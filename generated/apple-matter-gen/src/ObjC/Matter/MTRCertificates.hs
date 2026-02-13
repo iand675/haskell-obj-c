@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRCertificates
   , generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_error
   , generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_error
   , generateCertificateSigningRequest_error
-  , initSelector
-  , newSelector
-  , createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector
-  , createRootCertificate_issuerID_fabricID_errorSelector
-  , createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector
-  , createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector
-  , createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector
-  , createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector
-  , keypair_matchesCertificateSelector
-  , isCertificate_equalToSelector
-  , createCertificateSigningRequest_errorSelector
-  , convertX509CertificateSelector
   , convertMatterCertificateSelector
-  , publicKeyFromCSR_errorSelector
-  , generateRootCertificate_issuerId_fabricId_errorSelector
+  , convertX509CertificateSelector
+  , createCertificateSigningRequest_errorSelector
+  , createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector
+  , createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector
+  , createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector
+  , createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector
+  , createRootCertificate_issuerID_fabricID_errorSelector
+  , createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector
+  , generateCertificateSigningRequest_errorSelector
   , generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_errorSelector
   , generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_errorSelector
-  , generateCertificateSigningRequest_errorSelector
+  , generateRootCertificate_issuerId_fabricId_errorSelector
+  , initSelector
+  , isCertificate_equalToSelector
+  , keypair_matchesCertificateSelector
+  , newSelector
+  , publicKeyFromCSR_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,15 +60,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRCertificates mtrCertificates => mtrCertificates -> IO (Id MTRCertificates)
-init_ mtrCertificates  =
-    sendMsg mtrCertificates (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrCertificates =
+  sendOwnedMessage mtrCertificates initSelector
 
 -- | @+ new@
 new :: IO (Id MTRCertificates)
 new  =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Create a root (self-signed) X.509 DER encoded certificate that has the right fields to be a valid Matter root certificate.
 --
@@ -90,11 +87,7 @@ createRootCertificate_issuerID_fabricID_validityPeriod_error :: (IsNSNumber issu
 createRootCertificate_issuerID_fabricID_validityPeriod_error keypair issuerID fabricID validityPeriod error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr issuerID $ \raw_issuerID ->
-      withObjCPtr fabricID $ \raw_fabricID ->
-        withObjCPtr validityPeriod $ \raw_validityPeriod ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "createRootCertificate:issuerID:fabricID:validityPeriod:error:") (retPtr retVoid) [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_issuerID :: Ptr ()), argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_validityPeriod :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector keypair (toNSNumber issuerID) (toNSNumber fabricID) (toNSDateInterval validityPeriod) (toNSError error_)
 
 -- | As above, but defaults to no expiration time.
 --
@@ -103,10 +96,7 @@ createRootCertificate_issuerID_fabricID_error :: (IsNSNumber issuerID, IsNSNumbe
 createRootCertificate_issuerID_fabricID_error keypair issuerID fabricID error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr issuerID $ \raw_issuerID ->
-      withObjCPtr fabricID $ \raw_fabricID ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "createRootCertificate:issuerID:fabricID:error:") (retPtr retVoid) [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_issuerID :: Ptr ()), argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createRootCertificate_issuerID_fabricID_errorSelector keypair (toNSNumber issuerID) (toNSNumber fabricID) (toNSError error_)
 
 -- | Create an intermediate X.509 DER encoded certificate that has the right fields to be a valid Matter intermediate certificate.
 --
@@ -125,12 +115,7 @@ createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fab
 createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_error rootKeypair rootCertificate intermediatePublicKey issuerID fabricID validityPeriod error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr rootCertificate $ \raw_rootCertificate ->
-      withObjCPtr issuerID $ \raw_issuerID ->
-        withObjCPtr fabricID $ \raw_fabricID ->
-          withObjCPtr validityPeriod $ \raw_validityPeriod ->
-            withObjCPtr error_ $ \raw_error_ ->
-              sendClassMsg cls' (mkSelector "createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:validityPeriod:error:") (retPtr retVoid) [argPtr (castPtr (unRawId rootKeypair) :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr intermediatePublicKey, argPtr (castPtr raw_issuerID :: Ptr ()), argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_validityPeriod :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector rootKeypair (toNSData rootCertificate) intermediatePublicKey (toNSNumber issuerID) (toNSNumber fabricID) (toNSDateInterval validityPeriod) (toNSError error_)
 
 -- | As above, but defaults to no expiration time.
 --
@@ -139,11 +124,7 @@ createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fab
 createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_error rootKeypair rootCertificate intermediatePublicKey issuerID fabricID error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr rootCertificate $ \raw_rootCertificate ->
-      withObjCPtr issuerID $ \raw_issuerID ->
-        withObjCPtr fabricID $ \raw_fabricID ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:error:") (retPtr retVoid) [argPtr (castPtr (unRawId rootKeypair) :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr intermediatePublicKey, argPtr (castPtr raw_issuerID :: Ptr ()), argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector rootKeypair (toNSData rootCertificate) intermediatePublicKey (toNSNumber issuerID) (toNSNumber fabricID) (toNSError error_)
 
 -- | Create an X.509 DER encoded certificate that has the right fields to be a valid Matter operational certificate.
 --
@@ -166,13 +147,7 @@ createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_no
 createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_error signingKeypair signingCertificate operationalPublicKey fabricID nodeID caseAuthenticatedTags validityPeriod error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr signingCertificate $ \raw_signingCertificate ->
-      withObjCPtr fabricID $ \raw_fabricID ->
-        withObjCPtr nodeID $ \raw_nodeID ->
-          withObjCPtr caseAuthenticatedTags $ \raw_caseAuthenticatedTags ->
-            withObjCPtr validityPeriod $ \raw_validityPeriod ->
-              withObjCPtr error_ $ \raw_error_ ->
-                sendClassMsg cls' (mkSelector "createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:validityPeriod:error:") (retPtr retVoid) [argPtr (castPtr (unRawId signingKeypair) :: Ptr ()), argPtr (castPtr raw_signingCertificate :: Ptr ()), argPtr operationalPublicKey, argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_caseAuthenticatedTags :: Ptr ()), argPtr (castPtr raw_validityPeriod :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector signingKeypair (toNSData signingCertificate) operationalPublicKey (toNSNumber fabricID) (toNSNumber nodeID) (toNSSet caseAuthenticatedTags) (toNSDateInterval validityPeriod) (toNSError error_)
 
 -- | As above, but defaults to no expiration time.
 --
@@ -181,12 +156,7 @@ createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_no
 createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_error signingKeypair signingCertificate operationalPublicKey fabricID nodeID caseAuthenticatedTags error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr signingCertificate $ \raw_signingCertificate ->
-      withObjCPtr fabricID $ \raw_fabricID ->
-        withObjCPtr nodeID $ \raw_nodeID ->
-          withObjCPtr caseAuthenticatedTags $ \raw_caseAuthenticatedTags ->
-            withObjCPtr error_ $ \raw_error_ ->
-              sendClassMsg cls' (mkSelector "createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:error:") (retPtr retVoid) [argPtr (castPtr (unRawId signingKeypair) :: Ptr ()), argPtr (castPtr raw_signingCertificate :: Ptr ()), argPtr operationalPublicKey, argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_caseAuthenticatedTags :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector signingKeypair (toNSData signingCertificate) operationalPublicKey (toNSNumber fabricID) (toNSNumber nodeID) (toNSSet caseAuthenticatedTags) (toNSError error_)
 
 -- | Check whether the given keypair's public key matches the given certificate's public key.  The certificate is expected to be an X.509 DER encoded certificate.
 --
@@ -197,8 +167,7 @@ keypair_matchesCertificate :: IsNSData certificate => RawId -> certificate -> IO
 keypair_matchesCertificate keypair certificate =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr certificate $ \raw_certificate ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "keypair:matchesCertificate:") retCULong [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_certificate :: Ptr ())]
+    sendClassMessage cls' keypair_matchesCertificateSelector keypair (toNSData certificate)
 
 -- | Check whether two X.509 DER encoded certificates are equivalent, in the sense of having the same public key and the same subject DN.  Returns NO if public keys or subject DNs cannot be extracted from the certificates.
 --
@@ -207,9 +176,7 @@ isCertificate_equalTo :: (IsNSData certificate1, IsNSData certificate2) => certi
 isCertificate_equalTo certificate1 certificate2 =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr certificate1 $ \raw_certificate1 ->
-      withObjCPtr certificate2 $ \raw_certificate2 ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isCertificate:equalTo:") retCULong [argPtr (castPtr raw_certificate1 :: Ptr ()), argPtr (castPtr raw_certificate2 :: Ptr ())]
+    sendClassMessage cls' isCertificate_equalToSelector (toNSData certificate1) (toNSData certificate2)
 
 -- | Generate a PKCS#10 certificate signing request from a MTRKeypair.  This can then be used to request an operational or ICA certificate from an external certificate authority.
 --
@@ -222,8 +189,7 @@ createCertificateSigningRequest_error :: IsNSError error_ => RawId -> error_ -> 
 createCertificateSigningRequest_error keypair error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "createCertificateSigningRequest:error:") (retPtr retVoid) [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createCertificateSigningRequest_errorSelector keypair (toNSError error_)
 
 -- | Convert the given X.509v3 DER encoded certificate to the Matter certificate format.
 --
@@ -234,8 +200,7 @@ convertX509Certificate :: IsNSData x509Certificate => x509Certificate -> IO (Id 
 convertX509Certificate x509Certificate =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr x509Certificate $ \raw_x509Certificate ->
-      sendClassMsg cls' (mkSelector "convertX509Certificate:") (retPtr retVoid) [argPtr (castPtr raw_x509Certificate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' convertX509CertificateSelector (toNSData x509Certificate)
 
 -- | Convert the given Matter TLV encoded certificate to the X.509v3 DER encoded format.
 --
@@ -246,8 +211,7 @@ convertMatterCertificate :: IsNSData matterCertificate => matterCertificate -> I
 convertMatterCertificate matterCertificate =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr matterCertificate $ \raw_matterCertificate ->
-      sendClassMsg cls' (mkSelector "convertMatterCertificate:") (retPtr retVoid) [argPtr (castPtr raw_matterCertificate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' convertMatterCertificateSelector (toNSData matterCertificate)
 
 -- | Extract the public key from the given PKCS#10 certificate signing request. This is the public key that a certificate issued in response to the request would need to have.
 --
@@ -256,124 +220,109 @@ publicKeyFromCSR_error :: (IsNSData csr, IsNSError error_) => csr -> error_ -> I
 publicKeyFromCSR_error csr error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr csr $ \raw_csr ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "publicKeyFromCSR:error:") (retPtr retVoid) [argPtr (castPtr raw_csr :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' publicKeyFromCSR_errorSelector (toNSData csr) (toNSError error_)
 
 -- | @+ generateRootCertificate:issuerId:fabricId:error:@
 generateRootCertificate_issuerId_fabricId_error :: (IsNSNumber issuerId, IsNSNumber fabricId, IsNSError error_) => RawId -> issuerId -> fabricId -> error_ -> IO (Id NSData)
 generateRootCertificate_issuerId_fabricId_error keypair issuerId fabricId error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr issuerId $ \raw_issuerId ->
-      withObjCPtr fabricId $ \raw_fabricId ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "generateRootCertificate:issuerId:fabricId:error:") (retPtr retVoid) [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_issuerId :: Ptr ()), argPtr (castPtr raw_fabricId :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' generateRootCertificate_issuerId_fabricId_errorSelector keypair (toNSNumber issuerId) (toNSNumber fabricId) (toNSError error_)
 
 -- | @+ generateIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerId:fabricId:error:@
 generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_error :: (IsNSData rootCertificate, IsNSNumber issuerId, IsNSNumber fabricId, IsNSError error_) => RawId -> rootCertificate -> Ptr () -> issuerId -> fabricId -> error_ -> IO (Id NSData)
 generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_error rootKeypair rootCertificate intermediatePublicKey issuerId fabricId error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr rootCertificate $ \raw_rootCertificate ->
-      withObjCPtr issuerId $ \raw_issuerId ->
-        withObjCPtr fabricId $ \raw_fabricId ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "generateIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerId:fabricId:error:") (retPtr retVoid) [argPtr (castPtr (unRawId rootKeypair) :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr intermediatePublicKey, argPtr (castPtr raw_issuerId :: Ptr ()), argPtr (castPtr raw_fabricId :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_errorSelector rootKeypair (toNSData rootCertificate) intermediatePublicKey (toNSNumber issuerId) (toNSNumber fabricId) (toNSError error_)
 
 -- | @+ generateOperationalCertificate:signingCertificate:operationalPublicKey:fabricId:nodeId:caseAuthenticatedTags:error:@
 generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_error :: (IsNSData signingCertificate, IsNSNumber fabricId, IsNSNumber nodeId, IsNSArray caseAuthenticatedTags, IsNSError error_) => RawId -> signingCertificate -> Ptr () -> fabricId -> nodeId -> caseAuthenticatedTags -> error_ -> IO (Id NSData)
 generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_error signingKeypair signingCertificate operationalPublicKey fabricId nodeId caseAuthenticatedTags error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr signingCertificate $ \raw_signingCertificate ->
-      withObjCPtr fabricId $ \raw_fabricId ->
-        withObjCPtr nodeId $ \raw_nodeId ->
-          withObjCPtr caseAuthenticatedTags $ \raw_caseAuthenticatedTags ->
-            withObjCPtr error_ $ \raw_error_ ->
-              sendClassMsg cls' (mkSelector "generateOperationalCertificate:signingCertificate:operationalPublicKey:fabricId:nodeId:caseAuthenticatedTags:error:") (retPtr retVoid) [argPtr (castPtr (unRawId signingKeypair) :: Ptr ()), argPtr (castPtr raw_signingCertificate :: Ptr ()), argPtr operationalPublicKey, argPtr (castPtr raw_fabricId :: Ptr ()), argPtr (castPtr raw_nodeId :: Ptr ()), argPtr (castPtr raw_caseAuthenticatedTags :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_errorSelector signingKeypair (toNSData signingCertificate) operationalPublicKey (toNSNumber fabricId) (toNSNumber nodeId) (toNSArray caseAuthenticatedTags) (toNSError error_)
 
 -- | @+ generateCertificateSigningRequest:error:@
 generateCertificateSigningRequest_error :: IsNSError error_ => RawId -> error_ -> IO (Id NSData)
 generateCertificateSigningRequest_error keypair error_ =
   do
     cls' <- getRequiredClass "MTRCertificates"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "generateCertificateSigningRequest:error:") (retPtr retVoid) [argPtr (castPtr (unRawId keypair) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' generateCertificateSigningRequest_errorSelector keypair (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRCertificates)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRCertificates)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @createRootCertificate:issuerID:fabricID:validityPeriod:error:@
-createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector :: Selector
+createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector :: Selector '[RawId, Id NSNumber, Id NSNumber, Id NSDateInterval, Id NSError] (Id NSData)
 createRootCertificate_issuerID_fabricID_validityPeriod_errorSelector = mkSelector "createRootCertificate:issuerID:fabricID:validityPeriod:error:"
 
 -- | @Selector@ for @createRootCertificate:issuerID:fabricID:error:@
-createRootCertificate_issuerID_fabricID_errorSelector :: Selector
+createRootCertificate_issuerID_fabricID_errorSelector :: Selector '[RawId, Id NSNumber, Id NSNumber, Id NSError] (Id NSData)
 createRootCertificate_issuerID_fabricID_errorSelector = mkSelector "createRootCertificate:issuerID:fabricID:error:"
 
 -- | @Selector@ for @createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:validityPeriod:error:@
-createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector :: Selector
+createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSDateInterval, Id NSError] (Id NSData)
 createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_validityPeriod_errorSelector = mkSelector "createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:validityPeriod:error:"
 
 -- | @Selector@ for @createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:error:@
-createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector :: Selector
+createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSError] (Id NSData)
 createIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerID_fabricID_errorSelector = mkSelector "createIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerID:fabricID:error:"
 
 -- | @Selector@ for @createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:validityPeriod:error:@
-createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector :: Selector
+createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSSet, Id NSDateInterval, Id NSError] (Id NSData)
 createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_validityPeriod_errorSelector = mkSelector "createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:validityPeriod:error:"
 
 -- | @Selector@ for @createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:error:@
-createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector :: Selector
+createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSSet, Id NSError] (Id NSData)
 createOperationalCertificate_signingCertificate_operationalPublicKey_fabricID_nodeID_caseAuthenticatedTags_errorSelector = mkSelector "createOperationalCertificate:signingCertificate:operationalPublicKey:fabricID:nodeID:caseAuthenticatedTags:error:"
 
 -- | @Selector@ for @keypair:matchesCertificate:@
-keypair_matchesCertificateSelector :: Selector
+keypair_matchesCertificateSelector :: Selector '[RawId, Id NSData] Bool
 keypair_matchesCertificateSelector = mkSelector "keypair:matchesCertificate:"
 
 -- | @Selector@ for @isCertificate:equalTo:@
-isCertificate_equalToSelector :: Selector
+isCertificate_equalToSelector :: Selector '[Id NSData, Id NSData] Bool
 isCertificate_equalToSelector = mkSelector "isCertificate:equalTo:"
 
 -- | @Selector@ for @createCertificateSigningRequest:error:@
-createCertificateSigningRequest_errorSelector :: Selector
+createCertificateSigningRequest_errorSelector :: Selector '[RawId, Id NSError] (Id NSData)
 createCertificateSigningRequest_errorSelector = mkSelector "createCertificateSigningRequest:error:"
 
 -- | @Selector@ for @convertX509Certificate:@
-convertX509CertificateSelector :: Selector
+convertX509CertificateSelector :: Selector '[Id NSData] (Id NSData)
 convertX509CertificateSelector = mkSelector "convertX509Certificate:"
 
 -- | @Selector@ for @convertMatterCertificate:@
-convertMatterCertificateSelector :: Selector
+convertMatterCertificateSelector :: Selector '[Id NSData] (Id NSData)
 convertMatterCertificateSelector = mkSelector "convertMatterCertificate:"
 
 -- | @Selector@ for @publicKeyFromCSR:error:@
-publicKeyFromCSR_errorSelector :: Selector
+publicKeyFromCSR_errorSelector :: Selector '[Id NSData, Id NSError] (Id NSData)
 publicKeyFromCSR_errorSelector = mkSelector "publicKeyFromCSR:error:"
 
 -- | @Selector@ for @generateRootCertificate:issuerId:fabricId:error:@
-generateRootCertificate_issuerId_fabricId_errorSelector :: Selector
+generateRootCertificate_issuerId_fabricId_errorSelector :: Selector '[RawId, Id NSNumber, Id NSNumber, Id NSError] (Id NSData)
 generateRootCertificate_issuerId_fabricId_errorSelector = mkSelector "generateRootCertificate:issuerId:fabricId:error:"
 
 -- | @Selector@ for @generateIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerId:fabricId:error:@
-generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_errorSelector :: Selector
+generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSError] (Id NSData)
 generateIntermediateCertificate_rootCertificate_intermediatePublicKey_issuerId_fabricId_errorSelector = mkSelector "generateIntermediateCertificate:rootCertificate:intermediatePublicKey:issuerId:fabricId:error:"
 
 -- | @Selector@ for @generateOperationalCertificate:signingCertificate:operationalPublicKey:fabricId:nodeId:caseAuthenticatedTags:error:@
-generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_errorSelector :: Selector
+generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_errorSelector :: Selector '[RawId, Id NSData, Ptr (), Id NSNumber, Id NSNumber, Id NSArray, Id NSError] (Id NSData)
 generateOperationalCertificate_signingCertificate_operationalPublicKey_fabricId_nodeId_caseAuthenticatedTags_errorSelector = mkSelector "generateOperationalCertificate:signingCertificate:operationalPublicKey:fabricId:nodeId:caseAuthenticatedTags:error:"
 
 -- | @Selector@ for @generateCertificateSigningRequest:error:@
-generateCertificateSigningRequest_errorSelector :: Selector
+generateCertificateSigningRequest_errorSelector :: Selector '[RawId, Id NSError] (Id NSData)
 generateCertificateSigningRequest_errorSelector = mkSelector "generateCertificateSigningRequest:error:"
 

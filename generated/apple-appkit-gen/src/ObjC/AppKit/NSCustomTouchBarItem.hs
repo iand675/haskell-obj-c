@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AppKit.NSCustomTouchBarItem
   , setViewController
   , customizationLabel
   , setCustomizationLabel
-  , viewSelector
-  , setViewSelector
-  , viewControllerSelector
-  , setViewControllerSelector
   , customizationLabelSelector
   , setCustomizationLabelSelector
+  , setViewControllerSelector
+  , setViewSelector
+  , viewControllerSelector
+  , viewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- view@
 view :: IsNSCustomTouchBarItem nsCustomTouchBarItem => nsCustomTouchBarItem -> IO (Id NSView)
-view nsCustomTouchBarItem  =
-    sendMsg nsCustomTouchBarItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsCustomTouchBarItem =
+  sendMessage nsCustomTouchBarItem viewSelector
 
 -- | @- setView:@
 setView :: (IsNSCustomTouchBarItem nsCustomTouchBarItem, IsNSView value) => nsCustomTouchBarItem -> value -> IO ()
-setView nsCustomTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCustomTouchBarItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setView nsCustomTouchBarItem value =
+  sendMessage nsCustomTouchBarItem setViewSelector (toNSView value)
 
 -- | @- viewController@
 viewController :: IsNSCustomTouchBarItem nsCustomTouchBarItem => nsCustomTouchBarItem -> IO (Id NSViewController)
-viewController nsCustomTouchBarItem  =
-    sendMsg nsCustomTouchBarItem (mkSelector "viewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewController nsCustomTouchBarItem =
+  sendMessage nsCustomTouchBarItem viewControllerSelector
 
 -- | @- setViewController:@
 setViewController :: (IsNSCustomTouchBarItem nsCustomTouchBarItem, IsNSViewController value) => nsCustomTouchBarItem -> value -> IO ()
-setViewController nsCustomTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCustomTouchBarItem (mkSelector "setViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setViewController nsCustomTouchBarItem value =
+  sendMessage nsCustomTouchBarItem setViewControllerSelector (toNSViewController value)
 
 -- | @- customizationLabel@
 customizationLabel :: IsNSCustomTouchBarItem nsCustomTouchBarItem => nsCustomTouchBarItem -> IO (Id NSString)
-customizationLabel nsCustomTouchBarItem  =
-    sendMsg nsCustomTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsCustomTouchBarItem =
+  sendMessage nsCustomTouchBarItem customizationLabelSelector
 
 -- | @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSCustomTouchBarItem nsCustomTouchBarItem, IsNSString value) => nsCustomTouchBarItem -> value -> IO ()
-setCustomizationLabel nsCustomTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCustomTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsCustomTouchBarItem value =
+  sendMessage nsCustomTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @setView:@
-setViewSelector :: Selector
+setViewSelector :: Selector '[Id NSView] ()
 setViewSelector = mkSelector "setView:"
 
 -- | @Selector@ for @viewController@
-viewControllerSelector :: Selector
+viewControllerSelector :: Selector '[] (Id NSViewController)
 viewControllerSelector = mkSelector "viewController"
 
 -- | @Selector@ for @setViewController:@
-setViewControllerSelector :: Selector
+setViewControllerSelector :: Selector '[Id NSViewController] ()
 setViewControllerSelector = mkSelector "setViewController:"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 

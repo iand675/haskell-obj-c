@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.AVFAudio.AVAudioSessionPortExtensionBluetoothMicrophone
   , IsAVAudioSessionPortExtensionBluetoothMicrophone(..)
   , highQualityRecording
   , farFieldCapture
-  , highQualityRecordingSelector
   , farFieldCaptureSelector
+  , highQualityRecordingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- highQualityRecording@
 highQualityRecording :: IsAVAudioSessionPortExtensionBluetoothMicrophone avAudioSessionPortExtensionBluetoothMicrophone => avAudioSessionPortExtensionBluetoothMicrophone -> IO (Id AVAudioSessionCapability)
-highQualityRecording avAudioSessionPortExtensionBluetoothMicrophone  =
-    sendMsg avAudioSessionPortExtensionBluetoothMicrophone (mkSelector "highQualityRecording") (retPtr retVoid) [] >>= retainedObject . castPtr
+highQualityRecording avAudioSessionPortExtensionBluetoothMicrophone =
+  sendMessage avAudioSessionPortExtensionBluetoothMicrophone highQualityRecordingSelector
 
 -- | Describes whether this port supports far-field input capture.
 --
 -- ObjC selector: @- farFieldCapture@
 farFieldCapture :: IsAVAudioSessionPortExtensionBluetoothMicrophone avAudioSessionPortExtensionBluetoothMicrophone => avAudioSessionPortExtensionBluetoothMicrophone -> IO (Id AVAudioSessionCapability)
-farFieldCapture avAudioSessionPortExtensionBluetoothMicrophone  =
-    sendMsg avAudioSessionPortExtensionBluetoothMicrophone (mkSelector "farFieldCapture") (retPtr retVoid) [] >>= retainedObject . castPtr
+farFieldCapture avAudioSessionPortExtensionBluetoothMicrophone =
+  sendMessage avAudioSessionPortExtensionBluetoothMicrophone farFieldCaptureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @highQualityRecording@
-highQualityRecordingSelector :: Selector
+highQualityRecordingSelector :: Selector '[] (Id AVAudioSessionCapability)
 highQualityRecordingSelector = mkSelector "highQualityRecording"
 
 -- | @Selector@ for @farFieldCapture@
-farFieldCaptureSelector :: Selector
+farFieldCaptureSelector :: Selector '[] (Id AVAudioSessionCapability)
 farFieldCaptureSelector = mkSelector "farFieldCapture"
 

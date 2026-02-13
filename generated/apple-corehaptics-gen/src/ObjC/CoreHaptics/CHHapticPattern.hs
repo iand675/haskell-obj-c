@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.CoreHaptics.CHHapticPattern
   , initWithContentsOfURL_error
   , exportDictionaryAndReturnError
   , duration
-  , initSelector
-  , initWithEvents_parameters_errorSelector
-  , initWithEvents_parameterCurves_errorSelector
-  , initWithDictionary_errorSelector
-  , initWithContentsOfURL_errorSelector
-  , exportDictionaryAndReturnErrorSelector
   , durationSelector
+  , exportDictionaryAndReturnErrorSelector
+  , initSelector
+  , initWithContentsOfURL_errorSelector
+  , initWithDictionary_errorSelector
+  , initWithEvents_parameterCurves_errorSelector
+  , initWithEvents_parameters_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCHHapticPattern chHapticPattern => chHapticPattern -> IO (Id CHHapticPattern)
-init_ chHapticPattern  =
-    sendMsg chHapticPattern (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticPattern =
+  sendOwnedMessage chHapticPattern initSelector
 
 -- | initWithEvents:parameters:error
 --
@@ -60,11 +57,8 @@ init_ chHapticPattern  =
 --
 -- ObjC selector: @- initWithEvents:parameters:error:@
 initWithEvents_parameters_error :: (IsCHHapticPattern chHapticPattern, IsNSArray events, IsNSArray parameters, IsNSError outError) => chHapticPattern -> events -> parameters -> outError -> IO (Id CHHapticPattern)
-initWithEvents_parameters_error chHapticPattern  events parameters outError =
-  withObjCPtr events $ \raw_events ->
-    withObjCPtr parameters $ \raw_parameters ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg chHapticPattern (mkSelector "initWithEvents:parameters:error:") (retPtr retVoid) [argPtr (castPtr raw_events :: Ptr ()), argPtr (castPtr raw_parameters :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithEvents_parameters_error chHapticPattern events parameters outError =
+  sendOwnedMessage chHapticPattern initWithEvents_parameters_errorSelector (toNSArray events) (toNSArray parameters) (toNSError outError)
 
 -- | initWithEvents:parameterCurves:error
 --
@@ -76,11 +70,8 @@ initWithEvents_parameters_error chHapticPattern  events parameters outError =
 --
 -- ObjC selector: @- initWithEvents:parameterCurves:error:@
 initWithEvents_parameterCurves_error :: (IsCHHapticPattern chHapticPattern, IsNSArray events, IsNSArray parameterCurves, IsNSError outError) => chHapticPattern -> events -> parameterCurves -> outError -> IO (Id CHHapticPattern)
-initWithEvents_parameterCurves_error chHapticPattern  events parameterCurves outError =
-  withObjCPtr events $ \raw_events ->
-    withObjCPtr parameterCurves $ \raw_parameterCurves ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg chHapticPattern (mkSelector "initWithEvents:parameterCurves:error:") (retPtr retVoid) [argPtr (castPtr raw_events :: Ptr ()), argPtr (castPtr raw_parameterCurves :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithEvents_parameterCurves_error chHapticPattern events parameterCurves outError =
+  sendOwnedMessage chHapticPattern initWithEvents_parameterCurves_errorSelector (toNSArray events) (toNSArray parameterCurves) (toNSError outError)
 
 -- | initWithDictionary:error
 --
@@ -90,10 +81,8 @@ initWithEvents_parameterCurves_error chHapticPattern  events parameterCurves out
 --
 -- ObjC selector: @- initWithDictionary:error:@
 initWithDictionary_error :: (IsCHHapticPattern chHapticPattern, IsNSDictionary patternDict, IsNSError outError) => chHapticPattern -> patternDict -> outError -> IO (Id CHHapticPattern)
-initWithDictionary_error chHapticPattern  patternDict outError =
-  withObjCPtr patternDict $ \raw_patternDict ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg chHapticPattern (mkSelector "initWithDictionary:error:") (retPtr retVoid) [argPtr (castPtr raw_patternDict :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary_error chHapticPattern patternDict outError =
+  sendOwnedMessage chHapticPattern initWithDictionary_errorSelector (toNSDictionary patternDict) (toNSError outError)
 
 -- | initWithContentsOfURL:error
 --
@@ -105,10 +94,8 @@ initWithDictionary_error chHapticPattern  patternDict outError =
 --
 -- ObjC selector: @- initWithContentsOfURL:error:@
 initWithContentsOfURL_error :: (IsCHHapticPattern chHapticPattern, IsNSURL ahapURL, IsNSError outError) => chHapticPattern -> ahapURL -> outError -> IO (Id CHHapticPattern)
-initWithContentsOfURL_error chHapticPattern  ahapURL outError =
-  withObjCPtr ahapURL $ \raw_ahapURL ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg chHapticPattern (mkSelector "initWithContentsOfURL:error:") (retPtr retVoid) [argPtr (castPtr raw_ahapURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL_error chHapticPattern ahapURL outError =
+  sendOwnedMessage chHapticPattern initWithContentsOfURL_errorSelector (toNSURL ahapURL) (toNSError outError)
 
 -- | exportDictionaryAndReturnError:error
 --
@@ -118,9 +105,8 @@ initWithContentsOfURL_error chHapticPattern  ahapURL outError =
 --
 -- ObjC selector: @- exportDictionaryAndReturnError:@
 exportDictionaryAndReturnError :: (IsCHHapticPattern chHapticPattern, IsNSError outError) => chHapticPattern -> outError -> IO (Id NSDictionary)
-exportDictionaryAndReturnError chHapticPattern  outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg chHapticPattern (mkSelector "exportDictionaryAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+exportDictionaryAndReturnError chHapticPattern outError =
+  sendMessage chHapticPattern exportDictionaryAndReturnErrorSelector (toNSError outError)
 
 -- | duration
 --
@@ -128,38 +114,38 @@ exportDictionaryAndReturnError chHapticPattern  outError =
 --
 -- ObjC selector: @- duration@
 duration :: IsCHHapticPattern chHapticPattern => chHapticPattern -> IO CDouble
-duration chHapticPattern  =
-    sendMsg chHapticPattern (mkSelector "duration") retCDouble []
+duration chHapticPattern =
+  sendMessage chHapticPattern durationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticPattern)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithEvents:parameters:error:@
-initWithEvents_parameters_errorSelector :: Selector
+initWithEvents_parameters_errorSelector :: Selector '[Id NSArray, Id NSArray, Id NSError] (Id CHHapticPattern)
 initWithEvents_parameters_errorSelector = mkSelector "initWithEvents:parameters:error:"
 
 -- | @Selector@ for @initWithEvents:parameterCurves:error:@
-initWithEvents_parameterCurves_errorSelector :: Selector
+initWithEvents_parameterCurves_errorSelector :: Selector '[Id NSArray, Id NSArray, Id NSError] (Id CHHapticPattern)
 initWithEvents_parameterCurves_errorSelector = mkSelector "initWithEvents:parameterCurves:error:"
 
 -- | @Selector@ for @initWithDictionary:error:@
-initWithDictionary_errorSelector :: Selector
+initWithDictionary_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id CHHapticPattern)
 initWithDictionary_errorSelector = mkSelector "initWithDictionary:error:"
 
 -- | @Selector@ for @initWithContentsOfURL:error:@
-initWithContentsOfURL_errorSelector :: Selector
+initWithContentsOfURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id CHHapticPattern)
 initWithContentsOfURL_errorSelector = mkSelector "initWithContentsOfURL:error:"
 
 -- | @Selector@ for @exportDictionaryAndReturnError:@
-exportDictionaryAndReturnErrorSelector :: Selector
+exportDictionaryAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 exportDictionaryAndReturnErrorSelector = mkSelector "exportDictionaryAndReturnError:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 

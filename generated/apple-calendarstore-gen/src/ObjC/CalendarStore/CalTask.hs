@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.CalendarStore.CalTask
   , setIsCompleted
   , completedDate
   , setCompletedDate
-  , taskSelector
-  , dueDateSelector
-  , setDueDateSelector
-  , prioritySelector
-  , setPrioritySelector
-  , isCompletedSelector
-  , setIsCompletedSelector
   , completedDateSelector
+  , dueDateSelector
+  , isCompletedSelector
+  , prioritySelector
   , setCompletedDateSelector
+  , setDueDateSelector
+  , setIsCompletedSelector
+  , setPrioritySelector
+  , taskSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,87 +45,85 @@ task :: IO RawId
 task  =
   do
     cls' <- getRequiredClass "CalTask"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "task") (retPtr retVoid) []
+    sendClassMessage cls' taskSelector
 
 -- | @- dueDate@
 dueDate :: IsCalTask calTask => calTask -> IO (Id NSDate)
-dueDate calTask  =
-    sendMsg calTask (mkSelector "dueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+dueDate calTask =
+  sendMessage calTask dueDateSelector
 
 -- | @- setDueDate:@
 setDueDate :: (IsCalTask calTask, IsNSDate value) => calTask -> value -> IO ()
-setDueDate calTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calTask (mkSelector "setDueDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDueDate calTask value =
+  sendMessage calTask setDueDateSelector (toNSDate value)
 
 -- | @- priority@
 priority :: IsCalTask calTask => calTask -> IO CULong
-priority calTask  =
-    sendMsg calTask (mkSelector "priority") retCULong []
+priority calTask =
+  sendMessage calTask prioritySelector
 
 -- | @- setPriority:@
 setPriority :: IsCalTask calTask => calTask -> CULong -> IO ()
-setPriority calTask  value =
-    sendMsg calTask (mkSelector "setPriority:") retVoid [argCULong value]
+setPriority calTask value =
+  sendMessage calTask setPrioritySelector value
 
 -- | @- isCompleted@
 isCompleted :: IsCalTask calTask => calTask -> IO Bool
-isCompleted calTask  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg calTask (mkSelector "isCompleted") retCULong []
+isCompleted calTask =
+  sendMessage calTask isCompletedSelector
 
 -- | @- setIsCompleted:@
 setIsCompleted :: IsCalTask calTask => calTask -> Bool -> IO ()
-setIsCompleted calTask  value =
-    sendMsg calTask (mkSelector "setIsCompleted:") retVoid [argCULong (if value then 1 else 0)]
+setIsCompleted calTask value =
+  sendMessage calTask setIsCompletedSelector value
 
 -- | @- completedDate@
 completedDate :: IsCalTask calTask => calTask -> IO (Id NSDate)
-completedDate calTask  =
-    sendMsg calTask (mkSelector "completedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completedDate calTask =
+  sendMessage calTask completedDateSelector
 
 -- | @- setCompletedDate:@
 setCompletedDate :: (IsCalTask calTask, IsNSDate value) => calTask -> value -> IO ()
-setCompletedDate calTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calTask (mkSelector "setCompletedDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletedDate calTask value =
+  sendMessage calTask setCompletedDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @task@
-taskSelector :: Selector
+taskSelector :: Selector '[] RawId
 taskSelector = mkSelector "task"
 
 -- | @Selector@ for @dueDate@
-dueDateSelector :: Selector
+dueDateSelector :: Selector '[] (Id NSDate)
 dueDateSelector = mkSelector "dueDate"
 
 -- | @Selector@ for @setDueDate:@
-setDueDateSelector :: Selector
+setDueDateSelector :: Selector '[Id NSDate] ()
 setDueDateSelector = mkSelector "setDueDate:"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] CULong
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[CULong] ()
 setPrioritySelector = mkSelector "setPriority:"
 
 -- | @Selector@ for @isCompleted@
-isCompletedSelector :: Selector
+isCompletedSelector :: Selector '[] Bool
 isCompletedSelector = mkSelector "isCompleted"
 
 -- | @Selector@ for @setIsCompleted:@
-setIsCompletedSelector :: Selector
+setIsCompletedSelector :: Selector '[Bool] ()
 setIsCompletedSelector = mkSelector "setIsCompleted:"
 
 -- | @Selector@ for @completedDate@
-completedDateSelector :: Selector
+completedDateSelector :: Selector '[] (Id NSDate)
 completedDateSelector = mkSelector "completedDate"
 
 -- | @Selector@ for @setCompletedDate:@
-setCompletedDateSelector :: Selector
+setCompletedDateSelector :: Selector '[Id NSDate] ()
 setCompletedDateSelector = mkSelector "setCompletedDate:"
 

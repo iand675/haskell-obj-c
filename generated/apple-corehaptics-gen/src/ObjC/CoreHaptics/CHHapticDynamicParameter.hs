@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,23 +23,19 @@ module ObjC.CoreHaptics.CHHapticDynamicParameter
   , initSelector
   , initWithParameterID_value_relativeTimeSelector
   , parameterIDSelector
-  , valueSelector
-  , setValueSelector
   , relativeTimeSelector
   , setRelativeTimeSelector
+  , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> IO (Id CHHapticDynamicParameter)
-init_ chHapticDynamicParameter  =
-    sendMsg chHapticDynamicParameter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticDynamicParameter =
+  sendOwnedMessage chHapticDynamicParameter initSelector
 
 -- | initWithParameterID:value:relativeTime
 --
@@ -62,9 +59,8 @@ init_ chHapticDynamicParameter  =
 --
 -- ObjC selector: @- initWithParameterID:value:relativeTime:@
 initWithParameterID_value_relativeTime :: (IsCHHapticDynamicParameter chHapticDynamicParameter, IsNSString parameterID) => chHapticDynamicParameter -> parameterID -> CFloat -> CDouble -> IO (Id CHHapticDynamicParameter)
-initWithParameterID_value_relativeTime chHapticDynamicParameter  parameterID value time =
-  withObjCPtr parameterID $ \raw_parameterID ->
-      sendMsg chHapticDynamicParameter (mkSelector "initWithParameterID:value:relativeTime:") (retPtr retVoid) [argPtr (castPtr raw_parameterID :: Ptr ()), argCFloat value, argCDouble time] >>= ownedObject . castPtr
+initWithParameterID_value_relativeTime chHapticDynamicParameter parameterID value time =
+  sendOwnedMessage chHapticDynamicParameter initWithParameterID_value_relativeTimeSelector (toNSString parameterID) value time
 
 -- | parameterID
 --
@@ -72,8 +68,8 @@ initWithParameterID_value_relativeTime chHapticDynamicParameter  parameterID val
 --
 -- ObjC selector: @- parameterID@
 parameterID :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> IO (Id NSString)
-parameterID chHapticDynamicParameter  =
-    sendMsg chHapticDynamicParameter (mkSelector "parameterID") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameterID chHapticDynamicParameter =
+  sendMessage chHapticDynamicParameter parameterIDSelector
 
 -- | value
 --
@@ -81,8 +77,8 @@ parameterID chHapticDynamicParameter  =
 --
 -- ObjC selector: @- value@
 value :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> IO CFloat
-value chHapticDynamicParameter  =
-    sendMsg chHapticDynamicParameter (mkSelector "value") retCFloat []
+value chHapticDynamicParameter =
+  sendMessage chHapticDynamicParameter valueSelector
 
 -- | value
 --
@@ -90,8 +86,8 @@ value chHapticDynamicParameter  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> CFloat -> IO ()
-setValue chHapticDynamicParameter  value =
-    sendMsg chHapticDynamicParameter (mkSelector "setValue:") retVoid [argCFloat value]
+setValue chHapticDynamicParameter value =
+  sendMessage chHapticDynamicParameter setValueSelector value
 
 -- | relativeTime
 --
@@ -99,8 +95,8 @@ setValue chHapticDynamicParameter  value =
 --
 -- ObjC selector: @- relativeTime@
 relativeTime :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> IO CDouble
-relativeTime chHapticDynamicParameter  =
-    sendMsg chHapticDynamicParameter (mkSelector "relativeTime") retCDouble []
+relativeTime chHapticDynamicParameter =
+  sendMessage chHapticDynamicParameter relativeTimeSelector
 
 -- | relativeTime
 --
@@ -108,38 +104,38 @@ relativeTime chHapticDynamicParameter  =
 --
 -- ObjC selector: @- setRelativeTime:@
 setRelativeTime :: IsCHHapticDynamicParameter chHapticDynamicParameter => chHapticDynamicParameter -> CDouble -> IO ()
-setRelativeTime chHapticDynamicParameter  value =
-    sendMsg chHapticDynamicParameter (mkSelector "setRelativeTime:") retVoid [argCDouble value]
+setRelativeTime chHapticDynamicParameter value =
+  sendMessage chHapticDynamicParameter setRelativeTimeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticDynamicParameter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithParameterID:value:relativeTime:@
-initWithParameterID_value_relativeTimeSelector :: Selector
+initWithParameterID_value_relativeTimeSelector :: Selector '[Id NSString, CFloat, CDouble] (Id CHHapticDynamicParameter)
 initWithParameterID_value_relativeTimeSelector = mkSelector "initWithParameterID:value:relativeTime:"
 
 -- | @Selector@ for @parameterID@
-parameterIDSelector :: Selector
+parameterIDSelector :: Selector '[] (Id NSString)
 parameterIDSelector = mkSelector "parameterID"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @relativeTime@
-relativeTimeSelector :: Selector
+relativeTimeSelector :: Selector '[] CDouble
 relativeTimeSelector = mkSelector "relativeTime"
 
 -- | @Selector@ for @setRelativeTime:@
-setRelativeTimeSelector :: Selector
+setRelativeTimeSelector :: Selector '[CDouble] ()
 setRelativeTimeSelector = mkSelector "setRelativeTime:"
 

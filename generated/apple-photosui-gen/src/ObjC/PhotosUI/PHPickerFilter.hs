@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,24 +28,24 @@ module ObjC.PhotosUI.PHPickerFilter
   , slomoVideosFilter
   , timelapseVideosFilter
   , spatialMediaFilter
-  , playbackStyleFilterSelector
-  , anyFilterMatchingSubfiltersSelector
   , allFilterMatchingSubfiltersSelector
-  , notFilterOfSubfilterSelector
-  , newSelector
-  , initSelector
-  , imagesFilterSelector
-  , videosFilterSelector
-  , livePhotosFilterSelector
-  , depthEffectPhotosFilterSelector
+  , anyFilterMatchingSubfiltersSelector
   , burstsFilterSelector
-  , panoramasFilterSelector
-  , screenshotsFilterSelector
-  , screenRecordingsFilterSelector
   , cinematicVideosFilterSelector
+  , depthEffectPhotosFilterSelector
+  , imagesFilterSelector
+  , initSelector
+  , livePhotosFilterSelector
+  , newSelector
+  , notFilterOfSubfilterSelector
+  , panoramasFilterSelector
+  , playbackStyleFilterSelector
+  , screenRecordingsFilterSelector
+  , screenshotsFilterSelector
   , slomoVideosFilterSelector
-  , timelapseVideosFilterSelector
   , spatialMediaFilterSelector
+  , timelapseVideosFilterSelector
+  , videosFilterSelector
 
   -- * Enum types
   , PHAssetPlaybackStyle(PHAssetPlaybackStyle)
@@ -57,15 +58,11 @@ module ObjC.PhotosUI.PHPickerFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,7 +77,7 @@ playbackStyleFilter :: PHAssetPlaybackStyle -> IO (Id PHPickerFilter)
 playbackStyleFilter playbackStyle =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "playbackStyleFilter:") (retPtr retVoid) [argCLong (coerce playbackStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' playbackStyleFilterSelector playbackStyle
 
 -- | Returns a new filter formed by OR-ing the filters in a given array.
 --
@@ -89,8 +86,7 @@ anyFilterMatchingSubfilters :: IsNSArray subfilters => subfilters -> IO (Id PHPi
 anyFilterMatchingSubfilters subfilters =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    withObjCPtr subfilters $ \raw_subfilters ->
-      sendClassMsg cls' (mkSelector "anyFilterMatchingSubfilters:") (retPtr retVoid) [argPtr (castPtr raw_subfilters :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' anyFilterMatchingSubfiltersSelector (toNSArray subfilters)
 
 -- | Returns a new filter formed by AND-ing the filters in a given array.
 --
@@ -99,8 +95,7 @@ allFilterMatchingSubfilters :: IsNSArray subfilters => subfilters -> IO (Id PHPi
 allFilterMatchingSubfilters subfilters =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    withObjCPtr subfilters $ \raw_subfilters ->
-      sendClassMsg cls' (mkSelector "allFilterMatchingSubfilters:") (retPtr retVoid) [argPtr (castPtr raw_subfilters :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' allFilterMatchingSubfiltersSelector (toNSArray subfilters)
 
 -- | Returns a new filter formed by negating the given filter.
 --
@@ -109,20 +104,19 @@ notFilterOfSubfilter :: IsPHPickerFilter subfilter => subfilter -> IO (Id PHPick
 notFilterOfSubfilter subfilter =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    withObjCPtr subfilter $ \raw_subfilter ->
-      sendClassMsg cls' (mkSelector "notFilterOfSubfilter:") (retPtr retVoid) [argPtr (castPtr raw_subfilter :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notFilterOfSubfilterSelector (toPHPickerFilter subfilter)
 
 -- | @+ new@
 new :: IO (Id PHPickerFilter)
 new  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPickerFilter phPickerFilter => phPickerFilter -> IO (Id PHPickerFilter)
-init_ phPickerFilter  =
-    sendMsg phPickerFilter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPickerFilter =
+  sendOwnedMessage phPickerFilter initSelector
 
 -- | The filter for images.
 --
@@ -131,7 +125,7 @@ imagesFilter :: IO (Id PHPickerFilter)
 imagesFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "imagesFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imagesFilterSelector
 
 -- | The filter for videos.
 --
@@ -140,7 +134,7 @@ videosFilter :: IO (Id PHPickerFilter)
 videosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "videosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' videosFilterSelector
 
 -- | The filter for live photos.
 --
@@ -149,7 +143,7 @@ livePhotosFilter :: IO (Id PHPickerFilter)
 livePhotosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "livePhotosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' livePhotosFilterSelector
 
 -- | The filter for Depth Effect photos.
 --
@@ -158,7 +152,7 @@ depthEffectPhotosFilter :: IO (Id PHPickerFilter)
 depthEffectPhotosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "depthEffectPhotosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' depthEffectPhotosFilterSelector
 
 -- | The filter for bursts.
 --
@@ -167,7 +161,7 @@ burstsFilter :: IO (Id PHPickerFilter)
 burstsFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "burstsFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' burstsFilterSelector
 
 -- | The filter for panorama photos.
 --
@@ -176,7 +170,7 @@ panoramasFilter :: IO (Id PHPickerFilter)
 panoramasFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "panoramasFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' panoramasFilterSelector
 
 -- | The filter for screenshots.
 --
@@ -185,7 +179,7 @@ screenshotsFilter :: IO (Id PHPickerFilter)
 screenshotsFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "screenshotsFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' screenshotsFilterSelector
 
 -- | The filter for screen recordings.
 --
@@ -194,7 +188,7 @@ screenRecordingsFilter :: IO (Id PHPickerFilter)
 screenRecordingsFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "screenRecordingsFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' screenRecordingsFilterSelector
 
 -- | The filter for Cinematic videos.
 --
@@ -203,7 +197,7 @@ cinematicVideosFilter :: IO (Id PHPickerFilter)
 cinematicVideosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "cinematicVideosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cinematicVideosFilterSelector
 
 -- | The filter for Slow-Mo videos.
 --
@@ -212,7 +206,7 @@ slomoVideosFilter :: IO (Id PHPickerFilter)
 slomoVideosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "slomoVideosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' slomoVideosFilterSelector
 
 -- | The filter for time-lapse videos.
 --
@@ -221,7 +215,7 @@ timelapseVideosFilter :: IO (Id PHPickerFilter)
 timelapseVideosFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "timelapseVideosFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' timelapseVideosFilterSelector
 
 -- | The filter for spatial media.
 --
@@ -230,81 +224,81 @@ spatialMediaFilter :: IO (Id PHPickerFilter)
 spatialMediaFilter  =
   do
     cls' <- getRequiredClass "PHPickerFilter"
-    sendClassMsg cls' (mkSelector "spatialMediaFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' spatialMediaFilterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @playbackStyleFilter:@
-playbackStyleFilterSelector :: Selector
+playbackStyleFilterSelector :: Selector '[PHAssetPlaybackStyle] (Id PHPickerFilter)
 playbackStyleFilterSelector = mkSelector "playbackStyleFilter:"
 
 -- | @Selector@ for @anyFilterMatchingSubfilters:@
-anyFilterMatchingSubfiltersSelector :: Selector
+anyFilterMatchingSubfiltersSelector :: Selector '[Id NSArray] (Id PHPickerFilter)
 anyFilterMatchingSubfiltersSelector = mkSelector "anyFilterMatchingSubfilters:"
 
 -- | @Selector@ for @allFilterMatchingSubfilters:@
-allFilterMatchingSubfiltersSelector :: Selector
+allFilterMatchingSubfiltersSelector :: Selector '[Id NSArray] (Id PHPickerFilter)
 allFilterMatchingSubfiltersSelector = mkSelector "allFilterMatchingSubfilters:"
 
 -- | @Selector@ for @notFilterOfSubfilter:@
-notFilterOfSubfilterSelector :: Selector
+notFilterOfSubfilterSelector :: Selector '[Id PHPickerFilter] (Id PHPickerFilter)
 notFilterOfSubfilterSelector = mkSelector "notFilterOfSubfilter:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPickerFilter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPickerFilter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @imagesFilter@
-imagesFilterSelector :: Selector
+imagesFilterSelector :: Selector '[] (Id PHPickerFilter)
 imagesFilterSelector = mkSelector "imagesFilter"
 
 -- | @Selector@ for @videosFilter@
-videosFilterSelector :: Selector
+videosFilterSelector :: Selector '[] (Id PHPickerFilter)
 videosFilterSelector = mkSelector "videosFilter"
 
 -- | @Selector@ for @livePhotosFilter@
-livePhotosFilterSelector :: Selector
+livePhotosFilterSelector :: Selector '[] (Id PHPickerFilter)
 livePhotosFilterSelector = mkSelector "livePhotosFilter"
 
 -- | @Selector@ for @depthEffectPhotosFilter@
-depthEffectPhotosFilterSelector :: Selector
+depthEffectPhotosFilterSelector :: Selector '[] (Id PHPickerFilter)
 depthEffectPhotosFilterSelector = mkSelector "depthEffectPhotosFilter"
 
 -- | @Selector@ for @burstsFilter@
-burstsFilterSelector :: Selector
+burstsFilterSelector :: Selector '[] (Id PHPickerFilter)
 burstsFilterSelector = mkSelector "burstsFilter"
 
 -- | @Selector@ for @panoramasFilter@
-panoramasFilterSelector :: Selector
+panoramasFilterSelector :: Selector '[] (Id PHPickerFilter)
 panoramasFilterSelector = mkSelector "panoramasFilter"
 
 -- | @Selector@ for @screenshotsFilter@
-screenshotsFilterSelector :: Selector
+screenshotsFilterSelector :: Selector '[] (Id PHPickerFilter)
 screenshotsFilterSelector = mkSelector "screenshotsFilter"
 
 -- | @Selector@ for @screenRecordingsFilter@
-screenRecordingsFilterSelector :: Selector
+screenRecordingsFilterSelector :: Selector '[] (Id PHPickerFilter)
 screenRecordingsFilterSelector = mkSelector "screenRecordingsFilter"
 
 -- | @Selector@ for @cinematicVideosFilter@
-cinematicVideosFilterSelector :: Selector
+cinematicVideosFilterSelector :: Selector '[] (Id PHPickerFilter)
 cinematicVideosFilterSelector = mkSelector "cinematicVideosFilter"
 
 -- | @Selector@ for @slomoVideosFilter@
-slomoVideosFilterSelector :: Selector
+slomoVideosFilterSelector :: Selector '[] (Id PHPickerFilter)
 slomoVideosFilterSelector = mkSelector "slomoVideosFilter"
 
 -- | @Selector@ for @timelapseVideosFilter@
-timelapseVideosFilterSelector :: Selector
+timelapseVideosFilterSelector :: Selector '[] (Id PHPickerFilter)
 timelapseVideosFilterSelector = mkSelector "timelapseVideosFilter"
 
 -- | @Selector@ for @spatialMediaFilter@
-spatialMediaFilterSelector :: Selector
+spatialMediaFilterSelector :: Selector '[] (Id PHPickerFilter)
 spatialMediaFilterSelector = mkSelector "spatialMediaFilter"
 

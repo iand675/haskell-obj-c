@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,10 +20,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryFullyConnected
   , initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags
   , initWithCoder_device
   , initWithDevice
-  , initWithDevice_convolutionData_scaleValue_type_flagsSelector
-  , initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
+  , initWithDevice_convolutionData_scaleValue_type_flagsSelector
 
   -- * Enum types
   , MPSCNNBinaryConvolutionFlags(MPSCNNBinaryConvolutionFlags)
@@ -35,15 +36,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryFullyConnected
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,8 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:convolutionData:scaleValue:type:flags:@
 initWithDevice_convolutionData_scaleValue_type_flags :: IsMPSCNNBinaryFullyConnected mpscnnBinaryFullyConnected => mpscnnBinaryFullyConnected -> RawId -> RawId -> CFloat -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryFullyConnected)
-initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryFullyConnected  device convolutionData scaleValue type_ flags =
-    sendMsg mpscnnBinaryFullyConnected (mkSelector "initWithDevice:convolutionData:scaleValue:type:flags:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId convolutionData) :: Ptr ()), argCFloat scaleValue, argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryFullyConnected device convolutionData scaleValue type_ flags =
+  sendOwnedMessage mpscnnBinaryFullyConnected initWithDevice_convolutionData_scaleValue_type_flagsSelector device convolutionData scaleValue type_ flags
 
 -- | Initializes a binary fully connected kernel with binary weights as well as both pre and post scaling terms.
 --
@@ -92,8 +89,8 @@ initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryFullyConnected 
 --
 -- ObjC selector: @- initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
 initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags :: IsMPSCNNBinaryFullyConnected mpscnnBinaryFullyConnected => mpscnnBinaryFullyConnected -> RawId -> RawId -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryFullyConnected)
-initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryFullyConnected  device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
-    sendMsg mpscnnBinaryFullyConnected (mkSelector "initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId convolutionData) :: Ptr ()), argPtr (unConst outputBiasTerms), argPtr (unConst outputScaleTerms), argPtr (unConst inputBiasTerms), argPtr (unConst inputScaleTerms), argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryFullyConnected device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
+  sendOwnedMessage mpscnnBinaryFullyConnected initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags
 
 -- | NSSecureCoding compatability
 --
@@ -107,32 +104,31 @@ initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_i
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNBinaryFullyConnected mpscnnBinaryFullyConnected, IsNSCoder aDecoder) => mpscnnBinaryFullyConnected -> aDecoder -> RawId -> IO (Id MPSCNNBinaryFullyConnected)
-initWithCoder_device mpscnnBinaryFullyConnected  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnBinaryFullyConnected (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnBinaryFullyConnected aDecoder device =
+  sendOwnedMessage mpscnnBinaryFullyConnected initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNBinaryFullyConnected mpscnnBinaryFullyConnected => mpscnnBinaryFullyConnected -> RawId -> IO (Id MPSCNNBinaryFullyConnected)
-initWithDevice mpscnnBinaryFullyConnected  device =
-    sendMsg mpscnnBinaryFullyConnected (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnBinaryFullyConnected device =
+  sendOwnedMessage mpscnnBinaryFullyConnected initWithDeviceSelector device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:convolutionData:scaleValue:type:flags:@
-initWithDevice_convolutionData_scaleValue_type_flagsSelector :: Selector
+initWithDevice_convolutionData_scaleValue_type_flagsSelector :: Selector '[RawId, RawId, CFloat, MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryFullyConnected)
 initWithDevice_convolutionData_scaleValue_type_flagsSelector = mkSelector "initWithDevice:convolutionData:scaleValue:type:flags:"
 
 -- | @Selector@ for @initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
-initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector
+initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector '[RawId, RawId, Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryFullyConnected)
 initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector = mkSelector "initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNBinaryFullyConnected)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNBinaryFullyConnected)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 

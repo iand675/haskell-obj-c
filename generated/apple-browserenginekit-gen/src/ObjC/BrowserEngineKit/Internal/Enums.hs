@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.BrowserEngineKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @BEAccessibilityContainerType@ (bitmask)
 newtype BEAccessibilityContainerType = BEAccessibilityContainerType CULong
@@ -61,6 +64,16 @@ pattern BEAccessibilityContainerTypeAlert = BEAccessibilityContainerType 1024
 pattern BEAccessibilityContainerTypeDescriptionList :: BEAccessibilityContainerType
 pattern BEAccessibilityContainerTypeDescriptionList = BEAccessibilityContainerType 2048
 
+instance ObjCArgument BEAccessibilityContainerType where
+  withObjCArg (BEAccessibilityContainerType x) k = k (argCULong x)
+
+instance ObjCReturn BEAccessibilityContainerType where
+  type RawReturn BEAccessibilityContainerType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BEAccessibilityContainerType x)
+  fromOwned x = pure (BEAccessibilityContainerType x)
+
 -- | @BEAccessibilityPressedState@
 newtype BEAccessibilityPressedState = BEAccessibilityPressedState CLong
   deriving stock (Eq, Ord, Show)
@@ -77,6 +90,16 @@ pattern BEAccessibilityPressedStateTrue = BEAccessibilityPressedState 2
 
 pattern BEAccessibilityPressedStateMixed :: BEAccessibilityPressedState
 pattern BEAccessibilityPressedStateMixed = BEAccessibilityPressedState 3
+
+instance ObjCArgument BEAccessibilityPressedState where
+  withObjCArg (BEAccessibilityPressedState x) k = k (argCLong x)
+
+instance ObjCReturn BEAccessibilityPressedState where
+  type RawReturn BEAccessibilityPressedState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BEAccessibilityPressedState x)
+  fromOwned x = pure (BEAccessibilityPressedState x)
 
 -- | @BEGestureType@
 newtype BEGestureType = BEGestureType CLong
@@ -113,6 +136,16 @@ pattern BEGestureTypeIMPhraseBoundaryDrag = BEGestureType 14
 pattern BEGestureTypeForceTouch :: BEGestureType
 pattern BEGestureTypeForceTouch = BEGestureType 15
 
+instance ObjCArgument BEGestureType where
+  withObjCArg (BEGestureType x) k = k (argCLong x)
+
+instance ObjCReturn BEGestureType where
+  type RawReturn BEGestureType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BEGestureType x)
+  fromOwned x = pure (BEGestureType x)
+
 -- | @BESelectionFlags@ (bitmask)
 newtype BESelectionFlags = BESelectionFlags CULong
   deriving stock (Eq, Ord, Show)
@@ -136,6 +169,16 @@ pattern BESelectionFlipped = BESelectionFlags 2
 pattern BEPhraseBoundaryChanged :: BESelectionFlags
 pattern BEPhraseBoundaryChanged = BESelectionFlags 4
 
+instance ObjCArgument BESelectionFlags where
+  withObjCArg (BESelectionFlags x) k = k (argCULong x)
+
+instance ObjCReturn BESelectionFlags where
+  type RawReturn BESelectionFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BESelectionFlags x)
+  fromOwned x = pure (BESelectionFlags x)
+
 -- | @BESelectionTouchPhase@
 newtype BESelectionTouchPhase = BESelectionTouchPhase CLong
   deriving stock (Eq, Ord, Show)
@@ -158,3 +201,13 @@ pattern BESelectionTouchPhaseEndedMovingBackward = BESelectionTouchPhase 4
 
 pattern BESelectionTouchPhaseEndedNotMoving :: BESelectionTouchPhase
 pattern BESelectionTouchPhaseEndedNotMoving = BESelectionTouchPhase 5
+
+instance ObjCArgument BESelectionTouchPhase where
+  withObjCArg (BESelectionTouchPhase x) k = k (argCLong x)
+
+instance ObjCReturn BESelectionTouchPhase where
+  type RawReturn BESelectionTouchPhase = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BESelectionTouchPhase x)
+  fromOwned x = pure (BESelectionTouchPhase x)

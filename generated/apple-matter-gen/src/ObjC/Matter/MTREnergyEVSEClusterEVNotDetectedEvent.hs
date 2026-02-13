@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTREnergyEVSEClusterEVNotDetectedEvent
   , setSessionEnergyCharged
   , sessionEnergyDischarged
   , setSessionEnergyDischarged
-  , sessionIDSelector
-  , setSessionIDSelector
-  , stateSelector
-  , setStateSelector
   , sessionDurationSelector
-  , setSessionDurationSelector
   , sessionEnergyChargedSelector
-  , setSessionEnergyChargedSelector
   , sessionEnergyDischargedSelector
+  , sessionIDSelector
+  , setSessionDurationSelector
+  , setSessionEnergyChargedSelector
   , setSessionEnergyDischargedSelector
+  , setSessionIDSelector
+  , setStateSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sessionID@
 sessionID :: IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent => mtrEnergyEVSEClusterEVNotDetectedEvent -> IO (Id NSNumber)
-sessionID mtrEnergyEVSEClusterEVNotDetectedEvent  =
-    sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "sessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionID mtrEnergyEVSEClusterEVNotDetectedEvent =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent sessionIDSelector
 
 -- | @- setSessionID:@
 setSessionID :: (IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEVNotDetectedEvent -> value -> IO ()
-setSessionID mtrEnergyEVSEClusterEVNotDetectedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "setSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionID mtrEnergyEVSEClusterEVNotDetectedEvent value =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent setSessionIDSelector (toNSNumber value)
 
 -- | @- state@
 state :: IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent => mtrEnergyEVSEClusterEVNotDetectedEvent -> IO (Id NSNumber)
-state mtrEnergyEVSEClusterEVNotDetectedEvent  =
-    sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state mtrEnergyEVSEClusterEVNotDetectedEvent =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent stateSelector
 
 -- | @- setState:@
 setState :: (IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEVNotDetectedEvent -> value -> IO ()
-setState mtrEnergyEVSEClusterEVNotDetectedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState mtrEnergyEVSEClusterEVNotDetectedEvent value =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent setStateSelector (toNSNumber value)
 
 -- | @- sessionDuration@
 sessionDuration :: IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent => mtrEnergyEVSEClusterEVNotDetectedEvent -> IO (Id NSNumber)
-sessionDuration mtrEnergyEVSEClusterEVNotDetectedEvent  =
-    sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "sessionDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionDuration mtrEnergyEVSEClusterEVNotDetectedEvent =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent sessionDurationSelector
 
 -- | @- setSessionDuration:@
 setSessionDuration :: (IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEVNotDetectedEvent -> value -> IO ()
-setSessionDuration mtrEnergyEVSEClusterEVNotDetectedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "setSessionDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionDuration mtrEnergyEVSEClusterEVNotDetectedEvent value =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent setSessionDurationSelector (toNSNumber value)
 
 -- | @- sessionEnergyCharged@
 sessionEnergyCharged :: IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent => mtrEnergyEVSEClusterEVNotDetectedEvent -> IO (Id NSNumber)
-sessionEnergyCharged mtrEnergyEVSEClusterEVNotDetectedEvent  =
-    sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "sessionEnergyCharged") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionEnergyCharged mtrEnergyEVSEClusterEVNotDetectedEvent =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent sessionEnergyChargedSelector
 
 -- | @- setSessionEnergyCharged:@
 setSessionEnergyCharged :: (IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEVNotDetectedEvent -> value -> IO ()
-setSessionEnergyCharged mtrEnergyEVSEClusterEVNotDetectedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "setSessionEnergyCharged:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionEnergyCharged mtrEnergyEVSEClusterEVNotDetectedEvent value =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent setSessionEnergyChargedSelector (toNSNumber value)
 
 -- | @- sessionEnergyDischarged@
 sessionEnergyDischarged :: IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent => mtrEnergyEVSEClusterEVNotDetectedEvent -> IO (Id NSNumber)
-sessionEnergyDischarged mtrEnergyEVSEClusterEVNotDetectedEvent  =
-    sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "sessionEnergyDischarged") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionEnergyDischarged mtrEnergyEVSEClusterEVNotDetectedEvent =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent sessionEnergyDischargedSelector
 
 -- | @- setSessionEnergyDischarged:@
 setSessionEnergyDischarged :: (IsMTREnergyEVSEClusterEVNotDetectedEvent mtrEnergyEVSEClusterEVNotDetectedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEVNotDetectedEvent -> value -> IO ()
-setSessionEnergyDischarged mtrEnergyEVSEClusterEVNotDetectedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEVNotDetectedEvent (mkSelector "setSessionEnergyDischarged:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionEnergyDischarged mtrEnergyEVSEClusterEVNotDetectedEvent value =
+  sendMessage mtrEnergyEVSEClusterEVNotDetectedEvent setSessionEnergyDischargedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sessionID@
-sessionIDSelector :: Selector
+sessionIDSelector :: Selector '[] (Id NSNumber)
 sessionIDSelector = mkSelector "sessionID"
 
 -- | @Selector@ for @setSessionID:@
-setSessionIDSelector :: Selector
+setSessionIDSelector :: Selector '[Id NSNumber] ()
 setSessionIDSelector = mkSelector "setSessionID:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSNumber)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSNumber] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @sessionDuration@
-sessionDurationSelector :: Selector
+sessionDurationSelector :: Selector '[] (Id NSNumber)
 sessionDurationSelector = mkSelector "sessionDuration"
 
 -- | @Selector@ for @setSessionDuration:@
-setSessionDurationSelector :: Selector
+setSessionDurationSelector :: Selector '[Id NSNumber] ()
 setSessionDurationSelector = mkSelector "setSessionDuration:"
 
 -- | @Selector@ for @sessionEnergyCharged@
-sessionEnergyChargedSelector :: Selector
+sessionEnergyChargedSelector :: Selector '[] (Id NSNumber)
 sessionEnergyChargedSelector = mkSelector "sessionEnergyCharged"
 
 -- | @Selector@ for @setSessionEnergyCharged:@
-setSessionEnergyChargedSelector :: Selector
+setSessionEnergyChargedSelector :: Selector '[Id NSNumber] ()
 setSessionEnergyChargedSelector = mkSelector "setSessionEnergyCharged:"
 
 -- | @Selector@ for @sessionEnergyDischarged@
-sessionEnergyDischargedSelector :: Selector
+sessionEnergyDischargedSelector :: Selector '[] (Id NSNumber)
 sessionEnergyDischargedSelector = mkSelector "sessionEnergyDischarged"
 
 -- | @Selector@ for @setSessionEnergyDischarged:@
-setSessionEnergyDischargedSelector :: Selector
+setSessionEnergyDischargedSelector :: Selector '[Id NSNumber] ()
 setSessionEnergyDischargedSelector = mkSelector "setSessionEnergyDischarged:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -59,30 +60,30 @@ module ObjC.ModelIO.MDLTexture
   , setIsCube
   , hasAlphaValues
   , setHasAlphaValues
+  , channelCountSelector
+  , channelEncodingSelector
+  , hasAlphaValuesSelector
+  , imageFromTextureAtLevelSelector
+  , imageFromTextureSelector
   , initSelector
-  , textureNamedSelector
-  , textureNamed_bundleSelector
-  , textureNamed_assetResolverSelector
+  , isCubeSelector
+  , mipLevelCountSelector
+  , rowStrideSelector
+  , setHasAlphaValuesSelector
+  , setIsCubeSelector
+  , texelDataWithBottomLeftOriginAtMipLevel_createSelector
+  , texelDataWithBottomLeftOriginSelector
+  , texelDataWithTopLeftOriginAtMipLevel_createSelector
+  , texelDataWithTopLeftOriginSelector
   , textureCubeWithImagesNamedSelector
   , textureCubeWithImagesNamed_bundleSelector
+  , textureNamedSelector
+  , textureNamed_assetResolverSelector
+  , textureNamed_bundleSelector
   , writeToURLSelector
   , writeToURL_levelSelector
   , writeToURL_typeSelector
   , writeToURL_type_levelSelector
-  , imageFromTextureSelector
-  , imageFromTextureAtLevelSelector
-  , texelDataWithTopLeftOriginSelector
-  , texelDataWithBottomLeftOriginSelector
-  , texelDataWithTopLeftOriginAtMipLevel_createSelector
-  , texelDataWithBottomLeftOriginAtMipLevel_createSelector
-  , rowStrideSelector
-  , channelCountSelector
-  , mipLevelCountSelector
-  , channelEncodingSelector
-  , isCubeSelector
-  , setIsCubeSelector
-  , hasAlphaValuesSelector
-  , setHasAlphaValuesSelector
 
   -- * Enum types
   , MDLTextureChannelEncoding(MDLTextureChannelEncoding)
@@ -100,15 +101,11 @@ module ObjC.ModelIO.MDLTexture
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -118,8 +115,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMDLTexture mdlTexture => mdlTexture -> IO (Id MDLTexture)
-init_ mdlTexture  =
-    sendMsg mdlTexture (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mdlTexture =
+  sendOwnedMessage mdlTexture initSelector
 
 -- | Creates a texture from a source in the main bundle named in a manner matching  name.
 --
@@ -128,25 +125,21 @@ textureNamed :: IsNSString name => name -> IO (Id MDLTexture)
 textureNamed name =
   do
     cls' <- getRequiredClass "MDLTexture"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "textureNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureNamedSelector (toNSString name)
 
 -- | @+ textureNamed:bundle:@
 textureNamed_bundle :: (IsNSString name, IsNSBundle bundleOrNil) => name -> bundleOrNil -> IO (Id MDLTexture)
 textureNamed_bundle name bundleOrNil =
   do
     cls' <- getRequiredClass "MDLTexture"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr bundleOrNil $ \raw_bundleOrNil ->
-        sendClassMsg cls' (mkSelector "textureNamed:bundle:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_bundleOrNil :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureNamed_bundleSelector (toNSString name) (toNSBundle bundleOrNil)
 
 -- | @+ textureNamed:assetResolver:@
 textureNamed_assetResolver :: IsNSString name => name -> RawId -> IO (Id MDLTexture)
 textureNamed_assetResolver name resolver =
   do
     cls' <- getRequiredClass "MDLTexture"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "textureNamed:assetResolver:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId resolver) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureNamed_assetResolverSelector (toNSString name) resolver
 
 -- | Creates a cube texture map image using 6 faces of the same dimensions,   ordered +X,-X,+Y,-Y,+Z,-Z If the data is read back the image will be compacted   into a single vertical stack where dimensions.y = 6 * dimensions.x  isCube will return YES
 --
@@ -157,221 +150,214 @@ textureCubeWithImagesNamed :: IsNSArray names => names -> IO (Id MDLTexture)
 textureCubeWithImagesNamed names =
   do
     cls' <- getRequiredClass "MDLTexture"
-    withObjCPtr names $ \raw_names ->
-      sendClassMsg cls' (mkSelector "textureCubeWithImagesNamed:") (retPtr retVoid) [argPtr (castPtr raw_names :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureCubeWithImagesNamedSelector (toNSArray names)
 
 -- | @+ textureCubeWithImagesNamed:bundle:@
 textureCubeWithImagesNamed_bundle :: (IsNSArray names, IsNSBundle bundleOrNil) => names -> bundleOrNil -> IO (Id MDLTexture)
 textureCubeWithImagesNamed_bundle names bundleOrNil =
   do
     cls' <- getRequiredClass "MDLTexture"
-    withObjCPtr names $ \raw_names ->
-      withObjCPtr bundleOrNil $ \raw_bundleOrNil ->
-        sendClassMsg cls' (mkSelector "textureCubeWithImagesNamed:bundle:") (retPtr retVoid) [argPtr (castPtr raw_names :: Ptr ()), argPtr (castPtr raw_bundleOrNil :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureCubeWithImagesNamed_bundleSelector (toNSArray names) (toNSBundle bundleOrNil)
 
 -- | write a texture to URL, deducing type from path extension
 --
 -- ObjC selector: @- writeToURL:@
 writeToURL :: (IsMDLTexture mdlTexture, IsNSURL url) => mdlTexture -> url -> IO Bool
-writeToURL mdlTexture  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "writeToURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+writeToURL mdlTexture url =
+  sendMessage mdlTexture writeToURLSelector (toNSURL url)
 
 -- | write a particular level of a mipped texture to URL, deducing type from path extension
 --
 -- ObjC selector: @- writeToURL:level:@
 writeToURL_level :: (IsMDLTexture mdlTexture, IsNSURL url) => mdlTexture -> url -> CULong -> IO Bool
-writeToURL_level mdlTexture  url level =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "writeToURL:level:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argCULong level]
+writeToURL_level mdlTexture url level =
+  sendMessage mdlTexture writeToURL_levelSelector (toNSURL url) level
 
 -- | write a texture to URL, using a specific UT type
 --
 -- ObjC selector: @- writeToURL:type:@
 writeToURL_type :: (IsMDLTexture mdlTexture, IsNSURL nsurl) => mdlTexture -> nsurl -> RawId -> IO Bool
-writeToURL_type mdlTexture  nsurl type_ =
-  withObjCPtr nsurl $ \raw_nsurl ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "writeToURL:type:") retCULong [argPtr (castPtr raw_nsurl :: Ptr ()), argPtr (castPtr (unRawId type_) :: Ptr ())]
+writeToURL_type mdlTexture nsurl type_ =
+  sendMessage mdlTexture writeToURL_typeSelector (toNSURL nsurl) type_
 
 -- | write a particular level of a mipped texture to URL, using a specific UT type
 --
 -- ObjC selector: @- writeToURL:type:level:@
 writeToURL_type_level :: (IsMDLTexture mdlTexture, IsNSURL nsurl) => mdlTexture -> nsurl -> RawId -> CULong -> IO Bool
-writeToURL_type_level mdlTexture  nsurl type_ level =
-  withObjCPtr nsurl $ \raw_nsurl ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "writeToURL:type:level:") retCULong [argPtr (castPtr raw_nsurl :: Ptr ()), argPtr (castPtr (unRawId type_) :: Ptr ()), argCULong level]
+writeToURL_type_level mdlTexture nsurl type_ level =
+  sendMessage mdlTexture writeToURL_type_levelSelector (toNSURL nsurl) type_ level
 
 -- | @- imageFromTexture@
 imageFromTexture :: IsMDLTexture mdlTexture => mdlTexture -> IO (Ptr ())
-imageFromTexture mdlTexture  =
-    fmap castPtr $ sendMsg mdlTexture (mkSelector "imageFromTexture") (retPtr retVoid) []
+imageFromTexture mdlTexture =
+  sendMessage mdlTexture imageFromTextureSelector
 
 -- | @- imageFromTextureAtLevel:@
 imageFromTextureAtLevel :: IsMDLTexture mdlTexture => mdlTexture -> CULong -> IO (Ptr ())
-imageFromTextureAtLevel mdlTexture  level =
-    fmap castPtr $ sendMsg mdlTexture (mkSelector "imageFromTextureAtLevel:") (retPtr retVoid) [argCULong level]
+imageFromTextureAtLevel mdlTexture level =
+  sendMessage mdlTexture imageFromTextureAtLevelSelector level
 
 -- | @- texelDataWithTopLeftOrigin@
 texelDataWithTopLeftOrigin :: IsMDLTexture mdlTexture => mdlTexture -> IO (Id NSData)
-texelDataWithTopLeftOrigin mdlTexture  =
-    sendMsg mdlTexture (mkSelector "texelDataWithTopLeftOrigin") (retPtr retVoid) [] >>= retainedObject . castPtr
+texelDataWithTopLeftOrigin mdlTexture =
+  sendMessage mdlTexture texelDataWithTopLeftOriginSelector
 
 -- | @- texelDataWithBottomLeftOrigin@
 texelDataWithBottomLeftOrigin :: IsMDLTexture mdlTexture => mdlTexture -> IO (Id NSData)
-texelDataWithBottomLeftOrigin mdlTexture  =
-    sendMsg mdlTexture (mkSelector "texelDataWithBottomLeftOrigin") (retPtr retVoid) [] >>= retainedObject . castPtr
+texelDataWithBottomLeftOrigin mdlTexture =
+  sendMessage mdlTexture texelDataWithBottomLeftOriginSelector
 
 -- | @- texelDataWithTopLeftOriginAtMipLevel:create:@
 texelDataWithTopLeftOriginAtMipLevel_create :: IsMDLTexture mdlTexture => mdlTexture -> CLong -> Bool -> IO (Id NSData)
-texelDataWithTopLeftOriginAtMipLevel_create mdlTexture  level create =
-    sendMsg mdlTexture (mkSelector "texelDataWithTopLeftOriginAtMipLevel:create:") (retPtr retVoid) [argCLong level, argCULong (if create then 1 else 0)] >>= retainedObject . castPtr
+texelDataWithTopLeftOriginAtMipLevel_create mdlTexture level create =
+  sendMessage mdlTexture texelDataWithTopLeftOriginAtMipLevel_createSelector level create
 
 -- | @- texelDataWithBottomLeftOriginAtMipLevel:create:@
 texelDataWithBottomLeftOriginAtMipLevel_create :: IsMDLTexture mdlTexture => mdlTexture -> CLong -> Bool -> IO (Id NSData)
-texelDataWithBottomLeftOriginAtMipLevel_create mdlTexture  level create =
-    sendMsg mdlTexture (mkSelector "texelDataWithBottomLeftOriginAtMipLevel:create:") (retPtr retVoid) [argCLong level, argCULong (if create then 1 else 0)] >>= retainedObject . castPtr
+texelDataWithBottomLeftOriginAtMipLevel_create mdlTexture level create =
+  sendMessage mdlTexture texelDataWithBottomLeftOriginAtMipLevel_createSelector level create
 
 -- | @- rowStride@
 rowStride :: IsMDLTexture mdlTexture => mdlTexture -> IO CLong
-rowStride mdlTexture  =
-    sendMsg mdlTexture (mkSelector "rowStride") retCLong []
+rowStride mdlTexture =
+  sendMessage mdlTexture rowStrideSelector
 
 -- | @- channelCount@
 channelCount :: IsMDLTexture mdlTexture => mdlTexture -> IO CULong
-channelCount mdlTexture  =
-    sendMsg mdlTexture (mkSelector "channelCount") retCULong []
+channelCount mdlTexture =
+  sendMessage mdlTexture channelCountSelector
 
 -- | @- mipLevelCount@
 mipLevelCount :: IsMDLTexture mdlTexture => mdlTexture -> IO CULong
-mipLevelCount mdlTexture  =
-    sendMsg mdlTexture (mkSelector "mipLevelCount") retCULong []
+mipLevelCount mdlTexture =
+  sendMessage mdlTexture mipLevelCountSelector
 
 -- | @- channelEncoding@
 channelEncoding :: IsMDLTexture mdlTexture => mdlTexture -> IO MDLTextureChannelEncoding
-channelEncoding mdlTexture  =
-    fmap (coerce :: CLong -> MDLTextureChannelEncoding) $ sendMsg mdlTexture (mkSelector "channelEncoding") retCLong []
+channelEncoding mdlTexture =
+  sendMessage mdlTexture channelEncodingSelector
 
 -- | @- isCube@
 isCube :: IsMDLTexture mdlTexture => mdlTexture -> IO Bool
-isCube mdlTexture  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "isCube") retCULong []
+isCube mdlTexture =
+  sendMessage mdlTexture isCubeSelector
 
 -- | @- setIsCube:@
 setIsCube :: IsMDLTexture mdlTexture => mdlTexture -> Bool -> IO ()
-setIsCube mdlTexture  value =
-    sendMsg mdlTexture (mkSelector "setIsCube:") retVoid [argCULong (if value then 1 else 0)]
+setIsCube mdlTexture value =
+  sendMessage mdlTexture setIsCubeSelector value
 
 -- | hasAlphaValues  Can be overridden. If not overridden, hasAlpha will be NO if the texture does not have an alpha channel. It wil be YES if the texture has an alpha channel and there is at least one non-opaque texel in it.
 --
 -- ObjC selector: @- hasAlphaValues@
 hasAlphaValues :: IsMDLTexture mdlTexture => mdlTexture -> IO Bool
-hasAlphaValues mdlTexture  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlTexture (mkSelector "hasAlphaValues") retCULong []
+hasAlphaValues mdlTexture =
+  sendMessage mdlTexture hasAlphaValuesSelector
 
 -- | hasAlphaValues  Can be overridden. If not overridden, hasAlpha will be NO if the texture does not have an alpha channel. It wil be YES if the texture has an alpha channel and there is at least one non-opaque texel in it.
 --
 -- ObjC selector: @- setHasAlphaValues:@
 setHasAlphaValues :: IsMDLTexture mdlTexture => mdlTexture -> Bool -> IO ()
-setHasAlphaValues mdlTexture  value =
-    sendMsg mdlTexture (mkSelector "setHasAlphaValues:") retVoid [argCULong (if value then 1 else 0)]
+setHasAlphaValues mdlTexture value =
+  sendMessage mdlTexture setHasAlphaValuesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MDLTexture)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @textureNamed:@
-textureNamedSelector :: Selector
+textureNamedSelector :: Selector '[Id NSString] (Id MDLTexture)
 textureNamedSelector = mkSelector "textureNamed:"
 
 -- | @Selector@ for @textureNamed:bundle:@
-textureNamed_bundleSelector :: Selector
+textureNamed_bundleSelector :: Selector '[Id NSString, Id NSBundle] (Id MDLTexture)
 textureNamed_bundleSelector = mkSelector "textureNamed:bundle:"
 
 -- | @Selector@ for @textureNamed:assetResolver:@
-textureNamed_assetResolverSelector :: Selector
+textureNamed_assetResolverSelector :: Selector '[Id NSString, RawId] (Id MDLTexture)
 textureNamed_assetResolverSelector = mkSelector "textureNamed:assetResolver:"
 
 -- | @Selector@ for @textureCubeWithImagesNamed:@
-textureCubeWithImagesNamedSelector :: Selector
+textureCubeWithImagesNamedSelector :: Selector '[Id NSArray] (Id MDLTexture)
 textureCubeWithImagesNamedSelector = mkSelector "textureCubeWithImagesNamed:"
 
 -- | @Selector@ for @textureCubeWithImagesNamed:bundle:@
-textureCubeWithImagesNamed_bundleSelector :: Selector
+textureCubeWithImagesNamed_bundleSelector :: Selector '[Id NSArray, Id NSBundle] (Id MDLTexture)
 textureCubeWithImagesNamed_bundleSelector = mkSelector "textureCubeWithImagesNamed:bundle:"
 
 -- | @Selector@ for @writeToURL:@
-writeToURLSelector :: Selector
+writeToURLSelector :: Selector '[Id NSURL] Bool
 writeToURLSelector = mkSelector "writeToURL:"
 
 -- | @Selector@ for @writeToURL:level:@
-writeToURL_levelSelector :: Selector
+writeToURL_levelSelector :: Selector '[Id NSURL, CULong] Bool
 writeToURL_levelSelector = mkSelector "writeToURL:level:"
 
 -- | @Selector@ for @writeToURL:type:@
-writeToURL_typeSelector :: Selector
+writeToURL_typeSelector :: Selector '[Id NSURL, RawId] Bool
 writeToURL_typeSelector = mkSelector "writeToURL:type:"
 
 -- | @Selector@ for @writeToURL:type:level:@
-writeToURL_type_levelSelector :: Selector
+writeToURL_type_levelSelector :: Selector '[Id NSURL, RawId, CULong] Bool
 writeToURL_type_levelSelector = mkSelector "writeToURL:type:level:"
 
 -- | @Selector@ for @imageFromTexture@
-imageFromTextureSelector :: Selector
+imageFromTextureSelector :: Selector '[] (Ptr ())
 imageFromTextureSelector = mkSelector "imageFromTexture"
 
 -- | @Selector@ for @imageFromTextureAtLevel:@
-imageFromTextureAtLevelSelector :: Selector
+imageFromTextureAtLevelSelector :: Selector '[CULong] (Ptr ())
 imageFromTextureAtLevelSelector = mkSelector "imageFromTextureAtLevel:"
 
 -- | @Selector@ for @texelDataWithTopLeftOrigin@
-texelDataWithTopLeftOriginSelector :: Selector
+texelDataWithTopLeftOriginSelector :: Selector '[] (Id NSData)
 texelDataWithTopLeftOriginSelector = mkSelector "texelDataWithTopLeftOrigin"
 
 -- | @Selector@ for @texelDataWithBottomLeftOrigin@
-texelDataWithBottomLeftOriginSelector :: Selector
+texelDataWithBottomLeftOriginSelector :: Selector '[] (Id NSData)
 texelDataWithBottomLeftOriginSelector = mkSelector "texelDataWithBottomLeftOrigin"
 
 -- | @Selector@ for @texelDataWithTopLeftOriginAtMipLevel:create:@
-texelDataWithTopLeftOriginAtMipLevel_createSelector :: Selector
+texelDataWithTopLeftOriginAtMipLevel_createSelector :: Selector '[CLong, Bool] (Id NSData)
 texelDataWithTopLeftOriginAtMipLevel_createSelector = mkSelector "texelDataWithTopLeftOriginAtMipLevel:create:"
 
 -- | @Selector@ for @texelDataWithBottomLeftOriginAtMipLevel:create:@
-texelDataWithBottomLeftOriginAtMipLevel_createSelector :: Selector
+texelDataWithBottomLeftOriginAtMipLevel_createSelector :: Selector '[CLong, Bool] (Id NSData)
 texelDataWithBottomLeftOriginAtMipLevel_createSelector = mkSelector "texelDataWithBottomLeftOriginAtMipLevel:create:"
 
 -- | @Selector@ for @rowStride@
-rowStrideSelector :: Selector
+rowStrideSelector :: Selector '[] CLong
 rowStrideSelector = mkSelector "rowStride"
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] CULong
 channelCountSelector = mkSelector "channelCount"
 
 -- | @Selector@ for @mipLevelCount@
-mipLevelCountSelector :: Selector
+mipLevelCountSelector :: Selector '[] CULong
 mipLevelCountSelector = mkSelector "mipLevelCount"
 
 -- | @Selector@ for @channelEncoding@
-channelEncodingSelector :: Selector
+channelEncodingSelector :: Selector '[] MDLTextureChannelEncoding
 channelEncodingSelector = mkSelector "channelEncoding"
 
 -- | @Selector@ for @isCube@
-isCubeSelector :: Selector
+isCubeSelector :: Selector '[] Bool
 isCubeSelector = mkSelector "isCube"
 
 -- | @Selector@ for @setIsCube:@
-setIsCubeSelector :: Selector
+setIsCubeSelector :: Selector '[Bool] ()
 setIsCubeSelector = mkSelector "setIsCube:"
 
 -- | @Selector@ for @hasAlphaValues@
-hasAlphaValuesSelector :: Selector
+hasAlphaValuesSelector :: Selector '[] Bool
 hasAlphaValuesSelector = mkSelector "hasAlphaValues"
 
 -- | @Selector@ for @setHasAlphaValues:@
-setHasAlphaValuesSelector :: Selector
+setHasAlphaValuesSelector :: Selector '[Bool] ()
 setHasAlphaValuesSelector = mkSelector "setHasAlphaValues:"
 

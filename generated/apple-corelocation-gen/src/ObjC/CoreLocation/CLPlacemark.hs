@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,39 +27,35 @@ module ObjC.CoreLocation.CLPlacemark
   , ocean
   , areasOfInterest
   , postalAddress
-  , initSelector
-  , newSelector
-  , initWithPlacemarkSelector
-  , regionSelector
-  , timeZoneSelector
   , addressDictionarySelector
-  , nameSelector
-  , thoroughfareSelector
-  , subThoroughfareSelector
-  , localitySelector
-  , subLocalitySelector
   , administrativeAreaSelector
-  , subAdministrativeAreaSelector
-  , postalCodeSelector
-  , isOcountryCodeSelector
-  , countrySelector
-  , inlandWaterSelector
-  , oceanSelector
   , areasOfInterestSelector
+  , countrySelector
+  , initSelector
+  , initWithPlacemarkSelector
+  , inlandWaterSelector
+  , isOcountryCodeSelector
+  , localitySelector
+  , nameSelector
+  , newSelector
+  , oceanSelector
   , postalAddressSelector
+  , postalCodeSelector
+  , regionSelector
+  , subAdministrativeAreaSelector
+  , subLocalitySelector
+  , subThoroughfareSelector
+  , thoroughfareSelector
+  , timeZoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,188 +64,187 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id CLPlacemark)
-init_ clPlacemark  =
-    sendMsg clPlacemark (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clPlacemark =
+  sendOwnedMessage clPlacemark initSelector
 
 -- | @+ new@
 new :: IO (Id CLPlacemark)
 new  =
   do
     cls' <- getRequiredClass "CLPlacemark"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithPlacemark:@
 initWithPlacemark :: (IsCLPlacemark clPlacemark, IsCLPlacemark placemark) => clPlacemark -> placemark -> IO (Id CLPlacemark)
-initWithPlacemark clPlacemark  placemark =
-  withObjCPtr placemark $ \raw_placemark ->
-      sendMsg clPlacemark (mkSelector "initWithPlacemark:") (retPtr retVoid) [argPtr (castPtr raw_placemark :: Ptr ())] >>= ownedObject . castPtr
+initWithPlacemark clPlacemark placemark =
+  sendOwnedMessage clPlacemark initWithPlacemarkSelector (toCLPlacemark placemark)
 
 -- | @- region@
 region :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id CLRegion)
-region clPlacemark  =
-    sendMsg clPlacemark (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+region clPlacemark =
+  sendMessage clPlacemark regionSelector
 
 -- | @- timeZone@
 timeZone :: IsCLPlacemark clPlacemark => clPlacemark -> IO RawId
-timeZone clPlacemark  =
-    fmap (RawId . castPtr) $ sendMsg clPlacemark (mkSelector "timeZone") (retPtr retVoid) []
+timeZone clPlacemark =
+  sendMessage clPlacemark timeZoneSelector
 
 -- | @- addressDictionary@
 addressDictionary :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSDictionary)
-addressDictionary clPlacemark  =
-    sendMsg clPlacemark (mkSelector "addressDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressDictionary clPlacemark =
+  sendMessage clPlacemark addressDictionarySelector
 
 -- | @- name@
 name :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-name clPlacemark  =
-    sendMsg clPlacemark (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name clPlacemark =
+  sendMessage clPlacemark nameSelector
 
 -- | @- thoroughfare@
 thoroughfare :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-thoroughfare clPlacemark  =
-    sendMsg clPlacemark (mkSelector "thoroughfare") (retPtr retVoid) [] >>= retainedObject . castPtr
+thoroughfare clPlacemark =
+  sendMessage clPlacemark thoroughfareSelector
 
 -- | @- subThoroughfare@
 subThoroughfare :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-subThoroughfare clPlacemark  =
-    sendMsg clPlacemark (mkSelector "subThoroughfare") (retPtr retVoid) [] >>= retainedObject . castPtr
+subThoroughfare clPlacemark =
+  sendMessage clPlacemark subThoroughfareSelector
 
 -- | @- locality@
 locality :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-locality clPlacemark  =
-    sendMsg clPlacemark (mkSelector "locality") (retPtr retVoid) [] >>= retainedObject . castPtr
+locality clPlacemark =
+  sendMessage clPlacemark localitySelector
 
 -- | @- subLocality@
 subLocality :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-subLocality clPlacemark  =
-    sendMsg clPlacemark (mkSelector "subLocality") (retPtr retVoid) [] >>= retainedObject . castPtr
+subLocality clPlacemark =
+  sendMessage clPlacemark subLocalitySelector
 
 -- | @- administrativeArea@
 administrativeArea :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-administrativeArea clPlacemark  =
-    sendMsg clPlacemark (mkSelector "administrativeArea") (retPtr retVoid) [] >>= retainedObject . castPtr
+administrativeArea clPlacemark =
+  sendMessage clPlacemark administrativeAreaSelector
 
 -- | @- subAdministrativeArea@
 subAdministrativeArea :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-subAdministrativeArea clPlacemark  =
-    sendMsg clPlacemark (mkSelector "subAdministrativeArea") (retPtr retVoid) [] >>= retainedObject . castPtr
+subAdministrativeArea clPlacemark =
+  sendMessage clPlacemark subAdministrativeAreaSelector
 
 -- | @- postalCode@
 postalCode :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-postalCode clPlacemark  =
-    sendMsg clPlacemark (mkSelector "postalCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalCode clPlacemark =
+  sendMessage clPlacemark postalCodeSelector
 
 -- | @- ISOcountryCode@
 isOcountryCode :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-isOcountryCode clPlacemark  =
-    sendMsg clPlacemark (mkSelector "ISOcountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+isOcountryCode clPlacemark =
+  sendMessage clPlacemark isOcountryCodeSelector
 
 -- | @- country@
 country :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-country clPlacemark  =
-    sendMsg clPlacemark (mkSelector "country") (retPtr retVoid) [] >>= retainedObject . castPtr
+country clPlacemark =
+  sendMessage clPlacemark countrySelector
 
 -- | @- inlandWater@
 inlandWater :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-inlandWater clPlacemark  =
-    sendMsg clPlacemark (mkSelector "inlandWater") (retPtr retVoid) [] >>= retainedObject . castPtr
+inlandWater clPlacemark =
+  sendMessage clPlacemark inlandWaterSelector
 
 -- | @- ocean@
 ocean :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSString)
-ocean clPlacemark  =
-    sendMsg clPlacemark (mkSelector "ocean") (retPtr retVoid) [] >>= retainedObject . castPtr
+ocean clPlacemark =
+  sendMessage clPlacemark oceanSelector
 
 -- | @- areasOfInterest@
 areasOfInterest :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id NSArray)
-areasOfInterest clPlacemark  =
-    sendMsg clPlacemark (mkSelector "areasOfInterest") (retPtr retVoid) [] >>= retainedObject . castPtr
+areasOfInterest clPlacemark =
+  sendMessage clPlacemark areasOfInterestSelector
 
 -- | @- postalAddress@
 postalAddress :: IsCLPlacemark clPlacemark => clPlacemark -> IO (Id CNPostalAddress)
-postalAddress clPlacemark  =
-    sendMsg clPlacemark (mkSelector "postalAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalAddress clPlacemark =
+  sendMessage clPlacemark postalAddressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLPlacemark)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLPlacemark)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithPlacemark:@
-initWithPlacemarkSelector :: Selector
+initWithPlacemarkSelector :: Selector '[Id CLPlacemark] (Id CLPlacemark)
 initWithPlacemarkSelector = mkSelector "initWithPlacemark:"
 
 -- | @Selector@ for @region@
-regionSelector :: Selector
+regionSelector :: Selector '[] (Id CLRegion)
 regionSelector = mkSelector "region"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] RawId
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @addressDictionary@
-addressDictionarySelector :: Selector
+addressDictionarySelector :: Selector '[] (Id NSDictionary)
 addressDictionarySelector = mkSelector "addressDictionary"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @thoroughfare@
-thoroughfareSelector :: Selector
+thoroughfareSelector :: Selector '[] (Id NSString)
 thoroughfareSelector = mkSelector "thoroughfare"
 
 -- | @Selector@ for @subThoroughfare@
-subThoroughfareSelector :: Selector
+subThoroughfareSelector :: Selector '[] (Id NSString)
 subThoroughfareSelector = mkSelector "subThoroughfare"
 
 -- | @Selector@ for @locality@
-localitySelector :: Selector
+localitySelector :: Selector '[] (Id NSString)
 localitySelector = mkSelector "locality"
 
 -- | @Selector@ for @subLocality@
-subLocalitySelector :: Selector
+subLocalitySelector :: Selector '[] (Id NSString)
 subLocalitySelector = mkSelector "subLocality"
 
 -- | @Selector@ for @administrativeArea@
-administrativeAreaSelector :: Selector
+administrativeAreaSelector :: Selector '[] (Id NSString)
 administrativeAreaSelector = mkSelector "administrativeArea"
 
 -- | @Selector@ for @subAdministrativeArea@
-subAdministrativeAreaSelector :: Selector
+subAdministrativeAreaSelector :: Selector '[] (Id NSString)
 subAdministrativeAreaSelector = mkSelector "subAdministrativeArea"
 
 -- | @Selector@ for @postalCode@
-postalCodeSelector :: Selector
+postalCodeSelector :: Selector '[] (Id NSString)
 postalCodeSelector = mkSelector "postalCode"
 
 -- | @Selector@ for @ISOcountryCode@
-isOcountryCodeSelector :: Selector
+isOcountryCodeSelector :: Selector '[] (Id NSString)
 isOcountryCodeSelector = mkSelector "ISOcountryCode"
 
 -- | @Selector@ for @country@
-countrySelector :: Selector
+countrySelector :: Selector '[] (Id NSString)
 countrySelector = mkSelector "country"
 
 -- | @Selector@ for @inlandWater@
-inlandWaterSelector :: Selector
+inlandWaterSelector :: Selector '[] (Id NSString)
 inlandWaterSelector = mkSelector "inlandWater"
 
 -- | @Selector@ for @ocean@
-oceanSelector :: Selector
+oceanSelector :: Selector '[] (Id NSString)
 oceanSelector = mkSelector "ocean"
 
 -- | @Selector@ for @areasOfInterest@
-areasOfInterestSelector :: Selector
+areasOfInterestSelector :: Selector '[] (Id NSArray)
 areasOfInterestSelector = mkSelector "areasOfInterest"
 
 -- | @Selector@ for @postalAddress@
-postalAddressSelector :: Selector
+postalAddressSelector :: Selector '[] (Id CNPostalAddress)
 postalAddressSelector = mkSelector "postalAddress"
 

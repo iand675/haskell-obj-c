@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.SensorKit.SRPhotoplethysmogramOpticalSample
   , backgroundNoise
   , backgroundNoiseOffset
   , conditions
-  , initSelector
-  , newSelector
-  , emitterSelector
   , activePhotodiodeIndexesSelector
-  , signalIdentifierSelector
-  , nominalWavelengthSelector
-  , effectiveWavelengthSelector
-  , samplingFrequencySelector
-  , nanosecondsSinceStartSelector
-  , normalizedReflectanceSelector
-  , whiteNoiseSelector
-  , pinkNoiseSelector
-  , backgroundNoiseSelector
   , backgroundNoiseOffsetSelector
+  , backgroundNoiseSelector
   , conditionsSelector
+  , effectiveWavelengthSelector
+  , emitterSelector
+  , initSelector
+  , nanosecondsSinceStartSelector
+  , newSelector
+  , nominalWavelengthSelector
+  , normalizedReflectanceSelector
+  , pinkNoiseSelector
+  , samplingFrequencySelector
+  , signalIdentifierSelector
+  , whiteNoiseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,15 +54,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id SRPhotoplethysmogramOpticalSample)
-init_ srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srPhotoplethysmogramOpticalSample =
+  sendOwnedMessage srPhotoplethysmogramOpticalSample initSelector
 
 -- | @+ new@
 new :: IO (Id SRPhotoplethysmogramOpticalSample)
 new  =
   do
     cls' <- getRequiredClass "SRPhotoplethysmogramOpticalSample"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | emitter
 --
@@ -73,8 +70,8 @@ new  =
 --
 -- ObjC selector: @- emitter@
 emitter :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO CLong
-emitter srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "emitter") retCLong []
+emitter srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample emitterSelector
 
 -- | activePhotodiodeIndexes
 --
@@ -82,8 +79,8 @@ emitter srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- activePhotodiodeIndexes@
 activePhotodiodeIndexes :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSIndexSet)
-activePhotodiodeIndexes srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "activePhotodiodeIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+activePhotodiodeIndexes srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample activePhotodiodeIndexesSelector
 
 -- | signalIdentifier
 --
@@ -93,8 +90,8 @@ activePhotodiodeIndexes srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- signalIdentifier@
 signalIdentifier :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO CLong
-signalIdentifier srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "signalIdentifier") retCLong []
+signalIdentifier srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample signalIdentifierSelector
 
 -- | nominalWavelength
 --
@@ -102,8 +99,8 @@ signalIdentifier srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- nominalWavelength@
 nominalWavelength :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSMeasurement)
-nominalWavelength srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "nominalWavelength") (retPtr retVoid) [] >>= retainedObject . castPtr
+nominalWavelength srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample nominalWavelengthSelector
 
 -- | effectiveWavelength
 --
@@ -111,8 +108,8 @@ nominalWavelength srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- effectiveWavelength@
 effectiveWavelength :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSMeasurement)
-effectiveWavelength srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "effectiveWavelength") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectiveWavelength srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample effectiveWavelengthSelector
 
 -- | samplingFrequency
 --
@@ -120,8 +117,8 @@ effectiveWavelength srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- samplingFrequency@
 samplingFrequency :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSMeasurement)
-samplingFrequency srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "samplingFrequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+samplingFrequency srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample samplingFrequencySelector
 
 -- | nanosecondsSinceStart
 --
@@ -129,8 +126,8 @@ samplingFrequency srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- nanosecondsSinceStart@
 nanosecondsSinceStart :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO CLong
-nanosecondsSinceStart srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "nanosecondsSinceStart") retCLong []
+nanosecondsSinceStart srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample nanosecondsSinceStartSelector
 
 -- | normalizedReflectance
 --
@@ -140,8 +137,8 @@ nanosecondsSinceStart srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- normalizedReflectance@
 normalizedReflectance :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
-normalizedReflectance srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "normalizedReflectance") (retPtr retVoid) [] >>= retainedObject . castPtr
+normalizedReflectance srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample normalizedReflectanceSelector
 
 -- | whiteNoise
 --
@@ -151,8 +148,8 @@ normalizedReflectance srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- whiteNoise@
 whiteNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
-whiteNoise srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "whiteNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+whiteNoise srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample whiteNoiseSelector
 
 -- | pinkNoise
 --
@@ -162,8 +159,8 @@ whiteNoise srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- pinkNoise@
 pinkNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
-pinkNoise srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "pinkNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+pinkNoise srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample pinkNoiseSelector
 
 -- | backgroundNoise
 --
@@ -173,8 +170,8 @@ pinkNoise srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- backgroundNoise@
 backgroundNoise :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
-backgroundNoise srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "backgroundNoise") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundNoise srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample backgroundNoiseSelector
 
 -- | backgroundNoiseOffset
 --
@@ -184,8 +181,8 @@ backgroundNoise srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- backgroundNoiseOffset@
 backgroundNoiseOffset :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSNumber)
-backgroundNoiseOffset srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "backgroundNoiseOffset") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundNoiseOffset srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample backgroundNoiseOffsetSelector
 
 -- | conditions
 --
@@ -195,70 +192,70 @@ backgroundNoiseOffset srPhotoplethysmogramOpticalSample  =
 --
 -- ObjC selector: @- conditions@
 conditions :: IsSRPhotoplethysmogramOpticalSample srPhotoplethysmogramOpticalSample => srPhotoplethysmogramOpticalSample -> IO (Id NSArray)
-conditions srPhotoplethysmogramOpticalSample  =
-    sendMsg srPhotoplethysmogramOpticalSample (mkSelector "conditions") (retPtr retVoid) [] >>= retainedObject . castPtr
+conditions srPhotoplethysmogramOpticalSample =
+  sendMessage srPhotoplethysmogramOpticalSample conditionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRPhotoplethysmogramOpticalSample)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRPhotoplethysmogramOpticalSample)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @emitter@
-emitterSelector :: Selector
+emitterSelector :: Selector '[] CLong
 emitterSelector = mkSelector "emitter"
 
 -- | @Selector@ for @activePhotodiodeIndexes@
-activePhotodiodeIndexesSelector :: Selector
+activePhotodiodeIndexesSelector :: Selector '[] (Id NSIndexSet)
 activePhotodiodeIndexesSelector = mkSelector "activePhotodiodeIndexes"
 
 -- | @Selector@ for @signalIdentifier@
-signalIdentifierSelector :: Selector
+signalIdentifierSelector :: Selector '[] CLong
 signalIdentifierSelector = mkSelector "signalIdentifier"
 
 -- | @Selector@ for @nominalWavelength@
-nominalWavelengthSelector :: Selector
+nominalWavelengthSelector :: Selector '[] (Id NSMeasurement)
 nominalWavelengthSelector = mkSelector "nominalWavelength"
 
 -- | @Selector@ for @effectiveWavelength@
-effectiveWavelengthSelector :: Selector
+effectiveWavelengthSelector :: Selector '[] (Id NSMeasurement)
 effectiveWavelengthSelector = mkSelector "effectiveWavelength"
 
 -- | @Selector@ for @samplingFrequency@
-samplingFrequencySelector :: Selector
+samplingFrequencySelector :: Selector '[] (Id NSMeasurement)
 samplingFrequencySelector = mkSelector "samplingFrequency"
 
 -- | @Selector@ for @nanosecondsSinceStart@
-nanosecondsSinceStartSelector :: Selector
+nanosecondsSinceStartSelector :: Selector '[] CLong
 nanosecondsSinceStartSelector = mkSelector "nanosecondsSinceStart"
 
 -- | @Selector@ for @normalizedReflectance@
-normalizedReflectanceSelector :: Selector
+normalizedReflectanceSelector :: Selector '[] (Id NSNumber)
 normalizedReflectanceSelector = mkSelector "normalizedReflectance"
 
 -- | @Selector@ for @whiteNoise@
-whiteNoiseSelector :: Selector
+whiteNoiseSelector :: Selector '[] (Id NSNumber)
 whiteNoiseSelector = mkSelector "whiteNoise"
 
 -- | @Selector@ for @pinkNoise@
-pinkNoiseSelector :: Selector
+pinkNoiseSelector :: Selector '[] (Id NSNumber)
 pinkNoiseSelector = mkSelector "pinkNoise"
 
 -- | @Selector@ for @backgroundNoise@
-backgroundNoiseSelector :: Selector
+backgroundNoiseSelector :: Selector '[] (Id NSNumber)
 backgroundNoiseSelector = mkSelector "backgroundNoise"
 
 -- | @Selector@ for @backgroundNoiseOffset@
-backgroundNoiseOffsetSelector :: Selector
+backgroundNoiseOffsetSelector :: Selector '[] (Id NSNumber)
 backgroundNoiseOffsetSelector = mkSelector "backgroundNoiseOffset"
 
 -- | @Selector@ for @conditions@
-conditionsSelector :: Selector
+conditionsSelector :: Selector '[] (Id NSArray)
 conditionsSelector = mkSelector "conditions"
 

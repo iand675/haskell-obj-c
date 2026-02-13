@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.QuartzCore.CAValueFunction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,23 +31,22 @@ functionWithName :: IsNSString name => name -> IO (Id CAValueFunction)
 functionWithName name =
   do
     cls' <- getRequiredClass "CAValueFunction"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "functionWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' functionWithNameSelector (toNSString name)
 
 -- | @- name@
 name :: IsCAValueFunction caValueFunction => caValueFunction -> IO (Id NSString)
-name caValueFunction  =
-    sendMsg caValueFunction (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name caValueFunction =
+  sendMessage caValueFunction nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @functionWithName:@
-functionWithNameSelector :: Selector
+functionWithNameSelector :: Selector '[Id NSString] (Id CAValueFunction)
 functionWithNameSelector = mkSelector "functionWithName:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

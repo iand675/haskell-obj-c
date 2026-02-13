@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetalPerformanceShaders.MPSNNReduceRowMax
   , IsMPSNNReduceRowMax(..)
   , initWithDevice
   , initWithCoder_device
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNReduceRowMax mpsnnReduceRowMax => mpsnnReduceRowMax -> RawId -> IO (Id MPSNNReduceRowMax)
-initWithDevice mpsnnReduceRowMax  device =
-    sendMsg mpsnnReduceRowMax (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnReduceRowMax device =
+  sendOwnedMessage mpsnnReduceRowMax initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -56,19 +53,18 @@ initWithDevice mpsnnReduceRowMax  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNReduceRowMax mpsnnReduceRowMax, IsNSCoder aDecoder) => mpsnnReduceRowMax -> aDecoder -> RawId -> IO (Id MPSNNReduceRowMax)
-initWithCoder_device mpsnnReduceRowMax  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnReduceRowMax (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnReduceRowMax aDecoder device =
+  sendOwnedMessage mpsnnReduceRowMax initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNReduceRowMax)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNReduceRowMax)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 

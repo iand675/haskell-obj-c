@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSFilePromiseProvider
   , setDelegate
   , userInfo
   , setUserInfo
-  , initWithFileType_delegateSelector
-  , initSelector
-  , fileTypeSelector
-  , setFileTypeSelector
   , delegateSelector
+  , fileTypeSelector
+  , initSelector
+  , initWithFileType_delegateSelector
   , setDelegateSelector
-  , userInfoSelector
+  , setFileTypeSelector
   , setUserInfoSelector
+  , userInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFileType:delegate:@
 initWithFileType_delegate :: (IsNSFilePromiseProvider nsFilePromiseProvider, IsNSString fileType) => nsFilePromiseProvider -> fileType -> RawId -> IO (Id NSFilePromiseProvider)
-initWithFileType_delegate nsFilePromiseProvider  fileType delegate =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg nsFilePromiseProvider (mkSelector "initWithFileType:delegate:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithFileType_delegate nsFilePromiseProvider fileType delegate =
+  sendOwnedMessage nsFilePromiseProvider initWithFileType_delegateSelector (toNSString fileType) delegate
 
 -- | @- init@
 init_ :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO (Id NSFilePromiseProvider)
-init_ nsFilePromiseProvider  =
-    sendMsg nsFilePromiseProvider (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsFilePromiseProvider =
+  sendOwnedMessage nsFilePromiseProvider initSelector
 
 -- | @- fileType@
 fileType :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO (Id NSString)
-fileType nsFilePromiseProvider  =
-    sendMsg nsFilePromiseProvider (mkSelector "fileType") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileType nsFilePromiseProvider =
+  sendMessage nsFilePromiseProvider fileTypeSelector
 
 -- | @- setFileType:@
 setFileType :: (IsNSFilePromiseProvider nsFilePromiseProvider, IsNSString value) => nsFilePromiseProvider -> value -> IO ()
-setFileType nsFilePromiseProvider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFilePromiseProvider (mkSelector "setFileType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileType nsFilePromiseProvider value =
+  sendMessage nsFilePromiseProvider setFileTypeSelector (toNSString value)
 
 -- | @- delegate@
 delegate :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO RawId
-delegate nsFilePromiseProvider  =
-    fmap (RawId . castPtr) $ sendMsg nsFilePromiseProvider (mkSelector "delegate") (retPtr retVoid) []
+delegate nsFilePromiseProvider =
+  sendMessage nsFilePromiseProvider delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> RawId -> IO ()
-setDelegate nsFilePromiseProvider  value =
-    sendMsg nsFilePromiseProvider (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsFilePromiseProvider value =
+  sendMessage nsFilePromiseProvider setDelegateSelector value
 
 -- | @- userInfo@
 userInfo :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> IO RawId
-userInfo nsFilePromiseProvider  =
-    fmap (RawId . castPtr) $ sendMsg nsFilePromiseProvider (mkSelector "userInfo") (retPtr retVoid) []
+userInfo nsFilePromiseProvider =
+  sendMessage nsFilePromiseProvider userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: IsNSFilePromiseProvider nsFilePromiseProvider => nsFilePromiseProvider -> RawId -> IO ()
-setUserInfo nsFilePromiseProvider  value =
-    sendMsg nsFilePromiseProvider (mkSelector "setUserInfo:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUserInfo nsFilePromiseProvider value =
+  sendMessage nsFilePromiseProvider setUserInfoSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileType:delegate:@
-initWithFileType_delegateSelector :: Selector
+initWithFileType_delegateSelector :: Selector '[Id NSString, RawId] (Id NSFilePromiseProvider)
 initWithFileType_delegateSelector = mkSelector "initWithFileType:delegate:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSFilePromiseProvider)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @fileType@
-fileTypeSelector :: Selector
+fileTypeSelector :: Selector '[] (Id NSString)
 fileTypeSelector = mkSelector "fileType"
 
 -- | @Selector@ for @setFileType:@
-setFileTypeSelector :: Selector
+setFileTypeSelector :: Selector '[Id NSString] ()
 setFileTypeSelector = mkSelector "setFileType:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] RawId
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[RawId] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 

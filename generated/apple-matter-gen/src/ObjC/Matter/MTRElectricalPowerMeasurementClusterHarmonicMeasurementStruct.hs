@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRElectricalPowerMeasurementClusterHarmonicMeasurementStruct
   , setOrder
   , measurement
   , setMeasurement
-  , orderSelector
-  , setOrderSelector
   , measurementSelector
+  , orderSelector
   , setMeasurementSelector
+  , setOrderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- order@
 order :: IsMTRElectricalPowerMeasurementClusterHarmonicMeasurementStruct mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct => mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct -> IO (Id NSNumber)
-order mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct  =
-    sendMsg mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct (mkSelector "order") (retPtr retVoid) [] >>= retainedObject . castPtr
+order mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct =
+  sendMessage mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct orderSelector
 
 -- | @- setOrder:@
 setOrder :: (IsMTRElectricalPowerMeasurementClusterHarmonicMeasurementStruct mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct, IsNSNumber value) => mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct -> value -> IO ()
-setOrder mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct (mkSelector "setOrder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOrder mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct value =
+  sendMessage mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct setOrderSelector (toNSNumber value)
 
 -- | @- measurement@
 measurement :: IsMTRElectricalPowerMeasurementClusterHarmonicMeasurementStruct mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct => mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct -> IO (Id NSNumber)
-measurement mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct  =
-    sendMsg mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct (mkSelector "measurement") (retPtr retVoid) [] >>= retainedObject . castPtr
+measurement mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct =
+  sendMessage mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct measurementSelector
 
 -- | @- setMeasurement:@
 setMeasurement :: (IsMTRElectricalPowerMeasurementClusterHarmonicMeasurementStruct mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct, IsNSNumber value) => mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct -> value -> IO ()
-setMeasurement mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct (mkSelector "setMeasurement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeasurement mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct value =
+  sendMessage mtrElectricalPowerMeasurementClusterHarmonicMeasurementStruct setMeasurementSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @order@
-orderSelector :: Selector
+orderSelector :: Selector '[] (Id NSNumber)
 orderSelector = mkSelector "order"
 
 -- | @Selector@ for @setOrder:@
-setOrderSelector :: Selector
+setOrderSelector :: Selector '[Id NSNumber] ()
 setOrderSelector = mkSelector "setOrder:"
 
 -- | @Selector@ for @measurement@
-measurementSelector :: Selector
+measurementSelector :: Selector '[] (Id NSNumber)
 measurementSelector = mkSelector "measurement"
 
 -- | @Selector@ for @setMeasurement:@
-setMeasurementSelector :: Selector
+setMeasurementSelector :: Selector '[Id NSNumber] ()
 setMeasurementSelector = mkSelector "setMeasurement:"
 

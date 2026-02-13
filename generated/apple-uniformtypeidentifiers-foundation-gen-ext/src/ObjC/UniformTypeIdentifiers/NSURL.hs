@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.UniformTypeIdentifiers.NSURL
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,10 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- URLByAppendingPathComponent:conformingToType:@
 urlByAppendingPathComponent_conformingToType :: (IsNSURL nsurl, IsNSString partialName, IsUTType contentType) => nsurl -> partialName -> contentType -> IO (Id NSURL)
-urlByAppendingPathComponent_conformingToType nsurl  partialName contentType =
-  withObjCPtr partialName $ \raw_partialName ->
-    withObjCPtr contentType $ \raw_contentType ->
-        sendMsg nsurl (mkSelector "URLByAppendingPathComponent:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_partialName :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ())] >>= retainedObject . castPtr
+urlByAppendingPathComponent_conformingToType nsurl partialName contentType =
+  sendMessage nsurl urlByAppendingPathComponent_conformingToTypeSelector (toNSString partialName) (toUTType contentType)
 
 -- | Generate a path component based on the last path component of the		receiver and a file type, then append it to a copy of the receiver.
 --
@@ -68,19 +63,18 @@ urlByAppendingPathComponent_conformingToType nsurl  partialName contentType =
 --
 -- ObjC selector: @- URLByAppendingPathExtensionForType:@
 urlByAppendingPathExtensionForType :: (IsNSURL nsurl, IsUTType contentType) => nsurl -> contentType -> IO (Id NSURL)
-urlByAppendingPathExtensionForType nsurl  contentType =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsurl (mkSelector "URLByAppendingPathExtensionForType:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ())] >>= retainedObject . castPtr
+urlByAppendingPathExtensionForType nsurl contentType =
+  sendMessage nsurl urlByAppendingPathExtensionForTypeSelector (toUTType contentType)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URLByAppendingPathComponent:conformingToType:@
-urlByAppendingPathComponent_conformingToTypeSelector :: Selector
+urlByAppendingPathComponent_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id NSURL)
 urlByAppendingPathComponent_conformingToTypeSelector = mkSelector "URLByAppendingPathComponent:conformingToType:"
 
 -- | @Selector@ for @URLByAppendingPathExtensionForType:@
-urlByAppendingPathExtensionForTypeSelector :: Selector
+urlByAppendingPathExtensionForTypeSelector :: Selector '[Id UTType] (Id NSURL)
 urlByAppendingPathExtensionForTypeSelector = mkSelector "URLByAppendingPathExtensionForType:"
 

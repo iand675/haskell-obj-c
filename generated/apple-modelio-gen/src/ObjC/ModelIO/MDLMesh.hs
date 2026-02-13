@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,43 +51,43 @@ module ObjC.ModelIO.MDLMesh
   , submeshes
   , setSubmeshes
   , allocator
-  , initWithBufferAllocatorSelector
-  , initWithVertexBuffer_vertexCount_descriptor_submeshesSelector
-  , initWithVertexBuffers_vertexCount_descriptor_submeshesSelector
-  , vertexAttributeDataForAttributeNamedSelector
-  , vertexAttributeDataForAttributeNamed_asFormatSelector
-  , generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector
-  , generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector
-  , generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector
-  , generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector
-  , generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector
-  , initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector
-  , newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector
-  , newIcosahedronWithRadius_inwardNormals_allocatorSelector
-  , newSubdividedMesh_submeshIndex_subdivisionLevelsSelector
   , addAttributeWithName_formatSelector
   , addAttributeWithName_format_type_data_strideSelector
   , addAttributeWithName_format_type_data_stride_timeSelector
   , addNormalsWithAttributeNamed_creaseThresholdSelector
-  , addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector
-  , addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector
   , addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector
+  , addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector
+  , addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector
   , addUnwrappedTextureCoordinatesForAttributeNamedSelector
-  , flipTextureCoordinatesInAttributeNamedSelector
-  , makeVerticesUniqueSelector
-  , makeVerticesUniqueAndReturnErrorSelector
-  , replaceAttributeNamed_withDataSelector
-  , updateAttributeNamed_withDataSelector
-  , removeAttributeNamedSelector
-  , vertexDescriptorSelector
-  , setVertexDescriptorSelector
-  , vertexCountSelector
-  , setVertexCountSelector
-  , vertexBuffersSelector
-  , setVertexBuffersSelector
-  , submeshesSelector
-  , setSubmeshesSelector
   , allocatorSelector
+  , flipTextureCoordinatesInAttributeNamedSelector
+  , generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector
+  , generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector
+  , generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector
+  , generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector
+  , generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector
+  , initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector
+  , initWithBufferAllocatorSelector
+  , initWithVertexBuffer_vertexCount_descriptor_submeshesSelector
+  , initWithVertexBuffers_vertexCount_descriptor_submeshesSelector
+  , makeVerticesUniqueAndReturnErrorSelector
+  , makeVerticesUniqueSelector
+  , newIcosahedronWithRadius_inwardNormals_allocatorSelector
+  , newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector
+  , newSubdividedMesh_submeshIndex_subdivisionLevelsSelector
+  , removeAttributeNamedSelector
+  , replaceAttributeNamed_withDataSelector
+  , setSubmeshesSelector
+  , setVertexBuffersSelector
+  , setVertexCountSelector
+  , setVertexDescriptorSelector
+  , submeshesSelector
+  , updateAttributeNamed_withDataSelector
+  , vertexAttributeDataForAttributeNamedSelector
+  , vertexAttributeDataForAttributeNamed_asFormatSelector
+  , vertexBuffersSelector
+  , vertexCountSelector
+  , vertexDescriptorSelector
 
   -- * Enum types
   , MDLGeometryType(MDLGeometryType)
@@ -164,15 +165,11 @@ module ObjC.ModelIO.MDLMesh
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -188,8 +185,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBufferAllocator:@
 initWithBufferAllocator :: IsMDLMesh mdlMesh => mdlMesh -> RawId -> IO (Id MDLMesh)
-initWithBufferAllocator mdlMesh  bufferAllocator =
-    sendMsg mdlMesh (mkSelector "initWithBufferAllocator:") (retPtr retVoid) [argPtr (castPtr (unRawId bufferAllocator) :: Ptr ())] >>= ownedObject . castPtr
+initWithBufferAllocator mdlMesh bufferAllocator =
+  sendOwnedMessage mdlMesh initWithBufferAllocatorSelector bufferAllocator
 
 -- | initWithVertexBuffer:vertexCount:descriptor:submeshes:
 --
@@ -207,10 +204,8 @@ initWithBufferAllocator mdlMesh  bufferAllocator =
 --
 -- ObjC selector: @- initWithVertexBuffer:vertexCount:descriptor:submeshes:@
 initWithVertexBuffer_vertexCount_descriptor_submeshes :: (IsMDLMesh mdlMesh, IsMDLVertexDescriptor descriptor, IsNSArray submeshes) => mdlMesh -> RawId -> CULong -> descriptor -> submeshes -> IO (Id MDLMesh)
-initWithVertexBuffer_vertexCount_descriptor_submeshes mdlMesh  vertexBuffer vertexCount descriptor submeshes =
-  withObjCPtr descriptor $ \raw_descriptor ->
-    withObjCPtr submeshes $ \raw_submeshes ->
-        sendMsg mdlMesh (mkSelector "initWithVertexBuffer:vertexCount:descriptor:submeshes:") (retPtr retVoid) [argPtr (castPtr (unRawId vertexBuffer) :: Ptr ()), argCULong vertexCount, argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_submeshes :: Ptr ())] >>= ownedObject . castPtr
+initWithVertexBuffer_vertexCount_descriptor_submeshes mdlMesh vertexBuffer vertexCount descriptor submeshes =
+  sendOwnedMessage mdlMesh initWithVertexBuffer_vertexCount_descriptor_submeshesSelector vertexBuffer vertexCount (toMDLVertexDescriptor descriptor) (toNSArray submeshes)
 
 -- | initWithVertexBuffer:vertexCount:descriptor:submeshes:
 --
@@ -228,11 +223,8 @@ initWithVertexBuffer_vertexCount_descriptor_submeshes mdlMesh  vertexBuffer vert
 --
 -- ObjC selector: @- initWithVertexBuffers:vertexCount:descriptor:submeshes:@
 initWithVertexBuffers_vertexCount_descriptor_submeshes :: (IsMDLMesh mdlMesh, IsNSArray vertexBuffers, IsMDLVertexDescriptor descriptor, IsNSArray submeshes) => mdlMesh -> vertexBuffers -> CULong -> descriptor -> submeshes -> IO (Id MDLMesh)
-initWithVertexBuffers_vertexCount_descriptor_submeshes mdlMesh  vertexBuffers vertexCount descriptor submeshes =
-  withObjCPtr vertexBuffers $ \raw_vertexBuffers ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr submeshes $ \raw_submeshes ->
-          sendMsg mdlMesh (mkSelector "initWithVertexBuffers:vertexCount:descriptor:submeshes:") (retPtr retVoid) [argPtr (castPtr raw_vertexBuffers :: Ptr ()), argCULong vertexCount, argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_submeshes :: Ptr ())] >>= ownedObject . castPtr
+initWithVertexBuffers_vertexCount_descriptor_submeshes mdlMesh vertexBuffers vertexCount descriptor submeshes =
+  sendOwnedMessage mdlMesh initWithVertexBuffers_vertexCount_descriptor_submeshesSelector (toNSArray vertexBuffers) vertexCount (toMDLVertexDescriptor descriptor) (toNSArray submeshes)
 
 -- | vertexAttributeDataForAttributeNamed:
 --
@@ -242,9 +234,8 @@ initWithVertexBuffers_vertexCount_descriptor_submeshes mdlMesh  vertexBuffers ve
 --
 -- ObjC selector: @- vertexAttributeDataForAttributeNamed:@
 vertexAttributeDataForAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString name) => mdlMesh -> name -> IO (Id MDLVertexAttributeData)
-vertexAttributeDataForAttributeNamed mdlMesh  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMesh (mkSelector "vertexAttributeDataForAttributeNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+vertexAttributeDataForAttributeNamed mdlMesh name =
+  sendMessage mdlMesh vertexAttributeDataForAttributeNamedSelector (toNSString name)
 
 -- | vertexAttributeDataForAttributeNamed:asFormat
 --
@@ -254,9 +245,8 @@ vertexAttributeDataForAttributeNamed mdlMesh  name =
 --
 -- ObjC selector: @- vertexAttributeDataForAttributeNamed:asFormat:@
 vertexAttributeDataForAttributeNamed_asFormat :: (IsMDLMesh mdlMesh, IsNSString name) => mdlMesh -> name -> MDLVertexFormat -> IO (Id MDLVertexAttributeData)
-vertexAttributeDataForAttributeNamed_asFormat mdlMesh  name format =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMesh (mkSelector "vertexAttributeDataForAttributeNamed:asFormat:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce format)] >>= retainedObject . castPtr
+vertexAttributeDataForAttributeNamed_asFormat mdlMesh name format =
+  sendMessage mdlMesh vertexAttributeDataForAttributeNamed_asFormatSelector (toNSString name) format
 
 -- | generateAmbientOcclusionTextureWithQuality:
 --
@@ -276,42 +266,28 @@ vertexAttributeDataForAttributeNamed_asFormat mdlMesh  name format =
 --
 -- ObjC selector: @- generateAmbientOcclusionTextureWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:@
 generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamed :: (IsMDLMesh mdlMesh, IsNSArray objectsToConsider, IsNSString vertexAttributeName, IsNSString materialPropertyName) => mdlMesh -> CFloat -> CFloat -> objectsToConsider -> vertexAttributeName -> materialPropertyName -> IO Bool
-generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamed mdlMesh  bakeQuality attenuationFactor objectsToConsider vertexAttributeName materialPropertyName =
-  withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-    withObjCPtr vertexAttributeName $ \raw_vertexAttributeName ->
-      withObjCPtr materialPropertyName $ \raw_materialPropertyName ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "generateAmbientOcclusionTextureWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:") retCULong [argCFloat bakeQuality, argCFloat attenuationFactor, argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_vertexAttributeName :: Ptr ()), argPtr (castPtr raw_materialPropertyName :: Ptr ())]
+generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamed mdlMesh bakeQuality attenuationFactor objectsToConsider vertexAttributeName materialPropertyName =
+  sendMessage mdlMesh generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector bakeQuality attenuationFactor (toNSArray objectsToConsider) (toNSString vertexAttributeName) (toNSString materialPropertyName)
 
 -- | @- generateAmbientOcclusionVertexColorsWithRaysPerSample:attenuationFactor:objectsToConsider:vertexAttributeNamed:@
 generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamed :: (IsMDLMesh mdlMesh, IsNSArray objectsToConsider, IsNSString vertexAttributeName) => mdlMesh -> CLong -> CFloat -> objectsToConsider -> vertexAttributeName -> IO Bool
-generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamed mdlMesh  raysPerSample attenuationFactor objectsToConsider vertexAttributeName =
-  withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-    withObjCPtr vertexAttributeName $ \raw_vertexAttributeName ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "generateAmbientOcclusionVertexColorsWithRaysPerSample:attenuationFactor:objectsToConsider:vertexAttributeNamed:") retCULong [argCLong raysPerSample, argCFloat attenuationFactor, argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_vertexAttributeName :: Ptr ())]
+generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamed mdlMesh raysPerSample attenuationFactor objectsToConsider vertexAttributeName =
+  sendMessage mdlMesh generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector raysPerSample attenuationFactor (toNSArray objectsToConsider) (toNSString vertexAttributeName)
 
 -- | @- generateAmbientOcclusionVertexColorsWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:@
 generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed :: (IsMDLMesh mdlMesh, IsNSArray objectsToConsider, IsNSString vertexAttributeName) => mdlMesh -> CFloat -> CFloat -> objectsToConsider -> vertexAttributeName -> IO Bool
-generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed mdlMesh  bakeQuality attenuationFactor objectsToConsider vertexAttributeName =
-  withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-    withObjCPtr vertexAttributeName $ \raw_vertexAttributeName ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "generateAmbientOcclusionVertexColorsWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:") retCULong [argCFloat bakeQuality, argCFloat attenuationFactor, argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_vertexAttributeName :: Ptr ())]
+generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed mdlMesh bakeQuality attenuationFactor objectsToConsider vertexAttributeName =
+  sendMessage mdlMesh generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector bakeQuality attenuationFactor (toNSArray objectsToConsider) (toNSString vertexAttributeName)
 
 -- | @- generateLightMapTextureWithQuality:lightsToConsider:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:@
 generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamed :: (IsMDLMesh mdlMesh, IsNSArray lightsToConsider, IsNSArray objectsToConsider, IsNSString vertexAttributeName, IsNSString materialPropertyName) => mdlMesh -> CFloat -> lightsToConsider -> objectsToConsider -> vertexAttributeName -> materialPropertyName -> IO Bool
-generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamed mdlMesh  bakeQuality lightsToConsider objectsToConsider vertexAttributeName materialPropertyName =
-  withObjCPtr lightsToConsider $ \raw_lightsToConsider ->
-    withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-      withObjCPtr vertexAttributeName $ \raw_vertexAttributeName ->
-        withObjCPtr materialPropertyName $ \raw_materialPropertyName ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "generateLightMapTextureWithQuality:lightsToConsider:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:") retCULong [argCFloat bakeQuality, argPtr (castPtr raw_lightsToConsider :: Ptr ()), argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_vertexAttributeName :: Ptr ()), argPtr (castPtr raw_materialPropertyName :: Ptr ())]
+generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamed mdlMesh bakeQuality lightsToConsider objectsToConsider vertexAttributeName materialPropertyName =
+  sendMessage mdlMesh generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector bakeQuality (toNSArray lightsToConsider) (toNSArray objectsToConsider) (toNSString vertexAttributeName) (toNSString materialPropertyName)
 
 -- | @- generateLightMapVertexColorsWithLightsToConsider:objectsToConsider:vertexAttributeNamed:@
 generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamed :: (IsMDLMesh mdlMesh, IsNSArray lightsToConsider, IsNSArray objectsToConsider, IsNSString vertexAttributeName) => mdlMesh -> lightsToConsider -> objectsToConsider -> vertexAttributeName -> IO Bool
-generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamed mdlMesh  lightsToConsider objectsToConsider vertexAttributeName =
-  withObjCPtr lightsToConsider $ \raw_lightsToConsider ->
-    withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-      withObjCPtr vertexAttributeName $ \raw_vertexAttributeName ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "generateLightMapVertexColorsWithLightsToConsider:objectsToConsider:vertexAttributeNamed:") retCULong [argPtr (castPtr raw_lightsToConsider :: Ptr ()), argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_vertexAttributeName :: Ptr ())]
+generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamed mdlMesh lightsToConsider objectsToConsider vertexAttributeName =
+  sendMessage mdlMesh generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector (toNSArray lightsToConsider) (toNSArray objectsToConsider) (toNSString vertexAttributeName)
 
 -- | initMeshBySubdividingMesh:submeshIndex:subdivisionLevels:allocator
 --
@@ -329,31 +305,29 @@ generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttribu
 --
 -- ObjC selector: @- initMeshBySubdividingMesh:submeshIndex:subdivisionLevels:allocator:@
 initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocator :: (IsMDLMesh mdlMesh, IsMDLMesh mesh) => mdlMesh -> mesh -> CInt -> CUInt -> RawId -> IO (Id MDLMesh)
-initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocator mdlMesh  mesh submeshIndex subdivisionLevels allocator =
-  withObjCPtr mesh $ \raw_mesh ->
-      sendMsg mdlMesh (mkSelector "initMeshBySubdividingMesh:submeshIndex:subdivisionLevels:allocator:") (retPtr retVoid) [argPtr (castPtr raw_mesh :: Ptr ()), argCInt submeshIndex, argCUInt subdivisionLevels, argPtr (castPtr (unRawId allocator) :: Ptr ())] >>= ownedObject . castPtr
+initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocator mdlMesh mesh submeshIndex subdivisionLevels allocator =
+  sendOwnedMessage mdlMesh initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector (toMDLMesh mesh) submeshIndex subdivisionLevels allocator
 
 -- | @+ newIcosahedronWithRadius:inwardNormals:geometryType:allocator:@
 newIcosahedronWithRadius_inwardNormals_geometryType_allocator :: CFloat -> Bool -> MDLGeometryType -> RawId -> IO (Id MDLMesh)
 newIcosahedronWithRadius_inwardNormals_geometryType_allocator radius inwardNormals geometryType allocator =
   do
     cls' <- getRequiredClass "MDLMesh"
-    sendClassMsg cls' (mkSelector "newIcosahedronWithRadius:inwardNormals:geometryType:allocator:") (retPtr retVoid) [argCFloat radius, argCULong (if inwardNormals then 1 else 0), argCLong (coerce geometryType), argPtr (castPtr (unRawId allocator) :: Ptr ())] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector radius inwardNormals geometryType allocator
 
 -- | @+ newIcosahedronWithRadius:inwardNormals:allocator:@
 newIcosahedronWithRadius_inwardNormals_allocator :: CFloat -> Bool -> RawId -> IO (Id MDLMesh)
 newIcosahedronWithRadius_inwardNormals_allocator radius inwardNormals allocator =
   do
     cls' <- getRequiredClass "MDLMesh"
-    sendClassMsg cls' (mkSelector "newIcosahedronWithRadius:inwardNormals:allocator:") (retPtr retVoid) [argCFloat radius, argCULong (if inwardNormals then 1 else 0), argPtr (castPtr (unRawId allocator) :: Ptr ())] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newIcosahedronWithRadius_inwardNormals_allocatorSelector radius inwardNormals allocator
 
 -- | @+ newSubdividedMesh:submeshIndex:subdivisionLevels:@
 newSubdividedMesh_submeshIndex_subdivisionLevels :: IsMDLMesh mesh => mesh -> CULong -> CULong -> IO (Id MDLMesh)
 newSubdividedMesh_submeshIndex_subdivisionLevels mesh submeshIndex subdivisionLevels =
   do
     cls' <- getRequiredClass "MDLMesh"
-    withObjCPtr mesh $ \raw_mesh ->
-      sendClassMsg cls' (mkSelector "newSubdividedMesh:submeshIndex:subdivisionLevels:") (retPtr retVoid) [argPtr (castPtr raw_mesh :: Ptr ()), argCULong submeshIndex, argCULong subdivisionLevels] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSubdividedMesh_submeshIndex_subdivisionLevelsSelector (toMDLMesh mesh) submeshIndex subdivisionLevels
 
 -- | addAttributeWithName:format
 --
@@ -363,9 +337,8 @@ newSubdividedMesh_submeshIndex_subdivisionLevels mesh submeshIndex subdivisionLe
 --
 -- ObjC selector: @- addAttributeWithName:format:@
 addAttributeWithName_format :: (IsMDLMesh mdlMesh, IsNSString name) => mdlMesh -> name -> MDLVertexFormat -> IO ()
-addAttributeWithName_format mdlMesh  name format =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMesh (mkSelector "addAttributeWithName:format:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce format)]
+addAttributeWithName_format mdlMesh name format =
+  sendMessage mdlMesh addAttributeWithName_formatSelector (toNSString name) format
 
 -- | addAttributeWithName:format:type:data:stride
 --
@@ -383,11 +356,8 @@ addAttributeWithName_format mdlMesh  name format =
 --
 -- ObjC selector: @- addAttributeWithName:format:type:data:stride:@
 addAttributeWithName_format_type_data_stride :: (IsMDLMesh mdlMesh, IsNSString name, IsNSString type_, IsNSData data_) => mdlMesh -> name -> MDLVertexFormat -> type_ -> data_ -> CLong -> IO ()
-addAttributeWithName_format_type_data_stride mdlMesh  name format type_ data_ stride =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr data_ $ \raw_data_ ->
-          sendMsg mdlMesh (mkSelector "addAttributeWithName:format:type:data:stride:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce format), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argCLong stride]
+addAttributeWithName_format_type_data_stride mdlMesh name format type_ data_ stride =
+  sendMessage mdlMesh addAttributeWithName_format_type_data_strideSelector (toNSString name) format (toNSString type_) (toNSData data_) stride
 
 -- | addAttributeWithName:format:type:data:stride:time
 --
@@ -409,11 +379,8 @@ addAttributeWithName_format_type_data_stride mdlMesh  name format type_ data_ st
 --
 -- ObjC selector: @- addAttributeWithName:format:type:data:stride:time:@
 addAttributeWithName_format_type_data_stride_time :: (IsMDLMesh mdlMesh, IsNSString name, IsNSString type_, IsNSData data_) => mdlMesh -> name -> MDLVertexFormat -> type_ -> data_ -> CLong -> CDouble -> IO ()
-addAttributeWithName_format_type_data_stride_time mdlMesh  name format type_ data_ stride time =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr data_ $ \raw_data_ ->
-          sendMsg mdlMesh (mkSelector "addAttributeWithName:format:type:data:stride:time:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce format), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argCLong stride, argCDouble time]
+addAttributeWithName_format_type_data_stride_time mdlMesh name format type_ data_ stride time =
+  sendMessage mdlMesh addAttributeWithName_format_type_data_stride_timeSelector (toNSString name) format (toNSString type_) (toNSData data_) stride time
 
 -- | addNormalsWithAttributeNamed:creaseThreshold:
 --
@@ -427,9 +394,8 @@ addAttributeWithName_format_type_data_stride_time mdlMesh  name format type_ dat
 --
 -- ObjC selector: @- addNormalsWithAttributeNamed:creaseThreshold:@
 addNormalsWithAttributeNamed_creaseThreshold :: (IsMDLMesh mdlMesh, IsNSString attributeName) => mdlMesh -> attributeName -> CFloat -> IO ()
-addNormalsWithAttributeNamed_creaseThreshold mdlMesh  attributeName creaseThreshold =
-  withObjCPtr attributeName $ \raw_attributeName ->
-      sendMsg mdlMesh (mkSelector "addNormalsWithAttributeNamed:creaseThreshold:") retVoid [argPtr (castPtr raw_attributeName :: Ptr ()), argCFloat creaseThreshold]
+addNormalsWithAttributeNamed_creaseThreshold mdlMesh attributeName creaseThreshold =
+  sendMessage mdlMesh addNormalsWithAttributeNamed_creaseThresholdSelector (toNSString attributeName) creaseThreshold
 
 -- | addTangentBasisForTextureCoordinateAttributeNamed:tangentAttributeNamed:bitangentAttributeNamed
 --
@@ -445,11 +411,8 @@ addNormalsWithAttributeNamed_creaseThreshold mdlMesh  attributeName creaseThresh
 --
 -- ObjC selector: @- addTangentBasisForTextureCoordinateAttributeNamed:tangentAttributeNamed:bitangentAttributeNamed:@
 addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString textureCoordinateAttributeName, IsNSString tangentAttributeName, IsNSString bitangentAttributeName) => mdlMesh -> textureCoordinateAttributeName -> tangentAttributeName -> bitangentAttributeName -> IO ()
-addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamed mdlMesh  textureCoordinateAttributeName tangentAttributeName bitangentAttributeName =
-  withObjCPtr textureCoordinateAttributeName $ \raw_textureCoordinateAttributeName ->
-    withObjCPtr tangentAttributeName $ \raw_tangentAttributeName ->
-      withObjCPtr bitangentAttributeName $ \raw_bitangentAttributeName ->
-          sendMsg mdlMesh (mkSelector "addTangentBasisForTextureCoordinateAttributeNamed:tangentAttributeNamed:bitangentAttributeNamed:") retVoid [argPtr (castPtr raw_textureCoordinateAttributeName :: Ptr ()), argPtr (castPtr raw_tangentAttributeName :: Ptr ()), argPtr (castPtr raw_bitangentAttributeName :: Ptr ())]
+addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamed mdlMesh textureCoordinateAttributeName tangentAttributeName bitangentAttributeName =
+  sendMessage mdlMesh addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector (toNSString textureCoordinateAttributeName) (toNSString tangentAttributeName) (toNSString bitangentAttributeName)
 
 -- | addTangentBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed
 --
@@ -465,19 +428,13 @@ addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangen
 --
 -- ObjC selector: @- addTangentBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:@
 addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString textureCoordinateAttributeName, IsNSString normalAttributeName, IsNSString tangentAttributeName) => mdlMesh -> textureCoordinateAttributeName -> normalAttributeName -> tangentAttributeName -> IO ()
-addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed mdlMesh  textureCoordinateAttributeName normalAttributeName tangentAttributeName =
-  withObjCPtr textureCoordinateAttributeName $ \raw_textureCoordinateAttributeName ->
-    withObjCPtr normalAttributeName $ \raw_normalAttributeName ->
-      withObjCPtr tangentAttributeName $ \raw_tangentAttributeName ->
-          sendMsg mdlMesh (mkSelector "addTangentBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:") retVoid [argPtr (castPtr raw_textureCoordinateAttributeName :: Ptr ()), argPtr (castPtr raw_normalAttributeName :: Ptr ()), argPtr (castPtr raw_tangentAttributeName :: Ptr ())]
+addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed mdlMesh textureCoordinateAttributeName normalAttributeName tangentAttributeName =
+  sendMessage mdlMesh addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector (toNSString textureCoordinateAttributeName) (toNSString normalAttributeName) (toNSString tangentAttributeName)
 
 -- | @- addOrthTanBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:@
 addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString textureCoordinateAttributeName, IsNSString normalAttributeName, IsNSString tangentAttributeName) => mdlMesh -> textureCoordinateAttributeName -> normalAttributeName -> tangentAttributeName -> IO ()
-addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed mdlMesh  textureCoordinateAttributeName normalAttributeName tangentAttributeName =
-  withObjCPtr textureCoordinateAttributeName $ \raw_textureCoordinateAttributeName ->
-    withObjCPtr normalAttributeName $ \raw_normalAttributeName ->
-      withObjCPtr tangentAttributeName $ \raw_tangentAttributeName ->
-          sendMsg mdlMesh (mkSelector "addOrthTanBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:") retVoid [argPtr (castPtr raw_textureCoordinateAttributeName :: Ptr ()), argPtr (castPtr raw_normalAttributeName :: Ptr ()), argPtr (castPtr raw_tangentAttributeName :: Ptr ())]
+addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamed mdlMesh textureCoordinateAttributeName normalAttributeName tangentAttributeName =
+  sendMessage mdlMesh addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector (toNSString textureCoordinateAttributeName) (toNSString normalAttributeName) (toNSString tangentAttributeName)
 
 -- | addTextureCoordinatesForAttributeNamed:textureCoordinateAttributeName
 --
@@ -489,9 +446,8 @@ addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAt
 --
 -- ObjC selector: @- addUnwrappedTextureCoordinatesForAttributeNamed:@
 addUnwrappedTextureCoordinatesForAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString textureCoordinateAttributeName) => mdlMesh -> textureCoordinateAttributeName -> IO ()
-addUnwrappedTextureCoordinatesForAttributeNamed mdlMesh  textureCoordinateAttributeName =
-  withObjCPtr textureCoordinateAttributeName $ \raw_textureCoordinateAttributeName ->
-      sendMsg mdlMesh (mkSelector "addUnwrappedTextureCoordinatesForAttributeNamed:") retVoid [argPtr (castPtr raw_textureCoordinateAttributeName :: Ptr ())]
+addUnwrappedTextureCoordinatesForAttributeNamed mdlMesh textureCoordinateAttributeName =
+  sendMessage mdlMesh addUnwrappedTextureCoordinatesForAttributeNamedSelector (toNSString textureCoordinateAttributeName)
 
 -- | flipTextureCoordinatesInAttributeNamed:
 --
@@ -503,9 +459,8 @@ addUnwrappedTextureCoordinatesForAttributeNamed mdlMesh  textureCoordinateAttrib
 --
 -- ObjC selector: @- flipTextureCoordinatesInAttributeNamed:@
 flipTextureCoordinatesInAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString textureCoordinateAttributeName) => mdlMesh -> textureCoordinateAttributeName -> IO ()
-flipTextureCoordinatesInAttributeNamed mdlMesh  textureCoordinateAttributeName =
-  withObjCPtr textureCoordinateAttributeName $ \raw_textureCoordinateAttributeName ->
-      sendMsg mdlMesh (mkSelector "flipTextureCoordinatesInAttributeNamed:") retVoid [argPtr (castPtr raw_textureCoordinateAttributeName :: Ptr ())]
+flipTextureCoordinatesInAttributeNamed mdlMesh textureCoordinateAttributeName =
+  sendMessage mdlMesh flipTextureCoordinatesInAttributeNamedSelector (toNSString textureCoordinateAttributeName)
 
 -- | makeVerticesUnique:
 --
@@ -515,8 +470,8 @@ flipTextureCoordinatesInAttributeNamed mdlMesh  textureCoordinateAttributeName =
 --
 -- ObjC selector: @- makeVerticesUnique@
 makeVerticesUnique :: IsMDLMesh mdlMesh => mdlMesh -> IO ()
-makeVerticesUnique mdlMesh  =
-    sendMsg mdlMesh (mkSelector "makeVerticesUnique") retVoid []
+makeVerticesUnique mdlMesh =
+  sendMessage mdlMesh makeVerticesUniqueSelector
 
 -- | makeVerticesUniqueAndReturnError:
 --
@@ -526,9 +481,8 @@ makeVerticesUnique mdlMesh  =
 --
 -- ObjC selector: @- makeVerticesUniqueAndReturnError:@
 makeVerticesUniqueAndReturnError :: (IsMDLMesh mdlMesh, IsNSError error_) => mdlMesh -> error_ -> IO Bool
-makeVerticesUniqueAndReturnError mdlMesh  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlMesh (mkSelector "makeVerticesUniqueAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+makeVerticesUniqueAndReturnError mdlMesh error_ =
+  sendMessage mdlMesh makeVerticesUniqueAndReturnErrorSelector (toNSError error_)
 
 -- | replaceAttributeNamed:withData
 --
@@ -538,10 +492,8 @@ makeVerticesUniqueAndReturnError mdlMesh  error_ =
 --
 -- ObjC selector: @- replaceAttributeNamed:withData:@
 replaceAttributeNamed_withData :: (IsMDLMesh mdlMesh, IsNSString name, IsMDLVertexAttributeData newData) => mdlMesh -> name -> newData -> IO ()
-replaceAttributeNamed_withData mdlMesh  name newData =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr newData $ \raw_newData ->
-        sendMsg mdlMesh (mkSelector "replaceAttributeNamed:withData:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_newData :: Ptr ())]
+replaceAttributeNamed_withData mdlMesh name newData =
+  sendMessage mdlMesh replaceAttributeNamed_withDataSelector (toNSString name) (toMDLVertexAttributeData newData)
 
 -- | updateAttributeNamed:withData
 --
@@ -551,10 +503,8 @@ replaceAttributeNamed_withData mdlMesh  name newData =
 --
 -- ObjC selector: @- updateAttributeNamed:withData:@
 updateAttributeNamed_withData :: (IsMDLMesh mdlMesh, IsNSString name, IsMDLVertexAttributeData newData) => mdlMesh -> name -> newData -> IO ()
-updateAttributeNamed_withData mdlMesh  name newData =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr newData $ \raw_newData ->
-        sendMsg mdlMesh (mkSelector "updateAttributeNamed:withData:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_newData :: Ptr ())]
+updateAttributeNamed_withData mdlMesh name newData =
+  sendMessage mdlMesh updateAttributeNamed_withDataSelector (toNSString name) (toMDLVertexAttributeData newData)
 
 -- | removeAttributeNamed:
 --
@@ -564,9 +514,8 @@ updateAttributeNamed_withData mdlMesh  name newData =
 --
 -- ObjC selector: @- removeAttributeNamed:@
 removeAttributeNamed :: (IsMDLMesh mdlMesh, IsNSString name) => mdlMesh -> name -> IO ()
-removeAttributeNamed mdlMesh  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMesh (mkSelector "removeAttributeNamed:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeAttributeNamed mdlMesh name =
+  sendMessage mdlMesh removeAttributeNamedSelector (toNSString name)
 
 -- | vertexDescriptor
 --
@@ -578,8 +527,8 @@ removeAttributeNamed mdlMesh  name =
 --
 -- ObjC selector: @- vertexDescriptor@
 vertexDescriptor :: IsMDLMesh mdlMesh => mdlMesh -> IO (Id MDLVertexDescriptor)
-vertexDescriptor mdlMesh  =
-    sendMsg mdlMesh (mkSelector "vertexDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexDescriptor mdlMesh =
+  sendMessage mdlMesh vertexDescriptorSelector
 
 -- | vertexDescriptor
 --
@@ -591,9 +540,8 @@ vertexDescriptor mdlMesh  =
 --
 -- ObjC selector: @- setVertexDescriptor:@
 setVertexDescriptor :: (IsMDLMesh mdlMesh, IsMDLVertexDescriptor value) => mdlMesh -> value -> IO ()
-setVertexDescriptor mdlMesh  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMesh (mkSelector "setVertexDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVertexDescriptor mdlMesh value =
+  sendMessage mdlMesh setVertexDescriptorSelector (toMDLVertexDescriptor value)
 
 -- | vertexCount
 --
@@ -603,8 +551,8 @@ setVertexDescriptor mdlMesh  value =
 --
 -- ObjC selector: @- vertexCount@
 vertexCount :: IsMDLMesh mdlMesh => mdlMesh -> IO CULong
-vertexCount mdlMesh  =
-    sendMsg mdlMesh (mkSelector "vertexCount") retCULong []
+vertexCount mdlMesh =
+  sendMessage mdlMesh vertexCountSelector
 
 -- | vertexCount
 --
@@ -614,8 +562,8 @@ vertexCount mdlMesh  =
 --
 -- ObjC selector: @- setVertexCount:@
 setVertexCount :: IsMDLMesh mdlMesh => mdlMesh -> CULong -> IO ()
-setVertexCount mdlMesh  value =
-    sendMsg mdlMesh (mkSelector "setVertexCount:") retVoid [argCULong value]
+setVertexCount mdlMesh value =
+  sendMessage mdlMesh setVertexCountSelector value
 
 -- | vertexBuffers
 --
@@ -625,8 +573,8 @@ setVertexCount mdlMesh  value =
 --
 -- ObjC selector: @- vertexBuffers@
 vertexBuffers :: IsMDLMesh mdlMesh => mdlMesh -> IO (Id NSArray)
-vertexBuffers mdlMesh  =
-    sendMsg mdlMesh (mkSelector "vertexBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexBuffers mdlMesh =
+  sendMessage mdlMesh vertexBuffersSelector
 
 -- | vertexBuffers
 --
@@ -636,9 +584,8 @@ vertexBuffers mdlMesh  =
 --
 -- ObjC selector: @- setVertexBuffers:@
 setVertexBuffers :: (IsMDLMesh mdlMesh, IsNSArray value) => mdlMesh -> value -> IO ()
-setVertexBuffers mdlMesh  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMesh (mkSelector "setVertexBuffers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVertexBuffers mdlMesh value =
+  sendMessage mdlMesh setVertexBuffersSelector (toNSArray value)
 
 -- | submeshes
 --
@@ -646,8 +593,8 @@ setVertexBuffers mdlMesh  value =
 --
 -- ObjC selector: @- submeshes@
 submeshes :: IsMDLMesh mdlMesh => mdlMesh -> IO (Id NSMutableArray)
-submeshes mdlMesh  =
-    sendMsg mdlMesh (mkSelector "submeshes") (retPtr retVoid) [] >>= retainedObject . castPtr
+submeshes mdlMesh =
+  sendMessage mdlMesh submeshesSelector
 
 -- | submeshes
 --
@@ -655,9 +602,8 @@ submeshes mdlMesh  =
 --
 -- ObjC selector: @- setSubmeshes:@
 setSubmeshes :: (IsMDLMesh mdlMesh, IsNSMutableArray value) => mdlMesh -> value -> IO ()
-setSubmeshes mdlMesh  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMesh (mkSelector "setSubmeshes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubmeshes mdlMesh value =
+  sendMessage mdlMesh setSubmeshesSelector (toNSMutableArray value)
 
 -- | allocator
 --
@@ -665,158 +611,158 @@ setSubmeshes mdlMesh  value =
 --
 -- ObjC selector: @- allocator@
 allocator :: IsMDLMesh mdlMesh => mdlMesh -> IO RawId
-allocator mdlMesh  =
-    fmap (RawId . castPtr) $ sendMsg mdlMesh (mkSelector "allocator") (retPtr retVoid) []
+allocator mdlMesh =
+  sendOwnedMessage mdlMesh allocatorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBufferAllocator:@
-initWithBufferAllocatorSelector :: Selector
+initWithBufferAllocatorSelector :: Selector '[RawId] (Id MDLMesh)
 initWithBufferAllocatorSelector = mkSelector "initWithBufferAllocator:"
 
 -- | @Selector@ for @initWithVertexBuffer:vertexCount:descriptor:submeshes:@
-initWithVertexBuffer_vertexCount_descriptor_submeshesSelector :: Selector
+initWithVertexBuffer_vertexCount_descriptor_submeshesSelector :: Selector '[RawId, CULong, Id MDLVertexDescriptor, Id NSArray] (Id MDLMesh)
 initWithVertexBuffer_vertexCount_descriptor_submeshesSelector = mkSelector "initWithVertexBuffer:vertexCount:descriptor:submeshes:"
 
 -- | @Selector@ for @initWithVertexBuffers:vertexCount:descriptor:submeshes:@
-initWithVertexBuffers_vertexCount_descriptor_submeshesSelector :: Selector
+initWithVertexBuffers_vertexCount_descriptor_submeshesSelector :: Selector '[Id NSArray, CULong, Id MDLVertexDescriptor, Id NSArray] (Id MDLMesh)
 initWithVertexBuffers_vertexCount_descriptor_submeshesSelector = mkSelector "initWithVertexBuffers:vertexCount:descriptor:submeshes:"
 
 -- | @Selector@ for @vertexAttributeDataForAttributeNamed:@
-vertexAttributeDataForAttributeNamedSelector :: Selector
+vertexAttributeDataForAttributeNamedSelector :: Selector '[Id NSString] (Id MDLVertexAttributeData)
 vertexAttributeDataForAttributeNamedSelector = mkSelector "vertexAttributeDataForAttributeNamed:"
 
 -- | @Selector@ for @vertexAttributeDataForAttributeNamed:asFormat:@
-vertexAttributeDataForAttributeNamed_asFormatSelector :: Selector
+vertexAttributeDataForAttributeNamed_asFormatSelector :: Selector '[Id NSString, MDLVertexFormat] (Id MDLVertexAttributeData)
 vertexAttributeDataForAttributeNamed_asFormatSelector = mkSelector "vertexAttributeDataForAttributeNamed:asFormat:"
 
 -- | @Selector@ for @generateAmbientOcclusionTextureWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:@
-generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector :: Selector
+generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector :: Selector '[CFloat, CFloat, Id NSArray, Id NSString, Id NSString] Bool
 generateAmbientOcclusionTextureWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector = mkSelector "generateAmbientOcclusionTextureWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:"
 
 -- | @Selector@ for @generateAmbientOcclusionVertexColorsWithRaysPerSample:attenuationFactor:objectsToConsider:vertexAttributeNamed:@
-generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector :: Selector
+generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector :: Selector '[CLong, CFloat, Id NSArray, Id NSString] Bool
 generateAmbientOcclusionVertexColorsWithRaysPerSample_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector = mkSelector "generateAmbientOcclusionVertexColorsWithRaysPerSample:attenuationFactor:objectsToConsider:vertexAttributeNamed:"
 
 -- | @Selector@ for @generateAmbientOcclusionVertexColorsWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:@
-generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector :: Selector
+generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector :: Selector '[CFloat, CFloat, Id NSArray, Id NSString] Bool
 generateAmbientOcclusionVertexColorsWithQuality_attenuationFactor_objectsToConsider_vertexAttributeNamedSelector = mkSelector "generateAmbientOcclusionVertexColorsWithQuality:attenuationFactor:objectsToConsider:vertexAttributeNamed:"
 
 -- | @Selector@ for @generateLightMapTextureWithQuality:lightsToConsider:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:@
-generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector :: Selector
+generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector :: Selector '[CFloat, Id NSArray, Id NSArray, Id NSString, Id NSString] Bool
 generateLightMapTextureWithQuality_lightsToConsider_objectsToConsider_vertexAttributeNamed_materialPropertyNamedSelector = mkSelector "generateLightMapTextureWithQuality:lightsToConsider:objectsToConsider:vertexAttributeNamed:materialPropertyNamed:"
 
 -- | @Selector@ for @generateLightMapVertexColorsWithLightsToConsider:objectsToConsider:vertexAttributeNamed:@
-generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector :: Selector
+generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector :: Selector '[Id NSArray, Id NSArray, Id NSString] Bool
 generateLightMapVertexColorsWithLightsToConsider_objectsToConsider_vertexAttributeNamedSelector = mkSelector "generateLightMapVertexColorsWithLightsToConsider:objectsToConsider:vertexAttributeNamed:"
 
 -- | @Selector@ for @initMeshBySubdividingMesh:submeshIndex:subdivisionLevels:allocator:@
-initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector :: Selector
+initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector :: Selector '[Id MDLMesh, CInt, CUInt, RawId] (Id MDLMesh)
 initMeshBySubdividingMesh_submeshIndex_subdivisionLevels_allocatorSelector = mkSelector "initMeshBySubdividingMesh:submeshIndex:subdivisionLevels:allocator:"
 
 -- | @Selector@ for @newIcosahedronWithRadius:inwardNormals:geometryType:allocator:@
-newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector :: Selector
+newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector :: Selector '[CFloat, Bool, MDLGeometryType, RawId] (Id MDLMesh)
 newIcosahedronWithRadius_inwardNormals_geometryType_allocatorSelector = mkSelector "newIcosahedronWithRadius:inwardNormals:geometryType:allocator:"
 
 -- | @Selector@ for @newIcosahedronWithRadius:inwardNormals:allocator:@
-newIcosahedronWithRadius_inwardNormals_allocatorSelector :: Selector
+newIcosahedronWithRadius_inwardNormals_allocatorSelector :: Selector '[CFloat, Bool, RawId] (Id MDLMesh)
 newIcosahedronWithRadius_inwardNormals_allocatorSelector = mkSelector "newIcosahedronWithRadius:inwardNormals:allocator:"
 
 -- | @Selector@ for @newSubdividedMesh:submeshIndex:subdivisionLevels:@
-newSubdividedMesh_submeshIndex_subdivisionLevelsSelector :: Selector
+newSubdividedMesh_submeshIndex_subdivisionLevelsSelector :: Selector '[Id MDLMesh, CULong, CULong] (Id MDLMesh)
 newSubdividedMesh_submeshIndex_subdivisionLevelsSelector = mkSelector "newSubdividedMesh:submeshIndex:subdivisionLevels:"
 
 -- | @Selector@ for @addAttributeWithName:format:@
-addAttributeWithName_formatSelector :: Selector
+addAttributeWithName_formatSelector :: Selector '[Id NSString, MDLVertexFormat] ()
 addAttributeWithName_formatSelector = mkSelector "addAttributeWithName:format:"
 
 -- | @Selector@ for @addAttributeWithName:format:type:data:stride:@
-addAttributeWithName_format_type_data_strideSelector :: Selector
+addAttributeWithName_format_type_data_strideSelector :: Selector '[Id NSString, MDLVertexFormat, Id NSString, Id NSData, CLong] ()
 addAttributeWithName_format_type_data_strideSelector = mkSelector "addAttributeWithName:format:type:data:stride:"
 
 -- | @Selector@ for @addAttributeWithName:format:type:data:stride:time:@
-addAttributeWithName_format_type_data_stride_timeSelector :: Selector
+addAttributeWithName_format_type_data_stride_timeSelector :: Selector '[Id NSString, MDLVertexFormat, Id NSString, Id NSData, CLong, CDouble] ()
 addAttributeWithName_format_type_data_stride_timeSelector = mkSelector "addAttributeWithName:format:type:data:stride:time:"
 
 -- | @Selector@ for @addNormalsWithAttributeNamed:creaseThreshold:@
-addNormalsWithAttributeNamed_creaseThresholdSelector :: Selector
+addNormalsWithAttributeNamed_creaseThresholdSelector :: Selector '[Id NSString, CFloat] ()
 addNormalsWithAttributeNamed_creaseThresholdSelector = mkSelector "addNormalsWithAttributeNamed:creaseThreshold:"
 
 -- | @Selector@ for @addTangentBasisForTextureCoordinateAttributeNamed:tangentAttributeNamed:bitangentAttributeNamed:@
-addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector :: Selector
+addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector :: Selector '[Id NSString, Id NSString, Id NSString] ()
 addTangentBasisForTextureCoordinateAttributeNamed_tangentAttributeNamed_bitangentAttributeNamedSelector = mkSelector "addTangentBasisForTextureCoordinateAttributeNamed:tangentAttributeNamed:bitangentAttributeNamed:"
 
 -- | @Selector@ for @addTangentBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:@
-addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector :: Selector
+addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector :: Selector '[Id NSString, Id NSString, Id NSString] ()
 addTangentBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector = mkSelector "addTangentBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:"
 
 -- | @Selector@ for @addOrthTanBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:@
-addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector :: Selector
+addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector :: Selector '[Id NSString, Id NSString, Id NSString] ()
 addOrthTanBasisForTextureCoordinateAttributeNamed_normalAttributeNamed_tangentAttributeNamedSelector = mkSelector "addOrthTanBasisForTextureCoordinateAttributeNamed:normalAttributeNamed:tangentAttributeNamed:"
 
 -- | @Selector@ for @addUnwrappedTextureCoordinatesForAttributeNamed:@
-addUnwrappedTextureCoordinatesForAttributeNamedSelector :: Selector
+addUnwrappedTextureCoordinatesForAttributeNamedSelector :: Selector '[Id NSString] ()
 addUnwrappedTextureCoordinatesForAttributeNamedSelector = mkSelector "addUnwrappedTextureCoordinatesForAttributeNamed:"
 
 -- | @Selector@ for @flipTextureCoordinatesInAttributeNamed:@
-flipTextureCoordinatesInAttributeNamedSelector :: Selector
+flipTextureCoordinatesInAttributeNamedSelector :: Selector '[Id NSString] ()
 flipTextureCoordinatesInAttributeNamedSelector = mkSelector "flipTextureCoordinatesInAttributeNamed:"
 
 -- | @Selector@ for @makeVerticesUnique@
-makeVerticesUniqueSelector :: Selector
+makeVerticesUniqueSelector :: Selector '[] ()
 makeVerticesUniqueSelector = mkSelector "makeVerticesUnique"
 
 -- | @Selector@ for @makeVerticesUniqueAndReturnError:@
-makeVerticesUniqueAndReturnErrorSelector :: Selector
+makeVerticesUniqueAndReturnErrorSelector :: Selector '[Id NSError] Bool
 makeVerticesUniqueAndReturnErrorSelector = mkSelector "makeVerticesUniqueAndReturnError:"
 
 -- | @Selector@ for @replaceAttributeNamed:withData:@
-replaceAttributeNamed_withDataSelector :: Selector
+replaceAttributeNamed_withDataSelector :: Selector '[Id NSString, Id MDLVertexAttributeData] ()
 replaceAttributeNamed_withDataSelector = mkSelector "replaceAttributeNamed:withData:"
 
 -- | @Selector@ for @updateAttributeNamed:withData:@
-updateAttributeNamed_withDataSelector :: Selector
+updateAttributeNamed_withDataSelector :: Selector '[Id NSString, Id MDLVertexAttributeData] ()
 updateAttributeNamed_withDataSelector = mkSelector "updateAttributeNamed:withData:"
 
 -- | @Selector@ for @removeAttributeNamed:@
-removeAttributeNamedSelector :: Selector
+removeAttributeNamedSelector :: Selector '[Id NSString] ()
 removeAttributeNamedSelector = mkSelector "removeAttributeNamed:"
 
 -- | @Selector@ for @vertexDescriptor@
-vertexDescriptorSelector :: Selector
+vertexDescriptorSelector :: Selector '[] (Id MDLVertexDescriptor)
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
 
 -- | @Selector@ for @setVertexDescriptor:@
-setVertexDescriptorSelector :: Selector
+setVertexDescriptorSelector :: Selector '[Id MDLVertexDescriptor] ()
 setVertexDescriptorSelector = mkSelector "setVertexDescriptor:"
 
 -- | @Selector@ for @vertexCount@
-vertexCountSelector :: Selector
+vertexCountSelector :: Selector '[] CULong
 vertexCountSelector = mkSelector "vertexCount"
 
 -- | @Selector@ for @setVertexCount:@
-setVertexCountSelector :: Selector
+setVertexCountSelector :: Selector '[CULong] ()
 setVertexCountSelector = mkSelector "setVertexCount:"
 
 -- | @Selector@ for @vertexBuffers@
-vertexBuffersSelector :: Selector
+vertexBuffersSelector :: Selector '[] (Id NSArray)
 vertexBuffersSelector = mkSelector "vertexBuffers"
 
 -- | @Selector@ for @setVertexBuffers:@
-setVertexBuffersSelector :: Selector
+setVertexBuffersSelector :: Selector '[Id NSArray] ()
 setVertexBuffersSelector = mkSelector "setVertexBuffers:"
 
 -- | @Selector@ for @submeshes@
-submeshesSelector :: Selector
+submeshesSelector :: Selector '[] (Id NSMutableArray)
 submeshesSelector = mkSelector "submeshes"
 
 -- | @Selector@ for @setSubmeshes:@
-setSubmeshesSelector :: Selector
+setSubmeshesSelector :: Selector '[Id NSMutableArray] ()
 setSubmeshesSelector = mkSelector "setSubmeshes:"
 
 -- | @Selector@ for @allocator@
-allocatorSelector :: Selector
+allocatorSelector :: Selector '[] RawId
 allocatorSelector = mkSelector "allocator"
 

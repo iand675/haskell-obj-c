@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitNegativeTransparency
   , documentType
   , setDocumentType
   , documentSize
-  , supportedDocumentTypesSelector
+  , documentSizeSelector
   , documentTypeSelector
   , setDocumentTypeSelector
-  , documentSizeSelector
+  , supportedDocumentTypesSelector
 
   -- * Enum types
   , ICScannerDocumentType(ICScannerDocumentType)
@@ -99,15 +100,11 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitNegativeTransparency
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -122,8 +119,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedDocumentTypes@
 supportedDocumentTypes :: IsICScannerFunctionalUnitNegativeTransparency icScannerFunctionalUnitNegativeTransparency => icScannerFunctionalUnitNegativeTransparency -> IO (Id NSIndexSet)
-supportedDocumentTypes icScannerFunctionalUnitNegativeTransparency  =
-    sendMsg icScannerFunctionalUnitNegativeTransparency (mkSelector "supportedDocumentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDocumentTypes icScannerFunctionalUnitNegativeTransparency =
+  sendMessage icScannerFunctionalUnitNegativeTransparency supportedDocumentTypesSelector
 
 -- | documentType
 --
@@ -131,8 +128,8 @@ supportedDocumentTypes icScannerFunctionalUnitNegativeTransparency  =
 --
 -- ObjC selector: @- documentType@
 documentType :: IsICScannerFunctionalUnitNegativeTransparency icScannerFunctionalUnitNegativeTransparency => icScannerFunctionalUnitNegativeTransparency -> IO ICScannerDocumentType
-documentType icScannerFunctionalUnitNegativeTransparency  =
-    fmap (coerce :: CULong -> ICScannerDocumentType) $ sendMsg icScannerFunctionalUnitNegativeTransparency (mkSelector "documentType") retCULong []
+documentType icScannerFunctionalUnitNegativeTransparency =
+  sendMessage icScannerFunctionalUnitNegativeTransparency documentTypeSelector
 
 -- | documentType
 --
@@ -140,8 +137,8 @@ documentType icScannerFunctionalUnitNegativeTransparency  =
 --
 -- ObjC selector: @- setDocumentType:@
 setDocumentType :: IsICScannerFunctionalUnitNegativeTransparency icScannerFunctionalUnitNegativeTransparency => icScannerFunctionalUnitNegativeTransparency -> ICScannerDocumentType -> IO ()
-setDocumentType icScannerFunctionalUnitNegativeTransparency  value =
-    sendMsg icScannerFunctionalUnitNegativeTransparency (mkSelector "setDocumentType:") retVoid [argCULong (coerce value)]
+setDocumentType icScannerFunctionalUnitNegativeTransparency value =
+  sendMessage icScannerFunctionalUnitNegativeTransparency setDocumentTypeSelector value
 
 -- | documentSize
 --
@@ -149,26 +146,26 @@ setDocumentType icScannerFunctionalUnitNegativeTransparency  value =
 --
 -- ObjC selector: @- documentSize@
 documentSize :: IsICScannerFunctionalUnitNegativeTransparency icScannerFunctionalUnitNegativeTransparency => icScannerFunctionalUnitNegativeTransparency -> IO NSSize
-documentSize icScannerFunctionalUnitNegativeTransparency  =
-    sendMsgStret icScannerFunctionalUnitNegativeTransparency (mkSelector "documentSize") retNSSize []
+documentSize icScannerFunctionalUnitNegativeTransparency =
+  sendMessage icScannerFunctionalUnitNegativeTransparency documentSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedDocumentTypes@
-supportedDocumentTypesSelector :: Selector
+supportedDocumentTypesSelector :: Selector '[] (Id NSIndexSet)
 supportedDocumentTypesSelector = mkSelector "supportedDocumentTypes"
 
 -- | @Selector@ for @documentType@
-documentTypeSelector :: Selector
+documentTypeSelector :: Selector '[] ICScannerDocumentType
 documentTypeSelector = mkSelector "documentType"
 
 -- | @Selector@ for @setDocumentType:@
-setDocumentTypeSelector :: Selector
+setDocumentTypeSelector :: Selector '[ICScannerDocumentType] ()
 setDocumentTypeSelector = mkSelector "setDocumentType:"
 
 -- | @Selector@ for @documentSize@
-documentSizeSelector :: Selector
+documentSizeSelector :: Selector '[] NSSize
 documentSizeSelector = mkSelector "documentSize"
 

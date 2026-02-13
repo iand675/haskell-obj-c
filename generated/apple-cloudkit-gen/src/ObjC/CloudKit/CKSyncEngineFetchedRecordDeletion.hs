@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.CloudKit.CKSyncEngineFetchedRecordDeletion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineFetchedRecordDeletion ckSyncEngineFetchedRecordDeletion => ckSyncEngineFetchedRecordDeletion -> IO (Id CKSyncEngineFetchedRecordDeletion)
-init_ ckSyncEngineFetchedRecordDeletion  =
-    sendMsg ckSyncEngineFetchedRecordDeletion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineFetchedRecordDeletion =
+  sendOwnedMessage ckSyncEngineFetchedRecordDeletion initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineFetchedRecordDeletion)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineFetchedRecordDeletion"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- recordID@
 recordID :: IsCKSyncEngineFetchedRecordDeletion ckSyncEngineFetchedRecordDeletion => ckSyncEngineFetchedRecordDeletion -> IO (Id CKRecordID)
-recordID ckSyncEngineFetchedRecordDeletion  =
-    sendMsg ckSyncEngineFetchedRecordDeletion (mkSelector "recordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordID ckSyncEngineFetchedRecordDeletion =
+  sendMessage ckSyncEngineFetchedRecordDeletion recordIDSelector
 
 -- | @- recordType@
 recordType :: IsCKSyncEngineFetchedRecordDeletion ckSyncEngineFetchedRecordDeletion => ckSyncEngineFetchedRecordDeletion -> IO (Id NSString)
-recordType ckSyncEngineFetchedRecordDeletion  =
-    sendMsg ckSyncEngineFetchedRecordDeletion (mkSelector "recordType") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordType ckSyncEngineFetchedRecordDeletion =
+  sendMessage ckSyncEngineFetchedRecordDeletion recordTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineFetchedRecordDeletion)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineFetchedRecordDeletion)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @recordID@
-recordIDSelector :: Selector
+recordIDSelector :: Selector '[] (Id CKRecordID)
 recordIDSelector = mkSelector "recordID"
 
 -- | @Selector@ for @recordType@
-recordTypeSelector :: Selector
+recordTypeSelector :: Selector '[] (Id NSString)
 recordTypeSelector = mkSelector "recordType"
 

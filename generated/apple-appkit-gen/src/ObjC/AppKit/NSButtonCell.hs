@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -64,63 +65,63 @@ module ObjC.AppKit.NSButtonCell
   , setGradientType
   , keyEquivalentFont
   , setKeyEquivalentFont
-  , initTextCellSelector
-  , initImageCellSelector
-  , initWithCoderSelector
-  , setButtonTypeSelector
-  , setPeriodicDelay_intervalSelector
-  , getPeriodicDelay_intervalSelector
-  , performClickSelector
-  , mouseEnteredSelector
-  , mouseExitedSelector
+  , alternateImageSelector
+  , alternateMnemonicLocationSelector
+  , alternateMnemonicSelector
+  , alternateTitleSelector
+  , attributedAlternateTitleSelector
+  , attributedTitleSelector
+  , backgroundColorSelector
+  , bezelStyleSelector
   , drawBezelWithFrame_inViewSelector
   , drawImage_withFrame_inViewSelector
   , drawTitle_withFrame_inViewSelector
-  , setTitleWithMnemonicSelector
-  , setAlternateTitleWithMnemonicSelector
-  , setAlternateMnemonicLocationSelector
-  , alternateMnemonicLocationSelector
-  , alternateMnemonicSelector
-  , setKeyEquivalentFont_sizeSelector
-  , bezelStyleSelector
-  , setBezelStyleSelector
-  , highlightsBySelector
-  , setHighlightsBySelector
-  , showsStateBySelector
-  , setShowsStateBySelector
-  , titleSelector
-  , setTitleSelector
-  , attributedTitleSelector
-  , setAttributedTitleSelector
-  , alternateTitleSelector
-  , setAlternateTitleSelector
-  , attributedAlternateTitleSelector
-  , setAttributedAlternateTitleSelector
-  , alternateImageSelector
-  , setAlternateImageSelector
-  , imagePositionSelector
-  , setImagePositionSelector
-  , imageScalingSelector
-  , setImageScalingSelector
-  , keyEquivalentSelector
-  , setKeyEquivalentSelector
-  , keyEquivalentModifierMaskSelector
-  , setKeyEquivalentModifierMaskSelector
-  , transparentSelector
-  , setTransparentSelector
-  , opaqueSelector
-  , imageDimsWhenDisabledSelector
-  , setImageDimsWhenDisabledSelector
-  , showsBorderOnlyWhileMouseInsideSelector
-  , setShowsBorderOnlyWhileMouseInsideSelector
-  , soundSelector
-  , setSoundSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
+  , getPeriodicDelay_intervalSelector
   , gradientTypeSelector
-  , setGradientTypeSelector
+  , highlightsBySelector
+  , imageDimsWhenDisabledSelector
+  , imagePositionSelector
+  , imageScalingSelector
+  , initImageCellSelector
+  , initTextCellSelector
+  , initWithCoderSelector
   , keyEquivalentFontSelector
+  , keyEquivalentModifierMaskSelector
+  , keyEquivalentSelector
+  , mouseEnteredSelector
+  , mouseExitedSelector
+  , opaqueSelector
+  , performClickSelector
+  , setAlternateImageSelector
+  , setAlternateMnemonicLocationSelector
+  , setAlternateTitleSelector
+  , setAlternateTitleWithMnemonicSelector
+  , setAttributedAlternateTitleSelector
+  , setAttributedTitleSelector
+  , setBackgroundColorSelector
+  , setBezelStyleSelector
+  , setButtonTypeSelector
+  , setGradientTypeSelector
+  , setHighlightsBySelector
+  , setImageDimsWhenDisabledSelector
+  , setImagePositionSelector
+  , setImageScalingSelector
   , setKeyEquivalentFontSelector
+  , setKeyEquivalentFont_sizeSelector
+  , setKeyEquivalentModifierMaskSelector
+  , setKeyEquivalentSelector
+  , setPeriodicDelay_intervalSelector
+  , setShowsBorderOnlyWhileMouseInsideSelector
+  , setShowsStateBySelector
+  , setSoundSelector
+  , setTitleSelector
+  , setTitleWithMnemonicSelector
+  , setTransparentSelector
+  , showsBorderOnlyWhileMouseInsideSelector
+  , showsStateBySelector
+  , soundSelector
+  , titleSelector
+  , transparentSelector
 
   -- * Enum types
   , NSBezelStyle(NSBezelStyle)
@@ -200,15 +201,11 @@ module ObjC.AppKit.NSButtonCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -219,540 +216,518 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:@
 initTextCell :: (IsNSButtonCell nsButtonCell, IsNSString string) => nsButtonCell -> string -> IO (Id NSButtonCell)
-initTextCell nsButtonCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsButtonCell (mkSelector "initTextCell:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initTextCell nsButtonCell string =
+  sendOwnedMessage nsButtonCell initTextCellSelector (toNSString string)
 
 -- | @- initImageCell:@
 initImageCell :: (IsNSButtonCell nsButtonCell, IsNSImage image) => nsButtonCell -> image -> IO (Id NSButtonCell)
-initImageCell nsButtonCell  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsButtonCell (mkSelector "initImageCell:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initImageCell nsButtonCell image =
+  sendOwnedMessage nsButtonCell initImageCellSelector (toNSImage image)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSButtonCell nsButtonCell, IsNSCoder coder) => nsButtonCell -> coder -> IO (Id NSButtonCell)
-initWithCoder nsButtonCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsButtonCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsButtonCell coder =
+  sendOwnedMessage nsButtonCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- setButtonType:@
 setButtonType :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSButtonType -> IO ()
-setButtonType nsButtonCell  type_ =
-    sendMsg nsButtonCell (mkSelector "setButtonType:") retVoid [argCULong (coerce type_)]
+setButtonType nsButtonCell type_ =
+  sendMessage nsButtonCell setButtonTypeSelector type_
 
 -- | @- setPeriodicDelay:interval:@
 setPeriodicDelay_interval :: IsNSButtonCell nsButtonCell => nsButtonCell -> CFloat -> CFloat -> IO ()
-setPeriodicDelay_interval nsButtonCell  delay interval =
-    sendMsg nsButtonCell (mkSelector "setPeriodicDelay:interval:") retVoid [argCFloat delay, argCFloat interval]
+setPeriodicDelay_interval nsButtonCell delay interval =
+  sendMessage nsButtonCell setPeriodicDelay_intervalSelector delay interval
 
 -- | @- getPeriodicDelay:interval:@
 getPeriodicDelay_interval :: IsNSButtonCell nsButtonCell => nsButtonCell -> Ptr CFloat -> Ptr CFloat -> IO ()
-getPeriodicDelay_interval nsButtonCell  delay interval =
-    sendMsg nsButtonCell (mkSelector "getPeriodicDelay:interval:") retVoid [argPtr delay, argPtr interval]
+getPeriodicDelay_interval nsButtonCell delay interval =
+  sendMessage nsButtonCell getPeriodicDelay_intervalSelector delay interval
 
 -- | @- performClick:@
 performClick :: IsNSButtonCell nsButtonCell => nsButtonCell -> RawId -> IO ()
-performClick nsButtonCell  sender =
-    sendMsg nsButtonCell (mkSelector "performClick:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performClick nsButtonCell sender =
+  sendMessage nsButtonCell performClickSelector sender
 
 -- | @- mouseEntered:@
 mouseEntered :: (IsNSButtonCell nsButtonCell, IsNSEvent event) => nsButtonCell -> event -> IO ()
-mouseEntered nsButtonCell  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsButtonCell (mkSelector "mouseEntered:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseEntered nsButtonCell event =
+  sendMessage nsButtonCell mouseEnteredSelector (toNSEvent event)
 
 -- | @- mouseExited:@
 mouseExited :: (IsNSButtonCell nsButtonCell, IsNSEvent event) => nsButtonCell -> event -> IO ()
-mouseExited nsButtonCell  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsButtonCell (mkSelector "mouseExited:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseExited nsButtonCell event =
+  sendMessage nsButtonCell mouseExitedSelector (toNSEvent event)
 
 -- | @- drawBezelWithFrame:inView:@
 drawBezelWithFrame_inView :: (IsNSButtonCell nsButtonCell, IsNSView controlView) => nsButtonCell -> NSRect -> controlView -> IO ()
-drawBezelWithFrame_inView nsButtonCell  frame controlView =
-  withObjCPtr controlView $ \raw_controlView ->
-      sendMsg nsButtonCell (mkSelector "drawBezelWithFrame:inView:") retVoid [argNSRect frame, argPtr (castPtr raw_controlView :: Ptr ())]
+drawBezelWithFrame_inView nsButtonCell frame controlView =
+  sendMessage nsButtonCell drawBezelWithFrame_inViewSelector frame (toNSView controlView)
 
 -- | @- drawImage:withFrame:inView:@
 drawImage_withFrame_inView :: (IsNSButtonCell nsButtonCell, IsNSImage image, IsNSView controlView) => nsButtonCell -> image -> NSRect -> controlView -> IO ()
-drawImage_withFrame_inView nsButtonCell  image frame controlView =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr controlView $ \raw_controlView ->
-        sendMsg nsButtonCell (mkSelector "drawImage:withFrame:inView:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argNSRect frame, argPtr (castPtr raw_controlView :: Ptr ())]
+drawImage_withFrame_inView nsButtonCell image frame controlView =
+  sendMessage nsButtonCell drawImage_withFrame_inViewSelector (toNSImage image) frame (toNSView controlView)
 
 -- | @- drawTitle:withFrame:inView:@
 drawTitle_withFrame_inView :: (IsNSButtonCell nsButtonCell, IsNSAttributedString title, IsNSView controlView) => nsButtonCell -> title -> NSRect -> controlView -> IO NSRect
-drawTitle_withFrame_inView nsButtonCell  title frame controlView =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr controlView $ \raw_controlView ->
-        sendMsgStret nsButtonCell (mkSelector "drawTitle:withFrame:inView:") retNSRect [argPtr (castPtr raw_title :: Ptr ()), argNSRect frame, argPtr (castPtr raw_controlView :: Ptr ())]
+drawTitle_withFrame_inView nsButtonCell title frame controlView =
+  sendMessage nsButtonCell drawTitle_withFrame_inViewSelector (toNSAttributedString title) frame (toNSView controlView)
 
 -- | @- setTitleWithMnemonic:@
 setTitleWithMnemonic :: (IsNSButtonCell nsButtonCell, IsNSString stringWithAmpersand) => nsButtonCell -> stringWithAmpersand -> IO ()
-setTitleWithMnemonic nsButtonCell  stringWithAmpersand =
-  withObjCPtr stringWithAmpersand $ \raw_stringWithAmpersand ->
-      sendMsg nsButtonCell (mkSelector "setTitleWithMnemonic:") retVoid [argPtr (castPtr raw_stringWithAmpersand :: Ptr ())]
+setTitleWithMnemonic nsButtonCell stringWithAmpersand =
+  sendMessage nsButtonCell setTitleWithMnemonicSelector (toNSString stringWithAmpersand)
 
 -- | @- setAlternateTitleWithMnemonic:@
 setAlternateTitleWithMnemonic :: (IsNSButtonCell nsButtonCell, IsNSString stringWithAmpersand) => nsButtonCell -> stringWithAmpersand -> IO ()
-setAlternateTitleWithMnemonic nsButtonCell  stringWithAmpersand =
-  withObjCPtr stringWithAmpersand $ \raw_stringWithAmpersand ->
-      sendMsg nsButtonCell (mkSelector "setAlternateTitleWithMnemonic:") retVoid [argPtr (castPtr raw_stringWithAmpersand :: Ptr ())]
+setAlternateTitleWithMnemonic nsButtonCell stringWithAmpersand =
+  sendMessage nsButtonCell setAlternateTitleWithMnemonicSelector (toNSString stringWithAmpersand)
 
 -- | @- setAlternateMnemonicLocation:@
 setAlternateMnemonicLocation :: IsNSButtonCell nsButtonCell => nsButtonCell -> CULong -> IO ()
-setAlternateMnemonicLocation nsButtonCell  location =
-    sendMsg nsButtonCell (mkSelector "setAlternateMnemonicLocation:") retVoid [argCULong location]
+setAlternateMnemonicLocation nsButtonCell location =
+  sendMessage nsButtonCell setAlternateMnemonicLocationSelector location
 
 -- | @- alternateMnemonicLocation@
 alternateMnemonicLocation :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO CULong
-alternateMnemonicLocation nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "alternateMnemonicLocation") retCULong []
+alternateMnemonicLocation nsButtonCell =
+  sendMessage nsButtonCell alternateMnemonicLocationSelector
 
 -- | @- alternateMnemonic@
 alternateMnemonic :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSString)
-alternateMnemonic nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "alternateMnemonic") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateMnemonic nsButtonCell =
+  sendMessage nsButtonCell alternateMnemonicSelector
 
 -- | @- setKeyEquivalentFont:size:@
 setKeyEquivalentFont_size :: (IsNSButtonCell nsButtonCell, IsNSString fontName) => nsButtonCell -> fontName -> CDouble -> IO ()
-setKeyEquivalentFont_size nsButtonCell  fontName fontSize =
-  withObjCPtr fontName $ \raw_fontName ->
-      sendMsg nsButtonCell (mkSelector "setKeyEquivalentFont:size:") retVoid [argPtr (castPtr raw_fontName :: Ptr ()), argCDouble fontSize]
+setKeyEquivalentFont_size nsButtonCell fontName fontSize =
+  sendMessage nsButtonCell setKeyEquivalentFont_sizeSelector (toNSString fontName) fontSize
 
 -- | @- bezelStyle@
 bezelStyle :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSBezelStyle
-bezelStyle nsButtonCell  =
-    fmap (coerce :: CULong -> NSBezelStyle) $ sendMsg nsButtonCell (mkSelector "bezelStyle") retCULong []
+bezelStyle nsButtonCell =
+  sendMessage nsButtonCell bezelStyleSelector
 
 -- | @- setBezelStyle:@
 setBezelStyle :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSBezelStyle -> IO ()
-setBezelStyle nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setBezelStyle:") retVoid [argCULong (coerce value)]
+setBezelStyle nsButtonCell value =
+  sendMessage nsButtonCell setBezelStyleSelector value
 
 -- | @- highlightsBy@
 highlightsBy :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSCellStyleMask
-highlightsBy nsButtonCell  =
-    fmap (coerce :: CULong -> NSCellStyleMask) $ sendMsg nsButtonCell (mkSelector "highlightsBy") retCULong []
+highlightsBy nsButtonCell =
+  sendMessage nsButtonCell highlightsBySelector
 
 -- | @- setHighlightsBy:@
 setHighlightsBy :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSCellStyleMask -> IO ()
-setHighlightsBy nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setHighlightsBy:") retVoid [argCULong (coerce value)]
+setHighlightsBy nsButtonCell value =
+  sendMessage nsButtonCell setHighlightsBySelector value
 
 -- | @- showsStateBy@
 showsStateBy :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSCellStyleMask
-showsStateBy nsButtonCell  =
-    fmap (coerce :: CULong -> NSCellStyleMask) $ sendMsg nsButtonCell (mkSelector "showsStateBy") retCULong []
+showsStateBy nsButtonCell =
+  sendMessage nsButtonCell showsStateBySelector
 
 -- | @- setShowsStateBy:@
 setShowsStateBy :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSCellStyleMask -> IO ()
-setShowsStateBy nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setShowsStateBy:") retVoid [argCULong (coerce value)]
+setShowsStateBy nsButtonCell value =
+  sendMessage nsButtonCell setShowsStateBySelector value
 
 -- | @- title@
 title :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSString)
-title nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsButtonCell =
+  sendMessage nsButtonCell titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSButtonCell nsButtonCell, IsNSString value) => nsButtonCell -> value -> IO ()
-setTitle nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsButtonCell value =
+  sendMessage nsButtonCell setTitleSelector (toNSString value)
 
 -- | @- attributedTitle@
 attributedTitle :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSAttributedString)
-attributedTitle nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedTitle nsButtonCell =
+  sendMessage nsButtonCell attributedTitleSelector
 
 -- | @- setAttributedTitle:@
 setAttributedTitle :: (IsNSButtonCell nsButtonCell, IsNSAttributedString value) => nsButtonCell -> value -> IO ()
-setAttributedTitle nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedTitle nsButtonCell value =
+  sendMessage nsButtonCell setAttributedTitleSelector (toNSAttributedString value)
 
 -- | @- alternateTitle@
 alternateTitle :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSString)
-alternateTitle nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "alternateTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateTitle nsButtonCell =
+  sendMessage nsButtonCell alternateTitleSelector
 
 -- | @- setAlternateTitle:@
 setAlternateTitle :: (IsNSButtonCell nsButtonCell, IsNSString value) => nsButtonCell -> value -> IO ()
-setAlternateTitle nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setAlternateTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateTitle nsButtonCell value =
+  sendMessage nsButtonCell setAlternateTitleSelector (toNSString value)
 
 -- | @- attributedAlternateTitle@
 attributedAlternateTitle :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSAttributedString)
-attributedAlternateTitle nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "attributedAlternateTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedAlternateTitle nsButtonCell =
+  sendMessage nsButtonCell attributedAlternateTitleSelector
 
 -- | @- setAttributedAlternateTitle:@
 setAttributedAlternateTitle :: (IsNSButtonCell nsButtonCell, IsNSAttributedString value) => nsButtonCell -> value -> IO ()
-setAttributedAlternateTitle nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setAttributedAlternateTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedAlternateTitle nsButtonCell value =
+  sendMessage nsButtonCell setAttributedAlternateTitleSelector (toNSAttributedString value)
 
 -- | @- alternateImage@
 alternateImage :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSImage)
-alternateImage nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "alternateImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateImage nsButtonCell =
+  sendMessage nsButtonCell alternateImageSelector
 
 -- | @- setAlternateImage:@
 setAlternateImage :: (IsNSButtonCell nsButtonCell, IsNSImage value) => nsButtonCell -> value -> IO ()
-setAlternateImage nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setAlternateImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateImage nsButtonCell value =
+  sendMessage nsButtonCell setAlternateImageSelector (toNSImage value)
 
 -- | @- imagePosition@
 imagePosition :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSCellImagePosition
-imagePosition nsButtonCell  =
-    fmap (coerce :: CULong -> NSCellImagePosition) $ sendMsg nsButtonCell (mkSelector "imagePosition") retCULong []
+imagePosition nsButtonCell =
+  sendMessage nsButtonCell imagePositionSelector
 
 -- | @- setImagePosition:@
 setImagePosition :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSCellImagePosition -> IO ()
-setImagePosition nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setImagePosition:") retVoid [argCULong (coerce value)]
+setImagePosition nsButtonCell value =
+  sendMessage nsButtonCell setImagePositionSelector value
 
 -- | @- imageScaling@
 imageScaling :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSImageScaling
-imageScaling nsButtonCell  =
-    fmap (coerce :: CULong -> NSImageScaling) $ sendMsg nsButtonCell (mkSelector "imageScaling") retCULong []
+imageScaling nsButtonCell =
+  sendMessage nsButtonCell imageScalingSelector
 
 -- | @- setImageScaling:@
 setImageScaling :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSImageScaling -> IO ()
-setImageScaling nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setImageScaling:") retVoid [argCULong (coerce value)]
+setImageScaling nsButtonCell value =
+  sendMessage nsButtonCell setImageScalingSelector value
 
 -- | @- keyEquivalent@
 keyEquivalent :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSString)
-keyEquivalent nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "keyEquivalent") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyEquivalent nsButtonCell =
+  sendMessage nsButtonCell keyEquivalentSelector
 
 -- | @- setKeyEquivalent:@
 setKeyEquivalent :: (IsNSButtonCell nsButtonCell, IsNSString value) => nsButtonCell -> value -> IO ()
-setKeyEquivalent nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setKeyEquivalent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyEquivalent nsButtonCell value =
+  sendMessage nsButtonCell setKeyEquivalentSelector (toNSString value)
 
 -- | @- keyEquivalentModifierMask@
 keyEquivalentModifierMask :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSEventModifierFlags
-keyEquivalentModifierMask nsButtonCell  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg nsButtonCell (mkSelector "keyEquivalentModifierMask") retCULong []
+keyEquivalentModifierMask nsButtonCell =
+  sendMessage nsButtonCell keyEquivalentModifierMaskSelector
 
 -- | @- setKeyEquivalentModifierMask:@
 setKeyEquivalentModifierMask :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSEventModifierFlags -> IO ()
-setKeyEquivalentModifierMask nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setKeyEquivalentModifierMask:") retVoid [argCULong (coerce value)]
+setKeyEquivalentModifierMask nsButtonCell value =
+  sendMessage nsButtonCell setKeyEquivalentModifierMaskSelector value
 
 -- | @- transparent@
 transparent :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO Bool
-transparent nsButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsButtonCell (mkSelector "transparent") retCULong []
+transparent nsButtonCell =
+  sendMessage nsButtonCell transparentSelector
 
 -- | @- setTransparent:@
 setTransparent :: IsNSButtonCell nsButtonCell => nsButtonCell -> Bool -> IO ()
-setTransparent nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setTransparent:") retVoid [argCULong (if value then 1 else 0)]
+setTransparent nsButtonCell value =
+  sendMessage nsButtonCell setTransparentSelector value
 
 -- | @- opaque@
 opaque :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO Bool
-opaque nsButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsButtonCell (mkSelector "opaque") retCULong []
+opaque nsButtonCell =
+  sendMessage nsButtonCell opaqueSelector
 
 -- | @- imageDimsWhenDisabled@
 imageDimsWhenDisabled :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO Bool
-imageDimsWhenDisabled nsButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsButtonCell (mkSelector "imageDimsWhenDisabled") retCULong []
+imageDimsWhenDisabled nsButtonCell =
+  sendMessage nsButtonCell imageDimsWhenDisabledSelector
 
 -- | @- setImageDimsWhenDisabled:@
 setImageDimsWhenDisabled :: IsNSButtonCell nsButtonCell => nsButtonCell -> Bool -> IO ()
-setImageDimsWhenDisabled nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setImageDimsWhenDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setImageDimsWhenDisabled nsButtonCell value =
+  sendMessage nsButtonCell setImageDimsWhenDisabledSelector value
 
 -- | @- showsBorderOnlyWhileMouseInside@
 showsBorderOnlyWhileMouseInside :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO Bool
-showsBorderOnlyWhileMouseInside nsButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsButtonCell (mkSelector "showsBorderOnlyWhileMouseInside") retCULong []
+showsBorderOnlyWhileMouseInside nsButtonCell =
+  sendMessage nsButtonCell showsBorderOnlyWhileMouseInsideSelector
 
 -- | @- setShowsBorderOnlyWhileMouseInside:@
 setShowsBorderOnlyWhileMouseInside :: IsNSButtonCell nsButtonCell => nsButtonCell -> Bool -> IO ()
-setShowsBorderOnlyWhileMouseInside nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setShowsBorderOnlyWhileMouseInside:") retVoid [argCULong (if value then 1 else 0)]
+setShowsBorderOnlyWhileMouseInside nsButtonCell value =
+  sendMessage nsButtonCell setShowsBorderOnlyWhileMouseInsideSelector value
 
 -- | @- sound@
 sound :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSSound)
-sound nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "sound") (retPtr retVoid) [] >>= retainedObject . castPtr
+sound nsButtonCell =
+  sendMessage nsButtonCell soundSelector
 
 -- | @- setSound:@
 setSound :: (IsNSButtonCell nsButtonCell, IsNSSound value) => nsButtonCell -> value -> IO ()
-setSound nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setSound:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSound nsButtonCell value =
+  sendMessage nsButtonCell setSoundSelector (toNSSound value)
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSColor)
-backgroundColor nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsButtonCell =
+  sendMessage nsButtonCell backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSButtonCell nsButtonCell, IsNSColor value) => nsButtonCell -> value -> IO ()
-setBackgroundColor nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsButtonCell value =
+  sendMessage nsButtonCell setBackgroundColorSelector (toNSColor value)
 
 -- | @- gradientType@
 gradientType :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO NSGradientType
-gradientType nsButtonCell  =
-    fmap (coerce :: CULong -> NSGradientType) $ sendMsg nsButtonCell (mkSelector "gradientType") retCULong []
+gradientType nsButtonCell =
+  sendMessage nsButtonCell gradientTypeSelector
 
 -- | @- setGradientType:@
 setGradientType :: IsNSButtonCell nsButtonCell => nsButtonCell -> NSGradientType -> IO ()
-setGradientType nsButtonCell  value =
-    sendMsg nsButtonCell (mkSelector "setGradientType:") retVoid [argCULong (coerce value)]
+setGradientType nsButtonCell value =
+  sendMessage nsButtonCell setGradientTypeSelector value
 
 -- | @- keyEquivalentFont@
 keyEquivalentFont :: IsNSButtonCell nsButtonCell => nsButtonCell -> IO (Id NSFont)
-keyEquivalentFont nsButtonCell  =
-    sendMsg nsButtonCell (mkSelector "keyEquivalentFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyEquivalentFont nsButtonCell =
+  sendMessage nsButtonCell keyEquivalentFontSelector
 
 -- | @- setKeyEquivalentFont:@
 setKeyEquivalentFont :: (IsNSButtonCell nsButtonCell, IsNSFont value) => nsButtonCell -> value -> IO ()
-setKeyEquivalentFont nsButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonCell (mkSelector "setKeyEquivalentFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyEquivalentFont nsButtonCell value =
+  sendMessage nsButtonCell setKeyEquivalentFontSelector (toNSFont value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:@
-initTextCellSelector :: Selector
+initTextCellSelector :: Selector '[Id NSString] (Id NSButtonCell)
 initTextCellSelector = mkSelector "initTextCell:"
 
 -- | @Selector@ for @initImageCell:@
-initImageCellSelector :: Selector
+initImageCellSelector :: Selector '[Id NSImage] (Id NSButtonCell)
 initImageCellSelector = mkSelector "initImageCell:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSButtonCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @setButtonType:@
-setButtonTypeSelector :: Selector
+setButtonTypeSelector :: Selector '[NSButtonType] ()
 setButtonTypeSelector = mkSelector "setButtonType:"
 
 -- | @Selector@ for @setPeriodicDelay:interval:@
-setPeriodicDelay_intervalSelector :: Selector
+setPeriodicDelay_intervalSelector :: Selector '[CFloat, CFloat] ()
 setPeriodicDelay_intervalSelector = mkSelector "setPeriodicDelay:interval:"
 
 -- | @Selector@ for @getPeriodicDelay:interval:@
-getPeriodicDelay_intervalSelector :: Selector
+getPeriodicDelay_intervalSelector :: Selector '[Ptr CFloat, Ptr CFloat] ()
 getPeriodicDelay_intervalSelector = mkSelector "getPeriodicDelay:interval:"
 
 -- | @Selector@ for @performClick:@
-performClickSelector :: Selector
+performClickSelector :: Selector '[RawId] ()
 performClickSelector = mkSelector "performClick:"
 
 -- | @Selector@ for @mouseEntered:@
-mouseEnteredSelector :: Selector
+mouseEnteredSelector :: Selector '[Id NSEvent] ()
 mouseEnteredSelector = mkSelector "mouseEntered:"
 
 -- | @Selector@ for @mouseExited:@
-mouseExitedSelector :: Selector
+mouseExitedSelector :: Selector '[Id NSEvent] ()
 mouseExitedSelector = mkSelector "mouseExited:"
 
 -- | @Selector@ for @drawBezelWithFrame:inView:@
-drawBezelWithFrame_inViewSelector :: Selector
+drawBezelWithFrame_inViewSelector :: Selector '[NSRect, Id NSView] ()
 drawBezelWithFrame_inViewSelector = mkSelector "drawBezelWithFrame:inView:"
 
 -- | @Selector@ for @drawImage:withFrame:inView:@
-drawImage_withFrame_inViewSelector :: Selector
+drawImage_withFrame_inViewSelector :: Selector '[Id NSImage, NSRect, Id NSView] ()
 drawImage_withFrame_inViewSelector = mkSelector "drawImage:withFrame:inView:"
 
 -- | @Selector@ for @drawTitle:withFrame:inView:@
-drawTitle_withFrame_inViewSelector :: Selector
+drawTitle_withFrame_inViewSelector :: Selector '[Id NSAttributedString, NSRect, Id NSView] NSRect
 drawTitle_withFrame_inViewSelector = mkSelector "drawTitle:withFrame:inView:"
 
 -- | @Selector@ for @setTitleWithMnemonic:@
-setTitleWithMnemonicSelector :: Selector
+setTitleWithMnemonicSelector :: Selector '[Id NSString] ()
 setTitleWithMnemonicSelector = mkSelector "setTitleWithMnemonic:"
 
 -- | @Selector@ for @setAlternateTitleWithMnemonic:@
-setAlternateTitleWithMnemonicSelector :: Selector
+setAlternateTitleWithMnemonicSelector :: Selector '[Id NSString] ()
 setAlternateTitleWithMnemonicSelector = mkSelector "setAlternateTitleWithMnemonic:"
 
 -- | @Selector@ for @setAlternateMnemonicLocation:@
-setAlternateMnemonicLocationSelector :: Selector
+setAlternateMnemonicLocationSelector :: Selector '[CULong] ()
 setAlternateMnemonicLocationSelector = mkSelector "setAlternateMnemonicLocation:"
 
 -- | @Selector@ for @alternateMnemonicLocation@
-alternateMnemonicLocationSelector :: Selector
+alternateMnemonicLocationSelector :: Selector '[] CULong
 alternateMnemonicLocationSelector = mkSelector "alternateMnemonicLocation"
 
 -- | @Selector@ for @alternateMnemonic@
-alternateMnemonicSelector :: Selector
+alternateMnemonicSelector :: Selector '[] (Id NSString)
 alternateMnemonicSelector = mkSelector "alternateMnemonic"
 
 -- | @Selector@ for @setKeyEquivalentFont:size:@
-setKeyEquivalentFont_sizeSelector :: Selector
+setKeyEquivalentFont_sizeSelector :: Selector '[Id NSString, CDouble] ()
 setKeyEquivalentFont_sizeSelector = mkSelector "setKeyEquivalentFont:size:"
 
 -- | @Selector@ for @bezelStyle@
-bezelStyleSelector :: Selector
+bezelStyleSelector :: Selector '[] NSBezelStyle
 bezelStyleSelector = mkSelector "bezelStyle"
 
 -- | @Selector@ for @setBezelStyle:@
-setBezelStyleSelector :: Selector
+setBezelStyleSelector :: Selector '[NSBezelStyle] ()
 setBezelStyleSelector = mkSelector "setBezelStyle:"
 
 -- | @Selector@ for @highlightsBy@
-highlightsBySelector :: Selector
+highlightsBySelector :: Selector '[] NSCellStyleMask
 highlightsBySelector = mkSelector "highlightsBy"
 
 -- | @Selector@ for @setHighlightsBy:@
-setHighlightsBySelector :: Selector
+setHighlightsBySelector :: Selector '[NSCellStyleMask] ()
 setHighlightsBySelector = mkSelector "setHighlightsBy:"
 
 -- | @Selector@ for @showsStateBy@
-showsStateBySelector :: Selector
+showsStateBySelector :: Selector '[] NSCellStyleMask
 showsStateBySelector = mkSelector "showsStateBy"
 
 -- | @Selector@ for @setShowsStateBy:@
-setShowsStateBySelector :: Selector
+setShowsStateBySelector :: Selector '[NSCellStyleMask] ()
 setShowsStateBySelector = mkSelector "setShowsStateBy:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @attributedTitle@
-attributedTitleSelector :: Selector
+attributedTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedTitleSelector = mkSelector "attributedTitle"
 
 -- | @Selector@ for @setAttributedTitle:@
-setAttributedTitleSelector :: Selector
+setAttributedTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
 
 -- | @Selector@ for @alternateTitle@
-alternateTitleSelector :: Selector
+alternateTitleSelector :: Selector '[] (Id NSString)
 alternateTitleSelector = mkSelector "alternateTitle"
 
 -- | @Selector@ for @setAlternateTitle:@
-setAlternateTitleSelector :: Selector
+setAlternateTitleSelector :: Selector '[Id NSString] ()
 setAlternateTitleSelector = mkSelector "setAlternateTitle:"
 
 -- | @Selector@ for @attributedAlternateTitle@
-attributedAlternateTitleSelector :: Selector
+attributedAlternateTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedAlternateTitleSelector = mkSelector "attributedAlternateTitle"
 
 -- | @Selector@ for @setAttributedAlternateTitle:@
-setAttributedAlternateTitleSelector :: Selector
+setAttributedAlternateTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedAlternateTitleSelector = mkSelector "setAttributedAlternateTitle:"
 
 -- | @Selector@ for @alternateImage@
-alternateImageSelector :: Selector
+alternateImageSelector :: Selector '[] (Id NSImage)
 alternateImageSelector = mkSelector "alternateImage"
 
 -- | @Selector@ for @setAlternateImage:@
-setAlternateImageSelector :: Selector
+setAlternateImageSelector :: Selector '[Id NSImage] ()
 setAlternateImageSelector = mkSelector "setAlternateImage:"
 
 -- | @Selector@ for @imagePosition@
-imagePositionSelector :: Selector
+imagePositionSelector :: Selector '[] NSCellImagePosition
 imagePositionSelector = mkSelector "imagePosition"
 
 -- | @Selector@ for @setImagePosition:@
-setImagePositionSelector :: Selector
+setImagePositionSelector :: Selector '[NSCellImagePosition] ()
 setImagePositionSelector = mkSelector "setImagePosition:"
 
 -- | @Selector@ for @imageScaling@
-imageScalingSelector :: Selector
+imageScalingSelector :: Selector '[] NSImageScaling
 imageScalingSelector = mkSelector "imageScaling"
 
 -- | @Selector@ for @setImageScaling:@
-setImageScalingSelector :: Selector
+setImageScalingSelector :: Selector '[NSImageScaling] ()
 setImageScalingSelector = mkSelector "setImageScaling:"
 
 -- | @Selector@ for @keyEquivalent@
-keyEquivalentSelector :: Selector
+keyEquivalentSelector :: Selector '[] (Id NSString)
 keyEquivalentSelector = mkSelector "keyEquivalent"
 
 -- | @Selector@ for @setKeyEquivalent:@
-setKeyEquivalentSelector :: Selector
+setKeyEquivalentSelector :: Selector '[Id NSString] ()
 setKeyEquivalentSelector = mkSelector "setKeyEquivalent:"
 
 -- | @Selector@ for @keyEquivalentModifierMask@
-keyEquivalentModifierMaskSelector :: Selector
+keyEquivalentModifierMaskSelector :: Selector '[] NSEventModifierFlags
 keyEquivalentModifierMaskSelector = mkSelector "keyEquivalentModifierMask"
 
 -- | @Selector@ for @setKeyEquivalentModifierMask:@
-setKeyEquivalentModifierMaskSelector :: Selector
+setKeyEquivalentModifierMaskSelector :: Selector '[NSEventModifierFlags] ()
 setKeyEquivalentModifierMaskSelector = mkSelector "setKeyEquivalentModifierMask:"
 
 -- | @Selector@ for @transparent@
-transparentSelector :: Selector
+transparentSelector :: Selector '[] Bool
 transparentSelector = mkSelector "transparent"
 
 -- | @Selector@ for @setTransparent:@
-setTransparentSelector :: Selector
+setTransparentSelector :: Selector '[Bool] ()
 setTransparentSelector = mkSelector "setTransparent:"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @imageDimsWhenDisabled@
-imageDimsWhenDisabledSelector :: Selector
+imageDimsWhenDisabledSelector :: Selector '[] Bool
 imageDimsWhenDisabledSelector = mkSelector "imageDimsWhenDisabled"
 
 -- | @Selector@ for @setImageDimsWhenDisabled:@
-setImageDimsWhenDisabledSelector :: Selector
+setImageDimsWhenDisabledSelector :: Selector '[Bool] ()
 setImageDimsWhenDisabledSelector = mkSelector "setImageDimsWhenDisabled:"
 
 -- | @Selector@ for @showsBorderOnlyWhileMouseInside@
-showsBorderOnlyWhileMouseInsideSelector :: Selector
+showsBorderOnlyWhileMouseInsideSelector :: Selector '[] Bool
 showsBorderOnlyWhileMouseInsideSelector = mkSelector "showsBorderOnlyWhileMouseInside"
 
 -- | @Selector@ for @setShowsBorderOnlyWhileMouseInside:@
-setShowsBorderOnlyWhileMouseInsideSelector :: Selector
+setShowsBorderOnlyWhileMouseInsideSelector :: Selector '[Bool] ()
 setShowsBorderOnlyWhileMouseInsideSelector = mkSelector "setShowsBorderOnlyWhileMouseInside:"
 
 -- | @Selector@ for @sound@
-soundSelector :: Selector
+soundSelector :: Selector '[] (Id NSSound)
 soundSelector = mkSelector "sound"
 
 -- | @Selector@ for @setSound:@
-setSoundSelector :: Selector
+setSoundSelector :: Selector '[Id NSSound] ()
 setSoundSelector = mkSelector "setSound:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @gradientType@
-gradientTypeSelector :: Selector
+gradientTypeSelector :: Selector '[] NSGradientType
 gradientTypeSelector = mkSelector "gradientType"
 
 -- | @Selector@ for @setGradientType:@
-setGradientTypeSelector :: Selector
+setGradientTypeSelector :: Selector '[NSGradientType] ()
 setGradientTypeSelector = mkSelector "setGradientType:"
 
 -- | @Selector@ for @keyEquivalentFont@
-keyEquivalentFontSelector :: Selector
+keyEquivalentFontSelector :: Selector '[] (Id NSFont)
 keyEquivalentFontSelector = mkSelector "keyEquivalentFont"
 
 -- | @Selector@ for @setKeyEquivalentFont:@
-setKeyEquivalentFontSelector :: Selector
+setKeyEquivalentFontSelector :: Selector '[Id NSFont] ()
 setKeyEquivalentFontSelector = mkSelector "setKeyEquivalentFont:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.ModelIO.MDLRelativeAssetResolver
   , initWithAsset
   , asset
   , setAsset
-  , initWithAssetSelector
   , assetSelector
+  , initWithAssetSelector
   , setAssetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,34 +34,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAsset:@
 initWithAsset :: (IsMDLRelativeAssetResolver mdlRelativeAssetResolver, IsMDLAsset asset) => mdlRelativeAssetResolver -> asset -> IO (Id MDLRelativeAssetResolver)
-initWithAsset mdlRelativeAssetResolver  asset =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg mdlRelativeAssetResolver (mkSelector "initWithAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= ownedObject . castPtr
+initWithAsset mdlRelativeAssetResolver asset =
+  sendOwnedMessage mdlRelativeAssetResolver initWithAssetSelector (toMDLAsset asset)
 
 -- | @- asset@
 asset :: IsMDLRelativeAssetResolver mdlRelativeAssetResolver => mdlRelativeAssetResolver -> IO (Id MDLAsset)
-asset mdlRelativeAssetResolver  =
-    sendMsg mdlRelativeAssetResolver (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset mdlRelativeAssetResolver =
+  sendMessage mdlRelativeAssetResolver assetSelector
 
 -- | @- setAsset:@
 setAsset :: (IsMDLRelativeAssetResolver mdlRelativeAssetResolver, IsMDLAsset value) => mdlRelativeAssetResolver -> value -> IO ()
-setAsset mdlRelativeAssetResolver  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlRelativeAssetResolver (mkSelector "setAsset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAsset mdlRelativeAssetResolver value =
+  sendMessage mdlRelativeAssetResolver setAssetSelector (toMDLAsset value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAsset:@
-initWithAssetSelector :: Selector
+initWithAssetSelector :: Selector '[Id MDLAsset] (Id MDLRelativeAssetResolver)
 initWithAssetSelector = mkSelector "initWithAsset:"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id MDLAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @setAsset:@
-setAssetSelector :: Selector
+setAssetSelector :: Selector '[Id MDLAsset] ()
 setAssetSelector = mkSelector "setAsset:"
 

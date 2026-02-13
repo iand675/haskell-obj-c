@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,38 +32,34 @@ module ObjC.ModelIO.MDLObject
   , setChildren
   , hidden
   , setHidden
-  , setComponent_forProtocolSelector
-  , componentConformingToProtocolSelector
-  , objectForKeyedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , objectAtPathSelector
-  , enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector
   , addChildSelector
-  , componentsSelector
-  , parentSelector
-  , setParentSelector
-  , instanceSelector
-  , setInstanceSelector
-  , pathSelector
-  , transformSelector
-  , setTransformSelector
   , childrenSelector
-  , setChildrenSelector
+  , componentConformingToProtocolSelector
+  , componentsSelector
+  , enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector
   , hiddenSelector
+  , instanceSelector
+  , objectAtPathSelector
+  , objectForKeyedSubscriptSelector
+  , parentSelector
+  , pathSelector
+  , setChildrenSelector
+  , setComponent_forProtocolSelector
   , setHiddenSelector
+  , setInstanceSelector
+  , setObject_forKeyedSubscriptSelector
+  , setParentSelector
+  , setTransformSelector
+  , transformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setComponent:forProtocol:@
 setComponent_forProtocol :: IsMDLObject mdlObject => mdlObject -> RawId -> RawId -> IO ()
-setComponent_forProtocol mdlObject  component protocol =
-    sendMsg mdlObject (mkSelector "setComponent:forProtocol:") retVoid [argPtr (castPtr (unRawId component) :: Ptr ()), argPtr (castPtr (unRawId protocol) :: Ptr ())]
+setComponent_forProtocol mdlObject component protocol =
+  sendMessage mdlObject setComponent_forProtocolSelector component protocol
 
 -- | componentConformingToProtocol:
 --
@@ -84,8 +81,8 @@ setComponent_forProtocol mdlObject  component protocol =
 --
 -- ObjC selector: @- componentConformingToProtocol:@
 componentConformingToProtocol :: IsMDLObject mdlObject => mdlObject -> RawId -> IO RawId
-componentConformingToProtocol mdlObject  protocol =
-    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "componentConformingToProtocol:") (retPtr retVoid) [argPtr (castPtr (unRawId protocol) :: Ptr ())]
+componentConformingToProtocol mdlObject protocol =
+  sendMessage mdlObject componentConformingToProtocolSelector protocol
 
 -- | objectForKeyedSubscript:
 --
@@ -97,8 +94,8 @@ componentConformingToProtocol mdlObject  protocol =
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: IsMDLObject mdlObject => mdlObject -> RawId -> IO RawId
-objectForKeyedSubscript mdlObject  key =
-    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ())]
+objectForKeyedSubscript mdlObject key =
+  sendMessage mdlObject objectForKeyedSubscriptSelector key
 
 -- | setObject:forKeyedSubscript:
 --
@@ -110,22 +107,20 @@ objectForKeyedSubscript mdlObject  key =
 --
 -- ObjC selector: @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: IsMDLObject mdlObject => mdlObject -> RawId -> RawId -> IO ()
-setObject_forKeyedSubscript mdlObject  obj_ key =
-    sendMsg mdlObject (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+setObject_forKeyedSubscript mdlObject obj_ key =
+  sendMessage mdlObject setObject_forKeyedSubscriptSelector obj_ key
 
 -- | Return the object at the specified path, or nil if none exists there
 --
 -- ObjC selector: @- objectAtPath:@
 objectAtPath :: (IsMDLObject mdlObject, IsNSString path) => mdlObject -> path -> IO (Id MDLObject)
-objectAtPath mdlObject  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg mdlObject (mkSelector "objectAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+objectAtPath mdlObject path =
+  sendMessage mdlObject objectAtPathSelector (toNSString path)
 
 -- | @- enumerateChildObjectsOfClass:root:usingBlock:stopPointer:@
 enumerateChildObjectsOfClass_root_usingBlock_stopPointer :: (IsMDLObject mdlObject, IsMDLObject root) => mdlObject -> Class -> root -> Ptr () -> Ptr Bool -> IO ()
-enumerateChildObjectsOfClass_root_usingBlock_stopPointer mdlObject  objectClass root block stopPointer =
-  withObjCPtr root $ \raw_root ->
-      sendMsg mdlObject (mkSelector "enumerateChildObjectsOfClass:root:usingBlock:stopPointer:") retVoid [argPtr (unClass objectClass), argPtr (castPtr raw_root :: Ptr ()), argPtr (castPtr block :: Ptr ()), argPtr stopPointer]
+enumerateChildObjectsOfClass_root_usingBlock_stopPointer mdlObject objectClass root block stopPointer =
+  sendMessage mdlObject enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector objectClass (toMDLObject root) block stopPointer
 
 -- | addChild:
 --
@@ -137,9 +132,8 @@ enumerateChildObjectsOfClass_root_usingBlock_stopPointer mdlObject  objectClass 
 --
 -- ObjC selector: @- addChild:@
 addChild :: (IsMDLObject mdlObject, IsMDLObject child) => mdlObject -> child -> IO ()
-addChild mdlObject  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg mdlObject (mkSelector "addChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChild mdlObject child =
+  sendMessage mdlObject addChildSelector (toMDLObject child)
 
 -- | components
 --
@@ -147,8 +141,8 @@ addChild mdlObject  child =
 --
 -- ObjC selector: @- components@
 components :: IsMDLObject mdlObject => mdlObject -> IO (Id NSArray)
-components mdlObject  =
-    sendMsg mdlObject (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+components mdlObject =
+  sendMessage mdlObject componentsSelector
 
 -- | parent
 --
@@ -158,8 +152,8 @@ components mdlObject  =
 --
 -- ObjC selector: @- parent@
 parent :: IsMDLObject mdlObject => mdlObject -> IO (Id MDLObject)
-parent mdlObject  =
-    sendMsg mdlObject (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent mdlObject =
+  sendMessage mdlObject parentSelector
 
 -- | parent
 --
@@ -169,9 +163,8 @@ parent mdlObject  =
 --
 -- ObjC selector: @- setParent:@
 setParent :: (IsMDLObject mdlObject, IsMDLObject value) => mdlObject -> value -> IO ()
-setParent mdlObject  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlObject (mkSelector "setParent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParent mdlObject value =
+  sendMessage mdlObject setParentSelector (toMDLObject value)
 
 -- | instance
 --
@@ -181,8 +174,8 @@ setParent mdlObject  value =
 --
 -- ObjC selector: @- instance@
 instance_ :: IsMDLObject mdlObject => mdlObject -> IO (Id MDLObject)
-instance_ mdlObject  =
-    sendMsg mdlObject (mkSelector "instance") (retPtr retVoid) [] >>= retainedObject . castPtr
+instance_ mdlObject =
+  sendMessage mdlObject instanceSelector
 
 -- | instance
 --
@@ -192,9 +185,8 @@ instance_ mdlObject  =
 --
 -- ObjC selector: @- setInstance:@
 setInstance :: (IsMDLObject mdlObject, IsMDLObject value) => mdlObject -> value -> IO ()
-setInstance mdlObject  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlObject (mkSelector "setInstance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInstance mdlObject value =
+  sendMessage mdlObject setInstanceSelector (toMDLObject value)
 
 -- | path
 --
@@ -204,8 +196,8 @@ setInstance mdlObject  value =
 --
 -- ObjC selector: @- path@
 path :: IsMDLObject mdlObject => mdlObject -> IO (Id NSString)
-path mdlObject  =
-    sendMsg mdlObject (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path mdlObject =
+  sendMessage mdlObject pathSelector
 
 -- | transform
 --
@@ -217,8 +209,8 @@ path mdlObject  =
 --
 -- ObjC selector: @- transform@
 transform :: IsMDLObject mdlObject => mdlObject -> IO RawId
-transform mdlObject  =
-    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "transform") (retPtr retVoid) []
+transform mdlObject =
+  sendMessage mdlObject transformSelector
 
 -- | transform
 --
@@ -230,8 +222,8 @@ transform mdlObject  =
 --
 -- ObjC selector: @- setTransform:@
 setTransform :: IsMDLObject mdlObject => mdlObject -> RawId -> IO ()
-setTransform mdlObject  value =
-    sendMsg mdlObject (mkSelector "setTransform:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTransform mdlObject value =
+  sendMessage mdlObject setTransformSelector value
 
 -- | children
 --
@@ -243,8 +235,8 @@ setTransform mdlObject  value =
 --
 -- ObjC selector: @- children@
 children :: IsMDLObject mdlObject => mdlObject -> IO RawId
-children mdlObject  =
-    fmap (RawId . castPtr) $ sendMsg mdlObject (mkSelector "children") (retPtr retVoid) []
+children mdlObject =
+  sendMessage mdlObject childrenSelector
 
 -- | children
 --
@@ -256,8 +248,8 @@ children mdlObject  =
 --
 -- ObjC selector: @- setChildren:@
 setChildren :: IsMDLObject mdlObject => mdlObject -> RawId -> IO ()
-setChildren mdlObject  value =
-    sendMsg mdlObject (mkSelector "setChildren:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setChildren mdlObject value =
+  sendMessage mdlObject setChildrenSelector value
 
 -- | hidden
 --
@@ -267,8 +259,8 @@ setChildren mdlObject  value =
 --
 -- ObjC selector: @- hidden@
 hidden :: IsMDLObject mdlObject => mdlObject -> IO Bool
-hidden mdlObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlObject (mkSelector "hidden") retCULong []
+hidden mdlObject =
+  sendMessage mdlObject hiddenSelector
 
 -- | hidden
 --
@@ -278,86 +270,86 @@ hidden mdlObject  =
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsMDLObject mdlObject => mdlObject -> Bool -> IO ()
-setHidden mdlObject  value =
-    sendMsg mdlObject (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden mdlObject value =
+  sendMessage mdlObject setHiddenSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setComponent:forProtocol:@
-setComponent_forProtocolSelector :: Selector
+setComponent_forProtocolSelector :: Selector '[RawId, RawId] ()
 setComponent_forProtocolSelector = mkSelector "setComponent:forProtocol:"
 
 -- | @Selector@ for @componentConformingToProtocol:@
-componentConformingToProtocolSelector :: Selector
+componentConformingToProtocolSelector :: Selector '[RawId] RawId
 componentConformingToProtocolSelector = mkSelector "componentConformingToProtocol:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[RawId] RawId
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, RawId] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @objectAtPath:@
-objectAtPathSelector :: Selector
+objectAtPathSelector :: Selector '[Id NSString] (Id MDLObject)
 objectAtPathSelector = mkSelector "objectAtPath:"
 
 -- | @Selector@ for @enumerateChildObjectsOfClass:root:usingBlock:stopPointer:@
-enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector :: Selector
+enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector :: Selector '[Class, Id MDLObject, Ptr (), Ptr Bool] ()
 enumerateChildObjectsOfClass_root_usingBlock_stopPointerSelector = mkSelector "enumerateChildObjectsOfClass:root:usingBlock:stopPointer:"
 
 -- | @Selector@ for @addChild:@
-addChildSelector :: Selector
+addChildSelector :: Selector '[Id MDLObject] ()
 addChildSelector = mkSelector "addChild:"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] (Id NSArray)
 componentsSelector = mkSelector "components"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id MDLObject)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @setParent:@
-setParentSelector :: Selector
+setParentSelector :: Selector '[Id MDLObject] ()
 setParentSelector = mkSelector "setParent:"
 
 -- | @Selector@ for @instance@
-instanceSelector :: Selector
+instanceSelector :: Selector '[] (Id MDLObject)
 instanceSelector = mkSelector "instance"
 
 -- | @Selector@ for @setInstance:@
-setInstanceSelector :: Selector
+setInstanceSelector :: Selector '[Id MDLObject] ()
 setInstanceSelector = mkSelector "setInstance:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] RawId
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @setTransform:@
-setTransformSelector :: Selector
+setTransformSelector :: Selector '[RawId] ()
 setTransformSelector = mkSelector "setTransform:"
 
 -- | @Selector@ for @children@
-childrenSelector :: Selector
+childrenSelector :: Selector '[] RawId
 childrenSelector = mkSelector "children"
 
 -- | @Selector@ for @setChildren:@
-setChildrenSelector :: Selector
+setChildrenSelector :: Selector '[RawId] ()
 setChildrenSelector = mkSelector "setChildren:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 

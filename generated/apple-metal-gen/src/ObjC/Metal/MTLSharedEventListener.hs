@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Metal.MTLSharedEventListener
   , initWithDispatchQueue
   , sharedListener
   , dispatchQueue
+  , dispatchQueueSelector
   , initSelector
   , initWithDispatchQueueSelector
   , sharedListenerSelector
-  , dispatchQueueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,44 +36,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTLSharedEventListener mtlSharedEventListener => mtlSharedEventListener -> IO (Id MTLSharedEventListener)
-init_ mtlSharedEventListener  =
-    sendMsg mtlSharedEventListener (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtlSharedEventListener =
+  sendOwnedMessage mtlSharedEventListener initSelector
 
 -- | @- initWithDispatchQueue:@
 initWithDispatchQueue :: (IsMTLSharedEventListener mtlSharedEventListener, IsNSObject dispatchQueue) => mtlSharedEventListener -> dispatchQueue -> IO (Id MTLSharedEventListener)
-initWithDispatchQueue mtlSharedEventListener  dispatchQueue =
-  withObjCPtr dispatchQueue $ \raw_dispatchQueue ->
-      sendMsg mtlSharedEventListener (mkSelector "initWithDispatchQueue:") (retPtr retVoid) [argPtr (castPtr raw_dispatchQueue :: Ptr ())] >>= ownedObject . castPtr
+initWithDispatchQueue mtlSharedEventListener dispatchQueue =
+  sendOwnedMessage mtlSharedEventListener initWithDispatchQueueSelector (toNSObject dispatchQueue)
 
 -- | @+ sharedListener@
 sharedListener :: IO (Id MTLSharedEventListener)
 sharedListener  =
   do
     cls' <- getRequiredClass "MTLSharedEventListener"
-    sendClassMsg cls' (mkSelector "sharedListener") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedListenerSelector
 
 -- | @- dispatchQueue@
 dispatchQueue :: IsMTLSharedEventListener mtlSharedEventListener => mtlSharedEventListener -> IO (Id NSObject)
-dispatchQueue mtlSharedEventListener  =
-    sendMsg mtlSharedEventListener (mkSelector "dispatchQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dispatchQueue mtlSharedEventListener =
+  sendMessage mtlSharedEventListener dispatchQueueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTLSharedEventListener)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDispatchQueue:@
-initWithDispatchQueueSelector :: Selector
+initWithDispatchQueueSelector :: Selector '[Id NSObject] (Id MTLSharedEventListener)
 initWithDispatchQueueSelector = mkSelector "initWithDispatchQueue:"
 
 -- | @Selector@ for @sharedListener@
-sharedListenerSelector :: Selector
+sharedListenerSelector :: Selector '[] (Id MTLSharedEventListener)
 sharedListenerSelector = mkSelector "sharedListener"
 
 -- | @Selector@ for @dispatchQueue@
-dispatchQueueSelector :: Selector
+dispatchQueueSelector :: Selector '[] (Id NSObject)
 dispatchQueueSelector = mkSelector "dispatchQueue"
 

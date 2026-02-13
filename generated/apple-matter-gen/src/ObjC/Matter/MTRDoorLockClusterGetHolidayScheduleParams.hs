@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDoorLockClusterGetHolidayScheduleParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , holidayIndexSelector
-  , setHolidayIndexSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setHolidayIndexSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- holidayIndex@
 holidayIndex :: IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams => mtrDoorLockClusterGetHolidayScheduleParams -> IO (Id NSNumber)
-holidayIndex mtrDoorLockClusterGetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "holidayIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+holidayIndex mtrDoorLockClusterGetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams holidayIndexSelector
 
 -- | @- setHolidayIndex:@
 setHolidayIndex :: (IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetHolidayScheduleParams -> value -> IO ()
-setHolidayIndex mtrDoorLockClusterGetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "setHolidayIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHolidayIndex mtrDoorLockClusterGetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams setHolidayIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setHolidayIndex mtrDoorLockClusterGetHolidayScheduleParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams => mtrDoorLockClusterGetHolidayScheduleParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetHolidayScheduleParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterGetHolidayScheduleParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams => mtrDoorLockClusterGetHolidayScheduleParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterGetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterGetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrDoorLockClusterGetHolidayScheduleParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterGetHolidayScheduleParams mtrDoorLockClusterGetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetHolidayScheduleParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterGetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetHolidayScheduleParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterGetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetHolidayScheduleParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @holidayIndex@
-holidayIndexSelector :: Selector
+holidayIndexSelector :: Selector '[] (Id NSNumber)
 holidayIndexSelector = mkSelector "holidayIndex"
 
 -- | @Selector@ for @setHolidayIndex:@
-setHolidayIndexSelector :: Selector
+setHolidayIndexSelector :: Selector '[Id NSNumber] ()
 setHolidayIndexSelector = mkSelector "setHolidayIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

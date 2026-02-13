@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Contacts.CNChangeHistoryAddGroupEvent
   , IsCNChangeHistoryAddGroupEvent(..)
   , group
   , containerIdentifier
-  , groupSelector
   , containerIdentifierSelector
+  , groupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,23 +30,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- group@
 group :: IsCNChangeHistoryAddGroupEvent cnChangeHistoryAddGroupEvent => cnChangeHistoryAddGroupEvent -> IO (Id CNGroup)
-group cnChangeHistoryAddGroupEvent  =
-    sendMsg cnChangeHistoryAddGroupEvent (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group cnChangeHistoryAddGroupEvent =
+  sendMessage cnChangeHistoryAddGroupEvent groupSelector
 
 -- | @- containerIdentifier@
 containerIdentifier :: IsCNChangeHistoryAddGroupEvent cnChangeHistoryAddGroupEvent => cnChangeHistoryAddGroupEvent -> IO (Id NSString)
-containerIdentifier cnChangeHistoryAddGroupEvent  =
-    sendMsg cnChangeHistoryAddGroupEvent (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier cnChangeHistoryAddGroupEvent =
+  sendMessage cnChangeHistoryAddGroupEvent containerIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id CNGroup)
 groupSelector = mkSelector "group"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 

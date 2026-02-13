@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.CoreMediaIO.CMIOExtensionPropertyAttributes
   , validValues
   , readOnly
   , initSelector
+  , initWithMinValue_maxValue_validValues_readOnlySelector
+  , maxValueSelector
+  , minValueSelector
   , newSelector
   , propertyAttributesWithMinValue_maxValue_validValues_readOnlySelector
-  , initWithMinValue_maxValue_validValues_readOnlySelector
   , readOnlyPropertyAttributeSelector
-  , minValueSelector
-  , maxValueSelector
-  , validValuesSelector
   , readOnlySelector
+  , validValuesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes => cmioExtensionPropertyAttributes -> IO (Id CMIOExtensionPropertyAttributes)
-init_ cmioExtensionPropertyAttributes  =
-    sendMsg cmioExtensionPropertyAttributes (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionPropertyAttributes =
+  sendOwnedMessage cmioExtensionPropertyAttributes initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionPropertyAttributes)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyAttributes"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | propertyAttributesWithMinValue:maxValue:validValues:readonly:
 --
@@ -80,8 +77,7 @@ propertyAttributesWithMinValue_maxValue_validValues_readOnly :: IsNSArray validV
 propertyAttributesWithMinValue_maxValue_validValues_readOnly minValue maxValue validValues readOnly =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyAttributes"
-    withObjCPtr validValues $ \raw_validValues ->
-      sendClassMsg cls' (mkSelector "propertyAttributesWithMinValue:maxValue:validValues:readOnly:") (retPtr retVoid) [argPtr (castPtr (unRawId minValue) :: Ptr ()), argPtr (castPtr (unRawId maxValue) :: Ptr ()), argPtr (castPtr raw_validValues :: Ptr ()), argCULong (if readOnly then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' propertyAttributesWithMinValue_maxValue_validValues_readOnlySelector minValue maxValue (toNSArray validValues) readOnly
 
 -- | propertyAttributesWithMinValue:maxValue:validValues:readonly:
 --
@@ -101,9 +97,8 @@ propertyAttributesWithMinValue_maxValue_validValues_readOnly minValue maxValue v
 --
 -- ObjC selector: @- initWithMinValue:maxValue:validValues:readOnly:@
 initWithMinValue_maxValue_validValues_readOnly :: (IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes, IsNSArray validValues) => cmioExtensionPropertyAttributes -> RawId -> RawId -> validValues -> Bool -> IO (Id CMIOExtensionPropertyAttributes)
-initWithMinValue_maxValue_validValues_readOnly cmioExtensionPropertyAttributes  minValue maxValue validValues readOnly =
-  withObjCPtr validValues $ \raw_validValues ->
-      sendMsg cmioExtensionPropertyAttributes (mkSelector "initWithMinValue:maxValue:validValues:readOnly:") (retPtr retVoid) [argPtr (castPtr (unRawId minValue) :: Ptr ()), argPtr (castPtr (unRawId maxValue) :: Ptr ()), argPtr (castPtr raw_validValues :: Ptr ()), argCULong (if readOnly then 1 else 0)] >>= ownedObject . castPtr
+initWithMinValue_maxValue_validValues_readOnly cmioExtensionPropertyAttributes minValue maxValue validValues readOnly =
+  sendOwnedMessage cmioExtensionPropertyAttributes initWithMinValue_maxValue_validValues_readOnlySelector minValue maxValue (toNSArray validValues) readOnly
 
 -- | readOnlyPropertyAttribute
 --
@@ -114,7 +109,7 @@ readOnlyPropertyAttribute :: IO (Id CMIOExtensionPropertyAttributes)
 readOnlyPropertyAttribute  =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyAttributes"
-    sendClassMsg cls' (mkSelector "readOnlyPropertyAttribute") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' readOnlyPropertyAttributeSelector
 
 -- | minValue
 --
@@ -122,8 +117,8 @@ readOnlyPropertyAttribute  =
 --
 -- ObjC selector: @- minValue@
 minValue :: IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes => cmioExtensionPropertyAttributes -> IO RawId
-minValue cmioExtensionPropertyAttributes  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionPropertyAttributes (mkSelector "minValue") (retPtr retVoid) []
+minValue cmioExtensionPropertyAttributes =
+  sendMessage cmioExtensionPropertyAttributes minValueSelector
 
 -- | maxValue
 --
@@ -131,8 +126,8 @@ minValue cmioExtensionPropertyAttributes  =
 --
 -- ObjC selector: @- maxValue@
 maxValue :: IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes => cmioExtensionPropertyAttributes -> IO RawId
-maxValue cmioExtensionPropertyAttributes  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionPropertyAttributes (mkSelector "maxValue") (retPtr retVoid) []
+maxValue cmioExtensionPropertyAttributes =
+  sendMessage cmioExtensionPropertyAttributes maxValueSelector
 
 -- | validValues
 --
@@ -140,8 +135,8 @@ maxValue cmioExtensionPropertyAttributes  =
 --
 -- ObjC selector: @- validValues@
 validValues :: IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes => cmioExtensionPropertyAttributes -> IO (Id NSArray)
-validValues cmioExtensionPropertyAttributes  =
-    sendMsg cmioExtensionPropertyAttributes (mkSelector "validValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+validValues cmioExtensionPropertyAttributes =
+  sendMessage cmioExtensionPropertyAttributes validValuesSelector
 
 -- | readOnly
 --
@@ -149,46 +144,46 @@ validValues cmioExtensionPropertyAttributes  =
 --
 -- ObjC selector: @- readOnly@
 readOnly :: IsCMIOExtensionPropertyAttributes cmioExtensionPropertyAttributes => cmioExtensionPropertyAttributes -> IO Bool
-readOnly cmioExtensionPropertyAttributes  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmioExtensionPropertyAttributes (mkSelector "readOnly") retCULong []
+readOnly cmioExtensionPropertyAttributes =
+  sendMessage cmioExtensionPropertyAttributes readOnlySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionPropertyAttributes)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionPropertyAttributes)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @propertyAttributesWithMinValue:maxValue:validValues:readOnly:@
-propertyAttributesWithMinValue_maxValue_validValues_readOnlySelector :: Selector
+propertyAttributesWithMinValue_maxValue_validValues_readOnlySelector :: Selector '[RawId, RawId, Id NSArray, Bool] (Id CMIOExtensionPropertyAttributes)
 propertyAttributesWithMinValue_maxValue_validValues_readOnlySelector = mkSelector "propertyAttributesWithMinValue:maxValue:validValues:readOnly:"
 
 -- | @Selector@ for @initWithMinValue:maxValue:validValues:readOnly:@
-initWithMinValue_maxValue_validValues_readOnlySelector :: Selector
+initWithMinValue_maxValue_validValues_readOnlySelector :: Selector '[RawId, RawId, Id NSArray, Bool] (Id CMIOExtensionPropertyAttributes)
 initWithMinValue_maxValue_validValues_readOnlySelector = mkSelector "initWithMinValue:maxValue:validValues:readOnly:"
 
 -- | @Selector@ for @readOnlyPropertyAttribute@
-readOnlyPropertyAttributeSelector :: Selector
+readOnlyPropertyAttributeSelector :: Selector '[] (Id CMIOExtensionPropertyAttributes)
 readOnlyPropertyAttributeSelector = mkSelector "readOnlyPropertyAttribute"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] RawId
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] RawId
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @validValues@
-validValuesSelector :: Selector
+validValuesSelector :: Selector '[] (Id NSArray)
 validValuesSelector = mkSelector "validValues"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 

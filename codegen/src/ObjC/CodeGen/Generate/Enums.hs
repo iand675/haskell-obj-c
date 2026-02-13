@@ -91,6 +91,7 @@ enumsModuleHeader modName =
   [ "{-# LANGUAGE PatternSynonyms #-}"
   , "{-# LANGUAGE GeneralizedNewtypeDeriving #-}"
   , "{-# LANGUAGE DerivingStrategies #-}"
+  , "{-# LANGUAGE TypeFamilies #-}"
   , ""
   , "-- | Enum types for this framework."
   , "--"
@@ -103,6 +104,8 @@ enumsModuleImports =
   [ "import Data.Bits (Bits, FiniteBits, (.|.))"
   , "import Foreign.C.Types"
   , "import Foreign.Storable (Storable)"
+  , "import Foreign.LibFFI"
+  , "import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))"
   ]
 
 -- | Generate the newtype, instances, and pattern synonyms for one enum.
@@ -133,12 +136,56 @@ generateEnumDecls ed =
             ]
         | otherwise = []
       patternDecls = concatMap (generateEnumPattern name) (enumConstants ed)
+      msgInstances = generateEnumMsgInstances ed
   in concat
     [ docLines ++ headerComment
     , newtypeDecl
     , semigroupInst
     , patternDecls
+    , msgInstances
     ]
+
+-- | Generate @ObjCArgument@ and @ObjCReturn@ instances for an enum type.
+--
+-- These allow the enum to be used directly with @sendMessage@ and friends.
+generateEnumMsgInstances :: EnumDef -> [Text]
+generateEnumMsgInstances ed =
+  let name   = enumName ed
+      hsUnderlying = enumUnderlyingHsType ed
+      argFn  = enumArgFunction ed
+      retFn  = enumRetFunction ed
+      retFnTy = enumRetFunctionType ed
+      -- When the FFI return type matches the underlying Haskell type,
+      -- the conversion is direct.  Otherwise go through fromIntegral.
+      directConversion = retFnTy == hsUnderlying
+      -- ObjCArgument instance
+      argBody
+        | directConversion =
+            "  withObjCArg (" <> name <> " x) k = k (" <> argFn <> " x)"
+        | otherwise =
+            "  withObjCArg (" <> name <> " x) k = k (" <> argFn <> " (fromIntegral x))"
+      -- ObjCReturn instance
+      retFromBody
+        | directConversion =
+            "  fromRetained x = pure (" <> name <> " x)"
+        | otherwise =
+            "  fromRetained x = pure (" <> name <> " (fromIntegral x))"
+      retOwnBody
+        | directConversion =
+            "  fromOwned x = pure (" <> name <> " x)"
+        | otherwise =
+            "  fromOwned x = pure (" <> name <> " (fromIntegral x))"
+  in [ ""
+     , "instance ObjCArgument " <> name <> " where"
+     , argBody
+     , ""
+     , "instance ObjCReturn " <> name <> " where"
+     , "  type RawReturn " <> name <> " = " <> retFnTy
+     , "  objcRetType = " <> retFn
+     , "  msgSendVariant = MsgSendNormal"
+     , retFromBody
+     , retOwnBody
+     ]
 
 -- | Generate a single pattern synonym for an enum constant.
 generateEnumPattern :: Text -> EnumConstant -> [Text]

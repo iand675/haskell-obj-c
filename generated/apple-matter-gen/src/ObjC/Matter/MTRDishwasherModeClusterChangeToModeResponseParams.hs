@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTRDishwasherModeClusterChangeToModeResponseParams
   , statusText
   , setStatusText
   , initWithResponseValue_errorSelector
-  , statusSelector
   , setStatusSelector
-  , statusTextSelector
   , setStatusTextSelector
+  , statusSelector
+  , statusTextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,54 +40,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRDishwasherModeClusterChangeToModeResponseParams mtrDishwasherModeClusterChangeToModeResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrDishwasherModeClusterChangeToModeResponseParams -> responseValue -> error_ -> IO (Id MTRDishwasherModeClusterChangeToModeResponseParams)
-initWithResponseValue_error mtrDishwasherModeClusterChangeToModeResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDishwasherModeClusterChangeToModeResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrDishwasherModeClusterChangeToModeResponseParams responseValue error_ =
+  sendOwnedMessage mtrDishwasherModeClusterChangeToModeResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRDishwasherModeClusterChangeToModeResponseParams mtrDishwasherModeClusterChangeToModeResponseParams => mtrDishwasherModeClusterChangeToModeResponseParams -> IO (Id NSNumber)
-status mtrDishwasherModeClusterChangeToModeResponseParams  =
-    sendMsg mtrDishwasherModeClusterChangeToModeResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrDishwasherModeClusterChangeToModeResponseParams =
+  sendMessage mtrDishwasherModeClusterChangeToModeResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRDishwasherModeClusterChangeToModeResponseParams mtrDishwasherModeClusterChangeToModeResponseParams, IsNSNumber value) => mtrDishwasherModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatus mtrDishwasherModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDishwasherModeClusterChangeToModeResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrDishwasherModeClusterChangeToModeResponseParams value =
+  sendMessage mtrDishwasherModeClusterChangeToModeResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- statusText@
 statusText :: IsMTRDishwasherModeClusterChangeToModeResponseParams mtrDishwasherModeClusterChangeToModeResponseParams => mtrDishwasherModeClusterChangeToModeResponseParams -> IO (Id NSString)
-statusText mtrDishwasherModeClusterChangeToModeResponseParams  =
-    sendMsg mtrDishwasherModeClusterChangeToModeResponseParams (mkSelector "statusText") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusText mtrDishwasherModeClusterChangeToModeResponseParams =
+  sendMessage mtrDishwasherModeClusterChangeToModeResponseParams statusTextSelector
 
 -- | @- setStatusText:@
 setStatusText :: (IsMTRDishwasherModeClusterChangeToModeResponseParams mtrDishwasherModeClusterChangeToModeResponseParams, IsNSString value) => mtrDishwasherModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatusText mtrDishwasherModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDishwasherModeClusterChangeToModeResponseParams (mkSelector "setStatusText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusText mtrDishwasherModeClusterChangeToModeResponseParams value =
+  sendMessage mtrDishwasherModeClusterChangeToModeResponseParams setStatusTextSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRDishwasherModeClusterChangeToModeResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @statusText@
-statusTextSelector :: Selector
+statusTextSelector :: Selector '[] (Id NSString)
 statusTextSelector = mkSelector "statusText"
 
 -- | @Selector@ for @setStatusText:@
-setStatusTextSelector :: Selector
+setStatusTextSelector :: Selector '[Id NSString] ()
 setStatusTextSelector = mkSelector "setStatusText:"
 

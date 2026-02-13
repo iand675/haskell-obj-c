@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INSetCarLockStatusIntent
   , initWithLocked_carName
   , locked
   , carName
+  , carNameSelector
   , initWithLocked_carNameSelector
   , lockedSelector
-  , carNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLocked:carName:@
 initWithLocked_carName :: (IsINSetCarLockStatusIntent inSetCarLockStatusIntent, IsNSNumber locked, IsINSpeakableString carName) => inSetCarLockStatusIntent -> locked -> carName -> IO (Id INSetCarLockStatusIntent)
-initWithLocked_carName inSetCarLockStatusIntent  locked carName =
-  withObjCPtr locked $ \raw_locked ->
-    withObjCPtr carName $ \raw_carName ->
-        sendMsg inSetCarLockStatusIntent (mkSelector "initWithLocked:carName:") (retPtr retVoid) [argPtr (castPtr raw_locked :: Ptr ()), argPtr (castPtr raw_carName :: Ptr ())] >>= ownedObject . castPtr
+initWithLocked_carName inSetCarLockStatusIntent locked carName =
+  sendOwnedMessage inSetCarLockStatusIntent initWithLocked_carNameSelector (toNSNumber locked) (toINSpeakableString carName)
 
 -- | @- locked@
 locked :: IsINSetCarLockStatusIntent inSetCarLockStatusIntent => inSetCarLockStatusIntent -> IO (Id NSNumber)
-locked inSetCarLockStatusIntent  =
-    sendMsg inSetCarLockStatusIntent (mkSelector "locked") (retPtr retVoid) [] >>= retainedObject . castPtr
+locked inSetCarLockStatusIntent =
+  sendMessage inSetCarLockStatusIntent lockedSelector
 
 -- | @- carName@
 carName :: IsINSetCarLockStatusIntent inSetCarLockStatusIntent => inSetCarLockStatusIntent -> IO (Id INSpeakableString)
-carName inSetCarLockStatusIntent  =
-    sendMsg inSetCarLockStatusIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
+carName inSetCarLockStatusIntent =
+  sendMessage inSetCarLockStatusIntent carNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLocked:carName:@
-initWithLocked_carNameSelector :: Selector
+initWithLocked_carNameSelector :: Selector '[Id NSNumber, Id INSpeakableString] (Id INSetCarLockStatusIntent)
 initWithLocked_carNameSelector = mkSelector "initWithLocked:carName:"
 
 -- | @Selector@ for @locked@
-lockedSelector :: Selector
+lockedSelector :: Selector '[] (Id NSNumber)
 lockedSelector = mkSelector "locked"
 
 -- | @Selector@ for @carName@
-carNameSelector :: Selector
+carNameSelector :: Selector '[] (Id INSpeakableString)
 carNameSelector = mkSelector "carName"
 

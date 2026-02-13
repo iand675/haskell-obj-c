@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | PGPhysicalMemoryRange_t
 --
@@ -39,3 +41,13 @@ argPGPhysicalMemoryRange_t = mkStorableArg pgPhysicalMemoryRange_tStructType
 
 retPGPhysicalMemoryRange_t :: RetType PGPhysicalMemoryRange_t
 retPGPhysicalMemoryRange_t = mkStorableRetType pgPhysicalMemoryRange_tStructType
+
+instance ObjCArgument PGPhysicalMemoryRange_t where
+  withObjCArg x k = k (argPGPhysicalMemoryRange_t x)
+
+instance ObjCReturn PGPhysicalMemoryRange_t where
+  type RawReturn PGPhysicalMemoryRange_t = PGPhysicalMemoryRange_t
+  objcRetType = retPGPhysicalMemoryRange_t
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

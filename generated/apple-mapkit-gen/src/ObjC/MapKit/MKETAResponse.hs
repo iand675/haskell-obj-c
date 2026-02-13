@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,12 +15,12 @@ module ObjC.MapKit.MKETAResponse
   , expectedArrivalDate
   , expectedDepartureDate
   , transportType
-  , sourceSelector
   , destinationSelector
-  , expectedTravelTimeSelector
   , distanceSelector
   , expectedArrivalDateSelector
   , expectedDepartureDateSelector
+  , expectedTravelTimeSelector
+  , sourceSelector
   , transportTypeSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.MapKit.MKETAResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,68 +47,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- source@
 source :: IsMKETAResponse mketaResponse => mketaResponse -> IO (Id MKMapItem)
-source mketaResponse  =
-    sendMsg mketaResponse (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source mketaResponse =
+  sendMessage mketaResponse sourceSelector
 
 -- | @- destination@
 destination :: IsMKETAResponse mketaResponse => mketaResponse -> IO (Id MKMapItem)
-destination mketaResponse  =
-    sendMsg mketaResponse (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination mketaResponse =
+  sendMessage mketaResponse destinationSelector
 
 -- | @- expectedTravelTime@
 expectedTravelTime :: IsMKETAResponse mketaResponse => mketaResponse -> IO CDouble
-expectedTravelTime mketaResponse  =
-    sendMsg mketaResponse (mkSelector "expectedTravelTime") retCDouble []
+expectedTravelTime mketaResponse =
+  sendMessage mketaResponse expectedTravelTimeSelector
 
 -- | @- distance@
 distance :: IsMKETAResponse mketaResponse => mketaResponse -> IO CDouble
-distance mketaResponse  =
-    sendMsg mketaResponse (mkSelector "distance") retCDouble []
+distance mketaResponse =
+  sendMessage mketaResponse distanceSelector
 
 -- | @- expectedArrivalDate@
 expectedArrivalDate :: IsMKETAResponse mketaResponse => mketaResponse -> IO RawId
-expectedArrivalDate mketaResponse  =
-    fmap (RawId . castPtr) $ sendMsg mketaResponse (mkSelector "expectedArrivalDate") (retPtr retVoid) []
+expectedArrivalDate mketaResponse =
+  sendMessage mketaResponse expectedArrivalDateSelector
 
 -- | @- expectedDepartureDate@
 expectedDepartureDate :: IsMKETAResponse mketaResponse => mketaResponse -> IO RawId
-expectedDepartureDate mketaResponse  =
-    fmap (RawId . castPtr) $ sendMsg mketaResponse (mkSelector "expectedDepartureDate") (retPtr retVoid) []
+expectedDepartureDate mketaResponse =
+  sendMessage mketaResponse expectedDepartureDateSelector
 
 -- | @- transportType@
 transportType :: IsMKETAResponse mketaResponse => mketaResponse -> IO MKDirectionsTransportType
-transportType mketaResponse  =
-    fmap (coerce :: CULong -> MKDirectionsTransportType) $ sendMsg mketaResponse (mkSelector "transportType") retCULong []
+transportType mketaResponse =
+  sendMessage mketaResponse transportTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id MKMapItem)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id MKMapItem)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @expectedTravelTime@
-expectedTravelTimeSelector :: Selector
+expectedTravelTimeSelector :: Selector '[] CDouble
 expectedTravelTimeSelector = mkSelector "expectedTravelTime"
 
 -- | @Selector@ for @distance@
-distanceSelector :: Selector
+distanceSelector :: Selector '[] CDouble
 distanceSelector = mkSelector "distance"
 
 -- | @Selector@ for @expectedArrivalDate@
-expectedArrivalDateSelector :: Selector
+expectedArrivalDateSelector :: Selector '[] RawId
 expectedArrivalDateSelector = mkSelector "expectedArrivalDate"
 
 -- | @Selector@ for @expectedDepartureDate@
-expectedDepartureDateSelector :: Selector
+expectedDepartureDateSelector :: Selector '[] RawId
 expectedDepartureDateSelector = mkSelector "expectedDepartureDate"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] MKDirectionsTransportType
 transportTypeSelector = mkSelector "transportType"
 

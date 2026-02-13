@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.QuartzCore.CAPropertyAnimation
   , setCumulative
   , valueFunction
   , setValueFunction
-  , animationWithKeyPathSelector
-  , keyPathSelector
-  , setKeyPathSelector
   , additiveSelector
-  , setAdditiveSelector
+  , animationWithKeyPathSelector
   , cumulativeSelector
+  , keyPathSelector
+  , setAdditiveSelector
   , setCumulativeSelector
-  , valueFunctionSelector
+  , setKeyPathSelector
   , setValueFunctionSelector
+  , valueFunctionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,88 +47,85 @@ animationWithKeyPath :: IsNSString path => path -> IO (Id CAPropertyAnimation)
 animationWithKeyPath path =
   do
     cls' <- getRequiredClass "CAPropertyAnimation"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "animationWithKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animationWithKeyPathSelector (toNSString path)
 
 -- | @- keyPath@
 keyPath :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> IO (Id NSString)
-keyPath caPropertyAnimation  =
-    sendMsg caPropertyAnimation (mkSelector "keyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyPath caPropertyAnimation =
+  sendMessage caPropertyAnimation keyPathSelector
 
 -- | @- setKeyPath:@
 setKeyPath :: (IsCAPropertyAnimation caPropertyAnimation, IsNSString value) => caPropertyAnimation -> value -> IO ()
-setKeyPath caPropertyAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caPropertyAnimation (mkSelector "setKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyPath caPropertyAnimation value =
+  sendMessage caPropertyAnimation setKeyPathSelector (toNSString value)
 
 -- | @- additive@
 additive :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> IO Bool
-additive caPropertyAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caPropertyAnimation (mkSelector "additive") retCULong []
+additive caPropertyAnimation =
+  sendMessage caPropertyAnimation additiveSelector
 
 -- | @- setAdditive:@
 setAdditive :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> Bool -> IO ()
-setAdditive caPropertyAnimation  value =
-    sendMsg caPropertyAnimation (mkSelector "setAdditive:") retVoid [argCULong (if value then 1 else 0)]
+setAdditive caPropertyAnimation value =
+  sendMessage caPropertyAnimation setAdditiveSelector value
 
 -- | @- cumulative@
 cumulative :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> IO Bool
-cumulative caPropertyAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caPropertyAnimation (mkSelector "cumulative") retCULong []
+cumulative caPropertyAnimation =
+  sendMessage caPropertyAnimation cumulativeSelector
 
 -- | @- setCumulative:@
 setCumulative :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> Bool -> IO ()
-setCumulative caPropertyAnimation  value =
-    sendMsg caPropertyAnimation (mkSelector "setCumulative:") retVoid [argCULong (if value then 1 else 0)]
+setCumulative caPropertyAnimation value =
+  sendMessage caPropertyAnimation setCumulativeSelector value
 
 -- | @- valueFunction@
 valueFunction :: IsCAPropertyAnimation caPropertyAnimation => caPropertyAnimation -> IO (Id CAValueFunction)
-valueFunction caPropertyAnimation  =
-    sendMsg caPropertyAnimation (mkSelector "valueFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueFunction caPropertyAnimation =
+  sendMessage caPropertyAnimation valueFunctionSelector
 
 -- | @- setValueFunction:@
 setValueFunction :: (IsCAPropertyAnimation caPropertyAnimation, IsCAValueFunction value) => caPropertyAnimation -> value -> IO ()
-setValueFunction caPropertyAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caPropertyAnimation (mkSelector "setValueFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueFunction caPropertyAnimation value =
+  sendMessage caPropertyAnimation setValueFunctionSelector (toCAValueFunction value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @animationWithKeyPath:@
-animationWithKeyPathSelector :: Selector
+animationWithKeyPathSelector :: Selector '[Id NSString] (Id CAPropertyAnimation)
 animationWithKeyPathSelector = mkSelector "animationWithKeyPath:"
 
 -- | @Selector@ for @keyPath@
-keyPathSelector :: Selector
+keyPathSelector :: Selector '[] (Id NSString)
 keyPathSelector = mkSelector "keyPath"
 
 -- | @Selector@ for @setKeyPath:@
-setKeyPathSelector :: Selector
+setKeyPathSelector :: Selector '[Id NSString] ()
 setKeyPathSelector = mkSelector "setKeyPath:"
 
 -- | @Selector@ for @additive@
-additiveSelector :: Selector
+additiveSelector :: Selector '[] Bool
 additiveSelector = mkSelector "additive"
 
 -- | @Selector@ for @setAdditive:@
-setAdditiveSelector :: Selector
+setAdditiveSelector :: Selector '[Bool] ()
 setAdditiveSelector = mkSelector "setAdditive:"
 
 -- | @Selector@ for @cumulative@
-cumulativeSelector :: Selector
+cumulativeSelector :: Selector '[] Bool
 cumulativeSelector = mkSelector "cumulative"
 
 -- | @Selector@ for @setCumulative:@
-setCumulativeSelector :: Selector
+setCumulativeSelector :: Selector '[Bool] ()
 setCumulativeSelector = mkSelector "setCumulative:"
 
 -- | @Selector@ for @valueFunction@
-valueFunctionSelector :: Selector
+valueFunctionSelector :: Selector '[] (Id CAValueFunction)
 valueFunctionSelector = mkSelector "valueFunction"
 
 -- | @Selector@ for @setValueFunction:@
-setValueFunctionSelector :: Selector
+setValueFunctionSelector :: Selector '[Id CAValueFunction] ()
 setValueFunctionSelector = mkSelector "setValueFunction:"
 

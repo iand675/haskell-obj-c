@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,23 +41,23 @@ module ObjC.CoreML.MLMultiArray
   , strides
   , count
   , pixelBuffer
-  , transferToMultiArraySelector
-  , objectAtIndexedSubscriptSelector
-  , objectForKeyedSubscriptSelector
-  , setObject_atIndexedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector
-  , getBytesWithHandlerSelector
-  , initWithShape_dataType_errorSelector
-  , initWithShape_dataType_stridesSelector
-  , initWithDataPointer_shape_dataType_strides_deallocator_errorSelector
-  , initWithPixelBuffer_shapeSelector
+  , countSelector
   , dataPointerSelector
   , dataTypeSelector
+  , getBytesWithHandlerSelector
+  , initWithDataPointer_shape_dataType_strides_deallocator_errorSelector
+  , initWithPixelBuffer_shapeSelector
+  , initWithShape_dataType_errorSelector
+  , initWithShape_dataType_stridesSelector
+  , multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector
+  , objectAtIndexedSubscriptSelector
+  , objectForKeyedSubscriptSelector
+  , pixelBufferSelector
+  , setObject_atIndexedSubscriptSelector
+  , setObject_forKeyedSubscriptSelector
   , shapeSelector
   , stridesSelector
-  , countSelector
-  , pixelBufferSelector
+  , transferToMultiArraySelector
 
   -- * Enum types
   , MLMultiArrayDataType(MLMultiArrayDataType)
@@ -70,15 +71,11 @@ module ObjC.CoreML.MLMultiArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,41 +99,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- transferToMultiArray:@
 transferToMultiArray :: (IsMLMultiArray mlMultiArray, IsMLMultiArray destinationMultiArray) => mlMultiArray -> destinationMultiArray -> IO ()
-transferToMultiArray mlMultiArray  destinationMultiArray =
-  withObjCPtr destinationMultiArray $ \raw_destinationMultiArray ->
-      sendMsg mlMultiArray (mkSelector "transferToMultiArray:") retVoid [argPtr (castPtr raw_destinationMultiArray :: Ptr ())]
+transferToMultiArray mlMultiArray destinationMultiArray =
+  sendMessage mlMultiArray transferToMultiArraySelector (toMLMultiArray destinationMultiArray)
 
 -- | Get a value by its linear index (assumes C-style index ordering)
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMLMultiArray mlMultiArray => mlMultiArray -> CLong -> IO (Id NSNumber)
-objectAtIndexedSubscript mlMultiArray  idx =
-    sendMsg mlMultiArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCLong idx] >>= retainedObject . castPtr
+objectAtIndexedSubscript mlMultiArray idx =
+  sendMessage mlMultiArray objectAtIndexedSubscriptSelector idx
 
 -- | Get a value by its multidimensional index (NSArray<NSNumber *>)
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsMLMultiArray mlMultiArray, IsNSArray key) => mlMultiArray -> key -> IO (Id NSNumber)
-objectForKeyedSubscript mlMultiArray  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg mlMultiArray (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript mlMultiArray key =
+  sendMessage mlMultiArray objectForKeyedSubscriptSelector (toNSArray key)
 
 -- | Set a value by its linear index (assumes C-style index ordering)
 --
 -- ObjC selector: @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsMLMultiArray mlMultiArray, IsNSNumber obj_) => mlMultiArray -> obj_ -> CLong -> IO ()
-setObject_atIndexedSubscript mlMultiArray  obj_ idx =
-  withObjCPtr obj_ $ \raw_obj_ ->
-      sendMsg mlMultiArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_obj_ :: Ptr ()), argCLong idx]
+setObject_atIndexedSubscript mlMultiArray obj_ idx =
+  sendMessage mlMultiArray setObject_atIndexedSubscriptSelector (toNSNumber obj_) idx
 
 -- | Set a value by subindicies (NSArray<NSNumber *>)
 --
 -- ObjC selector: @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: (IsMLMultiArray mlMultiArray, IsNSNumber obj_, IsNSArray key) => mlMultiArray -> obj_ -> key -> IO ()
-setObject_forKeyedSubscript mlMultiArray  obj_ key =
-  withObjCPtr obj_ $ \raw_obj_ ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg mlMultiArray (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr raw_obj_ :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setObject_forKeyedSubscript mlMultiArray obj_ key =
+  sendMessage mlMultiArray setObject_forKeyedSubscriptSelector (toNSNumber obj_) (toNSArray key)
 
 -- | Concatenate MLMultiArrays to form a new MLMultiArray.
 --
@@ -159,8 +151,7 @@ multiArrayByConcatenatingMultiArrays_alongAxis_dataType :: IsNSArray multiArrays
 multiArrayByConcatenatingMultiArrays_alongAxis_dataType multiArrays axis dataType =
   do
     cls' <- getRequiredClass "MLMultiArray"
-    withObjCPtr multiArrays $ \raw_multiArrays ->
-      sendClassMsg cls' (mkSelector "multiArrayByConcatenatingMultiArrays:alongAxis:dataType:") (retPtr retVoid) [argPtr (castPtr raw_multiArrays :: Ptr ()), argCLong axis, argCLong (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector (toNSArray multiArrays) axis dataType
 
 -- | Get the underlying buffer pointer to read.
 --
@@ -170,8 +161,8 @@ multiArrayByConcatenatingMultiArrays_alongAxis_dataType multiArrays axis dataTyp
 --
 -- ObjC selector: @- getBytesWithHandler:@
 getBytesWithHandler :: IsMLMultiArray mlMultiArray => mlMultiArray -> Ptr () -> IO ()
-getBytesWithHandler mlMultiArray  handler =
-    sendMsg mlMultiArray (mkSelector "getBytesWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+getBytesWithHandler mlMultiArray handler =
+  sendMessage mlMultiArray getBytesWithHandlerSelector handler
 
 -- | Creates the object.
 --
@@ -183,10 +174,8 @@ getBytesWithHandler mlMultiArray  handler =
 --
 -- ObjC selector: @- initWithShape:dataType:error:@
 initWithShape_dataType_error :: (IsMLMultiArray mlMultiArray, IsNSArray shape, IsNSError error_) => mlMultiArray -> shape -> MLMultiArrayDataType -> error_ -> IO (Id MLMultiArray)
-initWithShape_dataType_error mlMultiArray  shape dataType error_ =
-  withObjCPtr shape $ \raw_shape ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mlMultiArray (mkSelector "initWithShape:dataType:error:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argCLong (coerce dataType), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithShape_dataType_error mlMultiArray shape dataType error_ =
+  sendOwnedMessage mlMultiArray initWithShape_dataType_errorSelector (toNSArray shape) dataType (toNSError error_)
 
 -- | Creates the object with specified strides.
 --
@@ -204,10 +193,8 @@ initWithShape_dataType_error mlMultiArray  shape dataType error_ =
 --
 -- ObjC selector: @- initWithShape:dataType:strides:@
 initWithShape_dataType_strides :: (IsMLMultiArray mlMultiArray, IsNSArray shape, IsNSArray strides) => mlMultiArray -> shape -> MLMultiArrayDataType -> strides -> IO (Id MLMultiArray)
-initWithShape_dataType_strides mlMultiArray  shape dataType strides =
-  withObjCPtr shape $ \raw_shape ->
-    withObjCPtr strides $ \raw_strides ->
-        sendMsg mlMultiArray (mkSelector "initWithShape:dataType:strides:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argCLong (coerce dataType), argPtr (castPtr raw_strides :: Ptr ())] >>= ownedObject . castPtr
+initWithShape_dataType_strides mlMultiArray shape dataType strides =
+  sendOwnedMessage mlMultiArray initWithShape_dataType_stridesSelector (toNSArray shape) dataType (toNSArray strides)
 
 -- | Creates the object with existing data without copy.
 --
@@ -219,11 +206,8 @@ initWithShape_dataType_strides mlMultiArray  shape dataType strides =
 --
 -- ObjC selector: @- initWithDataPointer:shape:dataType:strides:deallocator:error:@
 initWithDataPointer_shape_dataType_strides_deallocator_error :: (IsMLMultiArray mlMultiArray, IsNSArray shape, IsNSArray strides, IsNSError error_) => mlMultiArray -> Ptr () -> shape -> MLMultiArrayDataType -> strides -> Ptr () -> error_ -> IO (Id MLMultiArray)
-initWithDataPointer_shape_dataType_strides_deallocator_error mlMultiArray  dataPointer shape dataType strides deallocator error_ =
-  withObjCPtr shape $ \raw_shape ->
-    withObjCPtr strides $ \raw_strides ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg mlMultiArray (mkSelector "initWithDataPointer:shape:dataType:strides:deallocator:error:") (retPtr retVoid) [argPtr dataPointer, argPtr (castPtr raw_shape :: Ptr ()), argCLong (coerce dataType), argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr deallocator :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithDataPointer_shape_dataType_strides_deallocator_error mlMultiArray dataPointer shape dataType strides deallocator error_ =
+  sendOwnedMessage mlMultiArray initWithDataPointer_shape_dataType_strides_deallocator_errorSelector dataPointer (toNSArray shape) dataType (toNSArray strides) deallocator (toNSError error_)
 
 -- | Create by wrapping a pixel buffer.
 --
@@ -241,30 +225,29 @@ initWithDataPointer_shape_dataType_strides_deallocator_error mlMultiArray  dataP
 --
 -- ObjC selector: @- initWithPixelBuffer:shape:@
 initWithPixelBuffer_shape :: (IsMLMultiArray mlMultiArray, IsNSArray shape) => mlMultiArray -> Ptr () -> shape -> IO (Id MLMultiArray)
-initWithPixelBuffer_shape mlMultiArray  pixelBuffer shape =
-  withObjCPtr shape $ \raw_shape ->
-      sendMsg mlMultiArray (mkSelector "initWithPixelBuffer:shape:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_shape :: Ptr ())] >>= ownedObject . castPtr
+initWithPixelBuffer_shape mlMultiArray pixelBuffer shape =
+  sendOwnedMessage mlMultiArray initWithPixelBuffer_shapeSelector pixelBuffer (toNSArray shape)
 
 -- | Unsafe pointer to underlying buffer holding the data
 --
 -- ObjC selector: @- dataPointer@
 dataPointer :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO (Ptr ())
-dataPointer mlMultiArray  =
-    fmap castPtr $ sendMsg mlMultiArray (mkSelector "dataPointer") (retPtr retVoid) []
+dataPointer mlMultiArray =
+  sendMessage mlMultiArray dataPointerSelector
 
 -- | Scalar's data type.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO MLMultiArrayDataType
-dataType mlMultiArray  =
-    fmap (coerce :: CLong -> MLMultiArrayDataType) $ sendMsg mlMultiArray (mkSelector "dataType") retCLong []
+dataType mlMultiArray =
+  sendMessage mlMultiArray dataTypeSelector
 
 -- | Shape of the multi-dimensional space that this instance represents.
 --
 -- ObjC selector: @- shape@
 shape :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO (Id NSArray)
-shape mlMultiArray  =
-    sendMsg mlMultiArray (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape mlMultiArray =
+  sendMessage mlMultiArray shapeSelector
 
 -- | Strides.
 --
@@ -272,8 +255,8 @@ shape mlMultiArray  =
 --
 -- ObjC selector: @- strides@
 strides :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO (Id NSArray)
-strides mlMultiArray  =
-    sendMsg mlMultiArray (mkSelector "strides") (retPtr retVoid) [] >>= retainedObject . castPtr
+strides mlMultiArray =
+  sendMessage mlMultiArray stridesSelector
 
 -- | Count of total number of addressable scalars.
 --
@@ -281,85 +264,85 @@ strides mlMultiArray  =
 --
 -- ObjC selector: @- count@
 count :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO CLong
-count mlMultiArray  =
-    sendMsg mlMultiArray (mkSelector "count") retCLong []
+count mlMultiArray =
+  sendMessage mlMultiArray countSelector
 
 -- | Returns the backing pixel buffer if exists, otherwise nil.
 --
 -- ObjC selector: @- pixelBuffer@
 pixelBuffer :: IsMLMultiArray mlMultiArray => mlMultiArray -> IO (Ptr ())
-pixelBuffer mlMultiArray  =
-    fmap castPtr $ sendMsg mlMultiArray (mkSelector "pixelBuffer") (retPtr retVoid) []
+pixelBuffer mlMultiArray =
+  sendMessage mlMultiArray pixelBufferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transferToMultiArray:@
-transferToMultiArraySelector :: Selector
+transferToMultiArraySelector :: Selector '[Id MLMultiArray] ()
 transferToMultiArraySelector = mkSelector "transferToMultiArray:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CLong] (Id NSNumber)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSArray] (Id NSNumber)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id NSNumber, CLong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[Id NSNumber, Id NSArray] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @multiArrayByConcatenatingMultiArrays:alongAxis:dataType:@
-multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector :: Selector
+multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector :: Selector '[Id NSArray, CLong, MLMultiArrayDataType] (Id MLMultiArray)
 multiArrayByConcatenatingMultiArrays_alongAxis_dataTypeSelector = mkSelector "multiArrayByConcatenatingMultiArrays:alongAxis:dataType:"
 
 -- | @Selector@ for @getBytesWithHandler:@
-getBytesWithHandlerSelector :: Selector
+getBytesWithHandlerSelector :: Selector '[Ptr ()] ()
 getBytesWithHandlerSelector = mkSelector "getBytesWithHandler:"
 
 -- | @Selector@ for @initWithShape:dataType:error:@
-initWithShape_dataType_errorSelector :: Selector
+initWithShape_dataType_errorSelector :: Selector '[Id NSArray, MLMultiArrayDataType, Id NSError] (Id MLMultiArray)
 initWithShape_dataType_errorSelector = mkSelector "initWithShape:dataType:error:"
 
 -- | @Selector@ for @initWithShape:dataType:strides:@
-initWithShape_dataType_stridesSelector :: Selector
+initWithShape_dataType_stridesSelector :: Selector '[Id NSArray, MLMultiArrayDataType, Id NSArray] (Id MLMultiArray)
 initWithShape_dataType_stridesSelector = mkSelector "initWithShape:dataType:strides:"
 
 -- | @Selector@ for @initWithDataPointer:shape:dataType:strides:deallocator:error:@
-initWithDataPointer_shape_dataType_strides_deallocator_errorSelector :: Selector
+initWithDataPointer_shape_dataType_strides_deallocator_errorSelector :: Selector '[Ptr (), Id NSArray, MLMultiArrayDataType, Id NSArray, Ptr (), Id NSError] (Id MLMultiArray)
 initWithDataPointer_shape_dataType_strides_deallocator_errorSelector = mkSelector "initWithDataPointer:shape:dataType:strides:deallocator:error:"
 
 -- | @Selector@ for @initWithPixelBuffer:shape:@
-initWithPixelBuffer_shapeSelector :: Selector
+initWithPixelBuffer_shapeSelector :: Selector '[Ptr (), Id NSArray] (Id MLMultiArray)
 initWithPixelBuffer_shapeSelector = mkSelector "initWithPixelBuffer:shape:"
 
 -- | @Selector@ for @dataPointer@
-dataPointerSelector :: Selector
+dataPointerSelector :: Selector '[] (Ptr ())
 dataPointerSelector = mkSelector "dataPointer"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MLMultiArrayDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSArray)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @strides@
-stridesSelector :: Selector
+stridesSelector :: Selector '[] (Id NSArray)
 stridesSelector = mkSelector "strides"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CLong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @pixelBuffer@
-pixelBufferSelector :: Selector
+pixelBufferSelector :: Selector '[] (Ptr ())
 pixelBufferSelector = mkSelector "pixelBuffer"
 

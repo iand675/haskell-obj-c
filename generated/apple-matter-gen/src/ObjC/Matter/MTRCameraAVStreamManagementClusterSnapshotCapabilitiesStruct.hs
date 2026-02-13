@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct
   , setRequiresEncodedPixels
   , requiresHardwareEncoder
   , setRequiresHardwareEncoder
-  , resolutionSelector
-  , setResolutionSelector
-  , maxFrameRateSelector
-  , setMaxFrameRateSelector
   , imageCodecSelector
-  , setImageCodecSelector
+  , maxFrameRateSelector
   , requiresEncodedPixelsSelector
-  , setRequiresEncodedPixelsSelector
   , requiresHardwareEncoderSelector
+  , resolutionSelector
+  , setImageCodecSelector
+  , setMaxFrameRateSelector
+  , setRequiresEncodedPixelsSelector
   , setRequiresHardwareEncoderSelector
+  , setResolutionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- resolution@
 resolution :: IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> IO (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
-resolution mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "resolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolution mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct resolutionSelector
 
 -- | @- setResolution:@
 setResolution :: (IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct, IsMTRCameraAVStreamManagementClusterVideoResolutionStruct value) => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> value -> IO ()
-setResolution mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "setResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResolution mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct setResolutionSelector (toMTRCameraAVStreamManagementClusterVideoResolutionStruct value)
 
 -- | @- maxFrameRate@
 maxFrameRate :: IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> IO (Id NSNumber)
-maxFrameRate mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "maxFrameRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxFrameRate mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct maxFrameRateSelector
 
 -- | @- setMaxFrameRate:@
 setMaxFrameRate :: (IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> value -> IO ()
-setMaxFrameRate mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "setMaxFrameRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxFrameRate mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct setMaxFrameRateSelector (toNSNumber value)
 
 -- | @- imageCodec@
 imageCodec :: IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> IO (Id NSNumber)
-imageCodec mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "imageCodec") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageCodec mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct imageCodecSelector
 
 -- | @- setImageCodec:@
 setImageCodec :: (IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> value -> IO ()
-setImageCodec mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "setImageCodec:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageCodec mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct setImageCodecSelector (toNSNumber value)
 
 -- | @- requiresEncodedPixels@
 requiresEncodedPixels :: IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> IO (Id NSNumber)
-requiresEncodedPixels mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "requiresEncodedPixels") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiresEncodedPixels mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct requiresEncodedPixelsSelector
 
 -- | @- setRequiresEncodedPixels:@
 setRequiresEncodedPixels :: (IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> value -> IO ()
-setRequiresEncodedPixels mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "setRequiresEncodedPixels:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiresEncodedPixels mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct setRequiresEncodedPixelsSelector (toNSNumber value)
 
 -- | @- requiresHardwareEncoder@
 requiresHardwareEncoder :: IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> IO (Id NSNumber)
-requiresHardwareEncoder mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "requiresHardwareEncoder") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiresHardwareEncoder mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct requiresHardwareEncoderSelector
 
 -- | @- setRequiresHardwareEncoder:@
 setRequiresHardwareEncoder :: (IsMTRCameraAVStreamManagementClusterSnapshotCapabilitiesStruct mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct -> value -> IO ()
-setRequiresHardwareEncoder mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct (mkSelector "setRequiresHardwareEncoder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiresHardwareEncoder mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotCapabilitiesStruct setRequiresHardwareEncoderSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resolution@
-resolutionSelector :: Selector
+resolutionSelector :: Selector '[] (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
 resolutionSelector = mkSelector "resolution"
 
 -- | @Selector@ for @setResolution:@
-setResolutionSelector :: Selector
+setResolutionSelector :: Selector '[Id MTRCameraAVStreamManagementClusterVideoResolutionStruct] ()
 setResolutionSelector = mkSelector "setResolution:"
 
 -- | @Selector@ for @maxFrameRate@
-maxFrameRateSelector :: Selector
+maxFrameRateSelector :: Selector '[] (Id NSNumber)
 maxFrameRateSelector = mkSelector "maxFrameRate"
 
 -- | @Selector@ for @setMaxFrameRate:@
-setMaxFrameRateSelector :: Selector
+setMaxFrameRateSelector :: Selector '[Id NSNumber] ()
 setMaxFrameRateSelector = mkSelector "setMaxFrameRate:"
 
 -- | @Selector@ for @imageCodec@
-imageCodecSelector :: Selector
+imageCodecSelector :: Selector '[] (Id NSNumber)
 imageCodecSelector = mkSelector "imageCodec"
 
 -- | @Selector@ for @setImageCodec:@
-setImageCodecSelector :: Selector
+setImageCodecSelector :: Selector '[Id NSNumber] ()
 setImageCodecSelector = mkSelector "setImageCodec:"
 
 -- | @Selector@ for @requiresEncodedPixels@
-requiresEncodedPixelsSelector :: Selector
+requiresEncodedPixelsSelector :: Selector '[] (Id NSNumber)
 requiresEncodedPixelsSelector = mkSelector "requiresEncodedPixels"
 
 -- | @Selector@ for @setRequiresEncodedPixels:@
-setRequiresEncodedPixelsSelector :: Selector
+setRequiresEncodedPixelsSelector :: Selector '[Id NSNumber] ()
 setRequiresEncodedPixelsSelector = mkSelector "setRequiresEncodedPixels:"
 
 -- | @Selector@ for @requiresHardwareEncoder@
-requiresHardwareEncoderSelector :: Selector
+requiresHardwareEncoderSelector :: Selector '[] (Id NSNumber)
 requiresHardwareEncoderSelector = mkSelector "requiresHardwareEncoder"
 
 -- | @Selector@ for @setRequiresHardwareEncoder:@
-setRequiresHardwareEncoderSelector :: Selector
+setRequiresHardwareEncoderSelector :: Selector '[Id NSNumber] ()
 setRequiresHardwareEncoderSelector = mkSelector "setRequiresHardwareEncoder:"
 

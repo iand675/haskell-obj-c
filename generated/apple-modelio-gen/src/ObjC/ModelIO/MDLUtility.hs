@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.ModelIO.MDLUtility
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,15 +29,13 @@ convertToUSDZ_writeToURL :: (IsNSURL inputURL, IsNSURL outputURL) => inputURL ->
 convertToUSDZ_writeToURL inputURL outputURL =
   do
     cls' <- getRequiredClass "MDLUtility"
-    withObjCPtr inputURL $ \raw_inputURL ->
-      withObjCPtr outputURL $ \raw_outputURL ->
-        sendClassMsg cls' (mkSelector "convertToUSDZ:writeToURL:") retVoid [argPtr (castPtr raw_inputURL :: Ptr ()), argPtr (castPtr raw_outputURL :: Ptr ())]
+    sendClassMessage cls' convertToUSDZ_writeToURLSelector (toNSURL inputURL) (toNSURL outputURL)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @convertToUSDZ:writeToURL:@
-convertToUSDZ_writeToURLSelector :: Selector
+convertToUSDZ_writeToURLSelector :: Selector '[Id NSURL, Id NSURL] ()
 convertToUSDZ_writeToURLSelector = mkSelector "convertToUSDZ:writeToURL:"
 

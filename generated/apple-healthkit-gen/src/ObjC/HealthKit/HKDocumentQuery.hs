@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.HealthKit.HKDocumentQuery
   , limit
   , sortDescriptors
   , includeDocumentData
+  , includeDocumentDataSelector
   , limitSelector
   , sortDescriptorsSelector
-  , includeDocumentDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- limit@
 limit :: IsHKDocumentQuery hkDocumentQuery => hkDocumentQuery -> IO CULong
-limit hkDocumentQuery  =
-    sendMsg hkDocumentQuery (mkSelector "limit") retCULong []
+limit hkDocumentQuery =
+  sendMessage hkDocumentQuery limitSelector
 
 -- | sortDescriptors
 --
@@ -50,8 +47,8 @@ limit hkDocumentQuery  =
 --
 -- ObjC selector: @- sortDescriptors@
 sortDescriptors :: IsHKDocumentQuery hkDocumentQuery => hkDocumentQuery -> IO (Id NSArray)
-sortDescriptors hkDocumentQuery  =
-    sendMsg hkDocumentQuery (mkSelector "sortDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptors hkDocumentQuery =
+  sendMessage hkDocumentQuery sortDescriptorsSelector
 
 -- | includeDocumentData
 --
@@ -59,22 +56,22 @@ sortDescriptors hkDocumentQuery  =
 --
 -- ObjC selector: @- includeDocumentData@
 includeDocumentData :: IsHKDocumentQuery hkDocumentQuery => hkDocumentQuery -> IO Bool
-includeDocumentData hkDocumentQuery  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkDocumentQuery (mkSelector "includeDocumentData") retCULong []
+includeDocumentData hkDocumentQuery =
+  sendMessage hkDocumentQuery includeDocumentDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @limit@
-limitSelector :: Selector
+limitSelector :: Selector '[] CULong
 limitSelector = mkSelector "limit"
 
 -- | @Selector@ for @sortDescriptors@
-sortDescriptorsSelector :: Selector
+sortDescriptorsSelector :: Selector '[] (Id NSArray)
 sortDescriptorsSelector = mkSelector "sortDescriptors"
 
 -- | @Selector@ for @includeDocumentData@
-includeDocumentDataSelector :: Selector
+includeDocumentDataSelector :: Selector '[] Bool
 includeDocumentDataSelector = mkSelector "includeDocumentData"
 

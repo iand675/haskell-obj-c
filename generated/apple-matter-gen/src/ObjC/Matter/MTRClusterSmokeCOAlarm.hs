@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,44 +34,40 @@ module ObjC.Matter.MTRClusterSmokeCOAlarm
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector
-  , selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributeExpressedStateWithParamsSelector
-  , readAttributeSmokeStateWithParamsSelector
-  , readAttributeCOStateWithParamsSelector
-  , readAttributeBatteryAlertWithParamsSelector
-  , readAttributeDeviceMutedWithParamsSelector
-  , readAttributeTestInProgressWithParamsSelector
-  , readAttributeHardwareFaultAlertWithParamsSelector
-  , readAttributeEndOfServiceAlertWithParamsSelector
-  , readAttributeInterconnectSmokeAlarmWithParamsSelector
-  , readAttributeInterconnectCOAlarmWithParamsSelector
-  , readAttributeContaminationStateWithParamsSelector
-  , readAttributeSmokeSensitivityLevelWithParamsSelector
-  , writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector
-  , writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector
-  , readAttributeExpiryDateWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeBatteryAlertWithParamsSelector
+  , readAttributeCOStateWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeContaminationStateWithParamsSelector
+  , readAttributeDeviceMutedWithParamsSelector
+  , readAttributeEndOfServiceAlertWithParamsSelector
+  , readAttributeExpiryDateWithParamsSelector
+  , readAttributeExpressedStateWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeHardwareFaultAlertWithParamsSelector
+  , readAttributeInterconnectCOAlarmWithParamsSelector
+  , readAttributeInterconnectSmokeAlarmWithParamsSelector
+  , readAttributeSmokeSensitivityLevelWithParamsSelector
+  , readAttributeSmokeStateWithParamsSelector
+  , readAttributeTestInProgressWithParamsSelector
+  , selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector
+  , selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector
+  , writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,265 +76,234 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selfTestRequestWithParams:expectedValues:expectedValueInterval:completion:@
 selfTestRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRSmokeCOAlarmClusterSelfTestRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterSmokeCOAlarm -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-selfTestRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterSmokeCOAlarm  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterSmokeCOAlarm (mkSelector "selfTestRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+selfTestRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterSmokeCOAlarm params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterSmokeCOAlarm selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRSmokeCOAlarmClusterSelfTestRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- selfTestRequestWithExpectedValues:expectedValueInterval:completion:@
 selfTestRequestWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterSmokeCOAlarm -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-selfTestRequestWithExpectedValues_expectedValueInterval_completion mtrClusterSmokeCOAlarm  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterSmokeCOAlarm (mkSelector "selfTestRequestWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+selfTestRequestWithExpectedValues_expectedValueInterval_completion mtrClusterSmokeCOAlarm expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterSmokeCOAlarm selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeExpressedStateWithParams:@
 readAttributeExpressedStateWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeExpressedStateWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeExpressedStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExpressedStateWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeExpressedStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSmokeStateWithParams:@
 readAttributeSmokeStateWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeSmokeStateWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeSmokeStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSmokeStateWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeSmokeStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCOStateWithParams:@
 readAttributeCOStateWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeCOStateWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeCOStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCOStateWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeCOStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBatteryAlertWithParams:@
 readAttributeBatteryAlertWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeBatteryAlertWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeBatteryAlertWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBatteryAlertWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeBatteryAlertWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDeviceMutedWithParams:@
 readAttributeDeviceMutedWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeDeviceMutedWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeDeviceMutedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDeviceMutedWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeDeviceMutedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTestInProgressWithParams:@
 readAttributeTestInProgressWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeTestInProgressWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeTestInProgressWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTestInProgressWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeTestInProgressWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeHardwareFaultAlertWithParams:@
 readAttributeHardwareFaultAlertWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeHardwareFaultAlertWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeHardwareFaultAlertWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHardwareFaultAlertWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeHardwareFaultAlertWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEndOfServiceAlertWithParams:@
 readAttributeEndOfServiceAlertWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeEndOfServiceAlertWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeEndOfServiceAlertWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEndOfServiceAlertWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeEndOfServiceAlertWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeInterconnectSmokeAlarmWithParams:@
 readAttributeInterconnectSmokeAlarmWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeInterconnectSmokeAlarmWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeInterconnectSmokeAlarmWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInterconnectSmokeAlarmWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeInterconnectSmokeAlarmWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeInterconnectCOAlarmWithParams:@
 readAttributeInterconnectCOAlarmWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeInterconnectCOAlarmWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeInterconnectCOAlarmWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInterconnectCOAlarmWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeInterconnectCOAlarmWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeContaminationStateWithParams:@
 readAttributeContaminationStateWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeContaminationStateWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeContaminationStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeContaminationStateWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeContaminationStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSmokeSensitivityLevelWithParams:@
 readAttributeSmokeSensitivityLevelWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeSmokeSensitivityLevelWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeSmokeSensitivityLevelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSmokeSensitivityLevelWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeSmokeSensitivityLevelWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:@
 writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterSmokeCOAlarm -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval mtrClusterSmokeCOAlarm  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterSmokeCOAlarm (mkSelector "writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval mtrClusterSmokeCOAlarm dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterSmokeCOAlarm writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:params:@
 writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_params :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterSmokeCOAlarm -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_params mtrClusterSmokeCOAlarm  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterSmokeCOAlarm (mkSelector "writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_params mtrClusterSmokeCOAlarm dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterSmokeCOAlarm writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeExpiryDateWithParams:@
 readAttributeExpiryDateWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeExpiryDateWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeExpiryDateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExpiryDateWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeExpiryDateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRReadParams params) => mtrClusterSmokeCOAlarm -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterSmokeCOAlarm  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSmokeCOAlarm (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterSmokeCOAlarm params =
+  sendMessage mtrClusterSmokeCOAlarm readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm => mtrClusterSmokeCOAlarm -> IO (Id MTRClusterSmokeCOAlarm)
-init_ mtrClusterSmokeCOAlarm  =
-    sendMsg mtrClusterSmokeCOAlarm (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterSmokeCOAlarm =
+  sendOwnedMessage mtrClusterSmokeCOAlarm initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterSmokeCOAlarm)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterSmokeCOAlarm"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterSmokeCOAlarm mtrClusterSmokeCOAlarm, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterSmokeCOAlarm -> device -> endpointID -> queue -> IO (Id MTRClusterSmokeCOAlarm)
-initWithDevice_endpointID_queue mtrClusterSmokeCOAlarm  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterSmokeCOAlarm (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterSmokeCOAlarm device endpointID queue =
+  sendOwnedMessage mtrClusterSmokeCOAlarm initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selfTestRequestWithParams:expectedValues:expectedValueInterval:completion:@
-selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRSmokeCOAlarmClusterSelfTestRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 selfTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "selfTestRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @selfTestRequestWithExpectedValues:expectedValueInterval:completion:@
-selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 selfTestRequestWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "selfTestRequestWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeExpressedStateWithParams:@
-readAttributeExpressedStateWithParamsSelector :: Selector
+readAttributeExpressedStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExpressedStateWithParamsSelector = mkSelector "readAttributeExpressedStateWithParams:"
 
 -- | @Selector@ for @readAttributeSmokeStateWithParams:@
-readAttributeSmokeStateWithParamsSelector :: Selector
+readAttributeSmokeStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSmokeStateWithParamsSelector = mkSelector "readAttributeSmokeStateWithParams:"
 
 -- | @Selector@ for @readAttributeCOStateWithParams:@
-readAttributeCOStateWithParamsSelector :: Selector
+readAttributeCOStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCOStateWithParamsSelector = mkSelector "readAttributeCOStateWithParams:"
 
 -- | @Selector@ for @readAttributeBatteryAlertWithParams:@
-readAttributeBatteryAlertWithParamsSelector :: Selector
+readAttributeBatteryAlertWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBatteryAlertWithParamsSelector = mkSelector "readAttributeBatteryAlertWithParams:"
 
 -- | @Selector@ for @readAttributeDeviceMutedWithParams:@
-readAttributeDeviceMutedWithParamsSelector :: Selector
+readAttributeDeviceMutedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDeviceMutedWithParamsSelector = mkSelector "readAttributeDeviceMutedWithParams:"
 
 -- | @Selector@ for @readAttributeTestInProgressWithParams:@
-readAttributeTestInProgressWithParamsSelector :: Selector
+readAttributeTestInProgressWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTestInProgressWithParamsSelector = mkSelector "readAttributeTestInProgressWithParams:"
 
 -- | @Selector@ for @readAttributeHardwareFaultAlertWithParams:@
-readAttributeHardwareFaultAlertWithParamsSelector :: Selector
+readAttributeHardwareFaultAlertWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHardwareFaultAlertWithParamsSelector = mkSelector "readAttributeHardwareFaultAlertWithParams:"
 
 -- | @Selector@ for @readAttributeEndOfServiceAlertWithParams:@
-readAttributeEndOfServiceAlertWithParamsSelector :: Selector
+readAttributeEndOfServiceAlertWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEndOfServiceAlertWithParamsSelector = mkSelector "readAttributeEndOfServiceAlertWithParams:"
 
 -- | @Selector@ for @readAttributeInterconnectSmokeAlarmWithParams:@
-readAttributeInterconnectSmokeAlarmWithParamsSelector :: Selector
+readAttributeInterconnectSmokeAlarmWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInterconnectSmokeAlarmWithParamsSelector = mkSelector "readAttributeInterconnectSmokeAlarmWithParams:"
 
 -- | @Selector@ for @readAttributeInterconnectCOAlarmWithParams:@
-readAttributeInterconnectCOAlarmWithParamsSelector :: Selector
+readAttributeInterconnectCOAlarmWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInterconnectCOAlarmWithParamsSelector = mkSelector "readAttributeInterconnectCOAlarmWithParams:"
 
 -- | @Selector@ for @readAttributeContaminationStateWithParams:@
-readAttributeContaminationStateWithParamsSelector :: Selector
+readAttributeContaminationStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeContaminationStateWithParamsSelector = mkSelector "readAttributeContaminationStateWithParams:"
 
 -- | @Selector@ for @readAttributeSmokeSensitivityLevelWithParams:@
-readAttributeSmokeSensitivityLevelWithParamsSelector :: Selector
+readAttributeSmokeSensitivityLevelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSmokeSensitivityLevelWithParamsSelector = mkSelector "readAttributeSmokeSensitivityLevelWithParams:"
 
 -- | @Selector@ for @writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:@
-writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSmokeSensitivityLevelWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:params:@
-writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSmokeSensitivityLevelWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSmokeSensitivityLevelWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeExpiryDateWithParams:@
-readAttributeExpiryDateWithParamsSelector :: Selector
+readAttributeExpiryDateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExpiryDateWithParamsSelector = mkSelector "readAttributeExpiryDateWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterSmokeCOAlarm)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterSmokeCOAlarm)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterSmokeCOAlarm)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

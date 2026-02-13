@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,40 +28,36 @@ module ObjC.IOBluetooth.OBEXFileTransferServices
   , abort
   , delegate
   , setDelegate
-  , withOBEXSessionSelector
-  , initWithOBEXSessionSelector
-  , currentPathSelector
-  , isBusySelector
-  , isConnectedSelector
-  , connectToFTPServiceSelector
-  , connectToObjectPushServiceSelector
-  , disconnectSelector
-  , changeCurrentFolderToRootSelector
+  , abortSelector
   , changeCurrentFolderBackwardSelector
   , changeCurrentFolderForwardToPathSelector
+  , changeCurrentFolderToRootSelector
+  , connectToFTPServiceSelector
+  , connectToObjectPushServiceSelector
+  , copyRemoteFile_toLocalPathSelector
   , createFolderSelector
+  , currentPathSelector
+  , delegateSelector
+  , disconnectSelector
+  , getDefaultVCardSelector
+  , initWithOBEXSessionSelector
+  , isBusySelector
+  , isConnectedSelector
   , removeItemSelector
   , retrieveFolderListingSelector
-  , sendFileSelector
-  , copyRemoteFile_toLocalPathSelector
   , sendData_type_nameSelector
-  , getDefaultVCardSelector
-  , abortSelector
-  , delegateSelector
+  , sendFileSelector
   , setDelegateSelector
+  , withOBEXSessionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,8 +79,7 @@ withOBEXSession :: IsIOBluetoothOBEXSession inOBEXSession => inOBEXSession -> IO
 withOBEXSession inOBEXSession =
   do
     cls' <- getRequiredClass "OBEXFileTransferServices"
-    withObjCPtr inOBEXSession $ \raw_inOBEXSession ->
-      sendClassMsg cls' (mkSelector "withOBEXSession:") (retPtr retVoid) [argPtr (castPtr raw_inOBEXSession :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withOBEXSessionSelector (toIOBluetoothOBEXSession inOBEXSession)
 
 -- | initWithOBEXSession:
 --
@@ -97,9 +93,8 @@ withOBEXSession inOBEXSession =
 --
 -- ObjC selector: @- initWithOBEXSession:@
 initWithOBEXSession :: (IsOBEXFileTransferServices obexFileTransferServices, IsIOBluetoothOBEXSession inOBEXSession) => obexFileTransferServices -> inOBEXSession -> IO (Id OBEXFileTransferServices)
-initWithOBEXSession obexFileTransferServices  inOBEXSession =
-  withObjCPtr inOBEXSession $ \raw_inOBEXSession ->
-      sendMsg obexFileTransferServices (mkSelector "initWithOBEXSession:") (retPtr retVoid) [argPtr (castPtr raw_inOBEXSession :: Ptr ())] >>= ownedObject . castPtr
+initWithOBEXSession obexFileTransferServices inOBEXSession =
+  sendOwnedMessage obexFileTransferServices initWithOBEXSessionSelector (toIOBluetoothOBEXSession inOBEXSession)
 
 -- | currentPath
 --
@@ -111,8 +106,8 @@ initWithOBEXSession obexFileTransferServices  inOBEXSession =
 --
 -- ObjC selector: @- currentPath@
 currentPath :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO (Id NSString)
-currentPath obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "currentPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPath obexFileTransferServices =
+  sendMessage obexFileTransferServices currentPathSelector
 
 -- | isBusy
 --
@@ -124,8 +119,8 @@ currentPath obexFileTransferServices  =
 --
 -- ObjC selector: @- isBusy@
 isBusy :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO Bool
-isBusy obexFileTransferServices  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg obexFileTransferServices (mkSelector "isBusy") retCULong []
+isBusy obexFileTransferServices =
+  sendMessage obexFileTransferServices isBusySelector
 
 -- | isConnected
 --
@@ -137,8 +132,8 @@ isBusy obexFileTransferServices  =
 --
 -- ObjC selector: @- isConnected@
 isConnected :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO Bool
-isConnected obexFileTransferServices  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg obexFileTransferServices (mkSelector "isConnected") retCULong []
+isConnected obexFileTransferServices =
+  sendMessage obexFileTransferServices isConnectedSelector
 
 -- | connectToFTPService
 --
@@ -150,8 +145,8 @@ isConnected obexFileTransferServices  =
 --
 -- ObjC selector: @- connectToFTPService@
 connectToFTPService :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-connectToFTPService obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "connectToFTPService") retCInt []
+connectToFTPService obexFileTransferServices =
+  sendMessage obexFileTransferServices connectToFTPServiceSelector
 
 -- | connectToObjectPushService
 --
@@ -163,8 +158,8 @@ connectToFTPService obexFileTransferServices  =
 --
 -- ObjC selector: @- connectToObjectPushService@
 connectToObjectPushService :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-connectToObjectPushService obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "connectToObjectPushService") retCInt []
+connectToObjectPushService obexFileTransferServices =
+  sendMessage obexFileTransferServices connectToObjectPushServiceSelector
 
 -- | disconnect
 --
@@ -176,8 +171,8 @@ connectToObjectPushService obexFileTransferServices  =
 --
 -- ObjC selector: @- disconnect@
 disconnect :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-disconnect obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "disconnect") retCInt []
+disconnect obexFileTransferServices =
+  sendMessage obexFileTransferServices disconnectSelector
 
 -- | changeCurrentFolderRoot
 --
@@ -189,8 +184,8 @@ disconnect obexFileTransferServices  =
 --
 -- ObjC selector: @- changeCurrentFolderToRoot@
 changeCurrentFolderToRoot :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-changeCurrentFolderToRoot obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "changeCurrentFolderToRoot") retCInt []
+changeCurrentFolderToRoot obexFileTransferServices =
+  sendMessage obexFileTransferServices changeCurrentFolderToRootSelector
 
 -- | changeCurrentFolderBackward
 --
@@ -202,8 +197,8 @@ changeCurrentFolderToRoot obexFileTransferServices  =
 --
 -- ObjC selector: @- changeCurrentFolderBackward@
 changeCurrentFolderBackward :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-changeCurrentFolderBackward obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "changeCurrentFolderBackward") retCInt []
+changeCurrentFolderBackward obexFileTransferServices =
+  sendMessage obexFileTransferServices changeCurrentFolderBackwardSelector
 
 -- | changeCurrentFolderForwardToPath:
 --
@@ -217,9 +212,8 @@ changeCurrentFolderBackward obexFileTransferServices  =
 --
 -- ObjC selector: @- changeCurrentFolderForwardToPath:@
 changeCurrentFolderForwardToPath :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inDirName) => obexFileTransferServices -> inDirName -> IO CInt
-changeCurrentFolderForwardToPath obexFileTransferServices  inDirName =
-  withObjCPtr inDirName $ \raw_inDirName ->
-      sendMsg obexFileTransferServices (mkSelector "changeCurrentFolderForwardToPath:") retCInt [argPtr (castPtr raw_inDirName :: Ptr ())]
+changeCurrentFolderForwardToPath obexFileTransferServices inDirName =
+  sendMessage obexFileTransferServices changeCurrentFolderForwardToPathSelector (toNSString inDirName)
 
 -- | createFolder:
 --
@@ -233,9 +227,8 @@ changeCurrentFolderForwardToPath obexFileTransferServices  inDirName =
 --
 -- ObjC selector: @- createFolder:@
 createFolder :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inDirName) => obexFileTransferServices -> inDirName -> IO CInt
-createFolder obexFileTransferServices  inDirName =
-  withObjCPtr inDirName $ \raw_inDirName ->
-      sendMsg obexFileTransferServices (mkSelector "createFolder:") retCInt [argPtr (castPtr raw_inDirName :: Ptr ())]
+createFolder obexFileTransferServices inDirName =
+  sendMessage obexFileTransferServices createFolderSelector (toNSString inDirName)
 
 -- | removeItem:
 --
@@ -249,9 +242,8 @@ createFolder obexFileTransferServices  inDirName =
 --
 -- ObjC selector: @- removeItem:@
 removeItem :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inItemName) => obexFileTransferServices -> inItemName -> IO CInt
-removeItem obexFileTransferServices  inItemName =
-  withObjCPtr inItemName $ \raw_inItemName ->
-      sendMsg obexFileTransferServices (mkSelector "removeItem:") retCInt [argPtr (castPtr raw_inItemName :: Ptr ())]
+removeItem obexFileTransferServices inItemName =
+  sendMessage obexFileTransferServices removeItemSelector (toNSString inItemName)
 
 -- | retrieveFolderListing
 --
@@ -263,8 +255,8 @@ removeItem obexFileTransferServices  inItemName =
 --
 -- ObjC selector: @- retrieveFolderListing@
 retrieveFolderListing :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-retrieveFolderListing obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "retrieveFolderListing") retCInt []
+retrieveFolderListing obexFileTransferServices =
+  sendMessage obexFileTransferServices retrieveFolderListingSelector
 
 -- | sendFile:
 --
@@ -278,9 +270,8 @@ retrieveFolderListing obexFileTransferServices  =
 --
 -- ObjC selector: @- sendFile:@
 sendFile :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inLocalPathAndName) => obexFileTransferServices -> inLocalPathAndName -> IO CInt
-sendFile obexFileTransferServices  inLocalPathAndName =
-  withObjCPtr inLocalPathAndName $ \raw_inLocalPathAndName ->
-      sendMsg obexFileTransferServices (mkSelector "sendFile:") retCInt [argPtr (castPtr raw_inLocalPathAndName :: Ptr ())]
+sendFile obexFileTransferServices inLocalPathAndName =
+  sendMessage obexFileTransferServices sendFileSelector (toNSString inLocalPathAndName)
 
 -- | copyRemoteFile:toLocalPath:
 --
@@ -296,10 +287,8 @@ sendFile obexFileTransferServices  inLocalPathAndName =
 --
 -- ObjC selector: @- copyRemoteFile:toLocalPath:@
 copyRemoteFile_toLocalPath :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inRemoteFileName, IsNSString inLocalPathAndName) => obexFileTransferServices -> inRemoteFileName -> inLocalPathAndName -> IO CInt
-copyRemoteFile_toLocalPath obexFileTransferServices  inRemoteFileName inLocalPathAndName =
-  withObjCPtr inRemoteFileName $ \raw_inRemoteFileName ->
-    withObjCPtr inLocalPathAndName $ \raw_inLocalPathAndName ->
-        sendMsg obexFileTransferServices (mkSelector "copyRemoteFile:toLocalPath:") retCInt [argPtr (castPtr raw_inRemoteFileName :: Ptr ()), argPtr (castPtr raw_inLocalPathAndName :: Ptr ())]
+copyRemoteFile_toLocalPath obexFileTransferServices inRemoteFileName inLocalPathAndName =
+  sendOwnedMessage obexFileTransferServices copyRemoteFile_toLocalPathSelector (toNSString inRemoteFileName) (toNSString inLocalPathAndName)
 
 -- | sendData:type:name:
 --
@@ -317,11 +306,8 @@ copyRemoteFile_toLocalPath obexFileTransferServices  inRemoteFileName inLocalPat
 --
 -- ObjC selector: @- sendData:type:name:@
 sendData_type_name :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSData inData, IsNSString inType, IsNSString inName) => obexFileTransferServices -> inData -> inType -> inName -> IO CInt
-sendData_type_name obexFileTransferServices  inData inType inName =
-  withObjCPtr inData $ \raw_inData ->
-    withObjCPtr inType $ \raw_inType ->
-      withObjCPtr inName $ \raw_inName ->
-          sendMsg obexFileTransferServices (mkSelector "sendData:type:name:") retCInt [argPtr (castPtr raw_inData :: Ptr ()), argPtr (castPtr raw_inType :: Ptr ()), argPtr (castPtr raw_inName :: Ptr ())]
+sendData_type_name obexFileTransferServices inData inType inName =
+  sendMessage obexFileTransferServices sendData_type_nameSelector (toNSData inData) (toNSString inType) (toNSString inName)
 
 -- | getDefaultVCard:
 --
@@ -335,9 +321,8 @@ sendData_type_name obexFileTransferServices  inData inType inName =
 --
 -- ObjC selector: @- getDefaultVCard:@
 getDefaultVCard :: (IsOBEXFileTransferServices obexFileTransferServices, IsNSString inLocalPathAndName) => obexFileTransferServices -> inLocalPathAndName -> IO CInt
-getDefaultVCard obexFileTransferServices  inLocalPathAndName =
-  withObjCPtr inLocalPathAndName $ \raw_inLocalPathAndName ->
-      sendMsg obexFileTransferServices (mkSelector "getDefaultVCard:") retCInt [argPtr (castPtr raw_inLocalPathAndName :: Ptr ())]
+getDefaultVCard obexFileTransferServices inLocalPathAndName =
+  sendMessage obexFileTransferServices getDefaultVCardSelector (toNSString inLocalPathAndName)
 
 -- | abort
 --
@@ -349,104 +334,104 @@ getDefaultVCard obexFileTransferServices  inLocalPathAndName =
 --
 -- ObjC selector: @- abort@
 abort :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO CInt
-abort obexFileTransferServices  =
-    sendMsg obexFileTransferServices (mkSelector "abort") retCInt []
+abort obexFileTransferServices =
+  sendMessage obexFileTransferServices abortSelector
 
 -- | @- delegate@
 delegate :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> IO RawId
-delegate obexFileTransferServices  =
-    fmap (RawId . castPtr) $ sendMsg obexFileTransferServices (mkSelector "delegate") (retPtr retVoid) []
+delegate obexFileTransferServices =
+  sendMessage obexFileTransferServices delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsOBEXFileTransferServices obexFileTransferServices => obexFileTransferServices -> RawId -> IO ()
-setDelegate obexFileTransferServices  value =
-    sendMsg obexFileTransferServices (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate obexFileTransferServices value =
+  sendMessage obexFileTransferServices setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @withOBEXSession:@
-withOBEXSessionSelector :: Selector
+withOBEXSessionSelector :: Selector '[Id IOBluetoothOBEXSession] (Id OBEXFileTransferServices)
 withOBEXSessionSelector = mkSelector "withOBEXSession:"
 
 -- | @Selector@ for @initWithOBEXSession:@
-initWithOBEXSessionSelector :: Selector
+initWithOBEXSessionSelector :: Selector '[Id IOBluetoothOBEXSession] (Id OBEXFileTransferServices)
 initWithOBEXSessionSelector = mkSelector "initWithOBEXSession:"
 
 -- | @Selector@ for @currentPath@
-currentPathSelector :: Selector
+currentPathSelector :: Selector '[] (Id NSString)
 currentPathSelector = mkSelector "currentPath"
 
 -- | @Selector@ for @isBusy@
-isBusySelector :: Selector
+isBusySelector :: Selector '[] Bool
 isBusySelector = mkSelector "isBusy"
 
 -- | @Selector@ for @isConnected@
-isConnectedSelector :: Selector
+isConnectedSelector :: Selector '[] Bool
 isConnectedSelector = mkSelector "isConnected"
 
 -- | @Selector@ for @connectToFTPService@
-connectToFTPServiceSelector :: Selector
+connectToFTPServiceSelector :: Selector '[] CInt
 connectToFTPServiceSelector = mkSelector "connectToFTPService"
 
 -- | @Selector@ for @connectToObjectPushService@
-connectToObjectPushServiceSelector :: Selector
+connectToObjectPushServiceSelector :: Selector '[] CInt
 connectToObjectPushServiceSelector = mkSelector "connectToObjectPushService"
 
 -- | @Selector@ for @disconnect@
-disconnectSelector :: Selector
+disconnectSelector :: Selector '[] CInt
 disconnectSelector = mkSelector "disconnect"
 
 -- | @Selector@ for @changeCurrentFolderToRoot@
-changeCurrentFolderToRootSelector :: Selector
+changeCurrentFolderToRootSelector :: Selector '[] CInt
 changeCurrentFolderToRootSelector = mkSelector "changeCurrentFolderToRoot"
 
 -- | @Selector@ for @changeCurrentFolderBackward@
-changeCurrentFolderBackwardSelector :: Selector
+changeCurrentFolderBackwardSelector :: Selector '[] CInt
 changeCurrentFolderBackwardSelector = mkSelector "changeCurrentFolderBackward"
 
 -- | @Selector@ for @changeCurrentFolderForwardToPath:@
-changeCurrentFolderForwardToPathSelector :: Selector
+changeCurrentFolderForwardToPathSelector :: Selector '[Id NSString] CInt
 changeCurrentFolderForwardToPathSelector = mkSelector "changeCurrentFolderForwardToPath:"
 
 -- | @Selector@ for @createFolder:@
-createFolderSelector :: Selector
+createFolderSelector :: Selector '[Id NSString] CInt
 createFolderSelector = mkSelector "createFolder:"
 
 -- | @Selector@ for @removeItem:@
-removeItemSelector :: Selector
+removeItemSelector :: Selector '[Id NSString] CInt
 removeItemSelector = mkSelector "removeItem:"
 
 -- | @Selector@ for @retrieveFolderListing@
-retrieveFolderListingSelector :: Selector
+retrieveFolderListingSelector :: Selector '[] CInt
 retrieveFolderListingSelector = mkSelector "retrieveFolderListing"
 
 -- | @Selector@ for @sendFile:@
-sendFileSelector :: Selector
+sendFileSelector :: Selector '[Id NSString] CInt
 sendFileSelector = mkSelector "sendFile:"
 
 -- | @Selector@ for @copyRemoteFile:toLocalPath:@
-copyRemoteFile_toLocalPathSelector :: Selector
+copyRemoteFile_toLocalPathSelector :: Selector '[Id NSString, Id NSString] CInt
 copyRemoteFile_toLocalPathSelector = mkSelector "copyRemoteFile:toLocalPath:"
 
 -- | @Selector@ for @sendData:type:name:@
-sendData_type_nameSelector :: Selector
+sendData_type_nameSelector :: Selector '[Id NSData, Id NSString, Id NSString] CInt
 sendData_type_nameSelector = mkSelector "sendData:type:name:"
 
 -- | @Selector@ for @getDefaultVCard:@
-getDefaultVCardSelector :: Selector
+getDefaultVCardSelector :: Selector '[Id NSString] CInt
 getDefaultVCardSelector = mkSelector "getDefaultVCard:"
 
 -- | @Selector@ for @abort@
-abortSelector :: Selector
+abortSelector :: Selector '[] CInt
 abortSelector = mkSelector "abort"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

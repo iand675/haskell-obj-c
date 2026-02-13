@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Accounts.ACAccount
   , userFullName
   , credential
   , setCredential
-  , initWithAccountTypeSelector
-  , identifierSelector
-  , accountTypeSelector
-  , setAccountTypeSelector
   , accountDescriptionSelector
+  , accountTypeSelector
+  , credentialSelector
+  , identifierSelector
+  , initWithAccountTypeSelector
   , setAccountDescriptionSelector
-  , usernameSelector
+  , setAccountTypeSelector
+  , setCredentialSelector
   , setUsernameSelector
   , userFullNameSelector
-  , credentialSelector
-  , setCredentialSelector
+  , usernameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,109 +46,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAccountType:@
 initWithAccountType :: (IsACAccount acAccount, IsACAccountType type_) => acAccount -> type_ -> IO (Id ACAccount)
-initWithAccountType acAccount  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg acAccount (mkSelector "initWithAccountType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= ownedObject . castPtr
+initWithAccountType acAccount type_ =
+  sendOwnedMessage acAccount initWithAccountTypeSelector (toACAccountType type_)
 
 -- | @- identifier@
 identifier :: IsACAccount acAccount => acAccount -> IO (Id NSString)
-identifier acAccount  =
-    sendMsg acAccount (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier acAccount =
+  sendMessage acAccount identifierSelector
 
 -- | @- accountType@
 accountType :: IsACAccount acAccount => acAccount -> IO (Id ACAccountType)
-accountType acAccount  =
-    sendMsg acAccount (mkSelector "accountType") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountType acAccount =
+  sendMessage acAccount accountTypeSelector
 
 -- | @- setAccountType:@
 setAccountType :: (IsACAccount acAccount, IsACAccountType value) => acAccount -> value -> IO ()
-setAccountType acAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg acAccount (mkSelector "setAccountType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccountType acAccount value =
+  sendMessage acAccount setAccountTypeSelector (toACAccountType value)
 
 -- | @- accountDescription@
 accountDescription :: IsACAccount acAccount => acAccount -> IO (Id NSString)
-accountDescription acAccount  =
-    sendMsg acAccount (mkSelector "accountDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountDescription acAccount =
+  sendMessage acAccount accountDescriptionSelector
 
 -- | @- setAccountDescription:@
 setAccountDescription :: (IsACAccount acAccount, IsNSString value) => acAccount -> value -> IO ()
-setAccountDescription acAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg acAccount (mkSelector "setAccountDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccountDescription acAccount value =
+  sendMessage acAccount setAccountDescriptionSelector (toNSString value)
 
 -- | @- username@
 username :: IsACAccount acAccount => acAccount -> IO (Id NSString)
-username acAccount  =
-    sendMsg acAccount (mkSelector "username") (retPtr retVoid) [] >>= retainedObject . castPtr
+username acAccount =
+  sendMessage acAccount usernameSelector
 
 -- | @- setUsername:@
 setUsername :: (IsACAccount acAccount, IsNSString value) => acAccount -> value -> IO ()
-setUsername acAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg acAccount (mkSelector "setUsername:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsername acAccount value =
+  sendMessage acAccount setUsernameSelector (toNSString value)
 
 -- | @- userFullName@
 userFullName :: IsACAccount acAccount => acAccount -> IO (Id NSString)
-userFullName acAccount  =
-    sendMsg acAccount (mkSelector "userFullName") (retPtr retVoid) [] >>= retainedObject . castPtr
+userFullName acAccount =
+  sendMessage acAccount userFullNameSelector
 
 -- | @- credential@
 credential :: IsACAccount acAccount => acAccount -> IO (Id ACAccountCredential)
-credential acAccount  =
-    sendMsg acAccount (mkSelector "credential") (retPtr retVoid) [] >>= retainedObject . castPtr
+credential acAccount =
+  sendMessage acAccount credentialSelector
 
 -- | @- setCredential:@
 setCredential :: (IsACAccount acAccount, IsACAccountCredential value) => acAccount -> value -> IO ()
-setCredential acAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg acAccount (mkSelector "setCredential:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredential acAccount value =
+  sendMessage acAccount setCredentialSelector (toACAccountCredential value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAccountType:@
-initWithAccountTypeSelector :: Selector
+initWithAccountTypeSelector :: Selector '[Id ACAccountType] (Id ACAccount)
 initWithAccountTypeSelector = mkSelector "initWithAccountType:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @accountType@
-accountTypeSelector :: Selector
+accountTypeSelector :: Selector '[] (Id ACAccountType)
 accountTypeSelector = mkSelector "accountType"
 
 -- | @Selector@ for @setAccountType:@
-setAccountTypeSelector :: Selector
+setAccountTypeSelector :: Selector '[Id ACAccountType] ()
 setAccountTypeSelector = mkSelector "setAccountType:"
 
 -- | @Selector@ for @accountDescription@
-accountDescriptionSelector :: Selector
+accountDescriptionSelector :: Selector '[] (Id NSString)
 accountDescriptionSelector = mkSelector "accountDescription"
 
 -- | @Selector@ for @setAccountDescription:@
-setAccountDescriptionSelector :: Selector
+setAccountDescriptionSelector :: Selector '[Id NSString] ()
 setAccountDescriptionSelector = mkSelector "setAccountDescription:"
 
 -- | @Selector@ for @username@
-usernameSelector :: Selector
+usernameSelector :: Selector '[] (Id NSString)
 usernameSelector = mkSelector "username"
 
 -- | @Selector@ for @setUsername:@
-setUsernameSelector :: Selector
+setUsernameSelector :: Selector '[Id NSString] ()
 setUsernameSelector = mkSelector "setUsername:"
 
 -- | @Selector@ for @userFullName@
-userFullNameSelector :: Selector
+userFullNameSelector :: Selector '[] (Id NSString)
 userFullNameSelector = mkSelector "userFullName"
 
 -- | @Selector@ for @credential@
-credentialSelector :: Selector
+credentialSelector :: Selector '[] (Id ACAccountCredential)
 credentialSelector = mkSelector "credential"
 
 -- | @Selector@ for @setCredential:@
-setCredentialSelector :: Selector
+setCredentialSelector :: Selector '[Id ACAccountCredential] ()
 setCredentialSelector = mkSelector "setCredential:"
 

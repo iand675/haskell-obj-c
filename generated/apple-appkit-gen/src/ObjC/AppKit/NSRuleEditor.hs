@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,48 +50,48 @@ module ObjC.AppKit.NSRuleEditor
   , setCriteriaKeyPath
   , displayValuesKeyPath
   , setDisplayValuesKeyPath
+  , addRowSelector
+  , canRemoveAllRowsSelector
+  , criteriaForRowSelector
+  , criteriaKeyPathSelector
+  , delegateSelector
+  , displayValuesForRowSelector
+  , displayValuesKeyPathSelector
+  , editableSelector
+  , formattingDictionarySelector
+  , formattingStringsFilenameSelector
+  , insertRowAtIndex_withType_asSubrowOfRow_animateSelector
+  , nestingModeSelector
+  , numberOfRowsSelector
+  , parentRowForRowSelector
+  , predicateForRowSelector
+  , predicateSelector
   , reloadCriteriaSelector
   , reloadPredicateSelector
-  , predicateForRowSelector
-  , subrowIndexesForRowSelector
-  , criteriaForRowSelector
-  , displayValuesForRowSelector
-  , rowForDisplayValueSelector
-  , rowTypeForRowSelector
-  , parentRowForRowSelector
-  , addRowSelector
-  , insertRowAtIndex_withType_asSubrowOfRow_animateSelector
-  , setCriteria_andDisplayValues_forRowAtIndexSelector
   , removeRowAtIndexSelector
   , removeRowsAtIndexes_includeSubrowsSelector
-  , selectRowIndexes_byExtendingSelectionSelector
-  , delegateSelector
-  , setDelegateSelector
-  , formattingStringsFilenameSelector
-  , setFormattingStringsFilenameSelector
-  , formattingDictionarySelector
-  , setFormattingDictionarySelector
-  , nestingModeSelector
-  , setNestingModeSelector
-  , rowHeightSelector
-  , setRowHeightSelector
-  , editableSelector
-  , setEditableSelector
-  , canRemoveAllRowsSelector
-  , setCanRemoveAllRowsSelector
-  , predicateSelector
-  , numberOfRowsSelector
-  , selectedRowIndexesSelector
   , rowClassSelector
-  , setRowClassSelector
+  , rowForDisplayValueSelector
+  , rowHeightSelector
+  , rowTypeForRowSelector
   , rowTypeKeyPathSelector
-  , setRowTypeKeyPathSelector
-  , subrowsKeyPathSelector
-  , setSubrowsKeyPathSelector
-  , criteriaKeyPathSelector
+  , selectRowIndexes_byExtendingSelectionSelector
+  , selectedRowIndexesSelector
+  , setCanRemoveAllRowsSelector
   , setCriteriaKeyPathSelector
-  , displayValuesKeyPathSelector
+  , setCriteria_andDisplayValues_forRowAtIndexSelector
+  , setDelegateSelector
   , setDisplayValuesKeyPathSelector
+  , setEditableSelector
+  , setFormattingDictionarySelector
+  , setFormattingStringsFilenameSelector
+  , setNestingModeSelector
+  , setRowClassSelector
+  , setRowHeightSelector
+  , setRowTypeKeyPathSelector
+  , setSubrowsKeyPathSelector
+  , subrowIndexesForRowSelector
+  , subrowsKeyPathSelector
 
   -- * Enum types
   , NSRuleEditorNestingMode(NSRuleEditorNestingMode)
@@ -104,15 +105,11 @@ module ObjC.AppKit.NSRuleEditor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -122,393 +119,383 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- reloadCriteria@
 reloadCriteria :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO ()
-reloadCriteria nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "reloadCriteria") retVoid []
+reloadCriteria nsRuleEditor =
+  sendMessage nsRuleEditor reloadCriteriaSelector
 
 -- | @- reloadPredicate@
 reloadPredicate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO ()
-reloadPredicate nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "reloadPredicate") retVoid []
+reloadPredicate nsRuleEditor =
+  sendMessage nsRuleEditor reloadPredicateSelector
 
 -- | @- predicateForRow:@
 predicateForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO (Id NSPredicate)
-predicateForRow nsRuleEditor  row =
-    sendMsg nsRuleEditor (mkSelector "predicateForRow:") (retPtr retVoid) [argCLong row] >>= retainedObject . castPtr
+predicateForRow nsRuleEditor row =
+  sendMessage nsRuleEditor predicateForRowSelector row
 
 -- | @- subrowIndexesForRow:@
 subrowIndexesForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO (Id NSIndexSet)
-subrowIndexesForRow nsRuleEditor  rowIndex =
-    sendMsg nsRuleEditor (mkSelector "subrowIndexesForRow:") (retPtr retVoid) [argCLong rowIndex] >>= retainedObject . castPtr
+subrowIndexesForRow nsRuleEditor rowIndex =
+  sendMessage nsRuleEditor subrowIndexesForRowSelector rowIndex
 
 -- | @- criteriaForRow:@
 criteriaForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO (Id NSArray)
-criteriaForRow nsRuleEditor  row =
-    sendMsg nsRuleEditor (mkSelector "criteriaForRow:") (retPtr retVoid) [argCLong row] >>= retainedObject . castPtr
+criteriaForRow nsRuleEditor row =
+  sendMessage nsRuleEditor criteriaForRowSelector row
 
 -- | @- displayValuesForRow:@
 displayValuesForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO (Id NSArray)
-displayValuesForRow nsRuleEditor  row =
-    sendMsg nsRuleEditor (mkSelector "displayValuesForRow:") (retPtr retVoid) [argCLong row] >>= retainedObject . castPtr
+displayValuesForRow nsRuleEditor row =
+  sendMessage nsRuleEditor displayValuesForRowSelector row
 
 -- | @- rowForDisplayValue:@
 rowForDisplayValue :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> RawId -> IO CLong
-rowForDisplayValue nsRuleEditor  displayValue =
-    sendMsg nsRuleEditor (mkSelector "rowForDisplayValue:") retCLong [argPtr (castPtr (unRawId displayValue) :: Ptr ())]
+rowForDisplayValue nsRuleEditor displayValue =
+  sendMessage nsRuleEditor rowForDisplayValueSelector displayValue
 
 -- | @- rowTypeForRow:@
 rowTypeForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO NSRuleEditorRowType
-rowTypeForRow nsRuleEditor  rowIndex =
-    fmap (coerce :: CULong -> NSRuleEditorRowType) $ sendMsg nsRuleEditor (mkSelector "rowTypeForRow:") retCULong [argCLong rowIndex]
+rowTypeForRow nsRuleEditor rowIndex =
+  sendMessage nsRuleEditor rowTypeForRowSelector rowIndex
 
 -- | @- parentRowForRow:@
 parentRowForRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO CLong
-parentRowForRow nsRuleEditor  rowIndex =
-    sendMsg nsRuleEditor (mkSelector "parentRowForRow:") retCLong [argCLong rowIndex]
+parentRowForRow nsRuleEditor rowIndex =
+  sendMessage nsRuleEditor parentRowForRowSelector rowIndex
 
 -- | @- addRow:@
 addRow :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> RawId -> IO ()
-addRow nsRuleEditor  sender =
-    sendMsg nsRuleEditor (mkSelector "addRow:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+addRow nsRuleEditor sender =
+  sendMessage nsRuleEditor addRowSelector sender
 
 -- | @- insertRowAtIndex:withType:asSubrowOfRow:animate:@
 insertRowAtIndex_withType_asSubrowOfRow_animate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> NSRuleEditorRowType -> CLong -> Bool -> IO ()
-insertRowAtIndex_withType_asSubrowOfRow_animate nsRuleEditor  rowIndex rowType parentRow shouldAnimate =
-    sendMsg nsRuleEditor (mkSelector "insertRowAtIndex:withType:asSubrowOfRow:animate:") retVoid [argCLong rowIndex, argCULong (coerce rowType), argCLong parentRow, argCULong (if shouldAnimate then 1 else 0)]
+insertRowAtIndex_withType_asSubrowOfRow_animate nsRuleEditor rowIndex rowType parentRow shouldAnimate =
+  sendMessage nsRuleEditor insertRowAtIndex_withType_asSubrowOfRow_animateSelector rowIndex rowType parentRow shouldAnimate
 
 -- | @- setCriteria:andDisplayValues:forRowAtIndex:@
 setCriteria_andDisplayValues_forRowAtIndex :: (IsNSRuleEditor nsRuleEditor, IsNSArray criteria, IsNSArray values) => nsRuleEditor -> criteria -> values -> CLong -> IO ()
-setCriteria_andDisplayValues_forRowAtIndex nsRuleEditor  criteria values rowIndex =
-  withObjCPtr criteria $ \raw_criteria ->
-    withObjCPtr values $ \raw_values ->
-        sendMsg nsRuleEditor (mkSelector "setCriteria:andDisplayValues:forRowAtIndex:") retVoid [argPtr (castPtr raw_criteria :: Ptr ()), argPtr (castPtr raw_values :: Ptr ()), argCLong rowIndex]
+setCriteria_andDisplayValues_forRowAtIndex nsRuleEditor criteria values rowIndex =
+  sendMessage nsRuleEditor setCriteria_andDisplayValues_forRowAtIndexSelector (toNSArray criteria) (toNSArray values) rowIndex
 
 -- | @- removeRowAtIndex:@
 removeRowAtIndex :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CLong -> IO ()
-removeRowAtIndex nsRuleEditor  rowIndex =
-    sendMsg nsRuleEditor (mkSelector "removeRowAtIndex:") retVoid [argCLong rowIndex]
+removeRowAtIndex nsRuleEditor rowIndex =
+  sendMessage nsRuleEditor removeRowAtIndexSelector rowIndex
 
 -- | @- removeRowsAtIndexes:includeSubrows:@
 removeRowsAtIndexes_includeSubrows :: (IsNSRuleEditor nsRuleEditor, IsNSIndexSet rowIndexes) => nsRuleEditor -> rowIndexes -> Bool -> IO ()
-removeRowsAtIndexes_includeSubrows nsRuleEditor  rowIndexes includeSubrows =
-  withObjCPtr rowIndexes $ \raw_rowIndexes ->
-      sendMsg nsRuleEditor (mkSelector "removeRowsAtIndexes:includeSubrows:") retVoid [argPtr (castPtr raw_rowIndexes :: Ptr ()), argCULong (if includeSubrows then 1 else 0)]
+removeRowsAtIndexes_includeSubrows nsRuleEditor rowIndexes includeSubrows =
+  sendMessage nsRuleEditor removeRowsAtIndexes_includeSubrowsSelector (toNSIndexSet rowIndexes) includeSubrows
 
 -- | @- selectRowIndexes:byExtendingSelection:@
 selectRowIndexes_byExtendingSelection :: (IsNSRuleEditor nsRuleEditor, IsNSIndexSet indexes) => nsRuleEditor -> indexes -> Bool -> IO ()
-selectRowIndexes_byExtendingSelection nsRuleEditor  indexes extend =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsRuleEditor (mkSelector "selectRowIndexes:byExtendingSelection:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (if extend then 1 else 0)]
+selectRowIndexes_byExtendingSelection nsRuleEditor indexes extend =
+  sendMessage nsRuleEditor selectRowIndexes_byExtendingSelectionSelector (toNSIndexSet indexes) extend
 
 -- | @- delegate@
 delegate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO RawId
-delegate nsRuleEditor  =
-    fmap (RawId . castPtr) $ sendMsg nsRuleEditor (mkSelector "delegate") (retPtr retVoid) []
+delegate nsRuleEditor =
+  sendMessage nsRuleEditor delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> RawId -> IO ()
-setDelegate nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsRuleEditor value =
+  sendMessage nsRuleEditor setDelegateSelector value
 
 -- | @- formattingStringsFilename@
 formattingStringsFilename :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
-formattingStringsFilename nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "formattingStringsFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+formattingStringsFilename nsRuleEditor =
+  sendMessage nsRuleEditor formattingStringsFilenameSelector
 
 -- | @- setFormattingStringsFilename:@
 setFormattingStringsFilename :: (IsNSRuleEditor nsRuleEditor, IsNSString value) => nsRuleEditor -> value -> IO ()
-setFormattingStringsFilename nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setFormattingStringsFilename:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFormattingStringsFilename nsRuleEditor value =
+  sendMessage nsRuleEditor setFormattingStringsFilenameSelector (toNSString value)
 
 -- | @- formattingDictionary@
 formattingDictionary :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSDictionary)
-formattingDictionary nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "formattingDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+formattingDictionary nsRuleEditor =
+  sendMessage nsRuleEditor formattingDictionarySelector
 
 -- | @- setFormattingDictionary:@
 setFormattingDictionary :: (IsNSRuleEditor nsRuleEditor, IsNSDictionary value) => nsRuleEditor -> value -> IO ()
-setFormattingDictionary nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setFormattingDictionary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFormattingDictionary nsRuleEditor value =
+  sendMessage nsRuleEditor setFormattingDictionarySelector (toNSDictionary value)
 
 -- | @- nestingMode@
 nestingMode :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO NSRuleEditorNestingMode
-nestingMode nsRuleEditor  =
-    fmap (coerce :: CULong -> NSRuleEditorNestingMode) $ sendMsg nsRuleEditor (mkSelector "nestingMode") retCULong []
+nestingMode nsRuleEditor =
+  sendMessage nsRuleEditor nestingModeSelector
 
 -- | @- setNestingMode:@
 setNestingMode :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> NSRuleEditorNestingMode -> IO ()
-setNestingMode nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setNestingMode:") retVoid [argCULong (coerce value)]
+setNestingMode nsRuleEditor value =
+  sendMessage nsRuleEditor setNestingModeSelector value
 
 -- | @- rowHeight@
 rowHeight :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO CDouble
-rowHeight nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "rowHeight") retCDouble []
+rowHeight nsRuleEditor =
+  sendMessage nsRuleEditor rowHeightSelector
 
 -- | @- setRowHeight:@
 setRowHeight :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> CDouble -> IO ()
-setRowHeight nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setRowHeight:") retVoid [argCDouble value]
+setRowHeight nsRuleEditor value =
+  sendMessage nsRuleEditor setRowHeightSelector value
 
 -- | @- editable@
 editable :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO Bool
-editable nsRuleEditor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRuleEditor (mkSelector "editable") retCULong []
+editable nsRuleEditor =
+  sendMessage nsRuleEditor editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> Bool -> IO ()
-setEditable nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsRuleEditor value =
+  sendMessage nsRuleEditor setEditableSelector value
 
 -- | @- canRemoveAllRows@
 canRemoveAllRows :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO Bool
-canRemoveAllRows nsRuleEditor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRuleEditor (mkSelector "canRemoveAllRows") retCULong []
+canRemoveAllRows nsRuleEditor =
+  sendMessage nsRuleEditor canRemoveAllRowsSelector
 
 -- | @- setCanRemoveAllRows:@
 setCanRemoveAllRows :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> Bool -> IO ()
-setCanRemoveAllRows nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setCanRemoveAllRows:") retVoid [argCULong (if value then 1 else 0)]
+setCanRemoveAllRows nsRuleEditor value =
+  sendMessage nsRuleEditor setCanRemoveAllRowsSelector value
 
 -- | @- predicate@
 predicate :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSPredicate)
-predicate nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate nsRuleEditor =
+  sendMessage nsRuleEditor predicateSelector
 
 -- | @- numberOfRows@
 numberOfRows :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO CLong
-numberOfRows nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "numberOfRows") retCLong []
+numberOfRows nsRuleEditor =
+  sendMessage nsRuleEditor numberOfRowsSelector
 
 -- | @- selectedRowIndexes@
 selectedRowIndexes :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSIndexSet)
-selectedRowIndexes nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "selectedRowIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedRowIndexes nsRuleEditor =
+  sendMessage nsRuleEditor selectedRowIndexesSelector
 
 -- | @- rowClass@
 rowClass :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO Class
-rowClass nsRuleEditor  =
-    fmap (Class . castPtr) $ sendMsg nsRuleEditor (mkSelector "rowClass") (retPtr retVoid) []
+rowClass nsRuleEditor =
+  sendMessage nsRuleEditor rowClassSelector
 
 -- | @- setRowClass:@
 setRowClass :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> Class -> IO ()
-setRowClass nsRuleEditor  value =
-    sendMsg nsRuleEditor (mkSelector "setRowClass:") retVoid [argPtr (unClass value)]
+setRowClass nsRuleEditor value =
+  sendMessage nsRuleEditor setRowClassSelector value
 
 -- | @- rowTypeKeyPath@
 rowTypeKeyPath :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
-rowTypeKeyPath nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "rowTypeKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+rowTypeKeyPath nsRuleEditor =
+  sendMessage nsRuleEditor rowTypeKeyPathSelector
 
 -- | @- setRowTypeKeyPath:@
 setRowTypeKeyPath :: (IsNSRuleEditor nsRuleEditor, IsNSString value) => nsRuleEditor -> value -> IO ()
-setRowTypeKeyPath nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setRowTypeKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRowTypeKeyPath nsRuleEditor value =
+  sendMessage nsRuleEditor setRowTypeKeyPathSelector (toNSString value)
 
 -- | @- subrowsKeyPath@
 subrowsKeyPath :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
-subrowsKeyPath nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "subrowsKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+subrowsKeyPath nsRuleEditor =
+  sendMessage nsRuleEditor subrowsKeyPathSelector
 
 -- | @- setSubrowsKeyPath:@
 setSubrowsKeyPath :: (IsNSRuleEditor nsRuleEditor, IsNSString value) => nsRuleEditor -> value -> IO ()
-setSubrowsKeyPath nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setSubrowsKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubrowsKeyPath nsRuleEditor value =
+  sendMessage nsRuleEditor setSubrowsKeyPathSelector (toNSString value)
 
 -- | @- criteriaKeyPath@
 criteriaKeyPath :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
-criteriaKeyPath nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "criteriaKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+criteriaKeyPath nsRuleEditor =
+  sendMessage nsRuleEditor criteriaKeyPathSelector
 
 -- | @- setCriteriaKeyPath:@
 setCriteriaKeyPath :: (IsNSRuleEditor nsRuleEditor, IsNSString value) => nsRuleEditor -> value -> IO ()
-setCriteriaKeyPath nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setCriteriaKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCriteriaKeyPath nsRuleEditor value =
+  sendMessage nsRuleEditor setCriteriaKeyPathSelector (toNSString value)
 
 -- | @- displayValuesKeyPath@
 displayValuesKeyPath :: IsNSRuleEditor nsRuleEditor => nsRuleEditor -> IO (Id NSString)
-displayValuesKeyPath nsRuleEditor  =
-    sendMsg nsRuleEditor (mkSelector "displayValuesKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayValuesKeyPath nsRuleEditor =
+  sendMessage nsRuleEditor displayValuesKeyPathSelector
 
 -- | @- setDisplayValuesKeyPath:@
 setDisplayValuesKeyPath :: (IsNSRuleEditor nsRuleEditor, IsNSString value) => nsRuleEditor -> value -> IO ()
-setDisplayValuesKeyPath nsRuleEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRuleEditor (mkSelector "setDisplayValuesKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayValuesKeyPath nsRuleEditor value =
+  sendMessage nsRuleEditor setDisplayValuesKeyPathSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reloadCriteria@
-reloadCriteriaSelector :: Selector
+reloadCriteriaSelector :: Selector '[] ()
 reloadCriteriaSelector = mkSelector "reloadCriteria"
 
 -- | @Selector@ for @reloadPredicate@
-reloadPredicateSelector :: Selector
+reloadPredicateSelector :: Selector '[] ()
 reloadPredicateSelector = mkSelector "reloadPredicate"
 
 -- | @Selector@ for @predicateForRow:@
-predicateForRowSelector :: Selector
+predicateForRowSelector :: Selector '[CLong] (Id NSPredicate)
 predicateForRowSelector = mkSelector "predicateForRow:"
 
 -- | @Selector@ for @subrowIndexesForRow:@
-subrowIndexesForRowSelector :: Selector
+subrowIndexesForRowSelector :: Selector '[CLong] (Id NSIndexSet)
 subrowIndexesForRowSelector = mkSelector "subrowIndexesForRow:"
 
 -- | @Selector@ for @criteriaForRow:@
-criteriaForRowSelector :: Selector
+criteriaForRowSelector :: Selector '[CLong] (Id NSArray)
 criteriaForRowSelector = mkSelector "criteriaForRow:"
 
 -- | @Selector@ for @displayValuesForRow:@
-displayValuesForRowSelector :: Selector
+displayValuesForRowSelector :: Selector '[CLong] (Id NSArray)
 displayValuesForRowSelector = mkSelector "displayValuesForRow:"
 
 -- | @Selector@ for @rowForDisplayValue:@
-rowForDisplayValueSelector :: Selector
+rowForDisplayValueSelector :: Selector '[RawId] CLong
 rowForDisplayValueSelector = mkSelector "rowForDisplayValue:"
 
 -- | @Selector@ for @rowTypeForRow:@
-rowTypeForRowSelector :: Selector
+rowTypeForRowSelector :: Selector '[CLong] NSRuleEditorRowType
 rowTypeForRowSelector = mkSelector "rowTypeForRow:"
 
 -- | @Selector@ for @parentRowForRow:@
-parentRowForRowSelector :: Selector
+parentRowForRowSelector :: Selector '[CLong] CLong
 parentRowForRowSelector = mkSelector "parentRowForRow:"
 
 -- | @Selector@ for @addRow:@
-addRowSelector :: Selector
+addRowSelector :: Selector '[RawId] ()
 addRowSelector = mkSelector "addRow:"
 
 -- | @Selector@ for @insertRowAtIndex:withType:asSubrowOfRow:animate:@
-insertRowAtIndex_withType_asSubrowOfRow_animateSelector :: Selector
+insertRowAtIndex_withType_asSubrowOfRow_animateSelector :: Selector '[CLong, NSRuleEditorRowType, CLong, Bool] ()
 insertRowAtIndex_withType_asSubrowOfRow_animateSelector = mkSelector "insertRowAtIndex:withType:asSubrowOfRow:animate:"
 
 -- | @Selector@ for @setCriteria:andDisplayValues:forRowAtIndex:@
-setCriteria_andDisplayValues_forRowAtIndexSelector :: Selector
+setCriteria_andDisplayValues_forRowAtIndexSelector :: Selector '[Id NSArray, Id NSArray, CLong] ()
 setCriteria_andDisplayValues_forRowAtIndexSelector = mkSelector "setCriteria:andDisplayValues:forRowAtIndex:"
 
 -- | @Selector@ for @removeRowAtIndex:@
-removeRowAtIndexSelector :: Selector
+removeRowAtIndexSelector :: Selector '[CLong] ()
 removeRowAtIndexSelector = mkSelector "removeRowAtIndex:"
 
 -- | @Selector@ for @removeRowsAtIndexes:includeSubrows:@
-removeRowsAtIndexes_includeSubrowsSelector :: Selector
+removeRowsAtIndexes_includeSubrowsSelector :: Selector '[Id NSIndexSet, Bool] ()
 removeRowsAtIndexes_includeSubrowsSelector = mkSelector "removeRowsAtIndexes:includeSubrows:"
 
 -- | @Selector@ for @selectRowIndexes:byExtendingSelection:@
-selectRowIndexes_byExtendingSelectionSelector :: Selector
+selectRowIndexes_byExtendingSelectionSelector :: Selector '[Id NSIndexSet, Bool] ()
 selectRowIndexes_byExtendingSelectionSelector = mkSelector "selectRowIndexes:byExtendingSelection:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @formattingStringsFilename@
-formattingStringsFilenameSelector :: Selector
+formattingStringsFilenameSelector :: Selector '[] (Id NSString)
 formattingStringsFilenameSelector = mkSelector "formattingStringsFilename"
 
 -- | @Selector@ for @setFormattingStringsFilename:@
-setFormattingStringsFilenameSelector :: Selector
+setFormattingStringsFilenameSelector :: Selector '[Id NSString] ()
 setFormattingStringsFilenameSelector = mkSelector "setFormattingStringsFilename:"
 
 -- | @Selector@ for @formattingDictionary@
-formattingDictionarySelector :: Selector
+formattingDictionarySelector :: Selector '[] (Id NSDictionary)
 formattingDictionarySelector = mkSelector "formattingDictionary"
 
 -- | @Selector@ for @setFormattingDictionary:@
-setFormattingDictionarySelector :: Selector
+setFormattingDictionarySelector :: Selector '[Id NSDictionary] ()
 setFormattingDictionarySelector = mkSelector "setFormattingDictionary:"
 
 -- | @Selector@ for @nestingMode@
-nestingModeSelector :: Selector
+nestingModeSelector :: Selector '[] NSRuleEditorNestingMode
 nestingModeSelector = mkSelector "nestingMode"
 
 -- | @Selector@ for @setNestingMode:@
-setNestingModeSelector :: Selector
+setNestingModeSelector :: Selector '[NSRuleEditorNestingMode] ()
 setNestingModeSelector = mkSelector "setNestingMode:"
 
 -- | @Selector@ for @rowHeight@
-rowHeightSelector :: Selector
+rowHeightSelector :: Selector '[] CDouble
 rowHeightSelector = mkSelector "rowHeight"
 
 -- | @Selector@ for @setRowHeight:@
-setRowHeightSelector :: Selector
+setRowHeightSelector :: Selector '[CDouble] ()
 setRowHeightSelector = mkSelector "setRowHeight:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @canRemoveAllRows@
-canRemoveAllRowsSelector :: Selector
+canRemoveAllRowsSelector :: Selector '[] Bool
 canRemoveAllRowsSelector = mkSelector "canRemoveAllRows"
 
 -- | @Selector@ for @setCanRemoveAllRows:@
-setCanRemoveAllRowsSelector :: Selector
+setCanRemoveAllRowsSelector :: Selector '[Bool] ()
 setCanRemoveAllRowsSelector = mkSelector "setCanRemoveAllRows:"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CLong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @selectedRowIndexes@
-selectedRowIndexesSelector :: Selector
+selectedRowIndexesSelector :: Selector '[] (Id NSIndexSet)
 selectedRowIndexesSelector = mkSelector "selectedRowIndexes"
 
 -- | @Selector@ for @rowClass@
-rowClassSelector :: Selector
+rowClassSelector :: Selector '[] Class
 rowClassSelector = mkSelector "rowClass"
 
 -- | @Selector@ for @setRowClass:@
-setRowClassSelector :: Selector
+setRowClassSelector :: Selector '[Class] ()
 setRowClassSelector = mkSelector "setRowClass:"
 
 -- | @Selector@ for @rowTypeKeyPath@
-rowTypeKeyPathSelector :: Selector
+rowTypeKeyPathSelector :: Selector '[] (Id NSString)
 rowTypeKeyPathSelector = mkSelector "rowTypeKeyPath"
 
 -- | @Selector@ for @setRowTypeKeyPath:@
-setRowTypeKeyPathSelector :: Selector
+setRowTypeKeyPathSelector :: Selector '[Id NSString] ()
 setRowTypeKeyPathSelector = mkSelector "setRowTypeKeyPath:"
 
 -- | @Selector@ for @subrowsKeyPath@
-subrowsKeyPathSelector :: Selector
+subrowsKeyPathSelector :: Selector '[] (Id NSString)
 subrowsKeyPathSelector = mkSelector "subrowsKeyPath"
 
 -- | @Selector@ for @setSubrowsKeyPath:@
-setSubrowsKeyPathSelector :: Selector
+setSubrowsKeyPathSelector :: Selector '[Id NSString] ()
 setSubrowsKeyPathSelector = mkSelector "setSubrowsKeyPath:"
 
 -- | @Selector@ for @criteriaKeyPath@
-criteriaKeyPathSelector :: Selector
+criteriaKeyPathSelector :: Selector '[] (Id NSString)
 criteriaKeyPathSelector = mkSelector "criteriaKeyPath"
 
 -- | @Selector@ for @setCriteriaKeyPath:@
-setCriteriaKeyPathSelector :: Selector
+setCriteriaKeyPathSelector :: Selector '[Id NSString] ()
 setCriteriaKeyPathSelector = mkSelector "setCriteriaKeyPath:"
 
 -- | @Selector@ for @displayValuesKeyPath@
-displayValuesKeyPathSelector :: Selector
+displayValuesKeyPathSelector :: Selector '[] (Id NSString)
 displayValuesKeyPathSelector = mkSelector "displayValuesKeyPath"
 
 -- | @Selector@ for @setDisplayValuesKeyPath:@
-setDisplayValuesKeyPathSelector :: Selector
+setDisplayValuesKeyPathSelector :: Selector '[Id NSString] ()
 setDisplayValuesKeyPathSelector = mkSelector "setDisplayValuesKeyPath:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRWebRTCTransportProviderClusterProvideOfferResponseParams
   , setVideoStreamID
   , audioStreamID
   , setAudioStreamID
+  , audioStreamIDSelector
   , initWithResponseValue_errorSelector
-  , webRTCSessionIDSelector
+  , setAudioStreamIDSelector
+  , setVideoStreamIDSelector
   , setWebRTCSessionIDSelector
   , videoStreamIDSelector
-  , setVideoStreamIDSelector
-  , audioStreamIDSelector
-  , setAudioStreamIDSelector
+  , webRTCSessionIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> responseValue -> error_ -> IO (Id MTRWebRTCTransportProviderClusterProvideOfferResponseParams)
-initWithResponseValue_error mtrWebRTCTransportProviderClusterProvideOfferResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrWebRTCTransportProviderClusterProvideOfferResponseParams responseValue error_ =
+  sendOwnedMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- webRTCSessionID@
 webRTCSessionID :: IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> IO (Id NSNumber)
-webRTCSessionID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "webRTCSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+webRTCSessionID mtrWebRTCTransportProviderClusterProvideOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams webRTCSessionIDSelector
 
 -- | @- setWebRTCSessionID:@
 setWebRTCSessionID :: (IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> value -> IO ()
-setWebRTCSessionID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "setWebRTCSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWebRTCSessionID mtrWebRTCTransportProviderClusterProvideOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams setWebRTCSessionIDSelector (toNSNumber value)
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> IO (Id NSNumber)
-videoStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> value -> IO ()
-setVideoStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- audioStreamID@
 audioStreamID :: IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> IO (Id NSNumber)
-audioStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "audioStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams audioStreamIDSelector
 
 -- | @- setAudioStreamID:@
 setAudioStreamID :: (IsMTRWebRTCTransportProviderClusterProvideOfferResponseParams mtrWebRTCTransportProviderClusterProvideOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterProvideOfferResponseParams -> value -> IO ()
-setAudioStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterProvideOfferResponseParams (mkSelector "setAudioStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioStreamID mtrWebRTCTransportProviderClusterProvideOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterProvideOfferResponseParams setAudioStreamIDSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRWebRTCTransportProviderClusterProvideOfferResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @webRTCSessionID@
-webRTCSessionIDSelector :: Selector
+webRTCSessionIDSelector :: Selector '[] (Id NSNumber)
 webRTCSessionIDSelector = mkSelector "webRTCSessionID"
 
 -- | @Selector@ for @setWebRTCSessionID:@
-setWebRTCSessionIDSelector :: Selector
+setWebRTCSessionIDSelector :: Selector '[Id NSNumber] ()
 setWebRTCSessionIDSelector = mkSelector "setWebRTCSessionID:"
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @audioStreamID@
-audioStreamIDSelector :: Selector
+audioStreamIDSelector :: Selector '[] (Id NSNumber)
 audioStreamIDSelector = mkSelector "audioStreamID"
 
 -- | @Selector@ for @setAudioStreamID:@
-setAudioStreamIDSelector :: Selector
+setAudioStreamIDSelector :: Selector '[Id NSNumber] ()
 setAudioStreamIDSelector = mkSelector "setAudioStreamID:"
 

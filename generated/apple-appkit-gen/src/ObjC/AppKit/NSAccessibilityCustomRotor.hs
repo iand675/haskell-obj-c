@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.AppKit.NSAccessibilityCustomRotor
   , setItemLoadingDelegate
   , initWithLabel_itemSearchDelegateSelector
   , initWithRotorType_itemSearchDelegateSelector
-  , typeSelector
-  , setTypeSelector
-  , labelSelector
-  , setLabelSelector
-  , itemSearchDelegateSelector
-  , setItemSearchDelegateSelector
   , itemLoadingDelegateSelector
+  , itemSearchDelegateSelector
+  , labelSelector
   , setItemLoadingDelegateSelector
+  , setItemSearchDelegateSelector
+  , setLabelSelector
+  , setTypeSelector
+  , typeSelector
 
   -- * Enum types
   , NSAccessibilityCustomRotorType(NSAccessibilityCustomRotorType)
@@ -57,15 +58,11 @@ module ObjC.AppKit.NSAccessibilityCustomRotor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,16 +74,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithLabel:itemSearchDelegate:@
 initWithLabel_itemSearchDelegate :: (IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor, IsNSString label) => nsAccessibilityCustomRotor -> label -> RawId -> IO (Id NSAccessibilityCustomRotor)
-initWithLabel_itemSearchDelegate nsAccessibilityCustomRotor  label itemSearchDelegate =
-  withObjCPtr label $ \raw_label ->
-      sendMsg nsAccessibilityCustomRotor (mkSelector "initWithLabel:itemSearchDelegate:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr (unRawId itemSearchDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithLabel_itemSearchDelegate nsAccessibilityCustomRotor label itemSearchDelegate =
+  sendOwnedMessage nsAccessibilityCustomRotor initWithLabel_itemSearchDelegateSelector (toNSString label) itemSearchDelegate
 
 -- | Convenience initializer for custom rotors that use a common type such as links, headings, etc. A default label will be provided.
 --
 -- ObjC selector: @- initWithRotorType:itemSearchDelegate:@
 initWithRotorType_itemSearchDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> NSAccessibilityCustomRotorType -> RawId -> IO (Id NSAccessibilityCustomRotor)
-initWithRotorType_itemSearchDelegate nsAccessibilityCustomRotor  rotorType itemSearchDelegate =
-    sendMsg nsAccessibilityCustomRotor (mkSelector "initWithRotorType:itemSearchDelegate:") (retPtr retVoid) [argCLong (coerce rotorType), argPtr (castPtr (unRawId itemSearchDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithRotorType_itemSearchDelegate nsAccessibilityCustomRotor rotorType itemSearchDelegate =
+  sendOwnedMessage nsAccessibilityCustomRotor initWithRotorType_itemSearchDelegateSelector rotorType itemSearchDelegate
 
 -- | The rotor type to provide results for.
 --
@@ -94,8 +90,8 @@ initWithRotorType_itemSearchDelegate nsAccessibilityCustomRotor  rotorType itemS
 --
 -- ObjC selector: @- type@
 type_ :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO NSAccessibilityCustomRotorType
-type_ nsAccessibilityCustomRotor  =
-    fmap (coerce :: CLong -> NSAccessibilityCustomRotorType) $ sendMsg nsAccessibilityCustomRotor (mkSelector "type") retCLong []
+type_ nsAccessibilityCustomRotor =
+  sendMessage nsAccessibilityCustomRotor typeSelector
 
 -- | The rotor type to provide results for.
 --
@@ -103,8 +99,8 @@ type_ nsAccessibilityCustomRotor  =
 --
 -- ObjC selector: @- setType:@
 setType :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> NSAccessibilityCustomRotorType -> IO ()
-setType nsAccessibilityCustomRotor  value =
-    sendMsg nsAccessibilityCustomRotor (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType nsAccessibilityCustomRotor value =
+  sendMessage nsAccessibilityCustomRotor setTypeSelector value
 
 -- | The localized label assistive technologies will use to describe the custom rotor.
 --
@@ -112,8 +108,8 @@ setType nsAccessibilityCustomRotor  value =
 --
 -- ObjC selector: @- label@
 label :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO (Id NSString)
-label nsAccessibilityCustomRotor  =
-    sendMsg nsAccessibilityCustomRotor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label nsAccessibilityCustomRotor =
+  sendMessage nsAccessibilityCustomRotor labelSelector
 
 -- | The localized label assistive technologies will use to describe the custom rotor.
 --
@@ -121,79 +117,78 @@ label nsAccessibilityCustomRotor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor, IsNSString value) => nsAccessibilityCustomRotor -> value -> IO ()
-setLabel nsAccessibilityCustomRotor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAccessibilityCustomRotor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel nsAccessibilityCustomRotor value =
+  sendMessage nsAccessibilityCustomRotor setLabelSelector (toNSString value)
 
 -- | The itemSearchDelegate will be asked to find the next item result after performing a search with the given search parameters.
 --
 -- ObjC selector: @- itemSearchDelegate@
 itemSearchDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO RawId
-itemSearchDelegate nsAccessibilityCustomRotor  =
-    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotor (mkSelector "itemSearchDelegate") (retPtr retVoid) []
+itemSearchDelegate nsAccessibilityCustomRotor =
+  sendMessage nsAccessibilityCustomRotor itemSearchDelegateSelector
 
 -- | The itemSearchDelegate will be asked to find the next item result after performing a search with the given search parameters.
 --
 -- ObjC selector: @- setItemSearchDelegate:@
 setItemSearchDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> RawId -> IO ()
-setItemSearchDelegate nsAccessibilityCustomRotor  value =
-    sendMsg nsAccessibilityCustomRotor (mkSelector "setItemSearchDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setItemSearchDelegate nsAccessibilityCustomRotor value =
+  sendMessage nsAccessibilityCustomRotor setItemSearchDelegateSelector value
 
 -- | Provide an item load delegate if the rotor vends item results that do not have a backing UI element yet. The loader will be asked to load an element via the accessibilityElementWithToken protocol method when the item result is selected by an assistive client. Applications can use the item result's token to determine which item to return.
 --
 -- ObjC selector: @- itemLoadingDelegate@
 itemLoadingDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> IO RawId
-itemLoadingDelegate nsAccessibilityCustomRotor  =
-    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotor (mkSelector "itemLoadingDelegate") (retPtr retVoid) []
+itemLoadingDelegate nsAccessibilityCustomRotor =
+  sendMessage nsAccessibilityCustomRotor itemLoadingDelegateSelector
 
 -- | Provide an item load delegate if the rotor vends item results that do not have a backing UI element yet. The loader will be asked to load an element via the accessibilityElementWithToken protocol method when the item result is selected by an assistive client. Applications can use the item result's token to determine which item to return.
 --
 -- ObjC selector: @- setItemLoadingDelegate:@
 setItemLoadingDelegate :: IsNSAccessibilityCustomRotor nsAccessibilityCustomRotor => nsAccessibilityCustomRotor -> RawId -> IO ()
-setItemLoadingDelegate nsAccessibilityCustomRotor  value =
-    sendMsg nsAccessibilityCustomRotor (mkSelector "setItemLoadingDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setItemLoadingDelegate nsAccessibilityCustomRotor value =
+  sendMessage nsAccessibilityCustomRotor setItemLoadingDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLabel:itemSearchDelegate:@
-initWithLabel_itemSearchDelegateSelector :: Selector
+initWithLabel_itemSearchDelegateSelector :: Selector '[Id NSString, RawId] (Id NSAccessibilityCustomRotor)
 initWithLabel_itemSearchDelegateSelector = mkSelector "initWithLabel:itemSearchDelegate:"
 
 -- | @Selector@ for @initWithRotorType:itemSearchDelegate:@
-initWithRotorType_itemSearchDelegateSelector :: Selector
+initWithRotorType_itemSearchDelegateSelector :: Selector '[NSAccessibilityCustomRotorType, RawId] (Id NSAccessibilityCustomRotor)
 initWithRotorType_itemSearchDelegateSelector = mkSelector "initWithRotorType:itemSearchDelegate:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] NSAccessibilityCustomRotorType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[NSAccessibilityCustomRotorType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @itemSearchDelegate@
-itemSearchDelegateSelector :: Selector
+itemSearchDelegateSelector :: Selector '[] RawId
 itemSearchDelegateSelector = mkSelector "itemSearchDelegate"
 
 -- | @Selector@ for @setItemSearchDelegate:@
-setItemSearchDelegateSelector :: Selector
+setItemSearchDelegateSelector :: Selector '[RawId] ()
 setItemSearchDelegateSelector = mkSelector "setItemSearchDelegate:"
 
 -- | @Selector@ for @itemLoadingDelegate@
-itemLoadingDelegateSelector :: Selector
+itemLoadingDelegateSelector :: Selector '[] RawId
 itemLoadingDelegateSelector = mkSelector "itemLoadingDelegate"
 
 -- | @Selector@ for @setItemLoadingDelegate:@
-setItemLoadingDelegateSelector :: Selector
+setItemLoadingDelegateSelector :: Selector '[RawId] ()
 setItemLoadingDelegateSelector = mkSelector "setItemLoadingDelegate:"
 

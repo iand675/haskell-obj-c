@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.AppKit.NSColorPicker
   , provideNewButtonImage
   , buttonToolTip
   , minContentSize
+  , attachColorListSelector
+  , buttonToolTipSelector
+  , colorPanelSelector
+  , detachColorListSelector
   , initWithPickerMask_colorPanelSelector
   , insertNewButtonImage_inSelector
-  , viewSizeChangedSelector
-  , attachColorListSelector
-  , detachColorListSelector
-  , setModeSelector
-  , colorPanelSelector
-  , provideNewButtonImageSelector
-  , buttonToolTipSelector
   , minContentSizeSelector
+  , provideNewButtonImageSelector
+  , setModeSelector
+  , viewSizeChangedSelector
 
   -- * Enum types
   , NSColorPanelMode(NSColorPanelMode)
@@ -42,15 +43,11 @@ module ObjC.AppKit.NSColorPicker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,100 +58,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPickerMask:colorPanel:@
 initWithPickerMask_colorPanel :: (IsNSColorPicker nsColorPicker, IsNSColorPanel owningColorPanel) => nsColorPicker -> CULong -> owningColorPanel -> IO (Id NSColorPicker)
-initWithPickerMask_colorPanel nsColorPicker  mask owningColorPanel =
-  withObjCPtr owningColorPanel $ \raw_owningColorPanel ->
-      sendMsg nsColorPicker (mkSelector "initWithPickerMask:colorPanel:") (retPtr retVoid) [argCULong mask, argPtr (castPtr raw_owningColorPanel :: Ptr ())] >>= ownedObject . castPtr
+initWithPickerMask_colorPanel nsColorPicker mask owningColorPanel =
+  sendOwnedMessage nsColorPicker initWithPickerMask_colorPanelSelector mask (toNSColorPanel owningColorPanel)
 
 -- | @- insertNewButtonImage:in:@
 insertNewButtonImage_in :: (IsNSColorPicker nsColorPicker, IsNSImage newButtonImage, IsNSButtonCell buttonCell) => nsColorPicker -> newButtonImage -> buttonCell -> IO ()
-insertNewButtonImage_in nsColorPicker  newButtonImage buttonCell =
-  withObjCPtr newButtonImage $ \raw_newButtonImage ->
-    withObjCPtr buttonCell $ \raw_buttonCell ->
-        sendMsg nsColorPicker (mkSelector "insertNewButtonImage:in:") retVoid [argPtr (castPtr raw_newButtonImage :: Ptr ()), argPtr (castPtr raw_buttonCell :: Ptr ())]
+insertNewButtonImage_in nsColorPicker newButtonImage buttonCell =
+  sendMessage nsColorPicker insertNewButtonImage_inSelector (toNSImage newButtonImage) (toNSButtonCell buttonCell)
 
 -- | @- viewSizeChanged:@
 viewSizeChanged :: IsNSColorPicker nsColorPicker => nsColorPicker -> RawId -> IO ()
-viewSizeChanged nsColorPicker  sender =
-    sendMsg nsColorPicker (mkSelector "viewSizeChanged:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+viewSizeChanged nsColorPicker sender =
+  sendMessage nsColorPicker viewSizeChangedSelector sender
 
 -- | @- attachColorList:@
 attachColorList :: (IsNSColorPicker nsColorPicker, IsNSColorList colorList) => nsColorPicker -> colorList -> IO ()
-attachColorList nsColorPicker  colorList =
-  withObjCPtr colorList $ \raw_colorList ->
-      sendMsg nsColorPicker (mkSelector "attachColorList:") retVoid [argPtr (castPtr raw_colorList :: Ptr ())]
+attachColorList nsColorPicker colorList =
+  sendMessage nsColorPicker attachColorListSelector (toNSColorList colorList)
 
 -- | @- detachColorList:@
 detachColorList :: (IsNSColorPicker nsColorPicker, IsNSColorList colorList) => nsColorPicker -> colorList -> IO ()
-detachColorList nsColorPicker  colorList =
-  withObjCPtr colorList $ \raw_colorList ->
-      sendMsg nsColorPicker (mkSelector "detachColorList:") retVoid [argPtr (castPtr raw_colorList :: Ptr ())]
+detachColorList nsColorPicker colorList =
+  sendMessage nsColorPicker detachColorListSelector (toNSColorList colorList)
 
 -- | @- setMode:@
 setMode :: IsNSColorPicker nsColorPicker => nsColorPicker -> NSColorPanelMode -> IO ()
-setMode nsColorPicker  mode =
-    sendMsg nsColorPicker (mkSelector "setMode:") retVoid [argCLong (coerce mode)]
+setMode nsColorPicker mode =
+  sendMessage nsColorPicker setModeSelector mode
 
 -- | @- colorPanel@
 colorPanel :: IsNSColorPicker nsColorPicker => nsColorPicker -> IO (Id NSColorPanel)
-colorPanel nsColorPicker  =
-    sendMsg nsColorPicker (mkSelector "colorPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorPanel nsColorPicker =
+  sendMessage nsColorPicker colorPanelSelector
 
 -- | @- provideNewButtonImage@
 provideNewButtonImage :: IsNSColorPicker nsColorPicker => nsColorPicker -> IO (Id NSImage)
-provideNewButtonImage nsColorPicker  =
-    sendMsg nsColorPicker (mkSelector "provideNewButtonImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+provideNewButtonImage nsColorPicker =
+  sendMessage nsColorPicker provideNewButtonImageSelector
 
 -- | @- buttonToolTip@
 buttonToolTip :: IsNSColorPicker nsColorPicker => nsColorPicker -> IO (Id NSString)
-buttonToolTip nsColorPicker  =
-    sendMsg nsColorPicker (mkSelector "buttonToolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonToolTip nsColorPicker =
+  sendMessage nsColorPicker buttonToolTipSelector
 
 -- | @- minContentSize@
 minContentSize :: IsNSColorPicker nsColorPicker => nsColorPicker -> IO NSSize
-minContentSize nsColorPicker  =
-    sendMsgStret nsColorPicker (mkSelector "minContentSize") retNSSize []
+minContentSize nsColorPicker =
+  sendMessage nsColorPicker minContentSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPickerMask:colorPanel:@
-initWithPickerMask_colorPanelSelector :: Selector
+initWithPickerMask_colorPanelSelector :: Selector '[CULong, Id NSColorPanel] (Id NSColorPicker)
 initWithPickerMask_colorPanelSelector = mkSelector "initWithPickerMask:colorPanel:"
 
 -- | @Selector@ for @insertNewButtonImage:in:@
-insertNewButtonImage_inSelector :: Selector
+insertNewButtonImage_inSelector :: Selector '[Id NSImage, Id NSButtonCell] ()
 insertNewButtonImage_inSelector = mkSelector "insertNewButtonImage:in:"
 
 -- | @Selector@ for @viewSizeChanged:@
-viewSizeChangedSelector :: Selector
+viewSizeChangedSelector :: Selector '[RawId] ()
 viewSizeChangedSelector = mkSelector "viewSizeChanged:"
 
 -- | @Selector@ for @attachColorList:@
-attachColorListSelector :: Selector
+attachColorListSelector :: Selector '[Id NSColorList] ()
 attachColorListSelector = mkSelector "attachColorList:"
 
 -- | @Selector@ for @detachColorList:@
-detachColorListSelector :: Selector
+detachColorListSelector :: Selector '[Id NSColorList] ()
 detachColorListSelector = mkSelector "detachColorList:"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[NSColorPanelMode] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @colorPanel@
-colorPanelSelector :: Selector
+colorPanelSelector :: Selector '[] (Id NSColorPanel)
 colorPanelSelector = mkSelector "colorPanel"
 
 -- | @Selector@ for @provideNewButtonImage@
-provideNewButtonImageSelector :: Selector
+provideNewButtonImageSelector :: Selector '[] (Id NSImage)
 provideNewButtonImageSelector = mkSelector "provideNewButtonImage"
 
 -- | @Selector@ for @buttonToolTip@
-buttonToolTipSelector :: Selector
+buttonToolTipSelector :: Selector '[] (Id NSString)
 buttonToolTipSelector = mkSelector "buttonToolTip"
 
 -- | @Selector@ for @minContentSize@
-minContentSizeSelector :: Selector
+minContentSizeSelector :: Selector '[] NSSize
 minContentSizeSelector = mkSelector "minContentSize"
 

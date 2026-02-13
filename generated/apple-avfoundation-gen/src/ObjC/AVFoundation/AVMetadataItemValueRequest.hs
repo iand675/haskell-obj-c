@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVMetadataItemValueRequest
   , respondWithValue
   , respondWithError
   , metadataItem
-  , respondWithValueSelector
-  , respondWithErrorSelector
   , metadataItemSelector
+  , respondWithErrorSelector
+  , respondWithValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- respondWithValue:@
 respondWithValue :: IsAVMetadataItemValueRequest avMetadataItemValueRequest => avMetadataItemValueRequest -> RawId -> IO ()
-respondWithValue avMetadataItemValueRequest  value =
-    sendMsg avMetadataItemValueRequest (mkSelector "respondWithValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+respondWithValue avMetadataItemValueRequest value =
+  sendMessage avMetadataItemValueRequest respondWithValueSelector value
 
 -- | respondWithError:
 --
@@ -50,28 +47,27 @@ respondWithValue avMetadataItemValueRequest  value =
 --
 -- ObjC selector: @- respondWithError:@
 respondWithError :: (IsAVMetadataItemValueRequest avMetadataItemValueRequest, IsNSError error_) => avMetadataItemValueRequest -> error_ -> IO ()
-respondWithError avMetadataItemValueRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg avMetadataItemValueRequest (mkSelector "respondWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+respondWithError avMetadataItemValueRequest error_ =
+  sendMessage avMetadataItemValueRequest respondWithErrorSelector (toNSError error_)
 
 -- | @- metadataItem@
 metadataItem :: IsAVMetadataItemValueRequest avMetadataItemValueRequest => avMetadataItemValueRequest -> IO (Id AVMetadataItem)
-metadataItem avMetadataItemValueRequest  =
-    sendMsg avMetadataItemValueRequest (mkSelector "metadataItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataItem avMetadataItemValueRequest =
+  sendMessage avMetadataItemValueRequest metadataItemSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @respondWithValue:@
-respondWithValueSelector :: Selector
+respondWithValueSelector :: Selector '[RawId] ()
 respondWithValueSelector = mkSelector "respondWithValue:"
 
 -- | @Selector@ for @respondWithError:@
-respondWithErrorSelector :: Selector
+respondWithErrorSelector :: Selector '[Id NSError] ()
 respondWithErrorSelector = mkSelector "respondWithError:"
 
 -- | @Selector@ for @metadataItem@
-metadataItemSelector :: Selector
+metadataItemSelector :: Selector '[] (Id AVMetadataItem)
 metadataItemSelector = mkSelector "metadataItem"
 

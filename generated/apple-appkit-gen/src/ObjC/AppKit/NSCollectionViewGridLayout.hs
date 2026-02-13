@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.AppKit.NSCollectionViewGridLayout
   , setMaximumItemSize
   , backgroundColors
   , setBackgroundColors
-  , marginsSelector
-  , setMarginsSelector
-  , minimumInteritemSpacingSelector
-  , setMinimumInteritemSpacingSelector
-  , minimumLineSpacingSelector
-  , setMinimumLineSpacingSelector
-  , maximumNumberOfRowsSelector
-  , setMaximumNumberOfRowsSelector
-  , maximumNumberOfColumnsSelector
-  , setMaximumNumberOfColumnsSelector
-  , minimumItemSizeSelector
-  , setMinimumItemSizeSelector
-  , maximumItemSizeSelector
-  , setMaximumItemSizeSelector
   , backgroundColorsSelector
+  , marginsSelector
+  , maximumItemSizeSelector
+  , maximumNumberOfColumnsSelector
+  , maximumNumberOfRowsSelector
+  , minimumInteritemSpacingSelector
+  , minimumItemSizeSelector
+  , minimumLineSpacingSelector
   , setBackgroundColorsSelector
+  , setMarginsSelector
+  , setMaximumItemSizeSelector
+  , setMaximumNumberOfColumnsSelector
+  , setMaximumNumberOfRowsSelector
+  , setMinimumInteritemSpacingSelector
+  , setMinimumItemSizeSelector
+  , setMinimumLineSpacingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,150 +57,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- margins@
 margins :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO NSEdgeInsets
-margins nsCollectionViewGridLayout  =
-    sendMsgStret nsCollectionViewGridLayout (mkSelector "margins") retNSEdgeInsets []
+margins nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout marginsSelector
 
 -- | @- setMargins:@
 setMargins :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> NSEdgeInsets -> IO ()
-setMargins nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMargins:") retVoid [argNSEdgeInsets value]
+setMargins nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMarginsSelector value
 
 -- | @- minimumInteritemSpacing@
 minimumInteritemSpacing :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO CDouble
-minimumInteritemSpacing nsCollectionViewGridLayout  =
-    sendMsg nsCollectionViewGridLayout (mkSelector "minimumInteritemSpacing") retCDouble []
+minimumInteritemSpacing nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout minimumInteritemSpacingSelector
 
 -- | @- setMinimumInteritemSpacing:@
 setMinimumInteritemSpacing :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> CDouble -> IO ()
-setMinimumInteritemSpacing nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMinimumInteritemSpacing:") retVoid [argCDouble value]
+setMinimumInteritemSpacing nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMinimumInteritemSpacingSelector value
 
 -- | @- minimumLineSpacing@
 minimumLineSpacing :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO CDouble
-minimumLineSpacing nsCollectionViewGridLayout  =
-    sendMsg nsCollectionViewGridLayout (mkSelector "minimumLineSpacing") retCDouble []
+minimumLineSpacing nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout minimumLineSpacingSelector
 
 -- | @- setMinimumLineSpacing:@
 setMinimumLineSpacing :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> CDouble -> IO ()
-setMinimumLineSpacing nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMinimumLineSpacing:") retVoid [argCDouble value]
+setMinimumLineSpacing nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMinimumLineSpacingSelector value
 
 -- | @- maximumNumberOfRows@
 maximumNumberOfRows :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO CULong
-maximumNumberOfRows nsCollectionViewGridLayout  =
-    sendMsg nsCollectionViewGridLayout (mkSelector "maximumNumberOfRows") retCULong []
+maximumNumberOfRows nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout maximumNumberOfRowsSelector
 
 -- | @- setMaximumNumberOfRows:@
 setMaximumNumberOfRows :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> CULong -> IO ()
-setMaximumNumberOfRows nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMaximumNumberOfRows:") retVoid [argCULong value]
+setMaximumNumberOfRows nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMaximumNumberOfRowsSelector value
 
 -- | @- maximumNumberOfColumns@
 maximumNumberOfColumns :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO CULong
-maximumNumberOfColumns nsCollectionViewGridLayout  =
-    sendMsg nsCollectionViewGridLayout (mkSelector "maximumNumberOfColumns") retCULong []
+maximumNumberOfColumns nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout maximumNumberOfColumnsSelector
 
 -- | @- setMaximumNumberOfColumns:@
 setMaximumNumberOfColumns :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> CULong -> IO ()
-setMaximumNumberOfColumns nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMaximumNumberOfColumns:") retVoid [argCULong value]
+setMaximumNumberOfColumns nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMaximumNumberOfColumnsSelector value
 
 -- | @- minimumItemSize@
 minimumItemSize :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO NSSize
-minimumItemSize nsCollectionViewGridLayout  =
-    sendMsgStret nsCollectionViewGridLayout (mkSelector "minimumItemSize") retNSSize []
+minimumItemSize nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout minimumItemSizeSelector
 
 -- | @- setMinimumItemSize:@
 setMinimumItemSize :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> NSSize -> IO ()
-setMinimumItemSize nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMinimumItemSize:") retVoid [argNSSize value]
+setMinimumItemSize nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMinimumItemSizeSelector value
 
 -- | @- maximumItemSize@
 maximumItemSize :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO NSSize
-maximumItemSize nsCollectionViewGridLayout  =
-    sendMsgStret nsCollectionViewGridLayout (mkSelector "maximumItemSize") retNSSize []
+maximumItemSize nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout maximumItemSizeSelector
 
 -- | @- setMaximumItemSize:@
 setMaximumItemSize :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> NSSize -> IO ()
-setMaximumItemSize nsCollectionViewGridLayout  value =
-    sendMsg nsCollectionViewGridLayout (mkSelector "setMaximumItemSize:") retVoid [argNSSize value]
+setMaximumItemSize nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setMaximumItemSizeSelector value
 
 -- | @- backgroundColors@
 backgroundColors :: IsNSCollectionViewGridLayout nsCollectionViewGridLayout => nsCollectionViewGridLayout -> IO (Id NSArray)
-backgroundColors nsCollectionViewGridLayout  =
-    sendMsg nsCollectionViewGridLayout (mkSelector "backgroundColors") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColors nsCollectionViewGridLayout =
+  sendMessage nsCollectionViewGridLayout backgroundColorsSelector
 
 -- | @- setBackgroundColors:@
 setBackgroundColors :: (IsNSCollectionViewGridLayout nsCollectionViewGridLayout, IsNSArray value) => nsCollectionViewGridLayout -> value -> IO ()
-setBackgroundColors nsCollectionViewGridLayout  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCollectionViewGridLayout (mkSelector "setBackgroundColors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColors nsCollectionViewGridLayout value =
+  sendMessage nsCollectionViewGridLayout setBackgroundColorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @margins@
-marginsSelector :: Selector
+marginsSelector :: Selector '[] NSEdgeInsets
 marginsSelector = mkSelector "margins"
 
 -- | @Selector@ for @setMargins:@
-setMarginsSelector :: Selector
+setMarginsSelector :: Selector '[NSEdgeInsets] ()
 setMarginsSelector = mkSelector "setMargins:"
 
 -- | @Selector@ for @minimumInteritemSpacing@
-minimumInteritemSpacingSelector :: Selector
+minimumInteritemSpacingSelector :: Selector '[] CDouble
 minimumInteritemSpacingSelector = mkSelector "minimumInteritemSpacing"
 
 -- | @Selector@ for @setMinimumInteritemSpacing:@
-setMinimumInteritemSpacingSelector :: Selector
+setMinimumInteritemSpacingSelector :: Selector '[CDouble] ()
 setMinimumInteritemSpacingSelector = mkSelector "setMinimumInteritemSpacing:"
 
 -- | @Selector@ for @minimumLineSpacing@
-minimumLineSpacingSelector :: Selector
+minimumLineSpacingSelector :: Selector '[] CDouble
 minimumLineSpacingSelector = mkSelector "minimumLineSpacing"
 
 -- | @Selector@ for @setMinimumLineSpacing:@
-setMinimumLineSpacingSelector :: Selector
+setMinimumLineSpacingSelector :: Selector '[CDouble] ()
 setMinimumLineSpacingSelector = mkSelector "setMinimumLineSpacing:"
 
 -- | @Selector@ for @maximumNumberOfRows@
-maximumNumberOfRowsSelector :: Selector
+maximumNumberOfRowsSelector :: Selector '[] CULong
 maximumNumberOfRowsSelector = mkSelector "maximumNumberOfRows"
 
 -- | @Selector@ for @setMaximumNumberOfRows:@
-setMaximumNumberOfRowsSelector :: Selector
+setMaximumNumberOfRowsSelector :: Selector '[CULong] ()
 setMaximumNumberOfRowsSelector = mkSelector "setMaximumNumberOfRows:"
 
 -- | @Selector@ for @maximumNumberOfColumns@
-maximumNumberOfColumnsSelector :: Selector
+maximumNumberOfColumnsSelector :: Selector '[] CULong
 maximumNumberOfColumnsSelector = mkSelector "maximumNumberOfColumns"
 
 -- | @Selector@ for @setMaximumNumberOfColumns:@
-setMaximumNumberOfColumnsSelector :: Selector
+setMaximumNumberOfColumnsSelector :: Selector '[CULong] ()
 setMaximumNumberOfColumnsSelector = mkSelector "setMaximumNumberOfColumns:"
 
 -- | @Selector@ for @minimumItemSize@
-minimumItemSizeSelector :: Selector
+minimumItemSizeSelector :: Selector '[] NSSize
 minimumItemSizeSelector = mkSelector "minimumItemSize"
 
 -- | @Selector@ for @setMinimumItemSize:@
-setMinimumItemSizeSelector :: Selector
+setMinimumItemSizeSelector :: Selector '[NSSize] ()
 setMinimumItemSizeSelector = mkSelector "setMinimumItemSize:"
 
 -- | @Selector@ for @maximumItemSize@
-maximumItemSizeSelector :: Selector
+maximumItemSizeSelector :: Selector '[] NSSize
 maximumItemSizeSelector = mkSelector "maximumItemSize"
 
 -- | @Selector@ for @setMaximumItemSize:@
-setMaximumItemSizeSelector :: Selector
+setMaximumItemSizeSelector :: Selector '[NSSize] ()
 setMaximumItemSizeSelector = mkSelector "setMaximumItemSize:"
 
 -- | @Selector@ for @backgroundColors@
-backgroundColorsSelector :: Selector
+backgroundColorsSelector :: Selector '[] (Id NSArray)
 backgroundColorsSelector = mkSelector "backgroundColors"
 
 -- | @Selector@ for @setBackgroundColors:@
-setBackgroundColorsSelector :: Selector
+setBackgroundColorsSelector :: Selector '[Id NSArray] ()
 setBackgroundColorsSelector = mkSelector "setBackgroundColors:"
 

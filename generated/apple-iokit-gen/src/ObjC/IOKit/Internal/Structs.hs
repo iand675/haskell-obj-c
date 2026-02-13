@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | IOColorEntry
 --
@@ -47,6 +49,16 @@ argIOColorEntry = mkStorableArg ioColorEntryStructType
 
 retIOColorEntry :: RetType IOColorEntry
 retIOColorEntry = mkStorableRetType ioColorEntryStructType
+
+instance ObjCArgument IOColorEntry where
+  withObjCArg x k = k (argIOColorEntry x)
+
+instance ObjCReturn IOColorEntry where
+  type RawReturn IOColorEntry = IOColorEntry
+  objcRetType = retIOColorEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | / Display mode timing information
 data IODetailedTimingInformationV1 = IODetailedTimingInformationV1
@@ -100,6 +112,16 @@ argIODetailedTimingInformationV1 = mkStorableArg ioDetailedTimingInformationV1St
 retIODetailedTimingInformationV1 :: RetType IODetailedTimingInformationV1
 retIODetailedTimingInformationV1 = mkStorableRetType ioDetailedTimingInformationV1StructType
 
+instance ObjCArgument IODetailedTimingInformationV1 where
+  withObjCArg x k = k (argIODetailedTimingInformationV1 x)
+
+instance ObjCReturn IODetailedTimingInformationV1 where
+  type RawReturn IODetailedTimingInformationV1 = IODetailedTimingInformationV1
+  objcRetType = retIODetailedTimingInformationV1
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data IOFBDisplayModeDescription = IOFBDisplayModeDescription
   { iofbDisplayModeDescriptionInfo :: !(Ptr ())
   , iofbDisplayModeDescriptionTimingInfo :: !(Ptr ())
@@ -124,6 +146,16 @@ argIOFBDisplayModeDescription = mkStorableArg iofbDisplayModeDescriptionStructTy
 retIOFBDisplayModeDescription :: RetType IOFBDisplayModeDescription
 retIOFBDisplayModeDescription = mkStorableRetType iofbDisplayModeDescriptionStructType
 
+instance ObjCArgument IOFBDisplayModeDescription where
+  withObjCArg x k = k (argIOFBDisplayModeDescription x)
+
+instance ObjCReturn IOFBDisplayModeDescription where
+  type RawReturn IOFBDisplayModeDescription = IOFBDisplayModeDescription
+  objcRetType = retIOFBDisplayModeDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data IOFixedPoint32 = IOFixedPoint32
   { ioFixedPoint32X :: !CInt
   , ioFixedPoint32Y :: !CInt
@@ -147,6 +179,16 @@ argIOFixedPoint32 = mkStorableArg ioFixedPoint32StructType
 
 retIOFixedPoint32 :: RetType IOFixedPoint32
 retIOFixedPoint32 = mkStorableRetType ioFixedPoint32StructType
+
+instance ObjCArgument IOFixedPoint32 where
+  withObjCArg x k = k (argIOFixedPoint32 x)
+
+instance ObjCReturn IOFixedPoint32 where
+  type RawReturn IOFixedPoint32 = IOFixedPoint32
+  objcRetType = retIOFixedPoint32
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data IOGBounds = IOGBounds
   { iogBoundsMinx :: !CShort
@@ -178,6 +220,16 @@ argIOGBounds = mkStorableArg iogBoundsStructType
 retIOGBounds :: RetType IOGBounds
 retIOGBounds = mkStorableRetType iogBoundsStructType
 
+instance ObjCArgument IOGBounds where
+  withObjCArg x k = k (argIOGBounds x)
+
+instance ObjCReturn IOGBounds where
+  type RawReturn IOGBounds = IOGBounds
+  objcRetType = retIOGBounds
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data IOGPoint = IOGPoint
   { iogPointX :: !CShort
   , iogPointY :: !CShort
@@ -202,6 +254,16 @@ argIOGPoint = mkStorableArg iogPointStructType
 retIOGPoint :: RetType IOGPoint
 retIOGPoint = mkStorableRetType iogPointStructType
 
+instance ObjCArgument IOGPoint where
+  withObjCArg x k = k (argIOGPoint x)
+
+instance ObjCReturn IOGPoint where
+  type RawReturn IOGPoint = IOGPoint
+  objcRetType = retIOGPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data IOGSize = IOGSize
   { iogSizeWidth :: !CShort
   , iogSizeHeight :: !CShort
@@ -225,6 +287,16 @@ argIOGSize = mkStorableArg iogSizeStructType
 
 retIOGSize :: RetType IOGSize
 retIOGSize = mkStorableRetType iogSizeStructType
+
+instance ObjCArgument IOGSize where
+  withObjCArg x k = k (argIOGSize x)
+
+instance ObjCReturn IOGSize where
+  type RawReturn IOGSize = IOGSize
+  objcRetType = retIOGSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOHIDCompletion
 --
@@ -268,6 +340,16 @@ argIOHIDCompletion = mkStorableArg iohidCompletionStructType
 retIOHIDCompletion :: RetType IOHIDCompletion
 retIOHIDCompletion = mkStorableRetType iohidCompletionStructType
 
+instance ObjCArgument IOHIDCompletion where
+  withObjCArg x k = k (argIOHIDCompletion x)
+
+instance ObjCReturn IOHIDCompletion where
+  type RawReturn IOHIDCompletion = IOHIDCompletion
+  objcRetType = retIOHIDCompletion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBBOSDescriptor
 --
 -- USB BOS descriptor. See the USB Specification at             http://www.usb.org.             USB 3.0 9.6.2: Binary Device Object Store (BOS)
@@ -301,6 +383,16 @@ argIOUSBBOSDescriptor = mkStorableArg iousbbosDescriptorStructType
 retIOUSBBOSDescriptor :: RetType IOUSBBOSDescriptor
 retIOUSBBOSDescriptor = mkStorableRetType iousbbosDescriptorStructType
 
+instance ObjCArgument IOUSBBOSDescriptor where
+  withObjCArg x k = k (argIOUSBBOSDescriptor x)
+
+instance ObjCReturn IOUSBBOSDescriptor where
+  type RawReturn IOUSBBOSDescriptor = IOUSBBOSDescriptor
+  objcRetType = retIOUSBBOSDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBConfigurationDescHeader
 --
 -- Header of a IOUSBConfigurationDescriptor.  Used to get the total length of the descriptor.             USB 2.0 9.6.3: Configuration
@@ -330,6 +422,16 @@ argIOUSBConfigurationDescHeader = mkStorableArg iousbConfigurationDescHeaderStru
 
 retIOUSBConfigurationDescHeader :: RetType IOUSBConfigurationDescHeader
 retIOUSBConfigurationDescHeader = mkStorableRetType iousbConfigurationDescHeaderStructType
+
+instance ObjCArgument IOUSBConfigurationDescHeader where
+  withObjCArg x k = k (argIOUSBConfigurationDescHeader x)
+
+instance ObjCReturn IOUSBConfigurationDescHeader where
+  type RawReturn IOUSBConfigurationDescHeader = IOUSBConfigurationDescHeader
+  objcRetType = retIOUSBConfigurationDescHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBConfigurationDescriptor
 --
@@ -376,6 +478,16 @@ argIOUSBConfigurationDescriptor = mkStorableArg iousbConfigurationDescriptorStru
 retIOUSBConfigurationDescriptor :: RetType IOUSBConfigurationDescriptor
 retIOUSBConfigurationDescriptor = mkStorableRetType iousbConfigurationDescriptorStructType
 
+instance ObjCArgument IOUSBConfigurationDescriptor where
+  withObjCArg x k = k (argIOUSBConfigurationDescriptor x)
+
+instance ObjCReturn IOUSBConfigurationDescriptor where
+  type RawReturn IOUSBConfigurationDescriptor = IOUSBConfigurationDescriptor
+  objcRetType = retIOUSBConfigurationDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDFUDescriptor
 --
 -- USB Device Firmware Update Descriptor. See the USB Device Firmware Update             Specification at http://www.usb.org.
@@ -412,6 +524,16 @@ argIOUSBDFUDescriptor = mkStorableArg iousbdfuDescriptorStructType
 retIOUSBDFUDescriptor :: RetType IOUSBDFUDescriptor
 retIOUSBDFUDescriptor = mkStorableRetType iousbdfuDescriptorStructType
 
+instance ObjCArgument IOUSBDFUDescriptor where
+  withObjCArg x k = k (argIOUSBDFUDescriptor x)
+
+instance ObjCReturn IOUSBDFUDescriptor where
+  type RawReturn IOUSBDFUDescriptor = IOUSBDFUDescriptor
+  objcRetType = retIOUSBDFUDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDescriptorHeader
 --
 -- Base descriptor defined by USB 2.0 9.5
@@ -441,6 +563,16 @@ argIOUSBDescriptor = mkStorableArg iousbDescriptorStructType
 retIOUSBDescriptor :: RetType IOUSBDescriptor
 retIOUSBDescriptor = mkStorableRetType iousbDescriptorStructType
 
+instance ObjCArgument IOUSBDescriptor where
+  withObjCArg x k = k (argIOUSBDescriptor x)
+
+instance ObjCReturn IOUSBDescriptor where
+  type RawReturn IOUSBDescriptor = IOUSBDescriptor
+  objcRetType = retIOUSBDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDescriptorHeader
 --
 -- Base descriptor defined by USB 2.0 9.5
@@ -469,6 +601,16 @@ argIOUSBDescriptorHeader = mkStorableArg iousbDescriptorHeaderStructType
 
 retIOUSBDescriptorHeader :: RetType IOUSBDescriptorHeader
 retIOUSBDescriptorHeader = mkStorableRetType iousbDescriptorHeaderStructType
+
+instance ObjCArgument IOUSBDescriptorHeader where
+  withObjCArg x k = k (argIOUSBDescriptorHeader x)
+
+instance ObjCReturn IOUSBDescriptorHeader where
+  type RawReturn IOUSBDescriptorHeader = IOUSBDescriptorHeader
+  objcRetType = retIOUSBDescriptorHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBDeviceCapabilityBillboardAltConfig
 --
@@ -500,6 +642,16 @@ argIOUSBDeviceCapabilityBillboardAltConfig = mkStorableArg iousbDeviceCapability
 retIOUSBDeviceCapabilityBillboardAltConfig :: RetType IOUSBDeviceCapabilityBillboardAltConfig
 retIOUSBDeviceCapabilityBillboardAltConfig = mkStorableRetType iousbDeviceCapabilityBillboardAltConfigStructType
 
+instance ObjCArgument IOUSBDeviceCapabilityBillboardAltConfig where
+  withObjCArg x k = k (argIOUSBDeviceCapabilityBillboardAltConfig x)
+
+instance ObjCReturn IOUSBDeviceCapabilityBillboardAltConfig where
+  type RawReturn IOUSBDeviceCapabilityBillboardAltConfig = IOUSBDeviceCapabilityBillboardAltConfig
+  objcRetType = retIOUSBDeviceCapabilityBillboardAltConfig
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceCapabilityBillboardAltConfig
 --
 -- Device Capability Billboard Alternate Setting Info.             USB Billboard 3.1.6.2: Billboard Capability Descriptor V1.2
@@ -529,6 +681,16 @@ argIOUSBDeviceCapabilityBillboardAltConfigCompatibility = mkStorableArg iousbDev
 
 retIOUSBDeviceCapabilityBillboardAltConfigCompatibility :: RetType IOUSBDeviceCapabilityBillboardAltConfigCompatibility
 retIOUSBDeviceCapabilityBillboardAltConfigCompatibility = mkStorableRetType iousbDeviceCapabilityBillboardAltConfigCompatibilityStructType
+
+instance ObjCArgument IOUSBDeviceCapabilityBillboardAltConfigCompatibility where
+  withObjCArg x k = k (argIOUSBDeviceCapabilityBillboardAltConfigCompatibility x)
+
+instance ObjCReturn IOUSBDeviceCapabilityBillboardAltConfigCompatibility where
+  type RawReturn IOUSBDeviceCapabilityBillboardAltConfigCompatibility = IOUSBDeviceCapabilityBillboardAltConfigCompatibility
+  objcRetType = retIOUSBDeviceCapabilityBillboardAltConfigCompatibility
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBDeviceCapabilityBillboardAltMode
 --
@@ -566,6 +728,16 @@ argIOUSBDeviceCapabilityBillboardAltMode = mkStorableArg iousbDeviceCapabilityBi
 retIOUSBDeviceCapabilityBillboardAltMode :: RetType IOUSBDeviceCapabilityBillboardAltMode
 retIOUSBDeviceCapabilityBillboardAltMode = mkStorableRetType iousbDeviceCapabilityBillboardAltModeStructType
 
+instance ObjCArgument IOUSBDeviceCapabilityBillboardAltMode where
+  withObjCArg x k = k (argIOUSBDeviceCapabilityBillboardAltMode x)
+
+instance ObjCReturn IOUSBDeviceCapabilityBillboardAltMode where
+  type RawReturn IOUSBDeviceCapabilityBillboardAltMode = IOUSBDeviceCapabilityBillboardAltMode
+  objcRetType = retIOUSBDeviceCapabilityBillboardAltMode
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceCapabilityDescriptorHeader
 --
 -- Device Capability descriptor.  See the USB Specification at             http://www.usb.org.             USB 3.0 9.6.2: Binary Device Object Store (BOS)
@@ -595,6 +767,16 @@ argIOUSBDeviceCapabilityDescriptorHeader = mkStorableArg iousbDeviceCapabilityDe
 
 retIOUSBDeviceCapabilityDescriptorHeader :: RetType IOUSBDeviceCapabilityDescriptorHeader
 retIOUSBDeviceCapabilityDescriptorHeader = mkStorableRetType iousbDeviceCapabilityDescriptorHeaderStructType
+
+instance ObjCArgument IOUSBDeviceCapabilityDescriptorHeader where
+  withObjCArg x k = k (argIOUSBDeviceCapabilityDescriptorHeader x)
+
+instance ObjCReturn IOUSBDeviceCapabilityDescriptorHeader where
+  type RawReturn IOUSBDeviceCapabilityDescriptorHeader = IOUSBDeviceCapabilityDescriptorHeader
+  objcRetType = retIOUSBDeviceCapabilityDescriptorHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBDeviceCapabilitySuperSpeedUSB
 --
@@ -641,6 +823,16 @@ argIOUSBDeviceCapabilitySuperSpeedUSB = mkStorableArg iousbDeviceCapabilitySuper
 retIOUSBDeviceCapabilitySuperSpeedUSB :: RetType IOUSBDeviceCapabilitySuperSpeedUSB
 retIOUSBDeviceCapabilitySuperSpeedUSB = mkStorableRetType iousbDeviceCapabilitySuperSpeedUSBStructType
 
+instance ObjCArgument IOUSBDeviceCapabilitySuperSpeedUSB where
+  withObjCArg x k = k (argIOUSBDeviceCapabilitySuperSpeedUSB x)
+
+instance ObjCReturn IOUSBDeviceCapabilitySuperSpeedUSB where
+  type RawReturn IOUSBDeviceCapabilitySuperSpeedUSB = IOUSBDeviceCapabilitySuperSpeedUSB
+  objcRetType = retIOUSBDeviceCapabilitySuperSpeedUSB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceCapabilityUSB2Extension
 --
 -- Device Capability USB 2.0 Extension.             USB 3.0 9.6.2.1: USB 2.0 Extension
@@ -673,6 +865,16 @@ argIOUSBDeviceCapabilityUSB2Extension = mkStorableArg iousbDeviceCapabilityUSB2E
 
 retIOUSBDeviceCapabilityUSB2Extension :: RetType IOUSBDeviceCapabilityUSB2Extension
 retIOUSBDeviceCapabilityUSB2Extension = mkStorableRetType iousbDeviceCapabilityUSB2ExtensionStructType
+
+instance ObjCArgument IOUSBDeviceCapabilityUSB2Extension where
+  withObjCArg x k = k (argIOUSBDeviceCapabilityUSB2Extension x)
+
+instance ObjCReturn IOUSBDeviceCapabilityUSB2Extension where
+  type RawReturn IOUSBDeviceCapabilityUSB2Extension = IOUSBDeviceCapabilityUSB2Extension
+  objcRetType = retIOUSBDeviceCapabilityUSB2Extension
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBDeviceDescriptor
 --
@@ -737,6 +939,16 @@ argIOUSBDeviceDescriptor = mkStorableArg iousbDeviceDescriptorStructType
 retIOUSBDeviceDescriptor :: RetType IOUSBDeviceDescriptor
 retIOUSBDeviceDescriptor = mkStorableRetType iousbDeviceDescriptorStructType
 
+instance ObjCArgument IOUSBDeviceDescriptor where
+  withObjCArg x k = k (argIOUSBDeviceDescriptor x)
+
+instance ObjCReturn IOUSBDeviceDescriptor where
+  type RawReturn IOUSBDeviceDescriptor = IOUSBDeviceDescriptor
+  objcRetType = retIOUSBDeviceDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceQualifierDescriptor
 --
 -- USB Device Qualifier Descriptor.             See the USB Specification at http://www.usb.org.             USB 2.0 9.6.2: Device Qualifier
@@ -785,6 +997,16 @@ argIOUSBDeviceQualifierDescriptor = mkStorableArg iousbDeviceQualifierDescriptor
 retIOUSBDeviceQualifierDescriptor :: RetType IOUSBDeviceQualifierDescriptor
 retIOUSBDeviceQualifierDescriptor = mkStorableRetType iousbDeviceQualifierDescriptorStructType
 
+instance ObjCArgument IOUSBDeviceQualifierDescriptor where
+  withObjCArg x k = k (argIOUSBDeviceQualifierDescriptor x)
+
+instance ObjCReturn IOUSBDeviceQualifierDescriptor where
+  type RawReturn IOUSBDeviceQualifierDescriptor = IOUSBDeviceQualifierDescriptor
+  objcRetType = retIOUSBDeviceQualifierDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceRequest
 --
 -- Standard device request.             See the USB Specification at http://www.usb.org.             USB 2.0 9.3: USB Device Requests
@@ -821,6 +1043,16 @@ argIOUSBDeviceRequest = mkStorableArg iousbDeviceRequestStructType
 retIOUSBDeviceRequest :: RetType IOUSBDeviceRequest
 retIOUSBDeviceRequest = mkStorableRetType iousbDeviceRequestStructType
 
+instance ObjCArgument IOUSBDeviceRequest where
+  withObjCArg x k = k (argIOUSBDeviceRequest x)
+
+instance ObjCReturn IOUSBDeviceRequest where
+  type RawReturn IOUSBDeviceRequest = IOUSBDeviceRequest
+  objcRetType = retIOUSBDeviceRequest
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBDeviceRequestSetSELData
 --
 -- See the USB Specification at http://www.usb.org.             USB 3.0 9.4.12: Set SEL Standard Device Request
@@ -853,6 +1085,16 @@ argIOUSBDeviceRequestSetSELData = mkStorableArg iousbDeviceRequestSetSELDataStru
 
 retIOUSBDeviceRequestSetSELData :: RetType IOUSBDeviceRequestSetSELData
 retIOUSBDeviceRequestSetSELData = mkStorableRetType iousbDeviceRequestSetSELDataStructType
+
+instance ObjCArgument IOUSBDeviceRequestSetSELData where
+  withObjCArg x k = k (argIOUSBDeviceRequestSetSELData x)
+
+instance ObjCReturn IOUSBDeviceRequestSetSELData where
+  type RawReturn IOUSBDeviceRequestSetSELData = IOUSBDeviceRequestSetSELData
+  objcRetType = retIOUSBDeviceRequestSetSELData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBEndpointDescriptor
 --
@@ -892,6 +1134,16 @@ argIOUSBEndpointDescriptor = mkStorableArg iousbEndpointDescriptorStructType
 
 retIOUSBEndpointDescriptor :: RetType IOUSBEndpointDescriptor
 retIOUSBEndpointDescriptor = mkStorableRetType iousbEndpointDescriptorStructType
+
+instance ObjCArgument IOUSBEndpointDescriptor where
+  withObjCArg x k = k (argIOUSBEndpointDescriptor x)
+
+instance ObjCReturn IOUSBEndpointDescriptor where
+  type RawReturn IOUSBEndpointDescriptor = IOUSBEndpointDescriptor
+  objcRetType = retIOUSBEndpointDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBHIDDescriptor
 --
@@ -938,6 +1190,16 @@ argIOUSBHIDDescriptor = mkStorableArg iousbhidDescriptorStructType
 retIOUSBHIDDescriptor :: RetType IOUSBHIDDescriptor
 retIOUSBHIDDescriptor = mkStorableRetType iousbhidDescriptorStructType
 
+instance ObjCArgument IOUSBHIDDescriptor where
+  withObjCArg x k = k (argIOUSBHIDDescriptor x)
+
+instance ObjCReturn IOUSBHIDDescriptor where
+  type RawReturn IOUSBHIDDescriptor = IOUSBHIDDescriptor
+  objcRetType = retIOUSBHIDDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBHIDReportDesc
 --
 -- USB HID Report Descriptor header.  See the USB HID Specification at             http://www.usb.org.
@@ -967,6 +1229,16 @@ argIOUSBHIDReportDesc = mkStorableArg iousbhidReportDescStructType
 
 retIOUSBHIDReportDesc :: RetType IOUSBHIDReportDesc
 retIOUSBHIDReportDesc = mkStorableRetType iousbhidReportDescStructType
+
+instance ObjCArgument IOUSBHIDReportDesc where
+  withObjCArg x k = k (argIOUSBHIDReportDesc x)
+
+instance ObjCReturn IOUSBHIDReportDesc where
+  type RawReturn IOUSBHIDReportDesc = IOUSBHIDReportDesc
+  objcRetType = retIOUSBHIDReportDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBInterfaceAssociationDescriptor
 --
@@ -1012,6 +1284,16 @@ argIOUSBInterfaceAssociationDescriptor = mkStorableArg iousbInterfaceAssociation
 
 retIOUSBInterfaceAssociationDescriptor :: RetType IOUSBInterfaceAssociationDescriptor
 retIOUSBInterfaceAssociationDescriptor = mkStorableRetType iousbInterfaceAssociationDescriptorStructType
+
+instance ObjCArgument IOUSBInterfaceAssociationDescriptor where
+  withObjCArg x k = k (argIOUSBInterfaceAssociationDescriptor x)
+
+instance ObjCReturn IOUSBInterfaceAssociationDescriptor where
+  type RawReturn IOUSBInterfaceAssociationDescriptor = IOUSBInterfaceAssociationDescriptor
+  objcRetType = retIOUSBInterfaceAssociationDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBInterfaceDescriptor
 --
@@ -1061,6 +1343,16 @@ argIOUSBInterfaceDescriptor = mkStorableArg iousbInterfaceDescriptorStructType
 retIOUSBInterfaceDescriptor :: RetType IOUSBInterfaceDescriptor
 retIOUSBInterfaceDescriptor = mkStorableRetType iousbInterfaceDescriptorStructType
 
+instance ObjCArgument IOUSBInterfaceDescriptor where
+  withObjCArg x k = k (argIOUSBInterfaceDescriptor x)
+
+instance ObjCReturn IOUSBInterfaceDescriptor where
+  type RawReturn IOUSBInterfaceDescriptor = IOUSBInterfaceDescriptor
+  objcRetType = retIOUSBInterfaceDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBSuperSpeedEndpointCompanionDescriptor
 --
 -- Descriptor for a SuperSpeed USB Endpoint Companion.             See the USB Specification at http://www.usb.org.             USB 3.1 9.6.7: SuperSpeed Endpoint Companion
@@ -1096,6 +1388,16 @@ argIOUSBSuperSpeedEndpointCompanionDescriptor = mkStorableArg iousbSuperSpeedEnd
 
 retIOUSBSuperSpeedEndpointCompanionDescriptor :: RetType IOUSBSuperSpeedEndpointCompanionDescriptor
 retIOUSBSuperSpeedEndpointCompanionDescriptor = mkStorableRetType iousbSuperSpeedEndpointCompanionDescriptorStructType
+
+instance ObjCArgument IOUSBSuperSpeedEndpointCompanionDescriptor where
+  withObjCArg x k = k (argIOUSBSuperSpeedEndpointCompanionDescriptor x)
+
+instance ObjCReturn IOUSBSuperSpeedEndpointCompanionDescriptor where
+  type RawReturn IOUSBSuperSpeedEndpointCompanionDescriptor = IOUSBSuperSpeedEndpointCompanionDescriptor
+  objcRetType = retIOUSBSuperSpeedEndpointCompanionDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBSuperSpeedHubDescriptor
 --
@@ -1145,6 +1447,16 @@ argIOUSBSuperSpeedHubDescriptor = mkStorableArg iousbSuperSpeedHubDescriptorStru
 retIOUSBSuperSpeedHubDescriptor :: RetType IOUSBSuperSpeedHubDescriptor
 retIOUSBSuperSpeedHubDescriptor = mkStorableRetType iousbSuperSpeedHubDescriptorStructType
 
+instance ObjCArgument IOUSBSuperSpeedHubDescriptor where
+  withObjCArg x k = k (argIOUSBSuperSpeedHubDescriptor x)
+
+instance ObjCReturn IOUSBSuperSpeedHubDescriptor where
+  type RawReturn IOUSBSuperSpeedHubDescriptor = IOUSBSuperSpeedHubDescriptor
+  objcRetType = retIOUSBSuperSpeedHubDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor
 --
 -- Descriptor for a SuperSpeedPlus Isochronout USB Endpoint Companion.             See the USB Specification at http://www.usb.org.             USB 3.1 9.6.8: SuperSpeedPlus Isochronous Endpoint Companion
@@ -1177,6 +1489,16 @@ argIOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor = mkStorableArg iou
 
 retIOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor :: RetType IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor
 retIOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor = mkStorableRetType iousbSuperSpeedPlusIsochronousEndpointCompanionDescriptorStructType
+
+instance ObjCArgument IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor where
+  withObjCArg x k = k (argIOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor x)
+
+instance ObjCReturn IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor where
+  type RawReturn IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor = IOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor
+  objcRetType = retIOUSBSuperSpeedPlusIsochronousEndpointCompanionDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NXEvent = NXEvent
   { nxEventType :: !CInt
@@ -1220,6 +1542,16 @@ argNXEvent = mkStorableArg nxEventStructType
 retNXEvent :: RetType NXEvent
 retNXEvent = mkStorableRetType nxEventStructType
 
+instance ObjCArgument NXEvent where
+  withObjCArg x k = k (argNXEvent x)
+
+instance ObjCReturn NXEvent where
+  type RawReturn NXEvent = NXEvent
+  objcRetType = retNXEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NXEventExt = NXEventExt
   { nxEventExtPayload :: !(Ptr ())
   , nxEventExtExtension :: !(Ptr ())
@@ -1243,6 +1575,16 @@ argNXEventExt = mkStorableArg nxEventExtStructType
 
 retNXEventExt :: RetType NXEventExt
 retNXEventExt = mkStorableRetType nxEventExtStructType
+
+instance ObjCArgument NXEventExt where
+  withObjCArg x k = k (argNXEventExt x)
+
+instance ObjCReturn NXEventExt where
+  type RawReturn NXEventExt = NXEventExt
+  objcRetType = retNXEventExt
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NXKeyMapping = NXKeyMapping
   { nxKeyMappingSize :: !CInt
@@ -1268,6 +1610,16 @@ argNXKeyMapping = mkStorableArg nxKeyMappingStructType
 retNXKeyMapping :: RetType NXKeyMapping
 retNXKeyMapping = mkStorableRetType nxKeyMappingStructType
 
+instance ObjCArgument NXKeyMapping where
+  withObjCArg x k = k (argNXKeyMapping x)
+
+instance ObjCReturn NXKeyMapping where
+  type RawReturn NXKeyMapping = NXKeyMapping
+  objcRetType = retNXKeyMapping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NXPoint = NXPoint
   { nxPointX :: !CFloat
   , nxPointY :: !CFloat
@@ -1292,6 +1644,16 @@ argNXPoint = mkStorableArg nxPointStructType
 retNXPoint :: RetType NXPoint
 retNXPoint = mkStorableRetType nxPointStructType
 
+instance ObjCArgument NXPoint where
+  withObjCArg x k = k (argNXPoint x)
+
+instance ObjCReturn NXPoint where
+  type RawReturn NXPoint = NXPoint
+  objcRetType = retNXPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NXSize = NXSize
   { nxSizeWidth :: !CFloat
   , nxSizeHeight :: !CFloat
@@ -1315,6 +1677,16 @@ argNXSize = mkStorableArg nxSizeStructType
 
 retNXSize :: RetType NXSize
 retNXSize = mkStorableRetType nxSizeStructType
+
+instance ObjCArgument NXSize where
+  withObjCArg x k = k (argNXSize x)
+
+instance ObjCReturn NXSize where
+  type RawReturn NXSize = NXSize
+  objcRetType = retNXSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NXTabletPointData = NXTabletPointData
   { nxTabletPointDataX :: !CInt
@@ -1370,6 +1742,16 @@ argNXTabletPointData = mkStorableArg nxTabletPointDataStructType
 retNXTabletPointData :: RetType NXTabletPointData
 retNXTabletPointData = mkStorableRetType nxTabletPointDataStructType
 
+instance ObjCArgument NXTabletPointData where
+  withObjCArg x k = k (argNXTabletPointData x)
+
+instance ObjCReturn NXTabletPointData where
+  type RawReturn NXTabletPointData = NXTabletPointData
+  objcRetType = retNXTabletPointData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NXTabletProximityData = NXTabletProximityData
   { nxTabletProximityDataVendorID :: !CUShort
   , nxTabletProximityDataTabletID :: !CUShort
@@ -1424,6 +1806,16 @@ argNXTabletProximityData = mkStorableArg nxTabletProximityDataStructType
 retNXTabletProximityData :: RetType NXTabletProximityData
 retNXTabletProximityData = mkStorableRetType nxTabletProximityDataStructType
 
+instance ObjCArgument NXTabletProximityData where
+  withObjCArg x k = k (argNXTabletProximityData x)
+
+instance ObjCReturn NXTabletProximityData where
+  type RawReturn NXTabletProximityData = NXTabletProximityData
+  objcRetType = retNXTabletProximityData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | UASPipeDescriptor
 --
 -- Structure used to specify the Mass Storage Specific UAS pipe usage descriptor
@@ -1456,3 +1848,13 @@ argUASPipeDescriptor = mkStorableArg uasPipeDescriptorStructType
 
 retUASPipeDescriptor :: RetType UASPipeDescriptor
 retUASPipeDescriptor = mkStorableRetType uasPipeDescriptorStructType
+
+instance ObjCArgument UASPipeDescriptor where
+  withObjCArg x k = k (argUASPipeDescriptor x)
+
+instance ObjCReturn UASPipeDescriptor where
+  type RawReturn UASPipeDescriptor = UASPipeDescriptor
+  objcRetType = retUASPipeDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

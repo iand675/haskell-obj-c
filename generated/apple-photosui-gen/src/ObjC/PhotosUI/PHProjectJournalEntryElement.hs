@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.PhotosUI.PHProjectJournalEntryElement
   , date
   , assetElement
   , textElement
-  , dateSelector
   , assetElementSelector
+  , dateSelector
   , textElementSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- date@
 date :: IsPHProjectJournalEntryElement phProjectJournalEntryElement => phProjectJournalEntryElement -> IO (Id NSDate)
-date phProjectJournalEntryElement  =
-    sendMsg phProjectJournalEntryElement (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date phProjectJournalEntryElement =
+  sendMessage phProjectJournalEntryElement dateSelector
 
 -- | Representative asset, if any, for that date.
 --
 -- ObjC selector: @- assetElement@
 assetElement :: IsPHProjectJournalEntryElement phProjectJournalEntryElement => phProjectJournalEntryElement -> IO (Id PHProjectAssetElement)
-assetElement phProjectJournalEntryElement  =
-    sendMsg phProjectJournalEntryElement (mkSelector "assetElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetElement phProjectJournalEntryElement =
+  sendMessage phProjectJournalEntryElement assetElementSelector
 
 -- | Descriptive text (e.g., "Mom's Birthday") for that date.
 --
 -- ObjC selector: @- textElement@
 textElement :: IsPHProjectJournalEntryElement phProjectJournalEntryElement => phProjectJournalEntryElement -> IO (Id PHProjectTextElement)
-textElement phProjectJournalEntryElement  =
-    sendMsg phProjectJournalEntryElement (mkSelector "textElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+textElement phProjectJournalEntryElement =
+  sendMessage phProjectJournalEntryElement textElementSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @assetElement@
-assetElementSelector :: Selector
+assetElementSelector :: Selector '[] (Id PHProjectAssetElement)
 assetElementSelector = mkSelector "assetElement"
 
 -- | @Selector@ for @textElement@
-textElementSelector :: Selector
+textElementSelector :: Selector '[] (Id PHProjectTextElement)
 textElementSelector = mkSelector "textElement"
 

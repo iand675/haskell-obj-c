@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.CoreImage.CIQRCodeFeature
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- messageString@
 messageString :: IsCIQRCodeFeature ciqrCodeFeature => ciqrCodeFeature -> IO (Id NSString)
-messageString ciqrCodeFeature  =
-    sendMsg ciqrCodeFeature (mkSelector "messageString") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageString ciqrCodeFeature =
+  sendMessage ciqrCodeFeature messageStringSelector
 
 -- | An abstract representation of a QR Code symbol.
 --
@@ -50,18 +47,18 @@ messageString ciqrCodeFeature  =
 --
 -- ObjC selector: @- symbolDescriptor@
 symbolDescriptor :: IsCIQRCodeFeature ciqrCodeFeature => ciqrCodeFeature -> IO RawId
-symbolDescriptor ciqrCodeFeature  =
-    fmap (RawId . castPtr) $ sendMsg ciqrCodeFeature (mkSelector "symbolDescriptor") (retPtr retVoid) []
+symbolDescriptor ciqrCodeFeature =
+  sendMessage ciqrCodeFeature symbolDescriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @messageString@
-messageStringSelector :: Selector
+messageStringSelector :: Selector '[] (Id NSString)
 messageStringSelector = mkSelector "messageString"
 
 -- | @Selector@ for @symbolDescriptor@
-symbolDescriptorSelector :: Selector
+symbolDescriptorSelector :: Selector '[] RawId
 symbolDescriptorSelector = mkSelector "symbolDescriptor"
 

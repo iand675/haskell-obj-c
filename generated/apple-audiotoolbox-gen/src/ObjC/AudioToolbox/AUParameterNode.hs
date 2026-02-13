@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,37 +31,33 @@ module ObjC.AudioToolbox.AUParameterNode
   , setImplementorValueFromStringCallback
   , implementorDisplayNameWithLengthCallback
   , setImplementorDisplayNameWithLengthCallback
+  , displayNameSelector
   , displayNameWithLengthSelector
+  , identifierSelector
+  , implementorDisplayNameWithLengthCallbackSelector
+  , implementorStringFromValueCallbackSelector
+  , implementorValueFromStringCallbackSelector
+  , implementorValueObserverSelector
+  , implementorValueProviderSelector
+  , keyPathSelector
+  , removeParameterObserverSelector
+  , setImplementorDisplayNameWithLengthCallbackSelector
+  , setImplementorStringFromValueCallbackSelector
+  , setImplementorValueFromStringCallbackSelector
+  , setImplementorValueObserverSelector
+  , setImplementorValueProviderSelector
+  , tokenByAddingParameterAutomationObserverSelector
   , tokenByAddingParameterObserverSelector
   , tokenByAddingParameterRecordingObserverSelector
-  , tokenByAddingParameterAutomationObserverSelector
-  , removeParameterObserverSelector
-  , identifierSelector
-  , keyPathSelector
-  , displayNameSelector
-  , implementorValueObserverSelector
-  , setImplementorValueObserverSelector
-  , implementorValueProviderSelector
-  , setImplementorValueProviderSelector
-  , implementorStringFromValueCallbackSelector
-  , setImplementorStringFromValueCallbackSelector
-  , implementorValueFromStringCallbackSelector
-  , setImplementorValueFromStringCallbackSelector
-  , implementorDisplayNameWithLengthCallbackSelector
-  , setImplementorDisplayNameWithLengthCallbackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- displayNameWithLength:@
 displayNameWithLength :: IsAUParameterNode auParameterNode => auParameterNode -> CLong -> IO (Id NSString)
-displayNameWithLength auParameterNode  maximumLength =
-    sendMsg auParameterNode (mkSelector "displayNameWithLength:") (retPtr retVoid) [argCLong maximumLength] >>= retainedObject . castPtr
+displayNameWithLength auParameterNode maximumLength =
+  sendMessage auParameterNode displayNameWithLengthSelector maximumLength
 
 -- | tokenByAddingParameterObserver:
 --
@@ -98,8 +95,8 @@ displayNameWithLength auParameterNode  maximumLength =
 --
 -- ObjC selector: @- tokenByAddingParameterObserver:@
 tokenByAddingParameterObserver :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO RawId
-tokenByAddingParameterObserver auParameterNode  observer =
-    fmap (RawId . castPtr) $ sendMsg auParameterNode (mkSelector "tokenByAddingParameterObserver:") (retPtr retVoid) [argPtr (castPtr observer :: Ptr ())]
+tokenByAddingParameterObserver auParameterNode observer =
+  sendMessage auParameterNode tokenByAddingParameterObserverSelector observer
 
 -- | tokenByAddingParameterRecordingObserver:
 --
@@ -111,8 +108,8 @@ tokenByAddingParameterObserver auParameterNode  observer =
 --
 -- ObjC selector: @- tokenByAddingParameterRecordingObserver:@
 tokenByAddingParameterRecordingObserver :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO RawId
-tokenByAddingParameterRecordingObserver auParameterNode  observer =
-    fmap (RawId . castPtr) $ sendMsg auParameterNode (mkSelector "tokenByAddingParameterRecordingObserver:") (retPtr retVoid) [argPtr (castPtr observer :: Ptr ())]
+tokenByAddingParameterRecordingObserver auParameterNode observer =
+  sendMessage auParameterNode tokenByAddingParameterRecordingObserverSelector observer
 
 -- | tokenByAddingParameterAutomationObserver:
 --
@@ -132,8 +129,8 @@ tokenByAddingParameterRecordingObserver auParameterNode  observer =
 --
 -- ObjC selector: @- tokenByAddingParameterAutomationObserver:@
 tokenByAddingParameterAutomationObserver :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO RawId
-tokenByAddingParameterAutomationObserver auParameterNode  observer =
-    fmap (RawId . castPtr) $ sendMsg auParameterNode (mkSelector "tokenByAddingParameterAutomationObserver:") (retPtr retVoid) [argPtr (castPtr observer :: Ptr ())]
+tokenByAddingParameterAutomationObserver auParameterNode observer =
+  sendMessage auParameterNode tokenByAddingParameterAutomationObserverSelector observer
 
 -- | removeParameterObserver:
 --
@@ -143,8 +140,8 @@ tokenByAddingParameterAutomationObserver auParameterNode  observer =
 --
 -- ObjC selector: @- removeParameterObserver:@
 removeParameterObserver :: IsAUParameterNode auParameterNode => auParameterNode -> RawId -> IO ()
-removeParameterObserver auParameterNode  token =
-    sendMsg auParameterNode (mkSelector "removeParameterObserver:") retVoid [argPtr (castPtr (unRawId token) :: Ptr ())]
+removeParameterObserver auParameterNode token =
+  sendMessage auParameterNode removeParameterObserverSelector token
 
 -- | identifier
 --
@@ -154,8 +151,8 @@ removeParameterObserver auParameterNode  token =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Id NSString)
-identifier auParameterNode  =
-    sendMsg auParameterNode (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier auParameterNode =
+  sendMessage auParameterNode identifierSelector
 
 -- | keyPath
 --
@@ -169,8 +166,8 @@ identifier auParameterNode  =
 --
 -- ObjC selector: @- keyPath@
 keyPath :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Id NSString)
-keyPath auParameterNode  =
-    sendMsg auParameterNode (mkSelector "keyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyPath auParameterNode =
+  sendMessage auParameterNode keyPathSelector
 
 -- | displayName
 --
@@ -178,8 +175,8 @@ keyPath auParameterNode  =
 --
 -- ObjC selector: @- displayName@
 displayName :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Id NSString)
-displayName auParameterNode  =
-    sendMsg auParameterNode (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName auParameterNode =
+  sendMessage auParameterNode displayNameSelector
 
 -- | Called when a parameter changes value.
 --
@@ -187,8 +184,8 @@ displayName auParameterNode  =
 --
 -- ObjC selector: @- implementorValueObserver@
 implementorValueObserver :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Ptr ())
-implementorValueObserver auParameterNode  =
-    fmap castPtr $ sendMsg auParameterNode (mkSelector "implementorValueObserver") (retPtr retVoid) []
+implementorValueObserver auParameterNode =
+  sendMessage auParameterNode implementorValueObserverSelector
 
 -- | Called when a parameter changes value.
 --
@@ -196,8 +193,8 @@ implementorValueObserver auParameterNode  =
 --
 -- ObjC selector: @- setImplementorValueObserver:@
 setImplementorValueObserver :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO ()
-setImplementorValueObserver auParameterNode  value =
-    sendMsg auParameterNode (mkSelector "setImplementorValueObserver:") retVoid [argPtr (castPtr value :: Ptr ())]
+setImplementorValueObserver auParameterNode value =
+  sendMessage auParameterNode setImplementorValueObserverSelector value
 
 -- | Called when a value of a parameter in the tree is known to have a stale value				needing to be refreshed.
 --
@@ -205,8 +202,8 @@ setImplementorValueObserver auParameterNode  value =
 --
 -- ObjC selector: @- implementorValueProvider@
 implementorValueProvider :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Ptr ())
-implementorValueProvider auParameterNode  =
-    fmap castPtr $ sendMsg auParameterNode (mkSelector "implementorValueProvider") (retPtr retVoid) []
+implementorValueProvider auParameterNode =
+  sendMessage auParameterNode implementorValueProviderSelector
 
 -- | Called when a value of a parameter in the tree is known to have a stale value				needing to be refreshed.
 --
@@ -214,124 +211,124 @@ implementorValueProvider auParameterNode  =
 --
 -- ObjC selector: @- setImplementorValueProvider:@
 setImplementorValueProvider :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO ()
-setImplementorValueProvider auParameterNode  value =
-    sendMsg auParameterNode (mkSelector "setImplementorValueProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+setImplementorValueProvider auParameterNode value =
+  sendMessage auParameterNode setImplementorValueProviderSelector value
 
 -- | Called to provide string representations of parameter values.	If value is nil, the callback uses the current value of the parameter.
 --
 -- ObjC selector: @- implementorStringFromValueCallback@
 implementorStringFromValueCallback :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Ptr ())
-implementorStringFromValueCallback auParameterNode  =
-    fmap castPtr $ sendMsg auParameterNode (mkSelector "implementorStringFromValueCallback") (retPtr retVoid) []
+implementorStringFromValueCallback auParameterNode =
+  sendMessage auParameterNode implementorStringFromValueCallbackSelector
 
 -- | Called to provide string representations of parameter values.	If value is nil, the callback uses the current value of the parameter.
 --
 -- ObjC selector: @- setImplementorStringFromValueCallback:@
 setImplementorStringFromValueCallback :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO ()
-setImplementorStringFromValueCallback auParameterNode  value =
-    sendMsg auParameterNode (mkSelector "setImplementorStringFromValueCallback:") retVoid [argPtr (castPtr value :: Ptr ())]
+setImplementorStringFromValueCallback auParameterNode value =
+  sendMessage auParameterNode setImplementorStringFromValueCallbackSelector value
 
 -- | Called to convert string to numeric representations of parameter values.
 --
 -- ObjC selector: @- implementorValueFromStringCallback@
 implementorValueFromStringCallback :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Ptr ())
-implementorValueFromStringCallback auParameterNode  =
-    fmap castPtr $ sendMsg auParameterNode (mkSelector "implementorValueFromStringCallback") (retPtr retVoid) []
+implementorValueFromStringCallback auParameterNode =
+  sendMessage auParameterNode implementorValueFromStringCallbackSelector
 
 -- | Called to convert string to numeric representations of parameter values.
 --
 -- ObjC selector: @- setImplementorValueFromStringCallback:@
 setImplementorValueFromStringCallback :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO ()
-setImplementorValueFromStringCallback auParameterNode  value =
-    sendMsg auParameterNode (mkSelector "setImplementorValueFromStringCallback:") retVoid [argPtr (castPtr value :: Ptr ())]
+setImplementorValueFromStringCallback auParameterNode value =
+  sendMessage auParameterNode setImplementorValueFromStringCallbackSelector value
 
 -- | Called to obtain an abbreviated version of a parameter or group name.
 --
 -- ObjC selector: @- implementorDisplayNameWithLengthCallback@
 implementorDisplayNameWithLengthCallback :: IsAUParameterNode auParameterNode => auParameterNode -> IO (Ptr ())
-implementorDisplayNameWithLengthCallback auParameterNode  =
-    fmap castPtr $ sendMsg auParameterNode (mkSelector "implementorDisplayNameWithLengthCallback") (retPtr retVoid) []
+implementorDisplayNameWithLengthCallback auParameterNode =
+  sendMessage auParameterNode implementorDisplayNameWithLengthCallbackSelector
 
 -- | Called to obtain an abbreviated version of a parameter or group name.
 --
 -- ObjC selector: @- setImplementorDisplayNameWithLengthCallback:@
 setImplementorDisplayNameWithLengthCallback :: IsAUParameterNode auParameterNode => auParameterNode -> Ptr () -> IO ()
-setImplementorDisplayNameWithLengthCallback auParameterNode  value =
-    sendMsg auParameterNode (mkSelector "setImplementorDisplayNameWithLengthCallback:") retVoid [argPtr (castPtr value :: Ptr ())]
+setImplementorDisplayNameWithLengthCallback auParameterNode value =
+  sendMessage auParameterNode setImplementorDisplayNameWithLengthCallbackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayNameWithLength:@
-displayNameWithLengthSelector :: Selector
+displayNameWithLengthSelector :: Selector '[CLong] (Id NSString)
 displayNameWithLengthSelector = mkSelector "displayNameWithLength:"
 
 -- | @Selector@ for @tokenByAddingParameterObserver:@
-tokenByAddingParameterObserverSelector :: Selector
+tokenByAddingParameterObserverSelector :: Selector '[Ptr ()] RawId
 tokenByAddingParameterObserverSelector = mkSelector "tokenByAddingParameterObserver:"
 
 -- | @Selector@ for @tokenByAddingParameterRecordingObserver:@
-tokenByAddingParameterRecordingObserverSelector :: Selector
+tokenByAddingParameterRecordingObserverSelector :: Selector '[Ptr ()] RawId
 tokenByAddingParameterRecordingObserverSelector = mkSelector "tokenByAddingParameterRecordingObserver:"
 
 -- | @Selector@ for @tokenByAddingParameterAutomationObserver:@
-tokenByAddingParameterAutomationObserverSelector :: Selector
+tokenByAddingParameterAutomationObserverSelector :: Selector '[Ptr ()] RawId
 tokenByAddingParameterAutomationObserverSelector = mkSelector "tokenByAddingParameterAutomationObserver:"
 
 -- | @Selector@ for @removeParameterObserver:@
-removeParameterObserverSelector :: Selector
+removeParameterObserverSelector :: Selector '[RawId] ()
 removeParameterObserverSelector = mkSelector "removeParameterObserver:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @keyPath@
-keyPathSelector :: Selector
+keyPathSelector :: Selector '[] (Id NSString)
 keyPathSelector = mkSelector "keyPath"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @implementorValueObserver@
-implementorValueObserverSelector :: Selector
+implementorValueObserverSelector :: Selector '[] (Ptr ())
 implementorValueObserverSelector = mkSelector "implementorValueObserver"
 
 -- | @Selector@ for @setImplementorValueObserver:@
-setImplementorValueObserverSelector :: Selector
+setImplementorValueObserverSelector :: Selector '[Ptr ()] ()
 setImplementorValueObserverSelector = mkSelector "setImplementorValueObserver:"
 
 -- | @Selector@ for @implementorValueProvider@
-implementorValueProviderSelector :: Selector
+implementorValueProviderSelector :: Selector '[] (Ptr ())
 implementorValueProviderSelector = mkSelector "implementorValueProvider"
 
 -- | @Selector@ for @setImplementorValueProvider:@
-setImplementorValueProviderSelector :: Selector
+setImplementorValueProviderSelector :: Selector '[Ptr ()] ()
 setImplementorValueProviderSelector = mkSelector "setImplementorValueProvider:"
 
 -- | @Selector@ for @implementorStringFromValueCallback@
-implementorStringFromValueCallbackSelector :: Selector
+implementorStringFromValueCallbackSelector :: Selector '[] (Ptr ())
 implementorStringFromValueCallbackSelector = mkSelector "implementorStringFromValueCallback"
 
 -- | @Selector@ for @setImplementorStringFromValueCallback:@
-setImplementorStringFromValueCallbackSelector :: Selector
+setImplementorStringFromValueCallbackSelector :: Selector '[Ptr ()] ()
 setImplementorStringFromValueCallbackSelector = mkSelector "setImplementorStringFromValueCallback:"
 
 -- | @Selector@ for @implementorValueFromStringCallback@
-implementorValueFromStringCallbackSelector :: Selector
+implementorValueFromStringCallbackSelector :: Selector '[] (Ptr ())
 implementorValueFromStringCallbackSelector = mkSelector "implementorValueFromStringCallback"
 
 -- | @Selector@ for @setImplementorValueFromStringCallback:@
-setImplementorValueFromStringCallbackSelector :: Selector
+setImplementorValueFromStringCallbackSelector :: Selector '[Ptr ()] ()
 setImplementorValueFromStringCallbackSelector = mkSelector "setImplementorValueFromStringCallback:"
 
 -- | @Selector@ for @implementorDisplayNameWithLengthCallback@
-implementorDisplayNameWithLengthCallbackSelector :: Selector
+implementorDisplayNameWithLengthCallbackSelector :: Selector '[] (Ptr ())
 implementorDisplayNameWithLengthCallbackSelector = mkSelector "implementorDisplayNameWithLengthCallback"
 
 -- | @Selector@ for @setImplementorDisplayNameWithLengthCallback:@
-setImplementorDisplayNameWithLengthCallbackSelector :: Selector
+setImplementorDisplayNameWithLengthCallbackSelector :: Selector '[Ptr ()] ()
 setImplementorDisplayNameWithLengthCallbackSelector = mkSelector "setImplementorDisplayNameWithLengthCallback:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.GameplayKit.GKRidgedNoiseSource
   , IsGKRidgedNoiseSource(..)
   , ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seed
   , initWithFrequency_octaveCount_lacunarity_seed
-  , ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector
   , initWithFrequency_octaveCount_lacunarity_seedSelector
+  , ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,22 +33,22 @@ ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seed :: CDouble -> CLong -
 ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seed frequency octaveCount lacunarity seed =
   do
     cls' <- getRequiredClass "GKRidgedNoiseSource"
-    sendClassMsg cls' (mkSelector "ridgedNoiseSourceWithFrequency:octaveCount:lacunarity:seed:") (retPtr retVoid) [argCDouble frequency, argCLong octaveCount, argCDouble lacunarity, argCInt seed] >>= retainedObject . castPtr
+    sendClassMessage cls' ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector frequency octaveCount lacunarity seed
 
 -- | @- initWithFrequency:octaveCount:lacunarity:seed:@
 initWithFrequency_octaveCount_lacunarity_seed :: IsGKRidgedNoiseSource gkRidgedNoiseSource => gkRidgedNoiseSource -> CDouble -> CLong -> CDouble -> CInt -> IO (Id GKRidgedNoiseSource)
-initWithFrequency_octaveCount_lacunarity_seed gkRidgedNoiseSource  frequency octaveCount lacunarity seed =
-    sendMsg gkRidgedNoiseSource (mkSelector "initWithFrequency:octaveCount:lacunarity:seed:") (retPtr retVoid) [argCDouble frequency, argCLong octaveCount, argCDouble lacunarity, argCInt seed] >>= ownedObject . castPtr
+initWithFrequency_octaveCount_lacunarity_seed gkRidgedNoiseSource frequency octaveCount lacunarity seed =
+  sendOwnedMessage gkRidgedNoiseSource initWithFrequency_octaveCount_lacunarity_seedSelector frequency octaveCount lacunarity seed
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ridgedNoiseSourceWithFrequency:octaveCount:lacunarity:seed:@
-ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector :: Selector
+ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector :: Selector '[CDouble, CLong, CDouble, CInt] (Id GKRidgedNoiseSource)
 ridgedNoiseSourceWithFrequency_octaveCount_lacunarity_seedSelector = mkSelector "ridgedNoiseSourceWithFrequency:octaveCount:lacunarity:seed:"
 
 -- | @Selector@ for @initWithFrequency:octaveCount:lacunarity:seed:@
-initWithFrequency_octaveCount_lacunarity_seedSelector :: Selector
+initWithFrequency_octaveCount_lacunarity_seedSelector :: Selector '[CDouble, CLong, CDouble, CInt] (Id GKRidgedNoiseSource)
 initWithFrequency_octaveCount_lacunarity_seedSelector = mkSelector "initWithFrequency:octaveCount:lacunarity:seed:"
 

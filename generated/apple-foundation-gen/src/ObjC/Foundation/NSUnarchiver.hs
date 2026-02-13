@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,27 @@ module ObjC.Foundation.NSUnarchiver
   , replaceObject_withObject
   , atEnd
   , systemVersion
+  , atEndSelector
+  , classNameDecodedForArchiveClassNameSelector
+  , decodeClassName_asClassNameSelector
   , initForReadingWithDataSelector
-  , setObjectZoneSelector
+  , nsUnarchiverClassNameDecodedForArchiveClassNameSelector
+  , nsUnarchiverDecodeClassName_asClassNameSelector
   , objectZoneSelector
+  , replaceObject_withObjectSelector
+  , setObjectZoneSelector
+  , systemVersionSelector
   , unarchiveObjectWithDataSelector
   , unarchiveObjectWithFileSelector
-  , decodeClassName_asClassNameSelector
-  , classNameDecodedForArchiveClassNameSelector
-  , replaceObject_withObjectSelector
-  , atEndSelector
-  , systemVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,122 +49,121 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initForReadingWithData:@
 initForReadingWithData :: (IsNSUnarchiver nsUnarchiver, IsNSData data_) => nsUnarchiver -> data_ -> IO (Id NSUnarchiver)
-initForReadingWithData nsUnarchiver  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsUnarchiver (mkSelector "initForReadingWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initForReadingWithData nsUnarchiver data_ =
+  sendOwnedMessage nsUnarchiver initForReadingWithDataSelector (toNSData data_)
 
 -- | @- setObjectZone:@
 setObjectZone :: IsNSUnarchiver nsUnarchiver => nsUnarchiver -> Ptr () -> IO ()
-setObjectZone nsUnarchiver  zone =
-    sendMsg nsUnarchiver (mkSelector "setObjectZone:") retVoid [argPtr zone]
+setObjectZone nsUnarchiver zone =
+  sendMessage nsUnarchiver setObjectZoneSelector zone
 
 -- | @- objectZone@
 objectZone :: IsNSUnarchiver nsUnarchiver => nsUnarchiver -> IO (Ptr ())
-objectZone nsUnarchiver  =
-    fmap castPtr $ sendMsg nsUnarchiver (mkSelector "objectZone") (retPtr retVoid) []
+objectZone nsUnarchiver =
+  sendMessage nsUnarchiver objectZoneSelector
 
 -- | @+ unarchiveObjectWithData:@
 unarchiveObjectWithData :: IsNSData data_ => data_ -> IO RawId
 unarchiveObjectWithData data_ =
   do
     cls' <- getRequiredClass "NSUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchiveObjectWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())]
+    sendClassMessage cls' unarchiveObjectWithDataSelector (toNSData data_)
 
 -- | @+ unarchiveObjectWithFile:@
 unarchiveObjectWithFile :: IsNSString path => path -> IO RawId
 unarchiveObjectWithFile path =
   do
     cls' <- getRequiredClass "NSUnarchiver"
-    withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchiveObjectWithFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+    sendClassMessage cls' unarchiveObjectWithFileSelector (toNSString path)
 
 -- | @+ decodeClassName:asClassName:@
 nsUnarchiverDecodeClassName_asClassName :: (IsNSString inArchiveName, IsNSString trueName) => inArchiveName -> trueName -> IO ()
 nsUnarchiverDecodeClassName_asClassName inArchiveName trueName =
   do
     cls' <- getRequiredClass "NSUnarchiver"
-    withObjCPtr inArchiveName $ \raw_inArchiveName ->
-      withObjCPtr trueName $ \raw_trueName ->
-        sendClassMsg cls' (mkSelector "decodeClassName:asClassName:") retVoid [argPtr (castPtr raw_inArchiveName :: Ptr ()), argPtr (castPtr raw_trueName :: Ptr ())]
+    sendClassMessage cls' nsUnarchiverDecodeClassName_asClassNameSelector (toNSString inArchiveName) (toNSString trueName)
 
 -- | @- decodeClassName:asClassName:@
 decodeClassName_asClassName :: (IsNSUnarchiver nsUnarchiver, IsNSString inArchiveName, IsNSString trueName) => nsUnarchiver -> inArchiveName -> trueName -> IO ()
-decodeClassName_asClassName nsUnarchiver  inArchiveName trueName =
-  withObjCPtr inArchiveName $ \raw_inArchiveName ->
-    withObjCPtr trueName $ \raw_trueName ->
-        sendMsg nsUnarchiver (mkSelector "decodeClassName:asClassName:") retVoid [argPtr (castPtr raw_inArchiveName :: Ptr ()), argPtr (castPtr raw_trueName :: Ptr ())]
+decodeClassName_asClassName nsUnarchiver inArchiveName trueName =
+  sendMessage nsUnarchiver decodeClassName_asClassNameSelector (toNSString inArchiveName) (toNSString trueName)
 
 -- | @+ classNameDecodedForArchiveClassName:@
 nsUnarchiverClassNameDecodedForArchiveClassName :: IsNSString inArchiveName => inArchiveName -> IO (Id NSString)
 nsUnarchiverClassNameDecodedForArchiveClassName inArchiveName =
   do
     cls' <- getRequiredClass "NSUnarchiver"
-    withObjCPtr inArchiveName $ \raw_inArchiveName ->
-      sendClassMsg cls' (mkSelector "classNameDecodedForArchiveClassName:") (retPtr retVoid) [argPtr (castPtr raw_inArchiveName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nsUnarchiverClassNameDecodedForArchiveClassNameSelector (toNSString inArchiveName)
 
 -- | @- classNameDecodedForArchiveClassName:@
 classNameDecodedForArchiveClassName :: (IsNSUnarchiver nsUnarchiver, IsNSString inArchiveName) => nsUnarchiver -> inArchiveName -> IO (Id NSString)
-classNameDecodedForArchiveClassName nsUnarchiver  inArchiveName =
-  withObjCPtr inArchiveName $ \raw_inArchiveName ->
-      sendMsg nsUnarchiver (mkSelector "classNameDecodedForArchiveClassName:") (retPtr retVoid) [argPtr (castPtr raw_inArchiveName :: Ptr ())] >>= retainedObject . castPtr
+classNameDecodedForArchiveClassName nsUnarchiver inArchiveName =
+  sendMessage nsUnarchiver classNameDecodedForArchiveClassNameSelector (toNSString inArchiveName)
 
 -- | @- replaceObject:withObject:@
 replaceObject_withObject :: IsNSUnarchiver nsUnarchiver => nsUnarchiver -> RawId -> RawId -> IO ()
-replaceObject_withObject nsUnarchiver  object newObject =
-    sendMsg nsUnarchiver (mkSelector "replaceObject:withObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr (unRawId newObject) :: Ptr ())]
+replaceObject_withObject nsUnarchiver object newObject =
+  sendMessage nsUnarchiver replaceObject_withObjectSelector object newObject
 
 -- | @- atEnd@
 atEnd :: IsNSUnarchiver nsUnarchiver => nsUnarchiver -> IO Bool
-atEnd nsUnarchiver  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUnarchiver (mkSelector "atEnd") retCULong []
+atEnd nsUnarchiver =
+  sendMessage nsUnarchiver atEndSelector
 
 -- | @- systemVersion@
 systemVersion :: IsNSUnarchiver nsUnarchiver => nsUnarchiver -> IO CUInt
-systemVersion nsUnarchiver  =
-    sendMsg nsUnarchiver (mkSelector "systemVersion") retCUInt []
+systemVersion nsUnarchiver =
+  sendMessage nsUnarchiver systemVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initForReadingWithData:@
-initForReadingWithDataSelector :: Selector
+initForReadingWithDataSelector :: Selector '[Id NSData] (Id NSUnarchiver)
 initForReadingWithDataSelector = mkSelector "initForReadingWithData:"
 
 -- | @Selector@ for @setObjectZone:@
-setObjectZoneSelector :: Selector
+setObjectZoneSelector :: Selector '[Ptr ()] ()
 setObjectZoneSelector = mkSelector "setObjectZone:"
 
 -- | @Selector@ for @objectZone@
-objectZoneSelector :: Selector
+objectZoneSelector :: Selector '[] (Ptr ())
 objectZoneSelector = mkSelector "objectZone"
 
 -- | @Selector@ for @unarchiveObjectWithData:@
-unarchiveObjectWithDataSelector :: Selector
+unarchiveObjectWithDataSelector :: Selector '[Id NSData] RawId
 unarchiveObjectWithDataSelector = mkSelector "unarchiveObjectWithData:"
 
 -- | @Selector@ for @unarchiveObjectWithFile:@
-unarchiveObjectWithFileSelector :: Selector
+unarchiveObjectWithFileSelector :: Selector '[Id NSString] RawId
 unarchiveObjectWithFileSelector = mkSelector "unarchiveObjectWithFile:"
 
 -- | @Selector@ for @decodeClassName:asClassName:@
-decodeClassName_asClassNameSelector :: Selector
+nsUnarchiverDecodeClassName_asClassNameSelector :: Selector '[Id NSString, Id NSString] ()
+nsUnarchiverDecodeClassName_asClassNameSelector = mkSelector "decodeClassName:asClassName:"
+
+-- | @Selector@ for @decodeClassName:asClassName:@
+decodeClassName_asClassNameSelector :: Selector '[Id NSString, Id NSString] ()
 decodeClassName_asClassNameSelector = mkSelector "decodeClassName:asClassName:"
 
 -- | @Selector@ for @classNameDecodedForArchiveClassName:@
-classNameDecodedForArchiveClassNameSelector :: Selector
+nsUnarchiverClassNameDecodedForArchiveClassNameSelector :: Selector '[Id NSString] (Id NSString)
+nsUnarchiverClassNameDecodedForArchiveClassNameSelector = mkSelector "classNameDecodedForArchiveClassName:"
+
+-- | @Selector@ for @classNameDecodedForArchiveClassName:@
+classNameDecodedForArchiveClassNameSelector :: Selector '[Id NSString] (Id NSString)
 classNameDecodedForArchiveClassNameSelector = mkSelector "classNameDecodedForArchiveClassName:"
 
 -- | @Selector@ for @replaceObject:withObject:@
-replaceObject_withObjectSelector :: Selector
+replaceObject_withObjectSelector :: Selector '[RawId, RawId] ()
 replaceObject_withObjectSelector = mkSelector "replaceObject:withObject:"
 
 -- | @Selector@ for @atEnd@
-atEndSelector :: Selector
+atEndSelector :: Selector '[] Bool
 atEndSelector = mkSelector "atEnd"
 
 -- | @Selector@ for @systemVersion@
-systemVersionSelector :: Selector
+systemVersionSelector :: Selector '[] CUInt
 systemVersionSelector = mkSelector "systemVersion"
 

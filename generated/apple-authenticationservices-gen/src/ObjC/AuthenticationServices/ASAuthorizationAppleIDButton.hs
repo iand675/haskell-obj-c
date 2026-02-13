@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,8 +13,8 @@ module ObjC.AuthenticationServices.ASAuthorizationAppleIDButton
   , cornerRadius
   , setCornerRadius
   , buttonWithType_styleSelector
-  , initWithAuthorizationButtonType_authorizationButtonStyleSelector
   , cornerRadiusSelector
+  , initWithAuthorizationButtonType_authorizationButtonStyleSelector
   , setCornerRadiusSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.AuthenticationServices.ASAuthorizationAppleIDButton
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,44 +48,44 @@ buttonWithType_style :: ASAuthorizationAppleIDButtonType -> ASAuthorizationApple
 buttonWithType_style type_ style =
   do
     cls' <- getRequiredClass "ASAuthorizationAppleIDButton"
-    sendClassMsg cls' (mkSelector "buttonWithType:style:") (retPtr retVoid) [argCLong (coerce type_), argCLong (coerce style)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonWithType_styleSelector type_ style
 
 -- | @- initWithAuthorizationButtonType:authorizationButtonStyle:@
 initWithAuthorizationButtonType_authorizationButtonStyle :: IsASAuthorizationAppleIDButton asAuthorizationAppleIDButton => asAuthorizationAppleIDButton -> ASAuthorizationAppleIDButtonType -> ASAuthorizationAppleIDButtonStyle -> IO (Id ASAuthorizationAppleIDButton)
-initWithAuthorizationButtonType_authorizationButtonStyle asAuthorizationAppleIDButton  type_ style =
-    sendMsg asAuthorizationAppleIDButton (mkSelector "initWithAuthorizationButtonType:authorizationButtonStyle:") (retPtr retVoid) [argCLong (coerce type_), argCLong (coerce style)] >>= ownedObject . castPtr
+initWithAuthorizationButtonType_authorizationButtonStyle asAuthorizationAppleIDButton type_ style =
+  sendOwnedMessage asAuthorizationAppleIDButton initWithAuthorizationButtonType_authorizationButtonStyleSelector type_ style
 
 -- | Set a custom corner radius to be used by this button.
 --
 -- ObjC selector: @- cornerRadius@
 cornerRadius :: IsASAuthorizationAppleIDButton asAuthorizationAppleIDButton => asAuthorizationAppleIDButton -> IO CDouble
-cornerRadius asAuthorizationAppleIDButton  =
-    sendMsg asAuthorizationAppleIDButton (mkSelector "cornerRadius") retCDouble []
+cornerRadius asAuthorizationAppleIDButton =
+  sendMessage asAuthorizationAppleIDButton cornerRadiusSelector
 
 -- | Set a custom corner radius to be used by this button.
 --
 -- ObjC selector: @- setCornerRadius:@
 setCornerRadius :: IsASAuthorizationAppleIDButton asAuthorizationAppleIDButton => asAuthorizationAppleIDButton -> CDouble -> IO ()
-setCornerRadius asAuthorizationAppleIDButton  value =
-    sendMsg asAuthorizationAppleIDButton (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius asAuthorizationAppleIDButton value =
+  sendMessage asAuthorizationAppleIDButton setCornerRadiusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonWithType:style:@
-buttonWithType_styleSelector :: Selector
+buttonWithType_styleSelector :: Selector '[ASAuthorizationAppleIDButtonType, ASAuthorizationAppleIDButtonStyle] (Id ASAuthorizationAppleIDButton)
 buttonWithType_styleSelector = mkSelector "buttonWithType:style:"
 
 -- | @Selector@ for @initWithAuthorizationButtonType:authorizationButtonStyle:@
-initWithAuthorizationButtonType_authorizationButtonStyleSelector :: Selector
+initWithAuthorizationButtonType_authorizationButtonStyleSelector :: Selector '[ASAuthorizationAppleIDButtonType, ASAuthorizationAppleIDButtonStyle] (Id ASAuthorizationAppleIDButton)
 initWithAuthorizationButtonType_authorizationButtonStyleSelector = mkSelector "initWithAuthorizationButtonType:authorizationButtonStyle:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 

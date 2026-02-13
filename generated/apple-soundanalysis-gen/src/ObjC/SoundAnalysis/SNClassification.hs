@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.SoundAnalysis.SNClassification
   , new
   , identifier
   , confidence
+  , confidenceSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
-  , confidenceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,47 +34,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSNClassification snClassification => snClassification -> IO (Id SNClassification)
-init_ snClassification  =
-    sendMsg snClassification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snClassification =
+  sendOwnedMessage snClassification initSelector
 
 -- | @+ new@
 new :: IO (Id SNClassification)
 new  =
   do
     cls' <- getRequiredClass "SNClassification"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The identifier of a classification request. An example classification could be a string like 'laughter' or 'applause'. The string is defined in the model that was used for the classification. Usually these are technical labels that are not localized and not meant to be used directly to be presented to an end user in the UI.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsSNClassification snClassification => snClassification -> IO (Id NSString)
-identifier snClassification  =
-    sendMsg snClassification (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier snClassification =
+  sendMessage snClassification identifierSelector
 
 -- | The level of confidence normalized to [0, 1], where 1 is most confident
 --
 -- ObjC selector: @- confidence@
 confidence :: IsSNClassification snClassification => snClassification -> IO CDouble
-confidence snClassification  =
-    sendMsg snClassification (mkSelector "confidence") retCDouble []
+confidence snClassification =
+  sendMessage snClassification confidenceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNClassification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SNClassification)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CDouble
 confidenceSelector = mkSelector "confidence"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,17 +23,17 @@ module ObjC.SceneKit.SCNShape
   , setChamferRadius
   , chamferProfile
   , setChamferProfile
-  , shapeWithPath_extrusionDepthSelector
-  , pathSelector
-  , setPathSelector
-  , extrusionDepthSelector
-  , setExtrusionDepthSelector
   , chamferModeSelector
-  , setChamferModeSelector
-  , chamferRadiusSelector
-  , setChamferRadiusSelector
   , chamferProfileSelector
+  , chamferRadiusSelector
+  , extrusionDepthSelector
+  , pathSelector
+  , setChamferModeSelector
   , setChamferProfileSelector
+  , setChamferRadiusSelector
+  , setExtrusionDepthSelector
+  , setPathSelector
+  , shapeWithPath_extrusionDepthSelector
 
   -- * Enum types
   , SCNChamferMode(SCNChamferMode)
@@ -42,15 +43,11 @@ module ObjC.SceneKit.SCNShape
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,7 @@ shapeWithPath_extrusionDepth :: IsNSBezierPath path => path -> CDouble -> IO (Id
 shapeWithPath_extrusionDepth path extrusionDepth =
   do
     cls' <- getRequiredClass "SCNShape"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "shapeWithPath:extrusionDepth:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argCDouble extrusionDepth] >>= retainedObject . castPtr
+    sendClassMessage cls' shapeWithPath_extrusionDepthSelector (toNSBezierPath path) extrusionDepth
 
 -- | path
 --
@@ -83,8 +79,8 @@ shapeWithPath_extrusionDepth path extrusionDepth =
 --
 -- ObjC selector: @- path@
 path :: IsSCNShape scnShape => scnShape -> IO (Id NSBezierPath)
-path scnShape  =
-    sendMsg scnShape (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path scnShape =
+  sendMessage scnShape pathSelector
 
 -- | path
 --
@@ -94,9 +90,8 @@ path scnShape  =
 --
 -- ObjC selector: @- setPath:@
 setPath :: (IsSCNShape scnShape, IsNSBezierPath value) => scnShape -> value -> IO ()
-setPath scnShape  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnShape (mkSelector "setPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPath scnShape value =
+  sendMessage scnShape setPathSelector (toNSBezierPath value)
 
 -- | extrusionDepth
 --
@@ -106,8 +101,8 @@ setPath scnShape  value =
 --
 -- ObjC selector: @- extrusionDepth@
 extrusionDepth :: IsSCNShape scnShape => scnShape -> IO CDouble
-extrusionDepth scnShape  =
-    sendMsg scnShape (mkSelector "extrusionDepth") retCDouble []
+extrusionDepth scnShape =
+  sendMessage scnShape extrusionDepthSelector
 
 -- | extrusionDepth
 --
@@ -117,8 +112,8 @@ extrusionDepth scnShape  =
 --
 -- ObjC selector: @- setExtrusionDepth:@
 setExtrusionDepth :: IsSCNShape scnShape => scnShape -> CDouble -> IO ()
-setExtrusionDepth scnShape  value =
-    sendMsg scnShape (mkSelector "setExtrusionDepth:") retVoid [argCDouble value]
+setExtrusionDepth scnShape value =
+  sendMessage scnShape setExtrusionDepthSelector value
 
 -- | chamferMode
 --
@@ -128,8 +123,8 @@ setExtrusionDepth scnShape  value =
 --
 -- ObjC selector: @- chamferMode@
 chamferMode :: IsSCNShape scnShape => scnShape -> IO SCNChamferMode
-chamferMode scnShape  =
-    fmap (coerce :: CLong -> SCNChamferMode) $ sendMsg scnShape (mkSelector "chamferMode") retCLong []
+chamferMode scnShape =
+  sendMessage scnShape chamferModeSelector
 
 -- | chamferMode
 --
@@ -139,8 +134,8 @@ chamferMode scnShape  =
 --
 -- ObjC selector: @- setChamferMode:@
 setChamferMode :: IsSCNShape scnShape => scnShape -> SCNChamferMode -> IO ()
-setChamferMode scnShape  value =
-    sendMsg scnShape (mkSelector "setChamferMode:") retVoid [argCLong (coerce value)]
+setChamferMode scnShape value =
+  sendMessage scnShape setChamferModeSelector value
 
 -- | chamferRadius
 --
@@ -150,8 +145,8 @@ setChamferMode scnShape  value =
 --
 -- ObjC selector: @- chamferRadius@
 chamferRadius :: IsSCNShape scnShape => scnShape -> IO CDouble
-chamferRadius scnShape  =
-    sendMsg scnShape (mkSelector "chamferRadius") retCDouble []
+chamferRadius scnShape =
+  sendMessage scnShape chamferRadiusSelector
 
 -- | chamferRadius
 --
@@ -161,8 +156,8 @@ chamferRadius scnShape  =
 --
 -- ObjC selector: @- setChamferRadius:@
 setChamferRadius :: IsSCNShape scnShape => scnShape -> CDouble -> IO ()
-setChamferRadius scnShape  value =
-    sendMsg scnShape (mkSelector "setChamferRadius:") retVoid [argCDouble value]
+setChamferRadius scnShape value =
+  sendMessage scnShape setChamferRadiusSelector value
 
 -- | chamferProfile
 --
@@ -172,8 +167,8 @@ setChamferRadius scnShape  value =
 --
 -- ObjC selector: @- chamferProfile@
 chamferProfile :: IsSCNShape scnShape => scnShape -> IO (Id NSBezierPath)
-chamferProfile scnShape  =
-    sendMsg scnShape (mkSelector "chamferProfile") (retPtr retVoid) [] >>= retainedObject . castPtr
+chamferProfile scnShape =
+  sendMessage scnShape chamferProfileSelector
 
 -- | chamferProfile
 --
@@ -183,55 +178,54 @@ chamferProfile scnShape  =
 --
 -- ObjC selector: @- setChamferProfile:@
 setChamferProfile :: (IsSCNShape scnShape, IsNSBezierPath value) => scnShape -> value -> IO ()
-setChamferProfile scnShape  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnShape (mkSelector "setChamferProfile:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChamferProfile scnShape value =
+  sendMessage scnShape setChamferProfileSelector (toNSBezierPath value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shapeWithPath:extrusionDepth:@
-shapeWithPath_extrusionDepthSelector :: Selector
+shapeWithPath_extrusionDepthSelector :: Selector '[Id NSBezierPath, CDouble] (Id SCNShape)
 shapeWithPath_extrusionDepthSelector = mkSelector "shapeWithPath:extrusionDepth:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSBezierPath)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[Id NSBezierPath] ()
 setPathSelector = mkSelector "setPath:"
 
 -- | @Selector@ for @extrusionDepth@
-extrusionDepthSelector :: Selector
+extrusionDepthSelector :: Selector '[] CDouble
 extrusionDepthSelector = mkSelector "extrusionDepth"
 
 -- | @Selector@ for @setExtrusionDepth:@
-setExtrusionDepthSelector :: Selector
+setExtrusionDepthSelector :: Selector '[CDouble] ()
 setExtrusionDepthSelector = mkSelector "setExtrusionDepth:"
 
 -- | @Selector@ for @chamferMode@
-chamferModeSelector :: Selector
+chamferModeSelector :: Selector '[] SCNChamferMode
 chamferModeSelector = mkSelector "chamferMode"
 
 -- | @Selector@ for @setChamferMode:@
-setChamferModeSelector :: Selector
+setChamferModeSelector :: Selector '[SCNChamferMode] ()
 setChamferModeSelector = mkSelector "setChamferMode:"
 
 -- | @Selector@ for @chamferRadius@
-chamferRadiusSelector :: Selector
+chamferRadiusSelector :: Selector '[] CDouble
 chamferRadiusSelector = mkSelector "chamferRadius"
 
 -- | @Selector@ for @setChamferRadius:@
-setChamferRadiusSelector :: Selector
+setChamferRadiusSelector :: Selector '[CDouble] ()
 setChamferRadiusSelector = mkSelector "setChamferRadius:"
 
 -- | @Selector@ for @chamferProfile@
-chamferProfileSelector :: Selector
+chamferProfileSelector :: Selector '[] (Id NSBezierPath)
 chamferProfileSelector = mkSelector "chamferProfile"
 
 -- | @Selector@ for @setChamferProfile:@
-setChamferProfileSelector :: Selector
+setChamferProfileSelector :: Selector '[Id NSBezierPath] ()
 setChamferProfileSelector = mkSelector "setChamferProfile:"
 

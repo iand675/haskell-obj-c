@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AVFAudio.AVAudioSessionDataSourceDescription
   , supportedPolarPatterns
   , selectedPolarPattern
   , preferredPolarPattern
-  , setPreferredPolarPattern_errorSelector
   , dataSourceIDSelector
   , dataSourceNameSelector
   , locationSelector
   , orientationSelector
-  , supportedPolarPatternsSelector
-  , selectedPolarPatternSelector
   , preferredPolarPatternSelector
+  , selectedPolarPatternSelector
+  , setPreferredPolarPattern_errorSelector
+  , supportedPolarPatternsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,93 +46,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setPreferredPolarPattern:error:@
 setPreferredPolarPattern_error :: (IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription, IsNSString pattern_, IsNSError outError) => avAudioSessionDataSourceDescription -> pattern_ -> outError -> IO Bool
-setPreferredPolarPattern_error avAudioSessionDataSourceDescription  pattern_ outError =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionDataSourceDescription (mkSelector "setPreferredPolarPattern:error:") retCULong [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredPolarPattern_error avAudioSessionDataSourceDescription pattern_ outError =
+  sendMessage avAudioSessionDataSourceDescription setPreferredPolarPattern_errorSelector (toNSString pattern_) (toNSError outError)
 
 -- | System-assigned ID for the data source.
 --
 -- ObjC selector: @- dataSourceID@
 dataSourceID :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSNumber)
-dataSourceID avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "dataSourceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataSourceID avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription dataSourceIDSelector
 
 -- | Human-readable name for the data source.
 --
 -- ObjC selector: @- dataSourceName@
 dataSourceName :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
-dataSourceName avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "dataSourceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataSourceName avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription dataSourceNameSelector
 
 -- | Describes the general location of a data source. Will be nil for data sources for which the location is not known.
 --
 -- ObjC selector: @- location@
 location :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
-location avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "location") (retPtr retVoid) [] >>= retainedObject . castPtr
+location avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription locationSelector
 
 -- | Describes the orientation of a data source.  Will be nil for data sources for which the orientation is not known.
 --
 -- ObjC selector: @- orientation@
 orientation :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
-orientation avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "orientation") (retPtr retVoid) [] >>= retainedObject . castPtr
+orientation avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription orientationSelector
 
 -- | Array of one or more AVAudioSessionPolarPatterns describing the supported polar patterns for a data source.  Will be nil for data sources that have no selectable patterns.
 --
 -- ObjC selector: @- supportedPolarPatterns@
 supportedPolarPatterns :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSArray)
-supportedPolarPatterns avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "supportedPolarPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedPolarPatterns avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription supportedPolarPatternsSelector
 
 -- | Describes the currently selected polar pattern.  Will be nil for data sources that have no selectable patterns.
 --
 -- ObjC selector: @- selectedPolarPattern@
 selectedPolarPattern :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
-selectedPolarPattern avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "selectedPolarPattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedPolarPattern avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription selectedPolarPatternSelector
 
 -- | Describes the preferred polar pattern.  Will be nil for data sources that have no selectable patterns or if no preference has been set.
 --
 -- ObjC selector: @- preferredPolarPattern@
 preferredPolarPattern :: IsAVAudioSessionDataSourceDescription avAudioSessionDataSourceDescription => avAudioSessionDataSourceDescription -> IO (Id NSString)
-preferredPolarPattern avAudioSessionDataSourceDescription  =
-    sendMsg avAudioSessionDataSourceDescription (mkSelector "preferredPolarPattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredPolarPattern avAudioSessionDataSourceDescription =
+  sendMessage avAudioSessionDataSourceDescription preferredPolarPatternSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setPreferredPolarPattern:error:@
-setPreferredPolarPattern_errorSelector :: Selector
+setPreferredPolarPattern_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setPreferredPolarPattern_errorSelector = mkSelector "setPreferredPolarPattern:error:"
 
 -- | @Selector@ for @dataSourceID@
-dataSourceIDSelector :: Selector
+dataSourceIDSelector :: Selector '[] (Id NSNumber)
 dataSourceIDSelector = mkSelector "dataSourceID"
 
 -- | @Selector@ for @dataSourceName@
-dataSourceNameSelector :: Selector
+dataSourceNameSelector :: Selector '[] (Id NSString)
 dataSourceNameSelector = mkSelector "dataSourceName"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] (Id NSString)
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] (Id NSString)
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @supportedPolarPatterns@
-supportedPolarPatternsSelector :: Selector
+supportedPolarPatternsSelector :: Selector '[] (Id NSArray)
 supportedPolarPatternsSelector = mkSelector "supportedPolarPatterns"
 
 -- | @Selector@ for @selectedPolarPattern@
-selectedPolarPatternSelector :: Selector
+selectedPolarPatternSelector :: Selector '[] (Id NSString)
 selectedPolarPatternSelector = mkSelector "selectedPolarPattern"
 
 -- | @Selector@ for @preferredPolarPattern@
-preferredPolarPatternSelector :: Selector
+preferredPolarPatternSelector :: Selector '[] (Id NSString)
 preferredPolarPatternSelector = mkSelector "preferredPolarPattern"
 

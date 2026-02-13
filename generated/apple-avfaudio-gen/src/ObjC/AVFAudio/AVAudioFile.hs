@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,22 +32,22 @@ module ObjC.AVFAudio.AVAudioFile
   , length_
   , framePosition
   , setFramePosition
-  , initSelector
-  , initForReading_errorSelector
-  , initForReading_commonFormat_interleaved_errorSelector
-  , initForWriting_settings_errorSelector
-  , initForWriting_settings_commonFormat_interleaved_errorSelector
   , closeSelector
+  , fileFormatSelector
+  , framePositionSelector
+  , initForReading_commonFormat_interleaved_errorSelector
+  , initForReading_errorSelector
+  , initForWriting_settings_commonFormat_interleaved_errorSelector
+  , initForWriting_settings_errorSelector
+  , initSelector
+  , isOpenSelector
+  , lengthSelector
+  , processingFormatSelector
   , readIntoBuffer_errorSelector
   , readIntoBuffer_frameCount_errorSelector
-  , writeFromBuffer_errorSelector
-  , isOpenSelector
-  , urlSelector
-  , fileFormatSelector
-  , processingFormatSelector
-  , lengthSelector
-  , framePositionSelector
   , setFramePositionSelector
+  , urlSelector
+  , writeFromBuffer_errorSelector
 
   -- * Enum types
   , AVAudioCommonFormat(AVAudioCommonFormat)
@@ -58,15 +59,11 @@ module ObjC.AVFAudio.AVAudioFile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioFile avAudioFile => avAudioFile -> IO (Id AVAudioFile)
-init_ avAudioFile  =
-    sendMsg avAudioFile (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioFile =
+  sendOwnedMessage avAudioFile initSelector
 
 -- | initForReading:error:
 --
@@ -91,10 +88,8 @@ init_ avAudioFile  =
 --
 -- ObjC selector: @- initForReading:error:@
 initForReading_error :: (IsAVAudioFile avAudioFile, IsNSURL fileURL, IsNSError outError) => avAudioFile -> fileURL -> outError -> IO (Id AVAudioFile)
-initForReading_error avAudioFile  fileURL outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avAudioFile (mkSelector "initForReading:error:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initForReading_error avAudioFile fileURL outError =
+  sendOwnedMessage avAudioFile initForReading_errorSelector (toNSURL fileURL) (toNSError outError)
 
 -- | initForReading:commonFormat:interleaved:error:
 --
@@ -110,10 +105,8 @@ initForReading_error avAudioFile  fileURL outError =
 --
 -- ObjC selector: @- initForReading:commonFormat:interleaved:error:@
 initForReading_commonFormat_interleaved_error :: (IsAVAudioFile avAudioFile, IsNSURL fileURL, IsNSError outError) => avAudioFile -> fileURL -> AVAudioCommonFormat -> Bool -> outError -> IO (Id AVAudioFile)
-initForReading_commonFormat_interleaved_error avAudioFile  fileURL format interleaved outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avAudioFile (mkSelector "initForReading:commonFormat:interleaved:error:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argCULong (coerce format), argCULong (if interleaved then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initForReading_commonFormat_interleaved_error avAudioFile fileURL format interleaved outError =
+  sendOwnedMessage avAudioFile initForReading_commonFormat_interleaved_errorSelector (toNSURL fileURL) format interleaved (toNSError outError)
 
 -- | initForWriting:settings:error:
 --
@@ -131,11 +124,8 @@ initForReading_commonFormat_interleaved_error avAudioFile  fileURL format interl
 --
 -- ObjC selector: @- initForWriting:settings:error:@
 initForWriting_settings_error :: (IsAVAudioFile avAudioFile, IsNSURL fileURL, IsNSDictionary settings, IsNSError outError) => avAudioFile -> fileURL -> settings -> outError -> IO (Id AVAudioFile)
-initForWriting_settings_error avAudioFile  fileURL settings outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr settings $ \raw_settings ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAudioFile (mkSelector "initForWriting:settings:error:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initForWriting_settings_error avAudioFile fileURL settings outError =
+  sendOwnedMessage avAudioFile initForWriting_settings_errorSelector (toNSURL fileURL) (toNSDictionary settings) (toNSError outError)
 
 -- | initForWriting:settings:commonFormat:interleaved:error:
 --
@@ -155,11 +145,8 @@ initForWriting_settings_error avAudioFile  fileURL settings outError =
 --
 -- ObjC selector: @- initForWriting:settings:commonFormat:interleaved:error:@
 initForWriting_settings_commonFormat_interleaved_error :: (IsAVAudioFile avAudioFile, IsNSURL fileURL, IsNSDictionary settings, IsNSError outError) => avAudioFile -> fileURL -> settings -> AVAudioCommonFormat -> Bool -> outError -> IO (Id AVAudioFile)
-initForWriting_settings_commonFormat_interleaved_error avAudioFile  fileURL settings format interleaved outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr settings $ \raw_settings ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAudioFile (mkSelector "initForWriting:settings:commonFormat:interleaved:error:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argCULong (coerce format), argCULong (if interleaved then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initForWriting_settings_commonFormat_interleaved_error avAudioFile fileURL settings format interleaved outError =
+  sendOwnedMessage avAudioFile initForWriting_settings_commonFormat_interleaved_errorSelector (toNSURL fileURL) (toNSDictionary settings) format interleaved (toNSError outError)
 
 -- | close
 --
@@ -173,8 +160,8 @@ initForWriting_settings_commonFormat_interleaved_error avAudioFile  fileURL sett
 --
 -- ObjC selector: @- close@
 close :: IsAVAudioFile avAudioFile => avAudioFile -> IO ()
-close avAudioFile  =
-    sendMsg avAudioFile (mkSelector "close") retVoid []
+close avAudioFile =
+  sendMessage avAudioFile closeSelector
 
 -- | readIntoBuffer:error:
 --
@@ -190,10 +177,8 @@ close avAudioFile  =
 --
 -- ObjC selector: @- readIntoBuffer:error:@
 readIntoBuffer_error :: (IsAVAudioFile avAudioFile, IsAVAudioPCMBuffer buffer, IsNSError outError) => avAudioFile -> buffer -> outError -> IO Bool
-readIntoBuffer_error avAudioFile  buffer outError =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFile (mkSelector "readIntoBuffer:error:") retCULong [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+readIntoBuffer_error avAudioFile buffer outError =
+  sendMessage avAudioFile readIntoBuffer_errorSelector (toAVAudioPCMBuffer buffer) (toNSError outError)
 
 -- | readIntoBuffer:frameCount:error:
 --
@@ -211,10 +196,8 @@ readIntoBuffer_error avAudioFile  buffer outError =
 --
 -- ObjC selector: @- readIntoBuffer:frameCount:error:@
 readIntoBuffer_frameCount_error :: (IsAVAudioFile avAudioFile, IsAVAudioPCMBuffer buffer, IsNSError outError) => avAudioFile -> buffer -> CUInt -> outError -> IO Bool
-readIntoBuffer_frameCount_error avAudioFile  buffer frames outError =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFile (mkSelector "readIntoBuffer:frameCount:error:") retCULong [argPtr (castPtr raw_buffer :: Ptr ()), argCUInt frames, argPtr (castPtr raw_outError :: Ptr ())]
+readIntoBuffer_frameCount_error avAudioFile buffer frames outError =
+  sendMessage avAudioFile readIntoBuffer_frameCount_errorSelector (toAVAudioPCMBuffer buffer) frames (toNSError outError)
 
 -- | writeFromBuffer:error:
 --
@@ -230,10 +213,8 @@ readIntoBuffer_frameCount_error avAudioFile  buffer frames outError =
 --
 -- ObjC selector: @- writeFromBuffer:error:@
 writeFromBuffer_error :: (IsAVAudioFile avAudioFile, IsNSError outError) => avAudioFile -> Const (Id AVAudioPCMBuffer) -> outError -> IO Bool
-writeFromBuffer_error avAudioFile  buffer outError =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFile (mkSelector "writeFromBuffer:error:") retCULong [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+writeFromBuffer_error avAudioFile buffer outError =
+  sendMessage avAudioFile writeFromBuffer_errorSelector buffer (toNSError outError)
 
 -- | isOpen
 --
@@ -241,8 +222,8 @@ writeFromBuffer_error avAudioFile  buffer outError =
 --
 -- ObjC selector: @- isOpen@
 isOpen :: IsAVAudioFile avAudioFile => avAudioFile -> IO Bool
-isOpen avAudioFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFile (mkSelector "isOpen") retCULong []
+isOpen avAudioFile =
+  sendMessage avAudioFile isOpenSelector
 
 -- | url
 --
@@ -250,8 +231,8 @@ isOpen avAudioFile  =
 --
 -- ObjC selector: @- url@
 url :: IsAVAudioFile avAudioFile => avAudioFile -> IO (Id NSURL)
-url avAudioFile  =
-    sendMsg avAudioFile (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avAudioFile =
+  sendMessage avAudioFile urlSelector
 
 -- | fileFormat
 --
@@ -259,8 +240,8 @@ url avAudioFile  =
 --
 -- ObjC selector: @- fileFormat@
 fileFormat :: IsAVAudioFile avAudioFile => avAudioFile -> IO (Id AVAudioFormat)
-fileFormat avAudioFile  =
-    sendMsg avAudioFile (mkSelector "fileFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileFormat avAudioFile =
+  sendMessage avAudioFile fileFormatSelector
 
 -- | processingFormat
 --
@@ -268,8 +249,8 @@ fileFormat avAudioFile  =
 --
 -- ObjC selector: @- processingFormat@
 processingFormat :: IsAVAudioFile avAudioFile => avAudioFile -> IO (Id AVAudioFormat)
-processingFormat avAudioFile  =
-    sendMsg avAudioFile (mkSelector "processingFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+processingFormat avAudioFile =
+  sendMessage avAudioFile processingFormatSelector
 
 -- | length
 --
@@ -279,8 +260,8 @@ processingFormat avAudioFile  =
 --
 -- ObjC selector: @- length@
 length_ :: IsAVAudioFile avAudioFile => avAudioFile -> IO CLong
-length_ avAudioFile  =
-    sendMsg avAudioFile (mkSelector "length") retCLong []
+length_ avAudioFile =
+  sendMessage avAudioFile lengthSelector
 
 -- | framePosition
 --
@@ -290,8 +271,8 @@ length_ avAudioFile  =
 --
 -- ObjC selector: @- framePosition@
 framePosition :: IsAVAudioFile avAudioFile => avAudioFile -> IO CLong
-framePosition avAudioFile  =
-    sendMsg avAudioFile (mkSelector "framePosition") retCLong []
+framePosition avAudioFile =
+  sendMessage avAudioFile framePositionSelector
 
 -- | framePosition
 --
@@ -301,74 +282,74 @@ framePosition avAudioFile  =
 --
 -- ObjC selector: @- setFramePosition:@
 setFramePosition :: IsAVAudioFile avAudioFile => avAudioFile -> CLong -> IO ()
-setFramePosition avAudioFile  value =
-    sendMsg avAudioFile (mkSelector "setFramePosition:") retVoid [argCLong value]
+setFramePosition avAudioFile value =
+  sendMessage avAudioFile setFramePositionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioFile)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initForReading:error:@
-initForReading_errorSelector :: Selector
+initForReading_errorSelector :: Selector '[Id NSURL, Id NSError] (Id AVAudioFile)
 initForReading_errorSelector = mkSelector "initForReading:error:"
 
 -- | @Selector@ for @initForReading:commonFormat:interleaved:error:@
-initForReading_commonFormat_interleaved_errorSelector :: Selector
+initForReading_commonFormat_interleaved_errorSelector :: Selector '[Id NSURL, AVAudioCommonFormat, Bool, Id NSError] (Id AVAudioFile)
 initForReading_commonFormat_interleaved_errorSelector = mkSelector "initForReading:commonFormat:interleaved:error:"
 
 -- | @Selector@ for @initForWriting:settings:error:@
-initForWriting_settings_errorSelector :: Selector
+initForWriting_settings_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] (Id AVAudioFile)
 initForWriting_settings_errorSelector = mkSelector "initForWriting:settings:error:"
 
 -- | @Selector@ for @initForWriting:settings:commonFormat:interleaved:error:@
-initForWriting_settings_commonFormat_interleaved_errorSelector :: Selector
+initForWriting_settings_commonFormat_interleaved_errorSelector :: Selector '[Id NSURL, Id NSDictionary, AVAudioCommonFormat, Bool, Id NSError] (Id AVAudioFile)
 initForWriting_settings_commonFormat_interleaved_errorSelector = mkSelector "initForWriting:settings:commonFormat:interleaved:error:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @readIntoBuffer:error:@
-readIntoBuffer_errorSelector :: Selector
+readIntoBuffer_errorSelector :: Selector '[Id AVAudioPCMBuffer, Id NSError] Bool
 readIntoBuffer_errorSelector = mkSelector "readIntoBuffer:error:"
 
 -- | @Selector@ for @readIntoBuffer:frameCount:error:@
-readIntoBuffer_frameCount_errorSelector :: Selector
+readIntoBuffer_frameCount_errorSelector :: Selector '[Id AVAudioPCMBuffer, CUInt, Id NSError] Bool
 readIntoBuffer_frameCount_errorSelector = mkSelector "readIntoBuffer:frameCount:error:"
 
 -- | @Selector@ for @writeFromBuffer:error:@
-writeFromBuffer_errorSelector :: Selector
+writeFromBuffer_errorSelector :: Selector '[Const (Id AVAudioPCMBuffer), Id NSError] Bool
 writeFromBuffer_errorSelector = mkSelector "writeFromBuffer:error:"
 
 -- | @Selector@ for @isOpen@
-isOpenSelector :: Selector
+isOpenSelector :: Selector '[] Bool
 isOpenSelector = mkSelector "isOpen"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @fileFormat@
-fileFormatSelector :: Selector
+fileFormatSelector :: Selector '[] (Id AVAudioFormat)
 fileFormatSelector = mkSelector "fileFormat"
 
 -- | @Selector@ for @processingFormat@
-processingFormatSelector :: Selector
+processingFormatSelector :: Selector '[] (Id AVAudioFormat)
 processingFormatSelector = mkSelector "processingFormat"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CLong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @framePosition@
-framePositionSelector :: Selector
+framePositionSelector :: Selector '[] CLong
 framePositionSelector = mkSelector "framePosition"
 
 -- | @Selector@ for @setFramePosition:@
-setFramePositionSelector :: Selector
+setFramePositionSelector :: Selector '[CLong] ()
 setFramePositionSelector = mkSelector "setFramePosition:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLossNode
   , initWithSource_lossDescriptor
   , gradientFilterWithSources
   , inputLabels
-  , nodeWithSource_lossDescriptorSelector
-  , initWithSource_lossDescriptorSelector
   , gradientFilterWithSourcesSelector
+  , initWithSource_lossDescriptorSelector
   , inputLabelsSelector
+  , nodeWithSource_lossDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,16 +39,12 @@ nodeWithSource_lossDescriptor :: (IsMPSNNImageNode source, IsMPSCNNYOLOLossDescr
 nodeWithSource_lossDescriptor source descriptor =
   do
     cls' <- getRequiredClass "MPSCNNYOLOLossNode"
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr descriptor $ \raw_descriptor ->
-        sendClassMsg cls' (mkSelector "nodeWithSource:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_lossDescriptorSelector (toMPSNNImageNode source) (toMPSCNNYOLOLossDescriptor descriptor)
 
 -- | @- initWithSource:lossDescriptor:@
 initWithSource_lossDescriptor :: (IsMPSCNNYOLOLossNode mpscnnyoloLossNode, IsMPSNNImageNode source, IsMPSCNNYOLOLossDescriptor descriptor) => mpscnnyoloLossNode -> source -> descriptor -> IO (Id MPSCNNYOLOLossNode)
-initWithSource_lossDescriptor mpscnnyoloLossNode  source descriptor =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg mpscnnyoloLossNode (mkSelector "initWithSource:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_lossDescriptor mpscnnyoloLossNode source descriptor =
+  sendOwnedMessage mpscnnyoloLossNode initWithSource_lossDescriptorSelector (toMPSNNImageNode source) (toMPSCNNYOLOLossDescriptor descriptor)
 
 -- | The loss filter is its own gradient filter and doesn't provide a corresponding gradient node.
 --
@@ -59,34 +52,33 @@ initWithSource_lossDescriptor mpscnnyoloLossNode  source descriptor =
 --
 -- ObjC selector: @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSCNNYOLOLossNode mpscnnyoloLossNode, IsNSArray gradientImages) => mpscnnyoloLossNode -> gradientImages -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSources mpscnnyoloLossNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpscnnyoloLossNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpscnnyoloLossNode gradientImages =
+  sendMessage mpscnnyoloLossNode gradientFilterWithSourcesSelector (toNSArray gradientImages)
 
 -- | Get the input node for labes and weights, for example to set the handle
 --
 -- ObjC selector: @- inputLabels@
 inputLabels :: IsMPSCNNYOLOLossNode mpscnnyoloLossNode => mpscnnyoloLossNode -> IO (Id MPSNNLabelsNode)
-inputLabels mpscnnyoloLossNode  =
-    sendMsg mpscnnyoloLossNode (mkSelector "inputLabels") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputLabels mpscnnyoloLossNode =
+  sendMessage mpscnnyoloLossNode inputLabelsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:lossDescriptor:@
-nodeWithSource_lossDescriptorSelector :: Selector
+nodeWithSource_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSCNNYOLOLossDescriptor] (Id MPSCNNYOLOLossNode)
 nodeWithSource_lossDescriptorSelector = mkSelector "nodeWithSource:lossDescriptor:"
 
 -- | @Selector@ for @initWithSource:lossDescriptor:@
-initWithSource_lossDescriptorSelector :: Selector
+initWithSource_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSCNNYOLOLossDescriptor] (Id MPSCNNYOLOLossNode)
 initWithSource_lossDescriptorSelector = mkSelector "initWithSource:lossDescriptor:"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 
 -- | @Selector@ for @inputLabels@
-inputLabelsSelector :: Selector
+inputLabelsSelector :: Selector '[] (Id MPSNNLabelsNode)
 inputLabelsSelector = mkSelector "inputLabels"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,35 +27,31 @@ module ObjC.WebKit.WebDataSource
   , webArchive
   , mainResource
   , subresources
-  , initWithRequestSelector
-  , subresourceForURLSelector
   , addSubresourceSelector
   , dataSelector
-  , representationSelector
-  , webFrameSelector
+  , initWithRequestSelector
   , initialRequestSelector
+  , loadingSelector
+  , mainResourceSelector
+  , pageTitleSelector
+  , representationSelector
   , requestSelector
   , responseSelector
+  , subresourceForURLSelector
+  , subresourcesSelector
   , textEncodingNameSelector
-  , loadingSelector
-  , pageTitleSelector
   , unreachableURLSelector
   , webArchiveSelector
-  , mainResourceSelector
-  , subresourcesSelector
+  , webFrameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,9 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRequest:@
 initWithRequest :: (IsWebDataSource webDataSource, IsNSURLRequest request) => webDataSource -> request -> IO (Id WebDataSource)
-initWithRequest webDataSource  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg webDataSource (mkSelector "initWithRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= ownedObject . castPtr
+initWithRequest webDataSource request =
+  sendOwnedMessage webDataSource initWithRequestSelector (toNSURLRequest request)
 
 -- | method subresourceForURL:
 --
@@ -83,9 +79,8 @@ initWithRequest webDataSource  request =
 --
 -- ObjC selector: @- subresourceForURL:@
 subresourceForURL :: (IsWebDataSource webDataSource, IsNSURL url) => webDataSource -> url -> IO (Id WebResource)
-subresourceForURL webDataSource  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg webDataSource (mkSelector "subresourceForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+subresourceForURL webDataSource url =
+  sendMessage webDataSource subresourceForURLSelector (toNSURL url)
 
 -- | addSubresource:
 --
@@ -95,9 +90,8 @@ subresourceForURL webDataSource  url =
 --
 -- ObjC selector: @- addSubresource:@
 addSubresource :: (IsWebDataSource webDataSource, IsWebResource subresource) => webDataSource -> subresource -> IO ()
-addSubresource webDataSource  subresource =
-  withObjCPtr subresource $ \raw_subresource ->
-      sendMsg webDataSource (mkSelector "addSubresource:") retVoid [argPtr (castPtr raw_subresource :: Ptr ())]
+addSubresource webDataSource subresource =
+  sendMessage webDataSource addSubresourceSelector (toWebResource subresource)
 
 -- | data
 --
@@ -107,8 +101,8 @@ addSubresource webDataSource  subresource =
 --
 -- ObjC selector: @- data@
 data_ :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSData)
-data_ webDataSource  =
-    sendMsg webDataSource (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ webDataSource =
+  sendMessage webDataSource dataSelector
 
 -- | representation
 --
@@ -118,8 +112,8 @@ data_ webDataSource  =
 --
 -- ObjC selector: @- representation@
 representation :: IsWebDataSource webDataSource => webDataSource -> IO RawId
-representation webDataSource  =
-    fmap (RawId . castPtr) $ sendMsg webDataSource (mkSelector "representation") (retPtr retVoid) []
+representation webDataSource =
+  sendMessage webDataSource representationSelector
 
 -- | webFrame
 --
@@ -127,8 +121,8 @@ representation webDataSource  =
 --
 -- ObjC selector: @- webFrame@
 webFrame :: IsWebDataSource webDataSource => webDataSource -> IO (Id WebFrame)
-webFrame webDataSource  =
-    sendMsg webDataSource (mkSelector "webFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+webFrame webDataSource =
+  sendMessage webDataSource webFrameSelector
 
 -- | initialRequest
 --
@@ -136,8 +130,8 @@ webFrame webDataSource  =
 --
 -- ObjC selector: @- initialRequest@
 initialRequest :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSURLRequest)
-initialRequest webDataSource  =
-    sendMsg webDataSource (mkSelector "initialRequest") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialRequest webDataSource =
+  sendOwnedMessage webDataSource initialRequestSelector
 
 -- | request
 --
@@ -145,8 +139,8 @@ initialRequest webDataSource  =
 --
 -- ObjC selector: @- request@
 request :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSMutableURLRequest)
-request webDataSource  =
-    sendMsg webDataSource (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request webDataSource =
+  sendMessage webDataSource requestSelector
 
 -- | response
 --
@@ -154,8 +148,8 @@ request webDataSource  =
 --
 -- ObjC selector: @- response@
 response :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSURLResponse)
-response webDataSource  =
-    sendMsg webDataSource (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response webDataSource =
+  sendMessage webDataSource responseSelector
 
 -- | textEncodingName
 --
@@ -163,8 +157,8 @@ response webDataSource  =
 --
 -- ObjC selector: @- textEncodingName@
 textEncodingName :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSString)
-textEncodingName webDataSource  =
-    sendMsg webDataSource (mkSelector "textEncodingName") (retPtr retVoid) [] >>= retainedObject . castPtr
+textEncodingName webDataSource =
+  sendMessage webDataSource textEncodingNameSelector
 
 -- | isLoading
 --
@@ -172,8 +166,8 @@ textEncodingName webDataSource  =
 --
 -- ObjC selector: @- loading@
 loading :: IsWebDataSource webDataSource => webDataSource -> IO Bool
-loading webDataSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webDataSource (mkSelector "loading") retCULong []
+loading webDataSource =
+  sendMessage webDataSource loadingSelector
 
 -- | pageTitle
 --
@@ -181,8 +175,8 @@ loading webDataSource  =
 --
 -- ObjC selector: @- pageTitle@
 pageTitle :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSString)
-pageTitle webDataSource  =
-    sendMsg webDataSource (mkSelector "pageTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageTitle webDataSource =
+  sendMessage webDataSource pageTitleSelector
 
 -- | unreachableURL
 --
@@ -192,8 +186,8 @@ pageTitle webDataSource  =
 --
 -- ObjC selector: @- unreachableURL@
 unreachableURL :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSURL)
-unreachableURL webDataSource  =
-    sendMsg webDataSource (mkSelector "unreachableURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+unreachableURL webDataSource =
+  sendMessage webDataSource unreachableURLSelector
 
 -- | webArchive
 --
@@ -201,8 +195,8 @@ unreachableURL webDataSource  =
 --
 -- ObjC selector: @- webArchive@
 webArchive :: IsWebDataSource webDataSource => webDataSource -> IO (Id WebArchive)
-webArchive webDataSource  =
-    sendMsg webDataSource (mkSelector "webArchive") (retPtr retVoid) [] >>= retainedObject . castPtr
+webArchive webDataSource =
+  sendMessage webDataSource webArchiveSelector
 
 -- | mainResource
 --
@@ -210,8 +204,8 @@ webArchive webDataSource  =
 --
 -- ObjC selector: @- mainResource@
 mainResource :: IsWebDataSource webDataSource => webDataSource -> IO (Id WebResource)
-mainResource webDataSource  =
-    sendMsg webDataSource (mkSelector "mainResource") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainResource webDataSource =
+  sendMessage webDataSource mainResourceSelector
 
 -- | subresources
 --
@@ -219,74 +213,74 @@ mainResource webDataSource  =
 --
 -- ObjC selector: @- subresources@
 subresources :: IsWebDataSource webDataSource => webDataSource -> IO (Id NSArray)
-subresources webDataSource  =
-    sendMsg webDataSource (mkSelector "subresources") (retPtr retVoid) [] >>= retainedObject . castPtr
+subresources webDataSource =
+  sendMessage webDataSource subresourcesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRequest:@
-initWithRequestSelector :: Selector
+initWithRequestSelector :: Selector '[Id NSURLRequest] (Id WebDataSource)
 initWithRequestSelector = mkSelector "initWithRequest:"
 
 -- | @Selector@ for @subresourceForURL:@
-subresourceForURLSelector :: Selector
+subresourceForURLSelector :: Selector '[Id NSURL] (Id WebResource)
 subresourceForURLSelector = mkSelector "subresourceForURL:"
 
 -- | @Selector@ for @addSubresource:@
-addSubresourceSelector :: Selector
+addSubresourceSelector :: Selector '[Id WebResource] ()
 addSubresourceSelector = mkSelector "addSubresource:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @representation@
-representationSelector :: Selector
+representationSelector :: Selector '[] RawId
 representationSelector = mkSelector "representation"
 
 -- | @Selector@ for @webFrame@
-webFrameSelector :: Selector
+webFrameSelector :: Selector '[] (Id WebFrame)
 webFrameSelector = mkSelector "webFrame"
 
 -- | @Selector@ for @initialRequest@
-initialRequestSelector :: Selector
+initialRequestSelector :: Selector '[] (Id NSURLRequest)
 initialRequestSelector = mkSelector "initialRequest"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSMutableURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @textEncodingName@
-textEncodingNameSelector :: Selector
+textEncodingNameSelector :: Selector '[] (Id NSString)
 textEncodingNameSelector = mkSelector "textEncodingName"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 
 -- | @Selector@ for @pageTitle@
-pageTitleSelector :: Selector
+pageTitleSelector :: Selector '[] (Id NSString)
 pageTitleSelector = mkSelector "pageTitle"
 
 -- | @Selector@ for @unreachableURL@
-unreachableURLSelector :: Selector
+unreachableURLSelector :: Selector '[] (Id NSURL)
 unreachableURLSelector = mkSelector "unreachableURL"
 
 -- | @Selector@ for @webArchive@
-webArchiveSelector :: Selector
+webArchiveSelector :: Selector '[] (Id WebArchive)
 webArchiveSelector = mkSelector "webArchive"
 
 -- | @Selector@ for @mainResource@
-mainResourceSelector :: Selector
+mainResourceSelector :: Selector '[] (Id WebResource)
 mainResourceSelector = mkSelector "mainResource"
 
 -- | @Selector@ for @subresources@
-subresourcesSelector :: Selector
+subresourcesSelector :: Selector '[] (Id NSArray)
 subresourcesSelector = mkSelector "subresources"
 

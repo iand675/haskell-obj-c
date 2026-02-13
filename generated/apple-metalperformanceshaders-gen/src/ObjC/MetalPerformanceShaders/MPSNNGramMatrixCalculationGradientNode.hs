@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.MetalPerformanceShaders.MPSNNGramMatrixCalculationGradientNode
   , nodeWithSourceGradient_sourceImage_gradientState_alpha
   , initWithSourceGradient_sourceImage_gradientState_alpha
   , alpha
-  , nodeWithSourceGradient_sourceImage_gradientStateSelector
-  , initWithSourceGradient_sourceImage_gradientStateSelector
-  , nodeWithSourceGradient_sourceImage_gradientState_alphaSelector
-  , initWithSourceGradient_sourceImage_gradientState_alphaSelector
   , alphaSelector
+  , initWithSourceGradient_sourceImage_gradientStateSelector
+  , initWithSourceGradient_sourceImage_gradientState_alphaSelector
+  , nodeWithSourceGradient_sourceImage_gradientStateSelector
+  , nodeWithSourceGradient_sourceImage_gradientState_alphaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,36 +39,24 @@ nodeWithSourceGradient_sourceImage_gradientState :: (IsMPSNNImageNode sourceGrad
 nodeWithSourceGradient_sourceImage_gradientState sourceGradient sourceImage gradientState =
   do
     cls' <- getRequiredClass "MPSNNGramMatrixCalculationGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientStateSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState)
 
 -- | @- initWithSourceGradient:sourceImage:gradientState:@
 initWithSourceGradient_sourceImage_gradientState :: (IsMPSNNGramMatrixCalculationGradientNode mpsnnGramMatrixCalculationGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => mpsnnGramMatrixCalculationGradientNode -> sourceGradient -> sourceImage -> gradientState -> IO (Id MPSNNGramMatrixCalculationGradientNode)
-initWithSourceGradient_sourceImage_gradientState mpsnnGramMatrixCalculationGradientNode  sourceGradient sourceImage gradientState =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpsnnGramMatrixCalculationGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState mpsnnGramMatrixCalculationGradientNode sourceGradient sourceImage gradientState =
+  sendOwnedMessage mpsnnGramMatrixCalculationGradientNode initWithSourceGradient_sourceImage_gradientStateSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState)
 
 -- | @+ nodeWithSourceGradient:sourceImage:gradientState:alpha:@
 nodeWithSourceGradient_sourceImage_gradientState_alpha :: (IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => sourceGradient -> sourceImage -> gradientState -> CFloat -> IO (Id MPSNNGramMatrixCalculationGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_alpha sourceGradient sourceImage gradientState alpha =
   do
     cls' <- getRequiredClass "MPSNNGramMatrixCalculationGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:alpha:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCFloat alpha] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientState_alphaSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) alpha
 
 -- | @- initWithSourceGradient:sourceImage:gradientState:alpha:@
 initWithSourceGradient_sourceImage_gradientState_alpha :: (IsMPSNNGramMatrixCalculationGradientNode mpsnnGramMatrixCalculationGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => mpsnnGramMatrixCalculationGradientNode -> sourceGradient -> sourceImage -> gradientState -> CFloat -> IO (Id MPSNNGramMatrixCalculationGradientNode)
-initWithSourceGradient_sourceImage_gradientState_alpha mpsnnGramMatrixCalculationGradientNode  sourceGradient sourceImage gradientState alpha =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpsnnGramMatrixCalculationGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:alpha:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCFloat alpha] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState_alpha mpsnnGramMatrixCalculationGradientNode sourceGradient sourceImage gradientState alpha =
+  sendOwnedMessage mpsnnGramMatrixCalculationGradientNode initWithSourceGradient_sourceImage_gradientState_alphaSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) alpha
 
 -- | alpha
 --
@@ -79,30 +64,30 @@ initWithSourceGradient_sourceImage_gradientState_alpha mpsnnGramMatrixCalculatio
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSNNGramMatrixCalculationGradientNode mpsnnGramMatrixCalculationGradientNode => mpsnnGramMatrixCalculationGradientNode -> IO CFloat
-alpha mpsnnGramMatrixCalculationGradientNode  =
-    sendMsg mpsnnGramMatrixCalculationGradientNode (mkSelector "alpha") retCFloat []
+alpha mpsnnGramMatrixCalculationGradientNode =
+  sendMessage mpsnnGramMatrixCalculationGradientNode alphaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:@
-nodeWithSourceGradient_sourceImage_gradientStateSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientStateSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode] (Id MPSNNGramMatrixCalculationGradientNode)
 nodeWithSourceGradient_sourceImage_gradientStateSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:@
-initWithSourceGradient_sourceImage_gradientStateSelector :: Selector
+initWithSourceGradient_sourceImage_gradientStateSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode] (Id MPSNNGramMatrixCalculationGradientNode)
 initWithSourceGradient_sourceImage_gradientStateSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:"
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:alpha:@
-nodeWithSourceGradient_sourceImage_gradientState_alphaSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientState_alphaSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CFloat] (Id MPSNNGramMatrixCalculationGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_alphaSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:alpha:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:alpha:@
-initWithSourceGradient_sourceImage_gradientState_alphaSelector :: Selector
+initWithSourceGradient_sourceImage_gradientState_alphaSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CFloat] (Id MPSNNGramMatrixCalculationGradientNode)
 initWithSourceGradient_sourceImage_gradientState_alphaSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:alpha:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SoundAnalysis.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SNErrorCode@
 newtype SNErrorCode = SNErrorCode CLong
@@ -31,6 +34,16 @@ pattern SNErrorCodeInvalidModel = SNErrorCode 4
 pattern SNErrorCodeInvalidFile :: SNErrorCode
 pattern SNErrorCodeInvalidFile = SNErrorCode 5
 
+instance ObjCArgument SNErrorCode where
+  withObjCArg (SNErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SNErrorCode where
+  type RawReturn SNErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SNErrorCode x)
+  fromOwned x = pure (SNErrorCode x)
+
 -- | Enumerates possible types for @SNTimeDurationConstraint@.
 -- | @SNTimeDurationConstraintType@
 newtype SNTimeDurationConstraintType = SNTimeDurationConstraintType CLong
@@ -42,3 +55,13 @@ pattern SNTimeDurationConstraintTypeEnumerated = SNTimeDurationConstraintType 1
 
 pattern SNTimeDurationConstraintTypeRange :: SNTimeDurationConstraintType
 pattern SNTimeDurationConstraintTypeRange = SNTimeDurationConstraintType 2
+
+instance ObjCArgument SNTimeDurationConstraintType where
+  withObjCArg (SNTimeDurationConstraintType x) k = k (argCLong x)
+
+instance ObjCReturn SNTimeDurationConstraintType where
+  type RawReturn SNTimeDurationConstraintType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SNTimeDurationConstraintType x)
+  fromOwned x = pure (SNTimeDurationConstraintType x)

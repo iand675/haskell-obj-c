@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -68,81 +69,77 @@ module ObjC.WebKit.DOMElement
   , firstElementChild
   , lastElementChild
   , childElementCount
-  , getAttributeSelector
-  , setAttribute_valueSelector
-  , removeAttributeSelector
-  , getAttributeNodeSelector
-  , setAttributeNodeSelector
-  , removeAttributeNodeSelector
-  , getElementsByTagNameSelector
-  , getAttributeNS_localNameSelector
-  , setAttributeNS_qualifiedName_valueSelector
-  , removeAttributeNS_localNameSelector
-  , getElementsByTagNameNS_localNameSelector
-  , getAttributeNodeNS_localNameSelector
-  , setAttributeNodeNSSelector
-  , hasAttributeSelector
-  , hasAttributeNS_localNameSelector
-  , focusSelector
   , blurSelector
-  , scrollIntoViewSelector
-  , scrollIntoViewIfNeededSelector
-  , getElementsByClassNameSelector
-  , webkitRequestFullScreenSelector
-  , querySelectorSelector
-  , querySelectorAllSelector
-  , imageSelector
-  , setAttributeSelector
-  , getAttributeNSSelector
-  , setAttributeNSSelector
-  , removeAttributeNSSelector
-  , getElementsByTagNameNSSelector
-  , getAttributeNodeNSSelector
-  , hasAttributeNSSelector
-  , scrollByLinesSelector
-  , scrollByPagesSelector
-  , tagNameSelector
-  , styleSelector
-  , offsetLeftSelector
-  , offsetTopSelector
-  , offsetWidthSelector
-  , offsetHeightSelector
+  , childElementCountSelector
+  , classNameSelector
+  , clientHeightSelector
   , clientLeftSelector
   , clientTopSelector
   , clientWidthSelector
-  , clientHeightSelector
-  , scrollLeftSelector
-  , setScrollLeftSelector
-  , scrollTopSelector
-  , setScrollTopSelector
-  , scrollWidthSelector
-  , scrollHeightSelector
-  , offsetParentSelector
-  , innerHTMLSelector
-  , setInnerHTMLSelector
-  , outerHTMLSelector
-  , setOuterHTMLSelector
-  , classNameSelector
-  , setClassNameSelector
-  , innerTextSelector
-  , previousElementSiblingSelector
-  , nextElementSiblingSelector
   , firstElementChildSelector
+  , focusSelector
+  , getAttributeNSSelector
+  , getAttributeNS_localNameSelector
+  , getAttributeNodeNSSelector
+  , getAttributeNodeNS_localNameSelector
+  , getAttributeNodeSelector
+  , getAttributeSelector
+  , getElementsByClassNameSelector
+  , getElementsByTagNameNSSelector
+  , getElementsByTagNameNS_localNameSelector
+  , getElementsByTagNameSelector
+  , hasAttributeNSSelector
+  , hasAttributeNS_localNameSelector
+  , hasAttributeSelector
+  , imageSelector
+  , innerHTMLSelector
+  , innerTextSelector
   , lastElementChildSelector
-  , childElementCountSelector
+  , nextElementSiblingSelector
+  , offsetHeightSelector
+  , offsetLeftSelector
+  , offsetParentSelector
+  , offsetTopSelector
+  , offsetWidthSelector
+  , outerHTMLSelector
+  , previousElementSiblingSelector
+  , querySelectorAllSelector
+  , querySelectorSelector
+  , removeAttributeNSSelector
+  , removeAttributeNS_localNameSelector
+  , removeAttributeNodeSelector
+  , removeAttributeSelector
+  , scrollByLinesSelector
+  , scrollByPagesSelector
+  , scrollHeightSelector
+  , scrollIntoViewIfNeededSelector
+  , scrollIntoViewSelector
+  , scrollLeftSelector
+  , scrollTopSelector
+  , scrollWidthSelector
+  , setAttributeNSSelector
+  , setAttributeNS_qualifiedName_valueSelector
+  , setAttributeNodeNSSelector
+  , setAttributeNodeSelector
+  , setAttributeSelector
+  , setAttribute_valueSelector
+  , setClassNameSelector
+  , setInnerHTMLSelector
+  , setOuterHTMLSelector
+  , setScrollLeftSelector
+  , setScrollTopSelector
+  , styleSelector
+  , tagNameSelector
+  , webkitRequestFullScreenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -152,607 +149,563 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- getAttribute:@
 getAttribute :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO (Id NSString)
-getAttribute domElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domElement (mkSelector "getAttribute:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+getAttribute domElement name =
+  sendMessage domElement getAttributeSelector (toNSString name)
 
 -- | @- setAttribute:value:@
 setAttribute_value :: (IsDOMElement domElement, IsNSString name, IsNSString value) => domElement -> name -> value -> IO ()
-setAttribute_value domElement  name value =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr value $ \raw_value ->
-        sendMsg domElement (mkSelector "setAttribute:value:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())]
+setAttribute_value domElement name value =
+  sendMessage domElement setAttribute_valueSelector (toNSString name) (toNSString value)
 
 -- | @- removeAttribute:@
 removeAttribute :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO ()
-removeAttribute domElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domElement (mkSelector "removeAttribute:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeAttribute domElement name =
+  sendMessage domElement removeAttributeSelector (toNSString name)
 
 -- | @- getAttributeNode:@
 getAttributeNode :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO (Id DOMAttr)
-getAttributeNode domElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domElement (mkSelector "getAttributeNode:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+getAttributeNode domElement name =
+  sendMessage domElement getAttributeNodeSelector (toNSString name)
 
 -- | @- setAttributeNode:@
 setAttributeNode :: (IsDOMElement domElement, IsDOMAttr newAttr) => domElement -> newAttr -> IO (Id DOMAttr)
-setAttributeNode domElement  newAttr =
-  withObjCPtr newAttr $ \raw_newAttr ->
-      sendMsg domElement (mkSelector "setAttributeNode:") (retPtr retVoid) [argPtr (castPtr raw_newAttr :: Ptr ())] >>= retainedObject . castPtr
+setAttributeNode domElement newAttr =
+  sendMessage domElement setAttributeNodeSelector (toDOMAttr newAttr)
 
 -- | @- removeAttributeNode:@
 removeAttributeNode :: (IsDOMElement domElement, IsDOMAttr oldAttr) => domElement -> oldAttr -> IO (Id DOMAttr)
-removeAttributeNode domElement  oldAttr =
-  withObjCPtr oldAttr $ \raw_oldAttr ->
-      sendMsg domElement (mkSelector "removeAttributeNode:") (retPtr retVoid) [argPtr (castPtr raw_oldAttr :: Ptr ())] >>= retainedObject . castPtr
+removeAttributeNode domElement oldAttr =
+  sendMessage domElement removeAttributeNodeSelector (toDOMAttr oldAttr)
 
 -- | @- getElementsByTagName:@
 getElementsByTagName :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO (Id DOMNodeList)
-getElementsByTagName domElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domElement (mkSelector "getElementsByTagName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagName domElement name =
+  sendMessage domElement getElementsByTagNameSelector (toNSString name)
 
 -- | @- getAttributeNS:localName:@
 getAttributeNS_localName :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id NSString)
-getAttributeNS_localName domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getAttributeNS:localName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getAttributeNS_localName domElement namespaceURI localName =
+  sendMessage domElement getAttributeNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- setAttributeNS:qualifiedName:value:@
 setAttributeNS_qualifiedName_value :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString qualifiedName, IsNSString value) => domElement -> namespaceURI -> qualifiedName -> value -> IO ()
-setAttributeNS_qualifiedName_value domElement  namespaceURI qualifiedName value =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-      withObjCPtr value $ \raw_value ->
-          sendMsg domElement (mkSelector "setAttributeNS:qualifiedName:value:") retVoid [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())]
+setAttributeNS_qualifiedName_value domElement namespaceURI qualifiedName value =
+  sendMessage domElement setAttributeNS_qualifiedName_valueSelector (toNSString namespaceURI) (toNSString qualifiedName) (toNSString value)
 
 -- | @- removeAttributeNS:localName:@
 removeAttributeNS_localName :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO ()
-removeAttributeNS_localName domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "removeAttributeNS:localName:") retVoid [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())]
+removeAttributeNS_localName domElement namespaceURI localName =
+  sendMessage domElement removeAttributeNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- getElementsByTagNameNS:localName:@
 getElementsByTagNameNS_localName :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id DOMNodeList)
-getElementsByTagNameNS_localName domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getElementsByTagNameNS:localName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagNameNS_localName domElement namespaceURI localName =
+  sendMessage domElement getElementsByTagNameNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- getAttributeNodeNS:localName:@
 getAttributeNodeNS_localName :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id DOMAttr)
-getAttributeNodeNS_localName domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getAttributeNodeNS:localName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getAttributeNodeNS_localName domElement namespaceURI localName =
+  sendMessage domElement getAttributeNodeNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- setAttributeNodeNS:@
 setAttributeNodeNS :: (IsDOMElement domElement, IsDOMAttr newAttr) => domElement -> newAttr -> IO (Id DOMAttr)
-setAttributeNodeNS domElement  newAttr =
-  withObjCPtr newAttr $ \raw_newAttr ->
-      sendMsg domElement (mkSelector "setAttributeNodeNS:") (retPtr retVoid) [argPtr (castPtr raw_newAttr :: Ptr ())] >>= retainedObject . castPtr
+setAttributeNodeNS domElement newAttr =
+  sendMessage domElement setAttributeNodeNSSelector (toDOMAttr newAttr)
 
 -- | @- hasAttribute:@
 hasAttribute :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO Bool
-hasAttribute domElement  name =
-  withObjCPtr name $ \raw_name ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domElement (mkSelector "hasAttribute:") retCULong [argPtr (castPtr raw_name :: Ptr ())]
+hasAttribute domElement name =
+  sendMessage domElement hasAttributeSelector (toNSString name)
 
 -- | @- hasAttributeNS:localName:@
 hasAttributeNS_localName :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO Bool
-hasAttributeNS_localName domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg domElement (mkSelector "hasAttributeNS:localName:") retCULong [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())]
+hasAttributeNS_localName domElement namespaceURI localName =
+  sendMessage domElement hasAttributeNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- focus@
 focus :: IsDOMElement domElement => domElement -> IO ()
-focus domElement  =
-    sendMsg domElement (mkSelector "focus") retVoid []
+focus domElement =
+  sendMessage domElement focusSelector
 
 -- | @- blur@
 blur :: IsDOMElement domElement => domElement -> IO ()
-blur domElement  =
-    sendMsg domElement (mkSelector "blur") retVoid []
+blur domElement =
+  sendMessage domElement blurSelector
 
 -- | @- scrollIntoView:@
 scrollIntoView :: IsDOMElement domElement => domElement -> Bool -> IO ()
-scrollIntoView domElement  alignWithTop =
-    sendMsg domElement (mkSelector "scrollIntoView:") retVoid [argCULong (if alignWithTop then 1 else 0)]
+scrollIntoView domElement alignWithTop =
+  sendMessage domElement scrollIntoViewSelector alignWithTop
 
 -- | @- scrollIntoViewIfNeeded:@
 scrollIntoViewIfNeeded :: IsDOMElement domElement => domElement -> Bool -> IO ()
-scrollIntoViewIfNeeded domElement  centerIfNeeded =
-    sendMsg domElement (mkSelector "scrollIntoViewIfNeeded:") retVoid [argCULong (if centerIfNeeded then 1 else 0)]
+scrollIntoViewIfNeeded domElement centerIfNeeded =
+  sendMessage domElement scrollIntoViewIfNeededSelector centerIfNeeded
 
 -- | @- getElementsByClassName:@
 getElementsByClassName :: (IsDOMElement domElement, IsNSString name) => domElement -> name -> IO (Id DOMNodeList)
-getElementsByClassName domElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domElement (mkSelector "getElementsByClassName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+getElementsByClassName domElement name =
+  sendMessage domElement getElementsByClassNameSelector (toNSString name)
 
 -- | @- webkitRequestFullScreen:@
 webkitRequestFullScreen :: IsDOMElement domElement => domElement -> CUShort -> IO ()
-webkitRequestFullScreen domElement  flags =
-    sendMsg domElement (mkSelector "webkitRequestFullScreen:") retVoid [argCUInt (fromIntegral flags)]
+webkitRequestFullScreen domElement flags =
+  sendMessage domElement webkitRequestFullScreenSelector flags
 
 -- | @- querySelector:@
 querySelector :: (IsDOMElement domElement, IsNSString selectors) => domElement -> selectors -> IO (Id DOMElement)
-querySelector domElement  selectors =
-  withObjCPtr selectors $ \raw_selectors ->
-      sendMsg domElement (mkSelector "querySelector:") (retPtr retVoid) [argPtr (castPtr raw_selectors :: Ptr ())] >>= retainedObject . castPtr
+querySelector domElement selectors =
+  sendMessage domElement querySelectorSelector (toNSString selectors)
 
 -- | @- querySelectorAll:@
 querySelectorAll :: (IsDOMElement domElement, IsNSString selectors) => domElement -> selectors -> IO (Id DOMNodeList)
-querySelectorAll domElement  selectors =
-  withObjCPtr selectors $ \raw_selectors ->
-      sendMsg domElement (mkSelector "querySelectorAll:") (retPtr retVoid) [argPtr (castPtr raw_selectors :: Ptr ())] >>= retainedObject . castPtr
+querySelectorAll domElement selectors =
+  sendMessage domElement querySelectorAllSelector (toNSString selectors)
 
 -- | @- image@
 image :: IsDOMElement domElement => domElement -> IO (Id NSImage)
-image domElement  =
-    sendMsg domElement (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image domElement =
+  sendMessage domElement imageSelector
 
 -- | @- setAttribute::@
 setAttribute :: (IsDOMElement domElement, IsNSString name, IsNSString value) => domElement -> name -> value -> IO ()
-setAttribute domElement  name value =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr value $ \raw_value ->
-        sendMsg domElement (mkSelector "setAttribute::") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())]
+setAttribute domElement name value =
+  sendMessage domElement setAttributeSelector (toNSString name) (toNSString value)
 
 -- | @- getAttributeNS::@
 getAttributeNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id NSString)
-getAttributeNS domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getAttributeNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getAttributeNS domElement namespaceURI localName =
+  sendMessage domElement getAttributeNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- setAttributeNS:::@
 setAttributeNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString qualifiedName, IsNSString value) => domElement -> namespaceURI -> qualifiedName -> value -> IO ()
-setAttributeNS domElement  namespaceURI qualifiedName value =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-      withObjCPtr value $ \raw_value ->
-          sendMsg domElement (mkSelector "setAttributeNS:::") retVoid [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())]
+setAttributeNS domElement namespaceURI qualifiedName value =
+  sendMessage domElement setAttributeNSSelector (toNSString namespaceURI) (toNSString qualifiedName) (toNSString value)
 
 -- | @- removeAttributeNS::@
 removeAttributeNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO ()
-removeAttributeNS domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "removeAttributeNS::") retVoid [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())]
+removeAttributeNS domElement namespaceURI localName =
+  sendMessage domElement removeAttributeNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- getElementsByTagNameNS::@
 getElementsByTagNameNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id DOMNodeList)
-getElementsByTagNameNS domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getElementsByTagNameNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagNameNS domElement namespaceURI localName =
+  sendMessage domElement getElementsByTagNameNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- getAttributeNodeNS::@
 getAttributeNodeNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO (Id DOMAttr)
-getAttributeNodeNS domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domElement (mkSelector "getAttributeNodeNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getAttributeNodeNS domElement namespaceURI localName =
+  sendMessage domElement getAttributeNodeNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- hasAttributeNS::@
 hasAttributeNS :: (IsDOMElement domElement, IsNSString namespaceURI, IsNSString localName) => domElement -> namespaceURI -> localName -> IO Bool
-hasAttributeNS domElement  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg domElement (mkSelector "hasAttributeNS::") retCULong [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())]
+hasAttributeNS domElement namespaceURI localName =
+  sendMessage domElement hasAttributeNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- scrollByLines:@
 scrollByLines :: IsDOMElement domElement => domElement -> CInt -> IO ()
-scrollByLines domElement  lines_ =
-    sendMsg domElement (mkSelector "scrollByLines:") retVoid [argCInt lines_]
+scrollByLines domElement lines_ =
+  sendMessage domElement scrollByLinesSelector lines_
 
 -- | @- scrollByPages:@
 scrollByPages :: IsDOMElement domElement => domElement -> CInt -> IO ()
-scrollByPages domElement  pages =
-    sendMsg domElement (mkSelector "scrollByPages:") retVoid [argCInt pages]
+scrollByPages domElement pages =
+  sendMessage domElement scrollByPagesSelector pages
 
 -- | @- tagName@
 tagName :: IsDOMElement domElement => domElement -> IO (Id NSString)
-tagName domElement  =
-    sendMsg domElement (mkSelector "tagName") (retPtr retVoid) [] >>= retainedObject . castPtr
+tagName domElement =
+  sendMessage domElement tagNameSelector
 
 -- | @- style@
 style :: IsDOMElement domElement => domElement -> IO (Id DOMCSSStyleDeclaration)
-style domElement  =
-    sendMsg domElement (mkSelector "style") (retPtr retVoid) [] >>= retainedObject . castPtr
+style domElement =
+  sendMessage domElement styleSelector
 
 -- | @- offsetLeft@
 offsetLeft :: IsDOMElement domElement => domElement -> IO CInt
-offsetLeft domElement  =
-    sendMsg domElement (mkSelector "offsetLeft") retCInt []
+offsetLeft domElement =
+  sendMessage domElement offsetLeftSelector
 
 -- | @- offsetTop@
 offsetTop :: IsDOMElement domElement => domElement -> IO CInt
-offsetTop domElement  =
-    sendMsg domElement (mkSelector "offsetTop") retCInt []
+offsetTop domElement =
+  sendMessage domElement offsetTopSelector
 
 -- | @- offsetWidth@
 offsetWidth :: IsDOMElement domElement => domElement -> IO CInt
-offsetWidth domElement  =
-    sendMsg domElement (mkSelector "offsetWidth") retCInt []
+offsetWidth domElement =
+  sendMessage domElement offsetWidthSelector
 
 -- | @- offsetHeight@
 offsetHeight :: IsDOMElement domElement => domElement -> IO CInt
-offsetHeight domElement  =
-    sendMsg domElement (mkSelector "offsetHeight") retCInt []
+offsetHeight domElement =
+  sendMessage domElement offsetHeightSelector
 
 -- | @- clientLeft@
 clientLeft :: IsDOMElement domElement => domElement -> IO CInt
-clientLeft domElement  =
-    sendMsg domElement (mkSelector "clientLeft") retCInt []
+clientLeft domElement =
+  sendMessage domElement clientLeftSelector
 
 -- | @- clientTop@
 clientTop :: IsDOMElement domElement => domElement -> IO CInt
-clientTop domElement  =
-    sendMsg domElement (mkSelector "clientTop") retCInt []
+clientTop domElement =
+  sendMessage domElement clientTopSelector
 
 -- | @- clientWidth@
 clientWidth :: IsDOMElement domElement => domElement -> IO CInt
-clientWidth domElement  =
-    sendMsg domElement (mkSelector "clientWidth") retCInt []
+clientWidth domElement =
+  sendMessage domElement clientWidthSelector
 
 -- | @- clientHeight@
 clientHeight :: IsDOMElement domElement => domElement -> IO CInt
-clientHeight domElement  =
-    sendMsg domElement (mkSelector "clientHeight") retCInt []
+clientHeight domElement =
+  sendMessage domElement clientHeightSelector
 
 -- | @- scrollLeft@
 scrollLeft :: IsDOMElement domElement => domElement -> IO CInt
-scrollLeft domElement  =
-    sendMsg domElement (mkSelector "scrollLeft") retCInt []
+scrollLeft domElement =
+  sendMessage domElement scrollLeftSelector
 
 -- | @- setScrollLeft:@
 setScrollLeft :: IsDOMElement domElement => domElement -> CInt -> IO ()
-setScrollLeft domElement  value =
-    sendMsg domElement (mkSelector "setScrollLeft:") retVoid [argCInt value]
+setScrollLeft domElement value =
+  sendMessage domElement setScrollLeftSelector value
 
 -- | @- scrollTop@
 scrollTop :: IsDOMElement domElement => domElement -> IO CInt
-scrollTop domElement  =
-    sendMsg domElement (mkSelector "scrollTop") retCInt []
+scrollTop domElement =
+  sendMessage domElement scrollTopSelector
 
 -- | @- setScrollTop:@
 setScrollTop :: IsDOMElement domElement => domElement -> CInt -> IO ()
-setScrollTop domElement  value =
-    sendMsg domElement (mkSelector "setScrollTop:") retVoid [argCInt value]
+setScrollTop domElement value =
+  sendMessage domElement setScrollTopSelector value
 
 -- | @- scrollWidth@
 scrollWidth :: IsDOMElement domElement => domElement -> IO CInt
-scrollWidth domElement  =
-    sendMsg domElement (mkSelector "scrollWidth") retCInt []
+scrollWidth domElement =
+  sendMessage domElement scrollWidthSelector
 
 -- | @- scrollHeight@
 scrollHeight :: IsDOMElement domElement => domElement -> IO CInt
-scrollHeight domElement  =
-    sendMsg domElement (mkSelector "scrollHeight") retCInt []
+scrollHeight domElement =
+  sendMessage domElement scrollHeightSelector
 
 -- | @- offsetParent@
 offsetParent :: IsDOMElement domElement => domElement -> IO (Id DOMElement)
-offsetParent domElement  =
-    sendMsg domElement (mkSelector "offsetParent") (retPtr retVoid) [] >>= retainedObject . castPtr
+offsetParent domElement =
+  sendMessage domElement offsetParentSelector
 
 -- | @- innerHTML@
 innerHTML :: IsDOMElement domElement => domElement -> IO (Id NSString)
-innerHTML domElement  =
-    sendMsg domElement (mkSelector "innerHTML") (retPtr retVoid) [] >>= retainedObject . castPtr
+innerHTML domElement =
+  sendMessage domElement innerHTMLSelector
 
 -- | @- setInnerHTML:@
 setInnerHTML :: (IsDOMElement domElement, IsNSString value) => domElement -> value -> IO ()
-setInnerHTML domElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domElement (mkSelector "setInnerHTML:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInnerHTML domElement value =
+  sendMessage domElement setInnerHTMLSelector (toNSString value)
 
 -- | @- outerHTML@
 outerHTML :: IsDOMElement domElement => domElement -> IO (Id NSString)
-outerHTML domElement  =
-    sendMsg domElement (mkSelector "outerHTML") (retPtr retVoid) [] >>= retainedObject . castPtr
+outerHTML domElement =
+  sendMessage domElement outerHTMLSelector
 
 -- | @- setOuterHTML:@
 setOuterHTML :: (IsDOMElement domElement, IsNSString value) => domElement -> value -> IO ()
-setOuterHTML domElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domElement (mkSelector "setOuterHTML:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOuterHTML domElement value =
+  sendMessage domElement setOuterHTMLSelector (toNSString value)
 
 -- | @- className@
 className :: IsDOMElement domElement => domElement -> IO (Id NSString)
-className domElement  =
-    sendMsg domElement (mkSelector "className") (retPtr retVoid) [] >>= retainedObject . castPtr
+className domElement =
+  sendMessage domElement classNameSelector
 
 -- | @- setClassName:@
 setClassName :: (IsDOMElement domElement, IsNSString value) => domElement -> value -> IO ()
-setClassName domElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domElement (mkSelector "setClassName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClassName domElement value =
+  sendMessage domElement setClassNameSelector (toNSString value)
 
 -- | @- innerText@
 innerText :: IsDOMElement domElement => domElement -> IO (Id NSString)
-innerText domElement  =
-    sendMsg domElement (mkSelector "innerText") (retPtr retVoid) [] >>= retainedObject . castPtr
+innerText domElement =
+  sendMessage domElement innerTextSelector
 
 -- | @- previousElementSibling@
 previousElementSibling :: IsDOMElement domElement => domElement -> IO (Id DOMElement)
-previousElementSibling domElement  =
-    sendMsg domElement (mkSelector "previousElementSibling") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousElementSibling domElement =
+  sendMessage domElement previousElementSiblingSelector
 
 -- | @- nextElementSibling@
 nextElementSibling :: IsDOMElement domElement => domElement -> IO (Id DOMElement)
-nextElementSibling domElement  =
-    sendMsg domElement (mkSelector "nextElementSibling") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextElementSibling domElement =
+  sendMessage domElement nextElementSiblingSelector
 
 -- | @- firstElementChild@
 firstElementChild :: IsDOMElement domElement => domElement -> IO (Id DOMElement)
-firstElementChild domElement  =
-    sendMsg domElement (mkSelector "firstElementChild") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstElementChild domElement =
+  sendMessage domElement firstElementChildSelector
 
 -- | @- lastElementChild@
 lastElementChild :: IsDOMElement domElement => domElement -> IO (Id DOMElement)
-lastElementChild domElement  =
-    sendMsg domElement (mkSelector "lastElementChild") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastElementChild domElement =
+  sendMessage domElement lastElementChildSelector
 
 -- | @- childElementCount@
 childElementCount :: IsDOMElement domElement => domElement -> IO CUInt
-childElementCount domElement  =
-    sendMsg domElement (mkSelector "childElementCount") retCUInt []
+childElementCount domElement =
+  sendMessage domElement childElementCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getAttribute:@
-getAttributeSelector :: Selector
+getAttributeSelector :: Selector '[Id NSString] (Id NSString)
 getAttributeSelector = mkSelector "getAttribute:"
 
 -- | @Selector@ for @setAttribute:value:@
-setAttribute_valueSelector :: Selector
+setAttribute_valueSelector :: Selector '[Id NSString, Id NSString] ()
 setAttribute_valueSelector = mkSelector "setAttribute:value:"
 
 -- | @Selector@ for @removeAttribute:@
-removeAttributeSelector :: Selector
+removeAttributeSelector :: Selector '[Id NSString] ()
 removeAttributeSelector = mkSelector "removeAttribute:"
 
 -- | @Selector@ for @getAttributeNode:@
-getAttributeNodeSelector :: Selector
+getAttributeNodeSelector :: Selector '[Id NSString] (Id DOMAttr)
 getAttributeNodeSelector = mkSelector "getAttributeNode:"
 
 -- | @Selector@ for @setAttributeNode:@
-setAttributeNodeSelector :: Selector
+setAttributeNodeSelector :: Selector '[Id DOMAttr] (Id DOMAttr)
 setAttributeNodeSelector = mkSelector "setAttributeNode:"
 
 -- | @Selector@ for @removeAttributeNode:@
-removeAttributeNodeSelector :: Selector
+removeAttributeNodeSelector :: Selector '[Id DOMAttr] (Id DOMAttr)
 removeAttributeNodeSelector = mkSelector "removeAttributeNode:"
 
 -- | @Selector@ for @getElementsByTagName:@
-getElementsByTagNameSelector :: Selector
+getElementsByTagNameSelector :: Selector '[Id NSString] (Id DOMNodeList)
 getElementsByTagNameSelector = mkSelector "getElementsByTagName:"
 
 -- | @Selector@ for @getAttributeNS:localName:@
-getAttributeNS_localNameSelector :: Selector
+getAttributeNS_localNameSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 getAttributeNS_localNameSelector = mkSelector "getAttributeNS:localName:"
 
 -- | @Selector@ for @setAttributeNS:qualifiedName:value:@
-setAttributeNS_qualifiedName_valueSelector :: Selector
+setAttributeNS_qualifiedName_valueSelector :: Selector '[Id NSString, Id NSString, Id NSString] ()
 setAttributeNS_qualifiedName_valueSelector = mkSelector "setAttributeNS:qualifiedName:value:"
 
 -- | @Selector@ for @removeAttributeNS:localName:@
-removeAttributeNS_localNameSelector :: Selector
+removeAttributeNS_localNameSelector :: Selector '[Id NSString, Id NSString] ()
 removeAttributeNS_localNameSelector = mkSelector "removeAttributeNS:localName:"
 
 -- | @Selector@ for @getElementsByTagNameNS:localName:@
-getElementsByTagNameNS_localNameSelector :: Selector
+getElementsByTagNameNS_localNameSelector :: Selector '[Id NSString, Id NSString] (Id DOMNodeList)
 getElementsByTagNameNS_localNameSelector = mkSelector "getElementsByTagNameNS:localName:"
 
 -- | @Selector@ for @getAttributeNodeNS:localName:@
-getAttributeNodeNS_localNameSelector :: Selector
+getAttributeNodeNS_localNameSelector :: Selector '[Id NSString, Id NSString] (Id DOMAttr)
 getAttributeNodeNS_localNameSelector = mkSelector "getAttributeNodeNS:localName:"
 
 -- | @Selector@ for @setAttributeNodeNS:@
-setAttributeNodeNSSelector :: Selector
+setAttributeNodeNSSelector :: Selector '[Id DOMAttr] (Id DOMAttr)
 setAttributeNodeNSSelector = mkSelector "setAttributeNodeNS:"
 
 -- | @Selector@ for @hasAttribute:@
-hasAttributeSelector :: Selector
+hasAttributeSelector :: Selector '[Id NSString] Bool
 hasAttributeSelector = mkSelector "hasAttribute:"
 
 -- | @Selector@ for @hasAttributeNS:localName:@
-hasAttributeNS_localNameSelector :: Selector
+hasAttributeNS_localNameSelector :: Selector '[Id NSString, Id NSString] Bool
 hasAttributeNS_localNameSelector = mkSelector "hasAttributeNS:localName:"
 
 -- | @Selector@ for @focus@
-focusSelector :: Selector
+focusSelector :: Selector '[] ()
 focusSelector = mkSelector "focus"
 
 -- | @Selector@ for @blur@
-blurSelector :: Selector
+blurSelector :: Selector '[] ()
 blurSelector = mkSelector "blur"
 
 -- | @Selector@ for @scrollIntoView:@
-scrollIntoViewSelector :: Selector
+scrollIntoViewSelector :: Selector '[Bool] ()
 scrollIntoViewSelector = mkSelector "scrollIntoView:"
 
 -- | @Selector@ for @scrollIntoViewIfNeeded:@
-scrollIntoViewIfNeededSelector :: Selector
+scrollIntoViewIfNeededSelector :: Selector '[Bool] ()
 scrollIntoViewIfNeededSelector = mkSelector "scrollIntoViewIfNeeded:"
 
 -- | @Selector@ for @getElementsByClassName:@
-getElementsByClassNameSelector :: Selector
+getElementsByClassNameSelector :: Selector '[Id NSString] (Id DOMNodeList)
 getElementsByClassNameSelector = mkSelector "getElementsByClassName:"
 
 -- | @Selector@ for @webkitRequestFullScreen:@
-webkitRequestFullScreenSelector :: Selector
+webkitRequestFullScreenSelector :: Selector '[CUShort] ()
 webkitRequestFullScreenSelector = mkSelector "webkitRequestFullScreen:"
 
 -- | @Selector@ for @querySelector:@
-querySelectorSelector :: Selector
+querySelectorSelector :: Selector '[Id NSString] (Id DOMElement)
 querySelectorSelector = mkSelector "querySelector:"
 
 -- | @Selector@ for @querySelectorAll:@
-querySelectorAllSelector :: Selector
+querySelectorAllSelector :: Selector '[Id NSString] (Id DOMNodeList)
 querySelectorAllSelector = mkSelector "querySelectorAll:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setAttribute::@
-setAttributeSelector :: Selector
+setAttributeSelector :: Selector '[Id NSString, Id NSString] ()
 setAttributeSelector = mkSelector "setAttribute::"
 
 -- | @Selector@ for @getAttributeNS::@
-getAttributeNSSelector :: Selector
+getAttributeNSSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 getAttributeNSSelector = mkSelector "getAttributeNS::"
 
 -- | @Selector@ for @setAttributeNS:::@
-setAttributeNSSelector :: Selector
+setAttributeNSSelector :: Selector '[Id NSString, Id NSString, Id NSString] ()
 setAttributeNSSelector = mkSelector "setAttributeNS:::"
 
 -- | @Selector@ for @removeAttributeNS::@
-removeAttributeNSSelector :: Selector
+removeAttributeNSSelector :: Selector '[Id NSString, Id NSString] ()
 removeAttributeNSSelector = mkSelector "removeAttributeNS::"
 
 -- | @Selector@ for @getElementsByTagNameNS::@
-getElementsByTagNameNSSelector :: Selector
+getElementsByTagNameNSSelector :: Selector '[Id NSString, Id NSString] (Id DOMNodeList)
 getElementsByTagNameNSSelector = mkSelector "getElementsByTagNameNS::"
 
 -- | @Selector@ for @getAttributeNodeNS::@
-getAttributeNodeNSSelector :: Selector
+getAttributeNodeNSSelector :: Selector '[Id NSString, Id NSString] (Id DOMAttr)
 getAttributeNodeNSSelector = mkSelector "getAttributeNodeNS::"
 
 -- | @Selector@ for @hasAttributeNS::@
-hasAttributeNSSelector :: Selector
+hasAttributeNSSelector :: Selector '[Id NSString, Id NSString] Bool
 hasAttributeNSSelector = mkSelector "hasAttributeNS::"
 
 -- | @Selector@ for @scrollByLines:@
-scrollByLinesSelector :: Selector
+scrollByLinesSelector :: Selector '[CInt] ()
 scrollByLinesSelector = mkSelector "scrollByLines:"
 
 -- | @Selector@ for @scrollByPages:@
-scrollByPagesSelector :: Selector
+scrollByPagesSelector :: Selector '[CInt] ()
 scrollByPagesSelector = mkSelector "scrollByPages:"
 
 -- | @Selector@ for @tagName@
-tagNameSelector :: Selector
+tagNameSelector :: Selector '[] (Id NSString)
 tagNameSelector = mkSelector "tagName"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] (Id DOMCSSStyleDeclaration)
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @offsetLeft@
-offsetLeftSelector :: Selector
+offsetLeftSelector :: Selector '[] CInt
 offsetLeftSelector = mkSelector "offsetLeft"
 
 -- | @Selector@ for @offsetTop@
-offsetTopSelector :: Selector
+offsetTopSelector :: Selector '[] CInt
 offsetTopSelector = mkSelector "offsetTop"
 
 -- | @Selector@ for @offsetWidth@
-offsetWidthSelector :: Selector
+offsetWidthSelector :: Selector '[] CInt
 offsetWidthSelector = mkSelector "offsetWidth"
 
 -- | @Selector@ for @offsetHeight@
-offsetHeightSelector :: Selector
+offsetHeightSelector :: Selector '[] CInt
 offsetHeightSelector = mkSelector "offsetHeight"
 
 -- | @Selector@ for @clientLeft@
-clientLeftSelector :: Selector
+clientLeftSelector :: Selector '[] CInt
 clientLeftSelector = mkSelector "clientLeft"
 
 -- | @Selector@ for @clientTop@
-clientTopSelector :: Selector
+clientTopSelector :: Selector '[] CInt
 clientTopSelector = mkSelector "clientTop"
 
 -- | @Selector@ for @clientWidth@
-clientWidthSelector :: Selector
+clientWidthSelector :: Selector '[] CInt
 clientWidthSelector = mkSelector "clientWidth"
 
 -- | @Selector@ for @clientHeight@
-clientHeightSelector :: Selector
+clientHeightSelector :: Selector '[] CInt
 clientHeightSelector = mkSelector "clientHeight"
 
 -- | @Selector@ for @scrollLeft@
-scrollLeftSelector :: Selector
+scrollLeftSelector :: Selector '[] CInt
 scrollLeftSelector = mkSelector "scrollLeft"
 
 -- | @Selector@ for @setScrollLeft:@
-setScrollLeftSelector :: Selector
+setScrollLeftSelector :: Selector '[CInt] ()
 setScrollLeftSelector = mkSelector "setScrollLeft:"
 
 -- | @Selector@ for @scrollTop@
-scrollTopSelector :: Selector
+scrollTopSelector :: Selector '[] CInt
 scrollTopSelector = mkSelector "scrollTop"
 
 -- | @Selector@ for @setScrollTop:@
-setScrollTopSelector :: Selector
+setScrollTopSelector :: Selector '[CInt] ()
 setScrollTopSelector = mkSelector "setScrollTop:"
 
 -- | @Selector@ for @scrollWidth@
-scrollWidthSelector :: Selector
+scrollWidthSelector :: Selector '[] CInt
 scrollWidthSelector = mkSelector "scrollWidth"
 
 -- | @Selector@ for @scrollHeight@
-scrollHeightSelector :: Selector
+scrollHeightSelector :: Selector '[] CInt
 scrollHeightSelector = mkSelector "scrollHeight"
 
 -- | @Selector@ for @offsetParent@
-offsetParentSelector :: Selector
+offsetParentSelector :: Selector '[] (Id DOMElement)
 offsetParentSelector = mkSelector "offsetParent"
 
 -- | @Selector@ for @innerHTML@
-innerHTMLSelector :: Selector
+innerHTMLSelector :: Selector '[] (Id NSString)
 innerHTMLSelector = mkSelector "innerHTML"
 
 -- | @Selector@ for @setInnerHTML:@
-setInnerHTMLSelector :: Selector
+setInnerHTMLSelector :: Selector '[Id NSString] ()
 setInnerHTMLSelector = mkSelector "setInnerHTML:"
 
 -- | @Selector@ for @outerHTML@
-outerHTMLSelector :: Selector
+outerHTMLSelector :: Selector '[] (Id NSString)
 outerHTMLSelector = mkSelector "outerHTML"
 
 -- | @Selector@ for @setOuterHTML:@
-setOuterHTMLSelector :: Selector
+setOuterHTMLSelector :: Selector '[Id NSString] ()
 setOuterHTMLSelector = mkSelector "setOuterHTML:"
 
 -- | @Selector@ for @className@
-classNameSelector :: Selector
+classNameSelector :: Selector '[] (Id NSString)
 classNameSelector = mkSelector "className"
 
 -- | @Selector@ for @setClassName:@
-setClassNameSelector :: Selector
+setClassNameSelector :: Selector '[Id NSString] ()
 setClassNameSelector = mkSelector "setClassName:"
 
 -- | @Selector@ for @innerText@
-innerTextSelector :: Selector
+innerTextSelector :: Selector '[] (Id NSString)
 innerTextSelector = mkSelector "innerText"
 
 -- | @Selector@ for @previousElementSibling@
-previousElementSiblingSelector :: Selector
+previousElementSiblingSelector :: Selector '[] (Id DOMElement)
 previousElementSiblingSelector = mkSelector "previousElementSibling"
 
 -- | @Selector@ for @nextElementSibling@
-nextElementSiblingSelector :: Selector
+nextElementSiblingSelector :: Selector '[] (Id DOMElement)
 nextElementSiblingSelector = mkSelector "nextElementSibling"
 
 -- | @Selector@ for @firstElementChild@
-firstElementChildSelector :: Selector
+firstElementChildSelector :: Selector '[] (Id DOMElement)
 firstElementChildSelector = mkSelector "firstElementChild"
 
 -- | @Selector@ for @lastElementChild@
-lastElementChildSelector :: Selector
+lastElementChildSelector :: Selector '[] (Id DOMElement)
 lastElementChildSelector = mkSelector "lastElementChild"
 
 -- | @Selector@ for @childElementCount@
-childElementCountSelector :: Selector
+childElementCountSelector :: Selector '[] CUInt
 childElementCountSelector = mkSelector "childElementCount"
 

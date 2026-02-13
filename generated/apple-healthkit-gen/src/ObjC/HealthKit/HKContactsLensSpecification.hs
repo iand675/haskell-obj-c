@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKContactsLensSpecification
   , new
   , baseCurve
   , diameter
-  , initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector
-  , initSelector
-  , newSelector
   , baseCurveSelector
   , diameterSelector
+  , initSelector
+  , initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,26 +52,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSphere:cylinder:axis:addPower:baseCurve:diameter:@
 initWithSphere_cylinder_axis_addPower_baseCurve_diameter :: (IsHKContactsLensSpecification hkContactsLensSpecification, IsHKQuantity sphere, IsHKQuantity cylinder, IsHKQuantity axis, IsHKQuantity addPower, IsHKQuantity baseCurve, IsHKQuantity diameter) => hkContactsLensSpecification -> sphere -> cylinder -> axis -> addPower -> baseCurve -> diameter -> IO (Id HKContactsLensSpecification)
-initWithSphere_cylinder_axis_addPower_baseCurve_diameter hkContactsLensSpecification  sphere cylinder axis addPower baseCurve diameter =
-  withObjCPtr sphere $ \raw_sphere ->
-    withObjCPtr cylinder $ \raw_cylinder ->
-      withObjCPtr axis $ \raw_axis ->
-        withObjCPtr addPower $ \raw_addPower ->
-          withObjCPtr baseCurve $ \raw_baseCurve ->
-            withObjCPtr diameter $ \raw_diameter ->
-                sendMsg hkContactsLensSpecification (mkSelector "initWithSphere:cylinder:axis:addPower:baseCurve:diameter:") (retPtr retVoid) [argPtr (castPtr raw_sphere :: Ptr ()), argPtr (castPtr raw_cylinder :: Ptr ()), argPtr (castPtr raw_axis :: Ptr ()), argPtr (castPtr raw_addPower :: Ptr ()), argPtr (castPtr raw_baseCurve :: Ptr ()), argPtr (castPtr raw_diameter :: Ptr ())] >>= ownedObject . castPtr
+initWithSphere_cylinder_axis_addPower_baseCurve_diameter hkContactsLensSpecification sphere cylinder axis addPower baseCurve diameter =
+  sendOwnedMessage hkContactsLensSpecification initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector (toHKQuantity sphere) (toHKQuantity cylinder) (toHKQuantity axis) (toHKQuantity addPower) (toHKQuantity baseCurve) (toHKQuantity diameter)
 
 -- | @- init@
 init_ :: IsHKContactsLensSpecification hkContactsLensSpecification => hkContactsLensSpecification -> IO (Id HKContactsLensSpecification)
-init_ hkContactsLensSpecification  =
-    sendMsg hkContactsLensSpecification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkContactsLensSpecification =
+  sendOwnedMessage hkContactsLensSpecification initSelector
 
 -- | @+ new@
 new :: IO (Id HKContactsLensSpecification)
 new  =
   do
     cls' <- getRequiredClass "HKContactsLensSpecification"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | baseCurve
 --
@@ -82,8 +73,8 @@ new  =
 --
 -- ObjC selector: @- baseCurve@
 baseCurve :: IsHKContactsLensSpecification hkContactsLensSpecification => hkContactsLensSpecification -> IO (Id HKQuantity)
-baseCurve hkContactsLensSpecification  =
-    sendMsg hkContactsLensSpecification (mkSelector "baseCurve") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseCurve hkContactsLensSpecification =
+  sendMessage hkContactsLensSpecification baseCurveSelector
 
 -- | diameter
 --
@@ -91,30 +82,30 @@ baseCurve hkContactsLensSpecification  =
 --
 -- ObjC selector: @- diameter@
 diameter :: IsHKContactsLensSpecification hkContactsLensSpecification => hkContactsLensSpecification -> IO (Id HKQuantity)
-diameter hkContactsLensSpecification  =
-    sendMsg hkContactsLensSpecification (mkSelector "diameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+diameter hkContactsLensSpecification =
+  sendMessage hkContactsLensSpecification diameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSphere:cylinder:axis:addPower:baseCurve:diameter:@
-initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector :: Selector
+initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector :: Selector '[Id HKQuantity, Id HKQuantity, Id HKQuantity, Id HKQuantity, Id HKQuantity, Id HKQuantity] (Id HKContactsLensSpecification)
 initWithSphere_cylinder_axis_addPower_baseCurve_diameterSelector = mkSelector "initWithSphere:cylinder:axis:addPower:baseCurve:diameter:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKContactsLensSpecification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKContactsLensSpecification)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @baseCurve@
-baseCurveSelector :: Selector
+baseCurveSelector :: Selector '[] (Id HKQuantity)
 baseCurveSelector = mkSelector "baseCurve"
 
 -- | @Selector@ for @diameter@
-diameterSelector :: Selector
+diameterSelector :: Selector '[] (Id HKQuantity)
 diameterSelector = mkSelector "diameter"
 

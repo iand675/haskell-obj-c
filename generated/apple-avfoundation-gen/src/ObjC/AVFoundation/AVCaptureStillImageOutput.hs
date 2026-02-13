@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,43 +37,39 @@ module ObjC.AVFoundation.AVCaptureStillImageOutput
   , lensStabilizationDuringBracketedCaptureSupported
   , lensStabilizationDuringBracketedCaptureEnabled
   , setLensStabilizationDuringBracketedCaptureEnabled
-  , initSelector
-  , newSelector
-  , captureStillImageAsynchronouslyFromConnection_completionHandlerSelector
-  , jpegStillImageNSDataRepresentationSelector
-  , prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector
-  , captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector
-  , outputSettingsSelector
-  , setOutputSettingsSelector
+  , automaticallyEnablesStillImageStabilizationWhenAvailableSelector
   , availableImageDataCVPixelFormatTypesSelector
   , availableImageDataCodecTypesSelector
-  , stillImageStabilizationSupportedSelector
-  , automaticallyEnablesStillImageStabilizationWhenAvailableSelector
-  , setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector
-  , stillImageStabilizationActiveSelector
-  , highResolutionStillImageOutputEnabledSelector
-  , setHighResolutionStillImageOutputEnabledSelector
-  , cameraSensorOrientationCompensationSupportedSelector
   , cameraSensorOrientationCompensationEnabledSelector
-  , setCameraSensorOrientationCompensationEnabledSelector
+  , cameraSensorOrientationCompensationSupportedSelector
+  , captureStillImageAsynchronouslyFromConnection_completionHandlerSelector
+  , captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector
   , capturingStillImageSelector
-  , maxBracketedCaptureStillImageCountSelector
-  , lensStabilizationDuringBracketedCaptureSupportedSelector
+  , highResolutionStillImageOutputEnabledSelector
+  , initSelector
+  , jpegStillImageNSDataRepresentationSelector
   , lensStabilizationDuringBracketedCaptureEnabledSelector
+  , lensStabilizationDuringBracketedCaptureSupportedSelector
+  , maxBracketedCaptureStillImageCountSelector
+  , newSelector
+  , outputSettingsSelector
+  , prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector
+  , setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector
+  , setCameraSensorOrientationCompensationEnabledSelector
+  , setHighResolutionStillImageOutputEnabledSelector
   , setLensStabilizationDuringBracketedCaptureEnabledSelector
+  , setOutputSettingsSelector
+  , stillImageStabilizationActiveSelector
+  , stillImageStabilizationSupportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,15 +78,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO (Id AVCaptureStillImageOutput)
-init_ avCaptureStillImageOutput  =
-    sendMsg avCaptureStillImageOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureStillImageOutput =
+  sendOwnedMessage avCaptureStillImageOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureStillImageOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureStillImageOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | captureStillImageAsynchronouslyFromConnection:completionHandler:
 --
@@ -109,9 +106,8 @@ new  =
 --
 -- ObjC selector: @- captureStillImageAsynchronouslyFromConnection:completionHandler:@
 captureStillImageAsynchronouslyFromConnection_completionHandler :: (IsAVCaptureStillImageOutput avCaptureStillImageOutput, IsAVCaptureConnection connection) => avCaptureStillImageOutput -> connection -> Ptr () -> IO ()
-captureStillImageAsynchronouslyFromConnection_completionHandler avCaptureStillImageOutput  connection handler =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureStillImageOutput (mkSelector "captureStillImageAsynchronouslyFromConnection:completionHandler:") retVoid [argPtr (castPtr raw_connection :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+captureStillImageAsynchronouslyFromConnection_completionHandler avCaptureStillImageOutput connection handler =
+  sendMessage avCaptureStillImageOutput captureStillImageAsynchronouslyFromConnection_completionHandlerSelector (toAVCaptureConnection connection) handler
 
 -- | jpegStillImageNSDataRepresentation:
 --
@@ -126,7 +122,7 @@ jpegStillImageNSDataRepresentation :: Ptr () -> IO (Id NSData)
 jpegStillImageNSDataRepresentation jpegSampleBuffer =
   do
     cls' <- getRequiredClass "AVCaptureStillImageOutput"
-    sendClassMsg cls' (mkSelector "jpegStillImageNSDataRepresentation:") (retPtr retVoid) [argPtr jpegSampleBuffer] >>= retainedObject . castPtr
+    sendClassMessage cls' jpegStillImageNSDataRepresentationSelector jpegSampleBuffer
 
 -- | prepareToCaptureStillImageBracketFromConnection:withSettingsArray:completionHandler:
 --
@@ -142,10 +138,8 @@ jpegStillImageNSDataRepresentation jpegSampleBuffer =
 --
 -- ObjC selector: @- prepareToCaptureStillImageBracketFromConnection:withSettingsArray:completionHandler:@
 prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandler :: (IsAVCaptureStillImageOutput avCaptureStillImageOutput, IsAVCaptureConnection connection, IsNSArray settings) => avCaptureStillImageOutput -> connection -> settings -> Ptr () -> IO ()
-prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandler avCaptureStillImageOutput  connection settings handler =
-  withObjCPtr connection $ \raw_connection ->
-    withObjCPtr settings $ \raw_settings ->
-        sendMsg avCaptureStillImageOutput (mkSelector "prepareToCaptureStillImageBracketFromConnection:withSettingsArray:completionHandler:") retVoid [argPtr (castPtr raw_connection :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandler avCaptureStillImageOutput connection settings handler =
+  sendMessage avCaptureStillImageOutput prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector (toAVCaptureConnection connection) (toNSArray settings) handler
 
 -- | captureStillImageBracketAsynchronouslyFromConnection:withSettingsArray:completionHandler:
 --
@@ -161,10 +155,8 @@ prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHand
 --
 -- ObjC selector: @- captureStillImageBracketAsynchronouslyFromConnection:withSettingsArray:completionHandler:@
 captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandler :: (IsAVCaptureStillImageOutput avCaptureStillImageOutput, IsAVCaptureConnection connection, IsNSArray settings) => avCaptureStillImageOutput -> connection -> settings -> Ptr () -> IO ()
-captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandler avCaptureStillImageOutput  connection settings handler =
-  withObjCPtr connection $ \raw_connection ->
-    withObjCPtr settings $ \raw_settings ->
-        sendMsg avCaptureStillImageOutput (mkSelector "captureStillImageBracketAsynchronouslyFromConnection:withSettingsArray:completionHandler:") retVoid [argPtr (castPtr raw_connection :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandler avCaptureStillImageOutput connection settings handler =
+  sendMessage avCaptureStillImageOutput captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector (toAVCaptureConnection connection) (toNSArray settings) handler
 
 -- | outputSettings
 --
@@ -176,8 +168,8 @@ captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completio
 --
 -- ObjC selector: @- outputSettings@
 outputSettings :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO (Id NSDictionary)
-outputSettings avCaptureStillImageOutput  =
-    sendMsg avCaptureStillImageOutput (mkSelector "outputSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputSettings avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput outputSettingsSelector
 
 -- | outputSettings
 --
@@ -189,9 +181,8 @@ outputSettings avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- setOutputSettings:@
 setOutputSettings :: (IsAVCaptureStillImageOutput avCaptureStillImageOutput, IsNSDictionary value) => avCaptureStillImageOutput -> value -> IO ()
-setOutputSettings avCaptureStillImageOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureStillImageOutput (mkSelector "setOutputSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputSettings avCaptureStillImageOutput value =
+  sendMessage avCaptureStillImageOutput setOutputSettingsSelector (toNSDictionary value)
 
 -- | availableImageDataCVPixelFormatTypes
 --
@@ -201,8 +192,8 @@ setOutputSettings avCaptureStillImageOutput  value =
 --
 -- ObjC selector: @- availableImageDataCVPixelFormatTypes@
 availableImageDataCVPixelFormatTypes :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO (Id NSArray)
-availableImageDataCVPixelFormatTypes avCaptureStillImageOutput  =
-    sendMsg avCaptureStillImageOutput (mkSelector "availableImageDataCVPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableImageDataCVPixelFormatTypes avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput availableImageDataCVPixelFormatTypesSelector
 
 -- | availableImageDataCodecTypes
 --
@@ -212,8 +203,8 @@ availableImageDataCVPixelFormatTypes avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- availableImageDataCodecTypes@
 availableImageDataCodecTypes :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO (Id NSArray)
-availableImageDataCodecTypes avCaptureStillImageOutput  =
-    sendMsg avCaptureStillImageOutput (mkSelector "availableImageDataCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableImageDataCodecTypes avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput availableImageDataCodecTypesSelector
 
 -- | stillImageStabilizationSupported
 --
@@ -223,8 +214,8 @@ availableImageDataCodecTypes avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- stillImageStabilizationSupported@
 stillImageStabilizationSupported :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-stillImageStabilizationSupported avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "stillImageStabilizationSupported") retCULong []
+stillImageStabilizationSupported avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput stillImageStabilizationSupportedSelector
 
 -- | automaticallyEnablesStillImageStabilizationWhenAvailable
 --
@@ -234,8 +225,8 @@ stillImageStabilizationSupported avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- automaticallyEnablesStillImageStabilizationWhenAvailable@
 automaticallyEnablesStillImageStabilizationWhenAvailable :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-automaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "automaticallyEnablesStillImageStabilizationWhenAvailable") retCULong []
+automaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput automaticallyEnablesStillImageStabilizationWhenAvailableSelector
 
 -- | automaticallyEnablesStillImageStabilizationWhenAvailable
 --
@@ -245,8 +236,8 @@ automaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageOutp
 --
 -- ObjC selector: @- setAutomaticallyEnablesStillImageStabilizationWhenAvailable:@
 setAutomaticallyEnablesStillImageStabilizationWhenAvailable :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> Bool -> IO ()
-setAutomaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageOutput  value =
-    sendMsg avCaptureStillImageOutput (mkSelector "setAutomaticallyEnablesStillImageStabilizationWhenAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageOutput value =
+  sendMessage avCaptureStillImageOutput setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector value
 
 -- | stillImageStabilizationActive
 --
@@ -256,8 +247,8 @@ setAutomaticallyEnablesStillImageStabilizationWhenAvailable avCaptureStillImageO
 --
 -- ObjC selector: @- stillImageStabilizationActive@
 stillImageStabilizationActive :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-stillImageStabilizationActive avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "stillImageStabilizationActive") retCULong []
+stillImageStabilizationActive avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput stillImageStabilizationActiveSelector
 
 -- | highResolutionStillImageOutputEnabled
 --
@@ -267,8 +258,8 @@ stillImageStabilizationActive avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- highResolutionStillImageOutputEnabled@
 highResolutionStillImageOutputEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-highResolutionStillImageOutputEnabled avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "highResolutionStillImageOutputEnabled") retCULong []
+highResolutionStillImageOutputEnabled avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput highResolutionStillImageOutputEnabledSelector
 
 -- | highResolutionStillImageOutputEnabled
 --
@@ -278,8 +269,8 @@ highResolutionStillImageOutputEnabled avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- setHighResolutionStillImageOutputEnabled:@
 setHighResolutionStillImageOutputEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> Bool -> IO ()
-setHighResolutionStillImageOutputEnabled avCaptureStillImageOutput  value =
-    sendMsg avCaptureStillImageOutput (mkSelector "setHighResolutionStillImageOutputEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setHighResolutionStillImageOutputEnabled avCaptureStillImageOutput value =
+  sendMessage avCaptureStillImageOutput setHighResolutionStillImageOutputEnabledSelector value
 
 -- | cameraSensorOrientationCompensationSupported
 --
@@ -289,8 +280,8 @@ setHighResolutionStillImageOutputEnabled avCaptureStillImageOutput  value =
 --
 -- ObjC selector: @- cameraSensorOrientationCompensationSupported@
 cameraSensorOrientationCompensationSupported :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-cameraSensorOrientationCompensationSupported avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "cameraSensorOrientationCompensationSupported") retCULong []
+cameraSensorOrientationCompensationSupported avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput cameraSensorOrientationCompensationSupportedSelector
 
 -- | cameraSensorOrientationCompensationEnabled
 --
@@ -300,8 +291,8 @@ cameraSensorOrientationCompensationSupported avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- cameraSensorOrientationCompensationEnabled@
 cameraSensorOrientationCompensationEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-cameraSensorOrientationCompensationEnabled avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "cameraSensorOrientationCompensationEnabled") retCULong []
+cameraSensorOrientationCompensationEnabled avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput cameraSensorOrientationCompensationEnabledSelector
 
 -- | cameraSensorOrientationCompensationEnabled
 --
@@ -311,8 +302,8 @@ cameraSensorOrientationCompensationEnabled avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- setCameraSensorOrientationCompensationEnabled:@
 setCameraSensorOrientationCompensationEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> Bool -> IO ()
-setCameraSensorOrientationCompensationEnabled avCaptureStillImageOutput  value =
-    sendMsg avCaptureStillImageOutput (mkSelector "setCameraSensorOrientationCompensationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraSensorOrientationCompensationEnabled avCaptureStillImageOutput value =
+  sendMessage avCaptureStillImageOutput setCameraSensorOrientationCompensationEnabledSelector value
 
 -- | capturingStillImage
 --
@@ -322,8 +313,8 @@ setCameraSensorOrientationCompensationEnabled avCaptureStillImageOutput  value =
 --
 -- ObjC selector: @- capturingStillImage@
 capturingStillImage :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-capturingStillImage avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "capturingStillImage") retCULong []
+capturingStillImage avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput capturingStillImageSelector
 
 -- | maxBracketedCaptureStillImageCount
 --
@@ -333,8 +324,8 @@ capturingStillImage avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- maxBracketedCaptureStillImageCount@
 maxBracketedCaptureStillImageCount :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO CULong
-maxBracketedCaptureStillImageCount avCaptureStillImageOutput  =
-    sendMsg avCaptureStillImageOutput (mkSelector "maxBracketedCaptureStillImageCount") retCULong []
+maxBracketedCaptureStillImageCount avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput maxBracketedCaptureStillImageCountSelector
 
 -- | lensStabilizationDuringBracketedCaptureSupported
 --
@@ -344,8 +335,8 @@ maxBracketedCaptureStillImageCount avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- lensStabilizationDuringBracketedCaptureSupported@
 lensStabilizationDuringBracketedCaptureSupported :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-lensStabilizationDuringBracketedCaptureSupported avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "lensStabilizationDuringBracketedCaptureSupported") retCULong []
+lensStabilizationDuringBracketedCaptureSupported avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput lensStabilizationDuringBracketedCaptureSupportedSelector
 
 -- | lensStabilizationDuringBracketedCaptureEnabled
 --
@@ -355,8 +346,8 @@ lensStabilizationDuringBracketedCaptureSupported avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- lensStabilizationDuringBracketedCaptureEnabled@
 lensStabilizationDuringBracketedCaptureEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> IO Bool
-lensStabilizationDuringBracketedCaptureEnabled avCaptureStillImageOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureStillImageOutput (mkSelector "lensStabilizationDuringBracketedCaptureEnabled") retCULong []
+lensStabilizationDuringBracketedCaptureEnabled avCaptureStillImageOutput =
+  sendMessage avCaptureStillImageOutput lensStabilizationDuringBracketedCaptureEnabledSelector
 
 -- | lensStabilizationDuringBracketedCaptureEnabled
 --
@@ -366,106 +357,106 @@ lensStabilizationDuringBracketedCaptureEnabled avCaptureStillImageOutput  =
 --
 -- ObjC selector: @- setLensStabilizationDuringBracketedCaptureEnabled:@
 setLensStabilizationDuringBracketedCaptureEnabled :: IsAVCaptureStillImageOutput avCaptureStillImageOutput => avCaptureStillImageOutput -> Bool -> IO ()
-setLensStabilizationDuringBracketedCaptureEnabled avCaptureStillImageOutput  value =
-    sendMsg avCaptureStillImageOutput (mkSelector "setLensStabilizationDuringBracketedCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLensStabilizationDuringBracketedCaptureEnabled avCaptureStillImageOutput value =
+  sendMessage avCaptureStillImageOutput setLensStabilizationDuringBracketedCaptureEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureStillImageOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureStillImageOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @captureStillImageAsynchronouslyFromConnection:completionHandler:@
-captureStillImageAsynchronouslyFromConnection_completionHandlerSelector :: Selector
+captureStillImageAsynchronouslyFromConnection_completionHandlerSelector :: Selector '[Id AVCaptureConnection, Ptr ()] ()
 captureStillImageAsynchronouslyFromConnection_completionHandlerSelector = mkSelector "captureStillImageAsynchronouslyFromConnection:completionHandler:"
 
 -- | @Selector@ for @jpegStillImageNSDataRepresentation:@
-jpegStillImageNSDataRepresentationSelector :: Selector
+jpegStillImageNSDataRepresentationSelector :: Selector '[Ptr ()] (Id NSData)
 jpegStillImageNSDataRepresentationSelector = mkSelector "jpegStillImageNSDataRepresentation:"
 
 -- | @Selector@ for @prepareToCaptureStillImageBracketFromConnection:withSettingsArray:completionHandler:@
-prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector :: Selector
+prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector :: Selector '[Id AVCaptureConnection, Id NSArray, Ptr ()] ()
 prepareToCaptureStillImageBracketFromConnection_withSettingsArray_completionHandlerSelector = mkSelector "prepareToCaptureStillImageBracketFromConnection:withSettingsArray:completionHandler:"
 
 -- | @Selector@ for @captureStillImageBracketAsynchronouslyFromConnection:withSettingsArray:completionHandler:@
-captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector :: Selector
+captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector :: Selector '[Id AVCaptureConnection, Id NSArray, Ptr ()] ()
 captureStillImageBracketAsynchronouslyFromConnection_withSettingsArray_completionHandlerSelector = mkSelector "captureStillImageBracketAsynchronouslyFromConnection:withSettingsArray:completionHandler:"
 
 -- | @Selector@ for @outputSettings@
-outputSettingsSelector :: Selector
+outputSettingsSelector :: Selector '[] (Id NSDictionary)
 outputSettingsSelector = mkSelector "outputSettings"
 
 -- | @Selector@ for @setOutputSettings:@
-setOutputSettingsSelector :: Selector
+setOutputSettingsSelector :: Selector '[Id NSDictionary] ()
 setOutputSettingsSelector = mkSelector "setOutputSettings:"
 
 -- | @Selector@ for @availableImageDataCVPixelFormatTypes@
-availableImageDataCVPixelFormatTypesSelector :: Selector
+availableImageDataCVPixelFormatTypesSelector :: Selector '[] (Id NSArray)
 availableImageDataCVPixelFormatTypesSelector = mkSelector "availableImageDataCVPixelFormatTypes"
 
 -- | @Selector@ for @availableImageDataCodecTypes@
-availableImageDataCodecTypesSelector :: Selector
+availableImageDataCodecTypesSelector :: Selector '[] (Id NSArray)
 availableImageDataCodecTypesSelector = mkSelector "availableImageDataCodecTypes"
 
 -- | @Selector@ for @stillImageStabilizationSupported@
-stillImageStabilizationSupportedSelector :: Selector
+stillImageStabilizationSupportedSelector :: Selector '[] Bool
 stillImageStabilizationSupportedSelector = mkSelector "stillImageStabilizationSupported"
 
 -- | @Selector@ for @automaticallyEnablesStillImageStabilizationWhenAvailable@
-automaticallyEnablesStillImageStabilizationWhenAvailableSelector :: Selector
+automaticallyEnablesStillImageStabilizationWhenAvailableSelector :: Selector '[] Bool
 automaticallyEnablesStillImageStabilizationWhenAvailableSelector = mkSelector "automaticallyEnablesStillImageStabilizationWhenAvailable"
 
 -- | @Selector@ for @setAutomaticallyEnablesStillImageStabilizationWhenAvailable:@
-setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector :: Selector
+setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector :: Selector '[Bool] ()
 setAutomaticallyEnablesStillImageStabilizationWhenAvailableSelector = mkSelector "setAutomaticallyEnablesStillImageStabilizationWhenAvailable:"
 
 -- | @Selector@ for @stillImageStabilizationActive@
-stillImageStabilizationActiveSelector :: Selector
+stillImageStabilizationActiveSelector :: Selector '[] Bool
 stillImageStabilizationActiveSelector = mkSelector "stillImageStabilizationActive"
 
 -- | @Selector@ for @highResolutionStillImageOutputEnabled@
-highResolutionStillImageOutputEnabledSelector :: Selector
+highResolutionStillImageOutputEnabledSelector :: Selector '[] Bool
 highResolutionStillImageOutputEnabledSelector = mkSelector "highResolutionStillImageOutputEnabled"
 
 -- | @Selector@ for @setHighResolutionStillImageOutputEnabled:@
-setHighResolutionStillImageOutputEnabledSelector :: Selector
+setHighResolutionStillImageOutputEnabledSelector :: Selector '[Bool] ()
 setHighResolutionStillImageOutputEnabledSelector = mkSelector "setHighResolutionStillImageOutputEnabled:"
 
 -- | @Selector@ for @cameraSensorOrientationCompensationSupported@
-cameraSensorOrientationCompensationSupportedSelector :: Selector
+cameraSensorOrientationCompensationSupportedSelector :: Selector '[] Bool
 cameraSensorOrientationCompensationSupportedSelector = mkSelector "cameraSensorOrientationCompensationSupported"
 
 -- | @Selector@ for @cameraSensorOrientationCompensationEnabled@
-cameraSensorOrientationCompensationEnabledSelector :: Selector
+cameraSensorOrientationCompensationEnabledSelector :: Selector '[] Bool
 cameraSensorOrientationCompensationEnabledSelector = mkSelector "cameraSensorOrientationCompensationEnabled"
 
 -- | @Selector@ for @setCameraSensorOrientationCompensationEnabled:@
-setCameraSensorOrientationCompensationEnabledSelector :: Selector
+setCameraSensorOrientationCompensationEnabledSelector :: Selector '[Bool] ()
 setCameraSensorOrientationCompensationEnabledSelector = mkSelector "setCameraSensorOrientationCompensationEnabled:"
 
 -- | @Selector@ for @capturingStillImage@
-capturingStillImageSelector :: Selector
+capturingStillImageSelector :: Selector '[] Bool
 capturingStillImageSelector = mkSelector "capturingStillImage"
 
 -- | @Selector@ for @maxBracketedCaptureStillImageCount@
-maxBracketedCaptureStillImageCountSelector :: Selector
+maxBracketedCaptureStillImageCountSelector :: Selector '[] CULong
 maxBracketedCaptureStillImageCountSelector = mkSelector "maxBracketedCaptureStillImageCount"
 
 -- | @Selector@ for @lensStabilizationDuringBracketedCaptureSupported@
-lensStabilizationDuringBracketedCaptureSupportedSelector :: Selector
+lensStabilizationDuringBracketedCaptureSupportedSelector :: Selector '[] Bool
 lensStabilizationDuringBracketedCaptureSupportedSelector = mkSelector "lensStabilizationDuringBracketedCaptureSupported"
 
 -- | @Selector@ for @lensStabilizationDuringBracketedCaptureEnabled@
-lensStabilizationDuringBracketedCaptureEnabledSelector :: Selector
+lensStabilizationDuringBracketedCaptureEnabledSelector :: Selector '[] Bool
 lensStabilizationDuringBracketedCaptureEnabledSelector = mkSelector "lensStabilizationDuringBracketedCaptureEnabled"
 
 -- | @Selector@ for @setLensStabilizationDuringBracketedCaptureEnabled:@
-setLensStabilizationDuringBracketedCaptureEnabledSelector :: Selector
+setLensStabilizationDuringBracketedCaptureEnabledSelector :: Selector '[Bool] ()
 setLensStabilizationDuringBracketedCaptureEnabledSelector = mkSelector "setLensStabilizationDuringBracketedCaptureEnabled:"
 

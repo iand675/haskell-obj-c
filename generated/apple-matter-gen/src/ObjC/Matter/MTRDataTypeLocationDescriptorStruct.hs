@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRDataTypeLocationDescriptorStruct
   , setFloorNumber
   , areaType
   , setAreaType
-  , locationNameSelector
-  , setLocationNameSelector
-  , floorNumberSelector
-  , setFloorNumberSelector
   , areaTypeSelector
+  , floorNumberSelector
+  , locationNameSelector
   , setAreaTypeSelector
+  , setFloorNumberSelector
+  , setLocationNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- locationName@
 locationName :: IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct => mtrDataTypeLocationDescriptorStruct -> IO (Id NSString)
-locationName mtrDataTypeLocationDescriptorStruct  =
-    sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "locationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+locationName mtrDataTypeLocationDescriptorStruct =
+  sendMessage mtrDataTypeLocationDescriptorStruct locationNameSelector
 
 -- | @- setLocationName:@
 setLocationName :: (IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct, IsNSString value) => mtrDataTypeLocationDescriptorStruct -> value -> IO ()
-setLocationName mtrDataTypeLocationDescriptorStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "setLocationName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocationName mtrDataTypeLocationDescriptorStruct value =
+  sendMessage mtrDataTypeLocationDescriptorStruct setLocationNameSelector (toNSString value)
 
 -- | @- floorNumber@
 floorNumber :: IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct => mtrDataTypeLocationDescriptorStruct -> IO (Id NSNumber)
-floorNumber mtrDataTypeLocationDescriptorStruct  =
-    sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "floorNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+floorNumber mtrDataTypeLocationDescriptorStruct =
+  sendMessage mtrDataTypeLocationDescriptorStruct floorNumberSelector
 
 -- | @- setFloorNumber:@
 setFloorNumber :: (IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct, IsNSNumber value) => mtrDataTypeLocationDescriptorStruct -> value -> IO ()
-setFloorNumber mtrDataTypeLocationDescriptorStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "setFloorNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFloorNumber mtrDataTypeLocationDescriptorStruct value =
+  sendMessage mtrDataTypeLocationDescriptorStruct setFloorNumberSelector (toNSNumber value)
 
 -- | @- areaType@
 areaType :: IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct => mtrDataTypeLocationDescriptorStruct -> IO (Id NSNumber)
-areaType mtrDataTypeLocationDescriptorStruct  =
-    sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "areaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+areaType mtrDataTypeLocationDescriptorStruct =
+  sendMessage mtrDataTypeLocationDescriptorStruct areaTypeSelector
 
 -- | @- setAreaType:@
 setAreaType :: (IsMTRDataTypeLocationDescriptorStruct mtrDataTypeLocationDescriptorStruct, IsNSNumber value) => mtrDataTypeLocationDescriptorStruct -> value -> IO ()
-setAreaType mtrDataTypeLocationDescriptorStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeLocationDescriptorStruct (mkSelector "setAreaType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAreaType mtrDataTypeLocationDescriptorStruct value =
+  sendMessage mtrDataTypeLocationDescriptorStruct setAreaTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @locationName@
-locationNameSelector :: Selector
+locationNameSelector :: Selector '[] (Id NSString)
 locationNameSelector = mkSelector "locationName"
 
 -- | @Selector@ for @setLocationName:@
-setLocationNameSelector :: Selector
+setLocationNameSelector :: Selector '[Id NSString] ()
 setLocationNameSelector = mkSelector "setLocationName:"
 
 -- | @Selector@ for @floorNumber@
-floorNumberSelector :: Selector
+floorNumberSelector :: Selector '[] (Id NSNumber)
 floorNumberSelector = mkSelector "floorNumber"
 
 -- | @Selector@ for @setFloorNumber:@
-setFloorNumberSelector :: Selector
+setFloorNumberSelector :: Selector '[Id NSNumber] ()
 setFloorNumberSelector = mkSelector "setFloorNumber:"
 
 -- | @Selector@ for @areaType@
-areaTypeSelector :: Selector
+areaTypeSelector :: Selector '[] (Id NSNumber)
 areaTypeSelector = mkSelector "areaType"
 
 -- | @Selector@ for @setAreaType:@
-setAreaTypeSelector :: Selector
+setAreaTypeSelector :: Selector '[Id NSNumber] ()
 setAreaTypeSelector = mkSelector "setAreaType:"
 

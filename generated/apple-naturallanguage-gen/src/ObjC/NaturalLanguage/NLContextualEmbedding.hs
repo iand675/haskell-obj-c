@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.NaturalLanguage.NLContextualEmbedding
   , dimension
   , maximumSequenceLength
   , hasAvailableAssets
-  , initSelector
-  , contextualEmbeddingWithModelIdentifierSelector
-  , contextualEmbeddingsForValuesSelector
   , contextualEmbeddingWithLanguageSelector
+  , contextualEmbeddingWithModelIdentifierSelector
   , contextualEmbeddingWithScriptSelector
-  , loadWithErrorSelector
-  , unloadSelector
-  , embeddingResultForString_language_errorSelector
-  , requestEmbeddingAssetsWithCompletionHandlerSelector
-  , modelIdentifierSelector
-  , languagesSelector
-  , scriptsSelector
-  , revisionSelector
+  , contextualEmbeddingsForValuesSelector
   , dimensionSelector
-  , maximumSequenceLengthSelector
+  , embeddingResultForString_language_errorSelector
   , hasAvailableAssetsSelector
+  , initSelector
+  , languagesSelector
+  , loadWithErrorSelector
+  , maximumSequenceLengthSelector
+  , modelIdentifierSelector
+  , requestEmbeddingAssetsWithCompletionHandlerSelector
+  , revisionSelector
+  , scriptsSelector
+  , unloadSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,165 +56,157 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO (Id NLContextualEmbedding)
-init_ nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nlContextualEmbedding =
+  sendOwnedMessage nlContextualEmbedding initSelector
 
 -- | @+ contextualEmbeddingWithModelIdentifier:@
 contextualEmbeddingWithModelIdentifier :: IsNSString modelIdentifier => modelIdentifier -> IO (Id NLContextualEmbedding)
 contextualEmbeddingWithModelIdentifier modelIdentifier =
   do
     cls' <- getRequiredClass "NLContextualEmbedding"
-    withObjCPtr modelIdentifier $ \raw_modelIdentifier ->
-      sendClassMsg cls' (mkSelector "contextualEmbeddingWithModelIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_modelIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextualEmbeddingWithModelIdentifierSelector (toNSString modelIdentifier)
 
 -- | @+ contextualEmbeddingsForValues:@
 contextualEmbeddingsForValues :: IsNSDictionary valuesDictionary => valuesDictionary -> IO (Id NSArray)
 contextualEmbeddingsForValues valuesDictionary =
   do
     cls' <- getRequiredClass "NLContextualEmbedding"
-    withObjCPtr valuesDictionary $ \raw_valuesDictionary ->
-      sendClassMsg cls' (mkSelector "contextualEmbeddingsForValues:") (retPtr retVoid) [argPtr (castPtr raw_valuesDictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextualEmbeddingsForValuesSelector (toNSDictionary valuesDictionary)
 
 -- | @+ contextualEmbeddingWithLanguage:@
 contextualEmbeddingWithLanguage :: IsNSString language => language -> IO (Id NLContextualEmbedding)
 contextualEmbeddingWithLanguage language =
   do
     cls' <- getRequiredClass "NLContextualEmbedding"
-    withObjCPtr language $ \raw_language ->
-      sendClassMsg cls' (mkSelector "contextualEmbeddingWithLanguage:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextualEmbeddingWithLanguageSelector (toNSString language)
 
 -- | @+ contextualEmbeddingWithScript:@
 contextualEmbeddingWithScript :: IsNSString script => script -> IO (Id NLContextualEmbedding)
 contextualEmbeddingWithScript script =
   do
     cls' <- getRequiredClass "NLContextualEmbedding"
-    withObjCPtr script $ \raw_script ->
-      sendClassMsg cls' (mkSelector "contextualEmbeddingWithScript:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextualEmbeddingWithScriptSelector (toNSString script)
 
 -- | @- loadWithError:@
 loadWithError :: (IsNLContextualEmbedding nlContextualEmbedding, IsNSError error_) => nlContextualEmbedding -> error_ -> IO Bool
-loadWithError nlContextualEmbedding  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nlContextualEmbedding (mkSelector "loadWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+loadWithError nlContextualEmbedding error_ =
+  sendMessage nlContextualEmbedding loadWithErrorSelector (toNSError error_)
 
 -- | @- unload@
 unload :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO ()
-unload nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "unload") retVoid []
+unload nlContextualEmbedding =
+  sendMessage nlContextualEmbedding unloadSelector
 
 -- | @- embeddingResultForString:language:error:@
 embeddingResultForString_language_error :: (IsNLContextualEmbedding nlContextualEmbedding, IsNSString string, IsNSString language, IsNSError error_) => nlContextualEmbedding -> string -> language -> error_ -> IO (Id NLContextualEmbeddingResult)
-embeddingResultForString_language_error nlContextualEmbedding  string language error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr language $ \raw_language ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg nlContextualEmbedding (mkSelector "embeddingResultForString:language:error:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+embeddingResultForString_language_error nlContextualEmbedding string language error_ =
+  sendMessage nlContextualEmbedding embeddingResultForString_language_errorSelector (toNSString string) (toNSString language) (toNSError error_)
 
 -- | @- requestEmbeddingAssetsWithCompletionHandler:@
 requestEmbeddingAssetsWithCompletionHandler :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> Ptr () -> IO ()
-requestEmbeddingAssetsWithCompletionHandler nlContextualEmbedding  completionHandler =
-    sendMsg nlContextualEmbedding (mkSelector "requestEmbeddingAssetsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestEmbeddingAssetsWithCompletionHandler nlContextualEmbedding completionHandler =
+  sendMessage nlContextualEmbedding requestEmbeddingAssetsWithCompletionHandlerSelector completionHandler
 
 -- | @- modelIdentifier@
 modelIdentifier :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO (Id NSString)
-modelIdentifier nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "modelIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelIdentifier nlContextualEmbedding =
+  sendMessage nlContextualEmbedding modelIdentifierSelector
 
 -- | @- languages@
 languages :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO (Id NSArray)
-languages nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "languages") (retPtr retVoid) [] >>= retainedObject . castPtr
+languages nlContextualEmbedding =
+  sendMessage nlContextualEmbedding languagesSelector
 
 -- | @- scripts@
 scripts :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO (Id NSArray)
-scripts nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "scripts") (retPtr retVoid) [] >>= retainedObject . castPtr
+scripts nlContextualEmbedding =
+  sendMessage nlContextualEmbedding scriptsSelector
 
 -- | @- revision@
 revision :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO CULong
-revision nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "revision") retCULong []
+revision nlContextualEmbedding =
+  sendMessage nlContextualEmbedding revisionSelector
 
 -- | @- dimension@
 dimension :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO CULong
-dimension nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "dimension") retCULong []
+dimension nlContextualEmbedding =
+  sendMessage nlContextualEmbedding dimensionSelector
 
 -- | @- maximumSequenceLength@
 maximumSequenceLength :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO CULong
-maximumSequenceLength nlContextualEmbedding  =
-    sendMsg nlContextualEmbedding (mkSelector "maximumSequenceLength") retCULong []
+maximumSequenceLength nlContextualEmbedding =
+  sendMessage nlContextualEmbedding maximumSequenceLengthSelector
 
 -- | @- hasAvailableAssets@
 hasAvailableAssets :: IsNLContextualEmbedding nlContextualEmbedding => nlContextualEmbedding -> IO Bool
-hasAvailableAssets nlContextualEmbedding  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nlContextualEmbedding (mkSelector "hasAvailableAssets") retCULong []
+hasAvailableAssets nlContextualEmbedding =
+  sendMessage nlContextualEmbedding hasAvailableAssetsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NLContextualEmbedding)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @contextualEmbeddingWithModelIdentifier:@
-contextualEmbeddingWithModelIdentifierSelector :: Selector
+contextualEmbeddingWithModelIdentifierSelector :: Selector '[Id NSString] (Id NLContextualEmbedding)
 contextualEmbeddingWithModelIdentifierSelector = mkSelector "contextualEmbeddingWithModelIdentifier:"
 
 -- | @Selector@ for @contextualEmbeddingsForValues:@
-contextualEmbeddingsForValuesSelector :: Selector
+contextualEmbeddingsForValuesSelector :: Selector '[Id NSDictionary] (Id NSArray)
 contextualEmbeddingsForValuesSelector = mkSelector "contextualEmbeddingsForValues:"
 
 -- | @Selector@ for @contextualEmbeddingWithLanguage:@
-contextualEmbeddingWithLanguageSelector :: Selector
+contextualEmbeddingWithLanguageSelector :: Selector '[Id NSString] (Id NLContextualEmbedding)
 contextualEmbeddingWithLanguageSelector = mkSelector "contextualEmbeddingWithLanguage:"
 
 -- | @Selector@ for @contextualEmbeddingWithScript:@
-contextualEmbeddingWithScriptSelector :: Selector
+contextualEmbeddingWithScriptSelector :: Selector '[Id NSString] (Id NLContextualEmbedding)
 contextualEmbeddingWithScriptSelector = mkSelector "contextualEmbeddingWithScript:"
 
 -- | @Selector@ for @loadWithError:@
-loadWithErrorSelector :: Selector
+loadWithErrorSelector :: Selector '[Id NSError] Bool
 loadWithErrorSelector = mkSelector "loadWithError:"
 
 -- | @Selector@ for @unload@
-unloadSelector :: Selector
+unloadSelector :: Selector '[] ()
 unloadSelector = mkSelector "unload"
 
 -- | @Selector@ for @embeddingResultForString:language:error:@
-embeddingResultForString_language_errorSelector :: Selector
+embeddingResultForString_language_errorSelector :: Selector '[Id NSString, Id NSString, Id NSError] (Id NLContextualEmbeddingResult)
 embeddingResultForString_language_errorSelector = mkSelector "embeddingResultForString:language:error:"
 
 -- | @Selector@ for @requestEmbeddingAssetsWithCompletionHandler:@
-requestEmbeddingAssetsWithCompletionHandlerSelector :: Selector
+requestEmbeddingAssetsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestEmbeddingAssetsWithCompletionHandlerSelector = mkSelector "requestEmbeddingAssetsWithCompletionHandler:"
 
 -- | @Selector@ for @modelIdentifier@
-modelIdentifierSelector :: Selector
+modelIdentifierSelector :: Selector '[] (Id NSString)
 modelIdentifierSelector = mkSelector "modelIdentifier"
 
 -- | @Selector@ for @languages@
-languagesSelector :: Selector
+languagesSelector :: Selector '[] (Id NSArray)
 languagesSelector = mkSelector "languages"
 
 -- | @Selector@ for @scripts@
-scriptsSelector :: Selector
+scriptsSelector :: Selector '[] (Id NSArray)
 scriptsSelector = mkSelector "scripts"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] CULong
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 
 -- | @Selector@ for @maximumSequenceLength@
-maximumSequenceLengthSelector :: Selector
+maximumSequenceLengthSelector :: Selector '[] CULong
 maximumSequenceLengthSelector = mkSelector "maximumSequenceLength"
 
 -- | @Selector@ for @hasAvailableAssets@
-hasAvailableAssetsSelector :: Selector
+hasAvailableAssetsSelector :: Selector '[] Bool
 hasAvailableAssetsSelector = mkSelector "hasAvailableAssets"
 

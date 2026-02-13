@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.PHASE.PHASEContainerNodeDefinition
   , new
   , initWithIdentifier
   , addSubtree
-  , initSelector
-  , newSelector
-  , initWithIdentifierSelector
   , addSubtreeSelector
+  , initSelector
+  , initWithIdentifierSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsPHASEContainerNodeDefinition phaseContainerNodeDefinition => phaseContainerNodeDefinition -> IO (Id PHASEContainerNodeDefinition)
-init_ phaseContainerNodeDefinition  =
-    sendMsg phaseContainerNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseContainerNodeDefinition =
+  sendOwnedMessage phaseContainerNodeDefinition initSelector
 
 -- | new
 --
@@ -63,7 +60,7 @@ new :: IO (Id PHASEContainerNodeDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEContainerNodeDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithIdentifier
 --
@@ -75,9 +72,8 @@ new  =
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsPHASEContainerNodeDefinition phaseContainerNodeDefinition, IsNSString identifier) => phaseContainerNodeDefinition -> identifier -> IO (Id PHASEContainerNodeDefinition)
-initWithIdentifier phaseContainerNodeDefinition  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseContainerNodeDefinition (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier phaseContainerNodeDefinition identifier =
+  sendOwnedMessage phaseContainerNodeDefinition initWithIdentifierSelector (toNSString identifier)
 
 -- | addSubtree
 --
@@ -87,27 +83,26 @@ initWithIdentifier phaseContainerNodeDefinition  identifier =
 --
 -- ObjC selector: @- addSubtree:@
 addSubtree :: (IsPHASEContainerNodeDefinition phaseContainerNodeDefinition, IsPHASESoundEventNodeDefinition subtree) => phaseContainerNodeDefinition -> subtree -> IO ()
-addSubtree phaseContainerNodeDefinition  subtree =
-  withObjCPtr subtree $ \raw_subtree ->
-      sendMsg phaseContainerNodeDefinition (mkSelector "addSubtree:") retVoid [argPtr (castPtr raw_subtree :: Ptr ())]
+addSubtree phaseContainerNodeDefinition subtree =
+  sendMessage phaseContainerNodeDefinition addSubtreeSelector (toPHASESoundEventNodeDefinition subtree)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEContainerNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEContainerNodeDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id PHASEContainerNodeDefinition)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @addSubtree:@
-addSubtreeSelector :: Selector
+addSubtreeSelector :: Selector '[Id PHASESoundEventNodeDefinition] ()
 addSubtreeSelector = mkSelector "addSubtree:"
 

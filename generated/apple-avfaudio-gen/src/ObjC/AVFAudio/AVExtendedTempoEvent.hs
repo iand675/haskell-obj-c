@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AVFAudio.AVExtendedTempoEvent
   , tempo
   , setTempo
   , initWithTempoSelector
-  , tempoSelector
   , setTempoSelector
+  , tempoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTempo:@
 initWithTempo :: IsAVExtendedTempoEvent avExtendedTempoEvent => avExtendedTempoEvent -> CDouble -> IO (Id AVExtendedTempoEvent)
-initWithTempo avExtendedTempoEvent  tempo =
-    sendMsg avExtendedTempoEvent (mkSelector "initWithTempo:") (retPtr retVoid) [argCDouble tempo] >>= ownedObject . castPtr
+initWithTempo avExtendedTempoEvent tempo =
+  sendOwnedMessage avExtendedTempoEvent initWithTempoSelector tempo
 
 -- | tempo
 --
@@ -54,8 +51,8 @@ initWithTempo avExtendedTempoEvent  tempo =
 --
 -- ObjC selector: @- tempo@
 tempo :: IsAVExtendedTempoEvent avExtendedTempoEvent => avExtendedTempoEvent -> IO CDouble
-tempo avExtendedTempoEvent  =
-    sendMsg avExtendedTempoEvent (mkSelector "tempo") retCDouble []
+tempo avExtendedTempoEvent =
+  sendMessage avExtendedTempoEvent tempoSelector
 
 -- | tempo
 --
@@ -63,22 +60,22 @@ tempo avExtendedTempoEvent  =
 --
 -- ObjC selector: @- setTempo:@
 setTempo :: IsAVExtendedTempoEvent avExtendedTempoEvent => avExtendedTempoEvent -> CDouble -> IO ()
-setTempo avExtendedTempoEvent  value =
-    sendMsg avExtendedTempoEvent (mkSelector "setTempo:") retVoid [argCDouble value]
+setTempo avExtendedTempoEvent value =
+  sendMessage avExtendedTempoEvent setTempoSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTempo:@
-initWithTempoSelector :: Selector
+initWithTempoSelector :: Selector '[CDouble] (Id AVExtendedTempoEvent)
 initWithTempoSelector = mkSelector "initWithTempo:"
 
 -- | @Selector@ for @tempo@
-tempoSelector :: Selector
+tempoSelector :: Selector '[] CDouble
 tempoSelector = mkSelector "tempo"
 
 -- | @Selector@ for @setTempo:@
-setTempoSelector :: Selector
+setTempoSelector :: Selector '[CDouble] ()
 setTempoSelector = mkSelector "setTempo:"
 

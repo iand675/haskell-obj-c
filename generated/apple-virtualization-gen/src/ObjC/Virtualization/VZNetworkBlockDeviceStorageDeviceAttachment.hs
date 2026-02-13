@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,15 +33,15 @@ module ObjC.Virtualization.VZNetworkBlockDeviceStorageDeviceAttachment
   , synchronizationMode
   , delegate
   , setDelegate
-  , initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector
-  , initWithURL_errorSelector
-  , validateURL_errorSelector
-  , urlSelector
-  , timeoutSelector
-  , forcedReadOnlySelector
-  , synchronizationModeSelector
   , delegateSelector
+  , forcedReadOnlySelector
+  , initWithURL_errorSelector
+  , initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector
   , setDelegateSelector
+  , synchronizationModeSelector
+  , timeoutSelector
+  , urlSelector
+  , validateURL_errorSelector
 
   -- * Enum types
   , VZDiskSynchronizationMode(VZDiskSynchronizationMode)
@@ -49,15 +50,11 @@ module ObjC.Virtualization.VZNetworkBlockDeviceStorageDeviceAttachment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,10 +78,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:timeout:forcedReadOnly:synchronizationMode:error:@
 initWithURL_timeout_forcedReadOnly_synchronizationMode_error :: (IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment, IsNSURL url, IsNSError error_) => vzNetworkBlockDeviceStorageDeviceAttachment -> url -> CDouble -> Bool -> VZDiskSynchronizationMode -> error_ -> IO (Id VZNetworkBlockDeviceStorageDeviceAttachment)
-initWithURL_timeout_forcedReadOnly_synchronizationMode_error vzNetworkBlockDeviceStorageDeviceAttachment  url timeout forcedReadOnly synchronizationMode error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "initWithURL:timeout:forcedReadOnly:synchronizationMode:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCDouble timeout, argCULong (if forcedReadOnly then 1 else 0), argCLong (coerce synchronizationMode), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_timeout_forcedReadOnly_synchronizationMode_error vzNetworkBlockDeviceStorageDeviceAttachment url timeout forcedReadOnly synchronizationMode error_ =
+  sendOwnedMessage vzNetworkBlockDeviceStorageDeviceAttachment initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector (toNSURL url) timeout forcedReadOnly synchronizationMode (toNSError error_)
 
 -- | Convenience initializer to create the attachment from an NBD URL.
 --
@@ -98,10 +93,8 @@ initWithURL_timeout_forcedReadOnly_synchronizationMode_error vzNetworkBlockDevic
 --
 -- ObjC selector: @- initWithURL:error:@
 initWithURL_error :: (IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment, IsNSURL url, IsNSError error_) => vzNetworkBlockDeviceStorageDeviceAttachment -> url -> error_ -> IO (Id VZNetworkBlockDeviceStorageDeviceAttachment)
-initWithURL_error vzNetworkBlockDeviceStorageDeviceAttachment  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "initWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_error vzNetworkBlockDeviceStorageDeviceAttachment url error_ =
+  sendOwnedMessage vzNetworkBlockDeviceStorageDeviceAttachment initWithURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | Check if URL is a valid NBD URL.
 --
@@ -118,23 +111,21 @@ validateURL_error :: (IsNSURL url, IsNSError error_) => url -> error_ -> IO Bool
 validateURL_error url error_ =
   do
     cls' <- getRequiredClass "VZNetworkBlockDeviceStorageDeviceAttachment"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "validateURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' validateURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | URL referring to the NBD server to which the NBD client is to be connected.
 --
 -- ObjC selector: @- URL@
 url :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO (Id NSURL)
-url vzNetworkBlockDeviceStorageDeviceAttachment  =
-    sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzNetworkBlockDeviceStorageDeviceAttachment =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment urlSelector
 
 -- | The timeout value in seconds for the connection between the client and server. When the timeout expires, an attempt to reconnect with the server will take place.
 --
 -- ObjC selector: @- timeout@
 timeout :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO CDouble
-timeout vzNetworkBlockDeviceStorageDeviceAttachment  =
-    sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "timeout") retCDouble []
+timeout vzNetworkBlockDeviceStorageDeviceAttachment =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment timeoutSelector
 
 -- | Whether the underlying disk attachment is forced to be read-only.
 --
@@ -142,67 +133,67 @@ timeout vzNetworkBlockDeviceStorageDeviceAttachment  =
 --
 -- ObjC selector: @- forcedReadOnly@
 forcedReadOnly :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO Bool
-forcedReadOnly vzNetworkBlockDeviceStorageDeviceAttachment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "forcedReadOnly") retCULong []
+forcedReadOnly vzNetworkBlockDeviceStorageDeviceAttachment =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment forcedReadOnlySelector
 
 -- | The mode in which the NBD client synchronizes data with the NBD server.
 --
 -- ObjC selector: @- synchronizationMode@
 synchronizationMode :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO VZDiskSynchronizationMode
-synchronizationMode vzNetworkBlockDeviceStorageDeviceAttachment  =
-    fmap (coerce :: CLong -> VZDiskSynchronizationMode) $ sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "synchronizationMode") retCLong []
+synchronizationMode vzNetworkBlockDeviceStorageDeviceAttachment =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment synchronizationModeSelector
 
 -- | The attachment's delegate.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> IO RawId
-delegate vzNetworkBlockDeviceStorageDeviceAttachment  =
-    fmap (RawId . castPtr) $ sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "delegate") (retPtr retVoid) []
+delegate vzNetworkBlockDeviceStorageDeviceAttachment =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment delegateSelector
 
 -- | The attachment's delegate.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsVZNetworkBlockDeviceStorageDeviceAttachment vzNetworkBlockDeviceStorageDeviceAttachment => vzNetworkBlockDeviceStorageDeviceAttachment -> RawId -> IO ()
-setDelegate vzNetworkBlockDeviceStorageDeviceAttachment  value =
-    sendMsg vzNetworkBlockDeviceStorageDeviceAttachment (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate vzNetworkBlockDeviceStorageDeviceAttachment value =
+  sendMessage vzNetworkBlockDeviceStorageDeviceAttachment setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:timeout:forcedReadOnly:synchronizationMode:error:@
-initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector :: Selector
+initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector :: Selector '[Id NSURL, CDouble, Bool, VZDiskSynchronizationMode, Id NSError] (Id VZNetworkBlockDeviceStorageDeviceAttachment)
 initWithURL_timeout_forcedReadOnly_synchronizationMode_errorSelector = mkSelector "initWithURL:timeout:forcedReadOnly:synchronizationMode:error:"
 
 -- | @Selector@ for @initWithURL:error:@
-initWithURL_errorSelector :: Selector
+initWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id VZNetworkBlockDeviceStorageDeviceAttachment)
 initWithURL_errorSelector = mkSelector "initWithURL:error:"
 
 -- | @Selector@ for @validateURL:error:@
-validateURL_errorSelector :: Selector
+validateURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 validateURL_errorSelector = mkSelector "validateURL:error:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] CDouble
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @forcedReadOnly@
-forcedReadOnlySelector :: Selector
+forcedReadOnlySelector :: Selector '[] Bool
 forcedReadOnlySelector = mkSelector "forcedReadOnly"
 
 -- | @Selector@ for @synchronizationMode@
-synchronizationModeSelector :: Selector
+synchronizationModeSelector :: Selector '[] VZDiskSynchronizationMode
 synchronizationModeSelector = mkSelector "synchronizationMode"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

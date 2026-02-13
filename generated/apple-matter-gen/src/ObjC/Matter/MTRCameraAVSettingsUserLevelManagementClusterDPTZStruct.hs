@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRCameraAVSettingsUserLevelManagementClusterDPTZStruct
   , setVideoStreamID
   , viewport
   , setViewport
-  , videoStreamIDSelector
   , setVideoStreamIDSelector
-  , viewportSelector
   , setViewportSelector
+  , videoStreamIDSelector
+  , viewportSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZStruct mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct => mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct -> IO (Id NSNumber)
-videoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZStruct mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct -> value -> IO ()
-setVideoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- viewport@
 viewport :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZStruct mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct => mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct -> IO (Id MTRDataTypeViewportStruct)
-viewport mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct (mkSelector "viewport") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewport mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct viewportSelector
 
 -- | @- setViewport:@
 setViewport :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZStruct mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct, IsMTRDataTypeViewportStruct value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct -> value -> IO ()
-setViewport mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct (mkSelector "setViewport:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setViewport mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZStruct setViewportSelector (toMTRDataTypeViewportStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @viewport@
-viewportSelector :: Selector
+viewportSelector :: Selector '[] (Id MTRDataTypeViewportStruct)
 viewportSelector = mkSelector "viewport"
 
 -- | @Selector@ for @setViewport:@
-setViewportSelector :: Selector
+setViewportSelector :: Selector '[Id MTRDataTypeViewportStruct] ()
 setViewportSelector = mkSelector "setViewport:"
 

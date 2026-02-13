@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.QuartzCore.CAAnimation
   , setPreferredFrameRateRange
   , animationSelector
   , defaultValueForKeySelector
+  , delegateSelector
+  , preferredFrameRateRangeSelector
+  , removedOnCompletionSelector
+  , setDelegateSelector
+  , setPreferredFrameRateRangeSelector
+  , setRemovedOnCompletionSelector
+  , setTimingFunctionSelector
   , shouldArchiveValueForKeySelector
   , timingFunctionSelector
-  , setTimingFunctionSelector
-  , delegateSelector
-  , setDelegateSelector
-  , removedOnCompletionSelector
-  , setRemovedOnCompletionSelector
-  , preferredFrameRateRangeSelector
-  , setPreferredFrameRateRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,108 +52,105 @@ animation :: IO (Id CAAnimation)
 animation  =
   do
     cls' <- getRequiredClass "CAAnimation"
-    sendClassMsg cls' (mkSelector "animation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' animationSelector
 
 -- | @+ defaultValueForKey:@
 defaultValueForKey :: IsNSString key => key -> IO RawId
 defaultValueForKey key =
   do
     cls' <- getRequiredClass "CAAnimation"
-    withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' defaultValueForKeySelector (toNSString key)
 
 -- | @- shouldArchiveValueForKey:@
 shouldArchiveValueForKey :: (IsCAAnimation caAnimation, IsNSString key) => caAnimation -> key -> IO Bool
-shouldArchiveValueForKey caAnimation  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg caAnimation (mkSelector "shouldArchiveValueForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+shouldArchiveValueForKey caAnimation key =
+  sendMessage caAnimation shouldArchiveValueForKeySelector (toNSString key)
 
 -- | @- timingFunction@
 timingFunction :: IsCAAnimation caAnimation => caAnimation -> IO (Id CAMediaTimingFunction)
-timingFunction caAnimation  =
-    sendMsg caAnimation (mkSelector "timingFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+timingFunction caAnimation =
+  sendMessage caAnimation timingFunctionSelector
 
 -- | @- setTimingFunction:@
 setTimingFunction :: (IsCAAnimation caAnimation, IsCAMediaTimingFunction value) => caAnimation -> value -> IO ()
-setTimingFunction caAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caAnimation (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimingFunction caAnimation value =
+  sendMessage caAnimation setTimingFunctionSelector (toCAMediaTimingFunction value)
 
 -- | @- delegate@
 delegate :: IsCAAnimation caAnimation => caAnimation -> IO RawId
-delegate caAnimation  =
-    fmap (RawId . castPtr) $ sendMsg caAnimation (mkSelector "delegate") (retPtr retVoid) []
+delegate caAnimation =
+  sendMessage caAnimation delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsCAAnimation caAnimation => caAnimation -> RawId -> IO ()
-setDelegate caAnimation  value =
-    sendMsg caAnimation (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate caAnimation value =
+  sendMessage caAnimation setDelegateSelector value
 
 -- | @- removedOnCompletion@
 removedOnCompletion :: IsCAAnimation caAnimation => caAnimation -> IO Bool
-removedOnCompletion caAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caAnimation (mkSelector "removedOnCompletion") retCULong []
+removedOnCompletion caAnimation =
+  sendMessage caAnimation removedOnCompletionSelector
 
 -- | @- setRemovedOnCompletion:@
 setRemovedOnCompletion :: IsCAAnimation caAnimation => caAnimation -> Bool -> IO ()
-setRemovedOnCompletion caAnimation  value =
-    sendMsg caAnimation (mkSelector "setRemovedOnCompletion:") retVoid [argCULong (if value then 1 else 0)]
+setRemovedOnCompletion caAnimation value =
+  sendMessage caAnimation setRemovedOnCompletionSelector value
 
 -- | @- preferredFrameRateRange@
 preferredFrameRateRange :: IsCAAnimation caAnimation => caAnimation -> IO CAFrameRateRange
-preferredFrameRateRange caAnimation  =
-    sendMsgStret caAnimation (mkSelector "preferredFrameRateRange") retCAFrameRateRange []
+preferredFrameRateRange caAnimation =
+  sendMessage caAnimation preferredFrameRateRangeSelector
 
 -- | @- setPreferredFrameRateRange:@
 setPreferredFrameRateRange :: IsCAAnimation caAnimation => caAnimation -> CAFrameRateRange -> IO ()
-setPreferredFrameRateRange caAnimation  value =
-    sendMsg caAnimation (mkSelector "setPreferredFrameRateRange:") retVoid [argCAFrameRateRange value]
+setPreferredFrameRateRange caAnimation value =
+  sendMessage caAnimation setPreferredFrameRateRangeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @animation@
-animationSelector :: Selector
+animationSelector :: Selector '[] (Id CAAnimation)
 animationSelector = mkSelector "animation"
 
 -- | @Selector@ for @defaultValueForKey:@
-defaultValueForKeySelector :: Selector
+defaultValueForKeySelector :: Selector '[Id NSString] RawId
 defaultValueForKeySelector = mkSelector "defaultValueForKey:"
 
 -- | @Selector@ for @shouldArchiveValueForKey:@
-shouldArchiveValueForKeySelector :: Selector
+shouldArchiveValueForKeySelector :: Selector '[Id NSString] Bool
 shouldArchiveValueForKeySelector = mkSelector "shouldArchiveValueForKey:"
 
 -- | @Selector@ for @timingFunction@
-timingFunctionSelector :: Selector
+timingFunctionSelector :: Selector '[] (Id CAMediaTimingFunction)
 timingFunctionSelector = mkSelector "timingFunction"
 
 -- | @Selector@ for @setTimingFunction:@
-setTimingFunctionSelector :: Selector
+setTimingFunctionSelector :: Selector '[Id CAMediaTimingFunction] ()
 setTimingFunctionSelector = mkSelector "setTimingFunction:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @removedOnCompletion@
-removedOnCompletionSelector :: Selector
+removedOnCompletionSelector :: Selector '[] Bool
 removedOnCompletionSelector = mkSelector "removedOnCompletion"
 
 -- | @Selector@ for @setRemovedOnCompletion:@
-setRemovedOnCompletionSelector :: Selector
+setRemovedOnCompletionSelector :: Selector '[Bool] ()
 setRemovedOnCompletionSelector = mkSelector "setRemovedOnCompletion:"
 
 -- | @Selector@ for @preferredFrameRateRange@
-preferredFrameRateRangeSelector :: Selector
+preferredFrameRateRangeSelector :: Selector '[] CAFrameRateRange
 preferredFrameRateRangeSelector = mkSelector "preferredFrameRateRange"
 
 -- | @Selector@ for @setPreferredFrameRateRange:@
-setPreferredFrameRateRangeSelector :: Selector
+setPreferredFrameRateRangeSelector :: Selector '[CAFrameRateRange] ()
 setPreferredFrameRateRangeSelector = mkSelector "setPreferredFrameRateRange:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AudioVideoBridging.AVBCentralManager
   , releaseDynamicEntityID
   , nextAvailableDynamicEntityModelID
   , releaseDynamicEntityModelID
-  , startControllerMatchingSelector
   , didAddInterfaceSelector
   , didRemoveInterfaceSelector
-  , streamingEnabledInterfacesOnlySelector
   , nextAvailableDynamicEntityIDSelector
-  , releaseDynamicEntityIDSelector
   , nextAvailableDynamicEntityModelIDSelector
+  , releaseDynamicEntityIDSelector
   , releaseDynamicEntityModelIDSelector
+  , startControllerMatchingSelector
+  , streamingEnabledInterfacesOnlySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startControllerMatching@
 startControllerMatching :: IsAVBCentralManager avbCentralManager => avbCentralManager -> IO ()
-startControllerMatching avbCentralManager  =
-    sendMsg avbCentralManager (mkSelector "startControllerMatching") retVoid []
+startControllerMatching avbCentralManager =
+  sendMessage avbCentralManager startControllerMatchingSelector
 
 -- | This method is called when an AVBInterface object is created for a NIC, either when the central manager is first started up or when the NIC is added later.
 --
@@ -64,9 +61,8 @@ startControllerMatching avbCentralManager  =
 --
 -- ObjC selector: @- didAddInterface:@
 didAddInterface :: (IsAVBCentralManager avbCentralManager, IsAVBInterface interface) => avbCentralManager -> interface -> IO ()
-didAddInterface avbCentralManager  interface =
-  withObjCPtr interface $ \raw_interface ->
-      sendMsg avbCentralManager (mkSelector "didAddInterface:") retVoid [argPtr (castPtr raw_interface :: Ptr ())]
+didAddInterface avbCentralManager interface =
+  sendMessage avbCentralManager didAddInterfaceSelector (toAVBInterface interface)
 
 -- | This method is called when a NIC has been removed from the system and the central manager is cleaning it up.
 --
@@ -76,9 +72,8 @@ didAddInterface avbCentralManager  interface =
 --
 -- ObjC selector: @- didRemoveInterface:@
 didRemoveInterface :: (IsAVBCentralManager avbCentralManager, IsAVBInterface interface) => avbCentralManager -> interface -> IO ()
-didRemoveInterface avbCentralManager  interface =
-  withObjCPtr interface $ \raw_interface ->
-      sendMsg avbCentralManager (mkSelector "didRemoveInterface:") retVoid [argPtr (castPtr raw_interface :: Ptr ())]
+didRemoveInterface avbCentralManager interface =
+  sendMessage avbCentralManager didRemoveInterfaceSelector (toAVBInterface interface)
 
 -- | This method is used to control if the central manager will create and process AVBInterface objects for non streaming interfaces.
 --
@@ -88,8 +83,8 @@ didRemoveInterface avbCentralManager  interface =
 --
 -- ObjC selector: @- streamingEnabledInterfacesOnly@
 streamingEnabledInterfacesOnly :: IsAVBCentralManager avbCentralManager => avbCentralManager -> IO Bool
-streamingEnabledInterfacesOnly avbCentralManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avbCentralManager (mkSelector "streamingEnabledInterfacesOnly") retCULong []
+streamingEnabledInterfacesOnly avbCentralManager =
+  sendMessage avbCentralManager streamingEnabledInterfacesOnlySelector
 
 -- | This method is used to allocate a dynamic Entity ID .
 --
@@ -102,7 +97,7 @@ nextAvailableDynamicEntityID :: IO CULong
 nextAvailableDynamicEntityID  =
   do
     cls' <- getRequiredClass "AVBCentralManager"
-    sendClassMsg cls' (mkSelector "nextAvailableDynamicEntityID") retCULong []
+    sendClassMessage cls' nextAvailableDynamicEntityIDSelector
 
 -- | This method is used to release a previously allocated dynamic Entity ID.
 --
@@ -113,7 +108,7 @@ releaseDynamicEntityID :: CULong -> IO ()
 releaseDynamicEntityID entityID =
   do
     cls' <- getRequiredClass "AVBCentralManager"
-    sendClassMsg cls' (mkSelector "releaseDynamicEntityID:") retVoid [argCULong entityID]
+    sendClassMessage cls' releaseDynamicEntityIDSelector entityID
 
 -- | This method is used to allocate a dynamic Entity Model ID .
 --
@@ -126,7 +121,7 @@ nextAvailableDynamicEntityModelID :: IO CULong
 nextAvailableDynamicEntityModelID  =
   do
     cls' <- getRequiredClass "AVBCentralManager"
-    sendClassMsg cls' (mkSelector "nextAvailableDynamicEntityModelID") retCULong []
+    sendClassMessage cls' nextAvailableDynamicEntityModelIDSelector
 
 -- | This method is used to release a previously allocated dynamic Entity Model ID.
 --
@@ -137,41 +132,41 @@ releaseDynamicEntityModelID :: CULong -> IO ()
 releaseDynamicEntityModelID entityModelID =
   do
     cls' <- getRequiredClass "AVBCentralManager"
-    sendClassMsg cls' (mkSelector "releaseDynamicEntityModelID:") retVoid [argCULong entityModelID]
+    sendClassMessage cls' releaseDynamicEntityModelIDSelector entityModelID
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startControllerMatching@
-startControllerMatchingSelector :: Selector
+startControllerMatchingSelector :: Selector '[] ()
 startControllerMatchingSelector = mkSelector "startControllerMatching"
 
 -- | @Selector@ for @didAddInterface:@
-didAddInterfaceSelector :: Selector
+didAddInterfaceSelector :: Selector '[Id AVBInterface] ()
 didAddInterfaceSelector = mkSelector "didAddInterface:"
 
 -- | @Selector@ for @didRemoveInterface:@
-didRemoveInterfaceSelector :: Selector
+didRemoveInterfaceSelector :: Selector '[Id AVBInterface] ()
 didRemoveInterfaceSelector = mkSelector "didRemoveInterface:"
 
 -- | @Selector@ for @streamingEnabledInterfacesOnly@
-streamingEnabledInterfacesOnlySelector :: Selector
+streamingEnabledInterfacesOnlySelector :: Selector '[] Bool
 streamingEnabledInterfacesOnlySelector = mkSelector "streamingEnabledInterfacesOnly"
 
 -- | @Selector@ for @nextAvailableDynamicEntityID@
-nextAvailableDynamicEntityIDSelector :: Selector
+nextAvailableDynamicEntityIDSelector :: Selector '[] CULong
 nextAvailableDynamicEntityIDSelector = mkSelector "nextAvailableDynamicEntityID"
 
 -- | @Selector@ for @releaseDynamicEntityID:@
-releaseDynamicEntityIDSelector :: Selector
+releaseDynamicEntityIDSelector :: Selector '[CULong] ()
 releaseDynamicEntityIDSelector = mkSelector "releaseDynamicEntityID:"
 
 -- | @Selector@ for @nextAvailableDynamicEntityModelID@
-nextAvailableDynamicEntityModelIDSelector :: Selector
+nextAvailableDynamicEntityModelIDSelector :: Selector '[] CULong
 nextAvailableDynamicEntityModelIDSelector = mkSelector "nextAvailableDynamicEntityModelID"
 
 -- | @Selector@ for @releaseDynamicEntityModelID:@
-releaseDynamicEntityModelIDSelector :: Selector
+releaseDynamicEntityModelIDSelector :: Selector '[CULong] ()
 releaseDynamicEntityModelIDSelector = mkSelector "releaseDynamicEntityModelID:"
 

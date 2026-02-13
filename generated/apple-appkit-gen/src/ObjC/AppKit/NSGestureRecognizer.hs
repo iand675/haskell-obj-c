@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -66,65 +67,65 @@ module ObjC.AppKit.NSGestureRecognizer
   , setState
   , allowedTouchTypes
   , setAllowedTouchTypes
-  , initWithTarget_actionSelector
-  , initWithCoderSelector
-  , locationInViewSelector
-  , resetSelector
-  , canPreventGestureRecognizerSelector
+  , actionSelector
+  , allowedTouchTypesSelector
   , canBePreventedByGestureRecognizerSelector
-  , shouldRequireFailureOfGestureRecognizerSelector
-  , shouldBeRequiredToFailByGestureRecognizerSelector
-  , mouseDownSelector
-  , rightMouseDownSelector
-  , otherMouseDownSelector
-  , mouseUpSelector
-  , rightMouseUpSelector
-  , otherMouseUpSelector
-  , mouseDraggedSelector
-  , rightMouseDraggedSelector
-  , otherMouseDraggedSelector
-  , mouseCancelledSelector
+  , canPreventGestureRecognizerSelector
+  , delaysKeyEventsSelector
+  , delaysMagnificationEventsSelector
+  , delaysOtherMouseButtonEventsSelector
+  , delaysPrimaryMouseButtonEventsSelector
+  , delaysRotationEventsSelector
+  , delaysSecondaryMouseButtonEventsSelector
+  , delegateSelector
+  , enabledSelector
+  , flagsChangedSelector
+  , initWithCoderSelector
+  , initWithTarget_actionSelector
   , keyDownSelector
   , keyUpSelector
-  , flagsChangedSelector
-  , tabletPointSelector
+  , locationInViewSelector
   , magnifyWithEventSelector
-  , rotateWithEventSelector
-  , pressureChangeWithEventSelector
-  , touchesBeganWithEventSelector
-  , touchesMovedWithEventSelector
-  , touchesEndedWithEventSelector
-  , touchesCancelledWithEventSelector
-  , targetSelector
-  , setTargetSelector
-  , actionSelector
-  , setActionSelector
-  , stateSelector
-  , delegateSelector
-  , setDelegateSelector
-  , enabledSelector
-  , setEnabledSelector
-  , viewSelector
-  , pressureConfigurationSelector
-  , setPressureConfigurationSelector
-  , delaysPrimaryMouseButtonEventsSelector
-  , setDelaysPrimaryMouseButtonEventsSelector
-  , delaysSecondaryMouseButtonEventsSelector
-  , setDelaysSecondaryMouseButtonEventsSelector
-  , delaysOtherMouseButtonEventsSelector
-  , setDelaysOtherMouseButtonEventsSelector
-  , delaysKeyEventsSelector
-  , setDelaysKeyEventsSelector
-  , delaysMagnificationEventsSelector
-  , setDelaysMagnificationEventsSelector
-  , delaysRotationEventsSelector
-  , setDelaysRotationEventsSelector
-  , nameSelector
-  , setNameSelector
   , modifierFlagsSelector
-  , setStateSelector
-  , allowedTouchTypesSelector
+  , mouseCancelledSelector
+  , mouseDownSelector
+  , mouseDraggedSelector
+  , mouseUpSelector
+  , nameSelector
+  , otherMouseDownSelector
+  , otherMouseDraggedSelector
+  , otherMouseUpSelector
+  , pressureChangeWithEventSelector
+  , pressureConfigurationSelector
+  , resetSelector
+  , rightMouseDownSelector
+  , rightMouseDraggedSelector
+  , rightMouseUpSelector
+  , rotateWithEventSelector
+  , setActionSelector
   , setAllowedTouchTypesSelector
+  , setDelaysKeyEventsSelector
+  , setDelaysMagnificationEventsSelector
+  , setDelaysOtherMouseButtonEventsSelector
+  , setDelaysPrimaryMouseButtonEventsSelector
+  , setDelaysRotationEventsSelector
+  , setDelaysSecondaryMouseButtonEventsSelector
+  , setDelegateSelector
+  , setEnabledSelector
+  , setNameSelector
+  , setPressureConfigurationSelector
+  , setStateSelector
+  , setTargetSelector
+  , shouldBeRequiredToFailByGestureRecognizerSelector
+  , shouldRequireFailureOfGestureRecognizerSelector
+  , stateSelector
+  , tabletPointSelector
+  , targetSelector
+  , touchesBeganWithEventSelector
+  , touchesCancelledWithEventSelector
+  , touchesEndedWithEventSelector
+  , touchesMovedWithEventSelector
+  , viewSelector
 
   -- * Enum types
   , NSEventModifierFlags(NSEventModifierFlags)
@@ -151,15 +152,11 @@ module ObjC.AppKit.NSGestureRecognizer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -169,566 +166,537 @@ import ObjC.AppKit.Internal.Enums
 import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTarget:action:@
-initWithTarget_action :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> RawId -> Selector -> IO (Id NSGestureRecognizer)
-initWithTarget_action nsGestureRecognizer  target action =
-    sendMsg nsGestureRecognizer (mkSelector "initWithTarget:action:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= ownedObject . castPtr
+initWithTarget_action :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> RawId -> Sel -> IO (Id NSGestureRecognizer)
+initWithTarget_action nsGestureRecognizer target action =
+  sendOwnedMessage nsGestureRecognizer initWithTarget_actionSelector target action
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSCoder coder) => nsGestureRecognizer -> coder -> IO (Id NSGestureRecognizer)
-initWithCoder nsGestureRecognizer  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsGestureRecognizer (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsGestureRecognizer coder =
+  sendOwnedMessage nsGestureRecognizer initWithCoderSelector (toNSCoder coder)
 
 -- | @- locationInView:@
 locationInView :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSView view) => nsGestureRecognizer -> view -> IO NSPoint
-locationInView nsGestureRecognizer  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsGestureRecognizer (mkSelector "locationInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
+locationInView nsGestureRecognizer view =
+  sendMessage nsGestureRecognizer locationInViewSelector (toNSView view)
 
 -- | @- reset@
 reset :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO ()
-reset nsGestureRecognizer  =
-    sendMsg nsGestureRecognizer (mkSelector "reset") retVoid []
+reset nsGestureRecognizer =
+  sendMessage nsGestureRecognizer resetSelector
 
 -- | @- canPreventGestureRecognizer:@
 canPreventGestureRecognizer :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSGestureRecognizer preventedGestureRecognizer) => nsGestureRecognizer -> preventedGestureRecognizer -> IO Bool
-canPreventGestureRecognizer nsGestureRecognizer  preventedGestureRecognizer =
-  withObjCPtr preventedGestureRecognizer $ \raw_preventedGestureRecognizer ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "canPreventGestureRecognizer:") retCULong [argPtr (castPtr raw_preventedGestureRecognizer :: Ptr ())]
+canPreventGestureRecognizer nsGestureRecognizer preventedGestureRecognizer =
+  sendMessage nsGestureRecognizer canPreventGestureRecognizerSelector (toNSGestureRecognizer preventedGestureRecognizer)
 
 -- | @- canBePreventedByGestureRecognizer:@
 canBePreventedByGestureRecognizer :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSGestureRecognizer preventingGestureRecognizer) => nsGestureRecognizer -> preventingGestureRecognizer -> IO Bool
-canBePreventedByGestureRecognizer nsGestureRecognizer  preventingGestureRecognizer =
-  withObjCPtr preventingGestureRecognizer $ \raw_preventingGestureRecognizer ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "canBePreventedByGestureRecognizer:") retCULong [argPtr (castPtr raw_preventingGestureRecognizer :: Ptr ())]
+canBePreventedByGestureRecognizer nsGestureRecognizer preventingGestureRecognizer =
+  sendMessage nsGestureRecognizer canBePreventedByGestureRecognizerSelector (toNSGestureRecognizer preventingGestureRecognizer)
 
 -- | @- shouldRequireFailureOfGestureRecognizer:@
 shouldRequireFailureOfGestureRecognizer :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSGestureRecognizer otherGestureRecognizer) => nsGestureRecognizer -> otherGestureRecognizer -> IO Bool
-shouldRequireFailureOfGestureRecognizer nsGestureRecognizer  otherGestureRecognizer =
-  withObjCPtr otherGestureRecognizer $ \raw_otherGestureRecognizer ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "shouldRequireFailureOfGestureRecognizer:") retCULong [argPtr (castPtr raw_otherGestureRecognizer :: Ptr ())]
+shouldRequireFailureOfGestureRecognizer nsGestureRecognizer otherGestureRecognizer =
+  sendMessage nsGestureRecognizer shouldRequireFailureOfGestureRecognizerSelector (toNSGestureRecognizer otherGestureRecognizer)
 
 -- | @- shouldBeRequiredToFailByGestureRecognizer:@
 shouldBeRequiredToFailByGestureRecognizer :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSGestureRecognizer otherGestureRecognizer) => nsGestureRecognizer -> otherGestureRecognizer -> IO Bool
-shouldBeRequiredToFailByGestureRecognizer nsGestureRecognizer  otherGestureRecognizer =
-  withObjCPtr otherGestureRecognizer $ \raw_otherGestureRecognizer ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "shouldBeRequiredToFailByGestureRecognizer:") retCULong [argPtr (castPtr raw_otherGestureRecognizer :: Ptr ())]
+shouldBeRequiredToFailByGestureRecognizer nsGestureRecognizer otherGestureRecognizer =
+  sendMessage nsGestureRecognizer shouldBeRequiredToFailByGestureRecognizerSelector (toNSGestureRecognizer otherGestureRecognizer)
 
 -- | @- mouseDown:@
 mouseDown :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-mouseDown nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "mouseDown:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseDown nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer mouseDownSelector (toNSEvent event)
 
 -- | @- rightMouseDown:@
 rightMouseDown :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-rightMouseDown nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "rightMouseDown:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+rightMouseDown nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer rightMouseDownSelector (toNSEvent event)
 
 -- | @- otherMouseDown:@
 otherMouseDown :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-otherMouseDown nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "otherMouseDown:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+otherMouseDown nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer otherMouseDownSelector (toNSEvent event)
 
 -- | @- mouseUp:@
 mouseUp :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-mouseUp nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "mouseUp:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseUp nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer mouseUpSelector (toNSEvent event)
 
 -- | @- rightMouseUp:@
 rightMouseUp :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-rightMouseUp nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "rightMouseUp:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+rightMouseUp nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer rightMouseUpSelector (toNSEvent event)
 
 -- | @- otherMouseUp:@
 otherMouseUp :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-otherMouseUp nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "otherMouseUp:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+otherMouseUp nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer otherMouseUpSelector (toNSEvent event)
 
 -- | @- mouseDragged:@
 mouseDragged :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-mouseDragged nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "mouseDragged:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseDragged nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer mouseDraggedSelector (toNSEvent event)
 
 -- | @- rightMouseDragged:@
 rightMouseDragged :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-rightMouseDragged nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "rightMouseDragged:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+rightMouseDragged nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer rightMouseDraggedSelector (toNSEvent event)
 
 -- | @- otherMouseDragged:@
 otherMouseDragged :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-otherMouseDragged nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "otherMouseDragged:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+otherMouseDragged nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer otherMouseDraggedSelector (toNSEvent event)
 
 -- | @- mouseCancelled:@
 mouseCancelled :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-mouseCancelled nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "mouseCancelled:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+mouseCancelled nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer mouseCancelledSelector (toNSEvent event)
 
 -- | @- keyDown:@
 keyDown :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-keyDown nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "keyDown:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+keyDown nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer keyDownSelector (toNSEvent event)
 
 -- | @- keyUp:@
 keyUp :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-keyUp nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "keyUp:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+keyUp nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer keyUpSelector (toNSEvent event)
 
 -- | @- flagsChanged:@
 flagsChanged :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-flagsChanged nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "flagsChanged:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+flagsChanged nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer flagsChangedSelector (toNSEvent event)
 
 -- | @- tabletPoint:@
 tabletPoint :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-tabletPoint nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "tabletPoint:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+tabletPoint nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer tabletPointSelector (toNSEvent event)
 
 -- | @- magnifyWithEvent:@
 magnifyWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-magnifyWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "magnifyWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+magnifyWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer magnifyWithEventSelector (toNSEvent event)
 
 -- | @- rotateWithEvent:@
 rotateWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-rotateWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "rotateWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+rotateWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer rotateWithEventSelector (toNSEvent event)
 
 -- | @- pressureChangeWithEvent:@
 pressureChangeWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-pressureChangeWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "pressureChangeWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+pressureChangeWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer pressureChangeWithEventSelector (toNSEvent event)
 
 -- | @- touchesBeganWithEvent:@
 touchesBeganWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-touchesBeganWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "touchesBeganWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+touchesBeganWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer touchesBeganWithEventSelector (toNSEvent event)
 
 -- | @- touchesMovedWithEvent:@
 touchesMovedWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-touchesMovedWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "touchesMovedWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+touchesMovedWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer touchesMovedWithEventSelector (toNSEvent event)
 
 -- | @- touchesEndedWithEvent:@
 touchesEndedWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-touchesEndedWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "touchesEndedWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+touchesEndedWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer touchesEndedWithEventSelector (toNSEvent event)
 
 -- | @- touchesCancelledWithEvent:@
 touchesCancelledWithEvent :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSEvent event) => nsGestureRecognizer -> event -> IO ()
-touchesCancelledWithEvent nsGestureRecognizer  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsGestureRecognizer (mkSelector "touchesCancelledWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+touchesCancelledWithEvent nsGestureRecognizer event =
+  sendMessage nsGestureRecognizer touchesCancelledWithEventSelector (toNSEvent event)
 
 -- | @- target@
 target :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO RawId
-target nsGestureRecognizer  =
-    fmap (RawId . castPtr) $ sendMsg nsGestureRecognizer (mkSelector "target") (retPtr retVoid) []
+target nsGestureRecognizer =
+  sendMessage nsGestureRecognizer targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> RawId -> IO ()
-setTarget nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setTargetSelector value
 
 -- | @- action@
-action :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Selector
-action nsGestureRecognizer  =
-    fmap (Selector . castPtr) $ sendMsg nsGestureRecognizer (mkSelector "action") (retPtr retVoid) []
+action :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Sel
+action nsGestureRecognizer =
+  sendMessage nsGestureRecognizer actionSelector
 
 -- | @- setAction:@
-setAction :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Selector -> IO ()
-setAction nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setAction:") retVoid [argPtr (unSelector value)]
+setAction :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Sel -> IO ()
+setAction nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setActionSelector value
 
 -- | @- state@
 state :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO NSGestureRecognizerState
-state nsGestureRecognizer  =
-    fmap (coerce :: CLong -> NSGestureRecognizerState) $ sendMsg nsGestureRecognizer (mkSelector "state") retCLong []
+state nsGestureRecognizer =
+  sendMessage nsGestureRecognizer stateSelector
 
 -- | @- delegate@
 delegate :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO RawId
-delegate nsGestureRecognizer  =
-    fmap (RawId . castPtr) $ sendMsg nsGestureRecognizer (mkSelector "delegate") (retPtr retVoid) []
+delegate nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> RawId -> IO ()
-setDelegate nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelegateSelector value
 
 -- | @- enabled@
 enabled :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-enabled nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "enabled") retCULong []
+enabled nsGestureRecognizer =
+  sendMessage nsGestureRecognizer enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setEnabled nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setEnabledSelector value
 
 -- | @- view@
 view :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSView)
-view nsGestureRecognizer  =
-    sendMsg nsGestureRecognizer (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsGestureRecognizer =
+  sendMessage nsGestureRecognizer viewSelector
 
 -- | @- pressureConfiguration@
 pressureConfiguration :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSPressureConfiguration)
-pressureConfiguration nsGestureRecognizer  =
-    sendMsg nsGestureRecognizer (mkSelector "pressureConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+pressureConfiguration nsGestureRecognizer =
+  sendMessage nsGestureRecognizer pressureConfigurationSelector
 
 -- | @- setPressureConfiguration:@
 setPressureConfiguration :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSPressureConfiguration value) => nsGestureRecognizer -> value -> IO ()
-setPressureConfiguration nsGestureRecognizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGestureRecognizer (mkSelector "setPressureConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPressureConfiguration nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setPressureConfigurationSelector (toNSPressureConfiguration value)
 
 -- | @- delaysPrimaryMouseButtonEvents@
 delaysPrimaryMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysPrimaryMouseButtonEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysPrimaryMouseButtonEvents") retCULong []
+delaysPrimaryMouseButtonEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysPrimaryMouseButtonEventsSelector
 
 -- | @- setDelaysPrimaryMouseButtonEvents:@
 setDelaysPrimaryMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysPrimaryMouseButtonEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysPrimaryMouseButtonEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysPrimaryMouseButtonEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysPrimaryMouseButtonEventsSelector value
 
 -- | @- delaysSecondaryMouseButtonEvents@
 delaysSecondaryMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysSecondaryMouseButtonEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysSecondaryMouseButtonEvents") retCULong []
+delaysSecondaryMouseButtonEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysSecondaryMouseButtonEventsSelector
 
 -- | @- setDelaysSecondaryMouseButtonEvents:@
 setDelaysSecondaryMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysSecondaryMouseButtonEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysSecondaryMouseButtonEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysSecondaryMouseButtonEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysSecondaryMouseButtonEventsSelector value
 
 -- | @- delaysOtherMouseButtonEvents@
 delaysOtherMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysOtherMouseButtonEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysOtherMouseButtonEvents") retCULong []
+delaysOtherMouseButtonEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysOtherMouseButtonEventsSelector
 
 -- | @- setDelaysOtherMouseButtonEvents:@
 setDelaysOtherMouseButtonEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysOtherMouseButtonEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysOtherMouseButtonEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysOtherMouseButtonEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysOtherMouseButtonEventsSelector value
 
 -- | @- delaysKeyEvents@
 delaysKeyEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysKeyEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysKeyEvents") retCULong []
+delaysKeyEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysKeyEventsSelector
 
 -- | @- setDelaysKeyEvents:@
 setDelaysKeyEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysKeyEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysKeyEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysKeyEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysKeyEventsSelector value
 
 -- | @- delaysMagnificationEvents@
 delaysMagnificationEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysMagnificationEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysMagnificationEvents") retCULong []
+delaysMagnificationEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysMagnificationEventsSelector
 
 -- | @- setDelaysMagnificationEvents:@
 setDelaysMagnificationEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysMagnificationEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysMagnificationEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysMagnificationEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysMagnificationEventsSelector value
 
 -- | @- delaysRotationEvents@
 delaysRotationEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO Bool
-delaysRotationEvents nsGestureRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGestureRecognizer (mkSelector "delaysRotationEvents") retCULong []
+delaysRotationEvents nsGestureRecognizer =
+  sendMessage nsGestureRecognizer delaysRotationEventsSelector
 
 -- | @- setDelaysRotationEvents:@
 setDelaysRotationEvents :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> Bool -> IO ()
-setDelaysRotationEvents nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setDelaysRotationEvents:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysRotationEvents nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setDelaysRotationEventsSelector value
 
 -- | @- name@
 name :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO (Id NSString)
-name nsGestureRecognizer  =
-    sendMsg nsGestureRecognizer (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsGestureRecognizer =
+  sendMessage nsGestureRecognizer nameSelector
 
 -- | @- setName:@
 setName :: (IsNSGestureRecognizer nsGestureRecognizer, IsNSString value) => nsGestureRecognizer -> value -> IO ()
-setName nsGestureRecognizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGestureRecognizer (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setNameSelector (toNSString value)
 
 -- | @- modifierFlags@
 modifierFlags :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO NSEventModifierFlags
-modifierFlags nsGestureRecognizer  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg nsGestureRecognizer (mkSelector "modifierFlags") retCULong []
+modifierFlags nsGestureRecognizer =
+  sendMessage nsGestureRecognizer modifierFlagsSelector
 
 -- | @- setState:@
 setState :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> NSGestureRecognizerState -> IO ()
-setState nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setState:") retVoid [argCLong (coerce value)]
+setState nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setStateSelector value
 
 -- | @- allowedTouchTypes@
 allowedTouchTypes :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> IO NSTouchTypeMask
-allowedTouchTypes nsGestureRecognizer  =
-    fmap (coerce :: CULong -> NSTouchTypeMask) $ sendMsg nsGestureRecognizer (mkSelector "allowedTouchTypes") retCULong []
+allowedTouchTypes nsGestureRecognizer =
+  sendMessage nsGestureRecognizer allowedTouchTypesSelector
 
 -- | @- setAllowedTouchTypes:@
 setAllowedTouchTypes :: IsNSGestureRecognizer nsGestureRecognizer => nsGestureRecognizer -> NSTouchTypeMask -> IO ()
-setAllowedTouchTypes nsGestureRecognizer  value =
-    sendMsg nsGestureRecognizer (mkSelector "setAllowedTouchTypes:") retVoid [argCULong (coerce value)]
+setAllowedTouchTypes nsGestureRecognizer value =
+  sendMessage nsGestureRecognizer setAllowedTouchTypesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTarget:action:@
-initWithTarget_actionSelector :: Selector
+initWithTarget_actionSelector :: Selector '[RawId, Sel] (Id NSGestureRecognizer)
 initWithTarget_actionSelector = mkSelector "initWithTarget:action:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSGestureRecognizer)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @locationInView:@
-locationInViewSelector :: Selector
+locationInViewSelector :: Selector '[Id NSView] NSPoint
 locationInViewSelector = mkSelector "locationInView:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @canPreventGestureRecognizer:@
-canPreventGestureRecognizerSelector :: Selector
+canPreventGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] Bool
 canPreventGestureRecognizerSelector = mkSelector "canPreventGestureRecognizer:"
 
 -- | @Selector@ for @canBePreventedByGestureRecognizer:@
-canBePreventedByGestureRecognizerSelector :: Selector
+canBePreventedByGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] Bool
 canBePreventedByGestureRecognizerSelector = mkSelector "canBePreventedByGestureRecognizer:"
 
 -- | @Selector@ for @shouldRequireFailureOfGestureRecognizer:@
-shouldRequireFailureOfGestureRecognizerSelector :: Selector
+shouldRequireFailureOfGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] Bool
 shouldRequireFailureOfGestureRecognizerSelector = mkSelector "shouldRequireFailureOfGestureRecognizer:"
 
 -- | @Selector@ for @shouldBeRequiredToFailByGestureRecognizer:@
-shouldBeRequiredToFailByGestureRecognizerSelector :: Selector
+shouldBeRequiredToFailByGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] Bool
 shouldBeRequiredToFailByGestureRecognizerSelector = mkSelector "shouldBeRequiredToFailByGestureRecognizer:"
 
 -- | @Selector@ for @mouseDown:@
-mouseDownSelector :: Selector
+mouseDownSelector :: Selector '[Id NSEvent] ()
 mouseDownSelector = mkSelector "mouseDown:"
 
 -- | @Selector@ for @rightMouseDown:@
-rightMouseDownSelector :: Selector
+rightMouseDownSelector :: Selector '[Id NSEvent] ()
 rightMouseDownSelector = mkSelector "rightMouseDown:"
 
 -- | @Selector@ for @otherMouseDown:@
-otherMouseDownSelector :: Selector
+otherMouseDownSelector :: Selector '[Id NSEvent] ()
 otherMouseDownSelector = mkSelector "otherMouseDown:"
 
 -- | @Selector@ for @mouseUp:@
-mouseUpSelector :: Selector
+mouseUpSelector :: Selector '[Id NSEvent] ()
 mouseUpSelector = mkSelector "mouseUp:"
 
 -- | @Selector@ for @rightMouseUp:@
-rightMouseUpSelector :: Selector
+rightMouseUpSelector :: Selector '[Id NSEvent] ()
 rightMouseUpSelector = mkSelector "rightMouseUp:"
 
 -- | @Selector@ for @otherMouseUp:@
-otherMouseUpSelector :: Selector
+otherMouseUpSelector :: Selector '[Id NSEvent] ()
 otherMouseUpSelector = mkSelector "otherMouseUp:"
 
 -- | @Selector@ for @mouseDragged:@
-mouseDraggedSelector :: Selector
+mouseDraggedSelector :: Selector '[Id NSEvent] ()
 mouseDraggedSelector = mkSelector "mouseDragged:"
 
 -- | @Selector@ for @rightMouseDragged:@
-rightMouseDraggedSelector :: Selector
+rightMouseDraggedSelector :: Selector '[Id NSEvent] ()
 rightMouseDraggedSelector = mkSelector "rightMouseDragged:"
 
 -- | @Selector@ for @otherMouseDragged:@
-otherMouseDraggedSelector :: Selector
+otherMouseDraggedSelector :: Selector '[Id NSEvent] ()
 otherMouseDraggedSelector = mkSelector "otherMouseDragged:"
 
 -- | @Selector@ for @mouseCancelled:@
-mouseCancelledSelector :: Selector
+mouseCancelledSelector :: Selector '[Id NSEvent] ()
 mouseCancelledSelector = mkSelector "mouseCancelled:"
 
 -- | @Selector@ for @keyDown:@
-keyDownSelector :: Selector
+keyDownSelector :: Selector '[Id NSEvent] ()
 keyDownSelector = mkSelector "keyDown:"
 
 -- | @Selector@ for @keyUp:@
-keyUpSelector :: Selector
+keyUpSelector :: Selector '[Id NSEvent] ()
 keyUpSelector = mkSelector "keyUp:"
 
 -- | @Selector@ for @flagsChanged:@
-flagsChangedSelector :: Selector
+flagsChangedSelector :: Selector '[Id NSEvent] ()
 flagsChangedSelector = mkSelector "flagsChanged:"
 
 -- | @Selector@ for @tabletPoint:@
-tabletPointSelector :: Selector
+tabletPointSelector :: Selector '[Id NSEvent] ()
 tabletPointSelector = mkSelector "tabletPoint:"
 
 -- | @Selector@ for @magnifyWithEvent:@
-magnifyWithEventSelector :: Selector
+magnifyWithEventSelector :: Selector '[Id NSEvent] ()
 magnifyWithEventSelector = mkSelector "magnifyWithEvent:"
 
 -- | @Selector@ for @rotateWithEvent:@
-rotateWithEventSelector :: Selector
+rotateWithEventSelector :: Selector '[Id NSEvent] ()
 rotateWithEventSelector = mkSelector "rotateWithEvent:"
 
 -- | @Selector@ for @pressureChangeWithEvent:@
-pressureChangeWithEventSelector :: Selector
+pressureChangeWithEventSelector :: Selector '[Id NSEvent] ()
 pressureChangeWithEventSelector = mkSelector "pressureChangeWithEvent:"
 
 -- | @Selector@ for @touchesBeganWithEvent:@
-touchesBeganWithEventSelector :: Selector
+touchesBeganWithEventSelector :: Selector '[Id NSEvent] ()
 touchesBeganWithEventSelector = mkSelector "touchesBeganWithEvent:"
 
 -- | @Selector@ for @touchesMovedWithEvent:@
-touchesMovedWithEventSelector :: Selector
+touchesMovedWithEventSelector :: Selector '[Id NSEvent] ()
 touchesMovedWithEventSelector = mkSelector "touchesMovedWithEvent:"
 
 -- | @Selector@ for @touchesEndedWithEvent:@
-touchesEndedWithEventSelector :: Selector
+touchesEndedWithEventSelector :: Selector '[Id NSEvent] ()
 touchesEndedWithEventSelector = mkSelector "touchesEndedWithEvent:"
 
 -- | @Selector@ for @touchesCancelledWithEvent:@
-touchesCancelledWithEventSelector :: Selector
+touchesCancelledWithEventSelector :: Selector '[Id NSEvent] ()
 touchesCancelledWithEventSelector = mkSelector "touchesCancelledWithEvent:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] Sel
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NSGestureRecognizerState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @pressureConfiguration@
-pressureConfigurationSelector :: Selector
+pressureConfigurationSelector :: Selector '[] (Id NSPressureConfiguration)
 pressureConfigurationSelector = mkSelector "pressureConfiguration"
 
 -- | @Selector@ for @setPressureConfiguration:@
-setPressureConfigurationSelector :: Selector
+setPressureConfigurationSelector :: Selector '[Id NSPressureConfiguration] ()
 setPressureConfigurationSelector = mkSelector "setPressureConfiguration:"
 
 -- | @Selector@ for @delaysPrimaryMouseButtonEvents@
-delaysPrimaryMouseButtonEventsSelector :: Selector
+delaysPrimaryMouseButtonEventsSelector :: Selector '[] Bool
 delaysPrimaryMouseButtonEventsSelector = mkSelector "delaysPrimaryMouseButtonEvents"
 
 -- | @Selector@ for @setDelaysPrimaryMouseButtonEvents:@
-setDelaysPrimaryMouseButtonEventsSelector :: Selector
+setDelaysPrimaryMouseButtonEventsSelector :: Selector '[Bool] ()
 setDelaysPrimaryMouseButtonEventsSelector = mkSelector "setDelaysPrimaryMouseButtonEvents:"
 
 -- | @Selector@ for @delaysSecondaryMouseButtonEvents@
-delaysSecondaryMouseButtonEventsSelector :: Selector
+delaysSecondaryMouseButtonEventsSelector :: Selector '[] Bool
 delaysSecondaryMouseButtonEventsSelector = mkSelector "delaysSecondaryMouseButtonEvents"
 
 -- | @Selector@ for @setDelaysSecondaryMouseButtonEvents:@
-setDelaysSecondaryMouseButtonEventsSelector :: Selector
+setDelaysSecondaryMouseButtonEventsSelector :: Selector '[Bool] ()
 setDelaysSecondaryMouseButtonEventsSelector = mkSelector "setDelaysSecondaryMouseButtonEvents:"
 
 -- | @Selector@ for @delaysOtherMouseButtonEvents@
-delaysOtherMouseButtonEventsSelector :: Selector
+delaysOtherMouseButtonEventsSelector :: Selector '[] Bool
 delaysOtherMouseButtonEventsSelector = mkSelector "delaysOtherMouseButtonEvents"
 
 -- | @Selector@ for @setDelaysOtherMouseButtonEvents:@
-setDelaysOtherMouseButtonEventsSelector :: Selector
+setDelaysOtherMouseButtonEventsSelector :: Selector '[Bool] ()
 setDelaysOtherMouseButtonEventsSelector = mkSelector "setDelaysOtherMouseButtonEvents:"
 
 -- | @Selector@ for @delaysKeyEvents@
-delaysKeyEventsSelector :: Selector
+delaysKeyEventsSelector :: Selector '[] Bool
 delaysKeyEventsSelector = mkSelector "delaysKeyEvents"
 
 -- | @Selector@ for @setDelaysKeyEvents:@
-setDelaysKeyEventsSelector :: Selector
+setDelaysKeyEventsSelector :: Selector '[Bool] ()
 setDelaysKeyEventsSelector = mkSelector "setDelaysKeyEvents:"
 
 -- | @Selector@ for @delaysMagnificationEvents@
-delaysMagnificationEventsSelector :: Selector
+delaysMagnificationEventsSelector :: Selector '[] Bool
 delaysMagnificationEventsSelector = mkSelector "delaysMagnificationEvents"
 
 -- | @Selector@ for @setDelaysMagnificationEvents:@
-setDelaysMagnificationEventsSelector :: Selector
+setDelaysMagnificationEventsSelector :: Selector '[Bool] ()
 setDelaysMagnificationEventsSelector = mkSelector "setDelaysMagnificationEvents:"
 
 -- | @Selector@ for @delaysRotationEvents@
-delaysRotationEventsSelector :: Selector
+delaysRotationEventsSelector :: Selector '[] Bool
 delaysRotationEventsSelector = mkSelector "delaysRotationEvents"
 
 -- | @Selector@ for @setDelaysRotationEvents:@
-setDelaysRotationEventsSelector :: Selector
+setDelaysRotationEventsSelector :: Selector '[Bool] ()
 setDelaysRotationEventsSelector = mkSelector "setDelaysRotationEvents:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @modifierFlags@
-modifierFlagsSelector :: Selector
+modifierFlagsSelector :: Selector '[] NSEventModifierFlags
 modifierFlagsSelector = mkSelector "modifierFlags"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[NSGestureRecognizerState] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @allowedTouchTypes@
-allowedTouchTypesSelector :: Selector
+allowedTouchTypesSelector :: Selector '[] NSTouchTypeMask
 allowedTouchTypesSelector = mkSelector "allowedTouchTypes"
 
 -- | @Selector@ for @setAllowedTouchTypes:@
-setAllowedTouchTypesSelector :: Selector
+setAllowedTouchTypesSelector :: Selector '[NSTouchTypeMask] ()
 setAllowedTouchTypesSelector = mkSelector "setAllowedTouchTypes:"
 

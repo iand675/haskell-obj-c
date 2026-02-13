@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.SceneKit.SCNHitTestResult
   , worldNormal
   , modelTransform
   , boneNode
-  , nodeSelector
-  , geometryIndexSelector
-  , faceIndexSelector
-  , localCoordinatesSelector
-  , worldCoordinatesSelector
-  , localNormalSelector
-  , worldNormalSelector
-  , modelTransformSelector
   , boneNodeSelector
+  , faceIndexSelector
+  , geometryIndexSelector
+  , localCoordinatesSelector
+  , localNormalSelector
+  , modelTransformSelector
+  , nodeSelector
+  , worldCoordinatesSelector
+  , worldNormalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,102 +49,102 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- node@
 node :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO (Id SCNNode)
-node scnHitTestResult  =
-    sendMsg scnHitTestResult (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node scnHitTestResult =
+  sendMessage scnHitTestResult nodeSelector
 
 -- | Index of the hit geometry element.
 --
 -- ObjC selector: @- geometryIndex@
 geometryIndex :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO CLong
-geometryIndex scnHitTestResult  =
-    sendMsg scnHitTestResult (mkSelector "geometryIndex") retCLong []
+geometryIndex scnHitTestResult =
+  sendMessage scnHitTestResult geometryIndexSelector
 
 -- | Index of the hit primitive of the geometry element.
 --
 -- ObjC selector: @- faceIndex@
 faceIndex :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO CLong
-faceIndex scnHitTestResult  =
-    sendMsg scnHitTestResult (mkSelector "faceIndex") retCLong []
+faceIndex scnHitTestResult =
+  sendMessage scnHitTestResult faceIndexSelector
 
 -- | Intersection point in the node's local coordinate system.
 --
 -- ObjC selector: @- localCoordinates@
 localCoordinates :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO SCNVector3
-localCoordinates scnHitTestResult  =
-    sendMsgStret scnHitTestResult (mkSelector "localCoordinates") retSCNVector3 []
+localCoordinates scnHitTestResult =
+  sendMessage scnHitTestResult localCoordinatesSelector
 
 -- | Intersection point in the world coordinate system.
 --
 -- ObjC selector: @- worldCoordinates@
 worldCoordinates :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO SCNVector3
-worldCoordinates scnHitTestResult  =
-    sendMsgStret scnHitTestResult (mkSelector "worldCoordinates") retSCNVector3 []
+worldCoordinates scnHitTestResult =
+  sendMessage scnHitTestResult worldCoordinatesSelector
 
 -- | Intersection normal in the node's local coordinate system.
 --
 -- ObjC selector: @- localNormal@
 localNormal :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO SCNVector3
-localNormal scnHitTestResult  =
-    sendMsgStret scnHitTestResult (mkSelector "localNormal") retSCNVector3 []
+localNormal scnHitTestResult =
+  sendMessage scnHitTestResult localNormalSelector
 
 -- | Intersection normal in the world coordinate system.
 --
 -- ObjC selector: @- worldNormal@
 worldNormal :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO SCNVector3
-worldNormal scnHitTestResult  =
-    sendMsgStret scnHitTestResult (mkSelector "worldNormal") retSCNVector3 []
+worldNormal scnHitTestResult =
+  sendMessage scnHitTestResult worldNormalSelector
 
 -- | World transform of the hit node.
 --
 -- ObjC selector: @- modelTransform@
 modelTransform :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO SCNMatrix4
-modelTransform scnHitTestResult  =
-    sendMsgStret scnHitTestResult (mkSelector "modelTransform") retSCNMatrix4 []
+modelTransform scnHitTestResult =
+  sendMessage scnHitTestResult modelTransformSelector
 
 -- | The hit bone. Only available if the node hit has a SCNSkinner attached.
 --
 -- ObjC selector: @- boneNode@
 boneNode :: IsSCNHitTestResult scnHitTestResult => scnHitTestResult -> IO (Id SCNNode)
-boneNode scnHitTestResult  =
-    sendMsg scnHitTestResult (mkSelector "boneNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+boneNode scnHitTestResult =
+  sendMessage scnHitTestResult boneNodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SCNNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @geometryIndex@
-geometryIndexSelector :: Selector
+geometryIndexSelector :: Selector '[] CLong
 geometryIndexSelector = mkSelector "geometryIndex"
 
 -- | @Selector@ for @faceIndex@
-faceIndexSelector :: Selector
+faceIndexSelector :: Selector '[] CLong
 faceIndexSelector = mkSelector "faceIndex"
 
 -- | @Selector@ for @localCoordinates@
-localCoordinatesSelector :: Selector
+localCoordinatesSelector :: Selector '[] SCNVector3
 localCoordinatesSelector = mkSelector "localCoordinates"
 
 -- | @Selector@ for @worldCoordinates@
-worldCoordinatesSelector :: Selector
+worldCoordinatesSelector :: Selector '[] SCNVector3
 worldCoordinatesSelector = mkSelector "worldCoordinates"
 
 -- | @Selector@ for @localNormal@
-localNormalSelector :: Selector
+localNormalSelector :: Selector '[] SCNVector3
 localNormalSelector = mkSelector "localNormal"
 
 -- | @Selector@ for @worldNormal@
-worldNormalSelector :: Selector
+worldNormalSelector :: Selector '[] SCNVector3
 worldNormalSelector = mkSelector "worldNormal"
 
 -- | @Selector@ for @modelTransform@
-modelTransformSelector :: Selector
+modelTransformSelector :: Selector '[] SCNMatrix4
 modelTransformSelector = mkSelector "modelTransform"
 
 -- | @Selector@ for @boneNode@
-boneNodeSelector :: Selector
+boneNodeSelector :: Selector '[] (Id SCNNode)
 boneNodeSelector = mkSelector "boneNode"
 

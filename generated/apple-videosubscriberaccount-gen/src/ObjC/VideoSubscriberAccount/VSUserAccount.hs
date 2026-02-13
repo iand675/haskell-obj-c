@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,33 +35,33 @@ module ObjC.VideoSubscriberAccount.VSUserAccount
   , deviceCategory
   , appleSubscription
   , setAppleSubscription
-  , initSelector
-  , newSelector
-  , initWithAccountType_updateURLSelector
-  , updateURLSelector
-  , setUpdateURLSelector
-  , requiresSystemTrustSelector
-  , setRequiresSystemTrustSelector
   , accountProviderIdentifierSelector
-  , setAccountProviderIdentifierSelector
-  , identifierSelector
-  , setIdentifierSelector
   , accountTypeSelector
-  , setAccountTypeSelector
-  , signedOutSelector
-  , setSignedOutSelector
-  , subscriptionBillingCycleEndDateSelector
-  , setSubscriptionBillingCycleEndDateSelector
-  , tierIdentifiersSelector
-  , setTierIdentifiersSelector
-  , billingIdentifierSelector
-  , setBillingIdentifierSelector
-  , authenticationDataSelector
-  , setAuthenticationDataSelector
-  , fromCurrentDeviceSelector
-  , deviceCategorySelector
   , appleSubscriptionSelector
+  , authenticationDataSelector
+  , billingIdentifierSelector
+  , deviceCategorySelector
+  , fromCurrentDeviceSelector
+  , identifierSelector
+  , initSelector
+  , initWithAccountType_updateURLSelector
+  , newSelector
+  , requiresSystemTrustSelector
+  , setAccountProviderIdentifierSelector
+  , setAccountTypeSelector
   , setAppleSubscriptionSelector
+  , setAuthenticationDataSelector
+  , setBillingIdentifierSelector
+  , setIdentifierSelector
+  , setRequiresSystemTrustSelector
+  , setSignedOutSelector
+  , setSubscriptionBillingCycleEndDateSelector
+  , setTierIdentifiersSelector
+  , setUpdateURLSelector
+  , signedOutSelector
+  , subscriptionBillingCycleEndDateSelector
+  , tierIdentifiersSelector
+  , updateURLSelector
 
   -- * Enum types
   , VSOriginatingDeviceCategory(VSOriginatingDeviceCategory)
@@ -72,15 +73,11 @@ module ObjC.VideoSubscriberAccount.VSUserAccount
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -90,259 +87,250 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id VSUserAccount)
-init_ vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vsUserAccount =
+  sendOwnedMessage vsUserAccount initSelector
 
 -- | @+ new@
 new :: IO (Id VSUserAccount)
 new  =
   do
     cls' <- getRequiredClass "VSUserAccount"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithAccountType:updateURL:@
 initWithAccountType_updateURL :: (IsVSUserAccount vsUserAccount, IsNSURL url) => vsUserAccount -> VSUserAccountType -> url -> IO (Id VSUserAccount)
-initWithAccountType_updateURL vsUserAccount  accountType url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg vsUserAccount (mkSelector "initWithAccountType:updateURL:") (retPtr retVoid) [argCLong (coerce accountType), argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithAccountType_updateURL vsUserAccount accountType url =
+  sendOwnedMessage vsUserAccount initWithAccountType_updateURLSelector accountType (toNSURL url)
 
 -- | @- updateURL@
 updateURL :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSURL)
-updateURL vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "updateURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+updateURL vsUserAccount =
+  sendMessage vsUserAccount updateURLSelector
 
 -- | @- setUpdateURL:@
 setUpdateURL :: (IsVSUserAccount vsUserAccount, IsNSURL value) => vsUserAccount -> value -> IO ()
-setUpdateURL vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setUpdateURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUpdateURL vsUserAccount value =
+  sendMessage vsUserAccount setUpdateURLSelector (toNSURL value)
 
 -- | @- requiresSystemTrust@
 requiresSystemTrust :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO Bool
-requiresSystemTrust vsUserAccount  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vsUserAccount (mkSelector "requiresSystemTrust") retCULong []
+requiresSystemTrust vsUserAccount =
+  sendMessage vsUserAccount requiresSystemTrustSelector
 
 -- | @- setRequiresSystemTrust:@
 setRequiresSystemTrust :: IsVSUserAccount vsUserAccount => vsUserAccount -> Bool -> IO ()
-setRequiresSystemTrust vsUserAccount  value =
-    sendMsg vsUserAccount (mkSelector "setRequiresSystemTrust:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresSystemTrust vsUserAccount value =
+  sendMessage vsUserAccount setRequiresSystemTrustSelector value
 
 -- | @- accountProviderIdentifier@
 accountProviderIdentifier :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSString)
-accountProviderIdentifier vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "accountProviderIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountProviderIdentifier vsUserAccount =
+  sendMessage vsUserAccount accountProviderIdentifierSelector
 
 -- | @- setAccountProviderIdentifier:@
 setAccountProviderIdentifier :: (IsVSUserAccount vsUserAccount, IsNSString value) => vsUserAccount -> value -> IO ()
-setAccountProviderIdentifier vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setAccountProviderIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccountProviderIdentifier vsUserAccount value =
+  sendMessage vsUserAccount setAccountProviderIdentifierSelector (toNSString value)
 
 -- | @- identifier@
 identifier :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSString)
-identifier vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier vsUserAccount =
+  sendMessage vsUserAccount identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsVSUserAccount vsUserAccount, IsNSString value) => vsUserAccount -> value -> IO ()
-setIdentifier vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier vsUserAccount value =
+  sendMessage vsUserAccount setIdentifierSelector (toNSString value)
 
 -- | @- accountType@
 accountType :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO VSUserAccountType
-accountType vsUserAccount  =
-    fmap (coerce :: CLong -> VSUserAccountType) $ sendMsg vsUserAccount (mkSelector "accountType") retCLong []
+accountType vsUserAccount =
+  sendMessage vsUserAccount accountTypeSelector
 
 -- | @- setAccountType:@
 setAccountType :: IsVSUserAccount vsUserAccount => vsUserAccount -> VSUserAccountType -> IO ()
-setAccountType vsUserAccount  value =
-    sendMsg vsUserAccount (mkSelector "setAccountType:") retVoid [argCLong (coerce value)]
+setAccountType vsUserAccount value =
+  sendMessage vsUserAccount setAccountTypeSelector value
 
 -- | @- signedOut@
 signedOut :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO Bool
-signedOut vsUserAccount  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vsUserAccount (mkSelector "signedOut") retCULong []
+signedOut vsUserAccount =
+  sendMessage vsUserAccount signedOutSelector
 
 -- | @- setSignedOut:@
 setSignedOut :: IsVSUserAccount vsUserAccount => vsUserAccount -> Bool -> IO ()
-setSignedOut vsUserAccount  value =
-    sendMsg vsUserAccount (mkSelector "setSignedOut:") retVoid [argCULong (if value then 1 else 0)]
+setSignedOut vsUserAccount value =
+  sendMessage vsUserAccount setSignedOutSelector value
 
 -- | @- subscriptionBillingCycleEndDate@
 subscriptionBillingCycleEndDate :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSDate)
-subscriptionBillingCycleEndDate vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "subscriptionBillingCycleEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionBillingCycleEndDate vsUserAccount =
+  sendMessage vsUserAccount subscriptionBillingCycleEndDateSelector
 
 -- | @- setSubscriptionBillingCycleEndDate:@
 setSubscriptionBillingCycleEndDate :: (IsVSUserAccount vsUserAccount, IsNSDate value) => vsUserAccount -> value -> IO ()
-setSubscriptionBillingCycleEndDate vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setSubscriptionBillingCycleEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionBillingCycleEndDate vsUserAccount value =
+  sendMessage vsUserAccount setSubscriptionBillingCycleEndDateSelector (toNSDate value)
 
 -- | @- tierIdentifiers@
 tierIdentifiers :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSArray)
-tierIdentifiers vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "tierIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+tierIdentifiers vsUserAccount =
+  sendMessage vsUserAccount tierIdentifiersSelector
 
 -- | @- setTierIdentifiers:@
 setTierIdentifiers :: (IsVSUserAccount vsUserAccount, IsNSArray value) => vsUserAccount -> value -> IO ()
-setTierIdentifiers vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setTierIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTierIdentifiers vsUserAccount value =
+  sendMessage vsUserAccount setTierIdentifiersSelector (toNSArray value)
 
 -- | @- billingIdentifier@
 billingIdentifier :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSString)
-billingIdentifier vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "billingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+billingIdentifier vsUserAccount =
+  sendMessage vsUserAccount billingIdentifierSelector
 
 -- | @- setBillingIdentifier:@
 setBillingIdentifier :: (IsVSUserAccount vsUserAccount, IsNSString value) => vsUserAccount -> value -> IO ()
-setBillingIdentifier vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setBillingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillingIdentifier vsUserAccount value =
+  sendMessage vsUserAccount setBillingIdentifierSelector (toNSString value)
 
 -- | @- authenticationData@
 authenticationData :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id NSString)
-authenticationData vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "authenticationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationData vsUserAccount =
+  sendMessage vsUserAccount authenticationDataSelector
 
 -- | @- setAuthenticationData:@
 setAuthenticationData :: (IsVSUserAccount vsUserAccount, IsNSString value) => vsUserAccount -> value -> IO ()
-setAuthenticationData vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setAuthenticationData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthenticationData vsUserAccount value =
+  sendMessage vsUserAccount setAuthenticationDataSelector (toNSString value)
 
 -- | @- fromCurrentDevice@
 fromCurrentDevice :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO Bool
-fromCurrentDevice vsUserAccount  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vsUserAccount (mkSelector "fromCurrentDevice") retCULong []
+fromCurrentDevice vsUserAccount =
+  sendMessage vsUserAccount fromCurrentDeviceSelector
 
 -- | @- deviceCategory@
 deviceCategory :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO VSOriginatingDeviceCategory
-deviceCategory vsUserAccount  =
-    fmap (coerce :: CLong -> VSOriginatingDeviceCategory) $ sendMsg vsUserAccount (mkSelector "deviceCategory") retCLong []
+deviceCategory vsUserAccount =
+  sendMessage vsUserAccount deviceCategorySelector
 
 -- | @- appleSubscription@
 appleSubscription :: IsVSUserAccount vsUserAccount => vsUserAccount -> IO (Id VSAppleSubscription)
-appleSubscription vsUserAccount  =
-    sendMsg vsUserAccount (mkSelector "appleSubscription") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleSubscription vsUserAccount =
+  sendMessage vsUserAccount appleSubscriptionSelector
 
 -- | @- setAppleSubscription:@
 setAppleSubscription :: (IsVSUserAccount vsUserAccount, IsVSAppleSubscription value) => vsUserAccount -> value -> IO ()
-setAppleSubscription vsUserAccount  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsUserAccount (mkSelector "setAppleSubscription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleSubscription vsUserAccount value =
+  sendMessage vsUserAccount setAppleSubscriptionSelector (toVSAppleSubscription value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VSUserAccount)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VSUserAccount)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithAccountType:updateURL:@
-initWithAccountType_updateURLSelector :: Selector
+initWithAccountType_updateURLSelector :: Selector '[VSUserAccountType, Id NSURL] (Id VSUserAccount)
 initWithAccountType_updateURLSelector = mkSelector "initWithAccountType:updateURL:"
 
 -- | @Selector@ for @updateURL@
-updateURLSelector :: Selector
+updateURLSelector :: Selector '[] (Id NSURL)
 updateURLSelector = mkSelector "updateURL"
 
 -- | @Selector@ for @setUpdateURL:@
-setUpdateURLSelector :: Selector
+setUpdateURLSelector :: Selector '[Id NSURL] ()
 setUpdateURLSelector = mkSelector "setUpdateURL:"
 
 -- | @Selector@ for @requiresSystemTrust@
-requiresSystemTrustSelector :: Selector
+requiresSystemTrustSelector :: Selector '[] Bool
 requiresSystemTrustSelector = mkSelector "requiresSystemTrust"
 
 -- | @Selector@ for @setRequiresSystemTrust:@
-setRequiresSystemTrustSelector :: Selector
+setRequiresSystemTrustSelector :: Selector '[Bool] ()
 setRequiresSystemTrustSelector = mkSelector "setRequiresSystemTrust:"
 
 -- | @Selector@ for @accountProviderIdentifier@
-accountProviderIdentifierSelector :: Selector
+accountProviderIdentifierSelector :: Selector '[] (Id NSString)
 accountProviderIdentifierSelector = mkSelector "accountProviderIdentifier"
 
 -- | @Selector@ for @setAccountProviderIdentifier:@
-setAccountProviderIdentifierSelector :: Selector
+setAccountProviderIdentifierSelector :: Selector '[Id NSString] ()
 setAccountProviderIdentifierSelector = mkSelector "setAccountProviderIdentifier:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @accountType@
-accountTypeSelector :: Selector
+accountTypeSelector :: Selector '[] VSUserAccountType
 accountTypeSelector = mkSelector "accountType"
 
 -- | @Selector@ for @setAccountType:@
-setAccountTypeSelector :: Selector
+setAccountTypeSelector :: Selector '[VSUserAccountType] ()
 setAccountTypeSelector = mkSelector "setAccountType:"
 
 -- | @Selector@ for @signedOut@
-signedOutSelector :: Selector
+signedOutSelector :: Selector '[] Bool
 signedOutSelector = mkSelector "signedOut"
 
 -- | @Selector@ for @setSignedOut:@
-setSignedOutSelector :: Selector
+setSignedOutSelector :: Selector '[Bool] ()
 setSignedOutSelector = mkSelector "setSignedOut:"
 
 -- | @Selector@ for @subscriptionBillingCycleEndDate@
-subscriptionBillingCycleEndDateSelector :: Selector
+subscriptionBillingCycleEndDateSelector :: Selector '[] (Id NSDate)
 subscriptionBillingCycleEndDateSelector = mkSelector "subscriptionBillingCycleEndDate"
 
 -- | @Selector@ for @setSubscriptionBillingCycleEndDate:@
-setSubscriptionBillingCycleEndDateSelector :: Selector
+setSubscriptionBillingCycleEndDateSelector :: Selector '[Id NSDate] ()
 setSubscriptionBillingCycleEndDateSelector = mkSelector "setSubscriptionBillingCycleEndDate:"
 
 -- | @Selector@ for @tierIdentifiers@
-tierIdentifiersSelector :: Selector
+tierIdentifiersSelector :: Selector '[] (Id NSArray)
 tierIdentifiersSelector = mkSelector "tierIdentifiers"
 
 -- | @Selector@ for @setTierIdentifiers:@
-setTierIdentifiersSelector :: Selector
+setTierIdentifiersSelector :: Selector '[Id NSArray] ()
 setTierIdentifiersSelector = mkSelector "setTierIdentifiers:"
 
 -- | @Selector@ for @billingIdentifier@
-billingIdentifierSelector :: Selector
+billingIdentifierSelector :: Selector '[] (Id NSString)
 billingIdentifierSelector = mkSelector "billingIdentifier"
 
 -- | @Selector@ for @setBillingIdentifier:@
-setBillingIdentifierSelector :: Selector
+setBillingIdentifierSelector :: Selector '[Id NSString] ()
 setBillingIdentifierSelector = mkSelector "setBillingIdentifier:"
 
 -- | @Selector@ for @authenticationData@
-authenticationDataSelector :: Selector
+authenticationDataSelector :: Selector '[] (Id NSString)
 authenticationDataSelector = mkSelector "authenticationData"
 
 -- | @Selector@ for @setAuthenticationData:@
-setAuthenticationDataSelector :: Selector
+setAuthenticationDataSelector :: Selector '[Id NSString] ()
 setAuthenticationDataSelector = mkSelector "setAuthenticationData:"
 
 -- | @Selector@ for @fromCurrentDevice@
-fromCurrentDeviceSelector :: Selector
+fromCurrentDeviceSelector :: Selector '[] Bool
 fromCurrentDeviceSelector = mkSelector "fromCurrentDevice"
 
 -- | @Selector@ for @deviceCategory@
-deviceCategorySelector :: Selector
+deviceCategorySelector :: Selector '[] VSOriginatingDeviceCategory
 deviceCategorySelector = mkSelector "deviceCategory"
 
 -- | @Selector@ for @appleSubscription@
-appleSubscriptionSelector :: Selector
+appleSubscriptionSelector :: Selector '[] (Id VSAppleSubscription)
 appleSubscriptionSelector = mkSelector "appleSubscription"
 
 -- | @Selector@ for @setAppleSubscription:@
-setAppleSubscriptionSelector :: Selector
+setAppleSubscriptionSelector :: Selector '[Id VSAppleSubscription] ()
 setAppleSubscriptionSelector = mkSelector "setAppleSubscription:"
 

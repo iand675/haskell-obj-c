@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,10 +28,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionGradientState
   , gradientForBiases
   , convolution
   , gradientForWeightsLayout
-  , gradientForWeightsSelector
-  , gradientForBiasesSelector
   , convolutionSelector
+  , gradientForBiasesSelector
   , gradientForWeightsLayoutSelector
+  , gradientForWeightsSelector
 
   -- * Enum types
   , MPSCNNConvolutionWeightsLayout(MPSCNNConvolutionWeightsLayout)
@@ -38,15 +39,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionGradientState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- gradientForWeights@
 gradientForWeights :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO RawId
-gradientForWeights mpscnnConvolutionGradientState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionGradientState (mkSelector "gradientForWeights") (retPtr retVoid) []
+gradientForWeights mpscnnConvolutionGradientState =
+  sendMessage mpscnnConvolutionGradientState gradientForWeightsSelector
 
 -- | gradientForBiases
 --
@@ -71,8 +68,8 @@ gradientForWeights mpscnnConvolutionGradientState  =
 --
 -- ObjC selector: @- gradientForBiases@
 gradientForBiases :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO RawId
-gradientForBiases mpscnnConvolutionGradientState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionGradientState (mkSelector "gradientForBiases") (retPtr retVoid) []
+gradientForBiases mpscnnConvolutionGradientState =
+  sendMessage mpscnnConvolutionGradientState gradientForBiasesSelector
 
 -- | convolution
 --
@@ -80,8 +77,8 @@ gradientForBiases mpscnnConvolutionGradientState  =
 --
 -- ObjC selector: @- convolution@
 convolution :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO (Id MPSCNNConvolution)
-convolution mpscnnConvolutionGradientState  =
-    sendMsg mpscnnConvolutionGradientState (mkSelector "convolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+convolution mpscnnConvolutionGradientState =
+  sendMessage mpscnnConvolutionGradientState convolutionSelector
 
 -- | gradientForWeightsLayout
 --
@@ -89,26 +86,26 @@ convolution mpscnnConvolutionGradientState  =
 --
 -- ObjC selector: @- gradientForWeightsLayout@
 gradientForWeightsLayout :: IsMPSCNNConvolutionGradientState mpscnnConvolutionGradientState => mpscnnConvolutionGradientState -> IO MPSCNNConvolutionWeightsLayout
-gradientForWeightsLayout mpscnnConvolutionGradientState  =
-    fmap (coerce :: CUInt -> MPSCNNConvolutionWeightsLayout) $ sendMsg mpscnnConvolutionGradientState (mkSelector "gradientForWeightsLayout") retCUInt []
+gradientForWeightsLayout mpscnnConvolutionGradientState =
+  sendMessage mpscnnConvolutionGradientState gradientForWeightsLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @gradientForWeights@
-gradientForWeightsSelector :: Selector
+gradientForWeightsSelector :: Selector '[] RawId
 gradientForWeightsSelector = mkSelector "gradientForWeights"
 
 -- | @Selector@ for @gradientForBiases@
-gradientForBiasesSelector :: Selector
+gradientForBiasesSelector :: Selector '[] RawId
 gradientForBiasesSelector = mkSelector "gradientForBiases"
 
 -- | @Selector@ for @convolution@
-convolutionSelector :: Selector
+convolutionSelector :: Selector '[] (Id MPSCNNConvolution)
 convolutionSelector = mkSelector "convolution"
 
 -- | @Selector@ for @gradientForWeightsLayout@
-gradientForWeightsLayoutSelector :: Selector
+gradientForWeightsLayoutSelector :: Selector '[] MPSCNNConvolutionWeightsLayout
 gradientForWeightsLayoutSelector = mkSelector "gradientForWeightsLayout"
 

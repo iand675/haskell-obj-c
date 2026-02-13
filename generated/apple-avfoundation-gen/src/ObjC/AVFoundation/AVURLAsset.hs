@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,37 +35,33 @@ module ObjC.AVFoundation.AVURLAsset
   , variants
   , assetCache
   , resourceLoader
-  , initSelector
-  , newSelector
-  , audiovisualTypesSelector
+  , assetCacheSelector
+  , audiovisualContentTypesSelector
   , audiovisualMIMETypesSelector
-  , isPlayableExtendedMIMETypeSelector
-  , urlAssetWithURL_optionsSelector
-  , initWithURL_optionsSelector
+  , audiovisualTypesSelector
   , compatibleTrackForCompositionTrackSelector
   , findCompatibleTrackForCompositionTrack_completionHandlerSelector
-  , audiovisualContentTypesSelector
-  , urlSelector
   , httpSessionIdentifierSelector
+  , initSelector
+  , initWithURL_optionsSelector
+  , isPlayableExtendedMIMETypeSelector
   , mayRequireContentKeysForMediaDataProcessingSelector
   , mediaExtensionPropertiesSelector
-  , sidecarURLSelector
-  , variantsSelector
-  , assetCacheSelector
+  , newSelector
   , resourceLoaderSelector
+  , sidecarURLSelector
+  , urlAssetWithURL_optionsSelector
+  , urlSelector
+  , variantsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,15 +71,15 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVURLAsset)
-init_ avurlAsset  =
-    sendMsg avurlAsset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avurlAsset =
+  sendOwnedMessage avurlAsset initSelector
 
 -- | @+ new@
 new :: IO (Id AVURLAsset)
 new  =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Provides the file types the AVURLAsset class understands.
 --
@@ -93,7 +90,7 @@ audiovisualTypes :: IO (Id NSArray)
 audiovisualTypes  =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    sendClassMsg cls' (mkSelector "audiovisualTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' audiovisualTypesSelector
 
 -- | Provides the MIME types the AVURLAsset class understands.
 --
@@ -104,7 +101,7 @@ audiovisualMIMETypes :: IO (Id NSArray)
 audiovisualMIMETypes  =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    sendClassMsg cls' (mkSelector "audiovisualMIMETypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' audiovisualMIMETypesSelector
 
 -- | Returns YES if asset is playable with the codec(s) and container type specified in extendedMIMEType. Returns NO otherwise.
 --
@@ -119,8 +116,7 @@ isPlayableExtendedMIMEType :: IsNSString extendedMIMEType => extendedMIMEType ->
 isPlayableExtendedMIMEType extendedMIMEType =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    withObjCPtr extendedMIMEType $ \raw_extendedMIMEType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPlayableExtendedMIMEType:") retCULong [argPtr (castPtr raw_extendedMIMEType :: Ptr ())]
+    sendClassMessage cls' isPlayableExtendedMIMETypeSelector (toNSString extendedMIMEType)
 
 -- | Returns an instance of AVURLAsset for inspection of a media resource.
 --
@@ -133,9 +129,7 @@ urlAssetWithURL_options :: (IsNSURL url, IsNSDictionary options) => url -> optio
 urlAssetWithURL_options url options =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "URLAssetWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' urlAssetWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | Initializes an instance of AVURLAsset for inspection of a media resource.
 --
@@ -145,10 +139,8 @@ urlAssetWithURL_options url options =
 --
 -- ObjC selector: @- initWithURL:options:@
 initWithURL_options :: (IsAVURLAsset avurlAsset, IsNSURL url, IsNSDictionary options) => avurlAsset -> url -> options -> IO (Id AVURLAsset)
-initWithURL_options avurlAsset  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avurlAsset (mkSelector "initWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options avurlAsset url options =
+  sendOwnedMessage avurlAsset initWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | Provides a reference to an AVAssetTrack of the target from which any timeRange can be inserted into a mutable composition track (via -[AVMutableCompositionTrack insertTimeRange:ofTrack:atTime:error:]).
 --
@@ -160,9 +152,8 @@ initWithURL_options avurlAsset  url options =
 --
 -- ObjC selector: @- compatibleTrackForCompositionTrack:@
 compatibleTrackForCompositionTrack :: (IsAVURLAsset avurlAsset, IsAVCompositionTrack compositionTrack) => avurlAsset -> compositionTrack -> IO (Id AVAssetTrack)
-compatibleTrackForCompositionTrack avurlAsset  compositionTrack =
-  withObjCPtr compositionTrack $ \raw_compositionTrack ->
-      sendMsg avurlAsset (mkSelector "compatibleTrackForCompositionTrack:") (retPtr retVoid) [argPtr (castPtr raw_compositionTrack :: Ptr ())] >>= retainedObject . castPtr
+compatibleTrackForCompositionTrack avurlAsset compositionTrack =
+  sendMessage avurlAsset compatibleTrackForCompositionTrackSelector (toAVCompositionTrack compositionTrack)
 
 -- | Loads a reference to an AVAssetTrack of the target from which any timeRange can be inserted into a mutable composition track (via -[AVMutableCompositionTrack insertTimeRange:ofTrack:atTime:error:]).
 --
@@ -172,9 +163,8 @@ compatibleTrackForCompositionTrack avurlAsset  compositionTrack =
 --
 -- ObjC selector: @- findCompatibleTrackForCompositionTrack:completionHandler:@
 findCompatibleTrackForCompositionTrack_completionHandler :: (IsAVURLAsset avurlAsset, IsAVCompositionTrack compositionTrack) => avurlAsset -> compositionTrack -> Ptr () -> IO ()
-findCompatibleTrackForCompositionTrack_completionHandler avurlAsset  compositionTrack completionHandler =
-  withObjCPtr compositionTrack $ \raw_compositionTrack ->
-      sendMsg avurlAsset (mkSelector "findCompatibleTrackForCompositionTrack:completionHandler:") retVoid [argPtr (castPtr raw_compositionTrack :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+findCompatibleTrackForCompositionTrack_completionHandler avurlAsset compositionTrack completionHandler =
+  sendMessage avurlAsset findCompatibleTrackForCompositionTrack_completionHandlerSelector (toAVCompositionTrack compositionTrack) completionHandler
 
 -- | Provides the content types the AVURLAsset class understands.
 --
@@ -185,14 +175,14 @@ audiovisualContentTypes :: IO (Id NSArray)
 audiovisualContentTypes  =
   do
     cls' <- getRequiredClass "AVURLAsset"
-    sendClassMsg cls' (mkSelector "audiovisualContentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' audiovisualContentTypesSelector
 
 -- | Indicates the URL with which the instance of AVURLAsset was initialized.
 --
 -- ObjC selector: @- URL@
 url :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSURL)
-url avurlAsset  =
-    sendMsg avurlAsset (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avurlAsset =
+  sendMessage avurlAsset urlSelector
 
 -- | Provides the identifier that's automatically included in any HTTP request issued on behalf of this asset in the HTTP header field "X-Playback-Session-Id".
 --
@@ -200,15 +190,15 @@ url avurlAsset  =
 --
 -- ObjC selector: @- httpSessionIdentifier@
 httpSessionIdentifier :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSUUID)
-httpSessionIdentifier avurlAsset  =
-    sendMsg avurlAsset (mkSelector "httpSessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpSessionIdentifier avurlAsset =
+  sendMessage avurlAsset httpSessionIdentifierSelector
 
 -- | Allows AVURLAsset to be added as a content key recipient to an AVContentKeySession.
 --
 -- ObjC selector: @- mayRequireContentKeysForMediaDataProcessing@
 mayRequireContentKeysForMediaDataProcessing :: IsAVURLAsset avurlAsset => avurlAsset -> IO Bool
-mayRequireContentKeysForMediaDataProcessing avurlAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avurlAsset (mkSelector "mayRequireContentKeysForMediaDataProcessing") retCULong []
+mayRequireContentKeysForMediaDataProcessing avurlAsset =
+  sendMessage avurlAsset mayRequireContentKeysForMediaDataProcessingSelector
 
 -- | The properties of the MediaExtension format reader for the asset.
 --
@@ -216,8 +206,8 @@ mayRequireContentKeysForMediaDataProcessing avurlAsset  =
 --
 -- ObjC selector: @- mediaExtensionProperties@
 mediaExtensionProperties :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVMediaExtensionProperties)
-mediaExtensionProperties avurlAsset  =
-    sendMsg avurlAsset (mkSelector "mediaExtensionProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaExtensionProperties avurlAsset =
+  sendMessage avurlAsset mediaExtensionPropertiesSelector
 
 -- | The sidecar URL used by the MediaExtension.
 --
@@ -225,8 +215,8 @@ mediaExtensionProperties avurlAsset  =
 --
 -- ObjC selector: @- sidecarURL@
 sidecarURL :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSURL)
-sidecarURL avurlAsset  =
-    sendMsg avurlAsset (mkSelector "sidecarURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+sidecarURL avurlAsset =
+  sendMessage avurlAsset sidecarURLSelector
 
 -- | Provides an array of AVAssetVariants contained in the asset
 --
@@ -234,15 +224,15 @@ sidecarURL avurlAsset  =
 --
 -- ObjC selector: @- variants@
 variants :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id NSArray)
-variants avurlAsset  =
-    sendMsg avurlAsset (mkSelector "variants") (retPtr retVoid) [] >>= retainedObject . castPtr
+variants avurlAsset =
+  sendMessage avurlAsset variantsSelector
 
 -- | Provides access to an instance of AVAssetCache to use for inspection of locally cached media data. Will be nil if an asset has not been configured to store or access media data from disk.
 --
 -- ObjC selector: @- assetCache@
 assetCache :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVAssetCache)
-assetCache avurlAsset  =
-    sendMsg avurlAsset (mkSelector "assetCache") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetCache avurlAsset =
+  sendMessage avurlAsset assetCacheSelector
 
 -- | Provides access to an instance of AVAssetResourceLoader, which offers limited control over the handling of URLs that may be loaded in the course of performing operations on the asset, such as playback.
 --
@@ -252,82 +242,82 @@ assetCache avurlAsset  =
 --
 -- ObjC selector: @- resourceLoader@
 resourceLoader :: IsAVURLAsset avurlAsset => avurlAsset -> IO (Id AVAssetResourceLoader)
-resourceLoader avurlAsset  =
-    sendMsg avurlAsset (mkSelector "resourceLoader") (retPtr retVoid) [] >>= retainedObject . castPtr
+resourceLoader avurlAsset =
+  sendMessage avurlAsset resourceLoaderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVURLAsset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVURLAsset)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @audiovisualTypes@
-audiovisualTypesSelector :: Selector
+audiovisualTypesSelector :: Selector '[] (Id NSArray)
 audiovisualTypesSelector = mkSelector "audiovisualTypes"
 
 -- | @Selector@ for @audiovisualMIMETypes@
-audiovisualMIMETypesSelector :: Selector
+audiovisualMIMETypesSelector :: Selector '[] (Id NSArray)
 audiovisualMIMETypesSelector = mkSelector "audiovisualMIMETypes"
 
 -- | @Selector@ for @isPlayableExtendedMIMEType:@
-isPlayableExtendedMIMETypeSelector :: Selector
+isPlayableExtendedMIMETypeSelector :: Selector '[Id NSString] Bool
 isPlayableExtendedMIMETypeSelector = mkSelector "isPlayableExtendedMIMEType:"
 
 -- | @Selector@ for @URLAssetWithURL:options:@
-urlAssetWithURL_optionsSelector :: Selector
+urlAssetWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVURLAsset)
 urlAssetWithURL_optionsSelector = mkSelector "URLAssetWithURL:options:"
 
 -- | @Selector@ for @initWithURL:options:@
-initWithURL_optionsSelector :: Selector
+initWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVURLAsset)
 initWithURL_optionsSelector = mkSelector "initWithURL:options:"
 
 -- | @Selector@ for @compatibleTrackForCompositionTrack:@
-compatibleTrackForCompositionTrackSelector :: Selector
+compatibleTrackForCompositionTrackSelector :: Selector '[Id AVCompositionTrack] (Id AVAssetTrack)
 compatibleTrackForCompositionTrackSelector = mkSelector "compatibleTrackForCompositionTrack:"
 
 -- | @Selector@ for @findCompatibleTrackForCompositionTrack:completionHandler:@
-findCompatibleTrackForCompositionTrack_completionHandlerSelector :: Selector
+findCompatibleTrackForCompositionTrack_completionHandlerSelector :: Selector '[Id AVCompositionTrack, Ptr ()] ()
 findCompatibleTrackForCompositionTrack_completionHandlerSelector = mkSelector "findCompatibleTrackForCompositionTrack:completionHandler:"
 
 -- | @Selector@ for @audiovisualContentTypes@
-audiovisualContentTypesSelector :: Selector
+audiovisualContentTypesSelector :: Selector '[] (Id NSArray)
 audiovisualContentTypesSelector = mkSelector "audiovisualContentTypes"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @httpSessionIdentifier@
-httpSessionIdentifierSelector :: Selector
+httpSessionIdentifierSelector :: Selector '[] (Id NSUUID)
 httpSessionIdentifierSelector = mkSelector "httpSessionIdentifier"
 
 -- | @Selector@ for @mayRequireContentKeysForMediaDataProcessing@
-mayRequireContentKeysForMediaDataProcessingSelector :: Selector
+mayRequireContentKeysForMediaDataProcessingSelector :: Selector '[] Bool
 mayRequireContentKeysForMediaDataProcessingSelector = mkSelector "mayRequireContentKeysForMediaDataProcessing"
 
 -- | @Selector@ for @mediaExtensionProperties@
-mediaExtensionPropertiesSelector :: Selector
+mediaExtensionPropertiesSelector :: Selector '[] (Id AVMediaExtensionProperties)
 mediaExtensionPropertiesSelector = mkSelector "mediaExtensionProperties"
 
 -- | @Selector@ for @sidecarURL@
-sidecarURLSelector :: Selector
+sidecarURLSelector :: Selector '[] (Id NSURL)
 sidecarURLSelector = mkSelector "sidecarURL"
 
 -- | @Selector@ for @variants@
-variantsSelector :: Selector
+variantsSelector :: Selector '[] (Id NSArray)
 variantsSelector = mkSelector "variants"
 
 -- | @Selector@ for @assetCache@
-assetCacheSelector :: Selector
+assetCacheSelector :: Selector '[] (Id AVAssetCache)
 assetCacheSelector = mkSelector "assetCache"
 
 -- | @Selector@ for @resourceLoader@
-resourceLoaderSelector :: Selector
+resourceLoaderSelector :: Selector '[] (Id AVAssetResourceLoader)
 resourceLoaderSelector = mkSelector "resourceLoader"
 

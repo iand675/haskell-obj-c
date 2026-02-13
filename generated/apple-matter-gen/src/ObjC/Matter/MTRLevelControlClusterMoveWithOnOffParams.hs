@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Matter.MTRLevelControlClusterMoveWithOnOffParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , moveModeSelector
-  , setMoveModeSelector
-  , rateSelector
-  , setRateSelector
   , optionsMaskSelector
-  , setOptionsMaskSelector
   , optionsOverrideSelector
-  , setOptionsOverrideSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , rateSelector
   , serverSideProcessingTimeoutSelector
+  , setMoveModeSelector
+  , setOptionsMaskSelector
+  , setOptionsOverrideSelector
+  , setRateSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,47 +48,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- moveMode@
 moveMode :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-moveMode mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "moveMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+moveMode mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams moveModeSelector
 
 -- | @- setMoveMode:@
 setMoveMode :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setMoveMode mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setMoveMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMoveMode mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setMoveModeSelector (toNSNumber value)
 
 -- | @- rate@
 rate :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-rate mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "rate") (retPtr retVoid) [] >>= retainedObject . castPtr
+rate mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams rateSelector
 
 -- | @- setRate:@
 setRate :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setRate mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRate mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setRateSelector (toNSNumber value)
 
 -- | @- optionsMask@
 optionsMask :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-optionsMask mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "optionsMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsMask mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams optionsMaskSelector
 
 -- | @- setOptionsMask:@
 setOptionsMask :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setOptionsMask mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setOptionsMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsMask mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setOptionsMaskSelector (toNSNumber value)
 
 -- | @- optionsOverride@
 optionsOverride :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-optionsOverride mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "optionsOverride") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsOverride mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams optionsOverrideSelector
 
 -- | @- setOptionsOverride:@
 setOptionsOverride :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setOptionsOverride mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setOptionsOverride:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsOverride mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setOptionsOverrideSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -101,8 +94,8 @@ setOptionsOverride mtrLevelControlClusterMoveWithOnOffParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,9 +105,8 @@ timedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -124,8 +116,8 @@ setTimedInvokeTimeoutMs mtrLevelControlClusterMoveWithOnOffParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams => mtrLevelControlClusterMoveWithOnOffParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrLevelControlClusterMoveWithOnOffParams  =
-    sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrLevelControlClusterMoveWithOnOffParams =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -135,59 +127,58 @@ serverSideProcessingTimeout mtrLevelControlClusterMoveWithOnOffParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRLevelControlClusterMoveWithOnOffParams mtrLevelControlClusterMoveWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterMoveWithOnOffParams -> value -> IO ()
-setServerSideProcessingTimeout mtrLevelControlClusterMoveWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveWithOnOffParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrLevelControlClusterMoveWithOnOffParams value =
+  sendMessage mtrLevelControlClusterMoveWithOnOffParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @moveMode@
-moveModeSelector :: Selector
+moveModeSelector :: Selector '[] (Id NSNumber)
 moveModeSelector = mkSelector "moveMode"
 
 -- | @Selector@ for @setMoveMode:@
-setMoveModeSelector :: Selector
+setMoveModeSelector :: Selector '[Id NSNumber] ()
 setMoveModeSelector = mkSelector "setMoveMode:"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] (Id NSNumber)
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[Id NSNumber] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @optionsMask@
-optionsMaskSelector :: Selector
+optionsMaskSelector :: Selector '[] (Id NSNumber)
 optionsMaskSelector = mkSelector "optionsMask"
 
 -- | @Selector@ for @setOptionsMask:@
-setOptionsMaskSelector :: Selector
+setOptionsMaskSelector :: Selector '[Id NSNumber] ()
 setOptionsMaskSelector = mkSelector "setOptionsMask:"
 
 -- | @Selector@ for @optionsOverride@
-optionsOverrideSelector :: Selector
+optionsOverrideSelector :: Selector '[] (Id NSNumber)
 optionsOverrideSelector = mkSelector "optionsOverride"
 
 -- | @Selector@ for @setOptionsOverride:@
-setOptionsOverrideSelector :: Selector
+setOptionsOverrideSelector :: Selector '[Id NSNumber] ()
 setOptionsOverrideSelector = mkSelector "setOptionsOverride:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

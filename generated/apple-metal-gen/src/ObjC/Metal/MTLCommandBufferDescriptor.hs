@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.Metal.MTLCommandBufferDescriptor
   , setErrorOptions
   , logState
   , setLogState
-  , retainedReferencesSelector
-  , setRetainedReferencesSelector
   , errorOptionsSelector
-  , setErrorOptionsSelector
   , logStateSelector
+  , retainedReferencesSelector
+  , setErrorOptionsSelector
   , setLogStateSelector
+  , setRetainedReferencesSelector
 
   -- * Enum types
   , MTLCommandBufferErrorOption(MTLCommandBufferErrorOption)
@@ -31,15 +32,11 @@ module ObjC.Metal.MTLCommandBufferDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- retainedReferences@
 retainedReferences :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> IO Bool
-retainedReferences mtlCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlCommandBufferDescriptor (mkSelector "retainedReferences") retCULong []
+retainedReferences mtlCommandBufferDescriptor =
+  sendMessage mtlCommandBufferDescriptor retainedReferencesSelector
 
 -- | retainedReferences
 --
@@ -62,8 +59,8 @@ retainedReferences mtlCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setRetainedReferences:@
 setRetainedReferences :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> Bool -> IO ()
-setRetainedReferences mtlCommandBufferDescriptor  value =
-    sendMsg mtlCommandBufferDescriptor (mkSelector "setRetainedReferences:") retVoid [argCULong (if value then 1 else 0)]
+setRetainedReferences mtlCommandBufferDescriptor value =
+  sendMessage mtlCommandBufferDescriptor setRetainedReferencesSelector value
 
 -- | errorOptions
 --
@@ -71,8 +68,8 @@ setRetainedReferences mtlCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- errorOptions@
 errorOptions :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> IO MTLCommandBufferErrorOption
-errorOptions mtlCommandBufferDescriptor  =
-    fmap (coerce :: CULong -> MTLCommandBufferErrorOption) $ sendMsg mtlCommandBufferDescriptor (mkSelector "errorOptions") retCULong []
+errorOptions mtlCommandBufferDescriptor =
+  sendMessage mtlCommandBufferDescriptor errorOptionsSelector
 
 -- | errorOptions
 --
@@ -80,8 +77,8 @@ errorOptions mtlCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setErrorOptions:@
 setErrorOptions :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> MTLCommandBufferErrorOption -> IO ()
-setErrorOptions mtlCommandBufferDescriptor  value =
-    sendMsg mtlCommandBufferDescriptor (mkSelector "setErrorOptions:") retVoid [argCULong (coerce value)]
+setErrorOptions mtlCommandBufferDescriptor value =
+  sendMessage mtlCommandBufferDescriptor setErrorOptionsSelector value
 
 -- | logState
 --
@@ -89,8 +86,8 @@ setErrorOptions mtlCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- logState@
 logState :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> IO RawId
-logState mtlCommandBufferDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlCommandBufferDescriptor (mkSelector "logState") (retPtr retVoid) []
+logState mtlCommandBufferDescriptor =
+  sendMessage mtlCommandBufferDescriptor logStateSelector
 
 -- | logState
 --
@@ -98,34 +95,34 @@ logState mtlCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setLogState:@
 setLogState :: IsMTLCommandBufferDescriptor mtlCommandBufferDescriptor => mtlCommandBufferDescriptor -> RawId -> IO ()
-setLogState mtlCommandBufferDescriptor  value =
-    sendMsg mtlCommandBufferDescriptor (mkSelector "setLogState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLogState mtlCommandBufferDescriptor value =
+  sendMessage mtlCommandBufferDescriptor setLogStateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @retainedReferences@
-retainedReferencesSelector :: Selector
+retainedReferencesSelector :: Selector '[] Bool
 retainedReferencesSelector = mkSelector "retainedReferences"
 
 -- | @Selector@ for @setRetainedReferences:@
-setRetainedReferencesSelector :: Selector
+setRetainedReferencesSelector :: Selector '[Bool] ()
 setRetainedReferencesSelector = mkSelector "setRetainedReferences:"
 
 -- | @Selector@ for @errorOptions@
-errorOptionsSelector :: Selector
+errorOptionsSelector :: Selector '[] MTLCommandBufferErrorOption
 errorOptionsSelector = mkSelector "errorOptions"
 
 -- | @Selector@ for @setErrorOptions:@
-setErrorOptionsSelector :: Selector
+setErrorOptionsSelector :: Selector '[MTLCommandBufferErrorOption] ()
 setErrorOptionsSelector = mkSelector "setErrorOptions:"
 
 -- | @Selector@ for @logState@
-logStateSelector :: Selector
+logStateSelector :: Selector '[] RawId
 logStateSelector = mkSelector "logState"
 
 -- | @Selector@ for @setLogState:@
-setLogStateSelector :: Selector
+setLogStateSelector :: Selector '[RawId] ()
 setLogStateSelector = mkSelector "setLogState:"
 

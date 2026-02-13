@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CoreImage.CIDetector
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,41 +49,35 @@ detectorOfType_context_options :: (IsNSString type_, IsCIContext context, IsNSDi
 detectorOfType_context_options type_ context options =
   do
     cls' <- getRequiredClass "CIDetector"
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr context $ \raw_context ->
-        withObjCPtr options $ \raw_options ->
-          sendClassMsg cls' (mkSelector "detectorOfType:context:options:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' detectorOfType_context_optionsSelector (toNSString type_) (toCIContext context) (toNSDictionary options)
 
 -- | Returns an array of CIFeature instances in the given image. The array is sorted by confidence, highest confidence first.
 --
 -- ObjC selector: @- featuresInImage:@
 featuresInImage :: (IsCIDetector ciDetector, IsCIImage image) => ciDetector -> image -> IO (Id NSArray)
-featuresInImage ciDetector  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg ciDetector (mkSelector "featuresInImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= retainedObject . castPtr
+featuresInImage ciDetector image =
+  sendMessage ciDetector featuresInImageSelector (toCIImage image)
 
 -- | Returns an array of CIFeature instances in the given image. The array is sorted by confidence, highest confidence first. The options dictionary can contain a CIDetectorImageOrientation key value.
 --
 -- ObjC selector: @- featuresInImage:options:@
 featuresInImage_options :: (IsCIDetector ciDetector, IsCIImage image, IsNSDictionary options) => ciDetector -> image -> options -> IO (Id NSArray)
-featuresInImage_options ciDetector  image options =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg ciDetector (mkSelector "featuresInImage:options:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+featuresInImage_options ciDetector image options =
+  sendMessage ciDetector featuresInImage_optionsSelector (toCIImage image) (toNSDictionary options)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @detectorOfType:context:options:@
-detectorOfType_context_optionsSelector :: Selector
+detectorOfType_context_optionsSelector :: Selector '[Id NSString, Id CIContext, Id NSDictionary] (Id CIDetector)
 detectorOfType_context_optionsSelector = mkSelector "detectorOfType:context:options:"
 
 -- | @Selector@ for @featuresInImage:@
-featuresInImageSelector :: Selector
+featuresInImageSelector :: Selector '[Id CIImage] (Id NSArray)
 featuresInImageSelector = mkSelector "featuresInImage:"
 
 -- | @Selector@ for @featuresInImage:options:@
-featuresInImage_optionsSelector :: Selector
+featuresInImage_optionsSelector :: Selector '[Id CIImage, Id NSDictionary] (Id NSArray)
 featuresInImage_optionsSelector = mkSelector "featuresInImage:options:"
 

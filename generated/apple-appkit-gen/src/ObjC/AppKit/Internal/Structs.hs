@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data NSDirectionalEdgeInsets = NSDirectionalEdgeInsets
   { nsDirectionalEdgeInsetsTop :: !CDouble
@@ -42,3 +44,13 @@ argNSDirectionalEdgeInsets = mkStorableArg nsDirectionalEdgeInsetsStructType
 
 retNSDirectionalEdgeInsets :: RetType NSDirectionalEdgeInsets
 retNSDirectionalEdgeInsets = mkStorableRetType nsDirectionalEdgeInsetsStructType
+
+instance ObjCArgument NSDirectionalEdgeInsets where
+  withObjCArg x k = k (argNSDirectionalEdgeInsets x)
+
+instance ObjCReturn NSDirectionalEdgeInsets where
+  type RawReturn NSDirectionalEdgeInsets = NSDirectionalEdgeInsets
+  objcRetType = retNSDirectionalEdgeInsets
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.ExtensionKit.EXHostViewController
   , setDelegate
   , placeholderView
   , setPlaceholderView
-  , makeXPCConnectionWithErrorSelector
   , delegateSelector
-  , setDelegateSelector
+  , makeXPCConnectionWithErrorSelector
   , placeholderViewSelector
+  , setDelegateSelector
   , setPlaceholderViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,60 +47,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- makeXPCConnectionWithError:@
 makeXPCConnectionWithError :: (IsEXHostViewController exHostViewController, IsNSError error_) => exHostViewController -> error_ -> IO (Id NSXPCConnection)
-makeXPCConnectionWithError exHostViewController  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg exHostViewController (mkSelector "makeXPCConnectionWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+makeXPCConnectionWithError exHostViewController error_ =
+  sendMessage exHostViewController makeXPCConnectionWithErrorSelector (toNSError error_)
 
 -- | A custom delegate object you use to receive notifications about the activation and deactivation of the app extension.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsEXHostViewController exHostViewController => exHostViewController -> IO RawId
-delegate exHostViewController  =
-    fmap (RawId . castPtr) $ sendMsg exHostViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate exHostViewController =
+  sendMessage exHostViewController delegateSelector
 
 -- | A custom delegate object you use to receive notifications about the activation and deactivation of the app extension.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsEXHostViewController exHostViewController => exHostViewController -> RawId -> IO ()
-setDelegate exHostViewController  value =
-    sendMsg exHostViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate exHostViewController value =
+  sendMessage exHostViewController setDelegateSelector value
 
 -- | The view to display when the view controller has no app extension content to display.
 --
 -- ObjC selector: @- placeholderView@
 placeholderView :: IsEXHostViewController exHostViewController => exHostViewController -> IO (Id NSView)
-placeholderView exHostViewController  =
-    sendMsg exHostViewController (mkSelector "placeholderView") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderView exHostViewController =
+  sendMessage exHostViewController placeholderViewSelector
 
 -- | The view to display when the view controller has no app extension content to display.
 --
 -- ObjC selector: @- setPlaceholderView:@
 setPlaceholderView :: (IsEXHostViewController exHostViewController, IsNSView value) => exHostViewController -> value -> IO ()
-setPlaceholderView exHostViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg exHostViewController (mkSelector "setPlaceholderView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderView exHostViewController value =
+  sendMessage exHostViewController setPlaceholderViewSelector (toNSView value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @makeXPCConnectionWithError:@
-makeXPCConnectionWithErrorSelector :: Selector
+makeXPCConnectionWithErrorSelector :: Selector '[Id NSError] (Id NSXPCConnection)
 makeXPCConnectionWithErrorSelector = mkSelector "makeXPCConnectionWithError:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @placeholderView@
-placeholderViewSelector :: Selector
+placeholderViewSelector :: Selector '[] (Id NSView)
 placeholderViewSelector = mkSelector "placeholderView"
 
 -- | @Selector@ for @setPlaceholderView:@
-setPlaceholderViewSelector :: Selector
+setPlaceholderViewSelector :: Selector '[Id NSView] ()
 setPlaceholderViewSelector = mkSelector "setPlaceholderView:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MediaPlayer.AVMediaSelectionOption
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,14 +30,14 @@ import ObjC.AVFoundation.Internal.Classes
 --
 -- ObjC selector: @- makeNowPlayingInfoLanguageOption@
 makeNowPlayingInfoLanguageOption :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id MPNowPlayingInfoLanguageOption)
-makeNowPlayingInfoLanguageOption avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "makeNowPlayingInfoLanguageOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeNowPlayingInfoLanguageOption avMediaSelectionOption =
+  sendMessage avMediaSelectionOption makeNowPlayingInfoLanguageOptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @makeNowPlayingInfoLanguageOption@
-makeNowPlayingInfoLanguageOptionSelector :: Selector
+makeNowPlayingInfoLanguageOptionSelector :: Selector '[] (Id MPNowPlayingInfoLanguageOption)
 makeNowPlayingInfoLanguageOptionSelector = mkSelector "makeNowPlayingInfoLanguageOption"
 

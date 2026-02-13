@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetricKit.MXAppLaunchMetric
   , histogrammedApplicationResumeTime
   , histogrammedOptimizedTimeToFirstDraw
   , histogrammedExtendedLaunch
-  , histogrammedTimeToFirstDrawSelector
   , histogrammedApplicationResumeTimeSelector
-  , histogrammedOptimizedTimeToFirstDrawSelector
   , histogrammedExtendedLaunchSelector
+  , histogrammedOptimizedTimeToFirstDrawSelector
+  , histogrammedTimeToFirstDrawSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- histogrammedTimeToFirstDraw@
 histogrammedTimeToFirstDraw :: IsMXAppLaunchMetric mxAppLaunchMetric => mxAppLaunchMetric -> IO (Id MXHistogram)
-histogrammedTimeToFirstDraw mxAppLaunchMetric  =
-    sendMsg mxAppLaunchMetric (mkSelector "histogrammedTimeToFirstDraw") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedTimeToFirstDraw mxAppLaunchMetric =
+  sendMessage mxAppLaunchMetric histogrammedTimeToFirstDrawSelector
 
 -- | histogrammedApplicationResumeTime
 --
@@ -58,8 +55,8 @@ histogrammedTimeToFirstDraw mxAppLaunchMetric  =
 --
 -- ObjC selector: @- histogrammedApplicationResumeTime@
 histogrammedApplicationResumeTime :: IsMXAppLaunchMetric mxAppLaunchMetric => mxAppLaunchMetric -> IO (Id MXHistogram)
-histogrammedApplicationResumeTime mxAppLaunchMetric  =
-    sendMsg mxAppLaunchMetric (mkSelector "histogrammedApplicationResumeTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedApplicationResumeTime mxAppLaunchMetric =
+  sendMessage mxAppLaunchMetric histogrammedApplicationResumeTimeSelector
 
 -- | histogrammedOptimizedTimeToFirstDraw
 --
@@ -73,8 +70,8 @@ histogrammedApplicationResumeTime mxAppLaunchMetric  =
 --
 -- ObjC selector: @- histogrammedOptimizedTimeToFirstDraw@
 histogrammedOptimizedTimeToFirstDraw :: IsMXAppLaunchMetric mxAppLaunchMetric => mxAppLaunchMetric -> IO (Id MXHistogram)
-histogrammedOptimizedTimeToFirstDraw mxAppLaunchMetric  =
-    sendMsg mxAppLaunchMetric (mkSelector "histogrammedOptimizedTimeToFirstDraw") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedOptimizedTimeToFirstDraw mxAppLaunchMetric =
+  sendMessage mxAppLaunchMetric histogrammedOptimizedTimeToFirstDrawSelector
 
 -- | histogrammedExtendedLaunch
 --
@@ -86,26 +83,26 @@ histogrammedOptimizedTimeToFirstDraw mxAppLaunchMetric  =
 --
 -- ObjC selector: @- histogrammedExtendedLaunch@
 histogrammedExtendedLaunch :: IsMXAppLaunchMetric mxAppLaunchMetric => mxAppLaunchMetric -> IO (Id MXHistogram)
-histogrammedExtendedLaunch mxAppLaunchMetric  =
-    sendMsg mxAppLaunchMetric (mkSelector "histogrammedExtendedLaunch") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedExtendedLaunch mxAppLaunchMetric =
+  sendMessage mxAppLaunchMetric histogrammedExtendedLaunchSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @histogrammedTimeToFirstDraw@
-histogrammedTimeToFirstDrawSelector :: Selector
+histogrammedTimeToFirstDrawSelector :: Selector '[] (Id MXHistogram)
 histogrammedTimeToFirstDrawSelector = mkSelector "histogrammedTimeToFirstDraw"
 
 -- | @Selector@ for @histogrammedApplicationResumeTime@
-histogrammedApplicationResumeTimeSelector :: Selector
+histogrammedApplicationResumeTimeSelector :: Selector '[] (Id MXHistogram)
 histogrammedApplicationResumeTimeSelector = mkSelector "histogrammedApplicationResumeTime"
 
 -- | @Selector@ for @histogrammedOptimizedTimeToFirstDraw@
-histogrammedOptimizedTimeToFirstDrawSelector :: Selector
+histogrammedOptimizedTimeToFirstDrawSelector :: Selector '[] (Id MXHistogram)
 histogrammedOptimizedTimeToFirstDrawSelector = mkSelector "histogrammedOptimizedTimeToFirstDraw"
 
 -- | @Selector@ for @histogrammedExtendedLaunch@
-histogrammedExtendedLaunchSelector :: Selector
+histogrammedExtendedLaunchSelector :: Selector '[] (Id MXHistogram)
 histogrammedExtendedLaunchSelector = mkSelector "histogrammedExtendedLaunch"
 

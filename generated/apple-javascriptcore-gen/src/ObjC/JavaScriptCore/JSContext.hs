@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,41 +31,37 @@ module ObjC.JavaScriptCore.JSContext
   , inspectable
   , setInspectable
   , jsGlobalContextRef
-  , initSelector
-  , initWithVirtualMachineSelector
+  , contextWithJSGlobalContextRefSelector
+  , currentArgumentsSelector
+  , currentCalleeSelector
+  , currentContextSelector
+  , currentThisSelector
   , evaluateScriptSelector
   , evaluateScript_withSourceURLSelector
-  , currentContextSelector
-  , currentCalleeSelector
-  , currentThisSelector
-  , currentArgumentsSelector
-  , contextWithJSGlobalContextRefSelector
-  , objectForKeyedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , globalObjectSelector
-  , exceptionSelector
-  , setExceptionSelector
   , exceptionHandlerSelector
-  , setExceptionHandlerSelector
-  , virtualMachineSelector
-  , nameSelector
-  , setNameSelector
+  , exceptionSelector
+  , globalObjectSelector
+  , initSelector
+  , initWithVirtualMachineSelector
   , inspectableSelector
-  , setInspectableSelector
   , jsGlobalContextRefSelector
+  , nameSelector
+  , objectForKeyedSubscriptSelector
+  , setExceptionHandlerSelector
+  , setExceptionSelector
+  , setInspectableSelector
+  , setNameSelector
+  , setObject_forKeyedSubscriptSelector
+  , virtualMachineSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsJSContext jsContext => jsContext -> IO (Id JSContext)
-init_ jsContext  =
-    sendMsg jsContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ jsContext =
+  sendOwnedMessage jsContext initSelector
 
 -- | Create a JSContext in the specified virtual machine.
 --
@@ -90,9 +87,8 @@ init_ jsContext  =
 --
 -- ObjC selector: @- initWithVirtualMachine:@
 initWithVirtualMachine :: (IsJSContext jsContext, IsJSVirtualMachine virtualMachine) => jsContext -> virtualMachine -> IO (Id JSContext)
-initWithVirtualMachine jsContext  virtualMachine =
-  withObjCPtr virtualMachine $ \raw_virtualMachine ->
-      sendMsg jsContext (mkSelector "initWithVirtualMachine:") (retPtr retVoid) [argPtr (castPtr raw_virtualMachine :: Ptr ())] >>= ownedObject . castPtr
+initWithVirtualMachine jsContext virtualMachine =
+  sendOwnedMessage jsContext initWithVirtualMachineSelector (toJSVirtualMachine virtualMachine)
 
 -- | Evaluating Scripts
 --
@@ -104,9 +100,8 @@ initWithVirtualMachine jsContext  virtualMachine =
 --
 -- ObjC selector: @- evaluateScript:@
 evaluateScript :: (IsJSContext jsContext, IsNSString script) => jsContext -> script -> IO (Id JSValue)
-evaluateScript jsContext  script =
-  withObjCPtr script $ \raw_script ->
-      sendMsg jsContext (mkSelector "evaluateScript:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ())] >>= retainedObject . castPtr
+evaluateScript jsContext script =
+  sendMessage jsContext evaluateScriptSelector (toNSString script)
 
 -- | Evaluate a string of JavaScript code, with a URL for the script's source file.
 --
@@ -118,10 +113,8 @@ evaluateScript jsContext  script =
 --
 -- ObjC selector: @- evaluateScript:withSourceURL:@
 evaluateScript_withSourceURL :: (IsJSContext jsContext, IsNSString script, IsNSURL sourceURL) => jsContext -> script -> sourceURL -> IO (Id JSValue)
-evaluateScript_withSourceURL jsContext  script sourceURL =
-  withObjCPtr script $ \raw_script ->
-    withObjCPtr sourceURL $ \raw_sourceURL ->
-        sendMsg jsContext (mkSelector "evaluateScript:withSourceURL:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ()), argPtr (castPtr raw_sourceURL :: Ptr ())] >>= retainedObject . castPtr
+evaluateScript_withSourceURL jsContext script sourceURL =
+  sendMessage jsContext evaluateScript_withSourceURLSelector (toNSString script) (toNSURL sourceURL)
 
 -- | Callback Accessors
 --
@@ -136,7 +129,7 @@ currentContext :: IO (Id JSContext)
 currentContext  =
   do
     cls' <- getRequiredClass "JSContext"
-    sendClassMsg cls' (mkSelector "currentContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentContextSelector
 
 -- | Get the JavaScript function that is currently executing.
 --
@@ -149,7 +142,7 @@ currentCallee :: IO (Id JSValue)
 currentCallee  =
   do
     cls' <- getRequiredClass "JSContext"
-    sendClassMsg cls' (mkSelector "currentCallee") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentCalleeSelector
 
 -- | Get the this value of the currently executing method.
 --
@@ -162,7 +155,7 @@ currentThis :: IO (Id JSValue)
 currentThis  =
   do
     cls' <- getRequiredClass "JSContext"
-    sendClassMsg cls' (mkSelector "currentThis") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentThisSelector
 
 -- | Get the arguments to the current callback.
 --
@@ -175,7 +168,7 @@ currentArguments :: IO (Id NSArray)
 currentArguments  =
   do
     cls' <- getRequiredClass "JSContext"
-    sendClassMsg cls' (mkSelector "currentArguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentArgumentsSelector
 
 -- | Create a JSContext, wrapping its C API counterpart.
 --
@@ -186,7 +179,7 @@ contextWithJSGlobalContextRef :: Ptr () -> IO (Id JSContext)
 contextWithJSGlobalContextRef jsGlobalContextRef =
   do
     cls' <- getRequiredClass "JSContext"
-    sendClassMsg cls' (mkSelector "contextWithJSGlobalContextRef:") (retPtr retVoid) [argPtr jsGlobalContextRef] >>= retainedObject . castPtr
+    sendClassMessage cls' contextWithJSGlobalContextRefSelector jsGlobalContextRef
 
 -- | Get a particular property on the global object.
 --
@@ -194,16 +187,15 @@ contextWithJSGlobalContextRef jsGlobalContextRef =
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: IsJSContext jsContext => jsContext -> RawId -> IO (Id JSValue)
-objectForKeyedSubscript jsContext  key =
-    sendMsg jsContext (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript jsContext key =
+  sendMessage jsContext objectForKeyedSubscriptSelector key
 
 -- | Set a particular property on the global object.
 --
 -- ObjC selector: @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: (IsJSContext jsContext, IsNSObject key) => jsContext -> RawId -> key -> IO ()
-setObject_forKeyedSubscript jsContext  object key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg jsContext (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setObject_forKeyedSubscript jsContext object key =
+  sendMessage jsContext setObject_forKeyedSubscriptSelector object (toNSObject key)
 
 -- | Get the global object of the context.
 --
@@ -213,8 +205,8 @@ setObject_forKeyedSubscript jsContext  object key =
 --
 -- ObjC selector: @- globalObject@
 globalObject :: IsJSContext jsContext => jsContext -> IO (Id JSValue)
-globalObject jsContext  =
-    sendMsg jsContext (mkSelector "globalObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+globalObject jsContext =
+  sendMessage jsContext globalObjectSelector
 
 -- | The exception property may be used to throw an exception to JavaScript.
 --
@@ -224,8 +216,8 @@ globalObject jsContext  =
 --
 -- ObjC selector: @- exception@
 exception :: IsJSContext jsContext => jsContext -> IO (Id JSValue)
-exception jsContext  =
-    sendMsg jsContext (mkSelector "exception") (retPtr retVoid) [] >>= retainedObject . castPtr
+exception jsContext =
+  sendMessage jsContext exceptionSelector
 
 -- | The exception property may be used to throw an exception to JavaScript.
 --
@@ -235,45 +227,43 @@ exception jsContext  =
 --
 -- ObjC selector: @- setException:@
 setException :: (IsJSContext jsContext, IsJSValue value) => jsContext -> value -> IO ()
-setException jsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg jsContext (mkSelector "setException:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setException jsContext value =
+  sendMessage jsContext setExceptionSelector (toJSValue value)
 
 -- | If a call to an API function results in an uncaught JavaScript exception, the exceptionHandler block will be invoked. The default implementation for the exception handler will store the exception to the exception property on context. As a consequence the default behaviour is for uncaught exceptions occurring within a callback from JavaScript to be rethrown upon return. Setting this value to nil will cause all exceptions occurring within a callback from JavaScript to be silently caught.
 --
 -- ObjC selector: @- exceptionHandler@
 exceptionHandler :: IsJSContext jsContext => jsContext -> IO (Ptr ())
-exceptionHandler jsContext  =
-    fmap castPtr $ sendMsg jsContext (mkSelector "exceptionHandler") (retPtr retVoid) []
+exceptionHandler jsContext =
+  sendMessage jsContext exceptionHandlerSelector
 
 -- | If a call to an API function results in an uncaught JavaScript exception, the exceptionHandler block will be invoked. The default implementation for the exception handler will store the exception to the exception property on context. As a consequence the default behaviour is for uncaught exceptions occurring within a callback from JavaScript to be rethrown upon return. Setting this value to nil will cause all exceptions occurring within a callback from JavaScript to be silently caught.
 --
 -- ObjC selector: @- setExceptionHandler:@
 setExceptionHandler :: IsJSContext jsContext => jsContext -> Ptr () -> IO ()
-setExceptionHandler jsContext  value =
-    sendMsg jsContext (mkSelector "setExceptionHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setExceptionHandler jsContext value =
+  sendMessage jsContext setExceptionHandlerSelector value
 
 -- | All instances of JSContext are associated with a JSVirtualMachine.
 --
 -- ObjC selector: @- virtualMachine@
 virtualMachine :: IsJSContext jsContext => jsContext -> IO (Id JSVirtualMachine)
-virtualMachine jsContext  =
-    sendMsg jsContext (mkSelector "virtualMachine") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualMachine jsContext =
+  sendMessage jsContext virtualMachineSelector
 
 -- | Name of the JSContext. Exposed when inspecting the context.
 --
 -- ObjC selector: @- name@
 name :: IsJSContext jsContext => jsContext -> IO (Id NSString)
-name jsContext  =
-    sendMsg jsContext (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name jsContext =
+  sendMessage jsContext nameSelector
 
 -- | Name of the JSContext. Exposed when inspecting the context.
 --
 -- ObjC selector: @- setName:@
 setName :: (IsJSContext jsContext, IsNSString value) => jsContext -> value -> IO ()
-setName jsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg jsContext (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName jsContext value =
+  sendMessage jsContext setNameSelector (toNSString value)
 
 -- | Controls whether this
 --
@@ -283,8 +273,8 @@ setName jsContext  value =
 --
 -- ObjC selector: @- inspectable@
 inspectable :: IsJSContext jsContext => jsContext -> IO Bool
-inspectable jsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsContext (mkSelector "inspectable") retCULong []
+inspectable jsContext =
+  sendMessage jsContext inspectableSelector
 
 -- | Controls whether this
 --
@@ -294,8 +284,8 @@ inspectable jsContext  =
 --
 -- ObjC selector: @- setInspectable:@
 setInspectable :: IsJSContext jsContext => jsContext -> Bool -> IO ()
-setInspectable jsContext  value =
-    sendMsg jsContext (mkSelector "setInspectable:") retVoid [argCULong (if value then 1 else 0)]
+setInspectable jsContext value =
+  sendMessage jsContext setInspectableSelector value
 
 -- | Get the C API counterpart wrapped by a JSContext.
 --
@@ -303,98 +293,98 @@ setInspectable jsContext  value =
 --
 -- ObjC selector: @- JSGlobalContextRef@
 jsGlobalContextRef :: IsJSContext jsContext => jsContext -> IO (Ptr ())
-jsGlobalContextRef jsContext  =
-    fmap castPtr $ sendMsg jsContext (mkSelector "JSGlobalContextRef") (retPtr retVoid) []
+jsGlobalContextRef jsContext =
+  sendMessage jsContext jsGlobalContextRefSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id JSContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithVirtualMachine:@
-initWithVirtualMachineSelector :: Selector
+initWithVirtualMachineSelector :: Selector '[Id JSVirtualMachine] (Id JSContext)
 initWithVirtualMachineSelector = mkSelector "initWithVirtualMachine:"
 
 -- | @Selector@ for @evaluateScript:@
-evaluateScriptSelector :: Selector
+evaluateScriptSelector :: Selector '[Id NSString] (Id JSValue)
 evaluateScriptSelector = mkSelector "evaluateScript:"
 
 -- | @Selector@ for @evaluateScript:withSourceURL:@
-evaluateScript_withSourceURLSelector :: Selector
+evaluateScript_withSourceURLSelector :: Selector '[Id NSString, Id NSURL] (Id JSValue)
 evaluateScript_withSourceURLSelector = mkSelector "evaluateScript:withSourceURL:"
 
 -- | @Selector@ for @currentContext@
-currentContextSelector :: Selector
+currentContextSelector :: Selector '[] (Id JSContext)
 currentContextSelector = mkSelector "currentContext"
 
 -- | @Selector@ for @currentCallee@
-currentCalleeSelector :: Selector
+currentCalleeSelector :: Selector '[] (Id JSValue)
 currentCalleeSelector = mkSelector "currentCallee"
 
 -- | @Selector@ for @currentThis@
-currentThisSelector :: Selector
+currentThisSelector :: Selector '[] (Id JSValue)
 currentThisSelector = mkSelector "currentThis"
 
 -- | @Selector@ for @currentArguments@
-currentArgumentsSelector :: Selector
+currentArgumentsSelector :: Selector '[] (Id NSArray)
 currentArgumentsSelector = mkSelector "currentArguments"
 
 -- | @Selector@ for @contextWithJSGlobalContextRef:@
-contextWithJSGlobalContextRefSelector :: Selector
+contextWithJSGlobalContextRefSelector :: Selector '[Ptr ()] (Id JSContext)
 contextWithJSGlobalContextRefSelector = mkSelector "contextWithJSGlobalContextRef:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[RawId] (Id JSValue)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, Id NSObject] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @globalObject@
-globalObjectSelector :: Selector
+globalObjectSelector :: Selector '[] (Id JSValue)
 globalObjectSelector = mkSelector "globalObject"
 
 -- | @Selector@ for @exception@
-exceptionSelector :: Selector
+exceptionSelector :: Selector '[] (Id JSValue)
 exceptionSelector = mkSelector "exception"
 
 -- | @Selector@ for @setException:@
-setExceptionSelector :: Selector
+setExceptionSelector :: Selector '[Id JSValue] ()
 setExceptionSelector = mkSelector "setException:"
 
 -- | @Selector@ for @exceptionHandler@
-exceptionHandlerSelector :: Selector
+exceptionHandlerSelector :: Selector '[] (Ptr ())
 exceptionHandlerSelector = mkSelector "exceptionHandler"
 
 -- | @Selector@ for @setExceptionHandler:@
-setExceptionHandlerSelector :: Selector
+setExceptionHandlerSelector :: Selector '[Ptr ()] ()
 setExceptionHandlerSelector = mkSelector "setExceptionHandler:"
 
 -- | @Selector@ for @virtualMachine@
-virtualMachineSelector :: Selector
+virtualMachineSelector :: Selector '[] (Id JSVirtualMachine)
 virtualMachineSelector = mkSelector "virtualMachine"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @inspectable@
-inspectableSelector :: Selector
+inspectableSelector :: Selector '[] Bool
 inspectableSelector = mkSelector "inspectable"
 
 -- | @Selector@ for @setInspectable:@
-setInspectableSelector :: Selector
+setInspectableSelector :: Selector '[Bool] ()
 setInspectableSelector = mkSelector "setInspectable:"
 
 -- | @Selector@ for @JSGlobalContextRef@
-jsGlobalContextRefSelector :: Selector
+jsGlobalContextRefSelector :: Selector '[] (Ptr ())
 jsGlobalContextRefSelector = mkSelector "JSGlobalContextRef"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,32 +24,28 @@ module ObjC.AVFoundation.AVAsynchronousVideoCompositionRequest
   , sourceTrackIDs
   , sourceSampleDataTrackIDs
   , videoCompositionInstruction
-  , sourceFrameByTrackIDSelector
-  , sourceSampleBufferByTrackIDSelector
-  , sourceTimedMetadataByTrackIDSelector
+  , attachSpatialVideoConfiguration_toPixelBufferSelector
+  , finishCancelledRequestSelector
+  , finishWithComposedTaggedBufferGroupSelector
   , finishWithComposedVideoFrameSelector
   , finishWithErrorSelector
-  , finishCancelledRequestSelector
-  , sourceTaggedBufferGroupByTrackIDSelector
-  , finishWithComposedTaggedBufferGroupSelector
-  , attachSpatialVideoConfiguration_toPixelBufferSelector
   , renderContextSelector
-  , sourceTrackIDsSelector
+  , sourceFrameByTrackIDSelector
+  , sourceSampleBufferByTrackIDSelector
   , sourceSampleDataTrackIDsSelector
+  , sourceTaggedBufferGroupByTrackIDSelector
+  , sourceTimedMetadataByTrackIDSelector
+  , sourceTrackIDsSelector
   , videoCompositionInstructionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sourceFrameByTrackID:@
 sourceFrameByTrackID :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> CInt -> IO (Ptr ())
-sourceFrameByTrackID avAsynchronousVideoCompositionRequest  trackID =
-    fmap castPtr $ sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceFrameByTrackID:") (retPtr retVoid) [argCInt trackID]
+sourceFrameByTrackID avAsynchronousVideoCompositionRequest trackID =
+  sendMessage avAsynchronousVideoCompositionRequest sourceFrameByTrackIDSelector trackID
 
 -- | Returns the source CMSampleBufferRef for the given track ID
 --
@@ -72,8 +69,8 @@ sourceFrameByTrackID avAsynchronousVideoCompositionRequest  trackID =
 --
 -- ObjC selector: @- sourceSampleBufferByTrackID:@
 sourceSampleBufferByTrackID :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> CInt -> IO (Ptr ())
-sourceSampleBufferByTrackID avAsynchronousVideoCompositionRequest  trackID =
-    fmap castPtr $ sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceSampleBufferByTrackID:") (retPtr retVoid) [argCInt trackID]
+sourceSampleBufferByTrackID avAsynchronousVideoCompositionRequest trackID =
+  sendMessage avAsynchronousVideoCompositionRequest sourceSampleBufferByTrackIDSelector trackID
 
 -- | Returns the source AVTimedMetadataGroup * for the given track ID
 --
@@ -81,8 +78,8 @@ sourceSampleBufferByTrackID avAsynchronousVideoCompositionRequest  trackID =
 --
 -- ObjC selector: @- sourceTimedMetadataByTrackID:@
 sourceTimedMetadataByTrackID :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> CInt -> IO (Id AVTimedMetadataGroup)
-sourceTimedMetadataByTrackID avAsynchronousVideoCompositionRequest  trackID =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceTimedMetadataByTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+sourceTimedMetadataByTrackID avAsynchronousVideoCompositionRequest trackID =
+  sendMessage avAsynchronousVideoCompositionRequest sourceTimedMetadataByTrackIDSelector trackID
 
 -- | The method that the custom compositor calls when composition succeeds.
 --
@@ -90,23 +87,22 @@ sourceTimedMetadataByTrackID avAsynchronousVideoCompositionRequest  trackID =
 --
 -- ObjC selector: @- finishWithComposedVideoFrame:@
 finishWithComposedVideoFrame :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> Ptr () -> IO ()
-finishWithComposedVideoFrame avAsynchronousVideoCompositionRequest  composedVideoFrame =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "finishWithComposedVideoFrame:") retVoid [argPtr composedVideoFrame]
+finishWithComposedVideoFrame avAsynchronousVideoCompositionRequest composedVideoFrame =
+  sendMessage avAsynchronousVideoCompositionRequest finishWithComposedVideoFrameSelector composedVideoFrame
 
 -- | callback the custom compositor should call when composition failed. The error parameter should describe the actual error.
 --
 -- ObjC selector: @- finishWithError:@
 finishWithError :: (IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest, IsNSError error_) => avAsynchronousVideoCompositionRequest -> error_ -> IO ()
-finishWithError avAsynchronousVideoCompositionRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg avAsynchronousVideoCompositionRequest (mkSelector "finishWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+finishWithError avAsynchronousVideoCompositionRequest error_ =
+  sendMessage avAsynchronousVideoCompositionRequest finishWithErrorSelector (toNSError error_)
 
 -- | callback the custom compositor should call for a request that has been cancelled.
 --
 -- ObjC selector: @- finishCancelledRequest@
 finishCancelledRequest :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO ()
-finishCancelledRequest avAsynchronousVideoCompositionRequest  =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "finishCancelledRequest") retVoid []
+finishCancelledRequest avAsynchronousVideoCompositionRequest =
+  sendMessage avAsynchronousVideoCompositionRequest finishCancelledRequestSelector
 
 -- | Returns the source CMTaggedBufferGroupRef for the given track ID.
 --
@@ -116,8 +112,8 @@ finishCancelledRequest avAsynchronousVideoCompositionRequest  =
 --
 -- ObjC selector: @- sourceTaggedBufferGroupByTrackID:@
 sourceTaggedBufferGroupByTrackID :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> CInt -> IO (Ptr ())
-sourceTaggedBufferGroupByTrackID avAsynchronousVideoCompositionRequest  trackID =
-    fmap castPtr $ sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceTaggedBufferGroupByTrackID:") (retPtr retVoid) [argCInt trackID]
+sourceTaggedBufferGroupByTrackID avAsynchronousVideoCompositionRequest trackID =
+  sendMessage avAsynchronousVideoCompositionRequest sourceTaggedBufferGroupByTrackIDSelector trackID
 
 -- | The method that the custom compositor calls when composition succeeds.
 --
@@ -125,98 +121,97 @@ sourceTaggedBufferGroupByTrackID avAsynchronousVideoCompositionRequest  trackID 
 --
 -- ObjC selector: @- finishWithComposedTaggedBufferGroup:@
 finishWithComposedTaggedBufferGroup :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> Ptr () -> IO ()
-finishWithComposedTaggedBufferGroup avAsynchronousVideoCompositionRequest  taggedBufferGroup =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "finishWithComposedTaggedBufferGroup:") retVoid [argPtr taggedBufferGroup]
+finishWithComposedTaggedBufferGroup avAsynchronousVideoCompositionRequest taggedBufferGroup =
+  sendMessage avAsynchronousVideoCompositionRequest finishWithComposedTaggedBufferGroupSelector taggedBufferGroup
 
 -- | Associates the pixel buffer with the specified spatial configuration. - Parameters:   - spatialVideoConfiguration: The spatial configuration to associate with the pixel buffer.   - pixelBuffer: The pixel buffer to associate with the spatial configuration. NOTE: The spatial configuration must be one of the spatial configurations specified in the ``AVVideoComposition/spatialConfigurations`` property. An exception will be thrown otherwise. NOTE: All pixel buffers from the custom compositor must be associated with the same spatial configuration. An exception will be thrown otherwise. A spatial configuration with all nil values indicates the video is not spatial. A nil spatial configuration also indicates the video is not spatial. The value can be nil, which indicates the output will not be spatial, but a spatial configuration with all nil values must be in the ``AVVideoComposition/spatialConfigurations`` property or an exception will be thrown.
 --
 -- ObjC selector: @- attachSpatialVideoConfiguration:toPixelBuffer:@
 attachSpatialVideoConfiguration_toPixelBuffer :: (IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest, IsAVSpatialVideoConfiguration spatialVideoConfiguration) => avAsynchronousVideoCompositionRequest -> spatialVideoConfiguration -> Ptr () -> IO ()
-attachSpatialVideoConfiguration_toPixelBuffer avAsynchronousVideoCompositionRequest  spatialVideoConfiguration pixelBuffer =
-  withObjCPtr spatialVideoConfiguration $ \raw_spatialVideoConfiguration ->
-      sendMsg avAsynchronousVideoCompositionRequest (mkSelector "attachSpatialVideoConfiguration:toPixelBuffer:") retVoid [argPtr (castPtr raw_spatialVideoConfiguration :: Ptr ()), argPtr pixelBuffer]
+attachSpatialVideoConfiguration_toPixelBuffer avAsynchronousVideoCompositionRequest spatialVideoConfiguration pixelBuffer =
+  sendMessage avAsynchronousVideoCompositionRequest attachSpatialVideoConfiguration_toPixelBufferSelector (toAVSpatialVideoConfiguration spatialVideoConfiguration) pixelBuffer
 
 -- | The AVVideoCompositionRenderContext making the request
 --
 -- ObjC selector: @- renderContext@
 renderContext :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO (Id AVVideoCompositionRenderContext)
-renderContext avAsynchronousVideoCompositionRequest  =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "renderContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+renderContext avAsynchronousVideoCompositionRequest =
+  sendMessage avAsynchronousVideoCompositionRequest renderContextSelector
 
 -- | Track IDs of all the source video buffers that are available to compose the frame.
 --
 -- ObjC selector: @- sourceTrackIDs@
 sourceTrackIDs :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO (Id NSArray)
-sourceTrackIDs avAsynchronousVideoCompositionRequest  =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceTrackIDs avAsynchronousVideoCompositionRequest =
+  sendMessage avAsynchronousVideoCompositionRequest sourceTrackIDsSelector
 
 -- | Track IDs of all the source sample data buffers that are available to compose the frame.
 --
 -- ObjC selector: @- sourceSampleDataTrackIDs@
 sourceSampleDataTrackIDs :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO (Id NSArray)
-sourceSampleDataTrackIDs avAsynchronousVideoCompositionRequest  =
-    sendMsg avAsynchronousVideoCompositionRequest (mkSelector "sourceSampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceSampleDataTrackIDs avAsynchronousVideoCompositionRequest =
+  sendMessage avAsynchronousVideoCompositionRequest sourceSampleDataTrackIDsSelector
 
 -- | The AVVideoCompositionInstruction to use to compose the frame.
 --
 -- ObjC selector: @- videoCompositionInstruction@
 videoCompositionInstruction :: IsAVAsynchronousVideoCompositionRequest avAsynchronousVideoCompositionRequest => avAsynchronousVideoCompositionRequest -> IO RawId
-videoCompositionInstruction avAsynchronousVideoCompositionRequest  =
-    fmap (RawId . castPtr) $ sendMsg avAsynchronousVideoCompositionRequest (mkSelector "videoCompositionInstruction") (retPtr retVoid) []
+videoCompositionInstruction avAsynchronousVideoCompositionRequest =
+  sendMessage avAsynchronousVideoCompositionRequest videoCompositionInstructionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sourceFrameByTrackID:@
-sourceFrameByTrackIDSelector :: Selector
+sourceFrameByTrackIDSelector :: Selector '[CInt] (Ptr ())
 sourceFrameByTrackIDSelector = mkSelector "sourceFrameByTrackID:"
 
 -- | @Selector@ for @sourceSampleBufferByTrackID:@
-sourceSampleBufferByTrackIDSelector :: Selector
+sourceSampleBufferByTrackIDSelector :: Selector '[CInt] (Ptr ())
 sourceSampleBufferByTrackIDSelector = mkSelector "sourceSampleBufferByTrackID:"
 
 -- | @Selector@ for @sourceTimedMetadataByTrackID:@
-sourceTimedMetadataByTrackIDSelector :: Selector
+sourceTimedMetadataByTrackIDSelector :: Selector '[CInt] (Id AVTimedMetadataGroup)
 sourceTimedMetadataByTrackIDSelector = mkSelector "sourceTimedMetadataByTrackID:"
 
 -- | @Selector@ for @finishWithComposedVideoFrame:@
-finishWithComposedVideoFrameSelector :: Selector
+finishWithComposedVideoFrameSelector :: Selector '[Ptr ()] ()
 finishWithComposedVideoFrameSelector = mkSelector "finishWithComposedVideoFrame:"
 
 -- | @Selector@ for @finishWithError:@
-finishWithErrorSelector :: Selector
+finishWithErrorSelector :: Selector '[Id NSError] ()
 finishWithErrorSelector = mkSelector "finishWithError:"
 
 -- | @Selector@ for @finishCancelledRequest@
-finishCancelledRequestSelector :: Selector
+finishCancelledRequestSelector :: Selector '[] ()
 finishCancelledRequestSelector = mkSelector "finishCancelledRequest"
 
 -- | @Selector@ for @sourceTaggedBufferGroupByTrackID:@
-sourceTaggedBufferGroupByTrackIDSelector :: Selector
+sourceTaggedBufferGroupByTrackIDSelector :: Selector '[CInt] (Ptr ())
 sourceTaggedBufferGroupByTrackIDSelector = mkSelector "sourceTaggedBufferGroupByTrackID:"
 
 -- | @Selector@ for @finishWithComposedTaggedBufferGroup:@
-finishWithComposedTaggedBufferGroupSelector :: Selector
+finishWithComposedTaggedBufferGroupSelector :: Selector '[Ptr ()] ()
 finishWithComposedTaggedBufferGroupSelector = mkSelector "finishWithComposedTaggedBufferGroup:"
 
 -- | @Selector@ for @attachSpatialVideoConfiguration:toPixelBuffer:@
-attachSpatialVideoConfiguration_toPixelBufferSelector :: Selector
+attachSpatialVideoConfiguration_toPixelBufferSelector :: Selector '[Id AVSpatialVideoConfiguration, Ptr ()] ()
 attachSpatialVideoConfiguration_toPixelBufferSelector = mkSelector "attachSpatialVideoConfiguration:toPixelBuffer:"
 
 -- | @Selector@ for @renderContext@
-renderContextSelector :: Selector
+renderContextSelector :: Selector '[] (Id AVVideoCompositionRenderContext)
 renderContextSelector = mkSelector "renderContext"
 
 -- | @Selector@ for @sourceTrackIDs@
-sourceTrackIDsSelector :: Selector
+sourceTrackIDsSelector :: Selector '[] (Id NSArray)
 sourceTrackIDsSelector = mkSelector "sourceTrackIDs"
 
 -- | @Selector@ for @sourceSampleDataTrackIDs@
-sourceSampleDataTrackIDsSelector :: Selector
+sourceSampleDataTrackIDsSelector :: Selector '[] (Id NSArray)
 sourceSampleDataTrackIDsSelector = mkSelector "sourceSampleDataTrackIDs"
 
 -- | @Selector@ for @videoCompositionInstruction@
-videoCompositionInstructionSelector :: Selector
+videoCompositionInstructionSelector :: Selector '[] RawId
 videoCompositionInstructionSelector = mkSelector "videoCompositionInstruction"
 

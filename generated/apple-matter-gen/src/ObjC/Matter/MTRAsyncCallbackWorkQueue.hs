@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Matter.MTRAsyncCallbackWorkQueue
   , initWithContext_queue
   , invalidate
   , enqueueWorkItem
+  , enqueueWorkItemSelector
   , initSelector
-  , newSelector
   , initWithContext_queueSelector
   , invalidateSelector
-  , enqueueWorkItemSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,54 +34,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRAsyncCallbackWorkQueue mtrAsyncCallbackWorkQueue => mtrAsyncCallbackWorkQueue -> IO (Id MTRAsyncCallbackWorkQueue)
-init_ mtrAsyncCallbackWorkQueue  =
-    sendMsg mtrAsyncCallbackWorkQueue (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrAsyncCallbackWorkQueue =
+  sendOwnedMessage mtrAsyncCallbackWorkQueue initSelector
 
 -- | @+ new@
 new :: IO (Id MTRAsyncCallbackWorkQueue)
 new  =
   do
     cls' <- getRequiredClass "MTRAsyncCallbackWorkQueue"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithContext:queue:@
 initWithContext_queue :: (IsMTRAsyncCallbackWorkQueue mtrAsyncCallbackWorkQueue, IsNSObject queue) => mtrAsyncCallbackWorkQueue -> RawId -> queue -> IO (Id MTRAsyncCallbackWorkQueue)
-initWithContext_queue mtrAsyncCallbackWorkQueue  context queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrAsyncCallbackWorkQueue (mkSelector "initWithContext:queue:") (retPtr retVoid) [argPtr (castPtr (unRawId context) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithContext_queue mtrAsyncCallbackWorkQueue context queue =
+  sendOwnedMessage mtrAsyncCallbackWorkQueue initWithContext_queueSelector context (toNSObject queue)
 
 -- | @- invalidate@
 invalidate :: IsMTRAsyncCallbackWorkQueue mtrAsyncCallbackWorkQueue => mtrAsyncCallbackWorkQueue -> IO ()
-invalidate mtrAsyncCallbackWorkQueue  =
-    sendMsg mtrAsyncCallbackWorkQueue (mkSelector "invalidate") retVoid []
+invalidate mtrAsyncCallbackWorkQueue =
+  sendMessage mtrAsyncCallbackWorkQueue invalidateSelector
 
 -- | @- enqueueWorkItem:@
 enqueueWorkItem :: (IsMTRAsyncCallbackWorkQueue mtrAsyncCallbackWorkQueue, IsMTRAsyncCallbackQueueWorkItem item) => mtrAsyncCallbackWorkQueue -> item -> IO ()
-enqueueWorkItem mtrAsyncCallbackWorkQueue  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg mtrAsyncCallbackWorkQueue (mkSelector "enqueueWorkItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+enqueueWorkItem mtrAsyncCallbackWorkQueue item =
+  sendMessage mtrAsyncCallbackWorkQueue enqueueWorkItemSelector (toMTRAsyncCallbackQueueWorkItem item)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRAsyncCallbackWorkQueue)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRAsyncCallbackWorkQueue)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithContext:queue:@
-initWithContext_queueSelector :: Selector
+initWithContext_queueSelector :: Selector '[RawId, Id NSObject] (Id MTRAsyncCallbackWorkQueue)
 initWithContext_queueSelector = mkSelector "initWithContext:queue:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @enqueueWorkItem:@
-enqueueWorkItemSelector :: Selector
+enqueueWorkItemSelector :: Selector '[Id MTRAsyncCallbackQueueWorkItem] ()
 enqueueWorkItemSelector = mkSelector "enqueueWorkItem:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INResumeWorkoutIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
 
   -- * Enum types
   , INResumeWorkoutIntentResponseCode(INResumeWorkoutIntentResponseCode)
@@ -27,15 +28,11 @@ module ObjC.Intents.INResumeWorkoutIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,33 +42,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINResumeWorkoutIntentResponse inResumeWorkoutIntentResponse => inResumeWorkoutIntentResponse -> IO RawId
-init_ inResumeWorkoutIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inResumeWorkoutIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inResumeWorkoutIntentResponse =
+  sendOwnedMessage inResumeWorkoutIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINResumeWorkoutIntentResponse inResumeWorkoutIntentResponse, IsNSUserActivity userActivity) => inResumeWorkoutIntentResponse -> INResumeWorkoutIntentResponseCode -> userActivity -> IO (Id INResumeWorkoutIntentResponse)
-initWithCode_userActivity inResumeWorkoutIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inResumeWorkoutIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inResumeWorkoutIntentResponse code userActivity =
+  sendOwnedMessage inResumeWorkoutIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINResumeWorkoutIntentResponse inResumeWorkoutIntentResponse => inResumeWorkoutIntentResponse -> IO INResumeWorkoutIntentResponseCode
-code inResumeWorkoutIntentResponse  =
-    fmap (coerce :: CLong -> INResumeWorkoutIntentResponseCode) $ sendMsg inResumeWorkoutIntentResponse (mkSelector "code") retCLong []
+code inResumeWorkoutIntentResponse =
+  sendMessage inResumeWorkoutIntentResponse codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INResumeWorkoutIntentResponseCode, Id NSUserActivity] (Id INResumeWorkoutIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INResumeWorkoutIntentResponseCode
 codeSelector = mkSelector "code"
 

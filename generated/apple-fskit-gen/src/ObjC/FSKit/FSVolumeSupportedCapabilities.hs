@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,46 +50,46 @@ module ObjC.FSKit.FSVolumeSupportedCapabilities
   , setSupportsVolumeGroups
   , caseFormat
   , setCaseFormat
-  , supportsPersistentObjectIDsSelector
-  , setSupportsPersistentObjectIDsSelector
-  , supportsSymbolicLinksSelector
-  , setSupportsSymbolicLinksSelector
-  , supportsHardLinksSelector
-  , setSupportsHardLinksSelector
-  , supportsJournalSelector
-  , setSupportsJournalSelector
-  , supportsActiveJournalSelector
-  , setSupportsActiveJournalSelector
-  , doesNotSupportRootTimesSelector
-  , setDoesNotSupportRootTimesSelector
-  , supportsSparseFilesSelector
-  , setSupportsSparseFilesSelector
-  , supportsZeroRunsSelector
-  , setSupportsZeroRunsSelector
-  , supportsFastStatFSSelector
-  , setSupportsFastStatFSSelector
-  , supports2TBFilesSelector
-  , setSupports2TBFilesSelector
-  , supportsOpenDenyModesSelector
-  , setSupportsOpenDenyModesSelector
-  , supportsHiddenFilesSelector
-  , setSupportsHiddenFilesSelector
-  , doesNotSupportVolumeSizesSelector
-  , setDoesNotSupportVolumeSizesSelector
-  , supports64BitObjectIDsSelector
-  , setSupports64BitObjectIDsSelector
-  , supportsDocumentIDSelector
-  , setSupportsDocumentIDSelector
-  , doesNotSupportImmutableFilesSelector
-  , setDoesNotSupportImmutableFilesSelector
-  , doesNotSupportSettingFilePermissionsSelector
-  , setDoesNotSupportSettingFilePermissionsSelector
-  , supportsSharedSpaceSelector
-  , setSupportsSharedSpaceSelector
-  , supportsVolumeGroupsSelector
-  , setSupportsVolumeGroupsSelector
   , caseFormatSelector
+  , doesNotSupportImmutableFilesSelector
+  , doesNotSupportRootTimesSelector
+  , doesNotSupportSettingFilePermissionsSelector
+  , doesNotSupportVolumeSizesSelector
   , setCaseFormatSelector
+  , setDoesNotSupportImmutableFilesSelector
+  , setDoesNotSupportRootTimesSelector
+  , setDoesNotSupportSettingFilePermissionsSelector
+  , setDoesNotSupportVolumeSizesSelector
+  , setSupports2TBFilesSelector
+  , setSupports64BitObjectIDsSelector
+  , setSupportsActiveJournalSelector
+  , setSupportsDocumentIDSelector
+  , setSupportsFastStatFSSelector
+  , setSupportsHardLinksSelector
+  , setSupportsHiddenFilesSelector
+  , setSupportsJournalSelector
+  , setSupportsOpenDenyModesSelector
+  , setSupportsPersistentObjectIDsSelector
+  , setSupportsSharedSpaceSelector
+  , setSupportsSparseFilesSelector
+  , setSupportsSymbolicLinksSelector
+  , setSupportsVolumeGroupsSelector
+  , setSupportsZeroRunsSelector
+  , supports2TBFilesSelector
+  , supports64BitObjectIDsSelector
+  , supportsActiveJournalSelector
+  , supportsDocumentIDSelector
+  , supportsFastStatFSSelector
+  , supportsHardLinksSelector
+  , supportsHiddenFilesSelector
+  , supportsJournalSelector
+  , supportsOpenDenyModesSelector
+  , supportsPersistentObjectIDsSelector
+  , supportsSharedSpaceSelector
+  , supportsSparseFilesSelector
+  , supportsSymbolicLinksSelector
+  , supportsVolumeGroupsSelector
+  , supportsZeroRunsSelector
 
   -- * Enum types
   , FSVolumeCaseFormat(FSVolumeCaseFormat)
@@ -98,15 +99,11 @@ module ObjC.FSKit.FSVolumeSupportedCapabilities
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -118,43 +115,43 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportsPersistentObjectIDs@
 supportsPersistentObjectIDs :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsPersistentObjectIDs fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsPersistentObjectIDs") retCULong []
+supportsPersistentObjectIDs fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsPersistentObjectIDsSelector
 
 -- | A Boolean property that indicates whether the volume supports persistent object identifiers and can look up file system objects by their IDs.
 --
 -- ObjC selector: @- setSupportsPersistentObjectIDs:@
 setSupportsPersistentObjectIDs :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsPersistentObjectIDs fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsPersistentObjectIDs:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsPersistentObjectIDs fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsPersistentObjectIDsSelector value
 
 -- | A Boolean property that indicates whether the volume supports symbolic links.
 --
 -- ObjC selector: @- supportsSymbolicLinks@
 supportsSymbolicLinks :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsSymbolicLinks fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsSymbolicLinks") retCULong []
+supportsSymbolicLinks fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsSymbolicLinksSelector
 
 -- | A Boolean property that indicates whether the volume supports symbolic links.
 --
 -- ObjC selector: @- setSupportsSymbolicLinks:@
 setSupportsSymbolicLinks :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsSymbolicLinks fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsSymbolicLinks:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsSymbolicLinks fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsSymbolicLinksSelector value
 
 -- | A Boolean property that indicates whether the volume supports hard links.
 --
 -- ObjC selector: @- supportsHardLinks@
 supportsHardLinks :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsHardLinks fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsHardLinks") retCULong []
+supportsHardLinks fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsHardLinksSelector
 
 -- | A Boolean property that indicates whether the volume supports hard links.
 --
 -- ObjC selector: @- setSupportsHardLinks:@
 setSupportsHardLinks :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsHardLinks fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsHardLinks:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsHardLinks fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsHardLinksSelector value
 
 -- | A Boolean property that indicates whether the volume supports a journal used to speed recovery in case of unplanned restart, such as a power outage or crash.
 --
@@ -162,8 +159,8 @@ setSupportsHardLinks fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsJournal@
 supportsJournal :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsJournal fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsJournal") retCULong []
+supportsJournal fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsJournalSelector
 
 -- | A Boolean property that indicates whether the volume supports a journal used to speed recovery in case of unplanned restart, such as a power outage or crash.
 --
@@ -171,22 +168,22 @@ supportsJournal fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsJournal:@
 setSupportsJournal :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsJournal fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsJournal:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsJournal fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsJournalSelector value
 
 -- | A Boolean property that indicates whether the volume currently uses a journal for speeding recovery after an unplanned shutdown.
 --
 -- ObjC selector: @- supportsActiveJournal@
 supportsActiveJournal :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsActiveJournal fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsActiveJournal") retCULong []
+supportsActiveJournal fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsActiveJournalSelector
 
 -- | A Boolean property that indicates whether the volume currently uses a journal for speeding recovery after an unplanned shutdown.
 --
 -- ObjC selector: @- setSupportsActiveJournal:@
 setSupportsActiveJournal :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsActiveJournal fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsActiveJournal:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsActiveJournal fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsActiveJournalSelector value
 
 -- | A Boolan property that indicates the volume doesn't store reliable times for the root directory.
 --
@@ -194,8 +191,8 @@ setSupportsActiveJournal fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- doesNotSupportRootTimes@
 doesNotSupportRootTimes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-doesNotSupportRootTimes fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "doesNotSupportRootTimes") retCULong []
+doesNotSupportRootTimes fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities doesNotSupportRootTimesSelector
 
 -- | A Boolan property that indicates the volume doesn't store reliable times for the root directory.
 --
@@ -203,8 +200,8 @@ doesNotSupportRootTimes fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setDoesNotSupportRootTimes:@
 setDoesNotSupportRootTimes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setDoesNotSupportRootTimes fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setDoesNotSupportRootTimes:") retVoid [argCULong (if value then 1 else 0)]
+setDoesNotSupportRootTimes fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setDoesNotSupportRootTimesSelector value
 
 -- | A Boolean property that indicates whether the volume supports sparse files.
 --
@@ -212,8 +209,8 @@ setDoesNotSupportRootTimes fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsSparseFiles@
 supportsSparseFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsSparseFiles fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsSparseFiles") retCULong []
+supportsSparseFiles fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsSparseFilesSelector
 
 -- | A Boolean property that indicates whether the volume supports sparse files.
 --
@@ -221,8 +218,8 @@ supportsSparseFiles fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsSparseFiles:@
 setSupportsSparseFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsSparseFiles fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsSparseFiles:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsSparseFiles fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsSparseFilesSelector value
 
 -- | A Boolean property that indicates whether the volume supports zero runs
 --
@@ -230,8 +227,8 @@ setSupportsSparseFiles fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsZeroRuns@
 supportsZeroRuns :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsZeroRuns fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsZeroRuns") retCULong []
+supportsZeroRuns fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsZeroRunsSelector
 
 -- | A Boolean property that indicates whether the volume supports zero runs
 --
@@ -239,8 +236,8 @@ supportsZeroRuns fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsZeroRuns:@
 setSupportsZeroRuns :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsZeroRuns fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsZeroRuns:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsZeroRuns fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsZeroRunsSelector value
 
 -- | A Boolean property that indicates whether the volume supports fast results when fetching file system statistics.
 --
@@ -248,8 +245,8 @@ setSupportsZeroRuns fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsFastStatFS@
 supportsFastStatFS :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsFastStatFS fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsFastStatFS") retCULong []
+supportsFastStatFS fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsFastStatFSSelector
 
 -- | A Boolean property that indicates whether the volume supports fast results when fetching file system statistics.
 --
@@ -257,22 +254,22 @@ supportsFastStatFS fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsFastStatFS:@
 setSupportsFastStatFS :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsFastStatFS fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsFastStatFS:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsFastStatFS fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsFastStatFSSelector value
 
 -- | A Boolean property that indicates whether the volume supports file sizes larger than 4GB, and potentially up to 2TB.
 --
 -- ObjC selector: @- supports2TBFiles@
 supports2TBFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supports2TBFiles fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supports2TBFiles") retCULong []
+supports2TBFiles fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supports2TBFilesSelector
 
 -- | A Boolean property that indicates whether the volume supports file sizes larger than 4GB, and potentially up to 2TB.
 --
 -- ObjC selector: @- setSupports2TBFiles:@
 setSupports2TBFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupports2TBFiles fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupports2TBFiles:") retVoid [argCULong (if value then 1 else 0)]
+setSupports2TBFiles fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupports2TBFilesSelector value
 
 -- | A Boolean property that indicates whether the volume supports open deny modes.
 --
@@ -280,8 +277,8 @@ setSupports2TBFiles fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsOpenDenyModes@
 supportsOpenDenyModes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsOpenDenyModes fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsOpenDenyModes") retCULong []
+supportsOpenDenyModes fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsOpenDenyModesSelector
 
 -- | A Boolean property that indicates whether the volume supports open deny modes.
 --
@@ -289,8 +286,8 @@ supportsOpenDenyModes fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsOpenDenyModes:@
 setSupportsOpenDenyModes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsOpenDenyModes fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsOpenDenyModes:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsOpenDenyModes fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsOpenDenyModesSelector value
 
 -- | A Boolean property that indicates whether the volume supports hidden files.
 --
@@ -298,8 +295,8 @@ setSupportsOpenDenyModes fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsHiddenFiles@
 supportsHiddenFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsHiddenFiles fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsHiddenFiles") retCULong []
+supportsHiddenFiles fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsHiddenFilesSelector
 
 -- | A Boolean property that indicates whether the volume supports hidden files.
 --
@@ -307,8 +304,8 @@ supportsHiddenFiles fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsHiddenFiles:@
 setSupportsHiddenFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsHiddenFiles fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsHiddenFiles:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsHiddenFiles fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsHiddenFilesSelector value
 
 -- | A Boolean property that indicates the volume doesn't support certain volume size reports.
 --
@@ -316,8 +313,8 @@ setSupportsHiddenFiles fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- doesNotSupportVolumeSizes@
 doesNotSupportVolumeSizes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-doesNotSupportVolumeSizes fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "doesNotSupportVolumeSizes") retCULong []
+doesNotSupportVolumeSizes fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities doesNotSupportVolumeSizesSelector
 
 -- | A Boolean property that indicates the volume doesn't support certain volume size reports.
 --
@@ -325,22 +322,22 @@ doesNotSupportVolumeSizes fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setDoesNotSupportVolumeSizes:@
 setDoesNotSupportVolumeSizes :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setDoesNotSupportVolumeSizes fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setDoesNotSupportVolumeSizes:") retVoid [argCULong (if value then 1 else 0)]
+setDoesNotSupportVolumeSizes fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setDoesNotSupportVolumeSizesSelector value
 
 -- | A Boolean property that indicates whether the volume supports 64-bit object IDs.
 --
 -- ObjC selector: @- supports64BitObjectIDs@
 supports64BitObjectIDs :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supports64BitObjectIDs fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supports64BitObjectIDs") retCULong []
+supports64BitObjectIDs fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supports64BitObjectIDsSelector
 
 -- | A Boolean property that indicates whether the volume supports 64-bit object IDs.
 --
 -- ObjC selector: @- setSupports64BitObjectIDs:@
 setSupports64BitObjectIDs :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupports64BitObjectIDs fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupports64BitObjectIDs:") retVoid [argCULong (if value then 1 else 0)]
+setSupports64BitObjectIDs fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupports64BitObjectIDsSelector value
 
 -- | A Boolean property that indicates whether the volume supports document IDs for document revisions.
 --
@@ -348,8 +345,8 @@ setSupports64BitObjectIDs fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsDocumentID@
 supportsDocumentID :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsDocumentID fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsDocumentID") retCULong []
+supportsDocumentID fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsDocumentIDSelector
 
 -- | A Boolean property that indicates whether the volume supports document IDs for document revisions.
 --
@@ -357,8 +354,8 @@ supportsDocumentID fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsDocumentID:@
 setSupportsDocumentID :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsDocumentID fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsDocumentID:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsDocumentID fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsDocumentIDSelector value
 
 -- | A Boolean property that indicates the volume doesn't support immutable files.
 --
@@ -366,8 +363,8 @@ setSupportsDocumentID fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- doesNotSupportImmutableFiles@
 doesNotSupportImmutableFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-doesNotSupportImmutableFiles fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "doesNotSupportImmutableFiles") retCULong []
+doesNotSupportImmutableFiles fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities doesNotSupportImmutableFilesSelector
 
 -- | A Boolean property that indicates the volume doesn't support immutable files.
 --
@@ -375,8 +372,8 @@ doesNotSupportImmutableFiles fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setDoesNotSupportImmutableFiles:@
 setDoesNotSupportImmutableFiles :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setDoesNotSupportImmutableFiles fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setDoesNotSupportImmutableFiles:") retVoid [argCULong (if value then 1 else 0)]
+setDoesNotSupportImmutableFiles fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setDoesNotSupportImmutableFilesSelector value
 
 -- | A Boolean property that indicates the volume doesn't set file permissions.
 --
@@ -384,8 +381,8 @@ setDoesNotSupportImmutableFiles fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- doesNotSupportSettingFilePermissions@
 doesNotSupportSettingFilePermissions :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-doesNotSupportSettingFilePermissions fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "doesNotSupportSettingFilePermissions") retCULong []
+doesNotSupportSettingFilePermissions fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities doesNotSupportSettingFilePermissionsSelector
 
 -- | A Boolean property that indicates the volume doesn't set file permissions.
 --
@@ -393,22 +390,22 @@ doesNotSupportSettingFilePermissions fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setDoesNotSupportSettingFilePermissions:@
 setDoesNotSupportSettingFilePermissions :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setDoesNotSupportSettingFilePermissions fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setDoesNotSupportSettingFilePermissions:") retVoid [argCULong (if value then 1 else 0)]
+setDoesNotSupportSettingFilePermissions fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setDoesNotSupportSettingFilePermissionsSelector value
 
 -- | A Boolean property that indicates whether the volume supports multiple logical file systems that share space in a single "partition."
 --
 -- ObjC selector: @- supportsSharedSpace@
 supportsSharedSpace :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsSharedSpace fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsSharedSpace") retCULong []
+supportsSharedSpace fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsSharedSpaceSelector
 
 -- | A Boolean property that indicates whether the volume supports multiple logical file systems that share space in a single "partition."
 --
 -- ObjC selector: @- setSupportsSharedSpace:@
 setSupportsSharedSpace :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsSharedSpace fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsSharedSpace:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsSharedSpace fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsSharedSpaceSelector value
 
 -- | A Boolean property that indicates whether the volume supports volume groups.
 --
@@ -416,8 +413,8 @@ setSupportsSharedSpace fsVolumeSupportedCapabilities  value =
 --
 -- ObjC selector: @- supportsVolumeGroups@
 supportsVolumeGroups :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO Bool
-supportsVolumeGroups fsVolumeSupportedCapabilities  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "supportsVolumeGroups") retCULong []
+supportsVolumeGroups fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities supportsVolumeGroupsSelector
 
 -- | A Boolean property that indicates whether the volume supports volume groups.
 --
@@ -425,184 +422,184 @@ supportsVolumeGroups fsVolumeSupportedCapabilities  =
 --
 -- ObjC selector: @- setSupportsVolumeGroups:@
 setSupportsVolumeGroups :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> Bool -> IO ()
-setSupportsVolumeGroups fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setSupportsVolumeGroups:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsVolumeGroups fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setSupportsVolumeGroupsSelector value
 
 -- | A value that indicates the volume's support for case sensitivity.
 --
 -- ObjC selector: @- caseFormat@
 caseFormat :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> IO FSVolumeCaseFormat
-caseFormat fsVolumeSupportedCapabilities  =
-    fmap (coerce :: CLong -> FSVolumeCaseFormat) $ sendMsg fsVolumeSupportedCapabilities (mkSelector "caseFormat") retCLong []
+caseFormat fsVolumeSupportedCapabilities =
+  sendMessage fsVolumeSupportedCapabilities caseFormatSelector
 
 -- | A value that indicates the volume's support for case sensitivity.
 --
 -- ObjC selector: @- setCaseFormat:@
 setCaseFormat :: IsFSVolumeSupportedCapabilities fsVolumeSupportedCapabilities => fsVolumeSupportedCapabilities -> FSVolumeCaseFormat -> IO ()
-setCaseFormat fsVolumeSupportedCapabilities  value =
-    sendMsg fsVolumeSupportedCapabilities (mkSelector "setCaseFormat:") retVoid [argCLong (coerce value)]
+setCaseFormat fsVolumeSupportedCapabilities value =
+  sendMessage fsVolumeSupportedCapabilities setCaseFormatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportsPersistentObjectIDs@
-supportsPersistentObjectIDsSelector :: Selector
+supportsPersistentObjectIDsSelector :: Selector '[] Bool
 supportsPersistentObjectIDsSelector = mkSelector "supportsPersistentObjectIDs"
 
 -- | @Selector@ for @setSupportsPersistentObjectIDs:@
-setSupportsPersistentObjectIDsSelector :: Selector
+setSupportsPersistentObjectIDsSelector :: Selector '[Bool] ()
 setSupportsPersistentObjectIDsSelector = mkSelector "setSupportsPersistentObjectIDs:"
 
 -- | @Selector@ for @supportsSymbolicLinks@
-supportsSymbolicLinksSelector :: Selector
+supportsSymbolicLinksSelector :: Selector '[] Bool
 supportsSymbolicLinksSelector = mkSelector "supportsSymbolicLinks"
 
 -- | @Selector@ for @setSupportsSymbolicLinks:@
-setSupportsSymbolicLinksSelector :: Selector
+setSupportsSymbolicLinksSelector :: Selector '[Bool] ()
 setSupportsSymbolicLinksSelector = mkSelector "setSupportsSymbolicLinks:"
 
 -- | @Selector@ for @supportsHardLinks@
-supportsHardLinksSelector :: Selector
+supportsHardLinksSelector :: Selector '[] Bool
 supportsHardLinksSelector = mkSelector "supportsHardLinks"
 
 -- | @Selector@ for @setSupportsHardLinks:@
-setSupportsHardLinksSelector :: Selector
+setSupportsHardLinksSelector :: Selector '[Bool] ()
 setSupportsHardLinksSelector = mkSelector "setSupportsHardLinks:"
 
 -- | @Selector@ for @supportsJournal@
-supportsJournalSelector :: Selector
+supportsJournalSelector :: Selector '[] Bool
 supportsJournalSelector = mkSelector "supportsJournal"
 
 -- | @Selector@ for @setSupportsJournal:@
-setSupportsJournalSelector :: Selector
+setSupportsJournalSelector :: Selector '[Bool] ()
 setSupportsJournalSelector = mkSelector "setSupportsJournal:"
 
 -- | @Selector@ for @supportsActiveJournal@
-supportsActiveJournalSelector :: Selector
+supportsActiveJournalSelector :: Selector '[] Bool
 supportsActiveJournalSelector = mkSelector "supportsActiveJournal"
 
 -- | @Selector@ for @setSupportsActiveJournal:@
-setSupportsActiveJournalSelector :: Selector
+setSupportsActiveJournalSelector :: Selector '[Bool] ()
 setSupportsActiveJournalSelector = mkSelector "setSupportsActiveJournal:"
 
 -- | @Selector@ for @doesNotSupportRootTimes@
-doesNotSupportRootTimesSelector :: Selector
+doesNotSupportRootTimesSelector :: Selector '[] Bool
 doesNotSupportRootTimesSelector = mkSelector "doesNotSupportRootTimes"
 
 -- | @Selector@ for @setDoesNotSupportRootTimes:@
-setDoesNotSupportRootTimesSelector :: Selector
+setDoesNotSupportRootTimesSelector :: Selector '[Bool] ()
 setDoesNotSupportRootTimesSelector = mkSelector "setDoesNotSupportRootTimes:"
 
 -- | @Selector@ for @supportsSparseFiles@
-supportsSparseFilesSelector :: Selector
+supportsSparseFilesSelector :: Selector '[] Bool
 supportsSparseFilesSelector = mkSelector "supportsSparseFiles"
 
 -- | @Selector@ for @setSupportsSparseFiles:@
-setSupportsSparseFilesSelector :: Selector
+setSupportsSparseFilesSelector :: Selector '[Bool] ()
 setSupportsSparseFilesSelector = mkSelector "setSupportsSparseFiles:"
 
 -- | @Selector@ for @supportsZeroRuns@
-supportsZeroRunsSelector :: Selector
+supportsZeroRunsSelector :: Selector '[] Bool
 supportsZeroRunsSelector = mkSelector "supportsZeroRuns"
 
 -- | @Selector@ for @setSupportsZeroRuns:@
-setSupportsZeroRunsSelector :: Selector
+setSupportsZeroRunsSelector :: Selector '[Bool] ()
 setSupportsZeroRunsSelector = mkSelector "setSupportsZeroRuns:"
 
 -- | @Selector@ for @supportsFastStatFS@
-supportsFastStatFSSelector :: Selector
+supportsFastStatFSSelector :: Selector '[] Bool
 supportsFastStatFSSelector = mkSelector "supportsFastStatFS"
 
 -- | @Selector@ for @setSupportsFastStatFS:@
-setSupportsFastStatFSSelector :: Selector
+setSupportsFastStatFSSelector :: Selector '[Bool] ()
 setSupportsFastStatFSSelector = mkSelector "setSupportsFastStatFS:"
 
 -- | @Selector@ for @supports2TBFiles@
-supports2TBFilesSelector :: Selector
+supports2TBFilesSelector :: Selector '[] Bool
 supports2TBFilesSelector = mkSelector "supports2TBFiles"
 
 -- | @Selector@ for @setSupports2TBFiles:@
-setSupports2TBFilesSelector :: Selector
+setSupports2TBFilesSelector :: Selector '[Bool] ()
 setSupports2TBFilesSelector = mkSelector "setSupports2TBFiles:"
 
 -- | @Selector@ for @supportsOpenDenyModes@
-supportsOpenDenyModesSelector :: Selector
+supportsOpenDenyModesSelector :: Selector '[] Bool
 supportsOpenDenyModesSelector = mkSelector "supportsOpenDenyModes"
 
 -- | @Selector@ for @setSupportsOpenDenyModes:@
-setSupportsOpenDenyModesSelector :: Selector
+setSupportsOpenDenyModesSelector :: Selector '[Bool] ()
 setSupportsOpenDenyModesSelector = mkSelector "setSupportsOpenDenyModes:"
 
 -- | @Selector@ for @supportsHiddenFiles@
-supportsHiddenFilesSelector :: Selector
+supportsHiddenFilesSelector :: Selector '[] Bool
 supportsHiddenFilesSelector = mkSelector "supportsHiddenFiles"
 
 -- | @Selector@ for @setSupportsHiddenFiles:@
-setSupportsHiddenFilesSelector :: Selector
+setSupportsHiddenFilesSelector :: Selector '[Bool] ()
 setSupportsHiddenFilesSelector = mkSelector "setSupportsHiddenFiles:"
 
 -- | @Selector@ for @doesNotSupportVolumeSizes@
-doesNotSupportVolumeSizesSelector :: Selector
+doesNotSupportVolumeSizesSelector :: Selector '[] Bool
 doesNotSupportVolumeSizesSelector = mkSelector "doesNotSupportVolumeSizes"
 
 -- | @Selector@ for @setDoesNotSupportVolumeSizes:@
-setDoesNotSupportVolumeSizesSelector :: Selector
+setDoesNotSupportVolumeSizesSelector :: Selector '[Bool] ()
 setDoesNotSupportVolumeSizesSelector = mkSelector "setDoesNotSupportVolumeSizes:"
 
 -- | @Selector@ for @supports64BitObjectIDs@
-supports64BitObjectIDsSelector :: Selector
+supports64BitObjectIDsSelector :: Selector '[] Bool
 supports64BitObjectIDsSelector = mkSelector "supports64BitObjectIDs"
 
 -- | @Selector@ for @setSupports64BitObjectIDs:@
-setSupports64BitObjectIDsSelector :: Selector
+setSupports64BitObjectIDsSelector :: Selector '[Bool] ()
 setSupports64BitObjectIDsSelector = mkSelector "setSupports64BitObjectIDs:"
 
 -- | @Selector@ for @supportsDocumentID@
-supportsDocumentIDSelector :: Selector
+supportsDocumentIDSelector :: Selector '[] Bool
 supportsDocumentIDSelector = mkSelector "supportsDocumentID"
 
 -- | @Selector@ for @setSupportsDocumentID:@
-setSupportsDocumentIDSelector :: Selector
+setSupportsDocumentIDSelector :: Selector '[Bool] ()
 setSupportsDocumentIDSelector = mkSelector "setSupportsDocumentID:"
 
 -- | @Selector@ for @doesNotSupportImmutableFiles@
-doesNotSupportImmutableFilesSelector :: Selector
+doesNotSupportImmutableFilesSelector :: Selector '[] Bool
 doesNotSupportImmutableFilesSelector = mkSelector "doesNotSupportImmutableFiles"
 
 -- | @Selector@ for @setDoesNotSupportImmutableFiles:@
-setDoesNotSupportImmutableFilesSelector :: Selector
+setDoesNotSupportImmutableFilesSelector :: Selector '[Bool] ()
 setDoesNotSupportImmutableFilesSelector = mkSelector "setDoesNotSupportImmutableFiles:"
 
 -- | @Selector@ for @doesNotSupportSettingFilePermissions@
-doesNotSupportSettingFilePermissionsSelector :: Selector
+doesNotSupportSettingFilePermissionsSelector :: Selector '[] Bool
 doesNotSupportSettingFilePermissionsSelector = mkSelector "doesNotSupportSettingFilePermissions"
 
 -- | @Selector@ for @setDoesNotSupportSettingFilePermissions:@
-setDoesNotSupportSettingFilePermissionsSelector :: Selector
+setDoesNotSupportSettingFilePermissionsSelector :: Selector '[Bool] ()
 setDoesNotSupportSettingFilePermissionsSelector = mkSelector "setDoesNotSupportSettingFilePermissions:"
 
 -- | @Selector@ for @supportsSharedSpace@
-supportsSharedSpaceSelector :: Selector
+supportsSharedSpaceSelector :: Selector '[] Bool
 supportsSharedSpaceSelector = mkSelector "supportsSharedSpace"
 
 -- | @Selector@ for @setSupportsSharedSpace:@
-setSupportsSharedSpaceSelector :: Selector
+setSupportsSharedSpaceSelector :: Selector '[Bool] ()
 setSupportsSharedSpaceSelector = mkSelector "setSupportsSharedSpace:"
 
 -- | @Selector@ for @supportsVolumeGroups@
-supportsVolumeGroupsSelector :: Selector
+supportsVolumeGroupsSelector :: Selector '[] Bool
 supportsVolumeGroupsSelector = mkSelector "supportsVolumeGroups"
 
 -- | @Selector@ for @setSupportsVolumeGroups:@
-setSupportsVolumeGroupsSelector :: Selector
+setSupportsVolumeGroupsSelector :: Selector '[Bool] ()
 setSupportsVolumeGroupsSelector = mkSelector "setSupportsVolumeGroups:"
 
 -- | @Selector@ for @caseFormat@
-caseFormatSelector :: Selector
+caseFormatSelector :: Selector '[] FSVolumeCaseFormat
 caseFormatSelector = mkSelector "caseFormat"
 
 -- | @Selector@ for @setCaseFormat:@
-setCaseFormatSelector :: Selector
+setCaseFormatSelector :: Selector '[FSVolumeCaseFormat] ()
 setCaseFormatSelector = mkSelector "setCaseFormat:"
 

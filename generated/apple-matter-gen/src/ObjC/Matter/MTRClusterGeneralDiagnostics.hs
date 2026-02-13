@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,43 +33,39 @@ module ObjC.Matter.MTRClusterGeneralDiagnostics
   , testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandler
   , readAttributeBootReasonsWithParams
   , initWithDevice_endpointID_queue
-  , testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector
-  , timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector
-  , timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , payloadTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeActiveHardwareFaultsWithParamsSelector
+  , readAttributeActiveNetworkFaultsWithParamsSelector
+  , readAttributeActiveRadioFaultsWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeBootReasonWithParamsSelector
+  , readAttributeBootReasonsWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeNetworkInterfacesWithParamsSelector
   , readAttributeRebootCountWithParamsSelector
-  , readAttributeUpTimeWithParamsSelector
-  , readAttributeTotalOperationalHoursWithParamsSelector
-  , readAttributeBootReasonWithParamsSelector
-  , readAttributeActiveHardwareFaultsWithParamsSelector
-  , readAttributeActiveRadioFaultsWithParamsSelector
-  , readAttributeActiveNetworkFaultsWithParamsSelector
   , readAttributeTestEventTriggersEnabledWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
+  , readAttributeTotalOperationalHoursWithParamsSelector
+  , readAttributeUpTimeWithParamsSelector
   , testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , readAttributeBootReasonsWithParamsSelector
-  , initWithDevice_endpointID_queueSelector
+  , testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector
+  , timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector
+  , timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,259 +74,225 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- testEventTriggerWithParams:expectedValues:expectedValueInterval:completion:@
 testEventTriggerWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRGeneralDiagnosticsClusterTestEventTriggerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterGeneralDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-testEventTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterGeneralDiagnostics (mkSelector "testEventTriggerWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+testEventTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterGeneralDiagnostics testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRGeneralDiagnosticsClusterTestEventTriggerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- timeSnapshotWithParams:expectedValues:expectedValueInterval:completion:@
 timeSnapshotWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRGeneralDiagnosticsClusterTimeSnapshotParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterGeneralDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-timeSnapshotWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterGeneralDiagnostics (mkSelector "timeSnapshotWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+timeSnapshotWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterGeneralDiagnostics timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRGeneralDiagnosticsClusterTimeSnapshotParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- timeSnapshotWithExpectedValues:expectedValueInterval:completion:@
 timeSnapshotWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterGeneralDiagnostics -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-timeSnapshotWithExpectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterGeneralDiagnostics (mkSelector "timeSnapshotWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+timeSnapshotWithExpectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterGeneralDiagnostics timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- payloadTestRequestWithParams:expectedValues:expectedValueInterval:completion:@
 payloadTestRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRGeneralDiagnosticsClusterPayloadTestRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterGeneralDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-payloadTestRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterGeneralDiagnostics (mkSelector "payloadTestRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+payloadTestRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterGeneralDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterGeneralDiagnostics payloadTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRGeneralDiagnosticsClusterPayloadTestRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeNetworkInterfacesWithParams:@
 readAttributeNetworkInterfacesWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeNetworkInterfacesWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeNetworkInterfacesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNetworkInterfacesWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeNetworkInterfacesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRebootCountWithParams:@
 readAttributeRebootCountWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRebootCountWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeRebootCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRebootCountWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeRebootCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUpTimeWithParams:@
 readAttributeUpTimeWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeUpTimeWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeUpTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUpTimeWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeUpTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTotalOperationalHoursWithParams:@
 readAttributeTotalOperationalHoursWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTotalOperationalHoursWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeTotalOperationalHoursWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTotalOperationalHoursWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeTotalOperationalHoursWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBootReasonWithParams:@
 readAttributeBootReasonWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeBootReasonWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeBootReasonWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBootReasonWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeBootReasonWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveHardwareFaultsWithParams:@
 readAttributeActiveHardwareFaultsWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeActiveHardwareFaultsWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeActiveHardwareFaultsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveHardwareFaultsWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeActiveHardwareFaultsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveRadioFaultsWithParams:@
 readAttributeActiveRadioFaultsWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeActiveRadioFaultsWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeActiveRadioFaultsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveRadioFaultsWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeActiveRadioFaultsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveNetworkFaultsWithParams:@
 readAttributeActiveNetworkFaultsWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeActiveNetworkFaultsWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeActiveNetworkFaultsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveNetworkFaultsWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeActiveNetworkFaultsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTestEventTriggersEnabledWithParams:@
 readAttributeTestEventTriggersEnabledWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTestEventTriggersEnabledWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeTestEventTriggersEnabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTestEventTriggersEnabledWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeTestEventTriggersEnabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics => mtrClusterGeneralDiagnostics -> IO (Id MTRClusterGeneralDiagnostics)
-init_ mtrClusterGeneralDiagnostics  =
-    sendMsg mtrClusterGeneralDiagnostics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterGeneralDiagnostics =
+  sendOwnedMessage mtrClusterGeneralDiagnostics initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterGeneralDiagnostics)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterGeneralDiagnostics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRDevice device, IsNSObject queue) => mtrClusterGeneralDiagnostics -> device -> CUShort -> queue -> IO (Id MTRClusterGeneralDiagnostics)
-initWithDevice_endpoint_queue mtrClusterGeneralDiagnostics  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterGeneralDiagnostics (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterGeneralDiagnostics device endpoint queue =
+  sendOwnedMessage mtrClusterGeneralDiagnostics initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- testEventTriggerWithParams:expectedValues:expectedValueInterval:completionHandler:@
 testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRGeneralDiagnosticsClusterTestEventTriggerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterGeneralDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterGeneralDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterGeneralDiagnostics (mkSelector "testEventTriggerWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterGeneralDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterGeneralDiagnostics testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRGeneralDiagnosticsClusterTestEventTriggerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- readAttributeBootReasonsWithParams:@
 readAttributeBootReasonsWithParams :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRReadParams params) => mtrClusterGeneralDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeBootReasonsWithParams mtrClusterGeneralDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterGeneralDiagnostics (mkSelector "readAttributeBootReasonsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBootReasonsWithParams mtrClusterGeneralDiagnostics params =
+  sendMessage mtrClusterGeneralDiagnostics readAttributeBootReasonsWithParamsSelector (toMTRReadParams params)
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterGeneralDiagnostics mtrClusterGeneralDiagnostics, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterGeneralDiagnostics -> device -> endpointID -> queue -> IO (Id MTRClusterGeneralDiagnostics)
-initWithDevice_endpointID_queue mtrClusterGeneralDiagnostics  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterGeneralDiagnostics (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterGeneralDiagnostics device endpointID queue =
+  sendOwnedMessage mtrClusterGeneralDiagnostics initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @testEventTriggerWithParams:expectedValues:expectedValueInterval:completion:@
-testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRGeneralDiagnosticsClusterTestEventTriggerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 testEventTriggerWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "testEventTriggerWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @timeSnapshotWithParams:expectedValues:expectedValueInterval:completion:@
-timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRGeneralDiagnosticsClusterTimeSnapshotParams, Id NSArray, Id NSNumber, Ptr ()] ()
 timeSnapshotWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "timeSnapshotWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @timeSnapshotWithExpectedValues:expectedValueInterval:completion:@
-timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 timeSnapshotWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "timeSnapshotWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @payloadTestRequestWithParams:expectedValues:expectedValueInterval:completion:@
-payloadTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+payloadTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRGeneralDiagnosticsClusterPayloadTestRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 payloadTestRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "payloadTestRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeNetworkInterfacesWithParams:@
-readAttributeNetworkInterfacesWithParamsSelector :: Selector
+readAttributeNetworkInterfacesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNetworkInterfacesWithParamsSelector = mkSelector "readAttributeNetworkInterfacesWithParams:"
 
 -- | @Selector@ for @readAttributeRebootCountWithParams:@
-readAttributeRebootCountWithParamsSelector :: Selector
+readAttributeRebootCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRebootCountWithParamsSelector = mkSelector "readAttributeRebootCountWithParams:"
 
 -- | @Selector@ for @readAttributeUpTimeWithParams:@
-readAttributeUpTimeWithParamsSelector :: Selector
+readAttributeUpTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUpTimeWithParamsSelector = mkSelector "readAttributeUpTimeWithParams:"
 
 -- | @Selector@ for @readAttributeTotalOperationalHoursWithParams:@
-readAttributeTotalOperationalHoursWithParamsSelector :: Selector
+readAttributeTotalOperationalHoursWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTotalOperationalHoursWithParamsSelector = mkSelector "readAttributeTotalOperationalHoursWithParams:"
 
 -- | @Selector@ for @readAttributeBootReasonWithParams:@
-readAttributeBootReasonWithParamsSelector :: Selector
+readAttributeBootReasonWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBootReasonWithParamsSelector = mkSelector "readAttributeBootReasonWithParams:"
 
 -- | @Selector@ for @readAttributeActiveHardwareFaultsWithParams:@
-readAttributeActiveHardwareFaultsWithParamsSelector :: Selector
+readAttributeActiveHardwareFaultsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveHardwareFaultsWithParamsSelector = mkSelector "readAttributeActiveHardwareFaultsWithParams:"
 
 -- | @Selector@ for @readAttributeActiveRadioFaultsWithParams:@
-readAttributeActiveRadioFaultsWithParamsSelector :: Selector
+readAttributeActiveRadioFaultsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveRadioFaultsWithParamsSelector = mkSelector "readAttributeActiveRadioFaultsWithParams:"
 
 -- | @Selector@ for @readAttributeActiveNetworkFaultsWithParams:@
-readAttributeActiveNetworkFaultsWithParamsSelector :: Selector
+readAttributeActiveNetworkFaultsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveNetworkFaultsWithParamsSelector = mkSelector "readAttributeActiveNetworkFaultsWithParams:"
 
 -- | @Selector@ for @readAttributeTestEventTriggersEnabledWithParams:@
-readAttributeTestEventTriggersEnabledWithParamsSelector :: Selector
+readAttributeTestEventTriggersEnabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTestEventTriggersEnabledWithParamsSelector = mkSelector "readAttributeTestEventTriggersEnabledWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterGeneralDiagnostics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterGeneralDiagnostics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterGeneralDiagnostics)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @testEventTriggerWithParams:expectedValues:expectedValueInterval:completionHandler:@
-testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRGeneralDiagnosticsClusterTestEventTriggerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 testEventTriggerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "testEventTriggerWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @readAttributeBootReasonsWithParams:@
-readAttributeBootReasonsWithParamsSelector :: Selector
+readAttributeBootReasonsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBootReasonsWithParamsSelector = mkSelector "readAttributeBootReasonsWithParams:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterGeneralDiagnostics)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

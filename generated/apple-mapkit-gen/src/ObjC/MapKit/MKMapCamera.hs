@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.MapKit.MKMapCamera
   , setPitch
   , altitude
   , setAltitude
+  , altitudeSelector
   , cameraSelector
   , centerCoordinateDistanceSelector
-  , setCenterCoordinateDistanceSelector
   , headingSelector
-  , setHeadingSelector
   , pitchSelector
-  , setPitchSelector
-  , altitudeSelector
   , setAltitudeSelector
+  , setCenterCoordinateDistanceSelector
+  , setHeadingSelector
+  , setPitchSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,85 +45,85 @@ camera :: IO (Id MKMapCamera)
 camera  =
   do
     cls' <- getRequiredClass "MKMapCamera"
-    sendClassMsg cls' (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cameraSelector
 
 -- | @- centerCoordinateDistance@
 centerCoordinateDistance :: IsMKMapCamera mkMapCamera => mkMapCamera -> IO CDouble
-centerCoordinateDistance mkMapCamera  =
-    sendMsg mkMapCamera (mkSelector "centerCoordinateDistance") retCDouble []
+centerCoordinateDistance mkMapCamera =
+  sendMessage mkMapCamera centerCoordinateDistanceSelector
 
 -- | @- setCenterCoordinateDistance:@
 setCenterCoordinateDistance :: IsMKMapCamera mkMapCamera => mkMapCamera -> CDouble -> IO ()
-setCenterCoordinateDistance mkMapCamera  value =
-    sendMsg mkMapCamera (mkSelector "setCenterCoordinateDistance:") retVoid [argCDouble value]
+setCenterCoordinateDistance mkMapCamera value =
+  sendMessage mkMapCamera setCenterCoordinateDistanceSelector value
 
 -- | @- heading@
 heading :: IsMKMapCamera mkMapCamera => mkMapCamera -> IO CDouble
-heading mkMapCamera  =
-    sendMsg mkMapCamera (mkSelector "heading") retCDouble []
+heading mkMapCamera =
+  sendMessage mkMapCamera headingSelector
 
 -- | @- setHeading:@
 setHeading :: IsMKMapCamera mkMapCamera => mkMapCamera -> CDouble -> IO ()
-setHeading mkMapCamera  value =
-    sendMsg mkMapCamera (mkSelector "setHeading:") retVoid [argCDouble value]
+setHeading mkMapCamera value =
+  sendMessage mkMapCamera setHeadingSelector value
 
 -- | @- pitch@
 pitch :: IsMKMapCamera mkMapCamera => mkMapCamera -> IO CDouble
-pitch mkMapCamera  =
-    sendMsg mkMapCamera (mkSelector "pitch") retCDouble []
+pitch mkMapCamera =
+  sendMessage mkMapCamera pitchSelector
 
 -- | @- setPitch:@
 setPitch :: IsMKMapCamera mkMapCamera => mkMapCamera -> CDouble -> IO ()
-setPitch mkMapCamera  value =
-    sendMsg mkMapCamera (mkSelector "setPitch:") retVoid [argCDouble value]
+setPitch mkMapCamera value =
+  sendMessage mkMapCamera setPitchSelector value
 
 -- | @- altitude@
 altitude :: IsMKMapCamera mkMapCamera => mkMapCamera -> IO CDouble
-altitude mkMapCamera  =
-    sendMsg mkMapCamera (mkSelector "altitude") retCDouble []
+altitude mkMapCamera =
+  sendMessage mkMapCamera altitudeSelector
 
 -- | @- setAltitude:@
 setAltitude :: IsMKMapCamera mkMapCamera => mkMapCamera -> CDouble -> IO ()
-setAltitude mkMapCamera  value =
-    sendMsg mkMapCamera (mkSelector "setAltitude:") retVoid [argCDouble value]
+setAltitude mkMapCamera value =
+  sendMessage mkMapCamera setAltitudeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @camera@
-cameraSelector :: Selector
+cameraSelector :: Selector '[] (Id MKMapCamera)
 cameraSelector = mkSelector "camera"
 
 -- | @Selector@ for @centerCoordinateDistance@
-centerCoordinateDistanceSelector :: Selector
+centerCoordinateDistanceSelector :: Selector '[] CDouble
 centerCoordinateDistanceSelector = mkSelector "centerCoordinateDistance"
 
 -- | @Selector@ for @setCenterCoordinateDistance:@
-setCenterCoordinateDistanceSelector :: Selector
+setCenterCoordinateDistanceSelector :: Selector '[CDouble] ()
 setCenterCoordinateDistanceSelector = mkSelector "setCenterCoordinateDistance:"
 
 -- | @Selector@ for @heading@
-headingSelector :: Selector
+headingSelector :: Selector '[] CDouble
 headingSelector = mkSelector "heading"
 
 -- | @Selector@ for @setHeading:@
-setHeadingSelector :: Selector
+setHeadingSelector :: Selector '[CDouble] ()
 setHeadingSelector = mkSelector "setHeading:"
 
 -- | @Selector@ for @pitch@
-pitchSelector :: Selector
+pitchSelector :: Selector '[] CDouble
 pitchSelector = mkSelector "pitch"
 
 -- | @Selector@ for @setPitch:@
-setPitchSelector :: Selector
+setPitchSelector :: Selector '[CDouble] ()
 setPitchSelector = mkSelector "setPitch:"
 
 -- | @Selector@ for @altitude@
-altitudeSelector :: Selector
+altitudeSelector :: Selector '[] CDouble
 altitudeSelector = mkSelector "altitude"
 
 -- | @Selector@ for @setAltitude:@
-setAltitudeSelector :: Selector
+setAltitudeSelector :: Selector '[CDouble] ()
 setAltitudeSelector = mkSelector "setAltitude:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,13 +23,13 @@ module ObjC.PHASE.PHASEGroupPresetSetting
   , rate
   , gainCurveType
   , rateCurveType
-  , initSelector
-  , newSelector
-  , initWithGain_rate_gainCurveType_rateCurveTypeSelector
-  , gainSelector
-  , rateSelector
   , gainCurveTypeSelector
+  , gainSelector
+  , initSelector
+  , initWithGain_rate_gainCurveType_rateCurveTypeSelector
+  , newSelector
   , rateCurveTypeSelector
+  , rateSelector
 
   -- * Enum types
   , PHASECurveType(PHASECurveType)
@@ -46,15 +47,11 @@ module ObjC.PHASE.PHASEGroupPresetSetting
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,15 +61,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> IO (Id PHASEGroupPresetSetting)
-init_ phaseGroupPresetSetting  =
-    sendMsg phaseGroupPresetSetting (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseGroupPresetSetting =
+  sendOwnedMessage phaseGroupPresetSetting initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEGroupPresetSetting)
 new  =
   do
     cls' <- getRequiredClass "PHASEGroupPresetSetting"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithGain:rate:gainCurveType:rateCurveType
 --
@@ -88,8 +85,8 @@ new  =
 --
 -- ObjC selector: @- initWithGain:rate:gainCurveType:rateCurveType:@
 initWithGain_rate_gainCurveType_rateCurveType :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> CDouble -> CDouble -> PHASECurveType -> PHASECurveType -> IO (Id PHASEGroupPresetSetting)
-initWithGain_rate_gainCurveType_rateCurveType phaseGroupPresetSetting  gain rate gainCurveType rateCurveType =
-    sendMsg phaseGroupPresetSetting (mkSelector "initWithGain:rate:gainCurveType:rateCurveType:") (retPtr retVoid) [argCDouble gain, argCDouble rate, argCLong (coerce gainCurveType), argCLong (coerce rateCurveType)] >>= ownedObject . castPtr
+initWithGain_rate_gainCurveType_rateCurveType phaseGroupPresetSetting gain rate gainCurveType rateCurveType =
+  sendOwnedMessage phaseGroupPresetSetting initWithGain_rate_gainCurveType_rateCurveTypeSelector gain rate gainCurveType rateCurveType
 
 -- | gain
 --
@@ -99,8 +96,8 @@ initWithGain_rate_gainCurveType_rateCurveType phaseGroupPresetSetting  gain rate
 --
 -- ObjC selector: @- gain@
 gain :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> IO CDouble
-gain phaseGroupPresetSetting  =
-    sendMsg phaseGroupPresetSetting (mkSelector "gain") retCDouble []
+gain phaseGroupPresetSetting =
+  sendMessage phaseGroupPresetSetting gainSelector
 
 -- | rate
 --
@@ -108,8 +105,8 @@ gain phaseGroupPresetSetting  =
 --
 -- ObjC selector: @- rate@
 rate :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> IO CDouble
-rate phaseGroupPresetSetting  =
-    sendMsg phaseGroupPresetSetting (mkSelector "rate") retCDouble []
+rate phaseGroupPresetSetting =
+  sendMessage phaseGroupPresetSetting rateSelector
 
 -- | gainCurveType
 --
@@ -117,8 +114,8 @@ rate phaseGroupPresetSetting  =
 --
 -- ObjC selector: @- gainCurveType@
 gainCurveType :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> IO PHASECurveType
-gainCurveType phaseGroupPresetSetting  =
-    fmap (coerce :: CLong -> PHASECurveType) $ sendMsg phaseGroupPresetSetting (mkSelector "gainCurveType") retCLong []
+gainCurveType phaseGroupPresetSetting =
+  sendMessage phaseGroupPresetSetting gainCurveTypeSelector
 
 -- | rateCurveType
 --
@@ -126,38 +123,38 @@ gainCurveType phaseGroupPresetSetting  =
 --
 -- ObjC selector: @- rateCurveType@
 rateCurveType :: IsPHASEGroupPresetSetting phaseGroupPresetSetting => phaseGroupPresetSetting -> IO PHASECurveType
-rateCurveType phaseGroupPresetSetting  =
-    fmap (coerce :: CLong -> PHASECurveType) $ sendMsg phaseGroupPresetSetting (mkSelector "rateCurveType") retCLong []
+rateCurveType phaseGroupPresetSetting =
+  sendMessage phaseGroupPresetSetting rateCurveTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEGroupPresetSetting)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEGroupPresetSetting)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithGain:rate:gainCurveType:rateCurveType:@
-initWithGain_rate_gainCurveType_rateCurveTypeSelector :: Selector
+initWithGain_rate_gainCurveType_rateCurveTypeSelector :: Selector '[CDouble, CDouble, PHASECurveType, PHASECurveType] (Id PHASEGroupPresetSetting)
 initWithGain_rate_gainCurveType_rateCurveTypeSelector = mkSelector "initWithGain:rate:gainCurveType:rateCurveType:"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CDouble
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CDouble
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @gainCurveType@
-gainCurveTypeSelector :: Selector
+gainCurveTypeSelector :: Selector '[] PHASECurveType
 gainCurveTypeSelector = mkSelector "gainCurveType"
 
 -- | @Selector@ for @rateCurveType@
-rateCurveTypeSelector :: Selector
+rateCurveTypeSelector :: Selector '[] PHASECurveType
 rateCurveTypeSelector = mkSelector "rateCurveType"
 

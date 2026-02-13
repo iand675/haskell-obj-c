@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.CloudKit.CKLocationSortDescriptor
   , initWithKey_relativeLocation
   , initWithCoder
   , initSelector
-  , newSelector
-  , initWithKey_relativeLocationSelector
   , initWithCoderSelector
+  , initWithKey_relativeLocationSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKLocationSortDescriptor ckLocationSortDescriptor => ckLocationSortDescriptor -> IO (Id CKLocationSortDescriptor)
-init_ ckLocationSortDescriptor  =
-    sendMsg ckLocationSortDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckLocationSortDescriptor =
+  sendOwnedMessage ckLocationSortDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id CKLocationSortDescriptor)
 new  =
   do
     cls' <- getRequiredClass "CKLocationSortDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithKey:relativeLocation:@
 initWithKey_relativeLocation :: (IsCKLocationSortDescriptor ckLocationSortDescriptor, IsNSString key) => ckLocationSortDescriptor -> key -> RawId -> IO (Id CKLocationSortDescriptor)
-initWithKey_relativeLocation ckLocationSortDescriptor  key relativeLocation =
-  withObjCPtr key $ \raw_key ->
-      sendMsg ckLocationSortDescriptor (mkSelector "initWithKey:relativeLocation:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId relativeLocation) :: Ptr ())] >>= ownedObject . castPtr
+initWithKey_relativeLocation ckLocationSortDescriptor key relativeLocation =
+  sendOwnedMessage ckLocationSortDescriptor initWithKey_relativeLocationSelector (toNSString key) relativeLocation
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKLocationSortDescriptor ckLocationSortDescriptor, IsNSCoder aDecoder) => ckLocationSortDescriptor -> aDecoder -> IO (Id CKLocationSortDescriptor)
-initWithCoder ckLocationSortDescriptor  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg ckLocationSortDescriptor (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder ckLocationSortDescriptor aDecoder =
+  sendOwnedMessage ckLocationSortDescriptor initWithCoderSelector (toNSCoder aDecoder)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKLocationSortDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKLocationSortDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithKey:relativeLocation:@
-initWithKey_relativeLocationSelector :: Selector
+initWithKey_relativeLocationSelector :: Selector '[Id NSString, RawId] (Id CKLocationSortDescriptor)
 initWithKey_relativeLocationSelector = mkSelector "initWithKey:relativeLocation:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CKLocationSortDescriptor)
 initWithCoderSelector = mkSelector "initWithCoder:"
 

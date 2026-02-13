@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.UserNotifications.UNNotificationServiceExtension
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- didReceiveNotificationRequest:withContentHandler:@
 didReceiveNotificationRequest_withContentHandler :: (IsUNNotificationServiceExtension unNotificationServiceExtension, IsUNNotificationRequest request) => unNotificationServiceExtension -> request -> Ptr () -> IO ()
-didReceiveNotificationRequest_withContentHandler unNotificationServiceExtension  request contentHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg unNotificationServiceExtension (mkSelector "didReceiveNotificationRequest:withContentHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr contentHandler :: Ptr ())]
+didReceiveNotificationRequest_withContentHandler unNotificationServiceExtension request contentHandler =
+  sendMessage unNotificationServiceExtension didReceiveNotificationRequest_withContentHandlerSelector (toUNNotificationRequest request) contentHandler
 
 -- | @- serviceExtensionTimeWillExpire@
 serviceExtensionTimeWillExpire :: IsUNNotificationServiceExtension unNotificationServiceExtension => unNotificationServiceExtension -> IO ()
-serviceExtensionTimeWillExpire unNotificationServiceExtension  =
-    sendMsg unNotificationServiceExtension (mkSelector "serviceExtensionTimeWillExpire") retVoid []
+serviceExtensionTimeWillExpire unNotificationServiceExtension =
+  sendMessage unNotificationServiceExtension serviceExtensionTimeWillExpireSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @didReceiveNotificationRequest:withContentHandler:@
-didReceiveNotificationRequest_withContentHandlerSelector :: Selector
+didReceiveNotificationRequest_withContentHandlerSelector :: Selector '[Id UNNotificationRequest, Ptr ()] ()
 didReceiveNotificationRequest_withContentHandlerSelector = mkSelector "didReceiveNotificationRequest:withContentHandler:"
 
 -- | @Selector@ for @serviceExtensionTimeWillExpire@
-serviceExtensionTimeWillExpireSelector :: Selector
+serviceExtensionTimeWillExpireSelector :: Selector '[] ()
 serviceExtensionTimeWillExpireSelector = mkSelector "serviceExtensionTimeWillExpire"
 

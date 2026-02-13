@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.Metal.MTLFunctionConstant
   , type_
   , index
   , required
-  , nameSelector
-  , typeSelector
   , indexSelector
+  , nameSelector
   , requiredSelector
+  , typeSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -122,15 +123,11 @@ module ObjC.Metal.MTLFunctionConstant
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,41 +137,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTLFunctionConstant mtlFunctionConstant => mtlFunctionConstant -> IO (Id NSString)
-name mtlFunctionConstant  =
-    sendMsg mtlFunctionConstant (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlFunctionConstant =
+  sendMessage mtlFunctionConstant nameSelector
 
 -- | @- type@
 type_ :: IsMTLFunctionConstant mtlFunctionConstant => mtlFunctionConstant -> IO MTLDataType
-type_ mtlFunctionConstant  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlFunctionConstant (mkSelector "type") retCULong []
+type_ mtlFunctionConstant =
+  sendMessage mtlFunctionConstant typeSelector
 
 -- | @- index@
 index :: IsMTLFunctionConstant mtlFunctionConstant => mtlFunctionConstant -> IO CULong
-index mtlFunctionConstant  =
-    sendMsg mtlFunctionConstant (mkSelector "index") retCULong []
+index mtlFunctionConstant =
+  sendMessage mtlFunctionConstant indexSelector
 
 -- | @- required@
 required :: IsMTLFunctionConstant mtlFunctionConstant => mtlFunctionConstant -> IO Bool
-required mtlFunctionConstant  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlFunctionConstant (mkSelector "required") retCULong []
+required mtlFunctionConstant =
+  sendMessage mtlFunctionConstant requiredSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MTLDataType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @required@
-requiredSelector :: Selector
+requiredSelector :: Selector '[] Bool
 requiredSelector = mkSelector "required"
 

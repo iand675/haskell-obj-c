@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MapKit.MKTileOverlayRenderer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTileOverlay:@
 initWithTileOverlay :: (IsMKTileOverlayRenderer mkTileOverlayRenderer, IsMKTileOverlay overlay) => mkTileOverlayRenderer -> overlay -> IO (Id MKTileOverlayRenderer)
-initWithTileOverlay mkTileOverlayRenderer  overlay =
-  withObjCPtr overlay $ \raw_overlay ->
-      sendMsg mkTileOverlayRenderer (mkSelector "initWithTileOverlay:") (retPtr retVoid) [argPtr (castPtr raw_overlay :: Ptr ())] >>= ownedObject . castPtr
+initWithTileOverlay mkTileOverlayRenderer overlay =
+  sendOwnedMessage mkTileOverlayRenderer initWithTileOverlaySelector (toMKTileOverlay overlay)
 
 -- | @- reloadData@
 reloadData :: IsMKTileOverlayRenderer mkTileOverlayRenderer => mkTileOverlayRenderer -> IO ()
-reloadData mkTileOverlayRenderer  =
-    sendMsg mkTileOverlayRenderer (mkSelector "reloadData") retVoid []
+reloadData mkTileOverlayRenderer =
+  sendMessage mkTileOverlayRenderer reloadDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTileOverlay:@
-initWithTileOverlaySelector :: Selector
+initWithTileOverlaySelector :: Selector '[Id MKTileOverlay] (Id MKTileOverlayRenderer)
 initWithTileOverlaySelector = mkSelector "initWithTileOverlay:"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 

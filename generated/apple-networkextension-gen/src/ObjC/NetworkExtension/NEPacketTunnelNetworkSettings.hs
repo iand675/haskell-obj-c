@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,26 +24,22 @@ module ObjC.NetworkExtension.NEPacketTunnelNetworkSettings
   , mtu
   , setMTU
   , iPv4SettingsSelector
-  , setIPv4SettingsSelector
   , iPv6SettingsSelector
-  , setIPv6SettingsSelector
-  , tunnelOverheadBytesSelector
-  , setTunnelOverheadBytesSelector
   , mtuSelector
+  , setIPv4SettingsSelector
+  , setIPv6SettingsSelector
   , setMTUSelector
+  , setTunnelOverheadBytesSelector
+  , tunnelOverheadBytesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- IPv4Settings@
 iPv4Settings :: IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings => nePacketTunnelNetworkSettings -> IO (Id NEIPv4Settings)
-iPv4Settings nePacketTunnelNetworkSettings  =
-    sendMsg nePacketTunnelNetworkSettings (mkSelector "IPv4Settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+iPv4Settings nePacketTunnelNetworkSettings =
+  sendMessage nePacketTunnelNetworkSettings iPv4SettingsSelector
 
 -- | IPv4Settings
 --
@@ -64,9 +61,8 @@ iPv4Settings nePacketTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setIPv4Settings:@
 setIPv4Settings :: (IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings, IsNEIPv4Settings value) => nePacketTunnelNetworkSettings -> value -> IO ()
-setIPv4Settings nePacketTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePacketTunnelNetworkSettings (mkSelector "setIPv4Settings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIPv4Settings nePacketTunnelNetworkSettings value =
+  sendMessage nePacketTunnelNetworkSettings setIPv4SettingsSelector (toNEIPv4Settings value)
 
 -- | IPv6Settings
 --
@@ -74,8 +70,8 @@ setIPv4Settings nePacketTunnelNetworkSettings  value =
 --
 -- ObjC selector: @- IPv6Settings@
 iPv6Settings :: IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings => nePacketTunnelNetworkSettings -> IO (Id NEIPv6Settings)
-iPv6Settings nePacketTunnelNetworkSettings  =
-    sendMsg nePacketTunnelNetworkSettings (mkSelector "IPv6Settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+iPv6Settings nePacketTunnelNetworkSettings =
+  sendMessage nePacketTunnelNetworkSettings iPv6SettingsSelector
 
 -- | IPv6Settings
 --
@@ -83,9 +79,8 @@ iPv6Settings nePacketTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setIPv6Settings:@
 setIPv6Settings :: (IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings, IsNEIPv6Settings value) => nePacketTunnelNetworkSettings -> value -> IO ()
-setIPv6Settings nePacketTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePacketTunnelNetworkSettings (mkSelector "setIPv6Settings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIPv6Settings nePacketTunnelNetworkSettings value =
+  sendMessage nePacketTunnelNetworkSettings setIPv6SettingsSelector (toNEIPv6Settings value)
 
 -- | tunnelOverheadBytes
 --
@@ -93,8 +88,8 @@ setIPv6Settings nePacketTunnelNetworkSettings  value =
 --
 -- ObjC selector: @- tunnelOverheadBytes@
 tunnelOverheadBytes :: IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings => nePacketTunnelNetworkSettings -> IO (Id NSNumber)
-tunnelOverheadBytes nePacketTunnelNetworkSettings  =
-    sendMsg nePacketTunnelNetworkSettings (mkSelector "tunnelOverheadBytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+tunnelOverheadBytes nePacketTunnelNetworkSettings =
+  sendMessage nePacketTunnelNetworkSettings tunnelOverheadBytesSelector
 
 -- | tunnelOverheadBytes
 --
@@ -102,9 +97,8 @@ tunnelOverheadBytes nePacketTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setTunnelOverheadBytes:@
 setTunnelOverheadBytes :: (IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings, IsNSNumber value) => nePacketTunnelNetworkSettings -> value -> IO ()
-setTunnelOverheadBytes nePacketTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePacketTunnelNetworkSettings (mkSelector "setTunnelOverheadBytes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTunnelOverheadBytes nePacketTunnelNetworkSettings value =
+  sendMessage nePacketTunnelNetworkSettings setTunnelOverheadBytesSelector (toNSNumber value)
 
 -- | MTU
 --
@@ -112,8 +106,8 @@ setTunnelOverheadBytes nePacketTunnelNetworkSettings  value =
 --
 -- ObjC selector: @- MTU@
 mtu :: IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings => nePacketTunnelNetworkSettings -> IO (Id NSNumber)
-mtu nePacketTunnelNetworkSettings  =
-    sendMsg nePacketTunnelNetworkSettings (mkSelector "MTU") (retPtr retVoid) [] >>= retainedObject . castPtr
+mtu nePacketTunnelNetworkSettings =
+  sendMessage nePacketTunnelNetworkSettings mtuSelector
 
 -- | MTU
 --
@@ -121,43 +115,42 @@ mtu nePacketTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setMTU:@
 setMTU :: (IsNEPacketTunnelNetworkSettings nePacketTunnelNetworkSettings, IsNSNumber value) => nePacketTunnelNetworkSettings -> value -> IO ()
-setMTU nePacketTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePacketTunnelNetworkSettings (mkSelector "setMTU:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMTU nePacketTunnelNetworkSettings value =
+  sendMessage nePacketTunnelNetworkSettings setMTUSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @IPv4Settings@
-iPv4SettingsSelector :: Selector
+iPv4SettingsSelector :: Selector '[] (Id NEIPv4Settings)
 iPv4SettingsSelector = mkSelector "IPv4Settings"
 
 -- | @Selector@ for @setIPv4Settings:@
-setIPv4SettingsSelector :: Selector
+setIPv4SettingsSelector :: Selector '[Id NEIPv4Settings] ()
 setIPv4SettingsSelector = mkSelector "setIPv4Settings:"
 
 -- | @Selector@ for @IPv6Settings@
-iPv6SettingsSelector :: Selector
+iPv6SettingsSelector :: Selector '[] (Id NEIPv6Settings)
 iPv6SettingsSelector = mkSelector "IPv6Settings"
 
 -- | @Selector@ for @setIPv6Settings:@
-setIPv6SettingsSelector :: Selector
+setIPv6SettingsSelector :: Selector '[Id NEIPv6Settings] ()
 setIPv6SettingsSelector = mkSelector "setIPv6Settings:"
 
 -- | @Selector@ for @tunnelOverheadBytes@
-tunnelOverheadBytesSelector :: Selector
+tunnelOverheadBytesSelector :: Selector '[] (Id NSNumber)
 tunnelOverheadBytesSelector = mkSelector "tunnelOverheadBytes"
 
 -- | @Selector@ for @setTunnelOverheadBytes:@
-setTunnelOverheadBytesSelector :: Selector
+setTunnelOverheadBytesSelector :: Selector '[Id NSNumber] ()
 setTunnelOverheadBytesSelector = mkSelector "setTunnelOverheadBytes:"
 
 -- | @Selector@ for @MTU@
-mtuSelector :: Selector
+mtuSelector :: Selector '[] (Id NSNumber)
 mtuSelector = mkSelector "MTU"
 
 -- | @Selector@ for @setMTU:@
-setMTUSelector :: Selector
+setMTUSelector :: Selector '[Id NSNumber] ()
 setMTUSelector = mkSelector "setMTU:"
 

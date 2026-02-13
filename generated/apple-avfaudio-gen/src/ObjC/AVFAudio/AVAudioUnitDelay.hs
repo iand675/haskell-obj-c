@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.AVFAudio.AVAudioUnitDelay
   , wetDryMix
   , setWetDryMix
   , delayTimeSelector
-  , setDelayTimeSelector
   , feedbackSelector
-  , setFeedbackSelector
   , lowPassCutoffSelector
+  , setDelayTimeSelector
+  , setFeedbackSelector
   , setLowPassCutoffSelector
-  , wetDryMixSelector
   , setWetDryMixSelector
+  , wetDryMixSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delayTime@
 delayTime :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> IO CDouble
-delayTime avAudioUnitDelay  =
-    sendMsg avAudioUnitDelay (mkSelector "delayTime") retCDouble []
+delayTime avAudioUnitDelay =
+  sendMessage avAudioUnitDelay delayTimeSelector
 
 -- | delayTime
 --
@@ -66,8 +63,8 @@ delayTime avAudioUnitDelay  =
 --
 -- ObjC selector: @- setDelayTime:@
 setDelayTime :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> CDouble -> IO ()
-setDelayTime avAudioUnitDelay  value =
-    sendMsg avAudioUnitDelay (mkSelector "setDelayTime:") retVoid [argCDouble value]
+setDelayTime avAudioUnitDelay value =
+  sendMessage avAudioUnitDelay setDelayTimeSelector value
 
 -- | feedback
 --
@@ -75,8 +72,8 @@ setDelayTime avAudioUnitDelay  value =
 --
 -- ObjC selector: @- feedback@
 feedback :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> IO CFloat
-feedback avAudioUnitDelay  =
-    sendMsg avAudioUnitDelay (mkSelector "feedback") retCFloat []
+feedback avAudioUnitDelay =
+  sendMessage avAudioUnitDelay feedbackSelector
 
 -- | feedback
 --
@@ -84,8 +81,8 @@ feedback avAudioUnitDelay  =
 --
 -- ObjC selector: @- setFeedback:@
 setFeedback :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> CFloat -> IO ()
-setFeedback avAudioUnitDelay  value =
-    sendMsg avAudioUnitDelay (mkSelector "setFeedback:") retVoid [argCFloat value]
+setFeedback avAudioUnitDelay value =
+  sendMessage avAudioUnitDelay setFeedbackSelector value
 
 -- | lowPassCutoff
 --
@@ -93,8 +90,8 @@ setFeedback avAudioUnitDelay  value =
 --
 -- ObjC selector: @- lowPassCutoff@
 lowPassCutoff :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> IO CFloat
-lowPassCutoff avAudioUnitDelay  =
-    sendMsg avAudioUnitDelay (mkSelector "lowPassCutoff") retCFloat []
+lowPassCutoff avAudioUnitDelay =
+  sendMessage avAudioUnitDelay lowPassCutoffSelector
 
 -- | lowPassCutoff
 --
@@ -102,8 +99,8 @@ lowPassCutoff avAudioUnitDelay  =
 --
 -- ObjC selector: @- setLowPassCutoff:@
 setLowPassCutoff :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> CFloat -> IO ()
-setLowPassCutoff avAudioUnitDelay  value =
-    sendMsg avAudioUnitDelay (mkSelector "setLowPassCutoff:") retVoid [argCFloat value]
+setLowPassCutoff avAudioUnitDelay value =
+  sendMessage avAudioUnitDelay setLowPassCutoffSelector value
 
 -- | wetDryMix
 --
@@ -111,8 +108,8 @@ setLowPassCutoff avAudioUnitDelay  value =
 --
 -- ObjC selector: @- wetDryMix@
 wetDryMix :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> IO CFloat
-wetDryMix avAudioUnitDelay  =
-    sendMsg avAudioUnitDelay (mkSelector "wetDryMix") retCFloat []
+wetDryMix avAudioUnitDelay =
+  sendMessage avAudioUnitDelay wetDryMixSelector
 
 -- | wetDryMix
 --
@@ -120,42 +117,42 @@ wetDryMix avAudioUnitDelay  =
 --
 -- ObjC selector: @- setWetDryMix:@
 setWetDryMix :: IsAVAudioUnitDelay avAudioUnitDelay => avAudioUnitDelay -> CFloat -> IO ()
-setWetDryMix avAudioUnitDelay  value =
-    sendMsg avAudioUnitDelay (mkSelector "setWetDryMix:") retVoid [argCFloat value]
+setWetDryMix avAudioUnitDelay value =
+  sendMessage avAudioUnitDelay setWetDryMixSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delayTime@
-delayTimeSelector :: Selector
+delayTimeSelector :: Selector '[] CDouble
 delayTimeSelector = mkSelector "delayTime"
 
 -- | @Selector@ for @setDelayTime:@
-setDelayTimeSelector :: Selector
+setDelayTimeSelector :: Selector '[CDouble] ()
 setDelayTimeSelector = mkSelector "setDelayTime:"
 
 -- | @Selector@ for @feedback@
-feedbackSelector :: Selector
+feedbackSelector :: Selector '[] CFloat
 feedbackSelector = mkSelector "feedback"
 
 -- | @Selector@ for @setFeedback:@
-setFeedbackSelector :: Selector
+setFeedbackSelector :: Selector '[CFloat] ()
 setFeedbackSelector = mkSelector "setFeedback:"
 
 -- | @Selector@ for @lowPassCutoff@
-lowPassCutoffSelector :: Selector
+lowPassCutoffSelector :: Selector '[] CFloat
 lowPassCutoffSelector = mkSelector "lowPassCutoff"
 
 -- | @Selector@ for @setLowPassCutoff:@
-setLowPassCutoffSelector :: Selector
+setLowPassCutoffSelector :: Selector '[CFloat] ()
 setLowPassCutoffSelector = mkSelector "setLowPassCutoff:"
 
 -- | @Selector@ for @wetDryMix@
-wetDryMixSelector :: Selector
+wetDryMixSelector :: Selector '[] CFloat
 wetDryMixSelector = mkSelector "wetDryMix"
 
 -- | @Selector@ for @setWetDryMix:@
-setWetDryMixSelector :: Selector
+setWetDryMixSelector :: Selector '[CFloat] ()
 setWetDryMixSelector = mkSelector "setWetDryMix:"
 

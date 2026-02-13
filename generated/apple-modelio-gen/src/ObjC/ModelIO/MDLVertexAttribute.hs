@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,17 +23,17 @@ module ObjC.ModelIO.MDLVertexAttribute
   , setBufferIndex
   , time
   , setTime
+  , bufferIndexSelector
+  , formatSelector
   , initWithName_format_offset_bufferIndexSelector
   , nameSelector
-  , setNameSelector
-  , formatSelector
-  , setFormatSelector
   , offsetSelector
-  , setOffsetSelector
-  , bufferIndexSelector
   , setBufferIndexSelector
-  , timeSelector
+  , setFormatSelector
+  , setNameSelector
+  , setOffsetSelector
   , setTimeSelector
+  , timeSelector
 
   -- * Enum types
   , MDLVertexFormat(MDLVertexFormat)
@@ -103,15 +104,11 @@ module ObjC.ModelIO.MDLVertexAttribute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -125,9 +122,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:format:offset:bufferIndex:@
 initWithName_format_offset_bufferIndex :: (IsMDLVertexAttribute mdlVertexAttribute, IsNSString name) => mdlVertexAttribute -> name -> MDLVertexFormat -> CULong -> CULong -> IO (Id MDLVertexAttribute)
-initWithName_format_offset_bufferIndex mdlVertexAttribute  name format offset bufferIndex =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlVertexAttribute (mkSelector "initWithName:format:offset:bufferIndex:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce format), argCULong offset, argCULong bufferIndex] >>= ownedObject . castPtr
+initWithName_format_offset_bufferIndex mdlVertexAttribute name format offset bufferIndex =
+  sendOwnedMessage mdlVertexAttribute initWithName_format_offset_bufferIndexSelector (toNSString name) format offset bufferIndex
 
 -- | name
 --
@@ -135,8 +131,8 @@ initWithName_format_offset_bufferIndex mdlVertexAttribute  name format offset bu
 --
 -- ObjC selector: @- name@
 name :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> IO (Id NSString)
-name mdlVertexAttribute  =
-    sendMsg mdlVertexAttribute (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlVertexAttribute =
+  sendMessage mdlVertexAttribute nameSelector
 
 -- | name
 --
@@ -144,9 +140,8 @@ name mdlVertexAttribute  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMDLVertexAttribute mdlVertexAttribute, IsNSString value) => mdlVertexAttribute -> value -> IO ()
-setName mdlVertexAttribute  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlVertexAttribute (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mdlVertexAttribute value =
+  sendMessage mdlVertexAttribute setNameSelector (toNSString value)
 
 -- | format
 --
@@ -156,8 +151,8 @@ setName mdlVertexAttribute  value =
 --
 -- ObjC selector: @- format@
 format :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> IO MDLVertexFormat
-format mdlVertexAttribute  =
-    fmap (coerce :: CULong -> MDLVertexFormat) $ sendMsg mdlVertexAttribute (mkSelector "format") retCULong []
+format mdlVertexAttribute =
+  sendMessage mdlVertexAttribute formatSelector
 
 -- | format
 --
@@ -167,8 +162,8 @@ format mdlVertexAttribute  =
 --
 -- ObjC selector: @- setFormat:@
 setFormat :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> MDLVertexFormat -> IO ()
-setFormat mdlVertexAttribute  value =
-    sendMsg mdlVertexAttribute (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+setFormat mdlVertexAttribute value =
+  sendMessage mdlVertexAttribute setFormatSelector value
 
 -- | offset
 --
@@ -176,8 +171,8 @@ setFormat mdlVertexAttribute  value =
 --
 -- ObjC selector: @- offset@
 offset :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> IO CULong
-offset mdlVertexAttribute  =
-    sendMsg mdlVertexAttribute (mkSelector "offset") retCULong []
+offset mdlVertexAttribute =
+  sendMessage mdlVertexAttribute offsetSelector
 
 -- | offset
 --
@@ -185,8 +180,8 @@ offset mdlVertexAttribute  =
 --
 -- ObjC selector: @- setOffset:@
 setOffset :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> CULong -> IO ()
-setOffset mdlVertexAttribute  value =
-    sendMsg mdlVertexAttribute (mkSelector "setOffset:") retVoid [argCULong value]
+setOffset mdlVertexAttribute value =
+  sendMessage mdlVertexAttribute setOffsetSelector value
 
 -- | bufferIndex
 --
@@ -194,8 +189,8 @@ setOffset mdlVertexAttribute  value =
 --
 -- ObjC selector: @- bufferIndex@
 bufferIndex :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> IO CULong
-bufferIndex mdlVertexAttribute  =
-    sendMsg mdlVertexAttribute (mkSelector "bufferIndex") retCULong []
+bufferIndex mdlVertexAttribute =
+  sendMessage mdlVertexAttribute bufferIndexSelector
 
 -- | bufferIndex
 --
@@ -203,8 +198,8 @@ bufferIndex mdlVertexAttribute  =
 --
 -- ObjC selector: @- setBufferIndex:@
 setBufferIndex :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> CULong -> IO ()
-setBufferIndex mdlVertexAttribute  value =
-    sendMsg mdlVertexAttribute (mkSelector "setBufferIndex:") retVoid [argCULong value]
+setBufferIndex mdlVertexAttribute value =
+  sendMessage mdlVertexAttribute setBufferIndexSelector value
 
 -- | time
 --
@@ -214,8 +209,8 @@ setBufferIndex mdlVertexAttribute  value =
 --
 -- ObjC selector: @- time@
 time :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> IO CDouble
-time mdlVertexAttribute  =
-    sendMsg mdlVertexAttribute (mkSelector "time") retCDouble []
+time mdlVertexAttribute =
+  sendMessage mdlVertexAttribute timeSelector
 
 -- | time
 --
@@ -225,54 +220,54 @@ time mdlVertexAttribute  =
 --
 -- ObjC selector: @- setTime:@
 setTime :: IsMDLVertexAttribute mdlVertexAttribute => mdlVertexAttribute -> CDouble -> IO ()
-setTime mdlVertexAttribute  value =
-    sendMsg mdlVertexAttribute (mkSelector "setTime:") retVoid [argCDouble value]
+setTime mdlVertexAttribute value =
+  sendMessage mdlVertexAttribute setTimeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:format:offset:bufferIndex:@
-initWithName_format_offset_bufferIndexSelector :: Selector
+initWithName_format_offset_bufferIndexSelector :: Selector '[Id NSString, MDLVertexFormat, CULong, CULong] (Id MDLVertexAttribute)
 initWithName_format_offset_bufferIndexSelector = mkSelector "initWithName:format:offset:bufferIndex:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] MDLVertexFormat
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[MDLVertexFormat] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[CULong] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @bufferIndex@
-bufferIndexSelector :: Selector
+bufferIndexSelector :: Selector '[] CULong
 bufferIndexSelector = mkSelector "bufferIndex"
 
 -- | @Selector@ for @setBufferIndex:@
-setBufferIndexSelector :: Selector
+setBufferIndexSelector :: Selector '[CULong] ()
 setBufferIndexSelector = mkSelector "setBufferIndex:"
 
 -- | @Selector@ for @time@
-timeSelector :: Selector
+timeSelector :: Selector '[] CDouble
 timeSelector = mkSelector "time"
 
 -- | @Selector@ for @setTime:@
-setTimeSelector :: Selector
+setTimeSelector :: Selector '[CDouble] ()
 setTimeSelector = mkSelector "setTime:"
 

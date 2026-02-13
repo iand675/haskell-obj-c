@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MediaPlayer.MPMediaQuerySection
   , IsMPMediaQuerySection(..)
   , title
   , range
-  , titleSelector
   , rangeSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,23 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- title@
 title :: IsMPMediaQuerySection mpMediaQuerySection => mpMediaQuerySection -> IO (Id NSString)
-title mpMediaQuerySection  =
-    sendMsg mpMediaQuerySection (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title mpMediaQuerySection =
+  sendMessage mpMediaQuerySection titleSelector
 
 -- | @- range@
 range :: IsMPMediaQuerySection mpMediaQuerySection => mpMediaQuerySection -> IO NSRange
-range mpMediaQuerySection  =
-    sendMsgStret mpMediaQuerySection (mkSelector "range") retNSRange []
+range mpMediaQuerySection =
+  sendMessage mpMediaQuerySection rangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @range@
-rangeSelector :: Selector
+rangeSelector :: Selector '[] NSRange
 rangeSelector = mkSelector "range"
 

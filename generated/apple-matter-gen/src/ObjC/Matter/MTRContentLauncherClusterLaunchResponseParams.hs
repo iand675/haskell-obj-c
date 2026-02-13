@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRContentLauncherClusterLaunchResponseParams
   , setData
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , statusSelector
-  , setStatusSelector
   , dataSelector
   , setDataSelector
-  , timedInvokeTimeoutMsSelector
+  , setStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,25 +36,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- status@
 status :: IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams => mtrContentLauncherClusterLaunchResponseParams -> IO (Id NSNumber)
-status mtrContentLauncherClusterLaunchResponseParams  =
-    sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrContentLauncherClusterLaunchResponseParams =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams, IsNSNumber value) => mtrContentLauncherClusterLaunchResponseParams -> value -> IO ()
-setStatus mtrContentLauncherClusterLaunchResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrContentLauncherClusterLaunchResponseParams value =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams => mtrContentLauncherClusterLaunchResponseParams -> IO (Id NSString)
-data_ mtrContentLauncherClusterLaunchResponseParams  =
-    sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrContentLauncherClusterLaunchResponseParams =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams, IsNSString value) => mtrContentLauncherClusterLaunchResponseParams -> value -> IO ()
-setData mtrContentLauncherClusterLaunchResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrContentLauncherClusterLaunchResponseParams value =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams setDataSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +62,8 @@ setData mtrContentLauncherClusterLaunchResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams => mtrContentLauncherClusterLaunchResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentLauncherClusterLaunchResponseParams  =
-    sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentLauncherClusterLaunchResponseParams =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,35 +73,34 @@ timedInvokeTimeoutMs mtrContentLauncherClusterLaunchResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentLauncherClusterLaunchResponseParams mtrContentLauncherClusterLaunchResponseParams, IsNSNumber value) => mtrContentLauncherClusterLaunchResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentLauncherClusterLaunchResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentLauncherClusterLaunchResponseParams value =
+  sendMessage mtrContentLauncherClusterLaunchResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

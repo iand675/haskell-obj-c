@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.NetworkExtension.NEHotspotHelperResponse
   , setNetwork
   , setNetworkList
   , deliver
-  , setNetworkSelector
-  , setNetworkListSelector
   , deliverSelector
+  , setNetworkListSelector
+  , setNetworkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setNetwork:@
 setNetwork :: (IsNEHotspotHelperResponse neHotspotHelperResponse, IsNEHotspotNetwork network) => neHotspotHelperResponse -> network -> IO ()
-setNetwork neHotspotHelperResponse  network =
-  withObjCPtr network $ \raw_network ->
-      sendMsg neHotspotHelperResponse (mkSelector "setNetwork:") retVoid [argPtr (castPtr raw_network :: Ptr ())]
+setNetwork neHotspotHelperResponse network =
+  sendMessage neHotspotHelperResponse setNetworkSelector (toNEHotspotNetwork network)
 
 -- | setNetworkList
 --
@@ -55,9 +51,8 @@ setNetwork neHotspotHelperResponse  network =
 --
 -- ObjC selector: @- setNetworkList:@
 setNetworkList :: (IsNEHotspotHelperResponse neHotspotHelperResponse, IsNSArray networkList) => neHotspotHelperResponse -> networkList -> IO ()
-setNetworkList neHotspotHelperResponse  networkList =
-  withObjCPtr networkList $ \raw_networkList ->
-      sendMsg neHotspotHelperResponse (mkSelector "setNetworkList:") retVoid [argPtr (castPtr raw_networkList :: Ptr ())]
+setNetworkList neHotspotHelperResponse networkList =
+  sendMessage neHotspotHelperResponse setNetworkListSelector (toNSArray networkList)
 
 -- | deliver
 --
@@ -67,22 +62,22 @@ setNetworkList neHotspotHelperResponse  networkList =
 --
 -- ObjC selector: @- deliver@
 deliver :: IsNEHotspotHelperResponse neHotspotHelperResponse => neHotspotHelperResponse -> IO ()
-deliver neHotspotHelperResponse  =
-    sendMsg neHotspotHelperResponse (mkSelector "deliver") retVoid []
+deliver neHotspotHelperResponse =
+  sendMessage neHotspotHelperResponse deliverSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setNetwork:@
-setNetworkSelector :: Selector
+setNetworkSelector :: Selector '[Id NEHotspotNetwork] ()
 setNetworkSelector = mkSelector "setNetwork:"
 
 -- | @Selector@ for @setNetworkList:@
-setNetworkListSelector :: Selector
+setNetworkListSelector :: Selector '[Id NSArray] ()
 setNetworkListSelector = mkSelector "setNetworkList:"
 
 -- | @Selector@ for @deliver@
-deliverSelector :: Selector
+deliverSelector :: Selector '[] ()
 deliverSelector = mkSelector "deliver"
 

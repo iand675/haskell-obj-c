@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.AVFAudio.AVMIDIChannelPressureEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:pressure:@
 initWithChannel_pressure :: IsAVMIDIChannelPressureEvent avmidiChannelPressureEvent => avmidiChannelPressureEvent -> CUInt -> CUInt -> IO (Id AVMIDIChannelPressureEvent)
-initWithChannel_pressure avmidiChannelPressureEvent  channel pressure =
-    sendMsg avmidiChannelPressureEvent (mkSelector "initWithChannel:pressure:") (retPtr retVoid) [argCUInt channel, argCUInt pressure] >>= ownedObject . castPtr
+initWithChannel_pressure avmidiChannelPressureEvent channel pressure =
+  sendOwnedMessage avmidiChannelPressureEvent initWithChannel_pressureSelector channel pressure
 
 -- | pressure
 --
@@ -56,8 +53,8 @@ initWithChannel_pressure avmidiChannelPressureEvent  channel pressure =
 --
 -- ObjC selector: @- pressure@
 pressure :: IsAVMIDIChannelPressureEvent avmidiChannelPressureEvent => avmidiChannelPressureEvent -> IO CUInt
-pressure avmidiChannelPressureEvent  =
-    sendMsg avmidiChannelPressureEvent (mkSelector "pressure") retCUInt []
+pressure avmidiChannelPressureEvent =
+  sendMessage avmidiChannelPressureEvent pressureSelector
 
 -- | pressure
 --
@@ -65,22 +62,22 @@ pressure avmidiChannelPressureEvent  =
 --
 -- ObjC selector: @- setPressure:@
 setPressure :: IsAVMIDIChannelPressureEvent avmidiChannelPressureEvent => avmidiChannelPressureEvent -> CUInt -> IO ()
-setPressure avmidiChannelPressureEvent  value =
-    sendMsg avmidiChannelPressureEvent (mkSelector "setPressure:") retVoid [argCUInt value]
+setPressure avmidiChannelPressureEvent value =
+  sendMessage avmidiChannelPressureEvent setPressureSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:pressure:@
-initWithChannel_pressureSelector :: Selector
+initWithChannel_pressureSelector :: Selector '[CUInt, CUInt] (Id AVMIDIChannelPressureEvent)
 initWithChannel_pressureSelector = mkSelector "initWithChannel:pressure:"
 
 -- | @Selector@ for @pressure@
-pressureSelector :: Selector
+pressureSelector :: Selector '[] CUInt
 pressureSelector = mkSelector "pressure"
 
 -- | @Selector@ for @setPressure:@
-setPressureSelector :: Selector
+setPressureSelector :: Selector '[CUInt] ()
 setPressureSelector = mkSelector "setPressure:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data GCPoint2 = GCPoint2
   { gcPoint2X :: !CFloat
@@ -36,6 +38,16 @@ argGCPoint2 = mkStorableArg gcPoint2StructType
 
 retGCPoint2 :: RetType GCPoint2
 retGCPoint2 = mkStorableRetType gcPoint2StructType
+
+instance ObjCArgument GCPoint2 where
+  withObjCArg x k = k (argGCPoint2 x)
+
+instance ObjCReturn GCPoint2 where
+  type RawReturn GCPoint2 = GCPoint2
+  objcRetType = retGCPoint2
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | Represents a quaternion (one way of parameterizing attitude). If q is an instance of GCQuaternion, mathematically it represents the following quaternion:
 --
@@ -69,3 +81,13 @@ argGCQuaternion = mkStorableArg gcQuaternionStructType
 
 retGCQuaternion :: RetType GCQuaternion
 retGCQuaternion = mkStorableRetType gcQuaternionStructType
+
+instance ObjCArgument GCQuaternion where
+  withObjCArg x k = k (argGCQuaternion x)
+
+instance ObjCReturn GCQuaternion where
+  type RawReturn GCQuaternion = GCQuaternion
+  objcRetType = retGCQuaternion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

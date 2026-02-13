@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.PassKit.PKPayment
   , billingContact
   , shippingContact
   , shippingMethod
-  , tokenSelector
   , billingContactSelector
   , shippingContactSelector
   , shippingMethodSelector
+  , tokenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- token@
 token :: IsPKPayment pkPayment => pkPayment -> IO (Id PKPaymentToken)
-token pkPayment  =
-    sendMsg pkPayment (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
+token pkPayment =
+  sendMessage pkPayment tokenSelector
 
 -- | @- billingContact@
 billingContact :: IsPKPayment pkPayment => pkPayment -> IO (Id PKContact)
-billingContact pkPayment  =
-    sendMsg pkPayment (mkSelector "billingContact") (retPtr retVoid) [] >>= retainedObject . castPtr
+billingContact pkPayment =
+  sendMessage pkPayment billingContactSelector
 
 -- | @- shippingContact@
 shippingContact :: IsPKPayment pkPayment => pkPayment -> IO (Id PKContact)
-shippingContact pkPayment  =
-    sendMsg pkPayment (mkSelector "shippingContact") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingContact pkPayment =
+  sendMessage pkPayment shippingContactSelector
 
 -- | @- shippingMethod@
 shippingMethod :: IsPKPayment pkPayment => pkPayment -> IO (Id PKShippingMethod)
-shippingMethod pkPayment  =
-    sendMsg pkPayment (mkSelector "shippingMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingMethod pkPayment =
+  sendMessage pkPayment shippingMethodSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @token@
-tokenSelector :: Selector
+tokenSelector :: Selector '[] (Id PKPaymentToken)
 tokenSelector = mkSelector "token"
 
 -- | @Selector@ for @billingContact@
-billingContactSelector :: Selector
+billingContactSelector :: Selector '[] (Id PKContact)
 billingContactSelector = mkSelector "billingContact"
 
 -- | @Selector@ for @shippingContact@
-shippingContactSelector :: Selector
+shippingContactSelector :: Selector '[] (Id PKContact)
 shippingContactSelector = mkSelector "shippingContact"
 
 -- | @Selector@ for @shippingMethod@
-shippingMethodSelector :: Selector
+shippingMethodSelector :: Selector '[] (Id PKShippingMethod)
 shippingMethodSelector = mkSelector "shippingMethod"
 

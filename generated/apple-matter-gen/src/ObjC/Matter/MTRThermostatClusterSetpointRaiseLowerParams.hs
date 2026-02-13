@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRThermostatClusterSetpointRaiseLowerParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , modeSelector
-  , setModeSelector
   , amountSelector
-  , setAmountSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , modeSelector
   , serverSideProcessingTimeoutSelector
+  , setAmountSelector
+  , setModeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mode@
 mode :: IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams => mtrThermostatClusterSetpointRaiseLowerParams -> IO (Id NSNumber)
-mode mtrThermostatClusterSetpointRaiseLowerParams  =
-    sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "mode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mode mtrThermostatClusterSetpointRaiseLowerParams =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams modeSelector
 
 -- | @- setMode:@
 setMode :: (IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams, IsNSNumber value) => mtrThermostatClusterSetpointRaiseLowerParams -> value -> IO ()
-setMode mtrThermostatClusterSetpointRaiseLowerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "setMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMode mtrThermostatClusterSetpointRaiseLowerParams value =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams setModeSelector (toNSNumber value)
 
 -- | @- amount@
 amount :: IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams => mtrThermostatClusterSetpointRaiseLowerParams -> IO (Id NSNumber)
-amount mtrThermostatClusterSetpointRaiseLowerParams  =
-    sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount mtrThermostatClusterSetpointRaiseLowerParams =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams amountSelector
 
 -- | @- setAmount:@
 setAmount :: (IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams, IsNSNumber value) => mtrThermostatClusterSetpointRaiseLowerParams -> value -> IO ()
-setAmount mtrThermostatClusterSetpointRaiseLowerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "setAmount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAmount mtrThermostatClusterSetpointRaiseLowerParams value =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams setAmountSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setAmount mtrThermostatClusterSetpointRaiseLowerParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams => mtrThermostatClusterSetpointRaiseLowerParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams  =
-    sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams, IsNSNumber value) => mtrThermostatClusterSetpointRaiseLowerParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams value =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrThermostatClusterSetpointRaiseLowerParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams => mtrThermostatClusterSetpointRaiseLowerParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThermostatClusterSetpointRaiseLowerParams  =
-    sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThermostatClusterSetpointRaiseLowerParams =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrThermostatClusterSetpointRaiseLowerParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThermostatClusterSetpointRaiseLowerParams mtrThermostatClusterSetpointRaiseLowerParams, IsNSNumber value) => mtrThermostatClusterSetpointRaiseLowerParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThermostatClusterSetpointRaiseLowerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointRaiseLowerParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThermostatClusterSetpointRaiseLowerParams value =
+  sendMessage mtrThermostatClusterSetpointRaiseLowerParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] (Id NSNumber)
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[Id NSNumber] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id NSNumber)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @setAmount:@
-setAmountSelector :: Selector
+setAmountSelector :: Selector '[Id NSNumber] ()
 setAmountSelector = mkSelector "setAmount:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

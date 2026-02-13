@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.Photos.PHFetchOptions
   , setFetchLimit
   , wantsIncrementalChangeDetails
   , setWantsIncrementalChangeDetails
-  , predicateSelector
-  , setPredicateSelector
-  , sortDescriptorsSelector
-  , setSortDescriptorsSelector
-  , includeHiddenAssetsSelector
-  , setIncludeHiddenAssetsSelector
-  , includeAllBurstAssetsSelector
-  , setIncludeAllBurstAssetsSelector
-  , includeAssetSourceTypesSelector
-  , setIncludeAssetSourceTypesSelector
   , fetchLimitSelector
+  , includeAllBurstAssetsSelector
+  , includeAssetSourceTypesSelector
+  , includeHiddenAssetsSelector
+  , predicateSelector
   , setFetchLimitSelector
-  , wantsIncrementalChangeDetailsSelector
+  , setIncludeAllBurstAssetsSelector
+  , setIncludeAssetSourceTypesSelector
+  , setIncludeHiddenAssetsSelector
+  , setPredicateSelector
+  , setSortDescriptorsSelector
   , setWantsIncrementalChangeDetailsSelector
+  , sortDescriptorsSelector
+  , wantsIncrementalChangeDetailsSelector
 
   -- * Enum types
   , PHAssetSourceType(PHAssetSourceType)
@@ -45,15 +46,11 @@ module ObjC.Photos.PHFetchOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,133 +60,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- predicate@
 predicate :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO (Id NSPredicate)
-predicate phFetchOptions  =
-    sendMsg phFetchOptions (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate phFetchOptions =
+  sendMessage phFetchOptions predicateSelector
 
 -- | @- setPredicate:@
 setPredicate :: (IsPHFetchOptions phFetchOptions, IsNSPredicate value) => phFetchOptions -> value -> IO ()
-setPredicate phFetchOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phFetchOptions (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPredicate phFetchOptions value =
+  sendMessage phFetchOptions setPredicateSelector (toNSPredicate value)
 
 -- | @- sortDescriptors@
 sortDescriptors :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO (Id NSArray)
-sortDescriptors phFetchOptions  =
-    sendMsg phFetchOptions (mkSelector "sortDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptors phFetchOptions =
+  sendMessage phFetchOptions sortDescriptorsSelector
 
 -- | @- setSortDescriptors:@
 setSortDescriptors :: (IsPHFetchOptions phFetchOptions, IsNSArray value) => phFetchOptions -> value -> IO ()
-setSortDescriptors phFetchOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phFetchOptions (mkSelector "setSortDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSortDescriptors phFetchOptions value =
+  sendMessage phFetchOptions setSortDescriptorsSelector (toNSArray value)
 
 -- | @- includeHiddenAssets@
 includeHiddenAssets :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO Bool
-includeHiddenAssets phFetchOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phFetchOptions (mkSelector "includeHiddenAssets") retCULong []
+includeHiddenAssets phFetchOptions =
+  sendMessage phFetchOptions includeHiddenAssetsSelector
 
 -- | @- setIncludeHiddenAssets:@
 setIncludeHiddenAssets :: IsPHFetchOptions phFetchOptions => phFetchOptions -> Bool -> IO ()
-setIncludeHiddenAssets phFetchOptions  value =
-    sendMsg phFetchOptions (mkSelector "setIncludeHiddenAssets:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeHiddenAssets phFetchOptions value =
+  sendMessage phFetchOptions setIncludeHiddenAssetsSelector value
 
 -- | @- includeAllBurstAssets@
 includeAllBurstAssets :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO Bool
-includeAllBurstAssets phFetchOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phFetchOptions (mkSelector "includeAllBurstAssets") retCULong []
+includeAllBurstAssets phFetchOptions =
+  sendMessage phFetchOptions includeAllBurstAssetsSelector
 
 -- | @- setIncludeAllBurstAssets:@
 setIncludeAllBurstAssets :: IsPHFetchOptions phFetchOptions => phFetchOptions -> Bool -> IO ()
-setIncludeAllBurstAssets phFetchOptions  value =
-    sendMsg phFetchOptions (mkSelector "setIncludeAllBurstAssets:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeAllBurstAssets phFetchOptions value =
+  sendMessage phFetchOptions setIncludeAllBurstAssetsSelector value
 
 -- | @- includeAssetSourceTypes@
 includeAssetSourceTypes :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO PHAssetSourceType
-includeAssetSourceTypes phFetchOptions  =
-    fmap (coerce :: CULong -> PHAssetSourceType) $ sendMsg phFetchOptions (mkSelector "includeAssetSourceTypes") retCULong []
+includeAssetSourceTypes phFetchOptions =
+  sendMessage phFetchOptions includeAssetSourceTypesSelector
 
 -- | @- setIncludeAssetSourceTypes:@
 setIncludeAssetSourceTypes :: IsPHFetchOptions phFetchOptions => phFetchOptions -> PHAssetSourceType -> IO ()
-setIncludeAssetSourceTypes phFetchOptions  value =
-    sendMsg phFetchOptions (mkSelector "setIncludeAssetSourceTypes:") retVoid [argCULong (coerce value)]
+setIncludeAssetSourceTypes phFetchOptions value =
+  sendMessage phFetchOptions setIncludeAssetSourceTypesSelector value
 
 -- | @- fetchLimit@
 fetchLimit :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO CULong
-fetchLimit phFetchOptions  =
-    sendMsg phFetchOptions (mkSelector "fetchLimit") retCULong []
+fetchLimit phFetchOptions =
+  sendMessage phFetchOptions fetchLimitSelector
 
 -- | @- setFetchLimit:@
 setFetchLimit :: IsPHFetchOptions phFetchOptions => phFetchOptions -> CULong -> IO ()
-setFetchLimit phFetchOptions  value =
-    sendMsg phFetchOptions (mkSelector "setFetchLimit:") retVoid [argCULong value]
+setFetchLimit phFetchOptions value =
+  sendMessage phFetchOptions setFetchLimitSelector value
 
 -- | @- wantsIncrementalChangeDetails@
 wantsIncrementalChangeDetails :: IsPHFetchOptions phFetchOptions => phFetchOptions -> IO Bool
-wantsIncrementalChangeDetails phFetchOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phFetchOptions (mkSelector "wantsIncrementalChangeDetails") retCULong []
+wantsIncrementalChangeDetails phFetchOptions =
+  sendMessage phFetchOptions wantsIncrementalChangeDetailsSelector
 
 -- | @- setWantsIncrementalChangeDetails:@
 setWantsIncrementalChangeDetails :: IsPHFetchOptions phFetchOptions => phFetchOptions -> Bool -> IO ()
-setWantsIncrementalChangeDetails phFetchOptions  value =
-    sendMsg phFetchOptions (mkSelector "setWantsIncrementalChangeDetails:") retVoid [argCULong (if value then 1 else 0)]
+setWantsIncrementalChangeDetails phFetchOptions value =
+  sendMessage phFetchOptions setWantsIncrementalChangeDetailsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @setPredicate:@
-setPredicateSelector :: Selector
+setPredicateSelector :: Selector '[Id NSPredicate] ()
 setPredicateSelector = mkSelector "setPredicate:"
 
 -- | @Selector@ for @sortDescriptors@
-sortDescriptorsSelector :: Selector
+sortDescriptorsSelector :: Selector '[] (Id NSArray)
 sortDescriptorsSelector = mkSelector "sortDescriptors"
 
 -- | @Selector@ for @setSortDescriptors:@
-setSortDescriptorsSelector :: Selector
+setSortDescriptorsSelector :: Selector '[Id NSArray] ()
 setSortDescriptorsSelector = mkSelector "setSortDescriptors:"
 
 -- | @Selector@ for @includeHiddenAssets@
-includeHiddenAssetsSelector :: Selector
+includeHiddenAssetsSelector :: Selector '[] Bool
 includeHiddenAssetsSelector = mkSelector "includeHiddenAssets"
 
 -- | @Selector@ for @setIncludeHiddenAssets:@
-setIncludeHiddenAssetsSelector :: Selector
+setIncludeHiddenAssetsSelector :: Selector '[Bool] ()
 setIncludeHiddenAssetsSelector = mkSelector "setIncludeHiddenAssets:"
 
 -- | @Selector@ for @includeAllBurstAssets@
-includeAllBurstAssetsSelector :: Selector
+includeAllBurstAssetsSelector :: Selector '[] Bool
 includeAllBurstAssetsSelector = mkSelector "includeAllBurstAssets"
 
 -- | @Selector@ for @setIncludeAllBurstAssets:@
-setIncludeAllBurstAssetsSelector :: Selector
+setIncludeAllBurstAssetsSelector :: Selector '[Bool] ()
 setIncludeAllBurstAssetsSelector = mkSelector "setIncludeAllBurstAssets:"
 
 -- | @Selector@ for @includeAssetSourceTypes@
-includeAssetSourceTypesSelector :: Selector
+includeAssetSourceTypesSelector :: Selector '[] PHAssetSourceType
 includeAssetSourceTypesSelector = mkSelector "includeAssetSourceTypes"
 
 -- | @Selector@ for @setIncludeAssetSourceTypes:@
-setIncludeAssetSourceTypesSelector :: Selector
+setIncludeAssetSourceTypesSelector :: Selector '[PHAssetSourceType] ()
 setIncludeAssetSourceTypesSelector = mkSelector "setIncludeAssetSourceTypes:"
 
 -- | @Selector@ for @fetchLimit@
-fetchLimitSelector :: Selector
+fetchLimitSelector :: Selector '[] CULong
 fetchLimitSelector = mkSelector "fetchLimit"
 
 -- | @Selector@ for @setFetchLimit:@
-setFetchLimitSelector :: Selector
+setFetchLimitSelector :: Selector '[CULong] ()
 setFetchLimitSelector = mkSelector "setFetchLimit:"
 
 -- | @Selector@ for @wantsIncrementalChangeDetails@
-wantsIncrementalChangeDetailsSelector :: Selector
+wantsIncrementalChangeDetailsSelector :: Selector '[] Bool
 wantsIncrementalChangeDetailsSelector = mkSelector "wantsIncrementalChangeDetails"
 
 -- | @Selector@ for @setWantsIncrementalChangeDetails:@
-setWantsIncrementalChangeDetailsSelector :: Selector
+setWantsIncrementalChangeDetailsSelector :: Selector '[Bool] ()
 setWantsIncrementalChangeDetailsSelector = mkSelector "setWantsIncrementalChangeDetails:"
 

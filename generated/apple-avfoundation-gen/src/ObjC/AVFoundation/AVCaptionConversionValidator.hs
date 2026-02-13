@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,12 +19,12 @@ module ObjC.AVFoundation.AVCaptionConversionValidator
   , status
   , captions
   , warnings
+  , captionsSelector
   , initSelector
   , newSelector
-  , validateCaptionConversionWithWarningHandlerSelector
-  , stopValidatingSelector
   , statusSelector
-  , captionsSelector
+  , stopValidatingSelector
+  , validateCaptionConversionWithWarningHandlerSelector
   , warningsSelector
 
   -- * Enum types
@@ -35,15 +36,11 @@ module ObjC.AVFoundation.AVCaptionConversionValidator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> IO (Id AVCaptionConversionValidator)
-init_ avCaptionConversionValidator  =
-    sendMsg avCaptionConversionValidator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionConversionValidator =
+  sendOwnedMessage avCaptionConversionValidator initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionConversionValidator)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionConversionValidator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | validateCaptionConversionWithWarningHandler:
 --
@@ -73,8 +70,8 @@ new  =
 --
 -- ObjC selector: @- validateCaptionConversionWithWarningHandler:@
 validateCaptionConversionWithWarningHandler :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> Ptr () -> IO ()
-validateCaptionConversionWithWarningHandler avCaptionConversionValidator  handler =
-    sendMsg avCaptionConversionValidator (mkSelector "validateCaptionConversionWithWarningHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+validateCaptionConversionWithWarningHandler avCaptionConversionValidator handler =
+  sendMessage avCaptionConversionValidator validateCaptionConversionWithWarningHandlerSelector handler
 
 -- | stopValidating
 --
@@ -84,8 +81,8 @@ validateCaptionConversionWithWarningHandler avCaptionConversionValidator  handle
 --
 -- ObjC selector: @- stopValidating@
 stopValidating :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> IO ()
-stopValidating avCaptionConversionValidator  =
-    sendMsg avCaptionConversionValidator (mkSelector "stopValidating") retVoid []
+stopValidating avCaptionConversionValidator =
+  sendMessage avCaptionConversionValidator stopValidatingSelector
 
 -- | status
 --
@@ -93,8 +90,8 @@ stopValidating avCaptionConversionValidator  =
 --
 -- ObjC selector: @- status@
 status :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> IO AVCaptionConversionValidatorStatus
-status avCaptionConversionValidator  =
-    fmap (coerce :: CLong -> AVCaptionConversionValidatorStatus) $ sendMsg avCaptionConversionValidator (mkSelector "status") retCLong []
+status avCaptionConversionValidator =
+  sendMessage avCaptionConversionValidator statusSelector
 
 -- | captions
 --
@@ -102,8 +99,8 @@ status avCaptionConversionValidator  =
 --
 -- ObjC selector: @- captions@
 captions :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> IO (Id NSArray)
-captions avCaptionConversionValidator  =
-    sendMsg avCaptionConversionValidator (mkSelector "captions") (retPtr retVoid) [] >>= retainedObject . castPtr
+captions avCaptionConversionValidator =
+  sendMessage avCaptionConversionValidator captionsSelector
 
 -- | warnings
 --
@@ -111,38 +108,38 @@ captions avCaptionConversionValidator  =
 --
 -- ObjC selector: @- warnings@
 warnings :: IsAVCaptionConversionValidator avCaptionConversionValidator => avCaptionConversionValidator -> IO (Id NSArray)
-warnings avCaptionConversionValidator  =
-    sendMsg avCaptionConversionValidator (mkSelector "warnings") (retPtr retVoid) [] >>= retainedObject . castPtr
+warnings avCaptionConversionValidator =
+  sendMessage avCaptionConversionValidator warningsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionConversionValidator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionConversionValidator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @validateCaptionConversionWithWarningHandler:@
-validateCaptionConversionWithWarningHandlerSelector :: Selector
+validateCaptionConversionWithWarningHandlerSelector :: Selector '[Ptr ()] ()
 validateCaptionConversionWithWarningHandlerSelector = mkSelector "validateCaptionConversionWithWarningHandler:"
 
 -- | @Selector@ for @stopValidating@
-stopValidatingSelector :: Selector
+stopValidatingSelector :: Selector '[] ()
 stopValidatingSelector = mkSelector "stopValidating"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVCaptionConversionValidatorStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @captions@
-captionsSelector :: Selector
+captionsSelector :: Selector '[] (Id NSArray)
 captionsSelector = mkSelector "captions"
 
 -- | @Selector@ for @warnings@
-warningsSelector :: Selector
+warningsSelector :: Selector '[] (Id NSArray)
 warningsSelector = mkSelector "warnings"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.SceneKit.SCNPhysicsHingeJoint
   , setAxisB
   , anchorB
   , setAnchorB
+  , anchorASelector
+  , anchorBSelector
+  , axisASelector
+  , axisBSelector
+  , bodyASelector
+  , bodyBSelector
   , jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector
   , jointWithBody_axis_anchorSelector
-  , bodyASelector
-  , axisASelector
-  , setAxisASelector
-  , anchorASelector
   , setAnchorASelector
-  , bodyBSelector
-  , axisBSelector
-  , setAxisBSelector
-  , anchorBSelector
   , setAnchorBSelector
+  , setAxisASelector
+  , setAxisBSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,117 +56,114 @@ jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorB :: (IsSCNPhysicsBody bodyA, IsS
 jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorB bodyA axisA anchorA bodyB axisB anchorB =
   do
     cls' <- getRequiredClass "SCNPhysicsHingeJoint"
-    withObjCPtr bodyA $ \raw_bodyA ->
-      withObjCPtr bodyB $ \raw_bodyB ->
-        sendClassMsg cls' (mkSelector "jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:") (retPtr retVoid) [argPtr (castPtr raw_bodyA :: Ptr ()), argSCNVector3 axisA, argSCNVector3 anchorA, argPtr (castPtr raw_bodyB :: Ptr ()), argSCNVector3 axisB, argSCNVector3 anchorB] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector (toSCNPhysicsBody bodyA) axisA anchorA (toSCNPhysicsBody bodyB) axisB anchorB
 
 -- | @+ jointWithBody:axis:anchor:@
 jointWithBody_axis_anchor :: IsSCNPhysicsBody body => body -> SCNVector3 -> SCNVector3 -> IO (Id SCNPhysicsHingeJoint)
 jointWithBody_axis_anchor body axis anchor =
   do
     cls' <- getRequiredClass "SCNPhysicsHingeJoint"
-    withObjCPtr body $ \raw_body ->
-      sendClassMsg cls' (mkSelector "jointWithBody:axis:anchor:") (retPtr retVoid) [argPtr (castPtr raw_body :: Ptr ()), argSCNVector3 axis, argSCNVector3 anchor] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBody_axis_anchorSelector (toSCNPhysicsBody body) axis anchor
 
 -- | @- bodyA@
 bodyA :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO (Id SCNPhysicsBody)
-bodyA scnPhysicsHingeJoint  =
-    sendMsg scnPhysicsHingeJoint (mkSelector "bodyA") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyA scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint bodyASelector
 
 -- | @- axisA@
 axisA :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO SCNVector3
-axisA scnPhysicsHingeJoint  =
-    sendMsgStret scnPhysicsHingeJoint (mkSelector "axisA") retSCNVector3 []
+axisA scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint axisASelector
 
 -- | @- setAxisA:@
 setAxisA :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> SCNVector3 -> IO ()
-setAxisA scnPhysicsHingeJoint  value =
-    sendMsg scnPhysicsHingeJoint (mkSelector "setAxisA:") retVoid [argSCNVector3 value]
+setAxisA scnPhysicsHingeJoint value =
+  sendMessage scnPhysicsHingeJoint setAxisASelector value
 
 -- | @- anchorA@
 anchorA :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO SCNVector3
-anchorA scnPhysicsHingeJoint  =
-    sendMsgStret scnPhysicsHingeJoint (mkSelector "anchorA") retSCNVector3 []
+anchorA scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint anchorASelector
 
 -- | @- setAnchorA:@
 setAnchorA :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> SCNVector3 -> IO ()
-setAnchorA scnPhysicsHingeJoint  value =
-    sendMsg scnPhysicsHingeJoint (mkSelector "setAnchorA:") retVoid [argSCNVector3 value]
+setAnchorA scnPhysicsHingeJoint value =
+  sendMessage scnPhysicsHingeJoint setAnchorASelector value
 
 -- | @- bodyB@
 bodyB :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO (Id SCNPhysicsBody)
-bodyB scnPhysicsHingeJoint  =
-    sendMsg scnPhysicsHingeJoint (mkSelector "bodyB") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyB scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint bodyBSelector
 
 -- | @- axisB@
 axisB :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO SCNVector3
-axisB scnPhysicsHingeJoint  =
-    sendMsgStret scnPhysicsHingeJoint (mkSelector "axisB") retSCNVector3 []
+axisB scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint axisBSelector
 
 -- | @- setAxisB:@
 setAxisB :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> SCNVector3 -> IO ()
-setAxisB scnPhysicsHingeJoint  value =
-    sendMsg scnPhysicsHingeJoint (mkSelector "setAxisB:") retVoid [argSCNVector3 value]
+setAxisB scnPhysicsHingeJoint value =
+  sendMessage scnPhysicsHingeJoint setAxisBSelector value
 
 -- | @- anchorB@
 anchorB :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> IO SCNVector3
-anchorB scnPhysicsHingeJoint  =
-    sendMsgStret scnPhysicsHingeJoint (mkSelector "anchorB") retSCNVector3 []
+anchorB scnPhysicsHingeJoint =
+  sendMessage scnPhysicsHingeJoint anchorBSelector
 
 -- | @- setAnchorB:@
 setAnchorB :: IsSCNPhysicsHingeJoint scnPhysicsHingeJoint => scnPhysicsHingeJoint -> SCNVector3 -> IO ()
-setAnchorB scnPhysicsHingeJoint  value =
-    sendMsg scnPhysicsHingeJoint (mkSelector "setAnchorB:") retVoid [argSCNVector3 value]
+setAnchorB scnPhysicsHingeJoint value =
+  sendMessage scnPhysicsHingeJoint setAnchorBSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:@
-jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector :: Selector
+jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector :: Selector '[Id SCNPhysicsBody, SCNVector3, SCNVector3, Id SCNPhysicsBody, SCNVector3, SCNVector3] (Id SCNPhysicsHingeJoint)
 jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector = mkSelector "jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:"
 
 -- | @Selector@ for @jointWithBody:axis:anchor:@
-jointWithBody_axis_anchorSelector :: Selector
+jointWithBody_axis_anchorSelector :: Selector '[Id SCNPhysicsBody, SCNVector3, SCNVector3] (Id SCNPhysicsHingeJoint)
 jointWithBody_axis_anchorSelector = mkSelector "jointWithBody:axis:anchor:"
 
 -- | @Selector@ for @bodyA@
-bodyASelector :: Selector
+bodyASelector :: Selector '[] (Id SCNPhysicsBody)
 bodyASelector = mkSelector "bodyA"
 
 -- | @Selector@ for @axisA@
-axisASelector :: Selector
+axisASelector :: Selector '[] SCNVector3
 axisASelector = mkSelector "axisA"
 
 -- | @Selector@ for @setAxisA:@
-setAxisASelector :: Selector
+setAxisASelector :: Selector '[SCNVector3] ()
 setAxisASelector = mkSelector "setAxisA:"
 
 -- | @Selector@ for @anchorA@
-anchorASelector :: Selector
+anchorASelector :: Selector '[] SCNVector3
 anchorASelector = mkSelector "anchorA"
 
 -- | @Selector@ for @setAnchorA:@
-setAnchorASelector :: Selector
+setAnchorASelector :: Selector '[SCNVector3] ()
 setAnchorASelector = mkSelector "setAnchorA:"
 
 -- | @Selector@ for @bodyB@
-bodyBSelector :: Selector
+bodyBSelector :: Selector '[] (Id SCNPhysicsBody)
 bodyBSelector = mkSelector "bodyB"
 
 -- | @Selector@ for @axisB@
-axisBSelector :: Selector
+axisBSelector :: Selector '[] SCNVector3
 axisBSelector = mkSelector "axisB"
 
 -- | @Selector@ for @setAxisB:@
-setAxisBSelector :: Selector
+setAxisBSelector :: Selector '[SCNVector3] ()
 setAxisBSelector = mkSelector "setAxisB:"
 
 -- | @Selector@ for @anchorB@
-anchorBSelector :: Selector
+anchorBSelector :: Selector '[] SCNVector3
 anchorBSelector = mkSelector "anchorB"
 
 -- | @Selector@ for @setAnchorB:@
-setAnchorBSelector :: Selector
+setAnchorBSelector :: Selector '[SCNVector3] ()
 setAnchorBSelector = mkSelector "setAnchorB:"
 

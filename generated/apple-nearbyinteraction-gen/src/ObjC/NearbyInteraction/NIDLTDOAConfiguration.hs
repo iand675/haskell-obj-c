@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.NearbyInteraction.NIDLTDOAConfiguration
   , new
   , networkIdentifier
   , setNetworkIdentifier
-  , initWithNetworkIdentifierSelector
   , initSelector
-  , newSelector
+  , initWithNetworkIdentifierSelector
   , networkIdentifierSelector
+  , newSelector
   , setNetworkIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,58 +38,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithNetworkIdentifier:@
 initWithNetworkIdentifier :: IsNIDLTDOAConfiguration nidltdoaConfiguration => nidltdoaConfiguration -> CLong -> IO (Id NIDLTDOAConfiguration)
-initWithNetworkIdentifier nidltdoaConfiguration  networkIdentifier =
-    sendMsg nidltdoaConfiguration (mkSelector "initWithNetworkIdentifier:") (retPtr retVoid) [argCLong networkIdentifier] >>= ownedObject . castPtr
+initWithNetworkIdentifier nidltdoaConfiguration networkIdentifier =
+  sendOwnedMessage nidltdoaConfiguration initWithNetworkIdentifierSelector networkIdentifier
 
 -- | Unavailable
 --
 -- ObjC selector: @- init@
 init_ :: IsNIDLTDOAConfiguration nidltdoaConfiguration => nidltdoaConfiguration -> IO (Id NIDLTDOAConfiguration)
-init_ nidltdoaConfiguration  =
-    sendMsg nidltdoaConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nidltdoaConfiguration =
+  sendOwnedMessage nidltdoaConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id NIDLTDOAConfiguration)
 new  =
   do
     cls' <- getRequiredClass "NIDLTDOAConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A unique identifier for a network supporting UWB Down Link Time Difference of Arrival(DL-TDoA).
 --
 -- ObjC selector: @- networkIdentifier@
 networkIdentifier :: IsNIDLTDOAConfiguration nidltdoaConfiguration => nidltdoaConfiguration -> IO CLong
-networkIdentifier nidltdoaConfiguration  =
-    sendMsg nidltdoaConfiguration (mkSelector "networkIdentifier") retCLong []
+networkIdentifier nidltdoaConfiguration =
+  sendMessage nidltdoaConfiguration networkIdentifierSelector
 
 -- | A unique identifier for a network supporting UWB Down Link Time Difference of Arrival(DL-TDoA).
 --
 -- ObjC selector: @- setNetworkIdentifier:@
 setNetworkIdentifier :: IsNIDLTDOAConfiguration nidltdoaConfiguration => nidltdoaConfiguration -> CLong -> IO ()
-setNetworkIdentifier nidltdoaConfiguration  value =
-    sendMsg nidltdoaConfiguration (mkSelector "setNetworkIdentifier:") retVoid [argCLong value]
+setNetworkIdentifier nidltdoaConfiguration value =
+  sendMessage nidltdoaConfiguration setNetworkIdentifierSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNetworkIdentifier:@
-initWithNetworkIdentifierSelector :: Selector
+initWithNetworkIdentifierSelector :: Selector '[CLong] (Id NIDLTDOAConfiguration)
 initWithNetworkIdentifierSelector = mkSelector "initWithNetworkIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NIDLTDOAConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NIDLTDOAConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @networkIdentifier@
-networkIdentifierSelector :: Selector
+networkIdentifierSelector :: Selector '[] CLong
 networkIdentifierSelector = mkSelector "networkIdentifier"
 
 -- | @Selector@ for @setNetworkIdentifier:@
-setNetworkIdentifierSelector :: Selector
+setNetworkIdentifierSelector :: Selector '[CLong] ()
 setNetworkIdentifierSelector = mkSelector "setNetworkIdentifier:"
 

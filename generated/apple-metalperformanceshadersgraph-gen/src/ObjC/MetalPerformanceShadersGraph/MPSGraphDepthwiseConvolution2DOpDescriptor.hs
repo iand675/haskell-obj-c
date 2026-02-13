@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution2DOpDescrip
   , setDataLayout
   , weightsLayout
   , setWeightsLayout
-  , descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector
-  , descriptorWithDataLayout_weightsLayoutSelector
-  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector
-  , strideInXSelector
-  , setStrideInXSelector
-  , strideInYSelector
-  , setStrideInYSelector
-  , dilationRateInXSelector
-  , setDilationRateInXSelector
-  , dilationRateInYSelector
-  , setDilationRateInYSelector
-  , paddingLeftSelector
-  , setPaddingLeftSelector
-  , paddingRightSelector
-  , setPaddingRightSelector
-  , paddingTopSelector
-  , setPaddingTopSelector
-  , paddingBottomSelector
-  , setPaddingBottomSelector
-  , paddingStyleSelector
-  , setPaddingStyleSelector
   , dataLayoutSelector
+  , descriptorWithDataLayout_weightsLayoutSelector
+  , descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector
+  , dilationRateInXSelector
+  , dilationRateInYSelector
+  , paddingBottomSelector
+  , paddingLeftSelector
+  , paddingRightSelector
+  , paddingStyleSelector
+  , paddingTopSelector
   , setDataLayoutSelector
-  , weightsLayoutSelector
+  , setDilationRateInXSelector
+  , setDilationRateInYSelector
+  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector
+  , setPaddingBottomSelector
+  , setPaddingLeftSelector
+  , setPaddingRightSelector
+  , setPaddingStyleSelector
+  , setPaddingTopSelector
+  , setStrideInXSelector
+  , setStrideInYSelector
   , setWeightsLayoutSelector
+  , strideInXSelector
+  , strideInYSelector
+  , weightsLayoutSelector
 
   -- * Enum types
   , MPSGraphPaddingStyle(MPSGraphPaddingStyle)
@@ -84,15 +85,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution2DOpDescrip
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,7 +106,7 @@ descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_pa
 descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayout strideInX strideInY dilationRateInX dilationRateInY paddingLeft paddingRight paddingTop paddingBottom paddingStyle dataLayout weightsLayout =
   do
     cls' <- getRequiredClass "MPSGraphDepthwiseConvolution2DOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithStrideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingStyle:dataLayout:weightsLayout:") (retPtr retVoid) [argCULong strideInX, argCULong strideInY, argCULong dilationRateInX, argCULong dilationRateInY, argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom, argCULong (coerce paddingStyle), argCULong (coerce dataLayout), argCULong (coerce weightsLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector strideInX strideInY dilationRateInX dilationRateInY paddingLeft paddingRight paddingTop paddingBottom paddingStyle dataLayout weightsLayout
 
 -- | Creates a 2D-depthwise convolution descriptor with given properties and default values.
 --
@@ -120,7 +117,7 @@ descriptorWithDataLayout_weightsLayout :: MPSGraphTensorNamedDataLayout -> MPSGr
 descriptorWithDataLayout_weightsLayout dataLayout weightsLayout =
   do
     cls' <- getRequiredClass "MPSGraphDepthwiseConvolution2DOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithDataLayout:weightsLayout:") (retPtr retVoid) [argCULong (coerce dataLayout), argCULong (coerce weightsLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithDataLayout_weightsLayoutSelector dataLayout weightsLayout
 
 -- | Sets the explicit padding values.
 --
@@ -130,8 +127,8 @@ descriptorWithDataLayout_weightsLayout dataLayout weightsLayout =
 --
 -- ObjC selector: @- setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:@
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> CULong -> CULong -> CULong -> IO ()
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor  paddingLeft paddingRight paddingTop paddingBottom =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:") retVoid [argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom]
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor paddingLeft paddingRight paddingTop paddingBottom =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector paddingLeft paddingRight paddingTop paddingBottom
 
 -- | The stride for the x dimension.
 --
@@ -139,8 +136,8 @@ setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom mpsGraph
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-strideInX mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "strideInX") retCULong []
+strideInX mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor strideInXSelector
 
 -- | The stride for the x dimension.
 --
@@ -148,8 +145,8 @@ strideInX mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setStrideInX:@
 setStrideInX :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setStrideInX mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setStrideInX:") retVoid [argCULong value]
+setStrideInX mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setStrideInXSelector value
 
 -- | The stride for the y dimension.
 --
@@ -157,8 +154,8 @@ setStrideInX mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-strideInY mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "strideInY") retCULong []
+strideInY mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor strideInYSelector
 
 -- | The stride for the y dimension.
 --
@@ -166,8 +163,8 @@ strideInY mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setStrideInY:@
 setStrideInY :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setStrideInY mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setStrideInY:") retVoid [argCULong value]
+setStrideInY mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setStrideInYSelector value
 
 -- | The dilation rate for the x dimension.
 --
@@ -175,8 +172,8 @@ setStrideInY mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRateInX@
 dilationRateInX :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-dilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "dilationRateInX") retCULong []
+dilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor dilationRateInXSelector
 
 -- | The dilation rate for the x dimension.
 --
@@ -184,8 +181,8 @@ dilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRateInX:@
 setDilationRateInX :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setDilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setDilationRateInX:") retVoid [argCULong value]
+setDilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setDilationRateInXSelector value
 
 -- | The dilation rate for the y dimension.
 --
@@ -193,8 +190,8 @@ setDilationRateInX mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRateInY@
 dilationRateInY :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-dilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "dilationRateInY") retCULong []
+dilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor dilationRateInYSelector
 
 -- | The dilation rate for the y dimension.
 --
@@ -202,8 +199,8 @@ dilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRateInY:@
 setDilationRateInY :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setDilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setDilationRateInY:") retVoid [argCULong value]
+setDilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setDilationRateInYSelector value
 
 -- | The explicit padding value for the x dimension the operation adds before the data.
 --
@@ -211,8 +208,8 @@ setDilationRateInY mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingLeft@
 paddingLeft :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-paddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "paddingLeft") retCULong []
+paddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor paddingLeftSelector
 
 -- | The explicit padding value for the x dimension the operation adds before the data.
 --
@@ -220,8 +217,8 @@ paddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingLeft:@
 setPaddingLeft :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setPaddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setPaddingLeft:") retVoid [argCULong value]
+setPaddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setPaddingLeftSelector value
 
 -- | The explicit padding value for the x dimension operation adds after the data.
 --
@@ -229,8 +226,8 @@ setPaddingLeft mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingRight@
 paddingRight :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-paddingRight mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "paddingRight") retCULong []
+paddingRight mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor paddingRightSelector
 
 -- | The explicit padding value for the x dimension operation adds after the data.
 --
@@ -238,8 +235,8 @@ paddingRight mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingRight:@
 setPaddingRight :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setPaddingRight mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setPaddingRight:") retVoid [argCULong value]
+setPaddingRight mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setPaddingRightSelector value
 
 -- | The explicit padding value for the y dimension operation adds before the data.
 --
@@ -247,8 +244,8 @@ setPaddingRight mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingTop@
 paddingTop :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-paddingTop mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "paddingTop") retCULong []
+paddingTop mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor paddingTopSelector
 
 -- | The explicit padding value for the y dimension operation adds before the data.
 --
@@ -256,8 +253,8 @@ paddingTop mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingTop:@
 setPaddingTop :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setPaddingTop mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setPaddingTop:") retVoid [argCULong value]
+setPaddingTop mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setPaddingTopSelector value
 
 -- | The explicit padding value for the y dimension operation adds after the data.
 --
@@ -265,8 +262,8 @@ setPaddingTop mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingBottom@
 paddingBottom :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO CULong
-paddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "paddingBottom") retCULong []
+paddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor paddingBottomSelector
 
 -- | The explicit padding value for the y dimension operation adds after the data.
 --
@@ -274,8 +271,8 @@ paddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingBottom:@
 setPaddingBottom :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> CULong -> IO ()
-setPaddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setPaddingBottom:") retVoid [argCULong value]
+setPaddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setPaddingBottomSelector value
 
 -- | The padding style for the operation.
 --
@@ -283,8 +280,8 @@ setPaddingBottom mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingStyle@
 paddingStyle :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO MPSGraphPaddingStyle
-paddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPaddingStyle) $ sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "paddingStyle") retCULong []
+paddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor paddingStyleSelector
 
 -- | The padding style for the operation.
 --
@@ -292,8 +289,8 @@ paddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingStyle:@
 setPaddingStyle :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> MPSGraphPaddingStyle -> IO ()
-setPaddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setPaddingStyle:") retVoid [argCULong (coerce value)]
+setPaddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setPaddingStyleSelector value
 
 -- | The data layout of the input data in the forward pass.
 --
@@ -301,8 +298,8 @@ setPaddingStyle mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- dataLayout@
 dataLayout :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO MPSGraphTensorNamedDataLayout
-dataLayout mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphTensorNamedDataLayout) $ sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "dataLayout") retCULong []
+dataLayout mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor dataLayoutSelector
 
 -- | The data layout of the input data in the forward pass.
 --
@@ -310,8 +307,8 @@ dataLayout mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setDataLayout:@
 setDataLayout :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> MPSGraphTensorNamedDataLayout -> IO ()
-setDataLayout mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setDataLayout:") retVoid [argCULong (coerce value)]
+setDataLayout mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setDataLayoutSelector value
 
 -- | The data layout of the weights.
 --
@@ -319,8 +316,8 @@ setDataLayout mpsGraphDepthwiseConvolution2DOpDescriptor  value =
 --
 -- ObjC selector: @- weightsLayout@
 weightsLayout :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> IO MPSGraphTensorNamedDataLayout
-weightsLayout mpsGraphDepthwiseConvolution2DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphTensorNamedDataLayout) $ sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "weightsLayout") retCULong []
+weightsLayout mpsGraphDepthwiseConvolution2DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor weightsLayoutSelector
 
 -- | The data layout of the weights.
 --
@@ -328,110 +325,110 @@ weightsLayout mpsGraphDepthwiseConvolution2DOpDescriptor  =
 --
 -- ObjC selector: @- setWeightsLayout:@
 setWeightsLayout :: IsMPSGraphDepthwiseConvolution2DOpDescriptor mpsGraphDepthwiseConvolution2DOpDescriptor => mpsGraphDepthwiseConvolution2DOpDescriptor -> MPSGraphTensorNamedDataLayout -> IO ()
-setWeightsLayout mpsGraphDepthwiseConvolution2DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution2DOpDescriptor (mkSelector "setWeightsLayout:") retVoid [argCULong (coerce value)]
+setWeightsLayout mpsGraphDepthwiseConvolution2DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution2DOpDescriptor setWeightsLayoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithStrideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingStyle:dataLayout:weightsLayout:@
-descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector :: Selector
+descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, MPSGraphPaddingStyle, MPSGraphTensorNamedDataLayout, MPSGraphTensorNamedDataLayout] (Id MPSGraphDepthwiseConvolution2DOpDescriptor)
 descriptorWithStrideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingStyle_dataLayout_weightsLayoutSelector = mkSelector "descriptorWithStrideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingStyle:dataLayout:weightsLayout:"
 
 -- | @Selector@ for @descriptorWithDataLayout:weightsLayout:@
-descriptorWithDataLayout_weightsLayoutSelector :: Selector
+descriptorWithDataLayout_weightsLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout, MPSGraphTensorNamedDataLayout] (Id MPSGraphDepthwiseConvolution2DOpDescriptor)
 descriptorWithDataLayout_weightsLayoutSelector = mkSelector "descriptorWithDataLayout:weightsLayout:"
 
 -- | @Selector@ for @setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:@
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector :: Selector
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector :: Selector '[CULong, CULong, CULong, CULong] ()
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector = mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @setStrideInX:@
-setStrideInXSelector :: Selector
+setStrideInXSelector :: Selector '[CULong] ()
 setStrideInXSelector = mkSelector "setStrideInX:"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @setStrideInY:@
-setStrideInYSelector :: Selector
+setStrideInYSelector :: Selector '[CULong] ()
 setStrideInYSelector = mkSelector "setStrideInY:"
 
 -- | @Selector@ for @dilationRateInX@
-dilationRateInXSelector :: Selector
+dilationRateInXSelector :: Selector '[] CULong
 dilationRateInXSelector = mkSelector "dilationRateInX"
 
 -- | @Selector@ for @setDilationRateInX:@
-setDilationRateInXSelector :: Selector
+setDilationRateInXSelector :: Selector '[CULong] ()
 setDilationRateInXSelector = mkSelector "setDilationRateInX:"
 
 -- | @Selector@ for @dilationRateInY@
-dilationRateInYSelector :: Selector
+dilationRateInYSelector :: Selector '[] CULong
 dilationRateInYSelector = mkSelector "dilationRateInY"
 
 -- | @Selector@ for @setDilationRateInY:@
-setDilationRateInYSelector :: Selector
+setDilationRateInYSelector :: Selector '[CULong] ()
 setDilationRateInYSelector = mkSelector "setDilationRateInY:"
 
 -- | @Selector@ for @paddingLeft@
-paddingLeftSelector :: Selector
+paddingLeftSelector :: Selector '[] CULong
 paddingLeftSelector = mkSelector "paddingLeft"
 
 -- | @Selector@ for @setPaddingLeft:@
-setPaddingLeftSelector :: Selector
+setPaddingLeftSelector :: Selector '[CULong] ()
 setPaddingLeftSelector = mkSelector "setPaddingLeft:"
 
 -- | @Selector@ for @paddingRight@
-paddingRightSelector :: Selector
+paddingRightSelector :: Selector '[] CULong
 paddingRightSelector = mkSelector "paddingRight"
 
 -- | @Selector@ for @setPaddingRight:@
-setPaddingRightSelector :: Selector
+setPaddingRightSelector :: Selector '[CULong] ()
 setPaddingRightSelector = mkSelector "setPaddingRight:"
 
 -- | @Selector@ for @paddingTop@
-paddingTopSelector :: Selector
+paddingTopSelector :: Selector '[] CULong
 paddingTopSelector = mkSelector "paddingTop"
 
 -- | @Selector@ for @setPaddingTop:@
-setPaddingTopSelector :: Selector
+setPaddingTopSelector :: Selector '[CULong] ()
 setPaddingTopSelector = mkSelector "setPaddingTop:"
 
 -- | @Selector@ for @paddingBottom@
-paddingBottomSelector :: Selector
+paddingBottomSelector :: Selector '[] CULong
 paddingBottomSelector = mkSelector "paddingBottom"
 
 -- | @Selector@ for @setPaddingBottom:@
-setPaddingBottomSelector :: Selector
+setPaddingBottomSelector :: Selector '[CULong] ()
 setPaddingBottomSelector = mkSelector "setPaddingBottom:"
 
 -- | @Selector@ for @paddingStyle@
-paddingStyleSelector :: Selector
+paddingStyleSelector :: Selector '[] MPSGraphPaddingStyle
 paddingStyleSelector = mkSelector "paddingStyle"
 
 -- | @Selector@ for @setPaddingStyle:@
-setPaddingStyleSelector :: Selector
+setPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] ()
 setPaddingStyleSelector = mkSelector "setPaddingStyle:"
 
 -- | @Selector@ for @dataLayout@
-dataLayoutSelector :: Selector
+dataLayoutSelector :: Selector '[] MPSGraphTensorNamedDataLayout
 dataLayoutSelector = mkSelector "dataLayout"
 
 -- | @Selector@ for @setDataLayout:@
-setDataLayoutSelector :: Selector
+setDataLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout] ()
 setDataLayoutSelector = mkSelector "setDataLayout:"
 
 -- | @Selector@ for @weightsLayout@
-weightsLayoutSelector :: Selector
+weightsLayoutSelector :: Selector '[] MPSGraphTensorNamedDataLayout
 weightsLayoutSelector = mkSelector "weightsLayout"
 
 -- | @Selector@ for @setWeightsLayout:@
-setWeightsLayoutSelector :: Selector
+setWeightsLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout] ()
 setWeightsLayoutSelector = mkSelector "setWeightsLayout:"
 

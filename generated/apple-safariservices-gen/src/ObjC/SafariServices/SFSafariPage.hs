@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.SafariServices.SFSafariPage
   , getPagePropertiesWithCompletionHandler
   , getContainingTabWithCompletionHandler
   , getScreenshotOfVisibleAreaWithCompletionHandler
-  , newSelector
-  , initSelector
   , dispatchMessageToScriptWithName_userInfoSelector
-  , reloadSelector
-  , getPagePropertiesWithCompletionHandlerSelector
   , getContainingTabWithCompletionHandlerSelector
+  , getPagePropertiesWithCompletionHandlerSelector
   , getScreenshotOfVisibleAreaWithCompletionHandlerSelector
+  , initSelector
+  , newSelector
+  , reloadSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,79 +41,77 @@ new :: IO (Id SFSafariPage)
 new  =
   do
     cls' <- getRequiredClass "SFSafariPage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSFSafariPage sfSafariPage => sfSafariPage -> IO (Id SFSafariPage)
-init_ sfSafariPage  =
-    sendMsg sfSafariPage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ sfSafariPage =
+  sendOwnedMessage sfSafariPage initSelector
 
 -- | Dispatches a message to the content script injected in this page.
 --
 -- ObjC selector: @- dispatchMessageToScriptWithName:userInfo:@
 dispatchMessageToScriptWithName_userInfo :: (IsSFSafariPage sfSafariPage, IsNSString messageName, IsNSDictionary userInfo) => sfSafariPage -> messageName -> userInfo -> IO ()
-dispatchMessageToScriptWithName_userInfo sfSafariPage  messageName userInfo =
-  withObjCPtr messageName $ \raw_messageName ->
-    withObjCPtr userInfo $ \raw_userInfo ->
-        sendMsg sfSafariPage (mkSelector "dispatchMessageToScriptWithName:userInfo:") retVoid [argPtr (castPtr raw_messageName :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+dispatchMessageToScriptWithName_userInfo sfSafariPage messageName userInfo =
+  sendMessage sfSafariPage dispatchMessageToScriptWithName_userInfoSelector (toNSString messageName) (toNSDictionary userInfo)
 
 -- | Reloads the page.
 --
 -- ObjC selector: @- reload@
 reload :: IsSFSafariPage sfSafariPage => sfSafariPage -> IO ()
-reload sfSafariPage  =
-    sendMsg sfSafariPage (mkSelector "reload") retVoid []
+reload sfSafariPage =
+  sendMessage sfSafariPage reloadSelector
 
 -- | This calls the completion handler with the properties of the page.
 --
 -- ObjC selector: @- getPagePropertiesWithCompletionHandler:@
 getPagePropertiesWithCompletionHandler :: IsSFSafariPage sfSafariPage => sfSafariPage -> Ptr () -> IO ()
-getPagePropertiesWithCompletionHandler sfSafariPage  completionHandler =
-    sendMsg sfSafariPage (mkSelector "getPagePropertiesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getPagePropertiesWithCompletionHandler sfSafariPage completionHandler =
+  sendMessage sfSafariPage getPagePropertiesWithCompletionHandlerSelector completionHandler
 
 -- | This calls the completion handler with the tab containing this page. This will return a non-nil tab for any pages being preloaded by Safari.
 --
 -- ObjC selector: @- getContainingTabWithCompletionHandler:@
 getContainingTabWithCompletionHandler :: IsSFSafariPage sfSafariPage => sfSafariPage -> Ptr () -> IO ()
-getContainingTabWithCompletionHandler sfSafariPage  completionHandler =
-    sendMsg sfSafariPage (mkSelector "getContainingTabWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getContainingTabWithCompletionHandler sfSafariPage completionHandler =
+  sendMessage sfSafariPage getContainingTabWithCompletionHandlerSelector completionHandler
 
 -- | Gets a screenshot of the currently visible area of the page.
 --
 -- ObjC selector: @- getScreenshotOfVisibleAreaWithCompletionHandler:@
 getScreenshotOfVisibleAreaWithCompletionHandler :: IsSFSafariPage sfSafariPage => sfSafariPage -> Ptr () -> IO ()
-getScreenshotOfVisibleAreaWithCompletionHandler sfSafariPage  completionHandler =
-    sendMsg sfSafariPage (mkSelector "getScreenshotOfVisibleAreaWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getScreenshotOfVisibleAreaWithCompletionHandler sfSafariPage completionHandler =
+  sendMessage sfSafariPage getScreenshotOfVisibleAreaWithCompletionHandlerSelector completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SFSafariPage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SFSafariPage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @dispatchMessageToScriptWithName:userInfo:@
-dispatchMessageToScriptWithName_userInfoSelector :: Selector
+dispatchMessageToScriptWithName_userInfoSelector :: Selector '[Id NSString, Id NSDictionary] ()
 dispatchMessageToScriptWithName_userInfoSelector = mkSelector "dispatchMessageToScriptWithName:userInfo:"
 
 -- | @Selector@ for @reload@
-reloadSelector :: Selector
+reloadSelector :: Selector '[] ()
 reloadSelector = mkSelector "reload"
 
 -- | @Selector@ for @getPagePropertiesWithCompletionHandler:@
-getPagePropertiesWithCompletionHandlerSelector :: Selector
+getPagePropertiesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 getPagePropertiesWithCompletionHandlerSelector = mkSelector "getPagePropertiesWithCompletionHandler:"
 
 -- | @Selector@ for @getContainingTabWithCompletionHandler:@
-getContainingTabWithCompletionHandlerSelector :: Selector
+getContainingTabWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 getContainingTabWithCompletionHandlerSelector = mkSelector "getContainingTabWithCompletionHandler:"
 
 -- | @Selector@ for @getScreenshotOfVisibleAreaWithCompletionHandler:@
-getScreenshotOfVisibleAreaWithCompletionHandlerSelector :: Selector
+getScreenshotOfVisibleAreaWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 getScreenshotOfVisibleAreaWithCompletionHandlerSelector = mkSelector "getScreenshotOfVisibleAreaWithCompletionHandler:"
 

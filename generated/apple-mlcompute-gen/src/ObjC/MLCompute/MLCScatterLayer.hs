@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,8 +15,8 @@ module ObjC.MLCompute.MLCScatterLayer
   , layerWithDimension_reductionType
   , dimension
   , reductionType
-  , layerWithDimension_reductionTypeSelector
   , dimensionSelector
+  , layerWithDimension_reductionTypeSelector
   , reductionTypeSelector
 
   -- * Enum types
@@ -34,15 +35,11 @@ module ObjC.MLCompute.MLCScatterLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,7 +60,7 @@ layerWithDimension_reductionType :: CULong -> MLCReductionType -> IO (Id MLCScat
 layerWithDimension_reductionType dimension reductionType =
   do
     cls' <- getRequiredClass "MLCScatterLayer"
-    sendClassMsg cls' (mkSelector "layerWithDimension:reductionType:") (retPtr retVoid) [argCULong dimension, argCInt (coerce reductionType)] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDimension_reductionTypeSelector dimension reductionType
 
 -- | dimension
 --
@@ -71,8 +68,8 @@ layerWithDimension_reductionType dimension reductionType =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCScatterLayer mlcScatterLayer => mlcScatterLayer -> IO CULong
-dimension mlcScatterLayer  =
-    sendMsg mlcScatterLayer (mkSelector "dimension") retCULong []
+dimension mlcScatterLayer =
+  sendMessage mlcScatterLayer dimensionSelector
 
 -- | reductionType
 --
@@ -80,22 +77,22 @@ dimension mlcScatterLayer  =
 --
 -- ObjC selector: @- reductionType@
 reductionType :: IsMLCScatterLayer mlcScatterLayer => mlcScatterLayer -> IO MLCReductionType
-reductionType mlcScatterLayer  =
-    fmap (coerce :: CInt -> MLCReductionType) $ sendMsg mlcScatterLayer (mkSelector "reductionType") retCInt []
+reductionType mlcScatterLayer =
+  sendMessage mlcScatterLayer reductionTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDimension:reductionType:@
-layerWithDimension_reductionTypeSelector :: Selector
+layerWithDimension_reductionTypeSelector :: Selector '[CULong, MLCReductionType] (Id MLCScatterLayer)
 layerWithDimension_reductionTypeSelector = mkSelector "layerWithDimension:reductionType:"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MLCReductionType
 reductionTypeSelector = mkSelector "reductionType"
 

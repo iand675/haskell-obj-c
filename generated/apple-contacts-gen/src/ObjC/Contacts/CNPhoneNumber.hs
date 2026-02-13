@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Contacts.CNPhoneNumber
   , init_
   , new
   , stringValue
-  , phoneNumberWithStringValueSelector
-  , initWithStringValueSelector
   , initSelector
+  , initWithStringValueSelector
   , newSelector
+  , phoneNumberWithStringValueSelector
   , stringValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,53 +43,51 @@ phoneNumberWithStringValue :: IsNSString stringValue => stringValue -> IO (Id CN
 phoneNumberWithStringValue stringValue =
   do
     cls' <- getRequiredClass "CNPhoneNumber"
-    withObjCPtr stringValue $ \raw_stringValue ->
-      sendClassMsg cls' (mkSelector "phoneNumberWithStringValue:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' phoneNumberWithStringValueSelector (toNSString stringValue)
 
 -- | @- initWithStringValue:@
 initWithStringValue :: (IsCNPhoneNumber cnPhoneNumber, IsNSString string) => cnPhoneNumber -> string -> IO (Id CNPhoneNumber)
-initWithStringValue cnPhoneNumber  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg cnPhoneNumber (mkSelector "initWithStringValue:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithStringValue cnPhoneNumber string =
+  sendOwnedMessage cnPhoneNumber initWithStringValueSelector (toNSString string)
 
 -- | @- init@
 init_ :: IsCNPhoneNumber cnPhoneNumber => cnPhoneNumber -> IO (Id CNPhoneNumber)
-init_ cnPhoneNumber  =
-    sendMsg cnPhoneNumber (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnPhoneNumber =
+  sendOwnedMessage cnPhoneNumber initSelector
 
 -- | @+ new@
 new :: IO (Id CNPhoneNumber)
 new  =
   do
     cls' <- getRequiredClass "CNPhoneNumber"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- stringValue@
 stringValue :: IsCNPhoneNumber cnPhoneNumber => cnPhoneNumber -> IO (Id NSString)
-stringValue cnPhoneNumber  =
-    sendMsg cnPhoneNumber (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue cnPhoneNumber =
+  sendMessage cnPhoneNumber stringValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @phoneNumberWithStringValue:@
-phoneNumberWithStringValueSelector :: Selector
+phoneNumberWithStringValueSelector :: Selector '[Id NSString] (Id CNPhoneNumber)
 phoneNumberWithStringValueSelector = mkSelector "phoneNumberWithStringValue:"
 
 -- | @Selector@ for @initWithStringValue:@
-initWithStringValueSelector :: Selector
+initWithStringValueSelector :: Selector '[Id NSString] (Id CNPhoneNumber)
 initWithStringValueSelector = mkSelector "initWithStringValue:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNPhoneNumber)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNPhoneNumber)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 

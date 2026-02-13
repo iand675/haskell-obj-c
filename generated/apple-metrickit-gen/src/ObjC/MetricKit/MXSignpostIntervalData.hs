@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.MetricKit.MXSignpostIntervalData
   , averageMemory
   , cumulativeLogicalWrites
   , cumulativeHitchTimeRatio
-  , histogrammedSignpostDurationSelector
-  , cumulativeCPUTimeSelector
   , averageMemorySelector
-  , cumulativeLogicalWritesSelector
+  , cumulativeCPUTimeSelector
   , cumulativeHitchTimeRatioSelector
+  , cumulativeLogicalWritesSelector
+  , histogrammedSignpostDurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- histogrammedSignpostDuration@
 histogrammedSignpostDuration :: IsMXSignpostIntervalData mxSignpostIntervalData => mxSignpostIntervalData -> IO (Id MXHistogram)
-histogrammedSignpostDuration mxSignpostIntervalData  =
-    sendMsg mxSignpostIntervalData (mkSelector "histogrammedSignpostDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedSignpostDuration mxSignpostIntervalData =
+  sendMessage mxSignpostIntervalData histogrammedSignpostDurationSelector
 
 -- | cumulativeCPUTime
 --
@@ -62,8 +59,8 @@ histogrammedSignpostDuration mxSignpostIntervalData  =
 --
 -- ObjC selector: @- cumulativeCPUTime@
 cumulativeCPUTime :: IsMXSignpostIntervalData mxSignpostIntervalData => mxSignpostIntervalData -> IO (Id NSMeasurement)
-cumulativeCPUTime mxSignpostIntervalData  =
-    sendMsg mxSignpostIntervalData (mkSelector "cumulativeCPUTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeCPUTime mxSignpostIntervalData =
+  sendMessage mxSignpostIntervalData cumulativeCPUTimeSelector
 
 -- | averageMemory
 --
@@ -73,8 +70,8 @@ cumulativeCPUTime mxSignpostIntervalData  =
 --
 -- ObjC selector: @- averageMemory@
 averageMemory :: IsMXSignpostIntervalData mxSignpostIntervalData => mxSignpostIntervalData -> IO (Id MXAverage)
-averageMemory mxSignpostIntervalData  =
-    sendMsg mxSignpostIntervalData (mkSelector "averageMemory") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageMemory mxSignpostIntervalData =
+  sendMessage mxSignpostIntervalData averageMemorySelector
 
 -- | cumulativeLogicalWrites
 --
@@ -84,8 +81,8 @@ averageMemory mxSignpostIntervalData  =
 --
 -- ObjC selector: @- cumulativeLogicalWrites@
 cumulativeLogicalWrites :: IsMXSignpostIntervalData mxSignpostIntervalData => mxSignpostIntervalData -> IO (Id NSMeasurement)
-cumulativeLogicalWrites mxSignpostIntervalData  =
-    sendMsg mxSignpostIntervalData (mkSelector "cumulativeLogicalWrites") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeLogicalWrites mxSignpostIntervalData =
+  sendMessage mxSignpostIntervalData cumulativeLogicalWritesSelector
 
 -- | cumulativeHitchTimeRatio
 --
@@ -95,30 +92,30 @@ cumulativeLogicalWrites mxSignpostIntervalData  =
 --
 -- ObjC selector: @- cumulativeHitchTimeRatio@
 cumulativeHitchTimeRatio :: IsMXSignpostIntervalData mxSignpostIntervalData => mxSignpostIntervalData -> IO (Id NSMeasurement)
-cumulativeHitchTimeRatio mxSignpostIntervalData  =
-    sendMsg mxSignpostIntervalData (mkSelector "cumulativeHitchTimeRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeHitchTimeRatio mxSignpostIntervalData =
+  sendMessage mxSignpostIntervalData cumulativeHitchTimeRatioSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @histogrammedSignpostDuration@
-histogrammedSignpostDurationSelector :: Selector
+histogrammedSignpostDurationSelector :: Selector '[] (Id MXHistogram)
 histogrammedSignpostDurationSelector = mkSelector "histogrammedSignpostDuration"
 
 -- | @Selector@ for @cumulativeCPUTime@
-cumulativeCPUTimeSelector :: Selector
+cumulativeCPUTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeCPUTimeSelector = mkSelector "cumulativeCPUTime"
 
 -- | @Selector@ for @averageMemory@
-averageMemorySelector :: Selector
+averageMemorySelector :: Selector '[] (Id MXAverage)
 averageMemorySelector = mkSelector "averageMemory"
 
 -- | @Selector@ for @cumulativeLogicalWrites@
-cumulativeLogicalWritesSelector :: Selector
+cumulativeLogicalWritesSelector :: Selector '[] (Id NSMeasurement)
 cumulativeLogicalWritesSelector = mkSelector "cumulativeLogicalWrites"
 
 -- | @Selector@ for @cumulativeHitchTimeRatio@
-cumulativeHitchTimeRatioSelector :: Selector
+cumulativeHitchTimeRatioSelector :: Selector '[] (Id NSMeasurement)
 cumulativeHitchTimeRatioSelector = mkSelector "cumulativeHitchTimeRatio"
 

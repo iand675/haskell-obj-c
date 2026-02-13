@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,20 +24,20 @@ module ObjC.AccessorySetupKit.ASAccessorySession
   , accessories
   , pickerDisplaySettings
   , setPickerDisplaySettings
+  , accessoriesSelector
   , activateWithQueue_eventHandlerSelector
-  , invalidateSelector
-  , showPickerWithCompletionHandlerSelector
-  , showPickerForDisplayItems_completionHandlerSelector
-  , finishAuthorization_settings_completionHandlerSelector
   , failAuthorization_completionHandlerSelector
+  , finishAuthorization_settings_completionHandlerSelector
+  , finishPickerDiscoverySelector
+  , invalidateSelector
+  , pickerDisplaySettingsSelector
   , removeAccessory_completionHandlerSelector
   , renameAccessory_options_completionHandlerSelector
+  , setPickerDisplaySettingsSelector
+  , showPickerForDisplayItems_completionHandlerSelector
+  , showPickerWithCompletionHandlerSelector
   , updateAuthorization_descriptor_completionHandlerSelector
   , updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector
-  , finishPickerDiscoverySelector
-  , accessoriesSelector
-  , pickerDisplaySettingsSelector
-  , setPickerDisplaySettingsSelector
 
   -- * Enum types
   , ASAccessoryRenameOptions(ASAccessoryRenameOptions)
@@ -44,15 +45,11 @@ module ObjC.AccessorySetupKit.ASAccessorySession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,9 +61,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- activateWithQueue:eventHandler:@
 activateWithQueue_eventHandler :: (IsASAccessorySession asAccessorySession, IsNSObject queue) => asAccessorySession -> queue -> Ptr () -> IO ()
-activateWithQueue_eventHandler asAccessorySession  queue eventHandler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg asAccessorySession (mkSelector "activateWithQueue:eventHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr eventHandler :: Ptr ())]
+activateWithQueue_eventHandler asAccessorySession queue eventHandler =
+  sendMessage asAccessorySession activateWithQueue_eventHandlerSelector (toNSObject queue) eventHandler
 
 -- | Invalidate the session by stopping any operations.
 --
@@ -74,8 +70,8 @@ activateWithQueue_eventHandler asAccessorySession  queue eventHandler =
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsASAccessorySession asAccessorySession => asAccessorySession -> IO ()
-invalidate asAccessorySession  =
-    sendMsg asAccessorySession (mkSelector "invalidate") retVoid []
+invalidate asAccessorySession =
+  sendMessage asAccessorySession invalidateSelector
 
 -- | Present a picker that shows accessories managed by a Device Discovery Extension in your app.
 --
@@ -87,8 +83,8 @@ invalidate asAccessorySession  =
 --
 -- ObjC selector: @- showPickerWithCompletionHandler:@
 showPickerWithCompletionHandler :: IsASAccessorySession asAccessorySession => asAccessorySession -> Ptr () -> IO ()
-showPickerWithCompletionHandler asAccessorySession  completionHandler =
-    sendMsg asAccessorySession (mkSelector "showPickerWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+showPickerWithCompletionHandler asAccessorySession completionHandler =
+  sendMessage asAccessorySession showPickerWithCompletionHandlerSelector completionHandler
 
 -- | Present a picker that shows discovered accessories matching an array of display items.
 --
@@ -98,9 +94,8 @@ showPickerWithCompletionHandler asAccessorySession  completionHandler =
 --
 -- ObjC selector: @- showPickerForDisplayItems:completionHandler:@
 showPickerForDisplayItems_completionHandler :: (IsASAccessorySession asAccessorySession, IsNSArray displayItems) => asAccessorySession -> displayItems -> Ptr () -> IO ()
-showPickerForDisplayItems_completionHandler asAccessorySession  displayItems completionHandler =
-  withObjCPtr displayItems $ \raw_displayItems ->
-      sendMsg asAccessorySession (mkSelector "showPickerForDisplayItems:completionHandler:") retVoid [argPtr (castPtr raw_displayItems :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+showPickerForDisplayItems_completionHandler asAccessorySession displayItems completionHandler =
+  sendMessage asAccessorySession showPickerForDisplayItems_completionHandlerSelector (toNSArray displayItems) completionHandler
 
 -- | Finish authorization of a partially-setup accessory.
 --
@@ -108,18 +103,15 @@ showPickerForDisplayItems_completionHandler asAccessorySession  displayItems com
 --
 -- ObjC selector: @- finishAuthorization:settings:completionHandler:@
 finishAuthorization_settings_completionHandler :: (IsASAccessorySession asAccessorySession, IsASAccessory accessory, IsASAccessorySettings settings) => asAccessorySession -> accessory -> settings -> Ptr () -> IO ()
-finishAuthorization_settings_completionHandler asAccessorySession  accessory settings completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-    withObjCPtr settings $ \raw_settings ->
-        sendMsg asAccessorySession (mkSelector "finishAuthorization:settings:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+finishAuthorization_settings_completionHandler asAccessorySession accessory settings completionHandler =
+  sendMessage asAccessorySession finishAuthorization_settings_completionHandlerSelector (toASAccessory accessory) (toASAccessorySettings settings) completionHandler
 
 -- | End authorization of a partially-configured accessory as a failure.
 --
 -- ObjC selector: @- failAuthorization:completionHandler:@
 failAuthorization_completionHandler :: (IsASAccessorySession asAccessorySession, IsASAccessory accessory) => asAccessorySession -> accessory -> Ptr () -> IO ()
-failAuthorization_completionHandler asAccessorySession  accessory completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-      sendMsg asAccessorySession (mkSelector "failAuthorization:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+failAuthorization_completionHandler asAccessorySession accessory completionHandler =
+  sendMessage asAccessorySession failAuthorization_completionHandlerSelector (toASAccessory accessory) completionHandler
 
 -- | Removes an accessory.
 --
@@ -127,9 +119,8 @@ failAuthorization_completionHandler asAccessorySession  accessory completionHand
 --
 -- ObjC selector: @- removeAccessory:completionHandler:@
 removeAccessory_completionHandler :: (IsASAccessorySession asAccessorySession, IsASAccessory accessory) => asAccessorySession -> accessory -> Ptr () -> IO ()
-removeAccessory_completionHandler asAccessorySession  accessory completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-      sendMsg asAccessorySession (mkSelector "removeAccessory:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+removeAccessory_completionHandler asAccessorySession accessory completionHandler =
+  sendMessage asAccessorySession removeAccessory_completionHandlerSelector (toASAccessory accessory) completionHandler
 
 -- | Displays a view to rename an accessory.
 --
@@ -139,9 +130,8 @@ removeAccessory_completionHandler asAccessorySession  accessory completionHandle
 --
 -- ObjC selector: @- renameAccessory:options:completionHandler:@
 renameAccessory_options_completionHandler :: (IsASAccessorySession asAccessorySession, IsASAccessory accessory) => asAccessorySession -> accessory -> ASAccessoryRenameOptions -> Ptr () -> IO ()
-renameAccessory_options_completionHandler asAccessorySession  accessory renameOptions completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-      sendMsg asAccessorySession (mkSelector "renameAccessory:options:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argCULong (coerce renameOptions), argPtr (castPtr completionHandler :: Ptr ())]
+renameAccessory_options_completionHandler asAccessorySession accessory renameOptions completionHandler =
+  sendMessage asAccessorySession renameAccessory_options_completionHandlerSelector (toASAccessory accessory) renameOptions completionHandler
 
 -- | Displays a view to upgrade an accessory with additional technology permissions.
 --
@@ -151,10 +141,8 @@ renameAccessory_options_completionHandler asAccessorySession  accessory renameOp
 --
 -- ObjC selector: @- updateAuthorization:descriptor:completionHandler:@
 updateAuthorization_descriptor_completionHandler :: (IsASAccessorySession asAccessorySession, IsASAccessory accessory, IsASDiscoveryDescriptor descriptor) => asAccessorySession -> accessory -> descriptor -> Ptr () -> IO ()
-updateAuthorization_descriptor_completionHandler asAccessorySession  accessory descriptor completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg asAccessorySession (mkSelector "updateAuthorization:descriptor:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+updateAuthorization_descriptor_completionHandler asAccessorySession accessory descriptor completionHandler =
+  sendMessage asAccessorySession updateAuthorization_descriptor_completionHandlerSelector (toASAccessory accessory) (toASDiscoveryDescriptor descriptor) completionHandler
 
 -- | Updates the picker with app-filtered accessories.
 --
@@ -164,9 +152,8 @@ updateAuthorization_descriptor_completionHandler asAccessorySession  accessory d
 --
 -- ObjC selector: @- updatePickerShowingDiscoveredDisplayItems:completionHandler:@
 updatePickerShowingDiscoveredDisplayItems_completionHandler :: (IsASAccessorySession asAccessorySession, IsNSArray displayItems) => asAccessorySession -> displayItems -> Ptr () -> IO ()
-updatePickerShowingDiscoveredDisplayItems_completionHandler asAccessorySession  displayItems completionHandler =
-  withObjCPtr displayItems $ \raw_displayItems ->
-      sendMsg asAccessorySession (mkSelector "updatePickerShowingDiscoveredDisplayItems:completionHandler:") retVoid [argPtr (castPtr raw_displayItems :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+updatePickerShowingDiscoveredDisplayItems_completionHandler asAccessorySession displayItems completionHandler =
+  sendMessage asAccessorySession updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector (toNSArray displayItems) completionHandler
 
 -- | Finish the discovery session in the picker and show a timeout error.
 --
@@ -178,8 +165,8 @@ updatePickerShowingDiscoveredDisplayItems_completionHandler asAccessorySession  
 --
 -- ObjC selector: @- finishPickerDiscovery:@
 finishPickerDiscovery :: IsASAccessorySession asAccessorySession => asAccessorySession -> Ptr () -> IO ()
-finishPickerDiscovery asAccessorySession  completionHandler =
-    sendMsg asAccessorySession (mkSelector "finishPickerDiscovery:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+finishPickerDiscovery asAccessorySession completionHandler =
+  sendMessage asAccessorySession finishPickerDiscoverySelector completionHandler
 
 -- | An array of previously-selected accessories for this application.
 --
@@ -187,8 +174,8 @@ finishPickerDiscovery asAccessorySession  completionHandler =
 --
 -- ObjC selector: @- accessories@
 accessories :: IsASAccessorySession asAccessorySession => asAccessorySession -> IO (Id NSArray)
-accessories asAccessorySession  =
-    sendMsg asAccessorySession (mkSelector "accessories") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessories asAccessorySession =
+  sendMessage asAccessorySession accessoriesSelector
 
 -- | Settings that affect the display of the accessory picker.
 --
@@ -196,8 +183,8 @@ accessories asAccessorySession  =
 --
 -- ObjC selector: @- pickerDisplaySettings@
 pickerDisplaySettings :: IsASAccessorySession asAccessorySession => asAccessorySession -> IO (Id ASPickerDisplaySettings)
-pickerDisplaySettings asAccessorySession  =
-    sendMsg asAccessorySession (mkSelector "pickerDisplaySettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+pickerDisplaySettings asAccessorySession =
+  sendMessage asAccessorySession pickerDisplaySettingsSelector
 
 -- | Settings that affect the display of the accessory picker.
 --
@@ -205,67 +192,66 @@ pickerDisplaySettings asAccessorySession  =
 --
 -- ObjC selector: @- setPickerDisplaySettings:@
 setPickerDisplaySettings :: (IsASAccessorySession asAccessorySession, IsASPickerDisplaySettings value) => asAccessorySession -> value -> IO ()
-setPickerDisplaySettings asAccessorySession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAccessorySession (mkSelector "setPickerDisplaySettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPickerDisplaySettings asAccessorySession value =
+  sendMessage asAccessorySession setPickerDisplaySettingsSelector (toASPickerDisplaySettings value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @activateWithQueue:eventHandler:@
-activateWithQueue_eventHandlerSelector :: Selector
+activateWithQueue_eventHandlerSelector :: Selector '[Id NSObject, Ptr ()] ()
 activateWithQueue_eventHandlerSelector = mkSelector "activateWithQueue:eventHandler:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @showPickerWithCompletionHandler:@
-showPickerWithCompletionHandlerSelector :: Selector
+showPickerWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 showPickerWithCompletionHandlerSelector = mkSelector "showPickerWithCompletionHandler:"
 
 -- | @Selector@ for @showPickerForDisplayItems:completionHandler:@
-showPickerForDisplayItems_completionHandlerSelector :: Selector
+showPickerForDisplayItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 showPickerForDisplayItems_completionHandlerSelector = mkSelector "showPickerForDisplayItems:completionHandler:"
 
 -- | @Selector@ for @finishAuthorization:settings:completionHandler:@
-finishAuthorization_settings_completionHandlerSelector :: Selector
+finishAuthorization_settings_completionHandlerSelector :: Selector '[Id ASAccessory, Id ASAccessorySettings, Ptr ()] ()
 finishAuthorization_settings_completionHandlerSelector = mkSelector "finishAuthorization:settings:completionHandler:"
 
 -- | @Selector@ for @failAuthorization:completionHandler:@
-failAuthorization_completionHandlerSelector :: Selector
+failAuthorization_completionHandlerSelector :: Selector '[Id ASAccessory, Ptr ()] ()
 failAuthorization_completionHandlerSelector = mkSelector "failAuthorization:completionHandler:"
 
 -- | @Selector@ for @removeAccessory:completionHandler:@
-removeAccessory_completionHandlerSelector :: Selector
+removeAccessory_completionHandlerSelector :: Selector '[Id ASAccessory, Ptr ()] ()
 removeAccessory_completionHandlerSelector = mkSelector "removeAccessory:completionHandler:"
 
 -- | @Selector@ for @renameAccessory:options:completionHandler:@
-renameAccessory_options_completionHandlerSelector :: Selector
+renameAccessory_options_completionHandlerSelector :: Selector '[Id ASAccessory, ASAccessoryRenameOptions, Ptr ()] ()
 renameAccessory_options_completionHandlerSelector = mkSelector "renameAccessory:options:completionHandler:"
 
 -- | @Selector@ for @updateAuthorization:descriptor:completionHandler:@
-updateAuthorization_descriptor_completionHandlerSelector :: Selector
+updateAuthorization_descriptor_completionHandlerSelector :: Selector '[Id ASAccessory, Id ASDiscoveryDescriptor, Ptr ()] ()
 updateAuthorization_descriptor_completionHandlerSelector = mkSelector "updateAuthorization:descriptor:completionHandler:"
 
 -- | @Selector@ for @updatePickerShowingDiscoveredDisplayItems:completionHandler:@
-updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector :: Selector
+updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 updatePickerShowingDiscoveredDisplayItems_completionHandlerSelector = mkSelector "updatePickerShowingDiscoveredDisplayItems:completionHandler:"
 
 -- | @Selector@ for @finishPickerDiscovery:@
-finishPickerDiscoverySelector :: Selector
+finishPickerDiscoverySelector :: Selector '[Ptr ()] ()
 finishPickerDiscoverySelector = mkSelector "finishPickerDiscovery:"
 
 -- | @Selector@ for @accessories@
-accessoriesSelector :: Selector
+accessoriesSelector :: Selector '[] (Id NSArray)
 accessoriesSelector = mkSelector "accessories"
 
 -- | @Selector@ for @pickerDisplaySettings@
-pickerDisplaySettingsSelector :: Selector
+pickerDisplaySettingsSelector :: Selector '[] (Id ASPickerDisplaySettings)
 pickerDisplaySettingsSelector = mkSelector "pickerDisplaySettings"
 
 -- | @Selector@ for @setPickerDisplaySettings:@
-setPickerDisplaySettingsSelector :: Selector
+setPickerDisplaySettingsSelector :: Selector '[Id ASPickerDisplaySettings] ()
 setPickerDisplaySettingsSelector = mkSelector "setPickerDisplaySettings:"
 

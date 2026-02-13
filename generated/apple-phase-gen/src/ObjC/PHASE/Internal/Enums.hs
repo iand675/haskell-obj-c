@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PHASE.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | PHASEAssetError
 --
@@ -37,6 +40,16 @@ pattern PHASEAssetErrorGeneralError = PHASEAssetError 1346920805
 pattern PHASEAssetErrorMemoryAllocation :: PHASEAssetError
 pattern PHASEAssetErrorMemoryAllocation = PHASEAssetError 1346920806
 
+instance ObjCArgument PHASEAssetError where
+  withObjCArg (PHASEAssetError x) k = k (argCLong x)
+
+instance ObjCReturn PHASEAssetError where
+  type RawReturn PHASEAssetError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEAssetError x)
+  fromOwned x = pure (PHASEAssetError x)
+
 -- | PHASEAssetType
 --
 -- Asset types.
@@ -60,6 +73,16 @@ pattern PHASEAssetTypeResident = PHASEAssetType 0
 
 pattern PHASEAssetTypeStreamed :: PHASEAssetType
 pattern PHASEAssetTypeStreamed = PHASEAssetType 1
+
+instance ObjCArgument PHASEAssetType where
+  withObjCArg (PHASEAssetType x) k = k (argCLong x)
+
+instance ObjCReturn PHASEAssetType where
+  type RawReturn PHASEAssetType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEAssetType x)
+  fromOwned x = pure (PHASEAssetType x)
 
 -- | PHASEAutomaticHeadTrackingFlags
 --
@@ -88,6 +111,16 @@ pattern PHASEAutomaticHeadTrackingFlagOrientation = PHASEAutomaticHeadTrackingFl
 
 pattern PHASEAutomaticHeadTrackingFlagPosition :: PHASEAutomaticHeadTrackingFlags
 pattern PHASEAutomaticHeadTrackingFlagPosition = PHASEAutomaticHeadTrackingFlags 2
+
+instance ObjCArgument PHASEAutomaticHeadTrackingFlags where
+  withObjCArg (PHASEAutomaticHeadTrackingFlags x) k = k (argCULong x)
+
+instance ObjCReturn PHASEAutomaticHeadTrackingFlags where
+  type RawReturn PHASEAutomaticHeadTrackingFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEAutomaticHeadTrackingFlags x)
+  fromOwned x = pure (PHASEAutomaticHeadTrackingFlags x)
 
 -- | PHASECalibrationMode
 --
@@ -119,6 +152,16 @@ pattern PHASECalibrationModeRelativeSpl = PHASECalibrationMode 1
 
 pattern PHASECalibrationModeAbsoluteSpl :: PHASECalibrationMode
 pattern PHASECalibrationModeAbsoluteSpl = PHASECalibrationMode 2
+
+instance ObjCArgument PHASECalibrationMode where
+  withObjCArg (PHASECalibrationMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASECalibrationMode where
+  type RawReturn PHASECalibrationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASECalibrationMode x)
+  fromOwned x = pure (PHASECalibrationMode x)
 
 -- | PHASECullOption
 --
@@ -164,6 +207,16 @@ pattern PHASECullOptionSleepWakeAtRealtimeOffset = PHASECullOption 3
 
 pattern PHASECullOptionDoNotCull :: PHASECullOption
 pattern PHASECullOptionDoNotCull = PHASECullOption 4
+
+instance ObjCArgument PHASECullOption where
+  withObjCArg (PHASECullOption x) k = k (argCLong x)
+
+instance ObjCReturn PHASECullOption where
+  type RawReturn PHASECullOption = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASECullOption x)
+  fromOwned x = pure (PHASECullOption x)
 
 -- | PHASECurveType
 --
@@ -250,6 +303,16 @@ pattern PHASECurveTypeHoldStartValue = PHASECurveType 1668434003
 pattern PHASECurveTypeJumpToEndValue :: PHASECurveType
 pattern PHASECurveTypeJumpToEndValue = PHASECurveType 1668434501
 
+instance ObjCArgument PHASECurveType where
+  withObjCArg (PHASECurveType x) k = k (argCLong x)
+
+instance ObjCReturn PHASECurveType where
+  type RawReturn PHASECurveType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASECurveType x)
+  fromOwned x = pure (PHASECurveType x)
+
 -- | PHASEError
 --
 -- General PHASE error codes
@@ -263,6 +326,16 @@ pattern PHASEErrorInitializeFailed = PHASEError 1346913633
 
 pattern PHASEErrorInvalidObject :: PHASEError
 pattern PHASEErrorInvalidObject = PHASEError 1346913634
+
+instance ObjCArgument PHASEError where
+  withObjCArg (PHASEError x) k = k (argCLong x)
+
+instance ObjCReturn PHASEError where
+  type RawReturn PHASEError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEError x)
+  fromOwned x = pure (PHASEError x)
 
 -- | PHASEMaterialPreset
 --
@@ -290,6 +363,16 @@ pattern PHASEMaterialPresetDrywall = PHASEMaterialPreset 1833202295
 pattern PHASEMaterialPresetWood :: PHASEMaterialPreset
 pattern PHASEMaterialPresetWood = PHASEMaterialPreset 1834448228
 
+instance ObjCArgument PHASEMaterialPreset where
+  withObjCArg (PHASEMaterialPreset x) k = k (argCLong x)
+
+instance ObjCReturn PHASEMaterialPreset where
+  type RawReturn PHASEMaterialPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEMaterialPreset x)
+  fromOwned x = pure (PHASEMaterialPreset x)
+
 -- | PHASEMediumPreset
 --
 -- Medium preset
@@ -300,6 +383,16 @@ newtype PHASEMediumPreset = PHASEMediumPreset CLong
 
 pattern PHASEMediumPresetAir :: PHASEMediumPreset
 pattern PHASEMediumPresetAir = PHASEMediumPreset 1835286898
+
+instance ObjCArgument PHASEMediumPreset where
+  withObjCArg (PHASEMediumPreset x) k = k (argCLong x)
+
+instance ObjCReturn PHASEMediumPreset where
+  type RawReturn PHASEMediumPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEMediumPreset x)
+  fromOwned x = pure (PHASEMediumPreset x)
 
 -- | PHASENormalizationMode
 --
@@ -327,6 +420,16 @@ pattern PHASENormalizationModeNone = PHASENormalizationMode 0
 pattern PHASENormalizationModeDynamic :: PHASENormalizationMode
 pattern PHASENormalizationModeDynamic = PHASENormalizationMode 1
 
+instance ObjCArgument PHASENormalizationMode where
+  withObjCArg (PHASENormalizationMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASENormalizationMode where
+  type RawReturn PHASENormalizationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASENormalizationMode x)
+  fromOwned x = pure (PHASENormalizationMode x)
+
 -- | PHASEPlaybackMode
 --
 -- Playback mode.
@@ -348,6 +451,16 @@ pattern PHASEPlaybackModeOneShot = PHASEPlaybackMode 0
 
 pattern PHASEPlaybackModeLooping :: PHASEPlaybackMode
 pattern PHASEPlaybackModeLooping = PHASEPlaybackMode 1
+
+instance ObjCArgument PHASEPlaybackMode where
+  withObjCArg (PHASEPlaybackMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASEPlaybackMode where
+  type RawReturn PHASEPlaybackMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEPlaybackMode x)
+  fromOwned x = pure (PHASEPlaybackMode x)
 
 -- | *************************************************************************************************
 --
@@ -393,6 +506,16 @@ pattern PHASEPushStreamBufferInterrupts = PHASEPushStreamBufferOptions 4
 pattern PHASEPushStreamBufferInterruptsAtLoop :: PHASEPushStreamBufferOptions
 pattern PHASEPushStreamBufferInterruptsAtLoop = PHASEPushStreamBufferOptions 8
 
+instance ObjCArgument PHASEPushStreamBufferOptions where
+  withObjCArg (PHASEPushStreamBufferOptions x) k = k (argCULong x)
+
+instance ObjCReturn PHASEPushStreamBufferOptions where
+  type RawReturn PHASEPushStreamBufferOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEPushStreamBufferOptions x)
+  fromOwned x = pure (PHASEPushStreamBufferOptions x)
+
 -- | PHASEPushStreamCompletionCallbackCondition
 --
 -- Specifies when the completion handler must be invoked.
@@ -407,6 +530,16 @@ newtype PHASEPushStreamCompletionCallbackCondition = PHASEPushStreamCompletionCa
 
 pattern PHASEPushStreamCompletionDataRendered :: PHASEPushStreamCompletionCallbackCondition
 pattern PHASEPushStreamCompletionDataRendered = PHASEPushStreamCompletionCallbackCondition 0
+
+instance ObjCArgument PHASEPushStreamCompletionCallbackCondition where
+  withObjCArg (PHASEPushStreamCompletionCallbackCondition x) k = k (argCLong x)
+
+instance ObjCReturn PHASEPushStreamCompletionCallbackCondition where
+  type RawReturn PHASEPushStreamCompletionCallbackCondition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEPushStreamCompletionCallbackCondition x)
+  fromOwned x = pure (PHASEPushStreamCompletionCallbackCondition x)
 
 -- | PHASERenderingMode
 --
@@ -429,6 +562,16 @@ pattern PHASERenderingModeLocal = PHASERenderingMode 0
 
 pattern PHASERenderingModeClient :: PHASERenderingMode
 pattern PHASERenderingModeClient = PHASERenderingMode 1
+
+instance ObjCArgument PHASERenderingMode where
+  withObjCArg (PHASERenderingMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASERenderingMode where
+  type RawReturn PHASERenderingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASERenderingMode x)
+  fromOwned x = pure (PHASERenderingMode x)
 
 -- | PHASERenderingState
 --
@@ -458,6 +601,16 @@ pattern PHASERenderingStateStarted = PHASERenderingState 1
 
 pattern PHASERenderingStatePaused :: PHASERenderingState
 pattern PHASERenderingStatePaused = PHASERenderingState 2
+
+instance ObjCArgument PHASERenderingState where
+  withObjCArg (PHASERenderingState x) k = k (argCLong x)
+
+instance ObjCReturn PHASERenderingState where
+  type RawReturn PHASERenderingState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASERenderingState x)
+  fromOwned x = pure (PHASERenderingState x)
 
 -- | PHASEReverbPreset
 --
@@ -506,6 +659,16 @@ pattern PHASEReverbPresetLargeHall2 = PHASEReverbPreset 1917601842
 pattern PHASEReverbPresetCathedral :: PHASEReverbPreset
 pattern PHASEReverbPresetCathedral = PHASEReverbPreset 1917023336
 
+instance ObjCArgument PHASEReverbPreset where
+  withObjCArg (PHASEReverbPreset x) k = k (argCLong x)
+
+instance ObjCReturn PHASEReverbPreset where
+  type RawReturn PHASEReverbPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEReverbPreset x)
+  fromOwned x = pure (PHASEReverbPreset x)
+
 -- | PHASESoundEventError
 --
 -- Sound event error.
@@ -532,6 +695,16 @@ pattern PHASESoundEventErrorSystemNotInitialized = PHASESoundEventError 13469256
 pattern PHASESoundEventErrorOutOfMemory :: PHASESoundEventError
 pattern PHASESoundEventErrorOutOfMemory = PHASESoundEventError 1346925670
 
+instance ObjCArgument PHASESoundEventError where
+  withObjCArg (PHASESoundEventError x) k = k (argCLong x)
+
+instance ObjCReturn PHASESoundEventError where
+  type RawReturn PHASESoundEventError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESoundEventError x)
+  fromOwned x = pure (PHASESoundEventError x)
+
 -- | PHASESoundEventPrepareHandlerReason
 --
 -- Sound event prepare handler reason
@@ -548,6 +721,16 @@ pattern PHASESoundEventPrepareHandlerReasonPrepared = PHASESoundEventPrepareHand
 
 pattern PHASESoundEventPrepareHandlerReasonTerminated :: PHASESoundEventPrepareHandlerReason
 pattern PHASESoundEventPrepareHandlerReasonTerminated = PHASESoundEventPrepareHandlerReason 2
+
+instance ObjCArgument PHASESoundEventPrepareHandlerReason where
+  withObjCArg (PHASESoundEventPrepareHandlerReason x) k = k (argCLong x)
+
+instance ObjCReturn PHASESoundEventPrepareHandlerReason where
+  type RawReturn PHASESoundEventPrepareHandlerReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESoundEventPrepareHandlerReason x)
+  fromOwned x = pure (PHASESoundEventPrepareHandlerReason x)
 
 -- | PHASESoundEventPrepareState
 --
@@ -566,6 +749,16 @@ pattern PHASESoundEventPrepareStatePrepareInProgress = PHASESoundEventPrepareSta
 pattern PHASESoundEventPrepareStatePrepared :: PHASESoundEventPrepareState
 pattern PHASESoundEventPrepareStatePrepared = PHASESoundEventPrepareState 2
 
+instance ObjCArgument PHASESoundEventPrepareState where
+  withObjCArg (PHASESoundEventPrepareState x) k = k (argCLong x)
+
+instance ObjCReturn PHASESoundEventPrepareState where
+  type RawReturn PHASESoundEventPrepareState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESoundEventPrepareState x)
+  fromOwned x = pure (PHASESoundEventPrepareState x)
+
 -- | PHASESoundEventSeekHandlerReason
 --
 -- Sound event seek handler reason
@@ -583,6 +776,16 @@ pattern PHASESoundEventSeekHandlerReasonFailureSeekAlreadyInProgress = PHASESoun
 pattern PHASESoundEventSeekHandlerReasonSeekSuccessful :: PHASESoundEventSeekHandlerReason
 pattern PHASESoundEventSeekHandlerReasonSeekSuccessful = PHASESoundEventSeekHandlerReason 2
 
+instance ObjCArgument PHASESoundEventSeekHandlerReason where
+  withObjCArg (PHASESoundEventSeekHandlerReason x) k = k (argCLong x)
+
+instance ObjCReturn PHASESoundEventSeekHandlerReason where
+  type RawReturn PHASESoundEventSeekHandlerReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESoundEventSeekHandlerReason x)
+  fromOwned x = pure (PHASESoundEventSeekHandlerReason x)
+
 -- | PHASESoundEventStartHandlerReason
 --
 -- Sound event start handler reason
@@ -599,6 +802,16 @@ pattern PHASESoundEventStartHandlerReasonFinishedPlaying = PHASESoundEventStartH
 
 pattern PHASESoundEventStartHandlerReasonTerminated :: PHASESoundEventStartHandlerReason
 pattern PHASESoundEventStartHandlerReasonTerminated = PHASESoundEventStartHandlerReason 2
+
+instance ObjCArgument PHASESoundEventStartHandlerReason where
+  withObjCArg (PHASESoundEventStartHandlerReason x) k = k (argCLong x)
+
+instance ObjCReturn PHASESoundEventStartHandlerReason where
+  type RawReturn PHASESoundEventStartHandlerReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESoundEventStartHandlerReason x)
+  fromOwned x = pure (PHASESoundEventStartHandlerReason x)
 
 -- | *************************************************************************************************
 --
@@ -637,6 +850,16 @@ pattern PHASESpatialPipelineFlagEarlyReflections = PHASESpatialPipelineFlags 2
 pattern PHASESpatialPipelineFlagLateReverb :: PHASESpatialPipelineFlags
 pattern PHASESpatialPipelineFlagLateReverb = PHASESpatialPipelineFlags 4
 
+instance ObjCArgument PHASESpatialPipelineFlags where
+  withObjCArg (PHASESpatialPipelineFlags x) k = k (argCULong x)
+
+instance ObjCReturn PHASESpatialPipelineFlags where
+  type RawReturn PHASESpatialPipelineFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESpatialPipelineFlags x)
+  fromOwned x = pure (PHASESpatialPipelineFlags x)
+
 -- | PHASESpatializationMode
 --
 -- Spatialization mode.
@@ -666,6 +889,16 @@ pattern PHASESpatializationModeAlwaysUseBinaural = PHASESpatializationMode 1
 pattern PHASESpatializationModeAlwaysUseChannelBased :: PHASESpatializationMode
 pattern PHASESpatializationModeAlwaysUseChannelBased = PHASESpatializationMode 2
 
+instance ObjCArgument PHASESpatializationMode where
+  withObjCArg (PHASESpatializationMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASESpatializationMode where
+  type RawReturn PHASESpatializationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASESpatializationMode x)
+  fromOwned x = pure (PHASESpatializationMode x)
+
 -- | PHASEUpdateMode
 --
 -- Update mode for the engine.
@@ -691,3 +924,13 @@ pattern PHASEUpdateModeAutomatic = PHASEUpdateMode 0
 
 pattern PHASEUpdateModeManual :: PHASEUpdateMode
 pattern PHASEUpdateModeManual = PHASEUpdateMode 1
+
+instance ObjCArgument PHASEUpdateMode where
+  withObjCArg (PHASEUpdateMode x) k = k (argCLong x)
+
+instance ObjCReturn PHASEUpdateMode where
+  type RawReturn PHASEUpdateMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHASEUpdateMode x)
+  fromOwned x = pure (PHASEUpdateMode x)

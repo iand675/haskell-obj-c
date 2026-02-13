@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.LocalAuthentication.LAEnvironmentMechanism
   , isUsable
   , localizedName
   , iconSystemName
-  , newSelector
+  , iconSystemNameSelector
   , initSelector
   , isUsableSelector
   , localizedNameSelector
-  , iconSystemNameSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,14 +39,14 @@ new :: IO (Id LAEnvironmentMechanism)
 new  =
   do
     cls' <- getRequiredClass "LAEnvironmentMechanism"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The Clients should only consume environment mechanisms..
 --
 -- ObjC selector: @- init@
 init_ :: IsLAEnvironmentMechanism laEnvironmentMechanism => laEnvironmentMechanism -> IO (Id LAEnvironmentMechanism)
-init_ laEnvironmentMechanism  =
-    sendMsg laEnvironmentMechanism (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laEnvironmentMechanism =
+  sendOwnedMessage laEnvironmentMechanism initSelector
 
 -- | Whether the mechanism is available for use, i.e. whether the relevant preflight call of @canEvaluatePolicy@ would succeed.
 --
@@ -57,44 +54,44 @@ init_ laEnvironmentMechanism  =
 --
 -- ObjC selector: @- isUsable@
 isUsable :: IsLAEnvironmentMechanism laEnvironmentMechanism => laEnvironmentMechanism -> IO Bool
-isUsable laEnvironmentMechanism  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laEnvironmentMechanism (mkSelector "isUsable") retCULong []
+isUsable laEnvironmentMechanism =
+  sendMessage laEnvironmentMechanism isUsableSelector
 
 -- | The localized name of the authentication mechanism, e.g. "Touch ID", "Face ID" etc.
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsLAEnvironmentMechanism laEnvironmentMechanism => laEnvironmentMechanism -> IO (Id NSString)
-localizedName laEnvironmentMechanism  =
-    sendMsg laEnvironmentMechanism (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName laEnvironmentMechanism =
+  sendMessage laEnvironmentMechanism localizedNameSelector
 
 -- | Name of the SF Symbol representing this authentication mechanism.
 --
 -- ObjC selector: @- iconSystemName@
 iconSystemName :: IsLAEnvironmentMechanism laEnvironmentMechanism => laEnvironmentMechanism -> IO (Id NSString)
-iconSystemName laEnvironmentMechanism  =
-    sendMsg laEnvironmentMechanism (mkSelector "iconSystemName") (retPtr retVoid) [] >>= retainedObject . castPtr
+iconSystemName laEnvironmentMechanism =
+  sendMessage laEnvironmentMechanism iconSystemNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAEnvironmentMechanism)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAEnvironmentMechanism)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @isUsable@
-isUsableSelector :: Selector
+isUsableSelector :: Selector '[] Bool
 isUsableSelector = mkSelector "isUsable"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @iconSystemName@
-iconSystemNameSelector :: Selector
+iconSystemNameSelector :: Selector '[] (Id NSString)
 iconSystemNameSelector = mkSelector "iconSystemName"
 

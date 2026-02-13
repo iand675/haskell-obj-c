@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,37 +45,37 @@ module ObjC.Metal.MTL4RenderPassDescriptor
   , setVisibilityResultType
   , supportColorAttachmentMapping
   , setSupportColorAttachmentMapping
-  , setSamplePositions_countSelector
-  , getSamplePositions_countSelector
   , colorAttachmentsSelector
-  , depthAttachmentSelector
-  , setDepthAttachmentSelector
-  , stencilAttachmentSelector
-  , setStencilAttachmentSelector
-  , renderTargetArrayLengthSelector
-  , setRenderTargetArrayLengthSelector
-  , imageblockSampleLengthSelector
-  , setImageblockSampleLengthSelector
-  , threadgroupMemoryLengthSelector
-  , setThreadgroupMemoryLengthSelector
-  , tileWidthSelector
-  , setTileWidthSelector
-  , tileHeightSelector
-  , setTileHeightSelector
   , defaultRasterSampleCountSelector
-  , setDefaultRasterSampleCountSelector
-  , renderTargetWidthSelector
-  , setRenderTargetWidthSelector
-  , renderTargetHeightSelector
-  , setRenderTargetHeightSelector
+  , depthAttachmentSelector
+  , getSamplePositions_countSelector
+  , imageblockSampleLengthSelector
   , rasterizationRateMapSelector
+  , renderTargetArrayLengthSelector
+  , renderTargetHeightSelector
+  , renderTargetWidthSelector
+  , setDefaultRasterSampleCountSelector
+  , setDepthAttachmentSelector
+  , setImageblockSampleLengthSelector
   , setRasterizationRateMapSelector
-  , visibilityResultBufferSelector
-  , setVisibilityResultBufferSelector
-  , visibilityResultTypeSelector
-  , setVisibilityResultTypeSelector
-  , supportColorAttachmentMappingSelector
+  , setRenderTargetArrayLengthSelector
+  , setRenderTargetHeightSelector
+  , setRenderTargetWidthSelector
+  , setSamplePositions_countSelector
+  , setStencilAttachmentSelector
   , setSupportColorAttachmentMappingSelector
+  , setThreadgroupMemoryLengthSelector
+  , setTileHeightSelector
+  , setTileWidthSelector
+  , setVisibilityResultBufferSelector
+  , setVisibilityResultTypeSelector
+  , stencilAttachmentSelector
+  , supportColorAttachmentMappingSelector
+  , threadgroupMemoryLengthSelector
+  , tileHeightSelector
+  , tileWidthSelector
+  , visibilityResultBufferSelector
+  , visibilityResultTypeSelector
 
   -- * Enum types
   , MTLVisibilityResultType(MTLVisibilityResultType)
@@ -83,15 +84,11 @@ module ObjC.Metal.MTL4RenderPassDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -105,8 +102,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setSamplePositions:count:@
 setSamplePositions_count :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> Const RawId -> CULong -> IO ()
-setSamplePositions_count mtL4RenderPassDescriptor  positions count =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setSamplePositions:count:") retVoid [argPtr (castPtr (unRawId (unConst positions)) :: Ptr ()), argCULong count]
+setSamplePositions_count mtL4RenderPassDescriptor positions count =
+  sendMessage mtL4RenderPassDescriptor setSamplePositions_countSelector positions count
 
 -- | Retrieves the previously-configured custom sample positions.
 --
@@ -118,87 +115,85 @@ setSamplePositions_count mtL4RenderPassDescriptor  positions count =
 --
 -- ObjC selector: @- getSamplePositions:count:@
 getSamplePositions_count :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> CULong -> IO CULong
-getSamplePositions_count mtL4RenderPassDescriptor  positions count =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "getSamplePositions:count:") retCULong [argPtr (castPtr (unRawId positions) :: Ptr ()), argCULong count]
+getSamplePositions_count mtL4RenderPassDescriptor positions count =
+  sendMessage mtL4RenderPassDescriptor getSamplePositions_countSelector positions count
 
 -- | Accesses the array of state information for render attachments that store color data.
 --
 -- ObjC selector: @- colorAttachments@
 colorAttachments :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO (Id MTLRenderPassColorAttachmentDescriptorArray)
-colorAttachments mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "colorAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorAttachments mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor colorAttachmentsSelector
 
 -- | Accesses state information for a render attachment that stores depth data.
 --
 -- ObjC selector: @- depthAttachment@
 depthAttachment :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO (Id MTLRenderPassDepthAttachmentDescriptor)
-depthAttachment mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "depthAttachment") (retPtr retVoid) [] >>= retainedObject . castPtr
+depthAttachment mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor depthAttachmentSelector
 
 -- | Accesses state information for a render attachment that stores depth data.
 --
 -- ObjC selector: @- setDepthAttachment:@
 setDepthAttachment :: (IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor, IsMTLRenderPassDepthAttachmentDescriptor value) => mtL4RenderPassDescriptor -> value -> IO ()
-setDepthAttachment mtL4RenderPassDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPassDescriptor (mkSelector "setDepthAttachment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDepthAttachment mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setDepthAttachmentSelector (toMTLRenderPassDepthAttachmentDescriptor value)
 
 -- | Accesses state information for a render attachment that stores stencil data.
 --
 -- ObjC selector: @- stencilAttachment@
 stencilAttachment :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO (Id MTLRenderPassStencilAttachmentDescriptor)
-stencilAttachment mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "stencilAttachment") (retPtr retVoid) [] >>= retainedObject . castPtr
+stencilAttachment mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor stencilAttachmentSelector
 
 -- | Accesses state information for a render attachment that stores stencil data.
 --
 -- ObjC selector: @- setStencilAttachment:@
 setStencilAttachment :: (IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor, IsMTLRenderPassStencilAttachmentDescriptor value) => mtL4RenderPassDescriptor -> value -> IO ()
-setStencilAttachment mtL4RenderPassDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPassDescriptor (mkSelector "setStencilAttachment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStencilAttachment mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setStencilAttachmentSelector (toMTLRenderPassStencilAttachmentDescriptor value)
 
 -- | Assigns the number of layers that all attachments this descriptor references have.
 --
 -- ObjC selector: @- renderTargetArrayLength@
 renderTargetArrayLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-renderTargetArrayLength mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "renderTargetArrayLength") retCULong []
+renderTargetArrayLength mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor renderTargetArrayLengthSelector
 
 -- | Assigns the number of layers that all attachments this descriptor references have.
 --
 -- ObjC selector: @- setRenderTargetArrayLength:@
 setRenderTargetArrayLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setRenderTargetArrayLength mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setRenderTargetArrayLength:") retVoid [argCULong value]
+setRenderTargetArrayLength mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setRenderTargetArrayLengthSelector value
 
 -- | Assigns the per-sample size, in bytes, of the largest explicit imageblock layout in the render pass.
 --
 -- ObjC selector: @- imageblockSampleLength@
 imageblockSampleLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-imageblockSampleLength mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "imageblockSampleLength") retCULong []
+imageblockSampleLength mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor imageblockSampleLengthSelector
 
 -- | Assigns the per-sample size, in bytes, of the largest explicit imageblock layout in the render pass.
 --
 -- ObjC selector: @- setImageblockSampleLength:@
 setImageblockSampleLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setImageblockSampleLength mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setImageblockSampleLength:") retVoid [argCULong value]
+setImageblockSampleLength mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setImageblockSampleLengthSelector value
 
 -- | Assigns the per-tile size, in bytes, of the persistent threadgroup memory allocation of this render pass.
 --
 -- ObjC selector: @- threadgroupMemoryLength@
 threadgroupMemoryLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-threadgroupMemoryLength mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "threadgroupMemoryLength") retCULong []
+threadgroupMemoryLength mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor threadgroupMemoryLengthSelector
 
 -- | Assigns the per-tile size, in bytes, of the persistent threadgroup memory allocation of this render pass.
 --
 -- ObjC selector: @- setThreadgroupMemoryLength:@
 setThreadgroupMemoryLength :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setThreadgroupMemoryLength mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setThreadgroupMemoryLength:") retVoid [argCULong value]
+setThreadgroupMemoryLength mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setThreadgroupMemoryLengthSelector value
 
 -- | The width of the tiles, in pixels, a render pass you create with this descriptor applies to its attachments.
 --
@@ -208,8 +203,8 @@ setThreadgroupMemoryLength mtL4RenderPassDescriptor  value =
 --
 -- ObjC selector: @- tileWidth@
 tileWidth :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-tileWidth mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "tileWidth") retCULong []
+tileWidth mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor tileWidthSelector
 
 -- | The width of the tiles, in pixels, a render pass you create with this descriptor applies to its attachments.
 --
@@ -219,8 +214,8 @@ tileWidth mtL4RenderPassDescriptor  =
 --
 -- ObjC selector: @- setTileWidth:@
 setTileWidth :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setTileWidth mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setTileWidth:") retVoid [argCULong value]
+setTileWidth mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setTileWidthSelector value
 
 -- | The height of the tiles, in pixels, a render pass you create with this descriptor applies to its attachments.
 --
@@ -230,8 +225,8 @@ setTileWidth mtL4RenderPassDescriptor  value =
 --
 -- ObjC selector: @- tileHeight@
 tileHeight :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-tileHeight mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "tileHeight") retCULong []
+tileHeight mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor tileHeightSelector
 
 -- | The height of the tiles, in pixels, a render pass you create with this descriptor applies to its attachments.
 --
@@ -241,22 +236,22 @@ tileHeight mtL4RenderPassDescriptor  =
 --
 -- ObjC selector: @- setTileHeight:@
 setTileHeight :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setTileHeight mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setTileHeight:") retVoid [argCULong value]
+setTileHeight mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setTileHeightSelector value
 
 -- | Sets the default raster sample count for the render pass when it references no attachments.
 --
 -- ObjC selector: @- defaultRasterSampleCount@
 defaultRasterSampleCount :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-defaultRasterSampleCount mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "defaultRasterSampleCount") retCULong []
+defaultRasterSampleCount mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor defaultRasterSampleCountSelector
 
 -- | Sets the default raster sample count for the render pass when it references no attachments.
 --
 -- ObjC selector: @- setDefaultRasterSampleCount:@
 setDefaultRasterSampleCount :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setDefaultRasterSampleCount mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setDefaultRasterSampleCount:") retVoid [argCULong value]
+setDefaultRasterSampleCount mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setDefaultRasterSampleCountSelector value
 
 -- | Sets the width, in pixels, to which Metal constrains the render target.
 --
@@ -266,8 +261,8 @@ setDefaultRasterSampleCount mtL4RenderPassDescriptor  value =
 --
 -- ObjC selector: @- renderTargetWidth@
 renderTargetWidth :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-renderTargetWidth mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "renderTargetWidth") retCULong []
+renderTargetWidth mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor renderTargetWidthSelector
 
 -- | Sets the width, in pixels, to which Metal constrains the render target.
 --
@@ -277,8 +272,8 @@ renderTargetWidth mtL4RenderPassDescriptor  =
 --
 -- ObjC selector: @- setRenderTargetWidth:@
 setRenderTargetWidth :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setRenderTargetWidth mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setRenderTargetWidth:") retVoid [argCULong value]
+setRenderTargetWidth mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setRenderTargetWidthSelector value
 
 -- | Sets the height, in pixels, to which Metal constrains the render target.
 --
@@ -288,8 +283,8 @@ setRenderTargetWidth mtL4RenderPassDescriptor  value =
 --
 -- ObjC selector: @- renderTargetHeight@
 renderTargetHeight :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO CULong
-renderTargetHeight mtL4RenderPassDescriptor  =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "renderTargetHeight") retCULong []
+renderTargetHeight mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor renderTargetHeightSelector
 
 -- | Sets the height, in pixels, to which Metal constrains the render target.
 --
@@ -299,8 +294,8 @@ renderTargetHeight mtL4RenderPassDescriptor  =
 --
 -- ObjC selector: @- setRenderTargetHeight:@
 setRenderTargetHeight :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> CULong -> IO ()
-setRenderTargetHeight mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setRenderTargetHeight:") retVoid [argCULong value]
+setRenderTargetHeight mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setRenderTargetHeightSelector value
 
 -- | Assigns an optional variable rasterization rate map that Metal uses in the render pass.
 --
@@ -310,8 +305,8 @@ setRenderTargetHeight mtL4RenderPassDescriptor  value =
 --
 -- ObjC selector: @- rasterizationRateMap@
 rasterizationRateMap :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO RawId
-rasterizationRateMap mtL4RenderPassDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtL4RenderPassDescriptor (mkSelector "rasterizationRateMap") (retPtr retVoid) []
+rasterizationRateMap mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor rasterizationRateMapSelector
 
 -- | Assigns an optional variable rasterization rate map that Metal uses in the render pass.
 --
@@ -321,176 +316,176 @@ rasterizationRateMap mtL4RenderPassDescriptor  =
 --
 -- ObjC selector: @- setRasterizationRateMap:@
 setRasterizationRateMap :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> IO ()
-setRasterizationRateMap mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setRasterizationRateMap:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRasterizationRateMap mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setRasterizationRateMapSelector value
 
 -- | Configures a buffer into which Metal writes counts of fragments (pixels) passing the depth and stencil tests.
 --
 -- ObjC selector: @- visibilityResultBuffer@
 visibilityResultBuffer :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO RawId
-visibilityResultBuffer mtL4RenderPassDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtL4RenderPassDescriptor (mkSelector "visibilityResultBuffer") (retPtr retVoid) []
+visibilityResultBuffer mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor visibilityResultBufferSelector
 
 -- | Configures a buffer into which Metal writes counts of fragments (pixels) passing the depth and stencil tests.
 --
 -- ObjC selector: @- setVisibilityResultBuffer:@
 setVisibilityResultBuffer :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> RawId -> IO ()
-setVisibilityResultBuffer mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setVisibilityResultBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setVisibilityResultBuffer mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setVisibilityResultBufferSelector value
 
 -- | Determines if Metal accumulates visibility results between render encoders or resets them.
 --
 -- ObjC selector: @- visibilityResultType@
 visibilityResultType :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO MTLVisibilityResultType
-visibilityResultType mtL4RenderPassDescriptor  =
-    fmap (coerce :: CLong -> MTLVisibilityResultType) $ sendMsg mtL4RenderPassDescriptor (mkSelector "visibilityResultType") retCLong []
+visibilityResultType mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor visibilityResultTypeSelector
 
 -- | Determines if Metal accumulates visibility results between render encoders or resets them.
 --
 -- ObjC selector: @- setVisibilityResultType:@
 setVisibilityResultType :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> MTLVisibilityResultType -> IO ()
-setVisibilityResultType mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setVisibilityResultType:") retVoid [argCLong (coerce value)]
+setVisibilityResultType mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setVisibilityResultTypeSelector value
 
 -- | Controls if the render pass supports color attachment mapping.
 --
 -- ObjC selector: @- supportColorAttachmentMapping@
 supportColorAttachmentMapping :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> IO Bool
-supportColorAttachmentMapping mtL4RenderPassDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4RenderPassDescriptor (mkSelector "supportColorAttachmentMapping") retCULong []
+supportColorAttachmentMapping mtL4RenderPassDescriptor =
+  sendMessage mtL4RenderPassDescriptor supportColorAttachmentMappingSelector
 
 -- | Controls if the render pass supports color attachment mapping.
 --
 -- ObjC selector: @- setSupportColorAttachmentMapping:@
 setSupportColorAttachmentMapping :: IsMTL4RenderPassDescriptor mtL4RenderPassDescriptor => mtL4RenderPassDescriptor -> Bool -> IO ()
-setSupportColorAttachmentMapping mtL4RenderPassDescriptor  value =
-    sendMsg mtL4RenderPassDescriptor (mkSelector "setSupportColorAttachmentMapping:") retVoid [argCULong (if value then 1 else 0)]
+setSupportColorAttachmentMapping mtL4RenderPassDescriptor value =
+  sendMessage mtL4RenderPassDescriptor setSupportColorAttachmentMappingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setSamplePositions:count:@
-setSamplePositions_countSelector :: Selector
+setSamplePositions_countSelector :: Selector '[Const RawId, CULong] ()
 setSamplePositions_countSelector = mkSelector "setSamplePositions:count:"
 
 -- | @Selector@ for @getSamplePositions:count:@
-getSamplePositions_countSelector :: Selector
+getSamplePositions_countSelector :: Selector '[RawId, CULong] CULong
 getSamplePositions_countSelector = mkSelector "getSamplePositions:count:"
 
 -- | @Selector@ for @colorAttachments@
-colorAttachmentsSelector :: Selector
+colorAttachmentsSelector :: Selector '[] (Id MTLRenderPassColorAttachmentDescriptorArray)
 colorAttachmentsSelector = mkSelector "colorAttachments"
 
 -- | @Selector@ for @depthAttachment@
-depthAttachmentSelector :: Selector
+depthAttachmentSelector :: Selector '[] (Id MTLRenderPassDepthAttachmentDescriptor)
 depthAttachmentSelector = mkSelector "depthAttachment"
 
 -- | @Selector@ for @setDepthAttachment:@
-setDepthAttachmentSelector :: Selector
+setDepthAttachmentSelector :: Selector '[Id MTLRenderPassDepthAttachmentDescriptor] ()
 setDepthAttachmentSelector = mkSelector "setDepthAttachment:"
 
 -- | @Selector@ for @stencilAttachment@
-stencilAttachmentSelector :: Selector
+stencilAttachmentSelector :: Selector '[] (Id MTLRenderPassStencilAttachmentDescriptor)
 stencilAttachmentSelector = mkSelector "stencilAttachment"
 
 -- | @Selector@ for @setStencilAttachment:@
-setStencilAttachmentSelector :: Selector
+setStencilAttachmentSelector :: Selector '[Id MTLRenderPassStencilAttachmentDescriptor] ()
 setStencilAttachmentSelector = mkSelector "setStencilAttachment:"
 
 -- | @Selector@ for @renderTargetArrayLength@
-renderTargetArrayLengthSelector :: Selector
+renderTargetArrayLengthSelector :: Selector '[] CULong
 renderTargetArrayLengthSelector = mkSelector "renderTargetArrayLength"
 
 -- | @Selector@ for @setRenderTargetArrayLength:@
-setRenderTargetArrayLengthSelector :: Selector
+setRenderTargetArrayLengthSelector :: Selector '[CULong] ()
 setRenderTargetArrayLengthSelector = mkSelector "setRenderTargetArrayLength:"
 
 -- | @Selector@ for @imageblockSampleLength@
-imageblockSampleLengthSelector :: Selector
+imageblockSampleLengthSelector :: Selector '[] CULong
 imageblockSampleLengthSelector = mkSelector "imageblockSampleLength"
 
 -- | @Selector@ for @setImageblockSampleLength:@
-setImageblockSampleLengthSelector :: Selector
+setImageblockSampleLengthSelector :: Selector '[CULong] ()
 setImageblockSampleLengthSelector = mkSelector "setImageblockSampleLength:"
 
 -- | @Selector@ for @threadgroupMemoryLength@
-threadgroupMemoryLengthSelector :: Selector
+threadgroupMemoryLengthSelector :: Selector '[] CULong
 threadgroupMemoryLengthSelector = mkSelector "threadgroupMemoryLength"
 
 -- | @Selector@ for @setThreadgroupMemoryLength:@
-setThreadgroupMemoryLengthSelector :: Selector
+setThreadgroupMemoryLengthSelector :: Selector '[CULong] ()
 setThreadgroupMemoryLengthSelector = mkSelector "setThreadgroupMemoryLength:"
 
 -- | @Selector@ for @tileWidth@
-tileWidthSelector :: Selector
+tileWidthSelector :: Selector '[] CULong
 tileWidthSelector = mkSelector "tileWidth"
 
 -- | @Selector@ for @setTileWidth:@
-setTileWidthSelector :: Selector
+setTileWidthSelector :: Selector '[CULong] ()
 setTileWidthSelector = mkSelector "setTileWidth:"
 
 -- | @Selector@ for @tileHeight@
-tileHeightSelector :: Selector
+tileHeightSelector :: Selector '[] CULong
 tileHeightSelector = mkSelector "tileHeight"
 
 -- | @Selector@ for @setTileHeight:@
-setTileHeightSelector :: Selector
+setTileHeightSelector :: Selector '[CULong] ()
 setTileHeightSelector = mkSelector "setTileHeight:"
 
 -- | @Selector@ for @defaultRasterSampleCount@
-defaultRasterSampleCountSelector :: Selector
+defaultRasterSampleCountSelector :: Selector '[] CULong
 defaultRasterSampleCountSelector = mkSelector "defaultRasterSampleCount"
 
 -- | @Selector@ for @setDefaultRasterSampleCount:@
-setDefaultRasterSampleCountSelector :: Selector
+setDefaultRasterSampleCountSelector :: Selector '[CULong] ()
 setDefaultRasterSampleCountSelector = mkSelector "setDefaultRasterSampleCount:"
 
 -- | @Selector@ for @renderTargetWidth@
-renderTargetWidthSelector :: Selector
+renderTargetWidthSelector :: Selector '[] CULong
 renderTargetWidthSelector = mkSelector "renderTargetWidth"
 
 -- | @Selector@ for @setRenderTargetWidth:@
-setRenderTargetWidthSelector :: Selector
+setRenderTargetWidthSelector :: Selector '[CULong] ()
 setRenderTargetWidthSelector = mkSelector "setRenderTargetWidth:"
 
 -- | @Selector@ for @renderTargetHeight@
-renderTargetHeightSelector :: Selector
+renderTargetHeightSelector :: Selector '[] CULong
 renderTargetHeightSelector = mkSelector "renderTargetHeight"
 
 -- | @Selector@ for @setRenderTargetHeight:@
-setRenderTargetHeightSelector :: Selector
+setRenderTargetHeightSelector :: Selector '[CULong] ()
 setRenderTargetHeightSelector = mkSelector "setRenderTargetHeight:"
 
 -- | @Selector@ for @rasterizationRateMap@
-rasterizationRateMapSelector :: Selector
+rasterizationRateMapSelector :: Selector '[] RawId
 rasterizationRateMapSelector = mkSelector "rasterizationRateMap"
 
 -- | @Selector@ for @setRasterizationRateMap:@
-setRasterizationRateMapSelector :: Selector
+setRasterizationRateMapSelector :: Selector '[RawId] ()
 setRasterizationRateMapSelector = mkSelector "setRasterizationRateMap:"
 
 -- | @Selector@ for @visibilityResultBuffer@
-visibilityResultBufferSelector :: Selector
+visibilityResultBufferSelector :: Selector '[] RawId
 visibilityResultBufferSelector = mkSelector "visibilityResultBuffer"
 
 -- | @Selector@ for @setVisibilityResultBuffer:@
-setVisibilityResultBufferSelector :: Selector
+setVisibilityResultBufferSelector :: Selector '[RawId] ()
 setVisibilityResultBufferSelector = mkSelector "setVisibilityResultBuffer:"
 
 -- | @Selector@ for @visibilityResultType@
-visibilityResultTypeSelector :: Selector
+visibilityResultTypeSelector :: Selector '[] MTLVisibilityResultType
 visibilityResultTypeSelector = mkSelector "visibilityResultType"
 
 -- | @Selector@ for @setVisibilityResultType:@
-setVisibilityResultTypeSelector :: Selector
+setVisibilityResultTypeSelector :: Selector '[MTLVisibilityResultType] ()
 setVisibilityResultTypeSelector = mkSelector "setVisibilityResultType:"
 
 -- | @Selector@ for @supportColorAttachmentMapping@
-supportColorAttachmentMappingSelector :: Selector
+supportColorAttachmentMappingSelector :: Selector '[] Bool
 supportColorAttachmentMappingSelector = mkSelector "supportColorAttachmentMapping"
 
 -- | @Selector@ for @setSupportColorAttachmentMapping:@
-setSupportColorAttachmentMappingSelector :: Selector
+setSupportColorAttachmentMappingSelector :: Selector '[Bool] ()
 setSupportColorAttachmentMappingSelector = mkSelector "setSupportColorAttachmentMapping:"
 

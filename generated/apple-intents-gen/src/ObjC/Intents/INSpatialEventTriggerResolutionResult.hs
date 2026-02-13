@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INSpatialEventTriggerResolutionResult
   , successWithResolvedSpatialEventTrigger
   , disambiguationWithSpatialEventTriggersToDisambiguate
   , confirmationRequiredWithSpatialEventTriggerToConfirm
-  , successWithResolvedSpatialEventTriggerSelector
-  , disambiguationWithSpatialEventTriggersToDisambiguateSelector
   , confirmationRequiredWithSpatialEventTriggerToConfirmSelector
+  , disambiguationWithSpatialEventTriggersToDisambiguateSelector
+  , successWithResolvedSpatialEventTriggerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedSpatialEventTrigger :: IsINSpatialEventTrigger resolvedSpatia
 successWithResolvedSpatialEventTrigger resolvedSpatialEventTrigger =
   do
     cls' <- getRequiredClass "INSpatialEventTriggerResolutionResult"
-    withObjCPtr resolvedSpatialEventTrigger $ \raw_resolvedSpatialEventTrigger ->
-      sendClassMsg cls' (mkSelector "successWithResolvedSpatialEventTrigger:") (retPtr retVoid) [argPtr (castPtr raw_resolvedSpatialEventTrigger :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedSpatialEventTriggerSelector (toINSpatialEventTrigger resolvedSpatialEventTrigger)
 
 -- | @+ disambiguationWithSpatialEventTriggersToDisambiguate:@
 disambiguationWithSpatialEventTriggersToDisambiguate :: IsNSArray spatialEventTriggersToDisambiguate => spatialEventTriggersToDisambiguate -> IO (Id INSpatialEventTriggerResolutionResult)
 disambiguationWithSpatialEventTriggersToDisambiguate spatialEventTriggersToDisambiguate =
   do
     cls' <- getRequiredClass "INSpatialEventTriggerResolutionResult"
-    withObjCPtr spatialEventTriggersToDisambiguate $ \raw_spatialEventTriggersToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithSpatialEventTriggersToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_spatialEventTriggersToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithSpatialEventTriggersToDisambiguateSelector (toNSArray spatialEventTriggersToDisambiguate)
 
 -- | @+ confirmationRequiredWithSpatialEventTriggerToConfirm:@
 confirmationRequiredWithSpatialEventTriggerToConfirm :: IsINSpatialEventTrigger spatialEventTriggerToConfirm => spatialEventTriggerToConfirm -> IO (Id INSpatialEventTriggerResolutionResult)
 confirmationRequiredWithSpatialEventTriggerToConfirm spatialEventTriggerToConfirm =
   do
     cls' <- getRequiredClass "INSpatialEventTriggerResolutionResult"
-    withObjCPtr spatialEventTriggerToConfirm $ \raw_spatialEventTriggerToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithSpatialEventTriggerToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_spatialEventTriggerToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithSpatialEventTriggerToConfirmSelector (toINSpatialEventTrigger spatialEventTriggerToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedSpatialEventTrigger:@
-successWithResolvedSpatialEventTriggerSelector :: Selector
+successWithResolvedSpatialEventTriggerSelector :: Selector '[Id INSpatialEventTrigger] (Id INSpatialEventTriggerResolutionResult)
 successWithResolvedSpatialEventTriggerSelector = mkSelector "successWithResolvedSpatialEventTrigger:"
 
 -- | @Selector@ for @disambiguationWithSpatialEventTriggersToDisambiguate:@
-disambiguationWithSpatialEventTriggersToDisambiguateSelector :: Selector
+disambiguationWithSpatialEventTriggersToDisambiguateSelector :: Selector '[Id NSArray] (Id INSpatialEventTriggerResolutionResult)
 disambiguationWithSpatialEventTriggersToDisambiguateSelector = mkSelector "disambiguationWithSpatialEventTriggersToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithSpatialEventTriggerToConfirm:@
-confirmationRequiredWithSpatialEventTriggerToConfirmSelector :: Selector
+confirmationRequiredWithSpatialEventTriggerToConfirmSelector :: Selector '[Id INSpatialEventTrigger] (Id INSpatialEventTriggerResolutionResult)
 confirmationRequiredWithSpatialEventTriggerToConfirmSelector = mkSelector "confirmationRequiredWithSpatialEventTriggerToConfirm:"
 

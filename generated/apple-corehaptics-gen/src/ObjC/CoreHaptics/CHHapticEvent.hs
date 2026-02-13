@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.CoreHaptics.CHHapticEvent
   , setRelativeTime
   , duration
   , setDuration
+  , durationSelector
+  , eventParametersSelector
   , initSelector
-  , initWithEventType_parameters_relativeTimeSelector
-  , initWithEventType_parameters_relativeTime_durationSelector
   , initWithAudioResourceID_parameters_relativeTimeSelector
   , initWithAudioResourceID_parameters_relativeTime_durationSelector
-  , typeSelector
-  , eventParametersSelector
+  , initWithEventType_parameters_relativeTimeSelector
+  , initWithEventType_parameters_relativeTime_durationSelector
   , relativeTimeSelector
-  , setRelativeTimeSelector
-  , durationSelector
   , setDurationSelector
+  , setRelativeTimeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCHHapticEvent chHapticEvent => chHapticEvent -> IO (Id CHHapticEvent)
-init_ chHapticEvent  =
-    sendMsg chHapticEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticEvent =
+  sendOwnedMessage chHapticEvent initSelector
 
 -- | initWithEventType:parameters:relativeTime
 --
@@ -70,10 +67,8 @@ init_ chHapticEvent  =
 --
 -- ObjC selector: @- initWithEventType:parameters:relativeTime:@
 initWithEventType_parameters_relativeTime :: (IsCHHapticEvent chHapticEvent, IsNSString type_, IsNSArray eventParams) => chHapticEvent -> type_ -> eventParams -> CDouble -> IO (Id CHHapticEvent)
-initWithEventType_parameters_relativeTime chHapticEvent  type_ eventParams time =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr eventParams $ \raw_eventParams ->
-        sendMsg chHapticEvent (mkSelector "initWithEventType:parameters:relativeTime:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_eventParams :: Ptr ()), argCDouble time] >>= ownedObject . castPtr
+initWithEventType_parameters_relativeTime chHapticEvent type_ eventParams time =
+  sendOwnedMessage chHapticEvent initWithEventType_parameters_relativeTimeSelector (toNSString type_) (toNSArray eventParams) time
 
 -- | initWithEventType:parameters:relativeTime:duration
 --
@@ -89,10 +84,8 @@ initWithEventType_parameters_relativeTime chHapticEvent  type_ eventParams time 
 --
 -- ObjC selector: @- initWithEventType:parameters:relativeTime:duration:@
 initWithEventType_parameters_relativeTime_duration :: (IsCHHapticEvent chHapticEvent, IsNSString type_, IsNSArray eventParams) => chHapticEvent -> type_ -> eventParams -> CDouble -> CDouble -> IO (Id CHHapticEvent)
-initWithEventType_parameters_relativeTime_duration chHapticEvent  type_ eventParams time duration =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr eventParams $ \raw_eventParams ->
-        sendMsg chHapticEvent (mkSelector "initWithEventType:parameters:relativeTime:duration:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_eventParams :: Ptr ()), argCDouble time, argCDouble duration] >>= ownedObject . castPtr
+initWithEventType_parameters_relativeTime_duration chHapticEvent type_ eventParams time duration =
+  sendOwnedMessage chHapticEvent initWithEventType_parameters_relativeTime_durationSelector (toNSString type_) (toNSArray eventParams) time duration
 
 -- | initWithAudioResourceID:parameters:relativeTime
 --
@@ -106,9 +99,8 @@ initWithEventType_parameters_relativeTime_duration chHapticEvent  type_ eventPar
 --
 -- ObjC selector: @- initWithAudioResourceID:parameters:relativeTime:@
 initWithAudioResourceID_parameters_relativeTime :: (IsCHHapticEvent chHapticEvent, IsNSArray eventParams) => chHapticEvent -> CULong -> eventParams -> CDouble -> IO (Id CHHapticEvent)
-initWithAudioResourceID_parameters_relativeTime chHapticEvent  resID eventParams time =
-  withObjCPtr eventParams $ \raw_eventParams ->
-      sendMsg chHapticEvent (mkSelector "initWithAudioResourceID:parameters:relativeTime:") (retPtr retVoid) [argCULong resID, argPtr (castPtr raw_eventParams :: Ptr ()), argCDouble time] >>= ownedObject . castPtr
+initWithAudioResourceID_parameters_relativeTime chHapticEvent resID eventParams time =
+  sendOwnedMessage chHapticEvent initWithAudioResourceID_parameters_relativeTimeSelector resID (toNSArray eventParams) time
 
 -- | initWithAudioResourceID:parameters:relativeTime:duration
 --
@@ -126,9 +118,8 @@ initWithAudioResourceID_parameters_relativeTime chHapticEvent  resID eventParams
 --
 -- ObjC selector: @- initWithAudioResourceID:parameters:relativeTime:duration:@
 initWithAudioResourceID_parameters_relativeTime_duration :: (IsCHHapticEvent chHapticEvent, IsNSArray eventParams) => chHapticEvent -> CULong -> eventParams -> CDouble -> CDouble -> IO (Id CHHapticEvent)
-initWithAudioResourceID_parameters_relativeTime_duration chHapticEvent  resID eventParams time duration =
-  withObjCPtr eventParams $ \raw_eventParams ->
-      sendMsg chHapticEvent (mkSelector "initWithAudioResourceID:parameters:relativeTime:duration:") (retPtr retVoid) [argCULong resID, argPtr (castPtr raw_eventParams :: Ptr ()), argCDouble time, argCDouble duration] >>= ownedObject . castPtr
+initWithAudioResourceID_parameters_relativeTime_duration chHapticEvent resID eventParams time duration =
+  sendOwnedMessage chHapticEvent initWithAudioResourceID_parameters_relativeTime_durationSelector resID (toNSArray eventParams) time duration
 
 -- | type
 --
@@ -136,8 +127,8 @@ initWithAudioResourceID_parameters_relativeTime_duration chHapticEvent  resID ev
 --
 -- ObjC selector: @- type@
 type_ :: IsCHHapticEvent chHapticEvent => chHapticEvent -> IO (Id NSString)
-type_ chHapticEvent  =
-    sendMsg chHapticEvent (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ chHapticEvent =
+  sendMessage chHapticEvent typeSelector
 
 -- | eventParameters
 --
@@ -145,8 +136,8 @@ type_ chHapticEvent  =
 --
 -- ObjC selector: @- eventParameters@
 eventParameters :: IsCHHapticEvent chHapticEvent => chHapticEvent -> IO (Id NSArray)
-eventParameters chHapticEvent  =
-    sendMsg chHapticEvent (mkSelector "eventParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+eventParameters chHapticEvent =
+  sendMessage chHapticEvent eventParametersSelector
 
 -- | relativeTime
 --
@@ -154,8 +145,8 @@ eventParameters chHapticEvent  =
 --
 -- ObjC selector: @- relativeTime@
 relativeTime :: IsCHHapticEvent chHapticEvent => chHapticEvent -> IO CDouble
-relativeTime chHapticEvent  =
-    sendMsg chHapticEvent (mkSelector "relativeTime") retCDouble []
+relativeTime chHapticEvent =
+  sendMessage chHapticEvent relativeTimeSelector
 
 -- | relativeTime
 --
@@ -163,8 +154,8 @@ relativeTime chHapticEvent  =
 --
 -- ObjC selector: @- setRelativeTime:@
 setRelativeTime :: IsCHHapticEvent chHapticEvent => chHapticEvent -> CDouble -> IO ()
-setRelativeTime chHapticEvent  value =
-    sendMsg chHapticEvent (mkSelector "setRelativeTime:") retVoid [argCDouble value]
+setRelativeTime chHapticEvent value =
+  sendMessage chHapticEvent setRelativeTimeSelector value
 
 -- | duration
 --
@@ -172,8 +163,8 @@ setRelativeTime chHapticEvent  value =
 --
 -- ObjC selector: @- duration@
 duration :: IsCHHapticEvent chHapticEvent => chHapticEvent -> IO CDouble
-duration chHapticEvent  =
-    sendMsg chHapticEvent (mkSelector "duration") retCDouble []
+duration chHapticEvent =
+  sendMessage chHapticEvent durationSelector
 
 -- | duration
 --
@@ -181,54 +172,54 @@ duration chHapticEvent  =
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsCHHapticEvent chHapticEvent => chHapticEvent -> CDouble -> IO ()
-setDuration chHapticEvent  value =
-    sendMsg chHapticEvent (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration chHapticEvent value =
+  sendMessage chHapticEvent setDurationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithEventType:parameters:relativeTime:@
-initWithEventType_parameters_relativeTimeSelector :: Selector
+initWithEventType_parameters_relativeTimeSelector :: Selector '[Id NSString, Id NSArray, CDouble] (Id CHHapticEvent)
 initWithEventType_parameters_relativeTimeSelector = mkSelector "initWithEventType:parameters:relativeTime:"
 
 -- | @Selector@ for @initWithEventType:parameters:relativeTime:duration:@
-initWithEventType_parameters_relativeTime_durationSelector :: Selector
+initWithEventType_parameters_relativeTime_durationSelector :: Selector '[Id NSString, Id NSArray, CDouble, CDouble] (Id CHHapticEvent)
 initWithEventType_parameters_relativeTime_durationSelector = mkSelector "initWithEventType:parameters:relativeTime:duration:"
 
 -- | @Selector@ for @initWithAudioResourceID:parameters:relativeTime:@
-initWithAudioResourceID_parameters_relativeTimeSelector :: Selector
+initWithAudioResourceID_parameters_relativeTimeSelector :: Selector '[CULong, Id NSArray, CDouble] (Id CHHapticEvent)
 initWithAudioResourceID_parameters_relativeTimeSelector = mkSelector "initWithAudioResourceID:parameters:relativeTime:"
 
 -- | @Selector@ for @initWithAudioResourceID:parameters:relativeTime:duration:@
-initWithAudioResourceID_parameters_relativeTime_durationSelector :: Selector
+initWithAudioResourceID_parameters_relativeTime_durationSelector :: Selector '[CULong, Id NSArray, CDouble, CDouble] (Id CHHapticEvent)
 initWithAudioResourceID_parameters_relativeTime_durationSelector = mkSelector "initWithAudioResourceID:parameters:relativeTime:duration:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @eventParameters@
-eventParametersSelector :: Selector
+eventParametersSelector :: Selector '[] (Id NSArray)
 eventParametersSelector = mkSelector "eventParameters"
 
 -- | @Selector@ for @relativeTime@
-relativeTimeSelector :: Selector
+relativeTimeSelector :: Selector '[] CDouble
 relativeTimeSelector = mkSelector "relativeTime"
 
 -- | @Selector@ for @setRelativeTime:@
-setRelativeTimeSelector :: Selector
+setRelativeTimeSelector :: Selector '[CDouble] ()
 setRelativeTimeSelector = mkSelector "setRelativeTime:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 

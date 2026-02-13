@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRLaundryWasherModeClusterModeOptionStruct
   , modeTags
   , setModeTags
   , labelSelector
-  , setLabelSelector
   , modeSelector
-  , setModeSelector
   , modeTagsSelector
+  , setLabelSelector
+  , setModeSelector
   , setModeTagsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- label@
 label :: IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct => mtrLaundryWasherModeClusterModeOptionStruct -> IO (Id NSString)
-label mtrLaundryWasherModeClusterModeOptionStruct  =
-    sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrLaundryWasherModeClusterModeOptionStruct =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct, IsNSString value) => mtrLaundryWasherModeClusterModeOptionStruct -> value -> IO ()
-setLabel mtrLaundryWasherModeClusterModeOptionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrLaundryWasherModeClusterModeOptionStruct value =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct setLabelSelector (toNSString value)
 
 -- | @- mode@
 mode :: IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct => mtrLaundryWasherModeClusterModeOptionStruct -> IO (Id NSNumber)
-mode mtrLaundryWasherModeClusterModeOptionStruct  =
-    sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "mode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mode mtrLaundryWasherModeClusterModeOptionStruct =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct modeSelector
 
 -- | @- setMode:@
 setMode :: (IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct, IsNSNumber value) => mtrLaundryWasherModeClusterModeOptionStruct -> value -> IO ()
-setMode mtrLaundryWasherModeClusterModeOptionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "setMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMode mtrLaundryWasherModeClusterModeOptionStruct value =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct setModeSelector (toNSNumber value)
 
 -- | @- modeTags@
 modeTags :: IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct => mtrLaundryWasherModeClusterModeOptionStruct -> IO (Id NSArray)
-modeTags mtrLaundryWasherModeClusterModeOptionStruct  =
-    sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "modeTags") (retPtr retVoid) [] >>= retainedObject . castPtr
+modeTags mtrLaundryWasherModeClusterModeOptionStruct =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct modeTagsSelector
 
 -- | @- setModeTags:@
 setModeTags :: (IsMTRLaundryWasherModeClusterModeOptionStruct mtrLaundryWasherModeClusterModeOptionStruct, IsNSArray value) => mtrLaundryWasherModeClusterModeOptionStruct -> value -> IO ()
-setModeTags mtrLaundryWasherModeClusterModeOptionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLaundryWasherModeClusterModeOptionStruct (mkSelector "setModeTags:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModeTags mtrLaundryWasherModeClusterModeOptionStruct value =
+  sendMessage mtrLaundryWasherModeClusterModeOptionStruct setModeTagsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] (Id NSNumber)
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[Id NSNumber] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @modeTags@
-modeTagsSelector :: Selector
+modeTagsSelector :: Selector '[] (Id NSArray)
 modeTagsSelector = mkSelector "modeTags"
 
 -- | @Selector@ for @setModeTags:@
-setModeTagsSelector :: Selector
+setModeTagsSelector :: Selector '[Id NSArray] ()
 setModeTagsSelector = mkSelector "setModeTags:"
 

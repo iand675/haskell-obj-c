@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRMediaPlaybackClusterFastForwardParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , audioAdvanceUnmutedSelector
-  , setAudioAdvanceUnmutedSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setAudioAdvanceUnmutedSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- audioAdvanceUnmuted@
 audioAdvanceUnmuted :: IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams => mtrMediaPlaybackClusterFastForwardParams -> IO (Id NSNumber)
-audioAdvanceUnmuted mtrMediaPlaybackClusterFastForwardParams  =
-    sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "audioAdvanceUnmuted") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioAdvanceUnmuted mtrMediaPlaybackClusterFastForwardParams =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams audioAdvanceUnmutedSelector
 
 -- | @- setAudioAdvanceUnmuted:@
 setAudioAdvanceUnmuted :: (IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterFastForwardParams -> value -> IO ()
-setAudioAdvanceUnmuted mtrMediaPlaybackClusterFastForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "setAudioAdvanceUnmuted:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioAdvanceUnmuted mtrMediaPlaybackClusterFastForwardParams value =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams setAudioAdvanceUnmutedSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setAudioAdvanceUnmuted mtrMediaPlaybackClusterFastForwardParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams => mtrMediaPlaybackClusterFastForwardParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams  =
-    sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterFastForwardParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams value =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrMediaPlaybackClusterFastForwardParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams => mtrMediaPlaybackClusterFastForwardParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMediaPlaybackClusterFastForwardParams  =
-    sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMediaPlaybackClusterFastForwardParams =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrMediaPlaybackClusterFastForwardParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMediaPlaybackClusterFastForwardParams mtrMediaPlaybackClusterFastForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterFastForwardParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMediaPlaybackClusterFastForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterFastForwardParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMediaPlaybackClusterFastForwardParams value =
+  sendMessage mtrMediaPlaybackClusterFastForwardParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @audioAdvanceUnmuted@
-audioAdvanceUnmutedSelector :: Selector
+audioAdvanceUnmutedSelector :: Selector '[] (Id NSNumber)
 audioAdvanceUnmutedSelector = mkSelector "audioAdvanceUnmuted"
 
 -- | @Selector@ for @setAudioAdvanceUnmuted:@
-setAudioAdvanceUnmutedSelector :: Selector
+setAudioAdvanceUnmutedSelector :: Selector '[Id NSNumber] ()
 setAudioAdvanceUnmutedSelector = mkSelector "setAudioAdvanceUnmuted:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

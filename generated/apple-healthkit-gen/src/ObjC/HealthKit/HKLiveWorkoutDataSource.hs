@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKLiveWorkoutDataSource
   , enableCollectionForType_predicate
   , disableCollectionForType
   , typesToCollect
+  , disableCollectionForTypeSelector
+  , enableCollectionForType_predicateSelector
   , initSelector
   , initWithHealthStore_workoutConfigurationSelector
-  , enableCollectionForType_predicateSelector
-  , disableCollectionForTypeSelector
   , typesToCollectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKLiveWorkoutDataSource hkLiveWorkoutDataSource => hkLiveWorkoutDataSource -> IO (Id HKLiveWorkoutDataSource)
-init_ hkLiveWorkoutDataSource  =
-    sendMsg hkLiveWorkoutDataSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkLiveWorkoutDataSource =
+  sendOwnedMessage hkLiveWorkoutDataSource initSelector
 
 -- | initWithHealthStore:workoutConfiguration:
 --
@@ -54,10 +51,8 @@ init_ hkLiveWorkoutDataSource  =
 --
 -- ObjC selector: @- initWithHealthStore:workoutConfiguration:@
 initWithHealthStore_workoutConfiguration :: (IsHKLiveWorkoutDataSource hkLiveWorkoutDataSource, IsHKHealthStore healthStore, IsHKWorkoutConfiguration configuration) => hkLiveWorkoutDataSource -> healthStore -> configuration -> IO (Id HKLiveWorkoutDataSource)
-initWithHealthStore_workoutConfiguration hkLiveWorkoutDataSource  healthStore configuration =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr configuration $ \raw_configuration ->
-        sendMsg hkLiveWorkoutDataSource (mkSelector "initWithHealthStore:workoutConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_workoutConfiguration hkLiveWorkoutDataSource healthStore configuration =
+  sendOwnedMessage hkLiveWorkoutDataSource initWithHealthStore_workoutConfigurationSelector (toHKHealthStore healthStore) (toHKWorkoutConfiguration configuration)
 
 -- | enableCollectionForType:predicate
 --
@@ -71,10 +66,8 @@ initWithHealthStore_workoutConfiguration hkLiveWorkoutDataSource  healthStore co
 --
 -- ObjC selector: @- enableCollectionForType:predicate:@
 enableCollectionForType_predicate :: (IsHKLiveWorkoutDataSource hkLiveWorkoutDataSource, IsHKQuantityType quantityType, IsNSPredicate predicate) => hkLiveWorkoutDataSource -> quantityType -> predicate -> IO ()
-enableCollectionForType_predicate hkLiveWorkoutDataSource  quantityType predicate =
-  withObjCPtr quantityType $ \raw_quantityType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkLiveWorkoutDataSource (mkSelector "enableCollectionForType:predicate:") retVoid [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ())]
+enableCollectionForType_predicate hkLiveWorkoutDataSource quantityType predicate =
+  sendMessage hkLiveWorkoutDataSource enableCollectionForType_predicateSelector (toHKQuantityType quantityType) (toNSPredicate predicate)
 
 -- | disableCollectionForType:
 --
@@ -84,9 +77,8 @@ enableCollectionForType_predicate hkLiveWorkoutDataSource  quantityType predicat
 --
 -- ObjC selector: @- disableCollectionForType:@
 disableCollectionForType :: (IsHKLiveWorkoutDataSource hkLiveWorkoutDataSource, IsHKQuantityType quantityType) => hkLiveWorkoutDataSource -> quantityType -> IO ()
-disableCollectionForType hkLiveWorkoutDataSource  quantityType =
-  withObjCPtr quantityType $ \raw_quantityType ->
-      sendMsg hkLiveWorkoutDataSource (mkSelector "disableCollectionForType:") retVoid [argPtr (castPtr raw_quantityType :: Ptr ())]
+disableCollectionForType hkLiveWorkoutDataSource quantityType =
+  sendMessage hkLiveWorkoutDataSource disableCollectionForTypeSelector (toHKQuantityType quantityType)
 
 -- | typesToCollect
 --
@@ -94,30 +86,30 @@ disableCollectionForType hkLiveWorkoutDataSource  quantityType =
 --
 -- ObjC selector: @- typesToCollect@
 typesToCollect :: IsHKLiveWorkoutDataSource hkLiveWorkoutDataSource => hkLiveWorkoutDataSource -> IO (Id NSSet)
-typesToCollect hkLiveWorkoutDataSource  =
-    sendMsg hkLiveWorkoutDataSource (mkSelector "typesToCollect") (retPtr retVoid) [] >>= retainedObject . castPtr
+typesToCollect hkLiveWorkoutDataSource =
+  sendMessage hkLiveWorkoutDataSource typesToCollectSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKLiveWorkoutDataSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithHealthStore:workoutConfiguration:@
-initWithHealthStore_workoutConfigurationSelector :: Selector
+initWithHealthStore_workoutConfigurationSelector :: Selector '[Id HKHealthStore, Id HKWorkoutConfiguration] (Id HKLiveWorkoutDataSource)
 initWithHealthStore_workoutConfigurationSelector = mkSelector "initWithHealthStore:workoutConfiguration:"
 
 -- | @Selector@ for @enableCollectionForType:predicate:@
-enableCollectionForType_predicateSelector :: Selector
+enableCollectionForType_predicateSelector :: Selector '[Id HKQuantityType, Id NSPredicate] ()
 enableCollectionForType_predicateSelector = mkSelector "enableCollectionForType:predicate:"
 
 -- | @Selector@ for @disableCollectionForType:@
-disableCollectionForTypeSelector :: Selector
+disableCollectionForTypeSelector :: Selector '[Id HKQuantityType] ()
 disableCollectionForTypeSelector = mkSelector "disableCollectionForType:"
 
 -- | @Selector@ for @typesToCollect@
-typesToCollectSelector :: Selector
+typesToCollectSelector :: Selector '[] (Id NSSet)
 typesToCollectSelector = mkSelector "typesToCollect"
 

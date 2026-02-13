@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,30 +36,26 @@ module ObjC.MetalPerformanceShaders.MPSImageArithmetic
   , setMinimumValue
   , maximumValue
   , setMaximumValue
-  , initWithDeviceSelector
-  , primaryScaleSelector
-  , setPrimaryScaleSelector
-  , secondaryScaleSelector
-  , setSecondaryScaleSelector
   , biasSelector
-  , setBiasSelector
-  , minimumValueSelector
-  , setMinimumValueSelector
+  , initWithDeviceSelector
   , maximumValueSelector
+  , minimumValueSelector
+  , primaryScaleSelector
+  , secondaryScaleSelector
+  , setBiasSelector
   , setMaximumValueSelector
+  , setMinimumValueSelector
+  , setPrimaryScaleSelector
+  , setSecondaryScaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,38 +64,38 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> RawId -> IO (Id MPSImageArithmetic)
-initWithDevice mpsImageArithmetic  device =
-    sendMsg mpsImageArithmetic (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageArithmetic device =
+  sendOwnedMessage mpsImageArithmetic initWithDeviceSelector device
 
 -- | @- primaryScale@
 primaryScale :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> IO CFloat
-primaryScale mpsImageArithmetic  =
-    sendMsg mpsImageArithmetic (mkSelector "primaryScale") retCFloat []
+primaryScale mpsImageArithmetic =
+  sendMessage mpsImageArithmetic primaryScaleSelector
 
 -- | @- setPrimaryScale:@
 setPrimaryScale :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> CFloat -> IO ()
-setPrimaryScale mpsImageArithmetic  value =
-    sendMsg mpsImageArithmetic (mkSelector "setPrimaryScale:") retVoid [argCFloat value]
+setPrimaryScale mpsImageArithmetic value =
+  sendMessage mpsImageArithmetic setPrimaryScaleSelector value
 
 -- | @- secondaryScale@
 secondaryScale :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> IO CFloat
-secondaryScale mpsImageArithmetic  =
-    sendMsg mpsImageArithmetic (mkSelector "secondaryScale") retCFloat []
+secondaryScale mpsImageArithmetic =
+  sendMessage mpsImageArithmetic secondaryScaleSelector
 
 -- | @- setSecondaryScale:@
 setSecondaryScale :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> CFloat -> IO ()
-setSecondaryScale mpsImageArithmetic  value =
-    sendMsg mpsImageArithmetic (mkSelector "setSecondaryScale:") retVoid [argCFloat value]
+setSecondaryScale mpsImageArithmetic value =
+  sendMessage mpsImageArithmetic setSecondaryScaleSelector value
 
 -- | @- bias@
 bias :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> IO CFloat
-bias mpsImageArithmetic  =
-    sendMsg mpsImageArithmetic (mkSelector "bias") retCFloat []
+bias mpsImageArithmetic =
+  sendMessage mpsImageArithmetic biasSelector
 
 -- | @- setBias:@
 setBias :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> CFloat -> IO ()
-setBias mpsImageArithmetic  value =
-    sendMsg mpsImageArithmetic (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpsImageArithmetic value =
+  sendMessage mpsImageArithmetic setBiasSelector value
 
 -- | minimumValue
 --
@@ -106,8 +103,8 @@ setBias mpsImageArithmetic  value =
 --
 -- ObjC selector: @- minimumValue@
 minimumValue :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> IO CFloat
-minimumValue mpsImageArithmetic  =
-    sendMsg mpsImageArithmetic (mkSelector "minimumValue") retCFloat []
+minimumValue mpsImageArithmetic =
+  sendMessage mpsImageArithmetic minimumValueSelector
 
 -- | minimumValue
 --
@@ -115,8 +112,8 @@ minimumValue mpsImageArithmetic  =
 --
 -- ObjC selector: @- setMinimumValue:@
 setMinimumValue :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> CFloat -> IO ()
-setMinimumValue mpsImageArithmetic  value =
-    sendMsg mpsImageArithmetic (mkSelector "setMinimumValue:") retVoid [argCFloat value]
+setMinimumValue mpsImageArithmetic value =
+  sendMessage mpsImageArithmetic setMinimumValueSelector value
 
 -- | maximumValue
 --
@@ -124,8 +121,8 @@ setMinimumValue mpsImageArithmetic  value =
 --
 -- ObjC selector: @- maximumValue@
 maximumValue :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> IO CFloat
-maximumValue mpsImageArithmetic  =
-    sendMsg mpsImageArithmetic (mkSelector "maximumValue") retCFloat []
+maximumValue mpsImageArithmetic =
+  sendMessage mpsImageArithmetic maximumValueSelector
 
 -- | maximumValue
 --
@@ -133,54 +130,54 @@ maximumValue mpsImageArithmetic  =
 --
 -- ObjC selector: @- setMaximumValue:@
 setMaximumValue :: IsMPSImageArithmetic mpsImageArithmetic => mpsImageArithmetic -> CFloat -> IO ()
-setMaximumValue mpsImageArithmetic  value =
-    sendMsg mpsImageArithmetic (mkSelector "setMaximumValue:") retVoid [argCFloat value]
+setMaximumValue mpsImageArithmetic value =
+  sendMessage mpsImageArithmetic setMaximumValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageArithmetic)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @primaryScale@
-primaryScaleSelector :: Selector
+primaryScaleSelector :: Selector '[] CFloat
 primaryScaleSelector = mkSelector "primaryScale"
 
 -- | @Selector@ for @setPrimaryScale:@
-setPrimaryScaleSelector :: Selector
+setPrimaryScaleSelector :: Selector '[CFloat] ()
 setPrimaryScaleSelector = mkSelector "setPrimaryScale:"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CFloat
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @setSecondaryScale:@
-setSecondaryScaleSelector :: Selector
+setSecondaryScaleSelector :: Selector '[CFloat] ()
 setSecondaryScaleSelector = mkSelector "setSecondaryScale:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CFloat
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @setMinimumValue:@
-setMinimumValueSelector :: Selector
+setMinimumValueSelector :: Selector '[CFloat] ()
 setMinimumValueSelector = mkSelector "setMinimumValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @setMaximumValue:@
-setMaximumValueSelector :: Selector
+setMaximumValueSelector :: Selector '[CFloat] ()
 setMaximumValueSelector = mkSelector "setMaximumValue:"
 

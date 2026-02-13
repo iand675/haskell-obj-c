@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.AVRouting.AVCustomDeviceRoute
   , IsAVCustomDeviceRoute(..)
   , networkEndpoint
   , bluetoothIdentifier
-  , networkEndpointSelector
   , bluetoothIdentifierSelector
+  , networkEndpointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- networkEndpoint@
 networkEndpoint :: IsAVCustomDeviceRoute avCustomDeviceRoute => avCustomDeviceRoute -> IO (Id NSObject)
-networkEndpoint avCustomDeviceRoute  =
-    sendMsg avCustomDeviceRoute (mkSelector "networkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkEndpoint avCustomDeviceRoute =
+  sendMessage avCustomDeviceRoute networkEndpointSelector
 
 -- | An identifier to use to establish a connection to a Bluetooth device.
 --
 -- ObjC selector: @- bluetoothIdentifier@
 bluetoothIdentifier :: IsAVCustomDeviceRoute avCustomDeviceRoute => avCustomDeviceRoute -> IO (Id NSUUID)
-bluetoothIdentifier avCustomDeviceRoute  =
-    sendMsg avCustomDeviceRoute (mkSelector "bluetoothIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothIdentifier avCustomDeviceRoute =
+  sendMessage avCustomDeviceRoute bluetoothIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkEndpoint@
-networkEndpointSelector :: Selector
+networkEndpointSelector :: Selector '[] (Id NSObject)
 networkEndpointSelector = mkSelector "networkEndpoint"
 
 -- | @Selector@ for @bluetoothIdentifier@
-bluetoothIdentifierSelector :: Selector
+bluetoothIdentifierSelector :: Selector '[] (Id NSUUID)
 bluetoothIdentifierSelector = mkSelector "bluetoothIdentifier"
 

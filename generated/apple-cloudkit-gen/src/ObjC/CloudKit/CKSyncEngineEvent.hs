@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,21 +51,21 @@ module ObjC.CloudKit.CKSyncEngineEvent
   , sentDatabaseChangesEvent
   , sentRecordZoneChangesEvent
   , didSendChangesEvent
+  , accountChangeEventSelector
+  , didFetchChangesEventSelector
+  , didFetchRecordZoneChangesEventSelector
+  , didSendChangesEventSelector
+  , fetchedDatabaseChangesEventSelector
+  , fetchedRecordZoneChangesEventSelector
   , initSelector
   , newSelector
-  , typeSelector
-  , stateUpdateEventSelector
-  , accountChangeEventSelector
-  , willFetchChangesEventSelector
-  , fetchedDatabaseChangesEventSelector
-  , didFetchChangesEventSelector
-  , willFetchRecordZoneChangesEventSelector
-  , fetchedRecordZoneChangesEventSelector
-  , didFetchRecordZoneChangesEventSelector
-  , willSendChangesEventSelector
   , sentDatabaseChangesEventSelector
   , sentRecordZoneChangesEventSelector
-  , didSendChangesEventSelector
+  , stateUpdateEventSelector
+  , typeSelector
+  , willFetchChangesEventSelector
+  , willFetchRecordZoneChangesEventSelector
+  , willSendChangesEventSelector
 
   -- * Enum types
   , CKSyncEngineEventType(CKSyncEngineEventType)
@@ -83,15 +84,11 @@ module ObjC.CloudKit.CKSyncEngineEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,142 +98,142 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineEvent)
-init_ ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineEvent =
+  sendOwnedMessage ckSyncEngineEvent initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineEvent)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- type@
 type_ :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO CKSyncEngineEventType
-type_ ckSyncEngineEvent  =
-    fmap (coerce :: CLong -> CKSyncEngineEventType) $ sendMsg ckSyncEngineEvent (mkSelector "type") retCLong []
+type_ ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent typeSelector
 
 -- | @- stateUpdateEvent@
 stateUpdateEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineStateUpdateEvent)
-stateUpdateEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "stateUpdateEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateUpdateEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent stateUpdateEventSelector
 
 -- | @- accountChangeEvent@
 accountChangeEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineAccountChangeEvent)
-accountChangeEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "accountChangeEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountChangeEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent accountChangeEventSelector
 
 -- | @- willFetchChangesEvent@
 willFetchChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineWillFetchChangesEvent)
-willFetchChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "willFetchChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+willFetchChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent willFetchChangesEventSelector
 
 -- | @- fetchedDatabaseChangesEvent@
 fetchedDatabaseChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineFetchedDatabaseChangesEvent)
-fetchedDatabaseChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "fetchedDatabaseChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchedDatabaseChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent fetchedDatabaseChangesEventSelector
 
 -- | @- didFetchChangesEvent@
 didFetchChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineDidFetchChangesEvent)
-didFetchChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "didFetchChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+didFetchChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent didFetchChangesEventSelector
 
 -- | @- willFetchRecordZoneChangesEvent@
 willFetchRecordZoneChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineWillFetchRecordZoneChangesEvent)
-willFetchRecordZoneChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "willFetchRecordZoneChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+willFetchRecordZoneChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent willFetchRecordZoneChangesEventSelector
 
 -- | @- fetchedRecordZoneChangesEvent@
 fetchedRecordZoneChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineFetchedRecordZoneChangesEvent)
-fetchedRecordZoneChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "fetchedRecordZoneChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchedRecordZoneChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent fetchedRecordZoneChangesEventSelector
 
 -- | @- didFetchRecordZoneChangesEvent@
 didFetchRecordZoneChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineDidFetchRecordZoneChangesEvent)
-didFetchRecordZoneChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "didFetchRecordZoneChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+didFetchRecordZoneChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent didFetchRecordZoneChangesEventSelector
 
 -- | @- willSendChangesEvent@
 willSendChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineWillSendChangesEvent)
-willSendChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "willSendChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+willSendChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent willSendChangesEventSelector
 
 -- | @- sentDatabaseChangesEvent@
 sentDatabaseChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineSentDatabaseChangesEvent)
-sentDatabaseChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "sentDatabaseChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+sentDatabaseChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent sentDatabaseChangesEventSelector
 
 -- | @- sentRecordZoneChangesEvent@
 sentRecordZoneChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineSentRecordZoneChangesEvent)
-sentRecordZoneChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "sentRecordZoneChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+sentRecordZoneChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent sentRecordZoneChangesEventSelector
 
 -- | @- didSendChangesEvent@
 didSendChangesEvent :: IsCKSyncEngineEvent ckSyncEngineEvent => ckSyncEngineEvent -> IO (Id CKSyncEngineDidSendChangesEvent)
-didSendChangesEvent ckSyncEngineEvent  =
-    sendMsg ckSyncEngineEvent (mkSelector "didSendChangesEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+didSendChangesEvent ckSyncEngineEvent =
+  sendMessage ckSyncEngineEvent didSendChangesEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CKSyncEngineEventType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @stateUpdateEvent@
-stateUpdateEventSelector :: Selector
+stateUpdateEventSelector :: Selector '[] (Id CKSyncEngineStateUpdateEvent)
 stateUpdateEventSelector = mkSelector "stateUpdateEvent"
 
 -- | @Selector@ for @accountChangeEvent@
-accountChangeEventSelector :: Selector
+accountChangeEventSelector :: Selector '[] (Id CKSyncEngineAccountChangeEvent)
 accountChangeEventSelector = mkSelector "accountChangeEvent"
 
 -- | @Selector@ for @willFetchChangesEvent@
-willFetchChangesEventSelector :: Selector
+willFetchChangesEventSelector :: Selector '[] (Id CKSyncEngineWillFetchChangesEvent)
 willFetchChangesEventSelector = mkSelector "willFetchChangesEvent"
 
 -- | @Selector@ for @fetchedDatabaseChangesEvent@
-fetchedDatabaseChangesEventSelector :: Selector
+fetchedDatabaseChangesEventSelector :: Selector '[] (Id CKSyncEngineFetchedDatabaseChangesEvent)
 fetchedDatabaseChangesEventSelector = mkSelector "fetchedDatabaseChangesEvent"
 
 -- | @Selector@ for @didFetchChangesEvent@
-didFetchChangesEventSelector :: Selector
+didFetchChangesEventSelector :: Selector '[] (Id CKSyncEngineDidFetchChangesEvent)
 didFetchChangesEventSelector = mkSelector "didFetchChangesEvent"
 
 -- | @Selector@ for @willFetchRecordZoneChangesEvent@
-willFetchRecordZoneChangesEventSelector :: Selector
+willFetchRecordZoneChangesEventSelector :: Selector '[] (Id CKSyncEngineWillFetchRecordZoneChangesEvent)
 willFetchRecordZoneChangesEventSelector = mkSelector "willFetchRecordZoneChangesEvent"
 
 -- | @Selector@ for @fetchedRecordZoneChangesEvent@
-fetchedRecordZoneChangesEventSelector :: Selector
+fetchedRecordZoneChangesEventSelector :: Selector '[] (Id CKSyncEngineFetchedRecordZoneChangesEvent)
 fetchedRecordZoneChangesEventSelector = mkSelector "fetchedRecordZoneChangesEvent"
 
 -- | @Selector@ for @didFetchRecordZoneChangesEvent@
-didFetchRecordZoneChangesEventSelector :: Selector
+didFetchRecordZoneChangesEventSelector :: Selector '[] (Id CKSyncEngineDidFetchRecordZoneChangesEvent)
 didFetchRecordZoneChangesEventSelector = mkSelector "didFetchRecordZoneChangesEvent"
 
 -- | @Selector@ for @willSendChangesEvent@
-willSendChangesEventSelector :: Selector
+willSendChangesEventSelector :: Selector '[] (Id CKSyncEngineWillSendChangesEvent)
 willSendChangesEventSelector = mkSelector "willSendChangesEvent"
 
 -- | @Selector@ for @sentDatabaseChangesEvent@
-sentDatabaseChangesEventSelector :: Selector
+sentDatabaseChangesEventSelector :: Selector '[] (Id CKSyncEngineSentDatabaseChangesEvent)
 sentDatabaseChangesEventSelector = mkSelector "sentDatabaseChangesEvent"
 
 -- | @Selector@ for @sentRecordZoneChangesEvent@
-sentRecordZoneChangesEventSelector :: Selector
+sentRecordZoneChangesEventSelector :: Selector '[] (Id CKSyncEngineSentRecordZoneChangesEvent)
 sentRecordZoneChangesEventSelector = mkSelector "sentRecordZoneChangesEvent"
 
 -- | @Selector@ for @didSendChangesEvent@
-didSendChangesEventSelector :: Selector
+didSendChangesEventSelector :: Selector '[] (Id CKSyncEngineDidSendChangesEvent)
 didSendChangesEventSelector = mkSelector "didSendChangesEvent"
 

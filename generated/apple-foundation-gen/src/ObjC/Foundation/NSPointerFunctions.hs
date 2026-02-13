@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.Foundation.NSPointerFunctions
   , setUsesStrongWriteBarrier
   , usesWeakReadAndWriteBarriers
   , setUsesWeakReadAndWriteBarriers
-  , initWithOptionsSelector
-  , pointerFunctionsWithOptionsSelector
-  , hashFunctionSelector
-  , setHashFunctionSelector
-  , isEqualFunctionSelector
-  , setIsEqualFunctionSelector
-  , sizeFunctionSelector
-  , setSizeFunctionSelector
-  , descriptionFunctionSelector
-  , setDescriptionFunctionSelector
-  , relinquishFunctionSelector
-  , setRelinquishFunctionSelector
   , acquireFunctionSelector
+  , descriptionFunctionSelector
+  , hashFunctionSelector
+  , initWithOptionsSelector
+  , isEqualFunctionSelector
+  , pointerFunctionsWithOptionsSelector
+  , relinquishFunctionSelector
   , setAcquireFunctionSelector
-  , usesStrongWriteBarrierSelector
+  , setDescriptionFunctionSelector
+  , setHashFunctionSelector
+  , setIsEqualFunctionSelector
+  , setRelinquishFunctionSelector
+  , setSizeFunctionSelector
   , setUsesStrongWriteBarrierSelector
-  , usesWeakReadAndWriteBarriersSelector
   , setUsesWeakReadAndWriteBarriersSelector
+  , sizeFunctionSelector
+  , usesStrongWriteBarrierSelector
+  , usesWeakReadAndWriteBarriersSelector
 
   -- * Enum types
   , NSPointerFunctionsOptions(NSPointerFunctionsOptions)
@@ -62,15 +63,11 @@ module ObjC.Foundation.NSPointerFunctions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,169 +76,169 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithOptions:@
 initWithOptions :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> NSPointerFunctionsOptions -> IO (Id NSPointerFunctions)
-initWithOptions nsPointerFunctions  options =
-    sendMsg nsPointerFunctions (mkSelector "initWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= ownedObject . castPtr
+initWithOptions nsPointerFunctions options =
+  sendOwnedMessage nsPointerFunctions initWithOptionsSelector options
 
 -- | @+ pointerFunctionsWithOptions:@
 pointerFunctionsWithOptions :: NSPointerFunctionsOptions -> IO (Id NSPointerFunctions)
 pointerFunctionsWithOptions options =
   do
     cls' <- getRequiredClass "NSPointerFunctions"
-    sendClassMsg cls' (mkSelector "pointerFunctionsWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' pointerFunctionsWithOptionsSelector options
 
 -- | @- hashFunction@
 hashFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-hashFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "hashFunction") (retPtr retVoid) []
+hashFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions hashFunctionSelector
 
 -- | @- setHashFunction:@
 setHashFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setHashFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setHashFunction:") retVoid [argPtr value]
+setHashFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setHashFunctionSelector value
 
 -- | @- isEqualFunction@
 isEqualFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-isEqualFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "isEqualFunction") (retPtr retVoid) []
+isEqualFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions isEqualFunctionSelector
 
 -- | @- setIsEqualFunction:@
 setIsEqualFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setIsEqualFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setIsEqualFunction:") retVoid [argPtr value]
+setIsEqualFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setIsEqualFunctionSelector value
 
 -- | @- sizeFunction@
 sizeFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-sizeFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "sizeFunction") (retPtr retVoid) []
+sizeFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions sizeFunctionSelector
 
 -- | @- setSizeFunction:@
 setSizeFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setSizeFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setSizeFunction:") retVoid [argPtr value]
+setSizeFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setSizeFunctionSelector value
 
 -- | @- descriptionFunction@
 descriptionFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-descriptionFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "descriptionFunction") (retPtr retVoid) []
+descriptionFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions descriptionFunctionSelector
 
 -- | @- setDescriptionFunction:@
 setDescriptionFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setDescriptionFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setDescriptionFunction:") retVoid [argPtr value]
+setDescriptionFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setDescriptionFunctionSelector value
 
 -- | @- relinquishFunction@
 relinquishFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-relinquishFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "relinquishFunction") (retPtr retVoid) []
+relinquishFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions relinquishFunctionSelector
 
 -- | @- setRelinquishFunction:@
 setRelinquishFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setRelinquishFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setRelinquishFunction:") retVoid [argPtr value]
+setRelinquishFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setRelinquishFunctionSelector value
 
 -- | @- acquireFunction@
 acquireFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO (Ptr ())
-acquireFunction nsPointerFunctions  =
-    fmap castPtr $ sendMsg nsPointerFunctions (mkSelector "acquireFunction") (retPtr retVoid) []
+acquireFunction nsPointerFunctions =
+  sendMessage nsPointerFunctions acquireFunctionSelector
 
 -- | @- setAcquireFunction:@
 setAcquireFunction :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Ptr () -> IO ()
-setAcquireFunction nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setAcquireFunction:") retVoid [argPtr value]
+setAcquireFunction nsPointerFunctions value =
+  sendMessage nsPointerFunctions setAcquireFunctionSelector value
 
 -- | @- usesStrongWriteBarrier@
 usesStrongWriteBarrier :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO Bool
-usesStrongWriteBarrier nsPointerFunctions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPointerFunctions (mkSelector "usesStrongWriteBarrier") retCULong []
+usesStrongWriteBarrier nsPointerFunctions =
+  sendMessage nsPointerFunctions usesStrongWriteBarrierSelector
 
 -- | @- setUsesStrongWriteBarrier:@
 setUsesStrongWriteBarrier :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Bool -> IO ()
-setUsesStrongWriteBarrier nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setUsesStrongWriteBarrier:") retVoid [argCULong (if value then 1 else 0)]
+setUsesStrongWriteBarrier nsPointerFunctions value =
+  sendMessage nsPointerFunctions setUsesStrongWriteBarrierSelector value
 
 -- | @- usesWeakReadAndWriteBarriers@
 usesWeakReadAndWriteBarriers :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> IO Bool
-usesWeakReadAndWriteBarriers nsPointerFunctions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPointerFunctions (mkSelector "usesWeakReadAndWriteBarriers") retCULong []
+usesWeakReadAndWriteBarriers nsPointerFunctions =
+  sendMessage nsPointerFunctions usesWeakReadAndWriteBarriersSelector
 
 -- | @- setUsesWeakReadAndWriteBarriers:@
 setUsesWeakReadAndWriteBarriers :: IsNSPointerFunctions nsPointerFunctions => nsPointerFunctions -> Bool -> IO ()
-setUsesWeakReadAndWriteBarriers nsPointerFunctions  value =
-    sendMsg nsPointerFunctions (mkSelector "setUsesWeakReadAndWriteBarriers:") retVoid [argCULong (if value then 1 else 0)]
+setUsesWeakReadAndWriteBarriers nsPointerFunctions value =
+  sendMessage nsPointerFunctions setUsesWeakReadAndWriteBarriersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOptions:@
-initWithOptionsSelector :: Selector
+initWithOptionsSelector :: Selector '[NSPointerFunctionsOptions] (Id NSPointerFunctions)
 initWithOptionsSelector = mkSelector "initWithOptions:"
 
 -- | @Selector@ for @pointerFunctionsWithOptions:@
-pointerFunctionsWithOptionsSelector :: Selector
+pointerFunctionsWithOptionsSelector :: Selector '[NSPointerFunctionsOptions] (Id NSPointerFunctions)
 pointerFunctionsWithOptionsSelector = mkSelector "pointerFunctionsWithOptions:"
 
 -- | @Selector@ for @hashFunction@
-hashFunctionSelector :: Selector
+hashFunctionSelector :: Selector '[] (Ptr ())
 hashFunctionSelector = mkSelector "hashFunction"
 
 -- | @Selector@ for @setHashFunction:@
-setHashFunctionSelector :: Selector
+setHashFunctionSelector :: Selector '[Ptr ()] ()
 setHashFunctionSelector = mkSelector "setHashFunction:"
 
 -- | @Selector@ for @isEqualFunction@
-isEqualFunctionSelector :: Selector
+isEqualFunctionSelector :: Selector '[] (Ptr ())
 isEqualFunctionSelector = mkSelector "isEqualFunction"
 
 -- | @Selector@ for @setIsEqualFunction:@
-setIsEqualFunctionSelector :: Selector
+setIsEqualFunctionSelector :: Selector '[Ptr ()] ()
 setIsEqualFunctionSelector = mkSelector "setIsEqualFunction:"
 
 -- | @Selector@ for @sizeFunction@
-sizeFunctionSelector :: Selector
+sizeFunctionSelector :: Selector '[] (Ptr ())
 sizeFunctionSelector = mkSelector "sizeFunction"
 
 -- | @Selector@ for @setSizeFunction:@
-setSizeFunctionSelector :: Selector
+setSizeFunctionSelector :: Selector '[Ptr ()] ()
 setSizeFunctionSelector = mkSelector "setSizeFunction:"
 
 -- | @Selector@ for @descriptionFunction@
-descriptionFunctionSelector :: Selector
+descriptionFunctionSelector :: Selector '[] (Ptr ())
 descriptionFunctionSelector = mkSelector "descriptionFunction"
 
 -- | @Selector@ for @setDescriptionFunction:@
-setDescriptionFunctionSelector :: Selector
+setDescriptionFunctionSelector :: Selector '[Ptr ()] ()
 setDescriptionFunctionSelector = mkSelector "setDescriptionFunction:"
 
 -- | @Selector@ for @relinquishFunction@
-relinquishFunctionSelector :: Selector
+relinquishFunctionSelector :: Selector '[] (Ptr ())
 relinquishFunctionSelector = mkSelector "relinquishFunction"
 
 -- | @Selector@ for @setRelinquishFunction:@
-setRelinquishFunctionSelector :: Selector
+setRelinquishFunctionSelector :: Selector '[Ptr ()] ()
 setRelinquishFunctionSelector = mkSelector "setRelinquishFunction:"
 
 -- | @Selector@ for @acquireFunction@
-acquireFunctionSelector :: Selector
+acquireFunctionSelector :: Selector '[] (Ptr ())
 acquireFunctionSelector = mkSelector "acquireFunction"
 
 -- | @Selector@ for @setAcquireFunction:@
-setAcquireFunctionSelector :: Selector
+setAcquireFunctionSelector :: Selector '[Ptr ()] ()
 setAcquireFunctionSelector = mkSelector "setAcquireFunction:"
 
 -- | @Selector@ for @usesStrongWriteBarrier@
-usesStrongWriteBarrierSelector :: Selector
+usesStrongWriteBarrierSelector :: Selector '[] Bool
 usesStrongWriteBarrierSelector = mkSelector "usesStrongWriteBarrier"
 
 -- | @Selector@ for @setUsesStrongWriteBarrier:@
-setUsesStrongWriteBarrierSelector :: Selector
+setUsesStrongWriteBarrierSelector :: Selector '[Bool] ()
 setUsesStrongWriteBarrierSelector = mkSelector "setUsesStrongWriteBarrier:"
 
 -- | @Selector@ for @usesWeakReadAndWriteBarriers@
-usesWeakReadAndWriteBarriersSelector :: Selector
+usesWeakReadAndWriteBarriersSelector :: Selector '[] Bool
 usesWeakReadAndWriteBarriersSelector = mkSelector "usesWeakReadAndWriteBarriers"
 
 -- | @Selector@ for @setUsesWeakReadAndWriteBarriers:@
-setUsesWeakReadAndWriteBarriersSelector :: Selector
+setUsesWeakReadAndWriteBarriersSelector :: Selector '[Bool] ()
 setUsesWeakReadAndWriteBarriersSelector = mkSelector "setUsesWeakReadAndWriteBarriers:"
 

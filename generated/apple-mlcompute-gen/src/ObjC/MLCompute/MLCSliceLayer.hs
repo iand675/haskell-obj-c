@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MLCompute.MLCSliceLayer
   , start
   , end
   , stride
+  , endSelector
   , sliceLayerWithStart_end_strideSelector
   , startSelector
-  , endSelector
   , strideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,10 +45,7 @@ sliceLayerWithStart_end_stride :: (IsNSArray start, IsNSArray end, IsNSArray str
 sliceLayerWithStart_end_stride start end stride =
   do
     cls' <- getRequiredClass "MLCSliceLayer"
-    withObjCPtr start $ \raw_start ->
-      withObjCPtr end $ \raw_end ->
-        withObjCPtr stride $ \raw_stride ->
-          sendClassMsg cls' (mkSelector "sliceLayerWithStart:end:stride:") (retPtr retVoid) [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_end :: Ptr ()), argPtr (castPtr raw_stride :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sliceLayerWithStart_end_strideSelector (toNSArray start) (toNSArray end) (toNSArray stride)
 
 -- | start
 --
@@ -59,8 +53,8 @@ sliceLayerWithStart_end_stride start end stride =
 --
 -- ObjC selector: @- start@
 start :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
-start mlcSliceLayer  =
-    sendMsg mlcSliceLayer (mkSelector "start") (retPtr retVoid) [] >>= retainedObject . castPtr
+start mlcSliceLayer =
+  sendMessage mlcSliceLayer startSelector
 
 -- | end
 --
@@ -68,8 +62,8 @@ start mlcSliceLayer  =
 --
 -- ObjC selector: @- end@
 end :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
-end mlcSliceLayer  =
-    sendMsg mlcSliceLayer (mkSelector "end") (retPtr retVoid) [] >>= retainedObject . castPtr
+end mlcSliceLayer =
+  sendMessage mlcSliceLayer endSelector
 
 -- | stride
 --
@@ -77,26 +71,26 @@ end mlcSliceLayer  =
 --
 -- ObjC selector: @- stride@
 stride :: IsMLCSliceLayer mlcSliceLayer => mlcSliceLayer -> IO (Id NSArray)
-stride mlcSliceLayer  =
-    sendMsg mlcSliceLayer (mkSelector "stride") (retPtr retVoid) [] >>= retainedObject . castPtr
+stride mlcSliceLayer =
+  sendMessage mlcSliceLayer strideSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sliceLayerWithStart:end:stride:@
-sliceLayerWithStart_end_strideSelector :: Selector
+sliceLayerWithStart_end_strideSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id MLCSliceLayer)
 sliceLayerWithStart_end_strideSelector = mkSelector "sliceLayerWithStart:end:stride:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] (Id NSArray)
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @end@
-endSelector :: Selector
+endSelector :: Selector '[] (Id NSArray)
 endSelector = mkSelector "end"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] (Id NSArray)
 strideSelector = mkSelector "stride"
 

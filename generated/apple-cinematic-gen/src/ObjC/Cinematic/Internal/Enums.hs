@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Cinematic.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CNCinematicErrorCode@
 newtype CNCinematicErrorCode = CNCinematicErrorCode CLong
@@ -36,6 +39,16 @@ pattern CNCinematicErrorCodeIncompatible = CNCinematicErrorCode 6
 
 pattern CNCinematicErrorCodeCancelled :: CNCinematicErrorCode
 pattern CNCinematicErrorCodeCancelled = CNCinematicErrorCode 7
+
+instance ObjCArgument CNCinematicErrorCode where
+  withObjCArg (CNCinematicErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CNCinematicErrorCode where
+  type RawReturn CNCinematicErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNCinematicErrorCode x)
+  fromOwned x = pure (CNCinematicErrorCode x)
 
 -- | The type of object that was detected.
 --
@@ -81,6 +94,16 @@ pattern CNDetectionTypeFixedFocus = CNDetectionType 101
 pattern CNDetectionTypeCustom :: CNDetectionType
 pattern CNDetectionTypeCustom = CNDetectionType 102
 
+instance ObjCArgument CNDetectionType where
+  withObjCArg (CNDetectionType x) k = k (argCLong x)
+
+instance ObjCReturn CNDetectionType where
+  type RawReturn CNDetectionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNDetectionType x)
+  fromOwned x = pure (CNDetectionType x)
+
 -- | @CNRenderingQuality@
 newtype CNRenderingQuality = CNRenderingQuality CLong
   deriving stock (Eq, Ord, Show)
@@ -98,6 +121,16 @@ pattern CNRenderingQualityExport = CNRenderingQuality 2
 pattern CNRenderingQualityExportHigh :: CNRenderingQuality
 pattern CNRenderingQualityExportHigh = CNRenderingQuality 3
 
+instance ObjCArgument CNRenderingQuality where
+  withObjCArg (CNRenderingQuality x) k = k (argCLong x)
+
+instance ObjCReturn CNRenderingQuality where
+  type RawReturn CNRenderingQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNRenderingQuality x)
+  fromOwned x = pure (CNRenderingQuality x)
+
 -- | CNSpatialAudioContentType
 --
 -- Enum used to generate settings dictionary for export using AssetReader and AssetWriter with Spatial Audio effects burned in
@@ -111,6 +144,16 @@ pattern CNSpatialAudioContentTypeStereo = CNSpatialAudioContentType 0
 
 pattern CNSpatialAudioContentTypeSpatial :: CNSpatialAudioContentType
 pattern CNSpatialAudioContentTypeSpatial = CNSpatialAudioContentType 1
+
+instance ObjCArgument CNSpatialAudioContentType where
+  withObjCArg (CNSpatialAudioContentType x) k = k (argCLong x)
+
+instance ObjCReturn CNSpatialAudioContentType where
+  type RawReturn CNSpatialAudioContentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNSpatialAudioContentType x)
+  fromOwned x = pure (CNSpatialAudioContentType x)
 
 -- | CNSpatialAudioRenderingStyle
 --
@@ -149,3 +192,13 @@ pattern CNSpatialAudioRenderingStyleStudioBackgroundStem = CNSpatialAudioRenderi
 
 pattern CNSpatialAudioRenderingStyleInFrameBackgroundStem :: CNSpatialAudioRenderingStyle
 pattern CNSpatialAudioRenderingStyleInFrameBackgroundStem = CNSpatialAudioRenderingStyle 9
+
+instance ObjCArgument CNSpatialAudioRenderingStyle where
+  withObjCArg (CNSpatialAudioRenderingStyle x) k = k (argCLong x)
+
+instance ObjCReturn CNSpatialAudioRenderingStyle where
+  type RawReturn CNSpatialAudioRenderingStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNSpatialAudioRenderingStyle x)
+  fromOwned x = pure (CNSpatialAudioRenderingStyle x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.MLCompute.MLCGroupNormalizationLayer
   , betaParameter
   , gammaParameter
   , varianceEpsilon
-  , layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector
-  , featureChannelCountSelector
-  , groupCountSelector
-  , betaSelector
-  , gammaSelector
   , betaParameterSelector
+  , betaSelector
+  , featureChannelCountSelector
   , gammaParameterSelector
+  , gammaSelector
+  , groupCountSelector
+  , layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector
   , varianceEpsilonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,9 +61,7 @@ layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilon :: (IsMLCTens
 layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilon featureChannelCount groupCount beta gamma varianceEpsilon =
   do
     cls' <- getRequiredClass "MLCGroupNormalizationLayer"
-    withObjCPtr beta $ \raw_beta ->
-      withObjCPtr gamma $ \raw_gamma ->
-        sendClassMsg cls' (mkSelector "layerWithFeatureChannelCount:groupCount:beta:gamma:varianceEpsilon:") (retPtr retVoid) [argCULong featureChannelCount, argCULong groupCount, argPtr (castPtr raw_beta :: Ptr ()), argPtr (castPtr raw_gamma :: Ptr ()), argCFloat varianceEpsilon] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector featureChannelCount groupCount (toMLCTensor beta) (toMLCTensor gamma) varianceEpsilon
 
 -- | featureChannelCount
 --
@@ -74,8 +69,8 @@ layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilon featureChanne
 --
 -- ObjC selector: @- featureChannelCount@
 featureChannelCount :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO CULong
-featureChannelCount mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "featureChannelCount") retCULong []
+featureChannelCount mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer featureChannelCountSelector
 
 -- | groupCount
 --
@@ -83,8 +78,8 @@ featureChannelCount mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- groupCount@
 groupCount :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO CULong
-groupCount mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "groupCount") retCULong []
+groupCount mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer groupCountSelector
 
 -- | beta
 --
@@ -92,8 +87,8 @@ groupCount mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- beta@
 beta :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO (Id MLCTensor)
-beta mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "beta") (retPtr retVoid) [] >>= retainedObject . castPtr
+beta mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer betaSelector
 
 -- | gamma
 --
@@ -101,8 +96,8 @@ beta mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- gamma@
 gamma :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO (Id MLCTensor)
-gamma mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "gamma") (retPtr retVoid) [] >>= retainedObject . castPtr
+gamma mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer gammaSelector
 
 -- | betaParameter
 --
@@ -110,8 +105,8 @@ gamma mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- betaParameter@
 betaParameter :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO (Id MLCTensorParameter)
-betaParameter mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "betaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+betaParameter mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer betaParameterSelector
 
 -- | gammaParameter
 --
@@ -119,8 +114,8 @@ betaParameter mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- gammaParameter@
 gammaParameter :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO (Id MLCTensorParameter)
-gammaParameter mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "gammaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+gammaParameter mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer gammaParameterSelector
 
 -- | varianceEpsilon
 --
@@ -128,42 +123,42 @@ gammaParameter mlcGroupNormalizationLayer  =
 --
 -- ObjC selector: @- varianceEpsilon@
 varianceEpsilon :: IsMLCGroupNormalizationLayer mlcGroupNormalizationLayer => mlcGroupNormalizationLayer -> IO CFloat
-varianceEpsilon mlcGroupNormalizationLayer  =
-    sendMsg mlcGroupNormalizationLayer (mkSelector "varianceEpsilon") retCFloat []
+varianceEpsilon mlcGroupNormalizationLayer =
+  sendMessage mlcGroupNormalizationLayer varianceEpsilonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithFeatureChannelCount:groupCount:beta:gamma:varianceEpsilon:@
-layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector :: Selector
+layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector :: Selector '[CULong, CULong, Id MLCTensor, Id MLCTensor, CFloat] (Id MLCGroupNormalizationLayer)
 layerWithFeatureChannelCount_groupCount_beta_gamma_varianceEpsilonSelector = mkSelector "layerWithFeatureChannelCount:groupCount:beta:gamma:varianceEpsilon:"
 
 -- | @Selector@ for @featureChannelCount@
-featureChannelCountSelector :: Selector
+featureChannelCountSelector :: Selector '[] CULong
 featureChannelCountSelector = mkSelector "featureChannelCount"
 
 -- | @Selector@ for @groupCount@
-groupCountSelector :: Selector
+groupCountSelector :: Selector '[] CULong
 groupCountSelector = mkSelector "groupCount"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] (Id MLCTensor)
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @gamma@
-gammaSelector :: Selector
+gammaSelector :: Selector '[] (Id MLCTensor)
 gammaSelector = mkSelector "gamma"
 
 -- | @Selector@ for @betaParameter@
-betaParameterSelector :: Selector
+betaParameterSelector :: Selector '[] (Id MLCTensorParameter)
 betaParameterSelector = mkSelector "betaParameter"
 
 -- | @Selector@ for @gammaParameter@
-gammaParameterSelector :: Selector
+gammaParameterSelector :: Selector '[] (Id MLCTensorParameter)
 gammaParameterSelector = mkSelector "gammaParameter"
 
 -- | @Selector@ for @varianceEpsilon@
-varianceEpsilonSelector :: Selector
+varianceEpsilonSelector :: Selector '[] CFloat
 varianceEpsilonSelector = mkSelector "varianceEpsilon"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Cinematic.CNScriptChanges
   , fNumber
   , userDecisions
   , addedDetectionTracks
-  , initWithDataRepresentationSelector
-  , initSelector
-  , newSelector
+  , addedDetectionTracksSelector
   , dataRepresentationSelector
   , fNumberSelector
+  , initSelector
+  , initWithDataRepresentationSelector
+  , newSelector
   , userDecisionsSelector
-  , addedDetectionTracksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,21 +42,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDataRepresentation:@
 initWithDataRepresentation :: (IsCNScriptChanges cnScriptChanges, IsNSData dataRepresentation) => cnScriptChanges -> dataRepresentation -> IO (Id CNScriptChanges)
-initWithDataRepresentation cnScriptChanges  dataRepresentation =
-  withObjCPtr dataRepresentation $ \raw_dataRepresentation ->
-      sendMsg cnScriptChanges (mkSelector "initWithDataRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_dataRepresentation :: Ptr ())] >>= ownedObject . castPtr
+initWithDataRepresentation cnScriptChanges dataRepresentation =
+  sendOwnedMessage cnScriptChanges initWithDataRepresentationSelector (toNSData dataRepresentation)
 
 -- | @- init@
 init_ :: IsCNScriptChanges cnScriptChanges => cnScriptChanges -> IO (Id CNScriptChanges)
-init_ cnScriptChanges  =
-    sendMsg cnScriptChanges (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnScriptChanges =
+  sendOwnedMessage cnScriptChanges initSelector
 
 -- | @+ new@
 new :: IO (Id CNScriptChanges)
 new  =
   do
     cls' <- getRequiredClass "CNScriptChanges"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Get persistent data representation of these changes for later restoration.
 --
@@ -67,59 +63,59 @@ new  =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsCNScriptChanges cnScriptChanges => cnScriptChanges -> IO (Id NSData)
-dataRepresentation cnScriptChanges  =
-    sendMsg cnScriptChanges (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation cnScriptChanges =
+  sendMessage cnScriptChanges dataRepresentationSelector
 
 -- | The f/number to apply to the entire movie.
 --
 -- ObjC selector: @- fNumber@
 fNumber :: IsCNScriptChanges cnScriptChanges => cnScriptChanges -> IO CFloat
-fNumber cnScriptChanges  =
-    sendMsg cnScriptChanges (mkSelector "fNumber") retCFloat []
+fNumber cnScriptChanges =
+  sendMessage cnScriptChanges fNumberSelector
 
 -- | All active user decisions, including those made at recording time, unless they have been removed.
 --
 -- ObjC selector: @- userDecisions@
 userDecisions :: IsCNScriptChanges cnScriptChanges => cnScriptChanges -> IO (Id NSArray)
-userDecisions cnScriptChanges  =
-    sendMsg cnScriptChanges (mkSelector "userDecisions") (retPtr retVoid) [] >>= retainedObject . castPtr
+userDecisions cnScriptChanges =
+  sendMessage cnScriptChanges userDecisionsSelector
 
 -- | All detection tracks that have been added. Does not include those created at recording time.
 --
 -- ObjC selector: @- addedDetectionTracks@
 addedDetectionTracks :: IsCNScriptChanges cnScriptChanges => cnScriptChanges -> IO (Id NSArray)
-addedDetectionTracks cnScriptChanges  =
-    sendMsg cnScriptChanges (mkSelector "addedDetectionTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedDetectionTracks cnScriptChanges =
+  sendMessage cnScriptChanges addedDetectionTracksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDataRepresentation:@
-initWithDataRepresentationSelector :: Selector
+initWithDataRepresentationSelector :: Selector '[Id NSData] (Id CNScriptChanges)
 initWithDataRepresentationSelector = mkSelector "initWithDataRepresentation:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNScriptChanges)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNScriptChanges)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @fNumber@
-fNumberSelector :: Selector
+fNumberSelector :: Selector '[] CFloat
 fNumberSelector = mkSelector "fNumber"
 
 -- | @Selector@ for @userDecisions@
-userDecisionsSelector :: Selector
+userDecisionsSelector :: Selector '[] (Id NSArray)
 userDecisionsSelector = mkSelector "userDecisions"
 
 -- | @Selector@ for @addedDetectionTracks@
-addedDetectionTracksSelector :: Selector
+addedDetectionTracksSelector :: Selector '[] (Id NSArray)
 addedDetectionTracksSelector = mkSelector "addedDetectionTracks"
 

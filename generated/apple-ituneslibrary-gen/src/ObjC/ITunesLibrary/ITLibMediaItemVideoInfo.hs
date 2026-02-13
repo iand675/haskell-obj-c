@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.ITunesLibrary.ITLibMediaItemVideoInfo
   , hd
   , videoWidth
   , videoHeight
+  , episodeOrderSelector
+  , episodeSelector
+  , hdSelector
+  , seasonSelector
   , seriesSelector
   , sortSeriesSelector
-  , seasonSelector
-  , episodeSelector
-  , episodeOrderSelector
-  , hdSelector
-  , videoWidthSelector
   , videoHeightSelector
+  , videoWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,91 +44,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- series@
 series :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO (Id NSString)
-series itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "series") (retPtr retVoid) [] >>= retainedObject . castPtr
+series itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo seriesSelector
 
 -- | The name of the TV series the video is associated with that should be used for when sorting (implies the track is a TV show).
 --
 -- ObjC selector: @- sortSeries@
 sortSeries :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO (Id NSString)
-sortSeries itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "sortSeries") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortSeries itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo sortSeriesSelector
 
 -- | The name of TV season the video is associated with (implies the track is a TV show).
 --
 -- ObjC selector: @- season@
 season :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO CULong
-season itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "season") retCULong []
+season itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo seasonSelector
 
 -- | The TV episode the video is associated with (implies the track is a TV show).
 --
 -- ObjC selector: @- episode@
 episode :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO (Id NSString)
-episode itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "episode") (retPtr retVoid) [] >>= retainedObject . castPtr
+episode itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo episodeSelector
 
 -- | The TV episode order the video is associated with (implies the track is a TV show).
 --
 -- ObjC selector: @- episodeOrder@
 episodeOrder :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO CLong
-episodeOrder itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "episodeOrder") retCLong []
+episodeOrder itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo episodeOrderSelector
 
 -- | Whether the video is high definition.
 --
 -- ObjC selector: @- hd@
 hd :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO Bool
-hd itLibMediaItemVideoInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItemVideoInfo (mkSelector "hd") retCULong []
+hd itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo hdSelector
 
 -- | The width of the video.
 --
 -- ObjC selector: @- videoWidth@
 videoWidth :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO CULong
-videoWidth itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "videoWidth") retCULong []
+videoWidth itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo videoWidthSelector
 
 -- | The height of the video.
 --
 -- ObjC selector: @- videoHeight@
 videoHeight :: IsITLibMediaItemVideoInfo itLibMediaItemVideoInfo => itLibMediaItemVideoInfo -> IO CULong
-videoHeight itLibMediaItemVideoInfo  =
-    sendMsg itLibMediaItemVideoInfo (mkSelector "videoHeight") retCULong []
+videoHeight itLibMediaItemVideoInfo =
+  sendMessage itLibMediaItemVideoInfo videoHeightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @series@
-seriesSelector :: Selector
+seriesSelector :: Selector '[] (Id NSString)
 seriesSelector = mkSelector "series"
 
 -- | @Selector@ for @sortSeries@
-sortSeriesSelector :: Selector
+sortSeriesSelector :: Selector '[] (Id NSString)
 sortSeriesSelector = mkSelector "sortSeries"
 
 -- | @Selector@ for @season@
-seasonSelector :: Selector
+seasonSelector :: Selector '[] CULong
 seasonSelector = mkSelector "season"
 
 -- | @Selector@ for @episode@
-episodeSelector :: Selector
+episodeSelector :: Selector '[] (Id NSString)
 episodeSelector = mkSelector "episode"
 
 -- | @Selector@ for @episodeOrder@
-episodeOrderSelector :: Selector
+episodeOrderSelector :: Selector '[] CLong
 episodeOrderSelector = mkSelector "episodeOrder"
 
 -- | @Selector@ for @hd@
-hdSelector :: Selector
+hdSelector :: Selector '[] Bool
 hdSelector = mkSelector "hd"
 
 -- | @Selector@ for @videoWidth@
-videoWidthSelector :: Selector
+videoWidthSelector :: Selector '[] CULong
 videoWidthSelector = mkSelector "videoWidth"
 
 -- | @Selector@ for @videoHeight@
-videoHeightSelector :: Selector
+videoHeightSelector :: Selector '[] CULong
 videoHeightSelector = mkSelector "videoHeight"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.AddressBook.ABPerson
   , removeProperties
   , properties
   , typeOfProperty
-  , parentGroupsSelector
-  , linkedPeopleSelector
-  , setImageDataSelector
-  , imageDataSelector
+  , addPropertiesAndTypesSelector
   , beginLoadingImageDataForClientSelector
   , cancelLoadingImageDataForTagSelector
+  , imageDataSelector
   , initWithVCardRepresentationSelector
-  , vCardRepresentationSelector
-  , searchElementForProperty_label_key_value_comparisonSelector
-  , addPropertiesAndTypesSelector
-  , removePropertiesSelector
+  , linkedPeopleSelector
+  , parentGroupsSelector
   , propertiesSelector
+  , removePropertiesSelector
+  , searchElementForProperty_label_key_value_comparisonSelector
+  , setImageDataSelector
   , typeOfPropertySelector
+  , vCardRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,142 +50,134 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- parentGroups@
 parentGroups :: IsABPerson abPerson => abPerson -> IO (Id NSArray)
-parentGroups abPerson  =
-    sendMsg abPerson (mkSelector "parentGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentGroups abPerson =
+  sendMessage abPerson parentGroupsSelector
 
 -- | @- linkedPeople@
 linkedPeople :: IsABPerson abPerson => abPerson -> IO (Id NSArray)
-linkedPeople abPerson  =
-    sendMsg abPerson (mkSelector "linkedPeople") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkedPeople abPerson =
+  sendMessage abPerson linkedPeopleSelector
 
 -- | @- setImageData:@
 setImageData :: (IsABPerson abPerson, IsNSData data_) => abPerson -> data_ -> IO Bool
-setImageData abPerson  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abPerson (mkSelector "setImageData:") retCULong [argPtr (castPtr raw_data_ :: Ptr ())]
+setImageData abPerson data_ =
+  sendMessage abPerson setImageDataSelector (toNSData data_)
 
 -- | @- imageData@
 imageData :: IsABPerson abPerson => abPerson -> IO (Id NSData)
-imageData abPerson  =
-    sendMsg abPerson (mkSelector "imageData") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageData abPerson =
+  sendMessage abPerson imageDataSelector
 
 -- | @- beginLoadingImageDataForClient:@
 beginLoadingImageDataForClient :: IsABPerson abPerson => abPerson -> RawId -> IO CLong
-beginLoadingImageDataForClient abPerson  client =
-    sendMsg abPerson (mkSelector "beginLoadingImageDataForClient:") retCLong [argPtr (castPtr (unRawId client) :: Ptr ())]
+beginLoadingImageDataForClient abPerson client =
+  sendMessage abPerson beginLoadingImageDataForClientSelector client
 
 -- | @+ cancelLoadingImageDataForTag:@
 cancelLoadingImageDataForTag :: CLong -> IO ()
 cancelLoadingImageDataForTag tag =
   do
     cls' <- getRequiredClass "ABPerson"
-    sendClassMsg cls' (mkSelector "cancelLoadingImageDataForTag:") retVoid [argCLong tag]
+    sendClassMessage cls' cancelLoadingImageDataForTagSelector tag
 
 -- | @- initWithVCardRepresentation:@
 initWithVCardRepresentation :: (IsABPerson abPerson, IsNSData vCardData) => abPerson -> vCardData -> IO RawId
-initWithVCardRepresentation abPerson  vCardData =
-  withObjCPtr vCardData $ \raw_vCardData ->
-      fmap (RawId . castPtr) $ sendMsg abPerson (mkSelector "initWithVCardRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_vCardData :: Ptr ())]
+initWithVCardRepresentation abPerson vCardData =
+  sendOwnedMessage abPerson initWithVCardRepresentationSelector (toNSData vCardData)
 
 -- | @- vCardRepresentation@
 vCardRepresentation :: IsABPerson abPerson => abPerson -> IO (Id NSData)
-vCardRepresentation abPerson  =
-    sendMsg abPerson (mkSelector "vCardRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+vCardRepresentation abPerson =
+  sendMessage abPerson vCardRepresentationSelector
 
 -- | @+ searchElementForProperty:label:key:value:comparison:@
 searchElementForProperty_label_key_value_comparison :: (IsNSString property, IsNSString label, IsNSString key) => property -> label -> key -> RawId -> CLong -> IO (Id ABSearchElement)
 searchElementForProperty_label_key_value_comparison property label key value comparison =
   do
     cls' <- getRequiredClass "ABPerson"
-    withObjCPtr property $ \raw_property ->
-      withObjCPtr label $ \raw_label ->
-        withObjCPtr key $ \raw_key ->
-          sendClassMsg cls' (mkSelector "searchElementForProperty:label:key:value:comparison:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ()), argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argCLong comparison] >>= retainedObject . castPtr
+    sendClassMessage cls' searchElementForProperty_label_key_value_comparisonSelector (toNSString property) (toNSString label) (toNSString key) value comparison
 
 -- | @+ addPropertiesAndTypes:@
 addPropertiesAndTypes :: IsNSDictionary properties => properties -> IO CLong
 addPropertiesAndTypes properties =
   do
     cls' <- getRequiredClass "ABPerson"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "addPropertiesAndTypes:") retCLong [argPtr (castPtr raw_properties :: Ptr ())]
+    sendClassMessage cls' addPropertiesAndTypesSelector (toNSDictionary properties)
 
 -- | @+ removeProperties:@
 removeProperties :: IsNSArray properties => properties -> IO CLong
 removeProperties properties =
   do
     cls' <- getRequiredClass "ABPerson"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "removeProperties:") retCLong [argPtr (castPtr raw_properties :: Ptr ())]
+    sendClassMessage cls' removePropertiesSelector (toNSArray properties)
 
 -- | @+ properties@
 properties :: IO (Id NSArray)
 properties  =
   do
     cls' <- getRequiredClass "ABPerson"
-    sendClassMsg cls' (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' propertiesSelector
 
 -- | @+ typeOfProperty:@
 typeOfProperty :: IsNSString property => property -> IO CLong
 typeOfProperty property =
   do
     cls' <- getRequiredClass "ABPerson"
-    withObjCPtr property $ \raw_property ->
-      sendClassMsg cls' (mkSelector "typeOfProperty:") retCLong [argPtr (castPtr raw_property :: Ptr ())]
+    sendClassMessage cls' typeOfPropertySelector (toNSString property)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @parentGroups@
-parentGroupsSelector :: Selector
+parentGroupsSelector :: Selector '[] (Id NSArray)
 parentGroupsSelector = mkSelector "parentGroups"
 
 -- | @Selector@ for @linkedPeople@
-linkedPeopleSelector :: Selector
+linkedPeopleSelector :: Selector '[] (Id NSArray)
 linkedPeopleSelector = mkSelector "linkedPeople"
 
 -- | @Selector@ for @setImageData:@
-setImageDataSelector :: Selector
+setImageDataSelector :: Selector '[Id NSData] Bool
 setImageDataSelector = mkSelector "setImageData:"
 
 -- | @Selector@ for @imageData@
-imageDataSelector :: Selector
+imageDataSelector :: Selector '[] (Id NSData)
 imageDataSelector = mkSelector "imageData"
 
 -- | @Selector@ for @beginLoadingImageDataForClient:@
-beginLoadingImageDataForClientSelector :: Selector
+beginLoadingImageDataForClientSelector :: Selector '[RawId] CLong
 beginLoadingImageDataForClientSelector = mkSelector "beginLoadingImageDataForClient:"
 
 -- | @Selector@ for @cancelLoadingImageDataForTag:@
-cancelLoadingImageDataForTagSelector :: Selector
+cancelLoadingImageDataForTagSelector :: Selector '[CLong] ()
 cancelLoadingImageDataForTagSelector = mkSelector "cancelLoadingImageDataForTag:"
 
 -- | @Selector@ for @initWithVCardRepresentation:@
-initWithVCardRepresentationSelector :: Selector
+initWithVCardRepresentationSelector :: Selector '[Id NSData] RawId
 initWithVCardRepresentationSelector = mkSelector "initWithVCardRepresentation:"
 
 -- | @Selector@ for @vCardRepresentation@
-vCardRepresentationSelector :: Selector
+vCardRepresentationSelector :: Selector '[] (Id NSData)
 vCardRepresentationSelector = mkSelector "vCardRepresentation"
 
 -- | @Selector@ for @searchElementForProperty:label:key:value:comparison:@
-searchElementForProperty_label_key_value_comparisonSelector :: Selector
+searchElementForProperty_label_key_value_comparisonSelector :: Selector '[Id NSString, Id NSString, Id NSString, RawId, CLong] (Id ABSearchElement)
 searchElementForProperty_label_key_value_comparisonSelector = mkSelector "searchElementForProperty:label:key:value:comparison:"
 
 -- | @Selector@ for @addPropertiesAndTypes:@
-addPropertiesAndTypesSelector :: Selector
+addPropertiesAndTypesSelector :: Selector '[Id NSDictionary] CLong
 addPropertiesAndTypesSelector = mkSelector "addPropertiesAndTypes:"
 
 -- | @Selector@ for @removeProperties:@
-removePropertiesSelector :: Selector
+removePropertiesSelector :: Selector '[Id NSArray] CLong
 removePropertiesSelector = mkSelector "removeProperties:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSArray)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @typeOfProperty:@
-typeOfPropertySelector :: Selector
+typeOfPropertySelector :: Selector '[Id NSString] CLong
 typeOfPropertySelector = mkSelector "typeOfProperty:"
 

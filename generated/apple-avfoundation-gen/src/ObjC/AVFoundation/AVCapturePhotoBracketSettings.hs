@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.AVFoundation.AVCapturePhotoBracketSettings
   , bracketedSettings
   , lensStabilizationEnabled
   , setLensStabilizationEnabled
-  , photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector
-  , photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector
   , bracketedSettingsSelector
   , lensStabilizationEnabledSelector
+  , photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector
+  , photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector
   , setLensStabilizationEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,9 +61,7 @@ photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettings :: 
 photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettings rawPixelFormatType processedFormat bracketedSettings =
   do
     cls' <- getRequiredClass "AVCapturePhotoBracketSettings"
-    withObjCPtr processedFormat $ \raw_processedFormat ->
-      withObjCPtr bracketedSettings $ \raw_bracketedSettings ->
-        sendClassMsg cls' (mkSelector "photoBracketSettingsWithRawPixelFormatType:processedFormat:bracketedSettings:") (retPtr retVoid) [argCUInt rawPixelFormatType, argPtr (castPtr raw_processedFormat :: Ptr ()), argPtr (castPtr raw_bracketedSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector rawPixelFormatType (toNSDictionary processedFormat) (toNSArray bracketedSettings)
 
 -- | photoBracketSettingsWithRawPixelFormatType:rawFileType:processedFormat:processedFileType:bracketedSettings:
 --
@@ -93,11 +88,7 @@ photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processed
 photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettings rawPixelFormatType rawFileType processedFormat processedFileType bracketedSettings =
   do
     cls' <- getRequiredClass "AVCapturePhotoBracketSettings"
-    withObjCPtr rawFileType $ \raw_rawFileType ->
-      withObjCPtr processedFormat $ \raw_processedFormat ->
-        withObjCPtr processedFileType $ \raw_processedFileType ->
-          withObjCPtr bracketedSettings $ \raw_bracketedSettings ->
-            sendClassMsg cls' (mkSelector "photoBracketSettingsWithRawPixelFormatType:rawFileType:processedFormat:processedFileType:bracketedSettings:") (retPtr retVoid) [argCUInt rawPixelFormatType, argPtr (castPtr raw_rawFileType :: Ptr ()), argPtr (castPtr raw_processedFormat :: Ptr ()), argPtr (castPtr raw_processedFileType :: Ptr ()), argPtr (castPtr raw_bracketedSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector rawPixelFormatType (toNSString rawFileType) (toNSDictionary processedFormat) (toNSString processedFileType) (toNSArray bracketedSettings)
 
 -- | bracketedSettings
 --
@@ -107,8 +98,8 @@ photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processed
 --
 -- ObjC selector: @- bracketedSettings@
 bracketedSettings :: IsAVCapturePhotoBracketSettings avCapturePhotoBracketSettings => avCapturePhotoBracketSettings -> IO (Id NSArray)
-bracketedSettings avCapturePhotoBracketSettings  =
-    sendMsg avCapturePhotoBracketSettings (mkSelector "bracketedSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+bracketedSettings avCapturePhotoBracketSettings =
+  sendMessage avCapturePhotoBracketSettings bracketedSettingsSelector
 
 -- | lensStabilizationEnabled
 --
@@ -118,8 +109,8 @@ bracketedSettings avCapturePhotoBracketSettings  =
 --
 -- ObjC selector: @- lensStabilizationEnabled@
 lensStabilizationEnabled :: IsAVCapturePhotoBracketSettings avCapturePhotoBracketSettings => avCapturePhotoBracketSettings -> IO Bool
-lensStabilizationEnabled avCapturePhotoBracketSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoBracketSettings (mkSelector "lensStabilizationEnabled") retCULong []
+lensStabilizationEnabled avCapturePhotoBracketSettings =
+  sendMessage avCapturePhotoBracketSettings lensStabilizationEnabledSelector
 
 -- | lensStabilizationEnabled
 --
@@ -129,30 +120,30 @@ lensStabilizationEnabled avCapturePhotoBracketSettings  =
 --
 -- ObjC selector: @- setLensStabilizationEnabled:@
 setLensStabilizationEnabled :: IsAVCapturePhotoBracketSettings avCapturePhotoBracketSettings => avCapturePhotoBracketSettings -> Bool -> IO ()
-setLensStabilizationEnabled avCapturePhotoBracketSettings  value =
-    sendMsg avCapturePhotoBracketSettings (mkSelector "setLensStabilizationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLensStabilizationEnabled avCapturePhotoBracketSettings value =
+  sendMessage avCapturePhotoBracketSettings setLensStabilizationEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @photoBracketSettingsWithRawPixelFormatType:processedFormat:bracketedSettings:@
-photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector :: Selector
+photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector :: Selector '[CUInt, Id NSDictionary, Id NSArray] (Id AVCapturePhotoBracketSettings)
 photoBracketSettingsWithRawPixelFormatType_processedFormat_bracketedSettingsSelector = mkSelector "photoBracketSettingsWithRawPixelFormatType:processedFormat:bracketedSettings:"
 
 -- | @Selector@ for @photoBracketSettingsWithRawPixelFormatType:rawFileType:processedFormat:processedFileType:bracketedSettings:@
-photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector :: Selector
+photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector :: Selector '[CUInt, Id NSString, Id NSDictionary, Id NSString, Id NSArray] (Id AVCapturePhotoBracketSettings)
 photoBracketSettingsWithRawPixelFormatType_rawFileType_processedFormat_processedFileType_bracketedSettingsSelector = mkSelector "photoBracketSettingsWithRawPixelFormatType:rawFileType:processedFormat:processedFileType:bracketedSettings:"
 
 -- | @Selector@ for @bracketedSettings@
-bracketedSettingsSelector :: Selector
+bracketedSettingsSelector :: Selector '[] (Id NSArray)
 bracketedSettingsSelector = mkSelector "bracketedSettings"
 
 -- | @Selector@ for @lensStabilizationEnabled@
-lensStabilizationEnabledSelector :: Selector
+lensStabilizationEnabledSelector :: Selector '[] Bool
 lensStabilizationEnabledSelector = mkSelector "lensStabilizationEnabled"
 
 -- | @Selector@ for @setLensStabilizationEnabled:@
-setLensStabilizationEnabledSelector :: Selector
+setLensStabilizationEnabledSelector :: Selector '[Bool] ()
 setLensStabilizationEnabledSelector = mkSelector "setLensStabilizationEnabled:"
 

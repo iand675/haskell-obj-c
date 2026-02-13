@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,18 +26,18 @@ module ObjC.CoreMIDI.MIDIUMPFunctionBlock
   , umpEndpoint
   , midiCIDevice
   , isEnabled
-  , initSelector
-  , nameSelector
-  , functionBlockIDSelector
   , directionSelector
   , firstGroupSelector
-  , totalGroupsSpannedSelector
+  , functionBlockIDSelector
+  , initSelector
+  , isEnabledSelector
   , maxSysEx8StreamsSelector
   , midI1InfoSelector
+  , midiCIDeviceSelector
+  , nameSelector
+  , totalGroupsSpannedSelector
   , uiHintSelector
   , umpEndpointSelector
-  , midiCIDeviceSelector
-  , isEnabledSelector
 
   -- * Enum types
   , MIDIUMPFunctionBlockDirection(MIDIUMPFunctionBlockDirection)
@@ -56,15 +57,11 @@ module ObjC.CoreMIDI.MIDIUMPFunctionBlock
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO (Id MIDIUMPFunctionBlock)
-init_ midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiumpFunctionBlock =
+  sendOwnedMessage midiumpFunctionBlock initSelector
 
 -- | name
 --
@@ -83,8 +80,8 @@ init_ midiumpFunctionBlock  =
 --
 -- ObjC selector: @- name@
 name :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO (Id NSString)
-name midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock nameSelector
 
 -- | functionBlockID
 --
@@ -92,8 +89,8 @@ name midiumpFunctionBlock  =
 --
 -- ObjC selector: @- functionBlockID@
 functionBlockID :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO CUChar
-functionBlockID midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "functionBlockID") retCUChar []
+functionBlockID midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock functionBlockIDSelector
 
 -- | direction
 --
@@ -101,8 +98,8 @@ functionBlockID midiumpFunctionBlock  =
 --
 -- ObjC selector: @- direction@
 direction :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO MIDIUMPFunctionBlockDirection
-direction midiumpFunctionBlock  =
-    fmap (coerce :: CInt -> MIDIUMPFunctionBlockDirection) $ sendMsg midiumpFunctionBlock (mkSelector "direction") retCInt []
+direction midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock directionSelector
 
 -- | firstGroup
 --
@@ -110,8 +107,8 @@ direction midiumpFunctionBlock  =
 --
 -- ObjC selector: @- firstGroup@
 firstGroup :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO CUChar
-firstGroup midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "firstGroup") retCUChar []
+firstGroup midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock firstGroupSelector
 
 -- | totalGroupsSpanned
 --
@@ -119,8 +116,8 @@ firstGroup midiumpFunctionBlock  =
 --
 -- ObjC selector: @- totalGroupsSpanned@
 totalGroupsSpanned :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO CUChar
-totalGroupsSpanned midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "totalGroupsSpanned") retCUChar []
+totalGroupsSpanned midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock totalGroupsSpannedSelector
 
 -- | maxSysEx8Streams
 --
@@ -128,8 +125,8 @@ totalGroupsSpanned midiumpFunctionBlock  =
 --
 -- ObjC selector: @- maxSysEx8Streams@
 maxSysEx8Streams :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO CUChar
-maxSysEx8Streams midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "maxSysEx8Streams") retCUChar []
+maxSysEx8Streams midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock maxSysEx8StreamsSelector
 
 -- | MIDI1Info
 --
@@ -137,8 +134,8 @@ maxSysEx8Streams midiumpFunctionBlock  =
 --
 -- ObjC selector: @- MIDI1Info@
 midI1Info :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO MIDIUMPFunctionBlockMIDI1Info
-midI1Info midiumpFunctionBlock  =
-    fmap (coerce :: CInt -> MIDIUMPFunctionBlockMIDI1Info) $ sendMsg midiumpFunctionBlock (mkSelector "MIDI1Info") retCInt []
+midI1Info midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock midI1InfoSelector
 
 -- | UIHint
 --
@@ -146,8 +143,8 @@ midI1Info midiumpFunctionBlock  =
 --
 -- ObjC selector: @- UIHint@
 uiHint :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO MIDIUMPFunctionBlockUIHint
-uiHint midiumpFunctionBlock  =
-    fmap (coerce :: CInt -> MIDIUMPFunctionBlockUIHint) $ sendMsg midiumpFunctionBlock (mkSelector "UIHint") retCInt []
+uiHint midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock uiHintSelector
 
 -- | UMPEndpoint
 --
@@ -157,8 +154,8 @@ uiHint midiumpFunctionBlock  =
 --
 -- ObjC selector: @- UMPEndpoint@
 umpEndpoint :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO (Id MIDIUMPEndpoint)
-umpEndpoint midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "UMPEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+umpEndpoint midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock umpEndpointSelector
 
 -- | MIDICIDevice
 --
@@ -168,8 +165,8 @@ umpEndpoint midiumpFunctionBlock  =
 --
 -- ObjC selector: @- midiCIDevice@
 midiCIDevice :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO (Id MIDICIDevice)
-midiCIDevice midiumpFunctionBlock  =
-    sendMsg midiumpFunctionBlock (mkSelector "midiCIDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+midiCIDevice midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock midiCIDeviceSelector
 
 -- | isEnabled
 --
@@ -177,58 +174,58 @@ midiCIDevice midiumpFunctionBlock  =
 --
 -- ObjC selector: @- isEnabled@
 isEnabled :: IsMIDIUMPFunctionBlock midiumpFunctionBlock => midiumpFunctionBlock -> IO Bool
-isEnabled midiumpFunctionBlock  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpFunctionBlock (mkSelector "isEnabled") retCULong []
+isEnabled midiumpFunctionBlock =
+  sendMessage midiumpFunctionBlock isEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDIUMPFunctionBlock)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @functionBlockID@
-functionBlockIDSelector :: Selector
+functionBlockIDSelector :: Selector '[] CUChar
 functionBlockIDSelector = mkSelector "functionBlockID"
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] MIDIUMPFunctionBlockDirection
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @firstGroup@
-firstGroupSelector :: Selector
+firstGroupSelector :: Selector '[] CUChar
 firstGroupSelector = mkSelector "firstGroup"
 
 -- | @Selector@ for @totalGroupsSpanned@
-totalGroupsSpannedSelector :: Selector
+totalGroupsSpannedSelector :: Selector '[] CUChar
 totalGroupsSpannedSelector = mkSelector "totalGroupsSpanned"
 
 -- | @Selector@ for @maxSysEx8Streams@
-maxSysEx8StreamsSelector :: Selector
+maxSysEx8StreamsSelector :: Selector '[] CUChar
 maxSysEx8StreamsSelector = mkSelector "maxSysEx8Streams"
 
 -- | @Selector@ for @MIDI1Info@
-midI1InfoSelector :: Selector
+midI1InfoSelector :: Selector '[] MIDIUMPFunctionBlockMIDI1Info
 midI1InfoSelector = mkSelector "MIDI1Info"
 
 -- | @Selector@ for @UIHint@
-uiHintSelector :: Selector
+uiHintSelector :: Selector '[] MIDIUMPFunctionBlockUIHint
 uiHintSelector = mkSelector "UIHint"
 
 -- | @Selector@ for @UMPEndpoint@
-umpEndpointSelector :: Selector
+umpEndpointSelector :: Selector '[] (Id MIDIUMPEndpoint)
 umpEndpointSelector = mkSelector "UMPEndpoint"
 
 -- | @Selector@ for @midiCIDevice@
-midiCIDeviceSelector :: Selector
+midiCIDeviceSelector :: Selector '[] (Id MIDICIDevice)
 midiCIDeviceSelector = mkSelector "midiCIDevice"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.CoreData.NSLightweightMigrationStage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSLightweightMigrationStage nsLightweightMigrationStage => nsLightweightMigrationStage -> IO (Id NSLightweightMigrationStage)
-init_ nsLightweightMigrationStage  =
-    sendMsg nsLightweightMigrationStage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsLightweightMigrationStage =
+  sendOwnedMessage nsLightweightMigrationStage initSelector
 
 -- | @- initWithVersionChecksums:@
 initWithVersionChecksums :: (IsNSLightweightMigrationStage nsLightweightMigrationStage, IsNSArray versionChecksums) => nsLightweightMigrationStage -> versionChecksums -> IO (Id NSLightweightMigrationStage)
-initWithVersionChecksums nsLightweightMigrationStage  versionChecksums =
-  withObjCPtr versionChecksums $ \raw_versionChecksums ->
-      sendMsg nsLightweightMigrationStage (mkSelector "initWithVersionChecksums:") (retPtr retVoid) [argPtr (castPtr raw_versionChecksums :: Ptr ())] >>= ownedObject . castPtr
+initWithVersionChecksums nsLightweightMigrationStage versionChecksums =
+  sendOwnedMessage nsLightweightMigrationStage initWithVersionChecksumsSelector (toNSArray versionChecksums)
 
 -- | @- versionChecksums@
 versionChecksums :: IsNSLightweightMigrationStage nsLightweightMigrationStage => nsLightweightMigrationStage -> IO (Id NSArray)
-versionChecksums nsLightweightMigrationStage  =
-    sendMsg nsLightweightMigrationStage (mkSelector "versionChecksums") (retPtr retVoid) [] >>= retainedObject . castPtr
+versionChecksums nsLightweightMigrationStage =
+  sendMessage nsLightweightMigrationStage versionChecksumsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSLightweightMigrationStage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithVersionChecksums:@
-initWithVersionChecksumsSelector :: Selector
+initWithVersionChecksumsSelector :: Selector '[Id NSArray] (Id NSLightweightMigrationStage)
 initWithVersionChecksumsSelector = mkSelector "initWithVersionChecksums:"
 
 -- | @Selector@ for @versionChecksums@
-versionChecksumsSelector :: Selector
+versionChecksumsSelector :: Selector '[] (Id NSArray)
 versionChecksumsSelector = mkSelector "versionChecksums"
 

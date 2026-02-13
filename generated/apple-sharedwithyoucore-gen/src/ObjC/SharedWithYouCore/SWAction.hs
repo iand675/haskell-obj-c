@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SharedWithYouCore.SWAction
   , fail_
   , uuid
   , complete
-  , fulfillSelector
-  , failSelector
-  , uuidSelector
   , completeSelector
+  , failSelector
+  , fulfillSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fulfill@
 fulfill :: IsSWAction swAction => swAction -> IO ()
-fulfill swAction  =
-    sendMsg swAction (mkSelector "fulfill") retVoid []
+fulfill swAction =
+  sendMessage swAction fulfillSelector
 
 -- | @- fail@
 fail_ :: IsSWAction swAction => swAction -> IO ()
-fail_ swAction  =
-    sendMsg swAction (mkSelector "fail") retVoid []
+fail_ swAction =
+  sendMessage swAction failSelector
 
 -- | @- uuid@
 uuid :: IsSWAction swAction => swAction -> IO (Id NSUUID)
-uuid swAction  =
-    sendMsg swAction (mkSelector "uuid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid swAction =
+  sendMessage swAction uuidSelector
 
 -- | @- complete@
 complete :: IsSWAction swAction => swAction -> IO Bool
-complete swAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg swAction (mkSelector "complete") retCULong []
+complete swAction =
+  sendMessage swAction completeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fulfill@
-fulfillSelector :: Selector
+fulfillSelector :: Selector '[] ()
 fulfillSelector = mkSelector "fulfill"
 
 -- | @Selector@ for @fail@
-failSelector :: Selector
+failSelector :: Selector '[] ()
 failSelector = mkSelector "fail"
 
 -- | @Selector@ for @uuid@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "uuid"
 
 -- | @Selector@ for @complete@
-completeSelector :: Selector
+completeSelector :: Selector '[] Bool
 completeSelector = mkSelector "complete"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.CoreData.NSPersistentStoreRequest
   , setAffectedStores
   , requestType
   , affectedStoresSelector
-  , setAffectedStoresSelector
   , requestTypeSelector
+  , setAffectedStoresSelector
 
   -- * Enum types
   , NSPersistentStoreRequestType(NSPersistentStoreRequestType)
@@ -24,15 +25,11 @@ module ObjC.CoreData.NSPersistentStoreRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,33 +39,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- affectedStores@
 affectedStores :: IsNSPersistentStoreRequest nsPersistentStoreRequest => nsPersistentStoreRequest -> IO (Id NSArray)
-affectedStores nsPersistentStoreRequest  =
-    sendMsg nsPersistentStoreRequest (mkSelector "affectedStores") (retPtr retVoid) [] >>= retainedObject . castPtr
+affectedStores nsPersistentStoreRequest =
+  sendMessage nsPersistentStoreRequest affectedStoresSelector
 
 -- | @- setAffectedStores:@
 setAffectedStores :: (IsNSPersistentStoreRequest nsPersistentStoreRequest, IsNSArray value) => nsPersistentStoreRequest -> value -> IO ()
-setAffectedStores nsPersistentStoreRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentStoreRequest (mkSelector "setAffectedStores:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAffectedStores nsPersistentStoreRequest value =
+  sendMessage nsPersistentStoreRequest setAffectedStoresSelector (toNSArray value)
 
 -- | @- requestType@
 requestType :: IsNSPersistentStoreRequest nsPersistentStoreRequest => nsPersistentStoreRequest -> IO NSPersistentStoreRequestType
-requestType nsPersistentStoreRequest  =
-    fmap (coerce :: CULong -> NSPersistentStoreRequestType) $ sendMsg nsPersistentStoreRequest (mkSelector "requestType") retCULong []
+requestType nsPersistentStoreRequest =
+  sendMessage nsPersistentStoreRequest requestTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @affectedStores@
-affectedStoresSelector :: Selector
+affectedStoresSelector :: Selector '[] (Id NSArray)
 affectedStoresSelector = mkSelector "affectedStores"
 
 -- | @Selector@ for @setAffectedStores:@
-setAffectedStoresSelector :: Selector
+setAffectedStoresSelector :: Selector '[Id NSArray] ()
 setAffectedStoresSelector = mkSelector "setAffectedStores:"
 
 -- | @Selector@ for @requestType@
-requestTypeSelector :: Selector
+requestTypeSelector :: Selector '[] NSPersistentStoreRequestType
 requestTypeSelector = mkSelector "requestType"
 

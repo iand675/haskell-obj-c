@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.BrowserEngineKit.BEDownloadMonitor
   , identifier
   , sourceURL
   , destinationURL
-  , initSelector
-  , newSelector
-  , initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector
-  , useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector
   , beginMonitoringSelector
-  , resumeMonitoring_completionHandlerSelector
   , createAccessTokenSelector
-  , identifierSelector
-  , sourceURLSelector
   , destinationURLSelector
+  , identifierSelector
+  , initSelector
+  , initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector
+  , newSelector
+  , resumeMonitoring_completionHandlerSelector
+  , sourceURLSelector
+  , useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,105 +45,99 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- init@
 init_ :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id BEDownloadMonitor)
-init_ beDownloadMonitor  =
-    sendMsg beDownloadMonitor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beDownloadMonitor =
+  sendOwnedMessage beDownloadMonitor initSelector
 
 -- | @+ new@
 new :: IO (Id BEDownloadMonitor)
 new  =
   do
     cls' <- getRequiredClass "BEDownloadMonitor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithSourceURL:destinationURL:observedProgress:liveActivityAccessToken:@
 initWithSourceURL_destinationURL_observedProgress_liveActivityAccessToken :: (IsBEDownloadMonitor beDownloadMonitor, IsNSURL sourceURL, IsNSURL destinationURL, IsNSProgress observedProgress, IsNSData liveActivityAccessToken) => beDownloadMonitor -> sourceURL -> destinationURL -> observedProgress -> liveActivityAccessToken -> IO (Id BEDownloadMonitor)
-initWithSourceURL_destinationURL_observedProgress_liveActivityAccessToken beDownloadMonitor  sourceURL destinationURL observedProgress liveActivityAccessToken =
-  withObjCPtr sourceURL $ \raw_sourceURL ->
-    withObjCPtr destinationURL $ \raw_destinationURL ->
-      withObjCPtr observedProgress $ \raw_observedProgress ->
-        withObjCPtr liveActivityAccessToken $ \raw_liveActivityAccessToken ->
-            sendMsg beDownloadMonitor (mkSelector "initWithSourceURL:destinationURL:observedProgress:liveActivityAccessToken:") (retPtr retVoid) [argPtr (castPtr raw_sourceURL :: Ptr ()), argPtr (castPtr raw_destinationURL :: Ptr ()), argPtr (castPtr raw_observedProgress :: Ptr ()), argPtr (castPtr raw_liveActivityAccessToken :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceURL_destinationURL_observedProgress_liveActivityAccessToken beDownloadMonitor sourceURL destinationURL observedProgress liveActivityAccessToken =
+  sendOwnedMessage beDownloadMonitor initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector (toNSURL sourceURL) (toNSURL destinationURL) (toNSProgress observedProgress) (toNSData liveActivityAccessToken)
 
 -- | @- useDownloadsFolderWithPlaceholderType:finalFileCreatedHandler:@
 useDownloadsFolderWithPlaceholderType_finalFileCreatedHandler :: (IsBEDownloadMonitor beDownloadMonitor, IsUTType type_) => beDownloadMonitor -> type_ -> Ptr () -> IO ()
-useDownloadsFolderWithPlaceholderType_finalFileCreatedHandler beDownloadMonitor  type_ finalFileCreatedHandler =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg beDownloadMonitor (mkSelector "useDownloadsFolderWithPlaceholderType:finalFileCreatedHandler:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr finalFileCreatedHandler :: Ptr ())]
+useDownloadsFolderWithPlaceholderType_finalFileCreatedHandler beDownloadMonitor type_ finalFileCreatedHandler =
+  sendMessage beDownloadMonitor useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector (toUTType type_) finalFileCreatedHandler
 
 -- | @- beginMonitoring:@
 beginMonitoring :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> Ptr () -> IO ()
-beginMonitoring beDownloadMonitor  completion =
-    sendMsg beDownloadMonitor (mkSelector "beginMonitoring:") retVoid [argPtr (castPtr completion :: Ptr ())]
+beginMonitoring beDownloadMonitor completion =
+  sendMessage beDownloadMonitor beginMonitoringSelector completion
 
 -- | @- resumeMonitoring:completionHandler:@
 resumeMonitoring_completionHandler :: (IsBEDownloadMonitor beDownloadMonitor, IsNSURL url) => beDownloadMonitor -> url -> Ptr () -> IO ()
-resumeMonitoring_completionHandler beDownloadMonitor  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg beDownloadMonitor (mkSelector "resumeMonitoring:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+resumeMonitoring_completionHandler beDownloadMonitor url completionHandler =
+  sendMessage beDownloadMonitor resumeMonitoring_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | @+ createAccessToken@
 createAccessToken :: IO (Id NSData)
 createAccessToken  =
   do
     cls' <- getRequiredClass "BEDownloadMonitor"
-    sendClassMsg cls' (mkSelector "createAccessToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' createAccessTokenSelector
 
 -- | @- identifier@
 identifier :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id NSUUID)
-identifier beDownloadMonitor  =
-    sendMsg beDownloadMonitor (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier beDownloadMonitor =
+  sendMessage beDownloadMonitor identifierSelector
 
 -- | @- sourceURL@
 sourceURL :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id NSURL)
-sourceURL beDownloadMonitor  =
-    sendMsg beDownloadMonitor (mkSelector "sourceURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceURL beDownloadMonitor =
+  sendMessage beDownloadMonitor sourceURLSelector
 
 -- | @- destinationURL@
 destinationURL :: IsBEDownloadMonitor beDownloadMonitor => beDownloadMonitor -> IO (Id NSURL)
-destinationURL beDownloadMonitor  =
-    sendMsg beDownloadMonitor (mkSelector "destinationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationURL beDownloadMonitor =
+  sendMessage beDownloadMonitor destinationURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BEDownloadMonitor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BEDownloadMonitor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSourceURL:destinationURL:observedProgress:liveActivityAccessToken:@
-initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector :: Selector
+initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector :: Selector '[Id NSURL, Id NSURL, Id NSProgress, Id NSData] (Id BEDownloadMonitor)
 initWithSourceURL_destinationURL_observedProgress_liveActivityAccessTokenSelector = mkSelector "initWithSourceURL:destinationURL:observedProgress:liveActivityAccessToken:"
 
 -- | @Selector@ for @useDownloadsFolderWithPlaceholderType:finalFileCreatedHandler:@
-useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector :: Selector
+useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector :: Selector '[Id UTType, Ptr ()] ()
 useDownloadsFolderWithPlaceholderType_finalFileCreatedHandlerSelector = mkSelector "useDownloadsFolderWithPlaceholderType:finalFileCreatedHandler:"
 
 -- | @Selector@ for @beginMonitoring:@
-beginMonitoringSelector :: Selector
+beginMonitoringSelector :: Selector '[Ptr ()] ()
 beginMonitoringSelector = mkSelector "beginMonitoring:"
 
 -- | @Selector@ for @resumeMonitoring:completionHandler:@
-resumeMonitoring_completionHandlerSelector :: Selector
+resumeMonitoring_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 resumeMonitoring_completionHandlerSelector = mkSelector "resumeMonitoring:completionHandler:"
 
 -- | @Selector@ for @createAccessToken@
-createAccessTokenSelector :: Selector
+createAccessTokenSelector :: Selector '[] (Id NSData)
 createAccessTokenSelector = mkSelector "createAccessToken"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSUUID)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @sourceURL@
-sourceURLSelector :: Selector
+sourceURLSelector :: Selector '[] (Id NSURL)
 sourceURLSelector = mkSelector "sourceURL"
 
 -- | @Selector@ for @destinationURL@
-destinationURLSelector :: Selector
+destinationURLSelector :: Selector '[] (Id NSURL)
 destinationURLSelector = mkSelector "destinationURL"
 

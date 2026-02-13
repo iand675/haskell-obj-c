@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Metal.MTL4PipelineDescriptor
   , options
   , setOptions
   , labelSelector
-  , setLabelSelector
   , optionsSelector
+  , setLabelSelector
   , setOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- label@
 label :: IsMTL4PipelineDescriptor mtL4PipelineDescriptor => mtL4PipelineDescriptor -> IO (Id NSString)
-label mtL4PipelineDescriptor  =
-    sendMsg mtL4PipelineDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtL4PipelineDescriptor =
+  sendMessage mtL4PipelineDescriptor labelSelector
 
 -- | Assigns an optional string that uniquely identifies a pipeline descriptor.
 --
@@ -50,42 +47,40 @@ label mtL4PipelineDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTL4PipelineDescriptor mtL4PipelineDescriptor, IsNSString value) => mtL4PipelineDescriptor -> value -> IO ()
-setLabel mtL4PipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4PipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtL4PipelineDescriptor value =
+  sendMessage mtL4PipelineDescriptor setLabelSelector (toNSString value)
 
 -- | Provides compile-time options when you build the pipeline.
 --
 -- ObjC selector: @- options@
 options :: IsMTL4PipelineDescriptor mtL4PipelineDescriptor => mtL4PipelineDescriptor -> IO (Id MTL4PipelineOptions)
-options mtL4PipelineDescriptor  =
-    sendMsg mtL4PipelineDescriptor (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options mtL4PipelineDescriptor =
+  sendMessage mtL4PipelineDescriptor optionsSelector
 
 -- | Provides compile-time options when you build the pipeline.
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: (IsMTL4PipelineDescriptor mtL4PipelineDescriptor, IsMTL4PipelineOptions value) => mtL4PipelineDescriptor -> value -> IO ()
-setOptions mtL4PipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4PipelineDescriptor (mkSelector "setOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptions mtL4PipelineDescriptor value =
+  sendMessage mtL4PipelineDescriptor setOptionsSelector (toMTL4PipelineOptions value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id MTL4PipelineOptions)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[Id MTL4PipelineOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 

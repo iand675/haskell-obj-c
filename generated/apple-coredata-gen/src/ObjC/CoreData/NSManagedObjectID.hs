@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreData.NSManagedObjectID
   , entity
   , persistentStore
   , temporaryID
-  , uriRepresentationSelector
   , entitySelector
   , persistentStoreSelector
   , temporaryIDSelector
+  , uriRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- URIRepresentation@
 uriRepresentation :: IsNSManagedObjectID nsManagedObjectID => nsManagedObjectID -> IO (Id NSURL)
-uriRepresentation nsManagedObjectID  =
-    sendMsg nsManagedObjectID (mkSelector "URIRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+uriRepresentation nsManagedObjectID =
+  sendMessage nsManagedObjectID uriRepresentationSelector
 
 -- | @- entity@
 entity :: IsNSManagedObjectID nsManagedObjectID => nsManagedObjectID -> IO (Id NSEntityDescription)
-entity nsManagedObjectID  =
-    sendMsg nsManagedObjectID (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsManagedObjectID =
+  sendMessage nsManagedObjectID entitySelector
 
 -- | @- persistentStore@
 persistentStore :: IsNSManagedObjectID nsManagedObjectID => nsManagedObjectID -> IO (Id NSPersistentStore)
-persistentStore nsManagedObjectID  =
-    sendMsg nsManagedObjectID (mkSelector "persistentStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentStore nsManagedObjectID =
+  sendMessage nsManagedObjectID persistentStoreSelector
 
 -- | @- temporaryID@
 temporaryID :: IsNSManagedObjectID nsManagedObjectID => nsManagedObjectID -> IO Bool
-temporaryID nsManagedObjectID  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObjectID (mkSelector "temporaryID") retCULong []
+temporaryID nsManagedObjectID =
+  sendMessage nsManagedObjectID temporaryIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URIRepresentation@
-uriRepresentationSelector :: Selector
+uriRepresentationSelector :: Selector '[] (Id NSURL)
 uriRepresentationSelector = mkSelector "URIRepresentation"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @persistentStore@
-persistentStoreSelector :: Selector
+persistentStoreSelector :: Selector '[] (Id NSPersistentStore)
 persistentStoreSelector = mkSelector "persistentStore"
 
 -- | @Selector@ for @temporaryID@
-temporaryIDSelector :: Selector
+temporaryIDSelector :: Selector '[] Bool
 temporaryIDSelector = mkSelector "temporaryID"
 

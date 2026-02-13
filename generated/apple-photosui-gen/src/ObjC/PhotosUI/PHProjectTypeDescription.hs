@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,33 +23,29 @@ module ObjC.PhotosUI.PHProjectTypeDescription
   , image
   , subtypeDescriptions
   , canProvideSubtypes
-  , initWithProjectType_title_description_image_subtypeDescriptionsSelector
+  , canProvideSubtypesSelector
+  , imageSelector
+  , initSelector
+  , initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector
   , initWithProjectType_title_attributedDescription_image_subtypeDescriptionsSelector
   , initWithProjectType_title_description_imageSelector
   , initWithProjectType_title_description_image_canProvideSubtypesSelector
-  , initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector
-  , initSelector
+  , initWithProjectType_title_description_image_subtypeDescriptionsSelector
+  , localizedAttributedDescriptionSelector
+  , localizedDescriptionSelector
+  , localizedTitleSelector
   , newSelector
   , projectTypeSelector
-  , localizedTitleSelector
-  , localizedDescriptionSelector
-  , localizedAttributedDescriptionSelector
-  , imageSelector
   , subtypeDescriptionsSelector
-  , canProvideSubtypesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,173 +57,151 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithProjectType:title:description:image:subtypeDescriptions:@
 initWithProjectType_title_description_image_subtypeDescriptions :: (IsPHProjectTypeDescription phProjectTypeDescription, IsNSString projectType, IsNSString localizedTitle, IsNSString localizedDescription, IsNSImage image, IsNSArray subtypeDescriptions) => phProjectTypeDescription -> projectType -> localizedTitle -> localizedDescription -> image -> subtypeDescriptions -> IO (Id PHProjectTypeDescription)
-initWithProjectType_title_description_image_subtypeDescriptions phProjectTypeDescription  projectType localizedTitle localizedDescription image subtypeDescriptions =
-  withObjCPtr projectType $ \raw_projectType ->
-    withObjCPtr localizedTitle $ \raw_localizedTitle ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr subtypeDescriptions $ \raw_subtypeDescriptions ->
-              sendMsg phProjectTypeDescription (mkSelector "initWithProjectType:title:description:image:subtypeDescriptions:") (retPtr retVoid) [argPtr (castPtr raw_projectType :: Ptr ()), argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_subtypeDescriptions :: Ptr ())] >>= ownedObject . castPtr
+initWithProjectType_title_description_image_subtypeDescriptions phProjectTypeDescription projectType localizedTitle localizedDescription image subtypeDescriptions =
+  sendOwnedMessage phProjectTypeDescription initWithProjectType_title_description_image_subtypeDescriptionsSelector (toNSString projectType) (toNSString localizedTitle) (toNSString localizedDescription) (toNSImage image) (toNSArray subtypeDescriptions)
 
 -- | Designated initalizer for instances with the full subtype hierarchy upfront and an attributed string for the description text.
 --
 -- ObjC selector: @- initWithProjectType:title:attributedDescription:image:subtypeDescriptions:@
 initWithProjectType_title_attributedDescription_image_subtypeDescriptions :: (IsPHProjectTypeDescription phProjectTypeDescription, IsNSString projectType, IsNSString localizedTitle, IsNSAttributedString localizedAttributedDescription, IsNSImage image, IsNSArray subtypeDescriptions) => phProjectTypeDescription -> projectType -> localizedTitle -> localizedAttributedDescription -> image -> subtypeDescriptions -> IO (Id PHProjectTypeDescription)
-initWithProjectType_title_attributedDescription_image_subtypeDescriptions phProjectTypeDescription  projectType localizedTitle localizedAttributedDescription image subtypeDescriptions =
-  withObjCPtr projectType $ \raw_projectType ->
-    withObjCPtr localizedTitle $ \raw_localizedTitle ->
-      withObjCPtr localizedAttributedDescription $ \raw_localizedAttributedDescription ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr subtypeDescriptions $ \raw_subtypeDescriptions ->
-              sendMsg phProjectTypeDescription (mkSelector "initWithProjectType:title:attributedDescription:image:subtypeDescriptions:") (retPtr retVoid) [argPtr (castPtr raw_projectType :: Ptr ()), argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_localizedAttributedDescription :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_subtypeDescriptions :: Ptr ())] >>= ownedObject . castPtr
+initWithProjectType_title_attributedDescription_image_subtypeDescriptions phProjectTypeDescription projectType localizedTitle localizedAttributedDescription image subtypeDescriptions =
+  sendOwnedMessage phProjectTypeDescription initWithProjectType_title_attributedDescription_image_subtypeDescriptionsSelector (toNSString projectType) (toNSString localizedTitle) (toNSAttributedString localizedAttributedDescription) (toNSImage image) (toNSArray subtypeDescriptions)
 
 -- | Convenience initializer without subtype descriptions.
 --
 -- ObjC selector: @- initWithProjectType:title:description:image:@
 initWithProjectType_title_description_image :: (IsPHProjectTypeDescription phProjectTypeDescription, IsNSString projectType, IsNSString localizedTitle, IsNSString localizedDescription, IsNSImage image) => phProjectTypeDescription -> projectType -> localizedTitle -> localizedDescription -> image -> IO (Id PHProjectTypeDescription)
-initWithProjectType_title_description_image phProjectTypeDescription  projectType localizedTitle localizedDescription image =
-  withObjCPtr projectType $ \raw_projectType ->
-    withObjCPtr localizedTitle $ \raw_localizedTitle ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        withObjCPtr image $ \raw_image ->
-            sendMsg phProjectTypeDescription (mkSelector "initWithProjectType:title:description:image:") (retPtr retVoid) [argPtr (castPtr raw_projectType :: Ptr ()), argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ()), argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initWithProjectType_title_description_image phProjectTypeDescription projectType localizedTitle localizedDescription image =
+  sendOwnedMessage phProjectTypeDescription initWithProjectType_title_description_imageSelector (toNSString projectType) (toNSString localizedTitle) (toNSString localizedDescription) (toNSImage image)
 
 -- | Designated initalizer for instances with lazily fetched subtypes.
 --
 -- ObjC selector: @- initWithProjectType:title:description:image:canProvideSubtypes:@
 initWithProjectType_title_description_image_canProvideSubtypes :: (IsPHProjectTypeDescription phProjectTypeDescription, IsNSString projectType, IsNSString localizedTitle, IsNSString localizedDescription, IsNSImage image) => phProjectTypeDescription -> projectType -> localizedTitle -> localizedDescription -> image -> Bool -> IO (Id PHProjectTypeDescription)
-initWithProjectType_title_description_image_canProvideSubtypes phProjectTypeDescription  projectType localizedTitle localizedDescription image canProvideSubtypes =
-  withObjCPtr projectType $ \raw_projectType ->
-    withObjCPtr localizedTitle $ \raw_localizedTitle ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        withObjCPtr image $ \raw_image ->
-            sendMsg phProjectTypeDescription (mkSelector "initWithProjectType:title:description:image:canProvideSubtypes:") (retPtr retVoid) [argPtr (castPtr raw_projectType :: Ptr ()), argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argCULong (if canProvideSubtypes then 1 else 0)] >>= ownedObject . castPtr
+initWithProjectType_title_description_image_canProvideSubtypes phProjectTypeDescription projectType localizedTitle localizedDescription image canProvideSubtypes =
+  sendOwnedMessage phProjectTypeDescription initWithProjectType_title_description_image_canProvideSubtypesSelector (toNSString projectType) (toNSString localizedTitle) (toNSString localizedDescription) (toNSImage image) canProvideSubtypes
 
 -- | Designated initalizer for instances with lazily fetched subtypes and an attributed string for the description text.
 --
 -- ObjC selector: @- initWithProjectType:title:attributedDescription:image:canProvideSubtypes:@
 initWithProjectType_title_attributedDescription_image_canProvideSubtypes :: (IsPHProjectTypeDescription phProjectTypeDescription, IsNSString projectType, IsNSString localizedTitle, IsNSAttributedString localizedAttributedDescription, IsNSImage image) => phProjectTypeDescription -> projectType -> localizedTitle -> localizedAttributedDescription -> image -> Bool -> IO (Id PHProjectTypeDescription)
-initWithProjectType_title_attributedDescription_image_canProvideSubtypes phProjectTypeDescription  projectType localizedTitle localizedAttributedDescription image canProvideSubtypes =
-  withObjCPtr projectType $ \raw_projectType ->
-    withObjCPtr localizedTitle $ \raw_localizedTitle ->
-      withObjCPtr localizedAttributedDescription $ \raw_localizedAttributedDescription ->
-        withObjCPtr image $ \raw_image ->
-            sendMsg phProjectTypeDescription (mkSelector "initWithProjectType:title:attributedDescription:image:canProvideSubtypes:") (retPtr retVoid) [argPtr (castPtr raw_projectType :: Ptr ()), argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_localizedAttributedDescription :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argCULong (if canProvideSubtypes then 1 else 0)] >>= ownedObject . castPtr
+initWithProjectType_title_attributedDescription_image_canProvideSubtypes phProjectTypeDescription projectType localizedTitle localizedAttributedDescription image canProvideSubtypes =
+  sendOwnedMessage phProjectTypeDescription initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector (toNSString projectType) (toNSString localizedTitle) (toNSAttributedString localizedAttributedDescription) (toNSImage image) canProvideSubtypes
 
 -- | @- init@
 init_ :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id PHProjectTypeDescription)
-init_ phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phProjectTypeDescription =
+  sendOwnedMessage phProjectTypeDescription initSelector
 
 -- | @+ new@
 new :: IO (Id PHProjectTypeDescription)
 new  =
   do
     cls' <- getRequiredClass "PHProjectTypeDescription"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Identifier for the project type info. These should be added to the extensible string enum defined in PhotosUITypes.h.
 --
 -- ObjC selector: @- projectType@
 projectType :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSString)
-projectType phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "projectType") (retPtr retVoid) [] >>= retainedObject . castPtr
+projectType phProjectTypeDescription =
+  sendMessage phProjectTypeDescription projectTypeSelector
 
 -- | Localized title and description of the project type to be displayed to the user. The title is required, but description is optional.
 --
 -- ObjC selector: @- localizedTitle@
 localizedTitle :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSString)
-localizedTitle phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTitle phProjectTypeDescription =
+  sendMessage phProjectTypeDescription localizedTitleSelector
 
 -- | @- localizedDescription@
 localizedDescription :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSString)
-localizedDescription phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription phProjectTypeDescription =
+  sendMessage phProjectTypeDescription localizedDescriptionSelector
 
 -- | @- localizedAttributedDescription@
 localizedAttributedDescription :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSAttributedString)
-localizedAttributedDescription phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "localizedAttributedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedAttributedDescription phProjectTypeDescription =
+  sendMessage phProjectTypeDescription localizedAttributedDescriptionSelector
 
 -- | Optional image to be associated with the project type in the picker; PNG images are recommended.
 --
 -- ObjC selector: @- image@
 image :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSImage)
-image phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image phProjectTypeDescription =
+  sendMessage phProjectTypeDescription imageSelector
 
 -- | Array of type descriptions for subtype descriptions, may be empty.
 --
 -- ObjC selector: @- subtypeDescriptions@
 subtypeDescriptions :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO (Id NSArray)
-subtypeDescriptions phProjectTypeDescription  =
-    sendMsg phProjectTypeDescription (mkSelector "subtypeDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtypeDescriptions phProjectTypeDescription =
+  sendMessage phProjectTypeDescription subtypeDescriptionsSelector
 
 -- | For spase instances canProvideSubtypes is an indicator if subtypes can be fetched from the data source. If subtypeDescriptions is not empty it will also return YES.
 --
 -- ObjC selector: @- canProvideSubtypes@
 canProvideSubtypes :: IsPHProjectTypeDescription phProjectTypeDescription => phProjectTypeDescription -> IO Bool
-canProvideSubtypes phProjectTypeDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectTypeDescription (mkSelector "canProvideSubtypes") retCULong []
+canProvideSubtypes phProjectTypeDescription =
+  sendMessage phProjectTypeDescription canProvideSubtypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProjectType:title:description:image:subtypeDescriptions:@
-initWithProjectType_title_description_image_subtypeDescriptionsSelector :: Selector
+initWithProjectType_title_description_image_subtypeDescriptionsSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSImage, Id NSArray] (Id PHProjectTypeDescription)
 initWithProjectType_title_description_image_subtypeDescriptionsSelector = mkSelector "initWithProjectType:title:description:image:subtypeDescriptions:"
 
 -- | @Selector@ for @initWithProjectType:title:attributedDescription:image:subtypeDescriptions:@
-initWithProjectType_title_attributedDescription_image_subtypeDescriptionsSelector :: Selector
+initWithProjectType_title_attributedDescription_image_subtypeDescriptionsSelector :: Selector '[Id NSString, Id NSString, Id NSAttributedString, Id NSImage, Id NSArray] (Id PHProjectTypeDescription)
 initWithProjectType_title_attributedDescription_image_subtypeDescriptionsSelector = mkSelector "initWithProjectType:title:attributedDescription:image:subtypeDescriptions:"
 
 -- | @Selector@ for @initWithProjectType:title:description:image:@
-initWithProjectType_title_description_imageSelector :: Selector
+initWithProjectType_title_description_imageSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSImage] (Id PHProjectTypeDescription)
 initWithProjectType_title_description_imageSelector = mkSelector "initWithProjectType:title:description:image:"
 
 -- | @Selector@ for @initWithProjectType:title:description:image:canProvideSubtypes:@
-initWithProjectType_title_description_image_canProvideSubtypesSelector :: Selector
+initWithProjectType_title_description_image_canProvideSubtypesSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSImage, Bool] (Id PHProjectTypeDescription)
 initWithProjectType_title_description_image_canProvideSubtypesSelector = mkSelector "initWithProjectType:title:description:image:canProvideSubtypes:"
 
 -- | @Selector@ for @initWithProjectType:title:attributedDescription:image:canProvideSubtypes:@
-initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector :: Selector
+initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector :: Selector '[Id NSString, Id NSString, Id NSAttributedString, Id NSImage, Bool] (Id PHProjectTypeDescription)
 initWithProjectType_title_attributedDescription_image_canProvideSubtypesSelector = mkSelector "initWithProjectType:title:attributedDescription:image:canProvideSubtypes:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHProjectTypeDescription)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHProjectTypeDescription)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @projectType@
-projectTypeSelector :: Selector
+projectTypeSelector :: Selector '[] (Id NSString)
 projectTypeSelector = mkSelector "projectType"
 
 -- | @Selector@ for @localizedTitle@
-localizedTitleSelector :: Selector
+localizedTitleSelector :: Selector '[] (Id NSString)
 localizedTitleSelector = mkSelector "localizedTitle"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @localizedAttributedDescription@
-localizedAttributedDescriptionSelector :: Selector
+localizedAttributedDescriptionSelector :: Selector '[] (Id NSAttributedString)
 localizedAttributedDescriptionSelector = mkSelector "localizedAttributedDescription"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @subtypeDescriptions@
-subtypeDescriptionsSelector :: Selector
+subtypeDescriptionsSelector :: Selector '[] (Id NSArray)
 subtypeDescriptionsSelector = mkSelector "subtypeDescriptions"
 
 -- | @Selector@ for @canProvideSubtypes@
-canProvideSubtypesSelector :: Selector
+canProvideSubtypesSelector :: Selector '[] Bool
 canProvideSubtypesSelector = mkSelector "canProvideSubtypes"
 

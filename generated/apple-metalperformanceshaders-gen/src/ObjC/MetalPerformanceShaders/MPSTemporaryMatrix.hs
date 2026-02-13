@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.MetalPerformanceShaders.MPSTemporaryMatrix
   , initWithBuffer_descriptor
   , readCount
   , setReadCount
-  , temporaryMatrixWithCommandBuffer_matrixDescriptorSelector
-  , prefetchStorageWithCommandBuffer_matrixDescriptorListSelector
   , initWithBuffer_descriptorSelector
+  , prefetchStorageWithCommandBuffer_matrixDescriptorListSelector
   , readCountSelector
   , setReadCountSelector
+  , temporaryMatrixWithCommandBuffer_matrixDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ temporaryMatrixWithCommandBuffer_matrixDescriptor :: IsMPSMatrixDescriptor matri
 temporaryMatrixWithCommandBuffer_matrixDescriptor commandBuffer matrixDescriptor =
   do
     cls' <- getRequiredClass "MPSTemporaryMatrix"
-    withObjCPtr matrixDescriptor $ \raw_matrixDescriptor ->
-      sendClassMsg cls' (mkSelector "temporaryMatrixWithCommandBuffer:matrixDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_matrixDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryMatrixWithCommandBuffer_matrixDescriptorSelector commandBuffer (toMPSMatrixDescriptor matrixDescriptor)
 
 -- | Help MPS decide which allocations to make ahead of time
 --
@@ -70,16 +66,14 @@ prefetchStorageWithCommandBuffer_matrixDescriptorList :: IsNSArray descriptorLis
 prefetchStorageWithCommandBuffer_matrixDescriptorList commandBuffer descriptorList =
   do
     cls' <- getRequiredClass "MPSTemporaryMatrix"
-    withObjCPtr descriptorList $ \raw_descriptorList ->
-      sendClassMsg cls' (mkSelector "prefetchStorageWithCommandBuffer:matrixDescriptorList:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptorList :: Ptr ())]
+    sendClassMessage cls' prefetchStorageWithCommandBuffer_matrixDescriptorListSelector commandBuffer (toNSArray descriptorList)
 
 -- | *** unavailable
 --
 -- ObjC selector: @- initWithBuffer:descriptor:@
 initWithBuffer_descriptor :: (IsMPSTemporaryMatrix mpsTemporaryMatrix, IsMPSMatrixDescriptor descriptor) => mpsTemporaryMatrix -> RawId -> descriptor -> IO (Id MPSTemporaryMatrix)
-initWithBuffer_descriptor mpsTemporaryMatrix  buffer descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsTemporaryMatrix (mkSelector "initWithBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_descriptor mpsTemporaryMatrix buffer descriptor =
+  sendOwnedMessage mpsTemporaryMatrix initWithBuffer_descriptorSelector buffer (toMPSMatrixDescriptor descriptor)
 
 -- | The number of times a temporary matrix may be read by a MPSMatrix... kernel                  before its contents become undefined.
 --
@@ -93,8 +87,8 @@ initWithBuffer_descriptor mpsTemporaryMatrix  buffer descriptor =
 --
 -- ObjC selector: @- readCount@
 readCount :: IsMPSTemporaryMatrix mpsTemporaryMatrix => mpsTemporaryMatrix -> IO CULong
-readCount mpsTemporaryMatrix  =
-    sendMsg mpsTemporaryMatrix (mkSelector "readCount") retCULong []
+readCount mpsTemporaryMatrix =
+  sendMessage mpsTemporaryMatrix readCountSelector
 
 -- | The number of times a temporary matrix may be read by a MPSMatrix... kernel                  before its contents become undefined.
 --
@@ -108,30 +102,30 @@ readCount mpsTemporaryMatrix  =
 --
 -- ObjC selector: @- setReadCount:@
 setReadCount :: IsMPSTemporaryMatrix mpsTemporaryMatrix => mpsTemporaryMatrix -> CULong -> IO ()
-setReadCount mpsTemporaryMatrix  value =
-    sendMsg mpsTemporaryMatrix (mkSelector "setReadCount:") retVoid [argCULong value]
+setReadCount mpsTemporaryMatrix value =
+  sendMessage mpsTemporaryMatrix setReadCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @temporaryMatrixWithCommandBuffer:matrixDescriptor:@
-temporaryMatrixWithCommandBuffer_matrixDescriptorSelector :: Selector
+temporaryMatrixWithCommandBuffer_matrixDescriptorSelector :: Selector '[RawId, Id MPSMatrixDescriptor] (Id MPSTemporaryMatrix)
 temporaryMatrixWithCommandBuffer_matrixDescriptorSelector = mkSelector "temporaryMatrixWithCommandBuffer:matrixDescriptor:"
 
 -- | @Selector@ for @prefetchStorageWithCommandBuffer:matrixDescriptorList:@
-prefetchStorageWithCommandBuffer_matrixDescriptorListSelector :: Selector
+prefetchStorageWithCommandBuffer_matrixDescriptorListSelector :: Selector '[RawId, Id NSArray] ()
 prefetchStorageWithCommandBuffer_matrixDescriptorListSelector = mkSelector "prefetchStorageWithCommandBuffer:matrixDescriptorList:"
 
 -- | @Selector@ for @initWithBuffer:descriptor:@
-initWithBuffer_descriptorSelector :: Selector
+initWithBuffer_descriptorSelector :: Selector '[RawId, Id MPSMatrixDescriptor] (Id MPSTemporaryMatrix)
 initWithBuffer_descriptorSelector = mkSelector "initWithBuffer:descriptor:"
 
 -- | @Selector@ for @readCount@
-readCountSelector :: Selector
+readCountSelector :: Selector '[] CULong
 readCountSelector = mkSelector "readCount"
 
 -- | @Selector@ for @setReadCount:@
-setReadCountSelector :: Selector
+setReadCountSelector :: Selector '[CULong] ()
 setReadCountSelector = mkSelector "setReadCount:"
 

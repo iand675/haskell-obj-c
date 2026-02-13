@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.ModelIO.MDLAnimationBindComponent
   , setJointAnimation
   , jointPaths
   , setJointPaths
-  , skeletonSelector
-  , setSkeletonSelector
   , jointAnimationSelector
-  , setJointAnimationSelector
   , jointPathsSelector
+  , setJointAnimationSelector
   , setJointPathsSelector
+  , setSkeletonSelector
+  , skeletonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,61 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- skeleton@
 skeleton :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> IO (Id MDLSkeleton)
-skeleton mdlAnimationBindComponent  =
-    sendMsg mdlAnimationBindComponent (mkSelector "skeleton") (retPtr retVoid) [] >>= retainedObject . castPtr
+skeleton mdlAnimationBindComponent =
+  sendMessage mdlAnimationBindComponent skeletonSelector
 
 -- | @- setSkeleton:@
 setSkeleton :: (IsMDLAnimationBindComponent mdlAnimationBindComponent, IsMDLSkeleton value) => mdlAnimationBindComponent -> value -> IO ()
-setSkeleton mdlAnimationBindComponent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlAnimationBindComponent (mkSelector "setSkeleton:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSkeleton mdlAnimationBindComponent value =
+  sendMessage mdlAnimationBindComponent setSkeletonSelector (toMDLSkeleton value)
 
 -- | @- jointAnimation@
 jointAnimation :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> IO RawId
-jointAnimation mdlAnimationBindComponent  =
-    fmap (RawId . castPtr) $ sendMsg mdlAnimationBindComponent (mkSelector "jointAnimation") (retPtr retVoid) []
+jointAnimation mdlAnimationBindComponent =
+  sendMessage mdlAnimationBindComponent jointAnimationSelector
 
 -- | @- setJointAnimation:@
 setJointAnimation :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> RawId -> IO ()
-setJointAnimation mdlAnimationBindComponent  value =
-    sendMsg mdlAnimationBindComponent (mkSelector "setJointAnimation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setJointAnimation mdlAnimationBindComponent value =
+  sendMessage mdlAnimationBindComponent setJointAnimationSelector value
 
 -- | @- jointPaths@
 jointPaths :: IsMDLAnimationBindComponent mdlAnimationBindComponent => mdlAnimationBindComponent -> IO (Id NSArray)
-jointPaths mdlAnimationBindComponent  =
-    sendMsg mdlAnimationBindComponent (mkSelector "jointPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+jointPaths mdlAnimationBindComponent =
+  sendMessage mdlAnimationBindComponent jointPathsSelector
 
 -- | @- setJointPaths:@
 setJointPaths :: (IsMDLAnimationBindComponent mdlAnimationBindComponent, IsNSArray value) => mdlAnimationBindComponent -> value -> IO ()
-setJointPaths mdlAnimationBindComponent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlAnimationBindComponent (mkSelector "setJointPaths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setJointPaths mdlAnimationBindComponent value =
+  sendMessage mdlAnimationBindComponent setJointPathsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @skeleton@
-skeletonSelector :: Selector
+skeletonSelector :: Selector '[] (Id MDLSkeleton)
 skeletonSelector = mkSelector "skeleton"
 
 -- | @Selector@ for @setSkeleton:@
-setSkeletonSelector :: Selector
+setSkeletonSelector :: Selector '[Id MDLSkeleton] ()
 setSkeletonSelector = mkSelector "setSkeleton:"
 
 -- | @Selector@ for @jointAnimation@
-jointAnimationSelector :: Selector
+jointAnimationSelector :: Selector '[] RawId
 jointAnimationSelector = mkSelector "jointAnimation"
 
 -- | @Selector@ for @setJointAnimation:@
-setJointAnimationSelector :: Selector
+setJointAnimationSelector :: Selector '[RawId] ()
 setJointAnimationSelector = mkSelector "setJointAnimation:"
 
 -- | @Selector@ for @jointPaths@
-jointPathsSelector :: Selector
+jointPathsSelector :: Selector '[] (Id NSArray)
 jointPathsSelector = mkSelector "jointPaths"
 
 -- | @Selector@ for @setJointPaths:@
-setJointPathsSelector :: Selector
+setJointPathsSelector :: Selector '[Id NSArray] ()
 setJointPathsSelector = mkSelector "setJointPaths:"
 

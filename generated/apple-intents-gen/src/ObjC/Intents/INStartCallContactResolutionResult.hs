@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INStartCallContactResolutionResult
   , IsINStartCallContactResolutionResult(..)
   , unsupportedForReason
   , initWithPersonResolutionResult
-  , unsupportedForReasonSelector
   , initWithPersonResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INStartCallContactUnsupportedReason(INStartCallContactUnsupportedReason)
@@ -25,15 +26,11 @@ module ObjC.Intents.INStartCallContactResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,23 +43,22 @@ unsupportedForReason :: INStartCallContactUnsupportedReason -> IO (Id INStartCal
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INStartCallContactResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithPersonResolutionResult:@
 initWithPersonResolutionResult :: (IsINStartCallContactResolutionResult inStartCallContactResolutionResult, IsINPersonResolutionResult personResolutionResult) => inStartCallContactResolutionResult -> personResolutionResult -> IO (Id INStartCallContactResolutionResult)
-initWithPersonResolutionResult inStartCallContactResolutionResult  personResolutionResult =
-  withObjCPtr personResolutionResult $ \raw_personResolutionResult ->
-      sendMsg inStartCallContactResolutionResult (mkSelector "initWithPersonResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_personResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithPersonResolutionResult inStartCallContactResolutionResult personResolutionResult =
+  sendOwnedMessage inStartCallContactResolutionResult initWithPersonResolutionResultSelector (toINPersonResolutionResult personResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INStartCallContactUnsupportedReason] (Id INStartCallContactResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithPersonResolutionResult:@
-initWithPersonResolutionResultSelector :: Selector
+initWithPersonResolutionResultSelector :: Selector '[Id INPersonResolutionResult] (Id INStartCallContactResolutionResult)
 initWithPersonResolutionResultSelector = mkSelector "initWithPersonResolutionResult:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,60 +52,56 @@ module ObjC.MetalKit.MTKView
   , setPaused
   , colorspace
   , setColorspace
-  , initWithCoderSelector
-  , releaseDrawablesSelector
-  , drawSelector
-  , delegateSelector
-  , setDelegateSelector
-  , deviceSelector
-  , setDeviceSelector
-  , currentDrawableSelector
-  , framebufferOnlySelector
-  , setFramebufferOnlySelector
-  , depthStencilAttachmentTextureUsageSelector
-  , setDepthStencilAttachmentTextureUsageSelector
-  , multisampleColorAttachmentTextureUsageSelector
-  , setMultisampleColorAttachmentTextureUsageSelector
-  , presentsWithTransactionSelector
-  , setPresentsWithTransactionSelector
-  , colorPixelFormatSelector
-  , setColorPixelFormatSelector
-  , depthStencilPixelFormatSelector
-  , setDepthStencilPixelFormatSelector
-  , depthStencilStorageModeSelector
-  , setDepthStencilStorageModeSelector
-  , sampleCountSelector
-  , setSampleCountSelector
-  , clearDepthSelector
-  , setClearDepthSelector
-  , clearStencilSelector
-  , setClearStencilSelector
-  , depthStencilTextureSelector
-  , multisampleColorTextureSelector
-  , preferredFramesPerSecondSelector
-  , setPreferredFramesPerSecondSelector
-  , enableSetNeedsDisplaySelector
-  , setEnableSetNeedsDisplaySelector
   , autoResizeDrawableSelector
-  , setAutoResizeDrawableSelector
-  , preferredDeviceSelector
-  , pausedSelector
-  , setPausedSelector
+  , clearDepthSelector
+  , clearStencilSelector
+  , colorPixelFormatSelector
   , colorspaceSelector
+  , currentDrawableSelector
+  , delegateSelector
+  , depthStencilAttachmentTextureUsageSelector
+  , depthStencilPixelFormatSelector
+  , depthStencilStorageModeSelector
+  , depthStencilTextureSelector
+  , deviceSelector
+  , drawSelector
+  , enableSetNeedsDisplaySelector
+  , framebufferOnlySelector
+  , initWithCoderSelector
+  , multisampleColorAttachmentTextureUsageSelector
+  , multisampleColorTextureSelector
+  , pausedSelector
+  , preferredDeviceSelector
+  , preferredFramesPerSecondSelector
+  , presentsWithTransactionSelector
+  , releaseDrawablesSelector
+  , sampleCountSelector
+  , setAutoResizeDrawableSelector
+  , setClearDepthSelector
+  , setClearStencilSelector
+  , setColorPixelFormatSelector
   , setColorspaceSelector
+  , setDelegateSelector
+  , setDepthStencilAttachmentTextureUsageSelector
+  , setDepthStencilPixelFormatSelector
+  , setDepthStencilStorageModeSelector
+  , setDeviceSelector
+  , setEnableSetNeedsDisplaySelector
+  , setFramebufferOnlySelector
+  , setMultisampleColorAttachmentTextureUsageSelector
+  , setPausedSelector
+  , setPreferredFramesPerSecondSelector
+  , setPresentsWithTransactionSelector
+  , setSampleCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -120,9 +117,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsMTKView mtkView, IsNSCoder coder) => mtkView -> coder -> IO (Id MTKView)
-initWithCoder mtkView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mtkView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder mtkView coder =
+  sendOwnedMessage mtkView initWithCoderSelector (toNSCoder coder)
 
 -- | releaseDrawables
 --
@@ -132,8 +128,8 @@ initWithCoder mtkView  coder =
 --
 -- ObjC selector: @- releaseDrawables@
 releaseDrawables :: IsMTKView mtkView => mtkView -> IO ()
-releaseDrawables mtkView  =
-    sendMsg mtkView (mkSelector "releaseDrawables") retVoid []
+releaseDrawables mtkView =
+  sendMessage mtkView releaseDrawablesSelector
 
 -- | draw
 --
@@ -143,8 +139,8 @@ releaseDrawables mtkView  =
 --
 -- ObjC selector: @- draw@
 draw :: IsMTKView mtkView => mtkView -> IO ()
-draw mtkView  =
-    sendMsg mtkView (mkSelector "draw") retVoid []
+draw mtkView =
+  sendMessage mtkView drawSelector
 
 -- | delegate
 --
@@ -152,8 +148,8 @@ draw mtkView  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsMTKView mtkView => mtkView -> IO RawId
-delegate mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "delegate") (retPtr retVoid) []
+delegate mtkView =
+  sendMessage mtkView delegateSelector
 
 -- | delegate
 --
@@ -161,8 +157,8 @@ delegate mtkView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsMTKView mtkView => mtkView -> RawId -> IO ()
-setDelegate mtkView  value =
-    sendMsg mtkView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mtkView value =
+  sendMessage mtkView setDelegateSelector value
 
 -- | device
 --
@@ -172,8 +168,8 @@ setDelegate mtkView  value =
 --
 -- ObjC selector: @- device@
 device :: IsMTKView mtkView => mtkView -> IO RawId
-device mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "device") (retPtr retVoid) []
+device mtkView =
+  sendMessage mtkView deviceSelector
 
 -- | device
 --
@@ -183,8 +179,8 @@ device mtkView  =
 --
 -- ObjC selector: @- setDevice:@
 setDevice :: IsMTKView mtkView => mtkView -> RawId -> IO ()
-setDevice mtkView  value =
-    sendMsg mtkView (mkSelector "setDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDevice mtkView value =
+  sendMessage mtkView setDeviceSelector value
 
 -- | currentDrawable
 --
@@ -194,8 +190,8 @@ setDevice mtkView  value =
 --
 -- ObjC selector: @- currentDrawable@
 currentDrawable :: IsMTKView mtkView => mtkView -> IO RawId
-currentDrawable mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "currentDrawable") (retPtr retVoid) []
+currentDrawable mtkView =
+  sendMessage mtkView currentDrawableSelector
 
 -- | framebufferOnly
 --
@@ -205,8 +201,8 @@ currentDrawable mtkView  =
 --
 -- ObjC selector: @- framebufferOnly@
 framebufferOnly :: IsMTKView mtkView => mtkView -> IO Bool
-framebufferOnly mtkView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtkView (mkSelector "framebufferOnly") retCULong []
+framebufferOnly mtkView =
+  sendMessage mtkView framebufferOnlySelector
 
 -- | framebufferOnly
 --
@@ -216,8 +212,8 @@ framebufferOnly mtkView  =
 --
 -- ObjC selector: @- setFramebufferOnly:@
 setFramebufferOnly :: IsMTKView mtkView => mtkView -> Bool -> IO ()
-setFramebufferOnly mtkView  value =
-    sendMsg mtkView (mkSelector "setFramebufferOnly:") retVoid [argCULong (if value then 1 else 0)]
+setFramebufferOnly mtkView value =
+  sendMessage mtkView setFramebufferOnlySelector value
 
 -- | depthStencilAttachmentTextureUsage
 --
@@ -227,8 +223,8 @@ setFramebufferOnly mtkView  value =
 --
 -- ObjC selector: @- depthStencilAttachmentTextureUsage@
 depthStencilAttachmentTextureUsage :: IsMTKView mtkView => mtkView -> IO CInt
-depthStencilAttachmentTextureUsage mtkView  =
-    sendMsg mtkView (mkSelector "depthStencilAttachmentTextureUsage") retCInt []
+depthStencilAttachmentTextureUsage mtkView =
+  sendMessage mtkView depthStencilAttachmentTextureUsageSelector
 
 -- | depthStencilAttachmentTextureUsage
 --
@@ -238,8 +234,8 @@ depthStencilAttachmentTextureUsage mtkView  =
 --
 -- ObjC selector: @- setDepthStencilAttachmentTextureUsage:@
 setDepthStencilAttachmentTextureUsage :: IsMTKView mtkView => mtkView -> CInt -> IO ()
-setDepthStencilAttachmentTextureUsage mtkView  value =
-    sendMsg mtkView (mkSelector "setDepthStencilAttachmentTextureUsage:") retVoid [argCInt (fromIntegral value)]
+setDepthStencilAttachmentTextureUsage mtkView value =
+  sendMessage mtkView setDepthStencilAttachmentTextureUsageSelector value
 
 -- | multisampleColorAttachmentTextureUsage
 --
@@ -249,8 +245,8 @@ setDepthStencilAttachmentTextureUsage mtkView  value =
 --
 -- ObjC selector: @- multisampleColorAttachmentTextureUsage@
 multisampleColorAttachmentTextureUsage :: IsMTKView mtkView => mtkView -> IO CInt
-multisampleColorAttachmentTextureUsage mtkView  =
-    sendMsg mtkView (mkSelector "multisampleColorAttachmentTextureUsage") retCInt []
+multisampleColorAttachmentTextureUsage mtkView =
+  sendMessage mtkView multisampleColorAttachmentTextureUsageSelector
 
 -- | multisampleColorAttachmentTextureUsage
 --
@@ -260,8 +256,8 @@ multisampleColorAttachmentTextureUsage mtkView  =
 --
 -- ObjC selector: @- setMultisampleColorAttachmentTextureUsage:@
 setMultisampleColorAttachmentTextureUsage :: IsMTKView mtkView => mtkView -> CInt -> IO ()
-setMultisampleColorAttachmentTextureUsage mtkView  value =
-    sendMsg mtkView (mkSelector "setMultisampleColorAttachmentTextureUsage:") retVoid [argCInt (fromIntegral value)]
+setMultisampleColorAttachmentTextureUsage mtkView value =
+  sendMessage mtkView setMultisampleColorAttachmentTextureUsageSelector value
 
 -- | presentsWithTransaction
 --
@@ -271,8 +267,8 @@ setMultisampleColorAttachmentTextureUsage mtkView  value =
 --
 -- ObjC selector: @- presentsWithTransaction@
 presentsWithTransaction :: IsMTKView mtkView => mtkView -> IO Bool
-presentsWithTransaction mtkView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtkView (mkSelector "presentsWithTransaction") retCULong []
+presentsWithTransaction mtkView =
+  sendMessage mtkView presentsWithTransactionSelector
 
 -- | presentsWithTransaction
 --
@@ -282,8 +278,8 @@ presentsWithTransaction mtkView  =
 --
 -- ObjC selector: @- setPresentsWithTransaction:@
 setPresentsWithTransaction :: IsMTKView mtkView => mtkView -> Bool -> IO ()
-setPresentsWithTransaction mtkView  value =
-    sendMsg mtkView (mkSelector "setPresentsWithTransaction:") retVoid [argCULong (if value then 1 else 0)]
+setPresentsWithTransaction mtkView value =
+  sendMessage mtkView setPresentsWithTransactionSelector value
 
 -- | colorPixelFormat
 --
@@ -291,8 +287,8 @@ setPresentsWithTransaction mtkView  value =
 --
 -- ObjC selector: @- colorPixelFormat@
 colorPixelFormat :: IsMTKView mtkView => mtkView -> IO CInt
-colorPixelFormat mtkView  =
-    sendMsg mtkView (mkSelector "colorPixelFormat") retCInt []
+colorPixelFormat mtkView =
+  sendMessage mtkView colorPixelFormatSelector
 
 -- | colorPixelFormat
 --
@@ -300,8 +296,8 @@ colorPixelFormat mtkView  =
 --
 -- ObjC selector: @- setColorPixelFormat:@
 setColorPixelFormat :: IsMTKView mtkView => mtkView -> CInt -> IO ()
-setColorPixelFormat mtkView  value =
-    sendMsg mtkView (mkSelector "setColorPixelFormat:") retVoid [argCInt (fromIntegral value)]
+setColorPixelFormat mtkView value =
+  sendMessage mtkView setColorPixelFormatSelector value
 
 -- | depthStencilPixelFormat
 --
@@ -309,8 +305,8 @@ setColorPixelFormat mtkView  value =
 --
 -- ObjC selector: @- depthStencilPixelFormat@
 depthStencilPixelFormat :: IsMTKView mtkView => mtkView -> IO CInt
-depthStencilPixelFormat mtkView  =
-    sendMsg mtkView (mkSelector "depthStencilPixelFormat") retCInt []
+depthStencilPixelFormat mtkView =
+  sendMessage mtkView depthStencilPixelFormatSelector
 
 -- | depthStencilPixelFormat
 --
@@ -318,8 +314,8 @@ depthStencilPixelFormat mtkView  =
 --
 -- ObjC selector: @- setDepthStencilPixelFormat:@
 setDepthStencilPixelFormat :: IsMTKView mtkView => mtkView -> CInt -> IO ()
-setDepthStencilPixelFormat mtkView  value =
-    sendMsg mtkView (mkSelector "setDepthStencilPixelFormat:") retVoid [argCInt (fromIntegral value)]
+setDepthStencilPixelFormat mtkView value =
+  sendMessage mtkView setDepthStencilPixelFormatSelector value
 
 -- | depthStencilStorageMode
 --
@@ -327,8 +323,8 @@ setDepthStencilPixelFormat mtkView  value =
 --
 -- ObjC selector: @- depthStencilStorageMode@
 depthStencilStorageMode :: IsMTKView mtkView => mtkView -> IO CInt
-depthStencilStorageMode mtkView  =
-    sendMsg mtkView (mkSelector "depthStencilStorageMode") retCInt []
+depthStencilStorageMode mtkView =
+  sendMessage mtkView depthStencilStorageModeSelector
 
 -- | depthStencilStorageMode
 --
@@ -336,8 +332,8 @@ depthStencilStorageMode mtkView  =
 --
 -- ObjC selector: @- setDepthStencilStorageMode:@
 setDepthStencilStorageMode :: IsMTKView mtkView => mtkView -> CInt -> IO ()
-setDepthStencilStorageMode mtkView  value =
-    sendMsg mtkView (mkSelector "setDepthStencilStorageMode:") retVoid [argCInt (fromIntegral value)]
+setDepthStencilStorageMode mtkView value =
+  sendMessage mtkView setDepthStencilStorageModeSelector value
 
 -- | sampleCount
 --
@@ -347,8 +343,8 @@ setDepthStencilStorageMode mtkView  value =
 --
 -- ObjC selector: @- sampleCount@
 sampleCount :: IsMTKView mtkView => mtkView -> IO CULong
-sampleCount mtkView  =
-    sendMsg mtkView (mkSelector "sampleCount") retCULong []
+sampleCount mtkView =
+  sendMessage mtkView sampleCountSelector
 
 -- | sampleCount
 --
@@ -358,8 +354,8 @@ sampleCount mtkView  =
 --
 -- ObjC selector: @- setSampleCount:@
 setSampleCount :: IsMTKView mtkView => mtkView -> CULong -> IO ()
-setSampleCount mtkView  value =
-    sendMsg mtkView (mkSelector "setSampleCount:") retVoid [argCULong value]
+setSampleCount mtkView value =
+  sendMessage mtkView setSampleCountSelector value
 
 -- | clearDepth
 --
@@ -369,8 +365,8 @@ setSampleCount mtkView  value =
 --
 -- ObjC selector: @- clearDepth@
 clearDepth :: IsMTKView mtkView => mtkView -> IO CDouble
-clearDepth mtkView  =
-    sendMsg mtkView (mkSelector "clearDepth") retCDouble []
+clearDepth mtkView =
+  sendMessage mtkView clearDepthSelector
 
 -- | clearDepth
 --
@@ -380,8 +376,8 @@ clearDepth mtkView  =
 --
 -- ObjC selector: @- setClearDepth:@
 setClearDepth :: IsMTKView mtkView => mtkView -> CDouble -> IO ()
-setClearDepth mtkView  value =
-    sendMsg mtkView (mkSelector "setClearDepth:") retVoid [argCDouble value]
+setClearDepth mtkView value =
+  sendMessage mtkView setClearDepthSelector value
 
 -- | clearStencil
 --
@@ -391,8 +387,8 @@ setClearDepth mtkView  value =
 --
 -- ObjC selector: @- clearStencil@
 clearStencil :: IsMTKView mtkView => mtkView -> IO CUInt
-clearStencil mtkView  =
-    sendMsg mtkView (mkSelector "clearStencil") retCUInt []
+clearStencil mtkView =
+  sendMessage mtkView clearStencilSelector
 
 -- | clearStencil
 --
@@ -402,8 +398,8 @@ clearStencil mtkView  =
 --
 -- ObjC selector: @- setClearStencil:@
 setClearStencil :: IsMTKView mtkView => mtkView -> CUInt -> IO ()
-setClearStencil mtkView  value =
-    sendMsg mtkView (mkSelector "setClearStencil:") retVoid [argCUInt value]
+setClearStencil mtkView value =
+  sendMessage mtkView setClearStencilSelector value
 
 -- | depthStencilTexture
 --
@@ -413,8 +409,8 @@ setClearStencil mtkView  value =
 --
 -- ObjC selector: @- depthStencilTexture@
 depthStencilTexture :: IsMTKView mtkView => mtkView -> IO RawId
-depthStencilTexture mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "depthStencilTexture") (retPtr retVoid) []
+depthStencilTexture mtkView =
+  sendMessage mtkView depthStencilTextureSelector
 
 -- | multisampleColorTexture
 --
@@ -424,8 +420,8 @@ depthStencilTexture mtkView  =
 --
 -- ObjC selector: @- multisampleColorTexture@
 multisampleColorTexture :: IsMTKView mtkView => mtkView -> IO RawId
-multisampleColorTexture mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "multisampleColorTexture") (retPtr retVoid) []
+multisampleColorTexture mtkView =
+  sendMessage mtkView multisampleColorTextureSelector
 
 -- | preferredFramesPerSecond
 --
@@ -435,8 +431,8 @@ multisampleColorTexture mtkView  =
 --
 -- ObjC selector: @- preferredFramesPerSecond@
 preferredFramesPerSecond :: IsMTKView mtkView => mtkView -> IO CLong
-preferredFramesPerSecond mtkView  =
-    sendMsg mtkView (mkSelector "preferredFramesPerSecond") retCLong []
+preferredFramesPerSecond mtkView =
+  sendMessage mtkView preferredFramesPerSecondSelector
 
 -- | preferredFramesPerSecond
 --
@@ -446,8 +442,8 @@ preferredFramesPerSecond mtkView  =
 --
 -- ObjC selector: @- setPreferredFramesPerSecond:@
 setPreferredFramesPerSecond :: IsMTKView mtkView => mtkView -> CLong -> IO ()
-setPreferredFramesPerSecond mtkView  value =
-    sendMsg mtkView (mkSelector "setPreferredFramesPerSecond:") retVoid [argCLong value]
+setPreferredFramesPerSecond mtkView value =
+  sendMessage mtkView setPreferredFramesPerSecondSelector value
 
 -- | enableSetNeedsDisplay
 --
@@ -457,8 +453,8 @@ setPreferredFramesPerSecond mtkView  value =
 --
 -- ObjC selector: @- enableSetNeedsDisplay@
 enableSetNeedsDisplay :: IsMTKView mtkView => mtkView -> IO Bool
-enableSetNeedsDisplay mtkView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtkView (mkSelector "enableSetNeedsDisplay") retCULong []
+enableSetNeedsDisplay mtkView =
+  sendMessage mtkView enableSetNeedsDisplaySelector
 
 -- | enableSetNeedsDisplay
 --
@@ -468,8 +464,8 @@ enableSetNeedsDisplay mtkView  =
 --
 -- ObjC selector: @- setEnableSetNeedsDisplay:@
 setEnableSetNeedsDisplay :: IsMTKView mtkView => mtkView -> Bool -> IO ()
-setEnableSetNeedsDisplay mtkView  value =
-    sendMsg mtkView (mkSelector "setEnableSetNeedsDisplay:") retVoid [argCULong (if value then 1 else 0)]
+setEnableSetNeedsDisplay mtkView value =
+  sendMessage mtkView setEnableSetNeedsDisplaySelector value
 
 -- | autoResizeDrawable
 --
@@ -479,8 +475,8 @@ setEnableSetNeedsDisplay mtkView  value =
 --
 -- ObjC selector: @- autoResizeDrawable@
 autoResizeDrawable :: IsMTKView mtkView => mtkView -> IO Bool
-autoResizeDrawable mtkView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtkView (mkSelector "autoResizeDrawable") retCULong []
+autoResizeDrawable mtkView =
+  sendMessage mtkView autoResizeDrawableSelector
 
 -- | autoResizeDrawable
 --
@@ -490,8 +486,8 @@ autoResizeDrawable mtkView  =
 --
 -- ObjC selector: @- setAutoResizeDrawable:@
 setAutoResizeDrawable :: IsMTKView mtkView => mtkView -> Bool -> IO ()
-setAutoResizeDrawable mtkView  value =
-    sendMsg mtkView (mkSelector "setAutoResizeDrawable:") retVoid [argCULong (if value then 1 else 0)]
+setAutoResizeDrawable mtkView value =
+  sendMessage mtkView setAutoResizeDrawableSelector value
 
 -- | preferredDevice
 --
@@ -501,8 +497,8 @@ setAutoResizeDrawable mtkView  value =
 --
 -- ObjC selector: @- preferredDevice@
 preferredDevice :: IsMTKView mtkView => mtkView -> IO RawId
-preferredDevice mtkView  =
-    fmap (RawId . castPtr) $ sendMsg mtkView (mkSelector "preferredDevice") (retPtr retVoid) []
+preferredDevice mtkView =
+  sendMessage mtkView preferredDeviceSelector
 
 -- | paused
 --
@@ -512,8 +508,8 @@ preferredDevice mtkView  =
 --
 -- ObjC selector: @- paused@
 paused :: IsMTKView mtkView => mtkView -> IO Bool
-paused mtkView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtkView (mkSelector "paused") retCULong []
+paused mtkView =
+  sendMessage mtkView pausedSelector
 
 -- | paused
 --
@@ -523,8 +519,8 @@ paused mtkView  =
 --
 -- ObjC selector: @- setPaused:@
 setPaused :: IsMTKView mtkView => mtkView -> Bool -> IO ()
-setPaused mtkView  value =
-    sendMsg mtkView (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused mtkView value =
+  sendMessage mtkView setPausedSelector value
 
 -- | colorspace
 --
@@ -534,8 +530,8 @@ setPaused mtkView  value =
 --
 -- ObjC selector: @- colorspace@
 colorspace :: IsMTKView mtkView => mtkView -> IO (Ptr ())
-colorspace mtkView  =
-    fmap castPtr $ sendMsg mtkView (mkSelector "colorspace") (retPtr retVoid) []
+colorspace mtkView =
+  sendMessage mtkView colorspaceSelector
 
 -- | colorspace
 --
@@ -545,174 +541,174 @@ colorspace mtkView  =
 --
 -- ObjC selector: @- setColorspace:@
 setColorspace :: IsMTKView mtkView => mtkView -> Ptr () -> IO ()
-setColorspace mtkView  value =
-    sendMsg mtkView (mkSelector "setColorspace:") retVoid [argPtr value]
+setColorspace mtkView value =
+  sendMessage mtkView setColorspaceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id MTKView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @releaseDrawables@
-releaseDrawablesSelector :: Selector
+releaseDrawablesSelector :: Selector '[] ()
 releaseDrawablesSelector = mkSelector "releaseDrawables"
 
 -- | @Selector@ for @draw@
-drawSelector :: Selector
+drawSelector :: Selector '[] ()
 drawSelector = mkSelector "draw"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @setDevice:@
-setDeviceSelector :: Selector
+setDeviceSelector :: Selector '[RawId] ()
 setDeviceSelector = mkSelector "setDevice:"
 
 -- | @Selector@ for @currentDrawable@
-currentDrawableSelector :: Selector
+currentDrawableSelector :: Selector '[] RawId
 currentDrawableSelector = mkSelector "currentDrawable"
 
 -- | @Selector@ for @framebufferOnly@
-framebufferOnlySelector :: Selector
+framebufferOnlySelector :: Selector '[] Bool
 framebufferOnlySelector = mkSelector "framebufferOnly"
 
 -- | @Selector@ for @setFramebufferOnly:@
-setFramebufferOnlySelector :: Selector
+setFramebufferOnlySelector :: Selector '[Bool] ()
 setFramebufferOnlySelector = mkSelector "setFramebufferOnly:"
 
 -- | @Selector@ for @depthStencilAttachmentTextureUsage@
-depthStencilAttachmentTextureUsageSelector :: Selector
+depthStencilAttachmentTextureUsageSelector :: Selector '[] CInt
 depthStencilAttachmentTextureUsageSelector = mkSelector "depthStencilAttachmentTextureUsage"
 
 -- | @Selector@ for @setDepthStencilAttachmentTextureUsage:@
-setDepthStencilAttachmentTextureUsageSelector :: Selector
+setDepthStencilAttachmentTextureUsageSelector :: Selector '[CInt] ()
 setDepthStencilAttachmentTextureUsageSelector = mkSelector "setDepthStencilAttachmentTextureUsage:"
 
 -- | @Selector@ for @multisampleColorAttachmentTextureUsage@
-multisampleColorAttachmentTextureUsageSelector :: Selector
+multisampleColorAttachmentTextureUsageSelector :: Selector '[] CInt
 multisampleColorAttachmentTextureUsageSelector = mkSelector "multisampleColorAttachmentTextureUsage"
 
 -- | @Selector@ for @setMultisampleColorAttachmentTextureUsage:@
-setMultisampleColorAttachmentTextureUsageSelector :: Selector
+setMultisampleColorAttachmentTextureUsageSelector :: Selector '[CInt] ()
 setMultisampleColorAttachmentTextureUsageSelector = mkSelector "setMultisampleColorAttachmentTextureUsage:"
 
 -- | @Selector@ for @presentsWithTransaction@
-presentsWithTransactionSelector :: Selector
+presentsWithTransactionSelector :: Selector '[] Bool
 presentsWithTransactionSelector = mkSelector "presentsWithTransaction"
 
 -- | @Selector@ for @setPresentsWithTransaction:@
-setPresentsWithTransactionSelector :: Selector
+setPresentsWithTransactionSelector :: Selector '[Bool] ()
 setPresentsWithTransactionSelector = mkSelector "setPresentsWithTransaction:"
 
 -- | @Selector@ for @colorPixelFormat@
-colorPixelFormatSelector :: Selector
+colorPixelFormatSelector :: Selector '[] CInt
 colorPixelFormatSelector = mkSelector "colorPixelFormat"
 
 -- | @Selector@ for @setColorPixelFormat:@
-setColorPixelFormatSelector :: Selector
+setColorPixelFormatSelector :: Selector '[CInt] ()
 setColorPixelFormatSelector = mkSelector "setColorPixelFormat:"
 
 -- | @Selector@ for @depthStencilPixelFormat@
-depthStencilPixelFormatSelector :: Selector
+depthStencilPixelFormatSelector :: Selector '[] CInt
 depthStencilPixelFormatSelector = mkSelector "depthStencilPixelFormat"
 
 -- | @Selector@ for @setDepthStencilPixelFormat:@
-setDepthStencilPixelFormatSelector :: Selector
+setDepthStencilPixelFormatSelector :: Selector '[CInt] ()
 setDepthStencilPixelFormatSelector = mkSelector "setDepthStencilPixelFormat:"
 
 -- | @Selector@ for @depthStencilStorageMode@
-depthStencilStorageModeSelector :: Selector
+depthStencilStorageModeSelector :: Selector '[] CInt
 depthStencilStorageModeSelector = mkSelector "depthStencilStorageMode"
 
 -- | @Selector@ for @setDepthStencilStorageMode:@
-setDepthStencilStorageModeSelector :: Selector
+setDepthStencilStorageModeSelector :: Selector '[CInt] ()
 setDepthStencilStorageModeSelector = mkSelector "setDepthStencilStorageMode:"
 
 -- | @Selector@ for @sampleCount@
-sampleCountSelector :: Selector
+sampleCountSelector :: Selector '[] CULong
 sampleCountSelector = mkSelector "sampleCount"
 
 -- | @Selector@ for @setSampleCount:@
-setSampleCountSelector :: Selector
+setSampleCountSelector :: Selector '[CULong] ()
 setSampleCountSelector = mkSelector "setSampleCount:"
 
 -- | @Selector@ for @clearDepth@
-clearDepthSelector :: Selector
+clearDepthSelector :: Selector '[] CDouble
 clearDepthSelector = mkSelector "clearDepth"
 
 -- | @Selector@ for @setClearDepth:@
-setClearDepthSelector :: Selector
+setClearDepthSelector :: Selector '[CDouble] ()
 setClearDepthSelector = mkSelector "setClearDepth:"
 
 -- | @Selector@ for @clearStencil@
-clearStencilSelector :: Selector
+clearStencilSelector :: Selector '[] CUInt
 clearStencilSelector = mkSelector "clearStencil"
 
 -- | @Selector@ for @setClearStencil:@
-setClearStencilSelector :: Selector
+setClearStencilSelector :: Selector '[CUInt] ()
 setClearStencilSelector = mkSelector "setClearStencil:"
 
 -- | @Selector@ for @depthStencilTexture@
-depthStencilTextureSelector :: Selector
+depthStencilTextureSelector :: Selector '[] RawId
 depthStencilTextureSelector = mkSelector "depthStencilTexture"
 
 -- | @Selector@ for @multisampleColorTexture@
-multisampleColorTextureSelector :: Selector
+multisampleColorTextureSelector :: Selector '[] RawId
 multisampleColorTextureSelector = mkSelector "multisampleColorTexture"
 
 -- | @Selector@ for @preferredFramesPerSecond@
-preferredFramesPerSecondSelector :: Selector
+preferredFramesPerSecondSelector :: Selector '[] CLong
 preferredFramesPerSecondSelector = mkSelector "preferredFramesPerSecond"
 
 -- | @Selector@ for @setPreferredFramesPerSecond:@
-setPreferredFramesPerSecondSelector :: Selector
+setPreferredFramesPerSecondSelector :: Selector '[CLong] ()
 setPreferredFramesPerSecondSelector = mkSelector "setPreferredFramesPerSecond:"
 
 -- | @Selector@ for @enableSetNeedsDisplay@
-enableSetNeedsDisplaySelector :: Selector
+enableSetNeedsDisplaySelector :: Selector '[] Bool
 enableSetNeedsDisplaySelector = mkSelector "enableSetNeedsDisplay"
 
 -- | @Selector@ for @setEnableSetNeedsDisplay:@
-setEnableSetNeedsDisplaySelector :: Selector
+setEnableSetNeedsDisplaySelector :: Selector '[Bool] ()
 setEnableSetNeedsDisplaySelector = mkSelector "setEnableSetNeedsDisplay:"
 
 -- | @Selector@ for @autoResizeDrawable@
-autoResizeDrawableSelector :: Selector
+autoResizeDrawableSelector :: Selector '[] Bool
 autoResizeDrawableSelector = mkSelector "autoResizeDrawable"
 
 -- | @Selector@ for @setAutoResizeDrawable:@
-setAutoResizeDrawableSelector :: Selector
+setAutoResizeDrawableSelector :: Selector '[Bool] ()
 setAutoResizeDrawableSelector = mkSelector "setAutoResizeDrawable:"
 
 -- | @Selector@ for @preferredDevice@
-preferredDeviceSelector :: Selector
+preferredDeviceSelector :: Selector '[] RawId
 preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 
 -- | @Selector@ for @colorspace@
-colorspaceSelector :: Selector
+colorspaceSelector :: Selector '[] (Ptr ())
 colorspaceSelector = mkSelector "colorspace"
 
 -- | @Selector@ for @setColorspace:@
-setColorspaceSelector :: Selector
+setColorspaceSelector :: Selector '[Ptr ()] ()
 setColorspaceSelector = mkSelector "setColorspace:"
 

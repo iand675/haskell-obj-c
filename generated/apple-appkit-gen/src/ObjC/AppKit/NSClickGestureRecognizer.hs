@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AppKit.NSClickGestureRecognizer
   , numberOfTouchesRequired
   , setNumberOfTouchesRequired
   , buttonMaskSelector
-  , setButtonMaskSelector
   , numberOfClicksRequiredSelector
-  , setNumberOfClicksRequiredSelector
   , numberOfTouchesRequiredSelector
+  , setButtonMaskSelector
+  , setNumberOfClicksRequiredSelector
   , setNumberOfTouchesRequiredSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- buttonMask@
 buttonMask :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> IO CULong
-buttonMask nsClickGestureRecognizer  =
-    sendMsg nsClickGestureRecognizer (mkSelector "buttonMask") retCULong []
+buttonMask nsClickGestureRecognizer =
+  sendMessage nsClickGestureRecognizer buttonMaskSelector
 
 -- | @- setButtonMask:@
 setButtonMask :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> CULong -> IO ()
-setButtonMask nsClickGestureRecognizer  value =
-    sendMsg nsClickGestureRecognizer (mkSelector "setButtonMask:") retVoid [argCULong value]
+setButtonMask nsClickGestureRecognizer value =
+  sendMessage nsClickGestureRecognizer setButtonMaskSelector value
 
 -- | @- numberOfClicksRequired@
 numberOfClicksRequired :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> IO CLong
-numberOfClicksRequired nsClickGestureRecognizer  =
-    sendMsg nsClickGestureRecognizer (mkSelector "numberOfClicksRequired") retCLong []
+numberOfClicksRequired nsClickGestureRecognizer =
+  sendMessage nsClickGestureRecognizer numberOfClicksRequiredSelector
 
 -- | @- setNumberOfClicksRequired:@
 setNumberOfClicksRequired :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> CLong -> IO ()
-setNumberOfClicksRequired nsClickGestureRecognizer  value =
-    sendMsg nsClickGestureRecognizer (mkSelector "setNumberOfClicksRequired:") retVoid [argCLong value]
+setNumberOfClicksRequired nsClickGestureRecognizer value =
+  sendMessage nsClickGestureRecognizer setNumberOfClicksRequiredSelector value
 
 -- | @- numberOfTouchesRequired@
 numberOfTouchesRequired :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> IO CLong
-numberOfTouchesRequired nsClickGestureRecognizer  =
-    sendMsg nsClickGestureRecognizer (mkSelector "numberOfTouchesRequired") retCLong []
+numberOfTouchesRequired nsClickGestureRecognizer =
+  sendMessage nsClickGestureRecognizer numberOfTouchesRequiredSelector
 
 -- | @- setNumberOfTouchesRequired:@
 setNumberOfTouchesRequired :: IsNSClickGestureRecognizer nsClickGestureRecognizer => nsClickGestureRecognizer -> CLong -> IO ()
-setNumberOfTouchesRequired nsClickGestureRecognizer  value =
-    sendMsg nsClickGestureRecognizer (mkSelector "setNumberOfTouchesRequired:") retVoid [argCLong value]
+setNumberOfTouchesRequired nsClickGestureRecognizer value =
+  sendMessage nsClickGestureRecognizer setNumberOfTouchesRequiredSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonMask@
-buttonMaskSelector :: Selector
+buttonMaskSelector :: Selector '[] CULong
 buttonMaskSelector = mkSelector "buttonMask"
 
 -- | @Selector@ for @setButtonMask:@
-setButtonMaskSelector :: Selector
+setButtonMaskSelector :: Selector '[CULong] ()
 setButtonMaskSelector = mkSelector "setButtonMask:"
 
 -- | @Selector@ for @numberOfClicksRequired@
-numberOfClicksRequiredSelector :: Selector
+numberOfClicksRequiredSelector :: Selector '[] CLong
 numberOfClicksRequiredSelector = mkSelector "numberOfClicksRequired"
 
 -- | @Selector@ for @setNumberOfClicksRequired:@
-setNumberOfClicksRequiredSelector :: Selector
+setNumberOfClicksRequiredSelector :: Selector '[CLong] ()
 setNumberOfClicksRequiredSelector = mkSelector "setNumberOfClicksRequired:"
 
 -- | @Selector@ for @numberOfTouchesRequired@
-numberOfTouchesRequiredSelector :: Selector
+numberOfTouchesRequiredSelector :: Selector '[] CLong
 numberOfTouchesRequiredSelector = mkSelector "numberOfTouchesRequired"
 
 -- | @Selector@ for @setNumberOfTouchesRequired:@
-setNumberOfTouchesRequiredSelector :: Selector
+setNumberOfTouchesRequiredSelector :: Selector '[CLong] ()
 setNumberOfTouchesRequiredSelector = mkSelector "setNumberOfTouchesRequired:"
 

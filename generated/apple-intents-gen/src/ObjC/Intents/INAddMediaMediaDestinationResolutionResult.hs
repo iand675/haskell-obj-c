@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INAddMediaMediaDestinationResolutionResult
   , IsINAddMediaMediaDestinationResolutionResult(..)
   , unsupportedForReason
   , initWithMediaDestinationResolutionResult
-  , unsupportedForReasonSelector
   , initWithMediaDestinationResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INAddMediaMediaDestinationUnsupportedReason(INAddMediaMediaDestinationUnsupportedReason)
@@ -19,15 +20,11 @@ module ObjC.Intents.INAddMediaMediaDestinationResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,23 +37,22 @@ unsupportedForReason :: INAddMediaMediaDestinationUnsupportedReason -> IO (Id IN
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INAddMediaMediaDestinationResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithMediaDestinationResolutionResult:@
 initWithMediaDestinationResolutionResult :: (IsINAddMediaMediaDestinationResolutionResult inAddMediaMediaDestinationResolutionResult, IsINMediaDestinationResolutionResult mediaDestinationResolutionResult) => inAddMediaMediaDestinationResolutionResult -> mediaDestinationResolutionResult -> IO (Id INAddMediaMediaDestinationResolutionResult)
-initWithMediaDestinationResolutionResult inAddMediaMediaDestinationResolutionResult  mediaDestinationResolutionResult =
-  withObjCPtr mediaDestinationResolutionResult $ \raw_mediaDestinationResolutionResult ->
-      sendMsg inAddMediaMediaDestinationResolutionResult (mkSelector "initWithMediaDestinationResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_mediaDestinationResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaDestinationResolutionResult inAddMediaMediaDestinationResolutionResult mediaDestinationResolutionResult =
+  sendOwnedMessage inAddMediaMediaDestinationResolutionResult initWithMediaDestinationResolutionResultSelector (toINMediaDestinationResolutionResult mediaDestinationResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INAddMediaMediaDestinationUnsupportedReason] (Id INAddMediaMediaDestinationResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithMediaDestinationResolutionResult:@
-initWithMediaDestinationResolutionResultSelector :: Selector
+initWithMediaDestinationResolutionResultSelector :: Selector '[Id INMediaDestinationResolutionResult] (Id INAddMediaMediaDestinationResolutionResult)
 initWithMediaDestinationResolutionResultSelector = mkSelector "initWithMediaDestinationResolutionResult:"
 

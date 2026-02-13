@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Vision.VNPixelBufferObservation
   , IsVNPixelBufferObservation(..)
   , pixelBuffer
   , featureName
-  , pixelBufferSelector
   , featureNameSelector
+  , pixelBufferSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,25 +38,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- pixelBuffer@
 pixelBuffer :: IsVNPixelBufferObservation vnPixelBufferObservation => vnPixelBufferObservation -> IO (Ptr ())
-pixelBuffer vnPixelBufferObservation  =
-    fmap castPtr $ sendMsg vnPixelBufferObservation (mkSelector "pixelBuffer") (retPtr retVoid) []
+pixelBuffer vnPixelBufferObservation =
+  sendMessage vnPixelBufferObservation pixelBufferSelector
 
 -- | The name used in the model description of the CoreML model that produced this observation allowing to correlate the observation back to the output of the model. This can be nil if the observation is not the result of a VNCoreMLRequest operation.
 --
 -- ObjC selector: @- featureName@
 featureName :: IsVNPixelBufferObservation vnPixelBufferObservation => vnPixelBufferObservation -> IO (Id NSString)
-featureName vnPixelBufferObservation  =
-    sendMsg vnPixelBufferObservation (mkSelector "featureName") (retPtr retVoid) [] >>= retainedObject . castPtr
+featureName vnPixelBufferObservation =
+  sendMessage vnPixelBufferObservation featureNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pixelBuffer@
-pixelBufferSelector :: Selector
+pixelBufferSelector :: Selector '[] (Ptr ())
 pixelBufferSelector = mkSelector "pixelBuffer"
 
 -- | @Selector@ for @featureName@
-featureNameSelector :: Selector
+featureNameSelector :: Selector '[] (Id NSString)
 featureNameSelector = mkSelector "featureName"
 

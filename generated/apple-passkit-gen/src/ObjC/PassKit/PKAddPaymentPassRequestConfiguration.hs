@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,26 +28,26 @@ module ObjC.PassKit.PKAddPaymentPassRequestConfiguration
   , setProductIdentifiers
   , requiresFelicaSecureElement
   , setRequiresFelicaSecureElement
-  , initWithEncryptionSchemeSelector
-  , encryptionSchemeSelector
-  , styleSelector
-  , setStyleSelector
-  , cardholderNameSelector
-  , setCardholderNameSelector
-  , primaryAccountSuffixSelector
-  , setPrimaryAccountSuffixSelector
   , cardDetailsSelector
-  , setCardDetailsSelector
+  , cardholderNameSelector
+  , encryptionSchemeSelector
+  , initWithEncryptionSchemeSelector
   , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , primaryAccountIdentifierSelector
-  , setPrimaryAccountIdentifierSelector
   , paymentNetworkSelector
-  , setPaymentNetworkSelector
+  , primaryAccountIdentifierSelector
+  , primaryAccountSuffixSelector
   , productIdentifiersSelector
-  , setProductIdentifiersSelector
   , requiresFelicaSecureElementSelector
+  , setCardDetailsSelector
+  , setCardholderNameSelector
+  , setLocalizedDescriptionSelector
+  , setPaymentNetworkSelector
+  , setPrimaryAccountIdentifierSelector
+  , setPrimaryAccountSuffixSelector
+  , setProductIdentifiersSelector
   , setRequiresFelicaSecureElementSelector
+  , setStyleSelector
+  , styleSelector
 
   -- * Enum types
   , PKAddPaymentPassStyle(PKAddPaymentPassStyle)
@@ -55,15 +56,11 @@ module ObjC.PassKit.PKAddPaymentPassRequestConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,193 +70,185 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithEncryptionScheme:@
 initWithEncryptionScheme :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString encryptionScheme) => pkAddPaymentPassRequestConfiguration -> encryptionScheme -> IO (Id PKAddPaymentPassRequestConfiguration)
-initWithEncryptionScheme pkAddPaymentPassRequestConfiguration  encryptionScheme =
-  withObjCPtr encryptionScheme $ \raw_encryptionScheme ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "initWithEncryptionScheme:") (retPtr retVoid) [argPtr (castPtr raw_encryptionScheme :: Ptr ())] >>= ownedObject . castPtr
+initWithEncryptionScheme pkAddPaymentPassRequestConfiguration encryptionScheme =
+  sendOwnedMessage pkAddPaymentPassRequestConfiguration initWithEncryptionSchemeSelector (toNSString encryptionScheme)
 
 -- | @- encryptionScheme@
 encryptionScheme :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-encryptionScheme pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "encryptionScheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+encryptionScheme pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration encryptionSchemeSelector
 
 -- | @- style@
 style :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO PKAddPaymentPassStyle
-style pkAddPaymentPassRequestConfiguration  =
-    fmap (coerce :: CLong -> PKAddPaymentPassStyle) $ sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "style") retCLong []
+style pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration styleSelector
 
 -- | @- setStyle:@
 setStyle :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> PKAddPaymentPassStyle -> IO ()
-setStyle pkAddPaymentPassRequestConfiguration  value =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setStyleSelector value
 
 -- | @- cardholderName@
 cardholderName :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-cardholderName pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "cardholderName") (retPtr retVoid) [] >>= retainedObject . castPtr
+cardholderName pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration cardholderNameSelector
 
 -- | @- setCardholderName:@
 setCardholderName :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setCardholderName pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setCardholderName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCardholderName pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setCardholderNameSelector (toNSString value)
 
 -- | @- primaryAccountSuffix@
 primaryAccountSuffix :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-primaryAccountSuffix pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "primaryAccountSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryAccountSuffix pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration primaryAccountSuffixSelector
 
 -- | @- setPrimaryAccountSuffix:@
 setPrimaryAccountSuffix :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setPrimaryAccountSuffix pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setPrimaryAccountSuffix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryAccountSuffix pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setPrimaryAccountSuffixSelector (toNSString value)
 
 -- | @- cardDetails@
 cardDetails :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSArray)
-cardDetails pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "cardDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+cardDetails pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration cardDetailsSelector
 
 -- | @- setCardDetails:@
 setCardDetails :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSArray value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setCardDetails pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setCardDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCardDetails pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setCardDetailsSelector (toNSArray value)
 
 -- | @- localizedDescription@
 localizedDescription :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-localizedDescription pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration localizedDescriptionSelector
 
 -- | @- setLocalizedDescription:@
 setLocalizedDescription :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setLocalizedDescription pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setLocalizedDescriptionSelector (toNSString value)
 
 -- | @- primaryAccountIdentifier@
 primaryAccountIdentifier :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-primaryAccountIdentifier pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "primaryAccountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryAccountIdentifier pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration primaryAccountIdentifierSelector
 
 -- | @- setPrimaryAccountIdentifier:@
 setPrimaryAccountIdentifier :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setPrimaryAccountIdentifier pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setPrimaryAccountIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryAccountIdentifier pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setPrimaryAccountIdentifierSelector (toNSString value)
 
 -- | @- paymentNetwork@
 paymentNetwork :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSString)
-paymentNetwork pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "paymentNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentNetwork pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration paymentNetworkSelector
 
 -- | @- setPaymentNetwork:@
 setPaymentNetwork :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSString value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setPaymentNetwork pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setPaymentNetwork:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentNetwork pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setPaymentNetworkSelector (toNSString value)
 
 -- | @- productIdentifiers@
 productIdentifiers :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO (Id NSSet)
-productIdentifiers pkAddPaymentPassRequestConfiguration  =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "productIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+productIdentifiers pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration productIdentifiersSelector
 
 -- | @- setProductIdentifiers:@
 setProductIdentifiers :: (IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration, IsNSSet value) => pkAddPaymentPassRequestConfiguration -> value -> IO ()
-setProductIdentifiers pkAddPaymentPassRequestConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setProductIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductIdentifiers pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setProductIdentifiersSelector (toNSSet value)
 
 -- | @- requiresFelicaSecureElement@
 requiresFelicaSecureElement :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> IO Bool
-requiresFelicaSecureElement pkAddPaymentPassRequestConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "requiresFelicaSecureElement") retCULong []
+requiresFelicaSecureElement pkAddPaymentPassRequestConfiguration =
+  sendMessage pkAddPaymentPassRequestConfiguration requiresFelicaSecureElementSelector
 
 -- | @- setRequiresFelicaSecureElement:@
 setRequiresFelicaSecureElement :: IsPKAddPaymentPassRequestConfiguration pkAddPaymentPassRequestConfiguration => pkAddPaymentPassRequestConfiguration -> Bool -> IO ()
-setRequiresFelicaSecureElement pkAddPaymentPassRequestConfiguration  value =
-    sendMsg pkAddPaymentPassRequestConfiguration (mkSelector "setRequiresFelicaSecureElement:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresFelicaSecureElement pkAddPaymentPassRequestConfiguration value =
+  sendMessage pkAddPaymentPassRequestConfiguration setRequiresFelicaSecureElementSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithEncryptionScheme:@
-initWithEncryptionSchemeSelector :: Selector
+initWithEncryptionSchemeSelector :: Selector '[Id NSString] (Id PKAddPaymentPassRequestConfiguration)
 initWithEncryptionSchemeSelector = mkSelector "initWithEncryptionScheme:"
 
 -- | @Selector@ for @encryptionScheme@
-encryptionSchemeSelector :: Selector
+encryptionSchemeSelector :: Selector '[] (Id NSString)
 encryptionSchemeSelector = mkSelector "encryptionScheme"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] PKAddPaymentPassStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[PKAddPaymentPassStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 
 -- | @Selector@ for @cardholderName@
-cardholderNameSelector :: Selector
+cardholderNameSelector :: Selector '[] (Id NSString)
 cardholderNameSelector = mkSelector "cardholderName"
 
 -- | @Selector@ for @setCardholderName:@
-setCardholderNameSelector :: Selector
+setCardholderNameSelector :: Selector '[Id NSString] ()
 setCardholderNameSelector = mkSelector "setCardholderName:"
 
 -- | @Selector@ for @primaryAccountSuffix@
-primaryAccountSuffixSelector :: Selector
+primaryAccountSuffixSelector :: Selector '[] (Id NSString)
 primaryAccountSuffixSelector = mkSelector "primaryAccountSuffix"
 
 -- | @Selector@ for @setPrimaryAccountSuffix:@
-setPrimaryAccountSuffixSelector :: Selector
+setPrimaryAccountSuffixSelector :: Selector '[Id NSString] ()
 setPrimaryAccountSuffixSelector = mkSelector "setPrimaryAccountSuffix:"
 
 -- | @Selector@ for @cardDetails@
-cardDetailsSelector :: Selector
+cardDetailsSelector :: Selector '[] (Id NSArray)
 cardDetailsSelector = mkSelector "cardDetails"
 
 -- | @Selector@ for @setCardDetails:@
-setCardDetailsSelector :: Selector
+setCardDetailsSelector :: Selector '[Id NSArray] ()
 setCardDetailsSelector = mkSelector "setCardDetails:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @primaryAccountIdentifier@
-primaryAccountIdentifierSelector :: Selector
+primaryAccountIdentifierSelector :: Selector '[] (Id NSString)
 primaryAccountIdentifierSelector = mkSelector "primaryAccountIdentifier"
 
 -- | @Selector@ for @setPrimaryAccountIdentifier:@
-setPrimaryAccountIdentifierSelector :: Selector
+setPrimaryAccountIdentifierSelector :: Selector '[Id NSString] ()
 setPrimaryAccountIdentifierSelector = mkSelector "setPrimaryAccountIdentifier:"
 
 -- | @Selector@ for @paymentNetwork@
-paymentNetworkSelector :: Selector
+paymentNetworkSelector :: Selector '[] (Id NSString)
 paymentNetworkSelector = mkSelector "paymentNetwork"
 
 -- | @Selector@ for @setPaymentNetwork:@
-setPaymentNetworkSelector :: Selector
+setPaymentNetworkSelector :: Selector '[Id NSString] ()
 setPaymentNetworkSelector = mkSelector "setPaymentNetwork:"
 
 -- | @Selector@ for @productIdentifiers@
-productIdentifiersSelector :: Selector
+productIdentifiersSelector :: Selector '[] (Id NSSet)
 productIdentifiersSelector = mkSelector "productIdentifiers"
 
 -- | @Selector@ for @setProductIdentifiers:@
-setProductIdentifiersSelector :: Selector
+setProductIdentifiersSelector :: Selector '[Id NSSet] ()
 setProductIdentifiersSelector = mkSelector "setProductIdentifiers:"
 
 -- | @Selector@ for @requiresFelicaSecureElement@
-requiresFelicaSecureElementSelector :: Selector
+requiresFelicaSecureElementSelector :: Selector '[] Bool
 requiresFelicaSecureElementSelector = mkSelector "requiresFelicaSecureElement"
 
 -- | @Selector@ for @setRequiresFelicaSecureElement:@
-setRequiresFelicaSecureElementSelector :: Selector
+setRequiresFelicaSecureElementSelector :: Selector '[Bool] ()
 setRequiresFelicaSecureElementSelector = mkSelector "setRequiresFelicaSecureElement:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.MediaPlayer.MPMediaPlaylist
   , authorDisplayName
   , addItemWithProductID_completionHandlerSelector
   , addMediaItems_completionHandlerSelector
-  , persistentIDSelector
+  , authorDisplayNameSelector
   , cloudGlobalIDSelector
+  , descriptionTextSelector
   , nameSelector
+  , persistentIDSelector
   , playlistAttributesSelector
   , seedItemsSelector
-  , descriptionTextSelector
-  , authorDisplayNameSelector
 
   -- * Enum types
   , MPMediaPlaylistAttribute(MPMediaPlaylistAttribute)
@@ -35,15 +36,11 @@ module ObjC.MediaPlayer.MPMediaPlaylist
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,88 +50,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addItemWithProductID:completionHandler:@
 addItemWithProductID_completionHandler :: (IsMPMediaPlaylist mpMediaPlaylist, IsNSString productID) => mpMediaPlaylist -> productID -> Ptr () -> IO ()
-addItemWithProductID_completionHandler mpMediaPlaylist  productID completionHandler =
-  withObjCPtr productID $ \raw_productID ->
-      sendMsg mpMediaPlaylist (mkSelector "addItemWithProductID:completionHandler:") retVoid [argPtr (castPtr raw_productID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+addItemWithProductID_completionHandler mpMediaPlaylist productID completionHandler =
+  sendMessage mpMediaPlaylist addItemWithProductID_completionHandlerSelector (toNSString productID) completionHandler
 
 -- | @- addMediaItems:completionHandler:@
 addMediaItems_completionHandler :: (IsMPMediaPlaylist mpMediaPlaylist, IsNSArray mediaItems) => mpMediaPlaylist -> mediaItems -> Ptr () -> IO ()
-addMediaItems_completionHandler mpMediaPlaylist  mediaItems completionHandler =
-  withObjCPtr mediaItems $ \raw_mediaItems ->
-      sendMsg mpMediaPlaylist (mkSelector "addMediaItems:completionHandler:") retVoid [argPtr (castPtr raw_mediaItems :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+addMediaItems_completionHandler mpMediaPlaylist mediaItems completionHandler =
+  sendMessage mpMediaPlaylist addMediaItems_completionHandlerSelector (toNSArray mediaItems) completionHandler
 
 -- | @- persistentID@
 persistentID :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO CULong
-persistentID mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "persistentID") retCULong []
+persistentID mpMediaPlaylist =
+  sendMessage mpMediaPlaylist persistentIDSelector
 
 -- | @- cloudGlobalID@
 cloudGlobalID :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO (Id NSString)
-cloudGlobalID mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "cloudGlobalID") (retPtr retVoid) [] >>= retainedObject . castPtr
+cloudGlobalID mpMediaPlaylist =
+  sendMessage mpMediaPlaylist cloudGlobalIDSelector
 
 -- | @- name@
 name :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO (Id NSString)
-name mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mpMediaPlaylist =
+  sendMessage mpMediaPlaylist nameSelector
 
 -- | @- playlistAttributes@
 playlistAttributes :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO MPMediaPlaylistAttribute
-playlistAttributes mpMediaPlaylist  =
-    fmap (coerce :: CULong -> MPMediaPlaylistAttribute) $ sendMsg mpMediaPlaylist (mkSelector "playlistAttributes") retCULong []
+playlistAttributes mpMediaPlaylist =
+  sendMessage mpMediaPlaylist playlistAttributesSelector
 
 -- | @- seedItems@
 seedItems :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO (Id NSArray)
-seedItems mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "seedItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+seedItems mpMediaPlaylist =
+  sendMessage mpMediaPlaylist seedItemsSelector
 
 -- | @- descriptionText@
 descriptionText :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO (Id NSString)
-descriptionText mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "descriptionText") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptionText mpMediaPlaylist =
+  sendMessage mpMediaPlaylist descriptionTextSelector
 
 -- | @- authorDisplayName@
 authorDisplayName :: IsMPMediaPlaylist mpMediaPlaylist => mpMediaPlaylist -> IO (Id NSString)
-authorDisplayName mpMediaPlaylist  =
-    sendMsg mpMediaPlaylist (mkSelector "authorDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorDisplayName mpMediaPlaylist =
+  sendMessage mpMediaPlaylist authorDisplayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addItemWithProductID:completionHandler:@
-addItemWithProductID_completionHandlerSelector :: Selector
+addItemWithProductID_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 addItemWithProductID_completionHandlerSelector = mkSelector "addItemWithProductID:completionHandler:"
 
 -- | @Selector@ for @addMediaItems:completionHandler:@
-addMediaItems_completionHandlerSelector :: Selector
+addMediaItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 addMediaItems_completionHandlerSelector = mkSelector "addMediaItems:completionHandler:"
 
 -- | @Selector@ for @persistentID@
-persistentIDSelector :: Selector
+persistentIDSelector :: Selector '[] CULong
 persistentIDSelector = mkSelector "persistentID"
 
 -- | @Selector@ for @cloudGlobalID@
-cloudGlobalIDSelector :: Selector
+cloudGlobalIDSelector :: Selector '[] (Id NSString)
 cloudGlobalIDSelector = mkSelector "cloudGlobalID"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @playlistAttributes@
-playlistAttributesSelector :: Selector
+playlistAttributesSelector :: Selector '[] MPMediaPlaylistAttribute
 playlistAttributesSelector = mkSelector "playlistAttributes"
 
 -- | @Selector@ for @seedItems@
-seedItemsSelector :: Selector
+seedItemsSelector :: Selector '[] (Id NSArray)
 seedItemsSelector = mkSelector "seedItems"
 
 -- | @Selector@ for @descriptionText@
-descriptionTextSelector :: Selector
+descriptionTextSelector :: Selector '[] (Id NSString)
 descriptionTextSelector = mkSelector "descriptionText"
 
 -- | @Selector@ for @authorDisplayName@
-authorDisplayNameSelector :: Selector
+authorDisplayNameSelector :: Selector '[] (Id NSString)
 authorDisplayNameSelector = mkSelector "authorDisplayName"
 

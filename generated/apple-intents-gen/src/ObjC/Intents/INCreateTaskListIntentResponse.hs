@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INCreateTaskListIntentResponse
   , code
   , createdTaskList
   , setCreatedTaskList
-  , initSelector
-  , initWithCode_userActivitySelector
   , codeSelector
   , createdTaskListSelector
+  , initSelector
+  , initWithCode_userActivitySelector
   , setCreatedTaskListSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.Intents.INCreateTaskListIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINCreateTaskListIntentResponse inCreateTaskListIntentResponse => inCreateTaskListIntentResponse -> IO RawId
-init_ inCreateTaskListIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inCreateTaskListIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inCreateTaskListIntentResponse =
+  sendOwnedMessage inCreateTaskListIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINCreateTaskListIntentResponse inCreateTaskListIntentResponse, IsNSUserActivity userActivity) => inCreateTaskListIntentResponse -> INCreateTaskListIntentResponseCode -> userActivity -> IO (Id INCreateTaskListIntentResponse)
-initWithCode_userActivity inCreateTaskListIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inCreateTaskListIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inCreateTaskListIntentResponse code userActivity =
+  sendOwnedMessage inCreateTaskListIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINCreateTaskListIntentResponse inCreateTaskListIntentResponse => inCreateTaskListIntentResponse -> IO INCreateTaskListIntentResponseCode
-code inCreateTaskListIntentResponse  =
-    fmap (coerce :: CLong -> INCreateTaskListIntentResponseCode) $ sendMsg inCreateTaskListIntentResponse (mkSelector "code") retCLong []
+code inCreateTaskListIntentResponse =
+  sendMessage inCreateTaskListIntentResponse codeSelector
 
 -- | @- createdTaskList@
 createdTaskList :: IsINCreateTaskListIntentResponse inCreateTaskListIntentResponse => inCreateTaskListIntentResponse -> IO (Id INTaskList)
-createdTaskList inCreateTaskListIntentResponse  =
-    sendMsg inCreateTaskListIntentResponse (mkSelector "createdTaskList") (retPtr retVoid) [] >>= retainedObject . castPtr
+createdTaskList inCreateTaskListIntentResponse =
+  sendMessage inCreateTaskListIntentResponse createdTaskListSelector
 
 -- | @- setCreatedTaskList:@
 setCreatedTaskList :: (IsINCreateTaskListIntentResponse inCreateTaskListIntentResponse, IsINTaskList value) => inCreateTaskListIntentResponse -> value -> IO ()
-setCreatedTaskList inCreateTaskListIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inCreateTaskListIntentResponse (mkSelector "setCreatedTaskList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCreatedTaskList inCreateTaskListIntentResponse value =
+  sendMessage inCreateTaskListIntentResponse setCreatedTaskListSelector (toINTaskList value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INCreateTaskListIntentResponseCode, Id NSUserActivity] (Id INCreateTaskListIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INCreateTaskListIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @createdTaskList@
-createdTaskListSelector :: Selector
+createdTaskListSelector :: Selector '[] (Id INTaskList)
 createdTaskListSelector = mkSelector "createdTaskList"
 
 -- | @Selector@ for @setCreatedTaskList:@
-setCreatedTaskListSelector :: Selector
+setCreatedTaskListSelector :: Selector '[Id INTaskList] ()
 setCreatedTaskListSelector = mkSelector "setCreatedTaskList:"
 

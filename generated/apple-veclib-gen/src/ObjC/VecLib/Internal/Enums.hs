@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.VecLib.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @BLAS_THREADING@
 newtype BLAS_THREADING = BLAS_THREADING CUInt
@@ -25,6 +28,16 @@ pattern BLAS_THREADING_SINGLE_THREADED = BLAS_THREADING 1
 pattern BLAS_THREADING_MAX_OPTIONS :: BLAS_THREADING
 pattern BLAS_THREADING_MAX_OPTIONS = BLAS_THREADING 2
 
+instance ObjCArgument BLAS_THREADING where
+  withObjCArg (BLAS_THREADING x) k = k (argCUInt x)
+
+instance ObjCReturn BLAS_THREADING where
+  type RawReturn BLAS_THREADING = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BLAS_THREADING x)
+  fromOwned x = pure (BLAS_THREADING x)
+
 -- | @CBLAS_DIAG@
 newtype CBLAS_DIAG = CBLAS_DIAG CInt
   deriving stock (Eq, Ord, Show)
@@ -35,6 +48,16 @@ pattern CblasNonUnit = CBLAS_DIAG 131
 
 pattern CblasUnit :: CBLAS_DIAG
 pattern CblasUnit = CBLAS_DIAG 132
+
+instance ObjCArgument CBLAS_DIAG where
+  withObjCArg (CBLAS_DIAG x) k = k (argCInt x)
+
+instance ObjCReturn CBLAS_DIAG where
+  type RawReturn CBLAS_DIAG = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBLAS_DIAG x)
+  fromOwned x = pure (CBLAS_DIAG x)
 
 -- | @CBLAS_ORDER@
 newtype CBLAS_ORDER = CBLAS_ORDER CInt
@@ -47,6 +70,16 @@ pattern CblasRowMajor = CBLAS_ORDER 101
 pattern CblasColMajor :: CBLAS_ORDER
 pattern CblasColMajor = CBLAS_ORDER 102
 
+instance ObjCArgument CBLAS_ORDER where
+  withObjCArg (CBLAS_ORDER x) k = k (argCInt x)
+
+instance ObjCReturn CBLAS_ORDER where
+  type RawReturn CBLAS_ORDER = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBLAS_ORDER x)
+  fromOwned x = pure (CBLAS_ORDER x)
+
 -- | @CBLAS_SIDE@
 newtype CBLAS_SIDE = CBLAS_SIDE CInt
   deriving stock (Eq, Ord, Show)
@@ -57,6 +90,16 @@ pattern CblasLeft = CBLAS_SIDE 141
 
 pattern CblasRight :: CBLAS_SIDE
 pattern CblasRight = CBLAS_SIDE 142
+
+instance ObjCArgument CBLAS_SIDE where
+  withObjCArg (CBLAS_SIDE x) k = k (argCInt x)
+
+instance ObjCReturn CBLAS_SIDE where
+  type RawReturn CBLAS_SIDE = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBLAS_SIDE x)
+  fromOwned x = pure (CBLAS_SIDE x)
 
 -- | @CBLAS_TRANSPOSE@
 newtype CBLAS_TRANSPOSE = CBLAS_TRANSPOSE CInt
@@ -75,6 +118,16 @@ pattern CblasConjTrans = CBLAS_TRANSPOSE 113
 pattern AtlasConj :: CBLAS_TRANSPOSE
 pattern AtlasConj = CBLAS_TRANSPOSE 114
 
+instance ObjCArgument CBLAS_TRANSPOSE where
+  withObjCArg (CBLAS_TRANSPOSE x) k = k (argCInt x)
+
+instance ObjCReturn CBLAS_TRANSPOSE where
+  type RawReturn CBLAS_TRANSPOSE = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBLAS_TRANSPOSE x)
+  fromOwned x = pure (CBLAS_TRANSPOSE x)
+
 -- | @CBLAS_UPLO@
 newtype CBLAS_UPLO = CBLAS_UPLO CInt
   deriving stock (Eq, Ord, Show)
@@ -85,3 +138,13 @@ pattern CblasUpper = CBLAS_UPLO 121
 
 pattern CblasLower :: CBLAS_UPLO
 pattern CblasLower = CBLAS_UPLO 122
+
+instance ObjCArgument CBLAS_UPLO where
+  withObjCArg (CBLAS_UPLO x) k = k (argCInt x)
+
+instance ObjCReturn CBLAS_UPLO where
+  type RawReturn CBLAS_UPLO = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBLAS_UPLO x)
+  fromOwned x = pure (CBLAS_UPLO x)

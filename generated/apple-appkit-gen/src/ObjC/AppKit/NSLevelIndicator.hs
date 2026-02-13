@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,40 +42,40 @@ module ObjC.AppKit.NSLevelIndicator
   , setRatingImage
   , ratingPlaceholderImage
   , setRatingPlaceholderImage
-  , tickMarkValueAtIndexSelector
-  , rectOfTickMarkAtIndexSelector
-  , levelIndicatorStyleSelector
-  , setLevelIndicatorStyleSelector
-  , editableSelector
-  , setEditableSelector
-  , minValueSelector
-  , setMinValueSelector
-  , maxValueSelector
-  , setMaxValueSelector
-  , warningValueSelector
-  , setWarningValueSelector
-  , criticalValueSelector
-  , setCriticalValueSelector
-  , tickMarkPositionSelector
-  , setTickMarkPositionSelector
-  , numberOfTickMarksSelector
-  , setNumberOfTickMarksSelector
-  , numberOfMajorTickMarksSelector
-  , setNumberOfMajorTickMarksSelector
-  , fillColorSelector
-  , setFillColorSelector
-  , warningFillColorSelector
-  , setWarningFillColorSelector
   , criticalFillColorSelector
-  , setCriticalFillColorSelector
+  , criticalValueSelector
   , drawsTieredCapacityLevelsSelector
-  , setDrawsTieredCapacityLevelsSelector
+  , editableSelector
+  , fillColorSelector
+  , levelIndicatorStyleSelector
+  , maxValueSelector
+  , minValueSelector
+  , numberOfMajorTickMarksSelector
+  , numberOfTickMarksSelector
   , placeholderVisibilitySelector
-  , setPlaceholderVisibilitySelector
   , ratingImageSelector
-  , setRatingImageSelector
   , ratingPlaceholderImageSelector
+  , rectOfTickMarkAtIndexSelector
+  , setCriticalFillColorSelector
+  , setCriticalValueSelector
+  , setDrawsTieredCapacityLevelsSelector
+  , setEditableSelector
+  , setFillColorSelector
+  , setLevelIndicatorStyleSelector
+  , setMaxValueSelector
+  , setMinValueSelector
+  , setNumberOfMajorTickMarksSelector
+  , setNumberOfTickMarksSelector
+  , setPlaceholderVisibilitySelector
+  , setRatingImageSelector
   , setRatingPlaceholderImageSelector
+  , setTickMarkPositionSelector
+  , setWarningFillColorSelector
+  , setWarningValueSelector
+  , tickMarkPositionSelector
+  , tickMarkValueAtIndexSelector
+  , warningFillColorSelector
+  , warningValueSelector
 
   -- * Enum types
   , NSLevelIndicatorPlaceholderVisibility(NSLevelIndicatorPlaceholderVisibility)
@@ -94,15 +95,11 @@ module ObjC.AppKit.NSLevelIndicator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -113,187 +110,183 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tickMarkValueAtIndex:@
 tickMarkValueAtIndex :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CLong -> IO CDouble
-tickMarkValueAtIndex nsLevelIndicator  index =
-    sendMsg nsLevelIndicator (mkSelector "tickMarkValueAtIndex:") retCDouble [argCLong index]
+tickMarkValueAtIndex nsLevelIndicator index =
+  sendMessage nsLevelIndicator tickMarkValueAtIndexSelector index
 
 -- | @- rectOfTickMarkAtIndex:@
 rectOfTickMarkAtIndex :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CLong -> IO NSRect
-rectOfTickMarkAtIndex nsLevelIndicator  index =
-    sendMsgStret nsLevelIndicator (mkSelector "rectOfTickMarkAtIndex:") retNSRect [argCLong index]
+rectOfTickMarkAtIndex nsLevelIndicator index =
+  sendMessage nsLevelIndicator rectOfTickMarkAtIndexSelector index
 
 -- | @- levelIndicatorStyle@
 levelIndicatorStyle :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO NSLevelIndicatorStyle
-levelIndicatorStyle nsLevelIndicator  =
-    fmap (coerce :: CULong -> NSLevelIndicatorStyle) $ sendMsg nsLevelIndicator (mkSelector "levelIndicatorStyle") retCULong []
+levelIndicatorStyle nsLevelIndicator =
+  sendMessage nsLevelIndicator levelIndicatorStyleSelector
 
 -- | @- setLevelIndicatorStyle:@
 setLevelIndicatorStyle :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> NSLevelIndicatorStyle -> IO ()
-setLevelIndicatorStyle nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setLevelIndicatorStyle:") retVoid [argCULong (coerce value)]
+setLevelIndicatorStyle nsLevelIndicator value =
+  sendMessage nsLevelIndicator setLevelIndicatorStyleSelector value
 
 -- | @- editable@
 editable :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO Bool
-editable nsLevelIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLevelIndicator (mkSelector "editable") retCULong []
+editable nsLevelIndicator =
+  sendMessage nsLevelIndicator editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> Bool -> IO ()
-setEditable nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsLevelIndicator value =
+  sendMessage nsLevelIndicator setEditableSelector value
 
 -- | @- minValue@
 minValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CDouble
-minValue nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "minValue") retCDouble []
+minValue nsLevelIndicator =
+  sendMessage nsLevelIndicator minValueSelector
 
 -- | @- setMinValue:@
 setMinValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CDouble -> IO ()
-setMinValue nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setMinValue:") retVoid [argCDouble value]
+setMinValue nsLevelIndicator value =
+  sendMessage nsLevelIndicator setMinValueSelector value
 
 -- | @- maxValue@
 maxValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CDouble
-maxValue nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "maxValue") retCDouble []
+maxValue nsLevelIndicator =
+  sendMessage nsLevelIndicator maxValueSelector
 
 -- | @- setMaxValue:@
 setMaxValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CDouble -> IO ()
-setMaxValue nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setMaxValue:") retVoid [argCDouble value]
+setMaxValue nsLevelIndicator value =
+  sendMessage nsLevelIndicator setMaxValueSelector value
 
 -- | @- warningValue@
 warningValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CDouble
-warningValue nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "warningValue") retCDouble []
+warningValue nsLevelIndicator =
+  sendMessage nsLevelIndicator warningValueSelector
 
 -- | @- setWarningValue:@
 setWarningValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CDouble -> IO ()
-setWarningValue nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setWarningValue:") retVoid [argCDouble value]
+setWarningValue nsLevelIndicator value =
+  sendMessage nsLevelIndicator setWarningValueSelector value
 
 -- | @- criticalValue@
 criticalValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CDouble
-criticalValue nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "criticalValue") retCDouble []
+criticalValue nsLevelIndicator =
+  sendMessage nsLevelIndicator criticalValueSelector
 
 -- | @- setCriticalValue:@
 setCriticalValue :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CDouble -> IO ()
-setCriticalValue nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setCriticalValue:") retVoid [argCDouble value]
+setCriticalValue nsLevelIndicator value =
+  sendMessage nsLevelIndicator setCriticalValueSelector value
 
 -- | @- tickMarkPosition@
 tickMarkPosition :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO NSTickMarkPosition
-tickMarkPosition nsLevelIndicator  =
-    fmap (coerce :: CULong -> NSTickMarkPosition) $ sendMsg nsLevelIndicator (mkSelector "tickMarkPosition") retCULong []
+tickMarkPosition nsLevelIndicator =
+  sendMessage nsLevelIndicator tickMarkPositionSelector
 
 -- | @- setTickMarkPosition:@
 setTickMarkPosition :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> NSTickMarkPosition -> IO ()
-setTickMarkPosition nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setTickMarkPosition:") retVoid [argCULong (coerce value)]
+setTickMarkPosition nsLevelIndicator value =
+  sendMessage nsLevelIndicator setTickMarkPositionSelector value
 
 -- | @- numberOfTickMarks@
 numberOfTickMarks :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CLong
-numberOfTickMarks nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "numberOfTickMarks") retCLong []
+numberOfTickMarks nsLevelIndicator =
+  sendMessage nsLevelIndicator numberOfTickMarksSelector
 
 -- | @- setNumberOfTickMarks:@
 setNumberOfTickMarks :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CLong -> IO ()
-setNumberOfTickMarks nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setNumberOfTickMarks:") retVoid [argCLong value]
+setNumberOfTickMarks nsLevelIndicator value =
+  sendMessage nsLevelIndicator setNumberOfTickMarksSelector value
 
 -- | @- numberOfMajorTickMarks@
 numberOfMajorTickMarks :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO CLong
-numberOfMajorTickMarks nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "numberOfMajorTickMarks") retCLong []
+numberOfMajorTickMarks nsLevelIndicator =
+  sendMessage nsLevelIndicator numberOfMajorTickMarksSelector
 
 -- | @- setNumberOfMajorTickMarks:@
 setNumberOfMajorTickMarks :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> CLong -> IO ()
-setNumberOfMajorTickMarks nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setNumberOfMajorTickMarks:") retVoid [argCLong value]
+setNumberOfMajorTickMarks nsLevelIndicator value =
+  sendMessage nsLevelIndicator setNumberOfMajorTickMarksSelector value
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing the "normal" state, and by the Rating indicator when drawing stars. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- fillColor@
 fillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
-fillColor nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "fillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fillColor nsLevelIndicator =
+  sendMessage nsLevelIndicator fillColorSelector
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing the "normal" state, and by the Rating indicator when drawing stars. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- setFillColor:@
 setFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
-setFillColor nsLevelIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLevelIndicator (mkSelector "setFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFillColor nsLevelIndicator value =
+  sendMessage nsLevelIndicator setFillColorSelector (toNSColor value)
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "warning" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- warningFillColor@
 warningFillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
-warningFillColor nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "warningFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+warningFillColor nsLevelIndicator =
+  sendMessage nsLevelIndicator warningFillColorSelector
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "warning" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- setWarningFillColor:@
 setWarningFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
-setWarningFillColor nsLevelIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLevelIndicator (mkSelector "setWarningFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWarningFillColor nsLevelIndicator value =
+  sendMessage nsLevelIndicator setWarningFillColorSelector (toNSColor value)
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "critical" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- criticalFillColor@
 criticalFillColor :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSColor)
-criticalFillColor nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "criticalFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+criticalFillColor nsLevelIndicator =
+  sendMessage nsLevelIndicator criticalFillColorSelector
 
 -- | Sets the fill color used by Continuous and Discrete Capacity indicators when drawing values above the "critical" threshold. The default value is a system-defined color which may vary between level indicator styles and OS releases.
 --
 -- ObjC selector: @- setCriticalFillColor:@
 setCriticalFillColor :: (IsNSLevelIndicator nsLevelIndicator, IsNSColor value) => nsLevelIndicator -> value -> IO ()
-setCriticalFillColor nsLevelIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLevelIndicator (mkSelector "setCriticalFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCriticalFillColor nsLevelIndicator value =
+  sendMessage nsLevelIndicator setCriticalFillColorSelector (toNSColor value)
 
 -- | @- drawsTieredCapacityLevels@
 drawsTieredCapacityLevels :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO Bool
-drawsTieredCapacityLevels nsLevelIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLevelIndicator (mkSelector "drawsTieredCapacityLevels") retCULong []
+drawsTieredCapacityLevels nsLevelIndicator =
+  sendMessage nsLevelIndicator drawsTieredCapacityLevelsSelector
 
 -- | @- setDrawsTieredCapacityLevels:@
 setDrawsTieredCapacityLevels :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> Bool -> IO ()
-setDrawsTieredCapacityLevels nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setDrawsTieredCapacityLevels:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsTieredCapacityLevels nsLevelIndicator value =
+  sendMessage nsLevelIndicator setDrawsTieredCapacityLevelsSelector value
 
 -- | For a Rating-style indicator, sets the conditions under which Rating placeholders are displayed. This property currently has no effect for other indicator styles. The default value is @NSLevelIndicatorPlaceholderVisibilityAutomatic.@
 --
 -- ObjC selector: @- placeholderVisibility@
 placeholderVisibility :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO NSLevelIndicatorPlaceholderVisibility
-placeholderVisibility nsLevelIndicator  =
-    fmap (coerce :: CLong -> NSLevelIndicatorPlaceholderVisibility) $ sendMsg nsLevelIndicator (mkSelector "placeholderVisibility") retCLong []
+placeholderVisibility nsLevelIndicator =
+  sendMessage nsLevelIndicator placeholderVisibilitySelector
 
 -- | For a Rating-style indicator, sets the conditions under which Rating placeholders are displayed. This property currently has no effect for other indicator styles. The default value is @NSLevelIndicatorPlaceholderVisibilityAutomatic.@
 --
 -- ObjC selector: @- setPlaceholderVisibility:@
 setPlaceholderVisibility :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> NSLevelIndicatorPlaceholderVisibility -> IO ()
-setPlaceholderVisibility nsLevelIndicator  value =
-    sendMsg nsLevelIndicator (mkSelector "setPlaceholderVisibility:") retVoid [argCLong (coerce value)]
+setPlaceholderVisibility nsLevelIndicator value =
+  sendMessage nsLevelIndicator setPlaceholderVisibilitySelector value
 
 -- | If non-nil, sets the image used by the Rating indicator style in place of the default star image. The default value is nil.
 --
 -- ObjC selector: @- ratingImage@
 ratingImage :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSImage)
-ratingImage nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "ratingImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingImage nsLevelIndicator =
+  sendMessage nsLevelIndicator ratingImageSelector
 
 -- | If non-nil, sets the image used by the Rating indicator style in place of the default star image. The default value is nil.
 --
 -- ObjC selector: @- setRatingImage:@
 setRatingImage :: (IsNSLevelIndicator nsLevelIndicator, IsNSImage value) => nsLevelIndicator -> value -> IO ()
-setRatingImage nsLevelIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLevelIndicator (mkSelector "setRatingImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRatingImage nsLevelIndicator value =
+  sendMessage nsLevelIndicator setRatingImageSelector (toNSImage value)
 
 -- | If non-nil, sets the image used by the Rating indicator style in place of the default faded placeholder image. The default value is nil.
 --
@@ -303,8 +296,8 @@ setRatingImage nsLevelIndicator  value =
 --
 -- ObjC selector: @- ratingPlaceholderImage@
 ratingPlaceholderImage :: IsNSLevelIndicator nsLevelIndicator => nsLevelIndicator -> IO (Id NSImage)
-ratingPlaceholderImage nsLevelIndicator  =
-    sendMsg nsLevelIndicator (mkSelector "ratingPlaceholderImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingPlaceholderImage nsLevelIndicator =
+  sendMessage nsLevelIndicator ratingPlaceholderImageSelector
 
 -- | If non-nil, sets the image used by the Rating indicator style in place of the default faded placeholder image. The default value is nil.
 --
@@ -314,147 +307,146 @@ ratingPlaceholderImage nsLevelIndicator  =
 --
 -- ObjC selector: @- setRatingPlaceholderImage:@
 setRatingPlaceholderImage :: (IsNSLevelIndicator nsLevelIndicator, IsNSImage value) => nsLevelIndicator -> value -> IO ()
-setRatingPlaceholderImage nsLevelIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLevelIndicator (mkSelector "setRatingPlaceholderImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRatingPlaceholderImage nsLevelIndicator value =
+  sendMessage nsLevelIndicator setRatingPlaceholderImageSelector (toNSImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tickMarkValueAtIndex:@
-tickMarkValueAtIndexSelector :: Selector
+tickMarkValueAtIndexSelector :: Selector '[CLong] CDouble
 tickMarkValueAtIndexSelector = mkSelector "tickMarkValueAtIndex:"
 
 -- | @Selector@ for @rectOfTickMarkAtIndex:@
-rectOfTickMarkAtIndexSelector :: Selector
+rectOfTickMarkAtIndexSelector :: Selector '[CLong] NSRect
 rectOfTickMarkAtIndexSelector = mkSelector "rectOfTickMarkAtIndex:"
 
 -- | @Selector@ for @levelIndicatorStyle@
-levelIndicatorStyleSelector :: Selector
+levelIndicatorStyleSelector :: Selector '[] NSLevelIndicatorStyle
 levelIndicatorStyleSelector = mkSelector "levelIndicatorStyle"
 
 -- | @Selector@ for @setLevelIndicatorStyle:@
-setLevelIndicatorStyleSelector :: Selector
+setLevelIndicatorStyleSelector :: Selector '[NSLevelIndicatorStyle] ()
 setLevelIndicatorStyleSelector = mkSelector "setLevelIndicatorStyle:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @setMinValue:@
-setMinValueSelector :: Selector
+setMinValueSelector :: Selector '[CDouble] ()
 setMinValueSelector = mkSelector "setMinValue:"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @setMaxValue:@
-setMaxValueSelector :: Selector
+setMaxValueSelector :: Selector '[CDouble] ()
 setMaxValueSelector = mkSelector "setMaxValue:"
 
 -- | @Selector@ for @warningValue@
-warningValueSelector :: Selector
+warningValueSelector :: Selector '[] CDouble
 warningValueSelector = mkSelector "warningValue"
 
 -- | @Selector@ for @setWarningValue:@
-setWarningValueSelector :: Selector
+setWarningValueSelector :: Selector '[CDouble] ()
 setWarningValueSelector = mkSelector "setWarningValue:"
 
 -- | @Selector@ for @criticalValue@
-criticalValueSelector :: Selector
+criticalValueSelector :: Selector '[] CDouble
 criticalValueSelector = mkSelector "criticalValue"
 
 -- | @Selector@ for @setCriticalValue:@
-setCriticalValueSelector :: Selector
+setCriticalValueSelector :: Selector '[CDouble] ()
 setCriticalValueSelector = mkSelector "setCriticalValue:"
 
 -- | @Selector@ for @tickMarkPosition@
-tickMarkPositionSelector :: Selector
+tickMarkPositionSelector :: Selector '[] NSTickMarkPosition
 tickMarkPositionSelector = mkSelector "tickMarkPosition"
 
 -- | @Selector@ for @setTickMarkPosition:@
-setTickMarkPositionSelector :: Selector
+setTickMarkPositionSelector :: Selector '[NSTickMarkPosition] ()
 setTickMarkPositionSelector = mkSelector "setTickMarkPosition:"
 
 -- | @Selector@ for @numberOfTickMarks@
-numberOfTickMarksSelector :: Selector
+numberOfTickMarksSelector :: Selector '[] CLong
 numberOfTickMarksSelector = mkSelector "numberOfTickMarks"
 
 -- | @Selector@ for @setNumberOfTickMarks:@
-setNumberOfTickMarksSelector :: Selector
+setNumberOfTickMarksSelector :: Selector '[CLong] ()
 setNumberOfTickMarksSelector = mkSelector "setNumberOfTickMarks:"
 
 -- | @Selector@ for @numberOfMajorTickMarks@
-numberOfMajorTickMarksSelector :: Selector
+numberOfMajorTickMarksSelector :: Selector '[] CLong
 numberOfMajorTickMarksSelector = mkSelector "numberOfMajorTickMarks"
 
 -- | @Selector@ for @setNumberOfMajorTickMarks:@
-setNumberOfMajorTickMarksSelector :: Selector
+setNumberOfMajorTickMarksSelector :: Selector '[CLong] ()
 setNumberOfMajorTickMarksSelector = mkSelector "setNumberOfMajorTickMarks:"
 
 -- | @Selector@ for @fillColor@
-fillColorSelector :: Selector
+fillColorSelector :: Selector '[] (Id NSColor)
 fillColorSelector = mkSelector "fillColor"
 
 -- | @Selector@ for @setFillColor:@
-setFillColorSelector :: Selector
+setFillColorSelector :: Selector '[Id NSColor] ()
 setFillColorSelector = mkSelector "setFillColor:"
 
 -- | @Selector@ for @warningFillColor@
-warningFillColorSelector :: Selector
+warningFillColorSelector :: Selector '[] (Id NSColor)
 warningFillColorSelector = mkSelector "warningFillColor"
 
 -- | @Selector@ for @setWarningFillColor:@
-setWarningFillColorSelector :: Selector
+setWarningFillColorSelector :: Selector '[Id NSColor] ()
 setWarningFillColorSelector = mkSelector "setWarningFillColor:"
 
 -- | @Selector@ for @criticalFillColor@
-criticalFillColorSelector :: Selector
+criticalFillColorSelector :: Selector '[] (Id NSColor)
 criticalFillColorSelector = mkSelector "criticalFillColor"
 
 -- | @Selector@ for @setCriticalFillColor:@
-setCriticalFillColorSelector :: Selector
+setCriticalFillColorSelector :: Selector '[Id NSColor] ()
 setCriticalFillColorSelector = mkSelector "setCriticalFillColor:"
 
 -- | @Selector@ for @drawsTieredCapacityLevels@
-drawsTieredCapacityLevelsSelector :: Selector
+drawsTieredCapacityLevelsSelector :: Selector '[] Bool
 drawsTieredCapacityLevelsSelector = mkSelector "drawsTieredCapacityLevels"
 
 -- | @Selector@ for @setDrawsTieredCapacityLevels:@
-setDrawsTieredCapacityLevelsSelector :: Selector
+setDrawsTieredCapacityLevelsSelector :: Selector '[Bool] ()
 setDrawsTieredCapacityLevelsSelector = mkSelector "setDrawsTieredCapacityLevels:"
 
 -- | @Selector@ for @placeholderVisibility@
-placeholderVisibilitySelector :: Selector
+placeholderVisibilitySelector :: Selector '[] NSLevelIndicatorPlaceholderVisibility
 placeholderVisibilitySelector = mkSelector "placeholderVisibility"
 
 -- | @Selector@ for @setPlaceholderVisibility:@
-setPlaceholderVisibilitySelector :: Selector
+setPlaceholderVisibilitySelector :: Selector '[NSLevelIndicatorPlaceholderVisibility] ()
 setPlaceholderVisibilitySelector = mkSelector "setPlaceholderVisibility:"
 
 -- | @Selector@ for @ratingImage@
-ratingImageSelector :: Selector
+ratingImageSelector :: Selector '[] (Id NSImage)
 ratingImageSelector = mkSelector "ratingImage"
 
 -- | @Selector@ for @setRatingImage:@
-setRatingImageSelector :: Selector
+setRatingImageSelector :: Selector '[Id NSImage] ()
 setRatingImageSelector = mkSelector "setRatingImage:"
 
 -- | @Selector@ for @ratingPlaceholderImage@
-ratingPlaceholderImageSelector :: Selector
+ratingPlaceholderImageSelector :: Selector '[] (Id NSImage)
 ratingPlaceholderImageSelector = mkSelector "ratingPlaceholderImage"
 
 -- | @Selector@ for @setRatingPlaceholderImage:@
-setRatingPlaceholderImageSelector :: Selector
+setRatingPlaceholderImageSelector :: Selector '[Id NSImage] ()
 setRatingPlaceholderImageSelector = mkSelector "setRatingPlaceholderImage:"
 

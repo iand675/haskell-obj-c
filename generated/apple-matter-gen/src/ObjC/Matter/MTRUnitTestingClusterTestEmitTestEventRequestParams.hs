@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRUnitTestingClusterTestEmitTestEventRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , arg1Selector
-  , setArg1Selector
   , arg2Selector
-  , setArg2Selector
   , arg3Selector
-  , setArg3Selector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setArg1Selector
+  , setArg2Selector
+  , setArg3Selector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arg1@
 arg1 :: IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams => mtrUnitTestingClusterTestEmitTestEventRequestParams -> IO (Id NSNumber)
-arg1 mtrUnitTestingClusterTestEmitTestEventRequestParams  =
-    sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "arg1") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg1 mtrUnitTestingClusterTestEmitTestEventRequestParams =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams arg1Selector
 
 -- | @- setArg1:@
 setArg1 :: (IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestEmitTestEventRequestParams -> value -> IO ()
-setArg1 mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "setArg1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg1 mtrUnitTestingClusterTestEmitTestEventRequestParams value =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams setArg1Selector (toNSNumber value)
 
 -- | @- arg2@
 arg2 :: IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams => mtrUnitTestingClusterTestEmitTestEventRequestParams -> IO (Id NSNumber)
-arg2 mtrUnitTestingClusterTestEmitTestEventRequestParams  =
-    sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "arg2") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg2 mtrUnitTestingClusterTestEmitTestEventRequestParams =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams arg2Selector
 
 -- | @- setArg2:@
 setArg2 :: (IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestEmitTestEventRequestParams -> value -> IO ()
-setArg2 mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "setArg2:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg2 mtrUnitTestingClusterTestEmitTestEventRequestParams value =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams setArg2Selector (toNSNumber value)
 
 -- | @- arg3@
 arg3 :: IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams => mtrUnitTestingClusterTestEmitTestEventRequestParams -> IO (Id NSNumber)
-arg3 mtrUnitTestingClusterTestEmitTestEventRequestParams  =
-    sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "arg3") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg3 mtrUnitTestingClusterTestEmitTestEventRequestParams =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams arg3Selector
 
 -- | @- setArg3:@
 setArg3 :: (IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestEmitTestEventRequestParams -> value -> IO ()
-setArg3 mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "setArg3:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg3 mtrUnitTestingClusterTestEmitTestEventRequestParams value =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams setArg3Selector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setArg3 mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams => mtrUnitTestingClusterTestEmitTestEventRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams  =
-    sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestEmitTestEventRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams value =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterTestEmitTestEventRequestParams  val
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams => mtrUnitTestingClusterTestEmitTestEventRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterTestEmitTestEventRequestParams  =
-    sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterTestEmitTestEventRequestParams =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrUnitTestingClusterTestEmitTestEventRequestParams 
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterTestEmitTestEventRequestParams mtrUnitTestingClusterTestEmitTestEventRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestEmitTestEventRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterTestEmitTestEventRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEmitTestEventRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterTestEmitTestEventRequestParams value =
+  sendMessage mtrUnitTestingClusterTestEmitTestEventRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arg1@
-arg1Selector :: Selector
+arg1Selector :: Selector '[] (Id NSNumber)
 arg1Selector = mkSelector "arg1"
 
 -- | @Selector@ for @setArg1:@
-setArg1Selector :: Selector
+setArg1Selector :: Selector '[Id NSNumber] ()
 setArg1Selector = mkSelector "setArg1:"
 
 -- | @Selector@ for @arg2@
-arg2Selector :: Selector
+arg2Selector :: Selector '[] (Id NSNumber)
 arg2Selector = mkSelector "arg2"
 
 -- | @Selector@ for @setArg2:@
-setArg2Selector :: Selector
+setArg2Selector :: Selector '[Id NSNumber] ()
 setArg2Selector = mkSelector "setArg2:"
 
 -- | @Selector@ for @arg3@
-arg3Selector :: Selector
+arg3Selector :: Selector '[] (Id NSNumber)
 arg3Selector = mkSelector "arg3"
 
 -- | @Selector@ for @setArg3:@
-setArg3Selector :: Selector
+setArg3Selector :: Selector '[Id NSNumber] ()
 setArg3Selector = mkSelector "setArg3:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

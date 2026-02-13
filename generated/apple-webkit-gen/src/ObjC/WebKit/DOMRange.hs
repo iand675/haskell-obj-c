@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,54 +42,50 @@ module ObjC.WebKit.DOMRange
   , text
   , webArchive
   , markupString
-  , setStart_offsetSelector
-  , setEnd_offsetSelector
-  , setStartBeforeSelector
-  , setStartAfterSelector
-  , setEndBeforeSelector
-  , setEndAfterSelector
-  , collapseSelector
-  , selectNodeSelector
-  , selectNodeContentsSelector
-  , compareBoundaryPoints_sourceRangeSelector
-  , deleteContentsSelector
-  , extractContentsSelector
   , cloneContentsSelector
-  , insertNodeSelector
-  , surroundContentsSelector
   , cloneRangeSelector
-  , toStringSelector
-  , detachSelector
-  , createContextualFragmentSelector
-  , compareNodeSelector
-  , intersectsNodeSelector
-  , comparePoint_offsetSelector
-  , isPointInRange_offsetSelector
-  , setStartSelector
-  , setEndSelector
-  , compareBoundaryPointsSelector
-  , startContainerSelector
-  , startOffsetSelector
-  , endContainerSelector
-  , endOffsetSelector
+  , collapseSelector
   , collapsedSelector
   , commonAncestorContainerSelector
-  , textSelector
-  , webArchiveSelector
+  , compareBoundaryPointsSelector
+  , compareBoundaryPoints_sourceRangeSelector
+  , compareNodeSelector
+  , comparePoint_offsetSelector
+  , createContextualFragmentSelector
+  , deleteContentsSelector
+  , detachSelector
+  , endContainerSelector
+  , endOffsetSelector
+  , extractContentsSelector
+  , insertNodeSelector
+  , intersectsNodeSelector
+  , isPointInRange_offsetSelector
   , markupStringSelector
+  , selectNodeContentsSelector
+  , selectNodeSelector
+  , setEndAfterSelector
+  , setEndBeforeSelector
+  , setEndSelector
+  , setEnd_offsetSelector
+  , setStartAfterSelector
+  , setStartBeforeSelector
+  , setStartSelector
+  , setStart_offsetSelector
+  , startContainerSelector
+  , startOffsetSelector
+  , surroundContentsSelector
+  , textSelector
+  , toStringSelector
+  , webArchiveSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,187 +94,168 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setStart:offset:@
 setStart_offset :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO ()
-setStart_offset domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setStart:offset:") retVoid [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+setStart_offset domRange refNode offset =
+  sendMessage domRange setStart_offsetSelector (toDOMNode refNode) offset
 
 -- | @- setEnd:offset:@
 setEnd_offset :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO ()
-setEnd_offset domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setEnd:offset:") retVoid [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+setEnd_offset domRange refNode offset =
+  sendMessage domRange setEnd_offsetSelector (toDOMNode refNode) offset
 
 -- | @- setStartBefore:@
 setStartBefore :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-setStartBefore domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setStartBefore:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+setStartBefore domRange refNode =
+  sendMessage domRange setStartBeforeSelector (toDOMNode refNode)
 
 -- | @- setStartAfter:@
 setStartAfter :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-setStartAfter domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setStartAfter:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+setStartAfter domRange refNode =
+  sendMessage domRange setStartAfterSelector (toDOMNode refNode)
 
 -- | @- setEndBefore:@
 setEndBefore :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-setEndBefore domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setEndBefore:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+setEndBefore domRange refNode =
+  sendMessage domRange setEndBeforeSelector (toDOMNode refNode)
 
 -- | @- setEndAfter:@
 setEndAfter :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-setEndAfter domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setEndAfter:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+setEndAfter domRange refNode =
+  sendMessage domRange setEndAfterSelector (toDOMNode refNode)
 
 -- | @- collapse:@
 collapse :: IsDOMRange domRange => domRange -> Bool -> IO ()
-collapse domRange  toStart =
-    sendMsg domRange (mkSelector "collapse:") retVoid [argCULong (if toStart then 1 else 0)]
+collapse domRange toStart =
+  sendMessage domRange collapseSelector toStart
 
 -- | @- selectNode:@
 selectNode :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-selectNode domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "selectNode:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+selectNode domRange refNode =
+  sendMessage domRange selectNodeSelector (toDOMNode refNode)
 
 -- | @- selectNodeContents:@
 selectNodeContents :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO ()
-selectNodeContents domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "selectNodeContents:") retVoid [argPtr (castPtr raw_refNode :: Ptr ())]
+selectNodeContents domRange refNode =
+  sendMessage domRange selectNodeContentsSelector (toDOMNode refNode)
 
 -- | @- compareBoundaryPoints:sourceRange:@
 compareBoundaryPoints_sourceRange :: (IsDOMRange domRange, IsDOMRange sourceRange) => domRange -> CUShort -> sourceRange -> IO CShort
-compareBoundaryPoints_sourceRange domRange  how sourceRange =
-  withObjCPtr sourceRange $ \raw_sourceRange ->
-      fmap fromIntegral $ sendMsg domRange (mkSelector "compareBoundaryPoints:sourceRange:") retCInt [argCUInt (fromIntegral how), argPtr (castPtr raw_sourceRange :: Ptr ())]
+compareBoundaryPoints_sourceRange domRange how sourceRange =
+  sendMessage domRange compareBoundaryPoints_sourceRangeSelector how (toDOMRange sourceRange)
 
 -- | @- deleteContents@
 deleteContents :: IsDOMRange domRange => domRange -> IO ()
-deleteContents domRange  =
-    sendMsg domRange (mkSelector "deleteContents") retVoid []
+deleteContents domRange =
+  sendMessage domRange deleteContentsSelector
 
 -- | @- extractContents@
 extractContents :: IsDOMRange domRange => domRange -> IO (Id DOMDocumentFragment)
-extractContents domRange  =
-    sendMsg domRange (mkSelector "extractContents") (retPtr retVoid) [] >>= retainedObject . castPtr
+extractContents domRange =
+  sendMessage domRange extractContentsSelector
 
 -- | @- cloneContents@
 cloneContents :: IsDOMRange domRange => domRange -> IO (Id DOMDocumentFragment)
-cloneContents domRange  =
-    sendMsg domRange (mkSelector "cloneContents") (retPtr retVoid) [] >>= retainedObject . castPtr
+cloneContents domRange =
+  sendMessage domRange cloneContentsSelector
 
 -- | @- insertNode:@
 insertNode :: (IsDOMRange domRange, IsDOMNode newNode) => domRange -> newNode -> IO ()
-insertNode domRange  newNode =
-  withObjCPtr newNode $ \raw_newNode ->
-      sendMsg domRange (mkSelector "insertNode:") retVoid [argPtr (castPtr raw_newNode :: Ptr ())]
+insertNode domRange newNode =
+  sendMessage domRange insertNodeSelector (toDOMNode newNode)
 
 -- | @- surroundContents:@
 surroundContents :: (IsDOMRange domRange, IsDOMNode newParent) => domRange -> newParent -> IO ()
-surroundContents domRange  newParent =
-  withObjCPtr newParent $ \raw_newParent ->
-      sendMsg domRange (mkSelector "surroundContents:") retVoid [argPtr (castPtr raw_newParent :: Ptr ())]
+surroundContents domRange newParent =
+  sendMessage domRange surroundContentsSelector (toDOMNode newParent)
 
 -- | @- cloneRange@
 cloneRange :: IsDOMRange domRange => domRange -> IO (Id DOMRange)
-cloneRange domRange  =
-    sendMsg domRange (mkSelector "cloneRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+cloneRange domRange =
+  sendMessage domRange cloneRangeSelector
 
 -- | @- toString@
 toString :: IsDOMRange domRange => domRange -> IO (Id NSString)
-toString domRange  =
-    sendMsg domRange (mkSelector "toString") (retPtr retVoid) [] >>= retainedObject . castPtr
+toString domRange =
+  sendMessage domRange toStringSelector
 
 -- | @- detach@
 detach :: IsDOMRange domRange => domRange -> IO ()
-detach domRange  =
-    sendMsg domRange (mkSelector "detach") retVoid []
+detach domRange =
+  sendMessage domRange detachSelector
 
 -- | @- createContextualFragment:@
 createContextualFragment :: (IsDOMRange domRange, IsNSString html) => domRange -> html -> IO (Id DOMDocumentFragment)
-createContextualFragment domRange  html =
-  withObjCPtr html $ \raw_html ->
-      sendMsg domRange (mkSelector "createContextualFragment:") (retPtr retVoid) [argPtr (castPtr raw_html :: Ptr ())] >>= retainedObject . castPtr
+createContextualFragment domRange html =
+  sendMessage domRange createContextualFragmentSelector (toNSString html)
 
 -- | @- compareNode:@
 compareNode :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO CShort
-compareNode domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      fmap fromIntegral $ sendMsg domRange (mkSelector "compareNode:") retCInt [argPtr (castPtr raw_refNode :: Ptr ())]
+compareNode domRange refNode =
+  sendMessage domRange compareNodeSelector (toDOMNode refNode)
 
 -- | @- intersectsNode:@
 intersectsNode :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> IO Bool
-intersectsNode domRange  refNode =
-  withObjCPtr refNode $ \raw_refNode ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domRange (mkSelector "intersectsNode:") retCULong [argPtr (castPtr raw_refNode :: Ptr ())]
+intersectsNode domRange refNode =
+  sendMessage domRange intersectsNodeSelector (toDOMNode refNode)
 
 -- | @- comparePoint:offset:@
 comparePoint_offset :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO CShort
-comparePoint_offset domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      fmap fromIntegral $ sendMsg domRange (mkSelector "comparePoint:offset:") retCInt [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+comparePoint_offset domRange refNode offset =
+  sendMessage domRange comparePoint_offsetSelector (toDOMNode refNode) offset
 
 -- | @- isPointInRange:offset:@
 isPointInRange_offset :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO Bool
-isPointInRange_offset domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domRange (mkSelector "isPointInRange:offset:") retCULong [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+isPointInRange_offset domRange refNode offset =
+  sendMessage domRange isPointInRange_offsetSelector (toDOMNode refNode) offset
 
 -- | @- setStart::@
 setStart :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO ()
-setStart domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setStart::") retVoid [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+setStart domRange refNode offset =
+  sendMessage domRange setStartSelector (toDOMNode refNode) offset
 
 -- | @- setEnd::@
 setEnd :: (IsDOMRange domRange, IsDOMNode refNode) => domRange -> refNode -> CInt -> IO ()
-setEnd domRange  refNode offset =
-  withObjCPtr refNode $ \raw_refNode ->
-      sendMsg domRange (mkSelector "setEnd::") retVoid [argPtr (castPtr raw_refNode :: Ptr ()), argCInt offset]
+setEnd domRange refNode offset =
+  sendMessage domRange setEndSelector (toDOMNode refNode) offset
 
 -- | @- compareBoundaryPoints::@
 compareBoundaryPoints :: (IsDOMRange domRange, IsDOMRange sourceRange) => domRange -> CUShort -> sourceRange -> IO CShort
-compareBoundaryPoints domRange  how sourceRange =
-  withObjCPtr sourceRange $ \raw_sourceRange ->
-      fmap fromIntegral $ sendMsg domRange (mkSelector "compareBoundaryPoints::") retCInt [argCUInt (fromIntegral how), argPtr (castPtr raw_sourceRange :: Ptr ())]
+compareBoundaryPoints domRange how sourceRange =
+  sendMessage domRange compareBoundaryPointsSelector how (toDOMRange sourceRange)
 
 -- | @- startContainer@
 startContainer :: IsDOMRange domRange => domRange -> IO (Id DOMNode)
-startContainer domRange  =
-    sendMsg domRange (mkSelector "startContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+startContainer domRange =
+  sendMessage domRange startContainerSelector
 
 -- | @- startOffset@
 startOffset :: IsDOMRange domRange => domRange -> IO CInt
-startOffset domRange  =
-    sendMsg domRange (mkSelector "startOffset") retCInt []
+startOffset domRange =
+  sendMessage domRange startOffsetSelector
 
 -- | @- endContainer@
 endContainer :: IsDOMRange domRange => domRange -> IO (Id DOMNode)
-endContainer domRange  =
-    sendMsg domRange (mkSelector "endContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+endContainer domRange =
+  sendMessage domRange endContainerSelector
 
 -- | @- endOffset@
 endOffset :: IsDOMRange domRange => domRange -> IO CInt
-endOffset domRange  =
-    sendMsg domRange (mkSelector "endOffset") retCInt []
+endOffset domRange =
+  sendMessage domRange endOffsetSelector
 
 -- | @- collapsed@
 collapsed :: IsDOMRange domRange => domRange -> IO Bool
-collapsed domRange  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domRange (mkSelector "collapsed") retCULong []
+collapsed domRange =
+  sendMessage domRange collapsedSelector
 
 -- | @- commonAncestorContainer@
 commonAncestorContainer :: IsDOMRange domRange => domRange -> IO (Id DOMNode)
-commonAncestorContainer domRange  =
-    sendMsg domRange (mkSelector "commonAncestorContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonAncestorContainer domRange =
+  sendMessage domRange commonAncestorContainerSelector
 
 -- | @- text@
 text :: IsDOMRange domRange => domRange -> IO (Id NSString)
-text domRange  =
-    sendMsg domRange (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text domRange =
+  sendMessage domRange textSelector
 
 -- | webArchive
 --
@@ -285,8 +263,8 @@ text domRange  =
 --
 -- ObjC selector: @- webArchive@
 webArchive :: IsDOMRange domRange => domRange -> IO (Id WebArchive)
-webArchive domRange  =
-    sendMsg domRange (mkSelector "webArchive") (retPtr retVoid) [] >>= retainedObject . castPtr
+webArchive domRange =
+  sendMessage domRange webArchiveSelector
 
 -- | markupString
 --
@@ -294,150 +272,150 @@ webArchive domRange  =
 --
 -- ObjC selector: @- markupString@
 markupString :: IsDOMRange domRange => domRange -> IO (Id NSString)
-markupString domRange  =
-    sendMsg domRange (mkSelector "markupString") (retPtr retVoid) [] >>= retainedObject . castPtr
+markupString domRange =
+  sendMessage domRange markupStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setStart:offset:@
-setStart_offsetSelector :: Selector
+setStart_offsetSelector :: Selector '[Id DOMNode, CInt] ()
 setStart_offsetSelector = mkSelector "setStart:offset:"
 
 -- | @Selector@ for @setEnd:offset:@
-setEnd_offsetSelector :: Selector
+setEnd_offsetSelector :: Selector '[Id DOMNode, CInt] ()
 setEnd_offsetSelector = mkSelector "setEnd:offset:"
 
 -- | @Selector@ for @setStartBefore:@
-setStartBeforeSelector :: Selector
+setStartBeforeSelector :: Selector '[Id DOMNode] ()
 setStartBeforeSelector = mkSelector "setStartBefore:"
 
 -- | @Selector@ for @setStartAfter:@
-setStartAfterSelector :: Selector
+setStartAfterSelector :: Selector '[Id DOMNode] ()
 setStartAfterSelector = mkSelector "setStartAfter:"
 
 -- | @Selector@ for @setEndBefore:@
-setEndBeforeSelector :: Selector
+setEndBeforeSelector :: Selector '[Id DOMNode] ()
 setEndBeforeSelector = mkSelector "setEndBefore:"
 
 -- | @Selector@ for @setEndAfter:@
-setEndAfterSelector :: Selector
+setEndAfterSelector :: Selector '[Id DOMNode] ()
 setEndAfterSelector = mkSelector "setEndAfter:"
 
 -- | @Selector@ for @collapse:@
-collapseSelector :: Selector
+collapseSelector :: Selector '[Bool] ()
 collapseSelector = mkSelector "collapse:"
 
 -- | @Selector@ for @selectNode:@
-selectNodeSelector :: Selector
+selectNodeSelector :: Selector '[Id DOMNode] ()
 selectNodeSelector = mkSelector "selectNode:"
 
 -- | @Selector@ for @selectNodeContents:@
-selectNodeContentsSelector :: Selector
+selectNodeContentsSelector :: Selector '[Id DOMNode] ()
 selectNodeContentsSelector = mkSelector "selectNodeContents:"
 
 -- | @Selector@ for @compareBoundaryPoints:sourceRange:@
-compareBoundaryPoints_sourceRangeSelector :: Selector
+compareBoundaryPoints_sourceRangeSelector :: Selector '[CUShort, Id DOMRange] CShort
 compareBoundaryPoints_sourceRangeSelector = mkSelector "compareBoundaryPoints:sourceRange:"
 
 -- | @Selector@ for @deleteContents@
-deleteContentsSelector :: Selector
+deleteContentsSelector :: Selector '[] ()
 deleteContentsSelector = mkSelector "deleteContents"
 
 -- | @Selector@ for @extractContents@
-extractContentsSelector :: Selector
+extractContentsSelector :: Selector '[] (Id DOMDocumentFragment)
 extractContentsSelector = mkSelector "extractContents"
 
 -- | @Selector@ for @cloneContents@
-cloneContentsSelector :: Selector
+cloneContentsSelector :: Selector '[] (Id DOMDocumentFragment)
 cloneContentsSelector = mkSelector "cloneContents"
 
 -- | @Selector@ for @insertNode:@
-insertNodeSelector :: Selector
+insertNodeSelector :: Selector '[Id DOMNode] ()
 insertNodeSelector = mkSelector "insertNode:"
 
 -- | @Selector@ for @surroundContents:@
-surroundContentsSelector :: Selector
+surroundContentsSelector :: Selector '[Id DOMNode] ()
 surroundContentsSelector = mkSelector "surroundContents:"
 
 -- | @Selector@ for @cloneRange@
-cloneRangeSelector :: Selector
+cloneRangeSelector :: Selector '[] (Id DOMRange)
 cloneRangeSelector = mkSelector "cloneRange"
 
 -- | @Selector@ for @toString@
-toStringSelector :: Selector
+toStringSelector :: Selector '[] (Id NSString)
 toStringSelector = mkSelector "toString"
 
 -- | @Selector@ for @detach@
-detachSelector :: Selector
+detachSelector :: Selector '[] ()
 detachSelector = mkSelector "detach"
 
 -- | @Selector@ for @createContextualFragment:@
-createContextualFragmentSelector :: Selector
+createContextualFragmentSelector :: Selector '[Id NSString] (Id DOMDocumentFragment)
 createContextualFragmentSelector = mkSelector "createContextualFragment:"
 
 -- | @Selector@ for @compareNode:@
-compareNodeSelector :: Selector
+compareNodeSelector :: Selector '[Id DOMNode] CShort
 compareNodeSelector = mkSelector "compareNode:"
 
 -- | @Selector@ for @intersectsNode:@
-intersectsNodeSelector :: Selector
+intersectsNodeSelector :: Selector '[Id DOMNode] Bool
 intersectsNodeSelector = mkSelector "intersectsNode:"
 
 -- | @Selector@ for @comparePoint:offset:@
-comparePoint_offsetSelector :: Selector
+comparePoint_offsetSelector :: Selector '[Id DOMNode, CInt] CShort
 comparePoint_offsetSelector = mkSelector "comparePoint:offset:"
 
 -- | @Selector@ for @isPointInRange:offset:@
-isPointInRange_offsetSelector :: Selector
+isPointInRange_offsetSelector :: Selector '[Id DOMNode, CInt] Bool
 isPointInRange_offsetSelector = mkSelector "isPointInRange:offset:"
 
 -- | @Selector@ for @setStart::@
-setStartSelector :: Selector
+setStartSelector :: Selector '[Id DOMNode, CInt] ()
 setStartSelector = mkSelector "setStart::"
 
 -- | @Selector@ for @setEnd::@
-setEndSelector :: Selector
+setEndSelector :: Selector '[Id DOMNode, CInt] ()
 setEndSelector = mkSelector "setEnd::"
 
 -- | @Selector@ for @compareBoundaryPoints::@
-compareBoundaryPointsSelector :: Selector
+compareBoundaryPointsSelector :: Selector '[CUShort, Id DOMRange] CShort
 compareBoundaryPointsSelector = mkSelector "compareBoundaryPoints::"
 
 -- | @Selector@ for @startContainer@
-startContainerSelector :: Selector
+startContainerSelector :: Selector '[] (Id DOMNode)
 startContainerSelector = mkSelector "startContainer"
 
 -- | @Selector@ for @startOffset@
-startOffsetSelector :: Selector
+startOffsetSelector :: Selector '[] CInt
 startOffsetSelector = mkSelector "startOffset"
 
 -- | @Selector@ for @endContainer@
-endContainerSelector :: Selector
+endContainerSelector :: Selector '[] (Id DOMNode)
 endContainerSelector = mkSelector "endContainer"
 
 -- | @Selector@ for @endOffset@
-endOffsetSelector :: Selector
+endOffsetSelector :: Selector '[] CInt
 endOffsetSelector = mkSelector "endOffset"
 
 -- | @Selector@ for @collapsed@
-collapsedSelector :: Selector
+collapsedSelector :: Selector '[] Bool
 collapsedSelector = mkSelector "collapsed"
 
 -- | @Selector@ for @commonAncestorContainer@
-commonAncestorContainerSelector :: Selector
+commonAncestorContainerSelector :: Selector '[] (Id DOMNode)
 commonAncestorContainerSelector = mkSelector "commonAncestorContainer"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @webArchive@
-webArchiveSelector :: Selector
+webArchiveSelector :: Selector '[] (Id WebArchive)
 webArchiveSelector = mkSelector "webArchive"
 
 -- | @Selector@ for @markupString@
-markupStringSelector :: Selector
+markupStringSelector :: Selector '[] (Id NSString)
 markupStringSelector = mkSelector "markupString"
 

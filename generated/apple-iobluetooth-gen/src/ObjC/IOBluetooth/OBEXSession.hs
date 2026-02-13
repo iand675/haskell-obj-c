@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,44 +32,40 @@ module ObjC.IOBluetooth.OBEXSession
   , openTransportConnection_selectorTarget_refCon
   , hasOpenTransportConnection
   , closeTransportConnection
-  , obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector
-  , obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector
-  , obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
-  , obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , clientHandleIncomingDataSelector
+  , closeTransportConnectionSelector
   , getAvailableCommandPayloadLengthSelector
   , getAvailableCommandResponsePayloadLengthSelector
   , getMaxPacketLengthSelector
   , hasOpenOBEXConnectionSelector
+  , hasOpenTransportConnectionSelector
+  , obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector
+  , obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector
+  , obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector
+  , openTransportConnection_selectorTarget_refConSelector
+  , sendDataToTransport_dataLengthSelector
+  , serverHandleIncomingDataSelector
   , setEventCallbackSelector
   , setEventRefConSelector
   , setEventSelector_target_refConSelector
-  , serverHandleIncomingDataSelector
-  , clientHandleIncomingDataSelector
-  , sendDataToTransport_dataLengthSelector
-  , openTransportConnection_selectorTarget_refConSelector
-  , hasOpenTransportConnectionSelector
-  , closeTransportConnectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,9 +98,9 @@ import ObjC.Foundation.Internal.Classes
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector. If you have already established an OBEX				connection and you call this again you will get an 'kOBEXSessionAlreadyConnectedError' as a result.
 --
 -- ObjC selector: @- OBEXConnect:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUShort -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXConnect:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inFlags, argCUInt (fromIntegral inMaxPacketLength), argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUShort -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXDisconnect
 --
@@ -126,9 +123,9 @@ obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector.				Be careful not to exceed the max packet length in your optional headers, or your command will be rejected.				It is recommended that you call getMaxPacketLength on your session before issuing this command so				you know how much data the session's target will accept in a single transaction.
 --
 -- ObjC selector: @- OBEXDisconnect:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXDisconnect:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXPut
 --
@@ -157,9 +154,9 @@ obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSes
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector.
 --
 -- ObjC selector: @- OBEXPut:headersData:headersDataLength:bodyData:bodyDataLength:eventSelector:selectorTarget:refCon:@
-obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refCon obexSession  isFinalChunk inHeadersData inHeadersDataLength inBodyData inBodyDataLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXPut:headersData:headersDataLength:bodyData:bodyDataLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar isFinalChunk, argPtr inHeadersData, argCULong inHeadersDataLength, argPtr inBodyData, argCULong inBodyDataLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refCon obexSession isFinalChunk inHeadersData inHeadersDataLength inBodyData inBodyDataLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector isFinalChunk inHeadersData inHeadersDataLength inBodyData inBodyDataLength inSelector inTarget inUserRefCon
 
 -- | OBEXGet
 --
@@ -184,9 +181,9 @@ obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_sele
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector.
 --
 -- ObjC selector: @- OBEXGet:headers:headersLength:eventSelector:selectorTarget:refCon:@
-obexGet_headers_headersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexGet_headers_headersLength_eventSelector_selectorTarget_refCon obexSession  isFinalChunk inHeaders inHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXGet:headers:headersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar isFinalChunk, argPtr inHeaders, argCULong inHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexGet_headers_headersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexGet_headers_headersLength_eventSelector_selectorTarget_refCon obexSession isFinalChunk inHeaders inHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector isFinalChunk inHeaders inHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXAbort
 --
@@ -209,9 +206,9 @@ obexGet_headers_headersLength_eventSelector_selectorTarget_refCon obexSession  i
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector.
 --
 -- ObjC selector: @- OBEXAbort:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXAbort:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXSetPath
 --
@@ -238,9 +235,9 @@ obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession 
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				transport. You will receive a response to your command on your selector.
 --
 -- ObjC selector: @- OBEXSetPath:constants:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inFlags inConstants inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXSetPath:constants:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inFlags, argCUChar inConstants, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inFlags inConstants inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inFlags inConstants inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXConnectResponse
 --
@@ -269,9 +266,9 @@ obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_select
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXConnectResponse:flags:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUChar -> CUShort -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXConnectResponse:flags:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argCUChar inFlags, argCUInt (fromIntegral inMaxPacketLength), argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> CUChar -> CUShort -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inFlags inMaxPacketLength inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXDisconnectResponse
 --
@@ -296,9 +293,9 @@ obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXDisconnectResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXDisconnectResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXPutResponse
 --
@@ -323,9 +320,9 @@ obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selec
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXPutResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXPutResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXGetResponse
 --
@@ -350,9 +347,9 @@ obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarg
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXGetResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXGetResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXAbortResponse
 --
@@ -377,9 +374,9 @@ obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarg
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXAbortResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXAbortResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | OBEXSetPathResponse
 --
@@ -404,9 +401,9 @@ obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTa
 -- A NULL selector or target will result in an error. After return, the data passed in will have been sent over the				underlying OBEX transport. You will receive any responses to your command response on your selector.
 --
 -- ObjC selector: @- OBEXSetPathResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Selector -> RawId -> Ptr () -> IO CInt
-obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession  inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "OBEXSetPathResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:") retCInt [argCUChar inResponseOpCode, argPtr inOptionalHeaders, argCULong inOptionalHeadersLength, argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> CUChar -> Ptr () -> CULong -> Sel -> RawId -> Ptr () -> IO CInt
+obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refCon obexSession inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon =
+  sendMessage obexSession obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector inResponseOpCode inOptionalHeaders inOptionalHeadersLength inSelector inTarget inUserRefCon
 
 -- | getAvailableCommandPayloadLength
 --
@@ -420,8 +417,8 @@ obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selector
 --
 -- ObjC selector: @- getAvailableCommandPayloadLength:@
 getAvailableCommandPayloadLength :: IsOBEXSession obexSession => obexSession -> CUChar -> IO CUShort
-getAvailableCommandPayloadLength obexSession  inOpCode =
-    fmap fromIntegral $ sendMsg obexSession (mkSelector "getAvailableCommandPayloadLength:") retCUInt [argCUChar inOpCode]
+getAvailableCommandPayloadLength obexSession inOpCode =
+  sendMessage obexSession getAvailableCommandPayloadLengthSelector inOpCode
 
 -- | getAvailableCommandResponsePayloadLength
 --
@@ -435,8 +432,8 @@ getAvailableCommandPayloadLength obexSession  inOpCode =
 --
 -- ObjC selector: @- getAvailableCommandResponsePayloadLength:@
 getAvailableCommandResponsePayloadLength :: IsOBEXSession obexSession => obexSession -> CUChar -> IO CUShort
-getAvailableCommandResponsePayloadLength obexSession  inOpCode =
-    fmap fromIntegral $ sendMsg obexSession (mkSelector "getAvailableCommandResponsePayloadLength:") retCUInt [argCUChar inOpCode]
+getAvailableCommandResponsePayloadLength obexSession inOpCode =
+  sendMessage obexSession getAvailableCommandResponsePayloadLengthSelector inOpCode
 
 -- | getMaxPacketLength
 --
@@ -448,8 +445,8 @@ getAvailableCommandResponsePayloadLength obexSession  inOpCode =
 --
 -- ObjC selector: @- getMaxPacketLength@
 getMaxPacketLength :: IsOBEXSession obexSession => obexSession -> IO CUShort
-getMaxPacketLength obexSession  =
-    fmap fromIntegral $ sendMsg obexSession (mkSelector "getMaxPacketLength") retCUInt []
+getMaxPacketLength obexSession =
+  sendMessage obexSession getMaxPacketLengthSelector
 
 -- | hasOpenOBEXConnection
 --
@@ -461,8 +458,8 @@ getMaxPacketLength obexSession  =
 --
 -- ObjC selector: @- hasOpenOBEXConnection@
 hasOpenOBEXConnection :: IsOBEXSession obexSession => obexSession -> IO Bool
-hasOpenOBEXConnection obexSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg obexSession (mkSelector "hasOpenOBEXConnection") retCULong []
+hasOpenOBEXConnection obexSession =
+  sendMessage obexSession hasOpenOBEXConnectionSelector
 
 -- | setEventCallback
 --
@@ -474,8 +471,8 @@ hasOpenOBEXConnection obexSession  =
 --
 -- ObjC selector: @- setEventCallback:@
 setEventCallback :: IsOBEXSession obexSession => obexSession -> Ptr () -> IO ()
-setEventCallback obexSession  inEventCallback =
-    sendMsg obexSession (mkSelector "setEventCallback:") retVoid [argPtr inEventCallback]
+setEventCallback obexSession inEventCallback =
+  sendMessage obexSession setEventCallbackSelector inEventCallback
 
 -- | setEventRefCon
 --
@@ -487,8 +484,8 @@ setEventCallback obexSession  inEventCallback =
 --
 -- ObjC selector: @- setEventRefCon:@
 setEventRefCon :: IsOBEXSession obexSession => obexSession -> Ptr () -> IO ()
-setEventRefCon obexSession  inRefCon =
-    sendMsg obexSession (mkSelector "setEventRefCon:") retVoid [argPtr inRefCon]
+setEventRefCon obexSession inRefCon =
+  sendMessage obexSession setEventRefConSelector inRefCon
 
 -- | setEventSelector
 --
@@ -503,9 +500,9 @@ setEventRefCon obexSession  inRefCon =
 -- Really not needed to be used, since the event selector will get set when an OBEX command is sent out.
 --
 -- ObjC selector: @- setEventSelector:target:refCon:@
-setEventSelector_target_refCon :: IsOBEXSession obexSession => obexSession -> Selector -> RawId -> Ptr () -> IO ()
-setEventSelector_target_refCon obexSession  inEventSelector inEventSelectorTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "setEventSelector:target:refCon:") retVoid [argPtr (unSelector inEventSelector), argPtr (castPtr (unRawId inEventSelectorTarget) :: Ptr ()), argPtr inUserRefCon]
+setEventSelector_target_refCon :: IsOBEXSession obexSession => obexSession -> Sel -> RawId -> Ptr () -> IO ()
+setEventSelector_target_refCon obexSession inEventSelector inEventSelectorTarget inUserRefCon =
+  sendMessage obexSession setEventSelector_target_refConSelector inEventSelector inEventSelectorTarget inUserRefCon
 
 -- | serverHandleIncomingData
 --
@@ -517,8 +514,8 @@ setEventSelector_target_refCon obexSession  inEventSelector inEventSelectorTarge
 --
 -- ObjC selector: @- serverHandleIncomingData:@
 serverHandleIncomingData :: IsOBEXSession obexSession => obexSession -> Ptr OBEXTransportEvent -> IO ()
-serverHandleIncomingData obexSession  event =
-    sendMsg obexSession (mkSelector "serverHandleIncomingData:") retVoid [argPtr event]
+serverHandleIncomingData obexSession event =
+  sendMessage obexSession serverHandleIncomingDataSelector event
 
 -- | clientHandleIncomingData
 --
@@ -530,8 +527,8 @@ serverHandleIncomingData obexSession  event =
 --
 -- ObjC selector: @- clientHandleIncomingData:@
 clientHandleIncomingData :: IsOBEXSession obexSession => obexSession -> Ptr OBEXTransportEvent -> IO ()
-clientHandleIncomingData obexSession  event =
-    sendMsg obexSession (mkSelector "clientHandleIncomingData:") retVoid [argPtr event]
+clientHandleIncomingData obexSession event =
+  sendMessage obexSession clientHandleIncomingDataSelector event
 
 -- | sendDataToTransport
 --
@@ -547,8 +544,8 @@ clientHandleIncomingData obexSession  event =
 --
 -- ObjC selector: @- sendDataToTransport:dataLength:@
 sendDataToTransport_dataLength :: IsOBEXSession obexSession => obexSession -> Ptr () -> CULong -> IO CInt
-sendDataToTransport_dataLength obexSession  inDataToSend inDataLength =
-    sendMsg obexSession (mkSelector "sendDataToTransport:dataLength:") retCInt [argPtr inDataToSend, argCULong inDataLength]
+sendDataToTransport_dataLength obexSession inDataToSend inDataLength =
+  sendMessage obexSession sendDataToTransport_dataLengthSelector inDataToSend inDataLength
 
 -- | openTransportConnection
 --
@@ -565,9 +562,9 @@ sendDataToTransport_dataLength obexSession  inDataToSend inDataLength =
 -- Tranport subclasses must override this! when called you should attempt to open your transport				connection, and if you are successful, return kOBEXSuccess, otherwise an interesting error code.
 --
 -- ObjC selector: @- openTransportConnection:selectorTarget:refCon:@
-openTransportConnection_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Selector -> RawId -> Ptr () -> IO CInt
-openTransportConnection_selectorTarget_refCon obexSession  inSelector inTarget inUserRefCon =
-    sendMsg obexSession (mkSelector "openTransportConnection:selectorTarget:refCon:") retCInt [argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+openTransportConnection_selectorTarget_refCon :: IsOBEXSession obexSession => obexSession -> Sel -> RawId -> Ptr () -> IO CInt
+openTransportConnection_selectorTarget_refCon obexSession inSelector inTarget inUserRefCon =
+  sendMessage obexSession openTransportConnection_selectorTarget_refConSelector inSelector inTarget inUserRefCon
 
 -- | hasOpenTransportConnection
 --
@@ -579,8 +576,8 @@ openTransportConnection_selectorTarget_refCon obexSession  inSelector inTarget i
 --
 -- ObjC selector: @- hasOpenTransportConnection@
 hasOpenTransportConnection :: IsOBEXSession obexSession => obexSession -> IO CUChar
-hasOpenTransportConnection obexSession  =
-    sendMsg obexSession (mkSelector "hasOpenTransportConnection") retCUChar []
+hasOpenTransportConnection obexSession =
+  sendMessage obexSession hasOpenTransportConnectionSelector
 
 -- | closeTransportConnection
 --
@@ -592,110 +589,110 @@ hasOpenTransportConnection obexSession  =
 --
 -- ObjC selector: @- closeTransportConnection@
 closeTransportConnection :: IsOBEXSession obexSession => obexSession -> IO CInt
-closeTransportConnection obexSession  =
-    sendMsg obexSession (mkSelector "closeTransportConnection") retCInt []
+closeTransportConnection obexSession =
+  sendMessage obexSession closeTransportConnectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @OBEXConnect:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, CUShort, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexConnect_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXConnect:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXDisconnect:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexDisconnect_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXDisconnect:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXPut:headersData:headersDataLength:bodyData:bodyDataLength:eventSelector:selectorTarget:refCon:@
-obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexPut_headersData_headersDataLength_bodyData_bodyDataLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXPut:headersData:headersDataLength:bodyData:bodyDataLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXGet:headers:headersLength:eventSelector:selectorTarget:refCon:@
-obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexGet_headers_headersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXGet:headers:headersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXAbort:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexAbort_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXAbort:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXSetPath:constants:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexSetPath_constants_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXSetPath:constants:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXConnectResponse:flags:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, CUChar, CUShort, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexConnectResponse_flags_maxPacketLength_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXConnectResponse:flags:maxPacketLength:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXDisconnectResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexDisconnectResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXDisconnectResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXPutResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexPutResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXPutResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXGetResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexGetResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXGetResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXAbortResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexAbortResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXAbortResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @OBEXSetPathResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:@
-obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector
+obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector :: Selector '[CUChar, Ptr (), CULong, Sel, RawId, Ptr ()] CInt
 obexSetPathResponse_optionalHeaders_optionalHeadersLength_eventSelector_selectorTarget_refConSelector = mkSelector "OBEXSetPathResponse:optionalHeaders:optionalHeadersLength:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @getAvailableCommandPayloadLength:@
-getAvailableCommandPayloadLengthSelector :: Selector
+getAvailableCommandPayloadLengthSelector :: Selector '[CUChar] CUShort
 getAvailableCommandPayloadLengthSelector = mkSelector "getAvailableCommandPayloadLength:"
 
 -- | @Selector@ for @getAvailableCommandResponsePayloadLength:@
-getAvailableCommandResponsePayloadLengthSelector :: Selector
+getAvailableCommandResponsePayloadLengthSelector :: Selector '[CUChar] CUShort
 getAvailableCommandResponsePayloadLengthSelector = mkSelector "getAvailableCommandResponsePayloadLength:"
 
 -- | @Selector@ for @getMaxPacketLength@
-getMaxPacketLengthSelector :: Selector
+getMaxPacketLengthSelector :: Selector '[] CUShort
 getMaxPacketLengthSelector = mkSelector "getMaxPacketLength"
 
 -- | @Selector@ for @hasOpenOBEXConnection@
-hasOpenOBEXConnectionSelector :: Selector
+hasOpenOBEXConnectionSelector :: Selector '[] Bool
 hasOpenOBEXConnectionSelector = mkSelector "hasOpenOBEXConnection"
 
 -- | @Selector@ for @setEventCallback:@
-setEventCallbackSelector :: Selector
+setEventCallbackSelector :: Selector '[Ptr ()] ()
 setEventCallbackSelector = mkSelector "setEventCallback:"
 
 -- | @Selector@ for @setEventRefCon:@
-setEventRefConSelector :: Selector
+setEventRefConSelector :: Selector '[Ptr ()] ()
 setEventRefConSelector = mkSelector "setEventRefCon:"
 
 -- | @Selector@ for @setEventSelector:target:refCon:@
-setEventSelector_target_refConSelector :: Selector
+setEventSelector_target_refConSelector :: Selector '[Sel, RawId, Ptr ()] ()
 setEventSelector_target_refConSelector = mkSelector "setEventSelector:target:refCon:"
 
 -- | @Selector@ for @serverHandleIncomingData:@
-serverHandleIncomingDataSelector :: Selector
+serverHandleIncomingDataSelector :: Selector '[Ptr OBEXTransportEvent] ()
 serverHandleIncomingDataSelector = mkSelector "serverHandleIncomingData:"
 
 -- | @Selector@ for @clientHandleIncomingData:@
-clientHandleIncomingDataSelector :: Selector
+clientHandleIncomingDataSelector :: Selector '[Ptr OBEXTransportEvent] ()
 clientHandleIncomingDataSelector = mkSelector "clientHandleIncomingData:"
 
 -- | @Selector@ for @sendDataToTransport:dataLength:@
-sendDataToTransport_dataLengthSelector :: Selector
+sendDataToTransport_dataLengthSelector :: Selector '[Ptr (), CULong] CInt
 sendDataToTransport_dataLengthSelector = mkSelector "sendDataToTransport:dataLength:"
 
 -- | @Selector@ for @openTransportConnection:selectorTarget:refCon:@
-openTransportConnection_selectorTarget_refConSelector :: Selector
+openTransportConnection_selectorTarget_refConSelector :: Selector '[Sel, RawId, Ptr ()] CInt
 openTransportConnection_selectorTarget_refConSelector = mkSelector "openTransportConnection:selectorTarget:refCon:"
 
 -- | @Selector@ for @hasOpenTransportConnection@
-hasOpenTransportConnectionSelector :: Selector
+hasOpenTransportConnectionSelector :: Selector '[] CUChar
 hasOpenTransportConnectionSelector = mkSelector "hasOpenTransportConnection"
 
 -- | @Selector@ for @closeTransportConnection@
-closeTransportConnectionSelector :: Selector
+closeTransportConnectionSelector :: Selector '[] CInt
 closeTransportConnectionSelector = mkSelector "closeTransportConnection"
 

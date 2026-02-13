@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.AVFoundation.AVPlaybackCoordinationMedium
   , IsAVPlaybackCoordinationMedium(..)
   , init_
   , connectedPlaybackCoordinators
-  , initSelector
   , connectedPlaybackCoordinatorsSelector
+  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,8 +30,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVPlaybackCoordinationMedium avPlaybackCoordinationMedium => avPlaybackCoordinationMedium -> IO (Id AVPlaybackCoordinationMedium)
-init_ avPlaybackCoordinationMedium  =
-    sendMsg avPlaybackCoordinationMedium (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlaybackCoordinationMedium =
+  sendOwnedMessage avPlaybackCoordinationMedium initSelector
 
 -- | All playback coordinators that are connected to the coordination medium.
 --
@@ -42,18 +39,18 @@ init_ avPlaybackCoordinationMedium  =
 --
 -- ObjC selector: @- connectedPlaybackCoordinators@
 connectedPlaybackCoordinators :: IsAVPlaybackCoordinationMedium avPlaybackCoordinationMedium => avPlaybackCoordinationMedium -> IO (Id NSArray)
-connectedPlaybackCoordinators avPlaybackCoordinationMedium  =
-    sendMsg avPlaybackCoordinationMedium (mkSelector "connectedPlaybackCoordinators") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectedPlaybackCoordinators avPlaybackCoordinationMedium =
+  sendMessage avPlaybackCoordinationMedium connectedPlaybackCoordinatorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlaybackCoordinationMedium)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @connectedPlaybackCoordinators@
-connectedPlaybackCoordinatorsSelector :: Selector
+connectedPlaybackCoordinatorsSelector :: Selector '[] (Id NSArray)
 connectedPlaybackCoordinatorsSelector = mkSelector "connectedPlaybackCoordinators"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRQRCodeSetupPayloadParser
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBase38Representation:@
 initWithBase38Representation :: (IsMTRQRCodeSetupPayloadParser mtrqrCodeSetupPayloadParser, IsNSString base38Representation) => mtrqrCodeSetupPayloadParser -> base38Representation -> IO (Id MTRQRCodeSetupPayloadParser)
-initWithBase38Representation mtrqrCodeSetupPayloadParser  base38Representation =
-  withObjCPtr base38Representation $ \raw_base38Representation ->
-      sendMsg mtrqrCodeSetupPayloadParser (mkSelector "initWithBase38Representation:") (retPtr retVoid) [argPtr (castPtr raw_base38Representation :: Ptr ())] >>= ownedObject . castPtr
+initWithBase38Representation mtrqrCodeSetupPayloadParser base38Representation =
+  sendOwnedMessage mtrqrCodeSetupPayloadParser initWithBase38RepresentationSelector (toNSString base38Representation)
 
 -- | @- populatePayload:@
 populatePayload :: (IsMTRQRCodeSetupPayloadParser mtrqrCodeSetupPayloadParser, IsNSError error_) => mtrqrCodeSetupPayloadParser -> error_ -> IO (Id MTRSetupPayload)
-populatePayload mtrqrCodeSetupPayloadParser  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg mtrqrCodeSetupPayloadParser (mkSelector "populatePayload:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+populatePayload mtrqrCodeSetupPayloadParser error_ =
+  sendMessage mtrqrCodeSetupPayloadParser populatePayloadSelector (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBase38Representation:@
-initWithBase38RepresentationSelector :: Selector
+initWithBase38RepresentationSelector :: Selector '[Id NSString] (Id MTRQRCodeSetupPayloadParser)
 initWithBase38RepresentationSelector = mkSelector "initWithBase38Representation:"
 
 -- | @Selector@ for @populatePayload:@
-populatePayloadSelector :: Selector
+populatePayloadSelector :: Selector '[Id NSError] (Id MTRSetupPayload)
 populatePayloadSelector = mkSelector "populatePayload:"
 

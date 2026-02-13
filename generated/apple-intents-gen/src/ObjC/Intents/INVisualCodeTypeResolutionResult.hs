@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INVisualCodeTypeResolutionResult
   , IsINVisualCodeTypeResolutionResult(..)
   , successWithResolvedVisualCodeType
   , confirmationRequiredWithVisualCodeTypeToConfirm
-  , successWithResolvedVisualCodeTypeSelector
   , confirmationRequiredWithVisualCodeTypeToConfirmSelector
+  , successWithResolvedVisualCodeTypeSelector
 
   -- * Enum types
   , INVisualCodeType(INVisualCodeType)
@@ -24,15 +25,11 @@ module ObjC.Intents.INVisualCodeTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,24 +42,24 @@ successWithResolvedVisualCodeType :: INVisualCodeType -> IO (Id INVisualCodeType
 successWithResolvedVisualCodeType resolvedVisualCodeType =
   do
     cls' <- getRequiredClass "INVisualCodeTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedVisualCodeType:") (retPtr retVoid) [argCLong (coerce resolvedVisualCodeType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedVisualCodeTypeSelector resolvedVisualCodeType
 
 -- | @+ confirmationRequiredWithVisualCodeTypeToConfirm:@
 confirmationRequiredWithVisualCodeTypeToConfirm :: INVisualCodeType -> IO (Id INVisualCodeTypeResolutionResult)
 confirmationRequiredWithVisualCodeTypeToConfirm visualCodeTypeToConfirm =
   do
     cls' <- getRequiredClass "INVisualCodeTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithVisualCodeTypeToConfirm:") (retPtr retVoid) [argCLong (coerce visualCodeTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithVisualCodeTypeToConfirmSelector visualCodeTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedVisualCodeType:@
-successWithResolvedVisualCodeTypeSelector :: Selector
+successWithResolvedVisualCodeTypeSelector :: Selector '[INVisualCodeType] (Id INVisualCodeTypeResolutionResult)
 successWithResolvedVisualCodeTypeSelector = mkSelector "successWithResolvedVisualCodeType:"
 
 -- | @Selector@ for @confirmationRequiredWithVisualCodeTypeToConfirm:@
-confirmationRequiredWithVisualCodeTypeToConfirmSelector :: Selector
+confirmationRequiredWithVisualCodeTypeToConfirmSelector :: Selector '[INVisualCodeType] (Id INVisualCodeTypeResolutionResult)
 confirmationRequiredWithVisualCodeTypeToConfirmSelector = mkSelector "confirmationRequiredWithVisualCodeTypeToConfirm:"
 

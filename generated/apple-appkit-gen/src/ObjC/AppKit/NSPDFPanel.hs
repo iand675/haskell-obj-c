@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.AppKit.NSPDFPanel
   , setOptions
   , defaultFileName
   , setDefaultFileName
-  , panelSelector
-  , beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector
   , accessoryControllerSelector
-  , setAccessoryControllerSelector
-  , optionsSelector
-  , setOptionsSelector
+  , beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector
   , defaultFileNameSelector
+  , optionsSelector
+  , panelSelector
+  , setAccessoryControllerSelector
   , setDefaultFileNameSelector
+  , setOptionsSelector
 
   -- * Enum types
   , NSPDFPanelOptions(NSPDFPanelOptions)
@@ -32,15 +33,11 @@ module ObjC.AppKit.NSPDFPanel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,80 +50,76 @@ panel :: IO (Id NSPDFPanel)
 panel  =
   do
     cls' <- getRequiredClass "NSPDFPanel"
-    sendClassMsg cls' (mkSelector "panel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' panelSelector
 
 -- | @- beginSheetWithPDFInfo:modalForWindow:completionHandler:@
 beginSheetWithPDFInfo_modalForWindow_completionHandler :: (IsNSPDFPanel nspdfPanel, IsNSPDFInfo pdfInfo, IsNSWindow docWindow) => nspdfPanel -> pdfInfo -> docWindow -> Ptr () -> IO ()
-beginSheetWithPDFInfo_modalForWindow_completionHandler nspdfPanel  pdfInfo docWindow completionHandler =
-  withObjCPtr pdfInfo $ \raw_pdfInfo ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg nspdfPanel (mkSelector "beginSheetWithPDFInfo:modalForWindow:completionHandler:") retVoid [argPtr (castPtr raw_pdfInfo :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+beginSheetWithPDFInfo_modalForWindow_completionHandler nspdfPanel pdfInfo docWindow completionHandler =
+  sendMessage nspdfPanel beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector (toNSPDFInfo pdfInfo) (toNSWindow docWindow) completionHandler
 
 -- | @- accessoryController@
 accessoryController :: IsNSPDFPanel nspdfPanel => nspdfPanel -> IO (Id NSViewController)
-accessoryController nspdfPanel  =
-    sendMsg nspdfPanel (mkSelector "accessoryController") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryController nspdfPanel =
+  sendMessage nspdfPanel accessoryControllerSelector
 
 -- | @- setAccessoryController:@
 setAccessoryController :: (IsNSPDFPanel nspdfPanel, IsNSViewController value) => nspdfPanel -> value -> IO ()
-setAccessoryController nspdfPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nspdfPanel (mkSelector "setAccessoryController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessoryController nspdfPanel value =
+  sendMessage nspdfPanel setAccessoryControllerSelector (toNSViewController value)
 
 -- | @- options@
 options :: IsNSPDFPanel nspdfPanel => nspdfPanel -> IO NSPDFPanelOptions
-options nspdfPanel  =
-    fmap (coerce :: CLong -> NSPDFPanelOptions) $ sendMsg nspdfPanel (mkSelector "options") retCLong []
+options nspdfPanel =
+  sendMessage nspdfPanel optionsSelector
 
 -- | @- setOptions:@
 setOptions :: IsNSPDFPanel nspdfPanel => nspdfPanel -> NSPDFPanelOptions -> IO ()
-setOptions nspdfPanel  value =
-    sendMsg nspdfPanel (mkSelector "setOptions:") retVoid [argCLong (coerce value)]
+setOptions nspdfPanel value =
+  sendMessage nspdfPanel setOptionsSelector value
 
 -- | @- defaultFileName@
 defaultFileName :: IsNSPDFPanel nspdfPanel => nspdfPanel -> IO (Id NSString)
-defaultFileName nspdfPanel  =
-    sendMsg nspdfPanel (mkSelector "defaultFileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultFileName nspdfPanel =
+  sendMessage nspdfPanel defaultFileNameSelector
 
 -- | @- setDefaultFileName:@
 setDefaultFileName :: (IsNSPDFPanel nspdfPanel, IsNSString value) => nspdfPanel -> value -> IO ()
-setDefaultFileName nspdfPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nspdfPanel (mkSelector "setDefaultFileName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultFileName nspdfPanel value =
+  sendMessage nspdfPanel setDefaultFileNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @panel@
-panelSelector :: Selector
+panelSelector :: Selector '[] (Id NSPDFPanel)
 panelSelector = mkSelector "panel"
 
 -- | @Selector@ for @beginSheetWithPDFInfo:modalForWindow:completionHandler:@
-beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector :: Selector
+beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector :: Selector '[Id NSPDFInfo, Id NSWindow, Ptr ()] ()
 beginSheetWithPDFInfo_modalForWindow_completionHandlerSelector = mkSelector "beginSheetWithPDFInfo:modalForWindow:completionHandler:"
 
 -- | @Selector@ for @accessoryController@
-accessoryControllerSelector :: Selector
+accessoryControllerSelector :: Selector '[] (Id NSViewController)
 accessoryControllerSelector = mkSelector "accessoryController"
 
 -- | @Selector@ for @setAccessoryController:@
-setAccessoryControllerSelector :: Selector
+setAccessoryControllerSelector :: Selector '[Id NSViewController] ()
 setAccessoryControllerSelector = mkSelector "setAccessoryController:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] NSPDFPanelOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[NSPDFPanelOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @defaultFileName@
-defaultFileNameSelector :: Selector
+defaultFileNameSelector :: Selector '[] (Id NSString)
 defaultFileNameSelector = mkSelector "defaultFileName"
 
 -- | @Selector@ for @setDefaultFileName:@
-setDefaultFileNameSelector :: Selector
+setDefaultFileNameSelector :: Selector '[Id NSString] ()
 setDefaultFileNameSelector = mkSelector "setDefaultFileName:"
 

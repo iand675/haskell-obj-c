@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.MetalPerformanceShaders.MPSRNNRecurrentMatrixState
   , IsMPSRNNRecurrentMatrixState(..)
   , getRecurrentOutputMatrixForLayerIndex
   , getMemoryCellMatrixForLayerIndex
-  , getRecurrentOutputMatrixForLayerIndexSelector
   , getMemoryCellMatrixForLayerIndexSelector
+  , getRecurrentOutputMatrixForLayerIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getRecurrentOutputMatrixForLayerIndex:@
 getRecurrentOutputMatrixForLayerIndex :: IsMPSRNNRecurrentMatrixState mpsrnnRecurrentMatrixState => mpsrnnRecurrentMatrixState -> CULong -> IO (Id MPSMatrix)
-getRecurrentOutputMatrixForLayerIndex mpsrnnRecurrentMatrixState  layerIndex =
-    sendMsg mpsrnnRecurrentMatrixState (mkSelector "getRecurrentOutputMatrixForLayerIndex:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+getRecurrentOutputMatrixForLayerIndex mpsrnnRecurrentMatrixState layerIndex =
+  sendMessage mpsrnnRecurrentMatrixState getRecurrentOutputMatrixForLayerIndexSelector layerIndex
 
 -- | Access the stored memory cell matrix data (if present).
 --
@@ -58,18 +55,18 @@ getRecurrentOutputMatrixForLayerIndex mpsrnnRecurrentMatrixState  layerIndex =
 --
 -- ObjC selector: @- getMemoryCellMatrixForLayerIndex:@
 getMemoryCellMatrixForLayerIndex :: IsMPSRNNRecurrentMatrixState mpsrnnRecurrentMatrixState => mpsrnnRecurrentMatrixState -> CULong -> IO (Id MPSMatrix)
-getMemoryCellMatrixForLayerIndex mpsrnnRecurrentMatrixState  layerIndex =
-    sendMsg mpsrnnRecurrentMatrixState (mkSelector "getMemoryCellMatrixForLayerIndex:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+getMemoryCellMatrixForLayerIndex mpsrnnRecurrentMatrixState layerIndex =
+  sendMessage mpsrnnRecurrentMatrixState getMemoryCellMatrixForLayerIndexSelector layerIndex
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getRecurrentOutputMatrixForLayerIndex:@
-getRecurrentOutputMatrixForLayerIndexSelector :: Selector
+getRecurrentOutputMatrixForLayerIndexSelector :: Selector '[CULong] (Id MPSMatrix)
 getRecurrentOutputMatrixForLayerIndexSelector = mkSelector "getRecurrentOutputMatrixForLayerIndex:"
 
 -- | @Selector@ for @getMemoryCellMatrixForLayerIndex:@
-getMemoryCellMatrixForLayerIndexSelector :: Selector
+getMemoryCellMatrixForLayerIndexSelector :: Selector '[CULong] (Id MPSMatrix)
 getMemoryCellMatrixForLayerIndexSelector = mkSelector "getMemoryCellMatrixForLayerIndex:"
 

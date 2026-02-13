@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.AppKit.NSTextTable
   , setCollapsesBorders
   , hidesEmptyCells
   , setHidesEmptyCells
-  , rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector
   , boundsRectForBlock_contentRect_inRect_textContainer_characterRangeSelector
-  , drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector
-  , numberOfColumnsSelector
-  , setNumberOfColumnsSelector
-  , layoutAlgorithmSelector
-  , setLayoutAlgorithmSelector
   , collapsesBordersSelector
-  , setCollapsesBordersSelector
+  , drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector
   , hidesEmptyCellsSelector
+  , layoutAlgorithmSelector
+  , numberOfColumnsSelector
+  , rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector
+  , setCollapsesBordersSelector
   , setHidesEmptyCellsSelector
+  , setLayoutAlgorithmSelector
+  , setNumberOfColumnsSelector
 
   -- * Enum types
   , NSTextTableLayoutAlgorithm(NSTextTableLayoutAlgorithm)
@@ -37,15 +38,11 @@ module ObjC.AppKit.NSTextTable
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,111 +53,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rectForBlock:layoutAtPoint:inRect:textContainer:characterRange:@
 rectForBlock_layoutAtPoint_inRect_textContainer_characterRange :: (IsNSTextTable nsTextTable, IsNSTextTableBlock block, IsNSTextContainer textContainer) => nsTextTable -> block -> NSPoint -> NSRect -> textContainer -> NSRange -> IO NSRect
-rectForBlock_layoutAtPoint_inRect_textContainer_characterRange nsTextTable  block startingPoint rect textContainer charRange =
-  withObjCPtr block $ \raw_block ->
-    withObjCPtr textContainer $ \raw_textContainer ->
-        sendMsgStret nsTextTable (mkSelector "rectForBlock:layoutAtPoint:inRect:textContainer:characterRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argNSPoint startingPoint, argNSRect rect, argPtr (castPtr raw_textContainer :: Ptr ()), argNSRange charRange]
+rectForBlock_layoutAtPoint_inRect_textContainer_characterRange nsTextTable block startingPoint rect textContainer charRange =
+  sendMessage nsTextTable rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector (toNSTextTableBlock block) startingPoint rect (toNSTextContainer textContainer) charRange
 
 -- | @- boundsRectForBlock:contentRect:inRect:textContainer:characterRange:@
 boundsRectForBlock_contentRect_inRect_textContainer_characterRange :: (IsNSTextTable nsTextTable, IsNSTextTableBlock block, IsNSTextContainer textContainer) => nsTextTable -> block -> NSRect -> NSRect -> textContainer -> NSRange -> IO NSRect
-boundsRectForBlock_contentRect_inRect_textContainer_characterRange nsTextTable  block contentRect rect textContainer charRange =
-  withObjCPtr block $ \raw_block ->
-    withObjCPtr textContainer $ \raw_textContainer ->
-        sendMsgStret nsTextTable (mkSelector "boundsRectForBlock:contentRect:inRect:textContainer:characterRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argNSRect contentRect, argNSRect rect, argPtr (castPtr raw_textContainer :: Ptr ()), argNSRange charRange]
+boundsRectForBlock_contentRect_inRect_textContainer_characterRange nsTextTable block contentRect rect textContainer charRange =
+  sendMessage nsTextTable boundsRectForBlock_contentRect_inRect_textContainer_characterRangeSelector (toNSTextTableBlock block) contentRect rect (toNSTextContainer textContainer) charRange
 
 -- | @- drawBackgroundForBlock:withFrame:inView:characterRange:layoutManager:@
 drawBackgroundForBlock_withFrame_inView_characterRange_layoutManager :: (IsNSTextTable nsTextTable, IsNSTextTableBlock block, IsNSView controlView, IsNSLayoutManager layoutManager) => nsTextTable -> block -> NSRect -> controlView -> NSRange -> layoutManager -> IO ()
-drawBackgroundForBlock_withFrame_inView_characterRange_layoutManager nsTextTable  block frameRect controlView charRange layoutManager =
-  withObjCPtr block $ \raw_block ->
-    withObjCPtr controlView $ \raw_controlView ->
-      withObjCPtr layoutManager $ \raw_layoutManager ->
-          sendMsg nsTextTable (mkSelector "drawBackgroundForBlock:withFrame:inView:characterRange:layoutManager:") retVoid [argPtr (castPtr raw_block :: Ptr ()), argNSRect frameRect, argPtr (castPtr raw_controlView :: Ptr ()), argNSRange charRange, argPtr (castPtr raw_layoutManager :: Ptr ())]
+drawBackgroundForBlock_withFrame_inView_characterRange_layoutManager nsTextTable block frameRect controlView charRange layoutManager =
+  sendMessage nsTextTable drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector (toNSTextTableBlock block) frameRect (toNSView controlView) charRange (toNSLayoutManager layoutManager)
 
 -- | @- numberOfColumns@
 numberOfColumns :: IsNSTextTable nsTextTable => nsTextTable -> IO CULong
-numberOfColumns nsTextTable  =
-    sendMsg nsTextTable (mkSelector "numberOfColumns") retCULong []
+numberOfColumns nsTextTable =
+  sendMessage nsTextTable numberOfColumnsSelector
 
 -- | @- setNumberOfColumns:@
 setNumberOfColumns :: IsNSTextTable nsTextTable => nsTextTable -> CULong -> IO ()
-setNumberOfColumns nsTextTable  value =
-    sendMsg nsTextTable (mkSelector "setNumberOfColumns:") retVoid [argCULong value]
+setNumberOfColumns nsTextTable value =
+  sendMessage nsTextTable setNumberOfColumnsSelector value
 
 -- | @- layoutAlgorithm@
 layoutAlgorithm :: IsNSTextTable nsTextTable => nsTextTable -> IO NSTextTableLayoutAlgorithm
-layoutAlgorithm nsTextTable  =
-    fmap (coerce :: CULong -> NSTextTableLayoutAlgorithm) $ sendMsg nsTextTable (mkSelector "layoutAlgorithm") retCULong []
+layoutAlgorithm nsTextTable =
+  sendMessage nsTextTable layoutAlgorithmSelector
 
 -- | @- setLayoutAlgorithm:@
 setLayoutAlgorithm :: IsNSTextTable nsTextTable => nsTextTable -> NSTextTableLayoutAlgorithm -> IO ()
-setLayoutAlgorithm nsTextTable  value =
-    sendMsg nsTextTable (mkSelector "setLayoutAlgorithm:") retVoid [argCULong (coerce value)]
+setLayoutAlgorithm nsTextTable value =
+  sendMessage nsTextTable setLayoutAlgorithmSelector value
 
 -- | @- collapsesBorders@
 collapsesBorders :: IsNSTextTable nsTextTable => nsTextTable -> IO Bool
-collapsesBorders nsTextTable  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextTable (mkSelector "collapsesBorders") retCULong []
+collapsesBorders nsTextTable =
+  sendMessage nsTextTable collapsesBordersSelector
 
 -- | @- setCollapsesBorders:@
 setCollapsesBorders :: IsNSTextTable nsTextTable => nsTextTable -> Bool -> IO ()
-setCollapsesBorders nsTextTable  value =
-    sendMsg nsTextTable (mkSelector "setCollapsesBorders:") retVoid [argCULong (if value then 1 else 0)]
+setCollapsesBorders nsTextTable value =
+  sendMessage nsTextTable setCollapsesBordersSelector value
 
 -- | @- hidesEmptyCells@
 hidesEmptyCells :: IsNSTextTable nsTextTable => nsTextTable -> IO Bool
-hidesEmptyCells nsTextTable  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextTable (mkSelector "hidesEmptyCells") retCULong []
+hidesEmptyCells nsTextTable =
+  sendMessage nsTextTable hidesEmptyCellsSelector
 
 -- | @- setHidesEmptyCells:@
 setHidesEmptyCells :: IsNSTextTable nsTextTable => nsTextTable -> Bool -> IO ()
-setHidesEmptyCells nsTextTable  value =
-    sendMsg nsTextTable (mkSelector "setHidesEmptyCells:") retVoid [argCULong (if value then 1 else 0)]
+setHidesEmptyCells nsTextTable value =
+  sendMessage nsTextTable setHidesEmptyCellsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rectForBlock:layoutAtPoint:inRect:textContainer:characterRange:@
-rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector :: Selector
+rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector :: Selector '[Id NSTextTableBlock, NSPoint, NSRect, Id NSTextContainer, NSRange] NSRect
 rectForBlock_layoutAtPoint_inRect_textContainer_characterRangeSelector = mkSelector "rectForBlock:layoutAtPoint:inRect:textContainer:characterRange:"
 
 -- | @Selector@ for @boundsRectForBlock:contentRect:inRect:textContainer:characterRange:@
-boundsRectForBlock_contentRect_inRect_textContainer_characterRangeSelector :: Selector
+boundsRectForBlock_contentRect_inRect_textContainer_characterRangeSelector :: Selector '[Id NSTextTableBlock, NSRect, NSRect, Id NSTextContainer, NSRange] NSRect
 boundsRectForBlock_contentRect_inRect_textContainer_characterRangeSelector = mkSelector "boundsRectForBlock:contentRect:inRect:textContainer:characterRange:"
 
 -- | @Selector@ for @drawBackgroundForBlock:withFrame:inView:characterRange:layoutManager:@
-drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector :: Selector
+drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector :: Selector '[Id NSTextTableBlock, NSRect, Id NSView, NSRange, Id NSLayoutManager] ()
 drawBackgroundForBlock_withFrame_inView_characterRange_layoutManagerSelector = mkSelector "drawBackgroundForBlock:withFrame:inView:characterRange:layoutManager:"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CULong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @setNumberOfColumns:@
-setNumberOfColumnsSelector :: Selector
+setNumberOfColumnsSelector :: Selector '[CULong] ()
 setNumberOfColumnsSelector = mkSelector "setNumberOfColumns:"
 
 -- | @Selector@ for @layoutAlgorithm@
-layoutAlgorithmSelector :: Selector
+layoutAlgorithmSelector :: Selector '[] NSTextTableLayoutAlgorithm
 layoutAlgorithmSelector = mkSelector "layoutAlgorithm"
 
 -- | @Selector@ for @setLayoutAlgorithm:@
-setLayoutAlgorithmSelector :: Selector
+setLayoutAlgorithmSelector :: Selector '[NSTextTableLayoutAlgorithm] ()
 setLayoutAlgorithmSelector = mkSelector "setLayoutAlgorithm:"
 
 -- | @Selector@ for @collapsesBorders@
-collapsesBordersSelector :: Selector
+collapsesBordersSelector :: Selector '[] Bool
 collapsesBordersSelector = mkSelector "collapsesBorders"
 
 -- | @Selector@ for @setCollapsesBorders:@
-setCollapsesBordersSelector :: Selector
+setCollapsesBordersSelector :: Selector '[Bool] ()
 setCollapsesBordersSelector = mkSelector "setCollapsesBorders:"
 
 -- | @Selector@ for @hidesEmptyCells@
-hidesEmptyCellsSelector :: Selector
+hidesEmptyCellsSelector :: Selector '[] Bool
 hidesEmptyCellsSelector = mkSelector "hidesEmptyCells"
 
 -- | @Selector@ for @setHidesEmptyCells:@
-setHidesEmptyCellsSelector :: Selector
+setHidesEmptyCellsSelector :: Selector '[Bool] ()
 setHidesEmptyCellsSelector = mkSelector "setHidesEmptyCells:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Metal.MTLVisibleFunctionTableDescriptor
   , visibleFunctionTableDescriptor
   , functionCount
   , setFunctionCount
-  , visibleFunctionTableDescriptorSelector
   , functionCountSelector
   , setFunctionCountSelector
+  , visibleFunctionTableDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,7 +37,7 @@ visibleFunctionTableDescriptor :: IO (Id MTLVisibleFunctionTableDescriptor)
 visibleFunctionTableDescriptor  =
   do
     cls' <- getRequiredClass "MTLVisibleFunctionTableDescriptor"
-    sendClassMsg cls' (mkSelector "visibleFunctionTableDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' visibleFunctionTableDescriptorSelector
 
 -- | functionCount
 --
@@ -48,8 +45,8 @@ visibleFunctionTableDescriptor  =
 --
 -- ObjC selector: @- functionCount@
 functionCount :: IsMTLVisibleFunctionTableDescriptor mtlVisibleFunctionTableDescriptor => mtlVisibleFunctionTableDescriptor -> IO CULong
-functionCount mtlVisibleFunctionTableDescriptor  =
-    sendMsg mtlVisibleFunctionTableDescriptor (mkSelector "functionCount") retCULong []
+functionCount mtlVisibleFunctionTableDescriptor =
+  sendMessage mtlVisibleFunctionTableDescriptor functionCountSelector
 
 -- | functionCount
 --
@@ -57,22 +54,22 @@ functionCount mtlVisibleFunctionTableDescriptor  =
 --
 -- ObjC selector: @- setFunctionCount:@
 setFunctionCount :: IsMTLVisibleFunctionTableDescriptor mtlVisibleFunctionTableDescriptor => mtlVisibleFunctionTableDescriptor -> CULong -> IO ()
-setFunctionCount mtlVisibleFunctionTableDescriptor  value =
-    sendMsg mtlVisibleFunctionTableDescriptor (mkSelector "setFunctionCount:") retVoid [argCULong value]
+setFunctionCount mtlVisibleFunctionTableDescriptor value =
+  sendMessage mtlVisibleFunctionTableDescriptor setFunctionCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @visibleFunctionTableDescriptor@
-visibleFunctionTableDescriptorSelector :: Selector
+visibleFunctionTableDescriptorSelector :: Selector '[] (Id MTLVisibleFunctionTableDescriptor)
 visibleFunctionTableDescriptorSelector = mkSelector "visibleFunctionTableDescriptor"
 
 -- | @Selector@ for @functionCount@
-functionCountSelector :: Selector
+functionCountSelector :: Selector '[] CULong
 functionCountSelector = mkSelector "functionCount"
 
 -- | @Selector@ for @setFunctionCount:@
-setFunctionCountSelector :: Selector
+setFunctionCountSelector :: Selector '[CULong] ()
 setFunctionCountSelector = mkSelector "setFunctionCount:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Intents.INGetReservationDetailsIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithReservationContainerReference:reservationItemReferences:@
 initWithReservationContainerReference_reservationItemReferences :: (IsINGetReservationDetailsIntent inGetReservationDetailsIntent, IsINSpeakableString reservationContainerReference, IsNSArray reservationItemReferences) => inGetReservationDetailsIntent -> reservationContainerReference -> reservationItemReferences -> IO (Id INGetReservationDetailsIntent)
-initWithReservationContainerReference_reservationItemReferences inGetReservationDetailsIntent  reservationContainerReference reservationItemReferences =
-  withObjCPtr reservationContainerReference $ \raw_reservationContainerReference ->
-    withObjCPtr reservationItemReferences $ \raw_reservationItemReferences ->
-        sendMsg inGetReservationDetailsIntent (mkSelector "initWithReservationContainerReference:reservationItemReferences:") (retPtr retVoid) [argPtr (castPtr raw_reservationContainerReference :: Ptr ()), argPtr (castPtr raw_reservationItemReferences :: Ptr ())] >>= ownedObject . castPtr
+initWithReservationContainerReference_reservationItemReferences inGetReservationDetailsIntent reservationContainerReference reservationItemReferences =
+  sendOwnedMessage inGetReservationDetailsIntent initWithReservationContainerReference_reservationItemReferencesSelector (toINSpeakableString reservationContainerReference) (toNSArray reservationItemReferences)
 
 -- | @- reservationContainerReference@
 reservationContainerReference :: IsINGetReservationDetailsIntent inGetReservationDetailsIntent => inGetReservationDetailsIntent -> IO (Id INSpeakableString)
-reservationContainerReference inGetReservationDetailsIntent  =
-    sendMsg inGetReservationDetailsIntent (mkSelector "reservationContainerReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservationContainerReference inGetReservationDetailsIntent =
+  sendMessage inGetReservationDetailsIntent reservationContainerReferenceSelector
 
 -- | @- reservationItemReferences@
 reservationItemReferences :: IsINGetReservationDetailsIntent inGetReservationDetailsIntent => inGetReservationDetailsIntent -> IO (Id NSArray)
-reservationItemReferences inGetReservationDetailsIntent  =
-    sendMsg inGetReservationDetailsIntent (mkSelector "reservationItemReferences") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservationItemReferences inGetReservationDetailsIntent =
+  sendMessage inGetReservationDetailsIntent reservationItemReferencesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithReservationContainerReference:reservationItemReferences:@
-initWithReservationContainerReference_reservationItemReferencesSelector :: Selector
+initWithReservationContainerReference_reservationItemReferencesSelector :: Selector '[Id INSpeakableString, Id NSArray] (Id INGetReservationDetailsIntent)
 initWithReservationContainerReference_reservationItemReferencesSelector = mkSelector "initWithReservationContainerReference:reservationItemReferences:"
 
 -- | @Selector@ for @reservationContainerReference@
-reservationContainerReferenceSelector :: Selector
+reservationContainerReferenceSelector :: Selector '[] (Id INSpeakableString)
 reservationContainerReferenceSelector = mkSelector "reservationContainerReference"
 
 -- | @Selector@ for @reservationItemReferences@
-reservationItemReferencesSelector :: Selector
+reservationItemReferencesSelector :: Selector '[] (Id NSArray)
 reservationItemReferencesSelector = mkSelector "reservationItemReferences"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.WebKit.NSAttributedString
   , loadFromHTMLWithFileURL_options_completionHandler
   , loadFromHTMLWithString_options_completionHandler
   , loadFromHTMLWithData_options_completionHandler
-  , loadFromHTMLWithRequest_options_completionHandlerSelector
-  , loadFromHTMLWithFileURL_options_completionHandlerSelector
-  , loadFromHTMLWithString_options_completionHandlerSelector
   , loadFromHTMLWithData_options_completionHandlerSelector
+  , loadFromHTMLWithFileURL_options_completionHandlerSelector
+  , loadFromHTMLWithRequest_options_completionHandlerSelector
+  , loadFromHTMLWithString_options_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,9 +45,7 @@ loadFromHTMLWithRequest_options_completionHandler :: (IsNSURLRequest request, Is
 loadFromHTMLWithRequest_options_completionHandler request options completionHandler =
   do
     cls' <- getRequiredClass "NSAttributedString"
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "loadFromHTMLWithRequest:options:completionHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromHTMLWithRequest_options_completionHandlerSelector (toNSURLRequest request) (toNSDictionary options) completionHandler
 
 -- | Converts a local HTML file into an attributed string.
 --
@@ -67,9 +62,7 @@ loadFromHTMLWithFileURL_options_completionHandler :: (IsNSURL fileURL, IsNSDicti
 loadFromHTMLWithFileURL_options_completionHandler fileURL options completionHandler =
   do
     cls' <- getRequiredClass "NSAttributedString"
-    withObjCPtr fileURL $ \raw_fileURL ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "loadFromHTMLWithFileURL:options:completionHandler:") retVoid [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromHTMLWithFileURL_options_completionHandlerSelector (toNSURL fileURL) (toNSDictionary options) completionHandler
 
 -- | Converts an HTML string into an attributed string.
 --
@@ -86,9 +79,7 @@ loadFromHTMLWithString_options_completionHandler :: (IsNSString string, IsNSDict
 loadFromHTMLWithString_options_completionHandler string options completionHandler =
   do
     cls' <- getRequiredClass "NSAttributedString"
-    withObjCPtr string $ \raw_string ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "loadFromHTMLWithString:options:completionHandler:") retVoid [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromHTMLWithString_options_completionHandlerSelector (toNSString string) (toNSDictionary options) completionHandler
 
 -- | Converts HTML data into an attributed string.
 --
@@ -105,27 +96,25 @@ loadFromHTMLWithData_options_completionHandler :: (IsNSData data_, IsNSDictionar
 loadFromHTMLWithData_options_completionHandler data_ options completionHandler =
   do
     cls' <- getRequiredClass "NSAttributedString"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "loadFromHTMLWithData:options:completionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromHTMLWithData_options_completionHandlerSelector (toNSData data_) (toNSDictionary options) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFromHTMLWithRequest:options:completionHandler:@
-loadFromHTMLWithRequest_options_completionHandlerSelector :: Selector
+loadFromHTMLWithRequest_options_completionHandlerSelector :: Selector '[Id NSURLRequest, Id NSDictionary, Ptr ()] ()
 loadFromHTMLWithRequest_options_completionHandlerSelector = mkSelector "loadFromHTMLWithRequest:options:completionHandler:"
 
 -- | @Selector@ for @loadFromHTMLWithFileURL:options:completionHandler:@
-loadFromHTMLWithFileURL_options_completionHandlerSelector :: Selector
+loadFromHTMLWithFileURL_options_completionHandlerSelector :: Selector '[Id NSURL, Id NSDictionary, Ptr ()] ()
 loadFromHTMLWithFileURL_options_completionHandlerSelector = mkSelector "loadFromHTMLWithFileURL:options:completionHandler:"
 
 -- | @Selector@ for @loadFromHTMLWithString:options:completionHandler:@
-loadFromHTMLWithString_options_completionHandlerSelector :: Selector
+loadFromHTMLWithString_options_completionHandlerSelector :: Selector '[Id NSString, Id NSDictionary, Ptr ()] ()
 loadFromHTMLWithString_options_completionHandlerSelector = mkSelector "loadFromHTMLWithString:options:completionHandler:"
 
 -- | @Selector@ for @loadFromHTMLWithData:options:completionHandler:@
-loadFromHTMLWithData_options_completionHandlerSelector :: Selector
+loadFromHTMLWithData_options_completionHandlerSelector :: Selector '[Id NSData, Id NSDictionary, Ptr ()] ()
 loadFromHTMLWithData_options_completionHandlerSelector = mkSelector "loadFromHTMLWithData:options:completionHandler:"
 

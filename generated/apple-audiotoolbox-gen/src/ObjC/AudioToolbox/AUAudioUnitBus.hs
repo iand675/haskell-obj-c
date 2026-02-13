@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,24 +30,24 @@ module ObjC.AudioToolbox.AUAudioUnitBus
   , setSupportedChannelCounts
   , maximumChannelCount
   , setMaximumChannelCount
-  , setFormat_errorSelector
-  , initWithFormat_errorSelector
-  , shouldAllocateBufferSelector
-  , setShouldAllocateBufferSelector
-  , enabledSelector
-  , setEnabledSelector
-  , nameSelector
-  , setNameSelector
-  , indexSelector
   , busTypeSelector
-  , ownerAudioUnitSelector
-  , supportedChannelLayoutTagsSelector
   , contextPresentationLatencySelector
-  , setContextPresentationLatencySelector
-  , supportedChannelCountsSelector
-  , setSupportedChannelCountsSelector
+  , enabledSelector
+  , indexSelector
+  , initWithFormat_errorSelector
   , maximumChannelCountSelector
+  , nameSelector
+  , ownerAudioUnitSelector
+  , setContextPresentationLatencySelector
+  , setEnabledSelector
+  , setFormat_errorSelector
   , setMaximumChannelCountSelector
+  , setNameSelector
+  , setShouldAllocateBufferSelector
+  , setSupportedChannelCountsSelector
+  , shouldAllocateBufferSelector
+  , supportedChannelCountsSelector
+  , supportedChannelLayoutTagsSelector
 
   -- * Enum types
   , AUAudioUnitBusType(AUAudioUnitBusType)
@@ -55,15 +56,11 @@ module ObjC.AudioToolbox.AUAudioUnitBus
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,9 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setFormat:error:@
 setFormat_error :: (IsAUAudioUnitBus auAudioUnitBus, IsNSError outError) => auAudioUnitBus -> RawId -> outError -> IO Bool
-setFormat_error auAudioUnitBus  format outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBus (mkSelector "setFormat:error:") retCULong [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setFormat_error auAudioUnitBus format outError =
+  sendMessage auAudioUnitBus setFormat_errorSelector format (toNSError outError)
 
 -- | initWithFormat:error:
 --
@@ -93,9 +89,8 @@ setFormat_error auAudioUnitBus  format outError =
 --
 -- ObjC selector: @- initWithFormat:error:@
 initWithFormat_error :: (IsAUAudioUnitBus auAudioUnitBus, IsNSError outError) => auAudioUnitBus -> RawId -> outError -> IO (Id AUAudioUnitBus)
-initWithFormat_error auAudioUnitBus  format outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg auAudioUnitBus (mkSelector "initWithFormat:error:") (retPtr retVoid) [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithFormat_error auAudioUnitBus format outError =
+  sendOwnedMessage auAudioUnitBus initWithFormat_errorSelector format (toNSError outError)
 
 -- | shouldAllocateBuffer
 --
@@ -111,8 +106,8 @@ initWithFormat_error auAudioUnitBus  format outError =
 --
 -- ObjC selector: @- shouldAllocateBuffer@
 shouldAllocateBuffer :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO Bool
-shouldAllocateBuffer auAudioUnitBus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBus (mkSelector "shouldAllocateBuffer") retCULong []
+shouldAllocateBuffer auAudioUnitBus =
+  sendMessage auAudioUnitBus shouldAllocateBufferSelector
 
 -- | shouldAllocateBuffer
 --
@@ -128,8 +123,8 @@ shouldAllocateBuffer auAudioUnitBus  =
 --
 -- ObjC selector: @- setShouldAllocateBuffer:@
 setShouldAllocateBuffer :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> Bool -> IO ()
-setShouldAllocateBuffer auAudioUnitBus  value =
-    sendMsg auAudioUnitBus (mkSelector "setShouldAllocateBuffer:") retVoid [argCULong (if value then 1 else 0)]
+setShouldAllocateBuffer auAudioUnitBus value =
+  sendMessage auAudioUnitBus setShouldAllocateBufferSelector value
 
 -- | enabled
 --
@@ -141,8 +136,8 @@ setShouldAllocateBuffer auAudioUnitBus  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO Bool
-enabled auAudioUnitBus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBus (mkSelector "enabled") retCULong []
+enabled auAudioUnitBus =
+  sendMessage auAudioUnitBus enabledSelector
 
 -- | enabled
 --
@@ -154,8 +149,8 @@ enabled auAudioUnitBus  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> Bool -> IO ()
-setEnabled auAudioUnitBus  value =
-    sendMsg auAudioUnitBus (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled auAudioUnitBus value =
+  sendMessage auAudioUnitBus setEnabledSelector value
 
 -- | name
 --
@@ -163,8 +158,8 @@ setEnabled auAudioUnitBus  value =
 --
 -- ObjC selector: @- name@
 name :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO (Id NSString)
-name auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name auAudioUnitBus =
+  sendMessage auAudioUnitBus nameSelector
 
 -- | name
 --
@@ -172,9 +167,8 @@ name auAudioUnitBus  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsAUAudioUnitBus auAudioUnitBus, IsNSString value) => auAudioUnitBus -> value -> IO ()
-setName auAudioUnitBus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnitBus (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName auAudioUnitBus value =
+  sendMessage auAudioUnitBus setNameSelector (toNSString value)
 
 -- | index
 --
@@ -182,8 +176,8 @@ setName auAudioUnitBus  value =
 --
 -- ObjC selector: @- index@
 index :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO CULong
-index auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "index") retCULong []
+index auAudioUnitBus =
+  sendMessage auAudioUnitBus indexSelector
 
 -- | busType
 --
@@ -191,8 +185,8 @@ index auAudioUnitBus  =
 --
 -- ObjC selector: @- busType@
 busType :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO AUAudioUnitBusType
-busType auAudioUnitBus  =
-    fmap (coerce :: CLong -> AUAudioUnitBusType) $ sendMsg auAudioUnitBus (mkSelector "busType") retCLong []
+busType auAudioUnitBus =
+  sendMessage auAudioUnitBus busTypeSelector
 
 -- | ownerAudioUnit
 --
@@ -200,8 +194,8 @@ busType auAudioUnitBus  =
 --
 -- ObjC selector: @- ownerAudioUnit@
 ownerAudioUnit :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO (Id AUAudioUnit)
-ownerAudioUnit auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "ownerAudioUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+ownerAudioUnit auAudioUnitBus =
+  sendMessage auAudioUnitBus ownerAudioUnitSelector
 
 -- | supportedChannelLayoutTags
 --
@@ -209,8 +203,8 @@ ownerAudioUnit auAudioUnitBus  =
 --
 -- ObjC selector: @- supportedChannelLayoutTags@
 supportedChannelLayoutTags :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO (Id NSArray)
-supportedChannelLayoutTags auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "supportedChannelLayoutTags") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedChannelLayoutTags auAudioUnitBus =
+  sendMessage auAudioUnitBus supportedChannelLayoutTagsSelector
 
 -- | contextPresentationLatency
 --
@@ -236,8 +230,8 @@ supportedChannelLayoutTags auAudioUnitBus  =
 --
 -- ObjC selector: @- contextPresentationLatency@
 contextPresentationLatency :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO CDouble
-contextPresentationLatency auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "contextPresentationLatency") retCDouble []
+contextPresentationLatency auAudioUnitBus =
+  sendMessage auAudioUnitBus contextPresentationLatencySelector
 
 -- | contextPresentationLatency
 --
@@ -263,8 +257,8 @@ contextPresentationLatency auAudioUnitBus  =
 --
 -- ObjC selector: @- setContextPresentationLatency:@
 setContextPresentationLatency :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> CDouble -> IO ()
-setContextPresentationLatency auAudioUnitBus  value =
-    sendMsg auAudioUnitBus (mkSelector "setContextPresentationLatency:") retVoid [argCDouble value]
+setContextPresentationLatency auAudioUnitBus value =
+  sendMessage auAudioUnitBus setContextPresentationLatencySelector value
 
 -- | supportedChannelCounts
 --
@@ -274,8 +268,8 @@ setContextPresentationLatency auAudioUnitBus  value =
 --
 -- ObjC selector: @- supportedChannelCounts@
 supportedChannelCounts :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO (Id NSArray)
-supportedChannelCounts auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "supportedChannelCounts") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedChannelCounts auAudioUnitBus =
+  sendMessage auAudioUnitBus supportedChannelCountsSelector
 
 -- | supportedChannelCounts
 --
@@ -285,9 +279,8 @@ supportedChannelCounts auAudioUnitBus  =
 --
 -- ObjC selector: @- setSupportedChannelCounts:@
 setSupportedChannelCounts :: (IsAUAudioUnitBus auAudioUnitBus, IsNSArray value) => auAudioUnitBus -> value -> IO ()
-setSupportedChannelCounts auAudioUnitBus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnitBus (mkSelector "setSupportedChannelCounts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedChannelCounts auAudioUnitBus value =
+  sendMessage auAudioUnitBus setSupportedChannelCountsSelector (toNSArray value)
 
 -- | maximumChannelCount
 --
@@ -297,8 +290,8 @@ setSupportedChannelCounts auAudioUnitBus  value =
 --
 -- ObjC selector: @- maximumChannelCount@
 maximumChannelCount :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> IO CUInt
-maximumChannelCount auAudioUnitBus  =
-    sendMsg auAudioUnitBus (mkSelector "maximumChannelCount") retCUInt []
+maximumChannelCount auAudioUnitBus =
+  sendMessage auAudioUnitBus maximumChannelCountSelector
 
 -- | maximumChannelCount
 --
@@ -308,82 +301,82 @@ maximumChannelCount auAudioUnitBus  =
 --
 -- ObjC selector: @- setMaximumChannelCount:@
 setMaximumChannelCount :: IsAUAudioUnitBus auAudioUnitBus => auAudioUnitBus -> CUInt -> IO ()
-setMaximumChannelCount auAudioUnitBus  value =
-    sendMsg auAudioUnitBus (mkSelector "setMaximumChannelCount:") retVoid [argCUInt value]
+setMaximumChannelCount auAudioUnitBus value =
+  sendMessage auAudioUnitBus setMaximumChannelCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setFormat:error:@
-setFormat_errorSelector :: Selector
+setFormat_errorSelector :: Selector '[RawId, Id NSError] Bool
 setFormat_errorSelector = mkSelector "setFormat:error:"
 
 -- | @Selector@ for @initWithFormat:error:@
-initWithFormat_errorSelector :: Selector
+initWithFormat_errorSelector :: Selector '[RawId, Id NSError] (Id AUAudioUnitBus)
 initWithFormat_errorSelector = mkSelector "initWithFormat:error:"
 
 -- | @Selector@ for @shouldAllocateBuffer@
-shouldAllocateBufferSelector :: Selector
+shouldAllocateBufferSelector :: Selector '[] Bool
 shouldAllocateBufferSelector = mkSelector "shouldAllocateBuffer"
 
 -- | @Selector@ for @setShouldAllocateBuffer:@
-setShouldAllocateBufferSelector :: Selector
+setShouldAllocateBufferSelector :: Selector '[Bool] ()
 setShouldAllocateBufferSelector = mkSelector "setShouldAllocateBuffer:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @busType@
-busTypeSelector :: Selector
+busTypeSelector :: Selector '[] AUAudioUnitBusType
 busTypeSelector = mkSelector "busType"
 
 -- | @Selector@ for @ownerAudioUnit@
-ownerAudioUnitSelector :: Selector
+ownerAudioUnitSelector :: Selector '[] (Id AUAudioUnit)
 ownerAudioUnitSelector = mkSelector "ownerAudioUnit"
 
 -- | @Selector@ for @supportedChannelLayoutTags@
-supportedChannelLayoutTagsSelector :: Selector
+supportedChannelLayoutTagsSelector :: Selector '[] (Id NSArray)
 supportedChannelLayoutTagsSelector = mkSelector "supportedChannelLayoutTags"
 
 -- | @Selector@ for @contextPresentationLatency@
-contextPresentationLatencySelector :: Selector
+contextPresentationLatencySelector :: Selector '[] CDouble
 contextPresentationLatencySelector = mkSelector "contextPresentationLatency"
 
 -- | @Selector@ for @setContextPresentationLatency:@
-setContextPresentationLatencySelector :: Selector
+setContextPresentationLatencySelector :: Selector '[CDouble] ()
 setContextPresentationLatencySelector = mkSelector "setContextPresentationLatency:"
 
 -- | @Selector@ for @supportedChannelCounts@
-supportedChannelCountsSelector :: Selector
+supportedChannelCountsSelector :: Selector '[] (Id NSArray)
 supportedChannelCountsSelector = mkSelector "supportedChannelCounts"
 
 -- | @Selector@ for @setSupportedChannelCounts:@
-setSupportedChannelCountsSelector :: Selector
+setSupportedChannelCountsSelector :: Selector '[Id NSArray] ()
 setSupportedChannelCountsSelector = mkSelector "setSupportedChannelCounts:"
 
 -- | @Selector@ for @maximumChannelCount@
-maximumChannelCountSelector :: Selector
+maximumChannelCountSelector :: Selector '[] CUInt
 maximumChannelCountSelector = mkSelector "maximumChannelCount"
 
 -- | @Selector@ for @setMaximumChannelCount:@
-setMaximumChannelCountSelector :: Selector
+setMaximumChannelCountSelector :: Selector '[CUInt] ()
 setMaximumChannelCountSelector = mkSelector "setMaximumChannelCount:"
 

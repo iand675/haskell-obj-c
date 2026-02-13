@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.Virtualization.VZUSBController
   , attachDevice_completionHandler
   , detachDevice_completionHandler
   , usbDevices
-  , newSelector
-  , initSelector
   , attachDevice_completionHandlerSelector
   , detachDevice_completionHandlerSelector
+  , initSelector
+  , newSelector
   , usbDevicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,12 +43,12 @@ new :: IO (Id VZUSBController)
 new  =
   do
     cls' <- getRequiredClass "VZUSBController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZUSBController vzusbController => vzusbController -> IO (Id VZUSBController)
-init_ vzusbController  =
-    sendMsg vzusbController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzusbController =
+  sendOwnedMessage vzusbController initSelector
 
 -- | Attach a USB device.
 --
@@ -65,8 +62,8 @@ init_ vzusbController  =
 --
 -- ObjC selector: @- attachDevice:completionHandler:@
 attachDevice_completionHandler :: IsVZUSBController vzusbController => vzusbController -> RawId -> Ptr () -> IO ()
-attachDevice_completionHandler vzusbController  device completionHandler =
-    sendMsg vzusbController (mkSelector "attachDevice:completionHandler:") retVoid [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+attachDevice_completionHandler vzusbController device completionHandler =
+  sendMessage vzusbController attachDevice_completionHandlerSelector device completionHandler
 
 -- | Detach a USB device.
 --
@@ -80,8 +77,8 @@ attachDevice_completionHandler vzusbController  device completionHandler =
 --
 -- ObjC selector: @- detachDevice:completionHandler:@
 detachDevice_completionHandler :: IsVZUSBController vzusbController => vzusbController -> RawId -> Ptr () -> IO ()
-detachDevice_completionHandler vzusbController  device completionHandler =
-    sendMsg vzusbController (mkSelector "detachDevice:completionHandler:") retVoid [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+detachDevice_completionHandler vzusbController device completionHandler =
+  sendMessage vzusbController detachDevice_completionHandlerSelector device completionHandler
 
 -- | Return a list of USB devices attached to controller.
 --
@@ -97,30 +94,30 @@ detachDevice_completionHandler vzusbController  device completionHandler =
 --
 -- ObjC selector: @- usbDevices@
 usbDevices :: IsVZUSBController vzusbController => vzusbController -> IO (Id NSArray)
-usbDevices vzusbController  =
-    sendMsg vzusbController (mkSelector "usbDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+usbDevices vzusbController =
+  sendMessage vzusbController usbDevicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZUSBController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZUSBController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @attachDevice:completionHandler:@
-attachDevice_completionHandlerSelector :: Selector
+attachDevice_completionHandlerSelector :: Selector '[RawId, Ptr ()] ()
 attachDevice_completionHandlerSelector = mkSelector "attachDevice:completionHandler:"
 
 -- | @Selector@ for @detachDevice:completionHandler:@
-detachDevice_completionHandlerSelector :: Selector
+detachDevice_completionHandlerSelector :: Selector '[RawId, Ptr ()] ()
 detachDevice_completionHandlerSelector = mkSelector "detachDevice:completionHandler:"
 
 -- | @Selector@ for @usbDevices@
-usbDevicesSelector :: Selector
+usbDevicesSelector :: Selector '[] (Id NSArray)
 usbDevicesSelector = mkSelector "usbDevices"
 

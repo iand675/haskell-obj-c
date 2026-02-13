@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AppKit.NSSplitViewItemAccessoryViewController
   , setAutomaticallyAppliesContentInsets
   , preferredScrollEdgeEffectStyle
   , setPreferredScrollEdgeEffectStyle
-  , viewWillAppearSelector
-  , viewDidAppearSelector
-  , viewWillDisappearSelector
-  , viewDidDisappearSelector
-  , hiddenSelector
-  , setHiddenSelector
   , automaticallyAppliesContentInsetsSelector
-  , setAutomaticallyAppliesContentInsetsSelector
+  , hiddenSelector
   , preferredScrollEdgeEffectStyleSelector
+  , setAutomaticallyAppliesContentInsetsSelector
+  , setHiddenSelector
   , setPreferredScrollEdgeEffectStyleSelector
+  , viewDidAppearSelector
+  , viewDidDisappearSelector
+  , viewWillAppearSelector
+  , viewWillDisappearSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,51 +44,51 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- viewWillAppear@
 viewWillAppear :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO ()
-viewWillAppear nsSplitViewItemAccessoryViewController  =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "viewWillAppear") retVoid []
+viewWillAppear nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController viewWillAppearSelector
 
 -- | @- viewDidAppear@
 viewDidAppear :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO ()
-viewDidAppear nsSplitViewItemAccessoryViewController  =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "viewDidAppear") retVoid []
+viewDidAppear nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController viewDidAppearSelector
 
 -- | @- viewWillDisappear@
 viewWillDisappear :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO ()
-viewWillDisappear nsSplitViewItemAccessoryViewController  =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "viewWillDisappear") retVoid []
+viewWillDisappear nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController viewWillDisappearSelector
 
 -- | @- viewDidDisappear@
 viewDidDisappear :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO ()
-viewDidDisappear nsSplitViewItemAccessoryViewController  =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "viewDidDisappear") retVoid []
+viewDidDisappear nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController viewDidDisappearSelector
 
 -- | When set, this property will collapse the accessory view to 0 height (animatable) but not remove it from the window. Set through the animator object to animate it.
 --
 -- ObjC selector: @- hidden@
 hidden :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO Bool
-hidden nsSplitViewItemAccessoryViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSplitViewItemAccessoryViewController (mkSelector "hidden") retCULong []
+hidden nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController hiddenSelector
 
 -- | When set, this property will collapse the accessory view to 0 height (animatable) but not remove it from the window. Set through the animator object to animate it.
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> Bool -> IO ()
-setHidden nsSplitViewItemAccessoryViewController  value =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsSplitViewItemAccessoryViewController value =
+  sendMessage nsSplitViewItemAccessoryViewController setHiddenSelector value
 
 -- | Whether or not standard content insets should be applied to the view. Defaults to YES.
 --
 -- ObjC selector: @- automaticallyAppliesContentInsets@
 automaticallyAppliesContentInsets :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO Bool
-automaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSplitViewItemAccessoryViewController (mkSelector "automaticallyAppliesContentInsets") retCULong []
+automaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController automaticallyAppliesContentInsetsSelector
 
 -- | Whether or not standard content insets should be applied to the view. Defaults to YES.
 --
 -- ObjC selector: @- setAutomaticallyAppliesContentInsets:@
 setAutomaticallyAppliesContentInsets :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> Bool -> IO ()
-setAutomaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController  value =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "setAutomaticallyAppliesContentInsets:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController value =
+  sendMessage nsSplitViewItemAccessoryViewController setAutomaticallyAppliesContentInsetsSelector value
 
 -- | The split view item accessory’s preferred effect for content scrolling behind it.
 --
@@ -101,8 +98,8 @@ setAutomaticallyAppliesContentInsets nsSplitViewItemAccessoryViewController  val
 --
 -- ObjC selector: @- preferredScrollEdgeEffectStyle@
 preferredScrollEdgeEffectStyle :: IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController => nsSplitViewItemAccessoryViewController -> IO (Id NSScrollEdgeEffectStyle)
-preferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController  =
-    sendMsg nsSplitViewItemAccessoryViewController (mkSelector "preferredScrollEdgeEffectStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController =
+  sendMessage nsSplitViewItemAccessoryViewController preferredScrollEdgeEffectStyleSelector
 
 -- | The split view item accessory’s preferred effect for content scrolling behind it.
 --
@@ -112,51 +109,50 @@ preferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController  =
 --
 -- ObjC selector: @- setPreferredScrollEdgeEffectStyle:@
 setPreferredScrollEdgeEffectStyle :: (IsNSSplitViewItemAccessoryViewController nsSplitViewItemAccessoryViewController, IsNSScrollEdgeEffectStyle value) => nsSplitViewItemAccessoryViewController -> value -> IO ()
-setPreferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSplitViewItemAccessoryViewController (mkSelector "setPreferredScrollEdgeEffectStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredScrollEdgeEffectStyle nsSplitViewItemAccessoryViewController value =
+  sendMessage nsSplitViewItemAccessoryViewController setPreferredScrollEdgeEffectStyleSelector (toNSScrollEdgeEffectStyle value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @viewWillAppear@
-viewWillAppearSelector :: Selector
+viewWillAppearSelector :: Selector '[] ()
 viewWillAppearSelector = mkSelector "viewWillAppear"
 
 -- | @Selector@ for @viewDidAppear@
-viewDidAppearSelector :: Selector
+viewDidAppearSelector :: Selector '[] ()
 viewDidAppearSelector = mkSelector "viewDidAppear"
 
 -- | @Selector@ for @viewWillDisappear@
-viewWillDisappearSelector :: Selector
+viewWillDisappearSelector :: Selector '[] ()
 viewWillDisappearSelector = mkSelector "viewWillDisappear"
 
 -- | @Selector@ for @viewDidDisappear@
-viewDidDisappearSelector :: Selector
+viewDidDisappearSelector :: Selector '[] ()
 viewDidDisappearSelector = mkSelector "viewDidDisappear"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @automaticallyAppliesContentInsets@
-automaticallyAppliesContentInsetsSelector :: Selector
+automaticallyAppliesContentInsetsSelector :: Selector '[] Bool
 automaticallyAppliesContentInsetsSelector = mkSelector "automaticallyAppliesContentInsets"
 
 -- | @Selector@ for @setAutomaticallyAppliesContentInsets:@
-setAutomaticallyAppliesContentInsetsSelector :: Selector
+setAutomaticallyAppliesContentInsetsSelector :: Selector '[Bool] ()
 setAutomaticallyAppliesContentInsetsSelector = mkSelector "setAutomaticallyAppliesContentInsets:"
 
 -- | @Selector@ for @preferredScrollEdgeEffectStyle@
-preferredScrollEdgeEffectStyleSelector :: Selector
+preferredScrollEdgeEffectStyleSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 preferredScrollEdgeEffectStyleSelector = mkSelector "preferredScrollEdgeEffectStyle"
 
 -- | @Selector@ for @setPreferredScrollEdgeEffectStyle:@
-setPreferredScrollEdgeEffectStyleSelector :: Selector
+setPreferredScrollEdgeEffectStyleSelector :: Selector '[Id NSScrollEdgeEffectStyle] ()
 setPreferredScrollEdgeEffectStyleSelector = mkSelector "setPreferredScrollEdgeEffectStyle:"
 

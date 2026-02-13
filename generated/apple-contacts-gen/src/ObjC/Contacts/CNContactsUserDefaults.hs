@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,9 +15,9 @@ module ObjC.Contacts.CNContactsUserDefaults
   , sharedDefaults
   , sortOrder
   , countryCode
+  , countryCodeSelector
   , sharedDefaultsSelector
   , sortOrderSelector
-  , countryCodeSelector
 
   -- * Enum types
   , CNContactSortOrder(CNContactSortOrder)
@@ -27,15 +28,11 @@ module ObjC.Contacts.CNContactsUserDefaults
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,31 +45,31 @@ sharedDefaults :: IO (Id CNContactsUserDefaults)
 sharedDefaults  =
   do
     cls' <- getRequiredClass "CNContactsUserDefaults"
-    sendClassMsg cls' (mkSelector "sharedDefaults") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedDefaultsSelector
 
 -- | @- sortOrder@
 sortOrder :: IsCNContactsUserDefaults cnContactsUserDefaults => cnContactsUserDefaults -> IO CNContactSortOrder
-sortOrder cnContactsUserDefaults  =
-    fmap (coerce :: CLong -> CNContactSortOrder) $ sendMsg cnContactsUserDefaults (mkSelector "sortOrder") retCLong []
+sortOrder cnContactsUserDefaults =
+  sendMessage cnContactsUserDefaults sortOrderSelector
 
 -- | @- countryCode@
 countryCode :: IsCNContactsUserDefaults cnContactsUserDefaults => cnContactsUserDefaults -> IO (Id NSString)
-countryCode cnContactsUserDefaults  =
-    sendMsg cnContactsUserDefaults (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode cnContactsUserDefaults =
+  sendMessage cnContactsUserDefaults countryCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedDefaults@
-sharedDefaultsSelector :: Selector
+sharedDefaultsSelector :: Selector '[] (Id CNContactsUserDefaults)
 sharedDefaultsSelector = mkSelector "sharedDefaults"
 
 -- | @Selector@ for @sortOrder@
-sortOrderSelector :: Selector
+sortOrderSelector :: Selector '[] CNContactSortOrder
 sortOrderSelector = mkSelector "sortOrder"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 

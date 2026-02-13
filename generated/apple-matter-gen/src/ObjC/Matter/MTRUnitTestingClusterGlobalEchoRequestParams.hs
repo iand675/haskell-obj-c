@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRUnitTestingClusterGlobalEchoRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , field1Selector
-  , setField1Selector
   , field2Selector
-  , setField2Selector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setField1Selector
+  , setField2Selector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- field1@
 field1 :: IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams => mtrUnitTestingClusterGlobalEchoRequestParams -> IO (Id MTRDataTypeTestGlobalStruct)
-field1 mtrUnitTestingClusterGlobalEchoRequestParams  =
-    sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "field1") (retPtr retVoid) [] >>= retainedObject . castPtr
+field1 mtrUnitTestingClusterGlobalEchoRequestParams =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams field1Selector
 
 -- | @- setField1:@
 setField1 :: (IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams, IsMTRDataTypeTestGlobalStruct value) => mtrUnitTestingClusterGlobalEchoRequestParams -> value -> IO ()
-setField1 mtrUnitTestingClusterGlobalEchoRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "setField1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setField1 mtrUnitTestingClusterGlobalEchoRequestParams value =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams setField1Selector (toMTRDataTypeTestGlobalStruct value)
 
 -- | @- field2@
 field2 :: IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams => mtrUnitTestingClusterGlobalEchoRequestParams -> IO (Id NSNumber)
-field2 mtrUnitTestingClusterGlobalEchoRequestParams  =
-    sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "field2") (retPtr retVoid) [] >>= retainedObject . castPtr
+field2 mtrUnitTestingClusterGlobalEchoRequestParams =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams field2Selector
 
 -- | @- setField2:@
 setField2 :: (IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams, IsNSNumber value) => mtrUnitTestingClusterGlobalEchoRequestParams -> value -> IO ()
-setField2 mtrUnitTestingClusterGlobalEchoRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "setField2:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setField2 mtrUnitTestingClusterGlobalEchoRequestParams value =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams setField2Selector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setField2 mtrUnitTestingClusterGlobalEchoRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams => mtrUnitTestingClusterGlobalEchoRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams  =
-    sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams, IsNSNumber value) => mtrUnitTestingClusterGlobalEchoRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams value =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterGlobalEchoRequestParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams => mtrUnitTestingClusterGlobalEchoRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterGlobalEchoRequestParams  =
-    sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterGlobalEchoRequestParams =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrUnitTestingClusterGlobalEchoRequestParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterGlobalEchoRequestParams mtrUnitTestingClusterGlobalEchoRequestParams, IsNSNumber value) => mtrUnitTestingClusterGlobalEchoRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterGlobalEchoRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterGlobalEchoRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterGlobalEchoRequestParams value =
+  sendMessage mtrUnitTestingClusterGlobalEchoRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @field1@
-field1Selector :: Selector
+field1Selector :: Selector '[] (Id MTRDataTypeTestGlobalStruct)
 field1Selector = mkSelector "field1"
 
 -- | @Selector@ for @setField1:@
-setField1Selector :: Selector
+setField1Selector :: Selector '[Id MTRDataTypeTestGlobalStruct] ()
 setField1Selector = mkSelector "setField1:"
 
 -- | @Selector@ for @field2@
-field2Selector :: Selector
+field2Selector :: Selector '[] (Id NSNumber)
 field2Selector = mkSelector "field2"
 
 -- | @Selector@ for @setField2:@
-setField2Selector :: Selector
+setField2Selector :: Selector '[Id NSNumber] ()
 setField2Selector = mkSelector "setField2:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

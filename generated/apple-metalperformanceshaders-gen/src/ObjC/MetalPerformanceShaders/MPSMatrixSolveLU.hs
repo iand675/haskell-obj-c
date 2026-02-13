@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSMatrixSolveLU
   , IsMPSMatrixSolveLU(..)
   , initWithDevice_transpose_order_numberOfRightHandSides
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrix
-  , initWithDevice_transpose_order_numberOfRightHandSidesSelector
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrixSelector
+  , initWithDevice_transpose_order_numberOfRightHandSidesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:transpose:order:numberOfRightHandSides:@
 initWithDevice_transpose_order_numberOfRightHandSides :: IsMPSMatrixSolveLU mpsMatrixSolveLU => mpsMatrixSolveLU -> RawId -> Bool -> CULong -> CULong -> IO (Id MPSMatrixSolveLU)
-initWithDevice_transpose_order_numberOfRightHandSides mpsMatrixSolveLU  device transpose order numberOfRightHandSides =
-    sendMsg mpsMatrixSolveLU (mkSelector "initWithDevice:transpose:order:numberOfRightHandSides:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if transpose then 1 else 0), argCULong order, argCULong numberOfRightHandSides] >>= ownedObject . castPtr
+initWithDevice_transpose_order_numberOfRightHandSides mpsMatrixSolveLU device transpose order numberOfRightHandSides =
+  sendOwnedMessage mpsMatrixSolveLU initWithDevice_transpose_order_numberOfRightHandSidesSelector device transpose order numberOfRightHandSides
 
 -- | Encode a MPSMatrixSolveLU kernel into a command Buffer.
 --
@@ -80,22 +77,18 @@ initWithDevice_transpose_order_numberOfRightHandSides mpsMatrixSolveLU  device t
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:pivotIndices:solutionMatrix:@
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrix :: (IsMPSMatrixSolveLU mpsMatrixSolveLU, IsMPSMatrix sourceMatrix, IsMPSMatrix rightHandSideMatrix, IsMPSMatrix pivotIndices, IsMPSMatrix solutionMatrix) => mpsMatrixSolveLU -> RawId -> sourceMatrix -> rightHandSideMatrix -> pivotIndices -> solutionMatrix -> IO ()
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrix mpsMatrixSolveLU  commandBuffer sourceMatrix rightHandSideMatrix pivotIndices solutionMatrix =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr rightHandSideMatrix $ \raw_rightHandSideMatrix ->
-      withObjCPtr pivotIndices $ \raw_pivotIndices ->
-        withObjCPtr solutionMatrix $ \raw_solutionMatrix ->
-            sendMsg mpsMatrixSolveLU (mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:pivotIndices:solutionMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_rightHandSideMatrix :: Ptr ()), argPtr (castPtr raw_pivotIndices :: Ptr ()), argPtr (castPtr raw_solutionMatrix :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrix mpsMatrixSolveLU commandBuffer sourceMatrix rightHandSideMatrix pivotIndices solutionMatrix =
+  sendMessage mpsMatrixSolveLU encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrixSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSMatrix rightHandSideMatrix) (toMPSMatrix pivotIndices) (toMPSMatrix solutionMatrix)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:transpose:order:numberOfRightHandSides:@
-initWithDevice_transpose_order_numberOfRightHandSidesSelector :: Selector
+initWithDevice_transpose_order_numberOfRightHandSidesSelector :: Selector '[RawId, Bool, CULong, CULong] (Id MPSMatrixSolveLU)
 initWithDevice_transpose_order_numberOfRightHandSidesSelector = mkSelector "initWithDevice:transpose:order:numberOfRightHandSides:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:pivotIndices:solutionMatrix:@
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrixSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_pivotIndices_solutionMatrixSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:pivotIndices:solutionMatrix:"
 

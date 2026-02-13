@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MapKit.MKMultiPolygon
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPolygons:@
 initWithPolygons :: (IsMKMultiPolygon mkMultiPolygon, IsNSArray polygons) => mkMultiPolygon -> polygons -> IO (Id MKMultiPolygon)
-initWithPolygons mkMultiPolygon  polygons =
-  withObjCPtr polygons $ \raw_polygons ->
-      sendMsg mkMultiPolygon (mkSelector "initWithPolygons:") (retPtr retVoid) [argPtr (castPtr raw_polygons :: Ptr ())] >>= ownedObject . castPtr
+initWithPolygons mkMultiPolygon polygons =
+  sendOwnedMessage mkMultiPolygon initWithPolygonsSelector (toNSArray polygons)
 
 -- | @- polygons@
 polygons :: IsMKMultiPolygon mkMultiPolygon => mkMultiPolygon -> IO (Id NSArray)
-polygons mkMultiPolygon  =
-    sendMsg mkMultiPolygon (mkSelector "polygons") (retPtr retVoid) [] >>= retainedObject . castPtr
+polygons mkMultiPolygon =
+  sendMessage mkMultiPolygon polygonsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPolygons:@
-initWithPolygonsSelector :: Selector
+initWithPolygonsSelector :: Selector '[Id NSArray] (Id MKMultiPolygon)
 initWithPolygonsSelector = mkSelector "initWithPolygons:"
 
 -- | @Selector@ for @polygons@
-polygonsSelector :: Selector
+polygonsSelector :: Selector '[] (Id NSArray)
 polygonsSelector = mkSelector "polygons"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.Virtualization.VZVirtioFileSystemDeviceConfiguration
   , setShare
   , macOSGuestAutomountTag
   , initWithTagSelector
-  , validateTag_errorSelector
-  , tagSelector
+  , macOSGuestAutomountTagSelector
+  , setShareSelector
   , setTagSelector
   , shareSelector
-  , setShareSelector
-  , macOSGuestAutomountTagSelector
+  , tagSelector
+  , validateTag_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTag:@
 initWithTag :: (IsVZVirtioFileSystemDeviceConfiguration vzVirtioFileSystemDeviceConfiguration, IsNSString tag) => vzVirtioFileSystemDeviceConfiguration -> tag -> IO (Id VZVirtioFileSystemDeviceConfiguration)
-initWithTag vzVirtioFileSystemDeviceConfiguration  tag =
-  withObjCPtr tag $ \raw_tag ->
-      sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "initWithTag:") (retPtr retVoid) [argPtr (castPtr raw_tag :: Ptr ())] >>= ownedObject . castPtr
+initWithTag vzVirtioFileSystemDeviceConfiguration tag =
+  sendOwnedMessage vzVirtioFileSystemDeviceConfiguration initWithTagSelector (toNSString tag)
 
 -- | Check if tag is a valid Virtio file system tag.
 --
@@ -70,9 +66,7 @@ validateTag_error :: (IsNSString tag, IsNSError error_) => tag -> error_ -> IO B
 validateTag_error tag error_ =
   do
     cls' <- getRequiredClass "VZVirtioFileSystemDeviceConfiguration"
-    withObjCPtr tag $ \raw_tag ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "validateTag:error:") retCULong [argPtr (castPtr raw_tag :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' validateTag_errorSelector (toNSString tag) (toNSError error_)
 
 -- | The tag is a string identifying the device.
 --
@@ -82,8 +76,8 @@ validateTag_error tag error_ =
 --
 -- ObjC selector: @- tag@
 tag :: IsVZVirtioFileSystemDeviceConfiguration vzVirtioFileSystemDeviceConfiguration => vzVirtioFileSystemDeviceConfiguration -> IO (Id NSString)
-tag vzVirtioFileSystemDeviceConfiguration  =
-    sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "tag") (retPtr retVoid) [] >>= retainedObject . castPtr
+tag vzVirtioFileSystemDeviceConfiguration =
+  sendMessage vzVirtioFileSystemDeviceConfiguration tagSelector
 
 -- | The tag is a string identifying the device.
 --
@@ -93,9 +87,8 @@ tag vzVirtioFileSystemDeviceConfiguration  =
 --
 -- ObjC selector: @- setTag:@
 setTag :: (IsVZVirtioFileSystemDeviceConfiguration vzVirtioFileSystemDeviceConfiguration, IsNSString value) => vzVirtioFileSystemDeviceConfiguration -> value -> IO ()
-setTag vzVirtioFileSystemDeviceConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "setTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTag vzVirtioFileSystemDeviceConfiguration value =
+  sendMessage vzVirtioFileSystemDeviceConfiguration setTagSelector (toNSString value)
 
 -- | Directory share. Defines how host resources are exposed to the guest virtual machine.
 --
@@ -107,8 +100,8 @@ setTag vzVirtioFileSystemDeviceConfiguration  value =
 --
 -- ObjC selector: @- share@
 share :: IsVZVirtioFileSystemDeviceConfiguration vzVirtioFileSystemDeviceConfiguration => vzVirtioFileSystemDeviceConfiguration -> IO (Id VZDirectoryShare)
-share vzVirtioFileSystemDeviceConfiguration  =
-    sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "share") (retPtr retVoid) [] >>= retainedObject . castPtr
+share vzVirtioFileSystemDeviceConfiguration =
+  sendMessage vzVirtioFileSystemDeviceConfiguration shareSelector
 
 -- | Directory share. Defines how host resources are exposed to the guest virtual machine.
 --
@@ -120,9 +113,8 @@ share vzVirtioFileSystemDeviceConfiguration  =
 --
 -- ObjC selector: @- setShare:@
 setShare :: (IsVZVirtioFileSystemDeviceConfiguration vzVirtioFileSystemDeviceConfiguration, IsVZDirectoryShare value) => vzVirtioFileSystemDeviceConfiguration -> value -> IO ()
-setShare vzVirtioFileSystemDeviceConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioFileSystemDeviceConfiguration (mkSelector "setShare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShare vzVirtioFileSystemDeviceConfiguration value =
+  sendMessage vzVirtioFileSystemDeviceConfiguration setShareSelector (toVZDirectoryShare value)
 
 -- | The macOS automount tag.
 --
@@ -133,37 +125,37 @@ macOSGuestAutomountTag :: IO (Id NSString)
 macOSGuestAutomountTag  =
   do
     cls' <- getRequiredClass "VZVirtioFileSystemDeviceConfiguration"
-    sendClassMsg cls' (mkSelector "macOSGuestAutomountTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' macOSGuestAutomountTagSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTag:@
-initWithTagSelector :: Selector
+initWithTagSelector :: Selector '[Id NSString] (Id VZVirtioFileSystemDeviceConfiguration)
 initWithTagSelector = mkSelector "initWithTag:"
 
 -- | @Selector@ for @validateTag:error:@
-validateTag_errorSelector :: Selector
+validateTag_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 validateTag_errorSelector = mkSelector "validateTag:error:"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] (Id NSString)
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @setTag:@
-setTagSelector :: Selector
+setTagSelector :: Selector '[Id NSString] ()
 setTagSelector = mkSelector "setTag:"
 
 -- | @Selector@ for @share@
-shareSelector :: Selector
+shareSelector :: Selector '[] (Id VZDirectoryShare)
 shareSelector = mkSelector "share"
 
 -- | @Selector@ for @setShare:@
-setShareSelector :: Selector
+setShareSelector :: Selector '[Id VZDirectoryShare] ()
 setShareSelector = mkSelector "setShare:"
 
 -- | @Selector@ for @macOSGuestAutomountTag@
-macOSGuestAutomountTagSelector :: Selector
+macOSGuestAutomountTagSelector :: Selector '[] (Id NSString)
 macOSGuestAutomountTagSelector = mkSelector "macOSGuestAutomountTag"
 

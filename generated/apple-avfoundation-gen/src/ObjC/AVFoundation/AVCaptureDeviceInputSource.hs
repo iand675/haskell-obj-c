@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.AVFoundation.AVCaptureDeviceInputSource
   , inputSourceID
   , localizedName
   , initSelector
-  , newSelector
   , inputSourceIDSelector
   , localizedNameSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDeviceInputSource avCaptureDeviceInputSource => avCaptureDeviceInputSource -> IO (Id AVCaptureDeviceInputSource)
-init_ avCaptureDeviceInputSource  =
-    sendMsg avCaptureDeviceInputSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDeviceInputSource =
+  sendOwnedMessage avCaptureDeviceInputSource initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDeviceInputSource)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDeviceInputSource"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | inputSourceID
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- inputSourceID@
 inputSourceID :: IsAVCaptureDeviceInputSource avCaptureDeviceInputSource => avCaptureDeviceInputSource -> IO (Id NSString)
-inputSourceID avCaptureDeviceInputSource  =
-    sendMsg avCaptureDeviceInputSource (mkSelector "inputSourceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputSourceID avCaptureDeviceInputSource =
+  sendMessage avCaptureDeviceInputSource inputSourceIDSelector
 
 -- | localizedName
 --
@@ -70,26 +67,26 @@ inputSourceID avCaptureDeviceInputSource  =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsAVCaptureDeviceInputSource avCaptureDeviceInputSource => avCaptureDeviceInputSource -> IO (Id NSString)
-localizedName avCaptureDeviceInputSource  =
-    sendMsg avCaptureDeviceInputSource (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName avCaptureDeviceInputSource =
+  sendMessage avCaptureDeviceInputSource localizedNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDeviceInputSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDeviceInputSource)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @inputSourceID@
-inputSourceIDSelector :: Selector
+inputSourceIDSelector :: Selector '[] (Id NSString)
 inputSourceIDSelector = mkSelector "inputSourceID"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 

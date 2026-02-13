@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MetalPerformanceShaders.MPSImageLaplacian
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bias@
 bias :: IsMPSImageLaplacian mpsImageLaplacian => mpsImageLaplacian -> IO CFloat
-bias mpsImageLaplacian  =
-    sendMsg mpsImageLaplacian (mkSelector "bias") retCFloat []
+bias mpsImageLaplacian =
+  sendMessage mpsImageLaplacian biasSelector
 
 -- | bias
 --
@@ -54,18 +51,18 @@ bias mpsImageLaplacian  =
 --
 -- ObjC selector: @- setBias:@
 setBias :: IsMPSImageLaplacian mpsImageLaplacian => mpsImageLaplacian -> CFloat -> IO ()
-setBias mpsImageLaplacian  value =
-    sendMsg mpsImageLaplacian (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpsImageLaplacian value =
+  sendMessage mpsImageLaplacian setBiasSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 

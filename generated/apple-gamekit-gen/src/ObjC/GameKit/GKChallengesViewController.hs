@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.GameKit.GKChallengesViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,23 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- challengeDelegate@
 challengeDelegate :: IsGKChallengesViewController gkChallengesViewController => gkChallengesViewController -> IO RawId
-challengeDelegate gkChallengesViewController  =
-    fmap (RawId . castPtr) $ sendMsg gkChallengesViewController (mkSelector "challengeDelegate") (retPtr retVoid) []
+challengeDelegate gkChallengesViewController =
+  sendMessage gkChallengesViewController challengeDelegateSelector
 
 -- | @- setChallengeDelegate:@
 setChallengeDelegate :: IsGKChallengesViewController gkChallengesViewController => gkChallengesViewController -> RawId -> IO ()
-setChallengeDelegate gkChallengesViewController  value =
-    sendMsg gkChallengesViewController (mkSelector "setChallengeDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setChallengeDelegate gkChallengesViewController value =
+  sendMessage gkChallengesViewController setChallengeDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @challengeDelegate@
-challengeDelegateSelector :: Selector
+challengeDelegateSelector :: Selector '[] RawId
 challengeDelegateSelector = mkSelector "challengeDelegate"
 
 -- | @Selector@ for @setChallengeDelegate:@
-setChallengeDelegateSelector :: Selector
+setChallengeDelegateSelector :: Selector '[RawId] ()
 setChallengeDelegateSelector = mkSelector "setChallengeDelegate:"
 

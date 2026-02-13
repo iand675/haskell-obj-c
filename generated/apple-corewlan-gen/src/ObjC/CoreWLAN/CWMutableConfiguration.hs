@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CoreWLAN.CWMutableConfiguration
   , setRequireAdministratorForIBSSMode
   , rememberJoinedNetworks
   , setRememberJoinedNetworks
-  , requireAdministratorForAssociationSelector
-  , setRequireAdministratorForAssociationSelector
-  , requireAdministratorForPowerSelector
-  , setRequireAdministratorForPowerSelector
-  , requireAdministratorForIBSSModeSelector
-  , setRequireAdministratorForIBSSModeSelector
   , rememberJoinedNetworksSelector
+  , requireAdministratorForAssociationSelector
+  , requireAdministratorForIBSSModeSelector
+  , requireAdministratorForPowerSelector
   , setRememberJoinedNetworksSelector
+  , setRequireAdministratorForAssociationSelector
+  , setRequireAdministratorForIBSSModeSelector
+  , setRequireAdministratorForPowerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,91 +46,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requireAdministratorForAssociation@
 requireAdministratorForAssociation :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> IO Bool
-requireAdministratorForAssociation cwMutableConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwMutableConfiguration (mkSelector "requireAdministratorForAssociation") retCULong []
+requireAdministratorForAssociation cwMutableConfiguration =
+  sendMessage cwMutableConfiguration requireAdministratorForAssociationSelector
 
 -- | Set the preference to require an administrator password to change networks.
 --
 -- ObjC selector: @- setRequireAdministratorForAssociation:@
 setRequireAdministratorForAssociation :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> Bool -> IO ()
-setRequireAdministratorForAssociation cwMutableConfiguration  value =
-    sendMsg cwMutableConfiguration (mkSelector "setRequireAdministratorForAssociation:") retVoid [argCULong (if value then 1 else 0)]
+setRequireAdministratorForAssociation cwMutableConfiguration value =
+  sendMessage cwMutableConfiguration setRequireAdministratorForAssociationSelector value
 
 -- | Set the preference to require an administrator password to change the interface power state.
 --
 -- ObjC selector: @- requireAdministratorForPower@
 requireAdministratorForPower :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> IO Bool
-requireAdministratorForPower cwMutableConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwMutableConfiguration (mkSelector "requireAdministratorForPower") retCULong []
+requireAdministratorForPower cwMutableConfiguration =
+  sendMessage cwMutableConfiguration requireAdministratorForPowerSelector
 
 -- | Set the preference to require an administrator password to change the interface power state.
 --
 -- ObjC selector: @- setRequireAdministratorForPower:@
 setRequireAdministratorForPower :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> Bool -> IO ()
-setRequireAdministratorForPower cwMutableConfiguration  value =
-    sendMsg cwMutableConfiguration (mkSelector "setRequireAdministratorForPower:") retVoid [argCULong (if value then 1 else 0)]
+setRequireAdministratorForPower cwMutableConfiguration value =
+  sendMessage cwMutableConfiguration setRequireAdministratorForPowerSelector value
 
 -- | Set the preference to require an administrator password to change networks.
 --
 -- ObjC selector: @- requireAdministratorForIBSSMode@
 requireAdministratorForIBSSMode :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> IO Bool
-requireAdministratorForIBSSMode cwMutableConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwMutableConfiguration (mkSelector "requireAdministratorForIBSSMode") retCULong []
+requireAdministratorForIBSSMode cwMutableConfiguration =
+  sendMessage cwMutableConfiguration requireAdministratorForIBSSModeSelector
 
 -- | Set the preference to require an administrator password to change networks.
 --
 -- ObjC selector: @- setRequireAdministratorForIBSSMode:@
 setRequireAdministratorForIBSSMode :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> Bool -> IO ()
-setRequireAdministratorForIBSSMode cwMutableConfiguration  value =
-    sendMsg cwMutableConfiguration (mkSelector "setRequireAdministratorForIBSSMode:") retVoid [argCULong (if value then 1 else 0)]
+setRequireAdministratorForIBSSMode cwMutableConfiguration value =
+  sendMessage cwMutableConfiguration setRequireAdministratorForIBSSModeSelector value
 
 -- | Set the preference to require an administrator password to create a computer-to-computer network.
 --
 -- ObjC selector: @- rememberJoinedNetworks@
 rememberJoinedNetworks :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> IO Bool
-rememberJoinedNetworks cwMutableConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwMutableConfiguration (mkSelector "rememberJoinedNetworks") retCULong []
+rememberJoinedNetworks cwMutableConfiguration =
+  sendMessage cwMutableConfiguration rememberJoinedNetworksSelector
 
 -- | Set the preference to require an administrator password to create a computer-to-computer network.
 --
 -- ObjC selector: @- setRememberJoinedNetworks:@
 setRememberJoinedNetworks :: IsCWMutableConfiguration cwMutableConfiguration => cwMutableConfiguration -> Bool -> IO ()
-setRememberJoinedNetworks cwMutableConfiguration  value =
-    sendMsg cwMutableConfiguration (mkSelector "setRememberJoinedNetworks:") retVoid [argCULong (if value then 1 else 0)]
+setRememberJoinedNetworks cwMutableConfiguration value =
+  sendMessage cwMutableConfiguration setRememberJoinedNetworksSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requireAdministratorForAssociation@
-requireAdministratorForAssociationSelector :: Selector
+requireAdministratorForAssociationSelector :: Selector '[] Bool
 requireAdministratorForAssociationSelector = mkSelector "requireAdministratorForAssociation"
 
 -- | @Selector@ for @setRequireAdministratorForAssociation:@
-setRequireAdministratorForAssociationSelector :: Selector
+setRequireAdministratorForAssociationSelector :: Selector '[Bool] ()
 setRequireAdministratorForAssociationSelector = mkSelector "setRequireAdministratorForAssociation:"
 
 -- | @Selector@ for @requireAdministratorForPower@
-requireAdministratorForPowerSelector :: Selector
+requireAdministratorForPowerSelector :: Selector '[] Bool
 requireAdministratorForPowerSelector = mkSelector "requireAdministratorForPower"
 
 -- | @Selector@ for @setRequireAdministratorForPower:@
-setRequireAdministratorForPowerSelector :: Selector
+setRequireAdministratorForPowerSelector :: Selector '[Bool] ()
 setRequireAdministratorForPowerSelector = mkSelector "setRequireAdministratorForPower:"
 
 -- | @Selector@ for @requireAdministratorForIBSSMode@
-requireAdministratorForIBSSModeSelector :: Selector
+requireAdministratorForIBSSModeSelector :: Selector '[] Bool
 requireAdministratorForIBSSModeSelector = mkSelector "requireAdministratorForIBSSMode"
 
 -- | @Selector@ for @setRequireAdministratorForIBSSMode:@
-setRequireAdministratorForIBSSModeSelector :: Selector
+setRequireAdministratorForIBSSModeSelector :: Selector '[Bool] ()
 setRequireAdministratorForIBSSModeSelector = mkSelector "setRequireAdministratorForIBSSMode:"
 
 -- | @Selector@ for @rememberJoinedNetworks@
-rememberJoinedNetworksSelector :: Selector
+rememberJoinedNetworksSelector :: Selector '[] Bool
 rememberJoinedNetworksSelector = mkSelector "rememberJoinedNetworks"
 
 -- | @Selector@ for @setRememberJoinedNetworks:@
-setRememberJoinedNetworksSelector :: Selector
+setRememberJoinedNetworksSelector :: Selector '[Bool] ()
 setRememberJoinedNetworksSelector = mkSelector "setRememberJoinedNetworks:"
 

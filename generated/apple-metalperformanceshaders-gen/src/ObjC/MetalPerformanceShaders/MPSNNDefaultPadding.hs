@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.MetalPerformanceShaders.MPSNNDefaultPadding
   , paddingForTensorflowAveragePooling
   , paddingForTensorflowAveragePoolingValidOnly
   , label
-  , paddingWithMethodSelector
+  , labelSelector
   , paddingForTensorflowAveragePoolingSelector
   , paddingForTensorflowAveragePoolingValidOnlySelector
-  , labelSelector
+  , paddingWithMethodSelector
 
   -- * Enum types
   , MPSNNPaddingMethod(MPSNNPaddingMethod)
@@ -44,15 +45,11 @@ module ObjC.MetalPerformanceShaders.MPSNNDefaultPadding
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,7 +70,7 @@ paddingWithMethod :: MPSNNPaddingMethod -> IO (Id MPSNNDefaultPadding)
 paddingWithMethod method =
   do
     cls' <- getRequiredClass "MPSNNDefaultPadding"
-    sendClassMsg cls' (mkSelector "paddingWithMethod:") (retPtr retVoid) [argCULong (coerce method)] >>= retainedObject . castPtr
+    sendClassMessage cls' paddingWithMethodSelector method
 
 -- | A padding policy that attempts to reproduce TensorFlow behavior for average pooling
 --
@@ -100,7 +97,7 @@ paddingForTensorflowAveragePooling :: IO (Id MPSNNDefaultPadding)
 paddingForTensorflowAveragePooling  =
   do
     cls' <- getRequiredClass "MPSNNDefaultPadding"
-    sendClassMsg cls' (mkSelector "paddingForTensorflowAveragePooling") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' paddingForTensorflowAveragePoolingSelector
 
 -- | Typical pooling padding policy for valid only mode
 --
@@ -109,32 +106,32 @@ paddingForTensorflowAveragePoolingValidOnly :: IO (Id MPSNNDefaultPadding)
 paddingForTensorflowAveragePoolingValidOnly  =
   do
     cls' <- getRequiredClass "MPSNNDefaultPadding"
-    sendClassMsg cls' (mkSelector "paddingForTensorflowAveragePoolingValidOnly") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' paddingForTensorflowAveragePoolingValidOnlySelector
 
 -- | Human readable description of what the padding policy does
 --
 -- ObjC selector: @- label@
 label :: IsMPSNNDefaultPadding mpsnnDefaultPadding => mpsnnDefaultPadding -> IO (Id NSString)
-label mpsnnDefaultPadding  =
-    sendMsg mpsnnDefaultPadding (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsnnDefaultPadding =
+  sendMessage mpsnnDefaultPadding labelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @paddingWithMethod:@
-paddingWithMethodSelector :: Selector
+paddingWithMethodSelector :: Selector '[MPSNNPaddingMethod] (Id MPSNNDefaultPadding)
 paddingWithMethodSelector = mkSelector "paddingWithMethod:"
 
 -- | @Selector@ for @paddingForTensorflowAveragePooling@
-paddingForTensorflowAveragePoolingSelector :: Selector
+paddingForTensorflowAveragePoolingSelector :: Selector '[] (Id MPSNNDefaultPadding)
 paddingForTensorflowAveragePoolingSelector = mkSelector "paddingForTensorflowAveragePooling"
 
 -- | @Selector@ for @paddingForTensorflowAveragePoolingValidOnly@
-paddingForTensorflowAveragePoolingValidOnlySelector :: Selector
+paddingForTensorflowAveragePoolingValidOnlySelector :: Selector '[] (Id MPSNNDefaultPadding)
 paddingForTensorflowAveragePoolingValidOnlySelector = mkSelector "paddingForTensorflowAveragePoolingValidOnly"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 

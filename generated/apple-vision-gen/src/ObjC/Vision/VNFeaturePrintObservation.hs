@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Vision.VNFeaturePrintObservation
   , elementCount
   , data_
   , computeDistance_toFeaturePrintObservation_errorSelector
-  , elementTypeSelector
-  , elementCountSelector
   , dataSelector
+  , elementCountSelector
+  , elementTypeSelector
 
   -- * Enum types
   , VNElementType(VNElementType)
@@ -24,15 +25,11 @@ module ObjC.Vision.VNFeaturePrintObservation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,49 +43,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- computeDistance:toFeaturePrintObservation:error:@
 computeDistance_toFeaturePrintObservation_error :: (IsVNFeaturePrintObservation vnFeaturePrintObservation, IsVNFeaturePrintObservation featurePrint, IsNSError error_) => vnFeaturePrintObservation -> Ptr CFloat -> featurePrint -> error_ -> IO Bool
-computeDistance_toFeaturePrintObservation_error vnFeaturePrintObservation  outDistance featurePrint error_ =
-  withObjCPtr featurePrint $ \raw_featurePrint ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnFeaturePrintObservation (mkSelector "computeDistance:toFeaturePrintObservation:error:") retCULong [argPtr outDistance, argPtr (castPtr raw_featurePrint :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+computeDistance_toFeaturePrintObservation_error vnFeaturePrintObservation outDistance featurePrint error_ =
+  sendMessage vnFeaturePrintObservation computeDistance_toFeaturePrintObservation_errorSelector outDistance (toVNFeaturePrintObservation featurePrint) (toNSError error_)
 
 -- | The type of each element in the data.
 --
 -- ObjC selector: @- elementType@
 elementType :: IsVNFeaturePrintObservation vnFeaturePrintObservation => vnFeaturePrintObservation -> IO VNElementType
-elementType vnFeaturePrintObservation  =
-    fmap (coerce :: CULong -> VNElementType) $ sendMsg vnFeaturePrintObservation (mkSelector "elementType") retCULong []
+elementType vnFeaturePrintObservation =
+  sendMessage vnFeaturePrintObservation elementTypeSelector
 
 -- | The total number of elements in the data.
 --
 -- ObjC selector: @- elementCount@
 elementCount :: IsVNFeaturePrintObservation vnFeaturePrintObservation => vnFeaturePrintObservation -> IO CULong
-elementCount vnFeaturePrintObservation  =
-    sendMsg vnFeaturePrintObservation (mkSelector "elementCount") retCULong []
+elementCount vnFeaturePrintObservation =
+  sendMessage vnFeaturePrintObservation elementCountSelector
 
 -- | The feature print data.
 --
 -- ObjC selector: @- data@
 data_ :: IsVNFeaturePrintObservation vnFeaturePrintObservation => vnFeaturePrintObservation -> IO (Id NSData)
-data_ vnFeaturePrintObservation  =
-    sendMsg vnFeaturePrintObservation (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ vnFeaturePrintObservation =
+  sendMessage vnFeaturePrintObservation dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @computeDistance:toFeaturePrintObservation:error:@
-computeDistance_toFeaturePrintObservation_errorSelector :: Selector
+computeDistance_toFeaturePrintObservation_errorSelector :: Selector '[Ptr CFloat, Id VNFeaturePrintObservation, Id NSError] Bool
 computeDistance_toFeaturePrintObservation_errorSelector = mkSelector "computeDistance:toFeaturePrintObservation:error:"
 
 -- | @Selector@ for @elementType@
-elementTypeSelector :: Selector
+elementTypeSelector :: Selector '[] VNElementType
 elementTypeSelector = mkSelector "elementType"
 
 -- | @Selector@ for @elementCount@
-elementCountSelector :: Selector
+elementCountSelector :: Selector '[] CULong
 elementCountSelector = mkSelector "elementCount"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

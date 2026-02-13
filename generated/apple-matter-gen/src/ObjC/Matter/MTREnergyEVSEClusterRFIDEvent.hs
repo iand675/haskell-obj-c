@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Matter.MTREnergyEVSEClusterRFIDEvent
   , IsMTREnergyEVSEClusterRFIDEvent(..)
   , uid
   , setUid
-  , uidSelector
   , setUidSelector
+  , uidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- uid@
 uid :: IsMTREnergyEVSEClusterRFIDEvent mtrEnergyEVSEClusterRFIDEvent => mtrEnergyEVSEClusterRFIDEvent -> IO (Id NSData)
-uid mtrEnergyEVSEClusterRFIDEvent  =
-    sendMsg mtrEnergyEVSEClusterRFIDEvent (mkSelector "uid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uid mtrEnergyEVSEClusterRFIDEvent =
+  sendMessage mtrEnergyEVSEClusterRFIDEvent uidSelector
 
 -- | @- setUid:@
 setUid :: (IsMTREnergyEVSEClusterRFIDEvent mtrEnergyEVSEClusterRFIDEvent, IsNSData value) => mtrEnergyEVSEClusterRFIDEvent -> value -> IO ()
-setUid mtrEnergyEVSEClusterRFIDEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterRFIDEvent (mkSelector "setUid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUid mtrEnergyEVSEClusterRFIDEvent value =
+  sendMessage mtrEnergyEVSEClusterRFIDEvent setUidSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uid@
-uidSelector :: Selector
+uidSelector :: Selector '[] (Id NSData)
 uidSelector = mkSelector "uid"
 
 -- | @Selector@ for @setUid:@
-setUidSelector :: Selector
+setUidSelector :: Selector '[Id NSData] ()
 setUidSelector = mkSelector "setUid:"
 

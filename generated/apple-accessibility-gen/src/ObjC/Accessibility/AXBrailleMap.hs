@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Accessibility.AXBrailleMap
   , presentImage
   , init_
   , new
-  , presentImageSelector
   , initSelector
   , newSelector
+  , presentImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- presentImage:@
 presentImage :: IsAXBrailleMap axBrailleMap => axBrailleMap -> Ptr () -> IO ()
-presentImage axBrailleMap  image =
-    sendMsg axBrailleMap (mkSelector "presentImage:") retVoid [argPtr image]
+presentImage axBrailleMap image =
+  sendMessage axBrailleMap presentImageSelector image
 
 -- | @- init@
 init_ :: IsAXBrailleMap axBrailleMap => axBrailleMap -> IO (Id AXBrailleMap)
-init_ axBrailleMap  =
-    sendMsg axBrailleMap (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ axBrailleMap =
+  sendOwnedMessage axBrailleMap initSelector
 
 -- | @+ new@
 new :: IO (Id AXBrailleMap)
 new  =
   do
     cls' <- getRequiredClass "AXBrailleMap"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @presentImage:@
-presentImageSelector :: Selector
+presentImageSelector :: Selector '[Ptr ()] ()
 presentImageSelector = mkSelector "presentImage:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AXBrailleMap)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AXBrailleMap)
 newSelector = mkSelector "new"
 

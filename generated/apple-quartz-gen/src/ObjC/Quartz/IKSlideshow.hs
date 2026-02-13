@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Quartz.IKSlideshow
   , exportSlideshowItem_toApplication
   , autoPlayDelay
   , setAutoPlayDelay
-  , sharedSlideshowSelector
-  , runSlideshowWithDataSource_inMode_optionsSelector
-  , stopSlideshowSelector
-  , reloadDataSelector
-  , reloadSlideshowItemAtIndexSelector
-  , indexOfCurrentSlideshowItemSelector
+  , autoPlayDelaySelector
   , canExportToApplicationSelector
   , exportSlideshowItem_toApplicationSelector
-  , autoPlayDelaySelector
+  , indexOfCurrentSlideshowItemSelector
+  , reloadDataSelector
+  , reloadSlideshowItemAtIndexSelector
+  , runSlideshowWithDataSource_inMode_optionsSelector
   , setAutoPlayDelaySelector
+  , sharedSlideshowSelector
+  , stopSlideshowSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,7 +55,7 @@ sharedSlideshow :: IO (Id IKSlideshow)
 sharedSlideshow  =
   do
     cls' <- getRequiredClass "IKSlideshow"
-    sendClassMsg cls' (mkSelector "sharedSlideshow") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSlideshowSelector
 
 -- | runSlideshowWithDataSource:inMode:options:
 --
@@ -66,10 +63,8 @@ sharedSlideshow  =
 --
 -- ObjC selector: @- runSlideshowWithDataSource:inMode:options:@
 runSlideshowWithDataSource_inMode_options :: (IsIKSlideshow ikSlideshow, IsNSString slideshowMode, IsNSDictionary slideshowOptions) => ikSlideshow -> RawId -> slideshowMode -> slideshowOptions -> IO ()
-runSlideshowWithDataSource_inMode_options ikSlideshow  dataSource slideshowMode slideshowOptions =
-  withObjCPtr slideshowMode $ \raw_slideshowMode ->
-    withObjCPtr slideshowOptions $ \raw_slideshowOptions ->
-        sendMsg ikSlideshow (mkSelector "runSlideshowWithDataSource:inMode:options:") retVoid [argPtr (castPtr (unRawId dataSource) :: Ptr ()), argPtr (castPtr raw_slideshowMode :: Ptr ()), argPtr (castPtr raw_slideshowOptions :: Ptr ())]
+runSlideshowWithDataSource_inMode_options ikSlideshow dataSource slideshowMode slideshowOptions =
+  sendMessage ikSlideshow runSlideshowWithDataSource_inMode_optionsSelector dataSource (toNSString slideshowMode) (toNSDictionary slideshowOptions)
 
 -- | stopSlideshow:
 --
@@ -77,8 +72,8 @@ runSlideshowWithDataSource_inMode_options ikSlideshow  dataSource slideshowMode 
 --
 -- ObjC selector: @- stopSlideshow:@
 stopSlideshow :: IsIKSlideshow ikSlideshow => ikSlideshow -> RawId -> IO ()
-stopSlideshow ikSlideshow  sender =
-    sendMsg ikSlideshow (mkSelector "stopSlideshow:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopSlideshow ikSlideshow sender =
+  sendMessage ikSlideshow stopSlideshowSelector sender
 
 -- | reloadData:
 --
@@ -86,8 +81,8 @@ stopSlideshow ikSlideshow  sender =
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsIKSlideshow ikSlideshow => ikSlideshow -> IO ()
-reloadData ikSlideshow  =
-    sendMsg ikSlideshow (mkSelector "reloadData") retVoid []
+reloadData ikSlideshow =
+  sendMessage ikSlideshow reloadDataSelector
 
 -- | reloadSlideshowItemAtIndex:
 --
@@ -95,8 +90,8 @@ reloadData ikSlideshow  =
 --
 -- ObjC selector: @- reloadSlideshowItemAtIndex:@
 reloadSlideshowItemAtIndex :: IsIKSlideshow ikSlideshow => ikSlideshow -> CULong -> IO ()
-reloadSlideshowItemAtIndex ikSlideshow  index =
-    sendMsg ikSlideshow (mkSelector "reloadSlideshowItemAtIndex:") retVoid [argCULong index]
+reloadSlideshowItemAtIndex ikSlideshow index =
+  sendMessage ikSlideshow reloadSlideshowItemAtIndexSelector index
 
 -- | indexOfCurrentSlideshowItem:
 --
@@ -104,8 +99,8 @@ reloadSlideshowItemAtIndex ikSlideshow  index =
 --
 -- ObjC selector: @- indexOfCurrentSlideshowItem@
 indexOfCurrentSlideshowItem :: IsIKSlideshow ikSlideshow => ikSlideshow -> IO CULong
-indexOfCurrentSlideshowItem ikSlideshow  =
-    sendMsg ikSlideshow (mkSelector "indexOfCurrentSlideshowItem") retCULong []
+indexOfCurrentSlideshowItem ikSlideshow =
+  sendMessage ikSlideshow indexOfCurrentSlideshowItemSelector
 
 -- | canExportToApplication:
 --
@@ -116,8 +111,7 @@ canExportToApplication :: IsNSString applicationBundleIdentifier => applicationB
 canExportToApplication applicationBundleIdentifier =
   do
     cls' <- getRequiredClass "IKSlideshow"
-    withObjCPtr applicationBundleIdentifier $ \raw_applicationBundleIdentifier ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canExportToApplication:") retCULong [argPtr (castPtr raw_applicationBundleIdentifier :: Ptr ())]
+    sendClassMessage cls' canExportToApplicationSelector (toNSString applicationBundleIdentifier)
 
 -- | exportSlideshowItem:toApplication:
 --
@@ -130,8 +124,7 @@ exportSlideshowItem_toApplication :: IsNSString applicationBundleIdentifier => R
 exportSlideshowItem_toApplication item applicationBundleIdentifier =
   do
     cls' <- getRequiredClass "IKSlideshow"
-    withObjCPtr applicationBundleIdentifier $ \raw_applicationBundleIdentifier ->
-      sendClassMsg cls' (mkSelector "exportSlideshowItem:toApplication:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ()), argPtr (castPtr raw_applicationBundleIdentifier :: Ptr ())]
+    sendClassMessage cls' exportSlideshowItem_toApplicationSelector item (toNSString applicationBundleIdentifier)
 
 -- | autoPlayDelay
 --
@@ -139,8 +132,8 @@ exportSlideshowItem_toApplication item applicationBundleIdentifier =
 --
 -- ObjC selector: @- autoPlayDelay@
 autoPlayDelay :: IsIKSlideshow ikSlideshow => ikSlideshow -> IO CDouble
-autoPlayDelay ikSlideshow  =
-    sendMsg ikSlideshow (mkSelector "autoPlayDelay") retCDouble []
+autoPlayDelay ikSlideshow =
+  sendMessage ikSlideshow autoPlayDelaySelector
 
 -- | autoPlayDelay
 --
@@ -148,50 +141,50 @@ autoPlayDelay ikSlideshow  =
 --
 -- ObjC selector: @- setAutoPlayDelay:@
 setAutoPlayDelay :: IsIKSlideshow ikSlideshow => ikSlideshow -> CDouble -> IO ()
-setAutoPlayDelay ikSlideshow  value =
-    sendMsg ikSlideshow (mkSelector "setAutoPlayDelay:") retVoid [argCDouble value]
+setAutoPlayDelay ikSlideshow value =
+  sendMessage ikSlideshow setAutoPlayDelaySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedSlideshow@
-sharedSlideshowSelector :: Selector
+sharedSlideshowSelector :: Selector '[] (Id IKSlideshow)
 sharedSlideshowSelector = mkSelector "sharedSlideshow"
 
 -- | @Selector@ for @runSlideshowWithDataSource:inMode:options:@
-runSlideshowWithDataSource_inMode_optionsSelector :: Selector
+runSlideshowWithDataSource_inMode_optionsSelector :: Selector '[RawId, Id NSString, Id NSDictionary] ()
 runSlideshowWithDataSource_inMode_optionsSelector = mkSelector "runSlideshowWithDataSource:inMode:options:"
 
 -- | @Selector@ for @stopSlideshow:@
-stopSlideshowSelector :: Selector
+stopSlideshowSelector :: Selector '[RawId] ()
 stopSlideshowSelector = mkSelector "stopSlideshow:"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @reloadSlideshowItemAtIndex:@
-reloadSlideshowItemAtIndexSelector :: Selector
+reloadSlideshowItemAtIndexSelector :: Selector '[CULong] ()
 reloadSlideshowItemAtIndexSelector = mkSelector "reloadSlideshowItemAtIndex:"
 
 -- | @Selector@ for @indexOfCurrentSlideshowItem@
-indexOfCurrentSlideshowItemSelector :: Selector
+indexOfCurrentSlideshowItemSelector :: Selector '[] CULong
 indexOfCurrentSlideshowItemSelector = mkSelector "indexOfCurrentSlideshowItem"
 
 -- | @Selector@ for @canExportToApplication:@
-canExportToApplicationSelector :: Selector
+canExportToApplicationSelector :: Selector '[Id NSString] Bool
 canExportToApplicationSelector = mkSelector "canExportToApplication:"
 
 -- | @Selector@ for @exportSlideshowItem:toApplication:@
-exportSlideshowItem_toApplicationSelector :: Selector
+exportSlideshowItem_toApplicationSelector :: Selector '[RawId, Id NSString] ()
 exportSlideshowItem_toApplicationSelector = mkSelector "exportSlideshowItem:toApplication:"
 
 -- | @Selector@ for @autoPlayDelay@
-autoPlayDelaySelector :: Selector
+autoPlayDelaySelector :: Selector '[] CDouble
 autoPlayDelaySelector = mkSelector "autoPlayDelay"
 
 -- | @Selector@ for @setAutoPlayDelay:@
-setAutoPlayDelaySelector :: Selector
+setAutoPlayDelaySelector :: Selector '[CDouble] ()
 setAutoPlayDelaySelector = mkSelector "setAutoPlayDelay:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Cinematic.CNObjectTracker
   , init_
   , new
   , isSupported
-  , initWithCommandQueueSelector
   , finishDetectionTrackSelector
-  , resetDetectionTrackSelector
   , initSelector
-  , newSelector
+  , initWithCommandQueueSelector
   , isSupportedSelector
+  , newSelector
+  , resetDetectionTrackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,34 +40,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCommandQueue:@
 initWithCommandQueue :: IsCNObjectTracker cnObjectTracker => cnObjectTracker -> RawId -> IO (Id CNObjectTracker)
-initWithCommandQueue cnObjectTracker  commandQueue =
-    sendMsg cnObjectTracker (mkSelector "initWithCommandQueue:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ())] >>= ownedObject . castPtr
+initWithCommandQueue cnObjectTracker commandQueue =
+  sendOwnedMessage cnObjectTracker initWithCommandQueueSelector commandQueue
 
 -- | Finish constructing the detection track and return it. - Returns: a detection track which tracks the object
 --
 -- ObjC selector: @- finishDetectionTrack@
 finishDetectionTrack :: IsCNObjectTracker cnObjectTracker => cnObjectTracker -> IO (Id CNDetectionTrack)
-finishDetectionTrack cnObjectTracker  =
-    sendMsg cnObjectTracker (mkSelector "finishDetectionTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+finishDetectionTrack cnObjectTracker =
+  sendMessage cnObjectTracker finishDetectionTrackSelector
 
 -- | Reset the builder to construct a new detection track.
 --
 -- ObjC selector: @- resetDetectionTrack@
 resetDetectionTrack :: IsCNObjectTracker cnObjectTracker => cnObjectTracker -> IO ()
-resetDetectionTrack cnObjectTracker  =
-    sendMsg cnObjectTracker (mkSelector "resetDetectionTrack") retVoid []
+resetDetectionTrack cnObjectTracker =
+  sendMessage cnObjectTracker resetDetectionTrackSelector
 
 -- | @- init@
 init_ :: IsCNObjectTracker cnObjectTracker => cnObjectTracker -> IO (Id CNObjectTracker)
-init_ cnObjectTracker  =
-    sendMsg cnObjectTracker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnObjectTracker =
+  sendOwnedMessage cnObjectTracker initSelector
 
 -- | @+ new@
 new :: IO (Id CNObjectTracker)
 new  =
   do
     cls' <- getRequiredClass "CNObjectTracker"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Indicates whether the current device supports object detection and tracking.
 --
@@ -79,33 +76,33 @@ isSupported :: IO Bool
 isSupported  =
   do
     cls' <- getRequiredClass "CNObjectTracker"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isSupported") retCULong []
+    sendClassMessage cls' isSupportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCommandQueue:@
-initWithCommandQueueSelector :: Selector
+initWithCommandQueueSelector :: Selector '[RawId] (Id CNObjectTracker)
 initWithCommandQueueSelector = mkSelector "initWithCommandQueue:"
 
 -- | @Selector@ for @finishDetectionTrack@
-finishDetectionTrackSelector :: Selector
+finishDetectionTrackSelector :: Selector '[] (Id CNDetectionTrack)
 finishDetectionTrackSelector = mkSelector "finishDetectionTrack"
 
 -- | @Selector@ for @resetDetectionTrack@
-resetDetectionTrackSelector :: Selector
+resetDetectionTrackSelector :: Selector '[] ()
 resetDetectionTrackSelector = mkSelector "resetDetectionTrack"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNObjectTracker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNObjectTracker)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isSupported@
-isSupportedSelector :: Selector
+isSupportedSelector :: Selector '[] Bool
 isSupportedSelector = mkSelector "isSupported"
 

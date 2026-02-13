@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Matter.MTRActionsClusterActionStruct
   , state
   , setState
   , actionIDSelector
-  , setActionIDSelector
-  , nameSelector
-  , setNameSelector
-  , typeSelector
-  , setTypeSelector
   , endpointListIDSelector
+  , nameSelector
+  , setActionIDSelector
   , setEndpointListIDSelector
-  , supportedCommandsSelector
-  , setSupportedCommandsSelector
-  , stateSelector
+  , setNameSelector
   , setStateSelector
+  , setSupportedCommandsSelector
+  , setTypeSelector
+  , stateSelector
+  , supportedCommandsSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- actionID@
 actionID :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSNumber)
-actionID mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "actionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionID mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct actionIDSelector
 
 -- | @- setActionID:@
 setActionID :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSNumber value) => mtrActionsClusterActionStruct -> value -> IO ()
-setActionID mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setActionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionID mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setActionIDSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSString)
-name mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSString value) => mtrActionsClusterActionStruct -> value -> IO ()
-setName mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setNameSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSNumber)
-type_ mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct typeSelector
 
 -- | @- setType:@
 setType :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSNumber value) => mtrActionsClusterActionStruct -> value -> IO ()
-setType mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setTypeSelector (toNSNumber value)
 
 -- | @- endpointListID@
 endpointListID :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSNumber)
-endpointListID mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "endpointListID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointListID mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct endpointListIDSelector
 
 -- | @- setEndpointListID:@
 setEndpointListID :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSNumber value) => mtrActionsClusterActionStruct -> value -> IO ()
-setEndpointListID mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setEndpointListID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointListID mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setEndpointListIDSelector (toNSNumber value)
 
 -- | @- supportedCommands@
 supportedCommands :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSNumber)
-supportedCommands mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "supportedCommands") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedCommands mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct supportedCommandsSelector
 
 -- | @- setSupportedCommands:@
 setSupportedCommands :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSNumber value) => mtrActionsClusterActionStruct -> value -> IO ()
-setSupportedCommands mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setSupportedCommands:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedCommands mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setSupportedCommandsSelector (toNSNumber value)
 
 -- | @- state@
 state :: IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct => mtrActionsClusterActionStruct -> IO (Id NSNumber)
-state mtrActionsClusterActionStruct  =
-    sendMsg mtrActionsClusterActionStruct (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state mtrActionsClusterActionStruct =
+  sendMessage mtrActionsClusterActionStruct stateSelector
 
 -- | @- setState:@
 setState :: (IsMTRActionsClusterActionStruct mtrActionsClusterActionStruct, IsNSNumber value) => mtrActionsClusterActionStruct -> value -> IO ()
-setState mtrActionsClusterActionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionStruct (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState mtrActionsClusterActionStruct value =
+  sendMessage mtrActionsClusterActionStruct setStateSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionID@
-actionIDSelector :: Selector
+actionIDSelector :: Selector '[] (Id NSNumber)
 actionIDSelector = mkSelector "actionID"
 
 -- | @Selector@ for @setActionID:@
-setActionIDSelector :: Selector
+setActionIDSelector :: Selector '[Id NSNumber] ()
 setActionIDSelector = mkSelector "setActionID:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSNumber)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSNumber] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @endpointListID@
-endpointListIDSelector :: Selector
+endpointListIDSelector :: Selector '[] (Id NSNumber)
 endpointListIDSelector = mkSelector "endpointListID"
 
 -- | @Selector@ for @setEndpointListID:@
-setEndpointListIDSelector :: Selector
+setEndpointListIDSelector :: Selector '[Id NSNumber] ()
 setEndpointListIDSelector = mkSelector "setEndpointListID:"
 
 -- | @Selector@ for @supportedCommands@
-supportedCommandsSelector :: Selector
+supportedCommandsSelector :: Selector '[] (Id NSNumber)
 supportedCommandsSelector = mkSelector "supportedCommands"
 
 -- | @Selector@ for @setSupportedCommands:@
-setSupportedCommandsSelector :: Selector
+setSupportedCommandsSelector :: Selector '[Id NSNumber] ()
 setSupportedCommandsSelector = mkSelector "setSupportedCommands:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSNumber)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSNumber] ()
 setStateSelector = mkSelector "setState:"
 

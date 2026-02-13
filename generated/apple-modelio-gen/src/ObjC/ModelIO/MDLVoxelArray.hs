@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,39 +31,35 @@ module ObjC.ModelIO.MDLVoxelArray
   , setShellFieldInteriorThickness
   , shellFieldExteriorThickness
   , setShellFieldExteriorThickness
-  , initWithAsset_divisions_patchRadiusSelector
-  , initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector
-  , initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector
-  , voxelIndicesSelector
-  , setVoxelsForMesh_divisions_patchRadiusSelector
-  , setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector
-  , setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector
-  , unionWithVoxelsSelector
-  , intersectWithVoxelsSelector
-  , differenceWithVoxelsSelector
-  , convertToSignedShellFieldSelector
   , coarseMeshSelector
   , coarseMeshUsingAllocatorSelector
-  , meshUsingAllocatorSelector
+  , convertToSignedShellFieldSelector
   , countSelector
+  , differenceWithVoxelsSelector
+  , initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector
+  , initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector
+  , initWithAsset_divisions_patchRadiusSelector
+  , intersectWithVoxelsSelector
   , isValidSignedShellFieldSelector
-  , shellFieldInteriorThicknessSelector
-  , setShellFieldInteriorThicknessSelector
-  , shellFieldExteriorThicknessSelector
+  , meshUsingAllocatorSelector
   , setShellFieldExteriorThicknessSelector
+  , setShellFieldInteriorThicknessSelector
+  , setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector
+  , setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector
+  , setVoxelsForMesh_divisions_patchRadiusSelector
+  , shellFieldExteriorThicknessSelector
+  , shellFieldInteriorThicknessSelector
+  , unionWithVoxelsSelector
+  , voxelIndicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,9 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAsset:divisions:patchRadius:@
 initWithAsset_divisions_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLAsset asset) => mdlVoxelArray -> asset -> CInt -> CFloat -> IO (Id MDLVoxelArray)
-initWithAsset_divisions_patchRadius mdlVoxelArray  asset divisions patchRadius =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg mdlVoxelArray (mkSelector "initWithAsset:divisions:patchRadius:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argCInt divisions, argCFloat patchRadius] >>= ownedObject . castPtr
+initWithAsset_divisions_patchRadius mdlVoxelArray asset divisions patchRadius =
+  sendOwnedMessage mdlVoxelArray initWithAsset_divisions_patchRadiusSelector (toMDLAsset asset) divisions patchRadius
 
 -- | Initialize a voxel grid from an MDLAsset and dilate the resulting voxels by a number of interior and exterior shells. Routine will attempt to create a closed volume model by applying patches of a given radius to any holes it may find in the asset.
 --
@@ -89,9 +85,8 @@ initWithAsset_divisions_patchRadius mdlVoxelArray  asset divisions patchRadius =
 --
 -- ObjC selector: @- initWithAsset:divisions:interiorShells:exteriorShells:patchRadius:@
 initWithAsset_divisions_interiorShells_exteriorShells_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLAsset asset) => mdlVoxelArray -> asset -> CInt -> CInt -> CInt -> CFloat -> IO (Id MDLVoxelArray)
-initWithAsset_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArray  asset divisions interiorShells exteriorShells patchRadius =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg mdlVoxelArray (mkSelector "initWithAsset:divisions:interiorShells:exteriorShells:patchRadius:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argCInt divisions, argCInt interiorShells, argCInt exteriorShells, argCFloat patchRadius] >>= ownedObject . castPtr
+initWithAsset_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArray asset divisions interiorShells exteriorShells patchRadius =
+  sendOwnedMessage mdlVoxelArray initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector (toMDLAsset asset) divisions interiorShells exteriorShells patchRadius
 
 -- | Initialize a voxel grid from an MDLAsset and dilate the resulting voxels by a spatial distance in the interior and exterior directions. Routine will attempt to create a closed volume model by applying "patches" of a given radius to any holes it may find in the asset.
 --
@@ -105,24 +100,22 @@ initWithAsset_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArray 
 --
 -- ObjC selector: @- initWithAsset:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:@
 initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLAsset asset) => mdlVoxelArray -> asset -> CInt -> CFloat -> CFloat -> CFloat -> IO (Id MDLVoxelArray)
-initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadius mdlVoxelArray  asset divisions interiorNBWidth exteriorNBWidth patchRadius =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg mdlVoxelArray (mkSelector "initWithAsset:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argCInt divisions, argCFloat interiorNBWidth, argCFloat exteriorNBWidth, argCFloat patchRadius] >>= ownedObject . castPtr
+initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadius mdlVoxelArray asset divisions interiorNBWidth exteriorNBWidth patchRadius =
+  sendOwnedMessage mdlVoxelArray initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector (toMDLAsset asset) divisions interiorNBWidth exteriorNBWidth patchRadius
 
 -- | Returns an NSData containing the indices of all voxels in the voxel grid
 --
 -- ObjC selector: @- voxelIndices@
 voxelIndices :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO (Id NSData)
-voxelIndices mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "voxelIndices") (retPtr retVoid) [] >>= retainedObject . castPtr
+voxelIndices mdlVoxelArray =
+  sendMessage mdlVoxelArray voxelIndicesSelector
 
 -- | Set voxels corresponding to a mesh. Routine will attempt to create a closed volume model by applying "patches" of a given radius to any holes it may find in the mesh.
 --
 -- ObjC selector: @- setVoxelsForMesh:divisions:patchRadius:@
 setVoxelsForMesh_divisions_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLMesh mesh) => mdlVoxelArray -> mesh -> CInt -> CFloat -> IO ()
-setVoxelsForMesh_divisions_patchRadius mdlVoxelArray  mesh divisions patchRadius =
-  withObjCPtr mesh $ \raw_mesh ->
-      sendMsg mdlVoxelArray (mkSelector "setVoxelsForMesh:divisions:patchRadius:") retVoid [argPtr (castPtr raw_mesh :: Ptr ()), argCInt divisions, argCFloat patchRadius]
+setVoxelsForMesh_divisions_patchRadius mdlVoxelArray mesh divisions patchRadius =
+  sendMessage mdlVoxelArray setVoxelsForMesh_divisions_patchRadiusSelector (toMDLMesh mesh) divisions patchRadius
 
 -- | Set voxels corresponding to a mesh Routine will attempt to create a closed volume model by applying "patches" of a given radius to any holes it may find in the mesh.
 --
@@ -136,9 +129,8 @@ setVoxelsForMesh_divisions_patchRadius mdlVoxelArray  mesh divisions patchRadius
 --
 -- ObjC selector: @- setVoxelsForMesh:divisions:interiorShells:exteriorShells:patchRadius:@
 setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLMesh mesh) => mdlVoxelArray -> mesh -> CInt -> CInt -> CInt -> CFloat -> IO ()
-setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArray  mesh divisions interiorShells exteriorShells patchRadius =
-  withObjCPtr mesh $ \raw_mesh ->
-      sendMsg mdlVoxelArray (mkSelector "setVoxelsForMesh:divisions:interiorShells:exteriorShells:patchRadius:") retVoid [argPtr (castPtr raw_mesh :: Ptr ()), argCInt divisions, argCInt interiorShells, argCInt exteriorShells, argCFloat patchRadius]
+setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArray mesh divisions interiorShells exteriorShells patchRadius =
+  sendMessage mdlVoxelArray setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector (toMDLMesh mesh) divisions interiorShells exteriorShells patchRadius
 
 -- | Set voxels corresponding to a mesh Routine will attempt to create a closed volume model by applying "patches" of a given radius to any holes it may find in the mesh.
 --
@@ -152,33 +144,29 @@ setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadius mdlVoxelArr
 --
 -- ObjC selector: @- setVoxelsForMesh:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:@
 setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadius :: (IsMDLVoxelArray mdlVoxelArray, IsMDLMesh mesh) => mdlVoxelArray -> mesh -> CInt -> CFloat -> CFloat -> CFloat -> IO ()
-setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadius mdlVoxelArray  mesh divisions interiorNBWidth exteriorNBWidth patchRadius =
-  withObjCPtr mesh $ \raw_mesh ->
-      sendMsg mdlVoxelArray (mkSelector "setVoxelsForMesh:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:") retVoid [argPtr (castPtr raw_mesh :: Ptr ()), argCInt divisions, argCFloat interiorNBWidth, argCFloat exteriorNBWidth, argCFloat patchRadius]
+setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadius mdlVoxelArray mesh divisions interiorNBWidth exteriorNBWidth patchRadius =
+  sendMessage mdlVoxelArray setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector (toMDLMesh mesh) divisions interiorNBWidth exteriorNBWidth patchRadius
 
 -- | Union modifies the voxel grid to be the merger with the supplied voxel grid. It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid. Note that the shell level data will be cleared.
 --
 -- ObjC selector: @- unionWithVoxels:@
 unionWithVoxels :: (IsMDLVoxelArray mdlVoxelArray, IsMDLVoxelArray voxels) => mdlVoxelArray -> voxels -> IO ()
-unionWithVoxels mdlVoxelArray  voxels =
-  withObjCPtr voxels $ \raw_voxels ->
-      sendMsg mdlVoxelArray (mkSelector "unionWithVoxels:") retVoid [argPtr (castPtr raw_voxels :: Ptr ())]
+unionWithVoxels mdlVoxelArray voxels =
+  sendMessage mdlVoxelArray unionWithVoxelsSelector (toMDLVoxelArray voxels)
 
 -- | Intersection modifies the voxel grid so that only voxels that are also in the supplied voxel grid are retained. It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid. Note that the shell level data will be cleared.
 --
 -- ObjC selector: @- intersectWithVoxels:@
 intersectWithVoxels :: (IsMDLVoxelArray mdlVoxelArray, IsMDLVoxelArray voxels) => mdlVoxelArray -> voxels -> IO ()
-intersectWithVoxels mdlVoxelArray  voxels =
-  withObjCPtr voxels $ \raw_voxels ->
-      sendMsg mdlVoxelArray (mkSelector "intersectWithVoxels:") retVoid [argPtr (castPtr raw_voxels :: Ptr ())]
+intersectWithVoxels mdlVoxelArray voxels =
+  sendMessage mdlVoxelArray intersectWithVoxelsSelector (toMDLVoxelArray voxels)
 
 -- | Difference modifies the voxel grid so that voxels also in the supplied voxel grid are removed. It is assumed that the spatial voxel extent of one voxel in the supplied grid is the same as that of the voxel grid. Note that the shell level data will be cleared.
 --
 -- ObjC selector: @- differenceWithVoxels:@
 differenceWithVoxels :: (IsMDLVoxelArray mdlVoxelArray, IsMDLVoxelArray voxels) => mdlVoxelArray -> voxels -> IO ()
-differenceWithVoxels mdlVoxelArray  voxels =
-  withObjCPtr voxels $ \raw_voxels ->
-      sendMsg mdlVoxelArray (mkSelector "differenceWithVoxels:") retVoid [argPtr (castPtr raw_voxels :: Ptr ())]
+differenceWithVoxels mdlVoxelArray voxels =
+  sendMessage mdlVoxelArray differenceWithVoxelsSelector (toMDLVoxelArray voxels)
 
 -- | Converts volume grid into a signed shell field by surrounding the surface voxels, which have shell  level values of zero, by an inner layer of voxels with shell level values of negative one and an  outer layer of voxels with shell level values of positive one.
 --
@@ -186,34 +174,34 @@ differenceWithVoxels mdlVoxelArray  voxels =
 --
 -- ObjC selector: @- convertToSignedShellField@
 convertToSignedShellField :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO ()
-convertToSignedShellField mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "convertToSignedShellField") retVoid []
+convertToSignedShellField mdlVoxelArray =
+  sendMessage mdlVoxelArray convertToSignedShellFieldSelector
 
 -- | Creates a coarse mesh from the voxel grid
 --
 -- ObjC selector: @- coarseMesh@
 coarseMesh :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO (Id MDLMesh)
-coarseMesh mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "coarseMesh") (retPtr retVoid) [] >>= retainedObject . castPtr
+coarseMesh mdlVoxelArray =
+  sendMessage mdlVoxelArray coarseMeshSelector
 
 -- | @- coarseMeshUsingAllocator:@
 coarseMeshUsingAllocator :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> RawId -> IO (Id MDLMesh)
-coarseMeshUsingAllocator mdlVoxelArray  allocator =
-    sendMsg mdlVoxelArray (mkSelector "coarseMeshUsingAllocator:") (retPtr retVoid) [argPtr (castPtr (unRawId allocator) :: Ptr ())] >>= retainedObject . castPtr
+coarseMeshUsingAllocator mdlVoxelArray allocator =
+  sendMessage mdlVoxelArray coarseMeshUsingAllocatorSelector allocator
 
 -- | Creates a smooth mesh from the voxel grid
 --
 -- ObjC selector: @- meshUsingAllocator:@
 meshUsingAllocator :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> RawId -> IO (Id MDLMesh)
-meshUsingAllocator mdlVoxelArray  allocator =
-    sendMsg mdlVoxelArray (mkSelector "meshUsingAllocator:") (retPtr retVoid) [argPtr (castPtr (unRawId allocator) :: Ptr ())] >>= retainedObject . castPtr
+meshUsingAllocator mdlVoxelArray allocator =
+  sendMessage mdlVoxelArray meshUsingAllocatorSelector allocator
 
 -- | The number of voxels in the grid
 --
 -- ObjC selector: @- count@
 count :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO CULong
-count mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "count") retCULong []
+count mdlVoxelArray =
+  sendMessage mdlVoxelArray countSelector
 
 -- | Returns whether or not the volume grid is in a valid signed shell field form.
 --
@@ -221,118 +209,118 @@ count mdlVoxelArray  =
 --
 -- ObjC selector: @- isValidSignedShellField@
 isValidSignedShellField :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO Bool
-isValidSignedShellField mdlVoxelArray  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlVoxelArray (mkSelector "isValidSignedShellField") retCULong []
+isValidSignedShellField mdlVoxelArray =
+  sendMessage mdlVoxelArray isValidSignedShellFieldSelector
 
 -- | If voxel grid is in a valid signed shell field form, sets the interior thickness to the desired width, as measured from the model surface. If the voxel grid is not in a valid signed shell field form, the value of this property is zero.
 --
 -- ObjC selector: @- shellFieldInteriorThickness@
 shellFieldInteriorThickness :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO CFloat
-shellFieldInteriorThickness mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "shellFieldInteriorThickness") retCFloat []
+shellFieldInteriorThickness mdlVoxelArray =
+  sendMessage mdlVoxelArray shellFieldInteriorThicknessSelector
 
 -- | If voxel grid is in a valid signed shell field form, sets the interior thickness to the desired width, as measured from the model surface. If the voxel grid is not in a valid signed shell field form, the value of this property is zero.
 --
 -- ObjC selector: @- setShellFieldInteriorThickness:@
 setShellFieldInteriorThickness :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> CFloat -> IO ()
-setShellFieldInteriorThickness mdlVoxelArray  value =
-    sendMsg mdlVoxelArray (mkSelector "setShellFieldInteriorThickness:") retVoid [argCFloat value]
+setShellFieldInteriorThickness mdlVoxelArray value =
+  sendMessage mdlVoxelArray setShellFieldInteriorThicknessSelector value
 
 -- | If voxel grid is in a valid signed shell field form, sets the exterior thickness to the desired width, as measured from the model surface. If the voxel grid is not in a valid signed shell field form, the value of this property is zero.
 --
 -- ObjC selector: @- shellFieldExteriorThickness@
 shellFieldExteriorThickness :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> IO CFloat
-shellFieldExteriorThickness mdlVoxelArray  =
-    sendMsg mdlVoxelArray (mkSelector "shellFieldExteriorThickness") retCFloat []
+shellFieldExteriorThickness mdlVoxelArray =
+  sendMessage mdlVoxelArray shellFieldExteriorThicknessSelector
 
 -- | If voxel grid is in a valid signed shell field form, sets the exterior thickness to the desired width, as measured from the model surface. If the voxel grid is not in a valid signed shell field form, the value of this property is zero.
 --
 -- ObjC selector: @- setShellFieldExteriorThickness:@
 setShellFieldExteriorThickness :: IsMDLVoxelArray mdlVoxelArray => mdlVoxelArray -> CFloat -> IO ()
-setShellFieldExteriorThickness mdlVoxelArray  value =
-    sendMsg mdlVoxelArray (mkSelector "setShellFieldExteriorThickness:") retVoid [argCFloat value]
+setShellFieldExteriorThickness mdlVoxelArray value =
+  sendMessage mdlVoxelArray setShellFieldExteriorThicknessSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAsset:divisions:patchRadius:@
-initWithAsset_divisions_patchRadiusSelector :: Selector
+initWithAsset_divisions_patchRadiusSelector :: Selector '[Id MDLAsset, CInt, CFloat] (Id MDLVoxelArray)
 initWithAsset_divisions_patchRadiusSelector = mkSelector "initWithAsset:divisions:patchRadius:"
 
 -- | @Selector@ for @initWithAsset:divisions:interiorShells:exteriorShells:patchRadius:@
-initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector :: Selector
+initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector :: Selector '[Id MDLAsset, CInt, CInt, CInt, CFloat] (Id MDLVoxelArray)
 initWithAsset_divisions_interiorShells_exteriorShells_patchRadiusSelector = mkSelector "initWithAsset:divisions:interiorShells:exteriorShells:patchRadius:"
 
 -- | @Selector@ for @initWithAsset:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:@
-initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector :: Selector
+initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector :: Selector '[Id MDLAsset, CInt, CFloat, CFloat, CFloat] (Id MDLVoxelArray)
 initWithAsset_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector = mkSelector "initWithAsset:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:"
 
 -- | @Selector@ for @voxelIndices@
-voxelIndicesSelector :: Selector
+voxelIndicesSelector :: Selector '[] (Id NSData)
 voxelIndicesSelector = mkSelector "voxelIndices"
 
 -- | @Selector@ for @setVoxelsForMesh:divisions:patchRadius:@
-setVoxelsForMesh_divisions_patchRadiusSelector :: Selector
+setVoxelsForMesh_divisions_patchRadiusSelector :: Selector '[Id MDLMesh, CInt, CFloat] ()
 setVoxelsForMesh_divisions_patchRadiusSelector = mkSelector "setVoxelsForMesh:divisions:patchRadius:"
 
 -- | @Selector@ for @setVoxelsForMesh:divisions:interiorShells:exteriorShells:patchRadius:@
-setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector :: Selector
+setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector :: Selector '[Id MDLMesh, CInt, CInt, CInt, CFloat] ()
 setVoxelsForMesh_divisions_interiorShells_exteriorShells_patchRadiusSelector = mkSelector "setVoxelsForMesh:divisions:interiorShells:exteriorShells:patchRadius:"
 
 -- | @Selector@ for @setVoxelsForMesh:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:@
-setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector :: Selector
+setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector :: Selector '[Id MDLMesh, CInt, CFloat, CFloat, CFloat] ()
 setVoxelsForMesh_divisions_interiorNBWidth_exteriorNBWidth_patchRadiusSelector = mkSelector "setVoxelsForMesh:divisions:interiorNBWidth:exteriorNBWidth:patchRadius:"
 
 -- | @Selector@ for @unionWithVoxels:@
-unionWithVoxelsSelector :: Selector
+unionWithVoxelsSelector :: Selector '[Id MDLVoxelArray] ()
 unionWithVoxelsSelector = mkSelector "unionWithVoxels:"
 
 -- | @Selector@ for @intersectWithVoxels:@
-intersectWithVoxelsSelector :: Selector
+intersectWithVoxelsSelector :: Selector '[Id MDLVoxelArray] ()
 intersectWithVoxelsSelector = mkSelector "intersectWithVoxels:"
 
 -- | @Selector@ for @differenceWithVoxels:@
-differenceWithVoxelsSelector :: Selector
+differenceWithVoxelsSelector :: Selector '[Id MDLVoxelArray] ()
 differenceWithVoxelsSelector = mkSelector "differenceWithVoxels:"
 
 -- | @Selector@ for @convertToSignedShellField@
-convertToSignedShellFieldSelector :: Selector
+convertToSignedShellFieldSelector :: Selector '[] ()
 convertToSignedShellFieldSelector = mkSelector "convertToSignedShellField"
 
 -- | @Selector@ for @coarseMesh@
-coarseMeshSelector :: Selector
+coarseMeshSelector :: Selector '[] (Id MDLMesh)
 coarseMeshSelector = mkSelector "coarseMesh"
 
 -- | @Selector@ for @coarseMeshUsingAllocator:@
-coarseMeshUsingAllocatorSelector :: Selector
+coarseMeshUsingAllocatorSelector :: Selector '[RawId] (Id MDLMesh)
 coarseMeshUsingAllocatorSelector = mkSelector "coarseMeshUsingAllocator:"
 
 -- | @Selector@ for @meshUsingAllocator:@
-meshUsingAllocatorSelector :: Selector
+meshUsingAllocatorSelector :: Selector '[RawId] (Id MDLMesh)
 meshUsingAllocatorSelector = mkSelector "meshUsingAllocator:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @isValidSignedShellField@
-isValidSignedShellFieldSelector :: Selector
+isValidSignedShellFieldSelector :: Selector '[] Bool
 isValidSignedShellFieldSelector = mkSelector "isValidSignedShellField"
 
 -- | @Selector@ for @shellFieldInteriorThickness@
-shellFieldInteriorThicknessSelector :: Selector
+shellFieldInteriorThicknessSelector :: Selector '[] CFloat
 shellFieldInteriorThicknessSelector = mkSelector "shellFieldInteriorThickness"
 
 -- | @Selector@ for @setShellFieldInteriorThickness:@
-setShellFieldInteriorThicknessSelector :: Selector
+setShellFieldInteriorThicknessSelector :: Selector '[CFloat] ()
 setShellFieldInteriorThicknessSelector = mkSelector "setShellFieldInteriorThickness:"
 
 -- | @Selector@ for @shellFieldExteriorThickness@
-shellFieldExteriorThicknessSelector :: Selector
+shellFieldExteriorThicknessSelector :: Selector '[] CFloat
 shellFieldExteriorThicknessSelector = mkSelector "shellFieldExteriorThickness"
 
 -- | @Selector@ for @setShellFieldExteriorThickness:@
-setShellFieldExteriorThicknessSelector :: Selector
+setShellFieldExteriorThicknessSelector :: Selector '[CFloat] ()
 setShellFieldExteriorThicknessSelector = mkSelector "setShellFieldExteriorThickness:"
 

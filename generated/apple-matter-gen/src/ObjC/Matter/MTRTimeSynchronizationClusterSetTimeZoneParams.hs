@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRTimeSynchronizationClusterSetTimeZoneParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timeZoneSelector
-  , setTimeZoneSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimeZoneSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timeZoneSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- timeZone@
 timeZone :: IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams => mtrTimeSynchronizationClusterSetTimeZoneParams -> IO (Id NSArray)
-timeZone mtrTimeSynchronizationClusterSetTimeZoneParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone mtrTimeSynchronizationClusterSetTimeZoneParams =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: (IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams, IsNSArray value) => mtrTimeSynchronizationClusterSetTimeZoneParams -> value -> IO ()
-setTimeZone mtrTimeSynchronizationClusterSetTimeZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "setTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeZone mtrTimeSynchronizationClusterSetTimeZoneParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams setTimeZoneSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTimeZone mtrTimeSynchronizationClusterSetTimeZoneParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams => mtrTimeSynchronizationClusterSetTimeZoneParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetTimeZoneParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTimeZoneParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams => mtrTimeSynchronizationClusterSetTimeZoneParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTimeZoneParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTimeZoneParams =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTimeZoneParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetTimeZoneParams mtrTimeSynchronizationClusterSetTimeZoneParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetTimeZoneParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetTimeZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTimeZoneParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetTimeZoneParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTimeZoneParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSArray)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[Id NSArray] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

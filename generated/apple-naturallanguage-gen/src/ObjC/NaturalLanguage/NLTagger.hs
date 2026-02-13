@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,25 +27,25 @@ module ObjC.NaturalLanguage.NLTagger
   , string
   , setString
   , dominantLanguage
-  , initWithTagSchemesSelector
   , availableTagSchemesForUnit_languageSelector
+  , dominantLanguageSelector
+  , enumerateTagsInRange_unit_scheme_options_usingBlockSelector
+  , gazetteersForTagSchemeSelector
+  , initWithTagSchemesSelector
+  , modelsForTagSchemeSelector
+  , requestAssetsForLanguage_tagScheme_completionHandlerSelector
+  , setGazetteers_forTagSchemeSelector
+  , setLanguage_rangeSelector
+  , setModels_forTagSchemeSelector
+  , setOrthography_rangeSelector
+  , setStringSelector
+  , stringSelector
+  , tagAtIndex_unit_scheme_tokenRangeSelector
+  , tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector
+  , tagSchemesSelector
+  , tagsInRange_unit_scheme_options_tokenRangesSelector
   , tokenRangeAtIndex_unitSelector
   , tokenRangeForRange_unitSelector
-  , enumerateTagsInRange_unit_scheme_options_usingBlockSelector
-  , tagAtIndex_unit_scheme_tokenRangeSelector
-  , tagsInRange_unit_scheme_options_tokenRangesSelector
-  , tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector
-  , setLanguage_rangeSelector
-  , setOrthography_rangeSelector
-  , setModels_forTagSchemeSelector
-  , modelsForTagSchemeSelector
-  , setGazetteers_forTagSchemeSelector
-  , gazetteersForTagSchemeSelector
-  , requestAssetsForLanguage_tagScheme_completionHandlerSelector
-  , tagSchemesSelector
-  , stringSelector
-  , setStringSelector
-  , dominantLanguageSelector
 
   -- * Enum types
   , NLTaggerOptions(NLTaggerOptions)
@@ -62,15 +63,11 @@ module ObjC.NaturalLanguage.NLTagger
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,198 +78,180 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTagSchemes:@
 initWithTagSchemes :: (IsNLTagger nlTagger, IsNSArray tagSchemes) => nlTagger -> tagSchemes -> IO (Id NLTagger)
-initWithTagSchemes nlTagger  tagSchemes =
-  withObjCPtr tagSchemes $ \raw_tagSchemes ->
-      sendMsg nlTagger (mkSelector "initWithTagSchemes:") (retPtr retVoid) [argPtr (castPtr raw_tagSchemes :: Ptr ())] >>= ownedObject . castPtr
+initWithTagSchemes nlTagger tagSchemes =
+  sendOwnedMessage nlTagger initWithTagSchemesSelector (toNSArray tagSchemes)
 
 -- | @+ availableTagSchemesForUnit:language:@
 availableTagSchemesForUnit_language :: IsNSString language => NLTokenUnit -> language -> IO (Id NSArray)
 availableTagSchemesForUnit_language unit language =
   do
     cls' <- getRequiredClass "NLTagger"
-    withObjCPtr language $ \raw_language ->
-      sendClassMsg cls' (mkSelector "availableTagSchemesForUnit:language:") (retPtr retVoid) [argCLong (coerce unit), argPtr (castPtr raw_language :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' availableTagSchemesForUnit_languageSelector unit (toNSString language)
 
 -- | @- tokenRangeAtIndex:unit:@
 tokenRangeAtIndex_unit :: IsNLTagger nlTagger => nlTagger -> CULong -> NLTokenUnit -> IO NSRange
-tokenRangeAtIndex_unit nlTagger  characterIndex unit =
-    sendMsgStret nlTagger (mkSelector "tokenRangeAtIndex:unit:") retNSRange [argCULong characterIndex, argCLong (coerce unit)]
+tokenRangeAtIndex_unit nlTagger characterIndex unit =
+  sendMessage nlTagger tokenRangeAtIndex_unitSelector characterIndex unit
 
 -- | @- tokenRangeForRange:unit:@
 tokenRangeForRange_unit :: IsNLTagger nlTagger => nlTagger -> NSRange -> NLTokenUnit -> IO NSRange
-tokenRangeForRange_unit nlTagger  range unit =
-    sendMsgStret nlTagger (mkSelector "tokenRangeForRange:unit:") retNSRange [argNSRange range, argCLong (coerce unit)]
+tokenRangeForRange_unit nlTagger range unit =
+  sendMessage nlTagger tokenRangeForRange_unitSelector range unit
 
 -- | @- enumerateTagsInRange:unit:scheme:options:usingBlock:@
 enumerateTagsInRange_unit_scheme_options_usingBlock :: (IsNLTagger nlTagger, IsNSString scheme) => nlTagger -> NSRange -> NLTokenUnit -> scheme -> NLTaggerOptions -> Ptr () -> IO ()
-enumerateTagsInRange_unit_scheme_options_usingBlock nlTagger  range unit scheme options block =
-  withObjCPtr scheme $ \raw_scheme ->
-      sendMsg nlTagger (mkSelector "enumerateTagsInRange:unit:scheme:options:usingBlock:") retVoid [argNSRange range, argCLong (coerce unit), argPtr (castPtr raw_scheme :: Ptr ()), argCULong (coerce options), argPtr (castPtr block :: Ptr ())]
+enumerateTagsInRange_unit_scheme_options_usingBlock nlTagger range unit scheme options block =
+  sendMessage nlTagger enumerateTagsInRange_unit_scheme_options_usingBlockSelector range unit (toNSString scheme) options block
 
 -- | @- tagAtIndex:unit:scheme:tokenRange:@
 tagAtIndex_unit_scheme_tokenRange :: (IsNLTagger nlTagger, IsNSString scheme) => nlTagger -> CULong -> NLTokenUnit -> scheme -> Ptr NSRange -> IO (Id NSString)
-tagAtIndex_unit_scheme_tokenRange nlTagger  characterIndex unit scheme tokenRange =
-  withObjCPtr scheme $ \raw_scheme ->
-      sendMsg nlTagger (mkSelector "tagAtIndex:unit:scheme:tokenRange:") (retPtr retVoid) [argCULong characterIndex, argCLong (coerce unit), argPtr (castPtr raw_scheme :: Ptr ()), argPtr tokenRange] >>= retainedObject . castPtr
+tagAtIndex_unit_scheme_tokenRange nlTagger characterIndex unit scheme tokenRange =
+  sendMessage nlTagger tagAtIndex_unit_scheme_tokenRangeSelector characterIndex unit (toNSString scheme) tokenRange
 
 -- | @- tagsInRange:unit:scheme:options:tokenRanges:@
 tagsInRange_unit_scheme_options_tokenRanges :: (IsNLTagger nlTagger, IsNSString scheme, IsNSArray tokenRanges) => nlTagger -> NSRange -> NLTokenUnit -> scheme -> NLTaggerOptions -> tokenRanges -> IO (Id NSArray)
-tagsInRange_unit_scheme_options_tokenRanges nlTagger  range unit scheme options tokenRanges =
-  withObjCPtr scheme $ \raw_scheme ->
-    withObjCPtr tokenRanges $ \raw_tokenRanges ->
-        sendMsg nlTagger (mkSelector "tagsInRange:unit:scheme:options:tokenRanges:") (retPtr retVoid) [argNSRange range, argCLong (coerce unit), argPtr (castPtr raw_scheme :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_tokenRanges :: Ptr ())] >>= retainedObject . castPtr
+tagsInRange_unit_scheme_options_tokenRanges nlTagger range unit scheme options tokenRanges =
+  sendMessage nlTagger tagsInRange_unit_scheme_options_tokenRangesSelector range unit (toNSString scheme) options (toNSArray tokenRanges)
 
 -- | @- tagHypothesesAtIndex:unit:scheme:maximumCount:tokenRange:@
 tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRange :: (IsNLTagger nlTagger, IsNSString scheme) => nlTagger -> CULong -> NLTokenUnit -> scheme -> CULong -> Ptr NSRange -> IO (Id NSDictionary)
-tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRange nlTagger  characterIndex unit scheme maximumCount tokenRange =
-  withObjCPtr scheme $ \raw_scheme ->
-      sendMsg nlTagger (mkSelector "tagHypothesesAtIndex:unit:scheme:maximumCount:tokenRange:") (retPtr retVoid) [argCULong characterIndex, argCLong (coerce unit), argPtr (castPtr raw_scheme :: Ptr ()), argCULong maximumCount, argPtr tokenRange] >>= retainedObject . castPtr
+tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRange nlTagger characterIndex unit scheme maximumCount tokenRange =
+  sendMessage nlTagger tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector characterIndex unit (toNSString scheme) maximumCount tokenRange
 
 -- | @- setLanguage:range:@
 setLanguage_range :: (IsNLTagger nlTagger, IsNSString language) => nlTagger -> language -> NSRange -> IO ()
-setLanguage_range nlTagger  language range =
-  withObjCPtr language $ \raw_language ->
-      sendMsg nlTagger (mkSelector "setLanguage:range:") retVoid [argPtr (castPtr raw_language :: Ptr ()), argNSRange range]
+setLanguage_range nlTagger language range =
+  sendMessage nlTagger setLanguage_rangeSelector (toNSString language) range
 
 -- | @- setOrthography:range:@
 setOrthography_range :: (IsNLTagger nlTagger, IsNSOrthography orthography) => nlTagger -> orthography -> NSRange -> IO ()
-setOrthography_range nlTagger  orthography range =
-  withObjCPtr orthography $ \raw_orthography ->
-      sendMsg nlTagger (mkSelector "setOrthography:range:") retVoid [argPtr (castPtr raw_orthography :: Ptr ()), argNSRange range]
+setOrthography_range nlTagger orthography range =
+  sendMessage nlTagger setOrthography_rangeSelector (toNSOrthography orthography) range
 
 -- | @- setModels:forTagScheme:@
 setModels_forTagScheme :: (IsNLTagger nlTagger, IsNSArray models, IsNSString tagScheme) => nlTagger -> models -> tagScheme -> IO ()
-setModels_forTagScheme nlTagger  models tagScheme =
-  withObjCPtr models $ \raw_models ->
-    withObjCPtr tagScheme $ \raw_tagScheme ->
-        sendMsg nlTagger (mkSelector "setModels:forTagScheme:") retVoid [argPtr (castPtr raw_models :: Ptr ()), argPtr (castPtr raw_tagScheme :: Ptr ())]
+setModels_forTagScheme nlTagger models tagScheme =
+  sendMessage nlTagger setModels_forTagSchemeSelector (toNSArray models) (toNSString tagScheme)
 
 -- | @- modelsForTagScheme:@
 modelsForTagScheme :: (IsNLTagger nlTagger, IsNSString tagScheme) => nlTagger -> tagScheme -> IO (Id NSArray)
-modelsForTagScheme nlTagger  tagScheme =
-  withObjCPtr tagScheme $ \raw_tagScheme ->
-      sendMsg nlTagger (mkSelector "modelsForTagScheme:") (retPtr retVoid) [argPtr (castPtr raw_tagScheme :: Ptr ())] >>= retainedObject . castPtr
+modelsForTagScheme nlTagger tagScheme =
+  sendMessage nlTagger modelsForTagSchemeSelector (toNSString tagScheme)
 
 -- | @- setGazetteers:forTagScheme:@
 setGazetteers_forTagScheme :: (IsNLTagger nlTagger, IsNSArray gazetteers, IsNSString tagScheme) => nlTagger -> gazetteers -> tagScheme -> IO ()
-setGazetteers_forTagScheme nlTagger  gazetteers tagScheme =
-  withObjCPtr gazetteers $ \raw_gazetteers ->
-    withObjCPtr tagScheme $ \raw_tagScheme ->
-        sendMsg nlTagger (mkSelector "setGazetteers:forTagScheme:") retVoid [argPtr (castPtr raw_gazetteers :: Ptr ()), argPtr (castPtr raw_tagScheme :: Ptr ())]
+setGazetteers_forTagScheme nlTagger gazetteers tagScheme =
+  sendMessage nlTagger setGazetteers_forTagSchemeSelector (toNSArray gazetteers) (toNSString tagScheme)
 
 -- | @- gazetteersForTagScheme:@
 gazetteersForTagScheme :: (IsNLTagger nlTagger, IsNSString tagScheme) => nlTagger -> tagScheme -> IO (Id NSArray)
-gazetteersForTagScheme nlTagger  tagScheme =
-  withObjCPtr tagScheme $ \raw_tagScheme ->
-      sendMsg nlTagger (mkSelector "gazetteersForTagScheme:") (retPtr retVoid) [argPtr (castPtr raw_tagScheme :: Ptr ())] >>= retainedObject . castPtr
+gazetteersForTagScheme nlTagger tagScheme =
+  sendMessage nlTagger gazetteersForTagSchemeSelector (toNSString tagScheme)
 
 -- | @+ requestAssetsForLanguage:tagScheme:completionHandler:@
 requestAssetsForLanguage_tagScheme_completionHandler :: (IsNSString language, IsNSString tagScheme) => language -> tagScheme -> Ptr () -> IO ()
 requestAssetsForLanguage_tagScheme_completionHandler language tagScheme completionHandler =
   do
     cls' <- getRequiredClass "NLTagger"
-    withObjCPtr language $ \raw_language ->
-      withObjCPtr tagScheme $ \raw_tagScheme ->
-        sendClassMsg cls' (mkSelector "requestAssetsForLanguage:tagScheme:completionHandler:") retVoid [argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_tagScheme :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' requestAssetsForLanguage_tagScheme_completionHandlerSelector (toNSString language) (toNSString tagScheme) completionHandler
 
 -- | @- tagSchemes@
 tagSchemes :: IsNLTagger nlTagger => nlTagger -> IO (Id NSArray)
-tagSchemes nlTagger  =
-    sendMsg nlTagger (mkSelector "tagSchemes") (retPtr retVoid) [] >>= retainedObject . castPtr
+tagSchemes nlTagger =
+  sendMessage nlTagger tagSchemesSelector
 
 -- | @- string@
 string :: IsNLTagger nlTagger => nlTagger -> IO (Id NSString)
-string nlTagger  =
-    sendMsg nlTagger (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string nlTagger =
+  sendMessage nlTagger stringSelector
 
 -- | @- setString:@
 setString :: (IsNLTagger nlTagger, IsNSString value) => nlTagger -> value -> IO ()
-setString nlTagger  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nlTagger (mkSelector "setString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setString nlTagger value =
+  sendMessage nlTagger setStringSelector (toNSString value)
 
 -- | @- dominantLanguage@
 dominantLanguage :: IsNLTagger nlTagger => nlTagger -> IO (Id NSString)
-dominantLanguage nlTagger  =
-    sendMsg nlTagger (mkSelector "dominantLanguage") (retPtr retVoid) [] >>= retainedObject . castPtr
+dominantLanguage nlTagger =
+  sendMessage nlTagger dominantLanguageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTagSchemes:@
-initWithTagSchemesSelector :: Selector
+initWithTagSchemesSelector :: Selector '[Id NSArray] (Id NLTagger)
 initWithTagSchemesSelector = mkSelector "initWithTagSchemes:"
 
 -- | @Selector@ for @availableTagSchemesForUnit:language:@
-availableTagSchemesForUnit_languageSelector :: Selector
+availableTagSchemesForUnit_languageSelector :: Selector '[NLTokenUnit, Id NSString] (Id NSArray)
 availableTagSchemesForUnit_languageSelector = mkSelector "availableTagSchemesForUnit:language:"
 
 -- | @Selector@ for @tokenRangeAtIndex:unit:@
-tokenRangeAtIndex_unitSelector :: Selector
+tokenRangeAtIndex_unitSelector :: Selector '[CULong, NLTokenUnit] NSRange
 tokenRangeAtIndex_unitSelector = mkSelector "tokenRangeAtIndex:unit:"
 
 -- | @Selector@ for @tokenRangeForRange:unit:@
-tokenRangeForRange_unitSelector :: Selector
+tokenRangeForRange_unitSelector :: Selector '[NSRange, NLTokenUnit] NSRange
 tokenRangeForRange_unitSelector = mkSelector "tokenRangeForRange:unit:"
 
 -- | @Selector@ for @enumerateTagsInRange:unit:scheme:options:usingBlock:@
-enumerateTagsInRange_unit_scheme_options_usingBlockSelector :: Selector
+enumerateTagsInRange_unit_scheme_options_usingBlockSelector :: Selector '[NSRange, NLTokenUnit, Id NSString, NLTaggerOptions, Ptr ()] ()
 enumerateTagsInRange_unit_scheme_options_usingBlockSelector = mkSelector "enumerateTagsInRange:unit:scheme:options:usingBlock:"
 
 -- | @Selector@ for @tagAtIndex:unit:scheme:tokenRange:@
-tagAtIndex_unit_scheme_tokenRangeSelector :: Selector
+tagAtIndex_unit_scheme_tokenRangeSelector :: Selector '[CULong, NLTokenUnit, Id NSString, Ptr NSRange] (Id NSString)
 tagAtIndex_unit_scheme_tokenRangeSelector = mkSelector "tagAtIndex:unit:scheme:tokenRange:"
 
 -- | @Selector@ for @tagsInRange:unit:scheme:options:tokenRanges:@
-tagsInRange_unit_scheme_options_tokenRangesSelector :: Selector
+tagsInRange_unit_scheme_options_tokenRangesSelector :: Selector '[NSRange, NLTokenUnit, Id NSString, NLTaggerOptions, Id NSArray] (Id NSArray)
 tagsInRange_unit_scheme_options_tokenRangesSelector = mkSelector "tagsInRange:unit:scheme:options:tokenRanges:"
 
 -- | @Selector@ for @tagHypothesesAtIndex:unit:scheme:maximumCount:tokenRange:@
-tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector :: Selector
+tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector :: Selector '[CULong, NLTokenUnit, Id NSString, CULong, Ptr NSRange] (Id NSDictionary)
 tagHypothesesAtIndex_unit_scheme_maximumCount_tokenRangeSelector = mkSelector "tagHypothesesAtIndex:unit:scheme:maximumCount:tokenRange:"
 
 -- | @Selector@ for @setLanguage:range:@
-setLanguage_rangeSelector :: Selector
+setLanguage_rangeSelector :: Selector '[Id NSString, NSRange] ()
 setLanguage_rangeSelector = mkSelector "setLanguage:range:"
 
 -- | @Selector@ for @setOrthography:range:@
-setOrthography_rangeSelector :: Selector
+setOrthography_rangeSelector :: Selector '[Id NSOrthography, NSRange] ()
 setOrthography_rangeSelector = mkSelector "setOrthography:range:"
 
 -- | @Selector@ for @setModels:forTagScheme:@
-setModels_forTagSchemeSelector :: Selector
+setModels_forTagSchemeSelector :: Selector '[Id NSArray, Id NSString] ()
 setModels_forTagSchemeSelector = mkSelector "setModels:forTagScheme:"
 
 -- | @Selector@ for @modelsForTagScheme:@
-modelsForTagSchemeSelector :: Selector
+modelsForTagSchemeSelector :: Selector '[Id NSString] (Id NSArray)
 modelsForTagSchemeSelector = mkSelector "modelsForTagScheme:"
 
 -- | @Selector@ for @setGazetteers:forTagScheme:@
-setGazetteers_forTagSchemeSelector :: Selector
+setGazetteers_forTagSchemeSelector :: Selector '[Id NSArray, Id NSString] ()
 setGazetteers_forTagSchemeSelector = mkSelector "setGazetteers:forTagScheme:"
 
 -- | @Selector@ for @gazetteersForTagScheme:@
-gazetteersForTagSchemeSelector :: Selector
+gazetteersForTagSchemeSelector :: Selector '[Id NSString] (Id NSArray)
 gazetteersForTagSchemeSelector = mkSelector "gazetteersForTagScheme:"
 
 -- | @Selector@ for @requestAssetsForLanguage:tagScheme:completionHandler:@
-requestAssetsForLanguage_tagScheme_completionHandlerSelector :: Selector
+requestAssetsForLanguage_tagScheme_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 requestAssetsForLanguage_tagScheme_completionHandlerSelector = mkSelector "requestAssetsForLanguage:tagScheme:completionHandler:"
 
 -- | @Selector@ for @tagSchemes@
-tagSchemesSelector :: Selector
+tagSchemesSelector :: Selector '[] (Id NSArray)
 tagSchemesSelector = mkSelector "tagSchemes"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[Id NSString] ()
 setStringSelector = mkSelector "setString:"
 
 -- | @Selector@ for @dominantLanguage@
-dominantLanguageSelector :: Selector
+dominantLanguageSelector :: Selector '[] (Id NSString)
 dominantLanguageSelector = mkSelector "dominantLanguage"
 

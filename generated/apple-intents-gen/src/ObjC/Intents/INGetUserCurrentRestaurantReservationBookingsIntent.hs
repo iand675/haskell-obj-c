@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Intents.INGetUserCurrentRestaurantReservationBookingsIntent
   , setMaximumNumberOfResults
   , earliestBookingDateForResults
   , setEarliestBookingDateForResults
-  , initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector
-  , restaurantSelector
-  , setRestaurantSelector
-  , reservationIdentifierSelector
-  , setReservationIdentifierSelector
-  , maximumNumberOfResultsSelector
-  , setMaximumNumberOfResultsSelector
   , earliestBookingDateForResultsSelector
+  , initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector
+  , maximumNumberOfResultsSelector
+  , reservationIdentifierSelector
+  , restaurantSelector
   , setEarliestBookingDateForResultsSelector
+  , setMaximumNumberOfResultsSelector
+  , setReservationIdentifierSelector
+  , setRestaurantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,94 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRestaurant:reservationIdentifier:maximumNumberOfResults:earliestBookingDateForResults:@
 initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResults :: (IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent, IsINRestaurant restaurant, IsNSString reservationIdentifier, IsNSNumber maximumNumberOfResults, IsNSDate earliestBookingDateForResults) => inGetUserCurrentRestaurantReservationBookingsIntent -> restaurant -> reservationIdentifier -> maximumNumberOfResults -> earliestBookingDateForResults -> IO (Id INGetUserCurrentRestaurantReservationBookingsIntent)
-initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent  restaurant reservationIdentifier maximumNumberOfResults earliestBookingDateForResults =
-  withObjCPtr restaurant $ \raw_restaurant ->
-    withObjCPtr reservationIdentifier $ \raw_reservationIdentifier ->
-      withObjCPtr maximumNumberOfResults $ \raw_maximumNumberOfResults ->
-        withObjCPtr earliestBookingDateForResults $ \raw_earliestBookingDateForResults ->
-            sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "initWithRestaurant:reservationIdentifier:maximumNumberOfResults:earliestBookingDateForResults:") (retPtr retVoid) [argPtr (castPtr raw_restaurant :: Ptr ()), argPtr (castPtr raw_reservationIdentifier :: Ptr ()), argPtr (castPtr raw_maximumNumberOfResults :: Ptr ()), argPtr (castPtr raw_earliestBookingDateForResults :: Ptr ())] >>= ownedObject . castPtr
+initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent restaurant reservationIdentifier maximumNumberOfResults earliestBookingDateForResults =
+  sendOwnedMessage inGetUserCurrentRestaurantReservationBookingsIntent initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector (toINRestaurant restaurant) (toNSString reservationIdentifier) (toNSNumber maximumNumberOfResults) (toNSDate earliestBookingDateForResults)
 
 -- | @- restaurant@
 restaurant :: IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent => inGetUserCurrentRestaurantReservationBookingsIntent -> IO (Id INRestaurant)
-restaurant inGetUserCurrentRestaurantReservationBookingsIntent  =
-    sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "restaurant") (retPtr retVoid) [] >>= retainedObject . castPtr
+restaurant inGetUserCurrentRestaurantReservationBookingsIntent =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent restaurantSelector
 
 -- | @- setRestaurant:@
 setRestaurant :: (IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent, IsINRestaurant value) => inGetUserCurrentRestaurantReservationBookingsIntent -> value -> IO ()
-setRestaurant inGetUserCurrentRestaurantReservationBookingsIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "setRestaurant:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRestaurant inGetUserCurrentRestaurantReservationBookingsIntent value =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent setRestaurantSelector (toINRestaurant value)
 
 -- | @- reservationIdentifier@
 reservationIdentifier :: IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent => inGetUserCurrentRestaurantReservationBookingsIntent -> IO (Id NSString)
-reservationIdentifier inGetUserCurrentRestaurantReservationBookingsIntent  =
-    sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "reservationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservationIdentifier inGetUserCurrentRestaurantReservationBookingsIntent =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent reservationIdentifierSelector
 
 -- | @- setReservationIdentifier:@
 setReservationIdentifier :: (IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent, IsNSString value) => inGetUserCurrentRestaurantReservationBookingsIntent -> value -> IO ()
-setReservationIdentifier inGetUserCurrentRestaurantReservationBookingsIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "setReservationIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReservationIdentifier inGetUserCurrentRestaurantReservationBookingsIntent value =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent setReservationIdentifierSelector (toNSString value)
 
 -- | @- maximumNumberOfResults@
 maximumNumberOfResults :: IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent => inGetUserCurrentRestaurantReservationBookingsIntent -> IO (Id NSNumber)
-maximumNumberOfResults inGetUserCurrentRestaurantReservationBookingsIntent  =
-    sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "maximumNumberOfResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumNumberOfResults inGetUserCurrentRestaurantReservationBookingsIntent =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent maximumNumberOfResultsSelector
 
 -- | @- setMaximumNumberOfResults:@
 setMaximumNumberOfResults :: (IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent, IsNSNumber value) => inGetUserCurrentRestaurantReservationBookingsIntent -> value -> IO ()
-setMaximumNumberOfResults inGetUserCurrentRestaurantReservationBookingsIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "setMaximumNumberOfResults:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumNumberOfResults inGetUserCurrentRestaurantReservationBookingsIntent value =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent setMaximumNumberOfResultsSelector (toNSNumber value)
 
 -- | @- earliestBookingDateForResults@
 earliestBookingDateForResults :: IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent => inGetUserCurrentRestaurantReservationBookingsIntent -> IO (Id NSDate)
-earliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent  =
-    sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "earliestBookingDateForResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+earliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent earliestBookingDateForResultsSelector
 
 -- | @- setEarliestBookingDateForResults:@
 setEarliestBookingDateForResults :: (IsINGetUserCurrentRestaurantReservationBookingsIntent inGetUserCurrentRestaurantReservationBookingsIntent, IsNSDate value) => inGetUserCurrentRestaurantReservationBookingsIntent -> value -> IO ()
-setEarliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetUserCurrentRestaurantReservationBookingsIntent (mkSelector "setEarliestBookingDateForResults:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEarliestBookingDateForResults inGetUserCurrentRestaurantReservationBookingsIntent value =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntent setEarliestBookingDateForResultsSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRestaurant:reservationIdentifier:maximumNumberOfResults:earliestBookingDateForResults:@
-initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector :: Selector
+initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector :: Selector '[Id INRestaurant, Id NSString, Id NSNumber, Id NSDate] (Id INGetUserCurrentRestaurantReservationBookingsIntent)
 initWithRestaurant_reservationIdentifier_maximumNumberOfResults_earliestBookingDateForResultsSelector = mkSelector "initWithRestaurant:reservationIdentifier:maximumNumberOfResults:earliestBookingDateForResults:"
 
 -- | @Selector@ for @restaurant@
-restaurantSelector :: Selector
+restaurantSelector :: Selector '[] (Id INRestaurant)
 restaurantSelector = mkSelector "restaurant"
 
 -- | @Selector@ for @setRestaurant:@
-setRestaurantSelector :: Selector
+setRestaurantSelector :: Selector '[Id INRestaurant] ()
 setRestaurantSelector = mkSelector "setRestaurant:"
 
 -- | @Selector@ for @reservationIdentifier@
-reservationIdentifierSelector :: Selector
+reservationIdentifierSelector :: Selector '[] (Id NSString)
 reservationIdentifierSelector = mkSelector "reservationIdentifier"
 
 -- | @Selector@ for @setReservationIdentifier:@
-setReservationIdentifierSelector :: Selector
+setReservationIdentifierSelector :: Selector '[Id NSString] ()
 setReservationIdentifierSelector = mkSelector "setReservationIdentifier:"
 
 -- | @Selector@ for @maximumNumberOfResults@
-maximumNumberOfResultsSelector :: Selector
+maximumNumberOfResultsSelector :: Selector '[] (Id NSNumber)
 maximumNumberOfResultsSelector = mkSelector "maximumNumberOfResults"
 
 -- | @Selector@ for @setMaximumNumberOfResults:@
-setMaximumNumberOfResultsSelector :: Selector
+setMaximumNumberOfResultsSelector :: Selector '[Id NSNumber] ()
 setMaximumNumberOfResultsSelector = mkSelector "setMaximumNumberOfResults:"
 
 -- | @Selector@ for @earliestBookingDateForResults@
-earliestBookingDateForResultsSelector :: Selector
+earliestBookingDateForResultsSelector :: Selector '[] (Id NSDate)
 earliestBookingDateForResultsSelector = mkSelector "earliestBookingDateForResults"
 
 -- | @Selector@ for @setEarliestBookingDateForResults:@
-setEarliestBookingDateForResultsSelector :: Selector
+setEarliestBookingDateForResultsSelector :: Selector '[Id NSDate] ()
 setEarliestBookingDateForResultsSelector = mkSelector "setEarliestBookingDateForResults:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.WebKit.DOMHTMLFrameSetElement
   , rows
   , setRows
   , colsSelector
-  , setColsSelector
   , rowsSelector
+  , setColsSelector
   , setRowsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cols@
 cols :: IsDOMHTMLFrameSetElement domhtmlFrameSetElement => domhtmlFrameSetElement -> IO (Id NSString)
-cols domhtmlFrameSetElement  =
-    sendMsg domhtmlFrameSetElement (mkSelector "cols") (retPtr retVoid) [] >>= retainedObject . castPtr
+cols domhtmlFrameSetElement =
+  sendMessage domhtmlFrameSetElement colsSelector
 
 -- | @- setCols:@
 setCols :: (IsDOMHTMLFrameSetElement domhtmlFrameSetElement, IsNSString value) => domhtmlFrameSetElement -> value -> IO ()
-setCols domhtmlFrameSetElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFrameSetElement (mkSelector "setCols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCols domhtmlFrameSetElement value =
+  sendMessage domhtmlFrameSetElement setColsSelector (toNSString value)
 
 -- | @- rows@
 rows :: IsDOMHTMLFrameSetElement domhtmlFrameSetElement => domhtmlFrameSetElement -> IO (Id NSString)
-rows domhtmlFrameSetElement  =
-    sendMsg domhtmlFrameSetElement (mkSelector "rows") (retPtr retVoid) [] >>= retainedObject . castPtr
+rows domhtmlFrameSetElement =
+  sendMessage domhtmlFrameSetElement rowsSelector
 
 -- | @- setRows:@
 setRows :: (IsDOMHTMLFrameSetElement domhtmlFrameSetElement, IsNSString value) => domhtmlFrameSetElement -> value -> IO ()
-setRows domhtmlFrameSetElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFrameSetElement (mkSelector "setRows:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRows domhtmlFrameSetElement value =
+  sendMessage domhtmlFrameSetElement setRowsSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cols@
-colsSelector :: Selector
+colsSelector :: Selector '[] (Id NSString)
 colsSelector = mkSelector "cols"
 
 -- | @Selector@ for @setCols:@
-setColsSelector :: Selector
+setColsSelector :: Selector '[Id NSString] ()
 setColsSelector = mkSelector "setCols:"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] (Id NSString)
 rowsSelector = mkSelector "rows"
 
 -- | @Selector@ for @setRows:@
-setRowsSelector :: Selector
+setRowsSelector :: Selector '[Id NSString] ()
 setRowsSelector = mkSelector "setRows:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.PassKit.PKIdentityRequest
   , usageDescriptionKey
   , setUsageDescriptionKey
   , descriptorSelector
-  , setDescriptorSelector
-  , nonceSelector
-  , setNonceSelector
   , merchantIdentifierSelector
+  , nonceSelector
+  , setDescriptorSelector
   , setMerchantIdentifierSelector
-  , usageDescriptionKeySelector
+  , setNonceSelector
   , setUsageDescriptionKeySelector
+  , usageDescriptionKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,45 +44,43 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> IO RawId
-descriptor pkIdentityRequest  =
-    fmap (RawId . castPtr) $ sendMsg pkIdentityRequest (mkSelector "descriptor") (retPtr retVoid) []
+descriptor pkIdentityRequest =
+  sendMessage pkIdentityRequest descriptorSelector
 
 -- | A descriptor describing the identity document to request.
 --
 -- ObjC selector: @- setDescriptor:@
 setDescriptor :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> RawId -> IO ()
-setDescriptor pkIdentityRequest  value =
-    sendMsg pkIdentityRequest (mkSelector "setDescriptor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDescriptor pkIdentityRequest value =
+  sendMessage pkIdentityRequest setDescriptorSelector value
 
 -- | A caller-specified nonce that will be included in the signed response payload. This is treated as opaque by the PKIdentityAuthorizationController, and has a maximum allowed size of 64 bytes.
 --
 -- ObjC selector: @- nonce@
 nonce :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> IO (Id NSData)
-nonce pkIdentityRequest  =
-    sendMsg pkIdentityRequest (mkSelector "nonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+nonce pkIdentityRequest =
+  sendMessage pkIdentityRequest nonceSelector
 
 -- | A caller-specified nonce that will be included in the signed response payload. This is treated as opaque by the PKIdentityAuthorizationController, and has a maximum allowed size of 64 bytes.
 --
 -- ObjC selector: @- setNonce:@
 setNonce :: (IsPKIdentityRequest pkIdentityRequest, IsNSData value) => pkIdentityRequest -> value -> IO ()
-setNonce pkIdentityRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkIdentityRequest (mkSelector "setNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNonce pkIdentityRequest value =
+  sendMessage pkIdentityRequest setNonceSelector (toNSData value)
 
 -- | Identifies the merchant making the request, as previously agreed with Apple. This must match one of the merchant identifiers in the application's entitlement. This property must be set when requestDocument is invoked.
 --
 -- ObjC selector: @- merchantIdentifier@
 merchantIdentifier :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> IO (Id NSString)
-merchantIdentifier pkIdentityRequest  =
-    sendMsg pkIdentityRequest (mkSelector "merchantIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+merchantIdentifier pkIdentityRequest =
+  sendMessage pkIdentityRequest merchantIdentifierSelector
 
 -- | Identifies the merchant making the request, as previously agreed with Apple. This must match one of the merchant identifiers in the application's entitlement. This property must be set when requestDocument is invoked.
 --
 -- ObjC selector: @- setMerchantIdentifier:@
 setMerchantIdentifier :: (IsPKIdentityRequest pkIdentityRequest, IsNSString value) => pkIdentityRequest -> value -> IO ()
-setMerchantIdentifier pkIdentityRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkIdentityRequest (mkSelector "setMerchantIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMerchantIdentifier pkIdentityRequest value =
+  sendMessage pkIdentityRequest setMerchantIdentifierSelector (toNSString value)
 
 -- | A key in the NSIdentityUsageDescriptionDictionary field of the app's Info.plist file.
 --
@@ -93,8 +88,8 @@ setMerchantIdentifier pkIdentityRequest  value =
 --
 -- ObjC selector: @- usageDescriptionKey@
 usageDescriptionKey :: IsPKIdentityRequest pkIdentityRequest => pkIdentityRequest -> IO (Id NSString)
-usageDescriptionKey pkIdentityRequest  =
-    sendMsg pkIdentityRequest (mkSelector "usageDescriptionKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+usageDescriptionKey pkIdentityRequest =
+  sendMessage pkIdentityRequest usageDescriptionKeySelector
 
 -- | A key in the NSIdentityUsageDescriptionDictionary field of the app's Info.plist file.
 --
@@ -102,43 +97,42 @@ usageDescriptionKey pkIdentityRequest  =
 --
 -- ObjC selector: @- setUsageDescriptionKey:@
 setUsageDescriptionKey :: (IsPKIdentityRequest pkIdentityRequest, IsNSString value) => pkIdentityRequest -> value -> IO ()
-setUsageDescriptionKey pkIdentityRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkIdentityRequest (mkSelector "setUsageDescriptionKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsageDescriptionKey pkIdentityRequest value =
+  sendMessage pkIdentityRequest setUsageDescriptionKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] RawId
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @setDescriptor:@
-setDescriptorSelector :: Selector
+setDescriptorSelector :: Selector '[RawId] ()
 setDescriptorSelector = mkSelector "setDescriptor:"
 
 -- | @Selector@ for @nonce@
-nonceSelector :: Selector
+nonceSelector :: Selector '[] (Id NSData)
 nonceSelector = mkSelector "nonce"
 
 -- | @Selector@ for @setNonce:@
-setNonceSelector :: Selector
+setNonceSelector :: Selector '[Id NSData] ()
 setNonceSelector = mkSelector "setNonce:"
 
 -- | @Selector@ for @merchantIdentifier@
-merchantIdentifierSelector :: Selector
+merchantIdentifierSelector :: Selector '[] (Id NSString)
 merchantIdentifierSelector = mkSelector "merchantIdentifier"
 
 -- | @Selector@ for @setMerchantIdentifier:@
-setMerchantIdentifierSelector :: Selector
+setMerchantIdentifierSelector :: Selector '[Id NSString] ()
 setMerchantIdentifierSelector = mkSelector "setMerchantIdentifier:"
 
 -- | @Selector@ for @usageDescriptionKey@
-usageDescriptionKeySelector :: Selector
+usageDescriptionKeySelector :: Selector '[] (Id NSString)
 usageDescriptionKeySelector = mkSelector "usageDescriptionKey"
 
 -- | @Selector@ for @setUsageDescriptionKey:@
-setUsageDescriptionKeySelector :: Selector
+setUsageDescriptionKeySelector :: Selector '[Id NSString] ()
 setUsageDescriptionKeySelector = mkSelector "setUsageDescriptionKey:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRChannelClusterLineupInfo
   , setPostalCode
   , lineupInfoType
   , setLineupInfoType
-  , operatorNameSelector
-  , setOperatorNameSelector
-  , lineupNameSelector
-  , setLineupNameSelector
-  , postalCodeSelector
-  , setPostalCodeSelector
   , lineupInfoTypeSelector
+  , lineupNameSelector
+  , operatorNameSelector
+  , postalCodeSelector
   , setLineupInfoTypeSelector
+  , setLineupNameSelector
+  , setOperatorNameSelector
+  , setPostalCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- operatorName@
 operatorName :: IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo => mtrChannelClusterLineupInfo -> IO (Id NSString)
-operatorName mtrChannelClusterLineupInfo  =
-    sendMsg mtrChannelClusterLineupInfo (mkSelector "operatorName") (retPtr retVoid) [] >>= retainedObject . castPtr
+operatorName mtrChannelClusterLineupInfo =
+  sendMessage mtrChannelClusterLineupInfo operatorNameSelector
 
 -- | @- setOperatorName:@
 setOperatorName :: (IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo, IsNSString value) => mtrChannelClusterLineupInfo -> value -> IO ()
-setOperatorName mtrChannelClusterLineupInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterLineupInfo (mkSelector "setOperatorName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperatorName mtrChannelClusterLineupInfo value =
+  sendMessage mtrChannelClusterLineupInfo setOperatorNameSelector (toNSString value)
 
 -- | @- lineupName@
 lineupName :: IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo => mtrChannelClusterLineupInfo -> IO (Id NSString)
-lineupName mtrChannelClusterLineupInfo  =
-    sendMsg mtrChannelClusterLineupInfo (mkSelector "lineupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineupName mtrChannelClusterLineupInfo =
+  sendMessage mtrChannelClusterLineupInfo lineupNameSelector
 
 -- | @- setLineupName:@
 setLineupName :: (IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo, IsNSString value) => mtrChannelClusterLineupInfo -> value -> IO ()
-setLineupName mtrChannelClusterLineupInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterLineupInfo (mkSelector "setLineupName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineupName mtrChannelClusterLineupInfo value =
+  sendMessage mtrChannelClusterLineupInfo setLineupNameSelector (toNSString value)
 
 -- | @- postalCode@
 postalCode :: IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo => mtrChannelClusterLineupInfo -> IO (Id NSString)
-postalCode mtrChannelClusterLineupInfo  =
-    sendMsg mtrChannelClusterLineupInfo (mkSelector "postalCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalCode mtrChannelClusterLineupInfo =
+  sendMessage mtrChannelClusterLineupInfo postalCodeSelector
 
 -- | @- setPostalCode:@
 setPostalCode :: (IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo, IsNSString value) => mtrChannelClusterLineupInfo -> value -> IO ()
-setPostalCode mtrChannelClusterLineupInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterLineupInfo (mkSelector "setPostalCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostalCode mtrChannelClusterLineupInfo value =
+  sendMessage mtrChannelClusterLineupInfo setPostalCodeSelector (toNSString value)
 
 -- | @- lineupInfoType@
 lineupInfoType :: IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo => mtrChannelClusterLineupInfo -> IO (Id NSNumber)
-lineupInfoType mtrChannelClusterLineupInfo  =
-    sendMsg mtrChannelClusterLineupInfo (mkSelector "lineupInfoType") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineupInfoType mtrChannelClusterLineupInfo =
+  sendMessage mtrChannelClusterLineupInfo lineupInfoTypeSelector
 
 -- | @- setLineupInfoType:@
 setLineupInfoType :: (IsMTRChannelClusterLineupInfo mtrChannelClusterLineupInfo, IsNSNumber value) => mtrChannelClusterLineupInfo -> value -> IO ()
-setLineupInfoType mtrChannelClusterLineupInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterLineupInfo (mkSelector "setLineupInfoType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineupInfoType mtrChannelClusterLineupInfo value =
+  sendMessage mtrChannelClusterLineupInfo setLineupInfoTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @operatorName@
-operatorNameSelector :: Selector
+operatorNameSelector :: Selector '[] (Id NSString)
 operatorNameSelector = mkSelector "operatorName"
 
 -- | @Selector@ for @setOperatorName:@
-setOperatorNameSelector :: Selector
+setOperatorNameSelector :: Selector '[Id NSString] ()
 setOperatorNameSelector = mkSelector "setOperatorName:"
 
 -- | @Selector@ for @lineupName@
-lineupNameSelector :: Selector
+lineupNameSelector :: Selector '[] (Id NSString)
 lineupNameSelector = mkSelector "lineupName"
 
 -- | @Selector@ for @setLineupName:@
-setLineupNameSelector :: Selector
+setLineupNameSelector :: Selector '[Id NSString] ()
 setLineupNameSelector = mkSelector "setLineupName:"
 
 -- | @Selector@ for @postalCode@
-postalCodeSelector :: Selector
+postalCodeSelector :: Selector '[] (Id NSString)
 postalCodeSelector = mkSelector "postalCode"
 
 -- | @Selector@ for @setPostalCode:@
-setPostalCodeSelector :: Selector
+setPostalCodeSelector :: Selector '[Id NSString] ()
 setPostalCodeSelector = mkSelector "setPostalCode:"
 
 -- | @Selector@ for @lineupInfoType@
-lineupInfoTypeSelector :: Selector
+lineupInfoTypeSelector :: Selector '[] (Id NSNumber)
 lineupInfoTypeSelector = mkSelector "lineupInfoType"
 
 -- | @Selector@ for @setLineupInfoType:@
-setLineupInfoTypeSelector :: Selector
+setLineupInfoTypeSelector :: Selector '[Id NSNumber] ()
 setLineupInfoTypeSelector = mkSelector "setLineupInfoType:"
 

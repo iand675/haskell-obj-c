@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.Photos.PHImageManager
   , requestPlayerItemForVideo_options_resultHandler
   , requestExportSessionForVideo_options_exportPreset_resultHandler
   , requestAVAssetForVideo_options_resultHandler
-  , defaultManagerSelector
-  , requestImageDataForAsset_options_resultHandlerSelector
-  , requestImageDataAndOrientationForAsset_options_resultHandlerSelector
   , cancelImageRequestSelector
-  , requestPlayerItemForVideo_options_resultHandlerSelector
-  , requestExportSessionForVideo_options_exportPreset_resultHandlerSelector
+  , defaultManagerSelector
   , requestAVAssetForVideo_options_resultHandlerSelector
+  , requestExportSessionForVideo_options_exportPreset_resultHandlerSelector
+  , requestImageDataAndOrientationForAsset_options_resultHandlerSelector
+  , requestImageDataForAsset_options_resultHandlerSelector
+  , requestPlayerItemForVideo_options_resultHandlerSelector
 
   -- * Enum types
   , PHImageContentMode(PHImageContentMode)
@@ -30,15 +31,11 @@ module ObjC.Photos.PHImageManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,7 +48,7 @@ defaultManager :: IO (Id PHImageManager)
 defaultManager  =
   do
     cls' <- getRequiredClass "PHImageManager"
-    sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultManagerSelector
 
 -- | Request largest represented image as data bytes for the specified asset.
 --
@@ -63,10 +60,8 @@ defaultManager  =
 --
 -- ObjC selector: @- requestImageDataForAsset:options:resultHandler:@
 requestImageDataForAsset_options_resultHandler :: (IsPHImageManager phImageManager, IsPHAsset asset, IsPHImageRequestOptions options) => phImageManager -> asset -> options -> Ptr () -> IO CInt
-requestImageDataForAsset_options_resultHandler phImageManager  asset options resultHandler =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg phImageManager (mkSelector "requestImageDataForAsset:options:resultHandler:") retCInt [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())]
+requestImageDataForAsset_options_resultHandler phImageManager asset options resultHandler =
+  sendMessage phImageManager requestImageDataForAsset_options_resultHandlerSelector (toPHAsset asset) (toPHImageRequestOptions options) resultHandler
 
 -- | Request largest represented image as data bytes and EXIF orientation for the specified asset.
 --
@@ -78,67 +73,58 @@ requestImageDataForAsset_options_resultHandler phImageManager  asset options res
 --
 -- ObjC selector: @- requestImageDataAndOrientationForAsset:options:resultHandler:@
 requestImageDataAndOrientationForAsset_options_resultHandler :: (IsPHImageManager phImageManager, IsPHAsset asset, IsPHImageRequestOptions options) => phImageManager -> asset -> options -> Ptr () -> IO CInt
-requestImageDataAndOrientationForAsset_options_resultHandler phImageManager  asset options resultHandler =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg phImageManager (mkSelector "requestImageDataAndOrientationForAsset:options:resultHandler:") retCInt [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())]
+requestImageDataAndOrientationForAsset_options_resultHandler phImageManager asset options resultHandler =
+  sendMessage phImageManager requestImageDataAndOrientationForAsset_options_resultHandlerSelector (toPHAsset asset) (toPHImageRequestOptions options) resultHandler
 
 -- | @- cancelImageRequest:@
 cancelImageRequest :: IsPHImageManager phImageManager => phImageManager -> CInt -> IO ()
-cancelImageRequest phImageManager  requestID =
-    sendMsg phImageManager (mkSelector "cancelImageRequest:") retVoid [argCInt requestID]
+cancelImageRequest phImageManager requestID =
+  sendMessage phImageManager cancelImageRequestSelector requestID
 
 -- | @- requestPlayerItemForVideo:options:resultHandler:@
 requestPlayerItemForVideo_options_resultHandler :: (IsPHImageManager phImageManager, IsPHAsset asset, IsPHVideoRequestOptions options) => phImageManager -> asset -> options -> Ptr () -> IO CInt
-requestPlayerItemForVideo_options_resultHandler phImageManager  asset options resultHandler =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg phImageManager (mkSelector "requestPlayerItemForVideo:options:resultHandler:") retCInt [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())]
+requestPlayerItemForVideo_options_resultHandler phImageManager asset options resultHandler =
+  sendMessage phImageManager requestPlayerItemForVideo_options_resultHandlerSelector (toPHAsset asset) (toPHVideoRequestOptions options) resultHandler
 
 -- | @- requestExportSessionForVideo:options:exportPreset:resultHandler:@
 requestExportSessionForVideo_options_exportPreset_resultHandler :: (IsPHImageManager phImageManager, IsPHAsset asset, IsPHVideoRequestOptions options, IsNSString exportPreset) => phImageManager -> asset -> options -> exportPreset -> Ptr () -> IO CInt
-requestExportSessionForVideo_options_exportPreset_resultHandler phImageManager  asset options exportPreset resultHandler =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr exportPreset $ \raw_exportPreset ->
-          sendMsg phImageManager (mkSelector "requestExportSessionForVideo:options:exportPreset:resultHandler:") retCInt [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_exportPreset :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())]
+requestExportSessionForVideo_options_exportPreset_resultHandler phImageManager asset options exportPreset resultHandler =
+  sendMessage phImageManager requestExportSessionForVideo_options_exportPreset_resultHandlerSelector (toPHAsset asset) (toPHVideoRequestOptions options) (toNSString exportPreset) resultHandler
 
 -- | @- requestAVAssetForVideo:options:resultHandler:@
 requestAVAssetForVideo_options_resultHandler :: (IsPHImageManager phImageManager, IsPHAsset asset, IsPHVideoRequestOptions options) => phImageManager -> asset -> options -> Ptr () -> IO CInt
-requestAVAssetForVideo_options_resultHandler phImageManager  asset options resultHandler =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg phImageManager (mkSelector "requestAVAssetForVideo:options:resultHandler:") retCInt [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())]
+requestAVAssetForVideo_options_resultHandler phImageManager asset options resultHandler =
+  sendMessage phImageManager requestAVAssetForVideo_options_resultHandlerSelector (toPHAsset asset) (toPHVideoRequestOptions options) resultHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultManager@
-defaultManagerSelector :: Selector
+defaultManagerSelector :: Selector '[] (Id PHImageManager)
 defaultManagerSelector = mkSelector "defaultManager"
 
 -- | @Selector@ for @requestImageDataForAsset:options:resultHandler:@
-requestImageDataForAsset_options_resultHandlerSelector :: Selector
+requestImageDataForAsset_options_resultHandlerSelector :: Selector '[Id PHAsset, Id PHImageRequestOptions, Ptr ()] CInt
 requestImageDataForAsset_options_resultHandlerSelector = mkSelector "requestImageDataForAsset:options:resultHandler:"
 
 -- | @Selector@ for @requestImageDataAndOrientationForAsset:options:resultHandler:@
-requestImageDataAndOrientationForAsset_options_resultHandlerSelector :: Selector
+requestImageDataAndOrientationForAsset_options_resultHandlerSelector :: Selector '[Id PHAsset, Id PHImageRequestOptions, Ptr ()] CInt
 requestImageDataAndOrientationForAsset_options_resultHandlerSelector = mkSelector "requestImageDataAndOrientationForAsset:options:resultHandler:"
 
 -- | @Selector@ for @cancelImageRequest:@
-cancelImageRequestSelector :: Selector
+cancelImageRequestSelector :: Selector '[CInt] ()
 cancelImageRequestSelector = mkSelector "cancelImageRequest:"
 
 -- | @Selector@ for @requestPlayerItemForVideo:options:resultHandler:@
-requestPlayerItemForVideo_options_resultHandlerSelector :: Selector
+requestPlayerItemForVideo_options_resultHandlerSelector :: Selector '[Id PHAsset, Id PHVideoRequestOptions, Ptr ()] CInt
 requestPlayerItemForVideo_options_resultHandlerSelector = mkSelector "requestPlayerItemForVideo:options:resultHandler:"
 
 -- | @Selector@ for @requestExportSessionForVideo:options:exportPreset:resultHandler:@
-requestExportSessionForVideo_options_exportPreset_resultHandlerSelector :: Selector
+requestExportSessionForVideo_options_exportPreset_resultHandlerSelector :: Selector '[Id PHAsset, Id PHVideoRequestOptions, Id NSString, Ptr ()] CInt
 requestExportSessionForVideo_options_exportPreset_resultHandlerSelector = mkSelector "requestExportSessionForVideo:options:exportPreset:resultHandler:"
 
 -- | @Selector@ for @requestAVAssetForVideo:options:resultHandler:@
-requestAVAssetForVideo_options_resultHandlerSelector :: Selector
+requestAVAssetForVideo_options_resultHandlerSelector :: Selector '[Id PHAsset, Id PHVideoRequestOptions, Ptr ()] CInt
 requestAVAssetForVideo_options_resultHandlerSelector = mkSelector "requestAVAssetForVideo:options:resultHandler:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,40 +28,36 @@ module ObjC.Foundation.NSScriptClassDescription
   , superclassDescription
   , appleEventCode
   , defaultSubcontainerAttributeKey
-  , classDescriptionForClassSelector
-  , initWithSuiteName_className_dictionarySelector
-  , matchesAppleEventCodeSelector
-  , supportsCommandSelector
-  , selectorForCommandSelector
-  , typeForKeySelector
-  , classDescriptionForKeySelector
   , appleEventCodeForKeySelector
-  , keyWithAppleEventCodeSelector
-  , isLocationRequiredToCreateForKeySelector
-  , hasPropertyForKeySelector
+  , appleEventCodeSelector
+  , classDescriptionForClassSelector
+  , classDescriptionForKeySelector
+  , classNameSelector
+  , defaultSubcontainerAttributeKeySelector
   , hasOrderedToManyRelationshipForKeySelector
+  , hasPropertyForKeySelector
   , hasReadablePropertyForKeySelector
   , hasWritablePropertyForKeySelector
-  , isReadOnlyKeySelector
-  , suiteNameSelector
-  , classNameSelector
   , implementationClassNameSelector
+  , initWithSuiteName_className_dictionarySelector
+  , isLocationRequiredToCreateForKeySelector
+  , isReadOnlyKeySelector
+  , keyWithAppleEventCodeSelector
+  , matchesAppleEventCodeSelector
+  , selectorForCommandSelector
+  , suiteNameSelector
   , superclassDescriptionSelector
-  , appleEventCodeSelector
-  , defaultSubcontainerAttributeKeySelector
+  , supportsCommandSelector
+  , typeForKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,207 +68,193 @@ classDescriptionForClass :: Class -> IO (Id NSScriptClassDescription)
 classDescriptionForClass aClass =
   do
     cls' <- getRequiredClass "NSScriptClassDescription"
-    sendClassMsg cls' (mkSelector "classDescriptionForClass:") (retPtr retVoid) [argPtr (unClass aClass)] >>= retainedObject . castPtr
+    sendClassMessage cls' classDescriptionForClassSelector aClass
 
 -- | @- initWithSuiteName:className:dictionary:@
 initWithSuiteName_className_dictionary :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString suiteName, IsNSString className, IsNSDictionary classDeclaration) => nsScriptClassDescription -> suiteName -> className -> classDeclaration -> IO (Id NSScriptClassDescription)
-initWithSuiteName_className_dictionary nsScriptClassDescription  suiteName className classDeclaration =
-  withObjCPtr suiteName $ \raw_suiteName ->
-    withObjCPtr className $ \raw_className ->
-      withObjCPtr classDeclaration $ \raw_classDeclaration ->
-          sendMsg nsScriptClassDescription (mkSelector "initWithSuiteName:className:dictionary:") (retPtr retVoid) [argPtr (castPtr raw_suiteName :: Ptr ()), argPtr (castPtr raw_className :: Ptr ()), argPtr (castPtr raw_classDeclaration :: Ptr ())] >>= ownedObject . castPtr
+initWithSuiteName_className_dictionary nsScriptClassDescription suiteName className classDeclaration =
+  sendOwnedMessage nsScriptClassDescription initWithSuiteName_className_dictionarySelector (toNSString suiteName) (toNSString className) (toNSDictionary classDeclaration)
 
 -- | @- matchesAppleEventCode:@
 matchesAppleEventCode :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> CUInt -> IO Bool
-matchesAppleEventCode nsScriptClassDescription  appleEventCode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "matchesAppleEventCode:") retCULong [argCUInt appleEventCode]
+matchesAppleEventCode nsScriptClassDescription appleEventCode =
+  sendMessage nsScriptClassDescription matchesAppleEventCodeSelector appleEventCode
 
 -- | @- supportsCommand:@
 supportsCommand :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSScriptCommandDescription commandDescription) => nsScriptClassDescription -> commandDescription -> IO Bool
-supportsCommand nsScriptClassDescription  commandDescription =
-  withObjCPtr commandDescription $ \raw_commandDescription ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "supportsCommand:") retCULong [argPtr (castPtr raw_commandDescription :: Ptr ())]
+supportsCommand nsScriptClassDescription commandDescription =
+  sendMessage nsScriptClassDescription supportsCommandSelector (toNSScriptCommandDescription commandDescription)
 
 -- | @- selectorForCommand:@
-selectorForCommand :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSScriptCommandDescription commandDescription) => nsScriptClassDescription -> commandDescription -> IO Selector
-selectorForCommand nsScriptClassDescription  commandDescription =
-  withObjCPtr commandDescription $ \raw_commandDescription ->
-      fmap (Selector . castPtr) $ sendMsg nsScriptClassDescription (mkSelector "selectorForCommand:") (retPtr retVoid) [argPtr (castPtr raw_commandDescription :: Ptr ())]
+selectorForCommand :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSScriptCommandDescription commandDescription) => nsScriptClassDescription -> commandDescription -> IO Sel
+selectorForCommand nsScriptClassDescription commandDescription =
+  sendMessage nsScriptClassDescription selectorForCommandSelector (toNSScriptCommandDescription commandDescription)
 
 -- | @- typeForKey:@
 typeForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO (Id NSString)
-typeForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsScriptClassDescription (mkSelector "typeForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+typeForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription typeForKeySelector (toNSString key)
 
 -- | @- classDescriptionForKey:@
 classDescriptionForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO (Id NSScriptClassDescription)
-classDescriptionForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsScriptClassDescription (mkSelector "classDescriptionForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+classDescriptionForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription classDescriptionForKeySelector (toNSString key)
 
 -- | @- appleEventCodeForKey:@
 appleEventCodeForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO CUInt
-appleEventCodeForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsScriptClassDescription (mkSelector "appleEventCodeForKey:") retCUInt [argPtr (castPtr raw_key :: Ptr ())]
+appleEventCodeForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription appleEventCodeForKeySelector (toNSString key)
 
 -- | @- keyWithAppleEventCode:@
 keyWithAppleEventCode :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> CUInt -> IO (Id NSString)
-keyWithAppleEventCode nsScriptClassDescription  appleEventCode =
-    sendMsg nsScriptClassDescription (mkSelector "keyWithAppleEventCode:") (retPtr retVoid) [argCUInt appleEventCode] >>= retainedObject . castPtr
+keyWithAppleEventCode nsScriptClassDescription appleEventCode =
+  sendMessage nsScriptClassDescription keyWithAppleEventCodeSelector appleEventCode
 
 -- | @- isLocationRequiredToCreateForKey:@
 isLocationRequiredToCreateForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString toManyRelationshipKey) => nsScriptClassDescription -> toManyRelationshipKey -> IO Bool
-isLocationRequiredToCreateForKey nsScriptClassDescription  toManyRelationshipKey =
-  withObjCPtr toManyRelationshipKey $ \raw_toManyRelationshipKey ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "isLocationRequiredToCreateForKey:") retCULong [argPtr (castPtr raw_toManyRelationshipKey :: Ptr ())]
+isLocationRequiredToCreateForKey nsScriptClassDescription toManyRelationshipKey =
+  sendMessage nsScriptClassDescription isLocationRequiredToCreateForKeySelector (toNSString toManyRelationshipKey)
 
 -- | @- hasPropertyForKey:@
 hasPropertyForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO Bool
-hasPropertyForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "hasPropertyForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+hasPropertyForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription hasPropertyForKeySelector (toNSString key)
 
 -- | @- hasOrderedToManyRelationshipForKey:@
 hasOrderedToManyRelationshipForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO Bool
-hasOrderedToManyRelationshipForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "hasOrderedToManyRelationshipForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+hasOrderedToManyRelationshipForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription hasOrderedToManyRelationshipForKeySelector (toNSString key)
 
 -- | @- hasReadablePropertyForKey:@
 hasReadablePropertyForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO Bool
-hasReadablePropertyForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "hasReadablePropertyForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+hasReadablePropertyForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription hasReadablePropertyForKeySelector (toNSString key)
 
 -- | @- hasWritablePropertyForKey:@
 hasWritablePropertyForKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO Bool
-hasWritablePropertyForKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "hasWritablePropertyForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+hasWritablePropertyForKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription hasWritablePropertyForKeySelector (toNSString key)
 
 -- | @- isReadOnlyKey:@
 isReadOnlyKey :: (IsNSScriptClassDescription nsScriptClassDescription, IsNSString key) => nsScriptClassDescription -> key -> IO Bool
-isReadOnlyKey nsScriptClassDescription  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptClassDescription (mkSelector "isReadOnlyKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+isReadOnlyKey nsScriptClassDescription key =
+  sendMessage nsScriptClassDescription isReadOnlyKeySelector (toNSString key)
 
 -- | @- suiteName@
 suiteName :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO (Id NSString)
-suiteName nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "suiteName") (retPtr retVoid) [] >>= retainedObject . castPtr
+suiteName nsScriptClassDescription =
+  sendMessage nsScriptClassDescription suiteNameSelector
 
 -- | @- className@
 className :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO (Id NSString)
-className nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "className") (retPtr retVoid) [] >>= retainedObject . castPtr
+className nsScriptClassDescription =
+  sendMessage nsScriptClassDescription classNameSelector
 
 -- | @- implementationClassName@
 implementationClassName :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO (Id NSString)
-implementationClassName nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "implementationClassName") (retPtr retVoid) [] >>= retainedObject . castPtr
+implementationClassName nsScriptClassDescription =
+  sendMessage nsScriptClassDescription implementationClassNameSelector
 
 -- | @- superclassDescription@
 superclassDescription :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO (Id NSScriptClassDescription)
-superclassDescription nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "superclassDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+superclassDescription nsScriptClassDescription =
+  sendMessage nsScriptClassDescription superclassDescriptionSelector
 
 -- | @- appleEventCode@
 appleEventCode :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO CUInt
-appleEventCode nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "appleEventCode") retCUInt []
+appleEventCode nsScriptClassDescription =
+  sendMessage nsScriptClassDescription appleEventCodeSelector
 
 -- | @- defaultSubcontainerAttributeKey@
 defaultSubcontainerAttributeKey :: IsNSScriptClassDescription nsScriptClassDescription => nsScriptClassDescription -> IO (Id NSString)
-defaultSubcontainerAttributeKey nsScriptClassDescription  =
-    sendMsg nsScriptClassDescription (mkSelector "defaultSubcontainerAttributeKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultSubcontainerAttributeKey nsScriptClassDescription =
+  sendMessage nsScriptClassDescription defaultSubcontainerAttributeKeySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @classDescriptionForClass:@
-classDescriptionForClassSelector :: Selector
+classDescriptionForClassSelector :: Selector '[Class] (Id NSScriptClassDescription)
 classDescriptionForClassSelector = mkSelector "classDescriptionForClass:"
 
 -- | @Selector@ for @initWithSuiteName:className:dictionary:@
-initWithSuiteName_className_dictionarySelector :: Selector
+initWithSuiteName_className_dictionarySelector :: Selector '[Id NSString, Id NSString, Id NSDictionary] (Id NSScriptClassDescription)
 initWithSuiteName_className_dictionarySelector = mkSelector "initWithSuiteName:className:dictionary:"
 
 -- | @Selector@ for @matchesAppleEventCode:@
-matchesAppleEventCodeSelector :: Selector
+matchesAppleEventCodeSelector :: Selector '[CUInt] Bool
 matchesAppleEventCodeSelector = mkSelector "matchesAppleEventCode:"
 
 -- | @Selector@ for @supportsCommand:@
-supportsCommandSelector :: Selector
+supportsCommandSelector :: Selector '[Id NSScriptCommandDescription] Bool
 supportsCommandSelector = mkSelector "supportsCommand:"
 
 -- | @Selector@ for @selectorForCommand:@
-selectorForCommandSelector :: Selector
+selectorForCommandSelector :: Selector '[Id NSScriptCommandDescription] Sel
 selectorForCommandSelector = mkSelector "selectorForCommand:"
 
 -- | @Selector@ for @typeForKey:@
-typeForKeySelector :: Selector
+typeForKeySelector :: Selector '[Id NSString] (Id NSString)
 typeForKeySelector = mkSelector "typeForKey:"
 
 -- | @Selector@ for @classDescriptionForKey:@
-classDescriptionForKeySelector :: Selector
+classDescriptionForKeySelector :: Selector '[Id NSString] (Id NSScriptClassDescription)
 classDescriptionForKeySelector = mkSelector "classDescriptionForKey:"
 
 -- | @Selector@ for @appleEventCodeForKey:@
-appleEventCodeForKeySelector :: Selector
+appleEventCodeForKeySelector :: Selector '[Id NSString] CUInt
 appleEventCodeForKeySelector = mkSelector "appleEventCodeForKey:"
 
 -- | @Selector@ for @keyWithAppleEventCode:@
-keyWithAppleEventCodeSelector :: Selector
+keyWithAppleEventCodeSelector :: Selector '[CUInt] (Id NSString)
 keyWithAppleEventCodeSelector = mkSelector "keyWithAppleEventCode:"
 
 -- | @Selector@ for @isLocationRequiredToCreateForKey:@
-isLocationRequiredToCreateForKeySelector :: Selector
+isLocationRequiredToCreateForKeySelector :: Selector '[Id NSString] Bool
 isLocationRequiredToCreateForKeySelector = mkSelector "isLocationRequiredToCreateForKey:"
 
 -- | @Selector@ for @hasPropertyForKey:@
-hasPropertyForKeySelector :: Selector
+hasPropertyForKeySelector :: Selector '[Id NSString] Bool
 hasPropertyForKeySelector = mkSelector "hasPropertyForKey:"
 
 -- | @Selector@ for @hasOrderedToManyRelationshipForKey:@
-hasOrderedToManyRelationshipForKeySelector :: Selector
+hasOrderedToManyRelationshipForKeySelector :: Selector '[Id NSString] Bool
 hasOrderedToManyRelationshipForKeySelector = mkSelector "hasOrderedToManyRelationshipForKey:"
 
 -- | @Selector@ for @hasReadablePropertyForKey:@
-hasReadablePropertyForKeySelector :: Selector
+hasReadablePropertyForKeySelector :: Selector '[Id NSString] Bool
 hasReadablePropertyForKeySelector = mkSelector "hasReadablePropertyForKey:"
 
 -- | @Selector@ for @hasWritablePropertyForKey:@
-hasWritablePropertyForKeySelector :: Selector
+hasWritablePropertyForKeySelector :: Selector '[Id NSString] Bool
 hasWritablePropertyForKeySelector = mkSelector "hasWritablePropertyForKey:"
 
 -- | @Selector@ for @isReadOnlyKey:@
-isReadOnlyKeySelector :: Selector
+isReadOnlyKeySelector :: Selector '[Id NSString] Bool
 isReadOnlyKeySelector = mkSelector "isReadOnlyKey:"
 
 -- | @Selector@ for @suiteName@
-suiteNameSelector :: Selector
+suiteNameSelector :: Selector '[] (Id NSString)
 suiteNameSelector = mkSelector "suiteName"
 
 -- | @Selector@ for @className@
-classNameSelector :: Selector
+classNameSelector :: Selector '[] (Id NSString)
 classNameSelector = mkSelector "className"
 
 -- | @Selector@ for @implementationClassName@
-implementationClassNameSelector :: Selector
+implementationClassNameSelector :: Selector '[] (Id NSString)
 implementationClassNameSelector = mkSelector "implementationClassName"
 
 -- | @Selector@ for @superclassDescription@
-superclassDescriptionSelector :: Selector
+superclassDescriptionSelector :: Selector '[] (Id NSScriptClassDescription)
 superclassDescriptionSelector = mkSelector "superclassDescription"
 
 -- | @Selector@ for @appleEventCode@
-appleEventCodeSelector :: Selector
+appleEventCodeSelector :: Selector '[] CUInt
 appleEventCodeSelector = mkSelector "appleEventCode"
 
 -- | @Selector@ for @defaultSubcontainerAttributeKey@
-defaultSubcontainerAttributeKeySelector :: Selector
+defaultSubcontainerAttributeKeySelector :: Selector '[] (Id NSString)
 defaultSubcontainerAttributeKeySelector = mkSelector "defaultSubcontainerAttributeKey"
 

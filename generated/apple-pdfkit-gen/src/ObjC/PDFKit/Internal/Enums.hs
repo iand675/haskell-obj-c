@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PDFKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @PDFAccessPermissions@
 newtype PDFAccessPermissions = PDFAccessPermissions CULong
@@ -39,6 +42,16 @@ pattern PDFAllowsCommenting = PDFAccessPermissions 64
 
 pattern PDFAllowsFormFieldEntry :: PDFAccessPermissions
 pattern PDFAllowsFormFieldEntry = PDFAccessPermissions 128
+
+instance ObjCArgument PDFAccessPermissions where
+  withObjCArg (PDFAccessPermissions x) k = k (argCULong x)
+
+instance ObjCReturn PDFAccessPermissions where
+  type RawReturn PDFAccessPermissions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFAccessPermissions x)
+  fromOwned x = pure (PDFAccessPermissions x)
 
 -- | @PDFActionNamedName@
 newtype PDFActionNamedName = PDFActionNamedName CLong
@@ -80,6 +93,16 @@ pattern KPDFActionNamedZoomIn = PDFActionNamedName 10
 
 pattern KPDFActionNamedZoomOut :: PDFActionNamedName
 pattern KPDFActionNamedZoomOut = PDFActionNamedName 11
+
+instance ObjCArgument PDFActionNamedName where
+  withObjCArg (PDFActionNamedName x) k = k (argCLong x)
+
+instance ObjCReturn PDFActionNamedName where
+  type RawReturn PDFActionNamedName = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFActionNamedName x)
+  fromOwned x = pure (PDFActionNamedName x)
 
 -- | @PDFAreaOfInterest@ (bitmask)
 newtype PDFAreaOfInterest = PDFAreaOfInterest CLong
@@ -125,6 +148,16 @@ pattern KPDFImageArea = PDFAreaOfInterest 256
 pattern KPDFAnyArea :: PDFAreaOfInterest
 pattern KPDFAnyArea = PDFAreaOfInterest 9223372036854775807
 
+instance ObjCArgument PDFAreaOfInterest where
+  withObjCArg (PDFAreaOfInterest x) k = k (argCLong x)
+
+instance ObjCReturn PDFAreaOfInterest where
+  type RawReturn PDFAreaOfInterest = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFAreaOfInterest x)
+  fromOwned x = pure (PDFAreaOfInterest x)
+
 -- | @PDFBorderStyle@
 newtype PDFBorderStyle = PDFBorderStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -144,6 +177,16 @@ pattern KPDFBorderStyleInset = PDFBorderStyle 3
 
 pattern KPDFBorderStyleUnderline :: PDFBorderStyle
 pattern KPDFBorderStyleUnderline = PDFBorderStyle 4
+
+instance ObjCArgument PDFBorderStyle where
+  withObjCArg (PDFBorderStyle x) k = k (argCLong x)
+
+instance ObjCReturn PDFBorderStyle where
+  type RawReturn PDFBorderStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFBorderStyle x)
+  fromOwned x = pure (PDFBorderStyle x)
 
 -- | @PDFDisplayBox@
 newtype PDFDisplayBox = PDFDisplayBox CLong
@@ -165,6 +208,16 @@ pattern KPDFDisplayBoxTrimBox = PDFDisplayBox 3
 pattern KPDFDisplayBoxArtBox :: PDFDisplayBox
 pattern KPDFDisplayBoxArtBox = PDFDisplayBox 4
 
+instance ObjCArgument PDFDisplayBox where
+  withObjCArg (PDFDisplayBox x) k = k (argCLong x)
+
+instance ObjCReturn PDFDisplayBox where
+  type RawReturn PDFDisplayBox = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFDisplayBox x)
+  fromOwned x = pure (PDFDisplayBox x)
+
 -- | @PDFDisplayDirection@
 newtype PDFDisplayDirection = PDFDisplayDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -175,6 +228,16 @@ pattern KPDFDisplayDirectionVertical = PDFDisplayDirection 0
 
 pattern KPDFDisplayDirectionHorizontal :: PDFDisplayDirection
 pattern KPDFDisplayDirectionHorizontal = PDFDisplayDirection 1
+
+instance ObjCArgument PDFDisplayDirection where
+  withObjCArg (PDFDisplayDirection x) k = k (argCLong x)
+
+instance ObjCReturn PDFDisplayDirection where
+  type RawReturn PDFDisplayDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFDisplayDirection x)
+  fromOwned x = pure (PDFDisplayDirection x)
 
 -- | @PDFDisplayMode@
 newtype PDFDisplayMode = PDFDisplayMode CLong
@@ -193,6 +256,16 @@ pattern KPDFDisplayTwoUp = PDFDisplayMode 2
 pattern KPDFDisplayTwoUpContinuous :: PDFDisplayMode
 pattern KPDFDisplayTwoUpContinuous = PDFDisplayMode 3
 
+instance ObjCArgument PDFDisplayMode where
+  withObjCArg (PDFDisplayMode x) k = k (argCLong x)
+
+instance ObjCReturn PDFDisplayMode where
+  type RawReturn PDFDisplayMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFDisplayMode x)
+  fromOwned x = pure (PDFDisplayMode x)
+
 -- | @PDFDocumentPermissions@
 newtype PDFDocumentPermissions = PDFDocumentPermissions CLong
   deriving stock (Eq, Ord, Show)
@@ -207,6 +280,16 @@ pattern KPDFDocumentPermissionsUser = PDFDocumentPermissions 1
 pattern KPDFDocumentPermissionsOwner :: PDFDocumentPermissions
 pattern KPDFDocumentPermissionsOwner = PDFDocumentPermissions 2
 
+instance ObjCArgument PDFDocumentPermissions where
+  withObjCArg (PDFDocumentPermissions x) k = k (argCLong x)
+
+instance ObjCReturn PDFDocumentPermissions where
+  type RawReturn PDFDocumentPermissions = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFDocumentPermissions x)
+  fromOwned x = pure (PDFDocumentPermissions x)
+
 -- | @PDFInterpolationQuality@
 newtype PDFInterpolationQuality = PDFInterpolationQuality CLong
   deriving stock (Eq, Ord, Show)
@@ -220,6 +303,16 @@ pattern KPDFInterpolationQualityLow = PDFInterpolationQuality 1
 
 pattern KPDFInterpolationQualityHigh :: PDFInterpolationQuality
 pattern KPDFInterpolationQualityHigh = PDFInterpolationQuality 2
+
+instance ObjCArgument PDFInterpolationQuality where
+  withObjCArg (PDFInterpolationQuality x) k = k (argCLong x)
+
+instance ObjCReturn PDFInterpolationQuality where
+  type RawReturn PDFInterpolationQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFInterpolationQuality x)
+  fromOwned x = pure (PDFInterpolationQuality x)
 
 -- | @PDFLineStyle@
 newtype PDFLineStyle = PDFLineStyle CLong
@@ -244,6 +337,16 @@ pattern KPDFLineStyleOpenArrow = PDFLineStyle 4
 pattern KPDFLineStyleClosedArrow :: PDFLineStyle
 pattern KPDFLineStyleClosedArrow = PDFLineStyle 5
 
+instance ObjCArgument PDFLineStyle where
+  withObjCArg (PDFLineStyle x) k = k (argCLong x)
+
+instance ObjCReturn PDFLineStyle where
+  type RawReturn PDFLineStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFLineStyle x)
+  fromOwned x = pure (PDFLineStyle x)
+
 -- | @PDFMarkupType@
 newtype PDFMarkupType = PDFMarkupType CLong
   deriving stock (Eq, Ord, Show)
@@ -261,6 +364,16 @@ pattern KPDFMarkupTypeUnderline = PDFMarkupType 2
 pattern KPDFMarkupTypeRedact :: PDFMarkupType
 pattern KPDFMarkupTypeRedact = PDFMarkupType 3
 
+instance ObjCArgument PDFMarkupType where
+  withObjCArg (PDFMarkupType x) k = k (argCLong x)
+
+instance ObjCReturn PDFMarkupType where
+  type RawReturn PDFMarkupType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFMarkupType x)
+  fromOwned x = pure (PDFMarkupType x)
+
 -- | @PDFPrintScalingMode@
 newtype PDFPrintScalingMode = PDFPrintScalingMode CLong
   deriving stock (Eq, Ord, Show)
@@ -275,6 +388,16 @@ pattern KPDFPrintPageScaleToFit = PDFPrintScalingMode 1
 pattern KPDFPrintPageScaleDownToFit :: PDFPrintScalingMode
 pattern KPDFPrintPageScaleDownToFit = PDFPrintScalingMode 2
 
+instance ObjCArgument PDFPrintScalingMode where
+  withObjCArg (PDFPrintScalingMode x) k = k (argCLong x)
+
+instance ObjCReturn PDFPrintScalingMode where
+  type RawReturn PDFPrintScalingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFPrintScalingMode x)
+  fromOwned x = pure (PDFPrintScalingMode x)
+
 -- | @PDFSelectionGranularity@
 newtype PDFSelectionGranularity = PDFSelectionGranularity CULong
   deriving stock (Eq, Ord, Show)
@@ -288,6 +411,16 @@ pattern PDFSelectionGranularityWord = PDFSelectionGranularity 1
 
 pattern PDFSelectionGranularityLine :: PDFSelectionGranularity
 pattern PDFSelectionGranularityLine = PDFSelectionGranularity 2
+
+instance ObjCArgument PDFSelectionGranularity where
+  withObjCArg (PDFSelectionGranularity x) k = k (argCULong x)
+
+instance ObjCReturn PDFSelectionGranularity where
+  type RawReturn PDFSelectionGranularity = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFSelectionGranularity x)
+  fromOwned x = pure (PDFSelectionGranularity x)
 
 -- | @PDFTextAnnotationIconType@
 newtype PDFTextAnnotationIconType = PDFTextAnnotationIconType CLong
@@ -315,6 +448,16 @@ pattern KPDFTextAnnotationIconParagraph = PDFTextAnnotationIconType 5
 pattern KPDFTextAnnotationIconInsert :: PDFTextAnnotationIconType
 pattern KPDFTextAnnotationIconInsert = PDFTextAnnotationIconType 6
 
+instance ObjCArgument PDFTextAnnotationIconType where
+  withObjCArg (PDFTextAnnotationIconType x) k = k (argCLong x)
+
+instance ObjCReturn PDFTextAnnotationIconType where
+  type RawReturn PDFTextAnnotationIconType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFTextAnnotationIconType x)
+  fromOwned x = pure (PDFTextAnnotationIconType x)
+
 -- | @PDFWidgetCellState@
 newtype PDFWidgetCellState = PDFWidgetCellState CLong
   deriving stock (Eq, Ord, Show)
@@ -328,6 +471,16 @@ pattern KPDFWidgetOffState = PDFWidgetCellState 0
 
 pattern KPDFWidgetOnState :: PDFWidgetCellState
 pattern KPDFWidgetOnState = PDFWidgetCellState 1
+
+instance ObjCArgument PDFWidgetCellState where
+  withObjCArg (PDFWidgetCellState x) k = k (argCLong x)
+
+instance ObjCReturn PDFWidgetCellState where
+  type RawReturn PDFWidgetCellState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFWidgetCellState x)
+  fromOwned x = pure (PDFWidgetCellState x)
 
 -- | @PDFWidgetControlType@
 newtype PDFWidgetControlType = PDFWidgetControlType CLong
@@ -345,3 +498,13 @@ pattern KPDFWidgetRadioButtonControl = PDFWidgetControlType 1
 
 pattern KPDFWidgetCheckBoxControl :: PDFWidgetControlType
 pattern KPDFWidgetCheckBoxControl = PDFWidgetControlType 2
+
+instance ObjCArgument PDFWidgetControlType where
+  withObjCArg (PDFWidgetControlType x) k = k (argCLong x)
+
+instance ObjCReturn PDFWidgetControlType where
+  type RawReturn PDFWidgetControlType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PDFWidgetControlType x)
+  fromOwned x = pure (PDFWidgetControlType x)

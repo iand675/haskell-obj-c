@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.NetworkExtension.NENetworkRule
   , matchLocalPrefix
   , matchProtocol
   , matchDirection
-  , initWithDestinationNetworkEndpoint_prefix_protocolSelector
-  , initWithDestinationNetwork_prefix_protocolSelector
   , initWithDestinationHostEndpoint_protocolSelector
   , initWithDestinationHost_protocolSelector
+  , initWithDestinationNetworkEndpoint_prefix_protocolSelector
+  , initWithDestinationNetwork_prefix_protocolSelector
   , initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector
   , initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector
-  , matchRemoteHostOrNetworkEndpointSelector
-  , matchRemoteEndpointSelector
-  , matchRemotePrefixSelector
+  , matchDirectionSelector
   , matchLocalNetworkEndpointSelector
   , matchLocalNetworkSelector
   , matchLocalPrefixSelector
   , matchProtocolSelector
-  , matchDirectionSelector
+  , matchRemoteEndpointSelector
+  , matchRemoteHostOrNetworkEndpointSelector
+  , matchRemotePrefixSelector
 
   -- * Enum types
   , NENetworkRuleProtocol(NENetworkRuleProtocol)
@@ -52,15 +53,11 @@ module ObjC.NetworkExtension.NENetworkRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,9 +79,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDestinationNetworkEndpoint:prefix:protocol:@
 initWithDestinationNetworkEndpoint_prefix_protocol :: (IsNENetworkRule neNetworkRule, IsNSObject networkEndpoint) => neNetworkRule -> networkEndpoint -> CULong -> NENetworkRuleProtocol -> IO (Id NENetworkRule)
-initWithDestinationNetworkEndpoint_prefix_protocol neNetworkRule  networkEndpoint destinationPrefix protocol =
-  withObjCPtr networkEndpoint $ \raw_networkEndpoint ->
-      sendMsg neNetworkRule (mkSelector "initWithDestinationNetworkEndpoint:prefix:protocol:") (retPtr retVoid) [argPtr (castPtr raw_networkEndpoint :: Ptr ()), argCULong destinationPrefix, argCLong (coerce protocol)] >>= ownedObject . castPtr
+initWithDestinationNetworkEndpoint_prefix_protocol neNetworkRule networkEndpoint destinationPrefix protocol =
+  sendOwnedMessage neNetworkRule initWithDestinationNetworkEndpoint_prefix_protocolSelector (toNSObject networkEndpoint) destinationPrefix protocol
 
 -- | initWithDestinationNetwork:prefix:protocol:
 --
@@ -100,9 +96,8 @@ initWithDestinationNetworkEndpoint_prefix_protocol neNetworkRule  networkEndpoin
 --
 -- ObjC selector: @- initWithDestinationNetwork:prefix:protocol:@
 initWithDestinationNetwork_prefix_protocol :: (IsNENetworkRule neNetworkRule, IsNWHostEndpoint networkEndpoint) => neNetworkRule -> networkEndpoint -> CULong -> NENetworkRuleProtocol -> IO (Id NENetworkRule)
-initWithDestinationNetwork_prefix_protocol neNetworkRule  networkEndpoint destinationPrefix protocol =
-  withObjCPtr networkEndpoint $ \raw_networkEndpoint ->
-      sendMsg neNetworkRule (mkSelector "initWithDestinationNetwork:prefix:protocol:") (retPtr retVoid) [argPtr (castPtr raw_networkEndpoint :: Ptr ()), argCULong destinationPrefix, argCLong (coerce protocol)] >>= ownedObject . castPtr
+initWithDestinationNetwork_prefix_protocol neNetworkRule networkEndpoint destinationPrefix protocol =
+  sendOwnedMessage neNetworkRule initWithDestinationNetwork_prefix_protocolSelector (toNWHostEndpoint networkEndpoint) destinationPrefix protocol
 
 -- | initWithDestinationHostEndpoint:protocol:
 --
@@ -116,9 +111,8 @@ initWithDestinationNetwork_prefix_protocol neNetworkRule  networkEndpoint destin
 --
 -- ObjC selector: @- initWithDestinationHostEndpoint:protocol:@
 initWithDestinationHostEndpoint_protocol :: (IsNENetworkRule neNetworkRule, IsNSObject hostEndpoint) => neNetworkRule -> hostEndpoint -> NENetworkRuleProtocol -> IO (Id NENetworkRule)
-initWithDestinationHostEndpoint_protocol neNetworkRule  hostEndpoint protocol =
-  withObjCPtr hostEndpoint $ \raw_hostEndpoint ->
-      sendMsg neNetworkRule (mkSelector "initWithDestinationHostEndpoint:protocol:") (retPtr retVoid) [argPtr (castPtr raw_hostEndpoint :: Ptr ()), argCLong (coerce protocol)] >>= ownedObject . castPtr
+initWithDestinationHostEndpoint_protocol neNetworkRule hostEndpoint protocol =
+  sendOwnedMessage neNetworkRule initWithDestinationHostEndpoint_protocolSelector (toNSObject hostEndpoint) protocol
 
 -- | initWithDestinationHost:protocol:
 --
@@ -132,9 +126,8 @@ initWithDestinationHostEndpoint_protocol neNetworkRule  hostEndpoint protocol =
 --
 -- ObjC selector: @- initWithDestinationHost:protocol:@
 initWithDestinationHost_protocol :: (IsNENetworkRule neNetworkRule, IsNWHostEndpoint hostEndpoint) => neNetworkRule -> hostEndpoint -> NENetworkRuleProtocol -> IO (Id NENetworkRule)
-initWithDestinationHost_protocol neNetworkRule  hostEndpoint protocol =
-  withObjCPtr hostEndpoint $ \raw_hostEndpoint ->
-      sendMsg neNetworkRule (mkSelector "initWithDestinationHost:protocol:") (retPtr retVoid) [argPtr (castPtr raw_hostEndpoint :: Ptr ()), argCLong (coerce protocol)] >>= ownedObject . castPtr
+initWithDestinationHost_protocol neNetworkRule hostEndpoint protocol =
+  sendOwnedMessage neNetworkRule initWithDestinationHost_protocolSelector (toNWHostEndpoint hostEndpoint) protocol
 
 -- | initWithRemoteNetworkEndpoint:remotePrefix:localNetworkEndpoint:localPrefix:protocol:direction:
 --
@@ -156,10 +149,8 @@ initWithDestinationHost_protocol neNetworkRule  hostEndpoint protocol =
 --
 -- ObjC selector: @- initWithRemoteNetworkEndpoint:remotePrefix:localNetworkEndpoint:localPrefix:protocol:direction:@
 initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_direction :: (IsNENetworkRule neNetworkRule, IsNSObject remoteNetwork, IsNSObject localNetwork) => neNetworkRule -> remoteNetwork -> CULong -> localNetwork -> CULong -> NENetworkRuleProtocol -> NETrafficDirection -> IO (Id NENetworkRule)
-initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_direction neNetworkRule  remoteNetwork remotePrefix localNetwork localPrefix protocol direction =
-  withObjCPtr remoteNetwork $ \raw_remoteNetwork ->
-    withObjCPtr localNetwork $ \raw_localNetwork ->
-        sendMsg neNetworkRule (mkSelector "initWithRemoteNetworkEndpoint:remotePrefix:localNetworkEndpoint:localPrefix:protocol:direction:") (retPtr retVoid) [argPtr (castPtr raw_remoteNetwork :: Ptr ()), argCULong remotePrefix, argPtr (castPtr raw_localNetwork :: Ptr ()), argCULong localPrefix, argCLong (coerce protocol), argCLong (coerce direction)] >>= ownedObject . castPtr
+initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_direction neNetworkRule remoteNetwork remotePrefix localNetwork localPrefix protocol direction =
+  sendOwnedMessage neNetworkRule initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector (toNSObject remoteNetwork) remotePrefix (toNSObject localNetwork) localPrefix protocol direction
 
 -- | initWithRemoteNetwork:remotePrefix:localNetwork:localPrefix:protocol:direction:
 --
@@ -181,10 +172,8 @@ initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_prot
 --
 -- ObjC selector: @- initWithRemoteNetwork:remotePrefix:localNetwork:localPrefix:protocol:direction:@
 initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_direction :: (IsNENetworkRule neNetworkRule, IsNWHostEndpoint remoteNetwork, IsNWHostEndpoint localNetwork) => neNetworkRule -> remoteNetwork -> CULong -> localNetwork -> CULong -> NENetworkRuleProtocol -> NETrafficDirection -> IO (Id NENetworkRule)
-initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_direction neNetworkRule  remoteNetwork remotePrefix localNetwork localPrefix protocol direction =
-  withObjCPtr remoteNetwork $ \raw_remoteNetwork ->
-    withObjCPtr localNetwork $ \raw_localNetwork ->
-        sendMsg neNetworkRule (mkSelector "initWithRemoteNetwork:remotePrefix:localNetwork:localPrefix:protocol:direction:") (retPtr retVoid) [argPtr (castPtr raw_remoteNetwork :: Ptr ()), argCULong remotePrefix, argPtr (castPtr raw_localNetwork :: Ptr ()), argCULong localPrefix, argCLong (coerce protocol), argCLong (coerce direction)] >>= ownedObject . castPtr
+initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_direction neNetworkRule remoteNetwork remotePrefix localNetwork localPrefix protocol direction =
+  sendOwnedMessage neNetworkRule initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector (toNWHostEndpoint remoteNetwork) remotePrefix (toNWHostEndpoint localNetwork) localPrefix protocol direction
 
 -- | matchRemoteHostOrNetworkEndpoint
 --
@@ -192,8 +181,8 @@ initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_direction n
 --
 -- ObjC selector: @- matchRemoteHostOrNetworkEndpoint@
 matchRemoteHostOrNetworkEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NSObject)
-matchRemoteHostOrNetworkEndpoint neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchRemoteHostOrNetworkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchRemoteHostOrNetworkEndpoint neNetworkRule =
+  sendMessage neNetworkRule matchRemoteHostOrNetworkEndpointSelector
 
 -- | matchRemoteEndpoint
 --
@@ -201,8 +190,8 @@ matchRemoteHostOrNetworkEndpoint neNetworkRule  =
 --
 -- ObjC selector: @- matchRemoteEndpoint@
 matchRemoteEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NWHostEndpoint)
-matchRemoteEndpoint neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchRemoteEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchRemoteEndpoint neNetworkRule =
+  sendMessage neNetworkRule matchRemoteEndpointSelector
 
 -- | matchRemotePrefix
 --
@@ -210,8 +199,8 @@ matchRemoteEndpoint neNetworkRule  =
 --
 -- ObjC selector: @- matchRemotePrefix@
 matchRemotePrefix :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO CULong
-matchRemotePrefix neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchRemotePrefix") retCULong []
+matchRemotePrefix neNetworkRule =
+  sendMessage neNetworkRule matchRemotePrefixSelector
 
 -- | matchLocalNetworkEndpoint
 --
@@ -219,8 +208,8 @@ matchRemotePrefix neNetworkRule  =
 --
 -- ObjC selector: @- matchLocalNetworkEndpoint@
 matchLocalNetworkEndpoint :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NSObject)
-matchLocalNetworkEndpoint neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchLocalNetworkEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchLocalNetworkEndpoint neNetworkRule =
+  sendMessage neNetworkRule matchLocalNetworkEndpointSelector
 
 -- | matchLocalNetwork
 --
@@ -228,8 +217,8 @@ matchLocalNetworkEndpoint neNetworkRule  =
 --
 -- ObjC selector: @- matchLocalNetwork@
 matchLocalNetwork :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO (Id NWHostEndpoint)
-matchLocalNetwork neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchLocalNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchLocalNetwork neNetworkRule =
+  sendMessage neNetworkRule matchLocalNetworkSelector
 
 -- | matchLocalPrefix
 --
@@ -237,8 +226,8 @@ matchLocalNetwork neNetworkRule  =
 --
 -- ObjC selector: @- matchLocalPrefix@
 matchLocalPrefix :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO CULong
-matchLocalPrefix neNetworkRule  =
-    sendMsg neNetworkRule (mkSelector "matchLocalPrefix") retCULong []
+matchLocalPrefix neNetworkRule =
+  sendMessage neNetworkRule matchLocalPrefixSelector
 
 -- | matchProtocol
 --
@@ -246,8 +235,8 @@ matchLocalPrefix neNetworkRule  =
 --
 -- ObjC selector: @- matchProtocol@
 matchProtocol :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO NENetworkRuleProtocol
-matchProtocol neNetworkRule  =
-    fmap (coerce :: CLong -> NENetworkRuleProtocol) $ sendMsg neNetworkRule (mkSelector "matchProtocol") retCLong []
+matchProtocol neNetworkRule =
+  sendMessage neNetworkRule matchProtocolSelector
 
 -- | matchDirection
 --
@@ -255,66 +244,66 @@ matchProtocol neNetworkRule  =
 --
 -- ObjC selector: @- matchDirection@
 matchDirection :: IsNENetworkRule neNetworkRule => neNetworkRule -> IO NETrafficDirection
-matchDirection neNetworkRule  =
-    fmap (coerce :: CLong -> NETrafficDirection) $ sendMsg neNetworkRule (mkSelector "matchDirection") retCLong []
+matchDirection neNetworkRule =
+  sendMessage neNetworkRule matchDirectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDestinationNetworkEndpoint:prefix:protocol:@
-initWithDestinationNetworkEndpoint_prefix_protocolSelector :: Selector
+initWithDestinationNetworkEndpoint_prefix_protocolSelector :: Selector '[Id NSObject, CULong, NENetworkRuleProtocol] (Id NENetworkRule)
 initWithDestinationNetworkEndpoint_prefix_protocolSelector = mkSelector "initWithDestinationNetworkEndpoint:prefix:protocol:"
 
 -- | @Selector@ for @initWithDestinationNetwork:prefix:protocol:@
-initWithDestinationNetwork_prefix_protocolSelector :: Selector
+initWithDestinationNetwork_prefix_protocolSelector :: Selector '[Id NWHostEndpoint, CULong, NENetworkRuleProtocol] (Id NENetworkRule)
 initWithDestinationNetwork_prefix_protocolSelector = mkSelector "initWithDestinationNetwork:prefix:protocol:"
 
 -- | @Selector@ for @initWithDestinationHostEndpoint:protocol:@
-initWithDestinationHostEndpoint_protocolSelector :: Selector
+initWithDestinationHostEndpoint_protocolSelector :: Selector '[Id NSObject, NENetworkRuleProtocol] (Id NENetworkRule)
 initWithDestinationHostEndpoint_protocolSelector = mkSelector "initWithDestinationHostEndpoint:protocol:"
 
 -- | @Selector@ for @initWithDestinationHost:protocol:@
-initWithDestinationHost_protocolSelector :: Selector
+initWithDestinationHost_protocolSelector :: Selector '[Id NWHostEndpoint, NENetworkRuleProtocol] (Id NENetworkRule)
 initWithDestinationHost_protocolSelector = mkSelector "initWithDestinationHost:protocol:"
 
 -- | @Selector@ for @initWithRemoteNetworkEndpoint:remotePrefix:localNetworkEndpoint:localPrefix:protocol:direction:@
-initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector :: Selector
+initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector :: Selector '[Id NSObject, CULong, Id NSObject, CULong, NENetworkRuleProtocol, NETrafficDirection] (Id NENetworkRule)
 initWithRemoteNetworkEndpoint_remotePrefix_localNetworkEndpoint_localPrefix_protocol_directionSelector = mkSelector "initWithRemoteNetworkEndpoint:remotePrefix:localNetworkEndpoint:localPrefix:protocol:direction:"
 
 -- | @Selector@ for @initWithRemoteNetwork:remotePrefix:localNetwork:localPrefix:protocol:direction:@
-initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector :: Selector
+initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector :: Selector '[Id NWHostEndpoint, CULong, Id NWHostEndpoint, CULong, NENetworkRuleProtocol, NETrafficDirection] (Id NENetworkRule)
 initWithRemoteNetwork_remotePrefix_localNetwork_localPrefix_protocol_directionSelector = mkSelector "initWithRemoteNetwork:remotePrefix:localNetwork:localPrefix:protocol:direction:"
 
 -- | @Selector@ for @matchRemoteHostOrNetworkEndpoint@
-matchRemoteHostOrNetworkEndpointSelector :: Selector
+matchRemoteHostOrNetworkEndpointSelector :: Selector '[] (Id NSObject)
 matchRemoteHostOrNetworkEndpointSelector = mkSelector "matchRemoteHostOrNetworkEndpoint"
 
 -- | @Selector@ for @matchRemoteEndpoint@
-matchRemoteEndpointSelector :: Selector
+matchRemoteEndpointSelector :: Selector '[] (Id NWHostEndpoint)
 matchRemoteEndpointSelector = mkSelector "matchRemoteEndpoint"
 
 -- | @Selector@ for @matchRemotePrefix@
-matchRemotePrefixSelector :: Selector
+matchRemotePrefixSelector :: Selector '[] CULong
 matchRemotePrefixSelector = mkSelector "matchRemotePrefix"
 
 -- | @Selector@ for @matchLocalNetworkEndpoint@
-matchLocalNetworkEndpointSelector :: Selector
+matchLocalNetworkEndpointSelector :: Selector '[] (Id NSObject)
 matchLocalNetworkEndpointSelector = mkSelector "matchLocalNetworkEndpoint"
 
 -- | @Selector@ for @matchLocalNetwork@
-matchLocalNetworkSelector :: Selector
+matchLocalNetworkSelector :: Selector '[] (Id NWHostEndpoint)
 matchLocalNetworkSelector = mkSelector "matchLocalNetwork"
 
 -- | @Selector@ for @matchLocalPrefix@
-matchLocalPrefixSelector :: Selector
+matchLocalPrefixSelector :: Selector '[] CULong
 matchLocalPrefixSelector = mkSelector "matchLocalPrefix"
 
 -- | @Selector@ for @matchProtocol@
-matchProtocolSelector :: Selector
+matchProtocolSelector :: Selector '[] NENetworkRuleProtocol
 matchProtocolSelector = mkSelector "matchProtocol"
 
 -- | @Selector@ for @matchDirection@
-matchDirectionSelector :: Selector
+matchDirectionSelector :: Selector '[] NETrafficDirection
 matchDirectionSelector = mkSelector "matchDirection"
 

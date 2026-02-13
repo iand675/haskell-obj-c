@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,53 +41,49 @@ module ObjC.AVFoundation.AVMutableMovieTrack
   , setLanguageCode
   , extendedLanguageTag
   , setExtendedLanguageTag
-  , hasMediaCharacteristicSelector
-  , metadataForFormatSelector
-  , associatedTracksOfTypeSelector
-  , appendSampleBuffer_decodeTime_presentationTime_errorSelector
-  , replaceFormatDescription_withFormatDescriptionSelector
   , addTrackAssociationToTrack_typeSelector
-  , removeTrackAssociationToTrack_typeSelector
-  , mediaDataStorageSelector
-  , setMediaDataStorageSelector
-  , sampleReferenceBaseURLSelector
-  , setSampleReferenceBaseURLSelector
-  , enabledSelector
-  , setEnabledSelector
   , alternateGroupIDSelector
-  , setAlternateGroupIDSelector
-  , modifiedSelector
-  , setModifiedSelector
-  , hasProtectedContentSelector
-  , timescaleSelector
-  , setTimescaleSelector
-  , metadataSelector
-  , setMetadataSelector
-  , preferredMediaChunkSizeSelector
-  , setPreferredMediaChunkSizeSelector
-  , preferredMediaChunkAlignmentSelector
-  , setPreferredMediaChunkAlignmentSelector
-  , preferredVolumeSelector
-  , setPreferredVolumeSelector
-  , layerSelector
-  , setLayerSelector
-  , languageCodeSelector
-  , setLanguageCodeSelector
+  , appendSampleBuffer_decodeTime_presentationTime_errorSelector
+  , associatedTracksOfTypeSelector
+  , enabledSelector
   , extendedLanguageTagSelector
+  , hasMediaCharacteristicSelector
+  , hasProtectedContentSelector
+  , languageCodeSelector
+  , layerSelector
+  , mediaDataStorageSelector
+  , metadataForFormatSelector
+  , metadataSelector
+  , modifiedSelector
+  , preferredMediaChunkAlignmentSelector
+  , preferredMediaChunkSizeSelector
+  , preferredVolumeSelector
+  , removeTrackAssociationToTrack_typeSelector
+  , replaceFormatDescription_withFormatDescriptionSelector
+  , sampleReferenceBaseURLSelector
+  , setAlternateGroupIDSelector
+  , setEnabledSelector
   , setExtendedLanguageTagSelector
+  , setLanguageCodeSelector
+  , setLayerSelector
+  , setMediaDataStorageSelector
+  , setMetadataSelector
+  , setModifiedSelector
+  , setPreferredMediaChunkAlignmentSelector
+  , setPreferredMediaChunkSizeSelector
+  , setPreferredVolumeSelector
+  , setSampleReferenceBaseURLSelector
+  , setTimescaleSelector
+  , timescaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -95,21 +92,18 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- hasMediaCharacteristic:@
 hasMediaCharacteristic :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString mediaCharacteristic) => avMutableMovieTrack -> mediaCharacteristic -> IO Bool
-hasMediaCharacteristic avMutableMovieTrack  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "hasMediaCharacteristic:") retCULong [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())]
+hasMediaCharacteristic avMutableMovieTrack mediaCharacteristic =
+  sendMessage avMutableMovieTrack hasMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | @- metadataForFormat:@
 metadataForFormat :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString format) => avMutableMovieTrack -> format -> IO (Id NSArray)
-metadataForFormat avMutableMovieTrack  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avMutableMovieTrack (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avMutableMovieTrack format =
+  sendMessage avMutableMovieTrack metadataForFormatSelector (toNSString format)
 
 -- | @- associatedTracksOfType:@
 associatedTracksOfType :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString trackAssociationType) => avMutableMovieTrack -> trackAssociationType -> IO (Id NSArray)
-associatedTracksOfType avMutableMovieTrack  trackAssociationType =
-  withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-      sendMsg avMutableMovieTrack (mkSelector "associatedTracksOfType:") (retPtr retVoid) [argPtr (castPtr raw_trackAssociationType :: Ptr ())] >>= retainedObject . castPtr
+associatedTracksOfType avMutableMovieTrack trackAssociationType =
+  sendMessage avMutableMovieTrack associatedTracksOfTypeSelector (toNSString trackAssociationType)
 
 -- | appendSampleBuffer:decodeTime:presentationTime:error:
 --
@@ -137,9 +131,8 @@ associatedTracksOfType avMutableMovieTrack  trackAssociationType =
 --
 -- ObjC selector: @- appendSampleBuffer:decodeTime:presentationTime:error:@
 appendSampleBuffer_decodeTime_presentationTime_error :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSError outError) => avMutableMovieTrack -> Ptr () -> RawId -> RawId -> outError -> IO Bool
-appendSampleBuffer_decodeTime_presentationTime_error avMutableMovieTrack  sampleBuffer outDecodeTime outPresentationTime outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "appendSampleBuffer:decodeTime:presentationTime:error:") retCULong [argPtr sampleBuffer, argPtr (castPtr (unRawId outDecodeTime) :: Ptr ()), argPtr (castPtr (unRawId outPresentationTime) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+appendSampleBuffer_decodeTime_presentationTime_error avMutableMovieTrack sampleBuffer outDecodeTime outPresentationTime outError =
+  sendMessage avMutableMovieTrack appendSampleBuffer_decodeTime_presentationTime_errorSelector sampleBuffer outDecodeTime outPresentationTime (toNSError outError)
 
 -- | replaceFormatDescription:withFormatDescription:
 --
@@ -155,8 +148,8 @@ appendSampleBuffer_decodeTime_presentationTime_error avMutableMovieTrack  sample
 --
 -- ObjC selector: @- replaceFormatDescription:withFormatDescription:@
 replaceFormatDescription_withFormatDescription :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> RawId -> RawId -> IO ()
-replaceFormatDescription_withFormatDescription avMutableMovieTrack  formatDescription newFormatDescription =
-    sendMsg avMutableMovieTrack (mkSelector "replaceFormatDescription:withFormatDescription:") retVoid [argPtr (castPtr (unRawId formatDescription) :: Ptr ()), argPtr (castPtr (unRawId newFormatDescription) :: Ptr ())]
+replaceFormatDescription_withFormatDescription avMutableMovieTrack formatDescription newFormatDescription =
+  sendMessage avMutableMovieTrack replaceFormatDescription_withFormatDescriptionSelector formatDescription newFormatDescription
 
 -- | addTrackAssociationToTrack:type:
 --
@@ -170,10 +163,8 @@ replaceFormatDescription_withFormatDescription avMutableMovieTrack  formatDescri
 --
 -- ObjC selector: @- addTrackAssociationToTrack:type:@
 addTrackAssociationToTrack_type :: (IsAVMutableMovieTrack avMutableMovieTrack, IsAVMovieTrack movieTrack, IsNSString trackAssociationType) => avMutableMovieTrack -> movieTrack -> trackAssociationType -> IO ()
-addTrackAssociationToTrack_type avMutableMovieTrack  movieTrack trackAssociationType =
-  withObjCPtr movieTrack $ \raw_movieTrack ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        sendMsg avMutableMovieTrack (mkSelector "addTrackAssociationToTrack:type:") retVoid [argPtr (castPtr raw_movieTrack :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+addTrackAssociationToTrack_type avMutableMovieTrack movieTrack trackAssociationType =
+  sendMessage avMutableMovieTrack addTrackAssociationToTrack_typeSelector (toAVMovieTrack movieTrack) (toNSString trackAssociationType)
 
 -- | removeTrackAssociationToTrack:type:
 --
@@ -187,10 +178,8 @@ addTrackAssociationToTrack_type avMutableMovieTrack  movieTrack trackAssociation
 --
 -- ObjC selector: @- removeTrackAssociationToTrack:type:@
 removeTrackAssociationToTrack_type :: (IsAVMutableMovieTrack avMutableMovieTrack, IsAVMovieTrack movieTrack, IsNSString trackAssociationType) => avMutableMovieTrack -> movieTrack -> trackAssociationType -> IO ()
-removeTrackAssociationToTrack_type avMutableMovieTrack  movieTrack trackAssociationType =
-  withObjCPtr movieTrack $ \raw_movieTrack ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        sendMsg avMutableMovieTrack (mkSelector "removeTrackAssociationToTrack:type:") retVoid [argPtr (castPtr raw_movieTrack :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+removeTrackAssociationToTrack_type avMutableMovieTrack movieTrack trackAssociationType =
+  sendMessage avMutableMovieTrack removeTrackAssociationToTrack_typeSelector (toAVMovieTrack movieTrack) (toNSString trackAssociationType)
 
 -- | mediaDataStorage
 --
@@ -200,8 +189,8 @@ removeTrackAssociationToTrack_type avMutableMovieTrack  movieTrack trackAssociat
 --
 -- ObjC selector: @- mediaDataStorage@
 mediaDataStorage :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO (Id AVMediaDataStorage)
-mediaDataStorage avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "mediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaDataStorage avMutableMovieTrack =
+  sendMessage avMutableMovieTrack mediaDataStorageSelector
 
 -- | mediaDataStorage
 --
@@ -211,9 +200,8 @@ mediaDataStorage avMutableMovieTrack  =
 --
 -- ObjC selector: @- setMediaDataStorage:@
 setMediaDataStorage :: (IsAVMutableMovieTrack avMutableMovieTrack, IsAVMediaDataStorage value) => avMutableMovieTrack -> value -> IO ()
-setMediaDataStorage avMutableMovieTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovieTrack (mkSelector "setMediaDataStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaDataStorage avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setMediaDataStorageSelector (toAVMediaDataStorage value)
 
 -- | sampleReferenceBaseURL
 --
@@ -227,8 +215,8 @@ setMediaDataStorage avMutableMovieTrack  value =
 --
 -- ObjC selector: @- sampleReferenceBaseURL@
 sampleReferenceBaseURL :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO (Id NSURL)
-sampleReferenceBaseURL avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "sampleReferenceBaseURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleReferenceBaseURL avMutableMovieTrack =
+  sendMessage avMutableMovieTrack sampleReferenceBaseURLSelector
 
 -- | sampleReferenceBaseURL
 --
@@ -242,9 +230,8 @@ sampleReferenceBaseURL avMutableMovieTrack  =
 --
 -- ObjC selector: @- setSampleReferenceBaseURL:@
 setSampleReferenceBaseURL :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSURL value) => avMutableMovieTrack -> value -> IO ()
-setSampleReferenceBaseURL avMutableMovieTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovieTrack (mkSelector "setSampleReferenceBaseURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSampleReferenceBaseURL avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setSampleReferenceBaseURLSelector (toNSURL value)
 
 -- | enabled
 --
@@ -252,8 +239,8 @@ setSampleReferenceBaseURL avMutableMovieTrack  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO Bool
-enabled avMutableMovieTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "enabled") retCULong []
+enabled avMutableMovieTrack =
+  sendMessage avMutableMovieTrack enabledSelector
 
 -- | enabled
 --
@@ -261,8 +248,8 @@ enabled avMutableMovieTrack  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> Bool -> IO ()
-setEnabled avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setEnabledSelector value
 
 -- | alternateGroupID
 --
@@ -270,8 +257,8 @@ setEnabled avMutableMovieTrack  value =
 --
 -- ObjC selector: @- alternateGroupID@
 alternateGroupID :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CLong
-alternateGroupID avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "alternateGroupID") retCLong []
+alternateGroupID avMutableMovieTrack =
+  sendMessage avMutableMovieTrack alternateGroupIDSelector
 
 -- | alternateGroupID
 --
@@ -279,8 +266,8 @@ alternateGroupID avMutableMovieTrack  =
 --
 -- ObjC selector: @- setAlternateGroupID:@
 setAlternateGroupID :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CLong -> IO ()
-setAlternateGroupID avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setAlternateGroupID:") retVoid [argCLong value]
+setAlternateGroupID avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setAlternateGroupIDSelector value
 
 -- | modified
 --
@@ -290,8 +277,8 @@ setAlternateGroupID avMutableMovieTrack  value =
 --
 -- ObjC selector: @- modified@
 modified :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO Bool
-modified avMutableMovieTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "modified") retCULong []
+modified avMutableMovieTrack =
+  sendMessage avMutableMovieTrack modifiedSelector
 
 -- | modified
 --
@@ -301,8 +288,8 @@ modified avMutableMovieTrack  =
 --
 -- ObjC selector: @- setModified:@
 setModified :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> Bool -> IO ()
-setModified avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setModified:") retVoid [argCULong (if value then 1 else 0)]
+setModified avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setModifiedSelector value
 
 -- | hasProtectedContent
 --
@@ -312,8 +299,8 @@ setModified avMutableMovieTrack  value =
 --
 -- ObjC selector: @- hasProtectedContent@
 hasProtectedContent :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO Bool
-hasProtectedContent avMutableMovieTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovieTrack (mkSelector "hasProtectedContent") retCULong []
+hasProtectedContent avMutableMovieTrack =
+  sendMessage avMutableMovieTrack hasProtectedContentSelector
 
 -- | timescale
 --
@@ -325,8 +312,8 @@ hasProtectedContent avMutableMovieTrack  =
 --
 -- ObjC selector: @- timescale@
 timescale :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CInt
-timescale avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "timescale") retCInt []
+timescale avMutableMovieTrack =
+  sendMessage avMutableMovieTrack timescaleSelector
 
 -- | timescale
 --
@@ -338,8 +325,8 @@ timescale avMutableMovieTrack  =
 --
 -- ObjC selector: @- setTimescale:@
 setTimescale :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CInt -> IO ()
-setTimescale avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setTimescale:") retVoid [argCInt value]
+setTimescale avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setTimescaleSelector value
 
 -- | metadata
 --
@@ -349,8 +336,8 @@ setTimescale avMutableMovieTrack  value =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO (Id NSArray)
-metadata avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avMutableMovieTrack =
+  sendMessage avMutableMovieTrack metadataSelector
 
 -- | metadata
 --
@@ -360,9 +347,8 @@ metadata avMutableMovieTrack  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSArray value) => avMutableMovieTrack -> value -> IO ()
-setMetadata avMutableMovieTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovieTrack (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setMetadataSelector (toNSArray value)
 
 -- | preferredMediaChunkSize
 --
@@ -374,8 +360,8 @@ setMetadata avMutableMovieTrack  value =
 --
 -- ObjC selector: @- preferredMediaChunkSize@
 preferredMediaChunkSize :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CLong
-preferredMediaChunkSize avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "preferredMediaChunkSize") retCLong []
+preferredMediaChunkSize avMutableMovieTrack =
+  sendMessage avMutableMovieTrack preferredMediaChunkSizeSelector
 
 -- | preferredMediaChunkSize
 --
@@ -387,8 +373,8 @@ preferredMediaChunkSize avMutableMovieTrack  =
 --
 -- ObjC selector: @- setPreferredMediaChunkSize:@
 setPreferredMediaChunkSize :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CLong -> IO ()
-setPreferredMediaChunkSize avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setPreferredMediaChunkSize:") retVoid [argCLong value]
+setPreferredMediaChunkSize avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setPreferredMediaChunkSizeSelector value
 
 -- | preferredMediaChunkAlignment
 --
@@ -398,8 +384,8 @@ setPreferredMediaChunkSize avMutableMovieTrack  value =
 --
 -- ObjC selector: @- preferredMediaChunkAlignment@
 preferredMediaChunkAlignment :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CLong
-preferredMediaChunkAlignment avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "preferredMediaChunkAlignment") retCLong []
+preferredMediaChunkAlignment avMutableMovieTrack =
+  sendMessage avMutableMovieTrack preferredMediaChunkAlignmentSelector
 
 -- | preferredMediaChunkAlignment
 --
@@ -409,8 +395,8 @@ preferredMediaChunkAlignment avMutableMovieTrack  =
 --
 -- ObjC selector: @- setPreferredMediaChunkAlignment:@
 setPreferredMediaChunkAlignment :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CLong -> IO ()
-setPreferredMediaChunkAlignment avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setPreferredMediaChunkAlignment:") retVoid [argCLong value]
+setPreferredMediaChunkAlignment avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setPreferredMediaChunkAlignmentSelector value
 
 -- | preferredVolume
 --
@@ -418,8 +404,8 @@ setPreferredMediaChunkAlignment avMutableMovieTrack  value =
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CFloat
-preferredVolume avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "preferredVolume") retCFloat []
+preferredVolume avMutableMovieTrack =
+  sendMessage avMutableMovieTrack preferredVolumeSelector
 
 -- | preferredVolume
 --
@@ -427,8 +413,8 @@ preferredVolume avMutableMovieTrack  =
 --
 -- ObjC selector: @- setPreferredVolume:@
 setPreferredVolume :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CFloat -> IO ()
-setPreferredVolume avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setPreferredVolume:") retVoid [argCFloat value]
+setPreferredVolume avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setPreferredVolumeSelector value
 
 -- | layer
 --
@@ -436,8 +422,8 @@ setPreferredVolume avMutableMovieTrack  value =
 --
 -- ObjC selector: @- layer@
 layer :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO CLong
-layer avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "layer") retCLong []
+layer avMutableMovieTrack =
+  sendMessage avMutableMovieTrack layerSelector
 
 -- | layer
 --
@@ -445,8 +431,8 @@ layer avMutableMovieTrack  =
 --
 -- ObjC selector: @- setLayer:@
 setLayer :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> CLong -> IO ()
-setLayer avMutableMovieTrack  value =
-    sendMsg avMutableMovieTrack (mkSelector "setLayer:") retVoid [argCLong value]
+setLayer avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setLayerSelector value
 
 -- | languageCode
 --
@@ -456,8 +442,8 @@ setLayer avMutableMovieTrack  value =
 --
 -- ObjC selector: @- languageCode@
 languageCode :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO (Id NSString)
-languageCode avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode avMutableMovieTrack =
+  sendMessage avMutableMovieTrack languageCodeSelector
 
 -- | languageCode
 --
@@ -467,9 +453,8 @@ languageCode avMutableMovieTrack  =
 --
 -- ObjC selector: @- setLanguageCode:@
 setLanguageCode :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString value) => avMutableMovieTrack -> value -> IO ()
-setLanguageCode avMutableMovieTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovieTrack (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setLanguageCodeSelector (toNSString value)
 
 -- | extendedLanguageTag
 --
@@ -479,8 +464,8 @@ setLanguageCode avMutableMovieTrack  value =
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsAVMutableMovieTrack avMutableMovieTrack => avMutableMovieTrack -> IO (Id NSString)
-extendedLanguageTag avMutableMovieTrack  =
-    sendMsg avMutableMovieTrack (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avMutableMovieTrack =
+  sendMessage avMutableMovieTrack extendedLanguageTagSelector
 
 -- | extendedLanguageTag
 --
@@ -490,147 +475,146 @@ extendedLanguageTag avMutableMovieTrack  =
 --
 -- ObjC selector: @- setExtendedLanguageTag:@
 setExtendedLanguageTag :: (IsAVMutableMovieTrack avMutableMovieTrack, IsNSString value) => avMutableMovieTrack -> value -> IO ()
-setExtendedLanguageTag avMutableMovieTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovieTrack (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedLanguageTag avMutableMovieTrack value =
+  sendMessage avMutableMovieTrack setExtendedLanguageTagSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hasMediaCharacteristic:@
-hasMediaCharacteristicSelector :: Selector
+hasMediaCharacteristicSelector :: Selector '[Id NSString] Bool
 hasMediaCharacteristicSelector = mkSelector "hasMediaCharacteristic:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @associatedTracksOfType:@
-associatedTracksOfTypeSelector :: Selector
+associatedTracksOfTypeSelector :: Selector '[Id NSString] (Id NSArray)
 associatedTracksOfTypeSelector = mkSelector "associatedTracksOfType:"
 
 -- | @Selector@ for @appendSampleBuffer:decodeTime:presentationTime:error:@
-appendSampleBuffer_decodeTime_presentationTime_errorSelector :: Selector
+appendSampleBuffer_decodeTime_presentationTime_errorSelector :: Selector '[Ptr (), RawId, RawId, Id NSError] Bool
 appendSampleBuffer_decodeTime_presentationTime_errorSelector = mkSelector "appendSampleBuffer:decodeTime:presentationTime:error:"
 
 -- | @Selector@ for @replaceFormatDescription:withFormatDescription:@
-replaceFormatDescription_withFormatDescriptionSelector :: Selector
+replaceFormatDescription_withFormatDescriptionSelector :: Selector '[RawId, RawId] ()
 replaceFormatDescription_withFormatDescriptionSelector = mkSelector "replaceFormatDescription:withFormatDescription:"
 
 -- | @Selector@ for @addTrackAssociationToTrack:type:@
-addTrackAssociationToTrack_typeSelector :: Selector
+addTrackAssociationToTrack_typeSelector :: Selector '[Id AVMovieTrack, Id NSString] ()
 addTrackAssociationToTrack_typeSelector = mkSelector "addTrackAssociationToTrack:type:"
 
 -- | @Selector@ for @removeTrackAssociationToTrack:type:@
-removeTrackAssociationToTrack_typeSelector :: Selector
+removeTrackAssociationToTrack_typeSelector :: Selector '[Id AVMovieTrack, Id NSString] ()
 removeTrackAssociationToTrack_typeSelector = mkSelector "removeTrackAssociationToTrack:type:"
 
 -- | @Selector@ for @mediaDataStorage@
-mediaDataStorageSelector :: Selector
+mediaDataStorageSelector :: Selector '[] (Id AVMediaDataStorage)
 mediaDataStorageSelector = mkSelector "mediaDataStorage"
 
 -- | @Selector@ for @setMediaDataStorage:@
-setMediaDataStorageSelector :: Selector
+setMediaDataStorageSelector :: Selector '[Id AVMediaDataStorage] ()
 setMediaDataStorageSelector = mkSelector "setMediaDataStorage:"
 
 -- | @Selector@ for @sampleReferenceBaseURL@
-sampleReferenceBaseURLSelector :: Selector
+sampleReferenceBaseURLSelector :: Selector '[] (Id NSURL)
 sampleReferenceBaseURLSelector = mkSelector "sampleReferenceBaseURL"
 
 -- | @Selector@ for @setSampleReferenceBaseURL:@
-setSampleReferenceBaseURLSelector :: Selector
+setSampleReferenceBaseURLSelector :: Selector '[Id NSURL] ()
 setSampleReferenceBaseURLSelector = mkSelector "setSampleReferenceBaseURL:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @alternateGroupID@
-alternateGroupIDSelector :: Selector
+alternateGroupIDSelector :: Selector '[] CLong
 alternateGroupIDSelector = mkSelector "alternateGroupID"
 
 -- | @Selector@ for @setAlternateGroupID:@
-setAlternateGroupIDSelector :: Selector
+setAlternateGroupIDSelector :: Selector '[CLong] ()
 setAlternateGroupIDSelector = mkSelector "setAlternateGroupID:"
 
 -- | @Selector@ for @modified@
-modifiedSelector :: Selector
+modifiedSelector :: Selector '[] Bool
 modifiedSelector = mkSelector "modified"
 
 -- | @Selector@ for @setModified:@
-setModifiedSelector :: Selector
+setModifiedSelector :: Selector '[Bool] ()
 setModifiedSelector = mkSelector "setModified:"
 
 -- | @Selector@ for @hasProtectedContent@
-hasProtectedContentSelector :: Selector
+hasProtectedContentSelector :: Selector '[] Bool
 hasProtectedContentSelector = mkSelector "hasProtectedContent"
 
 -- | @Selector@ for @timescale@
-timescaleSelector :: Selector
+timescaleSelector :: Selector '[] CInt
 timescaleSelector = mkSelector "timescale"
 
 -- | @Selector@ for @setTimescale:@
-setTimescaleSelector :: Selector
+setTimescaleSelector :: Selector '[CInt] ()
 setTimescaleSelector = mkSelector "setTimescale:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @preferredMediaChunkSize@
-preferredMediaChunkSizeSelector :: Selector
+preferredMediaChunkSizeSelector :: Selector '[] CLong
 preferredMediaChunkSizeSelector = mkSelector "preferredMediaChunkSize"
 
 -- | @Selector@ for @setPreferredMediaChunkSize:@
-setPreferredMediaChunkSizeSelector :: Selector
+setPreferredMediaChunkSizeSelector :: Selector '[CLong] ()
 setPreferredMediaChunkSizeSelector = mkSelector "setPreferredMediaChunkSize:"
 
 -- | @Selector@ for @preferredMediaChunkAlignment@
-preferredMediaChunkAlignmentSelector :: Selector
+preferredMediaChunkAlignmentSelector :: Selector '[] CLong
 preferredMediaChunkAlignmentSelector = mkSelector "preferredMediaChunkAlignment"
 
 -- | @Selector@ for @setPreferredMediaChunkAlignment:@
-setPreferredMediaChunkAlignmentSelector :: Selector
+setPreferredMediaChunkAlignmentSelector :: Selector '[CLong] ()
 setPreferredMediaChunkAlignmentSelector = mkSelector "setPreferredMediaChunkAlignment:"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @setPreferredVolume:@
-setPreferredVolumeSelector :: Selector
+setPreferredVolumeSelector :: Selector '[CFloat] ()
 setPreferredVolumeSelector = mkSelector "setPreferredVolume:"
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] CLong
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @setLayer:@
-setLayerSelector :: Selector
+setLayerSelector :: Selector '[CLong] ()
 setLayerSelector = mkSelector "setLayer:"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @setExtendedLanguageTag:@
-setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector :: Selector '[Id NSString] ()
 setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 

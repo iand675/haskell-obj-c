@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Foundation.NSURLSessionStreamTask
   , stopSecureConnection
   , init_
   , new
-  , readDataOfMinLength_maxLength_timeout_completionHandlerSelector
-  , writeData_timeout_completionHandlerSelector
   , captureStreamsSelector
-  , closeWriteSelector
   , closeReadSelector
-  , startSecureConnectionSelector
-  , stopSecureConnectionSelector
+  , closeWriteSelector
   , initSelector
   , newSelector
+  , readDataOfMinLength_maxLength_timeout_completionHandlerSelector
+  , startSecureConnectionSelector
+  , stopSecureConnectionSelector
+  , writeData_timeout_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,89 +41,88 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readDataOfMinLength:maxLength:timeout:completionHandler:@
 readDataOfMinLength_maxLength_timeout_completionHandler :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> CULong -> CULong -> CDouble -> Ptr () -> IO ()
-readDataOfMinLength_maxLength_timeout_completionHandler nsurlSessionStreamTask  minBytes maxBytes timeout completionHandler =
-    sendMsg nsurlSessionStreamTask (mkSelector "readDataOfMinLength:maxLength:timeout:completionHandler:") retVoid [argCULong minBytes, argCULong maxBytes, argCDouble timeout, argPtr (castPtr completionHandler :: Ptr ())]
+readDataOfMinLength_maxLength_timeout_completionHandler nsurlSessionStreamTask minBytes maxBytes timeout completionHandler =
+  sendMessage nsurlSessionStreamTask readDataOfMinLength_maxLength_timeout_completionHandlerSelector minBytes maxBytes timeout completionHandler
 
 -- | @- writeData:timeout:completionHandler:@
 writeData_timeout_completionHandler :: (IsNSURLSessionStreamTask nsurlSessionStreamTask, IsNSData data_) => nsurlSessionStreamTask -> data_ -> CDouble -> Ptr () -> IO ()
-writeData_timeout_completionHandler nsurlSessionStreamTask  data_ timeout completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsurlSessionStreamTask (mkSelector "writeData:timeout:completionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argCDouble timeout, argPtr (castPtr completionHandler :: Ptr ())]
+writeData_timeout_completionHandler nsurlSessionStreamTask data_ timeout completionHandler =
+  sendMessage nsurlSessionStreamTask writeData_timeout_completionHandlerSelector (toNSData data_) timeout completionHandler
 
 -- | @- captureStreams@
 captureStreams :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO ()
-captureStreams nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "captureStreams") retVoid []
+captureStreams nsurlSessionStreamTask =
+  sendMessage nsurlSessionStreamTask captureStreamsSelector
 
 -- | @- closeWrite@
 closeWrite :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO ()
-closeWrite nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "closeWrite") retVoid []
+closeWrite nsurlSessionStreamTask =
+  sendMessage nsurlSessionStreamTask closeWriteSelector
 
 -- | @- closeRead@
 closeRead :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO ()
-closeRead nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "closeRead") retVoid []
+closeRead nsurlSessionStreamTask =
+  sendMessage nsurlSessionStreamTask closeReadSelector
 
 -- | @- startSecureConnection@
 startSecureConnection :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO ()
-startSecureConnection nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "startSecureConnection") retVoid []
+startSecureConnection nsurlSessionStreamTask =
+  sendMessage nsurlSessionStreamTask startSecureConnectionSelector
 
 -- | @- stopSecureConnection@
 stopSecureConnection :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO ()
-stopSecureConnection nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "stopSecureConnection") retVoid []
+stopSecureConnection nsurlSessionStreamTask =
+  sendMessage nsurlSessionStreamTask stopSecureConnectionSelector
 
 -- | @- init@
 init_ :: IsNSURLSessionStreamTask nsurlSessionStreamTask => nsurlSessionStreamTask -> IO (Id NSURLSessionStreamTask)
-init_ nsurlSessionStreamTask  =
-    sendMsg nsurlSessionStreamTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlSessionStreamTask =
+  sendOwnedMessage nsurlSessionStreamTask initSelector
 
 -- | @+ new@
 new :: IO (Id NSURLSessionStreamTask)
 new  =
   do
     cls' <- getRequiredClass "NSURLSessionStreamTask"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readDataOfMinLength:maxLength:timeout:completionHandler:@
-readDataOfMinLength_maxLength_timeout_completionHandlerSelector :: Selector
+readDataOfMinLength_maxLength_timeout_completionHandlerSelector :: Selector '[CULong, CULong, CDouble, Ptr ()] ()
 readDataOfMinLength_maxLength_timeout_completionHandlerSelector = mkSelector "readDataOfMinLength:maxLength:timeout:completionHandler:"
 
 -- | @Selector@ for @writeData:timeout:completionHandler:@
-writeData_timeout_completionHandlerSelector :: Selector
+writeData_timeout_completionHandlerSelector :: Selector '[Id NSData, CDouble, Ptr ()] ()
 writeData_timeout_completionHandlerSelector = mkSelector "writeData:timeout:completionHandler:"
 
 -- | @Selector@ for @captureStreams@
-captureStreamsSelector :: Selector
+captureStreamsSelector :: Selector '[] ()
 captureStreamsSelector = mkSelector "captureStreams"
 
 -- | @Selector@ for @closeWrite@
-closeWriteSelector :: Selector
+closeWriteSelector :: Selector '[] ()
 closeWriteSelector = mkSelector "closeWrite"
 
 -- | @Selector@ for @closeRead@
-closeReadSelector :: Selector
+closeReadSelector :: Selector '[] ()
 closeReadSelector = mkSelector "closeRead"
 
 -- | @Selector@ for @startSecureConnection@
-startSecureConnectionSelector :: Selector
+startSecureConnectionSelector :: Selector '[] ()
 startSecureConnectionSelector = mkSelector "startSecureConnection"
 
 -- | @Selector@ for @stopSecureConnection@
-stopSecureConnectionSelector :: Selector
+stopSecureConnectionSelector :: Selector '[] ()
 stopSecureConnectionSelector = mkSelector "stopSecureConnection"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLSessionStreamTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSURLSessionStreamTask)
 newSelector = mkSelector "new"
 

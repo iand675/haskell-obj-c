@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.IdentityLookup.ILMessageCommunication
   , isEqualToMessageCommunication
   , init_
   , messageBody
-  , isEqualToMessageCommunicationSelector
   , initSelector
+  , isEqualToMessageCommunicationSelector
   , messageBodySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- isEqualToMessageCommunication:@
 isEqualToMessageCommunication :: (IsILMessageCommunication ilMessageCommunication, IsILMessageCommunication communication) => ilMessageCommunication -> communication -> IO Bool
-isEqualToMessageCommunication ilMessageCommunication  communication =
-  withObjCPtr communication $ \raw_communication ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ilMessageCommunication (mkSelector "isEqualToMessageCommunication:") retCULong [argPtr (castPtr raw_communication :: Ptr ())]
+isEqualToMessageCommunication ilMessageCommunication communication =
+  sendMessage ilMessageCommunication isEqualToMessageCommunicationSelector (toILMessageCommunication communication)
 
 -- | @- init@
 init_ :: IsILMessageCommunication ilMessageCommunication => ilMessageCommunication -> IO (Id ILMessageCommunication)
-init_ ilMessageCommunication  =
-    sendMsg ilMessageCommunication (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ilMessageCommunication =
+  sendOwnedMessage ilMessageCommunication initSelector
 
 -- | @- messageBody@
 messageBody :: IsILMessageCommunication ilMessageCommunication => ilMessageCommunication -> IO (Id NSString)
-messageBody ilMessageCommunication  =
-    sendMsg ilMessageCommunication (mkSelector "messageBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageBody ilMessageCommunication =
+  sendMessage ilMessageCommunication messageBodySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isEqualToMessageCommunication:@
-isEqualToMessageCommunicationSelector :: Selector
+isEqualToMessageCommunicationSelector :: Selector '[Id ILMessageCommunication] Bool
 isEqualToMessageCommunicationSelector = mkSelector "isEqualToMessageCommunication:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ILMessageCommunication)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @messageBody@
-messageBodySelector :: Selector
+messageBodySelector :: Selector '[] (Id NSString)
 messageBodySelector = mkSelector "messageBody"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSImageGaussianBlur
   , initWithCoder_device
   , initWithDevice
   , sigma
-  , initWithDevice_sigmaSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_sigmaSelector
   , sigmaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:sigma:@
 initWithDevice_sigma :: IsMPSImageGaussianBlur mpsImageGaussianBlur => mpsImageGaussianBlur -> RawId -> CFloat -> IO (Id MPSImageGaussianBlur)
-initWithDevice_sigma mpsImageGaussianBlur  device sigma =
-    sendMsg mpsImageGaussianBlur (mkSelector "initWithDevice:sigma:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat sigma] >>= ownedObject . castPtr
+initWithDevice_sigma mpsImageGaussianBlur device sigma =
+  sendOwnedMessage mpsImageGaussianBlur initWithDevice_sigmaSelector device sigma
 
 -- | NSSecureCoding compatability
 --
@@ -64,14 +61,13 @@ initWithDevice_sigma mpsImageGaussianBlur  device sigma =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageGaussianBlur mpsImageGaussianBlur, IsNSCoder aDecoder) => mpsImageGaussianBlur -> aDecoder -> RawId -> IO (Id MPSImageGaussianBlur)
-initWithCoder_device mpsImageGaussianBlur  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageGaussianBlur (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageGaussianBlur aDecoder device =
+  sendOwnedMessage mpsImageGaussianBlur initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageGaussianBlur mpsImageGaussianBlur => mpsImageGaussianBlur -> RawId -> IO (Id MPSImageGaussianBlur)
-initWithDevice mpsImageGaussianBlur  device =
-    sendMsg mpsImageGaussianBlur (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageGaussianBlur device =
+  sendOwnedMessage mpsImageGaussianBlur initWithDeviceSelector device
 
 -- | sigma
 --
@@ -79,26 +75,26 @@ initWithDevice mpsImageGaussianBlur  device =
 --
 -- ObjC selector: @- sigma@
 sigma :: IsMPSImageGaussianBlur mpsImageGaussianBlur => mpsImageGaussianBlur -> IO CFloat
-sigma mpsImageGaussianBlur  =
-    sendMsg mpsImageGaussianBlur (mkSelector "sigma") retCFloat []
+sigma mpsImageGaussianBlur =
+  sendMessage mpsImageGaussianBlur sigmaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:sigma:@
-initWithDevice_sigmaSelector :: Selector
+initWithDevice_sigmaSelector :: Selector '[RawId, CFloat] (Id MPSImageGaussianBlur)
 initWithDevice_sigmaSelector = mkSelector "initWithDevice:sigma:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageGaussianBlur)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageGaussianBlur)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @sigma@
-sigmaSelector :: Selector
+sigmaSelector :: Selector '[] CFloat
 sigmaSelector = mkSelector "sigma"
 

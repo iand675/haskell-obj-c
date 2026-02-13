@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.HealthKit.HKLensSpecification
   , cylinder
   , axis
   , addPower
+  , addPowerSelector
+  , axisSelector
+  , cylinderSelector
   , initSelector
   , newSelector
   , sphereSelector
-  , cylinderSelector
-  , axisSelector
-  , addPowerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKLensSpecification hkLensSpecification => hkLensSpecification -> IO (Id HKLensSpecification)
-init_ hkLensSpecification  =
-    sendMsg hkLensSpecification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkLensSpecification =
+  sendOwnedMessage hkLensSpecification initSelector
 
 -- | @+ new@
 new :: IO (Id HKLensSpecification)
 new  =
   do
     cls' <- getRequiredClass "HKLensSpecification"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | sphere
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- sphere@
 sphere :: IsHKLensSpecification hkLensSpecification => hkLensSpecification -> IO (Id HKQuantity)
-sphere hkLensSpecification  =
-    sendMsg hkLensSpecification (mkSelector "sphere") (retPtr retVoid) [] >>= retainedObject . castPtr
+sphere hkLensSpecification =
+  sendMessage hkLensSpecification sphereSelector
 
 -- | cylinder
 --
@@ -68,8 +65,8 @@ sphere hkLensSpecification  =
 --
 -- ObjC selector: @- cylinder@
 cylinder :: IsHKLensSpecification hkLensSpecification => hkLensSpecification -> IO (Id HKQuantity)
-cylinder hkLensSpecification  =
-    sendMsg hkLensSpecification (mkSelector "cylinder") (retPtr retVoid) [] >>= retainedObject . castPtr
+cylinder hkLensSpecification =
+  sendMessage hkLensSpecification cylinderSelector
 
 -- | axis
 --
@@ -77,8 +74,8 @@ cylinder hkLensSpecification  =
 --
 -- ObjC selector: @- axis@
 axis :: IsHKLensSpecification hkLensSpecification => hkLensSpecification -> IO (Id HKQuantity)
-axis hkLensSpecification  =
-    sendMsg hkLensSpecification (mkSelector "axis") (retPtr retVoid) [] >>= retainedObject . castPtr
+axis hkLensSpecification =
+  sendMessage hkLensSpecification axisSelector
 
 -- | addPower
 --
@@ -86,34 +83,34 @@ axis hkLensSpecification  =
 --
 -- ObjC selector: @- addPower@
 addPower :: IsHKLensSpecification hkLensSpecification => hkLensSpecification -> IO (Id HKQuantity)
-addPower hkLensSpecification  =
-    sendMsg hkLensSpecification (mkSelector "addPower") (retPtr retVoid) [] >>= retainedObject . castPtr
+addPower hkLensSpecification =
+  sendMessage hkLensSpecification addPowerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKLensSpecification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKLensSpecification)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sphere@
-sphereSelector :: Selector
+sphereSelector :: Selector '[] (Id HKQuantity)
 sphereSelector = mkSelector "sphere"
 
 -- | @Selector@ for @cylinder@
-cylinderSelector :: Selector
+cylinderSelector :: Selector '[] (Id HKQuantity)
 cylinderSelector = mkSelector "cylinder"
 
 -- | @Selector@ for @axis@
-axisSelector :: Selector
+axisSelector :: Selector '[] (Id HKQuantity)
 axisSelector = mkSelector "axis"
 
 -- | @Selector@ for @addPower@
-addPowerSelector :: Selector
+addPowerSelector :: Selector '[] (Id HKQuantity)
 addPowerSelector = mkSelector "addPower"
 

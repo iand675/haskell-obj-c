@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,41 +31,37 @@ module ObjC.Matter.MTRClusterEthernetNetworkDiagnostics
   , resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler
   , resetCountsWithExpectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , resetCountsWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributePHYRateWithParamsSelector
-  , readAttributeFullDuplexWithParamsSelector
-  , readAttributePacketRxCountWithParamsSelector
-  , readAttributePacketTxCountWithParamsSelector
-  , readAttributeTxErrCountWithParamsSelector
-  , readAttributeCollisionCountWithParamsSelector
-  , readAttributeOverrunCountWithParamsSelector
-  , readAttributeCarrierDetectWithParamsSelector
-  , readAttributeTimeSinceResetWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeCarrierDetectWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , readAttributeCollisionCountWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeFullDuplexWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeOverrunCountWithParamsSelector
+  , readAttributePHYRateWithParamsSelector
+  , readAttributePacketRxCountWithParamsSelector
+  , readAttributePacketTxCountWithParamsSelector
+  , readAttributeTimeSinceResetWithParamsSelector
+  , readAttributeTxErrCountWithParamsSelector
   , resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , resetCountsWithExpectedValues_expectedValueInterval_completionSelector
+  , resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,236 +70,207 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- resetCountsWithParams:expectedValues:expectedValueInterval:completion:@
 resetCountsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTREthernetNetworkDiagnosticsClusterResetCountsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEthernetNetworkDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEthernetNetworkDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+resetCountsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEthernetNetworkDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEthernetNetworkDiagnostics resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREthernetNetworkDiagnosticsClusterResetCountsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- resetCountsWithExpectedValues:expectedValueInterval:completion:@
 resetCountsWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEthernetNetworkDiagnostics -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithExpectedValues_expectedValueInterval_completion mtrClusterEthernetNetworkDiagnostics  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+resetCountsWithExpectedValues_expectedValueInterval_completion mtrClusterEthernetNetworkDiagnostics expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterEthernetNetworkDiagnostics resetCountsWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributePHYRateWithParams:@
 readAttributePHYRateWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePHYRateWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributePHYRateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePHYRateWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributePHYRateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFullDuplexWithParams:@
 readAttributeFullDuplexWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeFullDuplexWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeFullDuplexWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFullDuplexWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeFullDuplexWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePacketRxCountWithParams:@
 readAttributePacketRxCountWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePacketRxCountWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributePacketRxCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePacketRxCountWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributePacketRxCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePacketTxCountWithParams:@
 readAttributePacketTxCountWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePacketTxCountWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributePacketTxCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePacketTxCountWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributePacketTxCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxErrCountWithParams:@
 readAttributeTxErrCountWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxErrCountWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeTxErrCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxErrCountWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeTxErrCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCollisionCountWithParams:@
 readAttributeCollisionCountWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeCollisionCountWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeCollisionCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCollisionCountWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeCollisionCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOverrunCountWithParams:@
 readAttributeOverrunCountWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeOverrunCountWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeOverrunCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOverrunCountWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeOverrunCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCarrierDetectWithParams:@
 readAttributeCarrierDetectWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeCarrierDetectWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeCarrierDetectWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCarrierDetectWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeCarrierDetectWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTimeSinceResetWithParams:@
 readAttributeTimeSinceResetWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTimeSinceResetWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeTimeSinceResetWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTimeSinceResetWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeTimeSinceResetWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRReadParams params) => mtrClusterEthernetNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterEthernetNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterEthernetNetworkDiagnostics params =
+  sendMessage mtrClusterEthernetNetworkDiagnostics readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics => mtrClusterEthernetNetworkDiagnostics -> IO (Id MTRClusterEthernetNetworkDiagnostics)
-init_ mtrClusterEthernetNetworkDiagnostics  =
-    sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterEthernetNetworkDiagnostics =
+  sendOwnedMessage mtrClusterEthernetNetworkDiagnostics initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterEthernetNetworkDiagnostics)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterEthernetNetworkDiagnostics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRDevice device, IsNSObject queue) => mtrClusterEthernetNetworkDiagnostics -> device -> CUShort -> queue -> IO (Id MTRClusterEthernetNetworkDiagnostics)
-initWithDevice_endpoint_queue mtrClusterEthernetNetworkDiagnostics  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterEthernetNetworkDiagnostics device endpoint queue =
+  sendOwnedMessage mtrClusterEthernetNetworkDiagnostics initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:@
 resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTREthernetNetworkDiagnosticsClusterResetCountsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEthernetNetworkDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterEthernetNetworkDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterEthernetNetworkDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterEthernetNetworkDiagnostics resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTREthernetNetworkDiagnosticsClusterResetCountsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- resetCountsWithExpectedValues:expectedValueInterval:completionHandler:@
 resetCountsWithExpectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEthernetNetworkDiagnostics -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithExpectedValues_expectedValueInterval_completionHandler mtrClusterEthernetNetworkDiagnostics  expectedValues expectedValueIntervalMs completionHandler =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+resetCountsWithExpectedValues_expectedValueInterval_completionHandler mtrClusterEthernetNetworkDiagnostics expectedValues expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterEthernetNetworkDiagnostics resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterEthernetNetworkDiagnostics mtrClusterEthernetNetworkDiagnostics, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterEthernetNetworkDiagnostics -> device -> endpointID -> queue -> IO (Id MTRClusterEthernetNetworkDiagnostics)
-initWithDevice_endpointID_queue mtrClusterEthernetNetworkDiagnostics  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterEthernetNetworkDiagnostics (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterEthernetNetworkDiagnostics device endpointID queue =
+  sendOwnedMessage mtrClusterEthernetNetworkDiagnostics initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resetCountsWithParams:expectedValues:expectedValueInterval:completion:@
-resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREthernetNetworkDiagnosticsClusterResetCountsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @resetCountsWithExpectedValues:expectedValueInterval:completion:@
-resetCountsWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+resetCountsWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributePHYRateWithParams:@
-readAttributePHYRateWithParamsSelector :: Selector
+readAttributePHYRateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePHYRateWithParamsSelector = mkSelector "readAttributePHYRateWithParams:"
 
 -- | @Selector@ for @readAttributeFullDuplexWithParams:@
-readAttributeFullDuplexWithParamsSelector :: Selector
+readAttributeFullDuplexWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFullDuplexWithParamsSelector = mkSelector "readAttributeFullDuplexWithParams:"
 
 -- | @Selector@ for @readAttributePacketRxCountWithParams:@
-readAttributePacketRxCountWithParamsSelector :: Selector
+readAttributePacketRxCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePacketRxCountWithParamsSelector = mkSelector "readAttributePacketRxCountWithParams:"
 
 -- | @Selector@ for @readAttributePacketTxCountWithParams:@
-readAttributePacketTxCountWithParamsSelector :: Selector
+readAttributePacketTxCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePacketTxCountWithParamsSelector = mkSelector "readAttributePacketTxCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxErrCountWithParams:@
-readAttributeTxErrCountWithParamsSelector :: Selector
+readAttributeTxErrCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxErrCountWithParamsSelector = mkSelector "readAttributeTxErrCountWithParams:"
 
 -- | @Selector@ for @readAttributeCollisionCountWithParams:@
-readAttributeCollisionCountWithParamsSelector :: Selector
+readAttributeCollisionCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCollisionCountWithParamsSelector = mkSelector "readAttributeCollisionCountWithParams:"
 
 -- | @Selector@ for @readAttributeOverrunCountWithParams:@
-readAttributeOverrunCountWithParamsSelector :: Selector
+readAttributeOverrunCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOverrunCountWithParamsSelector = mkSelector "readAttributeOverrunCountWithParams:"
 
 -- | @Selector@ for @readAttributeCarrierDetectWithParams:@
-readAttributeCarrierDetectWithParamsSelector :: Selector
+readAttributeCarrierDetectWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCarrierDetectWithParamsSelector = mkSelector "readAttributeCarrierDetectWithParams:"
 
 -- | @Selector@ for @readAttributeTimeSinceResetWithParams:@
-readAttributeTimeSinceResetWithParamsSelector :: Selector
+readAttributeTimeSinceResetWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTimeSinceResetWithParamsSelector = mkSelector "readAttributeTimeSinceResetWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterEthernetNetworkDiagnostics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterEthernetNetworkDiagnostics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterEthernetNetworkDiagnostics)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:@
-resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTREthernetNetworkDiagnosticsClusterResetCountsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @resetCountsWithExpectedValues:expectedValueInterval:completionHandler:@
-resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterEthernetNetworkDiagnostics)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

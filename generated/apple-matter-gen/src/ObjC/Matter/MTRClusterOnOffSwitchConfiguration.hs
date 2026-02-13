@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRClusterOnOffSwitchConfiguration
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeSwitchTypeWithParamsSelector
-  , readAttributeSwitchActionsWithParamsSelector
-  , writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector
-  , writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSwitchActionsWithParamsSelector
+  , readAttributeSwitchTypeWithParamsSelector
+  , writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector
+  , writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,143 +52,126 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeSwitchTypeWithParams:@
 readAttributeSwitchTypeWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeSwitchTypeWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeSwitchTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSwitchTypeWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeSwitchTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSwitchActionsWithParams:@
 readAttributeSwitchActionsWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeSwitchActionsWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeSwitchActionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSwitchActionsWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeSwitchActionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSwitchActionsWithValue:expectedValueInterval:@
 writeAttributeSwitchActionsWithValue_expectedValueInterval :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterOnOffSwitchConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSwitchActionsWithValue_expectedValueInterval mtrClusterOnOffSwitchConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "writeAttributeSwitchActionsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSwitchActionsWithValue_expectedValueInterval mtrClusterOnOffSwitchConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterOnOffSwitchConfiguration writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSwitchActionsWithValue:expectedValueInterval:params:@
 writeAttributeSwitchActionsWithValue_expectedValueInterval_params :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterOnOffSwitchConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSwitchActionsWithValue_expectedValueInterval_params mtrClusterOnOffSwitchConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "writeAttributeSwitchActionsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSwitchActionsWithValue_expectedValueInterval_params mtrClusterOnOffSwitchConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterOnOffSwitchConfiguration writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRReadParams params) => mtrClusterOnOffSwitchConfiguration -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterOnOffSwitchConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterOnOffSwitchConfiguration params =
+  sendMessage mtrClusterOnOffSwitchConfiguration readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration => mtrClusterOnOffSwitchConfiguration -> IO (Id MTRClusterOnOffSwitchConfiguration)
-init_ mtrClusterOnOffSwitchConfiguration  =
-    sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterOnOffSwitchConfiguration =
+  sendOwnedMessage mtrClusterOnOffSwitchConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterOnOffSwitchConfiguration)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterOnOffSwitchConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRDevice device, IsNSObject queue) => mtrClusterOnOffSwitchConfiguration -> device -> CUShort -> queue -> IO (Id MTRClusterOnOffSwitchConfiguration)
-initWithDevice_endpoint_queue mtrClusterOnOffSwitchConfiguration  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterOnOffSwitchConfiguration device endpoint queue =
+  sendOwnedMessage mtrClusterOnOffSwitchConfiguration initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterOnOffSwitchConfiguration mtrClusterOnOffSwitchConfiguration, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterOnOffSwitchConfiguration -> device -> endpointID -> queue -> IO (Id MTRClusterOnOffSwitchConfiguration)
-initWithDevice_endpointID_queue mtrClusterOnOffSwitchConfiguration  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterOnOffSwitchConfiguration (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterOnOffSwitchConfiguration device endpointID queue =
+  sendOwnedMessage mtrClusterOnOffSwitchConfiguration initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeSwitchTypeWithParams:@
-readAttributeSwitchTypeWithParamsSelector :: Selector
+readAttributeSwitchTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSwitchTypeWithParamsSelector = mkSelector "readAttributeSwitchTypeWithParams:"
 
 -- | @Selector@ for @readAttributeSwitchActionsWithParams:@
-readAttributeSwitchActionsWithParamsSelector :: Selector
+readAttributeSwitchActionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSwitchActionsWithParamsSelector = mkSelector "readAttributeSwitchActionsWithParams:"
 
 -- | @Selector@ for @writeAttributeSwitchActionsWithValue:expectedValueInterval:@
-writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSwitchActionsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSwitchActionsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSwitchActionsWithValue:expectedValueInterval:params:@
-writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSwitchActionsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSwitchActionsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterOnOffSwitchConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterOnOffSwitchConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterOnOffSwitchConfiguration)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterOnOffSwitchConfiguration)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

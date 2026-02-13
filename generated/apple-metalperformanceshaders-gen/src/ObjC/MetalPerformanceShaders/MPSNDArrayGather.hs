@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayGather
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- axis@
 axis :: IsMPSNDArrayGather mpsndArrayGather => mpsndArrayGather -> IO CULong
-axis mpsndArrayGather  =
-    sendMsg mpsndArrayGather (mkSelector "axis") retCULong []
+axis mpsndArrayGather =
+  sendMessage mpsndArrayGather axisSelector
 
 -- | axis
 --
@@ -52,18 +49,18 @@ axis mpsndArrayGather  =
 --
 -- ObjC selector: @- setAxis:@
 setAxis :: IsMPSNDArrayGather mpsndArrayGather => mpsndArrayGather -> CULong -> IO ()
-setAxis mpsndArrayGather  value =
-    sendMsg mpsndArrayGather (mkSelector "setAxis:") retVoid [argCULong value]
+setAxis mpsndArrayGather value =
+  sendMessage mpsndArrayGather setAxisSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @axis@
-axisSelector :: Selector
+axisSelector :: Selector '[] CULong
 axisSelector = mkSelector "axis"
 
 -- | @Selector@ for @setAxis:@
-setAxisSelector :: Selector
+setAxisSelector :: Selector '[CULong] ()
 setAxisSelector = mkSelector "setAxis:"
 

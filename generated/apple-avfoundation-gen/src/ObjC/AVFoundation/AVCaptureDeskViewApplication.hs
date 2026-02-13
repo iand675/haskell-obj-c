@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCaptureDeskViewApplication
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- presentWithCompletionHandler:@
 presentWithCompletionHandler :: IsAVCaptureDeskViewApplication avCaptureDeskViewApplication => avCaptureDeskViewApplication -> Ptr () -> IO ()
-presentWithCompletionHandler avCaptureDeskViewApplication  completionHandler =
-    sendMsg avCaptureDeskViewApplication (mkSelector "presentWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+presentWithCompletionHandler avCaptureDeskViewApplication completionHandler =
+  sendMessage avCaptureDeskViewApplication presentWithCompletionHandlerSelector completionHandler
 
 -- | presentWithLaunchConfiguration:completionHandler:
 --
@@ -60,19 +57,18 @@ presentWithCompletionHandler avCaptureDeskViewApplication  completionHandler =
 --
 -- ObjC selector: @- presentWithLaunchConfiguration:completionHandler:@
 presentWithLaunchConfiguration_completionHandler :: (IsAVCaptureDeskViewApplication avCaptureDeskViewApplication, IsAVCaptureDeskViewApplicationLaunchConfiguration launchConfiguration) => avCaptureDeskViewApplication -> launchConfiguration -> Ptr () -> IO ()
-presentWithLaunchConfiguration_completionHandler avCaptureDeskViewApplication  launchConfiguration completionHandler =
-  withObjCPtr launchConfiguration $ \raw_launchConfiguration ->
-      sendMsg avCaptureDeskViewApplication (mkSelector "presentWithLaunchConfiguration:completionHandler:") retVoid [argPtr (castPtr raw_launchConfiguration :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+presentWithLaunchConfiguration_completionHandler avCaptureDeskViewApplication launchConfiguration completionHandler =
+  sendMessage avCaptureDeskViewApplication presentWithLaunchConfiguration_completionHandlerSelector (toAVCaptureDeskViewApplicationLaunchConfiguration launchConfiguration) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @presentWithCompletionHandler:@
-presentWithCompletionHandlerSelector :: Selector
+presentWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 presentWithCompletionHandlerSelector = mkSelector "presentWithCompletionHandler:"
 
 -- | @Selector@ for @presentWithLaunchConfiguration:completionHandler:@
-presentWithLaunchConfiguration_completionHandlerSelector :: Selector
+presentWithLaunchConfiguration_completionHandlerSelector :: Selector '[Id AVCaptureDeskViewApplicationLaunchConfiguration, Ptr ()] ()
 presentWithLaunchConfiguration_completionHandlerSelector = mkSelector "presentWithLaunchConfiguration:completionHandler:"
 

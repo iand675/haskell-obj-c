@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.AppKit.NSFontAssetRequest
   , downloadFontAssetsWithCompletionHandler
   , downloadedFontDescriptors
   , progress
-  , initSelector
-  , initWithFontDescriptors_optionsSelector
   , downloadFontAssetsWithCompletionHandlerSelector
   , downloadedFontDescriptorsSelector
+  , initSelector
+  , initWithFontDescriptors_optionsSelector
   , progressSelector
 
   -- * Enum types
@@ -24,15 +25,11 @@ module ObjC.AppKit.NSFontAssetRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,51 +39,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSFontAssetRequest nsFontAssetRequest => nsFontAssetRequest -> IO (Id NSFontAssetRequest)
-init_ nsFontAssetRequest  =
-    sendMsg nsFontAssetRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsFontAssetRequest =
+  sendOwnedMessage nsFontAssetRequest initSelector
 
 -- | @- initWithFontDescriptors:options:@
 initWithFontDescriptors_options :: (IsNSFontAssetRequest nsFontAssetRequest, IsNSArray fontDescriptors) => nsFontAssetRequest -> fontDescriptors -> NSFontAssetRequestOptions -> IO (Id NSFontAssetRequest)
-initWithFontDescriptors_options nsFontAssetRequest  fontDescriptors options =
-  withObjCPtr fontDescriptors $ \raw_fontDescriptors ->
-      sendMsg nsFontAssetRequest (mkSelector "initWithFontDescriptors:options:") (retPtr retVoid) [argPtr (castPtr raw_fontDescriptors :: Ptr ()), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithFontDescriptors_options nsFontAssetRequest fontDescriptors options =
+  sendOwnedMessage nsFontAssetRequest initWithFontDescriptors_optionsSelector (toNSArray fontDescriptors) options
 
 -- | @- downloadFontAssetsWithCompletionHandler:@
 downloadFontAssetsWithCompletionHandler :: IsNSFontAssetRequest nsFontAssetRequest => nsFontAssetRequest -> Ptr () -> IO ()
-downloadFontAssetsWithCompletionHandler nsFontAssetRequest  completionHandler =
-    sendMsg nsFontAssetRequest (mkSelector "downloadFontAssetsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+downloadFontAssetsWithCompletionHandler nsFontAssetRequest completionHandler =
+  sendMessage nsFontAssetRequest downloadFontAssetsWithCompletionHandlerSelector completionHandler
 
 -- | @- downloadedFontDescriptors@
 downloadedFontDescriptors :: IsNSFontAssetRequest nsFontAssetRequest => nsFontAssetRequest -> IO (Id NSArray)
-downloadedFontDescriptors nsFontAssetRequest  =
-    sendMsg nsFontAssetRequest (mkSelector "downloadedFontDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadedFontDescriptors nsFontAssetRequest =
+  sendMessage nsFontAssetRequest downloadedFontDescriptorsSelector
 
 -- | @- progress@
 progress :: IsNSFontAssetRequest nsFontAssetRequest => nsFontAssetRequest -> IO (Id NSProgress)
-progress nsFontAssetRequest  =
-    sendMsg nsFontAssetRequest (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress nsFontAssetRequest =
+  sendMessage nsFontAssetRequest progressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSFontAssetRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithFontDescriptors:options:@
-initWithFontDescriptors_optionsSelector :: Selector
+initWithFontDescriptors_optionsSelector :: Selector '[Id NSArray, NSFontAssetRequestOptions] (Id NSFontAssetRequest)
 initWithFontDescriptors_optionsSelector = mkSelector "initWithFontDescriptors:options:"
 
 -- | @Selector@ for @downloadFontAssetsWithCompletionHandler:@
-downloadFontAssetsWithCompletionHandlerSelector :: Selector
+downloadFontAssetsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 downloadFontAssetsWithCompletionHandlerSelector = mkSelector "downloadFontAssetsWithCompletionHandler:"
 
 -- | @Selector@ for @downloadedFontDescriptors@
-downloadedFontDescriptorsSelector :: Selector
+downloadedFontDescriptorsSelector :: Selector '[] (Id NSArray)
 downloadedFontDescriptorsSelector = mkSelector "downloadedFontDescriptors"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 

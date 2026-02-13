@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,10 +19,10 @@ module ObjC.Virtualization.VZEFIVariableStore
   , initWithURL
   , initCreatingVariableStoreAtURL_options_error
   , url
-  , newSelector
+  , initCreatingVariableStoreAtURL_options_errorSelector
   , initSelector
   , initWithURLSelector
-  , initCreatingVariableStoreAtURL_options_errorSelector
+  , newSelector
   , urlSelector
 
   -- * Enum types
@@ -30,15 +31,11 @@ module ObjC.Virtualization.VZEFIVariableStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,12 +48,12 @@ new :: IO (Id VZEFIVariableStore)
 new  =
   do
     cls' <- getRequiredClass "VZEFIVariableStore"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZEFIVariableStore vzefiVariableStore => vzefiVariableStore -> IO (Id VZEFIVariableStore)
-init_ vzefiVariableStore  =
-    sendMsg vzefiVariableStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzefiVariableStore =
+  sendOwnedMessage vzefiVariableStore initSelector
 
 -- | Initialize the variable store from the URL of an existing file.
 --
@@ -66,9 +63,8 @@ init_ vzefiVariableStore  =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsVZEFIVariableStore vzefiVariableStore, IsNSURL url) => vzefiVariableStore -> url -> IO (Id VZEFIVariableStore)
-initWithURL vzefiVariableStore  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg vzefiVariableStore (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL vzefiVariableStore url =
+  sendOwnedMessage vzefiVariableStore initWithURLSelector (toNSURL url)
 
 -- | Write an initialized VZEFIVariableStore to a URL on a file system.
 --
@@ -82,39 +78,37 @@ initWithURL vzefiVariableStore  url =
 --
 -- ObjC selector: @- initCreatingVariableStoreAtURL:options:error:@
 initCreatingVariableStoreAtURL_options_error :: (IsVZEFIVariableStore vzefiVariableStore, IsNSURL url, IsNSError error_) => vzefiVariableStore -> url -> VZEFIVariableStoreInitializationOptions -> error_ -> IO (Id VZEFIVariableStore)
-initCreatingVariableStoreAtURL_options_error vzefiVariableStore  url options error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzefiVariableStore (mkSelector "initCreatingVariableStoreAtURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initCreatingVariableStoreAtURL_options_error vzefiVariableStore url options error_ =
+  sendOwnedMessage vzefiVariableStore initCreatingVariableStoreAtURL_options_errorSelector (toNSURL url) options (toNSError error_)
 
 -- | The URL of the variable store on the local file system.
 --
 -- ObjC selector: @- URL@
 url :: IsVZEFIVariableStore vzefiVariableStore => vzefiVariableStore -> IO (Id NSURL)
-url vzefiVariableStore  =
-    sendMsg vzefiVariableStore (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzefiVariableStore =
+  sendMessage vzefiVariableStore urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZEFIVariableStore)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZEFIVariableStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id VZEFIVariableStore)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initCreatingVariableStoreAtURL:options:error:@
-initCreatingVariableStoreAtURL_options_errorSelector :: Selector
+initCreatingVariableStoreAtURL_options_errorSelector :: Selector '[Id NSURL, VZEFIVariableStoreInitializationOptions, Id NSError] (Id VZEFIVariableStore)
 initCreatingVariableStoreAtURL_options_errorSelector = mkSelector "initCreatingVariableStoreAtURL:options:error:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

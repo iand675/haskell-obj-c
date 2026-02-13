@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.NetworkExtension.NEHotspotConfiguration
   , setLifeTimeInDays
   , hidden
   , setHidden
-  , initWithSSIDSelector
-  , initWithSSID_passphrase_isWEPSelector
-  , initWithSSID_eapSettingsSelector
+  , hiddenSelector
   , initWithHS20Settings_eapSettingsSelector
   , initWithSSIDPrefixSelector
   , initWithSSIDPrefix_passphrase_isWEPSelector
-  , ssidSelector
-  , ssidPrefixSelector
+  , initWithSSIDSelector
+  , initWithSSID_eapSettingsSelector
+  , initWithSSID_passphrase_isWEPSelector
   , joinOnceSelector
-  , setJoinOnceSelector
   , lifeTimeInDaysSelector
-  , setLifeTimeInDaysSelector
-  , hiddenSelector
   , setHiddenSelector
+  , setJoinOnceSelector
+  , setLifeTimeInDaysSelector
+  , ssidPrefixSelector
+  , ssidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,9 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSSID:@
 initWithSSID :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSString ssid) => neHotspotConfiguration -> ssid -> IO (Id NEHotspotConfiguration)
-initWithSSID neHotspotConfiguration  ssid =
-  withObjCPtr ssid $ \raw_ssid ->
-      sendMsg neHotspotConfiguration (mkSelector "initWithSSID:") (retPtr retVoid) [argPtr (castPtr raw_ssid :: Ptr ())] >>= ownedObject . castPtr
+initWithSSID neHotspotConfiguration ssid =
+  sendOwnedMessage neHotspotConfiguration initWithSSIDSelector (toNSString ssid)
 
 -- | initWithSSID:passphrase:isWEP
 --
@@ -81,10 +77,8 @@ initWithSSID neHotspotConfiguration  ssid =
 --
 -- ObjC selector: @- initWithSSID:passphrase:isWEP:@
 initWithSSID_passphrase_isWEP :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSString ssid, IsNSString passphrase) => neHotspotConfiguration -> ssid -> passphrase -> Bool -> IO (Id NEHotspotConfiguration)
-initWithSSID_passphrase_isWEP neHotspotConfiguration  ssid passphrase isWEP =
-  withObjCPtr ssid $ \raw_ssid ->
-    withObjCPtr passphrase $ \raw_passphrase ->
-        sendMsg neHotspotConfiguration (mkSelector "initWithSSID:passphrase:isWEP:") (retPtr retVoid) [argPtr (castPtr raw_ssid :: Ptr ()), argPtr (castPtr raw_passphrase :: Ptr ()), argCULong (if isWEP then 1 else 0)] >>= ownedObject . castPtr
+initWithSSID_passphrase_isWEP neHotspotConfiguration ssid passphrase isWEP =
+  sendOwnedMessage neHotspotConfiguration initWithSSID_passphrase_isWEPSelector (toNSString ssid) (toNSString passphrase) isWEP
 
 -- | initWithSSID:eapSettings
 --
@@ -96,10 +90,8 @@ initWithSSID_passphrase_isWEP neHotspotConfiguration  ssid passphrase isWEP =
 --
 -- ObjC selector: @- initWithSSID:eapSettings:@
 initWithSSID_eapSettings :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSString ssid, IsNEHotspotEAPSettings eapSettings) => neHotspotConfiguration -> ssid -> eapSettings -> IO (Id NEHotspotConfiguration)
-initWithSSID_eapSettings neHotspotConfiguration  ssid eapSettings =
-  withObjCPtr ssid $ \raw_ssid ->
-    withObjCPtr eapSettings $ \raw_eapSettings ->
-        sendMsg neHotspotConfiguration (mkSelector "initWithSSID:eapSettings:") (retPtr retVoid) [argPtr (castPtr raw_ssid :: Ptr ()), argPtr (castPtr raw_eapSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithSSID_eapSettings neHotspotConfiguration ssid eapSettings =
+  sendOwnedMessage neHotspotConfiguration initWithSSID_eapSettingsSelector (toNSString ssid) (toNEHotspotEAPSettings eapSettings)
 
 -- | initWithHS20Settings:eapSettings
 --
@@ -111,10 +103,8 @@ initWithSSID_eapSettings neHotspotConfiguration  ssid eapSettings =
 --
 -- ObjC selector: @- initWithHS20Settings:eapSettings:@
 initWithHS20Settings_eapSettings :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNEHotspotHS20Settings hs20Settings, IsNEHotspotEAPSettings eapSettings) => neHotspotConfiguration -> hs20Settings -> eapSettings -> IO (Id NEHotspotConfiguration)
-initWithHS20Settings_eapSettings neHotspotConfiguration  hs20Settings eapSettings =
-  withObjCPtr hs20Settings $ \raw_hs20Settings ->
-    withObjCPtr eapSettings $ \raw_eapSettings ->
-        sendMsg neHotspotConfiguration (mkSelector "initWithHS20Settings:eapSettings:") (retPtr retVoid) [argPtr (castPtr raw_hs20Settings :: Ptr ()), argPtr (castPtr raw_eapSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithHS20Settings_eapSettings neHotspotConfiguration hs20Settings eapSettings =
+  sendOwnedMessage neHotspotConfiguration initWithHS20Settings_eapSettingsSelector (toNEHotspotHS20Settings hs20Settings) (toNEHotspotEAPSettings eapSettings)
 
 -- | initWithSSIDPrefix:
 --
@@ -124,9 +114,8 @@ initWithHS20Settings_eapSettings neHotspotConfiguration  hs20Settings eapSetting
 --
 -- ObjC selector: @- initWithSSIDPrefix:@
 initWithSSIDPrefix :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSString ssidPrefix) => neHotspotConfiguration -> ssidPrefix -> IO (Id NEHotspotConfiguration)
-initWithSSIDPrefix neHotspotConfiguration  ssidPrefix =
-  withObjCPtr ssidPrefix $ \raw_ssidPrefix ->
-      sendMsg neHotspotConfiguration (mkSelector "initWithSSIDPrefix:") (retPtr retVoid) [argPtr (castPtr raw_ssidPrefix :: Ptr ())] >>= ownedObject . castPtr
+initWithSSIDPrefix neHotspotConfiguration ssidPrefix =
+  sendOwnedMessage neHotspotConfiguration initWithSSIDPrefixSelector (toNSString ssidPrefix)
 
 -- | initWithSSIDPrefix:passphrase:isWEP
 --
@@ -140,10 +129,8 @@ initWithSSIDPrefix neHotspotConfiguration  ssidPrefix =
 --
 -- ObjC selector: @- initWithSSIDPrefix:passphrase:isWEP:@
 initWithSSIDPrefix_passphrase_isWEP :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSString ssidPrefix, IsNSString passphrase) => neHotspotConfiguration -> ssidPrefix -> passphrase -> Bool -> IO (Id NEHotspotConfiguration)
-initWithSSIDPrefix_passphrase_isWEP neHotspotConfiguration  ssidPrefix passphrase isWEP =
-  withObjCPtr ssidPrefix $ \raw_ssidPrefix ->
-    withObjCPtr passphrase $ \raw_passphrase ->
-        sendMsg neHotspotConfiguration (mkSelector "initWithSSIDPrefix:passphrase:isWEP:") (retPtr retVoid) [argPtr (castPtr raw_ssidPrefix :: Ptr ()), argPtr (castPtr raw_passphrase :: Ptr ()), argCULong (if isWEP then 1 else 0)] >>= ownedObject . castPtr
+initWithSSIDPrefix_passphrase_isWEP neHotspotConfiguration ssidPrefix passphrase isWEP =
+  sendOwnedMessage neHotspotConfiguration initWithSSIDPrefix_passphrase_isWEPSelector (toNSString ssidPrefix) (toNSString passphrase) isWEP
 
 -- | SSID
 --
@@ -151,8 +138,8 @@ initWithSSIDPrefix_passphrase_isWEP neHotspotConfiguration  ssidPrefix passphras
 --
 -- ObjC selector: @- SSID@
 ssid :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> IO (Id NSString)
-ssid neHotspotConfiguration  =
-    sendMsg neHotspotConfiguration (mkSelector "SSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid neHotspotConfiguration =
+  sendMessage neHotspotConfiguration ssidSelector
 
 -- | SSIDPrefix
 --
@@ -160,8 +147,8 @@ ssid neHotspotConfiguration  =
 --
 -- ObjC selector: @- SSIDPrefix@
 ssidPrefix :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> IO (Id NSString)
-ssidPrefix neHotspotConfiguration  =
-    sendMsg neHotspotConfiguration (mkSelector "SSIDPrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssidPrefix neHotspotConfiguration =
+  sendMessage neHotspotConfiguration ssidPrefixSelector
 
 -- | joinOnce
 --
@@ -169,8 +156,8 @@ ssidPrefix neHotspotConfiguration  =
 --
 -- ObjC selector: @- joinOnce@
 joinOnce :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> IO Bool
-joinOnce neHotspotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotConfiguration (mkSelector "joinOnce") retCULong []
+joinOnce neHotspotConfiguration =
+  sendMessage neHotspotConfiguration joinOnceSelector
 
 -- | joinOnce
 --
@@ -178,8 +165,8 @@ joinOnce neHotspotConfiguration  =
 --
 -- ObjC selector: @- setJoinOnce:@
 setJoinOnce :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> Bool -> IO ()
-setJoinOnce neHotspotConfiguration  value =
-    sendMsg neHotspotConfiguration (mkSelector "setJoinOnce:") retVoid [argCULong (if value then 1 else 0)]
+setJoinOnce neHotspotConfiguration value =
+  sendMessage neHotspotConfiguration setJoinOnceSelector value
 
 -- | lifeTimeInDays
 --
@@ -187,8 +174,8 @@ setJoinOnce neHotspotConfiguration  value =
 --
 -- ObjC selector: @- lifeTimeInDays@
 lifeTimeInDays :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> IO (Id NSNumber)
-lifeTimeInDays neHotspotConfiguration  =
-    sendMsg neHotspotConfiguration (mkSelector "lifeTimeInDays") (retPtr retVoid) [] >>= retainedObject . castPtr
+lifeTimeInDays neHotspotConfiguration =
+  sendMessage neHotspotConfiguration lifeTimeInDaysSelector
 
 -- | lifeTimeInDays
 --
@@ -196,9 +183,8 @@ lifeTimeInDays neHotspotConfiguration  =
 --
 -- ObjC selector: @- setLifeTimeInDays:@
 setLifeTimeInDays :: (IsNEHotspotConfiguration neHotspotConfiguration, IsNSNumber value) => neHotspotConfiguration -> value -> IO ()
-setLifeTimeInDays neHotspotConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotConfiguration (mkSelector "setLifeTimeInDays:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLifeTimeInDays neHotspotConfiguration value =
+  sendMessage neHotspotConfiguration setLifeTimeInDaysSelector (toNSNumber value)
 
 -- | hidden
 --
@@ -206,8 +192,8 @@ setLifeTimeInDays neHotspotConfiguration  value =
 --
 -- ObjC selector: @- hidden@
 hidden :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> IO Bool
-hidden neHotspotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotConfiguration (mkSelector "hidden") retCULong []
+hidden neHotspotConfiguration =
+  sendMessage neHotspotConfiguration hiddenSelector
 
 -- | hidden
 --
@@ -215,66 +201,66 @@ hidden neHotspotConfiguration  =
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsNEHotspotConfiguration neHotspotConfiguration => neHotspotConfiguration -> Bool -> IO ()
-setHidden neHotspotConfiguration  value =
-    sendMsg neHotspotConfiguration (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden neHotspotConfiguration value =
+  sendMessage neHotspotConfiguration setHiddenSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSSID:@
-initWithSSIDSelector :: Selector
+initWithSSIDSelector :: Selector '[Id NSString] (Id NEHotspotConfiguration)
 initWithSSIDSelector = mkSelector "initWithSSID:"
 
 -- | @Selector@ for @initWithSSID:passphrase:isWEP:@
-initWithSSID_passphrase_isWEPSelector :: Selector
+initWithSSID_passphrase_isWEPSelector :: Selector '[Id NSString, Id NSString, Bool] (Id NEHotspotConfiguration)
 initWithSSID_passphrase_isWEPSelector = mkSelector "initWithSSID:passphrase:isWEP:"
 
 -- | @Selector@ for @initWithSSID:eapSettings:@
-initWithSSID_eapSettingsSelector :: Selector
+initWithSSID_eapSettingsSelector :: Selector '[Id NSString, Id NEHotspotEAPSettings] (Id NEHotspotConfiguration)
 initWithSSID_eapSettingsSelector = mkSelector "initWithSSID:eapSettings:"
 
 -- | @Selector@ for @initWithHS20Settings:eapSettings:@
-initWithHS20Settings_eapSettingsSelector :: Selector
+initWithHS20Settings_eapSettingsSelector :: Selector '[Id NEHotspotHS20Settings, Id NEHotspotEAPSettings] (Id NEHotspotConfiguration)
 initWithHS20Settings_eapSettingsSelector = mkSelector "initWithHS20Settings:eapSettings:"
 
 -- | @Selector@ for @initWithSSIDPrefix:@
-initWithSSIDPrefixSelector :: Selector
+initWithSSIDPrefixSelector :: Selector '[Id NSString] (Id NEHotspotConfiguration)
 initWithSSIDPrefixSelector = mkSelector "initWithSSIDPrefix:"
 
 -- | @Selector@ for @initWithSSIDPrefix:passphrase:isWEP:@
-initWithSSIDPrefix_passphrase_isWEPSelector :: Selector
+initWithSSIDPrefix_passphrase_isWEPSelector :: Selector '[Id NSString, Id NSString, Bool] (Id NEHotspotConfiguration)
 initWithSSIDPrefix_passphrase_isWEPSelector = mkSelector "initWithSSIDPrefix:passphrase:isWEP:"
 
 -- | @Selector@ for @SSID@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSString)
 ssidSelector = mkSelector "SSID"
 
 -- | @Selector@ for @SSIDPrefix@
-ssidPrefixSelector :: Selector
+ssidPrefixSelector :: Selector '[] (Id NSString)
 ssidPrefixSelector = mkSelector "SSIDPrefix"
 
 -- | @Selector@ for @joinOnce@
-joinOnceSelector :: Selector
+joinOnceSelector :: Selector '[] Bool
 joinOnceSelector = mkSelector "joinOnce"
 
 -- | @Selector@ for @setJoinOnce:@
-setJoinOnceSelector :: Selector
+setJoinOnceSelector :: Selector '[Bool] ()
 setJoinOnceSelector = mkSelector "setJoinOnce:"
 
 -- | @Selector@ for @lifeTimeInDays@
-lifeTimeInDaysSelector :: Selector
+lifeTimeInDaysSelector :: Selector '[] (Id NSNumber)
 lifeTimeInDaysSelector = mkSelector "lifeTimeInDays"
 
 -- | @Selector@ for @setLifeTimeInDays:@
-setLifeTimeInDaysSelector :: Selector
+setLifeTimeInDaysSelector :: Selector '[Id NSNumber] ()
 setLifeTimeInDaysSelector = mkSelector "setLifeTimeInDays:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.GameSave.GSSyncedDirectoryState
   , url
   , conflictedVersions
   , error_
+  , conflictedVersionsSelector
+  , errorSelector
   , initSelector
   , newSelector
   , stateSelector
   , urlSelector
-  , conflictedVersionsSelector
-  , errorSelector
 
   -- * Enum types
   , GSSyncState(GSSyncState)
@@ -36,15 +37,11 @@ module ObjC.GameSave.GSSyncedDirectoryState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,20 +51,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO (Id GSSyncedDirectoryState)
-init_ gsSyncedDirectoryState  =
-    sendMsg gsSyncedDirectoryState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gsSyncedDirectoryState =
+  sendOwnedMessage gsSyncedDirectoryState initSelector
 
 -- | @- new@
 new :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO (Id GSSyncedDirectoryState)
-new gsSyncedDirectoryState  =
-    sendMsg gsSyncedDirectoryState (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new gsSyncedDirectoryState =
+  sendOwnedMessage gsSyncedDirectoryState newSelector
 
 -- | Specifies the current state of the directory
 --
 -- ObjC selector: @- state@
 state :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO GSSyncState
-state gsSyncedDirectoryState  =
-    fmap (coerce :: CLong -> GSSyncState) $ sendMsg gsSyncedDirectoryState (mkSelector "state") retCLong []
+state gsSyncedDirectoryState =
+  sendMessage gsSyncedDirectoryState stateSelector
 
 -- | The URL of a directory to read and write game-save data in.
 --
@@ -75,8 +72,8 @@ state gsSyncedDirectoryState  =
 --
 -- ObjC selector: @- url@
 url :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO (Id NSURL)
-url gsSyncedDirectoryState  =
-    sendMsg gsSyncedDirectoryState (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url gsSyncedDirectoryState =
+  sendMessage gsSyncedDirectoryState urlSelector
 
 -- | The conflicting versions.
 --
@@ -86,8 +83,8 @@ url gsSyncedDirectoryState  =
 --
 -- ObjC selector: @- conflictedVersions@
 conflictedVersions :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO (Id NSArray)
-conflictedVersions gsSyncedDirectoryState  =
-    sendMsg gsSyncedDirectoryState (mkSelector "conflictedVersions") (retPtr retVoid) [] >>= retainedObject . castPtr
+conflictedVersions gsSyncedDirectoryState =
+  sendMessage gsSyncedDirectoryState conflictedVersionsSelector
 
 -- | The error preventing you from using the directory.
 --
@@ -95,34 +92,34 @@ conflictedVersions gsSyncedDirectoryState  =
 --
 -- ObjC selector: @- error@
 error_ :: IsGSSyncedDirectoryState gsSyncedDirectoryState => gsSyncedDirectoryState -> IO (Id NSError)
-error_ gsSyncedDirectoryState  =
-    sendMsg gsSyncedDirectoryState (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ gsSyncedDirectoryState =
+  sendMessage gsSyncedDirectoryState errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GSSyncedDirectoryState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id GSSyncedDirectoryState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] GSSyncState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @conflictedVersions@
-conflictedVersionsSelector :: Selector
+conflictedVersionsSelector :: Selector '[] (Id NSArray)
 conflictedVersionsSelector = mkSelector "conflictedVersions"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

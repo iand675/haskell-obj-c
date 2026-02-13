@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.HealthKit.HKActivitySummary
   , setAppleStandHoursGoal
   , standHoursGoal
   , setStandHoursGoal
-  , dateComponentsForCalendarSelector
-  , activityMoveModeSelector
-  , setActivityMoveModeSelector
-  , pausedSelector
-  , setPausedSelector
-  , activeEnergyBurnedSelector
-  , setActiveEnergyBurnedSelector
-  , appleMoveTimeSelector
-  , setAppleMoveTimeSelector
-  , appleExerciseTimeSelector
-  , setAppleExerciseTimeSelector
-  , appleStandHoursSelector
-  , setAppleStandHoursSelector
   , activeEnergyBurnedGoalSelector
-  , setActiveEnergyBurnedGoalSelector
-  , appleMoveTimeGoalSelector
-  , setAppleMoveTimeGoalSelector
+  , activeEnergyBurnedSelector
+  , activityMoveModeSelector
   , appleExerciseTimeGoalSelector
-  , setAppleExerciseTimeGoalSelector
-  , exerciseTimeGoalSelector
-  , setExerciseTimeGoalSelector
+  , appleExerciseTimeSelector
+  , appleMoveTimeGoalSelector
+  , appleMoveTimeSelector
   , appleStandHoursGoalSelector
+  , appleStandHoursSelector
+  , dateComponentsForCalendarSelector
+  , exerciseTimeGoalSelector
+  , pausedSelector
+  , setActiveEnergyBurnedGoalSelector
+  , setActiveEnergyBurnedSelector
+  , setActivityMoveModeSelector
+  , setAppleExerciseTimeGoalSelector
+  , setAppleExerciseTimeSelector
+  , setAppleMoveTimeGoalSelector
+  , setAppleMoveTimeSelector
   , setAppleStandHoursGoalSelector
-  , standHoursGoalSelector
+  , setAppleStandHoursSelector
+  , setExerciseTimeGoalSelector
+  , setPausedSelector
   , setStandHoursGoalSelector
+  , standHoursGoalSelector
 
   -- * Enum types
   , HKActivityMoveMode(HKActivityMoveMode)
@@ -69,15 +70,11 @@ module ObjC.HealthKit.HKActivitySummary
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,9 +90,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- dateComponentsForCalendar:@
 dateComponentsForCalendar :: (IsHKActivitySummary hkActivitySummary, IsNSCalendar calendar) => hkActivitySummary -> calendar -> IO (Id NSDateComponents)
-dateComponentsForCalendar hkActivitySummary  calendar =
-  withObjCPtr calendar $ \raw_calendar ->
-      sendMsg hkActivitySummary (mkSelector "dateComponentsForCalendar:") (retPtr retVoid) [argPtr (castPtr raw_calendar :: Ptr ())] >>= retainedObject . castPtr
+dateComponentsForCalendar hkActivitySummary calendar =
+  sendMessage hkActivitySummary dateComponentsForCalendarSelector (toNSCalendar calendar)
 
 -- | activityMoveMode
 --
@@ -105,8 +101,8 @@ dateComponentsForCalendar hkActivitySummary  calendar =
 --
 -- ObjC selector: @- activityMoveMode@
 activityMoveMode :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO HKActivityMoveMode
-activityMoveMode hkActivitySummary  =
-    fmap (coerce :: CLong -> HKActivityMoveMode) $ sendMsg hkActivitySummary (mkSelector "activityMoveMode") retCLong []
+activityMoveMode hkActivitySummary =
+  sendMessage hkActivitySummary activityMoveModeSelector
 
 -- | activityMoveMode
 --
@@ -116,8 +112,8 @@ activityMoveMode hkActivitySummary  =
 --
 -- ObjC selector: @- setActivityMoveMode:@
 setActivityMoveMode :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> HKActivityMoveMode -> IO ()
-setActivityMoveMode hkActivitySummary  value =
-    sendMsg hkActivitySummary (mkSelector "setActivityMoveMode:") retVoid [argCLong (coerce value)]
+setActivityMoveMode hkActivitySummary value =
+  sendMessage hkActivitySummary setActivityMoveModeSelector value
 
 -- | paused
 --
@@ -127,8 +123,8 @@ setActivityMoveMode hkActivitySummary  value =
 --
 -- ObjC selector: @- paused@
 paused :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO Bool
-paused hkActivitySummary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkActivitySummary (mkSelector "paused") retCULong []
+paused hkActivitySummary =
+  sendMessage hkActivitySummary pausedSelector
 
 -- | paused
 --
@@ -138,8 +134,8 @@ paused hkActivitySummary  =
 --
 -- ObjC selector: @- setPaused:@
 setPaused :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> Bool -> IO ()
-setPaused hkActivitySummary  value =
-    sendMsg hkActivitySummary (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused hkActivitySummary value =
+  sendMessage hkActivitySummary setPausedSelector value
 
 -- | activeEnergyBurned
 --
@@ -149,8 +145,8 @@ setPaused hkActivitySummary  value =
 --
 -- ObjC selector: @- activeEnergyBurned@
 activeEnergyBurned :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-activeEnergyBurned hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "activeEnergyBurned") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeEnergyBurned hkActivitySummary =
+  sendMessage hkActivitySummary activeEnergyBurnedSelector
 
 -- | activeEnergyBurned
 --
@@ -160,9 +156,8 @@ activeEnergyBurned hkActivitySummary  =
 --
 -- ObjC selector: @- setActiveEnergyBurned:@
 setActiveEnergyBurned :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setActiveEnergyBurned hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setActiveEnergyBurned:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveEnergyBurned hkActivitySummary value =
+  sendMessage hkActivitySummary setActiveEnergyBurnedSelector (toHKQuantity value)
 
 -- | appleMoveTime
 --
@@ -172,8 +167,8 @@ setActiveEnergyBurned hkActivitySummary  value =
 --
 -- ObjC selector: @- appleMoveTime@
 appleMoveTime :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleMoveTime hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleMoveTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleMoveTime hkActivitySummary =
+  sendMessage hkActivitySummary appleMoveTimeSelector
 
 -- | appleMoveTime
 --
@@ -183,9 +178,8 @@ appleMoveTime hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleMoveTime:@
 setAppleMoveTime :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleMoveTime hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleMoveTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleMoveTime hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleMoveTimeSelector (toHKQuantity value)
 
 -- | appleExerciseTime
 --
@@ -195,8 +189,8 @@ setAppleMoveTime hkActivitySummary  value =
 --
 -- ObjC selector: @- appleExerciseTime@
 appleExerciseTime :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleExerciseTime hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleExerciseTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleExerciseTime hkActivitySummary =
+  sendMessage hkActivitySummary appleExerciseTimeSelector
 
 -- | appleExerciseTime
 --
@@ -206,9 +200,8 @@ appleExerciseTime hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleExerciseTime:@
 setAppleExerciseTime :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleExerciseTime hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleExerciseTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleExerciseTime hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleExerciseTimeSelector (toHKQuantity value)
 
 -- | appleStandHours
 --
@@ -218,8 +211,8 @@ setAppleExerciseTime hkActivitySummary  value =
 --
 -- ObjC selector: @- appleStandHours@
 appleStandHours :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleStandHours hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleStandHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleStandHours hkActivitySummary =
+  sendMessage hkActivitySummary appleStandHoursSelector
 
 -- | appleStandHours
 --
@@ -229,9 +222,8 @@ appleStandHours hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleStandHours:@
 setAppleStandHours :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleStandHours hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleStandHours:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleStandHours hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleStandHoursSelector (toHKQuantity value)
 
 -- | activeEnergyBurnedGoal
 --
@@ -241,8 +233,8 @@ setAppleStandHours hkActivitySummary  value =
 --
 -- ObjC selector: @- activeEnergyBurnedGoal@
 activeEnergyBurnedGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-activeEnergyBurnedGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "activeEnergyBurnedGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeEnergyBurnedGoal hkActivitySummary =
+  sendMessage hkActivitySummary activeEnergyBurnedGoalSelector
 
 -- | activeEnergyBurnedGoal
 --
@@ -252,9 +244,8 @@ activeEnergyBurnedGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setActiveEnergyBurnedGoal:@
 setActiveEnergyBurnedGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setActiveEnergyBurnedGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setActiveEnergyBurnedGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveEnergyBurnedGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setActiveEnergyBurnedGoalSelector (toHKQuantity value)
 
 -- | appleMoveTimeGoal
 --
@@ -264,8 +255,8 @@ setActiveEnergyBurnedGoal hkActivitySummary  value =
 --
 -- ObjC selector: @- appleMoveTimeGoal@
 appleMoveTimeGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleMoveTimeGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleMoveTimeGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleMoveTimeGoal hkActivitySummary =
+  sendMessage hkActivitySummary appleMoveTimeGoalSelector
 
 -- | appleMoveTimeGoal
 --
@@ -275,9 +266,8 @@ appleMoveTimeGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleMoveTimeGoal:@
 setAppleMoveTimeGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleMoveTimeGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleMoveTimeGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleMoveTimeGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleMoveTimeGoalSelector (toHKQuantity value)
 
 -- | appleExerciseTimeGoal
 --
@@ -287,8 +277,8 @@ setAppleMoveTimeGoal hkActivitySummary  value =
 --
 -- ObjC selector: @- appleExerciseTimeGoal@
 appleExerciseTimeGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleExerciseTimeGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleExerciseTimeGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleExerciseTimeGoal hkActivitySummary =
+  sendMessage hkActivitySummary appleExerciseTimeGoalSelector
 
 -- | appleExerciseTimeGoal
 --
@@ -298,9 +288,8 @@ appleExerciseTimeGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleExerciseTimeGoal:@
 setAppleExerciseTimeGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleExerciseTimeGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleExerciseTimeGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleExerciseTimeGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleExerciseTimeGoalSelector (toHKQuantity value)
 
 -- | exerciseTimeGoal
 --
@@ -310,8 +299,8 @@ setAppleExerciseTimeGoal hkActivitySummary  value =
 --
 -- ObjC selector: @- exerciseTimeGoal@
 exerciseTimeGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-exerciseTimeGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "exerciseTimeGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+exerciseTimeGoal hkActivitySummary =
+  sendMessage hkActivitySummary exerciseTimeGoalSelector
 
 -- | exerciseTimeGoal
 --
@@ -321,9 +310,8 @@ exerciseTimeGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setExerciseTimeGoal:@
 setExerciseTimeGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setExerciseTimeGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setExerciseTimeGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExerciseTimeGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setExerciseTimeGoalSelector (toHKQuantity value)
 
 -- | appleStandHoursGoal
 --
@@ -333,8 +321,8 @@ setExerciseTimeGoal hkActivitySummary  value =
 --
 -- ObjC selector: @- appleStandHoursGoal@
 appleStandHoursGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-appleStandHoursGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "appleStandHoursGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleStandHoursGoal hkActivitySummary =
+  sendMessage hkActivitySummary appleStandHoursGoalSelector
 
 -- | appleStandHoursGoal
 --
@@ -344,9 +332,8 @@ appleStandHoursGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setAppleStandHoursGoal:@
 setAppleStandHoursGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setAppleStandHoursGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setAppleStandHoursGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleStandHoursGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setAppleStandHoursGoalSelector (toHKQuantity value)
 
 -- | standHoursGoal
 --
@@ -356,8 +343,8 @@ setAppleStandHoursGoal hkActivitySummary  value =
 --
 -- ObjC selector: @- standHoursGoal@
 standHoursGoal :: IsHKActivitySummary hkActivitySummary => hkActivitySummary -> IO (Id HKQuantity)
-standHoursGoal hkActivitySummary  =
-    sendMsg hkActivitySummary (mkSelector "standHoursGoal") (retPtr retVoid) [] >>= retainedObject . castPtr
+standHoursGoal hkActivitySummary =
+  sendMessage hkActivitySummary standHoursGoalSelector
 
 -- | standHoursGoal
 --
@@ -367,111 +354,110 @@ standHoursGoal hkActivitySummary  =
 --
 -- ObjC selector: @- setStandHoursGoal:@
 setStandHoursGoal :: (IsHKActivitySummary hkActivitySummary, IsHKQuantity value) => hkActivitySummary -> value -> IO ()
-setStandHoursGoal hkActivitySummary  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkActivitySummary (mkSelector "setStandHoursGoal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandHoursGoal hkActivitySummary value =
+  sendMessage hkActivitySummary setStandHoursGoalSelector (toHKQuantity value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dateComponentsForCalendar:@
-dateComponentsForCalendarSelector :: Selector
+dateComponentsForCalendarSelector :: Selector '[Id NSCalendar] (Id NSDateComponents)
 dateComponentsForCalendarSelector = mkSelector "dateComponentsForCalendar:"
 
 -- | @Selector@ for @activityMoveMode@
-activityMoveModeSelector :: Selector
+activityMoveModeSelector :: Selector '[] HKActivityMoveMode
 activityMoveModeSelector = mkSelector "activityMoveMode"
 
 -- | @Selector@ for @setActivityMoveMode:@
-setActivityMoveModeSelector :: Selector
+setActivityMoveModeSelector :: Selector '[HKActivityMoveMode] ()
 setActivityMoveModeSelector = mkSelector "setActivityMoveMode:"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 
 -- | @Selector@ for @activeEnergyBurned@
-activeEnergyBurnedSelector :: Selector
+activeEnergyBurnedSelector :: Selector '[] (Id HKQuantity)
 activeEnergyBurnedSelector = mkSelector "activeEnergyBurned"
 
 -- | @Selector@ for @setActiveEnergyBurned:@
-setActiveEnergyBurnedSelector :: Selector
+setActiveEnergyBurnedSelector :: Selector '[Id HKQuantity] ()
 setActiveEnergyBurnedSelector = mkSelector "setActiveEnergyBurned:"
 
 -- | @Selector@ for @appleMoveTime@
-appleMoveTimeSelector :: Selector
+appleMoveTimeSelector :: Selector '[] (Id HKQuantity)
 appleMoveTimeSelector = mkSelector "appleMoveTime"
 
 -- | @Selector@ for @setAppleMoveTime:@
-setAppleMoveTimeSelector :: Selector
+setAppleMoveTimeSelector :: Selector '[Id HKQuantity] ()
 setAppleMoveTimeSelector = mkSelector "setAppleMoveTime:"
 
 -- | @Selector@ for @appleExerciseTime@
-appleExerciseTimeSelector :: Selector
+appleExerciseTimeSelector :: Selector '[] (Id HKQuantity)
 appleExerciseTimeSelector = mkSelector "appleExerciseTime"
 
 -- | @Selector@ for @setAppleExerciseTime:@
-setAppleExerciseTimeSelector :: Selector
+setAppleExerciseTimeSelector :: Selector '[Id HKQuantity] ()
 setAppleExerciseTimeSelector = mkSelector "setAppleExerciseTime:"
 
 -- | @Selector@ for @appleStandHours@
-appleStandHoursSelector :: Selector
+appleStandHoursSelector :: Selector '[] (Id HKQuantity)
 appleStandHoursSelector = mkSelector "appleStandHours"
 
 -- | @Selector@ for @setAppleStandHours:@
-setAppleStandHoursSelector :: Selector
+setAppleStandHoursSelector :: Selector '[Id HKQuantity] ()
 setAppleStandHoursSelector = mkSelector "setAppleStandHours:"
 
 -- | @Selector@ for @activeEnergyBurnedGoal@
-activeEnergyBurnedGoalSelector :: Selector
+activeEnergyBurnedGoalSelector :: Selector '[] (Id HKQuantity)
 activeEnergyBurnedGoalSelector = mkSelector "activeEnergyBurnedGoal"
 
 -- | @Selector@ for @setActiveEnergyBurnedGoal:@
-setActiveEnergyBurnedGoalSelector :: Selector
+setActiveEnergyBurnedGoalSelector :: Selector '[Id HKQuantity] ()
 setActiveEnergyBurnedGoalSelector = mkSelector "setActiveEnergyBurnedGoal:"
 
 -- | @Selector@ for @appleMoveTimeGoal@
-appleMoveTimeGoalSelector :: Selector
+appleMoveTimeGoalSelector :: Selector '[] (Id HKQuantity)
 appleMoveTimeGoalSelector = mkSelector "appleMoveTimeGoal"
 
 -- | @Selector@ for @setAppleMoveTimeGoal:@
-setAppleMoveTimeGoalSelector :: Selector
+setAppleMoveTimeGoalSelector :: Selector '[Id HKQuantity] ()
 setAppleMoveTimeGoalSelector = mkSelector "setAppleMoveTimeGoal:"
 
 -- | @Selector@ for @appleExerciseTimeGoal@
-appleExerciseTimeGoalSelector :: Selector
+appleExerciseTimeGoalSelector :: Selector '[] (Id HKQuantity)
 appleExerciseTimeGoalSelector = mkSelector "appleExerciseTimeGoal"
 
 -- | @Selector@ for @setAppleExerciseTimeGoal:@
-setAppleExerciseTimeGoalSelector :: Selector
+setAppleExerciseTimeGoalSelector :: Selector '[Id HKQuantity] ()
 setAppleExerciseTimeGoalSelector = mkSelector "setAppleExerciseTimeGoal:"
 
 -- | @Selector@ for @exerciseTimeGoal@
-exerciseTimeGoalSelector :: Selector
+exerciseTimeGoalSelector :: Selector '[] (Id HKQuantity)
 exerciseTimeGoalSelector = mkSelector "exerciseTimeGoal"
 
 -- | @Selector@ for @setExerciseTimeGoal:@
-setExerciseTimeGoalSelector :: Selector
+setExerciseTimeGoalSelector :: Selector '[Id HKQuantity] ()
 setExerciseTimeGoalSelector = mkSelector "setExerciseTimeGoal:"
 
 -- | @Selector@ for @appleStandHoursGoal@
-appleStandHoursGoalSelector :: Selector
+appleStandHoursGoalSelector :: Selector '[] (Id HKQuantity)
 appleStandHoursGoalSelector = mkSelector "appleStandHoursGoal"
 
 -- | @Selector@ for @setAppleStandHoursGoal:@
-setAppleStandHoursGoalSelector :: Selector
+setAppleStandHoursGoalSelector :: Selector '[Id HKQuantity] ()
 setAppleStandHoursGoalSelector = mkSelector "setAppleStandHoursGoal:"
 
 -- | @Selector@ for @standHoursGoal@
-standHoursGoalSelector :: Selector
+standHoursGoalSelector :: Selector '[] (Id HKQuantity)
 standHoursGoalSelector = mkSelector "standHoursGoal"
 
 -- | @Selector@ for @setStandHoursGoal:@
-setStandHoursGoalSelector :: Selector
+setStandHoursGoalSelector :: Selector '[Id HKQuantity] ()
 setStandHoursGoalSelector = mkSelector "setStandHoursGoal:"
 

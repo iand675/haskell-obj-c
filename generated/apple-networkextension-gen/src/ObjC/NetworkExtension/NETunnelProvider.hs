@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.NetworkExtension.NETunnelProvider
   , routingMethod
   , reasserting
   , setReasserting
-  , handleAppMessage_completionHandlerSelector
-  , setTunnelNetworkSettings_completionHandlerSelector
-  , protocolConfigurationSelector
   , appRulesSelector
-  , routingMethodSelector
+  , handleAppMessage_completionHandlerSelector
+  , protocolConfigurationSelector
   , reassertingSelector
+  , routingMethodSelector
   , setReassertingSelector
+  , setTunnelNetworkSettings_completionHandlerSelector
 
   -- * Enum types
   , NETunnelProviderRoutingMethod(NETunnelProviderRoutingMethod)
@@ -36,15 +37,11 @@ module ObjC.NetworkExtension.NETunnelProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,9 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- handleAppMessage:completionHandler:@
 handleAppMessage_completionHandler :: (IsNETunnelProvider neTunnelProvider, IsNSData messageData) => neTunnelProvider -> messageData -> Ptr () -> IO ()
-handleAppMessage_completionHandler neTunnelProvider  messageData completionHandler =
-  withObjCPtr messageData $ \raw_messageData ->
-      sendMsg neTunnelProvider (mkSelector "handleAppMessage:completionHandler:") retVoid [argPtr (castPtr raw_messageData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+handleAppMessage_completionHandler neTunnelProvider messageData completionHandler =
+  sendMessage neTunnelProvider handleAppMessage_completionHandlerSelector (toNSData messageData) completionHandler
 
 -- | setTunnelNetworkSettings:completionHandler:
 --
@@ -76,9 +72,8 @@ handleAppMessage_completionHandler neTunnelProvider  messageData completionHandl
 --
 -- ObjC selector: @- setTunnelNetworkSettings:completionHandler:@
 setTunnelNetworkSettings_completionHandler :: (IsNETunnelProvider neTunnelProvider, IsNETunnelNetworkSettings tunnelNetworkSettings) => neTunnelProvider -> tunnelNetworkSettings -> Ptr () -> IO ()
-setTunnelNetworkSettings_completionHandler neTunnelProvider  tunnelNetworkSettings completionHandler =
-  withObjCPtr tunnelNetworkSettings $ \raw_tunnelNetworkSettings ->
-      sendMsg neTunnelProvider (mkSelector "setTunnelNetworkSettings:completionHandler:") retVoid [argPtr (castPtr raw_tunnelNetworkSettings :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setTunnelNetworkSettings_completionHandler neTunnelProvider tunnelNetworkSettings completionHandler =
+  sendMessage neTunnelProvider setTunnelNetworkSettings_completionHandlerSelector (toNETunnelNetworkSettings tunnelNetworkSettings) completionHandler
 
 -- | protocolConfiguration
 --
@@ -86,8 +81,8 @@ setTunnelNetworkSettings_completionHandler neTunnelProvider  tunnelNetworkSettin
 --
 -- ObjC selector: @- protocolConfiguration@
 protocolConfiguration :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> IO (Id NEVPNProtocol)
-protocolConfiguration neTunnelProvider  =
-    sendMsg neTunnelProvider (mkSelector "protocolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocolConfiguration neTunnelProvider =
+  sendMessage neTunnelProvider protocolConfigurationSelector
 
 -- | appRules
 --
@@ -95,8 +90,8 @@ protocolConfiguration neTunnelProvider  =
 --
 -- ObjC selector: @- appRules@
 appRules :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> IO (Id NSArray)
-appRules neTunnelProvider  =
-    sendMsg neTunnelProvider (mkSelector "appRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+appRules neTunnelProvider =
+  sendMessage neTunnelProvider appRulesSelector
 
 -- | routingMethod
 --
@@ -104,8 +99,8 @@ appRules neTunnelProvider  =
 --
 -- ObjC selector: @- routingMethod@
 routingMethod :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> IO NETunnelProviderRoutingMethod
-routingMethod neTunnelProvider  =
-    fmap (coerce :: CLong -> NETunnelProviderRoutingMethod) $ sendMsg neTunnelProvider (mkSelector "routingMethod") retCLong []
+routingMethod neTunnelProvider =
+  sendMessage neTunnelProvider routingMethodSelector
 
 -- | reasserting
 --
@@ -113,8 +108,8 @@ routingMethod neTunnelProvider  =
 --
 -- ObjC selector: @- reasserting@
 reasserting :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> IO Bool
-reasserting neTunnelProvider  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neTunnelProvider (mkSelector "reasserting") retCULong []
+reasserting neTunnelProvider =
+  sendMessage neTunnelProvider reassertingSelector
 
 -- | reasserting
 --
@@ -122,38 +117,38 @@ reasserting neTunnelProvider  =
 --
 -- ObjC selector: @- setReasserting:@
 setReasserting :: IsNETunnelProvider neTunnelProvider => neTunnelProvider -> Bool -> IO ()
-setReasserting neTunnelProvider  value =
-    sendMsg neTunnelProvider (mkSelector "setReasserting:") retVoid [argCULong (if value then 1 else 0)]
+setReasserting neTunnelProvider value =
+  sendMessage neTunnelProvider setReassertingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @handleAppMessage:completionHandler:@
-handleAppMessage_completionHandlerSelector :: Selector
+handleAppMessage_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 handleAppMessage_completionHandlerSelector = mkSelector "handleAppMessage:completionHandler:"
 
 -- | @Selector@ for @setTunnelNetworkSettings:completionHandler:@
-setTunnelNetworkSettings_completionHandlerSelector :: Selector
+setTunnelNetworkSettings_completionHandlerSelector :: Selector '[Id NETunnelNetworkSettings, Ptr ()] ()
 setTunnelNetworkSettings_completionHandlerSelector = mkSelector "setTunnelNetworkSettings:completionHandler:"
 
 -- | @Selector@ for @protocolConfiguration@
-protocolConfigurationSelector :: Selector
+protocolConfigurationSelector :: Selector '[] (Id NEVPNProtocol)
 protocolConfigurationSelector = mkSelector "protocolConfiguration"
 
 -- | @Selector@ for @appRules@
-appRulesSelector :: Selector
+appRulesSelector :: Selector '[] (Id NSArray)
 appRulesSelector = mkSelector "appRules"
 
 -- | @Selector@ for @routingMethod@
-routingMethodSelector :: Selector
+routingMethodSelector :: Selector '[] NETunnelProviderRoutingMethod
 routingMethodSelector = mkSelector "routingMethod"
 
 -- | @Selector@ for @reasserting@
-reassertingSelector :: Selector
+reassertingSelector :: Selector '[] Bool
 reassertingSelector = mkSelector "reasserting"
 
 -- | @Selector@ for @setReasserting:@
-setReassertingSelector :: Selector
+setReassertingSelector :: Selector '[Bool] ()
 setReassertingSelector = mkSelector "setReasserting:"
 

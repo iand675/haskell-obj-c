@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,23 +27,19 @@ module ObjC.Virtualization.VZVirtioTraditionalMemoryBalloonDevice
   , init_
   , targetVirtualMachineMemorySize
   , setTargetVirtualMachineMemorySize
-  , newSelector
   , initSelector
-  , targetVirtualMachineMemorySizeSelector
+  , newSelector
   , setTargetVirtualMachineMemorySizeSelector
+  , targetVirtualMachineMemorySizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,12 +51,12 @@ new :: IO (Id VZVirtioTraditionalMemoryBalloonDevice)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioTraditionalMemoryBalloonDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioTraditionalMemoryBalloonDevice vzVirtioTraditionalMemoryBalloonDevice => vzVirtioTraditionalMemoryBalloonDevice -> IO (Id VZVirtioTraditionalMemoryBalloonDevice)
-init_ vzVirtioTraditionalMemoryBalloonDevice  =
-    sendMsg vzVirtioTraditionalMemoryBalloonDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioTraditionalMemoryBalloonDevice =
+  sendOwnedMessage vzVirtioTraditionalMemoryBalloonDevice initSelector
 
 -- | Target memory size for the virtual machine in bytes.
 --
@@ -73,8 +70,8 @@ init_ vzVirtioTraditionalMemoryBalloonDevice  =
 --
 -- ObjC selector: @- targetVirtualMachineMemorySize@
 targetVirtualMachineMemorySize :: IsVZVirtioTraditionalMemoryBalloonDevice vzVirtioTraditionalMemoryBalloonDevice => vzVirtioTraditionalMemoryBalloonDevice -> IO CULong
-targetVirtualMachineMemorySize vzVirtioTraditionalMemoryBalloonDevice  =
-    sendMsg vzVirtioTraditionalMemoryBalloonDevice (mkSelector "targetVirtualMachineMemorySize") retCULong []
+targetVirtualMachineMemorySize vzVirtioTraditionalMemoryBalloonDevice =
+  sendMessage vzVirtioTraditionalMemoryBalloonDevice targetVirtualMachineMemorySizeSelector
 
 -- | Target memory size for the virtual machine in bytes.
 --
@@ -88,26 +85,26 @@ targetVirtualMachineMemorySize vzVirtioTraditionalMemoryBalloonDevice  =
 --
 -- ObjC selector: @- setTargetVirtualMachineMemorySize:@
 setTargetVirtualMachineMemorySize :: IsVZVirtioTraditionalMemoryBalloonDevice vzVirtioTraditionalMemoryBalloonDevice => vzVirtioTraditionalMemoryBalloonDevice -> CULong -> IO ()
-setTargetVirtualMachineMemorySize vzVirtioTraditionalMemoryBalloonDevice  value =
-    sendMsg vzVirtioTraditionalMemoryBalloonDevice (mkSelector "setTargetVirtualMachineMemorySize:") retVoid [argCULong value]
+setTargetVirtualMachineMemorySize vzVirtioTraditionalMemoryBalloonDevice value =
+  sendMessage vzVirtioTraditionalMemoryBalloonDevice setTargetVirtualMachineMemorySizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioTraditionalMemoryBalloonDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioTraditionalMemoryBalloonDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @targetVirtualMachineMemorySize@
-targetVirtualMachineMemorySizeSelector :: Selector
+targetVirtualMachineMemorySizeSelector :: Selector '[] CULong
 targetVirtualMachineMemorySizeSelector = mkSelector "targetVirtualMachineMemorySize"
 
 -- | @Selector@ for @setTargetVirtualMachineMemorySize:@
-setTargetVirtualMachineMemorySizeSelector :: Selector
+setTargetVirtualMachineMemorySizeSelector :: Selector '[CULong] ()
 setTargetVirtualMachineMemorySizeSelector = mkSelector "setTargetVirtualMachineMemorySize:"
 

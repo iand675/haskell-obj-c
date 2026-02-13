@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,37 +40,37 @@ module ObjC.Foundation.NSIndexSet
   , count
   , firstIndex
   , lastIndex
-  , indexSetSelector
-  , indexSetWithIndexSelector
-  , indexSetWithIndexesInRangeSelector
-  , initWithIndexesInRangeSelector
-  , initWithIndexSetSelector
-  , initWithIndexSelector
-  , isEqualToIndexSetSelector
-  , indexGreaterThanIndexSelector
-  , indexLessThanIndexSelector
-  , indexGreaterThanOrEqualToIndexSelector
-  , indexLessThanOrEqualToIndexSelector
-  , getIndexes_maxCount_inIndexRangeSelector
-  , countOfIndexesInRangeSelector
   , containsIndexSelector
   , containsIndexesInRangeSelector
   , containsIndexesSelector
-  , intersectsIndexesInRangeSelector
+  , countOfIndexesInRangeSelector
+  , countSelector
+  , enumerateIndexesInRange_options_usingBlockSelector
   , enumerateIndexesUsingBlockSelector
   , enumerateIndexesWithOptions_usingBlockSelector
-  , enumerateIndexesInRange_options_usingBlockSelector
-  , indexPassingTestSelector
-  , indexWithOptions_passingTestSelector
-  , indexInRange_options_passingTestSelector
-  , indexesPassingTestSelector
-  , indexesWithOptions_passingTestSelector
-  , indexesInRange_options_passingTestSelector
+  , enumerateRangesInRange_options_usingBlockSelector
   , enumerateRangesUsingBlockSelector
   , enumerateRangesWithOptions_usingBlockSelector
-  , enumerateRangesInRange_options_usingBlockSelector
-  , countSelector
   , firstIndexSelector
+  , getIndexes_maxCount_inIndexRangeSelector
+  , indexGreaterThanIndexSelector
+  , indexGreaterThanOrEqualToIndexSelector
+  , indexInRange_options_passingTestSelector
+  , indexLessThanIndexSelector
+  , indexLessThanOrEqualToIndexSelector
+  , indexPassingTestSelector
+  , indexSetSelector
+  , indexSetWithIndexSelector
+  , indexSetWithIndexesInRangeSelector
+  , indexWithOptions_passingTestSelector
+  , indexesInRange_options_passingTestSelector
+  , indexesPassingTestSelector
+  , indexesWithOptions_passingTestSelector
+  , initWithIndexSelector
+  , initWithIndexSetSelector
+  , initWithIndexesInRangeSelector
+  , intersectsIndexesInRangeSelector
+  , isEqualToIndexSetSelector
   , lastIndexSelector
 
   -- * Enum types
@@ -79,15 +80,11 @@ module ObjC.Foundation.NSIndexSet
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -100,299 +97,296 @@ indexSet :: IO (Id NSIndexSet)
 indexSet  =
   do
     cls' <- getRequiredClass "NSIndexSet"
-    sendClassMsg cls' (mkSelector "indexSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' indexSetSelector
 
 -- | @+ indexSetWithIndex:@
 indexSetWithIndex :: CULong -> IO (Id NSIndexSet)
 indexSetWithIndex value =
   do
     cls' <- getRequiredClass "NSIndexSet"
-    sendClassMsg cls' (mkSelector "indexSetWithIndex:") (retPtr retVoid) [argCULong value] >>= retainedObject . castPtr
+    sendClassMessage cls' indexSetWithIndexSelector value
 
 -- | @+ indexSetWithIndexesInRange:@
 indexSetWithIndexesInRange :: NSRange -> IO (Id NSIndexSet)
 indexSetWithIndexesInRange range =
   do
     cls' <- getRequiredClass "NSIndexSet"
-    sendClassMsg cls' (mkSelector "indexSetWithIndexesInRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+    sendClassMessage cls' indexSetWithIndexesInRangeSelector range
 
 -- | @- initWithIndexesInRange:@
 initWithIndexesInRange :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> IO (Id NSIndexSet)
-initWithIndexesInRange nsIndexSet  range =
-    sendMsg nsIndexSet (mkSelector "initWithIndexesInRange:") (retPtr retVoid) [argNSRange range] >>= ownedObject . castPtr
+initWithIndexesInRange nsIndexSet range =
+  sendOwnedMessage nsIndexSet initWithIndexesInRangeSelector range
 
 -- | @- initWithIndexSet:@
 initWithIndexSet :: (IsNSIndexSet nsIndexSet, IsNSIndexSet indexSet) => nsIndexSet -> indexSet -> IO (Id NSIndexSet)
-initWithIndexSet nsIndexSet  indexSet =
-  withObjCPtr indexSet $ \raw_indexSet ->
-      sendMsg nsIndexSet (mkSelector "initWithIndexSet:") (retPtr retVoid) [argPtr (castPtr raw_indexSet :: Ptr ())] >>= ownedObject . castPtr
+initWithIndexSet nsIndexSet indexSet =
+  sendOwnedMessage nsIndexSet initWithIndexSetSelector (toNSIndexSet indexSet)
 
 -- | @- initWithIndex:@
 initWithIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO (Id NSIndexSet)
-initWithIndex nsIndexSet  value =
-    sendMsg nsIndexSet (mkSelector "initWithIndex:") (retPtr retVoid) [argCULong value] >>= ownedObject . castPtr
+initWithIndex nsIndexSet value =
+  sendOwnedMessage nsIndexSet initWithIndexSelector value
 
 -- | @- isEqualToIndexSet:@
 isEqualToIndexSet :: (IsNSIndexSet nsIndexSet, IsNSIndexSet indexSet) => nsIndexSet -> indexSet -> IO Bool
-isEqualToIndexSet nsIndexSet  indexSet =
-  withObjCPtr indexSet $ \raw_indexSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsIndexSet (mkSelector "isEqualToIndexSet:") retCULong [argPtr (castPtr raw_indexSet :: Ptr ())]
+isEqualToIndexSet nsIndexSet indexSet =
+  sendMessage nsIndexSet isEqualToIndexSetSelector (toNSIndexSet indexSet)
 
 -- | @- indexGreaterThanIndex:@
 indexGreaterThanIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO CULong
-indexGreaterThanIndex nsIndexSet  value =
-    sendMsg nsIndexSet (mkSelector "indexGreaterThanIndex:") retCULong [argCULong value]
+indexGreaterThanIndex nsIndexSet value =
+  sendMessage nsIndexSet indexGreaterThanIndexSelector value
 
 -- | @- indexLessThanIndex:@
 indexLessThanIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO CULong
-indexLessThanIndex nsIndexSet  value =
-    sendMsg nsIndexSet (mkSelector "indexLessThanIndex:") retCULong [argCULong value]
+indexLessThanIndex nsIndexSet value =
+  sendMessage nsIndexSet indexLessThanIndexSelector value
 
 -- | @- indexGreaterThanOrEqualToIndex:@
 indexGreaterThanOrEqualToIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO CULong
-indexGreaterThanOrEqualToIndex nsIndexSet  value =
-    sendMsg nsIndexSet (mkSelector "indexGreaterThanOrEqualToIndex:") retCULong [argCULong value]
+indexGreaterThanOrEqualToIndex nsIndexSet value =
+  sendMessage nsIndexSet indexGreaterThanOrEqualToIndexSelector value
 
 -- | @- indexLessThanOrEqualToIndex:@
 indexLessThanOrEqualToIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO CULong
-indexLessThanOrEqualToIndex nsIndexSet  value =
-    sendMsg nsIndexSet (mkSelector "indexLessThanOrEqualToIndex:") retCULong [argCULong value]
+indexLessThanOrEqualToIndex nsIndexSet value =
+  sendMessage nsIndexSet indexLessThanOrEqualToIndexSelector value
 
 -- | @- getIndexes:maxCount:inIndexRange:@
 getIndexes_maxCount_inIndexRange :: IsNSIndexSet nsIndexSet => nsIndexSet -> Ptr CULong -> CULong -> Ptr NSRange -> IO CULong
-getIndexes_maxCount_inIndexRange nsIndexSet  indexBuffer bufferSize range =
-    sendMsg nsIndexSet (mkSelector "getIndexes:maxCount:inIndexRange:") retCULong [argPtr indexBuffer, argCULong bufferSize, argPtr range]
+getIndexes_maxCount_inIndexRange nsIndexSet indexBuffer bufferSize range =
+  sendMessage nsIndexSet getIndexes_maxCount_inIndexRangeSelector indexBuffer bufferSize range
 
 -- | @- countOfIndexesInRange:@
 countOfIndexesInRange :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> IO CULong
-countOfIndexesInRange nsIndexSet  range =
-    sendMsg nsIndexSet (mkSelector "countOfIndexesInRange:") retCULong [argNSRange range]
+countOfIndexesInRange nsIndexSet range =
+  sendMessage nsIndexSet countOfIndexesInRangeSelector range
 
 -- | @- containsIndex:@
 containsIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> CULong -> IO Bool
-containsIndex nsIndexSet  value =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsIndexSet (mkSelector "containsIndex:") retCULong [argCULong value]
+containsIndex nsIndexSet value =
+  sendMessage nsIndexSet containsIndexSelector value
 
 -- | @- containsIndexesInRange:@
 containsIndexesInRange :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> IO Bool
-containsIndexesInRange nsIndexSet  range =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsIndexSet (mkSelector "containsIndexesInRange:") retCULong [argNSRange range]
+containsIndexesInRange nsIndexSet range =
+  sendMessage nsIndexSet containsIndexesInRangeSelector range
 
 -- | @- containsIndexes:@
 containsIndexes :: (IsNSIndexSet nsIndexSet, IsNSIndexSet indexSet) => nsIndexSet -> indexSet -> IO Bool
-containsIndexes nsIndexSet  indexSet =
-  withObjCPtr indexSet $ \raw_indexSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsIndexSet (mkSelector "containsIndexes:") retCULong [argPtr (castPtr raw_indexSet :: Ptr ())]
+containsIndexes nsIndexSet indexSet =
+  sendMessage nsIndexSet containsIndexesSelector (toNSIndexSet indexSet)
 
 -- | @- intersectsIndexesInRange:@
 intersectsIndexesInRange :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> IO Bool
-intersectsIndexesInRange nsIndexSet  range =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsIndexSet (mkSelector "intersectsIndexesInRange:") retCULong [argNSRange range]
+intersectsIndexesInRange nsIndexSet range =
+  sendMessage nsIndexSet intersectsIndexesInRangeSelector range
 
 -- | @- enumerateIndexesUsingBlock:@
 enumerateIndexesUsingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> Ptr () -> IO ()
-enumerateIndexesUsingBlock nsIndexSet  block =
-    sendMsg nsIndexSet (mkSelector "enumerateIndexesUsingBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateIndexesUsingBlock nsIndexSet block =
+  sendMessage nsIndexSet enumerateIndexesUsingBlockSelector block
 
 -- | @- enumerateIndexesWithOptions:usingBlock:@
 enumerateIndexesWithOptions_usingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSEnumerationOptions -> Ptr () -> IO ()
-enumerateIndexesWithOptions_usingBlock nsIndexSet  opts block =
-    sendMsg nsIndexSet (mkSelector "enumerateIndexesWithOptions:usingBlock:") retVoid [argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateIndexesWithOptions_usingBlock nsIndexSet opts block =
+  sendMessage nsIndexSet enumerateIndexesWithOptions_usingBlockSelector opts block
 
 -- | @- enumerateIndexesInRange:options:usingBlock:@
 enumerateIndexesInRange_options_usingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> NSEnumerationOptions -> Ptr () -> IO ()
-enumerateIndexesInRange_options_usingBlock nsIndexSet  range opts block =
-    sendMsg nsIndexSet (mkSelector "enumerateIndexesInRange:options:usingBlock:") retVoid [argNSRange range, argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateIndexesInRange_options_usingBlock nsIndexSet range opts block =
+  sendMessage nsIndexSet enumerateIndexesInRange_options_usingBlockSelector range opts block
 
 -- | @- indexPassingTest:@
 indexPassingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> Ptr () -> IO CULong
-indexPassingTest nsIndexSet  predicate =
-    sendMsg nsIndexSet (mkSelector "indexPassingTest:") retCULong [argPtr (castPtr predicate :: Ptr ())]
+indexPassingTest nsIndexSet predicate =
+  sendMessage nsIndexSet indexPassingTestSelector predicate
 
 -- | @- indexWithOptions:passingTest:@
 indexWithOptions_passingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSEnumerationOptions -> Ptr () -> IO CULong
-indexWithOptions_passingTest nsIndexSet  opts predicate =
-    sendMsg nsIndexSet (mkSelector "indexWithOptions:passingTest:") retCULong [argCULong (coerce opts), argPtr (castPtr predicate :: Ptr ())]
+indexWithOptions_passingTest nsIndexSet opts predicate =
+  sendMessage nsIndexSet indexWithOptions_passingTestSelector opts predicate
 
 -- | @- indexInRange:options:passingTest:@
 indexInRange_options_passingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> NSEnumerationOptions -> Ptr () -> IO CULong
-indexInRange_options_passingTest nsIndexSet  range opts predicate =
-    sendMsg nsIndexSet (mkSelector "indexInRange:options:passingTest:") retCULong [argNSRange range, argCULong (coerce opts), argPtr (castPtr predicate :: Ptr ())]
+indexInRange_options_passingTest nsIndexSet range opts predicate =
+  sendMessage nsIndexSet indexInRange_options_passingTestSelector range opts predicate
 
 -- | @- indexesPassingTest:@
 indexesPassingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> Ptr () -> IO (Id NSIndexSet)
-indexesPassingTest nsIndexSet  predicate =
-    sendMsg nsIndexSet (mkSelector "indexesPassingTest:") (retPtr retVoid) [argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+indexesPassingTest nsIndexSet predicate =
+  sendMessage nsIndexSet indexesPassingTestSelector predicate
 
 -- | @- indexesWithOptions:passingTest:@
 indexesWithOptions_passingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSEnumerationOptions -> Ptr () -> IO (Id NSIndexSet)
-indexesWithOptions_passingTest nsIndexSet  opts predicate =
-    sendMsg nsIndexSet (mkSelector "indexesWithOptions:passingTest:") (retPtr retVoid) [argCULong (coerce opts), argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+indexesWithOptions_passingTest nsIndexSet opts predicate =
+  sendMessage nsIndexSet indexesWithOptions_passingTestSelector opts predicate
 
 -- | @- indexesInRange:options:passingTest:@
 indexesInRange_options_passingTest :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> NSEnumerationOptions -> Ptr () -> IO (Id NSIndexSet)
-indexesInRange_options_passingTest nsIndexSet  range opts predicate =
-    sendMsg nsIndexSet (mkSelector "indexesInRange:options:passingTest:") (retPtr retVoid) [argNSRange range, argCULong (coerce opts), argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+indexesInRange_options_passingTest nsIndexSet range opts predicate =
+  sendMessage nsIndexSet indexesInRange_options_passingTestSelector range opts predicate
 
 -- | @- enumerateRangesUsingBlock:@
 enumerateRangesUsingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> Ptr () -> IO ()
-enumerateRangesUsingBlock nsIndexSet  block =
-    sendMsg nsIndexSet (mkSelector "enumerateRangesUsingBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateRangesUsingBlock nsIndexSet block =
+  sendMessage nsIndexSet enumerateRangesUsingBlockSelector block
 
 -- | @- enumerateRangesWithOptions:usingBlock:@
 enumerateRangesWithOptions_usingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSEnumerationOptions -> Ptr () -> IO ()
-enumerateRangesWithOptions_usingBlock nsIndexSet  opts block =
-    sendMsg nsIndexSet (mkSelector "enumerateRangesWithOptions:usingBlock:") retVoid [argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateRangesWithOptions_usingBlock nsIndexSet opts block =
+  sendMessage nsIndexSet enumerateRangesWithOptions_usingBlockSelector opts block
 
 -- | @- enumerateRangesInRange:options:usingBlock:@
 enumerateRangesInRange_options_usingBlock :: IsNSIndexSet nsIndexSet => nsIndexSet -> NSRange -> NSEnumerationOptions -> Ptr () -> IO ()
-enumerateRangesInRange_options_usingBlock nsIndexSet  range opts block =
-    sendMsg nsIndexSet (mkSelector "enumerateRangesInRange:options:usingBlock:") retVoid [argNSRange range, argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateRangesInRange_options_usingBlock nsIndexSet range opts block =
+  sendMessage nsIndexSet enumerateRangesInRange_options_usingBlockSelector range opts block
 
 -- | @- count@
 count :: IsNSIndexSet nsIndexSet => nsIndexSet -> IO CULong
-count nsIndexSet  =
-    sendMsg nsIndexSet (mkSelector "count") retCULong []
+count nsIndexSet =
+  sendMessage nsIndexSet countSelector
 
 -- | @- firstIndex@
 firstIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> IO CULong
-firstIndex nsIndexSet  =
-    sendMsg nsIndexSet (mkSelector "firstIndex") retCULong []
+firstIndex nsIndexSet =
+  sendMessage nsIndexSet firstIndexSelector
 
 -- | @- lastIndex@
 lastIndex :: IsNSIndexSet nsIndexSet => nsIndexSet -> IO CULong
-lastIndex nsIndexSet  =
-    sendMsg nsIndexSet (mkSelector "lastIndex") retCULong []
+lastIndex nsIndexSet =
+  sendMessage nsIndexSet lastIndexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indexSet@
-indexSetSelector :: Selector
+indexSetSelector :: Selector '[] (Id NSIndexSet)
 indexSetSelector = mkSelector "indexSet"
 
 -- | @Selector@ for @indexSetWithIndex:@
-indexSetWithIndexSelector :: Selector
+indexSetWithIndexSelector :: Selector '[CULong] (Id NSIndexSet)
 indexSetWithIndexSelector = mkSelector "indexSetWithIndex:"
 
 -- | @Selector@ for @indexSetWithIndexesInRange:@
-indexSetWithIndexesInRangeSelector :: Selector
+indexSetWithIndexesInRangeSelector :: Selector '[NSRange] (Id NSIndexSet)
 indexSetWithIndexesInRangeSelector = mkSelector "indexSetWithIndexesInRange:"
 
 -- | @Selector@ for @initWithIndexesInRange:@
-initWithIndexesInRangeSelector :: Selector
+initWithIndexesInRangeSelector :: Selector '[NSRange] (Id NSIndexSet)
 initWithIndexesInRangeSelector = mkSelector "initWithIndexesInRange:"
 
 -- | @Selector@ for @initWithIndexSet:@
-initWithIndexSetSelector :: Selector
+initWithIndexSetSelector :: Selector '[Id NSIndexSet] (Id NSIndexSet)
 initWithIndexSetSelector = mkSelector "initWithIndexSet:"
 
 -- | @Selector@ for @initWithIndex:@
-initWithIndexSelector :: Selector
+initWithIndexSelector :: Selector '[CULong] (Id NSIndexSet)
 initWithIndexSelector = mkSelector "initWithIndex:"
 
 -- | @Selector@ for @isEqualToIndexSet:@
-isEqualToIndexSetSelector :: Selector
+isEqualToIndexSetSelector :: Selector '[Id NSIndexSet] Bool
 isEqualToIndexSetSelector = mkSelector "isEqualToIndexSet:"
 
 -- | @Selector@ for @indexGreaterThanIndex:@
-indexGreaterThanIndexSelector :: Selector
+indexGreaterThanIndexSelector :: Selector '[CULong] CULong
 indexGreaterThanIndexSelector = mkSelector "indexGreaterThanIndex:"
 
 -- | @Selector@ for @indexLessThanIndex:@
-indexLessThanIndexSelector :: Selector
+indexLessThanIndexSelector :: Selector '[CULong] CULong
 indexLessThanIndexSelector = mkSelector "indexLessThanIndex:"
 
 -- | @Selector@ for @indexGreaterThanOrEqualToIndex:@
-indexGreaterThanOrEqualToIndexSelector :: Selector
+indexGreaterThanOrEqualToIndexSelector :: Selector '[CULong] CULong
 indexGreaterThanOrEqualToIndexSelector = mkSelector "indexGreaterThanOrEqualToIndex:"
 
 -- | @Selector@ for @indexLessThanOrEqualToIndex:@
-indexLessThanOrEqualToIndexSelector :: Selector
+indexLessThanOrEqualToIndexSelector :: Selector '[CULong] CULong
 indexLessThanOrEqualToIndexSelector = mkSelector "indexLessThanOrEqualToIndex:"
 
 -- | @Selector@ for @getIndexes:maxCount:inIndexRange:@
-getIndexes_maxCount_inIndexRangeSelector :: Selector
+getIndexes_maxCount_inIndexRangeSelector :: Selector '[Ptr CULong, CULong, Ptr NSRange] CULong
 getIndexes_maxCount_inIndexRangeSelector = mkSelector "getIndexes:maxCount:inIndexRange:"
 
 -- | @Selector@ for @countOfIndexesInRange:@
-countOfIndexesInRangeSelector :: Selector
+countOfIndexesInRangeSelector :: Selector '[NSRange] CULong
 countOfIndexesInRangeSelector = mkSelector "countOfIndexesInRange:"
 
 -- | @Selector@ for @containsIndex:@
-containsIndexSelector :: Selector
+containsIndexSelector :: Selector '[CULong] Bool
 containsIndexSelector = mkSelector "containsIndex:"
 
 -- | @Selector@ for @containsIndexesInRange:@
-containsIndexesInRangeSelector :: Selector
+containsIndexesInRangeSelector :: Selector '[NSRange] Bool
 containsIndexesInRangeSelector = mkSelector "containsIndexesInRange:"
 
 -- | @Selector@ for @containsIndexes:@
-containsIndexesSelector :: Selector
+containsIndexesSelector :: Selector '[Id NSIndexSet] Bool
 containsIndexesSelector = mkSelector "containsIndexes:"
 
 -- | @Selector@ for @intersectsIndexesInRange:@
-intersectsIndexesInRangeSelector :: Selector
+intersectsIndexesInRangeSelector :: Selector '[NSRange] Bool
 intersectsIndexesInRangeSelector = mkSelector "intersectsIndexesInRange:"
 
 -- | @Selector@ for @enumerateIndexesUsingBlock:@
-enumerateIndexesUsingBlockSelector :: Selector
+enumerateIndexesUsingBlockSelector :: Selector '[Ptr ()] ()
 enumerateIndexesUsingBlockSelector = mkSelector "enumerateIndexesUsingBlock:"
 
 -- | @Selector@ for @enumerateIndexesWithOptions:usingBlock:@
-enumerateIndexesWithOptions_usingBlockSelector :: Selector
+enumerateIndexesWithOptions_usingBlockSelector :: Selector '[NSEnumerationOptions, Ptr ()] ()
 enumerateIndexesWithOptions_usingBlockSelector = mkSelector "enumerateIndexesWithOptions:usingBlock:"
 
 -- | @Selector@ for @enumerateIndexesInRange:options:usingBlock:@
-enumerateIndexesInRange_options_usingBlockSelector :: Selector
+enumerateIndexesInRange_options_usingBlockSelector :: Selector '[NSRange, NSEnumerationOptions, Ptr ()] ()
 enumerateIndexesInRange_options_usingBlockSelector = mkSelector "enumerateIndexesInRange:options:usingBlock:"
 
 -- | @Selector@ for @indexPassingTest:@
-indexPassingTestSelector :: Selector
+indexPassingTestSelector :: Selector '[Ptr ()] CULong
 indexPassingTestSelector = mkSelector "indexPassingTest:"
 
 -- | @Selector@ for @indexWithOptions:passingTest:@
-indexWithOptions_passingTestSelector :: Selector
+indexWithOptions_passingTestSelector :: Selector '[NSEnumerationOptions, Ptr ()] CULong
 indexWithOptions_passingTestSelector = mkSelector "indexWithOptions:passingTest:"
 
 -- | @Selector@ for @indexInRange:options:passingTest:@
-indexInRange_options_passingTestSelector :: Selector
+indexInRange_options_passingTestSelector :: Selector '[NSRange, NSEnumerationOptions, Ptr ()] CULong
 indexInRange_options_passingTestSelector = mkSelector "indexInRange:options:passingTest:"
 
 -- | @Selector@ for @indexesPassingTest:@
-indexesPassingTestSelector :: Selector
+indexesPassingTestSelector :: Selector '[Ptr ()] (Id NSIndexSet)
 indexesPassingTestSelector = mkSelector "indexesPassingTest:"
 
 -- | @Selector@ for @indexesWithOptions:passingTest:@
-indexesWithOptions_passingTestSelector :: Selector
+indexesWithOptions_passingTestSelector :: Selector '[NSEnumerationOptions, Ptr ()] (Id NSIndexSet)
 indexesWithOptions_passingTestSelector = mkSelector "indexesWithOptions:passingTest:"
 
 -- | @Selector@ for @indexesInRange:options:passingTest:@
-indexesInRange_options_passingTestSelector :: Selector
+indexesInRange_options_passingTestSelector :: Selector '[NSRange, NSEnumerationOptions, Ptr ()] (Id NSIndexSet)
 indexesInRange_options_passingTestSelector = mkSelector "indexesInRange:options:passingTest:"
 
 -- | @Selector@ for @enumerateRangesUsingBlock:@
-enumerateRangesUsingBlockSelector :: Selector
+enumerateRangesUsingBlockSelector :: Selector '[Ptr ()] ()
 enumerateRangesUsingBlockSelector = mkSelector "enumerateRangesUsingBlock:"
 
 -- | @Selector@ for @enumerateRangesWithOptions:usingBlock:@
-enumerateRangesWithOptions_usingBlockSelector :: Selector
+enumerateRangesWithOptions_usingBlockSelector :: Selector '[NSEnumerationOptions, Ptr ()] ()
 enumerateRangesWithOptions_usingBlockSelector = mkSelector "enumerateRangesWithOptions:usingBlock:"
 
 -- | @Selector@ for @enumerateRangesInRange:options:usingBlock:@
-enumerateRangesInRange_options_usingBlockSelector :: Selector
+enumerateRangesInRange_options_usingBlockSelector :: Selector '[NSRange, NSEnumerationOptions, Ptr ()] ()
 enumerateRangesInRange_options_usingBlockSelector = mkSelector "enumerateRangesInRange:options:usingBlock:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @firstIndex@
-firstIndexSelector :: Selector
+firstIndexSelector :: Selector '[] CULong
 firstIndexSelector = mkSelector "firstIndex"
 
 -- | @Selector@ for @lastIndex@
-lastIndexSelector :: Selector
+lastIndexSelector :: Selector '[] CULong
 lastIndexSelector = mkSelector "lastIndex"
 

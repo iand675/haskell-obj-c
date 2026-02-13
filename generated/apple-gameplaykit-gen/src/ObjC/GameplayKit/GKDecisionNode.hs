@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.GameplayKit.GKDecisionNode
   , createBranchWithValue_attribute
   , createBranchWithPredicate_attribute
   , createBranchWithWeight_attribute
-  , createBranchWithValue_attributeSelector
   , createBranchWithPredicate_attributeSelector
+  , createBranchWithValue_attributeSelector
   , createBranchWithWeight_attributeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,9 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- createBranchWithValue:attribute:@
 createBranchWithValue_attribute :: (IsGKDecisionNode gkDecisionNode, IsNSNumber value) => gkDecisionNode -> value -> RawId -> IO (Id GKDecisionNode)
-createBranchWithValue_attribute gkDecisionNode  value attribute =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkDecisionNode (mkSelector "createBranchWithValue:attribute:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr (unRawId attribute) :: Ptr ())] >>= retainedObject . castPtr
+createBranchWithValue_attribute gkDecisionNode value attribute =
+  sendMessage gkDecisionNode createBranchWithValue_attributeSelector (toNSNumber value) attribute
 
 -- | Creates a predicated branch to a node containing the specified attribute
 --
@@ -55,9 +51,8 @@ createBranchWithValue_attribute gkDecisionNode  value attribute =
 --
 -- ObjC selector: @- createBranchWithPredicate:attribute:@
 createBranchWithPredicate_attribute :: (IsGKDecisionNode gkDecisionNode, IsNSPredicate predicate) => gkDecisionNode -> predicate -> RawId -> IO (Id GKDecisionNode)
-createBranchWithPredicate_attribute gkDecisionNode  predicate attribute =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg gkDecisionNode (mkSelector "createBranchWithPredicate:attribute:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr (unRawId attribute) :: Ptr ())] >>= retainedObject . castPtr
+createBranchWithPredicate_attribute gkDecisionNode predicate attribute =
+  sendMessage gkDecisionNode createBranchWithPredicate_attributeSelector (toNSPredicate predicate) attribute
 
 -- | Creates a random branch to a node containing the specified attribute
 --
@@ -71,22 +66,22 @@ createBranchWithPredicate_attribute gkDecisionNode  predicate attribute =
 --
 -- ObjC selector: @- createBranchWithWeight:attribute:@
 createBranchWithWeight_attribute :: IsGKDecisionNode gkDecisionNode => gkDecisionNode -> CLong -> RawId -> IO (Id GKDecisionNode)
-createBranchWithWeight_attribute gkDecisionNode  weight attribute =
-    sendMsg gkDecisionNode (mkSelector "createBranchWithWeight:attribute:") (retPtr retVoid) [argCLong weight, argPtr (castPtr (unRawId attribute) :: Ptr ())] >>= retainedObject . castPtr
+createBranchWithWeight_attribute gkDecisionNode weight attribute =
+  sendMessage gkDecisionNode createBranchWithWeight_attributeSelector weight attribute
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createBranchWithValue:attribute:@
-createBranchWithValue_attributeSelector :: Selector
+createBranchWithValue_attributeSelector :: Selector '[Id NSNumber, RawId] (Id GKDecisionNode)
 createBranchWithValue_attributeSelector = mkSelector "createBranchWithValue:attribute:"
 
 -- | @Selector@ for @createBranchWithPredicate:attribute:@
-createBranchWithPredicate_attributeSelector :: Selector
+createBranchWithPredicate_attributeSelector :: Selector '[Id NSPredicate, RawId] (Id GKDecisionNode)
 createBranchWithPredicate_attributeSelector = mkSelector "createBranchWithPredicate:attribute:"
 
 -- | @Selector@ for @createBranchWithWeight:attribute:@
-createBranchWithWeight_attributeSelector :: Selector
+createBranchWithWeight_attributeSelector :: Selector '[CLong, RawId] (Id GKDecisionNode)
 createBranchWithWeight_attributeSelector = mkSelector "createBranchWithWeight:attribute:"
 

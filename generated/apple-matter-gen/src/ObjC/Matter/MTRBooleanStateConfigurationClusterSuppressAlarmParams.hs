@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRBooleanStateConfigurationClusterSuppressAlarmParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , alarmsToSuppressSelector
-  , setAlarmsToSuppressSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setAlarmsToSuppressSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- alarmsToSuppress@
 alarmsToSuppress :: IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> IO (Id NSNumber)
-alarmsToSuppress mtrBooleanStateConfigurationClusterSuppressAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "alarmsToSuppress") (retPtr retVoid) [] >>= retainedObject . castPtr
+alarmsToSuppress mtrBooleanStateConfigurationClusterSuppressAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams alarmsToSuppressSelector
 
 -- | @- setAlarmsToSuppress:@
 setAlarmsToSuppress :: (IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> value -> IO ()
-setAlarmsToSuppress mtrBooleanStateConfigurationClusterSuppressAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "setAlarmsToSuppress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlarmsToSuppress mtrBooleanStateConfigurationClusterSuppressAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams setAlarmsToSuppressSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setAlarmsToSuppress mtrBooleanStateConfigurationClusterSuppressAlarmParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterSuppressAlarmParams  
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrBooleanStateConfigurationClusterSuppressAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrBooleanStateConfigurationClusterSuppressAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrBooleanStateConfigurationClusterSuppressAlarmPara
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRBooleanStateConfigurationClusterSuppressAlarmParams mtrBooleanStateConfigurationClusterSuppressAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterSuppressAlarmParams -> value -> IO ()
-setServerSideProcessingTimeout mtrBooleanStateConfigurationClusterSuppressAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterSuppressAlarmParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrBooleanStateConfigurationClusterSuppressAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterSuppressAlarmParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alarmsToSuppress@
-alarmsToSuppressSelector :: Selector
+alarmsToSuppressSelector :: Selector '[] (Id NSNumber)
 alarmsToSuppressSelector = mkSelector "alarmsToSuppress"
 
 -- | @Selector@ for @setAlarmsToSuppress:@
-setAlarmsToSuppressSelector :: Selector
+setAlarmsToSuppressSelector :: Selector '[Id NSNumber] ()
 setAlarmsToSuppressSelector = mkSelector "setAlarmsToSuppress:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

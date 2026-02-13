@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,44 +36,40 @@ module ObjC.AVFAudio.AVAudioRecorder
   , setMeteringEnabled
   , channelAssignments
   , setChannelAssignments
-  , initWithURL_settings_errorSelector
-  , initWithURL_format_errorSelector
-  , prepareToRecordSelector
-  , recordSelector
-  , recordAtTimeSelector
-  , recordForDurationSelector
-  , recordAtTime_forDurationSelector
-  , pauseSelector
-  , stopSelector
-  , deleteRecordingSelector
-  , updateMetersSelector
-  , peakPowerForChannelSelector
   , averagePowerForChannelSelector
-  , recordingSelector
-  , urlSelector
-  , settingsSelector
-  , formatSelector
-  , delegateSelector
-  , setDelegateSelector
-  , currentTimeSelector
-  , deviceCurrentTimeSelector
-  , meteringEnabledSelector
-  , setMeteringEnabledSelector
   , channelAssignmentsSelector
+  , currentTimeSelector
+  , delegateSelector
+  , deleteRecordingSelector
+  , deviceCurrentTimeSelector
+  , formatSelector
+  , initWithURL_format_errorSelector
+  , initWithURL_settings_errorSelector
+  , meteringEnabledSelector
+  , pauseSelector
+  , peakPowerForChannelSelector
+  , prepareToRecordSelector
+  , recordAtTimeSelector
+  , recordAtTime_forDurationSelector
+  , recordForDurationSelector
+  , recordSelector
+  , recordingSelector
   , setChannelAssignmentsSelector
+  , setDelegateSelector
+  , setMeteringEnabledSelector
+  , settingsSelector
+  , stopSelector
+  , updateMetersSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,11 +84,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:settings:error:@
 initWithURL_settings_error :: (IsAVAudioRecorder avAudioRecorder, IsNSURL url, IsNSDictionary settings, IsNSError outError) => avAudioRecorder -> url -> settings -> outError -> IO (Id AVAudioRecorder)
-initWithURL_settings_error avAudioRecorder  url settings outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr settings $ \raw_settings ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAudioRecorder (mkSelector "initWithURL:settings:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_settings_error avAudioRecorder url settings outError =
+  sendOwnedMessage avAudioRecorder initWithURL_settings_errorSelector (toNSURL url) (toNSDictionary settings) (toNSError outError)
 
 -- | initWithURL:format:error:
 --
@@ -101,11 +95,8 @@ initWithURL_settings_error avAudioRecorder  url settings outError =
 --
 -- ObjC selector: @- initWithURL:format:error:@
 initWithURL_format_error :: (IsAVAudioRecorder avAudioRecorder, IsNSURL url, IsAVAudioFormat format, IsNSError outError) => avAudioRecorder -> url -> format -> outError -> IO (Id AVAudioRecorder)
-initWithURL_format_error avAudioRecorder  url format outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr format $ \raw_format ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAudioRecorder (mkSelector "initWithURL:format:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_format_error avAudioRecorder url format outError =
+  sendOwnedMessage avAudioRecorder initWithURL_format_errorSelector (toNSURL url) (toAVAudioFormat format) (toNSError outError)
 
 -- | prepareToRecord
 --
@@ -115,8 +106,8 @@ initWithURL_format_error avAudioRecorder  url format outError =
 --
 -- ObjC selector: @- prepareToRecord@
 prepareToRecord :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO Bool
-prepareToRecord avAudioRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "prepareToRecord") retCULong []
+prepareToRecord avAudioRecorder =
+  sendMessage avAudioRecorder prepareToRecordSelector
 
 -- | record
 --
@@ -126,8 +117,8 @@ prepareToRecord avAudioRecorder  =
 --
 -- ObjC selector: @- record@
 record :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO Bool
-record avAudioRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "record") retCULong []
+record avAudioRecorder =
+  sendMessage avAudioRecorder recordSelector
 
 -- | recordAtTime:
 --
@@ -137,8 +128,8 @@ record avAudioRecorder  =
 --
 -- ObjC selector: @- recordAtTime:@
 recordAtTime :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> CDouble -> IO Bool
-recordAtTime avAudioRecorder  time =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "recordAtTime:") retCULong [argCDouble time]
+recordAtTime avAudioRecorder time =
+  sendMessage avAudioRecorder recordAtTimeSelector time
 
 -- | recordForDuration:
 --
@@ -148,8 +139,8 @@ recordAtTime avAudioRecorder  time =
 --
 -- ObjC selector: @- recordForDuration:@
 recordForDuration :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> CDouble -> IO Bool
-recordForDuration avAudioRecorder  duration =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "recordForDuration:") retCULong [argCDouble duration]
+recordForDuration avAudioRecorder duration =
+  sendMessage avAudioRecorder recordForDurationSelector duration
 
 -- | recordAtTime:forDuration:
 --
@@ -159,8 +150,8 @@ recordForDuration avAudioRecorder  duration =
 --
 -- ObjC selector: @- recordAtTime:forDuration:@
 recordAtTime_forDuration :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> CDouble -> CDouble -> IO Bool
-recordAtTime_forDuration avAudioRecorder  time duration =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "recordAtTime:forDuration:") retCULong [argCDouble time, argCDouble duration]
+recordAtTime_forDuration avAudioRecorder time duration =
+  sendMessage avAudioRecorder recordAtTime_forDurationSelector time duration
 
 -- | pause
 --
@@ -168,8 +159,8 @@ recordAtTime_forDuration avAudioRecorder  time duration =
 --
 -- ObjC selector: @- pause@
 pause :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO ()
-pause avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "pause") retVoid []
+pause avAudioRecorder =
+  sendMessage avAudioRecorder pauseSelector
 
 -- | stop
 --
@@ -179,8 +170,8 @@ pause avAudioRecorder  =
 --
 -- ObjC selector: @- stop@
 stop :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO ()
-stop avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "stop") retVoid []
+stop avAudioRecorder =
+  sendMessage avAudioRecorder stopSelector
 
 -- | deleteRecording
 --
@@ -190,8 +181,8 @@ stop avAudioRecorder  =
 --
 -- ObjC selector: @- deleteRecording@
 deleteRecording :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO Bool
-deleteRecording avAudioRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "deleteRecording") retCULong []
+deleteRecording avAudioRecorder =
+  sendMessage avAudioRecorder deleteRecordingSelector
 
 -- | updateMeters
 --
@@ -199,8 +190,8 @@ deleteRecording avAudioRecorder  =
 --
 -- ObjC selector: @- updateMeters@
 updateMeters :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO ()
-updateMeters avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "updateMeters") retVoid []
+updateMeters avAudioRecorder =
+  sendMessage avAudioRecorder updateMetersSelector
 
 -- | peakPowerForChannel:
 --
@@ -208,8 +199,8 @@ updateMeters avAudioRecorder  =
 --
 -- ObjC selector: @- peakPowerForChannel:@
 peakPowerForChannel :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> CULong -> IO CFloat
-peakPowerForChannel avAudioRecorder  channelNumber =
-    sendMsg avAudioRecorder (mkSelector "peakPowerForChannel:") retCFloat [argCULong channelNumber]
+peakPowerForChannel avAudioRecorder channelNumber =
+  sendMessage avAudioRecorder peakPowerForChannelSelector channelNumber
 
 -- | averagePowerForChannel:
 --
@@ -217,8 +208,8 @@ peakPowerForChannel avAudioRecorder  channelNumber =
 --
 -- ObjC selector: @- averagePowerForChannel:@
 averagePowerForChannel :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> CULong -> IO CFloat
-averagePowerForChannel avAudioRecorder  channelNumber =
-    sendMsg avAudioRecorder (mkSelector "averagePowerForChannel:") retCFloat [argCULong channelNumber]
+averagePowerForChannel avAudioRecorder channelNumber =
+  sendMessage avAudioRecorder averagePowerForChannelSelector channelNumber
 
 -- | recording
 --
@@ -226,8 +217,8 @@ averagePowerForChannel avAudioRecorder  channelNumber =
 --
 -- ObjC selector: @- recording@
 recording :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO Bool
-recording avAudioRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "recording") retCULong []
+recording avAudioRecorder =
+  sendMessage avAudioRecorder recordingSelector
 
 -- | url
 --
@@ -235,8 +226,8 @@ recording avAudioRecorder  =
 --
 -- ObjC selector: @- url@
 url :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id NSURL)
-url avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avAudioRecorder =
+  sendMessage avAudioRecorder urlSelector
 
 -- | settings
 --
@@ -246,8 +237,8 @@ url avAudioRecorder  =
 --
 -- ObjC selector: @- settings@
 settings :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id NSDictionary)
-settings avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+settings avAudioRecorder =
+  sendMessage avAudioRecorder settingsSelector
 
 -- | format
 --
@@ -257,8 +248,8 @@ settings avAudioRecorder  =
 --
 -- ObjC selector: @- format@
 format :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id AVAudioFormat)
-format avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format avAudioRecorder =
+  sendMessage avAudioRecorder formatSelector
 
 -- | delegate
 --
@@ -266,8 +257,8 @@ format avAudioRecorder  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO RawId
-delegate avAudioRecorder  =
-    fmap (RawId . castPtr) $ sendMsg avAudioRecorder (mkSelector "delegate") (retPtr retVoid) []
+delegate avAudioRecorder =
+  sendMessage avAudioRecorder delegateSelector
 
 -- | delegate
 --
@@ -275,8 +266,8 @@ delegate avAudioRecorder  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> RawId -> IO ()
-setDelegate avAudioRecorder  value =
-    sendMsg avAudioRecorder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avAudioRecorder value =
+  sendMessage avAudioRecorder setDelegateSelector value
 
 -- | currentTime
 --
@@ -286,8 +277,8 @@ setDelegate avAudioRecorder  value =
 --
 -- ObjC selector: @- currentTime@
 currentTime :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO CDouble
-currentTime avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "currentTime") retCDouble []
+currentTime avAudioRecorder =
+  sendMessage avAudioRecorder currentTimeSelector
 
 -- | deviceCurrentTime
 --
@@ -297,8 +288,8 @@ currentTime avAudioRecorder  =
 --
 -- ObjC selector: @- deviceCurrentTime@
 deviceCurrentTime :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO CDouble
-deviceCurrentTime avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "deviceCurrentTime") retCDouble []
+deviceCurrentTime avAudioRecorder =
+  sendMessage avAudioRecorder deviceCurrentTimeSelector
 
 -- | meteringEnabled
 --
@@ -308,8 +299,8 @@ deviceCurrentTime avAudioRecorder  =
 --
 -- ObjC selector: @- meteringEnabled@
 meteringEnabled :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO Bool
-meteringEnabled avAudioRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioRecorder (mkSelector "meteringEnabled") retCULong []
+meteringEnabled avAudioRecorder =
+  sendMessage avAudioRecorder meteringEnabledSelector
 
 -- | meteringEnabled
 --
@@ -319,8 +310,8 @@ meteringEnabled avAudioRecorder  =
 --
 -- ObjC selector: @- setMeteringEnabled:@
 setMeteringEnabled :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> Bool -> IO ()
-setMeteringEnabled avAudioRecorder  value =
-    sendMsg avAudioRecorder (mkSelector "setMeteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setMeteringEnabled avAudioRecorder value =
+  sendMessage avAudioRecorder setMeteringEnabledSelector value
 
 -- | channelAssignments
 --
@@ -330,8 +321,8 @@ setMeteringEnabled avAudioRecorder  value =
 --
 -- ObjC selector: @- channelAssignments@
 channelAssignments :: IsAVAudioRecorder avAudioRecorder => avAudioRecorder -> IO (Id NSArray)
-channelAssignments avAudioRecorder  =
-    sendMsg avAudioRecorder (mkSelector "channelAssignments") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelAssignments avAudioRecorder =
+  sendMessage avAudioRecorder channelAssignmentsSelector
 
 -- | channelAssignments
 --
@@ -341,111 +332,110 @@ channelAssignments avAudioRecorder  =
 --
 -- ObjC selector: @- setChannelAssignments:@
 setChannelAssignments :: (IsAVAudioRecorder avAudioRecorder, IsNSArray value) => avAudioRecorder -> value -> IO ()
-setChannelAssignments avAudioRecorder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioRecorder (mkSelector "setChannelAssignments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelAssignments avAudioRecorder value =
+  sendMessage avAudioRecorder setChannelAssignmentsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:settings:error:@
-initWithURL_settings_errorSelector :: Selector
+initWithURL_settings_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] (Id AVAudioRecorder)
 initWithURL_settings_errorSelector = mkSelector "initWithURL:settings:error:"
 
 -- | @Selector@ for @initWithURL:format:error:@
-initWithURL_format_errorSelector :: Selector
+initWithURL_format_errorSelector :: Selector '[Id NSURL, Id AVAudioFormat, Id NSError] (Id AVAudioRecorder)
 initWithURL_format_errorSelector = mkSelector "initWithURL:format:error:"
 
 -- | @Selector@ for @prepareToRecord@
-prepareToRecordSelector :: Selector
+prepareToRecordSelector :: Selector '[] Bool
 prepareToRecordSelector = mkSelector "prepareToRecord"
 
 -- | @Selector@ for @record@
-recordSelector :: Selector
+recordSelector :: Selector '[] Bool
 recordSelector = mkSelector "record"
 
 -- | @Selector@ for @recordAtTime:@
-recordAtTimeSelector :: Selector
+recordAtTimeSelector :: Selector '[CDouble] Bool
 recordAtTimeSelector = mkSelector "recordAtTime:"
 
 -- | @Selector@ for @recordForDuration:@
-recordForDurationSelector :: Selector
+recordForDurationSelector :: Selector '[CDouble] Bool
 recordForDurationSelector = mkSelector "recordForDuration:"
 
 -- | @Selector@ for @recordAtTime:forDuration:@
-recordAtTime_forDurationSelector :: Selector
+recordAtTime_forDurationSelector :: Selector '[CDouble, CDouble] Bool
 recordAtTime_forDurationSelector = mkSelector "recordAtTime:forDuration:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @deleteRecording@
-deleteRecordingSelector :: Selector
+deleteRecordingSelector :: Selector '[] Bool
 deleteRecordingSelector = mkSelector "deleteRecording"
 
 -- | @Selector@ for @updateMeters@
-updateMetersSelector :: Selector
+updateMetersSelector :: Selector '[] ()
 updateMetersSelector = mkSelector "updateMeters"
 
 -- | @Selector@ for @peakPowerForChannel:@
-peakPowerForChannelSelector :: Selector
+peakPowerForChannelSelector :: Selector '[CULong] CFloat
 peakPowerForChannelSelector = mkSelector "peakPowerForChannel:"
 
 -- | @Selector@ for @averagePowerForChannel:@
-averagePowerForChannelSelector :: Selector
+averagePowerForChannelSelector :: Selector '[CULong] CFloat
 averagePowerForChannelSelector = mkSelector "averagePowerForChannel:"
 
 -- | @Selector@ for @recording@
-recordingSelector :: Selector
+recordingSelector :: Selector '[] Bool
 recordingSelector = mkSelector "recording"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @settings@
-settingsSelector :: Selector
+settingsSelector :: Selector '[] (Id NSDictionary)
 settingsSelector = mkSelector "settings"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id AVAudioFormat)
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @currentTime@
-currentTimeSelector :: Selector
+currentTimeSelector :: Selector '[] CDouble
 currentTimeSelector = mkSelector "currentTime"
 
 -- | @Selector@ for @deviceCurrentTime@
-deviceCurrentTimeSelector :: Selector
+deviceCurrentTimeSelector :: Selector '[] CDouble
 deviceCurrentTimeSelector = mkSelector "deviceCurrentTime"
 
 -- | @Selector@ for @meteringEnabled@
-meteringEnabledSelector :: Selector
+meteringEnabledSelector :: Selector '[] Bool
 meteringEnabledSelector = mkSelector "meteringEnabled"
 
 -- | @Selector@ for @setMeteringEnabled:@
-setMeteringEnabledSelector :: Selector
+setMeteringEnabledSelector :: Selector '[Bool] ()
 setMeteringEnabledSelector = mkSelector "setMeteringEnabled:"
 
 -- | @Selector@ for @channelAssignments@
-channelAssignmentsSelector :: Selector
+channelAssignmentsSelector :: Selector '[] (Id NSArray)
 channelAssignmentsSelector = mkSelector "channelAssignments"
 
 -- | @Selector@ for @setChannelAssignments:@
-setChannelAssignmentsSelector :: Selector
+setChannelAssignmentsSelector :: Selector '[Id NSArray] ()
 setChannelAssignmentsSelector = mkSelector "setChannelAssignments:"
 

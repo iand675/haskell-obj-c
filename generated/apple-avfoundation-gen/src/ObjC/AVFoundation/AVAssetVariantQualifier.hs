@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,24 +30,24 @@ module ObjC.AVFoundation.AVAssetVariantQualifier
   , predicateForImmersiveAudio
   , predicateForDownmixAudio
   , predicateForAudioSampleRate_operatorType
-  , initSelector
-  , newSelector
+  , assetVariantQualifierForMaximumValueInKeyPathSelector
+  , assetVariantQualifierForMinimumValueInKeyPathSelector
   , assetVariantQualifierWithPredicateSelector
   , assetVariantQualifierWithVariantSelector
-  , assetVariantQualifierForMinimumValueInKeyPathSelector
-  , assetVariantQualifierForMaximumValueInKeyPathSelector
-  , predicateForChannelCount_mediaSelectionOption_operatorTypeSelector
-  , predicateForBinauralAudio_mediaSelectionOptionSelector
-  , predicateForImmersiveAudio_mediaSelectionOptionSelector
-  , predicateForDownmixAudio_mediaSelectionOptionSelector
-  , predicateForPresentationWidth_operatorTypeSelector
-  , predicateForPresentationHeight_operatorTypeSelector
+  , initSelector
+  , newSelector
   , predicateForAudioSampleRate_mediaSelectionOption_operatorTypeSelector
-  , predicateForChannelCount_operatorTypeSelector
-  , predicateForBinauralAudioSelector
-  , predicateForImmersiveAudioSelector
-  , predicateForDownmixAudioSelector
   , predicateForAudioSampleRate_operatorTypeSelector
+  , predicateForBinauralAudioSelector
+  , predicateForBinauralAudio_mediaSelectionOptionSelector
+  , predicateForChannelCount_mediaSelectionOption_operatorTypeSelector
+  , predicateForChannelCount_operatorTypeSelector
+  , predicateForDownmixAudioSelector
+  , predicateForDownmixAudio_mediaSelectionOptionSelector
+  , predicateForImmersiveAudioSelector
+  , predicateForImmersiveAudio_mediaSelectionOptionSelector
+  , predicateForPresentationHeight_operatorTypeSelector
+  , predicateForPresentationWidth_operatorTypeSelector
 
   -- * Enum types
   , NSPredicateOperatorType(NSPredicateOperatorType)
@@ -67,15 +68,11 @@ module ObjC.AVFoundation.AVAssetVariantQualifier
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,15 +82,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetVariantQualifier avAssetVariantQualifier => avAssetVariantQualifier -> IO (Id AVAssetVariantQualifier)
-init_ avAssetVariantQualifier  =
-    sendMsg avAssetVariantQualifier (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetVariantQualifier =
+  sendOwnedMessage avAssetVariantQualifier initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetVariantQualifier)
 new  =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns a qualifer for a predicate.
 --
@@ -104,8 +101,7 @@ assetVariantQualifierWithPredicate :: IsNSPredicate predicate => predicate -> IO
 assetVariantQualifierWithPredicate predicate =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr predicate $ \raw_predicate ->
-      sendClassMsg cls' (mkSelector "assetVariantQualifierWithPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetVariantQualifierWithPredicateSelector (toNSPredicate predicate)
 
 -- | Returns a qualifer for a particular asset variant.
 --
@@ -116,8 +112,7 @@ assetVariantQualifierWithVariant :: IsAVAssetVariant variant => variant -> IO (I
 assetVariantQualifierWithVariant variant =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr variant $ \raw_variant ->
-      sendClassMsg cls' (mkSelector "assetVariantQualifierWithVariant:") (retPtr retVoid) [argPtr (castPtr raw_variant :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetVariantQualifierWithVariantSelector (toAVAssetVariant variant)
 
 -- | Returns a qualifer for finding variant with minimum value in the input key path.
 --
@@ -128,8 +123,7 @@ assetVariantQualifierForMinimumValueInKeyPath :: IsNSString keyPath => keyPath -
 assetVariantQualifierForMinimumValueInKeyPath keyPath =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr keyPath $ \raw_keyPath ->
-      sendClassMsg cls' (mkSelector "assetVariantQualifierForMinimumValueInKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetVariantQualifierForMinimumValueInKeyPathSelector (toNSString keyPath)
 
 -- | Returns a qualifer for finding variant with maximum value in the input key path
 --
@@ -140,8 +134,7 @@ assetVariantQualifierForMaximumValueInKeyPath :: IsNSString keyPath => keyPath -
 assetVariantQualifierForMaximumValueInKeyPath keyPath =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr keyPath $ \raw_keyPath ->
-      sendClassMsg cls' (mkSelector "assetVariantQualifierForMaximumValueInKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetVariantQualifierForMaximumValueInKeyPathSelector (toNSString keyPath)
 
 -- | Creates a NSPredicate for audio channel count which can be used with other NSPredicates to express variant preferences.
 --
@@ -152,8 +145,7 @@ predicateForChannelCount_mediaSelectionOption_operatorType :: IsAVMediaSelection
 predicateForChannelCount_mediaSelectionOption_operatorType channelCount mediaSelectionOption operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-      sendClassMsg cls' (mkSelector "predicateForChannelCount:mediaSelectionOption:operatorType:") (retPtr retVoid) [argCLong channelCount, argPtr (castPtr raw_mediaSelectionOption :: Ptr ()), argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForChannelCount_mediaSelectionOption_operatorTypeSelector channelCount (toAVMediaSelectionOption mediaSelectionOption) operatorType
 
 -- | Creates a NSPredicate for binaural which can be used with other NSPredicates to express variant preferences.
 --
@@ -164,8 +156,7 @@ predicateForBinauralAudio_mediaSelectionOption :: IsAVMediaSelectionOption media
 predicateForBinauralAudio_mediaSelectionOption isBinauralAudio mediaSelectionOption =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-      sendClassMsg cls' (mkSelector "predicateForBinauralAudio:mediaSelectionOption:") (retPtr retVoid) [argCULong (if isBinauralAudio then 1 else 0), argPtr (castPtr raw_mediaSelectionOption :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForBinauralAudio_mediaSelectionOptionSelector isBinauralAudio (toAVMediaSelectionOption mediaSelectionOption)
 
 -- | Creates a NSPredicate for immersive audio which can be used with other NSPredicates to express variant preferences.
 --
@@ -176,8 +167,7 @@ predicateForImmersiveAudio_mediaSelectionOption :: IsAVMediaSelectionOption medi
 predicateForImmersiveAudio_mediaSelectionOption isImmersiveAudio mediaSelectionOption =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-      sendClassMsg cls' (mkSelector "predicateForImmersiveAudio:mediaSelectionOption:") (retPtr retVoid) [argCULong (if isImmersiveAudio then 1 else 0), argPtr (castPtr raw_mediaSelectionOption :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForImmersiveAudio_mediaSelectionOptionSelector isImmersiveAudio (toAVMediaSelectionOption mediaSelectionOption)
 
 -- | Creates a NSPredicate for immersive audio which can be used with other NSPredicates to express variant preferences.
 --
@@ -188,8 +178,7 @@ predicateForDownmixAudio_mediaSelectionOption :: IsAVMediaSelectionOption mediaS
 predicateForDownmixAudio_mediaSelectionOption isDownmixAudio mediaSelectionOption =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-      sendClassMsg cls' (mkSelector "predicateForDownmixAudio:mediaSelectionOption:") (retPtr retVoid) [argCULong (if isDownmixAudio then 1 else 0), argPtr (castPtr raw_mediaSelectionOption :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForDownmixAudio_mediaSelectionOptionSelector isDownmixAudio (toAVMediaSelectionOption mediaSelectionOption)
 
 -- | Creates a NSPredicate for presentation size width which can be used with other NSPredicates to express variant preferences.
 --
@@ -200,7 +189,7 @@ predicateForPresentationWidth_operatorType :: CDouble -> NSPredicateOperatorType
 predicateForPresentationWidth_operatorType width operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForPresentationWidth:operatorType:") (retPtr retVoid) [argCDouble width, argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForPresentationWidth_operatorTypeSelector width operatorType
 
 -- | Creates a NSPredicate for presentation size height which can be used with other NSPredicates to express variant preferences.
 --
@@ -211,7 +200,7 @@ predicateForPresentationHeight_operatorType :: CDouble -> NSPredicateOperatorTyp
 predicateForPresentationHeight_operatorType height operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForPresentationHeight:operatorType:") (retPtr retVoid) [argCDouble height, argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForPresentationHeight_operatorTypeSelector height operatorType
 
 -- | Creates a NSPredicate for audio sample rate which can be used with other NSPredicates to express variant preferences.
 --
@@ -222,8 +211,7 @@ predicateForAudioSampleRate_mediaSelectionOption_operatorType :: IsAVMediaSelect
 predicateForAudioSampleRate_mediaSelectionOption_operatorType sampleRate mediaSelectionOption operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-      sendClassMsg cls' (mkSelector "predicateForAudioSampleRate:mediaSelectionOption:operatorType:") (retPtr retVoid) [argCDouble sampleRate, argPtr (castPtr raw_mediaSelectionOption :: Ptr ()), argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForAudioSampleRate_mediaSelectionOption_operatorTypeSelector sampleRate (toAVMediaSelectionOption mediaSelectionOption) operatorType
 
 -- | Creates a NSPredicate for audio channel count which can be used with other NSPredicates to express variant preferences.
 --
@@ -236,7 +224,7 @@ predicateForChannelCount_operatorType :: CLong -> NSPredicateOperatorType -> IO 
 predicateForChannelCount_operatorType channelCount operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForChannelCount:operatorType:") (retPtr retVoid) [argCLong channelCount, argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForChannelCount_operatorTypeSelector channelCount operatorType
 
 -- | Creates a NSPredicate for binaural which can be used with other NSPredicates to express variant preferences.
 --
@@ -247,7 +235,7 @@ predicateForBinauralAudio :: Bool -> IO (Id NSPredicate)
 predicateForBinauralAudio isBinauralAudio =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForBinauralAudio:") (retPtr retVoid) [argCULong (if isBinauralAudio then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForBinauralAudioSelector isBinauralAudio
 
 -- | Creates a NSPredicate for immersive audio which can be used with other NSPredicates to express variant preferences.
 --
@@ -260,7 +248,7 @@ predicateForImmersiveAudio :: Bool -> IO (Id NSPredicate)
 predicateForImmersiveAudio isImmersiveAudio =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForImmersiveAudio:") (retPtr retVoid) [argCULong (if isImmersiveAudio then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForImmersiveAudioSelector isImmersiveAudio
 
 -- | Creates a NSPredicate for immersive audio which can be used with other NSPredicates to express variant preferences.
 --
@@ -273,7 +261,7 @@ predicateForDownmixAudio :: Bool -> IO (Id NSPredicate)
 predicateForDownmixAudio isDownmixAudio =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForDownmixAudio:") (retPtr retVoid) [argCULong (if isDownmixAudio then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForDownmixAudioSelector isDownmixAudio
 
 -- | Creates a NSPredicate for audio sample rate which can be used with other NSPredicates to express variant preferences.
 --
@@ -286,81 +274,81 @@ predicateForAudioSampleRate_operatorType :: CDouble -> NSPredicateOperatorType -
 predicateForAudioSampleRate_operatorType sampleRate operatorType =
   do
     cls' <- getRequiredClass "AVAssetVariantQualifier"
-    sendClassMsg cls' (mkSelector "predicateForAudioSampleRate:operatorType:") (retPtr retVoid) [argCDouble sampleRate, argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForAudioSampleRate_operatorTypeSelector sampleRate operatorType
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetVariantQualifier)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetVariantQualifier)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetVariantQualifierWithPredicate:@
-assetVariantQualifierWithPredicateSelector :: Selector
+assetVariantQualifierWithPredicateSelector :: Selector '[Id NSPredicate] (Id AVAssetVariantQualifier)
 assetVariantQualifierWithPredicateSelector = mkSelector "assetVariantQualifierWithPredicate:"
 
 -- | @Selector@ for @assetVariantQualifierWithVariant:@
-assetVariantQualifierWithVariantSelector :: Selector
+assetVariantQualifierWithVariantSelector :: Selector '[Id AVAssetVariant] (Id AVAssetVariantQualifier)
 assetVariantQualifierWithVariantSelector = mkSelector "assetVariantQualifierWithVariant:"
 
 -- | @Selector@ for @assetVariantQualifierForMinimumValueInKeyPath:@
-assetVariantQualifierForMinimumValueInKeyPathSelector :: Selector
+assetVariantQualifierForMinimumValueInKeyPathSelector :: Selector '[Id NSString] (Id AVAssetVariantQualifier)
 assetVariantQualifierForMinimumValueInKeyPathSelector = mkSelector "assetVariantQualifierForMinimumValueInKeyPath:"
 
 -- | @Selector@ for @assetVariantQualifierForMaximumValueInKeyPath:@
-assetVariantQualifierForMaximumValueInKeyPathSelector :: Selector
+assetVariantQualifierForMaximumValueInKeyPathSelector :: Selector '[Id NSString] (Id AVAssetVariantQualifier)
 assetVariantQualifierForMaximumValueInKeyPathSelector = mkSelector "assetVariantQualifierForMaximumValueInKeyPath:"
 
 -- | @Selector@ for @predicateForChannelCount:mediaSelectionOption:operatorType:@
-predicateForChannelCount_mediaSelectionOption_operatorTypeSelector :: Selector
+predicateForChannelCount_mediaSelectionOption_operatorTypeSelector :: Selector '[CLong, Id AVMediaSelectionOption, NSPredicateOperatorType] (Id NSPredicate)
 predicateForChannelCount_mediaSelectionOption_operatorTypeSelector = mkSelector "predicateForChannelCount:mediaSelectionOption:operatorType:"
 
 -- | @Selector@ for @predicateForBinauralAudio:mediaSelectionOption:@
-predicateForBinauralAudio_mediaSelectionOptionSelector :: Selector
+predicateForBinauralAudio_mediaSelectionOptionSelector :: Selector '[Bool, Id AVMediaSelectionOption] (Id NSPredicate)
 predicateForBinauralAudio_mediaSelectionOptionSelector = mkSelector "predicateForBinauralAudio:mediaSelectionOption:"
 
 -- | @Selector@ for @predicateForImmersiveAudio:mediaSelectionOption:@
-predicateForImmersiveAudio_mediaSelectionOptionSelector :: Selector
+predicateForImmersiveAudio_mediaSelectionOptionSelector :: Selector '[Bool, Id AVMediaSelectionOption] (Id NSPredicate)
 predicateForImmersiveAudio_mediaSelectionOptionSelector = mkSelector "predicateForImmersiveAudio:mediaSelectionOption:"
 
 -- | @Selector@ for @predicateForDownmixAudio:mediaSelectionOption:@
-predicateForDownmixAudio_mediaSelectionOptionSelector :: Selector
+predicateForDownmixAudio_mediaSelectionOptionSelector :: Selector '[Bool, Id AVMediaSelectionOption] (Id NSPredicate)
 predicateForDownmixAudio_mediaSelectionOptionSelector = mkSelector "predicateForDownmixAudio:mediaSelectionOption:"
 
 -- | @Selector@ for @predicateForPresentationWidth:operatorType:@
-predicateForPresentationWidth_operatorTypeSelector :: Selector
+predicateForPresentationWidth_operatorTypeSelector :: Selector '[CDouble, NSPredicateOperatorType] (Id NSPredicate)
 predicateForPresentationWidth_operatorTypeSelector = mkSelector "predicateForPresentationWidth:operatorType:"
 
 -- | @Selector@ for @predicateForPresentationHeight:operatorType:@
-predicateForPresentationHeight_operatorTypeSelector :: Selector
+predicateForPresentationHeight_operatorTypeSelector :: Selector '[CDouble, NSPredicateOperatorType] (Id NSPredicate)
 predicateForPresentationHeight_operatorTypeSelector = mkSelector "predicateForPresentationHeight:operatorType:"
 
 -- | @Selector@ for @predicateForAudioSampleRate:mediaSelectionOption:operatorType:@
-predicateForAudioSampleRate_mediaSelectionOption_operatorTypeSelector :: Selector
+predicateForAudioSampleRate_mediaSelectionOption_operatorTypeSelector :: Selector '[CDouble, Id AVMediaSelectionOption, NSPredicateOperatorType] (Id NSPredicate)
 predicateForAudioSampleRate_mediaSelectionOption_operatorTypeSelector = mkSelector "predicateForAudioSampleRate:mediaSelectionOption:operatorType:"
 
 -- | @Selector@ for @predicateForChannelCount:operatorType:@
-predicateForChannelCount_operatorTypeSelector :: Selector
+predicateForChannelCount_operatorTypeSelector :: Selector '[CLong, NSPredicateOperatorType] (Id NSPredicate)
 predicateForChannelCount_operatorTypeSelector = mkSelector "predicateForChannelCount:operatorType:"
 
 -- | @Selector@ for @predicateForBinauralAudio:@
-predicateForBinauralAudioSelector :: Selector
+predicateForBinauralAudioSelector :: Selector '[Bool] (Id NSPredicate)
 predicateForBinauralAudioSelector = mkSelector "predicateForBinauralAudio:"
 
 -- | @Selector@ for @predicateForImmersiveAudio:@
-predicateForImmersiveAudioSelector :: Selector
+predicateForImmersiveAudioSelector :: Selector '[Bool] (Id NSPredicate)
 predicateForImmersiveAudioSelector = mkSelector "predicateForImmersiveAudio:"
 
 -- | @Selector@ for @predicateForDownmixAudio:@
-predicateForDownmixAudioSelector :: Selector
+predicateForDownmixAudioSelector :: Selector '[Bool] (Id NSPredicate)
 predicateForDownmixAudioSelector = mkSelector "predicateForDownmixAudio:"
 
 -- | @Selector@ for @predicateForAudioSampleRate:operatorType:@
-predicateForAudioSampleRate_operatorTypeSelector :: Selector
+predicateForAudioSampleRate_operatorTypeSelector :: Selector '[CDouble, NSPredicateOperatorType] (Id NSPredicate)
 predicateForAudioSampleRate_operatorTypeSelector = mkSelector "predicateForAudioSampleRate:operatorType:"
 

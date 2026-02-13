@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.CoreML.MLImageSize
   , IsMLImageSize(..)
   , pixelsWide
   , pixelsHigh
-  , pixelsWideSelector
   , pixelsHighSelector
+  , pixelsWideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pixelsWide@
 pixelsWide :: IsMLImageSize mlImageSize => mlImageSize -> IO CLong
-pixelsWide mlImageSize  =
-    sendMsg mlImageSize (mkSelector "pixelsWide") retCLong []
+pixelsWide mlImageSize =
+  sendMessage mlImageSize pixelsWideSelector
 
 -- | @- pixelsHigh@
 pixelsHigh :: IsMLImageSize mlImageSize => mlImageSize -> IO CLong
-pixelsHigh mlImageSize  =
-    sendMsg mlImageSize (mkSelector "pixelsHigh") retCLong []
+pixelsHigh mlImageSize =
+  sendMessage mlImageSize pixelsHighSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pixelsWide@
-pixelsWideSelector :: Selector
+pixelsWideSelector :: Selector '[] CLong
 pixelsWideSelector = mkSelector "pixelsWide"
 
 -- | @Selector@ for @pixelsHigh@
-pixelsHighSelector :: Selector
+pixelsHighSelector :: Selector '[] CLong
 pixelsHighSelector = mkSelector "pixelsHigh"
 

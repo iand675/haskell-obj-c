@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,32 +46,28 @@ module ObjC.Foundation.NSURLConnection
   , sendSynchronousRequest_returningResponse_error
   , originalRequest
   , currentRequest
-  , initWithRequest_delegate_startImmediatelySelector
-  , initWithRequest_delegateSelector
-  , connectionWithRequest_delegateSelector
-  , startSelector
-  , cancelSelector
-  , scheduleInRunLoop_forModeSelector
-  , unscheduleFromRunLoop_forModeSelector
-  , setDelegateQueueSelector
   , canHandleRequestSelector
+  , cancelSelector
+  , connectionWithRequest_delegateSelector
+  , currentRequestSelector
+  , initWithRequest_delegateSelector
+  , initWithRequest_delegate_startImmediatelySelector
+  , originalRequestSelector
+  , scheduleInRunLoop_forModeSelector
   , sendAsynchronousRequest_queue_completionHandlerSelector
   , sendSynchronousRequest_returningResponse_errorSelector
-  , originalRequestSelector
-  , currentRequestSelector
+  , setDelegateQueueSelector
+  , startSelector
+  , unscheduleFromRunLoop_forModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,53 +75,45 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRequest:delegate:startImmediately:@
 initWithRequest_delegate_startImmediately :: (IsNSURLConnection nsurlConnection, IsNSURLRequest request) => nsurlConnection -> request -> RawId -> Bool -> IO (Id NSURLConnection)
-initWithRequest_delegate_startImmediately nsurlConnection  request delegate startImmediately =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlConnection (mkSelector "initWithRequest:delegate:startImmediately:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argCULong (if startImmediately then 1 else 0)] >>= ownedObject . castPtr
+initWithRequest_delegate_startImmediately nsurlConnection request delegate startImmediately =
+  sendOwnedMessage nsurlConnection initWithRequest_delegate_startImmediatelySelector (toNSURLRequest request) delegate startImmediately
 
 -- | @- initWithRequest:delegate:@
 initWithRequest_delegate :: (IsNSURLConnection nsurlConnection, IsNSURLRequest request) => nsurlConnection -> request -> RawId -> IO (Id NSURLConnection)
-initWithRequest_delegate nsurlConnection  request delegate =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlConnection (mkSelector "initWithRequest:delegate:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithRequest_delegate nsurlConnection request delegate =
+  sendOwnedMessage nsurlConnection initWithRequest_delegateSelector (toNSURLRequest request) delegate
 
 -- | @+ connectionWithRequest:delegate:@
 connectionWithRequest_delegate :: IsNSURLRequest request => request -> RawId -> IO (Id NSURLConnection)
 connectionWithRequest_delegate request delegate =
   do
     cls' <- getRequiredClass "NSURLConnection"
-    withObjCPtr request $ \raw_request ->
-      sendClassMsg cls' (mkSelector "connectionWithRequest:delegate:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithRequest_delegateSelector (toNSURLRequest request) delegate
 
 -- | @- start@
 start :: IsNSURLConnection nsurlConnection => nsurlConnection -> IO ()
-start nsurlConnection  =
-    sendMsg nsurlConnection (mkSelector "start") retVoid []
+start nsurlConnection =
+  sendMessage nsurlConnection startSelector
 
 -- | @- cancel@
 cancel :: IsNSURLConnection nsurlConnection => nsurlConnection -> IO ()
-cancel nsurlConnection  =
-    sendMsg nsurlConnection (mkSelector "cancel") retVoid []
+cancel nsurlConnection =
+  sendMessage nsurlConnection cancelSelector
 
 -- | @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsNSURLConnection nsurlConnection, IsNSRunLoop aRunLoop, IsNSString mode) => nsurlConnection -> aRunLoop -> mode -> IO ()
-scheduleInRunLoop_forMode nsurlConnection  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsurlConnection (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+scheduleInRunLoop_forMode nsurlConnection aRunLoop mode =
+  sendMessage nsurlConnection scheduleInRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- unscheduleFromRunLoop:forMode:@
 unscheduleFromRunLoop_forMode :: (IsNSURLConnection nsurlConnection, IsNSRunLoop aRunLoop, IsNSString mode) => nsurlConnection -> aRunLoop -> mode -> IO ()
-unscheduleFromRunLoop_forMode nsurlConnection  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsurlConnection (mkSelector "unscheduleFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+unscheduleFromRunLoop_forMode nsurlConnection aRunLoop mode =
+  sendMessage nsurlConnection unscheduleFromRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- setDelegateQueue:@
 setDelegateQueue :: (IsNSURLConnection nsurlConnection, IsNSOperationQueue queue) => nsurlConnection -> queue -> IO ()
-setDelegateQueue nsurlConnection  queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg nsurlConnection (mkSelector "setDelegateQueue:") retVoid [argPtr (castPtr raw_queue :: Ptr ())]
+setDelegateQueue nsurlConnection queue =
+  sendMessage nsurlConnection setDelegateQueueSelector (toNSOperationQueue queue)
 
 -- | canHandleRequest:
 --
@@ -141,8 +130,7 @@ canHandleRequest :: IsNSURLRequest request => request -> IO Bool
 canHandleRequest request =
   do
     cls' <- getRequiredClass "NSURLConnection"
-    withObjCPtr request $ \raw_request ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canHandleRequest:") retCULong [argPtr (castPtr raw_request :: Ptr ())]
+    sendClassMessage cls' canHandleRequestSelector (toNSURLRequest request)
 
 -- | sendAsynchronousRequest:queue:completionHandler:
 --
@@ -161,9 +149,7 @@ sendAsynchronousRequest_queue_completionHandler :: (IsNSURLRequest request, IsNS
 sendAsynchronousRequest_queue_completionHandler request queue handler =
   do
     cls' <- getRequiredClass "NSURLConnection"
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr queue $ \raw_queue ->
-        sendClassMsg cls' (mkSelector "sendAsynchronousRequest:queue:completionHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' sendAsynchronousRequest_queue_completionHandlerSelector (toNSURLRequest request) (toNSOperationQueue queue) handler
 
 -- | sendSynchronousRequest:returningResponse:error:
 --
@@ -184,74 +170,71 @@ sendSynchronousRequest_returningResponse_error :: (IsNSURLRequest request, IsNSU
 sendSynchronousRequest_returningResponse_error request response error_ =
   do
     cls' <- getRequiredClass "NSURLConnection"
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr response $ \raw_response ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "sendSynchronousRequest:returningResponse:error:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_response :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sendSynchronousRequest_returningResponse_errorSelector (toNSURLRequest request) (toNSURLResponse response) (toNSError error_)
 
 -- | @- originalRequest@
 originalRequest :: IsNSURLConnection nsurlConnection => nsurlConnection -> IO (Id NSURLRequest)
-originalRequest nsurlConnection  =
-    sendMsg nsurlConnection (mkSelector "originalRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalRequest nsurlConnection =
+  sendMessage nsurlConnection originalRequestSelector
 
 -- | @- currentRequest@
 currentRequest :: IsNSURLConnection nsurlConnection => nsurlConnection -> IO (Id NSURLRequest)
-currentRequest nsurlConnection  =
-    sendMsg nsurlConnection (mkSelector "currentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentRequest nsurlConnection =
+  sendMessage nsurlConnection currentRequestSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRequest:delegate:startImmediately:@
-initWithRequest_delegate_startImmediatelySelector :: Selector
+initWithRequest_delegate_startImmediatelySelector :: Selector '[Id NSURLRequest, RawId, Bool] (Id NSURLConnection)
 initWithRequest_delegate_startImmediatelySelector = mkSelector "initWithRequest:delegate:startImmediately:"
 
 -- | @Selector@ for @initWithRequest:delegate:@
-initWithRequest_delegateSelector :: Selector
+initWithRequest_delegateSelector :: Selector '[Id NSURLRequest, RawId] (Id NSURLConnection)
 initWithRequest_delegateSelector = mkSelector "initWithRequest:delegate:"
 
 -- | @Selector@ for @connectionWithRequest:delegate:@
-connectionWithRequest_delegateSelector :: Selector
+connectionWithRequest_delegateSelector :: Selector '[Id NSURLRequest, RawId] (Id NSURLConnection)
 connectionWithRequest_delegateSelector = mkSelector "connectionWithRequest:delegate:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @unscheduleFromRunLoop:forMode:@
-unscheduleFromRunLoop_forModeSelector :: Selector
+unscheduleFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 unscheduleFromRunLoop_forModeSelector = mkSelector "unscheduleFromRunLoop:forMode:"
 
 -- | @Selector@ for @setDelegateQueue:@
-setDelegateQueueSelector :: Selector
+setDelegateQueueSelector :: Selector '[Id NSOperationQueue] ()
 setDelegateQueueSelector = mkSelector "setDelegateQueue:"
 
 -- | @Selector@ for @canHandleRequest:@
-canHandleRequestSelector :: Selector
+canHandleRequestSelector :: Selector '[Id NSURLRequest] Bool
 canHandleRequestSelector = mkSelector "canHandleRequest:"
 
 -- | @Selector@ for @sendAsynchronousRequest:queue:completionHandler:@
-sendAsynchronousRequest_queue_completionHandlerSelector :: Selector
+sendAsynchronousRequest_queue_completionHandlerSelector :: Selector '[Id NSURLRequest, Id NSOperationQueue, Ptr ()] ()
 sendAsynchronousRequest_queue_completionHandlerSelector = mkSelector "sendAsynchronousRequest:queue:completionHandler:"
 
 -- | @Selector@ for @sendSynchronousRequest:returningResponse:error:@
-sendSynchronousRequest_returningResponse_errorSelector :: Selector
+sendSynchronousRequest_returningResponse_errorSelector :: Selector '[Id NSURLRequest, Id NSURLResponse, Id NSError] (Id NSData)
 sendSynchronousRequest_returningResponse_errorSelector = mkSelector "sendSynchronousRequest:returningResponse:error:"
 
 -- | @Selector@ for @originalRequest@
-originalRequestSelector :: Selector
+originalRequestSelector :: Selector '[] (Id NSURLRequest)
 originalRequestSelector = mkSelector "originalRequest"
 
 -- | @Selector@ for @currentRequest@
-currentRequestSelector :: Selector
+currentRequestSelector :: Selector '[] (Id NSURLRequest)
 currentRequestSelector = mkSelector "currentRequest"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreAudioKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @AUGenericViewDisplayFlags@ (bitmask)
 newtype AUGenericViewDisplayFlags = AUGenericViewDisplayFlags CUInt
@@ -30,3 +33,13 @@ pattern AUViewPropertiesDisplayFlag = AUGenericViewDisplayFlags 2
 
 pattern AUViewParametersDisplayFlag :: AUGenericViewDisplayFlags
 pattern AUViewParametersDisplayFlag = AUGenericViewDisplayFlags 4
+
+instance ObjCArgument AUGenericViewDisplayFlags where
+  withObjCArg (AUGenericViewDisplayFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AUGenericViewDisplayFlags where
+  type RawReturn AUGenericViewDisplayFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUGenericViewDisplayFlags x)
+  fromOwned x = pure (AUGenericViewDisplayFlags x)

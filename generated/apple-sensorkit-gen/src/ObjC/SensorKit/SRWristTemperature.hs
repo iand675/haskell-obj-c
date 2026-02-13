@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.SensorKit.SRWristTemperature
   , value
   , condition
   , errorEstimate
+  , conditionSelector
+  , errorEstimateSelector
   , initSelector
   , newSelector
   , timestampSelector
   , valueSelector
-  , conditionSelector
-  , errorEstimateSelector
 
   -- * Enum types
   , SRWristTemperatureCondition(SRWristTemperatureCondition)
@@ -29,15 +30,11 @@ module ObjC.SensorKit.SRWristTemperature
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRWristTemperature srWristTemperature => srWristTemperature -> IO (Id SRWristTemperature)
-init_ srWristTemperature  =
-    sendMsg srWristTemperature (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srWristTemperature =
+  sendOwnedMessage srWristTemperature initSelector
 
 -- | @+ new@
 new :: IO (Id SRWristTemperature)
 new  =
   do
     cls' <- getRequiredClass "SRWristTemperature"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | timestamp
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- timestamp@
 timestamp :: IsSRWristTemperature srWristTemperature => srWristTemperature -> IO (Id NSDate)
-timestamp srWristTemperature  =
-    sendMsg srWristTemperature (mkSelector "timestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+timestamp srWristTemperature =
+  sendMessage srWristTemperature timestampSelector
 
 -- | value
 --
@@ -72,8 +69,8 @@ timestamp srWristTemperature  =
 --
 -- ObjC selector: @- value@
 value :: IsSRWristTemperature srWristTemperature => srWristTemperature -> IO (Id NSMeasurement)
-value srWristTemperature  =
-    sendMsg srWristTemperature (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value srWristTemperature =
+  sendMessage srWristTemperature valueSelector
 
 -- | condition
 --
@@ -81,8 +78,8 @@ value srWristTemperature  =
 --
 -- ObjC selector: @- condition@
 condition :: IsSRWristTemperature srWristTemperature => srWristTemperature -> IO SRWristTemperatureCondition
-condition srWristTemperature  =
-    fmap (coerce :: CULong -> SRWristTemperatureCondition) $ sendMsg srWristTemperature (mkSelector "condition") retCULong []
+condition srWristTemperature =
+  sendMessage srWristTemperature conditionSelector
 
 -- | errorEstimate
 --
@@ -90,34 +87,34 @@ condition srWristTemperature  =
 --
 -- ObjC selector: @- errorEstimate@
 errorEstimate :: IsSRWristTemperature srWristTemperature => srWristTemperature -> IO (Id NSMeasurement)
-errorEstimate srWristTemperature  =
-    sendMsg srWristTemperature (mkSelector "errorEstimate") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorEstimate srWristTemperature =
+  sendMessage srWristTemperature errorEstimateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRWristTemperature)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRWristTemperature)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] (Id NSDate)
 timestampSelector = mkSelector "timestamp"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSMeasurement)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @condition@
-conditionSelector :: Selector
+conditionSelector :: Selector '[] SRWristTemperatureCondition
 conditionSelector = mkSelector "condition"
 
 -- | @Selector@ for @errorEstimate@
-errorEstimateSelector :: Selector
+errorEstimateSelector :: Selector '[] (Id NSMeasurement)
 errorEstimateSelector = mkSelector "errorEstimate"
 

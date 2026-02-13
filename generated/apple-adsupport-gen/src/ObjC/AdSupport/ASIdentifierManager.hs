@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.AdSupport.ASIdentifierManager
   , sharedManager
   , advertisingIdentifier
   , advertisingTrackingEnabled
-  , sharedManagerSelector
   , advertisingIdentifierSelector
   , advertisingTrackingEnabledSelector
+  , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,7 +39,7 @@ sharedManager :: IO (Id ASIdentifierManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "ASIdentifierManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | The UUID that is specific to a device.
 --
@@ -62,8 +59,8 @@ sharedManager  =
 --
 -- ObjC selector: @- advertisingIdentifier@
 advertisingIdentifier :: IsASIdentifierManager asIdentifierManager => asIdentifierManager -> IO (Id NSUUID)
-advertisingIdentifier asIdentifierManager  =
-    sendMsg asIdentifierManager (mkSelector "advertisingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+advertisingIdentifier asIdentifierManager =
+  sendMessage asIdentifierManager advertisingIdentifierSelector
 
 -- | A Boolean value that indicates whether the user has limited ad tracking enabled.
 --
@@ -71,22 +68,22 @@ advertisingIdentifier asIdentifierManager  =
 --
 -- ObjC selector: @- advertisingTrackingEnabled@
 advertisingTrackingEnabled :: IsASIdentifierManager asIdentifierManager => asIdentifierManager -> IO Bool
-advertisingTrackingEnabled asIdentifierManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asIdentifierManager (mkSelector "advertisingTrackingEnabled") retCULong []
+advertisingTrackingEnabled asIdentifierManager =
+  sendMessage asIdentifierManager advertisingTrackingEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id ASIdentifierManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @advertisingIdentifier@
-advertisingIdentifierSelector :: Selector
+advertisingIdentifierSelector :: Selector '[] (Id NSUUID)
 advertisingIdentifierSelector = mkSelector "advertisingIdentifier"
 
 -- | @Selector@ for @advertisingTrackingEnabled@
-advertisingTrackingEnabledSelector :: Selector
+advertisingTrackingEnabledSelector :: Selector '[] Bool
 advertisingTrackingEnabledSelector = mkSelector "advertisingTrackingEnabled"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CloudKit.CKSyncEngineFailedRecordSave
   , new
   , record
   , error_
+  , errorSelector
   , initSelector
   , newSelector
   , recordSelector
-  , errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineFailedRecordSave ckSyncEngineFailedRecordSave => ckSyncEngineFailedRecordSave -> IO (Id CKSyncEngineFailedRecordSave)
-init_ ckSyncEngineFailedRecordSave  =
-    sendMsg ckSyncEngineFailedRecordSave (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineFailedRecordSave =
+  sendOwnedMessage ckSyncEngineFailedRecordSave initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineFailedRecordSave)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineFailedRecordSave"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- record@
 record :: IsCKSyncEngineFailedRecordSave ckSyncEngineFailedRecordSave => ckSyncEngineFailedRecordSave -> IO (Id CKRecord)
-record ckSyncEngineFailedRecordSave  =
-    sendMsg ckSyncEngineFailedRecordSave (mkSelector "record") (retPtr retVoid) [] >>= retainedObject . castPtr
+record ckSyncEngineFailedRecordSave =
+  sendMessage ckSyncEngineFailedRecordSave recordSelector
 
 -- | @- error@
 error_ :: IsCKSyncEngineFailedRecordSave ckSyncEngineFailedRecordSave => ckSyncEngineFailedRecordSave -> IO (Id NSError)
-error_ ckSyncEngineFailedRecordSave  =
-    sendMsg ckSyncEngineFailedRecordSave (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ ckSyncEngineFailedRecordSave =
+  sendMessage ckSyncEngineFailedRecordSave errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineFailedRecordSave)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineFailedRecordSave)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @record@
-recordSelector :: Selector
+recordSelector :: Selector '[] (Id CKRecord)
 recordSelector = mkSelector "record"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKSourceRevision
   , source
   , version
   , productType
-  , initWithSource_versionSelector
   , initSelector
+  , initWithSource_versionSelector
+  , productTypeSelector
   , sourceSelector
   , versionSelector
-  , productTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSource:version:@
 initWithSource_version :: (IsHKSourceRevision hkSourceRevision, IsHKSource source, IsNSString version) => hkSourceRevision -> source -> version -> IO (Id HKSourceRevision)
-initWithSource_version hkSourceRevision  source version =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr version $ \raw_version ->
-        sendMsg hkSourceRevision (mkSelector "initWithSource:version:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_version :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_version hkSourceRevision source version =
+  sendOwnedMessage hkSourceRevision initWithSource_versionSelector (toHKSource source) (toNSString version)
 
 -- | @- init@
 init_ :: IsHKSourceRevision hkSourceRevision => hkSourceRevision -> IO (Id HKSourceRevision)
-init_ hkSourceRevision  =
-    sendMsg hkSourceRevision (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkSourceRevision =
+  sendOwnedMessage hkSourceRevision initSelector
 
 -- | source
 --
@@ -61,8 +56,8 @@ init_ hkSourceRevision  =
 --
 -- ObjC selector: @- source@
 source :: IsHKSourceRevision hkSourceRevision => hkSourceRevision -> IO (Id HKSource)
-source hkSourceRevision  =
-    sendMsg hkSourceRevision (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source hkSourceRevision =
+  sendMessage hkSourceRevision sourceSelector
 
 -- | version
 --
@@ -72,8 +67,8 @@ source hkSourceRevision  =
 --
 -- ObjC selector: @- version@
 version :: IsHKSourceRevision hkSourceRevision => hkSourceRevision -> IO (Id NSString)
-version hkSourceRevision  =
-    sendMsg hkSourceRevision (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version hkSourceRevision =
+  sendMessage hkSourceRevision versionSelector
 
 -- | productType
 --
@@ -83,30 +78,30 @@ version hkSourceRevision  =
 --
 -- ObjC selector: @- productType@
 productType :: IsHKSourceRevision hkSourceRevision => hkSourceRevision -> IO (Id NSString)
-productType hkSourceRevision  =
-    sendMsg hkSourceRevision (mkSelector "productType") (retPtr retVoid) [] >>= retainedObject . castPtr
+productType hkSourceRevision =
+  sendMessage hkSourceRevision productTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSource:version:@
-initWithSource_versionSelector :: Selector
+initWithSource_versionSelector :: Selector '[Id HKSource, Id NSString] (Id HKSourceRevision)
 initWithSource_versionSelector = mkSelector "initWithSource:version:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKSourceRevision)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id HKSource)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @productType@
-productTypeSelector :: Selector
+productTypeSelector :: Selector '[] (Id NSString)
 productTypeSelector = mkSelector "productType"
 

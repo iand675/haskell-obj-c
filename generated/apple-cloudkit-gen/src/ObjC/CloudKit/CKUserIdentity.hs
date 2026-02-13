@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.CloudKit.CKUserIdentity
   , nameComponents
   , hasiCloudAccount
   , contactIdentifiers
+  , contactIdentifiersSelector
+  , hasiCloudAccountSelector
   , initSelector
-  , newSelector
-  , userRecordIDSelector
   , lookupInfoSelector
   , nameComponentsSelector
-  , hasiCloudAccountSelector
-  , contactIdentifiersSelector
+  , newSelector
+  , userRecordIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,72 +40,72 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO (Id CKUserIdentity)
-init_ ckUserIdentity  =
-    sendMsg ckUserIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckUserIdentity =
+  sendOwnedMessage ckUserIdentity initSelector
 
 -- | @+ new@
 new :: IO (Id CKUserIdentity)
 new  =
   do
     cls' <- getRequiredClass "CKUserIdentity"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- userRecordID@
 userRecordID :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO (Id CKRecordID)
-userRecordID ckUserIdentity  =
-    sendMsg ckUserIdentity (mkSelector "userRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+userRecordID ckUserIdentity =
+  sendMessage ckUserIdentity userRecordIDSelector
 
 -- | This is the @lookupInfo@ you passed in to @CKDiscoverUserIdentitiesOperation@ or @CKFetchShareParticipantsOperation@
 --
 -- ObjC selector: @- lookupInfo@
 lookupInfo :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO (Id CKUserIdentityLookupInfo)
-lookupInfo ckUserIdentity  =
-    sendMsg ckUserIdentity (mkSelector "lookupInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+lookupInfo ckUserIdentity =
+  sendMessage ckUserIdentity lookupInfoSelector
 
 -- | @- nameComponents@
 nameComponents :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO (Id NSPersonNameComponents)
-nameComponents ckUserIdentity  =
-    sendMsg ckUserIdentity (mkSelector "nameComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameComponents ckUserIdentity =
+  sendMessage ckUserIdentity nameComponentsSelector
 
 -- | @- hasiCloudAccount@
 hasiCloudAccount :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO Bool
-hasiCloudAccount ckUserIdentity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckUserIdentity (mkSelector "hasiCloudAccount") retCULong []
+hasiCloudAccount ckUserIdentity =
+  sendMessage ckUserIdentity hasiCloudAccountSelector
 
 -- | @- contactIdentifiers@
 contactIdentifiers :: IsCKUserIdentity ckUserIdentity => ckUserIdentity -> IO (Id NSArray)
-contactIdentifiers ckUserIdentity  =
-    sendMsg ckUserIdentity (mkSelector "contactIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactIdentifiers ckUserIdentity =
+  sendMessage ckUserIdentity contactIdentifiersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKUserIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKUserIdentity)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @userRecordID@
-userRecordIDSelector :: Selector
+userRecordIDSelector :: Selector '[] (Id CKRecordID)
 userRecordIDSelector = mkSelector "userRecordID"
 
 -- | @Selector@ for @lookupInfo@
-lookupInfoSelector :: Selector
+lookupInfoSelector :: Selector '[] (Id CKUserIdentityLookupInfo)
 lookupInfoSelector = mkSelector "lookupInfo"
 
 -- | @Selector@ for @nameComponents@
-nameComponentsSelector :: Selector
+nameComponentsSelector :: Selector '[] (Id NSPersonNameComponents)
 nameComponentsSelector = mkSelector "nameComponents"
 
 -- | @Selector@ for @hasiCloudAccount@
-hasiCloudAccountSelector :: Selector
+hasiCloudAccountSelector :: Selector '[] Bool
 hasiCloudAccountSelector = mkSelector "hasiCloudAccount"
 
 -- | @Selector@ for @contactIdentifiers@
-contactIdentifiersSelector :: Selector
+contactIdentifiersSelector :: Selector '[] (Id NSArray)
 contactIdentifiersSelector = mkSelector "contactIdentifiers"
 

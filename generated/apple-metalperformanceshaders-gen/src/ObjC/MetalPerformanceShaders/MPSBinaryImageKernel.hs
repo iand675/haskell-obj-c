@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,15 +24,15 @@ module ObjC.MetalPerformanceShaders.MPSBinaryImageKernel
   , setPrimaryEdgeMode
   , secondaryEdgeMode
   , setSecondaryEdgeMode
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector
   , encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocatorSelector
-  , encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector
   , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
+  , encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector
+  , encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , primaryEdgeModeSelector
-  , setPrimaryEdgeModeSelector
   , secondaryEdgeModeSelector
+  , setPrimaryEdgeModeSelector
   , setSecondaryEdgeModeSelector
 
   -- * Enum types
@@ -44,15 +45,11 @@ module ObjC.MetalPerformanceShaders.MPSBinaryImageKernel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> RawId -> IO (Id MPSBinaryImageKernel)
-initWithDevice mpsBinaryImageKernel  device =
-    sendMsg mpsBinaryImageKernel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsBinaryImageKernel device =
+  sendOwnedMessage mpsBinaryImageKernel initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -84,9 +81,8 @@ initWithDevice mpsBinaryImageKernel  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSBinaryImageKernel mpsBinaryImageKernel, IsNSCoder aDecoder) => mpsBinaryImageKernel -> aDecoder -> RawId -> IO (Id MPSBinaryImageKernel)
-initWithCoder_device mpsBinaryImageKernel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsBinaryImageKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsBinaryImageKernel aDecoder device =
+  sendOwnedMessage mpsBinaryImageKernel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | This method attempts to apply the MPSKernel in place on a texture.
 --
@@ -112,8 +108,8 @@ initWithCoder_device mpsBinaryImageKernel  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryTexture:inPlaceSecondaryTexture:fallbackCopyAllocator:@
 encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocator :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> RawId -> RawId -> RawId -> Ptr () -> IO Bool
-encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocator mpsBinaryImageKernel  commandBuffer primaryTexture inPlaceSecondaryTexture copyAllocator =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsBinaryImageKernel (mkSelector "encodeToCommandBuffer:primaryTexture:inPlaceSecondaryTexture:fallbackCopyAllocator:") retCULong [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryTexture) :: Ptr ()), argPtr (castPtr (unRawId inPlaceSecondaryTexture) :: Ptr ()), argPtr (castPtr copyAllocator :: Ptr ())]
+encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocator mpsBinaryImageKernel commandBuffer primaryTexture inPlaceSecondaryTexture copyAllocator =
+  sendMessage mpsBinaryImageKernel encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector commandBuffer primaryTexture inPlaceSecondaryTexture copyAllocator
 
 -- | Attempt to apply a MPSKernel to a texture in place.
 --
@@ -147,8 +143,8 @@ encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocat
 --
 -- ObjC selector: @- encodeToCommandBuffer:inPlacePrimaryTexture:secondaryTexture:fallbackCopyAllocator:@
 encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocator :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> RawId -> RawId -> RawId -> Ptr () -> IO Bool
-encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocator mpsBinaryImageKernel  commandBuffer inPlacePrimaryTexture secondaryTexture copyAllocator =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsBinaryImageKernel (mkSelector "encodeToCommandBuffer:inPlacePrimaryTexture:secondaryTexture:fallbackCopyAllocator:") retCULong [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId inPlacePrimaryTexture) :: Ptr ()), argPtr (castPtr (unRawId secondaryTexture) :: Ptr ()), argPtr (castPtr copyAllocator :: Ptr ())]
+encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocator mpsBinaryImageKernel commandBuffer inPlacePrimaryTexture secondaryTexture copyAllocator =
+  sendMessage mpsBinaryImageKernel encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocatorSelector commandBuffer inPlacePrimaryTexture secondaryTexture copyAllocator
 
 -- | Encode a MPSKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -162,8 +158,8 @@ encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocat
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryTexture:secondaryTexture:destinationTexture:@
 encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTexture :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTexture mpsBinaryImageKernel  commandBuffer primaryTexture secondaryTexture destinationTexture =
-    sendMsg mpsBinaryImageKernel (mkSelector "encodeToCommandBuffer:primaryTexture:secondaryTexture:destinationTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryTexture) :: Ptr ()), argPtr (castPtr (unRawId secondaryTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ())]
+encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTexture mpsBinaryImageKernel commandBuffer primaryTexture secondaryTexture destinationTexture =
+  sendMessage mpsBinaryImageKernel encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector commandBuffer primaryTexture secondaryTexture destinationTexture
 
 -- | Encode a MPSKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -177,11 +173,8 @@ encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTexture mpsBina
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage :: (IsMPSBinaryImageKernel mpsBinaryImageKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsMPSImage destinationImage) => mpsBinaryImageKernel -> RawId -> primaryImage -> secondaryImage -> destinationImage -> IO ()
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpsBinaryImageKernel  commandBuffer primaryImage secondaryImage destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpsBinaryImageKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpsBinaryImageKernel commandBuffer primaryImage secondaryImage destinationImage =
+  sendMessage mpsBinaryImageKernel encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toMPSImage destinationImage)
 
 -- | primaryEdgeMode
 --
@@ -193,8 +186,8 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpsBinaryImag
 --
 -- ObjC selector: @- primaryEdgeMode@
 primaryEdgeMode :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> IO MPSImageEdgeMode
-primaryEdgeMode mpsBinaryImageKernel  =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpsBinaryImageKernel (mkSelector "primaryEdgeMode") retCULong []
+primaryEdgeMode mpsBinaryImageKernel =
+  sendMessage mpsBinaryImageKernel primaryEdgeModeSelector
 
 -- | primaryEdgeMode
 --
@@ -206,8 +199,8 @@ primaryEdgeMode mpsBinaryImageKernel  =
 --
 -- ObjC selector: @- setPrimaryEdgeMode:@
 setPrimaryEdgeMode :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> MPSImageEdgeMode -> IO ()
-setPrimaryEdgeMode mpsBinaryImageKernel  value =
-    sendMsg mpsBinaryImageKernel (mkSelector "setPrimaryEdgeMode:") retVoid [argCULong (coerce value)]
+setPrimaryEdgeMode mpsBinaryImageKernel value =
+  sendMessage mpsBinaryImageKernel setPrimaryEdgeModeSelector value
 
 -- | secondaryEdgeMode
 --
@@ -219,8 +212,8 @@ setPrimaryEdgeMode mpsBinaryImageKernel  value =
 --
 -- ObjC selector: @- secondaryEdgeMode@
 secondaryEdgeMode :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> IO MPSImageEdgeMode
-secondaryEdgeMode mpsBinaryImageKernel  =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpsBinaryImageKernel (mkSelector "secondaryEdgeMode") retCULong []
+secondaryEdgeMode mpsBinaryImageKernel =
+  sendMessage mpsBinaryImageKernel secondaryEdgeModeSelector
 
 -- | secondaryEdgeMode
 --
@@ -232,50 +225,50 @@ secondaryEdgeMode mpsBinaryImageKernel  =
 --
 -- ObjC selector: @- setSecondaryEdgeMode:@
 setSecondaryEdgeMode :: IsMPSBinaryImageKernel mpsBinaryImageKernel => mpsBinaryImageKernel -> MPSImageEdgeMode -> IO ()
-setSecondaryEdgeMode mpsBinaryImageKernel  value =
-    sendMsg mpsBinaryImageKernel (mkSelector "setSecondaryEdgeMode:") retVoid [argCULong (coerce value)]
+setSecondaryEdgeMode mpsBinaryImageKernel value =
+  sendMessage mpsBinaryImageKernel setSecondaryEdgeModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSBinaryImageKernel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSBinaryImageKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryTexture:inPlaceSecondaryTexture:fallbackCopyAllocator:@
-encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector :: Selector
+encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector :: Selector '[RawId, RawId, RawId, Ptr ()] Bool
 encodeToCommandBuffer_primaryTexture_inPlaceSecondaryTexture_fallbackCopyAllocatorSelector = mkSelector "encodeToCommandBuffer:primaryTexture:inPlaceSecondaryTexture:fallbackCopyAllocator:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inPlacePrimaryTexture:secondaryTexture:fallbackCopyAllocator:@
-encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocatorSelector :: Selector
+encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocatorSelector :: Selector '[RawId, RawId, RawId, Ptr ()] Bool
 encodeToCommandBuffer_inPlacePrimaryTexture_secondaryTexture_fallbackCopyAllocatorSelector = mkSelector "encodeToCommandBuffer:inPlacePrimaryTexture:secondaryTexture:fallbackCopyAllocator:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryTexture:secondaryTexture:destinationTexture:@
-encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector :: Selector
+encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeToCommandBuffer_primaryTexture_secondaryTexture_destinationTextureSelector = mkSelector "encodeToCommandBuffer:primaryTexture:secondaryTexture:destinationTexture:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSImage] ()
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:"
 
 -- | @Selector@ for @primaryEdgeMode@
-primaryEdgeModeSelector :: Selector
+primaryEdgeModeSelector :: Selector '[] MPSImageEdgeMode
 primaryEdgeModeSelector = mkSelector "primaryEdgeMode"
 
 -- | @Selector@ for @setPrimaryEdgeMode:@
-setPrimaryEdgeModeSelector :: Selector
+setPrimaryEdgeModeSelector :: Selector '[MPSImageEdgeMode] ()
 setPrimaryEdgeModeSelector = mkSelector "setPrimaryEdgeMode:"
 
 -- | @Selector@ for @secondaryEdgeMode@
-secondaryEdgeModeSelector :: Selector
+secondaryEdgeModeSelector :: Selector '[] MPSImageEdgeMode
 secondaryEdgeModeSelector = mkSelector "secondaryEdgeMode"
 
 -- | @Selector@ for @setSecondaryEdgeMode:@
-setSecondaryEdgeModeSelector :: Selector
+setSecondaryEdgeModeSelector :: Selector '[MPSImageEdgeMode] ()
 setSecondaryEdgeModeSelector = mkSelector "setSecondaryEdgeMode:"
 

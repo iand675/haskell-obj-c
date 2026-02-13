@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRCommissionerControlClusterCommissioningRequestResultEvent
   , setStatusCode
   , fabricIndex
   , setFabricIndex
-  , requestIDSelector
-  , setRequestIDSelector
   , clientNodeIDSelector
-  , setClientNodeIDSelector
-  , statusCodeSelector
-  , setStatusCodeSelector
   , fabricIndexSelector
+  , requestIDSelector
+  , setClientNodeIDSelector
   , setFabricIndexSelector
+  , setRequestIDSelector
+  , setStatusCodeSelector
+  , statusCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestID@
 requestID :: IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent => mtrCommissionerControlClusterCommissioningRequestResultEvent -> IO (Id NSNumber)
-requestID mtrCommissionerControlClusterCommissioningRequestResultEvent  =
-    sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "requestID") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestID mtrCommissionerControlClusterCommissioningRequestResultEvent =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent requestIDSelector
 
 -- | @- setRequestID:@
 setRequestID :: (IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent, IsNSNumber value) => mtrCommissionerControlClusterCommissioningRequestResultEvent -> value -> IO ()
-setRequestID mtrCommissionerControlClusterCommissioningRequestResultEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "setRequestID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestID mtrCommissionerControlClusterCommissioningRequestResultEvent value =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent setRequestIDSelector (toNSNumber value)
 
 -- | @- clientNodeID@
 clientNodeID :: IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent => mtrCommissionerControlClusterCommissioningRequestResultEvent -> IO (Id NSNumber)
-clientNodeID mtrCommissionerControlClusterCommissioningRequestResultEvent  =
-    sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "clientNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientNodeID mtrCommissionerControlClusterCommissioningRequestResultEvent =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent clientNodeIDSelector
 
 -- | @- setClientNodeID:@
 setClientNodeID :: (IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent, IsNSNumber value) => mtrCommissionerControlClusterCommissioningRequestResultEvent -> value -> IO ()
-setClientNodeID mtrCommissionerControlClusterCommissioningRequestResultEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "setClientNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientNodeID mtrCommissionerControlClusterCommissioningRequestResultEvent value =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent setClientNodeIDSelector (toNSNumber value)
 
 -- | @- statusCode@
 statusCode :: IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent => mtrCommissionerControlClusterCommissioningRequestResultEvent -> IO (Id NSNumber)
-statusCode mtrCommissionerControlClusterCommissioningRequestResultEvent  =
-    sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "statusCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusCode mtrCommissionerControlClusterCommissioningRequestResultEvent =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent statusCodeSelector
 
 -- | @- setStatusCode:@
 setStatusCode :: (IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent, IsNSNumber value) => mtrCommissionerControlClusterCommissioningRequestResultEvent -> value -> IO ()
-setStatusCode mtrCommissionerControlClusterCommissioningRequestResultEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "setStatusCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusCode mtrCommissionerControlClusterCommissioningRequestResultEvent value =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent setStatusCodeSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent => mtrCommissionerControlClusterCommissioningRequestResultEvent -> IO (Id NSNumber)
-fabricIndex mtrCommissionerControlClusterCommissioningRequestResultEvent  =
-    sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrCommissionerControlClusterCommissioningRequestResultEvent =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRCommissionerControlClusterCommissioningRequestResultEvent mtrCommissionerControlClusterCommissioningRequestResultEvent, IsNSNumber value) => mtrCommissionerControlClusterCommissioningRequestResultEvent -> value -> IO ()
-setFabricIndex mtrCommissionerControlClusterCommissioningRequestResultEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissioningRequestResultEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrCommissionerControlClusterCommissioningRequestResultEvent value =
+  sendMessage mtrCommissionerControlClusterCommissioningRequestResultEvent setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestID@
-requestIDSelector :: Selector
+requestIDSelector :: Selector '[] (Id NSNumber)
 requestIDSelector = mkSelector "requestID"
 
 -- | @Selector@ for @setRequestID:@
-setRequestIDSelector :: Selector
+setRequestIDSelector :: Selector '[Id NSNumber] ()
 setRequestIDSelector = mkSelector "setRequestID:"
 
 -- | @Selector@ for @clientNodeID@
-clientNodeIDSelector :: Selector
+clientNodeIDSelector :: Selector '[] (Id NSNumber)
 clientNodeIDSelector = mkSelector "clientNodeID"
 
 -- | @Selector@ for @setClientNodeID:@
-setClientNodeIDSelector :: Selector
+setClientNodeIDSelector :: Selector '[Id NSNumber] ()
 setClientNodeIDSelector = mkSelector "setClientNodeID:"
 
 -- | @Selector@ for @statusCode@
-statusCodeSelector :: Selector
+statusCodeSelector :: Selector '[] (Id NSNumber)
 statusCodeSelector = mkSelector "statusCode"
 
 -- | @Selector@ for @setStatusCode:@
-setStatusCodeSelector :: Selector
+setStatusCodeSelector :: Selector '[Id NSNumber] ()
 setStatusCodeSelector = mkSelector "setStatusCode:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

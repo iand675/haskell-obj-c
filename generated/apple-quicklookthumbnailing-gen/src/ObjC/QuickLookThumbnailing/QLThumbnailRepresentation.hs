@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.QuickLookThumbnailing.QLThumbnailRepresentation
   , type_
   , cgImage
   , uiImage
-  , typeSelector
   , cgImageSelector
+  , typeSelector
   , uiImageSelector
 
   -- * Enum types
@@ -22,15 +23,11 @@ module ObjC.QuickLookThumbnailing.QLThumbnailRepresentation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,36 +37,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- type@
 type_ :: IsQLThumbnailRepresentation qlThumbnailRepresentation => qlThumbnailRepresentation -> IO QLThumbnailRepresentationType
-type_ qlThumbnailRepresentation  =
-    fmap (coerce :: CLong -> QLThumbnailRepresentationType) $ sendMsg qlThumbnailRepresentation (mkSelector "type") retCLong []
+type_ qlThumbnailRepresentation =
+  sendMessage qlThumbnailRepresentation typeSelector
 
 -- | Returns the CGImage representation of the thumbnail.
 --
 -- ObjC selector: @- CGImage@
 cgImage :: IsQLThumbnailRepresentation qlThumbnailRepresentation => qlThumbnailRepresentation -> IO (Ptr ())
-cgImage qlThumbnailRepresentation  =
-    fmap castPtr $ sendMsg qlThumbnailRepresentation (mkSelector "CGImage") (retPtr retVoid) []
+cgImage qlThumbnailRepresentation =
+  sendMessage qlThumbnailRepresentation cgImageSelector
 
 -- | Returns the UIImage representation of the thumbnail. You need to explicitly link against UIKit to use this property.
 --
 -- ObjC selector: @- UIImage@
 uiImage :: IsQLThumbnailRepresentation qlThumbnailRepresentation => qlThumbnailRepresentation -> IO RawId
-uiImage qlThumbnailRepresentation  =
-    fmap (RawId . castPtr) $ sendMsg qlThumbnailRepresentation (mkSelector "UIImage") (retPtr retVoid) []
+uiImage qlThumbnailRepresentation =
+  sendMessage qlThumbnailRepresentation uiImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] QLThumbnailRepresentationType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @CGImage@
-cgImageSelector :: Selector
+cgImageSelector :: Selector '[] (Ptr ())
 cgImageSelector = mkSelector "CGImage"
 
 -- | @Selector@ for @UIImage@
-uiImageSelector :: Selector
+uiImageSelector :: Selector '[] RawId
 uiImageSelector = mkSelector "UIImage"
 

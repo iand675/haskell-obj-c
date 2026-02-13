@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentApplication
   , teamIdentifier
   , requiresSignatureValidation
   , setRequiresSignatureValidation
+  , bundleIdentifierSelector
+  , initSelector
   , initWithBundleIdentifierSelector
   , initWithBundleIdentifier_teamIdentifierSelector
-  , initSelector
   , newSelector
-  , bundleIdentifierSelector
-  , teamIdentifierSelector
   , requiresSignatureValidationSelector
   , setRequiresSignatureValidationSelector
+  , teamIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,82 +40,79 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBundleIdentifier:@
 initWithBundleIdentifier :: (IsAEAssessmentApplication aeAssessmentApplication, IsNSString bundleIdentifier) => aeAssessmentApplication -> bundleIdentifier -> IO (Id AEAssessmentApplication)
-initWithBundleIdentifier aeAssessmentApplication  bundleIdentifier =
-  withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-      sendMsg aeAssessmentApplication (mkSelector "initWithBundleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_bundleIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithBundleIdentifier aeAssessmentApplication bundleIdentifier =
+  sendOwnedMessage aeAssessmentApplication initWithBundleIdentifierSelector (toNSString bundleIdentifier)
 
 -- | @- initWithBundleIdentifier:teamIdentifier:@
 initWithBundleIdentifier_teamIdentifier :: (IsAEAssessmentApplication aeAssessmentApplication, IsNSString bundleIdentifier, IsNSString teamIdentifier) => aeAssessmentApplication -> bundleIdentifier -> teamIdentifier -> IO (Id AEAssessmentApplication)
-initWithBundleIdentifier_teamIdentifier aeAssessmentApplication  bundleIdentifier teamIdentifier =
-  withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-    withObjCPtr teamIdentifier $ \raw_teamIdentifier ->
-        sendMsg aeAssessmentApplication (mkSelector "initWithBundleIdentifier:teamIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_bundleIdentifier :: Ptr ()), argPtr (castPtr raw_teamIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithBundleIdentifier_teamIdentifier aeAssessmentApplication bundleIdentifier teamIdentifier =
+  sendOwnedMessage aeAssessmentApplication initWithBundleIdentifier_teamIdentifierSelector (toNSString bundleIdentifier) (toNSString teamIdentifier)
 
 -- | @- init@
 init_ :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO (Id AEAssessmentApplication)
-init_ aeAssessmentApplication  =
-    sendMsg aeAssessmentApplication (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ aeAssessmentApplication =
+  sendOwnedMessage aeAssessmentApplication initSelector
 
 -- | @+ new@
 new :: IO (Id AEAssessmentApplication)
 new  =
   do
     cls' <- getRequiredClass "AEAssessmentApplication"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- bundleIdentifier@
 bundleIdentifier :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO (Id NSString)
-bundleIdentifier aeAssessmentApplication  =
-    sendMsg aeAssessmentApplication (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier aeAssessmentApplication =
+  sendMessage aeAssessmentApplication bundleIdentifierSelector
 
 -- | @- teamIdentifier@
 teamIdentifier :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO (Id NSString)
-teamIdentifier aeAssessmentApplication  =
-    sendMsg aeAssessmentApplication (mkSelector "teamIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+teamIdentifier aeAssessmentApplication =
+  sendMessage aeAssessmentApplication teamIdentifierSelector
 
 -- | @- requiresSignatureValidation@
 requiresSignatureValidation :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> IO Bool
-requiresSignatureValidation aeAssessmentApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentApplication (mkSelector "requiresSignatureValidation") retCULong []
+requiresSignatureValidation aeAssessmentApplication =
+  sendMessage aeAssessmentApplication requiresSignatureValidationSelector
 
 -- | @- setRequiresSignatureValidation:@
 setRequiresSignatureValidation :: IsAEAssessmentApplication aeAssessmentApplication => aeAssessmentApplication -> Bool -> IO ()
-setRequiresSignatureValidation aeAssessmentApplication  value =
-    sendMsg aeAssessmentApplication (mkSelector "setRequiresSignatureValidation:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresSignatureValidation aeAssessmentApplication value =
+  sendMessage aeAssessmentApplication setRequiresSignatureValidationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBundleIdentifier:@
-initWithBundleIdentifierSelector :: Selector
+initWithBundleIdentifierSelector :: Selector '[Id NSString] (Id AEAssessmentApplication)
 initWithBundleIdentifierSelector = mkSelector "initWithBundleIdentifier:"
 
 -- | @Selector@ for @initWithBundleIdentifier:teamIdentifier:@
-initWithBundleIdentifier_teamIdentifierSelector :: Selector
+initWithBundleIdentifier_teamIdentifierSelector :: Selector '[Id NSString, Id NSString] (Id AEAssessmentApplication)
 initWithBundleIdentifier_teamIdentifierSelector = mkSelector "initWithBundleIdentifier:teamIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AEAssessmentApplication)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AEAssessmentApplication)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @teamIdentifier@
-teamIdentifierSelector :: Selector
+teamIdentifierSelector :: Selector '[] (Id NSString)
 teamIdentifierSelector = mkSelector "teamIdentifier"
 
 -- | @Selector@ for @requiresSignatureValidation@
-requiresSignatureValidationSelector :: Selector
+requiresSignatureValidationSelector :: Selector '[] Bool
 requiresSignatureValidationSelector = mkSelector "requiresSignatureValidation"
 
 -- | @Selector@ for @setRequiresSignatureValidation:@
-setRequiresSignatureValidationSelector :: Selector
+setRequiresSignatureValidationSelector :: Selector '[Bool] ()
 setRequiresSignatureValidationSelector = mkSelector "setRequiresSignatureValidation:"
 

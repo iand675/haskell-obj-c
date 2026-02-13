@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.MapKit.MKMapItemIdentifier
   , new
   , initWithIdentifierString
   , identifierString
-  , initSelector
-  , newSelector
-  , initWithIdentifierStringSelector
   , identifierStringSelector
+  , initSelector
+  , initWithIdentifierStringSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMKMapItemIdentifier mkMapItemIdentifier => mkMapItemIdentifier -> IO (Id MKMapItemIdentifier)
-init_ mkMapItemIdentifier  =
-    sendMsg mkMapItemIdentifier (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkMapItemIdentifier =
+  sendOwnedMessage mkMapItemIdentifier initSelector
 
 -- | @+ new@
 new :: IO (Id MKMapItemIdentifier)
 new  =
   do
     cls' <- getRequiredClass "MKMapItemIdentifier"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithIdentifierString:@
 initWithIdentifierString :: (IsMKMapItemIdentifier mkMapItemIdentifier, IsNSString string) => mkMapItemIdentifier -> string -> IO (Id MKMapItemIdentifier)
-initWithIdentifierString mkMapItemIdentifier  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg mkMapItemIdentifier (mkSelector "initWithIdentifierString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifierString mkMapItemIdentifier string =
+  sendOwnedMessage mkMapItemIdentifier initWithIdentifierStringSelector (toNSString string)
 
 -- | @- identifierString@
 identifierString :: IsMKMapItemIdentifier mkMapItemIdentifier => mkMapItemIdentifier -> IO (Id NSString)
-identifierString mkMapItemIdentifier  =
-    sendMsg mkMapItemIdentifier (mkSelector "identifierString") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifierString mkMapItemIdentifier =
+  sendMessage mkMapItemIdentifier identifierStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKMapItemIdentifier)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKMapItemIdentifier)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithIdentifierString:@
-initWithIdentifierStringSelector :: Selector
+initWithIdentifierStringSelector :: Selector '[Id NSString] (Id MKMapItemIdentifier)
 initWithIdentifierStringSelector = mkSelector "initWithIdentifierString:"
 
 -- | @Selector@ for @identifierString@
-identifierStringSelector :: Selector
+identifierStringSelector :: Selector '[] (Id NSString)
 identifierStringSelector = mkSelector "identifierString"
 

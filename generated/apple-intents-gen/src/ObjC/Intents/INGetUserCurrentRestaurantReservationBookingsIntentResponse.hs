@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INGetUserCurrentRestaurantReservationBookingsIntentResponse
   , code
   , userCurrentBookings
   , setUserCurrentBookings
-  , initWithUserCurrentBookings_code_userActivitySelector
   , codeSelector
-  , userCurrentBookingsSelector
+  , initWithUserCurrentBookings_code_userActivitySelector
   , setUserCurrentBookingsSelector
+  , userCurrentBookingsSelector
 
   -- * Enum types
   , INGetUserCurrentRestaurantReservationBookingsIntentResponseCode(INGetUserCurrentRestaurantReservationBookingsIntentResponseCode)
@@ -25,15 +26,11 @@ module ObjC.Intents.INGetUserCurrentRestaurantReservationBookingsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,44 +40,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithUserCurrentBookings:code:userActivity:@
 initWithUserCurrentBookings_code_userActivity :: (IsINGetUserCurrentRestaurantReservationBookingsIntentResponse inGetUserCurrentRestaurantReservationBookingsIntentResponse, IsNSArray userCurrentBookings, IsNSUserActivity userActivity) => inGetUserCurrentRestaurantReservationBookingsIntentResponse -> userCurrentBookings -> INGetUserCurrentRestaurantReservationBookingsIntentResponseCode -> userActivity -> IO (Id INGetUserCurrentRestaurantReservationBookingsIntentResponse)
-initWithUserCurrentBookings_code_userActivity inGetUserCurrentRestaurantReservationBookingsIntentResponse  userCurrentBookings code userActivity =
-  withObjCPtr userCurrentBookings $ \raw_userCurrentBookings ->
-    withObjCPtr userActivity $ \raw_userActivity ->
-        sendMsg inGetUserCurrentRestaurantReservationBookingsIntentResponse (mkSelector "initWithUserCurrentBookings:code:userActivity:") (retPtr retVoid) [argPtr (castPtr raw_userCurrentBookings :: Ptr ()), argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithUserCurrentBookings_code_userActivity inGetUserCurrentRestaurantReservationBookingsIntentResponse userCurrentBookings code userActivity =
+  sendOwnedMessage inGetUserCurrentRestaurantReservationBookingsIntentResponse initWithUserCurrentBookings_code_userActivitySelector (toNSArray userCurrentBookings) code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINGetUserCurrentRestaurantReservationBookingsIntentResponse inGetUserCurrentRestaurantReservationBookingsIntentResponse => inGetUserCurrentRestaurantReservationBookingsIntentResponse -> IO INGetUserCurrentRestaurantReservationBookingsIntentResponseCode
-code inGetUserCurrentRestaurantReservationBookingsIntentResponse  =
-    fmap (coerce :: CLong -> INGetUserCurrentRestaurantReservationBookingsIntentResponseCode) $ sendMsg inGetUserCurrentRestaurantReservationBookingsIntentResponse (mkSelector "code") retCLong []
+code inGetUserCurrentRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntentResponse codeSelector
 
 -- | @- userCurrentBookings@
 userCurrentBookings :: IsINGetUserCurrentRestaurantReservationBookingsIntentResponse inGetUserCurrentRestaurantReservationBookingsIntentResponse => inGetUserCurrentRestaurantReservationBookingsIntentResponse -> IO (Id NSArray)
-userCurrentBookings inGetUserCurrentRestaurantReservationBookingsIntentResponse  =
-    sendMsg inGetUserCurrentRestaurantReservationBookingsIntentResponse (mkSelector "userCurrentBookings") (retPtr retVoid) [] >>= retainedObject . castPtr
+userCurrentBookings inGetUserCurrentRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntentResponse userCurrentBookingsSelector
 
 -- | @- setUserCurrentBookings:@
 setUserCurrentBookings :: (IsINGetUserCurrentRestaurantReservationBookingsIntentResponse inGetUserCurrentRestaurantReservationBookingsIntentResponse, IsNSArray value) => inGetUserCurrentRestaurantReservationBookingsIntentResponse -> value -> IO ()
-setUserCurrentBookings inGetUserCurrentRestaurantReservationBookingsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetUserCurrentRestaurantReservationBookingsIntentResponse (mkSelector "setUserCurrentBookings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserCurrentBookings inGetUserCurrentRestaurantReservationBookingsIntentResponse value =
+  sendMessage inGetUserCurrentRestaurantReservationBookingsIntentResponse setUserCurrentBookingsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUserCurrentBookings:code:userActivity:@
-initWithUserCurrentBookings_code_userActivitySelector :: Selector
+initWithUserCurrentBookings_code_userActivitySelector :: Selector '[Id NSArray, INGetUserCurrentRestaurantReservationBookingsIntentResponseCode, Id NSUserActivity] (Id INGetUserCurrentRestaurantReservationBookingsIntentResponse)
 initWithUserCurrentBookings_code_userActivitySelector = mkSelector "initWithUserCurrentBookings:code:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetUserCurrentRestaurantReservationBookingsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @userCurrentBookings@
-userCurrentBookingsSelector :: Selector
+userCurrentBookingsSelector :: Selector '[] (Id NSArray)
 userCurrentBookingsSelector = mkSelector "userCurrentBookings"
 
 -- | @Selector@ for @setUserCurrentBookings:@
-setUserCurrentBookingsSelector :: Selector
+setUserCurrentBookingsSelector :: Selector '[Id NSArray] ()
 setUserCurrentBookingsSelector = mkSelector "setUserCurrentBookings:"
 

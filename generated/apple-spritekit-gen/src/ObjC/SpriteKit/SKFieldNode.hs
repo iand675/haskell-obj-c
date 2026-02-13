@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,49 +37,45 @@ module ObjC.SpriteKit.SKFieldNode
   , setAnimationSpeed
   , texture
   , setTexture
-  , dragFieldSelector
-  , vortexFieldSelector
-  , radialGravityFieldSelector
-  , velocityFieldWithTextureSelector
-  , noiseFieldWithSmoothness_animationSpeedSelector
-  , turbulenceFieldWithSmoothness_animationSpeedSelector
-  , springFieldSelector
-  , electricFieldSelector
-  , magneticFieldSelector
-  , customFieldWithEvaluationBlockSelector
-  , regionSelector
-  , setRegionSelector
-  , strengthSelector
-  , setStrengthSelector
-  , falloffSelector
-  , setFalloffSelector
-  , minimumRadiusSelector
-  , setMinimumRadiusSelector
-  , enabledSelector
-  , setEnabledSelector
-  , exclusiveSelector
-  , setExclusiveSelector
-  , categoryBitMaskSelector
-  , setCategoryBitMaskSelector
-  , smoothnessSelector
-  , setSmoothnessSelector
   , animationSpeedSelector
+  , categoryBitMaskSelector
+  , customFieldWithEvaluationBlockSelector
+  , dragFieldSelector
+  , electricFieldSelector
+  , enabledSelector
+  , exclusiveSelector
+  , falloffSelector
+  , magneticFieldSelector
+  , minimumRadiusSelector
+  , noiseFieldWithSmoothness_animationSpeedSelector
+  , radialGravityFieldSelector
+  , regionSelector
   , setAnimationSpeedSelector
-  , textureSelector
+  , setCategoryBitMaskSelector
+  , setEnabledSelector
+  , setExclusiveSelector
+  , setFalloffSelector
+  , setMinimumRadiusSelector
+  , setRegionSelector
+  , setSmoothnessSelector
+  , setStrengthSelector
   , setTextureSelector
+  , smoothnessSelector
+  , springFieldSelector
+  , strengthSelector
+  , textureSelector
+  , turbulenceFieldWithSmoothness_animationSpeedSelector
+  , velocityFieldWithTextureSelector
+  , vortexFieldSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,7 +90,7 @@ dragField :: IO (Id SKFieldNode)
 dragField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "dragField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dragFieldSelector
 
 -- | Applies a force tangential to the direction from the sample point to the field's position. The force will be CCW to the direction. Make the strength negative to apply force in the CW direction. Amount is proportional to distance from center and the object's mass. Use this to create effects such as tornadoes.
 --
@@ -102,7 +99,7 @@ vortexField :: IO (Id SKFieldNode)
 vortexField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "vortexField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' vortexFieldSelector
 
 -- | Applies a force in the direction of the origin of the field in local space. To repel objects, use a negative strength. The force is proportional to the distance from the field origin. Varies with the mass of the object according to F = ma The field node's rotation property can be used to orient the gravity in a particular direction.
 --
@@ -111,7 +108,7 @@ radialGravityField :: IO (Id SKFieldNode)
 radialGravityField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "radialGravityField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' radialGravityFieldSelector
 
 -- | The supplied texture contains velocity values for any object entering the field’s area of effect. If no texture is supplied, the direction property is used instead. Velocity fields override the effect of any other acceleration applied to the body. Velocity fields are typically used for such effects as advection, for example, a velocity field might describe the velocity on the surface of a river. An object placed in the river would then follow the river.
 --
@@ -124,8 +121,7 @@ velocityFieldWithTexture :: IsSKTexture velocityTexture => velocityTexture -> IO
 velocityFieldWithTexture velocityTexture =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    withObjCPtr velocityTexture $ \raw_velocityTexture ->
-      sendClassMsg cls' (mkSelector "velocityFieldWithTexture:") (retPtr retVoid) [argPtr (castPtr raw_velocityTexture :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' velocityFieldWithTextureSelector (toSKTexture velocityTexture)
 
 -- | A time varying differentiable Perlin simplex noise field. By default a smooth noise is calculated, and the field is time varying. Use this to simulate such effects as fireflies, or snow. To freeze the noise in place, set animationSpeed to 0.0. Mass is ignored.
 --
@@ -142,7 +138,7 @@ noiseFieldWithSmoothness_animationSpeed :: CDouble -> CDouble -> IO (Id SKFieldN
 noiseFieldWithSmoothness_animationSpeed smoothness speed =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "noiseFieldWithSmoothness:animationSpeed:") (retPtr retVoid) [argCDouble smoothness, argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseFieldWithSmoothness_animationSpeedSelector smoothness speed
 
 -- | Just like Noise, except the strength of the noise is proportional to the velocity of the object in the field.
 --
@@ -159,7 +155,7 @@ turbulenceFieldWithSmoothness_animationSpeed :: CDouble -> CDouble -> IO (Id SKF
 turbulenceFieldWithSmoothness_animationSpeed smoothness speed =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "turbulenceFieldWithSmoothness:animationSpeed:") (retPtr retVoid) [argCDouble smoothness, argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' turbulenceFieldWithSmoothness_animationSpeedSelector smoothness speed
 
 -- | A Hooke’s law force - a force linearly proportional to distance from the center of the field. An object in this field will oscillate with a period proportional to the inverse of the mass. An example use is to keep objects confined to a particular region.
 --
@@ -168,7 +164,7 @@ springField :: IO (Id SKFieldNode)
 springField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "springField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' springFieldSelector
 
 -- | A force proportional to the charge on the object. A charge property has been added to SKPhysicsBodies to accomplish this. An example use of this field is to make objects behavior differently from one another when they enter a region, or to make an object's behavior different than its mass based behavior This field models the first part of the Lorentz equation, F = qE
 --
@@ -177,7 +173,7 @@ electricField :: IO (Id SKFieldNode)
 electricField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "electricField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' electricFieldSelector
 
 -- | A force proportional to the charge on the object and the object’s velocity. A charge property has been added to SKPhysicsBodies to accomplish this. An example use of this field is to make objects behavior differently from one another when they enter a region, or to make an object's behavior different than its mass based behavior This field models the second part of the Lorentz equation, F = qvB
 --
@@ -186,43 +182,42 @@ magneticField :: IO (Id SKFieldNode)
 magneticField  =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "magneticField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' magneticFieldSelector
 
 -- | @+ customFieldWithEvaluationBlock:@
 customFieldWithEvaluationBlock :: Ptr () -> IO (Id SKFieldNode)
 customFieldWithEvaluationBlock block =
   do
     cls' <- getRequiredClass "SKFieldNode"
-    sendClassMsg cls' (mkSelector "customFieldWithEvaluationBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customFieldWithEvaluationBlockSelector block
 
 -- | The region property is the domain of the field's effect. No force is applied to objects outside the region.
 --
 -- ObjC selector: @- region@
 region :: IsSKFieldNode skFieldNode => skFieldNode -> IO (Id SKRegion)
-region skFieldNode  =
-    sendMsg skFieldNode (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+region skFieldNode =
+  sendMessage skFieldNode regionSelector
 
 -- | The region property is the domain of the field's effect. No force is applied to objects outside the region.
 --
 -- ObjC selector: @- setRegion:@
 setRegion :: (IsSKFieldNode skFieldNode, IsSKRegion value) => skFieldNode -> value -> IO ()
-setRegion skFieldNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skFieldNode (mkSelector "setRegion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRegion skFieldNode value =
+  sendMessage skFieldNode setRegionSelector (toSKRegion value)
 
 -- | strength scaling value. default 1.0
 --
 -- ObjC selector: @- strength@
 strength :: IsSKFieldNode skFieldNode => skFieldNode -> IO CFloat
-strength skFieldNode  =
-    sendMsg skFieldNode (mkSelector "strength") retCFloat []
+strength skFieldNode =
+  sendMessage skFieldNode strengthSelector
 
 -- | strength scaling value. default 1.0
 --
 -- ObjC selector: @- setStrength:@
 setStrength :: IsSKFieldNode skFieldNode => skFieldNode -> CFloat -> IO ()
-setStrength skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setStrength:") retVoid [argCFloat value]
+setStrength skFieldNode value =
+  sendMessage skFieldNode setStrengthSelector value
 
 -- | The falloff exponent used to calculate field strength at a distance.    Falloff starts at the minimum radius.
 --
@@ -232,8 +227,8 @@ setStrength skFieldNode  value =
 --
 -- ObjC selector: @- falloff@
 falloff :: IsSKFieldNode skFieldNode => skFieldNode -> IO CFloat
-falloff skFieldNode  =
-    sendMsg skFieldNode (mkSelector "falloff") retCFloat []
+falloff skFieldNode =
+  sendMessage skFieldNode falloffSelector
 
 -- | The falloff exponent used to calculate field strength at a distance.    Falloff starts at the minimum radius.
 --
@@ -243,22 +238,22 @@ falloff skFieldNode  =
 --
 -- ObjC selector: @- setFalloff:@
 setFalloff :: IsSKFieldNode skFieldNode => skFieldNode -> CFloat -> IO ()
-setFalloff skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setFalloff:") retVoid [argCFloat value]
+setFalloff skFieldNode value =
+  sendMessage skFieldNode setFalloffSelector value
 
 -- | minimum radius of effect. Default is very small.
 --
 -- ObjC selector: @- minimumRadius@
 minimumRadius :: IsSKFieldNode skFieldNode => skFieldNode -> IO CFloat
-minimumRadius skFieldNode  =
-    sendMsg skFieldNode (mkSelector "minimumRadius") retCFloat []
+minimumRadius skFieldNode =
+  sendMessage skFieldNode minimumRadiusSelector
 
 -- | minimum radius of effect. Default is very small.
 --
 -- ObjC selector: @- setMinimumRadius:@
 setMinimumRadius :: IsSKFieldNode skFieldNode => skFieldNode -> CFloat -> IO ()
-setMinimumRadius skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setMinimumRadius:") retVoid [argCFloat value]
+setMinimumRadius skFieldNode value =
+  sendMessage skFieldNode setMinimumRadiusSelector value
 
 -- | If enabled, a field has an effect.
 --
@@ -266,8 +261,8 @@ setMinimumRadius skFieldNode  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsSKFieldNode skFieldNode => skFieldNode -> IO Bool
-enabled skFieldNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skFieldNode (mkSelector "enabled") retCULong []
+enabled skFieldNode =
+  sendMessage skFieldNode enabledSelector
 
 -- | If enabled, a field has an effect.
 --
@@ -275,8 +270,8 @@ enabled skFieldNode  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsSKFieldNode skFieldNode => skFieldNode -> Bool -> IO ()
-setEnabled skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled skFieldNode value =
+  sendMessage skFieldNode setEnabledSelector value
 
 -- | If a field is exclusive, it suppresses any other field in its region of effect.    If two or more exclusive fields overlap, it is undefined which one of them will take effect
 --
@@ -284,8 +279,8 @@ setEnabled skFieldNode  value =
 --
 -- ObjC selector: @- exclusive@
 exclusive :: IsSKFieldNode skFieldNode => skFieldNode -> IO Bool
-exclusive skFieldNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skFieldNode (mkSelector "exclusive") retCULong []
+exclusive skFieldNode =
+  sendMessage skFieldNode exclusiveSelector
 
 -- | If a field is exclusive, it suppresses any other field in its region of effect.    If two or more exclusive fields overlap, it is undefined which one of them will take effect
 --
@@ -293,8 +288,8 @@ exclusive skFieldNode  =
 --
 -- ObjC selector: @- setExclusive:@
 setExclusive :: IsSKFieldNode skFieldNode => skFieldNode -> Bool -> IO ()
-setExclusive skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setExclusive:") retVoid [argCULong (if value then 1 else 0)]
+setExclusive skFieldNode value =
+  sendMessage skFieldNode setExclusiveSelector value
 
 -- | Logical categories the field belongs to. Default is all categories.    These categories correspond to fieldBitMasks, and can be used to enforce that a particular field applies    to a particular category of objects.
 --
@@ -304,8 +299,8 @@ setExclusive skFieldNode  value =
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSKFieldNode skFieldNode => skFieldNode -> IO CUInt
-categoryBitMask skFieldNode  =
-    sendMsg skFieldNode (mkSelector "categoryBitMask") retCUInt []
+categoryBitMask skFieldNode =
+  sendMessage skFieldNode categoryBitMaskSelector
 
 -- | Logical categories the field belongs to. Default is all categories.    These categories correspond to fieldBitMasks, and can be used to enforce that a particular field applies    to a particular category of objects.
 --
@@ -315,8 +310,8 @@ categoryBitMask skFieldNode  =
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSKFieldNode skFieldNode => skFieldNode -> CUInt -> IO ()
-setCategoryBitMask skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setCategoryBitMask:") retVoid [argCUInt value]
+setCategoryBitMask skFieldNode value =
+  sendMessage skFieldNode setCategoryBitMaskSelector value
 
 -- | fields without a smoothness component will return 0
 --
@@ -326,8 +321,8 @@ setCategoryBitMask skFieldNode  value =
 --
 -- ObjC selector: @- smoothness@
 smoothness :: IsSKFieldNode skFieldNode => skFieldNode -> IO CFloat
-smoothness skFieldNode  =
-    sendMsg skFieldNode (mkSelector "smoothness") retCFloat []
+smoothness skFieldNode =
+  sendMessage skFieldNode smoothnessSelector
 
 -- | fields without a smoothness component will return 0
 --
@@ -337,8 +332,8 @@ smoothness skFieldNode  =
 --
 -- ObjC selector: @- setSmoothness:@
 setSmoothness :: IsSKFieldNode skFieldNode => skFieldNode -> CFloat -> IO ()
-setSmoothness skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setSmoothness:") retVoid [argCFloat value]
+setSmoothness skFieldNode value =
+  sendMessage skFieldNode setSmoothnessSelector value
 
 -- | fields that can be animated can have non zero values.
 --
@@ -350,8 +345,8 @@ setSmoothness skFieldNode  value =
 --
 -- ObjC selector: @- animationSpeed@
 animationSpeed :: IsSKFieldNode skFieldNode => skFieldNode -> IO CFloat
-animationSpeed skFieldNode  =
-    sendMsg skFieldNode (mkSelector "animationSpeed") retCFloat []
+animationSpeed skFieldNode =
+  sendMessage skFieldNode animationSpeedSelector
 
 -- | fields that can be animated can have non zero values.
 --
@@ -363,8 +358,8 @@ animationSpeed skFieldNode  =
 --
 -- ObjC selector: @- setAnimationSpeed:@
 setAnimationSpeed :: IsSKFieldNode skFieldNode => skFieldNode -> CFloat -> IO ()
-setAnimationSpeed skFieldNode  value =
-    sendMsg skFieldNode (mkSelector "setAnimationSpeed:") retVoid [argCFloat value]
+setAnimationSpeed skFieldNode value =
+  sendMessage skFieldNode setAnimationSpeedSelector value
 
 -- | fields constructed with a texture can be uppdated by assigning a new texture
 --
@@ -372,8 +367,8 @@ setAnimationSpeed skFieldNode  value =
 --
 -- ObjC selector: @- texture@
 texture :: IsSKFieldNode skFieldNode => skFieldNode -> IO (Id SKTexture)
-texture skFieldNode  =
-    sendMsg skFieldNode (mkSelector "texture") (retPtr retVoid) [] >>= retainedObject . castPtr
+texture skFieldNode =
+  sendMessage skFieldNode textureSelector
 
 -- | fields constructed with a texture can be uppdated by assigning a new texture
 --
@@ -381,131 +376,130 @@ texture skFieldNode  =
 --
 -- ObjC selector: @- setTexture:@
 setTexture :: (IsSKFieldNode skFieldNode, IsSKTexture value) => skFieldNode -> value -> IO ()
-setTexture skFieldNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skFieldNode (mkSelector "setTexture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTexture skFieldNode value =
+  sendMessage skFieldNode setTextureSelector (toSKTexture value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dragField@
-dragFieldSelector :: Selector
+dragFieldSelector :: Selector '[] (Id SKFieldNode)
 dragFieldSelector = mkSelector "dragField"
 
 -- | @Selector@ for @vortexField@
-vortexFieldSelector :: Selector
+vortexFieldSelector :: Selector '[] (Id SKFieldNode)
 vortexFieldSelector = mkSelector "vortexField"
 
 -- | @Selector@ for @radialGravityField@
-radialGravityFieldSelector :: Selector
+radialGravityFieldSelector :: Selector '[] (Id SKFieldNode)
 radialGravityFieldSelector = mkSelector "radialGravityField"
 
 -- | @Selector@ for @velocityFieldWithTexture:@
-velocityFieldWithTextureSelector :: Selector
+velocityFieldWithTextureSelector :: Selector '[Id SKTexture] (Id SKFieldNode)
 velocityFieldWithTextureSelector = mkSelector "velocityFieldWithTexture:"
 
 -- | @Selector@ for @noiseFieldWithSmoothness:animationSpeed:@
-noiseFieldWithSmoothness_animationSpeedSelector :: Selector
+noiseFieldWithSmoothness_animationSpeedSelector :: Selector '[CDouble, CDouble] (Id SKFieldNode)
 noiseFieldWithSmoothness_animationSpeedSelector = mkSelector "noiseFieldWithSmoothness:animationSpeed:"
 
 -- | @Selector@ for @turbulenceFieldWithSmoothness:animationSpeed:@
-turbulenceFieldWithSmoothness_animationSpeedSelector :: Selector
+turbulenceFieldWithSmoothness_animationSpeedSelector :: Selector '[CDouble, CDouble] (Id SKFieldNode)
 turbulenceFieldWithSmoothness_animationSpeedSelector = mkSelector "turbulenceFieldWithSmoothness:animationSpeed:"
 
 -- | @Selector@ for @springField@
-springFieldSelector :: Selector
+springFieldSelector :: Selector '[] (Id SKFieldNode)
 springFieldSelector = mkSelector "springField"
 
 -- | @Selector@ for @electricField@
-electricFieldSelector :: Selector
+electricFieldSelector :: Selector '[] (Id SKFieldNode)
 electricFieldSelector = mkSelector "electricField"
 
 -- | @Selector@ for @magneticField@
-magneticFieldSelector :: Selector
+magneticFieldSelector :: Selector '[] (Id SKFieldNode)
 magneticFieldSelector = mkSelector "magneticField"
 
 -- | @Selector@ for @customFieldWithEvaluationBlock:@
-customFieldWithEvaluationBlockSelector :: Selector
+customFieldWithEvaluationBlockSelector :: Selector '[Ptr ()] (Id SKFieldNode)
 customFieldWithEvaluationBlockSelector = mkSelector "customFieldWithEvaluationBlock:"
 
 -- | @Selector@ for @region@
-regionSelector :: Selector
+regionSelector :: Selector '[] (Id SKRegion)
 regionSelector = mkSelector "region"
 
 -- | @Selector@ for @setRegion:@
-setRegionSelector :: Selector
+setRegionSelector :: Selector '[Id SKRegion] ()
 setRegionSelector = mkSelector "setRegion:"
 
 -- | @Selector@ for @strength@
-strengthSelector :: Selector
+strengthSelector :: Selector '[] CFloat
 strengthSelector = mkSelector "strength"
 
 -- | @Selector@ for @setStrength:@
-setStrengthSelector :: Selector
+setStrengthSelector :: Selector '[CFloat] ()
 setStrengthSelector = mkSelector "setStrength:"
 
 -- | @Selector@ for @falloff@
-falloffSelector :: Selector
+falloffSelector :: Selector '[] CFloat
 falloffSelector = mkSelector "falloff"
 
 -- | @Selector@ for @setFalloff:@
-setFalloffSelector :: Selector
+setFalloffSelector :: Selector '[CFloat] ()
 setFalloffSelector = mkSelector "setFalloff:"
 
 -- | @Selector@ for @minimumRadius@
-minimumRadiusSelector :: Selector
+minimumRadiusSelector :: Selector '[] CFloat
 minimumRadiusSelector = mkSelector "minimumRadius"
 
 -- | @Selector@ for @setMinimumRadius:@
-setMinimumRadiusSelector :: Selector
+setMinimumRadiusSelector :: Selector '[CFloat] ()
 setMinimumRadiusSelector = mkSelector "setMinimumRadius:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @exclusive@
-exclusiveSelector :: Selector
+exclusiveSelector :: Selector '[] Bool
 exclusiveSelector = mkSelector "exclusive"
 
 -- | @Selector@ for @setExclusive:@
-setExclusiveSelector :: Selector
+setExclusiveSelector :: Selector '[Bool] ()
 setExclusiveSelector = mkSelector "setExclusive:"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CUInt
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CUInt] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 
 -- | @Selector@ for @smoothness@
-smoothnessSelector :: Selector
+smoothnessSelector :: Selector '[] CFloat
 smoothnessSelector = mkSelector "smoothness"
 
 -- | @Selector@ for @setSmoothness:@
-setSmoothnessSelector :: Selector
+setSmoothnessSelector :: Selector '[CFloat] ()
 setSmoothnessSelector = mkSelector "setSmoothness:"
 
 -- | @Selector@ for @animationSpeed@
-animationSpeedSelector :: Selector
+animationSpeedSelector :: Selector '[] CFloat
 animationSpeedSelector = mkSelector "animationSpeed"
 
 -- | @Selector@ for @setAnimationSpeed:@
-setAnimationSpeedSelector :: Selector
+setAnimationSpeedSelector :: Selector '[CFloat] ()
 setAnimationSpeedSelector = mkSelector "setAnimationSpeed:"
 
 -- | @Selector@ for @texture@
-textureSelector :: Selector
+textureSelector :: Selector '[] (Id SKTexture)
 textureSelector = mkSelector "texture"
 
 -- | @Selector@ for @setTexture:@
-setTextureSelector :: Selector
+setTextureSelector :: Selector '[Id SKTexture] ()
 setTextureSelector = mkSelector "setTexture:"
 

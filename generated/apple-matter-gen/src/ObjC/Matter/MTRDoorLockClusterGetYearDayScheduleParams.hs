@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRDoorLockClusterGetYearDayScheduleParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , yearDayIndexSelector
-  , setYearDayIndexSelector
-  , userIndexSelector
-  , setUserIndexSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setUserIndexSelector
+  , setYearDayIndexSelector
+  , timedInvokeTimeoutMsSelector
+  , userIndexSelector
+  , yearDayIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- yearDayIndex@
 yearDayIndex :: IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams => mtrDoorLockClusterGetYearDayScheduleParams -> IO (Id NSNumber)
-yearDayIndex mtrDoorLockClusterGetYearDayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "yearDayIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+yearDayIndex mtrDoorLockClusterGetYearDayScheduleParams =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams yearDayIndexSelector
 
 -- | @- setYearDayIndex:@
 setYearDayIndex :: (IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetYearDayScheduleParams -> value -> IO ()
-setYearDayIndex mtrDoorLockClusterGetYearDayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "setYearDayIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setYearDayIndex mtrDoorLockClusterGetYearDayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams setYearDayIndexSelector (toNSNumber value)
 
 -- | @- userIndex@
 userIndex :: IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams => mtrDoorLockClusterGetYearDayScheduleParams -> IO (Id NSNumber)
-userIndex mtrDoorLockClusterGetYearDayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "userIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIndex mtrDoorLockClusterGetYearDayScheduleParams =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams userIndexSelector
 
 -- | @- setUserIndex:@
 setUserIndex :: (IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetYearDayScheduleParams -> value -> IO ()
-setUserIndex mtrDoorLockClusterGetYearDayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "setUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIndex mtrDoorLockClusterGetYearDayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams setUserIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setUserIndex mtrDoorLockClusterGetYearDayScheduleParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams => mtrDoorLockClusterGetYearDayScheduleParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetYearDayScheduleParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterGetYearDayScheduleParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams => mtrDoorLockClusterGetYearDayScheduleParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterGetYearDayScheduleParams  =
-    sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterGetYearDayScheduleParams =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrDoorLockClusterGetYearDayScheduleParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterGetYearDayScheduleParams mtrDoorLockClusterGetYearDayScheduleParams, IsNSNumber value) => mtrDoorLockClusterGetYearDayScheduleParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterGetYearDayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetYearDayScheduleParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterGetYearDayScheduleParams value =
+  sendMessage mtrDoorLockClusterGetYearDayScheduleParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @yearDayIndex@
-yearDayIndexSelector :: Selector
+yearDayIndexSelector :: Selector '[] (Id NSNumber)
 yearDayIndexSelector = mkSelector "yearDayIndex"
 
 -- | @Selector@ for @setYearDayIndex:@
-setYearDayIndexSelector :: Selector
+setYearDayIndexSelector :: Selector '[Id NSNumber] ()
 setYearDayIndexSelector = mkSelector "setYearDayIndex:"
 
 -- | @Selector@ for @userIndex@
-userIndexSelector :: Selector
+userIndexSelector :: Selector '[] (Id NSNumber)
 userIndexSelector = mkSelector "userIndex"
 
 -- | @Selector@ for @setUserIndex:@
-setUserIndexSelector :: Selector
+setUserIndexSelector :: Selector '[Id NSNumber] ()
 setUserIndexSelector = mkSelector "setUserIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

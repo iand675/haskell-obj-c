@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.NetworkExtension.NEIPv4Route
   , destinationSubnetMask
   , gatewayAddress
   , setGatewayAddress
-  , initWithDestinationAddress_subnetMaskSelector
   , destinationAddressSelector
   , destinationSubnetMaskSelector
   , gatewayAddressSelector
+  , initWithDestinationAddress_subnetMaskSelector
   , setGatewayAddressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,10 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDestinationAddress:subnetMask:@
 initWithDestinationAddress_subnetMask :: (IsNEIPv4Route neiPv4Route, IsNSString address, IsNSString subnetMask) => neiPv4Route -> address -> subnetMask -> IO (Id NEIPv4Route)
-initWithDestinationAddress_subnetMask neiPv4Route  address subnetMask =
-  withObjCPtr address $ \raw_address ->
-    withObjCPtr subnetMask $ \raw_subnetMask ->
-        sendMsg neiPv4Route (mkSelector "initWithDestinationAddress:subnetMask:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_subnetMask :: Ptr ())] >>= ownedObject . castPtr
+initWithDestinationAddress_subnetMask neiPv4Route address subnetMask =
+  sendOwnedMessage neiPv4Route initWithDestinationAddress_subnetMaskSelector (toNSString address) (toNSString subnetMask)
 
 -- | destinationAddress
 --
@@ -64,8 +59,8 @@ initWithDestinationAddress_subnetMask neiPv4Route  address subnetMask =
 --
 -- ObjC selector: @- destinationAddress@
 destinationAddress :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
-destinationAddress neiPv4Route  =
-    sendMsg neiPv4Route (mkSelector "destinationAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationAddress neiPv4Route =
+  sendMessage neiPv4Route destinationAddressSelector
 
 -- | destinationSubnetMask
 --
@@ -73,8 +68,8 @@ destinationAddress neiPv4Route  =
 --
 -- ObjC selector: @- destinationSubnetMask@
 destinationSubnetMask :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
-destinationSubnetMask neiPv4Route  =
-    sendMsg neiPv4Route (mkSelector "destinationSubnetMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationSubnetMask neiPv4Route =
+  sendMessage neiPv4Route destinationSubnetMaskSelector
 
 -- | gatewayAddress
 --
@@ -82,8 +77,8 @@ destinationSubnetMask neiPv4Route  =
 --
 -- ObjC selector: @- gatewayAddress@
 gatewayAddress :: IsNEIPv4Route neiPv4Route => neiPv4Route -> IO (Id NSString)
-gatewayAddress neiPv4Route  =
-    sendMsg neiPv4Route (mkSelector "gatewayAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+gatewayAddress neiPv4Route =
+  sendMessage neiPv4Route gatewayAddressSelector
 
 -- | gatewayAddress
 --
@@ -91,31 +86,30 @@ gatewayAddress neiPv4Route  =
 --
 -- ObjC selector: @- setGatewayAddress:@
 setGatewayAddress :: (IsNEIPv4Route neiPv4Route, IsNSString value) => neiPv4Route -> value -> IO ()
-setGatewayAddress neiPv4Route  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neiPv4Route (mkSelector "setGatewayAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGatewayAddress neiPv4Route value =
+  sendMessage neiPv4Route setGatewayAddressSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDestinationAddress:subnetMask:@
-initWithDestinationAddress_subnetMaskSelector :: Selector
+initWithDestinationAddress_subnetMaskSelector :: Selector '[Id NSString, Id NSString] (Id NEIPv4Route)
 initWithDestinationAddress_subnetMaskSelector = mkSelector "initWithDestinationAddress:subnetMask:"
 
 -- | @Selector@ for @destinationAddress@
-destinationAddressSelector :: Selector
+destinationAddressSelector :: Selector '[] (Id NSString)
 destinationAddressSelector = mkSelector "destinationAddress"
 
 -- | @Selector@ for @destinationSubnetMask@
-destinationSubnetMaskSelector :: Selector
+destinationSubnetMaskSelector :: Selector '[] (Id NSString)
 destinationSubnetMaskSelector = mkSelector "destinationSubnetMask"
 
 -- | @Selector@ for @gatewayAddress@
-gatewayAddressSelector :: Selector
+gatewayAddressSelector :: Selector '[] (Id NSString)
 gatewayAddressSelector = mkSelector "gatewayAddress"
 
 -- | @Selector@ for @setGatewayAddress:@
-setGatewayAddressSelector :: Selector
+setGatewayAddressSelector :: Selector '[Id NSString] ()
 setGatewayAddressSelector = mkSelector "setGatewayAddress:"
 

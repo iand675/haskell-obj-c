@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INCallDestinationTypeResolutionResult
   , IsINCallDestinationTypeResolutionResult(..)
   , successWithResolvedCallDestinationType
   , confirmationRequiredWithCallDestinationTypeToConfirm
-  , successWithResolvedCallDestinationTypeSelector
   , confirmationRequiredWithCallDestinationTypeToConfirmSelector
+  , successWithResolvedCallDestinationTypeSelector
 
   -- * Enum types
   , INCallDestinationType(INCallDestinationType)
@@ -27,15 +28,11 @@ module ObjC.Intents.INCallDestinationTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,24 +45,24 @@ successWithResolvedCallDestinationType :: INCallDestinationType -> IO (Id INCall
 successWithResolvedCallDestinationType resolvedCallDestinationType =
   do
     cls' <- getRequiredClass "INCallDestinationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCallDestinationType:") (retPtr retVoid) [argCLong (coerce resolvedCallDestinationType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCallDestinationTypeSelector resolvedCallDestinationType
 
 -- | @+ confirmationRequiredWithCallDestinationTypeToConfirm:@
 confirmationRequiredWithCallDestinationTypeToConfirm :: INCallDestinationType -> IO (Id INCallDestinationTypeResolutionResult)
 confirmationRequiredWithCallDestinationTypeToConfirm callDestinationTypeToConfirm =
   do
     cls' <- getRequiredClass "INCallDestinationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCallDestinationTypeToConfirm:") (retPtr retVoid) [argCLong (coerce callDestinationTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCallDestinationTypeToConfirmSelector callDestinationTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCallDestinationType:@
-successWithResolvedCallDestinationTypeSelector :: Selector
+successWithResolvedCallDestinationTypeSelector :: Selector '[INCallDestinationType] (Id INCallDestinationTypeResolutionResult)
 successWithResolvedCallDestinationTypeSelector = mkSelector "successWithResolvedCallDestinationType:"
 
 -- | @Selector@ for @confirmationRequiredWithCallDestinationTypeToConfirm:@
-confirmationRequiredWithCallDestinationTypeToConfirmSelector :: Selector
+confirmationRequiredWithCallDestinationTypeToConfirmSelector :: Selector '[INCallDestinationType] (Id INCallDestinationTypeResolutionResult)
 confirmationRequiredWithCallDestinationTypeToConfirmSelector = mkSelector "confirmationRequiredWithCallDestinationTypeToConfirm:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.SpriteKit.SK3DNode
   , setLoops
   , autoenablesDefaultLighting
   , setAutoenablesDefaultLighting
-  , initWithCoderSelector
-  , sceneTimeSelector
-  , setSceneTimeSelector
-  , playingSelector
-  , setPlayingSelector
-  , loopsSelector
-  , setLoopsSelector
   , autoenablesDefaultLightingSelector
+  , initWithCoderSelector
+  , loopsSelector
+  , playingSelector
+  , sceneTimeSelector
   , setAutoenablesDefaultLightingSelector
+  , setLoopsSelector
+  , setPlayingSelector
+  , setSceneTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,9 +45,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsSK3DNode sK3DNode, IsNSCoder aDecoder) => sK3DNode -> aDecoder -> IO (Id SK3DNode)
-initWithCoder sK3DNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg sK3DNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder sK3DNode aDecoder =
+  sendOwnedMessage sK3DNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | sceneTime
 --
@@ -58,8 +54,8 @@ initWithCoder sK3DNode  aDecoder =
 --
 -- ObjC selector: @- sceneTime@
 sceneTime :: IsSK3DNode sK3DNode => sK3DNode -> IO CDouble
-sceneTime sK3DNode  =
-    sendMsg sK3DNode (mkSelector "sceneTime") retCDouble []
+sceneTime sK3DNode =
+  sendMessage sK3DNode sceneTimeSelector
 
 -- | sceneTime
 --
@@ -67,8 +63,8 @@ sceneTime sK3DNode  =
 --
 -- ObjC selector: @- setSceneTime:@
 setSceneTime :: IsSK3DNode sK3DNode => sK3DNode -> CDouble -> IO ()
-setSceneTime sK3DNode  value =
-    sendMsg sK3DNode (mkSelector "setSceneTime:") retVoid [argCDouble value]
+setSceneTime sK3DNode value =
+  sendMessage sK3DNode setSceneTimeSelector value
 
 -- | playing
 --
@@ -76,8 +72,8 @@ setSceneTime sK3DNode  value =
 --
 -- ObjC selector: @- playing@
 playing :: IsSK3DNode sK3DNode => sK3DNode -> IO Bool
-playing sK3DNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sK3DNode (mkSelector "playing") retCULong []
+playing sK3DNode =
+  sendMessage sK3DNode playingSelector
 
 -- | playing
 --
@@ -85,8 +81,8 @@ playing sK3DNode  =
 --
 -- ObjC selector: @- setPlaying:@
 setPlaying :: IsSK3DNode sK3DNode => sK3DNode -> Bool -> IO ()
-setPlaying sK3DNode  value =
-    sendMsg sK3DNode (mkSelector "setPlaying:") retVoid [argCULong (if value then 1 else 0)]
+setPlaying sK3DNode value =
+  sendMessage sK3DNode setPlayingSelector value
 
 -- | loops
 --
@@ -96,8 +92,8 @@ setPlaying sK3DNode  value =
 --
 -- ObjC selector: @- loops@
 loops :: IsSK3DNode sK3DNode => sK3DNode -> IO Bool
-loops sK3DNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sK3DNode (mkSelector "loops") retCULong []
+loops sK3DNode =
+  sendMessage sK3DNode loopsSelector
 
 -- | loops
 --
@@ -107,8 +103,8 @@ loops sK3DNode  =
 --
 -- ObjC selector: @- setLoops:@
 setLoops :: IsSK3DNode sK3DNode => sK3DNode -> Bool -> IO ()
-setLoops sK3DNode  value =
-    sendMsg sK3DNode (mkSelector "setLoops:") retVoid [argCULong (if value then 1 else 0)]
+setLoops sK3DNode value =
+  sendMessage sK3DNode setLoopsSelector value
 
 -- | autoenablesDefaultLighting
 --
@@ -118,8 +114,8 @@ setLoops sK3DNode  value =
 --
 -- ObjC selector: @- autoenablesDefaultLighting@
 autoenablesDefaultLighting :: IsSK3DNode sK3DNode => sK3DNode -> IO Bool
-autoenablesDefaultLighting sK3DNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sK3DNode (mkSelector "autoenablesDefaultLighting") retCULong []
+autoenablesDefaultLighting sK3DNode =
+  sendMessage sK3DNode autoenablesDefaultLightingSelector
 
 -- | autoenablesDefaultLighting
 --
@@ -129,46 +125,46 @@ autoenablesDefaultLighting sK3DNode  =
 --
 -- ObjC selector: @- setAutoenablesDefaultLighting:@
 setAutoenablesDefaultLighting :: IsSK3DNode sK3DNode => sK3DNode -> Bool -> IO ()
-setAutoenablesDefaultLighting sK3DNode  value =
-    sendMsg sK3DNode (mkSelector "setAutoenablesDefaultLighting:") retVoid [argCULong (if value then 1 else 0)]
+setAutoenablesDefaultLighting sK3DNode value =
+  sendMessage sK3DNode setAutoenablesDefaultLightingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SK3DNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @sceneTime@
-sceneTimeSelector :: Selector
+sceneTimeSelector :: Selector '[] CDouble
 sceneTimeSelector = mkSelector "sceneTime"
 
 -- | @Selector@ for @setSceneTime:@
-setSceneTimeSelector :: Selector
+setSceneTimeSelector :: Selector '[CDouble] ()
 setSceneTimeSelector = mkSelector "setSceneTime:"
 
 -- | @Selector@ for @playing@
-playingSelector :: Selector
+playingSelector :: Selector '[] Bool
 playingSelector = mkSelector "playing"
 
 -- | @Selector@ for @setPlaying:@
-setPlayingSelector :: Selector
+setPlayingSelector :: Selector '[Bool] ()
 setPlayingSelector = mkSelector "setPlaying:"
 
 -- | @Selector@ for @loops@
-loopsSelector :: Selector
+loopsSelector :: Selector '[] Bool
 loopsSelector = mkSelector "loops"
 
 -- | @Selector@ for @setLoops:@
-setLoopsSelector :: Selector
+setLoopsSelector :: Selector '[Bool] ()
 setLoopsSelector = mkSelector "setLoops:"
 
 -- | @Selector@ for @autoenablesDefaultLighting@
-autoenablesDefaultLightingSelector :: Selector
+autoenablesDefaultLightingSelector :: Selector '[] Bool
 autoenablesDefaultLightingSelector = mkSelector "autoenablesDefaultLighting"
 
 -- | @Selector@ for @setAutoenablesDefaultLighting:@
-setAutoenablesDefaultLightingSelector :: Selector
+setAutoenablesDefaultLightingSelector :: Selector '[Bool] ()
 setAutoenablesDefaultLightingSelector = mkSelector "setAutoenablesDefaultLighting:"
 

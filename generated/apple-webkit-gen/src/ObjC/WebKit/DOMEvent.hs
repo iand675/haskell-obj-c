@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.WebKit.DOMEvent
   , setReturnValue
   , cancelBubble
   , setCancelBubble
-  , stopPropagationSelector
-  , preventDefaultSelector
-  , initEvent_canBubbleArg_cancelableArgSelector
-  , initEventSelector
-  , typeSelector
-  , targetSelector
+  , bubblesSelector
+  , cancelBubbleSelector
+  , cancelableSelector
   , currentTargetSelector
   , eventPhaseSelector
-  , bubblesSelector
-  , cancelableSelector
-  , timeStampSelector
-  , srcElementSelector
+  , initEventSelector
+  , initEvent_canBubbleArg_cancelableArgSelector
+  , preventDefaultSelector
   , returnValueSelector
-  , setReturnValueSelector
-  , cancelBubbleSelector
   , setCancelBubbleSelector
+  , setReturnValueSelector
+  , srcElementSelector
+  , stopPropagationSelector
+  , targetSelector
+  , timeStampSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,151 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stopPropagation@
 stopPropagation :: IsDOMEvent domEvent => domEvent -> IO ()
-stopPropagation domEvent  =
-    sendMsg domEvent (mkSelector "stopPropagation") retVoid []
+stopPropagation domEvent =
+  sendMessage domEvent stopPropagationSelector
 
 -- | @- preventDefault@
 preventDefault :: IsDOMEvent domEvent => domEvent -> IO ()
-preventDefault domEvent  =
-    sendMsg domEvent (mkSelector "preventDefault") retVoid []
+preventDefault domEvent =
+  sendMessage domEvent preventDefaultSelector
 
 -- | @- initEvent:canBubbleArg:cancelableArg:@
 initEvent_canBubbleArg_cancelableArg :: (IsDOMEvent domEvent, IsNSString eventTypeArg) => domEvent -> eventTypeArg -> Bool -> Bool -> IO ()
-initEvent_canBubbleArg_cancelableArg domEvent  eventTypeArg canBubbleArg cancelableArg =
-  withObjCPtr eventTypeArg $ \raw_eventTypeArg ->
-      sendMsg domEvent (mkSelector "initEvent:canBubbleArg:cancelableArg:") retVoid [argPtr (castPtr raw_eventTypeArg :: Ptr ()), argCULong (if canBubbleArg then 1 else 0), argCULong (if cancelableArg then 1 else 0)]
+initEvent_canBubbleArg_cancelableArg domEvent eventTypeArg canBubbleArg cancelableArg =
+  sendOwnedMessage domEvent initEvent_canBubbleArg_cancelableArgSelector (toNSString eventTypeArg) canBubbleArg cancelableArg
 
 -- | @- initEvent:::@
 initEvent :: (IsDOMEvent domEvent, IsNSString eventTypeArg) => domEvent -> eventTypeArg -> Bool -> Bool -> IO ()
-initEvent domEvent  eventTypeArg canBubbleArg cancelableArg =
-  withObjCPtr eventTypeArg $ \raw_eventTypeArg ->
-      sendMsg domEvent (mkSelector "initEvent:::") retVoid [argPtr (castPtr raw_eventTypeArg :: Ptr ()), argCULong (if canBubbleArg then 1 else 0), argCULong (if cancelableArg then 1 else 0)]
+initEvent domEvent eventTypeArg canBubbleArg cancelableArg =
+  sendOwnedMessage domEvent initEventSelector (toNSString eventTypeArg) canBubbleArg cancelableArg
 
 -- | @- type@
 type_ :: IsDOMEvent domEvent => domEvent -> IO (Id NSString)
-type_ domEvent  =
-    sendMsg domEvent (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domEvent =
+  sendMessage domEvent typeSelector
 
 -- | @- target@
 target :: IsDOMEvent domEvent => domEvent -> IO RawId
-target domEvent  =
-    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "target") (retPtr retVoid) []
+target domEvent =
+  sendMessage domEvent targetSelector
 
 -- | @- currentTarget@
 currentTarget :: IsDOMEvent domEvent => domEvent -> IO RawId
-currentTarget domEvent  =
-    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "currentTarget") (retPtr retVoid) []
+currentTarget domEvent =
+  sendMessage domEvent currentTargetSelector
 
 -- | @- eventPhase@
 eventPhase :: IsDOMEvent domEvent => domEvent -> IO CUShort
-eventPhase domEvent  =
-    fmap fromIntegral $ sendMsg domEvent (mkSelector "eventPhase") retCUInt []
+eventPhase domEvent =
+  sendMessage domEvent eventPhaseSelector
 
 -- | @- bubbles@
 bubbles :: IsDOMEvent domEvent => domEvent -> IO Bool
-bubbles domEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domEvent (mkSelector "bubbles") retCULong []
+bubbles domEvent =
+  sendMessage domEvent bubblesSelector
 
 -- | @- cancelable@
 cancelable :: IsDOMEvent domEvent => domEvent -> IO Bool
-cancelable domEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domEvent (mkSelector "cancelable") retCULong []
+cancelable domEvent =
+  sendMessage domEvent cancelableSelector
 
 -- | @- timeStamp@
 timeStamp :: IsDOMEvent domEvent => domEvent -> IO CULong
-timeStamp domEvent  =
-    sendMsg domEvent (mkSelector "timeStamp") retCULong []
+timeStamp domEvent =
+  sendMessage domEvent timeStampSelector
 
 -- | @- srcElement@
 srcElement :: IsDOMEvent domEvent => domEvent -> IO RawId
-srcElement domEvent  =
-    fmap (RawId . castPtr) $ sendMsg domEvent (mkSelector "srcElement") (retPtr retVoid) []
+srcElement domEvent =
+  sendMessage domEvent srcElementSelector
 
 -- | @- returnValue@
 returnValue :: IsDOMEvent domEvent => domEvent -> IO Bool
-returnValue domEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domEvent (mkSelector "returnValue") retCULong []
+returnValue domEvent =
+  sendMessage domEvent returnValueSelector
 
 -- | @- setReturnValue:@
 setReturnValue :: IsDOMEvent domEvent => domEvent -> Bool -> IO ()
-setReturnValue domEvent  value =
-    sendMsg domEvent (mkSelector "setReturnValue:") retVoid [argCULong (if value then 1 else 0)]
+setReturnValue domEvent value =
+  sendMessage domEvent setReturnValueSelector value
 
 -- | @- cancelBubble@
 cancelBubble :: IsDOMEvent domEvent => domEvent -> IO Bool
-cancelBubble domEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domEvent (mkSelector "cancelBubble") retCULong []
+cancelBubble domEvent =
+  sendMessage domEvent cancelBubbleSelector
 
 -- | @- setCancelBubble:@
 setCancelBubble :: IsDOMEvent domEvent => domEvent -> Bool -> IO ()
-setCancelBubble domEvent  value =
-    sendMsg domEvent (mkSelector "setCancelBubble:") retVoid [argCULong (if value then 1 else 0)]
+setCancelBubble domEvent value =
+  sendMessage domEvent setCancelBubbleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stopPropagation@
-stopPropagationSelector :: Selector
+stopPropagationSelector :: Selector '[] ()
 stopPropagationSelector = mkSelector "stopPropagation"
 
 -- | @Selector@ for @preventDefault@
-preventDefaultSelector :: Selector
+preventDefaultSelector :: Selector '[] ()
 preventDefaultSelector = mkSelector "preventDefault"
 
 -- | @Selector@ for @initEvent:canBubbleArg:cancelableArg:@
-initEvent_canBubbleArg_cancelableArgSelector :: Selector
+initEvent_canBubbleArg_cancelableArgSelector :: Selector '[Id NSString, Bool, Bool] ()
 initEvent_canBubbleArg_cancelableArgSelector = mkSelector "initEvent:canBubbleArg:cancelableArg:"
 
 -- | @Selector@ for @initEvent:::@
-initEventSelector :: Selector
+initEventSelector :: Selector '[Id NSString, Bool, Bool] ()
 initEventSelector = mkSelector "initEvent:::"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @currentTarget@
-currentTargetSelector :: Selector
+currentTargetSelector :: Selector '[] RawId
 currentTargetSelector = mkSelector "currentTarget"
 
 -- | @Selector@ for @eventPhase@
-eventPhaseSelector :: Selector
+eventPhaseSelector :: Selector '[] CUShort
 eventPhaseSelector = mkSelector "eventPhase"
 
 -- | @Selector@ for @bubbles@
-bubblesSelector :: Selector
+bubblesSelector :: Selector '[] Bool
 bubblesSelector = mkSelector "bubbles"
 
 -- | @Selector@ for @cancelable@
-cancelableSelector :: Selector
+cancelableSelector :: Selector '[] Bool
 cancelableSelector = mkSelector "cancelable"
 
 -- | @Selector@ for @timeStamp@
-timeStampSelector :: Selector
+timeStampSelector :: Selector '[] CULong
 timeStampSelector = mkSelector "timeStamp"
 
 -- | @Selector@ for @srcElement@
-srcElementSelector :: Selector
+srcElementSelector :: Selector '[] RawId
 srcElementSelector = mkSelector "srcElement"
 
 -- | @Selector@ for @returnValue@
-returnValueSelector :: Selector
+returnValueSelector :: Selector '[] Bool
 returnValueSelector = mkSelector "returnValue"
 
 -- | @Selector@ for @setReturnValue:@
-setReturnValueSelector :: Selector
+setReturnValueSelector :: Selector '[Bool] ()
 setReturnValueSelector = mkSelector "setReturnValue:"
 
 -- | @Selector@ for @cancelBubble@
-cancelBubbleSelector :: Selector
+cancelBubbleSelector :: Selector '[] Bool
 cancelBubbleSelector = mkSelector "cancelBubble"
 
 -- | @Selector@ for @setCancelBubble:@
-setCancelBubbleSelector :: Selector
+setCancelBubbleSelector :: Selector '[Bool] ()
 setCancelBubbleSelector = mkSelector "setCancelBubble:"
 

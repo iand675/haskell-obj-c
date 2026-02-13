@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.CloudKit.CKDatabaseOperation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- database@
 database :: IsCKDatabaseOperation ckDatabaseOperation => ckDatabaseOperation -> IO (Id CKDatabase)
-database ckDatabaseOperation  =
-    sendMsg ckDatabaseOperation (mkSelector "database") (retPtr retVoid) [] >>= retainedObject . castPtr
+database ckDatabaseOperation =
+  sendMessage ckDatabaseOperation databaseSelector
 
 -- | The database on which to perform the operation.
 --
@@ -52,19 +49,18 @@ database ckDatabaseOperation  =
 --
 -- ObjC selector: @- setDatabase:@
 setDatabase :: (IsCKDatabaseOperation ckDatabaseOperation, IsCKDatabase value) => ckDatabaseOperation -> value -> IO ()
-setDatabase ckDatabaseOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckDatabaseOperation (mkSelector "setDatabase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDatabase ckDatabaseOperation value =
+  sendMessage ckDatabaseOperation setDatabaseSelector (toCKDatabase value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @database@
-databaseSelector :: Selector
+databaseSelector :: Selector '[] (Id CKDatabase)
 databaseSelector = mkSelector "database"
 
 -- | @Selector@ for @setDatabase:@
-setDatabaseSelector :: Selector
+setDatabaseSelector :: Selector '[Id CKDatabase] ()
 setDatabaseSelector = mkSelector "setDatabase:"
 

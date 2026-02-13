@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AuthenticationServices.ASGeneratePasswordsRequest
   , passwordFieldPasswordRules
   , confirmPasswordFieldPasswordRules
   , passwordRulesFromQuirks
-  , initSelector
-  , newSelector
-  , initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector
-  , serviceIdentifierSelector
-  , passwordFieldPasswordRulesSelector
   , confirmPasswordFieldPasswordRulesSelector
+  , initSelector
+  , initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector
+  , newSelector
+  , passwordFieldPasswordRulesSelector
   , passwordRulesFromQuirksSelector
+  , serviceIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,38 +38,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASGeneratePasswordsRequest asGeneratePasswordsRequest => asGeneratePasswordsRequest -> IO (Id ASGeneratePasswordsRequest)
-init_ asGeneratePasswordsRequest  =
-    sendMsg asGeneratePasswordsRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asGeneratePasswordsRequest =
+  sendOwnedMessage asGeneratePasswordsRequest initSelector
 
 -- | @+ new@
 new :: IO (Id ASGeneratePasswordsRequest)
 new  =
   do
     cls' <- getRequiredClass "ASGeneratePasswordsRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithServiceIdentifier:passwordFieldPasswordRules:confirmPasswordFieldPasswordRules:passwordRulesFromQuirks:@
 initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirks :: (IsASGeneratePasswordsRequest asGeneratePasswordsRequest, IsASCredentialServiceIdentifier serviceIdentifier, IsNSString passwordFieldPasswordRules, IsNSString confirmPasswordFieldPasswordRules, IsNSString passwordRulesFromQuirks) => asGeneratePasswordsRequest -> serviceIdentifier -> passwordFieldPasswordRules -> confirmPasswordFieldPasswordRules -> passwordRulesFromQuirks -> IO (Id ASGeneratePasswordsRequest)
-initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirks asGeneratePasswordsRequest  serviceIdentifier passwordFieldPasswordRules confirmPasswordFieldPasswordRules passwordRulesFromQuirks =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr passwordFieldPasswordRules $ \raw_passwordFieldPasswordRules ->
-      withObjCPtr confirmPasswordFieldPasswordRules $ \raw_confirmPasswordFieldPasswordRules ->
-        withObjCPtr passwordRulesFromQuirks $ \raw_passwordRulesFromQuirks ->
-            sendMsg asGeneratePasswordsRequest (mkSelector "initWithServiceIdentifier:passwordFieldPasswordRules:confirmPasswordFieldPasswordRules:passwordRulesFromQuirks:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_passwordFieldPasswordRules :: Ptr ()), argPtr (castPtr raw_confirmPasswordFieldPasswordRules :: Ptr ()), argPtr (castPtr raw_passwordRulesFromQuirks :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirks asGeneratePasswordsRequest serviceIdentifier passwordFieldPasswordRules confirmPasswordFieldPasswordRules passwordRulesFromQuirks =
+  sendOwnedMessage asGeneratePasswordsRequest initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector (toASCredentialServiceIdentifier serviceIdentifier) (toNSString passwordFieldPasswordRules) (toNSString confirmPasswordFieldPasswordRules) (toNSString passwordRulesFromQuirks)
 
 -- | The identifier of the service for which the the credential would be associated.
 --
 -- ObjC selector: @- serviceIdentifier@
 serviceIdentifier :: IsASGeneratePasswordsRequest asGeneratePasswordsRequest => asGeneratePasswordsRequest -> IO (Id ASCredentialServiceIdentifier)
-serviceIdentifier asGeneratePasswordsRequest  =
-    sendMsg asGeneratePasswordsRequest (mkSelector "serviceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceIdentifier asGeneratePasswordsRequest =
+  sendMessage asGeneratePasswordsRequest serviceIdentifierSelector
 
 -- | Developer provided password rules.
 --
 -- ObjC selector: @- passwordFieldPasswordRules@
 passwordFieldPasswordRules :: IsASGeneratePasswordsRequest asGeneratePasswordsRequest => asGeneratePasswordsRequest -> IO (Id NSString)
-passwordFieldPasswordRules asGeneratePasswordsRequest  =
-    sendMsg asGeneratePasswordsRequest (mkSelector "passwordFieldPasswordRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+passwordFieldPasswordRules asGeneratePasswordsRequest =
+  sendMessage asGeneratePasswordsRequest passwordFieldPasswordRulesSelector
 
 -- | Developer provided password rules for a "confirm password" field.
 --
@@ -80,45 +73,45 @@ passwordFieldPasswordRules asGeneratePasswordsRequest  =
 --
 -- ObjC selector: @- confirmPasswordFieldPasswordRules@
 confirmPasswordFieldPasswordRules :: IsASGeneratePasswordsRequest asGeneratePasswordsRequest => asGeneratePasswordsRequest -> IO (Id NSString)
-confirmPasswordFieldPasswordRules asGeneratePasswordsRequest  =
-    sendMsg asGeneratePasswordsRequest (mkSelector "confirmPasswordFieldPasswordRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+confirmPasswordFieldPasswordRules asGeneratePasswordsRequest =
+  sendMessage asGeneratePasswordsRequest confirmPasswordFieldPasswordRulesSelector
 
 -- | Password rules from https://github.com/apple/password-manager-resources
 --
 -- ObjC selector: @- passwordRulesFromQuirks@
 passwordRulesFromQuirks :: IsASGeneratePasswordsRequest asGeneratePasswordsRequest => asGeneratePasswordsRequest -> IO (Id NSString)
-passwordRulesFromQuirks asGeneratePasswordsRequest  =
-    sendMsg asGeneratePasswordsRequest (mkSelector "passwordRulesFromQuirks") (retPtr retVoid) [] >>= retainedObject . castPtr
+passwordRulesFromQuirks asGeneratePasswordsRequest =
+  sendMessage asGeneratePasswordsRequest passwordRulesFromQuirksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASGeneratePasswordsRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASGeneratePasswordsRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithServiceIdentifier:passwordFieldPasswordRules:confirmPasswordFieldPasswordRules:passwordRulesFromQuirks:@
-initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector :: Selector
+initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector :: Selector '[Id ASCredentialServiceIdentifier, Id NSString, Id NSString, Id NSString] (Id ASGeneratePasswordsRequest)
 initWithServiceIdentifier_passwordFieldPasswordRules_confirmPasswordFieldPasswordRules_passwordRulesFromQuirksSelector = mkSelector "initWithServiceIdentifier:passwordFieldPasswordRules:confirmPasswordFieldPasswordRules:passwordRulesFromQuirks:"
 
 -- | @Selector@ for @serviceIdentifier@
-serviceIdentifierSelector :: Selector
+serviceIdentifierSelector :: Selector '[] (Id ASCredentialServiceIdentifier)
 serviceIdentifierSelector = mkSelector "serviceIdentifier"
 
 -- | @Selector@ for @passwordFieldPasswordRules@
-passwordFieldPasswordRulesSelector :: Selector
+passwordFieldPasswordRulesSelector :: Selector '[] (Id NSString)
 passwordFieldPasswordRulesSelector = mkSelector "passwordFieldPasswordRules"
 
 -- | @Selector@ for @confirmPasswordFieldPasswordRules@
-confirmPasswordFieldPasswordRulesSelector :: Selector
+confirmPasswordFieldPasswordRulesSelector :: Selector '[] (Id NSString)
 confirmPasswordFieldPasswordRulesSelector = mkSelector "confirmPasswordFieldPasswordRules"
 
 -- | @Selector@ for @passwordRulesFromQuirks@
-passwordRulesFromQuirksSelector :: Selector
+passwordRulesFromQuirksSelector :: Selector '[] (Id NSString)
 passwordRulesFromQuirksSelector = mkSelector "passwordRulesFromQuirks"
 

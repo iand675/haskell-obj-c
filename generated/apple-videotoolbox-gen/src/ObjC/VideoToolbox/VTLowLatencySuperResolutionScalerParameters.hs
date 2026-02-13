@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.VideoToolbox.VTLowLatencySuperResolutionScalerParameters
   , new
   , sourceFrame
   , destinationFrame
-  , initWithSourceFrame_destinationFrameSelector
+  , destinationFrameSelector
   , initSelector
+  , initWithSourceFrame_destinationFrameSelector
   , newSelector
   , sourceFrameSelector
-  , destinationFrameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,58 +44,56 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSourceFrame:destinationFrame:@
 initWithSourceFrame_destinationFrame :: (IsVTLowLatencySuperResolutionScalerParameters vtLowLatencySuperResolutionScalerParameters, IsVTFrameProcessorFrame sourceFrame, IsVTFrameProcessorFrame destinationFrame) => vtLowLatencySuperResolutionScalerParameters -> sourceFrame -> destinationFrame -> IO (Id VTLowLatencySuperResolutionScalerParameters)
-initWithSourceFrame_destinationFrame vtLowLatencySuperResolutionScalerParameters  sourceFrame destinationFrame =
-  withObjCPtr sourceFrame $ \raw_sourceFrame ->
-    withObjCPtr destinationFrame $ \raw_destinationFrame ->
-        sendMsg vtLowLatencySuperResolutionScalerParameters (mkSelector "initWithSourceFrame:destinationFrame:") (retPtr retVoid) [argPtr (castPtr raw_sourceFrame :: Ptr ()), argPtr (castPtr raw_destinationFrame :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceFrame_destinationFrame vtLowLatencySuperResolutionScalerParameters sourceFrame destinationFrame =
+  sendOwnedMessage vtLowLatencySuperResolutionScalerParameters initWithSourceFrame_destinationFrameSelector (toVTFrameProcessorFrame sourceFrame) (toVTFrameProcessorFrame destinationFrame)
 
 -- | @- init@
 init_ :: IsVTLowLatencySuperResolutionScalerParameters vtLowLatencySuperResolutionScalerParameters => vtLowLatencySuperResolutionScalerParameters -> IO (Id VTLowLatencySuperResolutionScalerParameters)
-init_ vtLowLatencySuperResolutionScalerParameters  =
-    sendMsg vtLowLatencySuperResolutionScalerParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtLowLatencySuperResolutionScalerParameters =
+  sendOwnedMessage vtLowLatencySuperResolutionScalerParameters initSelector
 
 -- | @+ new@
 new :: IO (Id VTLowLatencySuperResolutionScalerParameters)
 new  =
   do
     cls' <- getRequiredClass "VTLowLatencySuperResolutionScalerParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Current source frame, which must be non @nil@.
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsVTLowLatencySuperResolutionScalerParameters vtLowLatencySuperResolutionScalerParameters => vtLowLatencySuperResolutionScalerParameters -> IO (Id VTFrameProcessorFrame)
-sourceFrame vtLowLatencySuperResolutionScalerParameters  =
-    sendMsg vtLowLatencySuperResolutionScalerParameters (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame vtLowLatencySuperResolutionScalerParameters =
+  sendMessage vtLowLatencySuperResolutionScalerParameters sourceFrameSelector
 
 -- | Destination frame that contains user-allocated pixel buffer that receives the scaled processor output.
 --
 -- ObjC selector: @- destinationFrame@
 destinationFrame :: IsVTLowLatencySuperResolutionScalerParameters vtLowLatencySuperResolutionScalerParameters => vtLowLatencySuperResolutionScalerParameters -> IO (Id VTFrameProcessorFrame)
-destinationFrame vtLowLatencySuperResolutionScalerParameters  =
-    sendMsg vtLowLatencySuperResolutionScalerParameters (mkSelector "destinationFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationFrame vtLowLatencySuperResolutionScalerParameters =
+  sendMessage vtLowLatencySuperResolutionScalerParameters destinationFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSourceFrame:destinationFrame:@
-initWithSourceFrame_destinationFrameSelector :: Selector
+initWithSourceFrame_destinationFrameSelector :: Selector '[Id VTFrameProcessorFrame, Id VTFrameProcessorFrame] (Id VTLowLatencySuperResolutionScalerParameters)
 initWithSourceFrame_destinationFrameSelector = mkSelector "initWithSourceFrame:destinationFrame:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTLowLatencySuperResolutionScalerParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTLowLatencySuperResolutionScalerParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @destinationFrame@
-destinationFrameSelector :: Selector
+destinationFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 destinationFrameSelector = mkSelector "destinationFrame"
 

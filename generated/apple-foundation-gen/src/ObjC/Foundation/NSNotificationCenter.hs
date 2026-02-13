@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,115 +17,103 @@ module ObjC.Foundation.NSNotificationCenter
   , removeObserver_name_object
   , addObserverForName_object_queue_usingBlock
   , defaultCenter
+  , addObserverForName_object_queue_usingBlockSelector
   , addObserver_selector_name_objectSelector
-  , postNotificationSelector
+  , defaultCenterSelector
   , postNotificationName_objectSelector
   , postNotificationName_object_userInfoSelector
+  , postNotificationSelector
   , removeObserverSelector
   , removeObserver_name_objectSelector
-  , addObserverForName_object_queue_usingBlockSelector
-  , defaultCenterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Foundation.Internal.Classes
 
 -- | @- addObserver:selector:name:object:@
-addObserver_selector_name_object :: (IsNSNotificationCenter nsNotificationCenter, IsNSString aName) => nsNotificationCenter -> RawId -> Selector -> aName -> RawId -> IO ()
-addObserver_selector_name_object nsNotificationCenter  observer aSelector aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-      sendMsg nsNotificationCenter (mkSelector "addObserver:selector:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector aSelector), argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())]
+addObserver_selector_name_object :: (IsNSNotificationCenter nsNotificationCenter, IsNSString aName) => nsNotificationCenter -> RawId -> Sel -> aName -> RawId -> IO ()
+addObserver_selector_name_object nsNotificationCenter observer aSelector aName anObject =
+  sendMessage nsNotificationCenter addObserver_selector_name_objectSelector observer aSelector (toNSString aName) anObject
 
 -- | @- postNotification:@
 postNotification :: (IsNSNotificationCenter nsNotificationCenter, IsNSNotification notification) => nsNotificationCenter -> notification -> IO ()
-postNotification nsNotificationCenter  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsNotificationCenter (mkSelector "postNotification:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+postNotification nsNotificationCenter notification =
+  sendMessage nsNotificationCenter postNotificationSelector (toNSNotification notification)
 
 -- | @- postNotificationName:object:@
 postNotificationName_object :: (IsNSNotificationCenter nsNotificationCenter, IsNSString aName) => nsNotificationCenter -> aName -> RawId -> IO ()
-postNotificationName_object nsNotificationCenter  aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-      sendMsg nsNotificationCenter (mkSelector "postNotificationName:object:") retVoid [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())]
+postNotificationName_object nsNotificationCenter aName anObject =
+  sendMessage nsNotificationCenter postNotificationName_objectSelector (toNSString aName) anObject
 
 -- | @- postNotificationName:object:userInfo:@
 postNotificationName_object_userInfo :: (IsNSNotificationCenter nsNotificationCenter, IsNSString aName, IsNSDictionary aUserInfo) => nsNotificationCenter -> aName -> RawId -> aUserInfo -> IO ()
-postNotificationName_object_userInfo nsNotificationCenter  aName anObject aUserInfo =
-  withObjCPtr aName $ \raw_aName ->
-    withObjCPtr aUserInfo $ \raw_aUserInfo ->
-        sendMsg nsNotificationCenter (mkSelector "postNotificationName:object:userInfo:") retVoid [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr raw_aUserInfo :: Ptr ())]
+postNotificationName_object_userInfo nsNotificationCenter aName anObject aUserInfo =
+  sendMessage nsNotificationCenter postNotificationName_object_userInfoSelector (toNSString aName) anObject (toNSDictionary aUserInfo)
 
 -- | @- removeObserver:@
 removeObserver :: IsNSNotificationCenter nsNotificationCenter => nsNotificationCenter -> RawId -> IO ()
-removeObserver nsNotificationCenter  observer =
-    sendMsg nsNotificationCenter (mkSelector "removeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeObserver nsNotificationCenter observer =
+  sendMessage nsNotificationCenter removeObserverSelector observer
 
 -- | @- removeObserver:name:object:@
 removeObserver_name_object :: (IsNSNotificationCenter nsNotificationCenter, IsNSString aName) => nsNotificationCenter -> RawId -> aName -> RawId -> IO ()
-removeObserver_name_object nsNotificationCenter  observer aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-      sendMsg nsNotificationCenter (mkSelector "removeObserver:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())]
+removeObserver_name_object nsNotificationCenter observer aName anObject =
+  sendMessage nsNotificationCenter removeObserver_name_objectSelector observer (toNSString aName) anObject
 
 -- | @- addObserverForName:object:queue:usingBlock:@
 addObserverForName_object_queue_usingBlock :: (IsNSNotificationCenter nsNotificationCenter, IsNSString name, IsNSOperationQueue queue) => nsNotificationCenter -> name -> RawId -> queue -> Ptr () -> IO RawId
-addObserverForName_object_queue_usingBlock nsNotificationCenter  name obj_ queue block =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr queue $ \raw_queue ->
-        fmap (RawId . castPtr) $ sendMsg nsNotificationCenter (mkSelector "addObserverForName:object:queue:usingBlock:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+addObserverForName_object_queue_usingBlock nsNotificationCenter name obj_ queue block =
+  sendMessage nsNotificationCenter addObserverForName_object_queue_usingBlockSelector (toNSString name) obj_ (toNSOperationQueue queue) block
 
 -- | @+ defaultCenter@
 defaultCenter :: IO (Id NSNotificationCenter)
 defaultCenter  =
   do
     cls' <- getRequiredClass "NSNotificationCenter"
-    sendClassMsg cls' (mkSelector "defaultCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCenterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addObserver:selector:name:object:@
-addObserver_selector_name_objectSelector :: Selector
+addObserver_selector_name_objectSelector :: Selector '[RawId, Sel, Id NSString, RawId] ()
 addObserver_selector_name_objectSelector = mkSelector "addObserver:selector:name:object:"
 
 -- | @Selector@ for @postNotification:@
-postNotificationSelector :: Selector
+postNotificationSelector :: Selector '[Id NSNotification] ()
 postNotificationSelector = mkSelector "postNotification:"
 
 -- | @Selector@ for @postNotificationName:object:@
-postNotificationName_objectSelector :: Selector
+postNotificationName_objectSelector :: Selector '[Id NSString, RawId] ()
 postNotificationName_objectSelector = mkSelector "postNotificationName:object:"
 
 -- | @Selector@ for @postNotificationName:object:userInfo:@
-postNotificationName_object_userInfoSelector :: Selector
+postNotificationName_object_userInfoSelector :: Selector '[Id NSString, RawId, Id NSDictionary] ()
 postNotificationName_object_userInfoSelector = mkSelector "postNotificationName:object:userInfo:"
 
 -- | @Selector@ for @removeObserver:@
-removeObserverSelector :: Selector
+removeObserverSelector :: Selector '[RawId] ()
 removeObserverSelector = mkSelector "removeObserver:"
 
 -- | @Selector@ for @removeObserver:name:object:@
-removeObserver_name_objectSelector :: Selector
+removeObserver_name_objectSelector :: Selector '[RawId, Id NSString, RawId] ()
 removeObserver_name_objectSelector = mkSelector "removeObserver:name:object:"
 
 -- | @Selector@ for @addObserverForName:object:queue:usingBlock:@
-addObserverForName_object_queue_usingBlockSelector :: Selector
+addObserverForName_object_queue_usingBlockSelector :: Selector '[Id NSString, RawId, Id NSOperationQueue, Ptr ()] RawId
 addObserverForName_object_queue_usingBlockSelector = mkSelector "addObserverForName:object:queue:usingBlock:"
 
 -- | @Selector@ for @defaultCenter@
-defaultCenterSelector :: Selector
+defaultCenterSelector :: Selector '[] (Id NSNotificationCenter)
 defaultCenterSelector = mkSelector "defaultCenter"
 

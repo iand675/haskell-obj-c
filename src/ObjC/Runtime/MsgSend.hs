@@ -92,21 +92,21 @@ objcMsgSendFpretPtr = unsafePerformIO (castPtrToFunPtr <$> c_hs_objc_msgSend_fpr
 -- | Send a message to any 'IsObjCObject' receiver.
 --
 -- Uses 'withObjCPtr' to keep the receiver alive for the duration of the call.
-sendMsg :: IsObjCObject recv => recv -> Selector -> RetType a -> [Arg] -> IO a
+sendMsg :: IsObjCObject recv => recv -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendMsg recv (Selector sel) retType args =
   withObjCPtr recv $ \ptr ->
     callFFI objcMsgSendPtr retType (argPtr ptr : argPtr sel : args)
 
 -- | Send a message that returns a floating-point value.
 -- On x86_64, this uses @objc_msgSend_fpret@. On ARM64, identical to 'sendMsg'.
-sendMsgFpret :: IsObjCObject recv => recv -> Selector -> RetType a -> [Arg] -> IO a
+sendMsgFpret :: IsObjCObject recv => recv -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendMsgFpret recv (Selector sel) retType args =
   withObjCPtr recv $ \ptr ->
     callFFI objcMsgSendFpretPtr retType (argPtr ptr : argPtr sel : args)
 
 -- | Send a message that returns a struct.
 -- On x86_64, this uses @objc_msgSend_stret@. On ARM64, identical to 'sendMsg'.
-sendMsgStret :: IsObjCObject recv => recv -> Selector -> RetType a -> [Arg] -> IO a
+sendMsgStret :: IsObjCObject recv => recv -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendMsgStret recv (Selector sel) retType args =
   withObjCPtr recv $ \ptr ->
     callFFI objcMsgSendStretPtr retType (argPtr ptr : argPtr sel : args)
@@ -116,17 +116,17 @@ sendMsgStret recv (Selector sel) retType args =
 -- ---------------------------------------------------------------------------
 
 -- | Send a message using a raw 'RawId' receiver. For low-level FFI use.
-sendRawMsg :: RawId -> Selector -> RetType a -> [Arg] -> IO a
+sendRawMsg :: RawId -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendRawMsg (RawId obj) (Selector sel) retType args =
   callFFI objcMsgSendPtr retType (argPtr obj : argPtr sel : args)
 
 -- | Raw variant of 'sendMsgFpret'.
-sendRawMsgFpret :: RawId -> Selector -> RetType a -> [Arg] -> IO a
+sendRawMsgFpret :: RawId -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendRawMsgFpret (RawId obj) (Selector sel) retType args =
   callFFI objcMsgSendFpretPtr retType (argPtr obj : argPtr sel : args)
 
 -- | Raw variant of 'sendMsgStret'.
-sendRawMsgStret :: RawId -> Selector -> RetType a -> [Arg] -> IO a
+sendRawMsgStret :: RawId -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendRawMsgStret (RawId obj) (Selector sel) retType args =
   callFFI objcMsgSendStretPtr retType (argPtr obj : argPtr sel : args)
 
@@ -135,17 +135,17 @@ sendRawMsgStret (RawId obj) (Selector sel) retType args =
 -- ---------------------------------------------------------------------------
 
 -- | Send a message to an Objective-C class (class method).
-sendClassMsg :: Class -> Selector -> RetType a -> [Arg] -> IO a
+sendClassMsg :: Class -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendClassMsg (Class cls) (Selector sel) retType args =
   callFFI objcMsgSendPtr retType (argPtr cls : argPtr sel : args)
 
 -- | Class method variant of 'sendMsgFpret'.
-sendClassMsgFpret :: Class -> Selector -> RetType a -> [Arg] -> IO a
+sendClassMsgFpret :: Class -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendClassMsgFpret (Class cls) (Selector sel) retType args =
   callFFI objcMsgSendFpretPtr retType (argPtr cls : argPtr sel : args)
 
 -- | Class method variant of 'sendMsgStret'.
-sendClassMsgStret :: Class -> Selector -> RetType a -> [Arg] -> IO a
+sendClassMsgStret :: Class -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendClassMsgStret (Class cls) (Selector sel) retType args =
   callFFI objcMsgSendStretPtr retType (argPtr cls : argPtr sel : args)
 
@@ -157,7 +157,7 @@ sendClassMsgStret (Class cls) (Selector sel) retType args =
 --
 -- You must construct an 'ObjCSuper' struct and pass a pointer to it as
 -- the first argument. The selector is the second argument.
-sendSuperMsg :: ObjCSuper -> Selector -> RetType a -> [Arg] -> IO a
+sendSuperMsg :: ObjCSuper -> Selector args ret -> RetType a -> [Arg] -> IO a
 sendSuperMsg super_ (Selector sel) retType args =
   alloca $ \superPtr -> do
     poke superPtr super_

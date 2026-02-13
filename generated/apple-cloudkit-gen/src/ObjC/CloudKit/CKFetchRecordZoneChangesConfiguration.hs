@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.CloudKit.CKFetchRecordZoneChangesConfiguration
   , setResultsLimit
   , desiredKeys
   , setDesiredKeys
-  , previousServerChangeTokenSelector
-  , setPreviousServerChangeTokenSelector
-  , resultsLimitSelector
-  , setResultsLimitSelector
   , desiredKeysSelector
+  , previousServerChangeTokenSelector
+  , resultsLimitSelector
   , setDesiredKeysSelector
+  , setPreviousServerChangeTokenSelector
+  , setResultsLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,24 +36,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previousServerChangeToken@
 previousServerChangeToken :: IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration => ckFetchRecordZoneChangesConfiguration -> IO (Id CKServerChangeToken)
-previousServerChangeToken ckFetchRecordZoneChangesConfiguration  =
-    sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "previousServerChangeToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousServerChangeToken ckFetchRecordZoneChangesConfiguration =
+  sendMessage ckFetchRecordZoneChangesConfiguration previousServerChangeTokenSelector
 
 -- | @- setPreviousServerChangeToken:@
 setPreviousServerChangeToken :: (IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration, IsCKServerChangeToken value) => ckFetchRecordZoneChangesConfiguration -> value -> IO ()
-setPreviousServerChangeToken ckFetchRecordZoneChangesConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "setPreviousServerChangeToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousServerChangeToken ckFetchRecordZoneChangesConfiguration value =
+  sendMessage ckFetchRecordZoneChangesConfiguration setPreviousServerChangeTokenSelector (toCKServerChangeToken value)
 
 -- | @- resultsLimit@
 resultsLimit :: IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration => ckFetchRecordZoneChangesConfiguration -> IO CULong
-resultsLimit ckFetchRecordZoneChangesConfiguration  =
-    sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "resultsLimit") retCULong []
+resultsLimit ckFetchRecordZoneChangesConfiguration =
+  sendMessage ckFetchRecordZoneChangesConfiguration resultsLimitSelector
 
 -- | @- setResultsLimit:@
 setResultsLimit :: IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration => ckFetchRecordZoneChangesConfiguration -> CULong -> IO ()
-setResultsLimit ckFetchRecordZoneChangesConfiguration  value =
-    sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "setResultsLimit:") retVoid [argCULong value]
+setResultsLimit ckFetchRecordZoneChangesConfiguration value =
+  sendMessage ckFetchRecordZoneChangesConfiguration setResultsLimitSelector value
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -64,8 +60,8 @@ setResultsLimit ckFetchRecordZoneChangesConfiguration  value =
 --
 -- ObjC selector: @- desiredKeys@
 desiredKeys :: IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration => ckFetchRecordZoneChangesConfiguration -> IO (Id NSArray)
-desiredKeys ckFetchRecordZoneChangesConfiguration  =
-    sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "desiredKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+desiredKeys ckFetchRecordZoneChangesConfiguration =
+  sendMessage ckFetchRecordZoneChangesConfiguration desiredKeysSelector
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -73,35 +69,34 @@ desiredKeys ckFetchRecordZoneChangesConfiguration  =
 --
 -- ObjC selector: @- setDesiredKeys:@
 setDesiredKeys :: (IsCKFetchRecordZoneChangesConfiguration ckFetchRecordZoneChangesConfiguration, IsNSArray value) => ckFetchRecordZoneChangesConfiguration -> value -> IO ()
-setDesiredKeys ckFetchRecordZoneChangesConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordZoneChangesConfiguration (mkSelector "setDesiredKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesiredKeys ckFetchRecordZoneChangesConfiguration value =
+  sendMessage ckFetchRecordZoneChangesConfiguration setDesiredKeysSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousServerChangeToken@
-previousServerChangeTokenSelector :: Selector
+previousServerChangeTokenSelector :: Selector '[] (Id CKServerChangeToken)
 previousServerChangeTokenSelector = mkSelector "previousServerChangeToken"
 
 -- | @Selector@ for @setPreviousServerChangeToken:@
-setPreviousServerChangeTokenSelector :: Selector
+setPreviousServerChangeTokenSelector :: Selector '[Id CKServerChangeToken] ()
 setPreviousServerChangeTokenSelector = mkSelector "setPreviousServerChangeToken:"
 
 -- | @Selector@ for @resultsLimit@
-resultsLimitSelector :: Selector
+resultsLimitSelector :: Selector '[] CULong
 resultsLimitSelector = mkSelector "resultsLimit"
 
 -- | @Selector@ for @setResultsLimit:@
-setResultsLimitSelector :: Selector
+setResultsLimitSelector :: Selector '[CULong] ()
 setResultsLimitSelector = mkSelector "setResultsLimit:"
 
 -- | @Selector@ for @desiredKeys@
-desiredKeysSelector :: Selector
+desiredKeysSelector :: Selector '[] (Id NSArray)
 desiredKeysSelector = mkSelector "desiredKeys"
 
 -- | @Selector@ for @setDesiredKeys:@
-setDesiredKeysSelector :: Selector
+setDesiredKeysSelector :: Selector '[Id NSArray] ()
 setDesiredKeysSelector = mkSelector "setDesiredKeys:"
 

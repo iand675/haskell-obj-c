@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.MLCompute.MLCFullyConnectedLayer
   , biases
   , weightsParameter
   , biasesParameter
-  , layerWithWeights_biases_descriptorSelector
-  , descriptorSelector
-  , weightsSelector
-  , biasesSelector
-  , weightsParameterSelector
   , biasesParameterSelector
+  , biasesSelector
+  , descriptorSelector
+  , layerWithWeights_biases_descriptorSelector
+  , weightsParameterSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,10 +55,7 @@ layerWithWeights_biases_descriptor :: (IsMLCTensor weights, IsMLCTensor biases, 
 layerWithWeights_biases_descriptor weights biases descriptor =
   do
     cls' <- getRequiredClass "MLCFullyConnectedLayer"
-    withObjCPtr weights $ \raw_weights ->
-      withObjCPtr biases $ \raw_biases ->
-        withObjCPtr descriptor $ \raw_descriptor ->
-          sendClassMsg cls' (mkSelector "layerWithWeights:biases:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithWeights_biases_descriptorSelector (toMLCTensor weights) (toMLCTensor biases) (toMLCConvolutionDescriptor descriptor)
 
 -- | descriptor
 --
@@ -69,8 +63,8 @@ layerWithWeights_biases_descriptor weights biases descriptor =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCFullyConnectedLayer mlcFullyConnectedLayer => mlcFullyConnectedLayer -> IO (Id MLCConvolutionDescriptor)
-descriptor mlcFullyConnectedLayer  =
-    sendMsg mlcFullyConnectedLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcFullyConnectedLayer =
+  sendMessage mlcFullyConnectedLayer descriptorSelector
 
 -- | weights
 --
@@ -78,8 +72,8 @@ descriptor mlcFullyConnectedLayer  =
 --
 -- ObjC selector: @- weights@
 weights :: IsMLCFullyConnectedLayer mlcFullyConnectedLayer => mlcFullyConnectedLayer -> IO (Id MLCTensor)
-weights mlcFullyConnectedLayer  =
-    sendMsg mlcFullyConnectedLayer (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights mlcFullyConnectedLayer =
+  sendMessage mlcFullyConnectedLayer weightsSelector
 
 -- | biases
 --
@@ -87,8 +81,8 @@ weights mlcFullyConnectedLayer  =
 --
 -- ObjC selector: @- biases@
 biases :: IsMLCFullyConnectedLayer mlcFullyConnectedLayer => mlcFullyConnectedLayer -> IO (Id MLCTensor)
-biases mlcFullyConnectedLayer  =
-    sendMsg mlcFullyConnectedLayer (mkSelector "biases") (retPtr retVoid) [] >>= retainedObject . castPtr
+biases mlcFullyConnectedLayer =
+  sendMessage mlcFullyConnectedLayer biasesSelector
 
 -- | weightsParameter
 --
@@ -96,8 +90,8 @@ biases mlcFullyConnectedLayer  =
 --
 -- ObjC selector: @- weightsParameter@
 weightsParameter :: IsMLCFullyConnectedLayer mlcFullyConnectedLayer => mlcFullyConnectedLayer -> IO (Id MLCTensorParameter)
-weightsParameter mlcFullyConnectedLayer  =
-    sendMsg mlcFullyConnectedLayer (mkSelector "weightsParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+weightsParameter mlcFullyConnectedLayer =
+  sendMessage mlcFullyConnectedLayer weightsParameterSelector
 
 -- | biasesParameter
 --
@@ -105,34 +99,34 @@ weightsParameter mlcFullyConnectedLayer  =
 --
 -- ObjC selector: @- biasesParameter@
 biasesParameter :: IsMLCFullyConnectedLayer mlcFullyConnectedLayer => mlcFullyConnectedLayer -> IO (Id MLCTensorParameter)
-biasesParameter mlcFullyConnectedLayer  =
-    sendMsg mlcFullyConnectedLayer (mkSelector "biasesParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+biasesParameter mlcFullyConnectedLayer =
+  sendMessage mlcFullyConnectedLayer biasesParameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithWeights:biases:descriptor:@
-layerWithWeights_biases_descriptorSelector :: Selector
+layerWithWeights_biases_descriptorSelector :: Selector '[Id MLCTensor, Id MLCTensor, Id MLCConvolutionDescriptor] (Id MLCFullyConnectedLayer)
 layerWithWeights_biases_descriptorSelector = mkSelector "layerWithWeights:biases:descriptor:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCConvolutionDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id MLCTensor)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] (Id MLCTensor)
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @weightsParameter@
-weightsParameterSelector :: Selector
+weightsParameterSelector :: Selector '[] (Id MLCTensorParameter)
 weightsParameterSelector = mkSelector "weightsParameter"
 
 -- | @Selector@ for @biasesParameter@
-biasesParameterSelector :: Selector
+biasesParameterSelector :: Selector '[] (Id MLCTensorParameter)
 biasesParameterSelector = mkSelector "biasesParameter"
 

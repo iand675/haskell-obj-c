@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CoreData.NSMergeConflict
   , persistedSnapshot
   , newVersionNumber
   , oldVersionNumber
-  , initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector
-  , initSelector
-  , sourceObjectSelector
-  , objectSnapshotSelector
   , cachedSnapshotSelector
-  , persistedSnapshotSelector
+  , initSelector
+  , initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector
   , newVersionNumberSelector
+  , objectSnapshotSelector
   , oldVersionNumberSelector
+  , persistedSnapshotSelector
+  , sourceObjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:@
 initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshot :: (IsNSMergeConflict nsMergeConflict, IsNSManagedObject srcObject, IsNSDictionary cachesnap, IsNSDictionary persnap) => nsMergeConflict -> srcObject -> CULong -> CULong -> cachesnap -> persnap -> IO (Id NSMergeConflict)
-initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshot nsMergeConflict  srcObject newvers oldvers cachesnap persnap =
-  withObjCPtr srcObject $ \raw_srcObject ->
-    withObjCPtr cachesnap $ \raw_cachesnap ->
-      withObjCPtr persnap $ \raw_persnap ->
-          sendMsg nsMergeConflict (mkSelector "initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:") (retPtr retVoid) [argPtr (castPtr raw_srcObject :: Ptr ()), argCULong newvers, argCULong oldvers, argPtr (castPtr raw_cachesnap :: Ptr ()), argPtr (castPtr raw_persnap :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshot nsMergeConflict srcObject newvers oldvers cachesnap persnap =
+  sendOwnedMessage nsMergeConflict initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector (toNSManagedObject srcObject) newvers oldvers (toNSDictionary cachesnap) (toNSDictionary persnap)
 
 -- | @- init@
 init_ :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO (Id NSMergeConflict)
-init_ nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMergeConflict =
+  sendOwnedMessage nsMergeConflict initSelector
 
 -- | @- sourceObject@
 sourceObject :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO (Id NSManagedObject)
-sourceObject nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "sourceObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceObject nsMergeConflict =
+  sendMessage nsMergeConflict sourceObjectSelector
 
 -- | @- objectSnapshot@
 objectSnapshot :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO (Id NSDictionary)
-objectSnapshot nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "objectSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectSnapshot nsMergeConflict =
+  sendMessage nsMergeConflict objectSnapshotSelector
 
 -- | @- cachedSnapshot@
 cachedSnapshot :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO (Id NSDictionary)
-cachedSnapshot nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "cachedSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+cachedSnapshot nsMergeConflict =
+  sendMessage nsMergeConflict cachedSnapshotSelector
 
 -- | @- persistedSnapshot@
 persistedSnapshot :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO (Id NSDictionary)
-persistedSnapshot nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "persistedSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistedSnapshot nsMergeConflict =
+  sendMessage nsMergeConflict persistedSnapshotSelector
 
 -- | @- newVersionNumber@
 newVersionNumber :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO CULong
-newVersionNumber nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "newVersionNumber") retCULong []
+newVersionNumber nsMergeConflict =
+  sendOwnedMessage nsMergeConflict newVersionNumberSelector
 
 -- | @- oldVersionNumber@
 oldVersionNumber :: IsNSMergeConflict nsMergeConflict => nsMergeConflict -> IO CULong
-oldVersionNumber nsMergeConflict  =
-    sendMsg nsMergeConflict (mkSelector "oldVersionNumber") retCULong []
+oldVersionNumber nsMergeConflict =
+  sendMessage nsMergeConflict oldVersionNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:@
-initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector :: Selector
+initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector :: Selector '[Id NSManagedObject, CULong, CULong, Id NSDictionary, Id NSDictionary] (Id NSMergeConflict)
 initWithSource_newVersion_oldVersion_cachedSnapshot_persistedSnapshotSelector = mkSelector "initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMergeConflict)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sourceObject@
-sourceObjectSelector :: Selector
+sourceObjectSelector :: Selector '[] (Id NSManagedObject)
 sourceObjectSelector = mkSelector "sourceObject"
 
 -- | @Selector@ for @objectSnapshot@
-objectSnapshotSelector :: Selector
+objectSnapshotSelector :: Selector '[] (Id NSDictionary)
 objectSnapshotSelector = mkSelector "objectSnapshot"
 
 -- | @Selector@ for @cachedSnapshot@
-cachedSnapshotSelector :: Selector
+cachedSnapshotSelector :: Selector '[] (Id NSDictionary)
 cachedSnapshotSelector = mkSelector "cachedSnapshot"
 
 -- | @Selector@ for @persistedSnapshot@
-persistedSnapshotSelector :: Selector
+persistedSnapshotSelector :: Selector '[] (Id NSDictionary)
 persistedSnapshotSelector = mkSelector "persistedSnapshot"
 
 -- | @Selector@ for @newVersionNumber@
-newVersionNumberSelector :: Selector
+newVersionNumberSelector :: Selector '[] CULong
 newVersionNumberSelector = mkSelector "newVersionNumber"
 
 -- | @Selector@ for @oldVersionNumber@
-oldVersionNumberSelector :: Selector
+oldVersionNumberSelector :: Selector '[] CULong
 oldVersionNumberSelector = mkSelector "oldVersionNumber"
 

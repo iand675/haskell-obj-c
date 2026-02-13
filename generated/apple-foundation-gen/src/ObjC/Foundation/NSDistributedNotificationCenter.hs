@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Foundation.NSDistributedNotificationCenter
   , removeObserver_name_object
   , suspended
   , setSuspended
-  , notificationCenterForTypeSelector
-  , defaultCenterSelector
-  , addObserver_selector_name_object_suspensionBehaviorSelector
-  , postNotificationName_object_userInfo_deliverImmediatelySelector
-  , postNotificationName_object_userInfo_optionsSelector
   , addObserver_selector_name_objectSelector
+  , addObserver_selector_name_object_suspensionBehaviorSelector
+  , defaultCenterSelector
+  , notificationCenterForTypeSelector
   , postNotificationName_objectSelector
   , postNotificationName_object_userInfoSelector
+  , postNotificationName_object_userInfo_deliverImmediatelySelector
+  , postNotificationName_object_userInfo_optionsSelector
   , removeObserver_name_objectSelector
-  , suspendedSelector
   , setSuspendedSelector
+  , suspendedSelector
 
   -- * Enum types
   , NSDistributedNotificationOptions(NSDistributedNotificationOptions)
@@ -42,15 +43,11 @@ module ObjC.Foundation.NSDistributedNotificationCenter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,123 +59,105 @@ notificationCenterForType :: IsNSString notificationCenterType => notificationCe
 notificationCenterForType notificationCenterType =
   do
     cls' <- getRequiredClass "NSDistributedNotificationCenter"
-    withObjCPtr notificationCenterType $ \raw_notificationCenterType ->
-      sendClassMsg cls' (mkSelector "notificationCenterForType:") (retPtr retVoid) [argPtr (castPtr raw_notificationCenterType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notificationCenterForTypeSelector (toNSString notificationCenterType)
 
 -- | @+ defaultCenter@
 defaultCenter :: IO (Id NSDistributedNotificationCenter)
 defaultCenter  =
   do
     cls' <- getRequiredClass "NSDistributedNotificationCenter"
-    sendClassMsg cls' (mkSelector "defaultCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCenterSelector
 
 -- | @- addObserver:selector:name:object:suspensionBehavior:@
-addObserver_selector_name_object_suspensionBehavior :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString name, IsNSString object) => nsDistributedNotificationCenter -> RawId -> Selector -> name -> object -> NSNotificationSuspensionBehavior -> IO ()
-addObserver_selector_name_object_suspensionBehavior nsDistributedNotificationCenter  observer selector name object suspensionBehavior =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr object $ \raw_object ->
-        sendMsg nsDistributedNotificationCenter (mkSelector "addObserver:selector:name:object:suspensionBehavior:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector selector), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_object :: Ptr ()), argCULong (coerce suspensionBehavior)]
+addObserver_selector_name_object_suspensionBehavior :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString name, IsNSString object) => nsDistributedNotificationCenter -> RawId -> Sel -> name -> object -> NSNotificationSuspensionBehavior -> IO ()
+addObserver_selector_name_object_suspensionBehavior nsDistributedNotificationCenter observer selector name object suspensionBehavior =
+  sendMessage nsDistributedNotificationCenter addObserver_selector_name_object_suspensionBehaviorSelector observer selector (toNSString name) (toNSString object) suspensionBehavior
 
 -- | @- postNotificationName:object:userInfo:deliverImmediately:@
 postNotificationName_object_userInfo_deliverImmediately :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString name, IsNSString object, IsNSDictionary userInfo) => nsDistributedNotificationCenter -> name -> object -> userInfo -> Bool -> IO ()
-postNotificationName_object_userInfo_deliverImmediately nsDistributedNotificationCenter  name object userInfo deliverImmediately =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr object $ \raw_object ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg nsDistributedNotificationCenter (mkSelector "postNotificationName:object:userInfo:deliverImmediately:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ()), argCULong (if deliverImmediately then 1 else 0)]
+postNotificationName_object_userInfo_deliverImmediately nsDistributedNotificationCenter name object userInfo deliverImmediately =
+  sendMessage nsDistributedNotificationCenter postNotificationName_object_userInfo_deliverImmediatelySelector (toNSString name) (toNSString object) (toNSDictionary userInfo) deliverImmediately
 
 -- | @- postNotificationName:object:userInfo:options:@
 postNotificationName_object_userInfo_options :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString name, IsNSString object, IsNSDictionary userInfo) => nsDistributedNotificationCenter -> name -> object -> userInfo -> NSDistributedNotificationOptions -> IO ()
-postNotificationName_object_userInfo_options nsDistributedNotificationCenter  name object userInfo options =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr object $ \raw_object ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg nsDistributedNotificationCenter (mkSelector "postNotificationName:object:userInfo:options:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ()), argCULong (coerce options)]
+postNotificationName_object_userInfo_options nsDistributedNotificationCenter name object userInfo options =
+  sendMessage nsDistributedNotificationCenter postNotificationName_object_userInfo_optionsSelector (toNSString name) (toNSString object) (toNSDictionary userInfo) options
 
 -- | @- addObserver:selector:name:object:@
-addObserver_selector_name_object :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString aName, IsNSString anObject) => nsDistributedNotificationCenter -> RawId -> Selector -> aName -> anObject -> IO ()
-addObserver_selector_name_object nsDistributedNotificationCenter  observer aSelector aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-    withObjCPtr anObject $ \raw_anObject ->
-        sendMsg nsDistributedNotificationCenter (mkSelector "addObserver:selector:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector aSelector), argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr raw_anObject :: Ptr ())]
+addObserver_selector_name_object :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString aName, IsNSString anObject) => nsDistributedNotificationCenter -> RawId -> Sel -> aName -> anObject -> IO ()
+addObserver_selector_name_object nsDistributedNotificationCenter observer aSelector aName anObject =
+  sendMessage nsDistributedNotificationCenter addObserver_selector_name_objectSelector observer aSelector (toNSString aName) (toNSString anObject)
 
 -- | @- postNotificationName:object:@
 postNotificationName_object :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString aName, IsNSString anObject) => nsDistributedNotificationCenter -> aName -> anObject -> IO ()
-postNotificationName_object nsDistributedNotificationCenter  aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-    withObjCPtr anObject $ \raw_anObject ->
-        sendMsg nsDistributedNotificationCenter (mkSelector "postNotificationName:object:") retVoid [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr raw_anObject :: Ptr ())]
+postNotificationName_object nsDistributedNotificationCenter aName anObject =
+  sendMessage nsDistributedNotificationCenter postNotificationName_objectSelector (toNSString aName) (toNSString anObject)
 
 -- | @- postNotificationName:object:userInfo:@
 postNotificationName_object_userInfo :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString aName, IsNSString anObject, IsNSDictionary aUserInfo) => nsDistributedNotificationCenter -> aName -> anObject -> aUserInfo -> IO ()
-postNotificationName_object_userInfo nsDistributedNotificationCenter  aName anObject aUserInfo =
-  withObjCPtr aName $ \raw_aName ->
-    withObjCPtr anObject $ \raw_anObject ->
-      withObjCPtr aUserInfo $ \raw_aUserInfo ->
-          sendMsg nsDistributedNotificationCenter (mkSelector "postNotificationName:object:userInfo:") retVoid [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr raw_anObject :: Ptr ()), argPtr (castPtr raw_aUserInfo :: Ptr ())]
+postNotificationName_object_userInfo nsDistributedNotificationCenter aName anObject aUserInfo =
+  sendMessage nsDistributedNotificationCenter postNotificationName_object_userInfoSelector (toNSString aName) (toNSString anObject) (toNSDictionary aUserInfo)
 
 -- | @- removeObserver:name:object:@
 removeObserver_name_object :: (IsNSDistributedNotificationCenter nsDistributedNotificationCenter, IsNSString aName, IsNSString anObject) => nsDistributedNotificationCenter -> RawId -> aName -> anObject -> IO ()
-removeObserver_name_object nsDistributedNotificationCenter  observer aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-    withObjCPtr anObject $ \raw_anObject ->
-        sendMsg nsDistributedNotificationCenter (mkSelector "removeObserver:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr raw_anObject :: Ptr ())]
+removeObserver_name_object nsDistributedNotificationCenter observer aName anObject =
+  sendMessage nsDistributedNotificationCenter removeObserver_name_objectSelector observer (toNSString aName) (toNSString anObject)
 
 -- | @- suspended@
 suspended :: IsNSDistributedNotificationCenter nsDistributedNotificationCenter => nsDistributedNotificationCenter -> IO Bool
-suspended nsDistributedNotificationCenter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDistributedNotificationCenter (mkSelector "suspended") retCULong []
+suspended nsDistributedNotificationCenter =
+  sendMessage nsDistributedNotificationCenter suspendedSelector
 
 -- | @- setSuspended:@
 setSuspended :: IsNSDistributedNotificationCenter nsDistributedNotificationCenter => nsDistributedNotificationCenter -> Bool -> IO ()
-setSuspended nsDistributedNotificationCenter  value =
-    sendMsg nsDistributedNotificationCenter (mkSelector "setSuspended:") retVoid [argCULong (if value then 1 else 0)]
+setSuspended nsDistributedNotificationCenter value =
+  sendMessage nsDistributedNotificationCenter setSuspendedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @notificationCenterForType:@
-notificationCenterForTypeSelector :: Selector
+notificationCenterForTypeSelector :: Selector '[Id NSString] (Id NSDistributedNotificationCenter)
 notificationCenterForTypeSelector = mkSelector "notificationCenterForType:"
 
 -- | @Selector@ for @defaultCenter@
-defaultCenterSelector :: Selector
+defaultCenterSelector :: Selector '[] (Id NSDistributedNotificationCenter)
 defaultCenterSelector = mkSelector "defaultCenter"
 
 -- | @Selector@ for @addObserver:selector:name:object:suspensionBehavior:@
-addObserver_selector_name_object_suspensionBehaviorSelector :: Selector
+addObserver_selector_name_object_suspensionBehaviorSelector :: Selector '[RawId, Sel, Id NSString, Id NSString, NSNotificationSuspensionBehavior] ()
 addObserver_selector_name_object_suspensionBehaviorSelector = mkSelector "addObserver:selector:name:object:suspensionBehavior:"
 
 -- | @Selector@ for @postNotificationName:object:userInfo:deliverImmediately:@
-postNotificationName_object_userInfo_deliverImmediatelySelector :: Selector
+postNotificationName_object_userInfo_deliverImmediatelySelector :: Selector '[Id NSString, Id NSString, Id NSDictionary, Bool] ()
 postNotificationName_object_userInfo_deliverImmediatelySelector = mkSelector "postNotificationName:object:userInfo:deliverImmediately:"
 
 -- | @Selector@ for @postNotificationName:object:userInfo:options:@
-postNotificationName_object_userInfo_optionsSelector :: Selector
+postNotificationName_object_userInfo_optionsSelector :: Selector '[Id NSString, Id NSString, Id NSDictionary, NSDistributedNotificationOptions] ()
 postNotificationName_object_userInfo_optionsSelector = mkSelector "postNotificationName:object:userInfo:options:"
 
 -- | @Selector@ for @addObserver:selector:name:object:@
-addObserver_selector_name_objectSelector :: Selector
+addObserver_selector_name_objectSelector :: Selector '[RawId, Sel, Id NSString, Id NSString] ()
 addObserver_selector_name_objectSelector = mkSelector "addObserver:selector:name:object:"
 
 -- | @Selector@ for @postNotificationName:object:@
-postNotificationName_objectSelector :: Selector
+postNotificationName_objectSelector :: Selector '[Id NSString, Id NSString] ()
 postNotificationName_objectSelector = mkSelector "postNotificationName:object:"
 
 -- | @Selector@ for @postNotificationName:object:userInfo:@
-postNotificationName_object_userInfoSelector :: Selector
+postNotificationName_object_userInfoSelector :: Selector '[Id NSString, Id NSString, Id NSDictionary] ()
 postNotificationName_object_userInfoSelector = mkSelector "postNotificationName:object:userInfo:"
 
 -- | @Selector@ for @removeObserver:name:object:@
-removeObserver_name_objectSelector :: Selector
+removeObserver_name_objectSelector :: Selector '[RawId, Id NSString, Id NSString] ()
 removeObserver_name_objectSelector = mkSelector "removeObserver:name:object:"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] Bool
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @setSuspended:@
-setSuspendedSelector :: Selector
+setSuspendedSelector :: Selector '[Bool] ()
 setSuspendedSelector = mkSelector "setSuspended:"
 

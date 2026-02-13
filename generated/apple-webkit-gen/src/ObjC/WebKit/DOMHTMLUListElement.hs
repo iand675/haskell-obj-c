@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.WebKit.DOMHTMLUListElement
   , setType
   , compactSelector
   , setCompactSelector
-  , typeSelector
   , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- compact@
 compact :: IsDOMHTMLUListElement domhtmluListElement => domhtmluListElement -> IO Bool
-compact domhtmluListElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmluListElement (mkSelector "compact") retCULong []
+compact domhtmluListElement =
+  sendMessage domhtmluListElement compactSelector
 
 -- | @- setCompact:@
 setCompact :: IsDOMHTMLUListElement domhtmluListElement => domhtmluListElement -> Bool -> IO ()
-setCompact domhtmluListElement  value =
-    sendMsg domhtmluListElement (mkSelector "setCompact:") retVoid [argCULong (if value then 1 else 0)]
+setCompact domhtmluListElement value =
+  sendMessage domhtmluListElement setCompactSelector value
 
 -- | @- type@
 type_ :: IsDOMHTMLUListElement domhtmluListElement => domhtmluListElement -> IO (Id NSString)
-type_ domhtmluListElement  =
-    sendMsg domhtmluListElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmluListElement =
+  sendMessage domhtmluListElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLUListElement domhtmluListElement, IsNSString value) => domhtmluListElement -> value -> IO ()
-setType domhtmluListElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmluListElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmluListElement value =
+  sendMessage domhtmluListElement setTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compact@
-compactSelector :: Selector
+compactSelector :: Selector '[] Bool
 compactSelector = mkSelector "compact"
 
 -- | @Selector@ for @setCompact:@
-setCompactSelector :: Selector
+setCompactSelector :: Selector '[Bool] ()
 setCompactSelector = mkSelector "setCompact:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 

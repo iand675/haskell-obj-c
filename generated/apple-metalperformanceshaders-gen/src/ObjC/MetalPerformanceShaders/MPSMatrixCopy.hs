@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.MetalPerformanceShaders.MPSMatrixCopy
   , copyColumns
   , sourcesAreTransposed
   , destinationsAreTransposed
-  , initWithDeviceSelector
-  , initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector
+  , copyColumnsSelector
+  , copyRowsSelector
+  , destinationsAreTransposedSelector
   , encodeToCommandBuffer_copyDescriptorSelector
   , encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffsetSelector
   , initWithCoder_deviceSelector
-  , copyRowsSelector
-  , copyColumnsSelector
+  , initWithDeviceSelector
+  , initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector
   , sourcesAreTransposedSelector
-  , destinationsAreTransposedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> RawId -> IO (Id MPSMatrixCopy)
-initWithDevice mpsMatrixCopy  device =
-    sendMsg mpsMatrixCopy (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixCopy device =
+  sendOwnedMessage mpsMatrixCopy initWithDeviceSelector device
 
 -- | Initialize a copy operator
 --
@@ -60,8 +57,8 @@ initWithDevice mpsMatrixCopy  device =
 --
 -- ObjC selector: @- initWithDevice:copyRows:copyColumns:sourcesAreTransposed:destinationsAreTransposed:@
 initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposed :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> RawId -> CULong -> CULong -> Bool -> Bool -> IO (Id MPSMatrixCopy)
-initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposed mpsMatrixCopy  device copyRows copyColumns sourcesAreTransposed destinationsAreTransposed =
-    sendMsg mpsMatrixCopy (mkSelector "initWithDevice:copyRows:copyColumns:sourcesAreTransposed:destinationsAreTransposed:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong copyRows, argCULong copyColumns, argCULong (if sourcesAreTransposed then 1 else 0), argCULong (if destinationsAreTransposed then 1 else 0)] >>= ownedObject . castPtr
+initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposed mpsMatrixCopy device copyRows copyColumns sourcesAreTransposed destinationsAreTransposed =
+  sendOwnedMessage mpsMatrixCopy initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector device copyRows copyColumns sourcesAreTransposed destinationsAreTransposed
 
 -- | Encode the copy operations to the command buffer
 --
@@ -71,9 +68,8 @@ initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTranspos
 --
 -- ObjC selector: @- encodeToCommandBuffer:copyDescriptor:@
 encodeToCommandBuffer_copyDescriptor :: (IsMPSMatrixCopy mpsMatrixCopy, IsMPSMatrixCopyDescriptor copyDescriptor) => mpsMatrixCopy -> RawId -> copyDescriptor -> IO ()
-encodeToCommandBuffer_copyDescriptor mpsMatrixCopy  commandBuffer copyDescriptor =
-  withObjCPtr copyDescriptor $ \raw_copyDescriptor ->
-      sendMsg mpsMatrixCopy (mkSelector "encodeToCommandBuffer:copyDescriptor:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_copyDescriptor :: Ptr ())]
+encodeToCommandBuffer_copyDescriptor mpsMatrixCopy commandBuffer copyDescriptor =
+  sendMessage mpsMatrixCopy encodeToCommandBuffer_copyDescriptorSelector commandBuffer (toMPSMatrixCopyDescriptor copyDescriptor)
 
 -- | Encode the copy operations to the command buffer.              This of the encode version support permuting the outputs with custom vectors of indices.              The permutations are defined on the destination indices and are the same for each copy              operation.
 --
@@ -91,11 +87,8 @@ encodeToCommandBuffer_copyDescriptor mpsMatrixCopy  commandBuffer copyDescriptor
 --
 -- ObjC selector: @- encodeToCommandBuffer:copyDescriptor:rowPermuteIndices:rowPermuteOffset:columnPermuteIndices:columnPermuteOffset:@
 encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffset :: (IsMPSMatrixCopy mpsMatrixCopy, IsMPSMatrixCopyDescriptor copyDescriptor, IsMPSVector rowPermuteIndices, IsMPSVector columnPermuteIndices) => mpsMatrixCopy -> RawId -> copyDescriptor -> rowPermuteIndices -> CULong -> columnPermuteIndices -> CULong -> IO ()
-encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffset mpsMatrixCopy  commandBuffer copyDescriptor rowPermuteIndices rowPermuteOffset columnPermuteIndices columnPermuteOffset =
-  withObjCPtr copyDescriptor $ \raw_copyDescriptor ->
-    withObjCPtr rowPermuteIndices $ \raw_rowPermuteIndices ->
-      withObjCPtr columnPermuteIndices $ \raw_columnPermuteIndices ->
-          sendMsg mpsMatrixCopy (mkSelector "encodeToCommandBuffer:copyDescriptor:rowPermuteIndices:rowPermuteOffset:columnPermuteIndices:columnPermuteOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_copyDescriptor :: Ptr ()), argPtr (castPtr raw_rowPermuteIndices :: Ptr ()), argCULong rowPermuteOffset, argPtr (castPtr raw_columnPermuteIndices :: Ptr ()), argCULong columnPermuteOffset]
+encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffset mpsMatrixCopy commandBuffer copyDescriptor rowPermuteIndices rowPermuteOffset columnPermuteIndices columnPermuteOffset =
+  sendMessage mpsMatrixCopy encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffsetSelector commandBuffer (toMPSMatrixCopyDescriptor copyDescriptor) (toMPSVector rowPermuteIndices) rowPermuteOffset (toMPSVector columnPermuteIndices) columnPermuteOffset
 
 -- | NSSecureCoding compatability
 --
@@ -109,75 +102,74 @@ encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPe
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixCopy mpsMatrixCopy, IsNSCoder aDecoder) => mpsMatrixCopy -> aDecoder -> RawId -> IO (Id MPSMatrixCopy)
-initWithCoder_device mpsMatrixCopy  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixCopy (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixCopy aDecoder device =
+  sendOwnedMessage mpsMatrixCopy initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | The number of rows to copy for each copy operation
 --
 -- ObjC selector: @- copyRows@
 copyRows :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> IO CULong
-copyRows mpsMatrixCopy  =
-    sendMsg mpsMatrixCopy (mkSelector "copyRows") retCULong []
+copyRows mpsMatrixCopy =
+  sendOwnedMessage mpsMatrixCopy copyRowsSelector
 
 -- | The number of columns to copy for each copy operation
 --
 -- ObjC selector: @- copyColumns@
 copyColumns :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> IO CULong
-copyColumns mpsMatrixCopy  =
-    sendMsg mpsMatrixCopy (mkSelector "copyColumns") retCULong []
+copyColumns mpsMatrixCopy =
+  sendOwnedMessage mpsMatrixCopy copyColumnsSelector
 
 -- | If YES, the sources are in row major storage order
 --
 -- ObjC selector: @- sourcesAreTransposed@
 sourcesAreTransposed :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> IO Bool
-sourcesAreTransposed mpsMatrixCopy  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsMatrixCopy (mkSelector "sourcesAreTransposed") retCULong []
+sourcesAreTransposed mpsMatrixCopy =
+  sendMessage mpsMatrixCopy sourcesAreTransposedSelector
 
 -- | If YES, the destinations are in row major storage order
 --
 -- ObjC selector: @- destinationsAreTransposed@
 destinationsAreTransposed :: IsMPSMatrixCopy mpsMatrixCopy => mpsMatrixCopy -> IO Bool
-destinationsAreTransposed mpsMatrixCopy  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsMatrixCopy (mkSelector "destinationsAreTransposed") retCULong []
+destinationsAreTransposed mpsMatrixCopy =
+  sendMessage mpsMatrixCopy destinationsAreTransposedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixCopy)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:copyRows:copyColumns:sourcesAreTransposed:destinationsAreTransposed:@
-initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector :: Selector
+initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector :: Selector '[RawId, CULong, CULong, Bool, Bool] (Id MPSMatrixCopy)
 initWithDevice_copyRows_copyColumns_sourcesAreTransposed_destinationsAreTransposedSelector = mkSelector "initWithDevice:copyRows:copyColumns:sourcesAreTransposed:destinationsAreTransposed:"
 
 -- | @Selector@ for @encodeToCommandBuffer:copyDescriptor:@
-encodeToCommandBuffer_copyDescriptorSelector :: Selector
+encodeToCommandBuffer_copyDescriptorSelector :: Selector '[RawId, Id MPSMatrixCopyDescriptor] ()
 encodeToCommandBuffer_copyDescriptorSelector = mkSelector "encodeToCommandBuffer:copyDescriptor:"
 
 -- | @Selector@ for @encodeToCommandBuffer:copyDescriptor:rowPermuteIndices:rowPermuteOffset:columnPermuteIndices:columnPermuteOffset:@
-encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffsetSelector :: Selector
+encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffsetSelector :: Selector '[RawId, Id MPSMatrixCopyDescriptor, Id MPSVector, CULong, Id MPSVector, CULong] ()
 encodeToCommandBuffer_copyDescriptor_rowPermuteIndices_rowPermuteOffset_columnPermuteIndices_columnPermuteOffsetSelector = mkSelector "encodeToCommandBuffer:copyDescriptor:rowPermuteIndices:rowPermuteOffset:columnPermuteIndices:columnPermuteOffset:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixCopy)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyRows@
-copyRowsSelector :: Selector
+copyRowsSelector :: Selector '[] CULong
 copyRowsSelector = mkSelector "copyRows"
 
 -- | @Selector@ for @copyColumns@
-copyColumnsSelector :: Selector
+copyColumnsSelector :: Selector '[] CULong
 copyColumnsSelector = mkSelector "copyColumns"
 
 -- | @Selector@ for @sourcesAreTransposed@
-sourcesAreTransposedSelector :: Selector
+sourcesAreTransposedSelector :: Selector '[] Bool
 sourcesAreTransposedSelector = mkSelector "sourcesAreTransposed"
 
 -- | @Selector@ for @destinationsAreTransposed@
-destinationsAreTransposedSelector :: Selector
+destinationsAreTransposedSelector :: Selector '[] Bool
 destinationsAreTransposedSelector = mkSelector "destinationsAreTransposed"
 

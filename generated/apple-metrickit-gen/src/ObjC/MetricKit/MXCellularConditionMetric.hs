@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.MetricKit.MXCellularConditionMetric
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,14 +40,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- histogrammedCellularConditionTime@
 histogrammedCellularConditionTime :: IsMXCellularConditionMetric mxCellularConditionMetric => mxCellularConditionMetric -> IO (Id MXHistogram)
-histogrammedCellularConditionTime mxCellularConditionMetric  =
-    sendMsg mxCellularConditionMetric (mkSelector "histogrammedCellularConditionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+histogrammedCellularConditionTime mxCellularConditionMetric =
+  sendMessage mxCellularConditionMetric histogrammedCellularConditionTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @histogrammedCellularConditionTime@
-histogrammedCellularConditionTimeSelector :: Selector
+histogrammedCellularConditionTimeSelector :: Selector '[] (Id MXHistogram)
 histogrammedCellularConditionTimeSelector = mkSelector "histogrammedCellularConditionTime"
 

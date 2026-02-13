@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INBillTypeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithBillTypeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedBillTypeSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithBillTypeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedBillTypeSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INBillType(INBillType)
@@ -44,15 +45,11 @@ module ObjC.Intents.INBillTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,46 +62,46 @@ successWithResolvedBillType :: INBillType -> IO (Id INBillTypeResolutionResult)
 successWithResolvedBillType resolvedBillType =
   do
     cls' <- getRequiredClass "INBillTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedBillType:") (retPtr retVoid) [argCLong (coerce resolvedBillType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedBillTypeSelector resolvedBillType
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INBillType -> IO (Id INBillTypeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INBillTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithBillTypeToConfirm:@
 confirmationRequiredWithBillTypeToConfirm :: INBillType -> IO (Id INBillTypeResolutionResult)
 confirmationRequiredWithBillTypeToConfirm billTypeToConfirm =
   do
     cls' <- getRequiredClass "INBillTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithBillTypeToConfirm:") (retPtr retVoid) [argCLong (coerce billTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithBillTypeToConfirmSelector billTypeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INBillType -> IO (Id INBillTypeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INBillTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedBillType:@
-successWithResolvedBillTypeSelector :: Selector
+successWithResolvedBillTypeSelector :: Selector '[INBillType] (Id INBillTypeResolutionResult)
 successWithResolvedBillTypeSelector = mkSelector "successWithResolvedBillType:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INBillType] (Id INBillTypeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithBillTypeToConfirm:@
-confirmationRequiredWithBillTypeToConfirmSelector :: Selector
+confirmationRequiredWithBillTypeToConfirmSelector :: Selector '[INBillType] (Id INBillTypeResolutionResult)
 confirmationRequiredWithBillTypeToConfirmSelector = mkSelector "confirmationRequiredWithBillTypeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INBillType] (Id INBillTypeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

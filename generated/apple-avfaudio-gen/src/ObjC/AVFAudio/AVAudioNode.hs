@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,33 +33,29 @@ module ObjC.AVFAudio.AVAudioNode
   , auAudioUnit
   , latency
   , outputPresentationLatency
-  , resetSelector
+  , auAudioUnitSelector
+  , engineSelector
   , inputFormatForBusSelector
-  , outputFormatForBusSelector
+  , installTapOnBus_bufferSize_format_blockSelector
+  , lastRenderTimeSelector
+  , latencySelector
   , nameForInputBusSelector
   , nameForOutputBusSelector
-  , installTapOnBus_bufferSize_format_blockSelector
-  , removeTapOnBusSelector
-  , engineSelector
   , numberOfInputsSelector
   , numberOfOutputsSelector
-  , lastRenderTimeSelector
-  , auAudioUnitSelector
-  , latencySelector
+  , outputFormatForBusSelector
   , outputPresentationLatencySelector
+  , removeTapOnBusSelector
+  , resetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reset@
 reset :: IsAVAudioNode avAudioNode => avAudioNode -> IO ()
-reset avAudioNode  =
-    sendMsg avAudioNode (mkSelector "reset") retVoid []
+reset avAudioNode =
+  sendMessage avAudioNode resetSelector
 
 -- | inputFormatForBus:
 --
@@ -81,8 +78,8 @@ reset avAudioNode  =
 --
 -- ObjC selector: @- inputFormatForBus:@
 inputFormatForBus :: IsAVAudioNode avAudioNode => avAudioNode -> CULong -> IO (Id AVAudioFormat)
-inputFormatForBus avAudioNode  bus =
-    sendMsg avAudioNode (mkSelector "inputFormatForBus:") (retPtr retVoid) [argCULong bus] >>= retainedObject . castPtr
+inputFormatForBus avAudioNode bus =
+  sendMessage avAudioNode inputFormatForBusSelector bus
 
 -- | outputFormatForBus:
 --
@@ -90,8 +87,8 @@ inputFormatForBus avAudioNode  bus =
 --
 -- ObjC selector: @- outputFormatForBus:@
 outputFormatForBus :: IsAVAudioNode avAudioNode => avAudioNode -> CULong -> IO (Id AVAudioFormat)
-outputFormatForBus avAudioNode  bus =
-    sendMsg avAudioNode (mkSelector "outputFormatForBus:") (retPtr retVoid) [argCULong bus] >>= retainedObject . castPtr
+outputFormatForBus avAudioNode bus =
+  sendMessage avAudioNode outputFormatForBusSelector bus
 
 -- | nameForInputBus:
 --
@@ -99,8 +96,8 @@ outputFormatForBus avAudioNode  bus =
 --
 -- ObjC selector: @- nameForInputBus:@
 nameForInputBus :: IsAVAudioNode avAudioNode => avAudioNode -> CULong -> IO (Id NSString)
-nameForInputBus avAudioNode  bus =
-    sendMsg avAudioNode (mkSelector "nameForInputBus:") (retPtr retVoid) [argCULong bus] >>= retainedObject . castPtr
+nameForInputBus avAudioNode bus =
+  sendMessage avAudioNode nameForInputBusSelector bus
 
 -- | nameForOutputBus:
 --
@@ -108,8 +105,8 @@ nameForInputBus avAudioNode  bus =
 --
 -- ObjC selector: @- nameForOutputBus:@
 nameForOutputBus :: IsAVAudioNode avAudioNode => avAudioNode -> CULong -> IO (Id NSString)
-nameForOutputBus avAudioNode  bus =
-    sendMsg avAudioNode (mkSelector "nameForOutputBus:") (retPtr retVoid) [argCULong bus] >>= retainedObject . castPtr
+nameForOutputBus avAudioNode bus =
+  sendMessage avAudioNode nameForOutputBusSelector bus
 
 -- | installTapOnBus:bufferSize:format:block:
 --
@@ -131,9 +128,8 @@ nameForOutputBus avAudioNode  bus =
 --
 -- ObjC selector: @- installTapOnBus:bufferSize:format:block:@
 installTapOnBus_bufferSize_format_block :: (IsAVAudioNode avAudioNode, IsAVAudioFormat format) => avAudioNode -> CULong -> CUInt -> format -> Ptr () -> IO ()
-installTapOnBus_bufferSize_format_block avAudioNode  bus bufferSize format tapBlock =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioNode (mkSelector "installTapOnBus:bufferSize:format:block:") retVoid [argCULong bus, argCUInt bufferSize, argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr tapBlock :: Ptr ())]
+installTapOnBus_bufferSize_format_block avAudioNode bus bufferSize format tapBlock =
+  sendMessage avAudioNode installTapOnBus_bufferSize_format_blockSelector bus bufferSize (toAVAudioFormat format) tapBlock
 
 -- | removeTapOnBus:
 --
@@ -143,8 +139,8 @@ installTapOnBus_bufferSize_format_block avAudioNode  bus bufferSize format tapBl
 --
 -- ObjC selector: @- removeTapOnBus:@
 removeTapOnBus :: IsAVAudioNode avAudioNode => avAudioNode -> CULong -> IO ()
-removeTapOnBus avAudioNode  bus =
-    sendMsg avAudioNode (mkSelector "removeTapOnBus:") retVoid [argCULong bus]
+removeTapOnBus avAudioNode bus =
+  sendMessage avAudioNode removeTapOnBusSelector bus
 
 -- | engine
 --
@@ -152,8 +148,8 @@ removeTapOnBus avAudioNode  bus =
 --
 -- ObjC selector: @- engine@
 engine :: IsAVAudioNode avAudioNode => avAudioNode -> IO (Id AVAudioEngine)
-engine avAudioNode  =
-    sendMsg avAudioNode (mkSelector "engine") (retPtr retVoid) [] >>= retainedObject . castPtr
+engine avAudioNode =
+  sendMessage avAudioNode engineSelector
 
 -- | numberOfInputs
 --
@@ -161,8 +157,8 @@ engine avAudioNode  =
 --
 -- ObjC selector: @- numberOfInputs@
 numberOfInputs :: IsAVAudioNode avAudioNode => avAudioNode -> IO CULong
-numberOfInputs avAudioNode  =
-    sendMsg avAudioNode (mkSelector "numberOfInputs") retCULong []
+numberOfInputs avAudioNode =
+  sendMessage avAudioNode numberOfInputsSelector
 
 -- | numberOfOutputs
 --
@@ -170,8 +166,8 @@ numberOfInputs avAudioNode  =
 --
 -- ObjC selector: @- numberOfOutputs@
 numberOfOutputs :: IsAVAudioNode avAudioNode => avAudioNode -> IO CULong
-numberOfOutputs avAudioNode  =
-    sendMsg avAudioNode (mkSelector "numberOfOutputs") retCULong []
+numberOfOutputs avAudioNode =
+  sendMessage avAudioNode numberOfOutputsSelector
 
 -- | lastRenderTime
 --
@@ -181,8 +177,8 @@ numberOfOutputs avAudioNode  =
 --
 -- ObjC selector: @- lastRenderTime@
 lastRenderTime :: IsAVAudioNode avAudioNode => avAudioNode -> IO (Id AVAudioTime)
-lastRenderTime avAudioNode  =
-    sendMsg avAudioNode (mkSelector "lastRenderTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastRenderTime avAudioNode =
+  sendMessage avAudioNode lastRenderTimeSelector
 
 -- | AUAudioUnit
 --
@@ -194,8 +190,8 @@ lastRenderTime avAudioNode  =
 --
 -- ObjC selector: @- AUAudioUnit@
 auAudioUnit :: IsAVAudioNode avAudioNode => avAudioNode -> IO (Id AUAudioUnit)
-auAudioUnit avAudioNode  =
-    sendMsg avAudioNode (mkSelector "AUAudioUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+auAudioUnit avAudioNode =
+  sendMessage avAudioNode auAudioUnitSelector
 
 -- | latency
 --
@@ -205,8 +201,8 @@ auAudioUnit avAudioNode  =
 --
 -- ObjC selector: @- latency@
 latency :: IsAVAudioNode avAudioNode => avAudioNode -> IO CDouble
-latency avAudioNode  =
-    sendMsg avAudioNode (mkSelector "latency") retCDouble []
+latency avAudioNode =
+  sendMessage avAudioNode latencySelector
 
 -- | outputPresentationLatency
 --
@@ -222,66 +218,66 @@ latency avAudioNode  =
 --
 -- ObjC selector: @- outputPresentationLatency@
 outputPresentationLatency :: IsAVAudioNode avAudioNode => avAudioNode -> IO CDouble
-outputPresentationLatency avAudioNode  =
-    sendMsg avAudioNode (mkSelector "outputPresentationLatency") retCDouble []
+outputPresentationLatency avAudioNode =
+  sendMessage avAudioNode outputPresentationLatencySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @inputFormatForBus:@
-inputFormatForBusSelector :: Selector
+inputFormatForBusSelector :: Selector '[CULong] (Id AVAudioFormat)
 inputFormatForBusSelector = mkSelector "inputFormatForBus:"
 
 -- | @Selector@ for @outputFormatForBus:@
-outputFormatForBusSelector :: Selector
+outputFormatForBusSelector :: Selector '[CULong] (Id AVAudioFormat)
 outputFormatForBusSelector = mkSelector "outputFormatForBus:"
 
 -- | @Selector@ for @nameForInputBus:@
-nameForInputBusSelector :: Selector
+nameForInputBusSelector :: Selector '[CULong] (Id NSString)
 nameForInputBusSelector = mkSelector "nameForInputBus:"
 
 -- | @Selector@ for @nameForOutputBus:@
-nameForOutputBusSelector :: Selector
+nameForOutputBusSelector :: Selector '[CULong] (Id NSString)
 nameForOutputBusSelector = mkSelector "nameForOutputBus:"
 
 -- | @Selector@ for @installTapOnBus:bufferSize:format:block:@
-installTapOnBus_bufferSize_format_blockSelector :: Selector
+installTapOnBus_bufferSize_format_blockSelector :: Selector '[CULong, CUInt, Id AVAudioFormat, Ptr ()] ()
 installTapOnBus_bufferSize_format_blockSelector = mkSelector "installTapOnBus:bufferSize:format:block:"
 
 -- | @Selector@ for @removeTapOnBus:@
-removeTapOnBusSelector :: Selector
+removeTapOnBusSelector :: Selector '[CULong] ()
 removeTapOnBusSelector = mkSelector "removeTapOnBus:"
 
 -- | @Selector@ for @engine@
-engineSelector :: Selector
+engineSelector :: Selector '[] (Id AVAudioEngine)
 engineSelector = mkSelector "engine"
 
 -- | @Selector@ for @numberOfInputs@
-numberOfInputsSelector :: Selector
+numberOfInputsSelector :: Selector '[] CULong
 numberOfInputsSelector = mkSelector "numberOfInputs"
 
 -- | @Selector@ for @numberOfOutputs@
-numberOfOutputsSelector :: Selector
+numberOfOutputsSelector :: Selector '[] CULong
 numberOfOutputsSelector = mkSelector "numberOfOutputs"
 
 -- | @Selector@ for @lastRenderTime@
-lastRenderTimeSelector :: Selector
+lastRenderTimeSelector :: Selector '[] (Id AVAudioTime)
 lastRenderTimeSelector = mkSelector "lastRenderTime"
 
 -- | @Selector@ for @AUAudioUnit@
-auAudioUnitSelector :: Selector
+auAudioUnitSelector :: Selector '[] (Id AUAudioUnit)
 auAudioUnitSelector = mkSelector "AUAudioUnit"
 
 -- | @Selector@ for @latency@
-latencySelector :: Selector
+latencySelector :: Selector '[] CDouble
 latencySelector = mkSelector "latency"
 
 -- | @Selector@ for @outputPresentationLatency@
-outputPresentationLatencySelector :: Selector
+outputPresentationLatencySelector :: Selector '[] CDouble
 outputPresentationLatencySelector = mkSelector "outputPresentationLatency"
 

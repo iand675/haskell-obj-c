@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,46 +50,46 @@ module ObjC.AppKit.NSSlider
   , allowsTickMarkValuesOnly
   , setAllowsTickMarkValuesOnly
   , acceptsFirstMouseSelector
-  , setTitleCellSelector
-  , titleCellSelector
-  , setTitleColorSelector
-  , titleColorSelector
-  , setTitleFontSelector
-  , titleFontSelector
-  , titleSelector
-  , setTitleSelector
-  , setKnobThicknessSelector
-  , setImageSelector
+  , allowsTickMarkValuesOnlySelector
+  , altIncrementValueSelector
+  , closestTickMarkValueToValueSelector
   , imageSelector
+  , indexOfTickMarkAtPointSelector
+  , knobThicknessSelector
+  , maxValueSelector
+  , minValueSelector
+  , neutralValueSelector
+  , numberOfTickMarksSelector
+  , rectOfTickMarkAtIndexSelector
+  , setAllowsTickMarkValuesOnlySelector
+  , setAltIncrementValueSelector
+  , setImageSelector
+  , setKnobThicknessSelector
+  , setMaxValueSelector
+  , setMinValueSelector
+  , setNeutralValueSelector
+  , setNumberOfTickMarksSelector
+  , setSliderTypeSelector
+  , setTickMarkPositionSelector
+  , setTintProminenceSelector
+  , setTitleCellSelector
+  , setTitleColorSelector
+  , setTitleFontSelector
+  , setTitleSelector
+  , setTrackFillColorSelector
+  , setVerticalSelector
+  , sliderTypeSelector
   , sliderWithTarget_actionSelector
   , sliderWithValue_minValue_maxValue_target_actionSelector
-  , tickMarkValueAtIndexSelector
-  , rectOfTickMarkAtIndexSelector
-  , indexOfTickMarkAtPointSelector
-  , closestTickMarkValueToValueSelector
-  , sliderTypeSelector
-  , setSliderTypeSelector
-  , minValueSelector
-  , setMinValueSelector
-  , maxValueSelector
-  , setMaxValueSelector
-  , neutralValueSelector
-  , setNeutralValueSelector
-  , altIncrementValueSelector
-  , setAltIncrementValueSelector
-  , knobThicknessSelector
-  , verticalSelector
-  , setVerticalSelector
-  , trackFillColorSelector
-  , setTrackFillColorSelector
-  , tintProminenceSelector
-  , setTintProminenceSelector
-  , numberOfTickMarksSelector
-  , setNumberOfTickMarksSelector
   , tickMarkPositionSelector
-  , setTickMarkPositionSelector
-  , allowsTickMarkValuesOnlySelector
-  , setAllowsTickMarkValuesOnlySelector
+  , tickMarkValueAtIndexSelector
+  , tintProminenceSelector
+  , titleCellSelector
+  , titleColorSelector
+  , titleFontSelector
+  , titleSelector
+  , trackFillColorSelector
+  , verticalSelector
 
   -- * Enum types
   , NSSliderType(NSSliderType)
@@ -107,15 +108,11 @@ module ObjC.AppKit.NSSlider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -126,69 +123,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- acceptsFirstMouse:@
 acceptsFirstMouse :: (IsNSSlider nsSlider, IsNSEvent event) => nsSlider -> event -> IO Bool
-acceptsFirstMouse nsSlider  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSlider (mkSelector "acceptsFirstMouse:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+acceptsFirstMouse nsSlider event =
+  sendMessage nsSlider acceptsFirstMouseSelector (toNSEvent event)
 
 -- | @- setTitleCell:@
 setTitleCell :: (IsNSSlider nsSlider, IsNSCell cell) => nsSlider -> cell -> IO ()
-setTitleCell nsSlider  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsSlider (mkSelector "setTitleCell:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+setTitleCell nsSlider cell =
+  sendMessage nsSlider setTitleCellSelector (toNSCell cell)
 
 -- | @- titleCell@
 titleCell :: IsNSSlider nsSlider => nsSlider -> IO RawId
-titleCell nsSlider  =
-    fmap (RawId . castPtr) $ sendMsg nsSlider (mkSelector "titleCell") (retPtr retVoid) []
+titleCell nsSlider =
+  sendMessage nsSlider titleCellSelector
 
 -- | @- setTitleColor:@
 setTitleColor :: (IsNSSlider nsSlider, IsNSColor newColor) => nsSlider -> newColor -> IO ()
-setTitleColor nsSlider  newColor =
-  withObjCPtr newColor $ \raw_newColor ->
-      sendMsg nsSlider (mkSelector "setTitleColor:") retVoid [argPtr (castPtr raw_newColor :: Ptr ())]
+setTitleColor nsSlider newColor =
+  sendMessage nsSlider setTitleColorSelector (toNSColor newColor)
 
 -- | @- titleColor@
 titleColor :: IsNSSlider nsSlider => nsSlider -> IO (Id NSColor)
-titleColor nsSlider  =
-    sendMsg nsSlider (mkSelector "titleColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+titleColor nsSlider =
+  sendMessage nsSlider titleColorSelector
 
 -- | @- setTitleFont:@
 setTitleFont :: (IsNSSlider nsSlider, IsNSFont fontObj) => nsSlider -> fontObj -> IO ()
-setTitleFont nsSlider  fontObj =
-  withObjCPtr fontObj $ \raw_fontObj ->
-      sendMsg nsSlider (mkSelector "setTitleFont:") retVoid [argPtr (castPtr raw_fontObj :: Ptr ())]
+setTitleFont nsSlider fontObj =
+  sendMessage nsSlider setTitleFontSelector (toNSFont fontObj)
 
 -- | @- titleFont@
 titleFont :: IsNSSlider nsSlider => nsSlider -> IO (Id NSFont)
-titleFont nsSlider  =
-    sendMsg nsSlider (mkSelector "titleFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+titleFont nsSlider =
+  sendMessage nsSlider titleFontSelector
 
 -- | @- title@
 title :: IsNSSlider nsSlider => nsSlider -> IO (Id NSString)
-title nsSlider  =
-    sendMsg nsSlider (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsSlider =
+  sendMessage nsSlider titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSSlider nsSlider, IsNSString string) => nsSlider -> string -> IO ()
-setTitle nsSlider  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsSlider (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_string :: Ptr ())]
+setTitle nsSlider string =
+  sendMessage nsSlider setTitleSelector (toNSString string)
 
 -- | @- setKnobThickness:@
 setKnobThickness :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO ()
-setKnobThickness nsSlider  thickness =
-    sendMsg nsSlider (mkSelector "setKnobThickness:") retVoid [argCDouble thickness]
+setKnobThickness nsSlider thickness =
+  sendMessage nsSlider setKnobThicknessSelector thickness
 
 -- | @- setImage:@
 setImage :: (IsNSSlider nsSlider, IsNSImage backgroundImage) => nsSlider -> backgroundImage -> IO ()
-setImage nsSlider  backgroundImage =
-  withObjCPtr backgroundImage $ \raw_backgroundImage ->
-      sendMsg nsSlider (mkSelector "setImage:") retVoid [argPtr (castPtr raw_backgroundImage :: Ptr ())]
+setImage nsSlider backgroundImage =
+  sendMessage nsSlider setImageSelector (toNSImage backgroundImage)
 
 -- | @- image@
 image :: IsNSSlider nsSlider => nsSlider -> IO (Id NSImage)
-image nsSlider  =
-    sendMsg nsSlider (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsSlider =
+  sendMessage nsSlider imageSelector
 
 -- | Creates a continuous horizontal slider over the range 0.0 to 1.0. The default value is 0.0.
 --
@@ -199,11 +190,11 @@ image nsSlider  =
 -- Returns: An initialized slider control.
 --
 -- ObjC selector: @+ sliderWithTarget:action:@
-sliderWithTarget_action :: RawId -> Selector -> IO (Id NSSlider)
+sliderWithTarget_action :: RawId -> Sel -> IO (Id NSSlider)
 sliderWithTarget_action target action =
   do
     cls' <- getRequiredClass "NSSlider"
-    sendClassMsg cls' (mkSelector "sliderWithTarget:action:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' sliderWithTarget_actionSelector target action
 
 -- | Creates a continuous horizontal slider that represents values over a specified range.
 --
@@ -220,321 +211,320 @@ sliderWithTarget_action target action =
 -- Returns: An initialized slider control.
 --
 -- ObjC selector: @+ sliderWithValue:minValue:maxValue:target:action:@
-sliderWithValue_minValue_maxValue_target_action :: CDouble -> CDouble -> CDouble -> RawId -> Selector -> IO (Id NSSlider)
+sliderWithValue_minValue_maxValue_target_action :: CDouble -> CDouble -> CDouble -> RawId -> Sel -> IO (Id NSSlider)
 sliderWithValue_minValue_maxValue_target_action value minValue maxValue target action =
   do
     cls' <- getRequiredClass "NSSlider"
-    sendClassMsg cls' (mkSelector "sliderWithValue:minValue:maxValue:target:action:") (retPtr retVoid) [argCDouble value, argCDouble minValue, argCDouble maxValue, argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' sliderWithValue_minValue_maxValue_target_actionSelector value minValue maxValue target action
 
 -- | @- tickMarkValueAtIndex:@
 tickMarkValueAtIndex :: IsNSSlider nsSlider => nsSlider -> CLong -> IO CDouble
-tickMarkValueAtIndex nsSlider  index =
-    sendMsg nsSlider (mkSelector "tickMarkValueAtIndex:") retCDouble [argCLong index]
+tickMarkValueAtIndex nsSlider index =
+  sendMessage nsSlider tickMarkValueAtIndexSelector index
 
 -- | @- rectOfTickMarkAtIndex:@
 rectOfTickMarkAtIndex :: IsNSSlider nsSlider => nsSlider -> CLong -> IO NSRect
-rectOfTickMarkAtIndex nsSlider  index =
-    sendMsgStret nsSlider (mkSelector "rectOfTickMarkAtIndex:") retNSRect [argCLong index]
+rectOfTickMarkAtIndex nsSlider index =
+  sendMessage nsSlider rectOfTickMarkAtIndexSelector index
 
 -- | @- indexOfTickMarkAtPoint:@
 indexOfTickMarkAtPoint :: IsNSSlider nsSlider => nsSlider -> NSPoint -> IO CLong
-indexOfTickMarkAtPoint nsSlider  point =
-    sendMsg nsSlider (mkSelector "indexOfTickMarkAtPoint:") retCLong [argNSPoint point]
+indexOfTickMarkAtPoint nsSlider point =
+  sendMessage nsSlider indexOfTickMarkAtPointSelector point
 
 -- | @- closestTickMarkValueToValue:@
 closestTickMarkValueToValue :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO CDouble
-closestTickMarkValueToValue nsSlider  value =
-    sendMsg nsSlider (mkSelector "closestTickMarkValueToValue:") retCDouble [argCDouble value]
+closestTickMarkValueToValue nsSlider value =
+  sendMessage nsSlider closestTickMarkValueToValueSelector value
 
 -- | @- sliderType@
 sliderType :: IsNSSlider nsSlider => nsSlider -> IO NSSliderType
-sliderType nsSlider  =
-    fmap (coerce :: CULong -> NSSliderType) $ sendMsg nsSlider (mkSelector "sliderType") retCULong []
+sliderType nsSlider =
+  sendMessage nsSlider sliderTypeSelector
 
 -- | @- setSliderType:@
 setSliderType :: IsNSSlider nsSlider => nsSlider -> NSSliderType -> IO ()
-setSliderType nsSlider  value =
-    sendMsg nsSlider (mkSelector "setSliderType:") retVoid [argCULong (coerce value)]
+setSliderType nsSlider value =
+  sendMessage nsSlider setSliderTypeSelector value
 
 -- | @- minValue@
 minValue :: IsNSSlider nsSlider => nsSlider -> IO CDouble
-minValue nsSlider  =
-    sendMsg nsSlider (mkSelector "minValue") retCDouble []
+minValue nsSlider =
+  sendMessage nsSlider minValueSelector
 
 -- | @- setMinValue:@
 setMinValue :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO ()
-setMinValue nsSlider  value =
-    sendMsg nsSlider (mkSelector "setMinValue:") retVoid [argCDouble value]
+setMinValue nsSlider value =
+  sendMessage nsSlider setMinValueSelector value
 
 -- | @- maxValue@
 maxValue :: IsNSSlider nsSlider => nsSlider -> IO CDouble
-maxValue nsSlider  =
-    sendMsg nsSlider (mkSelector "maxValue") retCDouble []
+maxValue nsSlider =
+  sendMessage nsSlider maxValueSelector
 
 -- | @- setMaxValue:@
 setMaxValue :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO ()
-setMaxValue nsSlider  value =
-    sendMsg nsSlider (mkSelector "setMaxValue:") retVoid [argCDouble value]
+setMaxValue nsSlider value =
+  sendMessage nsSlider setMaxValueSelector value
 
 -- | The value this slider will be filled from. This slider will be filled from its @neutralValue@ to its current value. If @neutralValue@ has not been explicitly set before, access to @neutralValue@ will return @minValue@.
 --
 -- ObjC selector: @- neutralValue@
 neutralValue :: IsNSSlider nsSlider => nsSlider -> IO CDouble
-neutralValue nsSlider  =
-    sendMsg nsSlider (mkSelector "neutralValue") retCDouble []
+neutralValue nsSlider =
+  sendMessage nsSlider neutralValueSelector
 
 -- | The value this slider will be filled from. This slider will be filled from its @neutralValue@ to its current value. If @neutralValue@ has not been explicitly set before, access to @neutralValue@ will return @minValue@.
 --
 -- ObjC selector: @- setNeutralValue:@
 setNeutralValue :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO ()
-setNeutralValue nsSlider  value =
-    sendMsg nsSlider (mkSelector "setNeutralValue:") retVoid [argCDouble value]
+setNeutralValue nsSlider value =
+  sendMessage nsSlider setNeutralValueSelector value
 
 -- | @- altIncrementValue@
 altIncrementValue :: IsNSSlider nsSlider => nsSlider -> IO CDouble
-altIncrementValue nsSlider  =
-    sendMsg nsSlider (mkSelector "altIncrementValue") retCDouble []
+altIncrementValue nsSlider =
+  sendMessage nsSlider altIncrementValueSelector
 
 -- | @- setAltIncrementValue:@
 setAltIncrementValue :: IsNSSlider nsSlider => nsSlider -> CDouble -> IO ()
-setAltIncrementValue nsSlider  value =
-    sendMsg nsSlider (mkSelector "setAltIncrementValue:") retVoid [argCDouble value]
+setAltIncrementValue nsSlider value =
+  sendMessage nsSlider setAltIncrementValueSelector value
 
 -- | @- knobThickness@
 knobThickness :: IsNSSlider nsSlider => nsSlider -> IO CDouble
-knobThickness nsSlider  =
-    sendMsg nsSlider (mkSelector "knobThickness") retCDouble []
+knobThickness nsSlider =
+  sendMessage nsSlider knobThicknessSelector
 
 -- | @- vertical@
 vertical :: IsNSSlider nsSlider => nsSlider -> IO Bool
-vertical nsSlider  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSlider (mkSelector "vertical") retCULong []
+vertical nsSlider =
+  sendMessage nsSlider verticalSelector
 
 -- | @- setVertical:@
 setVertical :: IsNSSlider nsSlider => nsSlider -> Bool -> IO ()
-setVertical nsSlider  value =
-    sendMsg nsSlider (mkSelector "setVertical:") retVoid [argCULong (if value then 1 else 0)]
+setVertical nsSlider value =
+  sendMessage nsSlider setVerticalSelector value
 
 -- | @- trackFillColor@
 trackFillColor :: IsNSSlider nsSlider => nsSlider -> IO (Id NSColor)
-trackFillColor nsSlider  =
-    sendMsg nsSlider (mkSelector "trackFillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackFillColor nsSlider =
+  sendMessage nsSlider trackFillColorSelector
 
 -- | @- setTrackFillColor:@
 setTrackFillColor :: (IsNSSlider nsSlider, IsNSColor value) => nsSlider -> value -> IO ()
-setTrackFillColor nsSlider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSlider (mkSelector "setTrackFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackFillColor nsSlider value =
+  sendMessage nsSlider setTrackFillColorSelector (toNSColor value)
 
 -- | The tint prominence of the slider. The automatic behavior for a regular slider tints its track fill, while a slider with tick marks is untinted. Setting the tint prominence will override this default behavior and choose an explicit track fill tint behavior. See ``NSTintProminence`` for a list of possible values.
 --
 -- ObjC selector: @- tintProminence@
 tintProminence :: IsNSSlider nsSlider => nsSlider -> IO NSTintProminence
-tintProminence nsSlider  =
-    fmap (coerce :: CLong -> NSTintProminence) $ sendMsg nsSlider (mkSelector "tintProminence") retCLong []
+tintProminence nsSlider =
+  sendMessage nsSlider tintProminenceSelector
 
 -- | The tint prominence of the slider. The automatic behavior for a regular slider tints its track fill, while a slider with tick marks is untinted. Setting the tint prominence will override this default behavior and choose an explicit track fill tint behavior. See ``NSTintProminence`` for a list of possible values.
 --
 -- ObjC selector: @- setTintProminence:@
 setTintProminence :: IsNSSlider nsSlider => nsSlider -> NSTintProminence -> IO ()
-setTintProminence nsSlider  value =
-    sendMsg nsSlider (mkSelector "setTintProminence:") retVoid [argCLong (coerce value)]
+setTintProminence nsSlider value =
+  sendMessage nsSlider setTintProminenceSelector value
 
 -- | @- numberOfTickMarks@
 numberOfTickMarks :: IsNSSlider nsSlider => nsSlider -> IO CLong
-numberOfTickMarks nsSlider  =
-    sendMsg nsSlider (mkSelector "numberOfTickMarks") retCLong []
+numberOfTickMarks nsSlider =
+  sendMessage nsSlider numberOfTickMarksSelector
 
 -- | @- setNumberOfTickMarks:@
 setNumberOfTickMarks :: IsNSSlider nsSlider => nsSlider -> CLong -> IO ()
-setNumberOfTickMarks nsSlider  value =
-    sendMsg nsSlider (mkSelector "setNumberOfTickMarks:") retVoid [argCLong value]
+setNumberOfTickMarks nsSlider value =
+  sendMessage nsSlider setNumberOfTickMarksSelector value
 
 -- | @- tickMarkPosition@
 tickMarkPosition :: IsNSSlider nsSlider => nsSlider -> IO NSTickMarkPosition
-tickMarkPosition nsSlider  =
-    fmap (coerce :: CULong -> NSTickMarkPosition) $ sendMsg nsSlider (mkSelector "tickMarkPosition") retCULong []
+tickMarkPosition nsSlider =
+  sendMessage nsSlider tickMarkPositionSelector
 
 -- | @- setTickMarkPosition:@
 setTickMarkPosition :: IsNSSlider nsSlider => nsSlider -> NSTickMarkPosition -> IO ()
-setTickMarkPosition nsSlider  value =
-    sendMsg nsSlider (mkSelector "setTickMarkPosition:") retVoid [argCULong (coerce value)]
+setTickMarkPosition nsSlider value =
+  sendMessage nsSlider setTickMarkPositionSelector value
 
 -- | @- allowsTickMarkValuesOnly@
 allowsTickMarkValuesOnly :: IsNSSlider nsSlider => nsSlider -> IO Bool
-allowsTickMarkValuesOnly nsSlider  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSlider (mkSelector "allowsTickMarkValuesOnly") retCULong []
+allowsTickMarkValuesOnly nsSlider =
+  sendMessage nsSlider allowsTickMarkValuesOnlySelector
 
 -- | @- setAllowsTickMarkValuesOnly:@
 setAllowsTickMarkValuesOnly :: IsNSSlider nsSlider => nsSlider -> Bool -> IO ()
-setAllowsTickMarkValuesOnly nsSlider  value =
-    sendMsg nsSlider (mkSelector "setAllowsTickMarkValuesOnly:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsTickMarkValuesOnly nsSlider value =
+  sendMessage nsSlider setAllowsTickMarkValuesOnlySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @acceptsFirstMouse:@
-acceptsFirstMouseSelector :: Selector
+acceptsFirstMouseSelector :: Selector '[Id NSEvent] Bool
 acceptsFirstMouseSelector = mkSelector "acceptsFirstMouse:"
 
 -- | @Selector@ for @setTitleCell:@
-setTitleCellSelector :: Selector
+setTitleCellSelector :: Selector '[Id NSCell] ()
 setTitleCellSelector = mkSelector "setTitleCell:"
 
 -- | @Selector@ for @titleCell@
-titleCellSelector :: Selector
+titleCellSelector :: Selector '[] RawId
 titleCellSelector = mkSelector "titleCell"
 
 -- | @Selector@ for @setTitleColor:@
-setTitleColorSelector :: Selector
+setTitleColorSelector :: Selector '[Id NSColor] ()
 setTitleColorSelector = mkSelector "setTitleColor:"
 
 -- | @Selector@ for @titleColor@
-titleColorSelector :: Selector
+titleColorSelector :: Selector '[] (Id NSColor)
 titleColorSelector = mkSelector "titleColor"
 
 -- | @Selector@ for @setTitleFont:@
-setTitleFontSelector :: Selector
+setTitleFontSelector :: Selector '[Id NSFont] ()
 setTitleFontSelector = mkSelector "setTitleFont:"
 
 -- | @Selector@ for @titleFont@
-titleFontSelector :: Selector
+titleFontSelector :: Selector '[] (Id NSFont)
 titleFontSelector = mkSelector "titleFont"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @setKnobThickness:@
-setKnobThicknessSelector :: Selector
+setKnobThicknessSelector :: Selector '[CDouble] ()
 setKnobThicknessSelector = mkSelector "setKnobThickness:"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @sliderWithTarget:action:@
-sliderWithTarget_actionSelector :: Selector
+sliderWithTarget_actionSelector :: Selector '[RawId, Sel] (Id NSSlider)
 sliderWithTarget_actionSelector = mkSelector "sliderWithTarget:action:"
 
 -- | @Selector@ for @sliderWithValue:minValue:maxValue:target:action:@
-sliderWithValue_minValue_maxValue_target_actionSelector :: Selector
+sliderWithValue_minValue_maxValue_target_actionSelector :: Selector '[CDouble, CDouble, CDouble, RawId, Sel] (Id NSSlider)
 sliderWithValue_minValue_maxValue_target_actionSelector = mkSelector "sliderWithValue:minValue:maxValue:target:action:"
 
 -- | @Selector@ for @tickMarkValueAtIndex:@
-tickMarkValueAtIndexSelector :: Selector
+tickMarkValueAtIndexSelector :: Selector '[CLong] CDouble
 tickMarkValueAtIndexSelector = mkSelector "tickMarkValueAtIndex:"
 
 -- | @Selector@ for @rectOfTickMarkAtIndex:@
-rectOfTickMarkAtIndexSelector :: Selector
+rectOfTickMarkAtIndexSelector :: Selector '[CLong] NSRect
 rectOfTickMarkAtIndexSelector = mkSelector "rectOfTickMarkAtIndex:"
 
 -- | @Selector@ for @indexOfTickMarkAtPoint:@
-indexOfTickMarkAtPointSelector :: Selector
+indexOfTickMarkAtPointSelector :: Selector '[NSPoint] CLong
 indexOfTickMarkAtPointSelector = mkSelector "indexOfTickMarkAtPoint:"
 
 -- | @Selector@ for @closestTickMarkValueToValue:@
-closestTickMarkValueToValueSelector :: Selector
+closestTickMarkValueToValueSelector :: Selector '[CDouble] CDouble
 closestTickMarkValueToValueSelector = mkSelector "closestTickMarkValueToValue:"
 
 -- | @Selector@ for @sliderType@
-sliderTypeSelector :: Selector
+sliderTypeSelector :: Selector '[] NSSliderType
 sliderTypeSelector = mkSelector "sliderType"
 
 -- | @Selector@ for @setSliderType:@
-setSliderTypeSelector :: Selector
+setSliderTypeSelector :: Selector '[NSSliderType] ()
 setSliderTypeSelector = mkSelector "setSliderType:"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @setMinValue:@
-setMinValueSelector :: Selector
+setMinValueSelector :: Selector '[CDouble] ()
 setMinValueSelector = mkSelector "setMinValue:"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @setMaxValue:@
-setMaxValueSelector :: Selector
+setMaxValueSelector :: Selector '[CDouble] ()
 setMaxValueSelector = mkSelector "setMaxValue:"
 
 -- | @Selector@ for @neutralValue@
-neutralValueSelector :: Selector
+neutralValueSelector :: Selector '[] CDouble
 neutralValueSelector = mkSelector "neutralValue"
 
 -- | @Selector@ for @setNeutralValue:@
-setNeutralValueSelector :: Selector
+setNeutralValueSelector :: Selector '[CDouble] ()
 setNeutralValueSelector = mkSelector "setNeutralValue:"
 
 -- | @Selector@ for @altIncrementValue@
-altIncrementValueSelector :: Selector
+altIncrementValueSelector :: Selector '[] CDouble
 altIncrementValueSelector = mkSelector "altIncrementValue"
 
 -- | @Selector@ for @setAltIncrementValue:@
-setAltIncrementValueSelector :: Selector
+setAltIncrementValueSelector :: Selector '[CDouble] ()
 setAltIncrementValueSelector = mkSelector "setAltIncrementValue:"
 
 -- | @Selector@ for @knobThickness@
-knobThicknessSelector :: Selector
+knobThicknessSelector :: Selector '[] CDouble
 knobThicknessSelector = mkSelector "knobThickness"
 
 -- | @Selector@ for @vertical@
-verticalSelector :: Selector
+verticalSelector :: Selector '[] Bool
 verticalSelector = mkSelector "vertical"
 
 -- | @Selector@ for @setVertical:@
-setVerticalSelector :: Selector
+setVerticalSelector :: Selector '[Bool] ()
 setVerticalSelector = mkSelector "setVertical:"
 
 -- | @Selector@ for @trackFillColor@
-trackFillColorSelector :: Selector
+trackFillColorSelector :: Selector '[] (Id NSColor)
 trackFillColorSelector = mkSelector "trackFillColor"
 
 -- | @Selector@ for @setTrackFillColor:@
-setTrackFillColorSelector :: Selector
+setTrackFillColorSelector :: Selector '[Id NSColor] ()
 setTrackFillColorSelector = mkSelector "setTrackFillColor:"
 
 -- | @Selector@ for @tintProminence@
-tintProminenceSelector :: Selector
+tintProminenceSelector :: Selector '[] NSTintProminence
 tintProminenceSelector = mkSelector "tintProminence"
 
 -- | @Selector@ for @setTintProminence:@
-setTintProminenceSelector :: Selector
+setTintProminenceSelector :: Selector '[NSTintProminence] ()
 setTintProminenceSelector = mkSelector "setTintProminence:"
 
 -- | @Selector@ for @numberOfTickMarks@
-numberOfTickMarksSelector :: Selector
+numberOfTickMarksSelector :: Selector '[] CLong
 numberOfTickMarksSelector = mkSelector "numberOfTickMarks"
 
 -- | @Selector@ for @setNumberOfTickMarks:@
-setNumberOfTickMarksSelector :: Selector
+setNumberOfTickMarksSelector :: Selector '[CLong] ()
 setNumberOfTickMarksSelector = mkSelector "setNumberOfTickMarks:"
 
 -- | @Selector@ for @tickMarkPosition@
-tickMarkPositionSelector :: Selector
+tickMarkPositionSelector :: Selector '[] NSTickMarkPosition
 tickMarkPositionSelector = mkSelector "tickMarkPosition"
 
 -- | @Selector@ for @setTickMarkPosition:@
-setTickMarkPositionSelector :: Selector
+setTickMarkPositionSelector :: Selector '[NSTickMarkPosition] ()
 setTickMarkPositionSelector = mkSelector "setTickMarkPosition:"
 
 -- | @Selector@ for @allowsTickMarkValuesOnly@
-allowsTickMarkValuesOnlySelector :: Selector
+allowsTickMarkValuesOnlySelector :: Selector '[] Bool
 allowsTickMarkValuesOnlySelector = mkSelector "allowsTickMarkValuesOnly"
 
 -- | @Selector@ for @setAllowsTickMarkValuesOnly:@
-setAllowsTickMarkValuesOnlySelector :: Selector
+setAllowsTickMarkValuesOnlySelector :: Selector '[Bool] ()
 setAllowsTickMarkValuesOnlySelector = mkSelector "setAllowsTickMarkValuesOnly:"
 

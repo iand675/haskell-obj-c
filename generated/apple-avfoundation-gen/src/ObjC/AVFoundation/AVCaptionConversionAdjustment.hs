@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.AVFoundation.AVCaptionConversionAdjustment
   , init_
   , new
   , adjustmentType
+  , adjustmentTypeSelector
   , initSelector
   , newSelector
-  , adjustmentTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionConversionAdjustment avCaptionConversionAdjustment => avCaptionConversionAdjustment -> IO (Id AVCaptionConversionAdjustment)
-init_ avCaptionConversionAdjustment  =
-    sendMsg avCaptionConversionAdjustment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionConversionAdjustment =
+  sendOwnedMessage avCaptionConversionAdjustment initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionConversionAdjustment)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionConversionAdjustment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | adjustmentType
 --
@@ -55,22 +52,22 @@ new  =
 --
 -- ObjC selector: @- adjustmentType@
 adjustmentType :: IsAVCaptionConversionAdjustment avCaptionConversionAdjustment => avCaptionConversionAdjustment -> IO (Id NSString)
-adjustmentType avCaptionConversionAdjustment  =
-    sendMsg avCaptionConversionAdjustment (mkSelector "adjustmentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+adjustmentType avCaptionConversionAdjustment =
+  sendMessage avCaptionConversionAdjustment adjustmentTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionConversionAdjustment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionConversionAdjustment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @adjustmentType@
-adjustmentTypeSelector :: Selector
+adjustmentTypeSelector :: Selector '[] (Id NSString)
 adjustmentTypeSelector = mkSelector "adjustmentType"
 

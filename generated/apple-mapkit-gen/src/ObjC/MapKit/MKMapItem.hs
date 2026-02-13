@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,42 +30,38 @@ module ObjC.MapKit.MKMapItem
   , setTimeZone
   , pointOfInterestCategory
   , setPointOfInterestCategory
-  , mapItemForCurrentLocationSelector
-  , initWithPlacemarkSelector
-  , initWithLocation_addressSelector
-  , openInMapsWithLaunchOptionsSelector
-  , openMapsWithItems_launchOptionsSelector
-  , openInMapsWithLaunchOptions_completionHandlerSelector
-  , openMapsWithItems_launchOptions_completionHandlerSelector
-  , identifierSelector
-  , alternateIdentifiersSelector
-  , placemarkSelector
-  , isCurrentLocationSelector
-  , addressSelector
   , addressRepresentationsSelector
+  , addressSelector
+  , alternateIdentifiersSelector
+  , identifierSelector
+  , initWithLocation_addressSelector
+  , initWithPlacemarkSelector
+  , isCurrentLocationSelector
+  , mapItemForCurrentLocationSelector
   , nameSelector
-  , setNameSelector
+  , openInMapsWithLaunchOptionsSelector
+  , openInMapsWithLaunchOptions_completionHandlerSelector
+  , openMapsWithItems_launchOptionsSelector
+  , openMapsWithItems_launchOptions_completionHandlerSelector
   , phoneNumberSelector
+  , placemarkSelector
+  , pointOfInterestCategorySelector
+  , setNameSelector
   , setPhoneNumberSelector
-  , urlSelector
+  , setPointOfInterestCategorySelector
+  , setTimeZoneSelector
   , setUrlSelector
   , timeZoneSelector
-  , setTimeZoneSelector
-  , pointOfInterestCategorySelector
-  , setPointOfInterestCategorySelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,227 +73,215 @@ mapItemForCurrentLocation :: IO (Id MKMapItem)
 mapItemForCurrentLocation  =
   do
     cls' <- getRequiredClass "MKMapItem"
-    sendClassMsg cls' (mkSelector "mapItemForCurrentLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mapItemForCurrentLocationSelector
 
 -- | @- initWithPlacemark:@
 initWithPlacemark :: (IsMKMapItem mkMapItem, IsMKPlacemark placemark) => mkMapItem -> placemark -> IO (Id MKMapItem)
-initWithPlacemark mkMapItem  placemark =
-  withObjCPtr placemark $ \raw_placemark ->
-      sendMsg mkMapItem (mkSelector "initWithPlacemark:") (retPtr retVoid) [argPtr (castPtr raw_placemark :: Ptr ())] >>= ownedObject . castPtr
+initWithPlacemark mkMapItem placemark =
+  sendOwnedMessage mkMapItem initWithPlacemarkSelector (toMKPlacemark placemark)
 
 -- | @- initWithLocation:address:@
 initWithLocation_address :: (IsMKMapItem mkMapItem, IsMKAddress address) => mkMapItem -> RawId -> address -> IO (Id MKMapItem)
-initWithLocation_address mkMapItem  location address =
-  withObjCPtr address $ \raw_address ->
-      sendMsg mkMapItem (mkSelector "initWithLocation:address:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
+initWithLocation_address mkMapItem location address =
+  sendOwnedMessage mkMapItem initWithLocation_addressSelector location (toMKAddress address)
 
 -- | @- openInMapsWithLaunchOptions:@
 openInMapsWithLaunchOptions :: (IsMKMapItem mkMapItem, IsNSDictionary launchOptions) => mkMapItem -> launchOptions -> IO Bool
-openInMapsWithLaunchOptions mkMapItem  launchOptions =
-  withObjCPtr launchOptions $ \raw_launchOptions ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapItem (mkSelector "openInMapsWithLaunchOptions:") retCULong [argPtr (castPtr raw_launchOptions :: Ptr ())]
+openInMapsWithLaunchOptions mkMapItem launchOptions =
+  sendMessage mkMapItem openInMapsWithLaunchOptionsSelector (toNSDictionary launchOptions)
 
 -- | @+ openMapsWithItems:launchOptions:@
 openMapsWithItems_launchOptions :: (IsNSArray mapItems, IsNSDictionary launchOptions) => mapItems -> launchOptions -> IO Bool
 openMapsWithItems_launchOptions mapItems launchOptions =
   do
     cls' <- getRequiredClass "MKMapItem"
-    withObjCPtr mapItems $ \raw_mapItems ->
-      withObjCPtr launchOptions $ \raw_launchOptions ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "openMapsWithItems:launchOptions:") retCULong [argPtr (castPtr raw_mapItems :: Ptr ()), argPtr (castPtr raw_launchOptions :: Ptr ())]
+    sendClassMessage cls' openMapsWithItems_launchOptionsSelector (toNSArray mapItems) (toNSDictionary launchOptions)
 
 -- | @- openInMapsWithLaunchOptions:completionHandler:@
 openInMapsWithLaunchOptions_completionHandler :: (IsMKMapItem mkMapItem, IsNSDictionary launchOptions) => mkMapItem -> launchOptions -> Ptr () -> IO ()
-openInMapsWithLaunchOptions_completionHandler mkMapItem  launchOptions completion =
-  withObjCPtr launchOptions $ \raw_launchOptions ->
-      sendMsg mkMapItem (mkSelector "openInMapsWithLaunchOptions:completionHandler:") retVoid [argPtr (castPtr raw_launchOptions :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+openInMapsWithLaunchOptions_completionHandler mkMapItem launchOptions completion =
+  sendMessage mkMapItem openInMapsWithLaunchOptions_completionHandlerSelector (toNSDictionary launchOptions) completion
 
 -- | @+ openMapsWithItems:launchOptions:completionHandler:@
 openMapsWithItems_launchOptions_completionHandler :: (IsNSArray mapItems, IsNSDictionary launchOptions) => mapItems -> launchOptions -> Ptr () -> IO ()
 openMapsWithItems_launchOptions_completionHandler mapItems launchOptions completion =
   do
     cls' <- getRequiredClass "MKMapItem"
-    withObjCPtr mapItems $ \raw_mapItems ->
-      withObjCPtr launchOptions $ \raw_launchOptions ->
-        sendClassMsg cls' (mkSelector "openMapsWithItems:launchOptions:completionHandler:") retVoid [argPtr (castPtr raw_mapItems :: Ptr ()), argPtr (castPtr raw_launchOptions :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' openMapsWithItems_launchOptions_completionHandlerSelector (toNSArray mapItems) (toNSDictionary launchOptions) completion
 
 -- | @- identifier@
 identifier :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id MKMapItemIdentifier)
-identifier mkMapItem  =
-    sendMsg mkMapItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mkMapItem =
+  sendMessage mkMapItem identifierSelector
 
 -- | @- alternateIdentifiers@
 alternateIdentifiers :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSSet)
-alternateIdentifiers mkMapItem  =
-    sendMsg mkMapItem (mkSelector "alternateIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateIdentifiers mkMapItem =
+  sendMessage mkMapItem alternateIdentifiersSelector
 
 -- | @- placemark@
 placemark :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id MKPlacemark)
-placemark mkMapItem  =
-    sendMsg mkMapItem (mkSelector "placemark") (retPtr retVoid) [] >>= retainedObject . castPtr
+placemark mkMapItem =
+  sendMessage mkMapItem placemarkSelector
 
 -- | @- isCurrentLocation@
 isCurrentLocation :: IsMKMapItem mkMapItem => mkMapItem -> IO Bool
-isCurrentLocation mkMapItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapItem (mkSelector "isCurrentLocation") retCULong []
+isCurrentLocation mkMapItem =
+  sendMessage mkMapItem isCurrentLocationSelector
 
 -- | @- address@
 address :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id MKAddress)
-address mkMapItem  =
-    sendMsg mkMapItem (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+address mkMapItem =
+  sendMessage mkMapItem addressSelector
 
 -- | @- addressRepresentations@
 addressRepresentations :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id MKAddressRepresentations)
-addressRepresentations mkMapItem  =
-    sendMsg mkMapItem (mkSelector "addressRepresentations") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressRepresentations mkMapItem =
+  sendMessage mkMapItem addressRepresentationsSelector
 
 -- | @- name@
 name :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSString)
-name mkMapItem  =
-    sendMsg mkMapItem (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mkMapItem =
+  sendMessage mkMapItem nameSelector
 
 -- | @- setName:@
 setName :: (IsMKMapItem mkMapItem, IsNSString value) => mkMapItem -> value -> IO ()
-setName mkMapItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapItem (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mkMapItem value =
+  sendMessage mkMapItem setNameSelector (toNSString value)
 
 -- | @- phoneNumber@
 phoneNumber :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSString)
-phoneNumber mkMapItem  =
-    sendMsg mkMapItem (mkSelector "phoneNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumber mkMapItem =
+  sendMessage mkMapItem phoneNumberSelector
 
 -- | @- setPhoneNumber:@
 setPhoneNumber :: (IsMKMapItem mkMapItem, IsNSString value) => mkMapItem -> value -> IO ()
-setPhoneNumber mkMapItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapItem (mkSelector "setPhoneNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhoneNumber mkMapItem value =
+  sendMessage mkMapItem setPhoneNumberSelector (toNSString value)
 
 -- | @- url@
 url :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSURL)
-url mkMapItem  =
-    sendMsg mkMapItem (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mkMapItem =
+  sendMessage mkMapItem urlSelector
 
 -- | @- setUrl:@
 setUrl :: (IsMKMapItem mkMapItem, IsNSURL value) => mkMapItem -> value -> IO ()
-setUrl mkMapItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapItem (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUrl mkMapItem value =
+  sendMessage mkMapItem setUrlSelector (toNSURL value)
 
 -- | @- timeZone@
 timeZone :: IsMKMapItem mkMapItem => mkMapItem -> IO RawId
-timeZone mkMapItem  =
-    fmap (RawId . castPtr) $ sendMsg mkMapItem (mkSelector "timeZone") (retPtr retVoid) []
+timeZone mkMapItem =
+  sendMessage mkMapItem timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: IsMKMapItem mkMapItem => mkMapItem -> RawId -> IO ()
-setTimeZone mkMapItem  value =
-    sendMsg mkMapItem (mkSelector "setTimeZone:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTimeZone mkMapItem value =
+  sendMessage mkMapItem setTimeZoneSelector value
 
 -- | @- pointOfInterestCategory@
 pointOfInterestCategory :: IsMKMapItem mkMapItem => mkMapItem -> IO (Id NSString)
-pointOfInterestCategory mkMapItem  =
-    sendMsg mkMapItem (mkSelector "pointOfInterestCategory") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfInterestCategory mkMapItem =
+  sendMessage mkMapItem pointOfInterestCategorySelector
 
 -- | @- setPointOfInterestCategory:@
 setPointOfInterestCategory :: (IsMKMapItem mkMapItem, IsNSString value) => mkMapItem -> value -> IO ()
-setPointOfInterestCategory mkMapItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapItem (mkSelector "setPointOfInterestCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfInterestCategory mkMapItem value =
+  sendMessage mkMapItem setPointOfInterestCategorySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mapItemForCurrentLocation@
-mapItemForCurrentLocationSelector :: Selector
+mapItemForCurrentLocationSelector :: Selector '[] (Id MKMapItem)
 mapItemForCurrentLocationSelector = mkSelector "mapItemForCurrentLocation"
 
 -- | @Selector@ for @initWithPlacemark:@
-initWithPlacemarkSelector :: Selector
+initWithPlacemarkSelector :: Selector '[Id MKPlacemark] (Id MKMapItem)
 initWithPlacemarkSelector = mkSelector "initWithPlacemark:"
 
 -- | @Selector@ for @initWithLocation:address:@
-initWithLocation_addressSelector :: Selector
+initWithLocation_addressSelector :: Selector '[RawId, Id MKAddress] (Id MKMapItem)
 initWithLocation_addressSelector = mkSelector "initWithLocation:address:"
 
 -- | @Selector@ for @openInMapsWithLaunchOptions:@
-openInMapsWithLaunchOptionsSelector :: Selector
+openInMapsWithLaunchOptionsSelector :: Selector '[Id NSDictionary] Bool
 openInMapsWithLaunchOptionsSelector = mkSelector "openInMapsWithLaunchOptions:"
 
 -- | @Selector@ for @openMapsWithItems:launchOptions:@
-openMapsWithItems_launchOptionsSelector :: Selector
+openMapsWithItems_launchOptionsSelector :: Selector '[Id NSArray, Id NSDictionary] Bool
 openMapsWithItems_launchOptionsSelector = mkSelector "openMapsWithItems:launchOptions:"
 
 -- | @Selector@ for @openInMapsWithLaunchOptions:completionHandler:@
-openInMapsWithLaunchOptions_completionHandlerSelector :: Selector
+openInMapsWithLaunchOptions_completionHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 openInMapsWithLaunchOptions_completionHandlerSelector = mkSelector "openInMapsWithLaunchOptions:completionHandler:"
 
 -- | @Selector@ for @openMapsWithItems:launchOptions:completionHandler:@
-openMapsWithItems_launchOptions_completionHandlerSelector :: Selector
+openMapsWithItems_launchOptions_completionHandlerSelector :: Selector '[Id NSArray, Id NSDictionary, Ptr ()] ()
 openMapsWithItems_launchOptions_completionHandlerSelector = mkSelector "openMapsWithItems:launchOptions:completionHandler:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id MKMapItemIdentifier)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @alternateIdentifiers@
-alternateIdentifiersSelector :: Selector
+alternateIdentifiersSelector :: Selector '[] (Id NSSet)
 alternateIdentifiersSelector = mkSelector "alternateIdentifiers"
 
 -- | @Selector@ for @placemark@
-placemarkSelector :: Selector
+placemarkSelector :: Selector '[] (Id MKPlacemark)
 placemarkSelector = mkSelector "placemark"
 
 -- | @Selector@ for @isCurrentLocation@
-isCurrentLocationSelector :: Selector
+isCurrentLocationSelector :: Selector '[] Bool
 isCurrentLocationSelector = mkSelector "isCurrentLocation"
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] (Id MKAddress)
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @addressRepresentations@
-addressRepresentationsSelector :: Selector
+addressRepresentationsSelector :: Selector '[] (Id MKAddressRepresentations)
 addressRepresentationsSelector = mkSelector "addressRepresentations"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @phoneNumber@
-phoneNumberSelector :: Selector
+phoneNumberSelector :: Selector '[] (Id NSString)
 phoneNumberSelector = mkSelector "phoneNumber"
 
 -- | @Selector@ for @setPhoneNumber:@
-setPhoneNumberSelector :: Selector
+setPhoneNumberSelector :: Selector '[Id NSString] ()
 setPhoneNumberSelector = mkSelector "setPhoneNumber:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @setUrl:@
-setUrlSelector :: Selector
+setUrlSelector :: Selector '[Id NSURL] ()
 setUrlSelector = mkSelector "setUrl:"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] RawId
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[RawId] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @pointOfInterestCategory@
-pointOfInterestCategorySelector :: Selector
+pointOfInterestCategorySelector :: Selector '[] (Id NSString)
 pointOfInterestCategorySelector = mkSelector "pointOfInterestCategory"
 
 -- | @Selector@ for @setPointOfInterestCategory:@
-setPointOfInterestCategorySelector :: Selector
+setPointOfInterestCategorySelector :: Selector '[Id NSString] ()
 setPointOfInterestCategorySelector = mkSelector "setPointOfInterestCategory:"
 

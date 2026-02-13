@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.ClassKit.CLSScoreItem
   , maxScore
   , setMaxScore
   , initWithIdentifier_title_score_maxScoreSelector
-  , scoreSelector
-  , setScoreSelector
   , maxScoreSelector
+  , scoreSelector
   , setMaxScoreSelector
+  , setScoreSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:title:score:maxScore:@
 initWithIdentifier_title_score_maxScore :: (IsCLSScoreItem clsScoreItem, IsNSString identifier, IsNSString title) => clsScoreItem -> identifier -> title -> CDouble -> CDouble -> IO (Id CLSScoreItem)
-initWithIdentifier_title_score_maxScore clsScoreItem  identifier title score maxScore =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg clsScoreItem (mkSelector "initWithIdentifier:title:score:maxScore:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argCDouble score, argCDouble maxScore] >>= ownedObject . castPtr
+initWithIdentifier_title_score_maxScore clsScoreItem identifier title score maxScore =
+  sendOwnedMessage clsScoreItem initWithIdentifier_title_score_maxScoreSelector (toNSString identifier) (toNSString title) score maxScore
 
 -- | Score out of @maxScore.@
 --
@@ -60,8 +55,8 @@ initWithIdentifier_title_score_maxScore clsScoreItem  identifier title score max
 --
 -- ObjC selector: @- score@
 score :: IsCLSScoreItem clsScoreItem => clsScoreItem -> IO CDouble
-score clsScoreItem  =
-    sendMsg clsScoreItem (mkSelector "score") retCDouble []
+score clsScoreItem =
+  sendMessage clsScoreItem scoreSelector
 
 -- | Score out of @maxScore.@
 --
@@ -69,8 +64,8 @@ score clsScoreItem  =
 --
 -- ObjC selector: @- setScore:@
 setScore :: IsCLSScoreItem clsScoreItem => clsScoreItem -> CDouble -> IO ()
-setScore clsScoreItem  value =
-    sendMsg clsScoreItem (mkSelector "setScore:") retVoid [argCDouble value]
+setScore clsScoreItem value =
+  sendMessage clsScoreItem setScoreSelector value
 
 -- | Total score possible.
 --
@@ -78,8 +73,8 @@ setScore clsScoreItem  value =
 --
 -- ObjC selector: @- maxScore@
 maxScore :: IsCLSScoreItem clsScoreItem => clsScoreItem -> IO CDouble
-maxScore clsScoreItem  =
-    sendMsg clsScoreItem (mkSelector "maxScore") retCDouble []
+maxScore clsScoreItem =
+  sendMessage clsScoreItem maxScoreSelector
 
 -- | Total score possible.
 --
@@ -87,30 +82,30 @@ maxScore clsScoreItem  =
 --
 -- ObjC selector: @- setMaxScore:@
 setMaxScore :: IsCLSScoreItem clsScoreItem => clsScoreItem -> CDouble -> IO ()
-setMaxScore clsScoreItem  value =
-    sendMsg clsScoreItem (mkSelector "setMaxScore:") retVoid [argCDouble value]
+setMaxScore clsScoreItem value =
+  sendMessage clsScoreItem setMaxScoreSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:title:score:maxScore:@
-initWithIdentifier_title_score_maxScoreSelector :: Selector
+initWithIdentifier_title_score_maxScoreSelector :: Selector '[Id NSString, Id NSString, CDouble, CDouble] (Id CLSScoreItem)
 initWithIdentifier_title_score_maxScoreSelector = mkSelector "initWithIdentifier:title:score:maxScore:"
 
 -- | @Selector@ for @score@
-scoreSelector :: Selector
+scoreSelector :: Selector '[] CDouble
 scoreSelector = mkSelector "score"
 
 -- | @Selector@ for @setScore:@
-setScoreSelector :: Selector
+setScoreSelector :: Selector '[CDouble] ()
 setScoreSelector = mkSelector "setScore:"
 
 -- | @Selector@ for @maxScore@
-maxScoreSelector :: Selector
+maxScoreSelector :: Selector '[] CDouble
 maxScoreSelector = mkSelector "maxScore"
 
 -- | @Selector@ for @setMaxScore:@
-setMaxScoreSelector :: Selector
+setMaxScoreSelector :: Selector '[CDouble] ()
 setMaxScoreSelector = mkSelector "setMaxScore:"
 

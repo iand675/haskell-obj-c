@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNUpsamplingBilinear
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:integerScaleFactorX:integerScaleFactorY:@
 initWithDevice_integerScaleFactorX_integerScaleFactorY :: IsMPSCNNUpsamplingBilinear mpscnnUpsamplingBilinear => mpscnnUpsamplingBilinear -> RawId -> CULong -> CULong -> IO (Id MPSCNNUpsamplingBilinear)
-initWithDevice_integerScaleFactorX_integerScaleFactorY mpscnnUpsamplingBilinear  device integerScaleFactorX integerScaleFactorY =
-    sendMsg mpscnnUpsamplingBilinear (mkSelector "initWithDevice:integerScaleFactorX:integerScaleFactorY:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong integerScaleFactorX, argCULong integerScaleFactorY] >>= ownedObject . castPtr
+initWithDevice_integerScaleFactorX_integerScaleFactorY mpscnnUpsamplingBilinear device integerScaleFactorX integerScaleFactorY =
+  sendOwnedMessage mpscnnUpsamplingBilinear initWithDevice_integerScaleFactorX_integerScaleFactorYSelector device integerScaleFactorX integerScaleFactorY
 
 -- | Initialize the bilinear spatial upsampling filter.
 --
@@ -64,18 +61,18 @@ initWithDevice_integerScaleFactorX_integerScaleFactorY mpscnnUpsamplingBilinear 
 --
 -- ObjC selector: @- initWithDevice:integerScaleFactorX:integerScaleFactorY:alignCorners:@
 initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCorners :: IsMPSCNNUpsamplingBilinear mpscnnUpsamplingBilinear => mpscnnUpsamplingBilinear -> RawId -> CULong -> CULong -> Bool -> IO (Id MPSCNNUpsamplingBilinear)
-initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCorners mpscnnUpsamplingBilinear  device integerScaleFactorX integerScaleFactorY alignCorners =
-    sendMsg mpscnnUpsamplingBilinear (mkSelector "initWithDevice:integerScaleFactorX:integerScaleFactorY:alignCorners:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong integerScaleFactorX, argCULong integerScaleFactorY, argCULong (if alignCorners then 1 else 0)] >>= ownedObject . castPtr
+initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCorners mpscnnUpsamplingBilinear device integerScaleFactorX integerScaleFactorY alignCorners =
+  sendOwnedMessage mpscnnUpsamplingBilinear initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCornersSelector device integerScaleFactorX integerScaleFactorY alignCorners
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:integerScaleFactorX:integerScaleFactorY:@
-initWithDevice_integerScaleFactorX_integerScaleFactorYSelector :: Selector
+initWithDevice_integerScaleFactorX_integerScaleFactorYSelector :: Selector '[RawId, CULong, CULong] (Id MPSCNNUpsamplingBilinear)
 initWithDevice_integerScaleFactorX_integerScaleFactorYSelector = mkSelector "initWithDevice:integerScaleFactorX:integerScaleFactorY:"
 
 -- | @Selector@ for @initWithDevice:integerScaleFactorX:integerScaleFactorY:alignCorners:@
-initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCornersSelector :: Selector
+initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCornersSelector :: Selector '[RawId, CULong, CULong, Bool] (Id MPSCNNUpsamplingBilinear)
 initWithDevice_integerScaleFactorX_integerScaleFactorY_alignCornersSelector = mkSelector "initWithDevice:integerScaleFactorX:integerScaleFactorY:alignCorners:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSScriptExecutionContext
   , setObjectBeingTested
   , rangeContainerObject
   , setRangeContainerObject
+  , objectBeingTestedSelector
+  , rangeContainerObjectSelector
+  , setObjectBeingTestedSelector
+  , setRangeContainerObjectSelector
+  , setTopLevelObjectSelector
   , sharedScriptExecutionContextSelector
   , topLevelObjectSelector
-  , setTopLevelObjectSelector
-  , objectBeingTestedSelector
-  , setObjectBeingTestedSelector
-  , rangeContainerObjectSelector
-  , setRangeContainerObjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,67 +40,67 @@ sharedScriptExecutionContext :: IO (Id NSScriptExecutionContext)
 sharedScriptExecutionContext  =
   do
     cls' <- getRequiredClass "NSScriptExecutionContext"
-    sendClassMsg cls' (mkSelector "sharedScriptExecutionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedScriptExecutionContextSelector
 
 -- | @- topLevelObject@
 topLevelObject :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> IO RawId
-topLevelObject nsScriptExecutionContext  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptExecutionContext (mkSelector "topLevelObject") (retPtr retVoid) []
+topLevelObject nsScriptExecutionContext =
+  sendMessage nsScriptExecutionContext topLevelObjectSelector
 
 -- | @- setTopLevelObject:@
 setTopLevelObject :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> RawId -> IO ()
-setTopLevelObject nsScriptExecutionContext  value =
-    sendMsg nsScriptExecutionContext (mkSelector "setTopLevelObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTopLevelObject nsScriptExecutionContext value =
+  sendMessage nsScriptExecutionContext setTopLevelObjectSelector value
 
 -- | @- objectBeingTested@
 objectBeingTested :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> IO RawId
-objectBeingTested nsScriptExecutionContext  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptExecutionContext (mkSelector "objectBeingTested") (retPtr retVoid) []
+objectBeingTested nsScriptExecutionContext =
+  sendMessage nsScriptExecutionContext objectBeingTestedSelector
 
 -- | @- setObjectBeingTested:@
 setObjectBeingTested :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> RawId -> IO ()
-setObjectBeingTested nsScriptExecutionContext  value =
-    sendMsg nsScriptExecutionContext (mkSelector "setObjectBeingTested:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setObjectBeingTested nsScriptExecutionContext value =
+  sendMessage nsScriptExecutionContext setObjectBeingTestedSelector value
 
 -- | @- rangeContainerObject@
 rangeContainerObject :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> IO RawId
-rangeContainerObject nsScriptExecutionContext  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptExecutionContext (mkSelector "rangeContainerObject") (retPtr retVoid) []
+rangeContainerObject nsScriptExecutionContext =
+  sendMessage nsScriptExecutionContext rangeContainerObjectSelector
 
 -- | @- setRangeContainerObject:@
 setRangeContainerObject :: IsNSScriptExecutionContext nsScriptExecutionContext => nsScriptExecutionContext -> RawId -> IO ()
-setRangeContainerObject nsScriptExecutionContext  value =
-    sendMsg nsScriptExecutionContext (mkSelector "setRangeContainerObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRangeContainerObject nsScriptExecutionContext value =
+  sendMessage nsScriptExecutionContext setRangeContainerObjectSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedScriptExecutionContext@
-sharedScriptExecutionContextSelector :: Selector
+sharedScriptExecutionContextSelector :: Selector '[] (Id NSScriptExecutionContext)
 sharedScriptExecutionContextSelector = mkSelector "sharedScriptExecutionContext"
 
 -- | @Selector@ for @topLevelObject@
-topLevelObjectSelector :: Selector
+topLevelObjectSelector :: Selector '[] RawId
 topLevelObjectSelector = mkSelector "topLevelObject"
 
 -- | @Selector@ for @setTopLevelObject:@
-setTopLevelObjectSelector :: Selector
+setTopLevelObjectSelector :: Selector '[RawId] ()
 setTopLevelObjectSelector = mkSelector "setTopLevelObject:"
 
 -- | @Selector@ for @objectBeingTested@
-objectBeingTestedSelector :: Selector
+objectBeingTestedSelector :: Selector '[] RawId
 objectBeingTestedSelector = mkSelector "objectBeingTested"
 
 -- | @Selector@ for @setObjectBeingTested:@
-setObjectBeingTestedSelector :: Selector
+setObjectBeingTestedSelector :: Selector '[RawId] ()
 setObjectBeingTestedSelector = mkSelector "setObjectBeingTested:"
 
 -- | @Selector@ for @rangeContainerObject@
-rangeContainerObjectSelector :: Selector
+rangeContainerObjectSelector :: Selector '[] RawId
 rangeContainerObjectSelector = mkSelector "rangeContainerObject"
 
 -- | @Selector@ for @setRangeContainerObject:@
-setRangeContainerObjectSelector :: Selector
+setRangeContainerObjectSelector :: Selector '[RawId] ()
 setRangeContainerObjectSelector = mkSelector "setRangeContainerObject:"
 

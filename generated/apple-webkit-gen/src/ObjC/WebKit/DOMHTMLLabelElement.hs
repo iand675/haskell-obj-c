@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.WebKit.DOMHTMLLabelElement
   , setHtmlFor
   , accessKey
   , setAccessKey
+  , accessKeySelector
   , formSelector
   , htmlForSelector
-  , setHtmlForSelector
-  , accessKeySelector
   , setAccessKeySelector
+  , setHtmlForSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,52 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- form@
 form :: IsDOMHTMLLabelElement domhtmlLabelElement => domhtmlLabelElement -> IO (Id DOMHTMLFormElement)
-form domhtmlLabelElement  =
-    sendMsg domhtmlLabelElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlLabelElement =
+  sendMessage domhtmlLabelElement formSelector
 
 -- | @- htmlFor@
 htmlFor :: IsDOMHTMLLabelElement domhtmlLabelElement => domhtmlLabelElement -> IO (Id NSString)
-htmlFor domhtmlLabelElement  =
-    sendMsg domhtmlLabelElement (mkSelector "htmlFor") (retPtr retVoid) [] >>= retainedObject . castPtr
+htmlFor domhtmlLabelElement =
+  sendMessage domhtmlLabelElement htmlForSelector
 
 -- | @- setHtmlFor:@
 setHtmlFor :: (IsDOMHTMLLabelElement domhtmlLabelElement, IsNSString value) => domhtmlLabelElement -> value -> IO ()
-setHtmlFor domhtmlLabelElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLabelElement (mkSelector "setHtmlFor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHtmlFor domhtmlLabelElement value =
+  sendMessage domhtmlLabelElement setHtmlForSelector (toNSString value)
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLLabelElement domhtmlLabelElement => domhtmlLabelElement -> IO (Id NSString)
-accessKey domhtmlLabelElement  =
-    sendMsg domhtmlLabelElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlLabelElement =
+  sendMessage domhtmlLabelElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLLabelElement domhtmlLabelElement, IsNSString value) => domhtmlLabelElement -> value -> IO ()
-setAccessKey domhtmlLabelElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLabelElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlLabelElement value =
+  sendMessage domhtmlLabelElement setAccessKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @htmlFor@
-htmlForSelector :: Selector
+htmlForSelector :: Selector '[] (Id NSString)
 htmlForSelector = mkSelector "htmlFor"
 
 -- | @Selector@ for @setHtmlFor:@
-setHtmlForSelector :: Selector
+setHtmlForSelector :: Selector '[Id NSString] ()
 setHtmlForSelector = mkSelector "setHtmlFor:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 

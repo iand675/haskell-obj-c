@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,31 +27,27 @@ module ObjC.IOUSBHost.IOUSBHostCIPortStateMachine
   , setConnected
   , overcurrent
   , setOvercurrent
+  , connectedSelector
+  , controllerInterfaceSelector
   , initSelector
   , initWithInterface_portNumber_errorSelector
   , inspectCommand_errorSelector
+  , overcurrentSelector
   , portNumberSelector
   , portStatusSelector
-  , controllerInterfaceSelector
   , poweredSelector
-  , setPoweredSelector
-  , connectedSelector
   , setConnectedSelector
-  , overcurrentSelector
   , setOvercurrentSelector
+  , setPoweredSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO (Id IOUSBHostCIPortStateMachine)
-init_ iousbHostCIPortStateMachine  =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ iousbHostCIPortStateMachine =
+  sendOwnedMessage iousbHostCIPortStateMachine initSelector
 
 -- | Initializes an IOUSBHostCIPortStateMachine object
 --
@@ -75,10 +72,8 @@ init_ iousbHostCIPortStateMachine  =
 --
 -- ObjC selector: @- initWithInterface:portNumber:error:@
 initWithInterface_portNumber_error :: (IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine, IsIOUSBHostControllerInterface interface, IsNSError error_) => iousbHostCIPortStateMachine -> interface -> CULong -> error_ -> IO (Id IOUSBHostCIPortStateMachine)
-initWithInterface_portNumber_error iousbHostCIPortStateMachine  interface portNumber error_ =
-  withObjCPtr interface $ \raw_interface ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg iousbHostCIPortStateMachine (mkSelector "initWithInterface:portNumber:error:") (retPtr retVoid) [argPtr (castPtr raw_interface :: Ptr ()), argCULong portNumber, argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface_portNumber_error iousbHostCIPortStateMachine interface portNumber error_ =
+  sendOwnedMessage iousbHostCIPortStateMachine initWithInterface_portNumber_errorSelector (toIOUSBHostControllerInterface interface) portNumber (toNSError error_)
 
 -- | Inspect an IOUSBHostCIMessage command
 --
@@ -90,24 +85,23 @@ initWithInterface_portNumber_error iousbHostCIPortStateMachine  interface portNu
 --
 -- ObjC selector: @- inspectCommand:error:@
 inspectCommand_error :: (IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine, IsNSError error_) => iousbHostCIPortStateMachine -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO Bool
-inspectCommand_error iousbHostCIPortStateMachine  command error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIPortStateMachine (mkSelector "inspectCommand:error:") retCULong [argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())]
+inspectCommand_error iousbHostCIPortStateMachine command error_ =
+  sendMessage iousbHostCIPortStateMachine inspectCommand_errorSelector command (toNSError error_)
 
 -- | @- portNumber@
 portNumber :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO CULong
-portNumber iousbHostCIPortStateMachine  =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "portNumber") retCULong []
+portNumber iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine portNumberSelector
 
 -- | @- portStatus@
 portStatus :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO CUInt
-portStatus iousbHostCIPortStateMachine  =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "portStatus") retCUInt []
+portStatus iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine portStatusSelector
 
 -- | @- controllerInterface@
 controllerInterface :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO (Id IOUSBHostControllerInterface)
-controllerInterface iousbHostCIPortStateMachine  =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "controllerInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerInterface iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine controllerInterfaceSelector
 
 -- | Set the powered state of the port
 --
@@ -115,8 +109,8 @@ controllerInterface iousbHostCIPortStateMachine  =
 --
 -- ObjC selector: @- powered@
 powered :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO Bool
-powered iousbHostCIPortStateMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIPortStateMachine (mkSelector "powered") retCULong []
+powered iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine poweredSelector
 
 -- | Set the powered state of the port
 --
@@ -124,8 +118,8 @@ powered iousbHostCIPortStateMachine  =
 --
 -- ObjC selector: @- setPowered:@
 setPowered :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> Bool -> IO ()
-setPowered iousbHostCIPortStateMachine  value =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "setPowered:") retVoid [argCULong (if value then 1 else 0)]
+setPowered iousbHostCIPortStateMachine value =
+  sendMessage iousbHostCIPortStateMachine setPoweredSelector value
 
 -- | Set the connection state of the port
 --
@@ -133,8 +127,8 @@ setPowered iousbHostCIPortStateMachine  value =
 --
 -- ObjC selector: @- connected@
 connected :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO Bool
-connected iousbHostCIPortStateMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIPortStateMachine (mkSelector "connected") retCULong []
+connected iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine connectedSelector
 
 -- | Set the connection state of the port
 --
@@ -142,8 +136,8 @@ connected iousbHostCIPortStateMachine  =
 --
 -- ObjC selector: @- setConnected:@
 setConnected :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> Bool -> IO ()
-setConnected iousbHostCIPortStateMachine  value =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "setConnected:") retVoid [argCULong (if value then 1 else 0)]
+setConnected iousbHostCIPortStateMachine value =
+  sendMessage iousbHostCIPortStateMachine setConnectedSelector value
 
 -- | Set the overcurrent state of the port
 --
@@ -151,8 +145,8 @@ setConnected iousbHostCIPortStateMachine  value =
 --
 -- ObjC selector: @- overcurrent@
 overcurrent :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> IO Bool
-overcurrent iousbHostCIPortStateMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIPortStateMachine (mkSelector "overcurrent") retCULong []
+overcurrent iousbHostCIPortStateMachine =
+  sendMessage iousbHostCIPortStateMachine overcurrentSelector
 
 -- | Set the overcurrent state of the port
 --
@@ -160,58 +154,58 @@ overcurrent iousbHostCIPortStateMachine  =
 --
 -- ObjC selector: @- setOvercurrent:@
 setOvercurrent :: IsIOUSBHostCIPortStateMachine iousbHostCIPortStateMachine => iousbHostCIPortStateMachine -> Bool -> IO ()
-setOvercurrent iousbHostCIPortStateMachine  value =
-    sendMsg iousbHostCIPortStateMachine (mkSelector "setOvercurrent:") retVoid [argCULong (if value then 1 else 0)]
+setOvercurrent iousbHostCIPortStateMachine value =
+  sendMessage iousbHostCIPortStateMachine setOvercurrentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id IOUSBHostCIPortStateMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterface:portNumber:error:@
-initWithInterface_portNumber_errorSelector :: Selector
+initWithInterface_portNumber_errorSelector :: Selector '[Id IOUSBHostControllerInterface, CULong, Id NSError] (Id IOUSBHostCIPortStateMachine)
 initWithInterface_portNumber_errorSelector = mkSelector "initWithInterface:portNumber:error:"
 
 -- | @Selector@ for @inspectCommand:error:@
-inspectCommand_errorSelector :: Selector
+inspectCommand_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] Bool
 inspectCommand_errorSelector = mkSelector "inspectCommand:error:"
 
 -- | @Selector@ for @portNumber@
-portNumberSelector :: Selector
+portNumberSelector :: Selector '[] CULong
 portNumberSelector = mkSelector "portNumber"
 
 -- | @Selector@ for @portStatus@
-portStatusSelector :: Selector
+portStatusSelector :: Selector '[] CUInt
 portStatusSelector = mkSelector "portStatus"
 
 -- | @Selector@ for @controllerInterface@
-controllerInterfaceSelector :: Selector
+controllerInterfaceSelector :: Selector '[] (Id IOUSBHostControllerInterface)
 controllerInterfaceSelector = mkSelector "controllerInterface"
 
 -- | @Selector@ for @powered@
-poweredSelector :: Selector
+poweredSelector :: Selector '[] Bool
 poweredSelector = mkSelector "powered"
 
 -- | @Selector@ for @setPowered:@
-setPoweredSelector :: Selector
+setPoweredSelector :: Selector '[Bool] ()
 setPoweredSelector = mkSelector "setPowered:"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @setConnected:@
-setConnectedSelector :: Selector
+setConnectedSelector :: Selector '[Bool] ()
 setConnectedSelector = mkSelector "setConnected:"
 
 -- | @Selector@ for @overcurrent@
-overcurrentSelector :: Selector
+overcurrentSelector :: Selector '[] Bool
 overcurrentSelector = mkSelector "overcurrent"
 
 -- | @Selector@ for @setOvercurrent:@
-setOvercurrentSelector :: Selector
+setOvercurrentSelector :: Selector '[Bool] ()
 setOvercurrentSelector = mkSelector "setOvercurrent:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.Foundation.NSUnitDispersion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,13 +28,13 @@ partsPerMillion :: IO (Id NSUnitDispersion)
 partsPerMillion  =
   do
     cls' <- getRequiredClass "NSUnitDispersion"
-    sendClassMsg cls' (mkSelector "partsPerMillion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' partsPerMillionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @partsPerMillion@
-partsPerMillionSelector :: Selector
+partsPerMillionSelector :: Selector '[] (Id NSUnitDispersion)
 partsPerMillionSelector = mkSelector "partsPerMillion"
 

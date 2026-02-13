@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Virtualization.VZUSBMassStorageDeviceConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAttachment:@
 initWithAttachment :: (IsVZUSBMassStorageDeviceConfiguration vzusbMassStorageDeviceConfiguration, IsVZStorageDeviceAttachment attachment) => vzusbMassStorageDeviceConfiguration -> attachment -> IO (Id VZUSBMassStorageDeviceConfiguration)
-initWithAttachment vzusbMassStorageDeviceConfiguration  attachment =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg vzusbMassStorageDeviceConfiguration (mkSelector "initWithAttachment:") (retPtr retVoid) [argPtr (castPtr raw_attachment :: Ptr ())] >>= ownedObject . castPtr
+initWithAttachment vzusbMassStorageDeviceConfiguration attachment =
+  sendOwnedMessage vzusbMassStorageDeviceConfiguration initWithAttachmentSelector (toVZStorageDeviceAttachment attachment)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAttachment:@
-initWithAttachmentSelector :: Selector
+initWithAttachmentSelector :: Selector '[Id VZStorageDeviceAttachment] (Id VZUSBMassStorageDeviceConfiguration)
 initWithAttachmentSelector = mkSelector "initWithAttachment:"
 

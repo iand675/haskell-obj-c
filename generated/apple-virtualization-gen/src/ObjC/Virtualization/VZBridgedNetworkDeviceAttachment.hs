@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,15 +29,11 @@ module ObjC.Virtualization.VZBridgedNetworkDeviceAttachment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,26 +46,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithInterface:@
 initWithInterface :: (IsVZBridgedNetworkDeviceAttachment vzBridgedNetworkDeviceAttachment, IsVZBridgedNetworkInterface interface) => vzBridgedNetworkDeviceAttachment -> interface -> IO (Id VZBridgedNetworkDeviceAttachment)
-initWithInterface vzBridgedNetworkDeviceAttachment  interface =
-  withObjCPtr interface $ \raw_interface ->
-      sendMsg vzBridgedNetworkDeviceAttachment (mkSelector "initWithInterface:") (retPtr retVoid) [argPtr (castPtr raw_interface :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface vzBridgedNetworkDeviceAttachment interface =
+  sendOwnedMessage vzBridgedNetworkDeviceAttachment initWithInterfaceSelector (toVZBridgedNetworkInterface interface)
 
 -- | Network interface of this device attachment.
 --
 -- ObjC selector: @- interface@
 interface :: IsVZBridgedNetworkDeviceAttachment vzBridgedNetworkDeviceAttachment => vzBridgedNetworkDeviceAttachment -> IO (Id VZBridgedNetworkInterface)
-interface vzBridgedNetworkDeviceAttachment  =
-    sendMsg vzBridgedNetworkDeviceAttachment (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+interface vzBridgedNetworkDeviceAttachment =
+  sendMessage vzBridgedNetworkDeviceAttachment interfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInterface:@
-initWithInterfaceSelector :: Selector
+initWithInterfaceSelector :: Selector '[Id VZBridgedNetworkInterface] (Id VZBridgedNetworkDeviceAttachment)
 initWithInterfaceSelector = mkSelector "initWithInterface:"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id VZBridgedNetworkInterface)
 interfaceSelector = mkSelector "interface"
 

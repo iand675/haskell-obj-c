@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.MLCompute.MLCConcatenationLayer
   , layer
   , layerWithDimension
   , dimension
+  , dimensionSelector
   , layerSelector
   , layerWithDimensionSelector
-  , dimensionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ layer :: IO (Id MLCConcatenationLayer)
 layer  =
   do
     cls' <- getRequiredClass "MLCConcatenationLayer"
-    sendClassMsg cls' (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' layerSelector
 
 -- | Create a concatenation layer
 --
@@ -57,7 +54,7 @@ layerWithDimension :: CULong -> IO (Id MLCConcatenationLayer)
 layerWithDimension dimension =
   do
     cls' <- getRequiredClass "MLCConcatenationLayer"
-    sendClassMsg cls' (mkSelector "layerWithDimension:") (retPtr retVoid) [argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDimensionSelector dimension
 
 -- | dimension
 --
@@ -67,22 +64,22 @@ layerWithDimension dimension =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCConcatenationLayer mlcConcatenationLayer => mlcConcatenationLayer -> IO CULong
-dimension mlcConcatenationLayer  =
-    sendMsg mlcConcatenationLayer (mkSelector "dimension") retCULong []
+dimension mlcConcatenationLayer =
+  sendMessage mlcConcatenationLayer dimensionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] (Id MLCConcatenationLayer)
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @layerWithDimension:@
-layerWithDimensionSelector :: Selector
+layerWithDimensionSelector :: Selector '[CULong] (Id MLCConcatenationLayer)
 layerWithDimensionSelector = mkSelector "layerWithDimension:"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 

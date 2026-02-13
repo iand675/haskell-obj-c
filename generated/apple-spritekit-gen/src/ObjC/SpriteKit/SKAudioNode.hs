@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.SpriteKit.SKAudioNode
   , setAutoplayLooped
   , positional
   , setPositional
+  , autoplayLoopedSelector
+  , avAudioNodeSelector
   , initWithAVAudioNodeSelector
   , initWithCoderSelector
   , initWithFileNamedSelector
   , initWithURLSelector
-  , avAudioNodeSelector
-  , setAvAudioNodeSelector
-  , autoplayLoopedSelector
-  , setAutoplayLoopedSelector
   , positionalSelector
+  , setAutoplayLoopedSelector
+  , setAvAudioNodeSelector
   , setPositionalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAVAudioNode:@
 initWithAVAudioNode :: (IsSKAudioNode skAudioNode, IsAVAudioNode node) => skAudioNode -> node -> IO (Id SKAudioNode)
-initWithAVAudioNode skAudioNode  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg skAudioNode (mkSelector "initWithAVAudioNode:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ())] >>= ownedObject . castPtr
+initWithAVAudioNode skAudioNode node =
+  sendOwnedMessage skAudioNode initWithAVAudioNodeSelector (toAVAudioNode node)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsSKAudioNode skAudioNode, IsNSCoder aDecoder) => skAudioNode -> aDecoder -> IO (Id SKAudioNode)
-initWithCoder skAudioNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg skAudioNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder skAudioNode aDecoder =
+  sendOwnedMessage skAudioNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | Convenience initializer that creates an AVAudioNode from the named audio asset in the main bundle.
 --
@@ -77,9 +72,8 @@ initWithCoder skAudioNode  aDecoder =
 --
 -- ObjC selector: @- initWithFileNamed:@
 initWithFileNamed :: (IsSKAudioNode skAudioNode, IsNSString name) => skAudioNode -> name -> IO (Id SKAudioNode)
-initWithFileNamed skAudioNode  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skAudioNode (mkSelector "initWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithFileNamed skAudioNode name =
+  sendOwnedMessage skAudioNode initWithFileNamedSelector (toNSString name)
 
 -- | Convenience initializer that creates an AVAudioNode from the URL that contain a audio asset.
 --
@@ -87,24 +81,22 @@ initWithFileNamed skAudioNode  name =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsSKAudioNode skAudioNode, IsNSURL url) => skAudioNode -> url -> IO (Id SKAudioNode)
-initWithURL skAudioNode  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg skAudioNode (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL skAudioNode url =
+  sendOwnedMessage skAudioNode initWithURLSelector (toNSURL url)
 
 -- | Sets or gets the current AVAudioNode used by this instance.
 --
 -- ObjC selector: @- avAudioNode@
 avAudioNode :: IsSKAudioNode skAudioNode => skAudioNode -> IO (Id AVAudioNode)
-avAudioNode skAudioNode  =
-    sendMsg skAudioNode (mkSelector "avAudioNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+avAudioNode skAudioNode =
+  sendMessage skAudioNode avAudioNodeSelector
 
 -- | Sets or gets the current AVAudioNode used by this instance.
 --
 -- ObjC selector: @- setAvAudioNode:@
 setAvAudioNode :: (IsSKAudioNode skAudioNode, IsAVAudioNode value) => skAudioNode -> value -> IO ()
-setAvAudioNode skAudioNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skAudioNode (mkSelector "setAvAudioNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAvAudioNode skAudioNode value =
+  sendMessage skAudioNode setAvAudioNodeSelector (toAVAudioNode value)
 
 -- | Specifies whether the node is to automatically play sound when added to a scene. If autoplaysLooped is NO, the node and its sound must be explicitly scheduled and played using the scene's engine.
 --
@@ -116,8 +108,8 @@ setAvAudioNode skAudioNode  value =
 --
 -- ObjC selector: @- autoplayLooped@
 autoplayLooped :: IsSKAudioNode skAudioNode => skAudioNode -> IO Bool
-autoplayLooped skAudioNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skAudioNode (mkSelector "autoplayLooped") retCULong []
+autoplayLooped skAudioNode =
+  sendMessage skAudioNode autoplayLoopedSelector
 
 -- | Specifies whether the node is to automatically play sound when added to a scene. If autoplaysLooped is NO, the node and its sound must be explicitly scheduled and played using the scene's engine.
 --
@@ -129,8 +121,8 @@ autoplayLooped skAudioNode  =
 --
 -- ObjC selector: @- setAutoplayLooped:@
 setAutoplayLooped :: IsSKAudioNode skAudioNode => skAudioNode -> Bool -> IO ()
-setAutoplayLooped skAudioNode  value =
-    sendMsg skAudioNode (mkSelector "setAutoplayLooped:") retVoid [argCULong (if value then 1 else 0)]
+setAutoplayLooped skAudioNode value =
+  sendMessage skAudioNode setAutoplayLoopedSelector value
 
 -- | Marks the audio source as positional so that the audio mix considers relative position and velocity with regards to the scene's current listener node.
 --
@@ -140,8 +132,8 @@ setAutoplayLooped skAudioNode  value =
 --
 -- ObjC selector: @- positional@
 positional :: IsSKAudioNode skAudioNode => skAudioNode -> IO Bool
-positional skAudioNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skAudioNode (mkSelector "positional") retCULong []
+positional skAudioNode =
+  sendMessage skAudioNode positionalSelector
 
 -- | Marks the audio source as positional so that the audio mix considers relative position and velocity with regards to the scene's current listener node.
 --
@@ -151,50 +143,50 @@ positional skAudioNode  =
 --
 -- ObjC selector: @- setPositional:@
 setPositional :: IsSKAudioNode skAudioNode => skAudioNode -> Bool -> IO ()
-setPositional skAudioNode  value =
-    sendMsg skAudioNode (mkSelector "setPositional:") retVoid [argCULong (if value then 1 else 0)]
+setPositional skAudioNode value =
+  sendMessage skAudioNode setPositionalSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAVAudioNode:@
-initWithAVAudioNodeSelector :: Selector
+initWithAVAudioNodeSelector :: Selector '[Id AVAudioNode] (Id SKAudioNode)
 initWithAVAudioNodeSelector = mkSelector "initWithAVAudioNode:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SKAudioNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithFileNamed:@
-initWithFileNamedSelector :: Selector
+initWithFileNamedSelector :: Selector '[Id NSString] (Id SKAudioNode)
 initWithFileNamedSelector = mkSelector "initWithFileNamed:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SKAudioNode)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @avAudioNode@
-avAudioNodeSelector :: Selector
+avAudioNodeSelector :: Selector '[] (Id AVAudioNode)
 avAudioNodeSelector = mkSelector "avAudioNode"
 
 -- | @Selector@ for @setAvAudioNode:@
-setAvAudioNodeSelector :: Selector
+setAvAudioNodeSelector :: Selector '[Id AVAudioNode] ()
 setAvAudioNodeSelector = mkSelector "setAvAudioNode:"
 
 -- | @Selector@ for @autoplayLooped@
-autoplayLoopedSelector :: Selector
+autoplayLoopedSelector :: Selector '[] Bool
 autoplayLoopedSelector = mkSelector "autoplayLooped"
 
 -- | @Selector@ for @setAutoplayLooped:@
-setAutoplayLoopedSelector :: Selector
+setAutoplayLoopedSelector :: Selector '[Bool] ()
 setAutoplayLoopedSelector = mkSelector "setAutoplayLooped:"
 
 -- | @Selector@ for @positional@
-positionalSelector :: Selector
+positionalSelector :: Selector '[] Bool
 positionalSelector = mkSelector "positional"
 
 -- | @Selector@ for @setPositional:@
-setPositionalSelector :: Selector
+setPositionalSelector :: Selector '[Bool] ()
 setPositionalSelector = mkSelector "setPositional:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Virtualization.VZFileSerialPortAttachment
   , initWithURL_append_error
   , url
   , append
-  , newSelector
+  , appendSelector
   , initSelector
   , initWithURL_append_errorSelector
+  , newSelector
   , urlSelector
-  , appendSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,12 +41,12 @@ new :: IO (Id VZFileSerialPortAttachment)
 new  =
   do
     cls' <- getRequiredClass "VZFileSerialPortAttachment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZFileSerialPortAttachment vzFileSerialPortAttachment => vzFileSerialPortAttachment -> IO (Id VZFileSerialPortAttachment)
-init_ vzFileSerialPortAttachment  =
-    sendMsg vzFileSerialPortAttachment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzFileSerialPortAttachment =
+  sendOwnedMessage vzFileSerialPortAttachment initSelector
 
 -- | Initialize the VZFileSerialPortAttachment from a URL of a file.
 --
@@ -63,46 +60,44 @@ init_ vzFileSerialPortAttachment  =
 --
 -- ObjC selector: @- initWithURL:append:error:@
 initWithURL_append_error :: (IsVZFileSerialPortAttachment vzFileSerialPortAttachment, IsNSURL url, IsNSError error_) => vzFileSerialPortAttachment -> url -> Bool -> error_ -> IO (Id VZFileSerialPortAttachment)
-initWithURL_append_error vzFileSerialPortAttachment  url shouldAppend error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzFileSerialPortAttachment (mkSelector "initWithURL:append:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if shouldAppend then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_append_error vzFileSerialPortAttachment url shouldAppend error_ =
+  sendOwnedMessage vzFileSerialPortAttachment initWithURL_append_errorSelector (toNSURL url) shouldAppend (toNSError error_)
 
 -- | The URL of the file for the attachment on the local file system.
 --
 -- ObjC selector: @- URL@
 url :: IsVZFileSerialPortAttachment vzFileSerialPortAttachment => vzFileSerialPortAttachment -> IO (Id NSURL)
-url vzFileSerialPortAttachment  =
-    sendMsg vzFileSerialPortAttachment (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzFileSerialPortAttachment =
+  sendMessage vzFileSerialPortAttachment urlSelector
 
 -- | True if the file should be opened in append mode, false otherwise.
 --
 -- ObjC selector: @- append@
 append :: IsVZFileSerialPortAttachment vzFileSerialPortAttachment => vzFileSerialPortAttachment -> IO Bool
-append vzFileSerialPortAttachment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzFileSerialPortAttachment (mkSelector "append") retCULong []
+append vzFileSerialPortAttachment =
+  sendMessage vzFileSerialPortAttachment appendSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZFileSerialPortAttachment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZFileSerialPortAttachment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:append:error:@
-initWithURL_append_errorSelector :: Selector
+initWithURL_append_errorSelector :: Selector '[Id NSURL, Bool, Id NSError] (Id VZFileSerialPortAttachment)
 initWithURL_append_errorSelector = mkSelector "initWithURL:append:error:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @append@
-appendSelector :: Selector
+appendSelector :: Selector '[] Bool
 appendSelector = mkSelector "append"
 

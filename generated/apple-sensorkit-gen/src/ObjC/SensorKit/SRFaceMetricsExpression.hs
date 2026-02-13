@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SensorKit.SRFaceMetricsExpression
   , new
   , identifier
   , value
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
   , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,15 +32,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRFaceMetricsExpression srFaceMetricsExpression => srFaceMetricsExpression -> IO (Id SRFaceMetricsExpression)
-init_ srFaceMetricsExpression  =
-    sendMsg srFaceMetricsExpression (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srFaceMetricsExpression =
+  sendOwnedMessage srFaceMetricsExpression initSelector
 
 -- | @+ new@
 new :: IO (Id SRFaceMetricsExpression)
 new  =
   do
     cls' <- getRequiredClass "SRFaceMetricsExpression"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | identifier
 --
@@ -53,8 +50,8 @@ new  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsSRFaceMetricsExpression srFaceMetricsExpression => srFaceMetricsExpression -> IO (Id NSString)
-identifier srFaceMetricsExpression  =
-    sendMsg srFaceMetricsExpression (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier srFaceMetricsExpression =
+  sendMessage srFaceMetricsExpression identifierSelector
 
 -- | value
 --
@@ -62,26 +59,26 @@ identifier srFaceMetricsExpression  =
 --
 -- ObjC selector: @- value@
 value :: IsSRFaceMetricsExpression srFaceMetricsExpression => srFaceMetricsExpression -> IO CDouble
-value srFaceMetricsExpression  =
-    sendMsg srFaceMetricsExpression (mkSelector "value") retCDouble []
+value srFaceMetricsExpression =
+  sendMessage srFaceMetricsExpression valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRFaceMetricsExpression)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRFaceMetricsExpression)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CDouble
 valueSelector = mkSelector "value"
 

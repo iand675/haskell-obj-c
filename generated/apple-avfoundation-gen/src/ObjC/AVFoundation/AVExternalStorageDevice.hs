@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,17 +27,17 @@ module ObjC.AVFoundation.AVExternalStorageDevice
   , uuid
   , notRecommendedForCaptureUse
   , authorizationStatus
+  , authorizationStatusSelector
+  , connectedSelector
+  , displayNameSelector
+  , freeSizeSelector
   , initSelector
   , newSelector
   , nextAvailableURLsWithPathExtensions_errorSelector
-  , requestAccessWithCompletionHandlerSelector
-  , displayNameSelector
-  , freeSizeSelector
-  , totalSizeSelector
-  , connectedSelector
-  , uuidSelector
   , notRecommendedForCaptureUseSelector
-  , authorizationStatusSelector
+  , requestAccessWithCompletionHandlerSelector
+  , totalSizeSelector
+  , uuidSelector
 
   -- * Enum types
   , AVAuthorizationStatus(AVAuthorizationStatus)
@@ -47,15 +48,11 @@ module ObjC.AVFoundation.AVExternalStorageDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,15 +62,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO (Id AVExternalStorageDevice)
-init_ avExternalStorageDevice  =
-    sendMsg avExternalStorageDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avExternalStorageDevice =
+  sendOwnedMessage avExternalStorageDevice initSelector
 
 -- | @+ new@
 new :: IO (Id AVExternalStorageDevice)
 new  =
   do
     cls' <- getRequiredClass "AVExternalStorageDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | nextAvailableURLsWithPathExtensions:error:
 --
@@ -93,10 +90,8 @@ new  =
 --
 -- ObjC selector: @- nextAvailableURLsWithPathExtensions:error:@
 nextAvailableURLsWithPathExtensions_error :: (IsAVExternalStorageDevice avExternalStorageDevice, IsNSArray extensionArray, IsNSError outError) => avExternalStorageDevice -> extensionArray -> outError -> IO (Id NSArray)
-nextAvailableURLsWithPathExtensions_error avExternalStorageDevice  extensionArray outError =
-  withObjCPtr extensionArray $ \raw_extensionArray ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avExternalStorageDevice (mkSelector "nextAvailableURLsWithPathExtensions:error:") (retPtr retVoid) [argPtr (castPtr raw_extensionArray :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+nextAvailableURLsWithPathExtensions_error avExternalStorageDevice extensionArray outError =
+  sendMessage avExternalStorageDevice nextAvailableURLsWithPathExtensions_errorSelector (toNSArray extensionArray) (toNSError outError)
 
 -- | requestAccessWithCompletionHandler:
 --
@@ -115,7 +110,7 @@ requestAccessWithCompletionHandler :: Ptr () -> IO ()
 requestAccessWithCompletionHandler handler =
   do
     cls' <- getRequiredClass "AVExternalStorageDevice"
-    sendClassMsg cls' (mkSelector "requestAccessWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' requestAccessWithCompletionHandlerSelector handler
 
 -- | displayName
 --
@@ -125,8 +120,8 @@ requestAccessWithCompletionHandler handler =
 --
 -- ObjC selector: @- displayName@
 displayName :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO (Id NSString)
-displayName avExternalStorageDevice  =
-    sendMsg avExternalStorageDevice (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName avExternalStorageDevice =
+  sendMessage avExternalStorageDevice displayNameSelector
 
 -- | freeSize
 --
@@ -136,8 +131,8 @@ displayName avExternalStorageDevice  =
 --
 -- ObjC selector: @- freeSize@
 freeSize :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO CLong
-freeSize avExternalStorageDevice  =
-    sendMsg avExternalStorageDevice (mkSelector "freeSize") retCLong []
+freeSize avExternalStorageDevice =
+  sendMessage avExternalStorageDevice freeSizeSelector
 
 -- | totalSize
 --
@@ -147,8 +142,8 @@ freeSize avExternalStorageDevice  =
 --
 -- ObjC selector: @- totalSize@
 totalSize :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO CLong
-totalSize avExternalStorageDevice  =
-    sendMsg avExternalStorageDevice (mkSelector "totalSize") retCLong []
+totalSize avExternalStorageDevice =
+  sendMessage avExternalStorageDevice totalSizeSelector
 
 -- | connected
 --
@@ -158,8 +153,8 @@ totalSize avExternalStorageDevice  =
 --
 -- ObjC selector: @- connected@
 connected :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO Bool
-connected avExternalStorageDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avExternalStorageDevice (mkSelector "connected") retCULong []
+connected avExternalStorageDevice =
+  sendMessage avExternalStorageDevice connectedSelector
 
 -- | uuid
 --
@@ -169,8 +164,8 @@ connected avExternalStorageDevice  =
 --
 -- ObjC selector: @- uuid@
 uuid :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO (Id NSUUID)
-uuid avExternalStorageDevice  =
-    sendMsg avExternalStorageDevice (mkSelector "uuid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid avExternalStorageDevice =
+  sendMessage avExternalStorageDevice uuidSelector
 
 -- | notRecommendedForCaptureUse
 --
@@ -180,8 +175,8 @@ uuid avExternalStorageDevice  =
 --
 -- ObjC selector: @- notRecommendedForCaptureUse@
 notRecommendedForCaptureUse :: IsAVExternalStorageDevice avExternalStorageDevice => avExternalStorageDevice -> IO Bool
-notRecommendedForCaptureUse avExternalStorageDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avExternalStorageDevice (mkSelector "notRecommendedForCaptureUse") retCULong []
+notRecommendedForCaptureUse avExternalStorageDevice =
+  sendMessage avExternalStorageDevice notRecommendedForCaptureUseSelector
 
 -- | authorizationStatus
 --
@@ -194,53 +189,53 @@ authorizationStatus :: IO AVAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "AVExternalStorageDevice"
-    fmap (coerce :: CLong -> AVAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVExternalStorageDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVExternalStorageDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @nextAvailableURLsWithPathExtensions:error:@
-nextAvailableURLsWithPathExtensions_errorSelector :: Selector
+nextAvailableURLsWithPathExtensions_errorSelector :: Selector '[Id NSArray, Id NSError] (Id NSArray)
 nextAvailableURLsWithPathExtensions_errorSelector = mkSelector "nextAvailableURLsWithPathExtensions:error:"
 
 -- | @Selector@ for @requestAccessWithCompletionHandler:@
-requestAccessWithCompletionHandlerSelector :: Selector
+requestAccessWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestAccessWithCompletionHandlerSelector = mkSelector "requestAccessWithCompletionHandler:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @freeSize@
-freeSizeSelector :: Selector
+freeSizeSelector :: Selector '[] CLong
 freeSizeSelector = mkSelector "freeSize"
 
 -- | @Selector@ for @totalSize@
-totalSizeSelector :: Selector
+totalSizeSelector :: Selector '[] CLong
 totalSizeSelector = mkSelector "totalSize"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @uuid@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "uuid"
 
 -- | @Selector@ for @notRecommendedForCaptureUse@
-notRecommendedForCaptureUseSelector :: Selector
+notRecommendedForCaptureUseSelector :: Selector '[] Bool
 notRecommendedForCaptureUseSelector = mkSelector "notRecommendedForCaptureUse"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] AVAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 

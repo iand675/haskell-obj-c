@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.CoreLocation.CLVisit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arrivalDate@
 arrivalDate :: IsCLVisit clVisit => clVisit -> IO (Id NSDate)
-arrivalDate clVisit  =
-    sendMsg clVisit (mkSelector "arrivalDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+arrivalDate clVisit =
+  sendMessage clVisit arrivalDateSelector
 
 -- | @- departureDate@
 departureDate :: IsCLVisit clVisit => clVisit -> IO (Id NSDate)
-departureDate clVisit  =
-    sendMsg clVisit (mkSelector "departureDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+departureDate clVisit =
+  sendMessage clVisit departureDateSelector
 
 -- | @- horizontalAccuracy@
 horizontalAccuracy :: IsCLVisit clVisit => clVisit -> IO CDouble
-horizontalAccuracy clVisit  =
-    sendMsg clVisit (mkSelector "horizontalAccuracy") retCDouble []
+horizontalAccuracy clVisit =
+  sendMessage clVisit horizontalAccuracySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arrivalDate@
-arrivalDateSelector :: Selector
+arrivalDateSelector :: Selector '[] (Id NSDate)
 arrivalDateSelector = mkSelector "arrivalDate"
 
 -- | @Selector@ for @departureDate@
-departureDateSelector :: Selector
+departureDateSelector :: Selector '[] (Id NSDate)
 departureDateSelector = mkSelector "departureDate"
 
 -- | @Selector@ for @horizontalAccuracy@
-horizontalAccuracySelector :: Selector
+horizontalAccuracySelector :: Selector '[] CDouble
 horizontalAccuracySelector = mkSelector "horizontalAccuracy"
 

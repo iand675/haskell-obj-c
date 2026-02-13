@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,17 +28,18 @@ module ObjC.CoreWLAN.CWWiFiClient
   , stopMonitoringAllEventsAndReturnError
   , delegate
   , setDelegate
-  , sharedWiFiClientSelector
+  , cwWiFiClientInterfaceNamesSelector
+  , delegateSelector
   , initSelector
-  , interfaceSelector
   , interfaceNamesSelector
+  , interfaceSelector
   , interfaceWithNameSelector
   , interfacesSelector
-  , startMonitoringEventWithType_errorSelector
-  , stopMonitoringEventWithType_errorSelector
-  , stopMonitoringAllEventsAndReturnErrorSelector
-  , delegateSelector
   , setDelegateSelector
+  , sharedWiFiClientSelector
+  , startMonitoringEventWithType_errorSelector
+  , stopMonitoringAllEventsAndReturnErrorSelector
+  , stopMonitoringEventWithType_errorSelector
 
   -- * Enum types
   , CWEventType(CWEventType)
@@ -55,15 +57,11 @@ module ObjC.CoreWLAN.CWWiFiClient
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,21 +76,21 @@ sharedWiFiClient :: IO (Id CWWiFiClient)
 sharedWiFiClient  =
   do
     cls' <- getRequiredClass "CWWiFiClient"
-    sendClassMsg cls' (mkSelector "sharedWiFiClient") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedWiFiClientSelector
 
 -- | Initializes a CWWiFiClient object.
 --
 -- ObjC selector: @- init@
 init_ :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> IO (Id CWWiFiClient)
-init_ cwWiFiClient  =
-    sendMsg cwWiFiClient (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cwWiFiClient =
+  sendOwnedMessage cwWiFiClient initSelector
 
 -- | Returns the CWInterface object for the default Wi-Fi interface.
 --
 -- ObjC selector: @- interface@
 interface :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> IO (Id CWInterface)
-interface cwWiFiClient  =
-    sendMsg cwWiFiClient (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+interface cwWiFiClient =
+  sendMessage cwWiFiClient interfaceSelector
 
 -- | Returns: An NSArray of NSString objects corresponding to Wi-Fi interface names.
 --
@@ -102,15 +100,15 @@ interface cwWiFiClient  =
 --
 -- ObjC selector: @- interfaceNames@
 interfaceNames :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> IO (Id NSArray)
-interfaceNames cwWiFiClient  =
-    sendMsg cwWiFiClient (mkSelector "interfaceNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaceNames cwWiFiClient =
+  sendMessage cwWiFiClient interfaceNamesSelector
 
 -- | @+ interfaceNames@
 cwWiFiClientInterfaceNames :: IO (Id NSArray)
 cwWiFiClientInterfaceNames  =
   do
     cls' <- getRequiredClass "CWWiFiClient"
-    sendClassMsg cls' (mkSelector "interfaceNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cwWiFiClientInterfaceNamesSelector
 
 -- | @interfaceName@ — The name of an available Wi-Fi interface.
 --
@@ -120,9 +118,8 @@ cwWiFiClientInterfaceNames  =
 --
 -- ObjC selector: @- interfaceWithName:@
 interfaceWithName :: (IsCWWiFiClient cwWiFiClient, IsNSString interfaceName) => cwWiFiClient -> interfaceName -> IO (Id CWInterface)
-interfaceWithName cwWiFiClient  interfaceName =
-  withObjCPtr interfaceName $ \raw_interfaceName ->
-      sendMsg cwWiFiClient (mkSelector "interfaceWithName:") (retPtr retVoid) [argPtr (castPtr raw_interfaceName :: Ptr ())] >>= retainedObject . castPtr
+interfaceWithName cwWiFiClient interfaceName =
+  sendMessage cwWiFiClient interfaceWithNameSelector (toNSString interfaceName)
 
 -- | Returns: An NSArray of CWInterface objects.
 --
@@ -132,8 +129,8 @@ interfaceWithName cwWiFiClient  interfaceName =
 --
 -- ObjC selector: @- interfaces@
 interfaces :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> IO (Id NSArray)
-interfaces cwWiFiClient  =
-    sendMsg cwWiFiClient (mkSelector "interfaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaces cwWiFiClient =
+  sendMessage cwWiFiClient interfacesSelector
 
 -- | @type@ — A CWEventType value.
 --
@@ -145,9 +142,8 @@ interfaces cwWiFiClient  =
 --
 -- ObjC selector: @- startMonitoringEventWithType:error:@
 startMonitoringEventWithType_error :: (IsCWWiFiClient cwWiFiClient, IsNSError error_) => cwWiFiClient -> CWEventType -> error_ -> IO Bool
-startMonitoringEventWithType_error cwWiFiClient  type_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwWiFiClient (mkSelector "startMonitoringEventWithType:error:") retCULong [argCLong (coerce type_), argPtr (castPtr raw_error_ :: Ptr ())]
+startMonitoringEventWithType_error cwWiFiClient type_ error_ =
+  sendMessage cwWiFiClient startMonitoringEventWithType_errorSelector type_ (toNSError error_)
 
 -- | @type@ — A CWEventType value.
 --
@@ -159,9 +155,8 @@ startMonitoringEventWithType_error cwWiFiClient  type_ error_ =
 --
 -- ObjC selector: @- stopMonitoringEventWithType:error:@
 stopMonitoringEventWithType_error :: (IsCWWiFiClient cwWiFiClient, IsNSError error_) => cwWiFiClient -> CWEventType -> error_ -> IO Bool
-stopMonitoringEventWithType_error cwWiFiClient  type_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwWiFiClient (mkSelector "stopMonitoringEventWithType:error:") retCULong [argCLong (coerce type_), argPtr (castPtr raw_error_ :: Ptr ())]
+stopMonitoringEventWithType_error cwWiFiClient type_ error_ =
+  sendMessage cwWiFiClient stopMonitoringEventWithType_errorSelector type_ (toNSError error_)
 
 -- | @error@ — An NSError object passed by reference, which upon return will contain the error if an error occurs. This parameter is optional.
 --
@@ -171,9 +166,8 @@ stopMonitoringEventWithType_error cwWiFiClient  type_ error_ =
 --
 -- ObjC selector: @- stopMonitoringAllEventsAndReturnError:@
 stopMonitoringAllEventsAndReturnError :: (IsCWWiFiClient cwWiFiClient, IsNSError error_) => cwWiFiClient -> error_ -> IO Bool
-stopMonitoringAllEventsAndReturnError cwWiFiClient  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwWiFiClient (mkSelector "stopMonitoringAllEventsAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+stopMonitoringAllEventsAndReturnError cwWiFiClient error_ =
+  sendMessage cwWiFiClient stopMonitoringAllEventsAndReturnErrorSelector (toNSError error_)
 
 -- | Sets the delegate to the specified object, which may implement CWWiFiEventDelegate protocol for Wi-Fi event handling.
 --
@@ -181,8 +175,8 @@ stopMonitoringAllEventsAndReturnError cwWiFiClient  error_ =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> IO RawId
-delegate cwWiFiClient  =
-    fmap (RawId . castPtr) $ sendMsg cwWiFiClient (mkSelector "delegate") (retPtr retVoid) []
+delegate cwWiFiClient =
+  sendMessage cwWiFiClient delegateSelector
 
 -- | Sets the delegate to the specified object, which may implement CWWiFiEventDelegate protocol for Wi-Fi event handling.
 --
@@ -190,54 +184,58 @@ delegate cwWiFiClient  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCWWiFiClient cwWiFiClient => cwWiFiClient -> RawId -> IO ()
-setDelegate cwWiFiClient  value =
-    sendMsg cwWiFiClient (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cwWiFiClient value =
+  sendMessage cwWiFiClient setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedWiFiClient@
-sharedWiFiClientSelector :: Selector
+sharedWiFiClientSelector :: Selector '[] (Id CWWiFiClient)
 sharedWiFiClientSelector = mkSelector "sharedWiFiClient"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CWWiFiClient)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id CWInterface)
 interfaceSelector = mkSelector "interface"
 
 -- | @Selector@ for @interfaceNames@
-interfaceNamesSelector :: Selector
+interfaceNamesSelector :: Selector '[] (Id NSArray)
 interfaceNamesSelector = mkSelector "interfaceNames"
 
+-- | @Selector@ for @interfaceNames@
+cwWiFiClientInterfaceNamesSelector :: Selector '[] (Id NSArray)
+cwWiFiClientInterfaceNamesSelector = mkSelector "interfaceNames"
+
 -- | @Selector@ for @interfaceWithName:@
-interfaceWithNameSelector :: Selector
+interfaceWithNameSelector :: Selector '[Id NSString] (Id CWInterface)
 interfaceWithNameSelector = mkSelector "interfaceWithName:"
 
 -- | @Selector@ for @interfaces@
-interfacesSelector :: Selector
+interfacesSelector :: Selector '[] (Id NSArray)
 interfacesSelector = mkSelector "interfaces"
 
 -- | @Selector@ for @startMonitoringEventWithType:error:@
-startMonitoringEventWithType_errorSelector :: Selector
+startMonitoringEventWithType_errorSelector :: Selector '[CWEventType, Id NSError] Bool
 startMonitoringEventWithType_errorSelector = mkSelector "startMonitoringEventWithType:error:"
 
 -- | @Selector@ for @stopMonitoringEventWithType:error:@
-stopMonitoringEventWithType_errorSelector :: Selector
+stopMonitoringEventWithType_errorSelector :: Selector '[CWEventType, Id NSError] Bool
 stopMonitoringEventWithType_errorSelector = mkSelector "stopMonitoringEventWithType:error:"
 
 -- | @Selector@ for @stopMonitoringAllEventsAndReturnError:@
-stopMonitoringAllEventsAndReturnErrorSelector :: Selector
+stopMonitoringAllEventsAndReturnErrorSelector :: Selector '[Id NSError] Bool
 stopMonitoringAllEventsAndReturnErrorSelector = mkSelector "stopMonitoringAllEventsAndReturnError:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

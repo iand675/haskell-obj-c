@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INCallRecordTypeResolutionResult
   , IsINCallRecordTypeResolutionResult(..)
   , successWithResolvedCallRecordType
   , confirmationRequiredWithCallRecordTypeToConfirm
-  , successWithResolvedCallRecordTypeSelector
   , confirmationRequiredWithCallRecordTypeToConfirmSelector
+  , successWithResolvedCallRecordTypeSelector
 
   -- * Enum types
   , INCallRecordType(INCallRecordType)
@@ -26,15 +27,11 @@ module ObjC.Intents.INCallRecordTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,24 +44,24 @@ successWithResolvedCallRecordType :: INCallRecordType -> IO (Id INCallRecordType
 successWithResolvedCallRecordType resolvedCallRecordType =
   do
     cls' <- getRequiredClass "INCallRecordTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCallRecordType:") (retPtr retVoid) [argCLong (coerce resolvedCallRecordType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCallRecordTypeSelector resolvedCallRecordType
 
 -- | @+ confirmationRequiredWithCallRecordTypeToConfirm:@
 confirmationRequiredWithCallRecordTypeToConfirm :: INCallRecordType -> IO (Id INCallRecordTypeResolutionResult)
 confirmationRequiredWithCallRecordTypeToConfirm callRecordTypeToConfirm =
   do
     cls' <- getRequiredClass "INCallRecordTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCallRecordTypeToConfirm:") (retPtr retVoid) [argCLong (coerce callRecordTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCallRecordTypeToConfirmSelector callRecordTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCallRecordType:@
-successWithResolvedCallRecordTypeSelector :: Selector
+successWithResolvedCallRecordTypeSelector :: Selector '[INCallRecordType] (Id INCallRecordTypeResolutionResult)
 successWithResolvedCallRecordTypeSelector = mkSelector "successWithResolvedCallRecordType:"
 
 -- | @Selector@ for @confirmationRequiredWithCallRecordTypeToConfirm:@
-confirmationRequiredWithCallRecordTypeToConfirmSelector :: Selector
+confirmationRequiredWithCallRecordTypeToConfirmSelector :: Selector '[INCallRecordType] (Id INCallRecordTypeResolutionResult)
 confirmationRequiredWithCallRecordTypeToConfirmSelector = mkSelector "confirmationRequiredWithCallRecordTypeToConfirm:"
 

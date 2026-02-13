@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,44 +32,40 @@ module ObjC.GameKit.GKLocalPlayer
   , setAuthenticateHandler
   , isPresentingFriendRequestViewController
   , friends
-  , fetchItemsForIdentityVerificationSignatureSelector
-  , saveGameData_withName_completionHandlerSelector
-  , deleteSavedGamesWithName_completionHandlerSelector
-  , presentFriendRequestCreatorFromViewController_errorSelector
-  , presentFriendRequestCreatorFromWindow_errorSelector
-  , loadFriendsAuthorizationStatusSelector
-  , setDefaultLeaderboardCategoryID_completionHandlerSelector
-  , loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector
+  , authenticateHandlerSelector
   , authenticateWithCompletionHandlerSelector
-  , generateIdentityVerificationSignatureWithCompletionHandlerSelector
-  , loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector
-  , setDefaultLeaderboardIdentifier_completionHandlerSelector
-  , registerListenerSelector
-  , unregisterListenerSelector
-  , unregisterAllListenersSelector
-  , localSelector
-  , localPlayerSelector
   , authenticatedSelector
-  , underageSelector
+  , deleteSavedGamesWithName_completionHandlerSelector
+  , fetchItemsForIdentityVerificationSignatureSelector
+  , friendsSelector
+  , generateIdentityVerificationSignatureWithCompletionHandlerSelector
+  , isPresentingFriendRequestViewControllerSelector
+  , loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector
+  , loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector
+  , loadFriendsAuthorizationStatusSelector
+  , localPlayerSelector
+  , localSelector
   , multiplayerGamingRestrictedSelector
   , personalizedCommunicationRestrictedSelector
-  , authenticateHandlerSelector
+  , presentFriendRequestCreatorFromViewController_errorSelector
+  , presentFriendRequestCreatorFromWindow_errorSelector
+  , registerListenerSelector
+  , saveGameData_withName_completionHandlerSelector
   , setAuthenticateHandlerSelector
-  , isPresentingFriendRequestViewControllerSelector
-  , friendsSelector
+  , setDefaultLeaderboardCategoryID_completionHandlerSelector
+  , setDefaultLeaderboardIdentifier_completionHandlerSelector
+  , underageSelector
+  , unregisterAllListenersSelector
+  , unregisterListenerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,25 +77,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- fetchItemsForIdentityVerificationSignature:@
 fetchItemsForIdentityVerificationSignature :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-fetchItemsForIdentityVerificationSignature gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "fetchItemsForIdentityVerificationSignature:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+fetchItemsForIdentityVerificationSignature gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer fetchItemsForIdentityVerificationSignatureSelector completionHandler
 
 -- | Asynchronously save game data. If a saved game with that name already exists it is overwritten, otherwise a new one is created. The completion handler is called with the new / modified GKSavedGame or an error. If the saved game was in conflict then the overwritten version will be the one with the same deviceName if present, otherwise the most recent overall.
 --
 -- ObjC selector: @- saveGameData:withName:completionHandler:@
 saveGameData_withName_completionHandler :: (IsGKLocalPlayer gkLocalPlayer, IsNSData data_, IsNSString name) => gkLocalPlayer -> data_ -> name -> Ptr () -> IO ()
-saveGameData_withName_completionHandler gkLocalPlayer  data_ name handler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr name $ \raw_name ->
-        sendMsg gkLocalPlayer (mkSelector "saveGameData:withName:completionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+saveGameData_withName_completionHandler gkLocalPlayer data_ name handler =
+  sendMessage gkLocalPlayer saveGameData_withName_completionHandlerSelector (toNSData data_) (toNSString name) handler
 
 -- | Asynchronously delete saved games with the given name. The completion handler will indicate whether or not the deletion was successful.
 --
 -- ObjC selector: @- deleteSavedGamesWithName:completionHandler:@
 deleteSavedGamesWithName_completionHandler :: (IsGKLocalPlayer gkLocalPlayer, IsNSString name) => gkLocalPlayer -> name -> Ptr () -> IO ()
-deleteSavedGamesWithName_completionHandler gkLocalPlayer  name handler =
-  withObjCPtr name $ \raw_name ->
-      sendMsg gkLocalPlayer (mkSelector "deleteSavedGamesWithName:completionHandler:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+deleteSavedGamesWithName_completionHandler gkLocalPlayer name handler =
+  sendMessage gkLocalPlayer deleteSavedGamesWithName_completionHandlerSelector (toNSString name) handler
 
 -- | presentFriendRequestCreatorFromViewController:
 --
@@ -108,10 +102,8 @@ deleteSavedGamesWithName_completionHandler gkLocalPlayer  name handler =
 --
 -- ObjC selector: @- presentFriendRequestCreatorFromViewController:error:@
 presentFriendRequestCreatorFromViewController_error :: (IsGKLocalPlayer gkLocalPlayer, IsNSViewController viewController, IsNSError error_) => gkLocalPlayer -> viewController -> error_ -> IO Bool
-presentFriendRequestCreatorFromViewController_error gkLocalPlayer  viewController error_ =
-  withObjCPtr viewController $ \raw_viewController ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "presentFriendRequestCreatorFromViewController:error:") retCULong [argPtr (castPtr raw_viewController :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+presentFriendRequestCreatorFromViewController_error gkLocalPlayer viewController error_ =
+  sendMessage gkLocalPlayer presentFriendRequestCreatorFromViewController_errorSelector (toNSViewController viewController) (toNSError error_)
 
 -- | presentFriendRequestCreatorFromWindow:
 --
@@ -121,70 +113,66 @@ presentFriendRequestCreatorFromViewController_error gkLocalPlayer  viewControlle
 --
 -- ObjC selector: @- presentFriendRequestCreatorFromWindow:error:@
 presentFriendRequestCreatorFromWindow_error :: (IsGKLocalPlayer gkLocalPlayer, IsNSWindow window, IsNSError error_) => gkLocalPlayer -> window -> error_ -> IO Bool
-presentFriendRequestCreatorFromWindow_error gkLocalPlayer  window error_ =
-  withObjCPtr window $ \raw_window ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "presentFriendRequestCreatorFromWindow:error:") retCULong [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+presentFriendRequestCreatorFromWindow_error gkLocalPlayer window error_ =
+  sendMessage gkLocalPlayer presentFriendRequestCreatorFromWindow_errorSelector (toNSWindow window) (toNSError error_)
 
 -- | @- loadFriendsAuthorizationStatus:@
 loadFriendsAuthorizationStatus :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-loadFriendsAuthorizationStatus gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "loadFriendsAuthorizationStatus:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFriendsAuthorizationStatus gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer loadFriendsAuthorizationStatusSelector completionHandler
 
 -- | @- setDefaultLeaderboardCategoryID:completionHandler:@
 setDefaultLeaderboardCategoryID_completionHandler :: (IsGKLocalPlayer gkLocalPlayer, IsNSString categoryID) => gkLocalPlayer -> categoryID -> Ptr () -> IO ()
-setDefaultLeaderboardCategoryID_completionHandler gkLocalPlayer  categoryID completionHandler =
-  withObjCPtr categoryID $ \raw_categoryID ->
-      sendMsg gkLocalPlayer (mkSelector "setDefaultLeaderboardCategoryID:completionHandler:") retVoid [argPtr (castPtr raw_categoryID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setDefaultLeaderboardCategoryID_completionHandler gkLocalPlayer categoryID completionHandler =
+  sendMessage gkLocalPlayer setDefaultLeaderboardCategoryID_completionHandlerSelector (toNSString categoryID) completionHandler
 
 -- | @- loadDefaultLeaderboardCategoryIDWithCompletionHandler:@
 loadDefaultLeaderboardCategoryIDWithCompletionHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-loadDefaultLeaderboardCategoryIDWithCompletionHandler gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "loadDefaultLeaderboardCategoryIDWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadDefaultLeaderboardCategoryIDWithCompletionHandler gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector completionHandler
 
 -- | @- authenticateWithCompletionHandler:@
 authenticateWithCompletionHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-authenticateWithCompletionHandler gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "authenticateWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+authenticateWithCompletionHandler gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer authenticateWithCompletionHandlerSelector completionHandler
 
 -- | Generates a signature allowing 3rd party server to authenticate the GKLocalPlayer    Possible reasons for error:    1. Communications problem    2. Unauthenticated player
 --
 -- ObjC selector: @- generateIdentityVerificationSignatureWithCompletionHandler:@
 generateIdentityVerificationSignatureWithCompletionHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-generateIdentityVerificationSignatureWithCompletionHandler gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "generateIdentityVerificationSignatureWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+generateIdentityVerificationSignatureWithCompletionHandler gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer generateIdentityVerificationSignatureWithCompletionHandlerSelector completionHandler
 
 -- | Load the default leaderboard identifier for the local player    Possible reasons for error:    1. Communications problem    2. Unauthenticated player    3. Leaderboard not present
 --
 -- ObjC selector: @- loadDefaultLeaderboardIdentifierWithCompletionHandler:@
 loadDefaultLeaderboardIdentifierWithCompletionHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-loadDefaultLeaderboardIdentifierWithCompletionHandler gkLocalPlayer  completionHandler =
-    sendMsg gkLocalPlayer (mkSelector "loadDefaultLeaderboardIdentifierWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadDefaultLeaderboardIdentifierWithCompletionHandler gkLocalPlayer completionHandler =
+  sendMessage gkLocalPlayer loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector completionHandler
 
 -- | Set the default leaderboard for the current game    Possible reasons for error:    1. Communications problem    2. Unauthenticated player    3. Leaderboard not present
 --
 -- ObjC selector: @- setDefaultLeaderboardIdentifier:completionHandler:@
 setDefaultLeaderboardIdentifier_completionHandler :: (IsGKLocalPlayer gkLocalPlayer, IsNSString leaderboardIdentifier) => gkLocalPlayer -> leaderboardIdentifier -> Ptr () -> IO ()
-setDefaultLeaderboardIdentifier_completionHandler gkLocalPlayer  leaderboardIdentifier completionHandler =
-  withObjCPtr leaderboardIdentifier $ \raw_leaderboardIdentifier ->
-      sendMsg gkLocalPlayer (mkSelector "setDefaultLeaderboardIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_leaderboardIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setDefaultLeaderboardIdentifier_completionHandler gkLocalPlayer leaderboardIdentifier completionHandler =
+  sendMessage gkLocalPlayer setDefaultLeaderboardIdentifier_completionHandlerSelector (toNSString leaderboardIdentifier) completionHandler
 
 -- | A single listener may be registered once. Registering multiple times results in undefined behavior. The registered listener will receive callbacks for any selector it responds to.
 --
 -- ObjC selector: @- registerListener:@
 registerListener :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> RawId -> IO ()
-registerListener gkLocalPlayer  listener =
-    sendMsg gkLocalPlayer (mkSelector "registerListener:") retVoid [argPtr (castPtr (unRawId listener) :: Ptr ())]
+registerListener gkLocalPlayer listener =
+  sendMessage gkLocalPlayer registerListenerSelector listener
 
 -- | @- unregisterListener:@
 unregisterListener :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> RawId -> IO ()
-unregisterListener gkLocalPlayer  listener =
-    sendMsg gkLocalPlayer (mkSelector "unregisterListener:") retVoid [argPtr (castPtr (unRawId listener) :: Ptr ())]
+unregisterListener gkLocalPlayer listener =
+  sendMessage gkLocalPlayer unregisterListenerSelector listener
 
 -- | @- unregisterAllListeners@
 unregisterAllListeners :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO ()
-unregisterAllListeners gkLocalPlayer  =
-    sendMsg gkLocalPlayer (mkSelector "unregisterAllListeners") retVoid []
+unregisterAllListeners gkLocalPlayer =
+  sendMessage gkLocalPlayer unregisterAllListenersSelector
 
 -- | Obtain the primary GKLocalPlayer object.    The player is only available for offline play until logged in.    A temporary player is created if no account is set up.
 --
@@ -193,168 +181,168 @@ local :: IO (Id GKLocalPlayer)
 local  =
   do
     cls' <- getRequiredClass "GKLocalPlayer"
-    sendClassMsg cls' (mkSelector "local") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' localSelector
 
 -- | @+ localPlayer@
 localPlayer :: IO (Id GKLocalPlayer)
 localPlayer  =
   do
     cls' <- getRequiredClass "GKLocalPlayer"
-    sendClassMsg cls' (mkSelector "localPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' localPlayerSelector
 
 -- | Authentication state
 --
 -- ObjC selector: @- authenticated@
 authenticated :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
-authenticated gkLocalPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "authenticated") retCULong []
+authenticated gkLocalPlayer =
+  sendMessage gkLocalPlayer authenticatedSelector
 
 -- | Indicates if a player is under age
 --
 -- ObjC selector: @- underage@
 underage :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
-underage gkLocalPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "underage") retCULong []
+underage gkLocalPlayer =
+  sendMessage gkLocalPlayer underageSelector
 
 -- | A Boolean value that declares whether or not multiplayer gaming is restricted on this device.
 --
 -- ObjC selector: @- multiplayerGamingRestricted@
 multiplayerGamingRestricted :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
-multiplayerGamingRestricted gkLocalPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "multiplayerGamingRestricted") retCULong []
+multiplayerGamingRestricted gkLocalPlayer =
+  sendMessage gkLocalPlayer multiplayerGamingRestrictedSelector
 
 -- | A Boolean value that declares whether personalized communication is restricted on this device. If it is restricted, the player will not be able to read or write personalized messages on game invites, challenges, or enable voice communication in multiplayer games.  Note: this value will always be true when isUnderage is true.
 --
 -- ObjC selector: @- personalizedCommunicationRestricted@
 personalizedCommunicationRestricted :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
-personalizedCommunicationRestricted gkLocalPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "personalizedCommunicationRestricted") retCULong []
+personalizedCommunicationRestricted gkLocalPlayer =
+  sendMessage gkLocalPlayer personalizedCommunicationRestrictedSelector
 
 -- | @- authenticateHandler@
 authenticateHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO (Ptr ())
-authenticateHandler gkLocalPlayer  =
-    fmap castPtr $ sendMsg gkLocalPlayer (mkSelector "authenticateHandler") (retPtr retVoid) []
+authenticateHandler gkLocalPlayer =
+  sendMessage gkLocalPlayer authenticateHandlerSelector
 
 -- | @- setAuthenticateHandler:@
 setAuthenticateHandler :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> Ptr () -> IO ()
-setAuthenticateHandler gkLocalPlayer  value =
-    sendMsg gkLocalPlayer (mkSelector "setAuthenticateHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAuthenticateHandler gkLocalPlayer value =
+  sendMessage gkLocalPlayer setAuthenticateHandlerSelector value
 
 -- | observable property that becomes true when the friend request view controller is displayed.  It becomes false when it is dismissed
 --
 -- ObjC selector: @- isPresentingFriendRequestViewController@
 isPresentingFriendRequestViewController :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO Bool
-isPresentingFriendRequestViewController gkLocalPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLocalPlayer (mkSelector "isPresentingFriendRequestViewController") retCULong []
+isPresentingFriendRequestViewController gkLocalPlayer =
+  sendMessage gkLocalPlayer isPresentingFriendRequestViewControllerSelector
 
 -- | This property is obsolete. **
 --
 -- ObjC selector: @- friends@
 friends :: IsGKLocalPlayer gkLocalPlayer => gkLocalPlayer -> IO (Id NSArray)
-friends gkLocalPlayer  =
-    sendMsg gkLocalPlayer (mkSelector "friends") (retPtr retVoid) [] >>= retainedObject . castPtr
+friends gkLocalPlayer =
+  sendMessage gkLocalPlayer friendsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchItemsForIdentityVerificationSignature:@
-fetchItemsForIdentityVerificationSignatureSelector :: Selector
+fetchItemsForIdentityVerificationSignatureSelector :: Selector '[Ptr ()] ()
 fetchItemsForIdentityVerificationSignatureSelector = mkSelector "fetchItemsForIdentityVerificationSignature:"
 
 -- | @Selector@ for @saveGameData:withName:completionHandler:@
-saveGameData_withName_completionHandlerSelector :: Selector
+saveGameData_withName_completionHandlerSelector :: Selector '[Id NSData, Id NSString, Ptr ()] ()
 saveGameData_withName_completionHandlerSelector = mkSelector "saveGameData:withName:completionHandler:"
 
 -- | @Selector@ for @deleteSavedGamesWithName:completionHandler:@
-deleteSavedGamesWithName_completionHandlerSelector :: Selector
+deleteSavedGamesWithName_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 deleteSavedGamesWithName_completionHandlerSelector = mkSelector "deleteSavedGamesWithName:completionHandler:"
 
 -- | @Selector@ for @presentFriendRequestCreatorFromViewController:error:@
-presentFriendRequestCreatorFromViewController_errorSelector :: Selector
+presentFriendRequestCreatorFromViewController_errorSelector :: Selector '[Id NSViewController, Id NSError] Bool
 presentFriendRequestCreatorFromViewController_errorSelector = mkSelector "presentFriendRequestCreatorFromViewController:error:"
 
 -- | @Selector@ for @presentFriendRequestCreatorFromWindow:error:@
-presentFriendRequestCreatorFromWindow_errorSelector :: Selector
+presentFriendRequestCreatorFromWindow_errorSelector :: Selector '[Id NSWindow, Id NSError] Bool
 presentFriendRequestCreatorFromWindow_errorSelector = mkSelector "presentFriendRequestCreatorFromWindow:error:"
 
 -- | @Selector@ for @loadFriendsAuthorizationStatus:@
-loadFriendsAuthorizationStatusSelector :: Selector
+loadFriendsAuthorizationStatusSelector :: Selector '[Ptr ()] ()
 loadFriendsAuthorizationStatusSelector = mkSelector "loadFriendsAuthorizationStatus:"
 
 -- | @Selector@ for @setDefaultLeaderboardCategoryID:completionHandler:@
-setDefaultLeaderboardCategoryID_completionHandlerSelector :: Selector
+setDefaultLeaderboardCategoryID_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 setDefaultLeaderboardCategoryID_completionHandlerSelector = mkSelector "setDefaultLeaderboardCategoryID:completionHandler:"
 
 -- | @Selector@ for @loadDefaultLeaderboardCategoryIDWithCompletionHandler:@
-loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector :: Selector
+loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadDefaultLeaderboardCategoryIDWithCompletionHandlerSelector = mkSelector "loadDefaultLeaderboardCategoryIDWithCompletionHandler:"
 
 -- | @Selector@ for @authenticateWithCompletionHandler:@
-authenticateWithCompletionHandlerSelector :: Selector
+authenticateWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 authenticateWithCompletionHandlerSelector = mkSelector "authenticateWithCompletionHandler:"
 
 -- | @Selector@ for @generateIdentityVerificationSignatureWithCompletionHandler:@
-generateIdentityVerificationSignatureWithCompletionHandlerSelector :: Selector
+generateIdentityVerificationSignatureWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 generateIdentityVerificationSignatureWithCompletionHandlerSelector = mkSelector "generateIdentityVerificationSignatureWithCompletionHandler:"
 
 -- | @Selector@ for @loadDefaultLeaderboardIdentifierWithCompletionHandler:@
-loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector :: Selector
+loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadDefaultLeaderboardIdentifierWithCompletionHandlerSelector = mkSelector "loadDefaultLeaderboardIdentifierWithCompletionHandler:"
 
 -- | @Selector@ for @setDefaultLeaderboardIdentifier:completionHandler:@
-setDefaultLeaderboardIdentifier_completionHandlerSelector :: Selector
+setDefaultLeaderboardIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 setDefaultLeaderboardIdentifier_completionHandlerSelector = mkSelector "setDefaultLeaderboardIdentifier:completionHandler:"
 
 -- | @Selector@ for @registerListener:@
-registerListenerSelector :: Selector
+registerListenerSelector :: Selector '[RawId] ()
 registerListenerSelector = mkSelector "registerListener:"
 
 -- | @Selector@ for @unregisterListener:@
-unregisterListenerSelector :: Selector
+unregisterListenerSelector :: Selector '[RawId] ()
 unregisterListenerSelector = mkSelector "unregisterListener:"
 
 -- | @Selector@ for @unregisterAllListeners@
-unregisterAllListenersSelector :: Selector
+unregisterAllListenersSelector :: Selector '[] ()
 unregisterAllListenersSelector = mkSelector "unregisterAllListeners"
 
 -- | @Selector@ for @local@
-localSelector :: Selector
+localSelector :: Selector '[] (Id GKLocalPlayer)
 localSelector = mkSelector "local"
 
 -- | @Selector@ for @localPlayer@
-localPlayerSelector :: Selector
+localPlayerSelector :: Selector '[] (Id GKLocalPlayer)
 localPlayerSelector = mkSelector "localPlayer"
 
 -- | @Selector@ for @authenticated@
-authenticatedSelector :: Selector
+authenticatedSelector :: Selector '[] Bool
 authenticatedSelector = mkSelector "authenticated"
 
 -- | @Selector@ for @underage@
-underageSelector :: Selector
+underageSelector :: Selector '[] Bool
 underageSelector = mkSelector "underage"
 
 -- | @Selector@ for @multiplayerGamingRestricted@
-multiplayerGamingRestrictedSelector :: Selector
+multiplayerGamingRestrictedSelector :: Selector '[] Bool
 multiplayerGamingRestrictedSelector = mkSelector "multiplayerGamingRestricted"
 
 -- | @Selector@ for @personalizedCommunicationRestricted@
-personalizedCommunicationRestrictedSelector :: Selector
+personalizedCommunicationRestrictedSelector :: Selector '[] Bool
 personalizedCommunicationRestrictedSelector = mkSelector "personalizedCommunicationRestricted"
 
 -- | @Selector@ for @authenticateHandler@
-authenticateHandlerSelector :: Selector
+authenticateHandlerSelector :: Selector '[] (Ptr ())
 authenticateHandlerSelector = mkSelector "authenticateHandler"
 
 -- | @Selector@ for @setAuthenticateHandler:@
-setAuthenticateHandlerSelector :: Selector
+setAuthenticateHandlerSelector :: Selector '[Ptr ()] ()
 setAuthenticateHandlerSelector = mkSelector "setAuthenticateHandler:"
 
 -- | @Selector@ for @isPresentingFriendRequestViewController@
-isPresentingFriendRequestViewControllerSelector :: Selector
+isPresentingFriendRequestViewControllerSelector :: Selector '[] Bool
 isPresentingFriendRequestViewControllerSelector = mkSelector "isPresentingFriendRequestViewController"
 
 -- | @Selector@ for @friends@
-friendsSelector :: Selector
+friendsSelector :: Selector '[] (Id NSArray)
 friendsSelector = mkSelector "friends"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Intents.INAirline
   , name
   , iataCode
   , icaoCode
+  , iataCodeSelector
+  , icaoCodeSelector
   , initSelector
   , initWithName_iataCode_icaoCodeSelector
   , nameSelector
-  , iataCodeSelector
-  , icaoCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,53 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINAirline inAirline => inAirline -> IO (Id INAirline)
-init_ inAirline  =
-    sendMsg inAirline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inAirline =
+  sendOwnedMessage inAirline initSelector
 
 -- | @- initWithName:iataCode:icaoCode:@
 initWithName_iataCode_icaoCode :: (IsINAirline inAirline, IsNSString name, IsNSString iataCode, IsNSString icaoCode) => inAirline -> name -> iataCode -> icaoCode -> IO (Id INAirline)
-initWithName_iataCode_icaoCode inAirline  name iataCode icaoCode =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr iataCode $ \raw_iataCode ->
-      withObjCPtr icaoCode $ \raw_icaoCode ->
-          sendMsg inAirline (mkSelector "initWithName:iataCode:icaoCode:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_iataCode :: Ptr ()), argPtr (castPtr raw_icaoCode :: Ptr ())] >>= ownedObject . castPtr
+initWithName_iataCode_icaoCode inAirline name iataCode icaoCode =
+  sendOwnedMessage inAirline initWithName_iataCode_icaoCodeSelector (toNSString name) (toNSString iataCode) (toNSString icaoCode)
 
 -- | @- name@
 name :: IsINAirline inAirline => inAirline -> IO (Id NSString)
-name inAirline  =
-    sendMsg inAirline (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name inAirline =
+  sendMessage inAirline nameSelector
 
 -- | @- iataCode@
 iataCode :: IsINAirline inAirline => inAirline -> IO (Id NSString)
-iataCode inAirline  =
-    sendMsg inAirline (mkSelector "iataCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+iataCode inAirline =
+  sendMessage inAirline iataCodeSelector
 
 -- | @- icaoCode@
 icaoCode :: IsINAirline inAirline => inAirline -> IO (Id NSString)
-icaoCode inAirline  =
-    sendMsg inAirline (mkSelector "icaoCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+icaoCode inAirline =
+  sendMessage inAirline icaoCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INAirline)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithName:iataCode:icaoCode:@
-initWithName_iataCode_icaoCodeSelector :: Selector
+initWithName_iataCode_icaoCodeSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id INAirline)
 initWithName_iataCode_icaoCodeSelector = mkSelector "initWithName:iataCode:icaoCode:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @iataCode@
-iataCodeSelector :: Selector
+iataCodeSelector :: Selector '[] (Id NSString)
 iataCodeSelector = mkSelector "iataCode"
 
 -- | @Selector@ for @icaoCode@
-icaoCodeSelector :: Selector
+icaoCodeSelector :: Selector '[] (Id NSString)
 icaoCodeSelector = mkSelector "icaoCode"
 

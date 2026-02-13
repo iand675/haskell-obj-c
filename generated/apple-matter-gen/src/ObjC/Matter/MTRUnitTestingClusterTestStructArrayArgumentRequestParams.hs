@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,34 +24,30 @@ module ObjC.Matter.MTRUnitTestingClusterTestStructArrayArgumentRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , arg1Selector
-  , setArg1Selector
   , arg2Selector
-  , setArg2Selector
   , arg3Selector
-  , setArg3Selector
   , arg4Selector
-  , setArg4Selector
   , arg5Selector
-  , setArg5Selector
   , arg6Selector
-  , setArg6Selector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setArg1Selector
+  , setArg2Selector
+  , setArg3Selector
+  , setArg4Selector
+  , setArg5Selector
+  , setArg6Selector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,69 +56,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arg1@
 arg1 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSArray)
-arg1 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg1") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg1 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg1Selector
 
 -- | @- setArg1:@
 setArg1 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSArray value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg1 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg1 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg1Selector (toNSArray value)
 
 -- | @- arg2@
 arg2 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSArray)
-arg2 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg2") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg2 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg2Selector
 
 -- | @- setArg2:@
 setArg2 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSArray value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg2 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg2:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg2 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg2Selector (toNSArray value)
 
 -- | @- arg3@
 arg3 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSArray)
-arg3 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg3") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg3 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg3Selector
 
 -- | @- setArg3:@
 setArg3 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSArray value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg3 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg3:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg3 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg3Selector (toNSArray value)
 
 -- | @- arg4@
 arg4 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSArray)
-arg4 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg4") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg4 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg4Selector
 
 -- | @- setArg4:@
 setArg4 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSArray value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg4 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg4:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg4 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg4Selector (toNSArray value)
 
 -- | @- arg5@
 arg5 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSNumber)
-arg5 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg5") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg5 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg5Selector
 
 -- | @- setArg5:@
 setArg5 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg5 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg5:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg5 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg5Selector (toNSNumber value)
 
 -- | @- arg6@
 arg6 :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSNumber)
-arg6 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "arg6") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg6 mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams arg6Selector
 
 -- | @- setArg6:@
 setArg6 :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setArg6 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setArg6:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg6 mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setArg6Selector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -131,8 +122,8 @@ setArg6 mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -142,9 +133,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParams  
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -154,8 +144,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterTestStructArrayArgumentRequestParam
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterTestStructArrayArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterTestStructArrayArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -165,75 +155,74 @@ serverSideProcessingTimeout mtrUnitTestingClusterTestStructArrayArgumentRequestP
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterTestStructArrayArgumentRequestParams mtrUnitTestingClusterTestStructArrayArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestStructArrayArgumentRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterTestStructArrayArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestStructArrayArgumentRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterTestStructArrayArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestStructArrayArgumentRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arg1@
-arg1Selector :: Selector
+arg1Selector :: Selector '[] (Id NSArray)
 arg1Selector = mkSelector "arg1"
 
 -- | @Selector@ for @setArg1:@
-setArg1Selector :: Selector
+setArg1Selector :: Selector '[Id NSArray] ()
 setArg1Selector = mkSelector "setArg1:"
 
 -- | @Selector@ for @arg2@
-arg2Selector :: Selector
+arg2Selector :: Selector '[] (Id NSArray)
 arg2Selector = mkSelector "arg2"
 
 -- | @Selector@ for @setArg2:@
-setArg2Selector :: Selector
+setArg2Selector :: Selector '[Id NSArray] ()
 setArg2Selector = mkSelector "setArg2:"
 
 -- | @Selector@ for @arg3@
-arg3Selector :: Selector
+arg3Selector :: Selector '[] (Id NSArray)
 arg3Selector = mkSelector "arg3"
 
 -- | @Selector@ for @setArg3:@
-setArg3Selector :: Selector
+setArg3Selector :: Selector '[Id NSArray] ()
 setArg3Selector = mkSelector "setArg3:"
 
 -- | @Selector@ for @arg4@
-arg4Selector :: Selector
+arg4Selector :: Selector '[] (Id NSArray)
 arg4Selector = mkSelector "arg4"
 
 -- | @Selector@ for @setArg4:@
-setArg4Selector :: Selector
+setArg4Selector :: Selector '[Id NSArray] ()
 setArg4Selector = mkSelector "setArg4:"
 
 -- | @Selector@ for @arg5@
-arg5Selector :: Selector
+arg5Selector :: Selector '[] (Id NSNumber)
 arg5Selector = mkSelector "arg5"
 
 -- | @Selector@ for @setArg5:@
-setArg5Selector :: Selector
+setArg5Selector :: Selector '[Id NSNumber] ()
 setArg5Selector = mkSelector "setArg5:"
 
 -- | @Selector@ for @arg6@
-arg6Selector :: Selector
+arg6Selector :: Selector '[] (Id NSNumber)
 arg6Selector = mkSelector "arg6"
 
 -- | @Selector@ for @setArg6:@
-setArg6Selector :: Selector
+setArg6Selector :: Selector '[Id NSNumber] ()
 setArg6Selector = mkSelector "setArg6:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

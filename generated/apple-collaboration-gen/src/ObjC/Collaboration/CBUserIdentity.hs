@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Collaboration.CBUserIdentity
   , posixUID
   , certificate
   , enabled
-  , userIdentityWithPosixUID_authoritySelector
   , authenticateWithPasswordSelector
-  , posixUIDSelector
   , certificateSelector
   , enabledSelector
+  , posixUIDSelector
+  , userIdentityWithPosixUID_authoritySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ userIdentityWithPosixUID_authority :: IsCBIdentityAuthority authority => CUInt -
 userIdentityWithPosixUID_authority uid authority =
   do
     cls' <- getRequiredClass "CBUserIdentity"
-    withObjCPtr authority $ \raw_authority ->
-      sendClassMsg cls' (mkSelector "userIdentityWithPosixUID:authority:") (retPtr retVoid) [argCUInt uid, argPtr (castPtr raw_authority :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' userIdentityWithPosixUID_authoritySelector uid (toCBIdentityAuthority authority)
 
 -- | Returns a Boolean value indicating whether the given password is correct for the identity.
 --
@@ -61,9 +57,8 @@ userIdentityWithPosixUID_authority uid authority =
 --
 -- ObjC selector: @- authenticateWithPassword:@
 authenticateWithPassword :: (IsCBUserIdentity cbUserIdentity, IsNSString password) => cbUserIdentity -> password -> IO Bool
-authenticateWithPassword cbUserIdentity  password =
-  withObjCPtr password $ \raw_password ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbUserIdentity (mkSelector "authenticateWithPassword:") retCULong [argPtr (castPtr raw_password :: Ptr ())]
+authenticateWithPassword cbUserIdentity password =
+  sendMessage cbUserIdentity authenticateWithPasswordSelector (toNSString password)
 
 -- | Returns the POSIX UID of the identity.
 --
@@ -73,8 +68,8 @@ authenticateWithPassword cbUserIdentity  password =
 --
 -- ObjC selector: @- posixUID@
 posixUID :: IsCBUserIdentity cbUserIdentity => cbUserIdentity -> IO CUInt
-posixUID cbUserIdentity  =
-    sendMsg cbUserIdentity (mkSelector "posixUID") retCUInt []
+posixUID cbUserIdentity =
+  sendMessage cbUserIdentity posixUIDSelector
 
 -- | Returns the public authentication certificate associated with a user identity.
 --
@@ -86,8 +81,8 @@ posixUID cbUserIdentity  =
 --
 -- ObjC selector: @- certificate@
 certificate :: IsCBUserIdentity cbUserIdentity => cbUserIdentity -> IO (Ptr ())
-certificate cbUserIdentity  =
-    fmap castPtr $ sendMsg cbUserIdentity (mkSelector "certificate") (retPtr retVoid) []
+certificate cbUserIdentity =
+  sendMessage cbUserIdentity certificateSelector
 
 -- | Returns a Boolean value indicating whether the identity is allowed to authenticate.
 --
@@ -97,30 +92,30 @@ certificate cbUserIdentity  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsCBUserIdentity cbUserIdentity => cbUserIdentity -> IO Bool
-enabled cbUserIdentity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbUserIdentity (mkSelector "enabled") retCULong []
+enabled cbUserIdentity =
+  sendMessage cbUserIdentity enabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @userIdentityWithPosixUID:authority:@
-userIdentityWithPosixUID_authoritySelector :: Selector
+userIdentityWithPosixUID_authoritySelector :: Selector '[CUInt, Id CBIdentityAuthority] (Id CBUserIdentity)
 userIdentityWithPosixUID_authoritySelector = mkSelector "userIdentityWithPosixUID:authority:"
 
 -- | @Selector@ for @authenticateWithPassword:@
-authenticateWithPasswordSelector :: Selector
+authenticateWithPasswordSelector :: Selector '[Id NSString] Bool
 authenticateWithPasswordSelector = mkSelector "authenticateWithPassword:"
 
 -- | @Selector@ for @posixUID@
-posixUIDSelector :: Selector
+posixUIDSelector :: Selector '[] CUInt
 posixUIDSelector = mkSelector "posixUID"
 
 -- | @Selector@ for @certificate@
-certificateSelector :: Selector
+certificateSelector :: Selector '[] (Ptr ())
 certificateSelector = mkSelector "certificate"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 

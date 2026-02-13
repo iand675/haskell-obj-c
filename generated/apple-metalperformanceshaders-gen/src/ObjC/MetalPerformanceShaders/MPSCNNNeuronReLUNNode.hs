@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuronReLUNNode
   , initWithSource_a_b
   , nodeWithSource
   , initWithSource
-  , nodeWithSource_a_bSelector
+  , initWithSourceSelector
   , initWithSource_a_bSelector
   , nodeWithSourceSelector
-  , initWithSourceSelector
+  , nodeWithSource_a_bSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,14 +41,12 @@ nodeWithSource_a_b :: IsMPSNNImageNode sourceNode => sourceNode -> CFloat -> CFl
 nodeWithSource_a_b sourceNode a b =
   do
     cls' <- getRequiredClass "MPSCNNNeuronReLUNNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:a:b:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat a, argCFloat b] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_a_bSelector (toMPSNNImageNode sourceNode) a b
 
 -- | @- initWithSource:a:b:@
 initWithSource_a_b :: (IsMPSCNNNeuronReLUNNode mpscnnNeuronReLUNNode, IsMPSNNImageNode sourceNode) => mpscnnNeuronReLUNNode -> sourceNode -> CFloat -> CFloat -> IO (Id MPSCNNNeuronReLUNNode)
-initWithSource_a_b mpscnnNeuronReLUNNode  sourceNode a b =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnNeuronReLUNNode (mkSelector "initWithSource:a:b:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat a, argCFloat b] >>= ownedObject . castPtr
+initWithSource_a_b mpscnnNeuronReLUNNode sourceNode a b =
+  sendOwnedMessage mpscnnNeuronReLUNNode initWithSource_a_bSelector (toMPSNNImageNode sourceNode) a b
 
 -- | Create an autoreleased node with default values for parameters a & b
 --
@@ -60,34 +55,32 @@ nodeWithSource :: IsMPSNNImageNode sourceNode => sourceNode -> IO (Id MPSCNNNeur
 nodeWithSource sourceNode =
   do
     cls' <- getRequiredClass "MPSCNNNeuronReLUNNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | Create an autoreleased node with default values for parameters a & b
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsMPSCNNNeuronReLUNNode mpscnnNeuronReLUNNode, IsMPSNNImageNode sourceNode) => mpscnnNeuronReLUNNode -> sourceNode -> IO (Id MPSCNNNeuronReLUNNode)
-initWithSource mpscnnNeuronReLUNNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnNeuronReLUNNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnNeuronReLUNNode sourceNode =
+  sendOwnedMessage mpscnnNeuronReLUNNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:a:b:@
-nodeWithSource_a_bSelector :: Selector
+nodeWithSource_a_bSelector :: Selector '[Id MPSNNImageNode, CFloat, CFloat] (Id MPSCNNNeuronReLUNNode)
 nodeWithSource_a_bSelector = mkSelector "nodeWithSource:a:b:"
 
 -- | @Selector@ for @initWithSource:a:b:@
-initWithSource_a_bSelector :: Selector
+initWithSource_a_bSelector :: Selector '[Id MPSNNImageNode, CFloat, CFloat] (Id MPSCNNNeuronReLUNNode)
 initWithSource_a_bSelector = mkSelector "initWithSource:a:b:"
 
 -- | @Selector@ for @nodeWithSource:@
-nodeWithSourceSelector :: Selector
+nodeWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNeuronReLUNNode)
 nodeWithSourceSelector = mkSelector "nodeWithSource:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNeuronReLUNNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 

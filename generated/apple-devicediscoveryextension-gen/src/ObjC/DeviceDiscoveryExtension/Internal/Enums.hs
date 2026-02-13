@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.DeviceDiscoveryExtension.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Category of the device.
 -- | @DDDeviceCategory@
@@ -38,6 +41,16 @@ pattern DDDeviceCategoryDesktopComputer = DDDeviceCategory 5
 pattern DDDeviceCategoryAccessorySetup :: DDDeviceCategory
 pattern DDDeviceCategoryAccessorySetup = DDDeviceCategory 6
 
+instance ObjCArgument DDDeviceCategory where
+  withObjCArg (DDDeviceCategory x) k = k (argCLong x)
+
+instance ObjCReturn DDDeviceCategory where
+  type RawReturn DDDeviceCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceCategory x)
+  fromOwned x = pure (DDDeviceCategory x)
+
 -- | State of media playback on the device.
 -- | @DDDeviceMediaPlaybackState@
 newtype DDDeviceMediaPlaybackState = DDDeviceMediaPlaybackState CLong
@@ -53,6 +66,16 @@ pattern DDDeviceMediaPlaybackStatePaused = DDDeviceMediaPlaybackState 1
 pattern DDDeviceMediaPlaybackStatePlaying :: DDDeviceMediaPlaybackState
 pattern DDDeviceMediaPlaybackStatePlaying = DDDeviceMediaPlaybackState 2
 
+instance ObjCArgument DDDeviceMediaPlaybackState where
+  withObjCArg (DDDeviceMediaPlaybackState x) k = k (argCLong x)
+
+instance ObjCReturn DDDeviceMediaPlaybackState where
+  type RawReturn DDDeviceMediaPlaybackState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceMediaPlaybackState x)
+  fromOwned x = pure (DDDeviceMediaPlaybackState x)
+
 -- | @DDDeviceProtocol@
 newtype DDDeviceProtocol = DDDeviceProtocol CLong
   deriving stock (Eq, Ord, Show)
@@ -63,6 +86,16 @@ pattern DDDeviceProtocolInvalid = DDDeviceProtocol 0
 
 pattern DDDeviceProtocolDIAL :: DDDeviceProtocol
 pattern DDDeviceProtocolDIAL = DDDeviceProtocol 1
+
+instance ObjCArgument DDDeviceProtocol where
+  withObjCArg (DDDeviceProtocol x) k = k (argCLong x)
+
+instance ObjCReturn DDDeviceProtocol where
+  type RawReturn DDDeviceProtocol = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceProtocol x)
+  fromOwned x = pure (DDDeviceProtocol x)
 
 -- | State of the device.
 -- | @DDDeviceState@
@@ -85,6 +118,16 @@ pattern DDDeviceStateAuthorized = DDDeviceState 25
 pattern DDDeviceStateInvalidating :: DDDeviceState
 pattern DDDeviceStateInvalidating = DDDeviceState 30
 
+instance ObjCArgument DDDeviceState where
+  withObjCArg (DDDeviceState x) k = k (argCLong x)
+
+instance ObjCReturn DDDeviceState where
+  type RawReturn DDDeviceState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceState x)
+  fromOwned x = pure (DDDeviceState x)
+
 -- | Device Support
 -- | @DDDeviceSupports@ (bitmask)
 newtype DDDeviceSupports = DDDeviceSupports CULong
@@ -106,6 +149,16 @@ pattern DDDeviceSupportsBluetoothTransportBridging = DDDeviceSupports 4
 pattern DDDeviceSupportsBluetoothHID :: DDDeviceSupports
 pattern DDDeviceSupportsBluetoothHID = DDDeviceSupports 8
 
+instance ObjCArgument DDDeviceSupports where
+  withObjCArg (DDDeviceSupports x) k = k (argCULong x)
+
+instance ObjCReturn DDDeviceSupports where
+  type RawReturn DDDeviceSupports = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceSupports x)
+  fromOwned x = pure (DDDeviceSupports x)
+
 -- | Wi-Fi Aware Service's Role
 -- | @DDDeviceWiFiAwareServiceRole@
 newtype DDDeviceWiFiAwareServiceRole = DDDeviceWiFiAwareServiceRole CLong
@@ -117,6 +170,16 @@ pattern DDDeviceWiFiAwareServiceRoleSubscriber = DDDeviceWiFiAwareServiceRole 10
 
 pattern DDDeviceWiFiAwareServiceRolePublisher :: DDDeviceWiFiAwareServiceRole
 pattern DDDeviceWiFiAwareServiceRolePublisher = DDDeviceWiFiAwareServiceRole 20
+
+instance ObjCArgument DDDeviceWiFiAwareServiceRole where
+  withObjCArg (DDDeviceWiFiAwareServiceRole x) k = k (argCLong x)
+
+instance ObjCReturn DDDeviceWiFiAwareServiceRole where
+  type RawReturn DDDeviceWiFiAwareServiceRole = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDDeviceWiFiAwareServiceRole x)
+  fromOwned x = pure (DDDeviceWiFiAwareServiceRole x)
 
 -- | Error codes used with DDErrorDomain. DeviceDiscoveryExtension error code range: 350000-350999.
 -- | @DDErrorCode@
@@ -151,6 +214,16 @@ pattern DDErrorCodePermission = DDErrorCode 350006
 pattern DDErrorCodeNext :: DDErrorCode
 pattern DDErrorCodeNext = DDErrorCode 350007
 
+instance ObjCArgument DDErrorCode where
+  withObjCArg (DDErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn DDErrorCode where
+  type RawReturn DDErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDErrorCode x)
+  fromOwned x = pure (DDErrorCode x)
+
 -- | Type of event.
 -- | @DDEventType@
 newtype DDEventType = DDEventType CLong
@@ -168,3 +241,13 @@ pattern DDEventTypeDeviceLost = DDEventType 41
 
 pattern DDEventTypeDeviceChanged :: DDEventType
 pattern DDEventTypeDeviceChanged = DDEventType 42
+
+instance ObjCArgument DDEventType where
+  withObjCArg (DDEventType x) k = k (argCLong x)
+
+instance ObjCReturn DDEventType where
+  type RawReturn DDEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DDEventType x)
+  fromOwned x = pure (DDEventType x)

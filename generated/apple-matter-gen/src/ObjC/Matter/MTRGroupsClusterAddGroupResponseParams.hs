@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.MTRGroupsClusterAddGroupResponseParams
   , setTimedInvokeTimeoutMs
   , groupId
   , setGroupId
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , groupIDSelector
-  , setGroupIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , groupIdSelector
+  , initWithResponseValue_errorSelector
+  , setGroupIDSelector
   , setGroupIdSelector
+  , setStatusSelector
+  , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,32 +48,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrGroupsClusterAddGroupResponseParams -> responseValue -> error_ -> IO (Id MTRGroupsClusterAddGroupResponseParams)
-initWithResponseValue_error mtrGroupsClusterAddGroupResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrGroupsClusterAddGroupResponseParams responseValue error_ =
+  sendOwnedMessage mtrGroupsClusterAddGroupResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams => mtrGroupsClusterAddGroupResponseParams -> IO (Id NSNumber)
-status mtrGroupsClusterAddGroupResponseParams  =
-    sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrGroupsClusterAddGroupResponseParams =
+  sendMessage mtrGroupsClusterAddGroupResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams, IsNSNumber value) => mtrGroupsClusterAddGroupResponseParams -> value -> IO ()
-setStatus mtrGroupsClusterAddGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrGroupsClusterAddGroupResponseParams value =
+  sendMessage mtrGroupsClusterAddGroupResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- groupID@
 groupID :: IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams => mtrGroupsClusterAddGroupResponseParams -> IO (Id NSNumber)
-groupID mtrGroupsClusterAddGroupResponseParams  =
-    sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupsClusterAddGroupResponseParams =
+  sendMessage mtrGroupsClusterAddGroupResponseParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams, IsNSNumber value) => mtrGroupsClusterAddGroupResponseParams -> value -> IO ()
-setGroupID mtrGroupsClusterAddGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupsClusterAddGroupResponseParams value =
+  sendMessage mtrGroupsClusterAddGroupResponseParams setGroupIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +79,8 @@ setGroupID mtrGroupsClusterAddGroupResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams => mtrGroupsClusterAddGroupResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupsClusterAddGroupResponseParams  =
-    sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupsClusterAddGroupResponseParams =
+  sendMessage mtrGroupsClusterAddGroupResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,58 +90,56 @@ timedInvokeTimeoutMs mtrGroupsClusterAddGroupResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams, IsNSNumber value) => mtrGroupsClusterAddGroupResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupsClusterAddGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupsClusterAddGroupResponseParams value =
+  sendMessage mtrGroupsClusterAddGroupResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | @- groupId@
 groupId :: IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams => mtrGroupsClusterAddGroupResponseParams -> IO (Id NSNumber)
-groupId mtrGroupsClusterAddGroupResponseParams  =
-    sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "groupId") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupId mtrGroupsClusterAddGroupResponseParams =
+  sendMessage mtrGroupsClusterAddGroupResponseParams groupIdSelector
 
 -- | @- setGroupId:@
 setGroupId :: (IsMTRGroupsClusterAddGroupResponseParams mtrGroupsClusterAddGroupResponseParams, IsNSNumber value) => mtrGroupsClusterAddGroupResponseParams -> value -> IO ()
-setGroupId mtrGroupsClusterAddGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterAddGroupResponseParams (mkSelector "setGroupId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupId mtrGroupsClusterAddGroupResponseParams value =
+  sendMessage mtrGroupsClusterAddGroupResponseParams setGroupIdSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRGroupsClusterAddGroupResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @groupId@
-groupIdSelector :: Selector
+groupIdSelector :: Selector '[] (Id NSNumber)
 groupIdSelector = mkSelector "groupId"
 
 -- | @Selector@ for @setGroupId:@
-setGroupIdSelector :: Selector
+setGroupIdSelector :: Selector '[Id NSNumber] ()
 setGroupIdSelector = mkSelector "setGroupId:"
 

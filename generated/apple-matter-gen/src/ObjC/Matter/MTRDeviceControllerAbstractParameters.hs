@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Matter.MTRDeviceControllerAbstractParameters
   , setStartSuspended
   , initSelector
   , newSelector
-  , startSuspendedSelector
   , setStartSuspendedSelector
+  , startSuspendedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRDeviceControllerAbstractParameters mtrDeviceControllerAbstractParameters => mtrDeviceControllerAbstractParameters -> IO (Id MTRDeviceControllerAbstractParameters)
-init_ mtrDeviceControllerAbstractParameters  =
-    sendMsg mtrDeviceControllerAbstractParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceControllerAbstractParameters =
+  sendOwnedMessage mtrDeviceControllerAbstractParameters initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDeviceControllerAbstractParameters)
 new  =
   do
     cls' <- getRequiredClass "MTRDeviceControllerAbstractParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Whether the controller should start out suspended.
 --
@@ -53,8 +50,8 @@ new  =
 --
 -- ObjC selector: @- startSuspended@
 startSuspended :: IsMTRDeviceControllerAbstractParameters mtrDeviceControllerAbstractParameters => mtrDeviceControllerAbstractParameters -> IO Bool
-startSuspended mtrDeviceControllerAbstractParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceControllerAbstractParameters (mkSelector "startSuspended") retCULong []
+startSuspended mtrDeviceControllerAbstractParameters =
+  sendMessage mtrDeviceControllerAbstractParameters startSuspendedSelector
 
 -- | Whether the controller should start out suspended.
 --
@@ -62,26 +59,26 @@ startSuspended mtrDeviceControllerAbstractParameters  =
 --
 -- ObjC selector: @- setStartSuspended:@
 setStartSuspended :: IsMTRDeviceControllerAbstractParameters mtrDeviceControllerAbstractParameters => mtrDeviceControllerAbstractParameters -> Bool -> IO ()
-setStartSuspended mtrDeviceControllerAbstractParameters  value =
-    sendMsg mtrDeviceControllerAbstractParameters (mkSelector "setStartSuspended:") retVoid [argCULong (if value then 1 else 0)]
+setStartSuspended mtrDeviceControllerAbstractParameters value =
+  sendMessage mtrDeviceControllerAbstractParameters setStartSuspendedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceControllerAbstractParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDeviceControllerAbstractParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startSuspended@
-startSuspendedSelector :: Selector
+startSuspendedSelector :: Selector '[] Bool
 startSuspendedSelector = mkSelector "startSuspended"
 
 -- | @Selector@ for @setStartSuspended:@
-setStartSuspendedSelector :: Selector
+setStartSuspendedSelector :: Selector '[Bool] ()
 setStartSuspendedSelector = mkSelector "setStartSuspended:"
 

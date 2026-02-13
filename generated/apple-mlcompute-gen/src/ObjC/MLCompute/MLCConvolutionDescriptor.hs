@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,30 +37,30 @@ module ObjC.MLCompute.MLCConvolutionDescriptor
   , paddingSizeInY
   , isConvolutionTranspose
   , usesDepthwiseConvolution
-  , descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector
-  , descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector
-  , descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector
-  , descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector
-  , convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector
-  , convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector
   , convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector
-  , depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector
-  , depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector
-  , depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector
+  , convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector
+  , convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector
   , convolutionTypeSelector
-  , kernelWidthSelector
-  , kernelHeightSelector
-  , inputFeatureChannelCountSelector
-  , outputFeatureChannelCountSelector
-  , strideInXSelector
-  , strideInYSelector
+  , depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector
+  , depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector
+  , depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector
+  , descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector
+  , descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector
+  , descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector
+  , descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector
   , dilationRateInXSelector
   , dilationRateInYSelector
   , groupCountSelector
+  , inputFeatureChannelCountSelector
+  , isConvolutionTransposeSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
+  , outputFeatureChannelCountSelector
   , paddingPolicySelector
   , paddingSizeInXSelector
   , paddingSizeInYSelector
-  , isConvolutionTransposeSelector
+  , strideInXSelector
+  , strideInYSelector
   , usesDepthwiseConvolutionSelector
 
   -- * Enum types
@@ -74,15 +75,11 @@ module ObjC.MLCompute.MLCConvolutionDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -117,11 +114,7 @@ descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCoun
 descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizes convolutionType kernelSizes inputFeatureChannelCount outputFeatureChannelCount groupCount strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "descriptorWithType:kernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argCInt (coerce convolutionType), argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argCULong groupCount, argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector convolutionType (toNSArray kernelSizes) inputFeatureChannelCount outputFeatureChannelCount groupCount (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object
 --
@@ -140,7 +133,7 @@ descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureCha
 descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCount kernelWidth kernelHeight inputFeatureChannelCount outputFeatureChannelCount =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector kernelWidth kernelHeight inputFeatureChannelCount outputFeatureChannelCount
 
 -- | Create a MLCConvolutionDescriptor object
 --
@@ -163,10 +156,7 @@ descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_str
 descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount outputFeatureChannelCount strides paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount outputFeatureChannelCount (toNSArray strides) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object
 --
@@ -193,11 +183,7 @@ descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_gro
 descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount outputFeatureChannelCount groupCount strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argCULong groupCount, argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount outputFeatureChannelCount groupCount (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object for convolution transpose
 --
@@ -216,7 +202,7 @@ convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCo
 convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCount kernelWidth kernelHeight inputFeatureChannelCount outputFeatureChannelCount =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    sendClassMsg cls' (mkSelector "convolutionTransposeDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector kernelWidth kernelHeight inputFeatureChannelCount outputFeatureChannelCount
 
 -- | Create a MLCConvolutionDescriptor object for convolution transpose
 --
@@ -239,10 +225,7 @@ convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFea
 convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount outputFeatureChannelCount strides paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount outputFeatureChannelCount (toNSArray strides) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object for convolution transpose
 --
@@ -269,11 +252,7 @@ convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFea
 convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount outputFeatureChannelCount groupCount strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argCULong groupCount, argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount outputFeatureChannelCount groupCount (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object for depthwise convolution
 --
@@ -292,7 +271,7 @@ depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCo
 depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplier kernelWidth kernelHeight inputFeatureChannelCount channelMultiplier =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    sendClassMsg cls' (mkSelector "depthwiseConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:channelMultiplier:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong inputFeatureChannelCount, argCULong channelMultiplier] >>= retainedObject . castPtr
+    sendClassMessage cls' depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector kernelWidth kernelHeight inputFeatureChannelCount channelMultiplier
 
 -- | Create a MLCConvolutionDescriptor object for depthwise convolution
 --
@@ -315,10 +294,7 @@ depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMu
 depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount channelMultiplier strides paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong channelMultiplier, argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount channelMultiplier (toNSArray strides) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCConvolutionDescriptor object for depthwise convolution
 --
@@ -343,11 +319,7 @@ depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMu
 depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizes kernelSizes inputFeatureChannelCount channelMultiplier strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCConvolutionDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong inputFeatureChannelCount, argCULong channelMultiplier, argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) inputFeatureChannelCount channelMultiplier (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | convolutionType
 --
@@ -355,8 +327,8 @@ depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMu
 --
 -- ObjC selector: @- convolutionType@
 convolutionType :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO MLCConvolutionType
-convolutionType mlcConvolutionDescriptor  =
-    fmap (coerce :: CInt -> MLCConvolutionType) $ sendMsg mlcConvolutionDescriptor (mkSelector "convolutionType") retCInt []
+convolutionType mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor convolutionTypeSelector
 
 -- | kernelWidth
 --
@@ -364,8 +336,8 @@ convolutionType mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-kernelWidth mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "kernelWidth") retCULong []
+kernelWidth mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor kernelWidthSelector
 
 -- | kernelHeight
 --
@@ -373,8 +345,8 @@ kernelWidth mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-kernelHeight mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "kernelHeight") retCULong []
+kernelHeight mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor kernelHeightSelector
 
 -- | inputFeatureChannelCount
 --
@@ -382,8 +354,8 @@ kernelHeight mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- inputFeatureChannelCount@
 inputFeatureChannelCount :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-inputFeatureChannelCount mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "inputFeatureChannelCount") retCULong []
+inputFeatureChannelCount mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor inputFeatureChannelCountSelector
 
 -- | outputFeatureChannelCount
 --
@@ -391,8 +363,8 @@ inputFeatureChannelCount mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- outputFeatureChannelCount@
 outputFeatureChannelCount :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-outputFeatureChannelCount mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "outputFeatureChannelCount") retCULong []
+outputFeatureChannelCount mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor outputFeatureChannelCountSelector
 
 -- | strideInX
 --
@@ -400,8 +372,8 @@ outputFeatureChannelCount mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-strideInX mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "strideInX") retCULong []
+strideInX mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor strideInXSelector
 
 -- | strideInY
 --
@@ -409,8 +381,8 @@ strideInX mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-strideInY mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "strideInY") retCULong []
+strideInY mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor strideInYSelector
 
 -- | dilationRateInX
 --
@@ -418,8 +390,8 @@ strideInY mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- dilationRateInX@
 dilationRateInX :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-dilationRateInX mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "dilationRateInX") retCULong []
+dilationRateInX mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor dilationRateInXSelector
 
 -- | dilationRateInY
 --
@@ -427,8 +399,8 @@ dilationRateInX mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- dilationRateInY@
 dilationRateInY :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-dilationRateInY mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "dilationRateInY") retCULong []
+dilationRateInY mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor dilationRateInYSelector
 
 -- | groupCount
 --
@@ -436,8 +408,8 @@ dilationRateInY mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- groupCount@
 groupCount :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-groupCount mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "groupCount") retCULong []
+groupCount mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor groupCountSelector
 
 -- | paddingPolicy
 --
@@ -445,8 +417,8 @@ groupCount mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- paddingPolicy@
 paddingPolicy :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO MLCPaddingPolicy
-paddingPolicy mlcConvolutionDescriptor  =
-    fmap (coerce :: CInt -> MLCPaddingPolicy) $ sendMsg mlcConvolutionDescriptor (mkSelector "paddingPolicy") retCInt []
+paddingPolicy mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor paddingPolicySelector
 
 -- | paddingSizeInX
 --
@@ -454,8 +426,8 @@ paddingPolicy mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- paddingSizeInX@
 paddingSizeInX :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-paddingSizeInX mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "paddingSizeInX") retCULong []
+paddingSizeInX mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor paddingSizeInXSelector
 
 -- | paddingSizeInY
 --
@@ -463,8 +435,8 @@ paddingSizeInX mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- paddingSizeInY@
 paddingSizeInY :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO CULong
-paddingSizeInY mlcConvolutionDescriptor  =
-    sendMsg mlcConvolutionDescriptor (mkSelector "paddingSizeInY") retCULong []
+paddingSizeInY mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor paddingSizeInYSelector
 
 -- | isConvolutionTranspose
 --
@@ -472,8 +444,8 @@ paddingSizeInY mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- isConvolutionTranspose@
 isConvolutionTranspose :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO Bool
-isConvolutionTranspose mlcConvolutionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcConvolutionDescriptor (mkSelector "isConvolutionTranspose") retCULong []
+isConvolutionTranspose mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor isConvolutionTransposeSelector
 
 -- | usesDepthwiseConvolution
 --
@@ -481,110 +453,110 @@ isConvolutionTranspose mlcConvolutionDescriptor  =
 --
 -- ObjC selector: @- usesDepthwiseConvolution@
 usesDepthwiseConvolution :: IsMLCConvolutionDescriptor mlcConvolutionDescriptor => mlcConvolutionDescriptor -> IO Bool
-usesDepthwiseConvolution mlcConvolutionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcConvolutionDescriptor (mkSelector "usesDepthwiseConvolution") retCULong []
+usesDepthwiseConvolution mlcConvolutionDescriptor =
+  sendMessage mlcConvolutionDescriptor usesDepthwiseConvolutionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithType:kernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:@
-descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[MLCConvolutionType, Id NSArray, CULong, CULong, CULong, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 descriptorWithType_kernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "descriptorWithType:kernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @descriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:@
-descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector :: Selector
+descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector :: Selector '[CULong, CULong, CULong, CULong] (Id MLCConvolutionDescriptor)
 descriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector = mkSelector "descriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:"
 
 -- | @Selector@ for @descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:@
-descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector :: Selector
+descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector = mkSelector "descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:@
-descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, CULong, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 descriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "descriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @convolutionTransposeDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:@
-convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector :: Selector
+convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector :: Selector '[CULong, CULong, CULong, CULong] (Id MLCConvolutionDescriptor)
 convolutionTransposeDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_outputFeatureChannelCountSelector = mkSelector "convolutionTransposeDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:outputFeatureChannelCount:"
 
 -- | @Selector@ for @convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:@
-convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector :: Selector
+convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_strides_paddingPolicy_paddingSizesSelector = mkSelector "convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:strides:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:@
-convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, CULong, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 convolutionTransposeDescriptorWithKernelSizes_inputFeatureChannelCount_outputFeatureChannelCount_groupCount_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "convolutionTransposeDescriptorWithKernelSizes:inputFeatureChannelCount:outputFeatureChannelCount:groupCount:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @depthwiseConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:channelMultiplier:@
-depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector :: Selector
+depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector :: Selector '[CULong, CULong, CULong, CULong] (Id MLCConvolutionDescriptor)
 depthwiseConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannelCount_channelMultiplierSelector = mkSelector "depthwiseConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannelCount:channelMultiplier:"
 
 -- | @Selector@ for @depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:paddingPolicy:paddingSizes:@
-depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector :: Selector
+depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_paddingPolicy_paddingSizesSelector = mkSelector "depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:dilationRates:paddingPolicy:paddingSizes:@
-depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, CULong, CULong, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCConvolutionDescriptor)
 depthwiseConvolutionDescriptorWithKernelSizes_inputFeatureChannelCount_channelMultiplier_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "depthwiseConvolutionDescriptorWithKernelSizes:inputFeatureChannelCount:channelMultiplier:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @convolutionType@
-convolutionTypeSelector :: Selector
+convolutionTypeSelector :: Selector '[] MLCConvolutionType
 convolutionTypeSelector = mkSelector "convolutionType"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @inputFeatureChannelCount@
-inputFeatureChannelCountSelector :: Selector
+inputFeatureChannelCountSelector :: Selector '[] CULong
 inputFeatureChannelCountSelector = mkSelector "inputFeatureChannelCount"
 
 -- | @Selector@ for @outputFeatureChannelCount@
-outputFeatureChannelCountSelector :: Selector
+outputFeatureChannelCountSelector :: Selector '[] CULong
 outputFeatureChannelCountSelector = mkSelector "outputFeatureChannelCount"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @dilationRateInX@
-dilationRateInXSelector :: Selector
+dilationRateInXSelector :: Selector '[] CULong
 dilationRateInXSelector = mkSelector "dilationRateInX"
 
 -- | @Selector@ for @dilationRateInY@
-dilationRateInYSelector :: Selector
+dilationRateInYSelector :: Selector '[] CULong
 dilationRateInYSelector = mkSelector "dilationRateInY"
 
 -- | @Selector@ for @groupCount@
-groupCountSelector :: Selector
+groupCountSelector :: Selector '[] CULong
 groupCountSelector = mkSelector "groupCount"
 
 -- | @Selector@ for @paddingPolicy@
-paddingPolicySelector :: Selector
+paddingPolicySelector :: Selector '[] MLCPaddingPolicy
 paddingPolicySelector = mkSelector "paddingPolicy"
 
 -- | @Selector@ for @paddingSizeInX@
-paddingSizeInXSelector :: Selector
+paddingSizeInXSelector :: Selector '[] CULong
 paddingSizeInXSelector = mkSelector "paddingSizeInX"
 
 -- | @Selector@ for @paddingSizeInY@
-paddingSizeInYSelector :: Selector
+paddingSizeInYSelector :: Selector '[] CULong
 paddingSizeInYSelector = mkSelector "paddingSizeInY"
 
 -- | @Selector@ for @isConvolutionTranspose@
-isConvolutionTransposeSelector :: Selector
+isConvolutionTransposeSelector :: Selector '[] Bool
 isConvolutionTransposeSelector = mkSelector "isConvolutionTranspose"
 
 -- | @Selector@ for @usesDepthwiseConvolution@
-usesDepthwiseConvolutionSelector :: Selector
+usesDepthwiseConvolutionSelector :: Selector '[] Bool
 usesDepthwiseConvolutionSelector = mkSelector "usesDepthwiseConvolution"
 

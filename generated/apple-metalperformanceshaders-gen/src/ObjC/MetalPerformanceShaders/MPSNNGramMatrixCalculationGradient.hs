@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.MetalPerformanceShaders.MPSNNGramMatrixCalculationGradient
   , initWithDevice
   , alpha
   , setAlpha
-  , initWithCoder_deviceSelector
-  , initWithDevice_alphaSelector
-  , initWithDeviceSelector
   , alphaSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_alphaSelector
   , setAlphaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNGramMatrixCalculationGradient mpsnnGramMatrixCalculationGradient, IsNSCoder aDecoder) => mpsnnGramMatrixCalculationGradient -> aDecoder -> RawId -> IO (Id MPSNNGramMatrixCalculationGradient)
-initWithCoder_device mpsnnGramMatrixCalculationGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnGramMatrixCalculationGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnGramMatrixCalculationGradient aDecoder device =
+  sendOwnedMessage mpsnnGramMatrixCalculationGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Initializes a MPSNNGramMatrixCalculationGradient kernel.
 --
@@ -67,8 +63,8 @@ initWithCoder_device mpsnnGramMatrixCalculationGradient  aDecoder device =
 --
 -- ObjC selector: @- initWithDevice:alpha:@
 initWithDevice_alpha :: IsMPSNNGramMatrixCalculationGradient mpsnnGramMatrixCalculationGradient => mpsnnGramMatrixCalculationGradient -> RawId -> CFloat -> IO (Id MPSNNGramMatrixCalculationGradient)
-initWithDevice_alpha mpsnnGramMatrixCalculationGradient  device alpha =
-    sendMsg mpsnnGramMatrixCalculationGradient (mkSelector "initWithDevice:alpha:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat alpha] >>= ownedObject . castPtr
+initWithDevice_alpha mpsnnGramMatrixCalculationGradient device alpha =
+  sendOwnedMessage mpsnnGramMatrixCalculationGradient initWithDevice_alphaSelector device alpha
 
 -- | Initializes a MPSNNGramMatrixCalculationGradient kernel with scaling factor alpha = 1.0f.
 --
@@ -78,8 +74,8 @@ initWithDevice_alpha mpsnnGramMatrixCalculationGradient  device alpha =
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNGramMatrixCalculationGradient mpsnnGramMatrixCalculationGradient => mpsnnGramMatrixCalculationGradient -> RawId -> IO (Id MPSNNGramMatrixCalculationGradient)
-initWithDevice mpsnnGramMatrixCalculationGradient  device =
-    sendMsg mpsnnGramMatrixCalculationGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnGramMatrixCalculationGradient device =
+  sendOwnedMessage mpsnnGramMatrixCalculationGradient initWithDeviceSelector device
 
 -- | alpha
 --
@@ -87,8 +83,8 @@ initWithDevice mpsnnGramMatrixCalculationGradient  device =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSNNGramMatrixCalculationGradient mpsnnGramMatrixCalculationGradient => mpsnnGramMatrixCalculationGradient -> IO CFloat
-alpha mpsnnGramMatrixCalculationGradient  =
-    sendMsg mpsnnGramMatrixCalculationGradient (mkSelector "alpha") retCFloat []
+alpha mpsnnGramMatrixCalculationGradient =
+  sendMessage mpsnnGramMatrixCalculationGradient alphaSelector
 
 -- | alpha
 --
@@ -96,30 +92,30 @@ alpha mpsnnGramMatrixCalculationGradient  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSNNGramMatrixCalculationGradient mpsnnGramMatrixCalculationGradient => mpsnnGramMatrixCalculationGradient -> CFloat -> IO ()
-setAlpha mpsnnGramMatrixCalculationGradient  value =
-    sendMsg mpsnnGramMatrixCalculationGradient (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpsnnGramMatrixCalculationGradient value =
+  sendMessage mpsnnGramMatrixCalculationGradient setAlphaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNGramMatrixCalculationGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:alpha:@
-initWithDevice_alphaSelector :: Selector
+initWithDevice_alphaSelector :: Selector '[RawId, CFloat] (Id MPSNNGramMatrixCalculationGradient)
 initWithDevice_alphaSelector = mkSelector "initWithDevice:alpha:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNGramMatrixCalculationGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 

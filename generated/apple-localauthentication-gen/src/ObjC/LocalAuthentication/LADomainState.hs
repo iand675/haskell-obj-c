@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.LocalAuthentication.LADomainState
   , biometry
   , companion
   , stateHash
-  , newSelector
-  , initSelector
   , biometrySelector
   , companionSelector
+  , initSelector
+  , newSelector
   , stateHashSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,26 +37,26 @@ new :: IO (Id LADomainState)
 new  =
   do
     cls' <- getRequiredClass "LADomainState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsLADomainState laDomainState => laDomainState -> IO (Id LADomainState)
-init_ laDomainState  =
-    sendMsg laDomainState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laDomainState =
+  sendOwnedMessage laDomainState initSelector
 
 -- | Contains biometric domain state.
 --
 -- ObjC selector: @- biometry@
 biometry :: IsLADomainState laDomainState => laDomainState -> IO (Id LADomainStateBiometry)
-biometry laDomainState  =
-    sendMsg laDomainState (mkSelector "biometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+biometry laDomainState =
+  sendMessage laDomainState biometrySelector
 
 -- | Contains companion domain state.
 --
 -- ObjC selector: @- companion@
 companion :: IsLADomainState laDomainState => laDomainState -> IO (Id LADomainStateCompanion)
-companion laDomainState  =
-    sendMsg laDomainState (mkSelector "companion") (retPtr retVoid) [] >>= retainedObject . castPtr
+companion laDomainState =
+  sendMessage laDomainState companionSelector
 
 -- | Contains combined state hash data for biometry and companion state hashes.
 --
@@ -67,30 +64,30 @@ companion laDomainState  =
 --
 -- ObjC selector: @- stateHash@
 stateHash :: IsLADomainState laDomainState => laDomainState -> IO (Id NSData)
-stateHash laDomainState  =
-    sendMsg laDomainState (mkSelector "stateHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateHash laDomainState =
+  sendMessage laDomainState stateHashSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LADomainState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LADomainState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @biometry@
-biometrySelector :: Selector
+biometrySelector :: Selector '[] (Id LADomainStateBiometry)
 biometrySelector = mkSelector "biometry"
 
 -- | @Selector@ for @companion@
-companionSelector :: Selector
+companionSelector :: Selector '[] (Id LADomainStateCompanion)
 companionSelector = mkSelector "companion"
 
 -- | @Selector@ for @stateHash@
-stateHashSelector :: Selector
+stateHashSelector :: Selector '[] (Id NSData)
 stateHashSelector = mkSelector "stateHash"
 

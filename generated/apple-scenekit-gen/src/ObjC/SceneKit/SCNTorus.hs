@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.SceneKit.SCNTorus
   , setRingSegmentCount
   , pipeSegmentCount
   , setPipeSegmentCount
-  , torusWithRingRadius_pipeRadiusSelector
-  , ringRadiusSelector
-  , setRingRadiusSelector
   , pipeRadiusSelector
-  , setPipeRadiusSelector
-  , ringSegmentCountSelector
-  , setRingSegmentCountSelector
   , pipeSegmentCountSelector
+  , ringRadiusSelector
+  , ringSegmentCountSelector
+  , setPipeRadiusSelector
   , setPipeSegmentCountSelector
+  , setRingRadiusSelector
+  , setRingSegmentCountSelector
+  , torusWithRingRadius_pipeRadiusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,7 +57,7 @@ torusWithRingRadius_pipeRadius :: CDouble -> CDouble -> IO (Id SCNTorus)
 torusWithRingRadius_pipeRadius ringRadius pipeRadius =
   do
     cls' <- getRequiredClass "SCNTorus"
-    sendClassMsg cls' (mkSelector "torusWithRingRadius:pipeRadius:") (retPtr retVoid) [argCDouble ringRadius, argCDouble pipeRadius] >>= retainedObject . castPtr
+    sendClassMessage cls' torusWithRingRadius_pipeRadiusSelector ringRadius pipeRadius
 
 -- | ringRadius
 --
@@ -70,8 +67,8 @@ torusWithRingRadius_pipeRadius ringRadius pipeRadius =
 --
 -- ObjC selector: @- ringRadius@
 ringRadius :: IsSCNTorus scnTorus => scnTorus -> IO CDouble
-ringRadius scnTorus  =
-    sendMsg scnTorus (mkSelector "ringRadius") retCDouble []
+ringRadius scnTorus =
+  sendMessage scnTorus ringRadiusSelector
 
 -- | ringRadius
 --
@@ -81,8 +78,8 @@ ringRadius scnTorus  =
 --
 -- ObjC selector: @- setRingRadius:@
 setRingRadius :: IsSCNTorus scnTorus => scnTorus -> CDouble -> IO ()
-setRingRadius scnTorus  value =
-    sendMsg scnTorus (mkSelector "setRingRadius:") retVoid [argCDouble value]
+setRingRadius scnTorus value =
+  sendMessage scnTorus setRingRadiusSelector value
 
 -- | pipeRadius
 --
@@ -92,8 +89,8 @@ setRingRadius scnTorus  value =
 --
 -- ObjC selector: @- pipeRadius@
 pipeRadius :: IsSCNTorus scnTorus => scnTorus -> IO CDouble
-pipeRadius scnTorus  =
-    sendMsg scnTorus (mkSelector "pipeRadius") retCDouble []
+pipeRadius scnTorus =
+  sendMessage scnTorus pipeRadiusSelector
 
 -- | pipeRadius
 --
@@ -103,8 +100,8 @@ pipeRadius scnTorus  =
 --
 -- ObjC selector: @- setPipeRadius:@
 setPipeRadius :: IsSCNTorus scnTorus => scnTorus -> CDouble -> IO ()
-setPipeRadius scnTorus  value =
-    sendMsg scnTorus (mkSelector "setPipeRadius:") retVoid [argCDouble value]
+setPipeRadius scnTorus value =
+  sendMessage scnTorus setPipeRadiusSelector value
 
 -- | ringSegmentCount
 --
@@ -114,8 +111,8 @@ setPipeRadius scnTorus  value =
 --
 -- ObjC selector: @- ringSegmentCount@
 ringSegmentCount :: IsSCNTorus scnTorus => scnTorus -> IO CLong
-ringSegmentCount scnTorus  =
-    sendMsg scnTorus (mkSelector "ringSegmentCount") retCLong []
+ringSegmentCount scnTorus =
+  sendMessage scnTorus ringSegmentCountSelector
 
 -- | ringSegmentCount
 --
@@ -125,8 +122,8 @@ ringSegmentCount scnTorus  =
 --
 -- ObjC selector: @- setRingSegmentCount:@
 setRingSegmentCount :: IsSCNTorus scnTorus => scnTorus -> CLong -> IO ()
-setRingSegmentCount scnTorus  value =
-    sendMsg scnTorus (mkSelector "setRingSegmentCount:") retVoid [argCLong value]
+setRingSegmentCount scnTorus value =
+  sendMessage scnTorus setRingSegmentCountSelector value
 
 -- | pipeSegmentCount
 --
@@ -136,8 +133,8 @@ setRingSegmentCount scnTorus  value =
 --
 -- ObjC selector: @- pipeSegmentCount@
 pipeSegmentCount :: IsSCNTorus scnTorus => scnTorus -> IO CLong
-pipeSegmentCount scnTorus  =
-    sendMsg scnTorus (mkSelector "pipeSegmentCount") retCLong []
+pipeSegmentCount scnTorus =
+  sendMessage scnTorus pipeSegmentCountSelector
 
 -- | pipeSegmentCount
 --
@@ -147,46 +144,46 @@ pipeSegmentCount scnTorus  =
 --
 -- ObjC selector: @- setPipeSegmentCount:@
 setPipeSegmentCount :: IsSCNTorus scnTorus => scnTorus -> CLong -> IO ()
-setPipeSegmentCount scnTorus  value =
-    sendMsg scnTorus (mkSelector "setPipeSegmentCount:") retVoid [argCLong value]
+setPipeSegmentCount scnTorus value =
+  sendMessage scnTorus setPipeSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @torusWithRingRadius:pipeRadius:@
-torusWithRingRadius_pipeRadiusSelector :: Selector
+torusWithRingRadius_pipeRadiusSelector :: Selector '[CDouble, CDouble] (Id SCNTorus)
 torusWithRingRadius_pipeRadiusSelector = mkSelector "torusWithRingRadius:pipeRadius:"
 
 -- | @Selector@ for @ringRadius@
-ringRadiusSelector :: Selector
+ringRadiusSelector :: Selector '[] CDouble
 ringRadiusSelector = mkSelector "ringRadius"
 
 -- | @Selector@ for @setRingRadius:@
-setRingRadiusSelector :: Selector
+setRingRadiusSelector :: Selector '[CDouble] ()
 setRingRadiusSelector = mkSelector "setRingRadius:"
 
 -- | @Selector@ for @pipeRadius@
-pipeRadiusSelector :: Selector
+pipeRadiusSelector :: Selector '[] CDouble
 pipeRadiusSelector = mkSelector "pipeRadius"
 
 -- | @Selector@ for @setPipeRadius:@
-setPipeRadiusSelector :: Selector
+setPipeRadiusSelector :: Selector '[CDouble] ()
 setPipeRadiusSelector = mkSelector "setPipeRadius:"
 
 -- | @Selector@ for @ringSegmentCount@
-ringSegmentCountSelector :: Selector
+ringSegmentCountSelector :: Selector '[] CLong
 ringSegmentCountSelector = mkSelector "ringSegmentCount"
 
 -- | @Selector@ for @setRingSegmentCount:@
-setRingSegmentCountSelector :: Selector
+setRingSegmentCountSelector :: Selector '[CLong] ()
 setRingSegmentCountSelector = mkSelector "setRingSegmentCount:"
 
 -- | @Selector@ for @pipeSegmentCount@
-pipeSegmentCountSelector :: Selector
+pipeSegmentCountSelector :: Selector '[] CLong
 pipeSegmentCountSelector = mkSelector "pipeSegmentCount"
 
 -- | @Selector@ for @setPipeSegmentCount:@
-setPipeSegmentCountSelector :: Selector
+setPipeSegmentCountSelector :: Selector '[CLong] ()
 setPipeSegmentCountSelector = mkSelector "setPipeSegmentCount:"
 

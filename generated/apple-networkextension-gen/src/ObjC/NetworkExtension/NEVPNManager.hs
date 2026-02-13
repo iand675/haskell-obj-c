@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,37 +33,33 @@ module ObjC.NetworkExtension.NEVPNManager
   , connection
   , enabled
   , setEnabled
-  , sharedManagerSelector
+  , connectionSelector
+  , enabledSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , onDemandEnabledSelector
+  , onDemandRulesSelector
+  , protocolConfigurationSelector
+  , protocolSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
   , setAuthorizationSelector
-  , onDemandRulesSelector
-  , setOnDemandRulesSelector
-  , onDemandEnabledSelector
-  , setOnDemandEnabledSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , protocolSelector
-  , setProtocolSelector
-  , protocolConfigurationSelector
-  , setProtocolConfigurationSelector
-  , connectionSelector
-  , enabledSelector
   , setEnabledSelector
+  , setLocalizedDescriptionSelector
+  , setOnDemandEnabledSelector
+  , setOnDemandRulesSelector
+  , setProtocolConfigurationSelector
+  , setProtocolSelector
+  , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,7 +75,7 @@ sharedManager :: IO (Id NEVPNManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NEVPNManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | loadFromPreferencesWithCompletionHandler:
 --
@@ -88,8 +85,8 @@ sharedManager  =
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNEVPNManager nevpnManager => nevpnManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler nevpnManager  completionHandler =
-    sendMsg nevpnManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler nevpnManager completionHandler =
+  sendMessage nevpnManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -99,8 +96,8 @@ loadFromPreferencesWithCompletionHandler nevpnManager  completionHandler =
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNEVPNManager nevpnManager => nevpnManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler nevpnManager  completionHandler =
-    sendMsg nevpnManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler nevpnManager completionHandler =
+  sendMessage nevpnManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -110,8 +107,8 @@ removeFromPreferencesWithCompletionHandler nevpnManager  completionHandler =
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNEVPNManager nevpnManager => nevpnManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler nevpnManager  completionHandler =
-    sendMsg nevpnManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler nevpnManager completionHandler =
+  sendMessage nevpnManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | setAuthorization:
 --
@@ -121,8 +118,8 @@ saveToPreferencesWithCompletionHandler nevpnManager  completionHandler =
 --
 -- ObjC selector: @- setAuthorization:@
 setAuthorization :: IsNEVPNManager nevpnManager => nevpnManager -> RawId -> IO ()
-setAuthorization nevpnManager  authorization =
-    sendMsg nevpnManager (mkSelector "setAuthorization:") retVoid [argPtr (castPtr (unRawId authorization) :: Ptr ())]
+setAuthorization nevpnManager authorization =
+  sendMessage nevpnManager setAuthorizationSelector authorization
 
 -- | onDemandRules
 --
@@ -130,8 +127,8 @@ setAuthorization nevpnManager  authorization =
 --
 -- ObjC selector: @- onDemandRules@
 onDemandRules :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NSArray)
-onDemandRules nevpnManager  =
-    sendMsg nevpnManager (mkSelector "onDemandRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+onDemandRules nevpnManager =
+  sendMessage nevpnManager onDemandRulesSelector
 
 -- | onDemandRules
 --
@@ -139,9 +136,8 @@ onDemandRules nevpnManager  =
 --
 -- ObjC selector: @- setOnDemandRules:@
 setOnDemandRules :: (IsNEVPNManager nevpnManager, IsNSArray value) => nevpnManager -> value -> IO ()
-setOnDemandRules nevpnManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnManager (mkSelector "setOnDemandRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOnDemandRules nevpnManager value =
+  sendMessage nevpnManager setOnDemandRulesSelector (toNSArray value)
 
 -- | onDemandEnabled
 --
@@ -149,8 +145,8 @@ setOnDemandRules nevpnManager  value =
 --
 -- ObjC selector: @- onDemandEnabled@
 onDemandEnabled :: IsNEVPNManager nevpnManager => nevpnManager -> IO Bool
-onDemandEnabled nevpnManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnManager (mkSelector "onDemandEnabled") retCULong []
+onDemandEnabled nevpnManager =
+  sendMessage nevpnManager onDemandEnabledSelector
 
 -- | onDemandEnabled
 --
@@ -158,8 +154,8 @@ onDemandEnabled nevpnManager  =
 --
 -- ObjC selector: @- setOnDemandEnabled:@
 setOnDemandEnabled :: IsNEVPNManager nevpnManager => nevpnManager -> Bool -> IO ()
-setOnDemandEnabled nevpnManager  value =
-    sendMsg nevpnManager (mkSelector "setOnDemandEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setOnDemandEnabled nevpnManager value =
+  sendMessage nevpnManager setOnDemandEnabledSelector value
 
 -- | localizedDescription
 --
@@ -167,8 +163,8 @@ setOnDemandEnabled nevpnManager  value =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NSString)
-localizedDescription nevpnManager  =
-    sendMsg nevpnManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription nevpnManager =
+  sendMessage nevpnManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -176,9 +172,8 @@ localizedDescription nevpnManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNEVPNManager nevpnManager, IsNSString value) => nevpnManager -> value -> IO ()
-setLocalizedDescription nevpnManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription nevpnManager value =
+  sendMessage nevpnManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | protocol
 --
@@ -186,8 +181,8 @@ setLocalizedDescription nevpnManager  value =
 --
 -- ObjC selector: @- protocol@
 protocol :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NEVPNProtocol)
-protocol nevpnManager  =
-    sendMsg nevpnManager (mkSelector "protocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocol nevpnManager =
+  sendMessage nevpnManager protocolSelector
 
 -- | protocol
 --
@@ -195,9 +190,8 @@ protocol nevpnManager  =
 --
 -- ObjC selector: @- setProtocol:@
 setProtocol :: (IsNEVPNManager nevpnManager, IsNEVPNProtocol value) => nevpnManager -> value -> IO ()
-setProtocol nevpnManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnManager (mkSelector "setProtocol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProtocol nevpnManager value =
+  sendMessage nevpnManager setProtocolSelector (toNEVPNProtocol value)
 
 -- | protocolConfiguration
 --
@@ -205,8 +199,8 @@ setProtocol nevpnManager  value =
 --
 -- ObjC selector: @- protocolConfiguration@
 protocolConfiguration :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NEVPNProtocol)
-protocolConfiguration nevpnManager  =
-    sendMsg nevpnManager (mkSelector "protocolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocolConfiguration nevpnManager =
+  sendMessage nevpnManager protocolConfigurationSelector
 
 -- | protocolConfiguration
 --
@@ -214,9 +208,8 @@ protocolConfiguration nevpnManager  =
 --
 -- ObjC selector: @- setProtocolConfiguration:@
 setProtocolConfiguration :: (IsNEVPNManager nevpnManager, IsNEVPNProtocol value) => nevpnManager -> value -> IO ()
-setProtocolConfiguration nevpnManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnManager (mkSelector "setProtocolConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProtocolConfiguration nevpnManager value =
+  sendMessage nevpnManager setProtocolConfigurationSelector (toNEVPNProtocol value)
 
 -- | connection
 --
@@ -224,8 +217,8 @@ setProtocolConfiguration nevpnManager  value =
 --
 -- ObjC selector: @- connection@
 connection :: IsNEVPNManager nevpnManager => nevpnManager -> IO (Id NEVPNConnection)
-connection nevpnManager  =
-    sendMsg nevpnManager (mkSelector "connection") (retPtr retVoid) [] >>= retainedObject . castPtr
+connection nevpnManager =
+  sendMessage nevpnManager connectionSelector
 
 -- | enabled
 --
@@ -233,8 +226,8 @@ connection nevpnManager  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNEVPNManager nevpnManager => nevpnManager -> IO Bool
-enabled nevpnManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnManager (mkSelector "enabled") retCULong []
+enabled nevpnManager =
+  sendMessage nevpnManager enabledSelector
 
 -- | enabled
 --
@@ -242,82 +235,82 @@ enabled nevpnManager  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNEVPNManager nevpnManager => nevpnManager -> Bool -> IO ()
-setEnabled nevpnManager  value =
-    sendMsg nevpnManager (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nevpnManager value =
+  sendMessage nevpnManager setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NEVPNManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @setAuthorization:@
-setAuthorizationSelector :: Selector
+setAuthorizationSelector :: Selector '[RawId] ()
 setAuthorizationSelector = mkSelector "setAuthorization:"
 
 -- | @Selector@ for @onDemandRules@
-onDemandRulesSelector :: Selector
+onDemandRulesSelector :: Selector '[] (Id NSArray)
 onDemandRulesSelector = mkSelector "onDemandRules"
 
 -- | @Selector@ for @setOnDemandRules:@
-setOnDemandRulesSelector :: Selector
+setOnDemandRulesSelector :: Selector '[Id NSArray] ()
 setOnDemandRulesSelector = mkSelector "setOnDemandRules:"
 
 -- | @Selector@ for @onDemandEnabled@
-onDemandEnabledSelector :: Selector
+onDemandEnabledSelector :: Selector '[] Bool
 onDemandEnabledSelector = mkSelector "onDemandEnabled"
 
 -- | @Selector@ for @setOnDemandEnabled:@
-setOnDemandEnabledSelector :: Selector
+setOnDemandEnabledSelector :: Selector '[Bool] ()
 setOnDemandEnabledSelector = mkSelector "setOnDemandEnabled:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] (Id NEVPNProtocol)
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @setProtocol:@
-setProtocolSelector :: Selector
+setProtocolSelector :: Selector '[Id NEVPNProtocol] ()
 setProtocolSelector = mkSelector "setProtocol:"
 
 -- | @Selector@ for @protocolConfiguration@
-protocolConfigurationSelector :: Selector
+protocolConfigurationSelector :: Selector '[] (Id NEVPNProtocol)
 protocolConfigurationSelector = mkSelector "protocolConfiguration"
 
 -- | @Selector@ for @setProtocolConfiguration:@
-setProtocolConfigurationSelector :: Selector
+setProtocolConfigurationSelector :: Selector '[Id NEVPNProtocol] ()
 setProtocolConfigurationSelector = mkSelector "setProtocolConfiguration:"
 
 -- | @Selector@ for @connection@
-connectionSelector :: Selector
+connectionSelector :: Selector '[] (Id NEVPNConnection)
 connectionSelector = mkSelector "connection"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,37 +27,33 @@ module ObjC.SpriteKit.SKRenderer
   , setShowsPhysics
   , showsFields
   , setShowsFields
-  , rendererWithDeviceSelector
-  , updateAtTimeSelector
-  , sceneSelector
-  , setSceneSelector
   , ignoresSiblingOrderSelector
+  , rendererWithDeviceSelector
+  , sceneSelector
   , setIgnoresSiblingOrderSelector
-  , shouldCullNonVisibleNodesSelector
+  , setSceneSelector
   , setShouldCullNonVisibleNodesSelector
-  , showsDrawCountSelector
   , setShowsDrawCountSelector
-  , showsNodeCountSelector
-  , setShowsNodeCountSelector
-  , showsQuadCountSelector
-  , setShowsQuadCountSelector
-  , showsPhysicsSelector
-  , setShowsPhysicsSelector
-  , showsFieldsSelector
   , setShowsFieldsSelector
+  , setShowsNodeCountSelector
+  , setShowsPhysicsSelector
+  , setShowsQuadCountSelector
+  , shouldCullNonVisibleNodesSelector
+  , showsDrawCountSelector
+  , showsFieldsSelector
+  , showsNodeCountSelector
+  , showsPhysicsSelector
+  , showsQuadCountSelector
+  , updateAtTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,7 +72,7 @@ rendererWithDevice :: RawId -> IO (Id SKRenderer)
 rendererWithDevice device =
   do
     cls' <- getRequiredClass "SKRenderer"
-    sendClassMsg cls' (mkSelector "rendererWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rendererWithDeviceSelector device
 
 -- | Update the scene at the specified system time.
 --
@@ -83,23 +80,22 @@ rendererWithDevice device =
 --
 -- ObjC selector: @- updateAtTime:@
 updateAtTime :: IsSKRenderer skRenderer => skRenderer -> CDouble -> IO ()
-updateAtTime skRenderer  currentTime =
-    sendMsg skRenderer (mkSelector "updateAtTime:") retVoid [argCDouble currentTime]
+updateAtTime skRenderer currentTime =
+  sendMessage skRenderer updateAtTimeSelector currentTime
 
 -- | The currently presented scene, otherwise nil. If in a transition, the 'incoming' scene is returned.
 --
 -- ObjC selector: @- scene@
 scene :: IsSKRenderer skRenderer => skRenderer -> IO (Id SKScene)
-scene skRenderer  =
-    sendMsg skRenderer (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+scene skRenderer =
+  sendMessage skRenderer sceneSelector
 
 -- | The currently presented scene, otherwise nil. If in a transition, the 'incoming' scene is returned.
 --
 -- ObjC selector: @- setScene:@
 setScene :: (IsSKRenderer skRenderer, IsSKScene value) => skRenderer -> value -> IO ()
-setScene skRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skRenderer (mkSelector "setScene:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScene skRenderer value =
+  sendMessage skRenderer setSceneSelector (toSKScene value)
 
 -- | Ignores sibling and traversal order to sort the rendered contents of a scene into the most efficient batching possible. This will require zPosition to be used in the scenes to properly guarantee elements are in front or behind each other.
 --
@@ -109,8 +105,8 @@ setScene skRenderer  value =
 --
 -- ObjC selector: @- ignoresSiblingOrder@
 ignoresSiblingOrder :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-ignoresSiblingOrder skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "ignoresSiblingOrder") retCULong []
+ignoresSiblingOrder skRenderer =
+  sendMessage skRenderer ignoresSiblingOrderSelector
 
 -- | Ignores sibling and traversal order to sort the rendered contents of a scene into the most efficient batching possible. This will require zPosition to be used in the scenes to properly guarantee elements are in front or behind each other.
 --
@@ -120,150 +116,150 @@ ignoresSiblingOrder skRenderer  =
 --
 -- ObjC selector: @- setIgnoresSiblingOrder:@
 setIgnoresSiblingOrder :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setIgnoresSiblingOrder skRenderer  value =
-    sendMsg skRenderer (mkSelector "setIgnoresSiblingOrder:") retVoid [argCULong (if value then 1 else 0)]
+setIgnoresSiblingOrder skRenderer value =
+  sendMessage skRenderer setIgnoresSiblingOrderSelector value
 
 -- | A boolean that indicated whether non-visible nodes should be automatically culled when rendering.
 --
 -- ObjC selector: @- shouldCullNonVisibleNodes@
 shouldCullNonVisibleNodes :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-shouldCullNonVisibleNodes skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "shouldCullNonVisibleNodes") retCULong []
+shouldCullNonVisibleNodes skRenderer =
+  sendMessage skRenderer shouldCullNonVisibleNodesSelector
 
 -- | A boolean that indicated whether non-visible nodes should be automatically culled when rendering.
 --
 -- ObjC selector: @- setShouldCullNonVisibleNodes:@
 setShouldCullNonVisibleNodes :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShouldCullNonVisibleNodes skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShouldCullNonVisibleNodes:") retVoid [argCULong (if value then 1 else 0)]
+setShouldCullNonVisibleNodes skRenderer value =
+  sendMessage skRenderer setShouldCullNonVisibleNodesSelector value
 
 -- | Toggles display of performance stats when rendering. All default to false.
 --
 -- ObjC selector: @- showsDrawCount@
 showsDrawCount :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-showsDrawCount skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "showsDrawCount") retCULong []
+showsDrawCount skRenderer =
+  sendMessage skRenderer showsDrawCountSelector
 
 -- | Toggles display of performance stats when rendering. All default to false.
 --
 -- ObjC selector: @- setShowsDrawCount:@
 setShowsDrawCount :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShowsDrawCount skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShowsDrawCount:") retVoid [argCULong (if value then 1 else 0)]
+setShowsDrawCount skRenderer value =
+  sendMessage skRenderer setShowsDrawCountSelector value
 
 -- | @- showsNodeCount@
 showsNodeCount :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-showsNodeCount skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "showsNodeCount") retCULong []
+showsNodeCount skRenderer =
+  sendMessage skRenderer showsNodeCountSelector
 
 -- | @- setShowsNodeCount:@
 setShowsNodeCount :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShowsNodeCount skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShowsNodeCount:") retVoid [argCULong (if value then 1 else 0)]
+setShowsNodeCount skRenderer value =
+  sendMessage skRenderer setShowsNodeCountSelector value
 
 -- | @- showsQuadCount@
 showsQuadCount :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-showsQuadCount skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "showsQuadCount") retCULong []
+showsQuadCount skRenderer =
+  sendMessage skRenderer showsQuadCountSelector
 
 -- | @- setShowsQuadCount:@
 setShowsQuadCount :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShowsQuadCount skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShowsQuadCount:") retVoid [argCULong (if value then 1 else 0)]
+setShowsQuadCount skRenderer value =
+  sendMessage skRenderer setShowsQuadCountSelector value
 
 -- | @- showsPhysics@
 showsPhysics :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-showsPhysics skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "showsPhysics") retCULong []
+showsPhysics skRenderer =
+  sendMessage skRenderer showsPhysicsSelector
 
 -- | @- setShowsPhysics:@
 setShowsPhysics :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShowsPhysics skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShowsPhysics:") retVoid [argCULong (if value then 1 else 0)]
+setShowsPhysics skRenderer value =
+  sendMessage skRenderer setShowsPhysicsSelector value
 
 -- | @- showsFields@
 showsFields :: IsSKRenderer skRenderer => skRenderer -> IO Bool
-showsFields skRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skRenderer (mkSelector "showsFields") retCULong []
+showsFields skRenderer =
+  sendMessage skRenderer showsFieldsSelector
 
 -- | @- setShowsFields:@
 setShowsFields :: IsSKRenderer skRenderer => skRenderer -> Bool -> IO ()
-setShowsFields skRenderer  value =
-    sendMsg skRenderer (mkSelector "setShowsFields:") retVoid [argCULong (if value then 1 else 0)]
+setShowsFields skRenderer value =
+  sendMessage skRenderer setShowsFieldsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rendererWithDevice:@
-rendererWithDeviceSelector :: Selector
+rendererWithDeviceSelector :: Selector '[RawId] (Id SKRenderer)
 rendererWithDeviceSelector = mkSelector "rendererWithDevice:"
 
 -- | @Selector@ for @updateAtTime:@
-updateAtTimeSelector :: Selector
+updateAtTimeSelector :: Selector '[CDouble] ()
 updateAtTimeSelector = mkSelector "updateAtTime:"
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SKScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @setScene:@
-setSceneSelector :: Selector
+setSceneSelector :: Selector '[Id SKScene] ()
 setSceneSelector = mkSelector "setScene:"
 
 -- | @Selector@ for @ignoresSiblingOrder@
-ignoresSiblingOrderSelector :: Selector
+ignoresSiblingOrderSelector :: Selector '[] Bool
 ignoresSiblingOrderSelector = mkSelector "ignoresSiblingOrder"
 
 -- | @Selector@ for @setIgnoresSiblingOrder:@
-setIgnoresSiblingOrderSelector :: Selector
+setIgnoresSiblingOrderSelector :: Selector '[Bool] ()
 setIgnoresSiblingOrderSelector = mkSelector "setIgnoresSiblingOrder:"
 
 -- | @Selector@ for @shouldCullNonVisibleNodes@
-shouldCullNonVisibleNodesSelector :: Selector
+shouldCullNonVisibleNodesSelector :: Selector '[] Bool
 shouldCullNonVisibleNodesSelector = mkSelector "shouldCullNonVisibleNodes"
 
 -- | @Selector@ for @setShouldCullNonVisibleNodes:@
-setShouldCullNonVisibleNodesSelector :: Selector
+setShouldCullNonVisibleNodesSelector :: Selector '[Bool] ()
 setShouldCullNonVisibleNodesSelector = mkSelector "setShouldCullNonVisibleNodes:"
 
 -- | @Selector@ for @showsDrawCount@
-showsDrawCountSelector :: Selector
+showsDrawCountSelector :: Selector '[] Bool
 showsDrawCountSelector = mkSelector "showsDrawCount"
 
 -- | @Selector@ for @setShowsDrawCount:@
-setShowsDrawCountSelector :: Selector
+setShowsDrawCountSelector :: Selector '[Bool] ()
 setShowsDrawCountSelector = mkSelector "setShowsDrawCount:"
 
 -- | @Selector@ for @showsNodeCount@
-showsNodeCountSelector :: Selector
+showsNodeCountSelector :: Selector '[] Bool
 showsNodeCountSelector = mkSelector "showsNodeCount"
 
 -- | @Selector@ for @setShowsNodeCount:@
-setShowsNodeCountSelector :: Selector
+setShowsNodeCountSelector :: Selector '[Bool] ()
 setShowsNodeCountSelector = mkSelector "setShowsNodeCount:"
 
 -- | @Selector@ for @showsQuadCount@
-showsQuadCountSelector :: Selector
+showsQuadCountSelector :: Selector '[] Bool
 showsQuadCountSelector = mkSelector "showsQuadCount"
 
 -- | @Selector@ for @setShowsQuadCount:@
-setShowsQuadCountSelector :: Selector
+setShowsQuadCountSelector :: Selector '[Bool] ()
 setShowsQuadCountSelector = mkSelector "setShowsQuadCount:"
 
 -- | @Selector@ for @showsPhysics@
-showsPhysicsSelector :: Selector
+showsPhysicsSelector :: Selector '[] Bool
 showsPhysicsSelector = mkSelector "showsPhysics"
 
 -- | @Selector@ for @setShowsPhysics:@
-setShowsPhysicsSelector :: Selector
+setShowsPhysicsSelector :: Selector '[Bool] ()
 setShowsPhysicsSelector = mkSelector "setShowsPhysics:"
 
 -- | @Selector@ for @showsFields@
-showsFieldsSelector :: Selector
+showsFieldsSelector :: Selector '[] Bool
 showsFieldsSelector = mkSelector "showsFields"
 
 -- | @Selector@ for @setShowsFields:@
-setShowsFieldsSelector :: Selector
+setShowsFieldsSelector :: Selector '[Bool] ()
 setShowsFieldsSelector = mkSelector "setShowsFields:"
 

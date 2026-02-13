@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayVectorLUTDequantize
   , setVectorAxis
   , initWithDevice_axisSelector
   , initWithDevice_sourceCountSelector
-  , vectorAxisSelector
   , setVectorAxisSelector
+  , vectorAxisSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,13 +48,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:axis:@
 initWithDevice_axis :: IsMPSNDArrayVectorLUTDequantize mpsndArrayVectorLUTDequantize => mpsndArrayVectorLUTDequantize -> RawId -> CULong -> IO (Id MPSNDArrayVectorLUTDequantize)
-initWithDevice_axis mpsndArrayVectorLUTDequantize  device axis =
-    sendMsg mpsndArrayVectorLUTDequantize (mkSelector "initWithDevice:axis:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong axis] >>= ownedObject . castPtr
+initWithDevice_axis mpsndArrayVectorLUTDequantize device axis =
+  sendOwnedMessage mpsndArrayVectorLUTDequantize initWithDevice_axisSelector device axis
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayVectorLUTDequantize mpsndArrayVectorLUTDequantize => mpsndArrayVectorLUTDequantize -> RawId -> CULong -> IO (Id MPSNDArrayVectorLUTDequantize)
-initWithDevice_sourceCount mpsndArrayVectorLUTDequantize  device sourceCount =
-    sendMsg mpsndArrayVectorLUTDequantize (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong sourceCount] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayVectorLUTDequantize device sourceCount =
+  sendOwnedMessage mpsndArrayVectorLUTDequantize initWithDevice_sourceCountSelector device sourceCount
 
 -- | vectorAxis
 --
@@ -65,8 +62,8 @@ initWithDevice_sourceCount mpsndArrayVectorLUTDequantize  device sourceCount =
 --
 -- ObjC selector: @- vectorAxis@
 vectorAxis :: IsMPSNDArrayVectorLUTDequantize mpsndArrayVectorLUTDequantize => mpsndArrayVectorLUTDequantize -> IO CULong
-vectorAxis mpsndArrayVectorLUTDequantize  =
-    sendMsg mpsndArrayVectorLUTDequantize (mkSelector "vectorAxis") retCULong []
+vectorAxis mpsndArrayVectorLUTDequantize =
+  sendMessage mpsndArrayVectorLUTDequantize vectorAxisSelector
 
 -- | vectorAxis
 --
@@ -74,26 +71,26 @@ vectorAxis mpsndArrayVectorLUTDequantize  =
 --
 -- ObjC selector: @- setVectorAxis:@
 setVectorAxis :: IsMPSNDArrayVectorLUTDequantize mpsndArrayVectorLUTDequantize => mpsndArrayVectorLUTDequantize -> CULong -> IO ()
-setVectorAxis mpsndArrayVectorLUTDequantize  value =
-    sendMsg mpsndArrayVectorLUTDequantize (mkSelector "setVectorAxis:") retVoid [argCULong value]
+setVectorAxis mpsndArrayVectorLUTDequantize value =
+  sendMessage mpsndArrayVectorLUTDequantize setVectorAxisSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:axis:@
-initWithDevice_axisSelector :: Selector
+initWithDevice_axisSelector :: Selector '[RawId, CULong] (Id MPSNDArrayVectorLUTDequantize)
 initWithDevice_axisSelector = mkSelector "initWithDevice:axis:"
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayVectorLUTDequantize)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 
 -- | @Selector@ for @vectorAxis@
-vectorAxisSelector :: Selector
+vectorAxisSelector :: Selector '[] CULong
 vectorAxisSelector = mkSelector "vectorAxis"
 
 -- | @Selector@ for @setVectorAxis:@
-setVectorAxisSelector :: Selector
+setVectorAxisSelector :: Selector '[CULong] ()
 setVectorAxisSelector = mkSelector "setVectorAxis:"
 

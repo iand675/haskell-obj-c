@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Intents.INDateRelevanceProvider
   , initWithStartDate_endDate
   , startDate
   , endDate
+  , endDateSelector
   , initWithStartDate_endDateSelector
   , startDateSelector
-  , endDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,17 +34,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithStartDate:endDate:@
 initWithStartDate_endDate :: (IsINDateRelevanceProvider inDateRelevanceProvider, IsNSDate startDate, IsNSDate endDate) => inDateRelevanceProvider -> startDate -> endDate -> IO (Id INDateRelevanceProvider)
-initWithStartDate_endDate inDateRelevanceProvider  startDate endDate =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-        sendMsg inDateRelevanceProvider (mkSelector "initWithStartDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= ownedObject . castPtr
+initWithStartDate_endDate inDateRelevanceProvider startDate endDate =
+  sendOwnedMessage inDateRelevanceProvider initWithStartDate_endDateSelector (toNSDate startDate) (toNSDate endDate)
 
 -- | The start date of the relevant time interval.
 --
 -- ObjC selector: @- startDate@
 startDate :: IsINDateRelevanceProvider inDateRelevanceProvider => inDateRelevanceProvider -> IO (Id NSDate)
-startDate inDateRelevanceProvider  =
-    sendMsg inDateRelevanceProvider (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate inDateRelevanceProvider =
+  sendMessage inDateRelevanceProvider startDateSelector
 
 -- | The end date of the relevant time interval.
 --
@@ -55,22 +50,22 @@ startDate inDateRelevanceProvider  =
 --
 -- ObjC selector: @- endDate@
 endDate :: IsINDateRelevanceProvider inDateRelevanceProvider => inDateRelevanceProvider -> IO (Id NSDate)
-endDate inDateRelevanceProvider  =
-    sendMsg inDateRelevanceProvider (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate inDateRelevanceProvider =
+  sendMessage inDateRelevanceProvider endDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStartDate:endDate:@
-initWithStartDate_endDateSelector :: Selector
+initWithStartDate_endDateSelector :: Selector '[Id NSDate, Id NSDate] (Id INDateRelevanceProvider)
 initWithStartDate_endDateSelector = mkSelector "initWithStartDate:endDate:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 

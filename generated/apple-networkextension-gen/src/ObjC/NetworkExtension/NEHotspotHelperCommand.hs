@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.NetworkExtension.NEHotspotHelperCommand
   , network
   , networkList
   , interface
+  , commandTypeSelector
   , createResponseSelector
   , createTCPConnectionSelector
   , createUDPSessionSelector
-  , commandTypeSelector
-  , networkSelector
-  , networkListSelector
   , interfaceSelector
+  , networkListSelector
+  , networkSelector
 
   -- * Enum types
   , NEHotspotHelperCommandType(NEHotspotHelperCommandType)
@@ -46,15 +47,11 @@ module ObjC.NetworkExtension.NEHotspotHelperCommand
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- createResponse:@
 createResponse :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> NEHotspotHelperResult -> IO (Id NEHotspotHelperResponse)
-createResponse neHotspotHelperCommand  result =
-    sendMsg neHotspotHelperCommand (mkSelector "createResponse:") (retPtr retVoid) [argCLong (coerce result)] >>= retainedObject . castPtr
+createResponse neHotspotHelperCommand result =
+  sendMessage neHotspotHelperCommand createResponseSelector result
 
 -- | createTCPConnection
 --
@@ -85,9 +82,8 @@ createResponse neHotspotHelperCommand  result =
 --
 -- ObjC selector: @- createTCPConnection:@
 createTCPConnection :: (IsNEHotspotHelperCommand neHotspotHelperCommand, IsNWEndpoint endpoint) => neHotspotHelperCommand -> endpoint -> IO (Id NWTCPConnection)
-createTCPConnection neHotspotHelperCommand  endpoint =
-  withObjCPtr endpoint $ \raw_endpoint ->
-      sendMsg neHotspotHelperCommand (mkSelector "createTCPConnection:") (retPtr retVoid) [argPtr (castPtr raw_endpoint :: Ptr ())] >>= retainedObject . castPtr
+createTCPConnection neHotspotHelperCommand endpoint =
+  sendMessage neHotspotHelperCommand createTCPConnectionSelector (toNWEndpoint endpoint)
 
 -- | createUDPSession
 --
@@ -99,9 +95,8 @@ createTCPConnection neHotspotHelperCommand  endpoint =
 --
 -- ObjC selector: @- createUDPSession:@
 createUDPSession :: (IsNEHotspotHelperCommand neHotspotHelperCommand, IsNWEndpoint endpoint) => neHotspotHelperCommand -> endpoint -> IO (Id NWUDPSession)
-createUDPSession neHotspotHelperCommand  endpoint =
-  withObjCPtr endpoint $ \raw_endpoint ->
-      sendMsg neHotspotHelperCommand (mkSelector "createUDPSession:") (retPtr retVoid) [argPtr (castPtr raw_endpoint :: Ptr ())] >>= retainedObject . castPtr
+createUDPSession neHotspotHelperCommand endpoint =
+  sendMessage neHotspotHelperCommand createUDPSessionSelector (toNWEndpoint endpoint)
 
 -- | commandType
 --
@@ -109,8 +104,8 @@ createUDPSession neHotspotHelperCommand  endpoint =
 --
 -- ObjC selector: @- commandType@
 commandType :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO NEHotspotHelperCommandType
-commandType neHotspotHelperCommand  =
-    fmap (coerce :: CLong -> NEHotspotHelperCommandType) $ sendMsg neHotspotHelperCommand (mkSelector "commandType") retCLong []
+commandType neHotspotHelperCommand =
+  sendMessage neHotspotHelperCommand commandTypeSelector
 
 -- | network
 --
@@ -118,8 +113,8 @@ commandType neHotspotHelperCommand  =
 --
 -- ObjC selector: @- network@
 network :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO (Id NEHotspotNetwork)
-network neHotspotHelperCommand  =
-    sendMsg neHotspotHelperCommand (mkSelector "network") (retPtr retVoid) [] >>= retainedObject . castPtr
+network neHotspotHelperCommand =
+  sendMessage neHotspotHelperCommand networkSelector
 
 -- | networkList
 --
@@ -127,8 +122,8 @@ network neHotspotHelperCommand  =
 --
 -- ObjC selector: @- networkList@
 networkList :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO (Id NSArray)
-networkList neHotspotHelperCommand  =
-    sendMsg neHotspotHelperCommand (mkSelector "networkList") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkList neHotspotHelperCommand =
+  sendMessage neHotspotHelperCommand networkListSelector
 
 -- | interface
 --
@@ -138,38 +133,38 @@ networkList neHotspotHelperCommand  =
 --
 -- ObjC selector: @- interface@
 interface :: IsNEHotspotHelperCommand neHotspotHelperCommand => neHotspotHelperCommand -> IO (Id NSObject)
-interface neHotspotHelperCommand  =
-    sendMsg neHotspotHelperCommand (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+interface neHotspotHelperCommand =
+  sendMessage neHotspotHelperCommand interfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createResponse:@
-createResponseSelector :: Selector
+createResponseSelector :: Selector '[NEHotspotHelperResult] (Id NEHotspotHelperResponse)
 createResponseSelector = mkSelector "createResponse:"
 
 -- | @Selector@ for @createTCPConnection:@
-createTCPConnectionSelector :: Selector
+createTCPConnectionSelector :: Selector '[Id NWEndpoint] (Id NWTCPConnection)
 createTCPConnectionSelector = mkSelector "createTCPConnection:"
 
 -- | @Selector@ for @createUDPSession:@
-createUDPSessionSelector :: Selector
+createUDPSessionSelector :: Selector '[Id NWEndpoint] (Id NWUDPSession)
 createUDPSessionSelector = mkSelector "createUDPSession:"
 
 -- | @Selector@ for @commandType@
-commandTypeSelector :: Selector
+commandTypeSelector :: Selector '[] NEHotspotHelperCommandType
 commandTypeSelector = mkSelector "commandType"
 
 -- | @Selector@ for @network@
-networkSelector :: Selector
+networkSelector :: Selector '[] (Id NEHotspotNetwork)
 networkSelector = mkSelector "network"
 
 -- | @Selector@ for @networkList@
-networkListSelector :: Selector
+networkListSelector :: Selector '[] (Id NSArray)
 networkListSelector = mkSelector "networkList"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id NSObject)
 interfaceSelector = mkSelector "interface"
 

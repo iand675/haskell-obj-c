@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRGeneralCommissioningClusterBasicCommissioningInfo
   , maxCumulativeFailsafeSeconds
   , setMaxCumulativeFailsafeSeconds
   , failSafeExpiryLengthSecondsSelector
-  , setFailSafeExpiryLengthSecondsSelector
   , maxCumulativeFailsafeSecondsSelector
+  , setFailSafeExpiryLengthSecondsSelector
   , setMaxCumulativeFailsafeSecondsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- failSafeExpiryLengthSeconds@
 failSafeExpiryLengthSeconds :: IsMTRGeneralCommissioningClusterBasicCommissioningInfo mtrGeneralCommissioningClusterBasicCommissioningInfo => mtrGeneralCommissioningClusterBasicCommissioningInfo -> IO (Id NSNumber)
-failSafeExpiryLengthSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo  =
-    sendMsg mtrGeneralCommissioningClusterBasicCommissioningInfo (mkSelector "failSafeExpiryLengthSeconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+failSafeExpiryLengthSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo =
+  sendMessage mtrGeneralCommissioningClusterBasicCommissioningInfo failSafeExpiryLengthSecondsSelector
 
 -- | @- setFailSafeExpiryLengthSeconds:@
 setFailSafeExpiryLengthSeconds :: (IsMTRGeneralCommissioningClusterBasicCommissioningInfo mtrGeneralCommissioningClusterBasicCommissioningInfo, IsNSNumber value) => mtrGeneralCommissioningClusterBasicCommissioningInfo -> value -> IO ()
-setFailSafeExpiryLengthSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterBasicCommissioningInfo (mkSelector "setFailSafeExpiryLengthSeconds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFailSafeExpiryLengthSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo value =
+  sendMessage mtrGeneralCommissioningClusterBasicCommissioningInfo setFailSafeExpiryLengthSecondsSelector (toNSNumber value)
 
 -- | @- maxCumulativeFailsafeSeconds@
 maxCumulativeFailsafeSeconds :: IsMTRGeneralCommissioningClusterBasicCommissioningInfo mtrGeneralCommissioningClusterBasicCommissioningInfo => mtrGeneralCommissioningClusterBasicCommissioningInfo -> IO (Id NSNumber)
-maxCumulativeFailsafeSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo  =
-    sendMsg mtrGeneralCommissioningClusterBasicCommissioningInfo (mkSelector "maxCumulativeFailsafeSeconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxCumulativeFailsafeSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo =
+  sendMessage mtrGeneralCommissioningClusterBasicCommissioningInfo maxCumulativeFailsafeSecondsSelector
 
 -- | @- setMaxCumulativeFailsafeSeconds:@
 setMaxCumulativeFailsafeSeconds :: (IsMTRGeneralCommissioningClusterBasicCommissioningInfo mtrGeneralCommissioningClusterBasicCommissioningInfo, IsNSNumber value) => mtrGeneralCommissioningClusterBasicCommissioningInfo -> value -> IO ()
-setMaxCumulativeFailsafeSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterBasicCommissioningInfo (mkSelector "setMaxCumulativeFailsafeSeconds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxCumulativeFailsafeSeconds mtrGeneralCommissioningClusterBasicCommissioningInfo value =
+  sendMessage mtrGeneralCommissioningClusterBasicCommissioningInfo setMaxCumulativeFailsafeSecondsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @failSafeExpiryLengthSeconds@
-failSafeExpiryLengthSecondsSelector :: Selector
+failSafeExpiryLengthSecondsSelector :: Selector '[] (Id NSNumber)
 failSafeExpiryLengthSecondsSelector = mkSelector "failSafeExpiryLengthSeconds"
 
 -- | @Selector@ for @setFailSafeExpiryLengthSeconds:@
-setFailSafeExpiryLengthSecondsSelector :: Selector
+setFailSafeExpiryLengthSecondsSelector :: Selector '[Id NSNumber] ()
 setFailSafeExpiryLengthSecondsSelector = mkSelector "setFailSafeExpiryLengthSeconds:"
 
 -- | @Selector@ for @maxCumulativeFailsafeSeconds@
-maxCumulativeFailsafeSecondsSelector :: Selector
+maxCumulativeFailsafeSecondsSelector :: Selector '[] (Id NSNumber)
 maxCumulativeFailsafeSecondsSelector = mkSelector "maxCumulativeFailsafeSeconds"
 
 -- | @Selector@ for @setMaxCumulativeFailsafeSeconds:@
-setMaxCumulativeFailsafeSecondsSelector :: Selector
+setMaxCumulativeFailsafeSecondsSelector :: Selector '[Id NSNumber] ()
 setMaxCumulativeFailsafeSecondsSelector = mkSelector "setMaxCumulativeFailsafeSeconds:"
 

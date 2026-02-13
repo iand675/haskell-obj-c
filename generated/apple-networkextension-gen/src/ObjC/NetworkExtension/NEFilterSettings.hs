@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,9 +17,9 @@ module ObjC.NetworkExtension.NEFilterSettings
   , initWithRules_defaultAction
   , rules
   , defaultAction
+  , defaultActionSelector
   , initWithRules_defaultActionSelector
   , rulesSelector
-  , defaultActionSelector
 
   -- * Enum types
   , NEFilterAction(NEFilterAction)
@@ -30,15 +31,11 @@ module ObjC.NetworkExtension.NEFilterSettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,9 +55,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRules:defaultAction:@
 initWithRules_defaultAction :: (IsNEFilterSettings neFilterSettings, IsNSArray rules) => neFilterSettings -> rules -> NEFilterAction -> IO (Id NEFilterSettings)
-initWithRules_defaultAction neFilterSettings  rules defaultAction =
-  withObjCPtr rules $ \raw_rules ->
-      sendMsg neFilterSettings (mkSelector "initWithRules:defaultAction:") (retPtr retVoid) [argPtr (castPtr raw_rules :: Ptr ()), argCLong (coerce defaultAction)] >>= ownedObject . castPtr
+initWithRules_defaultAction neFilterSettings rules defaultAction =
+  sendOwnedMessage neFilterSettings initWithRules_defaultActionSelector (toNSArray rules) defaultAction
 
 -- | rules
 --
@@ -68,8 +64,8 @@ initWithRules_defaultAction neFilterSettings  rules defaultAction =
 --
 -- ObjC selector: @- rules@
 rules :: IsNEFilterSettings neFilterSettings => neFilterSettings -> IO (Id NSArray)
-rules neFilterSettings  =
-    sendMsg neFilterSettings (mkSelector "rules") (retPtr retVoid) [] >>= retainedObject . castPtr
+rules neFilterSettings =
+  sendMessage neFilterSettings rulesSelector
 
 -- | defaultAction
 --
@@ -77,22 +73,22 @@ rules neFilterSettings  =
 --
 -- ObjC selector: @- defaultAction@
 defaultAction :: IsNEFilterSettings neFilterSettings => neFilterSettings -> IO NEFilterAction
-defaultAction neFilterSettings  =
-    fmap (coerce :: CLong -> NEFilterAction) $ sendMsg neFilterSettings (mkSelector "defaultAction") retCLong []
+defaultAction neFilterSettings =
+  sendMessage neFilterSettings defaultActionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRules:defaultAction:@
-initWithRules_defaultActionSelector :: Selector
+initWithRules_defaultActionSelector :: Selector '[Id NSArray, NEFilterAction] (Id NEFilterSettings)
 initWithRules_defaultActionSelector = mkSelector "initWithRules:defaultAction:"
 
 -- | @Selector@ for @rules@
-rulesSelector :: Selector
+rulesSelector :: Selector '[] (Id NSArray)
 rulesSelector = mkSelector "rules"
 
 -- | @Selector@ for @defaultAction@
-defaultActionSelector :: Selector
+defaultActionSelector :: Selector '[] NEFilterAction
 defaultActionSelector = mkSelector "defaultAction"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRDataTypeMeasurementAccuracyRangeStruct
   , setFixedMin
   , fixedTypical
   , setFixedTypical
-  , rangeMinSelector
-  , setRangeMinSelector
-  , rangeMaxSelector
-  , setRangeMaxSelector
-  , percentMaxSelector
-  , setPercentMaxSelector
-  , percentMinSelector
-  , setPercentMinSelector
-  , percentTypicalSelector
-  , setPercentTypicalSelector
   , fixedMaxSelector
-  , setFixedMaxSelector
   , fixedMinSelector
-  , setFixedMinSelector
   , fixedTypicalSelector
+  , percentMaxSelector
+  , percentMinSelector
+  , percentTypicalSelector
+  , rangeMaxSelector
+  , rangeMinSelector
+  , setFixedMaxSelector
+  , setFixedMinSelector
   , setFixedTypicalSelector
+  , setPercentMaxSelector
+  , setPercentMinSelector
+  , setPercentTypicalSelector
+  , setRangeMaxSelector
+  , setRangeMinSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rangeMin@
 rangeMin :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-rangeMin mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "rangeMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+rangeMin mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct rangeMinSelector
 
 -- | @- setRangeMin:@
 setRangeMin :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setRangeMin mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setRangeMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRangeMin mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setRangeMinSelector (toNSNumber value)
 
 -- | @- rangeMax@
 rangeMax :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-rangeMax mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "rangeMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+rangeMax mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct rangeMaxSelector
 
 -- | @- setRangeMax:@
 setRangeMax :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setRangeMax mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setRangeMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRangeMax mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setRangeMaxSelector (toNSNumber value)
 
 -- | @- percentMax@
 percentMax :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentMax mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "percentMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentMax mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct percentMaxSelector
 
 -- | @- setPercentMax:@
 setPercentMax :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentMax mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setPercentMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentMax mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setPercentMaxSelector (toNSNumber value)
 
 -- | @- percentMin@
 percentMin :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentMin mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "percentMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentMin mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct percentMinSelector
 
 -- | @- setPercentMin:@
 setPercentMin :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentMin mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setPercentMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentMin mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setPercentMinSelector (toNSNumber value)
 
 -- | @- percentTypical@
 percentTypical :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentTypical mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "percentTypical") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentTypical mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct percentTypicalSelector
 
 -- | @- setPercentTypical:@
 setPercentTypical :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentTypical mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setPercentTypical:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentTypical mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setPercentTypicalSelector (toNSNumber value)
 
 -- | @- fixedMax@
 fixedMax :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedMax mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "fixedMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedMax mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct fixedMaxSelector
 
 -- | @- setFixedMax:@
 setFixedMax :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedMax mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setFixedMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedMax mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setFixedMaxSelector (toNSNumber value)
 
 -- | @- fixedMin@
 fixedMin :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedMin mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "fixedMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedMin mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct fixedMinSelector
 
 -- | @- setFixedMin:@
 setFixedMin :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedMin mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setFixedMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedMin mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setFixedMinSelector (toNSNumber value)
 
 -- | @- fixedTypical@
 fixedTypical :: IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct => mtrDataTypeMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedTypical mtrDataTypeMeasurementAccuracyRangeStruct  =
-    sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "fixedTypical") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedTypical mtrDataTypeMeasurementAccuracyRangeStruct =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct fixedTypicalSelector
 
 -- | @- setFixedTypical:@
 setFixedTypical :: (IsMTRDataTypeMeasurementAccuracyRangeStruct mtrDataTypeMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrDataTypeMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedTypical mtrDataTypeMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeMeasurementAccuracyRangeStruct (mkSelector "setFixedTypical:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedTypical mtrDataTypeMeasurementAccuracyRangeStruct value =
+  sendMessage mtrDataTypeMeasurementAccuracyRangeStruct setFixedTypicalSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rangeMin@
-rangeMinSelector :: Selector
+rangeMinSelector :: Selector '[] (Id NSNumber)
 rangeMinSelector = mkSelector "rangeMin"
 
 -- | @Selector@ for @setRangeMin:@
-setRangeMinSelector :: Selector
+setRangeMinSelector :: Selector '[Id NSNumber] ()
 setRangeMinSelector = mkSelector "setRangeMin:"
 
 -- | @Selector@ for @rangeMax@
-rangeMaxSelector :: Selector
+rangeMaxSelector :: Selector '[] (Id NSNumber)
 rangeMaxSelector = mkSelector "rangeMax"
 
 -- | @Selector@ for @setRangeMax:@
-setRangeMaxSelector :: Selector
+setRangeMaxSelector :: Selector '[Id NSNumber] ()
 setRangeMaxSelector = mkSelector "setRangeMax:"
 
 -- | @Selector@ for @percentMax@
-percentMaxSelector :: Selector
+percentMaxSelector :: Selector '[] (Id NSNumber)
 percentMaxSelector = mkSelector "percentMax"
 
 -- | @Selector@ for @setPercentMax:@
-setPercentMaxSelector :: Selector
+setPercentMaxSelector :: Selector '[Id NSNumber] ()
 setPercentMaxSelector = mkSelector "setPercentMax:"
 
 -- | @Selector@ for @percentMin@
-percentMinSelector :: Selector
+percentMinSelector :: Selector '[] (Id NSNumber)
 percentMinSelector = mkSelector "percentMin"
 
 -- | @Selector@ for @setPercentMin:@
-setPercentMinSelector :: Selector
+setPercentMinSelector :: Selector '[Id NSNumber] ()
 setPercentMinSelector = mkSelector "setPercentMin:"
 
 -- | @Selector@ for @percentTypical@
-percentTypicalSelector :: Selector
+percentTypicalSelector :: Selector '[] (Id NSNumber)
 percentTypicalSelector = mkSelector "percentTypical"
 
 -- | @Selector@ for @setPercentTypical:@
-setPercentTypicalSelector :: Selector
+setPercentTypicalSelector :: Selector '[Id NSNumber] ()
 setPercentTypicalSelector = mkSelector "setPercentTypical:"
 
 -- | @Selector@ for @fixedMax@
-fixedMaxSelector :: Selector
+fixedMaxSelector :: Selector '[] (Id NSNumber)
 fixedMaxSelector = mkSelector "fixedMax"
 
 -- | @Selector@ for @setFixedMax:@
-setFixedMaxSelector :: Selector
+setFixedMaxSelector :: Selector '[Id NSNumber] ()
 setFixedMaxSelector = mkSelector "setFixedMax:"
 
 -- | @Selector@ for @fixedMin@
-fixedMinSelector :: Selector
+fixedMinSelector :: Selector '[] (Id NSNumber)
 fixedMinSelector = mkSelector "fixedMin"
 
 -- | @Selector@ for @setFixedMin:@
-setFixedMinSelector :: Selector
+setFixedMinSelector :: Selector '[Id NSNumber] ()
 setFixedMinSelector = mkSelector "setFixedMin:"
 
 -- | @Selector@ for @fixedTypical@
-fixedTypicalSelector :: Selector
+fixedTypicalSelector :: Selector '[] (Id NSNumber)
 fixedTypicalSelector = mkSelector "fixedTypical"
 
 -- | @Selector@ for @setFixedTypical:@
-setFixedTypicalSelector :: Selector
+setFixedTypicalSelector :: Selector '[Id NSNumber] ()
 setFixedTypicalSelector = mkSelector "setFixedTypical:"
 

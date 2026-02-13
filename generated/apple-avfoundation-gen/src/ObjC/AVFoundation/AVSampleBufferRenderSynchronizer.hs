@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.AVFoundation.AVSampleBufferRenderSynchronizer
   , setIntendedSpatialAudioExperience
   , renderers
   , addBoundaryTimeObserverForTimes_queue_usingBlockSelector
-  , removeTimeObserverSelector
   , addRendererSelector
-  , timebaseSelector
-  , rateSelector
-  , setRateSelector
   , delaysRateChangeUntilHasSufficientMediaDataSelector
-  , setDelaysRateChangeUntilHasSufficientMediaDataSelector
   , intendedSpatialAudioExperienceSelector
-  , setIntendedSpatialAudioExperienceSelector
+  , rateSelector
+  , removeTimeObserverSelector
   , renderersSelector
+  , setDelaysRateChangeUntilHasSufficientMediaDataSelector
+  , setIntendedSpatialAudioExperienceSelector
+  , setRateSelector
+  , timebaseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,10 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addBoundaryTimeObserverForTimes:queue:usingBlock:@
 addBoundaryTimeObserverForTimes_queue_usingBlock :: (IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer, IsNSArray times, IsNSObject queue) => avSampleBufferRenderSynchronizer -> times -> queue -> Ptr () -> IO RawId
-addBoundaryTimeObserverForTimes_queue_usingBlock avSampleBufferRenderSynchronizer  times queue block =
-  withObjCPtr times $ \raw_times ->
-    withObjCPtr queue $ \raw_queue ->
-        fmap (RawId . castPtr) $ sendMsg avSampleBufferRenderSynchronizer (mkSelector "addBoundaryTimeObserverForTimes:queue:usingBlock:") (retPtr retVoid) [argPtr (castPtr raw_times :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+addBoundaryTimeObserverForTimes_queue_usingBlock avSampleBufferRenderSynchronizer times queue block =
+  sendMessage avSampleBufferRenderSynchronizer addBoundaryTimeObserverForTimes_queue_usingBlockSelector (toNSArray times) (toNSObject queue) block
 
 -- | Cancels a previously registered time observer.
 --
@@ -74,8 +69,8 @@ addBoundaryTimeObserverForTimes_queue_usingBlock avSampleBufferRenderSynchronize
 --
 -- ObjC selector: @- removeTimeObserver:@
 removeTimeObserver :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> RawId -> IO ()
-removeTimeObserver avSampleBufferRenderSynchronizer  observer =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "removeTimeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeTimeObserver avSampleBufferRenderSynchronizer observer =
+  sendMessage avSampleBufferRenderSynchronizer removeTimeObserverSelector observer
 
 -- | Adds a renderer to the list of renderers under the synchronizer's control.
 --
@@ -87,8 +82,8 @@ removeTimeObserver avSampleBufferRenderSynchronizer  observer =
 --
 -- ObjC selector: @- addRenderer:@
 addRenderer :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> RawId -> IO ()
-addRenderer avSampleBufferRenderSynchronizer  renderer =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "addRenderer:") retVoid [argPtr (castPtr (unRawId renderer) :: Ptr ())]
+addRenderer avSampleBufferRenderSynchronizer renderer =
+  sendMessage avSampleBufferRenderSynchronizer addRendererSelector renderer
 
 -- | The synchronizer's rendering timebase, which governs how time stamps are interpreted.
 --
@@ -100,8 +95,8 @@ addRenderer avSampleBufferRenderSynchronizer  renderer =
 --
 -- ObjC selector: @- timebase@
 timebase :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO (Ptr ())
-timebase avSampleBufferRenderSynchronizer  =
-    fmap castPtr $ sendMsg avSampleBufferRenderSynchronizer (mkSelector "timebase") (retPtr retVoid) []
+timebase avSampleBufferRenderSynchronizer =
+  sendMessage avSampleBufferRenderSynchronizer timebaseSelector
 
 -- | Playback rate.
 --
@@ -109,8 +104,8 @@ timebase avSampleBufferRenderSynchronizer  =
 --
 -- ObjC selector: @- rate@
 rate :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO CFloat
-rate avSampleBufferRenderSynchronizer  =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "rate") retCFloat []
+rate avSampleBufferRenderSynchronizer =
+  sendMessage avSampleBufferRenderSynchronizer rateSelector
 
 -- | Playback rate.
 --
@@ -118,8 +113,8 @@ rate avSampleBufferRenderSynchronizer  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> CFloat -> IO ()
-setRate avSampleBufferRenderSynchronizer  value =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avSampleBufferRenderSynchronizer value =
+  sendMessage avSampleBufferRenderSynchronizer setRateSelector value
 
 -- | Indicates whether the playback should be started immediately on rate change request.
 --
@@ -127,8 +122,8 @@ setRate avSampleBufferRenderSynchronizer  value =
 --
 -- ObjC selector: @- delaysRateChangeUntilHasSufficientMediaData@
 delaysRateChangeUntilHasSufficientMediaData :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO Bool
-delaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferRenderSynchronizer (mkSelector "delaysRateChangeUntilHasSufficientMediaData") retCULong []
+delaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer =
+  sendMessage avSampleBufferRenderSynchronizer delaysRateChangeUntilHasSufficientMediaDataSelector
 
 -- | Indicates whether the playback should be started immediately on rate change request.
 --
@@ -136,8 +131,8 @@ delaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer  =
 --
 -- ObjC selector: @- setDelaysRateChangeUntilHasSufficientMediaData:@
 setDelaysRateChangeUntilHasSufficientMediaData :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> Bool -> IO ()
-setDelaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer  value =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "setDelaysRateChangeUntilHasSufficientMediaData:") retVoid [argCULong (if value then 1 else 0)]
+setDelaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer value =
+  sendMessage avSampleBufferRenderSynchronizer setDelaysRateChangeUntilHasSufficientMediaDataSelector value
 
 -- | The intended spatial audio experience applied to all AVSampleBufferAudioRenderers within this synchronizer.
 --
@@ -145,8 +140,8 @@ setDelaysRateChangeUntilHasSufficientMediaData avSampleBufferRenderSynchronizer 
 --
 -- ObjC selector: @- intendedSpatialAudioExperience@
 intendedSpatialAudioExperience :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO RawId
-intendedSpatialAudioExperience avSampleBufferRenderSynchronizer  =
-    fmap (RawId . castPtr) $ sendMsg avSampleBufferRenderSynchronizer (mkSelector "intendedSpatialAudioExperience") (retPtr retVoid) []
+intendedSpatialAudioExperience avSampleBufferRenderSynchronizer =
+  sendMessage avSampleBufferRenderSynchronizer intendedSpatialAudioExperienceSelector
 
 -- | The intended spatial audio experience applied to all AVSampleBufferAudioRenderers within this synchronizer.
 --
@@ -154,8 +149,8 @@ intendedSpatialAudioExperience avSampleBufferRenderSynchronizer  =
 --
 -- ObjC selector: @- setIntendedSpatialAudioExperience:@
 setIntendedSpatialAudioExperience :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> RawId -> IO ()
-setIntendedSpatialAudioExperience avSampleBufferRenderSynchronizer  value =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "setIntendedSpatialAudioExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIntendedSpatialAudioExperience avSampleBufferRenderSynchronizer value =
+  sendMessage avSampleBufferRenderSynchronizer setIntendedSpatialAudioExperienceSelector value
 
 -- | Array of id<AVQueuedSampleBufferRendering> currently attached to the synchronizer.
 --
@@ -165,54 +160,54 @@ setIntendedSpatialAudioExperience avSampleBufferRenderSynchronizer  value =
 --
 -- ObjC selector: @- renderers@
 renderers :: IsAVSampleBufferRenderSynchronizer avSampleBufferRenderSynchronizer => avSampleBufferRenderSynchronizer -> IO (Id NSArray)
-renderers avSampleBufferRenderSynchronizer  =
-    sendMsg avSampleBufferRenderSynchronizer (mkSelector "renderers") (retPtr retVoid) [] >>= retainedObject . castPtr
+renderers avSampleBufferRenderSynchronizer =
+  sendMessage avSampleBufferRenderSynchronizer renderersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addBoundaryTimeObserverForTimes:queue:usingBlock:@
-addBoundaryTimeObserverForTimes_queue_usingBlockSelector :: Selector
+addBoundaryTimeObserverForTimes_queue_usingBlockSelector :: Selector '[Id NSArray, Id NSObject, Ptr ()] RawId
 addBoundaryTimeObserverForTimes_queue_usingBlockSelector = mkSelector "addBoundaryTimeObserverForTimes:queue:usingBlock:"
 
 -- | @Selector@ for @removeTimeObserver:@
-removeTimeObserverSelector :: Selector
+removeTimeObserverSelector :: Selector '[RawId] ()
 removeTimeObserverSelector = mkSelector "removeTimeObserver:"
 
 -- | @Selector@ for @addRenderer:@
-addRendererSelector :: Selector
+addRendererSelector :: Selector '[RawId] ()
 addRendererSelector = mkSelector "addRenderer:"
 
 -- | @Selector@ for @timebase@
-timebaseSelector :: Selector
+timebaseSelector :: Selector '[] (Ptr ())
 timebaseSelector = mkSelector "timebase"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @delaysRateChangeUntilHasSufficientMediaData@
-delaysRateChangeUntilHasSufficientMediaDataSelector :: Selector
+delaysRateChangeUntilHasSufficientMediaDataSelector :: Selector '[] Bool
 delaysRateChangeUntilHasSufficientMediaDataSelector = mkSelector "delaysRateChangeUntilHasSufficientMediaData"
 
 -- | @Selector@ for @setDelaysRateChangeUntilHasSufficientMediaData:@
-setDelaysRateChangeUntilHasSufficientMediaDataSelector :: Selector
+setDelaysRateChangeUntilHasSufficientMediaDataSelector :: Selector '[Bool] ()
 setDelaysRateChangeUntilHasSufficientMediaDataSelector = mkSelector "setDelaysRateChangeUntilHasSufficientMediaData:"
 
 -- | @Selector@ for @intendedSpatialAudioExperience@
-intendedSpatialAudioExperienceSelector :: Selector
+intendedSpatialAudioExperienceSelector :: Selector '[] RawId
 intendedSpatialAudioExperienceSelector = mkSelector "intendedSpatialAudioExperience"
 
 -- | @Selector@ for @setIntendedSpatialAudioExperience:@
-setIntendedSpatialAudioExperienceSelector :: Selector
+setIntendedSpatialAudioExperienceSelector :: Selector '[RawId] ()
 setIntendedSpatialAudioExperienceSelector = mkSelector "setIntendedSpatialAudioExperience:"
 
 -- | @Selector@ for @renderers@
-renderersSelector :: Selector
+renderersSelector :: Selector '[] (Id NSArray)
 renderersSelector = mkSelector "renderers"
 

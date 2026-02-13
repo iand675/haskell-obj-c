@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.NaturalLanguage.NLModelConfiguration
   , type_
   , language
   , revision
-  , supportedRevisionsForTypeSelector
   , currentRevisionForTypeSelector
-  , typeSelector
   , languageSelector
   , revisionSelector
+  , supportedRevisionsForTypeSelector
+  , typeSelector
 
   -- * Enum types
   , NLModelType(NLModelType)
@@ -25,15 +26,11 @@ module ObjC.NaturalLanguage.NLModelConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,51 +43,51 @@ supportedRevisionsForType :: NLModelType -> IO (Id NSIndexSet)
 supportedRevisionsForType type_ =
   do
     cls' <- getRequiredClass "NLModelConfiguration"
-    sendClassMsg cls' (mkSelector "supportedRevisionsForType:") (retPtr retVoid) [argCLong (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRevisionsForTypeSelector type_
 
 -- | @+ currentRevisionForType:@
 currentRevisionForType :: NLModelType -> IO CULong
 currentRevisionForType type_ =
   do
     cls' <- getRequiredClass "NLModelConfiguration"
-    sendClassMsg cls' (mkSelector "currentRevisionForType:") retCULong [argCLong (coerce type_)]
+    sendClassMessage cls' currentRevisionForTypeSelector type_
 
 -- | @- type@
 type_ :: IsNLModelConfiguration nlModelConfiguration => nlModelConfiguration -> IO NLModelType
-type_ nlModelConfiguration  =
-    fmap (coerce :: CLong -> NLModelType) $ sendMsg nlModelConfiguration (mkSelector "type") retCLong []
+type_ nlModelConfiguration =
+  sendMessage nlModelConfiguration typeSelector
 
 -- | @- language@
 language :: IsNLModelConfiguration nlModelConfiguration => nlModelConfiguration -> IO (Id NSString)
-language nlModelConfiguration  =
-    sendMsg nlModelConfiguration (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language nlModelConfiguration =
+  sendMessage nlModelConfiguration languageSelector
 
 -- | @- revision@
 revision :: IsNLModelConfiguration nlModelConfiguration => nlModelConfiguration -> IO CULong
-revision nlModelConfiguration  =
-    sendMsg nlModelConfiguration (mkSelector "revision") retCULong []
+revision nlModelConfiguration =
+  sendMessage nlModelConfiguration revisionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedRevisionsForType:@
-supportedRevisionsForTypeSelector :: Selector
+supportedRevisionsForTypeSelector :: Selector '[NLModelType] (Id NSIndexSet)
 supportedRevisionsForTypeSelector = mkSelector "supportedRevisionsForType:"
 
 -- | @Selector@ for @currentRevisionForType:@
-currentRevisionForTypeSelector :: Selector
+currentRevisionForTypeSelector :: Selector '[NLModelType] CULong
 currentRevisionForTypeSelector = mkSelector "currentRevisionForType:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] NLModelType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id NSString)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] CULong
 revisionSelector = mkSelector "revision"
 

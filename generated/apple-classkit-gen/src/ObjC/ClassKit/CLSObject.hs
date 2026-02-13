@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.ClassKit.CLSObject
   , init_
   , dateCreated
   , dateLastModified
-  , newSelector
-  , initSelector
   , dateCreatedSelector
   , dateLastModifiedSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,44 +39,44 @@ new :: IO (Id CLSObject)
 new  =
   do
     cls' <- getRequiredClass "CLSObject"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCLSObject clsObject => clsObject -> IO (Id CLSObject)
-init_ clsObject  =
-    sendMsg clsObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clsObject =
+  sendOwnedMessage clsObject initSelector
 
 -- | The date this object was created.
 --
 -- ObjC selector: @- dateCreated@
 dateCreated :: IsCLSObject clsObject => clsObject -> IO (Id NSDate)
-dateCreated clsObject  =
-    sendMsg clsObject (mkSelector "dateCreated") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateCreated clsObject =
+  sendMessage clsObject dateCreatedSelector
 
 -- | The date this object was last modified.
 --
 -- ObjC selector: @- dateLastModified@
 dateLastModified :: IsCLSObject clsObject => clsObject -> IO (Id NSDate)
-dateLastModified clsObject  =
-    sendMsg clsObject (mkSelector "dateLastModified") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateLastModified clsObject =
+  sendMessage clsObject dateLastModifiedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLSObject)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLSObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @dateCreated@
-dateCreatedSelector :: Selector
+dateCreatedSelector :: Selector '[] (Id NSDate)
 dateCreatedSelector = mkSelector "dateCreated"
 
 -- | @Selector@ for @dateLastModified@
-dateLastModifiedSelector :: Selector
+dateLastModifiedSelector :: Selector '[] (Id NSDate)
 dateLastModifiedSelector = mkSelector "dateLastModified"
 

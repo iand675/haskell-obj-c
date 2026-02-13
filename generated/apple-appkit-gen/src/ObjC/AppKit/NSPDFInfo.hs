@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.AppKit.NSPDFInfo
   , paperSize
   , setPaperSize
   , attributes
-  , urlSelector
-  , setURLSelector
-  , fileExtensionHiddenSelector
-  , setFileExtensionHiddenSelector
-  , tagNamesSelector
-  , setTagNamesSelector
-  , orientationSelector
-  , setOrientationSelector
-  , paperSizeSelector
-  , setPaperSizeSelector
   , attributesSelector
+  , fileExtensionHiddenSelector
+  , orientationSelector
+  , paperSizeSelector
+  , setFileExtensionHiddenSelector
+  , setOrientationSelector
+  , setPaperSizeSelector
+  , setTagNamesSelector
+  , setURLSelector
+  , tagNamesSelector
+  , urlSelector
 
   -- * Enum types
   , NSPaperOrientation(NSPaperOrientation)
@@ -37,15 +38,11 @@ module ObjC.AppKit.NSPDFInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,106 +53,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- URL@
 url :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO (Id NSURL)
-url nspdfInfo  =
-    sendMsg nspdfInfo (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nspdfInfo =
+  sendMessage nspdfInfo urlSelector
 
 -- | @- setURL:@
 setURL :: (IsNSPDFInfo nspdfInfo, IsNSURL value) => nspdfInfo -> value -> IO ()
-setURL nspdfInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nspdfInfo (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL nspdfInfo value =
+  sendMessage nspdfInfo setURLSelector (toNSURL value)
 
 -- | @- fileExtensionHidden@
 fileExtensionHidden :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO Bool
-fileExtensionHidden nspdfInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nspdfInfo (mkSelector "fileExtensionHidden") retCULong []
+fileExtensionHidden nspdfInfo =
+  sendMessage nspdfInfo fileExtensionHiddenSelector
 
 -- | @- setFileExtensionHidden:@
 setFileExtensionHidden :: IsNSPDFInfo nspdfInfo => nspdfInfo -> Bool -> IO ()
-setFileExtensionHidden nspdfInfo  value =
-    sendMsg nspdfInfo (mkSelector "setFileExtensionHidden:") retVoid [argCULong (if value then 1 else 0)]
+setFileExtensionHidden nspdfInfo value =
+  sendMessage nspdfInfo setFileExtensionHiddenSelector value
 
 -- | @- tagNames@
 tagNames :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO (Id NSArray)
-tagNames nspdfInfo  =
-    sendMsg nspdfInfo (mkSelector "tagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+tagNames nspdfInfo =
+  sendMessage nspdfInfo tagNamesSelector
 
 -- | @- setTagNames:@
 setTagNames :: (IsNSPDFInfo nspdfInfo, IsNSArray value) => nspdfInfo -> value -> IO ()
-setTagNames nspdfInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nspdfInfo (mkSelector "setTagNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTagNames nspdfInfo value =
+  sendMessage nspdfInfo setTagNamesSelector (toNSArray value)
 
 -- | @- orientation@
 orientation :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO NSPaperOrientation
-orientation nspdfInfo  =
-    fmap (coerce :: CLong -> NSPaperOrientation) $ sendMsg nspdfInfo (mkSelector "orientation") retCLong []
+orientation nspdfInfo =
+  sendMessage nspdfInfo orientationSelector
 
 -- | @- setOrientation:@
 setOrientation :: IsNSPDFInfo nspdfInfo => nspdfInfo -> NSPaperOrientation -> IO ()
-setOrientation nspdfInfo  value =
-    sendMsg nspdfInfo (mkSelector "setOrientation:") retVoid [argCLong (coerce value)]
+setOrientation nspdfInfo value =
+  sendMessage nspdfInfo setOrientationSelector value
 
 -- | @- paperSize@
 paperSize :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO NSSize
-paperSize nspdfInfo  =
-    sendMsgStret nspdfInfo (mkSelector "paperSize") retNSSize []
+paperSize nspdfInfo =
+  sendMessage nspdfInfo paperSizeSelector
 
 -- | @- setPaperSize:@
 setPaperSize :: IsNSPDFInfo nspdfInfo => nspdfInfo -> NSSize -> IO ()
-setPaperSize nspdfInfo  value =
-    sendMsg nspdfInfo (mkSelector "setPaperSize:") retVoid [argNSSize value]
+setPaperSize nspdfInfo value =
+  sendMessage nspdfInfo setPaperSizeSelector value
 
 -- | @- attributes@
 attributes :: IsNSPDFInfo nspdfInfo => nspdfInfo -> IO (Id NSMutableDictionary)
-attributes nspdfInfo  =
-    sendMsg nspdfInfo (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes nspdfInfo =
+  sendMessage nspdfInfo attributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @fileExtensionHidden@
-fileExtensionHiddenSelector :: Selector
+fileExtensionHiddenSelector :: Selector '[] Bool
 fileExtensionHiddenSelector = mkSelector "fileExtensionHidden"
 
 -- | @Selector@ for @setFileExtensionHidden:@
-setFileExtensionHiddenSelector :: Selector
+setFileExtensionHiddenSelector :: Selector '[Bool] ()
 setFileExtensionHiddenSelector = mkSelector "setFileExtensionHidden:"
 
 -- | @Selector@ for @tagNames@
-tagNamesSelector :: Selector
+tagNamesSelector :: Selector '[] (Id NSArray)
 tagNamesSelector = mkSelector "tagNames"
 
 -- | @Selector@ for @setTagNames:@
-setTagNamesSelector :: Selector
+setTagNamesSelector :: Selector '[Id NSArray] ()
 setTagNamesSelector = mkSelector "setTagNames:"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] NSPaperOrientation
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[NSPaperOrientation] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @paperSize@
-paperSizeSelector :: Selector
+paperSizeSelector :: Selector '[] NSSize
 paperSizeSelector = mkSelector "paperSize"
 
 -- | @Selector@ for @setPaperSize:@
-setPaperSizeSelector :: Selector
+setPaperSizeSelector :: Selector '[NSSize] ()
 setPaperSizeSelector = mkSelector "setPaperSize:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSMutableDictionary)
 attributesSelector = mkSelector "attributes"
 

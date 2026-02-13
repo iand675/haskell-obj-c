@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.SyncServices.ISyncChange
   , record
   , changes
   , changeWithType_recordIdentifier_changesSelector
+  , changesSelector
   , initWithChangeType_recordIdentifier_changesSelector
-  , typeSelector
   , recordIdentifierSelector
   , recordSelector
-  , changesSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,62 +39,58 @@ changeWithType_recordIdentifier_changes :: (IsNSString recordIdentifier, IsNSArr
 changeWithType_recordIdentifier_changes type_ recordIdentifier changes =
   do
     cls' <- getRequiredClass "ISyncChange"
-    withObjCPtr recordIdentifier $ \raw_recordIdentifier ->
-      withObjCPtr changes $ \raw_changes ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "changeWithType:recordIdentifier:changes:") (retPtr retVoid) [argCInt type_, argPtr (castPtr raw_recordIdentifier :: Ptr ()), argPtr (castPtr raw_changes :: Ptr ())]
+    sendClassMessage cls' changeWithType_recordIdentifier_changesSelector type_ (toNSString recordIdentifier) (toNSArray changes)
 
 -- | @- initWithChangeType:recordIdentifier:changes:@
 initWithChangeType_recordIdentifier_changes :: (IsISyncChange iSyncChange, IsNSString recordIdentifier, IsNSArray changes) => iSyncChange -> CInt -> recordIdentifier -> changes -> IO RawId
-initWithChangeType_recordIdentifier_changes iSyncChange  type_ recordIdentifier changes =
-  withObjCPtr recordIdentifier $ \raw_recordIdentifier ->
-    withObjCPtr changes $ \raw_changes ->
-        fmap (RawId . castPtr) $ sendMsg iSyncChange (mkSelector "initWithChangeType:recordIdentifier:changes:") (retPtr retVoid) [argCInt type_, argPtr (castPtr raw_recordIdentifier :: Ptr ()), argPtr (castPtr raw_changes :: Ptr ())]
+initWithChangeType_recordIdentifier_changes iSyncChange type_ recordIdentifier changes =
+  sendOwnedMessage iSyncChange initWithChangeType_recordIdentifier_changesSelector type_ (toNSString recordIdentifier) (toNSArray changes)
 
 -- | @- type@
 type_ :: IsISyncChange iSyncChange => iSyncChange -> IO CInt
-type_ iSyncChange  =
-    sendMsg iSyncChange (mkSelector "type") retCInt []
+type_ iSyncChange =
+  sendMessage iSyncChange typeSelector
 
 -- | @- recordIdentifier@
 recordIdentifier :: IsISyncChange iSyncChange => iSyncChange -> IO (Id NSString)
-recordIdentifier iSyncChange  =
-    sendMsg iSyncChange (mkSelector "recordIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordIdentifier iSyncChange =
+  sendMessage iSyncChange recordIdentifierSelector
 
 -- | @- record@
 record :: IsISyncChange iSyncChange => iSyncChange -> IO (Id NSDictionary)
-record iSyncChange  =
-    sendMsg iSyncChange (mkSelector "record") (retPtr retVoid) [] >>= retainedObject . castPtr
+record iSyncChange =
+  sendMessage iSyncChange recordSelector
 
 -- | @- changes@
 changes :: IsISyncChange iSyncChange => iSyncChange -> IO (Id NSArray)
-changes iSyncChange  =
-    sendMsg iSyncChange (mkSelector "changes") (retPtr retVoid) [] >>= retainedObject . castPtr
+changes iSyncChange =
+  sendMessage iSyncChange changesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @changeWithType:recordIdentifier:changes:@
-changeWithType_recordIdentifier_changesSelector :: Selector
+changeWithType_recordIdentifier_changesSelector :: Selector '[CInt, Id NSString, Id NSArray] RawId
 changeWithType_recordIdentifier_changesSelector = mkSelector "changeWithType:recordIdentifier:changes:"
 
 -- | @Selector@ for @initWithChangeType:recordIdentifier:changes:@
-initWithChangeType_recordIdentifier_changesSelector :: Selector
+initWithChangeType_recordIdentifier_changesSelector :: Selector '[CInt, Id NSString, Id NSArray] RawId
 initWithChangeType_recordIdentifier_changesSelector = mkSelector "initWithChangeType:recordIdentifier:changes:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CInt
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @recordIdentifier@
-recordIdentifierSelector :: Selector
+recordIdentifierSelector :: Selector '[] (Id NSString)
 recordIdentifierSelector = mkSelector "recordIdentifier"
 
 -- | @Selector@ for @record@
-recordSelector :: Selector
+recordSelector :: Selector '[] (Id NSDictionary)
 recordSelector = mkSelector "record"
 
 -- | @Selector@ for @changes@
-changesSelector :: Selector
+changesSelector :: Selector '[] (Id NSArray)
 changesSelector = mkSelector "changes"
 

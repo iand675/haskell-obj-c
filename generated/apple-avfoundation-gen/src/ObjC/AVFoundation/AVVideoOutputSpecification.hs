@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.AVFoundation.AVVideoOutputSpecification
   , setDefaultPixelBufferAttributes
   , defaultOutputSettings
   , setDefaultOutputSettings
+  , defaultOutputSettingsSelector
+  , defaultPixelBufferAttributesSelector
   , initSelector
-  , newSelector
   , initWithTagCollectionsSelector
+  , newSelector
+  , preferredTagCollectionsSelector
+  , setDefaultOutputSettingsSelector
+  , setDefaultPixelBufferAttributesSelector
   , setOutputPixelBufferAttributes_forTagCollectionSelector
   , setOutputSettings_forTagCollectionSelector
-  , preferredTagCollectionsSelector
-  , defaultPixelBufferAttributesSelector
-  , setDefaultPixelBufferAttributesSelector
-  , defaultOutputSettingsSelector
-  , setDefaultOutputSettingsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVVideoOutputSpecification avVideoOutputSpecification => avVideoOutputSpecification -> IO (Id AVVideoOutputSpecification)
-init_ avVideoOutputSpecification  =
-    sendMsg avVideoOutputSpecification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avVideoOutputSpecification =
+  sendOwnedMessage avVideoOutputSpecification initSelector
 
 -- | @+ new@
 new :: IO (Id AVVideoOutputSpecification)
 new  =
   do
     cls' <- getRequiredClass "AVVideoOutputSpecification"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithTagCollections:
 --
@@ -73,9 +70,8 @@ new  =
 --
 -- ObjC selector: @- initWithTagCollections:@
 initWithTagCollections :: (IsAVVideoOutputSpecification avVideoOutputSpecification, IsNSArray tagCollections) => avVideoOutputSpecification -> tagCollections -> IO (Id AVVideoOutputSpecification)
-initWithTagCollections avVideoOutputSpecification  tagCollections =
-  withObjCPtr tagCollections $ \raw_tagCollections ->
-      sendMsg avVideoOutputSpecification (mkSelector "initWithTagCollections:") (retPtr retVoid) [argPtr (castPtr raw_tagCollections :: Ptr ())] >>= ownedObject . castPtr
+initWithTagCollections avVideoOutputSpecification tagCollections =
+  sendOwnedMessage avVideoOutputSpecification initWithTagCollectionsSelector (toNSArray tagCollections)
 
 -- | setOutputPixelBufferAttributes:forTagCollection:
 --
@@ -91,9 +87,8 @@ initWithTagCollections avVideoOutputSpecification  tagCollections =
 --
 -- ObjC selector: @- setOutputPixelBufferAttributes:forTagCollection:@
 setOutputPixelBufferAttributes_forTagCollection :: (IsAVVideoOutputSpecification avVideoOutputSpecification, IsNSDictionary pixelBufferAttributes) => avVideoOutputSpecification -> pixelBufferAttributes -> RawId -> IO ()
-setOutputPixelBufferAttributes_forTagCollection avVideoOutputSpecification  pixelBufferAttributes tagCollection =
-  withObjCPtr pixelBufferAttributes $ \raw_pixelBufferAttributes ->
-      sendMsg avVideoOutputSpecification (mkSelector "setOutputPixelBufferAttributes:forTagCollection:") retVoid [argPtr (castPtr raw_pixelBufferAttributes :: Ptr ()), argPtr (castPtr (unRawId tagCollection) :: Ptr ())]
+setOutputPixelBufferAttributes_forTagCollection avVideoOutputSpecification pixelBufferAttributes tagCollection =
+  sendMessage avVideoOutputSpecification setOutputPixelBufferAttributes_forTagCollectionSelector (toNSDictionary pixelBufferAttributes) tagCollection
 
 -- | setOutputSettings:forTagCollection
 --
@@ -109,9 +104,8 @@ setOutputPixelBufferAttributes_forTagCollection avVideoOutputSpecification  pixe
 --
 -- ObjC selector: @- setOutputSettings:forTagCollection:@
 setOutputSettings_forTagCollection :: (IsAVVideoOutputSpecification avVideoOutputSpecification, IsNSDictionary outputSettings) => avVideoOutputSpecification -> outputSettings -> RawId -> IO ()
-setOutputSettings_forTagCollection avVideoOutputSpecification  outputSettings tagCollection =
-  withObjCPtr outputSettings $ \raw_outputSettings ->
-      sendMsg avVideoOutputSpecification (mkSelector "setOutputSettings:forTagCollection:") retVoid [argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr (unRawId tagCollection) :: Ptr ())]
+setOutputSettings_forTagCollection avVideoOutputSpecification outputSettings tagCollection =
+  sendMessage avVideoOutputSpecification setOutputSettings_forTagCollectionSelector (toNSDictionary outputSettings) tagCollection
 
 -- | preferredTagCollections
 --
@@ -121,8 +115,8 @@ setOutputSettings_forTagCollection avVideoOutputSpecification  outputSettings ta
 --
 -- ObjC selector: @- preferredTagCollections@
 preferredTagCollections :: IsAVVideoOutputSpecification avVideoOutputSpecification => avVideoOutputSpecification -> IO (Id NSArray)
-preferredTagCollections avVideoOutputSpecification  =
-    sendMsg avVideoOutputSpecification (mkSelector "preferredTagCollections") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredTagCollections avVideoOutputSpecification =
+  sendMessage avVideoOutputSpecification preferredTagCollectionsSelector
 
 -- | defaultPixelBufferAttributes
 --
@@ -134,8 +128,8 @@ preferredTagCollections avVideoOutputSpecification  =
 --
 -- ObjC selector: @- defaultPixelBufferAttributes@
 defaultPixelBufferAttributes :: IsAVVideoOutputSpecification avVideoOutputSpecification => avVideoOutputSpecification -> IO (Id NSDictionary)
-defaultPixelBufferAttributes avVideoOutputSpecification  =
-    sendMsg avVideoOutputSpecification (mkSelector "defaultPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultPixelBufferAttributes avVideoOutputSpecification =
+  sendMessage avVideoOutputSpecification defaultPixelBufferAttributesSelector
 
 -- | defaultPixelBufferAttributes
 --
@@ -147,9 +141,8 @@ defaultPixelBufferAttributes avVideoOutputSpecification  =
 --
 -- ObjC selector: @- setDefaultPixelBufferAttributes:@
 setDefaultPixelBufferAttributes :: (IsAVVideoOutputSpecification avVideoOutputSpecification, IsNSDictionary value) => avVideoOutputSpecification -> value -> IO ()
-setDefaultPixelBufferAttributes avVideoOutputSpecification  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avVideoOutputSpecification (mkSelector "setDefaultPixelBufferAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultPixelBufferAttributes avVideoOutputSpecification value =
+  sendMessage avVideoOutputSpecification setDefaultPixelBufferAttributesSelector (toNSDictionary value)
 
 -- | defaultOutputSettings
 --
@@ -161,8 +154,8 @@ setDefaultPixelBufferAttributes avVideoOutputSpecification  value =
 --
 -- ObjC selector: @- defaultOutputSettings@
 defaultOutputSettings :: IsAVVideoOutputSpecification avVideoOutputSpecification => avVideoOutputSpecification -> IO (Id NSDictionary)
-defaultOutputSettings avVideoOutputSpecification  =
-    sendMsg avVideoOutputSpecification (mkSelector "defaultOutputSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultOutputSettings avVideoOutputSpecification =
+  sendMessage avVideoOutputSpecification defaultOutputSettingsSelector
 
 -- | defaultOutputSettings
 --
@@ -174,51 +167,50 @@ defaultOutputSettings avVideoOutputSpecification  =
 --
 -- ObjC selector: @- setDefaultOutputSettings:@
 setDefaultOutputSettings :: (IsAVVideoOutputSpecification avVideoOutputSpecification, IsNSDictionary value) => avVideoOutputSpecification -> value -> IO ()
-setDefaultOutputSettings avVideoOutputSpecification  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avVideoOutputSpecification (mkSelector "setDefaultOutputSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultOutputSettings avVideoOutputSpecification value =
+  sendMessage avVideoOutputSpecification setDefaultOutputSettingsSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVVideoOutputSpecification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVVideoOutputSpecification)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithTagCollections:@
-initWithTagCollectionsSelector :: Selector
+initWithTagCollectionsSelector :: Selector '[Id NSArray] (Id AVVideoOutputSpecification)
 initWithTagCollectionsSelector = mkSelector "initWithTagCollections:"
 
 -- | @Selector@ for @setOutputPixelBufferAttributes:forTagCollection:@
-setOutputPixelBufferAttributes_forTagCollectionSelector :: Selector
+setOutputPixelBufferAttributes_forTagCollectionSelector :: Selector '[Id NSDictionary, RawId] ()
 setOutputPixelBufferAttributes_forTagCollectionSelector = mkSelector "setOutputPixelBufferAttributes:forTagCollection:"
 
 -- | @Selector@ for @setOutputSettings:forTagCollection:@
-setOutputSettings_forTagCollectionSelector :: Selector
+setOutputSettings_forTagCollectionSelector :: Selector '[Id NSDictionary, RawId] ()
 setOutputSettings_forTagCollectionSelector = mkSelector "setOutputSettings:forTagCollection:"
 
 -- | @Selector@ for @preferredTagCollections@
-preferredTagCollectionsSelector :: Selector
+preferredTagCollectionsSelector :: Selector '[] (Id NSArray)
 preferredTagCollectionsSelector = mkSelector "preferredTagCollections"
 
 -- | @Selector@ for @defaultPixelBufferAttributes@
-defaultPixelBufferAttributesSelector :: Selector
+defaultPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 defaultPixelBufferAttributesSelector = mkSelector "defaultPixelBufferAttributes"
 
 -- | @Selector@ for @setDefaultPixelBufferAttributes:@
-setDefaultPixelBufferAttributesSelector :: Selector
+setDefaultPixelBufferAttributesSelector :: Selector '[Id NSDictionary] ()
 setDefaultPixelBufferAttributesSelector = mkSelector "setDefaultPixelBufferAttributes:"
 
 -- | @Selector@ for @defaultOutputSettings@
-defaultOutputSettingsSelector :: Selector
+defaultOutputSettingsSelector :: Selector '[] (Id NSDictionary)
 defaultOutputSettingsSelector = mkSelector "defaultOutputSettings"
 
 -- | @Selector@ for @setDefaultOutputSettings:@
-setDefaultOutputSettingsSelector :: Selector
+setDefaultOutputSettingsSelector :: Selector '[Id NSDictionary] ()
 setDefaultOutputSettingsSelector = mkSelector "setDefaultOutputSettings:"
 

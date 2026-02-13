@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinatorPlaybackControlCommand
   , new
   , originator
   , expectedCurrentItemIdentifier
+  , expectedCurrentItemIdentifierSelector
   , initSelector
   , newSelector
   , originatorSelector
-  , expectedCurrentItemIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVDelegatingPlaybackCoordinatorPlaybackControlCommand avDelegatingPlaybackCoordinatorPlaybackControlCommand => avDelegatingPlaybackCoordinatorPlaybackControlCommand -> IO (Id AVDelegatingPlaybackCoordinatorPlaybackControlCommand)
-init_ avDelegatingPlaybackCoordinatorPlaybackControlCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorPlaybackControlCommand (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avDelegatingPlaybackCoordinatorPlaybackControlCommand =
+  sendOwnedMessage avDelegatingPlaybackCoordinatorPlaybackControlCommand initSelector
 
 -- | @+ new@
 new :: IO (Id AVDelegatingPlaybackCoordinatorPlaybackControlCommand)
 new  =
   do
     cls' <- getRequiredClass "AVDelegatingPlaybackCoordinatorPlaybackControlCommand"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The participant causing this command to be issued.
 --
@@ -55,8 +52,8 @@ new  =
 --
 -- ObjC selector: @- originator@
 originator :: IsAVDelegatingPlaybackCoordinatorPlaybackControlCommand avDelegatingPlaybackCoordinatorPlaybackControlCommand => avDelegatingPlaybackCoordinatorPlaybackControlCommand -> IO (Id AVCoordinatedPlaybackParticipant)
-originator avDelegatingPlaybackCoordinatorPlaybackControlCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorPlaybackControlCommand (mkSelector "originator") (retPtr retVoid) [] >>= retainedObject . castPtr
+originator avDelegatingPlaybackCoordinatorPlaybackControlCommand =
+  sendMessage avDelegatingPlaybackCoordinatorPlaybackControlCommand originatorSelector
 
 -- | Indicates the item this command was issued for.
 --
@@ -64,26 +61,26 @@ originator avDelegatingPlaybackCoordinatorPlaybackControlCommand  =
 --
 -- ObjC selector: @- expectedCurrentItemIdentifier@
 expectedCurrentItemIdentifier :: IsAVDelegatingPlaybackCoordinatorPlaybackControlCommand avDelegatingPlaybackCoordinatorPlaybackControlCommand => avDelegatingPlaybackCoordinatorPlaybackControlCommand -> IO (Id NSString)
-expectedCurrentItemIdentifier avDelegatingPlaybackCoordinatorPlaybackControlCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorPlaybackControlCommand (mkSelector "expectedCurrentItemIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+expectedCurrentItemIdentifier avDelegatingPlaybackCoordinatorPlaybackControlCommand =
+  sendMessage avDelegatingPlaybackCoordinatorPlaybackControlCommand expectedCurrentItemIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorPlaybackControlCommand)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorPlaybackControlCommand)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @originator@
-originatorSelector :: Selector
+originatorSelector :: Selector '[] (Id AVCoordinatedPlaybackParticipant)
 originatorSelector = mkSelector "originator"
 
 -- | @Selector@ for @expectedCurrentItemIdentifier@
-expectedCurrentItemIdentifierSelector :: Selector
+expectedCurrentItemIdentifierSelector :: Selector '[] (Id NSString)
 expectedCurrentItemIdentifierSelector = mkSelector "expectedCurrentItemIdentifier"
 

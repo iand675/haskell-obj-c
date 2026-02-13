@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,8 +20,8 @@ module ObjC.AVFAudio.AVAudioUnitDistortion
   , loadFactoryPresetSelector
   , preGainSelector
   , setPreGainSelector
-  , wetDryMixSelector
   , setWetDryMixSelector
+  , wetDryMixSelector
 
   -- * Enum types
   , AVAudioUnitDistortionPreset(AVAudioUnitDistortionPreset)
@@ -49,15 +50,11 @@ module ObjC.AVFAudio.AVAudioUnitDistortion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadFactoryPreset:@
 loadFactoryPreset :: IsAVAudioUnitDistortion avAudioUnitDistortion => avAudioUnitDistortion -> AVAudioUnitDistortionPreset -> IO ()
-loadFactoryPreset avAudioUnitDistortion  preset =
-    sendMsg avAudioUnitDistortion (mkSelector "loadFactoryPreset:") retVoid [argCLong (coerce preset)]
+loadFactoryPreset avAudioUnitDistortion preset =
+  sendMessage avAudioUnitDistortion loadFactoryPresetSelector preset
 
 -- | preGain
 --
@@ -80,8 +77,8 @@ loadFactoryPreset avAudioUnitDistortion  preset =
 --
 -- ObjC selector: @- preGain@
 preGain :: IsAVAudioUnitDistortion avAudioUnitDistortion => avAudioUnitDistortion -> IO CFloat
-preGain avAudioUnitDistortion  =
-    sendMsg avAudioUnitDistortion (mkSelector "preGain") retCFloat []
+preGain avAudioUnitDistortion =
+  sendMessage avAudioUnitDistortion preGainSelector
 
 -- | preGain
 --
@@ -89,8 +86,8 @@ preGain avAudioUnitDistortion  =
 --
 -- ObjC selector: @- setPreGain:@
 setPreGain :: IsAVAudioUnitDistortion avAudioUnitDistortion => avAudioUnitDistortion -> CFloat -> IO ()
-setPreGain avAudioUnitDistortion  value =
-    sendMsg avAudioUnitDistortion (mkSelector "setPreGain:") retVoid [argCFloat value]
+setPreGain avAudioUnitDistortion value =
+  sendMessage avAudioUnitDistortion setPreGainSelector value
 
 -- | wetDryMix
 --
@@ -98,8 +95,8 @@ setPreGain avAudioUnitDistortion  value =
 --
 -- ObjC selector: @- wetDryMix@
 wetDryMix :: IsAVAudioUnitDistortion avAudioUnitDistortion => avAudioUnitDistortion -> IO CFloat
-wetDryMix avAudioUnitDistortion  =
-    sendMsg avAudioUnitDistortion (mkSelector "wetDryMix") retCFloat []
+wetDryMix avAudioUnitDistortion =
+  sendMessage avAudioUnitDistortion wetDryMixSelector
 
 -- | wetDryMix
 --
@@ -107,30 +104,30 @@ wetDryMix avAudioUnitDistortion  =
 --
 -- ObjC selector: @- setWetDryMix:@
 setWetDryMix :: IsAVAudioUnitDistortion avAudioUnitDistortion => avAudioUnitDistortion -> CFloat -> IO ()
-setWetDryMix avAudioUnitDistortion  value =
-    sendMsg avAudioUnitDistortion (mkSelector "setWetDryMix:") retVoid [argCFloat value]
+setWetDryMix avAudioUnitDistortion value =
+  sendMessage avAudioUnitDistortion setWetDryMixSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFactoryPreset:@
-loadFactoryPresetSelector :: Selector
+loadFactoryPresetSelector :: Selector '[AVAudioUnitDistortionPreset] ()
 loadFactoryPresetSelector = mkSelector "loadFactoryPreset:"
 
 -- | @Selector@ for @preGain@
-preGainSelector :: Selector
+preGainSelector :: Selector '[] CFloat
 preGainSelector = mkSelector "preGain"
 
 -- | @Selector@ for @setPreGain:@
-setPreGainSelector :: Selector
+setPreGainSelector :: Selector '[CFloat] ()
 setPreGainSelector = mkSelector "setPreGain:"
 
 -- | @Selector@ for @wetDryMix@
-wetDryMixSelector :: Selector
+wetDryMixSelector :: Selector '[] CFloat
 wetDryMixSelector = mkSelector "wetDryMix"
 
 -- | @Selector@ for @setWetDryMix:@
-setWetDryMixSelector :: Selector
+setWetDryMixSelector :: Selector '[CFloat] ()
 setWetDryMixSelector = mkSelector "setWetDryMix:"
 

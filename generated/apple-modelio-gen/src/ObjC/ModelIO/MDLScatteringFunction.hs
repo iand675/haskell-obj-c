@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.ModelIO.MDLScatteringFunction
   , normal
   , ambientOcclusion
   , ambientOcclusionScale
-  , nameSelector
-  , setNameSelector
+  , ambientOcclusionScaleSelector
+  , ambientOcclusionSelector
   , baseColorSelector
   , emissionSelector
-  , specularSelector
-  , materialIndexOfRefractionSelector
   , interfaceIndexOfRefractionSelector
+  , materialIndexOfRefractionSelector
+  , nameSelector
   , normalSelector
-  , ambientOcclusionSelector
-  , ambientOcclusionScaleSelector
+  , setNameSelector
+  , specularSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,98 +48,97 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id NSString)
-name mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlScatteringFunction =
+  sendMessage mdlScatteringFunction nameSelector
 
 -- | See: MDLNamed
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMDLScatteringFunction mdlScatteringFunction, IsNSString value) => mdlScatteringFunction -> value -> IO ()
-setName mdlScatteringFunction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlScatteringFunction (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mdlScatteringFunction value =
+  sendMessage mdlScatteringFunction setNameSelector (toNSString value)
 
 -- | @- baseColor@
 baseColor :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-baseColor mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "baseColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseColor mdlScatteringFunction =
+  sendMessage mdlScatteringFunction baseColorSelector
 
 -- | @- emission@
 emission :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-emission mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "emission") (retPtr retVoid) [] >>= retainedObject . castPtr
+emission mdlScatteringFunction =
+  sendMessage mdlScatteringFunction emissionSelector
 
 -- | @- specular@
 specular :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-specular mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "specular") (retPtr retVoid) [] >>= retainedObject . castPtr
+specular mdlScatteringFunction =
+  sendMessage mdlScatteringFunction specularSelector
 
 -- | @- materialIndexOfRefraction@
 materialIndexOfRefraction :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-materialIndexOfRefraction mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "materialIndexOfRefraction") (retPtr retVoid) [] >>= retainedObject . castPtr
+materialIndexOfRefraction mdlScatteringFunction =
+  sendMessage mdlScatteringFunction materialIndexOfRefractionSelector
 
 -- | @- interfaceIndexOfRefraction@
 interfaceIndexOfRefraction :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-interfaceIndexOfRefraction mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "interfaceIndexOfRefraction") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaceIndexOfRefraction mdlScatteringFunction =
+  sendMessage mdlScatteringFunction interfaceIndexOfRefractionSelector
 
 -- | @- normal@
 normal :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-normal mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "normal") (retPtr retVoid) [] >>= retainedObject . castPtr
+normal mdlScatteringFunction =
+  sendMessage mdlScatteringFunction normalSelector
 
 -- | @- ambientOcclusion@
 ambientOcclusion :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-ambientOcclusion mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "ambientOcclusion") (retPtr retVoid) [] >>= retainedObject . castPtr
+ambientOcclusion mdlScatteringFunction =
+  sendMessage mdlScatteringFunction ambientOcclusionSelector
 
 -- | @- ambientOcclusionScale@
 ambientOcclusionScale :: IsMDLScatteringFunction mdlScatteringFunction => mdlScatteringFunction -> IO (Id MDLMaterialProperty)
-ambientOcclusionScale mdlScatteringFunction  =
-    sendMsg mdlScatteringFunction (mkSelector "ambientOcclusionScale") (retPtr retVoid) [] >>= retainedObject . castPtr
+ambientOcclusionScale mdlScatteringFunction =
+  sendMessage mdlScatteringFunction ambientOcclusionScaleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @baseColor@
-baseColorSelector :: Selector
+baseColorSelector :: Selector '[] (Id MDLMaterialProperty)
 baseColorSelector = mkSelector "baseColor"
 
 -- | @Selector@ for @emission@
-emissionSelector :: Selector
+emissionSelector :: Selector '[] (Id MDLMaterialProperty)
 emissionSelector = mkSelector "emission"
 
 -- | @Selector@ for @specular@
-specularSelector :: Selector
+specularSelector :: Selector '[] (Id MDLMaterialProperty)
 specularSelector = mkSelector "specular"
 
 -- | @Selector@ for @materialIndexOfRefraction@
-materialIndexOfRefractionSelector :: Selector
+materialIndexOfRefractionSelector :: Selector '[] (Id MDLMaterialProperty)
 materialIndexOfRefractionSelector = mkSelector "materialIndexOfRefraction"
 
 -- | @Selector@ for @interfaceIndexOfRefraction@
-interfaceIndexOfRefractionSelector :: Selector
+interfaceIndexOfRefractionSelector :: Selector '[] (Id MDLMaterialProperty)
 interfaceIndexOfRefractionSelector = mkSelector "interfaceIndexOfRefraction"
 
 -- | @Selector@ for @normal@
-normalSelector :: Selector
+normalSelector :: Selector '[] (Id MDLMaterialProperty)
 normalSelector = mkSelector "normal"
 
 -- | @Selector@ for @ambientOcclusion@
-ambientOcclusionSelector :: Selector
+ambientOcclusionSelector :: Selector '[] (Id MDLMaterialProperty)
 ambientOcclusionSelector = mkSelector "ambientOcclusion"
 
 -- | @Selector@ for @ambientOcclusionScale@
-ambientOcclusionScaleSelector :: Selector
+ambientOcclusionScaleSelector :: Selector '[] (Id MDLMaterialProperty)
 ambientOcclusionScaleSelector = mkSelector "ambientOcclusionScale"
 

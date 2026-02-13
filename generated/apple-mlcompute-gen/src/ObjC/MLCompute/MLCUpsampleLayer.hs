@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.MLCompute.MLCUpsampleLayer
   , shape
   , sampleMode
   , alignsCorners
+  , alignsCornersSelector
   , layerWithShapeSelector
   , layerWithShape_sampleMode_alignsCornersSelector
-  , shapeSelector
   , sampleModeSelector
-  , alignsCornersSelector
+  , shapeSelector
 
   -- * Enum types
   , MLCSampleMode(MLCSampleMode)
@@ -29,15 +30,11 @@ module ObjC.MLCompute.MLCUpsampleLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,8 +53,7 @@ layerWithShape :: IsNSArray shape => shape -> IO (Id MLCUpsampleLayer)
 layerWithShape shape =
   do
     cls' <- getRequiredClass "MLCUpsampleLayer"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "layerWithShape:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithShapeSelector (toNSArray shape)
 
 -- | Create an upsample layer
 --
@@ -74,8 +70,7 @@ layerWithShape_sampleMode_alignsCorners :: IsNSArray shape => shape -> MLCSample
 layerWithShape_sampleMode_alignsCorners shape sampleMode alignsCorners =
   do
     cls' <- getRequiredClass "MLCUpsampleLayer"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "layerWithShape:sampleMode:alignsCorners:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argCInt (coerce sampleMode), argCULong (if alignsCorners then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithShape_sampleMode_alignsCornersSelector (toNSArray shape) sampleMode alignsCorners
 
 -- | shape
 --
@@ -83,8 +78,8 @@ layerWithShape_sampleMode_alignsCorners shape sampleMode alignsCorners =
 --
 -- ObjC selector: @- shape@
 shape :: IsMLCUpsampleLayer mlcUpsampleLayer => mlcUpsampleLayer -> IO (Id NSArray)
-shape mlcUpsampleLayer  =
-    sendMsg mlcUpsampleLayer (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape mlcUpsampleLayer =
+  sendMessage mlcUpsampleLayer shapeSelector
 
 -- | sampleMode
 --
@@ -92,8 +87,8 @@ shape mlcUpsampleLayer  =
 --
 -- ObjC selector: @- sampleMode@
 sampleMode :: IsMLCUpsampleLayer mlcUpsampleLayer => mlcUpsampleLayer -> IO MLCSampleMode
-sampleMode mlcUpsampleLayer  =
-    fmap (coerce :: CInt -> MLCSampleMode) $ sendMsg mlcUpsampleLayer (mkSelector "sampleMode") retCInt []
+sampleMode mlcUpsampleLayer =
+  sendMessage mlcUpsampleLayer sampleModeSelector
 
 -- | alignsCorners
 --
@@ -103,30 +98,30 @@ sampleMode mlcUpsampleLayer  =
 --
 -- ObjC selector: @- alignsCorners@
 alignsCorners :: IsMLCUpsampleLayer mlcUpsampleLayer => mlcUpsampleLayer -> IO Bool
-alignsCorners mlcUpsampleLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcUpsampleLayer (mkSelector "alignsCorners") retCULong []
+alignsCorners mlcUpsampleLayer =
+  sendMessage mlcUpsampleLayer alignsCornersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithShape:@
-layerWithShapeSelector :: Selector
+layerWithShapeSelector :: Selector '[Id NSArray] (Id MLCUpsampleLayer)
 layerWithShapeSelector = mkSelector "layerWithShape:"
 
 -- | @Selector@ for @layerWithShape:sampleMode:alignsCorners:@
-layerWithShape_sampleMode_alignsCornersSelector :: Selector
+layerWithShape_sampleMode_alignsCornersSelector :: Selector '[Id NSArray, MLCSampleMode, Bool] (Id MLCUpsampleLayer)
 layerWithShape_sampleMode_alignsCornersSelector = mkSelector "layerWithShape:sampleMode:alignsCorners:"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSArray)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @sampleMode@
-sampleModeSelector :: Selector
+sampleModeSelector :: Selector '[] MLCSampleMode
 sampleModeSelector = mkSelector "sampleMode"
 
 -- | @Selector@ for @alignsCorners@
-alignsCornersSelector :: Selector
+alignsCornersSelector :: Selector '[] Bool
 alignsCornersSelector = mkSelector "alignsCorners"
 

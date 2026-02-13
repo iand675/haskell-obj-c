@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,19 +29,19 @@ module ObjC.CloudKit.CKOperationGroup
   , setExpectedSendSize
   , expectedReceiveSize
   , setExpectedReceiveSize
+  , defaultConfigurationSelector
+  , expectedReceiveSizeSelector
+  , expectedSendSizeSelector
   , initSelector
   , initWithCoderSelector
-  , operationGroupIDSelector
-  , defaultConfigurationSelector
-  , setDefaultConfigurationSelector
   , nameSelector
-  , setNameSelector
+  , operationGroupIDSelector
   , quantitySelector
-  , setQuantitySelector
-  , expectedSendSizeSelector
-  , setExpectedSendSizeSelector
-  , expectedReceiveSizeSelector
+  , setDefaultConfigurationSelector
   , setExpectedReceiveSizeSelector
+  , setExpectedSendSizeSelector
+  , setNameSelector
+  , setQuantitySelector
 
   -- * Enum types
   , CKOperationGroupTransferSize(CKOperationGroupTransferSize)
@@ -55,15 +56,11 @@ module ObjC.CloudKit.CKOperationGroup
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,14 +70,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO (Id CKOperationGroup)
-init_ ckOperationGroup  =
-    sendMsg ckOperationGroup (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckOperationGroup =
+  sendOwnedMessage ckOperationGroup initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKOperationGroup ckOperationGroup, IsNSCoder aDecoder) => ckOperationGroup -> aDecoder -> IO (Id CKOperationGroup)
-initWithCoder ckOperationGroup  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg ckOperationGroup (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder ckOperationGroup aDecoder =
+  sendOwnedMessage ckOperationGroup initWithCoderSelector (toNSCoder aDecoder)
 
 -- | This is an identifier unique to this @CKOperationGroup@
 --
@@ -88,8 +84,8 @@ initWithCoder ckOperationGroup  aDecoder =
 --
 -- ObjC selector: @- operationGroupID@
 operationGroupID :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO (Id NSString)
-operationGroupID ckOperationGroup  =
-    sendMsg ckOperationGroup (mkSelector "operationGroupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationGroupID ckOperationGroup =
+  sendMessage ckOperationGroup operationGroupIDSelector
 
 -- | This is the default configuration applied to operations in this operation group.
 --
@@ -97,8 +93,8 @@ operationGroupID ckOperationGroup  =
 --
 -- ObjC selector: @- defaultConfiguration@
 defaultConfiguration :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO (Id CKOperationConfiguration)
-defaultConfiguration ckOperationGroup  =
-    sendMsg ckOperationGroup (mkSelector "defaultConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultConfiguration ckOperationGroup =
+  sendMessage ckOperationGroup defaultConfigurationSelector
 
 -- | This is the default configuration applied to operations in this operation group.
 --
@@ -106,9 +102,8 @@ defaultConfiguration ckOperationGroup  =
 --
 -- ObjC selector: @- setDefaultConfiguration:@
 setDefaultConfiguration :: (IsCKOperationGroup ckOperationGroup, IsCKOperationConfiguration value) => ckOperationGroup -> value -> IO ()
-setDefaultConfiguration ckOperationGroup  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperationGroup (mkSelector "setDefaultConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultConfiguration ckOperationGroup value =
+  sendMessage ckOperationGroup setDefaultConfigurationSelector (toCKOperationConfiguration value)
 
 -- | Describes the user action attributed to the operation group.
 --
@@ -116,8 +111,8 @@ setDefaultConfiguration ckOperationGroup  value =
 --
 -- ObjC selector: @- name@
 name :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO (Id NSString)
-name ckOperationGroup  =
-    sendMsg ckOperationGroup (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name ckOperationGroup =
+  sendMessage ckOperationGroup nameSelector
 
 -- | Describes the user action attributed to the operation group.
 --
@@ -125,9 +120,8 @@ name ckOperationGroup  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsCKOperationGroup ckOperationGroup, IsNSString value) => ckOperationGroup -> value -> IO ()
-setName ckOperationGroup  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperationGroup (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName ckOperationGroup value =
+  sendMessage ckOperationGroup setNameSelector (toNSString value)
 
 -- | Describes an application-specific "number of elements" associated with the operation group.
 --
@@ -135,8 +129,8 @@ setName ckOperationGroup  value =
 --
 -- ObjC selector: @- quantity@
 quantity :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO CULong
-quantity ckOperationGroup  =
-    sendMsg ckOperationGroup (mkSelector "quantity") retCULong []
+quantity ckOperationGroup =
+  sendMessage ckOperationGroup quantitySelector
 
 -- | Describes an application-specific "number of elements" associated with the operation group.
 --
@@ -144,8 +138,8 @@ quantity ckOperationGroup  =
 --
 -- ObjC selector: @- setQuantity:@
 setQuantity :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> CULong -> IO ()
-setQuantity ckOperationGroup  value =
-    sendMsg ckOperationGroup (mkSelector "setQuantity:") retVoid [argCULong value]
+setQuantity ckOperationGroup value =
+  sendMessage ckOperationGroup setQuantitySelector value
 
 -- | Estimated size of traffic being uploaded to the CloudKit Server
 --
@@ -153,8 +147,8 @@ setQuantity ckOperationGroup  value =
 --
 -- ObjC selector: @- expectedSendSize@
 expectedSendSize :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO CKOperationGroupTransferSize
-expectedSendSize ckOperationGroup  =
-    fmap (coerce :: CLong -> CKOperationGroupTransferSize) $ sendMsg ckOperationGroup (mkSelector "expectedSendSize") retCLong []
+expectedSendSize ckOperationGroup =
+  sendMessage ckOperationGroup expectedSendSizeSelector
 
 -- | Estimated size of traffic being uploaded to the CloudKit Server
 --
@@ -162,8 +156,8 @@ expectedSendSize ckOperationGroup  =
 --
 -- ObjC selector: @- setExpectedSendSize:@
 setExpectedSendSize :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> CKOperationGroupTransferSize -> IO ()
-setExpectedSendSize ckOperationGroup  value =
-    sendMsg ckOperationGroup (mkSelector "setExpectedSendSize:") retVoid [argCLong (coerce value)]
+setExpectedSendSize ckOperationGroup value =
+  sendMessage ckOperationGroup setExpectedSendSizeSelector value
 
 -- | Estimated size of traffic being downloaded from the CloudKit Server
 --
@@ -171,8 +165,8 @@ setExpectedSendSize ckOperationGroup  value =
 --
 -- ObjC selector: @- expectedReceiveSize@
 expectedReceiveSize :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> IO CKOperationGroupTransferSize
-expectedReceiveSize ckOperationGroup  =
-    fmap (coerce :: CLong -> CKOperationGroupTransferSize) $ sendMsg ckOperationGroup (mkSelector "expectedReceiveSize") retCLong []
+expectedReceiveSize ckOperationGroup =
+  sendMessage ckOperationGroup expectedReceiveSizeSelector
 
 -- | Estimated size of traffic being downloaded from the CloudKit Server
 --
@@ -180,62 +174,62 @@ expectedReceiveSize ckOperationGroup  =
 --
 -- ObjC selector: @- setExpectedReceiveSize:@
 setExpectedReceiveSize :: IsCKOperationGroup ckOperationGroup => ckOperationGroup -> CKOperationGroupTransferSize -> IO ()
-setExpectedReceiveSize ckOperationGroup  value =
-    sendMsg ckOperationGroup (mkSelector "setExpectedReceiveSize:") retVoid [argCLong (coerce value)]
+setExpectedReceiveSize ckOperationGroup value =
+  sendMessage ckOperationGroup setExpectedReceiveSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKOperationGroup)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CKOperationGroup)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @operationGroupID@
-operationGroupIDSelector :: Selector
+operationGroupIDSelector :: Selector '[] (Id NSString)
 operationGroupIDSelector = mkSelector "operationGroupID"
 
 -- | @Selector@ for @defaultConfiguration@
-defaultConfigurationSelector :: Selector
+defaultConfigurationSelector :: Selector '[] (Id CKOperationConfiguration)
 defaultConfigurationSelector = mkSelector "defaultConfiguration"
 
 -- | @Selector@ for @setDefaultConfiguration:@
-setDefaultConfigurationSelector :: Selector
+setDefaultConfigurationSelector :: Selector '[Id CKOperationConfiguration] ()
 setDefaultConfigurationSelector = mkSelector "setDefaultConfiguration:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @quantity@
-quantitySelector :: Selector
+quantitySelector :: Selector '[] CULong
 quantitySelector = mkSelector "quantity"
 
 -- | @Selector@ for @setQuantity:@
-setQuantitySelector :: Selector
+setQuantitySelector :: Selector '[CULong] ()
 setQuantitySelector = mkSelector "setQuantity:"
 
 -- | @Selector@ for @expectedSendSize@
-expectedSendSizeSelector :: Selector
+expectedSendSizeSelector :: Selector '[] CKOperationGroupTransferSize
 expectedSendSizeSelector = mkSelector "expectedSendSize"
 
 -- | @Selector@ for @setExpectedSendSize:@
-setExpectedSendSizeSelector :: Selector
+setExpectedSendSizeSelector :: Selector '[CKOperationGroupTransferSize] ()
 setExpectedSendSizeSelector = mkSelector "setExpectedSendSize:"
 
 -- | @Selector@ for @expectedReceiveSize@
-expectedReceiveSizeSelector :: Selector
+expectedReceiveSizeSelector :: Selector '[] CKOperationGroupTransferSize
 expectedReceiveSizeSelector = mkSelector "expectedReceiveSize"
 
 -- | @Selector@ for @setExpectedReceiveSize:@
-setExpectedReceiveSizeSelector :: Selector
+setExpectedReceiveSizeSelector :: Selector '[CKOperationGroupTransferSize] ()
 setExpectedReceiveSizeSelector = mkSelector "setExpectedReceiveSize:"
 

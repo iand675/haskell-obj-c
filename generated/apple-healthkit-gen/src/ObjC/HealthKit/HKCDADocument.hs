@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.HealthKit.HKCDADocument
   , patientName
   , authorName
   , custodianName
-  , documentDataSelector
-  , titleSelector
-  , patientNameSelector
   , authorNameSelector
   , custodianNameSelector
+  , documentDataSelector
+  , patientNameSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- documentData@
 documentData :: IsHKCDADocument hkcdaDocument => hkcdaDocument -> IO (Id NSData)
-documentData hkcdaDocument  =
-    sendMsg hkcdaDocument (mkSelector "documentData") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentData hkcdaDocument =
+  sendMessage hkcdaDocument documentDataSelector
 
 -- | title
 --
@@ -52,8 +49,8 @@ documentData hkcdaDocument  =
 --
 -- ObjC selector: @- title@
 title :: IsHKCDADocument hkcdaDocument => hkcdaDocument -> IO (Id NSString)
-title hkcdaDocument  =
-    sendMsg hkcdaDocument (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title hkcdaDocument =
+  sendMessage hkcdaDocument titleSelector
 
 -- | patientName
 --
@@ -63,8 +60,8 @@ title hkcdaDocument  =
 --
 -- ObjC selector: @- patientName@
 patientName :: IsHKCDADocument hkcdaDocument => hkcdaDocument -> IO (Id NSString)
-patientName hkcdaDocument  =
-    sendMsg hkcdaDocument (mkSelector "patientName") (retPtr retVoid) [] >>= retainedObject . castPtr
+patientName hkcdaDocument =
+  sendMessage hkcdaDocument patientNameSelector
 
 -- | authorName
 --
@@ -74,8 +71,8 @@ patientName hkcdaDocument  =
 --
 -- ObjC selector: @- authorName@
 authorName :: IsHKCDADocument hkcdaDocument => hkcdaDocument -> IO (Id NSString)
-authorName hkcdaDocument  =
-    sendMsg hkcdaDocument (mkSelector "authorName") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorName hkcdaDocument =
+  sendMessage hkcdaDocument authorNameSelector
 
 -- | custodianName
 --
@@ -85,30 +82,30 @@ authorName hkcdaDocument  =
 --
 -- ObjC selector: @- custodianName@
 custodianName :: IsHKCDADocument hkcdaDocument => hkcdaDocument -> IO (Id NSString)
-custodianName hkcdaDocument  =
-    sendMsg hkcdaDocument (mkSelector "custodianName") (retPtr retVoid) [] >>= retainedObject . castPtr
+custodianName hkcdaDocument =
+  sendMessage hkcdaDocument custodianNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @documentData@
-documentDataSelector :: Selector
+documentDataSelector :: Selector '[] (Id NSData)
 documentDataSelector = mkSelector "documentData"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @patientName@
-patientNameSelector :: Selector
+patientNameSelector :: Selector '[] (Id NSString)
 patientNameSelector = mkSelector "patientName"
 
 -- | @Selector@ for @authorName@
-authorNameSelector :: Selector
+authorNameSelector :: Selector '[] (Id NSString)
 authorNameSelector = mkSelector "authorName"
 
 -- | @Selector@ for @custodianName@
-custodianNameSelector :: Selector
+custodianNameSelector :: Selector '[] (Id NSString)
 custodianNameSelector = mkSelector "custodianName"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.MailKit.MEOutgoingMessageEncodingStatus
   , canEncrypt
   , securityError
   , addressesFailingEncryption
-  , newSelector
+  , addressesFailingEncryptionSelector
+  , canEncryptSelector
+  , canSignSelector
   , initSelector
   , initWithCanSign_canEncrypt_securityError_addressesFailingEncryptionSelector
-  , canSignSelector
-  , canEncryptSelector
+  , newSelector
   , securityErrorSelector
-  , addressesFailingEncryptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,77 +43,75 @@ new :: IO (Id MEOutgoingMessageEncodingStatus)
 new  =
   do
     cls' <- getRequiredClass "MEOutgoingMessageEncodingStatus"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus => meOutgoingMessageEncodingStatus -> IO (Id MEOutgoingMessageEncodingStatus)
-init_ meOutgoingMessageEncodingStatus  =
-    sendMsg meOutgoingMessageEncodingStatus (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meOutgoingMessageEncodingStatus =
+  sendOwnedMessage meOutgoingMessageEncodingStatus initSelector
 
 -- | @- initWithCanSign:canEncrypt:securityError:addressesFailingEncryption:@
 initWithCanSign_canEncrypt_securityError_addressesFailingEncryption :: (IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus, IsNSError securityError, IsNSArray addressesFailingEncryption) => meOutgoingMessageEncodingStatus -> Bool -> Bool -> securityError -> addressesFailingEncryption -> IO (Id MEOutgoingMessageEncodingStatus)
-initWithCanSign_canEncrypt_securityError_addressesFailingEncryption meOutgoingMessageEncodingStatus  canSign canEncrypt securityError addressesFailingEncryption =
-  withObjCPtr securityError $ \raw_securityError ->
-    withObjCPtr addressesFailingEncryption $ \raw_addressesFailingEncryption ->
-        sendMsg meOutgoingMessageEncodingStatus (mkSelector "initWithCanSign:canEncrypt:securityError:addressesFailingEncryption:") (retPtr retVoid) [argCULong (if canSign then 1 else 0), argCULong (if canEncrypt then 1 else 0), argPtr (castPtr raw_securityError :: Ptr ()), argPtr (castPtr raw_addressesFailingEncryption :: Ptr ())] >>= ownedObject . castPtr
+initWithCanSign_canEncrypt_securityError_addressesFailingEncryption meOutgoingMessageEncodingStatus canSign canEncrypt securityError addressesFailingEncryption =
+  sendOwnedMessage meOutgoingMessageEncodingStatus initWithCanSign_canEncrypt_securityError_addressesFailingEncryptionSelector canSign canEncrypt (toNSError securityError) (toNSArray addressesFailingEncryption)
 
 -- | Whether or not the message can be signed.
 --
 -- ObjC selector: @- canSign@
 canSign :: IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus => meOutgoingMessageEncodingStatus -> IO Bool
-canSign meOutgoingMessageEncodingStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meOutgoingMessageEncodingStatus (mkSelector "canSign") retCULong []
+canSign meOutgoingMessageEncodingStatus =
+  sendMessage meOutgoingMessageEncodingStatus canSignSelector
 
 -- | Whether or not the message can be encrypted.
 --
 -- ObjC selector: @- canEncrypt@
 canEncrypt :: IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus => meOutgoingMessageEncodingStatus -> IO Bool
-canEncrypt meOutgoingMessageEncodingStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meOutgoingMessageEncodingStatus (mkSelector "canEncrypt") retCULong []
+canEncrypt meOutgoingMessageEncodingStatus =
+  sendMessage meOutgoingMessageEncodingStatus canEncryptSelector
 
 -- | Any error that occurred while verifying the security status for the outgoing mail message.
 --
 -- ObjC selector: @- securityError@
 securityError :: IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus => meOutgoingMessageEncodingStatus -> IO (Id NSError)
-securityError meOutgoingMessageEncodingStatus  =
-    sendMsg meOutgoingMessageEncodingStatus (mkSelector "securityError") (retPtr retVoid) [] >>= retainedObject . castPtr
+securityError meOutgoingMessageEncodingStatus =
+  sendMessage meOutgoingMessageEncodingStatus securityErrorSelector
 
 -- | A list of any recipients for which the message should be encrypted but an error occurred. This could include missing the public key for the recipient.
 --
 -- ObjC selector: @- addressesFailingEncryption@
 addressesFailingEncryption :: IsMEOutgoingMessageEncodingStatus meOutgoingMessageEncodingStatus => meOutgoingMessageEncodingStatus -> IO (Id NSArray)
-addressesFailingEncryption meOutgoingMessageEncodingStatus  =
-    sendMsg meOutgoingMessageEncodingStatus (mkSelector "addressesFailingEncryption") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressesFailingEncryption meOutgoingMessageEncodingStatus =
+  sendMessage meOutgoingMessageEncodingStatus addressesFailingEncryptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEOutgoingMessageEncodingStatus)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEOutgoingMessageEncodingStatus)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCanSign:canEncrypt:securityError:addressesFailingEncryption:@
-initWithCanSign_canEncrypt_securityError_addressesFailingEncryptionSelector :: Selector
+initWithCanSign_canEncrypt_securityError_addressesFailingEncryptionSelector :: Selector '[Bool, Bool, Id NSError, Id NSArray] (Id MEOutgoingMessageEncodingStatus)
 initWithCanSign_canEncrypt_securityError_addressesFailingEncryptionSelector = mkSelector "initWithCanSign:canEncrypt:securityError:addressesFailingEncryption:"
 
 -- | @Selector@ for @canSign@
-canSignSelector :: Selector
+canSignSelector :: Selector '[] Bool
 canSignSelector = mkSelector "canSign"
 
 -- | @Selector@ for @canEncrypt@
-canEncryptSelector :: Selector
+canEncryptSelector :: Selector '[] Bool
 canEncryptSelector = mkSelector "canEncrypt"
 
 -- | @Selector@ for @securityError@
-securityErrorSelector :: Selector
+securityErrorSelector :: Selector '[] (Id NSError)
 securityErrorSelector = mkSelector "securityError"
 
 -- | @Selector@ for @addressesFailingEncryption@
-addressesFailingEncryptionSelector :: Selector
+addressesFailingEncryptionSelector :: Selector '[] (Id NSArray)
 addressesFailingEncryptionSelector = mkSelector "addressesFailingEncryption"
 

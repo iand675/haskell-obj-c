@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.Metal.MTL4ArgumentTableDescriptor
   , setSupportAttributeStrides
   , label
   , setLabel
-  , maxBufferBindCountSelector
-  , setMaxBufferBindCountSelector
-  , maxTextureBindCountSelector
-  , setMaxTextureBindCountSelector
-  , maxSamplerStateBindCountSelector
-  , setMaxSamplerStateBindCountSelector
   , initializeBindingsSelector
-  , setInitializeBindingsSelector
-  , supportAttributeStridesSelector
-  , setSupportAttributeStridesSelector
   , labelSelector
+  , maxBufferBindCountSelector
+  , maxSamplerStateBindCountSelector
+  , maxTextureBindCountSelector
+  , setInitializeBindingsSelector
   , setLabelSelector
+  , setMaxBufferBindCountSelector
+  , setMaxSamplerStateBindCountSelector
+  , setMaxTextureBindCountSelector
+  , setSupportAttributeStridesSelector
+  , supportAttributeStridesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- maxBufferBindCount@
 maxBufferBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO CULong
-maxBufferBindCount mtL4ArgumentTableDescriptor  =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "maxBufferBindCount") retCULong []
+maxBufferBindCount mtL4ArgumentTableDescriptor =
+  sendMessage mtL4ArgumentTableDescriptor maxBufferBindCountSelector
 
 -- | Determines the number of buffer-binding slots for the argument table.
 --
@@ -68,8 +65,8 @@ maxBufferBindCount mtL4ArgumentTableDescriptor  =
 --
 -- ObjC selector: @- setMaxBufferBindCount:@
 setMaxBufferBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> CULong -> IO ()
-setMaxBufferBindCount mtL4ArgumentTableDescriptor  value =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "setMaxBufferBindCount:") retVoid [argCULong value]
+setMaxBufferBindCount mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setMaxBufferBindCountSelector value
 
 -- | Determines the number of texture-binding slots for the argument table.
 --
@@ -77,8 +74,8 @@ setMaxBufferBindCount mtL4ArgumentTableDescriptor  value =
 --
 -- ObjC selector: @- maxTextureBindCount@
 maxTextureBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO CULong
-maxTextureBindCount mtL4ArgumentTableDescriptor  =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "maxTextureBindCount") retCULong []
+maxTextureBindCount mtL4ArgumentTableDescriptor =
+  sendMessage mtL4ArgumentTableDescriptor maxTextureBindCountSelector
 
 -- | Determines the number of texture-binding slots for the argument table.
 --
@@ -86,8 +83,8 @@ maxTextureBindCount mtL4ArgumentTableDescriptor  =
 --
 -- ObjC selector: @- setMaxTextureBindCount:@
 setMaxTextureBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> CULong -> IO ()
-setMaxTextureBindCount mtL4ArgumentTableDescriptor  value =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "setMaxTextureBindCount:") retVoid [argCULong value]
+setMaxTextureBindCount mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setMaxTextureBindCountSelector value
 
 -- | Determines the number of sampler state-binding slots for the argument table.
 --
@@ -95,8 +92,8 @@ setMaxTextureBindCount mtL4ArgumentTableDescriptor  value =
 --
 -- ObjC selector: @- maxSamplerStateBindCount@
 maxSamplerStateBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO CULong
-maxSamplerStateBindCount mtL4ArgumentTableDescriptor  =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "maxSamplerStateBindCount") retCULong []
+maxSamplerStateBindCount mtL4ArgumentTableDescriptor =
+  sendMessage mtL4ArgumentTableDescriptor maxSamplerStateBindCountSelector
 
 -- | Determines the number of sampler state-binding slots for the argument table.
 --
@@ -104,8 +101,8 @@ maxSamplerStateBindCount mtL4ArgumentTableDescriptor  =
 --
 -- ObjC selector: @- setMaxSamplerStateBindCount:@
 setMaxSamplerStateBindCount :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> CULong -> IO ()
-setMaxSamplerStateBindCount mtL4ArgumentTableDescriptor  value =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "setMaxSamplerStateBindCount:") retVoid [argCULong value]
+setMaxSamplerStateBindCount mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setMaxSamplerStateBindCountSelector value
 
 -- | Configures whether Metal initializes the bindings to nil values upon creation of argument table.
 --
@@ -113,8 +110,8 @@ setMaxSamplerStateBindCount mtL4ArgumentTableDescriptor  value =
 --
 -- ObjC selector: @- initializeBindings@
 initializeBindings :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO Bool
-initializeBindings mtL4ArgumentTableDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4ArgumentTableDescriptor (mkSelector "initializeBindings") retCULong []
+initializeBindings mtL4ArgumentTableDescriptor =
+  sendOwnedMessage mtL4ArgumentTableDescriptor initializeBindingsSelector
 
 -- | Configures whether Metal initializes the bindings to nil values upon creation of argument table.
 --
@@ -122,8 +119,8 @@ initializeBindings mtL4ArgumentTableDescriptor  =
 --
 -- ObjC selector: @- setInitializeBindings:@
 setInitializeBindings :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> Bool -> IO ()
-setInitializeBindings mtL4ArgumentTableDescriptor  value =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "setInitializeBindings:") retVoid [argCULong (if value then 1 else 0)]
+setInitializeBindings mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setInitializeBindingsSelector value
 
 -- | Controls whether Metal should reserve memory for attribute strides in the argument table.
 --
@@ -133,8 +130,8 @@ setInitializeBindings mtL4ArgumentTableDescriptor  value =
 --
 -- ObjC selector: @- supportAttributeStrides@
 supportAttributeStrides :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO Bool
-supportAttributeStrides mtL4ArgumentTableDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4ArgumentTableDescriptor (mkSelector "supportAttributeStrides") retCULong []
+supportAttributeStrides mtL4ArgumentTableDescriptor =
+  sendMessage mtL4ArgumentTableDescriptor supportAttributeStridesSelector
 
 -- | Controls whether Metal should reserve memory for attribute strides in the argument table.
 --
@@ -144,73 +141,72 @@ supportAttributeStrides mtL4ArgumentTableDescriptor  =
 --
 -- ObjC selector: @- setSupportAttributeStrides:@
 setSupportAttributeStrides :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> Bool -> IO ()
-setSupportAttributeStrides mtL4ArgumentTableDescriptor  value =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "setSupportAttributeStrides:") retVoid [argCULong (if value then 1 else 0)]
+setSupportAttributeStrides mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setSupportAttributeStridesSelector value
 
 -- | Assigns an optional label with the argument table for debug purposes.
 --
 -- ObjC selector: @- label@
 label :: IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor => mtL4ArgumentTableDescriptor -> IO (Id NSString)
-label mtL4ArgumentTableDescriptor  =
-    sendMsg mtL4ArgumentTableDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtL4ArgumentTableDescriptor =
+  sendMessage mtL4ArgumentTableDescriptor labelSelector
 
 -- | Assigns an optional label with the argument table for debug purposes.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTL4ArgumentTableDescriptor mtL4ArgumentTableDescriptor, IsNSString value) => mtL4ArgumentTableDescriptor -> value -> IO ()
-setLabel mtL4ArgumentTableDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4ArgumentTableDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtL4ArgumentTableDescriptor value =
+  sendMessage mtL4ArgumentTableDescriptor setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxBufferBindCount@
-maxBufferBindCountSelector :: Selector
+maxBufferBindCountSelector :: Selector '[] CULong
 maxBufferBindCountSelector = mkSelector "maxBufferBindCount"
 
 -- | @Selector@ for @setMaxBufferBindCount:@
-setMaxBufferBindCountSelector :: Selector
+setMaxBufferBindCountSelector :: Selector '[CULong] ()
 setMaxBufferBindCountSelector = mkSelector "setMaxBufferBindCount:"
 
 -- | @Selector@ for @maxTextureBindCount@
-maxTextureBindCountSelector :: Selector
+maxTextureBindCountSelector :: Selector '[] CULong
 maxTextureBindCountSelector = mkSelector "maxTextureBindCount"
 
 -- | @Selector@ for @setMaxTextureBindCount:@
-setMaxTextureBindCountSelector :: Selector
+setMaxTextureBindCountSelector :: Selector '[CULong] ()
 setMaxTextureBindCountSelector = mkSelector "setMaxTextureBindCount:"
 
 -- | @Selector@ for @maxSamplerStateBindCount@
-maxSamplerStateBindCountSelector :: Selector
+maxSamplerStateBindCountSelector :: Selector '[] CULong
 maxSamplerStateBindCountSelector = mkSelector "maxSamplerStateBindCount"
 
 -- | @Selector@ for @setMaxSamplerStateBindCount:@
-setMaxSamplerStateBindCountSelector :: Selector
+setMaxSamplerStateBindCountSelector :: Selector '[CULong] ()
 setMaxSamplerStateBindCountSelector = mkSelector "setMaxSamplerStateBindCount:"
 
 -- | @Selector@ for @initializeBindings@
-initializeBindingsSelector :: Selector
+initializeBindingsSelector :: Selector '[] Bool
 initializeBindingsSelector = mkSelector "initializeBindings"
 
 -- | @Selector@ for @setInitializeBindings:@
-setInitializeBindingsSelector :: Selector
+setInitializeBindingsSelector :: Selector '[Bool] ()
 setInitializeBindingsSelector = mkSelector "setInitializeBindings:"
 
 -- | @Selector@ for @supportAttributeStrides@
-supportAttributeStridesSelector :: Selector
+supportAttributeStridesSelector :: Selector '[] Bool
 supportAttributeStridesSelector = mkSelector "supportAttributeStrides"
 
 -- | @Selector@ for @setSupportAttributeStrides:@
-setSupportAttributeStridesSelector :: Selector
+setSupportAttributeStridesSelector :: Selector '[Bool] ()
 setSupportAttributeStridesSelector = mkSelector "setSupportAttributeStrides:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,14 +25,14 @@ module ObjC.PHASE.PHASESamplerNodeDefinition
   , setCullOption
   , playbackMode
   , setPlaybackMode
-  , initSelector
-  , newSelector
-  , initWithSoundAssetIdentifier_mixerDefinition_identifierSelector
-  , initWithSoundAssetIdentifier_mixerDefinitionSelector
   , assetIdentifierSelector
   , cullOptionSelector
-  , setCullOptionSelector
+  , initSelector
+  , initWithSoundAssetIdentifier_mixerDefinitionSelector
+  , initWithSoundAssetIdentifier_mixerDefinition_identifierSelector
+  , newSelector
   , playbackModeSelector
+  , setCullOptionSelector
   , setPlaybackModeSelector
 
   -- * Enum types
@@ -47,15 +48,11 @@ module ObjC.PHASE.PHASESamplerNodeDefinition
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,15 +62,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> IO (Id PHASESamplerNodeDefinition)
-init_ phaseSamplerNodeDefinition  =
-    sendMsg phaseSamplerNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseSamplerNodeDefinition =
+  sendOwnedMessage phaseSamplerNodeDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASESamplerNodeDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASESamplerNodeDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithSoundAssetIdentifier:mixerDefinition:identifier
 --
@@ -89,11 +86,8 @@ new  =
 --
 -- ObjC selector: @- initWithSoundAssetIdentifier:mixerDefinition:identifier:@
 initWithSoundAssetIdentifier_mixerDefinition_identifier :: (IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition, IsNSString soundAssetIdentifier, IsPHASEMixerDefinition mixerDefinition, IsNSString identifier) => phaseSamplerNodeDefinition -> soundAssetIdentifier -> mixerDefinition -> identifier -> IO (Id PHASESamplerNodeDefinition)
-initWithSoundAssetIdentifier_mixerDefinition_identifier phaseSamplerNodeDefinition  soundAssetIdentifier mixerDefinition identifier =
-  withObjCPtr soundAssetIdentifier $ \raw_soundAssetIdentifier ->
-    withObjCPtr mixerDefinition $ \raw_mixerDefinition ->
-      withObjCPtr identifier $ \raw_identifier ->
-          sendMsg phaseSamplerNodeDefinition (mkSelector "initWithSoundAssetIdentifier:mixerDefinition:identifier:") (retPtr retVoid) [argPtr (castPtr raw_soundAssetIdentifier :: Ptr ()), argPtr (castPtr raw_mixerDefinition :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithSoundAssetIdentifier_mixerDefinition_identifier phaseSamplerNodeDefinition soundAssetIdentifier mixerDefinition identifier =
+  sendOwnedMessage phaseSamplerNodeDefinition initWithSoundAssetIdentifier_mixerDefinition_identifierSelector (toNSString soundAssetIdentifier) (toPHASEMixerDefinition mixerDefinition) (toNSString identifier)
 
 -- | initWithSoundAssetIdentifier:mixerDefinition
 --
@@ -107,10 +101,8 @@ initWithSoundAssetIdentifier_mixerDefinition_identifier phaseSamplerNodeDefiniti
 --
 -- ObjC selector: @- initWithSoundAssetIdentifier:mixerDefinition:@
 initWithSoundAssetIdentifier_mixerDefinition :: (IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition, IsNSString soundAssetIdentifier, IsPHASEMixerDefinition mixerDefinition) => phaseSamplerNodeDefinition -> soundAssetIdentifier -> mixerDefinition -> IO (Id PHASESamplerNodeDefinition)
-initWithSoundAssetIdentifier_mixerDefinition phaseSamplerNodeDefinition  soundAssetIdentifier mixerDefinition =
-  withObjCPtr soundAssetIdentifier $ \raw_soundAssetIdentifier ->
-    withObjCPtr mixerDefinition $ \raw_mixerDefinition ->
-        sendMsg phaseSamplerNodeDefinition (mkSelector "initWithSoundAssetIdentifier:mixerDefinition:") (retPtr retVoid) [argPtr (castPtr raw_soundAssetIdentifier :: Ptr ()), argPtr (castPtr raw_mixerDefinition :: Ptr ())] >>= ownedObject . castPtr
+initWithSoundAssetIdentifier_mixerDefinition phaseSamplerNodeDefinition soundAssetIdentifier mixerDefinition =
+  sendOwnedMessage phaseSamplerNodeDefinition initWithSoundAssetIdentifier_mixerDefinitionSelector (toNSString soundAssetIdentifier) (toPHASEMixerDefinition mixerDefinition)
 
 -- | assetIdentifier
 --
@@ -118,8 +110,8 @@ initWithSoundAssetIdentifier_mixerDefinition phaseSamplerNodeDefinition  soundAs
 --
 -- ObjC selector: @- assetIdentifier@
 assetIdentifier :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> IO (Id NSString)
-assetIdentifier phaseSamplerNodeDefinition  =
-    sendMsg phaseSamplerNodeDefinition (mkSelector "assetIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetIdentifier phaseSamplerNodeDefinition =
+  sendMessage phaseSamplerNodeDefinition assetIdentifierSelector
 
 -- | cullOption
 --
@@ -129,8 +121,8 @@ assetIdentifier phaseSamplerNodeDefinition  =
 --
 -- ObjC selector: @- cullOption@
 cullOption :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> IO PHASECullOption
-cullOption phaseSamplerNodeDefinition  =
-    fmap (coerce :: CLong -> PHASECullOption) $ sendMsg phaseSamplerNodeDefinition (mkSelector "cullOption") retCLong []
+cullOption phaseSamplerNodeDefinition =
+  sendMessage phaseSamplerNodeDefinition cullOptionSelector
 
 -- | cullOption
 --
@@ -140,8 +132,8 @@ cullOption phaseSamplerNodeDefinition  =
 --
 -- ObjC selector: @- setCullOption:@
 setCullOption :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> PHASECullOption -> IO ()
-setCullOption phaseSamplerNodeDefinition  value =
-    sendMsg phaseSamplerNodeDefinition (mkSelector "setCullOption:") retVoid [argCLong (coerce value)]
+setCullOption phaseSamplerNodeDefinition value =
+  sendMessage phaseSamplerNodeDefinition setCullOptionSelector value
 
 -- | playbackMode
 --
@@ -151,8 +143,8 @@ setCullOption phaseSamplerNodeDefinition  value =
 --
 -- ObjC selector: @- playbackMode@
 playbackMode :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> IO PHASEPlaybackMode
-playbackMode phaseSamplerNodeDefinition  =
-    fmap (coerce :: CLong -> PHASEPlaybackMode) $ sendMsg phaseSamplerNodeDefinition (mkSelector "playbackMode") retCLong []
+playbackMode phaseSamplerNodeDefinition =
+  sendMessage phaseSamplerNodeDefinition playbackModeSelector
 
 -- | playbackMode
 --
@@ -162,46 +154,46 @@ playbackMode phaseSamplerNodeDefinition  =
 --
 -- ObjC selector: @- setPlaybackMode:@
 setPlaybackMode :: IsPHASESamplerNodeDefinition phaseSamplerNodeDefinition => phaseSamplerNodeDefinition -> PHASEPlaybackMode -> IO ()
-setPlaybackMode phaseSamplerNodeDefinition  value =
-    sendMsg phaseSamplerNodeDefinition (mkSelector "setPlaybackMode:") retVoid [argCLong (coerce value)]
+setPlaybackMode phaseSamplerNodeDefinition value =
+  sendMessage phaseSamplerNodeDefinition setPlaybackModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASESamplerNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASESamplerNodeDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSoundAssetIdentifier:mixerDefinition:identifier:@
-initWithSoundAssetIdentifier_mixerDefinition_identifierSelector :: Selector
+initWithSoundAssetIdentifier_mixerDefinition_identifierSelector :: Selector '[Id NSString, Id PHASEMixerDefinition, Id NSString] (Id PHASESamplerNodeDefinition)
 initWithSoundAssetIdentifier_mixerDefinition_identifierSelector = mkSelector "initWithSoundAssetIdentifier:mixerDefinition:identifier:"
 
 -- | @Selector@ for @initWithSoundAssetIdentifier:mixerDefinition:@
-initWithSoundAssetIdentifier_mixerDefinitionSelector :: Selector
+initWithSoundAssetIdentifier_mixerDefinitionSelector :: Selector '[Id NSString, Id PHASEMixerDefinition] (Id PHASESamplerNodeDefinition)
 initWithSoundAssetIdentifier_mixerDefinitionSelector = mkSelector "initWithSoundAssetIdentifier:mixerDefinition:"
 
 -- | @Selector@ for @assetIdentifier@
-assetIdentifierSelector :: Selector
+assetIdentifierSelector :: Selector '[] (Id NSString)
 assetIdentifierSelector = mkSelector "assetIdentifier"
 
 -- | @Selector@ for @cullOption@
-cullOptionSelector :: Selector
+cullOptionSelector :: Selector '[] PHASECullOption
 cullOptionSelector = mkSelector "cullOption"
 
 -- | @Selector@ for @setCullOption:@
-setCullOptionSelector :: Selector
+setCullOptionSelector :: Selector '[PHASECullOption] ()
 setCullOptionSelector = mkSelector "setCullOption:"
 
 -- | @Selector@ for @playbackMode@
-playbackModeSelector :: Selector
+playbackModeSelector :: Selector '[] PHASEPlaybackMode
 playbackModeSelector = mkSelector "playbackMode"
 
 -- | @Selector@ for @setPlaybackMode:@
-setPlaybackModeSelector :: Selector
+setPlaybackModeSelector :: Selector '[PHASEPlaybackMode] ()
 setPlaybackModeSelector = mkSelector "setPlaybackMode:"
 

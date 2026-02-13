@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.CoreMotion.CMAbsoluteAltitudeData
   , altitude
   , accuracy
   , precision
-  , altitudeSelector
   , accuracySelector
+  , altitudeSelector
   , precisionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- altitude@
 altitude :: IsCMAbsoluteAltitudeData cmAbsoluteAltitudeData => cmAbsoluteAltitudeData -> IO CDouble
-altitude cmAbsoluteAltitudeData  =
-    sendMsg cmAbsoluteAltitudeData (mkSelector "altitude") retCDouble []
+altitude cmAbsoluteAltitudeData =
+  sendMessage cmAbsoluteAltitudeData altitudeSelector
 
 -- | @- accuracy@
 accuracy :: IsCMAbsoluteAltitudeData cmAbsoluteAltitudeData => cmAbsoluteAltitudeData -> IO CDouble
-accuracy cmAbsoluteAltitudeData  =
-    sendMsg cmAbsoluteAltitudeData (mkSelector "accuracy") retCDouble []
+accuracy cmAbsoluteAltitudeData =
+  sendMessage cmAbsoluteAltitudeData accuracySelector
 
 -- | @- precision@
 precision :: IsCMAbsoluteAltitudeData cmAbsoluteAltitudeData => cmAbsoluteAltitudeData -> IO CDouble
-precision cmAbsoluteAltitudeData  =
-    sendMsg cmAbsoluteAltitudeData (mkSelector "precision") retCDouble []
+precision cmAbsoluteAltitudeData =
+  sendMessage cmAbsoluteAltitudeData precisionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @altitude@
-altitudeSelector :: Selector
+altitudeSelector :: Selector '[] CDouble
 altitudeSelector = mkSelector "altitude"
 
 -- | @Selector@ for @accuracy@
-accuracySelector :: Selector
+accuracySelector :: Selector '[] CDouble
 accuracySelector = mkSelector "accuracy"
 
 -- | @Selector@ for @precision@
-precisionSelector :: Selector
+precisionSelector :: Selector '[] CDouble
 precisionSelector = mkSelector "precision"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.MetricKit.MXForegroundExitData
   , cumulativeAbnormalExitCount
   , cumulativeIllegalInstructionExitCount
   , cumulativeAppWatchdogExitCount
-  , cumulativeNormalAppExitCountSelector
-  , cumulativeMemoryResourceLimitExitCountSelector
-  , cumulativeBadAccessExitCountSelector
   , cumulativeAbnormalExitCountSelector
-  , cumulativeIllegalInstructionExitCountSelector
   , cumulativeAppWatchdogExitCountSelector
+  , cumulativeBadAccessExitCountSelector
+  , cumulativeIllegalInstructionExitCountSelector
+  , cumulativeMemoryResourceLimitExitCountSelector
+  , cumulativeNormalAppExitCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- cumulativeNormalAppExitCount@
 cumulativeNormalAppExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeNormalAppExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeNormalAppExitCount") retCULong []
+cumulativeNormalAppExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeNormalAppExitCountSelector
 
 -- | cumulativeMemoryResourceLimitExitCount
 --
@@ -60,8 +57,8 @@ cumulativeNormalAppExitCount mxForegroundExitData  =
 --
 -- ObjC selector: @- cumulativeMemoryResourceLimitExitCount@
 cumulativeMemoryResourceLimitExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeMemoryResourceLimitExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeMemoryResourceLimitExitCount") retCULong []
+cumulativeMemoryResourceLimitExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeMemoryResourceLimitExitCountSelector
 
 -- | cumulativeBadAccessExitCount
 --
@@ -69,8 +66,8 @@ cumulativeMemoryResourceLimitExitCount mxForegroundExitData  =
 --
 -- ObjC selector: @- cumulativeBadAccessExitCount@
 cumulativeBadAccessExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeBadAccessExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeBadAccessExitCount") retCULong []
+cumulativeBadAccessExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeBadAccessExitCountSelector
 
 -- | cumulativeAbnormalExitCount
 --
@@ -80,8 +77,8 @@ cumulativeBadAccessExitCount mxForegroundExitData  =
 --
 -- ObjC selector: @- cumulativeAbnormalExitCount@
 cumulativeAbnormalExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeAbnormalExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeAbnormalExitCount") retCULong []
+cumulativeAbnormalExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeAbnormalExitCountSelector
 
 -- | cumulativeIllegalInstructionExitCount
 --
@@ -91,8 +88,8 @@ cumulativeAbnormalExitCount mxForegroundExitData  =
 --
 -- ObjC selector: @- cumulativeIllegalInstructionExitCount@
 cumulativeIllegalInstructionExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeIllegalInstructionExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeIllegalInstructionExitCount") retCULong []
+cumulativeIllegalInstructionExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeIllegalInstructionExitCountSelector
 
 -- | cumulativeAppWatchdogExitCount
 --
@@ -102,34 +99,34 @@ cumulativeIllegalInstructionExitCount mxForegroundExitData  =
 --
 -- ObjC selector: @- cumulativeAppWatchdogExitCount@
 cumulativeAppWatchdogExitCount :: IsMXForegroundExitData mxForegroundExitData => mxForegroundExitData -> IO CULong
-cumulativeAppWatchdogExitCount mxForegroundExitData  =
-    sendMsg mxForegroundExitData (mkSelector "cumulativeAppWatchdogExitCount") retCULong []
+cumulativeAppWatchdogExitCount mxForegroundExitData =
+  sendMessage mxForegroundExitData cumulativeAppWatchdogExitCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cumulativeNormalAppExitCount@
-cumulativeNormalAppExitCountSelector :: Selector
+cumulativeNormalAppExitCountSelector :: Selector '[] CULong
 cumulativeNormalAppExitCountSelector = mkSelector "cumulativeNormalAppExitCount"
 
 -- | @Selector@ for @cumulativeMemoryResourceLimitExitCount@
-cumulativeMemoryResourceLimitExitCountSelector :: Selector
+cumulativeMemoryResourceLimitExitCountSelector :: Selector '[] CULong
 cumulativeMemoryResourceLimitExitCountSelector = mkSelector "cumulativeMemoryResourceLimitExitCount"
 
 -- | @Selector@ for @cumulativeBadAccessExitCount@
-cumulativeBadAccessExitCountSelector :: Selector
+cumulativeBadAccessExitCountSelector :: Selector '[] CULong
 cumulativeBadAccessExitCountSelector = mkSelector "cumulativeBadAccessExitCount"
 
 -- | @Selector@ for @cumulativeAbnormalExitCount@
-cumulativeAbnormalExitCountSelector :: Selector
+cumulativeAbnormalExitCountSelector :: Selector '[] CULong
 cumulativeAbnormalExitCountSelector = mkSelector "cumulativeAbnormalExitCount"
 
 -- | @Selector@ for @cumulativeIllegalInstructionExitCount@
-cumulativeIllegalInstructionExitCountSelector :: Selector
+cumulativeIllegalInstructionExitCountSelector :: Selector '[] CULong
 cumulativeIllegalInstructionExitCountSelector = mkSelector "cumulativeIllegalInstructionExitCount"
 
 -- | @Selector@ for @cumulativeAppWatchdogExitCount@
-cumulativeAppWatchdogExitCountSelector :: Selector
+cumulativeAppWatchdogExitCountSelector :: Selector '[] CULong
 cumulativeAppWatchdogExitCountSelector = mkSelector "cumulativeAppWatchdogExitCount"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.VideoToolbox.VTFrameProcessorFrame
   , init_
   , new
   , buffer
+  , bufferSelector
   , initSelector
   , newSelector
-  , bufferSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVTFrameProcessorFrame vtFrameProcessorFrame => vtFrameProcessorFrame -> IO (Id VTFrameProcessorFrame)
-init_ vtFrameProcessorFrame  =
-    sendMsg vtFrameProcessorFrame (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtFrameProcessorFrame =
+  sendOwnedMessage vtFrameProcessorFrame initSelector
 
 -- | @+ new@
 new :: IO (Id VTFrameProcessorFrame)
 new  =
   do
     cls' <- getRequiredClass "VTFrameProcessorFrame"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Pixel buffer that you provided when you initialized the object.
 --
 -- ObjC selector: @- buffer@
 buffer :: IsVTFrameProcessorFrame vtFrameProcessorFrame => vtFrameProcessorFrame -> IO (Ptr ())
-buffer vtFrameProcessorFrame  =
-    fmap castPtr $ sendMsg vtFrameProcessorFrame (mkSelector "buffer") (retPtr retVoid) []
+buffer vtFrameProcessorFrame =
+  sendMessage vtFrameProcessorFrame bufferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTFrameProcessorFrame)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTFrameProcessorFrame)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @buffer@
-bufferSelector :: Selector
+bufferSelector :: Selector '[] (Ptr ())
 bufferSelector = mkSelector "buffer"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.OSAKit.OSALanguageInstance
   , componentInstance
   , defaultTarget
   , setDefaultTarget
-  , languageInstanceWithLanguageSelector
-  , initWithLanguageSelector
-  , richTextFromDescriptorSelector
-  , languageSelector
   , componentInstanceSelector
   , defaultTargetSelector
+  , initWithLanguageSelector
+  , languageInstanceWithLanguageSelector
+  , languageSelector
+  , richTextFromDescriptorSelector
   , setDefaultTargetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,70 +41,67 @@ languageInstanceWithLanguage :: IsOSALanguage language => language -> IO (Id OSA
 languageInstanceWithLanguage language =
   do
     cls' <- getRequiredClass "OSALanguageInstance"
-    withObjCPtr language $ \raw_language ->
-      sendClassMsg cls' (mkSelector "languageInstanceWithLanguage:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' languageInstanceWithLanguageSelector (toOSALanguage language)
 
 -- | @- initWithLanguage:@
 initWithLanguage :: (IsOSALanguageInstance osaLanguageInstance, IsOSALanguage language) => osaLanguageInstance -> language -> IO (Id OSALanguageInstance)
-initWithLanguage osaLanguageInstance  language =
-  withObjCPtr language $ \raw_language ->
-      sendMsg osaLanguageInstance (mkSelector "initWithLanguage:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ())] >>= ownedObject . castPtr
+initWithLanguage osaLanguageInstance language =
+  sendOwnedMessage osaLanguageInstance initWithLanguageSelector (toOSALanguage language)
 
 -- | @- richTextFromDescriptor:@
 richTextFromDescriptor :: (IsOSALanguageInstance osaLanguageInstance, IsNSAppleEventDescriptor descriptor) => osaLanguageInstance -> descriptor -> IO (Id NSAttributedString)
-richTextFromDescriptor osaLanguageInstance  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg osaLanguageInstance (mkSelector "richTextFromDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+richTextFromDescriptor osaLanguageInstance descriptor =
+  sendMessage osaLanguageInstance richTextFromDescriptorSelector (toNSAppleEventDescriptor descriptor)
 
 -- | @- language@
 language :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> IO (Id OSALanguage)
-language osaLanguageInstance  =
-    sendMsg osaLanguageInstance (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language osaLanguageInstance =
+  sendMessage osaLanguageInstance languageSelector
 
 -- | @- componentInstance@
 componentInstance :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> IO RawId
-componentInstance osaLanguageInstance  =
-    fmap (RawId . castPtr) $ sendMsg osaLanguageInstance (mkSelector "componentInstance") (retPtr retVoid) []
+componentInstance osaLanguageInstance =
+  sendMessage osaLanguageInstance componentInstanceSelector
 
 -- | @- defaultTarget@
 defaultTarget :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> IO RawId
-defaultTarget osaLanguageInstance  =
-    fmap (RawId . castPtr) $ sendMsg osaLanguageInstance (mkSelector "defaultTarget") (retPtr retVoid) []
+defaultTarget osaLanguageInstance =
+  sendMessage osaLanguageInstance defaultTargetSelector
 
 -- | @- setDefaultTarget:@
 setDefaultTarget :: IsOSALanguageInstance osaLanguageInstance => osaLanguageInstance -> RawId -> IO ()
-setDefaultTarget osaLanguageInstance  value =
-    sendMsg osaLanguageInstance (mkSelector "setDefaultTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDefaultTarget osaLanguageInstance value =
+  sendMessage osaLanguageInstance setDefaultTargetSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @languageInstanceWithLanguage:@
-languageInstanceWithLanguageSelector :: Selector
+languageInstanceWithLanguageSelector :: Selector '[Id OSALanguage] (Id OSALanguageInstance)
 languageInstanceWithLanguageSelector = mkSelector "languageInstanceWithLanguage:"
 
 -- | @Selector@ for @initWithLanguage:@
-initWithLanguageSelector :: Selector
+initWithLanguageSelector :: Selector '[Id OSALanguage] (Id OSALanguageInstance)
 initWithLanguageSelector = mkSelector "initWithLanguage:"
 
 -- | @Selector@ for @richTextFromDescriptor:@
-richTextFromDescriptorSelector :: Selector
+richTextFromDescriptorSelector :: Selector '[Id NSAppleEventDescriptor] (Id NSAttributedString)
 richTextFromDescriptorSelector = mkSelector "richTextFromDescriptor:"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id OSALanguage)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @componentInstance@
-componentInstanceSelector :: Selector
+componentInstanceSelector :: Selector '[] RawId
 componentInstanceSelector = mkSelector "componentInstance"
 
 -- | @Selector@ for @defaultTarget@
-defaultTargetSelector :: Selector
+defaultTargetSelector :: Selector '[] RawId
 defaultTargetSelector = mkSelector "defaultTarget"
 
 -- | @Selector@ for @setDefaultTarget:@
-setDefaultTargetSelector :: Selector
+setDefaultTargetSelector :: Selector '[RawId] ()
 setDefaultTargetSelector = mkSelector "setDefaultTarget:"
 

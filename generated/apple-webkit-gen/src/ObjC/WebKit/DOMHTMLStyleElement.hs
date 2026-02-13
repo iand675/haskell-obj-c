@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.WebKit.DOMHTMLStyleElement
   , setType
   , sheet
   , disabledSelector
-  , setDisabledSelector
   , mediaSelector
+  , setDisabledSelector
   , setMediaSelector
-  , typeSelector
   , setTypeSelector
   , sheetSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,70 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- disabled@
 disabled :: IsDOMHTMLStyleElement domhtmlStyleElement => domhtmlStyleElement -> IO Bool
-disabled domhtmlStyleElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlStyleElement (mkSelector "disabled") retCULong []
+disabled domhtmlStyleElement =
+  sendMessage domhtmlStyleElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLStyleElement domhtmlStyleElement => domhtmlStyleElement -> Bool -> IO ()
-setDisabled domhtmlStyleElement  value =
-    sendMsg domhtmlStyleElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlStyleElement value =
+  sendMessage domhtmlStyleElement setDisabledSelector value
 
 -- | @- media@
 media :: IsDOMHTMLStyleElement domhtmlStyleElement => domhtmlStyleElement -> IO (Id NSString)
-media domhtmlStyleElement  =
-    sendMsg domhtmlStyleElement (mkSelector "media") (retPtr retVoid) [] >>= retainedObject . castPtr
+media domhtmlStyleElement =
+  sendMessage domhtmlStyleElement mediaSelector
 
 -- | @- setMedia:@
 setMedia :: (IsDOMHTMLStyleElement domhtmlStyleElement, IsNSString value) => domhtmlStyleElement -> value -> IO ()
-setMedia domhtmlStyleElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlStyleElement (mkSelector "setMedia:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMedia domhtmlStyleElement value =
+  sendMessage domhtmlStyleElement setMediaSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLStyleElement domhtmlStyleElement => domhtmlStyleElement -> IO (Id NSString)
-type_ domhtmlStyleElement  =
-    sendMsg domhtmlStyleElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlStyleElement =
+  sendMessage domhtmlStyleElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLStyleElement domhtmlStyleElement, IsNSString value) => domhtmlStyleElement -> value -> IO ()
-setType domhtmlStyleElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlStyleElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlStyleElement value =
+  sendMessage domhtmlStyleElement setTypeSelector (toNSString value)
 
 -- | @- sheet@
 sheet :: IsDOMHTMLStyleElement domhtmlStyleElement => domhtmlStyleElement -> IO (Id DOMStyleSheet)
-sheet domhtmlStyleElement  =
-    sendMsg domhtmlStyleElement (mkSelector "sheet") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheet domhtmlStyleElement =
+  sendMessage domhtmlStyleElement sheetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @media@
-mediaSelector :: Selector
+mediaSelector :: Selector '[] (Id NSString)
 mediaSelector = mkSelector "media"
 
 -- | @Selector@ for @setMedia:@
-setMediaSelector :: Selector
+setMediaSelector :: Selector '[Id NSString] ()
 setMediaSelector = mkSelector "setMedia:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @sheet@
-sheetSelector :: Selector
+sheetSelector :: Selector '[] (Id DOMStyleSheet)
 sheetSelector = mkSelector "sheet"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionNode
   , accumulatorPrecision
   , setAccumulatorPrecision
   , convolutionGradientState
-  , nodeWithSource_weightsSelector
-  , initWithSource_weightsSelector
-  , trainingStyleSelector
-  , setTrainingStyleSelector
   , accumulatorPrecisionSelector
-  , setAccumulatorPrecisionSelector
   , convolutionGradientStateSelector
+  , initWithSource_weightsSelector
+  , nodeWithSource_weightsSelector
+  , setAccumulatorPrecisionSelector
+  , setTrainingStyleSelector
+  , trainingStyleSelector
 
   -- * Enum types
   , MPSNNConvolutionAccumulatorPrecisionOption(MPSNNConvolutionAccumulatorPrecisionOption)
@@ -35,15 +36,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,8 +61,7 @@ nodeWithSource_weights :: IsMPSNNImageNode sourceNode => sourceNode -> RawId -> 
 nodeWithSource_weights sourceNode weights =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_weightsSelector (toMPSNNImageNode sourceNode) weights
 
 -- | Init a node representing a MPSCNNConvolution kernel
 --
@@ -77,23 +73,22 @@ nodeWithSource_weights sourceNode weights =
 --
 -- ObjC selector: @- initWithSource:weights:@
 initWithSource_weights :: (IsMPSCNNConvolutionNode mpscnnConvolutionNode, IsMPSNNImageNode sourceNode) => mpscnnConvolutionNode -> sourceNode -> RawId -> IO (Id MPSCNNConvolutionNode)
-initWithSource_weights mpscnnConvolutionNode  sourceNode weights =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnConvolutionNode (mkSelector "initWithSource:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_weights mpscnnConvolutionNode sourceNode weights =
+  sendOwnedMessage mpscnnConvolutionNode initWithSource_weightsSelector (toMPSNNImageNode sourceNode) weights
 
 -- | The training style of the forward node will be propagated to gradient nodes made from it
 --
 -- ObjC selector: @- trainingStyle@
 trainingStyle :: IsMPSCNNConvolutionNode mpscnnConvolutionNode => mpscnnConvolutionNode -> IO MPSNNTrainingStyle
-trainingStyle mpscnnConvolutionNode  =
-    fmap (coerce :: CULong -> MPSNNTrainingStyle) $ sendMsg mpscnnConvolutionNode (mkSelector "trainingStyle") retCULong []
+trainingStyle mpscnnConvolutionNode =
+  sendMessage mpscnnConvolutionNode trainingStyleSelector
 
 -- | The training style of the forward node will be propagated to gradient nodes made from it
 --
 -- ObjC selector: @- setTrainingStyle:@
 setTrainingStyle :: IsMPSCNNConvolutionNode mpscnnConvolutionNode => mpscnnConvolutionNode -> MPSNNTrainingStyle -> IO ()
-setTrainingStyle mpscnnConvolutionNode  value =
-    sendMsg mpscnnConvolutionNode (mkSelector "setTrainingStyle:") retVoid [argCULong (coerce value)]
+setTrainingStyle mpscnnConvolutionNode value =
+  sendMessage mpscnnConvolutionNode setTrainingStyleSelector value
 
 -- | Set the floating-point precision used by the convolution accumulator
 --
@@ -101,8 +96,8 @@ setTrainingStyle mpscnnConvolutionNode  value =
 --
 -- ObjC selector: @- accumulatorPrecision@
 accumulatorPrecision :: IsMPSCNNConvolutionNode mpscnnConvolutionNode => mpscnnConvolutionNode -> IO MPSNNConvolutionAccumulatorPrecisionOption
-accumulatorPrecision mpscnnConvolutionNode  =
-    fmap (coerce :: CULong -> MPSNNConvolutionAccumulatorPrecisionOption) $ sendMsg mpscnnConvolutionNode (mkSelector "accumulatorPrecision") retCULong []
+accumulatorPrecision mpscnnConvolutionNode =
+  sendMessage mpscnnConvolutionNode accumulatorPrecisionSelector
 
 -- | Set the floating-point precision used by the convolution accumulator
 --
@@ -110,8 +105,8 @@ accumulatorPrecision mpscnnConvolutionNode  =
 --
 -- ObjC selector: @- setAccumulatorPrecision:@
 setAccumulatorPrecision :: IsMPSCNNConvolutionNode mpscnnConvolutionNode => mpscnnConvolutionNode -> MPSNNConvolutionAccumulatorPrecisionOption -> IO ()
-setAccumulatorPrecision mpscnnConvolutionNode  value =
-    sendMsg mpscnnConvolutionNode (mkSelector "setAccumulatorPrecision:") retVoid [argCULong (coerce value)]
+setAccumulatorPrecision mpscnnConvolutionNode value =
+  sendMessage mpscnnConvolutionNode setAccumulatorPrecisionSelector value
 
 -- | A node to represent a MPSCNNConvolutionGradientState object
 --
@@ -119,38 +114,38 @@ setAccumulatorPrecision mpscnnConvolutionNode  value =
 --
 -- ObjC selector: @- convolutionGradientState@
 convolutionGradientState :: IsMPSCNNConvolutionNode mpscnnConvolutionNode => mpscnnConvolutionNode -> IO (Id MPSCNNConvolutionGradientStateNode)
-convolutionGradientState mpscnnConvolutionNode  =
-    sendMsg mpscnnConvolutionNode (mkSelector "convolutionGradientState") (retPtr retVoid) [] >>= retainedObject . castPtr
+convolutionGradientState mpscnnConvolutionNode =
+  sendMessage mpscnnConvolutionNode convolutionGradientStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:weights:@
-nodeWithSource_weightsSelector :: Selector
+nodeWithSource_weightsSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNConvolutionNode)
 nodeWithSource_weightsSelector = mkSelector "nodeWithSource:weights:"
 
 -- | @Selector@ for @initWithSource:weights:@
-initWithSource_weightsSelector :: Selector
+initWithSource_weightsSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNConvolutionNode)
 initWithSource_weightsSelector = mkSelector "initWithSource:weights:"
 
 -- | @Selector@ for @trainingStyle@
-trainingStyleSelector :: Selector
+trainingStyleSelector :: Selector '[] MPSNNTrainingStyle
 trainingStyleSelector = mkSelector "trainingStyle"
 
 -- | @Selector@ for @setTrainingStyle:@
-setTrainingStyleSelector :: Selector
+setTrainingStyleSelector :: Selector '[MPSNNTrainingStyle] ()
 setTrainingStyleSelector = mkSelector "setTrainingStyle:"
 
 -- | @Selector@ for @accumulatorPrecision@
-accumulatorPrecisionSelector :: Selector
+accumulatorPrecisionSelector :: Selector '[] MPSNNConvolutionAccumulatorPrecisionOption
 accumulatorPrecisionSelector = mkSelector "accumulatorPrecision"
 
 -- | @Selector@ for @setAccumulatorPrecision:@
-setAccumulatorPrecisionSelector :: Selector
+setAccumulatorPrecisionSelector :: Selector '[MPSNNConvolutionAccumulatorPrecisionOption] ()
 setAccumulatorPrecisionSelector = mkSelector "setAccumulatorPrecision:"
 
 -- | @Selector@ for @convolutionGradientState@
-convolutionGradientStateSelector :: Selector
+convolutionGradientStateSelector :: Selector '[] (Id MPSCNNConvolutionGradientStateNode)
 convolutionGradientStateSelector = mkSelector "convolutionGradientState"
 

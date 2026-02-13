@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.SafariServices.SFUniversalLink
   , applicationURL
   , enabled
   , setEnabled
-  , newSelector
-  , initSelector
-  , initWithWebpageURLSelector
-  , webpageURLSelector
   , applicationURLSelector
   , enabledSelector
+  , initSelector
+  , initWithWebpageURLSelector
+  , newSelector
   , setEnabledSelector
+  , webpageURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,78 +45,77 @@ new :: IO (Id SFUniversalLink)
 new  =
   do
     cls' <- getRequiredClass "SFUniversalLink"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSFUniversalLink sfUniversalLink => sfUniversalLink -> IO (Id SFUniversalLink)
-init_ sfUniversalLink  =
-    sendMsg sfUniversalLink (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ sfUniversalLink =
+  sendOwnedMessage sfUniversalLink initSelector
 
 -- | Initialize the receiver with a web URL that may or may not be a universal link.
 --
 -- ObjC selector: @- initWithWebpageURL:@
 initWithWebpageURL :: (IsSFUniversalLink sfUniversalLink, IsNSURL url) => sfUniversalLink -> url -> IO (Id SFUniversalLink)
-initWithWebpageURL sfUniversalLink  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg sfUniversalLink (mkSelector "initWithWebpageURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithWebpageURL sfUniversalLink url =
+  sendOwnedMessage sfUniversalLink initWithWebpageURLSelector (toNSURL url)
 
 -- | The URL passed when initializing the receiver.
 --
 -- ObjC selector: @- webpageURL@
 webpageURL :: IsSFUniversalLink sfUniversalLink => sfUniversalLink -> IO (Id NSURL)
-webpageURL sfUniversalLink  =
-    sendMsg sfUniversalLink (mkSelector "webpageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+webpageURL sfUniversalLink =
+  sendMessage sfUniversalLink webpageURLSelector
 
 -- | The file URL to the application that can handle this universal link.
 --
 -- ObjC selector: @- applicationURL@
 applicationURL :: IsSFUniversalLink sfUniversalLink => sfUniversalLink -> IO (Id NSURL)
-applicationURL sfUniversalLink  =
-    sendMsg sfUniversalLink (mkSelector "applicationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationURL sfUniversalLink =
+  sendMessage sfUniversalLink applicationURLSelector
 
 -- | Whether or not this universal link is enabled. If it is enabled, the URL will open in the application instead of the browser. Set this property when the user indicates they wish to enable or disable this universal link.
 --
 -- ObjC selector: @- enabled@
 enabled :: IsSFUniversalLink sfUniversalLink => sfUniversalLink -> IO Bool
-enabled sfUniversalLink  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfUniversalLink (mkSelector "enabled") retCULong []
+enabled sfUniversalLink =
+  sendMessage sfUniversalLink enabledSelector
 
 -- | Whether or not this universal link is enabled. If it is enabled, the URL will open in the application instead of the browser. Set this property when the user indicates they wish to enable or disable this universal link.
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsSFUniversalLink sfUniversalLink => sfUniversalLink -> Bool -> IO ()
-setEnabled sfUniversalLink  value =
-    sendMsg sfUniversalLink (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled sfUniversalLink value =
+  sendMessage sfUniversalLink setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SFUniversalLink)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SFUniversalLink)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithWebpageURL:@
-initWithWebpageURLSelector :: Selector
+initWithWebpageURLSelector :: Selector '[Id NSURL] (Id SFUniversalLink)
 initWithWebpageURLSelector = mkSelector "initWithWebpageURL:"
 
 -- | @Selector@ for @webpageURL@
-webpageURLSelector :: Selector
+webpageURLSelector :: Selector '[] (Id NSURL)
 webpageURLSelector = mkSelector "webpageURL"
 
 -- | @Selector@ for @applicationURL@
-applicationURLSelector :: Selector
+applicationURLSelector :: Selector '[] (Id NSURL)
 applicationURLSelector = mkSelector "applicationURL"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.SystemExtensions.OSSystemExtensionProperties
   , isEnabled
   , isAwaitingUserApproval
   , isUninstalling
-  , urlSelector
   , bundleIdentifierSelector
-  , bundleVersionSelector
   , bundleShortVersionSelector
-  , isEnabledSelector
+  , bundleVersionSelector
   , isAwaitingUserApprovalSelector
+  , isEnabledSelector
   , isUninstallingSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,80 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- URL@
 url :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO (Id NSURL)
-url osSystemExtensionProperties  =
-    sendMsg osSystemExtensionProperties (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties urlSelector
 
 -- | The bundle identifier of the extension (CFBundleIdentifier)
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO (Id NSString)
-bundleIdentifier osSystemExtensionProperties  =
-    sendMsg osSystemExtensionProperties (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties bundleIdentifierSelector
 
 -- | The bundle version of the extension (CFBundleVersion)
 --
 -- ObjC selector: @- bundleVersion@
 bundleVersion :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO (Id NSString)
-bundleVersion osSystemExtensionProperties  =
-    sendMsg osSystemExtensionProperties (mkSelector "bundleVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleVersion osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties bundleVersionSelector
 
 -- | The bundle short version string of the extension (CFBundleShortVersionString)
 --
 -- ObjC selector: @- bundleShortVersion@
 bundleShortVersion :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO (Id NSString)
-bundleShortVersion osSystemExtensionProperties  =
-    sendMsg osSystemExtensionProperties (mkSelector "bundleShortVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleShortVersion osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties bundleShortVersionSelector
 
 -- | Returns the enabled state of the extension
 --
 -- ObjC selector: @- isEnabled@
 isEnabled :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO Bool
-isEnabled osSystemExtensionProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osSystemExtensionProperties (mkSelector "isEnabled") retCULong []
+isEnabled osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties isEnabledSelector
 
 -- | Returns whether an extension is waiting for user approval
 --
 -- ObjC selector: @- isAwaitingUserApproval@
 isAwaitingUserApproval :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO Bool
-isAwaitingUserApproval osSystemExtensionProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osSystemExtensionProperties (mkSelector "isAwaitingUserApproval") retCULong []
+isAwaitingUserApproval osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties isAwaitingUserApprovalSelector
 
 -- | Returns if an extension is being uninstalled
 --
 -- ObjC selector: @- isUninstalling@
 isUninstalling :: IsOSSystemExtensionProperties osSystemExtensionProperties => osSystemExtensionProperties -> IO Bool
-isUninstalling osSystemExtensionProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osSystemExtensionProperties (mkSelector "isUninstalling") retCULong []
+isUninstalling osSystemExtensionProperties =
+  sendMessage osSystemExtensionProperties isUninstallingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @bundleVersion@
-bundleVersionSelector :: Selector
+bundleVersionSelector :: Selector '[] (Id NSString)
 bundleVersionSelector = mkSelector "bundleVersion"
 
 -- | @Selector@ for @bundleShortVersion@
-bundleShortVersionSelector :: Selector
+bundleShortVersionSelector :: Selector '[] (Id NSString)
 bundleShortVersionSelector = mkSelector "bundleShortVersion"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 
 -- | @Selector@ for @isAwaitingUserApproval@
-isAwaitingUserApprovalSelector :: Selector
+isAwaitingUserApprovalSelector :: Selector '[] Bool
 isAwaitingUserApprovalSelector = mkSelector "isAwaitingUserApproval"
 
 -- | @Selector@ for @isUninstalling@
-isUninstallingSelector :: Selector
+isUninstallingSelector :: Selector '[] Bool
 isUninstallingSelector = mkSelector "isUninstalling"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Intents.INAirportGate
   , airport
   , terminal
   , gate
+  , airportSelector
+  , gateSelector
   , initSelector
   , initWithAirport_terminal_gateSelector
-  , airportSelector
   , terminalSelector
-  , gateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,53 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINAirportGate inAirportGate => inAirportGate -> IO (Id INAirportGate)
-init_ inAirportGate  =
-    sendMsg inAirportGate (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inAirportGate =
+  sendOwnedMessage inAirportGate initSelector
 
 -- | @- initWithAirport:terminal:gate:@
 initWithAirport_terminal_gate :: (IsINAirportGate inAirportGate, IsINAirport airport, IsNSString terminal, IsNSString gate) => inAirportGate -> airport -> terminal -> gate -> IO (Id INAirportGate)
-initWithAirport_terminal_gate inAirportGate  airport terminal gate =
-  withObjCPtr airport $ \raw_airport ->
-    withObjCPtr terminal $ \raw_terminal ->
-      withObjCPtr gate $ \raw_gate ->
-          sendMsg inAirportGate (mkSelector "initWithAirport:terminal:gate:") (retPtr retVoid) [argPtr (castPtr raw_airport :: Ptr ()), argPtr (castPtr raw_terminal :: Ptr ()), argPtr (castPtr raw_gate :: Ptr ())] >>= ownedObject . castPtr
+initWithAirport_terminal_gate inAirportGate airport terminal gate =
+  sendOwnedMessage inAirportGate initWithAirport_terminal_gateSelector (toINAirport airport) (toNSString terminal) (toNSString gate)
 
 -- | @- airport@
 airport :: IsINAirportGate inAirportGate => inAirportGate -> IO (Id INAirport)
-airport inAirportGate  =
-    sendMsg inAirportGate (mkSelector "airport") (retPtr retVoid) [] >>= retainedObject . castPtr
+airport inAirportGate =
+  sendMessage inAirportGate airportSelector
 
 -- | @- terminal@
 terminal :: IsINAirportGate inAirportGate => inAirportGate -> IO (Id NSString)
-terminal inAirportGate  =
-    sendMsg inAirportGate (mkSelector "terminal") (retPtr retVoid) [] >>= retainedObject . castPtr
+terminal inAirportGate =
+  sendMessage inAirportGate terminalSelector
 
 -- | @- gate@
 gate :: IsINAirportGate inAirportGate => inAirportGate -> IO (Id NSString)
-gate inAirportGate  =
-    sendMsg inAirportGate (mkSelector "gate") (retPtr retVoid) [] >>= retainedObject . castPtr
+gate inAirportGate =
+  sendMessage inAirportGate gateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INAirportGate)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAirport:terminal:gate:@
-initWithAirport_terminal_gateSelector :: Selector
+initWithAirport_terminal_gateSelector :: Selector '[Id INAirport, Id NSString, Id NSString] (Id INAirportGate)
 initWithAirport_terminal_gateSelector = mkSelector "initWithAirport:terminal:gate:"
 
 -- | @Selector@ for @airport@
-airportSelector :: Selector
+airportSelector :: Selector '[] (Id INAirport)
 airportSelector = mkSelector "airport"
 
 -- | @Selector@ for @terminal@
-terminalSelector :: Selector
+terminalSelector :: Selector '[] (Id NSString)
 terminalSelector = mkSelector "terminal"
 
 -- | @Selector@ for @gate@
-gateSelector :: Selector
+gateSelector :: Selector '[] (Id NSString)
 gateSelector = mkSelector "gate"
 

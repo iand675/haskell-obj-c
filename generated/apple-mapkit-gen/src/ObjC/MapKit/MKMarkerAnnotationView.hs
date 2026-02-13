@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.MapKit.MKMarkerAnnotationView
   , setSelectedGlyphImage
   , animatesWhenAdded
   , setAnimatesWhenAdded
-  , titleVisibilitySelector
+  , animatesWhenAddedSelector
+  , glyphImageSelector
+  , glyphTextSelector
+  , glyphTintColorSelector
+  , markerTintColorSelector
+  , selectedGlyphImageSelector
+  , setAnimatesWhenAddedSelector
+  , setGlyphImageSelector
+  , setGlyphTextSelector
+  , setGlyphTintColorSelector
+  , setMarkerTintColorSelector
+  , setSelectedGlyphImageSelector
+  , setSubtitleVisibilitySelector
   , setTitleVisibilitySelector
   , subtitleVisibilitySelector
-  , setSubtitleVisibilitySelector
-  , markerTintColorSelector
-  , setMarkerTintColorSelector
-  , glyphTintColorSelector
-  , setGlyphTintColorSelector
-  , glyphTextSelector
-  , setGlyphTextSelector
-  , glyphImageSelector
-  , setGlyphImageSelector
-  , selectedGlyphImageSelector
-  , setSelectedGlyphImageSelector
-  , animatesWhenAddedSelector
-  , setAnimatesWhenAddedSelector
+  , titleVisibilitySelector
 
   -- * Enum types
   , MKFeatureVisibility(MKFeatureVisibility)
@@ -48,15 +49,11 @@ module ObjC.MapKit.MKMarkerAnnotationView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,154 +64,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- titleVisibility@
 titleVisibility :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO MKFeatureVisibility
-titleVisibility mkMarkerAnnotationView  =
-    fmap (coerce :: CLong -> MKFeatureVisibility) $ sendMsg mkMarkerAnnotationView (mkSelector "titleVisibility") retCLong []
+titleVisibility mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView titleVisibilitySelector
 
 -- | @- setTitleVisibility:@
 setTitleVisibility :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> MKFeatureVisibility -> IO ()
-setTitleVisibility mkMarkerAnnotationView  value =
-    sendMsg mkMarkerAnnotationView (mkSelector "setTitleVisibility:") retVoid [argCLong (coerce value)]
+setTitleVisibility mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setTitleVisibilitySelector value
 
 -- | @- subtitleVisibility@
 subtitleVisibility :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO MKFeatureVisibility
-subtitleVisibility mkMarkerAnnotationView  =
-    fmap (coerce :: CLong -> MKFeatureVisibility) $ sendMsg mkMarkerAnnotationView (mkSelector "subtitleVisibility") retCLong []
+subtitleVisibility mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView subtitleVisibilitySelector
 
 -- | @- setSubtitleVisibility:@
 setSubtitleVisibility :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> MKFeatureVisibility -> IO ()
-setSubtitleVisibility mkMarkerAnnotationView  value =
-    sendMsg mkMarkerAnnotationView (mkSelector "setSubtitleVisibility:") retVoid [argCLong (coerce value)]
+setSubtitleVisibility mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setSubtitleVisibilitySelector value
 
 -- | @- markerTintColor@
 markerTintColor :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO (Id NSColor)
-markerTintColor mkMarkerAnnotationView  =
-    sendMsg mkMarkerAnnotationView (mkSelector "markerTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+markerTintColor mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView markerTintColorSelector
 
 -- | @- setMarkerTintColor:@
 setMarkerTintColor :: (IsMKMarkerAnnotationView mkMarkerAnnotationView, IsNSColor value) => mkMarkerAnnotationView -> value -> IO ()
-setMarkerTintColor mkMarkerAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMarkerAnnotationView (mkSelector "setMarkerTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMarkerTintColor mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setMarkerTintColorSelector (toNSColor value)
 
 -- | @- glyphTintColor@
 glyphTintColor :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO (Id NSColor)
-glyphTintColor mkMarkerAnnotationView  =
-    sendMsg mkMarkerAnnotationView (mkSelector "glyphTintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+glyphTintColor mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView glyphTintColorSelector
 
 -- | @- setGlyphTintColor:@
 setGlyphTintColor :: (IsMKMarkerAnnotationView mkMarkerAnnotationView, IsNSColor value) => mkMarkerAnnotationView -> value -> IO ()
-setGlyphTintColor mkMarkerAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMarkerAnnotationView (mkSelector "setGlyphTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGlyphTintColor mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setGlyphTintColorSelector (toNSColor value)
 
 -- | @- glyphText@
 glyphText :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO (Id NSString)
-glyphText mkMarkerAnnotationView  =
-    sendMsg mkMarkerAnnotationView (mkSelector "glyphText") (retPtr retVoid) [] >>= retainedObject . castPtr
+glyphText mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView glyphTextSelector
 
 -- | @- setGlyphText:@
 setGlyphText :: (IsMKMarkerAnnotationView mkMarkerAnnotationView, IsNSString value) => mkMarkerAnnotationView -> value -> IO ()
-setGlyphText mkMarkerAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMarkerAnnotationView (mkSelector "setGlyphText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGlyphText mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setGlyphTextSelector (toNSString value)
 
 -- | @- glyphImage@
 glyphImage :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO (Id NSImage)
-glyphImage mkMarkerAnnotationView  =
-    sendMsg mkMarkerAnnotationView (mkSelector "glyphImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+glyphImage mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView glyphImageSelector
 
 -- | @- setGlyphImage:@
 setGlyphImage :: (IsMKMarkerAnnotationView mkMarkerAnnotationView, IsNSImage value) => mkMarkerAnnotationView -> value -> IO ()
-setGlyphImage mkMarkerAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMarkerAnnotationView (mkSelector "setGlyphImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGlyphImage mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setGlyphImageSelector (toNSImage value)
 
 -- | @- selectedGlyphImage@
 selectedGlyphImage :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO (Id NSImage)
-selectedGlyphImage mkMarkerAnnotationView  =
-    sendMsg mkMarkerAnnotationView (mkSelector "selectedGlyphImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedGlyphImage mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView selectedGlyphImageSelector
 
 -- | @- setSelectedGlyphImage:@
 setSelectedGlyphImage :: (IsMKMarkerAnnotationView mkMarkerAnnotationView, IsNSImage value) => mkMarkerAnnotationView -> value -> IO ()
-setSelectedGlyphImage mkMarkerAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMarkerAnnotationView (mkSelector "setSelectedGlyphImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectedGlyphImage mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setSelectedGlyphImageSelector (toNSImage value)
 
 -- | @- animatesWhenAdded@
 animatesWhenAdded :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> IO Bool
-animatesWhenAdded mkMarkerAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMarkerAnnotationView (mkSelector "animatesWhenAdded") retCULong []
+animatesWhenAdded mkMarkerAnnotationView =
+  sendMessage mkMarkerAnnotationView animatesWhenAddedSelector
 
 -- | @- setAnimatesWhenAdded:@
 setAnimatesWhenAdded :: IsMKMarkerAnnotationView mkMarkerAnnotationView => mkMarkerAnnotationView -> Bool -> IO ()
-setAnimatesWhenAdded mkMarkerAnnotationView  value =
-    sendMsg mkMarkerAnnotationView (mkSelector "setAnimatesWhenAdded:") retVoid [argCULong (if value then 1 else 0)]
+setAnimatesWhenAdded mkMarkerAnnotationView value =
+  sendMessage mkMarkerAnnotationView setAnimatesWhenAddedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @titleVisibility@
-titleVisibilitySelector :: Selector
+titleVisibilitySelector :: Selector '[] MKFeatureVisibility
 titleVisibilitySelector = mkSelector "titleVisibility"
 
 -- | @Selector@ for @setTitleVisibility:@
-setTitleVisibilitySelector :: Selector
+setTitleVisibilitySelector :: Selector '[MKFeatureVisibility] ()
 setTitleVisibilitySelector = mkSelector "setTitleVisibility:"
 
 -- | @Selector@ for @subtitleVisibility@
-subtitleVisibilitySelector :: Selector
+subtitleVisibilitySelector :: Selector '[] MKFeatureVisibility
 subtitleVisibilitySelector = mkSelector "subtitleVisibility"
 
 -- | @Selector@ for @setSubtitleVisibility:@
-setSubtitleVisibilitySelector :: Selector
+setSubtitleVisibilitySelector :: Selector '[MKFeatureVisibility] ()
 setSubtitleVisibilitySelector = mkSelector "setSubtitleVisibility:"
 
 -- | @Selector@ for @markerTintColor@
-markerTintColorSelector :: Selector
+markerTintColorSelector :: Selector '[] (Id NSColor)
 markerTintColorSelector = mkSelector "markerTintColor"
 
 -- | @Selector@ for @setMarkerTintColor:@
-setMarkerTintColorSelector :: Selector
+setMarkerTintColorSelector :: Selector '[Id NSColor] ()
 setMarkerTintColorSelector = mkSelector "setMarkerTintColor:"
 
 -- | @Selector@ for @glyphTintColor@
-glyphTintColorSelector :: Selector
+glyphTintColorSelector :: Selector '[] (Id NSColor)
 glyphTintColorSelector = mkSelector "glyphTintColor"
 
 -- | @Selector@ for @setGlyphTintColor:@
-setGlyphTintColorSelector :: Selector
+setGlyphTintColorSelector :: Selector '[Id NSColor] ()
 setGlyphTintColorSelector = mkSelector "setGlyphTintColor:"
 
 -- | @Selector@ for @glyphText@
-glyphTextSelector :: Selector
+glyphTextSelector :: Selector '[] (Id NSString)
 glyphTextSelector = mkSelector "glyphText"
 
 -- | @Selector@ for @setGlyphText:@
-setGlyphTextSelector :: Selector
+setGlyphTextSelector :: Selector '[Id NSString] ()
 setGlyphTextSelector = mkSelector "setGlyphText:"
 
 -- | @Selector@ for @glyphImage@
-glyphImageSelector :: Selector
+glyphImageSelector :: Selector '[] (Id NSImage)
 glyphImageSelector = mkSelector "glyphImage"
 
 -- | @Selector@ for @setGlyphImage:@
-setGlyphImageSelector :: Selector
+setGlyphImageSelector :: Selector '[Id NSImage] ()
 setGlyphImageSelector = mkSelector "setGlyphImage:"
 
 -- | @Selector@ for @selectedGlyphImage@
-selectedGlyphImageSelector :: Selector
+selectedGlyphImageSelector :: Selector '[] (Id NSImage)
 selectedGlyphImageSelector = mkSelector "selectedGlyphImage"
 
 -- | @Selector@ for @setSelectedGlyphImage:@
-setSelectedGlyphImageSelector :: Selector
+setSelectedGlyphImageSelector :: Selector '[Id NSImage] ()
 setSelectedGlyphImageSelector = mkSelector "setSelectedGlyphImage:"
 
 -- | @Selector@ for @animatesWhenAdded@
-animatesWhenAddedSelector :: Selector
+animatesWhenAddedSelector :: Selector '[] Bool
 animatesWhenAddedSelector = mkSelector "animatesWhenAdded"
 
 -- | @Selector@ for @setAnimatesWhenAdded:@
-setAnimatesWhenAddedSelector :: Selector
+setAnimatesWhenAddedSelector :: Selector '[Bool] ()
 setAnimatesWhenAddedSelector = mkSelector "setAnimatesWhenAdded:"
 

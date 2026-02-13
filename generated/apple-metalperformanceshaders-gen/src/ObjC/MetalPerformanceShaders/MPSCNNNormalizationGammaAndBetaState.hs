@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNNormalizationGammaAndBetaState
   , temporaryStateWithCommandBuffer_numberOfFeatureChannels
   , gamma
   , beta
+  , betaSelector
+  , gammaSelector
   , initWithGamma_betaSelector
   , temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector
-  , gammaSelector
-  , betaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithGamma:beta:@
 initWithGamma_beta :: IsMPSCNNNormalizationGammaAndBetaState mpscnnNormalizationGammaAndBetaState => mpscnnNormalizationGammaAndBetaState -> RawId -> RawId -> IO (Id MPSCNNNormalizationGammaAndBetaState)
-initWithGamma_beta mpscnnNormalizationGammaAndBetaState  gamma beta =
-    sendMsg mpscnnNormalizationGammaAndBetaState (mkSelector "initWithGamma:beta:") (retPtr retVoid) [argPtr (castPtr (unRawId gamma) :: Ptr ()), argPtr (castPtr (unRawId beta) :: Ptr ())] >>= ownedObject . castPtr
+initWithGamma_beta mpscnnNormalizationGammaAndBetaState gamma beta =
+  sendOwnedMessage mpscnnNormalizationGammaAndBetaState initWithGamma_betaSelector gamma beta
 
 -- | Create a temporary MPSCNNNormalizationGammaAndBetaState suitable              for a normalization operation on images containing no more than              the specified number of feature channels.
 --
@@ -59,7 +56,7 @@ temporaryStateWithCommandBuffer_numberOfFeatureChannels :: RawId -> CULong -> IO
 temporaryStateWithCommandBuffer_numberOfFeatureChannels commandBuffer numberOfFeatureChannels =
   do
     cls' <- getRequiredClass "MPSCNNNormalizationGammaAndBetaState"
-    sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong numberOfFeatureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector commandBuffer numberOfFeatureChannels
 
 -- | gamma
 --
@@ -67,8 +64,8 @@ temporaryStateWithCommandBuffer_numberOfFeatureChannels commandBuffer numberOfFe
 --
 -- ObjC selector: @- gamma@
 gamma :: IsMPSCNNNormalizationGammaAndBetaState mpscnnNormalizationGammaAndBetaState => mpscnnNormalizationGammaAndBetaState -> IO RawId
-gamma mpscnnNormalizationGammaAndBetaState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationGammaAndBetaState (mkSelector "gamma") (retPtr retVoid) []
+gamma mpscnnNormalizationGammaAndBetaState =
+  sendMessage mpscnnNormalizationGammaAndBetaState gammaSelector
 
 -- | beta
 --
@@ -76,26 +73,26 @@ gamma mpscnnNormalizationGammaAndBetaState  =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNNormalizationGammaAndBetaState mpscnnNormalizationGammaAndBetaState => mpscnnNormalizationGammaAndBetaState -> IO RawId
-beta mpscnnNormalizationGammaAndBetaState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnNormalizationGammaAndBetaState (mkSelector "beta") (retPtr retVoid) []
+beta mpscnnNormalizationGammaAndBetaState =
+  sendMessage mpscnnNormalizationGammaAndBetaState betaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithGamma:beta:@
-initWithGamma_betaSelector :: Selector
+initWithGamma_betaSelector :: Selector '[RawId, RawId] (Id MPSCNNNormalizationGammaAndBetaState)
 initWithGamma_betaSelector = mkSelector "initWithGamma:beta:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:numberOfFeatureChannels:@
-temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector :: Selector
+temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector :: Selector '[RawId, CULong] (Id MPSCNNNormalizationGammaAndBetaState)
 temporaryStateWithCommandBuffer_numberOfFeatureChannelsSelector = mkSelector "temporaryStateWithCommandBuffer:numberOfFeatureChannels:"
 
 -- | @Selector@ for @gamma@
-gammaSelector :: Selector
+gammaSelector :: Selector '[] RawId
 gammaSelector = mkSelector "gamma"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] RawId
 betaSelector = mkSelector "beta"
 

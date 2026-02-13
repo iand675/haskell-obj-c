@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INSnoozeTasksTaskResolutionResult
   , IsINSnoozeTasksTaskResolutionResult(..)
   , unsupportedForReason
   , initWithTaskResolutionResult
-  , unsupportedForReasonSelector
   , initWithTaskResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INSnoozeTasksTaskUnsupportedReason(INSnoozeTasksTaskUnsupportedReason)
@@ -18,15 +19,11 @@ module ObjC.Intents.INSnoozeTasksTaskResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,23 +36,22 @@ unsupportedForReason :: INSnoozeTasksTaskUnsupportedReason -> IO (Id INSnoozeTas
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INSnoozeTasksTaskResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithTaskResolutionResult:@
 initWithTaskResolutionResult :: (IsINSnoozeTasksTaskResolutionResult inSnoozeTasksTaskResolutionResult, IsINTaskResolutionResult taskResolutionResult) => inSnoozeTasksTaskResolutionResult -> taskResolutionResult -> IO (Id INSnoozeTasksTaskResolutionResult)
-initWithTaskResolutionResult inSnoozeTasksTaskResolutionResult  taskResolutionResult =
-  withObjCPtr taskResolutionResult $ \raw_taskResolutionResult ->
-      sendMsg inSnoozeTasksTaskResolutionResult (mkSelector "initWithTaskResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_taskResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithTaskResolutionResult inSnoozeTasksTaskResolutionResult taskResolutionResult =
+  sendOwnedMessage inSnoozeTasksTaskResolutionResult initWithTaskResolutionResultSelector (toINTaskResolutionResult taskResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INSnoozeTasksTaskUnsupportedReason] (Id INSnoozeTasksTaskResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithTaskResolutionResult:@
-initWithTaskResolutionResultSelector :: Selector
+initWithTaskResolutionResultSelector :: Selector '[Id INTaskResolutionResult] (Id INSnoozeTasksTaskResolutionResult)
 initWithTaskResolutionResultSelector = mkSelector "initWithTaskResolutionResult:"
 

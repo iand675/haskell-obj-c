@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,31 +33,31 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
   , setMaxCallStackDepth
   , shaderValidation
   , setShaderValidation
-  , resetSelector
-  , labelSelector
-  , setLabelSelector
-  , tileFunctionSelector
-  , setTileFunctionSelector
-  , rasterSampleCountSelector
-  , setRasterSampleCountSelector
-  , colorAttachmentsSelector
-  , threadgroupSizeMatchesTileSizeSelector
-  , setThreadgroupSizeMatchesTileSizeSelector
-  , tileBuffersSelector
-  , maxTotalThreadsPerThreadgroupSelector
-  , setMaxTotalThreadsPerThreadgroupSelector
   , binaryArchivesSelector
-  , setBinaryArchivesSelector
-  , preloadedLibrariesSelector
-  , setPreloadedLibrariesSelector
+  , colorAttachmentsSelector
+  , labelSelector
   , linkedFunctionsSelector
-  , setLinkedFunctionsSelector
-  , supportAddingBinaryFunctionsSelector
-  , setSupportAddingBinaryFunctionsSelector
   , maxCallStackDepthSelector
+  , maxTotalThreadsPerThreadgroupSelector
+  , preloadedLibrariesSelector
+  , rasterSampleCountSelector
+  , resetSelector
+  , setBinaryArchivesSelector
+  , setLabelSelector
+  , setLinkedFunctionsSelector
   , setMaxCallStackDepthSelector
-  , shaderValidationSelector
+  , setMaxTotalThreadsPerThreadgroupSelector
+  , setPreloadedLibrariesSelector
+  , setRasterSampleCountSelector
   , setShaderValidationSelector
+  , setSupportAddingBinaryFunctionsSelector
+  , setThreadgroupSizeMatchesTileSizeSelector
+  , setTileFunctionSelector
+  , shaderValidationSelector
+  , supportAddingBinaryFunctionsSelector
+  , threadgroupSizeMatchesTileSizeSelector
+  , tileBuffersSelector
+  , tileFunctionSelector
 
   -- * Enum types
   , MTLShaderValidation(MTLShaderValidation)
@@ -66,15 +67,11 @@ module ObjC.Metal.MTLTileRenderPipelineDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,8 +81,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- reset@
 reset :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO ()
-reset mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "reset") retVoid []
+reset mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor resetSelector
 
 -- | label:
 --
@@ -93,8 +90,8 @@ reset mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- label@
 label :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id NSString)
-label mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor labelSelector
 
 -- | label:
 --
@@ -102,9 +99,8 @@ label mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsNSString value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
-setLabel mtlTileRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setLabelSelector (toNSString value)
 
 -- | tileFunction:
 --
@@ -114,8 +110,8 @@ setLabel mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- tileFunction@
 tileFunction :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO RawId
-tileFunction mtlTileRenderPipelineDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlTileRenderPipelineDescriptor (mkSelector "tileFunction") (retPtr retVoid) []
+tileFunction mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor tileFunctionSelector
 
 -- | tileFunction:
 --
@@ -125,23 +121,23 @@ tileFunction mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setTileFunction:@
 setTileFunction :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> RawId -> IO ()
-setTileFunction mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setTileFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTileFunction mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setTileFunctionSelector value
 
 -- | @- rasterSampleCount@
 rasterSampleCount :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO CULong
-rasterSampleCount mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "rasterSampleCount") retCULong []
+rasterSampleCount mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor rasterSampleCountSelector
 
 -- | @- setRasterSampleCount:@
 setRasterSampleCount :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> CULong -> IO ()
-setRasterSampleCount mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setRasterSampleCount:") retVoid [argCULong value]
+setRasterSampleCount mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setRasterSampleCountSelector value
 
 -- | @- colorAttachments@
 colorAttachments :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id MTLTileRenderPipelineColorAttachmentDescriptorArray)
-colorAttachments mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "colorAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorAttachments mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor colorAttachmentsSelector
 
 -- | threadgroupSizeMatchesTileSize:
 --
@@ -151,8 +147,8 @@ colorAttachments mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- threadgroupSizeMatchesTileSize@
 threadgroupSizeMatchesTileSize :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO Bool
-threadgroupSizeMatchesTileSize mtlTileRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlTileRenderPipelineDescriptor (mkSelector "threadgroupSizeMatchesTileSize") retCULong []
+threadgroupSizeMatchesTileSize mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor threadgroupSizeMatchesTileSizeSelector
 
 -- | threadgroupSizeMatchesTileSize:
 --
@@ -162,13 +158,13 @@ threadgroupSizeMatchesTileSize mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setThreadgroupSizeMatchesTileSize:@
 setThreadgroupSizeMatchesTileSize :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> Bool -> IO ()
-setThreadgroupSizeMatchesTileSize mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setThreadgroupSizeMatchesTileSize:") retVoid [argCULong (if value then 1 else 0)]
+setThreadgroupSizeMatchesTileSize mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setThreadgroupSizeMatchesTileSizeSelector value
 
 -- | @- tileBuffers@
 tileBuffers :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id MTLPipelineBufferDescriptorArray)
-tileBuffers mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "tileBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileBuffers mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor tileBuffersSelector
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -176,8 +172,8 @@ tileBuffers mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- maxTotalThreadsPerThreadgroup@
 maxTotalThreadsPerThreadgroup :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO CULong
-maxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "maxTotalThreadsPerThreadgroup") retCULong []
+maxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor maxTotalThreadsPerThreadgroupSelector
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -185,8 +181,8 @@ maxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerThreadgroup:@
 setMaxTotalThreadsPerThreadgroup :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setMaxTotalThreadsPerThreadgroupSelector value
 
 -- | binaryArchives
 --
@@ -198,8 +194,8 @@ setMaxTotalThreadsPerThreadgroup mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- binaryArchives@
 binaryArchives :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id NSArray)
-binaryArchives mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryArchives mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor binaryArchivesSelector
 
 -- | binaryArchives
 --
@@ -211,9 +207,8 @@ binaryArchives mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setBinaryArchives:@
 setBinaryArchives :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsNSArray value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
-setBinaryArchives mtlTileRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryArchives mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setBinaryArchivesSelector (toNSArray value)
 
 -- | preloadedLibraries
 --
@@ -225,8 +220,8 @@ setBinaryArchives mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- preloadedLibraries@
 preloadedLibraries :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id NSArray)
-preloadedLibraries mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "preloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+preloadedLibraries mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor preloadedLibrariesSelector
 
 -- | preloadedLibraries
 --
@@ -238,9 +233,8 @@ preloadedLibraries mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setPreloadedLibraries:@
 setPreloadedLibraries :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsNSArray value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
-setPreloadedLibraries mtlTileRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreloadedLibraries mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setPreloadedLibrariesSelector (toNSArray value)
 
 -- | linkedFunctions
 --
@@ -250,8 +244,8 @@ setPreloadedLibraries mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- linkedFunctions@
 linkedFunctions :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO (Id MTLLinkedFunctions)
-linkedFunctions mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "linkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkedFunctions mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor linkedFunctionsSelector
 
 -- | linkedFunctions
 --
@@ -261,9 +255,8 @@ linkedFunctions mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setLinkedFunctions:@
 setLinkedFunctions :: (IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor, IsMTLLinkedFunctions value) => mtlTileRenderPipelineDescriptor -> value -> IO ()
-setLinkedFunctions mtlTileRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkedFunctions mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setLinkedFunctionsSelector (toMTLLinkedFunctions value)
 
 -- | supportAddingBinaryFunctions
 --
@@ -271,8 +264,8 @@ setLinkedFunctions mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- supportAddingBinaryFunctions@
 supportAddingBinaryFunctions :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO Bool
-supportAddingBinaryFunctions mtlTileRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlTileRenderPipelineDescriptor (mkSelector "supportAddingBinaryFunctions") retCULong []
+supportAddingBinaryFunctions mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor supportAddingBinaryFunctionsSelector
 
 -- | supportAddingBinaryFunctions
 --
@@ -280,8 +273,8 @@ supportAddingBinaryFunctions mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setSupportAddingBinaryFunctions:@
 setSupportAddingBinaryFunctions :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> Bool -> IO ()
-setSupportAddingBinaryFunctions mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setSupportAddingBinaryFunctions:") retVoid [argCULong (if value then 1 else 0)]
+setSupportAddingBinaryFunctions mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setSupportAddingBinaryFunctionsSelector value
 
 -- | maxCallStackDepth
 --
@@ -289,8 +282,8 @@ setSupportAddingBinaryFunctions mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxCallStackDepth@
 maxCallStackDepth :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO CULong
-maxCallStackDepth mtlTileRenderPipelineDescriptor  =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "maxCallStackDepth") retCULong []
+maxCallStackDepth mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor maxCallStackDepthSelector
 
 -- | maxCallStackDepth
 --
@@ -298,8 +291,8 @@ maxCallStackDepth mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxCallStackDepth:@
 setMaxCallStackDepth :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> CULong -> IO ()
-setMaxCallStackDepth mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setMaxCallStackDepth:") retVoid [argCULong value]
+setMaxCallStackDepth mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setMaxCallStackDepthSelector value
 
 -- | shaderValidation
 --
@@ -309,8 +302,8 @@ setMaxCallStackDepth mtlTileRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- shaderValidation@
 shaderValidation :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> IO MTLShaderValidation
-shaderValidation mtlTileRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTLShaderValidation) $ sendMsg mtlTileRenderPipelineDescriptor (mkSelector "shaderValidation") retCLong []
+shaderValidation mtlTileRenderPipelineDescriptor =
+  sendMessage mtlTileRenderPipelineDescriptor shaderValidationSelector
 
 -- | shaderValidation
 --
@@ -320,110 +313,110 @@ shaderValidation mtlTileRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setShaderValidation:@
 setShaderValidation :: IsMTLTileRenderPipelineDescriptor mtlTileRenderPipelineDescriptor => mtlTileRenderPipelineDescriptor -> MTLShaderValidation -> IO ()
-setShaderValidation mtlTileRenderPipelineDescriptor  value =
-    sendMsg mtlTileRenderPipelineDescriptor (mkSelector "setShaderValidation:") retVoid [argCLong (coerce value)]
+setShaderValidation mtlTileRenderPipelineDescriptor value =
+  sendMessage mtlTileRenderPipelineDescriptor setShaderValidationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @tileFunction@
-tileFunctionSelector :: Selector
+tileFunctionSelector :: Selector '[] RawId
 tileFunctionSelector = mkSelector "tileFunction"
 
 -- | @Selector@ for @setTileFunction:@
-setTileFunctionSelector :: Selector
+setTileFunctionSelector :: Selector '[RawId] ()
 setTileFunctionSelector = mkSelector "setTileFunction:"
 
 -- | @Selector@ for @rasterSampleCount@
-rasterSampleCountSelector :: Selector
+rasterSampleCountSelector :: Selector '[] CULong
 rasterSampleCountSelector = mkSelector "rasterSampleCount"
 
 -- | @Selector@ for @setRasterSampleCount:@
-setRasterSampleCountSelector :: Selector
+setRasterSampleCountSelector :: Selector '[CULong] ()
 setRasterSampleCountSelector = mkSelector "setRasterSampleCount:"
 
 -- | @Selector@ for @colorAttachments@
-colorAttachmentsSelector :: Selector
+colorAttachmentsSelector :: Selector '[] (Id MTLTileRenderPipelineColorAttachmentDescriptorArray)
 colorAttachmentsSelector = mkSelector "colorAttachments"
 
 -- | @Selector@ for @threadgroupSizeMatchesTileSize@
-threadgroupSizeMatchesTileSizeSelector :: Selector
+threadgroupSizeMatchesTileSizeSelector :: Selector '[] Bool
 threadgroupSizeMatchesTileSizeSelector = mkSelector "threadgroupSizeMatchesTileSize"
 
 -- | @Selector@ for @setThreadgroupSizeMatchesTileSize:@
-setThreadgroupSizeMatchesTileSizeSelector :: Selector
+setThreadgroupSizeMatchesTileSizeSelector :: Selector '[Bool] ()
 setThreadgroupSizeMatchesTileSizeSelector = mkSelector "setThreadgroupSizeMatchesTileSize:"
 
 -- | @Selector@ for @tileBuffers@
-tileBuffersSelector :: Selector
+tileBuffersSelector :: Selector '[] (Id MTLPipelineBufferDescriptorArray)
 tileBuffersSelector = mkSelector "tileBuffers"
 
 -- | @Selector@ for @maxTotalThreadsPerThreadgroup@
-maxTotalThreadsPerThreadgroupSelector :: Selector
+maxTotalThreadsPerThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerThreadgroupSelector = mkSelector "maxTotalThreadsPerThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerThreadgroup:@
-setMaxTotalThreadsPerThreadgroupSelector :: Selector
+setMaxTotalThreadsPerThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerThreadgroupSelector = mkSelector "setMaxTotalThreadsPerThreadgroup:"
 
 -- | @Selector@ for @binaryArchives@
-binaryArchivesSelector :: Selector
+binaryArchivesSelector :: Selector '[] (Id NSArray)
 binaryArchivesSelector = mkSelector "binaryArchives"
 
 -- | @Selector@ for @setBinaryArchives:@
-setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector :: Selector '[Id NSArray] ()
 setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @preloadedLibraries@
-preloadedLibrariesSelector :: Selector
+preloadedLibrariesSelector :: Selector '[] (Id NSArray)
 preloadedLibrariesSelector = mkSelector "preloadedLibraries"
 
 -- | @Selector@ for @setPreloadedLibraries:@
-setPreloadedLibrariesSelector :: Selector
+setPreloadedLibrariesSelector :: Selector '[Id NSArray] ()
 setPreloadedLibrariesSelector = mkSelector "setPreloadedLibraries:"
 
 -- | @Selector@ for @linkedFunctions@
-linkedFunctionsSelector :: Selector
+linkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 linkedFunctionsSelector = mkSelector "linkedFunctions"
 
 -- | @Selector@ for @setLinkedFunctions:@
-setLinkedFunctionsSelector :: Selector
+setLinkedFunctionsSelector :: Selector '[Id MTLLinkedFunctions] ()
 setLinkedFunctionsSelector = mkSelector "setLinkedFunctions:"
 
 -- | @Selector@ for @supportAddingBinaryFunctions@
-supportAddingBinaryFunctionsSelector :: Selector
+supportAddingBinaryFunctionsSelector :: Selector '[] Bool
 supportAddingBinaryFunctionsSelector = mkSelector "supportAddingBinaryFunctions"
 
 -- | @Selector@ for @setSupportAddingBinaryFunctions:@
-setSupportAddingBinaryFunctionsSelector :: Selector
+setSupportAddingBinaryFunctionsSelector :: Selector '[Bool] ()
 setSupportAddingBinaryFunctionsSelector = mkSelector "setSupportAddingBinaryFunctions:"
 
 -- | @Selector@ for @maxCallStackDepth@
-maxCallStackDepthSelector :: Selector
+maxCallStackDepthSelector :: Selector '[] CULong
 maxCallStackDepthSelector = mkSelector "maxCallStackDepth"
 
 -- | @Selector@ for @setMaxCallStackDepth:@
-setMaxCallStackDepthSelector :: Selector
+setMaxCallStackDepthSelector :: Selector '[CULong] ()
 setMaxCallStackDepthSelector = mkSelector "setMaxCallStackDepth:"
 
 -- | @Selector@ for @shaderValidation@
-shaderValidationSelector :: Selector
+shaderValidationSelector :: Selector '[] MTLShaderValidation
 shaderValidationSelector = mkSelector "shaderValidation"
 
 -- | @Selector@ for @setShaderValidation:@
-setShaderValidationSelector :: Selector
+setShaderValidationSelector :: Selector '[MTLShaderValidation] ()
 setShaderValidationSelector = mkSelector "setShaderValidation:"
 

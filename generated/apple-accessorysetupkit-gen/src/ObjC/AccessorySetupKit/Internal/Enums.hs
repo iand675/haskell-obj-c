@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AccessorySetupKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Type of event.
 -- | @ASAccessoryEventType@
@@ -59,6 +62,16 @@ pattern ASAccessoryEventTypePickerSetupPairing = ASAccessoryEventType 80
 pattern ASAccessoryEventTypePickerSetupRename :: ASAccessoryEventType
 pattern ASAccessoryEventTypePickerSetupRename = ASAccessoryEventType 90
 
+instance ObjCArgument ASAccessoryEventType where
+  withObjCArg (ASAccessoryEventType x) k = k (argCLong x)
+
+instance ObjCReturn ASAccessoryEventType where
+  type RawReturn ASAccessoryEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAccessoryEventType x)
+  fromOwned x = pure (ASAccessoryEventType x)
+
 -- | Accessory Rename Options
 -- | @ASAccessoryRenameOptions@ (bitmask)
 newtype ASAccessoryRenameOptions = ASAccessoryRenameOptions CULong
@@ -74,6 +87,16 @@ instance Monoid ASAccessoryRenameOptions where
 pattern ASAccessoryRenameSSID :: ASAccessoryRenameOptions
 pattern ASAccessoryRenameSSID = ASAccessoryRenameOptions 1
 
+instance ObjCArgument ASAccessoryRenameOptions where
+  withObjCArg (ASAccessoryRenameOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASAccessoryRenameOptions where
+  type RawReturn ASAccessoryRenameOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAccessoryRenameOptions x)
+  fromOwned x = pure (ASAccessoryRenameOptions x)
+
 -- | A type that defines values for the state of an accessory.
 -- | @ASAccessoryState@
 newtype ASAccessoryState = ASAccessoryState CLong
@@ -88,6 +111,16 @@ pattern ASAccessoryStateAwaitingAuthorization = ASAccessoryState 10
 
 pattern ASAccessoryStateAuthorized :: ASAccessoryState
 pattern ASAccessoryStateAuthorized = ASAccessoryState 20
+
+instance ObjCArgument ASAccessoryState where
+  withObjCArg (ASAccessoryState x) k = k (argCLong x)
+
+instance ObjCReturn ASAccessoryState where
+  type RawReturn ASAccessoryState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAccessoryState x)
+  fromOwned x = pure (ASAccessoryState x)
 
 -- | Accessory Support Options
 -- | @ASAccessorySupportOptions@ (bitmask)
@@ -110,6 +143,16 @@ pattern ASAccessorySupportBluetoothTransportBridging = ASAccessorySupportOptions
 pattern ASAccessorySupportBluetoothHID :: ASAccessorySupportOptions
 pattern ASAccessorySupportBluetoothHID = ASAccessorySupportOptions 8
 
+instance ObjCArgument ASAccessorySupportOptions where
+  withObjCArg (ASAccessorySupportOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASAccessorySupportOptions where
+  type RawReturn ASAccessorySupportOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAccessorySupportOptions x)
+  fromOwned x = pure (ASAccessorySupportOptions x)
+
 -- | Discovery Range
 -- | @ASDiscoveryDescriptorRange@
 newtype ASDiscoveryDescriptorRange = ASDiscoveryDescriptorRange CLong
@@ -122,6 +165,16 @@ pattern ASDiscoveryDescriptorRangeDefault = ASDiscoveryDescriptorRange 0
 pattern ASDiscoveryDescriptorRangeImmediate :: ASDiscoveryDescriptorRange
 pattern ASDiscoveryDescriptorRangeImmediate = ASDiscoveryDescriptorRange 10
 
+instance ObjCArgument ASDiscoveryDescriptorRange where
+  withObjCArg (ASDiscoveryDescriptorRange x) k = k (argCLong x)
+
+instance ObjCReturn ASDiscoveryDescriptorRange where
+  type RawReturn ASDiscoveryDescriptorRange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASDiscoveryDescriptorRange x)
+  fromOwned x = pure (ASDiscoveryDescriptorRange x)
+
 -- | A type that defines service roles for Wi-Fi Aware accessories.
 -- | @ASDiscoveryDescriptorWiFiAwareServiceRole@
 newtype ASDiscoveryDescriptorWiFiAwareServiceRole = ASDiscoveryDescriptorWiFiAwareServiceRole CLong
@@ -133,6 +186,16 @@ pattern ASDiscoveryDescriptorWiFiAwareServiceRoleSubscriber = ASDiscoveryDescrip
 
 pattern ASDiscoveryDescriptorWiFiAwareServiceRolePublisher :: ASDiscoveryDescriptorWiFiAwareServiceRole
 pattern ASDiscoveryDescriptorWiFiAwareServiceRolePublisher = ASDiscoveryDescriptorWiFiAwareServiceRole 20
+
+instance ObjCArgument ASDiscoveryDescriptorWiFiAwareServiceRole where
+  withObjCArg (ASDiscoveryDescriptorWiFiAwareServiceRole x) k = k (argCLong x)
+
+instance ObjCReturn ASDiscoveryDescriptorWiFiAwareServiceRole where
+  type RawReturn ASDiscoveryDescriptorWiFiAwareServiceRole = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASDiscoveryDescriptorWiFiAwareServiceRole x)
+  fromOwned x = pure (ASDiscoveryDescriptorWiFiAwareServiceRole x)
 
 -- | Error codes used with ASErrorDomain.
 -- | @ASErrorCode@
@@ -176,6 +239,16 @@ pattern ASErrorCodeUserCancelled = ASErrorCode 700
 pattern ASErrorCodeUserRestricted :: ASErrorCode
 pattern ASErrorCodeUserRestricted = ASErrorCode 750
 
+instance ObjCArgument ASErrorCode where
+  withObjCArg (ASErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ASErrorCode where
+  type RawReturn ASErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASErrorCode x)
+  fromOwned x = pure (ASErrorCode x)
+
 -- | Accessory Setup Options
 -- | @ASPickerDisplayItemSetupOptions@ (bitmask)
 newtype ASPickerDisplayItemSetupOptions = ASPickerDisplayItemSetupOptions CULong
@@ -197,6 +270,16 @@ pattern ASPickerDisplayItemSetupConfirmAuthorization = ASPickerDisplayItemSetupO
 pattern ASPickerDisplayItemSetupFinishInApp :: ASPickerDisplayItemSetupOptions
 pattern ASPickerDisplayItemSetupFinishInApp = ASPickerDisplayItemSetupOptions 4
 
+instance ObjCArgument ASPickerDisplayItemSetupOptions where
+  withObjCArg (ASPickerDisplayItemSetupOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASPickerDisplayItemSetupOptions where
+  type RawReturn ASPickerDisplayItemSetupOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASPickerDisplayItemSetupOptions x)
+  fromOwned x = pure (ASPickerDisplayItemSetupOptions x)
+
 -- | Picker Options
 -- | @ASPickerDisplaySettingsOptions@ (bitmask)
 newtype ASPickerDisplaySettingsOptions = ASPickerDisplaySettingsOptions CULong
@@ -211,3 +294,13 @@ instance Monoid ASPickerDisplaySettingsOptions where
 
 pattern ASPickerDisplaySettingsOptionFilterDiscoveryResults :: ASPickerDisplaySettingsOptions
 pattern ASPickerDisplaySettingsOptionFilterDiscoveryResults = ASPickerDisplaySettingsOptions 1
+
+instance ObjCArgument ASPickerDisplaySettingsOptions where
+  withObjCArg (ASPickerDisplaySettingsOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASPickerDisplaySettingsOptions where
+  type RawReturn ASPickerDisplaySettingsOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASPickerDisplaySettingsOptions x)
+  fromOwned x = pure (ASPickerDisplaySettingsOptions x)

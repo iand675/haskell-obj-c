@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INSetMessageAttributeIntent
   , initWithIdentifiers_attribute
   , identifiers
   , attribute
-  , initWithIdentifiers_attributeSelector
-  , identifiersSelector
   , attributeSelector
+  , identifiersSelector
+  , initWithIdentifiers_attributeSelector
 
   -- * Enum types
   , INMessageAttribute(INMessageAttribute)
@@ -25,15 +26,11 @@ module ObjC.Intents.INSetMessageAttributeIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,33 +40,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithIdentifiers:attribute:@
 initWithIdentifiers_attribute :: (IsINSetMessageAttributeIntent inSetMessageAttributeIntent, IsNSArray identifiers) => inSetMessageAttributeIntent -> identifiers -> INMessageAttribute -> IO (Id INSetMessageAttributeIntent)
-initWithIdentifiers_attribute inSetMessageAttributeIntent  identifiers attribute =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg inSetMessageAttributeIntent (mkSelector "initWithIdentifiers:attribute:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ()), argCLong (coerce attribute)] >>= ownedObject . castPtr
+initWithIdentifiers_attribute inSetMessageAttributeIntent identifiers attribute =
+  sendOwnedMessage inSetMessageAttributeIntent initWithIdentifiers_attributeSelector (toNSArray identifiers) attribute
 
 -- | @- identifiers@
 identifiers :: IsINSetMessageAttributeIntent inSetMessageAttributeIntent => inSetMessageAttributeIntent -> IO (Id NSArray)
-identifiers inSetMessageAttributeIntent  =
-    sendMsg inSetMessageAttributeIntent (mkSelector "identifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifiers inSetMessageAttributeIntent =
+  sendMessage inSetMessageAttributeIntent identifiersSelector
 
 -- | @- attribute@
 attribute :: IsINSetMessageAttributeIntent inSetMessageAttributeIntent => inSetMessageAttributeIntent -> IO INMessageAttribute
-attribute inSetMessageAttributeIntent  =
-    fmap (coerce :: CLong -> INMessageAttribute) $ sendMsg inSetMessageAttributeIntent (mkSelector "attribute") retCLong []
+attribute inSetMessageAttributeIntent =
+  sendMessage inSetMessageAttributeIntent attributeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifiers:attribute:@
-initWithIdentifiers_attributeSelector :: Selector
+initWithIdentifiers_attributeSelector :: Selector '[Id NSArray, INMessageAttribute] (Id INSetMessageAttributeIntent)
 initWithIdentifiers_attributeSelector = mkSelector "initWithIdentifiers:attribute:"
 
 -- | @Selector@ for @identifiers@
-identifiersSelector :: Selector
+identifiersSelector :: Selector '[] (Id NSArray)
 identifiersSelector = mkSelector "identifiers"
 
 -- | @Selector@ for @attribute@
-attributeSelector :: Selector
+attributeSelector :: Selector '[] INMessageAttribute
 attributeSelector = mkSelector "attribute"
 

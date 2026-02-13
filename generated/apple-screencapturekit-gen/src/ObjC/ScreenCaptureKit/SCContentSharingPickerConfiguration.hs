@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.ScreenCaptureKit.SCContentSharingPickerConfiguration
   , allowsChangingSelectedContent
   , setAllowsChangingSelectedContent
   , allowedPickerModesSelector
-  , setAllowedPickerModesSelector
-  , excludedWindowIDsSelector
-  , setExcludedWindowIDsSelector
-  , excludedBundleIDsSelector
-  , setExcludedBundleIDsSelector
   , allowsChangingSelectedContentSelector
+  , excludedBundleIDsSelector
+  , excludedWindowIDsSelector
+  , setAllowedPickerModesSelector
   , setAllowsChangingSelectedContentSelector
+  , setExcludedBundleIDsSelector
+  , setExcludedWindowIDsSelector
 
   -- * Enum types
   , SCContentSharingPickerMode(SCContentSharingPickerMode)
@@ -38,15 +39,11 @@ module ObjC.ScreenCaptureKit.SCContentSharingPickerConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,93 +55,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- allowedPickerModes@
 allowedPickerModes :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> IO SCContentSharingPickerMode
-allowedPickerModes scContentSharingPickerConfiguration  =
-    fmap (coerce :: CULong -> SCContentSharingPickerMode) $ sendMsg scContentSharingPickerConfiguration (mkSelector "allowedPickerModes") retCULong []
+allowedPickerModes scContentSharingPickerConfiguration =
+  sendMessage scContentSharingPickerConfiguration allowedPickerModesSelector
 
 -- | allowedPickerModes Limits the type of selections available to the user when the picker is presented. Default is 0, no excluded picking modes
 --
 -- ObjC selector: @- setAllowedPickerModes:@
 setAllowedPickerModes :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> SCContentSharingPickerMode -> IO ()
-setAllowedPickerModes scContentSharingPickerConfiguration  value =
-    sendMsg scContentSharingPickerConfiguration (mkSelector "setAllowedPickerModes:") retVoid [argCULong (coerce value)]
+setAllowedPickerModes scContentSharingPickerConfiguration value =
+  sendMessage scContentSharingPickerConfiguration setAllowedPickerModesSelector value
 
 -- | excludedWindowIDs Excludes CGWindowIDs for picking
 --
 -- ObjC selector: @- excludedWindowIDs@
 excludedWindowIDs :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> IO (Id NSArray)
-excludedWindowIDs scContentSharingPickerConfiguration  =
-    sendMsg scContentSharingPickerConfiguration (mkSelector "excludedWindowIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedWindowIDs scContentSharingPickerConfiguration =
+  sendMessage scContentSharingPickerConfiguration excludedWindowIDsSelector
 
 -- | excludedWindowIDs Excludes CGWindowIDs for picking
 --
 -- ObjC selector: @- setExcludedWindowIDs:@
 setExcludedWindowIDs :: (IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration, IsNSArray value) => scContentSharingPickerConfiguration -> value -> IO ()
-setExcludedWindowIDs scContentSharingPickerConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scContentSharingPickerConfiguration (mkSelector "setExcludedWindowIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedWindowIDs scContentSharingPickerConfiguration value =
+  sendMessage scContentSharingPickerConfiguration setExcludedWindowIDsSelector (toNSArray value)
 
 -- | excludedBundleIDs Excludes bundle IDs for picking
 --
 -- ObjC selector: @- excludedBundleIDs@
 excludedBundleIDs :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> IO (Id NSArray)
-excludedBundleIDs scContentSharingPickerConfiguration  =
-    sendMsg scContentSharingPickerConfiguration (mkSelector "excludedBundleIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedBundleIDs scContentSharingPickerConfiguration =
+  sendMessage scContentSharingPickerConfiguration excludedBundleIDsSelector
 
 -- | excludedBundleIDs Excludes bundle IDs for picking
 --
 -- ObjC selector: @- setExcludedBundleIDs:@
 setExcludedBundleIDs :: (IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration, IsNSArray value) => scContentSharingPickerConfiguration -> value -> IO ()
-setExcludedBundleIDs scContentSharingPickerConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scContentSharingPickerConfiguration (mkSelector "setExcludedBundleIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedBundleIDs scContentSharingPickerConfiguration value =
+  sendMessage scContentSharingPickerConfiguration setExcludedBundleIDsSelector (toNSArray value)
 
 -- | allowsChangingSelectedContent Controls if the user can make updates to the content filter after the initial selection. Defaults is YES.
 --
 -- ObjC selector: @- allowsChangingSelectedContent@
 allowsChangingSelectedContent :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> IO Bool
-allowsChangingSelectedContent scContentSharingPickerConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scContentSharingPickerConfiguration (mkSelector "allowsChangingSelectedContent") retCULong []
+allowsChangingSelectedContent scContentSharingPickerConfiguration =
+  sendMessage scContentSharingPickerConfiguration allowsChangingSelectedContentSelector
 
 -- | allowsChangingSelectedContent Controls if the user can make updates to the content filter after the initial selection. Defaults is YES.
 --
 -- ObjC selector: @- setAllowsChangingSelectedContent:@
 setAllowsChangingSelectedContent :: IsSCContentSharingPickerConfiguration scContentSharingPickerConfiguration => scContentSharingPickerConfiguration -> Bool -> IO ()
-setAllowsChangingSelectedContent scContentSharingPickerConfiguration  value =
-    sendMsg scContentSharingPickerConfiguration (mkSelector "setAllowsChangingSelectedContent:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsChangingSelectedContent scContentSharingPickerConfiguration value =
+  sendMessage scContentSharingPickerConfiguration setAllowsChangingSelectedContentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allowedPickerModes@
-allowedPickerModesSelector :: Selector
+allowedPickerModesSelector :: Selector '[] SCContentSharingPickerMode
 allowedPickerModesSelector = mkSelector "allowedPickerModes"
 
 -- | @Selector@ for @setAllowedPickerModes:@
-setAllowedPickerModesSelector :: Selector
+setAllowedPickerModesSelector :: Selector '[SCContentSharingPickerMode] ()
 setAllowedPickerModesSelector = mkSelector "setAllowedPickerModes:"
 
 -- | @Selector@ for @excludedWindowIDs@
-excludedWindowIDsSelector :: Selector
+excludedWindowIDsSelector :: Selector '[] (Id NSArray)
 excludedWindowIDsSelector = mkSelector "excludedWindowIDs"
 
 -- | @Selector@ for @setExcludedWindowIDs:@
-setExcludedWindowIDsSelector :: Selector
+setExcludedWindowIDsSelector :: Selector '[Id NSArray] ()
 setExcludedWindowIDsSelector = mkSelector "setExcludedWindowIDs:"
 
 -- | @Selector@ for @excludedBundleIDs@
-excludedBundleIDsSelector :: Selector
+excludedBundleIDsSelector :: Selector '[] (Id NSArray)
 excludedBundleIDsSelector = mkSelector "excludedBundleIDs"
 
 -- | @Selector@ for @setExcludedBundleIDs:@
-setExcludedBundleIDsSelector :: Selector
+setExcludedBundleIDsSelector :: Selector '[Id NSArray] ()
 setExcludedBundleIDsSelector = mkSelector "setExcludedBundleIDs:"
 
 -- | @Selector@ for @allowsChangingSelectedContent@
-allowsChangingSelectedContentSelector :: Selector
+allowsChangingSelectedContentSelector :: Selector '[] Bool
 allowsChangingSelectedContentSelector = mkSelector "allowsChangingSelectedContent"
 
 -- | @Selector@ for @setAllowsChangingSelectedContent:@
-setAllowsChangingSelectedContentSelector :: Selector
+setAllowsChangingSelectedContentSelector :: Selector '[Bool] ()
 setAllowsChangingSelectedContentSelector = mkSelector "setAllowsChangingSelectedContent:"
 

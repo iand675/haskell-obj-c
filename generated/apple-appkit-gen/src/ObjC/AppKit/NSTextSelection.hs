@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.AppKit.NSTextSelection
   , setSecondarySelectionLocation
   , typingAttributes
   , setTypingAttributes
-  , initWithRanges_affinity_granularitySelector
-  , initWithCoderSelector
-  , initWithRange_affinity_granularitySelector
-  , initWithLocation_affinitySelector
-  , initSelector
-  , textSelectionWithTextRangesSelector
-  , textRangesSelector
-  , granularitySelector
   , affinitySelector
-  , transientSelector
   , anchorPositionOffsetSelector
-  , setAnchorPositionOffsetSelector
+  , granularitySelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithLocation_affinitySelector
+  , initWithRange_affinity_granularitySelector
+  , initWithRanges_affinity_granularitySelector
   , logicalSelector
-  , setLogicalSelector
   , secondarySelectionLocationSelector
+  , setAnchorPositionOffsetSelector
+  , setLogicalSelector
   , setSecondarySelectionLocationSelector
-  , typingAttributesSelector
   , setTypingAttributesSelector
+  , textRangesSelector
+  , textSelectionWithTextRangesSelector
+  , transientSelector
+  , typingAttributesSelector
 
   -- * Enum types
   , NSTextSelectionAffinity(NSTextSelectionAffinity)
@@ -57,15 +58,11 @@ module ObjC.AppKit.NSTextSelection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,172 +72,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRanges:affinity:granularity:@
 initWithRanges_affinity_granularity :: (IsNSTextSelection nsTextSelection, IsNSArray textRanges) => nsTextSelection -> textRanges -> NSTextSelectionAffinity -> NSTextSelectionGranularity -> IO (Id NSTextSelection)
-initWithRanges_affinity_granularity nsTextSelection  textRanges affinity granularity =
-  withObjCPtr textRanges $ \raw_textRanges ->
-      sendMsg nsTextSelection (mkSelector "initWithRanges:affinity:granularity:") (retPtr retVoid) [argPtr (castPtr raw_textRanges :: Ptr ()), argCLong (coerce affinity), argCLong (coerce granularity)] >>= ownedObject . castPtr
+initWithRanges_affinity_granularity nsTextSelection textRanges affinity granularity =
+  sendOwnedMessage nsTextSelection initWithRanges_affinity_granularitySelector (toNSArray textRanges) affinity granularity
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextSelection nsTextSelection, IsNSCoder coder) => nsTextSelection -> coder -> IO (Id NSTextSelection)
-initWithCoder nsTextSelection  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextSelection (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextSelection coder =
+  sendOwnedMessage nsTextSelection initWithCoderSelector (toNSCoder coder)
 
 -- | @- initWithRange:affinity:granularity:@
 initWithRange_affinity_granularity :: (IsNSTextSelection nsTextSelection, IsNSTextRange range) => nsTextSelection -> range -> NSTextSelectionAffinity -> NSTextSelectionGranularity -> IO (Id NSTextSelection)
-initWithRange_affinity_granularity nsTextSelection  range affinity granularity =
-  withObjCPtr range $ \raw_range ->
-      sendMsg nsTextSelection (mkSelector "initWithRange:affinity:granularity:") (retPtr retVoid) [argPtr (castPtr raw_range :: Ptr ()), argCLong (coerce affinity), argCLong (coerce granularity)] >>= ownedObject . castPtr
+initWithRange_affinity_granularity nsTextSelection range affinity granularity =
+  sendOwnedMessage nsTextSelection initWithRange_affinity_granularitySelector (toNSTextRange range) affinity granularity
 
 -- | @- initWithLocation:affinity:@
 initWithLocation_affinity :: IsNSTextSelection nsTextSelection => nsTextSelection -> RawId -> NSTextSelectionAffinity -> IO (Id NSTextSelection)
-initWithLocation_affinity nsTextSelection  location affinity =
-    sendMsg nsTextSelection (mkSelector "initWithLocation:affinity:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argCLong (coerce affinity)] >>= ownedObject . castPtr
+initWithLocation_affinity nsTextSelection location affinity =
+  sendOwnedMessage nsTextSelection initWithLocation_affinitySelector location affinity
 
 -- | @- init@
 init_ :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO (Id NSTextSelection)
-init_ nsTextSelection  =
-    sendMsg nsTextSelection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextSelection =
+  sendOwnedMessage nsTextSelection initSelector
 
 -- | @- textSelectionWithTextRanges:@
 textSelectionWithTextRanges :: (IsNSTextSelection nsTextSelection, IsNSArray textRanges) => nsTextSelection -> textRanges -> IO (Id NSTextSelection)
-textSelectionWithTextRanges nsTextSelection  textRanges =
-  withObjCPtr textRanges $ \raw_textRanges ->
-      sendMsg nsTextSelection (mkSelector "textSelectionWithTextRanges:") (retPtr retVoid) [argPtr (castPtr raw_textRanges :: Ptr ())] >>= retainedObject . castPtr
+textSelectionWithTextRanges nsTextSelection textRanges =
+  sendMessage nsTextSelection textSelectionWithTextRangesSelector (toNSArray textRanges)
 
 -- | @- textRanges@
 textRanges :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO (Id NSArray)
-textRanges nsTextSelection  =
-    sendMsg nsTextSelection (mkSelector "textRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+textRanges nsTextSelection =
+  sendMessage nsTextSelection textRangesSelector
 
 -- | @- granularity@
 granularity :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO NSTextSelectionGranularity
-granularity nsTextSelection  =
-    fmap (coerce :: CLong -> NSTextSelectionGranularity) $ sendMsg nsTextSelection (mkSelector "granularity") retCLong []
+granularity nsTextSelection =
+  sendMessage nsTextSelection granularitySelector
 
 -- | @- affinity@
 affinity :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO NSTextSelectionAffinity
-affinity nsTextSelection  =
-    fmap (coerce :: CLong -> NSTextSelectionAffinity) $ sendMsg nsTextSelection (mkSelector "affinity") retCLong []
+affinity nsTextSelection =
+  sendMessage nsTextSelection affinitySelector
 
 -- | @- transient@
 transient :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO Bool
-transient nsTextSelection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextSelection (mkSelector "transient") retCULong []
+transient nsTextSelection =
+  sendMessage nsTextSelection transientSelector
 
 -- | @- anchorPositionOffset@
 anchorPositionOffset :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO CDouble
-anchorPositionOffset nsTextSelection  =
-    sendMsg nsTextSelection (mkSelector "anchorPositionOffset") retCDouble []
+anchorPositionOffset nsTextSelection =
+  sendMessage nsTextSelection anchorPositionOffsetSelector
 
 -- | @- setAnchorPositionOffset:@
 setAnchorPositionOffset :: IsNSTextSelection nsTextSelection => nsTextSelection -> CDouble -> IO ()
-setAnchorPositionOffset nsTextSelection  value =
-    sendMsg nsTextSelection (mkSelector "setAnchorPositionOffset:") retVoid [argCDouble value]
+setAnchorPositionOffset nsTextSelection value =
+  sendMessage nsTextSelection setAnchorPositionOffsetSelector value
 
 -- | @- logical@
 logical :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO Bool
-logical nsTextSelection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextSelection (mkSelector "logical") retCULong []
+logical nsTextSelection =
+  sendMessage nsTextSelection logicalSelector
 
 -- | @- setLogical:@
 setLogical :: IsNSTextSelection nsTextSelection => nsTextSelection -> Bool -> IO ()
-setLogical nsTextSelection  value =
-    sendMsg nsTextSelection (mkSelector "setLogical:") retVoid [argCULong (if value then 1 else 0)]
+setLogical nsTextSelection value =
+  sendMessage nsTextSelection setLogicalSelector value
 
 -- | @- secondarySelectionLocation@
 secondarySelectionLocation :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO RawId
-secondarySelectionLocation nsTextSelection  =
-    fmap (RawId . castPtr) $ sendMsg nsTextSelection (mkSelector "secondarySelectionLocation") (retPtr retVoid) []
+secondarySelectionLocation nsTextSelection =
+  sendMessage nsTextSelection secondarySelectionLocationSelector
 
 -- | @- setSecondarySelectionLocation:@
 setSecondarySelectionLocation :: IsNSTextSelection nsTextSelection => nsTextSelection -> RawId -> IO ()
-setSecondarySelectionLocation nsTextSelection  value =
-    sendMsg nsTextSelection (mkSelector "setSecondarySelectionLocation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSecondarySelectionLocation nsTextSelection value =
+  sendMessage nsTextSelection setSecondarySelectionLocationSelector value
 
 -- | @- typingAttributes@
 typingAttributes :: IsNSTextSelection nsTextSelection => nsTextSelection -> IO (Id NSDictionary)
-typingAttributes nsTextSelection  =
-    sendMsg nsTextSelection (mkSelector "typingAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+typingAttributes nsTextSelection =
+  sendMessage nsTextSelection typingAttributesSelector
 
 -- | @- setTypingAttributes:@
 setTypingAttributes :: (IsNSTextSelection nsTextSelection, IsNSDictionary value) => nsTextSelection -> value -> IO ()
-setTypingAttributes nsTextSelection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextSelection (mkSelector "setTypingAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTypingAttributes nsTextSelection value =
+  sendMessage nsTextSelection setTypingAttributesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRanges:affinity:granularity:@
-initWithRanges_affinity_granularitySelector :: Selector
+initWithRanges_affinity_granularitySelector :: Selector '[Id NSArray, NSTextSelectionAffinity, NSTextSelectionGranularity] (Id NSTextSelection)
 initWithRanges_affinity_granularitySelector = mkSelector "initWithRanges:affinity:granularity:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextSelection)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithRange:affinity:granularity:@
-initWithRange_affinity_granularitySelector :: Selector
+initWithRange_affinity_granularitySelector :: Selector '[Id NSTextRange, NSTextSelectionAffinity, NSTextSelectionGranularity] (Id NSTextSelection)
 initWithRange_affinity_granularitySelector = mkSelector "initWithRange:affinity:granularity:"
 
 -- | @Selector@ for @initWithLocation:affinity:@
-initWithLocation_affinitySelector :: Selector
+initWithLocation_affinitySelector :: Selector '[RawId, NSTextSelectionAffinity] (Id NSTextSelection)
 initWithLocation_affinitySelector = mkSelector "initWithLocation:affinity:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextSelection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @textSelectionWithTextRanges:@
-textSelectionWithTextRangesSelector :: Selector
+textSelectionWithTextRangesSelector :: Selector '[Id NSArray] (Id NSTextSelection)
 textSelectionWithTextRangesSelector = mkSelector "textSelectionWithTextRanges:"
 
 -- | @Selector@ for @textRanges@
-textRangesSelector :: Selector
+textRangesSelector :: Selector '[] (Id NSArray)
 textRangesSelector = mkSelector "textRanges"
 
 -- | @Selector@ for @granularity@
-granularitySelector :: Selector
+granularitySelector :: Selector '[] NSTextSelectionGranularity
 granularitySelector = mkSelector "granularity"
 
 -- | @Selector@ for @affinity@
-affinitySelector :: Selector
+affinitySelector :: Selector '[] NSTextSelectionAffinity
 affinitySelector = mkSelector "affinity"
 
 -- | @Selector@ for @transient@
-transientSelector :: Selector
+transientSelector :: Selector '[] Bool
 transientSelector = mkSelector "transient"
 
 -- | @Selector@ for @anchorPositionOffset@
-anchorPositionOffsetSelector :: Selector
+anchorPositionOffsetSelector :: Selector '[] CDouble
 anchorPositionOffsetSelector = mkSelector "anchorPositionOffset"
 
 -- | @Selector@ for @setAnchorPositionOffset:@
-setAnchorPositionOffsetSelector :: Selector
+setAnchorPositionOffsetSelector :: Selector '[CDouble] ()
 setAnchorPositionOffsetSelector = mkSelector "setAnchorPositionOffset:"
 
 -- | @Selector@ for @logical@
-logicalSelector :: Selector
+logicalSelector :: Selector '[] Bool
 logicalSelector = mkSelector "logical"
 
 -- | @Selector@ for @setLogical:@
-setLogicalSelector :: Selector
+setLogicalSelector :: Selector '[Bool] ()
 setLogicalSelector = mkSelector "setLogical:"
 
 -- | @Selector@ for @secondarySelectionLocation@
-secondarySelectionLocationSelector :: Selector
+secondarySelectionLocationSelector :: Selector '[] RawId
 secondarySelectionLocationSelector = mkSelector "secondarySelectionLocation"
 
 -- | @Selector@ for @setSecondarySelectionLocation:@
-setSecondarySelectionLocationSelector :: Selector
+setSecondarySelectionLocationSelector :: Selector '[RawId] ()
 setSecondarySelectionLocationSelector = mkSelector "setSecondarySelectionLocation:"
 
 -- | @Selector@ for @typingAttributes@
-typingAttributesSelector :: Selector
+typingAttributesSelector :: Selector '[] (Id NSDictionary)
 typingAttributesSelector = mkSelector "typingAttributes"
 
 -- | @Selector@ for @setTypingAttributes:@
-setTypingAttributesSelector :: Selector
+setTypingAttributesSelector :: Selector '[Id NSDictionary] ()
 setTypingAttributesSelector = mkSelector "setTypingAttributes:"
 

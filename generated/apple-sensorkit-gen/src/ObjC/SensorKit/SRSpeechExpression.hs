@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.SensorKit.SRSpeechExpression
   , valence
   , activation
   , dominance
-  , initSelector
-  , newSelector
-  , versionSelector
-  , confidenceSelector
-  , moodSelector
-  , valenceSelector
   , activationSelector
+  , confidenceSelector
   , dominanceSelector
+  , initSelector
+  , moodSelector
+  , newSelector
+  , valenceSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO (Id SRSpeechExpression)
-init_ srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srSpeechExpression =
+  sendOwnedMessage srSpeechExpression initSelector
 
 -- | @+ new@
 new :: IO (Id SRSpeechExpression)
 new  =
   do
     cls' <- getRequiredClass "SRSpeechExpression"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | version
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- version@
 version :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO (Id NSString)
-version srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version srSpeechExpression =
+  sendMessage srSpeechExpression versionSelector
 
 -- | confidence
 --
@@ -68,8 +65,8 @@ version srSpeechExpression  =
 --
 -- ObjC selector: @- confidence@
 confidence :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO CDouble
-confidence srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "confidence") retCDouble []
+confidence srSpeechExpression =
+  sendMessage srSpeechExpression confidenceSelector
 
 -- | mood
 --
@@ -79,8 +76,8 @@ confidence srSpeechExpression  =
 --
 -- ObjC selector: @- mood@
 mood :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO CDouble
-mood srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "mood") retCDouble []
+mood srSpeechExpression =
+  sendMessage srSpeechExpression moodSelector
 
 -- | valence
 --
@@ -90,8 +87,8 @@ mood srSpeechExpression  =
 --
 -- ObjC selector: @- valence@
 valence :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO CDouble
-valence srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "valence") retCDouble []
+valence srSpeechExpression =
+  sendMessage srSpeechExpression valenceSelector
 
 -- | activation
 --
@@ -101,8 +98,8 @@ valence srSpeechExpression  =
 --
 -- ObjC selector: @- activation@
 activation :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO CDouble
-activation srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "activation") retCDouble []
+activation srSpeechExpression =
+  sendMessage srSpeechExpression activationSelector
 
 -- | dominance
 --
@@ -112,42 +109,42 @@ activation srSpeechExpression  =
 --
 -- ObjC selector: @- dominance@
 dominance :: IsSRSpeechExpression srSpeechExpression => srSpeechExpression -> IO CDouble
-dominance srSpeechExpression  =
-    sendMsg srSpeechExpression (mkSelector "dominance") retCDouble []
+dominance srSpeechExpression =
+  sendMessage srSpeechExpression dominanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRSpeechExpression)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRSpeechExpression)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CDouble
 confidenceSelector = mkSelector "confidence"
 
 -- | @Selector@ for @mood@
-moodSelector :: Selector
+moodSelector :: Selector '[] CDouble
 moodSelector = mkSelector "mood"
 
 -- | @Selector@ for @valence@
-valenceSelector :: Selector
+valenceSelector :: Selector '[] CDouble
 valenceSelector = mkSelector "valence"
 
 -- | @Selector@ for @activation@
-activationSelector :: Selector
+activationSelector :: Selector '[] CDouble
 activationSelector = mkSelector "activation"
 
 -- | @Selector@ for @dominance@
-dominanceSelector :: Selector
+dominanceSelector :: Selector '[] CDouble
 dominanceSelector = mkSelector "dominance"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INBookRestaurantReservationIntentResponse
   , code
   , userBooking
   , setUserBooking
-  , initWithCode_userActivitySelector
   , codeSelector
-  , userBookingSelector
+  , initWithCode_userActivitySelector
   , setUserBookingSelector
+  , userBookingSelector
 
   -- * Enum types
   , INBookRestaurantReservationIntentCode(INBookRestaurantReservationIntentCode)
@@ -27,15 +28,11 @@ module ObjC.Intents.INBookRestaurantReservationIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,43 +42,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINBookRestaurantReservationIntentResponse inBookRestaurantReservationIntentResponse, IsNSUserActivity userActivity) => inBookRestaurantReservationIntentResponse -> INBookRestaurantReservationIntentCode -> userActivity -> IO (Id INBookRestaurantReservationIntentResponse)
-initWithCode_userActivity inBookRestaurantReservationIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inBookRestaurantReservationIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inBookRestaurantReservationIntentResponse code userActivity =
+  sendOwnedMessage inBookRestaurantReservationIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINBookRestaurantReservationIntentResponse inBookRestaurantReservationIntentResponse => inBookRestaurantReservationIntentResponse -> IO INBookRestaurantReservationIntentCode
-code inBookRestaurantReservationIntentResponse  =
-    fmap (coerce :: CLong -> INBookRestaurantReservationIntentCode) $ sendMsg inBookRestaurantReservationIntentResponse (mkSelector "code") retCLong []
+code inBookRestaurantReservationIntentResponse =
+  sendMessage inBookRestaurantReservationIntentResponse codeSelector
 
 -- | @- userBooking@
 userBooking :: IsINBookRestaurantReservationIntentResponse inBookRestaurantReservationIntentResponse => inBookRestaurantReservationIntentResponse -> IO (Id INRestaurantReservationUserBooking)
-userBooking inBookRestaurantReservationIntentResponse  =
-    sendMsg inBookRestaurantReservationIntentResponse (mkSelector "userBooking") (retPtr retVoid) [] >>= retainedObject . castPtr
+userBooking inBookRestaurantReservationIntentResponse =
+  sendMessage inBookRestaurantReservationIntentResponse userBookingSelector
 
 -- | @- setUserBooking:@
 setUserBooking :: (IsINBookRestaurantReservationIntentResponse inBookRestaurantReservationIntentResponse, IsINRestaurantReservationUserBooking value) => inBookRestaurantReservationIntentResponse -> value -> IO ()
-setUserBooking inBookRestaurantReservationIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntentResponse (mkSelector "setUserBooking:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserBooking inBookRestaurantReservationIntentResponse value =
+  sendMessage inBookRestaurantReservationIntentResponse setUserBookingSelector (toINRestaurantReservationUserBooking value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INBookRestaurantReservationIntentCode, Id NSUserActivity] (Id INBookRestaurantReservationIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INBookRestaurantReservationIntentCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @userBooking@
-userBookingSelector :: Selector
+userBookingSelector :: Selector '[] (Id INRestaurantReservationUserBooking)
 userBookingSelector = mkSelector "userBooking"
 
 -- | @Selector@ for @setUserBooking:@
-setUserBookingSelector :: Selector
+setUserBookingSelector :: Selector '[Id INRestaurantReservationUserBooking] ()
 setUserBookingSelector = mkSelector "setUserBooking:"
 

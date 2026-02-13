@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -92,91 +93,91 @@ module ObjC.AVFAudio.AVAudioSession
   , outputLatency
   , ioBufferDuration
   , supportedOutputChannelLayouts
-  , sharedInstanceSelector
-  , setCategory_errorSelector
-  , setCategory_withOptions_errorSelector
-  , setCategory_mode_options_errorSelector
-  , setCategory_mode_routeSharingPolicy_options_errorSelector
-  , setMode_errorSelector
-  , setAllowHapticsAndSystemSoundsDuringRecording_errorSelector
-  , requestRecordPermissionSelector
-  , overrideOutputAudioPort_errorSelector
-  , setPreferredInput_errorSelector
-  , setPrefersNoInterruptionsFromSystemAlerts_errorSelector
-  , setPrefersEchoCancelledInput_errorSelector
-  , setOutputMuted_errorSelector
-  , initSelector
-  , setActive_withFlags_errorSelector
-  , setPreferredHardwareSampleRate_errorSelector
-  , setPreferredMicrophoneInjectionMode_errorSelector
-  , setAggregatedIOPreference_errorSelector
-  , setSupportsMultichannelContent_errorSelector
-  , setPrefersInterruptionOnRouteDisconnect_errorSelector
-  , setPreferredSampleRate_errorSelector
-  , setPreferredIOBufferDuration_errorSelector
-  , setPreferredInputNumberOfChannels_errorSelector
-  , setPreferredOutputNumberOfChannels_errorSelector
-  , setPreferredInputOrientation_errorSelector
-  , setInputGain_errorSelector
-  , setInputDataSource_errorSelector
-  , setOutputDataSource_errorSelector
-  , setActive_errorSelector
-  , setActive_withOptions_errorSelector
   , activateWithOptions_completionHandlerSelector
-  , availableCategoriesSelector
-  , categorySelector
-  , categoryOptionsSelector
-  , routeSharingPolicySelector
-  , availableModesSelector
-  , modeSelector
   , allowHapticsAndSystemSoundsDuringRecordingSelector
-  , recordPermissionSelector
-  , preferredInputSelector
-  , prefersNoInterruptionsFromSystemAlertsSelector
-  , renderingModeSelector
-  , prefersEchoCancelledInputSelector
-  , isEchoCancelledInputEnabledSelector
-  , isEchoCancelledInputAvailableSelector
-  , outputMutedSelector
-  , delegateSelector
-  , setDelegateSelector
-  , inputIsAvailableSelector
-  , currentHardwareSampleRateSelector
+  , availableCategoriesSelector
+  , availableInputsSelector
+  , availableModesSelector
+  , categoryOptionsSelector
+  , categorySelector
   , currentHardwareInputNumberOfChannelsSelector
   , currentHardwareOutputNumberOfChannelsSelector
-  , preferredHardwareSampleRateSelector
-  , preferredMicrophoneInjectionModeSelector
-  , isMicrophoneInjectionAvailableSelector
-  , availableInputsSelector
+  , currentHardwareSampleRateSelector
   , currentRouteSelector
-  , supportsMultichannelContentSelector
-  , prefersInterruptionOnRouteDisconnectSelector
-  , otherAudioPlayingSelector
-  , secondaryAudioShouldBeSilencedHintSelector
-  , outputVolumeSelector
-  , promptStyleSelector
-  , preferredSampleRateSelector
-  , preferredIOBufferDurationSelector
-  , preferredInputNumberOfChannelsSelector
-  , preferredOutputNumberOfChannelsSelector
-  , preferredInputOrientationSelector
-  , inputOrientationSelector
-  , maximumInputNumberOfChannelsSelector
-  , maximumOutputNumberOfChannelsSelector
+  , delegateSelector
+  , initSelector
+  , inputAvailableSelector
+  , inputDataSourceSelector
+  , inputDataSourcesSelector
   , inputGainSelector
   , inputGainSettableSelector
-  , inputAvailableSelector
-  , inputDataSourcesSelector
-  , inputDataSourceSelector
-  , outputDataSourcesSelector
-  , outputDataSourceSelector
-  , sampleRateSelector
-  , inputNumberOfChannelsSelector
-  , outputNumberOfChannelsSelector
+  , inputIsAvailableSelector
   , inputLatencySelector
-  , outputLatencySelector
+  , inputNumberOfChannelsSelector
+  , inputOrientationSelector
   , ioBufferDurationSelector
+  , isEchoCancelledInputAvailableSelector
+  , isEchoCancelledInputEnabledSelector
+  , isMicrophoneInjectionAvailableSelector
+  , maximumInputNumberOfChannelsSelector
+  , maximumOutputNumberOfChannelsSelector
+  , modeSelector
+  , otherAudioPlayingSelector
+  , outputDataSourceSelector
+  , outputDataSourcesSelector
+  , outputLatencySelector
+  , outputMutedSelector
+  , outputNumberOfChannelsSelector
+  , outputVolumeSelector
+  , overrideOutputAudioPort_errorSelector
+  , preferredHardwareSampleRateSelector
+  , preferredIOBufferDurationSelector
+  , preferredInputNumberOfChannelsSelector
+  , preferredInputOrientationSelector
+  , preferredInputSelector
+  , preferredMicrophoneInjectionModeSelector
+  , preferredOutputNumberOfChannelsSelector
+  , preferredSampleRateSelector
+  , prefersEchoCancelledInputSelector
+  , prefersInterruptionOnRouteDisconnectSelector
+  , prefersNoInterruptionsFromSystemAlertsSelector
+  , promptStyleSelector
+  , recordPermissionSelector
+  , renderingModeSelector
+  , requestRecordPermissionSelector
+  , routeSharingPolicySelector
+  , sampleRateSelector
+  , secondaryAudioShouldBeSilencedHintSelector
+  , setActive_errorSelector
+  , setActive_withFlags_errorSelector
+  , setActive_withOptions_errorSelector
+  , setAggregatedIOPreference_errorSelector
+  , setAllowHapticsAndSystemSoundsDuringRecording_errorSelector
+  , setCategory_errorSelector
+  , setCategory_mode_options_errorSelector
+  , setCategory_mode_routeSharingPolicy_options_errorSelector
+  , setCategory_withOptions_errorSelector
+  , setDelegateSelector
+  , setInputDataSource_errorSelector
+  , setInputGain_errorSelector
+  , setMode_errorSelector
+  , setOutputDataSource_errorSelector
+  , setOutputMuted_errorSelector
+  , setPreferredHardwareSampleRate_errorSelector
+  , setPreferredIOBufferDuration_errorSelector
+  , setPreferredInputNumberOfChannels_errorSelector
+  , setPreferredInputOrientation_errorSelector
+  , setPreferredInput_errorSelector
+  , setPreferredMicrophoneInjectionMode_errorSelector
+  , setPreferredOutputNumberOfChannels_errorSelector
+  , setPreferredSampleRate_errorSelector
+  , setPrefersEchoCancelledInput_errorSelector
+  , setPrefersInterruptionOnRouteDisconnect_errorSelector
+  , setPrefersNoInterruptionsFromSystemAlerts_errorSelector
+  , setSupportsMultichannelContent_errorSelector
+  , sharedInstanceSelector
   , supportedOutputChannelLayoutsSelector
+  , supportsMultichannelContentSelector
 
   -- * Enum types
   , AVAudioSessionActivationOptions(AVAudioSessionActivationOptions)
@@ -234,15 +235,11 @@ module ObjC.AVFAudio.AVAudioSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -257,35 +254,28 @@ sharedInstance :: IO (Id AVAudioSession)
 sharedInstance  =
   do
     cls' <- getRequiredClass "AVAudioSession"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | Set session category.
 --
 -- ObjC selector: @- setCategory:error:@
 setCategory_error :: (IsAVAudioSession avAudioSession, IsNSString category, IsNSError outError) => avAudioSession -> category -> outError -> IO Bool
-setCategory_error avAudioSession  category outError =
-  withObjCPtr category $ \raw_category ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setCategory:error:") retCULong [argPtr (castPtr raw_category :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setCategory_error avAudioSession category outError =
+  sendMessage avAudioSession setCategory_errorSelector (toNSString category) (toNSError outError)
 
 -- | Set session category with options.
 --
 -- ObjC selector: @- setCategory:withOptions:error:@
 setCategory_withOptions_error :: (IsAVAudioSession avAudioSession, IsNSString category, IsNSError outError) => avAudioSession -> category -> AVAudioSessionCategoryOptions -> outError -> IO Bool
-setCategory_withOptions_error avAudioSession  category options outError =
-  withObjCPtr category $ \raw_category ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setCategory:withOptions:error:") retCULong [argPtr (castPtr raw_category :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+setCategory_withOptions_error avAudioSession category options outError =
+  sendMessage avAudioSession setCategory_withOptions_errorSelector (toNSString category) options (toNSError outError)
 
 -- | Set session category and mode with options.
 --
 -- ObjC selector: @- setCategory:mode:options:error:@
 setCategory_mode_options_error :: (IsAVAudioSession avAudioSession, IsNSString category, IsNSString mode, IsNSError outError) => avAudioSession -> category -> mode -> AVAudioSessionCategoryOptions -> outError -> IO Bool
-setCategory_mode_options_error avAudioSession  category mode options outError =
-  withObjCPtr category $ \raw_category ->
-    withObjCPtr mode $ \raw_mode ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setCategory:mode:options:error:") retCULong [argPtr (castPtr raw_category :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+setCategory_mode_options_error avAudioSession category mode options outError =
+  sendMessage avAudioSession setCategory_mode_options_errorSelector (toNSString category) (toNSString mode) options (toNSError outError)
 
 -- | Set session category, mode, routing sharing policy, and options.
 --
@@ -299,11 +289,8 @@ setCategory_mode_options_error avAudioSession  category mode options outError =
 --
 -- ObjC selector: @- setCategory:mode:routeSharingPolicy:options:error:@
 setCategory_mode_routeSharingPolicy_options_error :: (IsAVAudioSession avAudioSession, IsNSString category, IsNSString mode, IsNSError outError) => avAudioSession -> category -> mode -> AVAudioSessionRouteSharingPolicy -> AVAudioSessionCategoryOptions -> outError -> IO Bool
-setCategory_mode_routeSharingPolicy_options_error avAudioSession  category mode policy options outError =
-  withObjCPtr category $ \raw_category ->
-    withObjCPtr mode $ \raw_mode ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setCategory:mode:routeSharingPolicy:options:error:") retCULong [argPtr (castPtr raw_category :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ()), argCULong (coerce policy), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+setCategory_mode_routeSharingPolicy_options_error avAudioSession category mode policy options outError =
+  sendMessage avAudioSession setCategory_mode_routeSharingPolicy_options_errorSelector (toNSString category) (toNSString mode) policy options (toNSError outError)
 
 -- | Set the session's mode.
 --
@@ -311,18 +298,15 @@ setCategory_mode_routeSharingPolicy_options_error avAudioSession  category mode 
 --
 -- ObjC selector: @- setMode:error:@
 setMode_error :: (IsAVAudioSession avAudioSession, IsNSString mode, IsNSError outError) => avAudioSession -> mode -> outError -> IO Bool
-setMode_error avAudioSession  mode outError =
-  withObjCPtr mode $ \raw_mode ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setMode:error:") retCULong [argPtr (castPtr raw_mode :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setMode_error avAudioSession mode outError =
+  sendMessage avAudioSession setMode_errorSelector (toNSString mode) (toNSError outError)
 
 -- | Set allowHapticsAndSystemSoundsDuringRecording to YES in order to allow system sounds and haptics to play while the session is actively using audio input. Default value is NO.
 --
 -- ObjC selector: @- setAllowHapticsAndSystemSoundsDuringRecording:error:@
 setAllowHapticsAndSystemSoundsDuringRecording_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setAllowHapticsAndSystemSoundsDuringRecording_error avAudioSession  inValue outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setAllowHapticsAndSystemSoundsDuringRecording:error:") retCULong [argCULong (if inValue then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setAllowHapticsAndSystemSoundsDuringRecording_error avAudioSession inValue outError =
+  sendMessage avAudioSession setAllowHapticsAndSystemSoundsDuringRecording_errorSelector inValue (toNSError outError)
 
 -- | Checks to see if calling process has permission to record audio.
 --
@@ -330,8 +314,8 @@ setAllowHapticsAndSystemSoundsDuringRecording_error avAudioSession  inValue outE
 --
 -- ObjC selector: @- requestRecordPermission:@
 requestRecordPermission :: IsAVAudioSession avAudioSession => avAudioSession -> Ptr () -> IO ()
-requestRecordPermission avAudioSession  response =
-    sendMsg avAudioSession (mkSelector "requestRecordPermission:") retVoid [argPtr (castPtr response :: Ptr ())]
+requestRecordPermission avAudioSession response =
+  sendMessage avAudioSession requestRecordPermissionSelector response
 
 -- | Use this method to temporarily override the output to built-in speaker.
 --
@@ -339,9 +323,8 @@ requestRecordPermission avAudioSession  response =
 --
 -- ObjC selector: @- overrideOutputAudioPort:error:@
 overrideOutputAudioPort_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> AVAudioSessionPortOverride -> outError -> IO Bool
-overrideOutputAudioPort_error avAudioSession  portOverride outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "overrideOutputAudioPort:error:") retCULong [argCULong (coerce portOverride), argPtr (castPtr raw_outError :: Ptr ())]
+overrideOutputAudioPort_error avAudioSession portOverride outError =
+  sendMessage avAudioSession overrideOutputAudioPort_errorSelector portOverride (toNSError outError)
 
 -- | Select a preferred input port for audio routing.
 --
@@ -349,10 +332,8 @@ overrideOutputAudioPort_error avAudioSession  portOverride outError =
 --
 -- ObjC selector: @- setPreferredInput:error:@
 setPreferredInput_error :: (IsAVAudioSession avAudioSession, IsAVAudioSessionPortDescription inPort, IsNSError outError) => avAudioSession -> inPort -> outError -> IO Bool
-setPreferredInput_error avAudioSession  inPort outError =
-  withObjCPtr inPort $ \raw_inPort ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredInput:error:") retCULong [argPtr (castPtr raw_inPort :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredInput_error avAudioSession inPort outError =
+  sendMessage avAudioSession setPreferredInput_errorSelector (toAVAudioSessionPortDescription inPort) (toNSError outError)
 
 -- | Set ringtone and alert interruption preference.
 --
@@ -360,9 +341,8 @@ setPreferredInput_error avAudioSession  inPort outError =
 --
 -- ObjC selector: @- setPrefersNoInterruptionsFromSystemAlerts:error:@
 setPrefersNoInterruptionsFromSystemAlerts_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setPrefersNoInterruptionsFromSystemAlerts_error avAudioSession  inValue outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPrefersNoInterruptionsFromSystemAlerts:error:") retCULong [argCULong (if inValue then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setPrefersNoInterruptionsFromSystemAlerts_error avAudioSession inValue outError =
+  sendMessage avAudioSession setPrefersNoInterruptionsFromSystemAlerts_errorSelector inValue (toNSError outError)
 
 -- | Set a preference to enable echo cancelled input on supported hardware
 --
@@ -376,9 +356,8 @@ setPrefersNoInterruptionsFromSystemAlerts_error avAudioSession  inValue outError
 --
 -- ObjC selector: @- setPrefersEchoCancelledInput:error:@
 setPrefersEchoCancelledInput_error :: (IsAVAudioSession avAudioSession, IsNSError error_) => avAudioSession -> Bool -> error_ -> IO Bool
-setPrefersEchoCancelledInput_error avAudioSession  value error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPrefersEchoCancelledInput:error:") retCULong [argCULong (if value then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+setPrefersEchoCancelledInput_error avAudioSession value error_ =
+  sendMessage avAudioSession setPrefersEchoCancelledInput_errorSelector value (toNSError error_)
 
 -- | Sets a Boolean value to inform the system to mute the session's output audio. The default value is false (unmuted).
 --
@@ -392,34 +371,30 @@ setPrefersEchoCancelledInput_error avAudioSession  value error_ =
 --
 -- ObjC selector: @- setOutputMuted:error:@
 setOutputMuted_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setOutputMuted_error avAudioSession  muted outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setOutputMuted:error:") retCULong [argCULong (if muted then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setOutputMuted_error avAudioSession muted outError =
+  sendMessage avAudioSession setOutputMuted_errorSelector muted (toNSError outError)
 
 -- | @- init@
 init_ :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSession)
-init_ avAudioSession  =
-    sendMsg avAudioSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioSession =
+  sendOwnedMessage avAudioSession initSelector
 
 -- | @- setActive:withFlags:error:@
 setActive_withFlags_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> CLong -> outError -> IO Bool
-setActive_withFlags_error avAudioSession  active flags outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setActive:withFlags:error:") retCULong [argCULong (if active then 1 else 0), argCLong flags, argPtr (castPtr raw_outError :: Ptr ())]
+setActive_withFlags_error avAudioSession active flags outError =
+  sendMessage avAudioSession setActive_withFlags_errorSelector active flags (toNSError outError)
 
 -- | @- setPreferredHardwareSampleRate:error:@
 setPreferredHardwareSampleRate_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CDouble -> outError -> IO Bool
-setPreferredHardwareSampleRate_error avAudioSession  sampleRate outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredHardwareSampleRate:error:") retCULong [argCDouble sampleRate, argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredHardwareSampleRate_error avAudioSession sampleRate outError =
+  sendMessage avAudioSession setPreferredHardwareSampleRate_errorSelector sampleRate (toNSError outError)
 
 -- | Set the preferred form of audio injection into another app's input stream See AVAudioSessionMicrophoneInjectionMode for available modes
 --
 -- ObjC selector: @- setPreferredMicrophoneInjectionMode:error:@
 setPreferredMicrophoneInjectionMode_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> AVAudioSessionMicrophoneInjectionMode -> outError -> IO Bool
-setPreferredMicrophoneInjectionMode_error avAudioSession  inValue outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredMicrophoneInjectionMode:error:") retCULong [argCLong (coerce inValue), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredMicrophoneInjectionMode_error avAudioSession inValue outError =
+  sendMessage avAudioSession setPreferredMicrophoneInjectionMode_errorSelector inValue (toNSError outError)
 
 -- | Controls whether audio input and output are aggregated. Only valid in combination with    AVAudioSessionCategoryPlayAndRecord or AVAudioSessionCategoryMultiRoute.
 --
@@ -427,17 +402,15 @@ setPreferredMicrophoneInjectionMode_error avAudioSession  inValue outError =
 --
 -- ObjC selector: @- setAggregatedIOPreference:error:@
 setAggregatedIOPreference_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> AVAudioSessionIOType -> outError -> IO Bool
-setAggregatedIOPreference_error avAudioSession  inIOType outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setAggregatedIOPreference:error:") retCULong [argCULong (coerce inIOType), argPtr (castPtr raw_outError :: Ptr ())]
+setAggregatedIOPreference_error avAudioSession inIOType outError =
+  sendMessage avAudioSession setAggregatedIOPreference_errorSelector inIOType (toNSError outError)
 
 -- | Set YES to inform the system if the app can supply multichannel audio content. Default value is NO. This property is intended to be used by 'Now Playing' applications. See https://developer.apple.com/documentation/mediaplayer/becoming_a_now_playable_app for more information about what it means to be a 'Now Playing' application. Typically 'Now Playing' applications will also use AVAudioSessionRouteSharingPolicyLongFormAudio or AVAudioSessionRouteSharingPolicyLongFormVideo.
 --
 -- ObjC selector: @- setSupportsMultichannelContent:error:@
 setSupportsMultichannelContent_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setSupportsMultichannelContent_error avAudioSession  inValue outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setSupportsMultichannelContent:error:") retCULong [argCULong (if inValue then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setSupportsMultichannelContent_error avAudioSession inValue outError =
+  sendMessage avAudioSession setSupportsMultichannelContent_errorSelector inValue (toNSError outError)
 
 -- | Use this method to opt in or opt out of interruption on route disconnect policy.
 --
@@ -447,49 +420,43 @@ setSupportsMultichannelContent_error avAudioSession  inValue outError =
 --
 -- ObjC selector: @- setPrefersInterruptionOnRouteDisconnect:error:@
 setPrefersInterruptionOnRouteDisconnect_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setPrefersInterruptionOnRouteDisconnect_error avAudioSession  inValue outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPrefersInterruptionOnRouteDisconnect:error:") retCULong [argCULong (if inValue then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setPrefersInterruptionOnRouteDisconnect_error avAudioSession inValue outError =
+  sendMessage avAudioSession setPrefersInterruptionOnRouteDisconnect_errorSelector inValue (toNSError outError)
 
 -- | The preferred hardware sample rate for the session. The actual sample rate may be different.
 --
 -- ObjC selector: @- setPreferredSampleRate:error:@
 setPreferredSampleRate_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CDouble -> outError -> IO Bool
-setPreferredSampleRate_error avAudioSession  sampleRate outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredSampleRate:error:") retCULong [argCDouble sampleRate, argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredSampleRate_error avAudioSession sampleRate outError =
+  sendMessage avAudioSession setPreferredSampleRate_errorSelector sampleRate (toNSError outError)
 
 -- | The preferred hardware IO buffer duration in seconds. The actual IO buffer duration may be different.
 --
 -- ObjC selector: @- setPreferredIOBufferDuration:error:@
 setPreferredIOBufferDuration_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CDouble -> outError -> IO Bool
-setPreferredIOBufferDuration_error avAudioSession  duration outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredIOBufferDuration:error:") retCULong [argCDouble duration, argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredIOBufferDuration_error avAudioSession duration outError =
+  sendMessage avAudioSession setPreferredIOBufferDuration_errorSelector duration (toNSError outError)
 
 -- | Sets the number of input channels that the app would prefer for the current route
 --
 -- ObjC selector: @- setPreferredInputNumberOfChannels:error:@
 setPreferredInputNumberOfChannels_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CLong -> outError -> IO Bool
-setPreferredInputNumberOfChannels_error avAudioSession  count outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredInputNumberOfChannels:error:") retCULong [argCLong count, argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredInputNumberOfChannels_error avAudioSession count outError =
+  sendMessage avAudioSession setPreferredInputNumberOfChannels_errorSelector count (toNSError outError)
 
 -- | Sets the number of output channels that the app would prefer for the current route
 --
 -- ObjC selector: @- setPreferredOutputNumberOfChannels:error:@
 setPreferredOutputNumberOfChannels_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CLong -> outError -> IO Bool
-setPreferredOutputNumberOfChannels_error avAudioSession  count outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredOutputNumberOfChannels:error:") retCULong [argCLong count, argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredOutputNumberOfChannels_error avAudioSession count outError =
+  sendMessage avAudioSession setPreferredOutputNumberOfChannels_errorSelector count (toNSError outError)
 
 -- | Sets the preferred input orientation. The input orientation determines which directions will be left and right when a built-in mic data source with the AVAudioSessionPolarPatternStereo polar pattern is selected. Typically, this orientation should match how the user is holding the device while recording, which will match the application's interface orientation when a single app is on the screen. The actual input orientation may be different, for example, if another app's session is in control of routing. The input orientation is independent of the orientation property of an AVAudioSessionDataSourceDescription.
 --
 -- ObjC selector: @- setPreferredInputOrientation:error:@
 setPreferredInputOrientation_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> AVAudioStereoOrientation -> outError -> IO Bool
-setPreferredInputOrientation_error avAudioSession  orientation outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setPreferredInputOrientation:error:") retCULong [argCLong (coerce orientation), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredInputOrientation_error avAudioSession orientation outError =
+  sendMessage avAudioSession setPreferredInputOrientation_errorSelector orientation (toNSError outError)
 
 -- | A value defined over the range [0.0, 1.0], with 0.0 corresponding to the lowest analog	gain setting and 1.0 corresponding to the highest analog gain setting.
 --
@@ -497,27 +464,22 @@ setPreferredInputOrientation_error avAudioSession  orientation outError =
 --
 -- ObjC selector: @- setInputGain:error:@
 setInputGain_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> CFloat -> outError -> IO Bool
-setInputGain_error avAudioSession  gain outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setInputGain:error:") retCULong [argCFloat gain, argPtr (castPtr raw_outError :: Ptr ())]
+setInputGain_error avAudioSession gain outError =
+  sendMessage avAudioSession setInputGain_errorSelector gain (toNSError outError)
 
 -- | Select a new input data source. Setting a nil value will clear the data source preference.
 --
 -- ObjC selector: @- setInputDataSource:error:@
 setInputDataSource_error :: (IsAVAudioSession avAudioSession, IsAVAudioSessionDataSourceDescription dataSource, IsNSError outError) => avAudioSession -> dataSource -> outError -> IO Bool
-setInputDataSource_error avAudioSession  dataSource outError =
-  withObjCPtr dataSource $ \raw_dataSource ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setInputDataSource:error:") retCULong [argPtr (castPtr raw_dataSource :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setInputDataSource_error avAudioSession dataSource outError =
+  sendMessage avAudioSession setInputDataSource_errorSelector (toAVAudioSessionDataSourceDescription dataSource) (toNSError outError)
 
 -- | Select a new output data source. Setting a nil value will clear the data source preference.
 --
 -- ObjC selector: @- setOutputDataSource:error:@
 setOutputDataSource_error :: (IsAVAudioSession avAudioSession, IsAVAudioSessionDataSourceDescription dataSource, IsNSError outError) => avAudioSession -> dataSource -> outError -> IO Bool
-setOutputDataSource_error avAudioSession  dataSource outError =
-  withObjCPtr dataSource $ \raw_dataSource ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setOutputDataSource:error:") retCULong [argPtr (castPtr raw_dataSource :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setOutputDataSource_error avAudioSession dataSource outError =
+  sendMessage avAudioSession setOutputDataSource_errorSelector (toAVAudioSessionDataSourceDescription dataSource) (toNSError outError)
 
 -- | Set the session active or inactive.
 --
@@ -525,15 +487,13 @@ setOutputDataSource_error avAudioSession  dataSource outError =
 --
 -- ObjC selector: @- setActive:error:@
 setActive_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> outError -> IO Bool
-setActive_error avAudioSession  active outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setActive:error:") retCULong [argCULong (if active then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setActive_error avAudioSession active outError =
+  sendMessage avAudioSession setActive_errorSelector active (toNSError outError)
 
 -- | @- setActive:withOptions:error:@
 setActive_withOptions_error :: (IsAVAudioSession avAudioSession, IsNSError outError) => avAudioSession -> Bool -> AVAudioSessionSetActiveOptions -> outError -> IO Bool
-setActive_withOptions_error avAudioSession  active options outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "setActive:withOptions:error:") retCULong [argCULong (if active then 1 else 0), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+setActive_withOptions_error avAudioSession active options outError =
+  sendMessage avAudioSession setActive_withOptions_errorSelector active options (toNSError outError)
 
 -- | Asynchronously activate the session.
 --
@@ -541,29 +501,29 @@ setActive_withOptions_error avAudioSession  active options outError =
 --
 -- ObjC selector: @- activateWithOptions:completionHandler:@
 activateWithOptions_completionHandler :: IsAVAudioSession avAudioSession => avAudioSession -> AVAudioSessionActivationOptions -> Ptr () -> IO ()
-activateWithOptions_completionHandler avAudioSession  options handler =
-    sendMsg avAudioSession (mkSelector "activateWithOptions:completionHandler:") retVoid [argCULong (coerce options), argPtr (castPtr handler :: Ptr ())]
+activateWithOptions_completionHandler avAudioSession options handler =
+  sendMessage avAudioSession activateWithOptions_completionHandlerSelector options handler
 
 -- | Get the list of categories available on the device.  Certain categories may be unavailable on particular devices.  For example, AVAudioSessionCategoryRecord will not be available on devices that have no support for audio input.
 --
 -- ObjC selector: @- availableCategories@
 availableCategories :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-availableCategories avAudioSession  =
-    sendMsg avAudioSession (mkSelector "availableCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableCategories avAudioSession =
+  sendMessage avAudioSession availableCategoriesSelector
 
 -- | Get session category. Examples: AVAudioSessionCategoryRecord, AVAudioSessionCategoryPlayAndRecord, etc.
 --
 -- ObjC selector: @- category@
 category :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSString)
-category avAudioSession  =
-    sendMsg avAudioSession (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+category avAudioSession =
+  sendMessage avAudioSession categorySelector
 
 -- | Get the current set of AVAudioSessionCategoryOptions.
 --
 -- ObjC selector: @- categoryOptions@
 categoryOptions :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionCategoryOptions
-categoryOptions avAudioSession  =
-    fmap (coerce :: CULong -> AVAudioSessionCategoryOptions) $ sendMsg avAudioSession (mkSelector "categoryOptions") retCULong []
+categoryOptions avAudioSession =
+  sendMessage avAudioSession categoryOptionsSelector
 
 -- | Get the route sharing policy.
 --
@@ -571,67 +531,67 @@ categoryOptions avAudioSession  =
 --
 -- ObjC selector: @- routeSharingPolicy@
 routeSharingPolicy :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionRouteSharingPolicy
-routeSharingPolicy avAudioSession  =
-    fmap (coerce :: CULong -> AVAudioSessionRouteSharingPolicy) $ sendMsg avAudioSession (mkSelector "routeSharingPolicy") retCULong []
+routeSharingPolicy avAudioSession =
+  sendMessage avAudioSession routeSharingPolicySelector
 
 -- | Get the list of modes available on the device.  Certain modes may be unavailable on particular devices.  For example, AVAudioSessionModeVideoRecording will not be available on devices that have no support for recording video.
 --
 -- ObjC selector: @- availableModes@
 availableModes :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-availableModes avAudioSession  =
-    sendMsg avAudioSession (mkSelector "availableModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableModes avAudioSession =
+  sendMessage avAudioSession availableModesSelector
 
 -- | Get the session's mode.
 --
 -- ObjC selector: @- mode@
 mode :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSString)
-mode avAudioSession  =
-    sendMsg avAudioSession (mkSelector "mode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mode avAudioSession =
+  sendMessage avAudioSession modeSelector
 
 -- | Whether system sounds and haptics can play while the session is actively using audio input.
 --
 -- ObjC selector: @- allowHapticsAndSystemSoundsDuringRecording@
 allowHapticsAndSystemSoundsDuringRecording :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-allowHapticsAndSystemSoundsDuringRecording avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "allowHapticsAndSystemSoundsDuringRecording") retCULong []
+allowHapticsAndSystemSoundsDuringRecording avAudioSession =
+  sendMessage avAudioSession allowHapticsAndSystemSoundsDuringRecordingSelector
 
 -- | Returns an enum indicating whether the user has granted or denied permission to record, or has not been asked
 --
 -- ObjC selector: @- recordPermission@
 recordPermission :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionRecordPermission
-recordPermission avAudioSession  =
-    fmap (coerce :: CULong -> AVAudioSessionRecordPermission) $ sendMsg avAudioSession (mkSelector "recordPermission") retCULong []
+recordPermission avAudioSession =
+  sendMessage avAudioSession recordPermissionSelector
 
 -- | Get the preferred input port.  Will be nil if no preference has been set.
 --
 -- ObjC selector: @- preferredInput@
 preferredInput :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionPortDescription)
-preferredInput avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredInput avAudioSession =
+  sendMessage avAudioSession preferredInputSelector
 
 -- | @- prefersNoInterruptionsFromSystemAlerts@
 prefersNoInterruptionsFromSystemAlerts :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-prefersNoInterruptionsFromSystemAlerts avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "prefersNoInterruptionsFromSystemAlerts") retCULong []
+prefersNoInterruptionsFromSystemAlerts avAudioSession =
+  sendMessage avAudioSession prefersNoInterruptionsFromSystemAlertsSelector
 
 -- | Get the currently resolved rendering mode to badge content appropriately. Clients should use this property to determine what to badge content as.
 --
 -- ObjC selector: @- renderingMode@
 renderingMode :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionRenderingMode
-renderingMode avAudioSession  =
-    fmap (coerce :: CLong -> AVAudioSessionRenderingMode) $ sendMsg avAudioSession (mkSelector "renderingMode") retCLong []
+renderingMode avAudioSession =
+  sendMessage avAudioSession renderingModeSelector
 
 -- | @- prefersEchoCancelledInput@
 prefersEchoCancelledInput :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-prefersEchoCancelledInput avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "prefersEchoCancelledInput") retCULong []
+prefersEchoCancelledInput avAudioSession =
+  sendMessage avAudioSession prefersEchoCancelledInputSelector
 
 -- | Returns YES if echo cancelled input is successfully enabled on an active session. Please see @prefersEchoCancelledInput@ above for more details.
 --
 -- ObjC selector: @- isEchoCancelledInputEnabled@
 isEchoCancelledInputEnabled :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-isEchoCancelledInputEnabled avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "isEchoCancelledInputEnabled") retCULong []
+isEchoCancelledInputEnabled avAudioSession =
+  sendMessage avAudioSession isEchoCancelledInputEnabledSelector
 
 -- | This property will return YES if the device supports echo cancellation with the following category and mode combinations:	- ``AVAudioSessionCategoryPlayAndRecord`` with ``AVAudioSessionModeDefault``	- ``AVAudioSessionCategoryMultiRoute`` with ``AVAudioSessionModeDualRoute``
 --
@@ -639,62 +599,62 @@ isEchoCancelledInputEnabled avAudioSession  =
 --
 -- ObjC selector: @- isEchoCancelledInputAvailable@
 isEchoCancelledInputAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-isEchoCancelledInputAvailable avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "isEchoCancelledInputAvailable") retCULong []
+isEchoCancelledInputAvailable avAudioSession =
+  sendMessage avAudioSession isEchoCancelledInputAvailableSelector
 
 -- | A Boolean value that indicates whether audio output is in a muted state.
 --
 -- ObjC selector: @- outputMuted@
 outputMuted :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-outputMuted avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "outputMuted") retCULong []
+outputMuted avAudioSession =
+  sendMessage avAudioSession outputMutedSelector
 
 -- | @- delegate@
 delegate :: IsAVAudioSession avAudioSession => avAudioSession -> IO RawId
-delegate avAudioSession  =
-    fmap (RawId . castPtr) $ sendMsg avAudioSession (mkSelector "delegate") (retPtr retVoid) []
+delegate avAudioSession =
+  sendMessage avAudioSession delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsAVAudioSession avAudioSession => avAudioSession -> RawId -> IO ()
-setDelegate avAudioSession  value =
-    sendMsg avAudioSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avAudioSession value =
+  sendMessage avAudioSession setDelegateSelector value
 
 -- | @- inputIsAvailable@
 inputIsAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-inputIsAvailable avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "inputIsAvailable") retCULong []
+inputIsAvailable avAudioSession =
+  sendMessage avAudioSession inputIsAvailableSelector
 
 -- | @- currentHardwareSampleRate@
 currentHardwareSampleRate :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-currentHardwareSampleRate avAudioSession  =
-    sendMsg avAudioSession (mkSelector "currentHardwareSampleRate") retCDouble []
+currentHardwareSampleRate avAudioSession =
+  sendMessage avAudioSession currentHardwareSampleRateSelector
 
 -- | @- currentHardwareInputNumberOfChannels@
 currentHardwareInputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-currentHardwareInputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "currentHardwareInputNumberOfChannels") retCLong []
+currentHardwareInputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession currentHardwareInputNumberOfChannelsSelector
 
 -- | @- currentHardwareOutputNumberOfChannels@
 currentHardwareOutputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-currentHardwareOutputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "currentHardwareOutputNumberOfChannels") retCLong []
+currentHardwareOutputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession currentHardwareOutputNumberOfChannelsSelector
 
 -- | @- preferredHardwareSampleRate@
 preferredHardwareSampleRate :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-preferredHardwareSampleRate avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredHardwareSampleRate") retCDouble []
+preferredHardwareSampleRate avAudioSession =
+  sendMessage avAudioSession preferredHardwareSampleRateSelector
 
 -- | @- preferredMicrophoneInjectionMode@
 preferredMicrophoneInjectionMode :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionMicrophoneInjectionMode
-preferredMicrophoneInjectionMode avAudioSession  =
-    fmap (coerce :: CLong -> AVAudioSessionMicrophoneInjectionMode) $ sendMsg avAudioSession (mkSelector "preferredMicrophoneInjectionMode") retCLong []
+preferredMicrophoneInjectionMode avAudioSession =
+  sendMessage avAudioSession preferredMicrophoneInjectionModeSelector
 
 -- | Indicates if microphone injection is available. Observe AVAudioSessionMicrophoneInjectionCapabilitiesChangeNotification for changes to this property
 --
 -- ObjC selector: @- isMicrophoneInjectionAvailable@
 isMicrophoneInjectionAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-isMicrophoneInjectionAvailable avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "isMicrophoneInjectionAvailable") retCULong []
+isMicrophoneInjectionAvailable avAudioSession =
+  sendMessage avAudioSession isMicrophoneInjectionAvailableSelector
 
 -- | Get the set of input ports that are available for routing.
 --
@@ -704,27 +664,27 @@ isMicrophoneInjectionAvailable avAudioSession  =
 --
 -- ObjC selector: @- availableInputs@
 availableInputs :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-availableInputs avAudioSession  =
-    sendMsg avAudioSession (mkSelector "availableInputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableInputs avAudioSession =
+  sendMessage avAudioSession availableInputsSelector
 
 -- | A description of the current route, consisting of zero or more input ports and zero or more output ports
 --
 -- ObjC selector: @- currentRoute@
 currentRoute :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionRouteDescription)
-currentRoute avAudioSession  =
-    sendMsg avAudioSession (mkSelector "currentRoute") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentRoute avAudioSession =
+  sendMessage avAudioSession currentRouteSelector
 
 -- | @- supportsMultichannelContent@
 supportsMultichannelContent :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-supportsMultichannelContent avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "supportsMultichannelContent") retCULong []
+supportsMultichannelContent avAudioSession =
+  sendMessage avAudioSession supportsMultichannelContentSelector
 
 -- | Indicates if session will be interrupted on route disconnect.
 --
 -- ObjC selector: @- prefersInterruptionOnRouteDisconnect@
 prefersInterruptionOnRouteDisconnect :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-prefersInterruptionOnRouteDisconnect avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "prefersInterruptionOnRouteDisconnect") retCULong []
+prefersInterruptionOnRouteDisconnect avAudioSession =
+  sendMessage avAudioSession prefersInterruptionOnRouteDisconnectSelector
 
 -- | True when another application is playing audio.
 --
@@ -732,8 +692,8 @@ prefersInterruptionOnRouteDisconnect avAudioSession  =
 --
 -- ObjC selector: @- otherAudioPlaying@
 otherAudioPlaying :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-otherAudioPlaying avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "otherAudioPlaying") retCULong []
+otherAudioPlaying avAudioSession =
+  sendMessage avAudioSession otherAudioPlayingSelector
 
 -- | True when another application with a non-mixable audio session is playing audio.
 --
@@ -741,89 +701,89 @@ otherAudioPlaying avAudioSession  =
 --
 -- ObjC selector: @- secondaryAudioShouldBeSilencedHint@
 secondaryAudioShouldBeSilencedHint :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-secondaryAudioShouldBeSilencedHint avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "secondaryAudioShouldBeSilencedHint") retCULong []
+secondaryAudioShouldBeSilencedHint avAudioSession =
+  sendMessage avAudioSession secondaryAudioShouldBeSilencedHintSelector
 
 -- | The current output volume. Value in range [0.0, 1.0]. Is key-value observable.
 --
 -- ObjC selector: @- outputVolume@
 outputVolume :: IsAVAudioSession avAudioSession => avAudioSession -> IO CFloat
-outputVolume avAudioSession  =
-    sendMsg avAudioSession (mkSelector "outputVolume") retCFloat []
+outputVolume avAudioSession =
+  sendMessage avAudioSession outputVolumeSelector
 
 -- | The prompt style is a hint to sessions using AVAudioSessionModeVoicePrompt to alter the type of prompts they issue in response to other audio activity on the system, such as Siri and phone calls. This property is key-value observable.
 --
 -- ObjC selector: @- promptStyle@
 promptStyle :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioSessionPromptStyle
-promptStyle avAudioSession  =
-    fmap (coerce :: CULong -> AVAudioSessionPromptStyle) $ sendMsg avAudioSession (mkSelector "promptStyle") retCULong []
+promptStyle avAudioSession =
+  sendMessage avAudioSession promptStyleSelector
 
 -- | @- preferredSampleRate@
 preferredSampleRate :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-preferredSampleRate avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredSampleRate") retCDouble []
+preferredSampleRate avAudioSession =
+  sendMessage avAudioSession preferredSampleRateSelector
 
 -- | @- preferredIOBufferDuration@
 preferredIOBufferDuration :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-preferredIOBufferDuration avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredIOBufferDuration") retCDouble []
+preferredIOBufferDuration avAudioSession =
+  sendMessage avAudioSession preferredIOBufferDurationSelector
 
 -- | @- preferredInputNumberOfChannels@
 preferredInputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-preferredInputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredInputNumberOfChannels") retCLong []
+preferredInputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession preferredInputNumberOfChannelsSelector
 
 -- | @- preferredOutputNumberOfChannels@
 preferredOutputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-preferredOutputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "preferredOutputNumberOfChannels") retCLong []
+preferredOutputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession preferredOutputNumberOfChannelsSelector
 
 -- | @- preferredInputOrientation@
 preferredInputOrientation :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioStereoOrientation
-preferredInputOrientation avAudioSession  =
-    fmap (coerce :: CLong -> AVAudioStereoOrientation) $ sendMsg avAudioSession (mkSelector "preferredInputOrientation") retCLong []
+preferredInputOrientation avAudioSession =
+  sendMessage avAudioSession preferredInputOrientationSelector
 
 -- | Describes the orientation of the input data source (valid for the built-in mic input data source when a stereo polar pattern is selected).
 --
 -- ObjC selector: @- inputOrientation@
 inputOrientation :: IsAVAudioSession avAudioSession => avAudioSession -> IO AVAudioStereoOrientation
-inputOrientation avAudioSession  =
-    fmap (coerce :: CLong -> AVAudioStereoOrientation) $ sendMsg avAudioSession (mkSelector "inputOrientation") retCLong []
+inputOrientation avAudioSession =
+  sendMessage avAudioSession inputOrientationSelector
 
 -- | Returns the largest number of audio input channels available for the current route
 --
 -- ObjC selector: @- maximumInputNumberOfChannels@
 maximumInputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-maximumInputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "maximumInputNumberOfChannels") retCLong []
+maximumInputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession maximumInputNumberOfChannelsSelector
 
 -- | Returns the largest number of audio output channels available for the current route
 --
 -- ObjC selector: @- maximumOutputNumberOfChannels@
 maximumOutputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-maximumOutputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "maximumOutputNumberOfChannels") retCLong []
+maximumOutputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession maximumOutputNumberOfChannelsSelector
 
 -- | value in range [0.0, 1.0]
 --
 -- ObjC selector: @- inputGain@
 inputGain :: IsAVAudioSession avAudioSession => avAudioSession -> IO CFloat
-inputGain avAudioSession  =
-    sendMsg avAudioSession (mkSelector "inputGain") retCFloat []
+inputGain avAudioSession =
+  sendMessage avAudioSession inputGainSelector
 
 -- | True when audio input gain is available.  Some input ports may not provide the ability to set the input gain, so check this value before attempting to set input gain.
 --
 -- ObjC selector: @- inputGainSettable@
 inputGainSettable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-inputGainSettable avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "inputGainSettable") retCULong []
+inputGainSettable avAudioSession =
+  sendMessage avAudioSession inputGainSettableSelector
 
 -- | True if input hardware is available. Key-value observable.
 --
 -- ObjC selector: @- inputAvailable@
 inputAvailable :: IsAVAudioSession avAudioSession => avAudioSession -> IO Bool
-inputAvailable avAudioSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSession (mkSelector "inputAvailable") retCULong []
+inputAvailable avAudioSession =
+  sendMessage avAudioSession inputAvailableSelector
 
 -- | DataSource methods are for use with routes that support input or output data source	selection.
 --
@@ -833,420 +793,420 @@ inputAvailable avAudioSession  =
 --
 -- ObjC selector: @- inputDataSources@
 inputDataSources :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-inputDataSources avAudioSession  =
-    sendMsg avAudioSession (mkSelector "inputDataSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputDataSources avAudioSession =
+  sendMessage avAudioSession inputDataSourcesSelector
 
 -- | Obtain the currently selected input data source.  Will be nil if no data sources are available.
 --
 -- ObjC selector: @- inputDataSource@
 inputDataSource :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionDataSourceDescription)
-inputDataSource avAudioSession  =
-    sendMsg avAudioSession (mkSelector "inputDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputDataSource avAudioSession =
+  sendMessage avAudioSession inputDataSourceSelector
 
 -- | See inputDataSources for background. Key-value observable.
 --
 -- ObjC selector: @- outputDataSources@
 outputDataSources :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-outputDataSources avAudioSession  =
-    sendMsg avAudioSession (mkSelector "outputDataSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputDataSources avAudioSession =
+  sendMessage avAudioSession outputDataSourcesSelector
 
 -- | Obtain the currently selected output data source.  Will be nil if no data sources are available.
 --
 -- ObjC selector: @- outputDataSource@
 outputDataSource :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id AVAudioSessionDataSourceDescription)
-outputDataSource avAudioSession  =
-    sendMsg avAudioSession (mkSelector "outputDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputDataSource avAudioSession =
+  sendMessage avAudioSession outputDataSourceSelector
 
 -- | The current hardware sample rate. Is key-value observable (starting iOS 18.0).
 --
 -- ObjC selector: @- sampleRate@
 sampleRate :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-sampleRate avAudioSession  =
-    sendMsg avAudioSession (mkSelector "sampleRate") retCDouble []
+sampleRate avAudioSession =
+  sendMessage avAudioSession sampleRateSelector
 
 -- | The current number of hardware input channels. Is key-value observable.
 --
 -- ObjC selector: @- inputNumberOfChannels@
 inputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-inputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "inputNumberOfChannels") retCLong []
+inputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession inputNumberOfChannelsSelector
 
 -- | The current number of hardware output channels. Is key-value observable.
 --
 -- ObjC selector: @- outputNumberOfChannels@
 outputNumberOfChannels :: IsAVAudioSession avAudioSession => avAudioSession -> IO CLong
-outputNumberOfChannels avAudioSession  =
-    sendMsg avAudioSession (mkSelector "outputNumberOfChannels") retCLong []
+outputNumberOfChannels avAudioSession =
+  sendMessage avAudioSession outputNumberOfChannelsSelector
 
 -- | The current hardware input latency in seconds.
 --
 -- ObjC selector: @- inputLatency@
 inputLatency :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-inputLatency avAudioSession  =
-    sendMsg avAudioSession (mkSelector "inputLatency") retCDouble []
+inputLatency avAudioSession =
+  sendMessage avAudioSession inputLatencySelector
 
 -- | The current hardware output latency in seconds.
 --
 -- ObjC selector: @- outputLatency@
 outputLatency :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-outputLatency avAudioSession  =
-    sendMsg avAudioSession (mkSelector "outputLatency") retCDouble []
+outputLatency avAudioSession =
+  sendMessage avAudioSession outputLatencySelector
 
 -- | The current hardware IO buffer duration in seconds. Is key-value observable.
 --
 -- ObjC selector: @- IOBufferDuration@
 ioBufferDuration :: IsAVAudioSession avAudioSession => avAudioSession -> IO CDouble
-ioBufferDuration avAudioSession  =
-    sendMsg avAudioSession (mkSelector "IOBufferDuration") retCDouble []
+ioBufferDuration avAudioSession =
+  sendMessage avAudioSession ioBufferDurationSelector
 
 -- | Get an array of channel layouts that the current route supports. This property is only supported when the output is routed to ports of type AVAudioSessionPortCarAudio or AVAudioSessionPortAirPlay Otherwise, an empty array will be returned. Note that this will return an empty array if session is inactive. Clients should listen to AVAudioSessionRenderingCapabilitiesChangeNotification to be notified when this changes.
 --
 -- ObjC selector: @- supportedOutputChannelLayouts@
 supportedOutputChannelLayouts :: IsAVAudioSession avAudioSession => avAudioSession -> IO (Id NSArray)
-supportedOutputChannelLayouts avAudioSession  =
-    sendMsg avAudioSession (mkSelector "supportedOutputChannelLayouts") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedOutputChannelLayouts avAudioSession =
+  sendMessage avAudioSession supportedOutputChannelLayoutsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id AVAudioSession)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @setCategory:error:@
-setCategory_errorSelector :: Selector
+setCategory_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setCategory_errorSelector = mkSelector "setCategory:error:"
 
 -- | @Selector@ for @setCategory:withOptions:error:@
-setCategory_withOptions_errorSelector :: Selector
+setCategory_withOptions_errorSelector :: Selector '[Id NSString, AVAudioSessionCategoryOptions, Id NSError] Bool
 setCategory_withOptions_errorSelector = mkSelector "setCategory:withOptions:error:"
 
 -- | @Selector@ for @setCategory:mode:options:error:@
-setCategory_mode_options_errorSelector :: Selector
+setCategory_mode_options_errorSelector :: Selector '[Id NSString, Id NSString, AVAudioSessionCategoryOptions, Id NSError] Bool
 setCategory_mode_options_errorSelector = mkSelector "setCategory:mode:options:error:"
 
 -- | @Selector@ for @setCategory:mode:routeSharingPolicy:options:error:@
-setCategory_mode_routeSharingPolicy_options_errorSelector :: Selector
+setCategory_mode_routeSharingPolicy_options_errorSelector :: Selector '[Id NSString, Id NSString, AVAudioSessionRouteSharingPolicy, AVAudioSessionCategoryOptions, Id NSError] Bool
 setCategory_mode_routeSharingPolicy_options_errorSelector = mkSelector "setCategory:mode:routeSharingPolicy:options:error:"
 
 -- | @Selector@ for @setMode:error:@
-setMode_errorSelector :: Selector
+setMode_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setMode_errorSelector = mkSelector "setMode:error:"
 
 -- | @Selector@ for @setAllowHapticsAndSystemSoundsDuringRecording:error:@
-setAllowHapticsAndSystemSoundsDuringRecording_errorSelector :: Selector
+setAllowHapticsAndSystemSoundsDuringRecording_errorSelector :: Selector '[Bool, Id NSError] Bool
 setAllowHapticsAndSystemSoundsDuringRecording_errorSelector = mkSelector "setAllowHapticsAndSystemSoundsDuringRecording:error:"
 
 -- | @Selector@ for @requestRecordPermission:@
-requestRecordPermissionSelector :: Selector
+requestRecordPermissionSelector :: Selector '[Ptr ()] ()
 requestRecordPermissionSelector = mkSelector "requestRecordPermission:"
 
 -- | @Selector@ for @overrideOutputAudioPort:error:@
-overrideOutputAudioPort_errorSelector :: Selector
+overrideOutputAudioPort_errorSelector :: Selector '[AVAudioSessionPortOverride, Id NSError] Bool
 overrideOutputAudioPort_errorSelector = mkSelector "overrideOutputAudioPort:error:"
 
 -- | @Selector@ for @setPreferredInput:error:@
-setPreferredInput_errorSelector :: Selector
+setPreferredInput_errorSelector :: Selector '[Id AVAudioSessionPortDescription, Id NSError] Bool
 setPreferredInput_errorSelector = mkSelector "setPreferredInput:error:"
 
 -- | @Selector@ for @setPrefersNoInterruptionsFromSystemAlerts:error:@
-setPrefersNoInterruptionsFromSystemAlerts_errorSelector :: Selector
+setPrefersNoInterruptionsFromSystemAlerts_errorSelector :: Selector '[Bool, Id NSError] Bool
 setPrefersNoInterruptionsFromSystemAlerts_errorSelector = mkSelector "setPrefersNoInterruptionsFromSystemAlerts:error:"
 
 -- | @Selector@ for @setPrefersEchoCancelledInput:error:@
-setPrefersEchoCancelledInput_errorSelector :: Selector
+setPrefersEchoCancelledInput_errorSelector :: Selector '[Bool, Id NSError] Bool
 setPrefersEchoCancelledInput_errorSelector = mkSelector "setPrefersEchoCancelledInput:error:"
 
 -- | @Selector@ for @setOutputMuted:error:@
-setOutputMuted_errorSelector :: Selector
+setOutputMuted_errorSelector :: Selector '[Bool, Id NSError] Bool
 setOutputMuted_errorSelector = mkSelector "setOutputMuted:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setActive:withFlags:error:@
-setActive_withFlags_errorSelector :: Selector
+setActive_withFlags_errorSelector :: Selector '[Bool, CLong, Id NSError] Bool
 setActive_withFlags_errorSelector = mkSelector "setActive:withFlags:error:"
 
 -- | @Selector@ for @setPreferredHardwareSampleRate:error:@
-setPreferredHardwareSampleRate_errorSelector :: Selector
+setPreferredHardwareSampleRate_errorSelector :: Selector '[CDouble, Id NSError] Bool
 setPreferredHardwareSampleRate_errorSelector = mkSelector "setPreferredHardwareSampleRate:error:"
 
 -- | @Selector@ for @setPreferredMicrophoneInjectionMode:error:@
-setPreferredMicrophoneInjectionMode_errorSelector :: Selector
+setPreferredMicrophoneInjectionMode_errorSelector :: Selector '[AVAudioSessionMicrophoneInjectionMode, Id NSError] Bool
 setPreferredMicrophoneInjectionMode_errorSelector = mkSelector "setPreferredMicrophoneInjectionMode:error:"
 
 -- | @Selector@ for @setAggregatedIOPreference:error:@
-setAggregatedIOPreference_errorSelector :: Selector
+setAggregatedIOPreference_errorSelector :: Selector '[AVAudioSessionIOType, Id NSError] Bool
 setAggregatedIOPreference_errorSelector = mkSelector "setAggregatedIOPreference:error:"
 
 -- | @Selector@ for @setSupportsMultichannelContent:error:@
-setSupportsMultichannelContent_errorSelector :: Selector
+setSupportsMultichannelContent_errorSelector :: Selector '[Bool, Id NSError] Bool
 setSupportsMultichannelContent_errorSelector = mkSelector "setSupportsMultichannelContent:error:"
 
 -- | @Selector@ for @setPrefersInterruptionOnRouteDisconnect:error:@
-setPrefersInterruptionOnRouteDisconnect_errorSelector :: Selector
+setPrefersInterruptionOnRouteDisconnect_errorSelector :: Selector '[Bool, Id NSError] Bool
 setPrefersInterruptionOnRouteDisconnect_errorSelector = mkSelector "setPrefersInterruptionOnRouteDisconnect:error:"
 
 -- | @Selector@ for @setPreferredSampleRate:error:@
-setPreferredSampleRate_errorSelector :: Selector
+setPreferredSampleRate_errorSelector :: Selector '[CDouble, Id NSError] Bool
 setPreferredSampleRate_errorSelector = mkSelector "setPreferredSampleRate:error:"
 
 -- | @Selector@ for @setPreferredIOBufferDuration:error:@
-setPreferredIOBufferDuration_errorSelector :: Selector
+setPreferredIOBufferDuration_errorSelector :: Selector '[CDouble, Id NSError] Bool
 setPreferredIOBufferDuration_errorSelector = mkSelector "setPreferredIOBufferDuration:error:"
 
 -- | @Selector@ for @setPreferredInputNumberOfChannels:error:@
-setPreferredInputNumberOfChannels_errorSelector :: Selector
+setPreferredInputNumberOfChannels_errorSelector :: Selector '[CLong, Id NSError] Bool
 setPreferredInputNumberOfChannels_errorSelector = mkSelector "setPreferredInputNumberOfChannels:error:"
 
 -- | @Selector@ for @setPreferredOutputNumberOfChannels:error:@
-setPreferredOutputNumberOfChannels_errorSelector :: Selector
+setPreferredOutputNumberOfChannels_errorSelector :: Selector '[CLong, Id NSError] Bool
 setPreferredOutputNumberOfChannels_errorSelector = mkSelector "setPreferredOutputNumberOfChannels:error:"
 
 -- | @Selector@ for @setPreferredInputOrientation:error:@
-setPreferredInputOrientation_errorSelector :: Selector
+setPreferredInputOrientation_errorSelector :: Selector '[AVAudioStereoOrientation, Id NSError] Bool
 setPreferredInputOrientation_errorSelector = mkSelector "setPreferredInputOrientation:error:"
 
 -- | @Selector@ for @setInputGain:error:@
-setInputGain_errorSelector :: Selector
+setInputGain_errorSelector :: Selector '[CFloat, Id NSError] Bool
 setInputGain_errorSelector = mkSelector "setInputGain:error:"
 
 -- | @Selector@ for @setInputDataSource:error:@
-setInputDataSource_errorSelector :: Selector
+setInputDataSource_errorSelector :: Selector '[Id AVAudioSessionDataSourceDescription, Id NSError] Bool
 setInputDataSource_errorSelector = mkSelector "setInputDataSource:error:"
 
 -- | @Selector@ for @setOutputDataSource:error:@
-setOutputDataSource_errorSelector :: Selector
+setOutputDataSource_errorSelector :: Selector '[Id AVAudioSessionDataSourceDescription, Id NSError] Bool
 setOutputDataSource_errorSelector = mkSelector "setOutputDataSource:error:"
 
 -- | @Selector@ for @setActive:error:@
-setActive_errorSelector :: Selector
+setActive_errorSelector :: Selector '[Bool, Id NSError] Bool
 setActive_errorSelector = mkSelector "setActive:error:"
 
 -- | @Selector@ for @setActive:withOptions:error:@
-setActive_withOptions_errorSelector :: Selector
+setActive_withOptions_errorSelector :: Selector '[Bool, AVAudioSessionSetActiveOptions, Id NSError] Bool
 setActive_withOptions_errorSelector = mkSelector "setActive:withOptions:error:"
 
 -- | @Selector@ for @activateWithOptions:completionHandler:@
-activateWithOptions_completionHandlerSelector :: Selector
+activateWithOptions_completionHandlerSelector :: Selector '[AVAudioSessionActivationOptions, Ptr ()] ()
 activateWithOptions_completionHandlerSelector = mkSelector "activateWithOptions:completionHandler:"
 
 -- | @Selector@ for @availableCategories@
-availableCategoriesSelector :: Selector
+availableCategoriesSelector :: Selector '[] (Id NSArray)
 availableCategoriesSelector = mkSelector "availableCategories"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] (Id NSString)
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @categoryOptions@
-categoryOptionsSelector :: Selector
+categoryOptionsSelector :: Selector '[] AVAudioSessionCategoryOptions
 categoryOptionsSelector = mkSelector "categoryOptions"
 
 -- | @Selector@ for @routeSharingPolicy@
-routeSharingPolicySelector :: Selector
+routeSharingPolicySelector :: Selector '[] AVAudioSessionRouteSharingPolicy
 routeSharingPolicySelector = mkSelector "routeSharingPolicy"
 
 -- | @Selector@ for @availableModes@
-availableModesSelector :: Selector
+availableModesSelector :: Selector '[] (Id NSArray)
 availableModesSelector = mkSelector "availableModes"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] (Id NSString)
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @allowHapticsAndSystemSoundsDuringRecording@
-allowHapticsAndSystemSoundsDuringRecordingSelector :: Selector
+allowHapticsAndSystemSoundsDuringRecordingSelector :: Selector '[] Bool
 allowHapticsAndSystemSoundsDuringRecordingSelector = mkSelector "allowHapticsAndSystemSoundsDuringRecording"
 
 -- | @Selector@ for @recordPermission@
-recordPermissionSelector :: Selector
+recordPermissionSelector :: Selector '[] AVAudioSessionRecordPermission
 recordPermissionSelector = mkSelector "recordPermission"
 
 -- | @Selector@ for @preferredInput@
-preferredInputSelector :: Selector
+preferredInputSelector :: Selector '[] (Id AVAudioSessionPortDescription)
 preferredInputSelector = mkSelector "preferredInput"
 
 -- | @Selector@ for @prefersNoInterruptionsFromSystemAlerts@
-prefersNoInterruptionsFromSystemAlertsSelector :: Selector
+prefersNoInterruptionsFromSystemAlertsSelector :: Selector '[] Bool
 prefersNoInterruptionsFromSystemAlertsSelector = mkSelector "prefersNoInterruptionsFromSystemAlerts"
 
 -- | @Selector@ for @renderingMode@
-renderingModeSelector :: Selector
+renderingModeSelector :: Selector '[] AVAudioSessionRenderingMode
 renderingModeSelector = mkSelector "renderingMode"
 
 -- | @Selector@ for @prefersEchoCancelledInput@
-prefersEchoCancelledInputSelector :: Selector
+prefersEchoCancelledInputSelector :: Selector '[] Bool
 prefersEchoCancelledInputSelector = mkSelector "prefersEchoCancelledInput"
 
 -- | @Selector@ for @isEchoCancelledInputEnabled@
-isEchoCancelledInputEnabledSelector :: Selector
+isEchoCancelledInputEnabledSelector :: Selector '[] Bool
 isEchoCancelledInputEnabledSelector = mkSelector "isEchoCancelledInputEnabled"
 
 -- | @Selector@ for @isEchoCancelledInputAvailable@
-isEchoCancelledInputAvailableSelector :: Selector
+isEchoCancelledInputAvailableSelector :: Selector '[] Bool
 isEchoCancelledInputAvailableSelector = mkSelector "isEchoCancelledInputAvailable"
 
 -- | @Selector@ for @outputMuted@
-outputMutedSelector :: Selector
+outputMutedSelector :: Selector '[] Bool
 outputMutedSelector = mkSelector "outputMuted"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @inputIsAvailable@
-inputIsAvailableSelector :: Selector
+inputIsAvailableSelector :: Selector '[] Bool
 inputIsAvailableSelector = mkSelector "inputIsAvailable"
 
 -- | @Selector@ for @currentHardwareSampleRate@
-currentHardwareSampleRateSelector :: Selector
+currentHardwareSampleRateSelector :: Selector '[] CDouble
 currentHardwareSampleRateSelector = mkSelector "currentHardwareSampleRate"
 
 -- | @Selector@ for @currentHardwareInputNumberOfChannels@
-currentHardwareInputNumberOfChannelsSelector :: Selector
+currentHardwareInputNumberOfChannelsSelector :: Selector '[] CLong
 currentHardwareInputNumberOfChannelsSelector = mkSelector "currentHardwareInputNumberOfChannels"
 
 -- | @Selector@ for @currentHardwareOutputNumberOfChannels@
-currentHardwareOutputNumberOfChannelsSelector :: Selector
+currentHardwareOutputNumberOfChannelsSelector :: Selector '[] CLong
 currentHardwareOutputNumberOfChannelsSelector = mkSelector "currentHardwareOutputNumberOfChannels"
 
 -- | @Selector@ for @preferredHardwareSampleRate@
-preferredHardwareSampleRateSelector :: Selector
+preferredHardwareSampleRateSelector :: Selector '[] CDouble
 preferredHardwareSampleRateSelector = mkSelector "preferredHardwareSampleRate"
 
 -- | @Selector@ for @preferredMicrophoneInjectionMode@
-preferredMicrophoneInjectionModeSelector :: Selector
+preferredMicrophoneInjectionModeSelector :: Selector '[] AVAudioSessionMicrophoneInjectionMode
 preferredMicrophoneInjectionModeSelector = mkSelector "preferredMicrophoneInjectionMode"
 
 -- | @Selector@ for @isMicrophoneInjectionAvailable@
-isMicrophoneInjectionAvailableSelector :: Selector
+isMicrophoneInjectionAvailableSelector :: Selector '[] Bool
 isMicrophoneInjectionAvailableSelector = mkSelector "isMicrophoneInjectionAvailable"
 
 -- | @Selector@ for @availableInputs@
-availableInputsSelector :: Selector
+availableInputsSelector :: Selector '[] (Id NSArray)
 availableInputsSelector = mkSelector "availableInputs"
 
 -- | @Selector@ for @currentRoute@
-currentRouteSelector :: Selector
+currentRouteSelector :: Selector '[] (Id AVAudioSessionRouteDescription)
 currentRouteSelector = mkSelector "currentRoute"
 
 -- | @Selector@ for @supportsMultichannelContent@
-supportsMultichannelContentSelector :: Selector
+supportsMultichannelContentSelector :: Selector '[] Bool
 supportsMultichannelContentSelector = mkSelector "supportsMultichannelContent"
 
 -- | @Selector@ for @prefersInterruptionOnRouteDisconnect@
-prefersInterruptionOnRouteDisconnectSelector :: Selector
+prefersInterruptionOnRouteDisconnectSelector :: Selector '[] Bool
 prefersInterruptionOnRouteDisconnectSelector = mkSelector "prefersInterruptionOnRouteDisconnect"
 
 -- | @Selector@ for @otherAudioPlaying@
-otherAudioPlayingSelector :: Selector
+otherAudioPlayingSelector :: Selector '[] Bool
 otherAudioPlayingSelector = mkSelector "otherAudioPlaying"
 
 -- | @Selector@ for @secondaryAudioShouldBeSilencedHint@
-secondaryAudioShouldBeSilencedHintSelector :: Selector
+secondaryAudioShouldBeSilencedHintSelector :: Selector '[] Bool
 secondaryAudioShouldBeSilencedHintSelector = mkSelector "secondaryAudioShouldBeSilencedHint"
 
 -- | @Selector@ for @outputVolume@
-outputVolumeSelector :: Selector
+outputVolumeSelector :: Selector '[] CFloat
 outputVolumeSelector = mkSelector "outputVolume"
 
 -- | @Selector@ for @promptStyle@
-promptStyleSelector :: Selector
+promptStyleSelector :: Selector '[] AVAudioSessionPromptStyle
 promptStyleSelector = mkSelector "promptStyle"
 
 -- | @Selector@ for @preferredSampleRate@
-preferredSampleRateSelector :: Selector
+preferredSampleRateSelector :: Selector '[] CDouble
 preferredSampleRateSelector = mkSelector "preferredSampleRate"
 
 -- | @Selector@ for @preferredIOBufferDuration@
-preferredIOBufferDurationSelector :: Selector
+preferredIOBufferDurationSelector :: Selector '[] CDouble
 preferredIOBufferDurationSelector = mkSelector "preferredIOBufferDuration"
 
 -- | @Selector@ for @preferredInputNumberOfChannels@
-preferredInputNumberOfChannelsSelector :: Selector
+preferredInputNumberOfChannelsSelector :: Selector '[] CLong
 preferredInputNumberOfChannelsSelector = mkSelector "preferredInputNumberOfChannels"
 
 -- | @Selector@ for @preferredOutputNumberOfChannels@
-preferredOutputNumberOfChannelsSelector :: Selector
+preferredOutputNumberOfChannelsSelector :: Selector '[] CLong
 preferredOutputNumberOfChannelsSelector = mkSelector "preferredOutputNumberOfChannels"
 
 -- | @Selector@ for @preferredInputOrientation@
-preferredInputOrientationSelector :: Selector
+preferredInputOrientationSelector :: Selector '[] AVAudioStereoOrientation
 preferredInputOrientationSelector = mkSelector "preferredInputOrientation"
 
 -- | @Selector@ for @inputOrientation@
-inputOrientationSelector :: Selector
+inputOrientationSelector :: Selector '[] AVAudioStereoOrientation
 inputOrientationSelector = mkSelector "inputOrientation"
 
 -- | @Selector@ for @maximumInputNumberOfChannels@
-maximumInputNumberOfChannelsSelector :: Selector
+maximumInputNumberOfChannelsSelector :: Selector '[] CLong
 maximumInputNumberOfChannelsSelector = mkSelector "maximumInputNumberOfChannels"
 
 -- | @Selector@ for @maximumOutputNumberOfChannels@
-maximumOutputNumberOfChannelsSelector :: Selector
+maximumOutputNumberOfChannelsSelector :: Selector '[] CLong
 maximumOutputNumberOfChannelsSelector = mkSelector "maximumOutputNumberOfChannels"
 
 -- | @Selector@ for @inputGain@
-inputGainSelector :: Selector
+inputGainSelector :: Selector '[] CFloat
 inputGainSelector = mkSelector "inputGain"
 
 -- | @Selector@ for @inputGainSettable@
-inputGainSettableSelector :: Selector
+inputGainSettableSelector :: Selector '[] Bool
 inputGainSettableSelector = mkSelector "inputGainSettable"
 
 -- | @Selector@ for @inputAvailable@
-inputAvailableSelector :: Selector
+inputAvailableSelector :: Selector '[] Bool
 inputAvailableSelector = mkSelector "inputAvailable"
 
 -- | @Selector@ for @inputDataSources@
-inputDataSourcesSelector :: Selector
+inputDataSourcesSelector :: Selector '[] (Id NSArray)
 inputDataSourcesSelector = mkSelector "inputDataSources"
 
 -- | @Selector@ for @inputDataSource@
-inputDataSourceSelector :: Selector
+inputDataSourceSelector :: Selector '[] (Id AVAudioSessionDataSourceDescription)
 inputDataSourceSelector = mkSelector "inputDataSource"
 
 -- | @Selector@ for @outputDataSources@
-outputDataSourcesSelector :: Selector
+outputDataSourcesSelector :: Selector '[] (Id NSArray)
 outputDataSourcesSelector = mkSelector "outputDataSources"
 
 -- | @Selector@ for @outputDataSource@
-outputDataSourceSelector :: Selector
+outputDataSourceSelector :: Selector '[] (Id AVAudioSessionDataSourceDescription)
 outputDataSourceSelector = mkSelector "outputDataSource"
 
 -- | @Selector@ for @sampleRate@
-sampleRateSelector :: Selector
+sampleRateSelector :: Selector '[] CDouble
 sampleRateSelector = mkSelector "sampleRate"
 
 -- | @Selector@ for @inputNumberOfChannels@
-inputNumberOfChannelsSelector :: Selector
+inputNumberOfChannelsSelector :: Selector '[] CLong
 inputNumberOfChannelsSelector = mkSelector "inputNumberOfChannels"
 
 -- | @Selector@ for @outputNumberOfChannels@
-outputNumberOfChannelsSelector :: Selector
+outputNumberOfChannelsSelector :: Selector '[] CLong
 outputNumberOfChannelsSelector = mkSelector "outputNumberOfChannels"
 
 -- | @Selector@ for @inputLatency@
-inputLatencySelector :: Selector
+inputLatencySelector :: Selector '[] CDouble
 inputLatencySelector = mkSelector "inputLatency"
 
 -- | @Selector@ for @outputLatency@
-outputLatencySelector :: Selector
+outputLatencySelector :: Selector '[] CDouble
 outputLatencySelector = mkSelector "outputLatency"
 
 -- | @Selector@ for @IOBufferDuration@
-ioBufferDurationSelector :: Selector
+ioBufferDurationSelector :: Selector '[] CDouble
 ioBufferDurationSelector = mkSelector "IOBufferDuration"
 
 -- | @Selector@ for @supportedOutputChannelLayouts@
-supportedOutputChannelLayoutsSelector :: Selector
+supportedOutputChannelLayoutsSelector :: Selector '[] (Id NSArray)
 supportedOutputChannelLayoutsSelector = mkSelector "supportedOutputChannelLayouts"
 

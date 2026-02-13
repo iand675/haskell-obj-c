@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSTextElement
   , childElements
   , parentElement
   , isRepresentedElement
-  , initWithTextContentManagerSelector
-  , textContentManagerSelector
-  , setTextContentManagerSelector
-  , elementRangeSelector
-  , setElementRangeSelector
   , childElementsSelector
-  , parentElementSelector
+  , elementRangeSelector
+  , initWithTextContentManagerSelector
   , isRepresentedElementSelector
+  , parentElementSelector
+  , setElementRangeSelector
+  , setTextContentManagerSelector
+  , textContentManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTextContentManager:@
 initWithTextContentManager :: (IsNSTextElement nsTextElement, IsNSTextContentManager textContentManager) => nsTextElement -> textContentManager -> IO (Id NSTextElement)
-initWithTextContentManager nsTextElement  textContentManager =
-  withObjCPtr textContentManager $ \raw_textContentManager ->
-      sendMsg nsTextElement (mkSelector "initWithTextContentManager:") (retPtr retVoid) [argPtr (castPtr raw_textContentManager :: Ptr ())] >>= ownedObject . castPtr
+initWithTextContentManager nsTextElement textContentManager =
+  sendOwnedMessage nsTextElement initWithTextContentManagerSelector (toNSTextContentManager textContentManager)
 
 -- | @- textContentManager@
 textContentManager :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSTextContentManager)
-textContentManager nsTextElement  =
-    sendMsg nsTextElement (mkSelector "textContentManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+textContentManager nsTextElement =
+  sendMessage nsTextElement textContentManagerSelector
 
 -- | @- setTextContentManager:@
 setTextContentManager :: (IsNSTextElement nsTextElement, IsNSTextContentManager value) => nsTextElement -> value -> IO ()
-setTextContentManager nsTextElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextElement (mkSelector "setTextContentManager:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextContentManager nsTextElement value =
+  sendMessage nsTextElement setTextContentManagerSelector (toNSTextContentManager value)
 
 -- | @- elementRange@
 elementRange :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSTextRange)
-elementRange nsTextElement  =
-    sendMsg nsTextElement (mkSelector "elementRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementRange nsTextElement =
+  sendMessage nsTextElement elementRangeSelector
 
 -- | @- setElementRange:@
 setElementRange :: (IsNSTextElement nsTextElement, IsNSTextRange value) => nsTextElement -> value -> IO ()
-setElementRange nsTextElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextElement (mkSelector "setElementRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElementRange nsTextElement value =
+  sendMessage nsTextElement setElementRangeSelector (toNSTextRange value)
 
 -- | @- childElements@
 childElements :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSArray)
-childElements nsTextElement  =
-    sendMsg nsTextElement (mkSelector "childElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+childElements nsTextElement =
+  sendMessage nsTextElement childElementsSelector
 
 -- | @- parentElement@
 parentElement :: IsNSTextElement nsTextElement => nsTextElement -> IO (Id NSTextElement)
-parentElement nsTextElement  =
-    sendMsg nsTextElement (mkSelector "parentElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentElement nsTextElement =
+  sendMessage nsTextElement parentElementSelector
 
 -- | @- isRepresentedElement@
 isRepresentedElement :: IsNSTextElement nsTextElement => nsTextElement -> IO Bool
-isRepresentedElement nsTextElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextElement (mkSelector "isRepresentedElement") retCULong []
+isRepresentedElement nsTextElement =
+  sendMessage nsTextElement isRepresentedElementSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTextContentManager:@
-initWithTextContentManagerSelector :: Selector
+initWithTextContentManagerSelector :: Selector '[Id NSTextContentManager] (Id NSTextElement)
 initWithTextContentManagerSelector = mkSelector "initWithTextContentManager:"
 
 -- | @Selector@ for @textContentManager@
-textContentManagerSelector :: Selector
+textContentManagerSelector :: Selector '[] (Id NSTextContentManager)
 textContentManagerSelector = mkSelector "textContentManager"
 
 -- | @Selector@ for @setTextContentManager:@
-setTextContentManagerSelector :: Selector
+setTextContentManagerSelector :: Selector '[Id NSTextContentManager] ()
 setTextContentManagerSelector = mkSelector "setTextContentManager:"
 
 -- | @Selector@ for @elementRange@
-elementRangeSelector :: Selector
+elementRangeSelector :: Selector '[] (Id NSTextRange)
 elementRangeSelector = mkSelector "elementRange"
 
 -- | @Selector@ for @setElementRange:@
-setElementRangeSelector :: Selector
+setElementRangeSelector :: Selector '[Id NSTextRange] ()
 setElementRangeSelector = mkSelector "setElementRange:"
 
 -- | @Selector@ for @childElements@
-childElementsSelector :: Selector
+childElementsSelector :: Selector '[] (Id NSArray)
 childElementsSelector = mkSelector "childElements"
 
 -- | @Selector@ for @parentElement@
-parentElementSelector :: Selector
+parentElementSelector :: Selector '[] (Id NSTextElement)
 parentElementSelector = mkSelector "parentElement"
 
 -- | @Selector@ for @isRepresentedElement@
-isRepresentedElementSelector :: Selector
+isRepresentedElementSelector :: Selector '[] Bool
 isRepresentedElementSelector = mkSelector "isRepresentedElement"
 

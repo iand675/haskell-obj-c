@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.WebKit.WKFrameInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,47 +38,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mainFrame@
 mainFrame :: IsWKFrameInfo wkFrameInfo => wkFrameInfo -> IO Bool
-mainFrame wkFrameInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkFrameInfo (mkSelector "mainFrame") retCULong []
+mainFrame wkFrameInfo =
+  sendMessage wkFrameInfo mainFrameSelector
 
 -- | The frame's current request.
 --
 -- ObjC selector: @- request@
 request :: IsWKFrameInfo wkFrameInfo => wkFrameInfo -> IO (Id NSURLRequest)
-request wkFrameInfo  =
-    sendMsg wkFrameInfo (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request wkFrameInfo =
+  sendMessage wkFrameInfo requestSelector
 
 -- | The frame's current security origin.
 --
 -- ObjC selector: @- securityOrigin@
 securityOrigin :: IsWKFrameInfo wkFrameInfo => wkFrameInfo -> IO (Id WKSecurityOrigin)
-securityOrigin wkFrameInfo  =
-    sendMsg wkFrameInfo (mkSelector "securityOrigin") (retPtr retVoid) [] >>= retainedObject . castPtr
+securityOrigin wkFrameInfo =
+  sendMessage wkFrameInfo securityOriginSelector
 
 -- | The web view of the webpage that contains this frame.
 --
 -- ObjC selector: @- webView@
 webView :: IsWKFrameInfo wkFrameInfo => wkFrameInfo -> IO (Id WKWebView)
-webView wkFrameInfo  =
-    sendMsg wkFrameInfo (mkSelector "webView") (retPtr retVoid) [] >>= retainedObject . castPtr
+webView wkFrameInfo =
+  sendMessage wkFrameInfo webViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mainFrame@
-mainFrameSelector :: Selector
+mainFrameSelector :: Selector '[] Bool
 mainFrameSelector = mkSelector "mainFrame"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @securityOrigin@
-securityOriginSelector :: Selector
+securityOriginSelector :: Selector '[] (Id WKSecurityOrigin)
 securityOriginSelector = mkSelector "securityOrigin"
 
 -- | @Selector@ for @webView@
-webViewSelector :: Selector
+webViewSelector :: Selector '[] (Id WKWebView)
 webViewSelector = mkSelector "webView"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,27 +25,23 @@ module ObjC.GameplayKit.GKBehavior
   , behaviorWithGoalsSelector
   , behaviorWithGoals_andWeightsSelector
   , behaviorWithWeightedGoalsSelector
+  , goalCountSelector
+  , objectAtIndexedSubscriptSelector
+  , objectForKeyedSubscriptSelector
+  , removeAllGoalsSelector
+  , removeGoalSelector
+  , setObject_forKeyedSubscriptSelector
   , setWeight_forGoalSelector
   , weightForGoalSelector
-  , removeGoalSelector
-  , removeAllGoalsSelector
-  , objectAtIndexedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , objectForKeyedSubscriptSelector
-  , goalCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,7 @@ behaviorWithGoal_weight :: IsGKGoal goal => goal -> CFloat -> IO (Id GKBehavior)
 behaviorWithGoal_weight goal weight =
   do
     cls' <- getRequiredClass "GKBehavior"
-    withObjCPtr goal $ \raw_goal ->
-      sendClassMsg cls' (mkSelector "behaviorWithGoal:weight:") (retPtr retVoid) [argPtr (castPtr raw_goal :: Ptr ()), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithGoal_weightSelector (toGKGoal goal) weight
 
 -- | Creates a behavior with an array of goals.  All weights are set to 1.0f
 --
@@ -68,8 +64,7 @@ behaviorWithGoals :: IsNSArray goals => goals -> IO (Id GKBehavior)
 behaviorWithGoals goals =
   do
     cls' <- getRequiredClass "GKBehavior"
-    withObjCPtr goals $ \raw_goals ->
-      sendClassMsg cls' (mkSelector "behaviorWithGoals:") (retPtr retVoid) [argPtr (castPtr raw_goals :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithGoalsSelector (toNSArray goals)
 
 -- | Creates a behavior with two associated arrays of goals and weights
 --
@@ -78,9 +73,7 @@ behaviorWithGoals_andWeights :: (IsNSArray goals, IsNSArray weights) => goals ->
 behaviorWithGoals_andWeights goals weights =
   do
     cls' <- getRequiredClass "GKBehavior"
-    withObjCPtr goals $ \raw_goals ->
-      withObjCPtr weights $ \raw_weights ->
-        sendClassMsg cls' (mkSelector "behaviorWithGoals:andWeights:") (retPtr retVoid) [argPtr (castPtr raw_goals :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithGoals_andWeightsSelector (toNSArray goals) (toNSArray weights)
 
 -- | Creates a behavior with a dictionary of goal/weight pairs
 --
@@ -89,8 +82,7 @@ behaviorWithWeightedGoals :: IsNSDictionary weightedGoals => weightedGoals -> IO
 behaviorWithWeightedGoals weightedGoals =
   do
     cls' <- getRequiredClass "GKBehavior"
-    withObjCPtr weightedGoals $ \raw_weightedGoals ->
-      sendClassMsg cls' (mkSelector "behaviorWithWeightedGoals:") (retPtr retVoid) [argPtr (castPtr raw_weightedGoals :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithWeightedGoalsSelector (toNSDictionary weightedGoals)
 
 -- | Adds a new goal or changes the weight of the existing goal in this behavior. If the goal does not exist in this behavior, it is added.
 --
@@ -100,9 +92,8 @@ behaviorWithWeightedGoals weightedGoals =
 --
 -- ObjC selector: @- setWeight:forGoal:@
 setWeight_forGoal :: (IsGKBehavior gkBehavior, IsGKGoal goal) => gkBehavior -> CFloat -> goal -> IO ()
-setWeight_forGoal gkBehavior  weight goal =
-  withObjCPtr goal $ \raw_goal ->
-      sendMsg gkBehavior (mkSelector "setWeight:forGoal:") retVoid [argCFloat weight, argPtr (castPtr raw_goal :: Ptr ())]
+setWeight_forGoal gkBehavior weight goal =
+  sendMessage gkBehavior setWeight_forGoalSelector weight (toGKGoal goal)
 
 -- | Gets the current weight for a given goal.
 --
@@ -110,9 +101,8 @@ setWeight_forGoal gkBehavior  weight goal =
 --
 -- ObjC selector: @- weightForGoal:@
 weightForGoal :: (IsGKBehavior gkBehavior, IsGKGoal goal) => gkBehavior -> goal -> IO CFloat
-weightForGoal gkBehavior  goal =
-  withObjCPtr goal $ \raw_goal ->
-      sendMsg gkBehavior (mkSelector "weightForGoal:") retCFloat [argPtr (castPtr raw_goal :: Ptr ())]
+weightForGoal gkBehavior goal =
+  sendMessage gkBehavior weightForGoalSelector (toGKGoal goal)
 
 -- | Remove the indicated goal from this behavior.
 --
@@ -120,95 +110,91 @@ weightForGoal gkBehavior  goal =
 --
 -- ObjC selector: @- removeGoal:@
 removeGoal :: (IsGKBehavior gkBehavior, IsGKGoal goal) => gkBehavior -> goal -> IO ()
-removeGoal gkBehavior  goal =
-  withObjCPtr goal $ \raw_goal ->
-      sendMsg gkBehavior (mkSelector "removeGoal:") retVoid [argPtr (castPtr raw_goal :: Ptr ())]
+removeGoal gkBehavior goal =
+  sendMessage gkBehavior removeGoalSelector (toGKGoal goal)
 
 -- | Removes all the goals on the behavior.
 --
 -- ObjC selector: @- removeAllGoals@
 removeAllGoals :: IsGKBehavior gkBehavior => gkBehavior -> IO ()
-removeAllGoals gkBehavior  =
-    sendMsg gkBehavior (mkSelector "removeAllGoals") retVoid []
+removeAllGoals gkBehavior =
+  sendMessage gkBehavior removeAllGoalsSelector
 
 -- | Supports getting goals via a [int] subscript.
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsGKBehavior gkBehavior => gkBehavior -> CULong -> IO (Id GKGoal)
-objectAtIndexedSubscript gkBehavior  idx =
-    sendMsg gkBehavior (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong idx] >>= retainedObject . castPtr
+objectAtIndexedSubscript gkBehavior idx =
+  sendMessage gkBehavior objectAtIndexedSubscriptSelector idx
 
 -- | Supports setting a weight via a [goal] subscript.
 --
 -- ObjC selector: @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: (IsGKBehavior gkBehavior, IsNSNumber weight, IsGKGoal goal) => gkBehavior -> weight -> goal -> IO ()
-setObject_forKeyedSubscript gkBehavior  weight goal =
-  withObjCPtr weight $ \raw_weight ->
-    withObjCPtr goal $ \raw_goal ->
-        sendMsg gkBehavior (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr raw_weight :: Ptr ()), argPtr (castPtr raw_goal :: Ptr ())]
+setObject_forKeyedSubscript gkBehavior weight goal =
+  sendMessage gkBehavior setObject_forKeyedSubscriptSelector (toNSNumber weight) (toGKGoal goal)
 
 -- | Supports getting a weight via a [goal] subscript.
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsGKBehavior gkBehavior, IsGKGoal goal) => gkBehavior -> goal -> IO (Id NSNumber)
-objectForKeyedSubscript gkBehavior  goal =
-  withObjCPtr goal $ \raw_goal ->
-      sendMsg gkBehavior (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_goal :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript gkBehavior goal =
+  sendMessage gkBehavior objectForKeyedSubscriptSelector (toGKGoal goal)
 
 -- | @- goalCount@
 goalCount :: IsGKBehavior gkBehavior => gkBehavior -> IO CLong
-goalCount gkBehavior  =
-    sendMsg gkBehavior (mkSelector "goalCount") retCLong []
+goalCount gkBehavior =
+  sendMessage gkBehavior goalCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @behaviorWithGoal:weight:@
-behaviorWithGoal_weightSelector :: Selector
+behaviorWithGoal_weightSelector :: Selector '[Id GKGoal, CFloat] (Id GKBehavior)
 behaviorWithGoal_weightSelector = mkSelector "behaviorWithGoal:weight:"
 
 -- | @Selector@ for @behaviorWithGoals:@
-behaviorWithGoalsSelector :: Selector
+behaviorWithGoalsSelector :: Selector '[Id NSArray] (Id GKBehavior)
 behaviorWithGoalsSelector = mkSelector "behaviorWithGoals:"
 
 -- | @Selector@ for @behaviorWithGoals:andWeights:@
-behaviorWithGoals_andWeightsSelector :: Selector
+behaviorWithGoals_andWeightsSelector :: Selector '[Id NSArray, Id NSArray] (Id GKBehavior)
 behaviorWithGoals_andWeightsSelector = mkSelector "behaviorWithGoals:andWeights:"
 
 -- | @Selector@ for @behaviorWithWeightedGoals:@
-behaviorWithWeightedGoalsSelector :: Selector
+behaviorWithWeightedGoalsSelector :: Selector '[Id NSDictionary] (Id GKBehavior)
 behaviorWithWeightedGoalsSelector = mkSelector "behaviorWithWeightedGoals:"
 
 -- | @Selector@ for @setWeight:forGoal:@
-setWeight_forGoalSelector :: Selector
+setWeight_forGoalSelector :: Selector '[CFloat, Id GKGoal] ()
 setWeight_forGoalSelector = mkSelector "setWeight:forGoal:"
 
 -- | @Selector@ for @weightForGoal:@
-weightForGoalSelector :: Selector
+weightForGoalSelector :: Selector '[Id GKGoal] CFloat
 weightForGoalSelector = mkSelector "weightForGoal:"
 
 -- | @Selector@ for @removeGoal:@
-removeGoalSelector :: Selector
+removeGoalSelector :: Selector '[Id GKGoal] ()
 removeGoalSelector = mkSelector "removeGoal:"
 
 -- | @Selector@ for @removeAllGoals@
-removeAllGoalsSelector :: Selector
+removeAllGoalsSelector :: Selector '[] ()
 removeAllGoalsSelector = mkSelector "removeAllGoals"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id GKGoal)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[Id NSNumber, Id GKGoal] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id GKGoal] (Id NSNumber)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @goalCount@
-goalCountSelector :: Selector
+goalCountSelector :: Selector '[] CLong
 goalCountSelector = mkSelector "goalCount"
 

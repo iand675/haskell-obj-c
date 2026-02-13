@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.MetricKit.MXUnitAveragePixelLuminance
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,13 +33,13 @@ apl :: IO (Id MXUnitAveragePixelLuminance)
 apl  =
   do
     cls' <- getRequiredClass "MXUnitAveragePixelLuminance"
-    sendClassMsg cls' (mkSelector "apl") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' aplSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @apl@
-aplSelector :: Selector
+aplSelector :: Selector '[] (Id MXUnitAveragePixelLuminance)
 aplSelector = mkSelector "apl"
 

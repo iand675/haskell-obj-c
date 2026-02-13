@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSDistantObject
   , initWithCoder
   , setProtocolForProxy
   , connectionForProxy
-  , proxyWithTarget_connectionSelector
+  , connectionForProxySelector
+  , initWithCoderSelector
+  , initWithLocal_connectionSelector
   , initWithTarget_connectionSelector
   , proxyWithLocal_connectionSelector
-  , initWithLocal_connectionSelector
-  , initWithCoderSelector
+  , proxyWithTarget_connectionSelector
   , setProtocolForProxySelector
-  , connectionForProxySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,74 +40,69 @@ proxyWithTarget_connection :: IsNSConnection connection => RawId -> connection -
 proxyWithTarget_connection target connection =
   do
     cls' <- getRequiredClass "NSDistantObject"
-    withObjCPtr connection $ \raw_connection ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "proxyWithTarget:connection:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())]
+    sendClassMessage cls' proxyWithTarget_connectionSelector target (toNSConnection connection)
 
 -- | @- initWithTarget:connection:@
 initWithTarget_connection :: (IsNSDistantObject nsDistantObject, IsNSConnection connection) => nsDistantObject -> RawId -> connection -> IO (Id NSDistantObject)
-initWithTarget_connection nsDistantObject  target connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg nsDistantObject (mkSelector "initWithTarget:connection:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())] >>= ownedObject . castPtr
+initWithTarget_connection nsDistantObject target connection =
+  sendOwnedMessage nsDistantObject initWithTarget_connectionSelector target (toNSConnection connection)
 
 -- | @+ proxyWithLocal:connection:@
 proxyWithLocal_connection :: IsNSConnection connection => RawId -> connection -> IO RawId
 proxyWithLocal_connection target connection =
   do
     cls' <- getRequiredClass "NSDistantObject"
-    withObjCPtr connection $ \raw_connection ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "proxyWithLocal:connection:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())]
+    sendClassMessage cls' proxyWithLocal_connectionSelector target (toNSConnection connection)
 
 -- | @- initWithLocal:connection:@
 initWithLocal_connection :: (IsNSDistantObject nsDistantObject, IsNSConnection connection) => nsDistantObject -> RawId -> connection -> IO (Id NSDistantObject)
-initWithLocal_connection nsDistantObject  target connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg nsDistantObject (mkSelector "initWithLocal:connection:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())] >>= ownedObject . castPtr
+initWithLocal_connection nsDistantObject target connection =
+  sendOwnedMessage nsDistantObject initWithLocal_connectionSelector target (toNSConnection connection)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSDistantObject nsDistantObject, IsNSCoder inCoder) => nsDistantObject -> inCoder -> IO (Id NSDistantObject)
-initWithCoder nsDistantObject  inCoder =
-  withObjCPtr inCoder $ \raw_inCoder ->
-      sendMsg nsDistantObject (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_inCoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsDistantObject inCoder =
+  sendOwnedMessage nsDistantObject initWithCoderSelector (toNSCoder inCoder)
 
 -- | @- setProtocolForProxy:@
 setProtocolForProxy :: IsNSDistantObject nsDistantObject => nsDistantObject -> RawId -> IO ()
-setProtocolForProxy nsDistantObject  proto =
-    sendMsg nsDistantObject (mkSelector "setProtocolForProxy:") retVoid [argPtr (castPtr (unRawId proto) :: Ptr ())]
+setProtocolForProxy nsDistantObject proto =
+  sendMessage nsDistantObject setProtocolForProxySelector proto
 
 -- | @- connectionForProxy@
 connectionForProxy :: IsNSDistantObject nsDistantObject => nsDistantObject -> IO (Id NSConnection)
-connectionForProxy nsDistantObject  =
-    sendMsg nsDistantObject (mkSelector "connectionForProxy") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionForProxy nsDistantObject =
+  sendMessage nsDistantObject connectionForProxySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @proxyWithTarget:connection:@
-proxyWithTarget_connectionSelector :: Selector
+proxyWithTarget_connectionSelector :: Selector '[RawId, Id NSConnection] RawId
 proxyWithTarget_connectionSelector = mkSelector "proxyWithTarget:connection:"
 
 -- | @Selector@ for @initWithTarget:connection:@
-initWithTarget_connectionSelector :: Selector
+initWithTarget_connectionSelector :: Selector '[RawId, Id NSConnection] (Id NSDistantObject)
 initWithTarget_connectionSelector = mkSelector "initWithTarget:connection:"
 
 -- | @Selector@ for @proxyWithLocal:connection:@
-proxyWithLocal_connectionSelector :: Selector
+proxyWithLocal_connectionSelector :: Selector '[RawId, Id NSConnection] RawId
 proxyWithLocal_connectionSelector = mkSelector "proxyWithLocal:connection:"
 
 -- | @Selector@ for @initWithLocal:connection:@
-initWithLocal_connectionSelector :: Selector
+initWithLocal_connectionSelector :: Selector '[RawId, Id NSConnection] (Id NSDistantObject)
 initWithLocal_connectionSelector = mkSelector "initWithLocal:connection:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSDistantObject)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @setProtocolForProxy:@
-setProtocolForProxySelector :: Selector
+setProtocolForProxySelector :: Selector '[RawId] ()
 setProtocolForProxySelector = mkSelector "setProtocolForProxy:"
 
 -- | @Selector@ for @connectionForProxy@
-connectionForProxySelector :: Selector
+connectionForProxySelector :: Selector '[] (Id NSConnection)
 connectionForProxySelector = mkSelector "connectionForProxy"
 

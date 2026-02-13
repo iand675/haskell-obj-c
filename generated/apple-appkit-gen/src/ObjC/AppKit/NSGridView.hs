@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,37 +39,37 @@ module ObjC.AppKit.NSGridView
   , setRowSpacing
   , columnSpacing
   , setColumnSpacing
-  , initWithFrameSelector
-  , initWithCoderSelector
-  , gridViewWithNumberOfColumns_rowsSelector
-  , gridViewWithViewsSelector
-  , rowAtIndexSelector
-  , indexOfRowSelector
-  , columnAtIndexSelector
-  , indexOfColumnSelector
+  , addColumnWithViewsSelector
+  , addRowWithViewsSelector
   , cellAtColumnIndex_rowIndexSelector
   , cellForViewSelector
-  , addRowWithViewsSelector
-  , insertRowAtIndex_withViewsSelector
-  , moveRowAtIndex_toIndexSelector
-  , removeRowAtIndexSelector
-  , addColumnWithViewsSelector
-  , insertColumnAtIndex_withViewsSelector
-  , moveColumnAtIndex_toIndexSelector
-  , removeColumnAtIndexSelector
-  , mergeCellsInHorizontalRange_verticalRangeSelector
-  , numberOfRowsSelector
-  , numberOfColumnsSelector
-  , xPlacementSelector
-  , setXPlacementSelector
-  , yPlacementSelector
-  , setYPlacementSelector
-  , rowAlignmentSelector
-  , setRowAlignmentSelector
-  , rowSpacingSelector
-  , setRowSpacingSelector
+  , columnAtIndexSelector
   , columnSpacingSelector
+  , gridViewWithNumberOfColumns_rowsSelector
+  , gridViewWithViewsSelector
+  , indexOfColumnSelector
+  , indexOfRowSelector
+  , initWithCoderSelector
+  , initWithFrameSelector
+  , insertColumnAtIndex_withViewsSelector
+  , insertRowAtIndex_withViewsSelector
+  , mergeCellsInHorizontalRange_verticalRangeSelector
+  , moveColumnAtIndex_toIndexSelector
+  , moveRowAtIndex_toIndexSelector
+  , numberOfColumnsSelector
+  , numberOfRowsSelector
+  , removeColumnAtIndexSelector
+  , removeRowAtIndexSelector
+  , rowAlignmentSelector
+  , rowAtIndexSelector
+  , rowSpacingSelector
   , setColumnSpacingSelector
+  , setRowAlignmentSelector
+  , setRowSpacingSelector
+  , setXPlacementSelector
+  , setYPlacementSelector
+  , xPlacementSelector
+  , yPlacementSelector
 
   -- * Enum types
   , NSGridCellPlacement(NSGridCellPlacement)
@@ -88,15 +89,11 @@ module ObjC.AppKit.NSGridView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,297 +104,288 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFrame:@
 initWithFrame :: IsNSGridView nsGridView => nsGridView -> NSRect -> IO (Id NSGridView)
-initWithFrame nsGridView  frameRect =
-    sendMsg nsGridView (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frameRect] >>= ownedObject . castPtr
+initWithFrame nsGridView frameRect =
+  sendOwnedMessage nsGridView initWithFrameSelector frameRect
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSGridView nsGridView, IsNSCoder coder) => nsGridView -> coder -> IO (Id NSGridView)
-initWithCoder nsGridView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsGridView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsGridView coder =
+  sendOwnedMessage nsGridView initWithCoderSelector (toNSCoder coder)
 
 -- | @+ gridViewWithNumberOfColumns:rows:@
 gridViewWithNumberOfColumns_rows :: CLong -> CLong -> IO (Id NSGridView)
 gridViewWithNumberOfColumns_rows columnCount rowCount =
   do
     cls' <- getRequiredClass "NSGridView"
-    sendClassMsg cls' (mkSelector "gridViewWithNumberOfColumns:rows:") (retPtr retVoid) [argCLong columnCount, argCLong rowCount] >>= retainedObject . castPtr
+    sendClassMessage cls' gridViewWithNumberOfColumns_rowsSelector columnCount rowCount
 
 -- | @+ gridViewWithViews:@
 gridViewWithViews :: IsNSArray rows => rows -> IO (Id NSGridView)
 gridViewWithViews rows =
   do
     cls' <- getRequiredClass "NSGridView"
-    withObjCPtr rows $ \raw_rows ->
-      sendClassMsg cls' (mkSelector "gridViewWithViews:") (retPtr retVoid) [argPtr (castPtr raw_rows :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' gridViewWithViewsSelector (toNSArray rows)
 
 -- | @- rowAtIndex:@
 rowAtIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> IO (Id NSGridRow)
-rowAtIndex nsGridView  index =
-    sendMsg nsGridView (mkSelector "rowAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+rowAtIndex nsGridView index =
+  sendMessage nsGridView rowAtIndexSelector index
 
 -- | @- indexOfRow:@
 indexOfRow :: (IsNSGridView nsGridView, IsNSGridRow row) => nsGridView -> row -> IO CLong
-indexOfRow nsGridView  row =
-  withObjCPtr row $ \raw_row ->
-      sendMsg nsGridView (mkSelector "indexOfRow:") retCLong [argPtr (castPtr raw_row :: Ptr ())]
+indexOfRow nsGridView row =
+  sendMessage nsGridView indexOfRowSelector (toNSGridRow row)
 
 -- | @- columnAtIndex:@
 columnAtIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> IO (Id NSGridColumn)
-columnAtIndex nsGridView  index =
-    sendMsg nsGridView (mkSelector "columnAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+columnAtIndex nsGridView index =
+  sendMessage nsGridView columnAtIndexSelector index
 
 -- | @- indexOfColumn:@
 indexOfColumn :: (IsNSGridView nsGridView, IsNSGridColumn column) => nsGridView -> column -> IO CLong
-indexOfColumn nsGridView  column =
-  withObjCPtr column $ \raw_column ->
-      sendMsg nsGridView (mkSelector "indexOfColumn:") retCLong [argPtr (castPtr raw_column :: Ptr ())]
+indexOfColumn nsGridView column =
+  sendMessage nsGridView indexOfColumnSelector (toNSGridColumn column)
 
 -- | @- cellAtColumnIndex:rowIndex:@
 cellAtColumnIndex_rowIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> CLong -> IO (Id NSGridCell)
-cellAtColumnIndex_rowIndex nsGridView  columnIndex rowIndex =
-    sendMsg nsGridView (mkSelector "cellAtColumnIndex:rowIndex:") (retPtr retVoid) [argCLong columnIndex, argCLong rowIndex] >>= retainedObject . castPtr
+cellAtColumnIndex_rowIndex nsGridView columnIndex rowIndex =
+  sendMessage nsGridView cellAtColumnIndex_rowIndexSelector columnIndex rowIndex
 
 -- | @- cellForView:@
 cellForView :: (IsNSGridView nsGridView, IsNSView view) => nsGridView -> view -> IO (Id NSGridCell)
-cellForView nsGridView  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsGridView (mkSelector "cellForView:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ())] >>= retainedObject . castPtr
+cellForView nsGridView view =
+  sendMessage nsGridView cellForViewSelector (toNSView view)
 
 -- | @- addRowWithViews:@
 addRowWithViews :: (IsNSGridView nsGridView, IsNSArray views) => nsGridView -> views -> IO (Id NSGridRow)
-addRowWithViews nsGridView  views =
-  withObjCPtr views $ \raw_views ->
-      sendMsg nsGridView (mkSelector "addRowWithViews:") (retPtr retVoid) [argPtr (castPtr raw_views :: Ptr ())] >>= retainedObject . castPtr
+addRowWithViews nsGridView views =
+  sendMessage nsGridView addRowWithViewsSelector (toNSArray views)
 
 -- | @- insertRowAtIndex:withViews:@
 insertRowAtIndex_withViews :: (IsNSGridView nsGridView, IsNSArray views) => nsGridView -> CLong -> views -> IO (Id NSGridRow)
-insertRowAtIndex_withViews nsGridView  index views =
-  withObjCPtr views $ \raw_views ->
-      sendMsg nsGridView (mkSelector "insertRowAtIndex:withViews:") (retPtr retVoid) [argCLong index, argPtr (castPtr raw_views :: Ptr ())] >>= retainedObject . castPtr
+insertRowAtIndex_withViews nsGridView index views =
+  sendMessage nsGridView insertRowAtIndex_withViewsSelector index (toNSArray views)
 
 -- | @- moveRowAtIndex:toIndex:@
 moveRowAtIndex_toIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> CLong -> IO ()
-moveRowAtIndex_toIndex nsGridView  fromIndex toIndex =
-    sendMsg nsGridView (mkSelector "moveRowAtIndex:toIndex:") retVoid [argCLong fromIndex, argCLong toIndex]
+moveRowAtIndex_toIndex nsGridView fromIndex toIndex =
+  sendMessage nsGridView moveRowAtIndex_toIndexSelector fromIndex toIndex
 
 -- | @- removeRowAtIndex:@
 removeRowAtIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> IO ()
-removeRowAtIndex nsGridView  index =
-    sendMsg nsGridView (mkSelector "removeRowAtIndex:") retVoid [argCLong index]
+removeRowAtIndex nsGridView index =
+  sendMessage nsGridView removeRowAtIndexSelector index
 
 -- | @- addColumnWithViews:@
 addColumnWithViews :: (IsNSGridView nsGridView, IsNSArray views) => nsGridView -> views -> IO (Id NSGridColumn)
-addColumnWithViews nsGridView  views =
-  withObjCPtr views $ \raw_views ->
-      sendMsg nsGridView (mkSelector "addColumnWithViews:") (retPtr retVoid) [argPtr (castPtr raw_views :: Ptr ())] >>= retainedObject . castPtr
+addColumnWithViews nsGridView views =
+  sendMessage nsGridView addColumnWithViewsSelector (toNSArray views)
 
 -- | @- insertColumnAtIndex:withViews:@
 insertColumnAtIndex_withViews :: (IsNSGridView nsGridView, IsNSArray views) => nsGridView -> CLong -> views -> IO (Id NSGridColumn)
-insertColumnAtIndex_withViews nsGridView  index views =
-  withObjCPtr views $ \raw_views ->
-      sendMsg nsGridView (mkSelector "insertColumnAtIndex:withViews:") (retPtr retVoid) [argCLong index, argPtr (castPtr raw_views :: Ptr ())] >>= retainedObject . castPtr
+insertColumnAtIndex_withViews nsGridView index views =
+  sendMessage nsGridView insertColumnAtIndex_withViewsSelector index (toNSArray views)
 
 -- | @- moveColumnAtIndex:toIndex:@
 moveColumnAtIndex_toIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> CLong -> IO ()
-moveColumnAtIndex_toIndex nsGridView  fromIndex toIndex =
-    sendMsg nsGridView (mkSelector "moveColumnAtIndex:toIndex:") retVoid [argCLong fromIndex, argCLong toIndex]
+moveColumnAtIndex_toIndex nsGridView fromIndex toIndex =
+  sendMessage nsGridView moveColumnAtIndex_toIndexSelector fromIndex toIndex
 
 -- | @- removeColumnAtIndex:@
 removeColumnAtIndex :: IsNSGridView nsGridView => nsGridView -> CLong -> IO ()
-removeColumnAtIndex nsGridView  index =
-    sendMsg nsGridView (mkSelector "removeColumnAtIndex:") retVoid [argCLong index]
+removeColumnAtIndex nsGridView index =
+  sendMessage nsGridView removeColumnAtIndexSelector index
 
 -- | @- mergeCellsInHorizontalRange:verticalRange:@
 mergeCellsInHorizontalRange_verticalRange :: IsNSGridView nsGridView => nsGridView -> NSRange -> NSRange -> IO ()
-mergeCellsInHorizontalRange_verticalRange nsGridView  hRange vRange =
-    sendMsg nsGridView (mkSelector "mergeCellsInHorizontalRange:verticalRange:") retVoid [argNSRange hRange, argNSRange vRange]
+mergeCellsInHorizontalRange_verticalRange nsGridView hRange vRange =
+  sendMessage nsGridView mergeCellsInHorizontalRange_verticalRangeSelector hRange vRange
 
 -- | @- numberOfRows@
 numberOfRows :: IsNSGridView nsGridView => nsGridView -> IO CLong
-numberOfRows nsGridView  =
-    sendMsg nsGridView (mkSelector "numberOfRows") retCLong []
+numberOfRows nsGridView =
+  sendMessage nsGridView numberOfRowsSelector
 
 -- | @- numberOfColumns@
 numberOfColumns :: IsNSGridView nsGridView => nsGridView -> IO CLong
-numberOfColumns nsGridView  =
-    sendMsg nsGridView (mkSelector "numberOfColumns") retCLong []
+numberOfColumns nsGridView =
+  sendMessage nsGridView numberOfColumnsSelector
 
 -- | @- xPlacement@
 xPlacement :: IsNSGridView nsGridView => nsGridView -> IO NSGridCellPlacement
-xPlacement nsGridView  =
-    fmap (coerce :: CLong -> NSGridCellPlacement) $ sendMsg nsGridView (mkSelector "xPlacement") retCLong []
+xPlacement nsGridView =
+  sendMessage nsGridView xPlacementSelector
 
 -- | @- setXPlacement:@
 setXPlacement :: IsNSGridView nsGridView => nsGridView -> NSGridCellPlacement -> IO ()
-setXPlacement nsGridView  value =
-    sendMsg nsGridView (mkSelector "setXPlacement:") retVoid [argCLong (coerce value)]
+setXPlacement nsGridView value =
+  sendMessage nsGridView setXPlacementSelector value
 
 -- | @- yPlacement@
 yPlacement :: IsNSGridView nsGridView => nsGridView -> IO NSGridCellPlacement
-yPlacement nsGridView  =
-    fmap (coerce :: CLong -> NSGridCellPlacement) $ sendMsg nsGridView (mkSelector "yPlacement") retCLong []
+yPlacement nsGridView =
+  sendMessage nsGridView yPlacementSelector
 
 -- | @- setYPlacement:@
 setYPlacement :: IsNSGridView nsGridView => nsGridView -> NSGridCellPlacement -> IO ()
-setYPlacement nsGridView  value =
-    sendMsg nsGridView (mkSelector "setYPlacement:") retVoid [argCLong (coerce value)]
+setYPlacement nsGridView value =
+  sendMessage nsGridView setYPlacementSelector value
 
 -- | @- rowAlignment@
 rowAlignment :: IsNSGridView nsGridView => nsGridView -> IO NSGridRowAlignment
-rowAlignment nsGridView  =
-    fmap (coerce :: CLong -> NSGridRowAlignment) $ sendMsg nsGridView (mkSelector "rowAlignment") retCLong []
+rowAlignment nsGridView =
+  sendMessage nsGridView rowAlignmentSelector
 
 -- | @- setRowAlignment:@
 setRowAlignment :: IsNSGridView nsGridView => nsGridView -> NSGridRowAlignment -> IO ()
-setRowAlignment nsGridView  value =
-    sendMsg nsGridView (mkSelector "setRowAlignment:") retVoid [argCLong (coerce value)]
+setRowAlignment nsGridView value =
+  sendMessage nsGridView setRowAlignmentSelector value
 
 -- | @- rowSpacing@
 rowSpacing :: IsNSGridView nsGridView => nsGridView -> IO CDouble
-rowSpacing nsGridView  =
-    sendMsg nsGridView (mkSelector "rowSpacing") retCDouble []
+rowSpacing nsGridView =
+  sendMessage nsGridView rowSpacingSelector
 
 -- | @- setRowSpacing:@
 setRowSpacing :: IsNSGridView nsGridView => nsGridView -> CDouble -> IO ()
-setRowSpacing nsGridView  value =
-    sendMsg nsGridView (mkSelector "setRowSpacing:") retVoid [argCDouble value]
+setRowSpacing nsGridView value =
+  sendMessage nsGridView setRowSpacingSelector value
 
 -- | @- columnSpacing@
 columnSpacing :: IsNSGridView nsGridView => nsGridView -> IO CDouble
-columnSpacing nsGridView  =
-    sendMsg nsGridView (mkSelector "columnSpacing") retCDouble []
+columnSpacing nsGridView =
+  sendMessage nsGridView columnSpacingSelector
 
 -- | @- setColumnSpacing:@
 setColumnSpacing :: IsNSGridView nsGridView => nsGridView -> CDouble -> IO ()
-setColumnSpacing nsGridView  value =
-    sendMsg nsGridView (mkSelector "setColumnSpacing:") retVoid [argCDouble value]
+setColumnSpacing nsGridView value =
+  sendMessage nsGridView setColumnSpacingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] (Id NSGridView)
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSGridView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @gridViewWithNumberOfColumns:rows:@
-gridViewWithNumberOfColumns_rowsSelector :: Selector
+gridViewWithNumberOfColumns_rowsSelector :: Selector '[CLong, CLong] (Id NSGridView)
 gridViewWithNumberOfColumns_rowsSelector = mkSelector "gridViewWithNumberOfColumns:rows:"
 
 -- | @Selector@ for @gridViewWithViews:@
-gridViewWithViewsSelector :: Selector
+gridViewWithViewsSelector :: Selector '[Id NSArray] (Id NSGridView)
 gridViewWithViewsSelector = mkSelector "gridViewWithViews:"
 
 -- | @Selector@ for @rowAtIndex:@
-rowAtIndexSelector :: Selector
+rowAtIndexSelector :: Selector '[CLong] (Id NSGridRow)
 rowAtIndexSelector = mkSelector "rowAtIndex:"
 
 -- | @Selector@ for @indexOfRow:@
-indexOfRowSelector :: Selector
+indexOfRowSelector :: Selector '[Id NSGridRow] CLong
 indexOfRowSelector = mkSelector "indexOfRow:"
 
 -- | @Selector@ for @columnAtIndex:@
-columnAtIndexSelector :: Selector
+columnAtIndexSelector :: Selector '[CLong] (Id NSGridColumn)
 columnAtIndexSelector = mkSelector "columnAtIndex:"
 
 -- | @Selector@ for @indexOfColumn:@
-indexOfColumnSelector :: Selector
+indexOfColumnSelector :: Selector '[Id NSGridColumn] CLong
 indexOfColumnSelector = mkSelector "indexOfColumn:"
 
 -- | @Selector@ for @cellAtColumnIndex:rowIndex:@
-cellAtColumnIndex_rowIndexSelector :: Selector
+cellAtColumnIndex_rowIndexSelector :: Selector '[CLong, CLong] (Id NSGridCell)
 cellAtColumnIndex_rowIndexSelector = mkSelector "cellAtColumnIndex:rowIndex:"
 
 -- | @Selector@ for @cellForView:@
-cellForViewSelector :: Selector
+cellForViewSelector :: Selector '[Id NSView] (Id NSGridCell)
 cellForViewSelector = mkSelector "cellForView:"
 
 -- | @Selector@ for @addRowWithViews:@
-addRowWithViewsSelector :: Selector
+addRowWithViewsSelector :: Selector '[Id NSArray] (Id NSGridRow)
 addRowWithViewsSelector = mkSelector "addRowWithViews:"
 
 -- | @Selector@ for @insertRowAtIndex:withViews:@
-insertRowAtIndex_withViewsSelector :: Selector
+insertRowAtIndex_withViewsSelector :: Selector '[CLong, Id NSArray] (Id NSGridRow)
 insertRowAtIndex_withViewsSelector = mkSelector "insertRowAtIndex:withViews:"
 
 -- | @Selector@ for @moveRowAtIndex:toIndex:@
-moveRowAtIndex_toIndexSelector :: Selector
+moveRowAtIndex_toIndexSelector :: Selector '[CLong, CLong] ()
 moveRowAtIndex_toIndexSelector = mkSelector "moveRowAtIndex:toIndex:"
 
 -- | @Selector@ for @removeRowAtIndex:@
-removeRowAtIndexSelector :: Selector
+removeRowAtIndexSelector :: Selector '[CLong] ()
 removeRowAtIndexSelector = mkSelector "removeRowAtIndex:"
 
 -- | @Selector@ for @addColumnWithViews:@
-addColumnWithViewsSelector :: Selector
+addColumnWithViewsSelector :: Selector '[Id NSArray] (Id NSGridColumn)
 addColumnWithViewsSelector = mkSelector "addColumnWithViews:"
 
 -- | @Selector@ for @insertColumnAtIndex:withViews:@
-insertColumnAtIndex_withViewsSelector :: Selector
+insertColumnAtIndex_withViewsSelector :: Selector '[CLong, Id NSArray] (Id NSGridColumn)
 insertColumnAtIndex_withViewsSelector = mkSelector "insertColumnAtIndex:withViews:"
 
 -- | @Selector@ for @moveColumnAtIndex:toIndex:@
-moveColumnAtIndex_toIndexSelector :: Selector
+moveColumnAtIndex_toIndexSelector :: Selector '[CLong, CLong] ()
 moveColumnAtIndex_toIndexSelector = mkSelector "moveColumnAtIndex:toIndex:"
 
 -- | @Selector@ for @removeColumnAtIndex:@
-removeColumnAtIndexSelector :: Selector
+removeColumnAtIndexSelector :: Selector '[CLong] ()
 removeColumnAtIndexSelector = mkSelector "removeColumnAtIndex:"
 
 -- | @Selector@ for @mergeCellsInHorizontalRange:verticalRange:@
-mergeCellsInHorizontalRange_verticalRangeSelector :: Selector
+mergeCellsInHorizontalRange_verticalRangeSelector :: Selector '[NSRange, NSRange] ()
 mergeCellsInHorizontalRange_verticalRangeSelector = mkSelector "mergeCellsInHorizontalRange:verticalRange:"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CLong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CLong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @xPlacement@
-xPlacementSelector :: Selector
+xPlacementSelector :: Selector '[] NSGridCellPlacement
 xPlacementSelector = mkSelector "xPlacement"
 
 -- | @Selector@ for @setXPlacement:@
-setXPlacementSelector :: Selector
+setXPlacementSelector :: Selector '[NSGridCellPlacement] ()
 setXPlacementSelector = mkSelector "setXPlacement:"
 
 -- | @Selector@ for @yPlacement@
-yPlacementSelector :: Selector
+yPlacementSelector :: Selector '[] NSGridCellPlacement
 yPlacementSelector = mkSelector "yPlacement"
 
 -- | @Selector@ for @setYPlacement:@
-setYPlacementSelector :: Selector
+setYPlacementSelector :: Selector '[NSGridCellPlacement] ()
 setYPlacementSelector = mkSelector "setYPlacement:"
 
 -- | @Selector@ for @rowAlignment@
-rowAlignmentSelector :: Selector
+rowAlignmentSelector :: Selector '[] NSGridRowAlignment
 rowAlignmentSelector = mkSelector "rowAlignment"
 
 -- | @Selector@ for @setRowAlignment:@
-setRowAlignmentSelector :: Selector
+setRowAlignmentSelector :: Selector '[NSGridRowAlignment] ()
 setRowAlignmentSelector = mkSelector "setRowAlignment:"
 
 -- | @Selector@ for @rowSpacing@
-rowSpacingSelector :: Selector
+rowSpacingSelector :: Selector '[] CDouble
 rowSpacingSelector = mkSelector "rowSpacing"
 
 -- | @Selector@ for @setRowSpacing:@
-setRowSpacingSelector :: Selector
+setRowSpacingSelector :: Selector '[CDouble] ()
 setRowSpacingSelector = mkSelector "setRowSpacing:"
 
 -- | @Selector@ for @columnSpacing@
-columnSpacingSelector :: Selector
+columnSpacingSelector :: Selector '[] CDouble
 columnSpacingSelector = mkSelector "columnSpacing"
 
 -- | @Selector@ for @setColumnSpacing:@
-setColumnSpacingSelector :: Selector
+setColumnSpacingSelector :: Selector '[CDouble] ()
 setColumnSpacingSelector = mkSelector "setColumnSpacing:"
 

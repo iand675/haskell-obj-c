@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRGroupcastClusterJoinGroupParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , groupIDSelector
-  , setGroupIDSelector
   , endpointsSelector
-  , setEndpointsSelector
-  , keyIDSelector
-  , setKeyIDSelector
-  , keySelector
-  , setKeySelector
   , gracePeriodSelector
+  , groupIDSelector
+  , keyIDSelector
+  , keySelector
+  , serverSideProcessingTimeoutSelector
+  , setEndpointsSelector
   , setGracePeriodSelector
-  , useAuxiliaryACLSelector
+  , setGroupIDSelector
+  , setKeyIDSelector
+  , setKeySelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
   , setUseAuxiliaryACLSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , useAuxiliaryACLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,69 +56,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-groupID mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setGroupID mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setGroupIDSelector (toNSNumber value)
 
 -- | @- endpoints@
 endpoints :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSArray)
-endpoints mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "endpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoints mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams endpointsSelector
 
 -- | @- setEndpoints:@
 setEndpoints :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSArray value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setEndpoints mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setEndpoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoints mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setEndpointsSelector (toNSArray value)
 
 -- | @- keyID@
 keyID :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-keyID mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "keyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyID mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams keyIDSelector
 
 -- | @- setKeyID:@
 setKeyID :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setKeyID mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyID mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setKeyIDSelector (toNSNumber value)
 
 -- | @- key@
 key :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSData)
-key mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "key") (retPtr retVoid) [] >>= retainedObject . castPtr
+key mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams keySelector
 
 -- | @- setKey:@
 setKey :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSData value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setKey mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKey mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setKeySelector (toNSData value)
 
 -- | @- gracePeriod@
 gracePeriod :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-gracePeriod mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "gracePeriod") (retPtr retVoid) [] >>= retainedObject . castPtr
+gracePeriod mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams gracePeriodSelector
 
 -- | @- setGracePeriod:@
 setGracePeriod :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setGracePeriod mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setGracePeriod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGracePeriod mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setGracePeriodSelector (toNSNumber value)
 
 -- | @- useAuxiliaryACL@
 useAuxiliaryACL :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-useAuxiliaryACL mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "useAuxiliaryACL") (retPtr retVoid) [] >>= retainedObject . castPtr
+useAuxiliaryACL mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams useAuxiliaryACLSelector
 
 -- | @- setUseAuxiliaryACL:@
 setUseAuxiliaryACL :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setUseAuxiliaryACL mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setUseAuxiliaryACL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUseAuxiliaryACL mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setUseAuxiliaryACLSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -131,8 +122,8 @@ setUseAuxiliaryACL mtrGroupcastClusterJoinGroupParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -142,9 +133,8 @@ timedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -154,8 +144,8 @@ setTimedInvokeTimeoutMs mtrGroupcastClusterJoinGroupParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams => mtrGroupcastClusterJoinGroupParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGroupcastClusterJoinGroupParams  =
-    sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGroupcastClusterJoinGroupParams =
+  sendMessage mtrGroupcastClusterJoinGroupParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -165,75 +155,74 @@ serverSideProcessingTimeout mtrGroupcastClusterJoinGroupParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGroupcastClusterJoinGroupParams mtrGroupcastClusterJoinGroupParams, IsNSNumber value) => mtrGroupcastClusterJoinGroupParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGroupcastClusterJoinGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterJoinGroupParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGroupcastClusterJoinGroupParams value =
+  sendMessage mtrGroupcastClusterJoinGroupParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @endpoints@
-endpointsSelector :: Selector
+endpointsSelector :: Selector '[] (Id NSArray)
 endpointsSelector = mkSelector "endpoints"
 
 -- | @Selector@ for @setEndpoints:@
-setEndpointsSelector :: Selector
+setEndpointsSelector :: Selector '[Id NSArray] ()
 setEndpointsSelector = mkSelector "setEndpoints:"
 
 -- | @Selector@ for @keyID@
-keyIDSelector :: Selector
+keyIDSelector :: Selector '[] (Id NSNumber)
 keyIDSelector = mkSelector "keyID"
 
 -- | @Selector@ for @setKeyID:@
-setKeyIDSelector :: Selector
+setKeyIDSelector :: Selector '[Id NSNumber] ()
 setKeyIDSelector = mkSelector "setKeyID:"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] (Id NSData)
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @setKey:@
-setKeySelector :: Selector
+setKeySelector :: Selector '[Id NSData] ()
 setKeySelector = mkSelector "setKey:"
 
 -- | @Selector@ for @gracePeriod@
-gracePeriodSelector :: Selector
+gracePeriodSelector :: Selector '[] (Id NSNumber)
 gracePeriodSelector = mkSelector "gracePeriod"
 
 -- | @Selector@ for @setGracePeriod:@
-setGracePeriodSelector :: Selector
+setGracePeriodSelector :: Selector '[Id NSNumber] ()
 setGracePeriodSelector = mkSelector "setGracePeriod:"
 
 -- | @Selector@ for @useAuxiliaryACL@
-useAuxiliaryACLSelector :: Selector
+useAuxiliaryACLSelector :: Selector '[] (Id NSNumber)
 useAuxiliaryACLSelector = mkSelector "useAuxiliaryACL"
 
 -- | @Selector@ for @setUseAuxiliaryACL:@
-setUseAuxiliaryACLSelector :: Selector
+setUseAuxiliaryACLSelector :: Selector '[Id NSNumber] ()
 setUseAuxiliaryACLSelector = mkSelector "setUseAuxiliaryACL:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

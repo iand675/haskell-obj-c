@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -89,87 +90,88 @@ module ObjC.AppKit.NSEvent
   , doubleClickInterval
   , keyRepeatDelay
   , keyRepeatInterval
-  , charactersByApplyingModifiersSelector
-  , eventWithEventRefSelector
-  , eventWithCGEventSelector
-  , touchesMatchingPhase_inViewSelector
-  , allTouchesSelector
-  , touchesForViewSelector
-  , coalescedTouchesForTouchSelector
-  , trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector
-  , startPeriodicEventsAfterDelay_withPeriodSelector
-  , stopPeriodicEventsSelector
-  , mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector
-  , keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector
-  , enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector
-  , otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector
-  , addGlobalMonitorForEventsMatchingMask_handlerSelector
-  , addLocalMonitorForEventsMatchingMask_handlerSelector
-  , removeMonitorSelector
-  , typeSelector
-  , modifierFlagsSelector
-  , timestampSelector
-  , windowSelector
-  , windowNumberSelector
-  , contextSelector
-  , clickCountSelector
-  , buttonNumberSelector
-  , eventNumberSelector
-  , pressureSelector
-  , locationInWindowSelector
-  , deltaXSelector
-  , deltaYSelector
-  , deltaZSelector
-  , hasPreciseScrollingDeltasSelector
-  , scrollingDeltaXSelector
-  , scrollingDeltaYSelector
-  , momentumPhaseSelector
-  , directionInvertedFromDeviceSelector
-  , charactersSelector
-  , charactersIgnoringModifiersSelector
   , aRepeatSelector
-  , keyCodeSelector
-  , trackingNumberSelector
-  , userDataSelector
-  , trackingAreaSelector
-  , subtypeSelector
-  , data1Selector
-  , data2Selector
-  , eventRefSelector
-  , cgEventSelector
-  , mouseCoalescingEnabledSelector
-  , setMouseCoalescingEnabledSelector
-  , magnificationSelector
-  , deviceIDSelector
-  , rotationSelector
   , absoluteXSelector
   , absoluteYSelector
   , absoluteZSelector
-  , buttonMaskSelector
-  , tiltSelector
-  , tangentialPressureSelector
-  , vendorDefinedSelector
-  , vendorIDSelector
-  , tabletIDSelector
-  , pointingDeviceIDSelector
-  , systemTabletIDSelector
-  , vendorPointingDeviceTypeSelector
-  , pointingDeviceSerialNumberSelector
-  , uniqueIDSelector
-  , capabilityMaskSelector
-  , pointingDeviceTypeSelector
-  , enteringProximitySelector
-  , phaseSelector
-  , stageSelector
-  , stageTransitionSelector
+  , addGlobalMonitorForEventsMatchingMask_handlerSelector
+  , addLocalMonitorForEventsMatchingMask_handlerSelector
+  , allTouchesSelector
   , associatedEventsMaskSelector
-  , pressureBehaviorSelector
-  , swipeTrackingFromScrollEventsEnabledSelector
-  , mouseLocationSelector
-  , pressedMouseButtonsSelector
+  , buttonMaskSelector
+  , buttonNumberSelector
+  , capabilityMaskSelector
+  , cgEventSelector
+  , charactersByApplyingModifiersSelector
+  , charactersIgnoringModifiersSelector
+  , charactersSelector
+  , clickCountSelector
+  , coalescedTouchesForTouchSelector
+  , contextSelector
+  , data1Selector
+  , data2Selector
+  , deltaXSelector
+  , deltaYSelector
+  , deltaZSelector
+  , deviceIDSelector
+  , directionInvertedFromDeviceSelector
   , doubleClickIntervalSelector
+  , enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector
+  , enteringProximitySelector
+  , eventNumberSelector
+  , eventRefSelector
+  , eventWithCGEventSelector
+  , eventWithEventRefSelector
+  , hasPreciseScrollingDeltasSelector
+  , keyCodeSelector
+  , keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector
   , keyRepeatDelaySelector
   , keyRepeatIntervalSelector
+  , locationInWindowSelector
+  , magnificationSelector
+  , modifierFlagsSelector
+  , momentumPhaseSelector
+  , mouseCoalescingEnabledSelector
+  , mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector
+  , mouseLocationSelector
+  , nsEventModifierFlagsSelector
+  , otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector
+  , phaseSelector
+  , pointingDeviceIDSelector
+  , pointingDeviceSerialNumberSelector
+  , pointingDeviceTypeSelector
+  , pressedMouseButtonsSelector
+  , pressureBehaviorSelector
+  , pressureSelector
+  , removeMonitorSelector
+  , rotationSelector
+  , scrollingDeltaXSelector
+  , scrollingDeltaYSelector
+  , setMouseCoalescingEnabledSelector
+  , stageSelector
+  , stageTransitionSelector
+  , startPeriodicEventsAfterDelay_withPeriodSelector
+  , stopPeriodicEventsSelector
+  , subtypeSelector
+  , swipeTrackingFromScrollEventsEnabledSelector
+  , systemTabletIDSelector
+  , tabletIDSelector
+  , tangentialPressureSelector
+  , tiltSelector
+  , timestampSelector
+  , touchesForViewSelector
+  , touchesMatchingPhase_inViewSelector
+  , trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector
+  , trackingAreaSelector
+  , trackingNumberSelector
+  , typeSelector
+  , uniqueIDSelector
+  , userDataSelector
+  , vendorDefinedSelector
+  , vendorIDSelector
+  , vendorPointingDeviceTypeSelector
+  , windowNumberSelector
+  , windowSelector
 
   -- * Enum types
   , NSEventButtonMask(NSEventButtonMask)
@@ -304,15 +306,11 @@ module ObjC.AppKit.NSEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -323,788 +321,783 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- charactersByApplyingModifiers:@
 charactersByApplyingModifiers :: IsNSEvent nsEvent => nsEvent -> NSEventModifierFlags -> IO (Id NSString)
-charactersByApplyingModifiers nsEvent  modifiers =
-    sendMsg nsEvent (mkSelector "charactersByApplyingModifiers:") (retPtr retVoid) [argCULong (coerce modifiers)] >>= retainedObject . castPtr
+charactersByApplyingModifiers nsEvent modifiers =
+  sendMessage nsEvent charactersByApplyingModifiersSelector modifiers
 
 -- | @+ eventWithEventRef:@
 eventWithEventRef :: Const (Ptr ()) -> IO (Id NSEvent)
 eventWithEventRef eventRef =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "eventWithEventRef:") (retPtr retVoid) [argPtr (unConst eventRef)] >>= retainedObject . castPtr
+    sendClassMessage cls' eventWithEventRefSelector eventRef
 
 -- | @+ eventWithCGEvent:@
 eventWithCGEvent :: Ptr () -> IO (Id NSEvent)
 eventWithCGEvent cgEvent =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "eventWithCGEvent:") (retPtr retVoid) [argPtr cgEvent] >>= retainedObject . castPtr
+    sendClassMessage cls' eventWithCGEventSelector cgEvent
 
 -- | @- touchesMatchingPhase:inView:@
 touchesMatchingPhase_inView :: (IsNSEvent nsEvent, IsNSView view) => nsEvent -> NSTouchPhase -> view -> IO (Id NSSet)
-touchesMatchingPhase_inView nsEvent  phase view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsEvent (mkSelector "touchesMatchingPhase:inView:") (retPtr retVoid) [argCULong (coerce phase), argPtr (castPtr raw_view :: Ptr ())] >>= retainedObject . castPtr
+touchesMatchingPhase_inView nsEvent phase view =
+  sendMessage nsEvent touchesMatchingPhase_inViewSelector phase (toNSView view)
 
 -- | @- allTouches@
 allTouches :: IsNSEvent nsEvent => nsEvent -> IO (Id NSSet)
-allTouches nsEvent  =
-    sendMsg nsEvent (mkSelector "allTouches") (retPtr retVoid) [] >>= retainedObject . castPtr
+allTouches nsEvent =
+  sendMessage nsEvent allTouchesSelector
 
 -- | @- touchesForView:@
 touchesForView :: (IsNSEvent nsEvent, IsNSView view) => nsEvent -> view -> IO (Id NSSet)
-touchesForView nsEvent  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsEvent (mkSelector "touchesForView:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ())] >>= retainedObject . castPtr
+touchesForView nsEvent view =
+  sendMessage nsEvent touchesForViewSelector (toNSView view)
 
 -- | @- coalescedTouchesForTouch:@
 coalescedTouchesForTouch :: (IsNSEvent nsEvent, IsNSTouch touch) => nsEvent -> touch -> IO (Id NSArray)
-coalescedTouchesForTouch nsEvent  touch =
-  withObjCPtr touch $ \raw_touch ->
-      sendMsg nsEvent (mkSelector "coalescedTouchesForTouch:") (retPtr retVoid) [argPtr (castPtr raw_touch :: Ptr ())] >>= retainedObject . castPtr
+coalescedTouchesForTouch nsEvent touch =
+  sendMessage nsEvent coalescedTouchesForTouchSelector (toNSTouch touch)
 
 -- | @- trackSwipeEventWithOptions:dampenAmountThresholdMin:max:usingHandler:@
 trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandler :: IsNSEvent nsEvent => nsEvent -> NSEventSwipeTrackingOptions -> CDouble -> CDouble -> Ptr () -> IO ()
-trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandler nsEvent  options minDampenThreshold maxDampenThreshold trackingHandler =
-    sendMsg nsEvent (mkSelector "trackSwipeEventWithOptions:dampenAmountThresholdMin:max:usingHandler:") retVoid [argCULong (coerce options), argCDouble minDampenThreshold, argCDouble maxDampenThreshold, argPtr (castPtr trackingHandler :: Ptr ())]
+trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandler nsEvent options minDampenThreshold maxDampenThreshold trackingHandler =
+  sendMessage nsEvent trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector options minDampenThreshold maxDampenThreshold trackingHandler
 
 -- | @+ startPeriodicEventsAfterDelay:withPeriod:@
 startPeriodicEventsAfterDelay_withPeriod :: CDouble -> CDouble -> IO ()
 startPeriodicEventsAfterDelay_withPeriod delay period =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "startPeriodicEventsAfterDelay:withPeriod:") retVoid [argCDouble delay, argCDouble period]
+    sendClassMessage cls' startPeriodicEventsAfterDelay_withPeriodSelector delay period
 
 -- | @+ stopPeriodicEvents@
 stopPeriodicEvents :: IO ()
 stopPeriodicEvents  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "stopPeriodicEvents") retVoid []
+    sendClassMessage cls' stopPeriodicEventsSelector
 
 -- | @+ mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:@
 mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure :: IsNSGraphicsContext unusedPassNil => NSEventType -> NSPoint -> NSEventModifierFlags -> CDouble -> CLong -> unusedPassNil -> CLong -> CLong -> CFloat -> IO (Id NSEvent)
 mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure type_ location flags time wNum unusedPassNil eNum cNum pressure =
   do
     cls' <- getRequiredClass "NSEvent"
-    withObjCPtr unusedPassNil $ \raw_unusedPassNil ->
-      sendClassMsg cls' (mkSelector "mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:") (retPtr retVoid) [argCULong (coerce type_), argNSPoint location, argCULong (coerce flags), argCDouble time, argCLong wNum, argPtr (castPtr raw_unusedPassNil :: Ptr ()), argCLong eNum, argCLong cNum, argCFloat pressure] >>= retainedObject . castPtr
+    sendClassMessage cls' mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector type_ location flags time wNum (toNSGraphicsContext unusedPassNil) eNum cNum pressure
 
 -- | @+ keyEventWithType:location:modifierFlags:timestamp:windowNumber:context:characters:charactersIgnoringModifiers:isARepeat:keyCode:@
 keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode :: (IsNSGraphicsContext unusedPassNil, IsNSString keys, IsNSString ukeys) => NSEventType -> NSPoint -> NSEventModifierFlags -> CDouble -> CLong -> unusedPassNil -> keys -> ukeys -> Bool -> CUShort -> IO (Id NSEvent)
 keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode type_ location flags time wNum unusedPassNil keys ukeys flag code =
   do
     cls' <- getRequiredClass "NSEvent"
-    withObjCPtr unusedPassNil $ \raw_unusedPassNil ->
-      withObjCPtr keys $ \raw_keys ->
-        withObjCPtr ukeys $ \raw_ukeys ->
-          sendClassMsg cls' (mkSelector "keyEventWithType:location:modifierFlags:timestamp:windowNumber:context:characters:charactersIgnoringModifiers:isARepeat:keyCode:") (retPtr retVoid) [argCULong (coerce type_), argNSPoint location, argCULong (coerce flags), argCDouble time, argCLong wNum, argPtr (castPtr raw_unusedPassNil :: Ptr ()), argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr raw_ukeys :: Ptr ()), argCULong (if flag then 1 else 0), argCUInt (fromIntegral code)] >>= retainedObject . castPtr
+    sendClassMessage cls' keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector type_ location flags time wNum (toNSGraphicsContext unusedPassNil) (toNSString keys) (toNSString ukeys) flag code
 
 -- | @+ enterExitEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:trackingNumber:userData:@
 enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userData :: IsNSGraphicsContext unusedPassNil => NSEventType -> NSPoint -> NSEventModifierFlags -> CDouble -> CLong -> unusedPassNil -> CLong -> CLong -> Ptr () -> IO (Id NSEvent)
 enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userData type_ location flags time wNum unusedPassNil eNum tNum data_ =
   do
     cls' <- getRequiredClass "NSEvent"
-    withObjCPtr unusedPassNil $ \raw_unusedPassNil ->
-      sendClassMsg cls' (mkSelector "enterExitEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:trackingNumber:userData:") (retPtr retVoid) [argCULong (coerce type_), argNSPoint location, argCULong (coerce flags), argCDouble time, argCLong wNum, argPtr (castPtr raw_unusedPassNil :: Ptr ()), argCLong eNum, argCLong tNum, argPtr data_] >>= retainedObject . castPtr
+    sendClassMessage cls' enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector type_ location flags time wNum (toNSGraphicsContext unusedPassNil) eNum tNum data_
 
 -- | @+ otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:@
 otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2 :: IsNSGraphicsContext unusedPassNil => NSEventType -> NSPoint -> NSEventModifierFlags -> CDouble -> CLong -> unusedPassNil -> CShort -> CLong -> CLong -> IO (Id NSEvent)
 otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2 type_ location flags time wNum unusedPassNil subtype d1 d2 =
   do
     cls' <- getRequiredClass "NSEvent"
-    withObjCPtr unusedPassNil $ \raw_unusedPassNil ->
-      sendClassMsg cls' (mkSelector "otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:") (retPtr retVoid) [argCULong (coerce type_), argNSPoint location, argCULong (coerce flags), argCDouble time, argCLong wNum, argPtr (castPtr raw_unusedPassNil :: Ptr ()), argCInt (fromIntegral subtype), argCLong d1, argCLong d2] >>= retainedObject . castPtr
+    sendClassMessage cls' otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector type_ location flags time wNum (toNSGraphicsContext unusedPassNil) subtype d1 d2
 
 -- | @+ addGlobalMonitorForEventsMatchingMask:handler:@
 addGlobalMonitorForEventsMatchingMask_handler :: NSEventMask -> Ptr () -> IO RawId
 addGlobalMonitorForEventsMatchingMask_handler mask block =
   do
     cls' <- getRequiredClass "NSEvent"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "addGlobalMonitorForEventsMatchingMask:handler:") (retPtr retVoid) [argCULong (coerce mask), argPtr (castPtr block :: Ptr ())]
+    sendClassMessage cls' addGlobalMonitorForEventsMatchingMask_handlerSelector mask block
 
 -- | @+ addLocalMonitorForEventsMatchingMask:handler:@
 addLocalMonitorForEventsMatchingMask_handler :: NSEventMask -> Ptr () -> IO RawId
 addLocalMonitorForEventsMatchingMask_handler mask block =
   do
     cls' <- getRequiredClass "NSEvent"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "addLocalMonitorForEventsMatchingMask:handler:") (retPtr retVoid) [argCULong (coerce mask), argPtr (castPtr block :: Ptr ())]
+    sendClassMessage cls' addLocalMonitorForEventsMatchingMask_handlerSelector mask block
 
 -- | @+ removeMonitor:@
 removeMonitor :: RawId -> IO ()
 removeMonitor eventMonitor =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "removeMonitor:") retVoid [argPtr (castPtr (unRawId eventMonitor) :: Ptr ())]
+    sendClassMessage cls' removeMonitorSelector eventMonitor
 
 -- | @- type@
 type_ :: IsNSEvent nsEvent => nsEvent -> IO NSEventType
-type_ nsEvent  =
-    fmap (coerce :: CULong -> NSEventType) $ sendMsg nsEvent (mkSelector "type") retCULong []
+type_ nsEvent =
+  sendMessage nsEvent typeSelector
 
 -- | @- modifierFlags@
 modifierFlags :: IsNSEvent nsEvent => nsEvent -> IO NSEventModifierFlags
-modifierFlags nsEvent  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg nsEvent (mkSelector "modifierFlags") retCULong []
+modifierFlags nsEvent =
+  sendMessage nsEvent modifierFlagsSelector
 
 -- | @- timestamp@
 timestamp :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-timestamp nsEvent  =
-    sendMsg nsEvent (mkSelector "timestamp") retCDouble []
+timestamp nsEvent =
+  sendMessage nsEvent timestampSelector
 
 -- | @- window@
 window :: IsNSEvent nsEvent => nsEvent -> IO (Id NSWindow)
-window nsEvent  =
-    sendMsg nsEvent (mkSelector "window") (retPtr retVoid) [] >>= retainedObject . castPtr
+window nsEvent =
+  sendMessage nsEvent windowSelector
 
 -- | @- windowNumber@
 windowNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
-windowNumber nsEvent  =
-    sendMsg nsEvent (mkSelector "windowNumber") retCLong []
+windowNumber nsEvent =
+  sendMessage nsEvent windowNumberSelector
 
 -- | @- context@
 context :: IsNSEvent nsEvent => nsEvent -> IO (Id NSGraphicsContext)
-context nsEvent  =
-    sendMsg nsEvent (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context nsEvent =
+  sendMessage nsEvent contextSelector
 
 -- | @- clickCount@
 clickCount :: IsNSEvent nsEvent => nsEvent -> IO CLong
-clickCount nsEvent  =
-    sendMsg nsEvent (mkSelector "clickCount") retCLong []
+clickCount nsEvent =
+  sendMessage nsEvent clickCountSelector
 
 -- | @- buttonNumber@
 buttonNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
-buttonNumber nsEvent  =
-    sendMsg nsEvent (mkSelector "buttonNumber") retCLong []
+buttonNumber nsEvent =
+  sendMessage nsEvent buttonNumberSelector
 
 -- | @- eventNumber@
 eventNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
-eventNumber nsEvent  =
-    sendMsg nsEvent (mkSelector "eventNumber") retCLong []
+eventNumber nsEvent =
+  sendMessage nsEvent eventNumberSelector
 
 -- | @- pressure@
 pressure :: IsNSEvent nsEvent => nsEvent -> IO CFloat
-pressure nsEvent  =
-    sendMsg nsEvent (mkSelector "pressure") retCFloat []
+pressure nsEvent =
+  sendMessage nsEvent pressureSelector
 
 -- | @- locationInWindow@
 locationInWindow :: IsNSEvent nsEvent => nsEvent -> IO NSPoint
-locationInWindow nsEvent  =
-    sendMsgStret nsEvent (mkSelector "locationInWindow") retNSPoint []
+locationInWindow nsEvent =
+  sendMessage nsEvent locationInWindowSelector
 
 -- | @- deltaX@
 deltaX :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-deltaX nsEvent  =
-    sendMsg nsEvent (mkSelector "deltaX") retCDouble []
+deltaX nsEvent =
+  sendMessage nsEvent deltaXSelector
 
 -- | @- deltaY@
 deltaY :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-deltaY nsEvent  =
-    sendMsg nsEvent (mkSelector "deltaY") retCDouble []
+deltaY nsEvent =
+  sendMessage nsEvent deltaYSelector
 
 -- | @- deltaZ@
 deltaZ :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-deltaZ nsEvent  =
-    sendMsg nsEvent (mkSelector "deltaZ") retCDouble []
+deltaZ nsEvent =
+  sendMessage nsEvent deltaZSelector
 
 -- | @- hasPreciseScrollingDeltas@
 hasPreciseScrollingDeltas :: IsNSEvent nsEvent => nsEvent -> IO Bool
-hasPreciseScrollingDeltas nsEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsEvent (mkSelector "hasPreciseScrollingDeltas") retCULong []
+hasPreciseScrollingDeltas nsEvent =
+  sendMessage nsEvent hasPreciseScrollingDeltasSelector
 
 -- | @- scrollingDeltaX@
 scrollingDeltaX :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-scrollingDeltaX nsEvent  =
-    sendMsg nsEvent (mkSelector "scrollingDeltaX") retCDouble []
+scrollingDeltaX nsEvent =
+  sendMessage nsEvent scrollingDeltaXSelector
 
 -- | @- scrollingDeltaY@
 scrollingDeltaY :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-scrollingDeltaY nsEvent  =
-    sendMsg nsEvent (mkSelector "scrollingDeltaY") retCDouble []
+scrollingDeltaY nsEvent =
+  sendMessage nsEvent scrollingDeltaYSelector
 
 -- | @- momentumPhase@
 momentumPhase :: IsNSEvent nsEvent => nsEvent -> IO NSEventPhase
-momentumPhase nsEvent  =
-    fmap (coerce :: CULong -> NSEventPhase) $ sendMsg nsEvent (mkSelector "momentumPhase") retCULong []
+momentumPhase nsEvent =
+  sendMessage nsEvent momentumPhaseSelector
 
 -- | @- directionInvertedFromDevice@
 directionInvertedFromDevice :: IsNSEvent nsEvent => nsEvent -> IO Bool
-directionInvertedFromDevice nsEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsEvent (mkSelector "directionInvertedFromDevice") retCULong []
+directionInvertedFromDevice nsEvent =
+  sendMessage nsEvent directionInvertedFromDeviceSelector
 
 -- | @- characters@
 characters :: IsNSEvent nsEvent => nsEvent -> IO (Id NSString)
-characters nsEvent  =
-    sendMsg nsEvent (mkSelector "characters") (retPtr retVoid) [] >>= retainedObject . castPtr
+characters nsEvent =
+  sendMessage nsEvent charactersSelector
 
 -- | @- charactersIgnoringModifiers@
 charactersIgnoringModifiers :: IsNSEvent nsEvent => nsEvent -> IO (Id NSString)
-charactersIgnoringModifiers nsEvent  =
-    sendMsg nsEvent (mkSelector "charactersIgnoringModifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+charactersIgnoringModifiers nsEvent =
+  sendMessage nsEvent charactersIgnoringModifiersSelector
 
 -- | @- ARepeat@
 aRepeat :: IsNSEvent nsEvent => nsEvent -> IO Bool
-aRepeat nsEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsEvent (mkSelector "ARepeat") retCULong []
+aRepeat nsEvent =
+  sendMessage nsEvent aRepeatSelector
 
 -- | @- keyCode@
 keyCode :: IsNSEvent nsEvent => nsEvent -> IO CUShort
-keyCode nsEvent  =
-    fmap fromIntegral $ sendMsg nsEvent (mkSelector "keyCode") retCUInt []
+keyCode nsEvent =
+  sendMessage nsEvent keyCodeSelector
 
 -- | @- trackingNumber@
 trackingNumber :: IsNSEvent nsEvent => nsEvent -> IO CLong
-trackingNumber nsEvent  =
-    sendMsg nsEvent (mkSelector "trackingNumber") retCLong []
+trackingNumber nsEvent =
+  sendMessage nsEvent trackingNumberSelector
 
 -- | @- userData@
 userData :: IsNSEvent nsEvent => nsEvent -> IO (Ptr ())
-userData nsEvent  =
-    fmap castPtr $ sendMsg nsEvent (mkSelector "userData") (retPtr retVoid) []
+userData nsEvent =
+  sendMessage nsEvent userDataSelector
 
 -- | @- trackingArea@
 trackingArea :: IsNSEvent nsEvent => nsEvent -> IO (Id NSTrackingArea)
-trackingArea nsEvent  =
-    sendMsg nsEvent (mkSelector "trackingArea") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackingArea nsEvent =
+  sendMessage nsEvent trackingAreaSelector
 
 -- | @- subtype@
 subtype :: IsNSEvent nsEvent => nsEvent -> IO NSEventSubtype
-subtype nsEvent  =
-    fmap (NSEventSubtype . fromIntegral :: CInt -> NSEventSubtype) $ sendMsg nsEvent (mkSelector "subtype") retCInt []
+subtype nsEvent =
+  sendMessage nsEvent subtypeSelector
 
 -- | @- data1@
 data1 :: IsNSEvent nsEvent => nsEvent -> IO CLong
-data1 nsEvent  =
-    sendMsg nsEvent (mkSelector "data1") retCLong []
+data1 nsEvent =
+  sendMessage nsEvent data1Selector
 
 -- | @- data2@
 data2 :: IsNSEvent nsEvent => nsEvent -> IO CLong
-data2 nsEvent  =
-    sendMsg nsEvent (mkSelector "data2") retCLong []
+data2 nsEvent =
+  sendMessage nsEvent data2Selector
 
 -- | @- eventRef@
 eventRef :: IsNSEvent nsEvent => nsEvent -> IO RawId
-eventRef nsEvent  =
-    fmap (RawId . castPtr) $ sendMsg nsEvent (mkSelector "eventRef") (retPtr retVoid) []
+eventRef nsEvent =
+  sendMessage nsEvent eventRefSelector
 
 -- | @- CGEvent@
 cgEvent :: IsNSEvent nsEvent => nsEvent -> IO (Ptr ())
-cgEvent nsEvent  =
-    fmap castPtr $ sendMsg nsEvent (mkSelector "CGEvent") (retPtr retVoid) []
+cgEvent nsEvent =
+  sendMessage nsEvent cgEventSelector
 
 -- | @+ mouseCoalescingEnabled@
 mouseCoalescingEnabled :: IO Bool
 mouseCoalescingEnabled  =
   do
     cls' <- getRequiredClass "NSEvent"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "mouseCoalescingEnabled") retCULong []
+    sendClassMessage cls' mouseCoalescingEnabledSelector
 
 -- | @+ setMouseCoalescingEnabled:@
 setMouseCoalescingEnabled :: Bool -> IO ()
 setMouseCoalescingEnabled value =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "setMouseCoalescingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setMouseCoalescingEnabledSelector value
 
 -- | @- magnification@
 magnification :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-magnification nsEvent  =
-    sendMsg nsEvent (mkSelector "magnification") retCDouble []
+magnification nsEvent =
+  sendMessage nsEvent magnificationSelector
 
 -- | @- deviceID@
 deviceID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-deviceID nsEvent  =
-    sendMsg nsEvent (mkSelector "deviceID") retCULong []
+deviceID nsEvent =
+  sendMessage nsEvent deviceIDSelector
 
 -- | @- rotation@
 rotation :: IsNSEvent nsEvent => nsEvent -> IO CFloat
-rotation nsEvent  =
-    sendMsg nsEvent (mkSelector "rotation") retCFloat []
+rotation nsEvent =
+  sendMessage nsEvent rotationSelector
 
 -- | @- absoluteX@
 absoluteX :: IsNSEvent nsEvent => nsEvent -> IO CLong
-absoluteX nsEvent  =
-    sendMsg nsEvent (mkSelector "absoluteX") retCLong []
+absoluteX nsEvent =
+  sendMessage nsEvent absoluteXSelector
 
 -- | @- absoluteY@
 absoluteY :: IsNSEvent nsEvent => nsEvent -> IO CLong
-absoluteY nsEvent  =
-    sendMsg nsEvent (mkSelector "absoluteY") retCLong []
+absoluteY nsEvent =
+  sendMessage nsEvent absoluteYSelector
 
 -- | @- absoluteZ@
 absoluteZ :: IsNSEvent nsEvent => nsEvent -> IO CLong
-absoluteZ nsEvent  =
-    sendMsg nsEvent (mkSelector "absoluteZ") retCLong []
+absoluteZ nsEvent =
+  sendMessage nsEvent absoluteZSelector
 
 -- | @- buttonMask@
 buttonMask :: IsNSEvent nsEvent => nsEvent -> IO NSEventButtonMask
-buttonMask nsEvent  =
-    fmap (coerce :: CULong -> NSEventButtonMask) $ sendMsg nsEvent (mkSelector "buttonMask") retCULong []
+buttonMask nsEvent =
+  sendMessage nsEvent buttonMaskSelector
 
 -- | @- tilt@
 tilt :: IsNSEvent nsEvent => nsEvent -> IO NSPoint
-tilt nsEvent  =
-    sendMsgStret nsEvent (mkSelector "tilt") retNSPoint []
+tilt nsEvent =
+  sendMessage nsEvent tiltSelector
 
 -- | @- tangentialPressure@
 tangentialPressure :: IsNSEvent nsEvent => nsEvent -> IO CFloat
-tangentialPressure nsEvent  =
-    sendMsg nsEvent (mkSelector "tangentialPressure") retCFloat []
+tangentialPressure nsEvent =
+  sendMessage nsEvent tangentialPressureSelector
 
 -- | @- vendorDefined@
 vendorDefined :: IsNSEvent nsEvent => nsEvent -> IO RawId
-vendorDefined nsEvent  =
-    fmap (RawId . castPtr) $ sendMsg nsEvent (mkSelector "vendorDefined") (retPtr retVoid) []
+vendorDefined nsEvent =
+  sendMessage nsEvent vendorDefinedSelector
 
 -- | @- vendorID@
 vendorID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-vendorID nsEvent  =
-    sendMsg nsEvent (mkSelector "vendorID") retCULong []
+vendorID nsEvent =
+  sendMessage nsEvent vendorIDSelector
 
 -- | @- tabletID@
 tabletID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-tabletID nsEvent  =
-    sendMsg nsEvent (mkSelector "tabletID") retCULong []
+tabletID nsEvent =
+  sendMessage nsEvent tabletIDSelector
 
 -- | @- pointingDeviceID@
 pointingDeviceID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-pointingDeviceID nsEvent  =
-    sendMsg nsEvent (mkSelector "pointingDeviceID") retCULong []
+pointingDeviceID nsEvent =
+  sendMessage nsEvent pointingDeviceIDSelector
 
 -- | @- systemTabletID@
 systemTabletID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-systemTabletID nsEvent  =
-    sendMsg nsEvent (mkSelector "systemTabletID") retCULong []
+systemTabletID nsEvent =
+  sendMessage nsEvent systemTabletIDSelector
 
 -- | @- vendorPointingDeviceType@
 vendorPointingDeviceType :: IsNSEvent nsEvent => nsEvent -> IO CULong
-vendorPointingDeviceType nsEvent  =
-    sendMsg nsEvent (mkSelector "vendorPointingDeviceType") retCULong []
+vendorPointingDeviceType nsEvent =
+  sendMessage nsEvent vendorPointingDeviceTypeSelector
 
 -- | @- pointingDeviceSerialNumber@
 pointingDeviceSerialNumber :: IsNSEvent nsEvent => nsEvent -> IO CULong
-pointingDeviceSerialNumber nsEvent  =
-    sendMsg nsEvent (mkSelector "pointingDeviceSerialNumber") retCULong []
+pointingDeviceSerialNumber nsEvent =
+  sendMessage nsEvent pointingDeviceSerialNumberSelector
 
 -- | @- uniqueID@
 uniqueID :: IsNSEvent nsEvent => nsEvent -> IO CULong
-uniqueID nsEvent  =
-    sendMsg nsEvent (mkSelector "uniqueID") retCULong []
+uniqueID nsEvent =
+  sendMessage nsEvent uniqueIDSelector
 
 -- | @- capabilityMask@
 capabilityMask :: IsNSEvent nsEvent => nsEvent -> IO CULong
-capabilityMask nsEvent  =
-    sendMsg nsEvent (mkSelector "capabilityMask") retCULong []
+capabilityMask nsEvent =
+  sendMessage nsEvent capabilityMaskSelector
 
 -- | @- pointingDeviceType@
 pointingDeviceType :: IsNSEvent nsEvent => nsEvent -> IO NSPointingDeviceType
-pointingDeviceType nsEvent  =
-    fmap (coerce :: CULong -> NSPointingDeviceType) $ sendMsg nsEvent (mkSelector "pointingDeviceType") retCULong []
+pointingDeviceType nsEvent =
+  sendMessage nsEvent pointingDeviceTypeSelector
 
 -- | @- enteringProximity@
 enteringProximity :: IsNSEvent nsEvent => nsEvent -> IO Bool
-enteringProximity nsEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsEvent (mkSelector "enteringProximity") retCULong []
+enteringProximity nsEvent =
+  sendMessage nsEvent enteringProximitySelector
 
 -- | @- phase@
 phase :: IsNSEvent nsEvent => nsEvent -> IO NSEventPhase
-phase nsEvent  =
-    fmap (coerce :: CULong -> NSEventPhase) $ sendMsg nsEvent (mkSelector "phase") retCULong []
+phase nsEvent =
+  sendMessage nsEvent phaseSelector
 
 -- | @- stage@
 stage :: IsNSEvent nsEvent => nsEvent -> IO CLong
-stage nsEvent  =
-    sendMsg nsEvent (mkSelector "stage") retCLong []
+stage nsEvent =
+  sendMessage nsEvent stageSelector
 
 -- | @- stageTransition@
 stageTransition :: IsNSEvent nsEvent => nsEvent -> IO CDouble
-stageTransition nsEvent  =
-    sendMsg nsEvent (mkSelector "stageTransition") retCDouble []
+stageTransition nsEvent =
+  sendMessage nsEvent stageTransitionSelector
 
 -- | @- associatedEventsMask@
 associatedEventsMask :: IsNSEvent nsEvent => nsEvent -> IO NSEventMask
-associatedEventsMask nsEvent  =
-    fmap (coerce :: CULong -> NSEventMask) $ sendMsg nsEvent (mkSelector "associatedEventsMask") retCULong []
+associatedEventsMask nsEvent =
+  sendMessage nsEvent associatedEventsMaskSelector
 
 -- | @- pressureBehavior@
 pressureBehavior :: IsNSEvent nsEvent => nsEvent -> IO NSPressureBehavior
-pressureBehavior nsEvent  =
-    fmap (coerce :: CLong -> NSPressureBehavior) $ sendMsg nsEvent (mkSelector "pressureBehavior") retCLong []
+pressureBehavior nsEvent =
+  sendMessage nsEvent pressureBehaviorSelector
 
 -- | @+ swipeTrackingFromScrollEventsEnabled@
 swipeTrackingFromScrollEventsEnabled :: IO Bool
 swipeTrackingFromScrollEventsEnabled  =
   do
     cls' <- getRequiredClass "NSEvent"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "swipeTrackingFromScrollEventsEnabled") retCULong []
+    sendClassMessage cls' swipeTrackingFromScrollEventsEnabledSelector
 
 -- | @+ mouseLocation@
 mouseLocation :: IO NSPoint
 mouseLocation  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsgStret cls' (mkSelector "mouseLocation") retNSPoint []
+    sendClassMessage cls' mouseLocationSelector
 
 -- | @+ modifierFlags@
 nsEventModifierFlags :: IO NSEventModifierFlags
 nsEventModifierFlags  =
   do
     cls' <- getRequiredClass "NSEvent"
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendClassMsg cls' (mkSelector "modifierFlags") retCULong []
+    sendClassMessage cls' nsEventModifierFlagsSelector
 
 -- | @+ pressedMouseButtons@
 pressedMouseButtons :: IO CULong
 pressedMouseButtons  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "pressedMouseButtons") retCULong []
+    sendClassMessage cls' pressedMouseButtonsSelector
 
 -- | @+ doubleClickInterval@
 doubleClickInterval :: IO CDouble
 doubleClickInterval  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "doubleClickInterval") retCDouble []
+    sendClassMessage cls' doubleClickIntervalSelector
 
 -- | @+ keyRepeatDelay@
 keyRepeatDelay :: IO CDouble
 keyRepeatDelay  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "keyRepeatDelay") retCDouble []
+    sendClassMessage cls' keyRepeatDelaySelector
 
 -- | @+ keyRepeatInterval@
 keyRepeatInterval :: IO CDouble
 keyRepeatInterval  =
   do
     cls' <- getRequiredClass "NSEvent"
-    sendClassMsg cls' (mkSelector "keyRepeatInterval") retCDouble []
+    sendClassMessage cls' keyRepeatIntervalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @charactersByApplyingModifiers:@
-charactersByApplyingModifiersSelector :: Selector
+charactersByApplyingModifiersSelector :: Selector '[NSEventModifierFlags] (Id NSString)
 charactersByApplyingModifiersSelector = mkSelector "charactersByApplyingModifiers:"
 
 -- | @Selector@ for @eventWithEventRef:@
-eventWithEventRefSelector :: Selector
+eventWithEventRefSelector :: Selector '[Const (Ptr ())] (Id NSEvent)
 eventWithEventRefSelector = mkSelector "eventWithEventRef:"
 
 -- | @Selector@ for @eventWithCGEvent:@
-eventWithCGEventSelector :: Selector
+eventWithCGEventSelector :: Selector '[Ptr ()] (Id NSEvent)
 eventWithCGEventSelector = mkSelector "eventWithCGEvent:"
 
 -- | @Selector@ for @touchesMatchingPhase:inView:@
-touchesMatchingPhase_inViewSelector :: Selector
+touchesMatchingPhase_inViewSelector :: Selector '[NSTouchPhase, Id NSView] (Id NSSet)
 touchesMatchingPhase_inViewSelector = mkSelector "touchesMatchingPhase:inView:"
 
 -- | @Selector@ for @allTouches@
-allTouchesSelector :: Selector
+allTouchesSelector :: Selector '[] (Id NSSet)
 allTouchesSelector = mkSelector "allTouches"
 
 -- | @Selector@ for @touchesForView:@
-touchesForViewSelector :: Selector
+touchesForViewSelector :: Selector '[Id NSView] (Id NSSet)
 touchesForViewSelector = mkSelector "touchesForView:"
 
 -- | @Selector@ for @coalescedTouchesForTouch:@
-coalescedTouchesForTouchSelector :: Selector
+coalescedTouchesForTouchSelector :: Selector '[Id NSTouch] (Id NSArray)
 coalescedTouchesForTouchSelector = mkSelector "coalescedTouchesForTouch:"
 
 -- | @Selector@ for @trackSwipeEventWithOptions:dampenAmountThresholdMin:max:usingHandler:@
-trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector :: Selector
+trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector :: Selector '[NSEventSwipeTrackingOptions, CDouble, CDouble, Ptr ()] ()
 trackSwipeEventWithOptions_dampenAmountThresholdMin_max_usingHandlerSelector = mkSelector "trackSwipeEventWithOptions:dampenAmountThresholdMin:max:usingHandler:"
 
 -- | @Selector@ for @startPeriodicEventsAfterDelay:withPeriod:@
-startPeriodicEventsAfterDelay_withPeriodSelector :: Selector
+startPeriodicEventsAfterDelay_withPeriodSelector :: Selector '[CDouble, CDouble] ()
 startPeriodicEventsAfterDelay_withPeriodSelector = mkSelector "startPeriodicEventsAfterDelay:withPeriod:"
 
 -- | @Selector@ for @stopPeriodicEvents@
-stopPeriodicEventsSelector :: Selector
+stopPeriodicEventsSelector :: Selector '[] ()
 stopPeriodicEventsSelector = mkSelector "stopPeriodicEvents"
 
 -- | @Selector@ for @mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:@
-mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector :: Selector
+mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector :: Selector '[NSEventType, NSPoint, NSEventModifierFlags, CDouble, CLong, Id NSGraphicsContext, CLong, CLong, CFloat] (Id NSEvent)
 mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressureSelector = mkSelector "mouseEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:clickCount:pressure:"
 
 -- | @Selector@ for @keyEventWithType:location:modifierFlags:timestamp:windowNumber:context:characters:charactersIgnoringModifiers:isARepeat:keyCode:@
-keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector :: Selector
+keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector :: Selector '[NSEventType, NSPoint, NSEventModifierFlags, CDouble, CLong, Id NSGraphicsContext, Id NSString, Id NSString, Bool, CUShort] (Id NSEvent)
 keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCodeSelector = mkSelector "keyEventWithType:location:modifierFlags:timestamp:windowNumber:context:characters:charactersIgnoringModifiers:isARepeat:keyCode:"
 
 -- | @Selector@ for @enterExitEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:trackingNumber:userData:@
-enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector :: Selector
+enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector :: Selector '[NSEventType, NSPoint, NSEventModifierFlags, CDouble, CLong, Id NSGraphicsContext, CLong, CLong, Ptr ()] (Id NSEvent)
 enterExitEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_trackingNumber_userDataSelector = mkSelector "enterExitEventWithType:location:modifierFlags:timestamp:windowNumber:context:eventNumber:trackingNumber:userData:"
 
 -- | @Selector@ for @otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:@
-otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector :: Selector
+otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector :: Selector '[NSEventType, NSPoint, NSEventModifierFlags, CDouble, CLong, Id NSGraphicsContext, CShort, CLong, CLong] (Id NSEvent)
 otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2Selector = mkSelector "otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:"
 
 -- | @Selector@ for @addGlobalMonitorForEventsMatchingMask:handler:@
-addGlobalMonitorForEventsMatchingMask_handlerSelector :: Selector
+addGlobalMonitorForEventsMatchingMask_handlerSelector :: Selector '[NSEventMask, Ptr ()] RawId
 addGlobalMonitorForEventsMatchingMask_handlerSelector = mkSelector "addGlobalMonitorForEventsMatchingMask:handler:"
 
 -- | @Selector@ for @addLocalMonitorForEventsMatchingMask:handler:@
-addLocalMonitorForEventsMatchingMask_handlerSelector :: Selector
+addLocalMonitorForEventsMatchingMask_handlerSelector :: Selector '[NSEventMask, Ptr ()] RawId
 addLocalMonitorForEventsMatchingMask_handlerSelector = mkSelector "addLocalMonitorForEventsMatchingMask:handler:"
 
 -- | @Selector@ for @removeMonitor:@
-removeMonitorSelector :: Selector
+removeMonitorSelector :: Selector '[RawId] ()
 removeMonitorSelector = mkSelector "removeMonitor:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] NSEventType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @modifierFlags@
-modifierFlagsSelector :: Selector
+modifierFlagsSelector :: Selector '[] NSEventModifierFlags
 modifierFlagsSelector = mkSelector "modifierFlags"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] CDouble
 timestampSelector = mkSelector "timestamp"
 
 -- | @Selector@ for @window@
-windowSelector :: Selector
+windowSelector :: Selector '[] (Id NSWindow)
 windowSelector = mkSelector "window"
 
 -- | @Selector@ for @windowNumber@
-windowNumberSelector :: Selector
+windowNumberSelector :: Selector '[] CLong
 windowNumberSelector = mkSelector "windowNumber"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id NSGraphicsContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @clickCount@
-clickCountSelector :: Selector
+clickCountSelector :: Selector '[] CLong
 clickCountSelector = mkSelector "clickCount"
 
 -- | @Selector@ for @buttonNumber@
-buttonNumberSelector :: Selector
+buttonNumberSelector :: Selector '[] CLong
 buttonNumberSelector = mkSelector "buttonNumber"
 
 -- | @Selector@ for @eventNumber@
-eventNumberSelector :: Selector
+eventNumberSelector :: Selector '[] CLong
 eventNumberSelector = mkSelector "eventNumber"
 
 -- | @Selector@ for @pressure@
-pressureSelector :: Selector
+pressureSelector :: Selector '[] CFloat
 pressureSelector = mkSelector "pressure"
 
 -- | @Selector@ for @locationInWindow@
-locationInWindowSelector :: Selector
+locationInWindowSelector :: Selector '[] NSPoint
 locationInWindowSelector = mkSelector "locationInWindow"
 
 -- | @Selector@ for @deltaX@
-deltaXSelector :: Selector
+deltaXSelector :: Selector '[] CDouble
 deltaXSelector = mkSelector "deltaX"
 
 -- | @Selector@ for @deltaY@
-deltaYSelector :: Selector
+deltaYSelector :: Selector '[] CDouble
 deltaYSelector = mkSelector "deltaY"
 
 -- | @Selector@ for @deltaZ@
-deltaZSelector :: Selector
+deltaZSelector :: Selector '[] CDouble
 deltaZSelector = mkSelector "deltaZ"
 
 -- | @Selector@ for @hasPreciseScrollingDeltas@
-hasPreciseScrollingDeltasSelector :: Selector
+hasPreciseScrollingDeltasSelector :: Selector '[] Bool
 hasPreciseScrollingDeltasSelector = mkSelector "hasPreciseScrollingDeltas"
 
 -- | @Selector@ for @scrollingDeltaX@
-scrollingDeltaXSelector :: Selector
+scrollingDeltaXSelector :: Selector '[] CDouble
 scrollingDeltaXSelector = mkSelector "scrollingDeltaX"
 
 -- | @Selector@ for @scrollingDeltaY@
-scrollingDeltaYSelector :: Selector
+scrollingDeltaYSelector :: Selector '[] CDouble
 scrollingDeltaYSelector = mkSelector "scrollingDeltaY"
 
 -- | @Selector@ for @momentumPhase@
-momentumPhaseSelector :: Selector
+momentumPhaseSelector :: Selector '[] NSEventPhase
 momentumPhaseSelector = mkSelector "momentumPhase"
 
 -- | @Selector@ for @directionInvertedFromDevice@
-directionInvertedFromDeviceSelector :: Selector
+directionInvertedFromDeviceSelector :: Selector '[] Bool
 directionInvertedFromDeviceSelector = mkSelector "directionInvertedFromDevice"
 
 -- | @Selector@ for @characters@
-charactersSelector :: Selector
+charactersSelector :: Selector '[] (Id NSString)
 charactersSelector = mkSelector "characters"
 
 -- | @Selector@ for @charactersIgnoringModifiers@
-charactersIgnoringModifiersSelector :: Selector
+charactersIgnoringModifiersSelector :: Selector '[] (Id NSString)
 charactersIgnoringModifiersSelector = mkSelector "charactersIgnoringModifiers"
 
 -- | @Selector@ for @ARepeat@
-aRepeatSelector :: Selector
+aRepeatSelector :: Selector '[] Bool
 aRepeatSelector = mkSelector "ARepeat"
 
 -- | @Selector@ for @keyCode@
-keyCodeSelector :: Selector
+keyCodeSelector :: Selector '[] CUShort
 keyCodeSelector = mkSelector "keyCode"
 
 -- | @Selector@ for @trackingNumber@
-trackingNumberSelector :: Selector
+trackingNumberSelector :: Selector '[] CLong
 trackingNumberSelector = mkSelector "trackingNumber"
 
 -- | @Selector@ for @userData@
-userDataSelector :: Selector
+userDataSelector :: Selector '[] (Ptr ())
 userDataSelector = mkSelector "userData"
 
 -- | @Selector@ for @trackingArea@
-trackingAreaSelector :: Selector
+trackingAreaSelector :: Selector '[] (Id NSTrackingArea)
 trackingAreaSelector = mkSelector "trackingArea"
 
 -- | @Selector@ for @subtype@
-subtypeSelector :: Selector
+subtypeSelector :: Selector '[] NSEventSubtype
 subtypeSelector = mkSelector "subtype"
 
 -- | @Selector@ for @data1@
-data1Selector :: Selector
+data1Selector :: Selector '[] CLong
 data1Selector = mkSelector "data1"
 
 -- | @Selector@ for @data2@
-data2Selector :: Selector
+data2Selector :: Selector '[] CLong
 data2Selector = mkSelector "data2"
 
 -- | @Selector@ for @eventRef@
-eventRefSelector :: Selector
+eventRefSelector :: Selector '[] RawId
 eventRefSelector = mkSelector "eventRef"
 
 -- | @Selector@ for @CGEvent@
-cgEventSelector :: Selector
+cgEventSelector :: Selector '[] (Ptr ())
 cgEventSelector = mkSelector "CGEvent"
 
 -- | @Selector@ for @mouseCoalescingEnabled@
-mouseCoalescingEnabledSelector :: Selector
+mouseCoalescingEnabledSelector :: Selector '[] Bool
 mouseCoalescingEnabledSelector = mkSelector "mouseCoalescingEnabled"
 
 -- | @Selector@ for @setMouseCoalescingEnabled:@
-setMouseCoalescingEnabledSelector :: Selector
+setMouseCoalescingEnabledSelector :: Selector '[Bool] ()
 setMouseCoalescingEnabledSelector = mkSelector "setMouseCoalescingEnabled:"
 
 -- | @Selector@ for @magnification@
-magnificationSelector :: Selector
+magnificationSelector :: Selector '[] CDouble
 magnificationSelector = mkSelector "magnification"
 
 -- | @Selector@ for @deviceID@
-deviceIDSelector :: Selector
+deviceIDSelector :: Selector '[] CULong
 deviceIDSelector = mkSelector "deviceID"
 
 -- | @Selector@ for @rotation@
-rotationSelector :: Selector
+rotationSelector :: Selector '[] CFloat
 rotationSelector = mkSelector "rotation"
 
 -- | @Selector@ for @absoluteX@
-absoluteXSelector :: Selector
+absoluteXSelector :: Selector '[] CLong
 absoluteXSelector = mkSelector "absoluteX"
 
 -- | @Selector@ for @absoluteY@
-absoluteYSelector :: Selector
+absoluteYSelector :: Selector '[] CLong
 absoluteYSelector = mkSelector "absoluteY"
 
 -- | @Selector@ for @absoluteZ@
-absoluteZSelector :: Selector
+absoluteZSelector :: Selector '[] CLong
 absoluteZSelector = mkSelector "absoluteZ"
 
 -- | @Selector@ for @buttonMask@
-buttonMaskSelector :: Selector
+buttonMaskSelector :: Selector '[] NSEventButtonMask
 buttonMaskSelector = mkSelector "buttonMask"
 
 -- | @Selector@ for @tilt@
-tiltSelector :: Selector
+tiltSelector :: Selector '[] NSPoint
 tiltSelector = mkSelector "tilt"
 
 -- | @Selector@ for @tangentialPressure@
-tangentialPressureSelector :: Selector
+tangentialPressureSelector :: Selector '[] CFloat
 tangentialPressureSelector = mkSelector "tangentialPressure"
 
 -- | @Selector@ for @vendorDefined@
-vendorDefinedSelector :: Selector
+vendorDefinedSelector :: Selector '[] RawId
 vendorDefinedSelector = mkSelector "vendorDefined"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] CULong
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @tabletID@
-tabletIDSelector :: Selector
+tabletIDSelector :: Selector '[] CULong
 tabletIDSelector = mkSelector "tabletID"
 
 -- | @Selector@ for @pointingDeviceID@
-pointingDeviceIDSelector :: Selector
+pointingDeviceIDSelector :: Selector '[] CULong
 pointingDeviceIDSelector = mkSelector "pointingDeviceID"
 
 -- | @Selector@ for @systemTabletID@
-systemTabletIDSelector :: Selector
+systemTabletIDSelector :: Selector '[] CULong
 systemTabletIDSelector = mkSelector "systemTabletID"
 
 -- | @Selector@ for @vendorPointingDeviceType@
-vendorPointingDeviceTypeSelector :: Selector
+vendorPointingDeviceTypeSelector :: Selector '[] CULong
 vendorPointingDeviceTypeSelector = mkSelector "vendorPointingDeviceType"
 
 -- | @Selector@ for @pointingDeviceSerialNumber@
-pointingDeviceSerialNumberSelector :: Selector
+pointingDeviceSerialNumberSelector :: Selector '[] CULong
 pointingDeviceSerialNumberSelector = mkSelector "pointingDeviceSerialNumber"
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] CULong
 uniqueIDSelector = mkSelector "uniqueID"
 
 -- | @Selector@ for @capabilityMask@
-capabilityMaskSelector :: Selector
+capabilityMaskSelector :: Selector '[] CULong
 capabilityMaskSelector = mkSelector "capabilityMask"
 
 -- | @Selector@ for @pointingDeviceType@
-pointingDeviceTypeSelector :: Selector
+pointingDeviceTypeSelector :: Selector '[] NSPointingDeviceType
 pointingDeviceTypeSelector = mkSelector "pointingDeviceType"
 
 -- | @Selector@ for @enteringProximity@
-enteringProximitySelector :: Selector
+enteringProximitySelector :: Selector '[] Bool
 enteringProximitySelector = mkSelector "enteringProximity"
 
 -- | @Selector@ for @phase@
-phaseSelector :: Selector
+phaseSelector :: Selector '[] NSEventPhase
 phaseSelector = mkSelector "phase"
 
 -- | @Selector@ for @stage@
-stageSelector :: Selector
+stageSelector :: Selector '[] CLong
 stageSelector = mkSelector "stage"
 
 -- | @Selector@ for @stageTransition@
-stageTransitionSelector :: Selector
+stageTransitionSelector :: Selector '[] CDouble
 stageTransitionSelector = mkSelector "stageTransition"
 
 -- | @Selector@ for @associatedEventsMask@
-associatedEventsMaskSelector :: Selector
+associatedEventsMaskSelector :: Selector '[] NSEventMask
 associatedEventsMaskSelector = mkSelector "associatedEventsMask"
 
 -- | @Selector@ for @pressureBehavior@
-pressureBehaviorSelector :: Selector
+pressureBehaviorSelector :: Selector '[] NSPressureBehavior
 pressureBehaviorSelector = mkSelector "pressureBehavior"
 
 -- | @Selector@ for @swipeTrackingFromScrollEventsEnabled@
-swipeTrackingFromScrollEventsEnabledSelector :: Selector
+swipeTrackingFromScrollEventsEnabledSelector :: Selector '[] Bool
 swipeTrackingFromScrollEventsEnabledSelector = mkSelector "swipeTrackingFromScrollEventsEnabled"
 
 -- | @Selector@ for @mouseLocation@
-mouseLocationSelector :: Selector
+mouseLocationSelector :: Selector '[] NSPoint
 mouseLocationSelector = mkSelector "mouseLocation"
 
+-- | @Selector@ for @modifierFlags@
+nsEventModifierFlagsSelector :: Selector '[] NSEventModifierFlags
+nsEventModifierFlagsSelector = mkSelector "modifierFlags"
+
 -- | @Selector@ for @pressedMouseButtons@
-pressedMouseButtonsSelector :: Selector
+pressedMouseButtonsSelector :: Selector '[] CULong
 pressedMouseButtonsSelector = mkSelector "pressedMouseButtons"
 
 -- | @Selector@ for @doubleClickInterval@
-doubleClickIntervalSelector :: Selector
+doubleClickIntervalSelector :: Selector '[] CDouble
 doubleClickIntervalSelector = mkSelector "doubleClickInterval"
 
 -- | @Selector@ for @keyRepeatDelay@
-keyRepeatDelaySelector :: Selector
+keyRepeatDelaySelector :: Selector '[] CDouble
 keyRepeatDelaySelector = mkSelector "keyRepeatDelay"
 
 -- | @Selector@ for @keyRepeatInterval@
-keyRepeatIntervalSelector :: Selector
+keyRepeatIntervalSelector :: Selector '[] CDouble
 keyRepeatIntervalSelector = mkSelector "keyRepeatInterval"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Intents.INIntent
   , setShortcutAvailability
   , donationMetadata
   , setDonationMetadata
-  , setImage_forParameterNamedSelector
-  , imageForParameterNamedSelector
-  , keyImageSelector
+  , donationMetadataSelector
   , identifierSelector
+  , imageForParameterNamedSelector
   , intentDescriptionSelector
-  , suggestedInvocationPhraseSelector
+  , keyImageSelector
+  , setDonationMetadataSelector
+  , setImage_forParameterNamedSelector
+  , setShortcutAvailabilitySelector
   , setSuggestedInvocationPhraseSelector
   , shortcutAvailabilitySelector
-  , setShortcutAvailabilitySelector
-  , donationMetadataSelector
-  , setDonationMetadataSelector
+  , suggestedInvocationPhraseSelector
 
   -- * Enum types
   , INShortcutAvailabilityOptions(INShortcutAvailabilityOptions)
@@ -42,15 +43,11 @@ module ObjC.Intents.INIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,109 +57,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setImage:forParameterNamed:@
 setImage_forParameterNamed :: (IsINIntent inIntent, IsINImage image, IsNSString parameterName) => inIntent -> image -> parameterName -> IO ()
-setImage_forParameterNamed inIntent  image parameterName =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr parameterName $ \raw_parameterName ->
-        sendMsg inIntent (mkSelector "setImage:forParameterNamed:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_parameterName :: Ptr ())]
+setImage_forParameterNamed inIntent image parameterName =
+  sendMessage inIntent setImage_forParameterNamedSelector (toINImage image) (toNSString parameterName)
 
 -- | @- imageForParameterNamed:@
 imageForParameterNamed :: (IsINIntent inIntent, IsNSString parameterName) => inIntent -> parameterName -> IO (Id INImage)
-imageForParameterNamed inIntent  parameterName =
-  withObjCPtr parameterName $ \raw_parameterName ->
-      sendMsg inIntent (mkSelector "imageForParameterNamed:") (retPtr retVoid) [argPtr (castPtr raw_parameterName :: Ptr ())] >>= retainedObject . castPtr
+imageForParameterNamed inIntent parameterName =
+  sendMessage inIntent imageForParameterNamedSelector (toNSString parameterName)
 
 -- | @- keyImage@
 keyImage :: IsINIntent inIntent => inIntent -> IO (Id INImage)
-keyImage inIntent  =
-    sendMsg inIntent (mkSelector "keyImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyImage inIntent =
+  sendMessage inIntent keyImageSelector
 
 -- | @- identifier@
 identifier :: IsINIntent inIntent => inIntent -> IO (Id NSString)
-identifier inIntent  =
-    sendMsg inIntent (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier inIntent =
+  sendMessage inIntent identifierSelector
 
 -- | @- intentDescription@
 intentDescription :: IsINIntent inIntent => inIntent -> IO (Id NSString)
-intentDescription inIntent  =
-    sendMsg inIntent (mkSelector "intentDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+intentDescription inIntent =
+  sendMessage inIntent intentDescriptionSelector
 
 -- | @- suggestedInvocationPhrase@
 suggestedInvocationPhrase :: IsINIntent inIntent => inIntent -> IO (Id NSString)
-suggestedInvocationPhrase inIntent  =
-    sendMsg inIntent (mkSelector "suggestedInvocationPhrase") (retPtr retVoid) [] >>= retainedObject . castPtr
+suggestedInvocationPhrase inIntent =
+  sendMessage inIntent suggestedInvocationPhraseSelector
 
 -- | @- setSuggestedInvocationPhrase:@
 setSuggestedInvocationPhrase :: (IsINIntent inIntent, IsNSString value) => inIntent -> value -> IO ()
-setSuggestedInvocationPhrase inIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inIntent (mkSelector "setSuggestedInvocationPhrase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSuggestedInvocationPhrase inIntent value =
+  sendMessage inIntent setSuggestedInvocationPhraseSelector (toNSString value)
 
 -- | @- shortcutAvailability@
 shortcutAvailability :: IsINIntent inIntent => inIntent -> IO INShortcutAvailabilityOptions
-shortcutAvailability inIntent  =
-    fmap (coerce :: CULong -> INShortcutAvailabilityOptions) $ sendMsg inIntent (mkSelector "shortcutAvailability") retCULong []
+shortcutAvailability inIntent =
+  sendMessage inIntent shortcutAvailabilitySelector
 
 -- | @- setShortcutAvailability:@
 setShortcutAvailability :: IsINIntent inIntent => inIntent -> INShortcutAvailabilityOptions -> IO ()
-setShortcutAvailability inIntent  value =
-    sendMsg inIntent (mkSelector "setShortcutAvailability:") retVoid [argCULong (coerce value)]
+setShortcutAvailability inIntent value =
+  sendMessage inIntent setShortcutAvailabilitySelector value
 
 -- | @- donationMetadata@
 donationMetadata :: IsINIntent inIntent => inIntent -> IO (Id INIntentDonationMetadata)
-donationMetadata inIntent  =
-    sendMsg inIntent (mkSelector "donationMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+donationMetadata inIntent =
+  sendMessage inIntent donationMetadataSelector
 
 -- | @- setDonationMetadata:@
 setDonationMetadata :: (IsINIntent inIntent, IsINIntentDonationMetadata value) => inIntent -> value -> IO ()
-setDonationMetadata inIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inIntent (mkSelector "setDonationMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDonationMetadata inIntent value =
+  sendMessage inIntent setDonationMetadataSelector (toINIntentDonationMetadata value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setImage:forParameterNamed:@
-setImage_forParameterNamedSelector :: Selector
+setImage_forParameterNamedSelector :: Selector '[Id INImage, Id NSString] ()
 setImage_forParameterNamedSelector = mkSelector "setImage:forParameterNamed:"
 
 -- | @Selector@ for @imageForParameterNamed:@
-imageForParameterNamedSelector :: Selector
+imageForParameterNamedSelector :: Selector '[Id NSString] (Id INImage)
 imageForParameterNamedSelector = mkSelector "imageForParameterNamed:"
 
 -- | @Selector@ for @keyImage@
-keyImageSelector :: Selector
+keyImageSelector :: Selector '[] (Id INImage)
 keyImageSelector = mkSelector "keyImage"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @intentDescription@
-intentDescriptionSelector :: Selector
+intentDescriptionSelector :: Selector '[] (Id NSString)
 intentDescriptionSelector = mkSelector "intentDescription"
 
 -- | @Selector@ for @suggestedInvocationPhrase@
-suggestedInvocationPhraseSelector :: Selector
+suggestedInvocationPhraseSelector :: Selector '[] (Id NSString)
 suggestedInvocationPhraseSelector = mkSelector "suggestedInvocationPhrase"
 
 -- | @Selector@ for @setSuggestedInvocationPhrase:@
-setSuggestedInvocationPhraseSelector :: Selector
+setSuggestedInvocationPhraseSelector :: Selector '[Id NSString] ()
 setSuggestedInvocationPhraseSelector = mkSelector "setSuggestedInvocationPhrase:"
 
 -- | @Selector@ for @shortcutAvailability@
-shortcutAvailabilitySelector :: Selector
+shortcutAvailabilitySelector :: Selector '[] INShortcutAvailabilityOptions
 shortcutAvailabilitySelector = mkSelector "shortcutAvailability"
 
 -- | @Selector@ for @setShortcutAvailability:@
-setShortcutAvailabilitySelector :: Selector
+setShortcutAvailabilitySelector :: Selector '[INShortcutAvailabilityOptions] ()
 setShortcutAvailabilitySelector = mkSelector "setShortcutAvailability:"
 
 -- | @Selector@ for @donationMetadata@
-donationMetadataSelector :: Selector
+donationMetadataSelector :: Selector '[] (Id INIntentDonationMetadata)
 donationMetadataSelector = mkSelector "donationMetadata"
 
 -- | @Selector@ for @setDonationMetadata:@
-setDonationMetadataSelector :: Selector
+setDonationMetadataSelector :: Selector '[Id INIntentDonationMetadata] ()
 setDonationMetadataSelector = mkSelector "setDonationMetadata:"
 

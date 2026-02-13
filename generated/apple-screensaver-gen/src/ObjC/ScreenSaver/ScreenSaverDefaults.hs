@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.ScreenSaver.ScreenSaverDefaults
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,14 +37,13 @@ defaultsForModuleWithName :: IsNSString inModuleName => inModuleName -> IO (Id S
 defaultsForModuleWithName inModuleName =
   do
     cls' <- getRequiredClass "ScreenSaverDefaults"
-    withObjCPtr inModuleName $ \raw_inModuleName ->
-      sendClassMsg cls' (mkSelector "defaultsForModuleWithName:") (retPtr retVoid) [argPtr (castPtr raw_inModuleName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultsForModuleWithNameSelector (toNSString inModuleName)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultsForModuleWithName:@
-defaultsForModuleWithNameSelector :: Selector
+defaultsForModuleWithNameSelector :: Selector '[Id NSString] (Id ScreenSaverDefaults)
 defaultsForModuleWithNameSelector = mkSelector "defaultsForModuleWithName:"
 

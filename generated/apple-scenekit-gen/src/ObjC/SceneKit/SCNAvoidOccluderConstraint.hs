@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,27 +23,23 @@ module ObjC.SceneKit.SCNAvoidOccluderConstraint
   , bias
   , setBias
   , avoidOccluderConstraintWithTargetSelector
-  , delegateSelector
-  , setDelegateSelector
-  , targetSelector
-  , setTargetSelector
-  , occluderCategoryBitMaskSelector
-  , setOccluderCategoryBitMaskSelector
   , biasSelector
+  , delegateSelector
+  , occluderCategoryBitMaskSelector
   , setBiasSelector
+  , setDelegateSelector
+  , setOccluderCategoryBitMaskSelector
+  , setTargetSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,7 @@ avoidOccluderConstraintWithTarget :: IsSCNNode target => target -> IO (Id SCNAvo
 avoidOccluderConstraintWithTarget target =
   do
     cls' <- getRequiredClass "SCNAvoidOccluderConstraint"
-    withObjCPtr target $ \raw_target ->
-      sendClassMsg cls' (mkSelector "avoidOccluderConstraintWithTarget:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' avoidOccluderConstraintWithTargetSelector (toSCNNode target)
 
 -- | delegate
 --
@@ -67,8 +63,8 @@ avoidOccluderConstraintWithTarget target =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> IO RawId
-delegate scnAvoidOccluderConstraint  =
-    fmap (RawId . castPtr) $ sendMsg scnAvoidOccluderConstraint (mkSelector "delegate") (retPtr retVoid) []
+delegate scnAvoidOccluderConstraint =
+  sendMessage scnAvoidOccluderConstraint delegateSelector
 
 -- | delegate
 --
@@ -76,8 +72,8 @@ delegate scnAvoidOccluderConstraint  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> RawId -> IO ()
-setDelegate scnAvoidOccluderConstraint  value =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate scnAvoidOccluderConstraint value =
+  sendMessage scnAvoidOccluderConstraint setDelegateSelector value
 
 -- | target
 --
@@ -85,8 +81,8 @@ setDelegate scnAvoidOccluderConstraint  value =
 --
 -- ObjC selector: @- target@
 target :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> IO (Id SCNNode)
-target scnAvoidOccluderConstraint  =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target scnAvoidOccluderConstraint =
+  sendMessage scnAvoidOccluderConstraint targetSelector
 
 -- | target
 --
@@ -94,9 +90,8 @@ target scnAvoidOccluderConstraint  =
 --
 -- ObjC selector: @- setTarget:@
 setTarget :: (IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint, IsSCNNode value) => scnAvoidOccluderConstraint -> value -> IO ()
-setTarget scnAvoidOccluderConstraint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnAvoidOccluderConstraint (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget scnAvoidOccluderConstraint value =
+  sendMessage scnAvoidOccluderConstraint setTargetSelector (toSCNNode value)
 
 -- | occluderCategoryBitMask
 --
@@ -104,8 +99,8 @@ setTarget scnAvoidOccluderConstraint  value =
 --
 -- ObjC selector: @- occluderCategoryBitMask@
 occluderCategoryBitMask :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> IO CULong
-occluderCategoryBitMask scnAvoidOccluderConstraint  =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "occluderCategoryBitMask") retCULong []
+occluderCategoryBitMask scnAvoidOccluderConstraint =
+  sendMessage scnAvoidOccluderConstraint occluderCategoryBitMaskSelector
 
 -- | occluderCategoryBitMask
 --
@@ -113,8 +108,8 @@ occluderCategoryBitMask scnAvoidOccluderConstraint  =
 --
 -- ObjC selector: @- setOccluderCategoryBitMask:@
 setOccluderCategoryBitMask :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> CULong -> IO ()
-setOccluderCategoryBitMask scnAvoidOccluderConstraint  value =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "setOccluderCategoryBitMask:") retVoid [argCULong value]
+setOccluderCategoryBitMask scnAvoidOccluderConstraint value =
+  sendMessage scnAvoidOccluderConstraint setOccluderCategoryBitMaskSelector value
 
 -- | bias
 --
@@ -124,8 +119,8 @@ setOccluderCategoryBitMask scnAvoidOccluderConstraint  value =
 --
 -- ObjC selector: @- bias@
 bias :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> IO CDouble
-bias scnAvoidOccluderConstraint  =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "bias") retCDouble []
+bias scnAvoidOccluderConstraint =
+  sendMessage scnAvoidOccluderConstraint biasSelector
 
 -- | bias
 --
@@ -135,46 +130,46 @@ bias scnAvoidOccluderConstraint  =
 --
 -- ObjC selector: @- setBias:@
 setBias :: IsSCNAvoidOccluderConstraint scnAvoidOccluderConstraint => scnAvoidOccluderConstraint -> CDouble -> IO ()
-setBias scnAvoidOccluderConstraint  value =
-    sendMsg scnAvoidOccluderConstraint (mkSelector "setBias:") retVoid [argCDouble value]
+setBias scnAvoidOccluderConstraint value =
+  sendMessage scnAvoidOccluderConstraint setBiasSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @avoidOccluderConstraintWithTarget:@
-avoidOccluderConstraintWithTargetSelector :: Selector
+avoidOccluderConstraintWithTargetSelector :: Selector '[Id SCNNode] (Id SCNAvoidOccluderConstraint)
 avoidOccluderConstraintWithTargetSelector = mkSelector "avoidOccluderConstraintWithTarget:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id SCNNode)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id SCNNode] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @occluderCategoryBitMask@
-occluderCategoryBitMaskSelector :: Selector
+occluderCategoryBitMaskSelector :: Selector '[] CULong
 occluderCategoryBitMaskSelector = mkSelector "occluderCategoryBitMask"
 
 -- | @Selector@ for @setOccluderCategoryBitMask:@
-setOccluderCategoryBitMaskSelector :: Selector
+setOccluderCategoryBitMaskSelector :: Selector '[CULong] ()
 setOccluderCategoryBitMaskSelector = mkSelector "setOccluderCategoryBitMask:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CDouble
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CDouble] ()
 setBiasSelector = mkSelector "setBias:"
 

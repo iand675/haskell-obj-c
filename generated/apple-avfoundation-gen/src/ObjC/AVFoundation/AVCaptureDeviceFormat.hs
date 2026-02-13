@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -72,65 +73,65 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
   , spatialVideoCaptureSupported
   , multiCamSupported
   , portraitEffectsMatteStillImageDeliverySupported
-  , initSelector
-  , newSelector
-  , isVideoStabilizationModeSupportedSelector
-  , videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector
-  , mediaTypeSelector
-  , formatDescriptionSelector
-  , videoSupportedFrameRateRangesSelector
-  , videoFieldOfViewSelector
-  , videoBinnedSelector
-  , videoStabilizationSupportedSelector
-  , videoMaxZoomFactorSelector
-  , videoZoomFactorUpscaleThresholdSelector
-  , systemRecommendedVideoZoomRangeSelector
-  , systemRecommendedExposureBiasRangeSelector
-  , minISOSelector
-  , maxISOSelector
-  , globalToneMappingSupportedSelector
-  , videoHDRSupportedSelector
-  , highPhotoQualitySupportedSelector
-  , highestPhotoQualitySupportedSelector
   , autoFocusSystemSelector
-  , supportedColorSpacesSelector
-  , videoMinZoomFactorForDepthDataDeliverySelector
-  , videoMaxZoomFactorForDepthDataDeliverySelector
-  , supportedVideoZoomFactorsForDepthDataDeliverySelector
-  , supportedVideoZoomRangesForDepthDataDeliverySelector
-  , zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector
-  , supportedDepthDataFormatsSelector
-  , unsupportedCaptureOutputClassesSelector
-  , supportedMaxPhotoDimensionsSelector
-  , secondaryNativeResolutionZoomFactorsSelector
   , autoVideoFrameRateSupportedSelector
+  , backgroundReplacementSupportedSelector
   , cameraLensSmudgeDetectionSupportedSelector
-  , smartFramingSupportedSelector
-  , supportedDynamicAspectRatiosSelector
+  , centerStageSupportedSelector
   , cinematicVideoCaptureSupportedSelector
   , defaultSimulatedApertureSelector
-  , minSimulatedApertureSelector
-  , maxSimulatedApertureSelector
-  , videoMinZoomFactorForCinematicVideoSelector
-  , videoMaxZoomFactorForCinematicVideoSelector
-  , videoFrameRateRangeForCinematicVideoSelector
   , edgeLightSupportedSelector
-  , backgroundReplacementSupportedSelector
-  , videoFrameRateRangeForBackgroundReplacementSelector
-  , reactionEffectsSupportedSelector
-  , videoFrameRateRangeForReactionEffectsInProgressSelector
-  , studioLightSupportedSelector
-  , videoFrameRateRangeForStudioLightSelector
-  , portraitEffectSupportedSelector
-  , videoFrameRateRangeForPortraitEffectSelector
-  , centerStageSupportedSelector
-  , videoMinZoomFactorForCenterStageSelector
-  , videoMaxZoomFactorForCenterStageSelector
-  , videoFrameRateRangeForCenterStageSelector
+  , formatDescriptionSelector
   , geometricDistortionCorrectedVideoFieldOfViewSelector
-  , spatialVideoCaptureSupportedSelector
+  , globalToneMappingSupportedSelector
+  , highPhotoQualitySupportedSelector
+  , highestPhotoQualitySupportedSelector
+  , initSelector
+  , isVideoStabilizationModeSupportedSelector
+  , maxISOSelector
+  , maxSimulatedApertureSelector
+  , mediaTypeSelector
+  , minISOSelector
+  , minSimulatedApertureSelector
   , multiCamSupportedSelector
+  , newSelector
+  , portraitEffectSupportedSelector
   , portraitEffectsMatteStillImageDeliverySupportedSelector
+  , reactionEffectsSupportedSelector
+  , secondaryNativeResolutionZoomFactorsSelector
+  , smartFramingSupportedSelector
+  , spatialVideoCaptureSupportedSelector
+  , studioLightSupportedSelector
+  , supportedColorSpacesSelector
+  , supportedDepthDataFormatsSelector
+  , supportedDynamicAspectRatiosSelector
+  , supportedMaxPhotoDimensionsSelector
+  , supportedVideoZoomFactorsForDepthDataDeliverySelector
+  , supportedVideoZoomRangesForDepthDataDeliverySelector
+  , systemRecommendedExposureBiasRangeSelector
+  , systemRecommendedVideoZoomRangeSelector
+  , unsupportedCaptureOutputClassesSelector
+  , videoBinnedSelector
+  , videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector
+  , videoFieldOfViewSelector
+  , videoFrameRateRangeForBackgroundReplacementSelector
+  , videoFrameRateRangeForCenterStageSelector
+  , videoFrameRateRangeForCinematicVideoSelector
+  , videoFrameRateRangeForPortraitEffectSelector
+  , videoFrameRateRangeForReactionEffectsInProgressSelector
+  , videoFrameRateRangeForStudioLightSelector
+  , videoHDRSupportedSelector
+  , videoMaxZoomFactorForCenterStageSelector
+  , videoMaxZoomFactorForCinematicVideoSelector
+  , videoMaxZoomFactorForDepthDataDeliverySelector
+  , videoMaxZoomFactorSelector
+  , videoMinZoomFactorForCenterStageSelector
+  , videoMinZoomFactorForCinematicVideoSelector
+  , videoMinZoomFactorForDepthDataDeliverySelector
+  , videoStabilizationSupportedSelector
+  , videoSupportedFrameRateRangesSelector
+  , videoZoomFactorUpscaleThresholdSelector
+  , zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector
 
   -- * Enum types
   , AVCaptureAutoFocusSystem(AVCaptureAutoFocusSystem)
@@ -149,15 +150,11 @@ module ObjC.AVFoundation.AVCaptureDeviceFormat
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -167,15 +164,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVCaptureDeviceFormat)
-init_ avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDeviceFormat =
+  sendOwnedMessage avCaptureDeviceFormat initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDeviceFormat)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDeviceFormat"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | isVideoStabilizationModeSupported
 --
@@ -187,8 +184,8 @@ new  =
 --
 -- ObjC selector: @- isVideoStabilizationModeSupported:@
 isVideoStabilizationModeSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> AVCaptureVideoStabilizationMode -> IO Bool
-isVideoStabilizationModeSupported avCaptureDeviceFormat  videoStabilizationMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "isVideoStabilizationModeSupported:") retCULong [argCLong (coerce videoStabilizationMode)]
+isVideoStabilizationModeSupported avCaptureDeviceFormat videoStabilizationMode =
+  sendMessage avCaptureDeviceFormat isVideoStabilizationModeSupportedSelector videoStabilizationMode
 
 -- | Indicates the horizontal field of view for an aspect ratio, either uncorrected or corrected for geometric distortion.
 --
@@ -196,9 +193,8 @@ isVideoStabilizationModeSupported avCaptureDeviceFormat  videoStabilizationMode 
 --
 -- ObjC selector: @- videoFieldOfViewForAspectRatio:geometricDistortionCorrected:@
 videoFieldOfViewForAspectRatio_geometricDistortionCorrected :: (IsAVCaptureDeviceFormat avCaptureDeviceFormat, IsNSString aspectRatio) => avCaptureDeviceFormat -> aspectRatio -> Bool -> IO CFloat
-videoFieldOfViewForAspectRatio_geometricDistortionCorrected avCaptureDeviceFormat  aspectRatio geometricDistortionCorrected =
-  withObjCPtr aspectRatio $ \raw_aspectRatio ->
-      sendMsg avCaptureDeviceFormat (mkSelector "videoFieldOfViewForAspectRatio:geometricDistortionCorrected:") retCFloat [argPtr (castPtr raw_aspectRatio :: Ptr ()), argCULong (if geometricDistortionCorrected then 1 else 0)]
+videoFieldOfViewForAspectRatio_geometricDistortionCorrected avCaptureDeviceFormat aspectRatio geometricDistortionCorrected =
+  sendMessage avCaptureDeviceFormat videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector (toNSString aspectRatio) geometricDistortionCorrected
 
 -- | mediaType
 --
@@ -208,8 +204,8 @@ videoFieldOfViewForAspectRatio_geometricDistortionCorrected avCaptureDeviceForma
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSString)
-mediaType avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat mediaTypeSelector
 
 -- | formatDescription
 --
@@ -219,8 +215,8 @@ mediaType avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- formatDescription@
 formatDescription :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO RawId
-formatDescription avCaptureDeviceFormat  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureDeviceFormat (mkSelector "formatDescription") (retPtr retVoid) []
+formatDescription avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat formatDescriptionSelector
 
 -- | videoSupportedFrameRateRanges
 --
@@ -230,8 +226,8 @@ formatDescription avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoSupportedFrameRateRanges@
 videoSupportedFrameRateRanges :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-videoSupportedFrameRateRanges avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoSupportedFrameRateRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoSupportedFrameRateRanges avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoSupportedFrameRateRangesSelector
 
 -- | videoFieldOfView
 --
@@ -241,8 +237,8 @@ videoSupportedFrameRateRanges avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFieldOfView@
 videoFieldOfView :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-videoFieldOfView avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFieldOfView") retCFloat []
+videoFieldOfView avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFieldOfViewSelector
 
 -- | videoBinned
 --
@@ -252,8 +248,8 @@ videoFieldOfView avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoBinned@
 videoBinned :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-videoBinned avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "videoBinned") retCULong []
+videoBinned avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoBinnedSelector
 
 -- | videoStabilizationSupported
 --
@@ -263,8 +259,8 @@ videoBinned avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoStabilizationSupported@
 videoStabilizationSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-videoStabilizationSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "videoStabilizationSupported") retCULong []
+videoStabilizationSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoStabilizationSupportedSelector
 
 -- | videoMaxZoomFactor
 --
@@ -274,8 +270,8 @@ videoStabilizationSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMaxZoomFactor@
 videoMaxZoomFactor :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMaxZoomFactor avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactor") retCDouble []
+videoMaxZoomFactor avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMaxZoomFactorSelector
 
 -- | videoZoomFactorUpscaleThreshold
 --
@@ -285,8 +281,8 @@ videoMaxZoomFactor avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoZoomFactorUpscaleThreshold@
 videoZoomFactorUpscaleThreshold :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoZoomFactorUpscaleThreshold avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoZoomFactorUpscaleThreshold") retCDouble []
+videoZoomFactorUpscaleThreshold avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoZoomFactorUpscaleThresholdSelector
 
 -- | systemRecommendedVideoZoomRange
 --
@@ -298,8 +294,8 @@ videoZoomFactorUpscaleThreshold avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- systemRecommendedVideoZoomRange@
 systemRecommendedVideoZoomRange :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVZoomRange)
-systemRecommendedVideoZoomRange avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "systemRecommendedVideoZoomRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemRecommendedVideoZoomRange avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat systemRecommendedVideoZoomRangeSelector
 
 -- | systemRecommendedExposureBiasRange
 --
@@ -311,8 +307,8 @@ systemRecommendedVideoZoomRange avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- systemRecommendedExposureBiasRange@
 systemRecommendedExposureBiasRange :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVExposureBiasRange)
-systemRecommendedExposureBiasRange avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "systemRecommendedExposureBiasRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemRecommendedExposureBiasRange avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat systemRecommendedExposureBiasRangeSelector
 
 -- | minISO
 --
@@ -322,8 +318,8 @@ systemRecommendedExposureBiasRange avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- minISO@
 minISO :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-minISO avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "minISO") retCFloat []
+minISO avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat minISOSelector
 
 -- | maxISO
 --
@@ -333,8 +329,8 @@ minISO avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- maxISO@
 maxISO :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-maxISO avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "maxISO") retCFloat []
+maxISO avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat maxISOSelector
 
 -- | globalToneMappingSupported
 --
@@ -344,8 +340,8 @@ maxISO avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- globalToneMappingSupported@
 globalToneMappingSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-globalToneMappingSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "globalToneMappingSupported") retCULong []
+globalToneMappingSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat globalToneMappingSupportedSelector
 
 -- | videoHDRSupported
 --
@@ -355,8 +351,8 @@ globalToneMappingSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoHDRSupported@
 videoHDRSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-videoHDRSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "videoHDRSupported") retCULong []
+videoHDRSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoHDRSupportedSelector
 
 -- | highPhotoQualitySupported
 --
@@ -366,8 +362,8 @@ videoHDRSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- highPhotoQualitySupported@
 highPhotoQualitySupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-highPhotoQualitySupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "highPhotoQualitySupported") retCULong []
+highPhotoQualitySupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat highPhotoQualitySupportedSelector
 
 -- | highestPhotoQualitySupported
 --
@@ -377,8 +373,8 @@ highPhotoQualitySupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- highestPhotoQualitySupported@
 highestPhotoQualitySupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-highestPhotoQualitySupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "highestPhotoQualitySupported") retCULong []
+highestPhotoQualitySupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat highestPhotoQualitySupportedSelector
 
 -- | autoFocusSystem
 --
@@ -388,8 +384,8 @@ highestPhotoQualitySupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- autoFocusSystem@
 autoFocusSystem :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO AVCaptureAutoFocusSystem
-autoFocusSystem avCaptureDeviceFormat  =
-    fmap (coerce :: CLong -> AVCaptureAutoFocusSystem) $ sendMsg avCaptureDeviceFormat (mkSelector "autoFocusSystem") retCLong []
+autoFocusSystem avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat autoFocusSystemSelector
 
 -- | supportedColorSpaces
 --
@@ -399,8 +395,8 @@ autoFocusSystem avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- supportedColorSpaces@
 supportedColorSpaces :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedColorSpaces avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedColorSpaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedColorSpaces avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedColorSpacesSelector
 
 -- | videoMinZoomFactorForDepthDataDelivery
 --
@@ -408,8 +404,8 @@ supportedColorSpaces avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMinZoomFactorForDepthDataDelivery@
 videoMinZoomFactorForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMinZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMinZoomFactorForDepthDataDelivery") retCDouble []
+videoMinZoomFactorForDepthDataDelivery avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMinZoomFactorForDepthDataDeliverySelector
 
 -- | videoMaxZoomFactorForDepthDataDelivery
 --
@@ -417,8 +413,8 @@ videoMinZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMaxZoomFactorForDepthDataDelivery@
 videoMaxZoomFactorForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMaxZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForDepthDataDelivery") retCDouble []
+videoMaxZoomFactorForDepthDataDelivery avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMaxZoomFactorForDepthDataDeliverySelector
 
 -- | supportedVideoZoomFactorsForDepthDataDelivery
 --
@@ -426,8 +422,8 @@ videoMaxZoomFactorForDepthDataDelivery avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- supportedVideoZoomFactorsForDepthDataDelivery@
 supportedVideoZoomFactorsForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedVideoZoomFactorsForDepthDataDelivery avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedVideoZoomFactorsForDepthDataDelivery") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedVideoZoomFactorsForDepthDataDelivery avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedVideoZoomFactorsForDepthDataDeliverySelector
 
 -- | supportedVideoZoomRangesForDepthDataDelivery
 --
@@ -439,8 +435,8 @@ supportedVideoZoomFactorsForDepthDataDelivery avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- supportedVideoZoomRangesForDepthDataDelivery@
 supportedVideoZoomRangesForDepthDataDelivery :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedVideoZoomRangesForDepthDataDelivery avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedVideoZoomRangesForDepthDataDelivery") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedVideoZoomRangesForDepthDataDelivery avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedVideoZoomRangesForDepthDataDeliverySelector
 
 -- | zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported
 --
@@ -450,8 +446,8 @@ supportedVideoZoomRangesForDepthDataDelivery avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported@
 zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported") retCULong []
+zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector
 
 -- | supportedDepthDataFormats
 --
@@ -461,8 +457,8 @@ zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported avCaptureDeviceForm
 --
 -- ObjC selector: @- supportedDepthDataFormats@
 supportedDepthDataFormats :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedDepthDataFormats avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedDepthDataFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDepthDataFormats avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedDepthDataFormatsSelector
 
 -- | unsupportedCaptureOutputClasses
 --
@@ -472,8 +468,8 @@ supportedDepthDataFormats avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- unsupportedCaptureOutputClasses@
 unsupportedCaptureOutputClasses :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-unsupportedCaptureOutputClasses avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "unsupportedCaptureOutputClasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+unsupportedCaptureOutputClasses avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat unsupportedCaptureOutputClassesSelector
 
 -- | supportedMaxPhotoDimensions
 --
@@ -483,8 +479,8 @@ unsupportedCaptureOutputClasses avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- supportedMaxPhotoDimensions@
 supportedMaxPhotoDimensions :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedMaxPhotoDimensions avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedMaxPhotoDimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedMaxPhotoDimensions avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedMaxPhotoDimensionsSelector
 
 -- | secondaryNativeResolutionZoomFactors
 --
@@ -494,8 +490,8 @@ supportedMaxPhotoDimensions avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- secondaryNativeResolutionZoomFactors@
 secondaryNativeResolutionZoomFactors :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-secondaryNativeResolutionZoomFactors avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "secondaryNativeResolutionZoomFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+secondaryNativeResolutionZoomFactors avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat secondaryNativeResolutionZoomFactorsSelector
 
 -- | autoVideoFrameRateSupported
 --
@@ -505,8 +501,8 @@ secondaryNativeResolutionZoomFactors avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- autoVideoFrameRateSupported@
 autoVideoFrameRateSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-autoVideoFrameRateSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "autoVideoFrameRateSupported") retCULong []
+autoVideoFrameRateSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat autoVideoFrameRateSupportedSelector
 
 -- | Whether camera lens smudge detection is supported.
 --
@@ -514,8 +510,8 @@ autoVideoFrameRateSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- cameraLensSmudgeDetectionSupported@
 cameraLensSmudgeDetectionSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-cameraLensSmudgeDetectionSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "cameraLensSmudgeDetectionSupported") retCULong []
+cameraLensSmudgeDetectionSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat cameraLensSmudgeDetectionSupportedSelector
 
 -- | Returns @true@ if smart framing is supported by the current format.
 --
@@ -523,8 +519,8 @@ cameraLensSmudgeDetectionSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- smartFramingSupported@
 smartFramingSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-smartFramingSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "smartFramingSupported") retCULong []
+smartFramingSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat smartFramingSupportedSelector
 
 -- | Indicates the supported aspect ratios for the device format.
 --
@@ -532,8 +528,8 @@ smartFramingSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- supportedDynamicAspectRatios@
 supportedDynamicAspectRatios :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id NSArray)
-supportedDynamicAspectRatios avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "supportedDynamicAspectRatios") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDynamicAspectRatios avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat supportedDynamicAspectRatiosSelector
 
 -- | Indicates whether the format supports Cinematic Video capture.
 --
@@ -541,8 +537,8 @@ supportedDynamicAspectRatios avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- cinematicVideoCaptureSupported@
 cinematicVideoCaptureSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-cinematicVideoCaptureSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "cinematicVideoCaptureSupported") retCULong []
+cinematicVideoCaptureSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat cinematicVideoCaptureSupportedSelector
 
 -- | Default shallow depth of field simulated aperture.
 --
@@ -550,8 +546,8 @@ cinematicVideoCaptureSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- defaultSimulatedAperture@
 defaultSimulatedAperture :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-defaultSimulatedAperture avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "defaultSimulatedAperture") retCFloat []
+defaultSimulatedAperture avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat defaultSimulatedApertureSelector
 
 -- | Minimum supported shallow depth of field simulated aperture.
 --
@@ -559,8 +555,8 @@ defaultSimulatedAperture avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- minSimulatedAperture@
 minSimulatedAperture :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-minSimulatedAperture avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "minSimulatedAperture") retCFloat []
+minSimulatedAperture avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat minSimulatedApertureSelector
 
 -- | Maximum supported shallow depth of field simulated aperture.
 --
@@ -568,8 +564,8 @@ minSimulatedAperture avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- maxSimulatedAperture@
 maxSimulatedAperture :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-maxSimulatedAperture avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "maxSimulatedAperture") retCFloat []
+maxSimulatedAperture avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat maxSimulatedApertureSelector
 
 -- | Indicates the minimum zoom factor available for the ``AVCaptureDevice/videoZoomFactor`` property when Cinematic Video capture is enabled on the device input.
 --
@@ -577,8 +573,8 @@ maxSimulatedAperture avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMinZoomFactorForCinematicVideo@
 videoMinZoomFactorForCinematicVideo :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMinZoomFactorForCinematicVideo avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMinZoomFactorForCinematicVideo") retCDouble []
+videoMinZoomFactorForCinematicVideo avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMinZoomFactorForCinematicVideoSelector
 
 -- | Indicates the maximum zoom factor available for the ``AVCaptureDevice/videoZoomFactor`` property when Cinematic Video capture is enabled on the device input.
 --
@@ -586,8 +582,8 @@ videoMinZoomFactorForCinematicVideo avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMaxZoomFactorForCinematicVideo@
 videoMaxZoomFactorForCinematicVideo :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMaxZoomFactorForCinematicVideo avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForCinematicVideo") retCDouble []
+videoMaxZoomFactorForCinematicVideo avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMaxZoomFactorForCinematicVideoSelector
 
 -- | Indicates the minimum / maximum frame rates available when Cinematic Video capture is enabled on the device input.
 --
@@ -595,8 +591,8 @@ videoMaxZoomFactorForCinematicVideo avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForCinematicVideo@
 videoFrameRateRangeForCinematicVideo :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForCinematicVideo avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForCinematicVideo") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForCinematicVideo avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForCinematicVideoSelector
 
 -- | Indicates whether the format supports the Edge Light feature.
 --
@@ -604,8 +600,8 @@ videoFrameRateRangeForCinematicVideo avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- edgeLightSupported@
 edgeLightSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-edgeLightSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "edgeLightSupported") retCULong []
+edgeLightSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat edgeLightSupportedSelector
 
 -- | backgroundReplacementSupported
 --
@@ -615,8 +611,8 @@ edgeLightSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- backgroundReplacementSupported@
 backgroundReplacementSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-backgroundReplacementSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "backgroundReplacementSupported") retCULong []
+backgroundReplacementSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat backgroundReplacementSupportedSelector
 
 -- | videoFrameRateRangeForBackgroundReplacement
 --
@@ -626,8 +622,8 @@ backgroundReplacementSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForBackgroundReplacement@
 videoFrameRateRangeForBackgroundReplacement :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForBackgroundReplacement avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForBackgroundReplacement") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForBackgroundReplacement avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForBackgroundReplacementSelector
 
 -- | reactionEffectsSupported
 --
@@ -637,8 +633,8 @@ videoFrameRateRangeForBackgroundReplacement avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- reactionEffectsSupported@
 reactionEffectsSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-reactionEffectsSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "reactionEffectsSupported") retCULong []
+reactionEffectsSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat reactionEffectsSupportedSelector
 
 -- | videoFrameRateRangeForReactionEffectsInProgress
 --
@@ -648,8 +644,8 @@ reactionEffectsSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForReactionEffectsInProgress@
 videoFrameRateRangeForReactionEffectsInProgress :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForReactionEffectsInProgress avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForReactionEffectsInProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForReactionEffectsInProgress avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForReactionEffectsInProgressSelector
 
 -- | studioLightSupported
 --
@@ -659,8 +655,8 @@ videoFrameRateRangeForReactionEffectsInProgress avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- studioLightSupported@
 studioLightSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-studioLightSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "studioLightSupported") retCULong []
+studioLightSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat studioLightSupportedSelector
 
 -- | videoFrameRateRangeForStudioLight
 --
@@ -670,8 +666,8 @@ studioLightSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForStudioLight@
 videoFrameRateRangeForStudioLight :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForStudioLight avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForStudioLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForStudioLight avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForStudioLightSelector
 
 -- | portraitEffectSupported
 --
@@ -681,8 +677,8 @@ videoFrameRateRangeForStudioLight avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- portraitEffectSupported@
 portraitEffectSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-portraitEffectSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "portraitEffectSupported") retCULong []
+portraitEffectSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat portraitEffectSupportedSelector
 
 -- | videoFrameRateRangeForPortraitEffect
 --
@@ -692,8 +688,8 @@ portraitEffectSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForPortraitEffect@
 videoFrameRateRangeForPortraitEffect :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForPortraitEffect avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForPortraitEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForPortraitEffect avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForPortraitEffectSelector
 
 -- | centerStageSupported
 --
@@ -703,8 +699,8 @@ videoFrameRateRangeForPortraitEffect avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- centerStageSupported@
 centerStageSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-centerStageSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "centerStageSupported") retCULong []
+centerStageSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat centerStageSupportedSelector
 
 -- | videoMinZoomFactorForCenterStage
 --
@@ -714,8 +710,8 @@ centerStageSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMinZoomFactorForCenterStage@
 videoMinZoomFactorForCenterStage :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMinZoomFactorForCenterStage avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMinZoomFactorForCenterStage") retCDouble []
+videoMinZoomFactorForCenterStage avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMinZoomFactorForCenterStageSelector
 
 -- | videoMaxZoomFactorForCenterStage
 --
@@ -725,8 +721,8 @@ videoMinZoomFactorForCenterStage avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoMaxZoomFactorForCenterStage@
 videoMaxZoomFactorForCenterStage :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CDouble
-videoMaxZoomFactorForCenterStage avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoMaxZoomFactorForCenterStage") retCDouble []
+videoMaxZoomFactorForCenterStage avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoMaxZoomFactorForCenterStageSelector
 
 -- | videoFrameRateRangeForCenterStage
 --
@@ -736,8 +732,8 @@ videoMaxZoomFactorForCenterStage avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- videoFrameRateRangeForCenterStage@
 videoFrameRateRangeForCenterStage :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO (Id AVFrameRateRange)
-videoFrameRateRangeForCenterStage avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "videoFrameRateRangeForCenterStage") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFrameRateRangeForCenterStage avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat videoFrameRateRangeForCenterStageSelector
 
 -- | geometricDistortionCorrectedVideoFieldOfView
 --
@@ -747,8 +743,8 @@ videoFrameRateRangeForCenterStage avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- geometricDistortionCorrectedVideoFieldOfView@
 geometricDistortionCorrectedVideoFieldOfView :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO CFloat
-geometricDistortionCorrectedVideoFieldOfView avCaptureDeviceFormat  =
-    sendMsg avCaptureDeviceFormat (mkSelector "geometricDistortionCorrectedVideoFieldOfView") retCFloat []
+geometricDistortionCorrectedVideoFieldOfView avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat geometricDistortionCorrectedVideoFieldOfViewSelector
 
 -- | spatialVideoCaptureSupported
 --
@@ -756,8 +752,8 @@ geometricDistortionCorrectedVideoFieldOfView avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- spatialVideoCaptureSupported@
 spatialVideoCaptureSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-spatialVideoCaptureSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "spatialVideoCaptureSupported") retCULong []
+spatialVideoCaptureSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat spatialVideoCaptureSupportedSelector
 
 -- | multiCamSupported
 --
@@ -767,251 +763,251 @@ spatialVideoCaptureSupported avCaptureDeviceFormat  =
 --
 -- ObjC selector: @- multiCamSupported@
 multiCamSupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-multiCamSupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "multiCamSupported") retCULong []
+multiCamSupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat multiCamSupportedSelector
 
 -- | @- portraitEffectsMatteStillImageDeliverySupported@
 portraitEffectsMatteStillImageDeliverySupported :: IsAVCaptureDeviceFormat avCaptureDeviceFormat => avCaptureDeviceFormat -> IO Bool
-portraitEffectsMatteStillImageDeliverySupported avCaptureDeviceFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceFormat (mkSelector "portraitEffectsMatteStillImageDeliverySupported") retCULong []
+portraitEffectsMatteStillImageDeliverySupported avCaptureDeviceFormat =
+  sendMessage avCaptureDeviceFormat portraitEffectsMatteStillImageDeliverySupportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDeviceFormat)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDeviceFormat)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isVideoStabilizationModeSupported:@
-isVideoStabilizationModeSupportedSelector :: Selector
+isVideoStabilizationModeSupportedSelector :: Selector '[AVCaptureVideoStabilizationMode] Bool
 isVideoStabilizationModeSupportedSelector = mkSelector "isVideoStabilizationModeSupported:"
 
 -- | @Selector@ for @videoFieldOfViewForAspectRatio:geometricDistortionCorrected:@
-videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector :: Selector
+videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector :: Selector '[Id NSString, Bool] CFloat
 videoFieldOfViewForAspectRatio_geometricDistortionCorrectedSelector = mkSelector "videoFieldOfViewForAspectRatio:geometricDistortionCorrected:"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @formatDescription@
-formatDescriptionSelector :: Selector
+formatDescriptionSelector :: Selector '[] RawId
 formatDescriptionSelector = mkSelector "formatDescription"
 
 -- | @Selector@ for @videoSupportedFrameRateRanges@
-videoSupportedFrameRateRangesSelector :: Selector
+videoSupportedFrameRateRangesSelector :: Selector '[] (Id NSArray)
 videoSupportedFrameRateRangesSelector = mkSelector "videoSupportedFrameRateRanges"
 
 -- | @Selector@ for @videoFieldOfView@
-videoFieldOfViewSelector :: Selector
+videoFieldOfViewSelector :: Selector '[] CFloat
 videoFieldOfViewSelector = mkSelector "videoFieldOfView"
 
 -- | @Selector@ for @videoBinned@
-videoBinnedSelector :: Selector
+videoBinnedSelector :: Selector '[] Bool
 videoBinnedSelector = mkSelector "videoBinned"
 
 -- | @Selector@ for @videoStabilizationSupported@
-videoStabilizationSupportedSelector :: Selector
+videoStabilizationSupportedSelector :: Selector '[] Bool
 videoStabilizationSupportedSelector = mkSelector "videoStabilizationSupported"
 
 -- | @Selector@ for @videoMaxZoomFactor@
-videoMaxZoomFactorSelector :: Selector
+videoMaxZoomFactorSelector :: Selector '[] CDouble
 videoMaxZoomFactorSelector = mkSelector "videoMaxZoomFactor"
 
 -- | @Selector@ for @videoZoomFactorUpscaleThreshold@
-videoZoomFactorUpscaleThresholdSelector :: Selector
+videoZoomFactorUpscaleThresholdSelector :: Selector '[] CDouble
 videoZoomFactorUpscaleThresholdSelector = mkSelector "videoZoomFactorUpscaleThreshold"
 
 -- | @Selector@ for @systemRecommendedVideoZoomRange@
-systemRecommendedVideoZoomRangeSelector :: Selector
+systemRecommendedVideoZoomRangeSelector :: Selector '[] (Id AVZoomRange)
 systemRecommendedVideoZoomRangeSelector = mkSelector "systemRecommendedVideoZoomRange"
 
 -- | @Selector@ for @systemRecommendedExposureBiasRange@
-systemRecommendedExposureBiasRangeSelector :: Selector
+systemRecommendedExposureBiasRangeSelector :: Selector '[] (Id AVExposureBiasRange)
 systemRecommendedExposureBiasRangeSelector = mkSelector "systemRecommendedExposureBiasRange"
 
 -- | @Selector@ for @minISO@
-minISOSelector :: Selector
+minISOSelector :: Selector '[] CFloat
 minISOSelector = mkSelector "minISO"
 
 -- | @Selector@ for @maxISO@
-maxISOSelector :: Selector
+maxISOSelector :: Selector '[] CFloat
 maxISOSelector = mkSelector "maxISO"
 
 -- | @Selector@ for @globalToneMappingSupported@
-globalToneMappingSupportedSelector :: Selector
+globalToneMappingSupportedSelector :: Selector '[] Bool
 globalToneMappingSupportedSelector = mkSelector "globalToneMappingSupported"
 
 -- | @Selector@ for @videoHDRSupported@
-videoHDRSupportedSelector :: Selector
+videoHDRSupportedSelector :: Selector '[] Bool
 videoHDRSupportedSelector = mkSelector "videoHDRSupported"
 
 -- | @Selector@ for @highPhotoQualitySupported@
-highPhotoQualitySupportedSelector :: Selector
+highPhotoQualitySupportedSelector :: Selector '[] Bool
 highPhotoQualitySupportedSelector = mkSelector "highPhotoQualitySupported"
 
 -- | @Selector@ for @highestPhotoQualitySupported@
-highestPhotoQualitySupportedSelector :: Selector
+highestPhotoQualitySupportedSelector :: Selector '[] Bool
 highestPhotoQualitySupportedSelector = mkSelector "highestPhotoQualitySupported"
 
 -- | @Selector@ for @autoFocusSystem@
-autoFocusSystemSelector :: Selector
+autoFocusSystemSelector :: Selector '[] AVCaptureAutoFocusSystem
 autoFocusSystemSelector = mkSelector "autoFocusSystem"
 
 -- | @Selector@ for @supportedColorSpaces@
-supportedColorSpacesSelector :: Selector
+supportedColorSpacesSelector :: Selector '[] (Id NSArray)
 supportedColorSpacesSelector = mkSelector "supportedColorSpaces"
 
 -- | @Selector@ for @videoMinZoomFactorForDepthDataDelivery@
-videoMinZoomFactorForDepthDataDeliverySelector :: Selector
+videoMinZoomFactorForDepthDataDeliverySelector :: Selector '[] CDouble
 videoMinZoomFactorForDepthDataDeliverySelector = mkSelector "videoMinZoomFactorForDepthDataDelivery"
 
 -- | @Selector@ for @videoMaxZoomFactorForDepthDataDelivery@
-videoMaxZoomFactorForDepthDataDeliverySelector :: Selector
+videoMaxZoomFactorForDepthDataDeliverySelector :: Selector '[] CDouble
 videoMaxZoomFactorForDepthDataDeliverySelector = mkSelector "videoMaxZoomFactorForDepthDataDelivery"
 
 -- | @Selector@ for @supportedVideoZoomFactorsForDepthDataDelivery@
-supportedVideoZoomFactorsForDepthDataDeliverySelector :: Selector
+supportedVideoZoomFactorsForDepthDataDeliverySelector :: Selector '[] (Id NSArray)
 supportedVideoZoomFactorsForDepthDataDeliverySelector = mkSelector "supportedVideoZoomFactorsForDepthDataDelivery"
 
 -- | @Selector@ for @supportedVideoZoomRangesForDepthDataDelivery@
-supportedVideoZoomRangesForDepthDataDeliverySelector :: Selector
+supportedVideoZoomRangesForDepthDataDeliverySelector :: Selector '[] (Id NSArray)
 supportedVideoZoomRangesForDepthDataDeliverySelector = mkSelector "supportedVideoZoomRangesForDepthDataDelivery"
 
 -- | @Selector@ for @zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported@
-zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector :: Selector
+zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector :: Selector '[] Bool
 zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupportedSelector = mkSelector "zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported"
 
 -- | @Selector@ for @supportedDepthDataFormats@
-supportedDepthDataFormatsSelector :: Selector
+supportedDepthDataFormatsSelector :: Selector '[] (Id NSArray)
 supportedDepthDataFormatsSelector = mkSelector "supportedDepthDataFormats"
 
 -- | @Selector@ for @unsupportedCaptureOutputClasses@
-unsupportedCaptureOutputClassesSelector :: Selector
+unsupportedCaptureOutputClassesSelector :: Selector '[] (Id NSArray)
 unsupportedCaptureOutputClassesSelector = mkSelector "unsupportedCaptureOutputClasses"
 
 -- | @Selector@ for @supportedMaxPhotoDimensions@
-supportedMaxPhotoDimensionsSelector :: Selector
+supportedMaxPhotoDimensionsSelector :: Selector '[] (Id NSArray)
 supportedMaxPhotoDimensionsSelector = mkSelector "supportedMaxPhotoDimensions"
 
 -- | @Selector@ for @secondaryNativeResolutionZoomFactors@
-secondaryNativeResolutionZoomFactorsSelector :: Selector
+secondaryNativeResolutionZoomFactorsSelector :: Selector '[] (Id NSArray)
 secondaryNativeResolutionZoomFactorsSelector = mkSelector "secondaryNativeResolutionZoomFactors"
 
 -- | @Selector@ for @autoVideoFrameRateSupported@
-autoVideoFrameRateSupportedSelector :: Selector
+autoVideoFrameRateSupportedSelector :: Selector '[] Bool
 autoVideoFrameRateSupportedSelector = mkSelector "autoVideoFrameRateSupported"
 
 -- | @Selector@ for @cameraLensSmudgeDetectionSupported@
-cameraLensSmudgeDetectionSupportedSelector :: Selector
+cameraLensSmudgeDetectionSupportedSelector :: Selector '[] Bool
 cameraLensSmudgeDetectionSupportedSelector = mkSelector "cameraLensSmudgeDetectionSupported"
 
 -- | @Selector@ for @smartFramingSupported@
-smartFramingSupportedSelector :: Selector
+smartFramingSupportedSelector :: Selector '[] Bool
 smartFramingSupportedSelector = mkSelector "smartFramingSupported"
 
 -- | @Selector@ for @supportedDynamicAspectRatios@
-supportedDynamicAspectRatiosSelector :: Selector
+supportedDynamicAspectRatiosSelector :: Selector '[] (Id NSArray)
 supportedDynamicAspectRatiosSelector = mkSelector "supportedDynamicAspectRatios"
 
 -- | @Selector@ for @cinematicVideoCaptureSupported@
-cinematicVideoCaptureSupportedSelector :: Selector
+cinematicVideoCaptureSupportedSelector :: Selector '[] Bool
 cinematicVideoCaptureSupportedSelector = mkSelector "cinematicVideoCaptureSupported"
 
 -- | @Selector@ for @defaultSimulatedAperture@
-defaultSimulatedApertureSelector :: Selector
+defaultSimulatedApertureSelector :: Selector '[] CFloat
 defaultSimulatedApertureSelector = mkSelector "defaultSimulatedAperture"
 
 -- | @Selector@ for @minSimulatedAperture@
-minSimulatedApertureSelector :: Selector
+minSimulatedApertureSelector :: Selector '[] CFloat
 minSimulatedApertureSelector = mkSelector "minSimulatedAperture"
 
 -- | @Selector@ for @maxSimulatedAperture@
-maxSimulatedApertureSelector :: Selector
+maxSimulatedApertureSelector :: Selector '[] CFloat
 maxSimulatedApertureSelector = mkSelector "maxSimulatedAperture"
 
 -- | @Selector@ for @videoMinZoomFactorForCinematicVideo@
-videoMinZoomFactorForCinematicVideoSelector :: Selector
+videoMinZoomFactorForCinematicVideoSelector :: Selector '[] CDouble
 videoMinZoomFactorForCinematicVideoSelector = mkSelector "videoMinZoomFactorForCinematicVideo"
 
 -- | @Selector@ for @videoMaxZoomFactorForCinematicVideo@
-videoMaxZoomFactorForCinematicVideoSelector :: Selector
+videoMaxZoomFactorForCinematicVideoSelector :: Selector '[] CDouble
 videoMaxZoomFactorForCinematicVideoSelector = mkSelector "videoMaxZoomFactorForCinematicVideo"
 
 -- | @Selector@ for @videoFrameRateRangeForCinematicVideo@
-videoFrameRateRangeForCinematicVideoSelector :: Selector
+videoFrameRateRangeForCinematicVideoSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForCinematicVideoSelector = mkSelector "videoFrameRateRangeForCinematicVideo"
 
 -- | @Selector@ for @edgeLightSupported@
-edgeLightSupportedSelector :: Selector
+edgeLightSupportedSelector :: Selector '[] Bool
 edgeLightSupportedSelector = mkSelector "edgeLightSupported"
 
 -- | @Selector@ for @backgroundReplacementSupported@
-backgroundReplacementSupportedSelector :: Selector
+backgroundReplacementSupportedSelector :: Selector '[] Bool
 backgroundReplacementSupportedSelector = mkSelector "backgroundReplacementSupported"
 
 -- | @Selector@ for @videoFrameRateRangeForBackgroundReplacement@
-videoFrameRateRangeForBackgroundReplacementSelector :: Selector
+videoFrameRateRangeForBackgroundReplacementSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForBackgroundReplacementSelector = mkSelector "videoFrameRateRangeForBackgroundReplacement"
 
 -- | @Selector@ for @reactionEffectsSupported@
-reactionEffectsSupportedSelector :: Selector
+reactionEffectsSupportedSelector :: Selector '[] Bool
 reactionEffectsSupportedSelector = mkSelector "reactionEffectsSupported"
 
 -- | @Selector@ for @videoFrameRateRangeForReactionEffectsInProgress@
-videoFrameRateRangeForReactionEffectsInProgressSelector :: Selector
+videoFrameRateRangeForReactionEffectsInProgressSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForReactionEffectsInProgressSelector = mkSelector "videoFrameRateRangeForReactionEffectsInProgress"
 
 -- | @Selector@ for @studioLightSupported@
-studioLightSupportedSelector :: Selector
+studioLightSupportedSelector :: Selector '[] Bool
 studioLightSupportedSelector = mkSelector "studioLightSupported"
 
 -- | @Selector@ for @videoFrameRateRangeForStudioLight@
-videoFrameRateRangeForStudioLightSelector :: Selector
+videoFrameRateRangeForStudioLightSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForStudioLightSelector = mkSelector "videoFrameRateRangeForStudioLight"
 
 -- | @Selector@ for @portraitEffectSupported@
-portraitEffectSupportedSelector :: Selector
+portraitEffectSupportedSelector :: Selector '[] Bool
 portraitEffectSupportedSelector = mkSelector "portraitEffectSupported"
 
 -- | @Selector@ for @videoFrameRateRangeForPortraitEffect@
-videoFrameRateRangeForPortraitEffectSelector :: Selector
+videoFrameRateRangeForPortraitEffectSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForPortraitEffectSelector = mkSelector "videoFrameRateRangeForPortraitEffect"
 
 -- | @Selector@ for @centerStageSupported@
-centerStageSupportedSelector :: Selector
+centerStageSupportedSelector :: Selector '[] Bool
 centerStageSupportedSelector = mkSelector "centerStageSupported"
 
 -- | @Selector@ for @videoMinZoomFactorForCenterStage@
-videoMinZoomFactorForCenterStageSelector :: Selector
+videoMinZoomFactorForCenterStageSelector :: Selector '[] CDouble
 videoMinZoomFactorForCenterStageSelector = mkSelector "videoMinZoomFactorForCenterStage"
 
 -- | @Selector@ for @videoMaxZoomFactorForCenterStage@
-videoMaxZoomFactorForCenterStageSelector :: Selector
+videoMaxZoomFactorForCenterStageSelector :: Selector '[] CDouble
 videoMaxZoomFactorForCenterStageSelector = mkSelector "videoMaxZoomFactorForCenterStage"
 
 -- | @Selector@ for @videoFrameRateRangeForCenterStage@
-videoFrameRateRangeForCenterStageSelector :: Selector
+videoFrameRateRangeForCenterStageSelector :: Selector '[] (Id AVFrameRateRange)
 videoFrameRateRangeForCenterStageSelector = mkSelector "videoFrameRateRangeForCenterStage"
 
 -- | @Selector@ for @geometricDistortionCorrectedVideoFieldOfView@
-geometricDistortionCorrectedVideoFieldOfViewSelector :: Selector
+geometricDistortionCorrectedVideoFieldOfViewSelector :: Selector '[] CFloat
 geometricDistortionCorrectedVideoFieldOfViewSelector = mkSelector "geometricDistortionCorrectedVideoFieldOfView"
 
 -- | @Selector@ for @spatialVideoCaptureSupported@
-spatialVideoCaptureSupportedSelector :: Selector
+spatialVideoCaptureSupportedSelector :: Selector '[] Bool
 spatialVideoCaptureSupportedSelector = mkSelector "spatialVideoCaptureSupported"
 
 -- | @Selector@ for @multiCamSupported@
-multiCamSupportedSelector :: Selector
+multiCamSupportedSelector :: Selector '[] Bool
 multiCamSupportedSelector = mkSelector "multiCamSupported"
 
 -- | @Selector@ for @portraitEffectsMatteStillImageDeliverySupported@
-portraitEffectsMatteStillImageDeliverySupportedSelector :: Selector
+portraitEffectsMatteStillImageDeliverySupportedSelector :: Selector '[] Bool
 portraitEffectsMatteStillImageDeliverySupportedSelector = mkSelector "portraitEffectsMatteStillImageDeliverySupported"
 

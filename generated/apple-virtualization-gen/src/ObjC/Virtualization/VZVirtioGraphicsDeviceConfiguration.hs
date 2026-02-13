@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.Virtualization.VZVirtioGraphicsDeviceConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZVirtioGraphicsDeviceConfiguration vzVirtioGraphicsDeviceConfiguration => vzVirtioGraphicsDeviceConfiguration -> IO (Id VZVirtioGraphicsDeviceConfiguration)
-init_ vzVirtioGraphicsDeviceConfiguration  =
-    sendMsg vzVirtioGraphicsDeviceConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioGraphicsDeviceConfiguration =
+  sendOwnedMessage vzVirtioGraphicsDeviceConfiguration initSelector
 
 -- | The scanouts to be attached to this graphics device.
 --
@@ -48,8 +45,8 @@ init_ vzVirtioGraphicsDeviceConfiguration  =
 --
 -- ObjC selector: @- scanouts@
 scanouts :: IsVZVirtioGraphicsDeviceConfiguration vzVirtioGraphicsDeviceConfiguration => vzVirtioGraphicsDeviceConfiguration -> IO (Id NSArray)
-scanouts vzVirtioGraphicsDeviceConfiguration  =
-    sendMsg vzVirtioGraphicsDeviceConfiguration (mkSelector "scanouts") (retPtr retVoid) [] >>= retainedObject . castPtr
+scanouts vzVirtioGraphicsDeviceConfiguration =
+  sendMessage vzVirtioGraphicsDeviceConfiguration scanoutsSelector
 
 -- | The scanouts to be attached to this graphics device.
 --
@@ -57,23 +54,22 @@ scanouts vzVirtioGraphicsDeviceConfiguration  =
 --
 -- ObjC selector: @- setScanouts:@
 setScanouts :: (IsVZVirtioGraphicsDeviceConfiguration vzVirtioGraphicsDeviceConfiguration, IsNSArray value) => vzVirtioGraphicsDeviceConfiguration -> value -> IO ()
-setScanouts vzVirtioGraphicsDeviceConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioGraphicsDeviceConfiguration (mkSelector "setScanouts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScanouts vzVirtioGraphicsDeviceConfiguration value =
+  sendMessage vzVirtioGraphicsDeviceConfiguration setScanoutsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioGraphicsDeviceConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @scanouts@
-scanoutsSelector :: Selector
+scanoutsSelector :: Selector '[] (Id NSArray)
 scanoutsSelector = mkSelector "scanouts"
 
 -- | @Selector@ for @setScanouts:@
-setScanoutsSelector :: Selector
+setScanoutsSelector :: Selector '[Id NSArray] ()
 setScanoutsSelector = mkSelector "setScanouts:"
 

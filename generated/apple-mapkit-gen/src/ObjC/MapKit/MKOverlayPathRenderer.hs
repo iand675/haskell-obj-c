@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,45 +33,41 @@ module ObjC.MapKit.MKOverlayPathRenderer
   , setShouldRasterize
   , path
   , setPath
-  , createPathSelector
-  , invalidatePathSelector
-  , applyStrokePropertiesToContext_atZoomScaleSelector
   , applyFillPropertiesToContext_atZoomScaleSelector
-  , strokePath_inContextSelector
-  , fillPath_inContextSelector
+  , applyStrokePropertiesToContext_atZoomScaleSelector
+  , createPathSelector
   , fillColorSelector
-  , setFillColorSelector
-  , strokeColorSelector
-  , setStrokeColorSelector
-  , lineWidthSelector
-  , setLineWidthSelector
-  , lineJoinSelector
-  , setLineJoinSelector
+  , fillPath_inContextSelector
+  , invalidatePathSelector
   , lineCapSelector
-  , setLineCapSelector
-  , miterLimitSelector
-  , setMiterLimitSelector
-  , lineDashPhaseSelector
-  , setLineDashPhaseSelector
   , lineDashPatternSelector
-  , setLineDashPatternSelector
-  , shouldRasterizeSelector
-  , setShouldRasterizeSelector
+  , lineDashPhaseSelector
+  , lineJoinSelector
+  , lineWidthSelector
+  , miterLimitSelector
   , pathSelector
+  , setFillColorSelector
+  , setLineCapSelector
+  , setLineDashPatternSelector
+  , setLineDashPhaseSelector
+  , setLineJoinSelector
+  , setLineWidthSelector
+  , setMiterLimitSelector
   , setPathSelector
+  , setShouldRasterizeSelector
+  , setStrokeColorSelector
+  , shouldRasterizeSelector
+  , strokeColorSelector
+  , strokePath_inContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,242 +77,239 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- createPath@
 createPath :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO ()
-createPath mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "createPath") retVoid []
+createPath mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer createPathSelector
 
 -- | @- invalidatePath@
 invalidatePath :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO ()
-invalidatePath mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "invalidatePath") retVoid []
+invalidatePath mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer invalidatePathSelector
 
 -- | @- applyStrokePropertiesToContext:atZoomScale:@
 applyStrokePropertiesToContext_atZoomScale :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> Ptr () -> CDouble -> IO ()
-applyStrokePropertiesToContext_atZoomScale mkOverlayPathRenderer  context zoomScale =
-    sendMsg mkOverlayPathRenderer (mkSelector "applyStrokePropertiesToContext:atZoomScale:") retVoid [argPtr context, argCDouble zoomScale]
+applyStrokePropertiesToContext_atZoomScale mkOverlayPathRenderer context zoomScale =
+  sendMessage mkOverlayPathRenderer applyStrokePropertiesToContext_atZoomScaleSelector context zoomScale
 
 -- | @- applyFillPropertiesToContext:atZoomScale:@
 applyFillPropertiesToContext_atZoomScale :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> Ptr () -> CDouble -> IO ()
-applyFillPropertiesToContext_atZoomScale mkOverlayPathRenderer  context zoomScale =
-    sendMsg mkOverlayPathRenderer (mkSelector "applyFillPropertiesToContext:atZoomScale:") retVoid [argPtr context, argCDouble zoomScale]
+applyFillPropertiesToContext_atZoomScale mkOverlayPathRenderer context zoomScale =
+  sendMessage mkOverlayPathRenderer applyFillPropertiesToContext_atZoomScaleSelector context zoomScale
 
 -- | @- strokePath:inContext:@
 strokePath_inContext :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> RawId -> Ptr () -> IO ()
-strokePath_inContext mkOverlayPathRenderer  path context =
-    sendMsg mkOverlayPathRenderer (mkSelector "strokePath:inContext:") retVoid [argPtr (castPtr (unRawId path) :: Ptr ()), argPtr context]
+strokePath_inContext mkOverlayPathRenderer path context =
+  sendMessage mkOverlayPathRenderer strokePath_inContextSelector path context
 
 -- | @- fillPath:inContext:@
 fillPath_inContext :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> RawId -> Ptr () -> IO ()
-fillPath_inContext mkOverlayPathRenderer  path context =
-    sendMsg mkOverlayPathRenderer (mkSelector "fillPath:inContext:") retVoid [argPtr (castPtr (unRawId path) :: Ptr ()), argPtr context]
+fillPath_inContext mkOverlayPathRenderer path context =
+  sendMessage mkOverlayPathRenderer fillPath_inContextSelector path context
 
 -- | @- fillColor@
 fillColor :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO (Id NSColor)
-fillColor mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "fillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fillColor mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer fillColorSelector
 
 -- | @- setFillColor:@
 setFillColor :: (IsMKOverlayPathRenderer mkOverlayPathRenderer, IsNSColor value) => mkOverlayPathRenderer -> value -> IO ()
-setFillColor mkOverlayPathRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkOverlayPathRenderer (mkSelector "setFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFillColor mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setFillColorSelector (toNSColor value)
 
 -- | @- strokeColor@
 strokeColor :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO (Id NSColor)
-strokeColor mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "strokeColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+strokeColor mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer strokeColorSelector
 
 -- | @- setStrokeColor:@
 setStrokeColor :: (IsMKOverlayPathRenderer mkOverlayPathRenderer, IsNSColor value) => mkOverlayPathRenderer -> value -> IO ()
-setStrokeColor mkOverlayPathRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkOverlayPathRenderer (mkSelector "setStrokeColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStrokeColor mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setStrokeColorSelector (toNSColor value)
 
 -- | @- lineWidth@
 lineWidth :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO CDouble
-lineWidth mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "lineWidth") retCDouble []
+lineWidth mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer lineWidthSelector
 
 -- | @- setLineWidth:@
 setLineWidth :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> CDouble -> IO ()
-setLineWidth mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setLineWidth:") retVoid [argCDouble value]
+setLineWidth mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setLineWidthSelector value
 
 -- | @- lineJoin@
 lineJoin :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO CInt
-lineJoin mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "lineJoin") retCInt []
+lineJoin mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer lineJoinSelector
 
 -- | @- setLineJoin:@
 setLineJoin :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> CInt -> IO ()
-setLineJoin mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setLineJoin:") retVoid [argCInt (fromIntegral value)]
+setLineJoin mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setLineJoinSelector value
 
 -- | @- lineCap@
 lineCap :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO CInt
-lineCap mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "lineCap") retCInt []
+lineCap mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer lineCapSelector
 
 -- | @- setLineCap:@
 setLineCap :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> CInt -> IO ()
-setLineCap mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setLineCap:") retVoid [argCInt (fromIntegral value)]
+setLineCap mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setLineCapSelector value
 
 -- | @- miterLimit@
 miterLimit :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO CDouble
-miterLimit mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "miterLimit") retCDouble []
+miterLimit mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer miterLimitSelector
 
 -- | @- setMiterLimit:@
 setMiterLimit :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> CDouble -> IO ()
-setMiterLimit mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setMiterLimit:") retVoid [argCDouble value]
+setMiterLimit mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setMiterLimitSelector value
 
 -- | @- lineDashPhase@
 lineDashPhase :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO CDouble
-lineDashPhase mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "lineDashPhase") retCDouble []
+lineDashPhase mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer lineDashPhaseSelector
 
 -- | @- setLineDashPhase:@
 setLineDashPhase :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> CDouble -> IO ()
-setLineDashPhase mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setLineDashPhase:") retVoid [argCDouble value]
+setLineDashPhase mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setLineDashPhaseSelector value
 
 -- | @- lineDashPattern@
 lineDashPattern :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO (Id NSArray)
-lineDashPattern mkOverlayPathRenderer  =
-    sendMsg mkOverlayPathRenderer (mkSelector "lineDashPattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineDashPattern mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer lineDashPatternSelector
 
 -- | @- setLineDashPattern:@
 setLineDashPattern :: (IsMKOverlayPathRenderer mkOverlayPathRenderer, IsNSArray value) => mkOverlayPathRenderer -> value -> IO ()
-setLineDashPattern mkOverlayPathRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkOverlayPathRenderer (mkSelector "setLineDashPattern:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineDashPattern mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setLineDashPatternSelector (toNSArray value)
 
 -- | @- shouldRasterize@
 shouldRasterize :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO Bool
-shouldRasterize mkOverlayPathRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkOverlayPathRenderer (mkSelector "shouldRasterize") retCULong []
+shouldRasterize mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer shouldRasterizeSelector
 
 -- | @- setShouldRasterize:@
 setShouldRasterize :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> Bool -> IO ()
-setShouldRasterize mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setShouldRasterize:") retVoid [argCULong (if value then 1 else 0)]
+setShouldRasterize mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setShouldRasterizeSelector value
 
 -- | @- path@
 path :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> IO RawId
-path mkOverlayPathRenderer  =
-    fmap (RawId . castPtr) $ sendMsg mkOverlayPathRenderer (mkSelector "path") (retPtr retVoid) []
+path mkOverlayPathRenderer =
+  sendMessage mkOverlayPathRenderer pathSelector
 
 -- | @- setPath:@
 setPath :: IsMKOverlayPathRenderer mkOverlayPathRenderer => mkOverlayPathRenderer -> RawId -> IO ()
-setPath mkOverlayPathRenderer  value =
-    sendMsg mkOverlayPathRenderer (mkSelector "setPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPath mkOverlayPathRenderer value =
+  sendMessage mkOverlayPathRenderer setPathSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createPath@
-createPathSelector :: Selector
+createPathSelector :: Selector '[] ()
 createPathSelector = mkSelector "createPath"
 
 -- | @Selector@ for @invalidatePath@
-invalidatePathSelector :: Selector
+invalidatePathSelector :: Selector '[] ()
 invalidatePathSelector = mkSelector "invalidatePath"
 
 -- | @Selector@ for @applyStrokePropertiesToContext:atZoomScale:@
-applyStrokePropertiesToContext_atZoomScaleSelector :: Selector
+applyStrokePropertiesToContext_atZoomScaleSelector :: Selector '[Ptr (), CDouble] ()
 applyStrokePropertiesToContext_atZoomScaleSelector = mkSelector "applyStrokePropertiesToContext:atZoomScale:"
 
 -- | @Selector@ for @applyFillPropertiesToContext:atZoomScale:@
-applyFillPropertiesToContext_atZoomScaleSelector :: Selector
+applyFillPropertiesToContext_atZoomScaleSelector :: Selector '[Ptr (), CDouble] ()
 applyFillPropertiesToContext_atZoomScaleSelector = mkSelector "applyFillPropertiesToContext:atZoomScale:"
 
 -- | @Selector@ for @strokePath:inContext:@
-strokePath_inContextSelector :: Selector
+strokePath_inContextSelector :: Selector '[RawId, Ptr ()] ()
 strokePath_inContextSelector = mkSelector "strokePath:inContext:"
 
 -- | @Selector@ for @fillPath:inContext:@
-fillPath_inContextSelector :: Selector
+fillPath_inContextSelector :: Selector '[RawId, Ptr ()] ()
 fillPath_inContextSelector = mkSelector "fillPath:inContext:"
 
 -- | @Selector@ for @fillColor@
-fillColorSelector :: Selector
+fillColorSelector :: Selector '[] (Id NSColor)
 fillColorSelector = mkSelector "fillColor"
 
 -- | @Selector@ for @setFillColor:@
-setFillColorSelector :: Selector
+setFillColorSelector :: Selector '[Id NSColor] ()
 setFillColorSelector = mkSelector "setFillColor:"
 
 -- | @Selector@ for @strokeColor@
-strokeColorSelector :: Selector
+strokeColorSelector :: Selector '[] (Id NSColor)
 strokeColorSelector = mkSelector "strokeColor"
 
 -- | @Selector@ for @setStrokeColor:@
-setStrokeColorSelector :: Selector
+setStrokeColorSelector :: Selector '[Id NSColor] ()
 setStrokeColorSelector = mkSelector "setStrokeColor:"
 
 -- | @Selector@ for @lineWidth@
-lineWidthSelector :: Selector
+lineWidthSelector :: Selector '[] CDouble
 lineWidthSelector = mkSelector "lineWidth"
 
 -- | @Selector@ for @setLineWidth:@
-setLineWidthSelector :: Selector
+setLineWidthSelector :: Selector '[CDouble] ()
 setLineWidthSelector = mkSelector "setLineWidth:"
 
 -- | @Selector@ for @lineJoin@
-lineJoinSelector :: Selector
+lineJoinSelector :: Selector '[] CInt
 lineJoinSelector = mkSelector "lineJoin"
 
 -- | @Selector@ for @setLineJoin:@
-setLineJoinSelector :: Selector
+setLineJoinSelector :: Selector '[CInt] ()
 setLineJoinSelector = mkSelector "setLineJoin:"
 
 -- | @Selector@ for @lineCap@
-lineCapSelector :: Selector
+lineCapSelector :: Selector '[] CInt
 lineCapSelector = mkSelector "lineCap"
 
 -- | @Selector@ for @setLineCap:@
-setLineCapSelector :: Selector
+setLineCapSelector :: Selector '[CInt] ()
 setLineCapSelector = mkSelector "setLineCap:"
 
 -- | @Selector@ for @miterLimit@
-miterLimitSelector :: Selector
+miterLimitSelector :: Selector '[] CDouble
 miterLimitSelector = mkSelector "miterLimit"
 
 -- | @Selector@ for @setMiterLimit:@
-setMiterLimitSelector :: Selector
+setMiterLimitSelector :: Selector '[CDouble] ()
 setMiterLimitSelector = mkSelector "setMiterLimit:"
 
 -- | @Selector@ for @lineDashPhase@
-lineDashPhaseSelector :: Selector
+lineDashPhaseSelector :: Selector '[] CDouble
 lineDashPhaseSelector = mkSelector "lineDashPhase"
 
 -- | @Selector@ for @setLineDashPhase:@
-setLineDashPhaseSelector :: Selector
+setLineDashPhaseSelector :: Selector '[CDouble] ()
 setLineDashPhaseSelector = mkSelector "setLineDashPhase:"
 
 -- | @Selector@ for @lineDashPattern@
-lineDashPatternSelector :: Selector
+lineDashPatternSelector :: Selector '[] (Id NSArray)
 lineDashPatternSelector = mkSelector "lineDashPattern"
 
 -- | @Selector@ for @setLineDashPattern:@
-setLineDashPatternSelector :: Selector
+setLineDashPatternSelector :: Selector '[Id NSArray] ()
 setLineDashPatternSelector = mkSelector "setLineDashPattern:"
 
 -- | @Selector@ for @shouldRasterize@
-shouldRasterizeSelector :: Selector
+shouldRasterizeSelector :: Selector '[] Bool
 shouldRasterizeSelector = mkSelector "shouldRasterize"
 
 -- | @Selector@ for @setShouldRasterize:@
-setShouldRasterizeSelector :: Selector
+setShouldRasterizeSelector :: Selector '[Bool] ()
 setShouldRasterizeSelector = mkSelector "setShouldRasterize:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] RawId
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[RawId] ()
 setPathSelector = mkSelector "setPath:"
 

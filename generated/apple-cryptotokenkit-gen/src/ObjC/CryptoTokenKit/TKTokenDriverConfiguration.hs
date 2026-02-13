@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CryptoTokenKit.TKTokenDriverConfiguration
   , classID
   , tokenConfigurations
   , addTokenConfigurationForTokenInstanceIDSelector
-  , removeTokenConfigurationForTokenInstanceIDSelector
+  , classIDSelector
+  , driverConfigurationsSelector
   , initSelector
   , newSelector
-  , driverConfigurationsSelector
-  , classIDSelector
+  , removeTokenConfigurationForTokenInstanceIDSelector
   , tokenConfigurationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,29 +42,27 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addTokenConfigurationForTokenInstanceID:@
 addTokenConfigurationForTokenInstanceID :: (IsTKTokenDriverConfiguration tkTokenDriverConfiguration, IsNSString instanceID) => tkTokenDriverConfiguration -> instanceID -> IO (Id TKTokenConfiguration)
-addTokenConfigurationForTokenInstanceID tkTokenDriverConfiguration  instanceID =
-  withObjCPtr instanceID $ \raw_instanceID ->
-      sendMsg tkTokenDriverConfiguration (mkSelector "addTokenConfigurationForTokenInstanceID:") (retPtr retVoid) [argPtr (castPtr raw_instanceID :: Ptr ())] >>= retainedObject . castPtr
+addTokenConfigurationForTokenInstanceID tkTokenDriverConfiguration instanceID =
+  sendMessage tkTokenDriverConfiguration addTokenConfigurationForTokenInstanceIDSelector (toNSString instanceID)
 
 -- | Removes configuration with specified tokenID. Does nothing if no such token configuration exists.
 --
 -- ObjC selector: @- removeTokenConfigurationForTokenInstanceID:@
 removeTokenConfigurationForTokenInstanceID :: (IsTKTokenDriverConfiguration tkTokenDriverConfiguration, IsNSString instanceID) => tkTokenDriverConfiguration -> instanceID -> IO ()
-removeTokenConfigurationForTokenInstanceID tkTokenDriverConfiguration  instanceID =
-  withObjCPtr instanceID $ \raw_instanceID ->
-      sendMsg tkTokenDriverConfiguration (mkSelector "removeTokenConfigurationForTokenInstanceID:") retVoid [argPtr (castPtr raw_instanceID :: Ptr ())]
+removeTokenConfigurationForTokenInstanceID tkTokenDriverConfiguration instanceID =
+  sendMessage tkTokenDriverConfiguration removeTokenConfigurationForTokenInstanceIDSelector (toNSString instanceID)
 
 -- | @- init@
 init_ :: IsTKTokenDriverConfiguration tkTokenDriverConfiguration => tkTokenDriverConfiguration -> IO (Id TKTokenDriverConfiguration)
-init_ tkTokenDriverConfiguration  =
-    sendMsg tkTokenDriverConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenDriverConfiguration =
+  sendOwnedMessage tkTokenDriverConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id TKTokenDriverConfiguration)
 new  =
   do
     cls' <- getRequiredClass "TKTokenDriverConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Contains dictionary of token class configurations keyed by TKTokenDriverClassID of token driver.
 --
@@ -78,51 +73,51 @@ driverConfigurations :: IO (Id NSDictionary)
 driverConfigurations  =
   do
     cls' <- getRequiredClass "TKTokenDriverConfiguration"
-    sendClassMsg cls' (mkSelector "driverConfigurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' driverConfigurationsSelector
 
 -- | ClassID of the token configuration. ClassID is taken from @com.apple.ctk.class-id@ token extension attribute.
 --
 -- ObjC selector: @- classID@
 classID :: IsTKTokenDriverConfiguration tkTokenDriverConfiguration => tkTokenDriverConfiguration -> IO (Id NSString)
-classID tkTokenDriverConfiguration  =
-    sendMsg tkTokenDriverConfiguration (mkSelector "classID") (retPtr retVoid) [] >>= retainedObject . castPtr
+classID tkTokenDriverConfiguration =
+  sendMessage tkTokenDriverConfiguration classIDSelector
 
 -- | Dictionary of all currently configured tokens for this token class, keyed by instanceID.
 --
 -- ObjC selector: @- tokenConfigurations@
 tokenConfigurations :: IsTKTokenDriverConfiguration tkTokenDriverConfiguration => tkTokenDriverConfiguration -> IO (Id NSDictionary)
-tokenConfigurations tkTokenDriverConfiguration  =
-    sendMsg tkTokenDriverConfiguration (mkSelector "tokenConfigurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenConfigurations tkTokenDriverConfiguration =
+  sendMessage tkTokenDriverConfiguration tokenConfigurationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addTokenConfigurationForTokenInstanceID:@
-addTokenConfigurationForTokenInstanceIDSelector :: Selector
+addTokenConfigurationForTokenInstanceIDSelector :: Selector '[Id NSString] (Id TKTokenConfiguration)
 addTokenConfigurationForTokenInstanceIDSelector = mkSelector "addTokenConfigurationForTokenInstanceID:"
 
 -- | @Selector@ for @removeTokenConfigurationForTokenInstanceID:@
-removeTokenConfigurationForTokenInstanceIDSelector :: Selector
+removeTokenConfigurationForTokenInstanceIDSelector :: Selector '[Id NSString] ()
 removeTokenConfigurationForTokenInstanceIDSelector = mkSelector "removeTokenConfigurationForTokenInstanceID:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenDriverConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id TKTokenDriverConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @driverConfigurations@
-driverConfigurationsSelector :: Selector
+driverConfigurationsSelector :: Selector '[] (Id NSDictionary)
 driverConfigurationsSelector = mkSelector "driverConfigurations"
 
 -- | @Selector@ for @classID@
-classIDSelector :: Selector
+classIDSelector :: Selector '[] (Id NSString)
 classIDSelector = mkSelector "classID"
 
 -- | @Selector@ for @tokenConfigurations@
-tokenConfigurationsSelector :: Selector
+tokenConfigurationsSelector :: Selector '[] (Id NSDictionary)
 tokenConfigurationsSelector = mkSelector "tokenConfigurations"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,46 +38,42 @@ module ObjC.WebKit.WKWebExtension
   , hasOverrideNewTabPage
   , hasCommands
   , hasContentModificationRules
-  , newSelector
-  , initSelector
-  , extensionWithAppExtensionBundle_completionHandlerSelector
-  , extensionWithResourceBaseURL_completionHandlerSelector
-  , supportsManifestVersionSelector
-  , errorsSelector
-  , manifestSelector
-  , manifestVersionSelector
+  , allRequestedMatchPatternsSelector
   , defaultLocaleSelector
+  , displayActionLabelSelector
+  , displayDescriptionSelector
   , displayNameSelector
   , displayShortNameSelector
   , displayVersionSelector
-  , displayDescriptionSelector
-  , displayActionLabelSelector
-  , versionSelector
-  , requestedPermissionsSelector
-  , optionalPermissionsSelector
-  , requestedPermissionMatchPatternsSelector
-  , optionalPermissionMatchPatternsSelector
-  , allRequestedMatchPatternsSelector
+  , errorsSelector
+  , extensionWithAppExtensionBundle_completionHandlerSelector
+  , extensionWithResourceBaseURL_completionHandlerSelector
   , hasBackgroundContentSelector
-  , hasPersistentBackgroundContentSelector
+  , hasCommandsSelector
+  , hasContentModificationRulesSelector
   , hasInjectedContentSelector
   , hasOptionsPageSelector
   , hasOverrideNewTabPageSelector
-  , hasCommandsSelector
-  , hasContentModificationRulesSelector
+  , hasPersistentBackgroundContentSelector
+  , initSelector
+  , manifestSelector
+  , manifestVersionSelector
+  , newSelector
+  , optionalPermissionMatchPatternsSelector
+  , optionalPermissionsSelector
+  , requestedPermissionMatchPatternsSelector
+  , requestedPermissionsSelector
+  , supportsManifestVersionSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,12 +86,12 @@ new :: IO (Id WKWebExtension)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtension"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id WKWebExtension)
-init_ wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtension =
+  sendOwnedMessage wkWebExtension initSelector
 
 -- | Returns a web extension initialized with a specified app extension bundle.
 --
@@ -109,8 +106,7 @@ extensionWithAppExtensionBundle_completionHandler :: IsNSBundle appExtensionBund
 extensionWithAppExtensionBundle_completionHandler appExtensionBundle completionHandler =
   do
     cls' <- getRequiredClass "WKWebExtension"
-    withObjCPtr appExtensionBundle $ \raw_appExtensionBundle ->
-      sendClassMsg cls' (mkSelector "extensionWithAppExtensionBundle:completionHandler:") retVoid [argPtr (castPtr raw_appExtensionBundle :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' extensionWithAppExtensionBundle_completionHandlerSelector (toNSBundle appExtensionBundle) completionHandler
 
 -- | Returns a web extension initialized with a specified resource base URL, which can point to either a directory or a ZIP archive.
 --
@@ -125,8 +121,7 @@ extensionWithResourceBaseURL_completionHandler :: IsNSURL resourceBaseURL => res
 extensionWithResourceBaseURL_completionHandler resourceBaseURL completionHandler =
   do
     cls' <- getRequiredClass "WKWebExtension"
-    withObjCPtr resourceBaseURL $ \raw_resourceBaseURL ->
-      sendClassMsg cls' (mkSelector "extensionWithResourceBaseURL:completionHandler:") retVoid [argPtr (castPtr raw_resourceBaseURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' extensionWithResourceBaseURL_completionHandlerSelector (toNSURL resourceBaseURL) completionHandler
 
 -- | Checks if a manifest version is supported by the extension.
 --
@@ -136,8 +131,8 @@ extensionWithResourceBaseURL_completionHandler resourceBaseURL completionHandler
 --
 -- ObjC selector: @- supportsManifestVersion:@
 supportsManifestVersion :: IsWKWebExtension wkWebExtension => wkWebExtension -> CDouble -> IO Bool
-supportsManifestVersion wkWebExtension  manifestVersion =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "supportsManifestVersion:") retCULong [argCDouble manifestVersion]
+supportsManifestVersion wkWebExtension manifestVersion =
+  sendMessage wkWebExtension supportsManifestVersionSelector manifestVersion
 
 -- | An array of all errors that occurred during the processing of the extension.
 --
@@ -147,15 +142,15 @@ supportsManifestVersion wkWebExtension  manifestVersion =
 --
 -- ObjC selector: @- errors@
 errors :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSArray)
-errors wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "errors") (retPtr retVoid) [] >>= retainedObject . castPtr
+errors wkWebExtension =
+  sendMessage wkWebExtension errorsSelector
 
 -- | The parsed manifest as a dictionary.
 --
 -- ObjC selector: @- manifest@
 manifest :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSDictionary)
-manifest wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "manifest") (retPtr retVoid) [] >>= retainedObject . castPtr
+manifest wkWebExtension =
+  sendMessage wkWebExtension manifestSelector
 
 -- | The parsed manifest version, or @0@ if there is no version specified in the manifest.
 --
@@ -163,43 +158,43 @@ manifest wkWebExtension  =
 --
 -- ObjC selector: @- manifestVersion@
 manifestVersion :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO CDouble
-manifestVersion wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "manifestVersion") retCDouble []
+manifestVersion wkWebExtension =
+  sendMessage wkWebExtension manifestVersionSelector
 
 -- | The default locale for the extension. Returns @nil@ if there was no default locale specified.
 --
 -- ObjC selector: @- defaultLocale@
 defaultLocale :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSLocale)
-defaultLocale wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "defaultLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultLocale wkWebExtension =
+  sendMessage wkWebExtension defaultLocaleSelector
 
 -- | The localized extension name. Returns @nil@ if there was no name specified.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-displayName wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName wkWebExtension =
+  sendMessage wkWebExtension displayNameSelector
 
 -- | The localized extension short name. Returns @nil@ if there was no short name specified.
 --
 -- ObjC selector: @- displayShortName@
 displayShortName :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-displayShortName wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "displayShortName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayShortName wkWebExtension =
+  sendMessage wkWebExtension displayShortNameSelector
 
 -- | The localized extension display version. Returns @nil@ if there was no display version specified.
 --
 -- ObjC selector: @- displayVersion@
 displayVersion :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-displayVersion wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "displayVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayVersion wkWebExtension =
+  sendMessage wkWebExtension displayVersionSelector
 
 -- | The localized extension description. Returns @nil@ if there was no description specified.
 --
 -- ObjC selector: @- displayDescription@
 displayDescription :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-displayDescription wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "displayDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayDescription wkWebExtension =
+  sendMessage wkWebExtension displayDescriptionSelector
 
 -- | The default localized extension action label. Returns @nil@ if there was no default action label specified.
 --
@@ -207,50 +202,50 @@ displayDescription wkWebExtension  =
 --
 -- ObjC selector: @- displayActionLabel@
 displayActionLabel :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-displayActionLabel wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "displayActionLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayActionLabel wkWebExtension =
+  sendMessage wkWebExtension displayActionLabelSelector
 
 -- | The extension version. Returns @nil@ if there was no version specified.
 --
 -- ObjC selector: @- version@
 version :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSString)
-version wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version wkWebExtension =
+  sendMessage wkWebExtension versionSelector
 
 -- | The set of permissions that the extension requires for its base functionality.
 --
 -- ObjC selector: @- requestedPermissions@
 requestedPermissions :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSSet)
-requestedPermissions wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "requestedPermissions") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedPermissions wkWebExtension =
+  sendMessage wkWebExtension requestedPermissionsSelector
 
 -- | The set of permissions that the extension may need for optional functionality. These permissions can be requested by the extension at a later time.
 --
 -- ObjC selector: @- optionalPermissions@
 optionalPermissions :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSSet)
-optionalPermissions wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "optionalPermissions") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalPermissions wkWebExtension =
+  sendMessage wkWebExtension optionalPermissionsSelector
 
 -- | The set of websites that the extension requires access to for its base functionality.
 --
 -- ObjC selector: @- requestedPermissionMatchPatterns@
 requestedPermissionMatchPatterns :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSSet)
-requestedPermissionMatchPatterns wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "requestedPermissionMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedPermissionMatchPatterns wkWebExtension =
+  sendMessage wkWebExtension requestedPermissionMatchPatternsSelector
 
 -- | The set of websites that the extension may need access to for optional functionality. These match patterns can be requested by the extension at a later time.
 --
 -- ObjC selector: @- optionalPermissionMatchPatterns@
 optionalPermissionMatchPatterns :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSSet)
-optionalPermissionMatchPatterns wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "optionalPermissionMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalPermissionMatchPatterns wkWebExtension =
+  sendMessage wkWebExtension optionalPermissionMatchPatternsSelector
 
 -- | The set of websites that the extension requires access to for injected content and for receiving messages from websites.
 --
 -- ObjC selector: @- allRequestedMatchPatterns@
 allRequestedMatchPatterns :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO (Id NSSet)
-allRequestedMatchPatterns wkWebExtension  =
-    sendMsg wkWebExtension (mkSelector "allRequestedMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+allRequestedMatchPatterns wkWebExtension =
+  sendMessage wkWebExtension allRequestedMatchPatternsSelector
 
 -- | A Boolean value indicating whether the extension has background content that can run when needed.
 --
@@ -258,8 +253,8 @@ allRequestedMatchPatterns wkWebExtension  =
 --
 -- ObjC selector: @- hasBackgroundContent@
 hasBackgroundContent :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasBackgroundContent wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasBackgroundContent") retCULong []
+hasBackgroundContent wkWebExtension =
+  sendMessage wkWebExtension hasBackgroundContentSelector
 
 -- | A Boolean value indicating whether the extension has background content that stays in memory as long as the extension is loaded.
 --
@@ -267,8 +262,8 @@ hasBackgroundContent wkWebExtension  =
 --
 -- ObjC selector: @- hasPersistentBackgroundContent@
 hasPersistentBackgroundContent :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasPersistentBackgroundContent wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasPersistentBackgroundContent") retCULong []
+hasPersistentBackgroundContent wkWebExtension =
+  sendMessage wkWebExtension hasPersistentBackgroundContentSelector
 
 -- | A Boolean value indicating whether the extension has script or stylesheet content that can be injected into webpages.
 --
@@ -278,8 +273,8 @@ hasPersistentBackgroundContent wkWebExtension  =
 --
 -- ObjC selector: @- hasInjectedContent@
 hasInjectedContent :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasInjectedContent wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasInjectedContent") retCULong []
+hasInjectedContent wkWebExtension =
+  sendMessage wkWebExtension hasInjectedContentSelector
 
 -- | A Boolean value indicating whether the extension has an options page.
 --
@@ -287,8 +282,8 @@ hasInjectedContent wkWebExtension  =
 --
 -- ObjC selector: @- hasOptionsPage@
 hasOptionsPage :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasOptionsPage wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasOptionsPage") retCULong []
+hasOptionsPage wkWebExtension =
+  sendMessage wkWebExtension hasOptionsPageSelector
 
 -- | A Boolean value indicating whether the extension provides an alternative to the default new tab page.
 --
@@ -296,8 +291,8 @@ hasOptionsPage wkWebExtension  =
 --
 -- ObjC selector: @- hasOverrideNewTabPage@
 hasOverrideNewTabPage :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasOverrideNewTabPage wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasOverrideNewTabPage") retCULong []
+hasOverrideNewTabPage wkWebExtension =
+  sendMessage wkWebExtension hasOverrideNewTabPageSelector
 
 -- | A Boolean value indicating whether the extension includes commands that users can invoke.
 --
@@ -305,125 +300,125 @@ hasOverrideNewTabPage wkWebExtension  =
 --
 -- ObjC selector: @- hasCommands@
 hasCommands :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasCommands wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasCommands") retCULong []
+hasCommands wkWebExtension =
+  sendMessage wkWebExtension hasCommandsSelector
 
 -- | A boolean value indicating whether the extension includes rules used for content modification or blocking.
 --
 -- ObjC selector: @- hasContentModificationRules@
 hasContentModificationRules :: IsWKWebExtension wkWebExtension => wkWebExtension -> IO Bool
-hasContentModificationRules wkWebExtension  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtension (mkSelector "hasContentModificationRules") retCULong []
+hasContentModificationRules wkWebExtension =
+  sendMessage wkWebExtension hasContentModificationRulesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtension)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtension)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @extensionWithAppExtensionBundle:completionHandler:@
-extensionWithAppExtensionBundle_completionHandlerSelector :: Selector
+extensionWithAppExtensionBundle_completionHandlerSelector :: Selector '[Id NSBundle, Ptr ()] ()
 extensionWithAppExtensionBundle_completionHandlerSelector = mkSelector "extensionWithAppExtensionBundle:completionHandler:"
 
 -- | @Selector@ for @extensionWithResourceBaseURL:completionHandler:@
-extensionWithResourceBaseURL_completionHandlerSelector :: Selector
+extensionWithResourceBaseURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 extensionWithResourceBaseURL_completionHandlerSelector = mkSelector "extensionWithResourceBaseURL:completionHandler:"
 
 -- | @Selector@ for @supportsManifestVersion:@
-supportsManifestVersionSelector :: Selector
+supportsManifestVersionSelector :: Selector '[CDouble] Bool
 supportsManifestVersionSelector = mkSelector "supportsManifestVersion:"
 
 -- | @Selector@ for @errors@
-errorsSelector :: Selector
+errorsSelector :: Selector '[] (Id NSArray)
 errorsSelector = mkSelector "errors"
 
 -- | @Selector@ for @manifest@
-manifestSelector :: Selector
+manifestSelector :: Selector '[] (Id NSDictionary)
 manifestSelector = mkSelector "manifest"
 
 -- | @Selector@ for @manifestVersion@
-manifestVersionSelector :: Selector
+manifestVersionSelector :: Selector '[] CDouble
 manifestVersionSelector = mkSelector "manifestVersion"
 
 -- | @Selector@ for @defaultLocale@
-defaultLocaleSelector :: Selector
+defaultLocaleSelector :: Selector '[] (Id NSLocale)
 defaultLocaleSelector = mkSelector "defaultLocale"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @displayShortName@
-displayShortNameSelector :: Selector
+displayShortNameSelector :: Selector '[] (Id NSString)
 displayShortNameSelector = mkSelector "displayShortName"
 
 -- | @Selector@ for @displayVersion@
-displayVersionSelector :: Selector
+displayVersionSelector :: Selector '[] (Id NSString)
 displayVersionSelector = mkSelector "displayVersion"
 
 -- | @Selector@ for @displayDescription@
-displayDescriptionSelector :: Selector
+displayDescriptionSelector :: Selector '[] (Id NSString)
 displayDescriptionSelector = mkSelector "displayDescription"
 
 -- | @Selector@ for @displayActionLabel@
-displayActionLabelSelector :: Selector
+displayActionLabelSelector :: Selector '[] (Id NSString)
 displayActionLabelSelector = mkSelector "displayActionLabel"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @requestedPermissions@
-requestedPermissionsSelector :: Selector
+requestedPermissionsSelector :: Selector '[] (Id NSSet)
 requestedPermissionsSelector = mkSelector "requestedPermissions"
 
 -- | @Selector@ for @optionalPermissions@
-optionalPermissionsSelector :: Selector
+optionalPermissionsSelector :: Selector '[] (Id NSSet)
 optionalPermissionsSelector = mkSelector "optionalPermissions"
 
 -- | @Selector@ for @requestedPermissionMatchPatterns@
-requestedPermissionMatchPatternsSelector :: Selector
+requestedPermissionMatchPatternsSelector :: Selector '[] (Id NSSet)
 requestedPermissionMatchPatternsSelector = mkSelector "requestedPermissionMatchPatterns"
 
 -- | @Selector@ for @optionalPermissionMatchPatterns@
-optionalPermissionMatchPatternsSelector :: Selector
+optionalPermissionMatchPatternsSelector :: Selector '[] (Id NSSet)
 optionalPermissionMatchPatternsSelector = mkSelector "optionalPermissionMatchPatterns"
 
 -- | @Selector@ for @allRequestedMatchPatterns@
-allRequestedMatchPatternsSelector :: Selector
+allRequestedMatchPatternsSelector :: Selector '[] (Id NSSet)
 allRequestedMatchPatternsSelector = mkSelector "allRequestedMatchPatterns"
 
 -- | @Selector@ for @hasBackgroundContent@
-hasBackgroundContentSelector :: Selector
+hasBackgroundContentSelector :: Selector '[] Bool
 hasBackgroundContentSelector = mkSelector "hasBackgroundContent"
 
 -- | @Selector@ for @hasPersistentBackgroundContent@
-hasPersistentBackgroundContentSelector :: Selector
+hasPersistentBackgroundContentSelector :: Selector '[] Bool
 hasPersistentBackgroundContentSelector = mkSelector "hasPersistentBackgroundContent"
 
 -- | @Selector@ for @hasInjectedContent@
-hasInjectedContentSelector :: Selector
+hasInjectedContentSelector :: Selector '[] Bool
 hasInjectedContentSelector = mkSelector "hasInjectedContent"
 
 -- | @Selector@ for @hasOptionsPage@
-hasOptionsPageSelector :: Selector
+hasOptionsPageSelector :: Selector '[] Bool
 hasOptionsPageSelector = mkSelector "hasOptionsPage"
 
 -- | @Selector@ for @hasOverrideNewTabPage@
-hasOverrideNewTabPageSelector :: Selector
+hasOverrideNewTabPageSelector :: Selector '[] Bool
 hasOverrideNewTabPageSelector = mkSelector "hasOverrideNewTabPage"
 
 -- | @Selector@ for @hasCommands@
-hasCommandsSelector :: Selector
+hasCommandsSelector :: Selector '[] Bool
 hasCommandsSelector = mkSelector "hasCommands"
 
 -- | @Selector@ for @hasContentModificationRules@
-hasContentModificationRulesSelector :: Selector
+hasContentModificationRulesSelector :: Selector '[] Bool
 hasContentModificationRulesSelector = mkSelector "hasContentModificationRules"
 

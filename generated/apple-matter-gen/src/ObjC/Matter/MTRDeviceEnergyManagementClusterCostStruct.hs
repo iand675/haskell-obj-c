@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterCostStruct
   , currency
   , setCurrency
   , costTypeSelector
-  , setCostTypeSelector
-  , valueSelector
-  , setValueSelector
-  , decimalPointsSelector
-  , setDecimalPointsSelector
   , currencySelector
+  , decimalPointsSelector
+  , setCostTypeSelector
   , setCurrencySelector
+  , setDecimalPointsSelector
+  , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- costType@
 costType :: IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct => mtrDeviceEnergyManagementClusterCostStruct -> IO (Id NSNumber)
-costType mtrDeviceEnergyManagementClusterCostStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "costType") (retPtr retVoid) [] >>= retainedObject . castPtr
+costType mtrDeviceEnergyManagementClusterCostStruct =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct costTypeSelector
 
 -- | @- setCostType:@
 setCostType :: (IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterCostStruct -> value -> IO ()
-setCostType mtrDeviceEnergyManagementClusterCostStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "setCostType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCostType mtrDeviceEnergyManagementClusterCostStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct setCostTypeSelector (toNSNumber value)
 
 -- | @- value@
 value :: IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct => mtrDeviceEnergyManagementClusterCostStruct -> IO (Id NSNumber)
-value mtrDeviceEnergyManagementClusterCostStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrDeviceEnergyManagementClusterCostStruct =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterCostStruct -> value -> IO ()
-setValue mtrDeviceEnergyManagementClusterCostStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrDeviceEnergyManagementClusterCostStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct setValueSelector (toNSNumber value)
 
 -- | @- decimalPoints@
 decimalPoints :: IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct => mtrDeviceEnergyManagementClusterCostStruct -> IO (Id NSNumber)
-decimalPoints mtrDeviceEnergyManagementClusterCostStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "decimalPoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+decimalPoints mtrDeviceEnergyManagementClusterCostStruct =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct decimalPointsSelector
 
 -- | @- setDecimalPoints:@
 setDecimalPoints :: (IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterCostStruct -> value -> IO ()
-setDecimalPoints mtrDeviceEnergyManagementClusterCostStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "setDecimalPoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDecimalPoints mtrDeviceEnergyManagementClusterCostStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct setDecimalPointsSelector (toNSNumber value)
 
 -- | @- currency@
 currency :: IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct => mtrDeviceEnergyManagementClusterCostStruct -> IO (Id NSNumber)
-currency mtrDeviceEnergyManagementClusterCostStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "currency") (retPtr retVoid) [] >>= retainedObject . castPtr
+currency mtrDeviceEnergyManagementClusterCostStruct =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct currencySelector
 
 -- | @- setCurrency:@
 setCurrency :: (IsMTRDeviceEnergyManagementClusterCostStruct mtrDeviceEnergyManagementClusterCostStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterCostStruct -> value -> IO ()
-setCurrency mtrDeviceEnergyManagementClusterCostStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterCostStruct (mkSelector "setCurrency:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrency mtrDeviceEnergyManagementClusterCostStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterCostStruct setCurrencySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @costType@
-costTypeSelector :: Selector
+costTypeSelector :: Selector '[] (Id NSNumber)
 costTypeSelector = mkSelector "costType"
 
 -- | @Selector@ for @setCostType:@
-setCostTypeSelector :: Selector
+setCostTypeSelector :: Selector '[Id NSNumber] ()
 setCostTypeSelector = mkSelector "setCostType:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSNumber)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSNumber] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @decimalPoints@
-decimalPointsSelector :: Selector
+decimalPointsSelector :: Selector '[] (Id NSNumber)
 decimalPointsSelector = mkSelector "decimalPoints"
 
 -- | @Selector@ for @setDecimalPoints:@
-setDecimalPointsSelector :: Selector
+setDecimalPointsSelector :: Selector '[Id NSNumber] ()
 setDecimalPointsSelector = mkSelector "setDecimalPoints:"
 
 -- | @Selector@ for @currency@
-currencySelector :: Selector
+currencySelector :: Selector '[] (Id NSNumber)
 currencySelector = mkSelector "currency"
 
 -- | @Selector@ for @setCurrency:@
-setCurrencySelector :: Selector
+setCurrencySelector :: Selector '[Id NSNumber] ()
 setCurrencySelector = mkSelector "setCurrency:"
 

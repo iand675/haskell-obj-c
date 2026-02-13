@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Intents.INRelevantShortcutStore
   , setRelevantShortcuts_completionHandler
   , init_
   , defaultStore
-  , setRelevantShortcuts_completionHandlerSelector
-  , initSelector
   , defaultStoreSelector
+  , initSelector
+  , setRelevantShortcuts_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,37 +38,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setRelevantShortcuts:completionHandler:@
 setRelevantShortcuts_completionHandler :: (IsINRelevantShortcutStore inRelevantShortcutStore, IsNSArray shortcuts) => inRelevantShortcutStore -> shortcuts -> Ptr () -> IO ()
-setRelevantShortcuts_completionHandler inRelevantShortcutStore  shortcuts completionHandler =
-  withObjCPtr shortcuts $ \raw_shortcuts ->
-      sendMsg inRelevantShortcutStore (mkSelector "setRelevantShortcuts:completionHandler:") retVoid [argPtr (castPtr raw_shortcuts :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setRelevantShortcuts_completionHandler inRelevantShortcutStore shortcuts completionHandler =
+  sendMessage inRelevantShortcutStore setRelevantShortcuts_completionHandlerSelector (toNSArray shortcuts) completionHandler
 
 -- | Note: Use the @defaultStore@ singleton.
 --
 -- ObjC selector: @- init@
 init_ :: IsINRelevantShortcutStore inRelevantShortcutStore => inRelevantShortcutStore -> IO (Id INRelevantShortcutStore)
-init_ inRelevantShortcutStore  =
-    sendMsg inRelevantShortcutStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRelevantShortcutStore =
+  sendOwnedMessage inRelevantShortcutStore initSelector
 
 -- | @+ defaultStore@
 defaultStore :: IO (Id INRelevantShortcutStore)
 defaultStore  =
   do
     cls' <- getRequiredClass "INRelevantShortcutStore"
-    sendClassMsg cls' (mkSelector "defaultStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultStoreSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setRelevantShortcuts:completionHandler:@
-setRelevantShortcuts_completionHandlerSelector :: Selector
+setRelevantShortcuts_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 setRelevantShortcuts_completionHandlerSelector = mkSelector "setRelevantShortcuts:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRelevantShortcutStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @defaultStore@
-defaultStoreSelector :: Selector
+defaultStoreSelector :: Selector '[] (Id INRelevantShortcutStore)
 defaultStoreSelector = mkSelector "defaultStore"
 

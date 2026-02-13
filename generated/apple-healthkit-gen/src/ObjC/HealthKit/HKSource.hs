@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.HealthKit.HKSource
   , init_
   , name
   , bundleIdentifier
+  , bundleIdentifierSelector
   , defaultSourceSelector
   , initSelector
   , nameSelector
-  , bundleIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,12 +43,12 @@ defaultSource :: IO (Id HKSource)
 defaultSource  =
   do
     cls' <- getRequiredClass "HKSource"
-    sendClassMsg cls' (mkSelector "defaultSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSourceSelector
 
 -- | @- init@
 init_ :: IsHKSource hkSource => hkSource -> IO (Id HKSource)
-init_ hkSource  =
-    sendMsg hkSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkSource =
+  sendOwnedMessage hkSource initSelector
 
 -- | name
 --
@@ -59,8 +56,8 @@ init_ hkSource  =
 --
 -- ObjC selector: @- name@
 name :: IsHKSource hkSource => hkSource -> IO (Id NSString)
-name hkSource  =
-    sendMsg hkSource (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name hkSource =
+  sendMessage hkSource nameSelector
 
 -- | bundleIdentifier
 --
@@ -68,26 +65,26 @@ name hkSource  =
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsHKSource hkSource => hkSource -> IO (Id NSString)
-bundleIdentifier hkSource  =
-    sendMsg hkSource (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier hkSource =
+  sendMessage hkSource bundleIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSource@
-defaultSourceSelector :: Selector
+defaultSourceSelector :: Selector '[] (Id HKSource)
 defaultSourceSelector = mkSelector "defaultSource"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 

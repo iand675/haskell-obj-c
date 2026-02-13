@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,48 +56,44 @@ module ObjC.CoreImage.CIColor
   , magentaColor
   , yellowColor
   , clearColor
+  , alphaSelector
+  , blackColorSelector
+  , blueColorSelector
+  , blueSelector
+  , clearColorSelector
+  , colorSpaceSelector
   , colorWithCGColorSelector
-  , colorWithRed_green_blue_alphaSelector
   , colorWithRed_green_blueSelector
+  , colorWithRed_green_blue_alphaSelector
   , colorWithRed_green_blue_alpha_colorSpaceSelector
   , colorWithRed_green_blue_colorSpaceSelector
   , colorWithStringSelector
+  , componentsSelector
+  , cyanColorSelector
+  , grayColorSelector
+  , greenColorSelector
+  , greenSelector
   , initWithCGColorSelector
-  , initWithRed_green_blue_alphaSelector
   , initWithRed_green_blueSelector
+  , initWithRed_green_blue_alphaSelector
   , initWithRed_green_blue_alpha_colorSpaceSelector
   , initWithRed_green_blue_colorSpaceSelector
-  , numberOfComponentsSelector
-  , componentsSelector
-  , alphaSelector
-  , colorSpaceSelector
-  , redSelector
-  , greenSelector
-  , blueSelector
-  , stringRepresentationSelector
-  , blackColorSelector
-  , whiteColorSelector
-  , grayColorSelector
-  , redColorSelector
-  , greenColorSelector
-  , blueColorSelector
-  , cyanColorSelector
   , magentaColorSelector
+  , numberOfComponentsSelector
+  , redColorSelector
+  , redSelector
+  , stringRepresentationSelector
+  , whiteColorSelector
   , yellowColorSelector
-  , clearColorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,7 +107,7 @@ colorWithCGColor :: Ptr () -> IO (Id CIColor)
 colorWithCGColor color =
   do
     cls' <- getRequiredClass "CIColor"
-    sendClassMsg cls' (mkSelector "colorWithCGColor:") (retPtr retVoid) [argPtr color] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithCGColorSelector color
 
 -- | Create a Core Image color object in the sRGB color space  with the specified red, green, blue, and alpha component values.
 --
@@ -121,7 +118,7 @@ colorWithRed_green_blue_alpha :: CDouble -> CDouble -> CDouble -> CDouble -> IO 
 colorWithRed_green_blue_alpha red green blue alpha =
   do
     cls' <- getRequiredClass "CIColor"
-    sendClassMsg cls' (mkSelector "colorWithRed:green:blue:alpha:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argCDouble alpha] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithRed_green_blue_alphaSelector red green blue alpha
 
 -- | Create a Core Image color object in the sRGB color space  with the specified red, green, and blue component values.
 --
@@ -132,7 +129,7 @@ colorWithRed_green_blue :: CDouble -> CDouble -> CDouble -> IO (Id CIColor)
 colorWithRed_green_blue red green blue =
   do
     cls' <- getRequiredClass "CIColor"
-    sendClassMsg cls' (mkSelector "colorWithRed:green:blue:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithRed_green_blueSelector red green blue
 
 -- | Create a Core Image color object  with the specified red, green, blue, and alpha component values as measured in the specified color space.
 --
@@ -145,7 +142,7 @@ colorWithRed_green_blue_alpha_colorSpace :: CDouble -> CDouble -> CDouble -> CDo
 colorWithRed_green_blue_alpha_colorSpace red green blue alpha colorSpace =
   do
     cls' <- getRequiredClass "CIColor"
-    sendClassMsg cls' (mkSelector "colorWithRed:green:blue:alpha:colorSpace:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argCDouble alpha, argPtr colorSpace] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithRed_green_blue_alpha_colorSpaceSelector red green blue alpha colorSpace
 
 -- | Create a Core Image color object  with the specified red, green, and blue component values as measured in the specified color space.
 --
@@ -158,7 +155,7 @@ colorWithRed_green_blue_colorSpace :: CDouble -> CDouble -> CDouble -> Ptr () ->
 colorWithRed_green_blue_colorSpace red green blue colorSpace =
   do
     cls' <- getRequiredClass "CIColor"
-    sendClassMsg cls' (mkSelector "colorWithRed:green:blue:colorSpace:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argPtr colorSpace] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithRed_green_blue_colorSpaceSelector red green blue colorSpace
 
 -- | Create a Core Image color object in the sRGB color space using a string containing the RGBA color component values.
 --
@@ -171,15 +168,14 @@ colorWithString :: IsNSString representation => representation -> IO (Id CIColor
 colorWithString representation =
   do
     cls' <- getRequiredClass "CIColor"
-    withObjCPtr representation $ \raw_representation ->
-      sendClassMsg cls' (mkSelector "colorWithString:") (retPtr retVoid) [argPtr (castPtr raw_representation :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' colorWithStringSelector (toNSString representation)
 
 -- | Create a Core Image color object with a Core Graphics color object. - Returns:    An initialized ``CIColor`` instance.
 --
 -- ObjC selector: @- initWithCGColor:@
 initWithCGColor :: IsCIColor ciColor => ciColor -> Ptr () -> IO (Id CIColor)
-initWithCGColor ciColor  color =
-    sendMsg ciColor (mkSelector "initWithCGColor:") (retPtr retVoid) [argPtr color] >>= ownedObject . castPtr
+initWithCGColor ciColor color =
+  sendOwnedMessage ciColor initWithCGColorSelector color
 
 -- | Initialize a Core Image color object in the sRGB color space  with the specified red, green, blue, and alpha component values.
 --
@@ -187,8 +183,8 @@ initWithCGColor ciColor  color =
 --
 -- ObjC selector: @- initWithRed:green:blue:alpha:@
 initWithRed_green_blue_alpha :: IsCIColor ciColor => ciColor -> CDouble -> CDouble -> CDouble -> CDouble -> IO (Id CIColor)
-initWithRed_green_blue_alpha ciColor  red green blue alpha =
-    sendMsg ciColor (mkSelector "initWithRed:green:blue:alpha:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argCDouble alpha] >>= ownedObject . castPtr
+initWithRed_green_blue_alpha ciColor red green blue alpha =
+  sendOwnedMessage ciColor initWithRed_green_blue_alphaSelector red green blue alpha
 
 -- | Initialize a Core Image color object in the sRGB color space  with the specified red, green, and blue component values.
 --
@@ -196,8 +192,8 @@ initWithRed_green_blue_alpha ciColor  red green blue alpha =
 --
 -- ObjC selector: @- initWithRed:green:blue:@
 initWithRed_green_blue :: IsCIColor ciColor => ciColor -> CDouble -> CDouble -> CDouble -> IO (Id CIColor)
-initWithRed_green_blue ciColor  red green blue =
-    sendMsg ciColor (mkSelector "initWithRed:green:blue:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue] >>= ownedObject . castPtr
+initWithRed_green_blue ciColor red green blue =
+  sendOwnedMessage ciColor initWithRed_green_blueSelector red green blue
 
 -- | Initialize a Core Image color object  with the specified red, green, and blue component values as measured in the specified color space.
 --
@@ -205,8 +201,8 @@ initWithRed_green_blue ciColor  red green blue =
 --
 -- ObjC selector: @- initWithRed:green:blue:alpha:colorSpace:@
 initWithRed_green_blue_alpha_colorSpace :: IsCIColor ciColor => ciColor -> CDouble -> CDouble -> CDouble -> CDouble -> Ptr () -> IO (Id CIColor)
-initWithRed_green_blue_alpha_colorSpace ciColor  red green blue alpha colorSpace =
-    sendMsg ciColor (mkSelector "initWithRed:green:blue:alpha:colorSpace:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argCDouble alpha, argPtr colorSpace] >>= ownedObject . castPtr
+initWithRed_green_blue_alpha_colorSpace ciColor red green blue alpha colorSpace =
+  sendOwnedMessage ciColor initWithRed_green_blue_alpha_colorSpaceSelector red green blue alpha colorSpace
 
 -- | Initialize a Core Image color object  with the specified red, green, and blue component values as measured in the specified color space.
 --
@@ -214,8 +210,8 @@ initWithRed_green_blue_alpha_colorSpace ciColor  red green blue alpha colorSpace
 --
 -- ObjC selector: @- initWithRed:green:blue:colorSpace:@
 initWithRed_green_blue_colorSpace :: IsCIColor ciColor => ciColor -> CDouble -> CDouble -> CDouble -> Ptr () -> IO (Id CIColor)
-initWithRed_green_blue_colorSpace ciColor  red green blue colorSpace =
-    sendMsg ciColor (mkSelector "initWithRed:green:blue:colorSpace:") (retPtr retVoid) [argCDouble red, argCDouble green, argCDouble blue, argPtr colorSpace] >>= ownedObject . castPtr
+initWithRed_green_blue_colorSpace ciColor red green blue colorSpace =
+  sendOwnedMessage ciColor initWithRed_green_blue_colorSpaceSelector red green blue colorSpace
 
 -- | Returns the color components of the color including alpha.
 --
@@ -225,8 +221,8 @@ initWithRed_green_blue_colorSpace ciColor  red green blue colorSpace =
 --
 -- ObjC selector: @- numberOfComponents@
 numberOfComponents :: IsCIColor ciColor => ciColor -> IO CULong
-numberOfComponents ciColor  =
-    sendMsg ciColor (mkSelector "numberOfComponents") retCULong []
+numberOfComponents ciColor =
+  sendMessage ciColor numberOfComponentsSelector
 
 -- | Return a pointer to an array of @CGFloat@ values including alpha.
 --
@@ -234,22 +230,22 @@ numberOfComponents ciColor  =
 --
 -- ObjC selector: @- components@
 components :: IsCIColor ciColor => ciColor -> IO RawId
-components ciColor  =
-    fmap (RawId . castPtr) $ sendMsg ciColor (mkSelector "components") (retPtr retVoid) []
+components ciColor =
+  sendMessage ciColor componentsSelector
 
 -- | Returns the alpha value of the color.
 --
 -- ObjC selector: @- alpha@
 alpha :: IsCIColor ciColor => ciColor -> IO CDouble
-alpha ciColor  =
-    sendMsg ciColor (mkSelector "alpha") retCDouble []
+alpha ciColor =
+  sendMessage ciColor alphaSelector
 
 -- | Returns the @CGColorSpace@ associated with the color
 --
 -- ObjC selector: @- colorSpace@
 colorSpace :: IsCIColor ciColor => ciColor -> IO (Ptr ())
-colorSpace ciColor  =
-    fmap castPtr $ sendMsg ciColor (mkSelector "colorSpace") (retPtr retVoid) []
+colorSpace ciColor =
+  sendMessage ciColor colorSpaceSelector
 
 -- | Returns the unpremultiplied red component of the color.
 --
@@ -257,8 +253,8 @@ colorSpace ciColor  =
 --
 -- ObjC selector: @- red@
 red :: IsCIColor ciColor => ciColor -> IO CDouble
-red ciColor  =
-    sendMsg ciColor (mkSelector "red") retCDouble []
+red ciColor =
+  sendMessage ciColor redSelector
 
 -- | Returns the unpremultiplied green component of the color.
 --
@@ -266,8 +262,8 @@ red ciColor  =
 --
 -- ObjC selector: @- green@
 green :: IsCIColor ciColor => ciColor -> IO CDouble
-green ciColor  =
-    sendMsg ciColor (mkSelector "green") retCDouble []
+green ciColor =
+  sendMessage ciColor greenSelector
 
 -- | Returns the unpremultiplied blue component of the color.
 --
@@ -275,8 +271,8 @@ green ciColor  =
 --
 -- ObjC selector: @- blue@
 blue :: IsCIColor ciColor => ciColor -> IO CDouble
-blue ciColor  =
-    sendMsg ciColor (mkSelector "blue") retCDouble []
+blue ciColor =
+  sendMessage ciColor blueSelector
 
 -- | Returns a formatted string with the unpremultiplied color and alpha components of the color.
 --
@@ -294,8 +290,8 @@ blue ciColor  =
 --
 -- ObjC selector: @- stringRepresentation@
 stringRepresentation :: IsCIColor ciColor => ciColor -> IO (Id NSString)
-stringRepresentation ciColor  =
-    sendMsg ciColor (mkSelector "stringRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringRepresentation ciColor =
+  sendMessage ciColor stringRepresentationSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0,0,0@ and alpha value @1@.
 --
@@ -304,7 +300,7 @@ blackColor :: IO RawId
 blackColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blackColor") (retPtr retVoid) []
+    sendClassMessage cls' blackColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @1,1,1@ and alpha value @1@.
 --
@@ -313,7 +309,7 @@ whiteColor :: IO RawId
 whiteColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "whiteColor") (retPtr retVoid) []
+    sendClassMessage cls' whiteColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0.5,0.5,0.5@ and alpha value @1@.
 --
@@ -322,7 +318,7 @@ grayColor :: IO RawId
 grayColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "grayColor") (retPtr retVoid) []
+    sendClassMessage cls' grayColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @1,0,0@ and alpha value @1@.
 --
@@ -331,7 +327,7 @@ redColor :: IO RawId
 redColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "redColor") (retPtr retVoid) []
+    sendClassMessage cls' redColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0,1,0@ and alpha value @1@.
 --
@@ -340,7 +336,7 @@ greenColor :: IO RawId
 greenColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "greenColor") (retPtr retVoid) []
+    sendClassMessage cls' greenColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0,0,1@ and alpha value @1@.
 --
@@ -349,7 +345,7 @@ blueColor :: IO RawId
 blueColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blueColor") (retPtr retVoid) []
+    sendClassMessage cls' blueColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0,1,1@ and alpha value @1@.
 --
@@ -358,7 +354,7 @@ cyanColor :: IO RawId
 cyanColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "cyanColor") (retPtr retVoid) []
+    sendClassMessage cls' cyanColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @1,0,1@ and alpha value @1@.
 --
@@ -367,7 +363,7 @@ magentaColor :: IO RawId
 magentaColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "magentaColor") (retPtr retVoid) []
+    sendClassMessage cls' magentaColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @1,1,0@ and alpha value @1@.
 --
@@ -376,7 +372,7 @@ yellowColor :: IO RawId
 yellowColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "yellowColor") (retPtr retVoid) []
+    sendClassMessage cls' yellowColorSelector
 
 -- | Returns a singleton Core Image color instance in the sRGB color space with RGB values @0,0,0@ and alpha value @0@.
 --
@@ -385,125 +381,125 @@ clearColor :: IO RawId
 clearColor  =
   do
     cls' <- getRequiredClass "CIColor"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "clearColor") (retPtr retVoid) []
+    sendClassMessage cls' clearColorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @colorWithCGColor:@
-colorWithCGColorSelector :: Selector
+colorWithCGColorSelector :: Selector '[Ptr ()] (Id CIColor)
 colorWithCGColorSelector = mkSelector "colorWithCGColor:"
 
 -- | @Selector@ for @colorWithRed:green:blue:alpha:@
-colorWithRed_green_blue_alphaSelector :: Selector
+colorWithRed_green_blue_alphaSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id CIColor)
 colorWithRed_green_blue_alphaSelector = mkSelector "colorWithRed:green:blue:alpha:"
 
 -- | @Selector@ for @colorWithRed:green:blue:@
-colorWithRed_green_blueSelector :: Selector
+colorWithRed_green_blueSelector :: Selector '[CDouble, CDouble, CDouble] (Id CIColor)
 colorWithRed_green_blueSelector = mkSelector "colorWithRed:green:blue:"
 
 -- | @Selector@ for @colorWithRed:green:blue:alpha:colorSpace:@
-colorWithRed_green_blue_alpha_colorSpaceSelector :: Selector
+colorWithRed_green_blue_alpha_colorSpaceSelector :: Selector '[CDouble, CDouble, CDouble, CDouble, Ptr ()] (Id CIColor)
 colorWithRed_green_blue_alpha_colorSpaceSelector = mkSelector "colorWithRed:green:blue:alpha:colorSpace:"
 
 -- | @Selector@ for @colorWithRed:green:blue:colorSpace:@
-colorWithRed_green_blue_colorSpaceSelector :: Selector
+colorWithRed_green_blue_colorSpaceSelector :: Selector '[CDouble, CDouble, CDouble, Ptr ()] (Id CIColor)
 colorWithRed_green_blue_colorSpaceSelector = mkSelector "colorWithRed:green:blue:colorSpace:"
 
 -- | @Selector@ for @colorWithString:@
-colorWithStringSelector :: Selector
+colorWithStringSelector :: Selector '[Id NSString] (Id CIColor)
 colorWithStringSelector = mkSelector "colorWithString:"
 
 -- | @Selector@ for @initWithCGColor:@
-initWithCGColorSelector :: Selector
+initWithCGColorSelector :: Selector '[Ptr ()] (Id CIColor)
 initWithCGColorSelector = mkSelector "initWithCGColor:"
 
 -- | @Selector@ for @initWithRed:green:blue:alpha:@
-initWithRed_green_blue_alphaSelector :: Selector
+initWithRed_green_blue_alphaSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id CIColor)
 initWithRed_green_blue_alphaSelector = mkSelector "initWithRed:green:blue:alpha:"
 
 -- | @Selector@ for @initWithRed:green:blue:@
-initWithRed_green_blueSelector :: Selector
+initWithRed_green_blueSelector :: Selector '[CDouble, CDouble, CDouble] (Id CIColor)
 initWithRed_green_blueSelector = mkSelector "initWithRed:green:blue:"
 
 -- | @Selector@ for @initWithRed:green:blue:alpha:colorSpace:@
-initWithRed_green_blue_alpha_colorSpaceSelector :: Selector
+initWithRed_green_blue_alpha_colorSpaceSelector :: Selector '[CDouble, CDouble, CDouble, CDouble, Ptr ()] (Id CIColor)
 initWithRed_green_blue_alpha_colorSpaceSelector = mkSelector "initWithRed:green:blue:alpha:colorSpace:"
 
 -- | @Selector@ for @initWithRed:green:blue:colorSpace:@
-initWithRed_green_blue_colorSpaceSelector :: Selector
+initWithRed_green_blue_colorSpaceSelector :: Selector '[CDouble, CDouble, CDouble, Ptr ()] (Id CIColor)
 initWithRed_green_blue_colorSpaceSelector = mkSelector "initWithRed:green:blue:colorSpace:"
 
 -- | @Selector@ for @numberOfComponents@
-numberOfComponentsSelector :: Selector
+numberOfComponentsSelector :: Selector '[] CULong
 numberOfComponentsSelector = mkSelector "numberOfComponents"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] RawId
 componentsSelector = mkSelector "components"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Ptr ())
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @red@
-redSelector :: Selector
+redSelector :: Selector '[] CDouble
 redSelector = mkSelector "red"
 
 -- | @Selector@ for @green@
-greenSelector :: Selector
+greenSelector :: Selector '[] CDouble
 greenSelector = mkSelector "green"
 
 -- | @Selector@ for @blue@
-blueSelector :: Selector
+blueSelector :: Selector '[] CDouble
 blueSelector = mkSelector "blue"
 
 -- | @Selector@ for @stringRepresentation@
-stringRepresentationSelector :: Selector
+stringRepresentationSelector :: Selector '[] (Id NSString)
 stringRepresentationSelector = mkSelector "stringRepresentation"
 
 -- | @Selector@ for @blackColor@
-blackColorSelector :: Selector
+blackColorSelector :: Selector '[] RawId
 blackColorSelector = mkSelector "blackColor"
 
 -- | @Selector@ for @whiteColor@
-whiteColorSelector :: Selector
+whiteColorSelector :: Selector '[] RawId
 whiteColorSelector = mkSelector "whiteColor"
 
 -- | @Selector@ for @grayColor@
-grayColorSelector :: Selector
+grayColorSelector :: Selector '[] RawId
 grayColorSelector = mkSelector "grayColor"
 
 -- | @Selector@ for @redColor@
-redColorSelector :: Selector
+redColorSelector :: Selector '[] RawId
 redColorSelector = mkSelector "redColor"
 
 -- | @Selector@ for @greenColor@
-greenColorSelector :: Selector
+greenColorSelector :: Selector '[] RawId
 greenColorSelector = mkSelector "greenColor"
 
 -- | @Selector@ for @blueColor@
-blueColorSelector :: Selector
+blueColorSelector :: Selector '[] RawId
 blueColorSelector = mkSelector "blueColor"
 
 -- | @Selector@ for @cyanColor@
-cyanColorSelector :: Selector
+cyanColorSelector :: Selector '[] RawId
 cyanColorSelector = mkSelector "cyanColor"
 
 -- | @Selector@ for @magentaColor@
-magentaColorSelector :: Selector
+magentaColorSelector :: Selector '[] RawId
 magentaColorSelector = mkSelector "magentaColor"
 
 -- | @Selector@ for @yellowColor@
-yellowColorSelector :: Selector
+yellowColorSelector :: Selector '[] RawId
 yellowColorSelector = mkSelector "yellowColor"
 
 -- | @Selector@ for @clearColor@
-clearColorSelector :: Selector
+clearColorSelector :: Selector '[] RawId
 clearColorSelector = mkSelector "clearColor"
 

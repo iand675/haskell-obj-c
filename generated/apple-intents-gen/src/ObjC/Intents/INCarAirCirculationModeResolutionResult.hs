@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INCarAirCirculationModeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithCarAirCirculationModeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedCarAirCirculationModeSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithCarAirCirculationModeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedCarAirCirculationModeSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INCarAirCirculationMode(INCarAirCirculationMode)
@@ -24,15 +25,11 @@ module ObjC.Intents.INCarAirCirculationModeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,46 +42,46 @@ successWithResolvedCarAirCirculationMode :: INCarAirCirculationMode -> IO (Id IN
 successWithResolvedCarAirCirculationMode resolvedCarAirCirculationMode =
   do
     cls' <- getRequiredClass "INCarAirCirculationModeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCarAirCirculationMode:") (retPtr retVoid) [argCLong (coerce resolvedCarAirCirculationMode)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCarAirCirculationModeSelector resolvedCarAirCirculationMode
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INCarAirCirculationMode -> IO (Id INCarAirCirculationModeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INCarAirCirculationModeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithCarAirCirculationModeToConfirm:@
 confirmationRequiredWithCarAirCirculationModeToConfirm :: INCarAirCirculationMode -> IO (Id INCarAirCirculationModeResolutionResult)
 confirmationRequiredWithCarAirCirculationModeToConfirm carAirCirculationModeToConfirm =
   do
     cls' <- getRequiredClass "INCarAirCirculationModeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCarAirCirculationModeToConfirm:") (retPtr retVoid) [argCLong (coerce carAirCirculationModeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCarAirCirculationModeToConfirmSelector carAirCirculationModeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INCarAirCirculationMode -> IO (Id INCarAirCirculationModeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INCarAirCirculationModeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCarAirCirculationMode:@
-successWithResolvedCarAirCirculationModeSelector :: Selector
+successWithResolvedCarAirCirculationModeSelector :: Selector '[INCarAirCirculationMode] (Id INCarAirCirculationModeResolutionResult)
 successWithResolvedCarAirCirculationModeSelector = mkSelector "successWithResolvedCarAirCirculationMode:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INCarAirCirculationMode] (Id INCarAirCirculationModeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithCarAirCirculationModeToConfirm:@
-confirmationRequiredWithCarAirCirculationModeToConfirmSelector :: Selector
+confirmationRequiredWithCarAirCirculationModeToConfirmSelector :: Selector '[INCarAirCirculationMode] (Id INCarAirCirculationModeResolutionResult)
 confirmationRequiredWithCarAirCirculationModeToConfirmSelector = mkSelector "confirmationRequiredWithCarAirCirculationModeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INCarAirCirculationMode] (Id INCarAirCirculationModeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

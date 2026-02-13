@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,26 +28,22 @@ module ObjC.Virtualization.VZMacPlatformConfiguration
   , setMachineIdentifier
   , auxiliaryStorage
   , setAuxiliaryStorage
-  , initSelector
-  , hardwareModelSelector
-  , setHardwareModelSelector
-  , machineIdentifierSelector
-  , setMachineIdentifierSelector
   , auxiliaryStorageSelector
+  , hardwareModelSelector
+  , initSelector
+  , machineIdentifierSelector
   , setAuxiliaryStorageSelector
+  , setHardwareModelSelector
+  , setMachineIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,23 +52,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZMacPlatformConfiguration vzMacPlatformConfiguration => vzMacPlatformConfiguration -> IO (Id VZMacPlatformConfiguration)
-init_ vzMacPlatformConfiguration  =
-    sendMsg vzMacPlatformConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacPlatformConfiguration =
+  sendOwnedMessage vzMacPlatformConfiguration initSelector
 
 -- | The Mac hardware model.
 --
 -- ObjC selector: @- hardwareModel@
 hardwareModel :: IsVZMacPlatformConfiguration vzMacPlatformConfiguration => vzMacPlatformConfiguration -> IO (Id VZMacHardwareModel)
-hardwareModel vzMacPlatformConfiguration  =
-    sendMsg vzMacPlatformConfiguration (mkSelector "hardwareModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareModel vzMacPlatformConfiguration =
+  sendMessage vzMacPlatformConfiguration hardwareModelSelector
 
 -- | The Mac hardware model.
 --
 -- ObjC selector: @- setHardwareModel:@
 setHardwareModel :: (IsVZMacPlatformConfiguration vzMacPlatformConfiguration, IsVZMacHardwareModel value) => vzMacPlatformConfiguration -> value -> IO ()
-setHardwareModel vzMacPlatformConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzMacPlatformConfiguration (mkSelector "setHardwareModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHardwareModel vzMacPlatformConfiguration value =
+  sendMessage vzMacPlatformConfiguration setHardwareModelSelector (toVZMacHardwareModel value)
 
 -- | The unique Mac machine identifier.
 --
@@ -79,8 +75,8 @@ setHardwareModel vzMacPlatformConfiguration  value =
 --
 -- ObjC selector: @- machineIdentifier@
 machineIdentifier :: IsVZMacPlatformConfiguration vzMacPlatformConfiguration => vzMacPlatformConfiguration -> IO (Id VZMacMachineIdentifier)
-machineIdentifier vzMacPlatformConfiguration  =
-    sendMsg vzMacPlatformConfiguration (mkSelector "machineIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+machineIdentifier vzMacPlatformConfiguration =
+  sendMessage vzMacPlatformConfiguration machineIdentifierSelector
 
 -- | The unique Mac machine identifier.
 --
@@ -88,9 +84,8 @@ machineIdentifier vzMacPlatformConfiguration  =
 --
 -- ObjC selector: @- setMachineIdentifier:@
 setMachineIdentifier :: (IsVZMacPlatformConfiguration vzMacPlatformConfiguration, IsVZMacMachineIdentifier value) => vzMacPlatformConfiguration -> value -> IO ()
-setMachineIdentifier vzMacPlatformConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzMacPlatformConfiguration (mkSelector "setMachineIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMachineIdentifier vzMacPlatformConfiguration value =
+  sendMessage vzMacPlatformConfiguration setMachineIdentifierSelector (toVZMacMachineIdentifier value)
 
 -- | The Mac auxiliary storage.
 --
@@ -98,8 +93,8 @@ setMachineIdentifier vzMacPlatformConfiguration  value =
 --
 -- ObjC selector: @- auxiliaryStorage@
 auxiliaryStorage :: IsVZMacPlatformConfiguration vzMacPlatformConfiguration => vzMacPlatformConfiguration -> IO (Id VZMacAuxiliaryStorage)
-auxiliaryStorage vzMacPlatformConfiguration  =
-    sendMsg vzMacPlatformConfiguration (mkSelector "auxiliaryStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+auxiliaryStorage vzMacPlatformConfiguration =
+  sendMessage vzMacPlatformConfiguration auxiliaryStorageSelector
 
 -- | The Mac auxiliary storage.
 --
@@ -107,39 +102,38 @@ auxiliaryStorage vzMacPlatformConfiguration  =
 --
 -- ObjC selector: @- setAuxiliaryStorage:@
 setAuxiliaryStorage :: (IsVZMacPlatformConfiguration vzMacPlatformConfiguration, IsVZMacAuxiliaryStorage value) => vzMacPlatformConfiguration -> value -> IO ()
-setAuxiliaryStorage vzMacPlatformConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzMacPlatformConfiguration (mkSelector "setAuxiliaryStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuxiliaryStorage vzMacPlatformConfiguration value =
+  sendMessage vzMacPlatformConfiguration setAuxiliaryStorageSelector (toVZMacAuxiliaryStorage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacPlatformConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @hardwareModel@
-hardwareModelSelector :: Selector
+hardwareModelSelector :: Selector '[] (Id VZMacHardwareModel)
 hardwareModelSelector = mkSelector "hardwareModel"
 
 -- | @Selector@ for @setHardwareModel:@
-setHardwareModelSelector :: Selector
+setHardwareModelSelector :: Selector '[Id VZMacHardwareModel] ()
 setHardwareModelSelector = mkSelector "setHardwareModel:"
 
 -- | @Selector@ for @machineIdentifier@
-machineIdentifierSelector :: Selector
+machineIdentifierSelector :: Selector '[] (Id VZMacMachineIdentifier)
 machineIdentifierSelector = mkSelector "machineIdentifier"
 
 -- | @Selector@ for @setMachineIdentifier:@
-setMachineIdentifierSelector :: Selector
+setMachineIdentifierSelector :: Selector '[Id VZMacMachineIdentifier] ()
 setMachineIdentifierSelector = mkSelector "setMachineIdentifier:"
 
 -- | @Selector@ for @auxiliaryStorage@
-auxiliaryStorageSelector :: Selector
+auxiliaryStorageSelector :: Selector '[] (Id VZMacAuxiliaryStorage)
 auxiliaryStorageSelector = mkSelector "auxiliaryStorage"
 
 -- | @Selector@ for @setAuxiliaryStorage:@
-setAuxiliaryStorageSelector :: Selector
+setAuxiliaryStorageSelector :: Selector '[Id VZMacAuxiliaryStorage] ()
 setAuxiliaryStorageSelector = mkSelector "setAuxiliaryStorage:"
 

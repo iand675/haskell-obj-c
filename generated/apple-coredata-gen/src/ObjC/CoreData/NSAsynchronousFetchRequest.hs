@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreData.NSAsynchronousFetchRequest
   , completionBlock
   , estimatedResultCount
   , setEstimatedResultCount
-  , fetchRequestSelector
   , completionBlockSelector
   , estimatedResultCountSelector
+  , fetchRequestSelector
   , setEstimatedResultCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fetchRequest@
 fetchRequest :: IsNSAsynchronousFetchRequest nsAsynchronousFetchRequest => nsAsynchronousFetchRequest -> IO (Id NSFetchRequest)
-fetchRequest nsAsynchronousFetchRequest  =
-    sendMsg nsAsynchronousFetchRequest (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchRequest nsAsynchronousFetchRequest =
+  sendMessage nsAsynchronousFetchRequest fetchRequestSelector
 
 -- | @- completionBlock@
 completionBlock :: IsNSAsynchronousFetchRequest nsAsynchronousFetchRequest => nsAsynchronousFetchRequest -> IO (Ptr ())
-completionBlock nsAsynchronousFetchRequest  =
-    fmap castPtr $ sendMsg nsAsynchronousFetchRequest (mkSelector "completionBlock") (retPtr retVoid) []
+completionBlock nsAsynchronousFetchRequest =
+  sendMessage nsAsynchronousFetchRequest completionBlockSelector
 
 -- | @- estimatedResultCount@
 estimatedResultCount :: IsNSAsynchronousFetchRequest nsAsynchronousFetchRequest => nsAsynchronousFetchRequest -> IO CLong
-estimatedResultCount nsAsynchronousFetchRequest  =
-    sendMsg nsAsynchronousFetchRequest (mkSelector "estimatedResultCount") retCLong []
+estimatedResultCount nsAsynchronousFetchRequest =
+  sendMessage nsAsynchronousFetchRequest estimatedResultCountSelector
 
 -- | @- setEstimatedResultCount:@
 setEstimatedResultCount :: IsNSAsynchronousFetchRequest nsAsynchronousFetchRequest => nsAsynchronousFetchRequest -> CLong -> IO ()
-setEstimatedResultCount nsAsynchronousFetchRequest  value =
-    sendMsg nsAsynchronousFetchRequest (mkSelector "setEstimatedResultCount:") retVoid [argCLong value]
+setEstimatedResultCount nsAsynchronousFetchRequest value =
+  sendMessage nsAsynchronousFetchRequest setEstimatedResultCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 
 -- | @Selector@ for @completionBlock@
-completionBlockSelector :: Selector
+completionBlockSelector :: Selector '[] (Ptr ())
 completionBlockSelector = mkSelector "completionBlock"
 
 -- | @Selector@ for @estimatedResultCount@
-estimatedResultCountSelector :: Selector
+estimatedResultCountSelector :: Selector '[] CLong
 estimatedResultCountSelector = mkSelector "estimatedResultCount"
 
 -- | @Selector@ for @setEstimatedResultCount:@
-setEstimatedResultCountSelector :: Selector
+setEstimatedResultCountSelector :: Selector '[CLong] ()
 setEstimatedResultCountSelector = mkSelector "setEstimatedResultCount:"
 

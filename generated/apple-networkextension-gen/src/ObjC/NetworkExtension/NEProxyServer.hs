@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.NetworkExtension.NEProxyServer
   , setUsername
   , password
   , setPassword
-  , initWithAddress_portSelector
   , addressSelector
-  , portSelector
   , authenticationRequiredSelector
-  , setAuthenticationRequiredSelector
-  , usernameSelector
-  , setUsernameSelector
+  , initWithAddress_portSelector
   , passwordSelector
+  , portSelector
+  , setAuthenticationRequiredSelector
   , setPasswordSelector
+  , setUsernameSelector
+  , usernameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,9 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAddress:port:@
 initWithAddress_port :: (IsNEProxyServer neProxyServer, IsNSString address) => neProxyServer -> address -> CLong -> IO (Id NEProxyServer)
-initWithAddress_port neProxyServer  address port =
-  withObjCPtr address $ \raw_address ->
-      sendMsg neProxyServer (mkSelector "initWithAddress:port:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argCLong port] >>= ownedObject . castPtr
+initWithAddress_port neProxyServer address port =
+  sendOwnedMessage neProxyServer initWithAddress_portSelector (toNSString address) port
 
 -- | address
 --
@@ -69,8 +65,8 @@ initWithAddress_port neProxyServer  address port =
 --
 -- ObjC selector: @- address@
 address :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
-address neProxyServer  =
-    sendMsg neProxyServer (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+address neProxyServer =
+  sendMessage neProxyServer addressSelector
 
 -- | port
 --
@@ -78,8 +74,8 @@ address neProxyServer  =
 --
 -- ObjC selector: @- port@
 port :: IsNEProxyServer neProxyServer => neProxyServer -> IO CLong
-port neProxyServer  =
-    sendMsg neProxyServer (mkSelector "port") retCLong []
+port neProxyServer =
+  sendMessage neProxyServer portSelector
 
 -- | authenticationRequired
 --
@@ -87,8 +83,8 @@ port neProxyServer  =
 --
 -- ObjC selector: @- authenticationRequired@
 authenticationRequired :: IsNEProxyServer neProxyServer => neProxyServer -> IO Bool
-authenticationRequired neProxyServer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neProxyServer (mkSelector "authenticationRequired") retCULong []
+authenticationRequired neProxyServer =
+  sendMessage neProxyServer authenticationRequiredSelector
 
 -- | authenticationRequired
 --
@@ -96,8 +92,8 @@ authenticationRequired neProxyServer  =
 --
 -- ObjC selector: @- setAuthenticationRequired:@
 setAuthenticationRequired :: IsNEProxyServer neProxyServer => neProxyServer -> Bool -> IO ()
-setAuthenticationRequired neProxyServer  value =
-    sendMsg neProxyServer (mkSelector "setAuthenticationRequired:") retVoid [argCULong (if value then 1 else 0)]
+setAuthenticationRequired neProxyServer value =
+  sendMessage neProxyServer setAuthenticationRequiredSelector value
 
 -- | username
 --
@@ -105,8 +101,8 @@ setAuthenticationRequired neProxyServer  value =
 --
 -- ObjC selector: @- username@
 username :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
-username neProxyServer  =
-    sendMsg neProxyServer (mkSelector "username") (retPtr retVoid) [] >>= retainedObject . castPtr
+username neProxyServer =
+  sendMessage neProxyServer usernameSelector
 
 -- | username
 --
@@ -114,9 +110,8 @@ username neProxyServer  =
 --
 -- ObjC selector: @- setUsername:@
 setUsername :: (IsNEProxyServer neProxyServer, IsNSString value) => neProxyServer -> value -> IO ()
-setUsername neProxyServer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxyServer (mkSelector "setUsername:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsername neProxyServer value =
+  sendMessage neProxyServer setUsernameSelector (toNSString value)
 
 -- | password
 --
@@ -124,8 +119,8 @@ setUsername neProxyServer  value =
 --
 -- ObjC selector: @- password@
 password :: IsNEProxyServer neProxyServer => neProxyServer -> IO (Id NSString)
-password neProxyServer  =
-    sendMsg neProxyServer (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+password neProxyServer =
+  sendMessage neProxyServer passwordSelector
 
 -- | password
 --
@@ -133,47 +128,46 @@ password neProxyServer  =
 --
 -- ObjC selector: @- setPassword:@
 setPassword :: (IsNEProxyServer neProxyServer, IsNSString value) => neProxyServer -> value -> IO ()
-setPassword neProxyServer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxyServer (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPassword neProxyServer value =
+  sendMessage neProxyServer setPasswordSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAddress:port:@
-initWithAddress_portSelector :: Selector
+initWithAddress_portSelector :: Selector '[Id NSString, CLong] (Id NEProxyServer)
 initWithAddress_portSelector = mkSelector "initWithAddress:port:"
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] (Id NSString)
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] CLong
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @authenticationRequired@
-authenticationRequiredSelector :: Selector
+authenticationRequiredSelector :: Selector '[] Bool
 authenticationRequiredSelector = mkSelector "authenticationRequired"
 
 -- | @Selector@ for @setAuthenticationRequired:@
-setAuthenticationRequiredSelector :: Selector
+setAuthenticationRequiredSelector :: Selector '[Bool] ()
 setAuthenticationRequiredSelector = mkSelector "setAuthenticationRequired:"
 
 -- | @Selector@ for @username@
-usernameSelector :: Selector
+usernameSelector :: Selector '[] (Id NSString)
 usernameSelector = mkSelector "username"
 
 -- | @Selector@ for @setUsername:@
-setUsernameSelector :: Selector
+setUsernameSelector :: Selector '[Id NSString] ()
 setUsernameSelector = mkSelector "setUsername:"
 
 -- | @Selector@ for @password@
-passwordSelector :: Selector
+passwordSelector :: Selector '[] (Id NSString)
 passwordSelector = mkSelector "password"
 
 -- | @Selector@ for @setPassword:@
-setPasswordSelector :: Selector
+setPasswordSelector :: Selector '[Id NSString] ()
 setPasswordSelector = mkSelector "setPassword:"
 

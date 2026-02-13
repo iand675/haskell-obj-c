@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INCreateNoteIntentResponse
   , code
   , createdNote
   , setCreatedNote
-  , initSelector
-  , initWithCode_userActivitySelector
   , codeSelector
   , createdNoteSelector
+  , initSelector
+  , initWithCode_userActivitySelector
   , setCreatedNoteSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.Intents.INCreateNoteIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINCreateNoteIntentResponse inCreateNoteIntentResponse => inCreateNoteIntentResponse -> IO RawId
-init_ inCreateNoteIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inCreateNoteIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inCreateNoteIntentResponse =
+  sendOwnedMessage inCreateNoteIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINCreateNoteIntentResponse inCreateNoteIntentResponse, IsNSUserActivity userActivity) => inCreateNoteIntentResponse -> INCreateNoteIntentResponseCode -> userActivity -> IO (Id INCreateNoteIntentResponse)
-initWithCode_userActivity inCreateNoteIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inCreateNoteIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inCreateNoteIntentResponse code userActivity =
+  sendOwnedMessage inCreateNoteIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINCreateNoteIntentResponse inCreateNoteIntentResponse => inCreateNoteIntentResponse -> IO INCreateNoteIntentResponseCode
-code inCreateNoteIntentResponse  =
-    fmap (coerce :: CLong -> INCreateNoteIntentResponseCode) $ sendMsg inCreateNoteIntentResponse (mkSelector "code") retCLong []
+code inCreateNoteIntentResponse =
+  sendMessage inCreateNoteIntentResponse codeSelector
 
 -- | @- createdNote@
 createdNote :: IsINCreateNoteIntentResponse inCreateNoteIntentResponse => inCreateNoteIntentResponse -> IO (Id INNote)
-createdNote inCreateNoteIntentResponse  =
-    sendMsg inCreateNoteIntentResponse (mkSelector "createdNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+createdNote inCreateNoteIntentResponse =
+  sendMessage inCreateNoteIntentResponse createdNoteSelector
 
 -- | @- setCreatedNote:@
 setCreatedNote :: (IsINCreateNoteIntentResponse inCreateNoteIntentResponse, IsINNote value) => inCreateNoteIntentResponse -> value -> IO ()
-setCreatedNote inCreateNoteIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inCreateNoteIntentResponse (mkSelector "setCreatedNote:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCreatedNote inCreateNoteIntentResponse value =
+  sendMessage inCreateNoteIntentResponse setCreatedNoteSelector (toINNote value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INCreateNoteIntentResponseCode, Id NSUserActivity] (Id INCreateNoteIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INCreateNoteIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @createdNote@
-createdNoteSelector :: Selector
+createdNoteSelector :: Selector '[] (Id INNote)
 createdNoteSelector = mkSelector "createdNote"
 
 -- | @Selector@ for @setCreatedNote:@
-setCreatedNoteSelector :: Selector
+setCreatedNoteSelector :: Selector '[Id INNote] ()
 setCreatedNoteSelector = mkSelector "setCreatedNote:"
 

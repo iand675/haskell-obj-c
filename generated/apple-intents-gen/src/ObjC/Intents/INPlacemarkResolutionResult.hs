@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INPlacemarkResolutionResult
   , successWithResolvedPlacemark
   , disambiguationWithPlacemarksToDisambiguate
   , confirmationRequiredWithPlacemarkToConfirm
-  , successWithResolvedPlacemarkSelector
-  , disambiguationWithPlacemarksToDisambiguateSelector
   , confirmationRequiredWithPlacemarkToConfirmSelector
+  , disambiguationWithPlacemarksToDisambiguateSelector
+  , successWithResolvedPlacemarkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,38 +34,35 @@ successWithResolvedPlacemark :: IsCLPlacemark resolvedPlacemark => resolvedPlace
 successWithResolvedPlacemark resolvedPlacemark =
   do
     cls' <- getRequiredClass "INPlacemarkResolutionResult"
-    withObjCPtr resolvedPlacemark $ \raw_resolvedPlacemark ->
-      sendClassMsg cls' (mkSelector "successWithResolvedPlacemark:") (retPtr retVoid) [argPtr (castPtr raw_resolvedPlacemark :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedPlacemarkSelector (toCLPlacemark resolvedPlacemark)
 
 -- | @+ disambiguationWithPlacemarksToDisambiguate:@
 disambiguationWithPlacemarksToDisambiguate :: IsNSArray placemarksToDisambiguate => placemarksToDisambiguate -> IO (Id INPlacemarkResolutionResult)
 disambiguationWithPlacemarksToDisambiguate placemarksToDisambiguate =
   do
     cls' <- getRequiredClass "INPlacemarkResolutionResult"
-    withObjCPtr placemarksToDisambiguate $ \raw_placemarksToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithPlacemarksToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_placemarksToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithPlacemarksToDisambiguateSelector (toNSArray placemarksToDisambiguate)
 
 -- | @+ confirmationRequiredWithPlacemarkToConfirm:@
 confirmationRequiredWithPlacemarkToConfirm :: IsCLPlacemark placemarkToConfirm => placemarkToConfirm -> IO (Id INPlacemarkResolutionResult)
 confirmationRequiredWithPlacemarkToConfirm placemarkToConfirm =
   do
     cls' <- getRequiredClass "INPlacemarkResolutionResult"
-    withObjCPtr placemarkToConfirm $ \raw_placemarkToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithPlacemarkToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_placemarkToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithPlacemarkToConfirmSelector (toCLPlacemark placemarkToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedPlacemark:@
-successWithResolvedPlacemarkSelector :: Selector
+successWithResolvedPlacemarkSelector :: Selector '[Id CLPlacemark] (Id INPlacemarkResolutionResult)
 successWithResolvedPlacemarkSelector = mkSelector "successWithResolvedPlacemark:"
 
 -- | @Selector@ for @disambiguationWithPlacemarksToDisambiguate:@
-disambiguationWithPlacemarksToDisambiguateSelector :: Selector
+disambiguationWithPlacemarksToDisambiguateSelector :: Selector '[Id NSArray] (Id INPlacemarkResolutionResult)
 disambiguationWithPlacemarksToDisambiguateSelector = mkSelector "disambiguationWithPlacemarksToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithPlacemarkToConfirm:@
-confirmationRequiredWithPlacemarkToConfirmSelector :: Selector
+confirmationRequiredWithPlacemarkToConfirmSelector :: Selector '[Id CLPlacemark] (Id INPlacemarkResolutionResult)
 confirmationRequiredWithPlacemarkToConfirmSelector = mkSelector "confirmationRequiredWithPlacemarkToConfirm:"
 

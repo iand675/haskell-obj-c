@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INRadioTypeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithRadioTypeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedRadioTypeSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithRadioTypeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedRadioTypeSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INRadioType(INRadioType)
@@ -27,15 +28,11 @@ module ObjC.Intents.INRadioTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,46 +45,46 @@ successWithResolvedRadioType :: INRadioType -> IO (Id INRadioTypeResolutionResul
 successWithResolvedRadioType resolvedRadioType =
   do
     cls' <- getRequiredClass "INRadioTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedRadioType:") (retPtr retVoid) [argCLong (coerce resolvedRadioType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedRadioTypeSelector resolvedRadioType
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INRadioType -> IO (Id INRadioTypeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INRadioTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithRadioTypeToConfirm:@
 confirmationRequiredWithRadioTypeToConfirm :: INRadioType -> IO (Id INRadioTypeResolutionResult)
 confirmationRequiredWithRadioTypeToConfirm radioTypeToConfirm =
   do
     cls' <- getRequiredClass "INRadioTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithRadioTypeToConfirm:") (retPtr retVoid) [argCLong (coerce radioTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithRadioTypeToConfirmSelector radioTypeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INRadioType -> IO (Id INRadioTypeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INRadioTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedRadioType:@
-successWithResolvedRadioTypeSelector :: Selector
+successWithResolvedRadioTypeSelector :: Selector '[INRadioType] (Id INRadioTypeResolutionResult)
 successWithResolvedRadioTypeSelector = mkSelector "successWithResolvedRadioType:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INRadioType] (Id INRadioTypeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithRadioTypeToConfirm:@
-confirmationRequiredWithRadioTypeToConfirmSelector :: Selector
+confirmationRequiredWithRadioTypeToConfirmSelector :: Selector '[INRadioType] (Id INRadioTypeResolutionResult)
 confirmationRequiredWithRadioTypeToConfirmSelector = mkSelector "confirmationRequiredWithRadioTypeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INRadioType] (Id INRadioTypeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

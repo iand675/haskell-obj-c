@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,41 +35,37 @@ module ObjC.AVFAudio.AVSpeechUtterance
   , setPreUtteranceDelay
   , postUtteranceDelay
   , setPostUtteranceDelay
-  , speechUtteranceWithStringSelector
-  , speechUtteranceWithAttributedStringSelector
-  , speechUtteranceWithSSMLRepresentationSelector
-  , initWithStringSelector
+  , attributedSpeechStringSelector
   , initWithAttributedStringSelector
   , initWithSSMLRepresentationSelector
-  , voiceSelector
-  , setVoiceSelector
-  , speechStringSelector
-  , attributedSpeechStringSelector
-  , rateSelector
-  , setRateSelector
+  , initWithStringSelector
   , pitchMultiplierSelector
-  , setPitchMultiplierSelector
-  , volumeSelector
-  , setVolumeSelector
-  , prefersAssistiveTechnologySettingsSelector
-  , setPrefersAssistiveTechnologySettingsSelector
-  , preUtteranceDelaySelector
-  , setPreUtteranceDelaySelector
   , postUtteranceDelaySelector
+  , preUtteranceDelaySelector
+  , prefersAssistiveTechnologySettingsSelector
+  , rateSelector
+  , setPitchMultiplierSelector
   , setPostUtteranceDelaySelector
+  , setPreUtteranceDelaySelector
+  , setPrefersAssistiveTechnologySettingsSelector
+  , setRateSelector
+  , setVoiceSelector
+  , setVolumeSelector
+  , speechStringSelector
+  , speechUtteranceWithAttributedStringSelector
+  , speechUtteranceWithSSMLRepresentationSelector
+  , speechUtteranceWithStringSelector
+  , voiceSelector
+  , volumeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,16 +77,14 @@ speechUtteranceWithString :: IsNSString string => string -> IO (Id AVSpeechUtter
 speechUtteranceWithString string =
   do
     cls' <- getRequiredClass "AVSpeechUtterance"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "speechUtteranceWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' speechUtteranceWithStringSelector (toNSString string)
 
 -- | @+ speechUtteranceWithAttributedString:@
 speechUtteranceWithAttributedString :: IsNSAttributedString string => string -> IO (Id AVSpeechUtterance)
 speechUtteranceWithAttributedString string =
   do
     cls' <- getRequiredClass "AVSpeechUtterance"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "speechUtteranceWithAttributedString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' speechUtteranceWithAttributedStringSelector (toNSAttributedString string)
 
 -- | A speech utterance that expects markup written using the Speech Synthesis Markup Language (SSML) standard. Returns nil if invalid SSML is passed in.
 --
@@ -98,20 +93,17 @@ speechUtteranceWithSSMLRepresentation :: IsNSString string => string -> IO (Id A
 speechUtteranceWithSSMLRepresentation string =
   do
     cls' <- getRequiredClass "AVSpeechUtterance"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "speechUtteranceWithSSMLRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' speechUtteranceWithSSMLRepresentationSelector (toNSString string)
 
 -- | @- initWithString:@
 initWithString :: (IsAVSpeechUtterance avSpeechUtterance, IsNSString string) => avSpeechUtterance -> string -> IO (Id AVSpeechUtterance)
-initWithString avSpeechUtterance  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg avSpeechUtterance (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithString avSpeechUtterance string =
+  sendOwnedMessage avSpeechUtterance initWithStringSelector (toNSString string)
 
 -- | @- initWithAttributedString:@
 initWithAttributedString :: (IsAVSpeechUtterance avSpeechUtterance, IsNSAttributedString string) => avSpeechUtterance -> string -> IO (Id AVSpeechUtterance)
-initWithAttributedString avSpeechUtterance  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg avSpeechUtterance (mkSelector "initWithAttributedString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithAttributedString avSpeechUtterance string =
+  sendOwnedMessage avSpeechUtterance initWithAttributedStringSelector (toNSAttributedString string)
 
 -- | A speech utterance that expects markup written using the Speech Synthesis Markup Language (SSML)  standard.
 --
@@ -121,180 +113,178 @@ initWithAttributedString avSpeechUtterance  string =
 --
 -- ObjC selector: @- initWithSSMLRepresentation:@
 initWithSSMLRepresentation :: (IsAVSpeechUtterance avSpeechUtterance, IsNSString string) => avSpeechUtterance -> string -> IO (Id AVSpeechUtterance)
-initWithSSMLRepresentation avSpeechUtterance  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg avSpeechUtterance (mkSelector "initWithSSMLRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithSSMLRepresentation avSpeechUtterance string =
+  sendOwnedMessage avSpeechUtterance initWithSSMLRepresentationSelector (toNSString string)
 
 -- | @- voice@
 voice :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO (Id AVSpeechSynthesisVoice)
-voice avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "voice") (retPtr retVoid) [] >>= retainedObject . castPtr
+voice avSpeechUtterance =
+  sendMessage avSpeechUtterance voiceSelector
 
 -- | @- setVoice:@
 setVoice :: (IsAVSpeechUtterance avSpeechUtterance, IsAVSpeechSynthesisVoice value) => avSpeechUtterance -> value -> IO ()
-setVoice avSpeechUtterance  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpeechUtterance (mkSelector "setVoice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVoice avSpeechUtterance value =
+  sendMessage avSpeechUtterance setVoiceSelector (toAVSpeechSynthesisVoice value)
 
 -- | @- speechString@
 speechString :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO (Id NSString)
-speechString avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "speechString") (retPtr retVoid) [] >>= retainedObject . castPtr
+speechString avSpeechUtterance =
+  sendMessage avSpeechUtterance speechStringSelector
 
 -- | @- attributedSpeechString@
 attributedSpeechString :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO (Id NSAttributedString)
-attributedSpeechString avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "attributedSpeechString") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedSpeechString avSpeechUtterance =
+  sendMessage avSpeechUtterance attributedSpeechStringSelector
 
 -- | @- rate@
 rate :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO CFloat
-rate avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "rate") retCFloat []
+rate avSpeechUtterance =
+  sendMessage avSpeechUtterance rateSelector
 
 -- | @- setRate:@
 setRate :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> CFloat -> IO ()
-setRate avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avSpeechUtterance value =
+  sendMessage avSpeechUtterance setRateSelector value
 
 -- | @- pitchMultiplier@
 pitchMultiplier :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO CFloat
-pitchMultiplier avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "pitchMultiplier") retCFloat []
+pitchMultiplier avSpeechUtterance =
+  sendMessage avSpeechUtterance pitchMultiplierSelector
 
 -- | @- setPitchMultiplier:@
 setPitchMultiplier :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> CFloat -> IO ()
-setPitchMultiplier avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setPitchMultiplier:") retVoid [argCFloat value]
+setPitchMultiplier avSpeechUtterance value =
+  sendMessage avSpeechUtterance setPitchMultiplierSelector value
 
 -- | @- volume@
 volume :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO CFloat
-volume avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "volume") retCFloat []
+volume avSpeechUtterance =
+  sendMessage avSpeechUtterance volumeSelector
 
 -- | @- setVolume:@
 setVolume :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> CFloat -> IO ()
-setVolume avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume avSpeechUtterance value =
+  sendMessage avSpeechUtterance setVolumeSelector value
 
 -- | @- prefersAssistiveTechnologySettings@
 prefersAssistiveTechnologySettings :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO Bool
-prefersAssistiveTechnologySettings avSpeechUtterance  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechUtterance (mkSelector "prefersAssistiveTechnologySettings") retCULong []
+prefersAssistiveTechnologySettings avSpeechUtterance =
+  sendMessage avSpeechUtterance prefersAssistiveTechnologySettingsSelector
 
 -- | @- setPrefersAssistiveTechnologySettings:@
 setPrefersAssistiveTechnologySettings :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> Bool -> IO ()
-setPrefersAssistiveTechnologySettings avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setPrefersAssistiveTechnologySettings:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersAssistiveTechnologySettings avSpeechUtterance value =
+  sendMessage avSpeechUtterance setPrefersAssistiveTechnologySettingsSelector value
 
 -- | @- preUtteranceDelay@
 preUtteranceDelay :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO CDouble
-preUtteranceDelay avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "preUtteranceDelay") retCDouble []
+preUtteranceDelay avSpeechUtterance =
+  sendMessage avSpeechUtterance preUtteranceDelaySelector
 
 -- | @- setPreUtteranceDelay:@
 setPreUtteranceDelay :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> CDouble -> IO ()
-setPreUtteranceDelay avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setPreUtteranceDelay:") retVoid [argCDouble value]
+setPreUtteranceDelay avSpeechUtterance value =
+  sendMessage avSpeechUtterance setPreUtteranceDelaySelector value
 
 -- | @- postUtteranceDelay@
 postUtteranceDelay :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> IO CDouble
-postUtteranceDelay avSpeechUtterance  =
-    sendMsg avSpeechUtterance (mkSelector "postUtteranceDelay") retCDouble []
+postUtteranceDelay avSpeechUtterance =
+  sendMessage avSpeechUtterance postUtteranceDelaySelector
 
 -- | @- setPostUtteranceDelay:@
 setPostUtteranceDelay :: IsAVSpeechUtterance avSpeechUtterance => avSpeechUtterance -> CDouble -> IO ()
-setPostUtteranceDelay avSpeechUtterance  value =
-    sendMsg avSpeechUtterance (mkSelector "setPostUtteranceDelay:") retVoid [argCDouble value]
+setPostUtteranceDelay avSpeechUtterance value =
+  sendMessage avSpeechUtterance setPostUtteranceDelaySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @speechUtteranceWithString:@
-speechUtteranceWithStringSelector :: Selector
+speechUtteranceWithStringSelector :: Selector '[Id NSString] (Id AVSpeechUtterance)
 speechUtteranceWithStringSelector = mkSelector "speechUtteranceWithString:"
 
 -- | @Selector@ for @speechUtteranceWithAttributedString:@
-speechUtteranceWithAttributedStringSelector :: Selector
+speechUtteranceWithAttributedStringSelector :: Selector '[Id NSAttributedString] (Id AVSpeechUtterance)
 speechUtteranceWithAttributedStringSelector = mkSelector "speechUtteranceWithAttributedString:"
 
 -- | @Selector@ for @speechUtteranceWithSSMLRepresentation:@
-speechUtteranceWithSSMLRepresentationSelector :: Selector
+speechUtteranceWithSSMLRepresentationSelector :: Selector '[Id NSString] (Id AVSpeechUtterance)
 speechUtteranceWithSSMLRepresentationSelector = mkSelector "speechUtteranceWithSSMLRepresentation:"
 
 -- | @Selector@ for @initWithString:@
-initWithStringSelector :: Selector
+initWithStringSelector :: Selector '[Id NSString] (Id AVSpeechUtterance)
 initWithStringSelector = mkSelector "initWithString:"
 
 -- | @Selector@ for @initWithAttributedString:@
-initWithAttributedStringSelector :: Selector
+initWithAttributedStringSelector :: Selector '[Id NSAttributedString] (Id AVSpeechUtterance)
 initWithAttributedStringSelector = mkSelector "initWithAttributedString:"
 
 -- | @Selector@ for @initWithSSMLRepresentation:@
-initWithSSMLRepresentationSelector :: Selector
+initWithSSMLRepresentationSelector :: Selector '[Id NSString] (Id AVSpeechUtterance)
 initWithSSMLRepresentationSelector = mkSelector "initWithSSMLRepresentation:"
 
 -- | @Selector@ for @voice@
-voiceSelector :: Selector
+voiceSelector :: Selector '[] (Id AVSpeechSynthesisVoice)
 voiceSelector = mkSelector "voice"
 
 -- | @Selector@ for @setVoice:@
-setVoiceSelector :: Selector
+setVoiceSelector :: Selector '[Id AVSpeechSynthesisVoice] ()
 setVoiceSelector = mkSelector "setVoice:"
 
 -- | @Selector@ for @speechString@
-speechStringSelector :: Selector
+speechStringSelector :: Selector '[] (Id NSString)
 speechStringSelector = mkSelector "speechString"
 
 -- | @Selector@ for @attributedSpeechString@
-attributedSpeechStringSelector :: Selector
+attributedSpeechStringSelector :: Selector '[] (Id NSAttributedString)
 attributedSpeechStringSelector = mkSelector "attributedSpeechString"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @pitchMultiplier@
-pitchMultiplierSelector :: Selector
+pitchMultiplierSelector :: Selector '[] CFloat
 pitchMultiplierSelector = mkSelector "pitchMultiplier"
 
 -- | @Selector@ for @setPitchMultiplier:@
-setPitchMultiplierSelector :: Selector
+setPitchMultiplierSelector :: Selector '[CFloat] ()
 setPitchMultiplierSelector = mkSelector "setPitchMultiplier:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @prefersAssistiveTechnologySettings@
-prefersAssistiveTechnologySettingsSelector :: Selector
+prefersAssistiveTechnologySettingsSelector :: Selector '[] Bool
 prefersAssistiveTechnologySettingsSelector = mkSelector "prefersAssistiveTechnologySettings"
 
 -- | @Selector@ for @setPrefersAssistiveTechnologySettings:@
-setPrefersAssistiveTechnologySettingsSelector :: Selector
+setPrefersAssistiveTechnologySettingsSelector :: Selector '[Bool] ()
 setPrefersAssistiveTechnologySettingsSelector = mkSelector "setPrefersAssistiveTechnologySettings:"
 
 -- | @Selector@ for @preUtteranceDelay@
-preUtteranceDelaySelector :: Selector
+preUtteranceDelaySelector :: Selector '[] CDouble
 preUtteranceDelaySelector = mkSelector "preUtteranceDelay"
 
 -- | @Selector@ for @setPreUtteranceDelay:@
-setPreUtteranceDelaySelector :: Selector
+setPreUtteranceDelaySelector :: Selector '[CDouble] ()
 setPreUtteranceDelaySelector = mkSelector "setPreUtteranceDelay:"
 
 -- | @Selector@ for @postUtteranceDelay@
-postUtteranceDelaySelector :: Selector
+postUtteranceDelaySelector :: Selector '[] CDouble
 postUtteranceDelaySelector = mkSelector "postUtteranceDelay"
 
 -- | @Selector@ for @setPostUtteranceDelay:@
-setPostUtteranceDelaySelector :: Selector
+setPostUtteranceDelaySelector :: Selector '[CDouble] ()
 setPostUtteranceDelaySelector = mkSelector "setPostUtteranceDelay:"
 

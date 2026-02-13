@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.SceneKit.SCNView
   , setAntialiasingMode
   , pixelFormat
   , setPixelFormat
-  , initWithFrame_optionsSelector
-  , snapshotSelector
-  , playSelector
-  , pauseSelector
-  , stopSelector
-  , sceneSelector
-  , setSceneSelector
-  , rendersContinuouslySelector
-  , setRendersContinuouslySelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
   , allowsCameraControlSelector
-  , setAllowsCameraControlSelector
+  , antialiasingModeSelector
+  , backgroundColorSelector
   , cameraControlConfigurationSelector
   , defaultCameraControllerSelector
-  , preferredFramesPerSecondSelector
-  , setPreferredFramesPerSecondSelector
   , drawableResizesAsynchronouslySelector
-  , setDrawableResizesAsynchronouslySelector
+  , initWithFrame_optionsSelector
   , openGLContextSelector
-  , setOpenGLContextSelector
-  , antialiasingModeSelector
-  , setAntialiasingModeSelector
+  , pauseSelector
   , pixelFormatSelector
+  , playSelector
+  , preferredFramesPerSecondSelector
+  , rendersContinuouslySelector
+  , sceneSelector
+  , setAllowsCameraControlSelector
+  , setAntialiasingModeSelector
+  , setBackgroundColorSelector
+  , setDrawableResizesAsynchronouslySelector
+  , setOpenGLContextSelector
   , setPixelFormatSelector
+  , setPreferredFramesPerSecondSelector
+  , setRendersContinuouslySelector
+  , setSceneSelector
+  , snapshotSelector
+  , stopSelector
 
   -- * Enum types
   , SCNAntialiasingMode(SCNAntialiasingMode)
@@ -72,15 +73,11 @@ module ObjC.SceneKit.SCNView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -100,9 +97,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrame:options:@
 initWithFrame_options :: (IsSCNView scnView, IsNSDictionary options) => scnView -> NSRect -> options -> IO (Id SCNView)
-initWithFrame_options scnView  frame options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg scnView (mkSelector "initWithFrame:options:") (retPtr retVoid) [argNSRect frame, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithFrame_options scnView frame options =
+  sendOwnedMessage scnView initWithFrame_optionsSelector frame (toNSDictionary options)
 
 -- | snapshot
 --
@@ -112,8 +108,8 @@ initWithFrame_options scnView  frame options =
 --
 -- ObjC selector: @- snapshot@
 snapshot :: IsSCNView scnView => scnView -> IO (Id NSImage)
-snapshot scnView  =
-    sendMsg scnView (mkSelector "snapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshot scnView =
+  sendMessage scnView snapshotSelector
 
 -- | play:
 --
@@ -125,8 +121,8 @@ snapshot scnView  =
 --
 -- ObjC selector: @- play:@
 play :: IsSCNView scnView => scnView -> RawId -> IO ()
-play scnView  sender =
-    sendMsg scnView (mkSelector "play:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+play scnView sender =
+  sendMessage scnView playSelector sender
 
 -- | pause:
 --
@@ -138,8 +134,8 @@ play scnView  sender =
 --
 -- ObjC selector: @- pause:@
 pause :: IsSCNView scnView => scnView -> RawId -> IO ()
-pause scnView  sender =
-    sendMsg scnView (mkSelector "pause:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pause scnView sender =
+  sendMessage scnView pauseSelector sender
 
 -- | stop:
 --
@@ -149,8 +145,8 @@ pause scnView  sender =
 --
 -- ObjC selector: @- stop:@
 stop :: IsSCNView scnView => scnView -> RawId -> IO ()
-stop scnView  sender =
-    sendMsg scnView (mkSelector "stop:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stop scnView sender =
+  sendMessage scnView stopSelector sender
 
 -- | scene
 --
@@ -158,8 +154,8 @@ stop scnView  sender =
 --
 -- ObjC selector: @- scene@
 scene :: IsSCNView scnView => scnView -> IO (Id SCNScene)
-scene scnView  =
-    sendMsg scnView (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+scene scnView =
+  sendMessage scnView sceneSelector
 
 -- | scene
 --
@@ -167,9 +163,8 @@ scene scnView  =
 --
 -- ObjC selector: @- setScene:@
 setScene :: (IsSCNView scnView, IsSCNScene value) => scnView -> value -> IO ()
-setScene scnView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnView (mkSelector "setScene:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScene scnView value =
+  sendMessage scnView setSceneSelector (toSCNScene value)
 
 -- | rendersContinuously
 --
@@ -177,8 +172,8 @@ setScene scnView  value =
 --
 -- ObjC selector: @- rendersContinuously@
 rendersContinuously :: IsSCNView scnView => scnView -> IO Bool
-rendersContinuously scnView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnView (mkSelector "rendersContinuously") retCULong []
+rendersContinuously scnView =
+  sendMessage scnView rendersContinuouslySelector
 
 -- | rendersContinuously
 --
@@ -186,8 +181,8 @@ rendersContinuously scnView  =
 --
 -- ObjC selector: @- setRendersContinuously:@
 setRendersContinuously :: IsSCNView scnView => scnView -> Bool -> IO ()
-setRendersContinuously scnView  value =
-    sendMsg scnView (mkSelector "setRendersContinuously:") retVoid [argCULong (if value then 1 else 0)]
+setRendersContinuously scnView value =
+  sendMessage scnView setRendersContinuouslySelector value
 
 -- | backgroundColor
 --
@@ -195,8 +190,8 @@ setRendersContinuously scnView  value =
 --
 -- ObjC selector: @- backgroundColor@
 backgroundColor :: IsSCNView scnView => scnView -> IO (Id NSColor)
-backgroundColor scnView  =
-    sendMsg scnView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor scnView =
+  sendMessage scnView backgroundColorSelector
 
 -- | backgroundColor
 --
@@ -204,9 +199,8 @@ backgroundColor scnView  =
 --
 -- ObjC selector: @- setBackgroundColor:@
 setBackgroundColor :: (IsSCNView scnView, IsNSColor value) => scnView -> value -> IO ()
-setBackgroundColor scnView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor scnView value =
+  sendMessage scnView setBackgroundColorSelector (toNSColor value)
 
 -- | allowsCameraControl
 --
@@ -216,8 +210,8 @@ setBackgroundColor scnView  value =
 --
 -- ObjC selector: @- allowsCameraControl@
 allowsCameraControl :: IsSCNView scnView => scnView -> IO Bool
-allowsCameraControl scnView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnView (mkSelector "allowsCameraControl") retCULong []
+allowsCameraControl scnView =
+  sendMessage scnView allowsCameraControlSelector
 
 -- | allowsCameraControl
 --
@@ -227,8 +221,8 @@ allowsCameraControl scnView  =
 --
 -- ObjC selector: @- setAllowsCameraControl:@
 setAllowsCameraControl :: IsSCNView scnView => scnView -> Bool -> IO ()
-setAllowsCameraControl scnView  value =
-    sendMsg scnView (mkSelector "setAllowsCameraControl:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCameraControl scnView value =
+  sendMessage scnView setAllowsCameraControlSelector value
 
 -- | cameraControlConfiguration
 --
@@ -238,8 +232,8 @@ setAllowsCameraControl scnView  value =
 --
 -- ObjC selector: @- cameraControlConfiguration@
 cameraControlConfiguration :: IsSCNView scnView => scnView -> IO RawId
-cameraControlConfiguration scnView  =
-    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "cameraControlConfiguration") (retPtr retVoid) []
+cameraControlConfiguration scnView =
+  sendMessage scnView cameraControlConfigurationSelector
 
 -- | defaultCameraController
 --
@@ -247,8 +241,8 @@ cameraControlConfiguration scnView  =
 --
 -- ObjC selector: @- defaultCameraController@
 defaultCameraController :: IsSCNView scnView => scnView -> IO (Id SCNCameraController)
-defaultCameraController scnView  =
-    sendMsg scnView (mkSelector "defaultCameraController") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultCameraController scnView =
+  sendMessage scnView defaultCameraControllerSelector
 
 -- | preferredFramesPerSecond
 --
@@ -258,8 +252,8 @@ defaultCameraController scnView  =
 --
 -- ObjC selector: @- preferredFramesPerSecond@
 preferredFramesPerSecond :: IsSCNView scnView => scnView -> IO CLong
-preferredFramesPerSecond scnView  =
-    sendMsg scnView (mkSelector "preferredFramesPerSecond") retCLong []
+preferredFramesPerSecond scnView =
+  sendMessage scnView preferredFramesPerSecondSelector
 
 -- | preferredFramesPerSecond
 --
@@ -269,8 +263,8 @@ preferredFramesPerSecond scnView  =
 --
 -- ObjC selector: @- setPreferredFramesPerSecond:@
 setPreferredFramesPerSecond :: IsSCNView scnView => scnView -> CLong -> IO ()
-setPreferredFramesPerSecond scnView  value =
-    sendMsg scnView (mkSelector "setPreferredFramesPerSecond:") retVoid [argCLong value]
+setPreferredFramesPerSecond scnView value =
+  sendMessage scnView setPreferredFramesPerSecondSelector value
 
 -- | drawableResizesAsynchronously
 --
@@ -280,8 +274,8 @@ setPreferredFramesPerSecond scnView  value =
 --
 -- ObjC selector: @- drawableResizesAsynchronously@
 drawableResizesAsynchronously :: IsSCNView scnView => scnView -> IO Bool
-drawableResizesAsynchronously scnView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnView (mkSelector "drawableResizesAsynchronously") retCULong []
+drawableResizesAsynchronously scnView =
+  sendMessage scnView drawableResizesAsynchronouslySelector
 
 -- | drawableResizesAsynchronously
 --
@@ -291,8 +285,8 @@ drawableResizesAsynchronously scnView  =
 --
 -- ObjC selector: @- setDrawableResizesAsynchronously:@
 setDrawableResizesAsynchronously :: IsSCNView scnView => scnView -> Bool -> IO ()
-setDrawableResizesAsynchronously scnView  value =
-    sendMsg scnView (mkSelector "setDrawableResizesAsynchronously:") retVoid [argCULong (if value then 1 else 0)]
+setDrawableResizesAsynchronously scnView value =
+  sendMessage scnView setDrawableResizesAsynchronouslySelector value
 
 -- | openGLContext
 --
@@ -302,8 +296,8 @@ setDrawableResizesAsynchronously scnView  value =
 --
 -- ObjC selector: @- openGLContext@
 openGLContext :: IsSCNView scnView => scnView -> IO RawId
-openGLContext scnView  =
-    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "openGLContext") (retPtr retVoid) []
+openGLContext scnView =
+  sendMessage scnView openGLContextSelector
 
 -- | openGLContext
 --
@@ -313,8 +307,8 @@ openGLContext scnView  =
 --
 -- ObjC selector: @- setOpenGLContext:@
 setOpenGLContext :: IsSCNView scnView => scnView -> RawId -> IO ()
-setOpenGLContext scnView  value =
-    sendMsg scnView (mkSelector "setOpenGLContext:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOpenGLContext scnView value =
+  sendMessage scnView setOpenGLContextSelector value
 
 -- | antialiasingMode
 --
@@ -322,8 +316,8 @@ setOpenGLContext scnView  value =
 --
 -- ObjC selector: @- antialiasingMode@
 antialiasingMode :: IsSCNView scnView => scnView -> IO SCNAntialiasingMode
-antialiasingMode scnView  =
-    fmap (coerce :: CULong -> SCNAntialiasingMode) $ sendMsg scnView (mkSelector "antialiasingMode") retCULong []
+antialiasingMode scnView =
+  sendMessage scnView antialiasingModeSelector
 
 -- | antialiasingMode
 --
@@ -331,8 +325,8 @@ antialiasingMode scnView  =
 --
 -- ObjC selector: @- setAntialiasingMode:@
 setAntialiasingMode :: IsSCNView scnView => scnView -> SCNAntialiasingMode -> IO ()
-setAntialiasingMode scnView  value =
-    sendMsg scnView (mkSelector "setAntialiasingMode:") retVoid [argCULong (coerce value)]
+setAntialiasingMode scnView value =
+  sendMessage scnView setAntialiasingModeSelector value
 
 -- | pixelFormat
 --
@@ -342,8 +336,8 @@ setAntialiasingMode scnView  value =
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsSCNView scnView => scnView -> IO RawId
-pixelFormat scnView  =
-    fmap (RawId . castPtr) $ sendMsg scnView (mkSelector "pixelFormat") (retPtr retVoid) []
+pixelFormat scnView =
+  sendMessage scnView pixelFormatSelector
 
 -- | pixelFormat
 --
@@ -353,110 +347,110 @@ pixelFormat scnView  =
 --
 -- ObjC selector: @- setPixelFormat:@
 setPixelFormat :: IsSCNView scnView => scnView -> RawId -> IO ()
-setPixelFormat scnView  value =
-    sendMsg scnView (mkSelector "setPixelFormat:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPixelFormat scnView value =
+  sendMessage scnView setPixelFormatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:options:@
-initWithFrame_optionsSelector :: Selector
+initWithFrame_optionsSelector :: Selector '[NSRect, Id NSDictionary] (Id SCNView)
 initWithFrame_optionsSelector = mkSelector "initWithFrame:options:"
 
 -- | @Selector@ for @snapshot@
-snapshotSelector :: Selector
+snapshotSelector :: Selector '[] (Id NSImage)
 snapshotSelector = mkSelector "snapshot"
 
 -- | @Selector@ for @play:@
-playSelector :: Selector
+playSelector :: Selector '[RawId] ()
 playSelector = mkSelector "play:"
 
 -- | @Selector@ for @pause:@
-pauseSelector :: Selector
+pauseSelector :: Selector '[RawId] ()
 pauseSelector = mkSelector "pause:"
 
 -- | @Selector@ for @stop:@
-stopSelector :: Selector
+stopSelector :: Selector '[RawId] ()
 stopSelector = mkSelector "stop:"
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SCNScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @setScene:@
-setSceneSelector :: Selector
+setSceneSelector :: Selector '[Id SCNScene] ()
 setSceneSelector = mkSelector "setScene:"
 
 -- | @Selector@ for @rendersContinuously@
-rendersContinuouslySelector :: Selector
+rendersContinuouslySelector :: Selector '[] Bool
 rendersContinuouslySelector = mkSelector "rendersContinuously"
 
 -- | @Selector@ for @setRendersContinuously:@
-setRendersContinuouslySelector :: Selector
+setRendersContinuouslySelector :: Selector '[Bool] ()
 setRendersContinuouslySelector = mkSelector "setRendersContinuously:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @allowsCameraControl@
-allowsCameraControlSelector :: Selector
+allowsCameraControlSelector :: Selector '[] Bool
 allowsCameraControlSelector = mkSelector "allowsCameraControl"
 
 -- | @Selector@ for @setAllowsCameraControl:@
-setAllowsCameraControlSelector :: Selector
+setAllowsCameraControlSelector :: Selector '[Bool] ()
 setAllowsCameraControlSelector = mkSelector "setAllowsCameraControl:"
 
 -- | @Selector@ for @cameraControlConfiguration@
-cameraControlConfigurationSelector :: Selector
+cameraControlConfigurationSelector :: Selector '[] RawId
 cameraControlConfigurationSelector = mkSelector "cameraControlConfiguration"
 
 -- | @Selector@ for @defaultCameraController@
-defaultCameraControllerSelector :: Selector
+defaultCameraControllerSelector :: Selector '[] (Id SCNCameraController)
 defaultCameraControllerSelector = mkSelector "defaultCameraController"
 
 -- | @Selector@ for @preferredFramesPerSecond@
-preferredFramesPerSecondSelector :: Selector
+preferredFramesPerSecondSelector :: Selector '[] CLong
 preferredFramesPerSecondSelector = mkSelector "preferredFramesPerSecond"
 
 -- | @Selector@ for @setPreferredFramesPerSecond:@
-setPreferredFramesPerSecondSelector :: Selector
+setPreferredFramesPerSecondSelector :: Selector '[CLong] ()
 setPreferredFramesPerSecondSelector = mkSelector "setPreferredFramesPerSecond:"
 
 -- | @Selector@ for @drawableResizesAsynchronously@
-drawableResizesAsynchronouslySelector :: Selector
+drawableResizesAsynchronouslySelector :: Selector '[] Bool
 drawableResizesAsynchronouslySelector = mkSelector "drawableResizesAsynchronously"
 
 -- | @Selector@ for @setDrawableResizesAsynchronously:@
-setDrawableResizesAsynchronouslySelector :: Selector
+setDrawableResizesAsynchronouslySelector :: Selector '[Bool] ()
 setDrawableResizesAsynchronouslySelector = mkSelector "setDrawableResizesAsynchronously:"
 
 -- | @Selector@ for @openGLContext@
-openGLContextSelector :: Selector
+openGLContextSelector :: Selector '[] RawId
 openGLContextSelector = mkSelector "openGLContext"
 
 -- | @Selector@ for @setOpenGLContext:@
-setOpenGLContextSelector :: Selector
+setOpenGLContextSelector :: Selector '[RawId] ()
 setOpenGLContextSelector = mkSelector "setOpenGLContext:"
 
 -- | @Selector@ for @antialiasingMode@
-antialiasingModeSelector :: Selector
+antialiasingModeSelector :: Selector '[] SCNAntialiasingMode
 antialiasingModeSelector = mkSelector "antialiasingMode"
 
 -- | @Selector@ for @setAntialiasingMode:@
-setAntialiasingModeSelector :: Selector
+setAntialiasingModeSelector :: Selector '[SCNAntialiasingMode] ()
 setAntialiasingModeSelector = mkSelector "setAntialiasingMode:"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] RawId
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[RawId] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 

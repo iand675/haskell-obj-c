@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,16 +24,16 @@ module ObjC.NetworkExtension.NEVPNIKEv2SecurityAssociationParameters
   , setPostQuantumKeyExchangeMethods
   , lifetimeMinutes
   , setLifetimeMinutes
-  , encryptionAlgorithmSelector
-  , setEncryptionAlgorithmSelector
-  , integrityAlgorithmSelector
-  , setIntegrityAlgorithmSelector
   , diffieHellmanGroupSelector
-  , setDiffieHellmanGroupSelector
-  , postQuantumKeyExchangeMethodsSelector
-  , setPostQuantumKeyExchangeMethodsSelector
+  , encryptionAlgorithmSelector
+  , integrityAlgorithmSelector
   , lifetimeMinutesSelector
+  , postQuantumKeyExchangeMethodsSelector
+  , setDiffieHellmanGroupSelector
+  , setEncryptionAlgorithmSelector
+  , setIntegrityAlgorithmSelector
   , setLifetimeMinutesSelector
+  , setPostQuantumKeyExchangeMethodsSelector
 
   -- * Enum types
   , NEVPNIKEv2DiffieHellmanGroup(NEVPNIKEv2DiffieHellmanGroup)
@@ -67,15 +68,11 @@ module ObjC.NetworkExtension.NEVPNIKEv2SecurityAssociationParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,8 +86,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- encryptionAlgorithm@
 encryptionAlgorithm :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO NEVPNIKEv2EncryptionAlgorithm
-encryptionAlgorithm nevpnikEv2SecurityAssociationParameters  =
-    fmap (coerce :: CLong -> NEVPNIKEv2EncryptionAlgorithm) $ sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "encryptionAlgorithm") retCLong []
+encryptionAlgorithm nevpnikEv2SecurityAssociationParameters =
+  sendMessage nevpnikEv2SecurityAssociationParameters encryptionAlgorithmSelector
 
 -- | encryptionAlgorithm
 --
@@ -98,8 +95,8 @@ encryptionAlgorithm nevpnikEv2SecurityAssociationParameters  =
 --
 -- ObjC selector: @- setEncryptionAlgorithm:@
 setEncryptionAlgorithm :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> NEVPNIKEv2EncryptionAlgorithm -> IO ()
-setEncryptionAlgorithm nevpnikEv2SecurityAssociationParameters  value =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setEncryptionAlgorithm:") retVoid [argCLong (coerce value)]
+setEncryptionAlgorithm nevpnikEv2SecurityAssociationParameters value =
+  sendMessage nevpnikEv2SecurityAssociationParameters setEncryptionAlgorithmSelector value
 
 -- | integrityAlgorithm
 --
@@ -107,8 +104,8 @@ setEncryptionAlgorithm nevpnikEv2SecurityAssociationParameters  value =
 --
 -- ObjC selector: @- integrityAlgorithm@
 integrityAlgorithm :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO NEVPNIKEv2IntegrityAlgorithm
-integrityAlgorithm nevpnikEv2SecurityAssociationParameters  =
-    fmap (coerce :: CLong -> NEVPNIKEv2IntegrityAlgorithm) $ sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "integrityAlgorithm") retCLong []
+integrityAlgorithm nevpnikEv2SecurityAssociationParameters =
+  sendMessage nevpnikEv2SecurityAssociationParameters integrityAlgorithmSelector
 
 -- | integrityAlgorithm
 --
@@ -116,8 +113,8 @@ integrityAlgorithm nevpnikEv2SecurityAssociationParameters  =
 --
 -- ObjC selector: @- setIntegrityAlgorithm:@
 setIntegrityAlgorithm :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> NEVPNIKEv2IntegrityAlgorithm -> IO ()
-setIntegrityAlgorithm nevpnikEv2SecurityAssociationParameters  value =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setIntegrityAlgorithm:") retVoid [argCLong (coerce value)]
+setIntegrityAlgorithm nevpnikEv2SecurityAssociationParameters value =
+  sendMessage nevpnikEv2SecurityAssociationParameters setIntegrityAlgorithmSelector value
 
 -- | diffieHellmanGroup
 --
@@ -125,8 +122,8 @@ setIntegrityAlgorithm nevpnikEv2SecurityAssociationParameters  value =
 --
 -- ObjC selector: @- diffieHellmanGroup@
 diffieHellmanGroup :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO NEVPNIKEv2DiffieHellmanGroup
-diffieHellmanGroup nevpnikEv2SecurityAssociationParameters  =
-    fmap (coerce :: CLong -> NEVPNIKEv2DiffieHellmanGroup) $ sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "diffieHellmanGroup") retCLong []
+diffieHellmanGroup nevpnikEv2SecurityAssociationParameters =
+  sendMessage nevpnikEv2SecurityAssociationParameters diffieHellmanGroupSelector
 
 -- | diffieHellmanGroup
 --
@@ -134,8 +131,8 @@ diffieHellmanGroup nevpnikEv2SecurityAssociationParameters  =
 --
 -- ObjC selector: @- setDiffieHellmanGroup:@
 setDiffieHellmanGroup :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> NEVPNIKEv2DiffieHellmanGroup -> IO ()
-setDiffieHellmanGroup nevpnikEv2SecurityAssociationParameters  value =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setDiffieHellmanGroup:") retVoid [argCLong (coerce value)]
+setDiffieHellmanGroup nevpnikEv2SecurityAssociationParameters value =
+  sendMessage nevpnikEv2SecurityAssociationParameters setDiffieHellmanGroupSelector value
 
 -- | postQuantumKeyExchangeMethods
 --
@@ -143,8 +140,8 @@ setDiffieHellmanGroup nevpnikEv2SecurityAssociationParameters  value =
 --
 -- ObjC selector: @- postQuantumKeyExchangeMethods@
 postQuantumKeyExchangeMethods :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO (Id NSArray)
-postQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "postQuantumKeyExchangeMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+postQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters =
+  sendMessage nevpnikEv2SecurityAssociationParameters postQuantumKeyExchangeMethodsSelector
 
 -- | postQuantumKeyExchangeMethods
 --
@@ -152,9 +149,8 @@ postQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  =
 --
 -- ObjC selector: @- setPostQuantumKeyExchangeMethods:@
 setPostQuantumKeyExchangeMethods :: (IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters, IsNSArray value) => nevpnikEv2SecurityAssociationParameters -> value -> IO ()
-setPostQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setPostQuantumKeyExchangeMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters value =
+  sendMessage nevpnikEv2SecurityAssociationParameters setPostQuantumKeyExchangeMethodsSelector (toNSArray value)
 
 -- | lifetimeMinutes
 --
@@ -162,8 +158,8 @@ setPostQuantumKeyExchangeMethods nevpnikEv2SecurityAssociationParameters  value 
 --
 -- ObjC selector: @- lifetimeMinutes@
 lifetimeMinutes :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> IO CInt
-lifetimeMinutes nevpnikEv2SecurityAssociationParameters  =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "lifetimeMinutes") retCInt []
+lifetimeMinutes nevpnikEv2SecurityAssociationParameters =
+  sendMessage nevpnikEv2SecurityAssociationParameters lifetimeMinutesSelector
 
 -- | lifetimeMinutes
 --
@@ -171,50 +167,50 @@ lifetimeMinutes nevpnikEv2SecurityAssociationParameters  =
 --
 -- ObjC selector: @- setLifetimeMinutes:@
 setLifetimeMinutes :: IsNEVPNIKEv2SecurityAssociationParameters nevpnikEv2SecurityAssociationParameters => nevpnikEv2SecurityAssociationParameters -> CInt -> IO ()
-setLifetimeMinutes nevpnikEv2SecurityAssociationParameters  value =
-    sendMsg nevpnikEv2SecurityAssociationParameters (mkSelector "setLifetimeMinutes:") retVoid [argCInt value]
+setLifetimeMinutes nevpnikEv2SecurityAssociationParameters value =
+  sendMessage nevpnikEv2SecurityAssociationParameters setLifetimeMinutesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @encryptionAlgorithm@
-encryptionAlgorithmSelector :: Selector
+encryptionAlgorithmSelector :: Selector '[] NEVPNIKEv2EncryptionAlgorithm
 encryptionAlgorithmSelector = mkSelector "encryptionAlgorithm"
 
 -- | @Selector@ for @setEncryptionAlgorithm:@
-setEncryptionAlgorithmSelector :: Selector
+setEncryptionAlgorithmSelector :: Selector '[NEVPNIKEv2EncryptionAlgorithm] ()
 setEncryptionAlgorithmSelector = mkSelector "setEncryptionAlgorithm:"
 
 -- | @Selector@ for @integrityAlgorithm@
-integrityAlgorithmSelector :: Selector
+integrityAlgorithmSelector :: Selector '[] NEVPNIKEv2IntegrityAlgorithm
 integrityAlgorithmSelector = mkSelector "integrityAlgorithm"
 
 -- | @Selector@ for @setIntegrityAlgorithm:@
-setIntegrityAlgorithmSelector :: Selector
+setIntegrityAlgorithmSelector :: Selector '[NEVPNIKEv2IntegrityAlgorithm] ()
 setIntegrityAlgorithmSelector = mkSelector "setIntegrityAlgorithm:"
 
 -- | @Selector@ for @diffieHellmanGroup@
-diffieHellmanGroupSelector :: Selector
+diffieHellmanGroupSelector :: Selector '[] NEVPNIKEv2DiffieHellmanGroup
 diffieHellmanGroupSelector = mkSelector "diffieHellmanGroup"
 
 -- | @Selector@ for @setDiffieHellmanGroup:@
-setDiffieHellmanGroupSelector :: Selector
+setDiffieHellmanGroupSelector :: Selector '[NEVPNIKEv2DiffieHellmanGroup] ()
 setDiffieHellmanGroupSelector = mkSelector "setDiffieHellmanGroup:"
 
 -- | @Selector@ for @postQuantumKeyExchangeMethods@
-postQuantumKeyExchangeMethodsSelector :: Selector
+postQuantumKeyExchangeMethodsSelector :: Selector '[] (Id NSArray)
 postQuantumKeyExchangeMethodsSelector = mkSelector "postQuantumKeyExchangeMethods"
 
 -- | @Selector@ for @setPostQuantumKeyExchangeMethods:@
-setPostQuantumKeyExchangeMethodsSelector :: Selector
+setPostQuantumKeyExchangeMethodsSelector :: Selector '[Id NSArray] ()
 setPostQuantumKeyExchangeMethodsSelector = mkSelector "setPostQuantumKeyExchangeMethods:"
 
 -- | @Selector@ for @lifetimeMinutes@
-lifetimeMinutesSelector :: Selector
+lifetimeMinutesSelector :: Selector '[] CInt
 lifetimeMinutesSelector = mkSelector "lifetimeMinutes"
 
 -- | @Selector@ for @setLifetimeMinutes:@
-setLifetimeMinutesSelector :: Selector
+setLifetimeMinutesSelector :: Selector '[CInt] ()
 setLifetimeMinutesSelector = mkSelector "setLifetimeMinutes:"
 

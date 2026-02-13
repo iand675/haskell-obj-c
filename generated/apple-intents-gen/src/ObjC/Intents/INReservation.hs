@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,13 +16,13 @@ module ObjC.Intents.INReservation
   , reservationHolderName
   , actions
   , url
+  , actionsSelector
+  , bookingTimeSelector
   , initSelector
   , itemReferenceSelector
-  , reservationNumberSelector
-  , bookingTimeSelector
-  , reservationStatusSelector
   , reservationHolderNameSelector
-  , actionsSelector
+  , reservationNumberSelector
+  , reservationStatusSelector
   , urlSelector
 
   -- * Enum types
@@ -34,15 +35,11 @@ module ObjC.Intents.INReservation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,77 +49,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINReservation inReservation => inReservation -> IO (Id INReservation)
-init_ inReservation  =
-    sendMsg inReservation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inReservation =
+  sendOwnedMessage inReservation initSelector
 
 -- | @- itemReference@
 itemReference :: IsINReservation inReservation => inReservation -> IO (Id INSpeakableString)
-itemReference inReservation  =
-    sendMsg inReservation (mkSelector "itemReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemReference inReservation =
+  sendMessage inReservation itemReferenceSelector
 
 -- | @- reservationNumber@
 reservationNumber :: IsINReservation inReservation => inReservation -> IO (Id NSString)
-reservationNumber inReservation  =
-    sendMsg inReservation (mkSelector "reservationNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservationNumber inReservation =
+  sendMessage inReservation reservationNumberSelector
 
 -- | @- bookingTime@
 bookingTime :: IsINReservation inReservation => inReservation -> IO (Id NSDate)
-bookingTime inReservation  =
-    sendMsg inReservation (mkSelector "bookingTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingTime inReservation =
+  sendMessage inReservation bookingTimeSelector
 
 -- | @- reservationStatus@
 reservationStatus :: IsINReservation inReservation => inReservation -> IO INReservationStatus
-reservationStatus inReservation  =
-    fmap (coerce :: CLong -> INReservationStatus) $ sendMsg inReservation (mkSelector "reservationStatus") retCLong []
+reservationStatus inReservation =
+  sendMessage inReservation reservationStatusSelector
 
 -- | @- reservationHolderName@
 reservationHolderName :: IsINReservation inReservation => inReservation -> IO (Id NSString)
-reservationHolderName inReservation  =
-    sendMsg inReservation (mkSelector "reservationHolderName") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservationHolderName inReservation =
+  sendMessage inReservation reservationHolderNameSelector
 
 -- | @- actions@
 actions :: IsINReservation inReservation => inReservation -> IO (Id NSArray)
-actions inReservation  =
-    sendMsg inReservation (mkSelector "actions") (retPtr retVoid) [] >>= retainedObject . castPtr
+actions inReservation =
+  sendMessage inReservation actionsSelector
 
 -- | @- URL@
 url :: IsINReservation inReservation => inReservation -> IO (Id NSURL)
-url inReservation  =
-    sendMsg inReservation (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url inReservation =
+  sendMessage inReservation urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INReservation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @itemReference@
-itemReferenceSelector :: Selector
+itemReferenceSelector :: Selector '[] (Id INSpeakableString)
 itemReferenceSelector = mkSelector "itemReference"
 
 -- | @Selector@ for @reservationNumber@
-reservationNumberSelector :: Selector
+reservationNumberSelector :: Selector '[] (Id NSString)
 reservationNumberSelector = mkSelector "reservationNumber"
 
 -- | @Selector@ for @bookingTime@
-bookingTimeSelector :: Selector
+bookingTimeSelector :: Selector '[] (Id NSDate)
 bookingTimeSelector = mkSelector "bookingTime"
 
 -- | @Selector@ for @reservationStatus@
-reservationStatusSelector :: Selector
+reservationStatusSelector :: Selector '[] INReservationStatus
 reservationStatusSelector = mkSelector "reservationStatus"
 
 -- | @Selector@ for @reservationHolderName@
-reservationHolderNameSelector :: Selector
+reservationHolderNameSelector :: Selector '[] (Id NSString)
 reservationHolderNameSelector = mkSelector "reservationHolderName"
 
 -- | @Selector@ for @actions@
-actionsSelector :: Selector
+actionsSelector :: Selector '[] (Id NSArray)
 actionsSelector = mkSelector "actions"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.PassKit.PKIssuerProvisioningExtensionStatus
   , remotePassEntriesAvailable
   , setRemotePassEntriesAvailable
   , initSelector
-  , requiresAuthenticationSelector
-  , setRequiresAuthenticationSelector
   , passEntriesAvailableSelector
-  , setPassEntriesAvailableSelector
   , remotePassEntriesAvailableSelector
+  , requiresAuthenticationSelector
+  , setPassEntriesAvailableSelector
   , setRemotePassEntriesAvailableSelector
+  , setRequiresAuthenticationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,68 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> IO (Id PKIssuerProvisioningExtensionStatus)
-init_ pkIssuerProvisioningExtensionStatus  =
-    sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkIssuerProvisioningExtensionStatus =
+  sendOwnedMessage pkIssuerProvisioningExtensionStatus initSelector
 
 -- | @- requiresAuthentication@
 requiresAuthentication :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> IO Bool
-requiresAuthentication pkIssuerProvisioningExtensionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "requiresAuthentication") retCULong []
+requiresAuthentication pkIssuerProvisioningExtensionStatus =
+  sendMessage pkIssuerProvisioningExtensionStatus requiresAuthenticationSelector
 
 -- | @- setRequiresAuthentication:@
 setRequiresAuthentication :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> Bool -> IO ()
-setRequiresAuthentication pkIssuerProvisioningExtensionStatus  value =
-    sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "setRequiresAuthentication:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresAuthentication pkIssuerProvisioningExtensionStatus value =
+  sendMessage pkIssuerProvisioningExtensionStatus setRequiresAuthenticationSelector value
 
 -- | @- passEntriesAvailable@
 passEntriesAvailable :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> IO Bool
-passEntriesAvailable pkIssuerProvisioningExtensionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "passEntriesAvailable") retCULong []
+passEntriesAvailable pkIssuerProvisioningExtensionStatus =
+  sendMessage pkIssuerProvisioningExtensionStatus passEntriesAvailableSelector
 
 -- | @- setPassEntriesAvailable:@
 setPassEntriesAvailable :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> Bool -> IO ()
-setPassEntriesAvailable pkIssuerProvisioningExtensionStatus  value =
-    sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "setPassEntriesAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setPassEntriesAvailable pkIssuerProvisioningExtensionStatus value =
+  sendMessage pkIssuerProvisioningExtensionStatus setPassEntriesAvailableSelector value
 
 -- | @- remotePassEntriesAvailable@
 remotePassEntriesAvailable :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> IO Bool
-remotePassEntriesAvailable pkIssuerProvisioningExtensionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "remotePassEntriesAvailable") retCULong []
+remotePassEntriesAvailable pkIssuerProvisioningExtensionStatus =
+  sendMessage pkIssuerProvisioningExtensionStatus remotePassEntriesAvailableSelector
 
 -- | @- setRemotePassEntriesAvailable:@
 setRemotePassEntriesAvailable :: IsPKIssuerProvisioningExtensionStatus pkIssuerProvisioningExtensionStatus => pkIssuerProvisioningExtensionStatus -> Bool -> IO ()
-setRemotePassEntriesAvailable pkIssuerProvisioningExtensionStatus  value =
-    sendMsg pkIssuerProvisioningExtensionStatus (mkSelector "setRemotePassEntriesAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setRemotePassEntriesAvailable pkIssuerProvisioningExtensionStatus value =
+  sendMessage pkIssuerProvisioningExtensionStatus setRemotePassEntriesAvailableSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKIssuerProvisioningExtensionStatus)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @requiresAuthentication@
-requiresAuthenticationSelector :: Selector
+requiresAuthenticationSelector :: Selector '[] Bool
 requiresAuthenticationSelector = mkSelector "requiresAuthentication"
 
 -- | @Selector@ for @setRequiresAuthentication:@
-setRequiresAuthenticationSelector :: Selector
+setRequiresAuthenticationSelector :: Selector '[Bool] ()
 setRequiresAuthenticationSelector = mkSelector "setRequiresAuthentication:"
 
 -- | @Selector@ for @passEntriesAvailable@
-passEntriesAvailableSelector :: Selector
+passEntriesAvailableSelector :: Selector '[] Bool
 passEntriesAvailableSelector = mkSelector "passEntriesAvailable"
 
 -- | @Selector@ for @setPassEntriesAvailable:@
-setPassEntriesAvailableSelector :: Selector
+setPassEntriesAvailableSelector :: Selector '[Bool] ()
 setPassEntriesAvailableSelector = mkSelector "setPassEntriesAvailable:"
 
 -- | @Selector@ for @remotePassEntriesAvailable@
-remotePassEntriesAvailableSelector :: Selector
+remotePassEntriesAvailableSelector :: Selector '[] Bool
 remotePassEntriesAvailableSelector = mkSelector "remotePassEntriesAvailable"
 
 -- | @Selector@ for @setRemotePassEntriesAvailable:@
-setRemotePassEntriesAvailableSelector :: Selector
+setRemotePassEntriesAvailableSelector :: Selector '[Bool] ()
 setRemotePassEntriesAvailableSelector = mkSelector "setRemotePassEntriesAvailable:"
 

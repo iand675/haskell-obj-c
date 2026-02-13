@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Foundation.NSPersonNameComponents
   , setNickname
   , phoneticRepresentation
   , setPhoneticRepresentation
-  , namePrefixSelector
-  , setNamePrefixSelector
-  , givenNameSelector
-  , setGivenNameSelector
-  , middleNameSelector
-  , setMiddleNameSelector
   , familyNameSelector
-  , setFamilyNameSelector
+  , givenNameSelector
+  , middleNameSelector
+  , namePrefixSelector
   , nameSuffixSelector
-  , setNameSuffixSelector
   , nicknameSelector
-  , setNicknameSelector
   , phoneticRepresentationSelector
+  , setFamilyNameSelector
+  , setGivenNameSelector
+  , setMiddleNameSelector
+  , setNamePrefixSelector
+  , setNameSuffixSelector
+  , setNicknameSelector
   , setPhoneticRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,138 +51,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- namePrefix@
 namePrefix :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-namePrefix nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "namePrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+namePrefix nsPersonNameComponents =
+  sendMessage nsPersonNameComponents namePrefixSelector
 
 -- | @- setNamePrefix:@
 setNamePrefix :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setNamePrefix nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setNamePrefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNamePrefix nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setNamePrefixSelector (toNSString value)
 
 -- | @- givenName@
 givenName :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-givenName nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "givenName") (retPtr retVoid) [] >>= retainedObject . castPtr
+givenName nsPersonNameComponents =
+  sendMessage nsPersonNameComponents givenNameSelector
 
 -- | @- setGivenName:@
 setGivenName :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setGivenName nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setGivenName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGivenName nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setGivenNameSelector (toNSString value)
 
 -- | @- middleName@
 middleName :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-middleName nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "middleName") (retPtr retVoid) [] >>= retainedObject . castPtr
+middleName nsPersonNameComponents =
+  sendMessage nsPersonNameComponents middleNameSelector
 
 -- | @- setMiddleName:@
 setMiddleName :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setMiddleName nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setMiddleName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMiddleName nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setMiddleNameSelector (toNSString value)
 
 -- | @- familyName@
 familyName :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-familyName nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "familyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+familyName nsPersonNameComponents =
+  sendMessage nsPersonNameComponents familyNameSelector
 
 -- | @- setFamilyName:@
 setFamilyName :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setFamilyName nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setFamilyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFamilyName nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setFamilyNameSelector (toNSString value)
 
 -- | @- nameSuffix@
 nameSuffix :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-nameSuffix nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "nameSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameSuffix nsPersonNameComponents =
+  sendMessage nsPersonNameComponents nameSuffixSelector
 
 -- | @- setNameSuffix:@
 setNameSuffix :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setNameSuffix nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setNameSuffix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNameSuffix nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setNameSuffixSelector (toNSString value)
 
 -- | @- nickname@
 nickname :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSString)
-nickname nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "nickname") (retPtr retVoid) [] >>= retainedObject . castPtr
+nickname nsPersonNameComponents =
+  sendMessage nsPersonNameComponents nicknameSelector
 
 -- | @- setNickname:@
 setNickname :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSString value) => nsPersonNameComponents -> value -> IO ()
-setNickname nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setNickname:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNickname nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setNicknameSelector (toNSString value)
 
 -- | @- phoneticRepresentation@
 phoneticRepresentation :: IsNSPersonNameComponents nsPersonNameComponents => nsPersonNameComponents -> IO (Id NSPersonNameComponents)
-phoneticRepresentation nsPersonNameComponents  =
-    sendMsg nsPersonNameComponents (mkSelector "phoneticRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneticRepresentation nsPersonNameComponents =
+  sendMessage nsPersonNameComponents phoneticRepresentationSelector
 
 -- | @- setPhoneticRepresentation:@
 setPhoneticRepresentation :: (IsNSPersonNameComponents nsPersonNameComponents, IsNSPersonNameComponents value) => nsPersonNameComponents -> value -> IO ()
-setPhoneticRepresentation nsPersonNameComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponents (mkSelector "setPhoneticRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhoneticRepresentation nsPersonNameComponents value =
+  sendMessage nsPersonNameComponents setPhoneticRepresentationSelector (toNSPersonNameComponents value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @namePrefix@
-namePrefixSelector :: Selector
+namePrefixSelector :: Selector '[] (Id NSString)
 namePrefixSelector = mkSelector "namePrefix"
 
 -- | @Selector@ for @setNamePrefix:@
-setNamePrefixSelector :: Selector
+setNamePrefixSelector :: Selector '[Id NSString] ()
 setNamePrefixSelector = mkSelector "setNamePrefix:"
 
 -- | @Selector@ for @givenName@
-givenNameSelector :: Selector
+givenNameSelector :: Selector '[] (Id NSString)
 givenNameSelector = mkSelector "givenName"
 
 -- | @Selector@ for @setGivenName:@
-setGivenNameSelector :: Selector
+setGivenNameSelector :: Selector '[Id NSString] ()
 setGivenNameSelector = mkSelector "setGivenName:"
 
 -- | @Selector@ for @middleName@
-middleNameSelector :: Selector
+middleNameSelector :: Selector '[] (Id NSString)
 middleNameSelector = mkSelector "middleName"
 
 -- | @Selector@ for @setMiddleName:@
-setMiddleNameSelector :: Selector
+setMiddleNameSelector :: Selector '[Id NSString] ()
 setMiddleNameSelector = mkSelector "setMiddleName:"
 
 -- | @Selector@ for @familyName@
-familyNameSelector :: Selector
+familyNameSelector :: Selector '[] (Id NSString)
 familyNameSelector = mkSelector "familyName"
 
 -- | @Selector@ for @setFamilyName:@
-setFamilyNameSelector :: Selector
+setFamilyNameSelector :: Selector '[Id NSString] ()
 setFamilyNameSelector = mkSelector "setFamilyName:"
 
 -- | @Selector@ for @nameSuffix@
-nameSuffixSelector :: Selector
+nameSuffixSelector :: Selector '[] (Id NSString)
 nameSuffixSelector = mkSelector "nameSuffix"
 
 -- | @Selector@ for @setNameSuffix:@
-setNameSuffixSelector :: Selector
+setNameSuffixSelector :: Selector '[Id NSString] ()
 setNameSuffixSelector = mkSelector "setNameSuffix:"
 
 -- | @Selector@ for @nickname@
-nicknameSelector :: Selector
+nicknameSelector :: Selector '[] (Id NSString)
 nicknameSelector = mkSelector "nickname"
 
 -- | @Selector@ for @setNickname:@
-setNicknameSelector :: Selector
+setNicknameSelector :: Selector '[Id NSString] ()
 setNicknameSelector = mkSelector "setNickname:"
 
 -- | @Selector@ for @phoneticRepresentation@
-phoneticRepresentationSelector :: Selector
+phoneticRepresentationSelector :: Selector '[] (Id NSPersonNameComponents)
 phoneticRepresentationSelector = mkSelector "phoneticRepresentation"
 
 -- | @Selector@ for @setPhoneticRepresentation:@
-setPhoneticRepresentationSelector :: Selector
+setPhoneticRepresentationSelector :: Selector '[Id NSPersonNameComponents] ()
 setPhoneticRepresentationSelector = mkSelector "setPhoneticRepresentation:"
 

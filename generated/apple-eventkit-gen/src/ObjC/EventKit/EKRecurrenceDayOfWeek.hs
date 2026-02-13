@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,10 +25,10 @@ module ObjC.EventKit.EKRecurrenceDayOfWeek
   , initWithDayOfTheWeek_weekNumber
   , dayOfTheWeek
   , weekNumber
+  , dayOfTheWeekSelector
   , dayOfWeekSelector
   , dayOfWeek_weekNumberSelector
   , initWithDayOfTheWeek_weekNumberSelector
-  , dayOfTheWeekSelector
   , weekNumberSelector
 
   -- * Enum types
@@ -49,15 +50,11 @@ module ObjC.EventKit.EKRecurrenceDayOfWeek
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,7 +71,7 @@ dayOfWeek :: EKWeekday -> IO (Id EKRecurrenceDayOfWeek)
 dayOfWeek dayOfTheWeek =
   do
     cls' <- getRequiredClass "EKRecurrenceDayOfWeek"
-    sendClassMsg cls' (mkSelector "dayOfWeek:") (retPtr retVoid) [argCLong (coerce dayOfTheWeek)] >>= retainedObject . castPtr
+    sendClassMessage cls' dayOfWeekSelector dayOfTheWeek
 
 -- | dayOfWeek:weekNumber:
 --
@@ -85,7 +82,7 @@ dayOfWeek_weekNumber :: EKWeekday -> CLong -> IO (Id EKRecurrenceDayOfWeek)
 dayOfWeek_weekNumber dayOfTheWeek weekNumber =
   do
     cls' <- getRequiredClass "EKRecurrenceDayOfWeek"
-    sendClassMsg cls' (mkSelector "dayOfWeek:weekNumber:") (retPtr retVoid) [argCLong (coerce dayOfTheWeek), argCLong weekNumber] >>= retainedObject . castPtr
+    sendClassMessage cls' dayOfWeek_weekNumberSelector dayOfTheWeek weekNumber
 
 -- | initWithDayOfTheWeek:weekNumber:
 --
@@ -93,8 +90,8 @@ dayOfWeek_weekNumber dayOfTheWeek weekNumber =
 --
 -- ObjC selector: @- initWithDayOfTheWeek:weekNumber:@
 initWithDayOfTheWeek_weekNumber :: IsEKRecurrenceDayOfWeek ekRecurrenceDayOfWeek => ekRecurrenceDayOfWeek -> EKWeekday -> CLong -> IO RawId
-initWithDayOfTheWeek_weekNumber ekRecurrenceDayOfWeek  dayOfTheWeek weekNumber =
-    fmap (RawId . castPtr) $ sendMsg ekRecurrenceDayOfWeek (mkSelector "initWithDayOfTheWeek:weekNumber:") (retPtr retVoid) [argCLong (coerce dayOfTheWeek), argCLong weekNumber]
+initWithDayOfTheWeek_weekNumber ekRecurrenceDayOfWeek dayOfTheWeek weekNumber =
+  sendOwnedMessage ekRecurrenceDayOfWeek initWithDayOfTheWeek_weekNumberSelector dayOfTheWeek weekNumber
 
 -- | dayOfTheWeek
 --
@@ -102,8 +99,8 @@ initWithDayOfTheWeek_weekNumber ekRecurrenceDayOfWeek  dayOfTheWeek weekNumber =
 --
 -- ObjC selector: @- dayOfTheWeek@
 dayOfTheWeek :: IsEKRecurrenceDayOfWeek ekRecurrenceDayOfWeek => ekRecurrenceDayOfWeek -> IO EKWeekday
-dayOfTheWeek ekRecurrenceDayOfWeek  =
-    fmap (coerce :: CLong -> EKWeekday) $ sendMsg ekRecurrenceDayOfWeek (mkSelector "dayOfTheWeek") retCLong []
+dayOfTheWeek ekRecurrenceDayOfWeek =
+  sendMessage ekRecurrenceDayOfWeek dayOfTheWeekSelector
 
 -- | weekNumber
 --
@@ -111,30 +108,30 @@ dayOfTheWeek ekRecurrenceDayOfWeek  =
 --
 -- ObjC selector: @- weekNumber@
 weekNumber :: IsEKRecurrenceDayOfWeek ekRecurrenceDayOfWeek => ekRecurrenceDayOfWeek -> IO CLong
-weekNumber ekRecurrenceDayOfWeek  =
-    sendMsg ekRecurrenceDayOfWeek (mkSelector "weekNumber") retCLong []
+weekNumber ekRecurrenceDayOfWeek =
+  sendMessage ekRecurrenceDayOfWeek weekNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayOfWeek:@
-dayOfWeekSelector :: Selector
+dayOfWeekSelector :: Selector '[EKWeekday] (Id EKRecurrenceDayOfWeek)
 dayOfWeekSelector = mkSelector "dayOfWeek:"
 
 -- | @Selector@ for @dayOfWeek:weekNumber:@
-dayOfWeek_weekNumberSelector :: Selector
+dayOfWeek_weekNumberSelector :: Selector '[EKWeekday, CLong] (Id EKRecurrenceDayOfWeek)
 dayOfWeek_weekNumberSelector = mkSelector "dayOfWeek:weekNumber:"
 
 -- | @Selector@ for @initWithDayOfTheWeek:weekNumber:@
-initWithDayOfTheWeek_weekNumberSelector :: Selector
+initWithDayOfTheWeek_weekNumberSelector :: Selector '[EKWeekday, CLong] RawId
 initWithDayOfTheWeek_weekNumberSelector = mkSelector "initWithDayOfTheWeek:weekNumber:"
 
 -- | @Selector@ for @dayOfTheWeek@
-dayOfTheWeekSelector :: Selector
+dayOfTheWeekSelector :: Selector '[] EKWeekday
 dayOfTheWeekSelector = mkSelector "dayOfTheWeek"
 
 -- | @Selector@ for @weekNumber@
-weekNumberSelector :: Selector
+weekNumberSelector :: Selector '[] CLong
 weekNumberSelector = mkSelector "weekNumber"
 

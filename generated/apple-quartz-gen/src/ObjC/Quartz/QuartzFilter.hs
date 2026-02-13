@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Quartz.QuartzFilter
   , localizedName
   , applyToContext
   , removeFromContext
-  , quartzFilterWithURLSelector
-  , quartzFilterWithPropertiesSelector
-  , quartzFilterWithOutputIntentsSelector
-  , propertiesSelector
-  , urlSelector
-  , localizedNameSelector
   , applyToContextSelector
+  , localizedNameSelector
+  , propertiesSelector
+  , quartzFilterWithOutputIntentsSelector
+  , quartzFilterWithPropertiesSelector
+  , quartzFilterWithURLSelector
   , removeFromContextSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,83 +43,80 @@ quartzFilterWithURL :: IsNSURL aURL => aURL -> IO (Id QuartzFilter)
 quartzFilterWithURL aURL =
   do
     cls' <- getRequiredClass "QuartzFilter"
-    withObjCPtr aURL $ \raw_aURL ->
-      sendClassMsg cls' (mkSelector "quartzFilterWithURL:") (retPtr retVoid) [argPtr (castPtr raw_aURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quartzFilterWithURLSelector (toNSURL aURL)
 
 -- | @+ quartzFilterWithProperties:@
 quartzFilterWithProperties :: IsNSDictionary properties => properties -> IO (Id QuartzFilter)
 quartzFilterWithProperties properties =
   do
     cls' <- getRequiredClass "QuartzFilter"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "quartzFilterWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quartzFilterWithPropertiesSelector (toNSDictionary properties)
 
 -- | @+ quartzFilterWithOutputIntents:@
 quartzFilterWithOutputIntents :: IsNSArray outputIntents => outputIntents -> IO (Id QuartzFilter)
 quartzFilterWithOutputIntents outputIntents =
   do
     cls' <- getRequiredClass "QuartzFilter"
-    withObjCPtr outputIntents $ \raw_outputIntents ->
-      sendClassMsg cls' (mkSelector "quartzFilterWithOutputIntents:") (retPtr retVoid) [argPtr (castPtr raw_outputIntents :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quartzFilterWithOutputIntentsSelector (toNSArray outputIntents)
 
 -- | @- properties@
 properties :: IsQuartzFilter quartzFilter => quartzFilter -> IO (Id NSDictionary)
-properties quartzFilter  =
-    sendMsg quartzFilter (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties quartzFilter =
+  sendMessage quartzFilter propertiesSelector
 
 -- | @- url@
 url :: IsQuartzFilter quartzFilter => quartzFilter -> IO (Id NSURL)
-url quartzFilter  =
-    sendMsg quartzFilter (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url quartzFilter =
+  sendMessage quartzFilter urlSelector
 
 -- | @- localizedName@
 localizedName :: IsQuartzFilter quartzFilter => quartzFilter -> IO (Id NSString)
-localizedName quartzFilter  =
-    sendMsg quartzFilter (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName quartzFilter =
+  sendMessage quartzFilter localizedNameSelector
 
 -- | @- applyToContext:@
 applyToContext :: IsQuartzFilter quartzFilter => quartzFilter -> Ptr () -> IO Bool
-applyToContext quartzFilter  aContext =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg quartzFilter (mkSelector "applyToContext:") retCULong [argPtr aContext]
+applyToContext quartzFilter aContext =
+  sendMessage quartzFilter applyToContextSelector aContext
 
 -- | @- removeFromContext:@
 removeFromContext :: IsQuartzFilter quartzFilter => quartzFilter -> Ptr () -> IO ()
-removeFromContext quartzFilter  aContext =
-    sendMsg quartzFilter (mkSelector "removeFromContext:") retVoid [argPtr aContext]
+removeFromContext quartzFilter aContext =
+  sendMessage quartzFilter removeFromContextSelector aContext
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @quartzFilterWithURL:@
-quartzFilterWithURLSelector :: Selector
+quartzFilterWithURLSelector :: Selector '[Id NSURL] (Id QuartzFilter)
 quartzFilterWithURLSelector = mkSelector "quartzFilterWithURL:"
 
 -- | @Selector@ for @quartzFilterWithProperties:@
-quartzFilterWithPropertiesSelector :: Selector
+quartzFilterWithPropertiesSelector :: Selector '[Id NSDictionary] (Id QuartzFilter)
 quartzFilterWithPropertiesSelector = mkSelector "quartzFilterWithProperties:"
 
 -- | @Selector@ for @quartzFilterWithOutputIntents:@
-quartzFilterWithOutputIntentsSelector :: Selector
+quartzFilterWithOutputIntentsSelector :: Selector '[Id NSArray] (Id QuartzFilter)
 quartzFilterWithOutputIntentsSelector = mkSelector "quartzFilterWithOutputIntents:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @applyToContext:@
-applyToContextSelector :: Selector
+applyToContextSelector :: Selector '[Ptr ()] Bool
 applyToContextSelector = mkSelector "applyToContext:"
 
 -- | @Selector@ for @removeFromContext:@
-removeFromContextSelector :: Selector
+removeFromContextSelector :: Selector '[Ptr ()] ()
 removeFromContextSelector = mkSelector "removeFromContext:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,10 +21,10 @@ module ObjC.Photos.PHAssetResourceUploadJob
   , resource
   , destination
   , state
+  , destinationSelector
   , fetchJobsWithAction_optionsSelector
   , jobLimitSelector
   , resourceSelector
-  , destinationSelector
   , stateSelector
 
   -- * Enum types
@@ -38,15 +39,11 @@ module ObjC.Photos.PHAssetResourceUploadJob
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,7 @@ fetchJobsWithAction_options :: IsPHFetchOptions options => PHAssetResourceUpload
 fetchJobsWithAction_options action options =
   do
     cls' <- getRequiredClass "PHAssetResourceUploadJob"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "fetchJobsWithAction:options:") (retPtr retVoid) [argCLong (coerce action), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchJobsWithAction_optionsSelector action (toPHFetchOptions options)
 
 -- | The maximum number of unacknowledged upload jobs allowed.
 --
@@ -77,50 +73,50 @@ jobLimit :: IO CLong
 jobLimit  =
   do
     cls' <- getRequiredClass "PHAssetResourceUploadJob"
-    sendClassMsg cls' (mkSelector "jobLimit") retCLong []
+    sendClassMessage cls' jobLimitSelector
 
 -- | The asset resource this job promises to upload.
 --
 -- ObjC selector: @- resource@
 resource :: IsPHAssetResourceUploadJob phAssetResourceUploadJob => phAssetResourceUploadJob -> IO (Id PHAssetResource)
-resource phAssetResourceUploadJob  =
-    sendMsg phAssetResourceUploadJob (mkSelector "resource") (retPtr retVoid) [] >>= retainedObject . castPtr
+resource phAssetResourceUploadJob =
+  sendMessage phAssetResourceUploadJob resourceSelector
 
 -- | The destination to send the job's resource.
 --
 -- ObjC selector: @- destination@
 destination :: IsPHAssetResourceUploadJob phAssetResourceUploadJob => phAssetResourceUploadJob -> IO (Id NSURLRequest)
-destination phAssetResourceUploadJob  =
-    sendMsg phAssetResourceUploadJob (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination phAssetResourceUploadJob =
+  sendMessage phAssetResourceUploadJob destinationSelector
 
 -- | The state of this upload job.
 --
 -- ObjC selector: @- state@
 state :: IsPHAssetResourceUploadJob phAssetResourceUploadJob => phAssetResourceUploadJob -> IO PHAssetResourceUploadJobState
-state phAssetResourceUploadJob  =
-    fmap (coerce :: CLong -> PHAssetResourceUploadJobState) $ sendMsg phAssetResourceUploadJob (mkSelector "state") retCLong []
+state phAssetResourceUploadJob =
+  sendMessage phAssetResourceUploadJob stateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchJobsWithAction:options:@
-fetchJobsWithAction_optionsSelector :: Selector
+fetchJobsWithAction_optionsSelector :: Selector '[PHAssetResourceUploadJobAction, Id PHFetchOptions] (Id PHFetchResult)
 fetchJobsWithAction_optionsSelector = mkSelector "fetchJobsWithAction:options:"
 
 -- | @Selector@ for @jobLimit@
-jobLimitSelector :: Selector
+jobLimitSelector :: Selector '[] CLong
 jobLimitSelector = mkSelector "jobLimit"
 
 -- | @Selector@ for @resource@
-resourceSelector :: Selector
+resourceSelector :: Selector '[] (Id PHAssetResource)
 resourceSelector = mkSelector "resource"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id NSURLRequest)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] PHAssetResourceUploadJobState
 stateSelector = mkSelector "state"
 

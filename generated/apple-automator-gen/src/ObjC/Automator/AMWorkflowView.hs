@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Automator.AMWorkflowView
   , setWorkflowController
   , editableSelector
   , setEditableSelector
-  , workflowControllerSelector
   , setWorkflowControllerSelector
+  , workflowControllerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,42 +33,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- editable@
 editable :: IsAMWorkflowView amWorkflowView => amWorkflowView -> IO Bool
-editable amWorkflowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg amWorkflowView (mkSelector "editable") retCULong []
+editable amWorkflowView =
+  sendMessage amWorkflowView editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsAMWorkflowView amWorkflowView => amWorkflowView -> Bool -> IO ()
-setEditable amWorkflowView  value =
-    sendMsg amWorkflowView (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable amWorkflowView value =
+  sendMessage amWorkflowView setEditableSelector value
 
 -- | @- workflowController@
 workflowController :: IsAMWorkflowView amWorkflowView => amWorkflowView -> IO (Id AMWorkflowController)
-workflowController amWorkflowView  =
-    sendMsg amWorkflowView (mkSelector "workflowController") (retPtr retVoid) [] >>= retainedObject . castPtr
+workflowController amWorkflowView =
+  sendMessage amWorkflowView workflowControllerSelector
 
 -- | @- setWorkflowController:@
 setWorkflowController :: (IsAMWorkflowView amWorkflowView, IsAMWorkflowController value) => amWorkflowView -> value -> IO ()
-setWorkflowController amWorkflowView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg amWorkflowView (mkSelector "setWorkflowController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWorkflowController amWorkflowView value =
+  sendMessage amWorkflowView setWorkflowControllerSelector (toAMWorkflowController value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @workflowController@
-workflowControllerSelector :: Selector
+workflowControllerSelector :: Selector '[] (Id AMWorkflowController)
 workflowControllerSelector = mkSelector "workflowController"
 
 -- | @Selector@ for @setWorkflowController:@
-setWorkflowControllerSelector :: Selector
+setWorkflowControllerSelector :: Selector '[Id AMWorkflowController] ()
 setWorkflowControllerSelector = mkSelector "setWorkflowController:"
 

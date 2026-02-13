@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,41 +47,41 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphConvolution3DOpDescriptor
   , setWeightsLayout
   , groups
   , setGroups
+  , dataLayoutSelector
   , descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayoutSelector
   , descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayoutSelector
-  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector
-  , strideInXSelector
-  , setStrideInXSelector
-  , strideInYSelector
-  , setStrideInYSelector
-  , strideInZSelector
-  , setStrideInZSelector
   , dilationRateInXSelector
-  , setDilationRateInXSelector
   , dilationRateInYSelector
-  , setDilationRateInYSelector
   , dilationRateInZSelector
-  , setDilationRateInZSelector
-  , paddingLeftSelector
-  , setPaddingLeftSelector
-  , paddingRightSelector
-  , setPaddingRightSelector
-  , paddingTopSelector
-  , setPaddingTopSelector
-  , paddingBottomSelector
-  , setPaddingBottomSelector
-  , paddingFrontSelector
-  , setPaddingFrontSelector
-  , paddingBackSelector
-  , setPaddingBackSelector
-  , paddingStyleSelector
-  , setPaddingStyleSelector
-  , dataLayoutSelector
-  , setDataLayoutSelector
-  , weightsLayoutSelector
-  , setWeightsLayoutSelector
   , groupsSelector
+  , paddingBackSelector
+  , paddingBottomSelector
+  , paddingFrontSelector
+  , paddingLeftSelector
+  , paddingRightSelector
+  , paddingStyleSelector
+  , paddingTopSelector
+  , setDataLayoutSelector
+  , setDilationRateInXSelector
+  , setDilationRateInYSelector
+  , setDilationRateInZSelector
+  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector
   , setGroupsSelector
+  , setPaddingBackSelector
+  , setPaddingBottomSelector
+  , setPaddingFrontSelector
+  , setPaddingLeftSelector
+  , setPaddingRightSelector
+  , setPaddingStyleSelector
+  , setPaddingTopSelector
+  , setStrideInXSelector
+  , setStrideInYSelector
+  , setStrideInZSelector
+  , setWeightsLayoutSelector
+  , strideInXSelector
+  , strideInYSelector
+  , strideInZSelector
+  , weightsLayoutSelector
 
   -- * Enum types
   , MPSGraphPaddingStyle(MPSGraphPaddingStyle)
@@ -104,15 +105,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphConvolution3DOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -127,7 +124,7 @@ descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dila
 descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayout strideInX strideInY strideInZ dilationRateInX dilationRateInY dilationRateInZ groups paddingLeft paddingRight paddingTop paddingBottom paddingFront paddingBack paddingStyle dataLayout weightsLayout =
   do
     cls' <- getRequiredClass "MPSGraphConvolution3DOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:paddingStyle:dataLayout:weightsLayout:") (retPtr retVoid) [argCULong strideInX, argCULong strideInY, argCULong strideInZ, argCULong dilationRateInX, argCULong dilationRateInY, argCULong dilationRateInZ, argCULong groups, argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom, argCULong paddingFront, argCULong paddingBack, argCULong (coerce paddingStyle), argCULong (coerce dataLayout), argCULong (coerce weightsLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayoutSelector strideInX strideInY strideInZ dilationRateInX dilationRateInY dilationRateInZ groups paddingLeft paddingRight paddingTop paddingBottom paddingFront paddingBack paddingStyle dataLayout weightsLayout
 
 -- | Creates a convolution descriptor with given values for parameters. - Parameters:   - strideInX: See ``strideInX`` property.   - strideInY: See ``strideInY`` property.   - strideInZ: See ``strideInZ`` property.   - dilationRateInX: See ``dilationRateInX`` property.   - dilationRateInY: See ``dilationRateInY`` property.   - dilationRateInZ: See ``dilationRateInZ`` property.   - groups: See ``groups`` property.   - paddingStyle: See ``paddingStyle`` property.   - dataLayout: See ``dataLayout`` property.   - weightsLayout: See ``weightsLayout`` property. - Returns: The @MPSGraphConvolution3DOpDescriptor@ on autoreleasepool.
 --
@@ -136,14 +133,14 @@ descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dila
 descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayout strideInX strideInY strideInZ dilationRateInX dilationRateInY dilationRateInZ groups paddingStyle dataLayout weightsLayout =
   do
     cls' <- getRequiredClass "MPSGraphConvolution3DOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingStyle:dataLayout:weightsLayout:") (retPtr retVoid) [argCULong strideInX, argCULong strideInY, argCULong strideInZ, argCULong dilationRateInX, argCULong dilationRateInY, argCULong dilationRateInZ, argCULong groups, argCULong (coerce paddingStyle), argCULong (coerce dataLayout), argCULong (coerce weightsLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayoutSelector strideInX strideInY strideInZ dilationRateInX dilationRateInY dilationRateInZ groups paddingStyle dataLayout weightsLayout
 
 -- | Sets the left, right, top, bottom, front, and back padding values. - Parameters:   - paddingLeft: See ``paddingLeft`` property.   - paddingRight: See ``paddingRight`` property.   - paddingTop: See ``paddingTop`` property.   - paddingBottom: See ``paddingBottom`` property.   - paddingFront: See ``paddingFront`` property.   - paddingBottom: See ``paddingBottom`` property.
 --
 -- ObjC selector: @- setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:@
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> CULong -> CULong -> CULong -> CULong -> CULong -> IO ()
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack mpsGraphConvolution3DOpDescriptor  paddingLeft paddingRight paddingTop paddingBottom paddingFront paddingBack =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:") retVoid [argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom, argCULong paddingFront, argCULong paddingBack]
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack mpsGraphConvolution3DOpDescriptor paddingLeft paddingRight paddingTop paddingBottom paddingFront paddingBack =
+  sendMessage mpsGraphConvolution3DOpDescriptor setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector paddingLeft paddingRight paddingTop paddingBottom paddingFront paddingBack
 
 -- | The scale that maps@x@-coordinate of destination to @x@-coordinate of source.
 --
@@ -151,8 +148,8 @@ setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingF
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-strideInX mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "strideInX") retCULong []
+strideInX mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor strideInXSelector
 
 -- | The scale that maps@x@-coordinate of destination to @x@-coordinate of source.
 --
@@ -160,8 +157,8 @@ strideInX mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setStrideInX:@
 setStrideInX :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setStrideInX mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setStrideInX:") retVoid [argCULong value]
+setStrideInX mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setStrideInXSelector value
 
 -- | The scale that maps@y@-coordinate of destination to @y@-coordinate of source.
 --
@@ -169,8 +166,8 @@ setStrideInX mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-strideInY mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "strideInY") retCULong []
+strideInY mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor strideInYSelector
 
 -- | The scale that maps@y@-coordinate of destination to @y@-coordinate of source.
 --
@@ -178,8 +175,8 @@ strideInY mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setStrideInY:@
 setStrideInY :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setStrideInY mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setStrideInY:") retVoid [argCULong value]
+setStrideInY mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setStrideInYSelector value
 
 -- | The scale that maps@z@-coordinate of destination to @z@-coordinate of source.
 --
@@ -187,8 +184,8 @@ setStrideInY mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- strideInZ@
 strideInZ :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-strideInZ mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "strideInZ") retCULong []
+strideInZ mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor strideInZSelector
 
 -- | The scale that maps@z@-coordinate of destination to @z@-coordinate of source.
 --
@@ -196,8 +193,8 @@ strideInZ mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setStrideInZ:@
 setStrideInZ :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setStrideInZ mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setStrideInZ:") retVoid [argCULong value]
+setStrideInZ mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setStrideInZSelector value
 
 -- | The amount by which weights tensor expands in the @x@-direction.
 --
@@ -205,8 +202,8 @@ setStrideInZ mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRateInX@
 dilationRateInX :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-dilationRateInX mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "dilationRateInX") retCULong []
+dilationRateInX mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor dilationRateInXSelector
 
 -- | The amount by which weights tensor expands in the @x@-direction.
 --
@@ -214,8 +211,8 @@ dilationRateInX mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRateInX:@
 setDilationRateInX :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setDilationRateInX mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setDilationRateInX:") retVoid [argCULong value]
+setDilationRateInX mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setDilationRateInXSelector value
 
 -- | The amount by which weights tensor expands in the @y@-direction.
 --
@@ -223,8 +220,8 @@ setDilationRateInX mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRateInY@
 dilationRateInY :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-dilationRateInY mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "dilationRateInY") retCULong []
+dilationRateInY mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor dilationRateInYSelector
 
 -- | The amount by which weights tensor expands in the @y@-direction.
 --
@@ -232,8 +229,8 @@ dilationRateInY mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRateInY:@
 setDilationRateInY :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setDilationRateInY mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setDilationRateInY:") retVoid [argCULong value]
+setDilationRateInY mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setDilationRateInYSelector value
 
 -- | The amount by which weights tensor expands in the @z@-direction.
 --
@@ -241,8 +238,8 @@ setDilationRateInY mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRateInZ@
 dilationRateInZ :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-dilationRateInZ mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "dilationRateInZ") retCULong []
+dilationRateInZ mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor dilationRateInZSelector
 
 -- | The amount by which weights tensor expands in the @z@-direction.
 --
@@ -250,92 +247,92 @@ dilationRateInZ mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRateInZ:@
 setDilationRateInZ :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setDilationRateInZ mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setDilationRateInZ:") retVoid [argCULong value]
+setDilationRateInZ mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setDilationRateInZSelector value
 
 -- | The number of zeros added on the left side of the source tensor.
 --
 -- ObjC selector: @- paddingLeft@
 paddingLeft :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingLeft mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingLeft") retCULong []
+paddingLeft mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingLeftSelector
 
 -- | The number of zeros added on the left side of the source tensor.
 --
 -- ObjC selector: @- setPaddingLeft:@
 setPaddingLeft :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingLeft mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingLeft:") retVoid [argCULong value]
+setPaddingLeft mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingLeftSelector value
 
 -- | The number of zeros added on the right side of the source tensor.
 --
 -- ObjC selector: @- paddingRight@
 paddingRight :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingRight mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingRight") retCULong []
+paddingRight mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingRightSelector
 
 -- | The number of zeros added on the right side of the source tensor.
 --
 -- ObjC selector: @- setPaddingRight:@
 setPaddingRight :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingRight mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingRight:") retVoid [argCULong value]
+setPaddingRight mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingRightSelector value
 
 -- | The number of zeros added at the top of the source tensor.
 --
 -- ObjC selector: @- paddingTop@
 paddingTop :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingTop mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingTop") retCULong []
+paddingTop mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingTopSelector
 
 -- | The number of zeros added at the top of the source tensor.
 --
 -- ObjC selector: @- setPaddingTop:@
 setPaddingTop :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingTop mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingTop:") retVoid [argCULong value]
+setPaddingTop mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingTopSelector value
 
 -- | The number of zeros added at the bottom of the source tensor.
 --
 -- ObjC selector: @- paddingBottom@
 paddingBottom :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingBottom mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingBottom") retCULong []
+paddingBottom mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingBottomSelector
 
 -- | The number of zeros added at the bottom of the source tensor.
 --
 -- ObjC selector: @- setPaddingBottom:@
 setPaddingBottom :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingBottom mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingBottom:") retVoid [argCULong value]
+setPaddingBottom mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingBottomSelector value
 
 -- | The number of zeros added at the front of the source tensor.
 --
 -- ObjC selector: @- paddingFront@
 paddingFront :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingFront mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingFront") retCULong []
+paddingFront mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingFrontSelector
 
 -- | The number of zeros added at the front of the source tensor.
 --
 -- ObjC selector: @- setPaddingFront:@
 setPaddingFront :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingFront mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingFront:") retVoid [argCULong value]
+setPaddingFront mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingFrontSelector value
 
 -- | The number of zeros added at the back of the source tensor.
 --
 -- ObjC selector: @- paddingBack@
 paddingBack :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-paddingBack mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingBack") retCULong []
+paddingBack mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingBackSelector
 
 -- | The number of zeros added at the back of the source tensor.
 --
 -- ObjC selector: @- setPaddingBack:@
 setPaddingBack :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setPaddingBack mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingBack:") retVoid [argCULong value]
+setPaddingBack mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingBackSelector value
 
 -- | The type of padding that is applied to the source tensor.
 --
@@ -343,8 +340,8 @@ setPaddingBack mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingStyle@
 paddingStyle :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO MPSGraphPaddingStyle
-paddingStyle mpsGraphConvolution3DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPaddingStyle) $ sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "paddingStyle") retCULong []
+paddingStyle mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor paddingStyleSelector
 
 -- | The type of padding that is applied to the source tensor.
 --
@@ -352,8 +349,8 @@ paddingStyle mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingStyle:@
 setPaddingStyle :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> MPSGraphPaddingStyle -> IO ()
-setPaddingStyle mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setPaddingStyle:") retVoid [argCULong (coerce value)]
+setPaddingStyle mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setPaddingStyleSelector value
 
 -- | The named layout of data in the source tensor.
 --
@@ -361,8 +358,8 @@ setPaddingStyle mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- dataLayout@
 dataLayout :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO MPSGraphTensorNamedDataLayout
-dataLayout mpsGraphConvolution3DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphTensorNamedDataLayout) $ sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "dataLayout") retCULong []
+dataLayout mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor dataLayoutSelector
 
 -- | The named layout of data in the source tensor.
 --
@@ -370,8 +367,8 @@ dataLayout mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setDataLayout:@
 setDataLayout :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> MPSGraphTensorNamedDataLayout -> IO ()
-setDataLayout mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setDataLayout:") retVoid [argCULong (coerce value)]
+setDataLayout mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setDataLayoutSelector value
 
 -- | The named layout of data in the weights tensor.
 --
@@ -379,8 +376,8 @@ setDataLayout mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- weightsLayout@
 weightsLayout :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO MPSGraphTensorNamedDataLayout
-weightsLayout mpsGraphConvolution3DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphTensorNamedDataLayout) $ sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "weightsLayout") retCULong []
+weightsLayout mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor weightsLayoutSelector
 
 -- | The named layout of data in the weights tensor.
 --
@@ -388,8 +385,8 @@ weightsLayout mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setWeightsLayout:@
 setWeightsLayout :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> MPSGraphTensorNamedDataLayout -> IO ()
-setWeightsLayout mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setWeightsLayout:") retVoid [argCULong (coerce value)]
+setWeightsLayout mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setWeightsLayoutSelector value
 
 -- | The number of partitions of the input and output channels.
 --
@@ -397,8 +394,8 @@ setWeightsLayout mpsGraphConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- groups@
 groups :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> IO CULong
-groups mpsGraphConvolution3DOpDescriptor  =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "groups") retCULong []
+groups mpsGraphConvolution3DOpDescriptor =
+  sendMessage mpsGraphConvolution3DOpDescriptor groupsSelector
 
 -- | The number of partitions of the input and output channels.
 --
@@ -406,150 +403,150 @@ groups mpsGraphConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setGroups:@
 setGroups :: IsMPSGraphConvolution3DOpDescriptor mpsGraphConvolution3DOpDescriptor => mpsGraphConvolution3DOpDescriptor -> CULong -> IO ()
-setGroups mpsGraphConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphConvolution3DOpDescriptor (mkSelector "setGroups:") retVoid [argCULong value]
+setGroups mpsGraphConvolution3DOpDescriptor value =
+  sendMessage mpsGraphConvolution3DOpDescriptor setGroupsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:paddingStyle:dataLayout:weightsLayout:@
-descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayoutSelector :: Selector
+descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayoutSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, MPSGraphPaddingStyle, MPSGraphTensorNamedDataLayout, MPSGraphTensorNamedDataLayout] (Id MPSGraphConvolution3DOpDescriptor)
 descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBack_paddingStyle_dataLayout_weightsLayoutSelector = mkSelector "descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:paddingStyle:dataLayout:weightsLayout:"
 
 -- | @Selector@ for @descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingStyle:dataLayout:weightsLayout:@
-descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayoutSelector :: Selector
+descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayoutSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong, CULong, MPSGraphPaddingStyle, MPSGraphTensorNamedDataLayout, MPSGraphTensorNamedDataLayout] (Id MPSGraphConvolution3DOpDescriptor)
 descriptorWithStrideInX_strideInY_strideInZ_dilationRateInX_dilationRateInY_dilationRateInZ_groups_paddingStyle_dataLayout_weightsLayoutSelector = mkSelector "descriptorWithStrideInX:strideInY:strideInZ:dilationRateInX:dilationRateInY:dilationRateInZ:groups:paddingStyle:dataLayout:weightsLayout:"
 
 -- | @Selector@ for @setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:@
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector :: Selector
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong] ()
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom_paddingFront_paddingBackSelector = mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:paddingFront:paddingBack:"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @setStrideInX:@
-setStrideInXSelector :: Selector
+setStrideInXSelector :: Selector '[CULong] ()
 setStrideInXSelector = mkSelector "setStrideInX:"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @setStrideInY:@
-setStrideInYSelector :: Selector
+setStrideInYSelector :: Selector '[CULong] ()
 setStrideInYSelector = mkSelector "setStrideInY:"
 
 -- | @Selector@ for @strideInZ@
-strideInZSelector :: Selector
+strideInZSelector :: Selector '[] CULong
 strideInZSelector = mkSelector "strideInZ"
 
 -- | @Selector@ for @setStrideInZ:@
-setStrideInZSelector :: Selector
+setStrideInZSelector :: Selector '[CULong] ()
 setStrideInZSelector = mkSelector "setStrideInZ:"
 
 -- | @Selector@ for @dilationRateInX@
-dilationRateInXSelector :: Selector
+dilationRateInXSelector :: Selector '[] CULong
 dilationRateInXSelector = mkSelector "dilationRateInX"
 
 -- | @Selector@ for @setDilationRateInX:@
-setDilationRateInXSelector :: Selector
+setDilationRateInXSelector :: Selector '[CULong] ()
 setDilationRateInXSelector = mkSelector "setDilationRateInX:"
 
 -- | @Selector@ for @dilationRateInY@
-dilationRateInYSelector :: Selector
+dilationRateInYSelector :: Selector '[] CULong
 dilationRateInYSelector = mkSelector "dilationRateInY"
 
 -- | @Selector@ for @setDilationRateInY:@
-setDilationRateInYSelector :: Selector
+setDilationRateInYSelector :: Selector '[CULong] ()
 setDilationRateInYSelector = mkSelector "setDilationRateInY:"
 
 -- | @Selector@ for @dilationRateInZ@
-dilationRateInZSelector :: Selector
+dilationRateInZSelector :: Selector '[] CULong
 dilationRateInZSelector = mkSelector "dilationRateInZ"
 
 -- | @Selector@ for @setDilationRateInZ:@
-setDilationRateInZSelector :: Selector
+setDilationRateInZSelector :: Selector '[CULong] ()
 setDilationRateInZSelector = mkSelector "setDilationRateInZ:"
 
 -- | @Selector@ for @paddingLeft@
-paddingLeftSelector :: Selector
+paddingLeftSelector :: Selector '[] CULong
 paddingLeftSelector = mkSelector "paddingLeft"
 
 -- | @Selector@ for @setPaddingLeft:@
-setPaddingLeftSelector :: Selector
+setPaddingLeftSelector :: Selector '[CULong] ()
 setPaddingLeftSelector = mkSelector "setPaddingLeft:"
 
 -- | @Selector@ for @paddingRight@
-paddingRightSelector :: Selector
+paddingRightSelector :: Selector '[] CULong
 paddingRightSelector = mkSelector "paddingRight"
 
 -- | @Selector@ for @setPaddingRight:@
-setPaddingRightSelector :: Selector
+setPaddingRightSelector :: Selector '[CULong] ()
 setPaddingRightSelector = mkSelector "setPaddingRight:"
 
 -- | @Selector@ for @paddingTop@
-paddingTopSelector :: Selector
+paddingTopSelector :: Selector '[] CULong
 paddingTopSelector = mkSelector "paddingTop"
 
 -- | @Selector@ for @setPaddingTop:@
-setPaddingTopSelector :: Selector
+setPaddingTopSelector :: Selector '[CULong] ()
 setPaddingTopSelector = mkSelector "setPaddingTop:"
 
 -- | @Selector@ for @paddingBottom@
-paddingBottomSelector :: Selector
+paddingBottomSelector :: Selector '[] CULong
 paddingBottomSelector = mkSelector "paddingBottom"
 
 -- | @Selector@ for @setPaddingBottom:@
-setPaddingBottomSelector :: Selector
+setPaddingBottomSelector :: Selector '[CULong] ()
 setPaddingBottomSelector = mkSelector "setPaddingBottom:"
 
 -- | @Selector@ for @paddingFront@
-paddingFrontSelector :: Selector
+paddingFrontSelector :: Selector '[] CULong
 paddingFrontSelector = mkSelector "paddingFront"
 
 -- | @Selector@ for @setPaddingFront:@
-setPaddingFrontSelector :: Selector
+setPaddingFrontSelector :: Selector '[CULong] ()
 setPaddingFrontSelector = mkSelector "setPaddingFront:"
 
 -- | @Selector@ for @paddingBack@
-paddingBackSelector :: Selector
+paddingBackSelector :: Selector '[] CULong
 paddingBackSelector = mkSelector "paddingBack"
 
 -- | @Selector@ for @setPaddingBack:@
-setPaddingBackSelector :: Selector
+setPaddingBackSelector :: Selector '[CULong] ()
 setPaddingBackSelector = mkSelector "setPaddingBack:"
 
 -- | @Selector@ for @paddingStyle@
-paddingStyleSelector :: Selector
+paddingStyleSelector :: Selector '[] MPSGraphPaddingStyle
 paddingStyleSelector = mkSelector "paddingStyle"
 
 -- | @Selector@ for @setPaddingStyle:@
-setPaddingStyleSelector :: Selector
+setPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] ()
 setPaddingStyleSelector = mkSelector "setPaddingStyle:"
 
 -- | @Selector@ for @dataLayout@
-dataLayoutSelector :: Selector
+dataLayoutSelector :: Selector '[] MPSGraphTensorNamedDataLayout
 dataLayoutSelector = mkSelector "dataLayout"
 
 -- | @Selector@ for @setDataLayout:@
-setDataLayoutSelector :: Selector
+setDataLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout] ()
 setDataLayoutSelector = mkSelector "setDataLayout:"
 
 -- | @Selector@ for @weightsLayout@
-weightsLayoutSelector :: Selector
+weightsLayoutSelector :: Selector '[] MPSGraphTensorNamedDataLayout
 weightsLayoutSelector = mkSelector "weightsLayout"
 
 -- | @Selector@ for @setWeightsLayout:@
-setWeightsLayoutSelector :: Selector
+setWeightsLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout] ()
 setWeightsLayoutSelector = mkSelector "setWeightsLayout:"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] CULong
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @setGroups:@
-setGroupsSelector :: Selector
+setGroupsSelector :: Selector '[CULong] ()
 setGroupsSelector = mkSelector "setGroups:"
 

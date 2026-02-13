@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,22 @@ module ObjC.Metal.MTLArgument
   , textureDataType
   , isDepthTexture
   , arrayLength
-  , nameSelector
-  , typeSelector
   , accessSelector
-  , indexSelector
   , activeSelector
+  , arrayLengthSelector
   , bufferAlignmentSelector
   , bufferDataSizeSelector
   , bufferDataTypeSelector
-  , bufferStructTypeSelector
   , bufferPointerTypeSelector
+  , bufferStructTypeSelector
+  , indexSelector
+  , isDepthTextureSelector
+  , nameSelector
+  , textureDataTypeSelector
+  , textureTypeSelector
   , threadgroupMemoryAlignmentSelector
   , threadgroupMemoryDataSizeSelector
-  , textureTypeSelector
-  , textureDataTypeSelector
-  , isDepthTextureSelector
-  , arrayLengthSelector
+  , typeSelector
 
   -- * Enum types
   , MTLArgumentType(MTLArgumentType)
@@ -173,15 +174,11 @@ module ObjC.Metal.MTLArgument
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -191,149 +188,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTLArgument mtlArgument => mtlArgument -> IO (Id NSString)
-name mtlArgument  =
-    sendMsg mtlArgument (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlArgument =
+  sendMessage mtlArgument nameSelector
 
 -- | @- type@
 type_ :: IsMTLArgument mtlArgument => mtlArgument -> IO MTLArgumentType
-type_ mtlArgument  =
-    fmap (coerce :: CULong -> MTLArgumentType) $ sendMsg mtlArgument (mkSelector "type") retCULong []
+type_ mtlArgument =
+  sendMessage mtlArgument typeSelector
 
 -- | @- access@
 access :: IsMTLArgument mtlArgument => mtlArgument -> IO MTLBindingAccess
-access mtlArgument  =
-    fmap (coerce :: CULong -> MTLBindingAccess) $ sendMsg mtlArgument (mkSelector "access") retCULong []
+access mtlArgument =
+  sendMessage mtlArgument accessSelector
 
 -- | @- index@
 index :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-index mtlArgument  =
-    sendMsg mtlArgument (mkSelector "index") retCULong []
+index mtlArgument =
+  sendMessage mtlArgument indexSelector
 
 -- | @- active@
 active :: IsMTLArgument mtlArgument => mtlArgument -> IO Bool
-active mtlArgument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlArgument (mkSelector "active") retCULong []
+active mtlArgument =
+  sendMessage mtlArgument activeSelector
 
 -- | @- bufferAlignment@
 bufferAlignment :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-bufferAlignment mtlArgument  =
-    sendMsg mtlArgument (mkSelector "bufferAlignment") retCULong []
+bufferAlignment mtlArgument =
+  sendMessage mtlArgument bufferAlignmentSelector
 
 -- | @- bufferDataSize@
 bufferDataSize :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-bufferDataSize mtlArgument  =
-    sendMsg mtlArgument (mkSelector "bufferDataSize") retCULong []
+bufferDataSize mtlArgument =
+  sendMessage mtlArgument bufferDataSizeSelector
 
 -- | @- bufferDataType@
 bufferDataType :: IsMTLArgument mtlArgument => mtlArgument -> IO MTLDataType
-bufferDataType mtlArgument  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlArgument (mkSelector "bufferDataType") retCULong []
+bufferDataType mtlArgument =
+  sendMessage mtlArgument bufferDataTypeSelector
 
 -- | @- bufferStructType@
 bufferStructType :: IsMTLArgument mtlArgument => mtlArgument -> IO (Id MTLStructType)
-bufferStructType mtlArgument  =
-    sendMsg mtlArgument (mkSelector "bufferStructType") (retPtr retVoid) [] >>= retainedObject . castPtr
+bufferStructType mtlArgument =
+  sendMessage mtlArgument bufferStructTypeSelector
 
 -- | @- bufferPointerType@
 bufferPointerType :: IsMTLArgument mtlArgument => mtlArgument -> IO (Id MTLPointerType)
-bufferPointerType mtlArgument  =
-    sendMsg mtlArgument (mkSelector "bufferPointerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+bufferPointerType mtlArgument =
+  sendMessage mtlArgument bufferPointerTypeSelector
 
 -- | @- threadgroupMemoryAlignment@
 threadgroupMemoryAlignment :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-threadgroupMemoryAlignment mtlArgument  =
-    sendMsg mtlArgument (mkSelector "threadgroupMemoryAlignment") retCULong []
+threadgroupMemoryAlignment mtlArgument =
+  sendMessage mtlArgument threadgroupMemoryAlignmentSelector
 
 -- | @- threadgroupMemoryDataSize@
 threadgroupMemoryDataSize :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-threadgroupMemoryDataSize mtlArgument  =
-    sendMsg mtlArgument (mkSelector "threadgroupMemoryDataSize") retCULong []
+threadgroupMemoryDataSize mtlArgument =
+  sendMessage mtlArgument threadgroupMemoryDataSizeSelector
 
 -- | @- textureType@
 textureType :: IsMTLArgument mtlArgument => mtlArgument -> IO MTLTextureType
-textureType mtlArgument  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mtlArgument (mkSelector "textureType") retCULong []
+textureType mtlArgument =
+  sendMessage mtlArgument textureTypeSelector
 
 -- | @- textureDataType@
 textureDataType :: IsMTLArgument mtlArgument => mtlArgument -> IO MTLDataType
-textureDataType mtlArgument  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlArgument (mkSelector "textureDataType") retCULong []
+textureDataType mtlArgument =
+  sendMessage mtlArgument textureDataTypeSelector
 
 -- | @- isDepthTexture@
 isDepthTexture :: IsMTLArgument mtlArgument => mtlArgument -> IO Bool
-isDepthTexture mtlArgument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlArgument (mkSelector "isDepthTexture") retCULong []
+isDepthTexture mtlArgument =
+  sendMessage mtlArgument isDepthTextureSelector
 
 -- | @- arrayLength@
 arrayLength :: IsMTLArgument mtlArgument => mtlArgument -> IO CULong
-arrayLength mtlArgument  =
-    sendMsg mtlArgument (mkSelector "arrayLength") retCULong []
+arrayLength mtlArgument =
+  sendMessage mtlArgument arrayLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MTLArgumentType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @access@
-accessSelector :: Selector
+accessSelector :: Selector '[] MTLBindingAccess
 accessSelector = mkSelector "access"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @bufferAlignment@
-bufferAlignmentSelector :: Selector
+bufferAlignmentSelector :: Selector '[] CULong
 bufferAlignmentSelector = mkSelector "bufferAlignment"
 
 -- | @Selector@ for @bufferDataSize@
-bufferDataSizeSelector :: Selector
+bufferDataSizeSelector :: Selector '[] CULong
 bufferDataSizeSelector = mkSelector "bufferDataSize"
 
 -- | @Selector@ for @bufferDataType@
-bufferDataTypeSelector :: Selector
+bufferDataTypeSelector :: Selector '[] MTLDataType
 bufferDataTypeSelector = mkSelector "bufferDataType"
 
 -- | @Selector@ for @bufferStructType@
-bufferStructTypeSelector :: Selector
+bufferStructTypeSelector :: Selector '[] (Id MTLStructType)
 bufferStructTypeSelector = mkSelector "bufferStructType"
 
 -- | @Selector@ for @bufferPointerType@
-bufferPointerTypeSelector :: Selector
+bufferPointerTypeSelector :: Selector '[] (Id MTLPointerType)
 bufferPointerTypeSelector = mkSelector "bufferPointerType"
 
 -- | @Selector@ for @threadgroupMemoryAlignment@
-threadgroupMemoryAlignmentSelector :: Selector
+threadgroupMemoryAlignmentSelector :: Selector '[] CULong
 threadgroupMemoryAlignmentSelector = mkSelector "threadgroupMemoryAlignment"
 
 -- | @Selector@ for @threadgroupMemoryDataSize@
-threadgroupMemoryDataSizeSelector :: Selector
+threadgroupMemoryDataSizeSelector :: Selector '[] CULong
 threadgroupMemoryDataSizeSelector = mkSelector "threadgroupMemoryDataSize"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @textureDataType@
-textureDataTypeSelector :: Selector
+textureDataTypeSelector :: Selector '[] MTLDataType
 textureDataTypeSelector = mkSelector "textureDataType"
 
 -- | @Selector@ for @isDepthTexture@
-isDepthTextureSelector :: Selector
+isDepthTextureSelector :: Selector '[] Bool
 isDepthTextureSelector = mkSelector "isDepthTexture"
 
 -- | @Selector@ for @arrayLength@
-arrayLengthSelector :: Selector
+arrayLengthSelector :: Selector '[] CULong
 arrayLengthSelector = mkSelector "arrayLength"
 

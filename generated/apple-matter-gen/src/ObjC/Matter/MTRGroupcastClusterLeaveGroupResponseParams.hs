@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRGroupcastClusterLeaveGroupResponseParams
   , setEndpoints
   , listTooLarge
   , setListTooLarge
-  , initWithResponseValue_errorSelector
-  , groupIDSelector
-  , setGroupIDSelector
   , endpointsSelector
-  , setEndpointsSelector
+  , groupIDSelector
+  , initWithResponseValue_errorSelector
   , listTooLargeSelector
+  , setEndpointsSelector
+  , setGroupIDSelector
   , setListTooLargeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrGroupcastClusterLeaveGroupResponseParams -> responseValue -> error_ -> IO (Id MTRGroupcastClusterLeaveGroupResponseParams)
-initWithResponseValue_error mtrGroupcastClusterLeaveGroupResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrGroupcastClusterLeaveGroupResponseParams responseValue error_ =
+  sendOwnedMessage mtrGroupcastClusterLeaveGroupResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams => mtrGroupcastClusterLeaveGroupResponseParams -> IO (Id NSNumber)
-groupID mtrGroupcastClusterLeaveGroupResponseParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterLeaveGroupResponseParams =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams, IsNSNumber value) => mtrGroupcastClusterLeaveGroupResponseParams -> value -> IO ()
-setGroupID mtrGroupcastClusterLeaveGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterLeaveGroupResponseParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams setGroupIDSelector (toNSNumber value)
 
 -- | @- endpoints@
 endpoints :: IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams => mtrGroupcastClusterLeaveGroupResponseParams -> IO (Id NSArray)
-endpoints mtrGroupcastClusterLeaveGroupResponseParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "endpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoints mtrGroupcastClusterLeaveGroupResponseParams =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams endpointsSelector
 
 -- | @- setEndpoints:@
 setEndpoints :: (IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams, IsNSArray value) => mtrGroupcastClusterLeaveGroupResponseParams -> value -> IO ()
-setEndpoints mtrGroupcastClusterLeaveGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "setEndpoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoints mtrGroupcastClusterLeaveGroupResponseParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams setEndpointsSelector (toNSArray value)
 
 -- | @- listTooLarge@
 listTooLarge :: IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams => mtrGroupcastClusterLeaveGroupResponseParams -> IO (Id NSNumber)
-listTooLarge mtrGroupcastClusterLeaveGroupResponseParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "listTooLarge") (retPtr retVoid) [] >>= retainedObject . castPtr
+listTooLarge mtrGroupcastClusterLeaveGroupResponseParams =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams listTooLargeSelector
 
 -- | @- setListTooLarge:@
 setListTooLarge :: (IsMTRGroupcastClusterLeaveGroupResponseParams mtrGroupcastClusterLeaveGroupResponseParams, IsNSNumber value) => mtrGroupcastClusterLeaveGroupResponseParams -> value -> IO ()
-setListTooLarge mtrGroupcastClusterLeaveGroupResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupResponseParams (mkSelector "setListTooLarge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setListTooLarge mtrGroupcastClusterLeaveGroupResponseParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupResponseParams setListTooLargeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRGroupcastClusterLeaveGroupResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @endpoints@
-endpointsSelector :: Selector
+endpointsSelector :: Selector '[] (Id NSArray)
 endpointsSelector = mkSelector "endpoints"
 
 -- | @Selector@ for @setEndpoints:@
-setEndpointsSelector :: Selector
+setEndpointsSelector :: Selector '[Id NSArray] ()
 setEndpointsSelector = mkSelector "setEndpoints:"
 
 -- | @Selector@ for @listTooLarge@
-listTooLargeSelector :: Selector
+listTooLargeSelector :: Selector '[] (Id NSNumber)
 listTooLargeSelector = mkSelector "listTooLarge"
 
 -- | @Selector@ for @setListTooLarge:@
-setListTooLargeSelector :: Selector
+setListTooLargeSelector :: Selector '[Id NSNumber] ()
 setListTooLargeSelector = mkSelector "setListTooLarge:"
 

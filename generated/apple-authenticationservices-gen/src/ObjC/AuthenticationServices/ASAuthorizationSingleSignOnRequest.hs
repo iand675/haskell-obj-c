@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.AuthenticationServices.ASAuthorizationSingleSignOnRequest
   , setUserInterfaceEnabled
   , authorizationOptionsSelector
   , setAuthorizationOptionsSelector
-  , userInterfaceEnabledSelector
   , setUserInterfaceEnabledSelector
+  , userInterfaceEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,16 +34,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- authorizationOptions@
 authorizationOptions :: IsASAuthorizationSingleSignOnRequest asAuthorizationSingleSignOnRequest => asAuthorizationSingleSignOnRequest -> IO (Id NSArray)
-authorizationOptions asAuthorizationSingleSignOnRequest  =
-    sendMsg asAuthorizationSingleSignOnRequest (mkSelector "authorizationOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizationOptions asAuthorizationSingleSignOnRequest =
+  sendMessage asAuthorizationSingleSignOnRequest authorizationOptionsSelector
 
 -- | Parameters required by the specific Authorization Server which should be used by the selected Authorization Services extension for authorization.
 --
 -- ObjC selector: @- setAuthorizationOptions:@
 setAuthorizationOptions :: (IsASAuthorizationSingleSignOnRequest asAuthorizationSingleSignOnRequest, IsNSArray value) => asAuthorizationSingleSignOnRequest -> value -> IO ()
-setAuthorizationOptions asAuthorizationSingleSignOnRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationSingleSignOnRequest (mkSelector "setAuthorizationOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthorizationOptions asAuthorizationSingleSignOnRequest value =
+  sendMessage asAuthorizationSingleSignOnRequest setAuthorizationOptionsSelector (toNSArray value)
 
 -- | Enables or disables the authorization user interface.
 --
@@ -56,8 +52,8 @@ setAuthorizationOptions asAuthorizationSingleSignOnRequest  value =
 --
 -- ObjC selector: @- userInterfaceEnabled@
 userInterfaceEnabled :: IsASAuthorizationSingleSignOnRequest asAuthorizationSingleSignOnRequest => asAuthorizationSingleSignOnRequest -> IO Bool
-userInterfaceEnabled asAuthorizationSingleSignOnRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationSingleSignOnRequest (mkSelector "userInterfaceEnabled") retCULong []
+userInterfaceEnabled asAuthorizationSingleSignOnRequest =
+  sendMessage asAuthorizationSingleSignOnRequest userInterfaceEnabledSelector
 
 -- | Enables or disables the authorization user interface.
 --
@@ -67,26 +63,26 @@ userInterfaceEnabled asAuthorizationSingleSignOnRequest  =
 --
 -- ObjC selector: @- setUserInterfaceEnabled:@
 setUserInterfaceEnabled :: IsASAuthorizationSingleSignOnRequest asAuthorizationSingleSignOnRequest => asAuthorizationSingleSignOnRequest -> Bool -> IO ()
-setUserInterfaceEnabled asAuthorizationSingleSignOnRequest  value =
-    sendMsg asAuthorizationSingleSignOnRequest (mkSelector "setUserInterfaceEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setUserInterfaceEnabled asAuthorizationSingleSignOnRequest value =
+  sendMessage asAuthorizationSingleSignOnRequest setUserInterfaceEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationOptions@
-authorizationOptionsSelector :: Selector
+authorizationOptionsSelector :: Selector '[] (Id NSArray)
 authorizationOptionsSelector = mkSelector "authorizationOptions"
 
 -- | @Selector@ for @setAuthorizationOptions:@
-setAuthorizationOptionsSelector :: Selector
+setAuthorizationOptionsSelector :: Selector '[Id NSArray] ()
 setAuthorizationOptionsSelector = mkSelector "setAuthorizationOptions:"
 
 -- | @Selector@ for @userInterfaceEnabled@
-userInterfaceEnabledSelector :: Selector
+userInterfaceEnabledSelector :: Selector '[] Bool
 userInterfaceEnabledSelector = mkSelector "userInterfaceEnabled"
 
 -- | @Selector@ for @setUserInterfaceEnabled:@
-setUserInterfaceEnabledSelector :: Selector
+setUserInterfaceEnabledSelector :: Selector '[Bool] ()
 setUserInterfaceEnabledSelector = mkSelector "setUserInterfaceEnabled:"
 

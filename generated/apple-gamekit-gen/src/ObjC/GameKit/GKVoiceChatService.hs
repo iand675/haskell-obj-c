@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,39 +29,35 @@ module ObjC.GameKit.GKVoiceChatService
   , setInputMeteringEnabled
   , outputMeterLevel
   , inputMeterLevel
+  , acceptCallID_errorSelector
+  , clientSelector
   , defaultVoiceChatServiceSelector
+  , denyCallIDSelector
+  , inputMeterLevelSelector
+  , inputMeteringEnabledSelector
   , isVoIPAllowedSelector
+  , microphoneMutedSelector
+  , outputMeterLevelSelector
+  , outputMeteringEnabledSelector
+  , receivedData_fromParticipantIDSelector
+  , receivedRealTimeData_fromParticipantIDSelector
+  , remoteParticipantVolumeSelector
+  , setClientSelector
+  , setInputMeteringEnabledSelector
+  , setMicrophoneMutedSelector
+  , setOutputMeteringEnabledSelector
+  , setRemoteParticipantVolumeSelector
   , startVoiceChatWithParticipantID_errorSelector
   , stopVoiceChatWithParticipantIDSelector
-  , acceptCallID_errorSelector
-  , denyCallIDSelector
-  , receivedRealTimeData_fromParticipantIDSelector
-  , receivedData_fromParticipantIDSelector
-  , clientSelector
-  , setClientSelector
-  , microphoneMutedSelector
-  , setMicrophoneMutedSelector
-  , remoteParticipantVolumeSelector
-  , setRemoteParticipantVolumeSelector
-  , outputMeteringEnabledSelector
-  , setOutputMeteringEnabledSelector
-  , inputMeteringEnabledSelector
-  , setInputMeteringEnabledSelector
-  , outputMeterLevelSelector
-  , inputMeterLevelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,194 +69,186 @@ defaultVoiceChatService :: IO (Id GKVoiceChatService)
 defaultVoiceChatService  =
   do
     cls' <- getRequiredClass "GKVoiceChatService"
-    sendClassMsg cls' (mkSelector "defaultVoiceChatService") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultVoiceChatServiceSelector
 
 -- | @+ isVoIPAllowed@
 isVoIPAllowed :: IO Bool
 isVoIPAllowed  =
   do
     cls' <- getRequiredClass "GKVoiceChatService"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isVoIPAllowed") retCULong []
+    sendClassMessage cls' isVoIPAllowedSelector
 
 -- | @- startVoiceChatWithParticipantID:error:@
 startVoiceChatWithParticipantID_error :: (IsGKVoiceChatService gkVoiceChatService, IsNSString participantID, IsNSError error_) => gkVoiceChatService -> participantID -> error_ -> IO Bool
-startVoiceChatWithParticipantID_error gkVoiceChatService  participantID error_ =
-  withObjCPtr participantID $ \raw_participantID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoiceChatService (mkSelector "startVoiceChatWithParticipantID:error:") retCULong [argPtr (castPtr raw_participantID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startVoiceChatWithParticipantID_error gkVoiceChatService participantID error_ =
+  sendMessage gkVoiceChatService startVoiceChatWithParticipantID_errorSelector (toNSString participantID) (toNSError error_)
 
 -- | @- stopVoiceChatWithParticipantID:@
 stopVoiceChatWithParticipantID :: (IsGKVoiceChatService gkVoiceChatService, IsNSString participantID) => gkVoiceChatService -> participantID -> IO ()
-stopVoiceChatWithParticipantID gkVoiceChatService  participantID =
-  withObjCPtr participantID $ \raw_participantID ->
-      sendMsg gkVoiceChatService (mkSelector "stopVoiceChatWithParticipantID:") retVoid [argPtr (castPtr raw_participantID :: Ptr ())]
+stopVoiceChatWithParticipantID gkVoiceChatService participantID =
+  sendMessage gkVoiceChatService stopVoiceChatWithParticipantIDSelector (toNSString participantID)
 
 -- | @- acceptCallID:error:@
 acceptCallID_error :: (IsGKVoiceChatService gkVoiceChatService, IsNSError error_) => gkVoiceChatService -> CLong -> error_ -> IO Bool
-acceptCallID_error gkVoiceChatService  callID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoiceChatService (mkSelector "acceptCallID:error:") retCULong [argCLong callID, argPtr (castPtr raw_error_ :: Ptr ())]
+acceptCallID_error gkVoiceChatService callID error_ =
+  sendMessage gkVoiceChatService acceptCallID_errorSelector callID (toNSError error_)
 
 -- | @- denyCallID:@
 denyCallID :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> CLong -> IO ()
-denyCallID gkVoiceChatService  callID =
-    sendMsg gkVoiceChatService (mkSelector "denyCallID:") retVoid [argCLong callID]
+denyCallID gkVoiceChatService callID =
+  sendMessage gkVoiceChatService denyCallIDSelector callID
 
 -- | @- receivedRealTimeData:fromParticipantID:@
 receivedRealTimeData_fromParticipantID :: (IsGKVoiceChatService gkVoiceChatService, IsNSData audio, IsNSString participantID) => gkVoiceChatService -> audio -> participantID -> IO ()
-receivedRealTimeData_fromParticipantID gkVoiceChatService  audio participantID =
-  withObjCPtr audio $ \raw_audio ->
-    withObjCPtr participantID $ \raw_participantID ->
-        sendMsg gkVoiceChatService (mkSelector "receivedRealTimeData:fromParticipantID:") retVoid [argPtr (castPtr raw_audio :: Ptr ()), argPtr (castPtr raw_participantID :: Ptr ())]
+receivedRealTimeData_fromParticipantID gkVoiceChatService audio participantID =
+  sendMessage gkVoiceChatService receivedRealTimeData_fromParticipantIDSelector (toNSData audio) (toNSString participantID)
 
 -- | @- receivedData:fromParticipantID:@
 receivedData_fromParticipantID :: (IsGKVoiceChatService gkVoiceChatService, IsNSData arbitraryData, IsNSString participantID) => gkVoiceChatService -> arbitraryData -> participantID -> IO ()
-receivedData_fromParticipantID gkVoiceChatService  arbitraryData participantID =
-  withObjCPtr arbitraryData $ \raw_arbitraryData ->
-    withObjCPtr participantID $ \raw_participantID ->
-        sendMsg gkVoiceChatService (mkSelector "receivedData:fromParticipantID:") retVoid [argPtr (castPtr raw_arbitraryData :: Ptr ()), argPtr (castPtr raw_participantID :: Ptr ())]
+receivedData_fromParticipantID gkVoiceChatService arbitraryData participantID =
+  sendMessage gkVoiceChatService receivedData_fromParticipantIDSelector (toNSData arbitraryData) (toNSString participantID)
 
 -- | @- client@
 client :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO RawId
-client gkVoiceChatService  =
-    fmap (RawId . castPtr) $ sendMsg gkVoiceChatService (mkSelector "client") (retPtr retVoid) []
+client gkVoiceChatService =
+  sendMessage gkVoiceChatService clientSelector
 
 -- | @- setClient:@
 setClient :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> RawId -> IO ()
-setClient gkVoiceChatService  value =
-    sendMsg gkVoiceChatService (mkSelector "setClient:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setClient gkVoiceChatService value =
+  sendMessage gkVoiceChatService setClientSelector value
 
 -- | @- microphoneMuted@
 microphoneMuted :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO Bool
-microphoneMuted gkVoiceChatService  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoiceChatService (mkSelector "microphoneMuted") retCULong []
+microphoneMuted gkVoiceChatService =
+  sendMessage gkVoiceChatService microphoneMutedSelector
 
 -- | @- setMicrophoneMuted:@
 setMicrophoneMuted :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> Bool -> IO ()
-setMicrophoneMuted gkVoiceChatService  value =
-    sendMsg gkVoiceChatService (mkSelector "setMicrophoneMuted:") retVoid [argCULong (if value then 1 else 0)]
+setMicrophoneMuted gkVoiceChatService value =
+  sendMessage gkVoiceChatService setMicrophoneMutedSelector value
 
 -- | @- remoteParticipantVolume@
 remoteParticipantVolume :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO CFloat
-remoteParticipantVolume gkVoiceChatService  =
-    sendMsg gkVoiceChatService (mkSelector "remoteParticipantVolume") retCFloat []
+remoteParticipantVolume gkVoiceChatService =
+  sendMessage gkVoiceChatService remoteParticipantVolumeSelector
 
 -- | @- setRemoteParticipantVolume:@
 setRemoteParticipantVolume :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> CFloat -> IO ()
-setRemoteParticipantVolume gkVoiceChatService  value =
-    sendMsg gkVoiceChatService (mkSelector "setRemoteParticipantVolume:") retVoid [argCFloat value]
+setRemoteParticipantVolume gkVoiceChatService value =
+  sendMessage gkVoiceChatService setRemoteParticipantVolumeSelector value
 
 -- | @- outputMeteringEnabled@
 outputMeteringEnabled :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO Bool
-outputMeteringEnabled gkVoiceChatService  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoiceChatService (mkSelector "outputMeteringEnabled") retCULong []
+outputMeteringEnabled gkVoiceChatService =
+  sendMessage gkVoiceChatService outputMeteringEnabledSelector
 
 -- | @- setOutputMeteringEnabled:@
 setOutputMeteringEnabled :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> Bool -> IO ()
-setOutputMeteringEnabled gkVoiceChatService  value =
-    sendMsg gkVoiceChatService (mkSelector "setOutputMeteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setOutputMeteringEnabled gkVoiceChatService value =
+  sendMessage gkVoiceChatService setOutputMeteringEnabledSelector value
 
 -- | @- inputMeteringEnabled@
 inputMeteringEnabled :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO Bool
-inputMeteringEnabled gkVoiceChatService  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoiceChatService (mkSelector "inputMeteringEnabled") retCULong []
+inputMeteringEnabled gkVoiceChatService =
+  sendMessage gkVoiceChatService inputMeteringEnabledSelector
 
 -- | @- setInputMeteringEnabled:@
 setInputMeteringEnabled :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> Bool -> IO ()
-setInputMeteringEnabled gkVoiceChatService  value =
-    sendMsg gkVoiceChatService (mkSelector "setInputMeteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setInputMeteringEnabled gkVoiceChatService value =
+  sendMessage gkVoiceChatService setInputMeteringEnabledSelector value
 
 -- | @- outputMeterLevel@
 outputMeterLevel :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO CFloat
-outputMeterLevel gkVoiceChatService  =
-    sendMsg gkVoiceChatService (mkSelector "outputMeterLevel") retCFloat []
+outputMeterLevel gkVoiceChatService =
+  sendMessage gkVoiceChatService outputMeterLevelSelector
 
 -- | @- inputMeterLevel@
 inputMeterLevel :: IsGKVoiceChatService gkVoiceChatService => gkVoiceChatService -> IO CFloat
-inputMeterLevel gkVoiceChatService  =
-    sendMsg gkVoiceChatService (mkSelector "inputMeterLevel") retCFloat []
+inputMeterLevel gkVoiceChatService =
+  sendMessage gkVoiceChatService inputMeterLevelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultVoiceChatService@
-defaultVoiceChatServiceSelector :: Selector
+defaultVoiceChatServiceSelector :: Selector '[] (Id GKVoiceChatService)
 defaultVoiceChatServiceSelector = mkSelector "defaultVoiceChatService"
 
 -- | @Selector@ for @isVoIPAllowed@
-isVoIPAllowedSelector :: Selector
+isVoIPAllowedSelector :: Selector '[] Bool
 isVoIPAllowedSelector = mkSelector "isVoIPAllowed"
 
 -- | @Selector@ for @startVoiceChatWithParticipantID:error:@
-startVoiceChatWithParticipantID_errorSelector :: Selector
+startVoiceChatWithParticipantID_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 startVoiceChatWithParticipantID_errorSelector = mkSelector "startVoiceChatWithParticipantID:error:"
 
 -- | @Selector@ for @stopVoiceChatWithParticipantID:@
-stopVoiceChatWithParticipantIDSelector :: Selector
+stopVoiceChatWithParticipantIDSelector :: Selector '[Id NSString] ()
 stopVoiceChatWithParticipantIDSelector = mkSelector "stopVoiceChatWithParticipantID:"
 
 -- | @Selector@ for @acceptCallID:error:@
-acceptCallID_errorSelector :: Selector
+acceptCallID_errorSelector :: Selector '[CLong, Id NSError] Bool
 acceptCallID_errorSelector = mkSelector "acceptCallID:error:"
 
 -- | @Selector@ for @denyCallID:@
-denyCallIDSelector :: Selector
+denyCallIDSelector :: Selector '[CLong] ()
 denyCallIDSelector = mkSelector "denyCallID:"
 
 -- | @Selector@ for @receivedRealTimeData:fromParticipantID:@
-receivedRealTimeData_fromParticipantIDSelector :: Selector
+receivedRealTimeData_fromParticipantIDSelector :: Selector '[Id NSData, Id NSString] ()
 receivedRealTimeData_fromParticipantIDSelector = mkSelector "receivedRealTimeData:fromParticipantID:"
 
 -- | @Selector@ for @receivedData:fromParticipantID:@
-receivedData_fromParticipantIDSelector :: Selector
+receivedData_fromParticipantIDSelector :: Selector '[Id NSData, Id NSString] ()
 receivedData_fromParticipantIDSelector = mkSelector "receivedData:fromParticipantID:"
 
 -- | @Selector@ for @client@
-clientSelector :: Selector
+clientSelector :: Selector '[] RawId
 clientSelector = mkSelector "client"
 
 -- | @Selector@ for @setClient:@
-setClientSelector :: Selector
+setClientSelector :: Selector '[RawId] ()
 setClientSelector = mkSelector "setClient:"
 
 -- | @Selector@ for @microphoneMuted@
-microphoneMutedSelector :: Selector
+microphoneMutedSelector :: Selector '[] Bool
 microphoneMutedSelector = mkSelector "microphoneMuted"
 
 -- | @Selector@ for @setMicrophoneMuted:@
-setMicrophoneMutedSelector :: Selector
+setMicrophoneMutedSelector :: Selector '[Bool] ()
 setMicrophoneMutedSelector = mkSelector "setMicrophoneMuted:"
 
 -- | @Selector@ for @remoteParticipantVolume@
-remoteParticipantVolumeSelector :: Selector
+remoteParticipantVolumeSelector :: Selector '[] CFloat
 remoteParticipantVolumeSelector = mkSelector "remoteParticipantVolume"
 
 -- | @Selector@ for @setRemoteParticipantVolume:@
-setRemoteParticipantVolumeSelector :: Selector
+setRemoteParticipantVolumeSelector :: Selector '[CFloat] ()
 setRemoteParticipantVolumeSelector = mkSelector "setRemoteParticipantVolume:"
 
 -- | @Selector@ for @outputMeteringEnabled@
-outputMeteringEnabledSelector :: Selector
+outputMeteringEnabledSelector :: Selector '[] Bool
 outputMeteringEnabledSelector = mkSelector "outputMeteringEnabled"
 
 -- | @Selector@ for @setOutputMeteringEnabled:@
-setOutputMeteringEnabledSelector :: Selector
+setOutputMeteringEnabledSelector :: Selector '[Bool] ()
 setOutputMeteringEnabledSelector = mkSelector "setOutputMeteringEnabled:"
 
 -- | @Selector@ for @inputMeteringEnabled@
-inputMeteringEnabledSelector :: Selector
+inputMeteringEnabledSelector :: Selector '[] Bool
 inputMeteringEnabledSelector = mkSelector "inputMeteringEnabled"
 
 -- | @Selector@ for @setInputMeteringEnabled:@
-setInputMeteringEnabledSelector :: Selector
+setInputMeteringEnabledSelector :: Selector '[Bool] ()
 setInputMeteringEnabledSelector = mkSelector "setInputMeteringEnabled:"
 
 -- | @Selector@ for @outputMeterLevel@
-outputMeterLevelSelector :: Selector
+outputMeterLevelSelector :: Selector '[] CFloat
 outputMeterLevelSelector = mkSelector "outputMeterLevel"
 
 -- | @Selector@ for @inputMeterLevel@
-inputMeterLevelSelector :: Selector
+inputMeterLevelSelector :: Selector '[] CFloat
 inputMeterLevelSelector = mkSelector "inputMeterLevel"
 

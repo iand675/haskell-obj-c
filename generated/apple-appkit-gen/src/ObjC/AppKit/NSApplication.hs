@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -125,124 +126,124 @@ module ObjC.AppKit.NSApplication
   , appearance
   , setAppearance
   , effectiveAppearance
-  , hideSelector
-  , unhideSelector
-  , unhideWithoutActivationSelector
-  , windowWithWindowNumberSelector
-  , deactivateSelector
+  , abortModalSelector
+  , activateContextHelpModeSelector
   , activateIgnoringOtherAppsSelector
   , activateSelector
-  , yieldActivationToApplicationSelector
-  , yieldActivationToApplicationWithBundleIdentifierSelector
-  , hideOtherApplicationsSelector
-  , unhideAllApplicationsSelector
-  , finishLaunchingSelector
-  , runSelector
-  , runModalForWindowSelector
-  , stopSelector
-  , stopModalSelector
-  , stopModalWithCodeSelector
-  , abortModalSelector
-  , beginModalSessionForWindowSelector
-  , runModalSessionSelector
-  , endModalSessionSelector
-  , terminateSelector
-  , requestUserAttentionSelector
-  , cancelUserAttentionRequestSelector
-  , enumerateWindowsWithOptions_usingBlockSelector
-  , preventWindowOrderingSelector
-  , setWindowsNeedUpdateSelector
-  , updateWindowsSelector
   , activationPolicySelector
-  , setActivationPolicySelector
-  , reportExceptionSelector
-  , detachDrawingThread_toTarget_withObjectSelector
-  , replyToApplicationShouldTerminateSelector
-  , replyToOpenOrPrintSelector
-  , orderFrontCharacterPaletteSelector
-  , extendStateRestorationSelector
-  , completeStateRestorationSelector
-  , restoreWindowWithIdentifier_state_completionHandlerSelector
-  , registerUserInterfaceItemSearchHandlerSelector
-  , unregisterUserInterfaceItemSearchHandlerSelector
-  , searchString_inUserInterfaceItemString_searchRange_foundRangeSelector
-  , runPageLayoutSelector
-  , orderFrontColorPanelSelector
-  , toggleTouchBarCustomizationPaletteSelector
-  , activateContextHelpModeSelector
-  , showHelpSelector
-  , runModalForWindow_relativeToWindowSelector
-  , beginModalSessionForWindow_relativeToWindowSelector
+  , activeSelector
+  , addWindowsItem_title_filenameSelector
+  , appearanceSelector
+  , applicationIconImageSelector
+  , applicationShouldSuppressHighDynamicRangeContentSelector
   , application_printFilesSelector
+  , arrangeInFrontSelector
+  , automaticCustomizeTouchBarMenuItemEnabledSelector
+  , beginModalSessionForWindowSelector
+  , beginModalSessionForWindow_relativeToWindowSelector
   , beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector
+  , cancelUserAttentionRequestSelector
+  , changeWindowsItem_title_filenameSelector
+  , completeStateRestorationSelector
+  , contextSelector
+  , currentEventSelector
+  , currentSystemPresentationOptionsSelector
+  , deactivateSelector
+  , delegateSelector
+  , detachDrawingThread_toTarget_withObjectSelector
+  , disableRelaunchOnLoginSelector
+  , discardEventsMatchingMask_beforeEventSelector
+  , dockTileSelector
+  , effectiveAppearanceSelector
+  , enableRelaunchOnLoginSelector
+  , enabledRemoteNotificationTypesSelector
+  , endModalSessionSelector
   , endSheetSelector
   , endSheet_returnCodeSelector
+  , enumerateWindowsWithOptions_usingBlockSelector
+  , extendStateRestorationSelector
+  , finishLaunchingSelector
+  , fullKeyboardAccessEnabledSelector
+  , helpMenuSelector
+  , hiddenSelector
+  , hideOtherApplicationsSelector
+  , hideSelector
+  , keyWindowSelector
+  , mainMenuSelector
+  , mainWindowSelector
   , makeWindowsPerform_inOrderSelector
-  , registerForRemoteNotificationsSelector
-  , unregisterForRemoteNotificationsSelector
-  , registerForRemoteNotificationTypesSelector
-  , disableRelaunchOnLoginSelector
-  , enableRelaunchOnLoginSelector
+  , miniaturizeAllSelector
+  , modalWindowSelector
+  , nextEventMatchingMask_untilDate_inMode_dequeueSelector
+  , occlusionStateSelector
+  , orderFrontCharacterPaletteSelector
+  , orderFrontColorPanelSelector
   , orderFrontStandardAboutPanelSelector
   , orderFrontStandardAboutPanelWithOptionsSelector
-  , registerServicesMenuSendTypes_returnTypesSelector
-  , arrangeInFrontSelector
-  , removeWindowsItemSelector
-  , addWindowsItem_title_filenameSelector
-  , changeWindowsItem_title_filenameSelector
-  , updateWindowsItemSelector
-  , miniaturizeAllSelector
-  , sendAction_to_fromSelector
-  , targetForActionSelector
-  , targetForAction_to_fromSelector
-  , tryToPerform_withSelector
-  , validRequestorForSendType_returnTypeSelector
-  , sendEventSelector
-  , postEvent_atStartSelector
-  , nextEventMatchingMask_untilDate_inMode_dequeueSelector
-  , discardEventsMatchingMask_beforeEventSelector
-  , sharedApplicationSelector
-  , delegateSelector
-  , setDelegateSelector
-  , mainWindowSelector
-  , keyWindowSelector
-  , activeSelector
-  , hiddenSelector
-  , runningSelector
-  , applicationShouldSuppressHighDynamicRangeContentSelector
-  , modalWindowSelector
-  , windowsSelector
-  , mainMenuSelector
-  , setMainMenuSelector
-  , helpMenuSelector
-  , setHelpMenuSelector
-  , applicationIconImageSelector
-  , setApplicationIconImageSelector
-  , dockTileSelector
-  , presentationOptionsSelector
-  , setPresentationOptionsSelector
-  , currentSystemPresentationOptionsSelector
-  , occlusionStateSelector
-  , protectedDataAvailableSelector
   , orderedDocumentsSelector
   , orderedWindowsSelector
-  , automaticCustomizeTouchBarMenuItemEnabledSelector
-  , setAutomaticCustomizeTouchBarMenuItemEnabledSelector
-  , contextSelector
+  , postEvent_atStartSelector
+  , presentationOptionsSelector
+  , preventWindowOrderingSelector
+  , protectedDataAvailableSelector
+  , registerForRemoteNotificationTypesSelector
+  , registerForRemoteNotificationsSelector
+  , registerServicesMenuSendTypes_returnTypesSelector
+  , registerUserInterfaceItemSearchHandlerSelector
   , registeredForRemoteNotificationsSelector
-  , enabledRemoteNotificationTypesSelector
-  , userInterfaceLayoutDirectionSelector
-  , servicesProviderSelector
-  , setServicesProviderSelector
+  , removeWindowsItemSelector
+  , replyToApplicationShouldTerminateSelector
+  , replyToOpenOrPrintSelector
+  , reportExceptionSelector
+  , requestUserAttentionSelector
+  , restoreWindowWithIdentifier_state_completionHandlerSelector
+  , runModalForWindowSelector
+  , runModalForWindow_relativeToWindowSelector
+  , runModalSessionSelector
+  , runPageLayoutSelector
+  , runSelector
+  , runningSelector
+  , searchString_inUserInterfaceItemString_searchRange_foundRangeSelector
+  , sendAction_to_fromSelector
+  , sendEventSelector
   , servicesMenuSelector
-  , setServicesMenuSelector
-  , fullKeyboardAccessEnabledSelector
-  , windowsMenuSelector
-  , setWindowsMenuSelector
-  , currentEventSelector
-  , appearanceSelector
+  , servicesProviderSelector
+  , setActivationPolicySelector
   , setAppearanceSelector
-  , effectiveAppearanceSelector
+  , setApplicationIconImageSelector
+  , setAutomaticCustomizeTouchBarMenuItemEnabledSelector
+  , setDelegateSelector
+  , setHelpMenuSelector
+  , setMainMenuSelector
+  , setPresentationOptionsSelector
+  , setServicesMenuSelector
+  , setServicesProviderSelector
+  , setWindowsMenuSelector
+  , setWindowsNeedUpdateSelector
+  , sharedApplicationSelector
+  , showHelpSelector
+  , stopModalSelector
+  , stopModalWithCodeSelector
+  , stopSelector
+  , targetForActionSelector
+  , targetForAction_to_fromSelector
+  , terminateSelector
+  , toggleTouchBarCustomizationPaletteSelector
+  , tryToPerform_withSelector
+  , unhideAllApplicationsSelector
+  , unhideSelector
+  , unhideWithoutActivationSelector
+  , unregisterForRemoteNotificationsSelector
+  , unregisterUserInterfaceItemSearchHandlerSelector
+  , updateWindowsItemSelector
+  , updateWindowsSelector
+  , userInterfaceLayoutDirectionSelector
+  , validRequestorForSendType_returnTypeSelector
+  , windowWithWindowNumberSelector
+  , windowsMenuSelector
+  , windowsSelector
+  , yieldActivationToApplicationSelector
+  , yieldActivationToApplicationWithBundleIdentifierSelector
 
   -- * Enum types
   , NSApplicationActivationPolicy(NSApplicationActivationPolicy)
@@ -322,15 +323,11 @@ module ObjC.AppKit.NSApplication
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -341,35 +338,35 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- hide:@
 hide :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-hide nsApplication  sender =
-    sendMsg nsApplication (mkSelector "hide:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+hide nsApplication sender =
+  sendMessage nsApplication hideSelector sender
 
 -- | @- unhide:@
 unhide :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-unhide nsApplication  sender =
-    sendMsg nsApplication (mkSelector "unhide:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+unhide nsApplication sender =
+  sendMessage nsApplication unhideSelector sender
 
 -- | @- unhideWithoutActivation@
 unhideWithoutActivation :: IsNSApplication nsApplication => nsApplication -> IO ()
-unhideWithoutActivation nsApplication  =
-    sendMsg nsApplication (mkSelector "unhideWithoutActivation") retVoid []
+unhideWithoutActivation nsApplication =
+  sendMessage nsApplication unhideWithoutActivationSelector
 
 -- | @- windowWithWindowNumber:@
 windowWithWindowNumber :: IsNSApplication nsApplication => nsApplication -> CLong -> IO (Id NSWindow)
-windowWithWindowNumber nsApplication  windowNum =
-    sendMsg nsApplication (mkSelector "windowWithWindowNumber:") (retPtr retVoid) [argCLong windowNum] >>= retainedObject . castPtr
+windowWithWindowNumber nsApplication windowNum =
+  sendMessage nsApplication windowWithWindowNumberSelector windowNum
 
 -- | @- deactivate@
 deactivate :: IsNSApplication nsApplication => nsApplication -> IO ()
-deactivate nsApplication  =
-    sendMsg nsApplication (mkSelector "deactivate") retVoid []
+deactivate nsApplication =
+  sendMessage nsApplication deactivateSelector
 
 -- | Makes the receiver the active app. - Parameter ignoreOtherApps: If @NO@, the app is activated only if no other app is currently active. If @YES@, the app activates regardless.
 --
 -- ObjC selector: @- activateIgnoringOtherApps:@
 activateIgnoringOtherApps :: IsNSApplication nsApplication => nsApplication -> Bool -> IO ()
-activateIgnoringOtherApps nsApplication  ignoreOtherApps =
-    sendMsg nsApplication (mkSelector "activateIgnoringOtherApps:") retVoid [argCULong (if ignoreOtherApps then 1 else 0)]
+activateIgnoringOtherApps nsApplication ignoreOtherApps =
+  sendMessage nsApplication activateIgnoringOtherAppsSelector ignoreOtherApps
 
 -- | Makes the receiver the active app, if possible.
 --
@@ -381,8 +378,8 @@ activateIgnoringOtherApps nsApplication  ignoreOtherApps =
 --
 -- ObjC selector: @- activate@
 activate :: IsNSApplication nsApplication => nsApplication -> IO ()
-activate nsApplication  =
-    sendMsg nsApplication (mkSelector "activate") retVoid []
+activate nsApplication =
+  sendMessage nsApplication activateSelector
 
 -- | Explicitly allows another application to make itself active.
 --
@@ -390,9 +387,8 @@ activate nsApplication  =
 --
 -- ObjC selector: @- yieldActivationToApplication:@
 yieldActivationToApplication :: (IsNSApplication nsApplication, IsNSRunningApplication application) => nsApplication -> application -> IO ()
-yieldActivationToApplication nsApplication  application =
-  withObjCPtr application $ \raw_application ->
-      sendMsg nsApplication (mkSelector "yieldActivationToApplication:") retVoid [argPtr (castPtr raw_application :: Ptr ())]
+yieldActivationToApplication nsApplication application =
+  sendMessage nsApplication yieldActivationToApplicationSelector (toNSRunningApplication application)
 
 -- | Same as @-yieldActivationToApplication:@, but the provided bundle identifier does not have to correspond to a currently running application.
 --
@@ -400,289 +396,271 @@ yieldActivationToApplication nsApplication  application =
 --
 -- ObjC selector: @- yieldActivationToApplicationWithBundleIdentifier:@
 yieldActivationToApplicationWithBundleIdentifier :: (IsNSApplication nsApplication, IsNSString bundleIdentifier) => nsApplication -> bundleIdentifier -> IO ()
-yieldActivationToApplicationWithBundleIdentifier nsApplication  bundleIdentifier =
-  withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-      sendMsg nsApplication (mkSelector "yieldActivationToApplicationWithBundleIdentifier:") retVoid [argPtr (castPtr raw_bundleIdentifier :: Ptr ())]
+yieldActivationToApplicationWithBundleIdentifier nsApplication bundleIdentifier =
+  sendMessage nsApplication yieldActivationToApplicationWithBundleIdentifierSelector (toNSString bundleIdentifier)
 
 -- | @- hideOtherApplications:@
 hideOtherApplications :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-hideOtherApplications nsApplication  sender =
-    sendMsg nsApplication (mkSelector "hideOtherApplications:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+hideOtherApplications nsApplication sender =
+  sendMessage nsApplication hideOtherApplicationsSelector sender
 
 -- | @- unhideAllApplications:@
 unhideAllApplications :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-unhideAllApplications nsApplication  sender =
-    sendMsg nsApplication (mkSelector "unhideAllApplications:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+unhideAllApplications nsApplication sender =
+  sendMessage nsApplication unhideAllApplicationsSelector sender
 
 -- | @- finishLaunching@
 finishLaunching :: IsNSApplication nsApplication => nsApplication -> IO ()
-finishLaunching nsApplication  =
-    sendMsg nsApplication (mkSelector "finishLaunching") retVoid []
+finishLaunching nsApplication =
+  sendMessage nsApplication finishLaunchingSelector
 
 -- | @- run@
 run :: IsNSApplication nsApplication => nsApplication -> IO ()
-run nsApplication  =
-    sendMsg nsApplication (mkSelector "run") retVoid []
+run nsApplication =
+  sendMessage nsApplication runSelector
 
 -- | @- runModalForWindow:@
 runModalForWindow :: (IsNSApplication nsApplication, IsNSWindow window) => nsApplication -> window -> IO CLong
-runModalForWindow nsApplication  window =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsApplication (mkSelector "runModalForWindow:") retCLong [argPtr (castPtr raw_window :: Ptr ())]
+runModalForWindow nsApplication window =
+  sendMessage nsApplication runModalForWindowSelector (toNSWindow window)
 
 -- | @- stop:@
 stop :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-stop nsApplication  sender =
-    sendMsg nsApplication (mkSelector "stop:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stop nsApplication sender =
+  sendMessage nsApplication stopSelector sender
 
 -- | @- stopModal@
 stopModal :: IsNSApplication nsApplication => nsApplication -> IO ()
-stopModal nsApplication  =
-    sendMsg nsApplication (mkSelector "stopModal") retVoid []
+stopModal nsApplication =
+  sendMessage nsApplication stopModalSelector
 
 -- | @- stopModalWithCode:@
 stopModalWithCode :: IsNSApplication nsApplication => nsApplication -> CLong -> IO ()
-stopModalWithCode nsApplication  returnCode =
-    sendMsg nsApplication (mkSelector "stopModalWithCode:") retVoid [argCLong returnCode]
+stopModalWithCode nsApplication returnCode =
+  sendMessage nsApplication stopModalWithCodeSelector returnCode
 
 -- | @- abortModal@
 abortModal :: IsNSApplication nsApplication => nsApplication -> IO ()
-abortModal nsApplication  =
-    sendMsg nsApplication (mkSelector "abortModal") retVoid []
+abortModal nsApplication =
+  sendMessage nsApplication abortModalSelector
 
 -- | @- beginModalSessionForWindow:@
 beginModalSessionForWindow :: (IsNSApplication nsApplication, IsNSWindow window) => nsApplication -> window -> IO (Ptr ())
-beginModalSessionForWindow nsApplication  window =
-  withObjCPtr window $ \raw_window ->
-      fmap castPtr $ sendMsg nsApplication (mkSelector "beginModalSessionForWindow:") (retPtr retVoid) [argPtr (castPtr raw_window :: Ptr ())]
+beginModalSessionForWindow nsApplication window =
+  sendMessage nsApplication beginModalSessionForWindowSelector (toNSWindow window)
 
 -- | @- runModalSession:@
 runModalSession :: IsNSApplication nsApplication => nsApplication -> Ptr () -> IO CLong
-runModalSession nsApplication  session =
-    sendMsg nsApplication (mkSelector "runModalSession:") retCLong [argPtr session]
+runModalSession nsApplication session =
+  sendMessage nsApplication runModalSessionSelector session
 
 -- | @- endModalSession:@
 endModalSession :: IsNSApplication nsApplication => nsApplication -> Ptr () -> IO ()
-endModalSession nsApplication  session =
-    sendMsg nsApplication (mkSelector "endModalSession:") retVoid [argPtr session]
+endModalSession nsApplication session =
+  sendMessage nsApplication endModalSessionSelector session
 
 -- | @- terminate:@
 terminate :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-terminate nsApplication  sender =
-    sendMsg nsApplication (mkSelector "terminate:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+terminate nsApplication sender =
+  sendMessage nsApplication terminateSelector sender
 
 -- | Inform the user that this application needs attention - call this method only if your application is not already active.
 --
 -- ObjC selector: @- requestUserAttention:@
 requestUserAttention :: IsNSApplication nsApplication => nsApplication -> NSRequestUserAttentionType -> IO CLong
-requestUserAttention nsApplication  requestType =
-    sendMsg nsApplication (mkSelector "requestUserAttention:") retCLong [argCULong (coerce requestType)]
+requestUserAttention nsApplication requestType =
+  sendMessage nsApplication requestUserAttentionSelector requestType
 
 -- | @- cancelUserAttentionRequest:@
 cancelUserAttentionRequest :: IsNSApplication nsApplication => nsApplication -> CLong -> IO ()
-cancelUserAttentionRequest nsApplication  request =
-    sendMsg nsApplication (mkSelector "cancelUserAttentionRequest:") retVoid [argCLong request]
+cancelUserAttentionRequest nsApplication request =
+  sendMessage nsApplication cancelUserAttentionRequestSelector request
 
 -- | Execute a block for each of the app's windows. Set @*stop = YES@ if desired, to halt the enumeration early.
 --
 -- ObjC selector: @- enumerateWindowsWithOptions:usingBlock:@
 enumerateWindowsWithOptions_usingBlock :: IsNSApplication nsApplication => nsApplication -> NSWindowListOptions -> Ptr () -> IO ()
-enumerateWindowsWithOptions_usingBlock nsApplication  options block =
-    sendMsg nsApplication (mkSelector "enumerateWindowsWithOptions:usingBlock:") retVoid [argCLong (coerce options), argPtr (castPtr block :: Ptr ())]
+enumerateWindowsWithOptions_usingBlock nsApplication options block =
+  sendMessage nsApplication enumerateWindowsWithOptions_usingBlockSelector options block
 
 -- | @- preventWindowOrdering@
 preventWindowOrdering :: IsNSApplication nsApplication => nsApplication -> IO ()
-preventWindowOrdering nsApplication  =
-    sendMsg nsApplication (mkSelector "preventWindowOrdering") retVoid []
+preventWindowOrdering nsApplication =
+  sendMessage nsApplication preventWindowOrderingSelector
 
 -- | @- setWindowsNeedUpdate:@
 setWindowsNeedUpdate :: IsNSApplication nsApplication => nsApplication -> Bool -> IO ()
-setWindowsNeedUpdate nsApplication  needUpdate =
-    sendMsg nsApplication (mkSelector "setWindowsNeedUpdate:") retVoid [argCULong (if needUpdate then 1 else 0)]
+setWindowsNeedUpdate nsApplication needUpdate =
+  sendMessage nsApplication setWindowsNeedUpdateSelector needUpdate
 
 -- | @- updateWindows@
 updateWindows :: IsNSApplication nsApplication => nsApplication -> IO ()
-updateWindows nsApplication  =
-    sendMsg nsApplication (mkSelector "updateWindows") retVoid []
+updateWindows nsApplication =
+  sendMessage nsApplication updateWindowsSelector
 
 -- | Returns: The activation policy of the application.
 --
 -- ObjC selector: @- activationPolicy@
 activationPolicy :: IsNSApplication nsApplication => nsApplication -> IO NSApplicationActivationPolicy
-activationPolicy nsApplication  =
-    fmap (coerce :: CLong -> NSApplicationActivationPolicy) $ sendMsg nsApplication (mkSelector "activationPolicy") retCLong []
+activationPolicy nsApplication =
+  sendMessage nsApplication activationPolicySelector
 
 -- | Attempts to modify the application's activation policy.  In OS X 10.9, any policy may be set; prior to 10.9, the activation policy may be changed to @NSApplicationActivationPolicyProhibited@ or @NSApplicationActivationPolicyRegular,@ but may not be changed to @NSApplicationActivationPolicyAccessory.@  This returns @YES@ if setting the activation policy is successful, and @NO@ if not.
 --
 -- ObjC selector: @- setActivationPolicy:@
 setActivationPolicy :: IsNSApplication nsApplication => nsApplication -> NSApplicationActivationPolicy -> IO Bool
-setActivationPolicy nsApplication  activationPolicy =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "setActivationPolicy:") retCULong [argCLong (coerce activationPolicy)]
+setActivationPolicy nsApplication activationPolicy =
+  sendMessage nsApplication setActivationPolicySelector activationPolicy
 
 -- | @- reportException:@
 reportException :: (IsNSApplication nsApplication, IsNSException exception) => nsApplication -> exception -> IO ()
-reportException nsApplication  exception =
-  withObjCPtr exception $ \raw_exception ->
-      sendMsg nsApplication (mkSelector "reportException:") retVoid [argPtr (castPtr raw_exception :: Ptr ())]
+reportException nsApplication exception =
+  sendMessage nsApplication reportExceptionSelector (toNSException exception)
 
 -- | @+ detachDrawingThread:toTarget:withObject:@
-detachDrawingThread_toTarget_withObject :: Selector -> RawId -> RawId -> IO ()
+detachDrawingThread_toTarget_withObject :: Sel -> RawId -> RawId -> IO ()
 detachDrawingThread_toTarget_withObject selector target argument =
   do
     cls' <- getRequiredClass "NSApplication"
-    sendClassMsg cls' (mkSelector "detachDrawingThread:toTarget:withObject:") retVoid [argPtr (unSelector selector), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr (unRawId argument) :: Ptr ())]
+    sendClassMessage cls' detachDrawingThread_toTarget_withObjectSelector selector target argument
 
 -- | If an application delegate returns NSTerminateLater from -applicationShouldTerminate:, -replyToApplicationShouldTerminate: must be called with YES or NO once the application decides if it can terminate.
 --
 -- ObjC selector: @- replyToApplicationShouldTerminate:@
 replyToApplicationShouldTerminate :: IsNSApplication nsApplication => nsApplication -> Bool -> IO ()
-replyToApplicationShouldTerminate nsApplication  shouldTerminate =
-    sendMsg nsApplication (mkSelector "replyToApplicationShouldTerminate:") retVoid [argCULong (if shouldTerminate then 1 else 0)]
+replyToApplicationShouldTerminate nsApplication shouldTerminate =
+  sendMessage nsApplication replyToApplicationShouldTerminateSelector shouldTerminate
 
 -- | If an application delegate encounters an error while handling @-application:openFiles:@ or@ -application:printFiles:@, @-replyToOpenOrPrint:@ should be called with @NSApplicationDelegateReplyFailure.@  If the user cancels the operation, @NSApplicationDelegateReplyCancel@ should be used, and if the operation succeeds, @NSApplicationDelegateReplySuccess@ should be used .
 --
 -- ObjC selector: @- replyToOpenOrPrint:@
 replyToOpenOrPrint :: IsNSApplication nsApplication => nsApplication -> NSApplicationDelegateReply -> IO ()
-replyToOpenOrPrint nsApplication  reply =
-    sendMsg nsApplication (mkSelector "replyToOpenOrPrint:") retVoid [argCULong (coerce reply)]
+replyToOpenOrPrint nsApplication reply =
+  sendMessage nsApplication replyToOpenOrPrintSelector reply
 
 -- | Opens the character palette.
 --
 -- ObjC selector: @- orderFrontCharacterPalette:@
 orderFrontCharacterPalette :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-orderFrontCharacterPalette nsApplication  sender =
-    sendMsg nsApplication (mkSelector "orderFrontCharacterPalette:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderFrontCharacterPalette nsApplication sender =
+  sendMessage nsApplication orderFrontCharacterPaletteSelector sender
 
 -- | @- extendStateRestoration@
 extendStateRestoration :: IsNSApplication nsApplication => nsApplication -> IO ()
-extendStateRestoration nsApplication  =
-    sendMsg nsApplication (mkSelector "extendStateRestoration") retVoid []
+extendStateRestoration nsApplication =
+  sendMessage nsApplication extendStateRestorationSelector
 
 -- | @- completeStateRestoration@
 completeStateRestoration :: IsNSApplication nsApplication => nsApplication -> IO ()
-completeStateRestoration nsApplication  =
-    sendMsg nsApplication (mkSelector "completeStateRestoration") retVoid []
+completeStateRestoration nsApplication =
+  sendMessage nsApplication completeStateRestorationSelector
 
 -- | @- restoreWindowWithIdentifier:state:completionHandler:@
 restoreWindowWithIdentifier_state_completionHandler :: (IsNSApplication nsApplication, IsNSString identifier, IsNSCoder state) => nsApplication -> identifier -> state -> Ptr () -> IO Bool
-restoreWindowWithIdentifier_state_completionHandler nsApplication  identifier state completionHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr state $ \raw_state ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "restoreWindowWithIdentifier:state:completionHandler:") retCULong [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+restoreWindowWithIdentifier_state_completionHandler nsApplication identifier state completionHandler =
+  sendMessage nsApplication restoreWindowWithIdentifier_state_completionHandlerSelector (toNSString identifier) (toNSCoder state) completionHandler
 
 -- | @- registerUserInterfaceItemSearchHandler:@
 registerUserInterfaceItemSearchHandler :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-registerUserInterfaceItemSearchHandler nsApplication  handler =
-    sendMsg nsApplication (mkSelector "registerUserInterfaceItemSearchHandler:") retVoid [argPtr (castPtr (unRawId handler) :: Ptr ())]
+registerUserInterfaceItemSearchHandler nsApplication handler =
+  sendMessage nsApplication registerUserInterfaceItemSearchHandlerSelector handler
 
 -- | @- unregisterUserInterfaceItemSearchHandler:@
 unregisterUserInterfaceItemSearchHandler :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-unregisterUserInterfaceItemSearchHandler nsApplication  handler =
-    sendMsg nsApplication (mkSelector "unregisterUserInterfaceItemSearchHandler:") retVoid [argPtr (castPtr (unRawId handler) :: Ptr ())]
+unregisterUserInterfaceItemSearchHandler nsApplication handler =
+  sendMessage nsApplication unregisterUserInterfaceItemSearchHandlerSelector handler
 
 -- | @- searchString:inUserInterfaceItemString:searchRange:foundRange:@
 searchString_inUserInterfaceItemString_searchRange_foundRange :: (IsNSApplication nsApplication, IsNSString searchString, IsNSString stringToSearch) => nsApplication -> searchString -> stringToSearch -> NSRange -> Ptr NSRange -> IO Bool
-searchString_inUserInterfaceItemString_searchRange_foundRange nsApplication  searchString stringToSearch searchRange foundRange =
-  withObjCPtr searchString $ \raw_searchString ->
-    withObjCPtr stringToSearch $ \raw_stringToSearch ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "searchString:inUserInterfaceItemString:searchRange:foundRange:") retCULong [argPtr (castPtr raw_searchString :: Ptr ()), argPtr (castPtr raw_stringToSearch :: Ptr ()), argNSRange searchRange, argPtr foundRange]
+searchString_inUserInterfaceItemString_searchRange_foundRange nsApplication searchString stringToSearch searchRange foundRange =
+  sendMessage nsApplication searchString_inUserInterfaceItemString_searchRange_foundRangeSelector (toNSString searchString) (toNSString stringToSearch) searchRange foundRange
 
 -- | @- runPageLayout:@
 runPageLayout :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-runPageLayout nsApplication  sender =
-    sendMsg nsApplication (mkSelector "runPageLayout:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+runPageLayout nsApplication sender =
+  sendMessage nsApplication runPageLayoutSelector sender
 
 -- | @- orderFrontColorPanel:@
 orderFrontColorPanel :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-orderFrontColorPanel nsApplication  sender =
-    sendMsg nsApplication (mkSelector "orderFrontColorPanel:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderFrontColorPanel nsApplication sender =
+  sendMessage nsApplication orderFrontColorPanelSelector sender
 
 -- | Show or dismiss the customization palette for the currently displayed NSTouchBars. NSApplication validates this selector against whether the current NSTouchBars are customizable and, if configured on a menu item, will standardize and localize the title. If the current system does not have Touch Bar support, the menu item will be automatically hidden.
 --
 -- ObjC selector: @- toggleTouchBarCustomizationPalette:@
 toggleTouchBarCustomizationPalette :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-toggleTouchBarCustomizationPalette nsApplication  sender =
-    sendMsg nsApplication (mkSelector "toggleTouchBarCustomizationPalette:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleTouchBarCustomizationPalette nsApplication sender =
+  sendMessage nsApplication toggleTouchBarCustomizationPaletteSelector sender
 
 -- | @- activateContextHelpMode:@
 activateContextHelpMode :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-activateContextHelpMode nsApplication  sender =
-    sendMsg nsApplication (mkSelector "activateContextHelpMode:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+activateContextHelpMode nsApplication sender =
+  sendMessage nsApplication activateContextHelpModeSelector sender
 
 -- | @- showHelp:@
 showHelp :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-showHelp nsApplication  sender =
-    sendMsg nsApplication (mkSelector "showHelp:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+showHelp nsApplication sender =
+  sendMessage nsApplication showHelpSelector sender
 
 -- | @-runModalForWindow:relativeToWindow:@ was deprecated in Mac OS X 10.0. Please use @-[NSWindow beginSheet:completionHandler:]@ instead.
 --
 -- ObjC selector: @- runModalForWindow:relativeToWindow:@
 runModalForWindow_relativeToWindow :: (IsNSApplication nsApplication, IsNSWindow window, IsNSWindow docWindow) => nsApplication -> window -> docWindow -> IO CLong
-runModalForWindow_relativeToWindow nsApplication  window docWindow =
-  withObjCPtr window $ \raw_window ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg nsApplication (mkSelector "runModalForWindow:relativeToWindow:") retCLong [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ())]
+runModalForWindow_relativeToWindow nsApplication window docWindow =
+  sendMessage nsApplication runModalForWindow_relativeToWindowSelector (toNSWindow window) (toNSWindow docWindow)
 
 -- | @-beginModalSessionForWindow:relativeToWindow:@ was deprecated in Mac OS X 10.0. Please use @-[NSWindow beginSheet:completionHandler:]@ instead.
 --
 -- ObjC selector: @- beginModalSessionForWindow:relativeToWindow:@
 beginModalSessionForWindow_relativeToWindow :: (IsNSApplication nsApplication, IsNSWindow window, IsNSWindow docWindow) => nsApplication -> window -> docWindow -> IO (Ptr ())
-beginModalSessionForWindow_relativeToWindow nsApplication  window docWindow =
-  withObjCPtr window $ \raw_window ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        fmap castPtr $ sendMsg nsApplication (mkSelector "beginModalSessionForWindow:relativeToWindow:") (retPtr retVoid) [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ())]
+beginModalSessionForWindow_relativeToWindow nsApplication window docWindow =
+  sendMessage nsApplication beginModalSessionForWindow_relativeToWindowSelector (toNSWindow window) (toNSWindow docWindow)
 
 -- | @-application:printFiles:@ was deprecated in Mac OS X 10.4. Implement @-application:printFiles:withSettings:showPrintPanels:@ in your application delegate instead.
 --
 -- ObjC selector: @- application:printFiles:@
 application_printFiles :: (IsNSApplication nsApplication, IsNSApplication sender, IsNSArray filenames) => nsApplication -> sender -> filenames -> IO ()
-application_printFiles nsApplication  sender filenames =
-  withObjCPtr sender $ \raw_sender ->
-    withObjCPtr filenames $ \raw_filenames ->
-        sendMsg nsApplication (mkSelector "application:printFiles:") retVoid [argPtr (castPtr raw_sender :: Ptr ()), argPtr (castPtr raw_filenames :: Ptr ())]
+application_printFiles nsApplication sender filenames =
+  sendMessage nsApplication application_printFilesSelector (toNSApplication sender) (toNSArray filenames)
 
 -- | @NSWindow@'s @-beginSheet:completionHandler:@ and @-endSheet:returnCode:@ should be used instead.  @NSApplication@'s @-beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:@ will continue to work as it previously did, leaking contextInfo and failing when there is already an existing sheet.
 --
 -- ObjC selector: @- beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsNSApplication nsApplication, IsNSWindow sheet, IsNSWindow docWindow) => nsApplication -> sheet -> docWindow -> RawId -> Selector -> Ptr () -> IO ()
-beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo nsApplication  sheet docWindow modalDelegate didEndSelector contextInfo =
-  withObjCPtr sheet $ \raw_sheet ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg nsApplication (mkSelector "beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_sheet :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId modalDelegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsNSApplication nsApplication, IsNSWindow sheet, IsNSWindow docWindow) => nsApplication -> sheet -> docWindow -> RawId -> Sel -> Ptr () -> IO ()
+beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo nsApplication sheet docWindow modalDelegate didEndSelector contextInfo =
+  sendMessage nsApplication beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector (toNSWindow sheet) (toNSWindow docWindow) modalDelegate didEndSelector contextInfo
 
 -- | @- endSheet:@
 endSheet :: (IsNSApplication nsApplication, IsNSWindow sheet) => nsApplication -> sheet -> IO ()
-endSheet nsApplication  sheet =
-  withObjCPtr sheet $ \raw_sheet ->
-      sendMsg nsApplication (mkSelector "endSheet:") retVoid [argPtr (castPtr raw_sheet :: Ptr ())]
+endSheet nsApplication sheet =
+  sendMessage nsApplication endSheetSelector (toNSWindow sheet)
 
 -- | @- endSheet:returnCode:@
 endSheet_returnCode :: (IsNSApplication nsApplication, IsNSWindow sheet) => nsApplication -> sheet -> CLong -> IO ()
-endSheet_returnCode nsApplication  sheet returnCode =
-  withObjCPtr sheet $ \raw_sheet ->
-      sendMsg nsApplication (mkSelector "endSheet:returnCode:") retVoid [argPtr (castPtr raw_sheet :: Ptr ()), argCLong returnCode]
+endSheet_returnCode nsApplication sheet returnCode =
+  sendMessage nsApplication endSheet_returnCodeSelector (toNSWindow sheet) returnCode
 
 -- | @- makeWindowsPerform:inOrder:@
-makeWindowsPerform_inOrder :: IsNSApplication nsApplication => nsApplication -> Selector -> Bool -> IO (Id NSWindow)
-makeWindowsPerform_inOrder nsApplication  selector inOrder =
-    sendMsg nsApplication (mkSelector "makeWindowsPerform:inOrder:") (retPtr retVoid) [argPtr (unSelector selector), argCULong (if inOrder then 1 else 0)] >>= retainedObject . castPtr
+makeWindowsPerform_inOrder :: IsNSApplication nsApplication => nsApplication -> Sel -> Bool -> IO (Id NSWindow)
+makeWindowsPerform_inOrder nsApplication selector inOrder =
+  sendMessage nsApplication makeWindowsPerform_inOrderSelector selector inOrder
 
 -- | @- registerForRemoteNotifications@
 registerForRemoteNotifications :: IsNSApplication nsApplication => nsApplication -> IO ()
-registerForRemoteNotifications nsApplication  =
-    sendMsg nsApplication (mkSelector "registerForRemoteNotifications") retVoid []
+registerForRemoteNotifications nsApplication =
+  sendMessage nsApplication registerForRemoteNotificationsSelector
 
 -- | @- unregisterForRemoteNotifications@
 unregisterForRemoteNotifications :: IsNSApplication nsApplication => nsApplication -> IO ()
-unregisterForRemoteNotifications nsApplication  =
-    sendMsg nsApplication (mkSelector "unregisterForRemoteNotifications") retVoid []
+unregisterForRemoteNotifications nsApplication =
+  sendMessage nsApplication unregisterForRemoteNotificationsSelector
 
 -- | The following are soft deprecated. Please use the @-registerForRemoteNotifications@ above and @-requestAuthorizationWithOptions:@ from @UserNotifications.framework@.
 --
 -- ObjC selector: @- registerForRemoteNotificationTypes:@
 registerForRemoteNotificationTypes :: IsNSApplication nsApplication => nsApplication -> NSRemoteNotificationType -> IO ()
-registerForRemoteNotificationTypes nsApplication  types =
-    sendMsg nsApplication (mkSelector "registerForRemoteNotificationTypes:") retVoid [argCULong (coerce types)]
+registerForRemoteNotificationTypes nsApplication types =
+  sendMessage nsApplication registerForRemoteNotificationTypesSelector types
 
 -- | Disable or reenable relaunching this app on login, if the app was running at the time the user logged out.  These methods increment and decrement a counter respectively; if the counter is 0 at the time the user logs out, then the app may be relaunched when the user logs back in.  The counter is initially zero, so by default apps are relaunched.
 --
@@ -694,833 +672,811 @@ registerForRemoteNotificationTypes nsApplication  types =
 --
 -- ObjC selector: @- disableRelaunchOnLogin@
 disableRelaunchOnLogin :: IsNSApplication nsApplication => nsApplication -> IO ()
-disableRelaunchOnLogin nsApplication  =
-    sendMsg nsApplication (mkSelector "disableRelaunchOnLogin") retVoid []
+disableRelaunchOnLogin nsApplication =
+  sendMessage nsApplication disableRelaunchOnLoginSelector
 
 -- | @- enableRelaunchOnLogin@
 enableRelaunchOnLogin :: IsNSApplication nsApplication => nsApplication -> IO ()
-enableRelaunchOnLogin nsApplication  =
-    sendMsg nsApplication (mkSelector "enableRelaunchOnLogin") retVoid []
+enableRelaunchOnLogin nsApplication =
+  sendMessage nsApplication enableRelaunchOnLoginSelector
 
 -- | @- orderFrontStandardAboutPanel:@
 orderFrontStandardAboutPanel :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-orderFrontStandardAboutPanel nsApplication  sender =
-    sendMsg nsApplication (mkSelector "orderFrontStandardAboutPanel:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderFrontStandardAboutPanel nsApplication sender =
+  sendMessage nsApplication orderFrontStandardAboutPanelSelector sender
 
 -- | @- orderFrontStandardAboutPanelWithOptions:@
 orderFrontStandardAboutPanelWithOptions :: (IsNSApplication nsApplication, IsNSDictionary optionsDictionary) => nsApplication -> optionsDictionary -> IO ()
-orderFrontStandardAboutPanelWithOptions nsApplication  optionsDictionary =
-  withObjCPtr optionsDictionary $ \raw_optionsDictionary ->
-      sendMsg nsApplication (mkSelector "orderFrontStandardAboutPanelWithOptions:") retVoid [argPtr (castPtr raw_optionsDictionary :: Ptr ())]
+orderFrontStandardAboutPanelWithOptions nsApplication optionsDictionary =
+  sendMessage nsApplication orderFrontStandardAboutPanelWithOptionsSelector (toNSDictionary optionsDictionary)
 
 -- | @- registerServicesMenuSendTypes:returnTypes:@
 registerServicesMenuSendTypes_returnTypes :: (IsNSApplication nsApplication, IsNSArray sendTypes, IsNSArray returnTypes) => nsApplication -> sendTypes -> returnTypes -> IO ()
-registerServicesMenuSendTypes_returnTypes nsApplication  sendTypes returnTypes =
-  withObjCPtr sendTypes $ \raw_sendTypes ->
-    withObjCPtr returnTypes $ \raw_returnTypes ->
-        sendMsg nsApplication (mkSelector "registerServicesMenuSendTypes:returnTypes:") retVoid [argPtr (castPtr raw_sendTypes :: Ptr ()), argPtr (castPtr raw_returnTypes :: Ptr ())]
+registerServicesMenuSendTypes_returnTypes nsApplication sendTypes returnTypes =
+  sendMessage nsApplication registerServicesMenuSendTypes_returnTypesSelector (toNSArray sendTypes) (toNSArray returnTypes)
 
 -- | @- arrangeInFront:@
 arrangeInFront :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-arrangeInFront nsApplication  sender =
-    sendMsg nsApplication (mkSelector "arrangeInFront:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+arrangeInFront nsApplication sender =
+  sendMessage nsApplication arrangeInFrontSelector sender
 
 -- | @- removeWindowsItem:@
 removeWindowsItem :: (IsNSApplication nsApplication, IsNSWindow win) => nsApplication -> win -> IO ()
-removeWindowsItem nsApplication  win =
-  withObjCPtr win $ \raw_win ->
-      sendMsg nsApplication (mkSelector "removeWindowsItem:") retVoid [argPtr (castPtr raw_win :: Ptr ())]
+removeWindowsItem nsApplication win =
+  sendMessage nsApplication removeWindowsItemSelector (toNSWindow win)
 
 -- | @- addWindowsItem:title:filename:@
 addWindowsItem_title_filename :: (IsNSApplication nsApplication, IsNSWindow win, IsNSString string) => nsApplication -> win -> string -> Bool -> IO ()
-addWindowsItem_title_filename nsApplication  win string isFilename =
-  withObjCPtr win $ \raw_win ->
-    withObjCPtr string $ \raw_string ->
-        sendMsg nsApplication (mkSelector "addWindowsItem:title:filename:") retVoid [argPtr (castPtr raw_win :: Ptr ()), argPtr (castPtr raw_string :: Ptr ()), argCULong (if isFilename then 1 else 0)]
+addWindowsItem_title_filename nsApplication win string isFilename =
+  sendMessage nsApplication addWindowsItem_title_filenameSelector (toNSWindow win) (toNSString string) isFilename
 
 -- | @- changeWindowsItem:title:filename:@
 changeWindowsItem_title_filename :: (IsNSApplication nsApplication, IsNSWindow win, IsNSString string) => nsApplication -> win -> string -> Bool -> IO ()
-changeWindowsItem_title_filename nsApplication  win string isFilename =
-  withObjCPtr win $ \raw_win ->
-    withObjCPtr string $ \raw_string ->
-        sendMsg nsApplication (mkSelector "changeWindowsItem:title:filename:") retVoid [argPtr (castPtr raw_win :: Ptr ()), argPtr (castPtr raw_string :: Ptr ()), argCULong (if isFilename then 1 else 0)]
+changeWindowsItem_title_filename nsApplication win string isFilename =
+  sendMessage nsApplication changeWindowsItem_title_filenameSelector (toNSWindow win) (toNSString string) isFilename
 
 -- | @- updateWindowsItem:@
 updateWindowsItem :: (IsNSApplication nsApplication, IsNSWindow win) => nsApplication -> win -> IO ()
-updateWindowsItem nsApplication  win =
-  withObjCPtr win $ \raw_win ->
-      sendMsg nsApplication (mkSelector "updateWindowsItem:") retVoid [argPtr (castPtr raw_win :: Ptr ())]
+updateWindowsItem nsApplication win =
+  sendMessage nsApplication updateWindowsItemSelector (toNSWindow win)
 
 -- | @- miniaturizeAll:@
 miniaturizeAll :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-miniaturizeAll nsApplication  sender =
-    sendMsg nsApplication (mkSelector "miniaturizeAll:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+miniaturizeAll nsApplication sender =
+  sendMessage nsApplication miniaturizeAllSelector sender
 
 -- | @- sendAction:to:from:@
-sendAction_to_from :: IsNSApplication nsApplication => nsApplication -> Selector -> RawId -> RawId -> IO Bool
-sendAction_to_from nsApplication  action target sender =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "sendAction:to:from:") retCULong [argPtr (unSelector action), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr (unRawId sender) :: Ptr ())]
+sendAction_to_from :: IsNSApplication nsApplication => nsApplication -> Sel -> RawId -> RawId -> IO Bool
+sendAction_to_from nsApplication action target sender =
+  sendMessage nsApplication sendAction_to_fromSelector action target sender
 
 -- | @- targetForAction:@
-targetForAction :: IsNSApplication nsApplication => nsApplication -> Selector -> IO RawId
-targetForAction nsApplication  action =
-    fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "targetForAction:") (retPtr retVoid) [argPtr (unSelector action)]
+targetForAction :: IsNSApplication nsApplication => nsApplication -> Sel -> IO RawId
+targetForAction nsApplication action =
+  sendMessage nsApplication targetForActionSelector action
 
 -- | @- targetForAction:to:from:@
-targetForAction_to_from :: IsNSApplication nsApplication => nsApplication -> Selector -> RawId -> RawId -> IO RawId
-targetForAction_to_from nsApplication  action target sender =
-    fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "targetForAction:to:from:") (retPtr retVoid) [argPtr (unSelector action), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr (unRawId sender) :: Ptr ())]
+targetForAction_to_from :: IsNSApplication nsApplication => nsApplication -> Sel -> RawId -> RawId -> IO RawId
+targetForAction_to_from nsApplication action target sender =
+  sendMessage nsApplication targetForAction_to_fromSelector action target sender
 
 -- | @- tryToPerform:with:@
-tryToPerform_with :: IsNSApplication nsApplication => nsApplication -> Selector -> RawId -> IO Bool
-tryToPerform_with nsApplication  action object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "tryToPerform:with:") retCULong [argPtr (unSelector action), argPtr (castPtr (unRawId object) :: Ptr ())]
+tryToPerform_with :: IsNSApplication nsApplication => nsApplication -> Sel -> RawId -> IO Bool
+tryToPerform_with nsApplication action object =
+  sendMessage nsApplication tryToPerform_withSelector action object
 
 -- | @- validRequestorForSendType:returnType:@
 validRequestorForSendType_returnType :: (IsNSApplication nsApplication, IsNSString sendType, IsNSString returnType) => nsApplication -> sendType -> returnType -> IO RawId
-validRequestorForSendType_returnType nsApplication  sendType returnType =
-  withObjCPtr sendType $ \raw_sendType ->
-    withObjCPtr returnType $ \raw_returnType ->
-        fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "validRequestorForSendType:returnType:") (retPtr retVoid) [argPtr (castPtr raw_sendType :: Ptr ()), argPtr (castPtr raw_returnType :: Ptr ())]
+validRequestorForSendType_returnType nsApplication sendType returnType =
+  sendMessage nsApplication validRequestorForSendType_returnTypeSelector (toNSString sendType) (toNSString returnType)
 
 -- | @- sendEvent:@
 sendEvent :: (IsNSApplication nsApplication, IsNSEvent event) => nsApplication -> event -> IO ()
-sendEvent nsApplication  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsApplication (mkSelector "sendEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+sendEvent nsApplication event =
+  sendMessage nsApplication sendEventSelector (toNSEvent event)
 
 -- | @- postEvent:atStart:@
 postEvent_atStart :: (IsNSApplication nsApplication, IsNSEvent event) => nsApplication -> event -> Bool -> IO ()
-postEvent_atStart nsApplication  event atStart =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsApplication (mkSelector "postEvent:atStart:") retVoid [argPtr (castPtr raw_event :: Ptr ()), argCULong (if atStart then 1 else 0)]
+postEvent_atStart nsApplication event atStart =
+  sendMessage nsApplication postEvent_atStartSelector (toNSEvent event) atStart
 
 -- | @- nextEventMatchingMask:untilDate:inMode:dequeue:@
 nextEventMatchingMask_untilDate_inMode_dequeue :: (IsNSApplication nsApplication, IsNSDate expiration, IsNSString mode) => nsApplication -> NSEventMask -> expiration -> mode -> Bool -> IO (Id NSEvent)
-nextEventMatchingMask_untilDate_inMode_dequeue nsApplication  mask expiration mode deqFlag =
-  withObjCPtr expiration $ \raw_expiration ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsApplication (mkSelector "nextEventMatchingMask:untilDate:inMode:dequeue:") (retPtr retVoid) [argCULong (coerce mask), argPtr (castPtr raw_expiration :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ()), argCULong (if deqFlag then 1 else 0)] >>= retainedObject . castPtr
+nextEventMatchingMask_untilDate_inMode_dequeue nsApplication mask expiration mode deqFlag =
+  sendMessage nsApplication nextEventMatchingMask_untilDate_inMode_dequeueSelector mask (toNSDate expiration) (toNSString mode) deqFlag
 
 -- | @- discardEventsMatchingMask:beforeEvent:@
 discardEventsMatchingMask_beforeEvent :: (IsNSApplication nsApplication, IsNSEvent lastEvent) => nsApplication -> NSEventMask -> lastEvent -> IO ()
-discardEventsMatchingMask_beforeEvent nsApplication  mask lastEvent =
-  withObjCPtr lastEvent $ \raw_lastEvent ->
-      sendMsg nsApplication (mkSelector "discardEventsMatchingMask:beforeEvent:") retVoid [argCULong (coerce mask), argPtr (castPtr raw_lastEvent :: Ptr ())]
+discardEventsMatchingMask_beforeEvent nsApplication mask lastEvent =
+  sendMessage nsApplication discardEventsMatchingMask_beforeEventSelector mask (toNSEvent lastEvent)
 
 -- | @+ sharedApplication@
 sharedApplication :: IO (Id NSApplication)
 sharedApplication  =
   do
     cls' <- getRequiredClass "NSApplication"
-    sendClassMsg cls' (mkSelector "sharedApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedApplicationSelector
 
 -- | @- delegate@
 delegate :: IsNSApplication nsApplication => nsApplication -> IO RawId
-delegate nsApplication  =
-    fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "delegate") (retPtr retVoid) []
+delegate nsApplication =
+  sendMessage nsApplication delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-setDelegate nsApplication  value =
-    sendMsg nsApplication (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsApplication value =
+  sendMessage nsApplication setDelegateSelector value
 
 -- | @- mainWindow@
 mainWindow :: IsNSApplication nsApplication => nsApplication -> IO (Id NSWindow)
-mainWindow nsApplication  =
-    sendMsg nsApplication (mkSelector "mainWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainWindow nsApplication =
+  sendMessage nsApplication mainWindowSelector
 
 -- | @- keyWindow@
 keyWindow :: IsNSApplication nsApplication => nsApplication -> IO (Id NSWindow)
-keyWindow nsApplication  =
-    sendMsg nsApplication (mkSelector "keyWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyWindow nsApplication =
+  sendMessage nsApplication keyWindowSelector
 
 -- | @- active@
 active :: IsNSApplication nsApplication => nsApplication -> IO Bool
-active nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "active") retCULong []
+active nsApplication =
+  sendMessage nsApplication activeSelector
 
 -- | @- hidden@
 hidden :: IsNSApplication nsApplication => nsApplication -> IO Bool
-hidden nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "hidden") retCULong []
+hidden nsApplication =
+  sendMessage nsApplication hiddenSelector
 
 -- | @- running@
 running :: IsNSApplication nsApplication => nsApplication -> IO Bool
-running nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "running") retCULong []
+running nsApplication =
+  sendMessage nsApplication runningSelector
 
 -- | A boolean value indicating whether your application should suppress HDR content based on established policy. Built-in AppKit components such as NSImageView will automatically behave correctly with HDR content. You should use this value in conjunction with notifications (@NSApplicationShouldBeginSuppressingHighDynamicRangeContentNotification@ and @NSApplicationShouldEndSuppressingHighDynamicRangeContentNotification@) to suppress HDR content in your application when signaled to do so.
 --
 -- ObjC selector: @- applicationShouldSuppressHighDynamicRangeContent@
 applicationShouldSuppressHighDynamicRangeContent :: IsNSApplication nsApplication => nsApplication -> IO Bool
-applicationShouldSuppressHighDynamicRangeContent nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "applicationShouldSuppressHighDynamicRangeContent") retCULong []
+applicationShouldSuppressHighDynamicRangeContent nsApplication =
+  sendMessage nsApplication applicationShouldSuppressHighDynamicRangeContentSelector
 
 -- | @- modalWindow@
 modalWindow :: IsNSApplication nsApplication => nsApplication -> IO (Id NSWindow)
-modalWindow nsApplication  =
-    sendMsg nsApplication (mkSelector "modalWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+modalWindow nsApplication =
+  sendMessage nsApplication modalWindowSelector
 
 -- | @- windows@
 windows :: IsNSApplication nsApplication => nsApplication -> IO (Id NSArray)
-windows nsApplication  =
-    sendMsg nsApplication (mkSelector "windows") (retPtr retVoid) [] >>= retainedObject . castPtr
+windows nsApplication =
+  sendMessage nsApplication windowsSelector
 
 -- | @- mainMenu@
 mainMenu :: IsNSApplication nsApplication => nsApplication -> IO (Id NSMenu)
-mainMenu nsApplication  =
-    sendMsg nsApplication (mkSelector "mainMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainMenu nsApplication =
+  sendMessage nsApplication mainMenuSelector
 
 -- | @- setMainMenu:@
 setMainMenu :: (IsNSApplication nsApplication, IsNSMenu value) => nsApplication -> value -> IO ()
-setMainMenu nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setMainMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMainMenu nsApplication value =
+  sendMessage nsApplication setMainMenuSelector (toNSMenu value)
 
 -- | Set or get the Help menu for the app.  If a non-nil menu is set as the Help menu, Spotlight for Help will be installed in it; otherwise AppKit will install Spotlight for Help into a menu of its choosing (and that menu is not returned from @-helpMenu@).  If you wish to completely suppress Spotlight for Help, you can set a menu that does not appear in the menu bar.  @NSApplication@ retains its Help menu and releases it when a different menu is set.
 --
 -- ObjC selector: @- helpMenu@
 helpMenu :: IsNSApplication nsApplication => nsApplication -> IO (Id NSMenu)
-helpMenu nsApplication  =
-    sendMsg nsApplication (mkSelector "helpMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+helpMenu nsApplication =
+  sendMessage nsApplication helpMenuSelector
 
 -- | Set or get the Help menu for the app.  If a non-nil menu is set as the Help menu, Spotlight for Help will be installed in it; otherwise AppKit will install Spotlight for Help into a menu of its choosing (and that menu is not returned from @-helpMenu@).  If you wish to completely suppress Spotlight for Help, you can set a menu that does not appear in the menu bar.  @NSApplication@ retains its Help menu and releases it when a different menu is set.
 --
 -- ObjC selector: @- setHelpMenu:@
 setHelpMenu :: (IsNSApplication nsApplication, IsNSMenu value) => nsApplication -> value -> IO ()
-setHelpMenu nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setHelpMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHelpMenu nsApplication value =
+  sendMessage nsApplication setHelpMenuSelector (toNSMenu value)
 
 -- | @- applicationIconImage@
 applicationIconImage :: IsNSApplication nsApplication => nsApplication -> IO (Id NSImage)
-applicationIconImage nsApplication  =
-    sendMsg nsApplication (mkSelector "applicationIconImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationIconImage nsApplication =
+  sendMessage nsApplication applicationIconImageSelector
 
 -- | @- setApplicationIconImage:@
 setApplicationIconImage :: (IsNSApplication nsApplication, IsNSImage value) => nsApplication -> value -> IO ()
-setApplicationIconImage nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setApplicationIconImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationIconImage nsApplication value =
+  sendMessage nsApplication setApplicationIconImageSelector (toNSImage value)
 
 -- | @- dockTile@
 dockTile :: IsNSApplication nsApplication => nsApplication -> IO (Id NSDockTile)
-dockTile nsApplication  =
-    sendMsg nsApplication (mkSelector "dockTile") (retPtr retVoid) [] >>= retainedObject . castPtr
+dockTile nsApplication =
+  sendMessage nsApplication dockTileSelector
 
 -- | Gets or sets the @presentationOptions@ that should be in effect for the system when this application is the active application.  Only certain combinations of @NSApplicationPresentationOptions@ flags are allowed, as detailed in the AppKit Release Notes and the reference documentation for @-setPresentationOptions:@.  When given an invalid combination of option flags, @-setPresentationOptions:@ raises an exception.
 --
 -- ObjC selector: @- presentationOptions@
 presentationOptions :: IsNSApplication nsApplication => nsApplication -> IO NSApplicationPresentationOptions
-presentationOptions nsApplication  =
-    fmap (coerce :: CULong -> NSApplicationPresentationOptions) $ sendMsg nsApplication (mkSelector "presentationOptions") retCULong []
+presentationOptions nsApplication =
+  sendMessage nsApplication presentationOptionsSelector
 
 -- | Gets or sets the @presentationOptions@ that should be in effect for the system when this application is the active application.  Only certain combinations of @NSApplicationPresentationOptions@ flags are allowed, as detailed in the AppKit Release Notes and the reference documentation for @-setPresentationOptions:@.  When given an invalid combination of option flags, @-setPresentationOptions:@ raises an exception.
 --
 -- ObjC selector: @- setPresentationOptions:@
 setPresentationOptions :: IsNSApplication nsApplication => nsApplication -> NSApplicationPresentationOptions -> IO ()
-setPresentationOptions nsApplication  value =
-    sendMsg nsApplication (mkSelector "setPresentationOptions:") retVoid [argCULong (coerce value)]
+setPresentationOptions nsApplication value =
+  sendMessage nsApplication setPresentationOptionsSelector value
 
 -- | Returns: The set of application presentation options that are currently in effect for the system. These are the presentation options that have been put into effect by the currently active application.
 --
 -- ObjC selector: @- currentSystemPresentationOptions@
 currentSystemPresentationOptions :: IsNSApplication nsApplication => nsApplication -> IO NSApplicationPresentationOptions
-currentSystemPresentationOptions nsApplication  =
-    fmap (coerce :: CULong -> NSApplicationPresentationOptions) $ sendMsg nsApplication (mkSelector "currentSystemPresentationOptions") retCULong []
+currentSystemPresentationOptions nsApplication =
+  sendMessage nsApplication currentSystemPresentationOptionsSelector
 
 -- | @- occlusionState@
 occlusionState :: IsNSApplication nsApplication => nsApplication -> IO NSApplicationOcclusionState
-occlusionState nsApplication  =
-    fmap (coerce :: CULong -> NSApplicationOcclusionState) $ sendMsg nsApplication (mkSelector "occlusionState") retCULong []
+occlusionState nsApplication =
+  sendMessage nsApplication occlusionStateSelector
 
 -- | @- protectedDataAvailable@
 protectedDataAvailable :: IsNSApplication nsApplication => nsApplication -> IO Bool
-protectedDataAvailable nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "protectedDataAvailable") retCULong []
+protectedDataAvailable nsApplication =
+  sendMessage nsApplication protectedDataAvailableSelector
 
 -- | @- orderedDocuments@
 orderedDocuments :: IsNSApplication nsApplication => nsApplication -> IO (Id NSArray)
-orderedDocuments nsApplication  =
-    sendMsg nsApplication (mkSelector "orderedDocuments") (retPtr retVoid) [] >>= retainedObject . castPtr
+orderedDocuments nsApplication =
+  sendMessage nsApplication orderedDocumentsSelector
 
 -- | @- orderedWindows@
 orderedWindows :: IsNSApplication nsApplication => nsApplication -> IO (Id NSArray)
-orderedWindows nsApplication  =
-    sendMsg nsApplication (mkSelector "orderedWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+orderedWindows nsApplication =
+  sendMessage nsApplication orderedWindowsSelector
 
 -- | Whether or not a menu item to customize the NSTouchBar can be automatically added to the main menu. It will only actually be added when Touch Bar hardware or simulator is present. Defaults to NO. Setting this property to YES is the recommended way to add the customization menu item. But if non-standard placement of the menu item is needed, creating a menu item with an action of @toggleTouchBarCustomizationPalette:@ can be used instead.
 --
 -- ObjC selector: @- automaticCustomizeTouchBarMenuItemEnabled@
 automaticCustomizeTouchBarMenuItemEnabled :: IsNSApplication nsApplication => nsApplication -> IO Bool
-automaticCustomizeTouchBarMenuItemEnabled nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "automaticCustomizeTouchBarMenuItemEnabled") retCULong []
+automaticCustomizeTouchBarMenuItemEnabled nsApplication =
+  sendMessage nsApplication automaticCustomizeTouchBarMenuItemEnabledSelector
 
 -- | Whether or not a menu item to customize the NSTouchBar can be automatically added to the main menu. It will only actually be added when Touch Bar hardware or simulator is present. Defaults to NO. Setting this property to YES is the recommended way to add the customization menu item. But if non-standard placement of the menu item is needed, creating a menu item with an action of @toggleTouchBarCustomizationPalette:@ can be used instead.
 --
 -- ObjC selector: @- setAutomaticCustomizeTouchBarMenuItemEnabled:@
 setAutomaticCustomizeTouchBarMenuItemEnabled :: IsNSApplication nsApplication => nsApplication -> Bool -> IO ()
-setAutomaticCustomizeTouchBarMenuItemEnabled nsApplication  value =
-    sendMsg nsApplication (mkSelector "setAutomaticCustomizeTouchBarMenuItemEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticCustomizeTouchBarMenuItemEnabled nsApplication value =
+  sendMessage nsApplication setAutomaticCustomizeTouchBarMenuItemEnabledSelector value
 
 -- | This method is deprecated as of macOS 10.12. Beginning in OS X 10.11 it would always return nil. Prior to this it would return an undefined graphics context that was not generally suitable for drawing.
 --
 -- ObjC selector: @- context@
 context :: IsNSApplication nsApplication => nsApplication -> IO (Id NSGraphicsContext)
-context nsApplication  =
-    sendMsg nsApplication (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context nsApplication =
+  sendMessage nsApplication contextSelector
 
 -- | Returns: @YES@ if the application is currently registered for remote notifications, taking into account any systemwide settings; doesn't relate to connectivity.
 --
 -- ObjC selector: @- registeredForRemoteNotifications@
 registeredForRemoteNotifications :: IsNSApplication nsApplication => nsApplication -> IO Bool
-registeredForRemoteNotifications nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "registeredForRemoteNotifications") retCULong []
+registeredForRemoteNotifications nsApplication =
+  sendMessage nsApplication registeredForRemoteNotificationsSelector
 
 -- | @- enabledRemoteNotificationTypes@
 enabledRemoteNotificationTypes :: IsNSApplication nsApplication => nsApplication -> IO NSRemoteNotificationType
-enabledRemoteNotificationTypes nsApplication  =
-    fmap (coerce :: CULong -> NSRemoteNotificationType) $ sendMsg nsApplication (mkSelector "enabledRemoteNotificationTypes") retCULong []
+enabledRemoteNotificationTypes nsApplication =
+  sendMessage nsApplication enabledRemoteNotificationTypesSelector
 
 -- | @- userInterfaceLayoutDirection@
 userInterfaceLayoutDirection :: IsNSApplication nsApplication => nsApplication -> IO NSUserInterfaceLayoutDirection
-userInterfaceLayoutDirection nsApplication  =
-    fmap (coerce :: CLong -> NSUserInterfaceLayoutDirection) $ sendMsg nsApplication (mkSelector "userInterfaceLayoutDirection") retCLong []
+userInterfaceLayoutDirection nsApplication =
+  sendMessage nsApplication userInterfaceLayoutDirectionSelector
 
 -- | @- servicesProvider@
 servicesProvider :: IsNSApplication nsApplication => nsApplication -> IO RawId
-servicesProvider nsApplication  =
-    fmap (RawId . castPtr) $ sendMsg nsApplication (mkSelector "servicesProvider") (retPtr retVoid) []
+servicesProvider nsApplication =
+  sendMessage nsApplication servicesProviderSelector
 
 -- | @- setServicesProvider:@
 setServicesProvider :: IsNSApplication nsApplication => nsApplication -> RawId -> IO ()
-setServicesProvider nsApplication  value =
-    sendMsg nsApplication (mkSelector "setServicesProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setServicesProvider nsApplication value =
+  sendMessage nsApplication setServicesProviderSelector value
 
 -- | @- servicesMenu@
 servicesMenu :: IsNSApplication nsApplication => nsApplication -> IO (Id NSMenu)
-servicesMenu nsApplication  =
-    sendMsg nsApplication (mkSelector "servicesMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+servicesMenu nsApplication =
+  sendMessage nsApplication servicesMenuSelector
 
 -- | @- setServicesMenu:@
 setServicesMenu :: (IsNSApplication nsApplication, IsNSMenu value) => nsApplication -> value -> IO ()
-setServicesMenu nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setServicesMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServicesMenu nsApplication value =
+  sendMessage nsApplication setServicesMenuSelector (toNSMenu value)
 
 -- | A Boolean value indicating whether keyboard navigation is enabled in System Settings > Keyboard. - Note: The value of this property is @YES@ if keyboard navigation is enabled or @NO@ if it’s not. You might use this value to implement your own key loop or to implement in-control tabbing behavior similar to @NSTableView@. Because of the nature of the preference storage, you won’t be notified of changes to this property if you attempt to observe it through key-value observing; however, accessing this property is fairly inexpensive, so you can access it directly rather than caching it. - Note: This property’s value isn’t necessarily reflective of the separate accessibility setting named “Full Keyboard Access” in System Settings > Accessibility > Keyboard.
 --
 -- ObjC selector: @- fullKeyboardAccessEnabled@
 fullKeyboardAccessEnabled :: IsNSApplication nsApplication => nsApplication -> IO Bool
-fullKeyboardAccessEnabled nsApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsApplication (mkSelector "fullKeyboardAccessEnabled") retCULong []
+fullKeyboardAccessEnabled nsApplication =
+  sendMessage nsApplication fullKeyboardAccessEnabledSelector
 
 -- | @- windowsMenu@
 windowsMenu :: IsNSApplication nsApplication => nsApplication -> IO (Id NSMenu)
-windowsMenu nsApplication  =
-    sendMsg nsApplication (mkSelector "windowsMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+windowsMenu nsApplication =
+  sendMessage nsApplication windowsMenuSelector
 
 -- | @- setWindowsMenu:@
 setWindowsMenu :: (IsNSApplication nsApplication, IsNSMenu value) => nsApplication -> value -> IO ()
-setWindowsMenu nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setWindowsMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWindowsMenu nsApplication value =
+  sendMessage nsApplication setWindowsMenuSelector (toNSMenu value)
 
 -- | @- currentEvent@
 currentEvent :: IsNSApplication nsApplication => nsApplication -> IO (Id NSEvent)
-currentEvent nsApplication  =
-    sendMsg nsApplication (mkSelector "currentEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentEvent nsApplication =
+  sendMessage nsApplication currentEventSelector
 
 -- | @- appearance@
 appearance :: IsNSApplication nsApplication => nsApplication -> IO (Id NSAppearance)
-appearance nsApplication  =
-    sendMsg nsApplication (mkSelector "appearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+appearance nsApplication =
+  sendMessage nsApplication appearanceSelector
 
 -- | @- setAppearance:@
 setAppearance :: (IsNSApplication nsApplication, IsNSAppearance value) => nsApplication -> value -> IO ()
-setAppearance nsApplication  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsApplication (mkSelector "setAppearance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppearance nsApplication value =
+  sendMessage nsApplication setAppearanceSelector (toNSAppearance value)
 
 -- | @- effectiveAppearance@
 effectiveAppearance :: IsNSApplication nsApplication => nsApplication -> IO (Id NSAppearance)
-effectiveAppearance nsApplication  =
-    sendMsg nsApplication (mkSelector "effectiveAppearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectiveAppearance nsApplication =
+  sendMessage nsApplication effectiveAppearanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hide:@
-hideSelector :: Selector
+hideSelector :: Selector '[RawId] ()
 hideSelector = mkSelector "hide:"
 
 -- | @Selector@ for @unhide:@
-unhideSelector :: Selector
+unhideSelector :: Selector '[RawId] ()
 unhideSelector = mkSelector "unhide:"
 
 -- | @Selector@ for @unhideWithoutActivation@
-unhideWithoutActivationSelector :: Selector
+unhideWithoutActivationSelector :: Selector '[] ()
 unhideWithoutActivationSelector = mkSelector "unhideWithoutActivation"
 
 -- | @Selector@ for @windowWithWindowNumber:@
-windowWithWindowNumberSelector :: Selector
+windowWithWindowNumberSelector :: Selector '[CLong] (Id NSWindow)
 windowWithWindowNumberSelector = mkSelector "windowWithWindowNumber:"
 
 -- | @Selector@ for @deactivate@
-deactivateSelector :: Selector
+deactivateSelector :: Selector '[] ()
 deactivateSelector = mkSelector "deactivate"
 
 -- | @Selector@ for @activateIgnoringOtherApps:@
-activateIgnoringOtherAppsSelector :: Selector
+activateIgnoringOtherAppsSelector :: Selector '[Bool] ()
 activateIgnoringOtherAppsSelector = mkSelector "activateIgnoringOtherApps:"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @yieldActivationToApplication:@
-yieldActivationToApplicationSelector :: Selector
+yieldActivationToApplicationSelector :: Selector '[Id NSRunningApplication] ()
 yieldActivationToApplicationSelector = mkSelector "yieldActivationToApplication:"
 
 -- | @Selector@ for @yieldActivationToApplicationWithBundleIdentifier:@
-yieldActivationToApplicationWithBundleIdentifierSelector :: Selector
+yieldActivationToApplicationWithBundleIdentifierSelector :: Selector '[Id NSString] ()
 yieldActivationToApplicationWithBundleIdentifierSelector = mkSelector "yieldActivationToApplicationWithBundleIdentifier:"
 
 -- | @Selector@ for @hideOtherApplications:@
-hideOtherApplicationsSelector :: Selector
+hideOtherApplicationsSelector :: Selector '[RawId] ()
 hideOtherApplicationsSelector = mkSelector "hideOtherApplications:"
 
 -- | @Selector@ for @unhideAllApplications:@
-unhideAllApplicationsSelector :: Selector
+unhideAllApplicationsSelector :: Selector '[RawId] ()
 unhideAllApplicationsSelector = mkSelector "unhideAllApplications:"
 
 -- | @Selector@ for @finishLaunching@
-finishLaunchingSelector :: Selector
+finishLaunchingSelector :: Selector '[] ()
 finishLaunchingSelector = mkSelector "finishLaunching"
 
 -- | @Selector@ for @run@
-runSelector :: Selector
+runSelector :: Selector '[] ()
 runSelector = mkSelector "run"
 
 -- | @Selector@ for @runModalForWindow:@
-runModalForWindowSelector :: Selector
+runModalForWindowSelector :: Selector '[Id NSWindow] CLong
 runModalForWindowSelector = mkSelector "runModalForWindow:"
 
 -- | @Selector@ for @stop:@
-stopSelector :: Selector
+stopSelector :: Selector '[RawId] ()
 stopSelector = mkSelector "stop:"
 
 -- | @Selector@ for @stopModal@
-stopModalSelector :: Selector
+stopModalSelector :: Selector '[] ()
 stopModalSelector = mkSelector "stopModal"
 
 -- | @Selector@ for @stopModalWithCode:@
-stopModalWithCodeSelector :: Selector
+stopModalWithCodeSelector :: Selector '[CLong] ()
 stopModalWithCodeSelector = mkSelector "stopModalWithCode:"
 
 -- | @Selector@ for @abortModal@
-abortModalSelector :: Selector
+abortModalSelector :: Selector '[] ()
 abortModalSelector = mkSelector "abortModal"
 
 -- | @Selector@ for @beginModalSessionForWindow:@
-beginModalSessionForWindowSelector :: Selector
+beginModalSessionForWindowSelector :: Selector '[Id NSWindow] (Ptr ())
 beginModalSessionForWindowSelector = mkSelector "beginModalSessionForWindow:"
 
 -- | @Selector@ for @runModalSession:@
-runModalSessionSelector :: Selector
+runModalSessionSelector :: Selector '[Ptr ()] CLong
 runModalSessionSelector = mkSelector "runModalSession:"
 
 -- | @Selector@ for @endModalSession:@
-endModalSessionSelector :: Selector
+endModalSessionSelector :: Selector '[Ptr ()] ()
 endModalSessionSelector = mkSelector "endModalSession:"
 
 -- | @Selector@ for @terminate:@
-terminateSelector :: Selector
+terminateSelector :: Selector '[RawId] ()
 terminateSelector = mkSelector "terminate:"
 
 -- | @Selector@ for @requestUserAttention:@
-requestUserAttentionSelector :: Selector
+requestUserAttentionSelector :: Selector '[NSRequestUserAttentionType] CLong
 requestUserAttentionSelector = mkSelector "requestUserAttention:"
 
 -- | @Selector@ for @cancelUserAttentionRequest:@
-cancelUserAttentionRequestSelector :: Selector
+cancelUserAttentionRequestSelector :: Selector '[CLong] ()
 cancelUserAttentionRequestSelector = mkSelector "cancelUserAttentionRequest:"
 
 -- | @Selector@ for @enumerateWindowsWithOptions:usingBlock:@
-enumerateWindowsWithOptions_usingBlockSelector :: Selector
+enumerateWindowsWithOptions_usingBlockSelector :: Selector '[NSWindowListOptions, Ptr ()] ()
 enumerateWindowsWithOptions_usingBlockSelector = mkSelector "enumerateWindowsWithOptions:usingBlock:"
 
 -- | @Selector@ for @preventWindowOrdering@
-preventWindowOrderingSelector :: Selector
+preventWindowOrderingSelector :: Selector '[] ()
 preventWindowOrderingSelector = mkSelector "preventWindowOrdering"
 
 -- | @Selector@ for @setWindowsNeedUpdate:@
-setWindowsNeedUpdateSelector :: Selector
+setWindowsNeedUpdateSelector :: Selector '[Bool] ()
 setWindowsNeedUpdateSelector = mkSelector "setWindowsNeedUpdate:"
 
 -- | @Selector@ for @updateWindows@
-updateWindowsSelector :: Selector
+updateWindowsSelector :: Selector '[] ()
 updateWindowsSelector = mkSelector "updateWindows"
 
 -- | @Selector@ for @activationPolicy@
-activationPolicySelector :: Selector
+activationPolicySelector :: Selector '[] NSApplicationActivationPolicy
 activationPolicySelector = mkSelector "activationPolicy"
 
 -- | @Selector@ for @setActivationPolicy:@
-setActivationPolicySelector :: Selector
+setActivationPolicySelector :: Selector '[NSApplicationActivationPolicy] Bool
 setActivationPolicySelector = mkSelector "setActivationPolicy:"
 
 -- | @Selector@ for @reportException:@
-reportExceptionSelector :: Selector
+reportExceptionSelector :: Selector '[Id NSException] ()
 reportExceptionSelector = mkSelector "reportException:"
 
 -- | @Selector@ for @detachDrawingThread:toTarget:withObject:@
-detachDrawingThread_toTarget_withObjectSelector :: Selector
+detachDrawingThread_toTarget_withObjectSelector :: Selector '[Sel, RawId, RawId] ()
 detachDrawingThread_toTarget_withObjectSelector = mkSelector "detachDrawingThread:toTarget:withObject:"
 
 -- | @Selector@ for @replyToApplicationShouldTerminate:@
-replyToApplicationShouldTerminateSelector :: Selector
+replyToApplicationShouldTerminateSelector :: Selector '[Bool] ()
 replyToApplicationShouldTerminateSelector = mkSelector "replyToApplicationShouldTerminate:"
 
 -- | @Selector@ for @replyToOpenOrPrint:@
-replyToOpenOrPrintSelector :: Selector
+replyToOpenOrPrintSelector :: Selector '[NSApplicationDelegateReply] ()
 replyToOpenOrPrintSelector = mkSelector "replyToOpenOrPrint:"
 
 -- | @Selector@ for @orderFrontCharacterPalette:@
-orderFrontCharacterPaletteSelector :: Selector
+orderFrontCharacterPaletteSelector :: Selector '[RawId] ()
 orderFrontCharacterPaletteSelector = mkSelector "orderFrontCharacterPalette:"
 
 -- | @Selector@ for @extendStateRestoration@
-extendStateRestorationSelector :: Selector
+extendStateRestorationSelector :: Selector '[] ()
 extendStateRestorationSelector = mkSelector "extendStateRestoration"
 
 -- | @Selector@ for @completeStateRestoration@
-completeStateRestorationSelector :: Selector
+completeStateRestorationSelector :: Selector '[] ()
 completeStateRestorationSelector = mkSelector "completeStateRestoration"
 
 -- | @Selector@ for @restoreWindowWithIdentifier:state:completionHandler:@
-restoreWindowWithIdentifier_state_completionHandlerSelector :: Selector
+restoreWindowWithIdentifier_state_completionHandlerSelector :: Selector '[Id NSString, Id NSCoder, Ptr ()] Bool
 restoreWindowWithIdentifier_state_completionHandlerSelector = mkSelector "restoreWindowWithIdentifier:state:completionHandler:"
 
 -- | @Selector@ for @registerUserInterfaceItemSearchHandler:@
-registerUserInterfaceItemSearchHandlerSelector :: Selector
+registerUserInterfaceItemSearchHandlerSelector :: Selector '[RawId] ()
 registerUserInterfaceItemSearchHandlerSelector = mkSelector "registerUserInterfaceItemSearchHandler:"
 
 -- | @Selector@ for @unregisterUserInterfaceItemSearchHandler:@
-unregisterUserInterfaceItemSearchHandlerSelector :: Selector
+unregisterUserInterfaceItemSearchHandlerSelector :: Selector '[RawId] ()
 unregisterUserInterfaceItemSearchHandlerSelector = mkSelector "unregisterUserInterfaceItemSearchHandler:"
 
 -- | @Selector@ for @searchString:inUserInterfaceItemString:searchRange:foundRange:@
-searchString_inUserInterfaceItemString_searchRange_foundRangeSelector :: Selector
+searchString_inUserInterfaceItemString_searchRange_foundRangeSelector :: Selector '[Id NSString, Id NSString, NSRange, Ptr NSRange] Bool
 searchString_inUserInterfaceItemString_searchRange_foundRangeSelector = mkSelector "searchString:inUserInterfaceItemString:searchRange:foundRange:"
 
 -- | @Selector@ for @runPageLayout:@
-runPageLayoutSelector :: Selector
+runPageLayoutSelector :: Selector '[RawId] ()
 runPageLayoutSelector = mkSelector "runPageLayout:"
 
 -- | @Selector@ for @orderFrontColorPanel:@
-orderFrontColorPanelSelector :: Selector
+orderFrontColorPanelSelector :: Selector '[RawId] ()
 orderFrontColorPanelSelector = mkSelector "orderFrontColorPanel:"
 
 -- | @Selector@ for @toggleTouchBarCustomizationPalette:@
-toggleTouchBarCustomizationPaletteSelector :: Selector
+toggleTouchBarCustomizationPaletteSelector :: Selector '[RawId] ()
 toggleTouchBarCustomizationPaletteSelector = mkSelector "toggleTouchBarCustomizationPalette:"
 
 -- | @Selector@ for @activateContextHelpMode:@
-activateContextHelpModeSelector :: Selector
+activateContextHelpModeSelector :: Selector '[RawId] ()
 activateContextHelpModeSelector = mkSelector "activateContextHelpMode:"
 
 -- | @Selector@ for @showHelp:@
-showHelpSelector :: Selector
+showHelpSelector :: Selector '[RawId] ()
 showHelpSelector = mkSelector "showHelp:"
 
 -- | @Selector@ for @runModalForWindow:relativeToWindow:@
-runModalForWindow_relativeToWindowSelector :: Selector
+runModalForWindow_relativeToWindowSelector :: Selector '[Id NSWindow, Id NSWindow] CLong
 runModalForWindow_relativeToWindowSelector = mkSelector "runModalForWindow:relativeToWindow:"
 
 -- | @Selector@ for @beginModalSessionForWindow:relativeToWindow:@
-beginModalSessionForWindow_relativeToWindowSelector :: Selector
+beginModalSessionForWindow_relativeToWindowSelector :: Selector '[Id NSWindow, Id NSWindow] (Ptr ())
 beginModalSessionForWindow_relativeToWindowSelector = mkSelector "beginModalSessionForWindow:relativeToWindow:"
 
 -- | @Selector@ for @application:printFiles:@
-application_printFilesSelector :: Selector
+application_printFilesSelector :: Selector '[Id NSApplication, Id NSArray] ()
 application_printFilesSelector = mkSelector "application:printFiles:"
 
 -- | @Selector@ for @beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector
+beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSWindow, Id NSWindow, RawId, Sel, Ptr ()] ()
 beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector = mkSelector "beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @endSheet:@
-endSheetSelector :: Selector
+endSheetSelector :: Selector '[Id NSWindow] ()
 endSheetSelector = mkSelector "endSheet:"
 
 -- | @Selector@ for @endSheet:returnCode:@
-endSheet_returnCodeSelector :: Selector
+endSheet_returnCodeSelector :: Selector '[Id NSWindow, CLong] ()
 endSheet_returnCodeSelector = mkSelector "endSheet:returnCode:"
 
 -- | @Selector@ for @makeWindowsPerform:inOrder:@
-makeWindowsPerform_inOrderSelector :: Selector
+makeWindowsPerform_inOrderSelector :: Selector '[Sel, Bool] (Id NSWindow)
 makeWindowsPerform_inOrderSelector = mkSelector "makeWindowsPerform:inOrder:"
 
 -- | @Selector@ for @registerForRemoteNotifications@
-registerForRemoteNotificationsSelector :: Selector
+registerForRemoteNotificationsSelector :: Selector '[] ()
 registerForRemoteNotificationsSelector = mkSelector "registerForRemoteNotifications"
 
 -- | @Selector@ for @unregisterForRemoteNotifications@
-unregisterForRemoteNotificationsSelector :: Selector
+unregisterForRemoteNotificationsSelector :: Selector '[] ()
 unregisterForRemoteNotificationsSelector = mkSelector "unregisterForRemoteNotifications"
 
 -- | @Selector@ for @registerForRemoteNotificationTypes:@
-registerForRemoteNotificationTypesSelector :: Selector
+registerForRemoteNotificationTypesSelector :: Selector '[NSRemoteNotificationType] ()
 registerForRemoteNotificationTypesSelector = mkSelector "registerForRemoteNotificationTypes:"
 
 -- | @Selector@ for @disableRelaunchOnLogin@
-disableRelaunchOnLoginSelector :: Selector
+disableRelaunchOnLoginSelector :: Selector '[] ()
 disableRelaunchOnLoginSelector = mkSelector "disableRelaunchOnLogin"
 
 -- | @Selector@ for @enableRelaunchOnLogin@
-enableRelaunchOnLoginSelector :: Selector
+enableRelaunchOnLoginSelector :: Selector '[] ()
 enableRelaunchOnLoginSelector = mkSelector "enableRelaunchOnLogin"
 
 -- | @Selector@ for @orderFrontStandardAboutPanel:@
-orderFrontStandardAboutPanelSelector :: Selector
+orderFrontStandardAboutPanelSelector :: Selector '[RawId] ()
 orderFrontStandardAboutPanelSelector = mkSelector "orderFrontStandardAboutPanel:"
 
 -- | @Selector@ for @orderFrontStandardAboutPanelWithOptions:@
-orderFrontStandardAboutPanelWithOptionsSelector :: Selector
+orderFrontStandardAboutPanelWithOptionsSelector :: Selector '[Id NSDictionary] ()
 orderFrontStandardAboutPanelWithOptionsSelector = mkSelector "orderFrontStandardAboutPanelWithOptions:"
 
 -- | @Selector@ for @registerServicesMenuSendTypes:returnTypes:@
-registerServicesMenuSendTypes_returnTypesSelector :: Selector
+registerServicesMenuSendTypes_returnTypesSelector :: Selector '[Id NSArray, Id NSArray] ()
 registerServicesMenuSendTypes_returnTypesSelector = mkSelector "registerServicesMenuSendTypes:returnTypes:"
 
 -- | @Selector@ for @arrangeInFront:@
-arrangeInFrontSelector :: Selector
+arrangeInFrontSelector :: Selector '[RawId] ()
 arrangeInFrontSelector = mkSelector "arrangeInFront:"
 
 -- | @Selector@ for @removeWindowsItem:@
-removeWindowsItemSelector :: Selector
+removeWindowsItemSelector :: Selector '[Id NSWindow] ()
 removeWindowsItemSelector = mkSelector "removeWindowsItem:"
 
 -- | @Selector@ for @addWindowsItem:title:filename:@
-addWindowsItem_title_filenameSelector :: Selector
+addWindowsItem_title_filenameSelector :: Selector '[Id NSWindow, Id NSString, Bool] ()
 addWindowsItem_title_filenameSelector = mkSelector "addWindowsItem:title:filename:"
 
 -- | @Selector@ for @changeWindowsItem:title:filename:@
-changeWindowsItem_title_filenameSelector :: Selector
+changeWindowsItem_title_filenameSelector :: Selector '[Id NSWindow, Id NSString, Bool] ()
 changeWindowsItem_title_filenameSelector = mkSelector "changeWindowsItem:title:filename:"
 
 -- | @Selector@ for @updateWindowsItem:@
-updateWindowsItemSelector :: Selector
+updateWindowsItemSelector :: Selector '[Id NSWindow] ()
 updateWindowsItemSelector = mkSelector "updateWindowsItem:"
 
 -- | @Selector@ for @miniaturizeAll:@
-miniaturizeAllSelector :: Selector
+miniaturizeAllSelector :: Selector '[RawId] ()
 miniaturizeAllSelector = mkSelector "miniaturizeAll:"
 
 -- | @Selector@ for @sendAction:to:from:@
-sendAction_to_fromSelector :: Selector
+sendAction_to_fromSelector :: Selector '[Sel, RawId, RawId] Bool
 sendAction_to_fromSelector = mkSelector "sendAction:to:from:"
 
 -- | @Selector@ for @targetForAction:@
-targetForActionSelector :: Selector
+targetForActionSelector :: Selector '[Sel] RawId
 targetForActionSelector = mkSelector "targetForAction:"
 
 -- | @Selector@ for @targetForAction:to:from:@
-targetForAction_to_fromSelector :: Selector
+targetForAction_to_fromSelector :: Selector '[Sel, RawId, RawId] RawId
 targetForAction_to_fromSelector = mkSelector "targetForAction:to:from:"
 
 -- | @Selector@ for @tryToPerform:with:@
-tryToPerform_withSelector :: Selector
+tryToPerform_withSelector :: Selector '[Sel, RawId] Bool
 tryToPerform_withSelector = mkSelector "tryToPerform:with:"
 
 -- | @Selector@ for @validRequestorForSendType:returnType:@
-validRequestorForSendType_returnTypeSelector :: Selector
+validRequestorForSendType_returnTypeSelector :: Selector '[Id NSString, Id NSString] RawId
 validRequestorForSendType_returnTypeSelector = mkSelector "validRequestorForSendType:returnType:"
 
 -- | @Selector@ for @sendEvent:@
-sendEventSelector :: Selector
+sendEventSelector :: Selector '[Id NSEvent] ()
 sendEventSelector = mkSelector "sendEvent:"
 
 -- | @Selector@ for @postEvent:atStart:@
-postEvent_atStartSelector :: Selector
+postEvent_atStartSelector :: Selector '[Id NSEvent, Bool] ()
 postEvent_atStartSelector = mkSelector "postEvent:atStart:"
 
 -- | @Selector@ for @nextEventMatchingMask:untilDate:inMode:dequeue:@
-nextEventMatchingMask_untilDate_inMode_dequeueSelector :: Selector
+nextEventMatchingMask_untilDate_inMode_dequeueSelector :: Selector '[NSEventMask, Id NSDate, Id NSString, Bool] (Id NSEvent)
 nextEventMatchingMask_untilDate_inMode_dequeueSelector = mkSelector "nextEventMatchingMask:untilDate:inMode:dequeue:"
 
 -- | @Selector@ for @discardEventsMatchingMask:beforeEvent:@
-discardEventsMatchingMask_beforeEventSelector :: Selector
+discardEventsMatchingMask_beforeEventSelector :: Selector '[NSEventMask, Id NSEvent] ()
 discardEventsMatchingMask_beforeEventSelector = mkSelector "discardEventsMatchingMask:beforeEvent:"
 
 -- | @Selector@ for @sharedApplication@
-sharedApplicationSelector :: Selector
+sharedApplicationSelector :: Selector '[] (Id NSApplication)
 sharedApplicationSelector = mkSelector "sharedApplication"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mainWindow@
-mainWindowSelector :: Selector
+mainWindowSelector :: Selector '[] (Id NSWindow)
 mainWindowSelector = mkSelector "mainWindow"
 
 -- | @Selector@ for @keyWindow@
-keyWindowSelector :: Selector
+keyWindowSelector :: Selector '[] (Id NSWindow)
 keyWindowSelector = mkSelector "keyWindow"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @applicationShouldSuppressHighDynamicRangeContent@
-applicationShouldSuppressHighDynamicRangeContentSelector :: Selector
+applicationShouldSuppressHighDynamicRangeContentSelector :: Selector '[] Bool
 applicationShouldSuppressHighDynamicRangeContentSelector = mkSelector "applicationShouldSuppressHighDynamicRangeContent"
 
 -- | @Selector@ for @modalWindow@
-modalWindowSelector :: Selector
+modalWindowSelector :: Selector '[] (Id NSWindow)
 modalWindowSelector = mkSelector "modalWindow"
 
 -- | @Selector@ for @windows@
-windowsSelector :: Selector
+windowsSelector :: Selector '[] (Id NSArray)
 windowsSelector = mkSelector "windows"
 
 -- | @Selector@ for @mainMenu@
-mainMenuSelector :: Selector
+mainMenuSelector :: Selector '[] (Id NSMenu)
 mainMenuSelector = mkSelector "mainMenu"
 
 -- | @Selector@ for @setMainMenu:@
-setMainMenuSelector :: Selector
+setMainMenuSelector :: Selector '[Id NSMenu] ()
 setMainMenuSelector = mkSelector "setMainMenu:"
 
 -- | @Selector@ for @helpMenu@
-helpMenuSelector :: Selector
+helpMenuSelector :: Selector '[] (Id NSMenu)
 helpMenuSelector = mkSelector "helpMenu"
 
 -- | @Selector@ for @setHelpMenu:@
-setHelpMenuSelector :: Selector
+setHelpMenuSelector :: Selector '[Id NSMenu] ()
 setHelpMenuSelector = mkSelector "setHelpMenu:"
 
 -- | @Selector@ for @applicationIconImage@
-applicationIconImageSelector :: Selector
+applicationIconImageSelector :: Selector '[] (Id NSImage)
 applicationIconImageSelector = mkSelector "applicationIconImage"
 
 -- | @Selector@ for @setApplicationIconImage:@
-setApplicationIconImageSelector :: Selector
+setApplicationIconImageSelector :: Selector '[Id NSImage] ()
 setApplicationIconImageSelector = mkSelector "setApplicationIconImage:"
 
 -- | @Selector@ for @dockTile@
-dockTileSelector :: Selector
+dockTileSelector :: Selector '[] (Id NSDockTile)
 dockTileSelector = mkSelector "dockTile"
 
 -- | @Selector@ for @presentationOptions@
-presentationOptionsSelector :: Selector
+presentationOptionsSelector :: Selector '[] NSApplicationPresentationOptions
 presentationOptionsSelector = mkSelector "presentationOptions"
 
 -- | @Selector@ for @setPresentationOptions:@
-setPresentationOptionsSelector :: Selector
+setPresentationOptionsSelector :: Selector '[NSApplicationPresentationOptions] ()
 setPresentationOptionsSelector = mkSelector "setPresentationOptions:"
 
 -- | @Selector@ for @currentSystemPresentationOptions@
-currentSystemPresentationOptionsSelector :: Selector
+currentSystemPresentationOptionsSelector :: Selector '[] NSApplicationPresentationOptions
 currentSystemPresentationOptionsSelector = mkSelector "currentSystemPresentationOptions"
 
 -- | @Selector@ for @occlusionState@
-occlusionStateSelector :: Selector
+occlusionStateSelector :: Selector '[] NSApplicationOcclusionState
 occlusionStateSelector = mkSelector "occlusionState"
 
 -- | @Selector@ for @protectedDataAvailable@
-protectedDataAvailableSelector :: Selector
+protectedDataAvailableSelector :: Selector '[] Bool
 protectedDataAvailableSelector = mkSelector "protectedDataAvailable"
 
 -- | @Selector@ for @orderedDocuments@
-orderedDocumentsSelector :: Selector
+orderedDocumentsSelector :: Selector '[] (Id NSArray)
 orderedDocumentsSelector = mkSelector "orderedDocuments"
 
 -- | @Selector@ for @orderedWindows@
-orderedWindowsSelector :: Selector
+orderedWindowsSelector :: Selector '[] (Id NSArray)
 orderedWindowsSelector = mkSelector "orderedWindows"
 
 -- | @Selector@ for @automaticCustomizeTouchBarMenuItemEnabled@
-automaticCustomizeTouchBarMenuItemEnabledSelector :: Selector
+automaticCustomizeTouchBarMenuItemEnabledSelector :: Selector '[] Bool
 automaticCustomizeTouchBarMenuItemEnabledSelector = mkSelector "automaticCustomizeTouchBarMenuItemEnabled"
 
 -- | @Selector@ for @setAutomaticCustomizeTouchBarMenuItemEnabled:@
-setAutomaticCustomizeTouchBarMenuItemEnabledSelector :: Selector
+setAutomaticCustomizeTouchBarMenuItemEnabledSelector :: Selector '[Bool] ()
 setAutomaticCustomizeTouchBarMenuItemEnabledSelector = mkSelector "setAutomaticCustomizeTouchBarMenuItemEnabled:"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id NSGraphicsContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @registeredForRemoteNotifications@
-registeredForRemoteNotificationsSelector :: Selector
+registeredForRemoteNotificationsSelector :: Selector '[] Bool
 registeredForRemoteNotificationsSelector = mkSelector "registeredForRemoteNotifications"
 
 -- | @Selector@ for @enabledRemoteNotificationTypes@
-enabledRemoteNotificationTypesSelector :: Selector
+enabledRemoteNotificationTypesSelector :: Selector '[] NSRemoteNotificationType
 enabledRemoteNotificationTypesSelector = mkSelector "enabledRemoteNotificationTypes"
 
 -- | @Selector@ for @userInterfaceLayoutDirection@
-userInterfaceLayoutDirectionSelector :: Selector
+userInterfaceLayoutDirectionSelector :: Selector '[] NSUserInterfaceLayoutDirection
 userInterfaceLayoutDirectionSelector = mkSelector "userInterfaceLayoutDirection"
 
 -- | @Selector@ for @servicesProvider@
-servicesProviderSelector :: Selector
+servicesProviderSelector :: Selector '[] RawId
 servicesProviderSelector = mkSelector "servicesProvider"
 
 -- | @Selector@ for @setServicesProvider:@
-setServicesProviderSelector :: Selector
+setServicesProviderSelector :: Selector '[RawId] ()
 setServicesProviderSelector = mkSelector "setServicesProvider:"
 
 -- | @Selector@ for @servicesMenu@
-servicesMenuSelector :: Selector
+servicesMenuSelector :: Selector '[] (Id NSMenu)
 servicesMenuSelector = mkSelector "servicesMenu"
 
 -- | @Selector@ for @setServicesMenu:@
-setServicesMenuSelector :: Selector
+setServicesMenuSelector :: Selector '[Id NSMenu] ()
 setServicesMenuSelector = mkSelector "setServicesMenu:"
 
 -- | @Selector@ for @fullKeyboardAccessEnabled@
-fullKeyboardAccessEnabledSelector :: Selector
+fullKeyboardAccessEnabledSelector :: Selector '[] Bool
 fullKeyboardAccessEnabledSelector = mkSelector "fullKeyboardAccessEnabled"
 
 -- | @Selector@ for @windowsMenu@
-windowsMenuSelector :: Selector
+windowsMenuSelector :: Selector '[] (Id NSMenu)
 windowsMenuSelector = mkSelector "windowsMenu"
 
 -- | @Selector@ for @setWindowsMenu:@
-setWindowsMenuSelector :: Selector
+setWindowsMenuSelector :: Selector '[Id NSMenu] ()
 setWindowsMenuSelector = mkSelector "setWindowsMenu:"
 
 -- | @Selector@ for @currentEvent@
-currentEventSelector :: Selector
+currentEventSelector :: Selector '[] (Id NSEvent)
 currentEventSelector = mkSelector "currentEvent"
 
 -- | @Selector@ for @appearance@
-appearanceSelector :: Selector
+appearanceSelector :: Selector '[] (Id NSAppearance)
 appearanceSelector = mkSelector "appearance"
 
 -- | @Selector@ for @setAppearance:@
-setAppearanceSelector :: Selector
+setAppearanceSelector :: Selector '[Id NSAppearance] ()
 setAppearanceSelector = mkSelector "setAppearance:"
 
 -- | @Selector@ for @effectiveAppearance@
-effectiveAppearanceSelector :: Selector
+effectiveAppearanceSelector :: Selector '[] (Id NSAppearance)
 effectiveAppearanceSelector = mkSelector "effectiveAppearance"
 

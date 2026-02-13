@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.NetworkExtension.NEDNSOverHTTPSSettings
   , setServerURL
   , identityReference
   , setIdentityReference
-  , serverURLSelector
-  , setServerURLSelector
   , identityReferenceSelector
+  , serverURLSelector
   , setIdentityReferenceSelector
+  , setServerURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- serverURL@
 serverURL :: IsNEDNSOverHTTPSSettings nednsOverHTTPSSettings => nednsOverHTTPSSettings -> IO (Id NSURL)
-serverURL nednsOverHTTPSSettings  =
-    sendMsg nednsOverHTTPSSettings (mkSelector "serverURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverURL nednsOverHTTPSSettings =
+  sendMessage nednsOverHTTPSSettings serverURLSelector
 
 -- | serverURL
 --
@@ -48,9 +45,8 @@ serverURL nednsOverHTTPSSettings  =
 --
 -- ObjC selector: @- setServerURL:@
 setServerURL :: (IsNEDNSOverHTTPSSettings nednsOverHTTPSSettings, IsNSURL value) => nednsOverHTTPSSettings -> value -> IO ()
-setServerURL nednsOverHTTPSSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsOverHTTPSSettings (mkSelector "setServerURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerURL nednsOverHTTPSSettings value =
+  sendMessage nednsOverHTTPSSettings setServerURLSelector (toNSURL value)
 
 -- | identityReference
 --
@@ -58,8 +54,8 @@ setServerURL nednsOverHTTPSSettings  value =
 --
 -- ObjC selector: @- identityReference@
 identityReference :: IsNEDNSOverHTTPSSettings nednsOverHTTPSSettings => nednsOverHTTPSSettings -> IO (Id NSData)
-identityReference nednsOverHTTPSSettings  =
-    sendMsg nednsOverHTTPSSettings (mkSelector "identityReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityReference nednsOverHTTPSSettings =
+  sendMessage nednsOverHTTPSSettings identityReferenceSelector
 
 -- | identityReference
 --
@@ -67,27 +63,26 @@ identityReference nednsOverHTTPSSettings  =
 --
 -- ObjC selector: @- setIdentityReference:@
 setIdentityReference :: (IsNEDNSOverHTTPSSettings nednsOverHTTPSSettings, IsNSData value) => nednsOverHTTPSSettings -> value -> IO ()
-setIdentityReference nednsOverHTTPSSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsOverHTTPSSettings (mkSelector "setIdentityReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentityReference nednsOverHTTPSSettings value =
+  sendMessage nednsOverHTTPSSettings setIdentityReferenceSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @serverURL@
-serverURLSelector :: Selector
+serverURLSelector :: Selector '[] (Id NSURL)
 serverURLSelector = mkSelector "serverURL"
 
 -- | @Selector@ for @setServerURL:@
-setServerURLSelector :: Selector
+setServerURLSelector :: Selector '[Id NSURL] ()
 setServerURLSelector = mkSelector "setServerURL:"
 
 -- | @Selector@ for @identityReference@
-identityReferenceSelector :: Selector
+identityReferenceSelector :: Selector '[] (Id NSData)
 identityReferenceSelector = mkSelector "identityReference"
 
 -- | @Selector@ for @setIdentityReference:@
-setIdentityReferenceSelector :: Selector
+setIdentityReferenceSelector :: Selector '[Id NSData] ()
 setIdentityReferenceSelector = mkSelector "setIdentityReference:"
 

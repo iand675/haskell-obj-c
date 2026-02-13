@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.AppKit.NSCustomImageRep
   , drawingHandler
   , drawSelector
   , delegate
-  , initWithSize_flipped_drawingHandlerSelector
-  , initWithDrawSelector_delegateSelector
-  , drawingHandlerSelector
-  , drawSelectorSelector
   , delegateSelector
+  , drawSelectorSelector
+  , drawingHandlerSelector
+  , initWithDrawSelector_delegateSelector
+  , initWithSize_flipped_drawingHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,50 +35,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSize:flipped:drawingHandler:@
 initWithSize_flipped_drawingHandler :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> NSSize -> Bool -> Ptr () -> IO (Id NSCustomImageRep)
-initWithSize_flipped_drawingHandler nsCustomImageRep  size drawingHandlerShouldBeCalledWithFlippedContext drawingHandler =
-    sendMsg nsCustomImageRep (mkSelector "initWithSize:flipped:drawingHandler:") (retPtr retVoid) [argNSSize size, argCULong (if drawingHandlerShouldBeCalledWithFlippedContext then 1 else 0), argPtr (castPtr drawingHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithSize_flipped_drawingHandler nsCustomImageRep size drawingHandlerShouldBeCalledWithFlippedContext drawingHandler =
+  sendOwnedMessage nsCustomImageRep initWithSize_flipped_drawingHandlerSelector size drawingHandlerShouldBeCalledWithFlippedContext drawingHandler
 
 -- | @- initWithDrawSelector:delegate:@
-initWithDrawSelector_delegate :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> Selector -> RawId -> IO (Id NSCustomImageRep)
-initWithDrawSelector_delegate nsCustomImageRep  selector delegate =
-    sendMsg nsCustomImageRep (mkSelector "initWithDrawSelector:delegate:") (retPtr retVoid) [argPtr (unSelector selector), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDrawSelector_delegate :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> Sel -> RawId -> IO (Id NSCustomImageRep)
+initWithDrawSelector_delegate nsCustomImageRep selector delegate =
+  sendOwnedMessage nsCustomImageRep initWithDrawSelector_delegateSelector selector delegate
 
 -- | @- drawingHandler@
 drawingHandler :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> IO (Ptr ())
-drawingHandler nsCustomImageRep  =
-    fmap castPtr $ sendMsg nsCustomImageRep (mkSelector "drawingHandler") (retPtr retVoid) []
+drawingHandler nsCustomImageRep =
+  sendMessage nsCustomImageRep drawingHandlerSelector
 
 -- | @- drawSelector@
-drawSelector :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> IO Selector
-drawSelector nsCustomImageRep  =
-    fmap (Selector . castPtr) $ sendMsg nsCustomImageRep (mkSelector "drawSelector") (retPtr retVoid) []
+drawSelector :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> IO Sel
+drawSelector nsCustomImageRep =
+  sendMessage nsCustomImageRep drawSelectorSelector
 
 -- | @- delegate@
 delegate :: IsNSCustomImageRep nsCustomImageRep => nsCustomImageRep -> IO RawId
-delegate nsCustomImageRep  =
-    fmap (RawId . castPtr) $ sendMsg nsCustomImageRep (mkSelector "delegate") (retPtr retVoid) []
+delegate nsCustomImageRep =
+  sendMessage nsCustomImageRep delegateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSize:flipped:drawingHandler:@
-initWithSize_flipped_drawingHandlerSelector :: Selector
+initWithSize_flipped_drawingHandlerSelector :: Selector '[NSSize, Bool, Ptr ()] (Id NSCustomImageRep)
 initWithSize_flipped_drawingHandlerSelector = mkSelector "initWithSize:flipped:drawingHandler:"
 
 -- | @Selector@ for @initWithDrawSelector:delegate:@
-initWithDrawSelector_delegateSelector :: Selector
+initWithDrawSelector_delegateSelector :: Selector '[Sel, RawId] (Id NSCustomImageRep)
 initWithDrawSelector_delegateSelector = mkSelector "initWithDrawSelector:delegate:"
 
 -- | @Selector@ for @drawingHandler@
-drawingHandlerSelector :: Selector
+drawingHandlerSelector :: Selector '[] (Ptr ())
 drawingHandlerSelector = mkSelector "drawingHandler"
 
 -- | @Selector@ for @drawSelector@
-drawSelectorSelector :: Selector
+drawSelectorSelector :: Selector '[] Sel
 drawSelectorSelector = mkSelector "drawSelector"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 

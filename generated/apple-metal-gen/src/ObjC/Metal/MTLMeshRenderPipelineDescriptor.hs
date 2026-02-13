@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -62,57 +63,57 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
   , setFragmentLinkedFunctions
   , shaderValidation
   , setShaderValidation
-  , resetSelector
-  , labelSelector
-  , setLabelSelector
-  , objectFunctionSelector
-  , setObjectFunctionSelector
-  , meshFunctionSelector
-  , setMeshFunctionSelector
-  , fragmentFunctionSelector
-  , setFragmentFunctionSelector
-  , maxTotalThreadsPerObjectThreadgroupSelector
-  , setMaxTotalThreadsPerObjectThreadgroupSelector
-  , maxTotalThreadsPerMeshThreadgroupSelector
-  , setMaxTotalThreadsPerMeshThreadgroupSelector
-  , objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , payloadMemoryLengthSelector
-  , setPayloadMemoryLengthSelector
-  , maxTotalThreadgroupsPerMeshGridSelector
-  , setMaxTotalThreadgroupsPerMeshGridSelector
-  , objectBuffersSelector
-  , meshBuffersSelector
-  , fragmentBuffersSelector
-  , rasterSampleCountSelector
-  , setRasterSampleCountSelector
   , alphaToCoverageEnabledSelector
-  , setAlphaToCoverageEnabledSelector
   , alphaToOneEnabledSelector
-  , setAlphaToOneEnabledSelector
-  , rasterizationEnabledSelector
-  , setRasterizationEnabledSelector
-  , maxVertexAmplificationCountSelector
-  , setMaxVertexAmplificationCountSelector
+  , binaryArchivesSelector
   , colorAttachmentsSelector
   , depthAttachmentPixelFormatSelector
-  , setDepthAttachmentPixelFormatSelector
-  , stencilAttachmentPixelFormatSelector
-  , setStencilAttachmentPixelFormatSelector
-  , supportIndirectCommandBuffersSelector
-  , setSupportIndirectCommandBuffersSelector
-  , binaryArchivesSelector
-  , setBinaryArchivesSelector
-  , objectLinkedFunctionsSelector
-  , setObjectLinkedFunctionsSelector
-  , meshLinkedFunctionsSelector
-  , setMeshLinkedFunctionsSelector
+  , fragmentBuffersSelector
+  , fragmentFunctionSelector
   , fragmentLinkedFunctionsSelector
+  , labelSelector
+  , maxTotalThreadgroupsPerMeshGridSelector
+  , maxTotalThreadsPerMeshThreadgroupSelector
+  , maxTotalThreadsPerObjectThreadgroupSelector
+  , maxVertexAmplificationCountSelector
+  , meshBuffersSelector
+  , meshFunctionSelector
+  , meshLinkedFunctionsSelector
+  , meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , objectBuffersSelector
+  , objectFunctionSelector
+  , objectLinkedFunctionsSelector
+  , objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , payloadMemoryLengthSelector
+  , rasterSampleCountSelector
+  , rasterizationEnabledSelector
+  , resetSelector
+  , setAlphaToCoverageEnabledSelector
+  , setAlphaToOneEnabledSelector
+  , setBinaryArchivesSelector
+  , setDepthAttachmentPixelFormatSelector
+  , setFragmentFunctionSelector
   , setFragmentLinkedFunctionsSelector
-  , shaderValidationSelector
+  , setLabelSelector
+  , setMaxTotalThreadgroupsPerMeshGridSelector
+  , setMaxTotalThreadsPerMeshThreadgroupSelector
+  , setMaxTotalThreadsPerObjectThreadgroupSelector
+  , setMaxVertexAmplificationCountSelector
+  , setMeshFunctionSelector
+  , setMeshLinkedFunctionsSelector
+  , setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , setObjectFunctionSelector
+  , setObjectLinkedFunctionsSelector
+  , setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , setPayloadMemoryLengthSelector
+  , setRasterSampleCountSelector
+  , setRasterizationEnabledSelector
   , setShaderValidationSelector
+  , setStencilAttachmentPixelFormatSelector
+  , setSupportIndirectCommandBuffersSelector
+  , shaderValidationSelector
+  , stencilAttachmentPixelFormatSelector
+  , supportIndirectCommandBuffersSelector
 
   -- * Enum types
   , MTLPixelFormat(MTLPixelFormat)
@@ -263,15 +264,11 @@ module ObjC.Metal.MTLMeshRenderPipelineDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -285,8 +282,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reset@
 reset :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO ()
-reset mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "reset") retVoid []
+reset mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor resetSelector
 
 -- | label
 --
@@ -294,8 +291,8 @@ reset mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- label@
 label :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id NSString)
-label mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor labelSelector
 
 -- | label
 --
@@ -303,9 +300,8 @@ label mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsNSString value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
-setLabel mtlMeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setLabelSelector (toNSString value)
 
 -- | objectFunction
 --
@@ -313,8 +309,8 @@ setLabel mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- objectFunction@
 objectFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
-objectFunction mtlMeshRenderPipelineDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "objectFunction") (retPtr retVoid) []
+objectFunction mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor objectFunctionSelector
 
 -- | objectFunction
 --
@@ -322,8 +318,8 @@ objectFunction mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setObjectFunction:@
 setObjectFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
-setObjectFunction mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setObjectFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setObjectFunction mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setObjectFunctionSelector value
 
 -- | meshFunction
 --
@@ -331,8 +327,8 @@ setObjectFunction mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- meshFunction@
 meshFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
-meshFunction mtlMeshRenderPipelineDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "meshFunction") (retPtr retVoid) []
+meshFunction mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor meshFunctionSelector
 
 -- | meshFunction
 --
@@ -340,8 +336,8 @@ meshFunction mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMeshFunction:@
 setMeshFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
-setMeshFunction mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMeshFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setMeshFunction mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMeshFunctionSelector value
 
 -- | fragmentFunction
 --
@@ -349,8 +345,8 @@ setMeshFunction mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- fragmentFunction@
 fragmentFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO RawId
-fragmentFunction mtlMeshRenderPipelineDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "fragmentFunction") (retPtr retVoid) []
+fragmentFunction mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor fragmentFunctionSelector
 
 -- | fragmentFunction
 --
@@ -358,8 +354,8 @@ fragmentFunction mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setFragmentFunction:@
 setFragmentFunction :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> RawId -> IO ()
-setFragmentFunction mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setFragmentFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFragmentFunction mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setFragmentFunctionSelector value
 
 -- | maxTotalThreadsPerObjectThreadgroup
 --
@@ -367,8 +363,8 @@ setFragmentFunction mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadsPerObjectThreadgroup@
 maxTotalThreadsPerObjectThreadgroup :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "maxTotalThreadsPerObjectThreadgroup") retCULong []
+maxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor maxTotalThreadsPerObjectThreadgroupSelector
 
 -- | maxTotalThreadsPerObjectThreadgroup
 --
@@ -376,8 +372,8 @@ maxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerObjectThreadgroup:@
 setMaxTotalThreadsPerObjectThreadgroup :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerObjectThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMaxTotalThreadsPerObjectThreadgroupSelector value
 
 -- | maxTotalThreadsPerMeshThreadgroup
 --
@@ -385,8 +381,8 @@ setMaxTotalThreadsPerObjectThreadgroup mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadsPerMeshThreadgroup@
 maxTotalThreadsPerMeshThreadgroup :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "maxTotalThreadsPerMeshThreadgroup") retCULong []
+maxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor maxTotalThreadsPerMeshThreadgroupSelector
 
 -- | maxTotalThreadsPerMeshThreadgroup
 --
@@ -394,8 +390,8 @@ maxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerMeshThreadgroup:@
 setMaxTotalThreadsPerMeshThreadgroup :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerMeshThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMaxTotalThreadsPerMeshThreadgroupSelector value
 
 -- | objectThreadgroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -403,8 +399,8 @@ setMaxTotalThreadsPerMeshThreadgroup mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- objectThreadgroupSizeIsMultipleOfThreadExecutionWidth@
 objectThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "objectThreadgroupSizeIsMultipleOfThreadExecutionWidth") retCULong []
+objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
 
 -- | objectThreadgroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -412,8 +408,8 @@ objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescr
 --
 -- ObjC selector: @- setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
 setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:") retVoid [argCULong (if value then 1 else 0)]
+setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector value
 
 -- | meshThreadgroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -421,8 +417,8 @@ setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDe
 --
 -- ObjC selector: @- meshThreadgroupSizeIsMultipleOfThreadExecutionWidth@
 meshThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "meshThreadgroupSizeIsMultipleOfThreadExecutionWidth") retCULong []
+meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
 
 -- | meshThreadgroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -430,8 +426,8 @@ meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescrip
 --
 -- ObjC selector: @- setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
 setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:") retVoid [argCULong (if value then 1 else 0)]
+setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector value
 
 -- | payloadMemoryLength
 --
@@ -439,8 +435,8 @@ setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtlMeshRenderPipelineDesc
 --
 -- ObjC selector: @- payloadMemoryLength@
 payloadMemoryLength :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-payloadMemoryLength mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "payloadMemoryLength") retCULong []
+payloadMemoryLength mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor payloadMemoryLengthSelector
 
 -- | payloadMemoryLength
 --
@@ -448,8 +444,8 @@ payloadMemoryLength mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setPayloadMemoryLength:@
 setPayloadMemoryLength :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setPayloadMemoryLength mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setPayloadMemoryLength:") retVoid [argCULong value]
+setPayloadMemoryLength mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setPayloadMemoryLengthSelector value
 
 -- | maxTotalThreadgroupsPerMeshGrid
 --
@@ -457,8 +453,8 @@ setPayloadMemoryLength mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadgroupsPerMeshGrid@
 maxTotalThreadgroupsPerMeshGrid :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "maxTotalThreadgroupsPerMeshGrid") retCULong []
+maxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor maxTotalThreadgroupsPerMeshGridSelector
 
 -- | maxTotalThreadgroupsPerMeshGrid
 --
@@ -466,8 +462,8 @@ maxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadgroupsPerMeshGrid:@
 setMaxTotalThreadgroupsPerMeshGrid :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadgroupsPerMeshGrid:") retVoid [argCULong value]
+setMaxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMaxTotalThreadgroupsPerMeshGridSelector value
 
 -- | objectBuffers
 --
@@ -477,8 +473,8 @@ setMaxTotalThreadgroupsPerMeshGrid mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- objectBuffers@
 objectBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLPipelineBufferDescriptorArray)
-objectBuffers mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "objectBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectBuffers mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor objectBuffersSelector
 
 -- | meshBuffers
 --
@@ -488,8 +484,8 @@ objectBuffers mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- meshBuffers@
 meshBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLPipelineBufferDescriptorArray)
-meshBuffers mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "meshBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshBuffers mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor meshBuffersSelector
 
 -- | fragmentBuffers
 --
@@ -499,8 +495,8 @@ meshBuffers mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- fragmentBuffers@
 fragmentBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLPipelineBufferDescriptorArray)
-fragmentBuffers mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "fragmentBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentBuffers mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor fragmentBuffersSelector
 
 -- | rasterSampleCount
 --
@@ -508,8 +504,8 @@ fragmentBuffers mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- rasterSampleCount@
 rasterSampleCount :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-rasterSampleCount mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "rasterSampleCount") retCULong []
+rasterSampleCount mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor rasterSampleCountSelector
 
 -- | rasterSampleCount
 --
@@ -517,8 +513,8 @@ rasterSampleCount mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setRasterSampleCount:@
 setRasterSampleCount :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setRasterSampleCount mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setRasterSampleCount:") retVoid [argCULong value]
+setRasterSampleCount mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setRasterSampleCountSelector value
 
 -- | alphaToCoverageEnabled
 --
@@ -528,8 +524,8 @@ setRasterSampleCount mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- alphaToCoverageEnabled@
 alphaToCoverageEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-alphaToCoverageEnabled mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "alphaToCoverageEnabled") retCULong []
+alphaToCoverageEnabled mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor alphaToCoverageEnabledSelector
 
 -- | alphaToCoverageEnabled
 --
@@ -539,8 +535,8 @@ alphaToCoverageEnabled mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setAlphaToCoverageEnabled:@
 setAlphaToCoverageEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setAlphaToCoverageEnabled mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setAlphaToCoverageEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAlphaToCoverageEnabled mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setAlphaToCoverageEnabledSelector value
 
 -- | alphaToOneEnabled
 --
@@ -550,8 +546,8 @@ setAlphaToCoverageEnabled mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- alphaToOneEnabled@
 alphaToOneEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-alphaToOneEnabled mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "alphaToOneEnabled") retCULong []
+alphaToOneEnabled mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor alphaToOneEnabledSelector
 
 -- | alphaToOneEnabled
 --
@@ -561,8 +557,8 @@ alphaToOneEnabled mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setAlphaToOneEnabled:@
 setAlphaToOneEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setAlphaToOneEnabled mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setAlphaToOneEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAlphaToOneEnabled mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setAlphaToOneEnabledSelector value
 
 -- | rasterizationEnabled
 --
@@ -572,8 +568,8 @@ setAlphaToOneEnabled mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- rasterizationEnabled@
 rasterizationEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-rasterizationEnabled mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "rasterizationEnabled") retCULong []
+rasterizationEnabled mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor rasterizationEnabledSelector
 
 -- | rasterizationEnabled
 --
@@ -583,8 +579,8 @@ rasterizationEnabled mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setRasterizationEnabled:@
 setRasterizationEnabled :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setRasterizationEnabled mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setRasterizationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setRasterizationEnabled mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setRasterizationEnabledSelector value
 
 -- | maxVertexAmplificationCount
 --
@@ -594,8 +590,8 @@ setRasterizationEnabled mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxVertexAmplificationCount@
 maxVertexAmplificationCount :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO CULong
-maxVertexAmplificationCount mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "maxVertexAmplificationCount") retCULong []
+maxVertexAmplificationCount mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor maxVertexAmplificationCountSelector
 
 -- | maxVertexAmplificationCount
 --
@@ -605,8 +601,8 @@ maxVertexAmplificationCount mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxVertexAmplificationCount:@
 setMaxVertexAmplificationCount :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxVertexAmplificationCount mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMaxVertexAmplificationCount:") retVoid [argCULong value]
+setMaxVertexAmplificationCount mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMaxVertexAmplificationCountSelector value
 
 -- | colorAttachments
 --
@@ -614,8 +610,8 @@ setMaxVertexAmplificationCount mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- colorAttachments@
 colorAttachments :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLRenderPipelineColorAttachmentDescriptorArray)
-colorAttachments mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "colorAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorAttachments mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor colorAttachmentsSelector
 
 -- | depthAttachmentPixelFormat
 --
@@ -625,8 +621,8 @@ colorAttachments mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- depthAttachmentPixelFormat@
 depthAttachmentPixelFormat :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO MTLPixelFormat
-depthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "depthAttachmentPixelFormat") retCULong []
+depthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor depthAttachmentPixelFormatSelector
 
 -- | depthAttachmentPixelFormat
 --
@@ -636,8 +632,8 @@ depthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setDepthAttachmentPixelFormat:@
 setDepthAttachmentPixelFormat :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> MTLPixelFormat -> IO ()
-setDepthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setDepthAttachmentPixelFormat:") retVoid [argCULong (coerce value)]
+setDepthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setDepthAttachmentPixelFormatSelector value
 
 -- | stencilAttachmentPixelFormat
 --
@@ -647,8 +643,8 @@ setDepthAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- stencilAttachmentPixelFormat@
 stencilAttachmentPixelFormat :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO MTLPixelFormat
-stencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "stencilAttachmentPixelFormat") retCULong []
+stencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor stencilAttachmentPixelFormatSelector
 
 -- | stencilAttachmentPixelFormat
 --
@@ -658,8 +654,8 @@ stencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setStencilAttachmentPixelFormat:@
 setStencilAttachmentPixelFormat :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> MTLPixelFormat -> IO ()
-setStencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setStencilAttachmentPixelFormat:") retVoid [argCULong (coerce value)]
+setStencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setStencilAttachmentPixelFormatSelector value
 
 -- | supportIndirectCommandBuffers
 --
@@ -669,8 +665,8 @@ setStencilAttachmentPixelFormat mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- supportIndirectCommandBuffers@
 supportIndirectCommandBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO Bool
-supportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "supportIndirectCommandBuffers") retCULong []
+supportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor supportIndirectCommandBuffersSelector
 
 -- | supportIndirectCommandBuffers
 --
@@ -680,8 +676,8 @@ supportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffers :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> Bool -> IO ()
-setSupportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCULong (if value then 1 else 0)]
+setSupportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setSupportIndirectCommandBuffersSelector value
 
 -- | binaryArchives
 --
@@ -693,8 +689,8 @@ setSupportIndirectCommandBuffers mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- binaryArchives@
 binaryArchives :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id NSArray)
-binaryArchives mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryArchives mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor binaryArchivesSelector
 
 -- | binaryArchives
 --
@@ -706,9 +702,8 @@ binaryArchives mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setBinaryArchives:@
 setBinaryArchives :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsNSArray value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
-setBinaryArchives mtlMeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryArchives mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setBinaryArchivesSelector (toNSArray value)
 
 -- | objectLinkedFunctions
 --
@@ -718,8 +713,8 @@ setBinaryArchives mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- objectLinkedFunctions@
 objectLinkedFunctions :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLLinkedFunctions)
-objectLinkedFunctions mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "objectLinkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectLinkedFunctions mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor objectLinkedFunctionsSelector
 
 -- | objectLinkedFunctions
 --
@@ -729,9 +724,8 @@ objectLinkedFunctions mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setObjectLinkedFunctions:@
 setObjectLinkedFunctions :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsMTLLinkedFunctions value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
-setObjectLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setObjectLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectLinkedFunctions mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setObjectLinkedFunctionsSelector (toMTLLinkedFunctions value)
 
 -- | meshLinkedFunctions
 --
@@ -741,8 +735,8 @@ setObjectLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- meshLinkedFunctions@
 meshLinkedFunctions :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLLinkedFunctions)
-meshLinkedFunctions mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "meshLinkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshLinkedFunctions mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor meshLinkedFunctionsSelector
 
 -- | meshLinkedFunctions
 --
@@ -752,9 +746,8 @@ meshLinkedFunctions mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMeshLinkedFunctions:@
 setMeshLinkedFunctions :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsMTLLinkedFunctions value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
-setMeshLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setMeshLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeshLinkedFunctions mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setMeshLinkedFunctionsSelector (toMTLLinkedFunctions value)
 
 -- | fragmentLinkedFunctions
 --
@@ -764,8 +757,8 @@ setMeshLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- fragmentLinkedFunctions@
 fragmentLinkedFunctions :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO (Id MTLLinkedFunctions)
-fragmentLinkedFunctions mtlMeshRenderPipelineDescriptor  =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "fragmentLinkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentLinkedFunctions mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor fragmentLinkedFunctionsSelector
 
 -- | fragmentLinkedFunctions
 --
@@ -775,9 +768,8 @@ fragmentLinkedFunctions mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setFragmentLinkedFunctions:@
 setFragmentLinkedFunctions :: (IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor, IsMTLLinkedFunctions value) => mtlMeshRenderPipelineDescriptor -> value -> IO ()
-setFragmentLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setFragmentLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragmentLinkedFunctions mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setFragmentLinkedFunctionsSelector (toMTLLinkedFunctions value)
 
 -- | shaderValidation
 --
@@ -787,8 +779,8 @@ setFragmentLinkedFunctions mtlMeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- shaderValidation@
 shaderValidation :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> IO MTLShaderValidation
-shaderValidation mtlMeshRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTLShaderValidation) $ sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "shaderValidation") retCLong []
+shaderValidation mtlMeshRenderPipelineDescriptor =
+  sendMessage mtlMeshRenderPipelineDescriptor shaderValidationSelector
 
 -- | shaderValidation
 --
@@ -798,214 +790,214 @@ shaderValidation mtlMeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setShaderValidation:@
 setShaderValidation :: IsMTLMeshRenderPipelineDescriptor mtlMeshRenderPipelineDescriptor => mtlMeshRenderPipelineDescriptor -> MTLShaderValidation -> IO ()
-setShaderValidation mtlMeshRenderPipelineDescriptor  value =
-    sendMsg mtlMeshRenderPipelineDescriptor (mkSelector "setShaderValidation:") retVoid [argCLong (coerce value)]
+setShaderValidation mtlMeshRenderPipelineDescriptor value =
+  sendMessage mtlMeshRenderPipelineDescriptor setShaderValidationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @objectFunction@
-objectFunctionSelector :: Selector
+objectFunctionSelector :: Selector '[] RawId
 objectFunctionSelector = mkSelector "objectFunction"
 
 -- | @Selector@ for @setObjectFunction:@
-setObjectFunctionSelector :: Selector
+setObjectFunctionSelector :: Selector '[RawId] ()
 setObjectFunctionSelector = mkSelector "setObjectFunction:"
 
 -- | @Selector@ for @meshFunction@
-meshFunctionSelector :: Selector
+meshFunctionSelector :: Selector '[] RawId
 meshFunctionSelector = mkSelector "meshFunction"
 
 -- | @Selector@ for @setMeshFunction:@
-setMeshFunctionSelector :: Selector
+setMeshFunctionSelector :: Selector '[RawId] ()
 setMeshFunctionSelector = mkSelector "setMeshFunction:"
 
 -- | @Selector@ for @fragmentFunction@
-fragmentFunctionSelector :: Selector
+fragmentFunctionSelector :: Selector '[] RawId
 fragmentFunctionSelector = mkSelector "fragmentFunction"
 
 -- | @Selector@ for @setFragmentFunction:@
-setFragmentFunctionSelector :: Selector
+setFragmentFunctionSelector :: Selector '[RawId] ()
 setFragmentFunctionSelector = mkSelector "setFragmentFunction:"
 
 -- | @Selector@ for @maxTotalThreadsPerObjectThreadgroup@
-maxTotalThreadsPerObjectThreadgroupSelector :: Selector
+maxTotalThreadsPerObjectThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerObjectThreadgroupSelector = mkSelector "maxTotalThreadsPerObjectThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerObjectThreadgroup:@
-setMaxTotalThreadsPerObjectThreadgroupSelector :: Selector
+setMaxTotalThreadsPerObjectThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerObjectThreadgroupSelector = mkSelector "setMaxTotalThreadsPerObjectThreadgroup:"
 
 -- | @Selector@ for @maxTotalThreadsPerMeshThreadgroup@
-maxTotalThreadsPerMeshThreadgroupSelector :: Selector
+maxTotalThreadsPerMeshThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerMeshThreadgroupSelector = mkSelector "maxTotalThreadsPerMeshThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerMeshThreadgroup:@
-setMaxTotalThreadsPerMeshThreadgroupSelector :: Selector
+setMaxTotalThreadsPerMeshThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerMeshThreadgroupSelector = mkSelector "setMaxTotalThreadsPerMeshThreadgroup:"
 
 -- | @Selector@ for @objectThreadgroupSizeIsMultipleOfThreadExecutionWidth@
-objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[] Bool
 objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "objectThreadgroupSizeIsMultipleOfThreadExecutionWidth"
 
 -- | @Selector@ for @setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
-setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[Bool] ()
 setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:"
 
 -- | @Selector@ for @meshThreadgroupSizeIsMultipleOfThreadExecutionWidth@
-meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[] Bool
 meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "meshThreadgroupSizeIsMultipleOfThreadExecutionWidth"
 
 -- | @Selector@ for @setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
-setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[Bool] ()
 setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:"
 
 -- | @Selector@ for @payloadMemoryLength@
-payloadMemoryLengthSelector :: Selector
+payloadMemoryLengthSelector :: Selector '[] CULong
 payloadMemoryLengthSelector = mkSelector "payloadMemoryLength"
 
 -- | @Selector@ for @setPayloadMemoryLength:@
-setPayloadMemoryLengthSelector :: Selector
+setPayloadMemoryLengthSelector :: Selector '[CULong] ()
 setPayloadMemoryLengthSelector = mkSelector "setPayloadMemoryLength:"
 
 -- | @Selector@ for @maxTotalThreadgroupsPerMeshGrid@
-maxTotalThreadgroupsPerMeshGridSelector :: Selector
+maxTotalThreadgroupsPerMeshGridSelector :: Selector '[] CULong
 maxTotalThreadgroupsPerMeshGridSelector = mkSelector "maxTotalThreadgroupsPerMeshGrid"
 
 -- | @Selector@ for @setMaxTotalThreadgroupsPerMeshGrid:@
-setMaxTotalThreadgroupsPerMeshGridSelector :: Selector
+setMaxTotalThreadgroupsPerMeshGridSelector :: Selector '[CULong] ()
 setMaxTotalThreadgroupsPerMeshGridSelector = mkSelector "setMaxTotalThreadgroupsPerMeshGrid:"
 
 -- | @Selector@ for @objectBuffers@
-objectBuffersSelector :: Selector
+objectBuffersSelector :: Selector '[] (Id MTLPipelineBufferDescriptorArray)
 objectBuffersSelector = mkSelector "objectBuffers"
 
 -- | @Selector@ for @meshBuffers@
-meshBuffersSelector :: Selector
+meshBuffersSelector :: Selector '[] (Id MTLPipelineBufferDescriptorArray)
 meshBuffersSelector = mkSelector "meshBuffers"
 
 -- | @Selector@ for @fragmentBuffers@
-fragmentBuffersSelector :: Selector
+fragmentBuffersSelector :: Selector '[] (Id MTLPipelineBufferDescriptorArray)
 fragmentBuffersSelector = mkSelector "fragmentBuffers"
 
 -- | @Selector@ for @rasterSampleCount@
-rasterSampleCountSelector :: Selector
+rasterSampleCountSelector :: Selector '[] CULong
 rasterSampleCountSelector = mkSelector "rasterSampleCount"
 
 -- | @Selector@ for @setRasterSampleCount:@
-setRasterSampleCountSelector :: Selector
+setRasterSampleCountSelector :: Selector '[CULong] ()
 setRasterSampleCountSelector = mkSelector "setRasterSampleCount:"
 
 -- | @Selector@ for @alphaToCoverageEnabled@
-alphaToCoverageEnabledSelector :: Selector
+alphaToCoverageEnabledSelector :: Selector '[] Bool
 alphaToCoverageEnabledSelector = mkSelector "alphaToCoverageEnabled"
 
 -- | @Selector@ for @setAlphaToCoverageEnabled:@
-setAlphaToCoverageEnabledSelector :: Selector
+setAlphaToCoverageEnabledSelector :: Selector '[Bool] ()
 setAlphaToCoverageEnabledSelector = mkSelector "setAlphaToCoverageEnabled:"
 
 -- | @Selector@ for @alphaToOneEnabled@
-alphaToOneEnabledSelector :: Selector
+alphaToOneEnabledSelector :: Selector '[] Bool
 alphaToOneEnabledSelector = mkSelector "alphaToOneEnabled"
 
 -- | @Selector@ for @setAlphaToOneEnabled:@
-setAlphaToOneEnabledSelector :: Selector
+setAlphaToOneEnabledSelector :: Selector '[Bool] ()
 setAlphaToOneEnabledSelector = mkSelector "setAlphaToOneEnabled:"
 
 -- | @Selector@ for @rasterizationEnabled@
-rasterizationEnabledSelector :: Selector
+rasterizationEnabledSelector :: Selector '[] Bool
 rasterizationEnabledSelector = mkSelector "rasterizationEnabled"
 
 -- | @Selector@ for @setRasterizationEnabled:@
-setRasterizationEnabledSelector :: Selector
+setRasterizationEnabledSelector :: Selector '[Bool] ()
 setRasterizationEnabledSelector = mkSelector "setRasterizationEnabled:"
 
 -- | @Selector@ for @maxVertexAmplificationCount@
-maxVertexAmplificationCountSelector :: Selector
+maxVertexAmplificationCountSelector :: Selector '[] CULong
 maxVertexAmplificationCountSelector = mkSelector "maxVertexAmplificationCount"
 
 -- | @Selector@ for @setMaxVertexAmplificationCount:@
-setMaxVertexAmplificationCountSelector :: Selector
+setMaxVertexAmplificationCountSelector :: Selector '[CULong] ()
 setMaxVertexAmplificationCountSelector = mkSelector "setMaxVertexAmplificationCount:"
 
 -- | @Selector@ for @colorAttachments@
-colorAttachmentsSelector :: Selector
+colorAttachmentsSelector :: Selector '[] (Id MTLRenderPipelineColorAttachmentDescriptorArray)
 colorAttachmentsSelector = mkSelector "colorAttachments"
 
 -- | @Selector@ for @depthAttachmentPixelFormat@
-depthAttachmentPixelFormatSelector :: Selector
+depthAttachmentPixelFormatSelector :: Selector '[] MTLPixelFormat
 depthAttachmentPixelFormatSelector = mkSelector "depthAttachmentPixelFormat"
 
 -- | @Selector@ for @setDepthAttachmentPixelFormat:@
-setDepthAttachmentPixelFormatSelector :: Selector
+setDepthAttachmentPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setDepthAttachmentPixelFormatSelector = mkSelector "setDepthAttachmentPixelFormat:"
 
 -- | @Selector@ for @stencilAttachmentPixelFormat@
-stencilAttachmentPixelFormatSelector :: Selector
+stencilAttachmentPixelFormatSelector :: Selector '[] MTLPixelFormat
 stencilAttachmentPixelFormatSelector = mkSelector "stencilAttachmentPixelFormat"
 
 -- | @Selector@ for @setStencilAttachmentPixelFormat:@
-setStencilAttachmentPixelFormatSelector :: Selector
+setStencilAttachmentPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setStencilAttachmentPixelFormatSelector = mkSelector "setStencilAttachmentPixelFormat:"
 
 -- | @Selector@ for @supportIndirectCommandBuffers@
-supportIndirectCommandBuffersSelector :: Selector
+supportIndirectCommandBuffersSelector :: Selector '[] Bool
 supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffers"
 
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
-setSupportIndirectCommandBuffersSelector :: Selector
+setSupportIndirectCommandBuffersSelector :: Selector '[Bool] ()
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
 
 -- | @Selector@ for @binaryArchives@
-binaryArchivesSelector :: Selector
+binaryArchivesSelector :: Selector '[] (Id NSArray)
 binaryArchivesSelector = mkSelector "binaryArchives"
 
 -- | @Selector@ for @setBinaryArchives:@
-setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector :: Selector '[Id NSArray] ()
 setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @objectLinkedFunctions@
-objectLinkedFunctionsSelector :: Selector
+objectLinkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 objectLinkedFunctionsSelector = mkSelector "objectLinkedFunctions"
 
 -- | @Selector@ for @setObjectLinkedFunctions:@
-setObjectLinkedFunctionsSelector :: Selector
+setObjectLinkedFunctionsSelector :: Selector '[Id MTLLinkedFunctions] ()
 setObjectLinkedFunctionsSelector = mkSelector "setObjectLinkedFunctions:"
 
 -- | @Selector@ for @meshLinkedFunctions@
-meshLinkedFunctionsSelector :: Selector
+meshLinkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 meshLinkedFunctionsSelector = mkSelector "meshLinkedFunctions"
 
 -- | @Selector@ for @setMeshLinkedFunctions:@
-setMeshLinkedFunctionsSelector :: Selector
+setMeshLinkedFunctionsSelector :: Selector '[Id MTLLinkedFunctions] ()
 setMeshLinkedFunctionsSelector = mkSelector "setMeshLinkedFunctions:"
 
 -- | @Selector@ for @fragmentLinkedFunctions@
-fragmentLinkedFunctionsSelector :: Selector
+fragmentLinkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 fragmentLinkedFunctionsSelector = mkSelector "fragmentLinkedFunctions"
 
 -- | @Selector@ for @setFragmentLinkedFunctions:@
-setFragmentLinkedFunctionsSelector :: Selector
+setFragmentLinkedFunctionsSelector :: Selector '[Id MTLLinkedFunctions] ()
 setFragmentLinkedFunctionsSelector = mkSelector "setFragmentLinkedFunctions:"
 
 -- | @Selector@ for @shaderValidation@
-shaderValidationSelector :: Selector
+shaderValidationSelector :: Selector '[] MTLShaderValidation
 shaderValidationSelector = mkSelector "shaderValidation"
 
 -- | @Selector@ for @setShaderValidation:@
-setShaderValidationSelector :: Selector
+setShaderValidationSelector :: Selector '[MTLShaderValidation] ()
 setShaderValidationSelector = mkSelector "setShaderValidation:"
 

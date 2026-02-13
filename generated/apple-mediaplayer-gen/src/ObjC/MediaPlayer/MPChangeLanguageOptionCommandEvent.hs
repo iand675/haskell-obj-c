@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MediaPlayer.MPChangeLanguageOptionCommandEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,25 +37,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- languageOption@
 languageOption :: IsMPChangeLanguageOptionCommandEvent mpChangeLanguageOptionCommandEvent => mpChangeLanguageOptionCommandEvent -> IO (Id MPNowPlayingInfoLanguageOption)
-languageOption mpChangeLanguageOptionCommandEvent  =
-    sendMsg mpChangeLanguageOptionCommandEvent (mkSelector "languageOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageOption mpChangeLanguageOptionCommandEvent =
+  sendMessage mpChangeLanguageOptionCommandEvent languageOptionSelector
 
 -- | Describes the extent of the changed language option
 --
 -- ObjC selector: @- setting@
 setting :: IsMPChangeLanguageOptionCommandEvent mpChangeLanguageOptionCommandEvent => mpChangeLanguageOptionCommandEvent -> IO MPChangeLanguageOptionSetting
-setting mpChangeLanguageOptionCommandEvent  =
-    fmap (coerce :: CLong -> MPChangeLanguageOptionSetting) $ sendMsg mpChangeLanguageOptionCommandEvent (mkSelector "setting") retCLong []
+setting mpChangeLanguageOptionCommandEvent =
+  sendMessage mpChangeLanguageOptionCommandEvent settingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @languageOption@
-languageOptionSelector :: Selector
+languageOptionSelector :: Selector '[] (Id MPNowPlayingInfoLanguageOption)
 languageOptionSelector = mkSelector "languageOption"
 
 -- | @Selector@ for @setting@
-settingSelector :: Selector
+settingSelector :: Selector '[] MPChangeLanguageOptionSetting
 settingSelector = mkSelector "setting"
 

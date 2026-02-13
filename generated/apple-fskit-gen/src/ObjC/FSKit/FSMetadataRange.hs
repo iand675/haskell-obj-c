@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,25 +25,21 @@ module ObjC.FSKit.FSMetadataRange
   , startOffset
   , segmentLength
   , segmentCount
+  , initSelector
   , initWithOffset_segmentLength_segmentCountSelector
   , rangeWithOffset_segmentLength_segmentCountSelector
-  , initSelector
-  , startOffsetSelector
-  , segmentLengthSelector
   , segmentCountSelector
+  , segmentLengthSelector
+  , startOffsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithOffset:segmentLength:segmentCount:@
 initWithOffset_segmentLength_segmentCount :: IsFSMetadataRange fsMetadataRange => fsMetadataRange -> CLong -> CULong -> CULong -> IO (Id FSMetadataRange)
-initWithOffset_segmentLength_segmentCount fsMetadataRange  startOffset segmentLength segmentCount =
-    sendMsg fsMetadataRange (mkSelector "initWithOffset:segmentLength:segmentCount:") (retPtr retVoid) [argCLong startOffset, argCULong segmentLength, argCULong segmentCount] >>= ownedObject . castPtr
+initWithOffset_segmentLength_segmentCount fsMetadataRange startOffset segmentLength segmentCount =
+  sendOwnedMessage fsMetadataRange initWithOffset_segmentLength_segmentCountSelector startOffset segmentLength segmentCount
 
 -- | Creates a metadata range with the given properties. - Parameters:   - startOffset: The start offset of the range in bytes. Ensure this value is a multiple of the corresponding resource's ``FSBlockDeviceResource-c.class/blockSize``.   - segmentLength: The segment length in bytes. Ensure this value is a multiple of the corresponding resource's ``FSBlockDeviceResource-c.class/blockSize``.   - segmentCount: The number of segments in the range.
 --
@@ -65,12 +62,12 @@ rangeWithOffset_segmentLength_segmentCount :: CLong -> CULong -> CULong -> IO (I
 rangeWithOffset_segmentLength_segmentCount startOffset segmentLength segmentCount =
   do
     cls' <- getRequiredClass "FSMetadataRange"
-    sendClassMsg cls' (mkSelector "rangeWithOffset:segmentLength:segmentCount:") (retPtr retVoid) [argCLong startOffset, argCULong segmentLength, argCULong segmentCount] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithOffset_segmentLength_segmentCountSelector startOffset segmentLength segmentCount
 
 -- | @- init@
 init_ :: IsFSMetadataRange fsMetadataRange => fsMetadataRange -> IO (Id FSMetadataRange)
-init_ fsMetadataRange  =
-    sendMsg fsMetadataRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsMetadataRange =
+  sendOwnedMessage fsMetadataRange initSelector
 
 -- | The start offset of the range in bytes.
 --
@@ -78,8 +75,8 @@ init_ fsMetadataRange  =
 --
 -- ObjC selector: @- startOffset@
 startOffset :: IsFSMetadataRange fsMetadataRange => fsMetadataRange -> IO CLong
-startOffset fsMetadataRange  =
-    sendMsg fsMetadataRange (mkSelector "startOffset") retCLong []
+startOffset fsMetadataRange =
+  sendMessage fsMetadataRange startOffsetSelector
 
 -- | The segment length in bytes.
 --
@@ -87,41 +84,41 @@ startOffset fsMetadataRange  =
 --
 -- ObjC selector: @- segmentLength@
 segmentLength :: IsFSMetadataRange fsMetadataRange => fsMetadataRange -> IO CULong
-segmentLength fsMetadataRange  =
-    sendMsg fsMetadataRange (mkSelector "segmentLength") retCULong []
+segmentLength fsMetadataRange =
+  sendMessage fsMetadataRange segmentLengthSelector
 
 -- | The number of segments in the range.
 --
 -- ObjC selector: @- segmentCount@
 segmentCount :: IsFSMetadataRange fsMetadataRange => fsMetadataRange -> IO CULong
-segmentCount fsMetadataRange  =
-    sendMsg fsMetadataRange (mkSelector "segmentCount") retCULong []
+segmentCount fsMetadataRange =
+  sendMessage fsMetadataRange segmentCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOffset:segmentLength:segmentCount:@
-initWithOffset_segmentLength_segmentCountSelector :: Selector
+initWithOffset_segmentLength_segmentCountSelector :: Selector '[CLong, CULong, CULong] (Id FSMetadataRange)
 initWithOffset_segmentLength_segmentCountSelector = mkSelector "initWithOffset:segmentLength:segmentCount:"
 
 -- | @Selector@ for @rangeWithOffset:segmentLength:segmentCount:@
-rangeWithOffset_segmentLength_segmentCountSelector :: Selector
+rangeWithOffset_segmentLength_segmentCountSelector :: Selector '[CLong, CULong, CULong] (Id FSMetadataRange)
 rangeWithOffset_segmentLength_segmentCountSelector = mkSelector "rangeWithOffset:segmentLength:segmentCount:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSMetadataRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @startOffset@
-startOffsetSelector :: Selector
+startOffsetSelector :: Selector '[] CLong
 startOffsetSelector = mkSelector "startOffset"
 
 -- | @Selector@ for @segmentLength@
-segmentLengthSelector :: Selector
+segmentLengthSelector :: Selector '[] CULong
 segmentLengthSelector = mkSelector "segmentLength"
 
 -- | @Selector@ for @segmentCount@
-segmentCountSelector :: Selector
+segmentCountSelector :: Selector '[] CULong
 segmentCountSelector = mkSelector "segmentCount"
 

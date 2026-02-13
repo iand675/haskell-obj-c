@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,33 +39,33 @@ module ObjC.AVFAudio.AVAudioSequencer
   , playing
   , rate
   , setRate
+  , beatsForHostTime_errorSelector
+  , beatsForSecondsSelector
+  , createAndAppendTrackSelector
+  , currentPositionInBeatsSelector
+  , currentPositionInSecondsSelector
+  , dataWithSMPTEResolution_errorSelector
+  , hostTimeForBeats_errorSelector
   , initSelector
   , initWithAudioEngineSelector
-  , loadFromURL_options_errorSelector
   , loadFromData_options_errorSelector
-  , writeToURL_SMPTEResolution_replaceExisting_errorSelector
-  , dataWithSMPTEResolution_errorSelector
-  , secondsForBeatsSelector
-  , beatsForSecondsSelector
-  , reverseEventsSelector
-  , createAndAppendTrackSelector
-  , removeTrackSelector
-  , setUserCallbackSelector
-  , hostTimeForBeats_errorSelector
-  , beatsForHostTime_errorSelector
+  , loadFromURL_options_errorSelector
+  , playingSelector
   , prepareToPlaySelector
+  , rateSelector
+  , removeTrackSelector
+  , reverseEventsSelector
+  , secondsForBeatsSelector
+  , setCurrentPositionInBeatsSelector
+  , setCurrentPositionInSecondsSelector
+  , setRateSelector
+  , setUserCallbackSelector
   , startAndReturnErrorSelector
   , stopSelector
-  , tracksSelector
   , tempoTrackSelector
+  , tracksSelector
   , userInfoSelector
-  , currentPositionInSecondsSelector
-  , setCurrentPositionInSecondsSelector
-  , currentPositionInBeatsSelector
-  , setCurrentPositionInBeatsSelector
-  , playingSelector
-  , rateSelector
-  , setRateSelector
+  , writeToURL_SMPTEResolution_replaceExisting_errorSelector
 
   -- * Enum types
   , AVMusicSequenceLoadOptions(AVMusicSequenceLoadOptions)
@@ -73,15 +74,11 @@ module ObjC.AVFAudio.AVAudioSequencer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,8 +94,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO (Id AVAudioSequencer)
-init_ avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioSequencer =
+  sendOwnedMessage avAudioSequencer initSelector
 
 -- | initWithAudioEngine:
 --
@@ -106,9 +103,8 @@ init_ avAudioSequencer  =
 --
 -- ObjC selector: @- initWithAudioEngine:@
 initWithAudioEngine :: (IsAVAudioSequencer avAudioSequencer, IsAVAudioEngine engine) => avAudioSequencer -> engine -> IO (Id AVAudioSequencer)
-initWithAudioEngine avAudioSequencer  engine =
-  withObjCPtr engine $ \raw_engine ->
-      sendMsg avAudioSequencer (mkSelector "initWithAudioEngine:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ())] >>= ownedObject . castPtr
+initWithAudioEngine avAudioSequencer engine =
+  sendOwnedMessage avAudioSequencer initWithAudioEngineSelector (toAVAudioEngine engine)
 
 -- | loadFromURL:options:error:
 --
@@ -122,10 +118,8 @@ initWithAudioEngine avAudioSequencer  engine =
 --
 -- ObjC selector: @- loadFromURL:options:error:@
 loadFromURL_options_error :: (IsAVAudioSequencer avAudioSequencer, IsNSURL fileURL, IsNSError outError) => avAudioSequencer -> fileURL -> AVMusicSequenceLoadOptions -> outError -> IO Bool
-loadFromURL_options_error avAudioSequencer  fileURL options outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "loadFromURL:options:error:") retCULong [argPtr (castPtr raw_fileURL :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+loadFromURL_options_error avAudioSequencer fileURL options outError =
+  sendMessage avAudioSequencer loadFromURL_options_errorSelector (toNSURL fileURL) options (toNSError outError)
 
 -- | loadFromData:options:error:
 --
@@ -139,10 +133,8 @@ loadFromURL_options_error avAudioSequencer  fileURL options outError =
 --
 -- ObjC selector: @- loadFromData:options:error:@
 loadFromData_options_error :: (IsAVAudioSequencer avAudioSequencer, IsNSData data_, IsNSError outError) => avAudioSequencer -> data_ -> AVMusicSequenceLoadOptions -> outError -> IO Bool
-loadFromData_options_error avAudioSequencer  data_ options outError =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "loadFromData:options:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+loadFromData_options_error avAudioSequencer data_ options outError =
+  sendMessage avAudioSequencer loadFromData_options_errorSelector (toNSData data_) options (toNSError outError)
 
 -- | writeToURL:SMPTEResolution:replaceExisting:error:
 --
@@ -162,10 +154,8 @@ loadFromData_options_error avAudioSequencer  data_ options outError =
 --
 -- ObjC selector: @- writeToURL:SMPTEResolution:replaceExisting:error:@
 writeToURL_SMPTEResolution_replaceExisting_error :: (IsAVAudioSequencer avAudioSequencer, IsNSURL fileURL, IsNSError outError) => avAudioSequencer -> fileURL -> CLong -> Bool -> outError -> IO Bool
-writeToURL_SMPTEResolution_replaceExisting_error avAudioSequencer  fileURL resolution replace outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "writeToURL:SMPTEResolution:replaceExisting:error:") retCULong [argPtr (castPtr raw_fileURL :: Ptr ()), argCLong resolution, argCULong (if replace then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+writeToURL_SMPTEResolution_replaceExisting_error avAudioSequencer fileURL resolution replace outError =
+  sendMessage avAudioSequencer writeToURL_SMPTEResolution_replaceExisting_errorSelector (toNSURL fileURL) resolution replace (toNSError outError)
 
 -- | dataWithSMPTEResolution:error:
 --
@@ -175,9 +165,8 @@ writeToURL_SMPTEResolution_replaceExisting_error avAudioSequencer  fileURL resol
 --
 -- ObjC selector: @- dataWithSMPTEResolution:error:@
 dataWithSMPTEResolution_error :: (IsAVAudioSequencer avAudioSequencer, IsNSError outError) => avAudioSequencer -> CLong -> outError -> IO (Id NSData)
-dataWithSMPTEResolution_error avAudioSequencer  smpteResolution outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avAudioSequencer (mkSelector "dataWithSMPTEResolution:error:") (retPtr retVoid) [argCLong smpteResolution, argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+dataWithSMPTEResolution_error avAudioSequencer smpteResolution outError =
+  sendMessage avAudioSequencer dataWithSMPTEResolution_errorSelector smpteResolution (toNSError outError)
 
 -- | secondsForBeats:
 --
@@ -185,8 +174,8 @@ dataWithSMPTEResolution_error avAudioSequencer  smpteResolution outError =
 --
 -- ObjC selector: @- secondsForBeats:@
 secondsForBeats :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> CDouble -> IO CDouble
-secondsForBeats avAudioSequencer  beats =
-    sendMsg avAudioSequencer (mkSelector "secondsForBeats:") retCDouble [argCDouble beats]
+secondsForBeats avAudioSequencer beats =
+  sendMessage avAudioSequencer secondsForBeatsSelector beats
 
 -- | beatsForSeconds:
 --
@@ -194,8 +183,8 @@ secondsForBeats avAudioSequencer  beats =
 --
 -- ObjC selector: @- beatsForSeconds:@
 beatsForSeconds :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> CDouble -> IO CDouble
-beatsForSeconds avAudioSequencer  seconds =
-    sendMsg avAudioSequencer (mkSelector "beatsForSeconds:") retCDouble [argCDouble seconds]
+beatsForSeconds avAudioSequencer seconds =
+  sendMessage avAudioSequencer beatsForSecondsSelector seconds
 
 -- | reverseEvents:
 --
@@ -203,8 +192,8 @@ beatsForSeconds avAudioSequencer  seconds =
 --
 -- ObjC selector: @- reverseEvents@
 reverseEvents :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO ()
-reverseEvents avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "reverseEvents") retVoid []
+reverseEvents avAudioSequencer =
+  sendMessage avAudioSequencer reverseEventsSelector
 
 -- | createAndAppendTrack:
 --
@@ -212,8 +201,8 @@ reverseEvents avAudioSequencer  =
 --
 -- ObjC selector: @- createAndAppendTrack@
 createAndAppendTrack :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO (Id AVMusicTrack)
-createAndAppendTrack avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "createAndAppendTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+createAndAppendTrack avAudioSequencer =
+  sendMessage avAudioSequencer createAndAppendTrackSelector
 
 -- | removeTrack:
 --
@@ -223,9 +212,8 @@ createAndAppendTrack avAudioSequencer  =
 --
 -- ObjC selector: @- removeTrack:@
 removeTrack :: (IsAVAudioSequencer avAudioSequencer, IsAVMusicTrack track) => avAudioSequencer -> track -> IO Bool
-removeTrack avAudioSequencer  track =
-  withObjCPtr track $ \raw_track ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "removeTrack:") retCULong [argPtr (castPtr raw_track :: Ptr ())]
+removeTrack avAudioSequencer track =
+  sendMessage avAudioSequencer removeTrackSelector (toAVMusicTrack track)
 
 -- | setUserCallback:
 --
@@ -237,8 +225,8 @@ removeTrack avAudioSequencer  track =
 --
 -- ObjC selector: @- setUserCallback:@
 setUserCallback :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> Ptr () -> IO ()
-setUserCallback avAudioSequencer  userCallback =
-    sendMsg avAudioSequencer (mkSelector "setUserCallback:") retVoid [argPtr (castPtr userCallback :: Ptr ())]
+setUserCallback avAudioSequencer userCallback =
+  sendMessage avAudioSequencer setUserCallbackSelector userCallback
 
 -- | hostTimeForBeats:error:
 --
@@ -248,9 +236,8 @@ setUserCallback avAudioSequencer  userCallback =
 --
 -- ObjC selector: @- hostTimeForBeats:error:@
 hostTimeForBeats_error :: (IsAVAudioSequencer avAudioSequencer, IsNSError outError) => avAudioSequencer -> CDouble -> outError -> IO CULong
-hostTimeForBeats_error avAudioSequencer  inBeats outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avAudioSequencer (mkSelector "hostTimeForBeats:error:") retCULong [argCDouble inBeats, argPtr (castPtr raw_outError :: Ptr ())]
+hostTimeForBeats_error avAudioSequencer inBeats outError =
+  sendMessage avAudioSequencer hostTimeForBeats_errorSelector inBeats (toNSError outError)
 
 -- | beatsForHostTime:error:
 --
@@ -260,9 +247,8 @@ hostTimeForBeats_error avAudioSequencer  inBeats outError =
 --
 -- ObjC selector: @- beatsForHostTime:error:@
 beatsForHostTime_error :: (IsAVAudioSequencer avAudioSequencer, IsNSError outError) => avAudioSequencer -> CULong -> outError -> IO CDouble
-beatsForHostTime_error avAudioSequencer  inHostTime outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avAudioSequencer (mkSelector "beatsForHostTime:error:") retCDouble [argCULong inHostTime, argPtr (castPtr raw_outError :: Ptr ())]
+beatsForHostTime_error avAudioSequencer inHostTime outError =
+  sendMessage avAudioSequencer beatsForHostTime_errorSelector inHostTime (toNSError outError)
 
 -- | prepareToPlay
 --
@@ -272,8 +258,8 @@ beatsForHostTime_error avAudioSequencer  inHostTime outError =
 --
 -- ObjC selector: @- prepareToPlay@
 prepareToPlay :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO ()
-prepareToPlay avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "prepareToPlay") retVoid []
+prepareToPlay avAudioSequencer =
+  sendMessage avAudioSequencer prepareToPlaySelector
 
 -- | startAndReturnError:
 --
@@ -283,9 +269,8 @@ prepareToPlay avAudioSequencer  =
 --
 -- ObjC selector: @- startAndReturnError:@
 startAndReturnError :: (IsAVAudioSequencer avAudioSequencer, IsNSError outError) => avAudioSequencer -> outError -> IO Bool
-startAndReturnError avAudioSequencer  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "startAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+startAndReturnError avAudioSequencer outError =
+  sendMessage avAudioSequencer startAndReturnErrorSelector (toNSError outError)
 
 -- | stop
 --
@@ -295,8 +280,8 @@ startAndReturnError avAudioSequencer  outError =
 --
 -- ObjC selector: @- stop@
 stop :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO ()
-stop avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "stop") retVoid []
+stop avAudioSequencer =
+  sendMessage avAudioSequencer stopSelector
 
 -- | tracks
 --
@@ -306,8 +291,8 @@ stop avAudioSequencer  =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO (Id NSArray)
-tracks avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avAudioSequencer =
+  sendMessage avAudioSequencer tracksSelector
 
 -- | tempoTrack
 --
@@ -323,8 +308,8 @@ tracks avAudioSequencer  =
 --
 -- ObjC selector: @- tempoTrack@
 tempoTrack :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO (Id AVMusicTrack)
-tempoTrack avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "tempoTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+tempoTrack avAudioSequencer =
+  sendMessage avAudioSequencer tempoTrackSelector
 
 -- | userInfo
 --
@@ -334,8 +319,8 @@ tempoTrack avAudioSequencer  =
 --
 -- ObjC selector: @- userInfo@
 userInfo :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO (Id NSDictionary)
-userInfo avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo avAudioSequencer =
+  sendMessage avAudioSequencer userInfoSelector
 
 -- | currentPositionInSeconds
 --
@@ -345,8 +330,8 @@ userInfo avAudioSequencer  =
 --
 -- ObjC selector: @- currentPositionInSeconds@
 currentPositionInSeconds :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO CDouble
-currentPositionInSeconds avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "currentPositionInSeconds") retCDouble []
+currentPositionInSeconds avAudioSequencer =
+  sendMessage avAudioSequencer currentPositionInSecondsSelector
 
 -- | currentPositionInSeconds
 --
@@ -356,8 +341,8 @@ currentPositionInSeconds avAudioSequencer  =
 --
 -- ObjC selector: @- setCurrentPositionInSeconds:@
 setCurrentPositionInSeconds :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> CDouble -> IO ()
-setCurrentPositionInSeconds avAudioSequencer  value =
-    sendMsg avAudioSequencer (mkSelector "setCurrentPositionInSeconds:") retVoid [argCDouble value]
+setCurrentPositionInSeconds avAudioSequencer value =
+  sendMessage avAudioSequencer setCurrentPositionInSecondsSelector value
 
 -- | currentPositionInBeats
 --
@@ -367,8 +352,8 @@ setCurrentPositionInSeconds avAudioSequencer  value =
 --
 -- ObjC selector: @- currentPositionInBeats@
 currentPositionInBeats :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO CDouble
-currentPositionInBeats avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "currentPositionInBeats") retCDouble []
+currentPositionInBeats avAudioSequencer =
+  sendMessage avAudioSequencer currentPositionInBeatsSelector
 
 -- | currentPositionInBeats
 --
@@ -378,8 +363,8 @@ currentPositionInBeats avAudioSequencer  =
 --
 -- ObjC selector: @- setCurrentPositionInBeats:@
 setCurrentPositionInBeats :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> CDouble -> IO ()
-setCurrentPositionInBeats avAudioSequencer  value =
-    sendMsg avAudioSequencer (mkSelector "setCurrentPositionInBeats:") retVoid [argCDouble value]
+setCurrentPositionInBeats avAudioSequencer value =
+  sendMessage avAudioSequencer setCurrentPositionInBeatsSelector value
 
 -- | playing
 --
@@ -389,8 +374,8 @@ setCurrentPositionInBeats avAudioSequencer  value =
 --
 -- ObjC selector: @- playing@
 playing :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO Bool
-playing avAudioSequencer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSequencer (mkSelector "playing") retCULong []
+playing avAudioSequencer =
+  sendMessage avAudioSequencer playingSelector
 
 -- | rate
 --
@@ -400,8 +385,8 @@ playing avAudioSequencer  =
 --
 -- ObjC selector: @- rate@
 rate :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> IO CFloat
-rate avAudioSequencer  =
-    sendMsg avAudioSequencer (mkSelector "rate") retCFloat []
+rate avAudioSequencer =
+  sendMessage avAudioSequencer rateSelector
 
 -- | rate
 --
@@ -411,118 +396,118 @@ rate avAudioSequencer  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVAudioSequencer avAudioSequencer => avAudioSequencer -> CFloat -> IO ()
-setRate avAudioSequencer  value =
-    sendMsg avAudioSequencer (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avAudioSequencer value =
+  sendMessage avAudioSequencer setRateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioSequencer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAudioEngine:@
-initWithAudioEngineSelector :: Selector
+initWithAudioEngineSelector :: Selector '[Id AVAudioEngine] (Id AVAudioSequencer)
 initWithAudioEngineSelector = mkSelector "initWithAudioEngine:"
 
 -- | @Selector@ for @loadFromURL:options:error:@
-loadFromURL_options_errorSelector :: Selector
+loadFromURL_options_errorSelector :: Selector '[Id NSURL, AVMusicSequenceLoadOptions, Id NSError] Bool
 loadFromURL_options_errorSelector = mkSelector "loadFromURL:options:error:"
 
 -- | @Selector@ for @loadFromData:options:error:@
-loadFromData_options_errorSelector :: Selector
+loadFromData_options_errorSelector :: Selector '[Id NSData, AVMusicSequenceLoadOptions, Id NSError] Bool
 loadFromData_options_errorSelector = mkSelector "loadFromData:options:error:"
 
 -- | @Selector@ for @writeToURL:SMPTEResolution:replaceExisting:error:@
-writeToURL_SMPTEResolution_replaceExisting_errorSelector :: Selector
+writeToURL_SMPTEResolution_replaceExisting_errorSelector :: Selector '[Id NSURL, CLong, Bool, Id NSError] Bool
 writeToURL_SMPTEResolution_replaceExisting_errorSelector = mkSelector "writeToURL:SMPTEResolution:replaceExisting:error:"
 
 -- | @Selector@ for @dataWithSMPTEResolution:error:@
-dataWithSMPTEResolution_errorSelector :: Selector
+dataWithSMPTEResolution_errorSelector :: Selector '[CLong, Id NSError] (Id NSData)
 dataWithSMPTEResolution_errorSelector = mkSelector "dataWithSMPTEResolution:error:"
 
 -- | @Selector@ for @secondsForBeats:@
-secondsForBeatsSelector :: Selector
+secondsForBeatsSelector :: Selector '[CDouble] CDouble
 secondsForBeatsSelector = mkSelector "secondsForBeats:"
 
 -- | @Selector@ for @beatsForSeconds:@
-beatsForSecondsSelector :: Selector
+beatsForSecondsSelector :: Selector '[CDouble] CDouble
 beatsForSecondsSelector = mkSelector "beatsForSeconds:"
 
 -- | @Selector@ for @reverseEvents@
-reverseEventsSelector :: Selector
+reverseEventsSelector :: Selector '[] ()
 reverseEventsSelector = mkSelector "reverseEvents"
 
 -- | @Selector@ for @createAndAppendTrack@
-createAndAppendTrackSelector :: Selector
+createAndAppendTrackSelector :: Selector '[] (Id AVMusicTrack)
 createAndAppendTrackSelector = mkSelector "createAndAppendTrack"
 
 -- | @Selector@ for @removeTrack:@
-removeTrackSelector :: Selector
+removeTrackSelector :: Selector '[Id AVMusicTrack] Bool
 removeTrackSelector = mkSelector "removeTrack:"
 
 -- | @Selector@ for @setUserCallback:@
-setUserCallbackSelector :: Selector
+setUserCallbackSelector :: Selector '[Ptr ()] ()
 setUserCallbackSelector = mkSelector "setUserCallback:"
 
 -- | @Selector@ for @hostTimeForBeats:error:@
-hostTimeForBeats_errorSelector :: Selector
+hostTimeForBeats_errorSelector :: Selector '[CDouble, Id NSError] CULong
 hostTimeForBeats_errorSelector = mkSelector "hostTimeForBeats:error:"
 
 -- | @Selector@ for @beatsForHostTime:error:@
-beatsForHostTime_errorSelector :: Selector
+beatsForHostTime_errorSelector :: Selector '[CULong, Id NSError] CDouble
 beatsForHostTime_errorSelector = mkSelector "beatsForHostTime:error:"
 
 -- | @Selector@ for @prepareToPlay@
-prepareToPlaySelector :: Selector
+prepareToPlaySelector :: Selector '[] ()
 prepareToPlaySelector = mkSelector "prepareToPlay"
 
 -- | @Selector@ for @startAndReturnError:@
-startAndReturnErrorSelector :: Selector
+startAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startAndReturnErrorSelector = mkSelector "startAndReturnError:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 
 -- | @Selector@ for @tempoTrack@
-tempoTrackSelector :: Selector
+tempoTrackSelector :: Selector '[] (Id AVMusicTrack)
 tempoTrackSelector = mkSelector "tempoTrack"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @currentPositionInSeconds@
-currentPositionInSecondsSelector :: Selector
+currentPositionInSecondsSelector :: Selector '[] CDouble
 currentPositionInSecondsSelector = mkSelector "currentPositionInSeconds"
 
 -- | @Selector@ for @setCurrentPositionInSeconds:@
-setCurrentPositionInSecondsSelector :: Selector
+setCurrentPositionInSecondsSelector :: Selector '[CDouble] ()
 setCurrentPositionInSecondsSelector = mkSelector "setCurrentPositionInSeconds:"
 
 -- | @Selector@ for @currentPositionInBeats@
-currentPositionInBeatsSelector :: Selector
+currentPositionInBeatsSelector :: Selector '[] CDouble
 currentPositionInBeatsSelector = mkSelector "currentPositionInBeats"
 
 -- | @Selector@ for @setCurrentPositionInBeats:@
-setCurrentPositionInBeatsSelector :: Selector
+setCurrentPositionInBeatsSelector :: Selector '[CDouble] ()
 setCurrentPositionInBeatsSelector = mkSelector "setCurrentPositionInBeats:"
 
 -- | @Selector@ for @playing@
-playingSelector :: Selector
+playingSelector :: Selector '[] Bool
 playingSelector = mkSelector "playing"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 

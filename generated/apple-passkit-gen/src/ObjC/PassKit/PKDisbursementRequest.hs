@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,29 +31,29 @@ module ObjC.PassKit.PKDisbursementRequest
   , setSupportedRegions
   , applicationData
   , setApplicationData
-  , initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector
-  , disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector
-  , disbursementCardUnsupportedErrorSelector
-  , merchantIdentifierSelector
-  , setMerchantIdentifierSelector
-  , regionCodeSelector
-  , setRegionCodeSelector
-  , supportedNetworksSelector
-  , setSupportedNetworksSelector
-  , merchantCapabilitiesSelector
-  , setMerchantCapabilitiesSelector
-  , summaryItemsSelector
-  , setSummaryItemsSelector
-  , currencyCodeSelector
-  , setCurrencyCodeSelector
-  , requiredRecipientContactFieldsSelector
-  , setRequiredRecipientContactFieldsSelector
-  , recipientContactSelector
-  , setRecipientContactSelector
-  , supportedRegionsSelector
-  , setSupportedRegionsSelector
   , applicationDataSelector
+  , currencyCodeSelector
+  , disbursementCardUnsupportedErrorSelector
+  , disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector
+  , initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector
+  , merchantCapabilitiesSelector
+  , merchantIdentifierSelector
+  , recipientContactSelector
+  , regionCodeSelector
+  , requiredRecipientContactFieldsSelector
   , setApplicationDataSelector
+  , setCurrencyCodeSelector
+  , setMerchantCapabilitiesSelector
+  , setMerchantIdentifierSelector
+  , setRecipientContactSelector
+  , setRegionCodeSelector
+  , setRequiredRecipientContactFieldsSelector
+  , setSummaryItemsSelector
+  , setSupportedNetworksSelector
+  , setSupportedRegionsSelector
+  , summaryItemsSelector
+  , supportedNetworksSelector
+  , supportedRegionsSelector
 
   -- * Enum types
   , PKMerchantCapability(PKMerchantCapability)
@@ -64,15 +65,11 @@ module ObjC.PassKit.PKDisbursementRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,232 +79,216 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMerchantIdentifier:currencyCode:regionCode:supportedNetworks:merchantCapabilities:summaryItems:@
 initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItems :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSString merchantIdentifier, IsNSString currencyCode, IsNSString regionCode, IsNSArray supportedNetworks, IsNSArray summaryItems) => pkDisbursementRequest -> merchantIdentifier -> currencyCode -> regionCode -> supportedNetworks -> PKMerchantCapability -> summaryItems -> IO (Id PKDisbursementRequest)
-initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItems pkDisbursementRequest  merchantIdentifier currencyCode regionCode supportedNetworks merchantCapabilities summaryItems =
-  withObjCPtr merchantIdentifier $ \raw_merchantIdentifier ->
-    withObjCPtr currencyCode $ \raw_currencyCode ->
-      withObjCPtr regionCode $ \raw_regionCode ->
-        withObjCPtr supportedNetworks $ \raw_supportedNetworks ->
-          withObjCPtr summaryItems $ \raw_summaryItems ->
-              sendMsg pkDisbursementRequest (mkSelector "initWithMerchantIdentifier:currencyCode:regionCode:supportedNetworks:merchantCapabilities:summaryItems:") (retPtr retVoid) [argPtr (castPtr raw_merchantIdentifier :: Ptr ()), argPtr (castPtr raw_currencyCode :: Ptr ()), argPtr (castPtr raw_regionCode :: Ptr ()), argPtr (castPtr raw_supportedNetworks :: Ptr ()), argCULong (coerce merchantCapabilities), argPtr (castPtr raw_summaryItems :: Ptr ())] >>= ownedObject . castPtr
+initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItems pkDisbursementRequest merchantIdentifier currencyCode regionCode supportedNetworks merchantCapabilities summaryItems =
+  sendOwnedMessage pkDisbursementRequest initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector (toNSString merchantIdentifier) (toNSString currencyCode) (toNSString regionCode) (toNSArray supportedNetworks) merchantCapabilities (toNSArray summaryItems)
 
 -- | @+ disbursementContactInvalidErrorWithContactField:localizedDescription:@
 disbursementContactInvalidErrorWithContactField_localizedDescription :: (IsNSString field, IsNSString localizedDescription) => field -> localizedDescription -> IO (Id NSError)
 disbursementContactInvalidErrorWithContactField_localizedDescription field localizedDescription =
   do
     cls' <- getRequiredClass "PKDisbursementRequest"
-    withObjCPtr field $ \raw_field ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        sendClassMsg cls' (mkSelector "disbursementContactInvalidErrorWithContactField:localizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_field :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector (toNSString field) (toNSString localizedDescription)
 
 -- | @+ disbursementCardUnsupportedError@
 disbursementCardUnsupportedError :: IO (Id NSError)
 disbursementCardUnsupportedError  =
   do
     cls' <- getRequiredClass "PKDisbursementRequest"
-    sendClassMsg cls' (mkSelector "disbursementCardUnsupportedError") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' disbursementCardUnsupportedErrorSelector
 
 -- | @- merchantIdentifier@
 merchantIdentifier :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSString)
-merchantIdentifier pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "merchantIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+merchantIdentifier pkDisbursementRequest =
+  sendMessage pkDisbursementRequest merchantIdentifierSelector
 
 -- | @- setMerchantIdentifier:@
 setMerchantIdentifier :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSString value) => pkDisbursementRequest -> value -> IO ()
-setMerchantIdentifier pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setMerchantIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMerchantIdentifier pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setMerchantIdentifierSelector (toNSString value)
 
 -- | @- regionCode@
 regionCode :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSString)
-regionCode pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "regionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionCode pkDisbursementRequest =
+  sendMessage pkDisbursementRequest regionCodeSelector
 
 -- | @- setRegionCode:@
 setRegionCode :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSString value) => pkDisbursementRequest -> value -> IO ()
-setRegionCode pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setRegionCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRegionCode pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setRegionCodeSelector (toNSString value)
 
 -- | @- supportedNetworks@
 supportedNetworks :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSArray)
-supportedNetworks pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "supportedNetworks") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedNetworks pkDisbursementRequest =
+  sendMessage pkDisbursementRequest supportedNetworksSelector
 
 -- | @- setSupportedNetworks:@
 setSupportedNetworks :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSArray value) => pkDisbursementRequest -> value -> IO ()
-setSupportedNetworks pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setSupportedNetworks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedNetworks pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setSupportedNetworksSelector (toNSArray value)
 
 -- | @- merchantCapabilities@
 merchantCapabilities :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO PKMerchantCapability
-merchantCapabilities pkDisbursementRequest  =
-    fmap (coerce :: CULong -> PKMerchantCapability) $ sendMsg pkDisbursementRequest (mkSelector "merchantCapabilities") retCULong []
+merchantCapabilities pkDisbursementRequest =
+  sendMessage pkDisbursementRequest merchantCapabilitiesSelector
 
 -- | @- setMerchantCapabilities:@
 setMerchantCapabilities :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> PKMerchantCapability -> IO ()
-setMerchantCapabilities pkDisbursementRequest  value =
-    sendMsg pkDisbursementRequest (mkSelector "setMerchantCapabilities:") retVoid [argCULong (coerce value)]
+setMerchantCapabilities pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setMerchantCapabilitiesSelector value
 
 -- | @- summaryItems@
 summaryItems :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSArray)
-summaryItems pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "summaryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+summaryItems pkDisbursementRequest =
+  sendMessage pkDisbursementRequest summaryItemsSelector
 
 -- | @- setSummaryItems:@
 setSummaryItems :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSArray value) => pkDisbursementRequest -> value -> IO ()
-setSummaryItems pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setSummaryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSummaryItems pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setSummaryItemsSelector (toNSArray value)
 
 -- | @- currencyCode@
 currencyCode :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSString)
-currencyCode pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode pkDisbursementRequest =
+  sendMessage pkDisbursementRequest currencyCodeSelector
 
 -- | @- setCurrencyCode:@
 setCurrencyCode :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSString value) => pkDisbursementRequest -> value -> IO ()
-setCurrencyCode pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setCurrencyCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencyCode pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setCurrencyCodeSelector (toNSString value)
 
 -- | @- requiredRecipientContactFields@
 requiredRecipientContactFields :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSArray)
-requiredRecipientContactFields pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "requiredRecipientContactFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredRecipientContactFields pkDisbursementRequest =
+  sendMessage pkDisbursementRequest requiredRecipientContactFieldsSelector
 
 -- | @- setRequiredRecipientContactFields:@
 setRequiredRecipientContactFields :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSArray value) => pkDisbursementRequest -> value -> IO ()
-setRequiredRecipientContactFields pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setRequiredRecipientContactFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiredRecipientContactFields pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setRequiredRecipientContactFieldsSelector (toNSArray value)
 
 -- | @- recipientContact@
 recipientContact :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id PKContact)
-recipientContact pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "recipientContact") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipientContact pkDisbursementRequest =
+  sendMessage pkDisbursementRequest recipientContactSelector
 
 -- | @- setRecipientContact:@
 setRecipientContact :: (IsPKDisbursementRequest pkDisbursementRequest, IsPKContact value) => pkDisbursementRequest -> value -> IO ()
-setRecipientContact pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setRecipientContact:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecipientContact pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setRecipientContactSelector (toPKContact value)
 
 -- | @- supportedRegions@
 supportedRegions :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSArray)
-supportedRegions pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "supportedRegions") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedRegions pkDisbursementRequest =
+  sendMessage pkDisbursementRequest supportedRegionsSelector
 
 -- | @- setSupportedRegions:@
 setSupportedRegions :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSArray value) => pkDisbursementRequest -> value -> IO ()
-setSupportedRegions pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setSupportedRegions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedRegions pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setSupportedRegionsSelector (toNSArray value)
 
 -- | @- applicationData@
 applicationData :: IsPKDisbursementRequest pkDisbursementRequest => pkDisbursementRequest -> IO (Id NSData)
-applicationData pkDisbursementRequest  =
-    sendMsg pkDisbursementRequest (mkSelector "applicationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationData pkDisbursementRequest =
+  sendMessage pkDisbursementRequest applicationDataSelector
 
 -- | @- setApplicationData:@
 setApplicationData :: (IsPKDisbursementRequest pkDisbursementRequest, IsNSData value) => pkDisbursementRequest -> value -> IO ()
-setApplicationData pkDisbursementRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDisbursementRequest (mkSelector "setApplicationData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationData pkDisbursementRequest value =
+  sendMessage pkDisbursementRequest setApplicationDataSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMerchantIdentifier:currencyCode:regionCode:supportedNetworks:merchantCapabilities:summaryItems:@
-initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector :: Selector
+initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSArray, PKMerchantCapability, Id NSArray] (Id PKDisbursementRequest)
 initWithMerchantIdentifier_currencyCode_regionCode_supportedNetworks_merchantCapabilities_summaryItemsSelector = mkSelector "initWithMerchantIdentifier:currencyCode:regionCode:supportedNetworks:merchantCapabilities:summaryItems:"
 
 -- | @Selector@ for @disbursementContactInvalidErrorWithContactField:localizedDescription:@
-disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector :: Selector
+disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector :: Selector '[Id NSString, Id NSString] (Id NSError)
 disbursementContactInvalidErrorWithContactField_localizedDescriptionSelector = mkSelector "disbursementContactInvalidErrorWithContactField:localizedDescription:"
 
 -- | @Selector@ for @disbursementCardUnsupportedError@
-disbursementCardUnsupportedErrorSelector :: Selector
+disbursementCardUnsupportedErrorSelector :: Selector '[] (Id NSError)
 disbursementCardUnsupportedErrorSelector = mkSelector "disbursementCardUnsupportedError"
 
 -- | @Selector@ for @merchantIdentifier@
-merchantIdentifierSelector :: Selector
+merchantIdentifierSelector :: Selector '[] (Id NSString)
 merchantIdentifierSelector = mkSelector "merchantIdentifier"
 
 -- | @Selector@ for @setMerchantIdentifier:@
-setMerchantIdentifierSelector :: Selector
+setMerchantIdentifierSelector :: Selector '[Id NSString] ()
 setMerchantIdentifierSelector = mkSelector "setMerchantIdentifier:"
 
 -- | @Selector@ for @regionCode@
-regionCodeSelector :: Selector
+regionCodeSelector :: Selector '[] (Id NSString)
 regionCodeSelector = mkSelector "regionCode"
 
 -- | @Selector@ for @setRegionCode:@
-setRegionCodeSelector :: Selector
+setRegionCodeSelector :: Selector '[Id NSString] ()
 setRegionCodeSelector = mkSelector "setRegionCode:"
 
 -- | @Selector@ for @supportedNetworks@
-supportedNetworksSelector :: Selector
+supportedNetworksSelector :: Selector '[] (Id NSArray)
 supportedNetworksSelector = mkSelector "supportedNetworks"
 
 -- | @Selector@ for @setSupportedNetworks:@
-setSupportedNetworksSelector :: Selector
+setSupportedNetworksSelector :: Selector '[Id NSArray] ()
 setSupportedNetworksSelector = mkSelector "setSupportedNetworks:"
 
 -- | @Selector@ for @merchantCapabilities@
-merchantCapabilitiesSelector :: Selector
+merchantCapabilitiesSelector :: Selector '[] PKMerchantCapability
 merchantCapabilitiesSelector = mkSelector "merchantCapabilities"
 
 -- | @Selector@ for @setMerchantCapabilities:@
-setMerchantCapabilitiesSelector :: Selector
+setMerchantCapabilitiesSelector :: Selector '[PKMerchantCapability] ()
 setMerchantCapabilitiesSelector = mkSelector "setMerchantCapabilities:"
 
 -- | @Selector@ for @summaryItems@
-summaryItemsSelector :: Selector
+summaryItemsSelector :: Selector '[] (Id NSArray)
 summaryItemsSelector = mkSelector "summaryItems"
 
 -- | @Selector@ for @setSummaryItems:@
-setSummaryItemsSelector :: Selector
+setSummaryItemsSelector :: Selector '[Id NSArray] ()
 setSummaryItemsSelector = mkSelector "setSummaryItems:"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 
 -- | @Selector@ for @setCurrencyCode:@
-setCurrencyCodeSelector :: Selector
+setCurrencyCodeSelector :: Selector '[Id NSString] ()
 setCurrencyCodeSelector = mkSelector "setCurrencyCode:"
 
 -- | @Selector@ for @requiredRecipientContactFields@
-requiredRecipientContactFieldsSelector :: Selector
+requiredRecipientContactFieldsSelector :: Selector '[] (Id NSArray)
 requiredRecipientContactFieldsSelector = mkSelector "requiredRecipientContactFields"
 
 -- | @Selector@ for @setRequiredRecipientContactFields:@
-setRequiredRecipientContactFieldsSelector :: Selector
+setRequiredRecipientContactFieldsSelector :: Selector '[Id NSArray] ()
 setRequiredRecipientContactFieldsSelector = mkSelector "setRequiredRecipientContactFields:"
 
 -- | @Selector@ for @recipientContact@
-recipientContactSelector :: Selector
+recipientContactSelector :: Selector '[] (Id PKContact)
 recipientContactSelector = mkSelector "recipientContact"
 
 -- | @Selector@ for @setRecipientContact:@
-setRecipientContactSelector :: Selector
+setRecipientContactSelector :: Selector '[Id PKContact] ()
 setRecipientContactSelector = mkSelector "setRecipientContact:"
 
 -- | @Selector@ for @supportedRegions@
-supportedRegionsSelector :: Selector
+supportedRegionsSelector :: Selector '[] (Id NSArray)
 supportedRegionsSelector = mkSelector "supportedRegions"
 
 -- | @Selector@ for @setSupportedRegions:@
-setSupportedRegionsSelector :: Selector
+setSupportedRegionsSelector :: Selector '[Id NSArray] ()
 setSupportedRegionsSelector = mkSelector "setSupportedRegions:"
 
 -- | @Selector@ for @applicationData@
-applicationDataSelector :: Selector
+applicationDataSelector :: Selector '[] (Id NSData)
 applicationDataSelector = mkSelector "applicationData"
 
 -- | @Selector@ for @setApplicationData:@
-setApplicationDataSelector :: Selector
+setApplicationDataSelector :: Selector '[Id NSData] ()
 setApplicationDataSelector = mkSelector "setApplicationData:"
 

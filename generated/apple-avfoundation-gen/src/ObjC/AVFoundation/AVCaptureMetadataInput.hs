@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.AVFoundation.AVCaptureMetadataInput
   , metadataInputWithFormatDescription_clock
   , initWithFormatDescription_clock
   , appendTimedMetadataGroup_error
-  , metadataInputWithFormatDescription_clockSelector
-  , initWithFormatDescription_clockSelector
   , appendTimedMetadataGroup_errorSelector
+  , initWithFormatDescription_clockSelector
+  , metadataInputWithFormatDescription_clockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,7 +51,7 @@ metadataInputWithFormatDescription_clock :: RawId -> Ptr () -> IO (Id AVCaptureM
 metadataInputWithFormatDescription_clock desc clock =
   do
     cls' <- getRequiredClass "AVCaptureMetadataInput"
-    sendClassMsg cls' (mkSelector "metadataInputWithFormatDescription:clock:") (retPtr retVoid) [argPtr (castPtr (unRawId desc) :: Ptr ()), argPtr clock] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataInputWithFormatDescription_clockSelector desc clock
 
 -- | initWithFormatDescription:clock:
 --
@@ -70,8 +67,8 @@ metadataInputWithFormatDescription_clock desc clock =
 --
 -- ObjC selector: @- initWithFormatDescription:clock:@
 initWithFormatDescription_clock :: IsAVCaptureMetadataInput avCaptureMetadataInput => avCaptureMetadataInput -> RawId -> Ptr () -> IO (Id AVCaptureMetadataInput)
-initWithFormatDescription_clock avCaptureMetadataInput  desc clock =
-    sendMsg avCaptureMetadataInput (mkSelector "initWithFormatDescription:clock:") (retPtr retVoid) [argPtr (castPtr (unRawId desc) :: Ptr ()), argPtr clock] >>= ownedObject . castPtr
+initWithFormatDescription_clock avCaptureMetadataInput desc clock =
+  sendOwnedMessage avCaptureMetadataInput initWithFormatDescription_clockSelector desc clock
 
 -- | appendTimedMetadataGroup:
 --
@@ -83,24 +80,22 @@ initWithFormatDescription_clock avCaptureMetadataInput  desc clock =
 --
 -- ObjC selector: @- appendTimedMetadataGroup:error:@
 appendTimedMetadataGroup_error :: (IsAVCaptureMetadataInput avCaptureMetadataInput, IsAVTimedMetadataGroup metadata, IsNSError outError) => avCaptureMetadataInput -> metadata -> outError -> IO Bool
-appendTimedMetadataGroup_error avCaptureMetadataInput  metadata outError =
-  withObjCPtr metadata $ \raw_metadata ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureMetadataInput (mkSelector "appendTimedMetadataGroup:error:") retCULong [argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+appendTimedMetadataGroup_error avCaptureMetadataInput metadata outError =
+  sendMessage avCaptureMetadataInput appendTimedMetadataGroup_errorSelector (toAVTimedMetadataGroup metadata) (toNSError outError)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @metadataInputWithFormatDescription:clock:@
-metadataInputWithFormatDescription_clockSelector :: Selector
+metadataInputWithFormatDescription_clockSelector :: Selector '[RawId, Ptr ()] (Id AVCaptureMetadataInput)
 metadataInputWithFormatDescription_clockSelector = mkSelector "metadataInputWithFormatDescription:clock:"
 
 -- | @Selector@ for @initWithFormatDescription:clock:@
-initWithFormatDescription_clockSelector :: Selector
+initWithFormatDescription_clockSelector :: Selector '[RawId, Ptr ()] (Id AVCaptureMetadataInput)
 initWithFormatDescription_clockSelector = mkSelector "initWithFormatDescription:clock:"
 
 -- | @Selector@ for @appendTimedMetadataGroup:error:@
-appendTimedMetadataGroup_errorSelector :: Selector
+appendTimedMetadataGroup_errorSelector :: Selector '[Id AVTimedMetadataGroup, Id NSError] Bool
 appendTimedMetadataGroup_errorSelector = mkSelector "appendTimedMetadataGroup:error:"
 

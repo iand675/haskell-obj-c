@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.Vision.VNGenerateImageFeaturePrintRequest
   , setImageCropAndScaleOption
   , results
   , imageCropAndScaleOptionSelector
-  , setImageCropAndScaleOptionSelector
   , resultsSelector
+  , setImageCropAndScaleOptionSelector
 
   -- * Enum types
   , VNImageCropAndScaleOption(VNImageCropAndScaleOption)
@@ -28,15 +29,11 @@ module ObjC.Vision.VNGenerateImageFeaturePrintRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- imageCropAndScaleOption@
 imageCropAndScaleOption :: IsVNGenerateImageFeaturePrintRequest vnGenerateImageFeaturePrintRequest => vnGenerateImageFeaturePrintRequest -> IO VNImageCropAndScaleOption
-imageCropAndScaleOption vnGenerateImageFeaturePrintRequest  =
-    fmap (coerce :: CULong -> VNImageCropAndScaleOption) $ sendMsg vnGenerateImageFeaturePrintRequest (mkSelector "imageCropAndScaleOption") retCULong []
+imageCropAndScaleOption vnGenerateImageFeaturePrintRequest =
+  sendMessage vnGenerateImageFeaturePrintRequest imageCropAndScaleOptionSelector
 
 -- | Determine what type of croping and scaling action should be applied to the image before generating the feature print.
 --
@@ -59,29 +56,29 @@ imageCropAndScaleOption vnGenerateImageFeaturePrintRequest  =
 --
 -- ObjC selector: @- setImageCropAndScaleOption:@
 setImageCropAndScaleOption :: IsVNGenerateImageFeaturePrintRequest vnGenerateImageFeaturePrintRequest => vnGenerateImageFeaturePrintRequest -> VNImageCropAndScaleOption -> IO ()
-setImageCropAndScaleOption vnGenerateImageFeaturePrintRequest  value =
-    sendMsg vnGenerateImageFeaturePrintRequest (mkSelector "setImageCropAndScaleOption:") retVoid [argCULong (coerce value)]
+setImageCropAndScaleOption vnGenerateImageFeaturePrintRequest value =
+  sendMessage vnGenerateImageFeaturePrintRequest setImageCropAndScaleOptionSelector value
 
 -- | @VNFeaturePrintObservation@ results.
 --
 -- ObjC selector: @- results@
 results :: IsVNGenerateImageFeaturePrintRequest vnGenerateImageFeaturePrintRequest => vnGenerateImageFeaturePrintRequest -> IO (Id NSArray)
-results vnGenerateImageFeaturePrintRequest  =
-    sendMsg vnGenerateImageFeaturePrintRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnGenerateImageFeaturePrintRequest =
+  sendMessage vnGenerateImageFeaturePrintRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageCropAndScaleOption@
-imageCropAndScaleOptionSelector :: Selector
+imageCropAndScaleOptionSelector :: Selector '[] VNImageCropAndScaleOption
 imageCropAndScaleOptionSelector = mkSelector "imageCropAndScaleOption"
 
 -- | @Selector@ for @setImageCropAndScaleOption:@
-setImageCropAndScaleOptionSelector :: Selector
+setImageCropAndScaleOptionSelector :: Selector '[VNImageCropAndScaleOption] ()
 setImageCropAndScaleOptionSelector = mkSelector "setImageCropAndScaleOption:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Intents.INRidePartySizeOption
   , partySizeRange
   , sizeDescription
   , priceRange
-  , initWithPartySizeRange_sizeDescription_priceRangeSelector
   , initSelector
+  , initWithPartySizeRange_sizeDescription_priceRangeSelector
   , partySizeRangeSelector
-  , sizeDescriptionSelector
   , priceRangeSelector
+  , sizeDescriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,52 +35,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPartySizeRange:sizeDescription:priceRange:@
 initWithPartySizeRange_sizeDescription_priceRange :: (IsINRidePartySizeOption inRidePartySizeOption, IsNSString sizeDescription, IsINPriceRange priceRange) => inRidePartySizeOption -> NSRange -> sizeDescription -> priceRange -> IO (Id INRidePartySizeOption)
-initWithPartySizeRange_sizeDescription_priceRange inRidePartySizeOption  partySizeRange sizeDescription priceRange =
-  withObjCPtr sizeDescription $ \raw_sizeDescription ->
-    withObjCPtr priceRange $ \raw_priceRange ->
-        sendMsg inRidePartySizeOption (mkSelector "initWithPartySizeRange:sizeDescription:priceRange:") (retPtr retVoid) [argNSRange partySizeRange, argPtr (castPtr raw_sizeDescription :: Ptr ()), argPtr (castPtr raw_priceRange :: Ptr ())] >>= ownedObject . castPtr
+initWithPartySizeRange_sizeDescription_priceRange inRidePartySizeOption partySizeRange sizeDescription priceRange =
+  sendOwnedMessage inRidePartySizeOption initWithPartySizeRange_sizeDescription_priceRangeSelector partySizeRange (toNSString sizeDescription) (toINPriceRange priceRange)
 
 -- | @- init@
 init_ :: IsINRidePartySizeOption inRidePartySizeOption => inRidePartySizeOption -> IO (Id INRidePartySizeOption)
-init_ inRidePartySizeOption  =
-    sendMsg inRidePartySizeOption (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRidePartySizeOption =
+  sendOwnedMessage inRidePartySizeOption initSelector
 
 -- | @- partySizeRange@
 partySizeRange :: IsINRidePartySizeOption inRidePartySizeOption => inRidePartySizeOption -> IO NSRange
-partySizeRange inRidePartySizeOption  =
-    sendMsgStret inRidePartySizeOption (mkSelector "partySizeRange") retNSRange []
+partySizeRange inRidePartySizeOption =
+  sendMessage inRidePartySizeOption partySizeRangeSelector
 
 -- | @- sizeDescription@
 sizeDescription :: IsINRidePartySizeOption inRidePartySizeOption => inRidePartySizeOption -> IO (Id NSString)
-sizeDescription inRidePartySizeOption  =
-    sendMsg inRidePartySizeOption (mkSelector "sizeDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+sizeDescription inRidePartySizeOption =
+  sendMessage inRidePartySizeOption sizeDescriptionSelector
 
 -- | @- priceRange@
 priceRange :: IsINRidePartySizeOption inRidePartySizeOption => inRidePartySizeOption -> IO (Id INPriceRange)
-priceRange inRidePartySizeOption  =
-    sendMsg inRidePartySizeOption (mkSelector "priceRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceRange inRidePartySizeOption =
+  sendMessage inRidePartySizeOption priceRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPartySizeRange:sizeDescription:priceRange:@
-initWithPartySizeRange_sizeDescription_priceRangeSelector :: Selector
+initWithPartySizeRange_sizeDescription_priceRangeSelector :: Selector '[NSRange, Id NSString, Id INPriceRange] (Id INRidePartySizeOption)
 initWithPartySizeRange_sizeDescription_priceRangeSelector = mkSelector "initWithPartySizeRange:sizeDescription:priceRange:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRidePartySizeOption)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @partySizeRange@
-partySizeRangeSelector :: Selector
+partySizeRangeSelector :: Selector '[] NSRange
 partySizeRangeSelector = mkSelector "partySizeRange"
 
 -- | @Selector@ for @sizeDescription@
-sizeDescriptionSelector :: Selector
+sizeDescriptionSelector :: Selector '[] (Id NSString)
 sizeDescriptionSelector = mkSelector "sizeDescription"
 
 -- | @Selector@ for @priceRange@
-priceRangeSelector :: Selector
+priceRangeSelector :: Selector '[] (Id INPriceRange)
 priceRangeSelector = mkSelector "priceRange"
 

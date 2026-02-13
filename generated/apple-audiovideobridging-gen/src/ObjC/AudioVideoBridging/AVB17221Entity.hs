@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,44 +52,44 @@ module ObjC.AudioVideoBridging.AVB17221Entity
   , setMacAddresses
   , entityDiscovery
   , setEntityDiscovery
-  , localEntitySelector
-  , setLocalEntitySelector
-  , timeToLiveSelector
-  , setTimeToLiveSelector
-  , entityIDSelector
-  , setEntityIDSelector
-  , entityModelIDSelector
-  , setEntityModelIDSelector
-  , entityCapabilitiesSelector
-  , setEntityCapabilitiesSelector
-  , talkerStreamSourcesSelector
-  , setTalkerStreamSourcesSelector
-  , talkerCapabilitiesSelector
-  , setTalkerCapabilitiesSelector
-  , listenerStreamSinksSelector
-  , setListenerStreamSinksSelector
-  , listenerCapabilitiesSelector
-  , setListenerCapabilitiesSelector
-  , controllerCapabilitiesSelector
-  , setControllerCapabilitiesSelector
-  , availableIndexSelector
-  , setAvailableIndexSelector
-  , gPTPGrandmasterIDSelector
-  , setGPTPGrandmasterIDSelector
-  , gPTPDomainNumberSelector
-  , setGPTPDomainNumberSelector
-  , identifyControlIndexSelector
-  , setIdentifyControlIndexSelector
-  , interfaceIndexSelector
-  , setInterfaceIndexSelector
   , associationIDSelector
-  , setAssociationIDSelector
+  , availableIndexSelector
+  , controllerCapabilitiesSelector
   , currentConfigurationIndexSelector
-  , setCurrentConfigurationIndexSelector
-  , macAddressesSelector
-  , setMacAddressesSelector
+  , entityCapabilitiesSelector
   , entityDiscoverySelector
+  , entityIDSelector
+  , entityModelIDSelector
+  , gPTPDomainNumberSelector
+  , gPTPGrandmasterIDSelector
+  , identifyControlIndexSelector
+  , interfaceIndexSelector
+  , listenerCapabilitiesSelector
+  , listenerStreamSinksSelector
+  , localEntitySelector
+  , macAddressesSelector
+  , setAssociationIDSelector
+  , setAvailableIndexSelector
+  , setControllerCapabilitiesSelector
+  , setCurrentConfigurationIndexSelector
+  , setEntityCapabilitiesSelector
   , setEntityDiscoverySelector
+  , setEntityIDSelector
+  , setEntityModelIDSelector
+  , setGPTPDomainNumberSelector
+  , setGPTPGrandmasterIDSelector
+  , setIdentifyControlIndexSelector
+  , setInterfaceIndexSelector
+  , setListenerCapabilitiesSelector
+  , setListenerStreamSinksSelector
+  , setLocalEntitySelector
+  , setMacAddressesSelector
+  , setTalkerCapabilitiesSelector
+  , setTalkerStreamSourcesSelector
+  , setTimeToLiveSelector
+  , talkerCapabilitiesSelector
+  , talkerStreamSourcesSelector
+  , timeToLiveSelector
 
   -- * Enum types
   , AVB17221ADPControllerCapabilities(AVB17221ADPControllerCapabilities)
@@ -143,15 +144,11 @@ module ObjC.AudioVideoBridging.AVB17221Entity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -165,8 +162,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- localEntity@
 localEntity :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO Bool
-localEntity avB17221Entity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221Entity (mkSelector "localEntity") retCULong []
+localEntity avB17221Entity =
+  sendMessage avB17221Entity localEntitySelector
 
 -- | localEntity
 --
@@ -174,8 +171,8 @@ localEntity avB17221Entity  =
 --
 -- ObjC selector: @- setLocalEntity:@
 setLocalEntity :: IsAVB17221Entity avB17221Entity => avB17221Entity -> Bool -> IO ()
-setLocalEntity avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setLocalEntity:") retVoid [argCULong (if value then 1 else 0)]
+setLocalEntity avB17221Entity value =
+  sendMessage avB17221Entity setLocalEntitySelector value
 
 -- | timeToLive
 --
@@ -183,8 +180,8 @@ setLocalEntity avB17221Entity  value =
 --
 -- ObjC selector: @- timeToLive@
 timeToLive :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUChar
-timeToLive avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "timeToLive") retCUChar []
+timeToLive avB17221Entity =
+  sendMessage avB17221Entity timeToLiveSelector
 
 -- | timeToLive
 --
@@ -192,8 +189,8 @@ timeToLive avB17221Entity  =
 --
 -- ObjC selector: @- setTimeToLive:@
 setTimeToLive :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUChar -> IO ()
-setTimeToLive avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setTimeToLive:") retVoid [argCUChar value]
+setTimeToLive avB17221Entity value =
+  sendMessage avB17221Entity setTimeToLiveSelector value
 
 -- | entityID
 --
@@ -201,8 +198,8 @@ setTimeToLive avB17221Entity  value =
 --
 -- ObjC selector: @- entityID@
 entityID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CULong
-entityID avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "entityID") retCULong []
+entityID avB17221Entity =
+  sendMessage avB17221Entity entityIDSelector
 
 -- | entityID
 --
@@ -210,8 +207,8 @@ entityID avB17221Entity  =
 --
 -- ObjC selector: @- setEntityID:@
 setEntityID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CULong -> IO ()
-setEntityID avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setEntityID:") retVoid [argCULong value]
+setEntityID avB17221Entity value =
+  sendMessage avB17221Entity setEntityIDSelector value
 
 -- | entityModelID
 --
@@ -219,8 +216,8 @@ setEntityID avB17221Entity  value =
 --
 -- ObjC selector: @- entityModelID@
 entityModelID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CULong
-entityModelID avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "entityModelID") retCULong []
+entityModelID avB17221Entity =
+  sendMessage avB17221Entity entityModelIDSelector
 
 -- | entityModelID
 --
@@ -228,8 +225,8 @@ entityModelID avB17221Entity  =
 --
 -- ObjC selector: @- setEntityModelID:@
 setEntityModelID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CULong -> IO ()
-setEntityModelID avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setEntityModelID:") retVoid [argCULong value]
+setEntityModelID avB17221Entity value =
+  sendMessage avB17221Entity setEntityModelIDSelector value
 
 -- | entityCapabilities
 --
@@ -237,8 +234,8 @@ setEntityModelID avB17221Entity  value =
 --
 -- ObjC selector: @- entityCapabilities@
 entityCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO AVB17221ADPEntityCapabilities
-entityCapabilities avB17221Entity  =
-    fmap (coerce :: CUInt -> AVB17221ADPEntityCapabilities) $ sendMsg avB17221Entity (mkSelector "entityCapabilities") retCUInt []
+entityCapabilities avB17221Entity =
+  sendMessage avB17221Entity entityCapabilitiesSelector
 
 -- | entityCapabilities
 --
@@ -246,8 +243,8 @@ entityCapabilities avB17221Entity  =
 --
 -- ObjC selector: @- setEntityCapabilities:@
 setEntityCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> AVB17221ADPEntityCapabilities -> IO ()
-setEntityCapabilities avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setEntityCapabilities:") retVoid [argCUInt (coerce value)]
+setEntityCapabilities avB17221Entity value =
+  sendMessage avB17221Entity setEntityCapabilitiesSelector value
 
 -- | talkerStreamSources
 --
@@ -255,8 +252,8 @@ setEntityCapabilities avB17221Entity  value =
 --
 -- ObjC selector: @- talkerStreamSources@
 talkerStreamSources :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUShort
-talkerStreamSources avB17221Entity  =
-    fmap fromIntegral $ sendMsg avB17221Entity (mkSelector "talkerStreamSources") retCUInt []
+talkerStreamSources avB17221Entity =
+  sendMessage avB17221Entity talkerStreamSourcesSelector
 
 -- | talkerStreamSources
 --
@@ -264,8 +261,8 @@ talkerStreamSources avB17221Entity  =
 --
 -- ObjC selector: @- setTalkerStreamSources:@
 setTalkerStreamSources :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUShort -> IO ()
-setTalkerStreamSources avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setTalkerStreamSources:") retVoid [argCUInt (fromIntegral value)]
+setTalkerStreamSources avB17221Entity value =
+  sendMessage avB17221Entity setTalkerStreamSourcesSelector value
 
 -- | talkerCapabilities
 --
@@ -273,8 +270,8 @@ setTalkerStreamSources avB17221Entity  value =
 --
 -- ObjC selector: @- talkerCapabilities@
 talkerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO AVB17221ADPTalkerCapabilities
-talkerCapabilities avB17221Entity  =
-    fmap (AVB17221ADPTalkerCapabilities . fromIntegral :: CUInt -> AVB17221ADPTalkerCapabilities) $ sendMsg avB17221Entity (mkSelector "talkerCapabilities") retCUInt []
+talkerCapabilities avB17221Entity =
+  sendMessage avB17221Entity talkerCapabilitiesSelector
 
 -- | talkerCapabilities
 --
@@ -282,8 +279,8 @@ talkerCapabilities avB17221Entity  =
 --
 -- ObjC selector: @- setTalkerCapabilities:@
 setTalkerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> AVB17221ADPTalkerCapabilities -> IO ()
-setTalkerCapabilities avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setTalkerCapabilities:") retVoid [argCUInt (fromIntegral (coerce value :: CUShort))]
+setTalkerCapabilities avB17221Entity value =
+  sendMessage avB17221Entity setTalkerCapabilitiesSelector value
 
 -- | listenerStreamSinks
 --
@@ -291,8 +288,8 @@ setTalkerCapabilities avB17221Entity  value =
 --
 -- ObjC selector: @- listenerStreamSinks@
 listenerStreamSinks :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUShort
-listenerStreamSinks avB17221Entity  =
-    fmap fromIntegral $ sendMsg avB17221Entity (mkSelector "listenerStreamSinks") retCUInt []
+listenerStreamSinks avB17221Entity =
+  sendMessage avB17221Entity listenerStreamSinksSelector
 
 -- | listenerStreamSinks
 --
@@ -300,8 +297,8 @@ listenerStreamSinks avB17221Entity  =
 --
 -- ObjC selector: @- setListenerStreamSinks:@
 setListenerStreamSinks :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUShort -> IO ()
-setListenerStreamSinks avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setListenerStreamSinks:") retVoid [argCUInt (fromIntegral value)]
+setListenerStreamSinks avB17221Entity value =
+  sendMessage avB17221Entity setListenerStreamSinksSelector value
 
 -- | listenerCapabilities
 --
@@ -309,8 +306,8 @@ setListenerStreamSinks avB17221Entity  value =
 --
 -- ObjC selector: @- listenerCapabilities@
 listenerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO AVB17221ADPListenerCapabilities
-listenerCapabilities avB17221Entity  =
-    fmap (AVB17221ADPListenerCapabilities . fromIntegral :: CUInt -> AVB17221ADPListenerCapabilities) $ sendMsg avB17221Entity (mkSelector "listenerCapabilities") retCUInt []
+listenerCapabilities avB17221Entity =
+  sendMessage avB17221Entity listenerCapabilitiesSelector
 
 -- | listenerCapabilities
 --
@@ -318,8 +315,8 @@ listenerCapabilities avB17221Entity  =
 --
 -- ObjC selector: @- setListenerCapabilities:@
 setListenerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> AVB17221ADPListenerCapabilities -> IO ()
-setListenerCapabilities avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setListenerCapabilities:") retVoid [argCUInt (fromIntegral (coerce value :: CUShort))]
+setListenerCapabilities avB17221Entity value =
+  sendMessage avB17221Entity setListenerCapabilitiesSelector value
 
 -- | controllerCapabilities
 --
@@ -327,8 +324,8 @@ setListenerCapabilities avB17221Entity  value =
 --
 -- ObjC selector: @- controllerCapabilities@
 controllerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO AVB17221ADPControllerCapabilities
-controllerCapabilities avB17221Entity  =
-    fmap (coerce :: CUInt -> AVB17221ADPControllerCapabilities) $ sendMsg avB17221Entity (mkSelector "controllerCapabilities") retCUInt []
+controllerCapabilities avB17221Entity =
+  sendMessage avB17221Entity controllerCapabilitiesSelector
 
 -- | controllerCapabilities
 --
@@ -336,8 +333,8 @@ controllerCapabilities avB17221Entity  =
 --
 -- ObjC selector: @- setControllerCapabilities:@
 setControllerCapabilities :: IsAVB17221Entity avB17221Entity => avB17221Entity -> AVB17221ADPControllerCapabilities -> IO ()
-setControllerCapabilities avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setControllerCapabilities:") retVoid [argCUInt (coerce value)]
+setControllerCapabilities avB17221Entity value =
+  sendMessage avB17221Entity setControllerCapabilitiesSelector value
 
 -- | availableIndex
 --
@@ -345,8 +342,8 @@ setControllerCapabilities avB17221Entity  value =
 --
 -- ObjC selector: @- availableIndex@
 availableIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUInt
-availableIndex avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "availableIndex") retCUInt []
+availableIndex avB17221Entity =
+  sendMessage avB17221Entity availableIndexSelector
 
 -- | availableIndex
 --
@@ -354,8 +351,8 @@ availableIndex avB17221Entity  =
 --
 -- ObjC selector: @- setAvailableIndex:@
 setAvailableIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUInt -> IO ()
-setAvailableIndex avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setAvailableIndex:") retVoid [argCUInt value]
+setAvailableIndex avB17221Entity value =
+  sendMessage avB17221Entity setAvailableIndexSelector value
 
 -- | gPTPGrandmasterID
 --
@@ -363,8 +360,8 @@ setAvailableIndex avB17221Entity  value =
 --
 -- ObjC selector: @- gPTPGrandmasterID@
 gPTPGrandmasterID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CULong
-gPTPGrandmasterID avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "gPTPGrandmasterID") retCULong []
+gPTPGrandmasterID avB17221Entity =
+  sendMessage avB17221Entity gPTPGrandmasterIDSelector
 
 -- | gPTPGrandmasterID
 --
@@ -372,8 +369,8 @@ gPTPGrandmasterID avB17221Entity  =
 --
 -- ObjC selector: @- setGPTPGrandmasterID:@
 setGPTPGrandmasterID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CULong -> IO ()
-setGPTPGrandmasterID avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setGPTPGrandmasterID:") retVoid [argCULong value]
+setGPTPGrandmasterID avB17221Entity value =
+  sendMessage avB17221Entity setGPTPGrandmasterIDSelector value
 
 -- | gPTPDomainNumber
 --
@@ -381,8 +378,8 @@ setGPTPGrandmasterID avB17221Entity  value =
 --
 -- ObjC selector: @- gPTPDomainNumber@
 gPTPDomainNumber :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUChar
-gPTPDomainNumber avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "gPTPDomainNumber") retCUChar []
+gPTPDomainNumber avB17221Entity =
+  sendMessage avB17221Entity gPTPDomainNumberSelector
 
 -- | gPTPDomainNumber
 --
@@ -390,8 +387,8 @@ gPTPDomainNumber avB17221Entity  =
 --
 -- ObjC selector: @- setGPTPDomainNumber:@
 setGPTPDomainNumber :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUChar -> IO ()
-setGPTPDomainNumber avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setGPTPDomainNumber:") retVoid [argCUChar value]
+setGPTPDomainNumber avB17221Entity value =
+  sendMessage avB17221Entity setGPTPDomainNumberSelector value
 
 -- | identifyControlIndex
 --
@@ -399,8 +396,8 @@ setGPTPDomainNumber avB17221Entity  value =
 --
 -- ObjC selector: @- identifyControlIndex@
 identifyControlIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUShort
-identifyControlIndex avB17221Entity  =
-    fmap fromIntegral $ sendMsg avB17221Entity (mkSelector "identifyControlIndex") retCUInt []
+identifyControlIndex avB17221Entity =
+  sendMessage avB17221Entity identifyControlIndexSelector
 
 -- | identifyControlIndex
 --
@@ -408,8 +405,8 @@ identifyControlIndex avB17221Entity  =
 --
 -- ObjC selector: @- setIdentifyControlIndex:@
 setIdentifyControlIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUShort -> IO ()
-setIdentifyControlIndex avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setIdentifyControlIndex:") retVoid [argCUInt (fromIntegral value)]
+setIdentifyControlIndex avB17221Entity value =
+  sendMessage avB17221Entity setIdentifyControlIndexSelector value
 
 -- | interfaceIndex
 --
@@ -417,8 +414,8 @@ setIdentifyControlIndex avB17221Entity  value =
 --
 -- ObjC selector: @- interfaceIndex@
 interfaceIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUShort
-interfaceIndex avB17221Entity  =
-    fmap fromIntegral $ sendMsg avB17221Entity (mkSelector "interfaceIndex") retCUInt []
+interfaceIndex avB17221Entity =
+  sendMessage avB17221Entity interfaceIndexSelector
 
 -- | interfaceIndex
 --
@@ -426,8 +423,8 @@ interfaceIndex avB17221Entity  =
 --
 -- ObjC selector: @- setInterfaceIndex:@
 setInterfaceIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUShort -> IO ()
-setInterfaceIndex avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setInterfaceIndex:") retVoid [argCUInt (fromIntegral value)]
+setInterfaceIndex avB17221Entity value =
+  sendMessage avB17221Entity setInterfaceIndexSelector value
 
 -- | associationID
 --
@@ -435,8 +432,8 @@ setInterfaceIndex avB17221Entity  value =
 --
 -- ObjC selector: @- associationID@
 associationID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CULong
-associationID avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "associationID") retCULong []
+associationID avB17221Entity =
+  sendMessage avB17221Entity associationIDSelector
 
 -- | associationID
 --
@@ -444,8 +441,8 @@ associationID avB17221Entity  =
 --
 -- ObjC selector: @- setAssociationID:@
 setAssociationID :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CULong -> IO ()
-setAssociationID avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setAssociationID:") retVoid [argCULong value]
+setAssociationID avB17221Entity value =
+  sendMessage avB17221Entity setAssociationIDSelector value
 
 -- | currentConfigurationIndexIndex
 --
@@ -453,8 +450,8 @@ setAssociationID avB17221Entity  value =
 --
 -- ObjC selector: @- currentConfigurationIndex@
 currentConfigurationIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO CUShort
-currentConfigurationIndex avB17221Entity  =
-    fmap fromIntegral $ sendMsg avB17221Entity (mkSelector "currentConfigurationIndex") retCUInt []
+currentConfigurationIndex avB17221Entity =
+  sendMessage avB17221Entity currentConfigurationIndexSelector
 
 -- | currentConfigurationIndexIndex
 --
@@ -462,8 +459,8 @@ currentConfigurationIndex avB17221Entity  =
 --
 -- ObjC selector: @- setCurrentConfigurationIndex:@
 setCurrentConfigurationIndex :: IsAVB17221Entity avB17221Entity => avB17221Entity -> CUShort -> IO ()
-setCurrentConfigurationIndex avB17221Entity  value =
-    sendMsg avB17221Entity (mkSelector "setCurrentConfigurationIndex:") retVoid [argCUInt (fromIntegral value)]
+setCurrentConfigurationIndex avB17221Entity value =
+  sendMessage avB17221Entity setCurrentConfigurationIndexSelector value
 
 -- | macAddresses
 --
@@ -471,8 +468,8 @@ setCurrentConfigurationIndex avB17221Entity  value =
 --
 -- ObjC selector: @- macAddresses@
 macAddresses :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO (Id NSArray)
-macAddresses avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "macAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+macAddresses avB17221Entity =
+  sendMessage avB17221Entity macAddressesSelector
 
 -- | macAddresses
 --
@@ -480,9 +477,8 @@ macAddresses avB17221Entity  =
 --
 -- ObjC selector: @- setMacAddresses:@
 setMacAddresses :: (IsAVB17221Entity avB17221Entity, IsNSArray value) => avB17221Entity -> value -> IO ()
-setMacAddresses avB17221Entity  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221Entity (mkSelector "setMacAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMacAddresses avB17221Entity value =
+  sendMessage avB17221Entity setMacAddressesSelector (toNSArray value)
 
 -- | entityDiscovery
 --
@@ -490,8 +486,8 @@ setMacAddresses avB17221Entity  value =
 --
 -- ObjC selector: @- entityDiscovery@
 entityDiscovery :: IsAVB17221Entity avB17221Entity => avB17221Entity -> IO (Id AVB17221EntityDiscovery)
-entityDiscovery avB17221Entity  =
-    sendMsg avB17221Entity (mkSelector "entityDiscovery") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityDiscovery avB17221Entity =
+  sendMessage avB17221Entity entityDiscoverySelector
 
 -- | entityDiscovery
 --
@@ -499,163 +495,162 @@ entityDiscovery avB17221Entity  =
 --
 -- ObjC selector: @- setEntityDiscovery:@
 setEntityDiscovery :: (IsAVB17221Entity avB17221Entity, IsAVB17221EntityDiscovery value) => avB17221Entity -> value -> IO ()
-setEntityDiscovery avB17221Entity  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221Entity (mkSelector "setEntityDiscovery:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEntityDiscovery avB17221Entity value =
+  sendMessage avB17221Entity setEntityDiscoverySelector (toAVB17221EntityDiscovery value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localEntity@
-localEntitySelector :: Selector
+localEntitySelector :: Selector '[] Bool
 localEntitySelector = mkSelector "localEntity"
 
 -- | @Selector@ for @setLocalEntity:@
-setLocalEntitySelector :: Selector
+setLocalEntitySelector :: Selector '[Bool] ()
 setLocalEntitySelector = mkSelector "setLocalEntity:"
 
 -- | @Selector@ for @timeToLive@
-timeToLiveSelector :: Selector
+timeToLiveSelector :: Selector '[] CUChar
 timeToLiveSelector = mkSelector "timeToLive"
 
 -- | @Selector@ for @setTimeToLive:@
-setTimeToLiveSelector :: Selector
+setTimeToLiveSelector :: Selector '[CUChar] ()
 setTimeToLiveSelector = mkSelector "setTimeToLive:"
 
 -- | @Selector@ for @entityID@
-entityIDSelector :: Selector
+entityIDSelector :: Selector '[] CULong
 entityIDSelector = mkSelector "entityID"
 
 -- | @Selector@ for @setEntityID:@
-setEntityIDSelector :: Selector
+setEntityIDSelector :: Selector '[CULong] ()
 setEntityIDSelector = mkSelector "setEntityID:"
 
 -- | @Selector@ for @entityModelID@
-entityModelIDSelector :: Selector
+entityModelIDSelector :: Selector '[] CULong
 entityModelIDSelector = mkSelector "entityModelID"
 
 -- | @Selector@ for @setEntityModelID:@
-setEntityModelIDSelector :: Selector
+setEntityModelIDSelector :: Selector '[CULong] ()
 setEntityModelIDSelector = mkSelector "setEntityModelID:"
 
 -- | @Selector@ for @entityCapabilities@
-entityCapabilitiesSelector :: Selector
+entityCapabilitiesSelector :: Selector '[] AVB17221ADPEntityCapabilities
 entityCapabilitiesSelector = mkSelector "entityCapabilities"
 
 -- | @Selector@ for @setEntityCapabilities:@
-setEntityCapabilitiesSelector :: Selector
+setEntityCapabilitiesSelector :: Selector '[AVB17221ADPEntityCapabilities] ()
 setEntityCapabilitiesSelector = mkSelector "setEntityCapabilities:"
 
 -- | @Selector@ for @talkerStreamSources@
-talkerStreamSourcesSelector :: Selector
+talkerStreamSourcesSelector :: Selector '[] CUShort
 talkerStreamSourcesSelector = mkSelector "talkerStreamSources"
 
 -- | @Selector@ for @setTalkerStreamSources:@
-setTalkerStreamSourcesSelector :: Selector
+setTalkerStreamSourcesSelector :: Selector '[CUShort] ()
 setTalkerStreamSourcesSelector = mkSelector "setTalkerStreamSources:"
 
 -- | @Selector@ for @talkerCapabilities@
-talkerCapabilitiesSelector :: Selector
+talkerCapabilitiesSelector :: Selector '[] AVB17221ADPTalkerCapabilities
 talkerCapabilitiesSelector = mkSelector "talkerCapabilities"
 
 -- | @Selector@ for @setTalkerCapabilities:@
-setTalkerCapabilitiesSelector :: Selector
+setTalkerCapabilitiesSelector :: Selector '[AVB17221ADPTalkerCapabilities] ()
 setTalkerCapabilitiesSelector = mkSelector "setTalkerCapabilities:"
 
 -- | @Selector@ for @listenerStreamSinks@
-listenerStreamSinksSelector :: Selector
+listenerStreamSinksSelector :: Selector '[] CUShort
 listenerStreamSinksSelector = mkSelector "listenerStreamSinks"
 
 -- | @Selector@ for @setListenerStreamSinks:@
-setListenerStreamSinksSelector :: Selector
+setListenerStreamSinksSelector :: Selector '[CUShort] ()
 setListenerStreamSinksSelector = mkSelector "setListenerStreamSinks:"
 
 -- | @Selector@ for @listenerCapabilities@
-listenerCapabilitiesSelector :: Selector
+listenerCapabilitiesSelector :: Selector '[] AVB17221ADPListenerCapabilities
 listenerCapabilitiesSelector = mkSelector "listenerCapabilities"
 
 -- | @Selector@ for @setListenerCapabilities:@
-setListenerCapabilitiesSelector :: Selector
+setListenerCapabilitiesSelector :: Selector '[AVB17221ADPListenerCapabilities] ()
 setListenerCapabilitiesSelector = mkSelector "setListenerCapabilities:"
 
 -- | @Selector@ for @controllerCapabilities@
-controllerCapabilitiesSelector :: Selector
+controllerCapabilitiesSelector :: Selector '[] AVB17221ADPControllerCapabilities
 controllerCapabilitiesSelector = mkSelector "controllerCapabilities"
 
 -- | @Selector@ for @setControllerCapabilities:@
-setControllerCapabilitiesSelector :: Selector
+setControllerCapabilitiesSelector :: Selector '[AVB17221ADPControllerCapabilities] ()
 setControllerCapabilitiesSelector = mkSelector "setControllerCapabilities:"
 
 -- | @Selector@ for @availableIndex@
-availableIndexSelector :: Selector
+availableIndexSelector :: Selector '[] CUInt
 availableIndexSelector = mkSelector "availableIndex"
 
 -- | @Selector@ for @setAvailableIndex:@
-setAvailableIndexSelector :: Selector
+setAvailableIndexSelector :: Selector '[CUInt] ()
 setAvailableIndexSelector = mkSelector "setAvailableIndex:"
 
 -- | @Selector@ for @gPTPGrandmasterID@
-gPTPGrandmasterIDSelector :: Selector
+gPTPGrandmasterIDSelector :: Selector '[] CULong
 gPTPGrandmasterIDSelector = mkSelector "gPTPGrandmasterID"
 
 -- | @Selector@ for @setGPTPGrandmasterID:@
-setGPTPGrandmasterIDSelector :: Selector
+setGPTPGrandmasterIDSelector :: Selector '[CULong] ()
 setGPTPGrandmasterIDSelector = mkSelector "setGPTPGrandmasterID:"
 
 -- | @Selector@ for @gPTPDomainNumber@
-gPTPDomainNumberSelector :: Selector
+gPTPDomainNumberSelector :: Selector '[] CUChar
 gPTPDomainNumberSelector = mkSelector "gPTPDomainNumber"
 
 -- | @Selector@ for @setGPTPDomainNumber:@
-setGPTPDomainNumberSelector :: Selector
+setGPTPDomainNumberSelector :: Selector '[CUChar] ()
 setGPTPDomainNumberSelector = mkSelector "setGPTPDomainNumber:"
 
 -- | @Selector@ for @identifyControlIndex@
-identifyControlIndexSelector :: Selector
+identifyControlIndexSelector :: Selector '[] CUShort
 identifyControlIndexSelector = mkSelector "identifyControlIndex"
 
 -- | @Selector@ for @setIdentifyControlIndex:@
-setIdentifyControlIndexSelector :: Selector
+setIdentifyControlIndexSelector :: Selector '[CUShort] ()
 setIdentifyControlIndexSelector = mkSelector "setIdentifyControlIndex:"
 
 -- | @Selector@ for @interfaceIndex@
-interfaceIndexSelector :: Selector
+interfaceIndexSelector :: Selector '[] CUShort
 interfaceIndexSelector = mkSelector "interfaceIndex"
 
 -- | @Selector@ for @setInterfaceIndex:@
-setInterfaceIndexSelector :: Selector
+setInterfaceIndexSelector :: Selector '[CUShort] ()
 setInterfaceIndexSelector = mkSelector "setInterfaceIndex:"
 
 -- | @Selector@ for @associationID@
-associationIDSelector :: Selector
+associationIDSelector :: Selector '[] CULong
 associationIDSelector = mkSelector "associationID"
 
 -- | @Selector@ for @setAssociationID:@
-setAssociationIDSelector :: Selector
+setAssociationIDSelector :: Selector '[CULong] ()
 setAssociationIDSelector = mkSelector "setAssociationID:"
 
 -- | @Selector@ for @currentConfigurationIndex@
-currentConfigurationIndexSelector :: Selector
+currentConfigurationIndexSelector :: Selector '[] CUShort
 currentConfigurationIndexSelector = mkSelector "currentConfigurationIndex"
 
 -- | @Selector@ for @setCurrentConfigurationIndex:@
-setCurrentConfigurationIndexSelector :: Selector
+setCurrentConfigurationIndexSelector :: Selector '[CUShort] ()
 setCurrentConfigurationIndexSelector = mkSelector "setCurrentConfigurationIndex:"
 
 -- | @Selector@ for @macAddresses@
-macAddressesSelector :: Selector
+macAddressesSelector :: Selector '[] (Id NSArray)
 macAddressesSelector = mkSelector "macAddresses"
 
 -- | @Selector@ for @setMacAddresses:@
-setMacAddressesSelector :: Selector
+setMacAddressesSelector :: Selector '[Id NSArray] ()
 setMacAddressesSelector = mkSelector "setMacAddresses:"
 
 -- | @Selector@ for @entityDiscovery@
-entityDiscoverySelector :: Selector
+entityDiscoverySelector :: Selector '[] (Id AVB17221EntityDiscovery)
 entityDiscoverySelector = mkSelector "entityDiscovery"
 
 -- | @Selector@ for @setEntityDiscovery:@
-setEntityDiscoverySelector :: Selector
+setEntityDiscoverySelector :: Selector '[Id AVB17221EntityDiscovery] ()
 setEntityDiscoverySelector = mkSelector "setEntityDiscovery:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CoreImage.CIAztecCodeDescriptor
   , isCompact
   , layerCount
   , dataCodewordCount
-  , initWithPayload_isCompact_layerCount_dataCodewordCountSelector
+  , dataCodewordCountSelector
   , descriptorWithPayload_isCompact_layerCount_dataCodewordCountSelector
   , errorCorrectedPayloadSelector
+  , initWithPayload_isCompact_layerCount_dataCodewordCountSelector
   , isCompactSelector
   , layerCountSelector
-  , dataCodewordCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPayload:isCompact:layerCount:dataCodewordCount:@
 initWithPayload_isCompact_layerCount_dataCodewordCount :: (IsCIAztecCodeDescriptor ciAztecCodeDescriptor, IsNSData errorCorrectedPayload) => ciAztecCodeDescriptor -> errorCorrectedPayload -> Bool -> CLong -> CLong -> IO (Id CIAztecCodeDescriptor)
-initWithPayload_isCompact_layerCount_dataCodewordCount ciAztecCodeDescriptor  errorCorrectedPayload isCompact layerCount dataCodewordCount =
-  withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendMsg ciAztecCodeDescriptor (mkSelector "initWithPayload:isCompact:layerCount:dataCodewordCount:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCULong (if isCompact then 1 else 0), argCLong layerCount, argCLong dataCodewordCount] >>= ownedObject . castPtr
+initWithPayload_isCompact_layerCount_dataCodewordCount ciAztecCodeDescriptor errorCorrectedPayload isCompact layerCount dataCodewordCount =
+  sendOwnedMessage ciAztecCodeDescriptor initWithPayload_isCompact_layerCount_dataCodewordCountSelector (toNSData errorCorrectedPayload) isCompact layerCount dataCodewordCount
 
 -- | Creates an Aztec code descriptor for the given payload and parameters.
 --
@@ -60,8 +56,7 @@ descriptorWithPayload_isCompact_layerCount_dataCodewordCount :: IsNSData errorCo
 descriptorWithPayload_isCompact_layerCount_dataCodewordCount errorCorrectedPayload isCompact layerCount dataCodewordCount =
   do
     cls' <- getRequiredClass "CIAztecCodeDescriptor"
-    withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendClassMsg cls' (mkSelector "descriptorWithPayload:isCompact:layerCount:dataCodewordCount:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCULong (if isCompact then 1 else 0), argCLong layerCount, argCLong dataCodewordCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPayload_isCompact_layerCount_dataCodewordCountSelector (toNSData errorCorrectedPayload) isCompact layerCount dataCodewordCount
 
 -- | The error-corrected payload that comprises the the Aztec code symbol.
 --
@@ -71,8 +66,8 @@ descriptorWithPayload_isCompact_layerCount_dataCodewordCount errorCorrectedPaylo
 --
 -- ObjC selector: @- errorCorrectedPayload@
 errorCorrectedPayload :: IsCIAztecCodeDescriptor ciAztecCodeDescriptor => ciAztecCodeDescriptor -> IO (Id NSData)
-errorCorrectedPayload ciAztecCodeDescriptor  =
-    sendMsg ciAztecCodeDescriptor (mkSelector "errorCorrectedPayload") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorCorrectedPayload ciAztecCodeDescriptor =
+  sendMessage ciAztecCodeDescriptor errorCorrectedPayloadSelector
 
 -- | A Boolean value telling if the Aztec code is compact.
 --
@@ -80,8 +75,8 @@ errorCorrectedPayload ciAztecCodeDescriptor  =
 --
 -- ObjC selector: @- isCompact@
 isCompact :: IsCIAztecCodeDescriptor ciAztecCodeDescriptor => ciAztecCodeDescriptor -> IO Bool
-isCompact ciAztecCodeDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciAztecCodeDescriptor (mkSelector "isCompact") retCULong []
+isCompact ciAztecCodeDescriptor =
+  sendMessage ciAztecCodeDescriptor isCompactSelector
 
 -- | The number of data layers in the Aztec code symbol.
 --
@@ -91,8 +86,8 @@ isCompact ciAztecCodeDescriptor  =
 --
 -- ObjC selector: @- layerCount@
 layerCount :: IsCIAztecCodeDescriptor ciAztecCodeDescriptor => ciAztecCodeDescriptor -> IO CLong
-layerCount ciAztecCodeDescriptor  =
-    sendMsg ciAztecCodeDescriptor (mkSelector "layerCount") retCLong []
+layerCount ciAztecCodeDescriptor =
+  sendMessage ciAztecCodeDescriptor layerCountSelector
 
 -- | The number of non-error-correction codewords carried by the Aztec code symbol.
 --
@@ -102,34 +97,34 @@ layerCount ciAztecCodeDescriptor  =
 --
 -- ObjC selector: @- dataCodewordCount@
 dataCodewordCount :: IsCIAztecCodeDescriptor ciAztecCodeDescriptor => ciAztecCodeDescriptor -> IO CLong
-dataCodewordCount ciAztecCodeDescriptor  =
-    sendMsg ciAztecCodeDescriptor (mkSelector "dataCodewordCount") retCLong []
+dataCodewordCount ciAztecCodeDescriptor =
+  sendMessage ciAztecCodeDescriptor dataCodewordCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayload:isCompact:layerCount:dataCodewordCount:@
-initWithPayload_isCompact_layerCount_dataCodewordCountSelector :: Selector
+initWithPayload_isCompact_layerCount_dataCodewordCountSelector :: Selector '[Id NSData, Bool, CLong, CLong] (Id CIAztecCodeDescriptor)
 initWithPayload_isCompact_layerCount_dataCodewordCountSelector = mkSelector "initWithPayload:isCompact:layerCount:dataCodewordCount:"
 
 -- | @Selector@ for @descriptorWithPayload:isCompact:layerCount:dataCodewordCount:@
-descriptorWithPayload_isCompact_layerCount_dataCodewordCountSelector :: Selector
+descriptorWithPayload_isCompact_layerCount_dataCodewordCountSelector :: Selector '[Id NSData, Bool, CLong, CLong] (Id CIAztecCodeDescriptor)
 descriptorWithPayload_isCompact_layerCount_dataCodewordCountSelector = mkSelector "descriptorWithPayload:isCompact:layerCount:dataCodewordCount:"
 
 -- | @Selector@ for @errorCorrectedPayload@
-errorCorrectedPayloadSelector :: Selector
+errorCorrectedPayloadSelector :: Selector '[] (Id NSData)
 errorCorrectedPayloadSelector = mkSelector "errorCorrectedPayload"
 
 -- | @Selector@ for @isCompact@
-isCompactSelector :: Selector
+isCompactSelector :: Selector '[] Bool
 isCompactSelector = mkSelector "isCompact"
 
 -- | @Selector@ for @layerCount@
-layerCountSelector :: Selector
+layerCountSelector :: Selector '[] CLong
 layerCountSelector = mkSelector "layerCount"
 
 -- | @Selector@ for @dataCodewordCount@
-dataCodewordCountSelector :: Selector
+dataCodewordCountSelector :: Selector '[] CLong
 dataCodewordCountSelector = mkSelector "dataCodewordCount"
 

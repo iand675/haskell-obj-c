@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Foundation.NSUnitDuration
   , nanoseconds
   , picoseconds
   , hoursSelector
-  , minutesSelector
-  , secondsSelector
-  , millisecondsSelector
   , microsecondsSelector
+  , millisecondsSelector
+  , minutesSelector
   , nanosecondsSelector
   , picosecondsSelector
+  , secondsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,79 @@ hours :: IO (Id NSUnitDuration)
 hours  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "hours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hoursSelector
 
 -- | @+ minutes@
 minutes :: IO (Id NSUnitDuration)
 minutes  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "minutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' minutesSelector
 
 -- | @+ seconds@
 seconds :: IO (Id NSUnitDuration)
 seconds  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "seconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' secondsSelector
 
 -- | @+ milliseconds@
 milliseconds :: IO (Id NSUnitDuration)
 milliseconds  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "milliseconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millisecondsSelector
 
 -- | @+ microseconds@
 microseconds :: IO (Id NSUnitDuration)
 microseconds  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "microseconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microsecondsSelector
 
 -- | @+ nanoseconds@
 nanoseconds :: IO (Id NSUnitDuration)
 nanoseconds  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "nanoseconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nanosecondsSelector
 
 -- | @+ picoseconds@
 picoseconds :: IO (Id NSUnitDuration)
 picoseconds  =
   do
     cls' <- getRequiredClass "NSUnitDuration"
-    sendClassMsg cls' (mkSelector "picoseconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' picosecondsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hours@
-hoursSelector :: Selector
+hoursSelector :: Selector '[] (Id NSUnitDuration)
 hoursSelector = mkSelector "hours"
 
 -- | @Selector@ for @minutes@
-minutesSelector :: Selector
+minutesSelector :: Selector '[] (Id NSUnitDuration)
 minutesSelector = mkSelector "minutes"
 
 -- | @Selector@ for @seconds@
-secondsSelector :: Selector
+secondsSelector :: Selector '[] (Id NSUnitDuration)
 secondsSelector = mkSelector "seconds"
 
 -- | @Selector@ for @milliseconds@
-millisecondsSelector :: Selector
+millisecondsSelector :: Selector '[] (Id NSUnitDuration)
 millisecondsSelector = mkSelector "milliseconds"
 
 -- | @Selector@ for @microseconds@
-microsecondsSelector :: Selector
+microsecondsSelector :: Selector '[] (Id NSUnitDuration)
 microsecondsSelector = mkSelector "microseconds"
 
 -- | @Selector@ for @nanoseconds@
-nanosecondsSelector :: Selector
+nanosecondsSelector :: Selector '[] (Id NSUnitDuration)
 nanosecondsSelector = mkSelector "nanoseconds"
 
 -- | @Selector@ for @picoseconds@
-picosecondsSelector :: Selector
+picosecondsSelector :: Selector '[] (Id NSUnitDuration)
 picosecondsSelector = mkSelector "picoseconds"
 

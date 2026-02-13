@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Foundation.NSBlockOperation
   , blockOperationWithBlock
   , addExecutionBlock
   , executionBlocks
-  , blockOperationWithBlockSelector
   , addExecutionBlockSelector
+  , blockOperationWithBlockSelector
   , executionBlocksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,31 +32,31 @@ blockOperationWithBlock :: Ptr () -> IO (Id NSBlockOperation)
 blockOperationWithBlock block =
   do
     cls' <- getRequiredClass "NSBlockOperation"
-    sendClassMsg cls' (mkSelector "blockOperationWithBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' blockOperationWithBlockSelector block
 
 -- | @- addExecutionBlock:@
 addExecutionBlock :: IsNSBlockOperation nsBlockOperation => nsBlockOperation -> Ptr () -> IO ()
-addExecutionBlock nsBlockOperation  block =
-    sendMsg nsBlockOperation (mkSelector "addExecutionBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+addExecutionBlock nsBlockOperation block =
+  sendMessage nsBlockOperation addExecutionBlockSelector block
 
 -- | @- executionBlocks@
 executionBlocks :: IsNSBlockOperation nsBlockOperation => nsBlockOperation -> IO (Id NSArray)
-executionBlocks nsBlockOperation  =
-    sendMsg nsBlockOperation (mkSelector "executionBlocks") (retPtr retVoid) [] >>= retainedObject . castPtr
+executionBlocks nsBlockOperation =
+  sendMessage nsBlockOperation executionBlocksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @blockOperationWithBlock:@
-blockOperationWithBlockSelector :: Selector
+blockOperationWithBlockSelector :: Selector '[Ptr ()] (Id NSBlockOperation)
 blockOperationWithBlockSelector = mkSelector "blockOperationWithBlock:"
 
 -- | @Selector@ for @addExecutionBlock:@
-addExecutionBlockSelector :: Selector
+addExecutionBlockSelector :: Selector '[Ptr ()] ()
 addExecutionBlockSelector = mkSelector "addExecutionBlock:"
 
 -- | @Selector@ for @executionBlocks@
-executionBlocksSelector :: Selector
+executionBlocksSelector :: Selector '[] (Id NSArray)
 executionBlocksSelector = mkSelector "executionBlocks"
 

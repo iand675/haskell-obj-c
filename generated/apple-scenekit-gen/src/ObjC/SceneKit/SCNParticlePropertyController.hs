@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.SceneKit.SCNParticlePropertyController
   , setInputOrigin
   , inputProperty
   , setInputProperty
-  , controllerWithAnimationSelector
   , animationSelector
-  , setAnimationSelector
-  , inputModeSelector
-  , setInputModeSelector
-  , inputScaleSelector
-  , setInputScaleSelector
+  , controllerWithAnimationSelector
   , inputBiasSelector
-  , setInputBiasSelector
+  , inputModeSelector
   , inputOriginSelector
-  , setInputOriginSelector
   , inputPropertySelector
+  , inputScaleSelector
+  , setAnimationSelector
+  , setInputBiasSelector
+  , setInputModeSelector
+  , setInputOriginSelector
   , setInputPropertySelector
+  , setInputScaleSelector
 
   -- * Enum types
   , SCNParticleInputMode(SCNParticleInputMode)
@@ -46,15 +47,11 @@ module ObjC.SceneKit.SCNParticlePropertyController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,125 +65,121 @@ controllerWithAnimation :: IsCAAnimation animation => animation -> IO (Id SCNPar
 controllerWithAnimation animation =
   do
     cls' <- getRequiredClass "SCNParticlePropertyController"
-    withObjCPtr animation $ \raw_animation ->
-      sendClassMsg cls' (mkSelector "controllerWithAnimation:") (retPtr retVoid) [argPtr (castPtr raw_animation :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' controllerWithAnimationSelector (toCAAnimation animation)
 
 -- | @- animation@
 animation :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO (Id CAAnimation)
-animation scnParticlePropertyController  =
-    sendMsg scnParticlePropertyController (mkSelector "animation") (retPtr retVoid) [] >>= retainedObject . castPtr
+animation scnParticlePropertyController =
+  sendMessage scnParticlePropertyController animationSelector
 
 -- | @- setAnimation:@
 setAnimation :: (IsSCNParticlePropertyController scnParticlePropertyController, IsCAAnimation value) => scnParticlePropertyController -> value -> IO ()
-setAnimation scnParticlePropertyController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnParticlePropertyController (mkSelector "setAnimation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAnimation scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setAnimationSelector (toCAAnimation value)
 
 -- | @- inputMode@
 inputMode :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO SCNParticleInputMode
-inputMode scnParticlePropertyController  =
-    fmap (coerce :: CLong -> SCNParticleInputMode) $ sendMsg scnParticlePropertyController (mkSelector "inputMode") retCLong []
+inputMode scnParticlePropertyController =
+  sendMessage scnParticlePropertyController inputModeSelector
 
 -- | @- setInputMode:@
 setInputMode :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> SCNParticleInputMode -> IO ()
-setInputMode scnParticlePropertyController  value =
-    sendMsg scnParticlePropertyController (mkSelector "setInputMode:") retVoid [argCLong (coerce value)]
+setInputMode scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setInputModeSelector value
 
 -- | @- inputScale@
 inputScale :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO CDouble
-inputScale scnParticlePropertyController  =
-    sendMsg scnParticlePropertyController (mkSelector "inputScale") retCDouble []
+inputScale scnParticlePropertyController =
+  sendMessage scnParticlePropertyController inputScaleSelector
 
 -- | @- setInputScale:@
 setInputScale :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> CDouble -> IO ()
-setInputScale scnParticlePropertyController  value =
-    sendMsg scnParticlePropertyController (mkSelector "setInputScale:") retVoid [argCDouble value]
+setInputScale scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setInputScaleSelector value
 
 -- | @- inputBias@
 inputBias :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO CDouble
-inputBias scnParticlePropertyController  =
-    sendMsg scnParticlePropertyController (mkSelector "inputBias") retCDouble []
+inputBias scnParticlePropertyController =
+  sendMessage scnParticlePropertyController inputBiasSelector
 
 -- | @- setInputBias:@
 setInputBias :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> CDouble -> IO ()
-setInputBias scnParticlePropertyController  value =
-    sendMsg scnParticlePropertyController (mkSelector "setInputBias:") retVoid [argCDouble value]
+setInputBias scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setInputBiasSelector value
 
 -- | @- inputOrigin@
 inputOrigin :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO (Id SCNNode)
-inputOrigin scnParticlePropertyController  =
-    sendMsg scnParticlePropertyController (mkSelector "inputOrigin") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputOrigin scnParticlePropertyController =
+  sendMessage scnParticlePropertyController inputOriginSelector
 
 -- | @- setInputOrigin:@
 setInputOrigin :: (IsSCNParticlePropertyController scnParticlePropertyController, IsSCNNode value) => scnParticlePropertyController -> value -> IO ()
-setInputOrigin scnParticlePropertyController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnParticlePropertyController (mkSelector "setInputOrigin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInputOrigin scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setInputOriginSelector (toSCNNode value)
 
 -- | @- inputProperty@
 inputProperty :: IsSCNParticlePropertyController scnParticlePropertyController => scnParticlePropertyController -> IO (Id NSString)
-inputProperty scnParticlePropertyController  =
-    sendMsg scnParticlePropertyController (mkSelector "inputProperty") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputProperty scnParticlePropertyController =
+  sendMessage scnParticlePropertyController inputPropertySelector
 
 -- | @- setInputProperty:@
 setInputProperty :: (IsSCNParticlePropertyController scnParticlePropertyController, IsNSString value) => scnParticlePropertyController -> value -> IO ()
-setInputProperty scnParticlePropertyController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnParticlePropertyController (mkSelector "setInputProperty:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInputProperty scnParticlePropertyController value =
+  sendMessage scnParticlePropertyController setInputPropertySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controllerWithAnimation:@
-controllerWithAnimationSelector :: Selector
+controllerWithAnimationSelector :: Selector '[Id CAAnimation] (Id SCNParticlePropertyController)
 controllerWithAnimationSelector = mkSelector "controllerWithAnimation:"
 
 -- | @Selector@ for @animation@
-animationSelector :: Selector
+animationSelector :: Selector '[] (Id CAAnimation)
 animationSelector = mkSelector "animation"
 
 -- | @Selector@ for @setAnimation:@
-setAnimationSelector :: Selector
+setAnimationSelector :: Selector '[Id CAAnimation] ()
 setAnimationSelector = mkSelector "setAnimation:"
 
 -- | @Selector@ for @inputMode@
-inputModeSelector :: Selector
+inputModeSelector :: Selector '[] SCNParticleInputMode
 inputModeSelector = mkSelector "inputMode"
 
 -- | @Selector@ for @setInputMode:@
-setInputModeSelector :: Selector
+setInputModeSelector :: Selector '[SCNParticleInputMode] ()
 setInputModeSelector = mkSelector "setInputMode:"
 
 -- | @Selector@ for @inputScale@
-inputScaleSelector :: Selector
+inputScaleSelector :: Selector '[] CDouble
 inputScaleSelector = mkSelector "inputScale"
 
 -- | @Selector@ for @setInputScale:@
-setInputScaleSelector :: Selector
+setInputScaleSelector :: Selector '[CDouble] ()
 setInputScaleSelector = mkSelector "setInputScale:"
 
 -- | @Selector@ for @inputBias@
-inputBiasSelector :: Selector
+inputBiasSelector :: Selector '[] CDouble
 inputBiasSelector = mkSelector "inputBias"
 
 -- | @Selector@ for @setInputBias:@
-setInputBiasSelector :: Selector
+setInputBiasSelector :: Selector '[CDouble] ()
 setInputBiasSelector = mkSelector "setInputBias:"
 
 -- | @Selector@ for @inputOrigin@
-inputOriginSelector :: Selector
+inputOriginSelector :: Selector '[] (Id SCNNode)
 inputOriginSelector = mkSelector "inputOrigin"
 
 -- | @Selector@ for @setInputOrigin:@
-setInputOriginSelector :: Selector
+setInputOriginSelector :: Selector '[Id SCNNode] ()
 setInputOriginSelector = mkSelector "setInputOrigin:"
 
 -- | @Selector@ for @inputProperty@
-inputPropertySelector :: Selector
+inputPropertySelector :: Selector '[] (Id NSString)
 inputPropertySelector = mkSelector "inputProperty"
 
 -- | @Selector@ for @setInputProperty:@
-setInputPropertySelector :: Selector
+setInputPropertySelector :: Selector '[Id NSString] ()
 setInputPropertySelector = mkSelector "setInputProperty:"
 

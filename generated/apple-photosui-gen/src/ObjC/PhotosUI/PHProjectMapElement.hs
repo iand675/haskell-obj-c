@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.PhotosUI.PHProjectMapElement
   , pitch
   , altitude
   , annotations
-  , mapTypeSelector
-  , headingSelector
-  , pitchSelector
   , altitudeSelector
   , annotationsSelector
+  , headingSelector
+  , mapTypeSelector
+  , pitchSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,50 +38,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mapType@
 mapType :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO CInt
-mapType phProjectMapElement  =
-    sendMsg phProjectMapElement (mkSelector "mapType") retCInt []
+mapType phProjectMapElement =
+  sendMessage phProjectMapElement mapTypeSelector
 
 -- | @- heading@
 heading :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO CDouble
-heading phProjectMapElement  =
-    sendMsg phProjectMapElement (mkSelector "heading") retCDouble []
+heading phProjectMapElement =
+  sendMessage phProjectMapElement headingSelector
 
 -- | @- pitch@
 pitch :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO CDouble
-pitch phProjectMapElement  =
-    sendMsg phProjectMapElement (mkSelector "pitch") retCDouble []
+pitch phProjectMapElement =
+  sendMessage phProjectMapElement pitchSelector
 
 -- | @- altitude@
 altitude :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO CDouble
-altitude phProjectMapElement  =
-    sendMsg phProjectMapElement (mkSelector "altitude") retCDouble []
+altitude phProjectMapElement =
+  sendMessage phProjectMapElement altitudeSelector
 
 -- | @- annotations@
 annotations :: IsPHProjectMapElement phProjectMapElement => phProjectMapElement -> IO (Id NSArray)
-annotations phProjectMapElement  =
-    sendMsg phProjectMapElement (mkSelector "annotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+annotations phProjectMapElement =
+  sendMessage phProjectMapElement annotationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mapType@
-mapTypeSelector :: Selector
+mapTypeSelector :: Selector '[] CInt
 mapTypeSelector = mkSelector "mapType"
 
 -- | @Selector@ for @heading@
-headingSelector :: Selector
+headingSelector :: Selector '[] CDouble
 headingSelector = mkSelector "heading"
 
 -- | @Selector@ for @pitch@
-pitchSelector :: Selector
+pitchSelector :: Selector '[] CDouble
 pitchSelector = mkSelector "pitch"
 
 -- | @Selector@ for @altitude@
-altitudeSelector :: Selector
+altitudeSelector :: Selector '[] CDouble
 altitudeSelector = mkSelector "altitude"
 
 -- | @Selector@ for @annotations@
-annotationsSelector :: Selector
+annotationsSelector :: Selector '[] (Id NSArray)
 annotationsSelector = mkSelector "annotations"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INPlaybackQueueLocationResolutionResult
   , IsINPlaybackQueueLocationResolutionResult(..)
   , successWithResolvedPlaybackQueueLocation
   , confirmationRequiredWithPlaybackQueueLocationToConfirm
-  , successWithResolvedPlaybackQueueLocationSelector
   , confirmationRequiredWithPlaybackQueueLocationToConfirmSelector
+  , successWithResolvedPlaybackQueueLocationSelector
 
   -- * Enum types
   , INPlaybackQueueLocation(INPlaybackQueueLocation)
@@ -21,15 +22,11 @@ module ObjC.Intents.INPlaybackQueueLocationResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,24 +39,24 @@ successWithResolvedPlaybackQueueLocation :: INPlaybackQueueLocation -> IO (Id IN
 successWithResolvedPlaybackQueueLocation resolvedPlaybackQueueLocation =
   do
     cls' <- getRequiredClass "INPlaybackQueueLocationResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedPlaybackQueueLocation:") (retPtr retVoid) [argCLong (coerce resolvedPlaybackQueueLocation)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedPlaybackQueueLocationSelector resolvedPlaybackQueueLocation
 
 -- | @+ confirmationRequiredWithPlaybackQueueLocationToConfirm:@
 confirmationRequiredWithPlaybackQueueLocationToConfirm :: INPlaybackQueueLocation -> IO (Id INPlaybackQueueLocationResolutionResult)
 confirmationRequiredWithPlaybackQueueLocationToConfirm playbackQueueLocationToConfirm =
   do
     cls' <- getRequiredClass "INPlaybackQueueLocationResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithPlaybackQueueLocationToConfirm:") (retPtr retVoid) [argCLong (coerce playbackQueueLocationToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithPlaybackQueueLocationToConfirmSelector playbackQueueLocationToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedPlaybackQueueLocation:@
-successWithResolvedPlaybackQueueLocationSelector :: Selector
+successWithResolvedPlaybackQueueLocationSelector :: Selector '[INPlaybackQueueLocation] (Id INPlaybackQueueLocationResolutionResult)
 successWithResolvedPlaybackQueueLocationSelector = mkSelector "successWithResolvedPlaybackQueueLocation:"
 
 -- | @Selector@ for @confirmationRequiredWithPlaybackQueueLocationToConfirm:@
-confirmationRequiredWithPlaybackQueueLocationToConfirmSelector :: Selector
+confirmationRequiredWithPlaybackQueueLocationToConfirmSelector :: Selector '[INPlaybackQueueLocation] (Id INPlaybackQueueLocationResolutionResult)
 confirmationRequiredWithPlaybackQueueLocationToConfirmSelector = mkSelector "confirmationRequiredWithPlaybackQueueLocationToConfirm:"
 

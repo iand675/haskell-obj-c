@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,22 +68,22 @@ module ObjC.AVFAudio.AVAudioPlayerNode
   , playerTimeForNodeTime
   , playing
   , initSelector
-  , scheduleBuffer_completionHandlerSelector
-  , scheduleBuffer_completionCallbackType_completionHandlerSelector
-  , scheduleBuffer_atTime_options_completionHandlerSelector
-  , scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector
-  , scheduleFile_atTime_completionHandlerSelector
-  , scheduleFile_atTime_completionCallbackType_completionHandlerSelector
-  , scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector
-  , scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector
-  , stopSelector
-  , prepareWithFrameCountSelector
-  , playSelector
-  , playAtTimeSelector
-  , pauseSelector
   , nodeTimeForPlayerTimeSelector
+  , pauseSelector
+  , playAtTimeSelector
+  , playSelector
   , playerTimeForNodeTimeSelector
   , playingSelector
+  , prepareWithFrameCountSelector
+  , scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector
+  , scheduleBuffer_atTime_options_completionHandlerSelector
+  , scheduleBuffer_completionCallbackType_completionHandlerSelector
+  , scheduleBuffer_completionHandlerSelector
+  , scheduleFile_atTime_completionCallbackType_completionHandlerSelector
+  , scheduleFile_atTime_completionHandlerSelector
+  , scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector
+  , scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector
+  , stopSelector
 
   -- * Enum types
   , AVAudioPlayerNodeBufferOptions(AVAudioPlayerNodeBufferOptions)
@@ -96,15 +97,11 @@ module ObjC.AVFAudio.AVAudioPlayerNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,8 +111,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> IO (Id AVAudioPlayerNode)
-init_ avAudioPlayerNode  =
-    sendMsg avAudioPlayerNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioPlayerNode =
+  sendOwnedMessage avAudioPlayerNode initSelector
 
 -- | scheduleBuffer:completionHandler:
 --
@@ -131,9 +128,8 @@ init_ avAudioPlayerNode  =
 --
 -- ObjC selector: @- scheduleBuffer:completionHandler:@
 scheduleBuffer_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioPCMBuffer buffer) => avAudioPlayerNode -> buffer -> Ptr () -> IO ()
-scheduleBuffer_completionHandler avAudioPlayerNode  buffer completionHandler =
-  withObjCPtr buffer $ \raw_buffer ->
-      sendMsg avAudioPlayerNode (mkSelector "scheduleBuffer:completionHandler:") retVoid [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleBuffer_completionHandler avAudioPlayerNode buffer completionHandler =
+  sendMessage avAudioPlayerNode scheduleBuffer_completionHandlerSelector (toAVAudioPCMBuffer buffer) completionHandler
 
 -- | scheduleBuffer:completionCallbackType:completionHandler:
 --
@@ -149,9 +145,8 @@ scheduleBuffer_completionHandler avAudioPlayerNode  buffer completionHandler =
 --
 -- ObjC selector: @- scheduleBuffer:completionCallbackType:completionHandler:@
 scheduleBuffer_completionCallbackType_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioPCMBuffer buffer) => avAudioPlayerNode -> buffer -> AVAudioPlayerNodeCompletionCallbackType -> Ptr () -> IO ()
-scheduleBuffer_completionCallbackType_completionHandler avAudioPlayerNode  buffer callbackType completionHandler =
-  withObjCPtr buffer $ \raw_buffer ->
-      sendMsg avAudioPlayerNode (mkSelector "scheduleBuffer:completionCallbackType:completionHandler:") retVoid [argPtr (castPtr raw_buffer :: Ptr ()), argCLong (coerce callbackType), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleBuffer_completionCallbackType_completionHandler avAudioPlayerNode buffer callbackType completionHandler =
+  sendMessage avAudioPlayerNode scheduleBuffer_completionCallbackType_completionHandlerSelector (toAVAudioPCMBuffer buffer) callbackType completionHandler
 
 -- | scheduleBuffer:atTime:options:completionHandler:
 --
@@ -169,10 +164,8 @@ scheduleBuffer_completionCallbackType_completionHandler avAudioPlayerNode  buffe
 --
 -- ObjC selector: @- scheduleBuffer:atTime:options:completionHandler:@
 scheduleBuffer_atTime_options_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioPCMBuffer buffer, IsAVAudioTime when) => avAudioPlayerNode -> buffer -> when -> AVAudioPlayerNodeBufferOptions -> Ptr () -> IO ()
-scheduleBuffer_atTime_options_completionHandler avAudioPlayerNode  buffer when options completionHandler =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleBuffer:atTime:options:completionHandler:") retVoid [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_when :: Ptr ()), argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleBuffer_atTime_options_completionHandler avAudioPlayerNode buffer when options completionHandler =
+  sendMessage avAudioPlayerNode scheduleBuffer_atTime_options_completionHandlerSelector (toAVAudioPCMBuffer buffer) (toAVAudioTime when) options completionHandler
 
 -- | scheduleBuffer:atTime:options:completionCallbackType:completionHandler:
 --
@@ -190,10 +183,8 @@ scheduleBuffer_atTime_options_completionHandler avAudioPlayerNode  buffer when o
 --
 -- ObjC selector: @- scheduleBuffer:atTime:options:completionCallbackType:completionHandler:@
 scheduleBuffer_atTime_options_completionCallbackType_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioPCMBuffer buffer, IsAVAudioTime when) => avAudioPlayerNode -> buffer -> when -> AVAudioPlayerNodeBufferOptions -> AVAudioPlayerNodeCompletionCallbackType -> Ptr () -> IO ()
-scheduleBuffer_atTime_options_completionCallbackType_completionHandler avAudioPlayerNode  buffer when options callbackType completionHandler =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleBuffer:atTime:options:completionCallbackType:completionHandler:") retVoid [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_when :: Ptr ()), argCULong (coerce options), argCLong (coerce callbackType), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleBuffer_atTime_options_completionCallbackType_completionHandler avAudioPlayerNode buffer when options callbackType completionHandler =
+  sendMessage avAudioPlayerNode scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector (toAVAudioPCMBuffer buffer) (toAVAudioTime when) options callbackType completionHandler
 
 -- | scheduleFile:atTime:completionHandler:
 --
@@ -209,10 +200,8 @@ scheduleBuffer_atTime_options_completionCallbackType_completionHandler avAudioPl
 --
 -- ObjC selector: @- scheduleFile:atTime:completionHandler:@
 scheduleFile_atTime_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioFile file, IsAVAudioTime when) => avAudioPlayerNode -> file -> when -> Ptr () -> IO ()
-scheduleFile_atTime_completionHandler avAudioPlayerNode  file when completionHandler =
-  withObjCPtr file $ \raw_file ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleFile:atTime:completionHandler:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argPtr (castPtr raw_when :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleFile_atTime_completionHandler avAudioPlayerNode file when completionHandler =
+  sendMessage avAudioPlayerNode scheduleFile_atTime_completionHandlerSelector (toAVAudioFile file) (toAVAudioTime when) completionHandler
 
 -- | scheduleFile:atTime:completionCallbackType:completionHandler:
 --
@@ -228,10 +217,8 @@ scheduleFile_atTime_completionHandler avAudioPlayerNode  file when completionHan
 --
 -- ObjC selector: @- scheduleFile:atTime:completionCallbackType:completionHandler:@
 scheduleFile_atTime_completionCallbackType_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioFile file, IsAVAudioTime when) => avAudioPlayerNode -> file -> when -> AVAudioPlayerNodeCompletionCallbackType -> Ptr () -> IO ()
-scheduleFile_atTime_completionCallbackType_completionHandler avAudioPlayerNode  file when callbackType completionHandler =
-  withObjCPtr file $ \raw_file ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleFile:atTime:completionCallbackType:completionHandler:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argPtr (castPtr raw_when :: Ptr ()), argCLong (coerce callbackType), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleFile_atTime_completionCallbackType_completionHandler avAudioPlayerNode file when callbackType completionHandler =
+  sendMessage avAudioPlayerNode scheduleFile_atTime_completionCallbackType_completionHandlerSelector (toAVAudioFile file) (toAVAudioTime when) callbackType completionHandler
 
 -- | scheduleSegment:startingFrame:frameCount:atTime:completionHandler:
 --
@@ -251,10 +238,8 @@ scheduleFile_atTime_completionCallbackType_completionHandler avAudioPlayerNode  
 --
 -- ObjC selector: @- scheduleSegment:startingFrame:frameCount:atTime:completionHandler:@
 scheduleSegment_startingFrame_frameCount_atTime_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioFile file, IsAVAudioTime when) => avAudioPlayerNode -> file -> CLong -> CUInt -> when -> Ptr () -> IO ()
-scheduleSegment_startingFrame_frameCount_atTime_completionHandler avAudioPlayerNode  file startFrame numberFrames when completionHandler =
-  withObjCPtr file $ \raw_file ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleSegment:startingFrame:frameCount:atTime:completionHandler:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argCLong startFrame, argCUInt numberFrames, argPtr (castPtr raw_when :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleSegment_startingFrame_frameCount_atTime_completionHandler avAudioPlayerNode file startFrame numberFrames when completionHandler =
+  sendMessage avAudioPlayerNode scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector (toAVAudioFile file) startFrame numberFrames (toAVAudioTime when) completionHandler
 
 -- | scheduleSegment:startingFrame:frameCount:atTime:completionCallbackType:completionHandler:
 --
@@ -274,10 +259,8 @@ scheduleSegment_startingFrame_frameCount_atTime_completionHandler avAudioPlayerN
 --
 -- ObjC selector: @- scheduleSegment:startingFrame:frameCount:atTime:completionCallbackType:completionHandler:@
 scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandler :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioFile file, IsAVAudioTime when) => avAudioPlayerNode -> file -> CLong -> CUInt -> when -> AVAudioPlayerNodeCompletionCallbackType -> Ptr () -> IO ()
-scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandler avAudioPlayerNode  file startFrame numberFrames when callbackType completionHandler =
-  withObjCPtr file $ \raw_file ->
-    withObjCPtr when $ \raw_when ->
-        sendMsg avAudioPlayerNode (mkSelector "scheduleSegment:startingFrame:frameCount:atTime:completionCallbackType:completionHandler:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argCLong startFrame, argCUInt numberFrames, argPtr (castPtr raw_when :: Ptr ()), argCLong (coerce callbackType), argPtr (castPtr completionHandler :: Ptr ())]
+scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandler avAudioPlayerNode file startFrame numberFrames when callbackType completionHandler =
+  sendMessage avAudioPlayerNode scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector (toAVAudioFile file) startFrame numberFrames (toAVAudioTime when) callbackType completionHandler
 
 -- | stop
 --
@@ -289,8 +272,8 @@ scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completio
 --
 -- ObjC selector: @- stop@
 stop :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> IO ()
-stop avAudioPlayerNode  =
-    sendMsg avAudioPlayerNode (mkSelector "stop") retVoid []
+stop avAudioPlayerNode =
+  sendMessage avAudioPlayerNode stopSelector
 
 -- | prepareWithFrameCount:
 --
@@ -300,8 +283,8 @@ stop avAudioPlayerNode  =
 --
 -- ObjC selector: @- prepareWithFrameCount:@
 prepareWithFrameCount :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> CUInt -> IO ()
-prepareWithFrameCount avAudioPlayerNode  frameCount =
-    sendMsg avAudioPlayerNode (mkSelector "prepareWithFrameCount:") retVoid [argCUInt frameCount]
+prepareWithFrameCount avAudioPlayerNode frameCount =
+  sendMessage avAudioPlayerNode prepareWithFrameCountSelector frameCount
 
 -- | play
 --
@@ -311,8 +294,8 @@ prepareWithFrameCount avAudioPlayerNode  frameCount =
 --
 -- ObjC selector: @- play@
 play :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> IO ()
-play avAudioPlayerNode  =
-    sendMsg avAudioPlayerNode (mkSelector "play") retVoid []
+play avAudioPlayerNode =
+  sendMessage avAudioPlayerNode playSelector
 
 -- | playAtTime:
 --
@@ -328,9 +311,8 @@ play avAudioPlayerNode  =
 --
 -- ObjC selector: @- playAtTime:@
 playAtTime :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioTime when) => avAudioPlayerNode -> when -> IO ()
-playAtTime avAudioPlayerNode  when =
-  withObjCPtr when $ \raw_when ->
-      sendMsg avAudioPlayerNode (mkSelector "playAtTime:") retVoid [argPtr (castPtr raw_when :: Ptr ())]
+playAtTime avAudioPlayerNode when =
+  sendMessage avAudioPlayerNode playAtTimeSelector (toAVAudioTime when)
 
 -- | pause
 --
@@ -342,8 +324,8 @@ playAtTime avAudioPlayerNode  when =
 --
 -- ObjC selector: @- pause@
 pause :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> IO ()
-pause avAudioPlayerNode  =
-    sendMsg avAudioPlayerNode (mkSelector "pause") retVoid []
+pause avAudioPlayerNode =
+  sendMessage avAudioPlayerNode pauseSelector
 
 -- | nodeTimeForPlayerTime:
 --
@@ -359,9 +341,8 @@ pause avAudioPlayerNode  =
 --
 -- ObjC selector: @- nodeTimeForPlayerTime:@
 nodeTimeForPlayerTime :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioTime playerTime) => avAudioPlayerNode -> playerTime -> IO (Id AVAudioTime)
-nodeTimeForPlayerTime avAudioPlayerNode  playerTime =
-  withObjCPtr playerTime $ \raw_playerTime ->
-      sendMsg avAudioPlayerNode (mkSelector "nodeTimeForPlayerTime:") (retPtr retVoid) [argPtr (castPtr raw_playerTime :: Ptr ())] >>= retainedObject . castPtr
+nodeTimeForPlayerTime avAudioPlayerNode playerTime =
+  sendMessage avAudioPlayerNode nodeTimeForPlayerTimeSelector (toAVAudioTime playerTime)
 
 -- | playerTimeForNodeTime:
 --
@@ -377,9 +358,8 @@ nodeTimeForPlayerTime avAudioPlayerNode  playerTime =
 --
 -- ObjC selector: @- playerTimeForNodeTime:@
 playerTimeForNodeTime :: (IsAVAudioPlayerNode avAudioPlayerNode, IsAVAudioTime nodeTime) => avAudioPlayerNode -> nodeTime -> IO (Id AVAudioTime)
-playerTimeForNodeTime avAudioPlayerNode  nodeTime =
-  withObjCPtr nodeTime $ \raw_nodeTime ->
-      sendMsg avAudioPlayerNode (mkSelector "playerTimeForNodeTime:") (retPtr retVoid) [argPtr (castPtr raw_nodeTime :: Ptr ())] >>= retainedObject . castPtr
+playerTimeForNodeTime avAudioPlayerNode nodeTime =
+  sendMessage avAudioPlayerNode playerTimeForNodeTimeSelector (toAVAudioTime nodeTime)
 
 -- | playing
 --
@@ -387,78 +367,78 @@ playerTimeForNodeTime avAudioPlayerNode  nodeTime =
 --
 -- ObjC selector: @- playing@
 playing :: IsAVAudioPlayerNode avAudioPlayerNode => avAudioPlayerNode -> IO Bool
-playing avAudioPlayerNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioPlayerNode (mkSelector "playing") retCULong []
+playing avAudioPlayerNode =
+  sendMessage avAudioPlayerNode playingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioPlayerNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @scheduleBuffer:completionHandler:@
-scheduleBuffer_completionHandlerSelector :: Selector
+scheduleBuffer_completionHandlerSelector :: Selector '[Id AVAudioPCMBuffer, Ptr ()] ()
 scheduleBuffer_completionHandlerSelector = mkSelector "scheduleBuffer:completionHandler:"
 
 -- | @Selector@ for @scheduleBuffer:completionCallbackType:completionHandler:@
-scheduleBuffer_completionCallbackType_completionHandlerSelector :: Selector
+scheduleBuffer_completionCallbackType_completionHandlerSelector :: Selector '[Id AVAudioPCMBuffer, AVAudioPlayerNodeCompletionCallbackType, Ptr ()] ()
 scheduleBuffer_completionCallbackType_completionHandlerSelector = mkSelector "scheduleBuffer:completionCallbackType:completionHandler:"
 
 -- | @Selector@ for @scheduleBuffer:atTime:options:completionHandler:@
-scheduleBuffer_atTime_options_completionHandlerSelector :: Selector
+scheduleBuffer_atTime_options_completionHandlerSelector :: Selector '[Id AVAudioPCMBuffer, Id AVAudioTime, AVAudioPlayerNodeBufferOptions, Ptr ()] ()
 scheduleBuffer_atTime_options_completionHandlerSelector = mkSelector "scheduleBuffer:atTime:options:completionHandler:"
 
 -- | @Selector@ for @scheduleBuffer:atTime:options:completionCallbackType:completionHandler:@
-scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector :: Selector
+scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector :: Selector '[Id AVAudioPCMBuffer, Id AVAudioTime, AVAudioPlayerNodeBufferOptions, AVAudioPlayerNodeCompletionCallbackType, Ptr ()] ()
 scheduleBuffer_atTime_options_completionCallbackType_completionHandlerSelector = mkSelector "scheduleBuffer:atTime:options:completionCallbackType:completionHandler:"
 
 -- | @Selector@ for @scheduleFile:atTime:completionHandler:@
-scheduleFile_atTime_completionHandlerSelector :: Selector
+scheduleFile_atTime_completionHandlerSelector :: Selector '[Id AVAudioFile, Id AVAudioTime, Ptr ()] ()
 scheduleFile_atTime_completionHandlerSelector = mkSelector "scheduleFile:atTime:completionHandler:"
 
 -- | @Selector@ for @scheduleFile:atTime:completionCallbackType:completionHandler:@
-scheduleFile_atTime_completionCallbackType_completionHandlerSelector :: Selector
+scheduleFile_atTime_completionCallbackType_completionHandlerSelector :: Selector '[Id AVAudioFile, Id AVAudioTime, AVAudioPlayerNodeCompletionCallbackType, Ptr ()] ()
 scheduleFile_atTime_completionCallbackType_completionHandlerSelector = mkSelector "scheduleFile:atTime:completionCallbackType:completionHandler:"
 
 -- | @Selector@ for @scheduleSegment:startingFrame:frameCount:atTime:completionHandler:@
-scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector :: Selector
+scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector :: Selector '[Id AVAudioFile, CLong, CUInt, Id AVAudioTime, Ptr ()] ()
 scheduleSegment_startingFrame_frameCount_atTime_completionHandlerSelector = mkSelector "scheduleSegment:startingFrame:frameCount:atTime:completionHandler:"
 
 -- | @Selector@ for @scheduleSegment:startingFrame:frameCount:atTime:completionCallbackType:completionHandler:@
-scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector :: Selector
+scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector :: Selector '[Id AVAudioFile, CLong, CUInt, Id AVAudioTime, AVAudioPlayerNodeCompletionCallbackType, Ptr ()] ()
 scheduleSegment_startingFrame_frameCount_atTime_completionCallbackType_completionHandlerSelector = mkSelector "scheduleSegment:startingFrame:frameCount:atTime:completionCallbackType:completionHandler:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @prepareWithFrameCount:@
-prepareWithFrameCountSelector :: Selector
+prepareWithFrameCountSelector :: Selector '[CUInt] ()
 prepareWithFrameCountSelector = mkSelector "prepareWithFrameCount:"
 
 -- | @Selector@ for @play@
-playSelector :: Selector
+playSelector :: Selector '[] ()
 playSelector = mkSelector "play"
 
 -- | @Selector@ for @playAtTime:@
-playAtTimeSelector :: Selector
+playAtTimeSelector :: Selector '[Id AVAudioTime] ()
 playAtTimeSelector = mkSelector "playAtTime:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @nodeTimeForPlayerTime:@
-nodeTimeForPlayerTimeSelector :: Selector
+nodeTimeForPlayerTimeSelector :: Selector '[Id AVAudioTime] (Id AVAudioTime)
 nodeTimeForPlayerTimeSelector = mkSelector "nodeTimeForPlayerTime:"
 
 -- | @Selector@ for @playerTimeForNodeTime:@
-playerTimeForNodeTimeSelector :: Selector
+playerTimeForNodeTimeSelector :: Selector '[Id AVAudioTime] (Id AVAudioTime)
 playerTimeForNodeTimeSelector = mkSelector "playerTimeForNodeTime:"
 
 -- | @Selector@ for @playing@
-playingSelector :: Selector
+playingSelector :: Selector '[] Bool
 playingSelector = mkSelector "playing"
 

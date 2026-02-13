@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRCommodityTariffClusterDayPatternStruct
   , setDaysOfWeek
   , dayEntryIDs
   , setDayEntryIDs
-  , dayPatternIDSelector
-  , setDayPatternIDSelector
-  , daysOfWeekSelector
-  , setDaysOfWeekSelector
   , dayEntryIDsSelector
+  , dayPatternIDSelector
+  , daysOfWeekSelector
   , setDayEntryIDsSelector
+  , setDayPatternIDSelector
+  , setDaysOfWeekSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayPatternID@
 dayPatternID :: IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct => mtrCommodityTariffClusterDayPatternStruct -> IO (Id NSNumber)
-dayPatternID mtrCommodityTariffClusterDayPatternStruct  =
-    sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "dayPatternID") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayPatternID mtrCommodityTariffClusterDayPatternStruct =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct dayPatternIDSelector
 
 -- | @- setDayPatternID:@
 setDayPatternID :: (IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct, IsNSNumber value) => mtrCommodityTariffClusterDayPatternStruct -> value -> IO ()
-setDayPatternID mtrCommodityTariffClusterDayPatternStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "setDayPatternID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayPatternID mtrCommodityTariffClusterDayPatternStruct value =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct setDayPatternIDSelector (toNSNumber value)
 
 -- | @- daysOfWeek@
 daysOfWeek :: IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct => mtrCommodityTariffClusterDayPatternStruct -> IO (Id NSNumber)
-daysOfWeek mtrCommodityTariffClusterDayPatternStruct  =
-    sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "daysOfWeek") (retPtr retVoid) [] >>= retainedObject . castPtr
+daysOfWeek mtrCommodityTariffClusterDayPatternStruct =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct daysOfWeekSelector
 
 -- | @- setDaysOfWeek:@
 setDaysOfWeek :: (IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct, IsNSNumber value) => mtrCommodityTariffClusterDayPatternStruct -> value -> IO ()
-setDaysOfWeek mtrCommodityTariffClusterDayPatternStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "setDaysOfWeek:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDaysOfWeek mtrCommodityTariffClusterDayPatternStruct value =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct setDaysOfWeekSelector (toNSNumber value)
 
 -- | @- dayEntryIDs@
 dayEntryIDs :: IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct => mtrCommodityTariffClusterDayPatternStruct -> IO (Id NSArray)
-dayEntryIDs mtrCommodityTariffClusterDayPatternStruct  =
-    sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "dayEntryIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayEntryIDs mtrCommodityTariffClusterDayPatternStruct =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct dayEntryIDsSelector
 
 -- | @- setDayEntryIDs:@
 setDayEntryIDs :: (IsMTRCommodityTariffClusterDayPatternStruct mtrCommodityTariffClusterDayPatternStruct, IsNSArray value) => mtrCommodityTariffClusterDayPatternStruct -> value -> IO ()
-setDayEntryIDs mtrCommodityTariffClusterDayPatternStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayPatternStruct (mkSelector "setDayEntryIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayEntryIDs mtrCommodityTariffClusterDayPatternStruct value =
+  sendMessage mtrCommodityTariffClusterDayPatternStruct setDayEntryIDsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayPatternID@
-dayPatternIDSelector :: Selector
+dayPatternIDSelector :: Selector '[] (Id NSNumber)
 dayPatternIDSelector = mkSelector "dayPatternID"
 
 -- | @Selector@ for @setDayPatternID:@
-setDayPatternIDSelector :: Selector
+setDayPatternIDSelector :: Selector '[Id NSNumber] ()
 setDayPatternIDSelector = mkSelector "setDayPatternID:"
 
 -- | @Selector@ for @daysOfWeek@
-daysOfWeekSelector :: Selector
+daysOfWeekSelector :: Selector '[] (Id NSNumber)
 daysOfWeekSelector = mkSelector "daysOfWeek"
 
 -- | @Selector@ for @setDaysOfWeek:@
-setDaysOfWeekSelector :: Selector
+setDaysOfWeekSelector :: Selector '[Id NSNumber] ()
 setDaysOfWeekSelector = mkSelector "setDaysOfWeek:"
 
 -- | @Selector@ for @dayEntryIDs@
-dayEntryIDsSelector :: Selector
+dayEntryIDsSelector :: Selector '[] (Id NSArray)
 dayEntryIDsSelector = mkSelector "dayEntryIDs"
 
 -- | @Selector@ for @setDayEntryIDs:@
-setDayEntryIDsSelector :: Selector
+setDayEntryIDsSelector :: Selector '[Id NSArray] ()
 setDayEntryIDsSelector = mkSelector "setDayEntryIDs:"
 

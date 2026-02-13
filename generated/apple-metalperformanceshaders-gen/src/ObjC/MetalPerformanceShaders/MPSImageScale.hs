@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.MetalPerformanceShaders.MPSImageScale
   , initWithCoder_device
   , scaleTransform
   , setScaleTransform
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , scaleTransformSelector
   , setScaleTransformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageScale mpsImageScale => mpsImageScale -> RawId -> IO (Id MPSImageScale)
-initWithDevice mpsImageScale  device =
-    sendMsg mpsImageScale (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageScale device =
+  sendOwnedMessage mpsImageScale initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -59,9 +56,8 @@ initWithDevice mpsImageScale  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageScale mpsImageScale, IsNSCoder aDecoder) => mpsImageScale -> aDecoder -> RawId -> IO (Id MPSImageScale)
-initWithCoder_device mpsImageScale  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageScale (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageScale aDecoder device =
+  sendOwnedMessage mpsImageScale initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | scaleTransform
 --
@@ -93,8 +89,8 @@ initWithCoder_device mpsImageScale  aDecoder device =
 --
 -- ObjC selector: @- scaleTransform@
 scaleTransform :: IsMPSImageScale mpsImageScale => mpsImageScale -> IO (Const (Ptr MPSScaleTransform))
-scaleTransform mpsImageScale  =
-    fmap Const $ fmap castPtr $ sendMsg mpsImageScale (mkSelector "scaleTransform") (retPtr retVoid) []
+scaleTransform mpsImageScale =
+  sendMessage mpsImageScale scaleTransformSelector
 
 -- | scaleTransform
 --
@@ -126,26 +122,26 @@ scaleTransform mpsImageScale  =
 --
 -- ObjC selector: @- setScaleTransform:@
 setScaleTransform :: IsMPSImageScale mpsImageScale => mpsImageScale -> Const (Ptr MPSScaleTransform) -> IO ()
-setScaleTransform mpsImageScale  value =
-    sendMsg mpsImageScale (mkSelector "setScaleTransform:") retVoid [argPtr (unConst value)]
+setScaleTransform mpsImageScale value =
+  sendMessage mpsImageScale setScaleTransformSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageScale)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageScale)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @scaleTransform@
-scaleTransformSelector :: Selector
+scaleTransformSelector :: Selector '[] (Const (Ptr MPSScaleTransform))
 scaleTransformSelector = mkSelector "scaleTransform"
 
 -- | @Selector@ for @setScaleTransform:@
-setScaleTransformSelector :: Selector
+setScaleTransformSelector :: Selector '[Const (Ptr MPSScaleTransform)] ()
 setScaleTransformSelector = mkSelector "setScaleTransform:"
 

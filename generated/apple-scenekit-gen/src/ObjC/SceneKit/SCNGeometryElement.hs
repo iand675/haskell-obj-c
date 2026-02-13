@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,24 +30,24 @@ module ObjC.SceneKit.SCNGeometryElement
   , setMinimumPointScreenSpaceRadius
   , maximumPointScreenSpaceRadius
   , setMaximumPointScreenSpaceRadius
-  , geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector
-  , geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector
+  , bytesPerIndexSelector
+  , dataSelector
   , geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndexSelector
   , geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector
-  , dataSelector
-  , primitiveTypeSelector
-  , primitiveCountSelector
-  , interleavedIndicesChannelsSelector
+  , geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector
+  , geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector
   , indicesChannelCountSelector
-  , bytesPerIndexSelector
-  , primitiveRangeSelector
-  , setPrimitiveRangeSelector
-  , pointSizeSelector
-  , setPointSizeSelector
-  , minimumPointScreenSpaceRadiusSelector
-  , setMinimumPointScreenSpaceRadiusSelector
+  , interleavedIndicesChannelsSelector
   , maximumPointScreenSpaceRadiusSelector
+  , minimumPointScreenSpaceRadiusSelector
+  , pointSizeSelector
+  , primitiveCountSelector
+  , primitiveRangeSelector
+  , primitiveTypeSelector
   , setMaximumPointScreenSpaceRadiusSelector
+  , setMinimumPointScreenSpaceRadiusSelector
+  , setPointSizeSelector
+  , setPrimitiveRangeSelector
 
   -- * Enum types
   , SCNGeometryPrimitiveType(SCNGeometryPrimitiveType)
@@ -58,15 +59,11 @@ module ObjC.SceneKit.SCNGeometryElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,8 +89,7 @@ geometryElementWithData_primitiveType_primitiveCount_bytesPerIndex :: IsNSData d
 geometryElementWithData_primitiveType_primitiveCount_bytesPerIndex data_ primitiveType primitiveCount bytesPerIndex =
   do
     cls' <- getRequiredClass "SCNGeometryElement"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "geometryElementWithData:primitiveType:primitiveCount:bytesPerIndex:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCLong (coerce primitiveType), argCLong primitiveCount, argCLong bytesPerIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector (toNSData data_) primitiveType primitiveCount bytesPerIndex
 
 -- | geometryElementWithData:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:
 --
@@ -114,8 +110,7 @@ geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interle
 geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndex data_ primitiveType primitiveCount indicesChannelCount interleavedIndicesChannels bytesPerIndex =
   do
     cls' <- getRequiredClass "SCNGeometryElement"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "geometryElementWithData:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCLong (coerce primitiveType), argCLong primitiveCount, argCLong indicesChannelCount, argCULong (if interleavedIndicesChannels then 1 else 0), argCLong bytesPerIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector (toNSData data_) primitiveType primitiveCount indicesChannelCount interleavedIndicesChannels bytesPerIndex
 
 -- | geometryElementWithBuffer:primitiveType:primitiveCount:bytesPerIndex:
 --
@@ -134,14 +129,14 @@ geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndex :: RawId ->
 geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndex buffer primitiveType primitiveCount bytesPerIndex =
   do
     cls' <- getRequiredClass "SCNGeometryElement"
-    sendClassMsg cls' (mkSelector "geometryElementWithBuffer:primitiveType:primitiveCount:bytesPerIndex:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCLong (coerce primitiveType), argCLong primitiveCount, argCLong bytesPerIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndexSelector buffer primitiveType primitiveCount bytesPerIndex
 
 -- | @+ geometryElementWithBuffer:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:@
 geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndex :: RawId -> SCNGeometryPrimitiveType -> CLong -> CLong -> Bool -> CLong -> IO (Id SCNGeometryElement)
 geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndex buffer primitiveType primitiveCount indicesChannelCount interleavedIndicesChannels bytesPerIndex =
   do
     cls' <- getRequiredClass "SCNGeometryElement"
-    sendClassMsg cls' (mkSelector "geometryElementWithBuffer:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCLong (coerce primitiveType), argCLong primitiveCount, argCLong indicesChannelCount, argCULong (if interleavedIndicesChannels then 1 else 0), argCLong bytesPerIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector buffer primitiveType primitiveCount indicesChannelCount interleavedIndicesChannels bytesPerIndex
 
 -- | data
 --
@@ -149,8 +144,8 @@ geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_inter
 --
 -- ObjC selector: @- data@
 data_ :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO (Id NSData)
-data_ scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ scnGeometryElement =
+  sendMessage scnGeometryElement dataSelector
 
 -- | primitiveType
 --
@@ -158,8 +153,8 @@ data_ scnGeometryElement  =
 --
 -- ObjC selector: @- primitiveType@
 primitiveType :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO SCNGeometryPrimitiveType
-primitiveType scnGeometryElement  =
-    fmap (coerce :: CLong -> SCNGeometryPrimitiveType) $ sendMsg scnGeometryElement (mkSelector "primitiveType") retCLong []
+primitiveType scnGeometryElement =
+  sendMessage scnGeometryElement primitiveTypeSelector
 
 -- | primitiveCount
 --
@@ -167,8 +162,8 @@ primitiveType scnGeometryElement  =
 --
 -- ObjC selector: @- primitiveCount@
 primitiveCount :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CLong
-primitiveCount scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "primitiveCount") retCLong []
+primitiveCount scnGeometryElement =
+  sendMessage scnGeometryElement primitiveCountSelector
 
 -- | interleavedIndicesChannels
 --
@@ -176,8 +171,8 @@ primitiveCount scnGeometryElement  =
 --
 -- ObjC selector: @- interleavedIndicesChannels@
 interleavedIndicesChannels :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO Bool
-interleavedIndicesChannels scnGeometryElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnGeometryElement (mkSelector "interleavedIndicesChannels") retCULong []
+interleavedIndicesChannels scnGeometryElement =
+  sendMessage scnGeometryElement interleavedIndicesChannelsSelector
 
 -- | indicesChannelCount
 --
@@ -185,8 +180,8 @@ interleavedIndicesChannels scnGeometryElement  =
 --
 -- ObjC selector: @- indicesChannelCount@
 indicesChannelCount :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CLong
-indicesChannelCount scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "indicesChannelCount") retCLong []
+indicesChannelCount scnGeometryElement =
+  sendMessage scnGeometryElement indicesChannelCountSelector
 
 -- | bytesPerIndex
 --
@@ -194,8 +189,8 @@ indicesChannelCount scnGeometryElement  =
 --
 -- ObjC selector: @- bytesPerIndex@
 bytesPerIndex :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CLong
-bytesPerIndex scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "bytesPerIndex") retCLong []
+bytesPerIndex scnGeometryElement =
+  sendMessage scnGeometryElement bytesPerIndexSelector
 
 -- | primitiveRange
 --
@@ -205,8 +200,8 @@ bytesPerIndex scnGeometryElement  =
 --
 -- ObjC selector: @- primitiveRange@
 primitiveRange :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO NSRange
-primitiveRange scnGeometryElement  =
-    sendMsgStret scnGeometryElement (mkSelector "primitiveRange") retNSRange []
+primitiveRange scnGeometryElement =
+  sendMessage scnGeometryElement primitiveRangeSelector
 
 -- | primitiveRange
 --
@@ -216,8 +211,8 @@ primitiveRange scnGeometryElement  =
 --
 -- ObjC selector: @- setPrimitiveRange:@
 setPrimitiveRange :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> NSRange -> IO ()
-setPrimitiveRange scnGeometryElement  value =
-    sendMsg scnGeometryElement (mkSelector "setPrimitiveRange:") retVoid [argNSRange value]
+setPrimitiveRange scnGeometryElement value =
+  sendMessage scnGeometryElement setPrimitiveRangeSelector value
 
 -- | pointSize
 --
@@ -225,8 +220,8 @@ setPrimitiveRange scnGeometryElement  value =
 --
 -- ObjC selector: @- pointSize@
 pointSize :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CDouble
-pointSize scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "pointSize") retCDouble []
+pointSize scnGeometryElement =
+  sendMessage scnGeometryElement pointSizeSelector
 
 -- | pointSize
 --
@@ -234,8 +229,8 @@ pointSize scnGeometryElement  =
 --
 -- ObjC selector: @- setPointSize:@
 setPointSize :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> CDouble -> IO ()
-setPointSize scnGeometryElement  value =
-    sendMsg scnGeometryElement (mkSelector "setPointSize:") retVoid [argCDouble value]
+setPointSize scnGeometryElement value =
+  sendMessage scnGeometryElement setPointSizeSelector value
 
 -- | minimumPointScreenSpaceRadius
 --
@@ -243,8 +238,8 @@ setPointSize scnGeometryElement  value =
 --
 -- ObjC selector: @- minimumPointScreenSpaceRadius@
 minimumPointScreenSpaceRadius :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CDouble
-minimumPointScreenSpaceRadius scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "minimumPointScreenSpaceRadius") retCDouble []
+minimumPointScreenSpaceRadius scnGeometryElement =
+  sendMessage scnGeometryElement minimumPointScreenSpaceRadiusSelector
 
 -- | minimumPointScreenSpaceRadius
 --
@@ -252,8 +247,8 @@ minimumPointScreenSpaceRadius scnGeometryElement  =
 --
 -- ObjC selector: @- setMinimumPointScreenSpaceRadius:@
 setMinimumPointScreenSpaceRadius :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> CDouble -> IO ()
-setMinimumPointScreenSpaceRadius scnGeometryElement  value =
-    sendMsg scnGeometryElement (mkSelector "setMinimumPointScreenSpaceRadius:") retVoid [argCDouble value]
+setMinimumPointScreenSpaceRadius scnGeometryElement value =
+  sendMessage scnGeometryElement setMinimumPointScreenSpaceRadiusSelector value
 
 -- | maximumPointScreenSpaceRadius
 --
@@ -261,8 +256,8 @@ setMinimumPointScreenSpaceRadius scnGeometryElement  value =
 --
 -- ObjC selector: @- maximumPointScreenSpaceRadius@
 maximumPointScreenSpaceRadius :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> IO CDouble
-maximumPointScreenSpaceRadius scnGeometryElement  =
-    sendMsg scnGeometryElement (mkSelector "maximumPointScreenSpaceRadius") retCDouble []
+maximumPointScreenSpaceRadius scnGeometryElement =
+  sendMessage scnGeometryElement maximumPointScreenSpaceRadiusSelector
 
 -- | maximumPointScreenSpaceRadius
 --
@@ -270,82 +265,82 @@ maximumPointScreenSpaceRadius scnGeometryElement  =
 --
 -- ObjC selector: @- setMaximumPointScreenSpaceRadius:@
 setMaximumPointScreenSpaceRadius :: IsSCNGeometryElement scnGeometryElement => scnGeometryElement -> CDouble -> IO ()
-setMaximumPointScreenSpaceRadius scnGeometryElement  value =
-    sendMsg scnGeometryElement (mkSelector "setMaximumPointScreenSpaceRadius:") retVoid [argCDouble value]
+setMaximumPointScreenSpaceRadius scnGeometryElement value =
+  sendMessage scnGeometryElement setMaximumPointScreenSpaceRadiusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @geometryElementWithData:primitiveType:primitiveCount:bytesPerIndex:@
-geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector :: Selector
+geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector :: Selector '[Id NSData, SCNGeometryPrimitiveType, CLong, CLong] (Id SCNGeometryElement)
 geometryElementWithData_primitiveType_primitiveCount_bytesPerIndexSelector = mkSelector "geometryElementWithData:primitiveType:primitiveCount:bytesPerIndex:"
 
 -- | @Selector@ for @geometryElementWithData:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:@
-geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector :: Selector
+geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector :: Selector '[Id NSData, SCNGeometryPrimitiveType, CLong, CLong, Bool, CLong] (Id SCNGeometryElement)
 geometryElementWithData_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector = mkSelector "geometryElementWithData:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:"
 
 -- | @Selector@ for @geometryElementWithBuffer:primitiveType:primitiveCount:bytesPerIndex:@
-geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndexSelector :: Selector
+geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndexSelector :: Selector '[RawId, SCNGeometryPrimitiveType, CLong, CLong] (Id SCNGeometryElement)
 geometryElementWithBuffer_primitiveType_primitiveCount_bytesPerIndexSelector = mkSelector "geometryElementWithBuffer:primitiveType:primitiveCount:bytesPerIndex:"
 
 -- | @Selector@ for @geometryElementWithBuffer:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:@
-geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector :: Selector
+geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector :: Selector '[RawId, SCNGeometryPrimitiveType, CLong, CLong, Bool, CLong] (Id SCNGeometryElement)
 geometryElementWithBuffer_primitiveType_primitiveCount_indicesChannelCount_interleavedIndicesChannels_bytesPerIndexSelector = mkSelector "geometryElementWithBuffer:primitiveType:primitiveCount:indicesChannelCount:interleavedIndicesChannels:bytesPerIndex:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @primitiveType@
-primitiveTypeSelector :: Selector
+primitiveTypeSelector :: Selector '[] SCNGeometryPrimitiveType
 primitiveTypeSelector = mkSelector "primitiveType"
 
 -- | @Selector@ for @primitiveCount@
-primitiveCountSelector :: Selector
+primitiveCountSelector :: Selector '[] CLong
 primitiveCountSelector = mkSelector "primitiveCount"
 
 -- | @Selector@ for @interleavedIndicesChannels@
-interleavedIndicesChannelsSelector :: Selector
+interleavedIndicesChannelsSelector :: Selector '[] Bool
 interleavedIndicesChannelsSelector = mkSelector "interleavedIndicesChannels"
 
 -- | @Selector@ for @indicesChannelCount@
-indicesChannelCountSelector :: Selector
+indicesChannelCountSelector :: Selector '[] CLong
 indicesChannelCountSelector = mkSelector "indicesChannelCount"
 
 -- | @Selector@ for @bytesPerIndex@
-bytesPerIndexSelector :: Selector
+bytesPerIndexSelector :: Selector '[] CLong
 bytesPerIndexSelector = mkSelector "bytesPerIndex"
 
 -- | @Selector@ for @primitiveRange@
-primitiveRangeSelector :: Selector
+primitiveRangeSelector :: Selector '[] NSRange
 primitiveRangeSelector = mkSelector "primitiveRange"
 
 -- | @Selector@ for @setPrimitiveRange:@
-setPrimitiveRangeSelector :: Selector
+setPrimitiveRangeSelector :: Selector '[NSRange] ()
 setPrimitiveRangeSelector = mkSelector "setPrimitiveRange:"
 
 -- | @Selector@ for @pointSize@
-pointSizeSelector :: Selector
+pointSizeSelector :: Selector '[] CDouble
 pointSizeSelector = mkSelector "pointSize"
 
 -- | @Selector@ for @setPointSize:@
-setPointSizeSelector :: Selector
+setPointSizeSelector :: Selector '[CDouble] ()
 setPointSizeSelector = mkSelector "setPointSize:"
 
 -- | @Selector@ for @minimumPointScreenSpaceRadius@
-minimumPointScreenSpaceRadiusSelector :: Selector
+minimumPointScreenSpaceRadiusSelector :: Selector '[] CDouble
 minimumPointScreenSpaceRadiusSelector = mkSelector "minimumPointScreenSpaceRadius"
 
 -- | @Selector@ for @setMinimumPointScreenSpaceRadius:@
-setMinimumPointScreenSpaceRadiusSelector :: Selector
+setMinimumPointScreenSpaceRadiusSelector :: Selector '[CDouble] ()
 setMinimumPointScreenSpaceRadiusSelector = mkSelector "setMinimumPointScreenSpaceRadius:"
 
 -- | @Selector@ for @maximumPointScreenSpaceRadius@
-maximumPointScreenSpaceRadiusSelector :: Selector
+maximumPointScreenSpaceRadiusSelector :: Selector '[] CDouble
 maximumPointScreenSpaceRadiusSelector = mkSelector "maximumPointScreenSpaceRadius"
 
 -- | @Selector@ for @setMaximumPointScreenSpaceRadius:@
-setMaximumPointScreenSpaceRadiusSelector :: Selector
+setMaximumPointScreenSpaceRadiusSelector :: Selector '[CDouble] ()
 setMaximumPointScreenSpaceRadiusSelector = mkSelector "setMaximumPointScreenSpaceRadius:"
 

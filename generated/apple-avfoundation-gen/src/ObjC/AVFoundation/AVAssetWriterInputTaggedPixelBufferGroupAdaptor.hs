@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AVFoundation.AVAssetWriterInputTaggedPixelBufferGroupAdaptor
   , assetWriterInput
   , sourcePixelBufferAttributes
   , pixelBufferPool
-  , initSelector
-  , newSelector
-  , assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector
-  , initWithAssetWriterInput_sourcePixelBufferAttributesSelector
   , assetWriterInputSelector
-  , sourcePixelBufferAttributesSelector
+  , assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector
+  , initSelector
+  , initWithAssetWriterInput_sourcePixelBufferAttributesSelector
+  , newSelector
   , pixelBufferPoolSelector
+  , sourcePixelBufferAttributesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetWriterInputTaggedPixelBufferGroupAdaptor avAssetWriterInputTaggedPixelBufferGroupAdaptor => avAssetWriterInputTaggedPixelBufferGroupAdaptor -> IO (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
-init_ avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
-    sendMsg avAssetWriterInputTaggedPixelBufferGroupAdaptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetWriterInputTaggedPixelBufferGroupAdaptor =
+  sendOwnedMessage avAssetWriterInputTaggedPixelBufferGroupAdaptor initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
 new  =
   do
     cls' <- getRequiredClass "AVAssetWriterInputTaggedPixelBufferGroupAdaptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new tagged buffer adaptor to receive tagged buffer groups for writing to the output file.
 --
@@ -70,9 +67,7 @@ assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBuf
 assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributes input sourcePixelBufferAttributes =
   do
     cls' <- getRequiredClass "AVAssetWriterInputTaggedPixelBufferGroupAdaptor"
-    withObjCPtr input $ \raw_input ->
-      withObjCPtr sourcePixelBufferAttributes $ \raw_sourcePixelBufferAttributes ->
-        sendClassMsg cls' (mkSelector "assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ()), argPtr (castPtr raw_sourcePixelBufferAttributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector (toAVAssetWriterInput input) (toNSDictionary sourcePixelBufferAttributes)
 
 -- | Creates a new tagged buffer group adaptor to receive tagged buffer groups for writing to the output file.
 --
@@ -90,17 +85,15 @@ assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBuf
 --
 -- ObjC selector: @- initWithAssetWriterInput:sourcePixelBufferAttributes:@
 initWithAssetWriterInput_sourcePixelBufferAttributes :: (IsAVAssetWriterInputTaggedPixelBufferGroupAdaptor avAssetWriterInputTaggedPixelBufferGroupAdaptor, IsAVAssetWriterInput input, IsNSDictionary sourcePixelBufferAttributes) => avAssetWriterInputTaggedPixelBufferGroupAdaptor -> input -> sourcePixelBufferAttributes -> IO (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
-initWithAssetWriterInput_sourcePixelBufferAttributes avAssetWriterInputTaggedPixelBufferGroupAdaptor  input sourcePixelBufferAttributes =
-  withObjCPtr input $ \raw_input ->
-    withObjCPtr sourcePixelBufferAttributes $ \raw_sourcePixelBufferAttributes ->
-        sendMsg avAssetWriterInputTaggedPixelBufferGroupAdaptor (mkSelector "initWithAssetWriterInput:sourcePixelBufferAttributes:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ()), argPtr (castPtr raw_sourcePixelBufferAttributes :: Ptr ())] >>= ownedObject . castPtr
+initWithAssetWriterInput_sourcePixelBufferAttributes avAssetWriterInputTaggedPixelBufferGroupAdaptor input sourcePixelBufferAttributes =
+  sendOwnedMessage avAssetWriterInputTaggedPixelBufferGroupAdaptor initWithAssetWriterInput_sourcePixelBufferAttributesSelector (toAVAssetWriterInput input) (toNSDictionary sourcePixelBufferAttributes)
 
 -- | The asset writer input to which the receiver should append tagged buffer groups.
 --
 -- ObjC selector: @- assetWriterInput@
 assetWriterInput :: IsAVAssetWriterInputTaggedPixelBufferGroupAdaptor avAssetWriterInputTaggedPixelBufferGroupAdaptor => avAssetWriterInputTaggedPixelBufferGroupAdaptor -> IO (Id AVAssetWriterInput)
-assetWriterInput avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
-    sendMsg avAssetWriterInputTaggedPixelBufferGroupAdaptor (mkSelector "assetWriterInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetWriterInput avAssetWriterInputTaggedPixelBufferGroupAdaptor =
+  sendMessage avAssetWriterInputTaggedPixelBufferGroupAdaptor assetWriterInputSelector
 
 -- | The pixel buffer attributes of pixel buffers that will be vended by the receiver's CVPixelBufferPool.
 --
@@ -108,8 +101,8 @@ assetWriterInput avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsAVAssetWriterInputTaggedPixelBufferGroupAdaptor avAssetWriterInputTaggedPixelBufferGroupAdaptor => avAssetWriterInputTaggedPixelBufferGroupAdaptor -> IO (Id NSDictionary)
-sourcePixelBufferAttributes avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
-    sendMsg avAssetWriterInputTaggedPixelBufferGroupAdaptor (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes avAssetWriterInputTaggedPixelBufferGroupAdaptor =
+  sendMessage avAssetWriterInputTaggedPixelBufferGroupAdaptor sourcePixelBufferAttributesSelector
 
 -- | A pixel buffer pool that will vend and efficiently recycle CVPixelBuffer objects of tagged buffer groups that can be appended to the receiver.
 --
@@ -121,38 +114,38 @@ sourcePixelBufferAttributes avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
 --
 -- ObjC selector: @- pixelBufferPool@
 pixelBufferPool :: IsAVAssetWriterInputTaggedPixelBufferGroupAdaptor avAssetWriterInputTaggedPixelBufferGroupAdaptor => avAssetWriterInputTaggedPixelBufferGroupAdaptor -> IO (Ptr ())
-pixelBufferPool avAssetWriterInputTaggedPixelBufferGroupAdaptor  =
-    fmap castPtr $ sendMsg avAssetWriterInputTaggedPixelBufferGroupAdaptor (mkSelector "pixelBufferPool") (retPtr retVoid) []
+pixelBufferPool avAssetWriterInputTaggedPixelBufferGroupAdaptor =
+  sendMessage avAssetWriterInputTaggedPixelBufferGroupAdaptor pixelBufferPoolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:@
-assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector :: Selector
+assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector :: Selector '[Id AVAssetWriterInput, Id NSDictionary] (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
 assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput_sourcePixelBufferAttributesSelector = mkSelector "assetWriterInputTaggedPixelBufferGroupAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:"
 
 -- | @Selector@ for @initWithAssetWriterInput:sourcePixelBufferAttributes:@
-initWithAssetWriterInput_sourcePixelBufferAttributesSelector :: Selector
+initWithAssetWriterInput_sourcePixelBufferAttributesSelector :: Selector '[Id AVAssetWriterInput, Id NSDictionary] (Id AVAssetWriterInputTaggedPixelBufferGroupAdaptor)
 initWithAssetWriterInput_sourcePixelBufferAttributesSelector = mkSelector "initWithAssetWriterInput:sourcePixelBufferAttributes:"
 
 -- | @Selector@ for @assetWriterInput@
-assetWriterInputSelector :: Selector
+assetWriterInputSelector :: Selector '[] (Id AVAssetWriterInput)
 assetWriterInputSelector = mkSelector "assetWriterInput"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @pixelBufferPool@
-pixelBufferPoolSelector :: Selector
+pixelBufferPoolSelector :: Selector '[] (Ptr ())
 pixelBufferPoolSelector = mkSelector "pixelBufferPool"
 

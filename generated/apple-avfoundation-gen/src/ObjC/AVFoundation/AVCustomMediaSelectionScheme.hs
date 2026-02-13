@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVCustomMediaSelectionScheme
   , shouldOfferLanguageSelection
   , availableLanguages
   , selectors
-  , mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector
-  , shouldOfferLanguageSelectionSelector
   , availableLanguagesSelector
+  , mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector
   , selectorsSelector
+  , shouldOfferLanguageSelectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,18 +42,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mediaPresentationSettingsForSelector:complementaryToLanguage:settings:@
 mediaPresentationSettingsForSelector_complementaryToLanguage_settings :: (IsAVCustomMediaSelectionScheme avCustomMediaSelectionScheme, IsAVMediaPresentationSelector selector, IsNSString language, IsNSArray settings) => avCustomMediaSelectionScheme -> selector -> language -> settings -> IO (Id NSArray)
-mediaPresentationSettingsForSelector_complementaryToLanguage_settings avCustomMediaSelectionScheme  selector language settings =
-  withObjCPtr selector $ \raw_selector ->
-    withObjCPtr language $ \raw_language ->
-      withObjCPtr settings $ \raw_settings ->
-          sendMsg avCustomMediaSelectionScheme (mkSelector "mediaPresentationSettingsForSelector:complementaryToLanguage:settings:") (retPtr retVoid) [argPtr (castPtr raw_selector :: Ptr ()), argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ())] >>= retainedObject . castPtr
+mediaPresentationSettingsForSelector_complementaryToLanguage_settings avCustomMediaSelectionScheme selector language settings =
+  sendMessage avCustomMediaSelectionScheme mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector (toAVMediaPresentationSelector selector) (toNSString language) (toNSArray settings)
 
 -- | Indicates whether an alternative selection interface should provide a menu of language choices.
 --
 -- ObjC selector: @- shouldOfferLanguageSelection@
 shouldOfferLanguageSelection :: IsAVCustomMediaSelectionScheme avCustomMediaSelectionScheme => avCustomMediaSelectionScheme -> IO Bool
-shouldOfferLanguageSelection avCustomMediaSelectionScheme  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCustomMediaSelectionScheme (mkSelector "shouldOfferLanguageSelection") retCULong []
+shouldOfferLanguageSelection avCustomMediaSelectionScheme =
+  sendMessage avCustomMediaSelectionScheme shouldOfferLanguageSelectionSelector
 
 -- | Provides available language choices.
 --
@@ -64,33 +58,33 @@ shouldOfferLanguageSelection avCustomMediaSelectionScheme  =
 --
 -- ObjC selector: @- availableLanguages@
 availableLanguages :: IsAVCustomMediaSelectionScheme avCustomMediaSelectionScheme => avCustomMediaSelectionScheme -> IO (Id NSArray)
-availableLanguages avCustomMediaSelectionScheme  =
-    sendMsg avCustomMediaSelectionScheme (mkSelector "availableLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableLanguages avCustomMediaSelectionScheme =
+  sendMessage avCustomMediaSelectionScheme availableLanguagesSelector
 
 -- | Provides custom settings.
 --
 -- ObjC selector: @- selectors@
 selectors :: IsAVCustomMediaSelectionScheme avCustomMediaSelectionScheme => avCustomMediaSelectionScheme -> IO (Id NSArray)
-selectors avCustomMediaSelectionScheme  =
-    sendMsg avCustomMediaSelectionScheme (mkSelector "selectors") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectors avCustomMediaSelectionScheme =
+  sendMessage avCustomMediaSelectionScheme selectorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaPresentationSettingsForSelector:complementaryToLanguage:settings:@
-mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector :: Selector
+mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector :: Selector '[Id AVMediaPresentationSelector, Id NSString, Id NSArray] (Id NSArray)
 mediaPresentationSettingsForSelector_complementaryToLanguage_settingsSelector = mkSelector "mediaPresentationSettingsForSelector:complementaryToLanguage:settings:"
 
 -- | @Selector@ for @shouldOfferLanguageSelection@
-shouldOfferLanguageSelectionSelector :: Selector
+shouldOfferLanguageSelectionSelector :: Selector '[] Bool
 shouldOfferLanguageSelectionSelector = mkSelector "shouldOfferLanguageSelection"
 
 -- | @Selector@ for @availableLanguages@
-availableLanguagesSelector :: Selector
+availableLanguagesSelector :: Selector '[] (Id NSArray)
 availableLanguagesSelector = mkSelector "availableLanguages"
 
 -- | @Selector@ for @selectors@
-selectorsSelector :: Selector
+selectorsSelector :: Selector '[] (Id NSArray)
 selectorsSelector = mkSelector "selectors"
 

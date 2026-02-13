@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRGeneralCommissioningClusterSetRegulatoryConfigParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , newRegulatoryConfigSelector
-  , setNewRegulatoryConfigSelector
-  , countryCodeSelector
-  , setCountryCodeSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , countryCodeSelector
+  , newRegulatoryConfigSelector
   , serverSideProcessingTimeoutSelector
+  , setBreadcrumbSelector
+  , setCountryCodeSelector
+  , setNewRegulatoryConfigSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newRegulatoryConfig@
 newRegulatoryConfig :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> IO (Id NSNumber)
-newRegulatoryConfig mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "newRegulatoryConfig") (retPtr retVoid) [] >>= ownedObject . castPtr
+newRegulatoryConfig mtrGeneralCommissioningClusterSetRegulatoryConfigParams =
+  sendOwnedMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams newRegulatoryConfigSelector
 
 -- | @- setNewRegulatoryConfig:@
 setNewRegulatoryConfig :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> value -> IO ()
-setNewRegulatoryConfig mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "setNewRegulatoryConfig:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewRegulatoryConfig mtrGeneralCommissioningClusterSetRegulatoryConfigParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams setNewRegulatoryConfigSelector (toNSNumber value)
 
 -- | @- countryCode@
 countryCode :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> IO (Id NSString)
-countryCode mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode mtrGeneralCommissioningClusterSetRegulatoryConfigParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams countryCodeSelector
 
 -- | @- setCountryCode:@
 setCountryCode :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams, IsNSString value) => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> value -> IO ()
-setCountryCode mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "setCountryCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCountryCode mtrGeneralCommissioningClusterSetRegulatoryConfigParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams setCountryCodeSelector (toNSString value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> IO (Id NSNumber)
-breadcrumb mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrGeneralCommissioningClusterSetRegulatoryConfigParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> value -> IO ()
-setBreadcrumb mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrGeneralCommissioningClusterSetRegulatoryConfigParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams setBreadcrumbSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setBreadcrumb mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGeneralCommissioningClusterSetRegulatoryConfigParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGeneralCommissioningClusterSetRegulatoryConfigParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrGeneralCommissioningClusterSetRegulatoryConfigPar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigParams mtrGeneralCommissioningClusterSetRegulatoryConfigParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGeneralCommissioningClusterSetRegulatoryConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGeneralCommissioningClusterSetRegulatoryConfigParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newRegulatoryConfig@
-newRegulatoryConfigSelector :: Selector
+newRegulatoryConfigSelector :: Selector '[] (Id NSNumber)
 newRegulatoryConfigSelector = mkSelector "newRegulatoryConfig"
 
 -- | @Selector@ for @setNewRegulatoryConfig:@
-setNewRegulatoryConfigSelector :: Selector
+setNewRegulatoryConfigSelector :: Selector '[Id NSNumber] ()
 setNewRegulatoryConfigSelector = mkSelector "setNewRegulatoryConfig:"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @setCountryCode:@
-setCountryCodeSelector :: Selector
+setCountryCodeSelector :: Selector '[Id NSString] ()
 setCountryCodeSelector = mkSelector "setCountryCode:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

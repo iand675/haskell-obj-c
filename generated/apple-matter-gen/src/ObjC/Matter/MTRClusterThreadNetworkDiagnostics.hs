@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -88,99 +89,95 @@ module ObjC.Matter.MTRClusterThreadNetworkDiagnostics
   , readAttributeNeighborTableListWithParams
   , readAttributeRouteTableListWithParams
   , initWithDevice_endpointID_queue
-  , resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , resetCountsWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributeChannelWithParamsSelector
-  , readAttributeRoutingRoleWithParamsSelector
-  , readAttributeNetworkNameWithParamsSelector
-  , readAttributePanIdWithParamsSelector
-  , readAttributeExtendedPanIdWithParamsSelector
-  , readAttributeMeshLocalPrefixWithParamsSelector
-  , readAttributeOverrunCountWithParamsSelector
-  , readAttributeNeighborTableWithParamsSelector
-  , readAttributeRouteTableWithParamsSelector
-  , readAttributePartitionIdWithParamsSelector
-  , readAttributeWeightingWithParamsSelector
-  , readAttributeDataVersionWithParamsSelector
-  , readAttributeStableDataVersionWithParamsSelector
-  , readAttributeLeaderRouterIdWithParamsSelector
-  , readAttributeDetachedRoleCountWithParamsSelector
-  , readAttributeChildRoleCountWithParamsSelector
-  , readAttributeRouterRoleCountWithParamsSelector
-  , readAttributeLeaderRoleCountWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeActiveNetworkFaultsListWithParamsSelector
+  , readAttributeActiveTimestampWithParamsSelector
   , readAttributeAttachAttemptCountWithParamsSelector
-  , readAttributePartitionIdChangeCountWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
   , readAttributeBetterPartitionAttachAttemptCountWithParamsSelector
+  , readAttributeChannelPage0MaskWithParamsSelector
+  , readAttributeChannelWithParamsSelector
+  , readAttributeChildRoleCountWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeDataVersionWithParamsSelector
+  , readAttributeDelayWithParamsSelector
+  , readAttributeDetachedRoleCountWithParamsSelector
+  , readAttributeExtAddressWithParamsSelector
+  , readAttributeExtendedPanIdWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLeaderRoleCountWithParamsSelector
+  , readAttributeLeaderRouterIdWithParamsSelector
+  , readAttributeMeshLocalPrefixWithParamsSelector
+  , readAttributeNeighborTableListWithParamsSelector
+  , readAttributeNeighborTableWithParamsSelector
+  , readAttributeNetworkNameWithParamsSelector
+  , readAttributeOperationalDatasetComponentsWithParamsSelector
+  , readAttributeOverrunCountWithParamsSelector
+  , readAttributePanIdWithParamsSelector
   , readAttributeParentChangeCountWithParamsSelector
-  , readAttributeTxTotalCountWithParamsSelector
-  , readAttributeTxUnicastCountWithParamsSelector
-  , readAttributeTxBroadcastCountWithParamsSelector
-  , readAttributeTxAckRequestedCountWithParamsSelector
-  , readAttributeTxAckedCountWithParamsSelector
-  , readAttributeTxNoAckRequestedCountWithParamsSelector
-  , readAttributeTxDataCountWithParamsSelector
-  , readAttributeTxDataPollCountWithParamsSelector
-  , readAttributeTxBeaconCountWithParamsSelector
-  , readAttributeTxBeaconRequestCountWithParamsSelector
-  , readAttributeTxOtherCountWithParamsSelector
-  , readAttributeTxRetryCountWithParamsSelector
-  , readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector
-  , readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector
-  , readAttributeTxErrCcaCountWithParamsSelector
-  , readAttributeTxErrAbortCountWithParamsSelector
-  , readAttributeTxErrBusyChannelCountWithParamsSelector
-  , readAttributeRxTotalCountWithParamsSelector
-  , readAttributeRxUnicastCountWithParamsSelector
+  , readAttributePartitionIdChangeCountWithParamsSelector
+  , readAttributePartitionIdWithParamsSelector
+  , readAttributePendingTimestampWithParamsSelector
+  , readAttributeRloc16WithParamsSelector
+  , readAttributeRouteTableListWithParamsSelector
+  , readAttributeRouteTableWithParamsSelector
+  , readAttributeRouterRoleCountWithParamsSelector
+  , readAttributeRoutingRoleWithParamsSelector
+  , readAttributeRxAddressFilteredCountWithParamsSelector
+  , readAttributeRxBeaconCountWithParamsSelector
+  , readAttributeRxBeaconRequestCountWithParamsSelector
   , readAttributeRxBroadcastCountWithParamsSelector
   , readAttributeRxDataCountWithParamsSelector
   , readAttributeRxDataPollCountWithParamsSelector
-  , readAttributeRxBeaconCountWithParamsSelector
-  , readAttributeRxBeaconRequestCountWithParamsSelector
-  , readAttributeRxOtherCountWithParamsSelector
-  , readAttributeRxAddressFilteredCountWithParamsSelector
   , readAttributeRxDestAddrFilteredCountWithParamsSelector
   , readAttributeRxDuplicatedCountWithParamsSelector
-  , readAttributeRxErrNoFrameCountWithParamsSelector
-  , readAttributeRxErrUnknownNeighborCountWithParamsSelector
-  , readAttributeRxErrInvalidSrcAddrCountWithParamsSelector
-  , readAttributeRxErrSecCountWithParamsSelector
   , readAttributeRxErrFcsCountWithParamsSelector
+  , readAttributeRxErrInvalidSrcAddrCountWithParamsSelector
+  , readAttributeRxErrNoFrameCountWithParamsSelector
   , readAttributeRxErrOtherCountWithParamsSelector
-  , readAttributeActiveTimestampWithParamsSelector
-  , readAttributePendingTimestampWithParamsSelector
-  , readAttributeDelayWithParamsSelector
+  , readAttributeRxErrSecCountWithParamsSelector
+  , readAttributeRxErrUnknownNeighborCountWithParamsSelector
+  , readAttributeRxOtherCountWithParamsSelector
+  , readAttributeRxTotalCountWithParamsSelector
+  , readAttributeRxUnicastCountWithParamsSelector
   , readAttributeSecurityPolicyWithParamsSelector
-  , readAttributeChannelPage0MaskWithParamsSelector
-  , readAttributeOperationalDatasetComponentsWithParamsSelector
-  , readAttributeActiveNetworkFaultsListWithParamsSelector
-  , readAttributeExtAddressWithParamsSelector
-  , readAttributeRloc16WithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , readAttributeStableDataVersionWithParamsSelector
+  , readAttributeTxAckRequestedCountWithParamsSelector
+  , readAttributeTxAckedCountWithParamsSelector
+  , readAttributeTxBeaconCountWithParamsSelector
+  , readAttributeTxBeaconRequestCountWithParamsSelector
+  , readAttributeTxBroadcastCountWithParamsSelector
+  , readAttributeTxDataCountWithParamsSelector
+  , readAttributeTxDataPollCountWithParamsSelector
+  , readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector
+  , readAttributeTxErrAbortCountWithParamsSelector
+  , readAttributeTxErrBusyChannelCountWithParamsSelector
+  , readAttributeTxErrCcaCountWithParamsSelector
+  , readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector
+  , readAttributeTxNoAckRequestedCountWithParamsSelector
+  , readAttributeTxOtherCountWithParamsSelector
+  , readAttributeTxRetryCountWithParamsSelector
+  , readAttributeTxTotalCountWithParamsSelector
+  , readAttributeTxUnicastCountWithParamsSelector
+  , readAttributeWeightingWithParamsSelector
   , resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector
-  , readAttributeNeighborTableListWithParamsSelector
-  , readAttributeRouteTableListWithParamsSelector
-  , initWithDevice_endpointID_queueSelector
+  , resetCountsWithExpectedValues_expectedValueInterval_completionSelector
+  , resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -189,816 +186,729 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- resetCountsWithParams:expectedValues:expectedValueInterval:completion:@
 resetCountsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRThreadNetworkDiagnosticsClusterResetCountsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+resetCountsWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadNetworkDiagnostics resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadNetworkDiagnosticsClusterResetCountsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- resetCountsWithExpectedValues:expectedValueInterval:completion:@
 resetCountsWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDiagnostics -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithExpectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDiagnostics  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+resetCountsWithExpectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDiagnostics expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadNetworkDiagnostics resetCountsWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeChannelWithParams:@
 readAttributeChannelWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeChannelWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeChannelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeChannelWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeChannelWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRoutingRoleWithParams:@
 readAttributeRoutingRoleWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRoutingRoleWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRoutingRoleWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRoutingRoleWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRoutingRoleWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNetworkNameWithParams:@
 readAttributeNetworkNameWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeNetworkNameWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeNetworkNameWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNetworkNameWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeNetworkNameWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePanIdWithParams:@
 readAttributePanIdWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePanIdWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributePanIdWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePanIdWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributePanIdWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeExtendedPanIdWithParams:@
 readAttributeExtendedPanIdWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeExtendedPanIdWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeExtendedPanIdWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExtendedPanIdWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeExtendedPanIdWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMeshLocalPrefixWithParams:@
 readAttributeMeshLocalPrefixWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeMeshLocalPrefixWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeMeshLocalPrefixWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeshLocalPrefixWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeMeshLocalPrefixWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOverrunCountWithParams:@
 readAttributeOverrunCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeOverrunCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeOverrunCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOverrunCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeOverrunCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNeighborTableWithParams:@
 readAttributeNeighborTableWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeNeighborTableWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeNeighborTableWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNeighborTableWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeNeighborTableWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRouteTableWithParams:@
 readAttributeRouteTableWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRouteTableWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRouteTableWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRouteTableWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRouteTableWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePartitionIdWithParams:@
 readAttributePartitionIdWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePartitionIdWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributePartitionIdWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePartitionIdWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributePartitionIdWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeWeightingWithParams:@
 readAttributeWeightingWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeWeightingWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeWeightingWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeWeightingWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeWeightingWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDataVersionWithParams:@
 readAttributeDataVersionWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeDataVersionWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeDataVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDataVersionWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeDataVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeStableDataVersionWithParams:@
 readAttributeStableDataVersionWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeStableDataVersionWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeStableDataVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStableDataVersionWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeStableDataVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLeaderRouterIdWithParams:@
 readAttributeLeaderRouterIdWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeLeaderRouterIdWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeLeaderRouterIdWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLeaderRouterIdWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeLeaderRouterIdWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDetachedRoleCountWithParams:@
 readAttributeDetachedRoleCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeDetachedRoleCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeDetachedRoleCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDetachedRoleCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeDetachedRoleCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeChildRoleCountWithParams:@
 readAttributeChildRoleCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeChildRoleCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeChildRoleCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeChildRoleCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeChildRoleCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRouterRoleCountWithParams:@
 readAttributeRouterRoleCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRouterRoleCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRouterRoleCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRouterRoleCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRouterRoleCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLeaderRoleCountWithParams:@
 readAttributeLeaderRoleCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeLeaderRoleCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeLeaderRoleCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLeaderRoleCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeLeaderRoleCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttachAttemptCountWithParams:@
 readAttributeAttachAttemptCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAttachAttemptCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeAttachAttemptCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttachAttemptCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeAttachAttemptCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePartitionIdChangeCountWithParams:@
 readAttributePartitionIdChangeCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePartitionIdChangeCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributePartitionIdChangeCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePartitionIdChangeCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributePartitionIdChangeCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBetterPartitionAttachAttemptCountWithParams:@
 readAttributeBetterPartitionAttachAttemptCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeBetterPartitionAttachAttemptCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeBetterPartitionAttachAttemptCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBetterPartitionAttachAttemptCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeBetterPartitionAttachAttemptCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeParentChangeCountWithParams:@
 readAttributeParentChangeCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeParentChangeCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeParentChangeCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeParentChangeCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeParentChangeCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxTotalCountWithParams:@
 readAttributeTxTotalCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxTotalCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxTotalCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxTotalCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxTotalCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxUnicastCountWithParams:@
 readAttributeTxUnicastCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxUnicastCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxUnicastCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxUnicastCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxUnicastCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxBroadcastCountWithParams:@
 readAttributeTxBroadcastCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxBroadcastCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxBroadcastCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxBroadcastCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxBroadcastCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxAckRequestedCountWithParams:@
 readAttributeTxAckRequestedCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxAckRequestedCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxAckRequestedCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxAckRequestedCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxAckRequestedCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxAckedCountWithParams:@
 readAttributeTxAckedCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxAckedCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxAckedCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxAckedCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxAckedCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxNoAckRequestedCountWithParams:@
 readAttributeTxNoAckRequestedCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxNoAckRequestedCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxNoAckRequestedCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxNoAckRequestedCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxNoAckRequestedCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxDataCountWithParams:@
 readAttributeTxDataCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxDataCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxDataCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxDataCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxDataCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxDataPollCountWithParams:@
 readAttributeTxDataPollCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxDataPollCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxDataPollCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxDataPollCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxDataPollCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxBeaconCountWithParams:@
 readAttributeTxBeaconCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxBeaconCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxBeaconCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxBeaconCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxBeaconCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxBeaconRequestCountWithParams:@
 readAttributeTxBeaconRequestCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxBeaconRequestCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxBeaconRequestCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxBeaconRequestCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxBeaconRequestCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxOtherCountWithParams:@
 readAttributeTxOtherCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxOtherCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxOtherCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxOtherCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxOtherCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxRetryCountWithParams:@
 readAttributeTxRetryCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxRetryCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxRetryCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxRetryCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxRetryCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxDirectMaxRetryExpiryCountWithParams:@
 readAttributeTxDirectMaxRetryExpiryCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxDirectMaxRetryExpiryCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxDirectMaxRetryExpiryCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxDirectMaxRetryExpiryCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxIndirectMaxRetryExpiryCountWithParams:@
 readAttributeTxIndirectMaxRetryExpiryCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxIndirectMaxRetryExpiryCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxIndirectMaxRetryExpiryCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxIndirectMaxRetryExpiryCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxErrCcaCountWithParams:@
 readAttributeTxErrCcaCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxErrCcaCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxErrCcaCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxErrCcaCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxErrCcaCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxErrAbortCountWithParams:@
 readAttributeTxErrAbortCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxErrAbortCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxErrAbortCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxErrAbortCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxErrAbortCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTxErrBusyChannelCountWithParams:@
 readAttributeTxErrBusyChannelCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeTxErrBusyChannelCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeTxErrBusyChannelCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTxErrBusyChannelCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeTxErrBusyChannelCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxTotalCountWithParams:@
 readAttributeRxTotalCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxTotalCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxTotalCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxTotalCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxTotalCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxUnicastCountWithParams:@
 readAttributeRxUnicastCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxUnicastCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxUnicastCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxUnicastCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxUnicastCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxBroadcastCountWithParams:@
 readAttributeRxBroadcastCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxBroadcastCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxBroadcastCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxBroadcastCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxBroadcastCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxDataCountWithParams:@
 readAttributeRxDataCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxDataCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxDataCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxDataCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxDataCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxDataPollCountWithParams:@
 readAttributeRxDataPollCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxDataPollCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxDataPollCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxDataPollCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxDataPollCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxBeaconCountWithParams:@
 readAttributeRxBeaconCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxBeaconCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxBeaconCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxBeaconCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxBeaconCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxBeaconRequestCountWithParams:@
 readAttributeRxBeaconRequestCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxBeaconRequestCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxBeaconRequestCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxBeaconRequestCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxBeaconRequestCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxOtherCountWithParams:@
 readAttributeRxOtherCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxOtherCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxOtherCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxOtherCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxOtherCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxAddressFilteredCountWithParams:@
 readAttributeRxAddressFilteredCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxAddressFilteredCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxAddressFilteredCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxAddressFilteredCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxAddressFilteredCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxDestAddrFilteredCountWithParams:@
 readAttributeRxDestAddrFilteredCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxDestAddrFilteredCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxDestAddrFilteredCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxDestAddrFilteredCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxDestAddrFilteredCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxDuplicatedCountWithParams:@
 readAttributeRxDuplicatedCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxDuplicatedCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxDuplicatedCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxDuplicatedCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxDuplicatedCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrNoFrameCountWithParams:@
 readAttributeRxErrNoFrameCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrNoFrameCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrNoFrameCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrNoFrameCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrNoFrameCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrUnknownNeighborCountWithParams:@
 readAttributeRxErrUnknownNeighborCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrUnknownNeighborCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrUnknownNeighborCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrUnknownNeighborCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrUnknownNeighborCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrInvalidSrcAddrCountWithParams:@
 readAttributeRxErrInvalidSrcAddrCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrInvalidSrcAddrCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrInvalidSrcAddrCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrInvalidSrcAddrCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrInvalidSrcAddrCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrSecCountWithParams:@
 readAttributeRxErrSecCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrSecCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrSecCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrSecCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrSecCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrFcsCountWithParams:@
 readAttributeRxErrFcsCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrFcsCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrFcsCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrFcsCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrFcsCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRxErrOtherCountWithParams:@
 readAttributeRxErrOtherCountWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRxErrOtherCountWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRxErrOtherCountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRxErrOtherCountWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRxErrOtherCountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveTimestampWithParams:@
 readAttributeActiveTimestampWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeActiveTimestampWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeActiveTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveTimestampWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeActiveTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePendingTimestampWithParams:@
 readAttributePendingTimestampWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributePendingTimestampWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributePendingTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePendingTimestampWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributePendingTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDelayWithParams:@
 readAttributeDelayWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeDelayWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeDelayWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDelayWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeDelayWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSecurityPolicyWithParams:@
 readAttributeSecurityPolicyWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeSecurityPolicyWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeSecurityPolicyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSecurityPolicyWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeSecurityPolicyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeChannelPage0MaskWithParams:@
 readAttributeChannelPage0MaskWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeChannelPage0MaskWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeChannelPage0MaskWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeChannelPage0MaskWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeChannelPage0MaskWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOperationalDatasetComponentsWithParams:@
 readAttributeOperationalDatasetComponentsWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeOperationalDatasetComponentsWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeOperationalDatasetComponentsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOperationalDatasetComponentsWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeOperationalDatasetComponentsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveNetworkFaultsListWithParams:@
 readAttributeActiveNetworkFaultsListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeActiveNetworkFaultsListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeActiveNetworkFaultsListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveNetworkFaultsListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeActiveNetworkFaultsListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeExtAddressWithParams:@
 readAttributeExtAddressWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeExtAddressWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeExtAddressWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExtAddressWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeExtAddressWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRloc16WithParams:@
 readAttributeRloc16WithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRloc16WithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRloc16WithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRloc16WithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRloc16WithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics => mtrClusterThreadNetworkDiagnostics -> IO (Id MTRClusterThreadNetworkDiagnostics)
-init_ mtrClusterThreadNetworkDiagnostics  =
-    sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterThreadNetworkDiagnostics =
+  sendOwnedMessage mtrClusterThreadNetworkDiagnostics initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterThreadNetworkDiagnostics)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterThreadNetworkDiagnostics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRDevice device, IsNSObject queue) => mtrClusterThreadNetworkDiagnostics -> device -> CUShort -> queue -> IO (Id MTRClusterThreadNetworkDiagnostics)
-initWithDevice_endpoint_queue mtrClusterThreadNetworkDiagnostics  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterThreadNetworkDiagnostics device endpoint queue =
+  sendOwnedMessage mtrClusterThreadNetworkDiagnostics initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:@
 resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRThreadNetworkDiagnosticsClusterResetCountsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDiagnostics -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThreadNetworkDiagnostics  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+resetCountsWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThreadNetworkDiagnostics params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThreadNetworkDiagnostics resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRThreadNetworkDiagnosticsClusterResetCountsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- resetCountsWithExpectedValues:expectedValueInterval:completionHandler:@
 resetCountsWithExpectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDiagnostics -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-resetCountsWithExpectedValues_expectedValueInterval_completionHandler mtrClusterThreadNetworkDiagnostics  expectedValues expectedValueIntervalMs completionHandler =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+resetCountsWithExpectedValues_expectedValueInterval_completionHandler mtrClusterThreadNetworkDiagnostics expectedValues expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThreadNetworkDiagnostics resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- readAttributeNeighborTableListWithParams:@
 readAttributeNeighborTableListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeNeighborTableListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeNeighborTableListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNeighborTableListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeNeighborTableListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRouteTableListWithParams:@
 readAttributeRouteTableListWithParams :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRReadParams params) => mtrClusterThreadNetworkDiagnostics -> params -> IO (Id NSDictionary)
-readAttributeRouteTableListWithParams mtrClusterThreadNetworkDiagnostics  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "readAttributeRouteTableListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRouteTableListWithParams mtrClusterThreadNetworkDiagnostics params =
+  sendMessage mtrClusterThreadNetworkDiagnostics readAttributeRouteTableListWithParamsSelector (toMTRReadParams params)
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterThreadNetworkDiagnostics mtrClusterThreadNetworkDiagnostics, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterThreadNetworkDiagnostics -> device -> endpointID -> queue -> IO (Id MTRClusterThreadNetworkDiagnostics)
-initWithDevice_endpointID_queue mtrClusterThreadNetworkDiagnostics  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterThreadNetworkDiagnostics (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterThreadNetworkDiagnostics device endpointID queue =
+  sendOwnedMessage mtrClusterThreadNetworkDiagnostics initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resetCountsWithParams:expectedValues:expectedValueInterval:completion:@
-resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadNetworkDiagnosticsClusterResetCountsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @resetCountsWithExpectedValues:expectedValueInterval:completion:@
-resetCountsWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+resetCountsWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeChannelWithParams:@
-readAttributeChannelWithParamsSelector :: Selector
+readAttributeChannelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeChannelWithParamsSelector = mkSelector "readAttributeChannelWithParams:"
 
 -- | @Selector@ for @readAttributeRoutingRoleWithParams:@
-readAttributeRoutingRoleWithParamsSelector :: Selector
+readAttributeRoutingRoleWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRoutingRoleWithParamsSelector = mkSelector "readAttributeRoutingRoleWithParams:"
 
 -- | @Selector@ for @readAttributeNetworkNameWithParams:@
-readAttributeNetworkNameWithParamsSelector :: Selector
+readAttributeNetworkNameWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNetworkNameWithParamsSelector = mkSelector "readAttributeNetworkNameWithParams:"
 
 -- | @Selector@ for @readAttributePanIdWithParams:@
-readAttributePanIdWithParamsSelector :: Selector
+readAttributePanIdWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePanIdWithParamsSelector = mkSelector "readAttributePanIdWithParams:"
 
 -- | @Selector@ for @readAttributeExtendedPanIdWithParams:@
-readAttributeExtendedPanIdWithParamsSelector :: Selector
+readAttributeExtendedPanIdWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExtendedPanIdWithParamsSelector = mkSelector "readAttributeExtendedPanIdWithParams:"
 
 -- | @Selector@ for @readAttributeMeshLocalPrefixWithParams:@
-readAttributeMeshLocalPrefixWithParamsSelector :: Selector
+readAttributeMeshLocalPrefixWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeshLocalPrefixWithParamsSelector = mkSelector "readAttributeMeshLocalPrefixWithParams:"
 
 -- | @Selector@ for @readAttributeOverrunCountWithParams:@
-readAttributeOverrunCountWithParamsSelector :: Selector
+readAttributeOverrunCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOverrunCountWithParamsSelector = mkSelector "readAttributeOverrunCountWithParams:"
 
 -- | @Selector@ for @readAttributeNeighborTableWithParams:@
-readAttributeNeighborTableWithParamsSelector :: Selector
+readAttributeNeighborTableWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNeighborTableWithParamsSelector = mkSelector "readAttributeNeighborTableWithParams:"
 
 -- | @Selector@ for @readAttributeRouteTableWithParams:@
-readAttributeRouteTableWithParamsSelector :: Selector
+readAttributeRouteTableWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRouteTableWithParamsSelector = mkSelector "readAttributeRouteTableWithParams:"
 
 -- | @Selector@ for @readAttributePartitionIdWithParams:@
-readAttributePartitionIdWithParamsSelector :: Selector
+readAttributePartitionIdWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePartitionIdWithParamsSelector = mkSelector "readAttributePartitionIdWithParams:"
 
 -- | @Selector@ for @readAttributeWeightingWithParams:@
-readAttributeWeightingWithParamsSelector :: Selector
+readAttributeWeightingWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeWeightingWithParamsSelector = mkSelector "readAttributeWeightingWithParams:"
 
 -- | @Selector@ for @readAttributeDataVersionWithParams:@
-readAttributeDataVersionWithParamsSelector :: Selector
+readAttributeDataVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDataVersionWithParamsSelector = mkSelector "readAttributeDataVersionWithParams:"
 
 -- | @Selector@ for @readAttributeStableDataVersionWithParams:@
-readAttributeStableDataVersionWithParamsSelector :: Selector
+readAttributeStableDataVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStableDataVersionWithParamsSelector = mkSelector "readAttributeStableDataVersionWithParams:"
 
 -- | @Selector@ for @readAttributeLeaderRouterIdWithParams:@
-readAttributeLeaderRouterIdWithParamsSelector :: Selector
+readAttributeLeaderRouterIdWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLeaderRouterIdWithParamsSelector = mkSelector "readAttributeLeaderRouterIdWithParams:"
 
 -- | @Selector@ for @readAttributeDetachedRoleCountWithParams:@
-readAttributeDetachedRoleCountWithParamsSelector :: Selector
+readAttributeDetachedRoleCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDetachedRoleCountWithParamsSelector = mkSelector "readAttributeDetachedRoleCountWithParams:"
 
 -- | @Selector@ for @readAttributeChildRoleCountWithParams:@
-readAttributeChildRoleCountWithParamsSelector :: Selector
+readAttributeChildRoleCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeChildRoleCountWithParamsSelector = mkSelector "readAttributeChildRoleCountWithParams:"
 
 -- | @Selector@ for @readAttributeRouterRoleCountWithParams:@
-readAttributeRouterRoleCountWithParamsSelector :: Selector
+readAttributeRouterRoleCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRouterRoleCountWithParamsSelector = mkSelector "readAttributeRouterRoleCountWithParams:"
 
 -- | @Selector@ for @readAttributeLeaderRoleCountWithParams:@
-readAttributeLeaderRoleCountWithParamsSelector :: Selector
+readAttributeLeaderRoleCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLeaderRoleCountWithParamsSelector = mkSelector "readAttributeLeaderRoleCountWithParams:"
 
 -- | @Selector@ for @readAttributeAttachAttemptCountWithParams:@
-readAttributeAttachAttemptCountWithParamsSelector :: Selector
+readAttributeAttachAttemptCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttachAttemptCountWithParamsSelector = mkSelector "readAttributeAttachAttemptCountWithParams:"
 
 -- | @Selector@ for @readAttributePartitionIdChangeCountWithParams:@
-readAttributePartitionIdChangeCountWithParamsSelector :: Selector
+readAttributePartitionIdChangeCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePartitionIdChangeCountWithParamsSelector = mkSelector "readAttributePartitionIdChangeCountWithParams:"
 
 -- | @Selector@ for @readAttributeBetterPartitionAttachAttemptCountWithParams:@
-readAttributeBetterPartitionAttachAttemptCountWithParamsSelector :: Selector
+readAttributeBetterPartitionAttachAttemptCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBetterPartitionAttachAttemptCountWithParamsSelector = mkSelector "readAttributeBetterPartitionAttachAttemptCountWithParams:"
 
 -- | @Selector@ for @readAttributeParentChangeCountWithParams:@
-readAttributeParentChangeCountWithParamsSelector :: Selector
+readAttributeParentChangeCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeParentChangeCountWithParamsSelector = mkSelector "readAttributeParentChangeCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxTotalCountWithParams:@
-readAttributeTxTotalCountWithParamsSelector :: Selector
+readAttributeTxTotalCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxTotalCountWithParamsSelector = mkSelector "readAttributeTxTotalCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxUnicastCountWithParams:@
-readAttributeTxUnicastCountWithParamsSelector :: Selector
+readAttributeTxUnicastCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxUnicastCountWithParamsSelector = mkSelector "readAttributeTxUnicastCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxBroadcastCountWithParams:@
-readAttributeTxBroadcastCountWithParamsSelector :: Selector
+readAttributeTxBroadcastCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxBroadcastCountWithParamsSelector = mkSelector "readAttributeTxBroadcastCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxAckRequestedCountWithParams:@
-readAttributeTxAckRequestedCountWithParamsSelector :: Selector
+readAttributeTxAckRequestedCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxAckRequestedCountWithParamsSelector = mkSelector "readAttributeTxAckRequestedCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxAckedCountWithParams:@
-readAttributeTxAckedCountWithParamsSelector :: Selector
+readAttributeTxAckedCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxAckedCountWithParamsSelector = mkSelector "readAttributeTxAckedCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxNoAckRequestedCountWithParams:@
-readAttributeTxNoAckRequestedCountWithParamsSelector :: Selector
+readAttributeTxNoAckRequestedCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxNoAckRequestedCountWithParamsSelector = mkSelector "readAttributeTxNoAckRequestedCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxDataCountWithParams:@
-readAttributeTxDataCountWithParamsSelector :: Selector
+readAttributeTxDataCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxDataCountWithParamsSelector = mkSelector "readAttributeTxDataCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxDataPollCountWithParams:@
-readAttributeTxDataPollCountWithParamsSelector :: Selector
+readAttributeTxDataPollCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxDataPollCountWithParamsSelector = mkSelector "readAttributeTxDataPollCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxBeaconCountWithParams:@
-readAttributeTxBeaconCountWithParamsSelector :: Selector
+readAttributeTxBeaconCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxBeaconCountWithParamsSelector = mkSelector "readAttributeTxBeaconCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxBeaconRequestCountWithParams:@
-readAttributeTxBeaconRequestCountWithParamsSelector :: Selector
+readAttributeTxBeaconRequestCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxBeaconRequestCountWithParamsSelector = mkSelector "readAttributeTxBeaconRequestCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxOtherCountWithParams:@
-readAttributeTxOtherCountWithParamsSelector :: Selector
+readAttributeTxOtherCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxOtherCountWithParamsSelector = mkSelector "readAttributeTxOtherCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxRetryCountWithParams:@
-readAttributeTxRetryCountWithParamsSelector :: Selector
+readAttributeTxRetryCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxRetryCountWithParamsSelector = mkSelector "readAttributeTxRetryCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxDirectMaxRetryExpiryCountWithParams:@
-readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector :: Selector
+readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxDirectMaxRetryExpiryCountWithParamsSelector = mkSelector "readAttributeTxDirectMaxRetryExpiryCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxIndirectMaxRetryExpiryCountWithParams:@
-readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector :: Selector
+readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxIndirectMaxRetryExpiryCountWithParamsSelector = mkSelector "readAttributeTxIndirectMaxRetryExpiryCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxErrCcaCountWithParams:@
-readAttributeTxErrCcaCountWithParamsSelector :: Selector
+readAttributeTxErrCcaCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxErrCcaCountWithParamsSelector = mkSelector "readAttributeTxErrCcaCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxErrAbortCountWithParams:@
-readAttributeTxErrAbortCountWithParamsSelector :: Selector
+readAttributeTxErrAbortCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxErrAbortCountWithParamsSelector = mkSelector "readAttributeTxErrAbortCountWithParams:"
 
 -- | @Selector@ for @readAttributeTxErrBusyChannelCountWithParams:@
-readAttributeTxErrBusyChannelCountWithParamsSelector :: Selector
+readAttributeTxErrBusyChannelCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTxErrBusyChannelCountWithParamsSelector = mkSelector "readAttributeTxErrBusyChannelCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxTotalCountWithParams:@
-readAttributeRxTotalCountWithParamsSelector :: Selector
+readAttributeRxTotalCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxTotalCountWithParamsSelector = mkSelector "readAttributeRxTotalCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxUnicastCountWithParams:@
-readAttributeRxUnicastCountWithParamsSelector :: Selector
+readAttributeRxUnicastCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxUnicastCountWithParamsSelector = mkSelector "readAttributeRxUnicastCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxBroadcastCountWithParams:@
-readAttributeRxBroadcastCountWithParamsSelector :: Selector
+readAttributeRxBroadcastCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxBroadcastCountWithParamsSelector = mkSelector "readAttributeRxBroadcastCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxDataCountWithParams:@
-readAttributeRxDataCountWithParamsSelector :: Selector
+readAttributeRxDataCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxDataCountWithParamsSelector = mkSelector "readAttributeRxDataCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxDataPollCountWithParams:@
-readAttributeRxDataPollCountWithParamsSelector :: Selector
+readAttributeRxDataPollCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxDataPollCountWithParamsSelector = mkSelector "readAttributeRxDataPollCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxBeaconCountWithParams:@
-readAttributeRxBeaconCountWithParamsSelector :: Selector
+readAttributeRxBeaconCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxBeaconCountWithParamsSelector = mkSelector "readAttributeRxBeaconCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxBeaconRequestCountWithParams:@
-readAttributeRxBeaconRequestCountWithParamsSelector :: Selector
+readAttributeRxBeaconRequestCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxBeaconRequestCountWithParamsSelector = mkSelector "readAttributeRxBeaconRequestCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxOtherCountWithParams:@
-readAttributeRxOtherCountWithParamsSelector :: Selector
+readAttributeRxOtherCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxOtherCountWithParamsSelector = mkSelector "readAttributeRxOtherCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxAddressFilteredCountWithParams:@
-readAttributeRxAddressFilteredCountWithParamsSelector :: Selector
+readAttributeRxAddressFilteredCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxAddressFilteredCountWithParamsSelector = mkSelector "readAttributeRxAddressFilteredCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxDestAddrFilteredCountWithParams:@
-readAttributeRxDestAddrFilteredCountWithParamsSelector :: Selector
+readAttributeRxDestAddrFilteredCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxDestAddrFilteredCountWithParamsSelector = mkSelector "readAttributeRxDestAddrFilteredCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxDuplicatedCountWithParams:@
-readAttributeRxDuplicatedCountWithParamsSelector :: Selector
+readAttributeRxDuplicatedCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxDuplicatedCountWithParamsSelector = mkSelector "readAttributeRxDuplicatedCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrNoFrameCountWithParams:@
-readAttributeRxErrNoFrameCountWithParamsSelector :: Selector
+readAttributeRxErrNoFrameCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrNoFrameCountWithParamsSelector = mkSelector "readAttributeRxErrNoFrameCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrUnknownNeighborCountWithParams:@
-readAttributeRxErrUnknownNeighborCountWithParamsSelector :: Selector
+readAttributeRxErrUnknownNeighborCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrUnknownNeighborCountWithParamsSelector = mkSelector "readAttributeRxErrUnknownNeighborCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrInvalidSrcAddrCountWithParams:@
-readAttributeRxErrInvalidSrcAddrCountWithParamsSelector :: Selector
+readAttributeRxErrInvalidSrcAddrCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrInvalidSrcAddrCountWithParamsSelector = mkSelector "readAttributeRxErrInvalidSrcAddrCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrSecCountWithParams:@
-readAttributeRxErrSecCountWithParamsSelector :: Selector
+readAttributeRxErrSecCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrSecCountWithParamsSelector = mkSelector "readAttributeRxErrSecCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrFcsCountWithParams:@
-readAttributeRxErrFcsCountWithParamsSelector :: Selector
+readAttributeRxErrFcsCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrFcsCountWithParamsSelector = mkSelector "readAttributeRxErrFcsCountWithParams:"
 
 -- | @Selector@ for @readAttributeRxErrOtherCountWithParams:@
-readAttributeRxErrOtherCountWithParamsSelector :: Selector
+readAttributeRxErrOtherCountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRxErrOtherCountWithParamsSelector = mkSelector "readAttributeRxErrOtherCountWithParams:"
 
 -- | @Selector@ for @readAttributeActiveTimestampWithParams:@
-readAttributeActiveTimestampWithParamsSelector :: Selector
+readAttributeActiveTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveTimestampWithParamsSelector = mkSelector "readAttributeActiveTimestampWithParams:"
 
 -- | @Selector@ for @readAttributePendingTimestampWithParams:@
-readAttributePendingTimestampWithParamsSelector :: Selector
+readAttributePendingTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePendingTimestampWithParamsSelector = mkSelector "readAttributePendingTimestampWithParams:"
 
 -- | @Selector@ for @readAttributeDelayWithParams:@
-readAttributeDelayWithParamsSelector :: Selector
+readAttributeDelayWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDelayWithParamsSelector = mkSelector "readAttributeDelayWithParams:"
 
 -- | @Selector@ for @readAttributeSecurityPolicyWithParams:@
-readAttributeSecurityPolicyWithParamsSelector :: Selector
+readAttributeSecurityPolicyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSecurityPolicyWithParamsSelector = mkSelector "readAttributeSecurityPolicyWithParams:"
 
 -- | @Selector@ for @readAttributeChannelPage0MaskWithParams:@
-readAttributeChannelPage0MaskWithParamsSelector :: Selector
+readAttributeChannelPage0MaskWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeChannelPage0MaskWithParamsSelector = mkSelector "readAttributeChannelPage0MaskWithParams:"
 
 -- | @Selector@ for @readAttributeOperationalDatasetComponentsWithParams:@
-readAttributeOperationalDatasetComponentsWithParamsSelector :: Selector
+readAttributeOperationalDatasetComponentsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOperationalDatasetComponentsWithParamsSelector = mkSelector "readAttributeOperationalDatasetComponentsWithParams:"
 
 -- | @Selector@ for @readAttributeActiveNetworkFaultsListWithParams:@
-readAttributeActiveNetworkFaultsListWithParamsSelector :: Selector
+readAttributeActiveNetworkFaultsListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveNetworkFaultsListWithParamsSelector = mkSelector "readAttributeActiveNetworkFaultsListWithParams:"
 
 -- | @Selector@ for @readAttributeExtAddressWithParams:@
-readAttributeExtAddressWithParamsSelector :: Selector
+readAttributeExtAddressWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExtAddressWithParamsSelector = mkSelector "readAttributeExtAddressWithParams:"
 
 -- | @Selector@ for @readAttributeRloc16WithParams:@
-readAttributeRloc16WithParamsSelector :: Selector
+readAttributeRloc16WithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRloc16WithParamsSelector = mkSelector "readAttributeRloc16WithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterThreadNetworkDiagnostics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterThreadNetworkDiagnostics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterThreadNetworkDiagnostics)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:@
-resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRThreadNetworkDiagnosticsClusterResetCountsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "resetCountsWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @resetCountsWithExpectedValues:expectedValueInterval:completionHandler:@
-resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 resetCountsWithExpectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "resetCountsWithExpectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @readAttributeNeighborTableListWithParams:@
-readAttributeNeighborTableListWithParamsSelector :: Selector
+readAttributeNeighborTableListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNeighborTableListWithParamsSelector = mkSelector "readAttributeNeighborTableListWithParams:"
 
 -- | @Selector@ for @readAttributeRouteTableListWithParams:@
-readAttributeRouteTableListWithParamsSelector :: Selector
+readAttributeRouteTableListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRouteTableListWithParamsSelector = mkSelector "readAttributeRouteTableListWithParams:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterThreadNetworkDiagnostics)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

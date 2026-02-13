@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.StoreKit.SKOverlayTransitionContext
   , init_
   , new
   , addAnimationBlock
+  , addAnimationBlockSelector
   , initSelector
   , newSelector
-  , addAnimationBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,36 +30,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSKOverlayTransitionContext skOverlayTransitionContext => skOverlayTransitionContext -> IO (Id SKOverlayTransitionContext)
-init_ skOverlayTransitionContext  =
-    sendMsg skOverlayTransitionContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skOverlayTransitionContext =
+  sendOwnedMessage skOverlayTransitionContext initSelector
 
 -- | @+ new@
 new :: IO (Id SKOverlayTransitionContext)
 new  =
   do
     cls' <- getRequiredClass "SKOverlayTransitionContext"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Adds an animation that will be synchronized with an overlay's presentation/dismissal.
 --
 -- ObjC selector: @- addAnimationBlock:@
 addAnimationBlock :: IsSKOverlayTransitionContext skOverlayTransitionContext => skOverlayTransitionContext -> Ptr () -> IO ()
-addAnimationBlock skOverlayTransitionContext  block =
-    sendMsg skOverlayTransitionContext (mkSelector "addAnimationBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+addAnimationBlock skOverlayTransitionContext block =
+  sendMessage skOverlayTransitionContext addAnimationBlockSelector block
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKOverlayTransitionContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SKOverlayTransitionContext)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @addAnimationBlock:@
-addAnimationBlockSelector :: Selector
+addAnimationBlockSelector :: Selector '[Ptr ()] ()
 addAnimationBlockSelector = mkSelector "addAnimationBlock:"
 

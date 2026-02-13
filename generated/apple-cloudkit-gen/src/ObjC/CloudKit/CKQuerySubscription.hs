@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.CloudKit.CKQuerySubscription
   , zoneID
   , setZoneID
   , querySubscriptionOptions
+  , initWithCoderSelector
   , initWithRecordType_predicate_optionsSelector
   , initWithRecordType_predicate_subscriptionID_optionsSelector
-  , initWithCoderSelector
-  , recordTypeSelector
   , predicateSelector
-  , zoneIDSelector
-  , setZoneIDSelector
   , querySubscriptionOptionsSelector
+  , recordTypeSelector
+  , setZoneIDSelector
+  , zoneIDSelector
 
   -- * Enum types
   , CKQuerySubscriptionOptions(CKQuerySubscriptionOptions)
@@ -39,15 +40,11 @@ module ObjC.CloudKit.CKQuerySubscription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,53 +54,46 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRecordType:predicate:options:@
 initWithRecordType_predicate_options :: (IsCKQuerySubscription ckQuerySubscription, IsNSString recordType, IsNSPredicate predicate) => ckQuerySubscription -> recordType -> predicate -> CKQuerySubscriptionOptions -> IO (Id CKQuerySubscription)
-initWithRecordType_predicate_options ckQuerySubscription  recordType predicate querySubscriptionOptions =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg ckQuerySubscription (mkSelector "initWithRecordType:predicate:options:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argCULong (coerce querySubscriptionOptions)] >>= ownedObject . castPtr
+initWithRecordType_predicate_options ckQuerySubscription recordType predicate querySubscriptionOptions =
+  sendOwnedMessage ckQuerySubscription initWithRecordType_predicate_optionsSelector (toNSString recordType) (toNSPredicate predicate) querySubscriptionOptions
 
 -- | @- initWithRecordType:predicate:subscriptionID:options:@
 initWithRecordType_predicate_subscriptionID_options :: (IsCKQuerySubscription ckQuerySubscription, IsNSString recordType, IsNSPredicate predicate, IsNSString subscriptionID) => ckQuerySubscription -> recordType -> predicate -> subscriptionID -> CKQuerySubscriptionOptions -> IO (Id CKQuerySubscription)
-initWithRecordType_predicate_subscriptionID_options ckQuerySubscription  recordType predicate subscriptionID querySubscriptionOptions =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr predicate $ \raw_predicate ->
-      withObjCPtr subscriptionID $ \raw_subscriptionID ->
-          sendMsg ckQuerySubscription (mkSelector "initWithRecordType:predicate:subscriptionID:options:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr raw_subscriptionID :: Ptr ()), argCULong (coerce querySubscriptionOptions)] >>= ownedObject . castPtr
+initWithRecordType_predicate_subscriptionID_options ckQuerySubscription recordType predicate subscriptionID querySubscriptionOptions =
+  sendOwnedMessage ckQuerySubscription initWithRecordType_predicate_subscriptionID_optionsSelector (toNSString recordType) (toNSPredicate predicate) (toNSString subscriptionID) querySubscriptionOptions
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKQuerySubscription ckQuerySubscription, IsNSCoder aDecoder) => ckQuerySubscription -> aDecoder -> IO (Id CKQuerySubscription)
-initWithCoder ckQuerySubscription  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg ckQuerySubscription (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder ckQuerySubscription aDecoder =
+  sendOwnedMessage ckQuerySubscription initWithCoderSelector (toNSCoder aDecoder)
 
 -- | The record type that this subscription watches
 --
 -- ObjC selector: @- recordType@
 recordType :: IsCKQuerySubscription ckQuerySubscription => ckQuerySubscription -> IO (Id NSString)
-recordType ckQuerySubscription  =
-    sendMsg ckQuerySubscription (mkSelector "recordType") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordType ckQuerySubscription =
+  sendMessage ckQuerySubscription recordTypeSelector
 
 -- | A predicate that determines when the subscription fires.
 --
 -- ObjC selector: @- predicate@
 predicate :: IsCKQuerySubscription ckQuerySubscription => ckQuerySubscription -> IO (Id NSPredicate)
-predicate ckQuerySubscription  =
-    sendMsg ckQuerySubscription (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate ckQuerySubscription =
+  sendMessage ckQuerySubscription predicateSelector
 
 -- | Optional property.  If set, a query subscription is scoped to only record changes in the indicated zone.  Query Subscriptions that do not specify a @zoneID@ are scoped to record changes across all zones in the database.
 --
 -- ObjC selector: @- zoneID@
 zoneID :: IsCKQuerySubscription ckQuerySubscription => ckQuerySubscription -> IO (Id CKRecordZoneID)
-zoneID ckQuerySubscription  =
-    sendMsg ckQuerySubscription (mkSelector "zoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneID ckQuerySubscription =
+  sendMessage ckQuerySubscription zoneIDSelector
 
 -- | Optional property.  If set, a query subscription is scoped to only record changes in the indicated zone.  Query Subscriptions that do not specify a @zoneID@ are scoped to record changes across all zones in the database.
 --
 -- ObjC selector: @- setZoneID:@
 setZoneID :: (IsCKQuerySubscription ckQuerySubscription, IsCKRecordZoneID value) => ckQuerySubscription -> value -> IO ()
-setZoneID ckQuerySubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckQuerySubscription (mkSelector "setZoneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZoneID ckQuerySubscription value =
+  sendMessage ckQuerySubscription setZoneIDSelector (toCKRecordZoneID value)
 
 -- | Options flags describing the firing behavior subscription.
 --
@@ -111,42 +101,42 @@ setZoneID ckQuerySubscription  value =
 --
 -- ObjC selector: @- querySubscriptionOptions@
 querySubscriptionOptions :: IsCKQuerySubscription ckQuerySubscription => ckQuerySubscription -> IO CKQuerySubscriptionOptions
-querySubscriptionOptions ckQuerySubscription  =
-    fmap (coerce :: CULong -> CKQuerySubscriptionOptions) $ sendMsg ckQuerySubscription (mkSelector "querySubscriptionOptions") retCULong []
+querySubscriptionOptions ckQuerySubscription =
+  sendMessage ckQuerySubscription querySubscriptionOptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRecordType:predicate:options:@
-initWithRecordType_predicate_optionsSelector :: Selector
+initWithRecordType_predicate_optionsSelector :: Selector '[Id NSString, Id NSPredicate, CKQuerySubscriptionOptions] (Id CKQuerySubscription)
 initWithRecordType_predicate_optionsSelector = mkSelector "initWithRecordType:predicate:options:"
 
 -- | @Selector@ for @initWithRecordType:predicate:subscriptionID:options:@
-initWithRecordType_predicate_subscriptionID_optionsSelector :: Selector
+initWithRecordType_predicate_subscriptionID_optionsSelector :: Selector '[Id NSString, Id NSPredicate, Id NSString, CKQuerySubscriptionOptions] (Id CKQuerySubscription)
 initWithRecordType_predicate_subscriptionID_optionsSelector = mkSelector "initWithRecordType:predicate:subscriptionID:options:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CKQuerySubscription)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @recordType@
-recordTypeSelector :: Selector
+recordTypeSelector :: Selector '[] (Id NSString)
 recordTypeSelector = mkSelector "recordType"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @zoneID@
-zoneIDSelector :: Selector
+zoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 zoneIDSelector = mkSelector "zoneID"
 
 -- | @Selector@ for @setZoneID:@
-setZoneIDSelector :: Selector
+setZoneIDSelector :: Selector '[Id CKRecordZoneID] ()
 setZoneIDSelector = mkSelector "setZoneID:"
 
 -- | @Selector@ for @querySubscriptionOptions@
-querySubscriptionOptionsSelector :: Selector
+querySubscriptionOptionsSelector :: Selector '[] CKQuerySubscriptionOptions
 querySubscriptionOptionsSelector = mkSelector "querySubscriptionOptions"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.PDFKit.PDFActionResetForm
   , setFields
   , fieldsIncludedAreCleared
   , setFieldsIncludedAreCleared
-  , initSelector
-  , fieldsSelector
-  , setFieldsSelector
   , fieldsIncludedAreClearedSelector
+  , fieldsSelector
+  , initSelector
   , setFieldsIncludedAreClearedSelector
+  , setFieldsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,51 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPDFActionResetForm pdfActionResetForm => pdfActionResetForm -> IO (Id PDFActionResetForm)
-init_ pdfActionResetForm  =
-    sendMsg pdfActionResetForm (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pdfActionResetForm =
+  sendOwnedMessage pdfActionResetForm initSelector
 
 -- | @- fields@
 fields :: IsPDFActionResetForm pdfActionResetForm => pdfActionResetForm -> IO (Id NSArray)
-fields pdfActionResetForm  =
-    sendMsg pdfActionResetForm (mkSelector "fields") (retPtr retVoid) [] >>= retainedObject . castPtr
+fields pdfActionResetForm =
+  sendMessage pdfActionResetForm fieldsSelector
 
 -- | @- setFields:@
 setFields :: (IsPDFActionResetForm pdfActionResetForm, IsNSArray value) => pdfActionResetForm -> value -> IO ()
-setFields pdfActionResetForm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfActionResetForm (mkSelector "setFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFields pdfActionResetForm value =
+  sendMessage pdfActionResetForm setFieldsSelector (toNSArray value)
 
 -- | @- fieldsIncludedAreCleared@
 fieldsIncludedAreCleared :: IsPDFActionResetForm pdfActionResetForm => pdfActionResetForm -> IO Bool
-fieldsIncludedAreCleared pdfActionResetForm  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfActionResetForm (mkSelector "fieldsIncludedAreCleared") retCULong []
+fieldsIncludedAreCleared pdfActionResetForm =
+  sendMessage pdfActionResetForm fieldsIncludedAreClearedSelector
 
 -- | @- setFieldsIncludedAreCleared:@
 setFieldsIncludedAreCleared :: IsPDFActionResetForm pdfActionResetForm => pdfActionResetForm -> Bool -> IO ()
-setFieldsIncludedAreCleared pdfActionResetForm  value =
-    sendMsg pdfActionResetForm (mkSelector "setFieldsIncludedAreCleared:") retVoid [argCULong (if value then 1 else 0)]
+setFieldsIncludedAreCleared pdfActionResetForm value =
+  sendMessage pdfActionResetForm setFieldsIncludedAreClearedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PDFActionResetForm)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @fields@
-fieldsSelector :: Selector
+fieldsSelector :: Selector '[] (Id NSArray)
 fieldsSelector = mkSelector "fields"
 
 -- | @Selector@ for @setFields:@
-setFieldsSelector :: Selector
+setFieldsSelector :: Selector '[Id NSArray] ()
 setFieldsSelector = mkSelector "setFields:"
 
 -- | @Selector@ for @fieldsIncludedAreCleared@
-fieldsIncludedAreClearedSelector :: Selector
+fieldsIncludedAreClearedSelector :: Selector '[] Bool
 fieldsIncludedAreClearedSelector = mkSelector "fieldsIncludedAreCleared"
 
 -- | @Selector@ for @setFieldsIncludedAreCleared:@
-setFieldsIncludedAreClearedSelector :: Selector
+setFieldsIncludedAreClearedSelector :: Selector '[Bool] ()
 setFieldsIncludedAreClearedSelector = mkSelector "setFieldsIncludedAreCleared:"
 

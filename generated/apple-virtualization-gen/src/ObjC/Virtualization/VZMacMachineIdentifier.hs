@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.Virtualization.VZMacMachineIdentifier
   , init_
   , initWithDataRepresentation
   , dataRepresentation
+  , dataRepresentationSelector
   , initSelector
   , initWithDataRepresentationSelector
-  , dataRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVZMacMachineIdentifier vzMacMachineIdentifier => vzMacMachineIdentifier -> IO (Id VZMacMachineIdentifier)
-init_ vzMacMachineIdentifier  =
-    sendMsg vzMacMachineIdentifier (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacMachineIdentifier =
+  sendOwnedMessage vzMacMachineIdentifier initSelector
 
 -- | Get the machine identifier described by the specified data representation.
 --
@@ -60,9 +57,8 @@ init_ vzMacMachineIdentifier  =
 --
 -- ObjC selector: @- initWithDataRepresentation:@
 initWithDataRepresentation :: (IsVZMacMachineIdentifier vzMacMachineIdentifier, IsNSData dataRepresentation) => vzMacMachineIdentifier -> dataRepresentation -> IO (Id VZMacMachineIdentifier)
-initWithDataRepresentation vzMacMachineIdentifier  dataRepresentation =
-  withObjCPtr dataRepresentation $ \raw_dataRepresentation ->
-      sendMsg vzMacMachineIdentifier (mkSelector "initWithDataRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_dataRepresentation :: Ptr ())] >>= ownedObject . castPtr
+initWithDataRepresentation vzMacMachineIdentifier dataRepresentation =
+  sendOwnedMessage vzMacMachineIdentifier initWithDataRepresentationSelector (toNSData dataRepresentation)
 
 -- | Opaque data representation of the machine identifier.
 --
@@ -72,22 +68,22 @@ initWithDataRepresentation vzMacMachineIdentifier  dataRepresentation =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsVZMacMachineIdentifier vzMacMachineIdentifier => vzMacMachineIdentifier -> IO (Id NSData)
-dataRepresentation vzMacMachineIdentifier  =
-    sendMsg vzMacMachineIdentifier (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation vzMacMachineIdentifier =
+  sendMessage vzMacMachineIdentifier dataRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacMachineIdentifier)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDataRepresentation:@
-initWithDataRepresentationSelector :: Selector
+initWithDataRepresentationSelector :: Selector '[Id NSData] (Id VZMacMachineIdentifier)
 initWithDataRepresentationSelector = mkSelector "initWithDataRepresentation:"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 

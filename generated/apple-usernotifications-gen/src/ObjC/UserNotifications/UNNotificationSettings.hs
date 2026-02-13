@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.UserNotifications.UNNotificationSettings
   , timeSensitiveSetting
   , scheduledDeliverySetting
   , directMessagesSetting
-  , initSelector
-  , authorizationStatusSelector
-  , soundSettingSelector
-  , badgeSettingSelector
   , alertSettingSelector
-  , notificationCenterSettingSelector
-  , lockScreenSettingSelector
-  , carPlaySettingSelector
   , alertStyleSelector
-  , showPreviewsSettingSelector
-  , criticalAlertSettingSelector
-  , providesAppNotificationSettingsSelector
   , announcementSettingSelector
-  , timeSensitiveSettingSelector
-  , scheduledDeliverySettingSelector
+  , authorizationStatusSelector
+  , badgeSettingSelector
+  , carPlaySettingSelector
+  , criticalAlertSettingSelector
   , directMessagesSettingSelector
+  , initSelector
+  , lockScreenSettingSelector
+  , notificationCenterSettingSelector
+  , providesAppNotificationSettingsSelector
+  , scheduledDeliverySettingSelector
+  , showPreviewsSettingSelector
+  , soundSettingSelector
+  , timeSensitiveSettingSelector
 
   -- * Enum types
   , UNAlertStyle(UNAlertStyle)
@@ -62,15 +63,11 @@ module ObjC.UserNotifications.UNNotificationSettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,149 +77,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO (Id UNNotificationSettings)
-init_ unNotificationSettings  =
-    sendMsg unNotificationSettings (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationSettings =
+  sendOwnedMessage unNotificationSettings initSelector
 
 -- | @- authorizationStatus@
 authorizationStatus :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNAuthorizationStatus
-authorizationStatus unNotificationSettings  =
-    fmap (coerce :: CLong -> UNAuthorizationStatus) $ sendMsg unNotificationSettings (mkSelector "authorizationStatus") retCLong []
+authorizationStatus unNotificationSettings =
+  sendMessage unNotificationSettings authorizationStatusSelector
 
 -- | @- soundSetting@
 soundSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-soundSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "soundSetting") retCLong []
+soundSetting unNotificationSettings =
+  sendMessage unNotificationSettings soundSettingSelector
 
 -- | @- badgeSetting@
 badgeSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-badgeSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "badgeSetting") retCLong []
+badgeSetting unNotificationSettings =
+  sendMessage unNotificationSettings badgeSettingSelector
 
 -- | @- alertSetting@
 alertSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-alertSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "alertSetting") retCLong []
+alertSetting unNotificationSettings =
+  sendMessage unNotificationSettings alertSettingSelector
 
 -- | @- notificationCenterSetting@
 notificationCenterSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-notificationCenterSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "notificationCenterSetting") retCLong []
+notificationCenterSetting unNotificationSettings =
+  sendMessage unNotificationSettings notificationCenterSettingSelector
 
 -- | @- lockScreenSetting@
 lockScreenSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-lockScreenSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "lockScreenSetting") retCLong []
+lockScreenSetting unNotificationSettings =
+  sendMessage unNotificationSettings lockScreenSettingSelector
 
 -- | @- carPlaySetting@
 carPlaySetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-carPlaySetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "carPlaySetting") retCLong []
+carPlaySetting unNotificationSettings =
+  sendMessage unNotificationSettings carPlaySettingSelector
 
 -- | @- alertStyle@
 alertStyle :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNAlertStyle
-alertStyle unNotificationSettings  =
-    fmap (coerce :: CLong -> UNAlertStyle) $ sendMsg unNotificationSettings (mkSelector "alertStyle") retCLong []
+alertStyle unNotificationSettings =
+  sendMessage unNotificationSettings alertStyleSelector
 
 -- | @- showPreviewsSetting@
 showPreviewsSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNShowPreviewsSetting
-showPreviewsSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNShowPreviewsSetting) $ sendMsg unNotificationSettings (mkSelector "showPreviewsSetting") retCLong []
+showPreviewsSetting unNotificationSettings =
+  sendMessage unNotificationSettings showPreviewsSettingSelector
 
 -- | @- criticalAlertSetting@
 criticalAlertSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-criticalAlertSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "criticalAlertSetting") retCLong []
+criticalAlertSetting unNotificationSettings =
+  sendMessage unNotificationSettings criticalAlertSettingSelector
 
 -- | @- providesAppNotificationSettings@
 providesAppNotificationSettings :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO Bool
-providesAppNotificationSettings unNotificationSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg unNotificationSettings (mkSelector "providesAppNotificationSettings") retCULong []
+providesAppNotificationSettings unNotificationSettings =
+  sendMessage unNotificationSettings providesAppNotificationSettingsSelector
 
 -- | @- announcementSetting@
 announcementSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-announcementSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "announcementSetting") retCLong []
+announcementSetting unNotificationSettings =
+  sendMessage unNotificationSettings announcementSettingSelector
 
 -- | @- timeSensitiveSetting@
 timeSensitiveSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-timeSensitiveSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "timeSensitiveSetting") retCLong []
+timeSensitiveSetting unNotificationSettings =
+  sendMessage unNotificationSettings timeSensitiveSettingSelector
 
 -- | @- scheduledDeliverySetting@
 scheduledDeliverySetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-scheduledDeliverySetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "scheduledDeliverySetting") retCLong []
+scheduledDeliverySetting unNotificationSettings =
+  sendMessage unNotificationSettings scheduledDeliverySettingSelector
 
 -- | @- directMessagesSetting@
 directMessagesSetting :: IsUNNotificationSettings unNotificationSettings => unNotificationSettings -> IO UNNotificationSetting
-directMessagesSetting unNotificationSettings  =
-    fmap (coerce :: CLong -> UNNotificationSetting) $ sendMsg unNotificationSettings (mkSelector "directMessagesSetting") retCLong []
+directMessagesSetting unNotificationSettings =
+  sendMessage unNotificationSettings directMessagesSettingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationSettings)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] UNAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @soundSetting@
-soundSettingSelector :: Selector
+soundSettingSelector :: Selector '[] UNNotificationSetting
 soundSettingSelector = mkSelector "soundSetting"
 
 -- | @Selector@ for @badgeSetting@
-badgeSettingSelector :: Selector
+badgeSettingSelector :: Selector '[] UNNotificationSetting
 badgeSettingSelector = mkSelector "badgeSetting"
 
 -- | @Selector@ for @alertSetting@
-alertSettingSelector :: Selector
+alertSettingSelector :: Selector '[] UNNotificationSetting
 alertSettingSelector = mkSelector "alertSetting"
 
 -- | @Selector@ for @notificationCenterSetting@
-notificationCenterSettingSelector :: Selector
+notificationCenterSettingSelector :: Selector '[] UNNotificationSetting
 notificationCenterSettingSelector = mkSelector "notificationCenterSetting"
 
 -- | @Selector@ for @lockScreenSetting@
-lockScreenSettingSelector :: Selector
+lockScreenSettingSelector :: Selector '[] UNNotificationSetting
 lockScreenSettingSelector = mkSelector "lockScreenSetting"
 
 -- | @Selector@ for @carPlaySetting@
-carPlaySettingSelector :: Selector
+carPlaySettingSelector :: Selector '[] UNNotificationSetting
 carPlaySettingSelector = mkSelector "carPlaySetting"
 
 -- | @Selector@ for @alertStyle@
-alertStyleSelector :: Selector
+alertStyleSelector :: Selector '[] UNAlertStyle
 alertStyleSelector = mkSelector "alertStyle"
 
 -- | @Selector@ for @showPreviewsSetting@
-showPreviewsSettingSelector :: Selector
+showPreviewsSettingSelector :: Selector '[] UNShowPreviewsSetting
 showPreviewsSettingSelector = mkSelector "showPreviewsSetting"
 
 -- | @Selector@ for @criticalAlertSetting@
-criticalAlertSettingSelector :: Selector
+criticalAlertSettingSelector :: Selector '[] UNNotificationSetting
 criticalAlertSettingSelector = mkSelector "criticalAlertSetting"
 
 -- | @Selector@ for @providesAppNotificationSettings@
-providesAppNotificationSettingsSelector :: Selector
+providesAppNotificationSettingsSelector :: Selector '[] Bool
 providesAppNotificationSettingsSelector = mkSelector "providesAppNotificationSettings"
 
 -- | @Selector@ for @announcementSetting@
-announcementSettingSelector :: Selector
+announcementSettingSelector :: Selector '[] UNNotificationSetting
 announcementSettingSelector = mkSelector "announcementSetting"
 
 -- | @Selector@ for @timeSensitiveSetting@
-timeSensitiveSettingSelector :: Selector
+timeSensitiveSettingSelector :: Selector '[] UNNotificationSetting
 timeSensitiveSettingSelector = mkSelector "timeSensitiveSetting"
 
 -- | @Selector@ for @scheduledDeliverySetting@
-scheduledDeliverySettingSelector :: Selector
+scheduledDeliverySettingSelector :: Selector '[] UNNotificationSetting
 scheduledDeliverySettingSelector = mkSelector "scheduledDeliverySetting"
 
 -- | @Selector@ for @directMessagesSetting@
-directMessagesSettingSelector :: Selector
+directMessagesSettingSelector :: Selector '[] UNNotificationSetting
 directMessagesSettingSelector = mkSelector "directMessagesSetting"
 

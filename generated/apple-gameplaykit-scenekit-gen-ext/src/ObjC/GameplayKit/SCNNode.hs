@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.GameplayKit.SCNNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.SceneKit.Internal.Classes
 --
 -- ObjC selector: @- entity@
 entity :: IsSCNNode scnNode => scnNode -> IO RawId
-entity scnNode  =
-    fmap (RawId . castPtr) $ sendMsg scnNode (mkSelector "entity") (retPtr retVoid) []
+entity scnNode =
+  sendMessage scnNode entitySelector
 
 -- | The GKEntity associated with the node via a GKSCNNodeComponent.
 --
@@ -50,18 +47,18 @@ entity scnNode  =
 --
 -- ObjC selector: @- setEntity:@
 setEntity :: IsSCNNode scnNode => scnNode -> RawId -> IO ()
-setEntity scnNode  value =
-    sendMsg scnNode (mkSelector "setEntity:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setEntity scnNode value =
+  sendMessage scnNode setEntitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] RawId
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @setEntity:@
-setEntitySelector :: Selector
+setEntitySelector :: Selector '[RawId] ()
 setEntitySelector = mkSelector "setEntity:"
 

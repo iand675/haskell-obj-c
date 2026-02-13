@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,59 +47,55 @@ module ObjC.Foundation.NSConnection
   , multipleThreadsEnabled
   , remoteObjects
   , localObjects
+  , addRequestModeSelector
+  , addRunLoopSelector
   , allConnectionsSelector
-  , defaultConnectionSelector
+  , connectionWithReceivePort_sendPortSelector
   , connectionWithRegisteredName_hostSelector
   , connectionWithRegisteredName_host_usingNameServerSelector
-  , rootProxyForConnectionWithRegisteredName_hostSelector
-  , rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector
-  , serviceConnectionWithName_rootObject_usingNameServerSelector
-  , serviceConnectionWithName_rootObjectSelector
+  , currentConversationSelector
+  , defaultConnectionSelector
+  , delegateSelector
+  , dispatchWithComponentsSelector
+  , enableMultipleThreadsSelector
+  , independentConversationQueueingSelector
+  , initWithReceivePort_sendPortSelector
   , invalidateSelector
-  , addRequestModeSelector
-  , removeRequestModeSelector
+  , localObjectsSelector
+  , multipleThreadsEnabledSelector
+  , receivePortSelector
   , registerNameSelector
   , registerName_withNameServerSelector
-  , connectionWithReceivePort_sendPortSelector
-  , currentConversationSelector
-  , initWithReceivePort_sendPortSelector
-  , enableMultipleThreadsSelector
-  , addRunLoopSelector
-  , removeRunLoopSelector
-  , runInNewThreadSelector
-  , dispatchWithComponentsSelector
-  , statisticsSelector
-  , requestTimeoutSelector
-  , setRequestTimeoutSelector
-  , replyTimeoutSelector
-  , setReplyTimeoutSelector
-  , rootObjectSelector
-  , setRootObjectSelector
-  , delegateSelector
-  , setDelegateSelector
-  , independentConversationQueueingSelector
-  , setIndependentConversationQueueingSelector
-  , validSelector
-  , rootProxySelector
-  , requestModesSelector
-  , sendPortSelector
-  , receivePortSelector
-  , multipleThreadsEnabledSelector
   , remoteObjectsSelector
-  , localObjectsSelector
+  , removeRequestModeSelector
+  , removeRunLoopSelector
+  , replyTimeoutSelector
+  , requestModesSelector
+  , requestTimeoutSelector
+  , rootObjectSelector
+  , rootProxyForConnectionWithRegisteredName_hostSelector
+  , rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector
+  , rootProxySelector
+  , runInNewThreadSelector
+  , sendPortSelector
+  , serviceConnectionWithName_rootObjectSelector
+  , serviceConnectionWithName_rootObject_usingNameServerSelector
+  , setDelegateSelector
+  , setIndependentConversationQueueingSelector
+  , setReplyTimeoutSelector
+  , setRequestTimeoutSelector
+  , setRootObjectSelector
+  , statisticsSelector
+  , validSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,407 +106,382 @@ allConnections :: IO (Id NSArray)
 allConnections  =
   do
     cls' <- getRequiredClass "NSConnection"
-    sendClassMsg cls' (mkSelector "allConnections") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' allConnectionsSelector
 
 -- | @+ defaultConnection@
 defaultConnection :: IO (Id NSConnection)
 defaultConnection  =
   do
     cls' <- getRequiredClass "NSConnection"
-    sendClassMsg cls' (mkSelector "defaultConnection") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultConnectionSelector
 
 -- | @+ connectionWithRegisteredName:host:@
 connectionWithRegisteredName_host :: (IsNSString name, IsNSString hostName) => name -> hostName -> IO (Id NSConnection)
 connectionWithRegisteredName_host name hostName =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr hostName $ \raw_hostName ->
-        sendClassMsg cls' (mkSelector "connectionWithRegisteredName:host:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_hostName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithRegisteredName_hostSelector (toNSString name) (toNSString hostName)
 
 -- | @+ connectionWithRegisteredName:host:usingNameServer:@
 connectionWithRegisteredName_host_usingNameServer :: (IsNSString name, IsNSString hostName, IsNSPortNameServer server) => name -> hostName -> server -> IO (Id NSConnection)
 connectionWithRegisteredName_host_usingNameServer name hostName server =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr hostName $ \raw_hostName ->
-        withObjCPtr server $ \raw_server ->
-          sendClassMsg cls' (mkSelector "connectionWithRegisteredName:host:usingNameServer:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_hostName :: Ptr ()), argPtr (castPtr raw_server :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithRegisteredName_host_usingNameServerSelector (toNSString name) (toNSString hostName) (toNSPortNameServer server)
 
 -- | @+ rootProxyForConnectionWithRegisteredName:host:@
 rootProxyForConnectionWithRegisteredName_host :: (IsNSString name, IsNSString hostName) => name -> hostName -> IO (Id NSDistantObject)
 rootProxyForConnectionWithRegisteredName_host name hostName =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr hostName $ \raw_hostName ->
-        sendClassMsg cls' (mkSelector "rootProxyForConnectionWithRegisteredName:host:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_hostName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rootProxyForConnectionWithRegisteredName_hostSelector (toNSString name) (toNSString hostName)
 
 -- | @+ rootProxyForConnectionWithRegisteredName:host:usingNameServer:@
 rootProxyForConnectionWithRegisteredName_host_usingNameServer :: (IsNSString name, IsNSString hostName, IsNSPortNameServer server) => name -> hostName -> server -> IO (Id NSDistantObject)
 rootProxyForConnectionWithRegisteredName_host_usingNameServer name hostName server =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr hostName $ \raw_hostName ->
-        withObjCPtr server $ \raw_server ->
-          sendClassMsg cls' (mkSelector "rootProxyForConnectionWithRegisteredName:host:usingNameServer:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_hostName :: Ptr ()), argPtr (castPtr raw_server :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector (toNSString name) (toNSString hostName) (toNSPortNameServer server)
 
 -- | @+ serviceConnectionWithName:rootObject:usingNameServer:@
 serviceConnectionWithName_rootObject_usingNameServer :: (IsNSString name, IsNSPortNameServer server) => name -> RawId -> server -> IO (Id NSConnection)
 serviceConnectionWithName_rootObject_usingNameServer name root server =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr server $ \raw_server ->
-        sendClassMsg cls' (mkSelector "serviceConnectionWithName:rootObject:usingNameServer:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId root) :: Ptr ()), argPtr (castPtr raw_server :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' serviceConnectionWithName_rootObject_usingNameServerSelector (toNSString name) root (toNSPortNameServer server)
 
 -- | @+ serviceConnectionWithName:rootObject:@
 serviceConnectionWithName_rootObject :: IsNSString name => name -> RawId -> IO (Id NSConnection)
 serviceConnectionWithName_rootObject name root =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "serviceConnectionWithName:rootObject:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId root) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' serviceConnectionWithName_rootObjectSelector (toNSString name) root
 
 -- | @- invalidate@
 invalidate :: IsNSConnection nsConnection => nsConnection -> IO ()
-invalidate nsConnection  =
-    sendMsg nsConnection (mkSelector "invalidate") retVoid []
+invalidate nsConnection =
+  sendMessage nsConnection invalidateSelector
 
 -- | @- addRequestMode:@
 addRequestMode :: (IsNSConnection nsConnection, IsNSString rmode) => nsConnection -> rmode -> IO ()
-addRequestMode nsConnection  rmode =
-  withObjCPtr rmode $ \raw_rmode ->
-      sendMsg nsConnection (mkSelector "addRequestMode:") retVoid [argPtr (castPtr raw_rmode :: Ptr ())]
+addRequestMode nsConnection rmode =
+  sendMessage nsConnection addRequestModeSelector (toNSString rmode)
 
 -- | @- removeRequestMode:@
 removeRequestMode :: (IsNSConnection nsConnection, IsNSString rmode) => nsConnection -> rmode -> IO ()
-removeRequestMode nsConnection  rmode =
-  withObjCPtr rmode $ \raw_rmode ->
-      sendMsg nsConnection (mkSelector "removeRequestMode:") retVoid [argPtr (castPtr raw_rmode :: Ptr ())]
+removeRequestMode nsConnection rmode =
+  sendMessage nsConnection removeRequestModeSelector (toNSString rmode)
 
 -- | @- registerName:@
 registerName :: (IsNSConnection nsConnection, IsNSString name) => nsConnection -> name -> IO Bool
-registerName nsConnection  name =
-  withObjCPtr name $ \raw_name ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsConnection (mkSelector "registerName:") retCULong [argPtr (castPtr raw_name :: Ptr ())]
+registerName nsConnection name =
+  sendMessage nsConnection registerNameSelector (toNSString name)
 
 -- | @- registerName:withNameServer:@
 registerName_withNameServer :: (IsNSConnection nsConnection, IsNSString name, IsNSPortNameServer server) => nsConnection -> name -> server -> IO Bool
-registerName_withNameServer nsConnection  name server =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr server $ \raw_server ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsConnection (mkSelector "registerName:withNameServer:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_server :: Ptr ())]
+registerName_withNameServer nsConnection name server =
+  sendMessage nsConnection registerName_withNameServerSelector (toNSString name) (toNSPortNameServer server)
 
 -- | @+ connectionWithReceivePort:sendPort:@
 connectionWithReceivePort_sendPort :: (IsNSPort receivePort, IsNSPort sendPort) => receivePort -> sendPort -> IO (Id NSConnection)
 connectionWithReceivePort_sendPort receivePort sendPort =
   do
     cls' <- getRequiredClass "NSConnection"
-    withObjCPtr receivePort $ \raw_receivePort ->
-      withObjCPtr sendPort $ \raw_sendPort ->
-        sendClassMsg cls' (mkSelector "connectionWithReceivePort:sendPort:") (retPtr retVoid) [argPtr (castPtr raw_receivePort :: Ptr ()), argPtr (castPtr raw_sendPort :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithReceivePort_sendPortSelector (toNSPort receivePort) (toNSPort sendPort)
 
 -- | @+ currentConversation@
 currentConversation :: IO RawId
 currentConversation  =
   do
     cls' <- getRequiredClass "NSConnection"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "currentConversation") (retPtr retVoid) []
+    sendClassMessage cls' currentConversationSelector
 
 -- | @- initWithReceivePort:sendPort:@
 initWithReceivePort_sendPort :: (IsNSConnection nsConnection, IsNSPort receivePort, IsNSPort sendPort) => nsConnection -> receivePort -> sendPort -> IO (Id NSConnection)
-initWithReceivePort_sendPort nsConnection  receivePort sendPort =
-  withObjCPtr receivePort $ \raw_receivePort ->
-    withObjCPtr sendPort $ \raw_sendPort ->
-        sendMsg nsConnection (mkSelector "initWithReceivePort:sendPort:") (retPtr retVoid) [argPtr (castPtr raw_receivePort :: Ptr ()), argPtr (castPtr raw_sendPort :: Ptr ())] >>= ownedObject . castPtr
+initWithReceivePort_sendPort nsConnection receivePort sendPort =
+  sendOwnedMessage nsConnection initWithReceivePort_sendPortSelector (toNSPort receivePort) (toNSPort sendPort)
 
 -- | @- enableMultipleThreads@
 enableMultipleThreads :: IsNSConnection nsConnection => nsConnection -> IO ()
-enableMultipleThreads nsConnection  =
-    sendMsg nsConnection (mkSelector "enableMultipleThreads") retVoid []
+enableMultipleThreads nsConnection =
+  sendMessage nsConnection enableMultipleThreadsSelector
 
 -- | @- addRunLoop:@
 addRunLoop :: (IsNSConnection nsConnection, IsNSRunLoop runloop) => nsConnection -> runloop -> IO ()
-addRunLoop nsConnection  runloop =
-  withObjCPtr runloop $ \raw_runloop ->
-      sendMsg nsConnection (mkSelector "addRunLoop:") retVoid [argPtr (castPtr raw_runloop :: Ptr ())]
+addRunLoop nsConnection runloop =
+  sendMessage nsConnection addRunLoopSelector (toNSRunLoop runloop)
 
 -- | @- removeRunLoop:@
 removeRunLoop :: (IsNSConnection nsConnection, IsNSRunLoop runloop) => nsConnection -> runloop -> IO ()
-removeRunLoop nsConnection  runloop =
-  withObjCPtr runloop $ \raw_runloop ->
-      sendMsg nsConnection (mkSelector "removeRunLoop:") retVoid [argPtr (castPtr raw_runloop :: Ptr ())]
+removeRunLoop nsConnection runloop =
+  sendMessage nsConnection removeRunLoopSelector (toNSRunLoop runloop)
 
 -- | @- runInNewThread@
 runInNewThread :: IsNSConnection nsConnection => nsConnection -> IO ()
-runInNewThread nsConnection  =
-    sendMsg nsConnection (mkSelector "runInNewThread") retVoid []
+runInNewThread nsConnection =
+  sendMessage nsConnection runInNewThreadSelector
 
 -- | @- dispatchWithComponents:@
 dispatchWithComponents :: (IsNSConnection nsConnection, IsNSArray components) => nsConnection -> components -> IO ()
-dispatchWithComponents nsConnection  components =
-  withObjCPtr components $ \raw_components ->
-      sendMsg nsConnection (mkSelector "dispatchWithComponents:") retVoid [argPtr (castPtr raw_components :: Ptr ())]
+dispatchWithComponents nsConnection components =
+  sendMessage nsConnection dispatchWithComponentsSelector (toNSArray components)
 
 -- | @- statistics@
 statistics :: IsNSConnection nsConnection => nsConnection -> IO (Id NSDictionary)
-statistics nsConnection  =
-    sendMsg nsConnection (mkSelector "statistics") (retPtr retVoid) [] >>= retainedObject . castPtr
+statistics nsConnection =
+  sendMessage nsConnection statisticsSelector
 
 -- | @- requestTimeout@
 requestTimeout :: IsNSConnection nsConnection => nsConnection -> IO CDouble
-requestTimeout nsConnection  =
-    sendMsg nsConnection (mkSelector "requestTimeout") retCDouble []
+requestTimeout nsConnection =
+  sendMessage nsConnection requestTimeoutSelector
 
 -- | @- setRequestTimeout:@
 setRequestTimeout :: IsNSConnection nsConnection => nsConnection -> CDouble -> IO ()
-setRequestTimeout nsConnection  value =
-    sendMsg nsConnection (mkSelector "setRequestTimeout:") retVoid [argCDouble value]
+setRequestTimeout nsConnection value =
+  sendMessage nsConnection setRequestTimeoutSelector value
 
 -- | @- replyTimeout@
 replyTimeout :: IsNSConnection nsConnection => nsConnection -> IO CDouble
-replyTimeout nsConnection  =
-    sendMsg nsConnection (mkSelector "replyTimeout") retCDouble []
+replyTimeout nsConnection =
+  sendMessage nsConnection replyTimeoutSelector
 
 -- | @- setReplyTimeout:@
 setReplyTimeout :: IsNSConnection nsConnection => nsConnection -> CDouble -> IO ()
-setReplyTimeout nsConnection  value =
-    sendMsg nsConnection (mkSelector "setReplyTimeout:") retVoid [argCDouble value]
+setReplyTimeout nsConnection value =
+  sendMessage nsConnection setReplyTimeoutSelector value
 
 -- | @- rootObject@
 rootObject :: IsNSConnection nsConnection => nsConnection -> IO RawId
-rootObject nsConnection  =
-    fmap (RawId . castPtr) $ sendMsg nsConnection (mkSelector "rootObject") (retPtr retVoid) []
+rootObject nsConnection =
+  sendMessage nsConnection rootObjectSelector
 
 -- | @- setRootObject:@
 setRootObject :: IsNSConnection nsConnection => nsConnection -> RawId -> IO ()
-setRootObject nsConnection  value =
-    sendMsg nsConnection (mkSelector "setRootObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRootObject nsConnection value =
+  sendMessage nsConnection setRootObjectSelector value
 
 -- | @- delegate@
 delegate :: IsNSConnection nsConnection => nsConnection -> IO RawId
-delegate nsConnection  =
-    fmap (RawId . castPtr) $ sendMsg nsConnection (mkSelector "delegate") (retPtr retVoid) []
+delegate nsConnection =
+  sendMessage nsConnection delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSConnection nsConnection => nsConnection -> RawId -> IO ()
-setDelegate nsConnection  value =
-    sendMsg nsConnection (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsConnection value =
+  sendMessage nsConnection setDelegateSelector value
 
 -- | @- independentConversationQueueing@
 independentConversationQueueing :: IsNSConnection nsConnection => nsConnection -> IO Bool
-independentConversationQueueing nsConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsConnection (mkSelector "independentConversationQueueing") retCULong []
+independentConversationQueueing nsConnection =
+  sendMessage nsConnection independentConversationQueueingSelector
 
 -- | @- setIndependentConversationQueueing:@
 setIndependentConversationQueueing :: IsNSConnection nsConnection => nsConnection -> Bool -> IO ()
-setIndependentConversationQueueing nsConnection  value =
-    sendMsg nsConnection (mkSelector "setIndependentConversationQueueing:") retVoid [argCULong (if value then 1 else 0)]
+setIndependentConversationQueueing nsConnection value =
+  sendMessage nsConnection setIndependentConversationQueueingSelector value
 
 -- | @- valid@
 valid :: IsNSConnection nsConnection => nsConnection -> IO Bool
-valid nsConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsConnection (mkSelector "valid") retCULong []
+valid nsConnection =
+  sendMessage nsConnection validSelector
 
 -- | @- rootProxy@
 rootProxy :: IsNSConnection nsConnection => nsConnection -> IO (Id NSDistantObject)
-rootProxy nsConnection  =
-    sendMsg nsConnection (mkSelector "rootProxy") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootProxy nsConnection =
+  sendMessage nsConnection rootProxySelector
 
 -- | @- requestModes@
 requestModes :: IsNSConnection nsConnection => nsConnection -> IO (Id NSArray)
-requestModes nsConnection  =
-    sendMsg nsConnection (mkSelector "requestModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestModes nsConnection =
+  sendMessage nsConnection requestModesSelector
 
 -- | @- sendPort@
 sendPort :: IsNSConnection nsConnection => nsConnection -> IO (Id NSPort)
-sendPort nsConnection  =
-    sendMsg nsConnection (mkSelector "sendPort") (retPtr retVoid) [] >>= retainedObject . castPtr
+sendPort nsConnection =
+  sendMessage nsConnection sendPortSelector
 
 -- | @- receivePort@
 receivePort :: IsNSConnection nsConnection => nsConnection -> IO (Id NSPort)
-receivePort nsConnection  =
-    sendMsg nsConnection (mkSelector "receivePort") (retPtr retVoid) [] >>= retainedObject . castPtr
+receivePort nsConnection =
+  sendMessage nsConnection receivePortSelector
 
 -- | @- multipleThreadsEnabled@
 multipleThreadsEnabled :: IsNSConnection nsConnection => nsConnection -> IO Bool
-multipleThreadsEnabled nsConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsConnection (mkSelector "multipleThreadsEnabled") retCULong []
+multipleThreadsEnabled nsConnection =
+  sendMessage nsConnection multipleThreadsEnabledSelector
 
 -- | @- remoteObjects@
 remoteObjects :: IsNSConnection nsConnection => nsConnection -> IO (Id NSArray)
-remoteObjects nsConnection  =
-    sendMsg nsConnection (mkSelector "remoteObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteObjects nsConnection =
+  sendMessage nsConnection remoteObjectsSelector
 
 -- | @- localObjects@
 localObjects :: IsNSConnection nsConnection => nsConnection -> IO (Id NSArray)
-localObjects nsConnection  =
-    sendMsg nsConnection (mkSelector "localObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+localObjects nsConnection =
+  sendMessage nsConnection localObjectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allConnections@
-allConnectionsSelector :: Selector
+allConnectionsSelector :: Selector '[] (Id NSArray)
 allConnectionsSelector = mkSelector "allConnections"
 
 -- | @Selector@ for @defaultConnection@
-defaultConnectionSelector :: Selector
+defaultConnectionSelector :: Selector '[] (Id NSConnection)
 defaultConnectionSelector = mkSelector "defaultConnection"
 
 -- | @Selector@ for @connectionWithRegisteredName:host:@
-connectionWithRegisteredName_hostSelector :: Selector
+connectionWithRegisteredName_hostSelector :: Selector '[Id NSString, Id NSString] (Id NSConnection)
 connectionWithRegisteredName_hostSelector = mkSelector "connectionWithRegisteredName:host:"
 
 -- | @Selector@ for @connectionWithRegisteredName:host:usingNameServer:@
-connectionWithRegisteredName_host_usingNameServerSelector :: Selector
+connectionWithRegisteredName_host_usingNameServerSelector :: Selector '[Id NSString, Id NSString, Id NSPortNameServer] (Id NSConnection)
 connectionWithRegisteredName_host_usingNameServerSelector = mkSelector "connectionWithRegisteredName:host:usingNameServer:"
 
 -- | @Selector@ for @rootProxyForConnectionWithRegisteredName:host:@
-rootProxyForConnectionWithRegisteredName_hostSelector :: Selector
+rootProxyForConnectionWithRegisteredName_hostSelector :: Selector '[Id NSString, Id NSString] (Id NSDistantObject)
 rootProxyForConnectionWithRegisteredName_hostSelector = mkSelector "rootProxyForConnectionWithRegisteredName:host:"
 
 -- | @Selector@ for @rootProxyForConnectionWithRegisteredName:host:usingNameServer:@
-rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector :: Selector
+rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector :: Selector '[Id NSString, Id NSString, Id NSPortNameServer] (Id NSDistantObject)
 rootProxyForConnectionWithRegisteredName_host_usingNameServerSelector = mkSelector "rootProxyForConnectionWithRegisteredName:host:usingNameServer:"
 
 -- | @Selector@ for @serviceConnectionWithName:rootObject:usingNameServer:@
-serviceConnectionWithName_rootObject_usingNameServerSelector :: Selector
+serviceConnectionWithName_rootObject_usingNameServerSelector :: Selector '[Id NSString, RawId, Id NSPortNameServer] (Id NSConnection)
 serviceConnectionWithName_rootObject_usingNameServerSelector = mkSelector "serviceConnectionWithName:rootObject:usingNameServer:"
 
 -- | @Selector@ for @serviceConnectionWithName:rootObject:@
-serviceConnectionWithName_rootObjectSelector :: Selector
+serviceConnectionWithName_rootObjectSelector :: Selector '[Id NSString, RawId] (Id NSConnection)
 serviceConnectionWithName_rootObjectSelector = mkSelector "serviceConnectionWithName:rootObject:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @addRequestMode:@
-addRequestModeSelector :: Selector
+addRequestModeSelector :: Selector '[Id NSString] ()
 addRequestModeSelector = mkSelector "addRequestMode:"
 
 -- | @Selector@ for @removeRequestMode:@
-removeRequestModeSelector :: Selector
+removeRequestModeSelector :: Selector '[Id NSString] ()
 removeRequestModeSelector = mkSelector "removeRequestMode:"
 
 -- | @Selector@ for @registerName:@
-registerNameSelector :: Selector
+registerNameSelector :: Selector '[Id NSString] Bool
 registerNameSelector = mkSelector "registerName:"
 
 -- | @Selector@ for @registerName:withNameServer:@
-registerName_withNameServerSelector :: Selector
+registerName_withNameServerSelector :: Selector '[Id NSString, Id NSPortNameServer] Bool
 registerName_withNameServerSelector = mkSelector "registerName:withNameServer:"
 
 -- | @Selector@ for @connectionWithReceivePort:sendPort:@
-connectionWithReceivePort_sendPortSelector :: Selector
+connectionWithReceivePort_sendPortSelector :: Selector '[Id NSPort, Id NSPort] (Id NSConnection)
 connectionWithReceivePort_sendPortSelector = mkSelector "connectionWithReceivePort:sendPort:"
 
 -- | @Selector@ for @currentConversation@
-currentConversationSelector :: Selector
+currentConversationSelector :: Selector '[] RawId
 currentConversationSelector = mkSelector "currentConversation"
 
 -- | @Selector@ for @initWithReceivePort:sendPort:@
-initWithReceivePort_sendPortSelector :: Selector
+initWithReceivePort_sendPortSelector :: Selector '[Id NSPort, Id NSPort] (Id NSConnection)
 initWithReceivePort_sendPortSelector = mkSelector "initWithReceivePort:sendPort:"
 
 -- | @Selector@ for @enableMultipleThreads@
-enableMultipleThreadsSelector :: Selector
+enableMultipleThreadsSelector :: Selector '[] ()
 enableMultipleThreadsSelector = mkSelector "enableMultipleThreads"
 
 -- | @Selector@ for @addRunLoop:@
-addRunLoopSelector :: Selector
+addRunLoopSelector :: Selector '[Id NSRunLoop] ()
 addRunLoopSelector = mkSelector "addRunLoop:"
 
 -- | @Selector@ for @removeRunLoop:@
-removeRunLoopSelector :: Selector
+removeRunLoopSelector :: Selector '[Id NSRunLoop] ()
 removeRunLoopSelector = mkSelector "removeRunLoop:"
 
 -- | @Selector@ for @runInNewThread@
-runInNewThreadSelector :: Selector
+runInNewThreadSelector :: Selector '[] ()
 runInNewThreadSelector = mkSelector "runInNewThread"
 
 -- | @Selector@ for @dispatchWithComponents:@
-dispatchWithComponentsSelector :: Selector
+dispatchWithComponentsSelector :: Selector '[Id NSArray] ()
 dispatchWithComponentsSelector = mkSelector "dispatchWithComponents:"
 
 -- | @Selector@ for @statistics@
-statisticsSelector :: Selector
+statisticsSelector :: Selector '[] (Id NSDictionary)
 statisticsSelector = mkSelector "statistics"
 
 -- | @Selector@ for @requestTimeout@
-requestTimeoutSelector :: Selector
+requestTimeoutSelector :: Selector '[] CDouble
 requestTimeoutSelector = mkSelector "requestTimeout"
 
 -- | @Selector@ for @setRequestTimeout:@
-setRequestTimeoutSelector :: Selector
+setRequestTimeoutSelector :: Selector '[CDouble] ()
 setRequestTimeoutSelector = mkSelector "setRequestTimeout:"
 
 -- | @Selector@ for @replyTimeout@
-replyTimeoutSelector :: Selector
+replyTimeoutSelector :: Selector '[] CDouble
 replyTimeoutSelector = mkSelector "replyTimeout"
 
 -- | @Selector@ for @setReplyTimeout:@
-setReplyTimeoutSelector :: Selector
+setReplyTimeoutSelector :: Selector '[CDouble] ()
 setReplyTimeoutSelector = mkSelector "setReplyTimeout:"
 
 -- | @Selector@ for @rootObject@
-rootObjectSelector :: Selector
+rootObjectSelector :: Selector '[] RawId
 rootObjectSelector = mkSelector "rootObject"
 
 -- | @Selector@ for @setRootObject:@
-setRootObjectSelector :: Selector
+setRootObjectSelector :: Selector '[RawId] ()
 setRootObjectSelector = mkSelector "setRootObject:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @independentConversationQueueing@
-independentConversationQueueingSelector :: Selector
+independentConversationQueueingSelector :: Selector '[] Bool
 independentConversationQueueingSelector = mkSelector "independentConversationQueueing"
 
 -- | @Selector@ for @setIndependentConversationQueueing:@
-setIndependentConversationQueueingSelector :: Selector
+setIndependentConversationQueueingSelector :: Selector '[Bool] ()
 setIndependentConversationQueueingSelector = mkSelector "setIndependentConversationQueueing:"
 
 -- | @Selector@ for @valid@
-validSelector :: Selector
+validSelector :: Selector '[] Bool
 validSelector = mkSelector "valid"
 
 -- | @Selector@ for @rootProxy@
-rootProxySelector :: Selector
+rootProxySelector :: Selector '[] (Id NSDistantObject)
 rootProxySelector = mkSelector "rootProxy"
 
 -- | @Selector@ for @requestModes@
-requestModesSelector :: Selector
+requestModesSelector :: Selector '[] (Id NSArray)
 requestModesSelector = mkSelector "requestModes"
 
 -- | @Selector@ for @sendPort@
-sendPortSelector :: Selector
+sendPortSelector :: Selector '[] (Id NSPort)
 sendPortSelector = mkSelector "sendPort"
 
 -- | @Selector@ for @receivePort@
-receivePortSelector :: Selector
+receivePortSelector :: Selector '[] (Id NSPort)
 receivePortSelector = mkSelector "receivePort"
 
 -- | @Selector@ for @multipleThreadsEnabled@
-multipleThreadsEnabledSelector :: Selector
+multipleThreadsEnabledSelector :: Selector '[] Bool
 multipleThreadsEnabledSelector = mkSelector "multipleThreadsEnabled"
 
 -- | @Selector@ for @remoteObjects@
-remoteObjectsSelector :: Selector
+remoteObjectsSelector :: Selector '[] (Id NSArray)
 remoteObjectsSelector = mkSelector "remoteObjects"
 
 -- | @Selector@ for @localObjects@
-localObjectsSelector :: Selector
+localObjectsSelector :: Selector '[] (Id NSArray)
 localObjectsSelector = mkSelector "localObjects"
 

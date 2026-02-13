@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.MapKit.MKLookAroundSceneRequest
   , mapItem
   , cancelled
   , loading
-  , newSelector
+  , cancelSelector
+  , cancelledSelector
+  , getSceneWithCompletionHandlerSelector
   , initSelector
   , initWithMapItemSelector
-  , getSceneWithCompletionHandlerSelector
-  , cancelSelector
-  , mapItemSelector
-  , cancelledSelector
   , loadingSelector
+  , mapItemSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,77 +43,76 @@ new :: IO (Id MKLookAroundSceneRequest)
 new  =
   do
     cls' <- getRequiredClass "MKLookAroundSceneRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> IO (Id MKLookAroundSceneRequest)
-init_ mkLookAroundSceneRequest  =
-    sendMsg mkLookAroundSceneRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkLookAroundSceneRequest =
+  sendOwnedMessage mkLookAroundSceneRequest initSelector
 
 -- | @- initWithMapItem:@
 initWithMapItem :: (IsMKLookAroundSceneRequest mkLookAroundSceneRequest, IsMKMapItem mapItem) => mkLookAroundSceneRequest -> mapItem -> IO (Id MKLookAroundSceneRequest)
-initWithMapItem mkLookAroundSceneRequest  mapItem =
-  withObjCPtr mapItem $ \raw_mapItem ->
-      sendMsg mkLookAroundSceneRequest (mkSelector "initWithMapItem:") (retPtr retVoid) [argPtr (castPtr raw_mapItem :: Ptr ())] >>= ownedObject . castPtr
+initWithMapItem mkLookAroundSceneRequest mapItem =
+  sendOwnedMessage mkLookAroundSceneRequest initWithMapItemSelector (toMKMapItem mapItem)
 
 -- | @- getSceneWithCompletionHandler:@
 getSceneWithCompletionHandler :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> Ptr () -> IO ()
-getSceneWithCompletionHandler mkLookAroundSceneRequest  completionHandler =
-    sendMsg mkLookAroundSceneRequest (mkSelector "getSceneWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getSceneWithCompletionHandler mkLookAroundSceneRequest completionHandler =
+  sendMessage mkLookAroundSceneRequest getSceneWithCompletionHandlerSelector completionHandler
 
 -- | @- cancel@
 cancel :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> IO ()
-cancel mkLookAroundSceneRequest  =
-    sendMsg mkLookAroundSceneRequest (mkSelector "cancel") retVoid []
+cancel mkLookAroundSceneRequest =
+  sendMessage mkLookAroundSceneRequest cancelSelector
 
 -- | @- mapItem@
 mapItem :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> IO (Id MKMapItem)
-mapItem mkLookAroundSceneRequest  =
-    sendMsg mkLookAroundSceneRequest (mkSelector "mapItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapItem mkLookAroundSceneRequest =
+  sendMessage mkLookAroundSceneRequest mapItemSelector
 
 -- | @- cancelled@
 cancelled :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> IO Bool
-cancelled mkLookAroundSceneRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkLookAroundSceneRequest (mkSelector "cancelled") retCULong []
+cancelled mkLookAroundSceneRequest =
+  sendMessage mkLookAroundSceneRequest cancelledSelector
 
 -- | @- loading@
 loading :: IsMKLookAroundSceneRequest mkLookAroundSceneRequest => mkLookAroundSceneRequest -> IO Bool
-loading mkLookAroundSceneRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkLookAroundSceneRequest (mkSelector "loading") retCULong []
+loading mkLookAroundSceneRequest =
+  sendMessage mkLookAroundSceneRequest loadingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKLookAroundSceneRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKLookAroundSceneRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMapItem:@
-initWithMapItemSelector :: Selector
+initWithMapItemSelector :: Selector '[Id MKMapItem] (Id MKLookAroundSceneRequest)
 initWithMapItemSelector = mkSelector "initWithMapItem:"
 
 -- | @Selector@ for @getSceneWithCompletionHandler:@
-getSceneWithCompletionHandlerSelector :: Selector
+getSceneWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 getSceneWithCompletionHandlerSelector = mkSelector "getSceneWithCompletionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @mapItem@
-mapItemSelector :: Selector
+mapItemSelector :: Selector '[] (Id MKMapItem)
 mapItemSelector = mkSelector "mapItem"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 

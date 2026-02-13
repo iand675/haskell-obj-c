@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,23 +23,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNUpsampling
   , scaleFactorX
   , scaleFactorY
   , alignCorners
+  , alignCornersSelector
   , initWithDeviceSelector
   , scaleFactorXSelector
   , scaleFactorYSelector
-  , alignCornersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNUpsampling mpscnnUpsampling => mpscnnUpsampling -> RawId -> IO (Id MPSCNNUpsampling)
-initWithDevice mpscnnUpsampling  device =
-    sendMsg mpscnnUpsampling (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnUpsampling device =
+  sendOwnedMessage mpscnnUpsampling initWithDeviceSelector device
 
 -- | scaleFactorX
 --
@@ -56,8 +53,8 @@ initWithDevice mpscnnUpsampling  device =
 --
 -- ObjC selector: @- scaleFactorX@
 scaleFactorX :: IsMPSCNNUpsampling mpscnnUpsampling => mpscnnUpsampling -> IO CDouble
-scaleFactorX mpscnnUpsampling  =
-    sendMsg mpscnnUpsampling (mkSelector "scaleFactorX") retCDouble []
+scaleFactorX mpscnnUpsampling =
+  sendMessage mpscnnUpsampling scaleFactorXSelector
 
 -- | scaleFactorY
 --
@@ -65,8 +62,8 @@ scaleFactorX mpscnnUpsampling  =
 --
 -- ObjC selector: @- scaleFactorY@
 scaleFactorY :: IsMPSCNNUpsampling mpscnnUpsampling => mpscnnUpsampling -> IO CDouble
-scaleFactorY mpscnnUpsampling  =
-    sendMsg mpscnnUpsampling (mkSelector "scaleFactorY") retCDouble []
+scaleFactorY mpscnnUpsampling =
+  sendMessage mpscnnUpsampling scaleFactorYSelector
 
 -- | alignCorners
 --
@@ -74,26 +71,26 @@ scaleFactorY mpscnnUpsampling  =
 --
 -- ObjC selector: @- alignCorners@
 alignCorners :: IsMPSCNNUpsampling mpscnnUpsampling => mpscnnUpsampling -> IO Bool
-alignCorners mpscnnUpsampling  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnUpsampling (mkSelector "alignCorners") retCULong []
+alignCorners mpscnnUpsampling =
+  sendMessage mpscnnUpsampling alignCornersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNUpsampling)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @scaleFactorX@
-scaleFactorXSelector :: Selector
+scaleFactorXSelector :: Selector '[] CDouble
 scaleFactorXSelector = mkSelector "scaleFactorX"
 
 -- | @Selector@ for @scaleFactorY@
-scaleFactorYSelector :: Selector
+scaleFactorYSelector :: Selector '[] CDouble
 scaleFactorYSelector = mkSelector "scaleFactorY"
 
 -- | @Selector@ for @alignCorners@
-alignCornersSelector :: Selector
+alignCornersSelector :: Selector '[] Bool
 alignCornersSelector = mkSelector "alignCorners"
 

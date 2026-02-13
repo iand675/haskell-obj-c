@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.MetalPerformanceShaders.MPSTemporaryVector
   , initWithBuffer_descriptor
   , readCount
   , setReadCount
-  , temporaryVectorWithCommandBuffer_descriptorSelector
-  , prefetchStorageWithCommandBuffer_descriptorListSelector
   , initWithBuffer_descriptorSelector
+  , prefetchStorageWithCommandBuffer_descriptorListSelector
   , readCountSelector
   , setReadCountSelector
+  , temporaryVectorWithCommandBuffer_descriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ temporaryVectorWithCommandBuffer_descriptor :: IsMPSVectorDescriptor descriptor 
 temporaryVectorWithCommandBuffer_descriptor commandBuffer descriptor =
   do
     cls' <- getRequiredClass "MPSTemporaryVector"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "temporaryVectorWithCommandBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryVectorWithCommandBuffer_descriptorSelector commandBuffer (toMPSVectorDescriptor descriptor)
 
 -- | Help MPS decide which allocations to make ahead of time
 --
@@ -70,16 +66,14 @@ prefetchStorageWithCommandBuffer_descriptorList :: IsNSArray descriptorList => R
 prefetchStorageWithCommandBuffer_descriptorList commandBuffer descriptorList =
   do
     cls' <- getRequiredClass "MPSTemporaryVector"
-    withObjCPtr descriptorList $ \raw_descriptorList ->
-      sendClassMsg cls' (mkSelector "prefetchStorageWithCommandBuffer:descriptorList:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptorList :: Ptr ())]
+    sendClassMessage cls' prefetchStorageWithCommandBuffer_descriptorListSelector commandBuffer (toNSArray descriptorList)
 
 -- | *** unavailable
 --
 -- ObjC selector: @- initWithBuffer:descriptor:@
 initWithBuffer_descriptor :: (IsMPSTemporaryVector mpsTemporaryVector, IsMPSVectorDescriptor descriptor) => mpsTemporaryVector -> RawId -> descriptor -> IO (Id MPSTemporaryVector)
-initWithBuffer_descriptor mpsTemporaryVector  buffer descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsTemporaryVector (mkSelector "initWithBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_descriptor mpsTemporaryVector buffer descriptor =
+  sendOwnedMessage mpsTemporaryVector initWithBuffer_descriptorSelector buffer (toMPSVectorDescriptor descriptor)
 
 -- | The number of times a temporary vector may be read by a MPSMatrix... kernel                  before its contents become undefined.
 --
@@ -93,8 +87,8 @@ initWithBuffer_descriptor mpsTemporaryVector  buffer descriptor =
 --
 -- ObjC selector: @- readCount@
 readCount :: IsMPSTemporaryVector mpsTemporaryVector => mpsTemporaryVector -> IO CULong
-readCount mpsTemporaryVector  =
-    sendMsg mpsTemporaryVector (mkSelector "readCount") retCULong []
+readCount mpsTemporaryVector =
+  sendMessage mpsTemporaryVector readCountSelector
 
 -- | The number of times a temporary vector may be read by a MPSMatrix... kernel                  before its contents become undefined.
 --
@@ -108,30 +102,30 @@ readCount mpsTemporaryVector  =
 --
 -- ObjC selector: @- setReadCount:@
 setReadCount :: IsMPSTemporaryVector mpsTemporaryVector => mpsTemporaryVector -> CULong -> IO ()
-setReadCount mpsTemporaryVector  value =
-    sendMsg mpsTemporaryVector (mkSelector "setReadCount:") retVoid [argCULong value]
+setReadCount mpsTemporaryVector value =
+  sendMessage mpsTemporaryVector setReadCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @temporaryVectorWithCommandBuffer:descriptor:@
-temporaryVectorWithCommandBuffer_descriptorSelector :: Selector
+temporaryVectorWithCommandBuffer_descriptorSelector :: Selector '[RawId, Id MPSVectorDescriptor] (Id MPSTemporaryVector)
 temporaryVectorWithCommandBuffer_descriptorSelector = mkSelector "temporaryVectorWithCommandBuffer:descriptor:"
 
 -- | @Selector@ for @prefetchStorageWithCommandBuffer:descriptorList:@
-prefetchStorageWithCommandBuffer_descriptorListSelector :: Selector
+prefetchStorageWithCommandBuffer_descriptorListSelector :: Selector '[RawId, Id NSArray] ()
 prefetchStorageWithCommandBuffer_descriptorListSelector = mkSelector "prefetchStorageWithCommandBuffer:descriptorList:"
 
 -- | @Selector@ for @initWithBuffer:descriptor:@
-initWithBuffer_descriptorSelector :: Selector
+initWithBuffer_descriptorSelector :: Selector '[RawId, Id MPSVectorDescriptor] (Id MPSTemporaryVector)
 initWithBuffer_descriptorSelector = mkSelector "initWithBuffer:descriptor:"
 
 -- | @Selector@ for @readCount@
-readCountSelector :: Selector
+readCountSelector :: Selector '[] CULong
 readCountSelector = mkSelector "readCount"
 
 -- | @Selector@ for @setReadCount:@
-setReadCountSelector :: Selector
+setReadCountSelector :: Selector '[CULong] ()
 setReadCountSelector = mkSelector "setReadCount:"
 

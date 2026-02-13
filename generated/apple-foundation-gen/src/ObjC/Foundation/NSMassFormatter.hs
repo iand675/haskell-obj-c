@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Foundation.NSMassFormatter
   , setUnitStyle
   , forPersonMassUse
   , setForPersonMassUse
-  , stringFromValue_unitSelector
-  , stringFromKilogramsSelector
-  , unitStringFromValue_unitSelector
-  , unitStringFromKilograms_usedUnitSelector
+  , forPersonMassUseSelector
   , getObjectValue_forString_errorDescriptionSelector
   , numberFormatterSelector
-  , setNumberFormatterSelector
-  , unitStyleSelector
-  , setUnitStyleSelector
-  , forPersonMassUseSelector
   , setForPersonMassUseSelector
+  , setNumberFormatterSelector
+  , setUnitStyleSelector
+  , stringFromKilogramsSelector
+  , stringFromValue_unitSelector
+  , unitStringFromKilograms_usedUnitSelector
+  , unitStringFromValue_unitSelector
+  , unitStyleSelector
 
   -- * Enum types
   , NSFormattingUnitStyle(NSFormattingUnitStyle)
@@ -44,15 +45,11 @@ module ObjC.Foundation.NSMassFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,107 +58,104 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- stringFromValue:unit:@
 stringFromValue_unit :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> CDouble -> NSMassFormatterUnit -> IO (Id NSString)
-stringFromValue_unit nsMassFormatter  value unit =
-    sendMsg nsMassFormatter (mkSelector "stringFromValue:unit:") (retPtr retVoid) [argCDouble value, argCLong (coerce unit)] >>= retainedObject . castPtr
+stringFromValue_unit nsMassFormatter value unit =
+  sendMessage nsMassFormatter stringFromValue_unitSelector value unit
 
 -- | @- stringFromKilograms:@
 stringFromKilograms :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> CDouble -> IO (Id NSString)
-stringFromKilograms nsMassFormatter  numberInKilograms =
-    sendMsg nsMassFormatter (mkSelector "stringFromKilograms:") (retPtr retVoid) [argCDouble numberInKilograms] >>= retainedObject . castPtr
+stringFromKilograms nsMassFormatter numberInKilograms =
+  sendMessage nsMassFormatter stringFromKilogramsSelector numberInKilograms
 
 -- | @- unitStringFromValue:unit:@
 unitStringFromValue_unit :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> CDouble -> NSMassFormatterUnit -> IO (Id NSString)
-unitStringFromValue_unit nsMassFormatter  value unit =
-    sendMsg nsMassFormatter (mkSelector "unitStringFromValue:unit:") (retPtr retVoid) [argCDouble value, argCLong (coerce unit)] >>= retainedObject . castPtr
+unitStringFromValue_unit nsMassFormatter value unit =
+  sendMessage nsMassFormatter unitStringFromValue_unitSelector value unit
 
 -- | @- unitStringFromKilograms:usedUnit:@
 unitStringFromKilograms_usedUnit :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> CDouble -> Ptr NSMassFormatterUnit -> IO (Id NSString)
-unitStringFromKilograms_usedUnit nsMassFormatter  numberInKilograms unitp =
-    sendMsg nsMassFormatter (mkSelector "unitStringFromKilograms:usedUnit:") (retPtr retVoid) [argCDouble numberInKilograms, argPtr unitp] >>= retainedObject . castPtr
+unitStringFromKilograms_usedUnit nsMassFormatter numberInKilograms unitp =
+  sendMessage nsMassFormatter unitStringFromKilograms_usedUnitSelector numberInKilograms unitp
 
 -- | @- getObjectValue:forString:errorDescription:@
 getObjectValue_forString_errorDescription :: (IsNSMassFormatter nsMassFormatter, IsNSString string, IsNSString error_) => nsMassFormatter -> Ptr RawId -> string -> error_ -> IO Bool
-getObjectValue_forString_errorDescription nsMassFormatter  obj_ string error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMassFormatter (mkSelector "getObjectValue:forString:errorDescription:") retCULong [argPtr obj_, argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+getObjectValue_forString_errorDescription nsMassFormatter obj_ string error_ =
+  sendMessage nsMassFormatter getObjectValue_forString_errorDescriptionSelector obj_ (toNSString string) (toNSString error_)
 
 -- | @- numberFormatter@
 numberFormatter :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> IO (Id NSNumberFormatter)
-numberFormatter nsMassFormatter  =
-    sendMsg nsMassFormatter (mkSelector "numberFormatter") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberFormatter nsMassFormatter =
+  sendMessage nsMassFormatter numberFormatterSelector
 
 -- | @- setNumberFormatter:@
 setNumberFormatter :: (IsNSMassFormatter nsMassFormatter, IsNSNumberFormatter value) => nsMassFormatter -> value -> IO ()
-setNumberFormatter nsMassFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMassFormatter (mkSelector "setNumberFormatter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberFormatter nsMassFormatter value =
+  sendMessage nsMassFormatter setNumberFormatterSelector (toNSNumberFormatter value)
 
 -- | @- unitStyle@
 unitStyle :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> IO NSFormattingUnitStyle
-unitStyle nsMassFormatter  =
-    fmap (coerce :: CLong -> NSFormattingUnitStyle) $ sendMsg nsMassFormatter (mkSelector "unitStyle") retCLong []
+unitStyle nsMassFormatter =
+  sendMessage nsMassFormatter unitStyleSelector
 
 -- | @- setUnitStyle:@
 setUnitStyle :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> NSFormattingUnitStyle -> IO ()
-setUnitStyle nsMassFormatter  value =
-    sendMsg nsMassFormatter (mkSelector "setUnitStyle:") retVoid [argCLong (coerce value)]
+setUnitStyle nsMassFormatter value =
+  sendMessage nsMassFormatter setUnitStyleSelector value
 
 -- | @- forPersonMassUse@
 forPersonMassUse :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> IO Bool
-forPersonMassUse nsMassFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMassFormatter (mkSelector "forPersonMassUse") retCULong []
+forPersonMassUse nsMassFormatter =
+  sendMessage nsMassFormatter forPersonMassUseSelector
 
 -- | @- setForPersonMassUse:@
 setForPersonMassUse :: IsNSMassFormatter nsMassFormatter => nsMassFormatter -> Bool -> IO ()
-setForPersonMassUse nsMassFormatter  value =
-    sendMsg nsMassFormatter (mkSelector "setForPersonMassUse:") retVoid [argCULong (if value then 1 else 0)]
+setForPersonMassUse nsMassFormatter value =
+  sendMessage nsMassFormatter setForPersonMassUseSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringFromValue:unit:@
-stringFromValue_unitSelector :: Selector
+stringFromValue_unitSelector :: Selector '[CDouble, NSMassFormatterUnit] (Id NSString)
 stringFromValue_unitSelector = mkSelector "stringFromValue:unit:"
 
 -- | @Selector@ for @stringFromKilograms:@
-stringFromKilogramsSelector :: Selector
+stringFromKilogramsSelector :: Selector '[CDouble] (Id NSString)
 stringFromKilogramsSelector = mkSelector "stringFromKilograms:"
 
 -- | @Selector@ for @unitStringFromValue:unit:@
-unitStringFromValue_unitSelector :: Selector
+unitStringFromValue_unitSelector :: Selector '[CDouble, NSMassFormatterUnit] (Id NSString)
 unitStringFromValue_unitSelector = mkSelector "unitStringFromValue:unit:"
 
 -- | @Selector@ for @unitStringFromKilograms:usedUnit:@
-unitStringFromKilograms_usedUnitSelector :: Selector
+unitStringFromKilograms_usedUnitSelector :: Selector '[CDouble, Ptr NSMassFormatterUnit] (Id NSString)
 unitStringFromKilograms_usedUnitSelector = mkSelector "unitStringFromKilograms:usedUnit:"
 
 -- | @Selector@ for @getObjectValue:forString:errorDescription:@
-getObjectValue_forString_errorDescriptionSelector :: Selector
+getObjectValue_forString_errorDescriptionSelector :: Selector '[Ptr RawId, Id NSString, Id NSString] Bool
 getObjectValue_forString_errorDescriptionSelector = mkSelector "getObjectValue:forString:errorDescription:"
 
 -- | @Selector@ for @numberFormatter@
-numberFormatterSelector :: Selector
+numberFormatterSelector :: Selector '[] (Id NSNumberFormatter)
 numberFormatterSelector = mkSelector "numberFormatter"
 
 -- | @Selector@ for @setNumberFormatter:@
-setNumberFormatterSelector :: Selector
+setNumberFormatterSelector :: Selector '[Id NSNumberFormatter] ()
 setNumberFormatterSelector = mkSelector "setNumberFormatter:"
 
 -- | @Selector@ for @unitStyle@
-unitStyleSelector :: Selector
+unitStyleSelector :: Selector '[] NSFormattingUnitStyle
 unitStyleSelector = mkSelector "unitStyle"
 
 -- | @Selector@ for @setUnitStyle:@
-setUnitStyleSelector :: Selector
+setUnitStyleSelector :: Selector '[NSFormattingUnitStyle] ()
 setUnitStyleSelector = mkSelector "setUnitStyle:"
 
 -- | @Selector@ for @forPersonMassUse@
-forPersonMassUseSelector :: Selector
+forPersonMassUseSelector :: Selector '[] Bool
 forPersonMassUseSelector = mkSelector "forPersonMassUse"
 
 -- | @Selector@ for @setForPersonMassUse:@
-setForPersonMassUseSelector :: Selector
+setForPersonMassUseSelector :: Selector '[Bool] ()
 setForPersonMassUseSelector = mkSelector "setForPersonMassUse:"
 

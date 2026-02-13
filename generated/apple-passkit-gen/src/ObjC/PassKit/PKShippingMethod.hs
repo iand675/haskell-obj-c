@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.PassKit.PKShippingMethod
   , setDetail
   , dateComponentsRange
   , setDateComponentsRange
-  , identifierSelector
-  , setIdentifierSelector
-  , detailSelector
-  , setDetailSelector
   , dateComponentsRangeSelector
+  , detailSelector
+  , identifierSelector
   , setDateComponentsRangeSelector
+  , setDetailSelector
+  , setIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- identifier@
 identifier :: IsPKShippingMethod pkShippingMethod => pkShippingMethod -> IO (Id NSString)
-identifier pkShippingMethod  =
-    sendMsg pkShippingMethod (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier pkShippingMethod =
+  sendMessage pkShippingMethod identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsPKShippingMethod pkShippingMethod, IsNSString value) => pkShippingMethod -> value -> IO ()
-setIdentifier pkShippingMethod  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkShippingMethod (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier pkShippingMethod value =
+  sendMessage pkShippingMethod setIdentifierSelector (toNSString value)
 
 -- | @- detail@
 detail :: IsPKShippingMethod pkShippingMethod => pkShippingMethod -> IO (Id NSString)
-detail pkShippingMethod  =
-    sendMsg pkShippingMethod (mkSelector "detail") (retPtr retVoid) [] >>= retainedObject . castPtr
+detail pkShippingMethod =
+  sendMessage pkShippingMethod detailSelector
 
 -- | @- setDetail:@
 setDetail :: (IsPKShippingMethod pkShippingMethod, IsNSString value) => pkShippingMethod -> value -> IO ()
-setDetail pkShippingMethod  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkShippingMethod (mkSelector "setDetail:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDetail pkShippingMethod value =
+  sendMessage pkShippingMethod setDetailSelector (toNSString value)
 
 -- | @- dateComponentsRange@
 dateComponentsRange :: IsPKShippingMethod pkShippingMethod => pkShippingMethod -> IO (Id PKDateComponentsRange)
-dateComponentsRange pkShippingMethod  =
-    sendMsg pkShippingMethod (mkSelector "dateComponentsRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateComponentsRange pkShippingMethod =
+  sendMessage pkShippingMethod dateComponentsRangeSelector
 
 -- | @- setDateComponentsRange:@
 setDateComponentsRange :: (IsPKShippingMethod pkShippingMethod, IsPKDateComponentsRange value) => pkShippingMethod -> value -> IO ()
-setDateComponentsRange pkShippingMethod  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkShippingMethod (mkSelector "setDateComponentsRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDateComponentsRange pkShippingMethod value =
+  sendMessage pkShippingMethod setDateComponentsRangeSelector (toPKDateComponentsRange value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @detail@
-detailSelector :: Selector
+detailSelector :: Selector '[] (Id NSString)
 detailSelector = mkSelector "detail"
 
 -- | @Selector@ for @setDetail:@
-setDetailSelector :: Selector
+setDetailSelector :: Selector '[Id NSString] ()
 setDetailSelector = mkSelector "setDetail:"
 
 -- | @Selector@ for @dateComponentsRange@
-dateComponentsRangeSelector :: Selector
+dateComponentsRangeSelector :: Selector '[] (Id PKDateComponentsRange)
 dateComponentsRangeSelector = mkSelector "dateComponentsRange"
 
 -- | @Selector@ for @setDateComponentsRange:@
-setDateComponentsRangeSelector :: Selector
+setDateComponentsRangeSelector :: Selector '[Id PKDateComponentsRange] ()
 setDateComponentsRangeSelector = mkSelector "setDateComponentsRange:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,38 +26,34 @@ module ObjC.Matter.MTRDoorLockClusterGetWeekDayScheduleResponseParams
   , setEndMinute
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , weekDayIndexSelector
-  , setWeekDayIndexSelector
-  , userIndexSelector
-  , setUserIndexSelector
-  , statusSelector
-  , setStatusSelector
   , daysMaskSelector
-  , setDaysMaskSelector
-  , startHourSelector
-  , setStartHourSelector
-  , startMinuteSelector
-  , setStartMinuteSelector
   , endHourSelector
-  , setEndHourSelector
   , endMinuteSelector
+  , initWithResponseValue_errorSelector
+  , setDaysMaskSelector
+  , setEndHourSelector
   , setEndMinuteSelector
-  , timedInvokeTimeoutMsSelector
+  , setStartHourSelector
+  , setStartMinuteSelector
+  , setStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , setUserIndexSelector
+  , setWeekDayIndexSelector
+  , startHourSelector
+  , startMinuteSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
+  , userIndexSelector
+  , weekDayIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,98 +68,88 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> responseValue -> error_ -> IO (Id MTRDoorLockClusterGetWeekDayScheduleResponseParams)
-initWithResponseValue_error mtrDoorLockClusterGetWeekDayScheduleResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrDoorLockClusterGetWeekDayScheduleResponseParams responseValue error_ =
+  sendOwnedMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- weekDayIndex@
 weekDayIndex :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-weekDayIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "weekDayIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+weekDayIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams weekDayIndexSelector
 
 -- | @- setWeekDayIndex:@
 setWeekDayIndex :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setWeekDayIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setWeekDayIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWeekDayIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setWeekDayIndexSelector (toNSNumber value)
 
 -- | @- userIndex@
 userIndex :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-userIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "userIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams userIndexSelector
 
 -- | @- setUserIndex:@
 setUserIndex :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setUserIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIndex mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setUserIndexSelector (toNSNumber value)
 
 -- | @- status@
 status :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-status mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setStatus mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- daysMask@
 daysMask :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-daysMask mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "daysMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+daysMask mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams daysMaskSelector
 
 -- | @- setDaysMask:@
 setDaysMask :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setDaysMask mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setDaysMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDaysMask mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setDaysMaskSelector (toNSNumber value)
 
 -- | @- startHour@
 startHour :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-startHour mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "startHour") (retPtr retVoid) [] >>= retainedObject . castPtr
+startHour mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams startHourSelector
 
 -- | @- setStartHour:@
 setStartHour :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setStartHour mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setStartHour:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartHour mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setStartHourSelector (toNSNumber value)
 
 -- | @- startMinute@
 startMinute :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-startMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "startMinute") (retPtr retVoid) [] >>= retainedObject . castPtr
+startMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams startMinuteSelector
 
 -- | @- setStartMinute:@
 setStartMinute :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setStartMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setStartMinute:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setStartMinuteSelector (toNSNumber value)
 
 -- | @- endHour@
 endHour :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-endHour mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "endHour") (retPtr retVoid) [] >>= retainedObject . castPtr
+endHour mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams endHourSelector
 
 -- | @- setEndHour:@
 setEndHour :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setEndHour mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setEndHour:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndHour mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setEndHourSelector (toNSNumber value)
 
 -- | @- endMinute@
 endMinute :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-endMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "endMinute") (retPtr retVoid) [] >>= retainedObject . castPtr
+endMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams endMinuteSelector
 
 -- | @- setEndMinute:@
 setEndMinute :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setEndMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setEndMinute:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setEndMinuteSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -172,8 +159,8 @@ setEndMinute mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
-    sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterGetWeekDayScheduleResponseParams =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -183,87 +170,86 @@ timedInvokeTimeoutMs mtrDoorLockClusterGetWeekDayScheduleResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterGetWeekDayScheduleResponseParams mtrDoorLockClusterGetWeekDayScheduleResponseParams, IsNSNumber value) => mtrDoorLockClusterGetWeekDayScheduleResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterGetWeekDayScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetWeekDayScheduleResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterGetWeekDayScheduleResponseParams value =
+  sendMessage mtrDoorLockClusterGetWeekDayScheduleResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRDoorLockClusterGetWeekDayScheduleResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @weekDayIndex@
-weekDayIndexSelector :: Selector
+weekDayIndexSelector :: Selector '[] (Id NSNumber)
 weekDayIndexSelector = mkSelector "weekDayIndex"
 
 -- | @Selector@ for @setWeekDayIndex:@
-setWeekDayIndexSelector :: Selector
+setWeekDayIndexSelector :: Selector '[Id NSNumber] ()
 setWeekDayIndexSelector = mkSelector "setWeekDayIndex:"
 
 -- | @Selector@ for @userIndex@
-userIndexSelector :: Selector
+userIndexSelector :: Selector '[] (Id NSNumber)
 userIndexSelector = mkSelector "userIndex"
 
 -- | @Selector@ for @setUserIndex:@
-setUserIndexSelector :: Selector
+setUserIndexSelector :: Selector '[Id NSNumber] ()
 setUserIndexSelector = mkSelector "setUserIndex:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @daysMask@
-daysMaskSelector :: Selector
+daysMaskSelector :: Selector '[] (Id NSNumber)
 daysMaskSelector = mkSelector "daysMask"
 
 -- | @Selector@ for @setDaysMask:@
-setDaysMaskSelector :: Selector
+setDaysMaskSelector :: Selector '[Id NSNumber] ()
 setDaysMaskSelector = mkSelector "setDaysMask:"
 
 -- | @Selector@ for @startHour@
-startHourSelector :: Selector
+startHourSelector :: Selector '[] (Id NSNumber)
 startHourSelector = mkSelector "startHour"
 
 -- | @Selector@ for @setStartHour:@
-setStartHourSelector :: Selector
+setStartHourSelector :: Selector '[Id NSNumber] ()
 setStartHourSelector = mkSelector "setStartHour:"
 
 -- | @Selector@ for @startMinute@
-startMinuteSelector :: Selector
+startMinuteSelector :: Selector '[] (Id NSNumber)
 startMinuteSelector = mkSelector "startMinute"
 
 -- | @Selector@ for @setStartMinute:@
-setStartMinuteSelector :: Selector
+setStartMinuteSelector :: Selector '[Id NSNumber] ()
 setStartMinuteSelector = mkSelector "setStartMinute:"
 
 -- | @Selector@ for @endHour@
-endHourSelector :: Selector
+endHourSelector :: Selector '[] (Id NSNumber)
 endHourSelector = mkSelector "endHour"
 
 -- | @Selector@ for @setEndHour:@
-setEndHourSelector :: Selector
+setEndHourSelector :: Selector '[Id NSNumber] ()
 setEndHourSelector = mkSelector "setEndHour:"
 
 -- | @Selector@ for @endMinute@
-endMinuteSelector :: Selector
+endMinuteSelector :: Selector '[] (Id NSNumber)
 endMinuteSelector = mkSelector "endMinute"
 
 -- | @Selector@ for @setEndMinute:@
-setEndMinuteSelector :: Selector
+setEndMinuteSelector :: Selector '[Id NSNumber] ()
 setEndMinuteSelector = mkSelector "setEndMinute:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

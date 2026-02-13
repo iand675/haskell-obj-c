@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AuthenticationServices.ASSettingsHelper
   , requestToTurnOnCredentialProviderExtensionWithCompletionHandler
   , init_
   , new
+  , initSelector
+  , newSelector
   , openCredentialProviderAppSettingsWithCompletionHandlerSelector
   , openVerificationCodeAppSettingsWithCompletionHandlerSelector
   , requestToTurnOnCredentialProviderExtensionWithCompletionHandlerSelector
-  , initSelector
-  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ openCredentialProviderAppSettingsWithCompletionHandler :: Ptr () -> IO ()
 openCredentialProviderAppSettingsWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "ASSettingsHelper"
-    sendClassMsg cls' (mkSelector "openCredentialProviderAppSettingsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' openCredentialProviderAppSettingsWithCompletionHandlerSelector completionHandler
 
 -- | Calling this method will open the Settings app and navigate directly to the Verification Code provider settings.
 --
@@ -53,7 +50,7 @@ openVerificationCodeAppSettingsWithCompletionHandler :: Ptr () -> IO ()
 openVerificationCodeAppSettingsWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "ASSettingsHelper"
-    sendClassMsg cls' (mkSelector "openVerificationCodeAppSettingsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' openVerificationCodeAppSettingsWithCompletionHandlerSelector completionHandler
 
 -- | Call this method from your containing app to request to turn on a contained Credential Provider Extension. If the extension is not currently enabled, a prompt will be shown to allow it to be turned on. The completion handler is called with YES or NO depending on whether the credential provider is enabled. You need to wait 10 seconds in order to make additional request to this API.
 --
@@ -62,41 +59,41 @@ requestToTurnOnCredentialProviderExtensionWithCompletionHandler :: Ptr () -> IO 
 requestToTurnOnCredentialProviderExtensionWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "ASSettingsHelper"
-    sendClassMsg cls' (mkSelector "requestToTurnOnCredentialProviderExtensionWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' requestToTurnOnCredentialProviderExtensionWithCompletionHandlerSelector completionHandler
 
 -- | @- init@
 init_ :: IsASSettingsHelper asSettingsHelper => asSettingsHelper -> IO (Id ASSettingsHelper)
-init_ asSettingsHelper  =
-    sendMsg asSettingsHelper (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asSettingsHelper =
+  sendOwnedMessage asSettingsHelper initSelector
 
 -- | @+ new@
 new :: IO (Id ASSettingsHelper)
 new  =
   do
     cls' <- getRequiredClass "ASSettingsHelper"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @openCredentialProviderAppSettingsWithCompletionHandler:@
-openCredentialProviderAppSettingsWithCompletionHandlerSelector :: Selector
+openCredentialProviderAppSettingsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 openCredentialProviderAppSettingsWithCompletionHandlerSelector = mkSelector "openCredentialProviderAppSettingsWithCompletionHandler:"
 
 -- | @Selector@ for @openVerificationCodeAppSettingsWithCompletionHandler:@
-openVerificationCodeAppSettingsWithCompletionHandlerSelector :: Selector
+openVerificationCodeAppSettingsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 openVerificationCodeAppSettingsWithCompletionHandlerSelector = mkSelector "openVerificationCodeAppSettingsWithCompletionHandler:"
 
 -- | @Selector@ for @requestToTurnOnCredentialProviderExtensionWithCompletionHandler:@
-requestToTurnOnCredentialProviderExtensionWithCompletionHandlerSelector :: Selector
+requestToTurnOnCredentialProviderExtensionWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestToTurnOnCredentialProviderExtensionWithCompletionHandlerSelector = mkSelector "requestToTurnOnCredentialProviderExtensionWithCompletionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASSettingsHelper)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASSettingsHelper)
 newSelector = mkSelector "new"
 

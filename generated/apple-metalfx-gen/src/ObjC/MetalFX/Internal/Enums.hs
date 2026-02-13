@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MetalFX.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The color space modes for the input and output textures you use with a spatial scaling effect instance.
 -- | @MTLFXSpatialScalerColorProcessingMode@
@@ -25,3 +28,13 @@ pattern MTLFXSpatialScalerColorProcessingModeLinear = MTLFXSpatialScalerColorPro
 
 pattern MTLFXSpatialScalerColorProcessingModeHDR :: MTLFXSpatialScalerColorProcessingMode
 pattern MTLFXSpatialScalerColorProcessingModeHDR = MTLFXSpatialScalerColorProcessingMode 2
+
+instance ObjCArgument MTLFXSpatialScalerColorProcessingMode where
+  withObjCArg (MTLFXSpatialScalerColorProcessingMode x) k = k (argCLong x)
+
+instance ObjCReturn MTLFXSpatialScalerColorProcessingMode where
+  type RawReturn MTLFXSpatialScalerColorProcessingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTLFXSpatialScalerColorProcessingMode x)
+  fromOwned x = pure (MTLFXSpatialScalerColorProcessingMode x)

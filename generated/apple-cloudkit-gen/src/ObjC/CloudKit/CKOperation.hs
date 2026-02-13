@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.CloudKit.CKOperation
   , setTimeoutIntervalForRequest
   , timeoutIntervalForResource
   , setTimeoutIntervalForResource
-  , initSelector
-  , configurationSelector
-  , setConfigurationSelector
-  , groupSelector
-  , setGroupSelector
-  , operationIDSelector
-  , longLivedOperationWasPersistedBlockSelector
-  , setLongLivedOperationWasPersistedBlockSelector
-  , containerSelector
-  , setContainerSelector
   , allowsCellularAccessSelector
-  , setAllowsCellularAccessSelector
+  , configurationSelector
+  , containerSelector
+  , groupSelector
+  , initSelector
+  , longLivedOperationWasPersistedBlockSelector
   , longLivedSelector
+  , operationIDSelector
+  , setAllowsCellularAccessSelector
+  , setConfigurationSelector
+  , setContainerSelector
+  , setGroupSelector
+  , setLongLivedOperationWasPersistedBlockSelector
   , setLongLivedSelector
-  , timeoutIntervalForRequestSelector
   , setTimeoutIntervalForRequestSelector
-  , timeoutIntervalForResourceSelector
   , setTimeoutIntervalForResourceSelector
+  , timeoutIntervalForRequestSelector
+  , timeoutIntervalForResourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKOperation ckOperation => ckOperation -> IO (Id CKOperation)
-init_ ckOperation  =
-    sendMsg ckOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckOperation =
+  sendOwnedMessage ckOperation initSelector
 
 -- | This defines per-operation configuration settings.
 --
@@ -72,8 +69,8 @@ init_ ckOperation  =
 --
 -- ObjC selector: @- configuration@
 configuration :: IsCKOperation ckOperation => ckOperation -> IO (Id CKOperationConfiguration)
-configuration ckOperation  =
-    sendMsg ckOperation (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration ckOperation =
+  sendMessage ckOperation configurationSelector
 
 -- | This defines per-operation configuration settings.
 --
@@ -81,24 +78,22 @@ configuration ckOperation  =
 --
 -- ObjC selector: @- setConfiguration:@
 setConfiguration :: (IsCKOperation ckOperation, IsCKOperationConfiguration value) => ckOperation -> value -> IO ()
-setConfiguration ckOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperation (mkSelector "setConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConfiguration ckOperation value =
+  sendMessage ckOperation setConfigurationSelector (toCKOperationConfiguration value)
 
 -- | The group this operation is associated with
 --
 -- ObjC selector: @- group@
 group :: IsCKOperation ckOperation => ckOperation -> IO (Id CKOperationGroup)
-group ckOperation  =
-    sendMsg ckOperation (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group ckOperation =
+  sendMessage ckOperation groupSelector
 
 -- | The group this operation is associated with
 --
 -- ObjC selector: @- setGroup:@
 setGroup :: (IsCKOperation ckOperation, IsCKOperationGroup value) => ckOperation -> value -> IO ()
-setGroup ckOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperation (mkSelector "setGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroup ckOperation value =
+  sendMessage ckOperation setGroupSelector (toCKOperationGroup value)
 
 -- | This is an identifier unique to this CKOperation.
 --
@@ -106,8 +101,8 @@ setGroup ckOperation  value =
 --
 -- ObjC selector: @- operationID@
 operationID :: IsCKOperation ckOperation => ckOperation -> IO (Id NSString)
-operationID ckOperation  =
-    sendMsg ckOperation (mkSelector "operationID") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationID ckOperation =
+  sendMessage ckOperation operationIDSelector
 
 -- | This callback is called after a long lived operation has begun running and is persisted.
 --
@@ -115,8 +110,8 @@ operationID ckOperation  =
 --
 -- ObjC selector: @- longLivedOperationWasPersistedBlock@
 longLivedOperationWasPersistedBlock :: IsCKOperation ckOperation => ckOperation -> IO (Ptr ())
-longLivedOperationWasPersistedBlock ckOperation  =
-    fmap castPtr $ sendMsg ckOperation (mkSelector "longLivedOperationWasPersistedBlock") (retPtr retVoid) []
+longLivedOperationWasPersistedBlock ckOperation =
+  sendMessage ckOperation longLivedOperationWasPersistedBlockSelector
 
 -- | This callback is called after a long lived operation has begun running and is persisted.
 --
@@ -124,133 +119,132 @@ longLivedOperationWasPersistedBlock ckOperation  =
 --
 -- ObjC selector: @- setLongLivedOperationWasPersistedBlock:@
 setLongLivedOperationWasPersistedBlock :: IsCKOperation ckOperation => ckOperation -> Ptr () -> IO ()
-setLongLivedOperationWasPersistedBlock ckOperation  value =
-    sendMsg ckOperation (mkSelector "setLongLivedOperationWasPersistedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setLongLivedOperationWasPersistedBlock ckOperation value =
+  sendMessage ckOperation setLongLivedOperationWasPersistedBlockSelector value
 
 -- | @- container@
 container :: IsCKOperation ckOperation => ckOperation -> IO (Id CKContainer)
-container ckOperation  =
-    sendMsg ckOperation (mkSelector "container") (retPtr retVoid) [] >>= retainedObject . castPtr
+container ckOperation =
+  sendMessage ckOperation containerSelector
 
 -- | @- setContainer:@
 setContainer :: (IsCKOperation ckOperation, IsCKContainer value) => ckOperation -> value -> IO ()
-setContainer ckOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperation (mkSelector "setContainer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainer ckOperation value =
+  sendMessage ckOperation setContainerSelector (toCKContainer value)
 
 -- | @- allowsCellularAccess@
 allowsCellularAccess :: IsCKOperation ckOperation => ckOperation -> IO Bool
-allowsCellularAccess ckOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckOperation (mkSelector "allowsCellularAccess") retCULong []
+allowsCellularAccess ckOperation =
+  sendMessage ckOperation allowsCellularAccessSelector
 
 -- | @- setAllowsCellularAccess:@
 setAllowsCellularAccess :: IsCKOperation ckOperation => ckOperation -> Bool -> IO ()
-setAllowsCellularAccess ckOperation  value =
-    sendMsg ckOperation (mkSelector "setAllowsCellularAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCellularAccess ckOperation value =
+  sendMessage ckOperation setAllowsCellularAccessSelector value
 
 -- | @- longLived@
 longLived :: IsCKOperation ckOperation => ckOperation -> IO Bool
-longLived ckOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckOperation (mkSelector "longLived") retCULong []
+longLived ckOperation =
+  sendMessage ckOperation longLivedSelector
 
 -- | @- setLongLived:@
 setLongLived :: IsCKOperation ckOperation => ckOperation -> Bool -> IO ()
-setLongLived ckOperation  value =
-    sendMsg ckOperation (mkSelector "setLongLived:") retVoid [argCULong (if value then 1 else 0)]
+setLongLived ckOperation value =
+  sendMessage ckOperation setLongLivedSelector value
 
 -- | @- timeoutIntervalForRequest@
 timeoutIntervalForRequest :: IsCKOperation ckOperation => ckOperation -> IO CDouble
-timeoutIntervalForRequest ckOperation  =
-    sendMsg ckOperation (mkSelector "timeoutIntervalForRequest") retCDouble []
+timeoutIntervalForRequest ckOperation =
+  sendMessage ckOperation timeoutIntervalForRequestSelector
 
 -- | @- setTimeoutIntervalForRequest:@
 setTimeoutIntervalForRequest :: IsCKOperation ckOperation => ckOperation -> CDouble -> IO ()
-setTimeoutIntervalForRequest ckOperation  value =
-    sendMsg ckOperation (mkSelector "setTimeoutIntervalForRequest:") retVoid [argCDouble value]
+setTimeoutIntervalForRequest ckOperation value =
+  sendMessage ckOperation setTimeoutIntervalForRequestSelector value
 
 -- | @- timeoutIntervalForResource@
 timeoutIntervalForResource :: IsCKOperation ckOperation => ckOperation -> IO CDouble
-timeoutIntervalForResource ckOperation  =
-    sendMsg ckOperation (mkSelector "timeoutIntervalForResource") retCDouble []
+timeoutIntervalForResource ckOperation =
+  sendMessage ckOperation timeoutIntervalForResourceSelector
 
 -- | @- setTimeoutIntervalForResource:@
 setTimeoutIntervalForResource :: IsCKOperation ckOperation => ckOperation -> CDouble -> IO ()
-setTimeoutIntervalForResource ckOperation  value =
-    sendMsg ckOperation (mkSelector "setTimeoutIntervalForResource:") retVoid [argCDouble value]
+setTimeoutIntervalForResource ckOperation value =
+  sendMessage ckOperation setTimeoutIntervalForResourceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id CKOperationConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @setConfiguration:@
-setConfigurationSelector :: Selector
+setConfigurationSelector :: Selector '[Id CKOperationConfiguration] ()
 setConfigurationSelector = mkSelector "setConfiguration:"
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id CKOperationGroup)
 groupSelector = mkSelector "group"
 
 -- | @Selector@ for @setGroup:@
-setGroupSelector :: Selector
+setGroupSelector :: Selector '[Id CKOperationGroup] ()
 setGroupSelector = mkSelector "setGroup:"
 
 -- | @Selector@ for @operationID@
-operationIDSelector :: Selector
+operationIDSelector :: Selector '[] (Id NSString)
 operationIDSelector = mkSelector "operationID"
 
 -- | @Selector@ for @longLivedOperationWasPersistedBlock@
-longLivedOperationWasPersistedBlockSelector :: Selector
+longLivedOperationWasPersistedBlockSelector :: Selector '[] (Ptr ())
 longLivedOperationWasPersistedBlockSelector = mkSelector "longLivedOperationWasPersistedBlock"
 
 -- | @Selector@ for @setLongLivedOperationWasPersistedBlock:@
-setLongLivedOperationWasPersistedBlockSelector :: Selector
+setLongLivedOperationWasPersistedBlockSelector :: Selector '[Ptr ()] ()
 setLongLivedOperationWasPersistedBlockSelector = mkSelector "setLongLivedOperationWasPersistedBlock:"
 
 -- | @Selector@ for @container@
-containerSelector :: Selector
+containerSelector :: Selector '[] (Id CKContainer)
 containerSelector = mkSelector "container"
 
 -- | @Selector@ for @setContainer:@
-setContainerSelector :: Selector
+setContainerSelector :: Selector '[Id CKContainer] ()
 setContainerSelector = mkSelector "setContainer:"
 
 -- | @Selector@ for @allowsCellularAccess@
-allowsCellularAccessSelector :: Selector
+allowsCellularAccessSelector :: Selector '[] Bool
 allowsCellularAccessSelector = mkSelector "allowsCellularAccess"
 
 -- | @Selector@ for @setAllowsCellularAccess:@
-setAllowsCellularAccessSelector :: Selector
+setAllowsCellularAccessSelector :: Selector '[Bool] ()
 setAllowsCellularAccessSelector = mkSelector "setAllowsCellularAccess:"
 
 -- | @Selector@ for @longLived@
-longLivedSelector :: Selector
+longLivedSelector :: Selector '[] Bool
 longLivedSelector = mkSelector "longLived"
 
 -- | @Selector@ for @setLongLived:@
-setLongLivedSelector :: Selector
+setLongLivedSelector :: Selector '[Bool] ()
 setLongLivedSelector = mkSelector "setLongLived:"
 
 -- | @Selector@ for @timeoutIntervalForRequest@
-timeoutIntervalForRequestSelector :: Selector
+timeoutIntervalForRequestSelector :: Selector '[] CDouble
 timeoutIntervalForRequestSelector = mkSelector "timeoutIntervalForRequest"
 
 -- | @Selector@ for @setTimeoutIntervalForRequest:@
-setTimeoutIntervalForRequestSelector :: Selector
+setTimeoutIntervalForRequestSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForRequestSelector = mkSelector "setTimeoutIntervalForRequest:"
 
 -- | @Selector@ for @timeoutIntervalForResource@
-timeoutIntervalForResourceSelector :: Selector
+timeoutIntervalForResourceSelector :: Selector '[] CDouble
 timeoutIntervalForResourceSelector = mkSelector "timeoutIntervalForResource"
 
 -- | @Selector@ for @setTimeoutIntervalForResource:@
-setTimeoutIntervalForResourceSelector :: Selector
+setTimeoutIntervalForResourceSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForResourceSelector = mkSelector "setTimeoutIntervalForResource:"
 

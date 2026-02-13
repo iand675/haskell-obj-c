@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.CloudKit.CKSyncEngineSentRecordZoneChangesEvent
   , failedRecordSaves
   , deletedRecordIDs
   , failedRecordDeletes
-  , savedRecordsSelector
-  , failedRecordSavesSelector
   , deletedRecordIDsSelector
   , failedRecordDeletesSelector
+  , failedRecordSavesSelector
+  , savedRecordsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,41 +40,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- savedRecords@
 savedRecords :: IsCKSyncEngineSentRecordZoneChangesEvent ckSyncEngineSentRecordZoneChangesEvent => ckSyncEngineSentRecordZoneChangesEvent -> IO (Id NSArray)
-savedRecords ckSyncEngineSentRecordZoneChangesEvent  =
-    sendMsg ckSyncEngineSentRecordZoneChangesEvent (mkSelector "savedRecords") (retPtr retVoid) [] >>= retainedObject . castPtr
+savedRecords ckSyncEngineSentRecordZoneChangesEvent =
+  sendMessage ckSyncEngineSentRecordZoneChangesEvent savedRecordsSelector
 
 -- | @- failedRecordSaves@
 failedRecordSaves :: IsCKSyncEngineSentRecordZoneChangesEvent ckSyncEngineSentRecordZoneChangesEvent => ckSyncEngineSentRecordZoneChangesEvent -> IO (Id NSArray)
-failedRecordSaves ckSyncEngineSentRecordZoneChangesEvent  =
-    sendMsg ckSyncEngineSentRecordZoneChangesEvent (mkSelector "failedRecordSaves") (retPtr retVoid) [] >>= retainedObject . castPtr
+failedRecordSaves ckSyncEngineSentRecordZoneChangesEvent =
+  sendMessage ckSyncEngineSentRecordZoneChangesEvent failedRecordSavesSelector
 
 -- | @- deletedRecordIDs@
 deletedRecordIDs :: IsCKSyncEngineSentRecordZoneChangesEvent ckSyncEngineSentRecordZoneChangesEvent => ckSyncEngineSentRecordZoneChangesEvent -> IO (Id NSArray)
-deletedRecordIDs ckSyncEngineSentRecordZoneChangesEvent  =
-    sendMsg ckSyncEngineSentRecordZoneChangesEvent (mkSelector "deletedRecordIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+deletedRecordIDs ckSyncEngineSentRecordZoneChangesEvent =
+  sendMessage ckSyncEngineSentRecordZoneChangesEvent deletedRecordIDsSelector
 
 -- | @- failedRecordDeletes@
 failedRecordDeletes :: IsCKSyncEngineSentRecordZoneChangesEvent ckSyncEngineSentRecordZoneChangesEvent => ckSyncEngineSentRecordZoneChangesEvent -> IO (Id NSDictionary)
-failedRecordDeletes ckSyncEngineSentRecordZoneChangesEvent  =
-    sendMsg ckSyncEngineSentRecordZoneChangesEvent (mkSelector "failedRecordDeletes") (retPtr retVoid) [] >>= retainedObject . castPtr
+failedRecordDeletes ckSyncEngineSentRecordZoneChangesEvent =
+  sendMessage ckSyncEngineSentRecordZoneChangesEvent failedRecordDeletesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @savedRecords@
-savedRecordsSelector :: Selector
+savedRecordsSelector :: Selector '[] (Id NSArray)
 savedRecordsSelector = mkSelector "savedRecords"
 
 -- | @Selector@ for @failedRecordSaves@
-failedRecordSavesSelector :: Selector
+failedRecordSavesSelector :: Selector '[] (Id NSArray)
 failedRecordSavesSelector = mkSelector "failedRecordSaves"
 
 -- | @Selector@ for @deletedRecordIDs@
-deletedRecordIDsSelector :: Selector
+deletedRecordIDsSelector :: Selector '[] (Id NSArray)
 deletedRecordIDsSelector = mkSelector "deletedRecordIDs"
 
 -- | @Selector@ for @failedRecordDeletes@
-failedRecordDeletesSelector :: Selector
+failedRecordDeletesSelector :: Selector '[] (Id NSDictionary)
 failedRecordDeletesSelector = mkSelector "failedRecordDeletes"
 

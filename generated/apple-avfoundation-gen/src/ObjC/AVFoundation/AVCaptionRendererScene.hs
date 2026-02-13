@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,23 +21,19 @@ module ObjC.AVFoundation.AVCaptionRendererScene
   , new
   , hasActiveCaptions
   , needsPeriodicRefresh
-  , initSelector
-  , newSelector
   , hasActiveCaptionsSelector
+  , initSelector
   , needsPeriodicRefreshSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionRendererScene avCaptionRendererScene => avCaptionRendererScene -> IO (Id AVCaptionRendererScene)
-init_ avCaptionRendererScene  =
-    sendMsg avCaptionRendererScene (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionRendererScene =
+  sendOwnedMessage avCaptionRendererScene initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionRendererScene)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionRendererScene"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | hasActiveCaptions
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- hasActiveCaptions@
 hasActiveCaptions :: IsAVCaptionRendererScene avCaptionRendererScene => avCaptionRendererScene -> IO Bool
-hasActiveCaptions avCaptionRendererScene  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptionRendererScene (mkSelector "hasActiveCaptions") retCULong []
+hasActiveCaptions avCaptionRendererScene =
+  sendMessage avCaptionRendererScene hasActiveCaptionsSelector
 
 -- | needsPeriodicRefresh
 --
@@ -74,26 +71,26 @@ hasActiveCaptions avCaptionRendererScene  =
 --
 -- ObjC selector: @- needsPeriodicRefresh@
 needsPeriodicRefresh :: IsAVCaptionRendererScene avCaptionRendererScene => avCaptionRendererScene -> IO Bool
-needsPeriodicRefresh avCaptionRendererScene  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptionRendererScene (mkSelector "needsPeriodicRefresh") retCULong []
+needsPeriodicRefresh avCaptionRendererScene =
+  sendMessage avCaptionRendererScene needsPeriodicRefreshSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionRendererScene)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionRendererScene)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @hasActiveCaptions@
-hasActiveCaptionsSelector :: Selector
+hasActiveCaptionsSelector :: Selector '[] Bool
 hasActiveCaptionsSelector = mkSelector "hasActiveCaptions"
 
 -- | @Selector@ for @needsPeriodicRefresh@
-needsPeriodicRefreshSelector :: Selector
+needsPeriodicRefreshSelector :: Selector '[] Bool
 needsPeriodicRefreshSelector = mkSelector "needsPeriodicRefresh"
 

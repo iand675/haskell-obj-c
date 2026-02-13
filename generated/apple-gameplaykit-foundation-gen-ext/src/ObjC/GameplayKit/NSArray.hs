@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.GameplayKit.NSArray
   , IsNSArray(..)
   , shuffledArrayWithRandomSource
   , shuffledArray
-  , shuffledArrayWithRandomSourceSelector
   , shuffledArraySelector
+  , shuffledArrayWithRandomSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,24 +30,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- shuffledArrayWithRandomSource:@
 shuffledArrayWithRandomSource :: (IsNSArray nsArray, IsGKRandomSource randomSource) => nsArray -> randomSource -> IO (Id NSArray)
-shuffledArrayWithRandomSource nsArray  randomSource =
-  withObjCPtr randomSource $ \raw_randomSource ->
-      sendMsg nsArray (mkSelector "shuffledArrayWithRandomSource:") (retPtr retVoid) [argPtr (castPtr raw_randomSource :: Ptr ())] >>= retainedObject . castPtr
+shuffledArrayWithRandomSource nsArray randomSource =
+  sendMessage nsArray shuffledArrayWithRandomSourceSelector (toGKRandomSource randomSource)
 
 -- | @- shuffledArray@
 shuffledArray :: IsNSArray nsArray => nsArray -> IO (Id NSArray)
-shuffledArray nsArray  =
-    sendMsg nsArray (mkSelector "shuffledArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+shuffledArray nsArray =
+  sendMessage nsArray shuffledArraySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shuffledArrayWithRandomSource:@
-shuffledArrayWithRandomSourceSelector :: Selector
+shuffledArrayWithRandomSourceSelector :: Selector '[Id GKRandomSource] (Id NSArray)
 shuffledArrayWithRandomSourceSelector = mkSelector "shuffledArrayWithRandomSource:"
 
 -- | @Selector@ for @shuffledArray@
-shuffledArraySelector :: Selector
+shuffledArraySelector :: Selector '[] (Id NSArray)
 shuffledArraySelector = mkSelector "shuffledArray"
 

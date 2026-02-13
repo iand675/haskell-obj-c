@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRMediaPlaybackClusterPlaybackPositionStruct
   , setUpdatedAt
   , position
   , setPosition
-  , updatedAtSelector
-  , setUpdatedAtSelector
   , positionSelector
   , setPositionSelector
+  , setUpdatedAtSelector
+  , updatedAtSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updatedAt@
 updatedAt :: IsMTRMediaPlaybackClusterPlaybackPositionStruct mtrMediaPlaybackClusterPlaybackPositionStruct => mtrMediaPlaybackClusterPlaybackPositionStruct -> IO (Id NSNumber)
-updatedAt mtrMediaPlaybackClusterPlaybackPositionStruct  =
-    sendMsg mtrMediaPlaybackClusterPlaybackPositionStruct (mkSelector "updatedAt") (retPtr retVoid) [] >>= retainedObject . castPtr
+updatedAt mtrMediaPlaybackClusterPlaybackPositionStruct =
+  sendMessage mtrMediaPlaybackClusterPlaybackPositionStruct updatedAtSelector
 
 -- | @- setUpdatedAt:@
 setUpdatedAt :: (IsMTRMediaPlaybackClusterPlaybackPositionStruct mtrMediaPlaybackClusterPlaybackPositionStruct, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackPositionStruct -> value -> IO ()
-setUpdatedAt mtrMediaPlaybackClusterPlaybackPositionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackPositionStruct (mkSelector "setUpdatedAt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUpdatedAt mtrMediaPlaybackClusterPlaybackPositionStruct value =
+  sendMessage mtrMediaPlaybackClusterPlaybackPositionStruct setUpdatedAtSelector (toNSNumber value)
 
 -- | @- position@
 position :: IsMTRMediaPlaybackClusterPlaybackPositionStruct mtrMediaPlaybackClusterPlaybackPositionStruct => mtrMediaPlaybackClusterPlaybackPositionStruct -> IO (Id NSNumber)
-position mtrMediaPlaybackClusterPlaybackPositionStruct  =
-    sendMsg mtrMediaPlaybackClusterPlaybackPositionStruct (mkSelector "position") (retPtr retVoid) [] >>= retainedObject . castPtr
+position mtrMediaPlaybackClusterPlaybackPositionStruct =
+  sendMessage mtrMediaPlaybackClusterPlaybackPositionStruct positionSelector
 
 -- | @- setPosition:@
 setPosition :: (IsMTRMediaPlaybackClusterPlaybackPositionStruct mtrMediaPlaybackClusterPlaybackPositionStruct, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackPositionStruct -> value -> IO ()
-setPosition mtrMediaPlaybackClusterPlaybackPositionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackPositionStruct (mkSelector "setPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPosition mtrMediaPlaybackClusterPlaybackPositionStruct value =
+  sendMessage mtrMediaPlaybackClusterPlaybackPositionStruct setPositionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updatedAt@
-updatedAtSelector :: Selector
+updatedAtSelector :: Selector '[] (Id NSNumber)
 updatedAtSelector = mkSelector "updatedAt"
 
 -- | @Selector@ for @setUpdatedAt:@
-setUpdatedAtSelector :: Selector
+setUpdatedAtSelector :: Selector '[Id NSNumber] ()
 setUpdatedAtSelector = mkSelector "setUpdatedAt:"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] (Id NSNumber)
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @setPosition:@
-setPositionSelector :: Selector
+setPositionSelector :: Selector '[Id NSNumber] ()
 setPositionSelector = mkSelector "setPosition:"
 

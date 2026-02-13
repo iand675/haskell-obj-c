@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,15 +14,11 @@ module ObjC.UserNotifications.NSString
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,9 +32,7 @@ localizedUserNotificationStringForKey_arguments :: (IsNSString key, IsNSArray ar
 localizedUserNotificationStringForKey_arguments key arguments =
   do
     cls' <- getRequiredClass "NSString"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr arguments $ \raw_arguments ->
-        sendClassMsg cls' (mkSelector "localizedUserNotificationStringForKey:arguments:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedUserNotificationStringForKey_argumentsSelector (toNSString key) (toNSArray arguments)
 
 
 -- | Allows using @OverloadedStrings@ for @Id NSString@.
@@ -51,6 +46,6 @@ instance IsString (Id NSString) where
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localizedUserNotificationStringForKey:arguments:@
-localizedUserNotificationStringForKey_argumentsSelector :: Selector
+localizedUserNotificationStringForKey_argumentsSelector :: Selector '[Id NSString, Id NSArray] (Id NSString)
 localizedUserNotificationStringForKey_argumentsSelector = mkSelector "localizedUserNotificationStringForKey:arguments:"
 

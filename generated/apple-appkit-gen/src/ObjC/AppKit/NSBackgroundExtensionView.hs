@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AppKit.NSBackgroundExtensionView
   , setContentView
   , automaticallyPlacesContentView
   , setAutomaticallyPlacesContentView
-  , contentViewSelector
-  , setContentViewSelector
   , automaticallyPlacesContentViewSelector
+  , contentViewSelector
   , setAutomaticallyPlacesContentViewSelector
+  , setContentViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contentView@
 contentView :: IsNSBackgroundExtensionView nsBackgroundExtensionView => nsBackgroundExtensionView -> IO (Id NSView)
-contentView nsBackgroundExtensionView  =
-    sendMsg nsBackgroundExtensionView (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsBackgroundExtensionView =
+  sendMessage nsBackgroundExtensionView contentViewSelector
 
 -- | The content view to extend to fill the @NSBackgroundExtensionView@.
 --
@@ -52,9 +49,8 @@ contentView nsBackgroundExtensionView  =
 --
 -- ObjC selector: @- setContentView:@
 setContentView :: (IsNSBackgroundExtensionView nsBackgroundExtensionView, IsNSView value) => nsBackgroundExtensionView -> value -> IO ()
-setContentView nsBackgroundExtensionView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBackgroundExtensionView (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsBackgroundExtensionView value =
+  sendMessage nsBackgroundExtensionView setContentViewSelector (toNSView value)
 
 -- | Controls the automatic safe area placement of the @contentView@ within the container.
 --
@@ -64,8 +60,8 @@ setContentView nsBackgroundExtensionView  value =
 --
 -- ObjC selector: @- automaticallyPlacesContentView@
 automaticallyPlacesContentView :: IsNSBackgroundExtensionView nsBackgroundExtensionView => nsBackgroundExtensionView -> IO Bool
-automaticallyPlacesContentView nsBackgroundExtensionView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBackgroundExtensionView (mkSelector "automaticallyPlacesContentView") retCULong []
+automaticallyPlacesContentView nsBackgroundExtensionView =
+  sendMessage nsBackgroundExtensionView automaticallyPlacesContentViewSelector
 
 -- | Controls the automatic safe area placement of the @contentView@ within the container.
 --
@@ -75,26 +71,26 @@ automaticallyPlacesContentView nsBackgroundExtensionView  =
 --
 -- ObjC selector: @- setAutomaticallyPlacesContentView:@
 setAutomaticallyPlacesContentView :: IsNSBackgroundExtensionView nsBackgroundExtensionView => nsBackgroundExtensionView -> Bool -> IO ()
-setAutomaticallyPlacesContentView nsBackgroundExtensionView  value =
-    sendMsg nsBackgroundExtensionView (mkSelector "setAutomaticallyPlacesContentView:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyPlacesContentView nsBackgroundExtensionView value =
+  sendMessage nsBackgroundExtensionView setAutomaticallyPlacesContentViewSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @automaticallyPlacesContentView@
-automaticallyPlacesContentViewSelector :: Selector
+automaticallyPlacesContentViewSelector :: Selector '[] Bool
 automaticallyPlacesContentViewSelector = mkSelector "automaticallyPlacesContentView"
 
 -- | @Selector@ for @setAutomaticallyPlacesContentView:@
-setAutomaticallyPlacesContentViewSelector :: Selector
+setAutomaticallyPlacesContentViewSelector :: Selector '[Bool] ()
 setAutomaticallyPlacesContentViewSelector = mkSelector "setAutomaticallyPlacesContentView:"
 

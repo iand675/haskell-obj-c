@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.NaturalLanguage.NLContextualEmbeddingResult
   , language
   , sequenceLength
   , initSelector
-  , tokenVectorAtIndex_tokenRangeSelector
-  , stringSelector
   , languageSelector
   , sequenceLengthSelector
+  , stringSelector
+  , tokenVectorAtIndex_tokenRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,50 +35,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNLContextualEmbeddingResult nlContextualEmbeddingResult => nlContextualEmbeddingResult -> IO (Id NLContextualEmbeddingResult)
-init_ nlContextualEmbeddingResult  =
-    sendMsg nlContextualEmbeddingResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nlContextualEmbeddingResult =
+  sendOwnedMessage nlContextualEmbeddingResult initSelector
 
 -- | @- tokenVectorAtIndex:tokenRange:@
 tokenVectorAtIndex_tokenRange :: IsNLContextualEmbeddingResult nlContextualEmbeddingResult => nlContextualEmbeddingResult -> CULong -> Ptr NSRange -> IO (Id NSArray)
-tokenVectorAtIndex_tokenRange nlContextualEmbeddingResult  characterIndex tokenRange =
-    sendMsg nlContextualEmbeddingResult (mkSelector "tokenVectorAtIndex:tokenRange:") (retPtr retVoid) [argCULong characterIndex, argPtr tokenRange] >>= retainedObject . castPtr
+tokenVectorAtIndex_tokenRange nlContextualEmbeddingResult characterIndex tokenRange =
+  sendMessage nlContextualEmbeddingResult tokenVectorAtIndex_tokenRangeSelector characterIndex tokenRange
 
 -- | @- string@
 string :: IsNLContextualEmbeddingResult nlContextualEmbeddingResult => nlContextualEmbeddingResult -> IO (Id NSString)
-string nlContextualEmbeddingResult  =
-    sendMsg nlContextualEmbeddingResult (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string nlContextualEmbeddingResult =
+  sendMessage nlContextualEmbeddingResult stringSelector
 
 -- | @- language@
 language :: IsNLContextualEmbeddingResult nlContextualEmbeddingResult => nlContextualEmbeddingResult -> IO (Id NSString)
-language nlContextualEmbeddingResult  =
-    sendMsg nlContextualEmbeddingResult (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language nlContextualEmbeddingResult =
+  sendMessage nlContextualEmbeddingResult languageSelector
 
 -- | @- sequenceLength@
 sequenceLength :: IsNLContextualEmbeddingResult nlContextualEmbeddingResult => nlContextualEmbeddingResult -> IO CULong
-sequenceLength nlContextualEmbeddingResult  =
-    sendMsg nlContextualEmbeddingResult (mkSelector "sequenceLength") retCULong []
+sequenceLength nlContextualEmbeddingResult =
+  sendMessage nlContextualEmbeddingResult sequenceLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NLContextualEmbeddingResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @tokenVectorAtIndex:tokenRange:@
-tokenVectorAtIndex_tokenRangeSelector :: Selector
+tokenVectorAtIndex_tokenRangeSelector :: Selector '[CULong, Ptr NSRange] (Id NSArray)
 tokenVectorAtIndex_tokenRangeSelector = mkSelector "tokenVectorAtIndex:tokenRange:"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id NSString)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @sequenceLength@
-sequenceLengthSelector :: Selector
+sequenceLengthSelector :: Selector '[] CULong
 sequenceLengthSelector = mkSelector "sequenceLength"
 

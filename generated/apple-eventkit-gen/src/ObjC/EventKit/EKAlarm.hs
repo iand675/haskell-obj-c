@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,23 +31,23 @@ module ObjC.EventKit.EKAlarm
   , setSoundName
   , url
   , setUrl
+  , absoluteDateSelector
   , alarmWithAbsoluteDateSelector
   , alarmWithRelativeOffsetSelector
-  , relativeOffsetSelector
-  , setRelativeOffsetSelector
-  , absoluteDateSelector
-  , setAbsoluteDateSelector
-  , structuredLocationSelector
-  , setStructuredLocationSelector
-  , proximitySelector
-  , setProximitySelector
-  , typeSelector
   , emailAddressSelector
+  , proximitySelector
+  , relativeOffsetSelector
+  , setAbsoluteDateSelector
   , setEmailAddressSelector
-  , soundNameSelector
+  , setProximitySelector
+  , setRelativeOffsetSelector
   , setSoundNameSelector
-  , urlSelector
+  , setStructuredLocationSelector
   , setUrlSelector
+  , soundNameSelector
+  , structuredLocationSelector
+  , typeSelector
+  , urlSelector
 
   -- * Enum types
   , EKAlarmProximity(EKAlarmProximity)
@@ -61,15 +62,11 @@ module ObjC.EventKit.EKAlarm
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,8 +85,7 @@ alarmWithAbsoluteDate :: IsNSDate date => date -> IO (Id EKAlarm)
 alarmWithAbsoluteDate date =
   do
     cls' <- getRequiredClass "EKAlarm"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "alarmWithAbsoluteDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' alarmWithAbsoluteDateSelector (toNSDate date)
 
 -- | alarmWithRelativeOffset:
 --
@@ -104,7 +100,7 @@ alarmWithRelativeOffset :: CDouble -> IO (Id EKAlarm)
 alarmWithRelativeOffset offset =
   do
     cls' <- getRequiredClass "EKAlarm"
-    sendClassMsg cls' (mkSelector "alarmWithRelativeOffset:") (retPtr retVoid) [argCDouble offset] >>= retainedObject . castPtr
+    sendClassMessage cls' alarmWithRelativeOffsetSelector offset
 
 -- | relativeOffset
 --
@@ -114,8 +110,8 @@ alarmWithRelativeOffset offset =
 --
 -- ObjC selector: @- relativeOffset@
 relativeOffset :: IsEKAlarm ekAlarm => ekAlarm -> IO CDouble
-relativeOffset ekAlarm  =
-    sendMsg ekAlarm (mkSelector "relativeOffset") retCDouble []
+relativeOffset ekAlarm =
+  sendMessage ekAlarm relativeOffsetSelector
 
 -- | relativeOffset
 --
@@ -125,8 +121,8 @@ relativeOffset ekAlarm  =
 --
 -- ObjC selector: @- setRelativeOffset:@
 setRelativeOffset :: IsEKAlarm ekAlarm => ekAlarm -> CDouble -> IO ()
-setRelativeOffset ekAlarm  value =
-    sendMsg ekAlarm (mkSelector "setRelativeOffset:") retVoid [argCDouble value]
+setRelativeOffset ekAlarm value =
+  sendMessage ekAlarm setRelativeOffsetSelector value
 
 -- | absoluteDate
 --
@@ -136,8 +132,8 @@ setRelativeOffset ekAlarm  value =
 --
 -- ObjC selector: @- absoluteDate@
 absoluteDate :: IsEKAlarm ekAlarm => ekAlarm -> IO (Id NSDate)
-absoluteDate ekAlarm  =
-    sendMsg ekAlarm (mkSelector "absoluteDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteDate ekAlarm =
+  sendMessage ekAlarm absoluteDateSelector
 
 -- | absoluteDate
 --
@@ -147,9 +143,8 @@ absoluteDate ekAlarm  =
 --
 -- ObjC selector: @- setAbsoluteDate:@
 setAbsoluteDate :: (IsEKAlarm ekAlarm, IsNSDate value) => ekAlarm -> value -> IO ()
-setAbsoluteDate ekAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekAlarm (mkSelector "setAbsoluteDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAbsoluteDate ekAlarm value =
+  sendMessage ekAlarm setAbsoluteDateSelector (toNSDate value)
 
 -- | structuredLocation
 --
@@ -157,8 +152,8 @@ setAbsoluteDate ekAlarm  value =
 --
 -- ObjC selector: @- structuredLocation@
 structuredLocation :: IsEKAlarm ekAlarm => ekAlarm -> IO (Id EKStructuredLocation)
-structuredLocation ekAlarm  =
-    sendMsg ekAlarm (mkSelector "structuredLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+structuredLocation ekAlarm =
+  sendMessage ekAlarm structuredLocationSelector
 
 -- | structuredLocation
 --
@@ -166,9 +161,8 @@ structuredLocation ekAlarm  =
 --
 -- ObjC selector: @- setStructuredLocation:@
 setStructuredLocation :: (IsEKAlarm ekAlarm, IsEKStructuredLocation value) => ekAlarm -> value -> IO ()
-setStructuredLocation ekAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekAlarm (mkSelector "setStructuredLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStructuredLocation ekAlarm value =
+  sendMessage ekAlarm setStructuredLocationSelector (toEKStructuredLocation value)
 
 -- | proximity
 --
@@ -176,8 +170,8 @@ setStructuredLocation ekAlarm  value =
 --
 -- ObjC selector: @- proximity@
 proximity :: IsEKAlarm ekAlarm => ekAlarm -> IO EKAlarmProximity
-proximity ekAlarm  =
-    fmap (coerce :: CLong -> EKAlarmProximity) $ sendMsg ekAlarm (mkSelector "proximity") retCLong []
+proximity ekAlarm =
+  sendMessage ekAlarm proximitySelector
 
 -- | proximity
 --
@@ -185,8 +179,8 @@ proximity ekAlarm  =
 --
 -- ObjC selector: @- setProximity:@
 setProximity :: IsEKAlarm ekAlarm => ekAlarm -> EKAlarmProximity -> IO ()
-setProximity ekAlarm  value =
-    sendMsg ekAlarm (mkSelector "setProximity:") retVoid [argCLong (coerce value)]
+setProximity ekAlarm value =
+  sendMessage ekAlarm setProximitySelector value
 
 -- | type
 --
@@ -196,8 +190,8 @@ setProximity ekAlarm  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsEKAlarm ekAlarm => ekAlarm -> IO EKAlarmType
-type_ ekAlarm  =
-    fmap (coerce :: CLong -> EKAlarmType) $ sendMsg ekAlarm (mkSelector "type") retCLong []
+type_ ekAlarm =
+  sendMessage ekAlarm typeSelector
 
 -- | emailAddress
 --
@@ -207,8 +201,8 @@ type_ ekAlarm  =
 --
 -- ObjC selector: @- emailAddress@
 emailAddress :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
-emailAddress ekAlarm  =
-    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "emailAddress") (retPtr retVoid) []
+emailAddress ekAlarm =
+  sendMessage ekAlarm emailAddressSelector
 
 -- | emailAddress
 --
@@ -218,8 +212,8 @@ emailAddress ekAlarm  =
 --
 -- ObjC selector: @- setEmailAddress:@
 setEmailAddress :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
-setEmailAddress ekAlarm  value =
-    sendMsg ekAlarm (mkSelector "setEmailAddress:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setEmailAddress ekAlarm value =
+  sendMessage ekAlarm setEmailAddressSelector value
 
 -- | soundName
 --
@@ -229,8 +223,8 @@ setEmailAddress ekAlarm  value =
 --
 -- ObjC selector: @- soundName@
 soundName :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
-soundName ekAlarm  =
-    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "soundName") (retPtr retVoid) []
+soundName ekAlarm =
+  sendMessage ekAlarm soundNameSelector
 
 -- | soundName
 --
@@ -240,8 +234,8 @@ soundName ekAlarm  =
 --
 -- ObjC selector: @- setSoundName:@
 setSoundName :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
-setSoundName ekAlarm  value =
-    sendMsg ekAlarm (mkSelector "setSoundName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSoundName ekAlarm value =
+  sendMessage ekAlarm setSoundNameSelector value
 
 -- | url
 --
@@ -251,8 +245,8 @@ setSoundName ekAlarm  value =
 --
 -- ObjC selector: @- url@
 url :: IsEKAlarm ekAlarm => ekAlarm -> IO RawId
-url ekAlarm  =
-    fmap (RawId . castPtr) $ sendMsg ekAlarm (mkSelector "url") (retPtr retVoid) []
+url ekAlarm =
+  sendMessage ekAlarm urlSelector
 
 -- | url
 --
@@ -262,78 +256,78 @@ url ekAlarm  =
 --
 -- ObjC selector: @- setUrl:@
 setUrl :: IsEKAlarm ekAlarm => ekAlarm -> RawId -> IO ()
-setUrl ekAlarm  value =
-    sendMsg ekAlarm (mkSelector "setUrl:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUrl ekAlarm value =
+  sendMessage ekAlarm setUrlSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alarmWithAbsoluteDate:@
-alarmWithAbsoluteDateSelector :: Selector
+alarmWithAbsoluteDateSelector :: Selector '[Id NSDate] (Id EKAlarm)
 alarmWithAbsoluteDateSelector = mkSelector "alarmWithAbsoluteDate:"
 
 -- | @Selector@ for @alarmWithRelativeOffset:@
-alarmWithRelativeOffsetSelector :: Selector
+alarmWithRelativeOffsetSelector :: Selector '[CDouble] (Id EKAlarm)
 alarmWithRelativeOffsetSelector = mkSelector "alarmWithRelativeOffset:"
 
 -- | @Selector@ for @relativeOffset@
-relativeOffsetSelector :: Selector
+relativeOffsetSelector :: Selector '[] CDouble
 relativeOffsetSelector = mkSelector "relativeOffset"
 
 -- | @Selector@ for @setRelativeOffset:@
-setRelativeOffsetSelector :: Selector
+setRelativeOffsetSelector :: Selector '[CDouble] ()
 setRelativeOffsetSelector = mkSelector "setRelativeOffset:"
 
 -- | @Selector@ for @absoluteDate@
-absoluteDateSelector :: Selector
+absoluteDateSelector :: Selector '[] (Id NSDate)
 absoluteDateSelector = mkSelector "absoluteDate"
 
 -- | @Selector@ for @setAbsoluteDate:@
-setAbsoluteDateSelector :: Selector
+setAbsoluteDateSelector :: Selector '[Id NSDate] ()
 setAbsoluteDateSelector = mkSelector "setAbsoluteDate:"
 
 -- | @Selector@ for @structuredLocation@
-structuredLocationSelector :: Selector
+structuredLocationSelector :: Selector '[] (Id EKStructuredLocation)
 structuredLocationSelector = mkSelector "structuredLocation"
 
 -- | @Selector@ for @setStructuredLocation:@
-setStructuredLocationSelector :: Selector
+setStructuredLocationSelector :: Selector '[Id EKStructuredLocation] ()
 setStructuredLocationSelector = mkSelector "setStructuredLocation:"
 
 -- | @Selector@ for @proximity@
-proximitySelector :: Selector
+proximitySelector :: Selector '[] EKAlarmProximity
 proximitySelector = mkSelector "proximity"
 
 -- | @Selector@ for @setProximity:@
-setProximitySelector :: Selector
+setProximitySelector :: Selector '[EKAlarmProximity] ()
 setProximitySelector = mkSelector "setProximity:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] EKAlarmType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @emailAddress@
-emailAddressSelector :: Selector
+emailAddressSelector :: Selector '[] RawId
 emailAddressSelector = mkSelector "emailAddress"
 
 -- | @Selector@ for @setEmailAddress:@
-setEmailAddressSelector :: Selector
+setEmailAddressSelector :: Selector '[RawId] ()
 setEmailAddressSelector = mkSelector "setEmailAddress:"
 
 -- | @Selector@ for @soundName@
-soundNameSelector :: Selector
+soundNameSelector :: Selector '[] RawId
 soundNameSelector = mkSelector "soundName"
 
 -- | @Selector@ for @setSoundName:@
-setSoundNameSelector :: Selector
+setSoundNameSelector :: Selector '[RawId] ()
 setSoundNameSelector = mkSelector "setSoundName:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] RawId
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @setUrl:@
-setUrlSelector :: Selector
+setUrlSelector :: Selector '[RawId] ()
 setUrlSelector = mkSelector "setUrl:"
 

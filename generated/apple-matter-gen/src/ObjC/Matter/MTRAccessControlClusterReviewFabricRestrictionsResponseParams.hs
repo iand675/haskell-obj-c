@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Matter.MTRAccessControlClusterReviewFabricRestrictionsResponseParams
   , token
   , setToken
   , initWithResponseValue_errorSelector
-  , tokenSelector
   , setTokenSelector
+  , tokenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRAccessControlClusterReviewFabricRestrictionsResponseParams mtrAccessControlClusterReviewFabricRestrictionsResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrAccessControlClusterReviewFabricRestrictionsResponseParams -> responseValue -> error_ -> IO (Id MTRAccessControlClusterReviewFabricRestrictionsResponseParams)
-initWithResponseValue_error mtrAccessControlClusterReviewFabricRestrictionsResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrAccessControlClusterReviewFabricRestrictionsResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrAccessControlClusterReviewFabricRestrictionsResponseParams responseValue error_ =
+  sendOwnedMessage mtrAccessControlClusterReviewFabricRestrictionsResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- token@
 token :: IsMTRAccessControlClusterReviewFabricRestrictionsResponseParams mtrAccessControlClusterReviewFabricRestrictionsResponseParams => mtrAccessControlClusterReviewFabricRestrictionsResponseParams -> IO (Id NSNumber)
-token mtrAccessControlClusterReviewFabricRestrictionsResponseParams  =
-    sendMsg mtrAccessControlClusterReviewFabricRestrictionsResponseParams (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
+token mtrAccessControlClusterReviewFabricRestrictionsResponseParams =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsResponseParams tokenSelector
 
 -- | @- setToken:@
 setToken :: (IsMTRAccessControlClusterReviewFabricRestrictionsResponseParams mtrAccessControlClusterReviewFabricRestrictionsResponseParams, IsNSNumber value) => mtrAccessControlClusterReviewFabricRestrictionsResponseParams -> value -> IO ()
-setToken mtrAccessControlClusterReviewFabricRestrictionsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterReviewFabricRestrictionsResponseParams (mkSelector "setToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToken mtrAccessControlClusterReviewFabricRestrictionsResponseParams value =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsResponseParams setTokenSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRAccessControlClusterReviewFabricRestrictionsResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @token@
-tokenSelector :: Selector
+tokenSelector :: Selector '[] (Id NSNumber)
 tokenSelector = mkSelector "token"
 
 -- | @Selector@ for @setToken:@
-setTokenSelector :: Selector
+setTokenSelector :: Selector '[Id NSNumber] ()
 setTokenSelector = mkSelector "setToken:"
 

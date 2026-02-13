@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,40 +42,40 @@ module ObjC.AppKit.NSATSTypesetter
   , paragraphSeparatorGlyphRange
   , layoutManager
   , currentTextContainer
-  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
-  , willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector
-  , shouldBreakLineByWordBeforeCharacterAtIndexSelector
-  , shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector
-  , hyphenationFactorForGlyphAtIndexSelector
-  , hyphenCharacterForGlyphAtIndexSelector
-  , boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector
-  , substituteFontForFontSelector
-  , textTabForGlyphLocation_writingDirection_maxLocationSelector
-  , setParagraphGlyphRange_separatorGlyphRangeSelector
-  , layoutParagraphAtPointSelector
-  , lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector
-  , paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector
-  , paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector
-  , setHardInvalidation_forGlyphRangeSelector
-  , getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector
-  , lineFragmentRectForProposedRect_remainingRectSelector
-  , sharedTypesetterSelector
-  , usesFontLeadingSelector
-  , setUsesFontLeadingSelector
-  , typesetterBehaviorSelector
-  , setTypesetterBehaviorSelector
-  , hyphenationFactorSelector
-  , setHyphenationFactorSelector
-  , lineFragmentPaddingSelector
-  , setLineFragmentPaddingSelector
-  , bidiProcessingEnabledSelector
-  , setBidiProcessingEnabledSelector
   , attributedStringSelector
-  , setAttributedStringSelector
+  , bidiProcessingEnabledSelector
+  , boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector
+  , currentTextContainerSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
+  , getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector
+  , hyphenCharacterForGlyphAtIndexSelector
+  , hyphenationFactorForGlyphAtIndexSelector
+  , hyphenationFactorSelector
+  , layoutManagerSelector
+  , layoutParagraphAtPointSelector
+  , lineFragmentPaddingSelector
+  , lineFragmentRectForProposedRect_remainingRectSelector
+  , lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector
   , paragraphGlyphRangeSelector
   , paragraphSeparatorGlyphRangeSelector
-  , layoutManagerSelector
-  , currentTextContainerSelector
+  , paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector
+  , paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector
+  , setAttributedStringSelector
+  , setBidiProcessingEnabledSelector
+  , setHardInvalidation_forGlyphRangeSelector
+  , setHyphenationFactorSelector
+  , setLineFragmentPaddingSelector
+  , setParagraphGlyphRange_separatorGlyphRangeSelector
+  , setTypesetterBehaviorSelector
+  , setUsesFontLeadingSelector
+  , sharedTypesetterSelector
+  , shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector
+  , shouldBreakLineByWordBeforeCharacterAtIndexSelector
+  , substituteFontForFontSelector
+  , textTabForGlyphLocation_writingDirection_maxLocationSelector
+  , typesetterBehaviorSelector
+  , usesFontLeadingSelector
+  , willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector
 
   -- * Enum types
   , NSTypesetterBehavior(NSTypesetterBehavior)
@@ -91,15 +92,11 @@ module ObjC.AppKit.NSATSTypesetter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,316 +107,313 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> IO CULong
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsatsTypesetter  glyphsRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
-    sendMsg nsatsTypesetter (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:") retCULong [argNSRange glyphsRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer]
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsatsTypesetter glyphsRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
+  sendMessage nsatsTypesetter getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector glyphsRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer
 
 -- | @- willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:@
 willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffset :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Ptr NSRect -> NSRange -> Ptr NSRect -> Ptr CDouble -> IO ()
-willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffset nsatsTypesetter  lineRect glyphRange usedRect baselineOffset =
-    sendMsg nsatsTypesetter (mkSelector "willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:") retVoid [argPtr lineRect, argNSRange glyphRange, argPtr usedRect, argPtr baselineOffset]
+willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffset nsatsTypesetter lineRect glyphRange usedRect baselineOffset =
+  sendMessage nsatsTypesetter willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector lineRect glyphRange usedRect baselineOffset
 
 -- | @- shouldBreakLineByWordBeforeCharacterAtIndex:@
 shouldBreakLineByWordBeforeCharacterAtIndex :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> IO Bool
-shouldBreakLineByWordBeforeCharacterAtIndex nsatsTypesetter  charIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsatsTypesetter (mkSelector "shouldBreakLineByWordBeforeCharacterAtIndex:") retCULong [argCULong charIndex]
+shouldBreakLineByWordBeforeCharacterAtIndex nsatsTypesetter charIndex =
+  sendMessage nsatsTypesetter shouldBreakLineByWordBeforeCharacterAtIndexSelector charIndex
 
 -- | @- shouldBreakLineByHyphenatingBeforeCharacterAtIndex:@
 shouldBreakLineByHyphenatingBeforeCharacterAtIndex :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> IO Bool
-shouldBreakLineByHyphenatingBeforeCharacterAtIndex nsatsTypesetter  charIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsatsTypesetter (mkSelector "shouldBreakLineByHyphenatingBeforeCharacterAtIndex:") retCULong [argCULong charIndex]
+shouldBreakLineByHyphenatingBeforeCharacterAtIndex nsatsTypesetter charIndex =
+  sendMessage nsatsTypesetter shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector charIndex
 
 -- | @- hyphenationFactorForGlyphAtIndex:@
 hyphenationFactorForGlyphAtIndex :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> IO CFloat
-hyphenationFactorForGlyphAtIndex nsatsTypesetter  glyphIndex =
-    sendMsg nsatsTypesetter (mkSelector "hyphenationFactorForGlyphAtIndex:") retCFloat [argCULong glyphIndex]
+hyphenationFactorForGlyphAtIndex nsatsTypesetter glyphIndex =
+  sendMessage nsatsTypesetter hyphenationFactorForGlyphAtIndexSelector glyphIndex
 
 -- | @- hyphenCharacterForGlyphAtIndex:@
 hyphenCharacterForGlyphAtIndex :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> IO CUInt
-hyphenCharacterForGlyphAtIndex nsatsTypesetter  glyphIndex =
-    sendMsg nsatsTypesetter (mkSelector "hyphenCharacterForGlyphAtIndex:") retCUInt [argCULong glyphIndex]
+hyphenCharacterForGlyphAtIndex nsatsTypesetter glyphIndex =
+  sendMessage nsatsTypesetter hyphenCharacterForGlyphAtIndexSelector glyphIndex
 
 -- | @- boundingBoxForControlGlyphAtIndex:forTextContainer:proposedLineFragment:glyphPosition:characterIndex:@
 boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndex :: (IsNSATSTypesetter nsatsTypesetter, IsNSTextContainer textContainer) => nsatsTypesetter -> CULong -> textContainer -> NSRect -> NSPoint -> CULong -> IO NSRect
-boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndex nsatsTypesetter  glyphIndex textContainer proposedRect glyphPosition charIndex =
-  withObjCPtr textContainer $ \raw_textContainer ->
-      sendMsgStret nsatsTypesetter (mkSelector "boundingBoxForControlGlyphAtIndex:forTextContainer:proposedLineFragment:glyphPosition:characterIndex:") retNSRect [argCULong glyphIndex, argPtr (castPtr raw_textContainer :: Ptr ()), argNSRect proposedRect, argNSPoint glyphPosition, argCULong charIndex]
+boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndex nsatsTypesetter glyphIndex textContainer proposedRect glyphPosition charIndex =
+  sendMessage nsatsTypesetter boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector glyphIndex (toNSTextContainer textContainer) proposedRect glyphPosition charIndex
 
 -- | @- substituteFontForFont:@
 substituteFontForFont :: (IsNSATSTypesetter nsatsTypesetter, IsNSFont originalFont) => nsatsTypesetter -> originalFont -> IO (Id NSFont)
-substituteFontForFont nsatsTypesetter  originalFont =
-  withObjCPtr originalFont $ \raw_originalFont ->
-      sendMsg nsatsTypesetter (mkSelector "substituteFontForFont:") (retPtr retVoid) [argPtr (castPtr raw_originalFont :: Ptr ())] >>= retainedObject . castPtr
+substituteFontForFont nsatsTypesetter originalFont =
+  sendMessage nsatsTypesetter substituteFontForFontSelector (toNSFont originalFont)
 
 -- | @- textTabForGlyphLocation:writingDirection:maxLocation:@
 textTabForGlyphLocation_writingDirection_maxLocation :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CDouble -> NSWritingDirection -> CDouble -> IO (Id NSTextTab)
-textTabForGlyphLocation_writingDirection_maxLocation nsatsTypesetter  glyphLocation direction maxLocation =
-    sendMsg nsatsTypesetter (mkSelector "textTabForGlyphLocation:writingDirection:maxLocation:") (retPtr retVoid) [argCDouble glyphLocation, argCLong (coerce direction), argCDouble maxLocation] >>= retainedObject . castPtr
+textTabForGlyphLocation_writingDirection_maxLocation nsatsTypesetter glyphLocation direction maxLocation =
+  sendMessage nsatsTypesetter textTabForGlyphLocation_writingDirection_maxLocationSelector glyphLocation direction maxLocation
 
 -- | @- setParagraphGlyphRange:separatorGlyphRange:@
 setParagraphGlyphRange_separatorGlyphRange :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> NSRange -> NSRange -> IO ()
-setParagraphGlyphRange_separatorGlyphRange nsatsTypesetter  paragraphRange paragraphSeparatorRange =
-    sendMsg nsatsTypesetter (mkSelector "setParagraphGlyphRange:separatorGlyphRange:") retVoid [argNSRange paragraphRange, argNSRange paragraphSeparatorRange]
+setParagraphGlyphRange_separatorGlyphRange nsatsTypesetter paragraphRange paragraphSeparatorRange =
+  sendMessage nsatsTypesetter setParagraphGlyphRange_separatorGlyphRangeSelector paragraphRange paragraphSeparatorRange
 
 -- | @- layoutParagraphAtPoint:@
 layoutParagraphAtPoint :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Ptr NSPoint -> IO CULong
-layoutParagraphAtPoint nsatsTypesetter  lineFragmentOrigin =
-    sendMsg nsatsTypesetter (mkSelector "layoutParagraphAtPoint:") retCULong [argPtr lineFragmentOrigin]
+layoutParagraphAtPoint nsatsTypesetter lineFragmentOrigin =
+  sendMessage nsatsTypesetter layoutParagraphAtPointSelector lineFragmentOrigin
 
 -- | @- lineSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:@
 lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRect :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> NSRect -> IO CDouble
-lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter  glyphIndex rect =
-    sendMsg nsatsTypesetter (mkSelector "lineSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:") retCDouble [argCULong glyphIndex, argNSRect rect]
+lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter glyphIndex rect =
+  sendMessage nsatsTypesetter lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector glyphIndex rect
 
 -- | @- paragraphSpacingBeforeGlyphAtIndex:withProposedLineFragmentRect:@
 paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRect :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> NSRect -> IO CDouble
-paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter  glyphIndex rect =
-    sendMsg nsatsTypesetter (mkSelector "paragraphSpacingBeforeGlyphAtIndex:withProposedLineFragmentRect:") retCDouble [argCULong glyphIndex, argNSRect rect]
+paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter glyphIndex rect =
+  sendMessage nsatsTypesetter paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector glyphIndex rect
 
 -- | @- paragraphSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:@
 paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRect :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CULong -> NSRect -> IO CDouble
-paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter  glyphIndex rect =
-    sendMsg nsatsTypesetter (mkSelector "paragraphSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:") retCDouble [argCULong glyphIndex, argNSRect rect]
+paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRect nsatsTypesetter glyphIndex rect =
+  sendMessage nsatsTypesetter paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector glyphIndex rect
 
 -- | @- setHardInvalidation:forGlyphRange:@
 setHardInvalidation_forGlyphRange :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Bool -> NSRange -> IO ()
-setHardInvalidation_forGlyphRange nsatsTypesetter  flag glyphRange =
-    sendMsg nsatsTypesetter (mkSelector "setHardInvalidation:forGlyphRange:") retVoid [argCULong (if flag then 1 else 0), argNSRange glyphRange]
+setHardInvalidation_forGlyphRange nsatsTypesetter flag glyphRange =
+  sendMessage nsatsTypesetter setHardInvalidation_forGlyphRangeSelector flag glyphRange
 
 -- | @- getLineFragmentRect:usedRect:forParagraphSeparatorGlyphRange:atProposedOrigin:@
 getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOrigin :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Ptr NSRect -> Ptr NSRect -> NSRange -> NSPoint -> IO ()
-getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOrigin nsatsTypesetter  lineFragmentRect lineFragmentUsedRect paragraphSeparatorGlyphRange lineOrigin =
-    sendMsg nsatsTypesetter (mkSelector "getLineFragmentRect:usedRect:forParagraphSeparatorGlyphRange:atProposedOrigin:") retVoid [argPtr lineFragmentRect, argPtr lineFragmentUsedRect, argNSRange paragraphSeparatorGlyphRange, argNSPoint lineOrigin]
+getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOrigin nsatsTypesetter lineFragmentRect lineFragmentUsedRect paragraphSeparatorGlyphRange lineOrigin =
+  sendMessage nsatsTypesetter getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector lineFragmentRect lineFragmentUsedRect paragraphSeparatorGlyphRange lineOrigin
 
 -- | @- lineFragmentRectForProposedRect:remainingRect:@
 lineFragmentRectForProposedRect_remainingRect :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> NSRect -> Ptr NSRect -> IO NSRect
-lineFragmentRectForProposedRect_remainingRect nsatsTypesetter  proposedRect remainingRect =
-    sendMsgStret nsatsTypesetter (mkSelector "lineFragmentRectForProposedRect:remainingRect:") retNSRect [argNSRect proposedRect, argPtr remainingRect]
+lineFragmentRectForProposedRect_remainingRect nsatsTypesetter proposedRect remainingRect =
+  sendMessage nsatsTypesetter lineFragmentRectForProposedRect_remainingRectSelector proposedRect remainingRect
 
 -- | @+ sharedTypesetter@
 sharedTypesetter :: IO (Id NSATSTypesetter)
 sharedTypesetter  =
   do
     cls' <- getRequiredClass "NSATSTypesetter"
-    sendClassMsg cls' (mkSelector "sharedTypesetter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedTypesetterSelector
 
 -- | @- usesFontLeading@
 usesFontLeading :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO Bool
-usesFontLeading nsatsTypesetter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsatsTypesetter (mkSelector "usesFontLeading") retCULong []
+usesFontLeading nsatsTypesetter =
+  sendMessage nsatsTypesetter usesFontLeadingSelector
 
 -- | @- setUsesFontLeading:@
 setUsesFontLeading :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Bool -> IO ()
-setUsesFontLeading nsatsTypesetter  value =
-    sendMsg nsatsTypesetter (mkSelector "setUsesFontLeading:") retVoid [argCULong (if value then 1 else 0)]
+setUsesFontLeading nsatsTypesetter value =
+  sendMessage nsatsTypesetter setUsesFontLeadingSelector value
 
 -- | @- typesetterBehavior@
 typesetterBehavior :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO NSTypesetterBehavior
-typesetterBehavior nsatsTypesetter  =
-    fmap (coerce :: CLong -> NSTypesetterBehavior) $ sendMsg nsatsTypesetter (mkSelector "typesetterBehavior") retCLong []
+typesetterBehavior nsatsTypesetter =
+  sendMessage nsatsTypesetter typesetterBehaviorSelector
 
 -- | @- setTypesetterBehavior:@
 setTypesetterBehavior :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> NSTypesetterBehavior -> IO ()
-setTypesetterBehavior nsatsTypesetter  value =
-    sendMsg nsatsTypesetter (mkSelector "setTypesetterBehavior:") retVoid [argCLong (coerce value)]
+setTypesetterBehavior nsatsTypesetter value =
+  sendMessage nsatsTypesetter setTypesetterBehaviorSelector value
 
 -- | @- hyphenationFactor@
 hyphenationFactor :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO CFloat
-hyphenationFactor nsatsTypesetter  =
-    sendMsg nsatsTypesetter (mkSelector "hyphenationFactor") retCFloat []
+hyphenationFactor nsatsTypesetter =
+  sendMessage nsatsTypesetter hyphenationFactorSelector
 
 -- | @- setHyphenationFactor:@
 setHyphenationFactor :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CFloat -> IO ()
-setHyphenationFactor nsatsTypesetter  value =
-    sendMsg nsatsTypesetter (mkSelector "setHyphenationFactor:") retVoid [argCFloat value]
+setHyphenationFactor nsatsTypesetter value =
+  sendMessage nsatsTypesetter setHyphenationFactorSelector value
 
 -- | @- lineFragmentPadding@
 lineFragmentPadding :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO CDouble
-lineFragmentPadding nsatsTypesetter  =
-    sendMsg nsatsTypesetter (mkSelector "lineFragmentPadding") retCDouble []
+lineFragmentPadding nsatsTypesetter =
+  sendMessage nsatsTypesetter lineFragmentPaddingSelector
 
 -- | @- setLineFragmentPadding:@
 setLineFragmentPadding :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> CDouble -> IO ()
-setLineFragmentPadding nsatsTypesetter  value =
-    sendMsg nsatsTypesetter (mkSelector "setLineFragmentPadding:") retVoid [argCDouble value]
+setLineFragmentPadding nsatsTypesetter value =
+  sendMessage nsatsTypesetter setLineFragmentPaddingSelector value
 
 -- | @- bidiProcessingEnabled@
 bidiProcessingEnabled :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO Bool
-bidiProcessingEnabled nsatsTypesetter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsatsTypesetter (mkSelector "bidiProcessingEnabled") retCULong []
+bidiProcessingEnabled nsatsTypesetter =
+  sendMessage nsatsTypesetter bidiProcessingEnabledSelector
 
 -- | @- setBidiProcessingEnabled:@
 setBidiProcessingEnabled :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> Bool -> IO ()
-setBidiProcessingEnabled nsatsTypesetter  value =
-    sendMsg nsatsTypesetter (mkSelector "setBidiProcessingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setBidiProcessingEnabled nsatsTypesetter value =
+  sendMessage nsatsTypesetter setBidiProcessingEnabledSelector value
 
 -- | @- attributedString@
 attributedString :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO (Id NSAttributedString)
-attributedString nsatsTypesetter  =
-    sendMsg nsatsTypesetter (mkSelector "attributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedString nsatsTypesetter =
+  sendMessage nsatsTypesetter attributedStringSelector
 
 -- | @- setAttributedString:@
 setAttributedString :: (IsNSATSTypesetter nsatsTypesetter, IsNSAttributedString value) => nsatsTypesetter -> value -> IO ()
-setAttributedString nsatsTypesetter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsatsTypesetter (mkSelector "setAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedString nsatsTypesetter value =
+  sendMessage nsatsTypesetter setAttributedStringSelector (toNSAttributedString value)
 
 -- | @- paragraphGlyphRange@
 paragraphGlyphRange :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO NSRange
-paragraphGlyphRange nsatsTypesetter  =
-    sendMsgStret nsatsTypesetter (mkSelector "paragraphGlyphRange") retNSRange []
+paragraphGlyphRange nsatsTypesetter =
+  sendMessage nsatsTypesetter paragraphGlyphRangeSelector
 
 -- | @- paragraphSeparatorGlyphRange@
 paragraphSeparatorGlyphRange :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO NSRange
-paragraphSeparatorGlyphRange nsatsTypesetter  =
-    sendMsgStret nsatsTypesetter (mkSelector "paragraphSeparatorGlyphRange") retNSRange []
+paragraphSeparatorGlyphRange nsatsTypesetter =
+  sendMessage nsatsTypesetter paragraphSeparatorGlyphRangeSelector
 
 -- | @- layoutManager@
 layoutManager :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO (Id NSLayoutManager)
-layoutManager nsatsTypesetter  =
-    sendMsg nsatsTypesetter (mkSelector "layoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutManager nsatsTypesetter =
+  sendMessage nsatsTypesetter layoutManagerSelector
 
 -- | @- currentTextContainer@
 currentTextContainer :: IsNSATSTypesetter nsatsTypesetter => nsatsTypesetter -> IO (Id NSTextContainer)
-currentTextContainer nsatsTypesetter  =
-    sendMsg nsatsTypesetter (mkSelector "currentTextContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentTextContainer nsatsTypesetter =
+  sendMessage nsatsTypesetter currentTextContainerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector '[NSRange, RawId, Ptr CULong, Ptr NSGlyphInscription, Ptr Bool] CULong
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:"
 
 -- | @Selector@ for @willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:@
-willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector :: Selector
+willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector :: Selector '[Ptr NSRect, NSRange, Ptr NSRect, Ptr CDouble] ()
 willSetLineFragmentRect_forGlyphRange_usedRect_baselineOffsetSelector = mkSelector "willSetLineFragmentRect:forGlyphRange:usedRect:baselineOffset:"
 
 -- | @Selector@ for @shouldBreakLineByWordBeforeCharacterAtIndex:@
-shouldBreakLineByWordBeforeCharacterAtIndexSelector :: Selector
+shouldBreakLineByWordBeforeCharacterAtIndexSelector :: Selector '[CULong] Bool
 shouldBreakLineByWordBeforeCharacterAtIndexSelector = mkSelector "shouldBreakLineByWordBeforeCharacterAtIndex:"
 
 -- | @Selector@ for @shouldBreakLineByHyphenatingBeforeCharacterAtIndex:@
-shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector :: Selector
+shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector :: Selector '[CULong] Bool
 shouldBreakLineByHyphenatingBeforeCharacterAtIndexSelector = mkSelector "shouldBreakLineByHyphenatingBeforeCharacterAtIndex:"
 
 -- | @Selector@ for @hyphenationFactorForGlyphAtIndex:@
-hyphenationFactorForGlyphAtIndexSelector :: Selector
+hyphenationFactorForGlyphAtIndexSelector :: Selector '[CULong] CFloat
 hyphenationFactorForGlyphAtIndexSelector = mkSelector "hyphenationFactorForGlyphAtIndex:"
 
 -- | @Selector@ for @hyphenCharacterForGlyphAtIndex:@
-hyphenCharacterForGlyphAtIndexSelector :: Selector
+hyphenCharacterForGlyphAtIndexSelector :: Selector '[CULong] CUInt
 hyphenCharacterForGlyphAtIndexSelector = mkSelector "hyphenCharacterForGlyphAtIndex:"
 
 -- | @Selector@ for @boundingBoxForControlGlyphAtIndex:forTextContainer:proposedLineFragment:glyphPosition:characterIndex:@
-boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector :: Selector
+boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector :: Selector '[CULong, Id NSTextContainer, NSRect, NSPoint, CULong] NSRect
 boundingBoxForControlGlyphAtIndex_forTextContainer_proposedLineFragment_glyphPosition_characterIndexSelector = mkSelector "boundingBoxForControlGlyphAtIndex:forTextContainer:proposedLineFragment:glyphPosition:characterIndex:"
 
 -- | @Selector@ for @substituteFontForFont:@
-substituteFontForFontSelector :: Selector
+substituteFontForFontSelector :: Selector '[Id NSFont] (Id NSFont)
 substituteFontForFontSelector = mkSelector "substituteFontForFont:"
 
 -- | @Selector@ for @textTabForGlyphLocation:writingDirection:maxLocation:@
-textTabForGlyphLocation_writingDirection_maxLocationSelector :: Selector
+textTabForGlyphLocation_writingDirection_maxLocationSelector :: Selector '[CDouble, NSWritingDirection, CDouble] (Id NSTextTab)
 textTabForGlyphLocation_writingDirection_maxLocationSelector = mkSelector "textTabForGlyphLocation:writingDirection:maxLocation:"
 
 -- | @Selector@ for @setParagraphGlyphRange:separatorGlyphRange:@
-setParagraphGlyphRange_separatorGlyphRangeSelector :: Selector
+setParagraphGlyphRange_separatorGlyphRangeSelector :: Selector '[NSRange, NSRange] ()
 setParagraphGlyphRange_separatorGlyphRangeSelector = mkSelector "setParagraphGlyphRange:separatorGlyphRange:"
 
 -- | @Selector@ for @layoutParagraphAtPoint:@
-layoutParagraphAtPointSelector :: Selector
+layoutParagraphAtPointSelector :: Selector '[Ptr NSPoint] CULong
 layoutParagraphAtPointSelector = mkSelector "layoutParagraphAtPoint:"
 
 -- | @Selector@ for @lineSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:@
-lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector
+lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector '[CULong, NSRect] CDouble
 lineSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector = mkSelector "lineSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:"
 
 -- | @Selector@ for @paragraphSpacingBeforeGlyphAtIndex:withProposedLineFragmentRect:@
-paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector
+paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector '[CULong, NSRect] CDouble
 paragraphSpacingBeforeGlyphAtIndex_withProposedLineFragmentRectSelector = mkSelector "paragraphSpacingBeforeGlyphAtIndex:withProposedLineFragmentRect:"
 
 -- | @Selector@ for @paragraphSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:@
-paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector
+paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector :: Selector '[CULong, NSRect] CDouble
 paragraphSpacingAfterGlyphAtIndex_withProposedLineFragmentRectSelector = mkSelector "paragraphSpacingAfterGlyphAtIndex:withProposedLineFragmentRect:"
 
 -- | @Selector@ for @setHardInvalidation:forGlyphRange:@
-setHardInvalidation_forGlyphRangeSelector :: Selector
+setHardInvalidation_forGlyphRangeSelector :: Selector '[Bool, NSRange] ()
 setHardInvalidation_forGlyphRangeSelector = mkSelector "setHardInvalidation:forGlyphRange:"
 
 -- | @Selector@ for @getLineFragmentRect:usedRect:forParagraphSeparatorGlyphRange:atProposedOrigin:@
-getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector :: Selector
+getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector :: Selector '[Ptr NSRect, Ptr NSRect, NSRange, NSPoint] ()
 getLineFragmentRect_usedRect_forParagraphSeparatorGlyphRange_atProposedOriginSelector = mkSelector "getLineFragmentRect:usedRect:forParagraphSeparatorGlyphRange:atProposedOrigin:"
 
 -- | @Selector@ for @lineFragmentRectForProposedRect:remainingRect:@
-lineFragmentRectForProposedRect_remainingRectSelector :: Selector
+lineFragmentRectForProposedRect_remainingRectSelector :: Selector '[NSRect, Ptr NSRect] NSRect
 lineFragmentRectForProposedRect_remainingRectSelector = mkSelector "lineFragmentRectForProposedRect:remainingRect:"
 
 -- | @Selector@ for @sharedTypesetter@
-sharedTypesetterSelector :: Selector
+sharedTypesetterSelector :: Selector '[] (Id NSATSTypesetter)
 sharedTypesetterSelector = mkSelector "sharedTypesetter"
 
 -- | @Selector@ for @usesFontLeading@
-usesFontLeadingSelector :: Selector
+usesFontLeadingSelector :: Selector '[] Bool
 usesFontLeadingSelector = mkSelector "usesFontLeading"
 
 -- | @Selector@ for @setUsesFontLeading:@
-setUsesFontLeadingSelector :: Selector
+setUsesFontLeadingSelector :: Selector '[Bool] ()
 setUsesFontLeadingSelector = mkSelector "setUsesFontLeading:"
 
 -- | @Selector@ for @typesetterBehavior@
-typesetterBehaviorSelector :: Selector
+typesetterBehaviorSelector :: Selector '[] NSTypesetterBehavior
 typesetterBehaviorSelector = mkSelector "typesetterBehavior"
 
 -- | @Selector@ for @setTypesetterBehavior:@
-setTypesetterBehaviorSelector :: Selector
+setTypesetterBehaviorSelector :: Selector '[NSTypesetterBehavior] ()
 setTypesetterBehaviorSelector = mkSelector "setTypesetterBehavior:"
 
 -- | @Selector@ for @hyphenationFactor@
-hyphenationFactorSelector :: Selector
+hyphenationFactorSelector :: Selector '[] CFloat
 hyphenationFactorSelector = mkSelector "hyphenationFactor"
 
 -- | @Selector@ for @setHyphenationFactor:@
-setHyphenationFactorSelector :: Selector
+setHyphenationFactorSelector :: Selector '[CFloat] ()
 setHyphenationFactorSelector = mkSelector "setHyphenationFactor:"
 
 -- | @Selector@ for @lineFragmentPadding@
-lineFragmentPaddingSelector :: Selector
+lineFragmentPaddingSelector :: Selector '[] CDouble
 lineFragmentPaddingSelector = mkSelector "lineFragmentPadding"
 
 -- | @Selector@ for @setLineFragmentPadding:@
-setLineFragmentPaddingSelector :: Selector
+setLineFragmentPaddingSelector :: Selector '[CDouble] ()
 setLineFragmentPaddingSelector = mkSelector "setLineFragmentPadding:"
 
 -- | @Selector@ for @bidiProcessingEnabled@
-bidiProcessingEnabledSelector :: Selector
+bidiProcessingEnabledSelector :: Selector '[] Bool
 bidiProcessingEnabledSelector = mkSelector "bidiProcessingEnabled"
 
 -- | @Selector@ for @setBidiProcessingEnabled:@
-setBidiProcessingEnabledSelector :: Selector
+setBidiProcessingEnabledSelector :: Selector '[Bool] ()
 setBidiProcessingEnabledSelector = mkSelector "setBidiProcessingEnabled:"
 
 -- | @Selector@ for @attributedString@
-attributedStringSelector :: Selector
+attributedStringSelector :: Selector '[] (Id NSAttributedString)
 attributedStringSelector = mkSelector "attributedString"
 
 -- | @Selector@ for @setAttributedString:@
-setAttributedStringSelector :: Selector
+setAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringSelector = mkSelector "setAttributedString:"
 
 -- | @Selector@ for @paragraphGlyphRange@
-paragraphGlyphRangeSelector :: Selector
+paragraphGlyphRangeSelector :: Selector '[] NSRange
 paragraphGlyphRangeSelector = mkSelector "paragraphGlyphRange"
 
 -- | @Selector@ for @paragraphSeparatorGlyphRange@
-paragraphSeparatorGlyphRangeSelector :: Selector
+paragraphSeparatorGlyphRangeSelector :: Selector '[] NSRange
 paragraphSeparatorGlyphRangeSelector = mkSelector "paragraphSeparatorGlyphRange"
 
 -- | @Selector@ for @layoutManager@
-layoutManagerSelector :: Selector
+layoutManagerSelector :: Selector '[] (Id NSLayoutManager)
 layoutManagerSelector = mkSelector "layoutManager"
 
 -- | @Selector@ for @currentTextContainer@
-currentTextContainerSelector :: Selector
+currentTextContainerSelector :: Selector '[] (Id NSTextContainer)
 currentTextContainerSelector = mkSelector "currentTextContainer"
 

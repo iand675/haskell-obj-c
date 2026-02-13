@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Intents.INSearchForNotebookItemsIntentResponse
   , setTasks
   , sortType
   , setSortType
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , notesSelector
   , setNotesSelector
-  , taskListsSelector
+  , setSortTypeSelector
   , setTaskListsSelector
-  , tasksSelector
   , setTasksSelector
   , sortTypeSelector
-  , setSortTypeSelector
+  , taskListsSelector
+  , tasksSelector
 
   -- * Enum types
   , INSearchForNotebookItemsIntentResponseCode(INSearchForNotebookItemsIntentResponseCode)
@@ -45,15 +46,11 @@ module ObjC.Intents.INSearchForNotebookItemsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,108 +60,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO RawId
-init_ inSearchForNotebookItemsIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSearchForNotebookItemsIntentResponse =
+  sendOwnedMessage inSearchForNotebookItemsIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse, IsNSUserActivity userActivity) => inSearchForNotebookItemsIntentResponse -> INSearchForNotebookItemsIntentResponseCode -> userActivity -> IO (Id INSearchForNotebookItemsIntentResponse)
-initWithCode_userActivity inSearchForNotebookItemsIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSearchForNotebookItemsIntentResponse code userActivity =
+  sendOwnedMessage inSearchForNotebookItemsIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO INSearchForNotebookItemsIntentResponseCode
-code inSearchForNotebookItemsIntentResponse  =
-    fmap (coerce :: CLong -> INSearchForNotebookItemsIntentResponseCode) $ sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "code") retCLong []
+code inSearchForNotebookItemsIntentResponse =
+  sendMessage inSearchForNotebookItemsIntentResponse codeSelector
 
 -- | @- notes@
 notes :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO (Id NSArray)
-notes inSearchForNotebookItemsIntentResponse  =
-    sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "notes") (retPtr retVoid) [] >>= retainedObject . castPtr
+notes inSearchForNotebookItemsIntentResponse =
+  sendMessage inSearchForNotebookItemsIntentResponse notesSelector
 
 -- | @- setNotes:@
 setNotes :: (IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse, IsNSArray value) => inSearchForNotebookItemsIntentResponse -> value -> IO ()
-setNotes inSearchForNotebookItemsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "setNotes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotes inSearchForNotebookItemsIntentResponse value =
+  sendMessage inSearchForNotebookItemsIntentResponse setNotesSelector (toNSArray value)
 
 -- | @- taskLists@
 taskLists :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO (Id NSArray)
-taskLists inSearchForNotebookItemsIntentResponse  =
-    sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "taskLists") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskLists inSearchForNotebookItemsIntentResponse =
+  sendMessage inSearchForNotebookItemsIntentResponse taskListsSelector
 
 -- | @- setTaskLists:@
 setTaskLists :: (IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse, IsNSArray value) => inSearchForNotebookItemsIntentResponse -> value -> IO ()
-setTaskLists inSearchForNotebookItemsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "setTaskLists:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTaskLists inSearchForNotebookItemsIntentResponse value =
+  sendMessage inSearchForNotebookItemsIntentResponse setTaskListsSelector (toNSArray value)
 
 -- | @- tasks@
 tasks :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO (Id NSArray)
-tasks inSearchForNotebookItemsIntentResponse  =
-    sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "tasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tasks inSearchForNotebookItemsIntentResponse =
+  sendMessage inSearchForNotebookItemsIntentResponse tasksSelector
 
 -- | @- setTasks:@
 setTasks :: (IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse, IsNSArray value) => inSearchForNotebookItemsIntentResponse -> value -> IO ()
-setTasks inSearchForNotebookItemsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "setTasks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTasks inSearchForNotebookItemsIntentResponse value =
+  sendMessage inSearchForNotebookItemsIntentResponse setTasksSelector (toNSArray value)
 
 -- | @- sortType@
 sortType :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> IO INSortType
-sortType inSearchForNotebookItemsIntentResponse  =
-    fmap (coerce :: CLong -> INSortType) $ sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "sortType") retCLong []
+sortType inSearchForNotebookItemsIntentResponse =
+  sendMessage inSearchForNotebookItemsIntentResponse sortTypeSelector
 
 -- | @- setSortType:@
 setSortType :: IsINSearchForNotebookItemsIntentResponse inSearchForNotebookItemsIntentResponse => inSearchForNotebookItemsIntentResponse -> INSortType -> IO ()
-setSortType inSearchForNotebookItemsIntentResponse  value =
-    sendMsg inSearchForNotebookItemsIntentResponse (mkSelector "setSortType:") retVoid [argCLong (coerce value)]
+setSortType inSearchForNotebookItemsIntentResponse value =
+  sendMessage inSearchForNotebookItemsIntentResponse setSortTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSearchForNotebookItemsIntentResponseCode, Id NSUserActivity] (Id INSearchForNotebookItemsIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSearchForNotebookItemsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @notes@
-notesSelector :: Selector
+notesSelector :: Selector '[] (Id NSArray)
 notesSelector = mkSelector "notes"
 
 -- | @Selector@ for @setNotes:@
-setNotesSelector :: Selector
+setNotesSelector :: Selector '[Id NSArray] ()
 setNotesSelector = mkSelector "setNotes:"
 
 -- | @Selector@ for @taskLists@
-taskListsSelector :: Selector
+taskListsSelector :: Selector '[] (Id NSArray)
 taskListsSelector = mkSelector "taskLists"
 
 -- | @Selector@ for @setTaskLists:@
-setTaskListsSelector :: Selector
+setTaskListsSelector :: Selector '[Id NSArray] ()
 setTaskListsSelector = mkSelector "setTaskLists:"
 
 -- | @Selector@ for @tasks@
-tasksSelector :: Selector
+tasksSelector :: Selector '[] (Id NSArray)
 tasksSelector = mkSelector "tasks"
 
 -- | @Selector@ for @setTasks:@
-setTasksSelector :: Selector
+setTasksSelector :: Selector '[Id NSArray] ()
 setTasksSelector = mkSelector "setTasks:"
 
 -- | @Selector@ for @sortType@
-sortTypeSelector :: Selector
+sortTypeSelector :: Selector '[] INSortType
 sortTypeSelector = mkSelector "sortType"
 
 -- | @Selector@ for @setSortType:@
-setSortTypeSelector :: Selector
+setSortTypeSelector :: Selector '[INSortType] ()
 setSortTypeSelector = mkSelector "setSortType:"
 

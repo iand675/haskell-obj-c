@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -64,51 +65,51 @@ module ObjC.AVFoundation.AVAssetExportSession
   , fileLengthLimit
   , setFileLengthLimit
   , supportedFileTypes
-  , initSelector
-  , newSelector
-  , exportSessionWithAsset_presetNameSelector
-  , initWithAsset_presetNameSelector
-  , exportAsynchronouslyWithCompletionHandlerSelector
+  , allExportPresetsSelector
+  , allowsParallelizedExportSelector
+  , assetSelector
+  , audioMixSelector
+  , audioTimePitchAlgorithmSelector
+  , audioTrackGroupHandlingSelector
+  , canPerformMultiplePassesOverSourceMediaDataSelector
   , cancelExportSelector
+  , customVideoCompositorSelector
+  , determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector
+  , directoryForTemporaryFilesSelector
+  , errorSelector
   , estimateMaximumDurationWithCompletionHandlerSelector
   , estimateOutputFileLengthWithCompletionHandlerSelector
-  , allExportPresetsSelector
-  , exportPresetsCompatibleWithAssetSelector
-  , determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector
-  , presetNameSelector
-  , assetSelector
-  , outputFileTypeSelector
-  , setOutputFileTypeSelector
-  , outputURLSelector
-  , setOutputURLSelector
-  , shouldOptimizeForNetworkUseSelector
-  , setShouldOptimizeForNetworkUseSelector
-  , allowsParallelizedExportSelector
-  , setAllowsParallelizedExportSelector
-  , statusSelector
-  , errorSelector
-  , progressSelector
-  , canPerformMultiplePassesOverSourceMediaDataSelector
-  , setCanPerformMultiplePassesOverSourceMediaDataSelector
-  , directoryForTemporaryFilesSelector
-  , setDirectoryForTemporaryFilesSelector
-  , audioTimePitchAlgorithmSelector
-  , setAudioTimePitchAlgorithmSelector
-  , audioMixSelector
-  , setAudioMixSelector
-  , videoCompositionSelector
-  , setVideoCompositionSelector
-  , customVideoCompositorSelector
-  , audioTrackGroupHandlingSelector
-  , setAudioTrackGroupHandlingSelector
-  , metadataSelector
-  , setMetadataSelector
-  , metadataItemFilterSelector
-  , setMetadataItemFilterSelector
   , estimatedOutputFileLengthSelector
+  , exportAsynchronouslyWithCompletionHandlerSelector
+  , exportPresetsCompatibleWithAssetSelector
+  , exportSessionWithAsset_presetNameSelector
   , fileLengthLimitSelector
+  , initSelector
+  , initWithAsset_presetNameSelector
+  , metadataItemFilterSelector
+  , metadataSelector
+  , newSelector
+  , outputFileTypeSelector
+  , outputURLSelector
+  , presetNameSelector
+  , progressSelector
+  , setAllowsParallelizedExportSelector
+  , setAudioMixSelector
+  , setAudioTimePitchAlgorithmSelector
+  , setAudioTrackGroupHandlingSelector
+  , setCanPerformMultiplePassesOverSourceMediaDataSelector
+  , setDirectoryForTemporaryFilesSelector
   , setFileLengthLimitSelector
+  , setMetadataItemFilterSelector
+  , setMetadataSelector
+  , setOutputFileTypeSelector
+  , setOutputURLSelector
+  , setShouldOptimizeForNetworkUseSelector
+  , setVideoCompositionSelector
+  , shouldOptimizeForNetworkUseSelector
+  , statusSelector
   , supportedFileTypesSelector
+  , videoCompositionSelector
 
   -- * Enum types
   , AVAssetExportSessionStatus(AVAssetExportSessionStatus)
@@ -125,15 +126,11 @@ module ObjC.AVFoundation.AVAssetExportSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -143,15 +140,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVAssetExportSession)
-init_ avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetExportSession =
+  sendOwnedMessage avAssetExportSession initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetExportSession)
 new  =
   do
     cls' <- getRequiredClass "AVAssetExportSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | exportSessionWithAsset:presetName:
 --
@@ -170,9 +167,7 @@ exportSessionWithAsset_presetName :: (IsAVAsset asset, IsNSString presetName) =>
 exportSessionWithAsset_presetName asset presetName =
   do
     cls' <- getRequiredClass "AVAssetExportSession"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr presetName $ \raw_presetName ->
-        sendClassMsg cls' (mkSelector "exportSessionWithAsset:presetName:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_presetName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' exportSessionWithAsset_presetNameSelector (toAVAsset asset) (toNSString presetName)
 
 -- | initWithAsset:presetName:
 --
@@ -188,10 +183,8 @@ exportSessionWithAsset_presetName asset presetName =
 --
 -- ObjC selector: @- initWithAsset:presetName:@
 initWithAsset_presetName :: (IsAVAssetExportSession avAssetExportSession, IsAVAsset asset, IsNSString presetName) => avAssetExportSession -> asset -> presetName -> IO (Id AVAssetExportSession)
-initWithAsset_presetName avAssetExportSession  asset presetName =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr presetName $ \raw_presetName ->
-        sendMsg avAssetExportSession (mkSelector "initWithAsset:presetName:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_presetName :: Ptr ())] >>= ownedObject . castPtr
+initWithAsset_presetName avAssetExportSession asset presetName =
+  sendOwnedMessage avAssetExportSession initWithAsset_presetNameSelector (toAVAsset asset) (toNSString presetName)
 
 -- | exportAsynchronouslyWithCompletionHandler:
 --
@@ -203,8 +196,8 @@ initWithAsset_presetName avAssetExportSession  asset presetName =
 --
 -- ObjC selector: @- exportAsynchronouslyWithCompletionHandler:@
 exportAsynchronouslyWithCompletionHandler :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Ptr () -> IO ()
-exportAsynchronouslyWithCompletionHandler avAssetExportSession  handler =
-    sendMsg avAssetExportSession (mkSelector "exportAsynchronouslyWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+exportAsynchronouslyWithCompletionHandler avAssetExportSession handler =
+  sendMessage avAssetExportSession exportAsynchronouslyWithCompletionHandlerSelector handler
 
 -- | cancelExport
 --
@@ -214,8 +207,8 @@ exportAsynchronouslyWithCompletionHandler avAssetExportSession  handler =
 --
 -- ObjC selector: @- cancelExport@
 cancelExport :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO ()
-cancelExport avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "cancelExport") retVoid []
+cancelExport avAssetExportSession =
+  sendMessage avAssetExportSession cancelExportSelector
 
 -- | estimateMaximumDurationWithCompletionHandler:
 --
@@ -227,8 +220,8 @@ cancelExport avAssetExportSession  =
 --
 -- ObjC selector: @- estimateMaximumDurationWithCompletionHandler:@
 estimateMaximumDurationWithCompletionHandler :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Ptr () -> IO ()
-estimateMaximumDurationWithCompletionHandler avAssetExportSession  handler =
-    sendMsg avAssetExportSession (mkSelector "estimateMaximumDurationWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+estimateMaximumDurationWithCompletionHandler avAssetExportSession handler =
+  sendMessage avAssetExportSession estimateMaximumDurationWithCompletionHandlerSelector handler
 
 -- | estimateOutputFileLengthWithCompletionHandler:
 --
@@ -240,8 +233,8 @@ estimateMaximumDurationWithCompletionHandler avAssetExportSession  handler =
 --
 -- ObjC selector: @- estimateOutputFileLengthWithCompletionHandler:@
 estimateOutputFileLengthWithCompletionHandler :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Ptr () -> IO ()
-estimateOutputFileLengthWithCompletionHandler avAssetExportSession  handler =
-    sendMsg avAssetExportSession (mkSelector "estimateOutputFileLengthWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+estimateOutputFileLengthWithCompletionHandler avAssetExportSession handler =
+  sendMessage avAssetExportSession estimateOutputFileLengthWithCompletionHandlerSelector handler
 
 -- | allExportPresets
 --
@@ -256,7 +249,7 @@ allExportPresets :: IO (Id NSArray)
 allExportPresets  =
   do
     cls' <- getRequiredClass "AVAssetExportSession"
-    sendClassMsg cls' (mkSelector "allExportPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' allExportPresetsSelector
 
 -- | exportPresetsCompatibleWithAsset:
 --
@@ -273,8 +266,7 @@ exportPresetsCompatibleWithAsset :: IsAVAsset asset => asset -> IO (Id NSArray)
 exportPresetsCompatibleWithAsset asset =
   do
     cls' <- getRequiredClass "AVAssetExportSession"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "exportPresetsCompatibleWithAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' exportPresetsCompatibleWithAssetSelector (toAVAsset asset)
 
 -- | determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:
 --
@@ -295,52 +287,47 @@ determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandler 
 determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandler presetName asset outputFileType handler =
   do
     cls' <- getRequiredClass "AVAssetExportSession"
-    withObjCPtr presetName $ \raw_presetName ->
-      withObjCPtr asset $ \raw_asset ->
-        withObjCPtr outputFileType $ \raw_outputFileType ->
-          sendClassMsg cls' (mkSelector "determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:") retVoid [argPtr (castPtr raw_presetName :: Ptr ()), argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector (toNSString presetName) (toAVAsset asset) (toNSString outputFileType) handler
 
 -- | @- presetName@
 presetName :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSString)
-presetName avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "presetName") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetName avAssetExportSession =
+  sendMessage avAssetExportSession presetNameSelector
 
 -- | @- asset@
 asset :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVAsset)
-asset avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset avAssetExportSession =
+  sendMessage avAssetExportSession assetSelector
 
 -- | @- outputFileType@
 outputFileType :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSString)
-outputFileType avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "outputFileType") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileType avAssetExportSession =
+  sendMessage avAssetExportSession outputFileTypeSelector
 
 -- | @- setOutputFileType:@
 setOutputFileType :: (IsAVAssetExportSession avAssetExportSession, IsNSString value) => avAssetExportSession -> value -> IO ()
-setOutputFileType avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setOutputFileType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputFileType avAssetExportSession value =
+  sendMessage avAssetExportSession setOutputFileTypeSelector (toNSString value)
 
 -- | @- outputURL@
 outputURL :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSURL)
-outputURL avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "outputURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputURL avAssetExportSession =
+  sendMessage avAssetExportSession outputURLSelector
 
 -- | @- setOutputURL:@
 setOutputURL :: (IsAVAssetExportSession avAssetExportSession, IsNSURL value) => avAssetExportSession -> value -> IO ()
-setOutputURL avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setOutputURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputURL avAssetExportSession value =
+  sendMessage avAssetExportSession setOutputURLSelector (toNSURL value)
 
 -- | @- shouldOptimizeForNetworkUse@
 shouldOptimizeForNetworkUse :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO Bool
-shouldOptimizeForNetworkUse avAssetExportSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetExportSession (mkSelector "shouldOptimizeForNetworkUse") retCULong []
+shouldOptimizeForNetworkUse avAssetExportSession =
+  sendMessage avAssetExportSession shouldOptimizeForNetworkUseSelector
 
 -- | @- setShouldOptimizeForNetworkUse:@
 setShouldOptimizeForNetworkUse :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Bool -> IO ()
-setShouldOptimizeForNetworkUse avAssetExportSession  value =
-    sendMsg avAssetExportSession (mkSelector "setShouldOptimizeForNetworkUse:") retVoid [argCULong (if value then 1 else 0)]
+setShouldOptimizeForNetworkUse avAssetExportSession value =
+  sendMessage avAssetExportSession setShouldOptimizeForNetworkUseSelector value
 
 -- | allowsParallelizedExport
 --
@@ -350,8 +337,8 @@ setShouldOptimizeForNetworkUse avAssetExportSession  value =
 --
 -- ObjC selector: @- allowsParallelizedExport@
 allowsParallelizedExport :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO Bool
-allowsParallelizedExport avAssetExportSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetExportSession (mkSelector "allowsParallelizedExport") retCULong []
+allowsParallelizedExport avAssetExportSession =
+  sendMessage avAssetExportSession allowsParallelizedExportSelector
 
 -- | allowsParallelizedExport
 --
@@ -361,23 +348,23 @@ allowsParallelizedExport avAssetExportSession  =
 --
 -- ObjC selector: @- setAllowsParallelizedExport:@
 setAllowsParallelizedExport :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Bool -> IO ()
-setAllowsParallelizedExport avAssetExportSession  value =
-    sendMsg avAssetExportSession (mkSelector "setAllowsParallelizedExport:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsParallelizedExport avAssetExportSession value =
+  sendMessage avAssetExportSession setAllowsParallelizedExportSelector value
 
 -- | @- status@
 status :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO AVAssetExportSessionStatus
-status avAssetExportSession  =
-    fmap (coerce :: CLong -> AVAssetExportSessionStatus) $ sendMsg avAssetExportSession (mkSelector "status") retCLong []
+status avAssetExportSession =
+  sendMessage avAssetExportSession statusSelector
 
 -- | @- error@
 error_ :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSError)
-error_ avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avAssetExportSession =
+  sendMessage avAssetExportSession errorSelector
 
 -- | @- progress@
 progress :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO CFloat
-progress avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "progress") retCFloat []
+progress avAssetExportSession =
+  sendMessage avAssetExportSession progressSelector
 
 -- | canPerformMultiplePassesOverSourceMediaData
 --
@@ -391,8 +378,8 @@ progress avAssetExportSession  =
 --
 -- ObjC selector: @- canPerformMultiplePassesOverSourceMediaData@
 canPerformMultiplePassesOverSourceMediaData :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO Bool
-canPerformMultiplePassesOverSourceMediaData avAssetExportSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetExportSession (mkSelector "canPerformMultiplePassesOverSourceMediaData") retCULong []
+canPerformMultiplePassesOverSourceMediaData avAssetExportSession =
+  sendMessage avAssetExportSession canPerformMultiplePassesOverSourceMediaDataSelector
 
 -- | canPerformMultiplePassesOverSourceMediaData
 --
@@ -406,8 +393,8 @@ canPerformMultiplePassesOverSourceMediaData avAssetExportSession  =
 --
 -- ObjC selector: @- setCanPerformMultiplePassesOverSourceMediaData:@
 setCanPerformMultiplePassesOverSourceMediaData :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> Bool -> IO ()
-setCanPerformMultiplePassesOverSourceMediaData avAssetExportSession  value =
-    sendMsg avAssetExportSession (mkSelector "setCanPerformMultiplePassesOverSourceMediaData:") retVoid [argCULong (if value then 1 else 0)]
+setCanPerformMultiplePassesOverSourceMediaData avAssetExportSession value =
+  sendMessage avAssetExportSession setCanPerformMultiplePassesOverSourceMediaDataSelector value
 
 -- | directoryForTemporaryFiles
 --
@@ -421,8 +408,8 @@ setCanPerformMultiplePassesOverSourceMediaData avAssetExportSession  value =
 --
 -- ObjC selector: @- directoryForTemporaryFiles@
 directoryForTemporaryFiles :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSURL)
-directoryForTemporaryFiles avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "directoryForTemporaryFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+directoryForTemporaryFiles avAssetExportSession =
+  sendMessage avAssetExportSession directoryForTemporaryFilesSelector
 
 -- | directoryForTemporaryFiles
 --
@@ -436,47 +423,43 @@ directoryForTemporaryFiles avAssetExportSession  =
 --
 -- ObjC selector: @- setDirectoryForTemporaryFiles:@
 setDirectoryForTemporaryFiles :: (IsAVAssetExportSession avAssetExportSession, IsNSURL value) => avAssetExportSession -> value -> IO ()
-setDirectoryForTemporaryFiles avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setDirectoryForTemporaryFiles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirectoryForTemporaryFiles avAssetExportSession value =
+  sendMessage avAssetExportSession setDirectoryForTemporaryFilesSelector (toNSURL value)
 
 -- | @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSString)
-audioTimePitchAlgorithm avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "audioTimePitchAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTimePitchAlgorithm avAssetExportSession =
+  sendMessage avAssetExportSession audioTimePitchAlgorithmSelector
 
 -- | @- setAudioTimePitchAlgorithm:@
 setAudioTimePitchAlgorithm :: (IsAVAssetExportSession avAssetExportSession, IsNSString value) => avAssetExportSession -> value -> IO ()
-setAudioTimePitchAlgorithm avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setAudioTimePitchAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioTimePitchAlgorithm avAssetExportSession value =
+  sendMessage avAssetExportSession setAudioTimePitchAlgorithmSelector (toNSString value)
 
 -- | @- audioMix@
 audioMix :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVAudioMix)
-audioMix avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "audioMix") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioMix avAssetExportSession =
+  sendMessage avAssetExportSession audioMixSelector
 
 -- | @- setAudioMix:@
 setAudioMix :: (IsAVAssetExportSession avAssetExportSession, IsAVAudioMix value) => avAssetExportSession -> value -> IO ()
-setAudioMix avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setAudioMix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioMix avAssetExportSession value =
+  sendMessage avAssetExportSession setAudioMixSelector (toAVAudioMix value)
 
 -- | @- videoComposition@
 videoComposition :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVVideoComposition)
-videoComposition avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "videoComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoComposition avAssetExportSession =
+  sendMessage avAssetExportSession videoCompositionSelector
 
 -- | @- setVideoComposition:@
 setVideoComposition :: (IsAVAssetExportSession avAssetExportSession, IsAVVideoComposition value) => avAssetExportSession -> value -> IO ()
-setVideoComposition avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoComposition avAssetExportSession value =
+  sendMessage avAssetExportSession setVideoCompositionSelector (toAVVideoComposition value)
 
 -- | @- customVideoCompositor@
 customVideoCompositor :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO RawId
-customVideoCompositor avAssetExportSession  =
-    fmap (RawId . castPtr) $ sendMsg avAssetExportSession (mkSelector "customVideoCompositor") (retPtr retVoid) []
+customVideoCompositor avAssetExportSession =
+  sendMessage avAssetExportSession customVideoCompositorSelector
 
 -- | audioTrackGroupHandling
 --
@@ -486,8 +469,8 @@ customVideoCompositor avAssetExportSession  =
 --
 -- ObjC selector: @- audioTrackGroupHandling@
 audioTrackGroupHandling :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO AVAssetTrackGroupOutputHandling
-audioTrackGroupHandling avAssetExportSession  =
-    fmap (coerce :: CULong -> AVAssetTrackGroupOutputHandling) $ sendMsg avAssetExportSession (mkSelector "audioTrackGroupHandling") retCULong []
+audioTrackGroupHandling avAssetExportSession =
+  sendMessage avAssetExportSession audioTrackGroupHandlingSelector
 
 -- | audioTrackGroupHandling
 --
@@ -497,232 +480,230 @@ audioTrackGroupHandling avAssetExportSession  =
 --
 -- ObjC selector: @- setAudioTrackGroupHandling:@
 setAudioTrackGroupHandling :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> AVAssetTrackGroupOutputHandling -> IO ()
-setAudioTrackGroupHandling avAssetExportSession  value =
-    sendMsg avAssetExportSession (mkSelector "setAudioTrackGroupHandling:") retVoid [argCULong (coerce value)]
+setAudioTrackGroupHandling avAssetExportSession value =
+  sendMessage avAssetExportSession setAudioTrackGroupHandlingSelector value
 
 -- | @- metadata@
 metadata :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSArray)
-metadata avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avAssetExportSession =
+  sendMessage avAssetExportSession metadataSelector
 
 -- | @- setMetadata:@
 setMetadata :: (IsAVAssetExportSession avAssetExportSession, IsNSArray value) => avAssetExportSession -> value -> IO ()
-setMetadata avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avAssetExportSession value =
+  sendMessage avAssetExportSession setMetadataSelector (toNSArray value)
 
 -- | @- metadataItemFilter@
 metadataItemFilter :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id AVMetadataItemFilter)
-metadataItemFilter avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "metadataItemFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataItemFilter avAssetExportSession =
+  sendMessage avAssetExportSession metadataItemFilterSelector
 
 -- | @- setMetadataItemFilter:@
 setMetadataItemFilter :: (IsAVAssetExportSession avAssetExportSession, IsAVMetadataItemFilter value) => avAssetExportSession -> value -> IO ()
-setMetadataItemFilter avAssetExportSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetExportSession (mkSelector "setMetadataItemFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadataItemFilter avAssetExportSession value =
+  sendMessage avAssetExportSession setMetadataItemFilterSelector (toAVMetadataItemFilter value)
 
 -- | @- estimatedOutputFileLength@
 estimatedOutputFileLength :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO CLong
-estimatedOutputFileLength avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "estimatedOutputFileLength") retCLong []
+estimatedOutputFileLength avAssetExportSession =
+  sendMessage avAssetExportSession estimatedOutputFileLengthSelector
 
 -- | @- fileLengthLimit@
 fileLengthLimit :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO CLong
-fileLengthLimit avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "fileLengthLimit") retCLong []
+fileLengthLimit avAssetExportSession =
+  sendMessage avAssetExportSession fileLengthLimitSelector
 
 -- | @- setFileLengthLimit:@
 setFileLengthLimit :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> CLong -> IO ()
-setFileLengthLimit avAssetExportSession  value =
-    sendMsg avAssetExportSession (mkSelector "setFileLengthLimit:") retVoid [argCLong value]
+setFileLengthLimit avAssetExportSession value =
+  sendMessage avAssetExportSession setFileLengthLimitSelector value
 
 -- | @- supportedFileTypes@
 supportedFileTypes :: IsAVAssetExportSession avAssetExportSession => avAssetExportSession -> IO (Id NSArray)
-supportedFileTypes avAssetExportSession  =
-    sendMsg avAssetExportSession (mkSelector "supportedFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedFileTypes avAssetExportSession =
+  sendMessage avAssetExportSession supportedFileTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetExportSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetExportSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @exportSessionWithAsset:presetName:@
-exportSessionWithAsset_presetNameSelector :: Selector
+exportSessionWithAsset_presetNameSelector :: Selector '[Id AVAsset, Id NSString] (Id AVAssetExportSession)
 exportSessionWithAsset_presetNameSelector = mkSelector "exportSessionWithAsset:presetName:"
 
 -- | @Selector@ for @initWithAsset:presetName:@
-initWithAsset_presetNameSelector :: Selector
+initWithAsset_presetNameSelector :: Selector '[Id AVAsset, Id NSString] (Id AVAssetExportSession)
 initWithAsset_presetNameSelector = mkSelector "initWithAsset:presetName:"
 
 -- | @Selector@ for @exportAsynchronouslyWithCompletionHandler:@
-exportAsynchronouslyWithCompletionHandlerSelector :: Selector
+exportAsynchronouslyWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 exportAsynchronouslyWithCompletionHandlerSelector = mkSelector "exportAsynchronouslyWithCompletionHandler:"
 
 -- | @Selector@ for @cancelExport@
-cancelExportSelector :: Selector
+cancelExportSelector :: Selector '[] ()
 cancelExportSelector = mkSelector "cancelExport"
 
 -- | @Selector@ for @estimateMaximumDurationWithCompletionHandler:@
-estimateMaximumDurationWithCompletionHandlerSelector :: Selector
+estimateMaximumDurationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 estimateMaximumDurationWithCompletionHandlerSelector = mkSelector "estimateMaximumDurationWithCompletionHandler:"
 
 -- | @Selector@ for @estimateOutputFileLengthWithCompletionHandler:@
-estimateOutputFileLengthWithCompletionHandlerSelector :: Selector
+estimateOutputFileLengthWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 estimateOutputFileLengthWithCompletionHandlerSelector = mkSelector "estimateOutputFileLengthWithCompletionHandler:"
 
 -- | @Selector@ for @allExportPresets@
-allExportPresetsSelector :: Selector
+allExportPresetsSelector :: Selector '[] (Id NSArray)
 allExportPresetsSelector = mkSelector "allExportPresets"
 
 -- | @Selector@ for @exportPresetsCompatibleWithAsset:@
-exportPresetsCompatibleWithAssetSelector :: Selector
+exportPresetsCompatibleWithAssetSelector :: Selector '[Id AVAsset] (Id NSArray)
 exportPresetsCompatibleWithAssetSelector = mkSelector "exportPresetsCompatibleWithAsset:"
 
 -- | @Selector@ for @determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:@
-determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector :: Selector
+determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector :: Selector '[Id NSString, Id AVAsset, Id NSString, Ptr ()] ()
 determineCompatibilityOfExportPreset_withAsset_outputFileType_completionHandlerSelector = mkSelector "determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:"
 
 -- | @Selector@ for @presetName@
-presetNameSelector :: Selector
+presetNameSelector :: Selector '[] (Id NSString)
 presetNameSelector = mkSelector "presetName"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @outputFileType@
-outputFileTypeSelector :: Selector
+outputFileTypeSelector :: Selector '[] (Id NSString)
 outputFileTypeSelector = mkSelector "outputFileType"
 
 -- | @Selector@ for @setOutputFileType:@
-setOutputFileTypeSelector :: Selector
+setOutputFileTypeSelector :: Selector '[Id NSString] ()
 setOutputFileTypeSelector = mkSelector "setOutputFileType:"
 
 -- | @Selector@ for @outputURL@
-outputURLSelector :: Selector
+outputURLSelector :: Selector '[] (Id NSURL)
 outputURLSelector = mkSelector "outputURL"
 
 -- | @Selector@ for @setOutputURL:@
-setOutputURLSelector :: Selector
+setOutputURLSelector :: Selector '[Id NSURL] ()
 setOutputURLSelector = mkSelector "setOutputURL:"
 
 -- | @Selector@ for @shouldOptimizeForNetworkUse@
-shouldOptimizeForNetworkUseSelector :: Selector
+shouldOptimizeForNetworkUseSelector :: Selector '[] Bool
 shouldOptimizeForNetworkUseSelector = mkSelector "shouldOptimizeForNetworkUse"
 
 -- | @Selector@ for @setShouldOptimizeForNetworkUse:@
-setShouldOptimizeForNetworkUseSelector :: Selector
+setShouldOptimizeForNetworkUseSelector :: Selector '[Bool] ()
 setShouldOptimizeForNetworkUseSelector = mkSelector "setShouldOptimizeForNetworkUse:"
 
 -- | @Selector@ for @allowsParallelizedExport@
-allowsParallelizedExportSelector :: Selector
+allowsParallelizedExportSelector :: Selector '[] Bool
 allowsParallelizedExportSelector = mkSelector "allowsParallelizedExport"
 
 -- | @Selector@ for @setAllowsParallelizedExport:@
-setAllowsParallelizedExportSelector :: Selector
+setAllowsParallelizedExportSelector :: Selector '[Bool] ()
 setAllowsParallelizedExportSelector = mkSelector "setAllowsParallelizedExport:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVAssetExportSessionStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] CFloat
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @canPerformMultiplePassesOverSourceMediaData@
-canPerformMultiplePassesOverSourceMediaDataSelector :: Selector
+canPerformMultiplePassesOverSourceMediaDataSelector :: Selector '[] Bool
 canPerformMultiplePassesOverSourceMediaDataSelector = mkSelector "canPerformMultiplePassesOverSourceMediaData"
 
 -- | @Selector@ for @setCanPerformMultiplePassesOverSourceMediaData:@
-setCanPerformMultiplePassesOverSourceMediaDataSelector :: Selector
+setCanPerformMultiplePassesOverSourceMediaDataSelector :: Selector '[Bool] ()
 setCanPerformMultiplePassesOverSourceMediaDataSelector = mkSelector "setCanPerformMultiplePassesOverSourceMediaData:"
 
 -- | @Selector@ for @directoryForTemporaryFiles@
-directoryForTemporaryFilesSelector :: Selector
+directoryForTemporaryFilesSelector :: Selector '[] (Id NSURL)
 directoryForTemporaryFilesSelector = mkSelector "directoryForTemporaryFiles"
 
 -- | @Selector@ for @setDirectoryForTemporaryFiles:@
-setDirectoryForTemporaryFilesSelector :: Selector
+setDirectoryForTemporaryFilesSelector :: Selector '[Id NSURL] ()
 setDirectoryForTemporaryFilesSelector = mkSelector "setDirectoryForTemporaryFiles:"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
-audioTimePitchAlgorithmSelector :: Selector
+audioTimePitchAlgorithmSelector :: Selector '[] (Id NSString)
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
 
 -- | @Selector@ for @setAudioTimePitchAlgorithm:@
-setAudioTimePitchAlgorithmSelector :: Selector
+setAudioTimePitchAlgorithmSelector :: Selector '[Id NSString] ()
 setAudioTimePitchAlgorithmSelector = mkSelector "setAudioTimePitchAlgorithm:"
 
 -- | @Selector@ for @audioMix@
-audioMixSelector :: Selector
+audioMixSelector :: Selector '[] (Id AVAudioMix)
 audioMixSelector = mkSelector "audioMix"
 
 -- | @Selector@ for @setAudioMix:@
-setAudioMixSelector :: Selector
+setAudioMixSelector :: Selector '[Id AVAudioMix] ()
 setAudioMixSelector = mkSelector "setAudioMix:"
 
 -- | @Selector@ for @videoComposition@
-videoCompositionSelector :: Selector
+videoCompositionSelector :: Selector '[] (Id AVVideoComposition)
 videoCompositionSelector = mkSelector "videoComposition"
 
 -- | @Selector@ for @setVideoComposition:@
-setVideoCompositionSelector :: Selector
+setVideoCompositionSelector :: Selector '[Id AVVideoComposition] ()
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
 
 -- | @Selector@ for @customVideoCompositor@
-customVideoCompositorSelector :: Selector
+customVideoCompositorSelector :: Selector '[] RawId
 customVideoCompositorSelector = mkSelector "customVideoCompositor"
 
 -- | @Selector@ for @audioTrackGroupHandling@
-audioTrackGroupHandlingSelector :: Selector
+audioTrackGroupHandlingSelector :: Selector '[] AVAssetTrackGroupOutputHandling
 audioTrackGroupHandlingSelector = mkSelector "audioTrackGroupHandling"
 
 -- | @Selector@ for @setAudioTrackGroupHandling:@
-setAudioTrackGroupHandlingSelector :: Selector
+setAudioTrackGroupHandlingSelector :: Selector '[AVAssetTrackGroupOutputHandling] ()
 setAudioTrackGroupHandlingSelector = mkSelector "setAudioTrackGroupHandling:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @metadataItemFilter@
-metadataItemFilterSelector :: Selector
+metadataItemFilterSelector :: Selector '[] (Id AVMetadataItemFilter)
 metadataItemFilterSelector = mkSelector "metadataItemFilter"
 
 -- | @Selector@ for @setMetadataItemFilter:@
-setMetadataItemFilterSelector :: Selector
+setMetadataItemFilterSelector :: Selector '[Id AVMetadataItemFilter] ()
 setMetadataItemFilterSelector = mkSelector "setMetadataItemFilter:"
 
 -- | @Selector@ for @estimatedOutputFileLength@
-estimatedOutputFileLengthSelector :: Selector
+estimatedOutputFileLengthSelector :: Selector '[] CLong
 estimatedOutputFileLengthSelector = mkSelector "estimatedOutputFileLength"
 
 -- | @Selector@ for @fileLengthLimit@
-fileLengthLimitSelector :: Selector
+fileLengthLimitSelector :: Selector '[] CLong
 fileLengthLimitSelector = mkSelector "fileLengthLimit"
 
 -- | @Selector@ for @setFileLengthLimit:@
-setFileLengthLimitSelector :: Selector
+setFileLengthLimitSelector :: Selector '[CLong] ()
 setFileLengthLimitSelector = mkSelector "setFileLengthLimit:"
 
 -- | @Selector@ for @supportedFileTypes@
-supportedFileTypesSelector :: Selector
+supportedFileTypesSelector :: Selector '[] (Id NSArray)
 supportedFileTypesSelector = mkSelector "supportedFileTypes"
 

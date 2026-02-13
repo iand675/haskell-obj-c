@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.WebKit.DOMCharacterData
   , data_
   , setData
   , length_
-  , substringData_lengthSelector
   , appendDataSelector
-  , insertData_dataSelector
-  , deleteData_lengthSelector
-  , replaceData_length_dataSelector
-  , substringDataSelector
-  , insertDataSelector
-  , deleteDataSelector
-  , replaceDataSelector
   , dataSelector
-  , setDataSelector
+  , deleteDataSelector
+  , deleteData_lengthSelector
+  , insertDataSelector
+  , insertData_dataSelector
   , lengthSelector
+  , replaceDataSelector
+  , replaceData_length_dataSelector
+  , setDataSelector
+  , substringDataSelector
+  , substringData_lengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- substringData:length:@
 substringData_length :: IsDOMCharacterData domCharacterData => domCharacterData -> CUInt -> CUInt -> IO (Id NSString)
-substringData_length domCharacterData  offset length_ =
-    sendMsg domCharacterData (mkSelector "substringData:length:") (retPtr retVoid) [argCUInt offset, argCUInt length_] >>= retainedObject . castPtr
+substringData_length domCharacterData offset length_ =
+  sendMessage domCharacterData substringData_lengthSelector offset length_
 
 -- | @- appendData:@
 appendData :: (IsDOMCharacterData domCharacterData, IsNSString data_) => domCharacterData -> data_ -> IO ()
-appendData domCharacterData  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domCharacterData (mkSelector "appendData:") retVoid [argPtr (castPtr raw_data_ :: Ptr ())]
+appendData domCharacterData data_ =
+  sendMessage domCharacterData appendDataSelector (toNSString data_)
 
 -- | @- insertData:data:@
 insertData_data :: (IsDOMCharacterData domCharacterData, IsNSString data_) => domCharacterData -> CUInt -> data_ -> IO ()
-insertData_data domCharacterData  offset data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domCharacterData (mkSelector "insertData:data:") retVoid [argCUInt offset, argPtr (castPtr raw_data_ :: Ptr ())]
+insertData_data domCharacterData offset data_ =
+  sendMessage domCharacterData insertData_dataSelector offset (toNSString data_)
 
 -- | @- deleteData:length:@
 deleteData_length :: IsDOMCharacterData domCharacterData => domCharacterData -> CUInt -> CUInt -> IO ()
-deleteData_length domCharacterData  offset length_ =
-    sendMsg domCharacterData (mkSelector "deleteData:length:") retVoid [argCUInt offset, argCUInt length_]
+deleteData_length domCharacterData offset length_ =
+  sendMessage domCharacterData deleteData_lengthSelector offset length_
 
 -- | @- replaceData:length:data:@
 replaceData_length_data :: (IsDOMCharacterData domCharacterData, IsNSString data_) => domCharacterData -> CUInt -> CUInt -> data_ -> IO ()
-replaceData_length_data domCharacterData  offset length_ data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domCharacterData (mkSelector "replaceData:length:data:") retVoid [argCUInt offset, argCUInt length_, argPtr (castPtr raw_data_ :: Ptr ())]
+replaceData_length_data domCharacterData offset length_ data_ =
+  sendMessage domCharacterData replaceData_length_dataSelector offset length_ (toNSString data_)
 
 -- | @- substringData::@
 substringData :: IsDOMCharacterData domCharacterData => domCharacterData -> CUInt -> CUInt -> IO (Id NSString)
-substringData domCharacterData  offset length_ =
-    sendMsg domCharacterData (mkSelector "substringData::") (retPtr retVoid) [argCUInt offset, argCUInt length_] >>= retainedObject . castPtr
+substringData domCharacterData offset length_ =
+  sendMessage domCharacterData substringDataSelector offset length_
 
 -- | @- insertData::@
 insertData :: (IsDOMCharacterData domCharacterData, IsNSString data_) => domCharacterData -> CUInt -> data_ -> IO ()
-insertData domCharacterData  offset data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domCharacterData (mkSelector "insertData::") retVoid [argCUInt offset, argPtr (castPtr raw_data_ :: Ptr ())]
+insertData domCharacterData offset data_ =
+  sendMessage domCharacterData insertDataSelector offset (toNSString data_)
 
 -- | @- deleteData::@
 deleteData :: IsDOMCharacterData domCharacterData => domCharacterData -> CUInt -> CUInt -> IO ()
-deleteData domCharacterData  offset length_ =
-    sendMsg domCharacterData (mkSelector "deleteData::") retVoid [argCUInt offset, argCUInt length_]
+deleteData domCharacterData offset length_ =
+  sendMessage domCharacterData deleteDataSelector offset length_
 
 -- | @- replaceData:::@
 replaceData :: (IsDOMCharacterData domCharacterData, IsNSString data_) => domCharacterData -> CUInt -> CUInt -> data_ -> IO ()
-replaceData domCharacterData  offset length_ data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domCharacterData (mkSelector "replaceData:::") retVoid [argCUInt offset, argCUInt length_, argPtr (castPtr raw_data_ :: Ptr ())]
+replaceData domCharacterData offset length_ data_ =
+  sendMessage domCharacterData replaceDataSelector offset length_ (toNSString data_)
 
 -- | @- data@
 data_ :: IsDOMCharacterData domCharacterData => domCharacterData -> IO (Id NSString)
-data_ domCharacterData  =
-    sendMsg domCharacterData (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ domCharacterData =
+  sendMessage domCharacterData dataSelector
 
 -- | @- setData:@
 setData :: (IsDOMCharacterData domCharacterData, IsNSString value) => domCharacterData -> value -> IO ()
-setData domCharacterData  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domCharacterData (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData domCharacterData value =
+  sendMessage domCharacterData setDataSelector (toNSString value)
 
 -- | @- length@
 length_ :: IsDOMCharacterData domCharacterData => domCharacterData -> IO CUInt
-length_ domCharacterData  =
-    sendMsg domCharacterData (mkSelector "length") retCUInt []
+length_ domCharacterData =
+  sendMessage domCharacterData lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @substringData:length:@
-substringData_lengthSelector :: Selector
+substringData_lengthSelector :: Selector '[CUInt, CUInt] (Id NSString)
 substringData_lengthSelector = mkSelector "substringData:length:"
 
 -- | @Selector@ for @appendData:@
-appendDataSelector :: Selector
+appendDataSelector :: Selector '[Id NSString] ()
 appendDataSelector = mkSelector "appendData:"
 
 -- | @Selector@ for @insertData:data:@
-insertData_dataSelector :: Selector
+insertData_dataSelector :: Selector '[CUInt, Id NSString] ()
 insertData_dataSelector = mkSelector "insertData:data:"
 
 -- | @Selector@ for @deleteData:length:@
-deleteData_lengthSelector :: Selector
+deleteData_lengthSelector :: Selector '[CUInt, CUInt] ()
 deleteData_lengthSelector = mkSelector "deleteData:length:"
 
 -- | @Selector@ for @replaceData:length:data:@
-replaceData_length_dataSelector :: Selector
+replaceData_length_dataSelector :: Selector '[CUInt, CUInt, Id NSString] ()
 replaceData_length_dataSelector = mkSelector "replaceData:length:data:"
 
 -- | @Selector@ for @substringData::@
-substringDataSelector :: Selector
+substringDataSelector :: Selector '[CUInt, CUInt] (Id NSString)
 substringDataSelector = mkSelector "substringData::"
 
 -- | @Selector@ for @insertData::@
-insertDataSelector :: Selector
+insertDataSelector :: Selector '[CUInt, Id NSString] ()
 insertDataSelector = mkSelector "insertData::"
 
 -- | @Selector@ for @deleteData::@
-deleteDataSelector :: Selector
+deleteDataSelector :: Selector '[CUInt, CUInt] ()
 deleteDataSelector = mkSelector "deleteData::"
 
 -- | @Selector@ for @replaceData:::@
-replaceDataSelector :: Selector
+replaceDataSelector :: Selector '[CUInt, CUInt, Id NSString] ()
 replaceDataSelector = mkSelector "replaceData:::"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 

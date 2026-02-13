@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.AVFoundation.AVMetadataFaceObject
   , yawAngle
   , faceIDSelector
   , hasRollAngleSelector
-  , rollAngleSelector
   , hasYawAngleSelector
+  , rollAngleSelector
   , yawAngleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- faceID@
 faceID :: IsAVMetadataFaceObject avMetadataFaceObject => avMetadataFaceObject -> IO CLong
-faceID avMetadataFaceObject  =
-    sendMsg avMetadataFaceObject (mkSelector "faceID") retCLong []
+faceID avMetadataFaceObject =
+  sendMessage avMetadataFaceObject faceIDSelector
 
 -- | hasRollAngle
 --
@@ -60,8 +57,8 @@ faceID avMetadataFaceObject  =
 --
 -- ObjC selector: @- hasRollAngle@
 hasRollAngle :: IsAVMetadataFaceObject avMetadataFaceObject => avMetadataFaceObject -> IO Bool
-hasRollAngle avMetadataFaceObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetadataFaceObject (mkSelector "hasRollAngle") retCULong []
+hasRollAngle avMetadataFaceObject =
+  sendMessage avMetadataFaceObject hasRollAngleSelector
 
 -- | rollAngle
 --
@@ -71,8 +68,8 @@ hasRollAngle avMetadataFaceObject  =
 --
 -- ObjC selector: @- rollAngle@
 rollAngle :: IsAVMetadataFaceObject avMetadataFaceObject => avMetadataFaceObject -> IO CDouble
-rollAngle avMetadataFaceObject  =
-    sendMsg avMetadataFaceObject (mkSelector "rollAngle") retCDouble []
+rollAngle avMetadataFaceObject =
+  sendMessage avMetadataFaceObject rollAngleSelector
 
 -- | hasYawAngle
 --
@@ -80,8 +77,8 @@ rollAngle avMetadataFaceObject  =
 --
 -- ObjC selector: @- hasYawAngle@
 hasYawAngle :: IsAVMetadataFaceObject avMetadataFaceObject => avMetadataFaceObject -> IO Bool
-hasYawAngle avMetadataFaceObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetadataFaceObject (mkSelector "hasYawAngle") retCULong []
+hasYawAngle avMetadataFaceObject =
+  sendMessage avMetadataFaceObject hasYawAngleSelector
 
 -- | yawAngle
 --
@@ -91,30 +88,30 @@ hasYawAngle avMetadataFaceObject  =
 --
 -- ObjC selector: @- yawAngle@
 yawAngle :: IsAVMetadataFaceObject avMetadataFaceObject => avMetadataFaceObject -> IO CDouble
-yawAngle avMetadataFaceObject  =
-    sendMsg avMetadataFaceObject (mkSelector "yawAngle") retCDouble []
+yawAngle avMetadataFaceObject =
+  sendMessage avMetadataFaceObject yawAngleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @faceID@
-faceIDSelector :: Selector
+faceIDSelector :: Selector '[] CLong
 faceIDSelector = mkSelector "faceID"
 
 -- | @Selector@ for @hasRollAngle@
-hasRollAngleSelector :: Selector
+hasRollAngleSelector :: Selector '[] Bool
 hasRollAngleSelector = mkSelector "hasRollAngle"
 
 -- | @Selector@ for @rollAngle@
-rollAngleSelector :: Selector
+rollAngleSelector :: Selector '[] CDouble
 rollAngleSelector = mkSelector "rollAngle"
 
 -- | @Selector@ for @hasYawAngle@
-hasYawAngleSelector :: Selector
+hasYawAngleSelector :: Selector '[] Bool
 hasYawAngleSelector = mkSelector "hasYawAngle"
 
 -- | @Selector@ for @yawAngle@
-yawAngleSelector :: Selector
+yawAngleSelector :: Selector '[] CDouble
 yawAngleSelector = mkSelector "yawAngle"
 

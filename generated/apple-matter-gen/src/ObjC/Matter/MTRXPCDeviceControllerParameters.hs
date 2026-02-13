@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRXPCDeviceControllerParameters
   , uniqueIdentifier
   , xpcConnectionBlock
   , initSelector
-  , newSelector
   , initWithXPCConnectionBlock_uniqueIdentifierSelector
   , initWithXPConnectionBlock_uniqueIdentifierSelector
+  , newSelector
   , uniqueIdentifierSelector
   , xpcConnectionBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRXPCDeviceControllerParameters mtrxpcDeviceControllerParameters => mtrxpcDeviceControllerParameters -> IO (Id MTRXPCDeviceControllerParameters)
-init_ mtrxpcDeviceControllerParameters  =
-    sendMsg mtrxpcDeviceControllerParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrxpcDeviceControllerParameters =
+  sendOwnedMessage mtrxpcDeviceControllerParameters initSelector
 
 -- | @+ new@
 new :: IO (Id MTRXPCDeviceControllerParameters)
 new  =
   do
     cls' <- getRequiredClass "MTRXPCDeviceControllerParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A controller created from this way will connect to a remote instance of an MTRDeviceController loaded in an XPC Service
 --
@@ -57,51 +54,49 @@ new  =
 --
 -- ObjC selector: @- initWithXPCConnectionBlock:uniqueIdentifier:@
 initWithXPCConnectionBlock_uniqueIdentifier :: (IsMTRXPCDeviceControllerParameters mtrxpcDeviceControllerParameters, IsNSUUID uniqueIdentifier) => mtrxpcDeviceControllerParameters -> Ptr () -> uniqueIdentifier -> IO (Id MTRXPCDeviceControllerParameters)
-initWithXPCConnectionBlock_uniqueIdentifier mtrxpcDeviceControllerParameters  xpcConnectionBlock uniqueIdentifier =
-  withObjCPtr uniqueIdentifier $ \raw_uniqueIdentifier ->
-      sendMsg mtrxpcDeviceControllerParameters (mkSelector "initWithXPCConnectionBlock:uniqueIdentifier:") (retPtr retVoid) [argPtr (castPtr xpcConnectionBlock :: Ptr ()), argPtr (castPtr raw_uniqueIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithXPCConnectionBlock_uniqueIdentifier mtrxpcDeviceControllerParameters xpcConnectionBlock uniqueIdentifier =
+  sendOwnedMessage mtrxpcDeviceControllerParameters initWithXPCConnectionBlock_uniqueIdentifierSelector xpcConnectionBlock (toNSUUID uniqueIdentifier)
 
 -- | @- initWithXPConnectionBlock:uniqueIdentifier:@
 initWithXPConnectionBlock_uniqueIdentifier :: (IsMTRXPCDeviceControllerParameters mtrxpcDeviceControllerParameters, IsNSUUID uniqueIdentifier) => mtrxpcDeviceControllerParameters -> Ptr () -> uniqueIdentifier -> IO (Id MTRXPCDeviceControllerParameters)
-initWithXPConnectionBlock_uniqueIdentifier mtrxpcDeviceControllerParameters  xpcConnectionBlock uniqueIdentifier =
-  withObjCPtr uniqueIdentifier $ \raw_uniqueIdentifier ->
-      sendMsg mtrxpcDeviceControllerParameters (mkSelector "initWithXPConnectionBlock:uniqueIdentifier:") (retPtr retVoid) [argPtr (castPtr xpcConnectionBlock :: Ptr ()), argPtr (castPtr raw_uniqueIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithXPConnectionBlock_uniqueIdentifier mtrxpcDeviceControllerParameters xpcConnectionBlock uniqueIdentifier =
+  sendOwnedMessage mtrxpcDeviceControllerParameters initWithXPConnectionBlock_uniqueIdentifierSelector xpcConnectionBlock (toNSUUID uniqueIdentifier)
 
 -- | @- uniqueIdentifier@
 uniqueIdentifier :: IsMTRXPCDeviceControllerParameters mtrxpcDeviceControllerParameters => mtrxpcDeviceControllerParameters -> IO (Id NSUUID)
-uniqueIdentifier mtrxpcDeviceControllerParameters  =
-    sendMsg mtrxpcDeviceControllerParameters (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier mtrxpcDeviceControllerParameters =
+  sendMessage mtrxpcDeviceControllerParameters uniqueIdentifierSelector
 
 -- | @- xpcConnectionBlock@
 xpcConnectionBlock :: IsMTRXPCDeviceControllerParameters mtrxpcDeviceControllerParameters => mtrxpcDeviceControllerParameters -> IO (Ptr ())
-xpcConnectionBlock mtrxpcDeviceControllerParameters  =
-    fmap castPtr $ sendMsg mtrxpcDeviceControllerParameters (mkSelector "xpcConnectionBlock") (retPtr retVoid) []
+xpcConnectionBlock mtrxpcDeviceControllerParameters =
+  sendMessage mtrxpcDeviceControllerParameters xpcConnectionBlockSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRXPCDeviceControllerParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRXPCDeviceControllerParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithXPCConnectionBlock:uniqueIdentifier:@
-initWithXPCConnectionBlock_uniqueIdentifierSelector :: Selector
+initWithXPCConnectionBlock_uniqueIdentifierSelector :: Selector '[Ptr (), Id NSUUID] (Id MTRXPCDeviceControllerParameters)
 initWithXPCConnectionBlock_uniqueIdentifierSelector = mkSelector "initWithXPCConnectionBlock:uniqueIdentifier:"
 
 -- | @Selector@ for @initWithXPConnectionBlock:uniqueIdentifier:@
-initWithXPConnectionBlock_uniqueIdentifierSelector :: Selector
+initWithXPConnectionBlock_uniqueIdentifierSelector :: Selector '[Ptr (), Id NSUUID] (Id MTRXPCDeviceControllerParameters)
 initWithXPConnectionBlock_uniqueIdentifierSelector = mkSelector "initWithXPConnectionBlock:uniqueIdentifier:"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSUUID)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @xpcConnectionBlock@
-xpcConnectionBlockSelector :: Selector
+xpcConnectionBlockSelector :: Selector '[] (Ptr ())
 xpcConnectionBlockSelector = mkSelector "xpcConnectionBlock"
 

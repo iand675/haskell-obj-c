@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.IOUSBHost.IOUSBHostCIDeviceStateMachine
   , completeRoute
   , deviceAddress
   , controllerInterface
+  , completeRouteSelector
+  , controllerInterfaceSelector
+  , deviceAddressSelector
   , initSelector
   , initWithInterface_command_errorSelector
   , inspectCommand_errorSelector
-  , completeRouteSelector
-  , deviceAddressSelector
-  , controllerInterfaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine => iousbHostCIDeviceStateMachine -> IO (Id IOUSBHostCIDeviceStateMachine)
-init_ iousbHostCIDeviceStateMachine  =
-    sendMsg iousbHostCIDeviceStateMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ iousbHostCIDeviceStateMachine =
+  sendOwnedMessage iousbHostCIDeviceStateMachine initSelector
 
 -- | Initializes an IOUSBHostCIDeviceStateMachine object
 --
@@ -63,10 +60,8 @@ init_ iousbHostCIDeviceStateMachine  =
 --
 -- ObjC selector: @- initWithInterface:command:error:@
 initWithInterface_command_error :: (IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine, IsIOUSBHostControllerInterface interface, IsNSError error_) => iousbHostCIDeviceStateMachine -> interface -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO (Id IOUSBHostCIDeviceStateMachine)
-initWithInterface_command_error iousbHostCIDeviceStateMachine  interface command error_ =
-  withObjCPtr interface $ \raw_interface ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg iousbHostCIDeviceStateMachine (mkSelector "initWithInterface:command:error:") (retPtr retVoid) [argPtr (castPtr raw_interface :: Ptr ()), argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface_command_error iousbHostCIDeviceStateMachine interface command error_ =
+  sendOwnedMessage iousbHostCIDeviceStateMachine initWithInterface_command_errorSelector (toIOUSBHostControllerInterface interface) command (toNSError error_)
 
 -- | Inspect an IOUSBHostCIMessage command
 --
@@ -78,50 +73,49 @@ initWithInterface_command_error iousbHostCIDeviceStateMachine  interface command
 --
 -- ObjC selector: @- inspectCommand:error:@
 inspectCommand_error :: (IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine, IsNSError error_) => iousbHostCIDeviceStateMachine -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO Bool
-inspectCommand_error iousbHostCIDeviceStateMachine  command error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIDeviceStateMachine (mkSelector "inspectCommand:error:") retCULong [argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())]
+inspectCommand_error iousbHostCIDeviceStateMachine command error_ =
+  sendMessage iousbHostCIDeviceStateMachine inspectCommand_errorSelector command (toNSError error_)
 
 -- | @- completeRoute@
 completeRoute :: IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine => iousbHostCIDeviceStateMachine -> IO CULong
-completeRoute iousbHostCIDeviceStateMachine  =
-    sendMsg iousbHostCIDeviceStateMachine (mkSelector "completeRoute") retCULong []
+completeRoute iousbHostCIDeviceStateMachine =
+  sendMessage iousbHostCIDeviceStateMachine completeRouteSelector
 
 -- | @- deviceAddress@
 deviceAddress :: IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine => iousbHostCIDeviceStateMachine -> IO CULong
-deviceAddress iousbHostCIDeviceStateMachine  =
-    sendMsg iousbHostCIDeviceStateMachine (mkSelector "deviceAddress") retCULong []
+deviceAddress iousbHostCIDeviceStateMachine =
+  sendMessage iousbHostCIDeviceStateMachine deviceAddressSelector
 
 -- | @- controllerInterface@
 controllerInterface :: IsIOUSBHostCIDeviceStateMachine iousbHostCIDeviceStateMachine => iousbHostCIDeviceStateMachine -> IO (Id IOUSBHostControllerInterface)
-controllerInterface iousbHostCIDeviceStateMachine  =
-    sendMsg iousbHostCIDeviceStateMachine (mkSelector "controllerInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerInterface iousbHostCIDeviceStateMachine =
+  sendMessage iousbHostCIDeviceStateMachine controllerInterfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id IOUSBHostCIDeviceStateMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterface:command:error:@
-initWithInterface_command_errorSelector :: Selector
+initWithInterface_command_errorSelector :: Selector '[Id IOUSBHostControllerInterface, Const (Ptr IOUSBHostCIMessage), Id NSError] (Id IOUSBHostCIDeviceStateMachine)
 initWithInterface_command_errorSelector = mkSelector "initWithInterface:command:error:"
 
 -- | @Selector@ for @inspectCommand:error:@
-inspectCommand_errorSelector :: Selector
+inspectCommand_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] Bool
 inspectCommand_errorSelector = mkSelector "inspectCommand:error:"
 
 -- | @Selector@ for @completeRoute@
-completeRouteSelector :: Selector
+completeRouteSelector :: Selector '[] CULong
 completeRouteSelector = mkSelector "completeRoute"
 
 -- | @Selector@ for @deviceAddress@
-deviceAddressSelector :: Selector
+deviceAddressSelector :: Selector '[] CULong
 deviceAddressSelector = mkSelector "deviceAddress"
 
 -- | @Selector@ for @controllerInterface@
-controllerInterfaceSelector :: Selector
+controllerInterfaceSelector :: Selector '[] (Id IOUSBHostControllerInterface)
 controllerInterfaceSelector = mkSelector "controllerInterface"
 

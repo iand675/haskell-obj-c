@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVAudioMixInputParameters
   , trackID
   , audioTimePitchAlgorithm
   , audioTapProcessor
-  , trackIDSelector
-  , audioTimePitchAlgorithmSelector
   , audioTapProcessorSelector
+  , audioTimePitchAlgorithmSelector
+  , trackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- trackID@
 trackID :: IsAVAudioMixInputParameters avAudioMixInputParameters => avAudioMixInputParameters -> IO CInt
-trackID avAudioMixInputParameters  =
-    sendMsg avAudioMixInputParameters (mkSelector "trackID") retCInt []
+trackID avAudioMixInputParameters =
+  sendMessage avAudioMixInputParameters trackIDSelector
 
 -- | audioTimePitchAlgorithm
 --
@@ -48,8 +45,8 @@ trackID avAudioMixInputParameters  =
 --
 -- ObjC selector: @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVAudioMixInputParameters avAudioMixInputParameters => avAudioMixInputParameters -> IO (Id NSString)
-audioTimePitchAlgorithm avAudioMixInputParameters  =
-    sendMsg avAudioMixInputParameters (mkSelector "audioTimePitchAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTimePitchAlgorithm avAudioMixInputParameters =
+  sendMessage avAudioMixInputParameters audioTimePitchAlgorithmSelector
 
 -- | audioTapProcessor
 --
@@ -57,22 +54,22 @@ audioTimePitchAlgorithm avAudioMixInputParameters  =
 --
 -- ObjC selector: @- audioTapProcessor@
 audioTapProcessor :: IsAVAudioMixInputParameters avAudioMixInputParameters => avAudioMixInputParameters -> IO RawId
-audioTapProcessor avAudioMixInputParameters  =
-    fmap (RawId . castPtr) $ sendMsg avAudioMixInputParameters (mkSelector "audioTapProcessor") (retPtr retVoid) []
+audioTapProcessor avAudioMixInputParameters =
+  sendMessage avAudioMixInputParameters audioTapProcessorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
-audioTimePitchAlgorithmSelector :: Selector
+audioTimePitchAlgorithmSelector :: Selector '[] (Id NSString)
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
 
 -- | @Selector@ for @audioTapProcessor@
-audioTapProcessorSelector :: Selector
+audioTapProcessorSelector :: Selector '[] RawId
 audioTapProcessorSelector = mkSelector "audioTapProcessor"
 

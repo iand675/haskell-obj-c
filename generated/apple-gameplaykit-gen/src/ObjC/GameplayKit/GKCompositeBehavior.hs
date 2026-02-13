@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.GameplayKit.GKCompositeBehavior
   , setObject_forKeyedSubscript
   , objectForKeyedSubscript
   , behaviorCount
+  , behaviorCountSelector
   , behaviorWithBehaviorsSelector
   , behaviorWithBehaviors_andWeightsSelector
+  , objectAtIndexedSubscriptSelector
+  , objectForKeyedSubscriptSelector
+  , removeAllBehaviorsSelector
+  , removeBehaviorSelector
+  , setObject_forKeyedSubscriptSelector
   , setWeight_forBehaviorSelector
   , weightForBehaviorSelector
-  , removeBehaviorSelector
-  , removeAllBehaviorsSelector
-  , objectAtIndexedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , objectForKeyedSubscriptSelector
-  , behaviorCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ behaviorWithBehaviors :: IsNSArray behaviors => behaviors -> IO (Id GKCompositeB
 behaviorWithBehaviors behaviors =
   do
     cls' <- getRequiredClass "GKCompositeBehavior"
-    withObjCPtr behaviors $ \raw_behaviors ->
-      sendClassMsg cls' (mkSelector "behaviorWithBehaviors:") (retPtr retVoid) [argPtr (castPtr raw_behaviors :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithBehaviorsSelector (toNSArray behaviors)
 
 -- | Creates a behavior with two associated arrays of sub-behaviors and weights
 --
@@ -62,9 +58,7 @@ behaviorWithBehaviors_andWeights :: (IsNSArray behaviors, IsNSArray weights) => 
 behaviorWithBehaviors_andWeights behaviors weights =
   do
     cls' <- getRequiredClass "GKCompositeBehavior"
-    withObjCPtr behaviors $ \raw_behaviors ->
-      withObjCPtr weights $ \raw_weights ->
-        sendClassMsg cls' (mkSelector "behaviorWithBehaviors:andWeights:") (retPtr retVoid) [argPtr (castPtr raw_behaviors :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithBehaviors_andWeightsSelector (toNSArray behaviors) (toNSArray weights)
 
 -- | Adds a new sub-behavior or changes the weight of the existing sub-behavior in this behavior. If the sub-behavior  does not exist in this behavior, it is added.
 --
@@ -74,9 +68,8 @@ behaviorWithBehaviors_andWeights behaviors weights =
 --
 -- ObjC selector: @- setWeight:forBehavior:@
 setWeight_forBehavior :: (IsGKCompositeBehavior gkCompositeBehavior, IsGKBehavior behavior) => gkCompositeBehavior -> CFloat -> behavior -> IO ()
-setWeight_forBehavior gkCompositeBehavior  weight behavior =
-  withObjCPtr behavior $ \raw_behavior ->
-      sendMsg gkCompositeBehavior (mkSelector "setWeight:forBehavior:") retVoid [argCFloat weight, argPtr (castPtr raw_behavior :: Ptr ())]
+setWeight_forBehavior gkCompositeBehavior weight behavior =
+  sendMessage gkCompositeBehavior setWeight_forBehaviorSelector weight (toGKBehavior behavior)
 
 -- | Gets the current weight for a given sub-behavior.
 --
@@ -84,9 +77,8 @@ setWeight_forBehavior gkCompositeBehavior  weight behavior =
 --
 -- ObjC selector: @- weightForBehavior:@
 weightForBehavior :: (IsGKCompositeBehavior gkCompositeBehavior, IsGKBehavior behavior) => gkCompositeBehavior -> behavior -> IO CFloat
-weightForBehavior gkCompositeBehavior  behavior =
-  withObjCPtr behavior $ \raw_behavior ->
-      sendMsg gkCompositeBehavior (mkSelector "weightForBehavior:") retCFloat [argPtr (castPtr raw_behavior :: Ptr ())]
+weightForBehavior gkCompositeBehavior behavior =
+  sendMessage gkCompositeBehavior weightForBehaviorSelector (toGKBehavior behavior)
 
 -- | Remove the indicated sub-behavior from this behavior.
 --
@@ -94,89 +86,85 @@ weightForBehavior gkCompositeBehavior  behavior =
 --
 -- ObjC selector: @- removeBehavior:@
 removeBehavior :: (IsGKCompositeBehavior gkCompositeBehavior, IsGKBehavior behavior) => gkCompositeBehavior -> behavior -> IO ()
-removeBehavior gkCompositeBehavior  behavior =
-  withObjCPtr behavior $ \raw_behavior ->
-      sendMsg gkCompositeBehavior (mkSelector "removeBehavior:") retVoid [argPtr (castPtr raw_behavior :: Ptr ())]
+removeBehavior gkCompositeBehavior behavior =
+  sendMessage gkCompositeBehavior removeBehaviorSelector (toGKBehavior behavior)
 
 -- | Removes all the sub-behavior on the behavior.
 --
 -- ObjC selector: @- removeAllBehaviors@
 removeAllBehaviors :: IsGKCompositeBehavior gkCompositeBehavior => gkCompositeBehavior -> IO ()
-removeAllBehaviors gkCompositeBehavior  =
-    sendMsg gkCompositeBehavior (mkSelector "removeAllBehaviors") retVoid []
+removeAllBehaviors gkCompositeBehavior =
+  sendMessage gkCompositeBehavior removeAllBehaviorsSelector
 
 -- | Supports getting behaviors via a [int] subscript.
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsGKCompositeBehavior gkCompositeBehavior => gkCompositeBehavior -> CULong -> IO (Id GKBehavior)
-objectAtIndexedSubscript gkCompositeBehavior  idx =
-    sendMsg gkCompositeBehavior (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong idx] >>= retainedObject . castPtr
+objectAtIndexedSubscript gkCompositeBehavior idx =
+  sendMessage gkCompositeBehavior objectAtIndexedSubscriptSelector idx
 
 -- | Supports setting a weight via a [behavior] subscript.
 --
 -- ObjC selector: @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: (IsGKCompositeBehavior gkCompositeBehavior, IsNSNumber weight, IsGKBehavior behavior) => gkCompositeBehavior -> weight -> behavior -> IO ()
-setObject_forKeyedSubscript gkCompositeBehavior  weight behavior =
-  withObjCPtr weight $ \raw_weight ->
-    withObjCPtr behavior $ \raw_behavior ->
-        sendMsg gkCompositeBehavior (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr raw_weight :: Ptr ()), argPtr (castPtr raw_behavior :: Ptr ())]
+setObject_forKeyedSubscript gkCompositeBehavior weight behavior =
+  sendMessage gkCompositeBehavior setObject_forKeyedSubscriptSelector (toNSNumber weight) (toGKBehavior behavior)
 
 -- | Supports getting a weight via a [behavior] subscript.
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsGKCompositeBehavior gkCompositeBehavior, IsGKBehavior behavior) => gkCompositeBehavior -> behavior -> IO (Id NSNumber)
-objectForKeyedSubscript gkCompositeBehavior  behavior =
-  withObjCPtr behavior $ \raw_behavior ->
-      sendMsg gkCompositeBehavior (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_behavior :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript gkCompositeBehavior behavior =
+  sendMessage gkCompositeBehavior objectForKeyedSubscriptSelector (toGKBehavior behavior)
 
 -- | Number of sub-behaviors in this behavior
 --
 -- ObjC selector: @- behaviorCount@
 behaviorCount :: IsGKCompositeBehavior gkCompositeBehavior => gkCompositeBehavior -> IO CLong
-behaviorCount gkCompositeBehavior  =
-    sendMsg gkCompositeBehavior (mkSelector "behaviorCount") retCLong []
+behaviorCount gkCompositeBehavior =
+  sendMessage gkCompositeBehavior behaviorCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @behaviorWithBehaviors:@
-behaviorWithBehaviorsSelector :: Selector
+behaviorWithBehaviorsSelector :: Selector '[Id NSArray] (Id GKCompositeBehavior)
 behaviorWithBehaviorsSelector = mkSelector "behaviorWithBehaviors:"
 
 -- | @Selector@ for @behaviorWithBehaviors:andWeights:@
-behaviorWithBehaviors_andWeightsSelector :: Selector
+behaviorWithBehaviors_andWeightsSelector :: Selector '[Id NSArray, Id NSArray] (Id GKCompositeBehavior)
 behaviorWithBehaviors_andWeightsSelector = mkSelector "behaviorWithBehaviors:andWeights:"
 
 -- | @Selector@ for @setWeight:forBehavior:@
-setWeight_forBehaviorSelector :: Selector
+setWeight_forBehaviorSelector :: Selector '[CFloat, Id GKBehavior] ()
 setWeight_forBehaviorSelector = mkSelector "setWeight:forBehavior:"
 
 -- | @Selector@ for @weightForBehavior:@
-weightForBehaviorSelector :: Selector
+weightForBehaviorSelector :: Selector '[Id GKBehavior] CFloat
 weightForBehaviorSelector = mkSelector "weightForBehavior:"
 
 -- | @Selector@ for @removeBehavior:@
-removeBehaviorSelector :: Selector
+removeBehaviorSelector :: Selector '[Id GKBehavior] ()
 removeBehaviorSelector = mkSelector "removeBehavior:"
 
 -- | @Selector@ for @removeAllBehaviors@
-removeAllBehaviorsSelector :: Selector
+removeAllBehaviorsSelector :: Selector '[] ()
 removeAllBehaviorsSelector = mkSelector "removeAllBehaviors"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id GKBehavior)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[Id NSNumber, Id GKBehavior] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id GKBehavior] (Id NSNumber)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @behaviorCount@
-behaviorCountSelector :: Selector
+behaviorCountSelector :: Selector '[] CLong
 behaviorCountSelector = mkSelector "behaviorCount"
 

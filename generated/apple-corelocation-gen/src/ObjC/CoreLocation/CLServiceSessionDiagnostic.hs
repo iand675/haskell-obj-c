@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CoreLocation.CLServiceSessionDiagnostic
   , fullAccuracyDenied
   , alwaysAuthorizationDenied
   , authorizationRequestInProgress
-  , authorizationDeniedSelector
+  , alwaysAuthorizationDeniedSelector
   , authorizationDeniedGloballySelector
+  , authorizationDeniedSelector
+  , authorizationRequestInProgressSelector
   , authorizationRestrictedSelector
+  , fullAccuracyDeniedSelector
   , insufficientlyInUseSelector
   , serviceSessionRequiredSelector
-  , fullAccuracyDeniedSelector
-  , alwaysAuthorizationDeniedSelector
-  , authorizationRequestInProgressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,77 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- authorizationDenied@
 authorizationDenied :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-authorizationDenied clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "authorizationDenied") retCULong []
+authorizationDenied clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic authorizationDeniedSelector
 
 -- | @- authorizationDeniedGlobally@
 authorizationDeniedGlobally :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-authorizationDeniedGlobally clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "authorizationDeniedGlobally") retCULong []
+authorizationDeniedGlobally clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic authorizationDeniedGloballySelector
 
 -- | @- authorizationRestricted@
 authorizationRestricted :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-authorizationRestricted clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "authorizationRestricted") retCULong []
+authorizationRestricted clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic authorizationRestrictedSelector
 
 -- | @- insufficientlyInUse@
 insufficientlyInUse :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-insufficientlyInUse clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "insufficientlyInUse") retCULong []
+insufficientlyInUse clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic insufficientlyInUseSelector
 
 -- | @- serviceSessionRequired@
 serviceSessionRequired :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-serviceSessionRequired clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "serviceSessionRequired") retCULong []
+serviceSessionRequired clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic serviceSessionRequiredSelector
 
 -- | @- fullAccuracyDenied@
 fullAccuracyDenied :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-fullAccuracyDenied clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "fullAccuracyDenied") retCULong []
+fullAccuracyDenied clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic fullAccuracyDeniedSelector
 
 -- | @- alwaysAuthorizationDenied@
 alwaysAuthorizationDenied :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-alwaysAuthorizationDenied clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "alwaysAuthorizationDenied") retCULong []
+alwaysAuthorizationDenied clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic alwaysAuthorizationDeniedSelector
 
 -- | @- authorizationRequestInProgress@
 authorizationRequestInProgress :: IsCLServiceSessionDiagnostic clServiceSessionDiagnostic => clServiceSessionDiagnostic -> IO Bool
-authorizationRequestInProgress clServiceSessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clServiceSessionDiagnostic (mkSelector "authorizationRequestInProgress") retCULong []
+authorizationRequestInProgress clServiceSessionDiagnostic =
+  sendMessage clServiceSessionDiagnostic authorizationRequestInProgressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationDenied@
-authorizationDeniedSelector :: Selector
+authorizationDeniedSelector :: Selector '[] Bool
 authorizationDeniedSelector = mkSelector "authorizationDenied"
 
 -- | @Selector@ for @authorizationDeniedGlobally@
-authorizationDeniedGloballySelector :: Selector
+authorizationDeniedGloballySelector :: Selector '[] Bool
 authorizationDeniedGloballySelector = mkSelector "authorizationDeniedGlobally"
 
 -- | @Selector@ for @authorizationRestricted@
-authorizationRestrictedSelector :: Selector
+authorizationRestrictedSelector :: Selector '[] Bool
 authorizationRestrictedSelector = mkSelector "authorizationRestricted"
 
 -- | @Selector@ for @insufficientlyInUse@
-insufficientlyInUseSelector :: Selector
+insufficientlyInUseSelector :: Selector '[] Bool
 insufficientlyInUseSelector = mkSelector "insufficientlyInUse"
 
 -- | @Selector@ for @serviceSessionRequired@
-serviceSessionRequiredSelector :: Selector
+serviceSessionRequiredSelector :: Selector '[] Bool
 serviceSessionRequiredSelector = mkSelector "serviceSessionRequired"
 
 -- | @Selector@ for @fullAccuracyDenied@
-fullAccuracyDeniedSelector :: Selector
+fullAccuracyDeniedSelector :: Selector '[] Bool
 fullAccuracyDeniedSelector = mkSelector "fullAccuracyDenied"
 
 -- | @Selector@ for @alwaysAuthorizationDenied@
-alwaysAuthorizationDeniedSelector :: Selector
+alwaysAuthorizationDeniedSelector :: Selector '[] Bool
 alwaysAuthorizationDeniedSelector = mkSelector "alwaysAuthorizationDenied"
 
 -- | @Selector@ for @authorizationRequestInProgress@
-authorizationRequestInProgressSelector :: Selector
+authorizationRequestInProgressSelector :: Selector '[] Bool
 authorizationRequestInProgressSelector = mkSelector "authorizationRequestInProgress"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.CloudKit.CKFetchRecordsOperation
   , setPerRecordProgressBlock
   , perRecordCompletionBlock
   , setPerRecordCompletionBlock
+  , desiredKeysSelector
+  , fetchCurrentUserRecordOperationSelector
   , initSelector
   , initWithRecordIDsSelector
-  , fetchCurrentUserRecordOperationSelector
-  , recordIDsSelector
-  , setRecordIDsSelector
-  , desiredKeysSelector
-  , setDesiredKeysSelector
-  , perRecordProgressBlockSelector
-  , setPerRecordProgressBlockSelector
   , perRecordCompletionBlockSelector
+  , perRecordProgressBlockSelector
+  , recordIDsSelector
+  , setDesiredKeysSelector
   , setPerRecordCompletionBlockSelector
+  , setPerRecordProgressBlockSelector
+  , setRecordIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,32 +46,30 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> IO (Id CKFetchRecordsOperation)
-init_ ckFetchRecordsOperation  =
-    sendMsg ckFetchRecordsOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchRecordsOperation =
+  sendOwnedMessage ckFetchRecordsOperation initSelector
 
 -- | @- initWithRecordIDs:@
 initWithRecordIDs :: (IsCKFetchRecordsOperation ckFetchRecordsOperation, IsNSArray recordIDs) => ckFetchRecordsOperation -> recordIDs -> IO (Id CKFetchRecordsOperation)
-initWithRecordIDs ckFetchRecordsOperation  recordIDs =
-  withObjCPtr recordIDs $ \raw_recordIDs ->
-      sendMsg ckFetchRecordsOperation (mkSelector "initWithRecordIDs:") (retPtr retVoid) [argPtr (castPtr raw_recordIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordIDs ckFetchRecordsOperation recordIDs =
+  sendOwnedMessage ckFetchRecordsOperation initWithRecordIDsSelector (toNSArray recordIDs)
 
 -- | @+ fetchCurrentUserRecordOperation@
 fetchCurrentUserRecordOperation :: IO (Id CKFetchRecordsOperation)
 fetchCurrentUserRecordOperation  =
   do
     cls' <- getRequiredClass "CKFetchRecordsOperation"
-    sendClassMsg cls' (mkSelector "fetchCurrentUserRecordOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchCurrentUserRecordOperationSelector
 
 -- | @- recordIDs@
 recordIDs :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> IO (Id NSArray)
-recordIDs ckFetchRecordsOperation  =
-    sendMsg ckFetchRecordsOperation (mkSelector "recordIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordIDs ckFetchRecordsOperation =
+  sendMessage ckFetchRecordsOperation recordIDsSelector
 
 -- | @- setRecordIDs:@
 setRecordIDs :: (IsCKFetchRecordsOperation ckFetchRecordsOperation, IsNSArray value) => ckFetchRecordsOperation -> value -> IO ()
-setRecordIDs ckFetchRecordsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordsOperation (mkSelector "setRecordIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordIDs ckFetchRecordsOperation value =
+  sendMessage ckFetchRecordsOperation setRecordIDsSelector (toNSArray value)
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -82,8 +77,8 @@ setRecordIDs ckFetchRecordsOperation  value =
 --
 -- ObjC selector: @- desiredKeys@
 desiredKeys :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> IO (Id NSArray)
-desiredKeys ckFetchRecordsOperation  =
-    sendMsg ckFetchRecordsOperation (mkSelector "desiredKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+desiredKeys ckFetchRecordsOperation =
+  sendMessage ckFetchRecordsOperation desiredKeysSelector
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -91,9 +86,8 @@ desiredKeys ckFetchRecordsOperation  =
 --
 -- ObjC selector: @- setDesiredKeys:@
 setDesiredKeys :: (IsCKFetchRecordsOperation ckFetchRecordsOperation, IsNSArray value) => ckFetchRecordsOperation -> value -> IO ()
-setDesiredKeys ckFetchRecordsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordsOperation (mkSelector "setDesiredKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesiredKeys ckFetchRecordsOperation value =
+  sendMessage ckFetchRecordsOperation setDesiredKeysSelector (toNSArray value)
 
 -- | Indicates the progress for each record.
 --
@@ -101,8 +95,8 @@ setDesiredKeys ckFetchRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordProgressBlock@
 perRecordProgressBlock :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> IO (Ptr ())
-perRecordProgressBlock ckFetchRecordsOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordsOperation (mkSelector "perRecordProgressBlock") (retPtr retVoid) []
+perRecordProgressBlock ckFetchRecordsOperation =
+  sendMessage ckFetchRecordsOperation perRecordProgressBlockSelector
 
 -- | Indicates the progress for each record.
 --
@@ -110,8 +104,8 @@ perRecordProgressBlock ckFetchRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordProgressBlock:@
 setPerRecordProgressBlock :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> Ptr () -> IO ()
-setPerRecordProgressBlock ckFetchRecordsOperation  value =
-    sendMsg ckFetchRecordsOperation (mkSelector "setPerRecordProgressBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordProgressBlock ckFetchRecordsOperation value =
+  sendMessage ckFetchRecordsOperation setPerRecordProgressBlockSelector value
 
 -- | Called on success or failure for each record.
 --
@@ -119,8 +113,8 @@ setPerRecordProgressBlock ckFetchRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordCompletionBlock@
 perRecordCompletionBlock :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> IO (Ptr ())
-perRecordCompletionBlock ckFetchRecordsOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordsOperation (mkSelector "perRecordCompletionBlock") (retPtr retVoid) []
+perRecordCompletionBlock ckFetchRecordsOperation =
+  sendMessage ckFetchRecordsOperation perRecordCompletionBlockSelector
 
 -- | Called on success or failure for each record.
 --
@@ -128,54 +122,54 @@ perRecordCompletionBlock ckFetchRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordCompletionBlock:@
 setPerRecordCompletionBlock :: IsCKFetchRecordsOperation ckFetchRecordsOperation => ckFetchRecordsOperation -> Ptr () -> IO ()
-setPerRecordCompletionBlock ckFetchRecordsOperation  value =
-    sendMsg ckFetchRecordsOperation (mkSelector "setPerRecordCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordCompletionBlock ckFetchRecordsOperation value =
+  sendMessage ckFetchRecordsOperation setPerRecordCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchRecordsOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRecordIDs:@
-initWithRecordIDsSelector :: Selector
+initWithRecordIDsSelector :: Selector '[Id NSArray] (Id CKFetchRecordsOperation)
 initWithRecordIDsSelector = mkSelector "initWithRecordIDs:"
 
 -- | @Selector@ for @fetchCurrentUserRecordOperation@
-fetchCurrentUserRecordOperationSelector :: Selector
+fetchCurrentUserRecordOperationSelector :: Selector '[] (Id CKFetchRecordsOperation)
 fetchCurrentUserRecordOperationSelector = mkSelector "fetchCurrentUserRecordOperation"
 
 -- | @Selector@ for @recordIDs@
-recordIDsSelector :: Selector
+recordIDsSelector :: Selector '[] (Id NSArray)
 recordIDsSelector = mkSelector "recordIDs"
 
 -- | @Selector@ for @setRecordIDs:@
-setRecordIDsSelector :: Selector
+setRecordIDsSelector :: Selector '[Id NSArray] ()
 setRecordIDsSelector = mkSelector "setRecordIDs:"
 
 -- | @Selector@ for @desiredKeys@
-desiredKeysSelector :: Selector
+desiredKeysSelector :: Selector '[] (Id NSArray)
 desiredKeysSelector = mkSelector "desiredKeys"
 
 -- | @Selector@ for @setDesiredKeys:@
-setDesiredKeysSelector :: Selector
+setDesiredKeysSelector :: Selector '[Id NSArray] ()
 setDesiredKeysSelector = mkSelector "setDesiredKeys:"
 
 -- | @Selector@ for @perRecordProgressBlock@
-perRecordProgressBlockSelector :: Selector
+perRecordProgressBlockSelector :: Selector '[] (Ptr ())
 perRecordProgressBlockSelector = mkSelector "perRecordProgressBlock"
 
 -- | @Selector@ for @setPerRecordProgressBlock:@
-setPerRecordProgressBlockSelector :: Selector
+setPerRecordProgressBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordProgressBlockSelector = mkSelector "setPerRecordProgressBlock:"
 
 -- | @Selector@ for @perRecordCompletionBlock@
-perRecordCompletionBlockSelector :: Selector
+perRecordCompletionBlockSelector :: Selector '[] (Ptr ())
 perRecordCompletionBlockSelector = mkSelector "perRecordCompletionBlock"
 
 -- | @Selector@ for @setPerRecordCompletionBlock:@
-setPerRecordCompletionBlockSelector :: Selector
+setPerRecordCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordCompletionBlockSelector = mkSelector "setPerRecordCompletionBlock:"
 

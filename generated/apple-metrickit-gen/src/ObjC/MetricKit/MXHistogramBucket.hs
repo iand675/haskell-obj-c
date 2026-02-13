@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.MetricKit.MXHistogramBucket
   , bucketStart
   , bucketEnd
   , bucketCount
-  , bucketStartSelector
-  , bucketEndSelector
   , bucketCountSelector
+  , bucketEndSelector
+  , bucketStartSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bucketStart@
 bucketStart :: IsMXHistogramBucket mxHistogramBucket => mxHistogramBucket -> IO (Id NSMeasurement)
-bucketStart mxHistogramBucket  =
-    sendMsg mxHistogramBucket (mkSelector "bucketStart") (retPtr retVoid) [] >>= retainedObject . castPtr
+bucketStart mxHistogramBucket =
+  sendMessage mxHistogramBucket bucketStartSelector
 
 -- | bucketEnd
 --
@@ -54,8 +51,8 @@ bucketStart mxHistogramBucket  =
 --
 -- ObjC selector: @- bucketEnd@
 bucketEnd :: IsMXHistogramBucket mxHistogramBucket => mxHistogramBucket -> IO (Id NSMeasurement)
-bucketEnd mxHistogramBucket  =
-    sendMsg mxHistogramBucket (mkSelector "bucketEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+bucketEnd mxHistogramBucket =
+  sendMessage mxHistogramBucket bucketEndSelector
 
 -- | bucketCount
 --
@@ -63,22 +60,22 @@ bucketEnd mxHistogramBucket  =
 --
 -- ObjC selector: @- bucketCount@
 bucketCount :: IsMXHistogramBucket mxHistogramBucket => mxHistogramBucket -> IO CULong
-bucketCount mxHistogramBucket  =
-    sendMsg mxHistogramBucket (mkSelector "bucketCount") retCULong []
+bucketCount mxHistogramBucket =
+  sendMessage mxHistogramBucket bucketCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bucketStart@
-bucketStartSelector :: Selector
+bucketStartSelector :: Selector '[] (Id NSMeasurement)
 bucketStartSelector = mkSelector "bucketStart"
 
 -- | @Selector@ for @bucketEnd@
-bucketEndSelector :: Selector
+bucketEndSelector :: Selector '[] (Id NSMeasurement)
 bucketEndSelector = mkSelector "bucketEnd"
 
 -- | @Selector@ for @bucketCount@
-bucketCountSelector :: Selector
+bucketCountSelector :: Selector '[] CULong
 bucketCountSelector = mkSelector "bucketCount"
 

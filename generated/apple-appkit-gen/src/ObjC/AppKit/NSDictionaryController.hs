@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.AppKit.NSDictionaryController
   , setLocalizedKeyDictionary
   , localizedKeyTable
   , setLocalizedKeyTable
-  , newObjectSelector
-  , initialKeySelector
-  , setInitialKeySelector
-  , initialValueSelector
-  , setInitialValueSelector
-  , includedKeysSelector
-  , setIncludedKeysSelector
   , excludedKeysSelector
-  , setExcludedKeysSelector
+  , includedKeysSelector
+  , initialKeySelector
+  , initialValueSelector
   , localizedKeyDictionarySelector
-  , setLocalizedKeyDictionarySelector
   , localizedKeyTableSelector
+  , newObjectSelector
+  , setExcludedKeysSelector
+  , setIncludedKeysSelector
+  , setInitialKeySelector
+  , setInitialValueSelector
+  , setLocalizedKeyDictionarySelector
   , setLocalizedKeyTableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,127 +50,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newObject@
 newObject :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSDictionaryControllerKeyValuePair)
-newObject nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "newObject") (retPtr retVoid) [] >>= ownedObject . castPtr
+newObject nsDictionaryController =
+  sendOwnedMessage nsDictionaryController newObjectSelector
 
 -- | @- initialKey@
 initialKey :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSString)
-initialKey nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "initialKey") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialKey nsDictionaryController =
+  sendOwnedMessage nsDictionaryController initialKeySelector
 
 -- | @- setInitialKey:@
 setInitialKey :: (IsNSDictionaryController nsDictionaryController, IsNSString value) => nsDictionaryController -> value -> IO ()
-setInitialKey nsDictionaryController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDictionaryController (mkSelector "setInitialKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialKey nsDictionaryController value =
+  sendMessage nsDictionaryController setInitialKeySelector (toNSString value)
 
 -- | @- initialValue@
 initialValue :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO RawId
-initialValue nsDictionaryController  =
-    fmap (RawId . castPtr) $ sendMsg nsDictionaryController (mkSelector "initialValue") (retPtr retVoid) []
+initialValue nsDictionaryController =
+  sendOwnedMessage nsDictionaryController initialValueSelector
 
 -- | @- setInitialValue:@
 setInitialValue :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> RawId -> IO ()
-setInitialValue nsDictionaryController  value =
-    sendMsg nsDictionaryController (mkSelector "setInitialValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInitialValue nsDictionaryController value =
+  sendMessage nsDictionaryController setInitialValueSelector value
 
 -- | @- includedKeys@
 includedKeys :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSArray)
-includedKeys nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "includedKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedKeys nsDictionaryController =
+  sendMessage nsDictionaryController includedKeysSelector
 
 -- | @- setIncludedKeys:@
 setIncludedKeys :: (IsNSDictionaryController nsDictionaryController, IsNSArray value) => nsDictionaryController -> value -> IO ()
-setIncludedKeys nsDictionaryController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDictionaryController (mkSelector "setIncludedKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIncludedKeys nsDictionaryController value =
+  sendMessage nsDictionaryController setIncludedKeysSelector (toNSArray value)
 
 -- | @- excludedKeys@
 excludedKeys :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSArray)
-excludedKeys nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "excludedKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedKeys nsDictionaryController =
+  sendMessage nsDictionaryController excludedKeysSelector
 
 -- | @- setExcludedKeys:@
 setExcludedKeys :: (IsNSDictionaryController nsDictionaryController, IsNSArray value) => nsDictionaryController -> value -> IO ()
-setExcludedKeys nsDictionaryController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDictionaryController (mkSelector "setExcludedKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedKeys nsDictionaryController value =
+  sendMessage nsDictionaryController setExcludedKeysSelector (toNSArray value)
 
 -- | @- localizedKeyDictionary@
 localizedKeyDictionary :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSDictionary)
-localizedKeyDictionary nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "localizedKeyDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedKeyDictionary nsDictionaryController =
+  sendMessage nsDictionaryController localizedKeyDictionarySelector
 
 -- | @- setLocalizedKeyDictionary:@
 setLocalizedKeyDictionary :: (IsNSDictionaryController nsDictionaryController, IsNSDictionary value) => nsDictionaryController -> value -> IO ()
-setLocalizedKeyDictionary nsDictionaryController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDictionaryController (mkSelector "setLocalizedKeyDictionary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedKeyDictionary nsDictionaryController value =
+  sendMessage nsDictionaryController setLocalizedKeyDictionarySelector (toNSDictionary value)
 
 -- | @- localizedKeyTable@
 localizedKeyTable :: IsNSDictionaryController nsDictionaryController => nsDictionaryController -> IO (Id NSString)
-localizedKeyTable nsDictionaryController  =
-    sendMsg nsDictionaryController (mkSelector "localizedKeyTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedKeyTable nsDictionaryController =
+  sendMessage nsDictionaryController localizedKeyTableSelector
 
 -- | @- setLocalizedKeyTable:@
 setLocalizedKeyTable :: (IsNSDictionaryController nsDictionaryController, IsNSString value) => nsDictionaryController -> value -> IO ()
-setLocalizedKeyTable nsDictionaryController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDictionaryController (mkSelector "setLocalizedKeyTable:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedKeyTable nsDictionaryController value =
+  sendMessage nsDictionaryController setLocalizedKeyTableSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newObject@
-newObjectSelector :: Selector
+newObjectSelector :: Selector '[] (Id NSDictionaryControllerKeyValuePair)
 newObjectSelector = mkSelector "newObject"
 
 -- | @Selector@ for @initialKey@
-initialKeySelector :: Selector
+initialKeySelector :: Selector '[] (Id NSString)
 initialKeySelector = mkSelector "initialKey"
 
 -- | @Selector@ for @setInitialKey:@
-setInitialKeySelector :: Selector
+setInitialKeySelector :: Selector '[Id NSString] ()
 setInitialKeySelector = mkSelector "setInitialKey:"
 
 -- | @Selector@ for @initialValue@
-initialValueSelector :: Selector
+initialValueSelector :: Selector '[] RawId
 initialValueSelector = mkSelector "initialValue"
 
 -- | @Selector@ for @setInitialValue:@
-setInitialValueSelector :: Selector
+setInitialValueSelector :: Selector '[RawId] ()
 setInitialValueSelector = mkSelector "setInitialValue:"
 
 -- | @Selector@ for @includedKeys@
-includedKeysSelector :: Selector
+includedKeysSelector :: Selector '[] (Id NSArray)
 includedKeysSelector = mkSelector "includedKeys"
 
 -- | @Selector@ for @setIncludedKeys:@
-setIncludedKeysSelector :: Selector
+setIncludedKeysSelector :: Selector '[Id NSArray] ()
 setIncludedKeysSelector = mkSelector "setIncludedKeys:"
 
 -- | @Selector@ for @excludedKeys@
-excludedKeysSelector :: Selector
+excludedKeysSelector :: Selector '[] (Id NSArray)
 excludedKeysSelector = mkSelector "excludedKeys"
 
 -- | @Selector@ for @setExcludedKeys:@
-setExcludedKeysSelector :: Selector
+setExcludedKeysSelector :: Selector '[Id NSArray] ()
 setExcludedKeysSelector = mkSelector "setExcludedKeys:"
 
 -- | @Selector@ for @localizedKeyDictionary@
-localizedKeyDictionarySelector :: Selector
+localizedKeyDictionarySelector :: Selector '[] (Id NSDictionary)
 localizedKeyDictionarySelector = mkSelector "localizedKeyDictionary"
 
 -- | @Selector@ for @setLocalizedKeyDictionary:@
-setLocalizedKeyDictionarySelector :: Selector
+setLocalizedKeyDictionarySelector :: Selector '[Id NSDictionary] ()
 setLocalizedKeyDictionarySelector = mkSelector "setLocalizedKeyDictionary:"
 
 -- | @Selector@ for @localizedKeyTable@
-localizedKeyTableSelector :: Selector
+localizedKeyTableSelector :: Selector '[] (Id NSString)
 localizedKeyTableSelector = mkSelector "localizedKeyTable"
 
 -- | @Selector@ for @setLocalizedKeyTable:@
-setLocalizedKeyTableSelector :: Selector
+setLocalizedKeyTableSelector :: Selector '[Id NSString] ()
 setLocalizedKeyTableSelector = mkSelector "setLocalizedKeyTable:"
 

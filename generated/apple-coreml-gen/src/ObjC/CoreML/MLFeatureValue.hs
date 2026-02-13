@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,32 +38,32 @@ module ObjC.CoreML.MLFeatureValue
   , dictionaryValue
   , imageBufferValue
   , sequenceValue
-  , featureValueWithInt64Selector
+  , dictionaryValueSelector
+  , doubleValueSelector
+  , featureValueWithCGImage_constraint_options_errorSelector
+  , featureValueWithCGImage_orientation_constraint_options_errorSelector
+  , featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
+  , featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
+  , featureValueWithDictionary_errorSelector
   , featureValueWithDoubleSelector
-  , featureValueWithStringSelector
+  , featureValueWithImageAtURL_constraint_options_errorSelector
+  , featureValueWithImageAtURL_orientation_constraint_options_errorSelector
+  , featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
+  , featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
+  , featureValueWithInt64Selector
   , featureValueWithMultiArraySelector
   , featureValueWithPixelBufferSelector
   , featureValueWithSequenceSelector
-  , undefinedFeatureValueWithTypeSelector
-  , featureValueWithDictionary_errorSelector
-  , isEqualToFeatureValueSelector
-  , featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
-  , featureValueWithImageAtURL_constraint_options_errorSelector
-  , featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
-  , featureValueWithCGImage_constraint_options_errorSelector
-  , featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
-  , featureValueWithImageAtURL_orientation_constraint_options_errorSelector
-  , featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector
-  , featureValueWithCGImage_orientation_constraint_options_errorSelector
-  , typeSelector
-  , undefinedSelector
-  , int64ValueSelector
-  , doubleValueSelector
-  , stringValueSelector
-  , multiArrayValueSelector
-  , dictionaryValueSelector
+  , featureValueWithStringSelector
   , imageBufferValueSelector
+  , int64ValueSelector
+  , isEqualToFeatureValueSelector
+  , multiArrayValueSelector
   , sequenceValueSelector
+  , stringValueSelector
+  , typeSelector
+  , undefinedFeatureValueWithTypeSelector
+  , undefinedSelector
 
   -- * Enum types
   , MLFeatureType(MLFeatureType)
@@ -78,15 +79,11 @@ module ObjC.CoreML.MLFeatureValue
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,45 +98,42 @@ featureValueWithInt64 :: CLong -> IO (Id MLFeatureValue)
 featureValueWithInt64 value =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    sendClassMsg cls' (mkSelector "featureValueWithInt64:") (retPtr retVoid) [argCLong value] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithInt64Selector value
 
 -- | @+ featureValueWithDouble:@
 featureValueWithDouble :: CDouble -> IO (Id MLFeatureValue)
 featureValueWithDouble value =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    sendClassMsg cls' (mkSelector "featureValueWithDouble:") (retPtr retVoid) [argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithDoubleSelector value
 
 -- | @+ featureValueWithString:@
 featureValueWithString :: IsNSString value => value -> IO (Id MLFeatureValue)
 featureValueWithString value =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "featureValueWithString:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithStringSelector (toNSString value)
 
 -- | @+ featureValueWithMultiArray:@
 featureValueWithMultiArray :: IsMLMultiArray value => value -> IO (Id MLFeatureValue)
 featureValueWithMultiArray value =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "featureValueWithMultiArray:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithMultiArraySelector (toMLMultiArray value)
 
 -- | @+ featureValueWithPixelBuffer:@
 featureValueWithPixelBuffer :: Ptr () -> IO (Id MLFeatureValue)
 featureValueWithPixelBuffer value =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    sendClassMsg cls' (mkSelector "featureValueWithPixelBuffer:") (retPtr retVoid) [argPtr value] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithPixelBufferSelector value
 
 -- | @+ featureValueWithSequence:@
 featureValueWithSequence :: IsMLSequence sequence_ => sequence_ -> IO (Id MLFeatureValue)
 featureValueWithSequence sequence_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr sequence_ $ \raw_sequence_ ->
-      sendClassMsg cls' (mkSelector "featureValueWithSequence:") (retPtr retVoid) [argPtr (castPtr raw_sequence_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithSequenceSelector (toMLSequence sequence_)
 
 -- | Represent an undefined value of a specified type
 --
@@ -148,7 +142,7 @@ undefinedFeatureValueWithType :: MLFeatureType -> IO (Id MLFeatureValue)
 undefinedFeatureValueWithType type_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    sendClassMsg cls' (mkSelector "undefinedFeatureValueWithType:") (retPtr retVoid) [argCLong (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' undefinedFeatureValueWithTypeSelector type_
 
 -- | For encoding a sparse feature set or for encoding probabilities. Input keys that are not NSNumber * or NSString * are rejected on construction and return a MLModelErrorFeatureTypeMismatch error. Further validation for consistency occurs on evaluation
 --
@@ -157,9 +151,7 @@ featureValueWithDictionary_error :: (IsNSDictionary value, IsNSError error_) => 
 featureValueWithDictionary_error value error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr value $ \raw_value ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "featureValueWithDictionary:error:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithDictionary_errorSelector (toNSDictionary value) (toNSError error_)
 
 -- | Returns a Boolean value that indicates whether a feature value is equal to another.
 --
@@ -167,9 +159,8 @@ featureValueWithDictionary_error value error_ =
 --
 -- ObjC selector: @- isEqualToFeatureValue:@
 isEqualToFeatureValue :: (IsMLFeatureValue mlFeatureValue, IsMLFeatureValue value) => mlFeatureValue -> value -> IO Bool
-isEqualToFeatureValue mlFeatureValue  value =
-  withObjCPtr value $ \raw_value ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlFeatureValue (mkSelector "isEqualToFeatureValue:") retCULong [argPtr (castPtr raw_value :: Ptr ())]
+isEqualToFeatureValue mlFeatureValue value =
+  sendMessage mlFeatureValue isEqualToFeatureValueSelector (toMLFeatureValue value)
 
 -- | Construct image feature value from an image on disk. Orientation is read from Exif if avaiable
 --
@@ -178,10 +169,7 @@ featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_error :
 featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_error url pixelsWide pixelsHigh pixelFormatType options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "featureValueWithImageAtURL:pixelsWide:pixelsHigh:pixelFormatType:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCLong pixelsWide, argCLong pixelsHigh, argCUInt pixelFormatType, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector (toNSURL url) pixelsWide pixelsHigh pixelFormatType (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from an image on disk, using a model specified image constraint. Orientation is read from Exif if avaiable
 --
@@ -190,11 +178,7 @@ featureValueWithImageAtURL_constraint_options_error :: (IsNSURL url, IsMLImageCo
 featureValueWithImageAtURL_constraint_options_error url constraint options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr constraint $ \raw_constraint ->
-        withObjCPtr options $ \raw_options ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "featureValueWithImageAtURL:constraint:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_constraint :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithImageAtURL_constraint_options_errorSelector (toNSURL url) (toMLImageConstraint constraint) (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from CGImage (orientation is assumed to be kCGImagePropertyOrientationUp)
 --
@@ -203,9 +187,7 @@ featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_error :: (
 featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_error cgImage pixelsWide pixelsHigh pixelFormatType options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "featureValueWithCGImage:pixelsWide:pixelsHigh:pixelFormatType:options:error:") (retPtr retVoid) [argPtr cgImage, argCLong pixelsWide, argCLong pixelsHigh, argCUInt pixelFormatType, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector cgImage pixelsWide pixelsHigh pixelFormatType (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from CGImage, using the size and type information required by feature description (orientation is assumed to be kCGImagePropertyOrientationUp)
 --
@@ -214,10 +196,7 @@ featureValueWithCGImage_constraint_options_error :: (IsMLImageConstraint constra
 featureValueWithCGImage_constraint_options_error cgImage constraint options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr constraint $ \raw_constraint ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "featureValueWithCGImage:constraint:options:error:") (retPtr retVoid) [argPtr cgImage, argPtr (castPtr raw_constraint :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithCGImage_constraint_options_errorSelector cgImage (toMLImageConstraint constraint) (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from an image on disk. The passed in orientation supersedes any in the file
 --
@@ -226,10 +205,7 @@ featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_opt
 featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_error url orientation pixelsWide pixelsHigh pixelFormatType options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "featureValueWithImageAtURL:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCInt (fromIntegral orientation), argCLong pixelsWide, argCLong pixelsHigh, argCUInt pixelFormatType, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector (toNSURL url) orientation pixelsWide pixelsHigh pixelFormatType (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from an image on disk using a model specified image constraint. The passed in orientation supersedes any in the file
 --
@@ -238,11 +214,7 @@ featureValueWithImageAtURL_orientation_constraint_options_error :: (IsNSURL url,
 featureValueWithImageAtURL_orientation_constraint_options_error url orientation constraint options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr constraint $ \raw_constraint ->
-        withObjCPtr options $ \raw_options ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "featureValueWithImageAtURL:orientation:constraint:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_constraint :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithImageAtURL_orientation_constraint_options_errorSelector (toNSURL url) orientation (toMLImageConstraint constraint) (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from CGImage w/ specified orientation
 --
@@ -251,9 +223,7 @@ featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_option
 featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_error cgImage orientation pixelsWide pixelsHigh pixelFormatType options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "featureValueWithCGImage:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:") (retPtr retVoid) [argPtr cgImage, argCInt (fromIntegral orientation), argCLong pixelsWide, argCLong pixelsHigh, argCUInt pixelFormatType, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector cgImage orientation pixelsWide pixelsHigh pixelFormatType (toNSDictionary options) (toNSError error_)
 
 -- | Construct image feature value from CGImage w/ specified orientation, using the size and type information required by feature description
 --
@@ -262,179 +232,176 @@ featureValueWithCGImage_orientation_constraint_options_error :: (IsMLImageConstr
 featureValueWithCGImage_orientation_constraint_options_error cgImage orientation constraint options error_ =
   do
     cls' <- getRequiredClass "MLFeatureValue"
-    withObjCPtr constraint $ \raw_constraint ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "featureValueWithCGImage:orientation:constraint:options:error:") (retPtr retVoid) [argPtr cgImage, argCInt (fromIntegral orientation), argPtr (castPtr raw_constraint :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' featureValueWithCGImage_orientation_constraint_options_errorSelector cgImage orientation (toMLImageConstraint constraint) (toNSDictionary options) (toNSError error_)
 
 -- | Type of the value for which the corresponding property below is held
 --
 -- ObjC selector: @- type@
 type_ :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO MLFeatureType
-type_ mlFeatureValue  =
-    fmap (coerce :: CLong -> MLFeatureType) $ sendMsg mlFeatureValue (mkSelector "type") retCLong []
+type_ mlFeatureValue =
+  sendMessage mlFeatureValue typeSelector
 
 -- | True if the value represents a missing or undefined value
 --
 -- ObjC selector: @- undefined@
 undefined_ :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO Bool
-undefined_ mlFeatureValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlFeatureValue (mkSelector "undefined") retCULong []
+undefined_ mlFeatureValue =
+  sendMessage mlFeatureValue undefinedSelector
 
 -- | Populated value if the type is MLFeatureTypeInt64
 --
 -- ObjC selector: @- int64Value@
 int64Value :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO CLong
-int64Value mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "int64Value") retCLong []
+int64Value mlFeatureValue =
+  sendMessage mlFeatureValue int64ValueSelector
 
 -- | Populated value if the type is MLFeatureTypeDouble
 --
 -- ObjC selector: @- doubleValue@
 doubleValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO CDouble
-doubleValue mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "doubleValue") retCDouble []
+doubleValue mlFeatureValue =
+  sendMessage mlFeatureValue doubleValueSelector
 
 -- | Populated value if the type is MLFeatureTypeString
 --
 -- ObjC selector: @- stringValue@
 stringValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO (Id NSString)
-stringValue mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue mlFeatureValue =
+  sendMessage mlFeatureValue stringValueSelector
 
 -- | Populated value if the type is MLFeatureTypeMultiArray
 --
 -- ObjC selector: @- multiArrayValue@
 multiArrayValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO (Id MLMultiArray)
-multiArrayValue mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "multiArrayValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiArrayValue mlFeatureValue =
+  sendMessage mlFeatureValue multiArrayValueSelector
 
 -- | Populated value if the type is MLFeatureTypeDictionary
 --
 -- ObjC selector: @- dictionaryValue@
 dictionaryValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO (Id NSDictionary)
-dictionaryValue mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "dictionaryValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryValue mlFeatureValue =
+  sendMessage mlFeatureValue dictionaryValueSelector
 
 -- | Populated value if the type is MLFeatureTypeImage
 --
 -- ObjC selector: @- imageBufferValue@
 imageBufferValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO (Ptr ())
-imageBufferValue mlFeatureValue  =
-    fmap castPtr $ sendMsg mlFeatureValue (mkSelector "imageBufferValue") (retPtr retVoid) []
+imageBufferValue mlFeatureValue =
+  sendMessage mlFeatureValue imageBufferValueSelector
 
 -- | Populated value if the type is MLFeatureTypeSequence
 --
 -- ObjC selector: @- sequenceValue@
 sequenceValue :: IsMLFeatureValue mlFeatureValue => mlFeatureValue -> IO (Id MLSequence)
-sequenceValue mlFeatureValue  =
-    sendMsg mlFeatureValue (mkSelector "sequenceValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+sequenceValue mlFeatureValue =
+  sendMessage mlFeatureValue sequenceValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @featureValueWithInt64:@
-featureValueWithInt64Selector :: Selector
+featureValueWithInt64Selector :: Selector '[CLong] (Id MLFeatureValue)
 featureValueWithInt64Selector = mkSelector "featureValueWithInt64:"
 
 -- | @Selector@ for @featureValueWithDouble:@
-featureValueWithDoubleSelector :: Selector
+featureValueWithDoubleSelector :: Selector '[CDouble] (Id MLFeatureValue)
 featureValueWithDoubleSelector = mkSelector "featureValueWithDouble:"
 
 -- | @Selector@ for @featureValueWithString:@
-featureValueWithStringSelector :: Selector
+featureValueWithStringSelector :: Selector '[Id NSString] (Id MLFeatureValue)
 featureValueWithStringSelector = mkSelector "featureValueWithString:"
 
 -- | @Selector@ for @featureValueWithMultiArray:@
-featureValueWithMultiArraySelector :: Selector
+featureValueWithMultiArraySelector :: Selector '[Id MLMultiArray] (Id MLFeatureValue)
 featureValueWithMultiArraySelector = mkSelector "featureValueWithMultiArray:"
 
 -- | @Selector@ for @featureValueWithPixelBuffer:@
-featureValueWithPixelBufferSelector :: Selector
+featureValueWithPixelBufferSelector :: Selector '[Ptr ()] (Id MLFeatureValue)
 featureValueWithPixelBufferSelector = mkSelector "featureValueWithPixelBuffer:"
 
 -- | @Selector@ for @featureValueWithSequence:@
-featureValueWithSequenceSelector :: Selector
+featureValueWithSequenceSelector :: Selector '[Id MLSequence] (Id MLFeatureValue)
 featureValueWithSequenceSelector = mkSelector "featureValueWithSequence:"
 
 -- | @Selector@ for @undefinedFeatureValueWithType:@
-undefinedFeatureValueWithTypeSelector :: Selector
+undefinedFeatureValueWithTypeSelector :: Selector '[MLFeatureType] (Id MLFeatureValue)
 undefinedFeatureValueWithTypeSelector = mkSelector "undefinedFeatureValueWithType:"
 
 -- | @Selector@ for @featureValueWithDictionary:error:@
-featureValueWithDictionary_errorSelector :: Selector
+featureValueWithDictionary_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithDictionary_errorSelector = mkSelector "featureValueWithDictionary:error:"
 
 -- | @Selector@ for @isEqualToFeatureValue:@
-isEqualToFeatureValueSelector :: Selector
+isEqualToFeatureValueSelector :: Selector '[Id MLFeatureValue] Bool
 isEqualToFeatureValueSelector = mkSelector "isEqualToFeatureValue:"
 
 -- | @Selector@ for @featureValueWithImageAtURL:pixelsWide:pixelsHigh:pixelFormatType:options:error:@
-featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector
+featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector '[Id NSURL, CLong, CLong, CUInt, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithImageAtURL_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector = mkSelector "featureValueWithImageAtURL:pixelsWide:pixelsHigh:pixelFormatType:options:error:"
 
 -- | @Selector@ for @featureValueWithImageAtURL:constraint:options:error:@
-featureValueWithImageAtURL_constraint_options_errorSelector :: Selector
+featureValueWithImageAtURL_constraint_options_errorSelector :: Selector '[Id NSURL, Id MLImageConstraint, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithImageAtURL_constraint_options_errorSelector = mkSelector "featureValueWithImageAtURL:constraint:options:error:"
 
 -- | @Selector@ for @featureValueWithCGImage:pixelsWide:pixelsHigh:pixelFormatType:options:error:@
-featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector
+featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector '[Ptr (), CLong, CLong, CUInt, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithCGImage_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector = mkSelector "featureValueWithCGImage:pixelsWide:pixelsHigh:pixelFormatType:options:error:"
 
 -- | @Selector@ for @featureValueWithCGImage:constraint:options:error:@
-featureValueWithCGImage_constraint_options_errorSelector :: Selector
+featureValueWithCGImage_constraint_options_errorSelector :: Selector '[Ptr (), Id MLImageConstraint, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithCGImage_constraint_options_errorSelector = mkSelector "featureValueWithCGImage:constraint:options:error:"
 
 -- | @Selector@ for @featureValueWithImageAtURL:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:@
-featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector
+featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector '[Id NSURL, CInt, CLong, CLong, CUInt, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithImageAtURL_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector = mkSelector "featureValueWithImageAtURL:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:"
 
 -- | @Selector@ for @featureValueWithImageAtURL:orientation:constraint:options:error:@
-featureValueWithImageAtURL_orientation_constraint_options_errorSelector :: Selector
+featureValueWithImageAtURL_orientation_constraint_options_errorSelector :: Selector '[Id NSURL, CInt, Id MLImageConstraint, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithImageAtURL_orientation_constraint_options_errorSelector = mkSelector "featureValueWithImageAtURL:orientation:constraint:options:error:"
 
 -- | @Selector@ for @featureValueWithCGImage:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:@
-featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector
+featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector :: Selector '[Ptr (), CInt, CLong, CLong, CUInt, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithCGImage_orientation_pixelsWide_pixelsHigh_pixelFormatType_options_errorSelector = mkSelector "featureValueWithCGImage:orientation:pixelsWide:pixelsHigh:pixelFormatType:options:error:"
 
 -- | @Selector@ for @featureValueWithCGImage:orientation:constraint:options:error:@
-featureValueWithCGImage_orientation_constraint_options_errorSelector :: Selector
+featureValueWithCGImage_orientation_constraint_options_errorSelector :: Selector '[Ptr (), CInt, Id MLImageConstraint, Id NSDictionary, Id NSError] (Id MLFeatureValue)
 featureValueWithCGImage_orientation_constraint_options_errorSelector = mkSelector "featureValueWithCGImage:orientation:constraint:options:error:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MLFeatureType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @undefined@
-undefinedSelector :: Selector
+undefinedSelector :: Selector '[] Bool
 undefinedSelector = mkSelector "undefined"
 
 -- | @Selector@ for @int64Value@
-int64ValueSelector :: Selector
+int64ValueSelector :: Selector '[] CLong
 int64ValueSelector = mkSelector "int64Value"
 
 -- | @Selector@ for @doubleValue@
-doubleValueSelector :: Selector
+doubleValueSelector :: Selector '[] CDouble
 doubleValueSelector = mkSelector "doubleValue"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @multiArrayValue@
-multiArrayValueSelector :: Selector
+multiArrayValueSelector :: Selector '[] (Id MLMultiArray)
 multiArrayValueSelector = mkSelector "multiArrayValue"
 
 -- | @Selector@ for @dictionaryValue@
-dictionaryValueSelector :: Selector
+dictionaryValueSelector :: Selector '[] (Id NSDictionary)
 dictionaryValueSelector = mkSelector "dictionaryValue"
 
 -- | @Selector@ for @imageBufferValue@
-imageBufferValueSelector :: Selector
+imageBufferValueSelector :: Selector '[] (Ptr ())
 imageBufferValueSelector = mkSelector "imageBufferValue"
 
 -- | @Selector@ for @sequenceValue@
-sequenceValueSelector :: Selector
+sequenceValueSelector :: Selector '[] (Id MLSequence)
 sequenceValueSelector = mkSelector "sequenceValue"
 

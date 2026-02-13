@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.CoreML.MLGPUComputeDevice
   , new
   , metalDevice
   , initSelector
-  , newSelector
   , metalDeviceSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLGPUComputeDevice mlgpuComputeDevice => mlgpuComputeDevice -> IO (Id MLGPUComputeDevice)
-init_ mlgpuComputeDevice  =
-    sendMsg mlgpuComputeDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlgpuComputeDevice =
+  sendOwnedMessage mlgpuComputeDevice initSelector
 
 -- | @+ new@
 new :: IO (Id MLGPUComputeDevice)
 new  =
   do
     cls' <- getRequiredClass "MLGPUComputeDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The underlying metal device.
 --
 -- ObjC selector: @- metalDevice@
 metalDevice :: IsMLGPUComputeDevice mlgpuComputeDevice => mlgpuComputeDevice -> IO RawId
-metalDevice mlgpuComputeDevice  =
-    fmap (RawId . castPtr) $ sendMsg mlgpuComputeDevice (mkSelector "metalDevice") (retPtr retVoid) []
+metalDevice mlgpuComputeDevice =
+  sendMessage mlgpuComputeDevice metalDeviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLGPUComputeDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLGPUComputeDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @metalDevice@
-metalDeviceSelector :: Selector
+metalDeviceSelector :: Selector '[] RawId
 metalDeviceSelector = mkSelector "metalDevice"
 

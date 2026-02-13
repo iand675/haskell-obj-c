@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -47,29 +48,25 @@ module ObjC.MetalPerformanceShaders.MPSCNNGradientKernel
   , setKernelOffsetX
   , kernelOffsetY
   , setKernelOffsetY
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector
-  , encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector
   , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector
   , encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector
+  , encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector
+  , encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , kernelOffsetXSelector
-  , setKernelOffsetXSelector
   , kernelOffsetYSelector
+  , setKernelOffsetXSelector
   , setKernelOffsetYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,8 +81,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> RawId -> IO (Id MPSCNNGradientKernel)
-initWithDevice mpscnnGradientKernel  device =
-    sendMsg mpscnnGradientKernel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnGradientKernel device =
+  sendOwnedMessage mpscnnGradientKernel initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -99,9 +96,8 @@ initWithDevice mpscnnGradientKernel  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNGradientKernel mpscnnGradientKernel, IsNSCoder aDecoder) => mpscnnGradientKernel -> aDecoder -> RawId -> IO (Id MPSCNNGradientKernel)
-initWithCoder_device mpscnnGradientKernel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnGradientKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnGradientKernel aDecoder device =
+  sendOwnedMessage mpscnnGradientKernel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a gradient filter and return a gradient
 --
@@ -121,11 +117,8 @@ initWithCoder_device mpscnnGradientKernel  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:@
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientState :: (IsMPSCNNGradientKernel mpscnnGradientKernel, IsMPSImage sourceGradient, IsMPSImage sourceImage, IsMPSState gradientState) => mpscnnGradientKernel -> RawId -> sourceGradient -> sourceImage -> gradientState -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceGradient_sourceImage_gradientState mpscnnGradientKernel  commandBuffer sourceGradient sourceImage gradientState =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpscnnGradientKernel (mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceGradient_sourceImage_gradientState mpscnnGradientKernel commandBuffer sourceGradient sourceImage gradientState =
+  sendMessage mpscnnGradientKernel encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector commandBuffer (toMPSImage sourceGradient) (toMPSImage sourceImage) (toMPSState gradientState)
 
 -- | Encode a gradient filter and return a gradient
 --
@@ -145,12 +138,8 @@ encodeToCommandBuffer_sourceGradient_sourceImage_gradientState mpscnnGradientKer
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:@
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradient :: (IsMPSCNNGradientKernel mpscnnGradientKernel, IsMPSImage sourceGradient, IsMPSImage sourceImage, IsMPSState gradientState, IsMPSImage destinationGradient) => mpscnnGradientKernel -> RawId -> sourceGradient -> sourceImage -> gradientState -> destinationGradient -> IO ()
-encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradient mpscnnGradientKernel  commandBuffer sourceGradient sourceImage gradientState destinationGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-        withObjCPtr destinationGradient $ \raw_destinationGradient ->
-            sendMsg mpscnnGradientKernel (mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argPtr (castPtr raw_destinationGradient :: Ptr ())]
+encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradient mpscnnGradientKernel commandBuffer sourceGradient sourceImage gradientState destinationGradient =
+  sendMessage mpscnnGradientKernel encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector commandBuffer (toMPSImage sourceGradient) (toMPSImage sourceImage) (toMPSState gradientState) (toMPSImage destinationGradient)
 
 -- | Encode a gradient filter and return a gradient
 --
@@ -168,8 +157,8 @@ encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradie
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> RawId -> RawId -> RawId -> RawId -> IO RawId
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates mpscnnGradientKernel  commandBuffer sourceGradients sourceImages gradientStates =
-    fmap (RawId . castPtr) $ sendMsg mpscnnGradientKernel (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId gradientStates) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates mpscnnGradientKernel commandBuffer sourceGradients sourceImages gradientStates =
+  sendMessage mpscnnGradientKernel encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector commandBuffer sourceGradients sourceImages gradientStates
 
 -- | Encode a gradient filter and return a gradient
 --
@@ -189,8 +178,8 @@ encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates mpscnnGra
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients mpscnnGradientKernel  commandBuffer sourceGradients sourceImages gradientStates destinationGradients =
-    sendMsg mpscnnGradientKernel (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId gradientStates) :: Ptr ()), argPtr (castPtr (unRawId destinationGradients) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradients mpscnnGradientKernel commandBuffer sourceGradients sourceImages gradientStates destinationGradients =
+  sendMessage mpscnnGradientKernel encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector commandBuffer sourceGradients sourceImages gradientStates destinationGradients
 
 -- | kernelOffsetX
 --
@@ -200,8 +189,8 @@ encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinati
 --
 -- ObjC selector: @- kernelOffsetX@
 kernelOffsetX :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> IO CLong
-kernelOffsetX mpscnnGradientKernel  =
-    sendMsg mpscnnGradientKernel (mkSelector "kernelOffsetX") retCLong []
+kernelOffsetX mpscnnGradientKernel =
+  sendMessage mpscnnGradientKernel kernelOffsetXSelector
 
 -- | kernelOffsetX
 --
@@ -211,8 +200,8 @@ kernelOffsetX mpscnnGradientKernel  =
 --
 -- ObjC selector: @- setKernelOffsetX:@
 setKernelOffsetX :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> CLong -> IO ()
-setKernelOffsetX mpscnnGradientKernel  value =
-    sendMsg mpscnnGradientKernel (mkSelector "setKernelOffsetX:") retVoid [argCLong value]
+setKernelOffsetX mpscnnGradientKernel value =
+  sendMessage mpscnnGradientKernel setKernelOffsetXSelector value
 
 -- | kernelOffsetY
 --
@@ -222,8 +211,8 @@ setKernelOffsetX mpscnnGradientKernel  value =
 --
 -- ObjC selector: @- kernelOffsetY@
 kernelOffsetY :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> IO CLong
-kernelOffsetY mpscnnGradientKernel  =
-    sendMsg mpscnnGradientKernel (mkSelector "kernelOffsetY") retCLong []
+kernelOffsetY mpscnnGradientKernel =
+  sendMessage mpscnnGradientKernel kernelOffsetYSelector
 
 -- | kernelOffsetY
 --
@@ -233,50 +222,50 @@ kernelOffsetY mpscnnGradientKernel  =
 --
 -- ObjC selector: @- setKernelOffsetY:@
 setKernelOffsetY :: IsMPSCNNGradientKernel mpscnnGradientKernel => mpscnnGradientKernel -> CLong -> IO ()
-setKernelOffsetY mpscnnGradientKernel  value =
-    sendMsg mpscnnGradientKernel (mkSelector "setKernelOffsetY:") retVoid [argCLong value]
+setKernelOffsetY mpscnnGradientKernel value =
+  sendMessage mpscnnGradientKernel setKernelOffsetYSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNGradientKernel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNGradientKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:@
-encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector :: Selector
+encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSState] (Id MPSImage)
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientStateSelector = mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:@
-encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector :: Selector
+encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSState, Id MPSImage] ()
 encodeToCommandBuffer_sourceGradient_sourceImage_gradientState_destinationGradientSelector = mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:gradientState:destinationGradient:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector :: Selector '[RawId, RawId, RawId, RawId] RawId
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector :: Selector '[RawId, RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_gradientStates_destinationGradientsSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:gradientStates:destinationGradients:"
 
 -- | @Selector@ for @kernelOffsetX@
-kernelOffsetXSelector :: Selector
+kernelOffsetXSelector :: Selector '[] CLong
 kernelOffsetXSelector = mkSelector "kernelOffsetX"
 
 -- | @Selector@ for @setKernelOffsetX:@
-setKernelOffsetXSelector :: Selector
+setKernelOffsetXSelector :: Selector '[CLong] ()
 setKernelOffsetXSelector = mkSelector "setKernelOffsetX:"
 
 -- | @Selector@ for @kernelOffsetY@
-kernelOffsetYSelector :: Selector
+kernelOffsetYSelector :: Selector '[] CLong
 kernelOffsetYSelector = mkSelector "kernelOffsetY"
 
 -- | @Selector@ for @setKernelOffsetY:@
-setKernelOffsetYSelector :: Selector
+setKernelOffsetYSelector :: Selector '[CLong] ()
 setKernelOffsetYSelector = mkSelector "setKernelOffsetY:"
 

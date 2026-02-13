@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.StoreKit.SKCloudServiceController
   , authorizationStatusSelector
   , requestAuthorizationSelector
   , requestCapabilitiesWithCompletionHandlerSelector
+  , requestPersonalizationTokenForClientToken_withCompletionHandlerSelector
   , requestStorefrontCountryCodeWithCompletionHandlerSelector
   , requestStorefrontIdentifierWithCompletionHandlerSelector
   , requestUserTokenForDeveloperToken_completionHandlerSelector
-  , requestPersonalizationTokenForClientToken_withCompletionHandlerSelector
 
   -- * Enum types
   , SKCloudServiceAuthorizationStatus(SKCloudServiceAuthorizationStatus)
@@ -31,15 +32,11 @@ module ObjC.StoreKit.SKCloudServiceController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,71 +49,69 @@ authorizationStatus :: IO SKCloudServiceAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "SKCloudServiceController"
-    fmap (coerce :: CLong -> SKCloudServiceAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @+ requestAuthorization:@
 requestAuthorization :: Ptr () -> IO ()
 requestAuthorization completionHandler =
   do
     cls' <- getRequiredClass "SKCloudServiceController"
-    sendClassMsg cls' (mkSelector "requestAuthorization:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' requestAuthorizationSelector completionHandler
 
 -- | @- requestCapabilitiesWithCompletionHandler:@
 requestCapabilitiesWithCompletionHandler :: IsSKCloudServiceController skCloudServiceController => skCloudServiceController -> Ptr () -> IO ()
-requestCapabilitiesWithCompletionHandler skCloudServiceController  completionHandler =
-    sendMsg skCloudServiceController (mkSelector "requestCapabilitiesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestCapabilitiesWithCompletionHandler skCloudServiceController completionHandler =
+  sendMessage skCloudServiceController requestCapabilitiesWithCompletionHandlerSelector completionHandler
 
 -- | @- requestStorefrontCountryCodeWithCompletionHandler:@
 requestStorefrontCountryCodeWithCompletionHandler :: IsSKCloudServiceController skCloudServiceController => skCloudServiceController -> Ptr () -> IO ()
-requestStorefrontCountryCodeWithCompletionHandler skCloudServiceController  completionHandler =
-    sendMsg skCloudServiceController (mkSelector "requestStorefrontCountryCodeWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestStorefrontCountryCodeWithCompletionHandler skCloudServiceController completionHandler =
+  sendMessage skCloudServiceController requestStorefrontCountryCodeWithCompletionHandlerSelector completionHandler
 
 -- | @- requestStorefrontIdentifierWithCompletionHandler:@
 requestStorefrontIdentifierWithCompletionHandler :: IsSKCloudServiceController skCloudServiceController => skCloudServiceController -> Ptr () -> IO ()
-requestStorefrontIdentifierWithCompletionHandler skCloudServiceController  completionHandler =
-    sendMsg skCloudServiceController (mkSelector "requestStorefrontIdentifierWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestStorefrontIdentifierWithCompletionHandler skCloudServiceController completionHandler =
+  sendMessage skCloudServiceController requestStorefrontIdentifierWithCompletionHandlerSelector completionHandler
 
 -- | @- requestUserTokenForDeveloperToken:completionHandler:@
 requestUserTokenForDeveloperToken_completionHandler :: (IsSKCloudServiceController skCloudServiceController, IsNSString developerToken) => skCloudServiceController -> developerToken -> Ptr () -> IO ()
-requestUserTokenForDeveloperToken_completionHandler skCloudServiceController  developerToken completionHandler =
-  withObjCPtr developerToken $ \raw_developerToken ->
-      sendMsg skCloudServiceController (mkSelector "requestUserTokenForDeveloperToken:completionHandler:") retVoid [argPtr (castPtr raw_developerToken :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestUserTokenForDeveloperToken_completionHandler skCloudServiceController developerToken completionHandler =
+  sendMessage skCloudServiceController requestUserTokenForDeveloperToken_completionHandlerSelector (toNSString developerToken) completionHandler
 
 -- | @- requestPersonalizationTokenForClientToken:withCompletionHandler:@
 requestPersonalizationTokenForClientToken_withCompletionHandler :: (IsSKCloudServiceController skCloudServiceController, IsNSString clientToken) => skCloudServiceController -> clientToken -> Ptr () -> IO ()
-requestPersonalizationTokenForClientToken_withCompletionHandler skCloudServiceController  clientToken completionHandler =
-  withObjCPtr clientToken $ \raw_clientToken ->
-      sendMsg skCloudServiceController (mkSelector "requestPersonalizationTokenForClientToken:withCompletionHandler:") retVoid [argPtr (castPtr raw_clientToken :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestPersonalizationTokenForClientToken_withCompletionHandler skCloudServiceController clientToken completionHandler =
+  sendMessage skCloudServiceController requestPersonalizationTokenForClientToken_withCompletionHandlerSelector (toNSString clientToken) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] SKCloudServiceAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @requestAuthorization:@
-requestAuthorizationSelector :: Selector
+requestAuthorizationSelector :: Selector '[Ptr ()] ()
 requestAuthorizationSelector = mkSelector "requestAuthorization:"
 
 -- | @Selector@ for @requestCapabilitiesWithCompletionHandler:@
-requestCapabilitiesWithCompletionHandlerSelector :: Selector
+requestCapabilitiesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestCapabilitiesWithCompletionHandlerSelector = mkSelector "requestCapabilitiesWithCompletionHandler:"
 
 -- | @Selector@ for @requestStorefrontCountryCodeWithCompletionHandler:@
-requestStorefrontCountryCodeWithCompletionHandlerSelector :: Selector
+requestStorefrontCountryCodeWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestStorefrontCountryCodeWithCompletionHandlerSelector = mkSelector "requestStorefrontCountryCodeWithCompletionHandler:"
 
 -- | @Selector@ for @requestStorefrontIdentifierWithCompletionHandler:@
-requestStorefrontIdentifierWithCompletionHandlerSelector :: Selector
+requestStorefrontIdentifierWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestStorefrontIdentifierWithCompletionHandlerSelector = mkSelector "requestStorefrontIdentifierWithCompletionHandler:"
 
 -- | @Selector@ for @requestUserTokenForDeveloperToken:completionHandler:@
-requestUserTokenForDeveloperToken_completionHandlerSelector :: Selector
+requestUserTokenForDeveloperToken_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 requestUserTokenForDeveloperToken_completionHandlerSelector = mkSelector "requestUserTokenForDeveloperToken:completionHandler:"
 
 -- | @Selector@ for @requestPersonalizationTokenForClientToken:withCompletionHandler:@
-requestPersonalizationTokenForClientToken_withCompletionHandlerSelector :: Selector
+requestPersonalizationTokenForClientToken_withCompletionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 requestPersonalizationTokenForClientToken_withCompletionHandlerSelector = mkSelector "requestPersonalizationTokenForClientToken:withCompletionHandler:"
 

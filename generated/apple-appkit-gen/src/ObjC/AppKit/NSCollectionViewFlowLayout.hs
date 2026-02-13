@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,29 +31,29 @@ module ObjC.AppKit.NSCollectionViewFlowLayout
   , setSectionHeadersPinToVisibleBounds
   , sectionFootersPinToVisibleBounds
   , setSectionFootersPinToVisibleBounds
-  , sectionAtIndexIsCollapsedSelector
   , collapseSectionAtIndexSelector
-  , expandSectionAtIndexSelector
-  , minimumLineSpacingSelector
-  , setMinimumLineSpacingSelector
-  , minimumInteritemSpacingSelector
-  , setMinimumInteritemSpacingSelector
-  , itemSizeSelector
-  , setItemSizeSelector
   , estimatedItemSizeSelector
-  , setEstimatedItemSizeSelector
-  , scrollDirectionSelector
-  , setScrollDirectionSelector
-  , headerReferenceSizeSelector
-  , setHeaderReferenceSizeSelector
+  , expandSectionAtIndexSelector
   , footerReferenceSizeSelector
-  , setFooterReferenceSizeSelector
-  , sectionInsetSelector
-  , setSectionInsetSelector
-  , sectionHeadersPinToVisibleBoundsSelector
-  , setSectionHeadersPinToVisibleBoundsSelector
+  , headerReferenceSizeSelector
+  , itemSizeSelector
+  , minimumInteritemSpacingSelector
+  , minimumLineSpacingSelector
+  , scrollDirectionSelector
+  , sectionAtIndexIsCollapsedSelector
   , sectionFootersPinToVisibleBoundsSelector
+  , sectionHeadersPinToVisibleBoundsSelector
+  , sectionInsetSelector
+  , setEstimatedItemSizeSelector
+  , setFooterReferenceSizeSelector
+  , setHeaderReferenceSizeSelector
+  , setItemSizeSelector
+  , setMinimumInteritemSpacingSelector
+  , setMinimumLineSpacingSelector
+  , setScrollDirectionSelector
   , setSectionFootersPinToVisibleBoundsSelector
+  , setSectionHeadersPinToVisibleBoundsSelector
+  , setSectionInsetSelector
 
   -- * Enum types
   , NSCollectionViewScrollDirection(NSCollectionViewScrollDirection)
@@ -61,15 +62,11 @@ module ObjC.AppKit.NSCollectionViewFlowLayout
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,212 +77,212 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sectionAtIndexIsCollapsed:@
 sectionAtIndexIsCollapsed :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> CULong -> IO Bool
-sectionAtIndexIsCollapsed nsCollectionViewFlowLayout  sectionIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewFlowLayout (mkSelector "sectionAtIndexIsCollapsed:") retCULong [argCULong sectionIndex]
+sectionAtIndexIsCollapsed nsCollectionViewFlowLayout sectionIndex =
+  sendMessage nsCollectionViewFlowLayout sectionAtIndexIsCollapsedSelector sectionIndex
 
 -- | @- collapseSectionAtIndex:@
 collapseSectionAtIndex :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> CULong -> IO ()
-collapseSectionAtIndex nsCollectionViewFlowLayout  sectionIndex =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "collapseSectionAtIndex:") retVoid [argCULong sectionIndex]
+collapseSectionAtIndex nsCollectionViewFlowLayout sectionIndex =
+  sendMessage nsCollectionViewFlowLayout collapseSectionAtIndexSelector sectionIndex
 
 -- | @- expandSectionAtIndex:@
 expandSectionAtIndex :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> CULong -> IO ()
-expandSectionAtIndex nsCollectionViewFlowLayout  sectionIndex =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "expandSectionAtIndex:") retVoid [argCULong sectionIndex]
+expandSectionAtIndex nsCollectionViewFlowLayout sectionIndex =
+  sendMessage nsCollectionViewFlowLayout expandSectionAtIndexSelector sectionIndex
 
 -- | @- minimumLineSpacing@
 minimumLineSpacing :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO CDouble
-minimumLineSpacing nsCollectionViewFlowLayout  =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "minimumLineSpacing") retCDouble []
+minimumLineSpacing nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout minimumLineSpacingSelector
 
 -- | @- setMinimumLineSpacing:@
 setMinimumLineSpacing :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> CDouble -> IO ()
-setMinimumLineSpacing nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setMinimumLineSpacing:") retVoid [argCDouble value]
+setMinimumLineSpacing nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setMinimumLineSpacingSelector value
 
 -- | @- minimumInteritemSpacing@
 minimumInteritemSpacing :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO CDouble
-minimumInteritemSpacing nsCollectionViewFlowLayout  =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "minimumInteritemSpacing") retCDouble []
+minimumInteritemSpacing nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout minimumInteritemSpacingSelector
 
 -- | @- setMinimumInteritemSpacing:@
 setMinimumInteritemSpacing :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> CDouble -> IO ()
-setMinimumInteritemSpacing nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setMinimumInteritemSpacing:") retVoid [argCDouble value]
+setMinimumInteritemSpacing nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setMinimumInteritemSpacingSelector value
 
 -- | @- itemSize@
 itemSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSSize
-itemSize nsCollectionViewFlowLayout  =
-    sendMsgStret nsCollectionViewFlowLayout (mkSelector "itemSize") retNSSize []
+itemSize nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout itemSizeSelector
 
 -- | @- setItemSize:@
 setItemSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSSize -> IO ()
-setItemSize nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setItemSize:") retVoid [argNSSize value]
+setItemSize nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setItemSizeSelector value
 
 -- | @- estimatedItemSize@
 estimatedItemSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSSize
-estimatedItemSize nsCollectionViewFlowLayout  =
-    sendMsgStret nsCollectionViewFlowLayout (mkSelector "estimatedItemSize") retNSSize []
+estimatedItemSize nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout estimatedItemSizeSelector
 
 -- | @- setEstimatedItemSize:@
 setEstimatedItemSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSSize -> IO ()
-setEstimatedItemSize nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setEstimatedItemSize:") retVoid [argNSSize value]
+setEstimatedItemSize nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setEstimatedItemSizeSelector value
 
 -- | @- scrollDirection@
 scrollDirection :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSCollectionViewScrollDirection
-scrollDirection nsCollectionViewFlowLayout  =
-    fmap (coerce :: CLong -> NSCollectionViewScrollDirection) $ sendMsg nsCollectionViewFlowLayout (mkSelector "scrollDirection") retCLong []
+scrollDirection nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout scrollDirectionSelector
 
 -- | @- setScrollDirection:@
 setScrollDirection :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSCollectionViewScrollDirection -> IO ()
-setScrollDirection nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setScrollDirection:") retVoid [argCLong (coerce value)]
+setScrollDirection nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setScrollDirectionSelector value
 
 -- | @- headerReferenceSize@
 headerReferenceSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSSize
-headerReferenceSize nsCollectionViewFlowLayout  =
-    sendMsgStret nsCollectionViewFlowLayout (mkSelector "headerReferenceSize") retNSSize []
+headerReferenceSize nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout headerReferenceSizeSelector
 
 -- | @- setHeaderReferenceSize:@
 setHeaderReferenceSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSSize -> IO ()
-setHeaderReferenceSize nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setHeaderReferenceSize:") retVoid [argNSSize value]
+setHeaderReferenceSize nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setHeaderReferenceSizeSelector value
 
 -- | @- footerReferenceSize@
 footerReferenceSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSSize
-footerReferenceSize nsCollectionViewFlowLayout  =
-    sendMsgStret nsCollectionViewFlowLayout (mkSelector "footerReferenceSize") retNSSize []
+footerReferenceSize nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout footerReferenceSizeSelector
 
 -- | @- setFooterReferenceSize:@
 setFooterReferenceSize :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSSize -> IO ()
-setFooterReferenceSize nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setFooterReferenceSize:") retVoid [argNSSize value]
+setFooterReferenceSize nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setFooterReferenceSizeSelector value
 
 -- | @- sectionInset@
 sectionInset :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO NSEdgeInsets
-sectionInset nsCollectionViewFlowLayout  =
-    sendMsgStret nsCollectionViewFlowLayout (mkSelector "sectionInset") retNSEdgeInsets []
+sectionInset nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout sectionInsetSelector
 
 -- | @- setSectionInset:@
 setSectionInset :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> NSEdgeInsets -> IO ()
-setSectionInset nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setSectionInset:") retVoid [argNSEdgeInsets value]
+setSectionInset nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setSectionInsetSelector value
 
 -- | @- sectionHeadersPinToVisibleBounds@
 sectionHeadersPinToVisibleBounds :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO Bool
-sectionHeadersPinToVisibleBounds nsCollectionViewFlowLayout  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewFlowLayout (mkSelector "sectionHeadersPinToVisibleBounds") retCULong []
+sectionHeadersPinToVisibleBounds nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout sectionHeadersPinToVisibleBoundsSelector
 
 -- | @- setSectionHeadersPinToVisibleBounds:@
 setSectionHeadersPinToVisibleBounds :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> Bool -> IO ()
-setSectionHeadersPinToVisibleBounds nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setSectionHeadersPinToVisibleBounds:") retVoid [argCULong (if value then 1 else 0)]
+setSectionHeadersPinToVisibleBounds nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setSectionHeadersPinToVisibleBoundsSelector value
 
 -- | @- sectionFootersPinToVisibleBounds@
 sectionFootersPinToVisibleBounds :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> IO Bool
-sectionFootersPinToVisibleBounds nsCollectionViewFlowLayout  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewFlowLayout (mkSelector "sectionFootersPinToVisibleBounds") retCULong []
+sectionFootersPinToVisibleBounds nsCollectionViewFlowLayout =
+  sendMessage nsCollectionViewFlowLayout sectionFootersPinToVisibleBoundsSelector
 
 -- | @- setSectionFootersPinToVisibleBounds:@
 setSectionFootersPinToVisibleBounds :: IsNSCollectionViewFlowLayout nsCollectionViewFlowLayout => nsCollectionViewFlowLayout -> Bool -> IO ()
-setSectionFootersPinToVisibleBounds nsCollectionViewFlowLayout  value =
-    sendMsg nsCollectionViewFlowLayout (mkSelector "setSectionFootersPinToVisibleBounds:") retVoid [argCULong (if value then 1 else 0)]
+setSectionFootersPinToVisibleBounds nsCollectionViewFlowLayout value =
+  sendMessage nsCollectionViewFlowLayout setSectionFootersPinToVisibleBoundsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sectionAtIndexIsCollapsed:@
-sectionAtIndexIsCollapsedSelector :: Selector
+sectionAtIndexIsCollapsedSelector :: Selector '[CULong] Bool
 sectionAtIndexIsCollapsedSelector = mkSelector "sectionAtIndexIsCollapsed:"
 
 -- | @Selector@ for @collapseSectionAtIndex:@
-collapseSectionAtIndexSelector :: Selector
+collapseSectionAtIndexSelector :: Selector '[CULong] ()
 collapseSectionAtIndexSelector = mkSelector "collapseSectionAtIndex:"
 
 -- | @Selector@ for @expandSectionAtIndex:@
-expandSectionAtIndexSelector :: Selector
+expandSectionAtIndexSelector :: Selector '[CULong] ()
 expandSectionAtIndexSelector = mkSelector "expandSectionAtIndex:"
 
 -- | @Selector@ for @minimumLineSpacing@
-minimumLineSpacingSelector :: Selector
+minimumLineSpacingSelector :: Selector '[] CDouble
 minimumLineSpacingSelector = mkSelector "minimumLineSpacing"
 
 -- | @Selector@ for @setMinimumLineSpacing:@
-setMinimumLineSpacingSelector :: Selector
+setMinimumLineSpacingSelector :: Selector '[CDouble] ()
 setMinimumLineSpacingSelector = mkSelector "setMinimumLineSpacing:"
 
 -- | @Selector@ for @minimumInteritemSpacing@
-minimumInteritemSpacingSelector :: Selector
+minimumInteritemSpacingSelector :: Selector '[] CDouble
 minimumInteritemSpacingSelector = mkSelector "minimumInteritemSpacing"
 
 -- | @Selector@ for @setMinimumInteritemSpacing:@
-setMinimumInteritemSpacingSelector :: Selector
+setMinimumInteritemSpacingSelector :: Selector '[CDouble] ()
 setMinimumInteritemSpacingSelector = mkSelector "setMinimumInteritemSpacing:"
 
 -- | @Selector@ for @itemSize@
-itemSizeSelector :: Selector
+itemSizeSelector :: Selector '[] NSSize
 itemSizeSelector = mkSelector "itemSize"
 
 -- | @Selector@ for @setItemSize:@
-setItemSizeSelector :: Selector
+setItemSizeSelector :: Selector '[NSSize] ()
 setItemSizeSelector = mkSelector "setItemSize:"
 
 -- | @Selector@ for @estimatedItemSize@
-estimatedItemSizeSelector :: Selector
+estimatedItemSizeSelector :: Selector '[] NSSize
 estimatedItemSizeSelector = mkSelector "estimatedItemSize"
 
 -- | @Selector@ for @setEstimatedItemSize:@
-setEstimatedItemSizeSelector :: Selector
+setEstimatedItemSizeSelector :: Selector '[NSSize] ()
 setEstimatedItemSizeSelector = mkSelector "setEstimatedItemSize:"
 
 -- | @Selector@ for @scrollDirection@
-scrollDirectionSelector :: Selector
+scrollDirectionSelector :: Selector '[] NSCollectionViewScrollDirection
 scrollDirectionSelector = mkSelector "scrollDirection"
 
 -- | @Selector@ for @setScrollDirection:@
-setScrollDirectionSelector :: Selector
+setScrollDirectionSelector :: Selector '[NSCollectionViewScrollDirection] ()
 setScrollDirectionSelector = mkSelector "setScrollDirection:"
 
 -- | @Selector@ for @headerReferenceSize@
-headerReferenceSizeSelector :: Selector
+headerReferenceSizeSelector :: Selector '[] NSSize
 headerReferenceSizeSelector = mkSelector "headerReferenceSize"
 
 -- | @Selector@ for @setHeaderReferenceSize:@
-setHeaderReferenceSizeSelector :: Selector
+setHeaderReferenceSizeSelector :: Selector '[NSSize] ()
 setHeaderReferenceSizeSelector = mkSelector "setHeaderReferenceSize:"
 
 -- | @Selector@ for @footerReferenceSize@
-footerReferenceSizeSelector :: Selector
+footerReferenceSizeSelector :: Selector '[] NSSize
 footerReferenceSizeSelector = mkSelector "footerReferenceSize"
 
 -- | @Selector@ for @setFooterReferenceSize:@
-setFooterReferenceSizeSelector :: Selector
+setFooterReferenceSizeSelector :: Selector '[NSSize] ()
 setFooterReferenceSizeSelector = mkSelector "setFooterReferenceSize:"
 
 -- | @Selector@ for @sectionInset@
-sectionInsetSelector :: Selector
+sectionInsetSelector :: Selector '[] NSEdgeInsets
 sectionInsetSelector = mkSelector "sectionInset"
 
 -- | @Selector@ for @setSectionInset:@
-setSectionInsetSelector :: Selector
+setSectionInsetSelector :: Selector '[NSEdgeInsets] ()
 setSectionInsetSelector = mkSelector "setSectionInset:"
 
 -- | @Selector@ for @sectionHeadersPinToVisibleBounds@
-sectionHeadersPinToVisibleBoundsSelector :: Selector
+sectionHeadersPinToVisibleBoundsSelector :: Selector '[] Bool
 sectionHeadersPinToVisibleBoundsSelector = mkSelector "sectionHeadersPinToVisibleBounds"
 
 -- | @Selector@ for @setSectionHeadersPinToVisibleBounds:@
-setSectionHeadersPinToVisibleBoundsSelector :: Selector
+setSectionHeadersPinToVisibleBoundsSelector :: Selector '[Bool] ()
 setSectionHeadersPinToVisibleBoundsSelector = mkSelector "setSectionHeadersPinToVisibleBounds:"
 
 -- | @Selector@ for @sectionFootersPinToVisibleBounds@
-sectionFootersPinToVisibleBoundsSelector :: Selector
+sectionFootersPinToVisibleBoundsSelector :: Selector '[] Bool
 sectionFootersPinToVisibleBoundsSelector = mkSelector "sectionFootersPinToVisibleBounds"
 
 -- | @Selector@ for @setSectionFootersPinToVisibleBounds:@
-setSectionFootersPinToVisibleBoundsSelector :: Selector
+setSectionFootersPinToVisibleBoundsSelector :: Selector '[Bool] ()
 setSectionFootersPinToVisibleBoundsSelector = mkSelector "setSectionFootersPinToVisibleBounds:"
 

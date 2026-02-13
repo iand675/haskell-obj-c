@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.GameplayKit.GKOctree
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,9 +37,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- removeElement:@
 removeElement :: (IsGKOctree gkOctree, IsNSObject element) => gkOctree -> element -> IO Bool
-removeElement gkOctree  element =
-  withObjCPtr element $ \raw_element ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkOctree (mkSelector "removeElement:") retCULong [argPtr (castPtr raw_element :: Ptr ())]
+removeElement gkOctree element =
+  sendMessage gkOctree removeElementSelector (toNSObject element)
 
 -- | Removes the given NSObject from the given node Note that this is not an exhaustive search and is faster than removeData:
 --
@@ -54,20 +50,18 @@ removeElement gkOctree  element =
 --
 -- ObjC selector: @- removeElement:withNode:@
 removeElement_withNode :: (IsGKOctree gkOctree, IsNSObject element, IsGKOctreeNode node) => gkOctree -> element -> node -> IO Bool
-removeElement_withNode gkOctree  element node =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr node $ \raw_node ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkOctree (mkSelector "removeElement:withNode:") retCULong [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_node :: Ptr ())]
+removeElement_withNode gkOctree element node =
+  sendMessage gkOctree removeElement_withNodeSelector (toNSObject element) (toGKOctreeNode node)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @removeElement:@
-removeElementSelector :: Selector
+removeElementSelector :: Selector '[Id NSObject] Bool
 removeElementSelector = mkSelector "removeElement:"
 
 -- | @Selector@ for @removeElement:withNode:@
-removeElement_withNodeSelector :: Selector
+removeElement_withNodeSelector :: Selector '[Id NSObject, Id GKOctreeNode] Bool
 removeElement_withNodeSelector = mkSelector "removeElement:withNode:"
 

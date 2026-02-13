@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -59,58 +60,58 @@ module ObjC.Foundation.NSLocale
   , quotationEndDelimiter
   , alternateQuotationBeginDelimiter
   , alternateQuotationEndDelimiter
-  , objectForKeySelector
-  , displayNameForKey_valueSelector
-  , initWithLocaleIdentifierSelector
-  , initWithCoderSelector
-  , componentsFromLocaleIdentifierSelector
-  , localeIdentifierFromComponentsSelector
-  , canonicalLocaleIdentifierFromStringSelector
-  , canonicalLanguageIdentifierFromStringSelector
-  , localeIdentifierFromWindowsLocaleCodeSelector
-  , windowsLocaleCodeFromLocaleIdentifierSelector
-  , characterDirectionForLanguageSelector
-  , lineDirectionForLanguageSelector
-  , localeWithLocaleIdentifierSelector
-  , initSelector
-  , localizedStringForLocaleIdentifierSelector
-  , localizedStringForLanguageCodeSelector
-  , localizedStringForCountryCodeSelector
-  , localizedStringForScriptCodeSelector
-  , localizedStringForVariantCodeSelector
-  , localizedStringForCalendarIdentifierSelector
-  , localizedStringForCollationIdentifierSelector
-  , localizedStringForCurrencyCodeSelector
-  , localizedStringForCollatorIdentifierSelector
-  , availableLocaleIdentifiersSelector
-  , isoLanguageCodesSelector
-  , isoCountryCodesSelector
-  , isoCurrencyCodesSelector
-  , commonISOCurrencyCodesSelector
-  , preferredLanguagesSelector
-  , autoupdatingCurrentLocaleSelector
-  , currentLocaleSelector
-  , systemLocaleSelector
-  , localeIdentifierSelector
-  , languageCodeSelector
-  , languageIdentifierSelector
-  , countryCodeSelector
-  , regionCodeSelector
-  , scriptCodeSelector
-  , variantCodeSelector
-  , exemplarCharacterSetSelector
-  , calendarIdentifierSelector
-  , collationIdentifierSelector
-  , usesMetricSystemSelector
-  , decimalSeparatorSelector
-  , groupingSeparatorSelector
-  , currencySymbolSelector
-  , currencyCodeSelector
-  , collatorIdentifierSelector
-  , quotationBeginDelimiterSelector
-  , quotationEndDelimiterSelector
   , alternateQuotationBeginDelimiterSelector
   , alternateQuotationEndDelimiterSelector
+  , autoupdatingCurrentLocaleSelector
+  , availableLocaleIdentifiersSelector
+  , calendarIdentifierSelector
+  , canonicalLanguageIdentifierFromStringSelector
+  , canonicalLocaleIdentifierFromStringSelector
+  , characterDirectionForLanguageSelector
+  , collationIdentifierSelector
+  , collatorIdentifierSelector
+  , commonISOCurrencyCodesSelector
+  , componentsFromLocaleIdentifierSelector
+  , countryCodeSelector
+  , currencyCodeSelector
+  , currencySymbolSelector
+  , currentLocaleSelector
+  , decimalSeparatorSelector
+  , displayNameForKey_valueSelector
+  , exemplarCharacterSetSelector
+  , groupingSeparatorSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithLocaleIdentifierSelector
+  , isoCountryCodesSelector
+  , isoCurrencyCodesSelector
+  , isoLanguageCodesSelector
+  , languageCodeSelector
+  , languageIdentifierSelector
+  , lineDirectionForLanguageSelector
+  , localeIdentifierFromComponentsSelector
+  , localeIdentifierFromWindowsLocaleCodeSelector
+  , localeIdentifierSelector
+  , localeWithLocaleIdentifierSelector
+  , localizedStringForCalendarIdentifierSelector
+  , localizedStringForCollationIdentifierSelector
+  , localizedStringForCollatorIdentifierSelector
+  , localizedStringForCountryCodeSelector
+  , localizedStringForCurrencyCodeSelector
+  , localizedStringForLanguageCodeSelector
+  , localizedStringForLocaleIdentifierSelector
+  , localizedStringForScriptCodeSelector
+  , localizedStringForVariantCodeSelector
+  , objectForKeySelector
+  , preferredLanguagesSelector
+  , quotationBeginDelimiterSelector
+  , quotationEndDelimiterSelector
+  , regionCodeSelector
+  , scriptCodeSelector
+  , systemLocaleSelector
+  , usesMetricSystemSelector
+  , variantCodeSelector
+  , windowsLocaleCodeFromLocaleIdentifierSelector
 
   -- * Enum types
   , NSLocaleLanguageDirection(NSLocaleLanguageDirection)
@@ -122,15 +123,11 @@ module ObjC.Foundation.NSLocale
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -139,534 +136,513 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- objectForKey:@
 objectForKey :: (IsNSLocale nsLocale, IsNSString key) => nsLocale -> key -> IO RawId
-objectForKey nsLocale  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsLocale (mkSelector "objectForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+objectForKey nsLocale key =
+  sendMessage nsLocale objectForKeySelector (toNSString key)
 
 -- | @- displayNameForKey:value:@
 displayNameForKey_value :: (IsNSLocale nsLocale, IsNSString key) => nsLocale -> key -> RawId -> IO (Id NSString)
-displayNameForKey_value nsLocale  key value =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsLocale (mkSelector "displayNameForKey:value:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ())] >>= retainedObject . castPtr
+displayNameForKey_value nsLocale key value =
+  sendMessage nsLocale displayNameForKey_valueSelector (toNSString key) value
 
 -- | @- initWithLocaleIdentifier:@
 initWithLocaleIdentifier :: (IsNSLocale nsLocale, IsNSString string) => nsLocale -> string -> IO (Id NSLocale)
-initWithLocaleIdentifier nsLocale  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsLocale (mkSelector "initWithLocaleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithLocaleIdentifier nsLocale string =
+  sendOwnedMessage nsLocale initWithLocaleIdentifierSelector (toNSString string)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSLocale nsLocale, IsNSCoder coder) => nsLocale -> coder -> IO (Id NSLocale)
-initWithCoder nsLocale  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsLocale (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsLocale coder =
+  sendOwnedMessage nsLocale initWithCoderSelector (toNSCoder coder)
 
 -- | @+ componentsFromLocaleIdentifier:@
 componentsFromLocaleIdentifier :: IsNSString string => string -> IO (Id NSDictionary)
 componentsFromLocaleIdentifier string =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "componentsFromLocaleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' componentsFromLocaleIdentifierSelector (toNSString string)
 
 -- | @+ localeIdentifierFromComponents:@
 localeIdentifierFromComponents :: IsNSDictionary dict => dict -> IO (Id NSString)
 localeIdentifierFromComponents dict =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr dict $ \raw_dict ->
-      sendClassMsg cls' (mkSelector "localeIdentifierFromComponents:") (retPtr retVoid) [argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localeIdentifierFromComponentsSelector (toNSDictionary dict)
 
 -- | @+ canonicalLocaleIdentifierFromString:@
 canonicalLocaleIdentifierFromString :: IsNSString string => string -> IO (Id NSString)
 canonicalLocaleIdentifierFromString string =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "canonicalLocaleIdentifierFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' canonicalLocaleIdentifierFromStringSelector (toNSString string)
 
 -- | @+ canonicalLanguageIdentifierFromString:@
 canonicalLanguageIdentifierFromString :: IsNSString string => string -> IO (Id NSString)
 canonicalLanguageIdentifierFromString string =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "canonicalLanguageIdentifierFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' canonicalLanguageIdentifierFromStringSelector (toNSString string)
 
 -- | @+ localeIdentifierFromWindowsLocaleCode:@
 localeIdentifierFromWindowsLocaleCode :: CUInt -> IO (Id NSString)
 localeIdentifierFromWindowsLocaleCode lcid =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "localeIdentifierFromWindowsLocaleCode:") (retPtr retVoid) [argCUInt lcid] >>= retainedObject . castPtr
+    sendClassMessage cls' localeIdentifierFromWindowsLocaleCodeSelector lcid
 
 -- | @+ windowsLocaleCodeFromLocaleIdentifier:@
 windowsLocaleCodeFromLocaleIdentifier :: IsNSString localeIdentifier => localeIdentifier -> IO CUInt
 windowsLocaleCodeFromLocaleIdentifier localeIdentifier =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr localeIdentifier $ \raw_localeIdentifier ->
-      sendClassMsg cls' (mkSelector "windowsLocaleCodeFromLocaleIdentifier:") retCUInt [argPtr (castPtr raw_localeIdentifier :: Ptr ())]
+    sendClassMessage cls' windowsLocaleCodeFromLocaleIdentifierSelector (toNSString localeIdentifier)
 
 -- | @+ characterDirectionForLanguage:@
 characterDirectionForLanguage :: IsNSString isoLangCode => isoLangCode -> IO NSLocaleLanguageDirection
 characterDirectionForLanguage isoLangCode =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr isoLangCode $ \raw_isoLangCode ->
-      fmap (coerce :: CULong -> NSLocaleLanguageDirection) $ sendClassMsg cls' (mkSelector "characterDirectionForLanguage:") retCULong [argPtr (castPtr raw_isoLangCode :: Ptr ())]
+    sendClassMessage cls' characterDirectionForLanguageSelector (toNSString isoLangCode)
 
 -- | @+ lineDirectionForLanguage:@
 lineDirectionForLanguage :: IsNSString isoLangCode => isoLangCode -> IO NSLocaleLanguageDirection
 lineDirectionForLanguage isoLangCode =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr isoLangCode $ \raw_isoLangCode ->
-      fmap (coerce :: CULong -> NSLocaleLanguageDirection) $ sendClassMsg cls' (mkSelector "lineDirectionForLanguage:") retCULong [argPtr (castPtr raw_isoLangCode :: Ptr ())]
+    sendClassMessage cls' lineDirectionForLanguageSelector (toNSString isoLangCode)
 
 -- | @+ localeWithLocaleIdentifier:@
 localeWithLocaleIdentifier :: IsNSString ident => ident -> IO (Id NSLocale)
 localeWithLocaleIdentifier ident =
   do
     cls' <- getRequiredClass "NSLocale"
-    withObjCPtr ident $ \raw_ident ->
-      sendClassMsg cls' (mkSelector "localeWithLocaleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_ident :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localeWithLocaleIdentifierSelector (toNSString ident)
 
 -- | @- init@
 init_ :: IsNSLocale nsLocale => nsLocale -> IO (Id NSLocale)
-init_ nsLocale  =
-    sendMsg nsLocale (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsLocale =
+  sendOwnedMessage nsLocale initSelector
 
 -- | @- localizedStringForLocaleIdentifier:@
 localizedStringForLocaleIdentifier :: (IsNSLocale nsLocale, IsNSString localeIdentifier) => nsLocale -> localeIdentifier -> IO (Id NSString)
-localizedStringForLocaleIdentifier nsLocale  localeIdentifier =
-  withObjCPtr localeIdentifier $ \raw_localeIdentifier ->
-      sendMsg nsLocale (mkSelector "localizedStringForLocaleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_localeIdentifier :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForLocaleIdentifier nsLocale localeIdentifier =
+  sendMessage nsLocale localizedStringForLocaleIdentifierSelector (toNSString localeIdentifier)
 
 -- | @- localizedStringForLanguageCode:@
 localizedStringForLanguageCode :: (IsNSLocale nsLocale, IsNSString languageCode) => nsLocale -> languageCode -> IO (Id NSString)
-localizedStringForLanguageCode nsLocale  languageCode =
-  withObjCPtr languageCode $ \raw_languageCode ->
-      sendMsg nsLocale (mkSelector "localizedStringForLanguageCode:") (retPtr retVoid) [argPtr (castPtr raw_languageCode :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForLanguageCode nsLocale languageCode =
+  sendMessage nsLocale localizedStringForLanguageCodeSelector (toNSString languageCode)
 
 -- | @- localizedStringForCountryCode:@
 localizedStringForCountryCode :: (IsNSLocale nsLocale, IsNSString countryCode) => nsLocale -> countryCode -> IO (Id NSString)
-localizedStringForCountryCode nsLocale  countryCode =
-  withObjCPtr countryCode $ \raw_countryCode ->
-      sendMsg nsLocale (mkSelector "localizedStringForCountryCode:") (retPtr retVoid) [argPtr (castPtr raw_countryCode :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForCountryCode nsLocale countryCode =
+  sendMessage nsLocale localizedStringForCountryCodeSelector (toNSString countryCode)
 
 -- | @- localizedStringForScriptCode:@
 localizedStringForScriptCode :: (IsNSLocale nsLocale, IsNSString scriptCode) => nsLocale -> scriptCode -> IO (Id NSString)
-localizedStringForScriptCode nsLocale  scriptCode =
-  withObjCPtr scriptCode $ \raw_scriptCode ->
-      sendMsg nsLocale (mkSelector "localizedStringForScriptCode:") (retPtr retVoid) [argPtr (castPtr raw_scriptCode :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForScriptCode nsLocale scriptCode =
+  sendMessage nsLocale localizedStringForScriptCodeSelector (toNSString scriptCode)
 
 -- | @- localizedStringForVariantCode:@
 localizedStringForVariantCode :: (IsNSLocale nsLocale, IsNSString variantCode) => nsLocale -> variantCode -> IO (Id NSString)
-localizedStringForVariantCode nsLocale  variantCode =
-  withObjCPtr variantCode $ \raw_variantCode ->
-      sendMsg nsLocale (mkSelector "localizedStringForVariantCode:") (retPtr retVoid) [argPtr (castPtr raw_variantCode :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForVariantCode nsLocale variantCode =
+  sendMessage nsLocale localizedStringForVariantCodeSelector (toNSString variantCode)
 
 -- | @- localizedStringForCalendarIdentifier:@
 localizedStringForCalendarIdentifier :: (IsNSLocale nsLocale, IsNSString calendarIdentifier) => nsLocale -> calendarIdentifier -> IO (Id NSString)
-localizedStringForCalendarIdentifier nsLocale  calendarIdentifier =
-  withObjCPtr calendarIdentifier $ \raw_calendarIdentifier ->
-      sendMsg nsLocale (mkSelector "localizedStringForCalendarIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_calendarIdentifier :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForCalendarIdentifier nsLocale calendarIdentifier =
+  sendMessage nsLocale localizedStringForCalendarIdentifierSelector (toNSString calendarIdentifier)
 
 -- | @- localizedStringForCollationIdentifier:@
 localizedStringForCollationIdentifier :: (IsNSLocale nsLocale, IsNSString collationIdentifier) => nsLocale -> collationIdentifier -> IO (Id NSString)
-localizedStringForCollationIdentifier nsLocale  collationIdentifier =
-  withObjCPtr collationIdentifier $ \raw_collationIdentifier ->
-      sendMsg nsLocale (mkSelector "localizedStringForCollationIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_collationIdentifier :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForCollationIdentifier nsLocale collationIdentifier =
+  sendMessage nsLocale localizedStringForCollationIdentifierSelector (toNSString collationIdentifier)
 
 -- | @- localizedStringForCurrencyCode:@
 localizedStringForCurrencyCode :: (IsNSLocale nsLocale, IsNSString currencyCode) => nsLocale -> currencyCode -> IO (Id NSString)
-localizedStringForCurrencyCode nsLocale  currencyCode =
-  withObjCPtr currencyCode $ \raw_currencyCode ->
-      sendMsg nsLocale (mkSelector "localizedStringForCurrencyCode:") (retPtr retVoid) [argPtr (castPtr raw_currencyCode :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForCurrencyCode nsLocale currencyCode =
+  sendMessage nsLocale localizedStringForCurrencyCodeSelector (toNSString currencyCode)
 
 -- | @- localizedStringForCollatorIdentifier:@
 localizedStringForCollatorIdentifier :: (IsNSLocale nsLocale, IsNSString collatorIdentifier) => nsLocale -> collatorIdentifier -> IO (Id NSString)
-localizedStringForCollatorIdentifier nsLocale  collatorIdentifier =
-  withObjCPtr collatorIdentifier $ \raw_collatorIdentifier ->
-      sendMsg nsLocale (mkSelector "localizedStringForCollatorIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_collatorIdentifier :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForCollatorIdentifier nsLocale collatorIdentifier =
+  sendMessage nsLocale localizedStringForCollatorIdentifierSelector (toNSString collatorIdentifier)
 
 -- | @+ availableLocaleIdentifiers@
 availableLocaleIdentifiers :: IO (Id NSArray)
 availableLocaleIdentifiers  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "availableLocaleIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableLocaleIdentifiersSelector
 
 -- | @+ ISOLanguageCodes@
 isoLanguageCodes :: IO (Id NSArray)
 isoLanguageCodes  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "ISOLanguageCodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' isoLanguageCodesSelector
 
 -- | @+ ISOCountryCodes@
 isoCountryCodes :: IO (Id NSArray)
 isoCountryCodes  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "ISOCountryCodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' isoCountryCodesSelector
 
 -- | @+ ISOCurrencyCodes@
 isoCurrencyCodes :: IO (Id NSArray)
 isoCurrencyCodes  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "ISOCurrencyCodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' isoCurrencyCodesSelector
 
 -- | @+ commonISOCurrencyCodes@
 commonISOCurrencyCodes :: IO (Id NSArray)
 commonISOCurrencyCodes  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "commonISOCurrencyCodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' commonISOCurrencyCodesSelector
 
 -- | @+ preferredLanguages@
 preferredLanguages :: IO (Id NSArray)
 preferredLanguages  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "preferredLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' preferredLanguagesSelector
 
 -- | @+ autoupdatingCurrentLocale@
 autoupdatingCurrentLocale :: IO (Id NSLocale)
 autoupdatingCurrentLocale  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "autoupdatingCurrentLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' autoupdatingCurrentLocaleSelector
 
 -- | @+ currentLocale@
 currentLocale :: IO (Id NSLocale)
 currentLocale  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "currentLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentLocaleSelector
 
 -- | @+ systemLocale@
 systemLocale :: IO (Id NSLocale)
 systemLocale  =
   do
     cls' <- getRequiredClass "NSLocale"
-    sendClassMsg cls' (mkSelector "systemLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' systemLocaleSelector
 
 -- | @- localeIdentifier@
 localeIdentifier :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-localeIdentifier nsLocale  =
-    sendMsg nsLocale (mkSelector "localeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+localeIdentifier nsLocale =
+  sendMessage nsLocale localeIdentifierSelector
 
 -- | @- languageCode@
 languageCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-languageCode nsLocale  =
-    sendMsg nsLocale (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode nsLocale =
+  sendMessage nsLocale languageCodeSelector
 
 -- | Returns the identifier for the language part of the locale. For example, returns "en-US" for "en_US\@rg=gbzzzz"  locale.
 --
 -- ObjC selector: @- languageIdentifier@
 languageIdentifier :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-languageIdentifier nsLocale  =
-    sendMsg nsLocale (mkSelector "languageIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageIdentifier nsLocale =
+  sendMessage nsLocale languageIdentifierSelector
 
 -- | @- countryCode@
 countryCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-countryCode nsLocale  =
-    sendMsg nsLocale (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode nsLocale =
+  sendMessage nsLocale countryCodeSelector
 
 -- | Returns the region code of the locale. If the @rg@ subtag is present, the value of the subtag will be used. For example,  returns "GB" for "en_US\@rg=gbzzzz" locale. If the @localeIdentifier@ doesn’t contain a region, returns @nil@.
 --
 -- ObjC selector: @- regionCode@
 regionCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-regionCode nsLocale  =
-    sendMsg nsLocale (mkSelector "regionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionCode nsLocale =
+  sendMessage nsLocale regionCodeSelector
 
 -- | @- scriptCode@
 scriptCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-scriptCode nsLocale  =
-    sendMsg nsLocale (mkSelector "scriptCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptCode nsLocale =
+  sendMessage nsLocale scriptCodeSelector
 
 -- | @- variantCode@
 variantCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-variantCode nsLocale  =
-    sendMsg nsLocale (mkSelector "variantCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+variantCode nsLocale =
+  sendMessage nsLocale variantCodeSelector
 
 -- | @- exemplarCharacterSet@
 exemplarCharacterSet :: IsNSLocale nsLocale => nsLocale -> IO (Id NSCharacterSet)
-exemplarCharacterSet nsLocale  =
-    sendMsg nsLocale (mkSelector "exemplarCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+exemplarCharacterSet nsLocale =
+  sendMessage nsLocale exemplarCharacterSetSelector
 
 -- | @- calendarIdentifier@
 calendarIdentifier :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-calendarIdentifier nsLocale  =
-    sendMsg nsLocale (mkSelector "calendarIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendarIdentifier nsLocale =
+  sendMessage nsLocale calendarIdentifierSelector
 
 -- | @- collationIdentifier@
 collationIdentifier :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-collationIdentifier nsLocale  =
-    sendMsg nsLocale (mkSelector "collationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+collationIdentifier nsLocale =
+  sendMessage nsLocale collationIdentifierSelector
 
 -- | @- usesMetricSystem@
 usesMetricSystem :: IsNSLocale nsLocale => nsLocale -> IO Bool
-usesMetricSystem nsLocale  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLocale (mkSelector "usesMetricSystem") retCULong []
+usesMetricSystem nsLocale =
+  sendMessage nsLocale usesMetricSystemSelector
 
 -- | @- decimalSeparator@
 decimalSeparator :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-decimalSeparator nsLocale  =
-    sendMsg nsLocale (mkSelector "decimalSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+decimalSeparator nsLocale =
+  sendMessage nsLocale decimalSeparatorSelector
 
 -- | @- groupingSeparator@
 groupingSeparator :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-groupingSeparator nsLocale  =
-    sendMsg nsLocale (mkSelector "groupingSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupingSeparator nsLocale =
+  sendMessage nsLocale groupingSeparatorSelector
 
 -- | @- currencySymbol@
 currencySymbol :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-currencySymbol nsLocale  =
-    sendMsg nsLocale (mkSelector "currencySymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencySymbol nsLocale =
+  sendMessage nsLocale currencySymbolSelector
 
 -- | @- currencyCode@
 currencyCode :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-currencyCode nsLocale  =
-    sendMsg nsLocale (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode nsLocale =
+  sendMessage nsLocale currencyCodeSelector
 
 -- | @- collatorIdentifier@
 collatorIdentifier :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-collatorIdentifier nsLocale  =
-    sendMsg nsLocale (mkSelector "collatorIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+collatorIdentifier nsLocale =
+  sendMessage nsLocale collatorIdentifierSelector
 
 -- | @- quotationBeginDelimiter@
 quotationBeginDelimiter :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-quotationBeginDelimiter nsLocale  =
-    sendMsg nsLocale (mkSelector "quotationBeginDelimiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+quotationBeginDelimiter nsLocale =
+  sendMessage nsLocale quotationBeginDelimiterSelector
 
 -- | @- quotationEndDelimiter@
 quotationEndDelimiter :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-quotationEndDelimiter nsLocale  =
-    sendMsg nsLocale (mkSelector "quotationEndDelimiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+quotationEndDelimiter nsLocale =
+  sendMessage nsLocale quotationEndDelimiterSelector
 
 -- | @- alternateQuotationBeginDelimiter@
 alternateQuotationBeginDelimiter :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-alternateQuotationBeginDelimiter nsLocale  =
-    sendMsg nsLocale (mkSelector "alternateQuotationBeginDelimiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateQuotationBeginDelimiter nsLocale =
+  sendMessage nsLocale alternateQuotationBeginDelimiterSelector
 
 -- | @- alternateQuotationEndDelimiter@
 alternateQuotationEndDelimiter :: IsNSLocale nsLocale => nsLocale -> IO (Id NSString)
-alternateQuotationEndDelimiter nsLocale  =
-    sendMsg nsLocale (mkSelector "alternateQuotationEndDelimiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateQuotationEndDelimiter nsLocale =
+  sendMessage nsLocale alternateQuotationEndDelimiterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectForKey:@
-objectForKeySelector :: Selector
+objectForKeySelector :: Selector '[Id NSString] RawId
 objectForKeySelector = mkSelector "objectForKey:"
 
 -- | @Selector@ for @displayNameForKey:value:@
-displayNameForKey_valueSelector :: Selector
+displayNameForKey_valueSelector :: Selector '[Id NSString, RawId] (Id NSString)
 displayNameForKey_valueSelector = mkSelector "displayNameForKey:value:"
 
 -- | @Selector@ for @initWithLocaleIdentifier:@
-initWithLocaleIdentifierSelector :: Selector
+initWithLocaleIdentifierSelector :: Selector '[Id NSString] (Id NSLocale)
 initWithLocaleIdentifierSelector = mkSelector "initWithLocaleIdentifier:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSLocale)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @componentsFromLocaleIdentifier:@
-componentsFromLocaleIdentifierSelector :: Selector
+componentsFromLocaleIdentifierSelector :: Selector '[Id NSString] (Id NSDictionary)
 componentsFromLocaleIdentifierSelector = mkSelector "componentsFromLocaleIdentifier:"
 
 -- | @Selector@ for @localeIdentifierFromComponents:@
-localeIdentifierFromComponentsSelector :: Selector
+localeIdentifierFromComponentsSelector :: Selector '[Id NSDictionary] (Id NSString)
 localeIdentifierFromComponentsSelector = mkSelector "localeIdentifierFromComponents:"
 
 -- | @Selector@ for @canonicalLocaleIdentifierFromString:@
-canonicalLocaleIdentifierFromStringSelector :: Selector
+canonicalLocaleIdentifierFromStringSelector :: Selector '[Id NSString] (Id NSString)
 canonicalLocaleIdentifierFromStringSelector = mkSelector "canonicalLocaleIdentifierFromString:"
 
 -- | @Selector@ for @canonicalLanguageIdentifierFromString:@
-canonicalLanguageIdentifierFromStringSelector :: Selector
+canonicalLanguageIdentifierFromStringSelector :: Selector '[Id NSString] (Id NSString)
 canonicalLanguageIdentifierFromStringSelector = mkSelector "canonicalLanguageIdentifierFromString:"
 
 -- | @Selector@ for @localeIdentifierFromWindowsLocaleCode:@
-localeIdentifierFromWindowsLocaleCodeSelector :: Selector
+localeIdentifierFromWindowsLocaleCodeSelector :: Selector '[CUInt] (Id NSString)
 localeIdentifierFromWindowsLocaleCodeSelector = mkSelector "localeIdentifierFromWindowsLocaleCode:"
 
 -- | @Selector@ for @windowsLocaleCodeFromLocaleIdentifier:@
-windowsLocaleCodeFromLocaleIdentifierSelector :: Selector
+windowsLocaleCodeFromLocaleIdentifierSelector :: Selector '[Id NSString] CUInt
 windowsLocaleCodeFromLocaleIdentifierSelector = mkSelector "windowsLocaleCodeFromLocaleIdentifier:"
 
 -- | @Selector@ for @characterDirectionForLanguage:@
-characterDirectionForLanguageSelector :: Selector
+characterDirectionForLanguageSelector :: Selector '[Id NSString] NSLocaleLanguageDirection
 characterDirectionForLanguageSelector = mkSelector "characterDirectionForLanguage:"
 
 -- | @Selector@ for @lineDirectionForLanguage:@
-lineDirectionForLanguageSelector :: Selector
+lineDirectionForLanguageSelector :: Selector '[Id NSString] NSLocaleLanguageDirection
 lineDirectionForLanguageSelector = mkSelector "lineDirectionForLanguage:"
 
 -- | @Selector@ for @localeWithLocaleIdentifier:@
-localeWithLocaleIdentifierSelector :: Selector
+localeWithLocaleIdentifierSelector :: Selector '[Id NSString] (Id NSLocale)
 localeWithLocaleIdentifierSelector = mkSelector "localeWithLocaleIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSLocale)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @localizedStringForLocaleIdentifier:@
-localizedStringForLocaleIdentifierSelector :: Selector
+localizedStringForLocaleIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForLocaleIdentifierSelector = mkSelector "localizedStringForLocaleIdentifier:"
 
 -- | @Selector@ for @localizedStringForLanguageCode:@
-localizedStringForLanguageCodeSelector :: Selector
+localizedStringForLanguageCodeSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForLanguageCodeSelector = mkSelector "localizedStringForLanguageCode:"
 
 -- | @Selector@ for @localizedStringForCountryCode:@
-localizedStringForCountryCodeSelector :: Selector
+localizedStringForCountryCodeSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForCountryCodeSelector = mkSelector "localizedStringForCountryCode:"
 
 -- | @Selector@ for @localizedStringForScriptCode:@
-localizedStringForScriptCodeSelector :: Selector
+localizedStringForScriptCodeSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForScriptCodeSelector = mkSelector "localizedStringForScriptCode:"
 
 -- | @Selector@ for @localizedStringForVariantCode:@
-localizedStringForVariantCodeSelector :: Selector
+localizedStringForVariantCodeSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForVariantCodeSelector = mkSelector "localizedStringForVariantCode:"
 
 -- | @Selector@ for @localizedStringForCalendarIdentifier:@
-localizedStringForCalendarIdentifierSelector :: Selector
+localizedStringForCalendarIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForCalendarIdentifierSelector = mkSelector "localizedStringForCalendarIdentifier:"
 
 -- | @Selector@ for @localizedStringForCollationIdentifier:@
-localizedStringForCollationIdentifierSelector :: Selector
+localizedStringForCollationIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForCollationIdentifierSelector = mkSelector "localizedStringForCollationIdentifier:"
 
 -- | @Selector@ for @localizedStringForCurrencyCode:@
-localizedStringForCurrencyCodeSelector :: Selector
+localizedStringForCurrencyCodeSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForCurrencyCodeSelector = mkSelector "localizedStringForCurrencyCode:"
 
 -- | @Selector@ for @localizedStringForCollatorIdentifier:@
-localizedStringForCollatorIdentifierSelector :: Selector
+localizedStringForCollatorIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForCollatorIdentifierSelector = mkSelector "localizedStringForCollatorIdentifier:"
 
 -- | @Selector@ for @availableLocaleIdentifiers@
-availableLocaleIdentifiersSelector :: Selector
+availableLocaleIdentifiersSelector :: Selector '[] (Id NSArray)
 availableLocaleIdentifiersSelector = mkSelector "availableLocaleIdentifiers"
 
 -- | @Selector@ for @ISOLanguageCodes@
-isoLanguageCodesSelector :: Selector
+isoLanguageCodesSelector :: Selector '[] (Id NSArray)
 isoLanguageCodesSelector = mkSelector "ISOLanguageCodes"
 
 -- | @Selector@ for @ISOCountryCodes@
-isoCountryCodesSelector :: Selector
+isoCountryCodesSelector :: Selector '[] (Id NSArray)
 isoCountryCodesSelector = mkSelector "ISOCountryCodes"
 
 -- | @Selector@ for @ISOCurrencyCodes@
-isoCurrencyCodesSelector :: Selector
+isoCurrencyCodesSelector :: Selector '[] (Id NSArray)
 isoCurrencyCodesSelector = mkSelector "ISOCurrencyCodes"
 
 -- | @Selector@ for @commonISOCurrencyCodes@
-commonISOCurrencyCodesSelector :: Selector
+commonISOCurrencyCodesSelector :: Selector '[] (Id NSArray)
 commonISOCurrencyCodesSelector = mkSelector "commonISOCurrencyCodes"
 
 -- | @Selector@ for @preferredLanguages@
-preferredLanguagesSelector :: Selector
+preferredLanguagesSelector :: Selector '[] (Id NSArray)
 preferredLanguagesSelector = mkSelector "preferredLanguages"
 
 -- | @Selector@ for @autoupdatingCurrentLocale@
-autoupdatingCurrentLocaleSelector :: Selector
+autoupdatingCurrentLocaleSelector :: Selector '[] (Id NSLocale)
 autoupdatingCurrentLocaleSelector = mkSelector "autoupdatingCurrentLocale"
 
 -- | @Selector@ for @currentLocale@
-currentLocaleSelector :: Selector
+currentLocaleSelector :: Selector '[] (Id NSLocale)
 currentLocaleSelector = mkSelector "currentLocale"
 
 -- | @Selector@ for @systemLocale@
-systemLocaleSelector :: Selector
+systemLocaleSelector :: Selector '[] (Id NSLocale)
 systemLocaleSelector = mkSelector "systemLocale"
 
 -- | @Selector@ for @localeIdentifier@
-localeIdentifierSelector :: Selector
+localeIdentifierSelector :: Selector '[] (Id NSString)
 localeIdentifierSelector = mkSelector "localeIdentifier"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @languageIdentifier@
-languageIdentifierSelector :: Selector
+languageIdentifierSelector :: Selector '[] (Id NSString)
 languageIdentifierSelector = mkSelector "languageIdentifier"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @regionCode@
-regionCodeSelector :: Selector
+regionCodeSelector :: Selector '[] (Id NSString)
 regionCodeSelector = mkSelector "regionCode"
 
 -- | @Selector@ for @scriptCode@
-scriptCodeSelector :: Selector
+scriptCodeSelector :: Selector '[] (Id NSString)
 scriptCodeSelector = mkSelector "scriptCode"
 
 -- | @Selector@ for @variantCode@
-variantCodeSelector :: Selector
+variantCodeSelector :: Selector '[] (Id NSString)
 variantCodeSelector = mkSelector "variantCode"
 
 -- | @Selector@ for @exemplarCharacterSet@
-exemplarCharacterSetSelector :: Selector
+exemplarCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 exemplarCharacterSetSelector = mkSelector "exemplarCharacterSet"
 
 -- | @Selector@ for @calendarIdentifier@
-calendarIdentifierSelector :: Selector
+calendarIdentifierSelector :: Selector '[] (Id NSString)
 calendarIdentifierSelector = mkSelector "calendarIdentifier"
 
 -- | @Selector@ for @collationIdentifier@
-collationIdentifierSelector :: Selector
+collationIdentifierSelector :: Selector '[] (Id NSString)
 collationIdentifierSelector = mkSelector "collationIdentifier"
 
 -- | @Selector@ for @usesMetricSystem@
-usesMetricSystemSelector :: Selector
+usesMetricSystemSelector :: Selector '[] Bool
 usesMetricSystemSelector = mkSelector "usesMetricSystem"
 
 -- | @Selector@ for @decimalSeparator@
-decimalSeparatorSelector :: Selector
+decimalSeparatorSelector :: Selector '[] (Id NSString)
 decimalSeparatorSelector = mkSelector "decimalSeparator"
 
 -- | @Selector@ for @groupingSeparator@
-groupingSeparatorSelector :: Selector
+groupingSeparatorSelector :: Selector '[] (Id NSString)
 groupingSeparatorSelector = mkSelector "groupingSeparator"
 
 -- | @Selector@ for @currencySymbol@
-currencySymbolSelector :: Selector
+currencySymbolSelector :: Selector '[] (Id NSString)
 currencySymbolSelector = mkSelector "currencySymbol"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 
 -- | @Selector@ for @collatorIdentifier@
-collatorIdentifierSelector :: Selector
+collatorIdentifierSelector :: Selector '[] (Id NSString)
 collatorIdentifierSelector = mkSelector "collatorIdentifier"
 
 -- | @Selector@ for @quotationBeginDelimiter@
-quotationBeginDelimiterSelector :: Selector
+quotationBeginDelimiterSelector :: Selector '[] (Id NSString)
 quotationBeginDelimiterSelector = mkSelector "quotationBeginDelimiter"
 
 -- | @Selector@ for @quotationEndDelimiter@
-quotationEndDelimiterSelector :: Selector
+quotationEndDelimiterSelector :: Selector '[] (Id NSString)
 quotationEndDelimiterSelector = mkSelector "quotationEndDelimiter"
 
 -- | @Selector@ for @alternateQuotationBeginDelimiter@
-alternateQuotationBeginDelimiterSelector :: Selector
+alternateQuotationBeginDelimiterSelector :: Selector '[] (Id NSString)
 alternateQuotationBeginDelimiterSelector = mkSelector "alternateQuotationBeginDelimiter"
 
 -- | @Selector@ for @alternateQuotationEndDelimiter@
-alternateQuotationEndDelimiterSelector :: Selector
+alternateQuotationEndDelimiterSelector :: Selector '[] (Id NSString)
 alternateQuotationEndDelimiterSelector = mkSelector "alternateQuotationEndDelimiter"
 

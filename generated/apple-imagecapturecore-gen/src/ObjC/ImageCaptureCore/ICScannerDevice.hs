@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,24 +32,24 @@ module ObjC.ImageCaptureCore.ICScannerDevice
   , setDocumentUTI
   , defaultUsername
   , setDefaultUsername
+  , cancelScanSelector
+  , defaultUsernameSelector
+  , documentNameSelector
+  , documentUTISelector
+  , downloadsDirectorySelector
+  , maxMemoryBandSizeSelector
   , requestOpenSessionWithCredentials_passwordSelector
-  , requestSelectFunctionalUnitSelector
   , requestOverviewScanSelector
   , requestScanSelector
-  , cancelScanSelector
+  , requestSelectFunctionalUnitSelector
   , selectedFunctionalUnitSelector
-  , transferModeSelector
-  , setTransferModeSelector
-  , maxMemoryBandSizeSelector
-  , setMaxMemoryBandSizeSelector
-  , downloadsDirectorySelector
-  , setDownloadsDirectorySelector
-  , documentNameSelector
-  , setDocumentNameSelector
-  , documentUTISelector
-  , setDocumentUTISelector
-  , defaultUsernameSelector
   , setDefaultUsernameSelector
+  , setDocumentNameSelector
+  , setDocumentUTISelector
+  , setDownloadsDirectorySelector
+  , setMaxMemoryBandSizeSelector
+  , setTransferModeSelector
+  , transferModeSelector
 
   -- * Enum types
   , ICScannerFunctionalUnitType(ICScannerFunctionalUnitType)
@@ -62,15 +63,11 @@ module ObjC.ImageCaptureCore.ICScannerDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,10 +83,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestOpenSessionWithCredentials:password:@
 requestOpenSessionWithCredentials_password :: (IsICScannerDevice icScannerDevice, IsNSString username, IsNSString password) => icScannerDevice -> username -> password -> IO ()
-requestOpenSessionWithCredentials_password icScannerDevice  username password =
-  withObjCPtr username $ \raw_username ->
-    withObjCPtr password $ \raw_password ->
-        sendMsg icScannerDevice (mkSelector "requestOpenSessionWithCredentials:password:") retVoid [argPtr (castPtr raw_username :: Ptr ()), argPtr (castPtr raw_password :: Ptr ())]
+requestOpenSessionWithCredentials_password icScannerDevice username password =
+  sendMessage icScannerDevice requestOpenSessionWithCredentials_passwordSelector (toNSString username) (toNSString password)
 
 -- | requestSelectFunctionalUnit:delegate:selector:contextInfo:
 --
@@ -99,8 +94,8 @@ requestOpenSessionWithCredentials_password icScannerDevice  username password =
 --
 -- ObjC selector: @- requestSelectFunctionalUnit:@
 requestSelectFunctionalUnit :: IsICScannerDevice icScannerDevice => icScannerDevice -> ICScannerFunctionalUnitType -> IO ()
-requestSelectFunctionalUnit icScannerDevice  type_ =
-    sendMsg icScannerDevice (mkSelector "requestSelectFunctionalUnit:") retVoid [argCULong (coerce type_)]
+requestSelectFunctionalUnit icScannerDevice type_ =
+  sendMessage icScannerDevice requestSelectFunctionalUnitSelector type_
 
 -- | requestOverviewScan
 --
@@ -110,8 +105,8 @@ requestSelectFunctionalUnit icScannerDevice  type_ =
 --
 -- ObjC selector: @- requestOverviewScan@
 requestOverviewScan :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO ()
-requestOverviewScan icScannerDevice  =
-    sendMsg icScannerDevice (mkSelector "requestOverviewScan") retVoid []
+requestOverviewScan icScannerDevice =
+  sendMessage icScannerDevice requestOverviewScanSelector
 
 -- | requestScan
 --
@@ -121,8 +116,8 @@ requestOverviewScan icScannerDevice  =
 --
 -- ObjC selector: @- requestScan@
 requestScan :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO ()
-requestScan icScannerDevice  =
-    sendMsg icScannerDevice (mkSelector "requestScan") retVoid []
+requestScan icScannerDevice =
+  sendMessage icScannerDevice requestScanSelector
 
 -- | cancelScan
 --
@@ -130,8 +125,8 @@ requestScan icScannerDevice  =
 --
 -- ObjC selector: @- cancelScan@
 cancelScan :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO ()
-cancelScan icScannerDevice  =
-    sendMsg icScannerDevice (mkSelector "cancelScan") retVoid []
+cancelScan icScannerDevice =
+  sendMessage icScannerDevice cancelScanSelector
 
 -- | selectedFunctionalUnit
 --
@@ -139,8 +134,8 @@ cancelScan icScannerDevice  =
 --
 -- ObjC selector: @- selectedFunctionalUnit@
 selectedFunctionalUnit :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
-selectedFunctionalUnit icScannerDevice  =
-    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "selectedFunctionalUnit") (retPtr retVoid) []
+selectedFunctionalUnit icScannerDevice =
+  sendMessage icScannerDevice selectedFunctionalUnitSelector
 
 -- | transferMode
 --
@@ -148,8 +143,8 @@ selectedFunctionalUnit icScannerDevice  =
 --
 -- ObjC selector: @- transferMode@
 transferMode :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO ICScannerTransferMode
-transferMode icScannerDevice  =
-    fmap (coerce :: CULong -> ICScannerTransferMode) $ sendMsg icScannerDevice (mkSelector "transferMode") retCULong []
+transferMode icScannerDevice =
+  sendMessage icScannerDevice transferModeSelector
 
 -- | transferMode
 --
@@ -157,8 +152,8 @@ transferMode icScannerDevice  =
 --
 -- ObjC selector: @- setTransferMode:@
 setTransferMode :: IsICScannerDevice icScannerDevice => icScannerDevice -> ICScannerTransferMode -> IO ()
-setTransferMode icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setTransferMode:") retVoid [argCULong (coerce value)]
+setTransferMode icScannerDevice value =
+  sendMessage icScannerDevice setTransferModeSelector value
 
 -- | maxMemoryBandSize
 --
@@ -166,8 +161,8 @@ setTransferMode icScannerDevice  value =
 --
 -- ObjC selector: @- maxMemoryBandSize@
 maxMemoryBandSize :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO CUInt
-maxMemoryBandSize icScannerDevice  =
-    sendMsg icScannerDevice (mkSelector "maxMemoryBandSize") retCUInt []
+maxMemoryBandSize icScannerDevice =
+  sendMessage icScannerDevice maxMemoryBandSizeSelector
 
 -- | maxMemoryBandSize
 --
@@ -175,8 +170,8 @@ maxMemoryBandSize icScannerDevice  =
 --
 -- ObjC selector: @- setMaxMemoryBandSize:@
 setMaxMemoryBandSize :: IsICScannerDevice icScannerDevice => icScannerDevice -> CUInt -> IO ()
-setMaxMemoryBandSize icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setMaxMemoryBandSize:") retVoid [argCUInt value]
+setMaxMemoryBandSize icScannerDevice value =
+  sendMessage icScannerDevice setMaxMemoryBandSizeSelector value
 
 -- | downloadsDirectory
 --
@@ -184,8 +179,8 @@ setMaxMemoryBandSize icScannerDevice  value =
 --
 -- ObjC selector: @- downloadsDirectory@
 downloadsDirectory :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
-downloadsDirectory icScannerDevice  =
-    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "downloadsDirectory") (retPtr retVoid) []
+downloadsDirectory icScannerDevice =
+  sendMessage icScannerDevice downloadsDirectorySelector
 
 -- | downloadsDirectory
 --
@@ -193,8 +188,8 @@ downloadsDirectory icScannerDevice  =
 --
 -- ObjC selector: @- setDownloadsDirectory:@
 setDownloadsDirectory :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
-setDownloadsDirectory icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setDownloadsDirectory:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDownloadsDirectory icScannerDevice value =
+  sendMessage icScannerDevice setDownloadsDirectorySelector value
 
 -- | documentName
 --
@@ -202,8 +197,8 @@ setDownloadsDirectory icScannerDevice  value =
 --
 -- ObjC selector: @- documentName@
 documentName :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
-documentName icScannerDevice  =
-    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "documentName") (retPtr retVoid) []
+documentName icScannerDevice =
+  sendMessage icScannerDevice documentNameSelector
 
 -- | documentName
 --
@@ -211,8 +206,8 @@ documentName icScannerDevice  =
 --
 -- ObjC selector: @- setDocumentName:@
 setDocumentName :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
-setDocumentName icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setDocumentName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDocumentName icScannerDevice value =
+  sendMessage icScannerDevice setDocumentNameSelector value
 
 -- | documentUTI
 --
@@ -220,8 +215,8 @@ setDocumentName icScannerDevice  value =
 --
 -- ObjC selector: @- documentUTI@
 documentUTI :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
-documentUTI icScannerDevice  =
-    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "documentUTI") (retPtr retVoid) []
+documentUTI icScannerDevice =
+  sendMessage icScannerDevice documentUTISelector
 
 -- | documentUTI
 --
@@ -229,8 +224,8 @@ documentUTI icScannerDevice  =
 --
 -- ObjC selector: @- setDocumentUTI:@
 setDocumentUTI :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
-setDocumentUTI icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setDocumentUTI:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDocumentUTI icScannerDevice value =
+  sendMessage icScannerDevice setDocumentUTISelector value
 
 -- | defaultUsername
 --
@@ -238,8 +233,8 @@ setDocumentUTI icScannerDevice  value =
 --
 -- ObjC selector: @- defaultUsername@
 defaultUsername :: IsICScannerDevice icScannerDevice => icScannerDevice -> IO RawId
-defaultUsername icScannerDevice  =
-    fmap (RawId . castPtr) $ sendMsg icScannerDevice (mkSelector "defaultUsername") (retPtr retVoid) []
+defaultUsername icScannerDevice =
+  sendMessage icScannerDevice defaultUsernameSelector
 
 -- | defaultUsername
 --
@@ -247,82 +242,82 @@ defaultUsername icScannerDevice  =
 --
 -- ObjC selector: @- setDefaultUsername:@
 setDefaultUsername :: IsICScannerDevice icScannerDevice => icScannerDevice -> RawId -> IO ()
-setDefaultUsername icScannerDevice  value =
-    sendMsg icScannerDevice (mkSelector "setDefaultUsername:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDefaultUsername icScannerDevice value =
+  sendMessage icScannerDevice setDefaultUsernameSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestOpenSessionWithCredentials:password:@
-requestOpenSessionWithCredentials_passwordSelector :: Selector
+requestOpenSessionWithCredentials_passwordSelector :: Selector '[Id NSString, Id NSString] ()
 requestOpenSessionWithCredentials_passwordSelector = mkSelector "requestOpenSessionWithCredentials:password:"
 
 -- | @Selector@ for @requestSelectFunctionalUnit:@
-requestSelectFunctionalUnitSelector :: Selector
+requestSelectFunctionalUnitSelector :: Selector '[ICScannerFunctionalUnitType] ()
 requestSelectFunctionalUnitSelector = mkSelector "requestSelectFunctionalUnit:"
 
 -- | @Selector@ for @requestOverviewScan@
-requestOverviewScanSelector :: Selector
+requestOverviewScanSelector :: Selector '[] ()
 requestOverviewScanSelector = mkSelector "requestOverviewScan"
 
 -- | @Selector@ for @requestScan@
-requestScanSelector :: Selector
+requestScanSelector :: Selector '[] ()
 requestScanSelector = mkSelector "requestScan"
 
 -- | @Selector@ for @cancelScan@
-cancelScanSelector :: Selector
+cancelScanSelector :: Selector '[] ()
 cancelScanSelector = mkSelector "cancelScan"
 
 -- | @Selector@ for @selectedFunctionalUnit@
-selectedFunctionalUnitSelector :: Selector
+selectedFunctionalUnitSelector :: Selector '[] RawId
 selectedFunctionalUnitSelector = mkSelector "selectedFunctionalUnit"
 
 -- | @Selector@ for @transferMode@
-transferModeSelector :: Selector
+transferModeSelector :: Selector '[] ICScannerTransferMode
 transferModeSelector = mkSelector "transferMode"
 
 -- | @Selector@ for @setTransferMode:@
-setTransferModeSelector :: Selector
+setTransferModeSelector :: Selector '[ICScannerTransferMode] ()
 setTransferModeSelector = mkSelector "setTransferMode:"
 
 -- | @Selector@ for @maxMemoryBandSize@
-maxMemoryBandSizeSelector :: Selector
+maxMemoryBandSizeSelector :: Selector '[] CUInt
 maxMemoryBandSizeSelector = mkSelector "maxMemoryBandSize"
 
 -- | @Selector@ for @setMaxMemoryBandSize:@
-setMaxMemoryBandSizeSelector :: Selector
+setMaxMemoryBandSizeSelector :: Selector '[CUInt] ()
 setMaxMemoryBandSizeSelector = mkSelector "setMaxMemoryBandSize:"
 
 -- | @Selector@ for @downloadsDirectory@
-downloadsDirectorySelector :: Selector
+downloadsDirectorySelector :: Selector '[] RawId
 downloadsDirectorySelector = mkSelector "downloadsDirectory"
 
 -- | @Selector@ for @setDownloadsDirectory:@
-setDownloadsDirectorySelector :: Selector
+setDownloadsDirectorySelector :: Selector '[RawId] ()
 setDownloadsDirectorySelector = mkSelector "setDownloadsDirectory:"
 
 -- | @Selector@ for @documentName@
-documentNameSelector :: Selector
+documentNameSelector :: Selector '[] RawId
 documentNameSelector = mkSelector "documentName"
 
 -- | @Selector@ for @setDocumentName:@
-setDocumentNameSelector :: Selector
+setDocumentNameSelector :: Selector '[RawId] ()
 setDocumentNameSelector = mkSelector "setDocumentName:"
 
 -- | @Selector@ for @documentUTI@
-documentUTISelector :: Selector
+documentUTISelector :: Selector '[] RawId
 documentUTISelector = mkSelector "documentUTI"
 
 -- | @Selector@ for @setDocumentUTI:@
-setDocumentUTISelector :: Selector
+setDocumentUTISelector :: Selector '[RawId] ()
 setDocumentUTISelector = mkSelector "setDocumentUTI:"
 
 -- | @Selector@ for @defaultUsername@
-defaultUsernameSelector :: Selector
+defaultUsernameSelector :: Selector '[] RawId
 defaultUsernameSelector = mkSelector "defaultUsername"
 
 -- | @Selector@ for @setDefaultUsername:@
-setDefaultUsernameSelector :: Selector
+setDefaultUsernameSelector :: Selector '[RawId] ()
 setDefaultUsernameSelector = mkSelector "setDefaultUsername:"
 

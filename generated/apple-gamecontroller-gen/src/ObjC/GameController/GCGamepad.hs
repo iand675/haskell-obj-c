@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.GameController.GCGamepad
   , buttonY
   , leftShoulder
   , rightShoulder
-  , saveSnapshotSelector
-  , controllerSelector
-  , valueChangedHandlerSelector
-  , setValueChangedHandlerSelector
-  , dpadSelector
   , buttonASelector
   , buttonBSelector
   , buttonXSelector
   , buttonYSelector
+  , controllerSelector
+  , dpadSelector
   , leftShoulderSelector
   , rightShoulderSelector
+  , saveSnapshotSelector
+  , setValueChangedHandlerSelector
+  , valueChangedHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,32 +50,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- saveSnapshot@
 saveSnapshot :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCGamepadSnapshot)
-saveSnapshot gcGamepad  =
-    sendMsg gcGamepad (mkSelector "saveSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+saveSnapshot gcGamepad =
+  sendMessage gcGamepad saveSnapshotSelector
 
 -- | A profile keeps a reference to the controller that this profile is mapping input from.
 --
 -- ObjC selector: @- controller@
 controller :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCController)
-controller gcGamepad  =
-    sendMsg gcGamepad (mkSelector "controller") (retPtr retVoid) [] >>= retainedObject . castPtr
+controller gcGamepad =
+  sendMessage gcGamepad controllerSelector
 
 -- | @- valueChangedHandler@
 valueChangedHandler :: IsGCGamepad gcGamepad => gcGamepad -> IO (Ptr ())
-valueChangedHandler gcGamepad  =
-    fmap castPtr $ sendMsg gcGamepad (mkSelector "valueChangedHandler") (retPtr retVoid) []
+valueChangedHandler gcGamepad =
+  sendMessage gcGamepad valueChangedHandlerSelector
 
 -- | @- setValueChangedHandler:@
 setValueChangedHandler :: IsGCGamepad gcGamepad => gcGamepad -> Ptr () -> IO ()
-setValueChangedHandler gcGamepad  value =
-    sendMsg gcGamepad (mkSelector "setValueChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueChangedHandler gcGamepad value =
+  sendMessage gcGamepad setValueChangedHandlerSelector value
 
 -- | Required to be analog in the Standard profile. All the elements of this directional input are thus analog.
 --
 -- ObjC selector: @- dpad@
 dpad :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerDirectionPad)
-dpad gcGamepad  =
-    sendMsg gcGamepad (mkSelector "dpad") (retPtr retVoid) [] >>= retainedObject . castPtr
+dpad gcGamepad =
+  sendMessage gcGamepad dpadSelector
 
 -- | All face buttons are required to be analog in the Standard profile. These must be arranged in the diamond pattern given below:
 --
@@ -86,83 +83,83 @@ dpad gcGamepad  =
 --
 -- ObjC selector: @- buttonA@
 buttonA :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-buttonA gcGamepad  =
-    sendMsg gcGamepad (mkSelector "buttonA") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonA gcGamepad =
+  sendMessage gcGamepad buttonASelector
 
 -- | @- buttonB@
 buttonB :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-buttonB gcGamepad  =
-    sendMsg gcGamepad (mkSelector "buttonB") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonB gcGamepad =
+  sendMessage gcGamepad buttonBSelector
 
 -- | @- buttonX@
 buttonX :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-buttonX gcGamepad  =
-    sendMsg gcGamepad (mkSelector "buttonX") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonX gcGamepad =
+  sendMessage gcGamepad buttonXSelector
 
 -- | @- buttonY@
 buttonY :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-buttonY gcGamepad  =
-    sendMsg gcGamepad (mkSelector "buttonY") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonY gcGamepad =
+  sendMessage gcGamepad buttonYSelector
 
 -- | Shoulder buttons are required to be analog inputs.
 --
 -- ObjC selector: @- leftShoulder@
 leftShoulder :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-leftShoulder gcGamepad  =
-    sendMsg gcGamepad (mkSelector "leftShoulder") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftShoulder gcGamepad =
+  sendMessage gcGamepad leftShoulderSelector
 
 -- | Shoulder buttons are required to be analog inputs.
 --
 -- ObjC selector: @- rightShoulder@
 rightShoulder :: IsGCGamepad gcGamepad => gcGamepad -> IO (Id GCControllerButtonInput)
-rightShoulder gcGamepad  =
-    sendMsg gcGamepad (mkSelector "rightShoulder") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightShoulder gcGamepad =
+  sendMessage gcGamepad rightShoulderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @saveSnapshot@
-saveSnapshotSelector :: Selector
+saveSnapshotSelector :: Selector '[] (Id GCGamepadSnapshot)
 saveSnapshotSelector = mkSelector "saveSnapshot"
 
 -- | @Selector@ for @controller@
-controllerSelector :: Selector
+controllerSelector :: Selector '[] (Id GCController)
 controllerSelector = mkSelector "controller"
 
 -- | @Selector@ for @valueChangedHandler@
-valueChangedHandlerSelector :: Selector
+valueChangedHandlerSelector :: Selector '[] (Ptr ())
 valueChangedHandlerSelector = mkSelector "valueChangedHandler"
 
 -- | @Selector@ for @setValueChangedHandler:@
-setValueChangedHandlerSelector :: Selector
+setValueChangedHandlerSelector :: Selector '[Ptr ()] ()
 setValueChangedHandlerSelector = mkSelector "setValueChangedHandler:"
 
 -- | @Selector@ for @dpad@
-dpadSelector :: Selector
+dpadSelector :: Selector '[] (Id GCControllerDirectionPad)
 dpadSelector = mkSelector "dpad"
 
 -- | @Selector@ for @buttonA@
-buttonASelector :: Selector
+buttonASelector :: Selector '[] (Id GCControllerButtonInput)
 buttonASelector = mkSelector "buttonA"
 
 -- | @Selector@ for @buttonB@
-buttonBSelector :: Selector
+buttonBSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonBSelector = mkSelector "buttonB"
 
 -- | @Selector@ for @buttonX@
-buttonXSelector :: Selector
+buttonXSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonXSelector = mkSelector "buttonX"
 
 -- | @Selector@ for @buttonY@
-buttonYSelector :: Selector
+buttonYSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonYSelector = mkSelector "buttonY"
 
 -- | @Selector@ for @leftShoulder@
-leftShoulderSelector :: Selector
+leftShoulderSelector :: Selector '[] (Id GCControllerButtonInput)
 leftShoulderSelector = mkSelector "leftShoulder"
 
 -- | @Selector@ for @rightShoulder@
-rightShoulderSelector :: Selector
+rightShoulderSelector :: Selector '[] (Id GCControllerButtonInput)
 rightShoulderSelector = mkSelector "rightShoulder"
 

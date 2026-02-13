@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.FSKit.FSTaskOptions
   , urlForOption
   , taskOptions
   , initSelector
-  , urlForOptionSelector
   , taskOptionsSelector
+  , urlForOptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSTaskOptions fsTaskOptions => fsTaskOptions -> IO (Id FSTaskOptions)
-init_ fsTaskOptions  =
-    sendMsg fsTaskOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsTaskOptions =
+  sendOwnedMessage fsTaskOptions initSelector
 
 -- | Retrieves a URL for a given option.
 --
@@ -48,9 +45,8 @@ init_ fsTaskOptions  =
 --
 -- ObjC selector: @- urlForOption:@
 urlForOption :: (IsFSTaskOptions fsTaskOptions, IsNSString option) => fsTaskOptions -> option -> IO (Id NSURL)
-urlForOption fsTaskOptions  option =
-  withObjCPtr option $ \raw_option ->
-      sendMsg fsTaskOptions (mkSelector "urlForOption:") (retPtr retVoid) [argPtr (castPtr raw_option :: Ptr ())] >>= retainedObject . castPtr
+urlForOption fsTaskOptions option =
+  sendMessage fsTaskOptions urlForOptionSelector (toNSString option)
 
 -- | An array of strings that represent command-line options for the task.
 --
@@ -58,22 +54,22 @@ urlForOption fsTaskOptions  option =
 --
 -- ObjC selector: @- taskOptions@
 taskOptions :: IsFSTaskOptions fsTaskOptions => fsTaskOptions -> IO (Id NSArray)
-taskOptions fsTaskOptions  =
-    sendMsg fsTaskOptions (mkSelector "taskOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskOptions fsTaskOptions =
+  sendMessage fsTaskOptions taskOptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSTaskOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @urlForOption:@
-urlForOptionSelector :: Selector
+urlForOptionSelector :: Selector '[Id NSString] (Id NSURL)
 urlForOptionSelector = mkSelector "urlForOption:"
 
 -- | @Selector@ for @taskOptions@
-taskOptionsSelector :: Selector
+taskOptionsSelector :: Selector '[] (Id NSArray)
 taskOptionsSelector = mkSelector "taskOptions"
 

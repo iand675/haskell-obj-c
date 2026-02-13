@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.AVFoundation.AVPlayerItemOutput
   , IsAVPlayerItemOutput(..)
   , suppressesPlayerRendering
   , setSuppressesPlayerRendering
-  , suppressesPlayerRenderingSelector
   , setSuppressesPlayerRenderingSelector
+  , suppressesPlayerRenderingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- suppressesPlayerRendering@
 suppressesPlayerRendering :: IsAVPlayerItemOutput avPlayerItemOutput => avPlayerItemOutput -> IO Bool
-suppressesPlayerRendering avPlayerItemOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerItemOutput (mkSelector "suppressesPlayerRendering") retCULong []
+suppressesPlayerRendering avPlayerItemOutput =
+  sendMessage avPlayerItemOutput suppressesPlayerRenderingSelector
 
 -- | suppressesPlayerRendering
 --
@@ -52,18 +49,18 @@ suppressesPlayerRendering avPlayerItemOutput  =
 --
 -- ObjC selector: @- setSuppressesPlayerRendering:@
 setSuppressesPlayerRendering :: IsAVPlayerItemOutput avPlayerItemOutput => avPlayerItemOutput -> Bool -> IO ()
-setSuppressesPlayerRendering avPlayerItemOutput  value =
-    sendMsg avPlayerItemOutput (mkSelector "setSuppressesPlayerRendering:") retVoid [argCULong (if value then 1 else 0)]
+setSuppressesPlayerRendering avPlayerItemOutput value =
+  sendMessage avPlayerItemOutput setSuppressesPlayerRenderingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @suppressesPlayerRendering@
-suppressesPlayerRenderingSelector :: Selector
+suppressesPlayerRenderingSelector :: Selector '[] Bool
 suppressesPlayerRenderingSelector = mkSelector "suppressesPlayerRendering"
 
 -- | @Selector@ for @setSuppressesPlayerRendering:@
-setSuppressesPlayerRenderingSelector :: Selector
+setSuppressesPlayerRenderingSelector :: Selector '[Bool] ()
 setSuppressesPlayerRenderingSelector = mkSelector "setSuppressesPlayerRendering:"
 

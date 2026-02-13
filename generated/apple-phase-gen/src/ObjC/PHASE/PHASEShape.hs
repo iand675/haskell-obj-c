@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.PHASE.PHASEShape
   , initWithEngine_mesh
   , initWithEngine_mesh_materials
   , elements
+  , elementsSelector
   , initSelector
-  , newSelector
   , initWithEngine_meshSelector
   , initWithEngine_mesh_materialsSelector
-  , elementsSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,15 +41,15 @@ import ObjC.ModelIO.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEShape phaseShape => phaseShape -> IO (Id PHASEShape)
-init_ phaseShape  =
-    sendMsg phaseShape (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseShape =
+  sendOwnedMessage phaseShape initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEShape)
 new  =
   do
     cls' <- getRequiredClass "PHASEShape"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine:mesh
 --
@@ -70,10 +67,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:mesh:@
 initWithEngine_mesh :: (IsPHASEShape phaseShape, IsPHASEEngine engine, IsMDLMesh mesh) => phaseShape -> engine -> mesh -> IO (Id PHASEShape)
-initWithEngine_mesh phaseShape  engine mesh =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr mesh $ \raw_mesh ->
-        sendMsg phaseShape (mkSelector "initWithEngine:mesh:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_mesh :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine_mesh phaseShape engine mesh =
+  sendOwnedMessage phaseShape initWithEngine_meshSelector (toPHASEEngine engine) (toMDLMesh mesh)
 
 -- | initWithEngine:mesh
 --
@@ -91,11 +86,8 @@ initWithEngine_mesh phaseShape  engine mesh =
 --
 -- ObjC selector: @- initWithEngine:mesh:materials:@
 initWithEngine_mesh_materials :: (IsPHASEShape phaseShape, IsPHASEEngine engine, IsMDLMesh mesh, IsNSArray materials) => phaseShape -> engine -> mesh -> materials -> IO (Id PHASEShape)
-initWithEngine_mesh_materials phaseShape  engine mesh materials =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr mesh $ \raw_mesh ->
-      withObjCPtr materials $ \raw_materials ->
-          sendMsg phaseShape (mkSelector "initWithEngine:mesh:materials:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_mesh :: Ptr ()), argPtr (castPtr raw_materials :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine_mesh_materials phaseShape engine mesh materials =
+  sendOwnedMessage phaseShape initWithEngine_mesh_materialsSelector (toPHASEEngine engine) (toMDLMesh mesh) (toNSArray materials)
 
 -- | elements
 --
@@ -103,30 +95,30 @@ initWithEngine_mesh_materials phaseShape  engine mesh materials =
 --
 -- ObjC selector: @- elements@
 elements :: IsPHASEShape phaseShape => phaseShape -> IO (Id NSArray)
-elements phaseShape  =
-    sendMsg phaseShape (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements phaseShape =
+  sendMessage phaseShape elementsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEShape)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEShape)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:mesh:@
-initWithEngine_meshSelector :: Selector
+initWithEngine_meshSelector :: Selector '[Id PHASEEngine, Id MDLMesh] (Id PHASEShape)
 initWithEngine_meshSelector = mkSelector "initWithEngine:mesh:"
 
 -- | @Selector@ for @initWithEngine:mesh:materials:@
-initWithEngine_mesh_materialsSelector :: Selector
+initWithEngine_mesh_materialsSelector :: Selector '[Id PHASEEngine, Id MDLMesh, Id NSArray] (Id PHASEShape)
 initWithEngine_mesh_materialsSelector = mkSelector "initWithEngine:mesh:materials:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id NSArray)
 elementsSelector = mkSelector "elements"
 

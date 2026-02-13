@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -123,116 +124,116 @@ module ObjC.SceneKit.SCNCamera
   , setFocalSize
   , focalDistance
   , setFocalDistance
-  , cameraSelector
-  , projectionTransformSelector
-  , setProjectionTransformSelector
-  , nameSelector
-  , setNameSelector
-  , fieldOfViewSelector
-  , setFieldOfViewSelector
-  , projectionDirectionSelector
-  , setProjectionDirectionSelector
-  , focalLengthSelector
-  , setFocalLengthSelector
-  , sensorHeightSelector
-  , setSensorHeightSelector
-  , zNearSelector
-  , setZNearSelector
-  , zFarSelector
-  , setZFarSelector
-  , automaticallyAdjustsZRangeSelector
-  , setAutomaticallyAdjustsZRangeSelector
-  , usesOrthographicProjectionSelector
-  , setUsesOrthographicProjectionSelector
-  , orthographicScaleSelector
-  , setOrthographicScaleSelector
-  , wantsDepthOfFieldSelector
-  , setWantsDepthOfFieldSelector
-  , focusDistanceSelector
-  , setFocusDistanceSelector
-  , focalBlurSampleCountSelector
-  , setFocalBlurSampleCountSelector
-  , fStopSelector
-  , setFStopSelector
   , apertureBladeCountSelector
-  , setApertureBladeCountSelector
-  , motionBlurIntensitySelector
-  , setMotionBlurIntensitySelector
-  , screenSpaceAmbientOcclusionIntensitySelector
-  , setScreenSpaceAmbientOcclusionIntensitySelector
-  , screenSpaceAmbientOcclusionRadiusSelector
-  , setScreenSpaceAmbientOcclusionRadiusSelector
-  , screenSpaceAmbientOcclusionBiasSelector
-  , setScreenSpaceAmbientOcclusionBiasSelector
-  , screenSpaceAmbientOcclusionDepthThresholdSelector
-  , setScreenSpaceAmbientOcclusionDepthThresholdSelector
-  , screenSpaceAmbientOcclusionNormalThresholdSelector
-  , setScreenSpaceAmbientOcclusionNormalThresholdSelector
-  , wantsHDRSelector
-  , setWantsHDRSelector
-  , exposureOffsetSelector
-  , setExposureOffsetSelector
-  , averageGraySelector
-  , setAverageGraySelector
-  , whitePointSelector
-  , setWhitePointSelector
-  , wantsExposureAdaptationSelector
-  , setWantsExposureAdaptationSelector
-  , exposureAdaptationBrighteningSpeedFactorSelector
-  , setExposureAdaptationBrighteningSpeedFactorSelector
-  , exposureAdaptationDarkeningSpeedFactorSelector
-  , setExposureAdaptationDarkeningSpeedFactorSelector
-  , minimumExposureSelector
-  , setMinimumExposureSelector
-  , maximumExposureSelector
-  , setMaximumExposureSelector
-  , bloomThresholdSelector
-  , setBloomThresholdSelector
-  , bloomIterationCountSelector
-  , setBloomIterationCountSelector
-  , bloomIterationSpreadSelector
-  , setBloomIterationSpreadSelector
-  , bloomIntensitySelector
-  , setBloomIntensitySelector
-  , bloomBlurRadiusSelector
-  , setBloomBlurRadiusSelector
-  , vignettingPowerSelector
-  , setVignettingPowerSelector
-  , vignettingIntensitySelector
-  , setVignettingIntensitySelector
-  , colorFringeStrengthSelector
-  , setColorFringeStrengthSelector
-  , colorFringeIntensitySelector
-  , setColorFringeIntensitySelector
-  , saturationSelector
-  , setSaturationSelector
-  , contrastSelector
-  , setContrastSelector
-  , grainIntensitySelector
-  , setGrainIntensitySelector
-  , grainScaleSelector
-  , setGrainScaleSelector
-  , grainIsColoredSelector
-  , setGrainIsColoredSelector
-  , whiteBalanceTemperatureSelector
-  , setWhiteBalanceTemperatureSelector
-  , whiteBalanceTintSelector
-  , setWhiteBalanceTintSelector
-  , colorGradingSelector
-  , categoryBitMaskSelector
-  , setCategoryBitMaskSelector
-  , focalBlurRadiusSelector
-  , setFocalBlurRadiusSelector
-  , xFovSelector
-  , setXFovSelector
-  , yFovSelector
-  , setYFovSelector
   , apertureSelector
-  , setApertureSelector
-  , focalSizeSelector
-  , setFocalSizeSelector
+  , automaticallyAdjustsZRangeSelector
+  , averageGraySelector
+  , bloomBlurRadiusSelector
+  , bloomIntensitySelector
+  , bloomIterationCountSelector
+  , bloomIterationSpreadSelector
+  , bloomThresholdSelector
+  , cameraSelector
+  , categoryBitMaskSelector
+  , colorFringeIntensitySelector
+  , colorFringeStrengthSelector
+  , colorGradingSelector
+  , contrastSelector
+  , exposureAdaptationBrighteningSpeedFactorSelector
+  , exposureAdaptationDarkeningSpeedFactorSelector
+  , exposureOffsetSelector
+  , fStopSelector
+  , fieldOfViewSelector
+  , focalBlurRadiusSelector
+  , focalBlurSampleCountSelector
   , focalDistanceSelector
+  , focalLengthSelector
+  , focalSizeSelector
+  , focusDistanceSelector
+  , grainIntensitySelector
+  , grainIsColoredSelector
+  , grainScaleSelector
+  , maximumExposureSelector
+  , minimumExposureSelector
+  , motionBlurIntensitySelector
+  , nameSelector
+  , orthographicScaleSelector
+  , projectionDirectionSelector
+  , projectionTransformSelector
+  , saturationSelector
+  , screenSpaceAmbientOcclusionBiasSelector
+  , screenSpaceAmbientOcclusionDepthThresholdSelector
+  , screenSpaceAmbientOcclusionIntensitySelector
+  , screenSpaceAmbientOcclusionNormalThresholdSelector
+  , screenSpaceAmbientOcclusionRadiusSelector
+  , sensorHeightSelector
+  , setApertureBladeCountSelector
+  , setApertureSelector
+  , setAutomaticallyAdjustsZRangeSelector
+  , setAverageGraySelector
+  , setBloomBlurRadiusSelector
+  , setBloomIntensitySelector
+  , setBloomIterationCountSelector
+  , setBloomIterationSpreadSelector
+  , setBloomThresholdSelector
+  , setCategoryBitMaskSelector
+  , setColorFringeIntensitySelector
+  , setColorFringeStrengthSelector
+  , setContrastSelector
+  , setExposureAdaptationBrighteningSpeedFactorSelector
+  , setExposureAdaptationDarkeningSpeedFactorSelector
+  , setExposureOffsetSelector
+  , setFStopSelector
+  , setFieldOfViewSelector
+  , setFocalBlurRadiusSelector
+  , setFocalBlurSampleCountSelector
   , setFocalDistanceSelector
+  , setFocalLengthSelector
+  , setFocalSizeSelector
+  , setFocusDistanceSelector
+  , setGrainIntensitySelector
+  , setGrainIsColoredSelector
+  , setGrainScaleSelector
+  , setMaximumExposureSelector
+  , setMinimumExposureSelector
+  , setMotionBlurIntensitySelector
+  , setNameSelector
+  , setOrthographicScaleSelector
+  , setProjectionDirectionSelector
+  , setProjectionTransformSelector
+  , setSaturationSelector
+  , setScreenSpaceAmbientOcclusionBiasSelector
+  , setScreenSpaceAmbientOcclusionDepthThresholdSelector
+  , setScreenSpaceAmbientOcclusionIntensitySelector
+  , setScreenSpaceAmbientOcclusionNormalThresholdSelector
+  , setScreenSpaceAmbientOcclusionRadiusSelector
+  , setSensorHeightSelector
+  , setUsesOrthographicProjectionSelector
+  , setVignettingIntensitySelector
+  , setVignettingPowerSelector
+  , setWantsDepthOfFieldSelector
+  , setWantsExposureAdaptationSelector
+  , setWantsHDRSelector
+  , setWhiteBalanceTemperatureSelector
+  , setWhiteBalanceTintSelector
+  , setWhitePointSelector
+  , setXFovSelector
+  , setYFovSelector
+  , setZFarSelector
+  , setZNearSelector
+  , usesOrthographicProjectionSelector
+  , vignettingIntensitySelector
+  , vignettingPowerSelector
+  , wantsDepthOfFieldSelector
+  , wantsExposureAdaptationSelector
+  , wantsHDRSelector
+  , whiteBalanceTemperatureSelector
+  , whiteBalanceTintSelector
+  , whitePointSelector
+  , xFovSelector
+  , yFovSelector
+  , zFarSelector
+  , zNearSelector
 
   -- * Enum types
   , SCNCameraProjectionDirection(SCNCameraProjectionDirection)
@@ -241,15 +242,11 @@ module ObjC.SceneKit.SCNCamera
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -267,17 +264,17 @@ camera :: IO (Id SCNCamera)
 camera  =
   do
     cls' <- getRequiredClass "SCNCamera"
-    sendClassMsg cls' (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cameraSelector
 
 -- | @- projectionTransform@
 projectionTransform :: IsSCNCamera scnCamera => scnCamera -> IO SCNMatrix4
-projectionTransform scnCamera  =
-    sendMsgStret scnCamera (mkSelector "projectionTransform") retSCNMatrix4 []
+projectionTransform scnCamera =
+  sendMessage scnCamera projectionTransformSelector
 
 -- | @- setProjectionTransform:@
 setProjectionTransform :: IsSCNCamera scnCamera => scnCamera -> SCNMatrix4 -> IO ()
-setProjectionTransform scnCamera  projectionTransform =
-    sendMsg scnCamera (mkSelector "setProjectionTransform:") retVoid [argSCNMatrix4 projectionTransform]
+setProjectionTransform scnCamera projectionTransform =
+  sendMessage scnCamera setProjectionTransformSelector projectionTransform
 
 -- | name
 --
@@ -285,8 +282,8 @@ setProjectionTransform scnCamera  projectionTransform =
 --
 -- ObjC selector: @- name@
 name :: IsSCNCamera scnCamera => scnCamera -> IO (Id NSString)
-name scnCamera  =
-    sendMsg scnCamera (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name scnCamera =
+  sendMessage scnCamera nameSelector
 
 -- | name
 --
@@ -294,9 +291,8 @@ name scnCamera  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSCNCamera scnCamera, IsNSString value) => scnCamera -> value -> IO ()
-setName scnCamera  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnCamera (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName scnCamera value =
+  sendMessage scnCamera setNameSelector (toNSString value)
 
 -- | fieldOfView
 --
@@ -306,8 +302,8 @@ setName scnCamera  value =
 --
 -- ObjC selector: @- fieldOfView@
 fieldOfView :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-fieldOfView scnCamera  =
-    sendMsg scnCamera (mkSelector "fieldOfView") retCDouble []
+fieldOfView scnCamera =
+  sendMessage scnCamera fieldOfViewSelector
 
 -- | fieldOfView
 --
@@ -317,8 +313,8 @@ fieldOfView scnCamera  =
 --
 -- ObjC selector: @- setFieldOfView:@
 setFieldOfView :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFieldOfView scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFieldOfView:") retVoid [argCDouble value]
+setFieldOfView scnCamera value =
+  sendMessage scnCamera setFieldOfViewSelector value
 
 -- | projectionDirection
 --
@@ -326,8 +322,8 @@ setFieldOfView scnCamera  value =
 --
 -- ObjC selector: @- projectionDirection@
 projectionDirection :: IsSCNCamera scnCamera => scnCamera -> IO SCNCameraProjectionDirection
-projectionDirection scnCamera  =
-    fmap (coerce :: CLong -> SCNCameraProjectionDirection) $ sendMsg scnCamera (mkSelector "projectionDirection") retCLong []
+projectionDirection scnCamera =
+  sendMessage scnCamera projectionDirectionSelector
 
 -- | projectionDirection
 --
@@ -335,8 +331,8 @@ projectionDirection scnCamera  =
 --
 -- ObjC selector: @- setProjectionDirection:@
 setProjectionDirection :: IsSCNCamera scnCamera => scnCamera -> SCNCameraProjectionDirection -> IO ()
-setProjectionDirection scnCamera  value =
-    sendMsg scnCamera (mkSelector "setProjectionDirection:") retVoid [argCLong (coerce value)]
+setProjectionDirection scnCamera value =
+  sendMessage scnCamera setProjectionDirectionSelector value
 
 -- | focalLength
 --
@@ -346,8 +342,8 @@ setProjectionDirection scnCamera  value =
 --
 -- ObjC selector: @- focalLength@
 focalLength :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-focalLength scnCamera  =
-    sendMsg scnCamera (mkSelector "focalLength") retCDouble []
+focalLength scnCamera =
+  sendMessage scnCamera focalLengthSelector
 
 -- | focalLength
 --
@@ -357,8 +353,8 @@ focalLength scnCamera  =
 --
 -- ObjC selector: @- setFocalLength:@
 setFocalLength :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFocalLength scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocalLength:") retVoid [argCDouble value]
+setFocalLength scnCamera value =
+  sendMessage scnCamera setFocalLengthSelector value
 
 -- | sensorHeight
 --
@@ -368,8 +364,8 @@ setFocalLength scnCamera  value =
 --
 -- ObjC selector: @- sensorHeight@
 sensorHeight :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-sensorHeight scnCamera  =
-    sendMsg scnCamera (mkSelector "sensorHeight") retCDouble []
+sensorHeight scnCamera =
+  sendMessage scnCamera sensorHeightSelector
 
 -- | sensorHeight
 --
@@ -379,8 +375,8 @@ sensorHeight scnCamera  =
 --
 -- ObjC selector: @- setSensorHeight:@
 setSensorHeight :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setSensorHeight scnCamera  value =
-    sendMsg scnCamera (mkSelector "setSensorHeight:") retVoid [argCDouble value]
+setSensorHeight scnCamera value =
+  sendMessage scnCamera setSensorHeightSelector value
 
 -- | zNear
 --
@@ -390,8 +386,8 @@ setSensorHeight scnCamera  value =
 --
 -- ObjC selector: @- zNear@
 zNear :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-zNear scnCamera  =
-    sendMsg scnCamera (mkSelector "zNear") retCDouble []
+zNear scnCamera =
+  sendMessage scnCamera zNearSelector
 
 -- | zNear
 --
@@ -401,8 +397,8 @@ zNear scnCamera  =
 --
 -- ObjC selector: @- setZNear:@
 setZNear :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setZNear scnCamera  value =
-    sendMsg scnCamera (mkSelector "setZNear:") retVoid [argCDouble value]
+setZNear scnCamera value =
+  sendMessage scnCamera setZNearSelector value
 
 -- | zFar
 --
@@ -412,8 +408,8 @@ setZNear scnCamera  value =
 --
 -- ObjC selector: @- zFar@
 zFar :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-zFar scnCamera  =
-    sendMsg scnCamera (mkSelector "zFar") retCDouble []
+zFar scnCamera =
+  sendMessage scnCamera zFarSelector
 
 -- | zFar
 --
@@ -423,8 +419,8 @@ zFar scnCamera  =
 --
 -- ObjC selector: @- setZFar:@
 setZFar :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setZFar scnCamera  value =
-    sendMsg scnCamera (mkSelector "setZFar:") retVoid [argCDouble value]
+setZFar scnCamera value =
+  sendMessage scnCamera setZFarSelector value
 
 -- | automaticallyAdjustsZRange
 --
@@ -434,8 +430,8 @@ setZFar scnCamera  value =
 --
 -- ObjC selector: @- automaticallyAdjustsZRange@
 automaticallyAdjustsZRange :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-automaticallyAdjustsZRange scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "automaticallyAdjustsZRange") retCULong []
+automaticallyAdjustsZRange scnCamera =
+  sendMessage scnCamera automaticallyAdjustsZRangeSelector
 
 -- | automaticallyAdjustsZRange
 --
@@ -445,8 +441,8 @@ automaticallyAdjustsZRange scnCamera  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsZRange:@
 setAutomaticallyAdjustsZRange :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setAutomaticallyAdjustsZRange scnCamera  value =
-    sendMsg scnCamera (mkSelector "setAutomaticallyAdjustsZRange:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsZRange scnCamera value =
+  sendMessage scnCamera setAutomaticallyAdjustsZRangeSelector value
 
 -- | usesOrthographicProjection
 --
@@ -454,8 +450,8 @@ setAutomaticallyAdjustsZRange scnCamera  value =
 --
 -- ObjC selector: @- usesOrthographicProjection@
 usesOrthographicProjection :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-usesOrthographicProjection scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "usesOrthographicProjection") retCULong []
+usesOrthographicProjection scnCamera =
+  sendMessage scnCamera usesOrthographicProjectionSelector
 
 -- | usesOrthographicProjection
 --
@@ -463,8 +459,8 @@ usesOrthographicProjection scnCamera  =
 --
 -- ObjC selector: @- setUsesOrthographicProjection:@
 setUsesOrthographicProjection :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setUsesOrthographicProjection scnCamera  value =
-    sendMsg scnCamera (mkSelector "setUsesOrthographicProjection:") retVoid [argCULong (if value then 1 else 0)]
+setUsesOrthographicProjection scnCamera value =
+  sendMessage scnCamera setUsesOrthographicProjectionSelector value
 
 -- | orthographicScale
 --
@@ -474,8 +470,8 @@ setUsesOrthographicProjection scnCamera  value =
 --
 -- ObjC selector: @- orthographicScale@
 orthographicScale :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-orthographicScale scnCamera  =
-    sendMsg scnCamera (mkSelector "orthographicScale") retCDouble []
+orthographicScale scnCamera =
+  sendMessage scnCamera orthographicScaleSelector
 
 -- | orthographicScale
 --
@@ -485,8 +481,8 @@ orthographicScale scnCamera  =
 --
 -- ObjC selector: @- setOrthographicScale:@
 setOrthographicScale :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setOrthographicScale scnCamera  value =
-    sendMsg scnCamera (mkSelector "setOrthographicScale:") retVoid [argCDouble value]
+setOrthographicScale scnCamera value =
+  sendMessage scnCamera setOrthographicScaleSelector value
 
 -- | wantsDepthOfField
 --
@@ -494,8 +490,8 @@ setOrthographicScale scnCamera  value =
 --
 -- ObjC selector: @- wantsDepthOfField@
 wantsDepthOfField :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-wantsDepthOfField scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "wantsDepthOfField") retCULong []
+wantsDepthOfField scnCamera =
+  sendMessage scnCamera wantsDepthOfFieldSelector
 
 -- | wantsDepthOfField
 --
@@ -503,8 +499,8 @@ wantsDepthOfField scnCamera  =
 --
 -- ObjC selector: @- setWantsDepthOfField:@
 setWantsDepthOfField :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setWantsDepthOfField scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWantsDepthOfField:") retVoid [argCULong (if value then 1 else 0)]
+setWantsDepthOfField scnCamera value =
+  sendMessage scnCamera setWantsDepthOfFieldSelector value
 
 -- | focusDistance
 --
@@ -514,8 +510,8 @@ setWantsDepthOfField scnCamera  value =
 --
 -- ObjC selector: @- focusDistance@
 focusDistance :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-focusDistance scnCamera  =
-    sendMsg scnCamera (mkSelector "focusDistance") retCDouble []
+focusDistance scnCamera =
+  sendMessage scnCamera focusDistanceSelector
 
 -- | focusDistance
 --
@@ -525,8 +521,8 @@ focusDistance scnCamera  =
 --
 -- ObjC selector: @- setFocusDistance:@
 setFocusDistance :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFocusDistance scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocusDistance:") retVoid [argCDouble value]
+setFocusDistance scnCamera value =
+  sendMessage scnCamera setFocusDistanceSelector value
 
 -- | focalBlurSampleCount
 --
@@ -536,8 +532,8 @@ setFocusDistance scnCamera  value =
 --
 -- ObjC selector: @- focalBlurSampleCount@
 focalBlurSampleCount :: IsSCNCamera scnCamera => scnCamera -> IO CLong
-focalBlurSampleCount scnCamera  =
-    sendMsg scnCamera (mkSelector "focalBlurSampleCount") retCLong []
+focalBlurSampleCount scnCamera =
+  sendMessage scnCamera focalBlurSampleCountSelector
 
 -- | focalBlurSampleCount
 --
@@ -547,8 +543,8 @@ focalBlurSampleCount scnCamera  =
 --
 -- ObjC selector: @- setFocalBlurSampleCount:@
 setFocalBlurSampleCount :: IsSCNCamera scnCamera => scnCamera -> CLong -> IO ()
-setFocalBlurSampleCount scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocalBlurSampleCount:") retVoid [argCLong value]
+setFocalBlurSampleCount scnCamera value =
+  sendMessage scnCamera setFocalBlurSampleCountSelector value
 
 -- | fStop
 --
@@ -558,8 +554,8 @@ setFocalBlurSampleCount scnCamera  value =
 --
 -- ObjC selector: @- fStop@
 fStop :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-fStop scnCamera  =
-    sendMsg scnCamera (mkSelector "fStop") retCDouble []
+fStop scnCamera =
+  sendMessage scnCamera fStopSelector
 
 -- | fStop
 --
@@ -569,8 +565,8 @@ fStop scnCamera  =
 --
 -- ObjC selector: @- setFStop:@
 setFStop :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFStop scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFStop:") retVoid [argCDouble value]
+setFStop scnCamera value =
+  sendMessage scnCamera setFStopSelector value
 
 -- | apertureBladeCount
 --
@@ -580,8 +576,8 @@ setFStop scnCamera  value =
 --
 -- ObjC selector: @- apertureBladeCount@
 apertureBladeCount :: IsSCNCamera scnCamera => scnCamera -> IO CLong
-apertureBladeCount scnCamera  =
-    sendMsg scnCamera (mkSelector "apertureBladeCount") retCLong []
+apertureBladeCount scnCamera =
+  sendMessage scnCamera apertureBladeCountSelector
 
 -- | apertureBladeCount
 --
@@ -591,8 +587,8 @@ apertureBladeCount scnCamera  =
 --
 -- ObjC selector: @- setApertureBladeCount:@
 setApertureBladeCount :: IsSCNCamera scnCamera => scnCamera -> CLong -> IO ()
-setApertureBladeCount scnCamera  value =
-    sendMsg scnCamera (mkSelector "setApertureBladeCount:") retVoid [argCLong value]
+setApertureBladeCount scnCamera value =
+  sendMessage scnCamera setApertureBladeCountSelector value
 
 -- | motionBlurIntensity
 --
@@ -602,8 +598,8 @@ setApertureBladeCount scnCamera  value =
 --
 -- ObjC selector: @- motionBlurIntensity@
 motionBlurIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-motionBlurIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "motionBlurIntensity") retCDouble []
+motionBlurIntensity scnCamera =
+  sendMessage scnCamera motionBlurIntensitySelector
 
 -- | motionBlurIntensity
 --
@@ -613,8 +609,8 @@ motionBlurIntensity scnCamera  =
 --
 -- ObjC selector: @- setMotionBlurIntensity:@
 setMotionBlurIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setMotionBlurIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setMotionBlurIntensity:") retVoid [argCDouble value]
+setMotionBlurIntensity scnCamera value =
+  sendMessage scnCamera setMotionBlurIntensitySelector value
 
 -- | screenSpaceAmbientOcclusionIntensity
 --
@@ -624,8 +620,8 @@ setMotionBlurIntensity scnCamera  value =
 --
 -- ObjC selector: @- screenSpaceAmbientOcclusionIntensity@
 screenSpaceAmbientOcclusionIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-screenSpaceAmbientOcclusionIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "screenSpaceAmbientOcclusionIntensity") retCDouble []
+screenSpaceAmbientOcclusionIntensity scnCamera =
+  sendMessage scnCamera screenSpaceAmbientOcclusionIntensitySelector
 
 -- | screenSpaceAmbientOcclusionIntensity
 --
@@ -635,8 +631,8 @@ screenSpaceAmbientOcclusionIntensity scnCamera  =
 --
 -- ObjC selector: @- setScreenSpaceAmbientOcclusionIntensity:@
 setScreenSpaceAmbientOcclusionIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setScreenSpaceAmbientOcclusionIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setScreenSpaceAmbientOcclusionIntensity:") retVoid [argCDouble value]
+setScreenSpaceAmbientOcclusionIntensity scnCamera value =
+  sendMessage scnCamera setScreenSpaceAmbientOcclusionIntensitySelector value
 
 -- | screenSpaceAmbientOcclusionRadius
 --
@@ -646,8 +642,8 @@ setScreenSpaceAmbientOcclusionIntensity scnCamera  value =
 --
 -- ObjC selector: @- screenSpaceAmbientOcclusionRadius@
 screenSpaceAmbientOcclusionRadius :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-screenSpaceAmbientOcclusionRadius scnCamera  =
-    sendMsg scnCamera (mkSelector "screenSpaceAmbientOcclusionRadius") retCDouble []
+screenSpaceAmbientOcclusionRadius scnCamera =
+  sendMessage scnCamera screenSpaceAmbientOcclusionRadiusSelector
 
 -- | screenSpaceAmbientOcclusionRadius
 --
@@ -657,8 +653,8 @@ screenSpaceAmbientOcclusionRadius scnCamera  =
 --
 -- ObjC selector: @- setScreenSpaceAmbientOcclusionRadius:@
 setScreenSpaceAmbientOcclusionRadius :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setScreenSpaceAmbientOcclusionRadius scnCamera  value =
-    sendMsg scnCamera (mkSelector "setScreenSpaceAmbientOcclusionRadius:") retVoid [argCDouble value]
+setScreenSpaceAmbientOcclusionRadius scnCamera value =
+  sendMessage scnCamera setScreenSpaceAmbientOcclusionRadiusSelector value
 
 -- | screenSpaceAmbientOcclusionBias
 --
@@ -668,8 +664,8 @@ setScreenSpaceAmbientOcclusionRadius scnCamera  value =
 --
 -- ObjC selector: @- screenSpaceAmbientOcclusionBias@
 screenSpaceAmbientOcclusionBias :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-screenSpaceAmbientOcclusionBias scnCamera  =
-    sendMsg scnCamera (mkSelector "screenSpaceAmbientOcclusionBias") retCDouble []
+screenSpaceAmbientOcclusionBias scnCamera =
+  sendMessage scnCamera screenSpaceAmbientOcclusionBiasSelector
 
 -- | screenSpaceAmbientOcclusionBias
 --
@@ -679,8 +675,8 @@ screenSpaceAmbientOcclusionBias scnCamera  =
 --
 -- ObjC selector: @- setScreenSpaceAmbientOcclusionBias:@
 setScreenSpaceAmbientOcclusionBias :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setScreenSpaceAmbientOcclusionBias scnCamera  value =
-    sendMsg scnCamera (mkSelector "setScreenSpaceAmbientOcclusionBias:") retVoid [argCDouble value]
+setScreenSpaceAmbientOcclusionBias scnCamera value =
+  sendMessage scnCamera setScreenSpaceAmbientOcclusionBiasSelector value
 
 -- | screenSpaceAmbientOcclusionDepthThreshold
 --
@@ -690,8 +686,8 @@ setScreenSpaceAmbientOcclusionBias scnCamera  value =
 --
 -- ObjC selector: @- screenSpaceAmbientOcclusionDepthThreshold@
 screenSpaceAmbientOcclusionDepthThreshold :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-screenSpaceAmbientOcclusionDepthThreshold scnCamera  =
-    sendMsg scnCamera (mkSelector "screenSpaceAmbientOcclusionDepthThreshold") retCDouble []
+screenSpaceAmbientOcclusionDepthThreshold scnCamera =
+  sendMessage scnCamera screenSpaceAmbientOcclusionDepthThresholdSelector
 
 -- | screenSpaceAmbientOcclusionDepthThreshold
 --
@@ -701,8 +697,8 @@ screenSpaceAmbientOcclusionDepthThreshold scnCamera  =
 --
 -- ObjC selector: @- setScreenSpaceAmbientOcclusionDepthThreshold:@
 setScreenSpaceAmbientOcclusionDepthThreshold :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setScreenSpaceAmbientOcclusionDepthThreshold scnCamera  value =
-    sendMsg scnCamera (mkSelector "setScreenSpaceAmbientOcclusionDepthThreshold:") retVoid [argCDouble value]
+setScreenSpaceAmbientOcclusionDepthThreshold scnCamera value =
+  sendMessage scnCamera setScreenSpaceAmbientOcclusionDepthThresholdSelector value
 
 -- | screenSpaceAmbientOcclusionNormalThreshold
 --
@@ -712,8 +708,8 @@ setScreenSpaceAmbientOcclusionDepthThreshold scnCamera  value =
 --
 -- ObjC selector: @- screenSpaceAmbientOcclusionNormalThreshold@
 screenSpaceAmbientOcclusionNormalThreshold :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-screenSpaceAmbientOcclusionNormalThreshold scnCamera  =
-    sendMsg scnCamera (mkSelector "screenSpaceAmbientOcclusionNormalThreshold") retCDouble []
+screenSpaceAmbientOcclusionNormalThreshold scnCamera =
+  sendMessage scnCamera screenSpaceAmbientOcclusionNormalThresholdSelector
 
 -- | screenSpaceAmbientOcclusionNormalThreshold
 --
@@ -723,8 +719,8 @@ screenSpaceAmbientOcclusionNormalThreshold scnCamera  =
 --
 -- ObjC selector: @- setScreenSpaceAmbientOcclusionNormalThreshold:@
 setScreenSpaceAmbientOcclusionNormalThreshold :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setScreenSpaceAmbientOcclusionNormalThreshold scnCamera  value =
-    sendMsg scnCamera (mkSelector "setScreenSpaceAmbientOcclusionNormalThreshold:") retVoid [argCDouble value]
+setScreenSpaceAmbientOcclusionNormalThreshold scnCamera value =
+  sendMessage scnCamera setScreenSpaceAmbientOcclusionNormalThresholdSelector value
 
 -- | wantsHDR
 --
@@ -732,8 +728,8 @@ setScreenSpaceAmbientOcclusionNormalThreshold scnCamera  value =
 --
 -- ObjC selector: @- wantsHDR@
 wantsHDR :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-wantsHDR scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "wantsHDR") retCULong []
+wantsHDR scnCamera =
+  sendMessage scnCamera wantsHDRSelector
 
 -- | wantsHDR
 --
@@ -741,8 +737,8 @@ wantsHDR scnCamera  =
 --
 -- ObjC selector: @- setWantsHDR:@
 setWantsHDR :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setWantsHDR scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWantsHDR:") retVoid [argCULong (if value then 1 else 0)]
+setWantsHDR scnCamera value =
+  sendMessage scnCamera setWantsHDRSelector value
 
 -- | exposureOffset
 --
@@ -750,8 +746,8 @@ setWantsHDR scnCamera  value =
 --
 -- ObjC selector: @- exposureOffset@
 exposureOffset :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-exposureOffset scnCamera  =
-    sendMsg scnCamera (mkSelector "exposureOffset") retCDouble []
+exposureOffset scnCamera =
+  sendMessage scnCamera exposureOffsetSelector
 
 -- | exposureOffset
 --
@@ -759,8 +755,8 @@ exposureOffset scnCamera  =
 --
 -- ObjC selector: @- setExposureOffset:@
 setExposureOffset :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setExposureOffset scnCamera  value =
-    sendMsg scnCamera (mkSelector "setExposureOffset:") retVoid [argCDouble value]
+setExposureOffset scnCamera value =
+  sendMessage scnCamera setExposureOffsetSelector value
 
 -- | averageGray
 --
@@ -768,8 +764,8 @@ setExposureOffset scnCamera  value =
 --
 -- ObjC selector: @- averageGray@
 averageGray :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-averageGray scnCamera  =
-    sendMsg scnCamera (mkSelector "averageGray") retCDouble []
+averageGray scnCamera =
+  sendMessage scnCamera averageGraySelector
 
 -- | averageGray
 --
@@ -777,8 +773,8 @@ averageGray scnCamera  =
 --
 -- ObjC selector: @- setAverageGray:@
 setAverageGray :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setAverageGray scnCamera  value =
-    sendMsg scnCamera (mkSelector "setAverageGray:") retVoid [argCDouble value]
+setAverageGray scnCamera value =
+  sendMessage scnCamera setAverageGraySelector value
 
 -- | whitePoint
 --
@@ -786,8 +782,8 @@ setAverageGray scnCamera  value =
 --
 -- ObjC selector: @- whitePoint@
 whitePoint :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-whitePoint scnCamera  =
-    sendMsg scnCamera (mkSelector "whitePoint") retCDouble []
+whitePoint scnCamera =
+  sendMessage scnCamera whitePointSelector
 
 -- | whitePoint
 --
@@ -795,8 +791,8 @@ whitePoint scnCamera  =
 --
 -- ObjC selector: @- setWhitePoint:@
 setWhitePoint :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setWhitePoint scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWhitePoint:") retVoid [argCDouble value]
+setWhitePoint scnCamera value =
+  sendMessage scnCamera setWhitePointSelector value
 
 -- | wantsExposureAdaptation
 --
@@ -804,8 +800,8 @@ setWhitePoint scnCamera  value =
 --
 -- ObjC selector: @- wantsExposureAdaptation@
 wantsExposureAdaptation :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-wantsExposureAdaptation scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "wantsExposureAdaptation") retCULong []
+wantsExposureAdaptation scnCamera =
+  sendMessage scnCamera wantsExposureAdaptationSelector
 
 -- | wantsExposureAdaptation
 --
@@ -813,8 +809,8 @@ wantsExposureAdaptation scnCamera  =
 --
 -- ObjC selector: @- setWantsExposureAdaptation:@
 setWantsExposureAdaptation :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setWantsExposureAdaptation scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWantsExposureAdaptation:") retVoid [argCULong (if value then 1 else 0)]
+setWantsExposureAdaptation scnCamera value =
+  sendMessage scnCamera setWantsExposureAdaptationSelector value
 
 -- | exposureAdaptationBrighteningSpeedFactor
 --
@@ -822,8 +818,8 @@ setWantsExposureAdaptation scnCamera  value =
 --
 -- ObjC selector: @- exposureAdaptationBrighteningSpeedFactor@
 exposureAdaptationBrighteningSpeedFactor :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-exposureAdaptationBrighteningSpeedFactor scnCamera  =
-    sendMsg scnCamera (mkSelector "exposureAdaptationBrighteningSpeedFactor") retCDouble []
+exposureAdaptationBrighteningSpeedFactor scnCamera =
+  sendMessage scnCamera exposureAdaptationBrighteningSpeedFactorSelector
 
 -- | exposureAdaptationBrighteningSpeedFactor
 --
@@ -831,8 +827,8 @@ exposureAdaptationBrighteningSpeedFactor scnCamera  =
 --
 -- ObjC selector: @- setExposureAdaptationBrighteningSpeedFactor:@
 setExposureAdaptationBrighteningSpeedFactor :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setExposureAdaptationBrighteningSpeedFactor scnCamera  value =
-    sendMsg scnCamera (mkSelector "setExposureAdaptationBrighteningSpeedFactor:") retVoid [argCDouble value]
+setExposureAdaptationBrighteningSpeedFactor scnCamera value =
+  sendMessage scnCamera setExposureAdaptationBrighteningSpeedFactorSelector value
 
 -- | exposureAdaptationDarkeningSpeedFactor
 --
@@ -840,8 +836,8 @@ setExposureAdaptationBrighteningSpeedFactor scnCamera  value =
 --
 -- ObjC selector: @- exposureAdaptationDarkeningSpeedFactor@
 exposureAdaptationDarkeningSpeedFactor :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-exposureAdaptationDarkeningSpeedFactor scnCamera  =
-    sendMsg scnCamera (mkSelector "exposureAdaptationDarkeningSpeedFactor") retCDouble []
+exposureAdaptationDarkeningSpeedFactor scnCamera =
+  sendMessage scnCamera exposureAdaptationDarkeningSpeedFactorSelector
 
 -- | exposureAdaptationDarkeningSpeedFactor
 --
@@ -849,8 +845,8 @@ exposureAdaptationDarkeningSpeedFactor scnCamera  =
 --
 -- ObjC selector: @- setExposureAdaptationDarkeningSpeedFactor:@
 setExposureAdaptationDarkeningSpeedFactor :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setExposureAdaptationDarkeningSpeedFactor scnCamera  value =
-    sendMsg scnCamera (mkSelector "setExposureAdaptationDarkeningSpeedFactor:") retVoid [argCDouble value]
+setExposureAdaptationDarkeningSpeedFactor scnCamera value =
+  sendMessage scnCamera setExposureAdaptationDarkeningSpeedFactorSelector value
 
 -- | minimumExposure
 --
@@ -858,8 +854,8 @@ setExposureAdaptationDarkeningSpeedFactor scnCamera  value =
 --
 -- ObjC selector: @- minimumExposure@
 minimumExposure :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-minimumExposure scnCamera  =
-    sendMsg scnCamera (mkSelector "minimumExposure") retCDouble []
+minimumExposure scnCamera =
+  sendMessage scnCamera minimumExposureSelector
 
 -- | minimumExposure
 --
@@ -867,8 +863,8 @@ minimumExposure scnCamera  =
 --
 -- ObjC selector: @- setMinimumExposure:@
 setMinimumExposure :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setMinimumExposure scnCamera  value =
-    sendMsg scnCamera (mkSelector "setMinimumExposure:") retVoid [argCDouble value]
+setMinimumExposure scnCamera value =
+  sendMessage scnCamera setMinimumExposureSelector value
 
 -- | maximumExposure
 --
@@ -876,8 +872,8 @@ setMinimumExposure scnCamera  value =
 --
 -- ObjC selector: @- maximumExposure@
 maximumExposure :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-maximumExposure scnCamera  =
-    sendMsg scnCamera (mkSelector "maximumExposure") retCDouble []
+maximumExposure scnCamera =
+  sendMessage scnCamera maximumExposureSelector
 
 -- | maximumExposure
 --
@@ -885,8 +881,8 @@ maximumExposure scnCamera  =
 --
 -- ObjC selector: @- setMaximumExposure:@
 setMaximumExposure :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setMaximumExposure scnCamera  value =
-    sendMsg scnCamera (mkSelector "setMaximumExposure:") retVoid [argCDouble value]
+setMaximumExposure scnCamera value =
+  sendMessage scnCamera setMaximumExposureSelector value
 
 -- | bloomThreshold
 --
@@ -894,8 +890,8 @@ setMaximumExposure scnCamera  value =
 --
 -- ObjC selector: @- bloomThreshold@
 bloomThreshold :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-bloomThreshold scnCamera  =
-    sendMsg scnCamera (mkSelector "bloomThreshold") retCDouble []
+bloomThreshold scnCamera =
+  sendMessage scnCamera bloomThresholdSelector
 
 -- | bloomThreshold
 --
@@ -903,8 +899,8 @@ bloomThreshold scnCamera  =
 --
 -- ObjC selector: @- setBloomThreshold:@
 setBloomThreshold :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setBloomThreshold scnCamera  value =
-    sendMsg scnCamera (mkSelector "setBloomThreshold:") retVoid [argCDouble value]
+setBloomThreshold scnCamera value =
+  sendMessage scnCamera setBloomThresholdSelector value
 
 -- | bloomIteration
 --
@@ -912,8 +908,8 @@ setBloomThreshold scnCamera  value =
 --
 -- ObjC selector: @- bloomIterationCount@
 bloomIterationCount :: IsSCNCamera scnCamera => scnCamera -> IO CLong
-bloomIterationCount scnCamera  =
-    sendMsg scnCamera (mkSelector "bloomIterationCount") retCLong []
+bloomIterationCount scnCamera =
+  sendMessage scnCamera bloomIterationCountSelector
 
 -- | bloomIteration
 --
@@ -921,8 +917,8 @@ bloomIterationCount scnCamera  =
 --
 -- ObjC selector: @- setBloomIterationCount:@
 setBloomIterationCount :: IsSCNCamera scnCamera => scnCamera -> CLong -> IO ()
-setBloomIterationCount scnCamera  value =
-    sendMsg scnCamera (mkSelector "setBloomIterationCount:") retVoid [argCLong value]
+setBloomIterationCount scnCamera value =
+  sendMessage scnCamera setBloomIterationCountSelector value
 
 -- | bloomIterationSpread
 --
@@ -930,8 +926,8 @@ setBloomIterationCount scnCamera  value =
 --
 -- ObjC selector: @- bloomIterationSpread@
 bloomIterationSpread :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-bloomIterationSpread scnCamera  =
-    sendMsg scnCamera (mkSelector "bloomIterationSpread") retCDouble []
+bloomIterationSpread scnCamera =
+  sendMessage scnCamera bloomIterationSpreadSelector
 
 -- | bloomIterationSpread
 --
@@ -939,8 +935,8 @@ bloomIterationSpread scnCamera  =
 --
 -- ObjC selector: @- setBloomIterationSpread:@
 setBloomIterationSpread :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setBloomIterationSpread scnCamera  value =
-    sendMsg scnCamera (mkSelector "setBloomIterationSpread:") retVoid [argCDouble value]
+setBloomIterationSpread scnCamera value =
+  sendMessage scnCamera setBloomIterationSpreadSelector value
 
 -- | bloomIntensity
 --
@@ -948,8 +944,8 @@ setBloomIterationSpread scnCamera  value =
 --
 -- ObjC selector: @- bloomIntensity@
 bloomIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-bloomIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "bloomIntensity") retCDouble []
+bloomIntensity scnCamera =
+  sendMessage scnCamera bloomIntensitySelector
 
 -- | bloomIntensity
 --
@@ -957,8 +953,8 @@ bloomIntensity scnCamera  =
 --
 -- ObjC selector: @- setBloomIntensity:@
 setBloomIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setBloomIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setBloomIntensity:") retVoid [argCDouble value]
+setBloomIntensity scnCamera value =
+  sendMessage scnCamera setBloomIntensitySelector value
 
 -- | bloomBlurRadius
 --
@@ -966,8 +962,8 @@ setBloomIntensity scnCamera  value =
 --
 -- ObjC selector: @- bloomBlurRadius@
 bloomBlurRadius :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-bloomBlurRadius scnCamera  =
-    sendMsg scnCamera (mkSelector "bloomBlurRadius") retCDouble []
+bloomBlurRadius scnCamera =
+  sendMessage scnCamera bloomBlurRadiusSelector
 
 -- | bloomBlurRadius
 --
@@ -975,8 +971,8 @@ bloomBlurRadius scnCamera  =
 --
 -- ObjC selector: @- setBloomBlurRadius:@
 setBloomBlurRadius :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setBloomBlurRadius scnCamera  value =
-    sendMsg scnCamera (mkSelector "setBloomBlurRadius:") retVoid [argCDouble value]
+setBloomBlurRadius scnCamera value =
+  sendMessage scnCamera setBloomBlurRadiusSelector value
 
 -- | vignettingPower
 --
@@ -984,8 +980,8 @@ setBloomBlurRadius scnCamera  value =
 --
 -- ObjC selector: @- vignettingPower@
 vignettingPower :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-vignettingPower scnCamera  =
-    sendMsg scnCamera (mkSelector "vignettingPower") retCDouble []
+vignettingPower scnCamera =
+  sendMessage scnCamera vignettingPowerSelector
 
 -- | vignettingPower
 --
@@ -993,8 +989,8 @@ vignettingPower scnCamera  =
 --
 -- ObjC selector: @- setVignettingPower:@
 setVignettingPower :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setVignettingPower scnCamera  value =
-    sendMsg scnCamera (mkSelector "setVignettingPower:") retVoid [argCDouble value]
+setVignettingPower scnCamera value =
+  sendMessage scnCamera setVignettingPowerSelector value
 
 -- | vignettingIntensity
 --
@@ -1002,8 +998,8 @@ setVignettingPower scnCamera  value =
 --
 -- ObjC selector: @- vignettingIntensity@
 vignettingIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-vignettingIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "vignettingIntensity") retCDouble []
+vignettingIntensity scnCamera =
+  sendMessage scnCamera vignettingIntensitySelector
 
 -- | vignettingIntensity
 --
@@ -1011,8 +1007,8 @@ vignettingIntensity scnCamera  =
 --
 -- ObjC selector: @- setVignettingIntensity:@
 setVignettingIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setVignettingIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setVignettingIntensity:") retVoid [argCDouble value]
+setVignettingIntensity scnCamera value =
+  sendMessage scnCamera setVignettingIntensitySelector value
 
 -- | colorFringeStrength
 --
@@ -1020,8 +1016,8 @@ setVignettingIntensity scnCamera  value =
 --
 -- ObjC selector: @- colorFringeStrength@
 colorFringeStrength :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-colorFringeStrength scnCamera  =
-    sendMsg scnCamera (mkSelector "colorFringeStrength") retCDouble []
+colorFringeStrength scnCamera =
+  sendMessage scnCamera colorFringeStrengthSelector
 
 -- | colorFringeStrength
 --
@@ -1029,8 +1025,8 @@ colorFringeStrength scnCamera  =
 --
 -- ObjC selector: @- setColorFringeStrength:@
 setColorFringeStrength :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setColorFringeStrength scnCamera  value =
-    sendMsg scnCamera (mkSelector "setColorFringeStrength:") retVoid [argCDouble value]
+setColorFringeStrength scnCamera value =
+  sendMessage scnCamera setColorFringeStrengthSelector value
 
 -- | colorFringeIntensity
 --
@@ -1038,8 +1034,8 @@ setColorFringeStrength scnCamera  value =
 --
 -- ObjC selector: @- colorFringeIntensity@
 colorFringeIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-colorFringeIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "colorFringeIntensity") retCDouble []
+colorFringeIntensity scnCamera =
+  sendMessage scnCamera colorFringeIntensitySelector
 
 -- | colorFringeIntensity
 --
@@ -1047,8 +1043,8 @@ colorFringeIntensity scnCamera  =
 --
 -- ObjC selector: @- setColorFringeIntensity:@
 setColorFringeIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setColorFringeIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setColorFringeIntensity:") retVoid [argCDouble value]
+setColorFringeIntensity scnCamera value =
+  sendMessage scnCamera setColorFringeIntensitySelector value
 
 -- | saturation
 --
@@ -1056,8 +1052,8 @@ setColorFringeIntensity scnCamera  value =
 --
 -- ObjC selector: @- saturation@
 saturation :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-saturation scnCamera  =
-    sendMsg scnCamera (mkSelector "saturation") retCDouble []
+saturation scnCamera =
+  sendMessage scnCamera saturationSelector
 
 -- | saturation
 --
@@ -1065,8 +1061,8 @@ saturation scnCamera  =
 --
 -- ObjC selector: @- setSaturation:@
 setSaturation :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setSaturation scnCamera  value =
-    sendMsg scnCamera (mkSelector "setSaturation:") retVoid [argCDouble value]
+setSaturation scnCamera value =
+  sendMessage scnCamera setSaturationSelector value
 
 -- | contrast
 --
@@ -1074,8 +1070,8 @@ setSaturation scnCamera  value =
 --
 -- ObjC selector: @- contrast@
 contrast :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-contrast scnCamera  =
-    sendMsg scnCamera (mkSelector "contrast") retCDouble []
+contrast scnCamera =
+  sendMessage scnCamera contrastSelector
 
 -- | contrast
 --
@@ -1083,8 +1079,8 @@ contrast scnCamera  =
 --
 -- ObjC selector: @- setContrast:@
 setContrast :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setContrast scnCamera  value =
-    sendMsg scnCamera (mkSelector "setContrast:") retVoid [argCDouble value]
+setContrast scnCamera value =
+  sendMessage scnCamera setContrastSelector value
 
 -- | grainIntensity
 --
@@ -1092,8 +1088,8 @@ setContrast scnCamera  value =
 --
 -- ObjC selector: @- grainIntensity@
 grainIntensity :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-grainIntensity scnCamera  =
-    sendMsg scnCamera (mkSelector "grainIntensity") retCDouble []
+grainIntensity scnCamera =
+  sendMessage scnCamera grainIntensitySelector
 
 -- | grainIntensity
 --
@@ -1101,8 +1097,8 @@ grainIntensity scnCamera  =
 --
 -- ObjC selector: @- setGrainIntensity:@
 setGrainIntensity :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setGrainIntensity scnCamera  value =
-    sendMsg scnCamera (mkSelector "setGrainIntensity:") retVoid [argCDouble value]
+setGrainIntensity scnCamera value =
+  sendMessage scnCamera setGrainIntensitySelector value
 
 -- | grainScale
 --
@@ -1110,8 +1106,8 @@ setGrainIntensity scnCamera  value =
 --
 -- ObjC selector: @- grainScale@
 grainScale :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-grainScale scnCamera  =
-    sendMsg scnCamera (mkSelector "grainScale") retCDouble []
+grainScale scnCamera =
+  sendMessage scnCamera grainScaleSelector
 
 -- | grainScale
 --
@@ -1119,8 +1115,8 @@ grainScale scnCamera  =
 --
 -- ObjC selector: @- setGrainScale:@
 setGrainScale :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setGrainScale scnCamera  value =
-    sendMsg scnCamera (mkSelector "setGrainScale:") retVoid [argCDouble value]
+setGrainScale scnCamera value =
+  sendMessage scnCamera setGrainScaleSelector value
 
 -- | grainIsColored
 --
@@ -1128,8 +1124,8 @@ setGrainScale scnCamera  value =
 --
 -- ObjC selector: @- grainIsColored@
 grainIsColored :: IsSCNCamera scnCamera => scnCamera -> IO Bool
-grainIsColored scnCamera  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCamera (mkSelector "grainIsColored") retCULong []
+grainIsColored scnCamera =
+  sendMessage scnCamera grainIsColoredSelector
 
 -- | grainIsColored
 --
@@ -1137,8 +1133,8 @@ grainIsColored scnCamera  =
 --
 -- ObjC selector: @- setGrainIsColored:@
 setGrainIsColored :: IsSCNCamera scnCamera => scnCamera -> Bool -> IO ()
-setGrainIsColored scnCamera  value =
-    sendMsg scnCamera (mkSelector "setGrainIsColored:") retVoid [argCULong (if value then 1 else 0)]
+setGrainIsColored scnCamera value =
+  sendMessage scnCamera setGrainIsColoredSelector value
 
 -- | whiteBalanceTemperature
 --
@@ -1146,8 +1142,8 @@ setGrainIsColored scnCamera  value =
 --
 -- ObjC selector: @- whiteBalanceTemperature@
 whiteBalanceTemperature :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-whiteBalanceTemperature scnCamera  =
-    sendMsg scnCamera (mkSelector "whiteBalanceTemperature") retCDouble []
+whiteBalanceTemperature scnCamera =
+  sendMessage scnCamera whiteBalanceTemperatureSelector
 
 -- | whiteBalanceTemperature
 --
@@ -1155,8 +1151,8 @@ whiteBalanceTemperature scnCamera  =
 --
 -- ObjC selector: @- setWhiteBalanceTemperature:@
 setWhiteBalanceTemperature :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setWhiteBalanceTemperature scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWhiteBalanceTemperature:") retVoid [argCDouble value]
+setWhiteBalanceTemperature scnCamera value =
+  sendMessage scnCamera setWhiteBalanceTemperatureSelector value
 
 -- | whiteBalanceTint
 --
@@ -1164,8 +1160,8 @@ setWhiteBalanceTemperature scnCamera  value =
 --
 -- ObjC selector: @- whiteBalanceTint@
 whiteBalanceTint :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-whiteBalanceTint scnCamera  =
-    sendMsg scnCamera (mkSelector "whiteBalanceTint") retCDouble []
+whiteBalanceTint scnCamera =
+  sendMessage scnCamera whiteBalanceTintSelector
 
 -- | whiteBalanceTint
 --
@@ -1173,8 +1169,8 @@ whiteBalanceTint scnCamera  =
 --
 -- ObjC selector: @- setWhiteBalanceTint:@
 setWhiteBalanceTint :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setWhiteBalanceTint scnCamera  value =
-    sendMsg scnCamera (mkSelector "setWhiteBalanceTint:") retVoid [argCDouble value]
+setWhiteBalanceTint scnCamera value =
+  sendMessage scnCamera setWhiteBalanceTintSelector value
 
 -- | colorGrading
 --
@@ -1182,8 +1178,8 @@ setWhiteBalanceTint scnCamera  value =
 --
 -- ObjC selector: @- colorGrading@
 colorGrading :: IsSCNCamera scnCamera => scnCamera -> IO (Id SCNMaterialProperty)
-colorGrading scnCamera  =
-    sendMsg scnCamera (mkSelector "colorGrading") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorGrading scnCamera =
+  sendMessage scnCamera colorGradingSelector
 
 -- | categoryBitMask
 --
@@ -1191,8 +1187,8 @@ colorGrading scnCamera  =
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSCNCamera scnCamera => scnCamera -> IO CULong
-categoryBitMask scnCamera  =
-    sendMsg scnCamera (mkSelector "categoryBitMask") retCULong []
+categoryBitMask scnCamera =
+  sendMessage scnCamera categoryBitMaskSelector
 
 -- | categoryBitMask
 --
@@ -1200,8 +1196,8 @@ categoryBitMask scnCamera  =
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSCNCamera scnCamera => scnCamera -> CULong -> IO ()
-setCategoryBitMask scnCamera  value =
-    sendMsg scnCamera (mkSelector "setCategoryBitMask:") retVoid [argCULong value]
+setCategoryBitMask scnCamera value =
+  sendMessage scnCamera setCategoryBitMaskSelector value
 
 -- | focalBlurRadius
 --
@@ -1211,8 +1207,8 @@ setCategoryBitMask scnCamera  value =
 --
 -- ObjC selector: @- focalBlurRadius@
 focalBlurRadius :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-focalBlurRadius scnCamera  =
-    sendMsg scnCamera (mkSelector "focalBlurRadius") retCDouble []
+focalBlurRadius scnCamera =
+  sendMessage scnCamera focalBlurRadiusSelector
 
 -- | focalBlurRadius
 --
@@ -1222,8 +1218,8 @@ focalBlurRadius scnCamera  =
 --
 -- ObjC selector: @- setFocalBlurRadius:@
 setFocalBlurRadius :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFocalBlurRadius scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocalBlurRadius:") retVoid [argCDouble value]
+setFocalBlurRadius scnCamera value =
+  sendMessage scnCamera setFocalBlurRadiusSelector value
 
 -- | xFov
 --
@@ -1233,8 +1229,8 @@ setFocalBlurRadius scnCamera  value =
 --
 -- ObjC selector: @- xFov@
 xFov :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-xFov scnCamera  =
-    sendMsg scnCamera (mkSelector "xFov") retCDouble []
+xFov scnCamera =
+  sendMessage scnCamera xFovSelector
 
 -- | xFov
 --
@@ -1244,8 +1240,8 @@ xFov scnCamera  =
 --
 -- ObjC selector: @- setXFov:@
 setXFov :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setXFov scnCamera  value =
-    sendMsg scnCamera (mkSelector "setXFov:") retVoid [argCDouble value]
+setXFov scnCamera value =
+  sendMessage scnCamera setXFovSelector value
 
 -- | yFov
 --
@@ -1255,8 +1251,8 @@ setXFov scnCamera  value =
 --
 -- ObjC selector: @- yFov@
 yFov :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-yFov scnCamera  =
-    sendMsg scnCamera (mkSelector "yFov") retCDouble []
+yFov scnCamera =
+  sendMessage scnCamera yFovSelector
 
 -- | yFov
 --
@@ -1266,8 +1262,8 @@ yFov scnCamera  =
 --
 -- ObjC selector: @- setYFov:@
 setYFov :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setYFov scnCamera  value =
-    sendMsg scnCamera (mkSelector "setYFov:") retVoid [argCDouble value]
+setYFov scnCamera value =
+  sendMessage scnCamera setYFovSelector value
 
 -- | aperture
 --
@@ -1277,8 +1273,8 @@ setYFov scnCamera  value =
 --
 -- ObjC selector: @- aperture@
 aperture :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-aperture scnCamera  =
-    sendMsg scnCamera (mkSelector "aperture") retCDouble []
+aperture scnCamera =
+  sendMessage scnCamera apertureSelector
 
 -- | aperture
 --
@@ -1288,8 +1284,8 @@ aperture scnCamera  =
 --
 -- ObjC selector: @- setAperture:@
 setAperture :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setAperture scnCamera  value =
-    sendMsg scnCamera (mkSelector "setAperture:") retVoid [argCDouble value]
+setAperture scnCamera value =
+  sendMessage scnCamera setApertureSelector value
 
 -- | focalSize
 --
@@ -1299,8 +1295,8 @@ setAperture scnCamera  value =
 --
 -- ObjC selector: @- focalSize@
 focalSize :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-focalSize scnCamera  =
-    sendMsg scnCamera (mkSelector "focalSize") retCDouble []
+focalSize scnCamera =
+  sendMessage scnCamera focalSizeSelector
 
 -- | focalSize
 --
@@ -1310,8 +1306,8 @@ focalSize scnCamera  =
 --
 -- ObjC selector: @- setFocalSize:@
 setFocalSize :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFocalSize scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocalSize:") retVoid [argCDouble value]
+setFocalSize scnCamera value =
+  sendMessage scnCamera setFocalSizeSelector value
 
 -- | focalDistance
 --
@@ -1321,8 +1317,8 @@ setFocalSize scnCamera  value =
 --
 -- ObjC selector: @- focalDistance@
 focalDistance :: IsSCNCamera scnCamera => scnCamera -> IO CDouble
-focalDistance scnCamera  =
-    sendMsg scnCamera (mkSelector "focalDistance") retCDouble []
+focalDistance scnCamera =
+  sendMessage scnCamera focalDistanceSelector
 
 -- | focalDistance
 --
@@ -1332,450 +1328,450 @@ focalDistance scnCamera  =
 --
 -- ObjC selector: @- setFocalDistance:@
 setFocalDistance :: IsSCNCamera scnCamera => scnCamera -> CDouble -> IO ()
-setFocalDistance scnCamera  value =
-    sendMsg scnCamera (mkSelector "setFocalDistance:") retVoid [argCDouble value]
+setFocalDistance scnCamera value =
+  sendMessage scnCamera setFocalDistanceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @camera@
-cameraSelector :: Selector
+cameraSelector :: Selector '[] (Id SCNCamera)
 cameraSelector = mkSelector "camera"
 
 -- | @Selector@ for @projectionTransform@
-projectionTransformSelector :: Selector
+projectionTransformSelector :: Selector '[] SCNMatrix4
 projectionTransformSelector = mkSelector "projectionTransform"
 
 -- | @Selector@ for @setProjectionTransform:@
-setProjectionTransformSelector :: Selector
+setProjectionTransformSelector :: Selector '[SCNMatrix4] ()
 setProjectionTransformSelector = mkSelector "setProjectionTransform:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @fieldOfView@
-fieldOfViewSelector :: Selector
+fieldOfViewSelector :: Selector '[] CDouble
 fieldOfViewSelector = mkSelector "fieldOfView"
 
 -- | @Selector@ for @setFieldOfView:@
-setFieldOfViewSelector :: Selector
+setFieldOfViewSelector :: Selector '[CDouble] ()
 setFieldOfViewSelector = mkSelector "setFieldOfView:"
 
 -- | @Selector@ for @projectionDirection@
-projectionDirectionSelector :: Selector
+projectionDirectionSelector :: Selector '[] SCNCameraProjectionDirection
 projectionDirectionSelector = mkSelector "projectionDirection"
 
 -- | @Selector@ for @setProjectionDirection:@
-setProjectionDirectionSelector :: Selector
+setProjectionDirectionSelector :: Selector '[SCNCameraProjectionDirection] ()
 setProjectionDirectionSelector = mkSelector "setProjectionDirection:"
 
 -- | @Selector@ for @focalLength@
-focalLengthSelector :: Selector
+focalLengthSelector :: Selector '[] CDouble
 focalLengthSelector = mkSelector "focalLength"
 
 -- | @Selector@ for @setFocalLength:@
-setFocalLengthSelector :: Selector
+setFocalLengthSelector :: Selector '[CDouble] ()
 setFocalLengthSelector = mkSelector "setFocalLength:"
 
 -- | @Selector@ for @sensorHeight@
-sensorHeightSelector :: Selector
+sensorHeightSelector :: Selector '[] CDouble
 sensorHeightSelector = mkSelector "sensorHeight"
 
 -- | @Selector@ for @setSensorHeight:@
-setSensorHeightSelector :: Selector
+setSensorHeightSelector :: Selector '[CDouble] ()
 setSensorHeightSelector = mkSelector "setSensorHeight:"
 
 -- | @Selector@ for @zNear@
-zNearSelector :: Selector
+zNearSelector :: Selector '[] CDouble
 zNearSelector = mkSelector "zNear"
 
 -- | @Selector@ for @setZNear:@
-setZNearSelector :: Selector
+setZNearSelector :: Selector '[CDouble] ()
 setZNearSelector = mkSelector "setZNear:"
 
 -- | @Selector@ for @zFar@
-zFarSelector :: Selector
+zFarSelector :: Selector '[] CDouble
 zFarSelector = mkSelector "zFar"
 
 -- | @Selector@ for @setZFar:@
-setZFarSelector :: Selector
+setZFarSelector :: Selector '[CDouble] ()
 setZFarSelector = mkSelector "setZFar:"
 
 -- | @Selector@ for @automaticallyAdjustsZRange@
-automaticallyAdjustsZRangeSelector :: Selector
+automaticallyAdjustsZRangeSelector :: Selector '[] Bool
 automaticallyAdjustsZRangeSelector = mkSelector "automaticallyAdjustsZRange"
 
 -- | @Selector@ for @setAutomaticallyAdjustsZRange:@
-setAutomaticallyAdjustsZRangeSelector :: Selector
+setAutomaticallyAdjustsZRangeSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsZRangeSelector = mkSelector "setAutomaticallyAdjustsZRange:"
 
 -- | @Selector@ for @usesOrthographicProjection@
-usesOrthographicProjectionSelector :: Selector
+usesOrthographicProjectionSelector :: Selector '[] Bool
 usesOrthographicProjectionSelector = mkSelector "usesOrthographicProjection"
 
 -- | @Selector@ for @setUsesOrthographicProjection:@
-setUsesOrthographicProjectionSelector :: Selector
+setUsesOrthographicProjectionSelector :: Selector '[Bool] ()
 setUsesOrthographicProjectionSelector = mkSelector "setUsesOrthographicProjection:"
 
 -- | @Selector@ for @orthographicScale@
-orthographicScaleSelector :: Selector
+orthographicScaleSelector :: Selector '[] CDouble
 orthographicScaleSelector = mkSelector "orthographicScale"
 
 -- | @Selector@ for @setOrthographicScale:@
-setOrthographicScaleSelector :: Selector
+setOrthographicScaleSelector :: Selector '[CDouble] ()
 setOrthographicScaleSelector = mkSelector "setOrthographicScale:"
 
 -- | @Selector@ for @wantsDepthOfField@
-wantsDepthOfFieldSelector :: Selector
+wantsDepthOfFieldSelector :: Selector '[] Bool
 wantsDepthOfFieldSelector = mkSelector "wantsDepthOfField"
 
 -- | @Selector@ for @setWantsDepthOfField:@
-setWantsDepthOfFieldSelector :: Selector
+setWantsDepthOfFieldSelector :: Selector '[Bool] ()
 setWantsDepthOfFieldSelector = mkSelector "setWantsDepthOfField:"
 
 -- | @Selector@ for @focusDistance@
-focusDistanceSelector :: Selector
+focusDistanceSelector :: Selector '[] CDouble
 focusDistanceSelector = mkSelector "focusDistance"
 
 -- | @Selector@ for @setFocusDistance:@
-setFocusDistanceSelector :: Selector
+setFocusDistanceSelector :: Selector '[CDouble] ()
 setFocusDistanceSelector = mkSelector "setFocusDistance:"
 
 -- | @Selector@ for @focalBlurSampleCount@
-focalBlurSampleCountSelector :: Selector
+focalBlurSampleCountSelector :: Selector '[] CLong
 focalBlurSampleCountSelector = mkSelector "focalBlurSampleCount"
 
 -- | @Selector@ for @setFocalBlurSampleCount:@
-setFocalBlurSampleCountSelector :: Selector
+setFocalBlurSampleCountSelector :: Selector '[CLong] ()
 setFocalBlurSampleCountSelector = mkSelector "setFocalBlurSampleCount:"
 
 -- | @Selector@ for @fStop@
-fStopSelector :: Selector
+fStopSelector :: Selector '[] CDouble
 fStopSelector = mkSelector "fStop"
 
 -- | @Selector@ for @setFStop:@
-setFStopSelector :: Selector
+setFStopSelector :: Selector '[CDouble] ()
 setFStopSelector = mkSelector "setFStop:"
 
 -- | @Selector@ for @apertureBladeCount@
-apertureBladeCountSelector :: Selector
+apertureBladeCountSelector :: Selector '[] CLong
 apertureBladeCountSelector = mkSelector "apertureBladeCount"
 
 -- | @Selector@ for @setApertureBladeCount:@
-setApertureBladeCountSelector :: Selector
+setApertureBladeCountSelector :: Selector '[CLong] ()
 setApertureBladeCountSelector = mkSelector "setApertureBladeCount:"
 
 -- | @Selector@ for @motionBlurIntensity@
-motionBlurIntensitySelector :: Selector
+motionBlurIntensitySelector :: Selector '[] CDouble
 motionBlurIntensitySelector = mkSelector "motionBlurIntensity"
 
 -- | @Selector@ for @setMotionBlurIntensity:@
-setMotionBlurIntensitySelector :: Selector
+setMotionBlurIntensitySelector :: Selector '[CDouble] ()
 setMotionBlurIntensitySelector = mkSelector "setMotionBlurIntensity:"
 
 -- | @Selector@ for @screenSpaceAmbientOcclusionIntensity@
-screenSpaceAmbientOcclusionIntensitySelector :: Selector
+screenSpaceAmbientOcclusionIntensitySelector :: Selector '[] CDouble
 screenSpaceAmbientOcclusionIntensitySelector = mkSelector "screenSpaceAmbientOcclusionIntensity"
 
 -- | @Selector@ for @setScreenSpaceAmbientOcclusionIntensity:@
-setScreenSpaceAmbientOcclusionIntensitySelector :: Selector
+setScreenSpaceAmbientOcclusionIntensitySelector :: Selector '[CDouble] ()
 setScreenSpaceAmbientOcclusionIntensitySelector = mkSelector "setScreenSpaceAmbientOcclusionIntensity:"
 
 -- | @Selector@ for @screenSpaceAmbientOcclusionRadius@
-screenSpaceAmbientOcclusionRadiusSelector :: Selector
+screenSpaceAmbientOcclusionRadiusSelector :: Selector '[] CDouble
 screenSpaceAmbientOcclusionRadiusSelector = mkSelector "screenSpaceAmbientOcclusionRadius"
 
 -- | @Selector@ for @setScreenSpaceAmbientOcclusionRadius:@
-setScreenSpaceAmbientOcclusionRadiusSelector :: Selector
+setScreenSpaceAmbientOcclusionRadiusSelector :: Selector '[CDouble] ()
 setScreenSpaceAmbientOcclusionRadiusSelector = mkSelector "setScreenSpaceAmbientOcclusionRadius:"
 
 -- | @Selector@ for @screenSpaceAmbientOcclusionBias@
-screenSpaceAmbientOcclusionBiasSelector :: Selector
+screenSpaceAmbientOcclusionBiasSelector :: Selector '[] CDouble
 screenSpaceAmbientOcclusionBiasSelector = mkSelector "screenSpaceAmbientOcclusionBias"
 
 -- | @Selector@ for @setScreenSpaceAmbientOcclusionBias:@
-setScreenSpaceAmbientOcclusionBiasSelector :: Selector
+setScreenSpaceAmbientOcclusionBiasSelector :: Selector '[CDouble] ()
 setScreenSpaceAmbientOcclusionBiasSelector = mkSelector "setScreenSpaceAmbientOcclusionBias:"
 
 -- | @Selector@ for @screenSpaceAmbientOcclusionDepthThreshold@
-screenSpaceAmbientOcclusionDepthThresholdSelector :: Selector
+screenSpaceAmbientOcclusionDepthThresholdSelector :: Selector '[] CDouble
 screenSpaceAmbientOcclusionDepthThresholdSelector = mkSelector "screenSpaceAmbientOcclusionDepthThreshold"
 
 -- | @Selector@ for @setScreenSpaceAmbientOcclusionDepthThreshold:@
-setScreenSpaceAmbientOcclusionDepthThresholdSelector :: Selector
+setScreenSpaceAmbientOcclusionDepthThresholdSelector :: Selector '[CDouble] ()
 setScreenSpaceAmbientOcclusionDepthThresholdSelector = mkSelector "setScreenSpaceAmbientOcclusionDepthThreshold:"
 
 -- | @Selector@ for @screenSpaceAmbientOcclusionNormalThreshold@
-screenSpaceAmbientOcclusionNormalThresholdSelector :: Selector
+screenSpaceAmbientOcclusionNormalThresholdSelector :: Selector '[] CDouble
 screenSpaceAmbientOcclusionNormalThresholdSelector = mkSelector "screenSpaceAmbientOcclusionNormalThreshold"
 
 -- | @Selector@ for @setScreenSpaceAmbientOcclusionNormalThreshold:@
-setScreenSpaceAmbientOcclusionNormalThresholdSelector :: Selector
+setScreenSpaceAmbientOcclusionNormalThresholdSelector :: Selector '[CDouble] ()
 setScreenSpaceAmbientOcclusionNormalThresholdSelector = mkSelector "setScreenSpaceAmbientOcclusionNormalThreshold:"
 
 -- | @Selector@ for @wantsHDR@
-wantsHDRSelector :: Selector
+wantsHDRSelector :: Selector '[] Bool
 wantsHDRSelector = mkSelector "wantsHDR"
 
 -- | @Selector@ for @setWantsHDR:@
-setWantsHDRSelector :: Selector
+setWantsHDRSelector :: Selector '[Bool] ()
 setWantsHDRSelector = mkSelector "setWantsHDR:"
 
 -- | @Selector@ for @exposureOffset@
-exposureOffsetSelector :: Selector
+exposureOffsetSelector :: Selector '[] CDouble
 exposureOffsetSelector = mkSelector "exposureOffset"
 
 -- | @Selector@ for @setExposureOffset:@
-setExposureOffsetSelector :: Selector
+setExposureOffsetSelector :: Selector '[CDouble] ()
 setExposureOffsetSelector = mkSelector "setExposureOffset:"
 
 -- | @Selector@ for @averageGray@
-averageGraySelector :: Selector
+averageGraySelector :: Selector '[] CDouble
 averageGraySelector = mkSelector "averageGray"
 
 -- | @Selector@ for @setAverageGray:@
-setAverageGraySelector :: Selector
+setAverageGraySelector :: Selector '[CDouble] ()
 setAverageGraySelector = mkSelector "setAverageGray:"
 
 -- | @Selector@ for @whitePoint@
-whitePointSelector :: Selector
+whitePointSelector :: Selector '[] CDouble
 whitePointSelector = mkSelector "whitePoint"
 
 -- | @Selector@ for @setWhitePoint:@
-setWhitePointSelector :: Selector
+setWhitePointSelector :: Selector '[CDouble] ()
 setWhitePointSelector = mkSelector "setWhitePoint:"
 
 -- | @Selector@ for @wantsExposureAdaptation@
-wantsExposureAdaptationSelector :: Selector
+wantsExposureAdaptationSelector :: Selector '[] Bool
 wantsExposureAdaptationSelector = mkSelector "wantsExposureAdaptation"
 
 -- | @Selector@ for @setWantsExposureAdaptation:@
-setWantsExposureAdaptationSelector :: Selector
+setWantsExposureAdaptationSelector :: Selector '[Bool] ()
 setWantsExposureAdaptationSelector = mkSelector "setWantsExposureAdaptation:"
 
 -- | @Selector@ for @exposureAdaptationBrighteningSpeedFactor@
-exposureAdaptationBrighteningSpeedFactorSelector :: Selector
+exposureAdaptationBrighteningSpeedFactorSelector :: Selector '[] CDouble
 exposureAdaptationBrighteningSpeedFactorSelector = mkSelector "exposureAdaptationBrighteningSpeedFactor"
 
 -- | @Selector@ for @setExposureAdaptationBrighteningSpeedFactor:@
-setExposureAdaptationBrighteningSpeedFactorSelector :: Selector
+setExposureAdaptationBrighteningSpeedFactorSelector :: Selector '[CDouble] ()
 setExposureAdaptationBrighteningSpeedFactorSelector = mkSelector "setExposureAdaptationBrighteningSpeedFactor:"
 
 -- | @Selector@ for @exposureAdaptationDarkeningSpeedFactor@
-exposureAdaptationDarkeningSpeedFactorSelector :: Selector
+exposureAdaptationDarkeningSpeedFactorSelector :: Selector '[] CDouble
 exposureAdaptationDarkeningSpeedFactorSelector = mkSelector "exposureAdaptationDarkeningSpeedFactor"
 
 -- | @Selector@ for @setExposureAdaptationDarkeningSpeedFactor:@
-setExposureAdaptationDarkeningSpeedFactorSelector :: Selector
+setExposureAdaptationDarkeningSpeedFactorSelector :: Selector '[CDouble] ()
 setExposureAdaptationDarkeningSpeedFactorSelector = mkSelector "setExposureAdaptationDarkeningSpeedFactor:"
 
 -- | @Selector@ for @minimumExposure@
-minimumExposureSelector :: Selector
+minimumExposureSelector :: Selector '[] CDouble
 minimumExposureSelector = mkSelector "minimumExposure"
 
 -- | @Selector@ for @setMinimumExposure:@
-setMinimumExposureSelector :: Selector
+setMinimumExposureSelector :: Selector '[CDouble] ()
 setMinimumExposureSelector = mkSelector "setMinimumExposure:"
 
 -- | @Selector@ for @maximumExposure@
-maximumExposureSelector :: Selector
+maximumExposureSelector :: Selector '[] CDouble
 maximumExposureSelector = mkSelector "maximumExposure"
 
 -- | @Selector@ for @setMaximumExposure:@
-setMaximumExposureSelector :: Selector
+setMaximumExposureSelector :: Selector '[CDouble] ()
 setMaximumExposureSelector = mkSelector "setMaximumExposure:"
 
 -- | @Selector@ for @bloomThreshold@
-bloomThresholdSelector :: Selector
+bloomThresholdSelector :: Selector '[] CDouble
 bloomThresholdSelector = mkSelector "bloomThreshold"
 
 -- | @Selector@ for @setBloomThreshold:@
-setBloomThresholdSelector :: Selector
+setBloomThresholdSelector :: Selector '[CDouble] ()
 setBloomThresholdSelector = mkSelector "setBloomThreshold:"
 
 -- | @Selector@ for @bloomIterationCount@
-bloomIterationCountSelector :: Selector
+bloomIterationCountSelector :: Selector '[] CLong
 bloomIterationCountSelector = mkSelector "bloomIterationCount"
 
 -- | @Selector@ for @setBloomIterationCount:@
-setBloomIterationCountSelector :: Selector
+setBloomIterationCountSelector :: Selector '[CLong] ()
 setBloomIterationCountSelector = mkSelector "setBloomIterationCount:"
 
 -- | @Selector@ for @bloomIterationSpread@
-bloomIterationSpreadSelector :: Selector
+bloomIterationSpreadSelector :: Selector '[] CDouble
 bloomIterationSpreadSelector = mkSelector "bloomIterationSpread"
 
 -- | @Selector@ for @setBloomIterationSpread:@
-setBloomIterationSpreadSelector :: Selector
+setBloomIterationSpreadSelector :: Selector '[CDouble] ()
 setBloomIterationSpreadSelector = mkSelector "setBloomIterationSpread:"
 
 -- | @Selector@ for @bloomIntensity@
-bloomIntensitySelector :: Selector
+bloomIntensitySelector :: Selector '[] CDouble
 bloomIntensitySelector = mkSelector "bloomIntensity"
 
 -- | @Selector@ for @setBloomIntensity:@
-setBloomIntensitySelector :: Selector
+setBloomIntensitySelector :: Selector '[CDouble] ()
 setBloomIntensitySelector = mkSelector "setBloomIntensity:"
 
 -- | @Selector@ for @bloomBlurRadius@
-bloomBlurRadiusSelector :: Selector
+bloomBlurRadiusSelector :: Selector '[] CDouble
 bloomBlurRadiusSelector = mkSelector "bloomBlurRadius"
 
 -- | @Selector@ for @setBloomBlurRadius:@
-setBloomBlurRadiusSelector :: Selector
+setBloomBlurRadiusSelector :: Selector '[CDouble] ()
 setBloomBlurRadiusSelector = mkSelector "setBloomBlurRadius:"
 
 -- | @Selector@ for @vignettingPower@
-vignettingPowerSelector :: Selector
+vignettingPowerSelector :: Selector '[] CDouble
 vignettingPowerSelector = mkSelector "vignettingPower"
 
 -- | @Selector@ for @setVignettingPower:@
-setVignettingPowerSelector :: Selector
+setVignettingPowerSelector :: Selector '[CDouble] ()
 setVignettingPowerSelector = mkSelector "setVignettingPower:"
 
 -- | @Selector@ for @vignettingIntensity@
-vignettingIntensitySelector :: Selector
+vignettingIntensitySelector :: Selector '[] CDouble
 vignettingIntensitySelector = mkSelector "vignettingIntensity"
 
 -- | @Selector@ for @setVignettingIntensity:@
-setVignettingIntensitySelector :: Selector
+setVignettingIntensitySelector :: Selector '[CDouble] ()
 setVignettingIntensitySelector = mkSelector "setVignettingIntensity:"
 
 -- | @Selector@ for @colorFringeStrength@
-colorFringeStrengthSelector :: Selector
+colorFringeStrengthSelector :: Selector '[] CDouble
 colorFringeStrengthSelector = mkSelector "colorFringeStrength"
 
 -- | @Selector@ for @setColorFringeStrength:@
-setColorFringeStrengthSelector :: Selector
+setColorFringeStrengthSelector :: Selector '[CDouble] ()
 setColorFringeStrengthSelector = mkSelector "setColorFringeStrength:"
 
 -- | @Selector@ for @colorFringeIntensity@
-colorFringeIntensitySelector :: Selector
+colorFringeIntensitySelector :: Selector '[] CDouble
 colorFringeIntensitySelector = mkSelector "colorFringeIntensity"
 
 -- | @Selector@ for @setColorFringeIntensity:@
-setColorFringeIntensitySelector :: Selector
+setColorFringeIntensitySelector :: Selector '[CDouble] ()
 setColorFringeIntensitySelector = mkSelector "setColorFringeIntensity:"
 
 -- | @Selector@ for @saturation@
-saturationSelector :: Selector
+saturationSelector :: Selector '[] CDouble
 saturationSelector = mkSelector "saturation"
 
 -- | @Selector@ for @setSaturation:@
-setSaturationSelector :: Selector
+setSaturationSelector :: Selector '[CDouble] ()
 setSaturationSelector = mkSelector "setSaturation:"
 
 -- | @Selector@ for @contrast@
-contrastSelector :: Selector
+contrastSelector :: Selector '[] CDouble
 contrastSelector = mkSelector "contrast"
 
 -- | @Selector@ for @setContrast:@
-setContrastSelector :: Selector
+setContrastSelector :: Selector '[CDouble] ()
 setContrastSelector = mkSelector "setContrast:"
 
 -- | @Selector@ for @grainIntensity@
-grainIntensitySelector :: Selector
+grainIntensitySelector :: Selector '[] CDouble
 grainIntensitySelector = mkSelector "grainIntensity"
 
 -- | @Selector@ for @setGrainIntensity:@
-setGrainIntensitySelector :: Selector
+setGrainIntensitySelector :: Selector '[CDouble] ()
 setGrainIntensitySelector = mkSelector "setGrainIntensity:"
 
 -- | @Selector@ for @grainScale@
-grainScaleSelector :: Selector
+grainScaleSelector :: Selector '[] CDouble
 grainScaleSelector = mkSelector "grainScale"
 
 -- | @Selector@ for @setGrainScale:@
-setGrainScaleSelector :: Selector
+setGrainScaleSelector :: Selector '[CDouble] ()
 setGrainScaleSelector = mkSelector "setGrainScale:"
 
 -- | @Selector@ for @grainIsColored@
-grainIsColoredSelector :: Selector
+grainIsColoredSelector :: Selector '[] Bool
 grainIsColoredSelector = mkSelector "grainIsColored"
 
 -- | @Selector@ for @setGrainIsColored:@
-setGrainIsColoredSelector :: Selector
+setGrainIsColoredSelector :: Selector '[Bool] ()
 setGrainIsColoredSelector = mkSelector "setGrainIsColored:"
 
 -- | @Selector@ for @whiteBalanceTemperature@
-whiteBalanceTemperatureSelector :: Selector
+whiteBalanceTemperatureSelector :: Selector '[] CDouble
 whiteBalanceTemperatureSelector = mkSelector "whiteBalanceTemperature"
 
 -- | @Selector@ for @setWhiteBalanceTemperature:@
-setWhiteBalanceTemperatureSelector :: Selector
+setWhiteBalanceTemperatureSelector :: Selector '[CDouble] ()
 setWhiteBalanceTemperatureSelector = mkSelector "setWhiteBalanceTemperature:"
 
 -- | @Selector@ for @whiteBalanceTint@
-whiteBalanceTintSelector :: Selector
+whiteBalanceTintSelector :: Selector '[] CDouble
 whiteBalanceTintSelector = mkSelector "whiteBalanceTint"
 
 -- | @Selector@ for @setWhiteBalanceTint:@
-setWhiteBalanceTintSelector :: Selector
+setWhiteBalanceTintSelector :: Selector '[CDouble] ()
 setWhiteBalanceTintSelector = mkSelector "setWhiteBalanceTint:"
 
 -- | @Selector@ for @colorGrading@
-colorGradingSelector :: Selector
+colorGradingSelector :: Selector '[] (Id SCNMaterialProperty)
 colorGradingSelector = mkSelector "colorGrading"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CULong
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CULong] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 
 -- | @Selector@ for @focalBlurRadius@
-focalBlurRadiusSelector :: Selector
+focalBlurRadiusSelector :: Selector '[] CDouble
 focalBlurRadiusSelector = mkSelector "focalBlurRadius"
 
 -- | @Selector@ for @setFocalBlurRadius:@
-setFocalBlurRadiusSelector :: Selector
+setFocalBlurRadiusSelector :: Selector '[CDouble] ()
 setFocalBlurRadiusSelector = mkSelector "setFocalBlurRadius:"
 
 -- | @Selector@ for @xFov@
-xFovSelector :: Selector
+xFovSelector :: Selector '[] CDouble
 xFovSelector = mkSelector "xFov"
 
 -- | @Selector@ for @setXFov:@
-setXFovSelector :: Selector
+setXFovSelector :: Selector '[CDouble] ()
 setXFovSelector = mkSelector "setXFov:"
 
 -- | @Selector@ for @yFov@
-yFovSelector :: Selector
+yFovSelector :: Selector '[] CDouble
 yFovSelector = mkSelector "yFov"
 
 -- | @Selector@ for @setYFov:@
-setYFovSelector :: Selector
+setYFovSelector :: Selector '[CDouble] ()
 setYFovSelector = mkSelector "setYFov:"
 
 -- | @Selector@ for @aperture@
-apertureSelector :: Selector
+apertureSelector :: Selector '[] CDouble
 apertureSelector = mkSelector "aperture"
 
 -- | @Selector@ for @setAperture:@
-setApertureSelector :: Selector
+setApertureSelector :: Selector '[CDouble] ()
 setApertureSelector = mkSelector "setAperture:"
 
 -- | @Selector@ for @focalSize@
-focalSizeSelector :: Selector
+focalSizeSelector :: Selector '[] CDouble
 focalSizeSelector = mkSelector "focalSize"
 
 -- | @Selector@ for @setFocalSize:@
-setFocalSizeSelector :: Selector
+setFocalSizeSelector :: Selector '[CDouble] ()
 setFocalSizeSelector = mkSelector "setFocalSize:"
 
 -- | @Selector@ for @focalDistance@
-focalDistanceSelector :: Selector
+focalDistanceSelector :: Selector '[] CDouble
 focalDistanceSelector = mkSelector "focalDistance"
 
 -- | @Selector@ for @setFocalDistance:@
-setFocalDistanceSelector :: Selector
+setFocalDistanceSelector :: Selector '[CDouble] ()
 setFocalDistanceSelector = mkSelector "setFocalDistance:"
 

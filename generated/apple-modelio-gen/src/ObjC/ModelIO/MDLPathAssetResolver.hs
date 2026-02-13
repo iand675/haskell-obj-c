@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.ModelIO.MDLPathAssetResolver
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,34 +38,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPath:@
 initWithPath :: (IsMDLPathAssetResolver mdlPathAssetResolver, IsNSString path) => mdlPathAssetResolver -> path -> IO (Id MDLPathAssetResolver)
-initWithPath mdlPathAssetResolver  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg mdlPathAssetResolver (mkSelector "initWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithPath mdlPathAssetResolver path =
+  sendOwnedMessage mdlPathAssetResolver initWithPathSelector (toNSString path)
 
 -- | @- path@
 path :: IsMDLPathAssetResolver mdlPathAssetResolver => mdlPathAssetResolver -> IO (Id NSString)
-path mdlPathAssetResolver  =
-    sendMsg mdlPathAssetResolver (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path mdlPathAssetResolver =
+  sendMessage mdlPathAssetResolver pathSelector
 
 -- | @- setPath:@
 setPath :: (IsMDLPathAssetResolver mdlPathAssetResolver, IsNSString value) => mdlPathAssetResolver -> value -> IO ()
-setPath mdlPathAssetResolver  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlPathAssetResolver (mkSelector "setPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPath mdlPathAssetResolver value =
+  sendMessage mdlPathAssetResolver setPathSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPath:@
-initWithPathSelector :: Selector
+initWithPathSelector :: Selector '[Id NSString] (Id MDLPathAssetResolver)
 initWithPathSelector = mkSelector "initWithPath:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[Id NSString] ()
 setPathSelector = mkSelector "setPath:"
 

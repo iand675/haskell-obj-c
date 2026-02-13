@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,26 +32,26 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphStencilOpDescriptor
   , setPaddingStyle
   , paddingConstant
   , setPaddingConstant
-  , descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector
-  , descriptorWithOffsets_explicitPaddingSelector
-  , descriptorWithExplicitPaddingSelector
-  , descriptorWithPaddingStyleSelector
-  , reductionModeSelector
-  , setReductionModeSelector
-  , offsetsSelector
-  , setOffsetsSelector
-  , stridesSelector
-  , setStridesSelector
-  , dilationRatesSelector
-  , setDilationRatesSelector
-  , explicitPaddingSelector
-  , setExplicitPaddingSelector
   , boundaryModeSelector
-  , setBoundaryModeSelector
-  , paddingStyleSelector
-  , setPaddingStyleSelector
+  , descriptorWithExplicitPaddingSelector
+  , descriptorWithOffsets_explicitPaddingSelector
+  , descriptorWithPaddingStyleSelector
+  , descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector
+  , dilationRatesSelector
+  , explicitPaddingSelector
+  , offsetsSelector
   , paddingConstantSelector
+  , paddingStyleSelector
+  , reductionModeSelector
+  , setBoundaryModeSelector
+  , setDilationRatesSelector
+  , setExplicitPaddingSelector
+  , setOffsetsSelector
   , setPaddingConstantSelector
+  , setPaddingStyleSelector
+  , setReductionModeSelector
+  , setStridesSelector
+  , stridesSelector
 
   -- * Enum types
   , MPSGraphPaddingMode(MPSGraphPaddingMode)
@@ -77,15 +78,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphStencilOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,7 +99,7 @@ descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_bounda
 descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstant reductionMode offsets strides dilationRates explicitPadding boundaryMode paddingStyle paddingConstant =
   do
     cls' <- getRequiredClass "MPSGraphStencilOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithReductionMode:offsets:strides:dilationRates:explicitPadding:boundaryMode:paddingStyle:paddingConstant:") (retPtr retVoid) [argCULong (coerce reductionMode), argPtr (castPtr (unRawId offsets) :: Ptr ()), argPtr (castPtr (unRawId strides) :: Ptr ()), argPtr (castPtr (unRawId dilationRates) :: Ptr ()), argPtr (castPtr (unRawId explicitPadding) :: Ptr ()), argCLong (coerce boundaryMode), argCULong (coerce paddingStyle), argCFloat paddingConstant] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector reductionMode offsets strides dilationRates explicitPadding boundaryMode paddingStyle paddingConstant
 
 -- | Creates a stencil operation descriptor with default values.
 --
@@ -113,7 +110,7 @@ descriptorWithOffsets_explicitPadding :: RawId -> RawId -> IO (Id MPSGraphStenci
 descriptorWithOffsets_explicitPadding offsets explicitPadding =
   do
     cls' <- getRequiredClass "MPSGraphStencilOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithOffsets:explicitPadding:") (retPtr retVoid) [argPtr (castPtr (unRawId offsets) :: Ptr ()), argPtr (castPtr (unRawId explicitPadding) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithOffsets_explicitPaddingSelector offsets explicitPadding
 
 -- | Creates a stencil operation descriptor with default values.
 --
@@ -124,7 +121,7 @@ descriptorWithExplicitPadding :: RawId -> IO (Id MPSGraphStencilOpDescriptor)
 descriptorWithExplicitPadding explicitPadding =
   do
     cls' <- getRequiredClass "MPSGraphStencilOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithExplicitPadding:") (retPtr retVoid) [argPtr (castPtr (unRawId explicitPadding) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithExplicitPaddingSelector explicitPadding
 
 -- | Creates a stencil operation descriptor with default values.
 --
@@ -135,7 +132,7 @@ descriptorWithPaddingStyle :: MPSGraphPaddingStyle -> IO (Id MPSGraphStencilOpDe
 descriptorWithPaddingStyle paddingStyle =
   do
     cls' <- getRequiredClass "MPSGraphStencilOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithPaddingStyle:") (retPtr retVoid) [argCULong (coerce paddingStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPaddingStyleSelector paddingStyle
 
 -- | The reduction mode to use within the stencil window.
 --
@@ -143,8 +140,8 @@ descriptorWithPaddingStyle paddingStyle =
 --
 -- ObjC selector: @- reductionMode@
 reductionMode :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO MPSGraphReductionMode
-reductionMode mpsGraphStencilOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphReductionMode) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "reductionMode") retCULong []
+reductionMode mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor reductionModeSelector
 
 -- | The reduction mode to use within the stencil window.
 --
@@ -152,8 +149,8 @@ reductionMode mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setReductionMode:@
 setReductionMode :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> MPSGraphReductionMode -> IO ()
-setReductionMode mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setReductionMode:") retVoid [argCULong (coerce value)]
+setReductionMode mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setReductionModeSelector value
 
 -- | An array of length four that determines from which offset to start reading the input tensor.
 --
@@ -161,8 +158,8 @@ setReductionMode mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- offsets@
 offsets :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO RawId
-offsets mpsGraphStencilOpDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "offsets") (retPtr retVoid) []
+offsets mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor offsetsSelector
 
 -- | An array of length four that determines from which offset to start reading the input tensor.
 --
@@ -170,8 +167,8 @@ offsets mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setOffsets:@
 setOffsets :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> RawId -> IO ()
-setOffsets mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setOffsets:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOffsets mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setOffsetsSelector value
 
 -- | The property that defines strides for spatial dimensions.
 --
@@ -179,8 +176,8 @@ setOffsets mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- strides@
 strides :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO RawId
-strides mpsGraphStencilOpDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "strides") (retPtr retVoid) []
+strides mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor stridesSelector
 
 -- | The property that defines strides for spatial dimensions.
 --
@@ -188,8 +185,8 @@ strides mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setStrides:@
 setStrides :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> RawId -> IO ()
-setStrides mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setStrides:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setStrides mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setStridesSelector value
 
 -- | The property that defines dilation rates for spatial dimensions.
 --
@@ -197,8 +194,8 @@ setStrides mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRates@
 dilationRates :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO RawId
-dilationRates mpsGraphStencilOpDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "dilationRates") (retPtr retVoid) []
+dilationRates mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor dilationRatesSelector
 
 -- | The property that defines dilation rates for spatial dimensions.
 --
@@ -206,8 +203,8 @@ dilationRates mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRates:@
 setDilationRates :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> RawId -> IO ()
-setDilationRates mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setDilationRates:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDilationRates mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setDilationRatesSelector value
 
 -- | The property that defines padding values for spatial dimensions.
 --
@@ -215,8 +212,8 @@ setDilationRates mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- explicitPadding@
 explicitPadding :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO RawId
-explicitPadding mpsGraphStencilOpDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "explicitPadding") (retPtr retVoid) []
+explicitPadding mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor explicitPaddingSelector
 
 -- | The property that defines padding values for spatial dimensions.
 --
@@ -224,8 +221,8 @@ explicitPadding mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setExplicitPadding:@
 setExplicitPadding :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> RawId -> IO ()
-setExplicitPadding mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setExplicitPadding:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setExplicitPadding mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setExplicitPaddingSelector value
 
 -- | The property that determines which values to use for padding the input tensor.
 --
@@ -233,8 +230,8 @@ setExplicitPadding mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- boundaryMode@
 boundaryMode :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO MPSGraphPaddingMode
-boundaryMode mpsGraphStencilOpDescriptor  =
-    fmap (coerce :: CLong -> MPSGraphPaddingMode) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "boundaryMode") retCLong []
+boundaryMode mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor boundaryModeSelector
 
 -- | The property that determines which values to use for padding the input tensor.
 --
@@ -242,8 +239,8 @@ boundaryMode mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setBoundaryMode:@
 setBoundaryMode :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> MPSGraphPaddingMode -> IO ()
-setBoundaryMode mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setBoundaryMode:") retVoid [argCLong (coerce value)]
+setBoundaryMode mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setBoundaryModeSelector value
 
 -- | The property that defines what kind of padding to apply to the stencil operation.
 --
@@ -251,8 +248,8 @@ setBoundaryMode mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- paddingStyle@
 paddingStyle :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO MPSGraphPaddingStyle
-paddingStyle mpsGraphStencilOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPaddingStyle) $ sendMsg mpsGraphStencilOpDescriptor (mkSelector "paddingStyle") retCULong []
+paddingStyle mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor paddingStyleSelector
 
 -- | The property that defines what kind of padding to apply to the stencil operation.
 --
@@ -260,8 +257,8 @@ paddingStyle mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingStyle:@
 setPaddingStyle :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> MPSGraphPaddingStyle -> IO ()
-setPaddingStyle mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setPaddingStyle:") retVoid [argCULong (coerce value)]
+setPaddingStyle mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setPaddingStyleSelector value
 
 -- | The padding value for @boundaryMode = MPSGraphPaddingModeConstant@.
 --
@@ -269,8 +266,8 @@ setPaddingStyle mpsGraphStencilOpDescriptor  value =
 --
 -- ObjC selector: @- paddingConstant@
 paddingConstant :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> IO CFloat
-paddingConstant mpsGraphStencilOpDescriptor  =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "paddingConstant") retCFloat []
+paddingConstant mpsGraphStencilOpDescriptor =
+  sendMessage mpsGraphStencilOpDescriptor paddingConstantSelector
 
 -- | The padding value for @boundaryMode = MPSGraphPaddingModeConstant@.
 --
@@ -278,90 +275,90 @@ paddingConstant mpsGraphStencilOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingConstant:@
 setPaddingConstant :: IsMPSGraphStencilOpDescriptor mpsGraphStencilOpDescriptor => mpsGraphStencilOpDescriptor -> CFloat -> IO ()
-setPaddingConstant mpsGraphStencilOpDescriptor  value =
-    sendMsg mpsGraphStencilOpDescriptor (mkSelector "setPaddingConstant:") retVoid [argCFloat value]
+setPaddingConstant mpsGraphStencilOpDescriptor value =
+  sendMessage mpsGraphStencilOpDescriptor setPaddingConstantSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithReductionMode:offsets:strides:dilationRates:explicitPadding:boundaryMode:paddingStyle:paddingConstant:@
-descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector :: Selector
+descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector :: Selector '[MPSGraphReductionMode, RawId, RawId, RawId, RawId, MPSGraphPaddingMode, MPSGraphPaddingStyle, CFloat] (Id MPSGraphStencilOpDescriptor)
 descriptorWithReductionMode_offsets_strides_dilationRates_explicitPadding_boundaryMode_paddingStyle_paddingConstantSelector = mkSelector "descriptorWithReductionMode:offsets:strides:dilationRates:explicitPadding:boundaryMode:paddingStyle:paddingConstant:"
 
 -- | @Selector@ for @descriptorWithOffsets:explicitPadding:@
-descriptorWithOffsets_explicitPaddingSelector :: Selector
+descriptorWithOffsets_explicitPaddingSelector :: Selector '[RawId, RawId] (Id MPSGraphStencilOpDescriptor)
 descriptorWithOffsets_explicitPaddingSelector = mkSelector "descriptorWithOffsets:explicitPadding:"
 
 -- | @Selector@ for @descriptorWithExplicitPadding:@
-descriptorWithExplicitPaddingSelector :: Selector
+descriptorWithExplicitPaddingSelector :: Selector '[RawId] (Id MPSGraphStencilOpDescriptor)
 descriptorWithExplicitPaddingSelector = mkSelector "descriptorWithExplicitPadding:"
 
 -- | @Selector@ for @descriptorWithPaddingStyle:@
-descriptorWithPaddingStyleSelector :: Selector
+descriptorWithPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] (Id MPSGraphStencilOpDescriptor)
 descriptorWithPaddingStyleSelector = mkSelector "descriptorWithPaddingStyle:"
 
 -- | @Selector@ for @reductionMode@
-reductionModeSelector :: Selector
+reductionModeSelector :: Selector '[] MPSGraphReductionMode
 reductionModeSelector = mkSelector "reductionMode"
 
 -- | @Selector@ for @setReductionMode:@
-setReductionModeSelector :: Selector
+setReductionModeSelector :: Selector '[MPSGraphReductionMode] ()
 setReductionModeSelector = mkSelector "setReductionMode:"
 
 -- | @Selector@ for @offsets@
-offsetsSelector :: Selector
+offsetsSelector :: Selector '[] RawId
 offsetsSelector = mkSelector "offsets"
 
 -- | @Selector@ for @setOffsets:@
-setOffsetsSelector :: Selector
+setOffsetsSelector :: Selector '[RawId] ()
 setOffsetsSelector = mkSelector "setOffsets:"
 
 -- | @Selector@ for @strides@
-stridesSelector :: Selector
+stridesSelector :: Selector '[] RawId
 stridesSelector = mkSelector "strides"
 
 -- | @Selector@ for @setStrides:@
-setStridesSelector :: Selector
+setStridesSelector :: Selector '[RawId] ()
 setStridesSelector = mkSelector "setStrides:"
 
 -- | @Selector@ for @dilationRates@
-dilationRatesSelector :: Selector
+dilationRatesSelector :: Selector '[] RawId
 dilationRatesSelector = mkSelector "dilationRates"
 
 -- | @Selector@ for @setDilationRates:@
-setDilationRatesSelector :: Selector
+setDilationRatesSelector :: Selector '[RawId] ()
 setDilationRatesSelector = mkSelector "setDilationRates:"
 
 -- | @Selector@ for @explicitPadding@
-explicitPaddingSelector :: Selector
+explicitPaddingSelector :: Selector '[] RawId
 explicitPaddingSelector = mkSelector "explicitPadding"
 
 -- | @Selector@ for @setExplicitPadding:@
-setExplicitPaddingSelector :: Selector
+setExplicitPaddingSelector :: Selector '[RawId] ()
 setExplicitPaddingSelector = mkSelector "setExplicitPadding:"
 
 -- | @Selector@ for @boundaryMode@
-boundaryModeSelector :: Selector
+boundaryModeSelector :: Selector '[] MPSGraphPaddingMode
 boundaryModeSelector = mkSelector "boundaryMode"
 
 -- | @Selector@ for @setBoundaryMode:@
-setBoundaryModeSelector :: Selector
+setBoundaryModeSelector :: Selector '[MPSGraphPaddingMode] ()
 setBoundaryModeSelector = mkSelector "setBoundaryMode:"
 
 -- | @Selector@ for @paddingStyle@
-paddingStyleSelector :: Selector
+paddingStyleSelector :: Selector '[] MPSGraphPaddingStyle
 paddingStyleSelector = mkSelector "paddingStyle"
 
 -- | @Selector@ for @setPaddingStyle:@
-setPaddingStyleSelector :: Selector
+setPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] ()
 setPaddingStyleSelector = mkSelector "setPaddingStyle:"
 
 -- | @Selector@ for @paddingConstant@
-paddingConstantSelector :: Selector
+paddingConstantSelector :: Selector '[] CFloat
 paddingConstantSelector = mkSelector "paddingConstant"
 
 -- | @Selector@ for @setPaddingConstant:@
-setPaddingConstantSelector :: Selector
+setPaddingConstantSelector :: Selector '[CFloat] ()
 setPaddingConstantSelector = mkSelector "setPaddingConstant:"
 

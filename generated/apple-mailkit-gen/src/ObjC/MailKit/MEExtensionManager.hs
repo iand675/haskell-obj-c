@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.MailKit.MEExtensionManager
   , init_
   , reloadContentBlockerWithIdentifier_completionHandler
   , reloadVisibleMessagesWithCompletionHandler
-  , newSelector
   , initSelector
+  , newSelector
   , reloadContentBlockerWithIdentifier_completionHandlerSelector
   , reloadVisibleMessagesWithCompletionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,12 +37,12 @@ new :: IO (Id MEExtensionManager)
 new  =
   do
     cls' <- getRequiredClass "MEExtensionManager"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEExtensionManager meExtensionManager => meExtensionManager -> IO (Id MEExtensionManager)
-init_ meExtensionManager  =
-    sendMsg meExtensionManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meExtensionManager =
+  sendOwnedMessage meExtensionManager initSelector
 
 -- | This will call on Mail to reload the content rule list associated with the given identifier. Mail May throttle reloading the content blocker to once every few minutes.
 --
@@ -54,8 +51,7 @@ reloadContentBlockerWithIdentifier_completionHandler :: IsNSString identifier =>
 reloadContentBlockerWithIdentifier_completionHandler identifier completionHandler =
   do
     cls' <- getRequiredClass "MEExtensionManager"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "reloadContentBlockerWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' reloadContentBlockerWithIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- | This will call on Mail to reload the currently visible messages.  Mail may throttle reloading visible messages.
 --
@@ -64,25 +60,25 @@ reloadVisibleMessagesWithCompletionHandler :: Ptr () -> IO ()
 reloadVisibleMessagesWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "MEExtensionManager"
-    sendClassMsg cls' (mkSelector "reloadVisibleMessagesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' reloadVisibleMessagesWithCompletionHandlerSelector completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEExtensionManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEExtensionManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @reloadContentBlockerWithIdentifier:completionHandler:@
-reloadContentBlockerWithIdentifier_completionHandlerSelector :: Selector
+reloadContentBlockerWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 reloadContentBlockerWithIdentifier_completionHandlerSelector = mkSelector "reloadContentBlockerWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @reloadVisibleMessagesWithCompletionHandler:@
-reloadVisibleMessagesWithCompletionHandlerSelector :: Selector
+reloadVisibleMessagesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 reloadVisibleMessagesWithCompletionHandlerSelector = mkSelector "reloadVisibleMessagesWithCompletionHandler:"
 

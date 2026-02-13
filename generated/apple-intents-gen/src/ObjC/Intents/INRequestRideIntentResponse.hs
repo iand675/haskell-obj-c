@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INRequestRideIntentResponse
   , code
   , rideStatus
   , setRideStatus
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , rideStatusSelector
   , setRideStatusSelector
 
@@ -34,15 +35,11 @@ module ObjC.Intents.INRequestRideIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,52 +49,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINRequestRideIntentResponse inRequestRideIntentResponse => inRequestRideIntentResponse -> IO RawId
-init_ inRequestRideIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inRequestRideIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inRequestRideIntentResponse =
+  sendOwnedMessage inRequestRideIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINRequestRideIntentResponse inRequestRideIntentResponse, IsNSUserActivity userActivity) => inRequestRideIntentResponse -> INRequestRideIntentResponseCode -> userActivity -> IO (Id INRequestRideIntentResponse)
-initWithCode_userActivity inRequestRideIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inRequestRideIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inRequestRideIntentResponse code userActivity =
+  sendOwnedMessage inRequestRideIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINRequestRideIntentResponse inRequestRideIntentResponse => inRequestRideIntentResponse -> IO INRequestRideIntentResponseCode
-code inRequestRideIntentResponse  =
-    fmap (coerce :: CLong -> INRequestRideIntentResponseCode) $ sendMsg inRequestRideIntentResponse (mkSelector "code") retCLong []
+code inRequestRideIntentResponse =
+  sendMessage inRequestRideIntentResponse codeSelector
 
 -- | @- rideStatus@
 rideStatus :: IsINRequestRideIntentResponse inRequestRideIntentResponse => inRequestRideIntentResponse -> IO (Id INRideStatus)
-rideStatus inRequestRideIntentResponse  =
-    sendMsg inRequestRideIntentResponse (mkSelector "rideStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideStatus inRequestRideIntentResponse =
+  sendMessage inRequestRideIntentResponse rideStatusSelector
 
 -- | @- setRideStatus:@
 setRideStatus :: (IsINRequestRideIntentResponse inRequestRideIntentResponse, IsINRideStatus value) => inRequestRideIntentResponse -> value -> IO ()
-setRideStatus inRequestRideIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRequestRideIntentResponse (mkSelector "setRideStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRideStatus inRequestRideIntentResponse value =
+  sendMessage inRequestRideIntentResponse setRideStatusSelector (toINRideStatus value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INRequestRideIntentResponseCode, Id NSUserActivity] (Id INRequestRideIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INRequestRideIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @rideStatus@
-rideStatusSelector :: Selector
+rideStatusSelector :: Selector '[] (Id INRideStatus)
 rideStatusSelector = mkSelector "rideStatus"
 
 -- | @Selector@ for @setRideStatus:@
-setRideStatusSelector :: Selector
+setRideStatusSelector :: Selector '[Id INRideStatus] ()
 setRideStatusSelector = mkSelector "setRideStatus:"
 

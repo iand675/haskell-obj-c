@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.IOBluetooth.IOBluetoothOBEXSession
   , sendDataToTransport_dataLength
   , setOpenTransportConnectionAsyncSelector_target_refCon
   , setOBEXSessionOpenConnectionCallback_refCon
-  , withSDPServiceRecordSelector
-  , withDevice_channelIDSelector
-  , withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector
-  , initWithSDPServiceRecordSelector
+  , closeTransportConnectionSelector
+  , getDeviceSelector
+  , getRFCOMMChannelSelector
+  , hasOpenTransportConnectionSelector
   , initWithDevice_channelIDSelector
   , initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector
-  , getRFCOMMChannelSelector
-  , getDeviceSelector
-  , sendBufferTroughChannelSelector
-  , restartTransmissionSelector
+  , initWithSDPServiceRecordSelector
   , isSessionTargetAMacSelector
   , openTransportConnection_selectorTarget_refConSelector
-  , hasOpenTransportConnectionSelector
-  , closeTransportConnectionSelector
+  , restartTransmissionSelector
+  , sendBufferTroughChannelSelector
   , sendDataToTransport_dataLengthSelector
-  , setOpenTransportConnectionAsyncSelector_target_refConSelector
   , setOBEXSessionOpenConnectionCallback_refConSelector
+  , setOpenTransportConnectionAsyncSelector_target_refConSelector
+  , withDevice_channelIDSelector
+  , withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector
+  , withSDPServiceRecordSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,7 @@ withSDPServiceRecord :: IsIOBluetoothSDPServiceRecord inSDPServiceRecord => inSD
 withSDPServiceRecord inSDPServiceRecord =
   do
     cls' <- getRequiredClass "IOBluetoothOBEXSession"
-    withObjCPtr inSDPServiceRecord $ \raw_inSDPServiceRecord ->
-      sendClassMsg cls' (mkSelector "withSDPServiceRecord:") (retPtr retVoid) [argPtr (castPtr raw_inSDPServiceRecord :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withSDPServiceRecordSelector (toIOBluetoothSDPServiceRecord inSDPServiceRecord)
 
 -- | withDevice
 --
@@ -98,8 +94,7 @@ withDevice_channelID :: IsIOBluetoothDevice inDevice => inDevice -> CUChar -> IO
 withDevice_channelID inDevice inRFCOMMChannelID =
   do
     cls' <- getRequiredClass "IOBluetoothOBEXSession"
-    withObjCPtr inDevice $ \raw_inDevice ->
-      sendClassMsg cls' (mkSelector "withDevice:channelID:") (retPtr retVoid) [argPtr (castPtr raw_inDevice :: Ptr ()), argCUChar inRFCOMMChannelID] >>= retainedObject . castPtr
+    sendClassMessage cls' withDevice_channelIDSelector (toIOBluetoothDevice inDevice) inRFCOMMChannelID
 
 -- | withIncomingRFCOMMChannel
 --
@@ -118,12 +113,11 @@ withDevice_channelID inDevice inRFCOMMChannelID =
 -- IMPORTANT NOTE*	In Bluetooth framework version 1.0.0, the session returned will NOT be autoreleased as it									should be according to objc convention. This has been changed starting in Bluetooth version									1.0.1 and later, so it WILL be autoreleased upon return, so you will need to retain									it if you want to reference it later.
 --
 -- ObjC selector: @+ withIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:@
-withIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon :: IsIOBluetoothRFCOMMChannel inChannel => inChannel -> Selector -> RawId -> Ptr () -> IO (Id IOBluetoothOBEXSession)
+withIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon :: IsIOBluetoothRFCOMMChannel inChannel => inChannel -> Sel -> RawId -> Ptr () -> IO (Id IOBluetoothOBEXSession)
 withIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon inChannel inEventSelector inEventSelectorTarget inUserRefCon =
   do
     cls' <- getRequiredClass "IOBluetoothOBEXSession"
-    withObjCPtr inChannel $ \raw_inChannel ->
-      sendClassMsg cls' (mkSelector "withIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:") (retPtr retVoid) [argPtr (castPtr raw_inChannel :: Ptr ()), argPtr (unSelector inEventSelector), argPtr (castPtr (unRawId inEventSelectorTarget) :: Ptr ()), argPtr inUserRefCon] >>= retainedObject . castPtr
+    sendClassMessage cls' withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector (toIOBluetoothRFCOMMChannel inChannel) inEventSelector inEventSelectorTarget inUserRefCon
 
 -- | initWithSDPServiceRecord
 --
@@ -135,9 +129,8 @@ withIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon inChannel inEventS
 --
 -- ObjC selector: @- initWithSDPServiceRecord:@
 initWithSDPServiceRecord :: (IsIOBluetoothOBEXSession ioBluetoothOBEXSession, IsIOBluetoothSDPServiceRecord inSDPServiceRecord) => ioBluetoothOBEXSession -> inSDPServiceRecord -> IO (Id IOBluetoothOBEXSession)
-initWithSDPServiceRecord ioBluetoothOBEXSession  inSDPServiceRecord =
-  withObjCPtr inSDPServiceRecord $ \raw_inSDPServiceRecord ->
-      sendMsg ioBluetoothOBEXSession (mkSelector "initWithSDPServiceRecord:") (retPtr retVoid) [argPtr (castPtr raw_inSDPServiceRecord :: Ptr ())] >>= ownedObject . castPtr
+initWithSDPServiceRecord ioBluetoothOBEXSession inSDPServiceRecord =
+  sendOwnedMessage ioBluetoothOBEXSession initWithSDPServiceRecordSelector (toIOBluetoothSDPServiceRecord inSDPServiceRecord)
 
 -- | initWithDevice
 --
@@ -151,9 +144,8 @@ initWithSDPServiceRecord ioBluetoothOBEXSession  inSDPServiceRecord =
 --
 -- ObjC selector: @- initWithDevice:channelID:@
 initWithDevice_channelID :: (IsIOBluetoothOBEXSession ioBluetoothOBEXSession, IsIOBluetoothDevice inDevice) => ioBluetoothOBEXSession -> inDevice -> CUChar -> IO (Id IOBluetoothOBEXSession)
-initWithDevice_channelID ioBluetoothOBEXSession  inDevice inChannelID =
-  withObjCPtr inDevice $ \raw_inDevice ->
-      sendMsg ioBluetoothOBEXSession (mkSelector "initWithDevice:channelID:") (retPtr retVoid) [argPtr (castPtr raw_inDevice :: Ptr ()), argCUChar inChannelID] >>= ownedObject . castPtr
+initWithDevice_channelID ioBluetoothOBEXSession inDevice inChannelID =
+  sendOwnedMessage ioBluetoothOBEXSession initWithDevice_channelIDSelector (toIOBluetoothDevice inDevice) inChannelID
 
 -- | initWithIncomingRFCOMMChannel
 --
@@ -170,10 +162,9 @@ initWithDevice_channelID ioBluetoothOBEXSession  inDevice inChannelID =
 -- Returns:
 --
 -- ObjC selector: @- initWithIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:@
-initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon :: (IsIOBluetoothOBEXSession ioBluetoothOBEXSession, IsIOBluetoothRFCOMMChannel inChannel) => ioBluetoothOBEXSession -> inChannel -> Selector -> RawId -> Ptr () -> IO (Id IOBluetoothOBEXSession)
-initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon ioBluetoothOBEXSession  inChannel inEventSelector inEventSelectorTarget inUserRefCon =
-  withObjCPtr inChannel $ \raw_inChannel ->
-      sendMsg ioBluetoothOBEXSession (mkSelector "initWithIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:") (retPtr retVoid) [argPtr (castPtr raw_inChannel :: Ptr ()), argPtr (unSelector inEventSelector), argPtr (castPtr (unRawId inEventSelectorTarget) :: Ptr ()), argPtr inUserRefCon] >>= ownedObject . castPtr
+initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon :: (IsIOBluetoothOBEXSession ioBluetoothOBEXSession, IsIOBluetoothRFCOMMChannel inChannel) => ioBluetoothOBEXSession -> inChannel -> Sel -> RawId -> Ptr () -> IO (Id IOBluetoothOBEXSession)
+initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon ioBluetoothOBEXSession inChannel inEventSelector inEventSelectorTarget inUserRefCon =
+  sendOwnedMessage ioBluetoothOBEXSession initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector (toIOBluetoothRFCOMMChannel inChannel) inEventSelector inEventSelectorTarget inUserRefCon
 
 -- | getRFCOMMChannel
 --
@@ -185,8 +176,8 @@ initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refCon ioBluetoothOBE
 --
 -- ObjC selector: @- getRFCOMMChannel@
 getRFCOMMChannel :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO (Id IOBluetoothRFCOMMChannel)
-getRFCOMMChannel ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "getRFCOMMChannel") (retPtr retVoid) [] >>= retainedObject . castPtr
+getRFCOMMChannel ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession getRFCOMMChannelSelector
 
 -- | getDevice
 --
@@ -196,8 +187,8 @@ getRFCOMMChannel ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- getDevice@
 getDevice :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO (Id IOBluetoothDevice)
-getDevice ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "getDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDevice ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession getDeviceSelector
 
 -- | sendBufferTroughChannel
 --
@@ -209,8 +200,8 @@ getDevice ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- sendBufferTroughChannel@
 sendBufferTroughChannel :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO CInt
-sendBufferTroughChannel ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "sendBufferTroughChannel") retCInt []
+sendBufferTroughChannel ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession sendBufferTroughChannelSelector
 
 -- | restartTransmission
 --
@@ -222,8 +213,8 @@ sendBufferTroughChannel ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- restartTransmission@
 restartTransmission :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO ()
-restartTransmission ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "restartTransmission") retVoid []
+restartTransmission ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession restartTransmissionSelector
 
 -- | isSessionTargetAMac
 --
@@ -235,8 +226,8 @@ restartTransmission ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- isSessionTargetAMac@
 isSessionTargetAMac :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO Bool
-isSessionTargetAMac ioBluetoothOBEXSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothOBEXSession (mkSelector "isSessionTargetAMac") retCULong []
+isSessionTargetAMac ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession isSessionTargetAMacSelector
 
 -- | openTransportConnection
 --
@@ -255,9 +246,9 @@ isSessionTargetAMac ioBluetoothOBEXSession  =
 -- Be sure to check the status code! Assume the connection was not opened unless status is kOBEXSuccess.
 --
 -- ObjC selector: @- openTransportConnection:selectorTarget:refCon:@
-openTransportConnection_selectorTarget_refCon :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Selector -> RawId -> Ptr () -> IO CInt
-openTransportConnection_selectorTarget_refCon ioBluetoothOBEXSession  inSelector inTarget inUserRefCon =
-    sendMsg ioBluetoothOBEXSession (mkSelector "openTransportConnection:selectorTarget:refCon:") retCInt [argPtr (unSelector inSelector), argPtr (castPtr (unRawId inTarget) :: Ptr ()), argPtr inUserRefCon]
+openTransportConnection_selectorTarget_refCon :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Sel -> RawId -> Ptr () -> IO CInt
+openTransportConnection_selectorTarget_refCon ioBluetoothOBEXSession inSelector inTarget inUserRefCon =
+  sendMessage ioBluetoothOBEXSession openTransportConnection_selectorTarget_refConSelector inSelector inTarget inUserRefCon
 
 -- | hasOpenTransportConnection
 --
@@ -267,8 +258,8 @@ openTransportConnection_selectorTarget_refCon ioBluetoothOBEXSession  inSelector
 --
 -- ObjC selector: @- hasOpenTransportConnection@
 hasOpenTransportConnection :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO CUChar
-hasOpenTransportConnection ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "hasOpenTransportConnection") retCUChar []
+hasOpenTransportConnection ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession hasOpenTransportConnectionSelector
 
 -- | closeTransportConnection
 --
@@ -278,8 +269,8 @@ hasOpenTransportConnection ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- closeTransportConnection@
 closeTransportConnection :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> IO CInt
-closeTransportConnection ioBluetoothOBEXSession  =
-    sendMsg ioBluetoothOBEXSession (mkSelector "closeTransportConnection") retCInt []
+closeTransportConnection ioBluetoothOBEXSession =
+  sendMessage ioBluetoothOBEXSession closeTransportConnectionSelector
 
 -- | sendDataToTransport
 --
@@ -289,8 +280,8 @@ closeTransportConnection ioBluetoothOBEXSession  =
 --
 -- ObjC selector: @- sendDataToTransport:dataLength:@
 sendDataToTransport_dataLength :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Ptr () -> CULong -> IO CInt
-sendDataToTransport_dataLength ioBluetoothOBEXSession  inDataToSend inDataLength =
-    sendMsg ioBluetoothOBEXSession (mkSelector "sendDataToTransport:dataLength:") retCInt [argPtr inDataToSend, argCULong inDataLength]
+sendDataToTransport_dataLength ioBluetoothOBEXSession inDataToSend inDataLength =
+  sendMessage ioBluetoothOBEXSession sendDataToTransport_dataLengthSelector inDataToSend inDataLength
 
 -- | setOpenTransportConnectionAsyncSelector
 --
@@ -305,9 +296,9 @@ sendDataToTransport_dataLength ioBluetoothOBEXSession  inDataToSend inDataLength
 -- You do not need to call this on the session typically, unless you have subclassed the OBEXSession to				implement a new transport and that transport supports async opening of connections. If it does not support				async open, then using this is pointless.
 --
 -- ObjC selector: @- setOpenTransportConnectionAsyncSelector:target:refCon:@
-setOpenTransportConnectionAsyncSelector_target_refCon :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Selector -> RawId -> Ptr () -> IO ()
-setOpenTransportConnectionAsyncSelector_target_refCon ioBluetoothOBEXSession  inSelector inSelectorTarget inUserRefCon =
-    sendMsg ioBluetoothOBEXSession (mkSelector "setOpenTransportConnectionAsyncSelector:target:refCon:") retVoid [argPtr (unSelector inSelector), argPtr (castPtr (unRawId inSelectorTarget) :: Ptr ()), argPtr inUserRefCon]
+setOpenTransportConnectionAsyncSelector_target_refCon :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Sel -> RawId -> Ptr () -> IO ()
+setOpenTransportConnectionAsyncSelector_target_refCon ioBluetoothOBEXSession inSelector inSelectorTarget inUserRefCon =
+  sendMessage ioBluetoothOBEXSession setOpenTransportConnectionAsyncSelector_target_refConSelector inSelector inSelectorTarget inUserRefCon
 
 -- | setOBEXSessionOpenConnectionCallback
 --
@@ -319,78 +310,78 @@ setOpenTransportConnectionAsyncSelector_target_refCon ioBluetoothOBEXSession  in
 --
 -- ObjC selector: @- setOBEXSessionOpenConnectionCallback:refCon:@
 setOBEXSessionOpenConnectionCallback_refCon :: IsIOBluetoothOBEXSession ioBluetoothOBEXSession => ioBluetoothOBEXSession -> Ptr () -> Ptr () -> IO ()
-setOBEXSessionOpenConnectionCallback_refCon ioBluetoothOBEXSession  inCallback inUserRefCon =
-    sendMsg ioBluetoothOBEXSession (mkSelector "setOBEXSessionOpenConnectionCallback:refCon:") retVoid [argPtr inCallback, argPtr inUserRefCon]
+setOBEXSessionOpenConnectionCallback_refCon ioBluetoothOBEXSession inCallback inUserRefCon =
+  sendMessage ioBluetoothOBEXSession setOBEXSessionOpenConnectionCallback_refConSelector inCallback inUserRefCon
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @withSDPServiceRecord:@
-withSDPServiceRecordSelector :: Selector
+withSDPServiceRecordSelector :: Selector '[Id IOBluetoothSDPServiceRecord] (Id IOBluetoothOBEXSession)
 withSDPServiceRecordSelector = mkSelector "withSDPServiceRecord:"
 
 -- | @Selector@ for @withDevice:channelID:@
-withDevice_channelIDSelector :: Selector
+withDevice_channelIDSelector :: Selector '[Id IOBluetoothDevice, CUChar] (Id IOBluetoothOBEXSession)
 withDevice_channelIDSelector = mkSelector "withDevice:channelID:"
 
 -- | @Selector@ for @withIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:@
-withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector :: Selector
+withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector :: Selector '[Id IOBluetoothRFCOMMChannel, Sel, RawId, Ptr ()] (Id IOBluetoothOBEXSession)
 withIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector = mkSelector "withIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @initWithSDPServiceRecord:@
-initWithSDPServiceRecordSelector :: Selector
+initWithSDPServiceRecordSelector :: Selector '[Id IOBluetoothSDPServiceRecord] (Id IOBluetoothOBEXSession)
 initWithSDPServiceRecordSelector = mkSelector "initWithSDPServiceRecord:"
 
 -- | @Selector@ for @initWithDevice:channelID:@
-initWithDevice_channelIDSelector :: Selector
+initWithDevice_channelIDSelector :: Selector '[Id IOBluetoothDevice, CUChar] (Id IOBluetoothOBEXSession)
 initWithDevice_channelIDSelector = mkSelector "initWithDevice:channelID:"
 
 -- | @Selector@ for @initWithIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:@
-initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector :: Selector
+initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector :: Selector '[Id IOBluetoothRFCOMMChannel, Sel, RawId, Ptr ()] (Id IOBluetoothOBEXSession)
 initWithIncomingRFCOMMChannel_eventSelector_selectorTarget_refConSelector = mkSelector "initWithIncomingRFCOMMChannel:eventSelector:selectorTarget:refCon:"
 
 -- | @Selector@ for @getRFCOMMChannel@
-getRFCOMMChannelSelector :: Selector
+getRFCOMMChannelSelector :: Selector '[] (Id IOBluetoothRFCOMMChannel)
 getRFCOMMChannelSelector = mkSelector "getRFCOMMChannel"
 
 -- | @Selector@ for @getDevice@
-getDeviceSelector :: Selector
+getDeviceSelector :: Selector '[] (Id IOBluetoothDevice)
 getDeviceSelector = mkSelector "getDevice"
 
 -- | @Selector@ for @sendBufferTroughChannel@
-sendBufferTroughChannelSelector :: Selector
+sendBufferTroughChannelSelector :: Selector '[] CInt
 sendBufferTroughChannelSelector = mkSelector "sendBufferTroughChannel"
 
 -- | @Selector@ for @restartTransmission@
-restartTransmissionSelector :: Selector
+restartTransmissionSelector :: Selector '[] ()
 restartTransmissionSelector = mkSelector "restartTransmission"
 
 -- | @Selector@ for @isSessionTargetAMac@
-isSessionTargetAMacSelector :: Selector
+isSessionTargetAMacSelector :: Selector '[] Bool
 isSessionTargetAMacSelector = mkSelector "isSessionTargetAMac"
 
 -- | @Selector@ for @openTransportConnection:selectorTarget:refCon:@
-openTransportConnection_selectorTarget_refConSelector :: Selector
+openTransportConnection_selectorTarget_refConSelector :: Selector '[Sel, RawId, Ptr ()] CInt
 openTransportConnection_selectorTarget_refConSelector = mkSelector "openTransportConnection:selectorTarget:refCon:"
 
 -- | @Selector@ for @hasOpenTransportConnection@
-hasOpenTransportConnectionSelector :: Selector
+hasOpenTransportConnectionSelector :: Selector '[] CUChar
 hasOpenTransportConnectionSelector = mkSelector "hasOpenTransportConnection"
 
 -- | @Selector@ for @closeTransportConnection@
-closeTransportConnectionSelector :: Selector
+closeTransportConnectionSelector :: Selector '[] CInt
 closeTransportConnectionSelector = mkSelector "closeTransportConnection"
 
 -- | @Selector@ for @sendDataToTransport:dataLength:@
-sendDataToTransport_dataLengthSelector :: Selector
+sendDataToTransport_dataLengthSelector :: Selector '[Ptr (), CULong] CInt
 sendDataToTransport_dataLengthSelector = mkSelector "sendDataToTransport:dataLength:"
 
 -- | @Selector@ for @setOpenTransportConnectionAsyncSelector:target:refCon:@
-setOpenTransportConnectionAsyncSelector_target_refConSelector :: Selector
+setOpenTransportConnectionAsyncSelector_target_refConSelector :: Selector '[Sel, RawId, Ptr ()] ()
 setOpenTransportConnectionAsyncSelector_target_refConSelector = mkSelector "setOpenTransportConnectionAsyncSelector:target:refCon:"
 
 -- | @Selector@ for @setOBEXSessionOpenConnectionCallback:refCon:@
-setOBEXSessionOpenConnectionCallback_refConSelector :: Selector
+setOBEXSessionOpenConnectionCallback_refConSelector :: Selector '[Ptr (), Ptr ()] ()
 setOBEXSessionOpenConnectionCallback_refConSelector = mkSelector "setOBEXSessionOpenConnectionCallback:refCon:"
 

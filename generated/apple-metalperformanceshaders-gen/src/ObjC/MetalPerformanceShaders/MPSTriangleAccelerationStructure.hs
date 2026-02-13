@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetalPerformanceShaders.MPSTriangleAccelerationStructure
   , IsMPSTriangleAccelerationStructure(..)
   , triangleCount
   , setTriangleCount
-  , triangleCountSelector
   , setTriangleCountSelector
+  , triangleCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- triangleCount@
 triangleCount :: IsMPSTriangleAccelerationStructure mpsTriangleAccelerationStructure => mpsTriangleAccelerationStructure -> IO CULong
-triangleCount mpsTriangleAccelerationStructure  =
-    sendMsg mpsTriangleAccelerationStructure (mkSelector "triangleCount") retCULong []
+triangleCount mpsTriangleAccelerationStructure =
+  sendMessage mpsTriangleAccelerationStructure triangleCountSelector
 
 -- | Number of triangles. Changes to this property require rebuilding the acceleration structure.
 --
@@ -48,18 +45,18 @@ triangleCount mpsTriangleAccelerationStructure  =
 --
 -- ObjC selector: @- setTriangleCount:@
 setTriangleCount :: IsMPSTriangleAccelerationStructure mpsTriangleAccelerationStructure => mpsTriangleAccelerationStructure -> CULong -> IO ()
-setTriangleCount mpsTriangleAccelerationStructure  value =
-    sendMsg mpsTriangleAccelerationStructure (mkSelector "setTriangleCount:") retVoid [argCULong value]
+setTriangleCount mpsTriangleAccelerationStructure value =
+  sendMessage mpsTriangleAccelerationStructure setTriangleCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @triangleCount@
-triangleCountSelector :: Selector
+triangleCountSelector :: Selector '[] CULong
 triangleCountSelector = mkSelector "triangleCount"
 
 -- | @Selector@ for @setTriangleCount:@
-setTriangleCountSelector :: Selector
+setTriangleCountSelector :: Selector '[CULong] ()
 setTriangleCountSelector = mkSelector "setTriangleCount:"
 

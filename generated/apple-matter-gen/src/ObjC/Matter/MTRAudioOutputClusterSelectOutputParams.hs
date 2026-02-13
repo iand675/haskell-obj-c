@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRAudioOutputClusterSelectOutputParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , indexSelector
-  , setIndexSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setIndexSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- index@
 index :: IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams => mtrAudioOutputClusterSelectOutputParams -> IO (Id NSNumber)
-index mtrAudioOutputClusterSelectOutputParams  =
-    sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "index") (retPtr retVoid) [] >>= retainedObject . castPtr
+index mtrAudioOutputClusterSelectOutputParams =
+  sendMessage mtrAudioOutputClusterSelectOutputParams indexSelector
 
 -- | @- setIndex:@
 setIndex :: (IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams, IsNSNumber value) => mtrAudioOutputClusterSelectOutputParams -> value -> IO ()
-setIndex mtrAudioOutputClusterSelectOutputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "setIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIndex mtrAudioOutputClusterSelectOutputParams value =
+  sendMessage mtrAudioOutputClusterSelectOutputParams setIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setIndex mtrAudioOutputClusterSelectOutputParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams => mtrAudioOutputClusterSelectOutputParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams  =
-    sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams =
+  sendMessage mtrAudioOutputClusterSelectOutputParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams, IsNSNumber value) => mtrAudioOutputClusterSelectOutputParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams value =
+  sendMessage mtrAudioOutputClusterSelectOutputParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrAudioOutputClusterSelectOutputParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams => mtrAudioOutputClusterSelectOutputParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrAudioOutputClusterSelectOutputParams  =
-    sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrAudioOutputClusterSelectOutputParams =
+  sendMessage mtrAudioOutputClusterSelectOutputParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrAudioOutputClusterSelectOutputParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRAudioOutputClusterSelectOutputParams mtrAudioOutputClusterSelectOutputParams, IsNSNumber value) => mtrAudioOutputClusterSelectOutputParams -> value -> IO ()
-setServerSideProcessingTimeout mtrAudioOutputClusterSelectOutputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterSelectOutputParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrAudioOutputClusterSelectOutputParams value =
+  sendMessage mtrAudioOutputClusterSelectOutputParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] (Id NSNumber)
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @setIndex:@
-setIndexSelector :: Selector
+setIndexSelector :: Selector '[Id NSNumber] ()
 setIndexSelector = mkSelector "setIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

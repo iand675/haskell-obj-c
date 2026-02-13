@@ -45,7 +45,7 @@ data NSTextViewDelegateOverrides = NSTextViewDelegateOverrides
   , _textViewDidChangeSelection :: !(Maybe (RawId -> IO ()))
   , _textViewDidChangeTypingAttributes :: !(Maybe (RawId -> IO ()))
   , _textView_willDisplayToolTip_forCharacterAtIndex :: !(Maybe (RawId -> RawId -> Int -> IO RawId))
-  , _textView_doCommandBySelector :: !(Maybe (RawId -> Selector -> IO Bool))
+  , _textView_doCommandBySelector :: !(Maybe (RawId -> Sel -> IO Bool))
   , _textView_menu_forEvent_atIndex :: !(Maybe (RawId -> RawId -> RawId -> Int -> IO RawId))
   , _textView_URLForContentsOfTextAttachment_atIndex :: !(Maybe (RawId -> RawId -> Int -> IO RawId))
   , _textView_willShowSharingServicePicker_forItems :: !(Maybe (RawId -> RawId -> RawId -> IO RawId))

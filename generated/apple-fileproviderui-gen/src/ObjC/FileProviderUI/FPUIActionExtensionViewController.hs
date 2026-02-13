@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.FileProviderUI.FPUIActionExtensionViewController
   , prepareForError
   , prepareForActionWithIdentifier_itemIdentifiers
   , extensionContext
-  , prepareForErrorSelector
-  , prepareForActionWithIdentifier_itemIdentifiersSelector
   , extensionContextSelector
+  , prepareForActionWithIdentifier_itemIdentifiersSelector
+  , prepareForErrorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- prepareForError:@
 prepareForError :: (IsFPUIActionExtensionViewController fpuiActionExtensionViewController, IsNSError error_) => fpuiActionExtensionViewController -> error_ -> IO ()
-prepareForError fpuiActionExtensionViewController  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg fpuiActionExtensionViewController (mkSelector "prepareForError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+prepareForError fpuiActionExtensionViewController error_ =
+  sendMessage fpuiActionExtensionViewController prepareForErrorSelector (toNSError error_)
 
 -- | Performs any necessary setup or configuration for the specified action.
 --
@@ -66,31 +62,29 @@ prepareForError fpuiActionExtensionViewController  error_ =
 --
 -- ObjC selector: @- prepareForActionWithIdentifier:itemIdentifiers:@
 prepareForActionWithIdentifier_itemIdentifiers :: (IsFPUIActionExtensionViewController fpuiActionExtensionViewController, IsNSString actionIdentifier, IsNSArray itemIdentifiers) => fpuiActionExtensionViewController -> actionIdentifier -> itemIdentifiers -> IO ()
-prepareForActionWithIdentifier_itemIdentifiers fpuiActionExtensionViewController  actionIdentifier itemIdentifiers =
-  withObjCPtr actionIdentifier $ \raw_actionIdentifier ->
-    withObjCPtr itemIdentifiers $ \raw_itemIdentifiers ->
-        sendMsg fpuiActionExtensionViewController (mkSelector "prepareForActionWithIdentifier:itemIdentifiers:") retVoid [argPtr (castPtr raw_actionIdentifier :: Ptr ()), argPtr (castPtr raw_itemIdentifiers :: Ptr ())]
+prepareForActionWithIdentifier_itemIdentifiers fpuiActionExtensionViewController actionIdentifier itemIdentifiers =
+  sendMessage fpuiActionExtensionViewController prepareForActionWithIdentifier_itemIdentifiersSelector (toNSString actionIdentifier) (toNSArray itemIdentifiers)
 
 -- | The extension context provided by the host app.
 --
 -- ObjC selector: @- extensionContext@
 extensionContext :: IsFPUIActionExtensionViewController fpuiActionExtensionViewController => fpuiActionExtensionViewController -> IO (Id FPUIActionExtensionContext)
-extensionContext fpuiActionExtensionViewController  =
-    sendMsg fpuiActionExtensionViewController (mkSelector "extensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionContext fpuiActionExtensionViewController =
+  sendMessage fpuiActionExtensionViewController extensionContextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prepareForError:@
-prepareForErrorSelector :: Selector
+prepareForErrorSelector :: Selector '[Id NSError] ()
 prepareForErrorSelector = mkSelector "prepareForError:"
 
 -- | @Selector@ for @prepareForActionWithIdentifier:itemIdentifiers:@
-prepareForActionWithIdentifier_itemIdentifiersSelector :: Selector
+prepareForActionWithIdentifier_itemIdentifiersSelector :: Selector '[Id NSString, Id NSArray] ()
 prepareForActionWithIdentifier_itemIdentifiersSelector = mkSelector "prepareForActionWithIdentifier:itemIdentifiers:"
 
 -- | @Selector@ for @extensionContext@
-extensionContextSelector :: Selector
+extensionContextSelector :: Selector '[] (Id FPUIActionExtensionContext)
 extensionContextSelector = mkSelector "extensionContext"
 

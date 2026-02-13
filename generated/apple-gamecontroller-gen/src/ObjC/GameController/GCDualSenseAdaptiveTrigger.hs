@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.GameController.GCDualSenseAdaptiveTrigger
   , mode
   , status
   , armPosition
-  , setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector
-  , setModeFeedbackWithStartPosition_resistiveStrengthSelector
-  , setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector
-  , setModeVibrationWithStartPosition_amplitude_frequencySelector
-  , setModeOffSelector
-  , modeSelector
-  , statusSelector
   , armPositionSelector
+  , modeSelector
+  , setModeFeedbackWithStartPosition_resistiveStrengthSelector
+  , setModeOffSelector
+  , setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector
+  , setModeVibrationWithStartPosition_amplitude_frequencySelector
+  , setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector
+  , statusSelector
 
   -- * Enum types
   , GCDualSenseAdaptiveTriggerMode(GCDualSenseAdaptiveTriggerMode)
@@ -52,15 +53,11 @@ module ObjC.GameController.GCDualSenseAdaptiveTrigger
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,8 +77,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setModeSlopeFeedbackWithStartPosition:endPosition:startStrength:endStrength:@
 setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrength :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> CFloat -> CFloat -> CFloat -> CFloat -> IO ()
-setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrength gcDualSenseAdaptiveTrigger  startPosition endPosition startStrength endStrength =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "setModeSlopeFeedbackWithStartPosition:endPosition:startStrength:endStrength:") retVoid [argCFloat startPosition, argCFloat endPosition, argCFloat startStrength, argCFloat endStrength]
+setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrength gcDualSenseAdaptiveTrigger startPosition endPosition startStrength endStrength =
+  sendMessage gcDualSenseAdaptiveTrigger setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector startPosition endPosition startStrength endStrength
 
 -- | Sets the adaptive trigger to feedback mode. The start position and strength of the effect can be set arbitrarily. The trigger arm will continue to provide a constant degree of feedback whenever it is depressed further than the start position.
 --
@@ -91,8 +88,8 @@ setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrength gcDu
 --
 -- ObjC selector: @- setModeFeedbackWithStartPosition:resistiveStrength:@
 setModeFeedbackWithStartPosition_resistiveStrength :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> CFloat -> CFloat -> IO ()
-setModeFeedbackWithStartPosition_resistiveStrength gcDualSenseAdaptiveTrigger  startPosition resistiveStrength =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "setModeFeedbackWithStartPosition:resistiveStrength:") retVoid [argCFloat startPosition, argCFloat resistiveStrength]
+setModeFeedbackWithStartPosition_resistiveStrength gcDualSenseAdaptiveTrigger startPosition resistiveStrength =
+  sendMessage gcDualSenseAdaptiveTrigger setModeFeedbackWithStartPosition_resistiveStrengthSelector startPosition resistiveStrength
 
 -- | Sets the adaptive trigger to weapon mode. The start position, end position, and strength of the effect can be set arbitrarily; however the end position must be larger than the start position. The trigger arm will continue to provide a constant degree of feedback whenever it is depressed further than the start position. Once the trigger arm has been depressed past the end position, the strength of the effect will immediately fall to zero, providing a "sense of release" similar to that provided by pulling the trigger of a weapon.
 --
@@ -104,8 +101,8 @@ setModeFeedbackWithStartPosition_resistiveStrength gcDualSenseAdaptiveTrigger  s
 --
 -- ObjC selector: @- setModeWeaponWithStartPosition:endPosition:resistiveStrength:@
 setModeWeaponWithStartPosition_endPosition_resistiveStrength :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> CFloat -> CFloat -> CFloat -> IO ()
-setModeWeaponWithStartPosition_endPosition_resistiveStrength gcDualSenseAdaptiveTrigger  startPosition endPosition resistiveStrength =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "setModeWeaponWithStartPosition:endPosition:resistiveStrength:") retVoid [argCFloat startPosition, argCFloat endPosition, argCFloat resistiveStrength]
+setModeWeaponWithStartPosition_endPosition_resistiveStrength gcDualSenseAdaptiveTrigger startPosition endPosition resistiveStrength =
+  sendMessage gcDualSenseAdaptiveTrigger setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector startPosition endPosition resistiveStrength
 
 -- | Sets the adaptive trigger to vibration mode. The start position, amplitude, and frequency of the effect can be set arbitrarily. The trigger arm will continue to strike against the trigger whenever it is depressed further than the start position, providing a "sense of vibration".
 --
@@ -117,15 +114,15 @@ setModeWeaponWithStartPosition_endPosition_resistiveStrength gcDualSenseAdaptive
 --
 -- ObjC selector: @- setModeVibrationWithStartPosition:amplitude:frequency:@
 setModeVibrationWithStartPosition_amplitude_frequency :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> CFloat -> CFloat -> CFloat -> IO ()
-setModeVibrationWithStartPosition_amplitude_frequency gcDualSenseAdaptiveTrigger  startPosition amplitude frequency =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "setModeVibrationWithStartPosition:amplitude:frequency:") retVoid [argCFloat startPosition, argCFloat amplitude, argCFloat frequency]
+setModeVibrationWithStartPosition_amplitude_frequency gcDualSenseAdaptiveTrigger startPosition amplitude frequency =
+  sendMessage gcDualSenseAdaptiveTrigger setModeVibrationWithStartPosition_amplitude_frequencySelector startPosition amplitude frequency
 
 -- | Sets the adaptive trigger to off mode. This turns off the adaptive trigger effect.
 --
 -- ObjC selector: @- setModeOff@
 setModeOff :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> IO ()
-setModeOff gcDualSenseAdaptiveTrigger  =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "setModeOff") retVoid []
+setModeOff gcDualSenseAdaptiveTrigger =
+  sendMessage gcDualSenseAdaptiveTrigger setModeOffSelector
 
 -- | The mode that the adaptive trigger is currently in. This property reflects the physical state of the triggers - and requires a response from the controller. It does not update immediately after calling -[GCDualSenseAdaptiveTrigger setMode...].
 --
@@ -133,8 +130,8 @@ setModeOff gcDualSenseAdaptiveTrigger  =
 --
 -- ObjC selector: @- mode@
 mode :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> IO GCDualSenseAdaptiveTriggerMode
-mode gcDualSenseAdaptiveTrigger  =
-    fmap (coerce :: CLong -> GCDualSenseAdaptiveTriggerMode) $ sendMsg gcDualSenseAdaptiveTrigger (mkSelector "mode") retCLong []
+mode gcDualSenseAdaptiveTrigger =
+  sendMessage gcDualSenseAdaptiveTrigger modeSelector
 
 -- | The current status of the adaptive trigger - whether it is ready to apply a load, is currently applying a load, or has finished applying a load.
 --
@@ -142,8 +139,8 @@ mode gcDualSenseAdaptiveTrigger  =
 --
 -- ObjC selector: @- status@
 status :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> IO GCDualSenseAdaptiveTriggerStatus
-status gcDualSenseAdaptiveTrigger  =
-    fmap (coerce :: CLong -> GCDualSenseAdaptiveTriggerStatus) $ sendMsg gcDualSenseAdaptiveTrigger (mkSelector "status") retCLong []
+status gcDualSenseAdaptiveTrigger =
+  sendMessage gcDualSenseAdaptiveTrigger statusSelector
 
 -- | A normalized float from [0-1], with 0 representing the lowest possible trigger arm position and 1 representing the maximum trigger arm position.
 --
@@ -151,42 +148,42 @@ status gcDualSenseAdaptiveTrigger  =
 --
 -- ObjC selector: @- armPosition@
 armPosition :: IsGCDualSenseAdaptiveTrigger gcDualSenseAdaptiveTrigger => gcDualSenseAdaptiveTrigger -> IO CFloat
-armPosition gcDualSenseAdaptiveTrigger  =
-    sendMsg gcDualSenseAdaptiveTrigger (mkSelector "armPosition") retCFloat []
+armPosition gcDualSenseAdaptiveTrigger =
+  sendMessage gcDualSenseAdaptiveTrigger armPositionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setModeSlopeFeedbackWithStartPosition:endPosition:startStrength:endStrength:@
-setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector :: Selector
+setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector :: Selector '[CFloat, CFloat, CFloat, CFloat] ()
 setModeSlopeFeedbackWithStartPosition_endPosition_startStrength_endStrengthSelector = mkSelector "setModeSlopeFeedbackWithStartPosition:endPosition:startStrength:endStrength:"
 
 -- | @Selector@ for @setModeFeedbackWithStartPosition:resistiveStrength:@
-setModeFeedbackWithStartPosition_resistiveStrengthSelector :: Selector
+setModeFeedbackWithStartPosition_resistiveStrengthSelector :: Selector '[CFloat, CFloat] ()
 setModeFeedbackWithStartPosition_resistiveStrengthSelector = mkSelector "setModeFeedbackWithStartPosition:resistiveStrength:"
 
 -- | @Selector@ for @setModeWeaponWithStartPosition:endPosition:resistiveStrength:@
-setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector :: Selector
+setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector :: Selector '[CFloat, CFloat, CFloat] ()
 setModeWeaponWithStartPosition_endPosition_resistiveStrengthSelector = mkSelector "setModeWeaponWithStartPosition:endPosition:resistiveStrength:"
 
 -- | @Selector@ for @setModeVibrationWithStartPosition:amplitude:frequency:@
-setModeVibrationWithStartPosition_amplitude_frequencySelector :: Selector
+setModeVibrationWithStartPosition_amplitude_frequencySelector :: Selector '[CFloat, CFloat, CFloat] ()
 setModeVibrationWithStartPosition_amplitude_frequencySelector = mkSelector "setModeVibrationWithStartPosition:amplitude:frequency:"
 
 -- | @Selector@ for @setModeOff@
-setModeOffSelector :: Selector
+setModeOffSelector :: Selector '[] ()
 setModeOffSelector = mkSelector "setModeOff"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] GCDualSenseAdaptiveTriggerMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] GCDualSenseAdaptiveTriggerStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @armPosition@
-armPositionSelector :: Selector
+armPositionSelector :: Selector '[] CFloat
 armPositionSelector = mkSelector "armPosition"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.AVFoundation.AVFragmentedAsset
   , tracksWithMediaCharacteristic
   , tracks
   , fragmentedAssetWithURL_optionsSelector
-  , trackWithTrackIDSelector
   , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
+  , trackWithTrackIDSelector
   , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,9 +53,7 @@ fragmentedAssetWithURL_options :: (IsNSURL url, IsNSDictionary options) => url -
 fragmentedAssetWithURL_options url options =
   do
     cls' <- getRequiredClass "AVFragmentedAsset"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fragmentedAssetWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fragmentedAssetWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | Provides an instance of AVFragmentedAssetTrack that represents the track of the specified trackID.
 --
@@ -70,8 +65,8 @@ fragmentedAssetWithURL_options url options =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVFragmentedAsset avFragmentedAsset => avFragmentedAsset -> CInt -> IO (Id AVFragmentedAssetTrack)
-trackWithTrackID avFragmentedAsset  trackID =
-    sendMsg avFragmentedAsset (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avFragmentedAsset trackID =
+  sendMessage avFragmentedAsset trackWithTrackIDSelector trackID
 
 -- | Loads an instance of AVFragmentedAssetTrack that represents the track of the specified trackID.
 --
@@ -79,8 +74,8 @@ trackWithTrackID avFragmentedAsset  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVFragmentedAsset avFragmentedAsset => avFragmentedAsset -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avFragmentedAsset  trackID completionHandler =
-    sendMsg avFragmentedAsset (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avFragmentedAsset trackID completionHandler =
+  sendMessage avFragmentedAsset loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | Provides an array of AVFragmentedAssetTracks of the asset that present media of the specified media type.
 --
@@ -92,9 +87,8 @@ loadTrackWithTrackID_completionHandler avFragmentedAsset  trackID completionHand
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVFragmentedAsset avFragmentedAsset, IsNSString mediaType) => avFragmentedAsset -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avFragmentedAsset  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avFragmentedAsset (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avFragmentedAsset mediaType =
+  sendMessage avFragmentedAsset tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | Provides an array of AVFragmentedAssetTracks of the asset that present media with the specified characteristic.
 --
@@ -106,9 +100,8 @@ tracksWithMediaType avFragmentedAsset  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVFragmentedAsset avFragmentedAsset, IsNSString mediaCharacteristic) => avFragmentedAsset -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avFragmentedAsset  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avFragmentedAsset (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avFragmentedAsset mediaCharacteristic =
+  sendMessage avFragmentedAsset tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | The tracks in an asset.
 --
@@ -116,34 +109,34 @@ tracksWithMediaCharacteristic avFragmentedAsset  mediaCharacteristic =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVFragmentedAsset avFragmentedAsset => avFragmentedAsset -> IO (Id NSArray)
-tracks avFragmentedAsset  =
-    sendMsg avFragmentedAsset (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avFragmentedAsset =
+  sendMessage avFragmentedAsset tracksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fragmentedAssetWithURL:options:@
-fragmentedAssetWithURL_optionsSelector :: Selector
+fragmentedAssetWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVFragmentedAsset)
 fragmentedAssetWithURL_optionsSelector = mkSelector "fragmentedAssetWithURL:options:"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVFragmentedAssetTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 

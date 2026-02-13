@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.CoreMediaIO.CMIOExtensionProviderProperties
   , propertiesDictionary
   , setPropertiesDictionary
   , initSelector
-  , newSelector
-  , providerPropertiesWithDictionarySelector
   , initWithDictionarySelector
-  , setPropertyState_forPropertySelector
-  , nameSelector
-  , setNameSelector
   , manufacturerSelector
-  , setManufacturerSelector
+  , nameSelector
+  , newSelector
   , propertiesDictionarySelector
+  , providerPropertiesWithDictionarySelector
+  , setManufacturerSelector
+  , setNameSelector
   , setPropertiesDictionarySelector
+  , setPropertyState_forPropertySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionProviderProperties cmioExtensionProviderProperties => cmioExtensionProviderProperties -> IO (Id CMIOExtensionProviderProperties)
-init_ cmioExtensionProviderProperties  =
-    sendMsg cmioExtensionProviderProperties (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionProviderProperties =
+  sendOwnedMessage cmioExtensionProviderProperties initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionProviderProperties)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionProviderProperties"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | providerPropertiesWithDictionary:
 --
@@ -76,8 +73,7 @@ providerPropertiesWithDictionary :: IsNSDictionary propertiesDictionary => prope
 providerPropertiesWithDictionary propertiesDictionary =
   do
     cls' <- getRequiredClass "CMIOExtensionProviderProperties"
-    withObjCPtr propertiesDictionary $ \raw_propertiesDictionary ->
-      sendClassMsg cls' (mkSelector "providerPropertiesWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_propertiesDictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' providerPropertiesWithDictionarySelector (toNSDictionary propertiesDictionary)
 
 -- | initWithDictionary:
 --
@@ -89,9 +85,8 @@ providerPropertiesWithDictionary propertiesDictionary =
 --
 -- ObjC selector: @- initWithDictionary:@
 initWithDictionary :: (IsCMIOExtensionProviderProperties cmioExtensionProviderProperties, IsNSDictionary propertiesDictionary) => cmioExtensionProviderProperties -> propertiesDictionary -> IO (Id CMIOExtensionProviderProperties)
-initWithDictionary cmioExtensionProviderProperties  propertiesDictionary =
-  withObjCPtr propertiesDictionary $ \raw_propertiesDictionary ->
-      sendMsg cmioExtensionProviderProperties (mkSelector "initWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_propertiesDictionary :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary cmioExtensionProviderProperties propertiesDictionary =
+  sendOwnedMessage cmioExtensionProviderProperties initWithDictionarySelector (toNSDictionary propertiesDictionary)
 
 -- | setPropertyState:forProperty:
 --
@@ -105,10 +100,8 @@ initWithDictionary cmioExtensionProviderProperties  propertiesDictionary =
 --
 -- ObjC selector: @- setPropertyState:forProperty:@
 setPropertyState_forProperty :: (IsCMIOExtensionProviderProperties cmioExtensionProviderProperties, IsCMIOExtensionPropertyState propertyState, IsNSString property) => cmioExtensionProviderProperties -> propertyState -> property -> IO ()
-setPropertyState_forProperty cmioExtensionProviderProperties  propertyState property =
-  withObjCPtr propertyState $ \raw_propertyState ->
-    withObjCPtr property $ \raw_property ->
-        sendMsg cmioExtensionProviderProperties (mkSelector "setPropertyState:forProperty:") retVoid [argPtr (castPtr raw_propertyState :: Ptr ()), argPtr (castPtr raw_property :: Ptr ())]
+setPropertyState_forProperty cmioExtensionProviderProperties propertyState property =
+  sendMessage cmioExtensionProviderProperties setPropertyState_forPropertySelector (toCMIOExtensionPropertyState propertyState) (toNSString property)
 
 -- | name
 --
@@ -118,8 +111,8 @@ setPropertyState_forProperty cmioExtensionProviderProperties  propertyState prop
 --
 -- ObjC selector: @- name@
 name :: IsCMIOExtensionProviderProperties cmioExtensionProviderProperties => cmioExtensionProviderProperties -> IO (Id NSString)
-name cmioExtensionProviderProperties  =
-    sendMsg cmioExtensionProviderProperties (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name cmioExtensionProviderProperties =
+  sendMessage cmioExtensionProviderProperties nameSelector
 
 -- | name
 --
@@ -129,9 +122,8 @@ name cmioExtensionProviderProperties  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsCMIOExtensionProviderProperties cmioExtensionProviderProperties, IsNSString value) => cmioExtensionProviderProperties -> value -> IO ()
-setName cmioExtensionProviderProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionProviderProperties (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName cmioExtensionProviderProperties value =
+  sendMessage cmioExtensionProviderProperties setNameSelector (toNSString value)
 
 -- | manufacturer
 --
@@ -141,8 +133,8 @@ setName cmioExtensionProviderProperties  value =
 --
 -- ObjC selector: @- manufacturer@
 manufacturer :: IsCMIOExtensionProviderProperties cmioExtensionProviderProperties => cmioExtensionProviderProperties -> IO (Id NSString)
-manufacturer cmioExtensionProviderProperties  =
-    sendMsg cmioExtensionProviderProperties (mkSelector "manufacturer") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturer cmioExtensionProviderProperties =
+  sendMessage cmioExtensionProviderProperties manufacturerSelector
 
 -- | manufacturer
 --
@@ -152,9 +144,8 @@ manufacturer cmioExtensionProviderProperties  =
 --
 -- ObjC selector: @- setManufacturer:@
 setManufacturer :: (IsCMIOExtensionProviderProperties cmioExtensionProviderProperties, IsNSString value) => cmioExtensionProviderProperties -> value -> IO ()
-setManufacturer cmioExtensionProviderProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionProviderProperties (mkSelector "setManufacturer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManufacturer cmioExtensionProviderProperties value =
+  sendMessage cmioExtensionProviderProperties setManufacturerSelector (toNSString value)
 
 -- | propertiesDictionary
 --
@@ -164,8 +155,8 @@ setManufacturer cmioExtensionProviderProperties  value =
 --
 -- ObjC selector: @- propertiesDictionary@
 propertiesDictionary :: IsCMIOExtensionProviderProperties cmioExtensionProviderProperties => cmioExtensionProviderProperties -> IO (Id NSDictionary)
-propertiesDictionary cmioExtensionProviderProperties  =
-    sendMsg cmioExtensionProviderProperties (mkSelector "propertiesDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertiesDictionary cmioExtensionProviderProperties =
+  sendMessage cmioExtensionProviderProperties propertiesDictionarySelector
 
 -- | propertiesDictionary
 --
@@ -175,55 +166,54 @@ propertiesDictionary cmioExtensionProviderProperties  =
 --
 -- ObjC selector: @- setPropertiesDictionary:@
 setPropertiesDictionary :: (IsCMIOExtensionProviderProperties cmioExtensionProviderProperties, IsNSDictionary value) => cmioExtensionProviderProperties -> value -> IO ()
-setPropertiesDictionary cmioExtensionProviderProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionProviderProperties (mkSelector "setPropertiesDictionary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPropertiesDictionary cmioExtensionProviderProperties value =
+  sendMessage cmioExtensionProviderProperties setPropertiesDictionarySelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionProviderProperties)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionProviderProperties)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @providerPropertiesWithDictionary:@
-providerPropertiesWithDictionarySelector :: Selector
+providerPropertiesWithDictionarySelector :: Selector '[Id NSDictionary] (Id CMIOExtensionProviderProperties)
 providerPropertiesWithDictionarySelector = mkSelector "providerPropertiesWithDictionary:"
 
 -- | @Selector@ for @initWithDictionary:@
-initWithDictionarySelector :: Selector
+initWithDictionarySelector :: Selector '[Id NSDictionary] (Id CMIOExtensionProviderProperties)
 initWithDictionarySelector = mkSelector "initWithDictionary:"
 
 -- | @Selector@ for @setPropertyState:forProperty:@
-setPropertyState_forPropertySelector :: Selector
+setPropertyState_forPropertySelector :: Selector '[Id CMIOExtensionPropertyState, Id NSString] ()
 setPropertyState_forPropertySelector = mkSelector "setPropertyState:forProperty:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @manufacturer@
-manufacturerSelector :: Selector
+manufacturerSelector :: Selector '[] (Id NSString)
 manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @setManufacturer:@
-setManufacturerSelector :: Selector
+setManufacturerSelector :: Selector '[Id NSString] ()
 setManufacturerSelector = mkSelector "setManufacturer:"
 
 -- | @Selector@ for @propertiesDictionary@
-propertiesDictionarySelector :: Selector
+propertiesDictionarySelector :: Selector '[] (Id NSDictionary)
 propertiesDictionarySelector = mkSelector "propertiesDictionary"
 
 -- | @Selector@ for @setPropertiesDictionary:@
-setPropertiesDictionarySelector :: Selector
+setPropertiesDictionarySelector :: Selector '[Id NSDictionary] ()
 setPropertiesDictionarySelector = mkSelector "setPropertiesDictionary:"
 

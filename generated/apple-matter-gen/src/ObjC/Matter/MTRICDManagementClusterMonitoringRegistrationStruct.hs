@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRICDManagementClusterMonitoringRegistrationStruct
   , fabricIndex
   , setFabricIndex
   , checkInNodeIDSelector
-  , setCheckInNodeIDSelector
-  , monitoredSubjectSelector
-  , setMonitoredSubjectSelector
   , clientTypeSelector
-  , setClientTypeSelector
   , fabricIndexSelector
+  , monitoredSubjectSelector
+  , setCheckInNodeIDSelector
+  , setClientTypeSelector
   , setFabricIndexSelector
+  , setMonitoredSubjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- checkInNodeID@
 checkInNodeID :: IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct => mtricdManagementClusterMonitoringRegistrationStruct -> IO (Id NSNumber)
-checkInNodeID mtricdManagementClusterMonitoringRegistrationStruct  =
-    sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "checkInNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+checkInNodeID mtricdManagementClusterMonitoringRegistrationStruct =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct checkInNodeIDSelector
 
 -- | @- setCheckInNodeID:@
 setCheckInNodeID :: (IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct, IsNSNumber value) => mtricdManagementClusterMonitoringRegistrationStruct -> value -> IO ()
-setCheckInNodeID mtricdManagementClusterMonitoringRegistrationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "setCheckInNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCheckInNodeID mtricdManagementClusterMonitoringRegistrationStruct value =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct setCheckInNodeIDSelector (toNSNumber value)
 
 -- | @- monitoredSubject@
 monitoredSubject :: IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct => mtricdManagementClusterMonitoringRegistrationStruct -> IO (Id NSNumber)
-monitoredSubject mtricdManagementClusterMonitoringRegistrationStruct  =
-    sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "monitoredSubject") (retPtr retVoid) [] >>= retainedObject . castPtr
+monitoredSubject mtricdManagementClusterMonitoringRegistrationStruct =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct monitoredSubjectSelector
 
 -- | @- setMonitoredSubject:@
 setMonitoredSubject :: (IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct, IsNSNumber value) => mtricdManagementClusterMonitoringRegistrationStruct -> value -> IO ()
-setMonitoredSubject mtricdManagementClusterMonitoringRegistrationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "setMonitoredSubject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMonitoredSubject mtricdManagementClusterMonitoringRegistrationStruct value =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct setMonitoredSubjectSelector (toNSNumber value)
 
 -- | @- clientType@
 clientType :: IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct => mtricdManagementClusterMonitoringRegistrationStruct -> IO (Id NSNumber)
-clientType mtricdManagementClusterMonitoringRegistrationStruct  =
-    sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "clientType") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientType mtricdManagementClusterMonitoringRegistrationStruct =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct clientTypeSelector
 
 -- | @- setClientType:@
 setClientType :: (IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct, IsNSNumber value) => mtricdManagementClusterMonitoringRegistrationStruct -> value -> IO ()
-setClientType mtricdManagementClusterMonitoringRegistrationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "setClientType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientType mtricdManagementClusterMonitoringRegistrationStruct value =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct setClientTypeSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct => mtricdManagementClusterMonitoringRegistrationStruct -> IO (Id NSNumber)
-fabricIndex mtricdManagementClusterMonitoringRegistrationStruct  =
-    sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtricdManagementClusterMonitoringRegistrationStruct =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRICDManagementClusterMonitoringRegistrationStruct mtricdManagementClusterMonitoringRegistrationStruct, IsNSNumber value) => mtricdManagementClusterMonitoringRegistrationStruct -> value -> IO ()
-setFabricIndex mtricdManagementClusterMonitoringRegistrationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterMonitoringRegistrationStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtricdManagementClusterMonitoringRegistrationStruct value =
+  sendMessage mtricdManagementClusterMonitoringRegistrationStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkInNodeID@
-checkInNodeIDSelector :: Selector
+checkInNodeIDSelector :: Selector '[] (Id NSNumber)
 checkInNodeIDSelector = mkSelector "checkInNodeID"
 
 -- | @Selector@ for @setCheckInNodeID:@
-setCheckInNodeIDSelector :: Selector
+setCheckInNodeIDSelector :: Selector '[Id NSNumber] ()
 setCheckInNodeIDSelector = mkSelector "setCheckInNodeID:"
 
 -- | @Selector@ for @monitoredSubject@
-monitoredSubjectSelector :: Selector
+monitoredSubjectSelector :: Selector '[] (Id NSNumber)
 monitoredSubjectSelector = mkSelector "monitoredSubject"
 
 -- | @Selector@ for @setMonitoredSubject:@
-setMonitoredSubjectSelector :: Selector
+setMonitoredSubjectSelector :: Selector '[Id NSNumber] ()
 setMonitoredSubjectSelector = mkSelector "setMonitoredSubject:"
 
 -- | @Selector@ for @clientType@
-clientTypeSelector :: Selector
+clientTypeSelector :: Selector '[] (Id NSNumber)
 clientTypeSelector = mkSelector "clientType"
 
 -- | @Selector@ for @setClientType:@
-setClientTypeSelector :: Selector
+setClientTypeSelector :: Selector '[Id NSNumber] ()
 setClientTypeSelector = mkSelector "setClientType:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

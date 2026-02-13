@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.MetalPerformanceShaders.MPSCNNFullyConnectedGradient
   , initWithDevice_weights
   , initWithCoder_device
   , initWithDevice
-  , initWithDevice_weightsSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:weights:@
 initWithDevice_weights :: IsMPSCNNFullyConnectedGradient mpscnnFullyConnectedGradient => mpscnnFullyConnectedGradient -> RawId -> RawId -> IO (Id MPSCNNFullyConnectedGradient)
-initWithDevice_weights mpscnnFullyConnectedGradient  device weights =
-    sendMsg mpscnnFullyConnectedGradient (mkSelector "initWithDevice:weights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_weights mpscnnFullyConnectedGradient device weights =
+  sendOwnedMessage mpscnnFullyConnectedGradient initWithDevice_weightsSelector device weights
 
 -- | NSSecureCoding compatability
 --
@@ -62,28 +59,27 @@ initWithDevice_weights mpscnnFullyConnectedGradient  device weights =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNFullyConnectedGradient mpscnnFullyConnectedGradient, IsNSCoder aDecoder) => mpscnnFullyConnectedGradient -> aDecoder -> RawId -> IO (Id MPSCNNFullyConnectedGradient)
-initWithCoder_device mpscnnFullyConnectedGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnFullyConnectedGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnFullyConnectedGradient aDecoder device =
+  sendOwnedMessage mpscnnFullyConnectedGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNFullyConnectedGradient mpscnnFullyConnectedGradient => mpscnnFullyConnectedGradient -> RawId -> IO (Id MPSCNNFullyConnectedGradient)
-initWithDevice mpscnnFullyConnectedGradient  device =
-    sendMsg mpscnnFullyConnectedGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnFullyConnectedGradient device =
+  sendOwnedMessage mpscnnFullyConnectedGradient initWithDeviceSelector device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:weights:@
-initWithDevice_weightsSelector :: Selector
+initWithDevice_weightsSelector :: Selector '[RawId, RawId] (Id MPSCNNFullyConnectedGradient)
 initWithDevice_weightsSelector = mkSelector "initWithDevice:weights:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNFullyConnectedGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNFullyConnectedGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 

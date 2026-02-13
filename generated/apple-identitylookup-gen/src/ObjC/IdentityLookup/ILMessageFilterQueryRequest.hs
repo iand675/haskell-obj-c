@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.IdentityLookup.ILMessageFilterQueryRequest
   , messageBody
   , receiverISOCountryCode
   , initSelector
-  , newSelector
-  , senderSelector
   , messageBodySelector
+  , newSelector
   , receiverISOCountryCodeSelector
+  , senderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,58 +36,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMessageFilterQueryRequest -> IO (Id ILMessageFilterQueryRequest)
-init_ ilMessageFilterQueryRequest  =
-    sendMsg ilMessageFilterQueryRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ilMessageFilterQueryRequest =
+  sendOwnedMessage ilMessageFilterQueryRequest initSelector
 
 -- | @+ new@
 new :: IO (Id ILMessageFilterQueryRequest)
 new  =
   do
     cls' <- getRequiredClass "ILMessageFilterQueryRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The sender of the message the receiver relates to.
 --
 -- ObjC selector: @- sender@
 sender :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMessageFilterQueryRequest -> IO (Id NSString)
-sender ilMessageFilterQueryRequest  =
-    sendMsg ilMessageFilterQueryRequest (mkSelector "sender") (retPtr retVoid) [] >>= retainedObject . castPtr
+sender ilMessageFilterQueryRequest =
+  sendMessage ilMessageFilterQueryRequest senderSelector
 
 -- | The body of the message the receiver relates to.
 --
 -- ObjC selector: @- messageBody@
 messageBody :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMessageFilterQueryRequest -> IO (Id NSString)
-messageBody ilMessageFilterQueryRequest  =
-    sendMsg ilMessageFilterQueryRequest (mkSelector "messageBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageBody ilMessageFilterQueryRequest =
+  sendMessage ilMessageFilterQueryRequest messageBodySelector
 
 -- | The ISO Country Code of the receiving phone number, in format specified by the ISO 3166-2 standard
 --
 -- ObjC selector: @- receiverISOCountryCode@
 receiverISOCountryCode :: IsILMessageFilterQueryRequest ilMessageFilterQueryRequest => ilMessageFilterQueryRequest -> IO (Id NSString)
-receiverISOCountryCode ilMessageFilterQueryRequest  =
-    sendMsg ilMessageFilterQueryRequest (mkSelector "receiverISOCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+receiverISOCountryCode ilMessageFilterQueryRequest =
+  sendMessage ilMessageFilterQueryRequest receiverISOCountryCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ILMessageFilterQueryRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ILMessageFilterQueryRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sender@
-senderSelector :: Selector
+senderSelector :: Selector '[] (Id NSString)
 senderSelector = mkSelector "sender"
 
 -- | @Selector@ for @messageBody@
-messageBodySelector :: Selector
+messageBodySelector :: Selector '[] (Id NSString)
 messageBodySelector = mkSelector "messageBody"
 
 -- | @Selector@ for @receiverISOCountryCode@
-receiverISOCountryCodeSelector :: Selector
+receiverISOCountryCodeSelector :: Selector '[] (Id NSString)
 receiverISOCountryCodeSelector = mkSelector "receiverISOCountryCode"
 

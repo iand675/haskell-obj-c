@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.NetworkExtension.NEVPNIKEv2PPKConfiguration
   , keychainReference
   , isMandatory
   , setIsMandatory
-  , initWithIdentifier_keychainReferenceSelector
   , identifierSelector
-  , keychainReferenceSelector
+  , initWithIdentifier_keychainReferenceSelector
   , isMandatorySelector
+  , keychainReferenceSelector
   , setIsMandatorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,10 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:keychainReference:@
 initWithIdentifier_keychainReference :: (IsNEVPNIKEv2PPKConfiguration nevpnikEv2PPKConfiguration, IsNSString identifier, IsNSData keychainReference) => nevpnikEv2PPKConfiguration -> identifier -> keychainReference -> IO (Id NEVPNIKEv2PPKConfiguration)
-initWithIdentifier_keychainReference nevpnikEv2PPKConfiguration  identifier keychainReference =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr keychainReference $ \raw_keychainReference ->
-        sendMsg nevpnikEv2PPKConfiguration (mkSelector "initWithIdentifier:keychainReference:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_keychainReference :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_keychainReference nevpnikEv2PPKConfiguration identifier keychainReference =
+  sendOwnedMessage nevpnikEv2PPKConfiguration initWithIdentifier_keychainReferenceSelector (toNSString identifier) (toNSData keychainReference)
 
 -- | identifier
 --
@@ -62,8 +57,8 @@ initWithIdentifier_keychainReference nevpnikEv2PPKConfiguration  identifier keyc
 --
 -- ObjC selector: @- identifier@
 identifier :: IsNEVPNIKEv2PPKConfiguration nevpnikEv2PPKConfiguration => nevpnikEv2PPKConfiguration -> IO (Id NSString)
-identifier nevpnikEv2PPKConfiguration  =
-    sendMsg nevpnikEv2PPKConfiguration (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nevpnikEv2PPKConfiguration =
+  sendMessage nevpnikEv2PPKConfiguration identifierSelector
 
 -- | keychainReference
 --
@@ -71,8 +66,8 @@ identifier nevpnikEv2PPKConfiguration  =
 --
 -- ObjC selector: @- keychainReference@
 keychainReference :: IsNEVPNIKEv2PPKConfiguration nevpnikEv2PPKConfiguration => nevpnikEv2PPKConfiguration -> IO (Id NSData)
-keychainReference nevpnikEv2PPKConfiguration  =
-    sendMsg nevpnikEv2PPKConfiguration (mkSelector "keychainReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+keychainReference nevpnikEv2PPKConfiguration =
+  sendMessage nevpnikEv2PPKConfiguration keychainReferenceSelector
 
 -- | isMandatory
 --
@@ -80,8 +75,8 @@ keychainReference nevpnikEv2PPKConfiguration  =
 --
 -- ObjC selector: @- isMandatory@
 isMandatory :: IsNEVPNIKEv2PPKConfiguration nevpnikEv2PPKConfiguration => nevpnikEv2PPKConfiguration -> IO Bool
-isMandatory nevpnikEv2PPKConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnikEv2PPKConfiguration (mkSelector "isMandatory") retCULong []
+isMandatory nevpnikEv2PPKConfiguration =
+  sendMessage nevpnikEv2PPKConfiguration isMandatorySelector
 
 -- | isMandatory
 --
@@ -89,30 +84,30 @@ isMandatory nevpnikEv2PPKConfiguration  =
 --
 -- ObjC selector: @- setIsMandatory:@
 setIsMandatory :: IsNEVPNIKEv2PPKConfiguration nevpnikEv2PPKConfiguration => nevpnikEv2PPKConfiguration -> Bool -> IO ()
-setIsMandatory nevpnikEv2PPKConfiguration  value =
-    sendMsg nevpnikEv2PPKConfiguration (mkSelector "setIsMandatory:") retVoid [argCULong (if value then 1 else 0)]
+setIsMandatory nevpnikEv2PPKConfiguration value =
+  sendMessage nevpnikEv2PPKConfiguration setIsMandatorySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:keychainReference:@
-initWithIdentifier_keychainReferenceSelector :: Selector
+initWithIdentifier_keychainReferenceSelector :: Selector '[Id NSString, Id NSData] (Id NEVPNIKEv2PPKConfiguration)
 initWithIdentifier_keychainReferenceSelector = mkSelector "initWithIdentifier:keychainReference:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @keychainReference@
-keychainReferenceSelector :: Selector
+keychainReferenceSelector :: Selector '[] (Id NSData)
 keychainReferenceSelector = mkSelector "keychainReference"
 
 -- | @Selector@ for @isMandatory@
-isMandatorySelector :: Selector
+isMandatorySelector :: Selector '[] Bool
 isMandatorySelector = mkSelector "isMandatory"
 
 -- | @Selector@ for @setIsMandatory:@
-setIsMandatorySelector :: Selector
+setIsMandatorySelector :: Selector '[Bool] ()
 setIsMandatorySelector = mkSelector "setIsMandatory:"
 

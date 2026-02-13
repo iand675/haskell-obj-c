@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,36 +28,32 @@ module ObjC.Matter.MTRClusterScenesManagement
   , new
   , initWithDevice_endpointID_queue
   , addSceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector
-  , storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector
   , copySceneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeSceneTableSizeWithParamsSelector
-  , readAttributeFabricSceneInfoWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFabricSceneInfoWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSceneTableSizeWithParamsSelector
+  , recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector
+  , removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,205 +62,171 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addSceneWithParams:expectedValues:expectedValueInterval:completion:@
 addSceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterAddSceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "addSceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement addSceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterAddSceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- viewSceneWithParams:expectedValues:expectedValueInterval:completion:@
 viewSceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterViewSceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-viewSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "viewSceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+viewSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterViewSceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeSceneWithParams:expectedValues:expectedValueInterval:completion:@
 removeSceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterRemoveSceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "removeSceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterRemoveSceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeAllScenesWithParams:expectedValues:expectedValueInterval:completion:@
 removeAllScenesWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterRemoveAllScenesParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeAllScenesWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "removeAllScenesWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeAllScenesWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterRemoveAllScenesParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- storeSceneWithParams:expectedValues:expectedValueInterval:completion:@
 storeSceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterStoreSceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-storeSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "storeSceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+storeSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterStoreSceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- recallSceneWithParams:expectedValues:expectedValueInterval:completion:@
 recallSceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterRecallSceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-recallSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "recallSceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+recallSceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterRecallSceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getSceneMembershipWithParams:expectedValues:expectedValueInterval:completion:@
 getSceneMembershipWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterGetSceneMembershipParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getSceneMembershipWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "getSceneMembershipWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getSceneMembershipWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterScenesManagement getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterGetSceneMembershipParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- copySceneWithParams:expectedValues:expectedValueInterval:completion:@
 copySceneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRScenesManagementClusterCopySceneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterScenesManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-copySceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterScenesManagement (mkSelector "copySceneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+copySceneWithParams_expectedValues_expectedValueInterval_completion mtrClusterScenesManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendOwnedMessage mtrClusterScenesManagement copySceneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRScenesManagementClusterCopySceneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeSceneTableSizeWithParams:@
 readAttributeSceneTableSizeWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeSceneTableSizeWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeSceneTableSizeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSceneTableSizeWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeSceneTableSizeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFabricSceneInfoWithParams:@
 readAttributeFabricSceneInfoWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeFabricSceneInfoWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeFabricSceneInfoWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFabricSceneInfoWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeFabricSceneInfoWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRReadParams params) => mtrClusterScenesManagement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterScenesManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterScenesManagement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterScenesManagement params =
+  sendMessage mtrClusterScenesManagement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterScenesManagement mtrClusterScenesManagement => mtrClusterScenesManagement -> IO (Id MTRClusterScenesManagement)
-init_ mtrClusterScenesManagement  =
-    sendMsg mtrClusterScenesManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterScenesManagement =
+  sendOwnedMessage mtrClusterScenesManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterScenesManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterScenesManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterScenesManagement mtrClusterScenesManagement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterScenesManagement -> device -> endpointID -> queue -> IO (Id MTRClusterScenesManagement)
-initWithDevice_endpointID_queue mtrClusterScenesManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterScenesManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterScenesManagement device endpointID queue =
+  sendOwnedMessage mtrClusterScenesManagement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addSceneWithParams:expectedValues:expectedValueInterval:completion:@
-addSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterAddSceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addSceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addSceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @viewSceneWithParams:expectedValues:expectedValueInterval:completion:@
-viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterViewSceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 viewSceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "viewSceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeSceneWithParams:expectedValues:expectedValueInterval:completion:@
-removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterRemoveSceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeSceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeSceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeAllScenesWithParams:expectedValues:expectedValueInterval:completion:@
-removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterRemoveAllScenesParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeAllScenesWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeAllScenesWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @storeSceneWithParams:expectedValues:expectedValueInterval:completion:@
-storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterStoreSceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 storeSceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "storeSceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @recallSceneWithParams:expectedValues:expectedValueInterval:completion:@
-recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterRecallSceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 recallSceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "recallSceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getSceneMembershipWithParams:expectedValues:expectedValueInterval:completion:@
-getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterGetSceneMembershipParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getSceneMembershipWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getSceneMembershipWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @copySceneWithParams:expectedValues:expectedValueInterval:completion:@
-copySceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+copySceneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRScenesManagementClusterCopySceneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 copySceneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "copySceneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeSceneTableSizeWithParams:@
-readAttributeSceneTableSizeWithParamsSelector :: Selector
+readAttributeSceneTableSizeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSceneTableSizeWithParamsSelector = mkSelector "readAttributeSceneTableSizeWithParams:"
 
 -- | @Selector@ for @readAttributeFabricSceneInfoWithParams:@
-readAttributeFabricSceneInfoWithParamsSelector :: Selector
+readAttributeFabricSceneInfoWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFabricSceneInfoWithParamsSelector = mkSelector "readAttributeFabricSceneInfoWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterScenesManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterScenesManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterScenesManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

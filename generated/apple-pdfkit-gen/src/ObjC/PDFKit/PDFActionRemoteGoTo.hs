@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.PDFKit.PDFActionRemoteGoTo
   , setURL
   , initWithPageIndex_atPoint_fileURLSelector
   , pageIndexSelector
-  , setPageIndexSelector
   , pointSelector
+  , setPageIndexSelector
   , setPointSelector
-  , urlSelector
   , setURLSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,70 +39,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPageIndex:atPoint:fileURL:@
 initWithPageIndex_atPoint_fileURL :: (IsPDFActionRemoteGoTo pdfActionRemoteGoTo, IsNSURL url) => pdfActionRemoteGoTo -> CULong -> NSPoint -> url -> IO (Id PDFActionRemoteGoTo)
-initWithPageIndex_atPoint_fileURL pdfActionRemoteGoTo  pageIndex point url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg pdfActionRemoteGoTo (mkSelector "initWithPageIndex:atPoint:fileURL:") (retPtr retVoid) [argCULong pageIndex, argNSPoint point, argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithPageIndex_atPoint_fileURL pdfActionRemoteGoTo pageIndex point url =
+  sendOwnedMessage pdfActionRemoteGoTo initWithPageIndex_atPoint_fileURLSelector pageIndex point (toNSURL url)
 
 -- | @- pageIndex@
 pageIndex :: IsPDFActionRemoteGoTo pdfActionRemoteGoTo => pdfActionRemoteGoTo -> IO CULong
-pageIndex pdfActionRemoteGoTo  =
-    sendMsg pdfActionRemoteGoTo (mkSelector "pageIndex") retCULong []
+pageIndex pdfActionRemoteGoTo =
+  sendMessage pdfActionRemoteGoTo pageIndexSelector
 
 -- | @- setPageIndex:@
 setPageIndex :: IsPDFActionRemoteGoTo pdfActionRemoteGoTo => pdfActionRemoteGoTo -> CULong -> IO ()
-setPageIndex pdfActionRemoteGoTo  value =
-    sendMsg pdfActionRemoteGoTo (mkSelector "setPageIndex:") retVoid [argCULong value]
+setPageIndex pdfActionRemoteGoTo value =
+  sendMessage pdfActionRemoteGoTo setPageIndexSelector value
 
 -- | @- point@
 point :: IsPDFActionRemoteGoTo pdfActionRemoteGoTo => pdfActionRemoteGoTo -> IO NSPoint
-point pdfActionRemoteGoTo  =
-    sendMsgStret pdfActionRemoteGoTo (mkSelector "point") retNSPoint []
+point pdfActionRemoteGoTo =
+  sendMessage pdfActionRemoteGoTo pointSelector
 
 -- | @- setPoint:@
 setPoint :: IsPDFActionRemoteGoTo pdfActionRemoteGoTo => pdfActionRemoteGoTo -> NSPoint -> IO ()
-setPoint pdfActionRemoteGoTo  value =
-    sendMsg pdfActionRemoteGoTo (mkSelector "setPoint:") retVoid [argNSPoint value]
+setPoint pdfActionRemoteGoTo value =
+  sendMessage pdfActionRemoteGoTo setPointSelector value
 
 -- | @- URL@
 url :: IsPDFActionRemoteGoTo pdfActionRemoteGoTo => pdfActionRemoteGoTo -> IO (Id NSURL)
-url pdfActionRemoteGoTo  =
-    sendMsg pdfActionRemoteGoTo (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url pdfActionRemoteGoTo =
+  sendMessage pdfActionRemoteGoTo urlSelector
 
 -- | @- setURL:@
 setURL :: (IsPDFActionRemoteGoTo pdfActionRemoteGoTo, IsNSURL value) => pdfActionRemoteGoTo -> value -> IO ()
-setURL pdfActionRemoteGoTo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfActionRemoteGoTo (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL pdfActionRemoteGoTo value =
+  sendMessage pdfActionRemoteGoTo setURLSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPageIndex:atPoint:fileURL:@
-initWithPageIndex_atPoint_fileURLSelector :: Selector
+initWithPageIndex_atPoint_fileURLSelector :: Selector '[CULong, NSPoint, Id NSURL] (Id PDFActionRemoteGoTo)
 initWithPageIndex_atPoint_fileURLSelector = mkSelector "initWithPageIndex:atPoint:fileURL:"
 
 -- | @Selector@ for @pageIndex@
-pageIndexSelector :: Selector
+pageIndexSelector :: Selector '[] CULong
 pageIndexSelector = mkSelector "pageIndex"
 
 -- | @Selector@ for @setPageIndex:@
-setPageIndexSelector :: Selector
+setPageIndexSelector :: Selector '[CULong] ()
 setPageIndexSelector = mkSelector "setPageIndex:"
 
 -- | @Selector@ for @point@
-pointSelector :: Selector
+pointSelector :: Selector '[] NSPoint
 pointSelector = mkSelector "point"
 
 -- | @Selector@ for @setPoint:@
-setPointSelector :: Selector
+setPointSelector :: Selector '[NSPoint] ()
 setPointSelector = mkSelector "setPoint:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 

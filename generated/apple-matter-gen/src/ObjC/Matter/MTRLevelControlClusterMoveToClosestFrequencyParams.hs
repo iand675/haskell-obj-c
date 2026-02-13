@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRLevelControlClusterMoveToClosestFrequencyParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , frequencySelector
-  , setFrequencySelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setFrequencySelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- frequency@
 frequency :: IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams => mtrLevelControlClusterMoveToClosestFrequencyParams -> IO (Id NSNumber)
-frequency mtrLevelControlClusterMoveToClosestFrequencyParams  =
-    sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "frequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+frequency mtrLevelControlClusterMoveToClosestFrequencyParams =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: (IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams, IsNSNumber value) => mtrLevelControlClusterMoveToClosestFrequencyParams -> value -> IO ()
-setFrequency mtrLevelControlClusterMoveToClosestFrequencyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "setFrequency:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFrequency mtrLevelControlClusterMoveToClosestFrequencyParams value =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams setFrequencySelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setFrequency mtrLevelControlClusterMoveToClosestFrequencyParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams => mtrLevelControlClusterMoveToClosestFrequencyParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams  =
-    sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams, IsNSNumber value) => mtrLevelControlClusterMoveToClosestFrequencyParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams value =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrLevelControlClusterMoveToClosestFrequencyParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams => mtrLevelControlClusterMoveToClosestFrequencyParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrLevelControlClusterMoveToClosestFrequencyParams  =
-    sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrLevelControlClusterMoveToClosestFrequencyParams =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrLevelControlClusterMoveToClosestFrequencyParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRLevelControlClusterMoveToClosestFrequencyParams mtrLevelControlClusterMoveToClosestFrequencyParams, IsNSNumber value) => mtrLevelControlClusterMoveToClosestFrequencyParams -> value -> IO ()
-setServerSideProcessingTimeout mtrLevelControlClusterMoveToClosestFrequencyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterMoveToClosestFrequencyParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrLevelControlClusterMoveToClosestFrequencyParams value =
+  sendMessage mtrLevelControlClusterMoveToClosestFrequencyParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] (Id NSNumber)
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[Id NSNumber] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRGeneralCommissioningClusterSetRegulatoryConfigResponsePara
   , setDebugText
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , errorCodeSelector
-  , setErrorCodeSelector
   , debugTextSelector
+  , errorCodeSelector
+  , initWithResponseValue_errorSelector
   , setDebugTextSelector
-  , timedInvokeTimeoutMsSelector
+  , setErrorCodeSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> responseValue -> error_ -> IO (Id MTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams)
-initWithResponseValue_error mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams responseValue error_ =
+  sendOwnedMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- errorCode@
 errorCode :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> IO (Id NSNumber)
-errorCode mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "errorCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorCode mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams errorCodeSelector
 
 -- | @- setErrorCode:@
 setErrorCode :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> value -> IO ()
-setErrorCode mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "setErrorCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrorCode mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams setErrorCodeSelector (toNSNumber value)
 
 -- | @- debugText@
 debugText :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> IO (Id NSString)
-debugText mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "debugText") (retPtr retVoid) [] >>= retainedObject . castPtr
+debugText mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams debugTextSelector
 
 -- | @- setDebugText:@
 setDebugText :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams, IsNSString value) => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> value -> IO ()
-setDebugText mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "setDebugText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDebugText mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams setDebugTextSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setDebugText mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  va
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  =
-    sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigResponsePa
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams value =
+  sendMessage mtrGeneralCommissioningClusterSetRegulatoryConfigResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @errorCode@
-errorCodeSelector :: Selector
+errorCodeSelector :: Selector '[] (Id NSNumber)
 errorCodeSelector = mkSelector "errorCode"
 
 -- | @Selector@ for @setErrorCode:@
-setErrorCodeSelector :: Selector
+setErrorCodeSelector :: Selector '[Id NSNumber] ()
 setErrorCodeSelector = mkSelector "setErrorCode:"
 
 -- | @Selector@ for @debugText@
-debugTextSelector :: Selector
+debugTextSelector :: Selector '[] (Id NSString)
 debugTextSelector = mkSelector "debugText"
 
 -- | @Selector@ for @setDebugText:@
-setDebugTextSelector :: Selector
+setDebugTextSelector :: Selector '[Id NSString] ()
 setDebugTextSelector = mkSelector "setDebugText:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

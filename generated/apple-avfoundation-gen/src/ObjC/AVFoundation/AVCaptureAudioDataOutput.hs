@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.AVFoundation.AVCaptureAudioDataOutput
   , setAudioSettings
   , spatialAudioChannelLayoutTag
   , setSpatialAudioChannelLayoutTag
+  , audioSettingsSelector
   , initSelector
   , newSelector
-  , setSampleBufferDelegate_queueSelector
   , recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector
-  , sampleBufferDelegateSelector
   , sampleBufferCallbackQueueSelector
-  , audioSettingsSelector
+  , sampleBufferDelegateSelector
   , setAudioSettingsSelector
-  , spatialAudioChannelLayoutTagSelector
+  , setSampleBufferDelegate_queueSelector
   , setSpatialAudioChannelLayoutTagSelector
+  , spatialAudioChannelLayoutTagSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO (Id AVCaptureAudioDataOutput)
-init_ avCaptureAudioDataOutput  =
-    sendMsg avCaptureAudioDataOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureAudioDataOutput =
+  sendOwnedMessage avCaptureAudioDataOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureAudioDataOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureAudioDataOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setSampleBufferDelegate:queue:
 --
@@ -79,9 +76,8 @@ new  =
 --
 -- ObjC selector: @- setSampleBufferDelegate:queue:@
 setSampleBufferDelegate_queue :: (IsAVCaptureAudioDataOutput avCaptureAudioDataOutput, IsNSObject sampleBufferCallbackQueue) => avCaptureAudioDataOutput -> RawId -> sampleBufferCallbackQueue -> IO ()
-setSampleBufferDelegate_queue avCaptureAudioDataOutput  sampleBufferDelegate sampleBufferCallbackQueue =
-  withObjCPtr sampleBufferCallbackQueue $ \raw_sampleBufferCallbackQueue ->
-      sendMsg avCaptureAudioDataOutput (mkSelector "setSampleBufferDelegate:queue:") retVoid [argPtr (castPtr (unRawId sampleBufferDelegate) :: Ptr ()), argPtr (castPtr raw_sampleBufferCallbackQueue :: Ptr ())]
+setSampleBufferDelegate_queue avCaptureAudioDataOutput sampleBufferDelegate sampleBufferCallbackQueue =
+  sendMessage avCaptureAudioDataOutput setSampleBufferDelegate_queueSelector sampleBufferDelegate (toNSObject sampleBufferCallbackQueue)
 
 -- | recommendedAudioSettingsForAssetWriterWithOutputFileType:
 --
@@ -101,9 +97,8 @@ setSampleBufferDelegate_queue avCaptureAudioDataOutput  sampleBufferDelegate sam
 --
 -- ObjC selector: @- recommendedAudioSettingsForAssetWriterWithOutputFileType:@
 recommendedAudioSettingsForAssetWriterWithOutputFileType :: (IsAVCaptureAudioDataOutput avCaptureAudioDataOutput, IsNSString outputFileType) => avCaptureAudioDataOutput -> outputFileType -> IO (Id NSDictionary)
-recommendedAudioSettingsForAssetWriterWithOutputFileType avCaptureAudioDataOutput  outputFileType =
-  withObjCPtr outputFileType $ \raw_outputFileType ->
-      sendMsg avCaptureAudioDataOutput (mkSelector "recommendedAudioSettingsForAssetWriterWithOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+recommendedAudioSettingsForAssetWriterWithOutputFileType avCaptureAudioDataOutput outputFileType =
+  sendMessage avCaptureAudioDataOutput recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector (toNSString outputFileType)
 
 -- | sampleBufferDelegate
 --
@@ -113,8 +108,8 @@ recommendedAudioSettingsForAssetWriterWithOutputFileType avCaptureAudioDataOutpu
 --
 -- ObjC selector: @- sampleBufferDelegate@
 sampleBufferDelegate :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO RawId
-sampleBufferDelegate avCaptureAudioDataOutput  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureAudioDataOutput (mkSelector "sampleBufferDelegate") (retPtr retVoid) []
+sampleBufferDelegate avCaptureAudioDataOutput =
+  sendMessage avCaptureAudioDataOutput sampleBufferDelegateSelector
 
 -- | sampleBufferCallbackQueue
 --
@@ -124,8 +119,8 @@ sampleBufferDelegate avCaptureAudioDataOutput  =
 --
 -- ObjC selector: @- sampleBufferCallbackQueue@
 sampleBufferCallbackQueue :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO (Id NSObject)
-sampleBufferCallbackQueue avCaptureAudioDataOutput  =
-    sendMsg avCaptureAudioDataOutput (mkSelector "sampleBufferCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferCallbackQueue avCaptureAudioDataOutput =
+  sendMessage avCaptureAudioDataOutput sampleBufferCallbackQueueSelector
 
 -- | audioSettings
 --
@@ -135,8 +130,8 @@ sampleBufferCallbackQueue avCaptureAudioDataOutput  =
 --
 -- ObjC selector: @- audioSettings@
 audioSettings :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO (Id NSDictionary)
-audioSettings avCaptureAudioDataOutput  =
-    sendMsg avCaptureAudioDataOutput (mkSelector "audioSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSettings avCaptureAudioDataOutput =
+  sendMessage avCaptureAudioDataOutput audioSettingsSelector
 
 -- | audioSettings
 --
@@ -146,9 +141,8 @@ audioSettings avCaptureAudioDataOutput  =
 --
 -- ObjC selector: @- setAudioSettings:@
 setAudioSettings :: (IsAVCaptureAudioDataOutput avCaptureAudioDataOutput, IsNSDictionary value) => avCaptureAudioDataOutput -> value -> IO ()
-setAudioSettings avCaptureAudioDataOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureAudioDataOutput (mkSelector "setAudioSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioSettings avCaptureAudioDataOutput value =
+  sendMessage avCaptureAudioDataOutput setAudioSettingsSelector (toNSDictionary value)
 
 -- | The audio channel layout tag of the audio sample buffers produced by the audio data output.
 --
@@ -160,8 +154,8 @@ setAudioSettings avCaptureAudioDataOutput  value =
 --
 -- ObjC selector: @- spatialAudioChannelLayoutTag@
 spatialAudioChannelLayoutTag :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> IO CUInt
-spatialAudioChannelLayoutTag avCaptureAudioDataOutput  =
-    sendMsg avCaptureAudioDataOutput (mkSelector "spatialAudioChannelLayoutTag") retCUInt []
+spatialAudioChannelLayoutTag avCaptureAudioDataOutput =
+  sendMessage avCaptureAudioDataOutput spatialAudioChannelLayoutTagSelector
 
 -- | The audio channel layout tag of the audio sample buffers produced by the audio data output.
 --
@@ -173,50 +167,50 @@ spatialAudioChannelLayoutTag avCaptureAudioDataOutput  =
 --
 -- ObjC selector: @- setSpatialAudioChannelLayoutTag:@
 setSpatialAudioChannelLayoutTag :: IsAVCaptureAudioDataOutput avCaptureAudioDataOutput => avCaptureAudioDataOutput -> CUInt -> IO ()
-setSpatialAudioChannelLayoutTag avCaptureAudioDataOutput  value =
-    sendMsg avCaptureAudioDataOutput (mkSelector "setSpatialAudioChannelLayoutTag:") retVoid [argCUInt value]
+setSpatialAudioChannelLayoutTag avCaptureAudioDataOutput value =
+  sendMessage avCaptureAudioDataOutput setSpatialAudioChannelLayoutTagSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureAudioDataOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureAudioDataOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setSampleBufferDelegate:queue:@
-setSampleBufferDelegate_queueSelector :: Selector
+setSampleBufferDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setSampleBufferDelegate_queueSelector = mkSelector "setSampleBufferDelegate:queue:"
 
 -- | @Selector@ for @recommendedAudioSettingsForAssetWriterWithOutputFileType:@
-recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector :: Selector
+recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector :: Selector '[Id NSString] (Id NSDictionary)
 recommendedAudioSettingsForAssetWriterWithOutputFileTypeSelector = mkSelector "recommendedAudioSettingsForAssetWriterWithOutputFileType:"
 
 -- | @Selector@ for @sampleBufferDelegate@
-sampleBufferDelegateSelector :: Selector
+sampleBufferDelegateSelector :: Selector '[] RawId
 sampleBufferDelegateSelector = mkSelector "sampleBufferDelegate"
 
 -- | @Selector@ for @sampleBufferCallbackQueue@
-sampleBufferCallbackQueueSelector :: Selector
+sampleBufferCallbackQueueSelector :: Selector '[] (Id NSObject)
 sampleBufferCallbackQueueSelector = mkSelector "sampleBufferCallbackQueue"
 
 -- | @Selector@ for @audioSettings@
-audioSettingsSelector :: Selector
+audioSettingsSelector :: Selector '[] (Id NSDictionary)
 audioSettingsSelector = mkSelector "audioSettings"
 
 -- | @Selector@ for @setAudioSettings:@
-setAudioSettingsSelector :: Selector
+setAudioSettingsSelector :: Selector '[Id NSDictionary] ()
 setAudioSettingsSelector = mkSelector "setAudioSettings:"
 
 -- | @Selector@ for @spatialAudioChannelLayoutTag@
-spatialAudioChannelLayoutTagSelector :: Selector
+spatialAudioChannelLayoutTagSelector :: Selector '[] CUInt
 spatialAudioChannelLayoutTagSelector = mkSelector "spatialAudioChannelLayoutTag"
 
 -- | @Selector@ for @setSpatialAudioChannelLayoutTag:@
-setSpatialAudioChannelLayoutTagSelector :: Selector
+setSpatialAudioChannelLayoutTagSelector :: Selector '[CUInt] ()
 setSpatialAudioChannelLayoutTagSelector = mkSelector "setSpatialAudioChannelLayoutTag:"
 

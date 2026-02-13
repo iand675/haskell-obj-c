@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.PDFKit.PDFBorder
   , dashPattern
   , setDashPattern
   , borderKeyValues
-  , drawInRectSelector
-  , styleSelector
-  , setStyleSelector
-  , lineWidthSelector
-  , setLineWidthSelector
-  , dashPatternSelector
-  , setDashPatternSelector
   , borderKeyValuesSelector
+  , dashPatternSelector
+  , drawInRectSelector
+  , lineWidthSelector
+  , setDashPatternSelector
+  , setLineWidthSelector
+  , setStyleSelector
+  , styleSelector
 
   -- * Enum types
   , PDFBorderStyle(PDFBorderStyle)
@@ -34,15 +35,11 @@ module ObjC.PDFKit.PDFBorder
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,78 +50,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- drawInRect:@
 drawInRect :: IsPDFBorder pdfBorder => pdfBorder -> NSRect -> IO ()
-drawInRect pdfBorder  rect =
-    sendMsg pdfBorder (mkSelector "drawInRect:") retVoid [argNSRect rect]
+drawInRect pdfBorder rect =
+  sendMessage pdfBorder drawInRectSelector rect
 
 -- | @- style@
 style :: IsPDFBorder pdfBorder => pdfBorder -> IO PDFBorderStyle
-style pdfBorder  =
-    fmap (coerce :: CLong -> PDFBorderStyle) $ sendMsg pdfBorder (mkSelector "style") retCLong []
+style pdfBorder =
+  sendMessage pdfBorder styleSelector
 
 -- | @- setStyle:@
 setStyle :: IsPDFBorder pdfBorder => pdfBorder -> PDFBorderStyle -> IO ()
-setStyle pdfBorder  value =
-    sendMsg pdfBorder (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle pdfBorder value =
+  sendMessage pdfBorder setStyleSelector value
 
 -- | @- lineWidth@
 lineWidth :: IsPDFBorder pdfBorder => pdfBorder -> IO CDouble
-lineWidth pdfBorder  =
-    sendMsg pdfBorder (mkSelector "lineWidth") retCDouble []
+lineWidth pdfBorder =
+  sendMessage pdfBorder lineWidthSelector
 
 -- | @- setLineWidth:@
 setLineWidth :: IsPDFBorder pdfBorder => pdfBorder -> CDouble -> IO ()
-setLineWidth pdfBorder  value =
-    sendMsg pdfBorder (mkSelector "setLineWidth:") retVoid [argCDouble value]
+setLineWidth pdfBorder value =
+  sendMessage pdfBorder setLineWidthSelector value
 
 -- | @- dashPattern@
 dashPattern :: IsPDFBorder pdfBorder => pdfBorder -> IO (Id NSArray)
-dashPattern pdfBorder  =
-    sendMsg pdfBorder (mkSelector "dashPattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+dashPattern pdfBorder =
+  sendMessage pdfBorder dashPatternSelector
 
 -- | @- setDashPattern:@
 setDashPattern :: (IsPDFBorder pdfBorder, IsNSArray value) => pdfBorder -> value -> IO ()
-setDashPattern pdfBorder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfBorder (mkSelector "setDashPattern:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDashPattern pdfBorder value =
+  sendMessage pdfBorder setDashPatternSelector (toNSArray value)
 
 -- | @- borderKeyValues@
 borderKeyValues :: IsPDFBorder pdfBorder => pdfBorder -> IO (Id NSDictionary)
-borderKeyValues pdfBorder  =
-    sendMsg pdfBorder (mkSelector "borderKeyValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+borderKeyValues pdfBorder =
+  sendMessage pdfBorder borderKeyValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @drawInRect:@
-drawInRectSelector :: Selector
+drawInRectSelector :: Selector '[NSRect] ()
 drawInRectSelector = mkSelector "drawInRect:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] PDFBorderStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[PDFBorderStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 
 -- | @Selector@ for @lineWidth@
-lineWidthSelector :: Selector
+lineWidthSelector :: Selector '[] CDouble
 lineWidthSelector = mkSelector "lineWidth"
 
 -- | @Selector@ for @setLineWidth:@
-setLineWidthSelector :: Selector
+setLineWidthSelector :: Selector '[CDouble] ()
 setLineWidthSelector = mkSelector "setLineWidth:"
 
 -- | @Selector@ for @dashPattern@
-dashPatternSelector :: Selector
+dashPatternSelector :: Selector '[] (Id NSArray)
 dashPatternSelector = mkSelector "dashPattern"
 
 -- | @Selector@ for @setDashPattern:@
-setDashPatternSelector :: Selector
+setDashPatternSelector :: Selector '[Id NSArray] ()
 setDashPatternSelector = mkSelector "setDashPattern:"
 
 -- | @Selector@ for @borderKeyValues@
-borderKeyValuesSelector :: Selector
+borderKeyValuesSelector :: Selector '[] (Id NSDictionary)
 borderKeyValuesSelector = mkSelector "borderKeyValues"
 

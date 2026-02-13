@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.GameController.GCPhysicalInputElementCollection
   , init_
   , elementEnumerator
   , count
-  , newSelector
-  , initSelector
-  , elementEnumeratorSelector
   , countSelector
+  , elementEnumeratorSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,42 +37,42 @@ new :: IO (Id GCPhysicalInputElementCollection)
 new  =
   do
     cls' <- getRequiredClass "GCPhysicalInputElementCollection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsGCPhysicalInputElementCollection gcPhysicalInputElementCollection => gcPhysicalInputElementCollection -> IO (Id GCPhysicalInputElementCollection)
-init_ gcPhysicalInputElementCollection  =
-    sendMsg gcPhysicalInputElementCollection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gcPhysicalInputElementCollection =
+  sendOwnedMessage gcPhysicalInputElementCollection initSelector
 
 -- | @- elementEnumerator@
 elementEnumerator :: IsGCPhysicalInputElementCollection gcPhysicalInputElementCollection => gcPhysicalInputElementCollection -> IO (Id NSEnumerator)
-elementEnumerator gcPhysicalInputElementCollection  =
-    sendMsg gcPhysicalInputElementCollection (mkSelector "elementEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementEnumerator gcPhysicalInputElementCollection =
+  sendMessage gcPhysicalInputElementCollection elementEnumeratorSelector
 
 -- | The number of elements in the collection.
 --
 -- ObjC selector: @- count@
 count :: IsGCPhysicalInputElementCollection gcPhysicalInputElementCollection => gcPhysicalInputElementCollection -> IO CULong
-count gcPhysicalInputElementCollection  =
-    sendMsg gcPhysicalInputElementCollection (mkSelector "count") retCULong []
+count gcPhysicalInputElementCollection =
+  sendMessage gcPhysicalInputElementCollection countSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id GCPhysicalInputElementCollection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GCPhysicalInputElementCollection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @elementEnumerator@
-elementEnumeratorSelector :: Selector
+elementEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 elementEnumeratorSelector = mkSelector "elementEnumerator"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 

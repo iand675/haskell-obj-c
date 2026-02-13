@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.NetworkExtension.NWUDPSession
   , hasBetterPath
   , currentPath
   , maximumDatagramLength
-  , initWithUpgradeForSessionSelector
-  , tryNextResolvedEndpointSelector
-  , writeMultipleDatagrams_completionHandlerSelector
-  , writeDatagram_completionHandlerSelector
   , cancelSelector
-  , stateSelector
-  , endpointSelector
-  , resolvedEndpointSelector
-  , viableSelector
-  , hasBetterPathSelector
   , currentPathSelector
+  , endpointSelector
+  , hasBetterPathSelector
+  , initWithUpgradeForSessionSelector
   , maximumDatagramLengthSelector
+  , resolvedEndpointSelector
+  , stateSelector
+  , tryNextResolvedEndpointSelector
+  , viableSelector
+  , writeDatagram_completionHandlerSelector
+  , writeMultipleDatagrams_completionHandlerSelector
 
   -- * Enum types
   , NWUDPSessionState(NWUDPSessionState)
@@ -47,15 +48,11 @@ module ObjC.NetworkExtension.NWUDPSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,9 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUpgradeForSession:@
 initWithUpgradeForSession :: (IsNWUDPSession nwudpSession, IsNWUDPSession session) => nwudpSession -> session -> IO (Id NWUDPSession)
-initWithUpgradeForSession nwudpSession  session =
-  withObjCPtr session $ \raw_session ->
-      sendMsg nwudpSession (mkSelector "initWithUpgradeForSession:") (retPtr retVoid) [argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithUpgradeForSession nwudpSession session =
+  sendOwnedMessage nwudpSession initWithUpgradeForSessionSelector (toNWUDPSession session)
 
 -- | tryNextResolvedEndpoint
 --
@@ -85,8 +81,8 @@ initWithUpgradeForSession nwudpSession  session =
 --
 -- ObjC selector: @- tryNextResolvedEndpoint@
 tryNextResolvedEndpoint :: IsNWUDPSession nwudpSession => nwudpSession -> IO ()
-tryNextResolvedEndpoint nwudpSession  =
-    sendMsg nwudpSession (mkSelector "tryNextResolvedEndpoint") retVoid []
+tryNextResolvedEndpoint nwudpSession =
+  sendMessage nwudpSession tryNextResolvedEndpointSelector
 
 -- | writeMultipleDatagrams:completionHandler
 --
@@ -98,9 +94,8 @@ tryNextResolvedEndpoint nwudpSession  =
 --
 -- ObjC selector: @- writeMultipleDatagrams:completionHandler:@
 writeMultipleDatagrams_completionHandler :: (IsNWUDPSession nwudpSession, IsNSArray datagramArray) => nwudpSession -> datagramArray -> Ptr () -> IO ()
-writeMultipleDatagrams_completionHandler nwudpSession  datagramArray completionHandler =
-  withObjCPtr datagramArray $ \raw_datagramArray ->
-      sendMsg nwudpSession (mkSelector "writeMultipleDatagrams:completionHandler:") retVoid [argPtr (castPtr raw_datagramArray :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+writeMultipleDatagrams_completionHandler nwudpSession datagramArray completionHandler =
+  sendMessage nwudpSession writeMultipleDatagrams_completionHandlerSelector (toNSArray datagramArray) completionHandler
 
 -- | writeDatagram:completionHandler
 --
@@ -112,9 +107,8 @@ writeMultipleDatagrams_completionHandler nwudpSession  datagramArray completionH
 --
 -- ObjC selector: @- writeDatagram:completionHandler:@
 writeDatagram_completionHandler :: (IsNWUDPSession nwudpSession, IsNSData datagram) => nwudpSession -> datagram -> Ptr () -> IO ()
-writeDatagram_completionHandler nwudpSession  datagram completionHandler =
-  withObjCPtr datagram $ \raw_datagram ->
-      sendMsg nwudpSession (mkSelector "writeDatagram:completionHandler:") retVoid [argPtr (castPtr raw_datagram :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+writeDatagram_completionHandler nwudpSession datagram completionHandler =
+  sendMessage nwudpSession writeDatagram_completionHandlerSelector (toNSData datagram) completionHandler
 
 -- | cancel
 --
@@ -122,8 +116,8 @@ writeDatagram_completionHandler nwudpSession  datagram completionHandler =
 --
 -- ObjC selector: @- cancel@
 cancel :: IsNWUDPSession nwudpSession => nwudpSession -> IO ()
-cancel nwudpSession  =
-    sendMsg nwudpSession (mkSelector "cancel") retVoid []
+cancel nwudpSession =
+  sendMessage nwudpSession cancelSelector
 
 -- | state
 --
@@ -131,8 +125,8 @@ cancel nwudpSession  =
 --
 -- ObjC selector: @- state@
 state :: IsNWUDPSession nwudpSession => nwudpSession -> IO NWUDPSessionState
-state nwudpSession  =
-    fmap (coerce :: CLong -> NWUDPSessionState) $ sendMsg nwudpSession (mkSelector "state") retCLong []
+state nwudpSession =
+  sendMessage nwudpSession stateSelector
 
 -- | endpoint
 --
@@ -140,8 +134,8 @@ state nwudpSession  =
 --
 -- ObjC selector: @- endpoint@
 endpoint :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWEndpoint)
-endpoint nwudpSession  =
-    sendMsg nwudpSession (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint nwudpSession =
+  sendMessage nwudpSession endpointSelector
 
 -- | resolvedEndpoint
 --
@@ -149,8 +143,8 @@ endpoint nwudpSession  =
 --
 -- ObjC selector: @- resolvedEndpoint@
 resolvedEndpoint :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWEndpoint)
-resolvedEndpoint nwudpSession  =
-    sendMsg nwudpSession (mkSelector "resolvedEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolvedEndpoint nwudpSession =
+  sendMessage nwudpSession resolvedEndpointSelector
 
 -- | viable
 --
@@ -158,8 +152,8 @@ resolvedEndpoint nwudpSession  =
 --
 -- ObjC selector: @- viable@
 viable :: IsNWUDPSession nwudpSession => nwudpSession -> IO Bool
-viable nwudpSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwudpSession (mkSelector "viable") retCULong []
+viable nwudpSession =
+  sendMessage nwudpSession viableSelector
 
 -- | hasBetterPath
 --
@@ -167,8 +161,8 @@ viable nwudpSession  =
 --
 -- ObjC selector: @- hasBetterPath@
 hasBetterPath :: IsNWUDPSession nwudpSession => nwudpSession -> IO Bool
-hasBetterPath nwudpSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwudpSession (mkSelector "hasBetterPath") retCULong []
+hasBetterPath nwudpSession =
+  sendMessage nwudpSession hasBetterPathSelector
 
 -- | currentPath
 --
@@ -176,8 +170,8 @@ hasBetterPath nwudpSession  =
 --
 -- ObjC selector: @- currentPath@
 currentPath :: IsNWUDPSession nwudpSession => nwudpSession -> IO (Id NWPath)
-currentPath nwudpSession  =
-    sendMsg nwudpSession (mkSelector "currentPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPath nwudpSession =
+  sendMessage nwudpSession currentPathSelector
 
 -- | maximumDatagramLength
 --
@@ -185,58 +179,58 @@ currentPath nwudpSession  =
 --
 -- ObjC selector: @- maximumDatagramLength@
 maximumDatagramLength :: IsNWUDPSession nwudpSession => nwudpSession -> IO CULong
-maximumDatagramLength nwudpSession  =
-    sendMsg nwudpSession (mkSelector "maximumDatagramLength") retCULong []
+maximumDatagramLength nwudpSession =
+  sendMessage nwudpSession maximumDatagramLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUpgradeForSession:@
-initWithUpgradeForSessionSelector :: Selector
+initWithUpgradeForSessionSelector :: Selector '[Id NWUDPSession] (Id NWUDPSession)
 initWithUpgradeForSessionSelector = mkSelector "initWithUpgradeForSession:"
 
 -- | @Selector@ for @tryNextResolvedEndpoint@
-tryNextResolvedEndpointSelector :: Selector
+tryNextResolvedEndpointSelector :: Selector '[] ()
 tryNextResolvedEndpointSelector = mkSelector "tryNextResolvedEndpoint"
 
 -- | @Selector@ for @writeMultipleDatagrams:completionHandler:@
-writeMultipleDatagrams_completionHandlerSelector :: Selector
+writeMultipleDatagrams_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 writeMultipleDatagrams_completionHandlerSelector = mkSelector "writeMultipleDatagrams:completionHandler:"
 
 -- | @Selector@ for @writeDatagram:completionHandler:@
-writeDatagram_completionHandlerSelector :: Selector
+writeDatagram_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 writeDatagram_completionHandlerSelector = mkSelector "writeDatagram:completionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NWUDPSessionState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NWEndpoint)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @resolvedEndpoint@
-resolvedEndpointSelector :: Selector
+resolvedEndpointSelector :: Selector '[] (Id NWEndpoint)
 resolvedEndpointSelector = mkSelector "resolvedEndpoint"
 
 -- | @Selector@ for @viable@
-viableSelector :: Selector
+viableSelector :: Selector '[] Bool
 viableSelector = mkSelector "viable"
 
 -- | @Selector@ for @hasBetterPath@
-hasBetterPathSelector :: Selector
+hasBetterPathSelector :: Selector '[] Bool
 hasBetterPathSelector = mkSelector "hasBetterPath"
 
 -- | @Selector@ for @currentPath@
-currentPathSelector :: Selector
+currentPathSelector :: Selector '[] (Id NWPath)
 currentPathSelector = mkSelector "currentPath"
 
 -- | @Selector@ for @maximumDatagramLength@
-maximumDatagramLengthSelector :: Selector
+maximumDatagramLengthSelector :: Selector '[] CULong
 maximumDatagramLengthSelector = mkSelector "maximumDatagramLength"
 

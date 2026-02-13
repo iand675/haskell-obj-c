@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.BackgroundTasks.BGTask
   , identifier
   , expirationHandler
   , setExpirationHandler
+  , expirationHandlerSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , setTaskCompletedWithSuccessSelector
-  , identifierSelector
-  , expirationHandlerSelector
   , setExpirationHandlerSelector
+  , setTaskCompletedWithSuccessSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBGTask bgTask => bgTask -> IO (Id BGTask)
-init_ bgTask  =
-    sendMsg bgTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ bgTask =
+  sendOwnedMessage bgTask initSelector
 
 -- | @+ new@
 new :: IO (Id BGTask)
 new  =
   do
     cls' <- getRequiredClass "BGTask"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Inform the background task scheduler that the task is complete.
 --
@@ -61,8 +58,8 @@ new  =
 --
 -- ObjC selector: @- setTaskCompletedWithSuccess:@
 setTaskCompletedWithSuccess :: IsBGTask bgTask => bgTask -> Bool -> IO ()
-setTaskCompletedWithSuccess bgTask  success =
-    sendMsg bgTask (mkSelector "setTaskCompletedWithSuccess:") retVoid [argCULong (if success then 1 else 0)]
+setTaskCompletedWithSuccess bgTask success =
+  sendMessage bgTask setTaskCompletedWithSuccessSelector success
 
 -- | The string identifier of the task.
 --
@@ -70,8 +67,8 @@ setTaskCompletedWithSuccess bgTask  success =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsBGTask bgTask => bgTask -> IO (Id NSString)
-identifier bgTask  =
-    sendMsg bgTask (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier bgTask =
+  sendMessage bgTask identifierSelector
 
 -- | A handler called shortly before the task’s background time expires.
 --
@@ -85,8 +82,8 @@ identifier bgTask  =
 --
 -- ObjC selector: @- expirationHandler@
 expirationHandler :: IsBGTask bgTask => bgTask -> IO (Ptr ())
-expirationHandler bgTask  =
-    fmap castPtr $ sendMsg bgTask (mkSelector "expirationHandler") (retPtr retVoid) []
+expirationHandler bgTask =
+  sendMessage bgTask expirationHandlerSelector
 
 -- | A handler called shortly before the task’s background time expires.
 --
@@ -100,34 +97,34 @@ expirationHandler bgTask  =
 --
 -- ObjC selector: @- setExpirationHandler:@
 setExpirationHandler :: IsBGTask bgTask => bgTask -> Ptr () -> IO ()
-setExpirationHandler bgTask  value =
-    sendMsg bgTask (mkSelector "setExpirationHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setExpirationHandler bgTask value =
+  sendMessage bgTask setExpirationHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BGTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BGTask)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setTaskCompletedWithSuccess:@
-setTaskCompletedWithSuccessSelector :: Selector
+setTaskCompletedWithSuccessSelector :: Selector '[Bool] ()
 setTaskCompletedWithSuccessSelector = mkSelector "setTaskCompletedWithSuccess:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @expirationHandler@
-expirationHandlerSelector :: Selector
+expirationHandlerSelector :: Selector '[] (Ptr ())
 expirationHandlerSelector = mkSelector "expirationHandler"
 
 -- | @Selector@ for @setExpirationHandler:@
-setExpirationHandlerSelector :: Selector
+setExpirationHandlerSelector :: Selector '[Ptr ()] ()
 setExpirationHandlerSelector = mkSelector "setExpirationHandler:"
 

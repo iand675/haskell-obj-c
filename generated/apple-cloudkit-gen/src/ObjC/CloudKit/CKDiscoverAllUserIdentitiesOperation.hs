@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.CloudKit.CKDiscoverAllUserIdentitiesOperation
   , setUserIdentityDiscoveredBlock
   , discoverAllUserIdentitiesCompletionBlock
   , setDiscoverAllUserIdentitiesCompletionBlock
-  , initSelector
-  , userIdentityDiscoveredBlockSelector
-  , setUserIdentityDiscoveredBlockSelector
   , discoverAllUserIdentitiesCompletionBlockSelector
+  , initSelector
   , setDiscoverAllUserIdentitiesCompletionBlockSelector
+  , setUserIdentityDiscoveredBlockSelector
+  , userIdentityDiscoveredBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKDiscoverAllUserIdentitiesOperation ckDiscoverAllUserIdentitiesOperation => ckDiscoverAllUserIdentitiesOperation -> IO (Id CKDiscoverAllUserIdentitiesOperation)
-init_ ckDiscoverAllUserIdentitiesOperation  =
-    sendMsg ckDiscoverAllUserIdentitiesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckDiscoverAllUserIdentitiesOperation =
+  sendOwnedMessage ckDiscoverAllUserIdentitiesOperation initSelector
 
 -- | Called once for each successfully-discovered user identity from the device's address book.
 --
@@ -52,8 +49,8 @@ init_ ckDiscoverAllUserIdentitiesOperation  =
 --
 -- ObjC selector: @- userIdentityDiscoveredBlock@
 userIdentityDiscoveredBlock :: IsCKDiscoverAllUserIdentitiesOperation ckDiscoverAllUserIdentitiesOperation => ckDiscoverAllUserIdentitiesOperation -> IO (Ptr ())
-userIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation  =
-    fmap castPtr $ sendMsg ckDiscoverAllUserIdentitiesOperation (mkSelector "userIdentityDiscoveredBlock") (retPtr retVoid) []
+userIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation =
+  sendMessage ckDiscoverAllUserIdentitiesOperation userIdentityDiscoveredBlockSelector
 
 -- | Called once for each successfully-discovered user identity from the device's address book.
 --
@@ -61,8 +58,8 @@ userIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation  =
 --
 -- ObjC selector: @- setUserIdentityDiscoveredBlock:@
 setUserIdentityDiscoveredBlock :: IsCKDiscoverAllUserIdentitiesOperation ckDiscoverAllUserIdentitiesOperation => ckDiscoverAllUserIdentitiesOperation -> Ptr () -> IO ()
-setUserIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation  value =
-    sendMsg ckDiscoverAllUserIdentitiesOperation (mkSelector "setUserIdentityDiscoveredBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setUserIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation value =
+  sendMessage ckDiscoverAllUserIdentitiesOperation setUserIdentityDiscoveredBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -74,8 +71,8 @@ setUserIdentityDiscoveredBlock ckDiscoverAllUserIdentitiesOperation  value =
 --
 -- ObjC selector: @- discoverAllUserIdentitiesCompletionBlock@
 discoverAllUserIdentitiesCompletionBlock :: IsCKDiscoverAllUserIdentitiesOperation ckDiscoverAllUserIdentitiesOperation => ckDiscoverAllUserIdentitiesOperation -> IO (Ptr ())
-discoverAllUserIdentitiesCompletionBlock ckDiscoverAllUserIdentitiesOperation  =
-    fmap castPtr $ sendMsg ckDiscoverAllUserIdentitiesOperation (mkSelector "discoverAllUserIdentitiesCompletionBlock") (retPtr retVoid) []
+discoverAllUserIdentitiesCompletionBlock ckDiscoverAllUserIdentitiesOperation =
+  sendMessage ckDiscoverAllUserIdentitiesOperation discoverAllUserIdentitiesCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -87,30 +84,30 @@ discoverAllUserIdentitiesCompletionBlock ckDiscoverAllUserIdentitiesOperation  =
 --
 -- ObjC selector: @- setDiscoverAllUserIdentitiesCompletionBlock:@
 setDiscoverAllUserIdentitiesCompletionBlock :: IsCKDiscoverAllUserIdentitiesOperation ckDiscoverAllUserIdentitiesOperation => ckDiscoverAllUserIdentitiesOperation -> Ptr () -> IO ()
-setDiscoverAllUserIdentitiesCompletionBlock ckDiscoverAllUserIdentitiesOperation  value =
-    sendMsg ckDiscoverAllUserIdentitiesOperation (mkSelector "setDiscoverAllUserIdentitiesCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDiscoverAllUserIdentitiesCompletionBlock ckDiscoverAllUserIdentitiesOperation value =
+  sendMessage ckDiscoverAllUserIdentitiesOperation setDiscoverAllUserIdentitiesCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKDiscoverAllUserIdentitiesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @userIdentityDiscoveredBlock@
-userIdentityDiscoveredBlockSelector :: Selector
+userIdentityDiscoveredBlockSelector :: Selector '[] (Ptr ())
 userIdentityDiscoveredBlockSelector = mkSelector "userIdentityDiscoveredBlock"
 
 -- | @Selector@ for @setUserIdentityDiscoveredBlock:@
-setUserIdentityDiscoveredBlockSelector :: Selector
+setUserIdentityDiscoveredBlockSelector :: Selector '[Ptr ()] ()
 setUserIdentityDiscoveredBlockSelector = mkSelector "setUserIdentityDiscoveredBlock:"
 
 -- | @Selector@ for @discoverAllUserIdentitiesCompletionBlock@
-discoverAllUserIdentitiesCompletionBlockSelector :: Selector
+discoverAllUserIdentitiesCompletionBlockSelector :: Selector '[] (Ptr ())
 discoverAllUserIdentitiesCompletionBlockSelector = mkSelector "discoverAllUserIdentitiesCompletionBlock"
 
 -- | @Selector@ for @setDiscoverAllUserIdentitiesCompletionBlock:@
-setDiscoverAllUserIdentitiesCompletionBlockSelector :: Selector
+setDiscoverAllUserIdentitiesCompletionBlockSelector :: Selector '[Ptr ()] ()
 setDiscoverAllUserIdentitiesCompletionBlockSelector = mkSelector "setDiscoverAllUserIdentitiesCompletionBlock:"
 

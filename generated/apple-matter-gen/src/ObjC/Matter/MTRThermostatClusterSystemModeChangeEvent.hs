@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRThermostatClusterSystemModeChangeEvent
   , setPreviousSystemMode
   , currentSystemMode
   , setCurrentSystemMode
-  , previousSystemModeSelector
-  , setPreviousSystemModeSelector
   , currentSystemModeSelector
+  , previousSystemModeSelector
   , setCurrentSystemModeSelector
+  , setPreviousSystemModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previousSystemMode@
 previousSystemMode :: IsMTRThermostatClusterSystemModeChangeEvent mtrThermostatClusterSystemModeChangeEvent => mtrThermostatClusterSystemModeChangeEvent -> IO (Id NSNumber)
-previousSystemMode mtrThermostatClusterSystemModeChangeEvent  =
-    sendMsg mtrThermostatClusterSystemModeChangeEvent (mkSelector "previousSystemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousSystemMode mtrThermostatClusterSystemModeChangeEvent =
+  sendMessage mtrThermostatClusterSystemModeChangeEvent previousSystemModeSelector
 
 -- | @- setPreviousSystemMode:@
 setPreviousSystemMode :: (IsMTRThermostatClusterSystemModeChangeEvent mtrThermostatClusterSystemModeChangeEvent, IsNSNumber value) => mtrThermostatClusterSystemModeChangeEvent -> value -> IO ()
-setPreviousSystemMode mtrThermostatClusterSystemModeChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSystemModeChangeEvent (mkSelector "setPreviousSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousSystemMode mtrThermostatClusterSystemModeChangeEvent value =
+  sendMessage mtrThermostatClusterSystemModeChangeEvent setPreviousSystemModeSelector (toNSNumber value)
 
 -- | @- currentSystemMode@
 currentSystemMode :: IsMTRThermostatClusterSystemModeChangeEvent mtrThermostatClusterSystemModeChangeEvent => mtrThermostatClusterSystemModeChangeEvent -> IO (Id NSNumber)
-currentSystemMode mtrThermostatClusterSystemModeChangeEvent  =
-    sendMsg mtrThermostatClusterSystemModeChangeEvent (mkSelector "currentSystemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSystemMode mtrThermostatClusterSystemModeChangeEvent =
+  sendMessage mtrThermostatClusterSystemModeChangeEvent currentSystemModeSelector
 
 -- | @- setCurrentSystemMode:@
 setCurrentSystemMode :: (IsMTRThermostatClusterSystemModeChangeEvent mtrThermostatClusterSystemModeChangeEvent, IsNSNumber value) => mtrThermostatClusterSystemModeChangeEvent -> value -> IO ()
-setCurrentSystemMode mtrThermostatClusterSystemModeChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSystemModeChangeEvent (mkSelector "setCurrentSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentSystemMode mtrThermostatClusterSystemModeChangeEvent value =
+  sendMessage mtrThermostatClusterSystemModeChangeEvent setCurrentSystemModeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousSystemMode@
-previousSystemModeSelector :: Selector
+previousSystemModeSelector :: Selector '[] (Id NSNumber)
 previousSystemModeSelector = mkSelector "previousSystemMode"
 
 -- | @Selector@ for @setPreviousSystemMode:@
-setPreviousSystemModeSelector :: Selector
+setPreviousSystemModeSelector :: Selector '[Id NSNumber] ()
 setPreviousSystemModeSelector = mkSelector "setPreviousSystemMode:"
 
 -- | @Selector@ for @currentSystemMode@
-currentSystemModeSelector :: Selector
+currentSystemModeSelector :: Selector '[] (Id NSNumber)
 currentSystemModeSelector = mkSelector "currentSystemMode"
 
 -- | @Selector@ for @setCurrentSystemMode:@
-setCurrentSystemModeSelector :: Selector
+setCurrentSystemModeSelector :: Selector '[Id NSNumber] ()
 setCurrentSystemModeSelector = mkSelector "setCurrentSystemMode:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INMediaDestinationResolutionResult
   , successWithResolvedMediaDestination
   , disambiguationWithMediaDestinationsToDisambiguate
   , confirmationRequiredWithMediaDestinationToConfirm
-  , successWithResolvedMediaDestinationSelector
-  , disambiguationWithMediaDestinationsToDisambiguateSelector
   , confirmationRequiredWithMediaDestinationToConfirmSelector
+  , disambiguationWithMediaDestinationsToDisambiguateSelector
+  , successWithResolvedMediaDestinationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedMediaDestination :: IsINMediaDestination resolvedMediaDestina
 successWithResolvedMediaDestination resolvedMediaDestination =
   do
     cls' <- getRequiredClass "INMediaDestinationResolutionResult"
-    withObjCPtr resolvedMediaDestination $ \raw_resolvedMediaDestination ->
-      sendClassMsg cls' (mkSelector "successWithResolvedMediaDestination:") (retPtr retVoid) [argPtr (castPtr raw_resolvedMediaDestination :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMediaDestinationSelector (toINMediaDestination resolvedMediaDestination)
 
 -- | @+ disambiguationWithMediaDestinationsToDisambiguate:@
 disambiguationWithMediaDestinationsToDisambiguate :: IsNSArray mediaDestinationsToDisambiguate => mediaDestinationsToDisambiguate -> IO (Id INMediaDestinationResolutionResult)
 disambiguationWithMediaDestinationsToDisambiguate mediaDestinationsToDisambiguate =
   do
     cls' <- getRequiredClass "INMediaDestinationResolutionResult"
-    withObjCPtr mediaDestinationsToDisambiguate $ \raw_mediaDestinationsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithMediaDestinationsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_mediaDestinationsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithMediaDestinationsToDisambiguateSelector (toNSArray mediaDestinationsToDisambiguate)
 
 -- | @+ confirmationRequiredWithMediaDestinationToConfirm:@
 confirmationRequiredWithMediaDestinationToConfirm :: IsINMediaDestination mediaDestinationToConfirm => mediaDestinationToConfirm -> IO (Id INMediaDestinationResolutionResult)
 confirmationRequiredWithMediaDestinationToConfirm mediaDestinationToConfirm =
   do
     cls' <- getRequiredClass "INMediaDestinationResolutionResult"
-    withObjCPtr mediaDestinationToConfirm $ \raw_mediaDestinationToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithMediaDestinationToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_mediaDestinationToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMediaDestinationToConfirmSelector (toINMediaDestination mediaDestinationToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMediaDestination:@
-successWithResolvedMediaDestinationSelector :: Selector
+successWithResolvedMediaDestinationSelector :: Selector '[Id INMediaDestination] (Id INMediaDestinationResolutionResult)
 successWithResolvedMediaDestinationSelector = mkSelector "successWithResolvedMediaDestination:"
 
 -- | @Selector@ for @disambiguationWithMediaDestinationsToDisambiguate:@
-disambiguationWithMediaDestinationsToDisambiguateSelector :: Selector
+disambiguationWithMediaDestinationsToDisambiguateSelector :: Selector '[Id NSArray] (Id INMediaDestinationResolutionResult)
 disambiguationWithMediaDestinationsToDisambiguateSelector = mkSelector "disambiguationWithMediaDestinationsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithMediaDestinationToConfirm:@
-confirmationRequiredWithMediaDestinationToConfirmSelector :: Selector
+confirmationRequiredWithMediaDestinationToConfirmSelector :: Selector '[Id INMediaDestination] (Id INMediaDestinationResolutionResult)
 confirmationRequiredWithMediaDestinationToConfirmSelector = mkSelector "confirmationRequiredWithMediaDestinationToConfirm:"
 

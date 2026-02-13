@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.Metal.MTLFunctionStitchingGraph
   , setOutputNode
   , attributes
   , setAttributes
-  , initWithFunctionName_nodes_outputNode_attributesSelector
-  , functionNameSelector
-  , setFunctionNameSelector
-  , nodesSelector
-  , setNodesSelector
-  , outputNodeSelector
-  , setOutputNodeSelector
   , attributesSelector
+  , functionNameSelector
+  , initWithFunctionName_nodes_outputNode_attributesSelector
+  , nodesSelector
+  , outputNodeSelector
   , setAttributesSelector
+  , setFunctionNameSelector
+  , setNodesSelector
+  , setOutputNodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,94 +48,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFunctionName:nodes:outputNode:attributes:@
 initWithFunctionName_nodes_outputNode_attributes :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsNSString functionName, IsNSArray nodes, IsMTLFunctionStitchingFunctionNode outputNode, IsNSArray attributes) => mtlFunctionStitchingGraph -> functionName -> nodes -> outputNode -> attributes -> IO (Id MTLFunctionStitchingGraph)
-initWithFunctionName_nodes_outputNode_attributes mtlFunctionStitchingGraph  functionName nodes outputNode attributes =
-  withObjCPtr functionName $ \raw_functionName ->
-    withObjCPtr nodes $ \raw_nodes ->
-      withObjCPtr outputNode $ \raw_outputNode ->
-        withObjCPtr attributes $ \raw_attributes ->
-            sendMsg mtlFunctionStitchingGraph (mkSelector "initWithFunctionName:nodes:outputNode:attributes:") (retPtr retVoid) [argPtr (castPtr raw_functionName :: Ptr ()), argPtr (castPtr raw_nodes :: Ptr ()), argPtr (castPtr raw_outputNode :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= ownedObject . castPtr
+initWithFunctionName_nodes_outputNode_attributes mtlFunctionStitchingGraph functionName nodes outputNode attributes =
+  sendOwnedMessage mtlFunctionStitchingGraph initWithFunctionName_nodes_outputNode_attributesSelector (toNSString functionName) (toNSArray nodes) (toMTLFunctionStitchingFunctionNode outputNode) (toNSArray attributes)
 
 -- | @- functionName@
 functionName :: IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph => mtlFunctionStitchingGraph -> IO (Id NSString)
-functionName mtlFunctionStitchingGraph  =
-    sendMsg mtlFunctionStitchingGraph (mkSelector "functionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+functionName mtlFunctionStitchingGraph =
+  sendMessage mtlFunctionStitchingGraph functionNameSelector
 
 -- | @- setFunctionName:@
 setFunctionName :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsNSString value) => mtlFunctionStitchingGraph -> value -> IO ()
-setFunctionName mtlFunctionStitchingGraph  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingGraph (mkSelector "setFunctionName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctionName mtlFunctionStitchingGraph value =
+  sendMessage mtlFunctionStitchingGraph setFunctionNameSelector (toNSString value)
 
 -- | @- nodes@
 nodes :: IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph => mtlFunctionStitchingGraph -> IO (Id NSArray)
-nodes mtlFunctionStitchingGraph  =
-    sendMsg mtlFunctionStitchingGraph (mkSelector "nodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodes mtlFunctionStitchingGraph =
+  sendMessage mtlFunctionStitchingGraph nodesSelector
 
 -- | @- setNodes:@
 setNodes :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsNSArray value) => mtlFunctionStitchingGraph -> value -> IO ()
-setNodes mtlFunctionStitchingGraph  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingGraph (mkSelector "setNodes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodes mtlFunctionStitchingGraph value =
+  sendMessage mtlFunctionStitchingGraph setNodesSelector (toNSArray value)
 
 -- | @- outputNode@
 outputNode :: IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph => mtlFunctionStitchingGraph -> IO (Id MTLFunctionStitchingFunctionNode)
-outputNode mtlFunctionStitchingGraph  =
-    sendMsg mtlFunctionStitchingGraph (mkSelector "outputNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputNode mtlFunctionStitchingGraph =
+  sendMessage mtlFunctionStitchingGraph outputNodeSelector
 
 -- | @- setOutputNode:@
 setOutputNode :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsMTLFunctionStitchingFunctionNode value) => mtlFunctionStitchingGraph -> value -> IO ()
-setOutputNode mtlFunctionStitchingGraph  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingGraph (mkSelector "setOutputNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputNode mtlFunctionStitchingGraph value =
+  sendMessage mtlFunctionStitchingGraph setOutputNodeSelector (toMTLFunctionStitchingFunctionNode value)
 
 -- | @- attributes@
 attributes :: IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph => mtlFunctionStitchingGraph -> IO (Id NSArray)
-attributes mtlFunctionStitchingGraph  =
-    sendMsg mtlFunctionStitchingGraph (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mtlFunctionStitchingGraph =
+  sendMessage mtlFunctionStitchingGraph attributesSelector
 
 -- | @- setAttributes:@
 setAttributes :: (IsMTLFunctionStitchingGraph mtlFunctionStitchingGraph, IsNSArray value) => mtlFunctionStitchingGraph -> value -> IO ()
-setAttributes mtlFunctionStitchingGraph  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingGraph (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributes mtlFunctionStitchingGraph value =
+  sendMessage mtlFunctionStitchingGraph setAttributesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFunctionName:nodes:outputNode:attributes:@
-initWithFunctionName_nodes_outputNode_attributesSelector :: Selector
+initWithFunctionName_nodes_outputNode_attributesSelector :: Selector '[Id NSString, Id NSArray, Id MTLFunctionStitchingFunctionNode, Id NSArray] (Id MTLFunctionStitchingGraph)
 initWithFunctionName_nodes_outputNode_attributesSelector = mkSelector "initWithFunctionName:nodes:outputNode:attributes:"
 
 -- | @Selector@ for @functionName@
-functionNameSelector :: Selector
+functionNameSelector :: Selector '[] (Id NSString)
 functionNameSelector = mkSelector "functionName"
 
 -- | @Selector@ for @setFunctionName:@
-setFunctionNameSelector :: Selector
+setFunctionNameSelector :: Selector '[Id NSString] ()
 setFunctionNameSelector = mkSelector "setFunctionName:"
 
 -- | @Selector@ for @nodes@
-nodesSelector :: Selector
+nodesSelector :: Selector '[] (Id NSArray)
 nodesSelector = mkSelector "nodes"
 
 -- | @Selector@ for @setNodes:@
-setNodesSelector :: Selector
+setNodesSelector :: Selector '[Id NSArray] ()
 setNodesSelector = mkSelector "setNodes:"
 
 -- | @Selector@ for @outputNode@
-outputNodeSelector :: Selector
+outputNodeSelector :: Selector '[] (Id MTLFunctionStitchingFunctionNode)
 outputNodeSelector = mkSelector "outputNode"
 
 -- | @Selector@ for @setOutputNode:@
-setOutputNodeSelector :: Selector
+setOutputNodeSelector :: Selector '[Id MTLFunctionStitchingFunctionNode] ()
 setOutputNodeSelector = mkSelector "setOutputNode:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSArray)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @setAttributes:@
-setAttributesSelector :: Selector
+setAttributesSelector :: Selector '[Id NSArray] ()
 setAttributesSelector = mkSelector "setAttributes:"
 

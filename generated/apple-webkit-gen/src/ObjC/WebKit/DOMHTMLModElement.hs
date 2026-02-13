@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.WebKit.DOMHTMLModElement
   , dateTime
   , setDateTime
   , citeSelector
-  , setCiteSelector
   , dateTimeSelector
+  , setCiteSelector
   , setDateTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cite@
 cite :: IsDOMHTMLModElement domhtmlModElement => domhtmlModElement -> IO (Id NSString)
-cite domhtmlModElement  =
-    sendMsg domhtmlModElement (mkSelector "cite") (retPtr retVoid) [] >>= retainedObject . castPtr
+cite domhtmlModElement =
+  sendMessage domhtmlModElement citeSelector
 
 -- | @- setCite:@
 setCite :: (IsDOMHTMLModElement domhtmlModElement, IsNSString value) => domhtmlModElement -> value -> IO ()
-setCite domhtmlModElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlModElement (mkSelector "setCite:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCite domhtmlModElement value =
+  sendMessage domhtmlModElement setCiteSelector (toNSString value)
 
 -- | @- dateTime@
 dateTime :: IsDOMHTMLModElement domhtmlModElement => domhtmlModElement -> IO (Id NSString)
-dateTime domhtmlModElement  =
-    sendMsg domhtmlModElement (mkSelector "dateTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateTime domhtmlModElement =
+  sendMessage domhtmlModElement dateTimeSelector
 
 -- | @- setDateTime:@
 setDateTime :: (IsDOMHTMLModElement domhtmlModElement, IsNSString value) => domhtmlModElement -> value -> IO ()
-setDateTime domhtmlModElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlModElement (mkSelector "setDateTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDateTime domhtmlModElement value =
+  sendMessage domhtmlModElement setDateTimeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cite@
-citeSelector :: Selector
+citeSelector :: Selector '[] (Id NSString)
 citeSelector = mkSelector "cite"
 
 -- | @Selector@ for @setCite:@
-setCiteSelector :: Selector
+setCiteSelector :: Selector '[Id NSString] ()
 setCiteSelector = mkSelector "setCite:"
 
 -- | @Selector@ for @dateTime@
-dateTimeSelector :: Selector
+dateTimeSelector :: Selector '[] (Id NSString)
 dateTimeSelector = mkSelector "dateTime"
 
 -- | @Selector@ for @setDateTime:@
-setDateTimeSelector :: Selector
+setDateTimeSelector :: Selector '[Id NSString] ()
 setDateTimeSelector = mkSelector "setDateTime:"
 

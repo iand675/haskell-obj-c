@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRClusterRelativeHumidityMeasurement
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeMeasuredValueWithParamsSelector
-  , readAttributeMinMeasuredValueWithParamsSelector
-  , readAttributeMaxMeasuredValueWithParamsSelector
-  , readAttributeToleranceWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeMaxMeasuredValueWithParamsSelector
+  , readAttributeMeasuredValueWithParamsSelector
+  , readAttributeMinMeasuredValueWithParamsSelector
+  , readAttributeToleranceWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,140 +52,126 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeMeasuredValueWithParams:@
 readAttributeMeasuredValueWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinMeasuredValueWithParams:@
 readAttributeMinMeasuredValueWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMinMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeMinMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeMinMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxMeasuredValueWithParams:@
 readAttributeMaxMeasuredValueWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMaxMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeMaxMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxMeasuredValueWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeMaxMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeToleranceWithParams:@
 readAttributeToleranceWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeToleranceWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeToleranceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeToleranceWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeToleranceWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRReadParams params) => mtrClusterRelativeHumidityMeasurement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterRelativeHumidityMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterRelativeHumidityMeasurement params =
+  sendMessage mtrClusterRelativeHumidityMeasurement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement => mtrClusterRelativeHumidityMeasurement -> IO (Id MTRClusterRelativeHumidityMeasurement)
-init_ mtrClusterRelativeHumidityMeasurement  =
-    sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterRelativeHumidityMeasurement =
+  sendOwnedMessage mtrClusterRelativeHumidityMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterRelativeHumidityMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterRelativeHumidityMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRDevice device, IsNSObject queue) => mtrClusterRelativeHumidityMeasurement -> device -> CUShort -> queue -> IO (Id MTRClusterRelativeHumidityMeasurement)
-initWithDevice_endpoint_queue mtrClusterRelativeHumidityMeasurement  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterRelativeHumidityMeasurement device endpoint queue =
+  sendOwnedMessage mtrClusterRelativeHumidityMeasurement initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterRelativeHumidityMeasurement mtrClusterRelativeHumidityMeasurement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterRelativeHumidityMeasurement -> device -> endpointID -> queue -> IO (Id MTRClusterRelativeHumidityMeasurement)
-initWithDevice_endpointID_queue mtrClusterRelativeHumidityMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterRelativeHumidityMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterRelativeHumidityMeasurement device endpointID queue =
+  sendOwnedMessage mtrClusterRelativeHumidityMeasurement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeMeasuredValueWithParams:@
-readAttributeMeasuredValueWithParamsSelector :: Selector
+readAttributeMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeasuredValueWithParamsSelector = mkSelector "readAttributeMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMinMeasuredValueWithParams:@
-readAttributeMinMeasuredValueWithParamsSelector :: Selector
+readAttributeMinMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinMeasuredValueWithParamsSelector = mkSelector "readAttributeMinMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMaxMeasuredValueWithParams:@
-readAttributeMaxMeasuredValueWithParamsSelector :: Selector
+readAttributeMaxMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxMeasuredValueWithParamsSelector = mkSelector "readAttributeMaxMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeToleranceWithParams:@
-readAttributeToleranceWithParamsSelector :: Selector
+readAttributeToleranceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeToleranceWithParamsSelector = mkSelector "readAttributeToleranceWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterRelativeHumidityMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterRelativeHumidityMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterRelativeHumidityMeasurement)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterRelativeHumidityMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.MapKit.MKMapSnapshotter
   , startWithQueue_completionHandler
   , cancel
   , loading
+  , cancelSelector
   , initWithOptionsSelector
+  , loadingSelector
   , startWithCompletionHandlerSelector
   , startWithQueue_completionHandlerSelector
-  , cancelSelector
-  , loadingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,52 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithOptions:@
 initWithOptions :: (IsMKMapSnapshotter mkMapSnapshotter, IsMKMapSnapshotOptions options) => mkMapSnapshotter -> options -> IO (Id MKMapSnapshotter)
-initWithOptions mkMapSnapshotter  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg mkMapSnapshotter (mkSelector "initWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithOptions mkMapSnapshotter options =
+  sendOwnedMessage mkMapSnapshotter initWithOptionsSelector (toMKMapSnapshotOptions options)
 
 -- | @- startWithCompletionHandler:@
 startWithCompletionHandler :: IsMKMapSnapshotter mkMapSnapshotter => mkMapSnapshotter -> Ptr () -> IO ()
-startWithCompletionHandler mkMapSnapshotter  completionHandler =
-    sendMsg mkMapSnapshotter (mkSelector "startWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startWithCompletionHandler mkMapSnapshotter completionHandler =
+  sendMessage mkMapSnapshotter startWithCompletionHandlerSelector completionHandler
 
 -- | @- startWithQueue:completionHandler:@
 startWithQueue_completionHandler :: (IsMKMapSnapshotter mkMapSnapshotter, IsNSObject queue) => mkMapSnapshotter -> queue -> Ptr () -> IO ()
-startWithQueue_completionHandler mkMapSnapshotter  queue completionHandler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mkMapSnapshotter (mkSelector "startWithQueue:completionHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startWithQueue_completionHandler mkMapSnapshotter queue completionHandler =
+  sendMessage mkMapSnapshotter startWithQueue_completionHandlerSelector (toNSObject queue) completionHandler
 
 -- | @- cancel@
 cancel :: IsMKMapSnapshotter mkMapSnapshotter => mkMapSnapshotter -> IO ()
-cancel mkMapSnapshotter  =
-    sendMsg mkMapSnapshotter (mkSelector "cancel") retVoid []
+cancel mkMapSnapshotter =
+  sendMessage mkMapSnapshotter cancelSelector
 
 -- | @- loading@
 loading :: IsMKMapSnapshotter mkMapSnapshotter => mkMapSnapshotter -> IO Bool
-loading mkMapSnapshotter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapSnapshotter (mkSelector "loading") retCULong []
+loading mkMapSnapshotter =
+  sendMessage mkMapSnapshotter loadingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOptions:@
-initWithOptionsSelector :: Selector
+initWithOptionsSelector :: Selector '[Id MKMapSnapshotOptions] (Id MKMapSnapshotter)
 initWithOptionsSelector = mkSelector "initWithOptions:"
 
 -- | @Selector@ for @startWithCompletionHandler:@
-startWithCompletionHandlerSelector :: Selector
+startWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startWithCompletionHandlerSelector = mkSelector "startWithCompletionHandler:"
 
 -- | @Selector@ for @startWithQueue:completionHandler:@
-startWithQueue_completionHandlerSelector :: Selector
+startWithQueue_completionHandlerSelector :: Selector '[Id NSObject, Ptr ()] ()
 startWithQueue_completionHandlerSelector = mkSelector "startWithQueue:completionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 

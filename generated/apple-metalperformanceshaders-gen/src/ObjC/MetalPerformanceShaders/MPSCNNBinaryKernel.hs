@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -68,59 +69,59 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryKernel
   , setPadding
   , destinationImageAllocator
   , setDestinationImageAllocator
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
-  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImageSelector
-  , encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector
-  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector
-  , resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
-  , resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
-  , temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
-  , temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
-  , isResultStateReusedAcrossBatchSelector
   , appendBatchBarrierSelector
-  , destinationImageDescriptorForSourceImages_sourceStatesSelector
-  , encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
   , batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
   , destinationFeatureChannelOffsetSelector
-  , setDestinationFeatureChannelOffsetSelector
-  , primarySourceFeatureChannelOffsetSelector
-  , setPrimarySourceFeatureChannelOffsetSelector
-  , secondarySourceFeatureChannelOffsetSelector
-  , setSecondarySourceFeatureChannelOffsetSelector
-  , primarySourceFeatureChannelMaxCountSelector
-  , setPrimarySourceFeatureChannelMaxCountSelector
-  , secondarySourceFeatureChannelMaxCountSelector
-  , setSecondarySourceFeatureChannelMaxCountSelector
-  , primaryEdgeModeSelector
-  , setPrimaryEdgeModeSelector
-  , secondaryEdgeModeSelector
-  , setSecondaryEdgeModeSelector
-  , primaryKernelWidthSelector
-  , primaryKernelHeightSelector
-  , secondaryKernelWidthSelector
-  , secondaryKernelHeightSelector
-  , primaryStrideInPixelsXSelector
-  , setPrimaryStrideInPixelsXSelector
-  , primaryStrideInPixelsYSelector
-  , setPrimaryStrideInPixelsYSelector
-  , secondaryStrideInPixelsXSelector
-  , setSecondaryStrideInPixelsXSelector
-  , secondaryStrideInPixelsYSelector
-  , setSecondaryStrideInPixelsYSelector
-  , primaryDilationRateXSelector
-  , primaryDilationRateYSelector
-  , secondaryDilationRateXSelector
-  , secondaryDilationRateYSelector
+  , destinationImageAllocatorSelector
+  , destinationImageDescriptorForSourceImages_sourceStatesSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector
+  , encodeToCommandBuffer_primaryImage_secondaryImageSelector
+  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
+  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector
+  , encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , isBackwardsSelector
+  , isResultStateReusedAcrossBatchSelector
   , isStateModifiedSelector
   , paddingSelector
-  , setPaddingSelector
-  , destinationImageAllocatorSelector
+  , primaryDilationRateXSelector
+  , primaryDilationRateYSelector
+  , primaryEdgeModeSelector
+  , primaryKernelHeightSelector
+  , primaryKernelWidthSelector
+  , primarySourceFeatureChannelMaxCountSelector
+  , primarySourceFeatureChannelOffsetSelector
+  , primaryStrideInPixelsXSelector
+  , primaryStrideInPixelsYSelector
+  , resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , secondaryDilationRateXSelector
+  , secondaryDilationRateYSelector
+  , secondaryEdgeModeSelector
+  , secondaryKernelHeightSelector
+  , secondaryKernelWidthSelector
+  , secondarySourceFeatureChannelMaxCountSelector
+  , secondarySourceFeatureChannelOffsetSelector
+  , secondaryStrideInPixelsXSelector
+  , secondaryStrideInPixelsYSelector
+  , setDestinationFeatureChannelOffsetSelector
   , setDestinationImageAllocatorSelector
+  , setPaddingSelector
+  , setPrimaryEdgeModeSelector
+  , setPrimarySourceFeatureChannelMaxCountSelector
+  , setPrimarySourceFeatureChannelOffsetSelector
+  , setPrimaryStrideInPixelsXSelector
+  , setPrimaryStrideInPixelsYSelector
+  , setSecondaryEdgeModeSelector
+  , setSecondarySourceFeatureChannelMaxCountSelector
+  , setSecondarySourceFeatureChannelOffsetSelector
+  , setSecondaryStrideInPixelsXSelector
+  , setSecondaryStrideInPixelsYSelector
+  , temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
+  , temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector
 
   -- * Enum types
   , MPSImageEdgeMode(MPSImageEdgeMode)
@@ -132,15 +133,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryKernel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -156,8 +153,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> IO (Id MPSCNNBinaryKernel)
-initWithDevice mpscnnBinaryKernel  device =
-    sendMsg mpscnnBinaryKernel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnBinaryKernel device =
+  sendOwnedMessage mpscnnBinaryKernel initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -171,9 +168,8 @@ initWithDevice mpscnnBinaryKernel  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSCoder aDecoder) => mpscnnBinaryKernel -> aDecoder -> RawId -> IO (Id MPSCNNBinaryKernel)
-initWithCoder_device mpscnnBinaryKernel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnBinaryKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnBinaryKernel aDecoder device =
+  sendOwnedMessage mpscnnBinaryKernel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a MPSCNNKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -189,11 +185,8 @@ initWithCoder_device mpscnnBinaryKernel  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsMPSImage destinationImage) => mpscnnBinaryKernel -> RawId -> primaryImage -> secondaryImage -> destinationImage -> IO ()
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBinaryKernel commandBuffer primaryImage secondaryImage destinationImage =
+  sendMessage mpscnnBinaryKernel encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toMPSImage destinationImage)
 
 -- | Encode a MPSCNNKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -209,8 +202,8 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBinaryK
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscnnBinaryKernel  commandBuffer primaryImages secondaryImages destinationImages =
-    sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscnnBinaryKernel commandBuffer primaryImages secondaryImages destinationImages =
+  sendMessage mpscnnBinaryKernel encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector commandBuffer primaryImages secondaryImages destinationImages
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture to hold the result and return it.
 --
@@ -228,10 +221,8 @@ encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscn
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryImage:secondaryImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage) => mpscnnBinaryKernel -> RawId -> primaryImage -> secondaryImage -> IO (Id MPSImage)
-encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-        sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBinaryKernel commandBuffer primaryImage secondaryImage =
+  sendMessage mpscnnBinaryKernel encodeToCommandBuffer_primaryImage_secondaryImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage)
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create textures to hold the results and return them.
 --
@@ -249,8 +240,8 @@ encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBinaryKernel  commandBuf
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> IO RawId
-encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ())]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBinaryKernel commandBuffer primaryImage secondaryImage =
+  sendMessage mpscnnBinaryKernel encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector commandBuffer primaryImage secondaryImage
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
 --
@@ -272,11 +263,8 @@ encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBinaryKernel  com
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporary :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsMPSState outState) => mpscnnBinaryKernel -> RawId -> primaryImage -> secondaryImage -> outState -> Bool -> IO (Id MPSImage)
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporary mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage outState isTemporary =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr outState $ \raw_outState ->
-          sendMsg mpscnnBinaryKernel (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0)] >>= retainedObject . castPtr
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporary mpscnnBinaryKernel commandBuffer primaryImage secondaryImage outState isTemporary =
+  sendMessage mpscnnBinaryKernel encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toMPSState outState) isTemporary
 
 -- | Encode a MPSCNNKernel into a command Buffer. Create a texture and state to hold the results and return them.
 --
@@ -298,8 +286,8 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationSt
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> RawId -> Bool -> IO RawId
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary mpscnnBinaryKernel  commandBuffer primaryImages secondaryImages outState isTemporary =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId outState) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporary mpscnnBinaryKernel commandBuffer primaryImages secondaryImages outState isTemporary =
+  sendMessage mpscnnBinaryKernel encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector commandBuffer primaryImages secondaryImages outState isTemporary
 
 -- | Allocate a MPSState (subclass) to hold the results from a -encodeBatchToCommandBuffer... operation
 --
@@ -321,18 +309,13 @@ encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_desti
 --
 -- ObjC selector: @- resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnBinaryKernel -> primaryImage -> secondaryImage -> sourceStates -> destinationImage -> IO (Id MPSState)
-resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr sourceStates $ \raw_sourceStates ->
-        withObjCPtr destinationImage $ \raw_destinationImage ->
-            sendMsg mpscnnBinaryKernel (mkSelector "resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector (toMPSImage primaryImage) (toMPSImage secondaryImage) (toNSArray sourceStates) (toMPSImage destinationImage)
 
 -- | @- resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
-resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr sourceStates $ \raw_sourceStates ->
-      fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector primaryImage secondaryImage (toNSArray sourceStates) destinationImage
 
 -- | Allocate a temporary MPSState (subclass) to hold the results from a -encodeBatchToCommandBuffer... operation
 --
@@ -356,18 +339,13 @@ resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImage mps
 --
 -- ObjC selector: @- temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnBinaryKernel -> RawId -> primaryImage -> secondaryImage -> sourceStates -> destinationImage -> IO (Id MPSState)
-temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr sourceStates $ \raw_sourceStates ->
-        withObjCPtr destinationImage $ \raw_destinationImage ->
-            sendMsg mpscnnBinaryKernel (mkSelector "temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel commandBuffer primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toNSArray sourceStates) (toMPSImage destinationImage)
 
 -- | @- temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
 temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> RawId -> sourceStates -> RawId -> IO RawId
-temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  commandBuffer primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr sourceStates $ \raw_sourceStates ->
-      fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel commandBuffer primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector commandBuffer primaryImage secondaryImage (toNSArray sourceStates) destinationImage
 
 -- | Returns YES if the same state is used for every operation in a batch
 --
@@ -375,8 +353,8 @@ temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStat
 --
 -- ObjC selector: @- isResultStateReusedAcrossBatch@
 isResultStateReusedAcrossBatch :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO Bool
-isResultStateReusedAcrossBatch mpscnnBinaryKernel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnBinaryKernel (mkSelector "isResultStateReusedAcrossBatch") retCULong []
+isResultStateReusedAcrossBatch mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel isResultStateReusedAcrossBatchSelector
 
 -- | Returns YES if the filter must be run over the entire batch before its              results may be considered complete
 --
@@ -388,8 +366,8 @@ isResultStateReusedAcrossBatch mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- appendBatchBarrier@
 appendBatchBarrier :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO Bool
-appendBatchBarrier mpscnnBinaryKernel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnBinaryKernel (mkSelector "appendBatchBarrier") retCULong []
+appendBatchBarrier mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel appendBatchBarrierSelector
 
 -- | Get a suggested destination image descriptor for a source image
 --
@@ -427,10 +405,8 @@ appendBatchBarrier mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- destinationImageDescriptorForSourceImages:sourceStates:@
 destinationImageDescriptorForSourceImages_sourceStates :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceImages, IsNSArray sourceStates) => mpscnnBinaryKernel -> sourceImages -> sourceStates -> IO (Id MPSImageDescriptor)
-destinationImageDescriptorForSourceImages_sourceStates mpscnnBinaryKernel  sourceImages sourceStates =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-        sendMsg mpscnnBinaryKernel (mkSelector "destinationImageDescriptorForSourceImages:sourceStates:") (retPtr retVoid) [argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ())] >>= retainedObject . castPtr
+destinationImageDescriptorForSourceImages_sourceStates mpscnnBinaryKernel sourceImages sourceStates =
+  sendMessage mpscnnBinaryKernel destinationImageDescriptorForSourceImages_sourceStatesSelector (toNSArray sourceImages) (toNSArray sourceStates)
 
 -- | The size of extra MPS heap storage allocated while the kernel is encoding
 --
@@ -438,12 +414,8 @@ destinationImageDescriptorForSourceImages_sourceStates mpscnnBinaryKernel  sourc
 --
 -- ObjC selector: @- encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnBinaryKernel -> primaryImage -> secondaryImage -> sourceStates -> destinationImage -> IO CULong
-encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr sourceStates $ \raw_sourceStates ->
-        withObjCPtr destinationImage $ \raw_destinationImage ->
-            sendMsg mpscnnBinaryKernel (mkSelector "encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:") retCULong [argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector (toMPSImage primaryImage) (toMPSImage secondaryImage) (toNSArray sourceStates) (toMPSImage destinationImage)
 
 -- | The size of extra MPS heap storage allocated while the kernel is encoding a batch
 --
@@ -451,9 +423,8 @@ encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage 
 --
 -- ObjC selector: @- batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
 batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage :: (IsMPSCNNBinaryKernel mpscnnBinaryKernel, IsNSArray sourceStates) => mpscnnBinaryKernel -> RawId -> RawId -> sourceStates -> RawId -> IO CULong
-batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel  primaryImage secondaryImage sourceStates destinationImage =
-  withObjCPtr sourceStates $ \raw_sourceStates ->
-      sendMsg mpscnnBinaryKernel (mkSelector "batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:") retCULong [argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImage mpscnnBinaryKernel primaryImage secondaryImage sourceStates destinationImage =
+  sendMessage mpscnnBinaryKernel batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector primaryImage secondaryImage (toNSArray sourceStates) destinationImage
 
 -- | destinationFeatureChannelOffset
 --
@@ -463,8 +434,8 @@ batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationI
 --
 -- ObjC selector: @- destinationFeatureChannelOffset@
 destinationFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-destinationFeatureChannelOffset mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "destinationFeatureChannelOffset") retCULong []
+destinationFeatureChannelOffset mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel destinationFeatureChannelOffsetSelector
 
 -- | destinationFeatureChannelOffset
 --
@@ -474,8 +445,8 @@ destinationFeatureChannelOffset mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setDestinationFeatureChannelOffset:@
 setDestinationFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setDestinationFeatureChannelOffset mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setDestinationFeatureChannelOffset:") retVoid [argCULong value]
+setDestinationFeatureChannelOffset mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setDestinationFeatureChannelOffsetSelector value
 
 -- | primarySourceFeatureChannelOffset
 --
@@ -485,8 +456,8 @@ setDestinationFeatureChannelOffset mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primarySourceFeatureChannelOffset@
 primarySourceFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primarySourceFeatureChannelOffset mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primarySourceFeatureChannelOffset") retCULong []
+primarySourceFeatureChannelOffset mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primarySourceFeatureChannelOffsetSelector
 
 -- | primarySourceFeatureChannelOffset
 --
@@ -496,8 +467,8 @@ primarySourceFeatureChannelOffset mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPrimarySourceFeatureChannelOffset:@
 setPrimarySourceFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setPrimarySourceFeatureChannelOffset mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPrimarySourceFeatureChannelOffset:") retVoid [argCULong value]
+setPrimarySourceFeatureChannelOffset mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPrimarySourceFeatureChannelOffsetSelector value
 
 -- | secondarySourceFeatureChannelOffset
 --
@@ -507,8 +478,8 @@ setPrimarySourceFeatureChannelOffset mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- secondarySourceFeatureChannelOffset@
 secondarySourceFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondarySourceFeatureChannelOffset mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondarySourceFeatureChannelOffset") retCULong []
+secondarySourceFeatureChannelOffset mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondarySourceFeatureChannelOffsetSelector
 
 -- | secondarySourceFeatureChannelOffset
 --
@@ -518,8 +489,8 @@ secondarySourceFeatureChannelOffset mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setSecondarySourceFeatureChannelOffset:@
 setSecondarySourceFeatureChannelOffset :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setSecondarySourceFeatureChannelOffset mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setSecondarySourceFeatureChannelOffset:") retVoid [argCULong value]
+setSecondarySourceFeatureChannelOffset mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setSecondarySourceFeatureChannelOffsetSelector value
 
 -- | primarySourceFeatureChannelMaxCount
 --
@@ -529,8 +500,8 @@ setSecondarySourceFeatureChannelOffset mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primarySourceFeatureChannelMaxCount@
 primarySourceFeatureChannelMaxCount :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primarySourceFeatureChannelMaxCount mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primarySourceFeatureChannelMaxCount") retCULong []
+primarySourceFeatureChannelMaxCount mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primarySourceFeatureChannelMaxCountSelector
 
 -- | primarySourceFeatureChannelMaxCount
 --
@@ -540,8 +511,8 @@ primarySourceFeatureChannelMaxCount mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPrimarySourceFeatureChannelMaxCount:@
 setPrimarySourceFeatureChannelMaxCount :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setPrimarySourceFeatureChannelMaxCount mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPrimarySourceFeatureChannelMaxCount:") retVoid [argCULong value]
+setPrimarySourceFeatureChannelMaxCount mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPrimarySourceFeatureChannelMaxCountSelector value
 
 -- | secondarySourceFeatureChannelMaxCount
 --
@@ -551,8 +522,8 @@ setPrimarySourceFeatureChannelMaxCount mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- secondarySourceFeatureChannelMaxCount@
 secondarySourceFeatureChannelMaxCount :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondarySourceFeatureChannelMaxCount mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondarySourceFeatureChannelMaxCount") retCULong []
+secondarySourceFeatureChannelMaxCount mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondarySourceFeatureChannelMaxCountSelector
 
 -- | secondarySourceFeatureChannelMaxCount
 --
@@ -562,8 +533,8 @@ secondarySourceFeatureChannelMaxCount mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setSecondarySourceFeatureChannelMaxCount:@
 setSecondarySourceFeatureChannelMaxCount :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setSecondarySourceFeatureChannelMaxCount mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setSecondarySourceFeatureChannelMaxCount:") retVoid [argCULong value]
+setSecondarySourceFeatureChannelMaxCount mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setSecondarySourceFeatureChannelMaxCountSelector value
 
 -- | primaryEdgeMode
 --
@@ -575,8 +546,8 @@ setSecondarySourceFeatureChannelMaxCount mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primaryEdgeMode@
 primaryEdgeMode :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO MPSImageEdgeMode
-primaryEdgeMode mpscnnBinaryKernel  =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpscnnBinaryKernel (mkSelector "primaryEdgeMode") retCULong []
+primaryEdgeMode mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryEdgeModeSelector
 
 -- | primaryEdgeMode
 --
@@ -588,8 +559,8 @@ primaryEdgeMode mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPrimaryEdgeMode:@
 setPrimaryEdgeMode :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> MPSImageEdgeMode -> IO ()
-setPrimaryEdgeMode mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPrimaryEdgeMode:") retVoid [argCULong (coerce value)]
+setPrimaryEdgeMode mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPrimaryEdgeModeSelector value
 
 -- | secondaryEdgeMode
 --
@@ -601,8 +572,8 @@ setPrimaryEdgeMode mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- secondaryEdgeMode@
 secondaryEdgeMode :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO MPSImageEdgeMode
-secondaryEdgeMode mpscnnBinaryKernel  =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpscnnBinaryKernel (mkSelector "secondaryEdgeMode") retCULong []
+secondaryEdgeMode mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryEdgeModeSelector
 
 -- | secondaryEdgeMode
 --
@@ -614,8 +585,8 @@ secondaryEdgeMode mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setSecondaryEdgeMode:@
 setSecondaryEdgeMode :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> MPSImageEdgeMode -> IO ()
-setSecondaryEdgeMode mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setSecondaryEdgeMode:") retVoid [argCULong (coerce value)]
+setSecondaryEdgeMode mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setSecondaryEdgeModeSelector value
 
 -- | primaryKernelWidth
 --
@@ -625,8 +596,8 @@ setSecondaryEdgeMode mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primaryKernelWidth@
 primaryKernelWidth :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryKernelWidth mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryKernelWidth") retCULong []
+primaryKernelWidth mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryKernelWidthSelector
 
 -- | primaryKernelHeight
 --
@@ -636,8 +607,8 @@ primaryKernelWidth mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- primaryKernelHeight@
 primaryKernelHeight :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryKernelHeight mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryKernelHeight") retCULong []
+primaryKernelHeight mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryKernelHeightSelector
 
 -- | kernelWidth
 --
@@ -647,8 +618,8 @@ primaryKernelHeight mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- secondaryKernelWidth@
 secondaryKernelWidth :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryKernelWidth mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryKernelWidth") retCULong []
+secondaryKernelWidth mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryKernelWidthSelector
 
 -- | kernelHeight
 --
@@ -658,8 +629,8 @@ secondaryKernelWidth mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- secondaryKernelHeight@
 secondaryKernelHeight :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryKernelHeight mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryKernelHeight") retCULong []
+secondaryKernelHeight mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryKernelHeightSelector
 
 -- | primaryStrideInPixelsX
 --
@@ -669,8 +640,8 @@ secondaryKernelHeight mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- primaryStrideInPixelsX@
 primaryStrideInPixelsX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryStrideInPixelsX mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryStrideInPixelsX") retCULong []
+primaryStrideInPixelsX mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryStrideInPixelsXSelector
 
 -- | primaryStrideInPixelsX
 --
@@ -680,8 +651,8 @@ primaryStrideInPixelsX mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPrimaryStrideInPixelsX:@
 setPrimaryStrideInPixelsX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setPrimaryStrideInPixelsX mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPrimaryStrideInPixelsX:") retVoid [argCULong value]
+setPrimaryStrideInPixelsX mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPrimaryStrideInPixelsXSelector value
 
 -- | primaryStrideInPixelsY
 --
@@ -691,8 +662,8 @@ setPrimaryStrideInPixelsX mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primaryStrideInPixelsY@
 primaryStrideInPixelsY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryStrideInPixelsY mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryStrideInPixelsY") retCULong []
+primaryStrideInPixelsY mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryStrideInPixelsYSelector
 
 -- | primaryStrideInPixelsY
 --
@@ -702,8 +673,8 @@ primaryStrideInPixelsY mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPrimaryStrideInPixelsY:@
 setPrimaryStrideInPixelsY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setPrimaryStrideInPixelsY mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPrimaryStrideInPixelsY:") retVoid [argCULong value]
+setPrimaryStrideInPixelsY mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPrimaryStrideInPixelsYSelector value
 
 -- | secondaryStrideInPixelsX
 --
@@ -713,8 +684,8 @@ setPrimaryStrideInPixelsY mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- secondaryStrideInPixelsX@
 secondaryStrideInPixelsX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryStrideInPixelsX mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryStrideInPixelsX") retCULong []
+secondaryStrideInPixelsX mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryStrideInPixelsXSelector
 
 -- | secondaryStrideInPixelsX
 --
@@ -724,8 +695,8 @@ secondaryStrideInPixelsX mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setSecondaryStrideInPixelsX:@
 setSecondaryStrideInPixelsX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setSecondaryStrideInPixelsX mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setSecondaryStrideInPixelsX:") retVoid [argCULong value]
+setSecondaryStrideInPixelsX mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setSecondaryStrideInPixelsXSelector value
 
 -- | secondaryStrideInPixelsY
 --
@@ -735,8 +706,8 @@ setSecondaryStrideInPixelsX mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- secondaryStrideInPixelsY@
 secondaryStrideInPixelsY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryStrideInPixelsY mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryStrideInPixelsY") retCULong []
+secondaryStrideInPixelsY mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryStrideInPixelsYSelector
 
 -- | secondaryStrideInPixelsY
 --
@@ -746,8 +717,8 @@ secondaryStrideInPixelsY mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setSecondaryStrideInPixelsY:@
 setSecondaryStrideInPixelsY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> CULong -> IO ()
-setSecondaryStrideInPixelsY mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setSecondaryStrideInPixelsY:") retVoid [argCULong value]
+setSecondaryStrideInPixelsY mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setSecondaryStrideInPixelsYSelector value
 
 -- | dilationRateX
 --
@@ -755,8 +726,8 @@ setSecondaryStrideInPixelsY mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- primaryDilationRateX@
 primaryDilationRateX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryDilationRateX mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryDilationRateX") retCULong []
+primaryDilationRateX mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryDilationRateXSelector
 
 -- | dilationRate
 --
@@ -764,8 +735,8 @@ primaryDilationRateX mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- primaryDilationRateY@
 primaryDilationRateY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-primaryDilationRateY mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "primaryDilationRateY") retCULong []
+primaryDilationRateY mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel primaryDilationRateYSelector
 
 -- | dilationRateX
 --
@@ -775,8 +746,8 @@ primaryDilationRateY mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- secondaryDilationRateX@
 secondaryDilationRateX :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryDilationRateX mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryDilationRateX") retCULong []
+secondaryDilationRateX mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryDilationRateXSelector
 
 -- | dilationRate
 --
@@ -786,8 +757,8 @@ secondaryDilationRateX mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- secondaryDilationRateY@
 secondaryDilationRateY :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO CULong
-secondaryDilationRateY mpscnnBinaryKernel  =
-    sendMsg mpscnnBinaryKernel (mkSelector "secondaryDilationRateY") retCULong []
+secondaryDilationRateY mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel secondaryDilationRateYSelector
 
 -- | isBackwards
 --
@@ -797,15 +768,15 @@ secondaryDilationRateY mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- isBackwards@
 isBackwards :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO Bool
-isBackwards mpscnnBinaryKernel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnBinaryKernel (mkSelector "isBackwards") retCULong []
+isBackwards mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel isBackwardsSelector
 
 -- | Returns true if the -encode call modifies the state object it accepts.
 --
 -- ObjC selector: @- isStateModified@
 isStateModified :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO Bool
-isStateModified mpscnnBinaryKernel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnBinaryKernel (mkSelector "isStateModified") retCULong []
+isStateModified mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel isStateModifiedSelector
 
 -- | padding
 --
@@ -815,8 +786,8 @@ isStateModified mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- padding@
 padding :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO RawId
-padding mpscnnBinaryKernel  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "padding") (retPtr retVoid) []
+padding mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel paddingSelector
 
 -- | padding
 --
@@ -826,8 +797,8 @@ padding mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setPadding:@
 setPadding :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> IO ()
-setPadding mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setPadding:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPadding mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setPaddingSelector value
 
 -- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
 --
@@ -835,8 +806,8 @@ setPadding mpscnnBinaryKernel  value =
 --
 -- ObjC selector: @- destinationImageAllocator@
 destinationImageAllocator :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> IO RawId
-destinationImageAllocator mpscnnBinaryKernel  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryKernel (mkSelector "destinationImageAllocator") (retPtr retVoid) []
+destinationImageAllocator mpscnnBinaryKernel =
+  sendMessage mpscnnBinaryKernel destinationImageAllocatorSelector
 
 -- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
 --
@@ -844,222 +815,222 @@ destinationImageAllocator mpscnnBinaryKernel  =
 --
 -- ObjC selector: @- setDestinationImageAllocator:@
 setDestinationImageAllocator :: IsMPSCNNBinaryKernel mpscnnBinaryKernel => mpscnnBinaryKernel -> RawId -> IO ()
-setDestinationImageAllocator mpscnnBinaryKernel  value =
-    sendMsg mpscnnBinaryKernel (mkSelector "setDestinationImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDestinationImageAllocator mpscnnBinaryKernel value =
+  sendMessage mpscnnBinaryKernel setDestinationImageAllocatorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNBinaryKernel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNBinaryKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSImage] ()
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:@
-encodeToCommandBuffer_primaryImage_secondaryImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage] (Id MPSImage)
 encodeToCommandBuffer_primaryImage_secondaryImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector :: Selector '[RawId, RawId, RawId] RawId
 encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:@
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSState, Bool] (Id MPSImage)
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationStateIsTemporary:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector :: Selector '[RawId, RawId, RawId, RawId, Bool] RawId
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
-resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[Id MPSImage, Id MPSImage, Id NSArray, Id MPSImage] (Id MPSState)
 resultStateForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "resultStateForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
-resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[RawId, RawId, Id NSArray, RawId] RawId
 resultStateBatchForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "resultStateBatchForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
-temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id NSArray, Id MPSImage] (Id MPSState)
 temporaryResultStateForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:@
-temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[RawId, RawId, RawId, Id NSArray, RawId] RawId
 temporaryResultStateBatchForCommandBuffer_primaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateBatchForCommandBuffer:primaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @isResultStateReusedAcrossBatch@
-isResultStateReusedAcrossBatchSelector :: Selector
+isResultStateReusedAcrossBatchSelector :: Selector '[] Bool
 isResultStateReusedAcrossBatchSelector = mkSelector "isResultStateReusedAcrossBatch"
 
 -- | @Selector@ for @appendBatchBarrier@
-appendBatchBarrierSelector :: Selector
+appendBatchBarrierSelector :: Selector '[] Bool
 appendBatchBarrierSelector = mkSelector "appendBatchBarrier"
 
 -- | @Selector@ for @destinationImageDescriptorForSourceImages:sourceStates:@
-destinationImageDescriptorForSourceImages_sourceStatesSelector :: Selector
+destinationImageDescriptorForSourceImages_sourceStatesSelector :: Selector '[Id NSArray, Id NSArray] (Id MPSImageDescriptor)
 destinationImageDescriptorForSourceImages_sourceStatesSelector = mkSelector "destinationImageDescriptorForSourceImages:sourceStates:"
 
 -- | @Selector@ for @encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
-encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[Id MPSImage, Id MPSImage, Id NSArray, Id MPSImage] CULong
 encodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "encodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:@
-batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector
+batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector :: Selector '[RawId, RawId, Id NSArray, RawId] CULong
 batchEncodingStorageSizeForPrimaryImage_secondaryImage_sourceStates_destinationImageSelector = mkSelector "batchEncodingStorageSizeForPrimaryImage:secondaryImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @destinationFeatureChannelOffset@
-destinationFeatureChannelOffsetSelector :: Selector
+destinationFeatureChannelOffsetSelector :: Selector '[] CULong
 destinationFeatureChannelOffsetSelector = mkSelector "destinationFeatureChannelOffset"
 
 -- | @Selector@ for @setDestinationFeatureChannelOffset:@
-setDestinationFeatureChannelOffsetSelector :: Selector
+setDestinationFeatureChannelOffsetSelector :: Selector '[CULong] ()
 setDestinationFeatureChannelOffsetSelector = mkSelector "setDestinationFeatureChannelOffset:"
 
 -- | @Selector@ for @primarySourceFeatureChannelOffset@
-primarySourceFeatureChannelOffsetSelector :: Selector
+primarySourceFeatureChannelOffsetSelector :: Selector '[] CULong
 primarySourceFeatureChannelOffsetSelector = mkSelector "primarySourceFeatureChannelOffset"
 
 -- | @Selector@ for @setPrimarySourceFeatureChannelOffset:@
-setPrimarySourceFeatureChannelOffsetSelector :: Selector
+setPrimarySourceFeatureChannelOffsetSelector :: Selector '[CULong] ()
 setPrimarySourceFeatureChannelOffsetSelector = mkSelector "setPrimarySourceFeatureChannelOffset:"
 
 -- | @Selector@ for @secondarySourceFeatureChannelOffset@
-secondarySourceFeatureChannelOffsetSelector :: Selector
+secondarySourceFeatureChannelOffsetSelector :: Selector '[] CULong
 secondarySourceFeatureChannelOffsetSelector = mkSelector "secondarySourceFeatureChannelOffset"
 
 -- | @Selector@ for @setSecondarySourceFeatureChannelOffset:@
-setSecondarySourceFeatureChannelOffsetSelector :: Selector
+setSecondarySourceFeatureChannelOffsetSelector :: Selector '[CULong] ()
 setSecondarySourceFeatureChannelOffsetSelector = mkSelector "setSecondarySourceFeatureChannelOffset:"
 
 -- | @Selector@ for @primarySourceFeatureChannelMaxCount@
-primarySourceFeatureChannelMaxCountSelector :: Selector
+primarySourceFeatureChannelMaxCountSelector :: Selector '[] CULong
 primarySourceFeatureChannelMaxCountSelector = mkSelector "primarySourceFeatureChannelMaxCount"
 
 -- | @Selector@ for @setPrimarySourceFeatureChannelMaxCount:@
-setPrimarySourceFeatureChannelMaxCountSelector :: Selector
+setPrimarySourceFeatureChannelMaxCountSelector :: Selector '[CULong] ()
 setPrimarySourceFeatureChannelMaxCountSelector = mkSelector "setPrimarySourceFeatureChannelMaxCount:"
 
 -- | @Selector@ for @secondarySourceFeatureChannelMaxCount@
-secondarySourceFeatureChannelMaxCountSelector :: Selector
+secondarySourceFeatureChannelMaxCountSelector :: Selector '[] CULong
 secondarySourceFeatureChannelMaxCountSelector = mkSelector "secondarySourceFeatureChannelMaxCount"
 
 -- | @Selector@ for @setSecondarySourceFeatureChannelMaxCount:@
-setSecondarySourceFeatureChannelMaxCountSelector :: Selector
+setSecondarySourceFeatureChannelMaxCountSelector :: Selector '[CULong] ()
 setSecondarySourceFeatureChannelMaxCountSelector = mkSelector "setSecondarySourceFeatureChannelMaxCount:"
 
 -- | @Selector@ for @primaryEdgeMode@
-primaryEdgeModeSelector :: Selector
+primaryEdgeModeSelector :: Selector '[] MPSImageEdgeMode
 primaryEdgeModeSelector = mkSelector "primaryEdgeMode"
 
 -- | @Selector@ for @setPrimaryEdgeMode:@
-setPrimaryEdgeModeSelector :: Selector
+setPrimaryEdgeModeSelector :: Selector '[MPSImageEdgeMode] ()
 setPrimaryEdgeModeSelector = mkSelector "setPrimaryEdgeMode:"
 
 -- | @Selector@ for @secondaryEdgeMode@
-secondaryEdgeModeSelector :: Selector
+secondaryEdgeModeSelector :: Selector '[] MPSImageEdgeMode
 secondaryEdgeModeSelector = mkSelector "secondaryEdgeMode"
 
 -- | @Selector@ for @setSecondaryEdgeMode:@
-setSecondaryEdgeModeSelector :: Selector
+setSecondaryEdgeModeSelector :: Selector '[MPSImageEdgeMode] ()
 setSecondaryEdgeModeSelector = mkSelector "setSecondaryEdgeMode:"
 
 -- | @Selector@ for @primaryKernelWidth@
-primaryKernelWidthSelector :: Selector
+primaryKernelWidthSelector :: Selector '[] CULong
 primaryKernelWidthSelector = mkSelector "primaryKernelWidth"
 
 -- | @Selector@ for @primaryKernelHeight@
-primaryKernelHeightSelector :: Selector
+primaryKernelHeightSelector :: Selector '[] CULong
 primaryKernelHeightSelector = mkSelector "primaryKernelHeight"
 
 -- | @Selector@ for @secondaryKernelWidth@
-secondaryKernelWidthSelector :: Selector
+secondaryKernelWidthSelector :: Selector '[] CULong
 secondaryKernelWidthSelector = mkSelector "secondaryKernelWidth"
 
 -- | @Selector@ for @secondaryKernelHeight@
-secondaryKernelHeightSelector :: Selector
+secondaryKernelHeightSelector :: Selector '[] CULong
 secondaryKernelHeightSelector = mkSelector "secondaryKernelHeight"
 
 -- | @Selector@ for @primaryStrideInPixelsX@
-primaryStrideInPixelsXSelector :: Selector
+primaryStrideInPixelsXSelector :: Selector '[] CULong
 primaryStrideInPixelsXSelector = mkSelector "primaryStrideInPixelsX"
 
 -- | @Selector@ for @setPrimaryStrideInPixelsX:@
-setPrimaryStrideInPixelsXSelector :: Selector
+setPrimaryStrideInPixelsXSelector :: Selector '[CULong] ()
 setPrimaryStrideInPixelsXSelector = mkSelector "setPrimaryStrideInPixelsX:"
 
 -- | @Selector@ for @primaryStrideInPixelsY@
-primaryStrideInPixelsYSelector :: Selector
+primaryStrideInPixelsYSelector :: Selector '[] CULong
 primaryStrideInPixelsYSelector = mkSelector "primaryStrideInPixelsY"
 
 -- | @Selector@ for @setPrimaryStrideInPixelsY:@
-setPrimaryStrideInPixelsYSelector :: Selector
+setPrimaryStrideInPixelsYSelector :: Selector '[CULong] ()
 setPrimaryStrideInPixelsYSelector = mkSelector "setPrimaryStrideInPixelsY:"
 
 -- | @Selector@ for @secondaryStrideInPixelsX@
-secondaryStrideInPixelsXSelector :: Selector
+secondaryStrideInPixelsXSelector :: Selector '[] CULong
 secondaryStrideInPixelsXSelector = mkSelector "secondaryStrideInPixelsX"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsX:@
-setSecondaryStrideInPixelsXSelector :: Selector
+setSecondaryStrideInPixelsXSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsXSelector = mkSelector "setSecondaryStrideInPixelsX:"
 
 -- | @Selector@ for @secondaryStrideInPixelsY@
-secondaryStrideInPixelsYSelector :: Selector
+secondaryStrideInPixelsYSelector :: Selector '[] CULong
 secondaryStrideInPixelsYSelector = mkSelector "secondaryStrideInPixelsY"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsY:@
-setSecondaryStrideInPixelsYSelector :: Selector
+setSecondaryStrideInPixelsYSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsYSelector = mkSelector "setSecondaryStrideInPixelsY:"
 
 -- | @Selector@ for @primaryDilationRateX@
-primaryDilationRateXSelector :: Selector
+primaryDilationRateXSelector :: Selector '[] CULong
 primaryDilationRateXSelector = mkSelector "primaryDilationRateX"
 
 -- | @Selector@ for @primaryDilationRateY@
-primaryDilationRateYSelector :: Selector
+primaryDilationRateYSelector :: Selector '[] CULong
 primaryDilationRateYSelector = mkSelector "primaryDilationRateY"
 
 -- | @Selector@ for @secondaryDilationRateX@
-secondaryDilationRateXSelector :: Selector
+secondaryDilationRateXSelector :: Selector '[] CULong
 secondaryDilationRateXSelector = mkSelector "secondaryDilationRateX"
 
 -- | @Selector@ for @secondaryDilationRateY@
-secondaryDilationRateYSelector :: Selector
+secondaryDilationRateYSelector :: Selector '[] CULong
 secondaryDilationRateYSelector = mkSelector "secondaryDilationRateY"
 
 -- | @Selector@ for @isBackwards@
-isBackwardsSelector :: Selector
+isBackwardsSelector :: Selector '[] Bool
 isBackwardsSelector = mkSelector "isBackwards"
 
 -- | @Selector@ for @isStateModified@
-isStateModifiedSelector :: Selector
+isStateModifiedSelector :: Selector '[] Bool
 isStateModifiedSelector = mkSelector "isStateModified"
 
 -- | @Selector@ for @padding@
-paddingSelector :: Selector
+paddingSelector :: Selector '[] RawId
 paddingSelector = mkSelector "padding"
 
 -- | @Selector@ for @setPadding:@
-setPaddingSelector :: Selector
+setPaddingSelector :: Selector '[RawId] ()
 setPaddingSelector = mkSelector "setPadding:"
 
 -- | @Selector@ for @destinationImageAllocator@
-destinationImageAllocatorSelector :: Selector
+destinationImageAllocatorSelector :: Selector '[] RawId
 destinationImageAllocatorSelector = mkSelector "destinationImageAllocator"
 
 -- | @Selector@ for @setDestinationImageAllocator:@
-setDestinationImageAllocatorSelector :: Selector
+setDestinationImageAllocatorSelector :: Selector '[RawId] ()
 setDestinationImageAllocatorSelector = mkSelector "setDestinationImageAllocator:"
 

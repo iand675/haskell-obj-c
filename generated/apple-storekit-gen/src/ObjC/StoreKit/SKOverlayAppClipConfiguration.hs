@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,17 +21,17 @@ module ObjC.StoreKit.SKOverlayAppClipConfiguration
   , setProviderToken
   , position
   , setPosition
-  , initSelector
-  , newSelector
-  , initWithPositionSelector
-  , setAdditionalValue_forKeySelector
   , additionalValueForKeySelector
   , campaignTokenSelector
-  , setCampaignTokenSelector
-  , providerTokenSelector
-  , setProviderTokenSelector
+  , initSelector
+  , initWithPositionSelector
+  , newSelector
   , positionSelector
+  , providerTokenSelector
+  , setAdditionalValue_forKeySelector
+  , setCampaignTokenSelector
   , setPositionSelector
+  , setProviderTokenSelector
 
   -- * Enum types
   , SKOverlayPosition(SKOverlayPosition)
@@ -39,15 +40,11 @@ module ObjC.StoreKit.SKOverlayAppClipConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,15 +54,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> IO (Id SKOverlayAppClipConfiguration)
-init_ skOverlayAppClipConfiguration  =
-    sendMsg skOverlayAppClipConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skOverlayAppClipConfiguration =
+  sendOwnedMessage skOverlayAppClipConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id SKOverlayAppClipConfiguration)
 new  =
   do
     cls' <- getRequiredClass "SKOverlayAppClipConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new app overlay configuration that will show an app clip's full app.
 --
@@ -73,110 +70,106 @@ new  =
 --
 -- ObjC selector: @- initWithPosition:@
 initWithPosition :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> SKOverlayPosition -> IO (Id SKOverlayAppClipConfiguration)
-initWithPosition skOverlayAppClipConfiguration  position =
-    sendMsg skOverlayAppClipConfiguration (mkSelector "initWithPosition:") (retPtr retVoid) [argCLong (coerce position)] >>= ownedObject . castPtr
+initWithPosition skOverlayAppClipConfiguration position =
+  sendOwnedMessage skOverlayAppClipConfiguration initWithPositionSelector position
 
 -- | @- setAdditionalValue:forKey:@
 setAdditionalValue_forKey :: (IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration, IsNSString key) => skOverlayAppClipConfiguration -> RawId -> key -> IO ()
-setAdditionalValue_forKey skOverlayAppClipConfiguration  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skOverlayAppClipConfiguration (mkSelector "setAdditionalValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setAdditionalValue_forKey skOverlayAppClipConfiguration value key =
+  sendMessage skOverlayAppClipConfiguration setAdditionalValue_forKeySelector value (toNSString key)
 
 -- | @- additionalValueForKey:@
 additionalValueForKey :: (IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration, IsNSString key) => skOverlayAppClipConfiguration -> key -> IO RawId
-additionalValueForKey skOverlayAppClipConfiguration  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg skOverlayAppClipConfiguration (mkSelector "additionalValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+additionalValueForKey skOverlayAppClipConfiguration key =
+  sendMessage skOverlayAppClipConfiguration additionalValueForKeySelector (toNSString key)
 
 -- | A token representing an App Analytics campaign.
 --
 -- ObjC selector: @- campaignToken@
 campaignToken :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> IO (Id NSString)
-campaignToken skOverlayAppClipConfiguration  =
-    sendMsg skOverlayAppClipConfiguration (mkSelector "campaignToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+campaignToken skOverlayAppClipConfiguration =
+  sendMessage skOverlayAppClipConfiguration campaignTokenSelector
 
 -- | A token representing an App Analytics campaign.
 --
 -- ObjC selector: @- setCampaignToken:@
 setCampaignToken :: (IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration, IsNSString value) => skOverlayAppClipConfiguration -> value -> IO ()
-setCampaignToken skOverlayAppClipConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skOverlayAppClipConfiguration (mkSelector "setCampaignToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCampaignToken skOverlayAppClipConfiguration value =
+  sendMessage skOverlayAppClipConfiguration setCampaignTokenSelector (toNSString value)
 
 -- | The provider token for the developer that created the app being presented.
 --
 -- ObjC selector: @- providerToken@
 providerToken :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> IO (Id NSString)
-providerToken skOverlayAppClipConfiguration  =
-    sendMsg skOverlayAppClipConfiguration (mkSelector "providerToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerToken skOverlayAppClipConfiguration =
+  sendMessage skOverlayAppClipConfiguration providerTokenSelector
 
 -- | The provider token for the developer that created the app being presented.
 --
 -- ObjC selector: @- setProviderToken:@
 setProviderToken :: (IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration, IsNSString value) => skOverlayAppClipConfiguration -> value -> IO ()
-setProviderToken skOverlayAppClipConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skOverlayAppClipConfiguration (mkSelector "setProviderToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderToken skOverlayAppClipConfiguration value =
+  sendMessage skOverlayAppClipConfiguration setProviderTokenSelector (toNSString value)
 
 -- | The position an overlay will show at on screen.
 --
 -- ObjC selector: @- position@
 position :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> IO SKOverlayPosition
-position skOverlayAppClipConfiguration  =
-    fmap (coerce :: CLong -> SKOverlayPosition) $ sendMsg skOverlayAppClipConfiguration (mkSelector "position") retCLong []
+position skOverlayAppClipConfiguration =
+  sendMessage skOverlayAppClipConfiguration positionSelector
 
 -- | The position an overlay will show at on screen.
 --
 -- ObjC selector: @- setPosition:@
 setPosition :: IsSKOverlayAppClipConfiguration skOverlayAppClipConfiguration => skOverlayAppClipConfiguration -> SKOverlayPosition -> IO ()
-setPosition skOverlayAppClipConfiguration  value =
-    sendMsg skOverlayAppClipConfiguration (mkSelector "setPosition:") retVoid [argCLong (coerce value)]
+setPosition skOverlayAppClipConfiguration value =
+  sendMessage skOverlayAppClipConfiguration setPositionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKOverlayAppClipConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SKOverlayAppClipConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithPosition:@
-initWithPositionSelector :: Selector
+initWithPositionSelector :: Selector '[SKOverlayPosition] (Id SKOverlayAppClipConfiguration)
 initWithPositionSelector = mkSelector "initWithPosition:"
 
 -- | @Selector@ for @setAdditionalValue:forKey:@
-setAdditionalValue_forKeySelector :: Selector
+setAdditionalValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setAdditionalValue_forKeySelector = mkSelector "setAdditionalValue:forKey:"
 
 -- | @Selector@ for @additionalValueForKey:@
-additionalValueForKeySelector :: Selector
+additionalValueForKeySelector :: Selector '[Id NSString] RawId
 additionalValueForKeySelector = mkSelector "additionalValueForKey:"
 
 -- | @Selector@ for @campaignToken@
-campaignTokenSelector :: Selector
+campaignTokenSelector :: Selector '[] (Id NSString)
 campaignTokenSelector = mkSelector "campaignToken"
 
 -- | @Selector@ for @setCampaignToken:@
-setCampaignTokenSelector :: Selector
+setCampaignTokenSelector :: Selector '[Id NSString] ()
 setCampaignTokenSelector = mkSelector "setCampaignToken:"
 
 -- | @Selector@ for @providerToken@
-providerTokenSelector :: Selector
+providerTokenSelector :: Selector '[] (Id NSString)
 providerTokenSelector = mkSelector "providerToken"
 
 -- | @Selector@ for @setProviderToken:@
-setProviderTokenSelector :: Selector
+setProviderTokenSelector :: Selector '[Id NSString] ()
 setProviderTokenSelector = mkSelector "setProviderToken:"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] SKOverlayPosition
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @setPosition:@
-setPositionSelector :: Selector
+setPositionSelector :: Selector '[SKOverlayPosition] ()
 setPositionSelector = mkSelector "setPosition:"
 

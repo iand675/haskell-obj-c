@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.AccessorySetupKit.ASPickerDisplayItem
   , setRenameOptions
   , setupOptions
   , setSetupOptions
-  , initWithName_productImage_descriptorSelector
-  , initSelector
-  , newSelector
-  , nameSelector
   , descriptorSelector
+  , initSelector
+  , initWithName_productImage_descriptorSelector
+  , nameSelector
+  , newSelector
   , renameOptionsSelector
   , setRenameOptionsSelector
-  , setupOptionsSelector
   , setSetupOptionsSelector
+  , setupOptionsSelector
 
   -- * Enum types
   , ASAccessoryRenameOptions(ASAccessoryRenameOptions)
@@ -36,15 +37,11 @@ module ObjC.AccessorySetupKit.ASPickerDisplayItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,34 +53,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:productImage:descriptor:@
 initWithName_productImage_descriptor :: (IsASPickerDisplayItem asPickerDisplayItem, IsNSString name, IsASDiscoveryDescriptor descriptor) => asPickerDisplayItem -> name -> RawId -> descriptor -> IO (Id ASPickerDisplayItem)
-initWithName_productImage_descriptor asPickerDisplayItem  name productImage descriptor =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg asPickerDisplayItem (mkSelector "initWithName:productImage:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId productImage) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithName_productImage_descriptor asPickerDisplayItem name productImage descriptor =
+  sendOwnedMessage asPickerDisplayItem initWithName_productImage_descriptorSelector (toNSString name) productImage (toASDiscoveryDescriptor descriptor)
 
 -- | @- init@
 init_ :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO (Id ASPickerDisplayItem)
-init_ asPickerDisplayItem  =
-    sendMsg asPickerDisplayItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asPickerDisplayItem =
+  sendOwnedMessage asPickerDisplayItem initSelector
 
 -- | @- new@
 new :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO (Id ASPickerDisplayItem)
-new asPickerDisplayItem  =
-    sendMsg asPickerDisplayItem (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new asPickerDisplayItem =
+  sendOwnedMessage asPickerDisplayItem newSelector
 
 -- | The accessory name to display in the picker.
 --
 -- ObjC selector: @- name@
 name :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO (Id NSString)
-name asPickerDisplayItem  =
-    sendMsg asPickerDisplayItem (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name asPickerDisplayItem =
+  sendMessage asPickerDisplayItem nameSelector
 
 -- | A descriptor that the picker uses to determine which discovered accessories to display.
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO (Id ASDiscoveryDescriptor)
-descriptor asPickerDisplayItem  =
-    sendMsg asPickerDisplayItem (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor asPickerDisplayItem =
+  sendMessage asPickerDisplayItem descriptorSelector
 
 -- | Options to allow renaming a matched accessory.
 --
@@ -91,8 +86,8 @@ descriptor asPickerDisplayItem  =
 --
 -- ObjC selector: @- renameOptions@
 renameOptions :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO ASAccessoryRenameOptions
-renameOptions asPickerDisplayItem  =
-    fmap (coerce :: CULong -> ASAccessoryRenameOptions) $ sendMsg asPickerDisplayItem (mkSelector "renameOptions") retCULong []
+renameOptions asPickerDisplayItem =
+  sendMessage asPickerDisplayItem renameOptionsSelector
 
 -- | Options to allow renaming a matched accessory.
 --
@@ -100,60 +95,60 @@ renameOptions asPickerDisplayItem  =
 --
 -- ObjC selector: @- setRenameOptions:@
 setRenameOptions :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> ASAccessoryRenameOptions -> IO ()
-setRenameOptions asPickerDisplayItem  value =
-    sendMsg asPickerDisplayItem (mkSelector "setRenameOptions:") retVoid [argCULong (coerce value)]
+setRenameOptions asPickerDisplayItem value =
+  sendMessage asPickerDisplayItem setRenameOptionsSelector value
 
 -- | Custom setup options for the accessory.
 --
 -- ObjC selector: @- setupOptions@
 setupOptions :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> IO ASPickerDisplayItemSetupOptions
-setupOptions asPickerDisplayItem  =
-    fmap (coerce :: CULong -> ASPickerDisplayItemSetupOptions) $ sendMsg asPickerDisplayItem (mkSelector "setupOptions") retCULong []
+setupOptions asPickerDisplayItem =
+  sendMessage asPickerDisplayItem setupOptionsSelector
 
 -- | Custom setup options for the accessory.
 --
 -- ObjC selector: @- setSetupOptions:@
 setSetupOptions :: IsASPickerDisplayItem asPickerDisplayItem => asPickerDisplayItem -> ASPickerDisplayItemSetupOptions -> IO ()
-setSetupOptions asPickerDisplayItem  value =
-    sendMsg asPickerDisplayItem (mkSelector "setSetupOptions:") retVoid [argCULong (coerce value)]
+setSetupOptions asPickerDisplayItem value =
+  sendMessage asPickerDisplayItem setSetupOptionsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:productImage:descriptor:@
-initWithName_productImage_descriptorSelector :: Selector
+initWithName_productImage_descriptorSelector :: Selector '[Id NSString, RawId, Id ASDiscoveryDescriptor] (Id ASPickerDisplayItem)
 initWithName_productImage_descriptorSelector = mkSelector "initWithName:productImage:descriptor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASPickerDisplayItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASPickerDisplayItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id ASDiscoveryDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @renameOptions@
-renameOptionsSelector :: Selector
+renameOptionsSelector :: Selector '[] ASAccessoryRenameOptions
 renameOptionsSelector = mkSelector "renameOptions"
 
 -- | @Selector@ for @setRenameOptions:@
-setRenameOptionsSelector :: Selector
+setRenameOptionsSelector :: Selector '[ASAccessoryRenameOptions] ()
 setRenameOptionsSelector = mkSelector "setRenameOptions:"
 
 -- | @Selector@ for @setupOptions@
-setupOptionsSelector :: Selector
+setupOptionsSelector :: Selector '[] ASPickerDisplayItemSetupOptions
 setupOptionsSelector = mkSelector "setupOptions"
 
 -- | @Selector@ for @setSetupOptions:@
-setSetupOptionsSelector :: Selector
+setSetupOptionsSelector :: Selector '[ASPickerDisplayItemSetupOptions] ()
 setSetupOptionsSelector = mkSelector "setSetupOptions:"
 

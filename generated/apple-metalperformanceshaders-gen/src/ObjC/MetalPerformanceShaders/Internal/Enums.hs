@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MetalPerformanceShaders.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Possible values of the acceleration structure status property
 -- | @MPSAccelerationStructureStatus@
@@ -22,6 +25,16 @@ pattern MPSAccelerationStructureStatusUnbuilt = MPSAccelerationStructureStatus 0
 
 pattern MPSAccelerationStructureStatusBuilt :: MPSAccelerationStructureStatus
 pattern MPSAccelerationStructureStatusBuilt = MPSAccelerationStructureStatus 1
+
+instance ObjCArgument MPSAccelerationStructureStatus where
+  withObjCArg (MPSAccelerationStructureStatus x) k = k (argCULong x)
+
+instance ObjCReturn MPSAccelerationStructureStatus where
+  type RawReturn MPSAccelerationStructureStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSAccelerationStructureStatus x)
+  fromOwned x = pure (MPSAccelerationStructureStatus x)
 
 -- | Options describing how an acceleration structure will be used
 -- | @MPSAccelerationStructureUsage@ (bitmask)
@@ -49,6 +62,16 @@ pattern MPSAccelerationStructureUsagePreferGPUBuild = MPSAccelerationStructureUs
 
 pattern MPSAccelerationStructureUsagePreferCPUBuild :: MPSAccelerationStructureUsage
 pattern MPSAccelerationStructureUsagePreferCPUBuild = MPSAccelerationStructureUsage 8
+
+instance ObjCArgument MPSAccelerationStructureUsage where
+  withObjCArg (MPSAccelerationStructureUsage x) k = k (argCULong x)
+
+instance ObjCReturn MPSAccelerationStructureUsage where
+  type RawReturn MPSAccelerationStructureUsage = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSAccelerationStructureUsage x)
+  fromOwned x = pure (MPSAccelerationStructureUsage x)
 
 -- | @MPSAliasingStrategy@ (bitmask)
 newtype MPSAliasingStrategy = MPSAliasingStrategy CULong
@@ -82,6 +105,16 @@ pattern MPSAliasingStrategyPreferTemporaryMemory = MPSAliasingStrategy 4
 pattern MPSAliasingStrategyPreferNonTemporaryMemory :: MPSAliasingStrategy
 pattern MPSAliasingStrategyPreferNonTemporaryMemory = MPSAliasingStrategy 8
 
+instance ObjCArgument MPSAliasingStrategy where
+  withObjCArg (MPSAliasingStrategy x) k = k (argCULong x)
+
+instance ObjCReturn MPSAliasingStrategy where
+  type RawReturn MPSAliasingStrategy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSAliasingStrategy x)
+  fromOwned x = pure (MPSAliasingStrategy x)
+
 -- | @MPSAlphaType@
 newtype MPSAlphaType = MPSAlphaType CULong
   deriving stock (Eq, Ord, Show)
@@ -95,6 +128,16 @@ pattern MPSAlphaTypeAlphaIsOne = MPSAlphaType 1
 
 pattern MPSAlphaTypePremultiplied :: MPSAlphaType
 pattern MPSAlphaTypePremultiplied = MPSAlphaType 2
+
+instance ObjCArgument MPSAlphaType where
+  withObjCArg (MPSAlphaType x) k = k (argCULong x)
+
+instance ObjCReturn MPSAlphaType where
+  type RawReturn MPSAlphaType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSAlphaType x)
+  fromOwned x = pure (MPSAlphaType x)
 
 -- | Options for the MPSRayIntersector bounding box intersection test type property
 -- | @MPSBoundingBoxIntersectionTestType@
@@ -110,6 +153,16 @@ pattern MPSBoundingBoxIntersectionTestTypeAxisAligned = MPSBoundingBoxIntersecti
 
 pattern MPSBoundingBoxIntersectionTestTypeFast :: MPSBoundingBoxIntersectionTestType
 pattern MPSBoundingBoxIntersectionTestTypeFast = MPSBoundingBoxIntersectionTestType 2
+
+instance ObjCArgument MPSBoundingBoxIntersectionTestType where
+  withObjCArg (MPSBoundingBoxIntersectionTestType x) k = k (argCULong x)
+
+instance ObjCReturn MPSBoundingBoxIntersectionTestType where
+  type RawReturn MPSBoundingBoxIntersectionTestType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSBoundingBoxIntersectionTestType x)
+  fromOwned x = pure (MPSBoundingBoxIntersectionTestType x)
 
 -- | @MPSCNNBatchNormalizationFlags@ (bitmask)
 newtype MPSCNNBatchNormalizationFlags = MPSCNNBatchNormalizationFlags CULong
@@ -137,6 +190,16 @@ pattern MPSCNNBatchNormalizationFlagsCalculateStatisticsNever = MPSCNNBatchNorma
 pattern MPSCNNBatchNormalizationFlagsCalculateStatisticsMask :: MPSCNNBatchNormalizationFlags
 pattern MPSCNNBatchNormalizationFlagsCalculateStatisticsMask = MPSCNNBatchNormalizationFlags 3
 
+instance ObjCArgument MPSCNNBatchNormalizationFlags where
+  withObjCArg (MPSCNNBatchNormalizationFlags x) k = k (argCULong x)
+
+instance ObjCReturn MPSCNNBatchNormalizationFlags where
+  type RawReturn MPSCNNBatchNormalizationFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNBatchNormalizationFlags x)
+  fromOwned x = pure (MPSCNNBatchNormalizationFlags x)
+
 -- | @MPSCNNBinaryConvolutionFlags@
 newtype MPSCNNBinaryConvolutionFlags = MPSCNNBinaryConvolutionFlags CULong
   deriving stock (Eq, Ord, Show)
@@ -147,6 +210,16 @@ pattern MPSCNNBinaryConvolutionFlagsNone = MPSCNNBinaryConvolutionFlags 0
 
 pattern MPSCNNBinaryConvolutionFlagsUseBetaScaling :: MPSCNNBinaryConvolutionFlags
 pattern MPSCNNBinaryConvolutionFlagsUseBetaScaling = MPSCNNBinaryConvolutionFlags 1
+
+instance ObjCArgument MPSCNNBinaryConvolutionFlags where
+  withObjCArg (MPSCNNBinaryConvolutionFlags x) k = k (argCULong x)
+
+instance ObjCReturn MPSCNNBinaryConvolutionFlags where
+  type RawReturn MPSCNNBinaryConvolutionFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNBinaryConvolutionFlags x)
+  fromOwned x = pure (MPSCNNBinaryConvolutionFlags x)
 
 -- | @MPSCNNBinaryConvolutionType@
 newtype MPSCNNBinaryConvolutionType = MPSCNNBinaryConvolutionType CULong
@@ -162,6 +235,16 @@ pattern MPSCNNBinaryConvolutionTypeXNOR = MPSCNNBinaryConvolutionType 1
 pattern MPSCNNBinaryConvolutionTypeAND :: MPSCNNBinaryConvolutionType
 pattern MPSCNNBinaryConvolutionTypeAND = MPSCNNBinaryConvolutionType 2
 
+instance ObjCArgument MPSCNNBinaryConvolutionType where
+  withObjCArg (MPSCNNBinaryConvolutionType x) k = k (argCULong x)
+
+instance ObjCReturn MPSCNNBinaryConvolutionType where
+  type RawReturn MPSCNNBinaryConvolutionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNBinaryConvolutionType x)
+  fromOwned x = pure (MPSCNNBinaryConvolutionType x)
+
 -- | @MPSCNNConvolutionFlags@
 newtype MPSCNNConvolutionFlags = MPSCNNConvolutionFlags CULong
   deriving stock (Eq, Ord, Show)
@@ -169,6 +252,16 @@ newtype MPSCNNConvolutionFlags = MPSCNNConvolutionFlags CULong
 
 pattern MPSCNNConvolutionFlagsNone :: MPSCNNConvolutionFlags
 pattern MPSCNNConvolutionFlagsNone = MPSCNNConvolutionFlags 0
+
+instance ObjCArgument MPSCNNConvolutionFlags where
+  withObjCArg (MPSCNNConvolutionFlags x) k = k (argCULong x)
+
+instance ObjCReturn MPSCNNConvolutionFlags where
+  type RawReturn MPSCNNConvolutionFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNConvolutionFlags x)
+  fromOwned x = pure (MPSCNNConvolutionFlags x)
 
 -- | @MPSCNNConvolutionGradientOption@ (bitmask)
 newtype MPSCNNConvolutionGradientOption = MPSCNNConvolutionGradientOption CULong
@@ -190,6 +283,16 @@ pattern MPSCNNConvolutionGradientOptionGradientWithWeightsAndBias = MPSCNNConvol
 pattern MPSCNNConvolutionGradientOptionAll :: MPSCNNConvolutionGradientOption
 pattern MPSCNNConvolutionGradientOptionAll = MPSCNNConvolutionGradientOption 3
 
+instance ObjCArgument MPSCNNConvolutionGradientOption where
+  withObjCArg (MPSCNNConvolutionGradientOption x) k = k (argCULong x)
+
+instance ObjCReturn MPSCNNConvolutionGradientOption where
+  type RawReturn MPSCNNConvolutionGradientOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNConvolutionGradientOption x)
+  fromOwned x = pure (MPSCNNConvolutionGradientOption x)
+
 -- | @MPSCNNConvolutionWeightsLayout@
 newtype MPSCNNConvolutionWeightsLayout = MPSCNNConvolutionWeightsLayout CUInt
   deriving stock (Eq, Ord, Show)
@@ -197,6 +300,16 @@ newtype MPSCNNConvolutionWeightsLayout = MPSCNNConvolutionWeightsLayout CUInt
 
 pattern MPSCNNConvolutionWeightsLayoutOHWI :: MPSCNNConvolutionWeightsLayout
 pattern MPSCNNConvolutionWeightsLayoutOHWI = MPSCNNConvolutionWeightsLayout 0
+
+instance ObjCArgument MPSCNNConvolutionWeightsLayout where
+  withObjCArg (MPSCNNConvolutionWeightsLayout x) k = k (argCUInt x)
+
+instance ObjCReturn MPSCNNConvolutionWeightsLayout where
+  type RawReturn MPSCNNConvolutionWeightsLayout = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNConvolutionWeightsLayout x)
+  fromOwned x = pure (MPSCNNConvolutionWeightsLayout x)
 
 -- | @MPSCNNLossType@
 newtype MPSCNNLossType = MPSCNNLossType CUInt
@@ -235,6 +348,16 @@ pattern MPSCNNLossTypeKullbackLeiblerDivergence = MPSCNNLossType 9
 
 pattern MPSCNNLossTypeCount :: MPSCNNLossType
 pattern MPSCNNLossTypeCount = MPSCNNLossType 10
+
+instance ObjCArgument MPSCNNLossType where
+  withObjCArg (MPSCNNLossType x) k = k (argCUInt x)
+
+instance ObjCReturn MPSCNNLossType where
+  type RawReturn MPSCNNLossType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNLossType x)
+  fromOwned x = pure (MPSCNNLossType x)
 
 -- | @MPSCNNNeuronType@
 newtype MPSCNNNeuronType = MPSCNNNeuronType CInt
@@ -292,6 +415,16 @@ pattern MPSCNNNeuronTypeGeLU = MPSCNNNeuronType 15
 pattern MPSCNNNeuronTypeCount :: MPSCNNNeuronType
 pattern MPSCNNNeuronTypeCount = MPSCNNNeuronType 16
 
+instance ObjCArgument MPSCNNNeuronType where
+  withObjCArg (MPSCNNNeuronType x) k = k (argCInt x)
+
+instance ObjCReturn MPSCNNNeuronType where
+  type RawReturn MPSCNNNeuronType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNNeuronType x)
+  fromOwned x = pure (MPSCNNNeuronType x)
+
 -- | @MPSCNNReductionType@
 newtype MPSCNNReductionType = MPSCNNReductionType CInt
   deriving stock (Eq, Ord, Show)
@@ -312,6 +445,16 @@ pattern MPSCNNReductionTypeSumByNonZeroWeights = MPSCNNReductionType 3
 pattern MPSCNNReductionTypeCount :: MPSCNNReductionType
 pattern MPSCNNReductionTypeCount = MPSCNNReductionType 4
 
+instance ObjCArgument MPSCNNReductionType where
+  withObjCArg (MPSCNNReductionType x) k = k (argCInt x)
+
+instance ObjCReturn MPSCNNReductionType where
+  type RawReturn MPSCNNReductionType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNReductionType x)
+  fromOwned x = pure (MPSCNNReductionType x)
+
 -- | @MPSCNNWeightsQuantizationType@
 newtype MPSCNNWeightsQuantizationType = MPSCNNWeightsQuantizationType CUInt
   deriving stock (Eq, Ord, Show)
@@ -326,6 +469,16 @@ pattern MPSCNNWeightsQuantizationTypeLinear = MPSCNNWeightsQuantizationType 1
 pattern MPSCNNWeightsQuantizationTypeLookupTable :: MPSCNNWeightsQuantizationType
 pattern MPSCNNWeightsQuantizationTypeLookupTable = MPSCNNWeightsQuantizationType 2
 
+instance ObjCArgument MPSCNNWeightsQuantizationType where
+  withObjCArg (MPSCNNWeightsQuantizationType x) k = k (argCUInt x)
+
+instance ObjCReturn MPSCNNWeightsQuantizationType where
+  type RawReturn MPSCNNWeightsQuantizationType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSCNNWeightsQuantizationType x)
+  fromOwned x = pure (MPSCNNWeightsQuantizationType x)
+
 -- | @MPSDataLayout@
 newtype MPSDataLayout = MPSDataLayout CULong
   deriving stock (Eq, Ord, Show)
@@ -336,6 +489,16 @@ pattern MPSDataLayoutHeightxWidthxFeatureChannels = MPSDataLayout 0
 
 pattern MPSDataLayoutFeatureChannelsxHeightxWidth :: MPSDataLayout
 pattern MPSDataLayoutFeatureChannelsxHeightxWidth = MPSDataLayout 1
+
+instance ObjCArgument MPSDataLayout where
+  withObjCArg (MPSDataLayout x) k = k (argCULong x)
+
+instance ObjCReturn MPSDataLayout where
+  type RawReturn MPSDataLayout = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSDataLayout x)
+  fromOwned x = pure (MPSDataLayout x)
 
 -- | @MPSDataType@
 newtype MPSDataType = MPSDataType CUInt
@@ -423,6 +586,16 @@ pattern MPSDataTypeUnorm1 = MPSDataType 1073741825
 pattern MPSDataTypeUnorm8 :: MPSDataType
 pattern MPSDataTypeUnorm8 = MPSDataType 1073741832
 
+instance ObjCArgument MPSDataType where
+  withObjCArg (MPSDataType x) k = k (argCUInt x)
+
+instance ObjCReturn MPSDataType where
+  type RawReturn MPSDataType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSDataType x)
+  fromOwned x = pure (MPSDataType x)
+
 -- | @MPSDeviceOptions@ (bitmask)
 newtype MPSDeviceOptions = MPSDeviceOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -443,6 +616,16 @@ pattern MPSDeviceOptionsLowPower = MPSDeviceOptions 1
 pattern MPSDeviceOptionsSkipRemovable :: MPSDeviceOptions
 pattern MPSDeviceOptionsSkipRemovable = MPSDeviceOptions 2
 
+instance ObjCArgument MPSDeviceOptions where
+  withObjCArg (MPSDeviceOptions x) k = k (argCULong x)
+
+instance ObjCReturn MPSDeviceOptions where
+  type RawReturn MPSDeviceOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSDeviceOptions x)
+  fromOwned x = pure (MPSDeviceOptions x)
+
 -- | @MPSFloatDataTypeBit@
 newtype MPSFloatDataTypeBit = MPSFloatDataTypeBit CUInt
   deriving stock (Eq, Ord, Show)
@@ -457,6 +640,16 @@ pattern MPSFloatDataTypeExponentBit = MPSFloatDataTypeBit 8126464
 pattern MPSFloatDataTypeMantissaBit :: MPSFloatDataTypeBit
 pattern MPSFloatDataTypeMantissaBit = MPSFloatDataTypeBit 261120
 
+instance ObjCArgument MPSFloatDataTypeBit where
+  withObjCArg (MPSFloatDataTypeBit x) k = k (argCUInt x)
+
+instance ObjCReturn MPSFloatDataTypeBit where
+  type RawReturn MPSFloatDataTypeBit = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSFloatDataTypeBit x)
+  fromOwned x = pure (MPSFloatDataTypeBit x)
+
 -- | @MPSFloatDataTypeShift@
 newtype MPSFloatDataTypeShift = MPSFloatDataTypeShift CUInt
   deriving stock (Eq, Ord, Show)
@@ -470,6 +663,16 @@ pattern MPSFloatDataTypeExponentShift = MPSFloatDataTypeShift 18
 
 pattern MPSFloatDataTypeMantissaShift :: MPSFloatDataTypeShift
 pattern MPSFloatDataTypeMantissaShift = MPSFloatDataTypeShift 10
+
+instance ObjCArgument MPSFloatDataTypeShift where
+  withObjCArg (MPSFloatDataTypeShift x) k = k (argCUInt x)
+
+instance ObjCReturn MPSFloatDataTypeShift where
+  type RawReturn MPSFloatDataTypeShift = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSFloatDataTypeShift x)
+  fromOwned x = pure (MPSFloatDataTypeShift x)
 
 -- | @MPSImageEdgeMode@
 newtype MPSImageEdgeMode = MPSImageEdgeMode CULong
@@ -490,6 +693,16 @@ pattern MPSImageEdgeModeMirrorWithEdge = MPSImageEdgeMode 3
 
 pattern MPSImageEdgeModeConstant :: MPSImageEdgeMode
 pattern MPSImageEdgeModeConstant = MPSImageEdgeMode 4
+
+instance ObjCArgument MPSImageEdgeMode where
+  withObjCArg (MPSImageEdgeMode x) k = k (argCULong x)
+
+instance ObjCReturn MPSImageEdgeMode where
+  type RawReturn MPSImageEdgeMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSImageEdgeMode x)
+  fromOwned x = pure (MPSImageEdgeMode x)
 
 -- | @MPSImageFeatureChannelFormat@
 newtype MPSImageFeatureChannelFormat = MPSImageFeatureChannelFormat CULong
@@ -516,6 +729,16 @@ pattern MPSImageFeatureChannelFormat_reserved0 = MPSImageFeatureChannelFormat 5
 
 pattern MPSImageFeatureChannelFormatCount :: MPSImageFeatureChannelFormat
 pattern MPSImageFeatureChannelFormatCount = MPSImageFeatureChannelFormat 6
+
+instance ObjCArgument MPSImageFeatureChannelFormat where
+  withObjCArg (MPSImageFeatureChannelFormat x) k = k (argCULong x)
+
+instance ObjCReturn MPSImageFeatureChannelFormat where
+  type RawReturn MPSImageFeatureChannelFormat = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSImageFeatureChannelFormat x)
+  fromOwned x = pure (MPSImageFeatureChannelFormat x)
 
 -- | Intersection data type options
 -- | @MPSIntersectionDataType@
@@ -550,6 +773,16 @@ pattern MPSIntersectionDataTypeDistancePrimitiveIndexBufferIndexInstanceIndex = 
 pattern MPSIntersectionDataTypeDistancePrimitiveIndexBufferIndexInstanceIndexCoordinates :: MPSIntersectionDataType
 pattern MPSIntersectionDataTypeDistancePrimitiveIndexBufferIndexInstanceIndexCoordinates = MPSIntersectionDataType 8
 
+instance ObjCArgument MPSIntersectionDataType where
+  withObjCArg (MPSIntersectionDataType x) k = k (argCULong x)
+
+instance ObjCReturn MPSIntersectionDataType where
+  type RawReturn MPSIntersectionDataType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSIntersectionDataType x)
+  fromOwned x = pure (MPSIntersectionDataType x)
+
 -- | Options for the MPSRayIntersector intersection type property
 -- | @MPSIntersectionType@
 newtype MPSIntersectionType = MPSIntersectionType CULong
@@ -561,6 +794,16 @@ pattern MPSIntersectionTypeNearest = MPSIntersectionType 0
 
 pattern MPSIntersectionTypeAny :: MPSIntersectionType
 pattern MPSIntersectionTypeAny = MPSIntersectionType 1
+
+instance ObjCArgument MPSIntersectionType where
+  withObjCArg (MPSIntersectionType x) k = k (argCULong x)
+
+instance ObjCReturn MPSIntersectionType where
+  type RawReturn MPSIntersectionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSIntersectionType x)
+  fromOwned x = pure (MPSIntersectionType x)
 
 -- | @MPSKernelOptions@ (bitmask)
 newtype MPSKernelOptions = MPSKernelOptions CULong
@@ -591,6 +834,16 @@ pattern MPSKernelOptionsInsertDebugGroups = MPSKernelOptions 8
 pattern MPSKernelOptionsVerbose :: MPSKernelOptions
 pattern MPSKernelOptionsVerbose = MPSKernelOptions 16
 
+instance ObjCArgument MPSKernelOptions where
+  withObjCArg (MPSKernelOptions x) k = k (argCULong x)
+
+instance ObjCReturn MPSKernelOptions where
+  type RawReturn MPSKernelOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSKernelOptions x)
+  fromOwned x = pure (MPSKernelOptions x)
+
 -- | @MPSMatrixDecompositionStatus@
 newtype MPSMatrixDecompositionStatus = MPSMatrixDecompositionStatus CInt
   deriving stock (Eq, Ord, Show)
@@ -607,6 +860,16 @@ pattern MPSMatrixDecompositionStatusSingular = MPSMatrixDecompositionStatus (-2)
 
 pattern MPSMatrixDecompositionStatusNonPositiveDefinite :: MPSMatrixDecompositionStatus
 pattern MPSMatrixDecompositionStatusNonPositiveDefinite = MPSMatrixDecompositionStatus (-3)
+
+instance ObjCArgument MPSMatrixDecompositionStatus where
+  withObjCArg (MPSMatrixDecompositionStatus x) k = k (argCInt x)
+
+instance ObjCReturn MPSMatrixDecompositionStatus where
+  type RawReturn MPSMatrixDecompositionStatus = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSMatrixDecompositionStatus x)
+  fromOwned x = pure (MPSMatrixDecompositionStatus x)
 
 -- | @MPSMatrixRandomDistribution@ (bitmask)
 newtype MPSMatrixRandomDistribution = MPSMatrixRandomDistribution CULong
@@ -628,6 +891,16 @@ pattern MPSMatrixRandomDistributionUniform = MPSMatrixRandomDistribution 2
 pattern MPSMatrixRandomDistributionNormal :: MPSMatrixRandomDistribution
 pattern MPSMatrixRandomDistributionNormal = MPSMatrixRandomDistribution 3
 
+instance ObjCArgument MPSMatrixRandomDistribution where
+  withObjCArg (MPSMatrixRandomDistribution x) k = k (argCULong x)
+
+instance ObjCReturn MPSMatrixRandomDistribution where
+  type RawReturn MPSMatrixRandomDistribution = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSMatrixRandomDistribution x)
+  fromOwned x = pure (MPSMatrixRandomDistribution x)
+
 -- | @MPSNDArrayQuantizationScheme@ (bitmask)
 newtype MPSNDArrayQuantizationScheme = MPSNDArrayQuantizationScheme CULong
   deriving stock (Eq, Ord, Show)
@@ -647,6 +920,16 @@ pattern MPSNDArrayQuantizationTypeAffine = MPSNDArrayQuantizationScheme 1
 
 pattern MPSNDArrayQuantizationTypeLUT :: MPSNDArrayQuantizationScheme
 pattern MPSNDArrayQuantizationTypeLUT = MPSNDArrayQuantizationScheme 2
+
+instance ObjCArgument MPSNDArrayQuantizationScheme where
+  withObjCArg (MPSNDArrayQuantizationScheme x) k = k (argCULong x)
+
+instance ObjCReturn MPSNDArrayQuantizationScheme where
+  type RawReturn MPSNDArrayQuantizationScheme = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNDArrayQuantizationScheme x)
+  fromOwned x = pure (MPSNDArrayQuantizationScheme x)
 
 -- | @MPSNNComparisonType@ (bitmask)
 newtype MPSNNComparisonType = MPSNNComparisonType CULong
@@ -677,6 +960,16 @@ pattern MPSNNComparisonTypeGreater = MPSNNComparisonType 4
 pattern MPSNNComparisonTypeGreaterOrEqual :: MPSNNComparisonType
 pattern MPSNNComparisonTypeGreaterOrEqual = MPSNNComparisonType 5
 
+instance ObjCArgument MPSNNComparisonType where
+  withObjCArg (MPSNNComparisonType x) k = k (argCULong x)
+
+instance ObjCReturn MPSNNComparisonType where
+  type RawReturn MPSNNComparisonType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNNComparisonType x)
+  fromOwned x = pure (MPSNNComparisonType x)
+
 -- | @MPSNNConvolutionAccumulatorPrecisionOption@ (bitmask)
 newtype MPSNNConvolutionAccumulatorPrecisionOption = MPSNNConvolutionAccumulatorPrecisionOption CULong
   deriving stock (Eq, Ord, Show)
@@ -693,6 +986,16 @@ pattern MPSNNConvolutionAccumulatorPrecisionOptionHalf = MPSNNConvolutionAccumul
 
 pattern MPSNNConvolutionAccumulatorPrecisionOptionFloat :: MPSNNConvolutionAccumulatorPrecisionOption
 pattern MPSNNConvolutionAccumulatorPrecisionOptionFloat = MPSNNConvolutionAccumulatorPrecisionOption 1
+
+instance ObjCArgument MPSNNConvolutionAccumulatorPrecisionOption where
+  withObjCArg (MPSNNConvolutionAccumulatorPrecisionOption x) k = k (argCULong x)
+
+instance ObjCReturn MPSNNConvolutionAccumulatorPrecisionOption where
+  type RawReturn MPSNNConvolutionAccumulatorPrecisionOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNNConvolutionAccumulatorPrecisionOption x)
+  fromOwned x = pure (MPSNNConvolutionAccumulatorPrecisionOption x)
 
 -- | @MPSNNPaddingMethod@ (bitmask)
 newtype MPSNNPaddingMethod = MPSNNPaddingMethod CULong
@@ -762,6 +1065,16 @@ pattern MPSNNPaddingMethodSizeMask = MPSNNPaddingMethod 2032
 pattern MPSNNPaddingMethodExcludeEdges :: MPSNNPaddingMethod
 pattern MPSNNPaddingMethodExcludeEdges = MPSNNPaddingMethod 32768
 
+instance ObjCArgument MPSNNPaddingMethod where
+  withObjCArg (MPSNNPaddingMethod x) k = k (argCULong x)
+
+instance ObjCReturn MPSNNPaddingMethod where
+  type RawReturn MPSNNPaddingMethod = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNNPaddingMethod x)
+  fromOwned x = pure (MPSNNPaddingMethod x)
+
 -- | @MPSNNRegularizationType@
 newtype MPSNNRegularizationType = MPSNNRegularizationType CULong
   deriving stock (Eq, Ord, Show)
@@ -775,6 +1088,16 @@ pattern MPSNNRegularizationTypeL1 = MPSNNRegularizationType 1
 
 pattern MPSNNRegularizationTypeL2 :: MPSNNRegularizationType
 pattern MPSNNRegularizationTypeL2 = MPSNNRegularizationType 2
+
+instance ObjCArgument MPSNNRegularizationType where
+  withObjCArg (MPSNNRegularizationType x) k = k (argCULong x)
+
+instance ObjCReturn MPSNNRegularizationType where
+  type RawReturn MPSNNRegularizationType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNNRegularizationType x)
+  fromOwned x = pure (MPSNNRegularizationType x)
 
 -- | @MPSNNTrainingStyle@ (bitmask)
 newtype MPSNNTrainingStyle = MPSNNTrainingStyle CULong
@@ -796,6 +1119,16 @@ pattern MPSNNTrainingStyleUpdateDeviceCPU = MPSNNTrainingStyle 1
 pattern MPSNNTrainingStyleUpdateDeviceGPU :: MPSNNTrainingStyle
 pattern MPSNNTrainingStyleUpdateDeviceGPU = MPSNNTrainingStyle 2
 
+instance ObjCArgument MPSNNTrainingStyle where
+  withObjCArg (MPSNNTrainingStyle x) k = k (argCULong x)
+
+instance ObjCReturn MPSNNTrainingStyle where
+  type RawReturn MPSNNTrainingStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSNNTrainingStyle x)
+  fromOwned x = pure (MPSNNTrainingStyle x)
+
 -- | @MPSPolygonType@
 newtype MPSPolygonType = MPSPolygonType CULong
   deriving stock (Eq, Ord, Show)
@@ -806,6 +1139,16 @@ pattern MPSPolygonTypeTriangle = MPSPolygonType 0
 
 pattern MPSPolygonTypeQuadrilateral :: MPSPolygonType
 pattern MPSPolygonTypeQuadrilateral = MPSPolygonType 1
+
+instance ObjCArgument MPSPolygonType where
+  withObjCArg (MPSPolygonType x) k = k (argCULong x)
+
+instance ObjCReturn MPSPolygonType where
+  type RawReturn MPSPolygonType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSPolygonType x)
+  fromOwned x = pure (MPSPolygonType x)
 
 -- | @MPSPurgeableState@
 newtype MPSPurgeableState = MPSPurgeableState CULong
@@ -827,6 +1170,16 @@ pattern MPSPurgeableStateVolatile = MPSPurgeableState 3
 pattern MPSPurgeableStateEmpty :: MPSPurgeableState
 pattern MPSPurgeableStateEmpty = MPSPurgeableState 4
 
+instance ObjCArgument MPSPurgeableState where
+  withObjCArg (MPSPurgeableState x) k = k (argCULong x)
+
+instance ObjCReturn MPSPurgeableState where
+  type RawReturn MPSPurgeableState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSPurgeableState x)
+  fromOwned x = pure (MPSPurgeableState x)
+
 -- | @MPSRNNBidirectionalCombineMode@
 newtype MPSRNNBidirectionalCombineMode = MPSRNNBidirectionalCombineMode CULong
   deriving stock (Eq, Ord, Show)
@@ -840,6 +1193,16 @@ pattern MPSRNNBidirectionalCombineModeAdd = MPSRNNBidirectionalCombineMode 1
 
 pattern MPSRNNBidirectionalCombineModeConcatenate :: MPSRNNBidirectionalCombineMode
 pattern MPSRNNBidirectionalCombineModeConcatenate = MPSRNNBidirectionalCombineMode 2
+
+instance ObjCArgument MPSRNNBidirectionalCombineMode where
+  withObjCArg (MPSRNNBidirectionalCombineMode x) k = k (argCULong x)
+
+instance ObjCReturn MPSRNNBidirectionalCombineMode where
+  type RawReturn MPSRNNBidirectionalCombineMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRNNBidirectionalCombineMode x)
+  fromOwned x = pure (MPSRNNBidirectionalCombineMode x)
 
 -- | @MPSRNNMatrixId@
 newtype MPSRNNMatrixId = MPSRNNMatrixId CULong
@@ -936,6 +1299,16 @@ pattern MPSRNNMatrixIdGRUOutputGateBiasTerms = MPSRNNMatrixId 28
 pattern MPSRNNMatrixId_count :: MPSRNNMatrixId
 pattern MPSRNNMatrixId_count = MPSRNNMatrixId 29
 
+instance ObjCArgument MPSRNNMatrixId where
+  withObjCArg (MPSRNNMatrixId x) k = k (argCULong x)
+
+instance ObjCReturn MPSRNNMatrixId where
+  type RawReturn MPSRNNMatrixId = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRNNMatrixId x)
+  fromOwned x = pure (MPSRNNMatrixId x)
+
 -- | @MPSRNNSequenceDirection@
 newtype MPSRNNSequenceDirection = MPSRNNSequenceDirection CULong
   deriving stock (Eq, Ord, Show)
@@ -946,6 +1319,16 @@ pattern MPSRNNSequenceDirectionForward = MPSRNNSequenceDirection 0
 
 pattern MPSRNNSequenceDirectionBackward :: MPSRNNSequenceDirection
 pattern MPSRNNSequenceDirectionBackward = MPSRNNSequenceDirection 1
+
+instance ObjCArgument MPSRNNSequenceDirection where
+  withObjCArg (MPSRNNSequenceDirection x) k = k (argCULong x)
+
+instance ObjCReturn MPSRNNSequenceDirection where
+  type RawReturn MPSRNNSequenceDirection = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRNNSequenceDirection x)
+  fromOwned x = pure (MPSRNNSequenceDirection x)
 
 -- | Options for the MPSRayIntersector ray data type property
 -- | @MPSRayDataType@
@@ -964,6 +1347,16 @@ pattern MPSRayDataTypeOriginMaskDirectionMaxDistance = MPSRayDataType 2
 
 pattern MPSRayDataTypePackedOriginDirection :: MPSRayDataType
 pattern MPSRayDataTypePackedOriginDirection = MPSRayDataType 3
+
+instance ObjCArgument MPSRayDataType where
+  withObjCArg (MPSRayDataType x) k = k (argCULong x)
+
+instance ObjCReturn MPSRayDataType where
+  type RawReturn MPSRayDataType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRayDataType x)
+  fromOwned x = pure (MPSRayDataType x)
 
 -- | Options for the MPSRayIntersector ray mask operator property
 -- | @MPSRayMaskOperator@
@@ -1007,6 +1400,16 @@ pattern MPSRayMaskOperatorEqual = MPSRayMaskOperator 10
 pattern MPSRayMaskOperatorNotEqual :: MPSRayMaskOperator
 pattern MPSRayMaskOperatorNotEqual = MPSRayMaskOperator 11
 
+instance ObjCArgument MPSRayMaskOperator where
+  withObjCArg (MPSRayMaskOperator x) k = k (argCULong x)
+
+instance ObjCReturn MPSRayMaskOperator where
+  type RawReturn MPSRayMaskOperator = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRayMaskOperator x)
+  fromOwned x = pure (MPSRayMaskOperator x)
+
 -- | Options for the MPSRayIntersector ray mask options property
 -- | @MPSRayMaskOptions@ (bitmask)
 newtype MPSRayMaskOptions = MPSRayMaskOptions CULong
@@ -1028,6 +1431,16 @@ pattern MPSRayMaskOptionPrimitive = MPSRayMaskOptions 1
 pattern MPSRayMaskOptionInstance :: MPSRayMaskOptions
 pattern MPSRayMaskOptionInstance = MPSRayMaskOptions 2
 
+instance ObjCArgument MPSRayMaskOptions where
+  withObjCArg (MPSRayMaskOptions x) k = k (argCULong x)
+
+instance ObjCReturn MPSRayMaskOptions where
+  type RawReturn MPSRayMaskOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSRayMaskOptions x)
+  fromOwned x = pure (MPSRayMaskOptions x)
+
 -- | @MPSStateResourceType@
 newtype MPSStateResourceType = MPSStateResourceType CULong
   deriving stock (Eq, Ord, Show)
@@ -1042,6 +1455,16 @@ pattern MPSStateResourceTypeBuffer = MPSStateResourceType 1
 pattern MPSStateResourceTypeTexture :: MPSStateResourceType
 pattern MPSStateResourceTypeTexture = MPSStateResourceType 2
 
+instance ObjCArgument MPSStateResourceType where
+  withObjCArg (MPSStateResourceType x) k = k (argCULong x)
+
+instance ObjCReturn MPSStateResourceType where
+  type RawReturn MPSStateResourceType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSStateResourceType x)
+  fromOwned x = pure (MPSStateResourceType x)
+
 -- | Controls how samples are weighted over time
 -- | @MPSTemporalWeighting@
 newtype MPSTemporalWeighting = MPSTemporalWeighting CULong
@@ -1053,6 +1476,16 @@ pattern MPSTemporalWeightingAverage = MPSTemporalWeighting 0
 
 pattern MPSTemporalWeightingExponentialMovingAverage :: MPSTemporalWeighting
 pattern MPSTemporalWeightingExponentialMovingAverage = MPSTemporalWeighting 1
+
+instance ObjCArgument MPSTemporalWeighting where
+  withObjCArg (MPSTemporalWeighting x) k = k (argCULong x)
+
+instance ObjCReturn MPSTemporalWeighting where
+  type RawReturn MPSTemporalWeighting = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSTemporalWeighting x)
+  fromOwned x = pure (MPSTemporalWeighting x)
 
 -- | Instance transformation type options
 -- | @MPSTransformType@
@@ -1066,6 +1499,16 @@ pattern MPSTransformTypeFloat4x4 = MPSTransformType 0
 pattern MPSTransformTypeIdentity :: MPSTransformType
 pattern MPSTransformTypeIdentity = MPSTransformType 1
 
+instance ObjCArgument MPSTransformType where
+  withObjCArg (MPSTransformType x) k = k (argCULong x)
+
+instance ObjCReturn MPSTransformType where
+  type RawReturn MPSTransformType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSTransformType x)
+  fromOwned x = pure (MPSTransformType x)
+
 -- | Options for the MPSRayIntersector triangle intersection test type property
 -- | @MPSTriangleIntersectionTestType@
 newtype MPSTriangleIntersectionTestType = MPSTriangleIntersectionTestType CULong
@@ -1077,3 +1520,13 @@ pattern MPSTriangleIntersectionTestTypeDefault = MPSTriangleIntersectionTestType
 
 pattern MPSTriangleIntersectionTestTypeWatertight :: MPSTriangleIntersectionTestType
 pattern MPSTriangleIntersectionTestTypeWatertight = MPSTriangleIntersectionTestType 1
+
+instance ObjCArgument MPSTriangleIntersectionTestType where
+  withObjCArg (MPSTriangleIntersectionTestType x) k = k (argCULong x)
+
+instance ObjCReturn MPSTriangleIntersectionTestType where
+  type RawReturn MPSTriangleIntersectionTestType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSTriangleIntersectionTestType x)
+  fromOwned x = pure (MPSTriangleIntersectionTestType x)

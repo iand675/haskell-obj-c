@@ -36,7 +36,7 @@ import ObjC.Runtime.StableIvar
 -- method is not implemented (the object will not respond to that
 -- selector).  'Just' provides the Haskell implementation.
 data NSTextInputClientOverrides = NSTextInputClientOverrides
-  { _doCommandBySelector :: !(Maybe (Selector -> IO ()))
+  { _doCommandBySelector :: !(Maybe (Sel -> IO ()))
   , _unmarkText :: !(Maybe (IO ()))
   , _hasMarkedText :: !(Maybe (IO Bool))
   , _validAttributesForMarkedText :: !(Maybe (IO RawId))

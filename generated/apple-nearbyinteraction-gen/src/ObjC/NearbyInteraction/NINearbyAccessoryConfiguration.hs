@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.NearbyInteraction.NINearbyAccessoryConfiguration
   , accessoryDiscoveryToken
   , cameraAssistanceEnabled
   , setCameraAssistanceEnabled
-  , initWithData_errorSelector
-  , initWithAccessoryData_bluetoothPeerIdentifier_errorSelector
-  , initSelector
-  , newSelector
   , accessoryDiscoveryTokenSelector
   , cameraAssistanceEnabledSelector
+  , initSelector
+  , initWithAccessoryData_bluetoothPeerIdentifier_errorSelector
+  , initWithData_errorSelector
+  , newSelector
   , setCameraAssistanceEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithData:error:@
 initWithData_error :: (IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration, IsNSData data_, IsNSError error_) => niNearbyAccessoryConfiguration -> data_ -> error_ -> IO (Id NINearbyAccessoryConfiguration)
-initWithData_error niNearbyAccessoryConfiguration  data_ error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg niNearbyAccessoryConfiguration (mkSelector "initWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData_error niNearbyAccessoryConfiguration data_ error_ =
+  sendOwnedMessage niNearbyAccessoryConfiguration initWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | Create a new nearby accessory configuration for an accessory that is also a paired Bluetooth device
 --
@@ -66,25 +61,22 @@ initWithData_error niNearbyAccessoryConfiguration  data_ error_ =
 --
 -- ObjC selector: @- initWithAccessoryData:bluetoothPeerIdentifier:error:@
 initWithAccessoryData_bluetoothPeerIdentifier_error :: (IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration, IsNSData accessoryData, IsNSUUID identifier, IsNSError error_) => niNearbyAccessoryConfiguration -> accessoryData -> identifier -> error_ -> IO (Id NINearbyAccessoryConfiguration)
-initWithAccessoryData_bluetoothPeerIdentifier_error niNearbyAccessoryConfiguration  accessoryData identifier error_ =
-  withObjCPtr accessoryData $ \raw_accessoryData ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg niNearbyAccessoryConfiguration (mkSelector "initWithAccessoryData:bluetoothPeerIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_accessoryData :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithAccessoryData_bluetoothPeerIdentifier_error niNearbyAccessoryConfiguration accessoryData identifier error_ =
+  sendOwnedMessage niNearbyAccessoryConfiguration initWithAccessoryData_bluetoothPeerIdentifier_errorSelector (toNSData accessoryData) (toNSUUID identifier) (toNSError error_)
 
 -- | Unavailable
 --
 -- ObjC selector: @- init@
 init_ :: IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration => niNearbyAccessoryConfiguration -> IO (Id NINearbyAccessoryConfiguration)
-init_ niNearbyAccessoryConfiguration  =
-    sendMsg niNearbyAccessoryConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ niNearbyAccessoryConfiguration =
+  sendOwnedMessage niNearbyAccessoryConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id NINearbyAccessoryConfiguration)
 new  =
   do
     cls' <- getRequiredClass "NINearbyAccessoryConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The discovery token identifying the accessory device for this session configuration.
 --
@@ -92,8 +84,8 @@ new  =
 --
 -- ObjC selector: @- accessoryDiscoveryToken@
 accessoryDiscoveryToken :: IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration => niNearbyAccessoryConfiguration -> IO (Id NIDiscoveryToken)
-accessoryDiscoveryToken niNearbyAccessoryConfiguration  =
-    sendMsg niNearbyAccessoryConfiguration (mkSelector "accessoryDiscoveryToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryDiscoveryToken niNearbyAccessoryConfiguration =
+  sendMessage niNearbyAccessoryConfiguration accessoryDiscoveryTokenSelector
 
 -- | Enables camera assistance during the NISession run with this configuration
 --
@@ -103,8 +95,8 @@ accessoryDiscoveryToken niNearbyAccessoryConfiguration  =
 --
 -- ObjC selector: @- cameraAssistanceEnabled@
 cameraAssistanceEnabled :: IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration => niNearbyAccessoryConfiguration -> IO Bool
-cameraAssistanceEnabled niNearbyAccessoryConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg niNearbyAccessoryConfiguration (mkSelector "cameraAssistanceEnabled") retCULong []
+cameraAssistanceEnabled niNearbyAccessoryConfiguration =
+  sendMessage niNearbyAccessoryConfiguration cameraAssistanceEnabledSelector
 
 -- | Enables camera assistance during the NISession run with this configuration
 --
@@ -114,38 +106,38 @@ cameraAssistanceEnabled niNearbyAccessoryConfiguration  =
 --
 -- ObjC selector: @- setCameraAssistanceEnabled:@
 setCameraAssistanceEnabled :: IsNINearbyAccessoryConfiguration niNearbyAccessoryConfiguration => niNearbyAccessoryConfiguration -> Bool -> IO ()
-setCameraAssistanceEnabled niNearbyAccessoryConfiguration  value =
-    sendMsg niNearbyAccessoryConfiguration (mkSelector "setCameraAssistanceEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraAssistanceEnabled niNearbyAccessoryConfiguration value =
+  sendMessage niNearbyAccessoryConfiguration setCameraAssistanceEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithData:error:@
-initWithData_errorSelector :: Selector
+initWithData_errorSelector :: Selector '[Id NSData, Id NSError] (Id NINearbyAccessoryConfiguration)
 initWithData_errorSelector = mkSelector "initWithData:error:"
 
 -- | @Selector@ for @initWithAccessoryData:bluetoothPeerIdentifier:error:@
-initWithAccessoryData_bluetoothPeerIdentifier_errorSelector :: Selector
+initWithAccessoryData_bluetoothPeerIdentifier_errorSelector :: Selector '[Id NSData, Id NSUUID, Id NSError] (Id NINearbyAccessoryConfiguration)
 initWithAccessoryData_bluetoothPeerIdentifier_errorSelector = mkSelector "initWithAccessoryData:bluetoothPeerIdentifier:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NINearbyAccessoryConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NINearbyAccessoryConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @accessoryDiscoveryToken@
-accessoryDiscoveryTokenSelector :: Selector
+accessoryDiscoveryTokenSelector :: Selector '[] (Id NIDiscoveryToken)
 accessoryDiscoveryTokenSelector = mkSelector "accessoryDiscoveryToken"
 
 -- | @Selector@ for @cameraAssistanceEnabled@
-cameraAssistanceEnabledSelector :: Selector
+cameraAssistanceEnabledSelector :: Selector '[] Bool
 cameraAssistanceEnabledSelector = mkSelector "cameraAssistanceEnabled"
 
 -- | @Selector@ for @setCameraAssistanceEnabled:@
-setCameraAssistanceEnabledSelector :: Selector
+setCameraAssistanceEnabledSelector :: Selector '[Bool] ()
 setCameraAssistanceEnabledSelector = mkSelector "setCameraAssistanceEnabled:"
 

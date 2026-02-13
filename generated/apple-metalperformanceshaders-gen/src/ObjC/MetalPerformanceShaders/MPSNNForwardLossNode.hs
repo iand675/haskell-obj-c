@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,26 +30,26 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLossNode
   , delta
   , propertyCallBack
   , setPropertyCallBack
-  , nodeWithSource_labels_weights_lossDescriptorSelector
-  , nodeWithSource_labels_lossDescriptorSelector
-  , nodeWithSources_lossDescriptorSelector
-  , initWithSource_labels_weights_lossDescriptorSelector
-  , initWithSource_labels_lossDescriptorSelector
-  , initWithSources_lossDescriptorSelector
-  , gradientFilterWithSourcesSelector
-  , gradientFiltersWithSourcesSelector
-  , gradientFilterWithSourceSelector
-  , gradientFiltersWithSourceSelector
-  , lossTypeSelector
-  , reductionTypeSelector
-  , numberOfClassesSelector
-  , reduceAcrossBatchSelector
-  , weightSelector
-  , labelSmoothingSelector
-  , epsilonSelector
   , deltaSelector
+  , epsilonSelector
+  , gradientFilterWithSourceSelector
+  , gradientFilterWithSourcesSelector
+  , gradientFiltersWithSourceSelector
+  , gradientFiltersWithSourcesSelector
+  , initWithSource_labels_lossDescriptorSelector
+  , initWithSource_labels_weights_lossDescriptorSelector
+  , initWithSources_lossDescriptorSelector
+  , labelSmoothingSelector
+  , lossTypeSelector
+  , nodeWithSource_labels_lossDescriptorSelector
+  , nodeWithSource_labels_weights_lossDescriptorSelector
+  , nodeWithSources_lossDescriptorSelector
+  , numberOfClassesSelector
   , propertyCallBackSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
   , setPropertyCallBackSelector
+  , weightSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -72,15 +73,11 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLossNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,21 +90,14 @@ nodeWithSource_labels_weights_lossDescriptor :: (IsMPSNNImageNode source, IsMPSN
 nodeWithSource_labels_weights_lossDescriptor source labels weights descriptor =
   do
     cls' <- getRequiredClass "MPSNNForwardLossNode"
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr labels $ \raw_labels ->
-        withObjCPtr weights $ \raw_weights ->
-          withObjCPtr descriptor $ \raw_descriptor ->
-            sendClassMsg cls' (mkSelector "nodeWithSource:labels:weights:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_labels_weights_lossDescriptorSelector (toMPSNNImageNode source) (toMPSNNImageNode labels) (toMPSNNImageNode weights) (toMPSCNNLossDescriptor descriptor)
 
 -- | @+ nodeWithSource:labels:lossDescriptor:@
 nodeWithSource_labels_lossDescriptor :: (IsMPSNNImageNode source, IsMPSNNImageNode labels, IsMPSCNNLossDescriptor descriptor) => source -> labels -> descriptor -> IO (Id MPSNNForwardLossNode)
 nodeWithSource_labels_lossDescriptor source labels descriptor =
   do
     cls' <- getRequiredClass "MPSNNForwardLossNode"
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr labels $ \raw_labels ->
-        withObjCPtr descriptor $ \raw_descriptor ->
-          sendClassMsg cls' (mkSelector "nodeWithSource:labels:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_labels_lossDescriptorSelector (toMPSNNImageNode source) (toMPSNNImageNode labels) (toMPSCNNLossDescriptor descriptor)
 
 -- | Init a forward loss node from multiple images
 --
@@ -120,26 +110,17 @@ nodeWithSources_lossDescriptor :: (IsNSArray sourceNodes, IsMPSCNNLossDescriptor
 nodeWithSources_lossDescriptor sourceNodes descriptor =
   do
     cls' <- getRequiredClass "MPSNNForwardLossNode"
-    withObjCPtr sourceNodes $ \raw_sourceNodes ->
-      withObjCPtr descriptor $ \raw_descriptor ->
-        sendClassMsg cls' (mkSelector "nodeWithSources:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSources_lossDescriptorSelector (toNSArray sourceNodes) (toMPSCNNLossDescriptor descriptor)
 
 -- | @- initWithSource:labels:weights:lossDescriptor:@
 initWithSource_labels_weights_lossDescriptor :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsMPSNNImageNode source, IsMPSNNImageNode labels, IsMPSNNImageNode weights, IsMPSCNNLossDescriptor descriptor) => mpsnnForwardLossNode -> source -> labels -> weights -> descriptor -> IO (Id MPSNNForwardLossNode)
-initWithSource_labels_weights_lossDescriptor mpsnnForwardLossNode  source labels weights descriptor =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr labels $ \raw_labels ->
-      withObjCPtr weights $ \raw_weights ->
-        withObjCPtr descriptor $ \raw_descriptor ->
-            sendMsg mpsnnForwardLossNode (mkSelector "initWithSource:labels:weights:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_labels_weights_lossDescriptor mpsnnForwardLossNode source labels weights descriptor =
+  sendOwnedMessage mpsnnForwardLossNode initWithSource_labels_weights_lossDescriptorSelector (toMPSNNImageNode source) (toMPSNNImageNode labels) (toMPSNNImageNode weights) (toMPSCNNLossDescriptor descriptor)
 
 -- | @- initWithSource:labels:lossDescriptor:@
 initWithSource_labels_lossDescriptor :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsMPSNNImageNode source, IsMPSNNImageNode labels, IsMPSCNNLossDescriptor descriptor) => mpsnnForwardLossNode -> source -> labels -> descriptor -> IO (Id MPSNNForwardLossNode)
-initWithSource_labels_lossDescriptor mpsnnForwardLossNode  source labels descriptor =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr labels $ \raw_labels ->
-      withObjCPtr descriptor $ \raw_descriptor ->
-          sendMsg mpsnnForwardLossNode (mkSelector "initWithSource:labels:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_labels_lossDescriptor mpsnnForwardLossNode source labels descriptor =
+  sendOwnedMessage mpsnnForwardLossNode initWithSource_labels_lossDescriptorSelector (toMPSNNImageNode source) (toMPSNNImageNode labels) (toMPSCNNLossDescriptor descriptor)
 
 -- | Init a forward loss node from multiple images
 --
@@ -149,76 +130,70 @@ initWithSource_labels_lossDescriptor mpsnnForwardLossNode  source labels descrip
 --
 -- ObjC selector: @- initWithSources:lossDescriptor:@
 initWithSources_lossDescriptor :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsNSArray sourceNodes, IsMPSCNNLossDescriptor descriptor) => mpsnnForwardLossNode -> sourceNodes -> descriptor -> IO (Id MPSNNForwardLossNode)
-initWithSources_lossDescriptor mpsnnForwardLossNode  sourceNodes descriptor =
-  withObjCPtr sourceNodes $ \raw_sourceNodes ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg mpsnnForwardLossNode (mkSelector "initWithSources:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithSources_lossDescriptor mpsnnForwardLossNode sourceNodes descriptor =
+  sendOwnedMessage mpsnnForwardLossNode initWithSources_lossDescriptorSelector (toNSArray sourceNodes) (toMPSCNNLossDescriptor descriptor)
 
 -- | Returns the gradient filter for predictions, if you want also gradients for labels then use -gradientFiltersWithSource(s):
 --
 -- ObjC selector: @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsNSArray sourceGradient) => mpsnnForwardLossNode -> sourceGradient -> IO (Id MPSNNLossGradientNode)
-gradientFilterWithSources mpsnnForwardLossNode  sourceGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      sendMsg mpsnnForwardLossNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpsnnForwardLossNode sourceGradient =
+  sendMessage mpsnnForwardLossNode gradientFilterWithSourcesSelector (toNSArray sourceGradient)
 
 -- | @- gradientFiltersWithSources:@
 gradientFiltersWithSources :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsNSArray sourceGradient) => mpsnnForwardLossNode -> sourceGradient -> IO (Id NSArray)
-gradientFiltersWithSources mpsnnForwardLossNode  sourceGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      sendMsg mpsnnForwardLossNode (mkSelector "gradientFiltersWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ())] >>= retainedObject . castPtr
+gradientFiltersWithSources mpsnnForwardLossNode sourceGradient =
+  sendMessage mpsnnForwardLossNode gradientFiltersWithSourcesSelector (toNSArray sourceGradient)
 
 -- | @- gradientFilterWithSource:@
 gradientFilterWithSource :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsMPSNNImageNode sourceGradient) => mpsnnForwardLossNode -> sourceGradient -> IO (Id MPSNNLossGradientNode)
-gradientFilterWithSource mpsnnForwardLossNode  sourceGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      sendMsg mpsnnForwardLossNode (mkSelector "gradientFilterWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSource mpsnnForwardLossNode sourceGradient =
+  sendMessage mpsnnForwardLossNode gradientFilterWithSourceSelector (toMPSNNImageNode sourceGradient)
 
 -- | @- gradientFiltersWithSource:@
 gradientFiltersWithSource :: (IsMPSNNForwardLossNode mpsnnForwardLossNode, IsMPSNNImageNode sourceGradient) => mpsnnForwardLossNode -> sourceGradient -> IO (Id NSArray)
-gradientFiltersWithSource mpsnnForwardLossNode  sourceGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      sendMsg mpsnnForwardLossNode (mkSelector "gradientFiltersWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ())] >>= retainedObject . castPtr
+gradientFiltersWithSource mpsnnForwardLossNode sourceGradient =
+  sendMessage mpsnnForwardLossNode gradientFiltersWithSourceSelector (toMPSNNImageNode sourceGradient)
 
 -- | @- lossType@
 lossType :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO MPSCNNLossType
-lossType mpsnnForwardLossNode  =
-    fmap (coerce :: CUInt -> MPSCNNLossType) $ sendMsg mpsnnForwardLossNode (mkSelector "lossType") retCUInt []
+lossType mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode lossTypeSelector
 
 -- | @- reductionType@
 reductionType :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO MPSCNNReductionType
-reductionType mpsnnForwardLossNode  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpsnnForwardLossNode (mkSelector "reductionType") retCInt []
+reductionType mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode reductionTypeSelector
 
 -- | @- numberOfClasses@
 numberOfClasses :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO CULong
-numberOfClasses mpsnnForwardLossNode  =
-    sendMsg mpsnnForwardLossNode (mkSelector "numberOfClasses") retCULong []
+numberOfClasses mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode numberOfClassesSelector
 
 -- | @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO Bool
-reduceAcrossBatch mpsnnForwardLossNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnForwardLossNode (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode reduceAcrossBatchSelector
 
 -- | @- weight@
 weight :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO CFloat
-weight mpsnnForwardLossNode  =
-    sendMsg mpsnnForwardLossNode (mkSelector "weight") retCFloat []
+weight mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode weightSelector
 
 -- | @- labelSmoothing@
 labelSmoothing :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO CFloat
-labelSmoothing mpsnnForwardLossNode  =
-    sendMsg mpsnnForwardLossNode (mkSelector "labelSmoothing") retCFloat []
+labelSmoothing mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode labelSmoothingSelector
 
 -- | @- epsilon@
 epsilon :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO CFloat
-epsilon mpsnnForwardLossNode  =
-    sendMsg mpsnnForwardLossNode (mkSelector "epsilon") retCFloat []
+epsilon mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode epsilonSelector
 
 -- | @- delta@
 delta :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO CFloat
-delta mpsnnForwardLossNode  =
-    sendMsg mpsnnForwardLossNode (mkSelector "delta") retCFloat []
+delta mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode deltaSelector
 
 -- | propertyCallBack
 --
@@ -226,8 +201,8 @@ delta mpsnnForwardLossNode  =
 --
 -- ObjC selector: @- propertyCallBack@
 propertyCallBack :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> IO RawId
-propertyCallBack mpsnnForwardLossNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnForwardLossNode (mkSelector "propertyCallBack") (retPtr retVoid) []
+propertyCallBack mpsnnForwardLossNode =
+  sendMessage mpsnnForwardLossNode propertyCallBackSelector
 
 -- | propertyCallBack
 --
@@ -235,90 +210,90 @@ propertyCallBack mpsnnForwardLossNode  =
 --
 -- ObjC selector: @- setPropertyCallBack:@
 setPropertyCallBack :: IsMPSNNForwardLossNode mpsnnForwardLossNode => mpsnnForwardLossNode -> RawId -> IO ()
-setPropertyCallBack mpsnnForwardLossNode  value =
-    sendMsg mpsnnForwardLossNode (mkSelector "setPropertyCallBack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPropertyCallBack mpsnnForwardLossNode value =
+  sendMessage mpsnnForwardLossNode setPropertyCallBackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:labels:weights:lossDescriptor:@
-nodeWithSource_labels_weights_lossDescriptorSelector :: Selector
+nodeWithSource_labels_weights_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNImageNode, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 nodeWithSource_labels_weights_lossDescriptorSelector = mkSelector "nodeWithSource:labels:weights:lossDescriptor:"
 
 -- | @Selector@ for @nodeWithSource:labels:lossDescriptor:@
-nodeWithSource_labels_lossDescriptorSelector :: Selector
+nodeWithSource_labels_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 nodeWithSource_labels_lossDescriptorSelector = mkSelector "nodeWithSource:labels:lossDescriptor:"
 
 -- | @Selector@ for @nodeWithSources:lossDescriptor:@
-nodeWithSources_lossDescriptorSelector :: Selector
+nodeWithSources_lossDescriptorSelector :: Selector '[Id NSArray, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 nodeWithSources_lossDescriptorSelector = mkSelector "nodeWithSources:lossDescriptor:"
 
 -- | @Selector@ for @initWithSource:labels:weights:lossDescriptor:@
-initWithSource_labels_weights_lossDescriptorSelector :: Selector
+initWithSource_labels_weights_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNImageNode, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 initWithSource_labels_weights_lossDescriptorSelector = mkSelector "initWithSource:labels:weights:lossDescriptor:"
 
 -- | @Selector@ for @initWithSource:labels:lossDescriptor:@
-initWithSource_labels_lossDescriptorSelector :: Selector
+initWithSource_labels_lossDescriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 initWithSource_labels_lossDescriptorSelector = mkSelector "initWithSource:labels:lossDescriptor:"
 
 -- | @Selector@ for @initWithSources:lossDescriptor:@
-initWithSources_lossDescriptorSelector :: Selector
+initWithSources_lossDescriptorSelector :: Selector '[Id NSArray, Id MPSCNNLossDescriptor] (Id MPSNNForwardLossNode)
 initWithSources_lossDescriptorSelector = mkSelector "initWithSources:lossDescriptor:"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNLossGradientNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 
 -- | @Selector@ for @gradientFiltersWithSources:@
-gradientFiltersWithSourcesSelector :: Selector
+gradientFiltersWithSourcesSelector :: Selector '[Id NSArray] (Id NSArray)
 gradientFiltersWithSourcesSelector = mkSelector "gradientFiltersWithSources:"
 
 -- | @Selector@ for @gradientFilterWithSource:@
-gradientFilterWithSourceSelector :: Selector
+gradientFilterWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNLossGradientNode)
 gradientFilterWithSourceSelector = mkSelector "gradientFilterWithSource:"
 
 -- | @Selector@ for @gradientFiltersWithSource:@
-gradientFiltersWithSourceSelector :: Selector
+gradientFiltersWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id NSArray)
 gradientFiltersWithSourceSelector = mkSelector "gradientFiltersWithSource:"
 
 -- | @Selector@ for @lossType@
-lossTypeSelector :: Selector
+lossTypeSelector :: Selector '[] MPSCNNLossType
 lossTypeSelector = mkSelector "lossType"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @numberOfClasses@
-numberOfClassesSelector :: Selector
+numberOfClassesSelector :: Selector '[] CULong
 numberOfClassesSelector = mkSelector "numberOfClasses"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @labelSmoothing@
-labelSmoothingSelector :: Selector
+labelSmoothingSelector :: Selector '[] CFloat
 labelSmoothingSelector = mkSelector "labelSmoothing"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @propertyCallBack@
-propertyCallBackSelector :: Selector
+propertyCallBackSelector :: Selector '[] RawId
 propertyCallBackSelector = mkSelector "propertyCallBack"
 
 -- | @Selector@ for @setPropertyCallBack:@
-setPropertyCallBackSelector :: Selector
+setPropertyCallBackSelector :: Selector '[RawId] ()
 setPropertyCallBackSelector = mkSelector "setPropertyCallBack:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,36 +39,37 @@ module ObjC.PassKit.PKPassLibrary
   , requestAuthorizationForCapability_completion
   , secureElementPassActivationAvailable
   , remoteSecureElementPasses
-  , isPassLibraryAvailableSelector
-  , requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector
-  , endAutomaticPassPresentationSuppressionWithRequestTokenSelector
-  , isSuppressingAutomaticPassPresentationSelector
-  , isPaymentPassActivationAvailableSelector
-  , passesSelector
-  , passWithPassTypeIdentifier_serialNumberSelector
-  , passesWithReaderIdentifierSelector
-  , passesOfTypeSelector
-  , remotePaymentPassesSelector
-  , removePassSelector
-  , containsPassSelector
-  , replacePassWithPassSelector
+  , activatePaymentPass_withActivationCode_completionSelector
+  , activatePaymentPass_withActivationData_completionSelector
+  , activateSecureElementPass_withActivationData_completionSelector
   , addPasses_withCompletionHandlerSelector
-  , openPaymentSetupSelector
-  , presentPaymentPassSelector
-  , presentSecureElementPassSelector
+  , authorizationStatusForCapabilitySelector
+  , canAddFelicaPassSelector
   , canAddPaymentPassWithPrimaryAccountIdentifierSelector
   , canAddSecureElementPassWithPrimaryAccountIdentifierSelector
-  , canAddFelicaPassSelector
-  , activatePaymentPass_withActivationData_completionSelector
-  , activatePaymentPass_withActivationCode_completionSelector
-  , activateSecureElementPass_withActivationData_completionSelector
-  , signData_withSecureElementPass_completionSelector
+  , containsPassSelector
   , encryptedServiceProviderDataForSecureElementPass_completionSelector
-  , serviceProviderDataForSecureElementPass_completionSelector
-  , authorizationStatusForCapabilitySelector
-  , requestAuthorizationForCapability_completionSelector
-  , secureElementPassActivationAvailableSelector
+  , endAutomaticPassPresentationSuppressionWithRequestTokenSelector
+  , isPassLibraryAvailableSelector
+  , isPaymentPassActivationAvailableSelector
+  , isSuppressingAutomaticPassPresentationSelector
+  , openPaymentSetupSelector
+  , passWithPassTypeIdentifier_serialNumberSelector
+  , passesOfTypeSelector
+  , passesSelector
+  , passesWithReaderIdentifierSelector
+  , pkPassLibraryIsPaymentPassActivationAvailableSelector
+  , presentPaymentPassSelector
+  , presentSecureElementPassSelector
+  , remotePaymentPassesSelector
   , remoteSecureElementPassesSelector
+  , removePassSelector
+  , replacePassWithPassSelector
+  , requestAuthorizationForCapability_completionSelector
+  , requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector
+  , secureElementPassActivationAvailableSelector
+  , serviceProviderDataForSecureElementPass_completionSelector
+  , signData_withSecureElementPass_completionSelector
 
   -- * Enum types
   , PKPassLibraryAuthorizationStatus(PKPassLibraryAuthorizationStatus)
@@ -85,15 +87,11 @@ module ObjC.PassKit.PKPassLibrary
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,308 +104,291 @@ isPassLibraryAvailable :: IO Bool
 isPassLibraryAvailable  =
   do
     cls' <- getRequiredClass "PKPassLibrary"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPassLibraryAvailable") retCULong []
+    sendClassMessage cls' isPassLibraryAvailableSelector
 
 -- | @+ requestAutomaticPassPresentationSuppressionWithResponseHandler:@
 requestAutomaticPassPresentationSuppressionWithResponseHandler :: Ptr () -> IO CULong
 requestAutomaticPassPresentationSuppressionWithResponseHandler responseHandler =
   do
     cls' <- getRequiredClass "PKPassLibrary"
-    sendClassMsg cls' (mkSelector "requestAutomaticPassPresentationSuppressionWithResponseHandler:") retCULong [argPtr (castPtr responseHandler :: Ptr ())]
+    sendClassMessage cls' requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector responseHandler
 
 -- | @+ endAutomaticPassPresentationSuppressionWithRequestToken:@
 endAutomaticPassPresentationSuppressionWithRequestToken :: CULong -> IO ()
 endAutomaticPassPresentationSuppressionWithRequestToken requestToken =
   do
     cls' <- getRequiredClass "PKPassLibrary"
-    sendClassMsg cls' (mkSelector "endAutomaticPassPresentationSuppressionWithRequestToken:") retVoid [argCULong requestToken]
+    sendClassMessage cls' endAutomaticPassPresentationSuppressionWithRequestTokenSelector requestToken
 
 -- | @+ isSuppressingAutomaticPassPresentation@
 isSuppressingAutomaticPassPresentation :: IO Bool
 isSuppressingAutomaticPassPresentation  =
   do
     cls' <- getRequiredClass "PKPassLibrary"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isSuppressingAutomaticPassPresentation") retCULong []
+    sendClassMessage cls' isSuppressingAutomaticPassPresentationSelector
 
 -- | @+ isPaymentPassActivationAvailable@
 pkPassLibraryIsPaymentPassActivationAvailable :: IO Bool
 pkPassLibraryIsPaymentPassActivationAvailable  =
   do
     cls' <- getRequiredClass "PKPassLibrary"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPaymentPassActivationAvailable") retCULong []
+    sendClassMessage cls' pkPassLibraryIsPaymentPassActivationAvailableSelector
 
 -- | @- isPaymentPassActivationAvailable@
 isPaymentPassActivationAvailable :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO Bool
-isPaymentPassActivationAvailable pkPassLibrary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "isPaymentPassActivationAvailable") retCULong []
+isPaymentPassActivationAvailable pkPassLibrary =
+  sendMessage pkPassLibrary isPaymentPassActivationAvailableSelector
 
 -- | @- passes@
 passes :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO (Id NSArray)
-passes pkPassLibrary  =
-    sendMsg pkPassLibrary (mkSelector "passes") (retPtr retVoid) [] >>= retainedObject . castPtr
+passes pkPassLibrary =
+  sendMessage pkPassLibrary passesSelector
 
 -- | @- passWithPassTypeIdentifier:serialNumber:@
 passWithPassTypeIdentifier_serialNumber :: (IsPKPassLibrary pkPassLibrary, IsNSString identifier, IsNSString serialNumber) => pkPassLibrary -> identifier -> serialNumber -> IO (Id PKPass)
-passWithPassTypeIdentifier_serialNumber pkPassLibrary  identifier serialNumber =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr serialNumber $ \raw_serialNumber ->
-        sendMsg pkPassLibrary (mkSelector "passWithPassTypeIdentifier:serialNumber:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_serialNumber :: Ptr ())] >>= retainedObject . castPtr
+passWithPassTypeIdentifier_serialNumber pkPassLibrary identifier serialNumber =
+  sendMessage pkPassLibrary passWithPassTypeIdentifier_serialNumberSelector (toNSString identifier) (toNSString serialNumber)
 
 -- | @- passesWithReaderIdentifier:@
 passesWithReaderIdentifier :: (IsPKPassLibrary pkPassLibrary, IsNSString readerIdentifier) => pkPassLibrary -> readerIdentifier -> IO (Id NSSet)
-passesWithReaderIdentifier pkPassLibrary  readerIdentifier =
-  withObjCPtr readerIdentifier $ \raw_readerIdentifier ->
-      sendMsg pkPassLibrary (mkSelector "passesWithReaderIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_readerIdentifier :: Ptr ())] >>= retainedObject . castPtr
+passesWithReaderIdentifier pkPassLibrary readerIdentifier =
+  sendMessage pkPassLibrary passesWithReaderIdentifierSelector (toNSString readerIdentifier)
 
 -- | @- passesOfType:@
 passesOfType :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> PKPassType -> IO (Id NSArray)
-passesOfType pkPassLibrary  passType =
-    sendMsg pkPassLibrary (mkSelector "passesOfType:") (retPtr retVoid) [argCULong (coerce passType)] >>= retainedObject . castPtr
+passesOfType pkPassLibrary passType =
+  sendMessage pkPassLibrary passesOfTypeSelector passType
 
 -- | @- remotePaymentPasses@
 remotePaymentPasses :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO (Id NSArray)
-remotePaymentPasses pkPassLibrary  =
-    sendMsg pkPassLibrary (mkSelector "remotePaymentPasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+remotePaymentPasses pkPassLibrary =
+  sendMessage pkPassLibrary remotePaymentPassesSelector
 
 -- | @- removePass:@
 removePass :: (IsPKPassLibrary pkPassLibrary, IsPKPass pass) => pkPassLibrary -> pass -> IO ()
-removePass pkPassLibrary  pass =
-  withObjCPtr pass $ \raw_pass ->
-      sendMsg pkPassLibrary (mkSelector "removePass:") retVoid [argPtr (castPtr raw_pass :: Ptr ())]
+removePass pkPassLibrary pass =
+  sendMessage pkPassLibrary removePassSelector (toPKPass pass)
 
 -- | @- containsPass:@
 containsPass :: (IsPKPassLibrary pkPassLibrary, IsPKPass pass) => pkPassLibrary -> pass -> IO Bool
-containsPass pkPassLibrary  pass =
-  withObjCPtr pass $ \raw_pass ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "containsPass:") retCULong [argPtr (castPtr raw_pass :: Ptr ())]
+containsPass pkPassLibrary pass =
+  sendMessage pkPassLibrary containsPassSelector (toPKPass pass)
 
 -- | @- replacePassWithPass:@
 replacePassWithPass :: (IsPKPassLibrary pkPassLibrary, IsPKPass pass) => pkPassLibrary -> pass -> IO Bool
-replacePassWithPass pkPassLibrary  pass =
-  withObjCPtr pass $ \raw_pass ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "replacePassWithPass:") retCULong [argPtr (castPtr raw_pass :: Ptr ())]
+replacePassWithPass pkPassLibrary pass =
+  sendMessage pkPassLibrary replacePassWithPassSelector (toPKPass pass)
 
 -- | @- addPasses:withCompletionHandler:@
 addPasses_withCompletionHandler :: (IsPKPassLibrary pkPassLibrary, IsNSArray passes) => pkPassLibrary -> passes -> Ptr () -> IO ()
-addPasses_withCompletionHandler pkPassLibrary  passes completion =
-  withObjCPtr passes $ \raw_passes ->
-      sendMsg pkPassLibrary (mkSelector "addPasses:withCompletionHandler:") retVoid [argPtr (castPtr raw_passes :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addPasses_withCompletionHandler pkPassLibrary passes completion =
+  sendMessage pkPassLibrary addPasses_withCompletionHandlerSelector (toNSArray passes) completion
 
 -- | @- openPaymentSetup@
 openPaymentSetup :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO ()
-openPaymentSetup pkPassLibrary  =
-    sendMsg pkPassLibrary (mkSelector "openPaymentSetup") retVoid []
+openPaymentSetup pkPassLibrary =
+  sendMessage pkPassLibrary openPaymentSetupSelector
 
 -- | @- presentPaymentPass:@
 presentPaymentPass :: (IsPKPassLibrary pkPassLibrary, IsPKPaymentPass pass) => pkPassLibrary -> pass -> IO ()
-presentPaymentPass pkPassLibrary  pass =
-  withObjCPtr pass $ \raw_pass ->
-      sendMsg pkPassLibrary (mkSelector "presentPaymentPass:") retVoid [argPtr (castPtr raw_pass :: Ptr ())]
+presentPaymentPass pkPassLibrary pass =
+  sendMessage pkPassLibrary presentPaymentPassSelector (toPKPaymentPass pass)
 
 -- | @- presentSecureElementPass:@
 presentSecureElementPass :: (IsPKPassLibrary pkPassLibrary, IsPKSecureElementPass pass) => pkPassLibrary -> pass -> IO ()
-presentSecureElementPass pkPassLibrary  pass =
-  withObjCPtr pass $ \raw_pass ->
-      sendMsg pkPassLibrary (mkSelector "presentSecureElementPass:") retVoid [argPtr (castPtr raw_pass :: Ptr ())]
+presentSecureElementPass pkPassLibrary pass =
+  sendMessage pkPassLibrary presentSecureElementPassSelector (toPKSecureElementPass pass)
 
 -- | @- canAddPaymentPassWithPrimaryAccountIdentifier:@
 canAddPaymentPassWithPrimaryAccountIdentifier :: (IsPKPassLibrary pkPassLibrary, IsNSString primaryAccountIdentifier) => pkPassLibrary -> primaryAccountIdentifier -> IO Bool
-canAddPaymentPassWithPrimaryAccountIdentifier pkPassLibrary  primaryAccountIdentifier =
-  withObjCPtr primaryAccountIdentifier $ \raw_primaryAccountIdentifier ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "canAddPaymentPassWithPrimaryAccountIdentifier:") retCULong [argPtr (castPtr raw_primaryAccountIdentifier :: Ptr ())]
+canAddPaymentPassWithPrimaryAccountIdentifier pkPassLibrary primaryAccountIdentifier =
+  sendMessage pkPassLibrary canAddPaymentPassWithPrimaryAccountIdentifierSelector (toNSString primaryAccountIdentifier)
 
 -- | @- canAddSecureElementPassWithPrimaryAccountIdentifier:@
 canAddSecureElementPassWithPrimaryAccountIdentifier :: (IsPKPassLibrary pkPassLibrary, IsNSString primaryAccountIdentifier) => pkPassLibrary -> primaryAccountIdentifier -> IO Bool
-canAddSecureElementPassWithPrimaryAccountIdentifier pkPassLibrary  primaryAccountIdentifier =
-  withObjCPtr primaryAccountIdentifier $ \raw_primaryAccountIdentifier ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "canAddSecureElementPassWithPrimaryAccountIdentifier:") retCULong [argPtr (castPtr raw_primaryAccountIdentifier :: Ptr ())]
+canAddSecureElementPassWithPrimaryAccountIdentifier pkPassLibrary primaryAccountIdentifier =
+  sendMessage pkPassLibrary canAddSecureElementPassWithPrimaryAccountIdentifierSelector (toNSString primaryAccountIdentifier)
 
 -- | @- canAddFelicaPass@
 canAddFelicaPass :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO Bool
-canAddFelicaPass pkPassLibrary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "canAddFelicaPass") retCULong []
+canAddFelicaPass pkPassLibrary =
+  sendMessage pkPassLibrary canAddFelicaPassSelector
 
 -- | @- activatePaymentPass:withActivationData:completion:@
 activatePaymentPass_withActivationData_completion :: (IsPKPassLibrary pkPassLibrary, IsPKPaymentPass paymentPass, IsNSData activationData) => pkPassLibrary -> paymentPass -> activationData -> Ptr () -> IO ()
-activatePaymentPass_withActivationData_completion pkPassLibrary  paymentPass activationData completion =
-  withObjCPtr paymentPass $ \raw_paymentPass ->
-    withObjCPtr activationData $ \raw_activationData ->
-        sendMsg pkPassLibrary (mkSelector "activatePaymentPass:withActivationData:completion:") retVoid [argPtr (castPtr raw_paymentPass :: Ptr ()), argPtr (castPtr raw_activationData :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+activatePaymentPass_withActivationData_completion pkPassLibrary paymentPass activationData completion =
+  sendMessage pkPassLibrary activatePaymentPass_withActivationData_completionSelector (toPKPaymentPass paymentPass) (toNSData activationData) completion
 
 -- | @- activatePaymentPass:withActivationCode:completion:@
 activatePaymentPass_withActivationCode_completion :: (IsPKPassLibrary pkPassLibrary, IsPKPaymentPass paymentPass, IsNSString activationCode) => pkPassLibrary -> paymentPass -> activationCode -> Ptr () -> IO ()
-activatePaymentPass_withActivationCode_completion pkPassLibrary  paymentPass activationCode completion =
-  withObjCPtr paymentPass $ \raw_paymentPass ->
-    withObjCPtr activationCode $ \raw_activationCode ->
-        sendMsg pkPassLibrary (mkSelector "activatePaymentPass:withActivationCode:completion:") retVoid [argPtr (castPtr raw_paymentPass :: Ptr ()), argPtr (castPtr raw_activationCode :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+activatePaymentPass_withActivationCode_completion pkPassLibrary paymentPass activationCode completion =
+  sendMessage pkPassLibrary activatePaymentPass_withActivationCode_completionSelector (toPKPaymentPass paymentPass) (toNSString activationCode) completion
 
 -- | @- activateSecureElementPass:withActivationData:completion:@
 activateSecureElementPass_withActivationData_completion :: (IsPKPassLibrary pkPassLibrary, IsPKSecureElementPass secureElementPass, IsNSData activationData) => pkPassLibrary -> secureElementPass -> activationData -> Ptr () -> IO ()
-activateSecureElementPass_withActivationData_completion pkPassLibrary  secureElementPass activationData completion =
-  withObjCPtr secureElementPass $ \raw_secureElementPass ->
-    withObjCPtr activationData $ \raw_activationData ->
-        sendMsg pkPassLibrary (mkSelector "activateSecureElementPass:withActivationData:completion:") retVoid [argPtr (castPtr raw_secureElementPass :: Ptr ()), argPtr (castPtr raw_activationData :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+activateSecureElementPass_withActivationData_completion pkPassLibrary secureElementPass activationData completion =
+  sendMessage pkPassLibrary activateSecureElementPass_withActivationData_completionSelector (toPKSecureElementPass secureElementPass) (toNSData activationData) completion
 
 -- | @- signData:withSecureElementPass:completion:@
 signData_withSecureElementPass_completion :: (IsPKPassLibrary pkPassLibrary, IsNSData signData, IsPKSecureElementPass secureElementPass) => pkPassLibrary -> signData -> secureElementPass -> Ptr () -> IO ()
-signData_withSecureElementPass_completion pkPassLibrary  signData secureElementPass completion =
-  withObjCPtr signData $ \raw_signData ->
-    withObjCPtr secureElementPass $ \raw_secureElementPass ->
-        sendMsg pkPassLibrary (mkSelector "signData:withSecureElementPass:completion:") retVoid [argPtr (castPtr raw_signData :: Ptr ()), argPtr (castPtr raw_secureElementPass :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+signData_withSecureElementPass_completion pkPassLibrary signData secureElementPass completion =
+  sendMessage pkPassLibrary signData_withSecureElementPass_completionSelector (toNSData signData) (toPKSecureElementPass secureElementPass) completion
 
 -- | @- encryptedServiceProviderDataForSecureElementPass:completion:@
 encryptedServiceProviderDataForSecureElementPass_completion :: (IsPKPassLibrary pkPassLibrary, IsPKSecureElementPass secureElementPass) => pkPassLibrary -> secureElementPass -> Ptr () -> IO ()
-encryptedServiceProviderDataForSecureElementPass_completion pkPassLibrary  secureElementPass completion =
-  withObjCPtr secureElementPass $ \raw_secureElementPass ->
-      sendMsg pkPassLibrary (mkSelector "encryptedServiceProviderDataForSecureElementPass:completion:") retVoid [argPtr (castPtr raw_secureElementPass :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+encryptedServiceProviderDataForSecureElementPass_completion pkPassLibrary secureElementPass completion =
+  sendMessage pkPassLibrary encryptedServiceProviderDataForSecureElementPass_completionSelector (toPKSecureElementPass secureElementPass) completion
 
 -- | @- serviceProviderDataForSecureElementPass:completion:@
 serviceProviderDataForSecureElementPass_completion :: (IsPKPassLibrary pkPassLibrary, IsPKSecureElementPass secureElementPass) => pkPassLibrary -> secureElementPass -> Ptr () -> IO ()
-serviceProviderDataForSecureElementPass_completion pkPassLibrary  secureElementPass completion =
-  withObjCPtr secureElementPass $ \raw_secureElementPass ->
-      sendMsg pkPassLibrary (mkSelector "serviceProviderDataForSecureElementPass:completion:") retVoid [argPtr (castPtr raw_secureElementPass :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+serviceProviderDataForSecureElementPass_completion pkPassLibrary secureElementPass completion =
+  sendMessage pkPassLibrary serviceProviderDataForSecureElementPass_completionSelector (toPKSecureElementPass secureElementPass) completion
 
 -- | @- authorizationStatusForCapability:@
 authorizationStatusForCapability :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> PKPassLibraryCapability -> IO PKPassLibraryAuthorizationStatus
-authorizationStatusForCapability pkPassLibrary  capability =
-    fmap (coerce :: CLong -> PKPassLibraryAuthorizationStatus) $ sendMsg pkPassLibrary (mkSelector "authorizationStatusForCapability:") retCLong [argCLong (coerce capability)]
+authorizationStatusForCapability pkPassLibrary capability =
+  sendMessage pkPassLibrary authorizationStatusForCapabilitySelector capability
 
 -- | @- requestAuthorizationForCapability:completion:@
 requestAuthorizationForCapability_completion :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> PKPassLibraryCapability -> Ptr () -> IO ()
-requestAuthorizationForCapability_completion pkPassLibrary  capability completion =
-    sendMsg pkPassLibrary (mkSelector "requestAuthorizationForCapability:completion:") retVoid [argCLong (coerce capability), argPtr (castPtr completion :: Ptr ())]
+requestAuthorizationForCapability_completion pkPassLibrary capability completion =
+  sendMessage pkPassLibrary requestAuthorizationForCapability_completionSelector capability completion
 
 -- | @- secureElementPassActivationAvailable@
 secureElementPassActivationAvailable :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO Bool
-secureElementPassActivationAvailable pkPassLibrary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPassLibrary (mkSelector "secureElementPassActivationAvailable") retCULong []
+secureElementPassActivationAvailable pkPassLibrary =
+  sendMessage pkPassLibrary secureElementPassActivationAvailableSelector
 
 -- | @- remoteSecureElementPasses@
 remoteSecureElementPasses :: IsPKPassLibrary pkPassLibrary => pkPassLibrary -> IO (Id NSArray)
-remoteSecureElementPasses pkPassLibrary  =
-    sendMsg pkPassLibrary (mkSelector "remoteSecureElementPasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteSecureElementPasses pkPassLibrary =
+  sendMessage pkPassLibrary remoteSecureElementPassesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isPassLibraryAvailable@
-isPassLibraryAvailableSelector :: Selector
+isPassLibraryAvailableSelector :: Selector '[] Bool
 isPassLibraryAvailableSelector = mkSelector "isPassLibraryAvailable"
 
 -- | @Selector@ for @requestAutomaticPassPresentationSuppressionWithResponseHandler:@
-requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector :: Selector
+requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector :: Selector '[Ptr ()] CULong
 requestAutomaticPassPresentationSuppressionWithResponseHandlerSelector = mkSelector "requestAutomaticPassPresentationSuppressionWithResponseHandler:"
 
 -- | @Selector@ for @endAutomaticPassPresentationSuppressionWithRequestToken:@
-endAutomaticPassPresentationSuppressionWithRequestTokenSelector :: Selector
+endAutomaticPassPresentationSuppressionWithRequestTokenSelector :: Selector '[CULong] ()
 endAutomaticPassPresentationSuppressionWithRequestTokenSelector = mkSelector "endAutomaticPassPresentationSuppressionWithRequestToken:"
 
 -- | @Selector@ for @isSuppressingAutomaticPassPresentation@
-isSuppressingAutomaticPassPresentationSelector :: Selector
+isSuppressingAutomaticPassPresentationSelector :: Selector '[] Bool
 isSuppressingAutomaticPassPresentationSelector = mkSelector "isSuppressingAutomaticPassPresentation"
 
 -- | @Selector@ for @isPaymentPassActivationAvailable@
-isPaymentPassActivationAvailableSelector :: Selector
+pkPassLibraryIsPaymentPassActivationAvailableSelector :: Selector '[] Bool
+pkPassLibraryIsPaymentPassActivationAvailableSelector = mkSelector "isPaymentPassActivationAvailable"
+
+-- | @Selector@ for @isPaymentPassActivationAvailable@
+isPaymentPassActivationAvailableSelector :: Selector '[] Bool
 isPaymentPassActivationAvailableSelector = mkSelector "isPaymentPassActivationAvailable"
 
 -- | @Selector@ for @passes@
-passesSelector :: Selector
+passesSelector :: Selector '[] (Id NSArray)
 passesSelector = mkSelector "passes"
 
 -- | @Selector@ for @passWithPassTypeIdentifier:serialNumber:@
-passWithPassTypeIdentifier_serialNumberSelector :: Selector
+passWithPassTypeIdentifier_serialNumberSelector :: Selector '[Id NSString, Id NSString] (Id PKPass)
 passWithPassTypeIdentifier_serialNumberSelector = mkSelector "passWithPassTypeIdentifier:serialNumber:"
 
 -- | @Selector@ for @passesWithReaderIdentifier:@
-passesWithReaderIdentifierSelector :: Selector
+passesWithReaderIdentifierSelector :: Selector '[Id NSString] (Id NSSet)
 passesWithReaderIdentifierSelector = mkSelector "passesWithReaderIdentifier:"
 
 -- | @Selector@ for @passesOfType:@
-passesOfTypeSelector :: Selector
+passesOfTypeSelector :: Selector '[PKPassType] (Id NSArray)
 passesOfTypeSelector = mkSelector "passesOfType:"
 
 -- | @Selector@ for @remotePaymentPasses@
-remotePaymentPassesSelector :: Selector
+remotePaymentPassesSelector :: Selector '[] (Id NSArray)
 remotePaymentPassesSelector = mkSelector "remotePaymentPasses"
 
 -- | @Selector@ for @removePass:@
-removePassSelector :: Selector
+removePassSelector :: Selector '[Id PKPass] ()
 removePassSelector = mkSelector "removePass:"
 
 -- | @Selector@ for @containsPass:@
-containsPassSelector :: Selector
+containsPassSelector :: Selector '[Id PKPass] Bool
 containsPassSelector = mkSelector "containsPass:"
 
 -- | @Selector@ for @replacePassWithPass:@
-replacePassWithPassSelector :: Selector
+replacePassWithPassSelector :: Selector '[Id PKPass] Bool
 replacePassWithPassSelector = mkSelector "replacePassWithPass:"
 
 -- | @Selector@ for @addPasses:withCompletionHandler:@
-addPasses_withCompletionHandlerSelector :: Selector
+addPasses_withCompletionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 addPasses_withCompletionHandlerSelector = mkSelector "addPasses:withCompletionHandler:"
 
 -- | @Selector@ for @openPaymentSetup@
-openPaymentSetupSelector :: Selector
+openPaymentSetupSelector :: Selector '[] ()
 openPaymentSetupSelector = mkSelector "openPaymentSetup"
 
 -- | @Selector@ for @presentPaymentPass:@
-presentPaymentPassSelector :: Selector
+presentPaymentPassSelector :: Selector '[Id PKPaymentPass] ()
 presentPaymentPassSelector = mkSelector "presentPaymentPass:"
 
 -- | @Selector@ for @presentSecureElementPass:@
-presentSecureElementPassSelector :: Selector
+presentSecureElementPassSelector :: Selector '[Id PKSecureElementPass] ()
 presentSecureElementPassSelector = mkSelector "presentSecureElementPass:"
 
 -- | @Selector@ for @canAddPaymentPassWithPrimaryAccountIdentifier:@
-canAddPaymentPassWithPrimaryAccountIdentifierSelector :: Selector
+canAddPaymentPassWithPrimaryAccountIdentifierSelector :: Selector '[Id NSString] Bool
 canAddPaymentPassWithPrimaryAccountIdentifierSelector = mkSelector "canAddPaymentPassWithPrimaryAccountIdentifier:"
 
 -- | @Selector@ for @canAddSecureElementPassWithPrimaryAccountIdentifier:@
-canAddSecureElementPassWithPrimaryAccountIdentifierSelector :: Selector
+canAddSecureElementPassWithPrimaryAccountIdentifierSelector :: Selector '[Id NSString] Bool
 canAddSecureElementPassWithPrimaryAccountIdentifierSelector = mkSelector "canAddSecureElementPassWithPrimaryAccountIdentifier:"
 
 -- | @Selector@ for @canAddFelicaPass@
-canAddFelicaPassSelector :: Selector
+canAddFelicaPassSelector :: Selector '[] Bool
 canAddFelicaPassSelector = mkSelector "canAddFelicaPass"
 
 -- | @Selector@ for @activatePaymentPass:withActivationData:completion:@
-activatePaymentPass_withActivationData_completionSelector :: Selector
+activatePaymentPass_withActivationData_completionSelector :: Selector '[Id PKPaymentPass, Id NSData, Ptr ()] ()
 activatePaymentPass_withActivationData_completionSelector = mkSelector "activatePaymentPass:withActivationData:completion:"
 
 -- | @Selector@ for @activatePaymentPass:withActivationCode:completion:@
-activatePaymentPass_withActivationCode_completionSelector :: Selector
+activatePaymentPass_withActivationCode_completionSelector :: Selector '[Id PKPaymentPass, Id NSString, Ptr ()] ()
 activatePaymentPass_withActivationCode_completionSelector = mkSelector "activatePaymentPass:withActivationCode:completion:"
 
 -- | @Selector@ for @activateSecureElementPass:withActivationData:completion:@
-activateSecureElementPass_withActivationData_completionSelector :: Selector
+activateSecureElementPass_withActivationData_completionSelector :: Selector '[Id PKSecureElementPass, Id NSData, Ptr ()] ()
 activateSecureElementPass_withActivationData_completionSelector = mkSelector "activateSecureElementPass:withActivationData:completion:"
 
 -- | @Selector@ for @signData:withSecureElementPass:completion:@
-signData_withSecureElementPass_completionSelector :: Selector
+signData_withSecureElementPass_completionSelector :: Selector '[Id NSData, Id PKSecureElementPass, Ptr ()] ()
 signData_withSecureElementPass_completionSelector = mkSelector "signData:withSecureElementPass:completion:"
 
 -- | @Selector@ for @encryptedServiceProviderDataForSecureElementPass:completion:@
-encryptedServiceProviderDataForSecureElementPass_completionSelector :: Selector
+encryptedServiceProviderDataForSecureElementPass_completionSelector :: Selector '[Id PKSecureElementPass, Ptr ()] ()
 encryptedServiceProviderDataForSecureElementPass_completionSelector = mkSelector "encryptedServiceProviderDataForSecureElementPass:completion:"
 
 -- | @Selector@ for @serviceProviderDataForSecureElementPass:completion:@
-serviceProviderDataForSecureElementPass_completionSelector :: Selector
+serviceProviderDataForSecureElementPass_completionSelector :: Selector '[Id PKSecureElementPass, Ptr ()] ()
 serviceProviderDataForSecureElementPass_completionSelector = mkSelector "serviceProviderDataForSecureElementPass:completion:"
 
 -- | @Selector@ for @authorizationStatusForCapability:@
-authorizationStatusForCapabilitySelector :: Selector
+authorizationStatusForCapabilitySelector :: Selector '[PKPassLibraryCapability] PKPassLibraryAuthorizationStatus
 authorizationStatusForCapabilitySelector = mkSelector "authorizationStatusForCapability:"
 
 -- | @Selector@ for @requestAuthorizationForCapability:completion:@
-requestAuthorizationForCapability_completionSelector :: Selector
+requestAuthorizationForCapability_completionSelector :: Selector '[PKPassLibraryCapability, Ptr ()] ()
 requestAuthorizationForCapability_completionSelector = mkSelector "requestAuthorizationForCapability:completion:"
 
 -- | @Selector@ for @secureElementPassActivationAvailable@
-secureElementPassActivationAvailableSelector :: Selector
+secureElementPassActivationAvailableSelector :: Selector '[] Bool
 secureElementPassActivationAvailableSelector = mkSelector "secureElementPassActivationAvailable"
 
 -- | @Selector@ for @remoteSecureElementPasses@
-remoteSecureElementPassesSelector :: Selector
+remoteSecureElementPassesSelector :: Selector '[] (Id NSArray)
 remoteSecureElementPassesSelector = mkSelector "remoteSecureElementPasses"
 

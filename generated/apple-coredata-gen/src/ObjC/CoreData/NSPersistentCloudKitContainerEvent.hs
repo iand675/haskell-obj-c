@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.CoreData.NSPersistentCloudKitContainerEvent
   , endDate
   , succeeded
   , error_
-  , newSelector
-  , initSelector
-  , identifierSelector
-  , storeIdentifierSelector
-  , typeSelector
-  , startDateSelector
   , endDateSelector
-  , succeededSelector
   , errorSelector
+  , identifierSelector
+  , initSelector
+  , newSelector
+  , startDateSelector
+  , storeIdentifierSelector
+  , succeededSelector
+  , typeSelector
 
   -- * Enum types
   , NSPersistentCloudKitContainerEventType(NSPersistentCloudKitContainerEventType)
@@ -34,15 +35,11 @@ module ObjC.CoreData.NSPersistentCloudKitContainerEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,85 +52,85 @@ new :: IO (Id NSPersistentCloudKitContainerEvent)
 new  =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSPersistentCloudKitContainerEvent)
-init_ nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsPersistentCloudKitContainerEvent =
+  sendOwnedMessage nsPersistentCloudKitContainerEvent initSelector
 
 -- | @- identifier@
 identifier :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSUUID)
-identifier nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent identifierSelector
 
 -- | @- storeIdentifier@
 storeIdentifier :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSString)
-storeIdentifier nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "storeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+storeIdentifier nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent storeIdentifierSelector
 
 -- | @- type@
 type_ :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO NSPersistentCloudKitContainerEventType
-type_ nsPersistentCloudKitContainerEvent  =
-    fmap (coerce :: CLong -> NSPersistentCloudKitContainerEventType) $ sendMsg nsPersistentCloudKitContainerEvent (mkSelector "type") retCLong []
+type_ nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent typeSelector
 
 -- | @- startDate@
 startDate :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSDate)
-startDate nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent startDateSelector
 
 -- | @- endDate@
 endDate :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSDate)
-endDate nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent endDateSelector
 
 -- | @- succeeded@
 succeeded :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO Bool
-succeeded nsPersistentCloudKitContainerEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentCloudKitContainerEvent (mkSelector "succeeded") retCULong []
+succeeded nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent succeededSelector
 
 -- | @- error@
 error_ :: IsNSPersistentCloudKitContainerEvent nsPersistentCloudKitContainerEvent => nsPersistentCloudKitContainerEvent -> IO (Id NSError)
-error_ nsPersistentCloudKitContainerEvent  =
-    sendMsg nsPersistentCloudKitContainerEvent (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ nsPersistentCloudKitContainerEvent =
+  sendMessage nsPersistentCloudKitContainerEvent errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSPersistentCloudKitContainerEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSPersistentCloudKitContainerEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSUUID)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @storeIdentifier@
-storeIdentifierSelector :: Selector
+storeIdentifierSelector :: Selector '[] (Id NSString)
 storeIdentifierSelector = mkSelector "storeIdentifier"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] NSPersistentCloudKitContainerEventType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @succeeded@
-succeededSelector :: Selector
+succeededSelector :: Selector '[] Bool
 succeededSelector = mkSelector "succeeded"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

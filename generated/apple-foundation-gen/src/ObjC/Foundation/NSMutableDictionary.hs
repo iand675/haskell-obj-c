@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.Foundation.NSMutableDictionary
   , removeObjectsForKeys
   , setDictionary
   , setObject_forKeyedSubscript
-  , removeObjectForKeySelector
-  , setObject_forKeySelector
-  , initSelector
-  , initWithCapacitySelector
-  , initWithCoderSelector
-  , setValue_forKeySelector
-  , dictionaryWithSharedKeySetSelector
+  , addEntriesFromDictionarySelector
   , dictionaryWithCapacitySelector
   , dictionaryWithContentsOfFileSelector
   , dictionaryWithContentsOfURLSelector
+  , dictionaryWithSharedKeySetSelector
+  , initSelector
+  , initWithCapacitySelector
+  , initWithCoderSelector
   , initWithContentsOfFileSelector
   , initWithContentsOfURLSelector
-  , addEntriesFromDictionarySelector
   , removeAllObjectsSelector
+  , removeObjectForKeySelector
   , removeObjectsForKeysSelector
   , setDictionarySelector
+  , setObject_forKeySelector
   , setObject_forKeyedSubscriptSelector
+  , setValue_forKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,175 +59,166 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- removeObjectForKey:@
 removeObjectForKey :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> RawId -> IO ()
-removeObjectForKey nsMutableDictionary  aKey =
-    sendMsg nsMutableDictionary (mkSelector "removeObjectForKey:") retVoid [argPtr (castPtr (unRawId aKey) :: Ptr ())]
+removeObjectForKey nsMutableDictionary aKey =
+  sendMessage nsMutableDictionary removeObjectForKeySelector aKey
 
 -- | @- setObject:forKey:@
 setObject_forKey :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> RawId -> RawId -> IO ()
-setObject_forKey nsMutableDictionary  anObject aKey =
-    sendMsg nsMutableDictionary (mkSelector "setObject:forKey:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr (unRawId aKey) :: Ptr ())]
+setObject_forKey nsMutableDictionary anObject aKey =
+  sendMessage nsMutableDictionary setObject_forKeySelector anObject aKey
 
 -- | @- init@
 init_ :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> IO (Id NSMutableDictionary)
-init_ nsMutableDictionary  =
-    sendMsg nsMutableDictionary (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMutableDictionary =
+  sendOwnedMessage nsMutableDictionary initSelector
 
 -- | @- initWithCapacity:@
 initWithCapacity :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> CULong -> IO (Id NSMutableDictionary)
-initWithCapacity nsMutableDictionary  numItems =
-    sendMsg nsMutableDictionary (mkSelector "initWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= ownedObject . castPtr
+initWithCapacity nsMutableDictionary numItems =
+  sendOwnedMessage nsMutableDictionary initWithCapacitySelector numItems
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSMutableDictionary nsMutableDictionary, IsNSCoder coder) => nsMutableDictionary -> coder -> IO (Id NSMutableDictionary)
-initWithCoder nsMutableDictionary  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsMutableDictionary (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsMutableDictionary coder =
+  sendOwnedMessage nsMutableDictionary initWithCoderSelector (toNSCoder coder)
 
 -- | @- setValue:forKey:@
 setValue_forKey :: (IsNSMutableDictionary nsMutableDictionary, IsNSString key) => nsMutableDictionary -> RawId -> key -> IO ()
-setValue_forKey nsMutableDictionary  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsMutableDictionary (mkSelector "setValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forKey nsMutableDictionary value key =
+  sendMessage nsMutableDictionary setValue_forKeySelector value (toNSString key)
 
 -- | @+ dictionaryWithSharedKeySet:@
 dictionaryWithSharedKeySet :: RawId -> IO (Id NSMutableDictionary)
 dictionaryWithSharedKeySet keyset =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    sendClassMsg cls' (mkSelector "dictionaryWithSharedKeySet:") (retPtr retVoid) [argPtr (castPtr (unRawId keyset) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithSharedKeySetSelector keyset
 
 -- | @+ dictionaryWithCapacity:@
 dictionaryWithCapacity :: CULong -> IO (Id NSMutableDictionary)
 dictionaryWithCapacity numItems =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    sendClassMsg cls' (mkSelector "dictionaryWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithCapacitySelector numItems
 
 -- | @+ dictionaryWithContentsOfFile:@
 dictionaryWithContentsOfFile :: IsNSString path => path -> IO (Id NSMutableDictionary)
 dictionaryWithContentsOfFile path =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "dictionaryWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithContentsOfFileSelector (toNSString path)
 
 -- | @+ dictionaryWithContentsOfURL:@
 dictionaryWithContentsOfURL :: IsNSURL url => url -> IO (Id NSMutableDictionary)
 dictionaryWithContentsOfURL url =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "dictionaryWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithContentsOfURLSelector (toNSURL url)
 
 -- | @- initWithContentsOfFile:@
 initWithContentsOfFile :: (IsNSMutableDictionary nsMutableDictionary, IsNSString path) => nsMutableDictionary -> path -> IO (Id NSMutableDictionary)
-initWithContentsOfFile nsMutableDictionary  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsMutableDictionary (mkSelector "initWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfFile nsMutableDictionary path =
+  sendOwnedMessage nsMutableDictionary initWithContentsOfFileSelector (toNSString path)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsNSMutableDictionary nsMutableDictionary, IsNSURL url) => nsMutableDictionary -> url -> IO (Id NSMutableDictionary)
-initWithContentsOfURL nsMutableDictionary  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsMutableDictionary (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL nsMutableDictionary url =
+  sendOwnedMessage nsMutableDictionary initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- addEntriesFromDictionary:@
 addEntriesFromDictionary :: (IsNSMutableDictionary nsMutableDictionary, IsNSDictionary otherDictionary) => nsMutableDictionary -> otherDictionary -> IO ()
-addEntriesFromDictionary nsMutableDictionary  otherDictionary =
-  withObjCPtr otherDictionary $ \raw_otherDictionary ->
-      sendMsg nsMutableDictionary (mkSelector "addEntriesFromDictionary:") retVoid [argPtr (castPtr raw_otherDictionary :: Ptr ())]
+addEntriesFromDictionary nsMutableDictionary otherDictionary =
+  sendMessage nsMutableDictionary addEntriesFromDictionarySelector (toNSDictionary otherDictionary)
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> IO ()
-removeAllObjects nsMutableDictionary  =
-    sendMsg nsMutableDictionary (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsMutableDictionary =
+  sendMessage nsMutableDictionary removeAllObjectsSelector
 
 -- | @- removeObjectsForKeys:@
 removeObjectsForKeys :: (IsNSMutableDictionary nsMutableDictionary, IsNSArray keyArray) => nsMutableDictionary -> keyArray -> IO ()
-removeObjectsForKeys nsMutableDictionary  keyArray =
-  withObjCPtr keyArray $ \raw_keyArray ->
-      sendMsg nsMutableDictionary (mkSelector "removeObjectsForKeys:") retVoid [argPtr (castPtr raw_keyArray :: Ptr ())]
+removeObjectsForKeys nsMutableDictionary keyArray =
+  sendMessage nsMutableDictionary removeObjectsForKeysSelector (toNSArray keyArray)
 
 -- | @- setDictionary:@
 setDictionary :: (IsNSMutableDictionary nsMutableDictionary, IsNSDictionary otherDictionary) => nsMutableDictionary -> otherDictionary -> IO ()
-setDictionary nsMutableDictionary  otherDictionary =
-  withObjCPtr otherDictionary $ \raw_otherDictionary ->
-      sendMsg nsMutableDictionary (mkSelector "setDictionary:") retVoid [argPtr (castPtr raw_otherDictionary :: Ptr ())]
+setDictionary nsMutableDictionary otherDictionary =
+  sendMessage nsMutableDictionary setDictionarySelector (toNSDictionary otherDictionary)
 
 -- | @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> RawId -> RawId -> IO ()
-setObject_forKeyedSubscript nsMutableDictionary  obj_ key =
-    sendMsg nsMutableDictionary (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+setObject_forKeyedSubscript nsMutableDictionary obj_ key =
+  sendMessage nsMutableDictionary setObject_forKeyedSubscriptSelector obj_ key
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @removeObjectForKey:@
-removeObjectForKeySelector :: Selector
+removeObjectForKeySelector :: Selector '[RawId] ()
 removeObjectForKeySelector = mkSelector "removeObjectForKey:"
 
 -- | @Selector@ for @setObject:forKey:@
-setObject_forKeySelector :: Selector
+setObject_forKeySelector :: Selector '[RawId, RawId] ()
 setObject_forKeySelector = mkSelector "setObject:forKey:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMutableDictionary)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCapacity:@
-initWithCapacitySelector :: Selector
+initWithCapacitySelector :: Selector '[CULong] (Id NSMutableDictionary)
 initWithCapacitySelector = mkSelector "initWithCapacity:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSMutableDictionary)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @setValue:forKey:@
-setValue_forKeySelector :: Selector
+setValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeySelector = mkSelector "setValue:forKey:"
 
 -- | @Selector@ for @dictionaryWithSharedKeySet:@
-dictionaryWithSharedKeySetSelector :: Selector
+dictionaryWithSharedKeySetSelector :: Selector '[RawId] (Id NSMutableDictionary)
 dictionaryWithSharedKeySetSelector = mkSelector "dictionaryWithSharedKeySet:"
 
 -- | @Selector@ for @dictionaryWithCapacity:@
-dictionaryWithCapacitySelector :: Selector
+dictionaryWithCapacitySelector :: Selector '[CULong] (Id NSMutableDictionary)
 dictionaryWithCapacitySelector = mkSelector "dictionaryWithCapacity:"
 
 -- | @Selector@ for @dictionaryWithContentsOfFile:@
-dictionaryWithContentsOfFileSelector :: Selector
+dictionaryWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSMutableDictionary)
 dictionaryWithContentsOfFileSelector = mkSelector "dictionaryWithContentsOfFile:"
 
 -- | @Selector@ for @dictionaryWithContentsOfURL:@
-dictionaryWithContentsOfURLSelector :: Selector
+dictionaryWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSMutableDictionary)
 dictionaryWithContentsOfURLSelector = mkSelector "dictionaryWithContentsOfURL:"
 
 -- | @Selector@ for @initWithContentsOfFile:@
-initWithContentsOfFileSelector :: Selector
+initWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSMutableDictionary)
 initWithContentsOfFileSelector = mkSelector "initWithContentsOfFile:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSMutableDictionary)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @addEntriesFromDictionary:@
-addEntriesFromDictionarySelector :: Selector
+addEntriesFromDictionarySelector :: Selector '[Id NSDictionary] ()
 addEntriesFromDictionarySelector = mkSelector "addEntriesFromDictionary:"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @removeObjectsForKeys:@
-removeObjectsForKeysSelector :: Selector
+removeObjectsForKeysSelector :: Selector '[Id NSArray] ()
 removeObjectsForKeysSelector = mkSelector "removeObjectsForKeys:"
 
 -- | @Selector@ for @setDictionary:@
-setDictionarySelector :: Selector
+setDictionarySelector :: Selector '[Id NSDictionary] ()
 setDictionarySelector = mkSelector "setDictionary:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, RawId] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 

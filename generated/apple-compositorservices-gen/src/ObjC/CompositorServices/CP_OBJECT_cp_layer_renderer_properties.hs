@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CompositorServices.CP_OBJECT_cp_layer_renderer_properties
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCP_OBJECT_cp_layer_renderer_properties cP_OBJECT_cp_layer_renderer_properties => cP_OBJECT_cp_layer_renderer_properties -> IO (Id CP_OBJECT_cp_layer_renderer_properties)
-init_ cP_OBJECT_cp_layer_renderer_properties  =
-    sendMsg cP_OBJECT_cp_layer_renderer_properties (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cP_OBJECT_cp_layer_renderer_properties =
+  sendOwnedMessage cP_OBJECT_cp_layer_renderer_properties initSelector
 
 -- | @+ new@
 new :: IO (Id CP_OBJECT_cp_layer_renderer_properties)
 new  =
   do
     cls' <- getRequiredClass "CP_OBJECT_cp_layer_renderer_properties"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CP_OBJECT_cp_layer_renderer_properties)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CP_OBJECT_cp_layer_renderer_properties)
 newSelector = mkSelector "new"
 

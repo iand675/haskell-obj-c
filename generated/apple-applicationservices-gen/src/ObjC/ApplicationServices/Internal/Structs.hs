@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreFoundation.Internal.Structs
 
 data ATSFlatDataFontNameDataHeader = ATSFlatDataFontNameDataHeader
@@ -37,6 +39,16 @@ argATSFlatDataFontNameDataHeader = mkStorableArg atsFlatDataFontNameDataHeaderSt
 
 retATSFlatDataFontNameDataHeader :: RetType ATSFlatDataFontNameDataHeader
 retATSFlatDataFontNameDataHeader = mkStorableRetType atsFlatDataFontNameDataHeaderStructType
+
+instance ObjCArgument ATSFlatDataFontNameDataHeader where
+  withObjCArg x k = k (argATSFlatDataFontNameDataHeader x)
+
+instance ObjCReturn ATSFlatDataFontNameDataHeader where
+  type RawReturn ATSFlatDataFontNameDataHeader = ATSFlatDataFontNameDataHeader
+  objcRetType = retATSFlatDataFontNameDataHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSFlatDataFontSpecRawNameData = ATSFlatDataFontSpecRawNameData
   { atsFlatDataFontSpecRawNameDataFontNameType :: !CUInt
@@ -71,6 +83,16 @@ argATSFlatDataFontSpecRawNameData = mkStorableArg atsFlatDataFontSpecRawNameData
 retATSFlatDataFontSpecRawNameData :: RetType ATSFlatDataFontSpecRawNameData
 retATSFlatDataFontSpecRawNameData = mkStorableRetType atsFlatDataFontSpecRawNameDataStructType
 
+instance ObjCArgument ATSFlatDataFontSpecRawNameData where
+  withObjCArg x k = k (argATSFlatDataFontSpecRawNameData x)
+
+instance ObjCReturn ATSFlatDataFontSpecRawNameData where
+  type RawReturn ATSFlatDataFontSpecRawNameData = ATSFlatDataFontSpecRawNameData
+  objcRetType = retATSFlatDataFontSpecRawNameData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSFlatDataLineInfoData = ATSFlatDataLineInfoData
   { atsFlatDataLineInfoDataLineLength :: !CUInt
   , atsFlatDataLineInfoDataNumberOfLineControls :: !CUInt
@@ -94,6 +116,16 @@ argATSFlatDataLineInfoData = mkStorableArg atsFlatDataLineInfoDataStructType
 
 retATSFlatDataLineInfoData :: RetType ATSFlatDataLineInfoData
 retATSFlatDataLineInfoData = mkStorableRetType atsFlatDataLineInfoDataStructType
+
+instance ObjCArgument ATSFlatDataLineInfoData where
+  withObjCArg x k = k (argATSFlatDataLineInfoData x)
+
+instance ObjCReturn ATSFlatDataLineInfoData where
+  type RawReturn ATSFlatDataLineInfoData = ATSFlatDataLineInfoData
+  objcRetType = retATSFlatDataLineInfoData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSFlatDataMainHeaderBlock = ATSFlatDataMainHeaderBlock
   { atsFlatDataMainHeaderBlockVersion :: !CUInt
@@ -128,6 +160,16 @@ argATSFlatDataMainHeaderBlock = mkStorableArg atsFlatDataMainHeaderBlockStructTy
 retATSFlatDataMainHeaderBlock :: RetType ATSFlatDataMainHeaderBlock
 retATSFlatDataMainHeaderBlock = mkStorableRetType atsFlatDataMainHeaderBlockStructType
 
+instance ObjCArgument ATSFlatDataMainHeaderBlock where
+  withObjCArg x k = k (argATSFlatDataMainHeaderBlock x)
+
+instance ObjCReturn ATSFlatDataMainHeaderBlock where
+  type RawReturn ATSFlatDataMainHeaderBlock = ATSFlatDataMainHeaderBlock
+  objcRetType = retATSFlatDataMainHeaderBlock
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSFlatDataStyleListFeatureData = ATSFlatDataStyleListFeatureData
   { atsFlatDataStyleListFeatureDataTheFeatureType :: !CUShort
   , atsFlatDataStyleListFeatureDataTheFeatureSelector :: !CUShort
@@ -151,6 +193,16 @@ argATSFlatDataStyleListFeatureData = mkStorableArg atsFlatDataStyleListFeatureDa
 
 retATSFlatDataStyleListFeatureData :: RetType ATSFlatDataStyleListFeatureData
 retATSFlatDataStyleListFeatureData = mkStorableRetType atsFlatDataStyleListFeatureDataStructType
+
+instance ObjCArgument ATSFlatDataStyleListFeatureData where
+  withObjCArg x k = k (argATSFlatDataStyleListFeatureData x)
+
+instance ObjCReturn ATSFlatDataStyleListFeatureData where
+  type RawReturn ATSFlatDataStyleListFeatureData = ATSFlatDataStyleListFeatureData
+  objcRetType = retATSFlatDataStyleListFeatureData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSFlatDataStyleListStyleDataHeader = ATSFlatDataStyleListStyleDataHeader
   { atsFlatDataStyleListStyleDataHeaderSizeOfStyleInfo :: !CUInt
@@ -182,6 +234,16 @@ argATSFlatDataStyleListStyleDataHeader = mkStorableArg atsFlatDataStyleListStyle
 retATSFlatDataStyleListStyleDataHeader :: RetType ATSFlatDataStyleListStyleDataHeader
 retATSFlatDataStyleListStyleDataHeader = mkStorableRetType atsFlatDataStyleListStyleDataHeaderStructType
 
+instance ObjCArgument ATSFlatDataStyleListStyleDataHeader where
+  withObjCArg x k = k (argATSFlatDataStyleListStyleDataHeader x)
+
+instance ObjCReturn ATSFlatDataStyleListStyleDataHeader where
+  type RawReturn ATSFlatDataStyleListStyleDataHeader = ATSFlatDataStyleListStyleDataHeader
+  objcRetType = retATSFlatDataStyleListStyleDataHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSFlatDataStyleListVariationData = ATSFlatDataStyleListVariationData
   { atsFlatDataStyleListVariationDataTheVariationAxis :: !CUInt
   , atsFlatDataStyleListVariationDataTheVariationValue :: !CInt
@@ -205,6 +267,16 @@ argATSFlatDataStyleListVariationData = mkStorableArg atsFlatDataStyleListVariati
 
 retATSFlatDataStyleListVariationData :: RetType ATSFlatDataStyleListVariationData
 retATSFlatDataStyleListVariationData = mkStorableRetType atsFlatDataStyleListVariationDataStructType
+
+instance ObjCArgument ATSFlatDataStyleListVariationData where
+  withObjCArg x k = k (argATSFlatDataStyleListVariationData x)
+
+instance ObjCReturn ATSFlatDataStyleListVariationData where
+  type RawReturn ATSFlatDataStyleListVariationData = ATSFlatDataStyleListVariationData
+  objcRetType = retATSFlatDataStyleListVariationData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSFlatDataTextLayoutDataHeader = ATSFlatDataTextLayoutDataHeader
   { atsFlatDataTextLayoutDataHeaderSizeOfLayoutData :: !CUInt
@@ -235,6 +307,16 @@ argATSFlatDataTextLayoutDataHeader = mkStorableArg atsFlatDataTextLayoutDataHead
 
 retATSFlatDataTextLayoutDataHeader :: RetType ATSFlatDataTextLayoutDataHeader
 retATSFlatDataTextLayoutDataHeader = mkStorableRetType atsFlatDataTextLayoutDataHeaderStructType
+
+instance ObjCArgument ATSFlatDataTextLayoutDataHeader where
+  withObjCArg x k = k (argATSFlatDataTextLayoutDataHeader x)
+
+instance ObjCReturn ATSFlatDataTextLayoutDataHeader where
+  type RawReturn ATSFlatDataTextLayoutDataHeader = ATSFlatDataTextLayoutDataHeader
+  objcRetType = retATSFlatDataTextLayoutDataHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSFontMetrics = ATSFontMetrics
   { atsFontMetricsVersion :: !CUInt
@@ -299,6 +381,16 @@ argATSFontMetrics = mkStorableArg atsFontMetricsStructType
 retATSFontMetrics :: RetType ATSFontMetrics
 retATSFontMetrics = mkStorableRetType atsFontMetricsStructType
 
+instance ObjCArgument ATSFontMetrics where
+  withObjCArg x k = k (argATSFontMetrics x)
+
+instance ObjCReturn ATSFontMetrics where
+  type RawReturn ATSFontMetrics = ATSFontMetrics
+  objcRetType = retATSFontMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSFontQuerySourceContext = ATSFontQuerySourceContext
   { atsFontQuerySourceContextVersion :: !CUInt
   , atsFontQuerySourceContextRefCon :: !(Ptr ())
@@ -328,6 +420,16 @@ argATSFontQuerySourceContext = mkStorableArg atsFontQuerySourceContextStructType
 
 retATSFontQuerySourceContext :: RetType ATSFontQuerySourceContext
 retATSFontQuerySourceContext = mkStorableRetType atsFontQuerySourceContextStructType
+
+instance ObjCArgument ATSFontQuerySourceContext where
+  withObjCArg x k = k (argATSFontQuerySourceContext x)
+
+instance ObjCReturn ATSFontQuerySourceContext where
+  type RawReturn ATSFontQuerySourceContext = ATSFontQuerySourceContext
+  objcRetType = retATSFontQuerySourceContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSJustWidthDeltaEntryOverride = ATSJustWidthDeltaEntryOverride
   { atsJustWidthDeltaEntryOverrideBeforeGrowLimit :: !CInt
@@ -365,6 +467,16 @@ argATSJustWidthDeltaEntryOverride = mkStorableArg atsJustWidthDeltaEntryOverride
 retATSJustWidthDeltaEntryOverride :: RetType ATSJustWidthDeltaEntryOverride
 retATSJustWidthDeltaEntryOverride = mkStorableRetType atsJustWidthDeltaEntryOverrideStructType
 
+instance ObjCArgument ATSJustWidthDeltaEntryOverride where
+  withObjCArg x k = k (argATSJustWidthDeltaEntryOverride x)
+
+instance ObjCReturn ATSJustWidthDeltaEntryOverride where
+  type RawReturn ATSJustWidthDeltaEntryOverride = ATSJustWidthDeltaEntryOverride
+  objcRetType = retATSJustWidthDeltaEntryOverride
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSLayoutRecord = ATSLayoutRecord
   { atsLayoutRecordGlyphID :: !CUShort
   , atsLayoutRecordFlags :: !CUInt
@@ -395,6 +507,16 @@ argATSLayoutRecord = mkStorableArg atsLayoutRecordStructType
 retATSLayoutRecord :: RetType ATSLayoutRecord
 retATSLayoutRecord = mkStorableRetType atsLayoutRecordStructType
 
+instance ObjCArgument ATSLayoutRecord where
+  withObjCArg x k = k (argATSLayoutRecord x)
+
+instance ObjCReturn ATSLayoutRecord where
+  type RawReturn ATSLayoutRecord = ATSLayoutRecord
+  objcRetType = retATSLayoutRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSPoint = ATSPoint
   { atsPointX :: !CDouble
   , atsPointY :: !CDouble
@@ -419,6 +541,16 @@ argATSPoint = mkStorableArg atsPointStructType
 retATSPoint :: RetType ATSPoint
 retATSPoint = mkStorableRetType atsPointStructType
 
+instance ObjCArgument ATSPoint where
+  withObjCArg x k = k (argATSPoint x)
+
+instance ObjCReturn ATSPoint where
+  type RawReturn ATSPoint = ATSPoint
+  objcRetType = retATSPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSUAttributeInfo = ATSUAttributeInfo
   { atsuAttributeInfoFTag :: !CUInt
   , atsuAttributeInfoFValueSize :: !CULong
@@ -442,6 +574,16 @@ argATSUAttributeInfo = mkStorableArg atsuAttributeInfoStructType
 
 retATSUAttributeInfo :: RetType ATSUAttributeInfo
 retATSUAttributeInfo = mkStorableRetType atsuAttributeInfoStructType
+
+instance ObjCArgument ATSUAttributeInfo where
+  withObjCArg x k = k (argATSUAttributeInfo x)
+
+instance ObjCReturn ATSUAttributeInfo where
+  type RawReturn ATSUAttributeInfo = ATSUAttributeInfo
+  objcRetType = retATSUAttributeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSUBackgroundColor = ATSUBackgroundColor
   { atsuBackgroundColorRed :: !CFloat
@@ -473,6 +615,16 @@ argATSUBackgroundColor = mkStorableArg atsuBackgroundColorStructType
 retATSUBackgroundColor :: RetType ATSUBackgroundColor
 retATSUBackgroundColor = mkStorableRetType atsuBackgroundColorStructType
 
+instance ObjCArgument ATSUBackgroundColor where
+  withObjCArg x k = k (argATSUBackgroundColor x)
+
+instance ObjCReturn ATSUBackgroundColor where
+  type RawReturn ATSUBackgroundColor = ATSUBackgroundColor
+  objcRetType = retATSUBackgroundColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSUCaret = ATSUCaret
   { atsuCaretFX :: !CInt
   , atsuCaretFY :: !CInt
@@ -502,6 +654,16 @@ argATSUCaret = mkStorableArg atsuCaretStructType
 
 retATSUCaret :: RetType ATSUCaret
 retATSUCaret = mkStorableRetType atsuCaretStructType
+
+instance ObjCArgument ATSUCaret where
+  withObjCArg x k = k (argATSUCaret x)
+
+instance ObjCReturn ATSUCaret where
+  type RawReturn ATSUCaret = ATSUCaret
+  objcRetType = retATSUCaret
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSUGlyphInfo = ATSUGlyphInfo
   { atsuGlyphInfoGlyphID :: !CUShort
@@ -548,6 +710,16 @@ argATSUGlyphInfo = mkStorableArg atsuGlyphInfoStructType
 retATSUGlyphInfo :: RetType ATSUGlyphInfo
 retATSUGlyphInfo = mkStorableRetType atsuGlyphInfoStructType
 
+instance ObjCArgument ATSUGlyphInfo where
+  withObjCArg x k = k (argATSUGlyphInfo x)
+
+instance ObjCReturn ATSUGlyphInfo where
+  type RawReturn ATSUGlyphInfo = ATSUGlyphInfo
+  objcRetType = retATSUGlyphInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSUGlyphSelector = ATSUGlyphSelector
   { atsuGlyphSelectorCollection :: !CUShort
   , atsuGlyphSelectorGlyphID :: !CUShort
@@ -571,6 +743,16 @@ argATSUGlyphSelector = mkStorableArg atsuGlyphSelectorStructType
 
 retATSUGlyphSelector :: RetType ATSUGlyphSelector
 retATSUGlyphSelector = mkStorableRetType atsuGlyphSelectorStructType
+
+instance ObjCArgument ATSUGlyphSelector where
+  withObjCArg x k = k (argATSUGlyphSelector x)
+
+instance ObjCReturn ATSUGlyphSelector where
+  type RawReturn ATSUGlyphSelector = ATSUGlyphSelector
+  objcRetType = retATSUGlyphSelector
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSURGBAlphaColor = ATSURGBAlphaColor
   { atsurgbAlphaColorRed :: !CFloat
@@ -602,6 +784,16 @@ argATSURGBAlphaColor = mkStorableArg atsurgbAlphaColorStructType
 retATSURGBAlphaColor :: RetType ATSURGBAlphaColor
 retATSURGBAlphaColor = mkStorableRetType atsurgbAlphaColorStructType
 
+instance ObjCArgument ATSURGBAlphaColor where
+  withObjCArg x k = k (argATSURGBAlphaColor x)
+
+instance ObjCReturn ATSURGBAlphaColor where
+  type RawReturn ATSURGBAlphaColor = ATSURGBAlphaColor
+  objcRetType = retATSURGBAlphaColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSUStyleRunInfo = ATSUStyleRunInfo
   { atsuStyleRunInfoRunLength :: !CUInt
   , atsuStyleRunInfoStyleObjectIndex :: !CUInt
@@ -626,6 +818,16 @@ argATSUStyleRunInfo = mkStorableArg atsuStyleRunInfoStructType
 retATSUStyleRunInfo :: RetType ATSUStyleRunInfo
 retATSUStyleRunInfo = mkStorableRetType atsuStyleRunInfoStructType
 
+instance ObjCArgument ATSUStyleRunInfo where
+  withObjCArg x k = k (argATSUStyleRunInfo x)
+
+instance ObjCReturn ATSUStyleRunInfo where
+  type RawReturn ATSUStyleRunInfo = ATSUStyleRunInfo
+  objcRetType = retATSUStyleRunInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSUTab = ATSUTab
   { atsuTabTabPosition :: !CInt
   , atsuTabTabType :: !CUShort
@@ -649,6 +851,16 @@ argATSUTab = mkStorableArg atsuTabStructType
 
 retATSUTab :: RetType ATSUTab
 retATSUTab = mkStorableRetType atsuTabStructType
+
+instance ObjCArgument ATSUTab where
+  withObjCArg x k = k (argATSUTab x)
+
+instance ObjCReturn ATSUTab where
+  type RawReturn ATSUTab = ATSUTab
+  objcRetType = retATSUTab
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AppParameters = AppParameters
   { appParametersTheMsgEvent :: !(Ptr ())
@@ -677,6 +889,16 @@ argAppParameters = mkStorableArg appParametersStructType
 retAppParameters :: RetType AppParameters
 retAppParameters = mkStorableRetType appParametersStructType
 
+instance ObjCArgument AppParameters where
+  withObjCArg x k = k (argAppParameters x)
+
+instance ObjCReturn AppParameters where
+  type RawReturn AppParameters = AppParameters
+  objcRetType = retAppParameters
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AsscEntry = AsscEntry
   { asscEntryFontSize :: !CShort
   , asscEntryFontStyle :: !CShort
@@ -703,6 +925,16 @@ argAsscEntry = mkStorableArg asscEntryStructType
 
 retAsscEntry :: RetType AsscEntry
 retAsscEntry = mkStorableRetType asscEntryStructType
+
+instance ObjCArgument AsscEntry where
+  withObjCArg x k = k (argAsscEntry x)
+
+instance ObjCReturn AsscEntry where
+  type RawReturn AsscEntry = AsscEntry
+  objcRetType = retAsscEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMBitmap = CMBitmap
   { cmBitmapImage :: !(Ptr ())
@@ -746,6 +978,16 @@ argCMBitmap = mkStorableArg cmBitmapStructType
 retCMBitmap :: RetType CMBitmap
 retCMBitmap = mkStorableRetType cmBitmapStructType
 
+instance ObjCArgument CMBitmap where
+  withObjCArg x k = k (argCMBitmap x)
+
+instance ObjCReturn CMBitmap where
+  type RawReturn CMBitmap = CMBitmap
+  objcRetType = retCMBitmap
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMBufferLocation = CMBufferLocation
   { cmBufferLocationBuffer :: !(Ptr ())
   , cmBufferLocationSize :: !CUInt
@@ -769,6 +1011,16 @@ argCMBufferLocation = mkStorableArg cmBufferLocationStructType
 
 retCMBufferLocation :: RetType CMBufferLocation
 retCMBufferLocation = mkStorableRetType cmBufferLocationStructType
+
+instance ObjCArgument CMBufferLocation where
+  withObjCArg x k = k (argCMBufferLocation x)
+
+instance ObjCReturn CMBufferLocation where
+  type RawReturn CMBufferLocation = CMBufferLocation
+  objcRetType = retCMBufferLocation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMCMYColor = CMCMYColor
   { cmcmyColorCyan :: !CUShort
@@ -796,6 +1048,16 @@ argCMCMYColor = mkStorableArg cmcmyColorStructType
 
 retCMCMYColor :: RetType CMCMYColor
 retCMCMYColor = mkStorableRetType cmcmyColorStructType
+
+instance ObjCArgument CMCMYColor where
+  withObjCArg x k = k (argCMCMYColor x)
+
+instance ObjCReturn CMCMYColor where
+  type RawReturn CMCMYColor = CMCMYColor
+  objcRetType = retCMCMYColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMCMYKColor = CMCMYKColor
   { cmcmykColorCyan :: !CUShort
@@ -826,6 +1088,16 @@ argCMCMYKColor = mkStorableArg cmcmykColorStructType
 
 retCMCMYKColor :: RetType CMCMYKColor
 retCMCMYKColor = mkStorableRetType cmcmykColorStructType
+
+instance ObjCArgument CMCMYKColor where
+  withObjCArg x k = k (argCMCMYKColor x)
+
+instance ObjCReturn CMCMYKColor where
+  type RawReturn CMCMYKColor = CMCMYKColor
+  objcRetType = retCMCMYKColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMDateTime = CMDateTime
   { cmDateTimeYear :: !CUShort
@@ -863,6 +1135,16 @@ argCMDateTime = mkStorableArg cmDateTimeStructType
 retCMDateTime :: RetType CMDateTime
 retCMDateTime = mkStorableRetType cmDateTimeStructType
 
+instance ObjCArgument CMDateTime where
+  withObjCArg x k = k (argCMDateTime x)
+
+instance ObjCReturn CMDateTime where
+  type RawReturn CMDateTime = CMDateTime
+  objcRetType = retCMDateTime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMDeviceProfileInfo = CMDeviceProfileInfo
   { cmDeviceProfileInfoDataVersion :: !CUInt
   , cmDeviceProfileInfoProfileID :: !CUInt
@@ -896,6 +1178,16 @@ argCMDeviceProfileInfo = mkStorableArg cmDeviceProfileInfoStructType
 retCMDeviceProfileInfo :: RetType CMDeviceProfileInfo
 retCMDeviceProfileInfo = mkStorableRetType cmDeviceProfileInfoStructType
 
+instance ObjCArgument CMDeviceProfileInfo where
+  withObjCArg x k = k (argCMDeviceProfileInfo x)
+
+instance ObjCReturn CMDeviceProfileInfo where
+  type RawReturn CMDeviceProfileInfo = CMDeviceProfileInfo
+  objcRetType = retCMDeviceProfileInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMDeviceProfileScope = CMDeviceProfileScope
   { cmDeviceProfileScopeDeviceUser :: !(Ptr ())
   , cmDeviceProfileScopeDeviceHost :: !(Ptr ())
@@ -919,6 +1211,16 @@ argCMDeviceProfileScope = mkStorableArg cmDeviceProfileScopeStructType
 
 retCMDeviceProfileScope :: RetType CMDeviceProfileScope
 retCMDeviceProfileScope = mkStorableRetType cmDeviceProfileScopeStructType
+
+instance ObjCArgument CMDeviceProfileScope where
+  withObjCArg x k = k (argCMDeviceProfileScope x)
+
+instance ObjCReturn CMDeviceProfileScope where
+  type RawReturn CMDeviceProfileScope = CMDeviceProfileScope
+  objcRetType = retCMDeviceProfileScope
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMDeviceScope = CMDeviceScope
   { cmDeviceScopeDeviceUser :: !(Ptr ())
@@ -944,6 +1246,16 @@ argCMDeviceScope = mkStorableArg cmDeviceScopeStructType
 retCMDeviceScope :: RetType CMDeviceScope
 retCMDeviceScope = mkStorableRetType cmDeviceScopeStructType
 
+instance ObjCArgument CMDeviceScope where
+  withObjCArg x k = k (argCMDeviceScope x)
+
+instance ObjCReturn CMDeviceScope where
+  type RawReturn CMDeviceScope = CMDeviceScope
+  objcRetType = retCMDeviceScope
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMFixedXYColor = CMFixedXYColor
   { cmFixedXYColorX :: !CInt
   , cmFixedXYColorY :: !CInt
@@ -967,6 +1279,16 @@ argCMFixedXYColor = mkStorableArg cmFixedXYColorStructType
 
 retCMFixedXYColor :: RetType CMFixedXYColor
 retCMFixedXYColor = mkStorableRetType cmFixedXYColorStructType
+
+instance ObjCArgument CMFixedXYColor where
+  withObjCArg x k = k (argCMFixedXYColor x)
+
+instance ObjCReturn CMFixedXYColor where
+  type RawReturn CMFixedXYColor = CMFixedXYColor
+  objcRetType = retCMFixedXYColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMFixedXYZColor = CMFixedXYZColor
   { cmFixedXYZColorX :: !CInt
@@ -995,6 +1317,16 @@ argCMFixedXYZColor = mkStorableArg cmFixedXYZColorStructType
 retCMFixedXYZColor :: RetType CMFixedXYZColor
 retCMFixedXYZColor = mkStorableRetType cmFixedXYZColorStructType
 
+instance ObjCArgument CMFixedXYZColor where
+  withObjCArg x k = k (argCMFixedXYZColor x)
+
+instance ObjCReturn CMFixedXYZColor where
+  type RawReturn CMFixedXYZColor = CMFixedXYZColor
+  objcRetType = retCMFixedXYZColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMGrayColor = CMGrayColor
   { cmGrayColorGray :: !CUShort
   } deriving (Eq, Show)
@@ -1015,6 +1347,16 @@ argCMGrayColor = mkStorableArg cmGrayColorStructType
 
 retCMGrayColor :: RetType CMGrayColor
 retCMGrayColor = mkStorableRetType cmGrayColorStructType
+
+instance ObjCArgument CMGrayColor where
+  withObjCArg x k = k (argCMGrayColor x)
+
+instance ObjCReturn CMGrayColor where
+  type RawReturn CMGrayColor = CMGrayColor
+  objcRetType = retCMGrayColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMHLSColor = CMHLSColor
   { cmhlsColorHue :: !CUShort
@@ -1043,6 +1385,16 @@ argCMHLSColor = mkStorableArg cmhlsColorStructType
 retCMHLSColor :: RetType CMHLSColor
 retCMHLSColor = mkStorableRetType cmhlsColorStructType
 
+instance ObjCArgument CMHLSColor where
+  withObjCArg x k = k (argCMHLSColor x)
+
+instance ObjCReturn CMHLSColor where
+  type RawReturn CMHLSColor = CMHLSColor
+  objcRetType = retCMHLSColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMHSVColor = CMHSVColor
   { cmhsvColorHue :: !CUShort
   , cmhsvColorSaturation :: !CUShort
@@ -1070,6 +1422,16 @@ argCMHSVColor = mkStorableArg cmhsvColorStructType
 retCMHSVColor :: RetType CMHSVColor
 retCMHSVColor = mkStorableRetType cmhsvColorStructType
 
+instance ObjCArgument CMHSVColor where
+  withObjCArg x k = k (argCMHSVColor x)
+
+instance ObjCReturn CMHSVColor where
+  type RawReturn CMHSVColor = CMHSVColor
+  objcRetType = retCMHSVColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMHandleLocation = CMHandleLocation
   { cmHandleLocationH :: !(Ptr ())
   } deriving (Eq, Show)
@@ -1090,6 +1452,16 @@ argCMHandleLocation = mkStorableArg cmHandleLocationStructType
 
 retCMHandleLocation :: RetType CMHandleLocation
 retCMHandleLocation = mkStorableRetType cmHandleLocationStructType
+
+instance ObjCArgument CMHandleLocation where
+  withObjCArg x k = k (argCMHandleLocation x)
+
+instance ObjCReturn CMHandleLocation where
+  type RawReturn CMHandleLocation = CMHandleLocation
+  objcRetType = retCMHandleLocation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMIntentCRDVMSize = CMIntentCRDVMSize
   { cmIntentCRDVMSizeRenderingIntent :: !CUInt
@@ -1114,6 +1486,16 @@ argCMIntentCRDVMSize = mkStorableArg cmIntentCRDVMSizeStructType
 
 retCMIntentCRDVMSize :: RetType CMIntentCRDVMSize
 retCMIntentCRDVMSize = mkStorableRetType cmIntentCRDVMSizeStructType
+
+instance ObjCArgument CMIntentCRDVMSize where
+  withObjCArg x k = k (argCMIntentCRDVMSize x)
+
+instance ObjCReturn CMIntentCRDVMSize where
+  type RawReturn CMIntentCRDVMSize = CMIntentCRDVMSize
+  objcRetType = retCMIntentCRDVMSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMLabColor = CMLabColor
   { cmLabColorL :: !CUShort
@@ -1142,6 +1524,16 @@ argCMLabColor = mkStorableArg cmLabColorStructType
 retCMLabColor :: RetType CMLabColor
 retCMLabColor = mkStorableRetType cmLabColorStructType
 
+instance ObjCArgument CMLabColor where
+  withObjCArg x k = k (argCMLabColor x)
+
+instance ObjCReturn CMLabColor where
+  type RawReturn CMLabColor = CMLabColor
+  objcRetType = retCMLabColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMLuvColor = CMLuvColor
   { cmLuvColorL :: !CUShort
   , cmLuvColorU :: !CUShort
@@ -1168,6 +1560,16 @@ argCMLuvColor = mkStorableArg cmLuvColorStructType
 
 retCMLuvColor :: RetType CMLuvColor
 retCMLuvColor = mkStorableRetType cmLuvColorStructType
+
+instance ObjCArgument CMLuvColor where
+  withObjCArg x k = k (argCMLuvColor x)
+
+instance ObjCReturn CMLuvColor where
+  type RawReturn CMLuvColor = CMLuvColor
+  objcRetType = retCMLuvColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMMakeAndModel = CMMakeAndModel
   { cmMakeAndModelManufacturer :: !CUInt
@@ -1211,6 +1613,16 @@ argCMMakeAndModel = mkStorableArg cmMakeAndModelStructType
 retCMMakeAndModel :: RetType CMMakeAndModel
 retCMMakeAndModel = mkStorableRetType cmMakeAndModelStructType
 
+instance ObjCArgument CMMakeAndModel where
+  withObjCArg x k = k (argCMMakeAndModel x)
+
+instance ObjCReturn CMMakeAndModel where
+  type RawReturn CMMakeAndModel = CMMakeAndModel
+  objcRetType = retCMMakeAndModel
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMMultiLocalizedUniCodeType = CMMultiLocalizedUniCodeType
   { cmMultiLocalizedUniCodeTypeTypeDescriptor :: !CUInt
   , cmMultiLocalizedUniCodeTypeReserved :: !CUInt
@@ -1241,6 +1653,16 @@ argCMMultiLocalizedUniCodeType = mkStorableArg cmMultiLocalizedUniCodeTypeStruct
 retCMMultiLocalizedUniCodeType :: RetType CMMultiLocalizedUniCodeType
 retCMMultiLocalizedUniCodeType = mkStorableRetType cmMultiLocalizedUniCodeTypeStructType
 
+instance ObjCArgument CMMultiLocalizedUniCodeType where
+  withObjCArg x k = k (argCMMultiLocalizedUniCodeType x)
+
+instance ObjCReturn CMMultiLocalizedUniCodeType where
+  type RawReturn CMMultiLocalizedUniCodeType = CMMultiLocalizedUniCodeType
+  objcRetType = retCMMultiLocalizedUniCodeType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMNamedColor = CMNamedColor
   { cmNamedColorNamedColorIndex :: !CUInt
   } deriving (Eq, Show)
@@ -1261,6 +1683,16 @@ argCMNamedColor = mkStorableArg cmNamedColorStructType
 
 retCMNamedColor :: RetType CMNamedColor
 retCMNamedColor = mkStorableRetType cmNamedColorStructType
+
+instance ObjCArgument CMNamedColor where
+  withObjCArg x k = k (argCMNamedColor x)
+
+instance ObjCReturn CMNamedColor where
+  type RawReturn CMNamedColor = CMNamedColor
+  objcRetType = retCMNamedColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMNativeDisplayInfoType = CMNativeDisplayInfoType
   { cmNativeDisplayInfoTypeTypeDescriptor :: !CUInt
@@ -1289,6 +1721,16 @@ argCMNativeDisplayInfoType = mkStorableArg cmNativeDisplayInfoTypeStructType
 retCMNativeDisplayInfoType :: RetType CMNativeDisplayInfoType
 retCMNativeDisplayInfoType = mkStorableRetType cmNativeDisplayInfoTypeStructType
 
+instance ObjCArgument CMNativeDisplayInfoType where
+  withObjCArg x k = k (argCMNativeDisplayInfoType x)
+
+instance ObjCReturn CMNativeDisplayInfoType where
+  type RawReturn CMNativeDisplayInfoType = CMNativeDisplayInfoType
+  objcRetType = retCMNativeDisplayInfoType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMRGBColor = CMRGBColor
   { cmrgbColorRed :: !CUShort
   , cmrgbColorGreen :: !CUShort
@@ -1315,6 +1757,16 @@ argCMRGBColor = mkStorableArg cmrgbColorStructType
 
 retCMRGBColor :: RetType CMRGBColor
 retCMRGBColor = mkStorableRetType cmrgbColorStructType
+
+instance ObjCArgument CMRGBColor where
+  withObjCArg x k = k (argCMRGBColor x)
+
+instance ObjCReturn CMRGBColor where
+  type RawReturn CMRGBColor = CMRGBColor
+  objcRetType = retCMRGBColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMScreeningChannelRec = CMScreeningChannelRec
   { cmScreeningChannelRecFrequency :: !CInt
@@ -1343,6 +1795,16 @@ argCMScreeningChannelRec = mkStorableArg cmScreeningChannelRecStructType
 retCMScreeningChannelRec :: RetType CMScreeningChannelRec
 retCMScreeningChannelRec = mkStorableRetType cmScreeningChannelRecStructType
 
+instance ObjCArgument CMScreeningChannelRec where
+  withObjCArg x k = k (argCMScreeningChannelRec x)
+
+instance ObjCReturn CMScreeningChannelRec where
+  type RawReturn CMScreeningChannelRec = CMScreeningChannelRec
+  objcRetType = retCMScreeningChannelRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMSignatureType = CMSignatureType
   { cmSignatureTypeTypeDescriptor :: !CUInt
   , cmSignatureTypeReserved :: !CUInt
@@ -1370,6 +1832,16 @@ argCMSignatureType = mkStorableArg cmSignatureTypeStructType
 retCMSignatureType :: RetType CMSignatureType
 retCMSignatureType = mkStorableRetType cmSignatureTypeStructType
 
+instance ObjCArgument CMSignatureType where
+  withObjCArg x k = k (argCMSignatureType x)
+
+instance ObjCReturn CMSignatureType where
+  type RawReturn CMSignatureType = CMSignatureType
+  objcRetType = retCMSignatureType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMTagRecord = CMTagRecord
   { cmTagRecordTag :: !CUInt
   , cmTagRecordElementOffset :: !CUInt
@@ -1396,6 +1868,16 @@ argCMTagRecord = mkStorableArg cmTagRecordStructType
 
 retCMTagRecord :: RetType CMTagRecord
 retCMTagRecord = mkStorableRetType cmTagRecordStructType
+
+instance ObjCArgument CMTagRecord where
+  withObjCArg x k = k (argCMTagRecord x)
+
+instance ObjCReturn CMTagRecord where
+  type RawReturn CMTagRecord = CMTagRecord
+  objcRetType = retCMTagRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMVideoCardGammaFormula = CMVideoCardGammaFormula
   { cmVideoCardGammaFormulaRedGamma :: !CInt
@@ -1442,6 +1924,16 @@ argCMVideoCardGammaFormula = mkStorableArg cmVideoCardGammaFormulaStructType
 retCMVideoCardGammaFormula :: RetType CMVideoCardGammaFormula
 retCMVideoCardGammaFormula = mkStorableRetType cmVideoCardGammaFormulaStructType
 
+instance ObjCArgument CMVideoCardGammaFormula where
+  withObjCArg x k = k (argCMVideoCardGammaFormula x)
+
+instance ObjCReturn CMVideoCardGammaFormula where
+  type RawReturn CMVideoCardGammaFormula = CMVideoCardGammaFormula
+  objcRetType = retCMVideoCardGammaFormula
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMVideoCardGammaType = CMVideoCardGammaType
   { cmVideoCardGammaTypeTypeDescriptor :: !CUInt
   , cmVideoCardGammaTypeReserved :: !CUInt
@@ -1468,6 +1960,16 @@ argCMVideoCardGammaType = mkStorableArg cmVideoCardGammaTypeStructType
 
 retCMVideoCardGammaType :: RetType CMVideoCardGammaType
 retCMVideoCardGammaType = mkStorableRetType cmVideoCardGammaTypeStructType
+
+instance ObjCArgument CMVideoCardGammaType where
+  withObjCArg x k = k (argCMVideoCardGammaType x)
+
+instance ObjCReturn CMVideoCardGammaType where
+  type RawReturn CMVideoCardGammaType = CMVideoCardGammaType
+  objcRetType = retCMVideoCardGammaType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMXYZColor = CMXYZColor
   { cmxyzColorX :: !CUShort
@@ -1496,6 +1998,16 @@ argCMXYZColor = mkStorableArg cmxyzColorStructType
 retCMXYZColor :: RetType CMXYZColor
 retCMXYZColor = mkStorableRetType cmxyzColorStructType
 
+instance ObjCArgument CMXYZColor where
+  withObjCArg x k = k (argCMXYZColor x)
+
+instance ObjCReturn CMXYZColor where
+  type RawReturn CMXYZColor = CMXYZColor
+  objcRetType = retCMXYZColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMYxyColor = CMYxyColor
   { cmYxyColorCapY :: !CUShort
   , cmYxyColorX :: !CUShort
@@ -1522,6 +2034,16 @@ argCMYxyColor = mkStorableArg cmYxyColorStructType
 
 retCMYxyColor :: RetType CMYxyColor
 retCMYxyColor = mkStorableRetType cmYxyColorStructType
+
+instance ObjCArgument CMYxyColor where
+  withObjCArg x k = k (argCMYxyColor x)
+
+instance ObjCReturn CMYxyColor where
+  type RawReturn CMYxyColor = CMYxyColor
+  objcRetType = retCMYxyColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CQDProcs = CQDProcs
   { cqdProcsTextProc :: !(Ptr ())
@@ -1601,6 +2123,16 @@ argCQDProcs = mkStorableArg cqdProcsStructType
 retCQDProcs :: RetType CQDProcs
 retCQDProcs = mkStorableRetType cqdProcsStructType
 
+instance ObjCArgument CQDProcs where
+  withObjCArg x k = k (argCQDProcs x)
+
+instance ObjCReturn CQDProcs where
+  type RawReturn CQDProcs = CQDProcs
+  objcRetType = retCQDProcs
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FMFontFamilyInstance = FMFontFamilyInstance
   { fmFontFamilyInstanceFontFamily :: !CShort
   , fmFontFamilyInstanceFontStyle :: !CShort
@@ -1625,6 +2157,16 @@ argFMFontFamilyInstance = mkStorableArg fmFontFamilyInstanceStructType
 retFMFontFamilyInstance :: RetType FMFontFamilyInstance
 retFMFontFamilyInstance = mkStorableRetType fmFontFamilyInstanceStructType
 
+instance ObjCArgument FMFontFamilyInstance where
+  withObjCArg x k = k (argFMFontFamilyInstance x)
+
+instance ObjCReturn FMFontFamilyInstance where
+  type RawReturn FMFontFamilyInstance = FMFontFamilyInstance
+  objcRetType = retFMFontFamilyInstance
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FontAssoc = FontAssoc
   { fontAssocNumAssoc :: !CShort
   } deriving (Eq, Show)
@@ -1645,6 +2187,16 @@ argFontAssoc = mkStorableArg fontAssocStructType
 
 retFontAssoc :: RetType FontAssoc
 retFontAssoc = mkStorableRetType fontAssocStructType
+
+instance ObjCArgument FontAssoc where
+  withObjCArg x k = k (argFontAssoc x)
+
+instance ObjCReturn FontAssoc where
+  type RawReturn FontAssoc = FontAssoc
+  objcRetType = retFontAssoc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FontInfo = FontInfo
   { fontInfoAscent :: !CShort
@@ -1675,6 +2227,16 @@ argFontInfo = mkStorableArg fontInfoStructType
 
 retFontInfo :: RetType FontInfo
 retFontInfo = mkStorableRetType fontInfoStructType
+
+instance ObjCArgument FontInfo where
+  withObjCArg x k = k (argFontInfo x)
+
+instance ObjCReturn FontInfo where
+  type RawReturn FontInfo = FontInfo
+  objcRetType = retFontInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FontRec = FontRec
   { fontRecFontType :: !CShort
@@ -1733,6 +2295,16 @@ argFontRec = mkStorableArg fontRecStructType
 retFontRec :: RetType FontRec
 retFontRec = mkStorableRetType fontRecStructType
 
+instance ObjCArgument FontRec where
+  withObjCArg x k = k (argFontRec x)
+
+instance ObjCReturn FontRec where
+  type RawReturn FontRec = FontRec
+  objcRetType = retFontRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KernEntry = KernEntry
   { kernEntryKernStyle :: !CShort
   , kernEntryKernLength :: !CShort
@@ -1756,6 +2328,16 @@ argKernEntry = mkStorableArg kernEntryStructType
 
 retKernEntry :: RetType KernEntry
 retKernEntry = mkStorableRetType kernEntryStructType
+
+instance ObjCArgument KernEntry where
+  withObjCArg x k = k (argKernEntry x)
+
+instance ObjCReturn KernEntry where
+  type RawReturn KernEntry = KernEntry
+  objcRetType = retKernEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KernPair = KernPair
   { kernPairKernFirst :: !CChar
@@ -1784,6 +2366,16 @@ argKernPair = mkStorableArg kernPairStructType
 retKernPair :: RetType KernPair
 retKernPair = mkStorableRetType kernPairStructType
 
+instance ObjCArgument KernPair where
+  withObjCArg x k = k (argKernPair x)
+
+instance ObjCReturn KernPair where
+  type RawReturn KernPair = KernPair
+  objcRetType = retKernPair
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KernTable = KernTable
   { kernTableNumKerns :: !CShort
   } deriving (Eq, Show)
@@ -1804,6 +2396,16 @@ argKernTable = mkStorableArg kernTableStructType
 
 retKernTable :: RetType KernTable
 retKernTable = mkStorableRetType kernTableStructType
+
+instance ObjCArgument KernTable where
+  withObjCArg x k = k (argKernTable x)
+
+instance ObjCReturn KernTable where
+  type RawReturn KernTable = KernTable
+  objcRetType = retKernTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NCMConcatProfileSpec = NCMConcatProfileSpec
   { ncmConcatProfileSpecRenderingIntent :: !CUInt
@@ -1831,6 +2433,16 @@ argNCMConcatProfileSpec = mkStorableArg ncmConcatProfileSpecStructType
 
 retNCMConcatProfileSpec :: RetType NCMConcatProfileSpec
 retNCMConcatProfileSpec = mkStorableRetType ncmConcatProfileSpecStructType
+
+instance ObjCArgument NCMConcatProfileSpec where
+  withObjCArg x k = k (argNCMConcatProfileSpec x)
+
+instance ObjCReturn NCMConcatProfileSpec where
+  type RawReturn NCMConcatProfileSpec = NCMConcatProfileSpec
+  objcRetType = retNCMConcatProfileSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PMPaperMargins = PMPaperMargins
   { pmPaperMarginsTop :: !CDouble
@@ -1862,6 +2474,16 @@ argPMPaperMargins = mkStorableArg pmPaperMarginsStructType
 retPMPaperMargins :: RetType PMPaperMargins
 retPMPaperMargins = mkStorableRetType pmPaperMarginsStructType
 
+instance ObjCArgument PMPaperMargins where
+  withObjCArg x k = k (argPMPaperMargins x)
+
+instance ObjCReturn PMPaperMargins where
+  type RawReturn PMPaperMargins = PMPaperMargins
+  objcRetType = retPMPaperMargins
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PMRect = PMRect
   { pmRectTop :: !CDouble
   , pmRectLeft :: !CDouble
@@ -1892,6 +2514,16 @@ argPMRect = mkStorableArg pmRectStructType
 retPMRect :: RetType PMRect
 retPMRect = mkStorableRetType pmRectStructType
 
+instance ObjCArgument PMRect where
+  withObjCArg x k = k (argPMRect x)
+
+instance ObjCReturn PMRect where
+  type RawReturn PMRect = PMRect
+  objcRetType = retPMRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PMResolution = PMResolution
   { pmResolutionHRes :: !CDouble
   , pmResolutionVRes :: !CDouble
@@ -1915,6 +2547,16 @@ argPMResolution = mkStorableArg pmResolutionStructType
 
 retPMResolution :: RetType PMResolution
 retPMResolution = mkStorableRetType pmResolutionStructType
+
+instance ObjCArgument PMResolution where
+  withObjCArg x k = k (argPMResolution x)
+
+instance ObjCReturn PMResolution where
+  type RawReturn PMResolution = PMResolution
+  objcRetType = retPMResolution
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PixPat = PixPat
   { pixPatPatType :: !CShort
@@ -1955,6 +2597,16 @@ argPixPat = mkStorableArg pixPatStructType
 retPixPat :: RetType PixPat
 retPixPat = mkStorableRetType pixPatStructType
 
+instance ObjCArgument PixPat where
+  withObjCArg x k = k (argPixPat x)
+
+instance ObjCReturn PixPat where
+  type RawReturn PixPat = PixPat
+  objcRetType = retPixPat
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data RGBColor = RGBColor
   { rgbColorRed :: !CUShort
   , rgbColorGreen :: !CUShort
@@ -1982,6 +2634,16 @@ argRGBColor = mkStorableArg rgbColorStructType
 retRGBColor :: RetType RGBColor
 retRGBColor = mkStorableRetType rgbColorStructType
 
+instance ObjCArgument RGBColor where
+  withObjCArg x k = k (argRGBColor x)
+
+instance ObjCReturn RGBColor where
+  type RawReturn RGBColor = RGBColor
+  objcRetType = retRGBColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SizeResourceRec = SizeResourceRec
   { sizeResourceRecFlags :: !CUShort
   , sizeResourceRecPreferredHeapSize :: !CUInt
@@ -2008,6 +2670,16 @@ argSizeResourceRec = mkStorableArg sizeResourceRecStructType
 
 retSizeResourceRec :: RetType SizeResourceRec
 retSizeResourceRec = mkStorableRetType sizeResourceRecStructType
+
+instance ObjCArgument SizeResourceRec where
+  withObjCArg x k = k (argSizeResourceRec x)
+
+instance ObjCReturn SizeResourceRec where
+  type RawReturn SizeResourceRec = SizeResourceRec
+  objcRetType = retSizeResourceRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SpeechErrorInfo = SpeechErrorInfo
   { speechErrorInfoCount :: !CShort
@@ -2042,6 +2714,16 @@ argSpeechErrorInfo = mkStorableArg speechErrorInfoStructType
 retSpeechErrorInfo :: RetType SpeechErrorInfo
 retSpeechErrorInfo = mkStorableRetType speechErrorInfoStructType
 
+instance ObjCArgument SpeechErrorInfo where
+  withObjCArg x k = k (argSpeechErrorInfo x)
+
+instance ObjCReturn SpeechErrorInfo where
+  type RawReturn SpeechErrorInfo = SpeechErrorInfo
+  objcRetType = retSpeechErrorInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SpeechStatusInfo = SpeechStatusInfo
   { speechStatusInfoOutputBusy :: !CUChar
   , speechStatusInfoOutputPaused :: !CUChar
@@ -2072,6 +2754,16 @@ argSpeechStatusInfo = mkStorableArg speechStatusInfoStructType
 retSpeechStatusInfo :: RetType SpeechStatusInfo
 retSpeechStatusInfo = mkStorableRetType speechStatusInfoStructType
 
+instance ObjCArgument SpeechStatusInfo where
+  withObjCArg x k = k (argSpeechStatusInfo x)
+
+instance ObjCReturn SpeechStatusInfo where
+  type RawReturn SpeechStatusInfo = SpeechStatusInfo
+  objcRetType = retSpeechStatusInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data VDGammaRecord = VDGammaRecord
   { vdGammaRecordCsGTable :: !(Ptr ())
   } deriving (Eq, Show)
@@ -2092,6 +2784,16 @@ argVDGammaRecord = mkStorableArg vdGammaRecordStructType
 
 retVDGammaRecord :: RetType VDGammaRecord
 retVDGammaRecord = mkStorableRetType vdGammaRecordStructType
+
+instance ObjCArgument VDGammaRecord where
+  withObjCArg x k = k (argVDGammaRecord x)
+
+instance ObjCReturn VDGammaRecord where
+  type RawReturn VDGammaRecord = VDGammaRecord
+  objcRetType = retVDGammaRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data VoiceFileInfo = VoiceFileInfo
   { voiceFileInfoFileSpec :: !(Ptr ())
@@ -2117,6 +2819,16 @@ argVoiceFileInfo = mkStorableArg voiceFileInfoStructType
 retVoiceFileInfo :: RetType VoiceFileInfo
 retVoiceFileInfo = mkStorableRetType voiceFileInfoStructType
 
+instance ObjCArgument VoiceFileInfo where
+  withObjCArg x k = k (argVoiceFileInfo x)
+
+instance ObjCReturn VoiceFileInfo where
+  type RawReturn VoiceFileInfo = VoiceFileInfo
+  objcRetType = retVoiceFileInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data VoiceSpec = VoiceSpec
   { voiceSpecCreator :: !CUInt
   , voiceSpecId :: !CUInt
@@ -2140,6 +2852,16 @@ argVoiceSpec = mkStorableArg voiceSpecStructType
 
 retVoiceSpec :: RetType VoiceSpec
 retVoiceSpec = mkStorableRetType voiceSpecStructType
+
+instance ObjCArgument VoiceSpec where
+  withObjCArg x k = k (argVoiceSpec x)
+
+instance ObjCReturn VoiceSpec where
+  type RawReturn VoiceSpec = VoiceSpec
+  objcRetType = retVoiceSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSGlyphIdealMetrics = ATSGlyphIdealMetrics
   { atsGlyphIdealMetricsAdvance :: !ATSPoint
@@ -2167,6 +2889,16 @@ argATSGlyphIdealMetrics = mkStorableArg atsGlyphIdealMetricsStructType
 
 retATSGlyphIdealMetrics :: RetType ATSGlyphIdealMetrics
 retATSGlyphIdealMetrics = mkStorableRetType atsGlyphIdealMetricsStructType
+
+instance ObjCArgument ATSGlyphIdealMetrics where
+  withObjCArg x k = k (argATSGlyphIdealMetrics x)
+
+instance ObjCReturn ATSGlyphIdealMetrics where
+  type RawReturn ATSGlyphIdealMetrics = ATSGlyphIdealMetrics
+  objcRetType = retATSGlyphIdealMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ATSGlyphScreenMetrics = ATSGlyphScreenMetrics
   { atsGlyphScreenMetricsDeviceAdvance :: !ATSPoint
@@ -2204,6 +2936,16 @@ argATSGlyphScreenMetrics = mkStorableArg atsGlyphScreenMetricsStructType
 retATSGlyphScreenMetrics :: RetType ATSGlyphScreenMetrics
 retATSGlyphScreenMetrics = mkStorableRetType atsGlyphScreenMetricsStructType
 
+instance ObjCArgument ATSGlyphScreenMetrics where
+  withObjCArg x k = k (argATSGlyphScreenMetrics x)
+
+instance ObjCReturn ATSGlyphScreenMetrics where
+  type RawReturn ATSGlyphScreenMetrics = ATSGlyphScreenMetrics
+  objcRetType = retATSGlyphScreenMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ATSTrapezoid = ATSTrapezoid
   { atsTrapezoidUpperLeft :: !FixedPoint
   , atsTrapezoidUpperRight :: !FixedPoint
@@ -2234,6 +2976,16 @@ argATSTrapezoid = mkStorableArg atsTrapezoidStructType
 retATSTrapezoid :: RetType ATSTrapezoid
 retATSTrapezoid = mkStorableRetType atsTrapezoidStructType
 
+instance ObjCArgument ATSTrapezoid where
+  withObjCArg x k = k (argATSTrapezoid x)
+
+instance ObjCReturn ATSTrapezoid where
+  type RawReturn ATSTrapezoid = ATSTrapezoid
+  objcRetType = retATSTrapezoid
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BitMap = BitMap
   { bitMapBaseAddr :: !(Ptr ())
   , bitMapRowBytes :: !CShort
@@ -2260,6 +3012,16 @@ argBitMap = mkStorableArg bitMapStructType
 
 retBitMap :: RetType BitMap
 retBitMap = mkStorableRetType bitMapStructType
+
+instance ObjCArgument BitMap where
+  withObjCArg x k = k (argBitMap x)
+
+instance ObjCReturn BitMap where
+  type RawReturn BitMap = BitMap
+  objcRetType = retBitMap
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMDateTimeType = CMDateTimeType
   { cmDateTimeTypeTypeDescriptor :: !CUInt
@@ -2288,6 +3050,16 @@ argCMDateTimeType = mkStorableArg cmDateTimeTypeStructType
 retCMDateTimeType :: RetType CMDateTimeType
 retCMDateTimeType = mkStorableRetType cmDateTimeTypeStructType
 
+instance ObjCArgument CMDateTimeType where
+  withObjCArg x k = k (argCMDateTimeType x)
+
+instance ObjCReturn CMDateTimeType where
+  type RawReturn CMDateTimeType = CMDateTimeType
+  objcRetType = retCMDateTimeType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMMakeAndModelType = CMMakeAndModelType
   { cmMakeAndModelTypeTypeDescriptor :: !CUInt
   , cmMakeAndModelTypeReserved :: !CUInt
@@ -2314,6 +3086,16 @@ argCMMakeAndModelType = mkStorableArg cmMakeAndModelTypeStructType
 
 retCMMakeAndModelType :: RetType CMMakeAndModelType
 retCMMakeAndModelType = mkStorableRetType cmMakeAndModelTypeStructType
+
+instance ObjCArgument CMMakeAndModelType where
+  withObjCArg x k = k (argCMMakeAndModelType x)
+
+instance ObjCReturn CMMakeAndModelType where
+  type RawReturn CMMakeAndModelType = CMMakeAndModelType
+  objcRetType = retCMMakeAndModelType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CMMeasurementType = CMMeasurementType
   { cmMeasurementTypeTypeDescriptor :: !CUInt
@@ -2354,6 +3136,16 @@ argCMMeasurementType = mkStorableArg cmMeasurementTypeStructType
 retCMMeasurementType :: RetType CMMeasurementType
 retCMMeasurementType = mkStorableRetType cmMeasurementTypeStructType
 
+instance ObjCArgument CMMeasurementType where
+  withObjCArg x k = k (argCMMeasurementType x)
+
+instance ObjCReturn CMMeasurementType where
+  type RawReturn CMMeasurementType = CMMeasurementType
+  objcRetType = retCMMeasurementType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CMViewingConditionsType = CMViewingConditionsType
   { cmViewingConditionsTypeTypeDescriptor :: !CUInt
   , cmViewingConditionsTypeReserved :: !CUInt
@@ -2387,6 +3179,16 @@ argCMViewingConditionsType = mkStorableArg cmViewingConditionsTypeStructType
 retCMViewingConditionsType :: RetType CMViewingConditionsType
 retCMViewingConditionsType = mkStorableRetType cmViewingConditionsTypeStructType
 
+instance ObjCArgument CMViewingConditionsType where
+  withObjCArg x k = k (argCMViewingConditionsType x)
+
+instance ObjCReturn CMViewingConditionsType where
+  type RawReturn CMViewingConditionsType = CMViewingConditionsType
+  objcRetType = retCMViewingConditionsType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ColorSpec = ColorSpec
   { colorSpecValue :: !CShort
   , colorSpecRgb :: !RGBColor
@@ -2410,6 +3212,16 @@ argColorSpec = mkStorableArg colorSpecStructType
 
 retColorSpec :: RetType ColorSpec
 retColorSpec = mkStorableRetType colorSpecStructType
+
+instance ObjCArgument ColorSpec where
+  withObjCArg x k = k (argColorSpec x)
+
+instance ObjCReturn ColorSpec where
+  type RawReturn ColorSpec = ColorSpec
+  objcRetType = retColorSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FMInput = FMInput
   { fmInputFamily :: !CShort
@@ -2449,6 +3261,16 @@ argFMInput = mkStorableArg fmInputStructType
 
 retFMInput :: RetType FMInput
 retFMInput = mkStorableRetType fmInputStructType
+
+instance ObjCArgument FMInput where
+  withObjCArg x k = k (argFMInput x)
+
+instance ObjCReturn FMInput where
+  type RawReturn FMInput = FMInput
+  objcRetType = retFMInput
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data GDevice = GDevice
   { gDeviceGdRefNum :: !CShort
@@ -2522,6 +3344,16 @@ argGDevice = mkStorableArg gDeviceStructType
 retGDevice :: RetType GDevice
 retGDevice = mkStorableRetType gDeviceStructType
 
+instance ObjCArgument GDevice where
+  withObjCArg x k = k (argGDevice x)
+
+instance ObjCReturn GDevice where
+  type RawReturn GDevice = GDevice
+  objcRetType = retGDevice
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LaunchParamBlockRec = LaunchParamBlockRec
   { launchParamBlockRecReserved1 :: !CUInt
   , launchParamBlockRecReserved2 :: !CUShort
@@ -2576,6 +3408,16 @@ argLaunchParamBlockRec = mkStorableArg launchParamBlockRecStructType
 retLaunchParamBlockRec :: RetType LaunchParamBlockRec
 retLaunchParamBlockRec = mkStorableRetType launchParamBlockRecStructType
 
+instance ObjCArgument LaunchParamBlockRec where
+  withObjCArg x k = k (argLaunchParamBlockRec x)
+
+instance ObjCReturn LaunchParamBlockRec where
+  type RawReturn LaunchParamBlockRec = LaunchParamBlockRec
+  objcRetType = retLaunchParamBlockRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NCMDeviceProfileInfo = NCMDeviceProfileInfo
   { ncmDeviceProfileInfoDataVersion :: !CUInt
   , ncmDeviceProfileInfoProfileID :: !CUInt
@@ -2611,6 +3453,16 @@ argNCMDeviceProfileInfo = mkStorableArg ncmDeviceProfileInfoStructType
 
 retNCMDeviceProfileInfo :: RetType NCMDeviceProfileInfo
 retNCMDeviceProfileInfo = mkStorableRetType ncmDeviceProfileInfoStructType
+
+instance ObjCArgument NCMDeviceProfileInfo where
+  withObjCArg x k = k (argNCMDeviceProfileInfo x)
+
+instance ObjCReturn NCMDeviceProfileInfo where
+  type RawReturn NCMDeviceProfileInfo = NCMDeviceProfileInfo
+  objcRetType = retNCMDeviceProfileInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OpenCPicParams = OpenCPicParams
   { openCPicParamsSrcRect :: !Rect
@@ -2648,6 +3500,16 @@ argOpenCPicParams = mkStorableArg openCPicParamsStructType
 retOpenCPicParams :: RetType OpenCPicParams
 retOpenCPicParams = mkStorableRetType openCPicParamsStructType
 
+instance ObjCArgument OpenCPicParams where
+  withObjCArg x k = k (argOpenCPicParams x)
+
+instance ObjCReturn OpenCPicParams where
+  type RawReturn OpenCPicParams = OpenCPicParams
+  objcRetType = retOpenCPicParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Picture = Picture
   { picturePicSize :: !CShort
   , picturePicFrame :: !Rect
@@ -2671,6 +3533,16 @@ argPicture = mkStorableArg pictureStructType
 
 retPicture :: RetType Picture
 retPicture = mkStorableRetType pictureStructType
+
+instance ObjCArgument Picture where
+  withObjCArg x k = k (argPicture x)
+
+instance ObjCReturn Picture where
+  type RawReturn Picture = Picture
+  objcRetType = retPicture
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PixMap = PixMap
   { pixMapBaseAddr :: !(Ptr ())
@@ -2735,6 +3607,16 @@ argPixMap = mkStorableArg pixMapStructType
 retPixMap :: RetType PixMap
 retPixMap = mkStorableRetType pixMapStructType
 
+instance ObjCArgument PixMap where
+  withObjCArg x k = k (argPixMap x)
+
+instance ObjCReturn PixMap where
+  type RawReturn PixMap = PixMap
+  objcRetType = retPixMap
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ProcessInfoExtendedRec = ProcessInfoExtendedRec
   { processInfoExtendedRecProcessInfoLength :: !CUInt
   , processInfoExtendedRecProcessName :: !(Ptr ())
@@ -2798,6 +3680,16 @@ argProcessInfoExtendedRec = mkStorableArg processInfoExtendedRecStructType
 retProcessInfoExtendedRec :: RetType ProcessInfoExtendedRec
 retProcessInfoExtendedRec = mkStorableRetType processInfoExtendedRecStructType
 
+instance ObjCArgument ProcessInfoExtendedRec where
+  withObjCArg x k = k (argProcessInfoExtendedRec x)
+
+instance ObjCReturn ProcessInfoExtendedRec where
+  type RawReturn ProcessInfoExtendedRec = ProcessInfoExtendedRec
+  objcRetType = retProcessInfoExtendedRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ProcessInfoRec = ProcessInfoRec
   { processInfoRecProcessInfoLength :: !CUInt
   , processInfoRecProcessName :: !(Ptr ())
@@ -2855,6 +3747,16 @@ argProcessInfoRec = mkStorableArg processInfoRecStructType
 retProcessInfoRec :: RetType ProcessInfoRec
 retProcessInfoRec = mkStorableRetType processInfoRecStructType
 
+instance ObjCArgument ProcessInfoRec where
+  withObjCArg x k = k (argProcessInfoRec x)
+
+instance ObjCReturn ProcessInfoRec where
+  type RawReturn ProcessInfoRec = ProcessInfoRec
+  objcRetType = retProcessInfoRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SpeechVersionInfo = SpeechVersionInfo
   { speechVersionInfoSynthType :: !CUInt
   , speechVersionInfoSynthSubType :: !CUInt
@@ -2887,3 +3789,13 @@ argSpeechVersionInfo = mkStorableArg speechVersionInfoStructType
 
 retSpeechVersionInfo :: RetType SpeechVersionInfo
 retSpeechVersionInfo = mkStorableRetType speechVersionInfoStructType
+
+instance ObjCArgument SpeechVersionInfo where
+  withObjCArg x k = k (argSpeechVersionInfo x)
+
+instance ObjCReturn SpeechVersionInfo where
+  type RawReturn SpeechVersionInfo = SpeechVersionInfo
+  objcRetType = retSpeechVersionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

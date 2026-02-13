@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.MLCompute.MLCSplitLayer
   , dimension
   , splitCount
   , splitSectionLengths
+  , dimensionSelector
   , layerWithSplitCount_dimensionSelector
   , layerWithSplitSectionLengths_dimensionSelector
-  , dimensionSelector
   , splitCountSelector
   , splitSectionLengthsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,7 +49,7 @@ layerWithSplitCount_dimension :: CULong -> CULong -> IO (Id MLCSplitLayer)
 layerWithSplitCount_dimension splitCount dimension =
   do
     cls' <- getRequiredClass "MLCSplitLayer"
-    sendClassMsg cls' (mkSelector "layerWithSplitCount:dimension:") (retPtr retVoid) [argCULong splitCount, argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithSplitCount_dimensionSelector splitCount dimension
 
 -- | Create a split layer
 --
@@ -67,8 +64,7 @@ layerWithSplitSectionLengths_dimension :: IsNSArray splitSectionLengths => split
 layerWithSplitSectionLengths_dimension splitSectionLengths dimension =
   do
     cls' <- getRequiredClass "MLCSplitLayer"
-    withObjCPtr splitSectionLengths $ \raw_splitSectionLengths ->
-      sendClassMsg cls' (mkSelector "layerWithSplitSectionLengths:dimension:") (retPtr retVoid) [argPtr (castPtr raw_splitSectionLengths :: Ptr ()), argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithSplitSectionLengths_dimensionSelector (toNSArray splitSectionLengths) dimension
 
 -- | dimension
 --
@@ -76,8 +72,8 @@ layerWithSplitSectionLengths_dimension splitSectionLengths dimension =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCSplitLayer mlcSplitLayer => mlcSplitLayer -> IO CULong
-dimension mlcSplitLayer  =
-    sendMsg mlcSplitLayer (mkSelector "dimension") retCULong []
+dimension mlcSplitLayer =
+  sendMessage mlcSplitLayer dimensionSelector
 
 -- | splitCount
 --
@@ -87,8 +83,8 @@ dimension mlcSplitLayer  =
 --
 -- ObjC selector: @- splitCount@
 splitCount :: IsMLCSplitLayer mlcSplitLayer => mlcSplitLayer -> IO CULong
-splitCount mlcSplitLayer  =
-    sendMsg mlcSplitLayer (mkSelector "splitCount") retCULong []
+splitCount mlcSplitLayer =
+  sendMessage mlcSplitLayer splitCountSelector
 
 -- | splitSectionLengths
 --
@@ -98,30 +94,30 @@ splitCount mlcSplitLayer  =
 --
 -- ObjC selector: @- splitSectionLengths@
 splitSectionLengths :: IsMLCSplitLayer mlcSplitLayer => mlcSplitLayer -> IO (Id NSArray)
-splitSectionLengths mlcSplitLayer  =
-    sendMsg mlcSplitLayer (mkSelector "splitSectionLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+splitSectionLengths mlcSplitLayer =
+  sendMessage mlcSplitLayer splitSectionLengthsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithSplitCount:dimension:@
-layerWithSplitCount_dimensionSelector :: Selector
+layerWithSplitCount_dimensionSelector :: Selector '[CULong, CULong] (Id MLCSplitLayer)
 layerWithSplitCount_dimensionSelector = mkSelector "layerWithSplitCount:dimension:"
 
 -- | @Selector@ for @layerWithSplitSectionLengths:dimension:@
-layerWithSplitSectionLengths_dimensionSelector :: Selector
+layerWithSplitSectionLengths_dimensionSelector :: Selector '[Id NSArray, CULong] (Id MLCSplitLayer)
 layerWithSplitSectionLengths_dimensionSelector = mkSelector "layerWithSplitSectionLengths:dimension:"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 
 -- | @Selector@ for @splitCount@
-splitCountSelector :: Selector
+splitCountSelector :: Selector '[] CULong
 splitCountSelector = mkSelector "splitCount"
 
 -- | @Selector@ for @splitSectionLengths@
-splitSectionLengthsSelector :: Selector
+splitSectionLengthsSelector :: Selector '[] (Id NSArray)
 splitSectionLengthsSelector = mkSelector "splitSectionLengths"
 

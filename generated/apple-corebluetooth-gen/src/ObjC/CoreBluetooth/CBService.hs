@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CoreBluetooth.CBService
   , isPrimary
   , includedServices
   , characteristics
-  , peripheralSelector
-  , isPrimarySelector
-  , includedServicesSelector
   , characteristicsSelector
+  , includedServicesSelector
+  , isPrimarySelector
+  , peripheralSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- peripheral@
 peripheral :: IsCBService cbService => cbService -> IO (Id CBPeripheral)
-peripheral cbService  =
-    sendMsg cbService (mkSelector "peripheral") (retPtr retVoid) [] >>= retainedObject . castPtr
+peripheral cbService =
+  sendMessage cbService peripheralSelector
 
 -- | isPrimary
 --
@@ -52,8 +49,8 @@ peripheral cbService  =
 --
 -- ObjC selector: @- isPrimary@
 isPrimary :: IsCBService cbService => cbService -> IO Bool
-isPrimary cbService  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbService (mkSelector "isPrimary") retCULong []
+isPrimary cbService =
+  sendMessage cbService isPrimarySelector
 
 -- | includedServices
 --
@@ -61,8 +58,8 @@ isPrimary cbService  =
 --
 -- ObjC selector: @- includedServices@
 includedServices :: IsCBService cbService => cbService -> IO (Id NSArray)
-includedServices cbService  =
-    sendMsg cbService (mkSelector "includedServices") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedServices cbService =
+  sendMessage cbService includedServicesSelector
 
 -- | characteristics
 --
@@ -70,26 +67,26 @@ includedServices cbService  =
 --
 -- ObjC selector: @- characteristics@
 characteristics :: IsCBService cbService => cbService -> IO (Id NSArray)
-characteristics cbService  =
-    sendMsg cbService (mkSelector "characteristics") (retPtr retVoid) [] >>= retainedObject . castPtr
+characteristics cbService =
+  sendMessage cbService characteristicsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @peripheral@
-peripheralSelector :: Selector
+peripheralSelector :: Selector '[] (Id CBPeripheral)
 peripheralSelector = mkSelector "peripheral"
 
 -- | @Selector@ for @isPrimary@
-isPrimarySelector :: Selector
+isPrimarySelector :: Selector '[] Bool
 isPrimarySelector = mkSelector "isPrimary"
 
 -- | @Selector@ for @includedServices@
-includedServicesSelector :: Selector
+includedServicesSelector :: Selector '[] (Id NSArray)
 includedServicesSelector = mkSelector "includedServices"
 
 -- | @Selector@ for @characteristics@
-characteristicsSelector :: Selector
+characteristicsSelector :: Selector '[] (Id NSArray)
 characteristicsSelector = mkSelector "characteristics"
 

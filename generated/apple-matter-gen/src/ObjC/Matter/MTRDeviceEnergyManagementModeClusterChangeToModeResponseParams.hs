@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTRDeviceEnergyManagementModeClusterChangeToModeResponseParam
   , statusText
   , setStatusText
   , initWithResponseValue_errorSelector
-  , statusSelector
   , setStatusSelector
-  , statusTextSelector
   , setStatusTextSelector
+  , statusSelector
+  , statusTextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,54 +40,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRDeviceEnergyManagementModeClusterChangeToModeResponseParams mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams -> responseValue -> error_ -> IO (Id MTRDeviceEnergyManagementModeClusterChangeToModeResponseParams)
-initWithResponseValue_error mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams responseValue error_ =
+  sendOwnedMessage mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRDeviceEnergyManagementModeClusterChangeToModeResponseParams mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams => mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams -> IO (Id NSNumber)
-status mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams  =
-    sendMsg mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams =
+  sendMessage mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRDeviceEnergyManagementModeClusterChangeToModeResponseParams mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams, IsNSNumber value) => mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatus mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams value =
+  sendMessage mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- statusText@
 statusText :: IsMTRDeviceEnergyManagementModeClusterChangeToModeResponseParams mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams => mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams -> IO (Id NSString)
-statusText mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams  =
-    sendMsg mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams (mkSelector "statusText") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusText mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams =
+  sendMessage mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams statusTextSelector
 
 -- | @- setStatusText:@
 setStatusText :: (IsMTRDeviceEnergyManagementModeClusterChangeToModeResponseParams mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams, IsNSString value) => mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatusText mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams (mkSelector "setStatusText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusText mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams value =
+  sendMessage mtrDeviceEnergyManagementModeClusterChangeToModeResponseParams setStatusTextSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRDeviceEnergyManagementModeClusterChangeToModeResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @statusText@
-statusTextSelector :: Selector
+statusTextSelector :: Selector '[] (Id NSString)
 statusTextSelector = mkSelector "statusText"
 
 -- | @Selector@ for @setStatusText:@
-setStatusTextSelector :: Selector
+setStatusTextSelector :: Selector '[Id NSString] ()
 setStatusTextSelector = mkSelector "setStatusText:"
 

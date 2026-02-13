@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Photos.PHLivePhotoRequestOptions
   , setNetworkAccessAllowed
   , progressHandler
   , setProgressHandler
-  , versionSelector
-  , setVersionSelector
   , deliveryModeSelector
-  , setDeliveryModeSelector
   , networkAccessAllowedSelector
-  , setNetworkAccessAllowedSelector
   , progressHandlerSelector
+  , setDeliveryModeSelector
+  , setNetworkAccessAllowedSelector
   , setProgressHandlerSelector
+  , setVersionSelector
+  , versionSelector
 
   -- * Enum types
   , PHImageRequestOptionsDeliveryMode(PHImageRequestOptionsDeliveryMode)
@@ -36,15 +37,11 @@ module ObjC.Photos.PHLivePhotoRequestOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,77 +51,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- version@
 version :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> IO PHImageRequestOptionsVersion
-version phLivePhotoRequestOptions  =
-    fmap (coerce :: CLong -> PHImageRequestOptionsVersion) $ sendMsg phLivePhotoRequestOptions (mkSelector "version") retCLong []
+version phLivePhotoRequestOptions =
+  sendMessage phLivePhotoRequestOptions versionSelector
 
 -- | @- setVersion:@
 setVersion :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> PHImageRequestOptionsVersion -> IO ()
-setVersion phLivePhotoRequestOptions  value =
-    sendMsg phLivePhotoRequestOptions (mkSelector "setVersion:") retVoid [argCLong (coerce value)]
+setVersion phLivePhotoRequestOptions value =
+  sendMessage phLivePhotoRequestOptions setVersionSelector value
 
 -- | @- deliveryMode@
 deliveryMode :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> IO PHImageRequestOptionsDeliveryMode
-deliveryMode phLivePhotoRequestOptions  =
-    fmap (coerce :: CLong -> PHImageRequestOptionsDeliveryMode) $ sendMsg phLivePhotoRequestOptions (mkSelector "deliveryMode") retCLong []
+deliveryMode phLivePhotoRequestOptions =
+  sendMessage phLivePhotoRequestOptions deliveryModeSelector
 
 -- | @- setDeliveryMode:@
 setDeliveryMode :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> PHImageRequestOptionsDeliveryMode -> IO ()
-setDeliveryMode phLivePhotoRequestOptions  value =
-    sendMsg phLivePhotoRequestOptions (mkSelector "setDeliveryMode:") retVoid [argCLong (coerce value)]
+setDeliveryMode phLivePhotoRequestOptions value =
+  sendMessage phLivePhotoRequestOptions setDeliveryModeSelector value
 
 -- | @- networkAccessAllowed@
 networkAccessAllowed :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> IO Bool
-networkAccessAllowed phLivePhotoRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phLivePhotoRequestOptions (mkSelector "networkAccessAllowed") retCULong []
+networkAccessAllowed phLivePhotoRequestOptions =
+  sendMessage phLivePhotoRequestOptions networkAccessAllowedSelector
 
 -- | @- setNetworkAccessAllowed:@
 setNetworkAccessAllowed :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> Bool -> IO ()
-setNetworkAccessAllowed phLivePhotoRequestOptions  value =
-    sendMsg phLivePhotoRequestOptions (mkSelector "setNetworkAccessAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setNetworkAccessAllowed phLivePhotoRequestOptions value =
+  sendMessage phLivePhotoRequestOptions setNetworkAccessAllowedSelector value
 
 -- | @- progressHandler@
 progressHandler :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> IO (Ptr ())
-progressHandler phLivePhotoRequestOptions  =
-    fmap castPtr $ sendMsg phLivePhotoRequestOptions (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler phLivePhotoRequestOptions =
+  sendMessage phLivePhotoRequestOptions progressHandlerSelector
 
 -- | @- setProgressHandler:@
 setProgressHandler :: IsPHLivePhotoRequestOptions phLivePhotoRequestOptions => phLivePhotoRequestOptions -> Ptr () -> IO ()
-setProgressHandler phLivePhotoRequestOptions  value =
-    sendMsg phLivePhotoRequestOptions (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler phLivePhotoRequestOptions value =
+  sendMessage phLivePhotoRequestOptions setProgressHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] PHImageRequestOptionsVersion
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[PHImageRequestOptionsVersion] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @deliveryMode@
-deliveryModeSelector :: Selector
+deliveryModeSelector :: Selector '[] PHImageRequestOptionsDeliveryMode
 deliveryModeSelector = mkSelector "deliveryMode"
 
 -- | @Selector@ for @setDeliveryMode:@
-setDeliveryModeSelector :: Selector
+setDeliveryModeSelector :: Selector '[PHImageRequestOptionsDeliveryMode] ()
 setDeliveryModeSelector = mkSelector "setDeliveryMode:"
 
 -- | @Selector@ for @networkAccessAllowed@
-networkAccessAllowedSelector :: Selector
+networkAccessAllowedSelector :: Selector '[] Bool
 networkAccessAllowedSelector = mkSelector "networkAccessAllowed"
 
 -- | @Selector@ for @setNetworkAccessAllowed:@
-setNetworkAccessAllowedSelector :: Selector
+setNetworkAccessAllowedSelector :: Selector '[Bool] ()
 setNetworkAccessAllowedSelector = mkSelector "setNetworkAccessAllowed:"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 

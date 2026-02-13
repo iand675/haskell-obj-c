@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,26 +34,26 @@ module ObjC.VideoToolbox.VTSuperResolutionScalerConfiguration
   , configurationModelPercentageAvailable
   , supported
   , supportedScaleFactors
-  , initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector
-  , initSelector
-  , newSelector
+  , configurationModelPercentageAvailableSelector
+  , configurationModelStatusSelector
+  , defaultRevisionSelector
+  , destinationPixelBufferAttributesSelector
   , downloadConfigurationModelWithCompletionHandlerSelector
-  , frameWidthSelector
   , frameHeightSelector
+  , frameSupportedPixelFormatsSelector
+  , frameWidthSelector
+  , initSelector
+  , initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector
   , inputTypeSelector
+  , newSelector
   , precomputedFlowSelector
-  , scaleFactorSelector
   , qualityPrioritizationSelector
   , revisionSelector
-  , supportedRevisionsSelector
-  , defaultRevisionSelector
-  , frameSupportedPixelFormatsSelector
+  , scaleFactorSelector
   , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
-  , configurationModelStatusSelector
-  , configurationModelPercentageAvailableSelector
-  , supportedSelector
+  , supportedRevisionsSelector
   , supportedScaleFactorsSelector
+  , supportedSelector
 
   -- * Enum types
   , VTSuperResolutionScalerConfigurationInputType(VTSuperResolutionScalerConfigurationInputType)
@@ -69,15 +70,11 @@ module ObjC.VideoToolbox.VTSuperResolutionScalerConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,20 +90,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:scaleFactor:inputType:usePrecomputedFlow:qualityPrioritization:revision:@
 initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revision :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> CLong -> CLong -> CLong -> VTSuperResolutionScalerConfigurationInputType -> Bool -> VTSuperResolutionScalerConfigurationQualityPrioritization -> VTSuperResolutionScalerConfigurationRevision -> IO (Id VTSuperResolutionScalerConfiguration)
-initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revision vtSuperResolutionScalerConfiguration  frameWidth frameHeight scaleFactor inputType usePrecomputedFlow qualityPrioritization revision =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "initWithFrameWidth:frameHeight:scaleFactor:inputType:usePrecomputedFlow:qualityPrioritization:revision:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCLong scaleFactor, argCLong (coerce inputType), argCULong (if usePrecomputedFlow then 1 else 0), argCLong (coerce qualityPrioritization), argCLong (coerce revision)] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revision vtSuperResolutionScalerConfiguration frameWidth frameHeight scaleFactor inputType usePrecomputedFlow qualityPrioritization revision =
+  sendOwnedMessage vtSuperResolutionScalerConfiguration initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector frameWidth frameHeight scaleFactor inputType usePrecomputedFlow qualityPrioritization revision
 
 -- | @- init@
 init_ :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO (Id VTSuperResolutionScalerConfiguration)
-init_ vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtSuperResolutionScalerConfiguration =
+  sendOwnedMessage vtSuperResolutionScalerConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTSuperResolutionScalerConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Downloads models that the system needs for the current configuration.
 --
@@ -114,43 +111,43 @@ new  =
 --
 -- ObjC selector: @- downloadConfigurationModelWithCompletionHandler:@
 downloadConfigurationModelWithCompletionHandler :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> Ptr () -> IO ()
-downloadConfigurationModelWithCompletionHandler vtSuperResolutionScalerConfiguration  completionHandler =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "downloadConfigurationModelWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+downloadConfigurationModelWithCompletionHandler vtSuperResolutionScalerConfiguration completionHandler =
+  sendMessage vtSuperResolutionScalerConfiguration downloadConfigurationModelWithCompletionHandlerSelector completionHandler
 
 -- | Width of source frame in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO CLong
-frameWidth vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration frameWidthSelector
 
 -- | Height of source frame in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO CLong
-frameHeight vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration frameHeightSelector
 
 -- | Indicates the type of input.
 --
 -- ObjC selector: @- inputType@
 inputType :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO VTSuperResolutionScalerConfigurationInputType
-inputType vtSuperResolutionScalerConfiguration  =
-    fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationInputType) $ sendMsg vtSuperResolutionScalerConfiguration (mkSelector "inputType") retCLong []
+inputType vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration inputTypeSelector
 
 -- | Indicates that you provide optical flow.
 --
 -- ObjC selector: @- precomputedFlow@
 precomputedFlow :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO Bool
-precomputedFlow vtSuperResolutionScalerConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtSuperResolutionScalerConfiguration (mkSelector "precomputedFlow") retCULong []
+precomputedFlow vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration precomputedFlowSelector
 
 -- | Indicates the scale factor between input and output.
 --
 -- ObjC selector: @- scaleFactor@
 scaleFactor :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO CLong
-scaleFactor vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "scaleFactor") retCLong []
+scaleFactor vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration scaleFactorSelector
 
 -- | A parameter to control quality and performance levels.
 --
@@ -158,15 +155,15 @@ scaleFactor vtSuperResolutionScalerConfiguration  =
 --
 -- ObjC selector: @- qualityPrioritization@
 qualityPrioritization :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO VTSuperResolutionScalerConfigurationQualityPrioritization
-qualityPrioritization vtSuperResolutionScalerConfiguration  =
-    fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationQualityPrioritization) $ sendMsg vtSuperResolutionScalerConfiguration (mkSelector "qualityPrioritization") retCLong []
+qualityPrioritization vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration qualityPrioritizationSelector
 
 -- | The specific algorithm or configuration revision you use to perform the request.
 --
 -- ObjC selector: @- revision@
 revision :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO VTSuperResolutionScalerConfigurationRevision
-revision vtSuperResolutionScalerConfiguration  =
-    fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationRevision) $ sendMsg vtSuperResolutionScalerConfiguration (mkSelector "revision") retCLong []
+revision vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration revisionSelector
 
 -- | Provides the collection of currently supported algorithms or configuration revisions for the class of configuration.
 --
@@ -177,7 +174,7 @@ supportedRevisions :: IO (Id NSIndexSet)
 supportedRevisions  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
-    sendClassMsg cls' (mkSelector "supportedRevisions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRevisionsSelector
 
 -- | Provides the default revision of a specific algorithm or configuration.
 --
@@ -186,14 +183,14 @@ defaultRevision :: IO VTSuperResolutionScalerConfigurationRevision
 defaultRevision  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
-    fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
+    sendClassMessage cls' defaultRevisionSelector
 
 -- | Available supported pixel formats for source frames for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -201,8 +198,8 @@ frameSupportedPixelFormats vtSuperResolutionScalerConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -210,22 +207,22 @@ sourcePixelBufferAttributes vtSuperResolutionScalerConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration destinationPixelBufferAttributesSelector
 
 -- | Reports the download status of models that the system needs for the current configuration.
 --
 -- ObjC selector: @- configurationModelStatus@
 configurationModelStatus :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO VTSuperResolutionScalerConfigurationModelStatus
-configurationModelStatus vtSuperResolutionScalerConfiguration  =
-    fmap (coerce :: CLong -> VTSuperResolutionScalerConfigurationModelStatus) $ sendMsg vtSuperResolutionScalerConfiguration (mkSelector "configurationModelStatus") retCLong []
+configurationModelStatus vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration configurationModelStatusSelector
 
 -- | Returns a floating point value between 0.0 and 1.0 indicating the percentage of required model assets that have been downloaded.
 --
 -- ObjC selector: @- configurationModelPercentageAvailable@
 configurationModelPercentageAvailable :: IsVTSuperResolutionScalerConfiguration vtSuperResolutionScalerConfiguration => vtSuperResolutionScalerConfiguration -> IO CFloat
-configurationModelPercentageAvailable vtSuperResolutionScalerConfiguration  =
-    sendMsg vtSuperResolutionScalerConfiguration (mkSelector "configurationModelPercentageAvailable") retCFloat []
+configurationModelPercentageAvailable vtSuperResolutionScalerConfiguration =
+  sendMessage vtSuperResolutionScalerConfiguration configurationModelPercentageAvailableSelector
 
 -- | Reports whether the system supports this processor.
 --
@@ -234,7 +231,7 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | Reports the set of supported scale factors to use when initializing a super-resolution scaler configuration.
 --
@@ -243,89 +240,89 @@ supportedScaleFactors :: IO (Id NSArray)
 supportedScaleFactors  =
   do
     cls' <- getRequiredClass "VTSuperResolutionScalerConfiguration"
-    sendClassMsg cls' (mkSelector "supportedScaleFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedScaleFactorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:scaleFactor:inputType:usePrecomputedFlow:qualityPrioritization:revision:@
-initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector
+initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector '[CLong, CLong, CLong, VTSuperResolutionScalerConfigurationInputType, Bool, VTSuperResolutionScalerConfigurationQualityPrioritization, VTSuperResolutionScalerConfigurationRevision] (Id VTSuperResolutionScalerConfiguration)
 initWithFrameWidth_frameHeight_scaleFactor_inputType_usePrecomputedFlow_qualityPrioritization_revisionSelector = mkSelector "initWithFrameWidth:frameHeight:scaleFactor:inputType:usePrecomputedFlow:qualityPrioritization:revision:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTSuperResolutionScalerConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTSuperResolutionScalerConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @downloadConfigurationModelWithCompletionHandler:@
-downloadConfigurationModelWithCompletionHandlerSelector :: Selector
+downloadConfigurationModelWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 downloadConfigurationModelWithCompletionHandlerSelector = mkSelector "downloadConfigurationModelWithCompletionHandler:"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @inputType@
-inputTypeSelector :: Selector
+inputTypeSelector :: Selector '[] VTSuperResolutionScalerConfigurationInputType
 inputTypeSelector = mkSelector "inputType"
 
 -- | @Selector@ for @precomputedFlow@
-precomputedFlowSelector :: Selector
+precomputedFlowSelector :: Selector '[] Bool
 precomputedFlowSelector = mkSelector "precomputedFlow"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CLong
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @qualityPrioritization@
-qualityPrioritizationSelector :: Selector
+qualityPrioritizationSelector :: Selector '[] VTSuperResolutionScalerConfigurationQualityPrioritization
 qualityPrioritizationSelector = mkSelector "qualityPrioritization"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] VTSuperResolutionScalerConfigurationRevision
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @supportedRevisions@
-supportedRevisionsSelector :: Selector
+supportedRevisionsSelector :: Selector '[] (Id NSIndexSet)
 supportedRevisionsSelector = mkSelector "supportedRevisions"
 
 -- | @Selector@ for @defaultRevision@
-defaultRevisionSelector :: Selector
+defaultRevisionSelector :: Selector '[] VTSuperResolutionScalerConfigurationRevision
 defaultRevisionSelector = mkSelector "defaultRevision"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @configurationModelStatus@
-configurationModelStatusSelector :: Selector
+configurationModelStatusSelector :: Selector '[] VTSuperResolutionScalerConfigurationModelStatus
 configurationModelStatusSelector = mkSelector "configurationModelStatus"
 
 -- | @Selector@ for @configurationModelPercentageAvailable@
-configurationModelPercentageAvailableSelector :: Selector
+configurationModelPercentageAvailableSelector :: Selector '[] CFloat
 configurationModelPercentageAvailableSelector = mkSelector "configurationModelPercentageAvailable"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @supportedScaleFactors@
-supportedScaleFactorsSelector :: Selector
+supportedScaleFactorsSelector :: Selector '[] (Id NSArray)
 supportedScaleFactorsSelector = mkSelector "supportedScaleFactors"
 

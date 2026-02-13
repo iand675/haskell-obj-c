@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.DriverKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @IOStateReporter_valueSelector@
 newtype IOStateReporter_valueSelector = IOStateReporter_valueSelector CInt
@@ -24,3 +27,13 @@ pattern KResidencyTime = IOStateReporter_valueSelector 1
 
 pattern KLastTransitionTime :: IOStateReporter_valueSelector
 pattern KLastTransitionTime = IOStateReporter_valueSelector 2
+
+instance ObjCArgument IOStateReporter_valueSelector where
+  withObjCArg (IOStateReporter_valueSelector x) k = k (argCInt x)
+
+instance ObjCReturn IOStateReporter_valueSelector where
+  type RawReturn IOStateReporter_valueSelector = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOStateReporter_valueSelector x)
+  fromOwned x = pure (IOStateReporter_valueSelector x)

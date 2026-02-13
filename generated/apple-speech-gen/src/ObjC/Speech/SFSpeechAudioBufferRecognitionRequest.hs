@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.Speech.SFSpeechAudioBufferRecognitionRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- appendAudioPCMBuffer:@
 appendAudioPCMBuffer :: (IsSFSpeechAudioBufferRecognitionRequest sfSpeechAudioBufferRecognitionRequest, IsAVAudioPCMBuffer audioPCMBuffer) => sfSpeechAudioBufferRecognitionRequest -> audioPCMBuffer -> IO ()
-appendAudioPCMBuffer sfSpeechAudioBufferRecognitionRequest  audioPCMBuffer =
-  withObjCPtr audioPCMBuffer $ \raw_audioPCMBuffer ->
-      sendMsg sfSpeechAudioBufferRecognitionRequest (mkSelector "appendAudioPCMBuffer:") retVoid [argPtr (castPtr raw_audioPCMBuffer :: Ptr ())]
+appendAudioPCMBuffer sfSpeechAudioBufferRecognitionRequest audioPCMBuffer =
+  sendMessage sfSpeechAudioBufferRecognitionRequest appendAudioPCMBufferSelector (toAVAudioPCMBuffer audioPCMBuffer)
 
 -- | Appends audio to the end of the recognition request.
 --
@@ -62,8 +58,8 @@ appendAudioPCMBuffer sfSpeechAudioBufferRecognitionRequest  audioPCMBuffer =
 --
 -- ObjC selector: @- appendAudioSampleBuffer:@
 appendAudioSampleBuffer :: IsSFSpeechAudioBufferRecognitionRequest sfSpeechAudioBufferRecognitionRequest => sfSpeechAudioBufferRecognitionRequest -> Ptr () -> IO ()
-appendAudioSampleBuffer sfSpeechAudioBufferRecognitionRequest  sampleBuffer =
-    sendMsg sfSpeechAudioBufferRecognitionRequest (mkSelector "appendAudioSampleBuffer:") retVoid [argPtr sampleBuffer]
+appendAudioSampleBuffer sfSpeechAudioBufferRecognitionRequest sampleBuffer =
+  sendMessage sfSpeechAudioBufferRecognitionRequest appendAudioSampleBufferSelector sampleBuffer
 
 -- | Marks the end of audio input for the recognition request.
 --
@@ -71,8 +67,8 @@ appendAudioSampleBuffer sfSpeechAudioBufferRecognitionRequest  sampleBuffer =
 --
 -- ObjC selector: @- endAudio@
 endAudio :: IsSFSpeechAudioBufferRecognitionRequest sfSpeechAudioBufferRecognitionRequest => sfSpeechAudioBufferRecognitionRequest -> IO ()
-endAudio sfSpeechAudioBufferRecognitionRequest  =
-    sendMsg sfSpeechAudioBufferRecognitionRequest (mkSelector "endAudio") retVoid []
+endAudio sfSpeechAudioBufferRecognitionRequest =
+  sendMessage sfSpeechAudioBufferRecognitionRequest endAudioSelector
 
 -- | The preferred audio format for optimal speech recognition.
 --
@@ -80,26 +76,26 @@ endAudio sfSpeechAudioBufferRecognitionRequest  =
 --
 -- ObjC selector: @- nativeAudioFormat@
 nativeAudioFormat :: IsSFSpeechAudioBufferRecognitionRequest sfSpeechAudioBufferRecognitionRequest => sfSpeechAudioBufferRecognitionRequest -> IO (Id AVAudioFormat)
-nativeAudioFormat sfSpeechAudioBufferRecognitionRequest  =
-    sendMsg sfSpeechAudioBufferRecognitionRequest (mkSelector "nativeAudioFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+nativeAudioFormat sfSpeechAudioBufferRecognitionRequest =
+  sendMessage sfSpeechAudioBufferRecognitionRequest nativeAudioFormatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @appendAudioPCMBuffer:@
-appendAudioPCMBufferSelector :: Selector
+appendAudioPCMBufferSelector :: Selector '[Id AVAudioPCMBuffer] ()
 appendAudioPCMBufferSelector = mkSelector "appendAudioPCMBuffer:"
 
 -- | @Selector@ for @appendAudioSampleBuffer:@
-appendAudioSampleBufferSelector :: Selector
+appendAudioSampleBufferSelector :: Selector '[Ptr ()] ()
 appendAudioSampleBufferSelector = mkSelector "appendAudioSampleBuffer:"
 
 -- | @Selector@ for @endAudio@
-endAudioSelector :: Selector
+endAudioSelector :: Selector '[] ()
 endAudioSelector = mkSelector "endAudio"
 
 -- | @Selector@ for @nativeAudioFormat@
-nativeAudioFormatSelector :: Selector
+nativeAudioFormatSelector :: Selector '[] (Id AVAudioFormat)
 nativeAudioFormatSelector = mkSelector "nativeAudioFormat"
 

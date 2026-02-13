@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterCMAFContainerOptionsStruct
   , setCencKeyID
   , metadataEnabled
   , setMetadataEnabled
-  , cmafInterfaceSelector
-  , setCmafInterfaceSelector
-  , segmentDurationSelector
-  , setSegmentDurationSelector
-  , chunkDurationSelector
-  , setChunkDurationSelector
-  , sessionGroupSelector
-  , setSessionGroupSelector
-  , trackNameSelector
-  , setTrackNameSelector
-  , cencKeySelector
-  , setCencKeySelector
   , cencKeyIDSelector
-  , setCencKeyIDSelector
+  , cencKeySelector
+  , chunkDurationSelector
+  , cmafInterfaceSelector
   , metadataEnabledSelector
+  , segmentDurationSelector
+  , sessionGroupSelector
+  , setCencKeyIDSelector
+  , setCencKeySelector
+  , setChunkDurationSelector
+  , setCmafInterfaceSelector
   , setMetadataEnabledSelector
+  , setSegmentDurationSelector
+  , setSessionGroupSelector
+  , setTrackNameSelector
+  , trackNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cmafInterface@
 cmafInterface :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSNumber)
-cmafInterface mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "cmafInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+cmafInterface mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct cmafInterfaceSelector
 
 -- | @- setCmafInterface:@
 setCmafInterface :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setCmafInterface mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setCmafInterface:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCmafInterface mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setCmafInterfaceSelector (toNSNumber value)
 
 -- | @- segmentDuration@
 segmentDuration :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSNumber)
-segmentDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "segmentDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+segmentDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct segmentDurationSelector
 
 -- | @- setSegmentDuration:@
 setSegmentDuration :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setSegmentDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setSegmentDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSegmentDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setSegmentDurationSelector (toNSNumber value)
 
 -- | @- chunkDuration@
 chunkDuration :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSNumber)
-chunkDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "chunkDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+chunkDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct chunkDurationSelector
 
 -- | @- setChunkDuration:@
 setChunkDuration :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setChunkDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setChunkDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChunkDuration mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setChunkDurationSelector (toNSNumber value)
 
 -- | @- sessionGroup@
 sessionGroup :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSNumber)
-sessionGroup mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "sessionGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionGroup mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct sessionGroupSelector
 
 -- | @- setSessionGroup:@
 setSessionGroup :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setSessionGroup mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setSessionGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionGroup mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setSessionGroupSelector (toNSNumber value)
 
 -- | @- trackName@
 trackName :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSString)
-trackName mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "trackName") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackName mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct trackNameSelector
 
 -- | @- setTrackName:@
 setTrackName :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSString value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setTrackName mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setTrackName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackName mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setTrackNameSelector (toNSString value)
 
 -- | @- cencKey@
 cencKey :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSData)
-cencKey mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "cencKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+cencKey mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct cencKeySelector
 
 -- | @- setCencKey:@
 setCencKey :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSData value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setCencKey mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setCencKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCencKey mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setCencKeySelector (toNSData value)
 
 -- | @- cencKeyID@
 cencKeyID :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSData)
-cencKeyID mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "cencKeyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+cencKeyID mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct cencKeyIDSelector
 
 -- | @- setCencKeyID:@
 setCencKeyID :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSData value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setCencKeyID mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setCencKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCencKeyID mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setCencKeyIDSelector (toNSData value)
 
 -- | @- metadataEnabled@
 metadataEnabled :: IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> IO (Id NSNumber)
-metadataEnabled mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "metadataEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataEnabled mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct metadataEnabledSelector
 
 -- | @- setMetadataEnabled:@
 setMetadataEnabled :: (IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct -> value -> IO ()
-setMetadataEnabled mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct (mkSelector "setMetadataEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadataEnabled mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterCMAFContainerOptionsStruct setMetadataEnabledSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cmafInterface@
-cmafInterfaceSelector :: Selector
+cmafInterfaceSelector :: Selector '[] (Id NSNumber)
 cmafInterfaceSelector = mkSelector "cmafInterface"
 
 -- | @Selector@ for @setCmafInterface:@
-setCmafInterfaceSelector :: Selector
+setCmafInterfaceSelector :: Selector '[Id NSNumber] ()
 setCmafInterfaceSelector = mkSelector "setCmafInterface:"
 
 -- | @Selector@ for @segmentDuration@
-segmentDurationSelector :: Selector
+segmentDurationSelector :: Selector '[] (Id NSNumber)
 segmentDurationSelector = mkSelector "segmentDuration"
 
 -- | @Selector@ for @setSegmentDuration:@
-setSegmentDurationSelector :: Selector
+setSegmentDurationSelector :: Selector '[Id NSNumber] ()
 setSegmentDurationSelector = mkSelector "setSegmentDuration:"
 
 -- | @Selector@ for @chunkDuration@
-chunkDurationSelector :: Selector
+chunkDurationSelector :: Selector '[] (Id NSNumber)
 chunkDurationSelector = mkSelector "chunkDuration"
 
 -- | @Selector@ for @setChunkDuration:@
-setChunkDurationSelector :: Selector
+setChunkDurationSelector :: Selector '[Id NSNumber] ()
 setChunkDurationSelector = mkSelector "setChunkDuration:"
 
 -- | @Selector@ for @sessionGroup@
-sessionGroupSelector :: Selector
+sessionGroupSelector :: Selector '[] (Id NSNumber)
 sessionGroupSelector = mkSelector "sessionGroup"
 
 -- | @Selector@ for @setSessionGroup:@
-setSessionGroupSelector :: Selector
+setSessionGroupSelector :: Selector '[Id NSNumber] ()
 setSessionGroupSelector = mkSelector "setSessionGroup:"
 
 -- | @Selector@ for @trackName@
-trackNameSelector :: Selector
+trackNameSelector :: Selector '[] (Id NSString)
 trackNameSelector = mkSelector "trackName"
 
 -- | @Selector@ for @setTrackName:@
-setTrackNameSelector :: Selector
+setTrackNameSelector :: Selector '[Id NSString] ()
 setTrackNameSelector = mkSelector "setTrackName:"
 
 -- | @Selector@ for @cencKey@
-cencKeySelector :: Selector
+cencKeySelector :: Selector '[] (Id NSData)
 cencKeySelector = mkSelector "cencKey"
 
 -- | @Selector@ for @setCencKey:@
-setCencKeySelector :: Selector
+setCencKeySelector :: Selector '[Id NSData] ()
 setCencKeySelector = mkSelector "setCencKey:"
 
 -- | @Selector@ for @cencKeyID@
-cencKeyIDSelector :: Selector
+cencKeyIDSelector :: Selector '[] (Id NSData)
 cencKeyIDSelector = mkSelector "cencKeyID"
 
 -- | @Selector@ for @setCencKeyID:@
-setCencKeyIDSelector :: Selector
+setCencKeyIDSelector :: Selector '[Id NSData] ()
 setCencKeyIDSelector = mkSelector "setCencKeyID:"
 
 -- | @Selector@ for @metadataEnabled@
-metadataEnabledSelector :: Selector
+metadataEnabledSelector :: Selector '[] (Id NSNumber)
 metadataEnabledSelector = mkSelector "metadataEnabled"
 
 -- | @Selector@ for @setMetadataEnabled:@
-setMetadataEnabledSelector :: Selector
+setMetadataEnabledSelector :: Selector '[Id NSNumber] ()
 setMetadataEnabledSelector = mkSelector "setMetadataEnabled:"
 

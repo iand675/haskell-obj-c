@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AuthenticationServices.ASPasskeyAssertionCredentialExtensionOutput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,26 +30,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLargeBlobOutput:@
 initWithLargeBlobOutput :: (IsASPasskeyAssertionCredentialExtensionOutput asPasskeyAssertionCredentialExtensionOutput, IsASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput largeBlob) => asPasskeyAssertionCredentialExtensionOutput -> largeBlob -> IO (Id ASPasskeyAssertionCredentialExtensionOutput)
-initWithLargeBlobOutput asPasskeyAssertionCredentialExtensionOutput  largeBlob =
-  withObjCPtr largeBlob $ \raw_largeBlob ->
-      sendMsg asPasskeyAssertionCredentialExtensionOutput (mkSelector "initWithLargeBlobOutput:") (retPtr retVoid) [argPtr (castPtr raw_largeBlob :: Ptr ())] >>= ownedObject . castPtr
+initWithLargeBlobOutput asPasskeyAssertionCredentialExtensionOutput largeBlob =
+  sendOwnedMessage asPasskeyAssertionCredentialExtensionOutput initWithLargeBlobOutputSelector (toASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput largeBlob)
 
 -- | Output for @largeBlob@ operation during passkey assertion.
 --
 -- ObjC selector: @- largeBlobAssertionOutput@
 largeBlobAssertionOutput :: IsASPasskeyAssertionCredentialExtensionOutput asPasskeyAssertionCredentialExtensionOutput => asPasskeyAssertionCredentialExtensionOutput -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
-largeBlobAssertionOutput asPasskeyAssertionCredentialExtensionOutput  =
-    sendMsg asPasskeyAssertionCredentialExtensionOutput (mkSelector "largeBlobAssertionOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+largeBlobAssertionOutput asPasskeyAssertionCredentialExtensionOutput =
+  sendMessage asPasskeyAssertionCredentialExtensionOutput largeBlobAssertionOutputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLargeBlobOutput:@
-initWithLargeBlobOutputSelector :: Selector
+initWithLargeBlobOutputSelector :: Selector '[Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput] (Id ASPasskeyAssertionCredentialExtensionOutput)
 initWithLargeBlobOutputSelector = mkSelector "initWithLargeBlobOutput:"
 
 -- | @Selector@ for @largeBlobAssertionOutput@
-largeBlobAssertionOutputSelector :: Selector
+largeBlobAssertionOutputSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
 largeBlobAssertionOutputSelector = mkSelector "largeBlobAssertionOutput"
 

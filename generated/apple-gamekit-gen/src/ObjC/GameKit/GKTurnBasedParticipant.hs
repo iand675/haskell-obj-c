@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.GameKit.GKTurnBasedParticipant
   , setMatchOutcome
   , timeoutDate
   , playerID
-  , playerSelector
   , lastTurnDateSelector
-  , statusSelector
   , matchOutcomeSelector
-  , setMatchOutcomeSelector
-  , timeoutDateSelector
   , playerIDSelector
+  , playerSelector
+  , setMatchOutcomeSelector
+  , statusSelector
+  , timeoutDateSelector
 
   -- * Enum types
   , GKTurnBasedMatchOutcome(GKTurnBasedMatchOutcome)
@@ -49,15 +50,11 @@ module ObjC.GameKit.GKTurnBasedParticipant
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,70 +64,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- player@
 player :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO (Id GKPlayer)
-player gkTurnBasedParticipant  =
-    sendMsg gkTurnBasedParticipant (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+player gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant playerSelector
 
 -- | @- lastTurnDate@
 lastTurnDate :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO (Id NSDate)
-lastTurnDate gkTurnBasedParticipant  =
-    sendMsg gkTurnBasedParticipant (mkSelector "lastTurnDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastTurnDate gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant lastTurnDateSelector
 
 -- | @- status@
 status :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO GKTurnBasedParticipantStatus
-status gkTurnBasedParticipant  =
-    fmap (coerce :: CLong -> GKTurnBasedParticipantStatus) $ sendMsg gkTurnBasedParticipant (mkSelector "status") retCLong []
+status gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant statusSelector
 
 -- | @- matchOutcome@
 matchOutcome :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO GKTurnBasedMatchOutcome
-matchOutcome gkTurnBasedParticipant  =
-    fmap (coerce :: CLong -> GKTurnBasedMatchOutcome) $ sendMsg gkTurnBasedParticipant (mkSelector "matchOutcome") retCLong []
+matchOutcome gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant matchOutcomeSelector
 
 -- | @- setMatchOutcome:@
 setMatchOutcome :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> GKTurnBasedMatchOutcome -> IO ()
-setMatchOutcome gkTurnBasedParticipant  value =
-    sendMsg gkTurnBasedParticipant (mkSelector "setMatchOutcome:") retVoid [argCLong (coerce value)]
+setMatchOutcome gkTurnBasedParticipant value =
+  sendMessage gkTurnBasedParticipant setMatchOutcomeSelector value
 
 -- | @- timeoutDate@
 timeoutDate :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO (Id NSDate)
-timeoutDate gkTurnBasedParticipant  =
-    sendMsg gkTurnBasedParticipant (mkSelector "timeoutDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeoutDate gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant timeoutDateSelector
 
 -- | * This property is obsolete. **
 --
 -- ObjC selector: @- playerID@
 playerID :: IsGKTurnBasedParticipant gkTurnBasedParticipant => gkTurnBasedParticipant -> IO (Id NSString)
-playerID gkTurnBasedParticipant  =
-    sendMsg gkTurnBasedParticipant (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerID gkTurnBasedParticipant =
+  sendMessage gkTurnBasedParticipant playerIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @player@
-playerSelector :: Selector
+playerSelector :: Selector '[] (Id GKPlayer)
 playerSelector = mkSelector "player"
 
 -- | @Selector@ for @lastTurnDate@
-lastTurnDateSelector :: Selector
+lastTurnDateSelector :: Selector '[] (Id NSDate)
 lastTurnDateSelector = mkSelector "lastTurnDate"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] GKTurnBasedParticipantStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @matchOutcome@
-matchOutcomeSelector :: Selector
+matchOutcomeSelector :: Selector '[] GKTurnBasedMatchOutcome
 matchOutcomeSelector = mkSelector "matchOutcome"
 
 -- | @Selector@ for @setMatchOutcome:@
-setMatchOutcomeSelector :: Selector
+setMatchOutcomeSelector :: Selector '[GKTurnBasedMatchOutcome] ()
 setMatchOutcomeSelector = mkSelector "setMatchOutcome:"
 
 -- | @Selector@ for @timeoutDate@
-timeoutDateSelector :: Selector
+timeoutDateSelector :: Selector '[] (Id NSDate)
 timeoutDateSelector = mkSelector "timeoutDate"
 
 -- | @Selector@ for @playerID@
-playerIDSelector :: Selector
+playerIDSelector :: Selector '[] (Id NSString)
 playerIDSelector = mkSelector "playerID"
 

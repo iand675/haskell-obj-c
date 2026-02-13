@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,46 +36,42 @@ module ObjC.Matter.MTRUnitTestingClusterTestComplexNullableOptionalRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , nullableIntSelector
-  , setNullableIntSelector
-  , optionalIntSelector
-  , setOptionalIntSelector
-  , nullableOptionalIntSelector
-  , setNullableOptionalIntSelector
-  , nullableStringSelector
-  , setNullableStringSelector
-  , optionalStringSelector
-  , setOptionalStringSelector
-  , nullableOptionalStringSelector
-  , setNullableOptionalStringSelector
-  , nullableStructSelector
-  , setNullableStructSelector
-  , optionalStructSelector
-  , setOptionalStructSelector
-  , nullableOptionalStructSelector
-  , setNullableOptionalStructSelector
   , nullableListSelector
-  , setNullableListSelector
-  , optionalListSelector
-  , setOptionalListSelector
+  , nullableOptionalIntSelector
   , nullableOptionalListSelector
-  , setNullableOptionalListSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , nullableOptionalStringSelector
+  , nullableOptionalStructSelector
+  , nullableStringSelector
+  , nullableStructSelector
+  , optionalIntSelector
+  , optionalListSelector
+  , optionalStringSelector
+  , optionalStructSelector
   , serverSideProcessingTimeoutSelector
+  , setNullableIntSelector
+  , setNullableListSelector
+  , setNullableOptionalIntSelector
+  , setNullableOptionalListSelector
+  , setNullableOptionalStringSelector
+  , setNullableOptionalStructSelector
+  , setNullableStringSelector
+  , setNullableStructSelector
+  , setOptionalIntSelector
+  , setOptionalListSelector
+  , setOptionalStringSelector
+  , setOptionalStructSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,135 +80,123 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nullableInt@
 nullableInt :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSNumber)
-nullableInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableIntSelector
 
 -- | @- setNullableInt:@
 setNullableInt :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableIntSelector (toNSNumber value)
 
 -- | @- optionalInt@
 optionalInt :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSNumber)
-optionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "optionalInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams optionalIntSelector
 
 -- | @- setOptionalInt:@
 setOptionalInt :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setOptionalInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setOptionalIntSelector (toNSNumber value)
 
 -- | @- nullableOptionalInt@
 nullableOptionalInt :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSNumber)
-nullableOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableOptionalInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableOptionalIntSelector
 
 -- | @- setNullableOptionalInt:@
 setNullableOptionalInt :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableOptionalInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalInt mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableOptionalIntSelector (toNSNumber value)
 
 -- | @- nullableString@
 nullableString :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSString)
-nullableString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableString") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableStringSelector
 
 -- | @- setNullableString:@
 setNullableString :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSString value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableStringSelector (toNSString value)
 
 -- | @- optionalString@
 optionalString :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSString)
-optionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "optionalString") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams optionalStringSelector
 
 -- | @- setOptionalString:@
 setOptionalString :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSString value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setOptionalString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setOptionalStringSelector (toNSString value)
 
 -- | @- nullableOptionalString@
 nullableOptionalString :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSString)
-nullableOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableOptionalString") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableOptionalStringSelector
 
 -- | @- setNullableOptionalString:@
 setNullableOptionalString :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSString value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableOptionalString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalString mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableOptionalStringSelector (toNSString value)
 
 -- | @- nullableStruct@
 nullableStruct :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id MTRUnitTestingClusterSimpleStruct)
-nullableStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableStructSelector
 
 -- | @- setNullableStruct:@
 setNullableStruct :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsMTRUnitTestingClusterSimpleStruct value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableStructSelector (toMTRUnitTestingClusterSimpleStruct value)
 
 -- | @- optionalStruct@
 optionalStruct :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id MTRUnitTestingClusterSimpleStruct)
-optionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "optionalStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams optionalStructSelector
 
 -- | @- setOptionalStruct:@
 setOptionalStruct :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsMTRUnitTestingClusterSimpleStruct value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setOptionalStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setOptionalStructSelector (toMTRUnitTestingClusterSimpleStruct value)
 
 -- | @- nullableOptionalStruct@
 nullableOptionalStruct :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id MTRUnitTestingClusterSimpleStruct)
-nullableOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableOptionalStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableOptionalStructSelector
 
 -- | @- setNullableOptionalStruct:@
 setNullableOptionalStruct :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsMTRUnitTestingClusterSimpleStruct value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableOptionalStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalStruct mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableOptionalStructSelector (toMTRUnitTestingClusterSimpleStruct value)
 
 -- | @- nullableList@
 nullableList :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSArray)
-nullableList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableList") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableListSelector
 
 -- | @- setNullableList:@
 setNullableList :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSArray value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableListSelector (toNSArray value)
 
 -- | @- optionalList@
 optionalList :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSArray)
-optionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "optionalList") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams optionalListSelector
 
 -- | @- setOptionalList:@
 setOptionalList :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSArray value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setOptionalList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setOptionalListSelector (toNSArray value)
 
 -- | @- nullableOptionalList@
 nullableOptionalList :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSArray)
-nullableOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "nullableOptionalList") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams nullableOptionalListSelector
 
 -- | @- setNullableOptionalList:@
 setNullableOptionalList :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSArray value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setNullableOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setNullableOptionalList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setNullableOptionalListSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -221,8 +206,8 @@ setNullableOptionalList mtrUnitTestingClusterTestComplexNullableOptionalRequestP
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -232,9 +217,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestPara
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -244,8 +228,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterTestComplexNullableOptionalRequestP
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  =
-    sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterTestComplexNullableOptionalRequestParams =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -255,123 +239,122 @@ serverSideProcessingTimeout mtrUnitTestingClusterTestComplexNullableOptionalRequ
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterTestComplexNullableOptionalRequestParams mtrUnitTestingClusterTestComplexNullableOptionalRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestComplexNullableOptionalRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterTestComplexNullableOptionalRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestComplexNullableOptionalRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterTestComplexNullableOptionalRequestParams value =
+  sendMessage mtrUnitTestingClusterTestComplexNullableOptionalRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nullableInt@
-nullableIntSelector :: Selector
+nullableIntSelector :: Selector '[] (Id NSNumber)
 nullableIntSelector = mkSelector "nullableInt"
 
 -- | @Selector@ for @setNullableInt:@
-setNullableIntSelector :: Selector
+setNullableIntSelector :: Selector '[Id NSNumber] ()
 setNullableIntSelector = mkSelector "setNullableInt:"
 
 -- | @Selector@ for @optionalInt@
-optionalIntSelector :: Selector
+optionalIntSelector :: Selector '[] (Id NSNumber)
 optionalIntSelector = mkSelector "optionalInt"
 
 -- | @Selector@ for @setOptionalInt:@
-setOptionalIntSelector :: Selector
+setOptionalIntSelector :: Selector '[Id NSNumber] ()
 setOptionalIntSelector = mkSelector "setOptionalInt:"
 
 -- | @Selector@ for @nullableOptionalInt@
-nullableOptionalIntSelector :: Selector
+nullableOptionalIntSelector :: Selector '[] (Id NSNumber)
 nullableOptionalIntSelector = mkSelector "nullableOptionalInt"
 
 -- | @Selector@ for @setNullableOptionalInt:@
-setNullableOptionalIntSelector :: Selector
+setNullableOptionalIntSelector :: Selector '[Id NSNumber] ()
 setNullableOptionalIntSelector = mkSelector "setNullableOptionalInt:"
 
 -- | @Selector@ for @nullableString@
-nullableStringSelector :: Selector
+nullableStringSelector :: Selector '[] (Id NSString)
 nullableStringSelector = mkSelector "nullableString"
 
 -- | @Selector@ for @setNullableString:@
-setNullableStringSelector :: Selector
+setNullableStringSelector :: Selector '[Id NSString] ()
 setNullableStringSelector = mkSelector "setNullableString:"
 
 -- | @Selector@ for @optionalString@
-optionalStringSelector :: Selector
+optionalStringSelector :: Selector '[] (Id NSString)
 optionalStringSelector = mkSelector "optionalString"
 
 -- | @Selector@ for @setOptionalString:@
-setOptionalStringSelector :: Selector
+setOptionalStringSelector :: Selector '[Id NSString] ()
 setOptionalStringSelector = mkSelector "setOptionalString:"
 
 -- | @Selector@ for @nullableOptionalString@
-nullableOptionalStringSelector :: Selector
+nullableOptionalStringSelector :: Selector '[] (Id NSString)
 nullableOptionalStringSelector = mkSelector "nullableOptionalString"
 
 -- | @Selector@ for @setNullableOptionalString:@
-setNullableOptionalStringSelector :: Selector
+setNullableOptionalStringSelector :: Selector '[Id NSString] ()
 setNullableOptionalStringSelector = mkSelector "setNullableOptionalString:"
 
 -- | @Selector@ for @nullableStruct@
-nullableStructSelector :: Selector
+nullableStructSelector :: Selector '[] (Id MTRUnitTestingClusterSimpleStruct)
 nullableStructSelector = mkSelector "nullableStruct"
 
 -- | @Selector@ for @setNullableStruct:@
-setNullableStructSelector :: Selector
+setNullableStructSelector :: Selector '[Id MTRUnitTestingClusterSimpleStruct] ()
 setNullableStructSelector = mkSelector "setNullableStruct:"
 
 -- | @Selector@ for @optionalStruct@
-optionalStructSelector :: Selector
+optionalStructSelector :: Selector '[] (Id MTRUnitTestingClusterSimpleStruct)
 optionalStructSelector = mkSelector "optionalStruct"
 
 -- | @Selector@ for @setOptionalStruct:@
-setOptionalStructSelector :: Selector
+setOptionalStructSelector :: Selector '[Id MTRUnitTestingClusterSimpleStruct] ()
 setOptionalStructSelector = mkSelector "setOptionalStruct:"
 
 -- | @Selector@ for @nullableOptionalStruct@
-nullableOptionalStructSelector :: Selector
+nullableOptionalStructSelector :: Selector '[] (Id MTRUnitTestingClusterSimpleStruct)
 nullableOptionalStructSelector = mkSelector "nullableOptionalStruct"
 
 -- | @Selector@ for @setNullableOptionalStruct:@
-setNullableOptionalStructSelector :: Selector
+setNullableOptionalStructSelector :: Selector '[Id MTRUnitTestingClusterSimpleStruct] ()
 setNullableOptionalStructSelector = mkSelector "setNullableOptionalStruct:"
 
 -- | @Selector@ for @nullableList@
-nullableListSelector :: Selector
+nullableListSelector :: Selector '[] (Id NSArray)
 nullableListSelector = mkSelector "nullableList"
 
 -- | @Selector@ for @setNullableList:@
-setNullableListSelector :: Selector
+setNullableListSelector :: Selector '[Id NSArray] ()
 setNullableListSelector = mkSelector "setNullableList:"
 
 -- | @Selector@ for @optionalList@
-optionalListSelector :: Selector
+optionalListSelector :: Selector '[] (Id NSArray)
 optionalListSelector = mkSelector "optionalList"
 
 -- | @Selector@ for @setOptionalList:@
-setOptionalListSelector :: Selector
+setOptionalListSelector :: Selector '[Id NSArray] ()
 setOptionalListSelector = mkSelector "setOptionalList:"
 
 -- | @Selector@ for @nullableOptionalList@
-nullableOptionalListSelector :: Selector
+nullableOptionalListSelector :: Selector '[] (Id NSArray)
 nullableOptionalListSelector = mkSelector "nullableOptionalList"
 
 -- | @Selector@ for @setNullableOptionalList:@
-setNullableOptionalListSelector :: Selector
+setNullableOptionalListSelector :: Selector '[Id NSArray] ()
 setNullableOptionalListSelector = mkSelector "setNullableOptionalList:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

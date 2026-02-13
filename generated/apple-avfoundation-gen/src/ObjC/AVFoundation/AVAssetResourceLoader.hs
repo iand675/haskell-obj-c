@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AVFoundation.AVAssetResourceLoader
   , setSendsCommonMediaClientDataAsHTTPHeaders
   , preloadsEligibleContentKeys
   , setPreloadsEligibleContentKeys
+  , delegateQueueSelector
+  , delegateSelector
   , initSelector
   , newSelector
-  , setDelegate_queueSelector
-  , delegateSelector
-  , delegateQueueSelector
-  , sendsCommonMediaClientDataAsHTTPHeadersSelector
-  , setSendsCommonMediaClientDataAsHTTPHeadersSelector
   , preloadsEligibleContentKeysSelector
+  , sendsCommonMediaClientDataAsHTTPHeadersSelector
+  , setDelegate_queueSelector
   , setPreloadsEligibleContentKeysSelector
+  , setSendsCommonMediaClientDataAsHTTPHeadersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO (Id AVAssetResourceLoader)
-init_ avAssetResourceLoader  =
-    sendMsg avAssetResourceLoader (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetResourceLoader =
+  sendOwnedMessage avAssetResourceLoader initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetResourceLoader)
 new  =
   do
     cls' <- getRequiredClass "AVAssetResourceLoader"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setDelegate:queue:
 --
@@ -69,9 +66,8 @@ new  =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVAssetResourceLoader avAssetResourceLoader, IsNSObject delegateQueue) => avAssetResourceLoader -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avAssetResourceLoader  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avAssetResourceLoader (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avAssetResourceLoader delegate delegateQueue =
+  sendMessage avAssetResourceLoader setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | delegate
 --
@@ -81,8 +77,8 @@ setDelegate_queue avAssetResourceLoader  delegate delegateQueue =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO RawId
-delegate avAssetResourceLoader  =
-    fmap (RawId . castPtr) $ sendMsg avAssetResourceLoader (mkSelector "delegate") (retPtr retVoid) []
+delegate avAssetResourceLoader =
+  sendMessage avAssetResourceLoader delegateSelector
 
 -- | delegateQueue
 --
@@ -92,18 +88,18 @@ delegate avAssetResourceLoader  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO (Id NSObject)
-delegateQueue avAssetResourceLoader  =
-    sendMsg avAssetResourceLoader (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avAssetResourceLoader =
+  sendMessage avAssetResourceLoader delegateQueueSelector
 
 -- | @- sendsCommonMediaClientDataAsHTTPHeaders@
 sendsCommonMediaClientDataAsHTTPHeaders :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO Bool
-sendsCommonMediaClientDataAsHTTPHeaders avAssetResourceLoader  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoader (mkSelector "sendsCommonMediaClientDataAsHTTPHeaders") retCULong []
+sendsCommonMediaClientDataAsHTTPHeaders avAssetResourceLoader =
+  sendMessage avAssetResourceLoader sendsCommonMediaClientDataAsHTTPHeadersSelector
 
 -- | @- setSendsCommonMediaClientDataAsHTTPHeaders:@
 setSendsCommonMediaClientDataAsHTTPHeaders :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> Bool -> IO ()
-setSendsCommonMediaClientDataAsHTTPHeaders avAssetResourceLoader  value =
-    sendMsg avAssetResourceLoader (mkSelector "setSendsCommonMediaClientDataAsHTTPHeaders:") retVoid [argCULong (if value then 1 else 0)]
+setSendsCommonMediaClientDataAsHTTPHeaders avAssetResourceLoader value =
+  sendMessage avAssetResourceLoader setSendsCommonMediaClientDataAsHTTPHeadersSelector value
 
 -- | preloadsEligibleContentKeys
 --
@@ -113,8 +109,8 @@ setSendsCommonMediaClientDataAsHTTPHeaders avAssetResourceLoader  value =
 --
 -- ObjC selector: @- preloadsEligibleContentKeys@
 preloadsEligibleContentKeys :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> IO Bool
-preloadsEligibleContentKeys avAssetResourceLoader  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoader (mkSelector "preloadsEligibleContentKeys") retCULong []
+preloadsEligibleContentKeys avAssetResourceLoader =
+  sendMessage avAssetResourceLoader preloadsEligibleContentKeysSelector
 
 -- | preloadsEligibleContentKeys
 --
@@ -124,46 +120,46 @@ preloadsEligibleContentKeys avAssetResourceLoader  =
 --
 -- ObjC selector: @- setPreloadsEligibleContentKeys:@
 setPreloadsEligibleContentKeys :: IsAVAssetResourceLoader avAssetResourceLoader => avAssetResourceLoader -> Bool -> IO ()
-setPreloadsEligibleContentKeys avAssetResourceLoader  value =
-    sendMsg avAssetResourceLoader (mkSelector "setPreloadsEligibleContentKeys:") retVoid [argCULong (if value then 1 else 0)]
+setPreloadsEligibleContentKeys avAssetResourceLoader value =
+  sendMessage avAssetResourceLoader setPreloadsEligibleContentKeysSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetResourceLoader)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetResourceLoader)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @sendsCommonMediaClientDataAsHTTPHeaders@
-sendsCommonMediaClientDataAsHTTPHeadersSelector :: Selector
+sendsCommonMediaClientDataAsHTTPHeadersSelector :: Selector '[] Bool
 sendsCommonMediaClientDataAsHTTPHeadersSelector = mkSelector "sendsCommonMediaClientDataAsHTTPHeaders"
 
 -- | @Selector@ for @setSendsCommonMediaClientDataAsHTTPHeaders:@
-setSendsCommonMediaClientDataAsHTTPHeadersSelector :: Selector
+setSendsCommonMediaClientDataAsHTTPHeadersSelector :: Selector '[Bool] ()
 setSendsCommonMediaClientDataAsHTTPHeadersSelector = mkSelector "setSendsCommonMediaClientDataAsHTTPHeaders:"
 
 -- | @Selector@ for @preloadsEligibleContentKeys@
-preloadsEligibleContentKeysSelector :: Selector
+preloadsEligibleContentKeysSelector :: Selector '[] Bool
 preloadsEligibleContentKeysSelector = mkSelector "preloadsEligibleContentKeys"
 
 -- | @Selector@ for @setPreloadsEligibleContentKeys:@
-setPreloadsEligibleContentKeysSelector :: Selector
+setPreloadsEligibleContentKeysSelector :: Selector '[Bool] ()
 setPreloadsEligibleContentKeysSelector = mkSelector "setPreloadsEligibleContentKeys:"
 

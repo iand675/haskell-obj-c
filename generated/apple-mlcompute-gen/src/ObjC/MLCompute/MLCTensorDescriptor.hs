@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,24 +30,24 @@ module ObjC.MLCompute.MLCTensorDescriptor
   , sortedSequences
   , batchSizePerSequenceStep
   , maxTensorDimensions
-  , newSelector
-  , initSelector
+  , batchSizePerSequenceStepSelector
+  , convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector
+  , convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector
+  , convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector
+  , dataTypeSelector
   , descriptorWithShape_dataTypeSelector
   , descriptorWithShape_sequenceLengths_sortedSequences_dataTypeSelector
   , descriptorWithWidth_height_featureChannelCount_batchSizeSelector
   , descriptorWithWidth_height_featureChannelCount_batchSize_dataTypeSelector
-  , convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector
-  , convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector
-  , convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector
-  , dataTypeSelector
   , dimensionCountSelector
+  , initSelector
+  , maxTensorDimensionsSelector
+  , newSelector
+  , sequenceLengthsSelector
   , shapeSelector
+  , sortedSequencesSelector
   , strideSelector
   , tensorAllocationSizeInBytesSelector
-  , sequenceLengthsSelector
-  , sortedSequencesSelector
-  , batchSizePerSequenceStepSelector
-  , maxTensorDimensionsSelector
 
   -- * Enum types
   , MLCDataType(MLCDataType)
@@ -62,15 +63,11 @@ module ObjC.MLCompute.MLCTensorDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,12 +80,12 @@ new :: IO (Id MLCTensorDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id MLCTensorDescriptor)
-init_ mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcTensorDescriptor =
+  sendOwnedMessage mlcTensorDescriptor initSelector
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -103,8 +100,7 @@ descriptorWithShape_dataType :: IsNSArray shape => shape -> MLCDataType -> IO (I
 descriptorWithShape_dataType shape dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "descriptorWithShape:dataType:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithShape_dataTypeSelector (toNSArray shape) dataType
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -125,9 +121,7 @@ descriptorWithShape_sequenceLengths_sortedSequences_dataType :: (IsNSArray shape
 descriptorWithShape_sequenceLengths_sortedSequences_dataType shape sequenceLengths sortedSequences dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    withObjCPtr shape $ \raw_shape ->
-      withObjCPtr sequenceLengths $ \raw_sequenceLengths ->
-        sendClassMsg cls' (mkSelector "descriptorWithShape:sequenceLengths:sortedSequences:dataType:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ()), argPtr (castPtr raw_sequenceLengths :: Ptr ()), argCULong (if sortedSequences then 1 else 0), argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithShape_sequenceLengths_sortedSequences_dataTypeSelector (toNSArray shape) (toNSArray sequenceLengths) sortedSequences dataType
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -148,7 +142,7 @@ descriptorWithWidth_height_featureChannelCount_batchSize :: CULong -> CULong -> 
 descriptorWithWidth_height_featureChannelCount_batchSize width height featureChannels batchSize =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithWidth:height:featureChannelCount:batchSize:") (retPtr retVoid) [argCULong width, argCULong height, argCULong featureChannels, argCULong batchSize] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithWidth_height_featureChannelCount_batchSizeSelector width height featureChannels batchSize
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -171,7 +165,7 @@ descriptorWithWidth_height_featureChannelCount_batchSize_dataType :: CULong -> C
 descriptorWithWidth_height_featureChannelCount_batchSize_dataType width height featureChannelCount batchSize dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithWidth:height:featureChannelCount:batchSize:dataType:") (retPtr retVoid) [argCULong width, argCULong height, argCULong featureChannelCount, argCULong batchSize, argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithWidth_height_featureChannelCount_batchSize_dataTypeSelector width height featureChannelCount batchSize dataType
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -194,7 +188,7 @@ convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeat
 convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataType width height inputFeatureChannelCount outputFeatureChannelCount dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "convolutionWeightsDescriptorWithWidth:height:inputFeatureChannelCount:outputFeatureChannelCount:dataType:") (retPtr retVoid) [argCULong width, argCULong height, argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector width height inputFeatureChannelCount outputFeatureChannelCount dataType
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -213,7 +207,7 @@ convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCou
 convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataType inputFeatureChannelCount outputFeatureChannelCount dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "convolutionWeightsDescriptorWithInputFeatureChannelCount:outputFeatureChannelCount:dataType:") (retPtr retVoid) [argCULong inputFeatureChannelCount, argCULong outputFeatureChannelCount, argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector inputFeatureChannelCount outputFeatureChannelCount dataType
 
 -- | Create a MLCTensorDescriptor object
 --
@@ -230,7 +224,7 @@ convolutionBiasesDescriptorWithFeatureChannelCount_dataType :: CULong -> MLCData
 convolutionBiasesDescriptorWithFeatureChannelCount_dataType featureChannelCount dataType =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "convolutionBiasesDescriptorWithFeatureChannelCount:dataType:") (retPtr retVoid) [argCULong featureChannelCount, argCInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector featureChannelCount dataType
 
 -- | dataType
 --
@@ -238,8 +232,8 @@ convolutionBiasesDescriptorWithFeatureChannelCount_dataType featureChannelCount 
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO MLCDataType
-dataType mlcTensorDescriptor  =
-    fmap (coerce :: CInt -> MLCDataType) $ sendMsg mlcTensorDescriptor (mkSelector "dataType") retCInt []
+dataType mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor dataTypeSelector
 
 -- | dimensionCount
 --
@@ -247,8 +241,8 @@ dataType mlcTensorDescriptor  =
 --
 -- ObjC selector: @- dimensionCount@
 dimensionCount :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO CULong
-dimensionCount mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "dimensionCount") retCULong []
+dimensionCount mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor dimensionCountSelector
 
 -- | shape
 --
@@ -256,8 +250,8 @@ dimensionCount mlcTensorDescriptor  =
 --
 -- ObjC selector: @- shape@
 shape :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
-shape mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor shapeSelector
 
 -- | stride
 --
@@ -265,8 +259,8 @@ shape mlcTensorDescriptor  =
 --
 -- ObjC selector: @- stride@
 stride :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
-stride mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "stride") (retPtr retVoid) [] >>= retainedObject . castPtr
+stride mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor strideSelector
 
 -- | tensorAllocationSizeInBytes
 --
@@ -274,8 +268,8 @@ stride mlcTensorDescriptor  =
 --
 -- ObjC selector: @- tensorAllocationSizeInBytes@
 tensorAllocationSizeInBytes :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO CULong
-tensorAllocationSizeInBytes mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "tensorAllocationSizeInBytes") retCULong []
+tensorAllocationSizeInBytes mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor tensorAllocationSizeInBytesSelector
 
 -- | sequenceLengths
 --
@@ -283,8 +277,8 @@ tensorAllocationSizeInBytes mlcTensorDescriptor  =
 --
 -- ObjC selector: @- sequenceLengths@
 sequenceLengths :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
-sequenceLengths mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "sequenceLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+sequenceLengths mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor sequenceLengthsSelector
 
 -- | sortedSequences
 --
@@ -292,8 +286,8 @@ sequenceLengths mlcTensorDescriptor  =
 --
 -- ObjC selector: @- sortedSequences@
 sortedSequences :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO Bool
-sortedSequences mlcTensorDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTensorDescriptor (mkSelector "sortedSequences") retCULong []
+sortedSequences mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor sortedSequencesSelector
 
 -- | batchSizePerSequenceStep
 --
@@ -303,8 +297,8 @@ sortedSequences mlcTensorDescriptor  =
 --
 -- ObjC selector: @- batchSizePerSequenceStep@
 batchSizePerSequenceStep :: IsMLCTensorDescriptor mlcTensorDescriptor => mlcTensorDescriptor -> IO (Id NSArray)
-batchSizePerSequenceStep mlcTensorDescriptor  =
-    sendMsg mlcTensorDescriptor (mkSelector "batchSizePerSequenceStep") (retPtr retVoid) [] >>= retainedObject . castPtr
+batchSizePerSequenceStep mlcTensorDescriptor =
+  sendMessage mlcTensorDescriptor batchSizePerSequenceStepSelector
 
 -- | maxTensorDimensions
 --
@@ -315,81 +309,81 @@ maxTensorDimensions :: IO CULong
 maxTensorDimensions  =
   do
     cls' <- getRequiredClass "MLCTensorDescriptor"
-    sendClassMsg cls' (mkSelector "maxTensorDimensions") retCULong []
+    sendClassMessage cls' maxTensorDimensionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCTensorDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCTensorDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithShape:dataType:@
-descriptorWithShape_dataTypeSelector :: Selector
+descriptorWithShape_dataTypeSelector :: Selector '[Id NSArray, MLCDataType] (Id MLCTensorDescriptor)
 descriptorWithShape_dataTypeSelector = mkSelector "descriptorWithShape:dataType:"
 
 -- | @Selector@ for @descriptorWithShape:sequenceLengths:sortedSequences:dataType:@
-descriptorWithShape_sequenceLengths_sortedSequences_dataTypeSelector :: Selector
+descriptorWithShape_sequenceLengths_sortedSequences_dataTypeSelector :: Selector '[Id NSArray, Id NSArray, Bool, MLCDataType] (Id MLCTensorDescriptor)
 descriptorWithShape_sequenceLengths_sortedSequences_dataTypeSelector = mkSelector "descriptorWithShape:sequenceLengths:sortedSequences:dataType:"
 
 -- | @Selector@ for @descriptorWithWidth:height:featureChannelCount:batchSize:@
-descriptorWithWidth_height_featureChannelCount_batchSizeSelector :: Selector
+descriptorWithWidth_height_featureChannelCount_batchSizeSelector :: Selector '[CULong, CULong, CULong, CULong] (Id MLCTensorDescriptor)
 descriptorWithWidth_height_featureChannelCount_batchSizeSelector = mkSelector "descriptorWithWidth:height:featureChannelCount:batchSize:"
 
 -- | @Selector@ for @descriptorWithWidth:height:featureChannelCount:batchSize:dataType:@
-descriptorWithWidth_height_featureChannelCount_batchSize_dataTypeSelector :: Selector
+descriptorWithWidth_height_featureChannelCount_batchSize_dataTypeSelector :: Selector '[CULong, CULong, CULong, CULong, MLCDataType] (Id MLCTensorDescriptor)
 descriptorWithWidth_height_featureChannelCount_batchSize_dataTypeSelector = mkSelector "descriptorWithWidth:height:featureChannelCount:batchSize:dataType:"
 
 -- | @Selector@ for @convolutionWeightsDescriptorWithWidth:height:inputFeatureChannelCount:outputFeatureChannelCount:dataType:@
-convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector :: Selector
+convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector :: Selector '[CULong, CULong, CULong, CULong, MLCDataType] (Id MLCTensorDescriptor)
 convolutionWeightsDescriptorWithWidth_height_inputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector = mkSelector "convolutionWeightsDescriptorWithWidth:height:inputFeatureChannelCount:outputFeatureChannelCount:dataType:"
 
 -- | @Selector@ for @convolutionWeightsDescriptorWithInputFeatureChannelCount:outputFeatureChannelCount:dataType:@
-convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector :: Selector
+convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector :: Selector '[CULong, CULong, MLCDataType] (Id MLCTensorDescriptor)
 convolutionWeightsDescriptorWithInputFeatureChannelCount_outputFeatureChannelCount_dataTypeSelector = mkSelector "convolutionWeightsDescriptorWithInputFeatureChannelCount:outputFeatureChannelCount:dataType:"
 
 -- | @Selector@ for @convolutionBiasesDescriptorWithFeatureChannelCount:dataType:@
-convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector :: Selector
+convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector :: Selector '[CULong, MLCDataType] (Id MLCTensorDescriptor)
 convolutionBiasesDescriptorWithFeatureChannelCount_dataTypeSelector = mkSelector "convolutionBiasesDescriptorWithFeatureChannelCount:dataType:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MLCDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @dimensionCount@
-dimensionCountSelector :: Selector
+dimensionCountSelector :: Selector '[] CULong
 dimensionCountSelector = mkSelector "dimensionCount"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSArray)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] (Id NSArray)
 strideSelector = mkSelector "stride"
 
 -- | @Selector@ for @tensorAllocationSizeInBytes@
-tensorAllocationSizeInBytesSelector :: Selector
+tensorAllocationSizeInBytesSelector :: Selector '[] CULong
 tensorAllocationSizeInBytesSelector = mkSelector "tensorAllocationSizeInBytes"
 
 -- | @Selector@ for @sequenceLengths@
-sequenceLengthsSelector :: Selector
+sequenceLengthsSelector :: Selector '[] (Id NSArray)
 sequenceLengthsSelector = mkSelector "sequenceLengths"
 
 -- | @Selector@ for @sortedSequences@
-sortedSequencesSelector :: Selector
+sortedSequencesSelector :: Selector '[] Bool
 sortedSequencesSelector = mkSelector "sortedSequences"
 
 -- | @Selector@ for @batchSizePerSequenceStep@
-batchSizePerSequenceStepSelector :: Selector
+batchSizePerSequenceStepSelector :: Selector '[] (Id NSArray)
 batchSizePerSequenceStepSelector = mkSelector "batchSizePerSequenceStep"
 
 -- | @Selector@ for @maxTensorDimensions@
-maxTensorDimensionsSelector :: Selector
+maxTensorDimensionsSelector :: Selector '[] CULong
 maxTensorDimensionsSelector = mkSelector "maxTensorDimensions"
 

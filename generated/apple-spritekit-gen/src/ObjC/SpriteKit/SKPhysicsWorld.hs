@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.SpriteKit.SKPhysicsWorld
   , contactDelegate
   , setContactDelegate
   , addJointSelector
-  , removeJointSelector
-  , removeAllJointsSelector
-  , speedSelector
-  , setSpeedSelector
   , contactDelegateSelector
+  , removeAllJointsSelector
+  , removeJointSelector
   , setContactDelegateSelector
+  , setSpeedSelector
+  , speedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,70 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addJoint:@
 addJoint :: (IsSKPhysicsWorld skPhysicsWorld, IsSKPhysicsJoint joint) => skPhysicsWorld -> joint -> IO ()
-addJoint skPhysicsWorld  joint =
-  withObjCPtr joint $ \raw_joint ->
-      sendMsg skPhysicsWorld (mkSelector "addJoint:") retVoid [argPtr (castPtr raw_joint :: Ptr ())]
+addJoint skPhysicsWorld joint =
+  sendMessage skPhysicsWorld addJointSelector (toSKPhysicsJoint joint)
 
 -- | @- removeJoint:@
 removeJoint :: (IsSKPhysicsWorld skPhysicsWorld, IsSKPhysicsJoint joint) => skPhysicsWorld -> joint -> IO ()
-removeJoint skPhysicsWorld  joint =
-  withObjCPtr joint $ \raw_joint ->
-      sendMsg skPhysicsWorld (mkSelector "removeJoint:") retVoid [argPtr (castPtr raw_joint :: Ptr ())]
+removeJoint skPhysicsWorld joint =
+  sendMessage skPhysicsWorld removeJointSelector (toSKPhysicsJoint joint)
 
 -- | @- removeAllJoints@
 removeAllJoints :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> IO ()
-removeAllJoints skPhysicsWorld  =
-    sendMsg skPhysicsWorld (mkSelector "removeAllJoints") retVoid []
+removeAllJoints skPhysicsWorld =
+  sendMessage skPhysicsWorld removeAllJointsSelector
 
 -- | @- speed@
 speed :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> IO CDouble
-speed skPhysicsWorld  =
-    sendMsg skPhysicsWorld (mkSelector "speed") retCDouble []
+speed skPhysicsWorld =
+  sendMessage skPhysicsWorld speedSelector
 
 -- | @- setSpeed:@
 setSpeed :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> CDouble -> IO ()
-setSpeed skPhysicsWorld  value =
-    sendMsg skPhysicsWorld (mkSelector "setSpeed:") retVoid [argCDouble value]
+setSpeed skPhysicsWorld value =
+  sendMessage skPhysicsWorld setSpeedSelector value
 
 -- | @- contactDelegate@
 contactDelegate :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> IO RawId
-contactDelegate skPhysicsWorld  =
-    fmap (RawId . castPtr) $ sendMsg skPhysicsWorld (mkSelector "contactDelegate") (retPtr retVoid) []
+contactDelegate skPhysicsWorld =
+  sendMessage skPhysicsWorld contactDelegateSelector
 
 -- | @- setContactDelegate:@
 setContactDelegate :: IsSKPhysicsWorld skPhysicsWorld => skPhysicsWorld -> RawId -> IO ()
-setContactDelegate skPhysicsWorld  value =
-    sendMsg skPhysicsWorld (mkSelector "setContactDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setContactDelegate skPhysicsWorld value =
+  sendMessage skPhysicsWorld setContactDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addJoint:@
-addJointSelector :: Selector
+addJointSelector :: Selector '[Id SKPhysicsJoint] ()
 addJointSelector = mkSelector "addJoint:"
 
 -- | @Selector@ for @removeJoint:@
-removeJointSelector :: Selector
+removeJointSelector :: Selector '[Id SKPhysicsJoint] ()
 removeJointSelector = mkSelector "removeJoint:"
 
 -- | @Selector@ for @removeAllJoints@
-removeAllJointsSelector :: Selector
+removeAllJointsSelector :: Selector '[] ()
 removeAllJointsSelector = mkSelector "removeAllJoints"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CDouble
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[CDouble] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @contactDelegate@
-contactDelegateSelector :: Selector
+contactDelegateSelector :: Selector '[] RawId
 contactDelegateSelector = mkSelector "contactDelegate"
 
 -- | @Selector@ for @setContactDelegate:@
-setContactDelegateSelector :: Selector
+setContactDelegateSelector :: Selector '[RawId] ()
 setContactDelegateSelector = mkSelector "setContactDelegate:"
 

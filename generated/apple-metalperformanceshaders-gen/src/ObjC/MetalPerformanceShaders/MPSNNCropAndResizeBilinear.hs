@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.MetalPerformanceShaders.MPSNNCropAndResizeBilinear
   , resizeHeight
   , numberOfRegions
   , regions
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regionsSelector
-  , initWithCoder_deviceSelector
-  , resizeWidthSelector
-  , resizeHeightSelector
   , numberOfRegionsSelector
   , regionsSelector
+  , resizeHeightSelector
+  , resizeWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> RawId -> IO (Id MPSNNCropAndResizeBilinear)
-initWithDevice mpsnnCropAndResizeBilinear  device =
-    sendMsg mpsnnCropAndResizeBilinear (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnCropAndResizeBilinear device =
+  sendOwnedMessage mpsnnCropAndResizeBilinear initWithDeviceSelector device
 
 -- | Initialize the crop and resize bilinear filter.
 --
@@ -69,8 +66,8 @@ initWithDevice mpsnnCropAndResizeBilinear  device =
 --
 -- ObjC selector: @- initWithDevice:resizeWidth:resizeHeight:numberOfRegions:regions:@
 initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regions :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> RawId -> CULong -> CULong -> CULong -> Const (Ptr MPSRegion) -> IO (Id MPSNNCropAndResizeBilinear)
-initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regions mpsnnCropAndResizeBilinear  device resizeWidth resizeHeight numberOfRegions regions =
-    sendMsg mpsnnCropAndResizeBilinear (mkSelector "initWithDevice:resizeWidth:resizeHeight:numberOfRegions:regions:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong resizeWidth, argCULong resizeHeight, argCULong numberOfRegions, argPtr (unConst regions)] >>= ownedObject . castPtr
+initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regions mpsnnCropAndResizeBilinear device resizeWidth resizeHeight numberOfRegions regions =
+  sendOwnedMessage mpsnnCropAndResizeBilinear initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regionsSelector device resizeWidth resizeHeight numberOfRegions regions
 
 -- | NSSecureCoding compatability
 --
@@ -84,9 +81,8 @@ initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regions mpsnnCropAndResi
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear, IsNSCoder aDecoder) => mpsnnCropAndResizeBilinear -> aDecoder -> RawId -> IO (Id MPSNNCropAndResizeBilinear)
-initWithCoder_device mpsnnCropAndResizeBilinear  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnCropAndResizeBilinear (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnCropAndResizeBilinear aDecoder device =
+  sendOwnedMessage mpsnnCropAndResizeBilinear initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | resizeWidth
 --
@@ -94,8 +90,8 @@ initWithCoder_device mpsnnCropAndResizeBilinear  aDecoder device =
 --
 -- ObjC selector: @- resizeWidth@
 resizeWidth :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> IO CULong
-resizeWidth mpsnnCropAndResizeBilinear  =
-    sendMsg mpsnnCropAndResizeBilinear (mkSelector "resizeWidth") retCULong []
+resizeWidth mpsnnCropAndResizeBilinear =
+  sendMessage mpsnnCropAndResizeBilinear resizeWidthSelector
 
 -- | resizeHeight
 --
@@ -103,8 +99,8 @@ resizeWidth mpsnnCropAndResizeBilinear  =
 --
 -- ObjC selector: @- resizeHeight@
 resizeHeight :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> IO CULong
-resizeHeight mpsnnCropAndResizeBilinear  =
-    sendMsg mpsnnCropAndResizeBilinear (mkSelector "resizeHeight") retCULong []
+resizeHeight mpsnnCropAndResizeBilinear =
+  sendMessage mpsnnCropAndResizeBilinear resizeHeightSelector
 
 -- | numberOfRegions
 --
@@ -112,8 +108,8 @@ resizeHeight mpsnnCropAndResizeBilinear  =
 --
 -- ObjC selector: @- numberOfRegions@
 numberOfRegions :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> IO CULong
-numberOfRegions mpsnnCropAndResizeBilinear  =
-    sendMsg mpsnnCropAndResizeBilinear (mkSelector "numberOfRegions") retCULong []
+numberOfRegions mpsnnCropAndResizeBilinear =
+  sendMessage mpsnnCropAndResizeBilinear numberOfRegionsSelector
 
 -- | regions
 --
@@ -121,38 +117,38 @@ numberOfRegions mpsnnCropAndResizeBilinear  =
 --
 -- ObjC selector: @- regions@
 regions :: IsMPSNNCropAndResizeBilinear mpsnnCropAndResizeBilinear => mpsnnCropAndResizeBilinear -> IO (Const (Ptr MPSRegion))
-regions mpsnnCropAndResizeBilinear  =
-    fmap Const $ fmap castPtr $ sendMsg mpsnnCropAndResizeBilinear (mkSelector "regions") (retPtr retVoid) []
+regions mpsnnCropAndResizeBilinear =
+  sendMessage mpsnnCropAndResizeBilinear regionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNCropAndResizeBilinear)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:resizeWidth:resizeHeight:numberOfRegions:regions:@
-initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regionsSelector :: Selector
+initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regionsSelector :: Selector '[RawId, CULong, CULong, CULong, Const (Ptr MPSRegion)] (Id MPSNNCropAndResizeBilinear)
 initWithDevice_resizeWidth_resizeHeight_numberOfRegions_regionsSelector = mkSelector "initWithDevice:resizeWidth:resizeHeight:numberOfRegions:regions:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNCropAndResizeBilinear)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @resizeWidth@
-resizeWidthSelector :: Selector
+resizeWidthSelector :: Selector '[] CULong
 resizeWidthSelector = mkSelector "resizeWidth"
 
 -- | @Selector@ for @resizeHeight@
-resizeHeightSelector :: Selector
+resizeHeightSelector :: Selector '[] CULong
 resizeHeightSelector = mkSelector "resizeHeight"
 
 -- | @Selector@ for @numberOfRegions@
-numberOfRegionsSelector :: Selector
+numberOfRegionsSelector :: Selector '[] CULong
 numberOfRegionsSelector = mkSelector "numberOfRegions"
 
 -- | @Selector@ for @regions@
-regionsSelector :: Selector
+regionsSelector :: Selector '[] (Const (Ptr MPSRegion))
 regionsSelector = mkSelector "regions"
 

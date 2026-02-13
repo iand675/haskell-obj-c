@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -86,85 +87,85 @@ module ObjC.MapKit.MKMapView
   , selectedAnnotations
   , setSelectedAnnotations
   , overlays
-  , setCamera_animatedSelector
-  , setCameraZoomRange_animatedSelector
-  , setCameraBoundary_animatedSelector
-  , setUserTrackingMode_animatedSelector
   , addAnnotationSelector
   , addAnnotationsSelector
-  , removeAnnotationSelector
-  , removeAnnotationsSelector
-  , viewForAnnotationSelector
+  , addOverlaySelector
+  , addOverlay_levelSelector
+  , addOverlaysSelector
+  , addOverlays_levelSelector
+  , annotationsSelector
+  , cameraBoundarySelector
+  , cameraSelector
+  , cameraZoomRangeSelector
+  , delegateSelector
   , dequeueReusableAnnotationViewWithIdentifierSelector
   , dequeueReusableAnnotationViewWithIdentifier_forAnnotationSelector
-  , registerClass_forAnnotationViewWithReuseIdentifierSelector
-  , selectAnnotation_animatedSelector
   , deselectAnnotation_animatedSelector
-  , showAnnotations_animatedSelector
-  , addOverlay_levelSelector
-  , addOverlays_levelSelector
+  , exchangeOverlayAtIndex_withOverlayAtIndexSelector
+  , exchangeOverlay_withOverlaySelector
+  , insertOverlay_aboveOverlaySelector
+  , insertOverlay_atIndexSelector
+  , insertOverlay_atIndex_levelSelector
+  , insertOverlay_belowOverlaySelector
+  , mapTypeSelector
+  , overlaysInLevelSelector
+  , overlaysSelector
+  , pitchButtonVisibilitySelector
+  , pitchEnabledSelector
+  , pointOfInterestFilterSelector
+  , preferredConfigurationSelector
+  , registerClass_forAnnotationViewWithReuseIdentifierSelector
+  , removeAnnotationSelector
+  , removeAnnotationsSelector
   , removeOverlaySelector
   , removeOverlaysSelector
-  , insertOverlay_atIndex_levelSelector
-  , insertOverlay_aboveOverlaySelector
-  , insertOverlay_belowOverlaySelector
-  , exchangeOverlay_withOverlaySelector
-  , overlaysInLevelSelector
   , rendererForOverlaySelector
-  , addOverlaySelector
-  , addOverlaysSelector
-  , insertOverlay_atIndexSelector
-  , exchangeOverlayAtIndex_withOverlayAtIndexSelector
-  , delegateSelector
-  , setDelegateSelector
-  , mapTypeSelector
-  , setMapTypeSelector
-  , preferredConfigurationSelector
-  , setPreferredConfigurationSelector
-  , cameraSelector
-  , setCameraSelector
-  , cameraZoomRangeSelector
-  , setCameraZoomRangeSelector
-  , cameraBoundarySelector
-  , setCameraBoundarySelector
-  , zoomEnabledSelector
-  , setZoomEnabledSelector
-  , scrollEnabledSelector
-  , setScrollEnabledSelector
   , rotateEnabledSelector
-  , setRotateEnabledSelector
-  , pitchEnabledSelector
-  , setPitchEnabledSelector
-  , showsUserTrackingButtonSelector
-  , setShowsUserTrackingButtonSelector
-  , pitchButtonVisibilitySelector
-  , setPitchButtonVisibilitySelector
-  , showsPitchControlSelector
-  , setShowsPitchControlSelector
-  , showsZoomControlsSelector
-  , setShowsZoomControlsSelector
-  , showsCompassSelector
-  , setShowsCompassSelector
-  , showsScaleSelector
-  , setShowsScaleSelector
-  , pointOfInterestFilterSelector
-  , setPointOfInterestFilterSelector
-  , showsPointsOfInterestSelector
-  , setShowsPointsOfInterestSelector
-  , showsBuildingsSelector
-  , setShowsBuildingsSelector
-  , showsTrafficSelector
-  , setShowsTrafficSelector
-  , showsUserLocationSelector
-  , setShowsUserLocationSelector
-  , userLocationSelector
-  , userTrackingModeSelector
-  , setUserTrackingModeSelector
-  , userLocationVisibleSelector
-  , annotationsSelector
+  , scrollEnabledSelector
+  , selectAnnotation_animatedSelector
   , selectedAnnotationsSelector
+  , setCameraBoundarySelector
+  , setCameraBoundary_animatedSelector
+  , setCameraSelector
+  , setCameraZoomRangeSelector
+  , setCameraZoomRange_animatedSelector
+  , setCamera_animatedSelector
+  , setDelegateSelector
+  , setMapTypeSelector
+  , setPitchButtonVisibilitySelector
+  , setPitchEnabledSelector
+  , setPointOfInterestFilterSelector
+  , setPreferredConfigurationSelector
+  , setRotateEnabledSelector
+  , setScrollEnabledSelector
   , setSelectedAnnotationsSelector
-  , overlaysSelector
+  , setShowsBuildingsSelector
+  , setShowsCompassSelector
+  , setShowsPitchControlSelector
+  , setShowsPointsOfInterestSelector
+  , setShowsScaleSelector
+  , setShowsTrafficSelector
+  , setShowsUserLocationSelector
+  , setShowsUserTrackingButtonSelector
+  , setShowsZoomControlsSelector
+  , setUserTrackingModeSelector
+  , setUserTrackingMode_animatedSelector
+  , setZoomEnabledSelector
+  , showAnnotations_animatedSelector
+  , showsBuildingsSelector
+  , showsCompassSelector
+  , showsPitchControlSelector
+  , showsPointsOfInterestSelector
+  , showsScaleSelector
+  , showsTrafficSelector
+  , showsUserLocationSelector
+  , showsUserTrackingButtonSelector
+  , showsZoomControlsSelector
+  , userLocationSelector
+  , userLocationVisibleSelector
+  , userTrackingModeSelector
+  , viewForAnnotationSelector
+  , zoomEnabledSelector
 
   -- * Enum types
   , MKFeatureVisibility(MKFeatureVisibility)
@@ -188,15 +189,11 @@ module ObjC.MapKit.MKMapView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -208,734 +205,716 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setCamera:animated:@
 setCamera_animated :: (IsMKMapView mkMapView, IsMKMapCamera camera) => mkMapView -> camera -> Bool -> IO ()
-setCamera_animated mkMapView  camera animated =
-  withObjCPtr camera $ \raw_camera ->
-      sendMsg mkMapView (mkSelector "setCamera:animated:") retVoid [argPtr (castPtr raw_camera :: Ptr ()), argCULong (if animated then 1 else 0)]
+setCamera_animated mkMapView camera animated =
+  sendMessage mkMapView setCamera_animatedSelector (toMKMapCamera camera) animated
 
 -- | @- setCameraZoomRange:animated:@
 setCameraZoomRange_animated :: (IsMKMapView mkMapView, IsMKMapCameraZoomRange cameraZoomRange) => mkMapView -> cameraZoomRange -> Bool -> IO ()
-setCameraZoomRange_animated mkMapView  cameraZoomRange animated =
-  withObjCPtr cameraZoomRange $ \raw_cameraZoomRange ->
-      sendMsg mkMapView (mkSelector "setCameraZoomRange:animated:") retVoid [argPtr (castPtr raw_cameraZoomRange :: Ptr ()), argCULong (if animated then 1 else 0)]
+setCameraZoomRange_animated mkMapView cameraZoomRange animated =
+  sendMessage mkMapView setCameraZoomRange_animatedSelector (toMKMapCameraZoomRange cameraZoomRange) animated
 
 -- | @- setCameraBoundary:animated:@
 setCameraBoundary_animated :: (IsMKMapView mkMapView, IsMKMapCameraBoundary cameraBoundary) => mkMapView -> cameraBoundary -> Bool -> IO ()
-setCameraBoundary_animated mkMapView  cameraBoundary animated =
-  withObjCPtr cameraBoundary $ \raw_cameraBoundary ->
-      sendMsg mkMapView (mkSelector "setCameraBoundary:animated:") retVoid [argPtr (castPtr raw_cameraBoundary :: Ptr ()), argCULong (if animated then 1 else 0)]
+setCameraBoundary_animated mkMapView cameraBoundary animated =
+  sendMessage mkMapView setCameraBoundary_animatedSelector (toMKMapCameraBoundary cameraBoundary) animated
 
 -- | @- setUserTrackingMode:animated:@
 setUserTrackingMode_animated :: IsMKMapView mkMapView => mkMapView -> MKUserTrackingMode -> Bool -> IO ()
-setUserTrackingMode_animated mkMapView  mode animated =
-    sendMsg mkMapView (mkSelector "setUserTrackingMode:animated:") retVoid [argCLong (coerce mode), argCULong (if animated then 1 else 0)]
+setUserTrackingMode_animated mkMapView mode animated =
+  sendMessage mkMapView setUserTrackingMode_animatedSelector mode animated
 
 -- | @- addAnnotation:@
 addAnnotation :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
-addAnnotation mkMapView  annotation =
-    sendMsg mkMapView (mkSelector "addAnnotation:") retVoid [argPtr (castPtr (unRawId annotation) :: Ptr ())]
+addAnnotation mkMapView annotation =
+  sendMessage mkMapView addAnnotationSelector annotation
 
 -- | @- addAnnotations:@
 addAnnotations :: (IsMKMapView mkMapView, IsNSArray annotations) => mkMapView -> annotations -> IO ()
-addAnnotations mkMapView  annotations =
-  withObjCPtr annotations $ \raw_annotations ->
-      sendMsg mkMapView (mkSelector "addAnnotations:") retVoid [argPtr (castPtr raw_annotations :: Ptr ())]
+addAnnotations mkMapView annotations =
+  sendMessage mkMapView addAnnotationsSelector (toNSArray annotations)
 
 -- | @- removeAnnotation:@
 removeAnnotation :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
-removeAnnotation mkMapView  annotation =
-    sendMsg mkMapView (mkSelector "removeAnnotation:") retVoid [argPtr (castPtr (unRawId annotation) :: Ptr ())]
+removeAnnotation mkMapView annotation =
+  sendMessage mkMapView removeAnnotationSelector annotation
 
 -- | @- removeAnnotations:@
 removeAnnotations :: (IsMKMapView mkMapView, IsNSArray annotations) => mkMapView -> annotations -> IO ()
-removeAnnotations mkMapView  annotations =
-  withObjCPtr annotations $ \raw_annotations ->
-      sendMsg mkMapView (mkSelector "removeAnnotations:") retVoid [argPtr (castPtr raw_annotations :: Ptr ())]
+removeAnnotations mkMapView annotations =
+  sendMessage mkMapView removeAnnotationsSelector (toNSArray annotations)
 
 -- | @- viewForAnnotation:@
 viewForAnnotation :: IsMKMapView mkMapView => mkMapView -> RawId -> IO (Id MKAnnotationView)
-viewForAnnotation mkMapView  annotation =
-    sendMsg mkMapView (mkSelector "viewForAnnotation:") (retPtr retVoid) [argPtr (castPtr (unRawId annotation) :: Ptr ())] >>= retainedObject . castPtr
+viewForAnnotation mkMapView annotation =
+  sendMessage mkMapView viewForAnnotationSelector annotation
 
 -- | @- dequeueReusableAnnotationViewWithIdentifier:@
 dequeueReusableAnnotationViewWithIdentifier :: (IsMKMapView mkMapView, IsNSString identifier) => mkMapView -> identifier -> IO (Id MKAnnotationView)
-dequeueReusableAnnotationViewWithIdentifier mkMapView  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg mkMapView (mkSelector "dequeueReusableAnnotationViewWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+dequeueReusableAnnotationViewWithIdentifier mkMapView identifier =
+  sendMessage mkMapView dequeueReusableAnnotationViewWithIdentifierSelector (toNSString identifier)
 
 -- | @- dequeueReusableAnnotationViewWithIdentifier:forAnnotation:@
 dequeueReusableAnnotationViewWithIdentifier_forAnnotation :: (IsMKMapView mkMapView, IsNSString identifier) => mkMapView -> identifier -> RawId -> IO (Id MKAnnotationView)
-dequeueReusableAnnotationViewWithIdentifier_forAnnotation mkMapView  identifier annotation =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg mkMapView (mkSelector "dequeueReusableAnnotationViewWithIdentifier:forAnnotation:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr (unRawId annotation) :: Ptr ())] >>= retainedObject . castPtr
+dequeueReusableAnnotationViewWithIdentifier_forAnnotation mkMapView identifier annotation =
+  sendMessage mkMapView dequeueReusableAnnotationViewWithIdentifier_forAnnotationSelector (toNSString identifier) annotation
 
 -- | @- registerClass:forAnnotationViewWithReuseIdentifier:@
 registerClass_forAnnotationViewWithReuseIdentifier :: (IsMKMapView mkMapView, IsNSString identifier) => mkMapView -> Class -> identifier -> IO ()
-registerClass_forAnnotationViewWithReuseIdentifier mkMapView  viewClass identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg mkMapView (mkSelector "registerClass:forAnnotationViewWithReuseIdentifier:") retVoid [argPtr (unClass viewClass), argPtr (castPtr raw_identifier :: Ptr ())]
+registerClass_forAnnotationViewWithReuseIdentifier mkMapView viewClass identifier =
+  sendMessage mkMapView registerClass_forAnnotationViewWithReuseIdentifierSelector viewClass (toNSString identifier)
 
 -- | @- selectAnnotation:animated:@
 selectAnnotation_animated :: IsMKMapView mkMapView => mkMapView -> RawId -> Bool -> IO ()
-selectAnnotation_animated mkMapView  annotation animated =
-    sendMsg mkMapView (mkSelector "selectAnnotation:animated:") retVoid [argPtr (castPtr (unRawId annotation) :: Ptr ()), argCULong (if animated then 1 else 0)]
+selectAnnotation_animated mkMapView annotation animated =
+  sendMessage mkMapView selectAnnotation_animatedSelector annotation animated
 
 -- | @- deselectAnnotation:animated:@
 deselectAnnotation_animated :: IsMKMapView mkMapView => mkMapView -> RawId -> Bool -> IO ()
-deselectAnnotation_animated mkMapView  annotation animated =
-    sendMsg mkMapView (mkSelector "deselectAnnotation:animated:") retVoid [argPtr (castPtr (unRawId annotation) :: Ptr ()), argCULong (if animated then 1 else 0)]
+deselectAnnotation_animated mkMapView annotation animated =
+  sendMessage mkMapView deselectAnnotation_animatedSelector annotation animated
 
 -- | @- showAnnotations:animated:@
 showAnnotations_animated :: (IsMKMapView mkMapView, IsNSArray annotations) => mkMapView -> annotations -> Bool -> IO ()
-showAnnotations_animated mkMapView  annotations animated =
-  withObjCPtr annotations $ \raw_annotations ->
-      sendMsg mkMapView (mkSelector "showAnnotations:animated:") retVoid [argPtr (castPtr raw_annotations :: Ptr ()), argCULong (if animated then 1 else 0)]
+showAnnotations_animated mkMapView annotations animated =
+  sendMessage mkMapView showAnnotations_animatedSelector (toNSArray annotations) animated
 
 -- | @- addOverlay:level:@
 addOverlay_level :: IsMKMapView mkMapView => mkMapView -> RawId -> MKOverlayLevel -> IO ()
-addOverlay_level mkMapView  overlay level =
-    sendMsg mkMapView (mkSelector "addOverlay:level:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ()), argCLong (coerce level)]
+addOverlay_level mkMapView overlay level =
+  sendMessage mkMapView addOverlay_levelSelector overlay level
 
 -- | @- addOverlays:level:@
 addOverlays_level :: (IsMKMapView mkMapView, IsNSArray overlays) => mkMapView -> overlays -> MKOverlayLevel -> IO ()
-addOverlays_level mkMapView  overlays level =
-  withObjCPtr overlays $ \raw_overlays ->
-      sendMsg mkMapView (mkSelector "addOverlays:level:") retVoid [argPtr (castPtr raw_overlays :: Ptr ()), argCLong (coerce level)]
+addOverlays_level mkMapView overlays level =
+  sendMessage mkMapView addOverlays_levelSelector (toNSArray overlays) level
 
 -- | @- removeOverlay:@
 removeOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
-removeOverlay mkMapView  overlay =
-    sendMsg mkMapView (mkSelector "removeOverlay:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ())]
+removeOverlay mkMapView overlay =
+  sendMessage mkMapView removeOverlaySelector overlay
 
 -- | @- removeOverlays:@
 removeOverlays :: (IsMKMapView mkMapView, IsNSArray overlays) => mkMapView -> overlays -> IO ()
-removeOverlays mkMapView  overlays =
-  withObjCPtr overlays $ \raw_overlays ->
-      sendMsg mkMapView (mkSelector "removeOverlays:") retVoid [argPtr (castPtr raw_overlays :: Ptr ())]
+removeOverlays mkMapView overlays =
+  sendMessage mkMapView removeOverlaysSelector (toNSArray overlays)
 
 -- | @- insertOverlay:atIndex:level:@
 insertOverlay_atIndex_level :: IsMKMapView mkMapView => mkMapView -> RawId -> CULong -> MKOverlayLevel -> IO ()
-insertOverlay_atIndex_level mkMapView  overlay index level =
-    sendMsg mkMapView (mkSelector "insertOverlay:atIndex:level:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ()), argCULong index, argCLong (coerce level)]
+insertOverlay_atIndex_level mkMapView overlay index level =
+  sendMessage mkMapView insertOverlay_atIndex_levelSelector overlay index level
 
 -- | @- insertOverlay:aboveOverlay:@
 insertOverlay_aboveOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> RawId -> IO ()
-insertOverlay_aboveOverlay mkMapView  overlay sibling =
-    sendMsg mkMapView (mkSelector "insertOverlay:aboveOverlay:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ()), argPtr (castPtr (unRawId sibling) :: Ptr ())]
+insertOverlay_aboveOverlay mkMapView overlay sibling =
+  sendMessage mkMapView insertOverlay_aboveOverlaySelector overlay sibling
 
 -- | @- insertOverlay:belowOverlay:@
 insertOverlay_belowOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> RawId -> IO ()
-insertOverlay_belowOverlay mkMapView  overlay sibling =
-    sendMsg mkMapView (mkSelector "insertOverlay:belowOverlay:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ()), argPtr (castPtr (unRawId sibling) :: Ptr ())]
+insertOverlay_belowOverlay mkMapView overlay sibling =
+  sendMessage mkMapView insertOverlay_belowOverlaySelector overlay sibling
 
 -- | @- exchangeOverlay:withOverlay:@
 exchangeOverlay_withOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> RawId -> IO ()
-exchangeOverlay_withOverlay mkMapView  overlay1 overlay2 =
-    sendMsg mkMapView (mkSelector "exchangeOverlay:withOverlay:") retVoid [argPtr (castPtr (unRawId overlay1) :: Ptr ()), argPtr (castPtr (unRawId overlay2) :: Ptr ())]
+exchangeOverlay_withOverlay mkMapView overlay1 overlay2 =
+  sendMessage mkMapView exchangeOverlay_withOverlaySelector overlay1 overlay2
 
 -- | @- overlaysInLevel:@
 overlaysInLevel :: IsMKMapView mkMapView => mkMapView -> MKOverlayLevel -> IO (Id NSArray)
-overlaysInLevel mkMapView  level =
-    sendMsg mkMapView (mkSelector "overlaysInLevel:") (retPtr retVoid) [argCLong (coerce level)] >>= retainedObject . castPtr
+overlaysInLevel mkMapView level =
+  sendMessage mkMapView overlaysInLevelSelector level
 
 -- | @- rendererForOverlay:@
 rendererForOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> IO (Id MKOverlayRenderer)
-rendererForOverlay mkMapView  overlay =
-    sendMsg mkMapView (mkSelector "rendererForOverlay:") (retPtr retVoid) [argPtr (castPtr (unRawId overlay) :: Ptr ())] >>= retainedObject . castPtr
+rendererForOverlay mkMapView overlay =
+  sendMessage mkMapView rendererForOverlaySelector overlay
 
 -- | @- addOverlay:@
 addOverlay :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
-addOverlay mkMapView  overlay =
-    sendMsg mkMapView (mkSelector "addOverlay:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ())]
+addOverlay mkMapView overlay =
+  sendMessage mkMapView addOverlaySelector overlay
 
 -- | @- addOverlays:@
 addOverlays :: (IsMKMapView mkMapView, IsNSArray overlays) => mkMapView -> overlays -> IO ()
-addOverlays mkMapView  overlays =
-  withObjCPtr overlays $ \raw_overlays ->
-      sendMsg mkMapView (mkSelector "addOverlays:") retVoid [argPtr (castPtr raw_overlays :: Ptr ())]
+addOverlays mkMapView overlays =
+  sendMessage mkMapView addOverlaysSelector (toNSArray overlays)
 
 -- | @- insertOverlay:atIndex:@
 insertOverlay_atIndex :: IsMKMapView mkMapView => mkMapView -> RawId -> CULong -> IO ()
-insertOverlay_atIndex mkMapView  overlay index =
-    sendMsg mkMapView (mkSelector "insertOverlay:atIndex:") retVoid [argPtr (castPtr (unRawId overlay) :: Ptr ()), argCULong index]
+insertOverlay_atIndex mkMapView overlay index =
+  sendMessage mkMapView insertOverlay_atIndexSelector overlay index
 
 -- | @- exchangeOverlayAtIndex:withOverlayAtIndex:@
 exchangeOverlayAtIndex_withOverlayAtIndex :: IsMKMapView mkMapView => mkMapView -> CULong -> CULong -> IO ()
-exchangeOverlayAtIndex_withOverlayAtIndex mkMapView  index1 index2 =
-    sendMsg mkMapView (mkSelector "exchangeOverlayAtIndex:withOverlayAtIndex:") retVoid [argCULong index1, argCULong index2]
+exchangeOverlayAtIndex_withOverlayAtIndex mkMapView index1 index2 =
+  sendMessage mkMapView exchangeOverlayAtIndex_withOverlayAtIndexSelector index1 index2
 
 -- | @- delegate@
 delegate :: IsMKMapView mkMapView => mkMapView -> IO RawId
-delegate mkMapView  =
-    fmap (RawId . castPtr) $ sendMsg mkMapView (mkSelector "delegate") (retPtr retVoid) []
+delegate mkMapView =
+  sendMessage mkMapView delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMKMapView mkMapView => mkMapView -> RawId -> IO ()
-setDelegate mkMapView  value =
-    sendMsg mkMapView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mkMapView value =
+  sendMessage mkMapView setDelegateSelector value
 
 -- | @- mapType@
 mapType :: IsMKMapView mkMapView => mkMapView -> IO MKMapType
-mapType mkMapView  =
-    fmap (coerce :: CULong -> MKMapType) $ sendMsg mkMapView (mkSelector "mapType") retCULong []
+mapType mkMapView =
+  sendMessage mkMapView mapTypeSelector
 
 -- | @- setMapType:@
 setMapType :: IsMKMapView mkMapView => mkMapView -> MKMapType -> IO ()
-setMapType mkMapView  value =
-    sendMsg mkMapView (mkSelector "setMapType:") retVoid [argCULong (coerce value)]
+setMapType mkMapView value =
+  sendMessage mkMapView setMapTypeSelector value
 
 -- | @- preferredConfiguration@
 preferredConfiguration :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapConfiguration)
-preferredConfiguration mkMapView  =
-    sendMsg mkMapView (mkSelector "preferredConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredConfiguration mkMapView =
+  sendMessage mkMapView preferredConfigurationSelector
 
 -- | @- setPreferredConfiguration:@
 setPreferredConfiguration :: (IsMKMapView mkMapView, IsMKMapConfiguration value) => mkMapView -> value -> IO ()
-setPreferredConfiguration mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setPreferredConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredConfiguration mkMapView value =
+  sendMessage mkMapView setPreferredConfigurationSelector (toMKMapConfiguration value)
 
 -- | @- camera@
 camera :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCamera)
-camera mkMapView  =
-    sendMsg mkMapView (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+camera mkMapView =
+  sendMessage mkMapView cameraSelector
 
 -- | @- setCamera:@
 setCamera :: (IsMKMapView mkMapView, IsMKMapCamera value) => mkMapView -> value -> IO ()
-setCamera mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCamera mkMapView value =
+  sendMessage mkMapView setCameraSelector (toMKMapCamera value)
 
 -- | @- cameraZoomRange@
 cameraZoomRange :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCameraZoomRange)
-cameraZoomRange mkMapView  =
-    sendMsg mkMapView (mkSelector "cameraZoomRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraZoomRange mkMapView =
+  sendMessage mkMapView cameraZoomRangeSelector
 
 -- | @- setCameraZoomRange:@
 setCameraZoomRange :: (IsMKMapView mkMapView, IsMKMapCameraZoomRange value) => mkMapView -> value -> IO ()
-setCameraZoomRange mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setCameraZoomRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCameraZoomRange mkMapView value =
+  sendMessage mkMapView setCameraZoomRangeSelector (toMKMapCameraZoomRange value)
 
 -- | @- cameraBoundary@
 cameraBoundary :: IsMKMapView mkMapView => mkMapView -> IO (Id MKMapCameraBoundary)
-cameraBoundary mkMapView  =
-    sendMsg mkMapView (mkSelector "cameraBoundary") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraBoundary mkMapView =
+  sendMessage mkMapView cameraBoundarySelector
 
 -- | @- setCameraBoundary:@
 setCameraBoundary :: (IsMKMapView mkMapView, IsMKMapCameraBoundary value) => mkMapView -> value -> IO ()
-setCameraBoundary mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setCameraBoundary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCameraBoundary mkMapView value =
+  sendMessage mkMapView setCameraBoundarySelector (toMKMapCameraBoundary value)
 
 -- | @- zoomEnabled@
 zoomEnabled :: IsMKMapView mkMapView => mkMapView -> IO Bool
-zoomEnabled mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "zoomEnabled") retCULong []
+zoomEnabled mkMapView =
+  sendMessage mkMapView zoomEnabledSelector
 
 -- | @- setZoomEnabled:@
 setZoomEnabled :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setZoomEnabled mkMapView  value =
-    sendMsg mkMapView (mkSelector "setZoomEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setZoomEnabled mkMapView value =
+  sendMessage mkMapView setZoomEnabledSelector value
 
 -- | @- scrollEnabled@
 scrollEnabled :: IsMKMapView mkMapView => mkMapView -> IO Bool
-scrollEnabled mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "scrollEnabled") retCULong []
+scrollEnabled mkMapView =
+  sendMessage mkMapView scrollEnabledSelector
 
 -- | @- setScrollEnabled:@
 setScrollEnabled :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setScrollEnabled mkMapView  value =
-    sendMsg mkMapView (mkSelector "setScrollEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setScrollEnabled mkMapView value =
+  sendMessage mkMapView setScrollEnabledSelector value
 
 -- | @- rotateEnabled@
 rotateEnabled :: IsMKMapView mkMapView => mkMapView -> IO Bool
-rotateEnabled mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "rotateEnabled") retCULong []
+rotateEnabled mkMapView =
+  sendMessage mkMapView rotateEnabledSelector
 
 -- | @- setRotateEnabled:@
 setRotateEnabled :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setRotateEnabled mkMapView  value =
-    sendMsg mkMapView (mkSelector "setRotateEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setRotateEnabled mkMapView value =
+  sendMessage mkMapView setRotateEnabledSelector value
 
 -- | @- pitchEnabled@
 pitchEnabled :: IsMKMapView mkMapView => mkMapView -> IO Bool
-pitchEnabled mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "pitchEnabled") retCULong []
+pitchEnabled mkMapView =
+  sendMessage mkMapView pitchEnabledSelector
 
 -- | @- setPitchEnabled:@
 setPitchEnabled :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setPitchEnabled mkMapView  value =
-    sendMsg mkMapView (mkSelector "setPitchEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPitchEnabled mkMapView value =
+  sendMessage mkMapView setPitchEnabledSelector value
 
 -- | @- showsUserTrackingButton@
 showsUserTrackingButton :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsUserTrackingButton mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsUserTrackingButton") retCULong []
+showsUserTrackingButton mkMapView =
+  sendMessage mkMapView showsUserTrackingButtonSelector
 
 -- | @- setShowsUserTrackingButton:@
 setShowsUserTrackingButton :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsUserTrackingButton mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsUserTrackingButton:") retVoid [argCULong (if value then 1 else 0)]
+setShowsUserTrackingButton mkMapView value =
+  sendMessage mkMapView setShowsUserTrackingButtonSelector value
 
 -- | @- pitchButtonVisibility@
 pitchButtonVisibility :: IsMKMapView mkMapView => mkMapView -> IO MKFeatureVisibility
-pitchButtonVisibility mkMapView  =
-    fmap (coerce :: CLong -> MKFeatureVisibility) $ sendMsg mkMapView (mkSelector "pitchButtonVisibility") retCLong []
+pitchButtonVisibility mkMapView =
+  sendMessage mkMapView pitchButtonVisibilitySelector
 
 -- | @- setPitchButtonVisibility:@
 setPitchButtonVisibility :: IsMKMapView mkMapView => mkMapView -> MKFeatureVisibility -> IO ()
-setPitchButtonVisibility mkMapView  value =
-    sendMsg mkMapView (mkSelector "setPitchButtonVisibility:") retVoid [argCLong (coerce value)]
+setPitchButtonVisibility mkMapView value =
+  sendMessage mkMapView setPitchButtonVisibilitySelector value
 
 -- | @- showsPitchControl@
 showsPitchControl :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsPitchControl mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsPitchControl") retCULong []
+showsPitchControl mkMapView =
+  sendMessage mkMapView showsPitchControlSelector
 
 -- | @- setShowsPitchControl:@
 setShowsPitchControl :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsPitchControl mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsPitchControl:") retVoid [argCULong (if value then 1 else 0)]
+setShowsPitchControl mkMapView value =
+  sendMessage mkMapView setShowsPitchControlSelector value
 
 -- | @- showsZoomControls@
 showsZoomControls :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsZoomControls mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsZoomControls") retCULong []
+showsZoomControls mkMapView =
+  sendMessage mkMapView showsZoomControlsSelector
 
 -- | @- setShowsZoomControls:@
 setShowsZoomControls :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsZoomControls mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsZoomControls:") retVoid [argCULong (if value then 1 else 0)]
+setShowsZoomControls mkMapView value =
+  sendMessage mkMapView setShowsZoomControlsSelector value
 
 -- | @- showsCompass@
 showsCompass :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsCompass mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsCompass") retCULong []
+showsCompass mkMapView =
+  sendMessage mkMapView showsCompassSelector
 
 -- | @- setShowsCompass:@
 setShowsCompass :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsCompass mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsCompass:") retVoid [argCULong (if value then 1 else 0)]
+setShowsCompass mkMapView value =
+  sendMessage mkMapView setShowsCompassSelector value
 
 -- | @- showsScale@
 showsScale :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsScale mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsScale") retCULong []
+showsScale mkMapView =
+  sendMessage mkMapView showsScaleSelector
 
 -- | @- setShowsScale:@
 setShowsScale :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsScale mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsScale:") retVoid [argCULong (if value then 1 else 0)]
+setShowsScale mkMapView value =
+  sendMessage mkMapView setShowsScaleSelector value
 
 -- | @- pointOfInterestFilter@
 pointOfInterestFilter :: IsMKMapView mkMapView => mkMapView -> IO (Id MKPointOfInterestFilter)
-pointOfInterestFilter mkMapView  =
-    sendMsg mkMapView (mkSelector "pointOfInterestFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfInterestFilter mkMapView =
+  sendMessage mkMapView pointOfInterestFilterSelector
 
 -- | @- setPointOfInterestFilter:@
 setPointOfInterestFilter :: (IsMKMapView mkMapView, IsMKPointOfInterestFilter value) => mkMapView -> value -> IO ()
-setPointOfInterestFilter mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setPointOfInterestFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfInterestFilter mkMapView value =
+  sendMessage mkMapView setPointOfInterestFilterSelector (toMKPointOfInterestFilter value)
 
 -- | @- showsPointsOfInterest@
 showsPointsOfInterest :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsPointsOfInterest mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsPointsOfInterest") retCULong []
+showsPointsOfInterest mkMapView =
+  sendMessage mkMapView showsPointsOfInterestSelector
 
 -- | @- setShowsPointsOfInterest:@
 setShowsPointsOfInterest :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsPointsOfInterest mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsPointsOfInterest:") retVoid [argCULong (if value then 1 else 0)]
+setShowsPointsOfInterest mkMapView value =
+  sendMessage mkMapView setShowsPointsOfInterestSelector value
 
 -- | @- showsBuildings@
 showsBuildings :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsBuildings mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsBuildings") retCULong []
+showsBuildings mkMapView =
+  sendMessage mkMapView showsBuildingsSelector
 
 -- | @- setShowsBuildings:@
 setShowsBuildings :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsBuildings mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsBuildings:") retVoid [argCULong (if value then 1 else 0)]
+setShowsBuildings mkMapView value =
+  sendMessage mkMapView setShowsBuildingsSelector value
 
 -- | @- showsTraffic@
 showsTraffic :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsTraffic mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsTraffic") retCULong []
+showsTraffic mkMapView =
+  sendMessage mkMapView showsTrafficSelector
 
 -- | @- setShowsTraffic:@
 setShowsTraffic :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsTraffic mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsTraffic:") retVoid [argCULong (if value then 1 else 0)]
+setShowsTraffic mkMapView value =
+  sendMessage mkMapView setShowsTrafficSelector value
 
 -- | @- showsUserLocation@
 showsUserLocation :: IsMKMapView mkMapView => mkMapView -> IO Bool
-showsUserLocation mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "showsUserLocation") retCULong []
+showsUserLocation mkMapView =
+  sendMessage mkMapView showsUserLocationSelector
 
 -- | @- setShowsUserLocation:@
 setShowsUserLocation :: IsMKMapView mkMapView => mkMapView -> Bool -> IO ()
-setShowsUserLocation mkMapView  value =
-    sendMsg mkMapView (mkSelector "setShowsUserLocation:") retVoid [argCULong (if value then 1 else 0)]
+setShowsUserLocation mkMapView value =
+  sendMessage mkMapView setShowsUserLocationSelector value
 
 -- | @- userLocation@
 userLocation :: IsMKMapView mkMapView => mkMapView -> IO (Id MKUserLocation)
-userLocation mkMapView  =
-    sendMsg mkMapView (mkSelector "userLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+userLocation mkMapView =
+  sendMessage mkMapView userLocationSelector
 
 -- | @- userTrackingMode@
 userTrackingMode :: IsMKMapView mkMapView => mkMapView -> IO MKUserTrackingMode
-userTrackingMode mkMapView  =
-    fmap (coerce :: CLong -> MKUserTrackingMode) $ sendMsg mkMapView (mkSelector "userTrackingMode") retCLong []
+userTrackingMode mkMapView =
+  sendMessage mkMapView userTrackingModeSelector
 
 -- | @- setUserTrackingMode:@
 setUserTrackingMode :: IsMKMapView mkMapView => mkMapView -> MKUserTrackingMode -> IO ()
-setUserTrackingMode mkMapView  value =
-    sendMsg mkMapView (mkSelector "setUserTrackingMode:") retVoid [argCLong (coerce value)]
+setUserTrackingMode mkMapView value =
+  sendMessage mkMapView setUserTrackingModeSelector value
 
 -- | @- userLocationVisible@
 userLocationVisible :: IsMKMapView mkMapView => mkMapView -> IO Bool
-userLocationVisible mkMapView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapView (mkSelector "userLocationVisible") retCULong []
+userLocationVisible mkMapView =
+  sendMessage mkMapView userLocationVisibleSelector
 
 -- | @- annotations@
 annotations :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
-annotations mkMapView  =
-    sendMsg mkMapView (mkSelector "annotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+annotations mkMapView =
+  sendMessage mkMapView annotationsSelector
 
 -- | @- selectedAnnotations@
 selectedAnnotations :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
-selectedAnnotations mkMapView  =
-    sendMsg mkMapView (mkSelector "selectedAnnotations") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedAnnotations mkMapView =
+  sendMessage mkMapView selectedAnnotationsSelector
 
 -- | @- setSelectedAnnotations:@
 setSelectedAnnotations :: (IsMKMapView mkMapView, IsNSArray value) => mkMapView -> value -> IO ()
-setSelectedAnnotations mkMapView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapView (mkSelector "setSelectedAnnotations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectedAnnotations mkMapView value =
+  sendMessage mkMapView setSelectedAnnotationsSelector (toNSArray value)
 
 -- | @- overlays@
 overlays :: IsMKMapView mkMapView => mkMapView -> IO (Id NSArray)
-overlays mkMapView  =
-    sendMsg mkMapView (mkSelector "overlays") (retPtr retVoid) [] >>= retainedObject . castPtr
+overlays mkMapView =
+  sendMessage mkMapView overlaysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setCamera:animated:@
-setCamera_animatedSelector :: Selector
+setCamera_animatedSelector :: Selector '[Id MKMapCamera, Bool] ()
 setCamera_animatedSelector = mkSelector "setCamera:animated:"
 
 -- | @Selector@ for @setCameraZoomRange:animated:@
-setCameraZoomRange_animatedSelector :: Selector
+setCameraZoomRange_animatedSelector :: Selector '[Id MKMapCameraZoomRange, Bool] ()
 setCameraZoomRange_animatedSelector = mkSelector "setCameraZoomRange:animated:"
 
 -- | @Selector@ for @setCameraBoundary:animated:@
-setCameraBoundary_animatedSelector :: Selector
+setCameraBoundary_animatedSelector :: Selector '[Id MKMapCameraBoundary, Bool] ()
 setCameraBoundary_animatedSelector = mkSelector "setCameraBoundary:animated:"
 
 -- | @Selector@ for @setUserTrackingMode:animated:@
-setUserTrackingMode_animatedSelector :: Selector
+setUserTrackingMode_animatedSelector :: Selector '[MKUserTrackingMode, Bool] ()
 setUserTrackingMode_animatedSelector = mkSelector "setUserTrackingMode:animated:"
 
 -- | @Selector@ for @addAnnotation:@
-addAnnotationSelector :: Selector
+addAnnotationSelector :: Selector '[RawId] ()
 addAnnotationSelector = mkSelector "addAnnotation:"
 
 -- | @Selector@ for @addAnnotations:@
-addAnnotationsSelector :: Selector
+addAnnotationsSelector :: Selector '[Id NSArray] ()
 addAnnotationsSelector = mkSelector "addAnnotations:"
 
 -- | @Selector@ for @removeAnnotation:@
-removeAnnotationSelector :: Selector
+removeAnnotationSelector :: Selector '[RawId] ()
 removeAnnotationSelector = mkSelector "removeAnnotation:"
 
 -- | @Selector@ for @removeAnnotations:@
-removeAnnotationsSelector :: Selector
+removeAnnotationsSelector :: Selector '[Id NSArray] ()
 removeAnnotationsSelector = mkSelector "removeAnnotations:"
 
 -- | @Selector@ for @viewForAnnotation:@
-viewForAnnotationSelector :: Selector
+viewForAnnotationSelector :: Selector '[RawId] (Id MKAnnotationView)
 viewForAnnotationSelector = mkSelector "viewForAnnotation:"
 
 -- | @Selector@ for @dequeueReusableAnnotationViewWithIdentifier:@
-dequeueReusableAnnotationViewWithIdentifierSelector :: Selector
+dequeueReusableAnnotationViewWithIdentifierSelector :: Selector '[Id NSString] (Id MKAnnotationView)
 dequeueReusableAnnotationViewWithIdentifierSelector = mkSelector "dequeueReusableAnnotationViewWithIdentifier:"
 
 -- | @Selector@ for @dequeueReusableAnnotationViewWithIdentifier:forAnnotation:@
-dequeueReusableAnnotationViewWithIdentifier_forAnnotationSelector :: Selector
+dequeueReusableAnnotationViewWithIdentifier_forAnnotationSelector :: Selector '[Id NSString, RawId] (Id MKAnnotationView)
 dequeueReusableAnnotationViewWithIdentifier_forAnnotationSelector = mkSelector "dequeueReusableAnnotationViewWithIdentifier:forAnnotation:"
 
 -- | @Selector@ for @registerClass:forAnnotationViewWithReuseIdentifier:@
-registerClass_forAnnotationViewWithReuseIdentifierSelector :: Selector
+registerClass_forAnnotationViewWithReuseIdentifierSelector :: Selector '[Class, Id NSString] ()
 registerClass_forAnnotationViewWithReuseIdentifierSelector = mkSelector "registerClass:forAnnotationViewWithReuseIdentifier:"
 
 -- | @Selector@ for @selectAnnotation:animated:@
-selectAnnotation_animatedSelector :: Selector
+selectAnnotation_animatedSelector :: Selector '[RawId, Bool] ()
 selectAnnotation_animatedSelector = mkSelector "selectAnnotation:animated:"
 
 -- | @Selector@ for @deselectAnnotation:animated:@
-deselectAnnotation_animatedSelector :: Selector
+deselectAnnotation_animatedSelector :: Selector '[RawId, Bool] ()
 deselectAnnotation_animatedSelector = mkSelector "deselectAnnotation:animated:"
 
 -- | @Selector@ for @showAnnotations:animated:@
-showAnnotations_animatedSelector :: Selector
+showAnnotations_animatedSelector :: Selector '[Id NSArray, Bool] ()
 showAnnotations_animatedSelector = mkSelector "showAnnotations:animated:"
 
 -- | @Selector@ for @addOverlay:level:@
-addOverlay_levelSelector :: Selector
+addOverlay_levelSelector :: Selector '[RawId, MKOverlayLevel] ()
 addOverlay_levelSelector = mkSelector "addOverlay:level:"
 
 -- | @Selector@ for @addOverlays:level:@
-addOverlays_levelSelector :: Selector
+addOverlays_levelSelector :: Selector '[Id NSArray, MKOverlayLevel] ()
 addOverlays_levelSelector = mkSelector "addOverlays:level:"
 
 -- | @Selector@ for @removeOverlay:@
-removeOverlaySelector :: Selector
+removeOverlaySelector :: Selector '[RawId] ()
 removeOverlaySelector = mkSelector "removeOverlay:"
 
 -- | @Selector@ for @removeOverlays:@
-removeOverlaysSelector :: Selector
+removeOverlaysSelector :: Selector '[Id NSArray] ()
 removeOverlaysSelector = mkSelector "removeOverlays:"
 
 -- | @Selector@ for @insertOverlay:atIndex:level:@
-insertOverlay_atIndex_levelSelector :: Selector
+insertOverlay_atIndex_levelSelector :: Selector '[RawId, CULong, MKOverlayLevel] ()
 insertOverlay_atIndex_levelSelector = mkSelector "insertOverlay:atIndex:level:"
 
 -- | @Selector@ for @insertOverlay:aboveOverlay:@
-insertOverlay_aboveOverlaySelector :: Selector
+insertOverlay_aboveOverlaySelector :: Selector '[RawId, RawId] ()
 insertOverlay_aboveOverlaySelector = mkSelector "insertOverlay:aboveOverlay:"
 
 -- | @Selector@ for @insertOverlay:belowOverlay:@
-insertOverlay_belowOverlaySelector :: Selector
+insertOverlay_belowOverlaySelector :: Selector '[RawId, RawId] ()
 insertOverlay_belowOverlaySelector = mkSelector "insertOverlay:belowOverlay:"
 
 -- | @Selector@ for @exchangeOverlay:withOverlay:@
-exchangeOverlay_withOverlaySelector :: Selector
+exchangeOverlay_withOverlaySelector :: Selector '[RawId, RawId] ()
 exchangeOverlay_withOverlaySelector = mkSelector "exchangeOverlay:withOverlay:"
 
 -- | @Selector@ for @overlaysInLevel:@
-overlaysInLevelSelector :: Selector
+overlaysInLevelSelector :: Selector '[MKOverlayLevel] (Id NSArray)
 overlaysInLevelSelector = mkSelector "overlaysInLevel:"
 
 -- | @Selector@ for @rendererForOverlay:@
-rendererForOverlaySelector :: Selector
+rendererForOverlaySelector :: Selector '[RawId] (Id MKOverlayRenderer)
 rendererForOverlaySelector = mkSelector "rendererForOverlay:"
 
 -- | @Selector@ for @addOverlay:@
-addOverlaySelector :: Selector
+addOverlaySelector :: Selector '[RawId] ()
 addOverlaySelector = mkSelector "addOverlay:"
 
 -- | @Selector@ for @addOverlays:@
-addOverlaysSelector :: Selector
+addOverlaysSelector :: Selector '[Id NSArray] ()
 addOverlaysSelector = mkSelector "addOverlays:"
 
 -- | @Selector@ for @insertOverlay:atIndex:@
-insertOverlay_atIndexSelector :: Selector
+insertOverlay_atIndexSelector :: Selector '[RawId, CULong] ()
 insertOverlay_atIndexSelector = mkSelector "insertOverlay:atIndex:"
 
 -- | @Selector@ for @exchangeOverlayAtIndex:withOverlayAtIndex:@
-exchangeOverlayAtIndex_withOverlayAtIndexSelector :: Selector
+exchangeOverlayAtIndex_withOverlayAtIndexSelector :: Selector '[CULong, CULong] ()
 exchangeOverlayAtIndex_withOverlayAtIndexSelector = mkSelector "exchangeOverlayAtIndex:withOverlayAtIndex:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mapType@
-mapTypeSelector :: Selector
+mapTypeSelector :: Selector '[] MKMapType
 mapTypeSelector = mkSelector "mapType"
 
 -- | @Selector@ for @setMapType:@
-setMapTypeSelector :: Selector
+setMapTypeSelector :: Selector '[MKMapType] ()
 setMapTypeSelector = mkSelector "setMapType:"
 
 -- | @Selector@ for @preferredConfiguration@
-preferredConfigurationSelector :: Selector
+preferredConfigurationSelector :: Selector '[] (Id MKMapConfiguration)
 preferredConfigurationSelector = mkSelector "preferredConfiguration"
 
 -- | @Selector@ for @setPreferredConfiguration:@
-setPreferredConfigurationSelector :: Selector
+setPreferredConfigurationSelector :: Selector '[Id MKMapConfiguration] ()
 setPreferredConfigurationSelector = mkSelector "setPreferredConfiguration:"
 
 -- | @Selector@ for @camera@
-cameraSelector :: Selector
+cameraSelector :: Selector '[] (Id MKMapCamera)
 cameraSelector = mkSelector "camera"
 
 -- | @Selector@ for @setCamera:@
-setCameraSelector :: Selector
+setCameraSelector :: Selector '[Id MKMapCamera] ()
 setCameraSelector = mkSelector "setCamera:"
 
 -- | @Selector@ for @cameraZoomRange@
-cameraZoomRangeSelector :: Selector
+cameraZoomRangeSelector :: Selector '[] (Id MKMapCameraZoomRange)
 cameraZoomRangeSelector = mkSelector "cameraZoomRange"
 
 -- | @Selector@ for @setCameraZoomRange:@
-setCameraZoomRangeSelector :: Selector
+setCameraZoomRangeSelector :: Selector '[Id MKMapCameraZoomRange] ()
 setCameraZoomRangeSelector = mkSelector "setCameraZoomRange:"
 
 -- | @Selector@ for @cameraBoundary@
-cameraBoundarySelector :: Selector
+cameraBoundarySelector :: Selector '[] (Id MKMapCameraBoundary)
 cameraBoundarySelector = mkSelector "cameraBoundary"
 
 -- | @Selector@ for @setCameraBoundary:@
-setCameraBoundarySelector :: Selector
+setCameraBoundarySelector :: Selector '[Id MKMapCameraBoundary] ()
 setCameraBoundarySelector = mkSelector "setCameraBoundary:"
 
 -- | @Selector@ for @zoomEnabled@
-zoomEnabledSelector :: Selector
+zoomEnabledSelector :: Selector '[] Bool
 zoomEnabledSelector = mkSelector "zoomEnabled"
 
 -- | @Selector@ for @setZoomEnabled:@
-setZoomEnabledSelector :: Selector
+setZoomEnabledSelector :: Selector '[Bool] ()
 setZoomEnabledSelector = mkSelector "setZoomEnabled:"
 
 -- | @Selector@ for @scrollEnabled@
-scrollEnabledSelector :: Selector
+scrollEnabledSelector :: Selector '[] Bool
 scrollEnabledSelector = mkSelector "scrollEnabled"
 
 -- | @Selector@ for @setScrollEnabled:@
-setScrollEnabledSelector :: Selector
+setScrollEnabledSelector :: Selector '[Bool] ()
 setScrollEnabledSelector = mkSelector "setScrollEnabled:"
 
 -- | @Selector@ for @rotateEnabled@
-rotateEnabledSelector :: Selector
+rotateEnabledSelector :: Selector '[] Bool
 rotateEnabledSelector = mkSelector "rotateEnabled"
 
 -- | @Selector@ for @setRotateEnabled:@
-setRotateEnabledSelector :: Selector
+setRotateEnabledSelector :: Selector '[Bool] ()
 setRotateEnabledSelector = mkSelector "setRotateEnabled:"
 
 -- | @Selector@ for @pitchEnabled@
-pitchEnabledSelector :: Selector
+pitchEnabledSelector :: Selector '[] Bool
 pitchEnabledSelector = mkSelector "pitchEnabled"
 
 -- | @Selector@ for @setPitchEnabled:@
-setPitchEnabledSelector :: Selector
+setPitchEnabledSelector :: Selector '[Bool] ()
 setPitchEnabledSelector = mkSelector "setPitchEnabled:"
 
 -- | @Selector@ for @showsUserTrackingButton@
-showsUserTrackingButtonSelector :: Selector
+showsUserTrackingButtonSelector :: Selector '[] Bool
 showsUserTrackingButtonSelector = mkSelector "showsUserTrackingButton"
 
 -- | @Selector@ for @setShowsUserTrackingButton:@
-setShowsUserTrackingButtonSelector :: Selector
+setShowsUserTrackingButtonSelector :: Selector '[Bool] ()
 setShowsUserTrackingButtonSelector = mkSelector "setShowsUserTrackingButton:"
 
 -- | @Selector@ for @pitchButtonVisibility@
-pitchButtonVisibilitySelector :: Selector
+pitchButtonVisibilitySelector :: Selector '[] MKFeatureVisibility
 pitchButtonVisibilitySelector = mkSelector "pitchButtonVisibility"
 
 -- | @Selector@ for @setPitchButtonVisibility:@
-setPitchButtonVisibilitySelector :: Selector
+setPitchButtonVisibilitySelector :: Selector '[MKFeatureVisibility] ()
 setPitchButtonVisibilitySelector = mkSelector "setPitchButtonVisibility:"
 
 -- | @Selector@ for @showsPitchControl@
-showsPitchControlSelector :: Selector
+showsPitchControlSelector :: Selector '[] Bool
 showsPitchControlSelector = mkSelector "showsPitchControl"
 
 -- | @Selector@ for @setShowsPitchControl:@
-setShowsPitchControlSelector :: Selector
+setShowsPitchControlSelector :: Selector '[Bool] ()
 setShowsPitchControlSelector = mkSelector "setShowsPitchControl:"
 
 -- | @Selector@ for @showsZoomControls@
-showsZoomControlsSelector :: Selector
+showsZoomControlsSelector :: Selector '[] Bool
 showsZoomControlsSelector = mkSelector "showsZoomControls"
 
 -- | @Selector@ for @setShowsZoomControls:@
-setShowsZoomControlsSelector :: Selector
+setShowsZoomControlsSelector :: Selector '[Bool] ()
 setShowsZoomControlsSelector = mkSelector "setShowsZoomControls:"
 
 -- | @Selector@ for @showsCompass@
-showsCompassSelector :: Selector
+showsCompassSelector :: Selector '[] Bool
 showsCompassSelector = mkSelector "showsCompass"
 
 -- | @Selector@ for @setShowsCompass:@
-setShowsCompassSelector :: Selector
+setShowsCompassSelector :: Selector '[Bool] ()
 setShowsCompassSelector = mkSelector "setShowsCompass:"
 
 -- | @Selector@ for @showsScale@
-showsScaleSelector :: Selector
+showsScaleSelector :: Selector '[] Bool
 showsScaleSelector = mkSelector "showsScale"
 
 -- | @Selector@ for @setShowsScale:@
-setShowsScaleSelector :: Selector
+setShowsScaleSelector :: Selector '[Bool] ()
 setShowsScaleSelector = mkSelector "setShowsScale:"
 
 -- | @Selector@ for @pointOfInterestFilter@
-pointOfInterestFilterSelector :: Selector
+pointOfInterestFilterSelector :: Selector '[] (Id MKPointOfInterestFilter)
 pointOfInterestFilterSelector = mkSelector "pointOfInterestFilter"
 
 -- | @Selector@ for @setPointOfInterestFilter:@
-setPointOfInterestFilterSelector :: Selector
+setPointOfInterestFilterSelector :: Selector '[Id MKPointOfInterestFilter] ()
 setPointOfInterestFilterSelector = mkSelector "setPointOfInterestFilter:"
 
 -- | @Selector@ for @showsPointsOfInterest@
-showsPointsOfInterestSelector :: Selector
+showsPointsOfInterestSelector :: Selector '[] Bool
 showsPointsOfInterestSelector = mkSelector "showsPointsOfInterest"
 
 -- | @Selector@ for @setShowsPointsOfInterest:@
-setShowsPointsOfInterestSelector :: Selector
+setShowsPointsOfInterestSelector :: Selector '[Bool] ()
 setShowsPointsOfInterestSelector = mkSelector "setShowsPointsOfInterest:"
 
 -- | @Selector@ for @showsBuildings@
-showsBuildingsSelector :: Selector
+showsBuildingsSelector :: Selector '[] Bool
 showsBuildingsSelector = mkSelector "showsBuildings"
 
 -- | @Selector@ for @setShowsBuildings:@
-setShowsBuildingsSelector :: Selector
+setShowsBuildingsSelector :: Selector '[Bool] ()
 setShowsBuildingsSelector = mkSelector "setShowsBuildings:"
 
 -- | @Selector@ for @showsTraffic@
-showsTrafficSelector :: Selector
+showsTrafficSelector :: Selector '[] Bool
 showsTrafficSelector = mkSelector "showsTraffic"
 
 -- | @Selector@ for @setShowsTraffic:@
-setShowsTrafficSelector :: Selector
+setShowsTrafficSelector :: Selector '[Bool] ()
 setShowsTrafficSelector = mkSelector "setShowsTraffic:"
 
 -- | @Selector@ for @showsUserLocation@
-showsUserLocationSelector :: Selector
+showsUserLocationSelector :: Selector '[] Bool
 showsUserLocationSelector = mkSelector "showsUserLocation"
 
 -- | @Selector@ for @setShowsUserLocation:@
-setShowsUserLocationSelector :: Selector
+setShowsUserLocationSelector :: Selector '[Bool] ()
 setShowsUserLocationSelector = mkSelector "setShowsUserLocation:"
 
 -- | @Selector@ for @userLocation@
-userLocationSelector :: Selector
+userLocationSelector :: Selector '[] (Id MKUserLocation)
 userLocationSelector = mkSelector "userLocation"
 
 -- | @Selector@ for @userTrackingMode@
-userTrackingModeSelector :: Selector
+userTrackingModeSelector :: Selector '[] MKUserTrackingMode
 userTrackingModeSelector = mkSelector "userTrackingMode"
 
 -- | @Selector@ for @setUserTrackingMode:@
-setUserTrackingModeSelector :: Selector
+setUserTrackingModeSelector :: Selector '[MKUserTrackingMode] ()
 setUserTrackingModeSelector = mkSelector "setUserTrackingMode:"
 
 -- | @Selector@ for @userLocationVisible@
-userLocationVisibleSelector :: Selector
+userLocationVisibleSelector :: Selector '[] Bool
 userLocationVisibleSelector = mkSelector "userLocationVisible"
 
 -- | @Selector@ for @annotations@
-annotationsSelector :: Selector
+annotationsSelector :: Selector '[] (Id NSArray)
 annotationsSelector = mkSelector "annotations"
 
 -- | @Selector@ for @selectedAnnotations@
-selectedAnnotationsSelector :: Selector
+selectedAnnotationsSelector :: Selector '[] (Id NSArray)
 selectedAnnotationsSelector = mkSelector "selectedAnnotations"
 
 -- | @Selector@ for @setSelectedAnnotations:@
-setSelectedAnnotationsSelector :: Selector
+setSelectedAnnotationsSelector :: Selector '[Id NSArray] ()
 setSelectedAnnotationsSelector = mkSelector "setSelectedAnnotations:"
 
 -- | @Selector@ for @overlays@
-overlaysSelector :: Selector
+overlaysSelector :: Selector '[] (Id NSArray)
 overlaysSelector = mkSelector "overlays"
 

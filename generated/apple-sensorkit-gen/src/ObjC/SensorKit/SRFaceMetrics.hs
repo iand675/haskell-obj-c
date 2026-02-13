@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.SensorKit.SRFaceMetrics
   , context
   , wholeFaceExpressions
   , partialFaceExpressions
+  , contextSelector
   , initSelector
   , newSelector
-  , versionSelector
-  , sessionIdentifierSelector
-  , contextSelector
-  , wholeFaceExpressionsSelector
   , partialFaceExpressionsSelector
+  , sessionIdentifierSelector
+  , versionSelector
+  , wholeFaceExpressionsSelector
 
   -- * Enum types
   , SRFaceMetricsContext(SRFaceMetricsContext)
@@ -29,15 +30,11 @@ module ObjC.SensorKit.SRFaceMetrics
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO (Id SRFaceMetrics)
-init_ srFaceMetrics  =
-    sendMsg srFaceMetrics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srFaceMetrics =
+  sendOwnedMessage srFaceMetrics initSelector
 
 -- | @+ new@
 new :: IO (Id SRFaceMetrics)
 new  =
   do
     cls' <- getRequiredClass "SRFaceMetrics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | version
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- version@
 version :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO (Id NSString)
-version srFaceMetrics  =
-    sendMsg srFaceMetrics (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version srFaceMetrics =
+  sendMessage srFaceMetrics versionSelector
 
 -- | sessionIdentifier
 --
@@ -72,8 +69,8 @@ version srFaceMetrics  =
 --
 -- ObjC selector: @- sessionIdentifier@
 sessionIdentifier :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO (Id NSString)
-sessionIdentifier srFaceMetrics  =
-    sendMsg srFaceMetrics (mkSelector "sessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionIdentifier srFaceMetrics =
+  sendMessage srFaceMetrics sessionIdentifierSelector
 
 -- | context
 --
@@ -81,8 +78,8 @@ sessionIdentifier srFaceMetrics  =
 --
 -- ObjC selector: @- context@
 context :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO SRFaceMetricsContext
-context srFaceMetrics  =
-    fmap (coerce :: CULong -> SRFaceMetricsContext) $ sendMsg srFaceMetrics (mkSelector "context") retCULong []
+context srFaceMetrics =
+  sendMessage srFaceMetrics contextSelector
 
 -- | wholeFaceExpressions
 --
@@ -90,8 +87,8 @@ context srFaceMetrics  =
 --
 -- ObjC selector: @- wholeFaceExpressions@
 wholeFaceExpressions :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO (Id NSArray)
-wholeFaceExpressions srFaceMetrics  =
-    sendMsg srFaceMetrics (mkSelector "wholeFaceExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+wholeFaceExpressions srFaceMetrics =
+  sendMessage srFaceMetrics wholeFaceExpressionsSelector
 
 -- | partialFaceExpressions
 --
@@ -99,38 +96,38 @@ wholeFaceExpressions srFaceMetrics  =
 --
 -- ObjC selector: @- partialFaceExpressions@
 partialFaceExpressions :: IsSRFaceMetrics srFaceMetrics => srFaceMetrics -> IO (Id NSArray)
-partialFaceExpressions srFaceMetrics  =
-    sendMsg srFaceMetrics (mkSelector "partialFaceExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+partialFaceExpressions srFaceMetrics =
+  sendMessage srFaceMetrics partialFaceExpressionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRFaceMetrics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRFaceMetrics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @sessionIdentifier@
-sessionIdentifierSelector :: Selector
+sessionIdentifierSelector :: Selector '[] (Id NSString)
 sessionIdentifierSelector = mkSelector "sessionIdentifier"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] SRFaceMetricsContext
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @wholeFaceExpressions@
-wholeFaceExpressionsSelector :: Selector
+wholeFaceExpressionsSelector :: Selector '[] (Id NSArray)
 wholeFaceExpressionsSelector = mkSelector "wholeFaceExpressions"
 
 -- | @Selector@ for @partialFaceExpressions@
-partialFaceExpressionsSelector :: Selector
+partialFaceExpressionsSelector :: Selector '[] (Id NSArray)
 partialFaceExpressionsSelector = mkSelector "partialFaceExpressions"
 

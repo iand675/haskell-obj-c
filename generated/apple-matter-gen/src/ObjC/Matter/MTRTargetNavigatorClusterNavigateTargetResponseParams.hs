@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRTargetNavigatorClusterNavigateTargetResponseParams
   , setData
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , dataSelector
+  , initWithResponseValue_errorSelector
   , setDataSelector
-  , timedInvokeTimeoutMsSelector
+  , setStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrTargetNavigatorClusterNavigateTargetResponseParams -> responseValue -> error_ -> IO (Id MTRTargetNavigatorClusterNavigateTargetResponseParams)
-initWithResponseValue_error mtrTargetNavigatorClusterNavigateTargetResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrTargetNavigatorClusterNavigateTargetResponseParams responseValue error_ =
+  sendOwnedMessage mtrTargetNavigatorClusterNavigateTargetResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams => mtrTargetNavigatorClusterNavigateTargetResponseParams -> IO (Id NSNumber)
-status mtrTargetNavigatorClusterNavigateTargetResponseParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrTargetNavigatorClusterNavigateTargetResponseParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams, IsNSNumber value) => mtrTargetNavigatorClusterNavigateTargetResponseParams -> value -> IO ()
-setStatus mtrTargetNavigatorClusterNavigateTargetResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrTargetNavigatorClusterNavigateTargetResponseParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams => mtrTargetNavigatorClusterNavigateTargetResponseParams -> IO (Id NSString)
-data_ mtrTargetNavigatorClusterNavigateTargetResponseParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrTargetNavigatorClusterNavigateTargetResponseParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams, IsNSString value) => mtrTargetNavigatorClusterNavigateTargetResponseParams -> value -> IO ()
-setData mtrTargetNavigatorClusterNavigateTargetResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrTargetNavigatorClusterNavigateTargetResponseParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams setDataSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setData mtrTargetNavigatorClusterNavigateTargetResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams => mtrTargetNavigatorClusterNavigateTargetResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetResponseParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetResponseParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTargetNavigatorClusterNavigateTargetResponseParams mtrTargetNavigatorClusterNavigateTargetResponseParams, IsNSNumber value) => mtrTargetNavigatorClusterNavigateTargetResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetResponseParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRTargetNavigatorClusterNavigateTargetResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

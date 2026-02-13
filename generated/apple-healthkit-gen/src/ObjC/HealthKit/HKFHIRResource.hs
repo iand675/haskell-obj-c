@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.HealthKit.HKFHIRResource
   , identifier
   , data_
   , sourceURL
-  , initSelector
-  , fhirVersionSelector
-  , resourceTypeSelector
-  , identifierSelector
   , dataSelector
+  , fhirVersionSelector
+  , identifierSelector
+  , initSelector
+  , resourceTypeSelector
   , sourceURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id HKFHIRResource)
-init_ hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkfhirResource =
+  sendOwnedMessage hkfhirResource initSelector
 
 -- | FHIRVersion
 --
@@ -52,8 +49,8 @@ init_ hkfhirResource  =
 --
 -- ObjC selector: @- FHIRVersion@
 fhirVersion :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id HKFHIRVersion)
-fhirVersion hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "FHIRVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+fhirVersion hkfhirResource =
+  sendMessage hkfhirResource fhirVersionSelector
 
 -- | resourceType
 --
@@ -63,8 +60,8 @@ fhirVersion hkfhirResource  =
 --
 -- ObjC selector: @- resourceType@
 resourceType :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id NSString)
-resourceType hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "resourceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+resourceType hkfhirResource =
+  sendMessage hkfhirResource resourceTypeSelector
 
 -- | identifier
 --
@@ -74,8 +71,8 @@ resourceType hkfhirResource  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id NSString)
-identifier hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier hkfhirResource =
+  sendMessage hkfhirResource identifierSelector
 
 -- | data
 --
@@ -85,8 +82,8 @@ identifier hkfhirResource  =
 --
 -- ObjC selector: @- data@
 data_ :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id NSData)
-data_ hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ hkfhirResource =
+  sendMessage hkfhirResource dataSelector
 
 -- | sourceURL
 --
@@ -96,34 +93,34 @@ data_ hkfhirResource  =
 --
 -- ObjC selector: @- sourceURL@
 sourceURL :: IsHKFHIRResource hkfhirResource => hkfhirResource -> IO (Id NSURL)
-sourceURL hkfhirResource  =
-    sendMsg hkfhirResource (mkSelector "sourceURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceURL hkfhirResource =
+  sendMessage hkfhirResource sourceURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKFHIRResource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @FHIRVersion@
-fhirVersionSelector :: Selector
+fhirVersionSelector :: Selector '[] (Id HKFHIRVersion)
 fhirVersionSelector = mkSelector "FHIRVersion"
 
 -- | @Selector@ for @resourceType@
-resourceTypeSelector :: Selector
+resourceTypeSelector :: Selector '[] (Id NSString)
 resourceTypeSelector = mkSelector "resourceType"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @sourceURL@
-sourceURLSelector :: Selector
+sourceURLSelector :: Selector '[] (Id NSURL)
 sourceURLSelector = mkSelector "sourceURL"
 

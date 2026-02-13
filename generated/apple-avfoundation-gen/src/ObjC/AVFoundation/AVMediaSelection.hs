@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVMediaSelection
   , selectedMediaOptionInMediaSelectionGroup
   , mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup
   , asset
-  , selectedMediaOptionInMediaSelectionGroupSelector
-  , mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector
   , assetSelector
+  , mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector
+  , selectedMediaOptionInMediaSelectionGroupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- selectedMediaOptionInMediaSelectionGroup:@
 selectedMediaOptionInMediaSelectionGroup :: (IsAVMediaSelection avMediaSelection, IsAVMediaSelectionGroup mediaSelectionGroup) => avMediaSelection -> mediaSelectionGroup -> IO (Id AVMediaSelectionOption)
-selectedMediaOptionInMediaSelectionGroup avMediaSelection  mediaSelectionGroup =
-  withObjCPtr mediaSelectionGroup $ \raw_mediaSelectionGroup ->
-      sendMsg avMediaSelection (mkSelector "selectedMediaOptionInMediaSelectionGroup:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionGroup :: Ptr ())] >>= retainedObject . castPtr
+selectedMediaOptionInMediaSelectionGroup avMediaSelection mediaSelectionGroup =
+  sendMessage avMediaSelection selectedMediaOptionInMediaSelectionGroupSelector (toAVMediaSelectionGroup mediaSelectionGroup)
 
 -- | mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup:
 --
@@ -59,28 +55,27 @@ selectedMediaOptionInMediaSelectionGroup avMediaSelection  mediaSelectionGroup =
 --
 -- ObjC selector: @- mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup:@
 mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup :: (IsAVMediaSelection avMediaSelection, IsAVMediaSelectionGroup mediaSelectionGroup) => avMediaSelection -> mediaSelectionGroup -> IO Bool
-mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup avMediaSelection  mediaSelectionGroup =
-  withObjCPtr mediaSelectionGroup $ \raw_mediaSelectionGroup ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMediaSelection (mkSelector "mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup:") retCULong [argPtr (castPtr raw_mediaSelectionGroup :: Ptr ())]
+mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup avMediaSelection mediaSelectionGroup =
+  sendMessage avMediaSelection mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector (toAVMediaSelectionGroup mediaSelectionGroup)
 
 -- | @- asset@
 asset :: IsAVMediaSelection avMediaSelection => avMediaSelection -> IO (Id AVAsset)
-asset avMediaSelection  =
-    sendMsg avMediaSelection (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset avMediaSelection =
+  sendMessage avMediaSelection assetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectedMediaOptionInMediaSelectionGroup:@
-selectedMediaOptionInMediaSelectionGroupSelector :: Selector
+selectedMediaOptionInMediaSelectionGroupSelector :: Selector '[Id AVMediaSelectionGroup] (Id AVMediaSelectionOption)
 selectedMediaOptionInMediaSelectionGroupSelector = mkSelector "selectedMediaOptionInMediaSelectionGroup:"
 
 -- | @Selector@ for @mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup:@
-mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector :: Selector
+mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector :: Selector '[Id AVMediaSelectionGroup] Bool
 mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroupSelector = mkSelector "mediaSelectionCriteriaCanBeAppliedAutomaticallyToMediaSelectionGroup:"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 

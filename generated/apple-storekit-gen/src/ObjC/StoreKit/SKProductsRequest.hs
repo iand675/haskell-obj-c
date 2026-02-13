@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.StoreKit.SKProductsRequest
   , initWithProductIdentifiers
   , delegate
   , setDelegate
-  , initWithProductIdentifiersSelector
   , delegateSelector
+  , initWithProductIdentifiersSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithProductIdentifiers:@
 initWithProductIdentifiers :: (IsSKProductsRequest skProductsRequest, IsNSSet productIdentifiers) => skProductsRequest -> productIdentifiers -> IO (Id SKProductsRequest)
-initWithProductIdentifiers skProductsRequest  productIdentifiers =
-  withObjCPtr productIdentifiers $ \raw_productIdentifiers ->
-      sendMsg skProductsRequest (mkSelector "initWithProductIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_productIdentifiers :: Ptr ())] >>= ownedObject . castPtr
+initWithProductIdentifiers skProductsRequest productIdentifiers =
+  sendOwnedMessage skProductsRequest initWithProductIdentifiersSelector (toNSSet productIdentifiers)
 
 -- | @- delegate@
 delegate :: IsSKProductsRequest skProductsRequest => skProductsRequest -> IO RawId
-delegate skProductsRequest  =
-    fmap (RawId . castPtr) $ sendMsg skProductsRequest (mkSelector "delegate") (retPtr retVoid) []
+delegate skProductsRequest =
+  sendMessage skProductsRequest delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsSKProductsRequest skProductsRequest => skProductsRequest -> RawId -> IO ()
-setDelegate skProductsRequest  value =
-    sendMsg skProductsRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate skProductsRequest value =
+  sendMessage skProductsRequest setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProductIdentifiers:@
-initWithProductIdentifiersSelector :: Selector
+initWithProductIdentifiersSelector :: Selector '[Id NSSet] (Id SKProductsRequest)
 initWithProductIdentifiersSelector = mkSelector "initWithProductIdentifiers:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

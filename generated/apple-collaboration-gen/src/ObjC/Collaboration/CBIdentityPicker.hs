@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Collaboration.CBIdentityPicker
   , allowsMultipleSelection
   , setAllowsMultipleSelection
   , identities
-  , runModalSelector
-  , runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
-  , runModalForWindow_completionHandlerSelector
-  , titleSelector
-  , setTitleSelector
   , allowsMultipleSelectionSelector
-  , setAllowsMultipleSelectionSelector
   , identitiesSelector
+  , runModalForWindow_completionHandlerSelector
+  , runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
+  , runModalSelector
+  , setAllowsMultipleSelectionSelector
+  , setTitleSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- runModal@
 runModal :: IsCBIdentityPicker cbIdentityPicker => cbIdentityPicker -> IO CLong
-runModal cbIdentityPicker  =
-    sendMsg cbIdentityPicker (mkSelector "runModal") retCLong []
+runModal cbIdentityPicker =
+  sendMessage cbIdentityPicker runModalSelector
 
 -- | Runs the receiver modally as a sheet attached to a specified window.
 --
@@ -72,10 +69,9 @@ runModal cbIdentityPicker  =
 -- - contextInfo: Contextual data passed to the delegate in the @didEndSelector@ message.
 --
 -- ObjC selector: @- runModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-runModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsCBIdentityPicker cbIdentityPicker, IsNSWindow window) => cbIdentityPicker -> window -> RawId -> Selector -> Ptr () -> IO ()
-runModalForWindow_modalDelegate_didEndSelector_contextInfo cbIdentityPicker  window delegate didEndSelector contextInfo =
-  withObjCPtr window $ \raw_window ->
-      sendMsg cbIdentityPicker (mkSelector "runModalForWindow:modalDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+runModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsCBIdentityPicker cbIdentityPicker, IsNSWindow window) => cbIdentityPicker -> window -> RawId -> Sel -> Ptr () -> IO ()
+runModalForWindow_modalDelegate_didEndSelector_contextInfo cbIdentityPicker window delegate didEndSelector contextInfo =
+  sendMessage cbIdentityPicker runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector (toNSWindow window) delegate didEndSelector contextInfo
 
 -- | Runs the identity picker modally as a sheet attached to a specified window.
 --
@@ -85,9 +81,8 @@ runModalForWindow_modalDelegate_didEndSelector_contextInfo cbIdentityPicker  win
 --
 -- ObjC selector: @- runModalForWindow:completionHandler:@
 runModalForWindow_completionHandler :: (IsCBIdentityPicker cbIdentityPicker, IsNSWindow window) => cbIdentityPicker -> window -> Ptr () -> IO ()
-runModalForWindow_completionHandler cbIdentityPicker  window completionHandler =
-  withObjCPtr window $ \raw_window ->
-      sendMsg cbIdentityPicker (mkSelector "runModalForWindow:completionHandler:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+runModalForWindow_completionHandler cbIdentityPicker window completionHandler =
+  sendMessage cbIdentityPicker runModalForWindow_completionHandlerSelector (toNSWindow window) completionHandler
 
 -- | The title of the identity picker.
 --
@@ -95,8 +90,8 @@ runModalForWindow_completionHandler cbIdentityPicker  window completionHandler =
 --
 -- ObjC selector: @- title@
 title :: IsCBIdentityPicker cbIdentityPicker => cbIdentityPicker -> IO (Id NSString)
-title cbIdentityPicker  =
-    sendMsg cbIdentityPicker (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title cbIdentityPicker =
+  sendMessage cbIdentityPicker titleSelector
 
 -- | The title of the identity picker.
 --
@@ -104,9 +99,8 @@ title cbIdentityPicker  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsCBIdentityPicker cbIdentityPicker, IsNSString value) => cbIdentityPicker -> value -> IO ()
-setTitle cbIdentityPicker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbIdentityPicker (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle cbIdentityPicker value =
+  sendMessage cbIdentityPicker setTitleSelector (toNSString value)
 
 -- | A Boolean value indicating whether the user is allowed to select multiple identities.
 --
@@ -114,8 +108,8 @@ setTitle cbIdentityPicker  value =
 --
 -- ObjC selector: @- allowsMultipleSelection@
 allowsMultipleSelection :: IsCBIdentityPicker cbIdentityPicker => cbIdentityPicker -> IO Bool
-allowsMultipleSelection cbIdentityPicker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbIdentityPicker (mkSelector "allowsMultipleSelection") retCULong []
+allowsMultipleSelection cbIdentityPicker =
+  sendMessage cbIdentityPicker allowsMultipleSelectionSelector
 
 -- | A Boolean value indicating whether the user is allowed to select multiple identities.
 --
@@ -123,49 +117,49 @@ allowsMultipleSelection cbIdentityPicker  =
 --
 -- ObjC selector: @- setAllowsMultipleSelection:@
 setAllowsMultipleSelection :: IsCBIdentityPicker cbIdentityPicker => cbIdentityPicker -> Bool -> IO ()
-setAllowsMultipleSelection cbIdentityPicker  value =
-    sendMsg cbIdentityPicker (mkSelector "setAllowsMultipleSelection:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsMultipleSelection cbIdentityPicker value =
+  sendMessage cbIdentityPicker setAllowsMultipleSelectionSelector value
 
 -- | The array of identities (represented by @CBIdentity@ objects) selected using the identity picker.
 --
 -- ObjC selector: @- identities@
 identities :: IsCBIdentityPicker cbIdentityPicker => cbIdentityPicker -> IO (Id NSArray)
-identities cbIdentityPicker  =
-    sendMsg cbIdentityPicker (mkSelector "identities") (retPtr retVoid) [] >>= retainedObject . castPtr
+identities cbIdentityPicker =
+  sendMessage cbIdentityPicker identitiesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] CLong
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @runModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector
+runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr ()] ()
 runModalForWindow_modalDelegate_didEndSelector_contextInfoSelector = mkSelector "runModalForWindow:modalDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @runModalForWindow:completionHandler:@
-runModalForWindow_completionHandlerSelector :: Selector
+runModalForWindow_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 runModalForWindow_completionHandlerSelector = mkSelector "runModalForWindow:completionHandler:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @allowsMultipleSelection@
-allowsMultipleSelectionSelector :: Selector
+allowsMultipleSelectionSelector :: Selector '[] Bool
 allowsMultipleSelectionSelector = mkSelector "allowsMultipleSelection"
 
 -- | @Selector@ for @setAllowsMultipleSelection:@
-setAllowsMultipleSelectionSelector :: Selector
+setAllowsMultipleSelectionSelector :: Selector '[Bool] ()
 setAllowsMultipleSelectionSelector = mkSelector "setAllowsMultipleSelection:"
 
 -- | @Selector@ for @identities@
-identitiesSelector :: Selector
+identitiesSelector :: Selector '[] (Id NSArray)
 identitiesSelector = mkSelector "identities"
 

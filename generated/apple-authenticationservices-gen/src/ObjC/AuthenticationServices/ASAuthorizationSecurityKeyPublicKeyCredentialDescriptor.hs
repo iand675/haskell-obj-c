@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AuthenticationServices.ASAuthorizationSecurityKeyPublicKeyCredential
   , init_
   , transports
   , setTransports
+  , initSelector
   , initWithCredentialID_transportsSelector
   , newSelector
-  , initSelector
-  , transportsSelector
   , setTransportsSelector
+  , transportsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,56 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCredentialID:transports:@
 initWithCredentialID_transports :: (IsASAuthorizationSecurityKeyPublicKeyCredentialDescriptor asAuthorizationSecurityKeyPublicKeyCredentialDescriptor, IsNSData credentialID, IsNSArray allowedTransports) => asAuthorizationSecurityKeyPublicKeyCredentialDescriptor -> credentialID -> allowedTransports -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
-initWithCredentialID_transports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor  credentialID allowedTransports =
-  withObjCPtr credentialID $ \raw_credentialID ->
-    withObjCPtr allowedTransports $ \raw_allowedTransports ->
-        sendMsg asAuthorizationSecurityKeyPublicKeyCredentialDescriptor (mkSelector "initWithCredentialID:transports:") (retPtr retVoid) [argPtr (castPtr raw_credentialID :: Ptr ()), argPtr (castPtr raw_allowedTransports :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialID_transports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor credentialID allowedTransports =
+  sendOwnedMessage asAuthorizationSecurityKeyPublicKeyCredentialDescriptor initWithCredentialID_transportsSelector (toNSData credentialID) (toNSArray allowedTransports)
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationSecurityKeyPublicKeyCredentialDescriptor asAuthorizationSecurityKeyPublicKeyCredentialDescriptor => asAuthorizationSecurityKeyPublicKeyCredentialDescriptor -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
-init_ asAuthorizationSecurityKeyPublicKeyCredentialDescriptor  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationSecurityKeyPublicKeyCredentialDescriptor =
+  sendOwnedMessage asAuthorizationSecurityKeyPublicKeyCredentialDescriptor initSelector
 
 -- | An array indicating transports for the credential indicated by credentialID.
 --
 -- ObjC selector: @- transports@
 transports :: IsASAuthorizationSecurityKeyPublicKeyCredentialDescriptor asAuthorizationSecurityKeyPublicKeyCredentialDescriptor => asAuthorizationSecurityKeyPublicKeyCredentialDescriptor -> IO (Id NSArray)
-transports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialDescriptor (mkSelector "transports") (retPtr retVoid) [] >>= retainedObject . castPtr
+transports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialDescriptor transportsSelector
 
 -- | An array indicating transports for the credential indicated by credentialID.
 --
 -- ObjC selector: @- setTransports:@
 setTransports :: (IsASAuthorizationSecurityKeyPublicKeyCredentialDescriptor asAuthorizationSecurityKeyPublicKeyCredentialDescriptor, IsNSArray value) => asAuthorizationSecurityKeyPublicKeyCredentialDescriptor -> value -> IO ()
-setTransports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationSecurityKeyPublicKeyCredentialDescriptor (mkSelector "setTransports:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransports asAuthorizationSecurityKeyPublicKeyCredentialDescriptor value =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialDescriptor setTransportsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCredentialID:transports:@
-initWithCredentialID_transportsSelector :: Selector
+initWithCredentialID_transportsSelector :: Selector '[Id NSData, Id NSArray] (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
 initWithCredentialID_transportsSelector = mkSelector "initWithCredentialID:transports:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @transports@
-transportsSelector :: Selector
+transportsSelector :: Selector '[] (Id NSArray)
 transportsSelector = mkSelector "transports"
 
 -- | @Selector@ for @setTransports:@
-setTransportsSelector :: Selector
+setTransportsSelector :: Selector '[Id NSArray] ()
 setTransportsSelector = mkSelector "setTransports:"
 

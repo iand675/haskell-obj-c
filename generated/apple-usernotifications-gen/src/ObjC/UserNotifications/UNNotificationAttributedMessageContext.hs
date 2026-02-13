@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.UserNotifications.UNNotificationAttributedMessageContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,24 +32,22 @@ contextWithSendMessageIntent_attributedContent :: (IsINSendMessageIntent sendMes
 contextWithSendMessageIntent_attributedContent sendMessageIntent attributedContent =
   do
     cls' <- getRequiredClass "UNNotificationAttributedMessageContext"
-    withObjCPtr sendMessageIntent $ \raw_sendMessageIntent ->
-      withObjCPtr attributedContent $ \raw_attributedContent ->
-        sendClassMsg cls' (mkSelector "contextWithSendMessageIntent:attributedContent:") (retPtr retVoid) [argPtr (castPtr raw_sendMessageIntent :: Ptr ()), argPtr (castPtr raw_attributedContent :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextWithSendMessageIntent_attributedContentSelector (toINSendMessageIntent sendMessageIntent) (toNSAttributedString attributedContent)
 
 -- | @- init@
 init_ :: IsUNNotificationAttributedMessageContext unNotificationAttributedMessageContext => unNotificationAttributedMessageContext -> IO (Id UNNotificationAttributedMessageContext)
-init_ unNotificationAttributedMessageContext  =
-    sendMsg unNotificationAttributedMessageContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationAttributedMessageContext =
+  sendOwnedMessage unNotificationAttributedMessageContext initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contextWithSendMessageIntent:attributedContent:@
-contextWithSendMessageIntent_attributedContentSelector :: Selector
+contextWithSendMessageIntent_attributedContentSelector :: Selector '[Id INSendMessageIntent, Id NSAttributedString] (Id UNNotificationAttributedMessageContext)
 contextWithSendMessageIntent_attributedContentSelector = mkSelector "contextWithSendMessageIntent:attributedContent:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationAttributedMessageContext)
 initSelector = mkSelector "init"
 

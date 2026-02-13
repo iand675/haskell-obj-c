@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.NetworkExtension.NEAppProxyUDPFlow
   , writeDatagrams_sentByEndpoints_completionHandler
   , localFlowEndpoint
   , localEndpoint
-  , writeDatagrams_sentByFlowEndpoints_completionHandlerSelector
-  , writeDatagrams_sentByEndpoints_completionHandlerSelector
-  , localFlowEndpointSelector
   , localEndpointSelector
+  , localFlowEndpointSelector
+  , writeDatagrams_sentByEndpoints_completionHandlerSelector
+  , writeDatagrams_sentByFlowEndpoints_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- writeDatagrams:sentByFlowEndpoints:completionHandler:@
 writeDatagrams_sentByFlowEndpoints_completionHandler :: (IsNEAppProxyUDPFlow neAppProxyUDPFlow, IsNSArray datagrams) => neAppProxyUDPFlow -> datagrams -> RawId -> Ptr () -> IO ()
-writeDatagrams_sentByFlowEndpoints_completionHandler neAppProxyUDPFlow  datagrams remoteEndpoints completionHandler =
-  withObjCPtr datagrams $ \raw_datagrams ->
-      sendMsg neAppProxyUDPFlow (mkSelector "writeDatagrams:sentByFlowEndpoints:completionHandler:") retVoid [argPtr (castPtr raw_datagrams :: Ptr ()), argPtr (castPtr (unRawId remoteEndpoints) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+writeDatagrams_sentByFlowEndpoints_completionHandler neAppProxyUDPFlow datagrams remoteEndpoints completionHandler =
+  sendMessage neAppProxyUDPFlow writeDatagrams_sentByFlowEndpoints_completionHandlerSelector (toNSArray datagrams) remoteEndpoints completionHandler
 
 -- | writeDatagrams:sentByEndpoint:completionHandler:
 --
@@ -69,10 +65,8 @@ writeDatagrams_sentByFlowEndpoints_completionHandler neAppProxyUDPFlow  datagram
 --
 -- ObjC selector: @- writeDatagrams:sentByEndpoints:completionHandler:@
 writeDatagrams_sentByEndpoints_completionHandler :: (IsNEAppProxyUDPFlow neAppProxyUDPFlow, IsNSArray datagrams, IsNSArray remoteEndpoints) => neAppProxyUDPFlow -> datagrams -> remoteEndpoints -> Ptr () -> IO ()
-writeDatagrams_sentByEndpoints_completionHandler neAppProxyUDPFlow  datagrams remoteEndpoints completionHandler =
-  withObjCPtr datagrams $ \raw_datagrams ->
-    withObjCPtr remoteEndpoints $ \raw_remoteEndpoints ->
-        sendMsg neAppProxyUDPFlow (mkSelector "writeDatagrams:sentByEndpoints:completionHandler:") retVoid [argPtr (castPtr raw_datagrams :: Ptr ()), argPtr (castPtr raw_remoteEndpoints :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+writeDatagrams_sentByEndpoints_completionHandler neAppProxyUDPFlow datagrams remoteEndpoints completionHandler =
+  sendMessage neAppProxyUDPFlow writeDatagrams_sentByEndpoints_completionHandlerSelector (toNSArray datagrams) (toNSArray remoteEndpoints) completionHandler
 
 -- | localFlowEndpoint
 --
@@ -80,8 +74,8 @@ writeDatagrams_sentByEndpoints_completionHandler neAppProxyUDPFlow  datagrams re
 --
 -- ObjC selector: @- localFlowEndpoint@
 localFlowEndpoint :: IsNEAppProxyUDPFlow neAppProxyUDPFlow => neAppProxyUDPFlow -> IO (Id NSObject)
-localFlowEndpoint neAppProxyUDPFlow  =
-    sendMsg neAppProxyUDPFlow (mkSelector "localFlowEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+localFlowEndpoint neAppProxyUDPFlow =
+  sendMessage neAppProxyUDPFlow localFlowEndpointSelector
 
 -- | localEndpoint
 --
@@ -89,26 +83,26 @@ localFlowEndpoint neAppProxyUDPFlow  =
 --
 -- ObjC selector: @- localEndpoint@
 localEndpoint :: IsNEAppProxyUDPFlow neAppProxyUDPFlow => neAppProxyUDPFlow -> IO (Id NWEndpoint)
-localEndpoint neAppProxyUDPFlow  =
-    sendMsg neAppProxyUDPFlow (mkSelector "localEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+localEndpoint neAppProxyUDPFlow =
+  sendMessage neAppProxyUDPFlow localEndpointSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @writeDatagrams:sentByFlowEndpoints:completionHandler:@
-writeDatagrams_sentByFlowEndpoints_completionHandlerSelector :: Selector
+writeDatagrams_sentByFlowEndpoints_completionHandlerSelector :: Selector '[Id NSArray, RawId, Ptr ()] ()
 writeDatagrams_sentByFlowEndpoints_completionHandlerSelector = mkSelector "writeDatagrams:sentByFlowEndpoints:completionHandler:"
 
 -- | @Selector@ for @writeDatagrams:sentByEndpoints:completionHandler:@
-writeDatagrams_sentByEndpoints_completionHandlerSelector :: Selector
+writeDatagrams_sentByEndpoints_completionHandlerSelector :: Selector '[Id NSArray, Id NSArray, Ptr ()] ()
 writeDatagrams_sentByEndpoints_completionHandlerSelector = mkSelector "writeDatagrams:sentByEndpoints:completionHandler:"
 
 -- | @Selector@ for @localFlowEndpoint@
-localFlowEndpointSelector :: Selector
+localFlowEndpointSelector :: Selector '[] (Id NSObject)
 localFlowEndpointSelector = mkSelector "localFlowEndpoint"
 
 -- | @Selector@ for @localEndpoint@
-localEndpointSelector :: Selector
+localEndpointSelector :: Selector '[] (Id NWEndpoint)
 localEndpointSelector = mkSelector "localEndpoint"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.BusinessChat.BCChatAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,15 +35,13 @@ openTranscript_intentParameters :: (IsNSString businessIdentifier, IsNSDictionar
 openTranscript_intentParameters businessIdentifier intentParameters =
   do
     cls' <- getRequiredClass "BCChatAction"
-    withObjCPtr businessIdentifier $ \raw_businessIdentifier ->
-      withObjCPtr intentParameters $ \raw_intentParameters ->
-        sendClassMsg cls' (mkSelector "openTranscript:intentParameters:") retVoid [argPtr (castPtr raw_businessIdentifier :: Ptr ()), argPtr (castPtr raw_intentParameters :: Ptr ())]
+    sendClassMessage cls' openTranscript_intentParametersSelector (toNSString businessIdentifier) (toNSDictionary intentParameters)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @openTranscript:intentParameters:@
-openTranscript_intentParametersSelector :: Selector
+openTranscript_intentParametersSelector :: Selector '[Id NSString, Id NSDictionary] ()
 openTranscript_intentParametersSelector = mkSelector "openTranscript:intentParameters:"
 

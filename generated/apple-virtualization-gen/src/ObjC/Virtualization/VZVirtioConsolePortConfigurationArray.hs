@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,25 +23,21 @@ module ObjC.Virtualization.VZVirtioConsolePortConfigurationArray
   , setObject_atIndexedSubscript
   , maximumPortCount
   , setMaximumPortCount
-  , newSelector
   , initSelector
-  , objectAtIndexedSubscriptSelector
-  , setObject_atIndexedSubscriptSelector
   , maximumPortCountSelector
+  , newSelector
+  , objectAtIndexedSubscriptSelector
   , setMaximumPortCountSelector
+  , setObject_atIndexedSubscriptSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,67 +49,66 @@ new :: IO (Id VZVirtioConsolePortConfigurationArray)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioConsolePortConfigurationArray"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioConsolePortConfigurationArray vzVirtioConsolePortConfigurationArray => vzVirtioConsolePortConfigurationArray -> IO (Id VZVirtioConsolePortConfigurationArray)
-init_ vzVirtioConsolePortConfigurationArray  =
-    sendMsg vzVirtioConsolePortConfigurationArray (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioConsolePortConfigurationArray =
+  sendOwnedMessage vzVirtioConsolePortConfigurationArray initSelector
 
 -- | Get a port configuration at the specified index.
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsVZVirtioConsolePortConfigurationArray vzVirtioConsolePortConfigurationArray => vzVirtioConsolePortConfigurationArray -> CULong -> IO (Id VZVirtioConsolePortConfiguration)
-objectAtIndexedSubscript vzVirtioConsolePortConfigurationArray  portIndex =
-    sendMsg vzVirtioConsolePortConfigurationArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong portIndex] >>= retainedObject . castPtr
+objectAtIndexedSubscript vzVirtioConsolePortConfigurationArray portIndex =
+  sendMessage vzVirtioConsolePortConfigurationArray objectAtIndexedSubscriptSelector portIndex
 
 -- | Set a port configuration at the specified index.
 --
 -- ObjC selector: @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsVZVirtioConsolePortConfigurationArray vzVirtioConsolePortConfigurationArray, IsVZVirtioConsolePortConfiguration configuration) => vzVirtioConsolePortConfigurationArray -> configuration -> CULong -> IO ()
-setObject_atIndexedSubscript vzVirtioConsolePortConfigurationArray  configuration portIndex =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg vzVirtioConsolePortConfigurationArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_configuration :: Ptr ()), argCULong portIndex]
+setObject_atIndexedSubscript vzVirtioConsolePortConfigurationArray configuration portIndex =
+  sendMessage vzVirtioConsolePortConfigurationArray setObject_atIndexedSubscriptSelector (toVZVirtioConsolePortConfiguration configuration) portIndex
 
 -- | The maximum number of ports allocated by this device. The default is the number of ports attached to this device.
 --
 -- ObjC selector: @- maximumPortCount@
 maximumPortCount :: IsVZVirtioConsolePortConfigurationArray vzVirtioConsolePortConfigurationArray => vzVirtioConsolePortConfigurationArray -> IO CUInt
-maximumPortCount vzVirtioConsolePortConfigurationArray  =
-    sendMsg vzVirtioConsolePortConfigurationArray (mkSelector "maximumPortCount") retCUInt []
+maximumPortCount vzVirtioConsolePortConfigurationArray =
+  sendMessage vzVirtioConsolePortConfigurationArray maximumPortCountSelector
 
 -- | The maximum number of ports allocated by this device. The default is the number of ports attached to this device.
 --
 -- ObjC selector: @- setMaximumPortCount:@
 setMaximumPortCount :: IsVZVirtioConsolePortConfigurationArray vzVirtioConsolePortConfigurationArray => vzVirtioConsolePortConfigurationArray -> CUInt -> IO ()
-setMaximumPortCount vzVirtioConsolePortConfigurationArray  value =
-    sendMsg vzVirtioConsolePortConfigurationArray (mkSelector "setMaximumPortCount:") retVoid [argCUInt value]
+setMaximumPortCount vzVirtioConsolePortConfigurationArray value =
+  sendMessage vzVirtioConsolePortConfigurationArray setMaximumPortCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioConsolePortConfigurationArray)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioConsolePortConfigurationArray)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id VZVirtioConsolePortConfiguration)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id VZVirtioConsolePortConfiguration, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @maximumPortCount@
-maximumPortCountSelector :: Selector
+maximumPortCountSelector :: Selector '[] CUInt
 maximumPortCountSelector = mkSelector "maximumPortCount"
 
 -- | @Selector@ for @setMaximumPortCount:@
-setMaximumPortCountSelector :: Selector
+setMaximumPortCountSelector :: Selector '[CUInt] ()
 setMaximumPortCountSelector = mkSelector "setMaximumPortCount:"
 

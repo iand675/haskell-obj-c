@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.SceneKit.SCNGeometrySource
   , bytesPerComponent
   , dataOffset
   , dataStride
+  , bytesPerComponentSelector
+  , componentsPerVectorSelector
+  , dataOffsetSelector
+  , dataSelector
+  , dataStrideSelector
+  , floatComponentsSelector
+  , geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector
   , geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector
-  , geometrySourceWithVertices_countSelector
   , geometrySourceWithNormals_countSelector
   , geometrySourceWithTextureCoordinates_countSelector
-  , geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector
-  , dataSelector
+  , geometrySourceWithVertices_countSelector
   , semanticSelector
   , vectorCountSelector
-  , floatComponentsSelector
-  , componentsPerVectorSelector
-  , bytesPerComponentSelector
-  , dataOffsetSelector
-  , dataStrideSelector
 
   -- * Enum types
   , MTLVertexFormat(MTLVertexFormat)
@@ -97,15 +98,11 @@ module ObjC.SceneKit.SCNGeometrySource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -139,9 +136,7 @@ geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_
 geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStride data_ semantic vectorCount floatComponents componentsPerVector bytesPerComponent offset stride =
   do
     cls' <- getRequiredClass "SCNGeometrySource"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr semantic $ \raw_semantic ->
-        sendClassMsg cls' (mkSelector "geometrySourceWithData:semantic:vectorCount:floatComponents:componentsPerVector:bytesPerComponent:dataOffset:dataStride:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_semantic :: Ptr ()), argCLong vectorCount, argCULong (if floatComponents then 1 else 0), argCLong componentsPerVector, argCLong bytesPerComponent, argCLong offset, argCLong stride] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector (toNSData data_) (toNSString semantic) vectorCount floatComponents componentsPerVector bytesPerComponent offset stride
 
 -- | geometrySourceWithVertices:count:
 --
@@ -158,7 +153,7 @@ geometrySourceWithVertices_count :: Const (Ptr SCNVector3) -> CLong -> IO (Id SC
 geometrySourceWithVertices_count vertices count =
   do
     cls' <- getRequiredClass "SCNGeometrySource"
-    sendClassMsg cls' (mkSelector "geometrySourceWithVertices:count:") (retPtr retVoid) [argPtr (unConst vertices), argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySourceWithVertices_countSelector vertices count
 
 -- | geometrySourceWithNormals:count:
 --
@@ -175,7 +170,7 @@ geometrySourceWithNormals_count :: Const (Ptr SCNVector3) -> CLong -> IO (Id SCN
 geometrySourceWithNormals_count normals count =
   do
     cls' <- getRequiredClass "SCNGeometrySource"
-    sendClassMsg cls' (mkSelector "geometrySourceWithNormals:count:") (retPtr retVoid) [argPtr (unConst normals), argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySourceWithNormals_countSelector normals count
 
 -- | geometrySourceWithTextureCoordinates:count:
 --
@@ -192,7 +187,7 @@ geometrySourceWithTextureCoordinates_count :: Const RawId -> CLong -> IO (Id SCN
 geometrySourceWithTextureCoordinates_count texcoord count =
   do
     cls' <- getRequiredClass "SCNGeometrySource"
-    sendClassMsg cls' (mkSelector "geometrySourceWithTextureCoordinates:count:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst texcoord)) :: Ptr ()), argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySourceWithTextureCoordinates_countSelector texcoord count
 
 -- | geometrySourceWithBuffer:semantic:vectorCount:floatComponents:componentsPerVector:bytesPerComponent:dataOffset:dataStride:
 --
@@ -227,8 +222,7 @@ geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStride
 geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStride buffer vertexFormat semantic vertexCount offset stride =
   do
     cls' <- getRequiredClass "SCNGeometrySource"
-    withObjCPtr semantic $ \raw_semantic ->
-      sendClassMsg cls' (mkSelector "geometrySourceWithBuffer:vertexFormat:semantic:vertexCount:dataOffset:dataStride:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong (coerce vertexFormat), argPtr (castPtr raw_semantic :: Ptr ()), argCLong vertexCount, argCLong offset, argCLong stride] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector buffer vertexFormat (toNSString semantic) vertexCount offset stride
 
 -- | data
 --
@@ -236,8 +230,8 @@ geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStride
 --
 -- ObjC selector: @- data@
 data_ :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO (Id NSData)
-data_ scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ scnGeometrySource =
+  sendMessage scnGeometrySource dataSelector
 
 -- | semantic
 --
@@ -245,8 +239,8 @@ data_ scnGeometrySource  =
 --
 -- ObjC selector: @- semantic@
 semantic :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO (Id NSString)
-semantic scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "semantic") (retPtr retVoid) [] >>= retainedObject . castPtr
+semantic scnGeometrySource =
+  sendMessage scnGeometrySource semanticSelector
 
 -- | vectorCount
 --
@@ -254,8 +248,8 @@ semantic scnGeometrySource  =
 --
 -- ObjC selector: @- vectorCount@
 vectorCount :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO CLong
-vectorCount scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "vectorCount") retCLong []
+vectorCount scnGeometrySource =
+  sendMessage scnGeometrySource vectorCountSelector
 
 -- | floatComponents
 --
@@ -263,8 +257,8 @@ vectorCount scnGeometrySource  =
 --
 -- ObjC selector: @- floatComponents@
 floatComponents :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO Bool
-floatComponents scnGeometrySource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnGeometrySource (mkSelector "floatComponents") retCULong []
+floatComponents scnGeometrySource =
+  sendMessage scnGeometrySource floatComponentsSelector
 
 -- | componentsPerVector
 --
@@ -272,8 +266,8 @@ floatComponents scnGeometrySource  =
 --
 -- ObjC selector: @- componentsPerVector@
 componentsPerVector :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO CLong
-componentsPerVector scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "componentsPerVector") retCLong []
+componentsPerVector scnGeometrySource =
+  sendMessage scnGeometrySource componentsPerVectorSelector
 
 -- | bytesPerComponent
 --
@@ -281,8 +275,8 @@ componentsPerVector scnGeometrySource  =
 --
 -- ObjC selector: @- bytesPerComponent@
 bytesPerComponent :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO CLong
-bytesPerComponent scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "bytesPerComponent") retCLong []
+bytesPerComponent scnGeometrySource =
+  sendMessage scnGeometrySource bytesPerComponentSelector
 
 -- | dataOffset
 --
@@ -290,8 +284,8 @@ bytesPerComponent scnGeometrySource  =
 --
 -- ObjC selector: @- dataOffset@
 dataOffset :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO CLong
-dataOffset scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "dataOffset") retCLong []
+dataOffset scnGeometrySource =
+  sendMessage scnGeometrySource dataOffsetSelector
 
 -- | dataStride
 --
@@ -299,62 +293,62 @@ dataOffset scnGeometrySource  =
 --
 -- ObjC selector: @- dataStride@
 dataStride :: IsSCNGeometrySource scnGeometrySource => scnGeometrySource -> IO CLong
-dataStride scnGeometrySource  =
-    sendMsg scnGeometrySource (mkSelector "dataStride") retCLong []
+dataStride scnGeometrySource =
+  sendMessage scnGeometrySource dataStrideSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @geometrySourceWithData:semantic:vectorCount:floatComponents:componentsPerVector:bytesPerComponent:dataOffset:dataStride:@
-geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector :: Selector
+geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector :: Selector '[Id NSData, Id NSString, CLong, Bool, CLong, CLong, CLong, CLong] (Id SCNGeometrySource)
 geometrySourceWithData_semantic_vectorCount_floatComponents_componentsPerVector_bytesPerComponent_dataOffset_dataStrideSelector = mkSelector "geometrySourceWithData:semantic:vectorCount:floatComponents:componentsPerVector:bytesPerComponent:dataOffset:dataStride:"
 
 -- | @Selector@ for @geometrySourceWithVertices:count:@
-geometrySourceWithVertices_countSelector :: Selector
+geometrySourceWithVertices_countSelector :: Selector '[Const (Ptr SCNVector3), CLong] (Id SCNGeometrySource)
 geometrySourceWithVertices_countSelector = mkSelector "geometrySourceWithVertices:count:"
 
 -- | @Selector@ for @geometrySourceWithNormals:count:@
-geometrySourceWithNormals_countSelector :: Selector
+geometrySourceWithNormals_countSelector :: Selector '[Const (Ptr SCNVector3), CLong] (Id SCNGeometrySource)
 geometrySourceWithNormals_countSelector = mkSelector "geometrySourceWithNormals:count:"
 
 -- | @Selector@ for @geometrySourceWithTextureCoordinates:count:@
-geometrySourceWithTextureCoordinates_countSelector :: Selector
+geometrySourceWithTextureCoordinates_countSelector :: Selector '[Const RawId, CLong] (Id SCNGeometrySource)
 geometrySourceWithTextureCoordinates_countSelector = mkSelector "geometrySourceWithTextureCoordinates:count:"
 
 -- | @Selector@ for @geometrySourceWithBuffer:vertexFormat:semantic:vertexCount:dataOffset:dataStride:@
-geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector :: Selector
+geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector :: Selector '[RawId, MTLVertexFormat, Id NSString, CLong, CLong, CLong] (Id SCNGeometrySource)
 geometrySourceWithBuffer_vertexFormat_semantic_vertexCount_dataOffset_dataStrideSelector = mkSelector "geometrySourceWithBuffer:vertexFormat:semantic:vertexCount:dataOffset:dataStride:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @semantic@
-semanticSelector :: Selector
+semanticSelector :: Selector '[] (Id NSString)
 semanticSelector = mkSelector "semantic"
 
 -- | @Selector@ for @vectorCount@
-vectorCountSelector :: Selector
+vectorCountSelector :: Selector '[] CLong
 vectorCountSelector = mkSelector "vectorCount"
 
 -- | @Selector@ for @floatComponents@
-floatComponentsSelector :: Selector
+floatComponentsSelector :: Selector '[] Bool
 floatComponentsSelector = mkSelector "floatComponents"
 
 -- | @Selector@ for @componentsPerVector@
-componentsPerVectorSelector :: Selector
+componentsPerVectorSelector :: Selector '[] CLong
 componentsPerVectorSelector = mkSelector "componentsPerVector"
 
 -- | @Selector@ for @bytesPerComponent@
-bytesPerComponentSelector :: Selector
+bytesPerComponentSelector :: Selector '[] CLong
 bytesPerComponentSelector = mkSelector "bytesPerComponent"
 
 -- | @Selector@ for @dataOffset@
-dataOffsetSelector :: Selector
+dataOffsetSelector :: Selector '[] CLong
 dataOffsetSelector = mkSelector "dataOffset"
 
 -- | @Selector@ for @dataStride@
-dataStrideSelector :: Selector
+dataStrideSelector :: Selector '[] CLong
 dataStrideSelector = mkSelector "dataStride"
 

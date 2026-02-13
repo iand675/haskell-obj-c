@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVCaptureExternalDisplayConfiguration
   , setShouldMatchFrameRate
   , bypassColorSpaceConversion
   , setBypassColorSpaceConversion
-  , shouldMatchFrameRateSelector
-  , setShouldMatchFrameRateSelector
   , bypassColorSpaceConversionSelector
   , setBypassColorSpaceConversionSelector
+  , setShouldMatchFrameRateSelector
+  , shouldMatchFrameRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- shouldMatchFrameRate@
 shouldMatchFrameRate :: IsAVCaptureExternalDisplayConfiguration avCaptureExternalDisplayConfiguration => avCaptureExternalDisplayConfiguration -> IO Bool
-shouldMatchFrameRate avCaptureExternalDisplayConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureExternalDisplayConfiguration (mkSelector "shouldMatchFrameRate") retCULong []
+shouldMatchFrameRate avCaptureExternalDisplayConfiguration =
+  sendMessage avCaptureExternalDisplayConfiguration shouldMatchFrameRateSelector
 
 -- | A property indicating whether the frame rate of the external display should be configured to match the camera's frame rate.
 --
@@ -52,8 +49,8 @@ shouldMatchFrameRate avCaptureExternalDisplayConfiguration  =
 --
 -- ObjC selector: @- setShouldMatchFrameRate:@
 setShouldMatchFrameRate :: IsAVCaptureExternalDisplayConfiguration avCaptureExternalDisplayConfiguration => avCaptureExternalDisplayConfiguration -> Bool -> IO ()
-setShouldMatchFrameRate avCaptureExternalDisplayConfiguration  value =
-    sendMsg avCaptureExternalDisplayConfiguration (mkSelector "setShouldMatchFrameRate:") retVoid [argCULong (if value then 1 else 0)]
+setShouldMatchFrameRate avCaptureExternalDisplayConfiguration value =
+  sendMessage avCaptureExternalDisplayConfiguration setShouldMatchFrameRateSelector value
 
 -- | A property indicating whether the color space of the configurator's preview layer should be preserved on the output display by avoiding color space conversions.
 --
@@ -61,8 +58,8 @@ setShouldMatchFrameRate avCaptureExternalDisplayConfiguration  value =
 --
 -- ObjC selector: @- bypassColorSpaceConversion@
 bypassColorSpaceConversion :: IsAVCaptureExternalDisplayConfiguration avCaptureExternalDisplayConfiguration => avCaptureExternalDisplayConfiguration -> IO Bool
-bypassColorSpaceConversion avCaptureExternalDisplayConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureExternalDisplayConfiguration (mkSelector "bypassColorSpaceConversion") retCULong []
+bypassColorSpaceConversion avCaptureExternalDisplayConfiguration =
+  sendMessage avCaptureExternalDisplayConfiguration bypassColorSpaceConversionSelector
 
 -- | A property indicating whether the color space of the configurator's preview layer should be preserved on the output display by avoiding color space conversions.
 --
@@ -70,26 +67,26 @@ bypassColorSpaceConversion avCaptureExternalDisplayConfiguration  =
 --
 -- ObjC selector: @- setBypassColorSpaceConversion:@
 setBypassColorSpaceConversion :: IsAVCaptureExternalDisplayConfiguration avCaptureExternalDisplayConfiguration => avCaptureExternalDisplayConfiguration -> Bool -> IO ()
-setBypassColorSpaceConversion avCaptureExternalDisplayConfiguration  value =
-    sendMsg avCaptureExternalDisplayConfiguration (mkSelector "setBypassColorSpaceConversion:") retVoid [argCULong (if value then 1 else 0)]
+setBypassColorSpaceConversion avCaptureExternalDisplayConfiguration value =
+  sendMessage avCaptureExternalDisplayConfiguration setBypassColorSpaceConversionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shouldMatchFrameRate@
-shouldMatchFrameRateSelector :: Selector
+shouldMatchFrameRateSelector :: Selector '[] Bool
 shouldMatchFrameRateSelector = mkSelector "shouldMatchFrameRate"
 
 -- | @Selector@ for @setShouldMatchFrameRate:@
-setShouldMatchFrameRateSelector :: Selector
+setShouldMatchFrameRateSelector :: Selector '[Bool] ()
 setShouldMatchFrameRateSelector = mkSelector "setShouldMatchFrameRate:"
 
 -- | @Selector@ for @bypassColorSpaceConversion@
-bypassColorSpaceConversionSelector :: Selector
+bypassColorSpaceConversionSelector :: Selector '[] Bool
 bypassColorSpaceConversionSelector = mkSelector "bypassColorSpaceConversion"
 
 -- | @Selector@ for @setBypassColorSpaceConversion:@
-setBypassColorSpaceConversionSelector :: Selector
+setBypassColorSpaceConversionSelector :: Selector '[Bool] ()
 setBypassColorSpaceConversionSelector = mkSelector "setBypassColorSpaceConversion:"
 

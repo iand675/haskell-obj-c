@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.QuickLookUI.QLPreviewReply
   , setAttachments
   , title
   , setTitle
-  , initWithFileURLSelector
-  , stringEncodingSelector
-  , setStringEncodingSelector
   , attachmentsSelector
+  , initWithFileURLSelector
   , setAttachmentsSelector
-  , titleSelector
+  , setStringEncodingSelector
   , setTitleSelector
+  , stringEncodingSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,83 +45,80 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 --
 -- ObjC selector: @- initWithFileURL:@
 initWithFileURL :: (IsQLPreviewReply qlPreviewReply, IsNSURL fileURL) => qlPreviewReply -> fileURL -> IO (Id QLPreviewReply)
-initWithFileURL qlPreviewReply  fileURL =
-  withObjCPtr fileURL $ \raw_fileURL ->
-      sendMsg qlPreviewReply (mkSelector "initWithFileURL:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ())] >>= ownedObject . castPtr
+initWithFileURL qlPreviewReply fileURL =
+  sendOwnedMessage qlPreviewReply initWithFileURLSelector (toNSURL fileURL)
 
 -- | String encoding for text or html based previews. Defaults to NSUTF8StringEncoding.
 --
 -- ObjC selector: @- stringEncoding@
 stringEncoding :: IsQLPreviewReply qlPreviewReply => qlPreviewReply -> IO CULong
-stringEncoding qlPreviewReply  =
-    sendMsg qlPreviewReply (mkSelector "stringEncoding") retCULong []
+stringEncoding qlPreviewReply =
+  sendMessage qlPreviewReply stringEncodingSelector
 
 -- | String encoding for text or html based previews. Defaults to NSUTF8StringEncoding.
 --
 -- ObjC selector: @- setStringEncoding:@
 setStringEncoding :: IsQLPreviewReply qlPreviewReply => qlPreviewReply -> CULong -> IO ()
-setStringEncoding qlPreviewReply  value =
-    sendMsg qlPreviewReply (mkSelector "setStringEncoding:") retVoid [argCULong value]
+setStringEncoding qlPreviewReply value =
+  sendMessage qlPreviewReply setStringEncodingSelector value
 
 -- | Attachments for HTML data previews. The keys of the dictionary are the attachment identifiers (eg foo) that can be referenced with the cid:id URL (eg cid:foo).
 --
 -- ObjC selector: @- attachments@
 attachments :: IsQLPreviewReply qlPreviewReply => qlPreviewReply -> IO (Id NSDictionary)
-attachments qlPreviewReply  =
-    sendMsg qlPreviewReply (mkSelector "attachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachments qlPreviewReply =
+  sendMessage qlPreviewReply attachmentsSelector
 
 -- | Attachments for HTML data previews. The keys of the dictionary are the attachment identifiers (eg foo) that can be referenced with the cid:id URL (eg cid:foo).
 --
 -- ObjC selector: @- setAttachments:@
 setAttachments :: (IsQLPreviewReply qlPreviewReply, IsNSDictionary value) => qlPreviewReply -> value -> IO ()
-setAttachments qlPreviewReply  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg qlPreviewReply (mkSelector "setAttachments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttachments qlPreviewReply value =
+  sendMessage qlPreviewReply setAttachmentsSelector (toNSDictionary value)
 
 -- | Custom display title for the preview. If left as the empty string, QuickLook will use the file name.
 --
 -- ObjC selector: @- title@
 title :: IsQLPreviewReply qlPreviewReply => qlPreviewReply -> IO (Id NSString)
-title qlPreviewReply  =
-    sendMsg qlPreviewReply (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title qlPreviewReply =
+  sendMessage qlPreviewReply titleSelector
 
 -- | Custom display title for the preview. If left as the empty string, QuickLook will use the file name.
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsQLPreviewReply qlPreviewReply, IsNSString value) => qlPreviewReply -> value -> IO ()
-setTitle qlPreviewReply  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg qlPreviewReply (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle qlPreviewReply value =
+  sendMessage qlPreviewReply setTitleSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileURL:@
-initWithFileURLSelector :: Selector
+initWithFileURLSelector :: Selector '[Id NSURL] (Id QLPreviewReply)
 initWithFileURLSelector = mkSelector "initWithFileURL:"
 
 -- | @Selector@ for @stringEncoding@
-stringEncodingSelector :: Selector
+stringEncodingSelector :: Selector '[] CULong
 stringEncodingSelector = mkSelector "stringEncoding"
 
 -- | @Selector@ for @setStringEncoding:@
-setStringEncodingSelector :: Selector
+setStringEncodingSelector :: Selector '[CULong] ()
 setStringEncodingSelector = mkSelector "setStringEncoding:"
 
 -- | @Selector@ for @attachments@
-attachmentsSelector :: Selector
+attachmentsSelector :: Selector '[] (Id NSDictionary)
 attachmentsSelector = mkSelector "attachments"
 
 -- | @Selector@ for @setAttachments:@
-setAttachmentsSelector :: Selector
+setAttachmentsSelector :: Selector '[Id NSDictionary] ()
 setAttachmentsSelector = mkSelector "setAttachments:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 

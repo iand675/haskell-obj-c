@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.SharedWithYou.SWHighlightPersistenceEvent
   , init_
   , new
   , persistenceEventTrigger
-  , initWithHighlight_triggerSelector
   , initSelector
+  , initWithHighlight_triggerSelector
   , newSelector
   , persistenceEventTriggerSelector
 
@@ -29,15 +30,11 @@ module ObjC.SharedWithYou.SWHighlightPersistenceEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,44 +50,43 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHighlight:trigger:@
 initWithHighlight_trigger :: (IsSWHighlightPersistenceEvent swHighlightPersistenceEvent, IsSWHighlight highlight) => swHighlightPersistenceEvent -> highlight -> SWHighlightPersistenceEventTrigger -> IO (Id SWHighlightPersistenceEvent)
-initWithHighlight_trigger swHighlightPersistenceEvent  highlight trigger =
-  withObjCPtr highlight $ \raw_highlight ->
-      sendMsg swHighlightPersistenceEvent (mkSelector "initWithHighlight:trigger:") (retPtr retVoid) [argPtr (castPtr raw_highlight :: Ptr ()), argCLong (coerce trigger)] >>= ownedObject . castPtr
+initWithHighlight_trigger swHighlightPersistenceEvent highlight trigger =
+  sendOwnedMessage swHighlightPersistenceEvent initWithHighlight_triggerSelector (toSWHighlight highlight) trigger
 
 -- | @- init@
 init_ :: IsSWHighlightPersistenceEvent swHighlightPersistenceEvent => swHighlightPersistenceEvent -> IO (Id SWHighlightPersistenceEvent)
-init_ swHighlightPersistenceEvent  =
-    sendMsg swHighlightPersistenceEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swHighlightPersistenceEvent =
+  sendOwnedMessage swHighlightPersistenceEvent initSelector
 
 -- | @+ new@
 new :: IO (Id SWHighlightPersistenceEvent)
 new  =
   do
     cls' <- getRequiredClass "SWHighlightPersistenceEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- persistenceEventTrigger@
 persistenceEventTrigger :: IsSWHighlightPersistenceEvent swHighlightPersistenceEvent => swHighlightPersistenceEvent -> IO SWHighlightPersistenceEventTrigger
-persistenceEventTrigger swHighlightPersistenceEvent  =
-    fmap (coerce :: CLong -> SWHighlightPersistenceEventTrigger) $ sendMsg swHighlightPersistenceEvent (mkSelector "persistenceEventTrigger") retCLong []
+persistenceEventTrigger swHighlightPersistenceEvent =
+  sendMessage swHighlightPersistenceEvent persistenceEventTriggerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHighlight:trigger:@
-initWithHighlight_triggerSelector :: Selector
+initWithHighlight_triggerSelector :: Selector '[Id SWHighlight, SWHighlightPersistenceEventTrigger] (Id SWHighlightPersistenceEvent)
 initWithHighlight_triggerSelector = mkSelector "initWithHighlight:trigger:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWHighlightPersistenceEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWHighlightPersistenceEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @persistenceEventTrigger@
-persistenceEventTriggerSelector :: Selector
+persistenceEventTriggerSelector :: Selector '[] SWHighlightPersistenceEventTrigger
 persistenceEventTriggerSelector = mkSelector "persistenceEventTrigger"
 

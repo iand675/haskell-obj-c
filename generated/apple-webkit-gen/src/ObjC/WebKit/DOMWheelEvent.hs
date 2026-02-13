@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.WebKit.DOMWheelEvent
   , wheelDelta
   , isHorizontal
   , initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKeySelector
+  , isHorizontalSelector
+  , wheelDeltaSelector
   , wheelDeltaXSelector
   , wheelDeltaYSelector
-  , wheelDeltaSelector
-  , isHorizontalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,51 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWheelEvent:wheelDeltaY:view:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:@
 initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey :: (IsDOMWheelEvent domWheelEvent, IsDOMAbstractView view) => domWheelEvent -> CInt -> CInt -> view -> CInt -> CInt -> CInt -> CInt -> Bool -> Bool -> Bool -> Bool -> IO ()
-initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey domWheelEvent  wheelDeltaX wheelDeltaY view screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey =
-  withObjCPtr view $ \raw_view ->
-      sendMsg domWheelEvent (mkSelector "initWheelEvent:wheelDeltaY:view:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:") retVoid [argCInt wheelDeltaX, argCInt wheelDeltaY, argPtr (castPtr raw_view :: Ptr ()), argCInt screenX, argCInt screenY, argCInt clientX, argCInt clientY, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0)]
+initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey domWheelEvent wheelDeltaX wheelDeltaY view screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey =
+  sendOwnedMessage domWheelEvent initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKeySelector wheelDeltaX wheelDeltaY (toDOMAbstractView view) screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey
 
 -- | @- wheelDeltaX@
 wheelDeltaX :: IsDOMWheelEvent domWheelEvent => domWheelEvent -> IO CInt
-wheelDeltaX domWheelEvent  =
-    sendMsg domWheelEvent (mkSelector "wheelDeltaX") retCInt []
+wheelDeltaX domWheelEvent =
+  sendMessage domWheelEvent wheelDeltaXSelector
 
 -- | @- wheelDeltaY@
 wheelDeltaY :: IsDOMWheelEvent domWheelEvent => domWheelEvent -> IO CInt
-wheelDeltaY domWheelEvent  =
-    sendMsg domWheelEvent (mkSelector "wheelDeltaY") retCInt []
+wheelDeltaY domWheelEvent =
+  sendMessage domWheelEvent wheelDeltaYSelector
 
 -- | @- wheelDelta@
 wheelDelta :: IsDOMWheelEvent domWheelEvent => domWheelEvent -> IO CInt
-wheelDelta domWheelEvent  =
-    sendMsg domWheelEvent (mkSelector "wheelDelta") retCInt []
+wheelDelta domWheelEvent =
+  sendMessage domWheelEvent wheelDeltaSelector
 
 -- | @- isHorizontal@
 isHorizontal :: IsDOMWheelEvent domWheelEvent => domWheelEvent -> IO Bool
-isHorizontal domWheelEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domWheelEvent (mkSelector "isHorizontal") retCULong []
+isHorizontal domWheelEvent =
+  sendMessage domWheelEvent isHorizontalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWheelEvent:wheelDeltaY:view:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:@
-initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector
+initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector '[CInt, CInt, Id DOMAbstractView, CInt, CInt, CInt, CInt, Bool, Bool, Bool, Bool] ()
 initWheelEvent_wheelDeltaY_view_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKeySelector = mkSelector "initWheelEvent:wheelDeltaY:view:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:"
 
 -- | @Selector@ for @wheelDeltaX@
-wheelDeltaXSelector :: Selector
+wheelDeltaXSelector :: Selector '[] CInt
 wheelDeltaXSelector = mkSelector "wheelDeltaX"
 
 -- | @Selector@ for @wheelDeltaY@
-wheelDeltaYSelector :: Selector
+wheelDeltaYSelector :: Selector '[] CInt
 wheelDeltaYSelector = mkSelector "wheelDeltaY"
 
 -- | @Selector@ for @wheelDelta@
-wheelDeltaSelector :: Selector
+wheelDeltaSelector :: Selector '[] CInt
 wheelDeltaSelector = mkSelector "wheelDelta"
 
 -- | @Selector@ for @isHorizontal@
-isHorizontalSelector :: Selector
+isHorizontalSelector :: Selector '[] Bool
 isHorizontalSelector = mkSelector "isHorizontal"
 

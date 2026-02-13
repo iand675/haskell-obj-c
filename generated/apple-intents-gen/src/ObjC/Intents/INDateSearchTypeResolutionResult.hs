@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INDateSearchTypeResolutionResult
   , IsINDateSearchTypeResolutionResult(..)
   , successWithResolvedDateSearchType
   , confirmationRequiredWithDateSearchTypeToConfirm
-  , successWithResolvedDateSearchTypeSelector
   , confirmationRequiredWithDateSearchTypeToConfirmSelector
+  , successWithResolvedDateSearchTypeSelector
 
   -- * Enum types
   , INDateSearchType(INDateSearchType)
@@ -21,15 +22,11 @@ module ObjC.Intents.INDateSearchTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,24 +39,24 @@ successWithResolvedDateSearchType :: INDateSearchType -> IO (Id INDateSearchType
 successWithResolvedDateSearchType resolvedDateSearchType =
   do
     cls' <- getRequiredClass "INDateSearchTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedDateSearchType:") (retPtr retVoid) [argCLong (coerce resolvedDateSearchType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedDateSearchTypeSelector resolvedDateSearchType
 
 -- | @+ confirmationRequiredWithDateSearchTypeToConfirm:@
 confirmationRequiredWithDateSearchTypeToConfirm :: INDateSearchType -> IO (Id INDateSearchTypeResolutionResult)
 confirmationRequiredWithDateSearchTypeToConfirm dateSearchTypeToConfirm =
   do
     cls' <- getRequiredClass "INDateSearchTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithDateSearchTypeToConfirm:") (retPtr retVoid) [argCLong (coerce dateSearchTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithDateSearchTypeToConfirmSelector dateSearchTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedDateSearchType:@
-successWithResolvedDateSearchTypeSelector :: Selector
+successWithResolvedDateSearchTypeSelector :: Selector '[INDateSearchType] (Id INDateSearchTypeResolutionResult)
 successWithResolvedDateSearchTypeSelector = mkSelector "successWithResolvedDateSearchType:"
 
 -- | @Selector@ for @confirmationRequiredWithDateSearchTypeToConfirm:@
-confirmationRequiredWithDateSearchTypeToConfirmSelector :: Selector
+confirmationRequiredWithDateSearchTypeToConfirmSelector :: Selector '[INDateSearchType] (Id INDateSearchTypeResolutionResult)
 confirmationRequiredWithDateSearchTypeToConfirmSelector = mkSelector "confirmationRequiredWithDateSearchTypeToConfirm:"
 

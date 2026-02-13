@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRThermostatClusterPresetStruct
   , setHeatingSetpoint
   , builtIn
   , setBuiltIn
-  , presetHandleSelector
-  , setPresetHandleSelector
-  , presetScenarioSelector
-  , setPresetScenarioSelector
-  , nameSelector
-  , setNameSelector
-  , coolingSetpointSelector
-  , setCoolingSetpointSelector
-  , heatingSetpointSelector
-  , setHeatingSetpointSelector
   , builtInSelector
+  , coolingSetpointSelector
+  , heatingSetpointSelector
+  , nameSelector
+  , presetHandleSelector
+  , presetScenarioSelector
   , setBuiltInSelector
+  , setCoolingSetpointSelector
+  , setHeatingSetpointSelector
+  , setNameSelector
+  , setPresetHandleSelector
+  , setPresetScenarioSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- presetHandle@
 presetHandle :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSData)
-presetHandle mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "presetHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetHandle mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct presetHandleSelector
 
 -- | @- setPresetHandle:@
 setPresetHandle :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSData value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setPresetHandle mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setPresetHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetHandle mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setPresetHandleSelector (toNSData value)
 
 -- | @- presetScenario@
 presetScenario :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSNumber)
-presetScenario mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "presetScenario") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetScenario mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct presetScenarioSelector
 
 -- | @- setPresetScenario:@
 setPresetScenario :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSNumber value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setPresetScenario mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setPresetScenario:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetScenario mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setPresetScenarioSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSString)
-name mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSString value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setName mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setNameSelector (toNSString value)
 
 -- | @- coolingSetpoint@
 coolingSetpoint :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSNumber)
-coolingSetpoint mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "coolingSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+coolingSetpoint mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct coolingSetpointSelector
 
 -- | @- setCoolingSetpoint:@
 setCoolingSetpoint :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSNumber value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setCoolingSetpoint mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setCoolingSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoolingSetpoint mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setCoolingSetpointSelector (toNSNumber value)
 
 -- | @- heatingSetpoint@
 heatingSetpoint :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSNumber)
-heatingSetpoint mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "heatingSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+heatingSetpoint mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct heatingSetpointSelector
 
 -- | @- setHeatingSetpoint:@
 setHeatingSetpoint :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSNumber value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setHeatingSetpoint mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setHeatingSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeatingSetpoint mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setHeatingSetpointSelector (toNSNumber value)
 
 -- | @- builtIn@
 builtIn :: IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct => mtrThermostatClusterPresetStruct -> IO (Id NSNumber)
-builtIn mtrThermostatClusterPresetStruct  =
-    sendMsg mtrThermostatClusterPresetStruct (mkSelector "builtIn") (retPtr retVoid) [] >>= retainedObject . castPtr
+builtIn mtrThermostatClusterPresetStruct =
+  sendMessage mtrThermostatClusterPresetStruct builtInSelector
 
 -- | @- setBuiltIn:@
 setBuiltIn :: (IsMTRThermostatClusterPresetStruct mtrThermostatClusterPresetStruct, IsNSNumber value) => mtrThermostatClusterPresetStruct -> value -> IO ()
-setBuiltIn mtrThermostatClusterPresetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetStruct (mkSelector "setBuiltIn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBuiltIn mtrThermostatClusterPresetStruct value =
+  sendMessage mtrThermostatClusterPresetStruct setBuiltInSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @presetHandle@
-presetHandleSelector :: Selector
+presetHandleSelector :: Selector '[] (Id NSData)
 presetHandleSelector = mkSelector "presetHandle"
 
 -- | @Selector@ for @setPresetHandle:@
-setPresetHandleSelector :: Selector
+setPresetHandleSelector :: Selector '[Id NSData] ()
 setPresetHandleSelector = mkSelector "setPresetHandle:"
 
 -- | @Selector@ for @presetScenario@
-presetScenarioSelector :: Selector
+presetScenarioSelector :: Selector '[] (Id NSNumber)
 presetScenarioSelector = mkSelector "presetScenario"
 
 -- | @Selector@ for @setPresetScenario:@
-setPresetScenarioSelector :: Selector
+setPresetScenarioSelector :: Selector '[Id NSNumber] ()
 setPresetScenarioSelector = mkSelector "setPresetScenario:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @coolingSetpoint@
-coolingSetpointSelector :: Selector
+coolingSetpointSelector :: Selector '[] (Id NSNumber)
 coolingSetpointSelector = mkSelector "coolingSetpoint"
 
 -- | @Selector@ for @setCoolingSetpoint:@
-setCoolingSetpointSelector :: Selector
+setCoolingSetpointSelector :: Selector '[Id NSNumber] ()
 setCoolingSetpointSelector = mkSelector "setCoolingSetpoint:"
 
 -- | @Selector@ for @heatingSetpoint@
-heatingSetpointSelector :: Selector
+heatingSetpointSelector :: Selector '[] (Id NSNumber)
 heatingSetpointSelector = mkSelector "heatingSetpoint"
 
 -- | @Selector@ for @setHeatingSetpoint:@
-setHeatingSetpointSelector :: Selector
+setHeatingSetpointSelector :: Selector '[Id NSNumber] ()
 setHeatingSetpointSelector = mkSelector "setHeatingSetpoint:"
 
 -- | @Selector@ for @builtIn@
-builtInSelector :: Selector
+builtInSelector :: Selector '[] (Id NSNumber)
 builtInSelector = mkSelector "builtIn"
 
 -- | @Selector@ for @setBuiltIn:@
-setBuiltInSelector :: Selector
+setBuiltInSelector :: Selector '[Id NSNumber] ()
 setBuiltInSelector = mkSelector "setBuiltIn:"
 

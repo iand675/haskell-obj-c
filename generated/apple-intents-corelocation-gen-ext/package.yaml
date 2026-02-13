@@ -20,6 +20,3 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.Intents.CLPlacemark
-  - ObjC.Intents.NSExtensionContext
-  - ObjC.Intents.NSString
-  - ObjC.Intents.NSUserActivity

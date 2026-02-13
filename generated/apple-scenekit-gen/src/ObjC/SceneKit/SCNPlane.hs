@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,32 +24,28 @@ module ObjC.SceneKit.SCNPlane
   , setCornerRadius
   , cornerSegmentCount
   , setCornerSegmentCount
-  , planeWithWidth_heightSelector
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , widthSegmentCountSelector
-  , setWidthSegmentCountSelector
-  , heightSegmentCountSelector
-  , setHeightSegmentCountSelector
   , cornerRadiusSelector
-  , setCornerRadiusSelector
   , cornerSegmentCountSelector
+  , heightSegmentCountSelector
+  , heightSelector
+  , planeWithWidth_heightSelector
+  , setCornerRadiusSelector
   , setCornerSegmentCountSelector
+  , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setWidthSegmentCountSelector
+  , setWidthSelector
+  , widthSegmentCountSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,7 +65,7 @@ planeWithWidth_height :: CDouble -> CDouble -> IO (Id SCNPlane)
 planeWithWidth_height width height =
   do
     cls' <- getRequiredClass "SCNPlane"
-    sendClassMsg cls' (mkSelector "planeWithWidth:height:") (retPtr retVoid) [argCDouble width, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' planeWithWidth_heightSelector width height
 
 -- | width
 --
@@ -78,8 +75,8 @@ planeWithWidth_height width height =
 --
 -- ObjC selector: @- width@
 width :: IsSCNPlane scnPlane => scnPlane -> IO CDouble
-width scnPlane  =
-    sendMsg scnPlane (mkSelector "width") retCDouble []
+width scnPlane =
+  sendMessage scnPlane widthSelector
 
 -- | width
 --
@@ -89,8 +86,8 @@ width scnPlane  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsSCNPlane scnPlane => scnPlane -> CDouble -> IO ()
-setWidth scnPlane  value =
-    sendMsg scnPlane (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth scnPlane value =
+  sendMessage scnPlane setWidthSelector value
 
 -- | height
 --
@@ -100,8 +97,8 @@ setWidth scnPlane  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNPlane scnPlane => scnPlane -> IO CDouble
-height scnPlane  =
-    sendMsg scnPlane (mkSelector "height") retCDouble []
+height scnPlane =
+  sendMessage scnPlane heightSelector
 
 -- | height
 --
@@ -111,8 +108,8 @@ height scnPlane  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNPlane scnPlane => scnPlane -> CDouble -> IO ()
-setHeight scnPlane  value =
-    sendMsg scnPlane (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnPlane value =
+  sendMessage scnPlane setHeightSelector value
 
 -- | widthSegmentCount
 --
@@ -122,8 +119,8 @@ setHeight scnPlane  value =
 --
 -- ObjC selector: @- widthSegmentCount@
 widthSegmentCount :: IsSCNPlane scnPlane => scnPlane -> IO CLong
-widthSegmentCount scnPlane  =
-    sendMsg scnPlane (mkSelector "widthSegmentCount") retCLong []
+widthSegmentCount scnPlane =
+  sendMessage scnPlane widthSegmentCountSelector
 
 -- | widthSegmentCount
 --
@@ -133,8 +130,8 @@ widthSegmentCount scnPlane  =
 --
 -- ObjC selector: @- setWidthSegmentCount:@
 setWidthSegmentCount :: IsSCNPlane scnPlane => scnPlane -> CLong -> IO ()
-setWidthSegmentCount scnPlane  value =
-    sendMsg scnPlane (mkSelector "setWidthSegmentCount:") retVoid [argCLong value]
+setWidthSegmentCount scnPlane value =
+  sendMessage scnPlane setWidthSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -144,8 +141,8 @@ setWidthSegmentCount scnPlane  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNPlane scnPlane => scnPlane -> IO CLong
-heightSegmentCount scnPlane  =
-    sendMsg scnPlane (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnPlane =
+  sendMessage scnPlane heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -155,8 +152,8 @@ heightSegmentCount scnPlane  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNPlane scnPlane => scnPlane -> CLong -> IO ()
-setHeightSegmentCount scnPlane  value =
-    sendMsg scnPlane (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnPlane value =
+  sendMessage scnPlane setHeightSegmentCountSelector value
 
 -- | cornerRadius
 --
@@ -166,8 +163,8 @@ setHeightSegmentCount scnPlane  value =
 --
 -- ObjC selector: @- cornerRadius@
 cornerRadius :: IsSCNPlane scnPlane => scnPlane -> IO CDouble
-cornerRadius scnPlane  =
-    sendMsg scnPlane (mkSelector "cornerRadius") retCDouble []
+cornerRadius scnPlane =
+  sendMessage scnPlane cornerRadiusSelector
 
 -- | cornerRadius
 --
@@ -177,8 +174,8 @@ cornerRadius scnPlane  =
 --
 -- ObjC selector: @- setCornerRadius:@
 setCornerRadius :: IsSCNPlane scnPlane => scnPlane -> CDouble -> IO ()
-setCornerRadius scnPlane  value =
-    sendMsg scnPlane (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius scnPlane value =
+  sendMessage scnPlane setCornerRadiusSelector value
 
 -- | cornerSegmentCount
 --
@@ -188,8 +185,8 @@ setCornerRadius scnPlane  value =
 --
 -- ObjC selector: @- cornerSegmentCount@
 cornerSegmentCount :: IsSCNPlane scnPlane => scnPlane -> IO CLong
-cornerSegmentCount scnPlane  =
-    sendMsg scnPlane (mkSelector "cornerSegmentCount") retCLong []
+cornerSegmentCount scnPlane =
+  sendMessage scnPlane cornerSegmentCountSelector
 
 -- | cornerSegmentCount
 --
@@ -199,62 +196,62 @@ cornerSegmentCount scnPlane  =
 --
 -- ObjC selector: @- setCornerSegmentCount:@
 setCornerSegmentCount :: IsSCNPlane scnPlane => scnPlane -> CLong -> IO ()
-setCornerSegmentCount scnPlane  value =
-    sendMsg scnPlane (mkSelector "setCornerSegmentCount:") retVoid [argCLong value]
+setCornerSegmentCount scnPlane value =
+  sendMessage scnPlane setCornerSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @planeWithWidth:height:@
-planeWithWidth_heightSelector :: Selector
+planeWithWidth_heightSelector :: Selector '[CDouble, CDouble] (Id SCNPlane)
 planeWithWidth_heightSelector = mkSelector "planeWithWidth:height:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @widthSegmentCount@
-widthSegmentCountSelector :: Selector
+widthSegmentCountSelector :: Selector '[] CLong
 widthSegmentCountSelector = mkSelector "widthSegmentCount"
 
 -- | @Selector@ for @setWidthSegmentCount:@
-setWidthSegmentCountSelector :: Selector
+setWidthSegmentCountSelector :: Selector '[CLong] ()
 setWidthSegmentCountSelector = mkSelector "setWidthSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 
 -- | @Selector@ for @cornerSegmentCount@
-cornerSegmentCountSelector :: Selector
+cornerSegmentCountSelector :: Selector '[] CLong
 cornerSegmentCountSelector = mkSelector "cornerSegmentCount"
 
 -- | @Selector@ for @setCornerSegmentCount:@
-setCornerSegmentCountSelector :: Selector
+setCornerSegmentCountSelector :: Selector '[CLong] ()
 setCornerSegmentCountSelector = mkSelector "setCornerSegmentCount:"
 

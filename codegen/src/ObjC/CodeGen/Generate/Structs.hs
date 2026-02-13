@@ -210,6 +210,7 @@ generateStructReExportModule prefix structs
 structsModuleHeader :: Text -> [Text]
 structsModuleHeader modName =
   [ "{-# LANGUAGE RecordWildCards #-}"
+  , "{-# LANGUAGE TypeFamilies #-}"
   , ""
   , "-- | Struct types for this framework."
   , "--"
@@ -226,6 +227,7 @@ structsModuleImports hierarchy framework structs =
   , "import Foreign.LibFFI.FFITypes"
   , "import Foreign.LibFFI.Internal (CType)"
   , "import System.IO.Unsafe (unsafePerformIO)"
+  , "import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))"
   ] ++ crossFwStructImports ++ enumImports
   where
     enumMap = hierarchyEnums hierarchy
@@ -363,7 +365,7 @@ generateStructCType hierarchy sd =
        <> "[" <> T.intercalate ", " ffiTypes <> "]"
      ]
 
--- | Generate arg\/ret convenience functions.
+-- | Generate arg\/ret convenience functions and @ObjCArgument@\/@ObjCReturn@ instances.
 generateStructArgRet :: StructDef -> [Text]
 generateStructArgRet sd =
   let name = structTypedefName sd
@@ -373,6 +375,16 @@ generateStructArgRet sd =
      , ""
      , "ret" <> name <> " :: RetType " <> name
      , "ret" <> name <> " = mkStorableRetType " <> lower <> "StructType"
+     , ""
+     , "instance ObjCArgument " <> name <> " where"
+     , "  withObjCArg x k = k (arg" <> name <> " x)"
+     , ""
+     , "instance ObjCReturn " <> name <> " where"
+     , "  type RawReturn " <> name <> " = " <> name
+     , "  objcRetType = ret" <> name
+     , "  msgSendVariant = MsgSendStret"
+     , "  fromRetained = pure"
+     , "  fromOwned = pure"
      ]
 
 -- ---------------------------------------------------------------------------

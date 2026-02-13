@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.CloudKit.CKRecordZone
   , share
   , encryptionScope
   , setEncryptionScope
-  , defaultRecordZoneSelector
-  , initSelector
-  , newSelector
-  , initWithZoneNameSelector
-  , initWithZoneIDSelector
-  , zoneIDSelector
   , capabilitiesSelector
-  , shareSelector
+  , defaultRecordZoneSelector
   , encryptionScopeSelector
+  , initSelector
+  , initWithZoneIDSelector
+  , initWithZoneNameSelector
+  , newSelector
   , setEncryptionScopeSelector
+  , shareSelector
+  , zoneIDSelector
 
   -- * Enum types
   , CKRecordZoneCapabilities(CKRecordZoneCapabilities)
@@ -40,15 +41,11 @@ module ObjC.CloudKit.CKRecordZone
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,43 +58,41 @@ defaultRecordZone :: IO (Id CKRecordZone)
 defaultRecordZone  =
   do
     cls' <- getRequiredClass "CKRecordZone"
-    sendClassMsg cls' (mkSelector "defaultRecordZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultRecordZoneSelector
 
 -- | @- init@
 init_ :: IsCKRecordZone ckRecordZone => ckRecordZone -> IO (Id CKRecordZone)
-init_ ckRecordZone  =
-    sendMsg ckRecordZone (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckRecordZone =
+  sendOwnedMessage ckRecordZone initSelector
 
 -- | @+ new@
 new :: IO (Id CKRecordZone)
 new  =
   do
     cls' <- getRequiredClass "CKRecordZone"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithZoneName:@
 initWithZoneName :: (IsCKRecordZone ckRecordZone, IsNSString zoneName) => ckRecordZone -> zoneName -> IO (Id CKRecordZone)
-initWithZoneName ckRecordZone  zoneName =
-  withObjCPtr zoneName $ \raw_zoneName ->
-      sendMsg ckRecordZone (mkSelector "initWithZoneName:") (retPtr retVoid) [argPtr (castPtr raw_zoneName :: Ptr ())] >>= ownedObject . castPtr
+initWithZoneName ckRecordZone zoneName =
+  sendOwnedMessage ckRecordZone initWithZoneNameSelector (toNSString zoneName)
 
 -- | @- initWithZoneID:@
 initWithZoneID :: (IsCKRecordZone ckRecordZone, IsCKRecordZoneID zoneID) => ckRecordZone -> zoneID -> IO (Id CKRecordZone)
-initWithZoneID ckRecordZone  zoneID =
-  withObjCPtr zoneID $ \raw_zoneID ->
-      sendMsg ckRecordZone (mkSelector "initWithZoneID:") (retPtr retVoid) [argPtr (castPtr raw_zoneID :: Ptr ())] >>= ownedObject . castPtr
+initWithZoneID ckRecordZone zoneID =
+  sendOwnedMessage ckRecordZone initWithZoneIDSelector (toCKRecordZoneID zoneID)
 
 -- | @- zoneID@
 zoneID :: IsCKRecordZone ckRecordZone => ckRecordZone -> IO (Id CKRecordZoneID)
-zoneID ckRecordZone  =
-    sendMsg ckRecordZone (mkSelector "zoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneID ckRecordZone =
+  sendMessage ckRecordZone zoneIDSelector
 
 -- | Capabilities on locally-created record zones are not valid until the record zone is saved. Capabilities on record zones fetched from the server are valid.
 --
 -- ObjC selector: @- capabilities@
 capabilities :: IsCKRecordZone ckRecordZone => ckRecordZone -> IO CKRecordZoneCapabilities
-capabilities ckRecordZone  =
-    fmap (coerce :: CULong -> CKRecordZoneCapabilities) $ sendMsg ckRecordZone (mkSelector "capabilities") retCULong []
+capabilities ckRecordZone =
+  sendMessage ckRecordZone capabilitiesSelector
 
 -- | The share property on a record zone will only be set on zones fetched from the server and only if a corresponding zone-wide share record for the zone exists on the server.
 --
@@ -107,8 +102,8 @@ capabilities ckRecordZone  =
 --
 -- ObjC selector: @- share@
 share :: IsCKRecordZone ckRecordZone => ckRecordZone -> IO (Id CKReference)
-share ckRecordZone  =
-    sendMsg ckRecordZone (mkSelector "share") (retPtr retVoid) [] >>= retainedObject . castPtr
+share ckRecordZone =
+  sendMessage ckRecordZone shareSelector
 
 -- | The encryption scope determines the granularity at which encryption keys are stored within the zone.
 --
@@ -118,8 +113,8 @@ share ckRecordZone  =
 --
 -- ObjC selector: @- encryptionScope@
 encryptionScope :: IsCKRecordZone ckRecordZone => ckRecordZone -> IO CKRecordZoneEncryptionScope
-encryptionScope ckRecordZone  =
-    fmap (coerce :: CLong -> CKRecordZoneEncryptionScope) $ sendMsg ckRecordZone (mkSelector "encryptionScope") retCLong []
+encryptionScope ckRecordZone =
+  sendMessage ckRecordZone encryptionScopeSelector
 
 -- | The encryption scope determines the granularity at which encryption keys are stored within the zone.
 --
@@ -129,50 +124,50 @@ encryptionScope ckRecordZone  =
 --
 -- ObjC selector: @- setEncryptionScope:@
 setEncryptionScope :: IsCKRecordZone ckRecordZone => ckRecordZone -> CKRecordZoneEncryptionScope -> IO ()
-setEncryptionScope ckRecordZone  value =
-    sendMsg ckRecordZone (mkSelector "setEncryptionScope:") retVoid [argCLong (coerce value)]
+setEncryptionScope ckRecordZone value =
+  sendMessage ckRecordZone setEncryptionScopeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultRecordZone@
-defaultRecordZoneSelector :: Selector
+defaultRecordZoneSelector :: Selector '[] (Id CKRecordZone)
 defaultRecordZoneSelector = mkSelector "defaultRecordZone"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKRecordZone)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKRecordZone)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithZoneName:@
-initWithZoneNameSelector :: Selector
+initWithZoneNameSelector :: Selector '[Id NSString] (Id CKRecordZone)
 initWithZoneNameSelector = mkSelector "initWithZoneName:"
 
 -- | @Selector@ for @initWithZoneID:@
-initWithZoneIDSelector :: Selector
+initWithZoneIDSelector :: Selector '[Id CKRecordZoneID] (Id CKRecordZone)
 initWithZoneIDSelector = mkSelector "initWithZoneID:"
 
 -- | @Selector@ for @zoneID@
-zoneIDSelector :: Selector
+zoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 zoneIDSelector = mkSelector "zoneID"
 
 -- | @Selector@ for @capabilities@
-capabilitiesSelector :: Selector
+capabilitiesSelector :: Selector '[] CKRecordZoneCapabilities
 capabilitiesSelector = mkSelector "capabilities"
 
 -- | @Selector@ for @share@
-shareSelector :: Selector
+shareSelector :: Selector '[] (Id CKReference)
 shareSelector = mkSelector "share"
 
 -- | @Selector@ for @encryptionScope@
-encryptionScopeSelector :: Selector
+encryptionScopeSelector :: Selector '[] CKRecordZoneEncryptionScope
 encryptionScopeSelector = mkSelector "encryptionScope"
 
 -- | @Selector@ for @setEncryptionScope:@
-setEncryptionScopeSelector :: Selector
+setEncryptionScopeSelector :: Selector '[CKRecordZoneEncryptionScope] ()
 setEncryptionScopeSelector = mkSelector "setEncryptionScope:"
 

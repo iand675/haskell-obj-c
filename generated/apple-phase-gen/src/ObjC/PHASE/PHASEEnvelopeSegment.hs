@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,15 +37,11 @@ module ObjC.PHASE.PHASEEnvelopeSegment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- curveType@
 curveType :: IsPHASEEnvelopeSegment phaseEnvelopeSegment => phaseEnvelopeSegment -> IO PHASECurveType
-curveType phaseEnvelopeSegment  =
-    fmap (coerce :: CLong -> PHASECurveType) $ sendMsg phaseEnvelopeSegment (mkSelector "curveType") retCLong []
+curveType phaseEnvelopeSegment =
+  sendMessage phaseEnvelopeSegment curveTypeSelector
 
 -- | curveType
 --
@@ -71,18 +68,18 @@ curveType phaseEnvelopeSegment  =
 --
 -- ObjC selector: @- setCurveType:@
 setCurveType :: IsPHASEEnvelopeSegment phaseEnvelopeSegment => phaseEnvelopeSegment -> PHASECurveType -> IO ()
-setCurveType phaseEnvelopeSegment  value =
-    sendMsg phaseEnvelopeSegment (mkSelector "setCurveType:") retVoid [argCLong (coerce value)]
+setCurveType phaseEnvelopeSegment value =
+  sendMessage phaseEnvelopeSegment setCurveTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @curveType@
-curveTypeSelector :: Selector
+curveTypeSelector :: Selector '[] PHASECurveType
 curveTypeSelector = mkSelector "curveType"
 
 -- | @Selector@ for @setCurveType:@
-setCurveTypeSelector :: Selector
+setCurveTypeSelector :: Selector '[PHASECurveType] ()
 setCurveTypeSelector = mkSelector "setCurveType:"
 

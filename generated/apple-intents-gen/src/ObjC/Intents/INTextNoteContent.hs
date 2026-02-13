@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Intents.INTextNoteContent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithText:@
 initWithText :: (IsINTextNoteContent inTextNoteContent, IsNSString text) => inTextNoteContent -> text -> IO (Id INTextNoteContent)
-initWithText inTextNoteContent  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg inTextNoteContent (mkSelector "initWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= ownedObject . castPtr
+initWithText inTextNoteContent text =
+  sendOwnedMessage inTextNoteContent initWithTextSelector (toNSString text)
 
 -- | @- text@
 text :: IsINTextNoteContent inTextNoteContent => inTextNoteContent -> IO (Id NSString)
-text inTextNoteContent  =
-    sendMsg inTextNoteContent (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text inTextNoteContent =
+  sendMessage inTextNoteContent textSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithText:@
-initWithTextSelector :: Selector
+initWithTextSelector :: Selector '[Id NSString] (Id INTextNoteContent)
 initWithTextSelector = mkSelector "initWithText:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 

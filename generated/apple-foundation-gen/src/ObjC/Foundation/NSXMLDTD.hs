@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,25 +31,25 @@ module ObjC.Foundation.NSXMLDTD
   , setPublicID
   , systemID
   , setSystemID
+  , addChildSelector
+  , attributeDeclarationForName_elementNameSelector
+  , elementDeclarationForNameSelector
+  , entityDeclarationForNameSelector
   , initSelector
-  , initWithKind_optionsSelector
   , initWithContentsOfURL_options_errorSelector
   , initWithData_options_errorSelector
+  , initWithKind_optionsSelector
   , insertChild_atIndexSelector
   , insertChildren_atIndexSelector
-  , removeChildAtIndexSelector
-  , setChildrenSelector
-  , addChildSelector
-  , replaceChildAtIndex_withNodeSelector
-  , entityDeclarationForNameSelector
   , notationDeclarationForNameSelector
-  , elementDeclarationForNameSelector
-  , attributeDeclarationForName_elementNameSelector
   , predefinedEntityDeclarationForNameSelector
   , publicIDSelector
+  , removeChildAtIndexSelector
+  , replaceChildAtIndex_withNodeSelector
+  , setChildrenSelector
   , setPublicIDSelector
-  , systemIDSelector
   , setSystemIDSelector
+  , systemIDSelector
 
   -- * Enum types
   , NSXMLNodeKind(NSXMLNodeKind)
@@ -97,15 +98,11 @@ module ObjC.Foundation.NSXMLDTD
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,27 +111,23 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- init@
 init_ :: IsNSXMLDTD nsxmldtd => nsxmldtd -> IO (Id NSXMLDTD)
-init_ nsxmldtd  =
-    sendMsg nsxmldtd (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsxmldtd =
+  sendOwnedMessage nsxmldtd initSelector
 
 -- | @- initWithKind:options:@
 initWithKind_options :: IsNSXMLDTD nsxmldtd => nsxmldtd -> NSXMLNodeKind -> NSXMLNodeOptions -> IO (Id NSXMLDTD)
-initWithKind_options nsxmldtd  kind options =
-    sendMsg nsxmldtd (mkSelector "initWithKind:options:") (retPtr retVoid) [argCULong (coerce kind), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithKind_options nsxmldtd kind options =
+  sendOwnedMessage nsxmldtd initWithKind_optionsSelector kind options
 
 -- | @- initWithContentsOfURL:options:error:@
 initWithContentsOfURL_options_error :: (IsNSXMLDTD nsxmldtd, IsNSURL url, IsNSError error_) => nsxmldtd -> url -> NSXMLNodeOptions -> error_ -> IO (Id NSXMLDTD)
-initWithContentsOfURL_options_error nsxmldtd  url mask error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsxmldtd (mkSelector "initWithContentsOfURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce mask), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL_options_error nsxmldtd url mask error_ =
+  sendOwnedMessage nsxmldtd initWithContentsOfURL_options_errorSelector (toNSURL url) mask (toNSError error_)
 
 -- | @- initWithData:options:error:@
 initWithData_options_error :: (IsNSXMLDTD nsxmldtd, IsNSData data_, IsNSError error_) => nsxmldtd -> data_ -> NSXMLNodeOptions -> error_ -> IO (Id NSXMLDTD)
-initWithData_options_error nsxmldtd  data_ mask error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsxmldtd (mkSelector "initWithData:options:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCULong (coerce mask), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options_error nsxmldtd data_ mask error_ =
+  sendOwnedMessage nsxmldtd initWithData_options_errorSelector (toNSData data_) mask (toNSError error_)
 
 -- | insertChild:atIndex:
 --
@@ -142,9 +135,8 @@ initWithData_options_error nsxmldtd  data_ mask error_ =
 --
 -- ObjC selector: @- insertChild:atIndex:@
 insertChild_atIndex :: (IsNSXMLDTD nsxmldtd, IsNSXMLNode child) => nsxmldtd -> child -> CULong -> IO ()
-insertChild_atIndex nsxmldtd  child index =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsxmldtd (mkSelector "insertChild:atIndex:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCULong index]
+insertChild_atIndex nsxmldtd child index =
+  sendMessage nsxmldtd insertChild_atIndexSelector (toNSXMLNode child) index
 
 -- | insertChildren:atIndex:
 --
@@ -152,9 +144,8 @@ insertChild_atIndex nsxmldtd  child index =
 --
 -- ObjC selector: @- insertChildren:atIndex:@
 insertChildren_atIndex :: (IsNSXMLDTD nsxmldtd, IsNSArray children) => nsxmldtd -> children -> CULong -> IO ()
-insertChildren_atIndex nsxmldtd  children index =
-  withObjCPtr children $ \raw_children ->
-      sendMsg nsxmldtd (mkSelector "insertChildren:atIndex:") retVoid [argPtr (castPtr raw_children :: Ptr ()), argCULong index]
+insertChildren_atIndex nsxmldtd children index =
+  sendMessage nsxmldtd insertChildren_atIndexSelector (toNSArray children) index
 
 -- | removeChildAtIndex:
 --
@@ -162,8 +153,8 @@ insertChildren_atIndex nsxmldtd  children index =
 --
 -- ObjC selector: @- removeChildAtIndex:@
 removeChildAtIndex :: IsNSXMLDTD nsxmldtd => nsxmldtd -> CULong -> IO ()
-removeChildAtIndex nsxmldtd  index =
-    sendMsg nsxmldtd (mkSelector "removeChildAtIndex:") retVoid [argCULong index]
+removeChildAtIndex nsxmldtd index =
+  sendMessage nsxmldtd removeChildAtIndexSelector index
 
 -- | setChildren:
 --
@@ -171,9 +162,8 @@ removeChildAtIndex nsxmldtd  index =
 --
 -- ObjC selector: @- setChildren:@
 setChildren :: (IsNSXMLDTD nsxmldtd, IsNSArray children) => nsxmldtd -> children -> IO ()
-setChildren nsxmldtd  children =
-  withObjCPtr children $ \raw_children ->
-      sendMsg nsxmldtd (mkSelector "setChildren:") retVoid [argPtr (castPtr raw_children :: Ptr ())]
+setChildren nsxmldtd children =
+  sendMessage nsxmldtd setChildrenSelector (toNSArray children)
 
 -- | addChild:
 --
@@ -181,9 +171,8 @@ setChildren nsxmldtd  children =
 --
 -- ObjC selector: @- addChild:@
 addChild :: (IsNSXMLDTD nsxmldtd, IsNSXMLNode child) => nsxmldtd -> child -> IO ()
-addChild nsxmldtd  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsxmldtd (mkSelector "addChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChild nsxmldtd child =
+  sendMessage nsxmldtd addChildSelector (toNSXMLNode child)
 
 -- | replaceChildAtIndex:withNode:
 --
@@ -191,9 +180,8 @@ addChild nsxmldtd  child =
 --
 -- ObjC selector: @- replaceChildAtIndex:withNode:@
 replaceChildAtIndex_withNode :: (IsNSXMLDTD nsxmldtd, IsNSXMLNode node) => nsxmldtd -> CULong -> node -> IO ()
-replaceChildAtIndex_withNode nsxmldtd  index node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg nsxmldtd (mkSelector "replaceChildAtIndex:withNode:") retVoid [argCULong index, argPtr (castPtr raw_node :: Ptr ())]
+replaceChildAtIndex_withNode nsxmldtd index node =
+  sendMessage nsxmldtd replaceChildAtIndex_withNodeSelector index (toNSXMLNode node)
 
 -- | entityDeclarationForName:
 --
@@ -201,9 +189,8 @@ replaceChildAtIndex_withNode nsxmldtd  index node =
 --
 -- ObjC selector: @- entityDeclarationForName:@
 entityDeclarationForName :: (IsNSXMLDTD nsxmldtd, IsNSString name) => nsxmldtd -> name -> IO (Id NSXMLDTDNode)
-entityDeclarationForName nsxmldtd  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmldtd (mkSelector "entityDeclarationForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+entityDeclarationForName nsxmldtd name =
+  sendMessage nsxmldtd entityDeclarationForNameSelector (toNSString name)
 
 -- | notationDeclarationForName:
 --
@@ -211,9 +198,8 @@ entityDeclarationForName nsxmldtd  name =
 --
 -- ObjC selector: @- notationDeclarationForName:@
 notationDeclarationForName :: (IsNSXMLDTD nsxmldtd, IsNSString name) => nsxmldtd -> name -> IO (Id NSXMLDTDNode)
-notationDeclarationForName nsxmldtd  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmldtd (mkSelector "notationDeclarationForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+notationDeclarationForName nsxmldtd name =
+  sendMessage nsxmldtd notationDeclarationForNameSelector (toNSString name)
 
 -- | elementDeclarationForName:
 --
@@ -221,9 +207,8 @@ notationDeclarationForName nsxmldtd  name =
 --
 -- ObjC selector: @- elementDeclarationForName:@
 elementDeclarationForName :: (IsNSXMLDTD nsxmldtd, IsNSString name) => nsxmldtd -> name -> IO (Id NSXMLDTDNode)
-elementDeclarationForName nsxmldtd  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmldtd (mkSelector "elementDeclarationForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+elementDeclarationForName nsxmldtd name =
+  sendMessage nsxmldtd elementDeclarationForNameSelector (toNSString name)
 
 -- | attributeDeclarationForName:
 --
@@ -231,10 +216,8 @@ elementDeclarationForName nsxmldtd  name =
 --
 -- ObjC selector: @- attributeDeclarationForName:elementName:@
 attributeDeclarationForName_elementName :: (IsNSXMLDTD nsxmldtd, IsNSString name, IsNSString elementName) => nsxmldtd -> name -> elementName -> IO (Id NSXMLDTDNode)
-attributeDeclarationForName_elementName nsxmldtd  name elementName =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr elementName $ \raw_elementName ->
-        sendMsg nsxmldtd (mkSelector "attributeDeclarationForName:elementName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_elementName :: Ptr ())] >>= retainedObject . castPtr
+attributeDeclarationForName_elementName nsxmldtd name elementName =
+  sendMessage nsxmldtd attributeDeclarationForName_elementNameSelector (toNSString name) (toNSString elementName)
 
 -- | predefinedEntityDeclarationForName:
 --
@@ -247,116 +230,113 @@ predefinedEntityDeclarationForName :: IsNSString name => name -> IO (Id NSXMLDTD
 predefinedEntityDeclarationForName name =
   do
     cls' <- getRequiredClass "NSXMLDTD"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "predefinedEntityDeclarationForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predefinedEntityDeclarationForNameSelector (toNSString name)
 
 -- | Sets the public id. This identifier should be in the default catalog in /etc/xml/catalog or in a path specified by the environment variable XML_CATALOG_FILES. When the public id is set the system id must also be set.
 --
 -- ObjC selector: @- publicID@
 publicID :: IsNSXMLDTD nsxmldtd => nsxmldtd -> IO (Id NSString)
-publicID nsxmldtd  =
-    sendMsg nsxmldtd (mkSelector "publicID") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicID nsxmldtd =
+  sendMessage nsxmldtd publicIDSelector
 
 -- | Sets the public id. This identifier should be in the default catalog in /etc/xml/catalog or in a path specified by the environment variable XML_CATALOG_FILES. When the public id is set the system id must also be set.
 --
 -- ObjC selector: @- setPublicID:@
 setPublicID :: (IsNSXMLDTD nsxmldtd, IsNSString value) => nsxmldtd -> value -> IO ()
-setPublicID nsxmldtd  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmldtd (mkSelector "setPublicID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPublicID nsxmldtd value =
+  sendMessage nsxmldtd setPublicIDSelector (toNSString value)
 
 -- | Sets the system id. This should be a URL that points to a valid DTD.
 --
 -- ObjC selector: @- systemID@
 systemID :: IsNSXMLDTD nsxmldtd => nsxmldtd -> IO (Id NSString)
-systemID nsxmldtd  =
-    sendMsg nsxmldtd (mkSelector "systemID") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemID nsxmldtd =
+  sendMessage nsxmldtd systemIDSelector
 
 -- | Sets the system id. This should be a URL that points to a valid DTD.
 --
 -- ObjC selector: @- setSystemID:@
 setSystemID :: (IsNSXMLDTD nsxmldtd, IsNSString value) => nsxmldtd -> value -> IO ()
-setSystemID nsxmldtd  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmldtd (mkSelector "setSystemID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemID nsxmldtd value =
+  sendMessage nsxmldtd setSystemIDSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSXMLDTD)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithKind:options:@
-initWithKind_optionsSelector :: Selector
+initWithKind_optionsSelector :: Selector '[NSXMLNodeKind, NSXMLNodeOptions] (Id NSXMLDTD)
 initWithKind_optionsSelector = mkSelector "initWithKind:options:"
 
 -- | @Selector@ for @initWithContentsOfURL:options:error:@
-initWithContentsOfURL_options_errorSelector :: Selector
+initWithContentsOfURL_options_errorSelector :: Selector '[Id NSURL, NSXMLNodeOptions, Id NSError] (Id NSXMLDTD)
 initWithContentsOfURL_options_errorSelector = mkSelector "initWithContentsOfURL:options:error:"
 
 -- | @Selector@ for @initWithData:options:error:@
-initWithData_options_errorSelector :: Selector
+initWithData_options_errorSelector :: Selector '[Id NSData, NSXMLNodeOptions, Id NSError] (Id NSXMLDTD)
 initWithData_options_errorSelector = mkSelector "initWithData:options:error:"
 
 -- | @Selector@ for @insertChild:atIndex:@
-insertChild_atIndexSelector :: Selector
+insertChild_atIndexSelector :: Selector '[Id NSXMLNode, CULong] ()
 insertChild_atIndexSelector = mkSelector "insertChild:atIndex:"
 
 -- | @Selector@ for @insertChildren:atIndex:@
-insertChildren_atIndexSelector :: Selector
+insertChildren_atIndexSelector :: Selector '[Id NSArray, CULong] ()
 insertChildren_atIndexSelector = mkSelector "insertChildren:atIndex:"
 
 -- | @Selector@ for @removeChildAtIndex:@
-removeChildAtIndexSelector :: Selector
+removeChildAtIndexSelector :: Selector '[CULong] ()
 removeChildAtIndexSelector = mkSelector "removeChildAtIndex:"
 
 -- | @Selector@ for @setChildren:@
-setChildrenSelector :: Selector
+setChildrenSelector :: Selector '[Id NSArray] ()
 setChildrenSelector = mkSelector "setChildren:"
 
 -- | @Selector@ for @addChild:@
-addChildSelector :: Selector
+addChildSelector :: Selector '[Id NSXMLNode] ()
 addChildSelector = mkSelector "addChild:"
 
 -- | @Selector@ for @replaceChildAtIndex:withNode:@
-replaceChildAtIndex_withNodeSelector :: Selector
+replaceChildAtIndex_withNodeSelector :: Selector '[CULong, Id NSXMLNode] ()
 replaceChildAtIndex_withNodeSelector = mkSelector "replaceChildAtIndex:withNode:"
 
 -- | @Selector@ for @entityDeclarationForName:@
-entityDeclarationForNameSelector :: Selector
+entityDeclarationForNameSelector :: Selector '[Id NSString] (Id NSXMLDTDNode)
 entityDeclarationForNameSelector = mkSelector "entityDeclarationForName:"
 
 -- | @Selector@ for @notationDeclarationForName:@
-notationDeclarationForNameSelector :: Selector
+notationDeclarationForNameSelector :: Selector '[Id NSString] (Id NSXMLDTDNode)
 notationDeclarationForNameSelector = mkSelector "notationDeclarationForName:"
 
 -- | @Selector@ for @elementDeclarationForName:@
-elementDeclarationForNameSelector :: Selector
+elementDeclarationForNameSelector :: Selector '[Id NSString] (Id NSXMLDTDNode)
 elementDeclarationForNameSelector = mkSelector "elementDeclarationForName:"
 
 -- | @Selector@ for @attributeDeclarationForName:elementName:@
-attributeDeclarationForName_elementNameSelector :: Selector
+attributeDeclarationForName_elementNameSelector :: Selector '[Id NSString, Id NSString] (Id NSXMLDTDNode)
 attributeDeclarationForName_elementNameSelector = mkSelector "attributeDeclarationForName:elementName:"
 
 -- | @Selector@ for @predefinedEntityDeclarationForName:@
-predefinedEntityDeclarationForNameSelector :: Selector
+predefinedEntityDeclarationForNameSelector :: Selector '[Id NSString] (Id NSXMLDTDNode)
 predefinedEntityDeclarationForNameSelector = mkSelector "predefinedEntityDeclarationForName:"
 
 -- | @Selector@ for @publicID@
-publicIDSelector :: Selector
+publicIDSelector :: Selector '[] (Id NSString)
 publicIDSelector = mkSelector "publicID"
 
 -- | @Selector@ for @setPublicID:@
-setPublicIDSelector :: Selector
+setPublicIDSelector :: Selector '[Id NSString] ()
 setPublicIDSelector = mkSelector "setPublicID:"
 
 -- | @Selector@ for @systemID@
-systemIDSelector :: Selector
+systemIDSelector :: Selector '[] (Id NSString)
 systemIDSelector = mkSelector "systemID"
 
 -- | @Selector@ for @setSystemID:@
-setSystemIDSelector :: Selector
+setSystemIDSelector :: Selector '[Id NSString] ()
 setSystemIDSelector = mkSelector "setSystemID:"
 

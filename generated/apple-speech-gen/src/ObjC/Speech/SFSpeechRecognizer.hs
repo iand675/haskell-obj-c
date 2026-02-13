@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,23 +47,23 @@ module ObjC.Speech.SFSpeechRecognizer
   , setDefaultTaskHint
   , queue
   , setQueue
-  , supportedLocalesSelector
   , authorizationStatusSelector
-  , requestAuthorizationSelector
+  , availableSelector
+  , defaultTaskHintSelector
+  , delegateSelector
   , initSelector
   , initWithLocaleSelector
-  , recognitionTaskWithRequest_resultHandlerSelector
-  , recognitionTaskWithRequest_delegateSelector
-  , availableSelector
   , localeSelector
-  , supportsOnDeviceRecognitionSelector
-  , setSupportsOnDeviceRecognitionSelector
-  , delegateSelector
-  , setDelegateSelector
-  , defaultTaskHintSelector
-  , setDefaultTaskHintSelector
   , queueSelector
+  , recognitionTaskWithRequest_delegateSelector
+  , recognitionTaskWithRequest_resultHandlerSelector
+  , requestAuthorizationSelector
+  , setDefaultTaskHintSelector
+  , setDelegateSelector
   , setQueueSelector
+  , setSupportsOnDeviceRecognitionSelector
+  , supportedLocalesSelector
+  , supportsOnDeviceRecognitionSelector
 
   -- * Enum types
   , SFSpeechRecognitionTaskHint(SFSpeechRecognitionTaskHint)
@@ -78,15 +79,11 @@ module ObjC.Speech.SFSpeechRecognizer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,7 +104,7 @@ supportedLocales :: IO (Id NSSet)
 supportedLocales  =
   do
     cls' <- getRequiredClass "SFSpeechRecognizer"
-    sendClassMsg cls' (mkSelector "supportedLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedLocalesSelector
 
 -- | Returns your app's current authorization to perform speech recognition.
 --
@@ -120,7 +117,7 @@ authorizationStatus :: IO SFSpeechRecognizerAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "SFSpeechRecognizer"
-    fmap (coerce :: CLong -> SFSpeechRecognizerAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | Asks the user to allow your app to perform speech recognition.
 --
@@ -139,7 +136,7 @@ requestAuthorization :: Ptr () -> IO ()
 requestAuthorization handler =
   do
     cls' <- getRequiredClass "SFSpeechRecognizer"
-    sendClassMsg cls' (mkSelector "requestAuthorization:") retVoid [argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' requestAuthorizationSelector handler
 
 -- | Creates a speech recognizer associated with the user's default language settings.
 --
@@ -151,8 +148,8 @@ requestAuthorization handler =
 --
 -- ObjC selector: @- init@
 init_ :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO (Id SFSpeechRecognizer)
-init_ sfSpeechRecognizer  =
-    sendMsg sfSpeechRecognizer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ sfSpeechRecognizer =
+  sendOwnedMessage sfSpeechRecognizer initSelector
 
 -- | Creates a speech recognizer associated with the specified locale.
 --
@@ -166,9 +163,8 @@ init_ sfSpeechRecognizer  =
 --
 -- ObjC selector: @- initWithLocale:@
 initWithLocale :: (IsSFSpeechRecognizer sfSpeechRecognizer, IsNSLocale locale) => sfSpeechRecognizer -> locale -> IO (Id SFSpeechRecognizer)
-initWithLocale sfSpeechRecognizer  locale =
-  withObjCPtr locale $ \raw_locale ->
-      sendMsg sfSpeechRecognizer (mkSelector "initWithLocale:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ())] >>= ownedObject . castPtr
+initWithLocale sfSpeechRecognizer locale =
+  sendOwnedMessage sfSpeechRecognizer initWithLocaleSelector (toNSLocale locale)
 
 -- | Executes the speech recognition request and delivers the results to the specified handler block.
 --
@@ -182,9 +178,8 @@ initWithLocale sfSpeechRecognizer  locale =
 --
 -- ObjC selector: @- recognitionTaskWithRequest:resultHandler:@
 recognitionTaskWithRequest_resultHandler :: (IsSFSpeechRecognizer sfSpeechRecognizer, IsSFSpeechRecognitionRequest request) => sfSpeechRecognizer -> request -> Ptr () -> IO (Id SFSpeechRecognitionTask)
-recognitionTaskWithRequest_resultHandler sfSpeechRecognizer  request resultHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg sfSpeechRecognizer (mkSelector "recognitionTaskWithRequest:resultHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr resultHandler :: Ptr ())] >>= retainedObject . castPtr
+recognitionTaskWithRequest_resultHandler sfSpeechRecognizer request resultHandler =
+  sendMessage sfSpeechRecognizer recognitionTaskWithRequest_resultHandlerSelector (toSFSpeechRecognitionRequest request) resultHandler
 
 -- | Recognizes speech from the audio source associated with the specified request, using the specified delegate to manage the results.
 --
@@ -198,9 +193,8 @@ recognitionTaskWithRequest_resultHandler sfSpeechRecognizer  request resultHandl
 --
 -- ObjC selector: @- recognitionTaskWithRequest:delegate:@
 recognitionTaskWithRequest_delegate :: (IsSFSpeechRecognizer sfSpeechRecognizer, IsSFSpeechRecognitionRequest request) => sfSpeechRecognizer -> request -> RawId -> IO (Id SFSpeechRecognitionTask)
-recognitionTaskWithRequest_delegate sfSpeechRecognizer  request delegate =
-  withObjCPtr request $ \raw_request ->
-      sendMsg sfSpeechRecognizer (mkSelector "recognitionTaskWithRequest:delegate:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= retainedObject . castPtr
+recognitionTaskWithRequest_delegate sfSpeechRecognizer request delegate =
+  sendMessage sfSpeechRecognizer recognitionTaskWithRequest_delegateSelector (toSFSpeechRecognitionRequest request) delegate
 
 -- | A Boolean value that indicates whether the speech recognizer is currently available.
 --
@@ -208,8 +202,8 @@ recognitionTaskWithRequest_delegate sfSpeechRecognizer  request delegate =
 --
 -- ObjC selector: @- available@
 available :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO Bool
-available sfSpeechRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognizer (mkSelector "available") retCULong []
+available sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer availableSelector
 
 -- | The locale of the speech recognizer.
 --
@@ -217,8 +211,8 @@ available sfSpeechRecognizer  =
 --
 -- ObjC selector: @- locale@
 locale :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO (Id NSLocale)
-locale sfSpeechRecognizer  =
-    sendMsg sfSpeechRecognizer (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer localeSelector
 
 -- | A Boolean value that indicates whether the speech recognizer can operate without network access.
 --
@@ -226,8 +220,8 @@ locale sfSpeechRecognizer  =
 --
 -- ObjC selector: @- supportsOnDeviceRecognition@
 supportsOnDeviceRecognition :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO Bool
-supportsOnDeviceRecognition sfSpeechRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognizer (mkSelector "supportsOnDeviceRecognition") retCULong []
+supportsOnDeviceRecognition sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer supportsOnDeviceRecognitionSelector
 
 -- | A Boolean value that indicates whether the speech recognizer can operate without network access.
 --
@@ -235,8 +229,8 @@ supportsOnDeviceRecognition sfSpeechRecognizer  =
 --
 -- ObjC selector: @- setSupportsOnDeviceRecognition:@
 setSupportsOnDeviceRecognition :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> Bool -> IO ()
-setSupportsOnDeviceRecognition sfSpeechRecognizer  value =
-    sendMsg sfSpeechRecognizer (mkSelector "setSupportsOnDeviceRecognition:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsOnDeviceRecognition sfSpeechRecognizer value =
+  sendMessage sfSpeechRecognizer setSupportsOnDeviceRecognitionSelector value
 
 -- | The delegate object that handles changes to the availability of speech recognition services.
 --
@@ -244,8 +238,8 @@ setSupportsOnDeviceRecognition sfSpeechRecognizer  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO RawId
-delegate sfSpeechRecognizer  =
-    fmap (RawId . castPtr) $ sendMsg sfSpeechRecognizer (mkSelector "delegate") (retPtr retVoid) []
+delegate sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer delegateSelector
 
 -- | The delegate object that handles changes to the availability of speech recognition services.
 --
@@ -253,8 +247,8 @@ delegate sfSpeechRecognizer  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> RawId -> IO ()
-setDelegate sfSpeechRecognizer  value =
-    sendMsg sfSpeechRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate sfSpeechRecognizer value =
+  sendMessage sfSpeechRecognizer setDelegateSelector value
 
 -- | A hint that indicates the type of speech recognition being requested.
 --
@@ -262,8 +256,8 @@ setDelegate sfSpeechRecognizer  value =
 --
 -- ObjC selector: @- defaultTaskHint@
 defaultTaskHint :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO SFSpeechRecognitionTaskHint
-defaultTaskHint sfSpeechRecognizer  =
-    fmap (coerce :: CLong -> SFSpeechRecognitionTaskHint) $ sendMsg sfSpeechRecognizer (mkSelector "defaultTaskHint") retCLong []
+defaultTaskHint sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer defaultTaskHintSelector
 
 -- | A hint that indicates the type of speech recognition being requested.
 --
@@ -271,8 +265,8 @@ defaultTaskHint sfSpeechRecognizer  =
 --
 -- ObjC selector: @- setDefaultTaskHint:@
 setDefaultTaskHint :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> SFSpeechRecognitionTaskHint -> IO ()
-setDefaultTaskHint sfSpeechRecognizer  value =
-    sendMsg sfSpeechRecognizer (mkSelector "setDefaultTaskHint:") retVoid [argCLong (coerce value)]
+setDefaultTaskHint sfSpeechRecognizer value =
+  sendMessage sfSpeechRecognizer setDefaultTaskHintSelector value
 
 -- | The queue on which to execute recognition task handlers and delegate methods.
 --
@@ -282,8 +276,8 @@ setDefaultTaskHint sfSpeechRecognizer  value =
 --
 -- ObjC selector: @- queue@
 queue :: IsSFSpeechRecognizer sfSpeechRecognizer => sfSpeechRecognizer -> IO (Id NSOperationQueue)
-queue sfSpeechRecognizer  =
-    sendMsg sfSpeechRecognizer (mkSelector "queue") (retPtr retVoid) [] >>= retainedObject . castPtr
+queue sfSpeechRecognizer =
+  sendMessage sfSpeechRecognizer queueSelector
 
 -- | The queue on which to execute recognition task handlers and delegate methods.
 --
@@ -293,79 +287,78 @@ queue sfSpeechRecognizer  =
 --
 -- ObjC selector: @- setQueue:@
 setQueue :: (IsSFSpeechRecognizer sfSpeechRecognizer, IsNSOperationQueue value) => sfSpeechRecognizer -> value -> IO ()
-setQueue sfSpeechRecognizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg sfSpeechRecognizer (mkSelector "setQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQueue sfSpeechRecognizer value =
+  sendMessage sfSpeechRecognizer setQueueSelector (toNSOperationQueue value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedLocales@
-supportedLocalesSelector :: Selector
+supportedLocalesSelector :: Selector '[] (Id NSSet)
 supportedLocalesSelector = mkSelector "supportedLocales"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] SFSpeechRecognizerAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @requestAuthorization:@
-requestAuthorizationSelector :: Selector
+requestAuthorizationSelector :: Selector '[Ptr ()] ()
 requestAuthorizationSelector = mkSelector "requestAuthorization:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SFSpeechRecognizer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithLocale:@
-initWithLocaleSelector :: Selector
+initWithLocaleSelector :: Selector '[Id NSLocale] (Id SFSpeechRecognizer)
 initWithLocaleSelector = mkSelector "initWithLocale:"
 
 -- | @Selector@ for @recognitionTaskWithRequest:resultHandler:@
-recognitionTaskWithRequest_resultHandlerSelector :: Selector
+recognitionTaskWithRequest_resultHandlerSelector :: Selector '[Id SFSpeechRecognitionRequest, Ptr ()] (Id SFSpeechRecognitionTask)
 recognitionTaskWithRequest_resultHandlerSelector = mkSelector "recognitionTaskWithRequest:resultHandler:"
 
 -- | @Selector@ for @recognitionTaskWithRequest:delegate:@
-recognitionTaskWithRequest_delegateSelector :: Selector
+recognitionTaskWithRequest_delegateSelector :: Selector '[Id SFSpeechRecognitionRequest, RawId] (Id SFSpeechRecognitionTask)
 recognitionTaskWithRequest_delegateSelector = mkSelector "recognitionTaskWithRequest:delegate:"
 
 -- | @Selector@ for @available@
-availableSelector :: Selector
+availableSelector :: Selector '[] Bool
 availableSelector = mkSelector "available"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @supportsOnDeviceRecognition@
-supportsOnDeviceRecognitionSelector :: Selector
+supportsOnDeviceRecognitionSelector :: Selector '[] Bool
 supportsOnDeviceRecognitionSelector = mkSelector "supportsOnDeviceRecognition"
 
 -- | @Selector@ for @setSupportsOnDeviceRecognition:@
-setSupportsOnDeviceRecognitionSelector :: Selector
+setSupportsOnDeviceRecognitionSelector :: Selector '[Bool] ()
 setSupportsOnDeviceRecognitionSelector = mkSelector "setSupportsOnDeviceRecognition:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @defaultTaskHint@
-defaultTaskHintSelector :: Selector
+defaultTaskHintSelector :: Selector '[] SFSpeechRecognitionTaskHint
 defaultTaskHintSelector = mkSelector "defaultTaskHint"
 
 -- | @Selector@ for @setDefaultTaskHint:@
-setDefaultTaskHintSelector :: Selector
+setDefaultTaskHintSelector :: Selector '[SFSpeechRecognitionTaskHint] ()
 setDefaultTaskHintSelector = mkSelector "setDefaultTaskHint:"
 
 -- | @Selector@ for @queue@
-queueSelector :: Selector
+queueSelector :: Selector '[] (Id NSOperationQueue)
 queueSelector = mkSelector "queue"
 
 -- | @Selector@ for @setQueue:@
-setQueueSelector :: Selector
+setQueueSelector :: Selector '[Id NSOperationQueue] ()
 setQueueSelector = mkSelector "setQueue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.LocalAuthentication.LASecret
   , loadDataWithCompletion
   , new
   , init_
+  , initSelector
   , loadDataWithCompletionSelector
   , newSelector
-  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadDataWithCompletion:@
 loadDataWithCompletion :: IsLASecret laSecret => laSecret -> Ptr () -> IO ()
-loadDataWithCompletion laSecret  handler =
-    sendMsg laSecret (mkSelector "loadDataWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+loadDataWithCompletion laSecret handler =
+  sendMessage laSecret loadDataWithCompletionSelector handler
 
 -- | Clients cannot create @LASecret@ instances directly. They typically obtain them from a @LAPersistedRight@ instance.
 --
@@ -49,28 +46,28 @@ new :: IO (Id LASecret)
 new  =
   do
     cls' <- getRequiredClass "LASecret"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Clients cannot create @LASecret@ instances directly. They typically obtain them from a @LAPersistedRight@ instance.
 --
 -- ObjC selector: @- init@
 init_ :: IsLASecret laSecret => laSecret -> IO (Id LASecret)
-init_ laSecret  =
-    sendMsg laSecret (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laSecret =
+  sendOwnedMessage laSecret initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadDataWithCompletion:@
-loadDataWithCompletionSelector :: Selector
+loadDataWithCompletionSelector :: Selector '[Ptr ()] ()
 loadDataWithCompletionSelector = mkSelector "loadDataWithCompletion:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LASecret)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LASecret)
 initSelector = mkSelector "init"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,40 +56,40 @@ module ObjC.ModelIO.MDLAsset
   , setOriginals
   , animations
   , setAnimations
-  , initWithURLSelector
-  , initWithURL_vertexDescriptor_bufferAllocatorSelector
-  , initWithBufferAllocatorSelector
-  , initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector
+  , addObjectSelector
+  , animationsSelector
+  , bufferAllocatorSelector
+  , canExportFileExtensionSelector
+  , canImportFileExtensionSelector
+  , childObjectsOfClassSelector
+  , countSelector
+  , endTimeSelector
   , exportAssetToURLSelector
   , exportAssetToURL_errorSelector
-  , objectAtPathSelector
-  , canImportFileExtensionSelector
-  , canExportFileExtensionSelector
-  , childObjectsOfClassSelector
-  , loadTexturesSelector
-  , addObjectSelector
-  , removeObjectSelector
-  , objectAtIndexedSubscriptSelector
-  , objectAtIndexSelector
-  , placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector
   , frameIntervalSelector
-  , setFrameIntervalSelector
-  , startTimeSelector
-  , setStartTimeSelector
-  , endTimeSelector
-  , setEndTimeSelector
-  , urlSelector
-  , resolverSelector
-  , setResolverSelector
-  , bufferAllocatorSelector
-  , vertexDescriptorSelector
-  , countSelector
+  , initWithBufferAllocatorSelector
+  , initWithURLSelector
+  , initWithURL_vertexDescriptor_bufferAllocatorSelector
+  , initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector
+  , loadTexturesSelector
   , mastersSelector
-  , setMastersSelector
+  , objectAtIndexSelector
+  , objectAtIndexedSubscriptSelector
+  , objectAtPathSelector
   , originalsSelector
-  , setOriginalsSelector
-  , animationsSelector
+  , placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector
+  , removeObjectSelector
+  , resolverSelector
   , setAnimationsSelector
+  , setEndTimeSelector
+  , setFrameIntervalSelector
+  , setMastersSelector
+  , setOriginalsSelector
+  , setResolverSelector
+  , setStartTimeSelector
+  , startTimeSelector
+  , urlSelector
+  , vertexDescriptorSelector
 
   -- * Enum types
   , MDLProbePlacement(MDLProbePlacement)
@@ -97,15 +98,11 @@ module ObjC.ModelIO.MDLAsset
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -123,9 +120,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsMDLAsset mdlAsset, IsNSURL url) => mdlAsset -> url -> IO (Id MDLAsset)
-initWithURL mdlAsset  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg mdlAsset (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL mdlAsset url =
+  sendOwnedMessage mdlAsset initWithURLSelector (toNSURL url)
 
 -- | initWithURL:vertexDescriptor:bufferAllocator:
 --
@@ -141,10 +137,8 @@ initWithURL mdlAsset  url =
 --
 -- ObjC selector: @- initWithURL:vertexDescriptor:bufferAllocator:@
 initWithURL_vertexDescriptor_bufferAllocator :: (IsMDLAsset mdlAsset, IsNSURL url, IsMDLVertexDescriptor vertexDescriptor) => mdlAsset -> url -> vertexDescriptor -> RawId -> IO (Id MDLAsset)
-initWithURL_vertexDescriptor_bufferAllocator mdlAsset  url vertexDescriptor bufferAllocator =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr vertexDescriptor $ \raw_vertexDescriptor ->
-        sendMsg mdlAsset (mkSelector "initWithURL:vertexDescriptor:bufferAllocator:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_vertexDescriptor :: Ptr ()), argPtr (castPtr (unRawId bufferAllocator) :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_vertexDescriptor_bufferAllocator mdlAsset url vertexDescriptor bufferAllocator =
+  sendOwnedMessage mdlAsset initWithURL_vertexDescriptor_bufferAllocatorSelector (toNSURL url) (toMDLVertexDescriptor vertexDescriptor) bufferAllocator
 
 -- | initWithBufferAllocator:
 --
@@ -152,8 +146,8 @@ initWithURL_vertexDescriptor_bufferAllocator mdlAsset  url vertexDescriptor buff
 --
 -- ObjC selector: @- initWithBufferAllocator:@
 initWithBufferAllocator :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO (Id MDLAsset)
-initWithBufferAllocator mdlAsset  bufferAllocator =
-    sendMsg mdlAsset (mkSelector "initWithBufferAllocator:") (retPtr retVoid) [argPtr (castPtr (unRawId bufferAllocator) :: Ptr ())] >>= ownedObject . castPtr
+initWithBufferAllocator mdlAsset bufferAllocator =
+  sendOwnedMessage mdlAsset initWithBufferAllocatorSelector bufferAllocator
 
 -- | initWithURL:vertexDescriptor:bufferAllocator:preserveTopology:error:
 --
@@ -163,11 +157,8 @@ initWithBufferAllocator mdlAsset  bufferAllocator =
 --
 -- ObjC selector: @- initWithURL:vertexDescriptor:bufferAllocator:preserveTopology:error:@
 initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_error :: (IsMDLAsset mdlAsset, IsNSURL url, IsMDLVertexDescriptor vertexDescriptor, IsNSError error_) => mdlAsset -> url -> vertexDescriptor -> RawId -> Bool -> error_ -> IO (Id MDLAsset)
-initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_error mdlAsset  url vertexDescriptor bufferAllocator preserveTopology error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr vertexDescriptor $ \raw_vertexDescriptor ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg mdlAsset (mkSelector "initWithURL:vertexDescriptor:bufferAllocator:preserveTopology:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_vertexDescriptor :: Ptr ()), argPtr (castPtr (unRawId bufferAllocator) :: Ptr ()), argCULong (if preserveTopology then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_error mdlAsset url vertexDescriptor bufferAllocator preserveTopology error_ =
+  sendOwnedMessage mdlAsset initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector (toNSURL url) (toMDLVertexDescriptor vertexDescriptor) bufferAllocator preserveTopology (toNSError error_)
 
 -- | exportAssetToURL:
 --
@@ -177,9 +168,8 @@ initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_error mdlAsset  ur
 --
 -- ObjC selector: @- exportAssetToURL:@
 exportAssetToURL :: (IsMDLAsset mdlAsset, IsNSURL url) => mdlAsset -> url -> IO Bool
-exportAssetToURL mdlAsset  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlAsset (mkSelector "exportAssetToURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+exportAssetToURL mdlAsset url =
+  sendMessage mdlAsset exportAssetToURLSelector (toNSURL url)
 
 -- | exportAssetToURL:error:
 --
@@ -189,18 +179,15 @@ exportAssetToURL mdlAsset  url =
 --
 -- ObjC selector: @- exportAssetToURL:error:@
 exportAssetToURL_error :: (IsMDLAsset mdlAsset, IsNSURL url, IsNSError error_) => mdlAsset -> url -> error_ -> IO Bool
-exportAssetToURL_error mdlAsset  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mdlAsset (mkSelector "exportAssetToURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+exportAssetToURL_error mdlAsset url error_ =
+  sendMessage mdlAsset exportAssetToURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | Return the object at the specified path, or nil if none exists there
 --
 -- ObjC selector: @- objectAtPath:@
 objectAtPath :: (IsMDLAsset mdlAsset, IsNSString path) => mdlAsset -> path -> IO (Id MDLObject)
-objectAtPath mdlAsset  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg mdlAsset (mkSelector "objectAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+objectAtPath mdlAsset path =
+  sendMessage mdlAsset objectAtPathSelector (toNSString path)
 
 -- | canImportFileExtension:
 --
@@ -213,8 +200,7 @@ canImportFileExtension :: IsNSString extension => extension -> IO Bool
 canImportFileExtension extension =
   do
     cls' <- getRequiredClass "MDLAsset"
-    withObjCPtr extension $ \raw_extension ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canImportFileExtension:") retCULong [argPtr (castPtr raw_extension :: Ptr ())]
+    sendClassMessage cls' canImportFileExtensionSelector (toNSString extension)
 
 -- | canImportFileExtension:
 --
@@ -227,8 +213,7 @@ canExportFileExtension :: IsNSString extension => extension -> IO Bool
 canExportFileExtension extension =
   do
     cls' <- getRequiredClass "MDLAsset"
-    withObjCPtr extension $ \raw_extension ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canExportFileExtension:") retCULong [argPtr (castPtr raw_extension :: Ptr ())]
+    sendClassMessage cls' canExportFileExtensionSelector (toNSString extension)
 
 -- | childObjectsOfClass:
 --
@@ -240,8 +225,8 @@ canExportFileExtension extension =
 --
 -- ObjC selector: @- childObjectsOfClass:@
 childObjectsOfClass :: IsMDLAsset mdlAsset => mdlAsset -> Class -> IO (Id NSArray)
-childObjectsOfClass mdlAsset  objectClass =
-    sendMsg mdlAsset (mkSelector "childObjectsOfClass:") (retPtr retVoid) [argPtr (unClass objectClass)] >>= retainedObject . castPtr
+childObjectsOfClass mdlAsset objectClass =
+  sendMessage mdlAsset childObjectsOfClassSelector objectClass
 
 -- | loadTextures
 --
@@ -249,8 +234,8 @@ childObjectsOfClass mdlAsset  objectClass =
 --
 -- ObjC selector: @- loadTextures@
 loadTextures :: IsMDLAsset mdlAsset => mdlAsset -> IO ()
-loadTextures mdlAsset  =
-    sendMsg mdlAsset (mkSelector "loadTextures") retVoid []
+loadTextures mdlAsset =
+  sendMessage mdlAsset loadTexturesSelector
 
 -- | addObject:
 --
@@ -260,9 +245,8 @@ loadTextures mdlAsset  =
 --
 -- ObjC selector: @- addObject:@
 addObject :: (IsMDLAsset mdlAsset, IsMDLObject object) => mdlAsset -> object -> IO ()
-addObject mdlAsset  object =
-  withObjCPtr object $ \raw_object ->
-      sendMsg mdlAsset (mkSelector "addObject:") retVoid [argPtr (castPtr raw_object :: Ptr ())]
+addObject mdlAsset object =
+  sendMessage mdlAsset addObjectSelector (toMDLObject object)
 
 -- | removeObject:
 --
@@ -272,9 +256,8 @@ addObject mdlAsset  object =
 --
 -- ObjC selector: @- removeObject:@
 removeObject :: (IsMDLAsset mdlAsset, IsMDLObject object) => mdlAsset -> object -> IO ()
-removeObject mdlAsset  object =
-  withObjCPtr object $ \raw_object ->
-      sendMsg mdlAsset (mkSelector "removeObject:") retVoid [argPtr (castPtr raw_object :: Ptr ())]
+removeObject mdlAsset object =
+  sendMessage mdlAsset removeObjectSelector (toMDLObject object)
 
 -- | objectAtIndexedSubscript:
 --
@@ -282,8 +265,8 @@ removeObject mdlAsset  object =
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMDLAsset mdlAsset => mdlAsset -> CULong -> IO (Id MDLObject)
-objectAtIndexedSubscript mdlAsset  index =
-    sendMsg mdlAsset (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+objectAtIndexedSubscript mdlAsset index =
+  sendMessage mdlAsset objectAtIndexedSubscriptSelector index
 
 -- | objectAtIndex:
 --
@@ -291,15 +274,15 @@ objectAtIndexedSubscript mdlAsset  index =
 --
 -- ObjC selector: @- objectAtIndex:@
 objectAtIndex :: IsMDLAsset mdlAsset => mdlAsset -> CULong -> IO (Id MDLObject)
-objectAtIndex mdlAsset  index =
-    sendMsg mdlAsset (mkSelector "objectAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+objectAtIndex mdlAsset index =
+  sendMessage mdlAsset objectAtIndexSelector index
 
 -- | @+ placeLightProbesWithDensity:heuristic:usingIrradianceDataSource:@
 placeLightProbesWithDensity_heuristic_usingIrradianceDataSource :: CFloat -> MDLProbePlacement -> RawId -> IO (Id NSArray)
 placeLightProbesWithDensity_heuristic_usingIrradianceDataSource value type_ dataSource =
   do
     cls' <- getRequiredClass "MDLAsset"
-    sendClassMsg cls' (mkSelector "placeLightProbesWithDensity:heuristic:usingIrradianceDataSource:") (retPtr retVoid) [argCFloat value, argCLong (coerce type_), argPtr (castPtr (unRawId dataSource) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector value type_ dataSource
 
 -- | frameInterval
 --
@@ -309,8 +292,8 @@ placeLightProbesWithDensity_heuristic_usingIrradianceDataSource value type_ data
 --
 -- ObjC selector: @- frameInterval@
 frameInterval :: IsMDLAsset mdlAsset => mdlAsset -> IO CDouble
-frameInterval mdlAsset  =
-    sendMsg mdlAsset (mkSelector "frameInterval") retCDouble []
+frameInterval mdlAsset =
+  sendMessage mdlAsset frameIntervalSelector
 
 -- | frameInterval
 --
@@ -320,8 +303,8 @@ frameInterval mdlAsset  =
 --
 -- ObjC selector: @- setFrameInterval:@
 setFrameInterval :: IsMDLAsset mdlAsset => mdlAsset -> CDouble -> IO ()
-setFrameInterval mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setFrameInterval:") retVoid [argCDouble value]
+setFrameInterval mdlAsset value =
+  sendMessage mdlAsset setFrameIntervalSelector value
 
 -- | startTime
 --
@@ -331,8 +314,8 @@ setFrameInterval mdlAsset  value =
 --
 -- ObjC selector: @- startTime@
 startTime :: IsMDLAsset mdlAsset => mdlAsset -> IO CDouble
-startTime mdlAsset  =
-    sendMsg mdlAsset (mkSelector "startTime") retCDouble []
+startTime mdlAsset =
+  sendMessage mdlAsset startTimeSelector
 
 -- | startTime
 --
@@ -342,8 +325,8 @@ startTime mdlAsset  =
 --
 -- ObjC selector: @- setStartTime:@
 setStartTime :: IsMDLAsset mdlAsset => mdlAsset -> CDouble -> IO ()
-setStartTime mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setStartTime:") retVoid [argCDouble value]
+setStartTime mdlAsset value =
+  sendMessage mdlAsset setStartTimeSelector value
 
 -- | endTime
 --
@@ -353,8 +336,8 @@ setStartTime mdlAsset  value =
 --
 -- ObjC selector: @- endTime@
 endTime :: IsMDLAsset mdlAsset => mdlAsset -> IO CDouble
-endTime mdlAsset  =
-    sendMsg mdlAsset (mkSelector "endTime") retCDouble []
+endTime mdlAsset =
+  sendMessage mdlAsset endTimeSelector
 
 -- | endTime
 --
@@ -364,8 +347,8 @@ endTime mdlAsset  =
 --
 -- ObjC selector: @- setEndTime:@
 setEndTime :: IsMDLAsset mdlAsset => mdlAsset -> CDouble -> IO ()
-setEndTime mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setEndTime:") retVoid [argCDouble value]
+setEndTime mdlAsset value =
+  sendMessage mdlAsset setEndTimeSelector value
 
 -- | URL
 --
@@ -375,8 +358,8 @@ setEndTime mdlAsset  value =
 --
 -- ObjC selector: @- URL@
 url :: IsMDLAsset mdlAsset => mdlAsset -> IO (Id NSURL)
-url mdlAsset  =
-    sendMsg mdlAsset (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mdlAsset =
+  sendMessage mdlAsset urlSelector
 
 -- | AssetResolver
 --
@@ -386,8 +369,8 @@ url mdlAsset  =
 --
 -- ObjC selector: @- resolver@
 resolver :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
-resolver mdlAsset  =
-    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "resolver") (retPtr retVoid) []
+resolver mdlAsset =
+  sendMessage mdlAsset resolverSelector
 
 -- | AssetResolver
 --
@@ -397,8 +380,8 @@ resolver mdlAsset  =
 --
 -- ObjC selector: @- setResolver:@
 setResolver :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
-setResolver mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setResolver:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setResolver mdlAsset value =
+  sendMessage mdlAsset setResolverSelector value
 
 -- | bufferAllocator
 --
@@ -406,8 +389,8 @@ setResolver mdlAsset  value =
 --
 -- ObjC selector: @- bufferAllocator@
 bufferAllocator :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
-bufferAllocator mdlAsset  =
-    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "bufferAllocator") (retPtr retVoid) []
+bufferAllocator mdlAsset =
+  sendMessage mdlAsset bufferAllocatorSelector
 
 -- | vertexDescriptor
 --
@@ -417,8 +400,8 @@ bufferAllocator mdlAsset  =
 --
 -- ObjC selector: @- vertexDescriptor@
 vertexDescriptor :: IsMDLAsset mdlAsset => mdlAsset -> IO (Id MDLVertexDescriptor)
-vertexDescriptor mdlAsset  =
-    sendMsg mdlAsset (mkSelector "vertexDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexDescriptor mdlAsset =
+  sendMessage mdlAsset vertexDescriptorSelector
 
 -- | count
 --
@@ -426,18 +409,18 @@ vertexDescriptor mdlAsset  =
 --
 -- ObjC selector: @- count@
 count :: IsMDLAsset mdlAsset => mdlAsset -> IO CULong
-count mdlAsset  =
-    sendMsg mdlAsset (mkSelector "count") retCULong []
+count mdlAsset =
+  sendMessage mdlAsset countSelector
 
 -- | @- masters@
 masters :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
-masters mdlAsset  =
-    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "masters") (retPtr retVoid) []
+masters mdlAsset =
+  sendMessage mdlAsset mastersSelector
 
 -- | @- setMasters:@
 setMasters :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
-setMasters mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setMasters:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setMasters mdlAsset value =
+  sendMessage mdlAsset setMastersSelector value
 
 -- | originals
 --
@@ -447,8 +430,8 @@ setMasters mdlAsset  value =
 --
 -- ObjC selector: @- originals@
 originals :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
-originals mdlAsset  =
-    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "originals") (retPtr retVoid) []
+originals mdlAsset =
+  sendMessage mdlAsset originalsSelector
 
 -- | originals
 --
@@ -458,8 +441,8 @@ originals mdlAsset  =
 --
 -- ObjC selector: @- setOriginals:@
 setOriginals :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
-setOriginals mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setOriginals:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOriginals mdlAsset value =
+  sendMessage mdlAsset setOriginalsSelector value
 
 -- | animations
 --
@@ -471,8 +454,8 @@ setOriginals mdlAsset  value =
 --
 -- ObjC selector: @- animations@
 animations :: IsMDLAsset mdlAsset => mdlAsset -> IO RawId
-animations mdlAsset  =
-    fmap (RawId . castPtr) $ sendMsg mdlAsset (mkSelector "animations") (retPtr retVoid) []
+animations mdlAsset =
+  sendMessage mdlAsset animationsSelector
 
 -- | animations
 --
@@ -484,146 +467,146 @@ animations mdlAsset  =
 --
 -- ObjC selector: @- setAnimations:@
 setAnimations :: IsMDLAsset mdlAsset => mdlAsset -> RawId -> IO ()
-setAnimations mdlAsset  value =
-    sendMsg mdlAsset (mkSelector "setAnimations:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAnimations mdlAsset value =
+  sendMessage mdlAsset setAnimationsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id MDLAsset)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithURL:vertexDescriptor:bufferAllocator:@
-initWithURL_vertexDescriptor_bufferAllocatorSelector :: Selector
+initWithURL_vertexDescriptor_bufferAllocatorSelector :: Selector '[Id NSURL, Id MDLVertexDescriptor, RawId] (Id MDLAsset)
 initWithURL_vertexDescriptor_bufferAllocatorSelector = mkSelector "initWithURL:vertexDescriptor:bufferAllocator:"
 
 -- | @Selector@ for @initWithBufferAllocator:@
-initWithBufferAllocatorSelector :: Selector
+initWithBufferAllocatorSelector :: Selector '[RawId] (Id MDLAsset)
 initWithBufferAllocatorSelector = mkSelector "initWithBufferAllocator:"
 
 -- | @Selector@ for @initWithURL:vertexDescriptor:bufferAllocator:preserveTopology:error:@
-initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector :: Selector
+initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector :: Selector '[Id NSURL, Id MDLVertexDescriptor, RawId, Bool, Id NSError] (Id MDLAsset)
 initWithURL_vertexDescriptor_bufferAllocator_preserveTopology_errorSelector = mkSelector "initWithURL:vertexDescriptor:bufferAllocator:preserveTopology:error:"
 
 -- | @Selector@ for @exportAssetToURL:@
-exportAssetToURLSelector :: Selector
+exportAssetToURLSelector :: Selector '[Id NSURL] Bool
 exportAssetToURLSelector = mkSelector "exportAssetToURL:"
 
 -- | @Selector@ for @exportAssetToURL:error:@
-exportAssetToURL_errorSelector :: Selector
+exportAssetToURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 exportAssetToURL_errorSelector = mkSelector "exportAssetToURL:error:"
 
 -- | @Selector@ for @objectAtPath:@
-objectAtPathSelector :: Selector
+objectAtPathSelector :: Selector '[Id NSString] (Id MDLObject)
 objectAtPathSelector = mkSelector "objectAtPath:"
 
 -- | @Selector@ for @canImportFileExtension:@
-canImportFileExtensionSelector :: Selector
+canImportFileExtensionSelector :: Selector '[Id NSString] Bool
 canImportFileExtensionSelector = mkSelector "canImportFileExtension:"
 
 -- | @Selector@ for @canExportFileExtension:@
-canExportFileExtensionSelector :: Selector
+canExportFileExtensionSelector :: Selector '[Id NSString] Bool
 canExportFileExtensionSelector = mkSelector "canExportFileExtension:"
 
 -- | @Selector@ for @childObjectsOfClass:@
-childObjectsOfClassSelector :: Selector
+childObjectsOfClassSelector :: Selector '[Class] (Id NSArray)
 childObjectsOfClassSelector = mkSelector "childObjectsOfClass:"
 
 -- | @Selector@ for @loadTextures@
-loadTexturesSelector :: Selector
+loadTexturesSelector :: Selector '[] ()
 loadTexturesSelector = mkSelector "loadTextures"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[Id MDLObject] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[Id MDLObject] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MDLObject)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @objectAtIndex:@
-objectAtIndexSelector :: Selector
+objectAtIndexSelector :: Selector '[CULong] (Id MDLObject)
 objectAtIndexSelector = mkSelector "objectAtIndex:"
 
 -- | @Selector@ for @placeLightProbesWithDensity:heuristic:usingIrradianceDataSource:@
-placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector :: Selector
+placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector :: Selector '[CFloat, MDLProbePlacement, RawId] (Id NSArray)
 placeLightProbesWithDensity_heuristic_usingIrradianceDataSourceSelector = mkSelector "placeLightProbesWithDensity:heuristic:usingIrradianceDataSource:"
 
 -- | @Selector@ for @frameInterval@
-frameIntervalSelector :: Selector
+frameIntervalSelector :: Selector '[] CDouble
 frameIntervalSelector = mkSelector "frameInterval"
 
 -- | @Selector@ for @setFrameInterval:@
-setFrameIntervalSelector :: Selector
+setFrameIntervalSelector :: Selector '[CDouble] ()
 setFrameIntervalSelector = mkSelector "setFrameInterval:"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] CDouble
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[CDouble] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @endTime@
-endTimeSelector :: Selector
+endTimeSelector :: Selector '[] CDouble
 endTimeSelector = mkSelector "endTime"
 
 -- | @Selector@ for @setEndTime:@
-setEndTimeSelector :: Selector
+setEndTimeSelector :: Selector '[CDouble] ()
 setEndTimeSelector = mkSelector "setEndTime:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @resolver@
-resolverSelector :: Selector
+resolverSelector :: Selector '[] RawId
 resolverSelector = mkSelector "resolver"
 
 -- | @Selector@ for @setResolver:@
-setResolverSelector :: Selector
+setResolverSelector :: Selector '[RawId] ()
 setResolverSelector = mkSelector "setResolver:"
 
 -- | @Selector@ for @bufferAllocator@
-bufferAllocatorSelector :: Selector
+bufferAllocatorSelector :: Selector '[] RawId
 bufferAllocatorSelector = mkSelector "bufferAllocator"
 
 -- | @Selector@ for @vertexDescriptor@
-vertexDescriptorSelector :: Selector
+vertexDescriptorSelector :: Selector '[] (Id MDLVertexDescriptor)
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @masters@
-mastersSelector :: Selector
+mastersSelector :: Selector '[] RawId
 mastersSelector = mkSelector "masters"
 
 -- | @Selector@ for @setMasters:@
-setMastersSelector :: Selector
+setMastersSelector :: Selector '[RawId] ()
 setMastersSelector = mkSelector "setMasters:"
 
 -- | @Selector@ for @originals@
-originalsSelector :: Selector
+originalsSelector :: Selector '[] RawId
 originalsSelector = mkSelector "originals"
 
 -- | @Selector@ for @setOriginals:@
-setOriginalsSelector :: Selector
+setOriginalsSelector :: Selector '[RawId] ()
 setOriginalsSelector = mkSelector "setOriginals:"
 
 -- | @Selector@ for @animations@
-animationsSelector :: Selector
+animationsSelector :: Selector '[] RawId
 animationsSelector = mkSelector "animations"
 
 -- | @Selector@ for @setAnimations:@
-setAnimationsSelector :: Selector
+setAnimationsSelector :: Selector '[RawId] ()
 setAnimationsSelector = mkSelector "setAnimations:"
 

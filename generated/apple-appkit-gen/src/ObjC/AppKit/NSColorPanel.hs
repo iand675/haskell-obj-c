@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.AppKit.NSColorPanel
   , alpha
   , maximumLinearExposure
   , setMaximumLinearExposure
+  , accessoryViewSelector
+  , alphaSelector
+  , attachColorListSelector
+  , colorSelector
+  , continuousSelector
+  , detachColorListSelector
   , dragColor_withEvent_fromViewSelector
+  , maximumLinearExposureSelector
+  , modeSelector
+  , setAccessoryViewSelector
+  , setActionSelector
+  , setColorSelector
+  , setContinuousSelector
+  , setMaximumLinearExposureSelector
+  , setModeSelector
   , setPickerMaskSelector
   , setPickerModeSelector
-  , setActionSelector
-  , setTargetSelector
-  , attachColorListSelector
-  , detachColorListSelector
-  , sharedColorPanelSelector
-  , sharedColorPanelExistsSelector
-  , accessoryViewSelector
-  , setAccessoryViewSelector
-  , continuousSelector
-  , setContinuousSelector
-  , showsAlphaSelector
   , setShowsAlphaSelector
-  , modeSelector
-  , setModeSelector
-  , colorSelector
-  , setColorSelector
-  , alphaSelector
-  , maximumLinearExposureSelector
-  , setMaximumLinearExposureSelector
+  , setTargetSelector
+  , sharedColorPanelExistsSelector
+  , sharedColorPanelSelector
+  , showsAlphaSelector
 
   -- * Enum types
   , NSColorPanelMode(NSColorPanelMode)
@@ -76,15 +77,11 @@ module ObjC.AppKit.NSColorPanel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,221 +94,214 @@ dragColor_withEvent_fromView :: (IsNSColor color, IsNSEvent event, IsNSView sour
 dragColor_withEvent_fromView color event sourceView =
   do
     cls' <- getRequiredClass "NSColorPanel"
-    withObjCPtr color $ \raw_color ->
-      withObjCPtr event $ \raw_event ->
-        withObjCPtr sourceView $ \raw_sourceView ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "dragColor:withEvent:fromView:") retCULong [argPtr (castPtr raw_color :: Ptr ()), argPtr (castPtr raw_event :: Ptr ()), argPtr (castPtr raw_sourceView :: Ptr ())]
+    sendClassMessage cls' dragColor_withEvent_fromViewSelector (toNSColor color) (toNSEvent event) (toNSView sourceView)
 
 -- | @+ setPickerMask:@
 setPickerMask :: NSColorPanelOptions -> IO ()
 setPickerMask mask =
   do
     cls' <- getRequiredClass "NSColorPanel"
-    sendClassMsg cls' (mkSelector "setPickerMask:") retVoid [argCULong (coerce mask)]
+    sendClassMessage cls' setPickerMaskSelector mask
 
 -- | @+ setPickerMode:@
 setPickerMode :: NSColorPanelMode -> IO ()
 setPickerMode mode =
   do
     cls' <- getRequiredClass "NSColorPanel"
-    sendClassMsg cls' (mkSelector "setPickerMode:") retVoid [argCLong (coerce mode)]
+    sendClassMessage cls' setPickerModeSelector mode
 
 -- | @- setAction:@
-setAction :: IsNSColorPanel nsColorPanel => nsColorPanel -> Selector -> IO ()
-setAction nsColorPanel  selector =
-    sendMsg nsColorPanel (mkSelector "setAction:") retVoid [argPtr (unSelector selector)]
+setAction :: IsNSColorPanel nsColorPanel => nsColorPanel -> Sel -> IO ()
+setAction nsColorPanel selector =
+  sendMessage nsColorPanel setActionSelector selector
 
 -- | @- setTarget:@
 setTarget :: IsNSColorPanel nsColorPanel => nsColorPanel -> RawId -> IO ()
-setTarget nsColorPanel  target =
-    sendMsg nsColorPanel (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId target) :: Ptr ())]
+setTarget nsColorPanel target =
+  sendMessage nsColorPanel setTargetSelector target
 
 -- | @- attachColorList:@
 attachColorList :: (IsNSColorPanel nsColorPanel, IsNSColorList colorList) => nsColorPanel -> colorList -> IO ()
-attachColorList nsColorPanel  colorList =
-  withObjCPtr colorList $ \raw_colorList ->
-      sendMsg nsColorPanel (mkSelector "attachColorList:") retVoid [argPtr (castPtr raw_colorList :: Ptr ())]
+attachColorList nsColorPanel colorList =
+  sendMessage nsColorPanel attachColorListSelector (toNSColorList colorList)
 
 -- | @- detachColorList:@
 detachColorList :: (IsNSColorPanel nsColorPanel, IsNSColorList colorList) => nsColorPanel -> colorList -> IO ()
-detachColorList nsColorPanel  colorList =
-  withObjCPtr colorList $ \raw_colorList ->
-      sendMsg nsColorPanel (mkSelector "detachColorList:") retVoid [argPtr (castPtr raw_colorList :: Ptr ())]
+detachColorList nsColorPanel colorList =
+  sendMessage nsColorPanel detachColorListSelector (toNSColorList colorList)
 
 -- | @+ sharedColorPanel@
 sharedColorPanel :: IO (Id NSColorPanel)
 sharedColorPanel  =
   do
     cls' <- getRequiredClass "NSColorPanel"
-    sendClassMsg cls' (mkSelector "sharedColorPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedColorPanelSelector
 
 -- | @+ sharedColorPanelExists@
 sharedColorPanelExists :: IO Bool
 sharedColorPanelExists  =
   do
     cls' <- getRequiredClass "NSColorPanel"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "sharedColorPanelExists") retCULong []
+    sendClassMessage cls' sharedColorPanelExistsSelector
 
 -- | @- accessoryView@
 accessoryView :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO (Id NSView)
-accessoryView nsColorPanel  =
-    sendMsg nsColorPanel (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryView nsColorPanel =
+  sendMessage nsColorPanel accessoryViewSelector
 
 -- | @- setAccessoryView:@
 setAccessoryView :: (IsNSColorPanel nsColorPanel, IsNSView value) => nsColorPanel -> value -> IO ()
-setAccessoryView nsColorPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsColorPanel (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessoryView nsColorPanel value =
+  sendMessage nsColorPanel setAccessoryViewSelector (toNSView value)
 
 -- | @- continuous@
 continuous :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO Bool
-continuous nsColorPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsColorPanel (mkSelector "continuous") retCULong []
+continuous nsColorPanel =
+  sendMessage nsColorPanel continuousSelector
 
 -- | @- setContinuous:@
 setContinuous :: IsNSColorPanel nsColorPanel => nsColorPanel -> Bool -> IO ()
-setContinuous nsColorPanel  value =
-    sendMsg nsColorPanel (mkSelector "setContinuous:") retVoid [argCULong (if value then 1 else 0)]
+setContinuous nsColorPanel value =
+  sendMessage nsColorPanel setContinuousSelector value
 
 -- | @- showsAlpha@
 showsAlpha :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO Bool
-showsAlpha nsColorPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsColorPanel (mkSelector "showsAlpha") retCULong []
+showsAlpha nsColorPanel =
+  sendMessage nsColorPanel showsAlphaSelector
 
 -- | @- setShowsAlpha:@
 setShowsAlpha :: IsNSColorPanel nsColorPanel => nsColorPanel -> Bool -> IO ()
-setShowsAlpha nsColorPanel  value =
-    sendMsg nsColorPanel (mkSelector "setShowsAlpha:") retVoid [argCULong (if value then 1 else 0)]
+setShowsAlpha nsColorPanel value =
+  sendMessage nsColorPanel setShowsAlphaSelector value
 
 -- | @- mode@
 mode :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO NSColorPanelMode
-mode nsColorPanel  =
-    fmap (coerce :: CLong -> NSColorPanelMode) $ sendMsg nsColorPanel (mkSelector "mode") retCLong []
+mode nsColorPanel =
+  sendMessage nsColorPanel modeSelector
 
 -- | @- setMode:@
 setMode :: IsNSColorPanel nsColorPanel => nsColorPanel -> NSColorPanelMode -> IO ()
-setMode nsColorPanel  value =
-    sendMsg nsColorPanel (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode nsColorPanel value =
+  sendMessage nsColorPanel setModeSelector value
 
 -- | @- color@
 color :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO (Id NSColor)
-color nsColorPanel  =
-    sendMsg nsColorPanel (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color nsColorPanel =
+  sendMessage nsColorPanel colorSelector
 
 -- | @- setColor:@
 setColor :: (IsNSColorPanel nsColorPanel, IsNSColor value) => nsColorPanel -> value -> IO ()
-setColor nsColorPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsColorPanel (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor nsColorPanel value =
+  sendMessage nsColorPanel setColorSelector (toNSColor value)
 
 -- | @- alpha@
 alpha :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO CDouble
-alpha nsColorPanel  =
-    sendMsg nsColorPanel (mkSelector "alpha") retCDouble []
+alpha nsColorPanel =
+  sendMessage nsColorPanel alphaSelector
 
 -- | The maximum linear exposure that can be set on a color picked in the color panel. Defaults to 1 and ignores any value less than 1. If set to a value >= 2, the color picked by the panel may have a linear exposure applied to it.
 --
 -- ObjC selector: @- maximumLinearExposure@
 maximumLinearExposure :: IsNSColorPanel nsColorPanel => nsColorPanel -> IO CDouble
-maximumLinearExposure nsColorPanel  =
-    sendMsg nsColorPanel (mkSelector "maximumLinearExposure") retCDouble []
+maximumLinearExposure nsColorPanel =
+  sendMessage nsColorPanel maximumLinearExposureSelector
 
 -- | The maximum linear exposure that can be set on a color picked in the color panel. Defaults to 1 and ignores any value less than 1. If set to a value >= 2, the color picked by the panel may have a linear exposure applied to it.
 --
 -- ObjC selector: @- setMaximumLinearExposure:@
 setMaximumLinearExposure :: IsNSColorPanel nsColorPanel => nsColorPanel -> CDouble -> IO ()
-setMaximumLinearExposure nsColorPanel  value =
-    sendMsg nsColorPanel (mkSelector "setMaximumLinearExposure:") retVoid [argCDouble value]
+setMaximumLinearExposure nsColorPanel value =
+  sendMessage nsColorPanel setMaximumLinearExposureSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dragColor:withEvent:fromView:@
-dragColor_withEvent_fromViewSelector :: Selector
+dragColor_withEvent_fromViewSelector :: Selector '[Id NSColor, Id NSEvent, Id NSView] Bool
 dragColor_withEvent_fromViewSelector = mkSelector "dragColor:withEvent:fromView:"
 
 -- | @Selector@ for @setPickerMask:@
-setPickerMaskSelector :: Selector
+setPickerMaskSelector :: Selector '[NSColorPanelOptions] ()
 setPickerMaskSelector = mkSelector "setPickerMask:"
 
 -- | @Selector@ for @setPickerMode:@
-setPickerModeSelector :: Selector
+setPickerModeSelector :: Selector '[NSColorPanelMode] ()
 setPickerModeSelector = mkSelector "setPickerMode:"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @attachColorList:@
-attachColorListSelector :: Selector
+attachColorListSelector :: Selector '[Id NSColorList] ()
 attachColorListSelector = mkSelector "attachColorList:"
 
 -- | @Selector@ for @detachColorList:@
-detachColorListSelector :: Selector
+detachColorListSelector :: Selector '[Id NSColorList] ()
 detachColorListSelector = mkSelector "detachColorList:"
 
 -- | @Selector@ for @sharedColorPanel@
-sharedColorPanelSelector :: Selector
+sharedColorPanelSelector :: Selector '[] (Id NSColorPanel)
 sharedColorPanelSelector = mkSelector "sharedColorPanel"
 
 -- | @Selector@ for @sharedColorPanelExists@
-sharedColorPanelExistsSelector :: Selector
+sharedColorPanelExistsSelector :: Selector '[] Bool
 sharedColorPanelExistsSelector = mkSelector "sharedColorPanelExists"
 
 -- | @Selector@ for @accessoryView@
-accessoryViewSelector :: Selector
+accessoryViewSelector :: Selector '[] (Id NSView)
 accessoryViewSelector = mkSelector "accessoryView"
 
 -- | @Selector@ for @setAccessoryView:@
-setAccessoryViewSelector :: Selector
+setAccessoryViewSelector :: Selector '[Id NSView] ()
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
 
 -- | @Selector@ for @continuous@
-continuousSelector :: Selector
+continuousSelector :: Selector '[] Bool
 continuousSelector = mkSelector "continuous"
 
 -- | @Selector@ for @setContinuous:@
-setContinuousSelector :: Selector
+setContinuousSelector :: Selector '[Bool] ()
 setContinuousSelector = mkSelector "setContinuous:"
 
 -- | @Selector@ for @showsAlpha@
-showsAlphaSelector :: Selector
+showsAlphaSelector :: Selector '[] Bool
 showsAlphaSelector = mkSelector "showsAlpha"
 
 -- | @Selector@ for @setShowsAlpha:@
-setShowsAlphaSelector :: Selector
+setShowsAlphaSelector :: Selector '[Bool] ()
 setShowsAlphaSelector = mkSelector "setShowsAlpha:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] NSColorPanelMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[NSColorPanelMode] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @maximumLinearExposure@
-maximumLinearExposureSelector :: Selector
+maximumLinearExposureSelector :: Selector '[] CDouble
 maximumLinearExposureSelector = mkSelector "maximumLinearExposure"
 
 -- | @Selector@ for @setMaximumLinearExposure:@
-setMaximumLinearExposureSelector :: Selector
+setMaximumLinearExposureSelector :: Selector '[CDouble] ()
 setMaximumLinearExposureSelector = mkSelector "setMaximumLinearExposure:"
 

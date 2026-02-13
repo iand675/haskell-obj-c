@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialLargeBlobAs
   , init_
   , readData
   , didWrite
-  , newSelector
-  , initSelector
-  , readDataSelector
   , didWriteSelector
+  , initSelector
+  , newSelector
+  , readDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,40 +35,40 @@ new :: IO (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput => asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
-init_ asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput =
+  sendOwnedMessage asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput initSelector
 
 -- | @- readData@
 readData :: IsASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput => asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput -> IO (Id NSData)
-readData asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput (mkSelector "readData") (retPtr retVoid) [] >>= retainedObject . castPtr
+readData asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput =
+  sendMessage asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput readDataSelector
 
 -- | @- didWrite@
 didWrite :: IsASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput => asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput -> IO Bool
-didWrite asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput (mkSelector "didWrite") retCULong []
+didWrite asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput =
+  sendMessage asAuthorizationPublicKeyCredentialLargeBlobAssertionOutput didWriteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @readData@
-readDataSelector :: Selector
+readDataSelector :: Selector '[] (Id NSData)
 readDataSelector = mkSelector "readData"
 
 -- | @Selector@ for @didWrite@
-didWriteSelector :: Selector
+didWriteSelector :: Selector '[] Bool
 didWriteSelector = mkSelector "didWrite"
 

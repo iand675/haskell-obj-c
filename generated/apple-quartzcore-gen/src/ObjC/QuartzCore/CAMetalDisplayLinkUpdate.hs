@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.QuartzCore.CAMetalDisplayLinkUpdate
   , targetTimestamp
   , targetPresentationTimestamp
   , drawableSelector
-  , targetTimestampSelector
   , targetPresentationTimestampSelector
+  , targetTimestampSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- drawable@
 drawable :: IsCAMetalDisplayLinkUpdate caMetalDisplayLinkUpdate => caMetalDisplayLinkUpdate -> IO RawId
-drawable caMetalDisplayLinkUpdate  =
-    fmap (RawId . castPtr) $ sendMsg caMetalDisplayLinkUpdate (mkSelector "drawable") (retPtr retVoid) []
+drawable caMetalDisplayLinkUpdate =
+  sendMessage caMetalDisplayLinkUpdate drawableSelector
 
 -- | @- targetTimestamp@
 targetTimestamp :: IsCAMetalDisplayLinkUpdate caMetalDisplayLinkUpdate => caMetalDisplayLinkUpdate -> IO CDouble
-targetTimestamp caMetalDisplayLinkUpdate  =
-    sendMsg caMetalDisplayLinkUpdate (mkSelector "targetTimestamp") retCDouble []
+targetTimestamp caMetalDisplayLinkUpdate =
+  sendMessage caMetalDisplayLinkUpdate targetTimestampSelector
 
 -- | @- targetPresentationTimestamp@
 targetPresentationTimestamp :: IsCAMetalDisplayLinkUpdate caMetalDisplayLinkUpdate => caMetalDisplayLinkUpdate -> IO CDouble
-targetPresentationTimestamp caMetalDisplayLinkUpdate  =
-    sendMsg caMetalDisplayLinkUpdate (mkSelector "targetPresentationTimestamp") retCDouble []
+targetPresentationTimestamp caMetalDisplayLinkUpdate =
+  sendMessage caMetalDisplayLinkUpdate targetPresentationTimestampSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @drawable@
-drawableSelector :: Selector
+drawableSelector :: Selector '[] RawId
 drawableSelector = mkSelector "drawable"
 
 -- | @Selector@ for @targetTimestamp@
-targetTimestampSelector :: Selector
+targetTimestampSelector :: Selector '[] CDouble
 targetTimestampSelector = mkSelector "targetTimestamp"
 
 -- | @Selector@ for @targetPresentationTimestamp@
-targetPresentationTimestampSelector :: Selector
+targetPresentationTimestampSelector :: Selector '[] CDouble
 targetPresentationTimestampSelector = mkSelector "targetPresentationTimestamp"
 

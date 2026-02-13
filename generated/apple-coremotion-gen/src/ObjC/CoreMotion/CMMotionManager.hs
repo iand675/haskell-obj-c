@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,44 +46,44 @@ module ObjC.CoreMotion.CMMotionManager
   , deviceMotion
   , showsDeviceMovementDisplay
   , setShowsDeviceMovementDisplay
+  , accelerometerActiveSelector
+  , accelerometerAvailableSelector
+  , accelerometerDataSelector
+  , accelerometerUpdateIntervalSelector
+  , attitudeReferenceFrameSelector
+  , availableAttitudeReferenceFramesSelector
+  , deviceMotionActiveSelector
+  , deviceMotionAvailableSelector
+  , deviceMotionSelector
+  , deviceMotionUpdateIntervalSelector
+  , gyroActiveSelector
+  , gyroAvailableSelector
+  , gyroDataSelector
+  , gyroUpdateIntervalSelector
+  , magnetometerActiveSelector
+  , magnetometerAvailableSelector
+  , magnetometerDataSelector
+  , magnetometerUpdateIntervalSelector
+  , setAccelerometerUpdateIntervalSelector
+  , setDeviceMotionUpdateIntervalSelector
+  , setGyroUpdateIntervalSelector
+  , setMagnetometerUpdateIntervalSelector
+  , setShowsDeviceMovementDisplaySelector
+  , showsDeviceMovementDisplaySelector
   , startAccelerometerUpdatesSelector
   , startAccelerometerUpdatesToQueue_withHandlerSelector
-  , stopAccelerometerUpdatesSelector
-  , startGyroUpdatesSelector
-  , startGyroUpdatesToQueue_withHandlerSelector
-  , stopGyroUpdatesSelector
-  , startMagnetometerUpdatesSelector
-  , startMagnetometerUpdatesToQueue_withHandlerSelector
-  , stopMagnetometerUpdatesSelector
-  , availableAttitudeReferenceFramesSelector
   , startDeviceMotionUpdatesSelector
   , startDeviceMotionUpdatesToQueue_withHandlerSelector
   , startDeviceMotionUpdatesUsingReferenceFrameSelector
   , startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandlerSelector
+  , startGyroUpdatesSelector
+  , startGyroUpdatesToQueue_withHandlerSelector
+  , startMagnetometerUpdatesSelector
+  , startMagnetometerUpdatesToQueue_withHandlerSelector
+  , stopAccelerometerUpdatesSelector
   , stopDeviceMotionUpdatesSelector
-  , accelerometerUpdateIntervalSelector
-  , setAccelerometerUpdateIntervalSelector
-  , accelerometerAvailableSelector
-  , accelerometerActiveSelector
-  , accelerometerDataSelector
-  , gyroUpdateIntervalSelector
-  , setGyroUpdateIntervalSelector
-  , gyroAvailableSelector
-  , gyroActiveSelector
-  , gyroDataSelector
-  , magnetometerUpdateIntervalSelector
-  , setMagnetometerUpdateIntervalSelector
-  , magnetometerAvailableSelector
-  , magnetometerActiveSelector
-  , magnetometerDataSelector
-  , deviceMotionUpdateIntervalSelector
-  , setDeviceMotionUpdateIntervalSelector
-  , attitudeReferenceFrameSelector
-  , deviceMotionAvailableSelector
-  , deviceMotionActiveSelector
-  , deviceMotionSelector
-  , showsDeviceMovementDisplaySelector
-  , setShowsDeviceMovementDisplaySelector
+  , stopGyroUpdatesSelector
+  , stopMagnetometerUpdatesSelector
 
   -- * Enum types
   , CMAttitudeReferenceFrame(CMAttitudeReferenceFrame)
@@ -93,15 +94,11 @@ module ObjC.CoreMotion.CMMotionManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -111,354 +108,349 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startAccelerometerUpdates@
 startAccelerometerUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-startAccelerometerUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "startAccelerometerUpdates") retVoid []
+startAccelerometerUpdates cmMotionManager =
+  sendMessage cmMotionManager startAccelerometerUpdatesSelector
 
 -- | @- startAccelerometerUpdatesToQueue:withHandler:@
 startAccelerometerUpdatesToQueue_withHandler :: (IsCMMotionManager cmMotionManager, IsNSOperationQueue queue) => cmMotionManager -> queue -> Ptr () -> IO ()
-startAccelerometerUpdatesToQueue_withHandler cmMotionManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionManager (mkSelector "startAccelerometerUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startAccelerometerUpdatesToQueue_withHandler cmMotionManager queue handler =
+  sendMessage cmMotionManager startAccelerometerUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopAccelerometerUpdates@
 stopAccelerometerUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-stopAccelerometerUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "stopAccelerometerUpdates") retVoid []
+stopAccelerometerUpdates cmMotionManager =
+  sendMessage cmMotionManager stopAccelerometerUpdatesSelector
 
 -- | @- startGyroUpdates@
 startGyroUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-startGyroUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "startGyroUpdates") retVoid []
+startGyroUpdates cmMotionManager =
+  sendMessage cmMotionManager startGyroUpdatesSelector
 
 -- | @- startGyroUpdatesToQueue:withHandler:@
 startGyroUpdatesToQueue_withHandler :: (IsCMMotionManager cmMotionManager, IsNSOperationQueue queue) => cmMotionManager -> queue -> Ptr () -> IO ()
-startGyroUpdatesToQueue_withHandler cmMotionManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionManager (mkSelector "startGyroUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startGyroUpdatesToQueue_withHandler cmMotionManager queue handler =
+  sendMessage cmMotionManager startGyroUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopGyroUpdates@
 stopGyroUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-stopGyroUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "stopGyroUpdates") retVoid []
+stopGyroUpdates cmMotionManager =
+  sendMessage cmMotionManager stopGyroUpdatesSelector
 
 -- | @- startMagnetometerUpdates@
 startMagnetometerUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-startMagnetometerUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "startMagnetometerUpdates") retVoid []
+startMagnetometerUpdates cmMotionManager =
+  sendMessage cmMotionManager startMagnetometerUpdatesSelector
 
 -- | @- startMagnetometerUpdatesToQueue:withHandler:@
 startMagnetometerUpdatesToQueue_withHandler :: (IsCMMotionManager cmMotionManager, IsNSOperationQueue queue) => cmMotionManager -> queue -> Ptr () -> IO ()
-startMagnetometerUpdatesToQueue_withHandler cmMotionManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionManager (mkSelector "startMagnetometerUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startMagnetometerUpdatesToQueue_withHandler cmMotionManager queue handler =
+  sendMessage cmMotionManager startMagnetometerUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopMagnetometerUpdates@
 stopMagnetometerUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-stopMagnetometerUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "stopMagnetometerUpdates") retVoid []
+stopMagnetometerUpdates cmMotionManager =
+  sendMessage cmMotionManager stopMagnetometerUpdatesSelector
 
 -- | @+ availableAttitudeReferenceFrames@
 availableAttitudeReferenceFrames :: IO CMAttitudeReferenceFrame
 availableAttitudeReferenceFrames  =
   do
     cls' <- getRequiredClass "CMMotionManager"
-    fmap (coerce :: CULong -> CMAttitudeReferenceFrame) $ sendClassMsg cls' (mkSelector "availableAttitudeReferenceFrames") retCULong []
+    sendClassMessage cls' availableAttitudeReferenceFramesSelector
 
 -- | @- startDeviceMotionUpdates@
 startDeviceMotionUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-startDeviceMotionUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "startDeviceMotionUpdates") retVoid []
+startDeviceMotionUpdates cmMotionManager =
+  sendMessage cmMotionManager startDeviceMotionUpdatesSelector
 
 -- | @- startDeviceMotionUpdatesToQueue:withHandler:@
 startDeviceMotionUpdatesToQueue_withHandler :: (IsCMMotionManager cmMotionManager, IsNSOperationQueue queue) => cmMotionManager -> queue -> Ptr () -> IO ()
-startDeviceMotionUpdatesToQueue_withHandler cmMotionManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionManager (mkSelector "startDeviceMotionUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startDeviceMotionUpdatesToQueue_withHandler cmMotionManager queue handler =
+  sendMessage cmMotionManager startDeviceMotionUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- startDeviceMotionUpdatesUsingReferenceFrame:@
 startDeviceMotionUpdatesUsingReferenceFrame :: IsCMMotionManager cmMotionManager => cmMotionManager -> CMAttitudeReferenceFrame -> IO ()
-startDeviceMotionUpdatesUsingReferenceFrame cmMotionManager  referenceFrame =
-    sendMsg cmMotionManager (mkSelector "startDeviceMotionUpdatesUsingReferenceFrame:") retVoid [argCULong (coerce referenceFrame)]
+startDeviceMotionUpdatesUsingReferenceFrame cmMotionManager referenceFrame =
+  sendMessage cmMotionManager startDeviceMotionUpdatesUsingReferenceFrameSelector referenceFrame
 
 -- | @- startDeviceMotionUpdatesUsingReferenceFrame:toQueue:withHandler:@
 startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandler :: (IsCMMotionManager cmMotionManager, IsNSOperationQueue queue) => cmMotionManager -> CMAttitudeReferenceFrame -> queue -> Ptr () -> IO ()
-startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandler cmMotionManager  referenceFrame queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionManager (mkSelector "startDeviceMotionUpdatesUsingReferenceFrame:toQueue:withHandler:") retVoid [argCULong (coerce referenceFrame), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandler cmMotionManager referenceFrame queue handler =
+  sendMessage cmMotionManager startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandlerSelector referenceFrame (toNSOperationQueue queue) handler
 
 -- | @- stopDeviceMotionUpdates@
 stopDeviceMotionUpdates :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO ()
-stopDeviceMotionUpdates cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "stopDeviceMotionUpdates") retVoid []
+stopDeviceMotionUpdates cmMotionManager =
+  sendMessage cmMotionManager stopDeviceMotionUpdatesSelector
 
 -- | @- accelerometerUpdateInterval@
 accelerometerUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
-accelerometerUpdateInterval cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "accelerometerUpdateInterval") retCDouble []
+accelerometerUpdateInterval cmMotionManager =
+  sendMessage cmMotionManager accelerometerUpdateIntervalSelector
 
 -- | @- setAccelerometerUpdateInterval:@
 setAccelerometerUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> CDouble -> IO ()
-setAccelerometerUpdateInterval cmMotionManager  value =
-    sendMsg cmMotionManager (mkSelector "setAccelerometerUpdateInterval:") retVoid [argCDouble value]
+setAccelerometerUpdateInterval cmMotionManager value =
+  sendMessage cmMotionManager setAccelerometerUpdateIntervalSelector value
 
 -- | @- accelerometerAvailable@
 accelerometerAvailable :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-accelerometerAvailable cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "accelerometerAvailable") retCULong []
+accelerometerAvailable cmMotionManager =
+  sendMessage cmMotionManager accelerometerAvailableSelector
 
 -- | @- accelerometerActive@
 accelerometerActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-accelerometerActive cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "accelerometerActive") retCULong []
+accelerometerActive cmMotionManager =
+  sendMessage cmMotionManager accelerometerActiveSelector
 
 -- | @- accelerometerData@
 accelerometerData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMAccelerometerData)
-accelerometerData cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "accelerometerData") (retPtr retVoid) [] >>= retainedObject . castPtr
+accelerometerData cmMotionManager =
+  sendMessage cmMotionManager accelerometerDataSelector
 
 -- | @- gyroUpdateInterval@
 gyroUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
-gyroUpdateInterval cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "gyroUpdateInterval") retCDouble []
+gyroUpdateInterval cmMotionManager =
+  sendMessage cmMotionManager gyroUpdateIntervalSelector
 
 -- | @- setGyroUpdateInterval:@
 setGyroUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> CDouble -> IO ()
-setGyroUpdateInterval cmMotionManager  value =
-    sendMsg cmMotionManager (mkSelector "setGyroUpdateInterval:") retVoid [argCDouble value]
+setGyroUpdateInterval cmMotionManager value =
+  sendMessage cmMotionManager setGyroUpdateIntervalSelector value
 
 -- | @- gyroAvailable@
 gyroAvailable :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-gyroAvailable cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "gyroAvailable") retCULong []
+gyroAvailable cmMotionManager =
+  sendMessage cmMotionManager gyroAvailableSelector
 
 -- | @- gyroActive@
 gyroActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-gyroActive cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "gyroActive") retCULong []
+gyroActive cmMotionManager =
+  sendMessage cmMotionManager gyroActiveSelector
 
 -- | @- gyroData@
 gyroData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMGyroData)
-gyroData cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "gyroData") (retPtr retVoid) [] >>= retainedObject . castPtr
+gyroData cmMotionManager =
+  sendMessage cmMotionManager gyroDataSelector
 
 -- | @- magnetometerUpdateInterval@
 magnetometerUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
-magnetometerUpdateInterval cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "magnetometerUpdateInterval") retCDouble []
+magnetometerUpdateInterval cmMotionManager =
+  sendMessage cmMotionManager magnetometerUpdateIntervalSelector
 
 -- | @- setMagnetometerUpdateInterval:@
 setMagnetometerUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> CDouble -> IO ()
-setMagnetometerUpdateInterval cmMotionManager  value =
-    sendMsg cmMotionManager (mkSelector "setMagnetometerUpdateInterval:") retVoid [argCDouble value]
+setMagnetometerUpdateInterval cmMotionManager value =
+  sendMessage cmMotionManager setMagnetometerUpdateIntervalSelector value
 
 -- | @- magnetometerAvailable@
 magnetometerAvailable :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-magnetometerAvailable cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "magnetometerAvailable") retCULong []
+magnetometerAvailable cmMotionManager =
+  sendMessage cmMotionManager magnetometerAvailableSelector
 
 -- | @- magnetometerActive@
 magnetometerActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-magnetometerActive cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "magnetometerActive") retCULong []
+magnetometerActive cmMotionManager =
+  sendMessage cmMotionManager magnetometerActiveSelector
 
 -- | @- magnetometerData@
 magnetometerData :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO RawId
-magnetometerData cmMotionManager  =
-    fmap (RawId . castPtr) $ sendMsg cmMotionManager (mkSelector "magnetometerData") (retPtr retVoid) []
+magnetometerData cmMotionManager =
+  sendMessage cmMotionManager magnetometerDataSelector
 
 -- | @- deviceMotionUpdateInterval@
 deviceMotionUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CDouble
-deviceMotionUpdateInterval cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "deviceMotionUpdateInterval") retCDouble []
+deviceMotionUpdateInterval cmMotionManager =
+  sendMessage cmMotionManager deviceMotionUpdateIntervalSelector
 
 -- | @- setDeviceMotionUpdateInterval:@
 setDeviceMotionUpdateInterval :: IsCMMotionManager cmMotionManager => cmMotionManager -> CDouble -> IO ()
-setDeviceMotionUpdateInterval cmMotionManager  value =
-    sendMsg cmMotionManager (mkSelector "setDeviceMotionUpdateInterval:") retVoid [argCDouble value]
+setDeviceMotionUpdateInterval cmMotionManager value =
+  sendMessage cmMotionManager setDeviceMotionUpdateIntervalSelector value
 
 -- | @- attitudeReferenceFrame@
 attitudeReferenceFrame :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO CMAttitudeReferenceFrame
-attitudeReferenceFrame cmMotionManager  =
-    fmap (coerce :: CULong -> CMAttitudeReferenceFrame) $ sendMsg cmMotionManager (mkSelector "attitudeReferenceFrame") retCULong []
+attitudeReferenceFrame cmMotionManager =
+  sendMessage cmMotionManager attitudeReferenceFrameSelector
 
 -- | @- deviceMotionAvailable@
 deviceMotionAvailable :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-deviceMotionAvailable cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "deviceMotionAvailable") retCULong []
+deviceMotionAvailable cmMotionManager =
+  sendMessage cmMotionManager deviceMotionAvailableSelector
 
 -- | @- deviceMotionActive@
 deviceMotionActive :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-deviceMotionActive cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "deviceMotionActive") retCULong []
+deviceMotionActive cmMotionManager =
+  sendMessage cmMotionManager deviceMotionActiveSelector
 
 -- | @- deviceMotion@
 deviceMotion :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO (Id CMDeviceMotion)
-deviceMotion cmMotionManager  =
-    sendMsg cmMotionManager (mkSelector "deviceMotion") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceMotion cmMotionManager =
+  sendMessage cmMotionManager deviceMotionSelector
 
 -- | @- showsDeviceMovementDisplay@
 showsDeviceMovementDisplay :: IsCMMotionManager cmMotionManager => cmMotionManager -> IO Bool
-showsDeviceMovementDisplay cmMotionManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionManager (mkSelector "showsDeviceMovementDisplay") retCULong []
+showsDeviceMovementDisplay cmMotionManager =
+  sendMessage cmMotionManager showsDeviceMovementDisplaySelector
 
 -- | @- setShowsDeviceMovementDisplay:@
 setShowsDeviceMovementDisplay :: IsCMMotionManager cmMotionManager => cmMotionManager -> Bool -> IO ()
-setShowsDeviceMovementDisplay cmMotionManager  value =
-    sendMsg cmMotionManager (mkSelector "setShowsDeviceMovementDisplay:") retVoid [argCULong (if value then 1 else 0)]
+setShowsDeviceMovementDisplay cmMotionManager value =
+  sendMessage cmMotionManager setShowsDeviceMovementDisplaySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startAccelerometerUpdates@
-startAccelerometerUpdatesSelector :: Selector
+startAccelerometerUpdatesSelector :: Selector '[] ()
 startAccelerometerUpdatesSelector = mkSelector "startAccelerometerUpdates"
 
 -- | @Selector@ for @startAccelerometerUpdatesToQueue:withHandler:@
-startAccelerometerUpdatesToQueue_withHandlerSelector :: Selector
+startAccelerometerUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startAccelerometerUpdatesToQueue_withHandlerSelector = mkSelector "startAccelerometerUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopAccelerometerUpdates@
-stopAccelerometerUpdatesSelector :: Selector
+stopAccelerometerUpdatesSelector :: Selector '[] ()
 stopAccelerometerUpdatesSelector = mkSelector "stopAccelerometerUpdates"
 
 -- | @Selector@ for @startGyroUpdates@
-startGyroUpdatesSelector :: Selector
+startGyroUpdatesSelector :: Selector '[] ()
 startGyroUpdatesSelector = mkSelector "startGyroUpdates"
 
 -- | @Selector@ for @startGyroUpdatesToQueue:withHandler:@
-startGyroUpdatesToQueue_withHandlerSelector :: Selector
+startGyroUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startGyroUpdatesToQueue_withHandlerSelector = mkSelector "startGyroUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopGyroUpdates@
-stopGyroUpdatesSelector :: Selector
+stopGyroUpdatesSelector :: Selector '[] ()
 stopGyroUpdatesSelector = mkSelector "stopGyroUpdates"
 
 -- | @Selector@ for @startMagnetometerUpdates@
-startMagnetometerUpdatesSelector :: Selector
+startMagnetometerUpdatesSelector :: Selector '[] ()
 startMagnetometerUpdatesSelector = mkSelector "startMagnetometerUpdates"
 
 -- | @Selector@ for @startMagnetometerUpdatesToQueue:withHandler:@
-startMagnetometerUpdatesToQueue_withHandlerSelector :: Selector
+startMagnetometerUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startMagnetometerUpdatesToQueue_withHandlerSelector = mkSelector "startMagnetometerUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopMagnetometerUpdates@
-stopMagnetometerUpdatesSelector :: Selector
+stopMagnetometerUpdatesSelector :: Selector '[] ()
 stopMagnetometerUpdatesSelector = mkSelector "stopMagnetometerUpdates"
 
 -- | @Selector@ for @availableAttitudeReferenceFrames@
-availableAttitudeReferenceFramesSelector :: Selector
+availableAttitudeReferenceFramesSelector :: Selector '[] CMAttitudeReferenceFrame
 availableAttitudeReferenceFramesSelector = mkSelector "availableAttitudeReferenceFrames"
 
 -- | @Selector@ for @startDeviceMotionUpdates@
-startDeviceMotionUpdatesSelector :: Selector
+startDeviceMotionUpdatesSelector :: Selector '[] ()
 startDeviceMotionUpdatesSelector = mkSelector "startDeviceMotionUpdates"
 
 -- | @Selector@ for @startDeviceMotionUpdatesToQueue:withHandler:@
-startDeviceMotionUpdatesToQueue_withHandlerSelector :: Selector
+startDeviceMotionUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startDeviceMotionUpdatesToQueue_withHandlerSelector = mkSelector "startDeviceMotionUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @startDeviceMotionUpdatesUsingReferenceFrame:@
-startDeviceMotionUpdatesUsingReferenceFrameSelector :: Selector
+startDeviceMotionUpdatesUsingReferenceFrameSelector :: Selector '[CMAttitudeReferenceFrame] ()
 startDeviceMotionUpdatesUsingReferenceFrameSelector = mkSelector "startDeviceMotionUpdatesUsingReferenceFrame:"
 
 -- | @Selector@ for @startDeviceMotionUpdatesUsingReferenceFrame:toQueue:withHandler:@
-startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandlerSelector :: Selector
+startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandlerSelector :: Selector '[CMAttitudeReferenceFrame, Id NSOperationQueue, Ptr ()] ()
 startDeviceMotionUpdatesUsingReferenceFrame_toQueue_withHandlerSelector = mkSelector "startDeviceMotionUpdatesUsingReferenceFrame:toQueue:withHandler:"
 
 -- | @Selector@ for @stopDeviceMotionUpdates@
-stopDeviceMotionUpdatesSelector :: Selector
+stopDeviceMotionUpdatesSelector :: Selector '[] ()
 stopDeviceMotionUpdatesSelector = mkSelector "stopDeviceMotionUpdates"
 
 -- | @Selector@ for @accelerometerUpdateInterval@
-accelerometerUpdateIntervalSelector :: Selector
+accelerometerUpdateIntervalSelector :: Selector '[] CDouble
 accelerometerUpdateIntervalSelector = mkSelector "accelerometerUpdateInterval"
 
 -- | @Selector@ for @setAccelerometerUpdateInterval:@
-setAccelerometerUpdateIntervalSelector :: Selector
+setAccelerometerUpdateIntervalSelector :: Selector '[CDouble] ()
 setAccelerometerUpdateIntervalSelector = mkSelector "setAccelerometerUpdateInterval:"
 
 -- | @Selector@ for @accelerometerAvailable@
-accelerometerAvailableSelector :: Selector
+accelerometerAvailableSelector :: Selector '[] Bool
 accelerometerAvailableSelector = mkSelector "accelerometerAvailable"
 
 -- | @Selector@ for @accelerometerActive@
-accelerometerActiveSelector :: Selector
+accelerometerActiveSelector :: Selector '[] Bool
 accelerometerActiveSelector = mkSelector "accelerometerActive"
 
 -- | @Selector@ for @accelerometerData@
-accelerometerDataSelector :: Selector
+accelerometerDataSelector :: Selector '[] (Id CMAccelerometerData)
 accelerometerDataSelector = mkSelector "accelerometerData"
 
 -- | @Selector@ for @gyroUpdateInterval@
-gyroUpdateIntervalSelector :: Selector
+gyroUpdateIntervalSelector :: Selector '[] CDouble
 gyroUpdateIntervalSelector = mkSelector "gyroUpdateInterval"
 
 -- | @Selector@ for @setGyroUpdateInterval:@
-setGyroUpdateIntervalSelector :: Selector
+setGyroUpdateIntervalSelector :: Selector '[CDouble] ()
 setGyroUpdateIntervalSelector = mkSelector "setGyroUpdateInterval:"
 
 -- | @Selector@ for @gyroAvailable@
-gyroAvailableSelector :: Selector
+gyroAvailableSelector :: Selector '[] Bool
 gyroAvailableSelector = mkSelector "gyroAvailable"
 
 -- | @Selector@ for @gyroActive@
-gyroActiveSelector :: Selector
+gyroActiveSelector :: Selector '[] Bool
 gyroActiveSelector = mkSelector "gyroActive"
 
 -- | @Selector@ for @gyroData@
-gyroDataSelector :: Selector
+gyroDataSelector :: Selector '[] (Id CMGyroData)
 gyroDataSelector = mkSelector "gyroData"
 
 -- | @Selector@ for @magnetometerUpdateInterval@
-magnetometerUpdateIntervalSelector :: Selector
+magnetometerUpdateIntervalSelector :: Selector '[] CDouble
 magnetometerUpdateIntervalSelector = mkSelector "magnetometerUpdateInterval"
 
 -- | @Selector@ for @setMagnetometerUpdateInterval:@
-setMagnetometerUpdateIntervalSelector :: Selector
+setMagnetometerUpdateIntervalSelector :: Selector '[CDouble] ()
 setMagnetometerUpdateIntervalSelector = mkSelector "setMagnetometerUpdateInterval:"
 
 -- | @Selector@ for @magnetometerAvailable@
-magnetometerAvailableSelector :: Selector
+magnetometerAvailableSelector :: Selector '[] Bool
 magnetometerAvailableSelector = mkSelector "magnetometerAvailable"
 
 -- | @Selector@ for @magnetometerActive@
-magnetometerActiveSelector :: Selector
+magnetometerActiveSelector :: Selector '[] Bool
 magnetometerActiveSelector = mkSelector "magnetometerActive"
 
 -- | @Selector@ for @magnetometerData@
-magnetometerDataSelector :: Selector
+magnetometerDataSelector :: Selector '[] RawId
 magnetometerDataSelector = mkSelector "magnetometerData"
 
 -- | @Selector@ for @deviceMotionUpdateInterval@
-deviceMotionUpdateIntervalSelector :: Selector
+deviceMotionUpdateIntervalSelector :: Selector '[] CDouble
 deviceMotionUpdateIntervalSelector = mkSelector "deviceMotionUpdateInterval"
 
 -- | @Selector@ for @setDeviceMotionUpdateInterval:@
-setDeviceMotionUpdateIntervalSelector :: Selector
+setDeviceMotionUpdateIntervalSelector :: Selector '[CDouble] ()
 setDeviceMotionUpdateIntervalSelector = mkSelector "setDeviceMotionUpdateInterval:"
 
 -- | @Selector@ for @attitudeReferenceFrame@
-attitudeReferenceFrameSelector :: Selector
+attitudeReferenceFrameSelector :: Selector '[] CMAttitudeReferenceFrame
 attitudeReferenceFrameSelector = mkSelector "attitudeReferenceFrame"
 
 -- | @Selector@ for @deviceMotionAvailable@
-deviceMotionAvailableSelector :: Selector
+deviceMotionAvailableSelector :: Selector '[] Bool
 deviceMotionAvailableSelector = mkSelector "deviceMotionAvailable"
 
 -- | @Selector@ for @deviceMotionActive@
-deviceMotionActiveSelector :: Selector
+deviceMotionActiveSelector :: Selector '[] Bool
 deviceMotionActiveSelector = mkSelector "deviceMotionActive"
 
 -- | @Selector@ for @deviceMotion@
-deviceMotionSelector :: Selector
+deviceMotionSelector :: Selector '[] (Id CMDeviceMotion)
 deviceMotionSelector = mkSelector "deviceMotion"
 
 -- | @Selector@ for @showsDeviceMovementDisplay@
-showsDeviceMovementDisplaySelector :: Selector
+showsDeviceMovementDisplaySelector :: Selector '[] Bool
 showsDeviceMovementDisplaySelector = mkSelector "showsDeviceMovementDisplay"
 
 -- | @Selector@ for @setShowsDeviceMovementDisplay:@
-setShowsDeviceMovementDisplaySelector :: Selector
+setShowsDeviceMovementDisplaySelector :: Selector '[Bool] ()
 setShowsDeviceMovementDisplaySelector = mkSelector "setShowsDeviceMovementDisplay:"
 

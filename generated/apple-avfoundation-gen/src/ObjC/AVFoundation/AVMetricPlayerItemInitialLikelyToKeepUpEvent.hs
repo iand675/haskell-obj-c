@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.AVFoundation.AVMetricPlayerItemInitialLikelyToKeepUpEvent
   , playlistRequestEvents
   , mediaSegmentRequestEvents
   , contentKeyRequestEvents
+  , contentKeyRequestEventsSelector
   , initSelector
+  , mediaSegmentRequestEventsSelector
   , newSelector
   , playlistRequestEventsSelector
-  , mediaSegmentRequestEventsSelector
-  , contentKeyRequestEventsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,58 +38,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricPlayerItemInitialLikelyToKeepUpEvent avMetricPlayerItemInitialLikelyToKeepUpEvent => avMetricPlayerItemInitialLikelyToKeepUpEvent -> IO (Id AVMetricPlayerItemInitialLikelyToKeepUpEvent)
-init_ avMetricPlayerItemInitialLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemInitialLikelyToKeepUpEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricPlayerItemInitialLikelyToKeepUpEvent =
+  sendOwnedMessage avMetricPlayerItemInitialLikelyToKeepUpEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricPlayerItemInitialLikelyToKeepUpEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricPlayerItemInitialLikelyToKeepUpEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the playlist request events required to reach likely to keep up.
 --
 -- ObjC selector: @- playlistRequestEvents@
 playlistRequestEvents :: IsAVMetricPlayerItemInitialLikelyToKeepUpEvent avMetricPlayerItemInitialLikelyToKeepUpEvent => avMetricPlayerItemInitialLikelyToKeepUpEvent -> IO (Id NSArray)
-playlistRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemInitialLikelyToKeepUpEvent (mkSelector "playlistRequestEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+playlistRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemInitialLikelyToKeepUpEvent playlistRequestEventsSelector
 
 -- | Returns the media segment request events required to reach likely to keep up.
 --
 -- ObjC selector: @- mediaSegmentRequestEvents@
 mediaSegmentRequestEvents :: IsAVMetricPlayerItemInitialLikelyToKeepUpEvent avMetricPlayerItemInitialLikelyToKeepUpEvent => avMetricPlayerItemInitialLikelyToKeepUpEvent -> IO (Id NSArray)
-mediaSegmentRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemInitialLikelyToKeepUpEvent (mkSelector "mediaSegmentRequestEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSegmentRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemInitialLikelyToKeepUpEvent mediaSegmentRequestEventsSelector
 
 -- | Returns the content key request required to reach likely to keep up.
 --
 -- ObjC selector: @- contentKeyRequestEvents@
 contentKeyRequestEvents :: IsAVMetricPlayerItemInitialLikelyToKeepUpEvent avMetricPlayerItemInitialLikelyToKeepUpEvent => avMetricPlayerItemInitialLikelyToKeepUpEvent -> IO (Id NSArray)
-contentKeyRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemInitialLikelyToKeepUpEvent (mkSelector "contentKeyRequestEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentKeyRequestEvents avMetricPlayerItemInitialLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemInitialLikelyToKeepUpEvent contentKeyRequestEventsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricPlayerItemInitialLikelyToKeepUpEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricPlayerItemInitialLikelyToKeepUpEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @playlistRequestEvents@
-playlistRequestEventsSelector :: Selector
+playlistRequestEventsSelector :: Selector '[] (Id NSArray)
 playlistRequestEventsSelector = mkSelector "playlistRequestEvents"
 
 -- | @Selector@ for @mediaSegmentRequestEvents@
-mediaSegmentRequestEventsSelector :: Selector
+mediaSegmentRequestEventsSelector :: Selector '[] (Id NSArray)
 mediaSegmentRequestEventsSelector = mkSelector "mediaSegmentRequestEvents"
 
 -- | @Selector@ for @contentKeyRequestEvents@
-contentKeyRequestEventsSelector :: Selector
+contentKeyRequestEventsSelector :: Selector '[] (Id NSArray)
 contentKeyRequestEventsSelector = mkSelector "contentKeyRequestEvents"
 

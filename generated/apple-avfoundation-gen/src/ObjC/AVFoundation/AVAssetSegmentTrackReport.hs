@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVAssetSegmentTrackReport
   , trackID
   , mediaType
   , firstVideoSampleInformation
+  , firstVideoSampleInformationSelector
   , initSelector
+  , mediaTypeSelector
   , newSelector
   , trackIDSelector
-  , mediaTypeSelector
-  , firstVideoSampleInformationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetSegmentTrackReport avAssetSegmentTrackReport => avAssetSegmentTrackReport -> IO (Id AVAssetSegmentTrackReport)
-init_ avAssetSegmentTrackReport  =
-    sendMsg avAssetSegmentTrackReport (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetSegmentTrackReport =
+  sendOwnedMessage avAssetSegmentTrackReport initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetSegmentTrackReport)
 new  =
   do
     cls' <- getRequiredClass "AVAssetSegmentTrackReport"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | trackID
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- trackID@
 trackID :: IsAVAssetSegmentTrackReport avAssetSegmentTrackReport => avAssetSegmentTrackReport -> IO CInt
-trackID avAssetSegmentTrackReport  =
-    sendMsg avAssetSegmentTrackReport (mkSelector "trackID") retCInt []
+trackID avAssetSegmentTrackReport =
+  sendMessage avAssetSegmentTrackReport trackIDSelector
 
 -- | mediaType
 --
@@ -68,8 +65,8 @@ trackID avAssetSegmentTrackReport  =
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVAssetSegmentTrackReport avAssetSegmentTrackReport => avAssetSegmentTrackReport -> IO (Id NSString)
-mediaType avAssetSegmentTrackReport  =
-    sendMsg avAssetSegmentTrackReport (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avAssetSegmentTrackReport =
+  sendMessage avAssetSegmentTrackReport mediaTypeSelector
 
 -- | firstVideoSampleInformation
 --
@@ -77,30 +74,30 @@ mediaType avAssetSegmentTrackReport  =
 --
 -- ObjC selector: @- firstVideoSampleInformation@
 firstVideoSampleInformation :: IsAVAssetSegmentTrackReport avAssetSegmentTrackReport => avAssetSegmentTrackReport -> IO (Id AVAssetSegmentReportSampleInformation)
-firstVideoSampleInformation avAssetSegmentTrackReport  =
-    sendMsg avAssetSegmentTrackReport (mkSelector "firstVideoSampleInformation") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstVideoSampleInformation avAssetSegmentTrackReport =
+  sendMessage avAssetSegmentTrackReport firstVideoSampleInformationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetSegmentTrackReport)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetSegmentTrackReport)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @firstVideoSampleInformation@
-firstVideoSampleInformationSelector :: Selector
+firstVideoSampleInformationSelector :: Selector '[] (Id AVAssetSegmentReportSampleInformation)
 firstVideoSampleInformationSelector = mkSelector "firstVideoSampleInformation"
 

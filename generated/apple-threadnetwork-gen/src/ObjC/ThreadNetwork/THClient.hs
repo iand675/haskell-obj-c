@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,27 +25,23 @@ module ObjC.ThreadNetwork.THClient
   , retrieveCredentialsForExtendedPANID_completion
   , checkPreferredNetworkForActiveOperationalDataset_completion
   , isPreferredNetworkAvailableWithCompletion
-  , initSelector
-  , deleteCredentialsForBorderAgent_completionSelector
-  , retrieveCredentialsForBorderAgent_completionSelector
-  , storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector
-  , retrievePreferredCredentialsSelector
-  , retrieveCredentialsForExtendedPANID_completionSelector
   , checkPreferredNetworkForActiveOperationalDataset_completionSelector
+  , deleteCredentialsForBorderAgent_completionSelector
+  , initSelector
   , isPreferredNetworkAvailableWithCompletionSelector
+  , retrieveCredentialsForBorderAgent_completionSelector
+  , retrieveCredentialsForExtendedPANID_completionSelector
+  , retrievePreferredCredentialsSelector
+  , storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsTHClient thClient => thClient -> IO (Id THClient)
-init_ thClient  =
-    sendMsg thClient (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ thClient =
+  sendOwnedMessage thClient initSelector
 
 -- | Deletes Thread network credentials from the framework database for a Border Agent.
 --
@@ -70,9 +67,8 @@ init_ thClient  =
 --
 -- ObjC selector: @- deleteCredentialsForBorderAgent:completion:@
 deleteCredentialsForBorderAgent_completion :: (IsTHClient thClient, IsNSData borderAgentID) => thClient -> borderAgentID -> Ptr () -> IO ()
-deleteCredentialsForBorderAgent_completion thClient  borderAgentID completion =
-  withObjCPtr borderAgentID $ \raw_borderAgentID ->
-      sendMsg thClient (mkSelector "deleteCredentialsForBorderAgent:completion:") retVoid [argPtr (castPtr raw_borderAgentID :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+deleteCredentialsForBorderAgent_completion thClient borderAgentID completion =
+  sendMessage thClient deleteCredentialsForBorderAgent_completionSelector (toNSData borderAgentID) completion
 
 -- | Requests Thread credentials for a Border Agent.
 --
@@ -84,9 +80,8 @@ deleteCredentialsForBorderAgent_completion thClient  borderAgentID completion =
 --
 -- ObjC selector: @- retrieveCredentialsForBorderAgent:completion:@
 retrieveCredentialsForBorderAgent_completion :: (IsTHClient thClient, IsNSData borderAgentID) => thClient -> borderAgentID -> Ptr () -> IO ()
-retrieveCredentialsForBorderAgent_completion thClient  borderAgentID completion =
-  withObjCPtr borderAgentID $ \raw_borderAgentID ->
-      sendMsg thClient (mkSelector "retrieveCredentialsForBorderAgent:completion:") retVoid [argPtr (castPtr raw_borderAgentID :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+retrieveCredentialsForBorderAgent_completion thClient borderAgentID completion =
+  sendMessage thClient retrieveCredentialsForBorderAgent_completionSelector (toNSData borderAgentID) completion
 
 -- | Stores Thread network credentials into the framework database that a Border Agent provides.
 --
@@ -100,10 +95,8 @@ retrieveCredentialsForBorderAgent_completion thClient  borderAgentID completion 
 --
 -- ObjC selector: @- storeCredentialsForBorderAgent:activeOperationalDataSet:completion:@
 storeCredentialsForBorderAgent_activeOperationalDataSet_completion :: (IsTHClient thClient, IsNSData borderAgentID, IsNSData activeOperationalDataSet) => thClient -> borderAgentID -> activeOperationalDataSet -> Ptr () -> IO ()
-storeCredentialsForBorderAgent_activeOperationalDataSet_completion thClient  borderAgentID activeOperationalDataSet completion =
-  withObjCPtr borderAgentID $ \raw_borderAgentID ->
-    withObjCPtr activeOperationalDataSet $ \raw_activeOperationalDataSet ->
-        sendMsg thClient (mkSelector "storeCredentialsForBorderAgent:activeOperationalDataSet:completion:") retVoid [argPtr (castPtr raw_borderAgentID :: Ptr ()), argPtr (castPtr raw_activeOperationalDataSet :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+storeCredentialsForBorderAgent_activeOperationalDataSet_completion thClient borderAgentID activeOperationalDataSet completion =
+  sendMessage thClient storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector (toNSData borderAgentID) (toNSData activeOperationalDataSet) completion
 
 -- | Requests Thread credentials for the preferred network.
 --
@@ -115,8 +108,8 @@ storeCredentialsForBorderAgent_activeOperationalDataSet_completion thClient  bor
 --
 -- ObjC selector: @- retrievePreferredCredentials:@
 retrievePreferredCredentials :: IsTHClient thClient => thClient -> Ptr () -> IO ()
-retrievePreferredCredentials thClient  completion =
-    sendMsg thClient (mkSelector "retrievePreferredCredentials:") retVoid [argPtr (castPtr completion :: Ptr ())]
+retrievePreferredCredentials thClient completion =
+  sendMessage thClient retrievePreferredCredentialsSelector completion
 
 -- | Requests Thread credentials for an extended Personal Area Network (PAN) ID.
 --
@@ -128,9 +121,8 @@ retrievePreferredCredentials thClient  completion =
 --
 -- ObjC selector: @- retrieveCredentialsForExtendedPANID:completion:@
 retrieveCredentialsForExtendedPANID_completion :: (IsTHClient thClient, IsNSData extendedPANID) => thClient -> extendedPANID -> Ptr () -> IO ()
-retrieveCredentialsForExtendedPANID_completion thClient  extendedPANID completion =
-  withObjCPtr extendedPANID $ \raw_extendedPANID ->
-      sendMsg thClient (mkSelector "retrieveCredentialsForExtendedPANID:completion:") retVoid [argPtr (castPtr raw_extendedPANID :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+retrieveCredentialsForExtendedPANID_completion thClient extendedPANID completion =
+  sendMessage thClient retrieveCredentialsForExtendedPANID_completionSelector (toNSData extendedPANID) completion
 
 -- | Determines if the essential operating parameters match the preferred network’s parameters.
 --
@@ -140,9 +132,8 @@ retrieveCredentialsForExtendedPANID_completion thClient  extendedPANID completio
 --
 -- ObjC selector: @- checkPreferredNetworkForActiveOperationalDataset:completion:@
 checkPreferredNetworkForActiveOperationalDataset_completion :: (IsTHClient thClient, IsNSData activeOperationalDataSet) => thClient -> activeOperationalDataSet -> Ptr () -> IO ()
-checkPreferredNetworkForActiveOperationalDataset_completion thClient  activeOperationalDataSet completion =
-  withObjCPtr activeOperationalDataSet $ \raw_activeOperationalDataSet ->
-      sendMsg thClient (mkSelector "checkPreferredNetworkForActiveOperationalDataset:completion:") retVoid [argPtr (castPtr raw_activeOperationalDataSet :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+checkPreferredNetworkForActiveOperationalDataset_completion thClient activeOperationalDataSet completion =
+  sendMessage thClient checkPreferredNetworkForActiveOperationalDataset_completionSelector (toNSData activeOperationalDataSet) completion
 
 -- | Determines if the preferred network is available or not
 --
@@ -152,42 +143,42 @@ checkPreferredNetworkForActiveOperationalDataset_completion thClient  activeOper
 --
 -- ObjC selector: @- isPreferredNetworkAvailableWithCompletion:@
 isPreferredNetworkAvailableWithCompletion :: IsTHClient thClient => thClient -> Ptr () -> IO ()
-isPreferredNetworkAvailableWithCompletion thClient  completion =
-    sendMsg thClient (mkSelector "isPreferredNetworkAvailableWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+isPreferredNetworkAvailableWithCompletion thClient completion =
+  sendMessage thClient isPreferredNetworkAvailableWithCompletionSelector completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id THClient)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @deleteCredentialsForBorderAgent:completion:@
-deleteCredentialsForBorderAgent_completionSelector :: Selector
+deleteCredentialsForBorderAgent_completionSelector :: Selector '[Id NSData, Ptr ()] ()
 deleteCredentialsForBorderAgent_completionSelector = mkSelector "deleteCredentialsForBorderAgent:completion:"
 
 -- | @Selector@ for @retrieveCredentialsForBorderAgent:completion:@
-retrieveCredentialsForBorderAgent_completionSelector :: Selector
+retrieveCredentialsForBorderAgent_completionSelector :: Selector '[Id NSData, Ptr ()] ()
 retrieveCredentialsForBorderAgent_completionSelector = mkSelector "retrieveCredentialsForBorderAgent:completion:"
 
 -- | @Selector@ for @storeCredentialsForBorderAgent:activeOperationalDataSet:completion:@
-storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector :: Selector
+storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector :: Selector '[Id NSData, Id NSData, Ptr ()] ()
 storeCredentialsForBorderAgent_activeOperationalDataSet_completionSelector = mkSelector "storeCredentialsForBorderAgent:activeOperationalDataSet:completion:"
 
 -- | @Selector@ for @retrievePreferredCredentials:@
-retrievePreferredCredentialsSelector :: Selector
+retrievePreferredCredentialsSelector :: Selector '[Ptr ()] ()
 retrievePreferredCredentialsSelector = mkSelector "retrievePreferredCredentials:"
 
 -- | @Selector@ for @retrieveCredentialsForExtendedPANID:completion:@
-retrieveCredentialsForExtendedPANID_completionSelector :: Selector
+retrieveCredentialsForExtendedPANID_completionSelector :: Selector '[Id NSData, Ptr ()] ()
 retrieveCredentialsForExtendedPANID_completionSelector = mkSelector "retrieveCredentialsForExtendedPANID:completion:"
 
 -- | @Selector@ for @checkPreferredNetworkForActiveOperationalDataset:completion:@
-checkPreferredNetworkForActiveOperationalDataset_completionSelector :: Selector
+checkPreferredNetworkForActiveOperationalDataset_completionSelector :: Selector '[Id NSData, Ptr ()] ()
 checkPreferredNetworkForActiveOperationalDataset_completionSelector = mkSelector "checkPreferredNetworkForActiveOperationalDataset:completion:"
 
 -- | @Selector@ for @isPreferredNetworkAvailableWithCompletion:@
-isPreferredNetworkAvailableWithCompletionSelector :: Selector
+isPreferredNetworkAvailableWithCompletionSelector :: Selector '[Ptr ()] ()
 isPreferredNetworkAvailableWithCompletionSelector = mkSelector "isPreferredNetworkAvailableWithCompletion:"
 

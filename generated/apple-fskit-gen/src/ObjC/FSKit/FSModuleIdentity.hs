@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.FSKit.FSModuleIdentity
   , url
   , enabled
   , bundleIdentifierSelector
-  , urlSelector
   , enabledSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsFSModuleIdentity fsModuleIdentity => fsModuleIdentity -> IO (Id NSString)
-bundleIdentifier fsModuleIdentity  =
-    sendMsg fsModuleIdentity (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier fsModuleIdentity =
+  sendMessage fsModuleIdentity bundleIdentifierSelector
 
 -- | The module's URL.
 --
 -- ObjC selector: @- url@
 url :: IsFSModuleIdentity fsModuleIdentity => fsModuleIdentity -> IO (Id NSURL)
-url fsModuleIdentity  =
-    sendMsg fsModuleIdentity (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url fsModuleIdentity =
+  sendMessage fsModuleIdentity urlSelector
 
 -- | A Boolean value that indicates if the module is enabled.
 --
 -- ObjC selector: @- enabled@
 enabled :: IsFSModuleIdentity fsModuleIdentity => fsModuleIdentity -> IO Bool
-enabled fsModuleIdentity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsModuleIdentity (mkSelector "enabled") retCULong []
+enabled fsModuleIdentity =
+  sendMessage fsModuleIdentity enabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 

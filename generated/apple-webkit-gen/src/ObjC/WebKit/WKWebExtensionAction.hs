@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,35 +27,31 @@ module ObjC.WebKit.WKWebExtensionAction
   , presentsPopup
   , popupPopover
   , popupWebView
-  , initSelector
-  , newSelector
-  , closePopupSelector
-  , webExtensionContextSelector
   , associatedTabSelector
-  , labelSelector
   , badgeTextSelector
-  , hasUnreadBadgeTextSelector
-  , setHasUnreadBadgeTextSelector
-  , inspectionNameSelector
-  , setInspectionNameSelector
+  , closePopupSelector
   , enabledSelector
+  , hasUnreadBadgeTextSelector
+  , initSelector
+  , inspectionNameSelector
+  , labelSelector
   , menuItemsSelector
-  , presentsPopupSelector
+  , newSelector
   , popupPopoverSelector
   , popupWebViewSelector
+  , presentsPopupSelector
+  , setHasUnreadBadgeTextSelector
+  , setInspectionNameSelector
+  , webExtensionContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,13 +61,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id WKWebExtensionAction)
-init_ wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionAction =
+  sendOwnedMessage wkWebExtensionAction initSelector
 
 -- | @- new@
 new :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id WKWebExtensionAction)
-new wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new wkWebExtensionAction =
+  sendOwnedMessage wkWebExtensionAction newSelector
 
 -- | Triggers the dismissal process of the popup.
 --
@@ -78,15 +75,15 @@ new wkWebExtensionAction  =
 --
 -- ObjC selector: @- closePopup@
 closePopup :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO ()
-closePopup wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "closePopup") retVoid []
+closePopup wkWebExtensionAction =
+  sendMessage wkWebExtensionAction closePopupSelector
 
 -- | The extension context to which this action is related.
 --
 -- ObjC selector: @- webExtensionContext@
 webExtensionContext :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id WKWebExtensionContext)
-webExtensionContext wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "webExtensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+webExtensionContext wkWebExtensionAction =
+  sendMessage wkWebExtensionAction webExtensionContextSelector
 
 -- | The tab that this action is associated with, or @nil@ if it is the default action.
 --
@@ -94,15 +91,15 @@ webExtensionContext wkWebExtensionAction  =
 --
 -- ObjC selector: @- associatedTab@
 associatedTab :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO RawId
-associatedTab wkWebExtensionAction  =
-    fmap (RawId . castPtr) $ sendMsg wkWebExtensionAction (mkSelector "associatedTab") (retPtr retVoid) []
+associatedTab wkWebExtensionAction =
+  sendMessage wkWebExtensionAction associatedTabSelector
 
 -- | The localized display label for the action.
 --
 -- ObjC selector: @- label@
 label :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id NSString)
-label wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label wkWebExtensionAction =
+  sendMessage wkWebExtensionAction labelSelector
 
 -- | The badge text for the action.
 --
@@ -110,8 +107,8 @@ label wkWebExtensionAction  =
 --
 -- ObjC selector: @- badgeText@
 badgeText :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id NSString)
-badgeText wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "badgeText") (retPtr retVoid) [] >>= retainedObject . castPtr
+badgeText wkWebExtensionAction =
+  sendMessage wkWebExtensionAction badgeTextSelector
 
 -- | A Boolean value indicating whether the badge text is unread.
 --
@@ -119,8 +116,8 @@ badgeText wkWebExtensionAction  =
 --
 -- ObjC selector: @- hasUnreadBadgeText@
 hasUnreadBadgeText :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO Bool
-hasUnreadBadgeText wkWebExtensionAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionAction (mkSelector "hasUnreadBadgeText") retCULong []
+hasUnreadBadgeText wkWebExtensionAction =
+  sendMessage wkWebExtensionAction hasUnreadBadgeTextSelector
 
 -- | A Boolean value indicating whether the badge text is unread.
 --
@@ -128,8 +125,8 @@ hasUnreadBadgeText wkWebExtensionAction  =
 --
 -- ObjC selector: @- setHasUnreadBadgeText:@
 setHasUnreadBadgeText :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> Bool -> IO ()
-setHasUnreadBadgeText wkWebExtensionAction  value =
-    sendMsg wkWebExtensionAction (mkSelector "setHasUnreadBadgeText:") retVoid [argCULong (if value then 1 else 0)]
+setHasUnreadBadgeText wkWebExtensionAction value =
+  sendMessage wkWebExtensionAction setHasUnreadBadgeTextSelector value
 
 -- | The name shown when inspecting the popup web view.
 --
@@ -137,8 +134,8 @@ setHasUnreadBadgeText wkWebExtensionAction  value =
 --
 -- ObjC selector: @- inspectionName@
 inspectionName :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id NSString)
-inspectionName wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "inspectionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+inspectionName wkWebExtensionAction =
+  sendMessage wkWebExtensionAction inspectionNameSelector
 
 -- | The name shown when inspecting the popup web view.
 --
@@ -146,21 +143,20 @@ inspectionName wkWebExtensionAction  =
 --
 -- ObjC selector: @- setInspectionName:@
 setInspectionName :: (IsWKWebExtensionAction wkWebExtensionAction, IsNSString value) => wkWebExtensionAction -> value -> IO ()
-setInspectionName wkWebExtensionAction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionAction (mkSelector "setInspectionName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInspectionName wkWebExtensionAction value =
+  sendMessage wkWebExtensionAction setInspectionNameSelector (toNSString value)
 
 -- | A Boolean value indicating whether the action is enabled.
 --
 -- ObjC selector: @- enabled@
 enabled :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO Bool
-enabled wkWebExtensionAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionAction (mkSelector "enabled") retCULong []
+enabled wkWebExtensionAction =
+  sendMessage wkWebExtensionAction enabledSelector
 
 -- | @- menuItems@
 menuItems :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id NSArray)
-menuItems wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "menuItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuItems wkWebExtensionAction =
+  sendMessage wkWebExtensionAction menuItemsSelector
 
 -- | A Boolean value indicating whether the action has a popup.
 --
@@ -168,8 +164,8 @@ menuItems wkWebExtensionAction  =
 --
 -- ObjC selector: @- presentsPopup@
 presentsPopup :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO Bool
-presentsPopup wkWebExtensionAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionAction (mkSelector "presentsPopup") retCULong []
+presentsPopup wkWebExtensionAction =
+  sendMessage wkWebExtensionAction presentsPopupSelector
 
 -- | A popover that presents a web view loaded with the popup page for this action, or @nil@ if no popup is specified.
 --
@@ -179,8 +175,8 @@ presentsPopup wkWebExtensionAction  =
 --
 -- ObjC selector: @- popupPopover@
 popupPopover :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id NSPopover)
-popupPopover wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "popupPopover") (retPtr retVoid) [] >>= retainedObject . castPtr
+popupPopover wkWebExtensionAction =
+  sendMessage wkWebExtensionAction popupPopoverSelector
 
 -- | A web view loaded with the popup page for this action, or @nil@ if no popup is specified.
 --
@@ -190,74 +186,74 @@ popupPopover wkWebExtensionAction  =
 --
 -- ObjC selector: @- popupWebView@
 popupWebView :: IsWKWebExtensionAction wkWebExtensionAction => wkWebExtensionAction -> IO (Id WKWebView)
-popupWebView wkWebExtensionAction  =
-    sendMsg wkWebExtensionAction (mkSelector "popupWebView") (retPtr retVoid) [] >>= retainedObject . castPtr
+popupWebView wkWebExtensionAction =
+  sendMessage wkWebExtensionAction popupWebViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionAction)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @closePopup@
-closePopupSelector :: Selector
+closePopupSelector :: Selector '[] ()
 closePopupSelector = mkSelector "closePopup"
 
 -- | @Selector@ for @webExtensionContext@
-webExtensionContextSelector :: Selector
+webExtensionContextSelector :: Selector '[] (Id WKWebExtensionContext)
 webExtensionContextSelector = mkSelector "webExtensionContext"
 
 -- | @Selector@ for @associatedTab@
-associatedTabSelector :: Selector
+associatedTabSelector :: Selector '[] RawId
 associatedTabSelector = mkSelector "associatedTab"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @badgeText@
-badgeTextSelector :: Selector
+badgeTextSelector :: Selector '[] (Id NSString)
 badgeTextSelector = mkSelector "badgeText"
 
 -- | @Selector@ for @hasUnreadBadgeText@
-hasUnreadBadgeTextSelector :: Selector
+hasUnreadBadgeTextSelector :: Selector '[] Bool
 hasUnreadBadgeTextSelector = mkSelector "hasUnreadBadgeText"
 
 -- | @Selector@ for @setHasUnreadBadgeText:@
-setHasUnreadBadgeTextSelector :: Selector
+setHasUnreadBadgeTextSelector :: Selector '[Bool] ()
 setHasUnreadBadgeTextSelector = mkSelector "setHasUnreadBadgeText:"
 
 -- | @Selector@ for @inspectionName@
-inspectionNameSelector :: Selector
+inspectionNameSelector :: Selector '[] (Id NSString)
 inspectionNameSelector = mkSelector "inspectionName"
 
 -- | @Selector@ for @setInspectionName:@
-setInspectionNameSelector :: Selector
+setInspectionNameSelector :: Selector '[Id NSString] ()
 setInspectionNameSelector = mkSelector "setInspectionName:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @menuItems@
-menuItemsSelector :: Selector
+menuItemsSelector :: Selector '[] (Id NSArray)
 menuItemsSelector = mkSelector "menuItems"
 
 -- | @Selector@ for @presentsPopup@
-presentsPopupSelector :: Selector
+presentsPopupSelector :: Selector '[] Bool
 presentsPopupSelector = mkSelector "presentsPopup"
 
 -- | @Selector@ for @popupPopover@
-popupPopoverSelector :: Selector
+popupPopoverSelector :: Selector '[] (Id NSPopover)
 popupPopoverSelector = mkSelector "popupPopover"
 
 -- | @Selector@ for @popupWebView@
-popupWebViewSelector :: Selector
+popupWebViewSelector :: Selector '[] (Id WKWebView)
 popupWebViewSelector = mkSelector "popupWebView"
 

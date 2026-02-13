@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.AppKit.NSTokenField
   , tokenizingCharacterSet
   , setTokenizingCharacterSet
   , defaultTokenizingCharacterSet
-  , delegateSelector
-  , setDelegateSelector
-  , tokenStyleSelector
-  , setTokenStyleSelector
   , completionDelaySelector
-  , setCompletionDelaySelector
   , defaultCompletionDelaySelector
-  , tokenizingCharacterSetSelector
-  , setTokenizingCharacterSetSelector
   , defaultTokenizingCharacterSetSelector
+  , delegateSelector
+  , setCompletionDelaySelector
+  , setDelegateSelector
+  , setTokenStyleSelector
+  , setTokenizingCharacterSetSelector
+  , tokenStyleSelector
+  , tokenizingCharacterSetSelector
 
   -- * Enum types
   , NSTokenStyle(NSTokenStyle)
@@ -38,15 +39,11 @@ module ObjC.AppKit.NSTokenField
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,100 +53,99 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsNSTokenField nsTokenField => nsTokenField -> IO RawId
-delegate nsTokenField  =
-    fmap (RawId . castPtr) $ sendMsg nsTokenField (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTokenField =
+  sendMessage nsTokenField delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTokenField nsTokenField => nsTokenField -> RawId -> IO ()
-setDelegate nsTokenField  value =
-    sendMsg nsTokenField (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTokenField value =
+  sendMessage nsTokenField setDelegateSelector value
 
 -- | @- tokenStyle@
 tokenStyle :: IsNSTokenField nsTokenField => nsTokenField -> IO NSTokenStyle
-tokenStyle nsTokenField  =
-    fmap (coerce :: CULong -> NSTokenStyle) $ sendMsg nsTokenField (mkSelector "tokenStyle") retCULong []
+tokenStyle nsTokenField =
+  sendMessage nsTokenField tokenStyleSelector
 
 -- | @- setTokenStyle:@
 setTokenStyle :: IsNSTokenField nsTokenField => nsTokenField -> NSTokenStyle -> IO ()
-setTokenStyle nsTokenField  value =
-    sendMsg nsTokenField (mkSelector "setTokenStyle:") retVoid [argCULong (coerce value)]
+setTokenStyle nsTokenField value =
+  sendMessage nsTokenField setTokenStyleSelector value
 
 -- | @- completionDelay@
 completionDelay :: IsNSTokenField nsTokenField => nsTokenField -> IO CDouble
-completionDelay nsTokenField  =
-    sendMsg nsTokenField (mkSelector "completionDelay") retCDouble []
+completionDelay nsTokenField =
+  sendMessage nsTokenField completionDelaySelector
 
 -- | @- setCompletionDelay:@
 setCompletionDelay :: IsNSTokenField nsTokenField => nsTokenField -> CDouble -> IO ()
-setCompletionDelay nsTokenField  value =
-    sendMsg nsTokenField (mkSelector "setCompletionDelay:") retVoid [argCDouble value]
+setCompletionDelay nsTokenField value =
+  sendMessage nsTokenField setCompletionDelaySelector value
 
 -- | @+ defaultCompletionDelay@
 defaultCompletionDelay :: IO CDouble
 defaultCompletionDelay  =
   do
     cls' <- getRequiredClass "NSTokenField"
-    sendClassMsg cls' (mkSelector "defaultCompletionDelay") retCDouble []
+    sendClassMessage cls' defaultCompletionDelaySelector
 
 -- | @- tokenizingCharacterSet@
 tokenizingCharacterSet :: IsNSTokenField nsTokenField => nsTokenField -> IO (Id NSCharacterSet)
-tokenizingCharacterSet nsTokenField  =
-    sendMsg nsTokenField (mkSelector "tokenizingCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenizingCharacterSet nsTokenField =
+  sendMessage nsTokenField tokenizingCharacterSetSelector
 
 -- | @- setTokenizingCharacterSet:@
 setTokenizingCharacterSet :: (IsNSTokenField nsTokenField, IsNSCharacterSet value) => nsTokenField -> value -> IO ()
-setTokenizingCharacterSet nsTokenField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTokenField (mkSelector "setTokenizingCharacterSet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTokenizingCharacterSet nsTokenField value =
+  sendMessage nsTokenField setTokenizingCharacterSetSelector (toNSCharacterSet value)
 
 -- | @+ defaultTokenizingCharacterSet@
 defaultTokenizingCharacterSet :: IO (Id NSCharacterSet)
 defaultTokenizingCharacterSet  =
   do
     cls' <- getRequiredClass "NSTokenField"
-    sendClassMsg cls' (mkSelector "defaultTokenizingCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultTokenizingCharacterSetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @tokenStyle@
-tokenStyleSelector :: Selector
+tokenStyleSelector :: Selector '[] NSTokenStyle
 tokenStyleSelector = mkSelector "tokenStyle"
 
 -- | @Selector@ for @setTokenStyle:@
-setTokenStyleSelector :: Selector
+setTokenStyleSelector :: Selector '[NSTokenStyle] ()
 setTokenStyleSelector = mkSelector "setTokenStyle:"
 
 -- | @Selector@ for @completionDelay@
-completionDelaySelector :: Selector
+completionDelaySelector :: Selector '[] CDouble
 completionDelaySelector = mkSelector "completionDelay"
 
 -- | @Selector@ for @setCompletionDelay:@
-setCompletionDelaySelector :: Selector
+setCompletionDelaySelector :: Selector '[CDouble] ()
 setCompletionDelaySelector = mkSelector "setCompletionDelay:"
 
 -- | @Selector@ for @defaultCompletionDelay@
-defaultCompletionDelaySelector :: Selector
+defaultCompletionDelaySelector :: Selector '[] CDouble
 defaultCompletionDelaySelector = mkSelector "defaultCompletionDelay"
 
 -- | @Selector@ for @tokenizingCharacterSet@
-tokenizingCharacterSetSelector :: Selector
+tokenizingCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 tokenizingCharacterSetSelector = mkSelector "tokenizingCharacterSet"
 
 -- | @Selector@ for @setTokenizingCharacterSet:@
-setTokenizingCharacterSetSelector :: Selector
+setTokenizingCharacterSetSelector :: Selector '[Id NSCharacterSet] ()
 setTokenizingCharacterSetSelector = mkSelector "setTokenizingCharacterSet:"
 
 -- | @Selector@ for @defaultTokenizingCharacterSet@
-defaultTokenizingCharacterSetSelector :: Selector
+defaultTokenizingCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 defaultTokenizingCharacterSetSelector = mkSelector "defaultTokenizingCharacterSet"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,49 +39,45 @@ module ObjC.Matter.MTRClusterBinaryInputBasic
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeActiveTextWithParamsSelector
-  , writeAttributeActiveTextWithValue_expectedValueIntervalSelector
-  , writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector
+  , readAttributeApplicationTypeWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
   , readAttributeDescriptionWithParamsSelector
-  , writeAttributeDescriptionWithValue_expectedValueIntervalSelector
-  , writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeInactiveTextWithParamsSelector
-  , writeAttributeInactiveTextWithValue_expectedValueIntervalSelector
-  , writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector
   , readAttributeOutOfServiceWithParamsSelector
-  , writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector
-  , writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector
   , readAttributePolarityWithParamsSelector
   , readAttributePresentValueWithParamsSelector
+  , readAttributeReliabilityWithParamsSelector
+  , readAttributeStatusFlagsWithParamsSelector
+  , writeAttributeActiveTextWithValue_expectedValueIntervalSelector
+  , writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeDescriptionWithValue_expectedValueIntervalSelector
+  , writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeInactiveTextWithValue_expectedValueIntervalSelector
+  , writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector
+  , writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector
   , writeAttributePresentValueWithValue_expectedValueIntervalSelector
   , writeAttributePresentValueWithValue_expectedValueInterval_paramsSelector
-  , readAttributeReliabilityWithParamsSelector
   , writeAttributeReliabilityWithValue_expectedValueIntervalSelector
   , writeAttributeReliabilityWithValue_expectedValueInterval_paramsSelector
-  , readAttributeStatusFlagsWithParamsSelector
-  , readAttributeApplicationTypeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,328 +86,279 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeActiveTextWithParams:@
 readAttributeActiveTextWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeActiveTextWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeActiveTextWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveTextWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeActiveTextWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeActiveTextWithValue:expectedValueInterval:@
 writeAttributeActiveTextWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeActiveTextWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeActiveTextWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeActiveTextWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeActiveTextWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeActiveTextWithValue:expectedValueInterval:params:@
 writeAttributeActiveTextWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeActiveTextWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeActiveTextWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeActiveTextWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeDescriptionWithParams:@
 readAttributeDescriptionWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeDescriptionWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeDescriptionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDescriptionWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeDescriptionWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeDescriptionWithValue:expectedValueInterval:@
 writeAttributeDescriptionWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeDescriptionWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeDescriptionWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeDescriptionWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeDescriptionWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeDescriptionWithValue:expectedValueInterval:params:@
 writeAttributeDescriptionWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeDescriptionWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeDescriptionWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeDescriptionWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeInactiveTextWithParams:@
 readAttributeInactiveTextWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeInactiveTextWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeInactiveTextWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInactiveTextWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeInactiveTextWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeInactiveTextWithValue:expectedValueInterval:@
 writeAttributeInactiveTextWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeInactiveTextWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeInactiveTextWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeInactiveTextWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeInactiveTextWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeInactiveTextWithValue:expectedValueInterval:params:@
 writeAttributeInactiveTextWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeInactiveTextWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeInactiveTextWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeInactiveTextWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOutOfServiceWithParams:@
 readAttributeOutOfServiceWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeOutOfServiceWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeOutOfServiceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOutOfServiceWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeOutOfServiceWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOutOfServiceWithValue:expectedValueInterval:@
 writeAttributeOutOfServiceWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOutOfServiceWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeOutOfServiceWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOutOfServiceWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOutOfServiceWithValue:expectedValueInterval:params:@
 writeAttributeOutOfServiceWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOutOfServiceWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeOutOfServiceWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOutOfServiceWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributePolarityWithParams:@
 readAttributePolarityWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributePolarityWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributePolarityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePolarityWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributePolarityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePresentValueWithParams:@
 readAttributePresentValueWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributePresentValueWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributePresentValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePresentValueWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributePresentValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributePresentValueWithValue:expectedValueInterval:@
 writeAttributePresentValueWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributePresentValueWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributePresentValueWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributePresentValueWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributePresentValueWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributePresentValueWithValue:expectedValueInterval:params:@
 writeAttributePresentValueWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributePresentValueWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributePresentValueWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributePresentValueWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributePresentValueWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeReliabilityWithParams:@
 readAttributeReliabilityWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeReliabilityWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeReliabilityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeReliabilityWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeReliabilityWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeReliabilityWithValue:expectedValueInterval:@
 writeAttributeReliabilityWithValue_expectedValueInterval :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeReliabilityWithValue_expectedValueInterval mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeReliabilityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeReliabilityWithValue_expectedValueInterval mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeReliabilityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeReliabilityWithValue:expectedValueInterval:params:@
 writeAttributeReliabilityWithValue_expectedValueInterval_params :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinaryInputBasic -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeReliabilityWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "writeAttributeReliabilityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeReliabilityWithValue_expectedValueInterval_params mtrClusterBinaryInputBasic dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinaryInputBasic writeAttributeReliabilityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeStatusFlagsWithParams:@
 readAttributeStatusFlagsWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeStatusFlagsWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeStatusFlagsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStatusFlagsWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeStatusFlagsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeApplicationTypeWithParams:@
 readAttributeApplicationTypeWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeApplicationTypeWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeApplicationTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeApplicationTypeWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeApplicationTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRReadParams params) => mtrClusterBinaryInputBasic -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterBinaryInputBasic  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinaryInputBasic (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterBinaryInputBasic params =
+  sendMessage mtrClusterBinaryInputBasic readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic => mtrClusterBinaryInputBasic -> IO (Id MTRClusterBinaryInputBasic)
-init_ mtrClusterBinaryInputBasic  =
-    sendMsg mtrClusterBinaryInputBasic (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterBinaryInputBasic =
+  sendOwnedMessage mtrClusterBinaryInputBasic initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterBinaryInputBasic)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterBinaryInputBasic"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRDevice device, IsNSObject queue) => mtrClusterBinaryInputBasic -> device -> CUShort -> queue -> IO (Id MTRClusterBinaryInputBasic)
-initWithDevice_endpoint_queue mtrClusterBinaryInputBasic  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterBinaryInputBasic (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterBinaryInputBasic device endpoint queue =
+  sendOwnedMessage mtrClusterBinaryInputBasic initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterBinaryInputBasic mtrClusterBinaryInputBasic, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterBinaryInputBasic -> device -> endpointID -> queue -> IO (Id MTRClusterBinaryInputBasic)
-initWithDevice_endpointID_queue mtrClusterBinaryInputBasic  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterBinaryInputBasic (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterBinaryInputBasic device endpointID queue =
+  sendOwnedMessage mtrClusterBinaryInputBasic initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeActiveTextWithParams:@
-readAttributeActiveTextWithParamsSelector :: Selector
+readAttributeActiveTextWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveTextWithParamsSelector = mkSelector "readAttributeActiveTextWithParams:"
 
 -- | @Selector@ for @writeAttributeActiveTextWithValue:expectedValueInterval:@
-writeAttributeActiveTextWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeActiveTextWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeActiveTextWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeActiveTextWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeActiveTextWithValue:expectedValueInterval:params:@
-writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeActiveTextWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeActiveTextWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeDescriptionWithParams:@
-readAttributeDescriptionWithParamsSelector :: Selector
+readAttributeDescriptionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDescriptionWithParamsSelector = mkSelector "readAttributeDescriptionWithParams:"
 
 -- | @Selector@ for @writeAttributeDescriptionWithValue:expectedValueInterval:@
-writeAttributeDescriptionWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeDescriptionWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeDescriptionWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeDescriptionWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeDescriptionWithValue:expectedValueInterval:params:@
-writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeDescriptionWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeDescriptionWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeInactiveTextWithParams:@
-readAttributeInactiveTextWithParamsSelector :: Selector
+readAttributeInactiveTextWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInactiveTextWithParamsSelector = mkSelector "readAttributeInactiveTextWithParams:"
 
 -- | @Selector@ for @writeAttributeInactiveTextWithValue:expectedValueInterval:@
-writeAttributeInactiveTextWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeInactiveTextWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeInactiveTextWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeInactiveTextWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeInactiveTextWithValue:expectedValueInterval:params:@
-writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeInactiveTextWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeInactiveTextWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOutOfServiceWithParams:@
-readAttributeOutOfServiceWithParamsSelector :: Selector
+readAttributeOutOfServiceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOutOfServiceWithParamsSelector = mkSelector "readAttributeOutOfServiceWithParams:"
 
 -- | @Selector@ for @writeAttributeOutOfServiceWithValue:expectedValueInterval:@
-writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOutOfServiceWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOutOfServiceWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOutOfServiceWithValue:expectedValueInterval:params:@
-writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOutOfServiceWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOutOfServiceWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributePolarityWithParams:@
-readAttributePolarityWithParamsSelector :: Selector
+readAttributePolarityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePolarityWithParamsSelector = mkSelector "readAttributePolarityWithParams:"
 
 -- | @Selector@ for @readAttributePresentValueWithParams:@
-readAttributePresentValueWithParamsSelector :: Selector
+readAttributePresentValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePresentValueWithParamsSelector = mkSelector "readAttributePresentValueWithParams:"
 
 -- | @Selector@ for @writeAttributePresentValueWithValue:expectedValueInterval:@
-writeAttributePresentValueWithValue_expectedValueIntervalSelector :: Selector
+writeAttributePresentValueWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributePresentValueWithValue_expectedValueIntervalSelector = mkSelector "writeAttributePresentValueWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributePresentValueWithValue:expectedValueInterval:params:@
-writeAttributePresentValueWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributePresentValueWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributePresentValueWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributePresentValueWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeReliabilityWithParams:@
-readAttributeReliabilityWithParamsSelector :: Selector
+readAttributeReliabilityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeReliabilityWithParamsSelector = mkSelector "readAttributeReliabilityWithParams:"
 
 -- | @Selector@ for @writeAttributeReliabilityWithValue:expectedValueInterval:@
-writeAttributeReliabilityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeReliabilityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeReliabilityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeReliabilityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeReliabilityWithValue:expectedValueInterval:params:@
-writeAttributeReliabilityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeReliabilityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeReliabilityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeReliabilityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeStatusFlagsWithParams:@
-readAttributeStatusFlagsWithParamsSelector :: Selector
+readAttributeStatusFlagsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStatusFlagsWithParamsSelector = mkSelector "readAttributeStatusFlagsWithParams:"
 
 -- | @Selector@ for @readAttributeApplicationTypeWithParams:@
-readAttributeApplicationTypeWithParamsSelector :: Selector
+readAttributeApplicationTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeApplicationTypeWithParamsSelector = mkSelector "readAttributeApplicationTypeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterBinaryInputBasic)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterBinaryInputBasic)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterBinaryInputBasic)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterBinaryInputBasic)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

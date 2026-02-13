@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.BrowserEngineKit.BELayerHierarchy
   , handle
   , layer
   , setLayer
-  , initSelector
-  , newSelector
-  , layerHierarchyWithErrorSelector
-  , invalidateSelector
   , handleSelector
+  , initSelector
+  , invalidateSelector
+  , layerHierarchyWithErrorSelector
   , layerSelector
+  , newSelector
   , setLayerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO (Id BELayerHierarchy)
-init_ beLayerHierarchy  =
-    sendMsg beLayerHierarchy (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beLayerHierarchy =
+  sendOwnedMessage beLayerHierarchy initSelector
 
 -- | @+ new@
 new :: IO (Id BELayerHierarchy)
 new  =
   do
     cls' <- getRequiredClass "BELayerHierarchy"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | may fail if a connection to the render server cannot be established
 --
@@ -58,66 +55,65 @@ layerHierarchyWithError :: IsNSError error_ => error_ -> IO (Id BELayerHierarchy
 layerHierarchyWithError error_ =
   do
     cls' <- getRequiredClass "BELayerHierarchy"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "layerHierarchyWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerHierarchyWithErrorSelector (toNSError error_)
 
 -- | invalidate must be called before this layer hierarchy is disposed of
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO ()
-invalidate beLayerHierarchy  =
-    sendMsg beLayerHierarchy (mkSelector "invalidate") retVoid []
+invalidate beLayerHierarchy =
+  sendMessage beLayerHierarchy invalidateSelector
 
 -- | a reference to this @BELayerHierarchy@ for use with @BELayerHierarchyHostingView@
 --
 -- ObjC selector: @- handle@
 handle :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO (Id BELayerHierarchyHandle)
-handle beLayerHierarchy  =
-    sendMsg beLayerHierarchy (mkSelector "handle") (retPtr retVoid) [] >>= retainedObject . castPtr
+handle beLayerHierarchy =
+  sendMessage beLayerHierarchy handleSelector
 
 -- | the root layer of this hierarchy
 --
 -- ObjC selector: @- layer@
 layer :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> IO RawId
-layer beLayerHierarchy  =
-    fmap (RawId . castPtr) $ sendMsg beLayerHierarchy (mkSelector "layer") (retPtr retVoid) []
+layer beLayerHierarchy =
+  sendMessage beLayerHierarchy layerSelector
 
 -- | the root layer of this hierarchy
 --
 -- ObjC selector: @- setLayer:@
 setLayer :: IsBELayerHierarchy beLayerHierarchy => beLayerHierarchy -> RawId -> IO ()
-setLayer beLayerHierarchy  value =
-    sendMsg beLayerHierarchy (mkSelector "setLayer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLayer beLayerHierarchy value =
+  sendMessage beLayerHierarchy setLayerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BELayerHierarchy)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BELayerHierarchy)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @layerHierarchyWithError:@
-layerHierarchyWithErrorSelector :: Selector
+layerHierarchyWithErrorSelector :: Selector '[Id NSError] (Id BELayerHierarchy)
 layerHierarchyWithErrorSelector = mkSelector "layerHierarchyWithError:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @handle@
-handleSelector :: Selector
+handleSelector :: Selector '[] (Id BELayerHierarchyHandle)
 handleSelector = mkSelector "handle"
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] RawId
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @setLayer:@
-setLayerSelector :: Selector
+setLayerSelector :: Selector '[RawId] ()
 setLayerSelector = mkSelector "setLayer:"
 

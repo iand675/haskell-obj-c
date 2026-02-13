@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Foundation.NSMutableIndexSet
   , addIndexesInRange
   , removeIndexesInRange
   , shiftIndexesStartingAtIndex_by
-  , addIndexesSelector
-  , removeIndexesSelector
-  , removeAllIndexesSelector
   , addIndexSelector
-  , removeIndexSelector
   , addIndexesInRangeSelector
+  , addIndexesSelector
+  , removeAllIndexesSelector
+  , removeIndexSelector
   , removeIndexesInRangeSelector
+  , removeIndexesSelector
   , shiftIndexesStartingAtIndex_bySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,77 @@ import ObjC.Foundation.Internal.Structs
 
 -- | @- addIndexes:@
 addIndexes :: (IsNSMutableIndexSet nsMutableIndexSet, IsNSIndexSet indexSet) => nsMutableIndexSet -> indexSet -> IO ()
-addIndexes nsMutableIndexSet  indexSet =
-  withObjCPtr indexSet $ \raw_indexSet ->
-      sendMsg nsMutableIndexSet (mkSelector "addIndexes:") retVoid [argPtr (castPtr raw_indexSet :: Ptr ())]
+addIndexes nsMutableIndexSet indexSet =
+  sendMessage nsMutableIndexSet addIndexesSelector (toNSIndexSet indexSet)
 
 -- | @- removeIndexes:@
 removeIndexes :: (IsNSMutableIndexSet nsMutableIndexSet, IsNSIndexSet indexSet) => nsMutableIndexSet -> indexSet -> IO ()
-removeIndexes nsMutableIndexSet  indexSet =
-  withObjCPtr indexSet $ \raw_indexSet ->
-      sendMsg nsMutableIndexSet (mkSelector "removeIndexes:") retVoid [argPtr (castPtr raw_indexSet :: Ptr ())]
+removeIndexes nsMutableIndexSet indexSet =
+  sendMessage nsMutableIndexSet removeIndexesSelector (toNSIndexSet indexSet)
 
 -- | @- removeAllIndexes@
 removeAllIndexes :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> IO ()
-removeAllIndexes nsMutableIndexSet  =
-    sendMsg nsMutableIndexSet (mkSelector "removeAllIndexes") retVoid []
+removeAllIndexes nsMutableIndexSet =
+  sendMessage nsMutableIndexSet removeAllIndexesSelector
 
 -- | @- addIndex:@
 addIndex :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> CULong -> IO ()
-addIndex nsMutableIndexSet  value =
-    sendMsg nsMutableIndexSet (mkSelector "addIndex:") retVoid [argCULong value]
+addIndex nsMutableIndexSet value =
+  sendMessage nsMutableIndexSet addIndexSelector value
 
 -- | @- removeIndex:@
 removeIndex :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> CULong -> IO ()
-removeIndex nsMutableIndexSet  value =
-    sendMsg nsMutableIndexSet (mkSelector "removeIndex:") retVoid [argCULong value]
+removeIndex nsMutableIndexSet value =
+  sendMessage nsMutableIndexSet removeIndexSelector value
 
 -- | @- addIndexesInRange:@
 addIndexesInRange :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> NSRange -> IO ()
-addIndexesInRange nsMutableIndexSet  range =
-    sendMsg nsMutableIndexSet (mkSelector "addIndexesInRange:") retVoid [argNSRange range]
+addIndexesInRange nsMutableIndexSet range =
+  sendMessage nsMutableIndexSet addIndexesInRangeSelector range
 
 -- | @- removeIndexesInRange:@
 removeIndexesInRange :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> NSRange -> IO ()
-removeIndexesInRange nsMutableIndexSet  range =
-    sendMsg nsMutableIndexSet (mkSelector "removeIndexesInRange:") retVoid [argNSRange range]
+removeIndexesInRange nsMutableIndexSet range =
+  sendMessage nsMutableIndexSet removeIndexesInRangeSelector range
 
 -- | @- shiftIndexesStartingAtIndex:by:@
 shiftIndexesStartingAtIndex_by :: IsNSMutableIndexSet nsMutableIndexSet => nsMutableIndexSet -> CULong -> CLong -> IO ()
-shiftIndexesStartingAtIndex_by nsMutableIndexSet  index delta =
-    sendMsg nsMutableIndexSet (mkSelector "shiftIndexesStartingAtIndex:by:") retVoid [argCULong index, argCLong delta]
+shiftIndexesStartingAtIndex_by nsMutableIndexSet index delta =
+  sendMessage nsMutableIndexSet shiftIndexesStartingAtIndex_bySelector index delta
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addIndexes:@
-addIndexesSelector :: Selector
+addIndexesSelector :: Selector '[Id NSIndexSet] ()
 addIndexesSelector = mkSelector "addIndexes:"
 
 -- | @Selector@ for @removeIndexes:@
-removeIndexesSelector :: Selector
+removeIndexesSelector :: Selector '[Id NSIndexSet] ()
 removeIndexesSelector = mkSelector "removeIndexes:"
 
 -- | @Selector@ for @removeAllIndexes@
-removeAllIndexesSelector :: Selector
+removeAllIndexesSelector :: Selector '[] ()
 removeAllIndexesSelector = mkSelector "removeAllIndexes"
 
 -- | @Selector@ for @addIndex:@
-addIndexSelector :: Selector
+addIndexSelector :: Selector '[CULong] ()
 addIndexSelector = mkSelector "addIndex:"
 
 -- | @Selector@ for @removeIndex:@
-removeIndexSelector :: Selector
+removeIndexSelector :: Selector '[CULong] ()
 removeIndexSelector = mkSelector "removeIndex:"
 
 -- | @Selector@ for @addIndexesInRange:@
-addIndexesInRangeSelector :: Selector
+addIndexesInRangeSelector :: Selector '[NSRange] ()
 addIndexesInRangeSelector = mkSelector "addIndexesInRange:"
 
 -- | @Selector@ for @removeIndexesInRange:@
-removeIndexesInRangeSelector :: Selector
+removeIndexesInRangeSelector :: Selector '[NSRange] ()
 removeIndexesInRangeSelector = mkSelector "removeIndexesInRange:"
 
 -- | @Selector@ for @shiftIndexesStartingAtIndex:by:@
-shiftIndexesStartingAtIndex_bySelector :: Selector
+shiftIndexesStartingAtIndex_bySelector :: Selector '[CULong, CLong] ()
 shiftIndexesStartingAtIndex_bySelector = mkSelector "shiftIndexesStartingAtIndex:by:"
 

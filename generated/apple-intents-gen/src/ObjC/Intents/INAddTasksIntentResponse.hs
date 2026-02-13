@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.Intents.INAddTasksIntentResponse
   , setModifiedTaskList
   , addedTasks
   , setAddedTasks
+  , addedTasksSelector
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , modifiedTaskListSelector
-  , setModifiedTaskListSelector
-  , addedTasksSelector
   , setAddedTasksSelector
+  , setModifiedTaskListSelector
 
   -- * Enum types
   , INAddTasksIntentResponseCode(INAddTasksIntentResponseCode)
@@ -33,15 +34,11 @@ module ObjC.Intents.INAddTasksIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,71 +48,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINAddTasksIntentResponse inAddTasksIntentResponse => inAddTasksIntentResponse -> IO RawId
-init_ inAddTasksIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inAddTasksIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inAddTasksIntentResponse =
+  sendOwnedMessage inAddTasksIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINAddTasksIntentResponse inAddTasksIntentResponse, IsNSUserActivity userActivity) => inAddTasksIntentResponse -> INAddTasksIntentResponseCode -> userActivity -> IO (Id INAddTasksIntentResponse)
-initWithCode_userActivity inAddTasksIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inAddTasksIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inAddTasksIntentResponse code userActivity =
+  sendOwnedMessage inAddTasksIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINAddTasksIntentResponse inAddTasksIntentResponse => inAddTasksIntentResponse -> IO INAddTasksIntentResponseCode
-code inAddTasksIntentResponse  =
-    fmap (coerce :: CLong -> INAddTasksIntentResponseCode) $ sendMsg inAddTasksIntentResponse (mkSelector "code") retCLong []
+code inAddTasksIntentResponse =
+  sendMessage inAddTasksIntentResponse codeSelector
 
 -- | @- modifiedTaskList@
 modifiedTaskList :: IsINAddTasksIntentResponse inAddTasksIntentResponse => inAddTasksIntentResponse -> IO (Id INTaskList)
-modifiedTaskList inAddTasksIntentResponse  =
-    sendMsg inAddTasksIntentResponse (mkSelector "modifiedTaskList") (retPtr retVoid) [] >>= retainedObject . castPtr
+modifiedTaskList inAddTasksIntentResponse =
+  sendMessage inAddTasksIntentResponse modifiedTaskListSelector
 
 -- | @- setModifiedTaskList:@
 setModifiedTaskList :: (IsINAddTasksIntentResponse inAddTasksIntentResponse, IsINTaskList value) => inAddTasksIntentResponse -> value -> IO ()
-setModifiedTaskList inAddTasksIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inAddTasksIntentResponse (mkSelector "setModifiedTaskList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModifiedTaskList inAddTasksIntentResponse value =
+  sendMessage inAddTasksIntentResponse setModifiedTaskListSelector (toINTaskList value)
 
 -- | @- addedTasks@
 addedTasks :: IsINAddTasksIntentResponse inAddTasksIntentResponse => inAddTasksIntentResponse -> IO (Id NSArray)
-addedTasks inAddTasksIntentResponse  =
-    sendMsg inAddTasksIntentResponse (mkSelector "addedTasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedTasks inAddTasksIntentResponse =
+  sendMessage inAddTasksIntentResponse addedTasksSelector
 
 -- | @- setAddedTasks:@
 setAddedTasks :: (IsINAddTasksIntentResponse inAddTasksIntentResponse, IsNSArray value) => inAddTasksIntentResponse -> value -> IO ()
-setAddedTasks inAddTasksIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inAddTasksIntentResponse (mkSelector "setAddedTasks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAddedTasks inAddTasksIntentResponse value =
+  sendMessage inAddTasksIntentResponse setAddedTasksSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INAddTasksIntentResponseCode, Id NSUserActivity] (Id INAddTasksIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INAddTasksIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @modifiedTaskList@
-modifiedTaskListSelector :: Selector
+modifiedTaskListSelector :: Selector '[] (Id INTaskList)
 modifiedTaskListSelector = mkSelector "modifiedTaskList"
 
 -- | @Selector@ for @setModifiedTaskList:@
-setModifiedTaskListSelector :: Selector
+setModifiedTaskListSelector :: Selector '[Id INTaskList] ()
 setModifiedTaskListSelector = mkSelector "setModifiedTaskList:"
 
 -- | @Selector@ for @addedTasks@
-addedTasksSelector :: Selector
+addedTasksSelector :: Selector '[] (Id NSArray)
 addedTasksSelector = mkSelector "addedTasks"
 
 -- | @Selector@ for @setAddedTasks:@
-setAddedTasksSelector :: Selector
+setAddedTasksSelector :: Selector '[Id NSArray] ()
 setAddedTasksSelector = mkSelector "setAddedTasks:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -274,41 +275,41 @@ module ObjC.MetalPerformanceShaders.MPSRayIntersector
   , setRayIndexDataType
   , rayMask
   , setRayMask
-  , initSelector
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , recommendedMinimumRayBatchSizeForRayCountSelector
-  , encodeWithCoderSelector
-  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector
-  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector
-  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector
-  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector
-  , encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector
-  , cullModeSelector
-  , setCullModeSelector
-  , frontFacingWindingSelector
-  , setFrontFacingWindingSelector
-  , triangleIntersectionTestTypeSelector
-  , setTriangleIntersectionTestTypeSelector
   , boundingBoxIntersectionTestTypeSelector
-  , setBoundingBoxIntersectionTestTypeSelector
-  , rayMaskOptionsSelector
-  , setRayMaskOptionsSelector
-  , rayMaskOperatorSelector
-  , setRayMaskOperatorSelector
-  , rayStrideSelector
-  , setRayStrideSelector
-  , intersectionStrideSelector
-  , setIntersectionStrideSelector
-  , rayDataTypeSelector
-  , setRayDataTypeSelector
+  , copyWithZone_deviceSelector
+  , cullModeSelector
+  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector
+  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector
+  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector
+  , encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector
+  , encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector
+  , encodeWithCoderSelector
+  , frontFacingWindingSelector
+  , initSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , intersectionDataTypeSelector
-  , setIntersectionDataTypeSelector
+  , intersectionStrideSelector
+  , rayDataTypeSelector
   , rayIndexDataTypeSelector
-  , setRayIndexDataTypeSelector
+  , rayMaskOperatorSelector
+  , rayMaskOptionsSelector
   , rayMaskSelector
+  , rayStrideSelector
+  , recommendedMinimumRayBatchSizeForRayCountSelector
+  , setBoundingBoxIntersectionTestTypeSelector
+  , setCullModeSelector
+  , setFrontFacingWindingSelector
+  , setIntersectionDataTypeSelector
+  , setIntersectionStrideSelector
+  , setRayDataTypeSelector
+  , setRayIndexDataTypeSelector
+  , setRayMaskOperatorSelector
+  , setRayMaskOptionsSelector
   , setRayMaskSelector
+  , setRayStrideSelector
+  , setTriangleIntersectionTestTypeSelector
+  , triangleIntersectionTestTypeSelector
 
   -- * Enum types
   , MPSBoundingBoxIntersectionTestType(MPSBoundingBoxIntersectionTestType)
@@ -391,15 +392,11 @@ module ObjC.MetalPerformanceShaders.MPSRayIntersector
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -410,23 +407,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO (Id MPSRayIntersector)
-init_ mpsRayIntersector  =
-    sendMsg mpsRayIntersector (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsRayIntersector =
+  sendOwnedMessage mpsRayIntersector initSelector
 
 -- | Initialize the raytracer with a Metal device
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> RawId -> IO (Id MPSRayIntersector)
-initWithDevice mpsRayIntersector  device =
-    sendMsg mpsRayIntersector (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsRayIntersector device =
+  sendOwnedMessage mpsRayIntersector initWithDeviceSelector device
 
 -- | Initialize the raytracer with an NSCoder and a Metal device
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSRayIntersector mpsRayIntersector, IsNSCoder aDecoder) => mpsRayIntersector -> aDecoder -> RawId -> IO (Id MPSRayIntersector)
-initWithCoder_device mpsRayIntersector  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsRayIntersector (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsRayIntersector aDecoder device =
+  sendOwnedMessage mpsRayIntersector initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Copy the raytracer with a Metal device
 --
@@ -438,8 +434,8 @@ initWithCoder_device mpsRayIntersector  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> Ptr () -> RawId -> IO (Id MPSRayIntersector)
-copyWithZone_device mpsRayIntersector  zone device =
-    sendMsg mpsRayIntersector (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsRayIntersector zone device =
+  sendOwnedMessage mpsRayIntersector copyWithZone_deviceSelector zone device
 
 -- | Get the recommended minimum number of rays to submit for intersection in one batch
 --
@@ -451,14 +447,13 @@ copyWithZone_device mpsRayIntersector  zone device =
 --
 -- ObjC selector: @- recommendedMinimumRayBatchSizeForRayCount:@
 recommendedMinimumRayBatchSizeForRayCount :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> CULong -> IO CULong
-recommendedMinimumRayBatchSizeForRayCount mpsRayIntersector  rayCount =
-    sendMsg mpsRayIntersector (mkSelector "recommendedMinimumRayBatchSizeForRayCount:") retCULong [argCULong rayCount]
+recommendedMinimumRayBatchSizeForRayCount mpsRayIntersector rayCount =
+  sendMessage mpsRayIntersector recommendedMinimumRayBatchSizeForRayCountSelector rayCount
 
 -- | @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSRayIntersector mpsRayIntersector, IsNSCoder coder) => mpsRayIntersector -> coder -> IO ()
-encodeWithCoder mpsRayIntersector  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsRayIntersector (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder mpsRayIntersector coder =
+  sendMessage mpsRayIntersector encodeWithCoderSelector (toNSCoder coder)
 
 -- | Schedule intersection tests between rays and an acceleration structure
 --
@@ -480,9 +475,8 @@ encodeWithCoder mpsRayIntersector  coder =
 --
 -- ObjC selector: @- encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCount:accelerationStructure:@
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructure :: (IsMPSRayIntersector mpsRayIntersector, IsMPSAccelerationStructure accelerationStructure) => mpsRayIntersector -> RawId -> MPSIntersectionType -> RawId -> CULong -> RawId -> CULong -> CULong -> accelerationStructure -> IO ()
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructure mpsRayIntersector  commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCount accelerationStructure =
-  withObjCPtr accelerationStructure $ \raw_accelerationStructure ->
-      sendMsg mpsRayIntersector (mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCount:accelerationStructure:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong (coerce intersectionType), argPtr (castPtr (unRawId rayBuffer) :: Ptr ()), argCULong rayBufferOffset, argPtr (castPtr (unRawId intersectionBuffer) :: Ptr ()), argCULong intersectionBufferOffset, argCULong rayCount, argPtr (castPtr raw_accelerationStructure :: Ptr ())]
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructure mpsRayIntersector commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCount accelerationStructure =
+  sendMessage mpsRayIntersector encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCount (toMPSAccelerationStructure accelerationStructure)
 
 -- | Schedule intersection tests between rays and an acceleration structure with a ray count provided in a buffer
 --
@@ -506,9 +500,8 @@ encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_int
 --
 -- ObjC selector: @- encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCountBuffer:rayCountBufferOffset:accelerationStructure:@
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructure :: (IsMPSRayIntersector mpsRayIntersector, IsMPSAccelerationStructure accelerationStructure) => mpsRayIntersector -> RawId -> MPSIntersectionType -> RawId -> CULong -> RawId -> CULong -> RawId -> CULong -> accelerationStructure -> IO ()
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructure mpsRayIntersector  commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCountBuffer rayCountBufferOffset accelerationStructure =
-  withObjCPtr accelerationStructure $ \raw_accelerationStructure ->
-      sendMsg mpsRayIntersector (mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCountBuffer:rayCountBufferOffset:accelerationStructure:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong (coerce intersectionType), argPtr (castPtr (unRawId rayBuffer) :: Ptr ()), argCULong rayBufferOffset, argPtr (castPtr (unRawId intersectionBuffer) :: Ptr ()), argCULong intersectionBufferOffset, argPtr (castPtr (unRawId rayCountBuffer) :: Ptr ()), argCULong rayCountBufferOffset, argPtr (castPtr raw_accelerationStructure :: Ptr ())]
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructure mpsRayIntersector commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCountBuffer rayCountBufferOffset accelerationStructure =
+  sendMessage mpsRayIntersector encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector commandBuffer intersectionType rayBuffer rayBufferOffset intersectionBuffer intersectionBufferOffset rayCountBuffer rayCountBufferOffset (toMPSAccelerationStructure accelerationStructure)
 
 -- | Schedule intersection tests between rays and an acceleration structure
 --
@@ -534,9 +527,8 @@ encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_int
 --
 -- ObjC selector: @- encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCount:accelerationStructure:@
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructure :: (IsMPSRayIntersector mpsRayIntersector, IsMPSAccelerationStructure accelerationStructure) => mpsRayIntersector -> RawId -> MPSIntersectionType -> RawId -> CULong -> RawId -> CULong -> RawId -> CULong -> CULong -> accelerationStructure -> IO ()
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructure mpsRayIntersector  commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCount accelerationStructure =
-  withObjCPtr accelerationStructure $ \raw_accelerationStructure ->
-      sendMsg mpsRayIntersector (mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCount:accelerationStructure:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong (coerce intersectionType), argPtr (castPtr (unRawId rayBuffer) :: Ptr ()), argCULong rayBufferOffset, argPtr (castPtr (unRawId rayIndexBuffer) :: Ptr ()), argCULong rayIndexBufferOffset, argPtr (castPtr (unRawId intersectionBuffer) :: Ptr ()), argCULong intersectionBufferOffset, argCULong rayIndexCount, argPtr (castPtr raw_accelerationStructure :: Ptr ())]
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructure mpsRayIntersector commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCount accelerationStructure =
+  sendMessage mpsRayIntersector encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCount (toMPSAccelerationStructure accelerationStructure)
 
 -- | Schedule intersection tests between rays and an acceleration structure with a ray count provided in a buffer
 --
@@ -564,9 +556,8 @@ encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_ray
 --
 -- ObjC selector: @- encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCountBuffer:rayIndexCountBufferOffset:accelerationStructure:@
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructure :: (IsMPSRayIntersector mpsRayIntersector, IsMPSAccelerationStructure accelerationStructure) => mpsRayIntersector -> RawId -> MPSIntersectionType -> RawId -> CULong -> RawId -> CULong -> RawId -> CULong -> RawId -> CULong -> accelerationStructure -> IO ()
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructure mpsRayIntersector  commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCountBuffer rayIndexCountBufferOffset accelerationStructure =
-  withObjCPtr accelerationStructure $ \raw_accelerationStructure ->
-      sendMsg mpsRayIntersector (mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCountBuffer:rayIndexCountBufferOffset:accelerationStructure:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong (coerce intersectionType), argPtr (castPtr (unRawId rayBuffer) :: Ptr ()), argCULong rayBufferOffset, argPtr (castPtr (unRawId rayIndexBuffer) :: Ptr ()), argCULong rayIndexBufferOffset, argPtr (castPtr (unRawId intersectionBuffer) :: Ptr ()), argCULong intersectionBufferOffset, argPtr (castPtr (unRawId rayIndexCountBuffer) :: Ptr ()), argCULong rayIndexCountBufferOffset, argPtr (castPtr raw_accelerationStructure :: Ptr ())]
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructure mpsRayIntersector commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCountBuffer rayIndexCountBufferOffset accelerationStructure =
+  sendMessage mpsRayIntersector encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector commandBuffer intersectionType rayBuffer rayBufferOffset rayIndexBuffer rayIndexBufferOffset intersectionBuffer intersectionBufferOffset rayIndexCountBuffer rayIndexCountBufferOffset (toMPSAccelerationStructure accelerationStructure)
 
 -- | Schedule intersection tests between rays and an acceleration structure, where rays and loaded from a texture and intersections are stored into a texture.
 --
@@ -614,9 +605,8 @@ encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_ray
 --
 -- ObjC selector: @- encodeIntersectionToCommandBuffer:intersectionType:rayTexture:intersectionTexture:accelerationStructure:@
 encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructure :: (IsMPSRayIntersector mpsRayIntersector, IsMPSAccelerationStructure accelerationStructure) => mpsRayIntersector -> RawId -> MPSIntersectionType -> RawId -> RawId -> accelerationStructure -> IO ()
-encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructure mpsRayIntersector  commandBuffer intersectionType rayTexture intersectionTexture accelerationStructure =
-  withObjCPtr accelerationStructure $ \raw_accelerationStructure ->
-      sendMsg mpsRayIntersector (mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayTexture:intersectionTexture:accelerationStructure:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong (coerce intersectionType), argPtr (castPtr (unRawId rayTexture) :: Ptr ()), argPtr (castPtr (unRawId intersectionTexture) :: Ptr ()), argPtr (castPtr raw_accelerationStructure :: Ptr ())]
+encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructure mpsRayIntersector commandBuffer intersectionType rayTexture intersectionTexture accelerationStructure =
+  sendMessage mpsRayIntersector encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector commandBuffer intersectionType rayTexture intersectionTexture (toMPSAccelerationStructure accelerationStructure)
 
 -- | Whether to ignore intersections between rays and back-facing or front-facing triangles or quadrilaterals. Defaults to MTLCullModeNone.
 --
@@ -626,8 +616,8 @@ encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTextur
 --
 -- ObjC selector: @- cullMode@
 cullMode :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MTLCullMode
-cullMode mpsRayIntersector  =
-    fmap (coerce :: CULong -> MTLCullMode) $ sendMsg mpsRayIntersector (mkSelector "cullMode") retCULong []
+cullMode mpsRayIntersector =
+  sendMessage mpsRayIntersector cullModeSelector
 
 -- | Whether to ignore intersections between rays and back-facing or front-facing triangles or quadrilaterals. Defaults to MTLCullModeNone.
 --
@@ -637,8 +627,8 @@ cullMode mpsRayIntersector  =
 --
 -- ObjC selector: @- setCullMode:@
 setCullMode :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MTLCullMode -> IO ()
-setCullMode mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setCullMode:") retVoid [argCULong (coerce value)]
+setCullMode mpsRayIntersector value =
+  sendMessage mpsRayIntersector setCullModeSelector value
 
 -- | Winding order used to determine which direction a triangle or quadrilateral's normal points when back face or front face culling is enabled. Defaults to MTLWindingClockwise.
 --
@@ -646,8 +636,8 @@ setCullMode mpsRayIntersector  value =
 --
 -- ObjC selector: @- frontFacingWinding@
 frontFacingWinding :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MTLWinding
-frontFacingWinding mpsRayIntersector  =
-    fmap (coerce :: CULong -> MTLWinding) $ sendMsg mpsRayIntersector (mkSelector "frontFacingWinding") retCULong []
+frontFacingWinding mpsRayIntersector =
+  sendMessage mpsRayIntersector frontFacingWindingSelector
 
 -- | Winding order used to determine which direction a triangle or quadrilateral's normal points when back face or front face culling is enabled. Defaults to MTLWindingClockwise.
 --
@@ -655,36 +645,36 @@ frontFacingWinding mpsRayIntersector  =
 --
 -- ObjC selector: @- setFrontFacingWinding:@
 setFrontFacingWinding :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MTLWinding -> IO ()
-setFrontFacingWinding mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setFrontFacingWinding:") retVoid [argCULong (coerce value)]
+setFrontFacingWinding mpsRayIntersector value =
+  sendMessage mpsRayIntersector setFrontFacingWindingSelector value
 
 -- | Ray/triangle intersection test type. Defaults to MPSTriangleIntersectionTestTypeDefault. Quads are broken into two triangles for intersection testing, so this property also applies to quadrilateral intersections.
 --
 -- ObjC selector: @- triangleIntersectionTestType@
 triangleIntersectionTestType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSTriangleIntersectionTestType
-triangleIntersectionTestType mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSTriangleIntersectionTestType) $ sendMsg mpsRayIntersector (mkSelector "triangleIntersectionTestType") retCULong []
+triangleIntersectionTestType mpsRayIntersector =
+  sendMessage mpsRayIntersector triangleIntersectionTestTypeSelector
 
 -- | Ray/triangle intersection test type. Defaults to MPSTriangleIntersectionTestTypeDefault. Quads are broken into two triangles for intersection testing, so this property also applies to quadrilateral intersections.
 --
 -- ObjC selector: @- setTriangleIntersectionTestType:@
 setTriangleIntersectionTestType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSTriangleIntersectionTestType -> IO ()
-setTriangleIntersectionTestType mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setTriangleIntersectionTestType:") retVoid [argCULong (coerce value)]
+setTriangleIntersectionTestType mpsRayIntersector value =
+  sendMessage mpsRayIntersector setTriangleIntersectionTestTypeSelector value
 
 -- | Ray/bounding box intersection test type. Defaults to MPSBoundingBoxIntersectionTestTypeDefault.
 --
 -- ObjC selector: @- boundingBoxIntersectionTestType@
 boundingBoxIntersectionTestType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSBoundingBoxIntersectionTestType
-boundingBoxIntersectionTestType mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSBoundingBoxIntersectionTestType) $ sendMsg mpsRayIntersector (mkSelector "boundingBoxIntersectionTestType") retCULong []
+boundingBoxIntersectionTestType mpsRayIntersector =
+  sendMessage mpsRayIntersector boundingBoxIntersectionTestTypeSelector
 
 -- | Ray/bounding box intersection test type. Defaults to MPSBoundingBoxIntersectionTestTypeDefault.
 --
 -- ObjC selector: @- setBoundingBoxIntersectionTestType:@
 setBoundingBoxIntersectionTestType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSBoundingBoxIntersectionTestType -> IO ()
-setBoundingBoxIntersectionTestType mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setBoundingBoxIntersectionTestType:") retVoid [argCULong (coerce value)]
+setBoundingBoxIntersectionTestType mpsRayIntersector value =
+  sendMessage mpsRayIntersector setBoundingBoxIntersectionTestTypeSelector value
 
 -- | Whether to enable primitive and instance masks. Defaults to MPSRayMaskOptionNone.
 --
@@ -696,8 +686,8 @@ setBoundingBoxIntersectionTestType mpsRayIntersector  value =
 --
 -- ObjC selector: @- rayMaskOptions@
 rayMaskOptions :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSRayMaskOptions
-rayMaskOptions mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSRayMaskOptions) $ sendMsg mpsRayIntersector (mkSelector "rayMaskOptions") retCULong []
+rayMaskOptions mpsRayIntersector =
+  sendMessage mpsRayIntersector rayMaskOptionsSelector
 
 -- | Whether to enable primitive and instance masks. Defaults to MPSRayMaskOptionNone.
 --
@@ -709,22 +699,22 @@ rayMaskOptions mpsRayIntersector  =
 --
 -- ObjC selector: @- setRayMaskOptions:@
 setRayMaskOptions :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSRayMaskOptions -> IO ()
-setRayMaskOptions mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayMaskOptions:") retVoid [argCULong (coerce value)]
+setRayMaskOptions mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayMaskOptionsSelector value
 
 -- | The operator to apply to determine whether to accept an intersection between a ray and a primitive or instance. Defaults to MPSRayMaskOperatorAnd.
 --
 -- ObjC selector: @- rayMaskOperator@
 rayMaskOperator :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSRayMaskOperator
-rayMaskOperator mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSRayMaskOperator) $ sendMsg mpsRayIntersector (mkSelector "rayMaskOperator") retCULong []
+rayMaskOperator mpsRayIntersector =
+  sendMessage mpsRayIntersector rayMaskOperatorSelector
 
 -- | The operator to apply to determine whether to accept an intersection between a ray and a primitive or instance. Defaults to MPSRayMaskOperatorAnd.
 --
 -- ObjC selector: @- setRayMaskOperator:@
 setRayMaskOperator :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSRayMaskOperator -> IO ()
-setRayMaskOperator mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayMaskOperator:") retVoid [argCULong (coerce value)]
+setRayMaskOperator mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayMaskOperatorSelector value
 
 -- | Offset, in bytes, between consecutive rays in the ray buffer. Defaults to 0, indicating that the rays are packed according to their natural aligned size.
 --
@@ -732,8 +722,8 @@ setRayMaskOperator mpsRayIntersector  value =
 --
 -- ObjC selector: @- rayStride@
 rayStride :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO CULong
-rayStride mpsRayIntersector  =
-    sendMsg mpsRayIntersector (mkSelector "rayStride") retCULong []
+rayStride mpsRayIntersector =
+  sendMessage mpsRayIntersector rayStrideSelector
 
 -- | Offset, in bytes, between consecutive rays in the ray buffer. Defaults to 0, indicating that the rays are packed according to their natural aligned size.
 --
@@ -741,8 +731,8 @@ rayStride mpsRayIntersector  =
 --
 -- ObjC selector: @- setRayStride:@
 setRayStride :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> CULong -> IO ()
-setRayStride mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayStride:") retVoid [argCULong value]
+setRayStride mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayStrideSelector value
 
 -- | Offset, in bytes, between consecutive intersections in the intersection buffer. Defaults to 0, indicating that the intersections are packed according to their natural aligned size.
 --
@@ -750,8 +740,8 @@ setRayStride mpsRayIntersector  value =
 --
 -- ObjC selector: @- intersectionStride@
 intersectionStride :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO CULong
-intersectionStride mpsRayIntersector  =
-    sendMsg mpsRayIntersector (mkSelector "intersectionStride") retCULong []
+intersectionStride mpsRayIntersector =
+  sendMessage mpsRayIntersector intersectionStrideSelector
 
 -- | Offset, in bytes, between consecutive intersections in the intersection buffer. Defaults to 0, indicating that the intersections are packed according to their natural aligned size.
 --
@@ -759,206 +749,206 @@ intersectionStride mpsRayIntersector  =
 --
 -- ObjC selector: @- setIntersectionStride:@
 setIntersectionStride :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> CULong -> IO ()
-setIntersectionStride mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setIntersectionStride:") retVoid [argCULong value]
+setIntersectionStride mpsRayIntersector value =
+  sendMessage mpsRayIntersector setIntersectionStrideSelector value
 
 -- | Ray data type. Defaults to MPSRayDataTypeOriginDirection.
 --
 -- ObjC selector: @- rayDataType@
 rayDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSRayDataType
-rayDataType mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSRayDataType) $ sendMsg mpsRayIntersector (mkSelector "rayDataType") retCULong []
+rayDataType mpsRayIntersector =
+  sendMessage mpsRayIntersector rayDataTypeSelector
 
 -- | Ray data type. Defaults to MPSRayDataTypeOriginDirection.
 --
 -- ObjC selector: @- setRayDataType:@
 setRayDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSRayDataType -> IO ()
-setRayDataType mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayDataType:") retVoid [argCULong (coerce value)]
+setRayDataType mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayDataTypeSelector value
 
 -- | Intersection data type. Defaults to MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates.
 --
 -- ObjC selector: @- intersectionDataType@
 intersectionDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSIntersectionDataType
-intersectionDataType mpsRayIntersector  =
-    fmap (coerce :: CULong -> MPSIntersectionDataType) $ sendMsg mpsRayIntersector (mkSelector "intersectionDataType") retCULong []
+intersectionDataType mpsRayIntersector =
+  sendMessage mpsRayIntersector intersectionDataTypeSelector
 
 -- | Intersection data type. Defaults to MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates.
 --
 -- ObjC selector: @- setIntersectionDataType:@
 setIntersectionDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSIntersectionDataType -> IO ()
-setIntersectionDataType mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setIntersectionDataType:") retVoid [argCULong (coerce value)]
+setIntersectionDataType mpsRayIntersector value =
+  sendMessage mpsRayIntersector setIntersectionDataTypeSelector value
 
 -- | Ray index data type. Defaults to MPSDataTypeUInt32. Only MPSDataTypeUInt16 and MPSDataTypeUInt32 are supported.
 --
 -- ObjC selector: @- rayIndexDataType@
 rayIndexDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO MPSDataType
-rayIndexDataType mpsRayIntersector  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsRayIntersector (mkSelector "rayIndexDataType") retCUInt []
+rayIndexDataType mpsRayIntersector =
+  sendMessage mpsRayIntersector rayIndexDataTypeSelector
 
 -- | Ray index data type. Defaults to MPSDataTypeUInt32. Only MPSDataTypeUInt16 and MPSDataTypeUInt32 are supported.
 --
 -- ObjC selector: @- setRayIndexDataType:@
 setRayIndexDataType :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> MPSDataType -> IO ()
-setRayIndexDataType mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayIndexDataType:") retVoid [argCUInt (coerce value)]
+setRayIndexDataType mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayIndexDataTypeSelector value
 
 -- | Global ray mask. Defaults to 0xFFFFFFFF. This value will be logically AND-ed with the per-ray mask if the ray data type contains a mask.
 --
 -- ObjC selector: @- rayMask@
 rayMask :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> IO CUInt
-rayMask mpsRayIntersector  =
-    sendMsg mpsRayIntersector (mkSelector "rayMask") retCUInt []
+rayMask mpsRayIntersector =
+  sendMessage mpsRayIntersector rayMaskSelector
 
 -- | Global ray mask. Defaults to 0xFFFFFFFF. This value will be logically AND-ed with the per-ray mask if the ray data type contains a mask.
 --
 -- ObjC selector: @- setRayMask:@
 setRayMask :: IsMPSRayIntersector mpsRayIntersector => mpsRayIntersector -> CUInt -> IO ()
-setRayMask mpsRayIntersector  value =
-    sendMsg mpsRayIntersector (mkSelector "setRayMask:") retVoid [argCUInt value]
+setRayMask mpsRayIntersector value =
+  sendMessage mpsRayIntersector setRayMaskSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSRayIntersector)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSRayIntersector)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSRayIntersector)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSRayIntersector)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @recommendedMinimumRayBatchSizeForRayCount:@
-recommendedMinimumRayBatchSizeForRayCountSelector :: Selector
+recommendedMinimumRayBatchSizeForRayCountSelector :: Selector '[CULong] CULong
 recommendedMinimumRayBatchSizeForRayCountSelector = mkSelector "recommendedMinimumRayBatchSizeForRayCount:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCount:accelerationStructure:@
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector :: Selector
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector :: Selector '[RawId, MPSIntersectionType, RawId, CULong, RawId, CULong, CULong, Id MPSAccelerationStructure] ()
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCount_accelerationStructureSelector = mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCount:accelerationStructure:"
 
 -- | @Selector@ for @encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCountBuffer:rayCountBufferOffset:accelerationStructure:@
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector :: Selector
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector :: Selector '[RawId, MPSIntersectionType, RawId, CULong, RawId, CULong, RawId, CULong, Id MPSAccelerationStructure] ()
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_intersectionBuffer_intersectionBufferOffset_rayCountBuffer_rayCountBufferOffset_accelerationStructureSelector = mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:intersectionBuffer:intersectionBufferOffset:rayCountBuffer:rayCountBufferOffset:accelerationStructure:"
 
 -- | @Selector@ for @encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCount:accelerationStructure:@
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector :: Selector
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector :: Selector '[RawId, MPSIntersectionType, RawId, CULong, RawId, CULong, RawId, CULong, CULong, Id MPSAccelerationStructure] ()
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCount_accelerationStructureSelector = mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCount:accelerationStructure:"
 
 -- | @Selector@ for @encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCountBuffer:rayIndexCountBufferOffset:accelerationStructure:@
-encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector :: Selector
+encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector :: Selector '[RawId, MPSIntersectionType, RawId, CULong, RawId, CULong, RawId, CULong, RawId, CULong, Id MPSAccelerationStructure] ()
 encodeIntersectionToCommandBuffer_intersectionType_rayBuffer_rayBufferOffset_rayIndexBuffer_rayIndexBufferOffset_intersectionBuffer_intersectionBufferOffset_rayIndexCountBuffer_rayIndexCountBufferOffset_accelerationStructureSelector = mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayBuffer:rayBufferOffset:rayIndexBuffer:rayIndexBufferOffset:intersectionBuffer:intersectionBufferOffset:rayIndexCountBuffer:rayIndexCountBufferOffset:accelerationStructure:"
 
 -- | @Selector@ for @encodeIntersectionToCommandBuffer:intersectionType:rayTexture:intersectionTexture:accelerationStructure:@
-encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector :: Selector
+encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector :: Selector '[RawId, MPSIntersectionType, RawId, RawId, Id MPSAccelerationStructure] ()
 encodeIntersectionToCommandBuffer_intersectionType_rayTexture_intersectionTexture_accelerationStructureSelector = mkSelector "encodeIntersectionToCommandBuffer:intersectionType:rayTexture:intersectionTexture:accelerationStructure:"
 
 -- | @Selector@ for @cullMode@
-cullModeSelector :: Selector
+cullModeSelector :: Selector '[] MTLCullMode
 cullModeSelector = mkSelector "cullMode"
 
 -- | @Selector@ for @setCullMode:@
-setCullModeSelector :: Selector
+setCullModeSelector :: Selector '[MTLCullMode] ()
 setCullModeSelector = mkSelector "setCullMode:"
 
 -- | @Selector@ for @frontFacingWinding@
-frontFacingWindingSelector :: Selector
+frontFacingWindingSelector :: Selector '[] MTLWinding
 frontFacingWindingSelector = mkSelector "frontFacingWinding"
 
 -- | @Selector@ for @setFrontFacingWinding:@
-setFrontFacingWindingSelector :: Selector
+setFrontFacingWindingSelector :: Selector '[MTLWinding] ()
 setFrontFacingWindingSelector = mkSelector "setFrontFacingWinding:"
 
 -- | @Selector@ for @triangleIntersectionTestType@
-triangleIntersectionTestTypeSelector :: Selector
+triangleIntersectionTestTypeSelector :: Selector '[] MPSTriangleIntersectionTestType
 triangleIntersectionTestTypeSelector = mkSelector "triangleIntersectionTestType"
 
 -- | @Selector@ for @setTriangleIntersectionTestType:@
-setTriangleIntersectionTestTypeSelector :: Selector
+setTriangleIntersectionTestTypeSelector :: Selector '[MPSTriangleIntersectionTestType] ()
 setTriangleIntersectionTestTypeSelector = mkSelector "setTriangleIntersectionTestType:"
 
 -- | @Selector@ for @boundingBoxIntersectionTestType@
-boundingBoxIntersectionTestTypeSelector :: Selector
+boundingBoxIntersectionTestTypeSelector :: Selector '[] MPSBoundingBoxIntersectionTestType
 boundingBoxIntersectionTestTypeSelector = mkSelector "boundingBoxIntersectionTestType"
 
 -- | @Selector@ for @setBoundingBoxIntersectionTestType:@
-setBoundingBoxIntersectionTestTypeSelector :: Selector
+setBoundingBoxIntersectionTestTypeSelector :: Selector '[MPSBoundingBoxIntersectionTestType] ()
 setBoundingBoxIntersectionTestTypeSelector = mkSelector "setBoundingBoxIntersectionTestType:"
 
 -- | @Selector@ for @rayMaskOptions@
-rayMaskOptionsSelector :: Selector
+rayMaskOptionsSelector :: Selector '[] MPSRayMaskOptions
 rayMaskOptionsSelector = mkSelector "rayMaskOptions"
 
 -- | @Selector@ for @setRayMaskOptions:@
-setRayMaskOptionsSelector :: Selector
+setRayMaskOptionsSelector :: Selector '[MPSRayMaskOptions] ()
 setRayMaskOptionsSelector = mkSelector "setRayMaskOptions:"
 
 -- | @Selector@ for @rayMaskOperator@
-rayMaskOperatorSelector :: Selector
+rayMaskOperatorSelector :: Selector '[] MPSRayMaskOperator
 rayMaskOperatorSelector = mkSelector "rayMaskOperator"
 
 -- | @Selector@ for @setRayMaskOperator:@
-setRayMaskOperatorSelector :: Selector
+setRayMaskOperatorSelector :: Selector '[MPSRayMaskOperator] ()
 setRayMaskOperatorSelector = mkSelector "setRayMaskOperator:"
 
 -- | @Selector@ for @rayStride@
-rayStrideSelector :: Selector
+rayStrideSelector :: Selector '[] CULong
 rayStrideSelector = mkSelector "rayStride"
 
 -- | @Selector@ for @setRayStride:@
-setRayStrideSelector :: Selector
+setRayStrideSelector :: Selector '[CULong] ()
 setRayStrideSelector = mkSelector "setRayStride:"
 
 -- | @Selector@ for @intersectionStride@
-intersectionStrideSelector :: Selector
+intersectionStrideSelector :: Selector '[] CULong
 intersectionStrideSelector = mkSelector "intersectionStride"
 
 -- | @Selector@ for @setIntersectionStride:@
-setIntersectionStrideSelector :: Selector
+setIntersectionStrideSelector :: Selector '[CULong] ()
 setIntersectionStrideSelector = mkSelector "setIntersectionStride:"
 
 -- | @Selector@ for @rayDataType@
-rayDataTypeSelector :: Selector
+rayDataTypeSelector :: Selector '[] MPSRayDataType
 rayDataTypeSelector = mkSelector "rayDataType"
 
 -- | @Selector@ for @setRayDataType:@
-setRayDataTypeSelector :: Selector
+setRayDataTypeSelector :: Selector '[MPSRayDataType] ()
 setRayDataTypeSelector = mkSelector "setRayDataType:"
 
 -- | @Selector@ for @intersectionDataType@
-intersectionDataTypeSelector :: Selector
+intersectionDataTypeSelector :: Selector '[] MPSIntersectionDataType
 intersectionDataTypeSelector = mkSelector "intersectionDataType"
 
 -- | @Selector@ for @setIntersectionDataType:@
-setIntersectionDataTypeSelector :: Selector
+setIntersectionDataTypeSelector :: Selector '[MPSIntersectionDataType] ()
 setIntersectionDataTypeSelector = mkSelector "setIntersectionDataType:"
 
 -- | @Selector@ for @rayIndexDataType@
-rayIndexDataTypeSelector :: Selector
+rayIndexDataTypeSelector :: Selector '[] MPSDataType
 rayIndexDataTypeSelector = mkSelector "rayIndexDataType"
 
 -- | @Selector@ for @setRayIndexDataType:@
-setRayIndexDataTypeSelector :: Selector
+setRayIndexDataTypeSelector :: Selector '[MPSDataType] ()
 setRayIndexDataTypeSelector = mkSelector "setRayIndexDataType:"
 
 -- | @Selector@ for @rayMask@
-rayMaskSelector :: Selector
+rayMaskSelector :: Selector '[] CUInt
 rayMaskSelector = mkSelector "rayMask"
 
 -- | @Selector@ for @setRayMask:@
-setRayMaskSelector :: Selector
+setRayMaskSelector :: Selector '[CUInt] ()
 setRayMaskSelector = mkSelector "setRayMask:"
 

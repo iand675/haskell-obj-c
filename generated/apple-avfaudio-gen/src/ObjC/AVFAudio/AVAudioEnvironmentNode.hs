@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,23 +37,23 @@ module ObjC.AVFAudio.AVAudioEnvironmentNode
   , applicableRenderingAlgorithms
   , listenerHeadTrackingEnabled
   , setListenerHeadTrackingEnabled
-  , initSelector
-  , outputTypeSelector
-  , setOutputTypeSelector
-  , outputVolumeSelector
-  , setOutputVolumeSelector
-  , nextAvailableInputBusSelector
-  , listenerPositionSelector
-  , setListenerPositionSelector
-  , listenerVectorOrientationSelector
-  , setListenerVectorOrientationSelector
-  , listenerAngularOrientationSelector
-  , setListenerAngularOrientationSelector
-  , distanceAttenuationParametersSelector
-  , reverbParametersSelector
   , applicableRenderingAlgorithmsSelector
+  , distanceAttenuationParametersSelector
+  , initSelector
+  , listenerAngularOrientationSelector
   , listenerHeadTrackingEnabledSelector
+  , listenerPositionSelector
+  , listenerVectorOrientationSelector
+  , nextAvailableInputBusSelector
+  , outputTypeSelector
+  , outputVolumeSelector
+  , reverbParametersSelector
+  , setListenerAngularOrientationSelector
   , setListenerHeadTrackingEnabledSelector
+  , setListenerPositionSelector
+  , setListenerVectorOrientationSelector
+  , setOutputTypeSelector
+  , setOutputVolumeSelector
 
   -- * Enum types
   , AVAudioEnvironmentOutputType(AVAudioEnvironmentOutputType)
@@ -63,15 +64,11 @@ module ObjC.AVFAudio.AVAudioEnvironmentNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,8 +79,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO (Id AVAudioEnvironmentNode)
-init_ avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioEnvironmentNode =
+  sendOwnedMessage avAudioEnvironmentNode initSelector
 
 -- | outputType
 --
@@ -97,8 +94,8 @@ init_ avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- outputType@
 outputType :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO AVAudioEnvironmentOutputType
-outputType avAudioEnvironmentNode  =
-    fmap (coerce :: CLong -> AVAudioEnvironmentOutputType) $ sendMsg avAudioEnvironmentNode (mkSelector "outputType") retCLong []
+outputType avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode outputTypeSelector
 
 -- | outputType
 --
@@ -112,8 +109,8 @@ outputType avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setOutputType:@
 setOutputType :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> AVAudioEnvironmentOutputType -> IO ()
-setOutputType avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setOutputType:") retVoid [argCLong (coerce value)]
+setOutputType avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setOutputTypeSelector value
 
 -- | outputVolume
 --
@@ -123,8 +120,8 @@ setOutputType avAudioEnvironmentNode  value =
 --
 -- ObjC selector: @- outputVolume@
 outputVolume :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO CFloat
-outputVolume avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "outputVolume") retCFloat []
+outputVolume avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode outputVolumeSelector
 
 -- | outputVolume
 --
@@ -134,8 +131,8 @@ outputVolume avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setOutputVolume:@
 setOutputVolume :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> CFloat -> IO ()
-setOutputVolume avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setOutputVolume:") retVoid [argCFloat value]
+setOutputVolume avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setOutputVolumeSelector value
 
 -- | nextAvailableInputBus
 --
@@ -145,8 +142,8 @@ setOutputVolume avAudioEnvironmentNode  value =
 --
 -- ObjC selector: @- nextAvailableInputBus@
 nextAvailableInputBus :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO CULong
-nextAvailableInputBus avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "nextAvailableInputBus") retCULong []
+nextAvailableInputBus avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode nextAvailableInputBusSelector
 
 -- | listenerPosition
 --
@@ -156,8 +153,8 @@ nextAvailableInputBus avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- listenerPosition@
 listenerPosition :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO AVAudio3DPoint
-listenerPosition avAudioEnvironmentNode  =
-    sendMsgStret avAudioEnvironmentNode (mkSelector "listenerPosition") retAVAudio3DPoint []
+listenerPosition avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode listenerPositionSelector
 
 -- | listenerPosition
 --
@@ -167,8 +164,8 @@ listenerPosition avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setListenerPosition:@
 setListenerPosition :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> AVAudio3DPoint -> IO ()
-setListenerPosition avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setListenerPosition:") retVoid [argAVAudio3DPoint value]
+setListenerPosition avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setListenerPositionSelector value
 
 -- | listenerVectorOrientation
 --
@@ -178,8 +175,8 @@ setListenerPosition avAudioEnvironmentNode  value =
 --
 -- ObjC selector: @- listenerVectorOrientation@
 listenerVectorOrientation :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO AVAudio3DVectorOrientation
-listenerVectorOrientation avAudioEnvironmentNode  =
-    sendMsgStret avAudioEnvironmentNode (mkSelector "listenerVectorOrientation") retAVAudio3DVectorOrientation []
+listenerVectorOrientation avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode listenerVectorOrientationSelector
 
 -- | listenerVectorOrientation
 --
@@ -189,8 +186,8 @@ listenerVectorOrientation avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setListenerVectorOrientation:@
 setListenerVectorOrientation :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> AVAudio3DVectorOrientation -> IO ()
-setListenerVectorOrientation avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setListenerVectorOrientation:") retVoid [argAVAudio3DVectorOrientation value]
+setListenerVectorOrientation avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setListenerVectorOrientationSelector value
 
 -- | listenerAngularOrientation
 --
@@ -200,8 +197,8 @@ setListenerVectorOrientation avAudioEnvironmentNode  value =
 --
 -- ObjC selector: @- listenerAngularOrientation@
 listenerAngularOrientation :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO AVAudio3DAngularOrientation
-listenerAngularOrientation avAudioEnvironmentNode  =
-    sendMsgStret avAudioEnvironmentNode (mkSelector "listenerAngularOrientation") retAVAudio3DAngularOrientation []
+listenerAngularOrientation avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode listenerAngularOrientationSelector
 
 -- | listenerAngularOrientation
 --
@@ -211,8 +208,8 @@ listenerAngularOrientation avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setListenerAngularOrientation:@
 setListenerAngularOrientation :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> AVAudio3DAngularOrientation -> IO ()
-setListenerAngularOrientation avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setListenerAngularOrientation:") retVoid [argAVAudio3DAngularOrientation value]
+setListenerAngularOrientation avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setListenerAngularOrientationSelector value
 
 -- | distanceAttenuationParameters
 --
@@ -220,8 +217,8 @@ setListenerAngularOrientation avAudioEnvironmentNode  value =
 --
 -- ObjC selector: @- distanceAttenuationParameters@
 distanceAttenuationParameters :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO (Id AVAudioEnvironmentDistanceAttenuationParameters)
-distanceAttenuationParameters avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "distanceAttenuationParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+distanceAttenuationParameters avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode distanceAttenuationParametersSelector
 
 -- | reverbParameters
 --
@@ -229,8 +226,8 @@ distanceAttenuationParameters avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- reverbParameters@
 reverbParameters :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO (Id AVAudioEnvironmentReverbParameters)
-reverbParameters avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "reverbParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+reverbParameters avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode reverbParametersSelector
 
 -- | applicableRenderingAlgorithms
 --
@@ -244,8 +241,8 @@ reverbParameters avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- applicableRenderingAlgorithms@
 applicableRenderingAlgorithms :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO (Id NSArray)
-applicableRenderingAlgorithms avAudioEnvironmentNode  =
-    sendMsg avAudioEnvironmentNode (mkSelector "applicableRenderingAlgorithms") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicableRenderingAlgorithms avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode applicableRenderingAlgorithmsSelector
 
 -- | listenerHeadTrackingEnabled
 --
@@ -253,8 +250,8 @@ applicableRenderingAlgorithms avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- listenerHeadTrackingEnabled@
 listenerHeadTrackingEnabled :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> IO Bool
-listenerHeadTrackingEnabled avAudioEnvironmentNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEnvironmentNode (mkSelector "listenerHeadTrackingEnabled") retCULong []
+listenerHeadTrackingEnabled avAudioEnvironmentNode =
+  sendMessage avAudioEnvironmentNode listenerHeadTrackingEnabledSelector
 
 -- | listenerHeadTrackingEnabled
 --
@@ -262,78 +259,78 @@ listenerHeadTrackingEnabled avAudioEnvironmentNode  =
 --
 -- ObjC selector: @- setListenerHeadTrackingEnabled:@
 setListenerHeadTrackingEnabled :: IsAVAudioEnvironmentNode avAudioEnvironmentNode => avAudioEnvironmentNode -> Bool -> IO ()
-setListenerHeadTrackingEnabled avAudioEnvironmentNode  value =
-    sendMsg avAudioEnvironmentNode (mkSelector "setListenerHeadTrackingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setListenerHeadTrackingEnabled avAudioEnvironmentNode value =
+  sendMessage avAudioEnvironmentNode setListenerHeadTrackingEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioEnvironmentNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @outputType@
-outputTypeSelector :: Selector
+outputTypeSelector :: Selector '[] AVAudioEnvironmentOutputType
 outputTypeSelector = mkSelector "outputType"
 
 -- | @Selector@ for @setOutputType:@
-setOutputTypeSelector :: Selector
+setOutputTypeSelector :: Selector '[AVAudioEnvironmentOutputType] ()
 setOutputTypeSelector = mkSelector "setOutputType:"
 
 -- | @Selector@ for @outputVolume@
-outputVolumeSelector :: Selector
+outputVolumeSelector :: Selector '[] CFloat
 outputVolumeSelector = mkSelector "outputVolume"
 
 -- | @Selector@ for @setOutputVolume:@
-setOutputVolumeSelector :: Selector
+setOutputVolumeSelector :: Selector '[CFloat] ()
 setOutputVolumeSelector = mkSelector "setOutputVolume:"
 
 -- | @Selector@ for @nextAvailableInputBus@
-nextAvailableInputBusSelector :: Selector
+nextAvailableInputBusSelector :: Selector '[] CULong
 nextAvailableInputBusSelector = mkSelector "nextAvailableInputBus"
 
 -- | @Selector@ for @listenerPosition@
-listenerPositionSelector :: Selector
+listenerPositionSelector :: Selector '[] AVAudio3DPoint
 listenerPositionSelector = mkSelector "listenerPosition"
 
 -- | @Selector@ for @setListenerPosition:@
-setListenerPositionSelector :: Selector
+setListenerPositionSelector :: Selector '[AVAudio3DPoint] ()
 setListenerPositionSelector = mkSelector "setListenerPosition:"
 
 -- | @Selector@ for @listenerVectorOrientation@
-listenerVectorOrientationSelector :: Selector
+listenerVectorOrientationSelector :: Selector '[] AVAudio3DVectorOrientation
 listenerVectorOrientationSelector = mkSelector "listenerVectorOrientation"
 
 -- | @Selector@ for @setListenerVectorOrientation:@
-setListenerVectorOrientationSelector :: Selector
+setListenerVectorOrientationSelector :: Selector '[AVAudio3DVectorOrientation] ()
 setListenerVectorOrientationSelector = mkSelector "setListenerVectorOrientation:"
 
 -- | @Selector@ for @listenerAngularOrientation@
-listenerAngularOrientationSelector :: Selector
+listenerAngularOrientationSelector :: Selector '[] AVAudio3DAngularOrientation
 listenerAngularOrientationSelector = mkSelector "listenerAngularOrientation"
 
 -- | @Selector@ for @setListenerAngularOrientation:@
-setListenerAngularOrientationSelector :: Selector
+setListenerAngularOrientationSelector :: Selector '[AVAudio3DAngularOrientation] ()
 setListenerAngularOrientationSelector = mkSelector "setListenerAngularOrientation:"
 
 -- | @Selector@ for @distanceAttenuationParameters@
-distanceAttenuationParametersSelector :: Selector
+distanceAttenuationParametersSelector :: Selector '[] (Id AVAudioEnvironmentDistanceAttenuationParameters)
 distanceAttenuationParametersSelector = mkSelector "distanceAttenuationParameters"
 
 -- | @Selector@ for @reverbParameters@
-reverbParametersSelector :: Selector
+reverbParametersSelector :: Selector '[] (Id AVAudioEnvironmentReverbParameters)
 reverbParametersSelector = mkSelector "reverbParameters"
 
 -- | @Selector@ for @applicableRenderingAlgorithms@
-applicableRenderingAlgorithmsSelector :: Selector
+applicableRenderingAlgorithmsSelector :: Selector '[] (Id NSArray)
 applicableRenderingAlgorithmsSelector = mkSelector "applicableRenderingAlgorithms"
 
 -- | @Selector@ for @listenerHeadTrackingEnabled@
-listenerHeadTrackingEnabledSelector :: Selector
+listenerHeadTrackingEnabledSelector :: Selector '[] Bool
 listenerHeadTrackingEnabledSelector = mkSelector "listenerHeadTrackingEnabled"
 
 -- | @Selector@ for @setListenerHeadTrackingEnabled:@
-setListenerHeadTrackingEnabledSelector :: Selector
+setListenerHeadTrackingEnabledSelector :: Selector '[Bool] ()
 setListenerHeadTrackingEnabledSelector = mkSelector "setListenerHeadTrackingEnabled:"
 

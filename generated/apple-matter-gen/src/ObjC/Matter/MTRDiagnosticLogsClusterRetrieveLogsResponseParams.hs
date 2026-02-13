@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Matter.MTRDiagnosticLogsClusterRetrieveLogsResponseParams
   , setContent
   , timeStamp
   , setTimeStamp
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
-  , logContentSelector
-  , setLogContentSelector
-  , utcTimeStampSelector
-  , setUtcTimeStampSelector
-  , timeSinceBootSelector
-  , setTimeSinceBootSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , contentSelector
+  , initWithResponseValue_errorSelector
+  , logContentSelector
   , setContentSelector
-  , timeStampSelector
+  , setLogContentSelector
+  , setStatusSelector
+  , setTimeSinceBootSelector
   , setTimeStampSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setUtcTimeStampSelector
+  , statusSelector
+  , timeSinceBootSelector
+  , timeStampSelector
+  , timedInvokeTimeoutMsSelector
+  , utcTimeStampSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,54 +60,48 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> responseValue -> error_ -> IO (Id MTRDiagnosticLogsClusterRetrieveLogsResponseParams)
-initWithResponseValue_error mtrDiagnosticLogsClusterRetrieveLogsResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrDiagnosticLogsClusterRetrieveLogsResponseParams responseValue error_ =
+  sendOwnedMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSNumber)
-status mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSNumber value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setStatus mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- logContent@
 logContent :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSData)
-logContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "logContent") (retPtr retVoid) [] >>= retainedObject . castPtr
+logContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams logContentSelector
 
 -- | @- setLogContent:@
 setLogContent :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSData value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setLogContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setLogContent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLogContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setLogContentSelector (toNSData value)
 
 -- | @- utcTimeStamp@
 utcTimeStamp :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSNumber)
-utcTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "utcTimeStamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+utcTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams utcTimeStampSelector
 
 -- | @- setUtcTimeStamp:@
 setUtcTimeStamp :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSNumber value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setUtcTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setUtcTimeStamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUtcTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setUtcTimeStampSelector (toNSNumber value)
 
 -- | @- timeSinceBoot@
 timeSinceBoot :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSNumber)
-timeSinceBoot mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "timeSinceBoot") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeSinceBoot mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams timeSinceBootSelector
 
 -- | @- setTimeSinceBoot:@
 setTimeSinceBoot :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSNumber value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setTimeSinceBoot mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setTimeSinceBoot:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeSinceBoot mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setTimeSinceBootSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -120,8 +111,8 @@ setTimeSinceBoot mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -131,93 +122,90 @@ timedInvokeTimeoutMs mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSNumber value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | @- content@
 content :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSData)
-content mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams contentSelector
 
 -- | @- setContent:@
 setContent :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSData value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setContent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContent mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setContentSelector (toNSData value)
 
 -- | @- timeStamp@
 timeStamp :: IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> IO (Id NSNumber)
-timeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams  =
-    sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "timeStamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams timeStampSelector
 
 -- | @- setTimeStamp:@
 setTimeStamp :: (IsMTRDiagnosticLogsClusterRetrieveLogsResponseParams mtrDiagnosticLogsClusterRetrieveLogsResponseParams, IsNSNumber value) => mtrDiagnosticLogsClusterRetrieveLogsResponseParams -> value -> IO ()
-setTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDiagnosticLogsClusterRetrieveLogsResponseParams (mkSelector "setTimeStamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeStamp mtrDiagnosticLogsClusterRetrieveLogsResponseParams value =
+  sendMessage mtrDiagnosticLogsClusterRetrieveLogsResponseParams setTimeStampSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRDiagnosticLogsClusterRetrieveLogsResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @logContent@
-logContentSelector :: Selector
+logContentSelector :: Selector '[] (Id NSData)
 logContentSelector = mkSelector "logContent"
 
 -- | @Selector@ for @setLogContent:@
-setLogContentSelector :: Selector
+setLogContentSelector :: Selector '[Id NSData] ()
 setLogContentSelector = mkSelector "setLogContent:"
 
 -- | @Selector@ for @utcTimeStamp@
-utcTimeStampSelector :: Selector
+utcTimeStampSelector :: Selector '[] (Id NSNumber)
 utcTimeStampSelector = mkSelector "utcTimeStamp"
 
 -- | @Selector@ for @setUtcTimeStamp:@
-setUtcTimeStampSelector :: Selector
+setUtcTimeStampSelector :: Selector '[Id NSNumber] ()
 setUtcTimeStampSelector = mkSelector "setUtcTimeStamp:"
 
 -- | @Selector@ for @timeSinceBoot@
-timeSinceBootSelector :: Selector
+timeSinceBootSelector :: Selector '[] (Id NSNumber)
 timeSinceBootSelector = mkSelector "timeSinceBoot"
 
 -- | @Selector@ for @setTimeSinceBoot:@
-setTimeSinceBootSelector :: Selector
+setTimeSinceBootSelector :: Selector '[Id NSNumber] ()
 setTimeSinceBootSelector = mkSelector "setTimeSinceBoot:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id NSData)
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @setContent:@
-setContentSelector :: Selector
+setContentSelector :: Selector '[Id NSData] ()
 setContentSelector = mkSelector "setContent:"
 
 -- | @Selector@ for @timeStamp@
-timeStampSelector :: Selector
+timeStampSelector :: Selector '[] (Id NSNumber)
 timeStampSelector = mkSelector "timeStamp"
 
 -- | @Selector@ for @setTimeStamp:@
-setTimeStampSelector :: Selector
+setTimeStampSelector :: Selector '[Id NSNumber] ()
 setTimeStampSelector = mkSelector "setTimeStamp:"
 

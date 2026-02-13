@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.WebKit.DOMHTMLBRElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- clear@
 clear :: IsDOMHTMLBRElement domhtmlbrElement => domhtmlbrElement -> IO (Id NSString)
-clear domhtmlbrElement  =
-    sendMsg domhtmlbrElement (mkSelector "clear") (retPtr retVoid) [] >>= retainedObject . castPtr
+clear domhtmlbrElement =
+  sendMessage domhtmlbrElement clearSelector
 
 -- | @- setClear:@
 setClear :: (IsDOMHTMLBRElement domhtmlbrElement, IsNSString value) => domhtmlbrElement -> value -> IO ()
-setClear domhtmlbrElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlbrElement (mkSelector "setClear:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClear domhtmlbrElement value =
+  sendMessage domhtmlbrElement setClearSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @clear@
-clearSelector :: Selector
+clearSelector :: Selector '[] (Id NSString)
 clearSelector = mkSelector "clear"
 
 -- | @Selector@ for @setClear:@
-setClearSelector :: Selector
+setClearSelector :: Selector '[Id NSString] ()
 setClearSelector = mkSelector "setClear:"
 

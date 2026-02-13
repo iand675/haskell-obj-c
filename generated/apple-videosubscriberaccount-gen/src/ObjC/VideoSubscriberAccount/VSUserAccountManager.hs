@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.VideoSubscriberAccount.VSUserAccountManager
   , queryAutoSignInTokenWithCompletionHandler
   , deleteAutoSignInTokenWithCompletionHandler
   , sharedUserAccountManager
-  , updateUserAccount_completionSelector
-  , queryAutoSignInTokenWithCompletionHandlerSelector
   , deleteAutoSignInTokenWithCompletionHandlerSelector
+  , queryAutoSignInTokenWithCompletionHandlerSelector
   , sharedUserAccountManagerSelector
+  , updateUserAccount_completionSelector
 
   -- * Enum types
   , VSUserAccountQueryOptions(VSUserAccountQueryOptions)
@@ -23,15 +24,11 @@ module ObjC.VideoSubscriberAccount.VSUserAccountManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,48 +38,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updateUserAccount:completion:@
 updateUserAccount_completion :: (IsVSUserAccountManager vsUserAccountManager, IsVSUserAccount account) => vsUserAccountManager -> account -> Ptr () -> IO ()
-updateUserAccount_completion vsUserAccountManager  account completion =
-  withObjCPtr account $ \raw_account ->
-      sendMsg vsUserAccountManager (mkSelector "updateUserAccount:completion:") retVoid [argPtr (castPtr raw_account :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+updateUserAccount_completion vsUserAccountManager account completion =
+  sendMessage vsUserAccountManager updateUserAccount_completionSelector (toVSUserAccount account) completion
 
 -- | Query the auto sign in token and authorization state.
 --
 -- ObjC selector: @- queryAutoSignInTokenWithCompletionHandler:@
 queryAutoSignInTokenWithCompletionHandler :: IsVSUserAccountManager vsUserAccountManager => vsUserAccountManager -> Ptr () -> IO ()
-queryAutoSignInTokenWithCompletionHandler vsUserAccountManager  completion =
-    sendMsg vsUserAccountManager (mkSelector "queryAutoSignInTokenWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+queryAutoSignInTokenWithCompletionHandler vsUserAccountManager completion =
+  sendMessage vsUserAccountManager queryAutoSignInTokenWithCompletionHandlerSelector completion
 
 -- | Deletes the auto sign in token.
 --
 -- ObjC selector: @- deleteAutoSignInTokenWithCompletionHandler:@
 deleteAutoSignInTokenWithCompletionHandler :: IsVSUserAccountManager vsUserAccountManager => vsUserAccountManager -> Ptr () -> IO ()
-deleteAutoSignInTokenWithCompletionHandler vsUserAccountManager  completion =
-    sendMsg vsUserAccountManager (mkSelector "deleteAutoSignInTokenWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+deleteAutoSignInTokenWithCompletionHandler vsUserAccountManager completion =
+  sendMessage vsUserAccountManager deleteAutoSignInTokenWithCompletionHandlerSelector completion
 
 -- | @+ sharedUserAccountManager@
 sharedUserAccountManager :: IO (Id VSUserAccountManager)
 sharedUserAccountManager  =
   do
     cls' <- getRequiredClass "VSUserAccountManager"
-    sendClassMsg cls' (mkSelector "sharedUserAccountManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedUserAccountManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateUserAccount:completion:@
-updateUserAccount_completionSelector :: Selector
+updateUserAccount_completionSelector :: Selector '[Id VSUserAccount, Ptr ()] ()
 updateUserAccount_completionSelector = mkSelector "updateUserAccount:completion:"
 
 -- | @Selector@ for @queryAutoSignInTokenWithCompletionHandler:@
-queryAutoSignInTokenWithCompletionHandlerSelector :: Selector
+queryAutoSignInTokenWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 queryAutoSignInTokenWithCompletionHandlerSelector = mkSelector "queryAutoSignInTokenWithCompletionHandler:"
 
 -- | @Selector@ for @deleteAutoSignInTokenWithCompletionHandler:@
-deleteAutoSignInTokenWithCompletionHandlerSelector :: Selector
+deleteAutoSignInTokenWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 deleteAutoSignInTokenWithCompletionHandlerSelector = mkSelector "deleteAutoSignInTokenWithCompletionHandler:"
 
 -- | @Selector@ for @sharedUserAccountManager@
-sharedUserAccountManagerSelector :: Selector
+sharedUserAccountManagerSelector :: Selector '[] (Id VSUserAccountManager)
 sharedUserAccountManagerSelector = mkSelector "sharedUserAccountManager"
 

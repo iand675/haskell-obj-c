@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVCaptionConversionWarning
   , warningType
   , rangeOfCaptions
   , adjustment
+  , adjustmentSelector
   , initSelector
   , newSelector
-  , warningTypeSelector
   , rangeOfCaptionsSelector
-  , adjustmentSelector
+  , warningTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,15 +41,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionConversionWarning avCaptionConversionWarning => avCaptionConversionWarning -> IO (Id AVCaptionConversionWarning)
-init_ avCaptionConversionWarning  =
-    sendMsg avCaptionConversionWarning (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionConversionWarning =
+  sendOwnedMessage avCaptionConversionWarning initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionConversionWarning)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionConversionWarning"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | warningType
 --
@@ -60,8 +57,8 @@ new  =
 --
 -- ObjC selector: @- warningType@
 warningType :: IsAVCaptionConversionWarning avCaptionConversionWarning => avCaptionConversionWarning -> IO (Id NSString)
-warningType avCaptionConversionWarning  =
-    sendMsg avCaptionConversionWarning (mkSelector "warningType") (retPtr retVoid) [] >>= retainedObject . castPtr
+warningType avCaptionConversionWarning =
+  sendMessage avCaptionConversionWarning warningTypeSelector
 
 -- | rangeOfCaptions
 --
@@ -71,8 +68,8 @@ warningType avCaptionConversionWarning  =
 --
 -- ObjC selector: @- rangeOfCaptions@
 rangeOfCaptions :: IsAVCaptionConversionWarning avCaptionConversionWarning => avCaptionConversionWarning -> IO NSRange
-rangeOfCaptions avCaptionConversionWarning  =
-    sendMsgStret avCaptionConversionWarning (mkSelector "rangeOfCaptions") retNSRange []
+rangeOfCaptions avCaptionConversionWarning =
+  sendMessage avCaptionConversionWarning rangeOfCaptionsSelector
 
 -- | adjustment
 --
@@ -82,30 +79,30 @@ rangeOfCaptions avCaptionConversionWarning  =
 --
 -- ObjC selector: @- adjustment@
 adjustment :: IsAVCaptionConversionWarning avCaptionConversionWarning => avCaptionConversionWarning -> IO (Id AVCaptionConversionAdjustment)
-adjustment avCaptionConversionWarning  =
-    sendMsg avCaptionConversionWarning (mkSelector "adjustment") (retPtr retVoid) [] >>= retainedObject . castPtr
+adjustment avCaptionConversionWarning =
+  sendMessage avCaptionConversionWarning adjustmentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionConversionWarning)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionConversionWarning)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @warningType@
-warningTypeSelector :: Selector
+warningTypeSelector :: Selector '[] (Id NSString)
 warningTypeSelector = mkSelector "warningType"
 
 -- | @Selector@ for @rangeOfCaptions@
-rangeOfCaptionsSelector :: Selector
+rangeOfCaptionsSelector :: Selector '[] NSRange
 rangeOfCaptionsSelector = mkSelector "rangeOfCaptions"
 
 -- | @Selector@ for @adjustment@
-adjustmentSelector :: Selector
+adjustmentSelector :: Selector '[] (Id AVCaptionConversionAdjustment)
 adjustmentSelector = mkSelector "adjustment"
 

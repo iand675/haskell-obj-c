@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterModifyForecastRequestParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , forecastIDSelector
-  , setForecastIDSelector
-  , slotAdjustmentsSelector
-  , setSlotAdjustmentsSelector
   , causeSelector
-  , setCauseSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , forecastIDSelector
   , serverSideProcessingTimeoutSelector
+  , setCauseSelector
+  , setForecastIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setSlotAdjustmentsSelector
+  , setTimedInvokeTimeoutMsSelector
+  , slotAdjustmentsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- forecastID@
 forecastID :: IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> IO (Id NSNumber)
-forecastID mtrDeviceEnergyManagementClusterModifyForecastRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "forecastID") (retPtr retVoid) [] >>= retainedObject . castPtr
+forecastID mtrDeviceEnergyManagementClusterModifyForecastRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams forecastIDSelector
 
 -- | @- setForecastID:@
 setForecastID :: (IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> value -> IO ()
-setForecastID mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "setForecastID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setForecastID mtrDeviceEnergyManagementClusterModifyForecastRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams setForecastIDSelector (toNSNumber value)
 
 -- | @- slotAdjustments@
 slotAdjustments :: IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> IO (Id NSArray)
-slotAdjustments mtrDeviceEnergyManagementClusterModifyForecastRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "slotAdjustments") (retPtr retVoid) [] >>= retainedObject . castPtr
+slotAdjustments mtrDeviceEnergyManagementClusterModifyForecastRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams slotAdjustmentsSelector
 
 -- | @- setSlotAdjustments:@
 setSlotAdjustments :: (IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams, IsNSArray value) => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> value -> IO ()
-setSlotAdjustments mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "setSlotAdjustments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSlotAdjustments mtrDeviceEnergyManagementClusterModifyForecastRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams setSlotAdjustmentsSelector (toNSArray value)
 
 -- | @- cause@
 cause :: IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> IO (Id NSNumber)
-cause mtrDeviceEnergyManagementClusterModifyForecastRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "cause") (retPtr retVoid) [] >>= retainedObject . castPtr
+cause mtrDeviceEnergyManagementClusterModifyForecastRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams causeSelector
 
 -- | @- setCause:@
 setCause :: (IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> value -> IO ()
-setCause mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "setCause:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCause mtrDeviceEnergyManagementClusterModifyForecastRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams setCauseSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setCause mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestParams
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterModifyForecastRequestPar
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDeviceEnergyManagementClusterModifyForecastRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDeviceEnergyManagementClusterModifyForecastRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrDeviceEnergyManagementClusterModifyForecastReques
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDeviceEnergyManagementClusterModifyForecastRequestParams mtrDeviceEnergyManagementClusterModifyForecastRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterModifyForecastRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterModifyForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterModifyForecastRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterModifyForecastRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterModifyForecastRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @forecastID@
-forecastIDSelector :: Selector
+forecastIDSelector :: Selector '[] (Id NSNumber)
 forecastIDSelector = mkSelector "forecastID"
 
 -- | @Selector@ for @setForecastID:@
-setForecastIDSelector :: Selector
+setForecastIDSelector :: Selector '[Id NSNumber] ()
 setForecastIDSelector = mkSelector "setForecastID:"
 
 -- | @Selector@ for @slotAdjustments@
-slotAdjustmentsSelector :: Selector
+slotAdjustmentsSelector :: Selector '[] (Id NSArray)
 slotAdjustmentsSelector = mkSelector "slotAdjustments"
 
 -- | @Selector@ for @setSlotAdjustments:@
-setSlotAdjustmentsSelector :: Selector
+setSlotAdjustmentsSelector :: Selector '[Id NSArray] ()
 setSlotAdjustmentsSelector = mkSelector "setSlotAdjustments:"
 
 -- | @Selector@ for @cause@
-causeSelector :: Selector
+causeSelector :: Selector '[] (Id NSNumber)
 causeSelector = mkSelector "cause"
 
 -- | @Selector@ for @setCause:@
-setCauseSelector :: Selector
+setCauseSelector :: Selector '[Id NSNumber] ()
 setCauseSelector = mkSelector "setCause:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

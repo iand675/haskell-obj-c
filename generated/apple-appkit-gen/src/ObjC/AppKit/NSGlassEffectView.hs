@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.AppKit.NSGlassEffectView
   , style
   , setStyle
   , contentViewSelector
-  , setContentViewSelector
   , cornerRadiusSelector
+  , setContentViewSelector
   , setCornerRadiusSelector
-  , tintColorSelector
+  , setStyleSelector
   , setTintColorSelector
   , styleSelector
-  , setStyleSelector
+  , tintColorSelector
 
   -- * Enum types
   , NSGlassEffectViewStyle(NSGlassEffectViewStyle)
@@ -33,15 +34,11 @@ module ObjC.AppKit.NSGlassEffectView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contentView@
 contentView :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> IO (Id NSView)
-contentView nsGlassEffectView  =
-    sendMsg nsGlassEffectView (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsGlassEffectView =
+  sendMessage nsGlassEffectView contentViewSelector
 
 -- | The view to embed in glass.
 --
@@ -64,86 +61,84 @@ contentView nsGlassEffectView  =
 --
 -- ObjC selector: @- setContentView:@
 setContentView :: (IsNSGlassEffectView nsGlassEffectView, IsNSView value) => nsGlassEffectView -> value -> IO ()
-setContentView nsGlassEffectView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGlassEffectView (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsGlassEffectView value =
+  sendMessage nsGlassEffectView setContentViewSelector (toNSView value)
 
 -- | The amount of curvature for all corners of the glass.
 --
 -- ObjC selector: @- cornerRadius@
 cornerRadius :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> IO CDouble
-cornerRadius nsGlassEffectView  =
-    sendMsg nsGlassEffectView (mkSelector "cornerRadius") retCDouble []
+cornerRadius nsGlassEffectView =
+  sendMessage nsGlassEffectView cornerRadiusSelector
 
 -- | The amount of curvature for all corners of the glass.
 --
 -- ObjC selector: @- setCornerRadius:@
 setCornerRadius :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> CDouble -> IO ()
-setCornerRadius nsGlassEffectView  value =
-    sendMsg nsGlassEffectView (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius nsGlassEffectView value =
+  sendMessage nsGlassEffectView setCornerRadiusSelector value
 
 -- | The color the glass effect view uses to tint the background and glass effect toward.
 --
 -- ObjC selector: @- tintColor@
 tintColor :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> IO (Id NSColor)
-tintColor nsGlassEffectView  =
-    sendMsg nsGlassEffectView (mkSelector "tintColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+tintColor nsGlassEffectView =
+  sendMessage nsGlassEffectView tintColorSelector
 
 -- | The color the glass effect view uses to tint the background and glass effect toward.
 --
 -- ObjC selector: @- setTintColor:@
 setTintColor :: (IsNSGlassEffectView nsGlassEffectView, IsNSColor value) => nsGlassEffectView -> value -> IO ()
-setTintColor nsGlassEffectView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGlassEffectView (mkSelector "setTintColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTintColor nsGlassEffectView value =
+  sendMessage nsGlassEffectView setTintColorSelector (toNSColor value)
 
 -- | The style of glass this view uses.
 --
 -- ObjC selector: @- style@
 style :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> IO NSGlassEffectViewStyle
-style nsGlassEffectView  =
-    fmap (coerce :: CLong -> NSGlassEffectViewStyle) $ sendMsg nsGlassEffectView (mkSelector "style") retCLong []
+style nsGlassEffectView =
+  sendMessage nsGlassEffectView styleSelector
 
 -- | The style of glass this view uses.
 --
 -- ObjC selector: @- setStyle:@
 setStyle :: IsNSGlassEffectView nsGlassEffectView => nsGlassEffectView -> NSGlassEffectViewStyle -> IO ()
-setStyle nsGlassEffectView  value =
-    sendMsg nsGlassEffectView (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle nsGlassEffectView value =
+  sendMessage nsGlassEffectView setStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 
 -- | @Selector@ for @tintColor@
-tintColorSelector :: Selector
+tintColorSelector :: Selector '[] (Id NSColor)
 tintColorSelector = mkSelector "tintColor"
 
 -- | @Selector@ for @setTintColor:@
-setTintColorSelector :: Selector
+setTintColorSelector :: Selector '[Id NSColor] ()
 setTintColorSelector = mkSelector "setTintColor:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] NSGlassEffectViewStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[NSGlassEffectViewStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 

@@ -72,7 +72,7 @@ desugaredMap = Map.fromList
   , ("long long",          PrimitiveTypeInfo "CLong"   "retCLong"   "CLong"   "argCLong"   "ffi_type_slong"   8 8)
   , ("int",                PrimitiveTypeInfo "CInt"    "retCInt"    "CInt"    "argCInt"    "ffi_type_sint"    4 4)
   , ("short",              PrimitiveTypeInfo "CShort"  "retCInt"    "CInt"    "argCInt"    "ffi_type_sint16"  2 2)
-  , ("signed char",        PrimitiveTypeInfo "CSChar"  "retCSChar"  "CSChar"  "argCChar"   "ffi_type_sint8"   1 1)
+  , ("signed char",        PrimitiveTypeInfo "CSChar"  "retInt8"    "Int8"    "argCChar"   "ffi_type_sint8"   1 1)
   , ("char",               PrimitiveTypeInfo "CChar"   "retCChar"   "CChar"   "argCChar"   "ffi_type_sint8"   1 1)
   -- Unsigned integers
   , ("unsigned long",      PrimitiveTypeInfo "CULong"  "retCULong"  "CULong"  "argCULong"  "ffi_type_ulong"   8 8)
@@ -85,7 +85,7 @@ desugaredMap = Map.fromList
   , ("float",              PrimitiveTypeInfo "CFloat"  "retCFloat"  "CFloat"  "argCFloat"  "ffi_type_float"   4 4)
   -- Fixed-width (aliases into the above, but with explicit names)
   , ("uint8_t",            PrimitiveTypeInfo "CUChar"  "retCUChar"  "CUChar"  "argCUChar"  "ffi_type_uint8"   1 1)
-  , ("int8_t",             PrimitiveTypeInfo "CSChar"  "retCSChar"  "CSChar"  "argCChar"   "ffi_type_sint8"   1 1)
+  , ("int8_t",             PrimitiveTypeInfo "CSChar"  "retInt8"    "Int8"    "argCChar"   "ffi_type_sint8"   1 1)
   , ("uint16_t",           PrimitiveTypeInfo "CUShort" "retCUInt"   "CUInt"   "argCUInt"   "ffi_type_uint16"  2 2)
   , ("int16_t",            PrimitiveTypeInfo "CShort"  "retCInt"    "CInt"    "argCInt"    "ffi_type_sint16"  2 2)
   , ("uint32_t",           PrimitiveTypeInfo "CUInt"   "retCUInt"   "CUInt"   "argCUInt"   "ffi_type_uint"    4 4)

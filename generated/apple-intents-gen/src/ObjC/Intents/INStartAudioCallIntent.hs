@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INStartAudioCallIntent
   , initWithContacts
   , destinationType
   , contacts
-  , initWithDestinationType_contactsSelector
-  , initWithContactsSelector
-  , destinationTypeSelector
   , contactsSelector
+  , destinationTypeSelector
+  , initWithContactsSelector
+  , initWithDestinationType_contactsSelector
 
   -- * Enum types
   , INCallDestinationType(INCallDestinationType)
@@ -31,15 +32,11 @@ module ObjC.Intents.INStartAudioCallIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,43 +46,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDestinationType:contacts:@
 initWithDestinationType_contacts :: (IsINStartAudioCallIntent inStartAudioCallIntent, IsNSArray contacts) => inStartAudioCallIntent -> INCallDestinationType -> contacts -> IO (Id INStartAudioCallIntent)
-initWithDestinationType_contacts inStartAudioCallIntent  destinationType contacts =
-  withObjCPtr contacts $ \raw_contacts ->
-      sendMsg inStartAudioCallIntent (mkSelector "initWithDestinationType:contacts:") (retPtr retVoid) [argCLong (coerce destinationType), argPtr (castPtr raw_contacts :: Ptr ())] >>= ownedObject . castPtr
+initWithDestinationType_contacts inStartAudioCallIntent destinationType contacts =
+  sendOwnedMessage inStartAudioCallIntent initWithDestinationType_contactsSelector destinationType (toNSArray contacts)
 
 -- | @- initWithContacts:@
 initWithContacts :: (IsINStartAudioCallIntent inStartAudioCallIntent, IsNSArray contacts) => inStartAudioCallIntent -> contacts -> IO (Id INStartAudioCallIntent)
-initWithContacts inStartAudioCallIntent  contacts =
-  withObjCPtr contacts $ \raw_contacts ->
-      sendMsg inStartAudioCallIntent (mkSelector "initWithContacts:") (retPtr retVoid) [argPtr (castPtr raw_contacts :: Ptr ())] >>= ownedObject . castPtr
+initWithContacts inStartAudioCallIntent contacts =
+  sendOwnedMessage inStartAudioCallIntent initWithContactsSelector (toNSArray contacts)
 
 -- | @- destinationType@
 destinationType :: IsINStartAudioCallIntent inStartAudioCallIntent => inStartAudioCallIntent -> IO INCallDestinationType
-destinationType inStartAudioCallIntent  =
-    fmap (coerce :: CLong -> INCallDestinationType) $ sendMsg inStartAudioCallIntent (mkSelector "destinationType") retCLong []
+destinationType inStartAudioCallIntent =
+  sendMessage inStartAudioCallIntent destinationTypeSelector
 
 -- | @- contacts@
 contacts :: IsINStartAudioCallIntent inStartAudioCallIntent => inStartAudioCallIntent -> IO (Id NSArray)
-contacts inStartAudioCallIntent  =
-    sendMsg inStartAudioCallIntent (mkSelector "contacts") (retPtr retVoid) [] >>= retainedObject . castPtr
+contacts inStartAudioCallIntent =
+  sendMessage inStartAudioCallIntent contactsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDestinationType:contacts:@
-initWithDestinationType_contactsSelector :: Selector
+initWithDestinationType_contactsSelector :: Selector '[INCallDestinationType, Id NSArray] (Id INStartAudioCallIntent)
 initWithDestinationType_contactsSelector = mkSelector "initWithDestinationType:contacts:"
 
 -- | @Selector@ for @initWithContacts:@
-initWithContactsSelector :: Selector
+initWithContactsSelector :: Selector '[Id NSArray] (Id INStartAudioCallIntent)
 initWithContactsSelector = mkSelector "initWithContacts:"
 
 -- | @Selector@ for @destinationType@
-destinationTypeSelector :: Selector
+destinationTypeSelector :: Selector '[] INCallDestinationType
 destinationTypeSelector = mkSelector "destinationType"
 
 -- | @Selector@ for @contacts@
-contactsSelector :: Selector
+contactsSelector :: Selector '[] (Id NSArray)
 contactsSelector = mkSelector "contacts"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,12 +28,12 @@ module ObjC.Vision.VNGenerateOpticalFlowRequest
   , setKeepNetworkOutput
   , results
   , computationAccuracySelector
-  , setComputationAccuracySelector
-  , outputPixelFormatSelector
-  , setOutputPixelFormatSelector
   , keepNetworkOutputSelector
-  , setKeepNetworkOutputSelector
+  , outputPixelFormatSelector
   , resultsSelector
+  , setComputationAccuracySelector
+  , setKeepNetworkOutputSelector
+  , setOutputPixelFormatSelector
 
   -- * Enum types
   , VNGenerateOpticalFlowRequestComputationAccuracy(VNGenerateOpticalFlowRequestComputationAccuracy)
@@ -43,15 +44,11 @@ module ObjC.Vision.VNGenerateOpticalFlowRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- computationAccuracy@
 computationAccuracy :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> IO VNGenerateOpticalFlowRequestComputationAccuracy
-computationAccuracy vnGenerateOpticalFlowRequest  =
-    fmap (coerce :: CULong -> VNGenerateOpticalFlowRequestComputationAccuracy) $ sendMsg vnGenerateOpticalFlowRequest (mkSelector "computationAccuracy") retCULong []
+computationAccuracy vnGenerateOpticalFlowRequest =
+  sendMessage vnGenerateOpticalFlowRequest computationAccuracySelector
 
 -- | The level of accuracy used to compute the optical flow. Default is VNGenerateOpticalFlowRequestComputationAccuracyMedium.
 --
@@ -74,22 +71,22 @@ computationAccuracy vnGenerateOpticalFlowRequest  =
 --
 -- ObjC selector: @- setComputationAccuracy:@
 setComputationAccuracy :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> VNGenerateOpticalFlowRequestComputationAccuracy -> IO ()
-setComputationAccuracy vnGenerateOpticalFlowRequest  value =
-    sendMsg vnGenerateOpticalFlowRequest (mkSelector "setComputationAccuracy:") retVoid [argCULong (coerce value)]
+setComputationAccuracy vnGenerateOpticalFlowRequest value =
+  sendMessage vnGenerateOpticalFlowRequest setComputationAccuracySelector value
 
 -- | Pixel format type of the output buffer. Valid values are kCVPixelFormatType_TwoComponent32Float and kCVPixelFormatType_TwoComponent16Half.        Default is kCVPixelFormatType_TwoComponent32Float.
 --
 -- ObjC selector: @- outputPixelFormat@
 outputPixelFormat :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> IO CUInt
-outputPixelFormat vnGenerateOpticalFlowRequest  =
-    sendMsg vnGenerateOpticalFlowRequest (mkSelector "outputPixelFormat") retCUInt []
+outputPixelFormat vnGenerateOpticalFlowRequest =
+  sendMessage vnGenerateOpticalFlowRequest outputPixelFormatSelector
 
 -- | Pixel format type of the output buffer. Valid values are kCVPixelFormatType_TwoComponent32Float and kCVPixelFormatType_TwoComponent16Half.        Default is kCVPixelFormatType_TwoComponent32Float.
 --
 -- ObjC selector: @- setOutputPixelFormat:@
 setOutputPixelFormat :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> CUInt -> IO ()
-setOutputPixelFormat vnGenerateOpticalFlowRequest  value =
-    sendMsg vnGenerateOpticalFlowRequest (mkSelector "setOutputPixelFormat:") retVoid [argCUInt value]
+setOutputPixelFormat vnGenerateOpticalFlowRequest value =
+  sendMessage vnGenerateOpticalFlowRequest setOutputPixelFormatSelector value
 
 -- | Setting this to YES will keep the raw pixel buffer coming from the the ML network. The default is NO.
 --
@@ -97,8 +94,8 @@ setOutputPixelFormat vnGenerateOpticalFlowRequest  value =
 --
 -- ObjC selector: @- keepNetworkOutput@
 keepNetworkOutput :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> IO Bool
-keepNetworkOutput vnGenerateOpticalFlowRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnGenerateOpticalFlowRequest (mkSelector "keepNetworkOutput") retCULong []
+keepNetworkOutput vnGenerateOpticalFlowRequest =
+  sendMessage vnGenerateOpticalFlowRequest keepNetworkOutputSelector
 
 -- | Setting this to YES will keep the raw pixel buffer coming from the the ML network. The default is NO.
 --
@@ -106,45 +103,45 @@ keepNetworkOutput vnGenerateOpticalFlowRequest  =
 --
 -- ObjC selector: @- setKeepNetworkOutput:@
 setKeepNetworkOutput :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> Bool -> IO ()
-setKeepNetworkOutput vnGenerateOpticalFlowRequest  value =
-    sendMsg vnGenerateOpticalFlowRequest (mkSelector "setKeepNetworkOutput:") retVoid [argCULong (if value then 1 else 0)]
+setKeepNetworkOutput vnGenerateOpticalFlowRequest value =
+  sendMessage vnGenerateOpticalFlowRequest setKeepNetworkOutputSelector value
 
 -- | VNPixelBufferObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNGenerateOpticalFlowRequest vnGenerateOpticalFlowRequest => vnGenerateOpticalFlowRequest -> IO (Id NSArray)
-results vnGenerateOpticalFlowRequest  =
-    sendMsg vnGenerateOpticalFlowRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnGenerateOpticalFlowRequest =
+  sendMessage vnGenerateOpticalFlowRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @computationAccuracy@
-computationAccuracySelector :: Selector
+computationAccuracySelector :: Selector '[] VNGenerateOpticalFlowRequestComputationAccuracy
 computationAccuracySelector = mkSelector "computationAccuracy"
 
 -- | @Selector@ for @setComputationAccuracy:@
-setComputationAccuracySelector :: Selector
+setComputationAccuracySelector :: Selector '[VNGenerateOpticalFlowRequestComputationAccuracy] ()
 setComputationAccuracySelector = mkSelector "setComputationAccuracy:"
 
 -- | @Selector@ for @outputPixelFormat@
-outputPixelFormatSelector :: Selector
+outputPixelFormatSelector :: Selector '[] CUInt
 outputPixelFormatSelector = mkSelector "outputPixelFormat"
 
 -- | @Selector@ for @setOutputPixelFormat:@
-setOutputPixelFormatSelector :: Selector
+setOutputPixelFormatSelector :: Selector '[CUInt] ()
 setOutputPixelFormatSelector = mkSelector "setOutputPixelFormat:"
 
 -- | @Selector@ for @keepNetworkOutput@
-keepNetworkOutputSelector :: Selector
+keepNetworkOutputSelector :: Selector '[] Bool
 keepNetworkOutputSelector = mkSelector "keepNetworkOutput"
 
 -- | @Selector@ for @setKeepNetworkOutput:@
-setKeepNetworkOutputSelector :: Selector
+setKeepNetworkOutputSelector :: Selector '[Bool] ()
 setKeepNetworkOutputSelector = mkSelector "setKeepNetworkOutput:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

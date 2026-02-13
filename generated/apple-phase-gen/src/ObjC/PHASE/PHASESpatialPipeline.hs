@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.PHASE.PHASESpatialPipeline
   , initWithFlags
   , flags
   , entries
-  , initSelector
-  , newSelector
-  , initWithFlagsSelector
-  , flagsSelector
   , entriesSelector
+  , flagsSelector
+  , initSelector
+  , initWithFlagsSelector
+  , newSelector
 
   -- * Enum types
   , PHASESpatialPipelineFlags(PHASESpatialPipelineFlags)
@@ -32,15 +33,11 @@ module ObjC.PHASE.PHASESpatialPipeline
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,15 +47,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO (Id PHASESpatialPipeline)
-init_ phaseSpatialPipeline  =
-    sendMsg phaseSpatialPipeline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseSpatialPipeline =
+  sendOwnedMessage phaseSpatialPipeline initSelector
 
 -- | @+ new@
 new :: IO (Id PHASESpatialPipeline)
 new  =
   do
     cls' <- getRequiredClass "PHASESpatialPipeline"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithFlags
 --
@@ -70,8 +67,8 @@ new  =
 --
 -- ObjC selector: @- initWithFlags:@
 initWithFlags :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> PHASESpatialPipelineFlags -> IO (Id PHASESpatialPipeline)
-initWithFlags phaseSpatialPipeline  flags =
-    sendMsg phaseSpatialPipeline (mkSelector "initWithFlags:") (retPtr retVoid) [argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithFlags phaseSpatialPipeline flags =
+  sendOwnedMessage phaseSpatialPipeline initWithFlagsSelector flags
 
 -- | flags
 --
@@ -79,8 +76,8 @@ initWithFlags phaseSpatialPipeline  flags =
 --
 -- ObjC selector: @- flags@
 flags :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO PHASESpatialPipelineFlags
-flags phaseSpatialPipeline  =
-    fmap (coerce :: CULong -> PHASESpatialPipelineFlags) $ sendMsg phaseSpatialPipeline (mkSelector "flags") retCULong []
+flags phaseSpatialPipeline =
+  sendMessage phaseSpatialPipeline flagsSelector
 
 -- | entries
 --
@@ -90,30 +87,30 @@ flags phaseSpatialPipeline  =
 --
 -- ObjC selector: @- entries@
 entries :: IsPHASESpatialPipeline phaseSpatialPipeline => phaseSpatialPipeline -> IO (Id NSDictionary)
-entries phaseSpatialPipeline  =
-    sendMsg phaseSpatialPipeline (mkSelector "entries") (retPtr retVoid) [] >>= retainedObject . castPtr
+entries phaseSpatialPipeline =
+  sendMessage phaseSpatialPipeline entriesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASESpatialPipeline)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASESpatialPipeline)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithFlags:@
-initWithFlagsSelector :: Selector
+initWithFlagsSelector :: Selector '[PHASESpatialPipelineFlags] (Id PHASESpatialPipeline)
 initWithFlagsSelector = mkSelector "initWithFlags:"
 
 -- | @Selector@ for @flags@
-flagsSelector :: Selector
+flagsSelector :: Selector '[] PHASESpatialPipelineFlags
 flagsSelector = mkSelector "flags"
 
 -- | @Selector@ for @entries@
-entriesSelector :: Selector
+entriesSelector :: Selector '[] (Id NSDictionary)
 entriesSelector = mkSelector "entries"
 

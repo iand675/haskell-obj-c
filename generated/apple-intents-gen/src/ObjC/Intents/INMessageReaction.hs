@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INMessageReaction
   , reactionType
   , reactionDescription
   , emoji
-  , initWithReactionType_reactionDescription_emojiSelector
-  , reactionTypeSelector
-  , reactionDescriptionSelector
   , emojiSelector
+  , initWithReactionType_reactionDescription_emojiSelector
+  , reactionDescriptionSelector
+  , reactionTypeSelector
 
   -- * Enum types
   , INMessageReactionType(INMessageReactionType)
@@ -24,15 +25,11 @@ module ObjC.Intents.INMessageReaction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,43 +39,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithReactionType:reactionDescription:emoji:@
 initWithReactionType_reactionDescription_emoji :: (IsINMessageReaction inMessageReaction, IsNSString reactionDescription, IsNSString emoji) => inMessageReaction -> INMessageReactionType -> reactionDescription -> emoji -> IO (Id INMessageReaction)
-initWithReactionType_reactionDescription_emoji inMessageReaction  reactionType reactionDescription emoji =
-  withObjCPtr reactionDescription $ \raw_reactionDescription ->
-    withObjCPtr emoji $ \raw_emoji ->
-        sendMsg inMessageReaction (mkSelector "initWithReactionType:reactionDescription:emoji:") (retPtr retVoid) [argCLong (coerce reactionType), argPtr (castPtr raw_reactionDescription :: Ptr ()), argPtr (castPtr raw_emoji :: Ptr ())] >>= ownedObject . castPtr
+initWithReactionType_reactionDescription_emoji inMessageReaction reactionType reactionDescription emoji =
+  sendOwnedMessage inMessageReaction initWithReactionType_reactionDescription_emojiSelector reactionType (toNSString reactionDescription) (toNSString emoji)
 
 -- | @- reactionType@
 reactionType :: IsINMessageReaction inMessageReaction => inMessageReaction -> IO INMessageReactionType
-reactionType inMessageReaction  =
-    fmap (coerce :: CLong -> INMessageReactionType) $ sendMsg inMessageReaction (mkSelector "reactionType") retCLong []
+reactionType inMessageReaction =
+  sendMessage inMessageReaction reactionTypeSelector
 
 -- | @- reactionDescription@
 reactionDescription :: IsINMessageReaction inMessageReaction => inMessageReaction -> IO (Id NSString)
-reactionDescription inMessageReaction  =
-    sendMsg inMessageReaction (mkSelector "reactionDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+reactionDescription inMessageReaction =
+  sendMessage inMessageReaction reactionDescriptionSelector
 
 -- | @- emoji@
 emoji :: IsINMessageReaction inMessageReaction => inMessageReaction -> IO (Id NSString)
-emoji inMessageReaction  =
-    sendMsg inMessageReaction (mkSelector "emoji") (retPtr retVoid) [] >>= retainedObject . castPtr
+emoji inMessageReaction =
+  sendMessage inMessageReaction emojiSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithReactionType:reactionDescription:emoji:@
-initWithReactionType_reactionDescription_emojiSelector :: Selector
+initWithReactionType_reactionDescription_emojiSelector :: Selector '[INMessageReactionType, Id NSString, Id NSString] (Id INMessageReaction)
 initWithReactionType_reactionDescription_emojiSelector = mkSelector "initWithReactionType:reactionDescription:emoji:"
 
 -- | @Selector@ for @reactionType@
-reactionTypeSelector :: Selector
+reactionTypeSelector :: Selector '[] INMessageReactionType
 reactionTypeSelector = mkSelector "reactionType"
 
 -- | @Selector@ for @reactionDescription@
-reactionDescriptionSelector :: Selector
+reactionDescriptionSelector :: Selector '[] (Id NSString)
 reactionDescriptionSelector = mkSelector "reactionDescription"
 
 -- | @Selector@ for @emoji@
-emojiSelector :: Selector
+emojiSelector :: Selector '[] (Id NSString)
 emojiSelector = mkSelector "emoji"
 

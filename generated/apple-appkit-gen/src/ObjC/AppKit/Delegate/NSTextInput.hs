@@ -37,7 +37,7 @@ import ObjC.Runtime.StableIvar
 -- selector).  'Just' provides the Haskell implementation.
 data NSTextInputOverrides = NSTextInputOverrides
   { _insertText :: !(Maybe (RawId -> IO ()))
-  , _doCommandBySelector :: !(Maybe (Selector -> IO ()))
+  , _doCommandBySelector :: !(Maybe (Sel -> IO ()))
   , _unmarkText :: !(Maybe (IO ()))
   , _hasMarkedText :: !(Maybe (IO Bool))
   , _conversationIdentifier :: !(Maybe (IO Int))

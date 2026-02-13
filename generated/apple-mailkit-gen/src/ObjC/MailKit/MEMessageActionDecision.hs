@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.MailKit.MEMessageActionDecision
   , invokeAgainWithBody
   , decisionApplyingActionSelector
   , decisionApplyingActionsSelector
-  , newSelector
   , initSelector
   , invokeAgainWithBodySelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,8 +37,7 @@ decisionApplyingAction :: IsMEMessageAction action => action -> IO (Id MEMessage
 decisionApplyingAction action =
   do
     cls' <- getRequiredClass "MEMessageActionDecision"
-    withObjCPtr action $ \raw_action ->
-      sendClassMsg cls' (mkSelector "decisionApplyingAction:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' decisionApplyingActionSelector (toMEMessageAction action)
 
 -- | Creates an @MEMessageActionDecision@ with multiple actions. Conflicting actions will be ignored.
 --
@@ -50,49 +46,48 @@ decisionApplyingActions :: IsNSArray actions => actions -> IO (Id MEMessageActio
 decisionApplyingActions actions =
   do
     cls' <- getRequiredClass "MEMessageActionDecision"
-    withObjCPtr actions $ \raw_actions ->
-      sendClassMsg cls' (mkSelector "decisionApplyingActions:") (retPtr retVoid) [argPtr (castPtr raw_actions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' decisionApplyingActionsSelector (toNSArray actions)
 
 -- | @+ new@
 new :: IO (Id MEMessageActionDecision)
 new  =
   do
     cls' <- getRequiredClass "MEMessageActionDecision"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEMessageActionDecision meMessageActionDecision => meMessageActionDecision -> IO (Id MEMessageActionDecision)
-init_ meMessageActionDecision  =
-    sendMsg meMessageActionDecision (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meMessageActionDecision =
+  sendOwnedMessage meMessageActionDecision initSelector
 
 -- | @+ invokeAgainWithBody@
 invokeAgainWithBody :: IO (Id MEMessageActionDecision)
 invokeAgainWithBody  =
   do
     cls' <- getRequiredClass "MEMessageActionDecision"
-    sendClassMsg cls' (mkSelector "invokeAgainWithBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' invokeAgainWithBodySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @decisionApplyingAction:@
-decisionApplyingActionSelector :: Selector
+decisionApplyingActionSelector :: Selector '[Id MEMessageAction] (Id MEMessageActionDecision)
 decisionApplyingActionSelector = mkSelector "decisionApplyingAction:"
 
 -- | @Selector@ for @decisionApplyingActions:@
-decisionApplyingActionsSelector :: Selector
+decisionApplyingActionsSelector :: Selector '[Id NSArray] (Id MEMessageActionDecision)
 decisionApplyingActionsSelector = mkSelector "decisionApplyingActions:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEMessageActionDecision)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEMessageActionDecision)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @invokeAgainWithBody@
-invokeAgainWithBodySelector :: Selector
+invokeAgainWithBodySelector :: Selector '[] (Id MEMessageActionDecision)
 invokeAgainWithBodySelector = mkSelector "invokeAgainWithBody"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,38 +26,34 @@ module ObjC.CallKit.CXProviderConfiguration
   , setSupportsAudioTranslation
   , supportedHandleTypes
   , setSupportedHandleTypes
+  , iconTemplateImageDataSelector
+  , includesCallsInRecentsSelector
   , initSelector
   , initWithLocalizedNameSelector
   , localizedNameSelector
-  , ringtoneSoundSelector
-  , setRingtoneSoundSelector
-  , iconTemplateImageDataSelector
-  , setIconTemplateImageDataSelector
   , maximumCallGroupsSelector
-  , setMaximumCallGroupsSelector
   , maximumCallsPerCallGroupSelector
-  , setMaximumCallsPerCallGroupSelector
-  , includesCallsInRecentsSelector
+  , ringtoneSoundSelector
+  , setIconTemplateImageDataSelector
   , setIncludesCallsInRecentsSelector
-  , supportsVideoSelector
-  , setSupportsVideoSelector
-  , supportsAudioTranslationSelector
-  , setSupportsAudioTranslationSelector
-  , supportedHandleTypesSelector
+  , setMaximumCallGroupsSelector
+  , setMaximumCallsPerCallGroupSelector
+  , setRingtoneSoundSelector
   , setSupportedHandleTypesSelector
+  , setSupportsAudioTranslationSelector
+  , setSupportsVideoSelector
+  , supportedHandleTypesSelector
+  , supportsAudioTranslationSelector
+  , supportsVideoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,190 +62,186 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO (Id CXProviderConfiguration)
-init_ cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cxProviderConfiguration =
+  sendOwnedMessage cxProviderConfiguration initSelector
 
 -- | @- initWithLocalizedName:@
 initWithLocalizedName :: (IsCXProviderConfiguration cxProviderConfiguration, IsNSString localizedName) => cxProviderConfiguration -> localizedName -> IO (Id CXProviderConfiguration)
-initWithLocalizedName cxProviderConfiguration  localizedName =
-  withObjCPtr localizedName $ \raw_localizedName ->
-      sendMsg cxProviderConfiguration (mkSelector "initWithLocalizedName:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedName cxProviderConfiguration localizedName =
+  sendOwnedMessage cxProviderConfiguration initWithLocalizedNameSelector (toNSString localizedName)
 
 -- | Localized name of the provider
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO (Id NSString)
-localizedName cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName cxProviderConfiguration =
+  sendMessage cxProviderConfiguration localizedNameSelector
 
 -- | Name of resource in app's bundle to play as ringtone for incoming call
 --
 -- ObjC selector: @- ringtoneSound@
 ringtoneSound :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO (Id NSString)
-ringtoneSound cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "ringtoneSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+ringtoneSound cxProviderConfiguration =
+  sendMessage cxProviderConfiguration ringtoneSoundSelector
 
 -- | Name of resource in app's bundle to play as ringtone for incoming call
 --
 -- ObjC selector: @- setRingtoneSound:@
 setRingtoneSound :: (IsCXProviderConfiguration cxProviderConfiguration, IsNSString value) => cxProviderConfiguration -> value -> IO ()
-setRingtoneSound cxProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cxProviderConfiguration (mkSelector "setRingtoneSound:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRingtoneSound cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setRingtoneSoundSelector (toNSString value)
 
 -- | @- iconTemplateImageData@
 iconTemplateImageData :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO (Id NSData)
-iconTemplateImageData cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "iconTemplateImageData") (retPtr retVoid) [] >>= retainedObject . castPtr
+iconTemplateImageData cxProviderConfiguration =
+  sendMessage cxProviderConfiguration iconTemplateImageDataSelector
 
 -- | @- setIconTemplateImageData:@
 setIconTemplateImageData :: (IsCXProviderConfiguration cxProviderConfiguration, IsNSData value) => cxProviderConfiguration -> value -> IO ()
-setIconTemplateImageData cxProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cxProviderConfiguration (mkSelector "setIconTemplateImageData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIconTemplateImageData cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setIconTemplateImageDataSelector (toNSData value)
 
 -- | @- maximumCallGroups@
 maximumCallGroups :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO CULong
-maximumCallGroups cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "maximumCallGroups") retCULong []
+maximumCallGroups cxProviderConfiguration =
+  sendMessage cxProviderConfiguration maximumCallGroupsSelector
 
 -- | @- setMaximumCallGroups:@
 setMaximumCallGroups :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> CULong -> IO ()
-setMaximumCallGroups cxProviderConfiguration  value =
-    sendMsg cxProviderConfiguration (mkSelector "setMaximumCallGroups:") retVoid [argCULong value]
+setMaximumCallGroups cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setMaximumCallGroupsSelector value
 
 -- | @- maximumCallsPerCallGroup@
 maximumCallsPerCallGroup :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO CULong
-maximumCallsPerCallGroup cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "maximumCallsPerCallGroup") retCULong []
+maximumCallsPerCallGroup cxProviderConfiguration =
+  sendMessage cxProviderConfiguration maximumCallsPerCallGroupSelector
 
 -- | @- setMaximumCallsPerCallGroup:@
 setMaximumCallsPerCallGroup :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> CULong -> IO ()
-setMaximumCallsPerCallGroup cxProviderConfiguration  value =
-    sendMsg cxProviderConfiguration (mkSelector "setMaximumCallsPerCallGroup:") retVoid [argCULong value]
+setMaximumCallsPerCallGroup cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setMaximumCallsPerCallGroupSelector value
 
 -- | Whether this provider's calls should be included in the system's Recents list at the end of each call. Default: YES
 --
 -- ObjC selector: @- includesCallsInRecents@
 includesCallsInRecents :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO Bool
-includesCallsInRecents cxProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxProviderConfiguration (mkSelector "includesCallsInRecents") retCULong []
+includesCallsInRecents cxProviderConfiguration =
+  sendMessage cxProviderConfiguration includesCallsInRecentsSelector
 
 -- | Whether this provider's calls should be included in the system's Recents list at the end of each call. Default: YES
 --
 -- ObjC selector: @- setIncludesCallsInRecents:@
 setIncludesCallsInRecents :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> Bool -> IO ()
-setIncludesCallsInRecents cxProviderConfiguration  value =
-    sendMsg cxProviderConfiguration (mkSelector "setIncludesCallsInRecents:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesCallsInRecents cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setIncludesCallsInRecentsSelector value
 
 -- | @- supportsVideo@
 supportsVideo :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO Bool
-supportsVideo cxProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxProviderConfiguration (mkSelector "supportsVideo") retCULong []
+supportsVideo cxProviderConfiguration =
+  sendMessage cxProviderConfiguration supportsVideoSelector
 
 -- | @- setSupportsVideo:@
 setSupportsVideo :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> Bool -> IO ()
-setSupportsVideo cxProviderConfiguration  value =
-    sendMsg cxProviderConfiguration (mkSelector "setSupportsVideo:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsVideo cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setSupportsVideoSelector value
 
 -- | @- supportsAudioTranslation@
 supportsAudioTranslation :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO Bool
-supportsAudioTranslation cxProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxProviderConfiguration (mkSelector "supportsAudioTranslation") retCULong []
+supportsAudioTranslation cxProviderConfiguration =
+  sendMessage cxProviderConfiguration supportsAudioTranslationSelector
 
 -- | @- setSupportsAudioTranslation:@
 setSupportsAudioTranslation :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> Bool -> IO ()
-setSupportsAudioTranslation cxProviderConfiguration  value =
-    sendMsg cxProviderConfiguration (mkSelector "setSupportsAudioTranslation:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsAudioTranslation cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setSupportsAudioTranslationSelector value
 
 -- | @- supportedHandleTypes@
 supportedHandleTypes :: IsCXProviderConfiguration cxProviderConfiguration => cxProviderConfiguration -> IO (Id NSSet)
-supportedHandleTypes cxProviderConfiguration  =
-    sendMsg cxProviderConfiguration (mkSelector "supportedHandleTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedHandleTypes cxProviderConfiguration =
+  sendMessage cxProviderConfiguration supportedHandleTypesSelector
 
 -- | @- setSupportedHandleTypes:@
 setSupportedHandleTypes :: (IsCXProviderConfiguration cxProviderConfiguration, IsNSSet value) => cxProviderConfiguration -> value -> IO ()
-setSupportedHandleTypes cxProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cxProviderConfiguration (mkSelector "setSupportedHandleTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedHandleTypes cxProviderConfiguration value =
+  sendMessage cxProviderConfiguration setSupportedHandleTypesSelector (toNSSet value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CXProviderConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithLocalizedName:@
-initWithLocalizedNameSelector :: Selector
+initWithLocalizedNameSelector :: Selector '[Id NSString] (Id CXProviderConfiguration)
 initWithLocalizedNameSelector = mkSelector "initWithLocalizedName:"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @ringtoneSound@
-ringtoneSoundSelector :: Selector
+ringtoneSoundSelector :: Selector '[] (Id NSString)
 ringtoneSoundSelector = mkSelector "ringtoneSound"
 
 -- | @Selector@ for @setRingtoneSound:@
-setRingtoneSoundSelector :: Selector
+setRingtoneSoundSelector :: Selector '[Id NSString] ()
 setRingtoneSoundSelector = mkSelector "setRingtoneSound:"
 
 -- | @Selector@ for @iconTemplateImageData@
-iconTemplateImageDataSelector :: Selector
+iconTemplateImageDataSelector :: Selector '[] (Id NSData)
 iconTemplateImageDataSelector = mkSelector "iconTemplateImageData"
 
 -- | @Selector@ for @setIconTemplateImageData:@
-setIconTemplateImageDataSelector :: Selector
+setIconTemplateImageDataSelector :: Selector '[Id NSData] ()
 setIconTemplateImageDataSelector = mkSelector "setIconTemplateImageData:"
 
 -- | @Selector@ for @maximumCallGroups@
-maximumCallGroupsSelector :: Selector
+maximumCallGroupsSelector :: Selector '[] CULong
 maximumCallGroupsSelector = mkSelector "maximumCallGroups"
 
 -- | @Selector@ for @setMaximumCallGroups:@
-setMaximumCallGroupsSelector :: Selector
+setMaximumCallGroupsSelector :: Selector '[CULong] ()
 setMaximumCallGroupsSelector = mkSelector "setMaximumCallGroups:"
 
 -- | @Selector@ for @maximumCallsPerCallGroup@
-maximumCallsPerCallGroupSelector :: Selector
+maximumCallsPerCallGroupSelector :: Selector '[] CULong
 maximumCallsPerCallGroupSelector = mkSelector "maximumCallsPerCallGroup"
 
 -- | @Selector@ for @setMaximumCallsPerCallGroup:@
-setMaximumCallsPerCallGroupSelector :: Selector
+setMaximumCallsPerCallGroupSelector :: Selector '[CULong] ()
 setMaximumCallsPerCallGroupSelector = mkSelector "setMaximumCallsPerCallGroup:"
 
 -- | @Selector@ for @includesCallsInRecents@
-includesCallsInRecentsSelector :: Selector
+includesCallsInRecentsSelector :: Selector '[] Bool
 includesCallsInRecentsSelector = mkSelector "includesCallsInRecents"
 
 -- | @Selector@ for @setIncludesCallsInRecents:@
-setIncludesCallsInRecentsSelector :: Selector
+setIncludesCallsInRecentsSelector :: Selector '[Bool] ()
 setIncludesCallsInRecentsSelector = mkSelector "setIncludesCallsInRecents:"
 
 -- | @Selector@ for @supportsVideo@
-supportsVideoSelector :: Selector
+supportsVideoSelector :: Selector '[] Bool
 supportsVideoSelector = mkSelector "supportsVideo"
 
 -- | @Selector@ for @setSupportsVideo:@
-setSupportsVideoSelector :: Selector
+setSupportsVideoSelector :: Selector '[Bool] ()
 setSupportsVideoSelector = mkSelector "setSupportsVideo:"
 
 -- | @Selector@ for @supportsAudioTranslation@
-supportsAudioTranslationSelector :: Selector
+supportsAudioTranslationSelector :: Selector '[] Bool
 supportsAudioTranslationSelector = mkSelector "supportsAudioTranslation"
 
 -- | @Selector@ for @setSupportsAudioTranslation:@
-setSupportsAudioTranslationSelector :: Selector
+setSupportsAudioTranslationSelector :: Selector '[Bool] ()
 setSupportsAudioTranslationSelector = mkSelector "setSupportsAudioTranslation:"
 
 -- | @Selector@ for @supportedHandleTypes@
-supportedHandleTypesSelector :: Selector
+supportedHandleTypesSelector :: Selector '[] (Id NSSet)
 supportedHandleTypesSelector = mkSelector "supportedHandleTypes"
 
 -- | @Selector@ for @setSupportedHandleTypes:@
-setSupportedHandleTypesSelector :: Selector
+setSupportedHandleTypesSelector :: Selector '[Id NSSet] ()
 setSupportedHandleTypesSelector = mkSelector "setSupportedHandleTypes:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,39 +33,35 @@ module ObjC.GameController.GCPhysicalInputProfile
   , allAxes
   , allDpads
   , allTouchpads
-  , objectForKeyedSubscriptSelector
+  , allAxesSelector
+  , allButtonsSelector
+  , allDpadsSelector
+  , allElementsSelector
+  , allTouchpadsSelector
+  , axesSelector
+  , buttonsSelector
   , captureSelector
-  , setStateFromPhysicalInputSelector
+  , deviceSelector
+  , dpadsSelector
+  , elementsSelector
+  , hasRemappedElementsSelector
+  , lastEventTimestampSelector
   , mappedElementAliasForPhysicalInputNameSelector
   , mappedPhysicalInputNamesForElementAliasSelector
-  , deviceSelector
-  , lastEventTimestampSelector
-  , hasRemappedElementsSelector
-  , valueDidChangeHandlerSelector
+  , objectForKeyedSubscriptSelector
+  , setStateFromPhysicalInputSelector
   , setValueDidChangeHandlerSelector
-  , elementsSelector
-  , buttonsSelector
-  , axesSelector
-  , dpadsSelector
   , touchpadsSelector
-  , allElementsSelector
-  , allButtonsSelector
-  , allAxesSelector
-  , allDpadsSelector
-  , allTouchpadsSelector
+  , valueDidChangeHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,9 +78,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsGCPhysicalInputProfile gcPhysicalInputProfile, IsNSString key) => gcPhysicalInputProfile -> key -> IO (Id GCControllerElement)
-objectForKeyedSubscript gcPhysicalInputProfile  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg gcPhysicalInputProfile (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript gcPhysicalInputProfile key =
+  sendMessage gcPhysicalInputProfile objectForKeyedSubscriptSelector (toNSString key)
 
 -- | Polls the state vector of the physical input input and saves it to a new and writable instance of GCPhysicalInputProfile.
 --
@@ -95,8 +91,8 @@ objectForKeyedSubscript gcPhysicalInputProfile  key =
 --
 -- ObjC selector: @- capture@
 capture :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id GCPhysicalInputProfile)
-capture gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "capture") (retPtr retVoid) [] >>= retainedObject . castPtr
+capture gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile captureSelector
 
 -- | Sets the state vector of the physical input profile to a copy of the passed in physical input profile's state vector.
 --
@@ -106,9 +102,8 @@ capture gcPhysicalInputProfile  =
 --
 -- ObjC selector: @- setStateFromPhysicalInput:@
 setStateFromPhysicalInput :: (IsGCPhysicalInputProfile gcPhysicalInputProfile, IsGCPhysicalInputProfile physicalInput) => gcPhysicalInputProfile -> physicalInput -> IO ()
-setStateFromPhysicalInput gcPhysicalInputProfile  physicalInput =
-  withObjCPtr physicalInput $ \raw_physicalInput ->
-      sendMsg gcPhysicalInputProfile (mkSelector "setStateFromPhysicalInput:") retVoid [argPtr (castPtr raw_physicalInput :: Ptr ())]
+setStateFromPhysicalInput gcPhysicalInputProfile physicalInput =
+  sendMessage gcPhysicalInputProfile setStateFromPhysicalInputSelector (toGCPhysicalInputProfile physicalInput)
 
 -- | Returns the primary alias of the GCControllerElement that a given physical input maps to.
 --
@@ -120,9 +115,8 @@ setStateFromPhysicalInput gcPhysicalInputProfile  physicalInput =
 --
 -- ObjC selector: @- mappedElementAliasForPhysicalInputName:@
 mappedElementAliasForPhysicalInputName :: (IsGCPhysicalInputProfile gcPhysicalInputProfile, IsNSString inputName) => gcPhysicalInputProfile -> inputName -> IO (Id NSString)
-mappedElementAliasForPhysicalInputName gcPhysicalInputProfile  inputName =
-  withObjCPtr inputName $ \raw_inputName ->
-      sendMsg gcPhysicalInputProfile (mkSelector "mappedElementAliasForPhysicalInputName:") (retPtr retVoid) [argPtr (castPtr raw_inputName :: Ptr ())] >>= retainedObject . castPtr
+mappedElementAliasForPhysicalInputName gcPhysicalInputProfile inputName =
+  sendMessage gcPhysicalInputProfile mappedElementAliasForPhysicalInputNameSelector (toNSString inputName)
 
 -- | Returns a set of GCInput strings corresponding to physical inputs that are mapped to a given GCControllerElement.
 --
@@ -134,23 +128,22 @@ mappedElementAliasForPhysicalInputName gcPhysicalInputProfile  inputName =
 --
 -- ObjC selector: @- mappedPhysicalInputNamesForElementAlias:@
 mappedPhysicalInputNamesForElementAlias :: (IsGCPhysicalInputProfile gcPhysicalInputProfile, IsNSString elementAlias) => gcPhysicalInputProfile -> elementAlias -> IO (Id NSSet)
-mappedPhysicalInputNamesForElementAlias gcPhysicalInputProfile  elementAlias =
-  withObjCPtr elementAlias $ \raw_elementAlias ->
-      sendMsg gcPhysicalInputProfile (mkSelector "mappedPhysicalInputNamesForElementAlias:") (retPtr retVoid) [argPtr (castPtr raw_elementAlias :: Ptr ())] >>= retainedObject . castPtr
+mappedPhysicalInputNamesForElementAlias gcPhysicalInputProfile elementAlias =
+  sendMessage gcPhysicalInputProfile mappedPhysicalInputNamesForElementAliasSelector (toNSString elementAlias)
 
 -- | A profile keeps a reference to the device that this profile is mapping input from
 --
 -- ObjC selector: @- device@
 device :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO RawId
-device gcPhysicalInputProfile  =
-    fmap (RawId . castPtr) $ sendMsg gcPhysicalInputProfile (mkSelector "device") (retPtr retVoid) []
+device gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile deviceSelector
 
 -- | The last time elements of this profile were updated.
 --
 -- ObjC selector: @- lastEventTimestamp@
 lastEventTimestamp :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO CDouble
-lastEventTimestamp gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "lastEventTimestamp") retCDouble []
+lastEventTimestamp gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile lastEventTimestampSelector
 
 -- | Whether the user has remapped their physical input controls for this profile at the system level.
 --
@@ -158,8 +151,8 @@ lastEventTimestamp gcPhysicalInputProfile  =
 --
 -- ObjC selector: @- hasRemappedElements@
 hasRemappedElements :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO Bool
-hasRemappedElements gcPhysicalInputProfile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcPhysicalInputProfile (mkSelector "hasRemappedElements") retCULong []
+hasRemappedElements gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile hasRemappedElementsSelector
 
 -- | Set this block if you want to be notified when a value on a element changed. If multiple elements have changed this block will be called for each element that changed.
 --
@@ -169,8 +162,8 @@ hasRemappedElements gcPhysicalInputProfile  =
 --
 -- ObjC selector: @- valueDidChangeHandler@
 valueDidChangeHandler :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Ptr ())
-valueDidChangeHandler gcPhysicalInputProfile  =
-    fmap castPtr $ sendMsg gcPhysicalInputProfile (mkSelector "valueDidChangeHandler") (retPtr retVoid) []
+valueDidChangeHandler gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile valueDidChangeHandlerSelector
 
 -- | Set this block if you want to be notified when a value on a element changed. If multiple elements have changed this block will be called for each element that changed.
 --
@@ -180,8 +173,8 @@ valueDidChangeHandler gcPhysicalInputProfile  =
 --
 -- ObjC selector: @- setValueDidChangeHandler:@
 setValueDidChangeHandler :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> Ptr () -> IO ()
-setValueDidChangeHandler gcPhysicalInputProfile  value =
-    sendMsg gcPhysicalInputProfile (mkSelector "setValueDidChangeHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueDidChangeHandler gcPhysicalInputProfile value =
+  sendMessage gcPhysicalInputProfile setValueDidChangeHandlerSelector value
 
 -- | The following properties allow for runtime lookup of any input element on a profile, when provided with a valid alias.
 --
@@ -193,137 +186,137 @@ setValueDidChangeHandler gcPhysicalInputProfile  value =
 --
 -- ObjC selector: @- elements@
 elements :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSDictionary)
-elements gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile elementsSelector
 
 -- | @- buttons@
 buttons :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSDictionary)
-buttons gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "buttons") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttons gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile buttonsSelector
 
 -- | @- axes@
 axes :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSDictionary)
-axes gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "axes") (retPtr retVoid) [] >>= retainedObject . castPtr
+axes gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile axesSelector
 
 -- | @- dpads@
 dpads :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSDictionary)
-dpads gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "dpads") (retPtr retVoid) [] >>= retainedObject . castPtr
+dpads gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile dpadsSelector
 
 -- | @- touchpads@
 touchpads :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSDictionary)
-touchpads gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "touchpads") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchpads gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile touchpadsSelector
 
 -- | The following properties allow for dynamic querying of the input elements available on a profile.
 --
 -- ObjC selector: @- allElements@
 allElements :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSSet)
-allElements gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "allElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+allElements gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile allElementsSelector
 
 -- | @- allButtons@
 allButtons :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSSet)
-allButtons gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "allButtons") (retPtr retVoid) [] >>= retainedObject . castPtr
+allButtons gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile allButtonsSelector
 
 -- | @- allAxes@
 allAxes :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSSet)
-allAxes gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "allAxes") (retPtr retVoid) [] >>= retainedObject . castPtr
+allAxes gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile allAxesSelector
 
 -- | @- allDpads@
 allDpads :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSSet)
-allDpads gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "allDpads") (retPtr retVoid) [] >>= retainedObject . castPtr
+allDpads gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile allDpadsSelector
 
 -- | @- allTouchpads@
 allTouchpads :: IsGCPhysicalInputProfile gcPhysicalInputProfile => gcPhysicalInputProfile -> IO (Id NSSet)
-allTouchpads gcPhysicalInputProfile  =
-    sendMsg gcPhysicalInputProfile (mkSelector "allTouchpads") (retPtr retVoid) [] >>= retainedObject . castPtr
+allTouchpads gcPhysicalInputProfile =
+  sendMessage gcPhysicalInputProfile allTouchpadsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] (Id GCControllerElement)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @capture@
-captureSelector :: Selector
+captureSelector :: Selector '[] (Id GCPhysicalInputProfile)
 captureSelector = mkSelector "capture"
 
 -- | @Selector@ for @setStateFromPhysicalInput:@
-setStateFromPhysicalInputSelector :: Selector
+setStateFromPhysicalInputSelector :: Selector '[Id GCPhysicalInputProfile] ()
 setStateFromPhysicalInputSelector = mkSelector "setStateFromPhysicalInput:"
 
 -- | @Selector@ for @mappedElementAliasForPhysicalInputName:@
-mappedElementAliasForPhysicalInputNameSelector :: Selector
+mappedElementAliasForPhysicalInputNameSelector :: Selector '[Id NSString] (Id NSString)
 mappedElementAliasForPhysicalInputNameSelector = mkSelector "mappedElementAliasForPhysicalInputName:"
 
 -- | @Selector@ for @mappedPhysicalInputNamesForElementAlias:@
-mappedPhysicalInputNamesForElementAliasSelector :: Selector
+mappedPhysicalInputNamesForElementAliasSelector :: Selector '[Id NSString] (Id NSSet)
 mappedPhysicalInputNamesForElementAliasSelector = mkSelector "mappedPhysicalInputNamesForElementAlias:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @lastEventTimestamp@
-lastEventTimestampSelector :: Selector
+lastEventTimestampSelector :: Selector '[] CDouble
 lastEventTimestampSelector = mkSelector "lastEventTimestamp"
 
 -- | @Selector@ for @hasRemappedElements@
-hasRemappedElementsSelector :: Selector
+hasRemappedElementsSelector :: Selector '[] Bool
 hasRemappedElementsSelector = mkSelector "hasRemappedElements"
 
 -- | @Selector@ for @valueDidChangeHandler@
-valueDidChangeHandlerSelector :: Selector
+valueDidChangeHandlerSelector :: Selector '[] (Ptr ())
 valueDidChangeHandlerSelector = mkSelector "valueDidChangeHandler"
 
 -- | @Selector@ for @setValueDidChangeHandler:@
-setValueDidChangeHandlerSelector :: Selector
+setValueDidChangeHandlerSelector :: Selector '[Ptr ()] ()
 setValueDidChangeHandlerSelector = mkSelector "setValueDidChangeHandler:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id NSDictionary)
 elementsSelector = mkSelector "elements"
 
 -- | @Selector@ for @buttons@
-buttonsSelector :: Selector
+buttonsSelector :: Selector '[] (Id NSDictionary)
 buttonsSelector = mkSelector "buttons"
 
 -- | @Selector@ for @axes@
-axesSelector :: Selector
+axesSelector :: Selector '[] (Id NSDictionary)
 axesSelector = mkSelector "axes"
 
 -- | @Selector@ for @dpads@
-dpadsSelector :: Selector
+dpadsSelector :: Selector '[] (Id NSDictionary)
 dpadsSelector = mkSelector "dpads"
 
 -- | @Selector@ for @touchpads@
-touchpadsSelector :: Selector
+touchpadsSelector :: Selector '[] (Id NSDictionary)
 touchpadsSelector = mkSelector "touchpads"
 
 -- | @Selector@ for @allElements@
-allElementsSelector :: Selector
+allElementsSelector :: Selector '[] (Id NSSet)
 allElementsSelector = mkSelector "allElements"
 
 -- | @Selector@ for @allButtons@
-allButtonsSelector :: Selector
+allButtonsSelector :: Selector '[] (Id NSSet)
 allButtonsSelector = mkSelector "allButtons"
 
 -- | @Selector@ for @allAxes@
-allAxesSelector :: Selector
+allAxesSelector :: Selector '[] (Id NSSet)
 allAxesSelector = mkSelector "allAxes"
 
 -- | @Selector@ for @allDpads@
-allDpadsSelector :: Selector
+allDpadsSelector :: Selector '[] (Id NSSet)
 allDpadsSelector = mkSelector "allDpads"
 
 -- | @Selector@ for @allTouchpads@
-allTouchpadsSelector :: Selector
+allTouchpadsSelector :: Selector '[] (Id NSSet)
 allTouchpadsSelector = mkSelector "allTouchpads"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.CallKit.CXCallDirectoryExtensionContext
   , setDelegate
   , incremental
   , addBlockingEntryWithNextSequentialPhoneNumberSelector
-  , removeBlockingEntryWithPhoneNumberSelector
-  , removeAllBlockingEntriesSelector
   , addIdentificationEntryWithNextSequentialPhoneNumber_labelSelector
-  , removeIdentificationEntryWithPhoneNumberSelector
-  , removeAllIdentificationEntriesSelector
-  , completeRequestWithCompletionHandlerSelector
   , completeRequestReturningItems_completionHandlerSelector
+  , completeRequestWithCompletionHandlerSelector
   , delegateSelector
-  , setDelegateSelector
   , incrementalSelector
+  , removeAllBlockingEntriesSelector
+  , removeAllIdentificationEntriesSelector
+  , removeBlockingEntryWithPhoneNumberSelector
+  , removeIdentificationEntryWithPhoneNumberSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addBlockingEntryWithNextSequentialPhoneNumber:@
 addBlockingEntryWithNextSequentialPhoneNumber :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> CLong -> IO ()
-addBlockingEntryWithNextSequentialPhoneNumber cxCallDirectoryExtensionContext  phoneNumber =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "addBlockingEntryWithNextSequentialPhoneNumber:") retVoid [argCLong phoneNumber]
+addBlockingEntryWithNextSequentialPhoneNumber cxCallDirectoryExtensionContext phoneNumber =
+  sendMessage cxCallDirectoryExtensionContext addBlockingEntryWithNextSequentialPhoneNumberSelector phoneNumber
 
 -- | Remove blocking entry with the specified phone number.
 --
@@ -60,8 +57,8 @@ addBlockingEntryWithNextSequentialPhoneNumber cxCallDirectoryExtensionContext  p
 --
 -- ObjC selector: @- removeBlockingEntryWithPhoneNumber:@
 removeBlockingEntryWithPhoneNumber :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> CLong -> IO ()
-removeBlockingEntryWithPhoneNumber cxCallDirectoryExtensionContext  phoneNumber =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "removeBlockingEntryWithPhoneNumber:") retVoid [argCLong phoneNumber]
+removeBlockingEntryWithPhoneNumber cxCallDirectoryExtensionContext phoneNumber =
+  sendMessage cxCallDirectoryExtensionContext removeBlockingEntryWithPhoneNumberSelector phoneNumber
 
 -- | Remove all currently-stored blocking entries.
 --
@@ -69,14 +66,13 @@ removeBlockingEntryWithPhoneNumber cxCallDirectoryExtensionContext  phoneNumber 
 --
 -- ObjC selector: @- removeAllBlockingEntries@
 removeAllBlockingEntries :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> IO ()
-removeAllBlockingEntries cxCallDirectoryExtensionContext  =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "removeAllBlockingEntries") retVoid []
+removeAllBlockingEntries cxCallDirectoryExtensionContext =
+  sendMessage cxCallDirectoryExtensionContext removeAllBlockingEntriesSelector
 
 -- | @- addIdentificationEntryWithNextSequentialPhoneNumber:label:@
 addIdentificationEntryWithNextSequentialPhoneNumber_label :: (IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext, IsNSString label) => cxCallDirectoryExtensionContext -> CLong -> label -> IO ()
-addIdentificationEntryWithNextSequentialPhoneNumber_label cxCallDirectoryExtensionContext  phoneNumber label =
-  withObjCPtr label $ \raw_label ->
-      sendMsg cxCallDirectoryExtensionContext (mkSelector "addIdentificationEntryWithNextSequentialPhoneNumber:label:") retVoid [argCLong phoneNumber, argPtr (castPtr raw_label :: Ptr ())]
+addIdentificationEntryWithNextSequentialPhoneNumber_label cxCallDirectoryExtensionContext phoneNumber label =
+  sendMessage cxCallDirectoryExtensionContext addIdentificationEntryWithNextSequentialPhoneNumber_labelSelector phoneNumber (toNSString label)
 
 -- | Remove identification entry with the specified phone number.
 --
@@ -86,8 +82,8 @@ addIdentificationEntryWithNextSequentialPhoneNumber_label cxCallDirectoryExtensi
 --
 -- ObjC selector: @- removeIdentificationEntryWithPhoneNumber:@
 removeIdentificationEntryWithPhoneNumber :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> CLong -> IO ()
-removeIdentificationEntryWithPhoneNumber cxCallDirectoryExtensionContext  phoneNumber =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "removeIdentificationEntryWithPhoneNumber:") retVoid [argCLong phoneNumber]
+removeIdentificationEntryWithPhoneNumber cxCallDirectoryExtensionContext phoneNumber =
+  sendMessage cxCallDirectoryExtensionContext removeIdentificationEntryWithPhoneNumberSelector phoneNumber
 
 -- | Remove all currently-stored identification entries.
 --
@@ -95,29 +91,28 @@ removeIdentificationEntryWithPhoneNumber cxCallDirectoryExtensionContext  phoneN
 --
 -- ObjC selector: @- removeAllIdentificationEntries@
 removeAllIdentificationEntries :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> IO ()
-removeAllIdentificationEntries cxCallDirectoryExtensionContext  =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "removeAllIdentificationEntries") retVoid []
+removeAllIdentificationEntries cxCallDirectoryExtensionContext =
+  sendMessage cxCallDirectoryExtensionContext removeAllIdentificationEntriesSelector
 
 -- | @- completeRequestWithCompletionHandler:@
 completeRequestWithCompletionHandler :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> Ptr () -> IO ()
-completeRequestWithCompletionHandler cxCallDirectoryExtensionContext  completion =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "completeRequestWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+completeRequestWithCompletionHandler cxCallDirectoryExtensionContext completion =
+  sendMessage cxCallDirectoryExtensionContext completeRequestWithCompletionHandlerSelector completion
 
 -- | @- completeRequestReturningItems:completionHandler:@
 completeRequestReturningItems_completionHandler :: (IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext, IsNSArray items) => cxCallDirectoryExtensionContext -> items -> Ptr () -> IO ()
-completeRequestReturningItems_completionHandler cxCallDirectoryExtensionContext  items completionHandler =
-  withObjCPtr items $ \raw_items ->
-      sendMsg cxCallDirectoryExtensionContext (mkSelector "completeRequestReturningItems:completionHandler:") retVoid [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeRequestReturningItems_completionHandler cxCallDirectoryExtensionContext items completionHandler =
+  sendMessage cxCallDirectoryExtensionContext completeRequestReturningItems_completionHandlerSelector (toNSArray items) completionHandler
 
 -- | @- delegate@
 delegate :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> IO RawId
-delegate cxCallDirectoryExtensionContext  =
-    fmap (RawId . castPtr) $ sendMsg cxCallDirectoryExtensionContext (mkSelector "delegate") (retPtr retVoid) []
+delegate cxCallDirectoryExtensionContext =
+  sendMessage cxCallDirectoryExtensionContext delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> RawId -> IO ()
-setDelegate cxCallDirectoryExtensionContext  value =
-    sendMsg cxCallDirectoryExtensionContext (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cxCallDirectoryExtensionContext value =
+  sendMessage cxCallDirectoryExtensionContext setDelegateSelector value
 
 -- | Whether the request should provide incremental data.
 --
@@ -125,54 +120,54 @@ setDelegate cxCallDirectoryExtensionContext  value =
 --
 -- ObjC selector: @- incremental@
 incremental :: IsCXCallDirectoryExtensionContext cxCallDirectoryExtensionContext => cxCallDirectoryExtensionContext -> IO Bool
-incremental cxCallDirectoryExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCallDirectoryExtensionContext (mkSelector "incremental") retCULong []
+incremental cxCallDirectoryExtensionContext =
+  sendMessage cxCallDirectoryExtensionContext incrementalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addBlockingEntryWithNextSequentialPhoneNumber:@
-addBlockingEntryWithNextSequentialPhoneNumberSelector :: Selector
+addBlockingEntryWithNextSequentialPhoneNumberSelector :: Selector '[CLong] ()
 addBlockingEntryWithNextSequentialPhoneNumberSelector = mkSelector "addBlockingEntryWithNextSequentialPhoneNumber:"
 
 -- | @Selector@ for @removeBlockingEntryWithPhoneNumber:@
-removeBlockingEntryWithPhoneNumberSelector :: Selector
+removeBlockingEntryWithPhoneNumberSelector :: Selector '[CLong] ()
 removeBlockingEntryWithPhoneNumberSelector = mkSelector "removeBlockingEntryWithPhoneNumber:"
 
 -- | @Selector@ for @removeAllBlockingEntries@
-removeAllBlockingEntriesSelector :: Selector
+removeAllBlockingEntriesSelector :: Selector '[] ()
 removeAllBlockingEntriesSelector = mkSelector "removeAllBlockingEntries"
 
 -- | @Selector@ for @addIdentificationEntryWithNextSequentialPhoneNumber:label:@
-addIdentificationEntryWithNextSequentialPhoneNumber_labelSelector :: Selector
+addIdentificationEntryWithNextSequentialPhoneNumber_labelSelector :: Selector '[CLong, Id NSString] ()
 addIdentificationEntryWithNextSequentialPhoneNumber_labelSelector = mkSelector "addIdentificationEntryWithNextSequentialPhoneNumber:label:"
 
 -- | @Selector@ for @removeIdentificationEntryWithPhoneNumber:@
-removeIdentificationEntryWithPhoneNumberSelector :: Selector
+removeIdentificationEntryWithPhoneNumberSelector :: Selector '[CLong] ()
 removeIdentificationEntryWithPhoneNumberSelector = mkSelector "removeIdentificationEntryWithPhoneNumber:"
 
 -- | @Selector@ for @removeAllIdentificationEntries@
-removeAllIdentificationEntriesSelector :: Selector
+removeAllIdentificationEntriesSelector :: Selector '[] ()
 removeAllIdentificationEntriesSelector = mkSelector "removeAllIdentificationEntries"
 
 -- | @Selector@ for @completeRequestWithCompletionHandler:@
-completeRequestWithCompletionHandlerSelector :: Selector
+completeRequestWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 completeRequestWithCompletionHandlerSelector = mkSelector "completeRequestWithCompletionHandler:"
 
 -- | @Selector@ for @completeRequestReturningItems:completionHandler:@
-completeRequestReturningItems_completionHandlerSelector :: Selector
+completeRequestReturningItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 completeRequestReturningItems_completionHandlerSelector = mkSelector "completeRequestReturningItems:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @incremental@
-incrementalSelector :: Selector
+incrementalSelector :: Selector '[] Bool
 incrementalSelector = mkSelector "incremental"
 

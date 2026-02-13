@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.CoreMIDI.MIDICIDevice
   , maxPropertyExchangeRequests
   , deviceType
   , profiles
-  , initSelector
   , deviceInfoSelector
+  , deviceTypeSelector
+  , initSelector
+  , maxPropertyExchangeRequestsSelector
+  , maxSysExSizeSelector
   , muidSelector
-  , supportsProtocolNegotiationSelector
+  , profilesSelector
+  , supportsProcessInquirySelector
   , supportsProfileConfigurationSelector
   , supportsPropertyExchangeSelector
-  , supportsProcessInquirySelector
-  , maxSysExSizeSelector
-  , maxPropertyExchangeRequestsSelector
-  , deviceTypeSelector
-  , profilesSelector
+  , supportsProtocolNegotiationSelector
 
   -- * Enum types
   , MIDICIDeviceType(MIDICIDeviceType)
@@ -45,15 +46,11 @@ module ObjC.CoreMIDI.MIDICIDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDICIDevice midiciDevice => midiciDevice -> IO (Id MIDICIDevice)
-init_ midiciDevice  =
-    sendMsg midiciDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiciDevice =
+  sendOwnedMessage midiciDevice initSelector
 
 -- | deviceInfo
 --
@@ -72,8 +69,8 @@ init_ midiciDevice  =
 --
 -- ObjC selector: @- deviceInfo@
 deviceInfo :: IsMIDICIDevice midiciDevice => midiciDevice -> IO (Id MIDI2DeviceInfo)
-deviceInfo midiciDevice  =
-    sendMsg midiciDevice (mkSelector "deviceInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceInfo midiciDevice =
+  sendMessage midiciDevice deviceInfoSelector
 
 -- | MUID
 --
@@ -81,8 +78,8 @@ deviceInfo midiciDevice  =
 --
 -- ObjC selector: @- MUID@
 muid :: IsMIDICIDevice midiciDevice => midiciDevice -> IO CUInt
-muid midiciDevice  =
-    sendMsg midiciDevice (mkSelector "MUID") retCUInt []
+muid midiciDevice =
+  sendMessage midiciDevice muidSelector
 
 -- | supportsProtocolNegotiation
 --
@@ -90,8 +87,8 @@ muid midiciDevice  =
 --
 -- ObjC selector: @- supportsProtocolNegotiation@
 supportsProtocolNegotiation :: IsMIDICIDevice midiciDevice => midiciDevice -> IO Bool
-supportsProtocolNegotiation midiciDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiciDevice (mkSelector "supportsProtocolNegotiation") retCULong []
+supportsProtocolNegotiation midiciDevice =
+  sendMessage midiciDevice supportsProtocolNegotiationSelector
 
 -- | supportsProfileConfiguration
 --
@@ -99,8 +96,8 @@ supportsProtocolNegotiation midiciDevice  =
 --
 -- ObjC selector: @- supportsProfileConfiguration@
 supportsProfileConfiguration :: IsMIDICIDevice midiciDevice => midiciDevice -> IO Bool
-supportsProfileConfiguration midiciDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiciDevice (mkSelector "supportsProfileConfiguration") retCULong []
+supportsProfileConfiguration midiciDevice =
+  sendMessage midiciDevice supportsProfileConfigurationSelector
 
 -- | supportsPropertyExchange
 --
@@ -108,8 +105,8 @@ supportsProfileConfiguration midiciDevice  =
 --
 -- ObjC selector: @- supportsPropertyExchange@
 supportsPropertyExchange :: IsMIDICIDevice midiciDevice => midiciDevice -> IO Bool
-supportsPropertyExchange midiciDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiciDevice (mkSelector "supportsPropertyExchange") retCULong []
+supportsPropertyExchange midiciDevice =
+  sendMessage midiciDevice supportsPropertyExchangeSelector
 
 -- | supportsProcessInquiry
 --
@@ -117,8 +114,8 @@ supportsPropertyExchange midiciDevice  =
 --
 -- ObjC selector: @- supportsProcessInquiry@
 supportsProcessInquiry :: IsMIDICIDevice midiciDevice => midiciDevice -> IO Bool
-supportsProcessInquiry midiciDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiciDevice (mkSelector "supportsProcessInquiry") retCULong []
+supportsProcessInquiry midiciDevice =
+  sendMessage midiciDevice supportsProcessInquirySelector
 
 -- | maxSysExSize
 --
@@ -126,8 +123,8 @@ supportsProcessInquiry midiciDevice  =
 --
 -- ObjC selector: @- maxSysExSize@
 maxSysExSize :: IsMIDICIDevice midiciDevice => midiciDevice -> IO CULong
-maxSysExSize midiciDevice  =
-    sendMsg midiciDevice (mkSelector "maxSysExSize") retCULong []
+maxSysExSize midiciDevice =
+  sendMessage midiciDevice maxSysExSizeSelector
 
 -- | maxPropertyExchangeRequests
 --
@@ -135,8 +132,8 @@ maxSysExSize midiciDevice  =
 --
 -- ObjC selector: @- maxPropertyExchangeRequests@
 maxPropertyExchangeRequests :: IsMIDICIDevice midiciDevice => midiciDevice -> IO CULong
-maxPropertyExchangeRequests midiciDevice  =
-    sendMsg midiciDevice (mkSelector "maxPropertyExchangeRequests") retCULong []
+maxPropertyExchangeRequests midiciDevice =
+  sendMessage midiciDevice maxPropertyExchangeRequestsSelector
 
 -- | deviceType
 --
@@ -144,8 +141,8 @@ maxPropertyExchangeRequests midiciDevice  =
 --
 -- ObjC selector: @- deviceType@
 deviceType :: IsMIDICIDevice midiciDevice => midiciDevice -> IO MIDICIDeviceType
-deviceType midiciDevice  =
-    fmap (coerce :: CUChar -> MIDICIDeviceType) $ sendMsg midiciDevice (mkSelector "deviceType") retCUChar []
+deviceType midiciDevice =
+  sendMessage midiciDevice deviceTypeSelector
 
 -- | profiles
 --
@@ -153,54 +150,54 @@ deviceType midiciDevice  =
 --
 -- ObjC selector: @- profiles@
 profiles :: IsMIDICIDevice midiciDevice => midiciDevice -> IO (Id NSArray)
-profiles midiciDevice  =
-    sendMsg midiciDevice (mkSelector "profiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+profiles midiciDevice =
+  sendMessage midiciDevice profilesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDICIDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @deviceInfo@
-deviceInfoSelector :: Selector
+deviceInfoSelector :: Selector '[] (Id MIDI2DeviceInfo)
 deviceInfoSelector = mkSelector "deviceInfo"
 
 -- | @Selector@ for @MUID@
-muidSelector :: Selector
+muidSelector :: Selector '[] CUInt
 muidSelector = mkSelector "MUID"
 
 -- | @Selector@ for @supportsProtocolNegotiation@
-supportsProtocolNegotiationSelector :: Selector
+supportsProtocolNegotiationSelector :: Selector '[] Bool
 supportsProtocolNegotiationSelector = mkSelector "supportsProtocolNegotiation"
 
 -- | @Selector@ for @supportsProfileConfiguration@
-supportsProfileConfigurationSelector :: Selector
+supportsProfileConfigurationSelector :: Selector '[] Bool
 supportsProfileConfigurationSelector = mkSelector "supportsProfileConfiguration"
 
 -- | @Selector@ for @supportsPropertyExchange@
-supportsPropertyExchangeSelector :: Selector
+supportsPropertyExchangeSelector :: Selector '[] Bool
 supportsPropertyExchangeSelector = mkSelector "supportsPropertyExchange"
 
 -- | @Selector@ for @supportsProcessInquiry@
-supportsProcessInquirySelector :: Selector
+supportsProcessInquirySelector :: Selector '[] Bool
 supportsProcessInquirySelector = mkSelector "supportsProcessInquiry"
 
 -- | @Selector@ for @maxSysExSize@
-maxSysExSizeSelector :: Selector
+maxSysExSizeSelector :: Selector '[] CULong
 maxSysExSizeSelector = mkSelector "maxSysExSize"
 
 -- | @Selector@ for @maxPropertyExchangeRequests@
-maxPropertyExchangeRequestsSelector :: Selector
+maxPropertyExchangeRequestsSelector :: Selector '[] CULong
 maxPropertyExchangeRequestsSelector = mkSelector "maxPropertyExchangeRequests"
 
 -- | @Selector@ for @deviceType@
-deviceTypeSelector :: Selector
+deviceTypeSelector :: Selector '[] MIDICIDeviceType
 deviceTypeSelector = mkSelector "deviceType"
 
 -- | @Selector@ for @profiles@
-profilesSelector :: Selector
+profilesSelector :: Selector '[] (Id NSArray)
 profilesSelector = mkSelector "profiles"
 

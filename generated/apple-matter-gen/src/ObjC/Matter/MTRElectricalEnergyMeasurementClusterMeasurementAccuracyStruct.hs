@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruc
   , setMaxMeasuredValue
   , accuracyRanges
   , setAccuracyRanges
-  , measurementTypeSelector
-  , setMeasurementTypeSelector
-  , measuredSelector
-  , setMeasuredSelector
-  , minMeasuredValueSelector
-  , setMinMeasuredValueSelector
-  , maxMeasuredValueSelector
-  , setMaxMeasuredValueSelector
   , accuracyRangesSelector
+  , maxMeasuredValueSelector
+  , measuredSelector
+  , measurementTypeSelector
+  , minMeasuredValueSelector
   , setAccuracyRangesSelector
+  , setMaxMeasuredValueSelector
+  , setMeasuredSelector
+  , setMeasurementTypeSelector
+  , setMinMeasuredValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- measurementType@
 measurementType :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> IO (Id NSNumber)
-measurementType mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "measurementType") (retPtr retVoid) [] >>= retainedObject . castPtr
+measurementType mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct measurementTypeSelector
 
 -- | @- setMeasurementType:@
 setMeasurementType :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> value -> IO ()
-setMeasurementType mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "setMeasurementType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeasurementType mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct setMeasurementTypeSelector (toNSNumber value)
 
 -- | @- measured@
 measured :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> IO (Id NSNumber)
-measured mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "measured") (retPtr retVoid) [] >>= retainedObject . castPtr
+measured mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct measuredSelector
 
 -- | @- setMeasured:@
 setMeasured :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> value -> IO ()
-setMeasured mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "setMeasured:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeasured mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct setMeasuredSelector (toNSNumber value)
 
 -- | @- minMeasuredValue@
 minMeasuredValue :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> IO (Id NSNumber)
-minMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "minMeasuredValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+minMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct minMeasuredValueSelector
 
 -- | @- setMinMeasuredValue:@
 setMinMeasuredValue :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> value -> IO ()
-setMinMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "setMinMeasuredValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct setMinMeasuredValueSelector (toNSNumber value)
 
 -- | @- maxMeasuredValue@
 maxMeasuredValue :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> IO (Id NSNumber)
-maxMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "maxMeasuredValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct maxMeasuredValueSelector
 
 -- | @- setMaxMeasuredValue:@
 setMaxMeasuredValue :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> value -> IO ()
-setMaxMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "setMaxMeasuredValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxMeasuredValue mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct setMaxMeasuredValueSelector (toNSNumber value)
 
 -- | @- accuracyRanges@
 accuracyRanges :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> IO (Id NSArray)
-accuracyRanges mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "accuracyRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+accuracyRanges mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct accuracyRangesSelector
 
 -- | @- setAccuracyRanges:@
 setAccuracyRanges :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct, IsNSArray value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct -> value -> IO ()
-setAccuracyRanges mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct (mkSelector "setAccuracyRanges:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccuracyRanges mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyStruct setAccuracyRangesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @measurementType@
-measurementTypeSelector :: Selector
+measurementTypeSelector :: Selector '[] (Id NSNumber)
 measurementTypeSelector = mkSelector "measurementType"
 
 -- | @Selector@ for @setMeasurementType:@
-setMeasurementTypeSelector :: Selector
+setMeasurementTypeSelector :: Selector '[Id NSNumber] ()
 setMeasurementTypeSelector = mkSelector "setMeasurementType:"
 
 -- | @Selector@ for @measured@
-measuredSelector :: Selector
+measuredSelector :: Selector '[] (Id NSNumber)
 measuredSelector = mkSelector "measured"
 
 -- | @Selector@ for @setMeasured:@
-setMeasuredSelector :: Selector
+setMeasuredSelector :: Selector '[Id NSNumber] ()
 setMeasuredSelector = mkSelector "setMeasured:"
 
 -- | @Selector@ for @minMeasuredValue@
-minMeasuredValueSelector :: Selector
+minMeasuredValueSelector :: Selector '[] (Id NSNumber)
 minMeasuredValueSelector = mkSelector "minMeasuredValue"
 
 -- | @Selector@ for @setMinMeasuredValue:@
-setMinMeasuredValueSelector :: Selector
+setMinMeasuredValueSelector :: Selector '[Id NSNumber] ()
 setMinMeasuredValueSelector = mkSelector "setMinMeasuredValue:"
 
 -- | @Selector@ for @maxMeasuredValue@
-maxMeasuredValueSelector :: Selector
+maxMeasuredValueSelector :: Selector '[] (Id NSNumber)
 maxMeasuredValueSelector = mkSelector "maxMeasuredValue"
 
 -- | @Selector@ for @setMaxMeasuredValue:@
-setMaxMeasuredValueSelector :: Selector
+setMaxMeasuredValueSelector :: Selector '[Id NSNumber] ()
 setMaxMeasuredValueSelector = mkSelector "setMaxMeasuredValue:"
 
 -- | @Selector@ for @accuracyRanges@
-accuracyRangesSelector :: Selector
+accuracyRangesSelector :: Selector '[] (Id NSArray)
 accuracyRangesSelector = mkSelector "accuracyRanges"
 
 -- | @Selector@ for @setAccuracyRanges:@
-setAccuracyRangesSelector :: Selector
+setAccuracyRangesSelector :: Selector '[Id NSArray] ()
 setAccuracyRangesSelector = mkSelector "setAccuracyRanges:"
 

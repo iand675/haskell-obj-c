@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Intents.INBookRestaurantReservationIntent
   , setSelectedOffer
   , guestProvidedSpecialRequestText
   , setGuestProvidedSpecialRequestText
-  , initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector
-  , restaurantSelector
-  , setRestaurantSelector
   , bookingDateComponentsSelector
-  , setBookingDateComponentsSelector
-  , partySizeSelector
-  , setPartySizeSelector
   , bookingIdentifierSelector
-  , setBookingIdentifierSelector
-  , guestSelector
-  , setGuestSelector
-  , selectedOfferSelector
-  , setSelectedOfferSelector
   , guestProvidedSpecialRequestTextSelector
+  , guestSelector
+  , initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector
+  , partySizeSelector
+  , restaurantSelector
+  , selectedOfferSelector
+  , setBookingDateComponentsSelector
+  , setBookingIdentifierSelector
   , setGuestProvidedSpecialRequestTextSelector
+  , setGuestSelector
+  , setPartySizeSelector
+  , setRestaurantSelector
+  , setSelectedOfferSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,152 +54,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRestaurant:bookingDateComponents:partySize:bookingIdentifier:guest:selectedOffer:guestProvidedSpecialRequestText:@
 initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestText :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsINRestaurant restaurant, IsNSDateComponents bookingDateComponents, IsNSString bookingIdentifier, IsINRestaurantGuest guest, IsINRestaurantOffer selectedOffer, IsNSString guestProvidedSpecialRequestText) => inBookRestaurantReservationIntent -> restaurant -> bookingDateComponents -> CULong -> bookingIdentifier -> guest -> selectedOffer -> guestProvidedSpecialRequestText -> IO (Id INBookRestaurantReservationIntent)
-initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestText inBookRestaurantReservationIntent  restaurant bookingDateComponents partySize bookingIdentifier guest selectedOffer guestProvidedSpecialRequestText =
-  withObjCPtr restaurant $ \raw_restaurant ->
-    withObjCPtr bookingDateComponents $ \raw_bookingDateComponents ->
-      withObjCPtr bookingIdentifier $ \raw_bookingIdentifier ->
-        withObjCPtr guest $ \raw_guest ->
-          withObjCPtr selectedOffer $ \raw_selectedOffer ->
-            withObjCPtr guestProvidedSpecialRequestText $ \raw_guestProvidedSpecialRequestText ->
-                sendMsg inBookRestaurantReservationIntent (mkSelector "initWithRestaurant:bookingDateComponents:partySize:bookingIdentifier:guest:selectedOffer:guestProvidedSpecialRequestText:") (retPtr retVoid) [argPtr (castPtr raw_restaurant :: Ptr ()), argPtr (castPtr raw_bookingDateComponents :: Ptr ()), argCULong partySize, argPtr (castPtr raw_bookingIdentifier :: Ptr ()), argPtr (castPtr raw_guest :: Ptr ()), argPtr (castPtr raw_selectedOffer :: Ptr ()), argPtr (castPtr raw_guestProvidedSpecialRequestText :: Ptr ())] >>= ownedObject . castPtr
+initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestText inBookRestaurantReservationIntent restaurant bookingDateComponents partySize bookingIdentifier guest selectedOffer guestProvidedSpecialRequestText =
+  sendOwnedMessage inBookRestaurantReservationIntent initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector (toINRestaurant restaurant) (toNSDateComponents bookingDateComponents) partySize (toNSString bookingIdentifier) (toINRestaurantGuest guest) (toINRestaurantOffer selectedOffer) (toNSString guestProvidedSpecialRequestText)
 
 -- | @- restaurant@
 restaurant :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id INRestaurant)
-restaurant inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "restaurant") (retPtr retVoid) [] >>= retainedObject . castPtr
+restaurant inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent restaurantSelector
 
 -- | @- setRestaurant:@
 setRestaurant :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsINRestaurant value) => inBookRestaurantReservationIntent -> value -> IO ()
-setRestaurant inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setRestaurant:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRestaurant inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setRestaurantSelector (toINRestaurant value)
 
 -- | @- bookingDateComponents@
 bookingDateComponents :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id NSDateComponents)
-bookingDateComponents inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "bookingDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingDateComponents inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent bookingDateComponentsSelector
 
 -- | @- setBookingDateComponents:@
 setBookingDateComponents :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsNSDateComponents value) => inBookRestaurantReservationIntent -> value -> IO ()
-setBookingDateComponents inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setBookingDateComponents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBookingDateComponents inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setBookingDateComponentsSelector (toNSDateComponents value)
 
 -- | @- partySize@
 partySize :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO CULong
-partySize inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "partySize") retCULong []
+partySize inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent partySizeSelector
 
 -- | @- setPartySize:@
 setPartySize :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> CULong -> IO ()
-setPartySize inBookRestaurantReservationIntent  value =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "setPartySize:") retVoid [argCULong value]
+setPartySize inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setPartySizeSelector value
 
 -- | @- bookingIdentifier@
 bookingIdentifier :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id NSString)
-bookingIdentifier inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "bookingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingIdentifier inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent bookingIdentifierSelector
 
 -- | @- setBookingIdentifier:@
 setBookingIdentifier :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsNSString value) => inBookRestaurantReservationIntent -> value -> IO ()
-setBookingIdentifier inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setBookingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBookingIdentifier inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setBookingIdentifierSelector (toNSString value)
 
 -- | @- guest@
 guest :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id INRestaurantGuest)
-guest inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "guest") (retPtr retVoid) [] >>= retainedObject . castPtr
+guest inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent guestSelector
 
 -- | @- setGuest:@
 setGuest :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsINRestaurantGuest value) => inBookRestaurantReservationIntent -> value -> IO ()
-setGuest inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setGuest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGuest inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setGuestSelector (toINRestaurantGuest value)
 
 -- | @- selectedOffer@
 selectedOffer :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id INRestaurantOffer)
-selectedOffer inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "selectedOffer") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedOffer inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent selectedOfferSelector
 
 -- | @- setSelectedOffer:@
 setSelectedOffer :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsINRestaurantOffer value) => inBookRestaurantReservationIntent -> value -> IO ()
-setSelectedOffer inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setSelectedOffer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectedOffer inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setSelectedOfferSelector (toINRestaurantOffer value)
 
 -- | @- guestProvidedSpecialRequestText@
 guestProvidedSpecialRequestText :: IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent => inBookRestaurantReservationIntent -> IO (Id NSString)
-guestProvidedSpecialRequestText inBookRestaurantReservationIntent  =
-    sendMsg inBookRestaurantReservationIntent (mkSelector "guestProvidedSpecialRequestText") (retPtr retVoid) [] >>= retainedObject . castPtr
+guestProvidedSpecialRequestText inBookRestaurantReservationIntent =
+  sendMessage inBookRestaurantReservationIntent guestProvidedSpecialRequestTextSelector
 
 -- | @- setGuestProvidedSpecialRequestText:@
 setGuestProvidedSpecialRequestText :: (IsINBookRestaurantReservationIntent inBookRestaurantReservationIntent, IsNSString value) => inBookRestaurantReservationIntent -> value -> IO ()
-setGuestProvidedSpecialRequestText inBookRestaurantReservationIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBookRestaurantReservationIntent (mkSelector "setGuestProvidedSpecialRequestText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGuestProvidedSpecialRequestText inBookRestaurantReservationIntent value =
+  sendMessage inBookRestaurantReservationIntent setGuestProvidedSpecialRequestTextSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRestaurant:bookingDateComponents:partySize:bookingIdentifier:guest:selectedOffer:guestProvidedSpecialRequestText:@
-initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector :: Selector
+initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector :: Selector '[Id INRestaurant, Id NSDateComponents, CULong, Id NSString, Id INRestaurantGuest, Id INRestaurantOffer, Id NSString] (Id INBookRestaurantReservationIntent)
 initWithRestaurant_bookingDateComponents_partySize_bookingIdentifier_guest_selectedOffer_guestProvidedSpecialRequestTextSelector = mkSelector "initWithRestaurant:bookingDateComponents:partySize:bookingIdentifier:guest:selectedOffer:guestProvidedSpecialRequestText:"
 
 -- | @Selector@ for @restaurant@
-restaurantSelector :: Selector
+restaurantSelector :: Selector '[] (Id INRestaurant)
 restaurantSelector = mkSelector "restaurant"
 
 -- | @Selector@ for @setRestaurant:@
-setRestaurantSelector :: Selector
+setRestaurantSelector :: Selector '[Id INRestaurant] ()
 setRestaurantSelector = mkSelector "setRestaurant:"
 
 -- | @Selector@ for @bookingDateComponents@
-bookingDateComponentsSelector :: Selector
+bookingDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 bookingDateComponentsSelector = mkSelector "bookingDateComponents"
 
 -- | @Selector@ for @setBookingDateComponents:@
-setBookingDateComponentsSelector :: Selector
+setBookingDateComponentsSelector :: Selector '[Id NSDateComponents] ()
 setBookingDateComponentsSelector = mkSelector "setBookingDateComponents:"
 
 -- | @Selector@ for @partySize@
-partySizeSelector :: Selector
+partySizeSelector :: Selector '[] CULong
 partySizeSelector = mkSelector "partySize"
 
 -- | @Selector@ for @setPartySize:@
-setPartySizeSelector :: Selector
+setPartySizeSelector :: Selector '[CULong] ()
 setPartySizeSelector = mkSelector "setPartySize:"
 
 -- | @Selector@ for @bookingIdentifier@
-bookingIdentifierSelector :: Selector
+bookingIdentifierSelector :: Selector '[] (Id NSString)
 bookingIdentifierSelector = mkSelector "bookingIdentifier"
 
 -- | @Selector@ for @setBookingIdentifier:@
-setBookingIdentifierSelector :: Selector
+setBookingIdentifierSelector :: Selector '[Id NSString] ()
 setBookingIdentifierSelector = mkSelector "setBookingIdentifier:"
 
 -- | @Selector@ for @guest@
-guestSelector :: Selector
+guestSelector :: Selector '[] (Id INRestaurantGuest)
 guestSelector = mkSelector "guest"
 
 -- | @Selector@ for @setGuest:@
-setGuestSelector :: Selector
+setGuestSelector :: Selector '[Id INRestaurantGuest] ()
 setGuestSelector = mkSelector "setGuest:"
 
 -- | @Selector@ for @selectedOffer@
-selectedOfferSelector :: Selector
+selectedOfferSelector :: Selector '[] (Id INRestaurantOffer)
 selectedOfferSelector = mkSelector "selectedOffer"
 
 -- | @Selector@ for @setSelectedOffer:@
-setSelectedOfferSelector :: Selector
+setSelectedOfferSelector :: Selector '[Id INRestaurantOffer] ()
 setSelectedOfferSelector = mkSelector "setSelectedOffer:"
 
 -- | @Selector@ for @guestProvidedSpecialRequestText@
-guestProvidedSpecialRequestTextSelector :: Selector
+guestProvidedSpecialRequestTextSelector :: Selector '[] (Id NSString)
 guestProvidedSpecialRequestTextSelector = mkSelector "guestProvidedSpecialRequestText"
 
 -- | @Selector@ for @setGuestProvidedSpecialRequestText:@
-setGuestProvidedSpecialRequestTextSelector :: Selector
+setGuestProvidedSpecialRequestTextSelector :: Selector '[Id NSString] ()
 setGuestProvidedSpecialRequestTextSelector = mkSelector "setGuestProvidedSpecialRequestText:"
 

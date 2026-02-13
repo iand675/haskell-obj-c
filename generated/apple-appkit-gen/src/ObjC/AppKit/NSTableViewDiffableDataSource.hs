@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.AppKit.NSTableViewDiffableDataSource
   , setSectionHeaderViewProvider
   , defaultRowAnimation
   , setDefaultRowAnimation
-  , initWithTableView_cellProviderSelector
-  , initSelector
-  , newSelector
-  , snapshotSelector
   , applySnapshot_animatingDifferencesSelector
   , applySnapshot_animatingDifferences_completionSelector
+  , defaultRowAnimationSelector
+  , initSelector
+  , initWithTableView_cellProviderSelector
   , itemIdentifierForRowSelector
+  , newSelector
   , rowForItemIdentifierSelector
-  , sectionIdentifierForRowSelector
   , rowForSectionIdentifierSelector
   , rowViewProviderSelector
-  , setRowViewProviderSelector
   , sectionHeaderViewProviderSelector
-  , setSectionHeaderViewProviderSelector
-  , defaultRowAnimationSelector
+  , sectionIdentifierForRowSelector
   , setDefaultRowAnimationSelector
+  , setRowViewProviderSelector
+  , setSectionHeaderViewProviderSelector
+  , snapshotSelector
 
   -- * Enum types
   , NSTableViewAnimationOptions(NSTableViewAnimationOptions)
@@ -52,15 +53,11 @@ module ObjC.AppKit.NSTableViewDiffableDataSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,154 +67,151 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTableView:cellProvider:@
 initWithTableView_cellProvider :: (IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource, IsNSTableView tableView) => nsTableViewDiffableDataSource -> tableView -> Ptr () -> IO (Id NSTableViewDiffableDataSource)
-initWithTableView_cellProvider nsTableViewDiffableDataSource  tableView cellProvider =
-  withObjCPtr tableView $ \raw_tableView ->
-      sendMsg nsTableViewDiffableDataSource (mkSelector "initWithTableView:cellProvider:") (retPtr retVoid) [argPtr (castPtr raw_tableView :: Ptr ()), argPtr (castPtr cellProvider :: Ptr ())] >>= ownedObject . castPtr
+initWithTableView_cellProvider nsTableViewDiffableDataSource tableView cellProvider =
+  sendOwnedMessage nsTableViewDiffableDataSource initWithTableView_cellProviderSelector (toNSTableView tableView) cellProvider
 
 -- | @- init@
 init_ :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> IO (Id NSTableViewDiffableDataSource)
-init_ nsTableViewDiffableDataSource  =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTableViewDiffableDataSource =
+  sendOwnedMessage nsTableViewDiffableDataSource initSelector
 
 -- | @+ new@
 new :: IO (Id NSTableViewDiffableDataSource)
 new  =
   do
     cls' <- getRequiredClass "NSTableViewDiffableDataSource"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- snapshot@
 snapshot :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> IO (Id NSDiffableDataSourceSnapshot)
-snapshot nsTableViewDiffableDataSource  =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "snapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshot nsTableViewDiffableDataSource =
+  sendMessage nsTableViewDiffableDataSource snapshotSelector
 
 -- | @- applySnapshot:animatingDifferences:@
 applySnapshot_animatingDifferences :: (IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource, IsNSDiffableDataSourceSnapshot snapshot) => nsTableViewDiffableDataSource -> snapshot -> Bool -> IO ()
-applySnapshot_animatingDifferences nsTableViewDiffableDataSource  snapshot animatingDifferences =
-  withObjCPtr snapshot $ \raw_snapshot ->
-      sendMsg nsTableViewDiffableDataSource (mkSelector "applySnapshot:animatingDifferences:") retVoid [argPtr (castPtr raw_snapshot :: Ptr ()), argCULong (if animatingDifferences then 1 else 0)]
+applySnapshot_animatingDifferences nsTableViewDiffableDataSource snapshot animatingDifferences =
+  sendMessage nsTableViewDiffableDataSource applySnapshot_animatingDifferencesSelector (toNSDiffableDataSourceSnapshot snapshot) animatingDifferences
 
 -- | @- applySnapshot:animatingDifferences:completion:@
 applySnapshot_animatingDifferences_completion :: (IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource, IsNSDiffableDataSourceSnapshot snapshot) => nsTableViewDiffableDataSource -> snapshot -> Bool -> Ptr () -> IO ()
-applySnapshot_animatingDifferences_completion nsTableViewDiffableDataSource  snapshot animatingDifferences completion =
-  withObjCPtr snapshot $ \raw_snapshot ->
-      sendMsg nsTableViewDiffableDataSource (mkSelector "applySnapshot:animatingDifferences:completion:") retVoid [argPtr (castPtr raw_snapshot :: Ptr ()), argCULong (if animatingDifferences then 1 else 0), argPtr (castPtr completion :: Ptr ())]
+applySnapshot_animatingDifferences_completion nsTableViewDiffableDataSource snapshot animatingDifferences completion =
+  sendMessage nsTableViewDiffableDataSource applySnapshot_animatingDifferences_completionSelector (toNSDiffableDataSourceSnapshot snapshot) animatingDifferences completion
 
 -- | @- itemIdentifierForRow:@
 itemIdentifierForRow :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> CLong -> IO RawId
-itemIdentifierForRow nsTableViewDiffableDataSource  row =
-    fmap (RawId . castPtr) $ sendMsg nsTableViewDiffableDataSource (mkSelector "itemIdentifierForRow:") (retPtr retVoid) [argCLong row]
+itemIdentifierForRow nsTableViewDiffableDataSource row =
+  sendMessage nsTableViewDiffableDataSource itemIdentifierForRowSelector row
 
 -- | @- rowForItemIdentifier:@
 rowForItemIdentifier :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> RawId -> IO CLong
-rowForItemIdentifier nsTableViewDiffableDataSource  identifier =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "rowForItemIdentifier:") retCLong [argPtr (castPtr (unRawId identifier) :: Ptr ())]
+rowForItemIdentifier nsTableViewDiffableDataSource identifier =
+  sendMessage nsTableViewDiffableDataSource rowForItemIdentifierSelector identifier
 
 -- | @- sectionIdentifierForRow:@
 sectionIdentifierForRow :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> CLong -> IO RawId
-sectionIdentifierForRow nsTableViewDiffableDataSource  row =
-    fmap (RawId . castPtr) $ sendMsg nsTableViewDiffableDataSource (mkSelector "sectionIdentifierForRow:") (retPtr retVoid) [argCLong row]
+sectionIdentifierForRow nsTableViewDiffableDataSource row =
+  sendMessage nsTableViewDiffableDataSource sectionIdentifierForRowSelector row
 
 -- | @- rowForSectionIdentifier:@
 rowForSectionIdentifier :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> RawId -> IO CLong
-rowForSectionIdentifier nsTableViewDiffableDataSource  identifier =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "rowForSectionIdentifier:") retCLong [argPtr (castPtr (unRawId identifier) :: Ptr ())]
+rowForSectionIdentifier nsTableViewDiffableDataSource identifier =
+  sendMessage nsTableViewDiffableDataSource rowForSectionIdentifierSelector identifier
 
 -- | @- rowViewProvider@
 rowViewProvider :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> IO (Ptr ())
-rowViewProvider nsTableViewDiffableDataSource  =
-    fmap castPtr $ sendMsg nsTableViewDiffableDataSource (mkSelector "rowViewProvider") (retPtr retVoid) []
+rowViewProvider nsTableViewDiffableDataSource =
+  sendMessage nsTableViewDiffableDataSource rowViewProviderSelector
 
 -- | @- setRowViewProvider:@
 setRowViewProvider :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> Ptr () -> IO ()
-setRowViewProvider nsTableViewDiffableDataSource  value =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "setRowViewProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRowViewProvider nsTableViewDiffableDataSource value =
+  sendMessage nsTableViewDiffableDataSource setRowViewProviderSelector value
 
 -- | @- sectionHeaderViewProvider@
 sectionHeaderViewProvider :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> IO (Ptr ())
-sectionHeaderViewProvider nsTableViewDiffableDataSource  =
-    fmap castPtr $ sendMsg nsTableViewDiffableDataSource (mkSelector "sectionHeaderViewProvider") (retPtr retVoid) []
+sectionHeaderViewProvider nsTableViewDiffableDataSource =
+  sendMessage nsTableViewDiffableDataSource sectionHeaderViewProviderSelector
 
 -- | @- setSectionHeaderViewProvider:@
 setSectionHeaderViewProvider :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> Ptr () -> IO ()
-setSectionHeaderViewProvider nsTableViewDiffableDataSource  value =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "setSectionHeaderViewProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+setSectionHeaderViewProvider nsTableViewDiffableDataSource value =
+  sendMessage nsTableViewDiffableDataSource setSectionHeaderViewProviderSelector value
 
 -- | @- defaultRowAnimation@
 defaultRowAnimation :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> IO NSTableViewAnimationOptions
-defaultRowAnimation nsTableViewDiffableDataSource  =
-    fmap (coerce :: CULong -> NSTableViewAnimationOptions) $ sendMsg nsTableViewDiffableDataSource (mkSelector "defaultRowAnimation") retCULong []
+defaultRowAnimation nsTableViewDiffableDataSource =
+  sendMessage nsTableViewDiffableDataSource defaultRowAnimationSelector
 
 -- | @- setDefaultRowAnimation:@
 setDefaultRowAnimation :: IsNSTableViewDiffableDataSource nsTableViewDiffableDataSource => nsTableViewDiffableDataSource -> NSTableViewAnimationOptions -> IO ()
-setDefaultRowAnimation nsTableViewDiffableDataSource  value =
-    sendMsg nsTableViewDiffableDataSource (mkSelector "setDefaultRowAnimation:") retVoid [argCULong (coerce value)]
+setDefaultRowAnimation nsTableViewDiffableDataSource value =
+  sendMessage nsTableViewDiffableDataSource setDefaultRowAnimationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTableView:cellProvider:@
-initWithTableView_cellProviderSelector :: Selector
+initWithTableView_cellProviderSelector :: Selector '[Id NSTableView, Ptr ()] (Id NSTableViewDiffableDataSource)
 initWithTableView_cellProviderSelector = mkSelector "initWithTableView:cellProvider:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTableViewDiffableDataSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSTableViewDiffableDataSource)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @snapshot@
-snapshotSelector :: Selector
+snapshotSelector :: Selector '[] (Id NSDiffableDataSourceSnapshot)
 snapshotSelector = mkSelector "snapshot"
 
 -- | @Selector@ for @applySnapshot:animatingDifferences:@
-applySnapshot_animatingDifferencesSelector :: Selector
+applySnapshot_animatingDifferencesSelector :: Selector '[Id NSDiffableDataSourceSnapshot, Bool] ()
 applySnapshot_animatingDifferencesSelector = mkSelector "applySnapshot:animatingDifferences:"
 
 -- | @Selector@ for @applySnapshot:animatingDifferences:completion:@
-applySnapshot_animatingDifferences_completionSelector :: Selector
+applySnapshot_animatingDifferences_completionSelector :: Selector '[Id NSDiffableDataSourceSnapshot, Bool, Ptr ()] ()
 applySnapshot_animatingDifferences_completionSelector = mkSelector "applySnapshot:animatingDifferences:completion:"
 
 -- | @Selector@ for @itemIdentifierForRow:@
-itemIdentifierForRowSelector :: Selector
+itemIdentifierForRowSelector :: Selector '[CLong] RawId
 itemIdentifierForRowSelector = mkSelector "itemIdentifierForRow:"
 
 -- | @Selector@ for @rowForItemIdentifier:@
-rowForItemIdentifierSelector :: Selector
+rowForItemIdentifierSelector :: Selector '[RawId] CLong
 rowForItemIdentifierSelector = mkSelector "rowForItemIdentifier:"
 
 -- | @Selector@ for @sectionIdentifierForRow:@
-sectionIdentifierForRowSelector :: Selector
+sectionIdentifierForRowSelector :: Selector '[CLong] RawId
 sectionIdentifierForRowSelector = mkSelector "sectionIdentifierForRow:"
 
 -- | @Selector@ for @rowForSectionIdentifier:@
-rowForSectionIdentifierSelector :: Selector
+rowForSectionIdentifierSelector :: Selector '[RawId] CLong
 rowForSectionIdentifierSelector = mkSelector "rowForSectionIdentifier:"
 
 -- | @Selector@ for @rowViewProvider@
-rowViewProviderSelector :: Selector
+rowViewProviderSelector :: Selector '[] (Ptr ())
 rowViewProviderSelector = mkSelector "rowViewProvider"
 
 -- | @Selector@ for @setRowViewProvider:@
-setRowViewProviderSelector :: Selector
+setRowViewProviderSelector :: Selector '[Ptr ()] ()
 setRowViewProviderSelector = mkSelector "setRowViewProvider:"
 
 -- | @Selector@ for @sectionHeaderViewProvider@
-sectionHeaderViewProviderSelector :: Selector
+sectionHeaderViewProviderSelector :: Selector '[] (Ptr ())
 sectionHeaderViewProviderSelector = mkSelector "sectionHeaderViewProvider"
 
 -- | @Selector@ for @setSectionHeaderViewProvider:@
-setSectionHeaderViewProviderSelector :: Selector
+setSectionHeaderViewProviderSelector :: Selector '[Ptr ()] ()
 setSectionHeaderViewProviderSelector = mkSelector "setSectionHeaderViewProvider:"
 
 -- | @Selector@ for @defaultRowAnimation@
-defaultRowAnimationSelector :: Selector
+defaultRowAnimationSelector :: Selector '[] NSTableViewAnimationOptions
 defaultRowAnimationSelector = mkSelector "defaultRowAnimation"
 
 -- | @Selector@ for @setDefaultRowAnimation:@
-setDefaultRowAnimationSelector :: Selector
+setDefaultRowAnimationSelector :: Selector '[NSTableViewAnimationOptions] ()
 setDefaultRowAnimationSelector = mkSelector "setDefaultRowAnimation:"
 

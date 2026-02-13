@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Photos.PHPersistentChangeFetchResult
   , new
   , init_
   , enumerateChangesWithBlock
-  , newSelector
-  , initSelector
   , enumerateChangesWithBlockSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ new :: IO (Id PHPersistentChangeFetchResult)
 new  =
   do
     cls' <- getRequiredClass "PHPersistentChangeFetchResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPersistentChangeFetchResult phPersistentChangeFetchResult => phPersistentChangeFetchResult -> IO (Id PHPersistentChangeFetchResult)
-init_ phPersistentChangeFetchResult  =
-    sendMsg phPersistentChangeFetchResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPersistentChangeFetchResult =
+  sendOwnedMessage phPersistentChangeFetchResult initSelector
 
 -- | @- enumerateChangesWithBlock:@
 enumerateChangesWithBlock :: IsPHPersistentChangeFetchResult phPersistentChangeFetchResult => phPersistentChangeFetchResult -> Ptr () -> IO ()
-enumerateChangesWithBlock phPersistentChangeFetchResult  block =
-    sendMsg phPersistentChangeFetchResult (mkSelector "enumerateChangesWithBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateChangesWithBlock phPersistentChangeFetchResult block =
+  sendMessage phPersistentChangeFetchResult enumerateChangesWithBlockSelector block
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPersistentChangeFetchResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPersistentChangeFetchResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @enumerateChangesWithBlock:@
-enumerateChangesWithBlockSelector :: Selector
+enumerateChangesWithBlockSelector :: Selector '[Ptr ()] ()
 enumerateChangesWithBlockSelector = mkSelector "enumerateChangesWithBlock:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,44 +56,44 @@ module ObjC.AVFoundation.AVAssetWriter
   , setProducesCombinableFragments
   , movieTimeScale
   , setMovieTimeScale
-  , initSelector
-  , newSelector
-  , assetWriterWithURL_fileType_errorSelector
-  , initWithURL_fileType_errorSelector
-  , initWithContentTypeSelector
-  , canApplyOutputSettings_forMediaTypeSelector
-  , canAddInputSelector
+  , addInputGroupSelector
   , addInputSelector
-  , startWritingSelector
+  , assetWriterWithURL_fileType_errorSelector
+  , availableMediaTypesSelector
+  , canAddInputGroupSelector
+  , canAddInputSelector
+  , canApplyOutputSettings_forMediaTypeSelector
   , cancelWritingSelector
+  , delegateSelector
+  , directoryForTemporaryFilesSelector
+  , errorSelector
   , finishWritingSelector
   , finishWritingWithCompletionHandlerSelector
   , flushSegmentSelector
-  , canAddInputGroupSelector
-  , addInputGroupSelector
-  , outputURLSelector
-  , outputFileTypeSelector
-  , availableMediaTypesSelector
-  , statusSelector
-  , errorSelector
-  , metadataSelector
-  , setMetadataSelector
-  , shouldOptimizeForNetworkUseSelector
-  , setShouldOptimizeForNetworkUseSelector
-  , directoryForTemporaryFilesSelector
-  , setDirectoryForTemporaryFilesSelector
-  , inputsSelector
-  , outputFileTypeProfileSelector
-  , setOutputFileTypeProfileSelector
-  , delegateSelector
-  , setDelegateSelector
-  , inputGroupsSelector
+  , initSelector
+  , initWithContentTypeSelector
+  , initWithURL_fileType_errorSelector
   , initialMovieFragmentSequenceNumberSelector
-  , setInitialMovieFragmentSequenceNumberSelector
-  , producesCombinableFragmentsSelector
-  , setProducesCombinableFragmentsSelector
+  , inputGroupsSelector
+  , inputsSelector
+  , metadataSelector
   , movieTimeScaleSelector
+  , newSelector
+  , outputFileTypeProfileSelector
+  , outputFileTypeSelector
+  , outputURLSelector
+  , producesCombinableFragmentsSelector
+  , setDelegateSelector
+  , setDirectoryForTemporaryFilesSelector
+  , setInitialMovieFragmentSequenceNumberSelector
+  , setMetadataSelector
   , setMovieTimeScaleSelector
+  , setOutputFileTypeProfileSelector
+  , setProducesCombinableFragmentsSelector
+  , setShouldOptimizeForNetworkUseSelector
+  , shouldOptimizeForNetworkUseSelector
+  , startWritingSelector
+  , statusSelector
 
   -- * Enum types
   , AVAssetWriterStatus(AVAssetWriterStatus)
@@ -104,15 +105,11 @@ module ObjC.AVFoundation.AVAssetWriter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -123,15 +120,15 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id AVAssetWriter)
-init_ avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetWriter =
+  sendOwnedMessage avAssetWriter initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetWriter)
 new  =
   do
     cls' <- getRequiredClass "AVAssetWriter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetWriterWithURL:fileType:error:
 --
@@ -154,10 +151,7 @@ assetWriterWithURL_fileType_error :: (IsNSURL outputURL, IsNSString outputFileTy
 assetWriterWithURL_fileType_error outputURL outputFileType outError =
   do
     cls' <- getRequiredClass "AVAssetWriter"
-    withObjCPtr outputURL $ \raw_outputURL ->
-      withObjCPtr outputFileType $ \raw_outputFileType ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "assetWriterWithURL:fileType:error:") (retPtr retVoid) [argPtr (castPtr raw_outputURL :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterWithURL_fileType_errorSelector (toNSURL outputURL) (toNSString outputFileType) (toNSError outError)
 
 -- | initWithURL:fileType:error:
 --
@@ -177,11 +171,8 @@ assetWriterWithURL_fileType_error outputURL outputFileType outError =
 --
 -- ObjC selector: @- initWithURL:fileType:error:@
 initWithURL_fileType_error :: (IsAVAssetWriter avAssetWriter, IsNSURL outputURL, IsNSString outputFileType, IsNSError outError) => avAssetWriter -> outputURL -> outputFileType -> outError -> IO (Id AVAssetWriter)
-initWithURL_fileType_error avAssetWriter  outputURL outputFileType outError =
-  withObjCPtr outputURL $ \raw_outputURL ->
-    withObjCPtr outputFileType $ \raw_outputFileType ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAssetWriter (mkSelector "initWithURL:fileType:error:") (retPtr retVoid) [argPtr (castPtr raw_outputURL :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_fileType_error avAssetWriter outputURL outputFileType outError =
+  sendOwnedMessage avAssetWriter initWithURL_fileType_errorSelector (toNSURL outputURL) (toNSString outputFileType) (toNSError outError)
 
 -- | initWithContentType:
 --
@@ -199,9 +190,8 @@ initWithURL_fileType_error avAssetWriter  outputURL outputFileType outError =
 --
 -- ObjC selector: @- initWithContentType:@
 initWithContentType :: (IsAVAssetWriter avAssetWriter, IsUTType outputContentType) => avAssetWriter -> outputContentType -> IO (Id AVAssetWriter)
-initWithContentType avAssetWriter  outputContentType =
-  withObjCPtr outputContentType $ \raw_outputContentType ->
-      sendMsg avAssetWriter (mkSelector "initWithContentType:") (retPtr retVoid) [argPtr (castPtr raw_outputContentType :: Ptr ())] >>= ownedObject . castPtr
+initWithContentType avAssetWriter outputContentType =
+  sendOwnedMessage avAssetWriter initWithContentTypeSelector (toUTType outputContentType)
 
 -- | canApplyOutputSettings:forMediaType:
 --
@@ -219,10 +209,8 @@ initWithContentType avAssetWriter  outputContentType =
 --
 -- ObjC selector: @- canApplyOutputSettings:forMediaType:@
 canApplyOutputSettings_forMediaType :: (IsAVAssetWriter avAssetWriter, IsNSDictionary outputSettings, IsNSString mediaType) => avAssetWriter -> outputSettings -> mediaType -> IO Bool
-canApplyOutputSettings_forMediaType avAssetWriter  outputSettings mediaType =
-  withObjCPtr outputSettings $ \raw_outputSettings ->
-    withObjCPtr mediaType $ \raw_mediaType ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "canApplyOutputSettings:forMediaType:") retCULong [argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr raw_mediaType :: Ptr ())]
+canApplyOutputSettings_forMediaType avAssetWriter outputSettings mediaType =
+  sendMessage avAssetWriter canApplyOutputSettings_forMediaTypeSelector (toNSDictionary outputSettings) (toNSString mediaType)
 
 -- | canAddInput:
 --
@@ -236,9 +224,8 @@ canApplyOutputSettings_forMediaType avAssetWriter  outputSettings mediaType =
 --
 -- ObjC selector: @- canAddInput:@
 canAddInput :: (IsAVAssetWriter avAssetWriter, IsAVAssetWriterInput input) => avAssetWriter -> input -> IO Bool
-canAddInput avAssetWriter  input =
-  withObjCPtr input $ \raw_input ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "canAddInput:") retCULong [argPtr (castPtr raw_input :: Ptr ())]
+canAddInput avAssetWriter input =
+  sendMessage avAssetWriter canAddInputSelector (toAVAssetWriterInput input)
 
 -- | addInput:
 --
@@ -256,9 +243,8 @@ canAddInput avAssetWriter  input =
 --
 -- ObjC selector: @- addInput:@
 addInput :: (IsAVAssetWriter avAssetWriter, IsAVAssetWriterInput input) => avAssetWriter -> input -> IO ()
-addInput avAssetWriter  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avAssetWriter (mkSelector "addInput:") retVoid [argPtr (castPtr raw_input :: Ptr ())]
+addInput avAssetWriter input =
+  sendMessage avAssetWriter addInputSelector (toAVAssetWriterInput input)
 
 -- | startWriting
 --
@@ -274,8 +260,8 @@ addInput avAssetWriter  input =
 --
 -- ObjC selector: @- startWriting@
 startWriting :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO Bool
-startWriting avAssetWriter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "startWriting") retCULong []
+startWriting avAssetWriter =
+  sendMessage avAssetWriter startWritingSelector
 
 -- | cancelWriting
 --
@@ -289,8 +275,8 @@ startWriting avAssetWriter  =
 --
 -- ObjC selector: @- cancelWriting@
 cancelWriting :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO ()
-cancelWriting avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "cancelWriting") retVoid []
+cancelWriting avAssetWriter =
+  sendMessage avAssetWriter cancelWritingSelector
 
 -- | finishWriting
 --
@@ -310,8 +296,8 @@ cancelWriting avAssetWriter  =
 --
 -- ObjC selector: @- finishWriting@
 finishWriting :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO Bool
-finishWriting avAssetWriter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "finishWriting") retCULong []
+finishWriting avAssetWriter =
+  sendMessage avAssetWriter finishWritingSelector
 
 -- | finishWritingWithCompletionHandler:
 --
@@ -325,8 +311,8 @@ finishWriting avAssetWriter  =
 --
 -- ObjC selector: @- finishWritingWithCompletionHandler:@
 finishWritingWithCompletionHandler :: IsAVAssetWriter avAssetWriter => avAssetWriter -> Ptr () -> IO ()
-finishWritingWithCompletionHandler avAssetWriter  handler =
-    sendMsg avAssetWriter (mkSelector "finishWritingWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+finishWritingWithCompletionHandler avAssetWriter handler =
+  sendMessage avAssetWriter finishWritingWithCompletionHandlerSelector handler
 
 -- | flushSegment
 --
@@ -336,8 +322,8 @@ finishWritingWithCompletionHandler avAssetWriter  handler =
 --
 -- ObjC selector: @- flushSegment@
 flushSegment :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO ()
-flushSegment avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "flushSegment") retVoid []
+flushSegment avAssetWriter =
+  sendMessage avAssetWriter flushSegmentSelector
 
 -- | canAddInputGroup:
 --
@@ -353,15 +339,13 @@ flushSegment avAssetWriter  =
 --
 -- ObjC selector: @- canAddInputGroup:@
 canAddInputGroup :: (IsAVAssetWriter avAssetWriter, IsAVAssetWriterInputGroup inputGroup) => avAssetWriter -> inputGroup -> IO Bool
-canAddInputGroup avAssetWriter  inputGroup =
-  withObjCPtr inputGroup $ \raw_inputGroup ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "canAddInputGroup:") retCULong [argPtr (castPtr raw_inputGroup :: Ptr ())]
+canAddInputGroup avAssetWriter inputGroup =
+  sendMessage avAssetWriter canAddInputGroupSelector (toAVAssetWriterInputGroup inputGroup)
 
 -- | @- addInputGroup:@
 addInputGroup :: (IsAVAssetWriter avAssetWriter, IsAVAssetWriterInputGroup inputGroup) => avAssetWriter -> inputGroup -> IO ()
-addInputGroup avAssetWriter  inputGroup =
-  withObjCPtr inputGroup $ \raw_inputGroup ->
-      sendMsg avAssetWriter (mkSelector "addInputGroup:") retVoid [argPtr (castPtr raw_inputGroup :: Ptr ())]
+addInputGroup avAssetWriter inputGroup =
+  sendMessage avAssetWriter addInputGroupSelector (toAVAssetWriterInputGroup inputGroup)
 
 -- | outputURL
 --
@@ -371,8 +355,8 @@ addInputGroup avAssetWriter  inputGroup =
 --
 -- ObjC selector: @- outputURL@
 outputURL :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSURL)
-outputURL avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "outputURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputURL avAssetWriter =
+  sendMessage avAssetWriter outputURLSelector
 
 -- | outputFileType
 --
@@ -380,8 +364,8 @@ outputURL avAssetWriter  =
 --
 -- ObjC selector: @- outputFileType@
 outputFileType :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSString)
-outputFileType avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "outputFileType") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileType avAssetWriter =
+  sendMessage avAssetWriter outputFileTypeSelector
 
 -- | availableMediaTypes
 --
@@ -391,8 +375,8 @@ outputFileType avAssetWriter  =
 --
 -- ObjC selector: @- availableMediaTypes@
 availableMediaTypes :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSArray)
-availableMediaTypes avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "availableMediaTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMediaTypes avAssetWriter =
+  sendMessage avAssetWriter availableMediaTypesSelector
 
 -- | status
 --
@@ -402,8 +386,8 @@ availableMediaTypes avAssetWriter  =
 --
 -- ObjC selector: @- status@
 status :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO AVAssetWriterStatus
-status avAssetWriter  =
-    fmap (coerce :: CLong -> AVAssetWriterStatus) $ sendMsg avAssetWriter (mkSelector "status") retCLong []
+status avAssetWriter =
+  sendMessage avAssetWriter statusSelector
 
 -- | error
 --
@@ -413,8 +397,8 @@ status avAssetWriter  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSError)
-error_ avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avAssetWriter =
+  sendMessage avAssetWriter errorSelector
 
 -- | metadata
 --
@@ -426,8 +410,8 @@ error_ avAssetWriter  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSArray)
-metadata avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avAssetWriter =
+  sendMessage avAssetWriter metadataSelector
 
 -- | metadata
 --
@@ -439,9 +423,8 @@ metadata avAssetWriter  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVAssetWriter avAssetWriter, IsNSArray value) => avAssetWriter -> value -> IO ()
-setMetadata avAssetWriter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriter (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avAssetWriter value =
+  sendMessage avAssetWriter setMetadataSelector (toNSArray value)
 
 -- | shouldOptimizeForNetworkUse
 --
@@ -453,8 +436,8 @@ setMetadata avAssetWriter  value =
 --
 -- ObjC selector: @- shouldOptimizeForNetworkUse@
 shouldOptimizeForNetworkUse :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO Bool
-shouldOptimizeForNetworkUse avAssetWriter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "shouldOptimizeForNetworkUse") retCULong []
+shouldOptimizeForNetworkUse avAssetWriter =
+  sendMessage avAssetWriter shouldOptimizeForNetworkUseSelector
 
 -- | shouldOptimizeForNetworkUse
 --
@@ -466,8 +449,8 @@ shouldOptimizeForNetworkUse avAssetWriter  =
 --
 -- ObjC selector: @- setShouldOptimizeForNetworkUse:@
 setShouldOptimizeForNetworkUse :: IsAVAssetWriter avAssetWriter => avAssetWriter -> Bool -> IO ()
-setShouldOptimizeForNetworkUse avAssetWriter  value =
-    sendMsg avAssetWriter (mkSelector "setShouldOptimizeForNetworkUse:") retVoid [argCULong (if value then 1 else 0)]
+setShouldOptimizeForNetworkUse avAssetWriter value =
+  sendMessage avAssetWriter setShouldOptimizeForNetworkUseSelector value
 
 -- | directoryForTemporaryFiles
 --
@@ -481,8 +464,8 @@ setShouldOptimizeForNetworkUse avAssetWriter  value =
 --
 -- ObjC selector: @- directoryForTemporaryFiles@
 directoryForTemporaryFiles :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSURL)
-directoryForTemporaryFiles avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "directoryForTemporaryFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+directoryForTemporaryFiles avAssetWriter =
+  sendMessage avAssetWriter directoryForTemporaryFilesSelector
 
 -- | directoryForTemporaryFiles
 --
@@ -496,9 +479,8 @@ directoryForTemporaryFiles avAssetWriter  =
 --
 -- ObjC selector: @- setDirectoryForTemporaryFiles:@
 setDirectoryForTemporaryFiles :: (IsAVAssetWriter avAssetWriter, IsNSURL value) => avAssetWriter -> value -> IO ()
-setDirectoryForTemporaryFiles avAssetWriter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriter (mkSelector "setDirectoryForTemporaryFiles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirectoryForTemporaryFiles avAssetWriter value =
+  sendMessage avAssetWriter setDirectoryForTemporaryFilesSelector (toNSURL value)
 
 -- | inputs
 --
@@ -508,8 +490,8 @@ setDirectoryForTemporaryFiles avAssetWriter  value =
 --
 -- ObjC selector: @- inputs@
 inputs :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSArray)
-inputs avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "inputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputs avAssetWriter =
+  sendMessage avAssetWriter inputsSelector
 
 -- | outputFileTypeProfile
 --
@@ -525,8 +507,8 @@ inputs avAssetWriter  =
 --
 -- ObjC selector: @- outputFileTypeProfile@
 outputFileTypeProfile :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSString)
-outputFileTypeProfile avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "outputFileTypeProfile") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileTypeProfile avAssetWriter =
+  sendMessage avAssetWriter outputFileTypeProfileSelector
 
 -- | outputFileTypeProfile
 --
@@ -542,9 +524,8 @@ outputFileTypeProfile avAssetWriter  =
 --
 -- ObjC selector: @- setOutputFileTypeProfile:@
 setOutputFileTypeProfile :: (IsAVAssetWriter avAssetWriter, IsNSString value) => avAssetWriter -> value -> IO ()
-setOutputFileTypeProfile avAssetWriter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriter (mkSelector "setOutputFileTypeProfile:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputFileTypeProfile avAssetWriter value =
+  sendMessage avAssetWriter setOutputFileTypeProfileSelector (toNSString value)
 
 -- | delegate
 --
@@ -554,8 +535,8 @@ setOutputFileTypeProfile avAssetWriter  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO RawId
-delegate avAssetWriter  =
-    fmap (RawId . castPtr) $ sendMsg avAssetWriter (mkSelector "delegate") (retPtr retVoid) []
+delegate avAssetWriter =
+  sendMessage avAssetWriter delegateSelector
 
 -- | delegate
 --
@@ -565,8 +546,8 @@ delegate avAssetWriter  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVAssetWriter avAssetWriter => avAssetWriter -> RawId -> IO ()
-setDelegate avAssetWriter  value =
-    sendMsg avAssetWriter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avAssetWriter value =
+  sendMessage avAssetWriter setDelegateSelector value
 
 -- | inputGroups
 --
@@ -576,8 +557,8 @@ setDelegate avAssetWriter  value =
 --
 -- ObjC selector: @- inputGroups@
 inputGroups :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO (Id NSArray)
-inputGroups avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "inputGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputGroups avAssetWriter =
+  sendMessage avAssetWriter inputGroupsSelector
 
 -- | initialMovieFragmentSequenceNumber
 --
@@ -593,8 +574,8 @@ inputGroups avAssetWriter  =
 --
 -- ObjC selector: @- initialMovieFragmentSequenceNumber@
 initialMovieFragmentSequenceNumber :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO CLong
-initialMovieFragmentSequenceNumber avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "initialMovieFragmentSequenceNumber") retCLong []
+initialMovieFragmentSequenceNumber avAssetWriter =
+  sendOwnedMessage avAssetWriter initialMovieFragmentSequenceNumberSelector
 
 -- | initialMovieFragmentSequenceNumber
 --
@@ -610,8 +591,8 @@ initialMovieFragmentSequenceNumber avAssetWriter  =
 --
 -- ObjC selector: @- setInitialMovieFragmentSequenceNumber:@
 setInitialMovieFragmentSequenceNumber :: IsAVAssetWriter avAssetWriter => avAssetWriter -> CLong -> IO ()
-setInitialMovieFragmentSequenceNumber avAssetWriter  value =
-    sendMsg avAssetWriter (mkSelector "setInitialMovieFragmentSequenceNumber:") retVoid [argCLong value]
+setInitialMovieFragmentSequenceNumber avAssetWriter value =
+  sendMessage avAssetWriter setInitialMovieFragmentSequenceNumberSelector value
 
 -- | producesCombinableFragments
 --
@@ -625,8 +606,8 @@ setInitialMovieFragmentSequenceNumber avAssetWriter  value =
 --
 -- ObjC selector: @- producesCombinableFragments@
 producesCombinableFragments :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO Bool
-producesCombinableFragments avAssetWriter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriter (mkSelector "producesCombinableFragments") retCULong []
+producesCombinableFragments avAssetWriter =
+  sendMessage avAssetWriter producesCombinableFragmentsSelector
 
 -- | producesCombinableFragments
 --
@@ -640,8 +621,8 @@ producesCombinableFragments avAssetWriter  =
 --
 -- ObjC selector: @- setProducesCombinableFragments:@
 setProducesCombinableFragments :: IsAVAssetWriter avAssetWriter => avAssetWriter -> Bool -> IO ()
-setProducesCombinableFragments avAssetWriter  value =
-    sendMsg avAssetWriter (mkSelector "setProducesCombinableFragments:") retVoid [argCULong (if value then 1 else 0)]
+setProducesCombinableFragments avAssetWriter value =
+  sendMessage avAssetWriter setProducesCombinableFragmentsSelector value
 
 -- | movieTimeScale
 --
@@ -653,8 +634,8 @@ setProducesCombinableFragments avAssetWriter  value =
 --
 -- ObjC selector: @- movieTimeScale@
 movieTimeScale :: IsAVAssetWriter avAssetWriter => avAssetWriter -> IO CInt
-movieTimeScale avAssetWriter  =
-    sendMsg avAssetWriter (mkSelector "movieTimeScale") retCInt []
+movieTimeScale avAssetWriter =
+  sendMessage avAssetWriter movieTimeScaleSelector
 
 -- | movieTimeScale
 --
@@ -666,162 +647,162 @@ movieTimeScale avAssetWriter  =
 --
 -- ObjC selector: @- setMovieTimeScale:@
 setMovieTimeScale :: IsAVAssetWriter avAssetWriter => avAssetWriter -> CInt -> IO ()
-setMovieTimeScale avAssetWriter  value =
-    sendMsg avAssetWriter (mkSelector "setMovieTimeScale:") retVoid [argCInt value]
+setMovieTimeScale avAssetWriter value =
+  sendMessage avAssetWriter setMovieTimeScaleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetWriter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetWriter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetWriterWithURL:fileType:error:@
-assetWriterWithURL_fileType_errorSelector :: Selector
+assetWriterWithURL_fileType_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSError] (Id AVAssetWriter)
 assetWriterWithURL_fileType_errorSelector = mkSelector "assetWriterWithURL:fileType:error:"
 
 -- | @Selector@ for @initWithURL:fileType:error:@
-initWithURL_fileType_errorSelector :: Selector
+initWithURL_fileType_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSError] (Id AVAssetWriter)
 initWithURL_fileType_errorSelector = mkSelector "initWithURL:fileType:error:"
 
 -- | @Selector@ for @initWithContentType:@
-initWithContentTypeSelector :: Selector
+initWithContentTypeSelector :: Selector '[Id UTType] (Id AVAssetWriter)
 initWithContentTypeSelector = mkSelector "initWithContentType:"
 
 -- | @Selector@ for @canApplyOutputSettings:forMediaType:@
-canApplyOutputSettings_forMediaTypeSelector :: Selector
+canApplyOutputSettings_forMediaTypeSelector :: Selector '[Id NSDictionary, Id NSString] Bool
 canApplyOutputSettings_forMediaTypeSelector = mkSelector "canApplyOutputSettings:forMediaType:"
 
 -- | @Selector@ for @canAddInput:@
-canAddInputSelector :: Selector
+canAddInputSelector :: Selector '[Id AVAssetWriterInput] Bool
 canAddInputSelector = mkSelector "canAddInput:"
 
 -- | @Selector@ for @addInput:@
-addInputSelector :: Selector
+addInputSelector :: Selector '[Id AVAssetWriterInput] ()
 addInputSelector = mkSelector "addInput:"
 
 -- | @Selector@ for @startWriting@
-startWritingSelector :: Selector
+startWritingSelector :: Selector '[] Bool
 startWritingSelector = mkSelector "startWriting"
 
 -- | @Selector@ for @cancelWriting@
-cancelWritingSelector :: Selector
+cancelWritingSelector :: Selector '[] ()
 cancelWritingSelector = mkSelector "cancelWriting"
 
 -- | @Selector@ for @finishWriting@
-finishWritingSelector :: Selector
+finishWritingSelector :: Selector '[] Bool
 finishWritingSelector = mkSelector "finishWriting"
 
 -- | @Selector@ for @finishWritingWithCompletionHandler:@
-finishWritingWithCompletionHandlerSelector :: Selector
+finishWritingWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 finishWritingWithCompletionHandlerSelector = mkSelector "finishWritingWithCompletionHandler:"
 
 -- | @Selector@ for @flushSegment@
-flushSegmentSelector :: Selector
+flushSegmentSelector :: Selector '[] ()
 flushSegmentSelector = mkSelector "flushSegment"
 
 -- | @Selector@ for @canAddInputGroup:@
-canAddInputGroupSelector :: Selector
+canAddInputGroupSelector :: Selector '[Id AVAssetWriterInputGroup] Bool
 canAddInputGroupSelector = mkSelector "canAddInputGroup:"
 
 -- | @Selector@ for @addInputGroup:@
-addInputGroupSelector :: Selector
+addInputGroupSelector :: Selector '[Id AVAssetWriterInputGroup] ()
 addInputGroupSelector = mkSelector "addInputGroup:"
 
 -- | @Selector@ for @outputURL@
-outputURLSelector :: Selector
+outputURLSelector :: Selector '[] (Id NSURL)
 outputURLSelector = mkSelector "outputURL"
 
 -- | @Selector@ for @outputFileType@
-outputFileTypeSelector :: Selector
+outputFileTypeSelector :: Selector '[] (Id NSString)
 outputFileTypeSelector = mkSelector "outputFileType"
 
 -- | @Selector@ for @availableMediaTypes@
-availableMediaTypesSelector :: Selector
+availableMediaTypesSelector :: Selector '[] (Id NSArray)
 availableMediaTypesSelector = mkSelector "availableMediaTypes"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVAssetWriterStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @shouldOptimizeForNetworkUse@
-shouldOptimizeForNetworkUseSelector :: Selector
+shouldOptimizeForNetworkUseSelector :: Selector '[] Bool
 shouldOptimizeForNetworkUseSelector = mkSelector "shouldOptimizeForNetworkUse"
 
 -- | @Selector@ for @setShouldOptimizeForNetworkUse:@
-setShouldOptimizeForNetworkUseSelector :: Selector
+setShouldOptimizeForNetworkUseSelector :: Selector '[Bool] ()
 setShouldOptimizeForNetworkUseSelector = mkSelector "setShouldOptimizeForNetworkUse:"
 
 -- | @Selector@ for @directoryForTemporaryFiles@
-directoryForTemporaryFilesSelector :: Selector
+directoryForTemporaryFilesSelector :: Selector '[] (Id NSURL)
 directoryForTemporaryFilesSelector = mkSelector "directoryForTemporaryFiles"
 
 -- | @Selector@ for @setDirectoryForTemporaryFiles:@
-setDirectoryForTemporaryFilesSelector :: Selector
+setDirectoryForTemporaryFilesSelector :: Selector '[Id NSURL] ()
 setDirectoryForTemporaryFilesSelector = mkSelector "setDirectoryForTemporaryFiles:"
 
 -- | @Selector@ for @inputs@
-inputsSelector :: Selector
+inputsSelector :: Selector '[] (Id NSArray)
 inputsSelector = mkSelector "inputs"
 
 -- | @Selector@ for @outputFileTypeProfile@
-outputFileTypeProfileSelector :: Selector
+outputFileTypeProfileSelector :: Selector '[] (Id NSString)
 outputFileTypeProfileSelector = mkSelector "outputFileTypeProfile"
 
 -- | @Selector@ for @setOutputFileTypeProfile:@
-setOutputFileTypeProfileSelector :: Selector
+setOutputFileTypeProfileSelector :: Selector '[Id NSString] ()
 setOutputFileTypeProfileSelector = mkSelector "setOutputFileTypeProfile:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @inputGroups@
-inputGroupsSelector :: Selector
+inputGroupsSelector :: Selector '[] (Id NSArray)
 inputGroupsSelector = mkSelector "inputGroups"
 
 -- | @Selector@ for @initialMovieFragmentSequenceNumber@
-initialMovieFragmentSequenceNumberSelector :: Selector
+initialMovieFragmentSequenceNumberSelector :: Selector '[] CLong
 initialMovieFragmentSequenceNumberSelector = mkSelector "initialMovieFragmentSequenceNumber"
 
 -- | @Selector@ for @setInitialMovieFragmentSequenceNumber:@
-setInitialMovieFragmentSequenceNumberSelector :: Selector
+setInitialMovieFragmentSequenceNumberSelector :: Selector '[CLong] ()
 setInitialMovieFragmentSequenceNumberSelector = mkSelector "setInitialMovieFragmentSequenceNumber:"
 
 -- | @Selector@ for @producesCombinableFragments@
-producesCombinableFragmentsSelector :: Selector
+producesCombinableFragmentsSelector :: Selector '[] Bool
 producesCombinableFragmentsSelector = mkSelector "producesCombinableFragments"
 
 -- | @Selector@ for @setProducesCombinableFragments:@
-setProducesCombinableFragmentsSelector :: Selector
+setProducesCombinableFragmentsSelector :: Selector '[Bool] ()
 setProducesCombinableFragmentsSelector = mkSelector "setProducesCombinableFragments:"
 
 -- | @Selector@ for @movieTimeScale@
-movieTimeScaleSelector :: Selector
+movieTimeScaleSelector :: Selector '[] CInt
 movieTimeScaleSelector = mkSelector "movieTimeScale"
 
 -- | @Selector@ for @setMovieTimeScale:@
-setMovieTimeScaleSelector :: Selector
+setMovieTimeScaleSelector :: Selector '[CInt] ()
 setMovieTimeScaleSelector = mkSelector "setMovieTimeScale:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.CoreData.NSFetchedPropertyDescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fetchRequest@
 fetchRequest :: IsNSFetchedPropertyDescription nsFetchedPropertyDescription => nsFetchedPropertyDescription -> IO (Id NSFetchRequest)
-fetchRequest nsFetchedPropertyDescription  =
-    sendMsg nsFetchedPropertyDescription (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchRequest nsFetchedPropertyDescription =
+  sendMessage nsFetchedPropertyDescription fetchRequestSelector
 
 -- | @- setFetchRequest:@
 setFetchRequest :: (IsNSFetchedPropertyDescription nsFetchedPropertyDescription, IsNSFetchRequest value) => nsFetchedPropertyDescription -> value -> IO ()
-setFetchRequest nsFetchedPropertyDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchedPropertyDescription (mkSelector "setFetchRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFetchRequest nsFetchedPropertyDescription value =
+  sendMessage nsFetchedPropertyDescription setFetchRequestSelector (toNSFetchRequest value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 
 -- | @Selector@ for @setFetchRequest:@
-setFetchRequestSelector :: Selector
+setFetchRequestSelector :: Selector '[Id NSFetchRequest] ()
 setFetchRequestSelector = mkSelector "setFetchRequest:"
 

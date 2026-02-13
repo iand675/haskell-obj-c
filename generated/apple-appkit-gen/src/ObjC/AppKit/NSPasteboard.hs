@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,39 +41,39 @@ module ObjC.AppKit.NSPasteboard
   , accessBehavior
   , pasteboardItems
   , types
-  , pasteboardWithNameSelector
-  , pasteboardWithUniqueNameSelector
-  , releaseGloballySelector
-  , prepareForNewContentsWithOptionsSelector
-  , clearContentsSelector
-  , writeObjectsSelector
-  , readObjectsForClasses_optionsSelector
-  , indexOfPasteboardItemSelector
-  , canReadItemWithDataConformingToTypesSelector
-  , canReadObjectForClasses_optionsSelector
-  , declareTypes_ownerSelector
+  , accessBehaviorSelector
   , addTypes_ownerSelector
   , availableTypeFromArraySelector
+  , canReadItemWithDataConformingToTypesSelector
+  , canReadObjectForClasses_optionsSelector
+  , changeCountSelector
+  , clearContentsSelector
+  , dataForTypeSelector
+  , declareTypes_ownerSelector
+  , generalPasteboardSelector
+  , indexOfPasteboardItemSelector
+  , nameSelector
+  , pasteboardByFilteringData_ofTypeSelector
+  , pasteboardByFilteringFileSelector
+  , pasteboardByFilteringTypesInPasteboardSelector
+  , pasteboardItemsSelector
+  , pasteboardWithNameSelector
+  , pasteboardWithUniqueNameSelector
+  , prepareForNewContentsWithOptionsSelector
+  , propertyListForTypeSelector
+  , readFileContentsType_toFileSelector
+  , readFileWrapperSelector
+  , readObjectsForClasses_optionsSelector
+  , releaseGloballySelector
   , setData_forTypeSelector
   , setPropertyList_forTypeSelector
   , setString_forTypeSelector
-  , dataForTypeSelector
-  , propertyListForTypeSelector
   , stringForTypeSelector
-  , writeFileContentsSelector
-  , readFileContentsType_toFileSelector
-  , writeFileWrapperSelector
-  , readFileWrapperSelector
   , typesFilterableToSelector
-  , pasteboardByFilteringFileSelector
-  , pasteboardByFilteringData_ofTypeSelector
-  , pasteboardByFilteringTypesInPasteboardSelector
-  , generalPasteboardSelector
-  , nameSelector
-  , changeCountSelector
-  , accessBehaviorSelector
-  , pasteboardItemsSelector
   , typesSelector
+  , writeFileContentsSelector
+  , writeFileWrapperSelector
+  , writeObjectsSelector
 
   -- * Enum types
   , NSPasteboardAccessBehavior(NSPasteboardAccessBehavior)
@@ -85,15 +86,11 @@ module ObjC.AppKit.NSPasteboard
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,343 +103,315 @@ pasteboardWithName :: IsNSString name => name -> IO (Id NSPasteboard)
 pasteboardWithName name =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "pasteboardWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pasteboardWithNameSelector (toNSString name)
 
 -- | @+ pasteboardWithUniqueName@
 pasteboardWithUniqueName :: IO (Id NSPasteboard)
 pasteboardWithUniqueName  =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    sendClassMsg cls' (mkSelector "pasteboardWithUniqueName") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pasteboardWithUniqueNameSelector
 
 -- | @- releaseGlobally@
 releaseGlobally :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO ()
-releaseGlobally nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "releaseGlobally") retVoid []
+releaseGlobally nsPasteboard =
+  sendMessage nsPasteboard releaseGloballySelector
 
 -- | @- prepareForNewContentsWithOptions:@
 prepareForNewContentsWithOptions :: IsNSPasteboard nsPasteboard => nsPasteboard -> NSPasteboardContentsOptions -> IO CLong
-prepareForNewContentsWithOptions nsPasteboard  options =
-    sendMsg nsPasteboard (mkSelector "prepareForNewContentsWithOptions:") retCLong [argCULong (coerce options)]
+prepareForNewContentsWithOptions nsPasteboard options =
+  sendMessage nsPasteboard prepareForNewContentsWithOptionsSelector options
 
 -- | @- clearContents@
 clearContents :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO CLong
-clearContents nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "clearContents") retCLong []
+clearContents nsPasteboard =
+  sendMessage nsPasteboard clearContentsSelector
 
 -- | @- writeObjects:@
 writeObjects :: (IsNSPasteboard nsPasteboard, IsNSArray objects) => nsPasteboard -> objects -> IO Bool
-writeObjects nsPasteboard  objects =
-  withObjCPtr objects $ \raw_objects ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "writeObjects:") retCULong [argPtr (castPtr raw_objects :: Ptr ())]
+writeObjects nsPasteboard objects =
+  sendMessage nsPasteboard writeObjectsSelector (toNSArray objects)
 
 -- | @- readObjectsForClasses:options:@
 readObjectsForClasses_options :: (IsNSPasteboard nsPasteboard, IsNSArray classArray, IsNSDictionary options) => nsPasteboard -> classArray -> options -> IO (Id NSArray)
-readObjectsForClasses_options nsPasteboard  classArray options =
-  withObjCPtr classArray $ \raw_classArray ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg nsPasteboard (mkSelector "readObjectsForClasses:options:") (retPtr retVoid) [argPtr (castPtr raw_classArray :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+readObjectsForClasses_options nsPasteboard classArray options =
+  sendMessage nsPasteboard readObjectsForClasses_optionsSelector (toNSArray classArray) (toNSDictionary options)
 
 -- | @- indexOfPasteboardItem:@
 indexOfPasteboardItem :: (IsNSPasteboard nsPasteboard, IsNSPasteboardItem pasteboardItem) => nsPasteboard -> pasteboardItem -> IO CULong
-indexOfPasteboardItem nsPasteboard  pasteboardItem =
-  withObjCPtr pasteboardItem $ \raw_pasteboardItem ->
-      sendMsg nsPasteboard (mkSelector "indexOfPasteboardItem:") retCULong [argPtr (castPtr raw_pasteboardItem :: Ptr ())]
+indexOfPasteboardItem nsPasteboard pasteboardItem =
+  sendMessage nsPasteboard indexOfPasteboardItemSelector (toNSPasteboardItem pasteboardItem)
 
 -- | @- canReadItemWithDataConformingToTypes:@
 canReadItemWithDataConformingToTypes :: (IsNSPasteboard nsPasteboard, IsNSArray types) => nsPasteboard -> types -> IO Bool
-canReadItemWithDataConformingToTypes nsPasteboard  types =
-  withObjCPtr types $ \raw_types ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "canReadItemWithDataConformingToTypes:") retCULong [argPtr (castPtr raw_types :: Ptr ())]
+canReadItemWithDataConformingToTypes nsPasteboard types =
+  sendMessage nsPasteboard canReadItemWithDataConformingToTypesSelector (toNSArray types)
 
 -- | @- canReadObjectForClasses:options:@
 canReadObjectForClasses_options :: (IsNSPasteboard nsPasteboard, IsNSArray classArray, IsNSDictionary options) => nsPasteboard -> classArray -> options -> IO Bool
-canReadObjectForClasses_options nsPasteboard  classArray options =
-  withObjCPtr classArray $ \raw_classArray ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "canReadObjectForClasses:options:") retCULong [argPtr (castPtr raw_classArray :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+canReadObjectForClasses_options nsPasteboard classArray options =
+  sendMessage nsPasteboard canReadObjectForClasses_optionsSelector (toNSArray classArray) (toNSDictionary options)
 
 -- | @- declareTypes:owner:@
 declareTypes_owner :: (IsNSPasteboard nsPasteboard, IsNSArray newTypes) => nsPasteboard -> newTypes -> RawId -> IO CLong
-declareTypes_owner nsPasteboard  newTypes newOwner =
-  withObjCPtr newTypes $ \raw_newTypes ->
-      sendMsg nsPasteboard (mkSelector "declareTypes:owner:") retCLong [argPtr (castPtr raw_newTypes :: Ptr ()), argPtr (castPtr (unRawId newOwner) :: Ptr ())]
+declareTypes_owner nsPasteboard newTypes newOwner =
+  sendMessage nsPasteboard declareTypes_ownerSelector (toNSArray newTypes) newOwner
 
 -- | @- addTypes:owner:@
 addTypes_owner :: (IsNSPasteboard nsPasteboard, IsNSArray newTypes) => nsPasteboard -> newTypes -> RawId -> IO CLong
-addTypes_owner nsPasteboard  newTypes newOwner =
-  withObjCPtr newTypes $ \raw_newTypes ->
-      sendMsg nsPasteboard (mkSelector "addTypes:owner:") retCLong [argPtr (castPtr raw_newTypes :: Ptr ()), argPtr (castPtr (unRawId newOwner) :: Ptr ())]
+addTypes_owner nsPasteboard newTypes newOwner =
+  sendMessage nsPasteboard addTypes_ownerSelector (toNSArray newTypes) newOwner
 
 -- | @- availableTypeFromArray:@
 availableTypeFromArray :: (IsNSPasteboard nsPasteboard, IsNSArray types) => nsPasteboard -> types -> IO (Id NSString)
-availableTypeFromArray nsPasteboard  types =
-  withObjCPtr types $ \raw_types ->
-      sendMsg nsPasteboard (mkSelector "availableTypeFromArray:") (retPtr retVoid) [argPtr (castPtr raw_types :: Ptr ())] >>= retainedObject . castPtr
+availableTypeFromArray nsPasteboard types =
+  sendMessage nsPasteboard availableTypeFromArraySelector (toNSArray types)
 
 -- | @- setData:forType:@
 setData_forType :: (IsNSPasteboard nsPasteboard, IsNSData data_, IsNSString dataType) => nsPasteboard -> data_ -> dataType -> IO Bool
-setData_forType nsPasteboard  data_ dataType =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr dataType $ \raw_dataType ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "setData:forType:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_dataType :: Ptr ())]
+setData_forType nsPasteboard data_ dataType =
+  sendMessage nsPasteboard setData_forTypeSelector (toNSData data_) (toNSString dataType)
 
 -- | @- setPropertyList:forType:@
 setPropertyList_forType :: (IsNSPasteboard nsPasteboard, IsNSString dataType) => nsPasteboard -> RawId -> dataType -> IO Bool
-setPropertyList_forType nsPasteboard  plist dataType =
-  withObjCPtr dataType $ \raw_dataType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "setPropertyList:forType:") retCULong [argPtr (castPtr (unRawId plist) :: Ptr ()), argPtr (castPtr raw_dataType :: Ptr ())]
+setPropertyList_forType nsPasteboard plist dataType =
+  sendMessage nsPasteboard setPropertyList_forTypeSelector plist (toNSString dataType)
 
 -- | @- setString:forType:@
 setString_forType :: (IsNSPasteboard nsPasteboard, IsNSString string, IsNSString dataType) => nsPasteboard -> string -> dataType -> IO Bool
-setString_forType nsPasteboard  string dataType =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr dataType $ \raw_dataType ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "setString:forType:") retCULong [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_dataType :: Ptr ())]
+setString_forType nsPasteboard string dataType =
+  sendMessage nsPasteboard setString_forTypeSelector (toNSString string) (toNSString dataType)
 
 -- | @- dataForType:@
 dataForType :: (IsNSPasteboard nsPasteboard, IsNSString dataType) => nsPasteboard -> dataType -> IO (Id NSData)
-dataForType nsPasteboard  dataType =
-  withObjCPtr dataType $ \raw_dataType ->
-      sendMsg nsPasteboard (mkSelector "dataForType:") (retPtr retVoid) [argPtr (castPtr raw_dataType :: Ptr ())] >>= retainedObject . castPtr
+dataForType nsPasteboard dataType =
+  sendMessage nsPasteboard dataForTypeSelector (toNSString dataType)
 
 -- | @- propertyListForType:@
 propertyListForType :: (IsNSPasteboard nsPasteboard, IsNSString dataType) => nsPasteboard -> dataType -> IO RawId
-propertyListForType nsPasteboard  dataType =
-  withObjCPtr dataType $ \raw_dataType ->
-      fmap (RawId . castPtr) $ sendMsg nsPasteboard (mkSelector "propertyListForType:") (retPtr retVoid) [argPtr (castPtr raw_dataType :: Ptr ())]
+propertyListForType nsPasteboard dataType =
+  sendMessage nsPasteboard propertyListForTypeSelector (toNSString dataType)
 
 -- | @- stringForType:@
 stringForType :: (IsNSPasteboard nsPasteboard, IsNSString dataType) => nsPasteboard -> dataType -> IO (Id NSString)
-stringForType nsPasteboard  dataType =
-  withObjCPtr dataType $ \raw_dataType ->
-      sendMsg nsPasteboard (mkSelector "stringForType:") (retPtr retVoid) [argPtr (castPtr raw_dataType :: Ptr ())] >>= retainedObject . castPtr
+stringForType nsPasteboard dataType =
+  sendMessage nsPasteboard stringForTypeSelector (toNSString dataType)
 
 -- | @- writeFileContents:@
 writeFileContents :: (IsNSPasteboard nsPasteboard, IsNSString filename) => nsPasteboard -> filename -> IO Bool
-writeFileContents nsPasteboard  filename =
-  withObjCPtr filename $ \raw_filename ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "writeFileContents:") retCULong [argPtr (castPtr raw_filename :: Ptr ())]
+writeFileContents nsPasteboard filename =
+  sendMessage nsPasteboard writeFileContentsSelector (toNSString filename)
 
 -- | @- readFileContentsType:toFile:@
 readFileContentsType_toFile :: (IsNSPasteboard nsPasteboard, IsNSString type_, IsNSString filename) => nsPasteboard -> type_ -> filename -> IO (Id NSString)
-readFileContentsType_toFile nsPasteboard  type_ filename =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr filename $ \raw_filename ->
-        sendMsg nsPasteboard (mkSelector "readFileContentsType:toFile:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_filename :: Ptr ())] >>= retainedObject . castPtr
+readFileContentsType_toFile nsPasteboard type_ filename =
+  sendMessage nsPasteboard readFileContentsType_toFileSelector (toNSString type_) (toNSString filename)
 
 -- | @- writeFileWrapper:@
 writeFileWrapper :: (IsNSPasteboard nsPasteboard, IsNSFileWrapper wrapper) => nsPasteboard -> wrapper -> IO Bool
-writeFileWrapper nsPasteboard  wrapper =
-  withObjCPtr wrapper $ \raw_wrapper ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboard (mkSelector "writeFileWrapper:") retCULong [argPtr (castPtr raw_wrapper :: Ptr ())]
+writeFileWrapper nsPasteboard wrapper =
+  sendMessage nsPasteboard writeFileWrapperSelector (toNSFileWrapper wrapper)
 
 -- | @- readFileWrapper@
 readFileWrapper :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSFileWrapper)
-readFileWrapper nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "readFileWrapper") (retPtr retVoid) [] >>= retainedObject . castPtr
+readFileWrapper nsPasteboard =
+  sendMessage nsPasteboard readFileWrapperSelector
 
 -- | @+ typesFilterableTo:@
 typesFilterableTo :: IsNSString type_ => type_ -> IO (Id NSArray)
 typesFilterableTo type_ =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    withObjCPtr type_ $ \raw_type_ ->
-      sendClassMsg cls' (mkSelector "typesFilterableTo:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typesFilterableToSelector (toNSString type_)
 
 -- | @+ pasteboardByFilteringFile:@
 pasteboardByFilteringFile :: IsNSString filename => filename -> IO (Id NSPasteboard)
 pasteboardByFilteringFile filename =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    withObjCPtr filename $ \raw_filename ->
-      sendClassMsg cls' (mkSelector "pasteboardByFilteringFile:") (retPtr retVoid) [argPtr (castPtr raw_filename :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pasteboardByFilteringFileSelector (toNSString filename)
 
 -- | @+ pasteboardByFilteringData:ofType:@
 pasteboardByFilteringData_ofType :: (IsNSData data_, IsNSString type_) => data_ -> type_ -> IO (Id NSPasteboard)
 pasteboardByFilteringData_ofType data_ type_ =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr type_ $ \raw_type_ ->
-        sendClassMsg cls' (mkSelector "pasteboardByFilteringData:ofType:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pasteboardByFilteringData_ofTypeSelector (toNSData data_) (toNSString type_)
 
 -- | @+ pasteboardByFilteringTypesInPasteboard:@
 pasteboardByFilteringTypesInPasteboard :: IsNSPasteboard pboard => pboard -> IO (Id NSPasteboard)
 pasteboardByFilteringTypesInPasteboard pboard =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    withObjCPtr pboard $ \raw_pboard ->
-      sendClassMsg cls' (mkSelector "pasteboardByFilteringTypesInPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pboard :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pasteboardByFilteringTypesInPasteboardSelector (toNSPasteboard pboard)
 
 -- | @+ generalPasteboard@
 generalPasteboard :: IO (Id NSPasteboard)
 generalPasteboard  =
   do
     cls' <- getRequiredClass "NSPasteboard"
-    sendClassMsg cls' (mkSelector "generalPasteboard") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' generalPasteboardSelector
 
 -- | @- name@
 name :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSString)
-name nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsPasteboard =
+  sendMessage nsPasteboard nameSelector
 
 -- | @- changeCount@
 changeCount :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO CLong
-changeCount nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "changeCount") retCLong []
+changeCount nsPasteboard =
+  sendMessage nsPasteboard changeCountSelector
 
 -- | The current pasteboard access behavior. The user can customize this behavior per-app in System Settings for any app that has triggered a pasteboard access alert in the past.
 --
 -- ObjC selector: @- accessBehavior@
 accessBehavior :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO NSPasteboardAccessBehavior
-accessBehavior nsPasteboard  =
-    fmap (coerce :: CLong -> NSPasteboardAccessBehavior) $ sendMsg nsPasteboard (mkSelector "accessBehavior") retCLong []
+accessBehavior nsPasteboard =
+  sendMessage nsPasteboard accessBehaviorSelector
 
 -- | @- pasteboardItems@
 pasteboardItems :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSArray)
-pasteboardItems nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "pasteboardItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+pasteboardItems nsPasteboard =
+  sendMessage nsPasteboard pasteboardItemsSelector
 
 -- | @- types@
 types :: IsNSPasteboard nsPasteboard => nsPasteboard -> IO (Id NSArray)
-types nsPasteboard  =
-    sendMsg nsPasteboard (mkSelector "types") (retPtr retVoid) [] >>= retainedObject . castPtr
+types nsPasteboard =
+  sendMessage nsPasteboard typesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pasteboardWithName:@
-pasteboardWithNameSelector :: Selector
+pasteboardWithNameSelector :: Selector '[Id NSString] (Id NSPasteboard)
 pasteboardWithNameSelector = mkSelector "pasteboardWithName:"
 
 -- | @Selector@ for @pasteboardWithUniqueName@
-pasteboardWithUniqueNameSelector :: Selector
+pasteboardWithUniqueNameSelector :: Selector '[] (Id NSPasteboard)
 pasteboardWithUniqueNameSelector = mkSelector "pasteboardWithUniqueName"
 
 -- | @Selector@ for @releaseGlobally@
-releaseGloballySelector :: Selector
+releaseGloballySelector :: Selector '[] ()
 releaseGloballySelector = mkSelector "releaseGlobally"
 
 -- | @Selector@ for @prepareForNewContentsWithOptions:@
-prepareForNewContentsWithOptionsSelector :: Selector
+prepareForNewContentsWithOptionsSelector :: Selector '[NSPasteboardContentsOptions] CLong
 prepareForNewContentsWithOptionsSelector = mkSelector "prepareForNewContentsWithOptions:"
 
 -- | @Selector@ for @clearContents@
-clearContentsSelector :: Selector
+clearContentsSelector :: Selector '[] CLong
 clearContentsSelector = mkSelector "clearContents"
 
 -- | @Selector@ for @writeObjects:@
-writeObjectsSelector :: Selector
+writeObjectsSelector :: Selector '[Id NSArray] Bool
 writeObjectsSelector = mkSelector "writeObjects:"
 
 -- | @Selector@ for @readObjectsForClasses:options:@
-readObjectsForClasses_optionsSelector :: Selector
+readObjectsForClasses_optionsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id NSArray)
 readObjectsForClasses_optionsSelector = mkSelector "readObjectsForClasses:options:"
 
 -- | @Selector@ for @indexOfPasteboardItem:@
-indexOfPasteboardItemSelector :: Selector
+indexOfPasteboardItemSelector :: Selector '[Id NSPasteboardItem] CULong
 indexOfPasteboardItemSelector = mkSelector "indexOfPasteboardItem:"
 
 -- | @Selector@ for @canReadItemWithDataConformingToTypes:@
-canReadItemWithDataConformingToTypesSelector :: Selector
+canReadItemWithDataConformingToTypesSelector :: Selector '[Id NSArray] Bool
 canReadItemWithDataConformingToTypesSelector = mkSelector "canReadItemWithDataConformingToTypes:"
 
 -- | @Selector@ for @canReadObjectForClasses:options:@
-canReadObjectForClasses_optionsSelector :: Selector
+canReadObjectForClasses_optionsSelector :: Selector '[Id NSArray, Id NSDictionary] Bool
 canReadObjectForClasses_optionsSelector = mkSelector "canReadObjectForClasses:options:"
 
 -- | @Selector@ for @declareTypes:owner:@
-declareTypes_ownerSelector :: Selector
+declareTypes_ownerSelector :: Selector '[Id NSArray, RawId] CLong
 declareTypes_ownerSelector = mkSelector "declareTypes:owner:"
 
 -- | @Selector@ for @addTypes:owner:@
-addTypes_ownerSelector :: Selector
+addTypes_ownerSelector :: Selector '[Id NSArray, RawId] CLong
 addTypes_ownerSelector = mkSelector "addTypes:owner:"
 
 -- | @Selector@ for @availableTypeFromArray:@
-availableTypeFromArraySelector :: Selector
+availableTypeFromArraySelector :: Selector '[Id NSArray] (Id NSString)
 availableTypeFromArraySelector = mkSelector "availableTypeFromArray:"
 
 -- | @Selector@ for @setData:forType:@
-setData_forTypeSelector :: Selector
+setData_forTypeSelector :: Selector '[Id NSData, Id NSString] Bool
 setData_forTypeSelector = mkSelector "setData:forType:"
 
 -- | @Selector@ for @setPropertyList:forType:@
-setPropertyList_forTypeSelector :: Selector
+setPropertyList_forTypeSelector :: Selector '[RawId, Id NSString] Bool
 setPropertyList_forTypeSelector = mkSelector "setPropertyList:forType:"
 
 -- | @Selector@ for @setString:forType:@
-setString_forTypeSelector :: Selector
+setString_forTypeSelector :: Selector '[Id NSString, Id NSString] Bool
 setString_forTypeSelector = mkSelector "setString:forType:"
 
 -- | @Selector@ for @dataForType:@
-dataForTypeSelector :: Selector
+dataForTypeSelector :: Selector '[Id NSString] (Id NSData)
 dataForTypeSelector = mkSelector "dataForType:"
 
 -- | @Selector@ for @propertyListForType:@
-propertyListForTypeSelector :: Selector
+propertyListForTypeSelector :: Selector '[Id NSString] RawId
 propertyListForTypeSelector = mkSelector "propertyListForType:"
 
 -- | @Selector@ for @stringForType:@
-stringForTypeSelector :: Selector
+stringForTypeSelector :: Selector '[Id NSString] (Id NSString)
 stringForTypeSelector = mkSelector "stringForType:"
 
 -- | @Selector@ for @writeFileContents:@
-writeFileContentsSelector :: Selector
+writeFileContentsSelector :: Selector '[Id NSString] Bool
 writeFileContentsSelector = mkSelector "writeFileContents:"
 
 -- | @Selector@ for @readFileContentsType:toFile:@
-readFileContentsType_toFileSelector :: Selector
+readFileContentsType_toFileSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 readFileContentsType_toFileSelector = mkSelector "readFileContentsType:toFile:"
 
 -- | @Selector@ for @writeFileWrapper:@
-writeFileWrapperSelector :: Selector
+writeFileWrapperSelector :: Selector '[Id NSFileWrapper] Bool
 writeFileWrapperSelector = mkSelector "writeFileWrapper:"
 
 -- | @Selector@ for @readFileWrapper@
-readFileWrapperSelector :: Selector
+readFileWrapperSelector :: Selector '[] (Id NSFileWrapper)
 readFileWrapperSelector = mkSelector "readFileWrapper"
 
 -- | @Selector@ for @typesFilterableTo:@
-typesFilterableToSelector :: Selector
+typesFilterableToSelector :: Selector '[Id NSString] (Id NSArray)
 typesFilterableToSelector = mkSelector "typesFilterableTo:"
 
 -- | @Selector@ for @pasteboardByFilteringFile:@
-pasteboardByFilteringFileSelector :: Selector
+pasteboardByFilteringFileSelector :: Selector '[Id NSString] (Id NSPasteboard)
 pasteboardByFilteringFileSelector = mkSelector "pasteboardByFilteringFile:"
 
 -- | @Selector@ for @pasteboardByFilteringData:ofType:@
-pasteboardByFilteringData_ofTypeSelector :: Selector
+pasteboardByFilteringData_ofTypeSelector :: Selector '[Id NSData, Id NSString] (Id NSPasteboard)
 pasteboardByFilteringData_ofTypeSelector = mkSelector "pasteboardByFilteringData:ofType:"
 
 -- | @Selector@ for @pasteboardByFilteringTypesInPasteboard:@
-pasteboardByFilteringTypesInPasteboardSelector :: Selector
+pasteboardByFilteringTypesInPasteboardSelector :: Selector '[Id NSPasteboard] (Id NSPasteboard)
 pasteboardByFilteringTypesInPasteboardSelector = mkSelector "pasteboardByFilteringTypesInPasteboard:"
 
 -- | @Selector@ for @generalPasteboard@
-generalPasteboardSelector :: Selector
+generalPasteboardSelector :: Selector '[] (Id NSPasteboard)
 generalPasteboardSelector = mkSelector "generalPasteboard"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @changeCount@
-changeCountSelector :: Selector
+changeCountSelector :: Selector '[] CLong
 changeCountSelector = mkSelector "changeCount"
 
 -- | @Selector@ for @accessBehavior@
-accessBehaviorSelector :: Selector
+accessBehaviorSelector :: Selector '[] NSPasteboardAccessBehavior
 accessBehaviorSelector = mkSelector "accessBehavior"
 
 -- | @Selector@ for @pasteboardItems@
-pasteboardItemsSelector :: Selector
+pasteboardItemsSelector :: Selector '[] (Id NSArray)
 pasteboardItemsSelector = mkSelector "pasteboardItems"
 
 -- | @Selector@ for @types@
-typesSelector :: Selector
+typesSelector :: Selector '[] (Id NSArray)
 typesSelector = mkSelector "types"
 

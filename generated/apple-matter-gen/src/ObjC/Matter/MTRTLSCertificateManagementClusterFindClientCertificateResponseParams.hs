@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Matter.MTRTLSCertificateManagementClusterFindClientCertificateRespon
   , initWithResponseValue_error
   , certificateDetails
   , setCertificateDetails
-  , initWithResponseValue_errorSelector
   , certificateDetailsSelector
+  , initWithResponseValue_errorSelector
   , setCertificateDetailsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRTLSCertificateManagementClusterFindClientCertificateResponseParams mtrtlsCertificateManagementClusterFindClientCertificateResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrtlsCertificateManagementClusterFindClientCertificateResponseParams -> responseValue -> error_ -> IO (Id MTRTLSCertificateManagementClusterFindClientCertificateResponseParams)
-initWithResponseValue_error mtrtlsCertificateManagementClusterFindClientCertificateResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrtlsCertificateManagementClusterFindClientCertificateResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrtlsCertificateManagementClusterFindClientCertificateResponseParams responseValue error_ =
+  sendOwnedMessage mtrtlsCertificateManagementClusterFindClientCertificateResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- certificateDetails@
 certificateDetails :: IsMTRTLSCertificateManagementClusterFindClientCertificateResponseParams mtrtlsCertificateManagementClusterFindClientCertificateResponseParams => mtrtlsCertificateManagementClusterFindClientCertificateResponseParams -> IO (Id NSArray)
-certificateDetails mtrtlsCertificateManagementClusterFindClientCertificateResponseParams  =
-    sendMsg mtrtlsCertificateManagementClusterFindClientCertificateResponseParams (mkSelector "certificateDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificateDetails mtrtlsCertificateManagementClusterFindClientCertificateResponseParams =
+  sendMessage mtrtlsCertificateManagementClusterFindClientCertificateResponseParams certificateDetailsSelector
 
 -- | @- setCertificateDetails:@
 setCertificateDetails :: (IsMTRTLSCertificateManagementClusterFindClientCertificateResponseParams mtrtlsCertificateManagementClusterFindClientCertificateResponseParams, IsNSArray value) => mtrtlsCertificateManagementClusterFindClientCertificateResponseParams -> value -> IO ()
-setCertificateDetails mtrtlsCertificateManagementClusterFindClientCertificateResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterFindClientCertificateResponseParams (mkSelector "setCertificateDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificateDetails mtrtlsCertificateManagementClusterFindClientCertificateResponseParams value =
+  sendMessage mtrtlsCertificateManagementClusterFindClientCertificateResponseParams setCertificateDetailsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRTLSCertificateManagementClusterFindClientCertificateResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @certificateDetails@
-certificateDetailsSelector :: Selector
+certificateDetailsSelector :: Selector '[] (Id NSArray)
 certificateDetailsSelector = mkSelector "certificateDetails"
 
 -- | @Selector@ for @setCertificateDetails:@
-setCertificateDetailsSelector :: Selector
+setCertificateDetailsSelector :: Selector '[Id NSArray] ()
 setCertificateDetailsSelector = mkSelector "setCertificateDetails:"
 

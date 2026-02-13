@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AudioToolbox.AUAudioUnitPreset
   , setNumber
   , name
   , setName
-  , numberSelector
-  , setNumberSelector
   , nameSelector
+  , numberSelector
   , setNameSelector
+  , setNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- number@
 number :: IsAUAudioUnitPreset auAudioUnitPreset => auAudioUnitPreset -> IO CLong
-number auAudioUnitPreset  =
-    sendMsg auAudioUnitPreset (mkSelector "number") retCLong []
+number auAudioUnitPreset =
+  sendMessage auAudioUnitPreset numberSelector
 
 -- | number
 --
@@ -52,8 +49,8 @@ number auAudioUnitPreset  =
 --
 -- ObjC selector: @- setNumber:@
 setNumber :: IsAUAudioUnitPreset auAudioUnitPreset => auAudioUnitPreset -> CLong -> IO ()
-setNumber auAudioUnitPreset  value =
-    sendMsg auAudioUnitPreset (mkSelector "setNumber:") retVoid [argCLong value]
+setNumber auAudioUnitPreset value =
+  sendMessage auAudioUnitPreset setNumberSelector value
 
 -- | name
 --
@@ -61,8 +58,8 @@ setNumber auAudioUnitPreset  value =
 --
 -- ObjC selector: @- name@
 name :: IsAUAudioUnitPreset auAudioUnitPreset => auAudioUnitPreset -> IO (Id NSString)
-name auAudioUnitPreset  =
-    sendMsg auAudioUnitPreset (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name auAudioUnitPreset =
+  sendMessage auAudioUnitPreset nameSelector
 
 -- | name
 --
@@ -70,27 +67,26 @@ name auAudioUnitPreset  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsAUAudioUnitPreset auAudioUnitPreset, IsNSString value) => auAudioUnitPreset -> value -> IO ()
-setName auAudioUnitPreset  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnitPreset (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName auAudioUnitPreset value =
+  sendMessage auAudioUnitPreset setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @number@
-numberSelector :: Selector
+numberSelector :: Selector '[] CLong
 numberSelector = mkSelector "number"
 
 -- | @Selector@ for @setNumber:@
-setNumberSelector :: Selector
+setNumberSelector :: Selector '[CLong] ()
 setNumberSelector = mkSelector "setNumber:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

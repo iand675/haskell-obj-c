@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Photos.PHCachingImageManager
   , stopCachingImagesForAllAssets
   , allowsCachingHighQualityImages
   , setAllowsCachingHighQualityImages
-  , stopCachingImagesForAllAssetsSelector
   , allowsCachingHighQualityImagesSelector
   , setAllowsCachingHighQualityImagesSelector
+  , stopCachingImagesForAllAssetsSelector
 
   -- * Enum types
   , PHImageContentMode(PHImageContentMode)
@@ -22,15 +23,11 @@ module ObjC.Photos.PHCachingImageManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,32 +37,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stopCachingImagesForAllAssets@
 stopCachingImagesForAllAssets :: IsPHCachingImageManager phCachingImageManager => phCachingImageManager -> IO ()
-stopCachingImagesForAllAssets phCachingImageManager  =
-    sendMsg phCachingImageManager (mkSelector "stopCachingImagesForAllAssets") retVoid []
+stopCachingImagesForAllAssets phCachingImageManager =
+  sendMessage phCachingImageManager stopCachingImagesForAllAssetsSelector
 
 -- | @- allowsCachingHighQualityImages@
 allowsCachingHighQualityImages :: IsPHCachingImageManager phCachingImageManager => phCachingImageManager -> IO Bool
-allowsCachingHighQualityImages phCachingImageManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phCachingImageManager (mkSelector "allowsCachingHighQualityImages") retCULong []
+allowsCachingHighQualityImages phCachingImageManager =
+  sendMessage phCachingImageManager allowsCachingHighQualityImagesSelector
 
 -- | @- setAllowsCachingHighQualityImages:@
 setAllowsCachingHighQualityImages :: IsPHCachingImageManager phCachingImageManager => phCachingImageManager -> Bool -> IO ()
-setAllowsCachingHighQualityImages phCachingImageManager  value =
-    sendMsg phCachingImageManager (mkSelector "setAllowsCachingHighQualityImages:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCachingHighQualityImages phCachingImageManager value =
+  sendMessage phCachingImageManager setAllowsCachingHighQualityImagesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stopCachingImagesForAllAssets@
-stopCachingImagesForAllAssetsSelector :: Selector
+stopCachingImagesForAllAssetsSelector :: Selector '[] ()
 stopCachingImagesForAllAssetsSelector = mkSelector "stopCachingImagesForAllAssets"
 
 -- | @Selector@ for @allowsCachingHighQualityImages@
-allowsCachingHighQualityImagesSelector :: Selector
+allowsCachingHighQualityImagesSelector :: Selector '[] Bool
 allowsCachingHighQualityImagesSelector = mkSelector "allowsCachingHighQualityImages"
 
 -- | @Selector@ for @setAllowsCachingHighQualityImages:@
-setAllowsCachingHighQualityImagesSelector :: Selector
+setAllowsCachingHighQualityImagesSelector :: Selector '[Bool] ()
 setAllowsCachingHighQualityImagesSelector = mkSelector "setAllowsCachingHighQualityImages:"
 

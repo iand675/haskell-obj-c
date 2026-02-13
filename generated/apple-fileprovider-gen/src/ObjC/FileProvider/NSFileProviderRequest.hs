@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.FileProvider.NSFileProviderRequest
   , isFileViewerRequest
   , requestingExecutable
   , domainVersion
-  , isSystemRequestSelector
-  , isFileViewerRequestSelector
-  , requestingExecutableSelector
   , domainVersionSelector
+  , isFileViewerRequestSelector
+  , isSystemRequestSelector
+  , requestingExecutableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isSystemRequest@
 isSystemRequest :: IsNSFileProviderRequest nsFileProviderRequest => nsFileProviderRequest -> IO Bool
-isSystemRequest nsFileProviderRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderRequest (mkSelector "isSystemRequest") retCULong []
+isSystemRequest nsFileProviderRequest =
+  sendMessage nsFileProviderRequest isSystemRequestSelector
 
 -- | The request was made by Finder or one of its helpers.
 --
@@ -52,15 +49,15 @@ isSystemRequest nsFileProviderRequest  =
 --
 -- ObjC selector: @- isFileViewerRequest@
 isFileViewerRequest :: IsNSFileProviderRequest nsFileProviderRequest => nsFileProviderRequest -> IO Bool
-isFileViewerRequest nsFileProviderRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderRequest (mkSelector "isFileViewerRequest") retCULong []
+isFileViewerRequest nsFileProviderRequest =
+  sendMessage nsFileProviderRequest isFileViewerRequestSelector
 
 -- | The URL of the requesting executable. This will always be nil unless both an MDM profile key is set, and the provider's application is installed by an MDM profile.
 --
 -- ObjC selector: @- requestingExecutable@
 requestingExecutable :: IsNSFileProviderRequest nsFileProviderRequest => nsFileProviderRequest -> IO (Id NSURL)
-requestingExecutable nsFileProviderRequest  =
-    sendMsg nsFileProviderRequest (mkSelector "requestingExecutable") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestingExecutable nsFileProviderRequest =
+  sendMessage nsFileProviderRequest requestingExecutableSelector
 
 -- | The version of the domain when the event that triggered the request was observed.
 --
@@ -68,26 +65,26 @@ requestingExecutable nsFileProviderRequest  =
 --
 -- ObjC selector: @- domainVersion@
 domainVersion :: IsNSFileProviderRequest nsFileProviderRequest => nsFileProviderRequest -> IO (Id NSFileProviderDomainVersion)
-domainVersion nsFileProviderRequest  =
-    sendMsg nsFileProviderRequest (mkSelector "domainVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainVersion nsFileProviderRequest =
+  sendMessage nsFileProviderRequest domainVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isSystemRequest@
-isSystemRequestSelector :: Selector
+isSystemRequestSelector :: Selector '[] Bool
 isSystemRequestSelector = mkSelector "isSystemRequest"
 
 -- | @Selector@ for @isFileViewerRequest@
-isFileViewerRequestSelector :: Selector
+isFileViewerRequestSelector :: Selector '[] Bool
 isFileViewerRequestSelector = mkSelector "isFileViewerRequest"
 
 -- | @Selector@ for @requestingExecutable@
-requestingExecutableSelector :: Selector
+requestingExecutableSelector :: Selector '[] (Id NSURL)
 requestingExecutableSelector = mkSelector "requestingExecutable"
 
 -- | @Selector@ for @domainVersion@
-domainVersionSelector :: Selector
+domainVersionSelector :: Selector '[] (Id NSFileProviderDomainVersion)
 domainVersionSelector = mkSelector "domainVersion"
 

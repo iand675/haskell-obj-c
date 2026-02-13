@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,46 +36,42 @@ module ObjC.Matter.MTRClusterElectricalPowerMeasurement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributePowerModeWithParamsSelector
-  , readAttributeNumberOfMeasurementTypesWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAccuracyWithParamsSelector
-  , readAttributeRangesWithParamsSelector
-  , readAttributeVoltageWithParamsSelector
   , readAttributeActiveCurrentWithParamsSelector
-  , readAttributeReactiveCurrentWithParamsSelector
-  , readAttributeApparentCurrentWithParamsSelector
   , readAttributeActivePowerWithParamsSelector
-  , readAttributeReactivePowerWithParamsSelector
+  , readAttributeApparentCurrentWithParamsSelector
   , readAttributeApparentPowerWithParamsSelector
-  , readAttributeRMSVoltageWithParamsSelector
-  , readAttributeRMSCurrentWithParamsSelector
-  , readAttributeRMSPowerWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
   , readAttributeFrequencyWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeHarmonicCurrentsWithParamsSelector
   , readAttributeHarmonicPhasesWithParamsSelector
-  , readAttributePowerFactorWithParamsSelector
   , readAttributeNeutralCurrentWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeNumberOfMeasurementTypesWithParamsSelector
+  , readAttributePowerFactorWithParamsSelector
+  , readAttributePowerModeWithParamsSelector
+  , readAttributeRMSCurrentWithParamsSelector
+  , readAttributeRMSPowerWithParamsSelector
+  , readAttributeRMSVoltageWithParamsSelector
+  , readAttributeRangesWithParamsSelector
+  , readAttributeReactiveCurrentWithParamsSelector
+  , readAttributeReactivePowerWithParamsSelector
+  , readAttributeVoltageWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,279 +80,252 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributePowerModeWithParams:@
 readAttributePowerModeWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributePowerModeWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributePowerModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePowerModeWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributePowerModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfMeasurementTypesWithParams:@
 readAttributeNumberOfMeasurementTypesWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeNumberOfMeasurementTypesWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeNumberOfMeasurementTypesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfMeasurementTypesWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeNumberOfMeasurementTypesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAccuracyWithParams:@
 readAttributeAccuracyWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAccuracyWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeAccuracyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAccuracyWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeAccuracyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRangesWithParams:@
 readAttributeRangesWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeRangesWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeRangesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRangesWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeRangesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeVoltageWithParams:@
 readAttributeVoltageWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeVoltageWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeVoltageWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeVoltageWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeVoltageWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveCurrentWithParams:@
 readAttributeActiveCurrentWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeActiveCurrentWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeActiveCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveCurrentWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeActiveCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeReactiveCurrentWithParams:@
 readAttributeReactiveCurrentWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeReactiveCurrentWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeReactiveCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeReactiveCurrentWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeReactiveCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeApparentCurrentWithParams:@
 readAttributeApparentCurrentWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeApparentCurrentWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeApparentCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeApparentCurrentWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeApparentCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActivePowerWithParams:@
 readAttributeActivePowerWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeActivePowerWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeActivePowerWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActivePowerWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeActivePowerWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeReactivePowerWithParams:@
 readAttributeReactivePowerWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeReactivePowerWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeReactivePowerWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeReactivePowerWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeReactivePowerWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeApparentPowerWithParams:@
 readAttributeApparentPowerWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeApparentPowerWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeApparentPowerWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeApparentPowerWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeApparentPowerWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRMSVoltageWithParams:@
 readAttributeRMSVoltageWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeRMSVoltageWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeRMSVoltageWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRMSVoltageWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeRMSVoltageWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRMSCurrentWithParams:@
 readAttributeRMSCurrentWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeRMSCurrentWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeRMSCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRMSCurrentWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeRMSCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRMSPowerWithParams:@
 readAttributeRMSPowerWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeRMSPowerWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeRMSPowerWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRMSPowerWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeRMSPowerWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFrequencyWithParams:@
 readAttributeFrequencyWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFrequencyWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeFrequencyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFrequencyWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeFrequencyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeHarmonicCurrentsWithParams:@
 readAttributeHarmonicCurrentsWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeHarmonicCurrentsWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeHarmonicCurrentsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHarmonicCurrentsWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeHarmonicCurrentsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeHarmonicPhasesWithParams:@
 readAttributeHarmonicPhasesWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeHarmonicPhasesWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeHarmonicPhasesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHarmonicPhasesWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeHarmonicPhasesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePowerFactorWithParams:@
 readAttributePowerFactorWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributePowerFactorWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributePowerFactorWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePowerFactorWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributePowerFactorWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNeutralCurrentWithParams:@
 readAttributeNeutralCurrentWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeNeutralCurrentWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeNeutralCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNeutralCurrentWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeNeutralCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRReadParams params) => mtrClusterElectricalPowerMeasurement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterElectricalPowerMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterElectricalPowerMeasurement params =
+  sendMessage mtrClusterElectricalPowerMeasurement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement => mtrClusterElectricalPowerMeasurement -> IO (Id MTRClusterElectricalPowerMeasurement)
-init_ mtrClusterElectricalPowerMeasurement  =
-    sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterElectricalPowerMeasurement =
+  sendOwnedMessage mtrClusterElectricalPowerMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterElectricalPowerMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterElectricalPowerMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterElectricalPowerMeasurement mtrClusterElectricalPowerMeasurement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterElectricalPowerMeasurement -> device -> endpointID -> queue -> IO (Id MTRClusterElectricalPowerMeasurement)
-initWithDevice_endpointID_queue mtrClusterElectricalPowerMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterElectricalPowerMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterElectricalPowerMeasurement device endpointID queue =
+  sendOwnedMessage mtrClusterElectricalPowerMeasurement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributePowerModeWithParams:@
-readAttributePowerModeWithParamsSelector :: Selector
+readAttributePowerModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePowerModeWithParamsSelector = mkSelector "readAttributePowerModeWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfMeasurementTypesWithParams:@
-readAttributeNumberOfMeasurementTypesWithParamsSelector :: Selector
+readAttributeNumberOfMeasurementTypesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfMeasurementTypesWithParamsSelector = mkSelector "readAttributeNumberOfMeasurementTypesWithParams:"
 
 -- | @Selector@ for @readAttributeAccuracyWithParams:@
-readAttributeAccuracyWithParamsSelector :: Selector
+readAttributeAccuracyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAccuracyWithParamsSelector = mkSelector "readAttributeAccuracyWithParams:"
 
 -- | @Selector@ for @readAttributeRangesWithParams:@
-readAttributeRangesWithParamsSelector :: Selector
+readAttributeRangesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRangesWithParamsSelector = mkSelector "readAttributeRangesWithParams:"
 
 -- | @Selector@ for @readAttributeVoltageWithParams:@
-readAttributeVoltageWithParamsSelector :: Selector
+readAttributeVoltageWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeVoltageWithParamsSelector = mkSelector "readAttributeVoltageWithParams:"
 
 -- | @Selector@ for @readAttributeActiveCurrentWithParams:@
-readAttributeActiveCurrentWithParamsSelector :: Selector
+readAttributeActiveCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveCurrentWithParamsSelector = mkSelector "readAttributeActiveCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeReactiveCurrentWithParams:@
-readAttributeReactiveCurrentWithParamsSelector :: Selector
+readAttributeReactiveCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeReactiveCurrentWithParamsSelector = mkSelector "readAttributeReactiveCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeApparentCurrentWithParams:@
-readAttributeApparentCurrentWithParamsSelector :: Selector
+readAttributeApparentCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeApparentCurrentWithParamsSelector = mkSelector "readAttributeApparentCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeActivePowerWithParams:@
-readAttributeActivePowerWithParamsSelector :: Selector
+readAttributeActivePowerWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActivePowerWithParamsSelector = mkSelector "readAttributeActivePowerWithParams:"
 
 -- | @Selector@ for @readAttributeReactivePowerWithParams:@
-readAttributeReactivePowerWithParamsSelector :: Selector
+readAttributeReactivePowerWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeReactivePowerWithParamsSelector = mkSelector "readAttributeReactivePowerWithParams:"
 
 -- | @Selector@ for @readAttributeApparentPowerWithParams:@
-readAttributeApparentPowerWithParamsSelector :: Selector
+readAttributeApparentPowerWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeApparentPowerWithParamsSelector = mkSelector "readAttributeApparentPowerWithParams:"
 
 -- | @Selector@ for @readAttributeRMSVoltageWithParams:@
-readAttributeRMSVoltageWithParamsSelector :: Selector
+readAttributeRMSVoltageWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRMSVoltageWithParamsSelector = mkSelector "readAttributeRMSVoltageWithParams:"
 
 -- | @Selector@ for @readAttributeRMSCurrentWithParams:@
-readAttributeRMSCurrentWithParamsSelector :: Selector
+readAttributeRMSCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRMSCurrentWithParamsSelector = mkSelector "readAttributeRMSCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeRMSPowerWithParams:@
-readAttributeRMSPowerWithParamsSelector :: Selector
+readAttributeRMSPowerWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRMSPowerWithParamsSelector = mkSelector "readAttributeRMSPowerWithParams:"
 
 -- | @Selector@ for @readAttributeFrequencyWithParams:@
-readAttributeFrequencyWithParamsSelector :: Selector
+readAttributeFrequencyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFrequencyWithParamsSelector = mkSelector "readAttributeFrequencyWithParams:"
 
 -- | @Selector@ for @readAttributeHarmonicCurrentsWithParams:@
-readAttributeHarmonicCurrentsWithParamsSelector :: Selector
+readAttributeHarmonicCurrentsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHarmonicCurrentsWithParamsSelector = mkSelector "readAttributeHarmonicCurrentsWithParams:"
 
 -- | @Selector@ for @readAttributeHarmonicPhasesWithParams:@
-readAttributeHarmonicPhasesWithParamsSelector :: Selector
+readAttributeHarmonicPhasesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHarmonicPhasesWithParamsSelector = mkSelector "readAttributeHarmonicPhasesWithParams:"
 
 -- | @Selector@ for @readAttributePowerFactorWithParams:@
-readAttributePowerFactorWithParamsSelector :: Selector
+readAttributePowerFactorWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePowerFactorWithParamsSelector = mkSelector "readAttributePowerFactorWithParams:"
 
 -- | @Selector@ for @readAttributeNeutralCurrentWithParams:@
-readAttributeNeutralCurrentWithParamsSelector :: Selector
+readAttributeNeutralCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNeutralCurrentWithParamsSelector = mkSelector "readAttributeNeutralCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterElectricalPowerMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterElectricalPowerMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterElectricalPowerMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

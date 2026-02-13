@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Vision.VNDetectedPoint
   , init_
   , initWithX_y
   , confidence
-  , newSelector
+  , confidenceSelector
   , initSelector
   , initWithX_ySelector
-  , confidenceSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,42 +41,42 @@ new :: IO (Id VNDetectedPoint)
 new  =
   do
     cls' <- getRequiredClass "VNDetectedPoint"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNDetectedPoint vnDetectedPoint => vnDetectedPoint -> IO (Id VNDetectedPoint)
-init_ vnDetectedPoint  =
-    sendMsg vnDetectedPoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnDetectedPoint =
+  sendOwnedMessage vnDetectedPoint initSelector
 
 -- | @- initWithX:y:@
 initWithX_y :: IsVNDetectedPoint vnDetectedPoint => vnDetectedPoint -> CDouble -> CDouble -> IO (Id VNDetectedPoint)
-initWithX_y vnDetectedPoint  x y =
-    sendMsg vnDetectedPoint (mkSelector "initWithX:y:") (retPtr retVoid) [argCDouble x, argCDouble y] >>= ownedObject . castPtr
+initWithX_y vnDetectedPoint x y =
+  sendOwnedMessage vnDetectedPoint initWithX_ySelector x y
 
 -- | The confidence in the accuracy of the location, in the range of [0.0, 1.0].
 --
 -- ObjC selector: @- confidence@
 confidence :: IsVNDetectedPoint vnDetectedPoint => vnDetectedPoint -> IO CFloat
-confidence vnDetectedPoint  =
-    sendMsg vnDetectedPoint (mkSelector "confidence") retCFloat []
+confidence vnDetectedPoint =
+  sendMessage vnDetectedPoint confidenceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNDetectedPoint)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNDetectedPoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithX:y:@
-initWithX_ySelector :: Selector
+initWithX_ySelector :: Selector '[CDouble, CDouble] (Id VNDetectedPoint)
 initWithX_ySelector = mkSelector "initWithX:y:"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CFloat
 confidenceSelector = mkSelector "confidence"
 

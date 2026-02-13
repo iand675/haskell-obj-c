@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,40 +52,40 @@ module ObjC.EventKit.EKEventStore
   , eventStoreIdentifier
   , defaultCalendarForNewEvents
   , authorizationStatusForEntityTypeSelector
-  , initWithAccessToEntityTypesSelector
-  , initSelector
-  , initWithSourcesSelector
-  , requestFullAccessToEventsWithCompletionSelector
-  , requestWriteOnlyAccessToEventsWithCompletionSelector
-  , requestFullAccessToRemindersWithCompletionSelector
-  , requestAccessToEntityType_completionSelector
-  , sourceWithIdentifierSelector
-  , calendarsForEntityTypeSelector
-  , defaultCalendarForNewRemindersSelector
-  , calendarWithIdentifierSelector
-  , saveCalendar_commit_errorSelector
-  , removeCalendar_commit_errorSelector
   , calendarItemWithIdentifierSelector
   , calendarItemsWithExternalIdentifierSelector
-  , saveEvent_span_errorSelector
-  , removeEvent_span_errorSelector
-  , saveEvent_span_commit_errorSelector
-  , removeEvent_span_commit_errorSelector
+  , calendarWithIdentifierSelector
+  , calendarsForEntityTypeSelector
+  , cancelFetchRequestSelector
+  , commitSelector
+  , defaultCalendarForNewEventsSelector
+  , defaultCalendarForNewRemindersSelector
+  , enumerateEventsMatchingPredicate_usingBlockSelector
+  , eventStoreIdentifierSelector
   , eventWithIdentifierSelector
   , eventsMatchingPredicateSelector
-  , enumerateEventsMatchingPredicate_usingBlockSelector
-  , predicateForEventsWithStartDate_endDate_calendarsSelector
-  , saveReminder_commit_errorSelector
-  , removeReminder_commit_errorSelector
-  , cancelFetchRequestSelector
-  , predicateForRemindersInCalendarsSelector
-  , predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector
+  , initSelector
+  , initWithAccessToEntityTypesSelector
+  , initWithSourcesSelector
   , predicateForCompletedRemindersWithCompletionDateStarting_ending_calendarsSelector
-  , commitSelector
-  , resetSelector
+  , predicateForEventsWithStartDate_endDate_calendarsSelector
+  , predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector
+  , predicateForRemindersInCalendarsSelector
   , refreshSourcesIfNecessarySelector
-  , eventStoreIdentifierSelector
-  , defaultCalendarForNewEventsSelector
+  , removeCalendar_commit_errorSelector
+  , removeEvent_span_commit_errorSelector
+  , removeEvent_span_errorSelector
+  , removeReminder_commit_errorSelector
+  , requestAccessToEntityType_completionSelector
+  , requestFullAccessToEventsWithCompletionSelector
+  , requestFullAccessToRemindersWithCompletionSelector
+  , requestWriteOnlyAccessToEventsWithCompletionSelector
+  , resetSelector
+  , saveCalendar_commit_errorSelector
+  , saveEvent_span_commit_errorSelector
+  , saveEvent_span_errorSelector
+  , saveReminder_commit_errorSelector
+  , sourceWithIdentifierSelector
 
   -- * Enum types
   , EKAuthorizationStatus(EKAuthorizationStatus)
@@ -106,15 +107,11 @@ module ObjC.EventKit.EKEventStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -131,7 +128,7 @@ authorizationStatusForEntityType :: EKEntityType -> IO EKAuthorizationStatus
 authorizationStatusForEntityType entityType =
   do
     cls' <- getRequiredClass "EKEventStore"
-    fmap (coerce :: CLong -> EKAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatusForEntityType:") retCLong [argCULong (coerce entityType)]
+    sendClassMessage cls' authorizationStatusForEntityTypeSelector entityType
 
 -- | initWithAccessToEntityTypes:
 --
@@ -141,15 +138,15 @@ authorizationStatusForEntityType entityType =
 --
 -- ObjC selector: @- initWithAccessToEntityTypes:@
 initWithAccessToEntityTypes :: IsEKEventStore ekEventStore => ekEventStore -> EKEntityMask -> IO RawId
-initWithAccessToEntityTypes ekEventStore  entityTypes =
-    fmap (RawId . castPtr) $ sendMsg ekEventStore (mkSelector "initWithAccessToEntityTypes:") (retPtr retVoid) [argCULong (coerce entityTypes)]
+initWithAccessToEntityTypes ekEventStore entityTypes =
+  sendOwnedMessage ekEventStore initWithAccessToEntityTypesSelector entityTypes
 
 -- | init
 --
 -- ObjC selector: @- init@
 init_ :: IsEKEventStore ekEventStore => ekEventStore -> IO RawId
-init_ ekEventStore  =
-    fmap (RawId . castPtr) $ sendMsg ekEventStore (mkSelector "init") (retPtr retVoid) []
+init_ ekEventStore =
+  sendOwnedMessage ekEventStore initSelector
 
 -- | initWithSources:
 --
@@ -159,29 +156,28 @@ init_ ekEventStore  =
 --
 -- ObjC selector: @- initWithSources:@
 initWithSources :: (IsEKEventStore ekEventStore, IsNSArray sources) => ekEventStore -> sources -> IO (Id EKEventStore)
-initWithSources ekEventStore  sources =
-  withObjCPtr sources $ \raw_sources ->
-      sendMsg ekEventStore (mkSelector "initWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ())] >>= ownedObject . castPtr
+initWithSources ekEventStore sources =
+  sendOwnedMessage ekEventStore initWithSourcesSelector (toNSArray sources)
 
 -- | @- requestFullAccessToEventsWithCompletion:@
 requestFullAccessToEventsWithCompletion :: IsEKEventStore ekEventStore => ekEventStore -> Ptr () -> IO ()
-requestFullAccessToEventsWithCompletion ekEventStore  completion =
-    sendMsg ekEventStore (mkSelector "requestFullAccessToEventsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestFullAccessToEventsWithCompletion ekEventStore completion =
+  sendMessage ekEventStore requestFullAccessToEventsWithCompletionSelector completion
 
 -- | @- requestWriteOnlyAccessToEventsWithCompletion:@
 requestWriteOnlyAccessToEventsWithCompletion :: IsEKEventStore ekEventStore => ekEventStore -> Ptr () -> IO ()
-requestWriteOnlyAccessToEventsWithCompletion ekEventStore  completion =
-    sendMsg ekEventStore (mkSelector "requestWriteOnlyAccessToEventsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestWriteOnlyAccessToEventsWithCompletion ekEventStore completion =
+  sendMessage ekEventStore requestWriteOnlyAccessToEventsWithCompletionSelector completion
 
 -- | @- requestFullAccessToRemindersWithCompletion:@
 requestFullAccessToRemindersWithCompletion :: IsEKEventStore ekEventStore => ekEventStore -> Ptr () -> IO ()
-requestFullAccessToRemindersWithCompletion ekEventStore  completion =
-    sendMsg ekEventStore (mkSelector "requestFullAccessToRemindersWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestFullAccessToRemindersWithCompletion ekEventStore completion =
+  sendMessage ekEventStore requestFullAccessToRemindersWithCompletionSelector completion
 
 -- | @- requestAccessToEntityType:completion:@
 requestAccessToEntityType_completion :: IsEKEventStore ekEventStore => ekEventStore -> EKEntityType -> Ptr () -> IO ()
-requestAccessToEntityType_completion ekEventStore  entityType completion =
-    sendMsg ekEventStore (mkSelector "requestAccessToEntityType:completion:") retVoid [argCULong (coerce entityType), argPtr (castPtr completion :: Ptr ())]
+requestAccessToEntityType_completion ekEventStore entityType completion =
+  sendMessage ekEventStore requestAccessToEntityType_completionSelector entityType completion
 
 -- | sourceWithIdentifier:
 --
@@ -189,9 +185,8 @@ requestAccessToEntityType_completion ekEventStore  entityType completion =
 --
 -- ObjC selector: @- sourceWithIdentifier:@
 sourceWithIdentifier :: (IsEKEventStore ekEventStore, IsNSString identifier) => ekEventStore -> identifier -> IO (Id EKSource)
-sourceWithIdentifier ekEventStore  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg ekEventStore (mkSelector "sourceWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+sourceWithIdentifier ekEventStore identifier =
+  sendMessage ekEventStore sourceWithIdentifierSelector (toNSString identifier)
 
 -- | calendarsForEntityType
 --
@@ -199,8 +194,8 @@ sourceWithIdentifier ekEventStore  identifier =
 --
 -- ObjC selector: @- calendarsForEntityType:@
 calendarsForEntityType :: IsEKEventStore ekEventStore => ekEventStore -> EKEntityType -> IO (Id NSArray)
-calendarsForEntityType ekEventStore  entityType =
-    sendMsg ekEventStore (mkSelector "calendarsForEntityType:") (retPtr retVoid) [argCULong (coerce entityType)] >>= retainedObject . castPtr
+calendarsForEntityType ekEventStore entityType =
+  sendMessage ekEventStore calendarsForEntityTypeSelector entityType
 
 -- | defaultCalendarForNewReminders
 --
@@ -210,8 +205,8 @@ calendarsForEntityType ekEventStore  entityType =
 --
 -- ObjC selector: @- defaultCalendarForNewReminders@
 defaultCalendarForNewReminders :: IsEKEventStore ekEventStore => ekEventStore -> IO (Id EKCalendar)
-defaultCalendarForNewReminders ekEventStore  =
-    sendMsg ekEventStore (mkSelector "defaultCalendarForNewReminders") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultCalendarForNewReminders ekEventStore =
+  sendMessage ekEventStore defaultCalendarForNewRemindersSelector
 
 -- | calendarWithIdentifier:
 --
@@ -219,9 +214,8 @@ defaultCalendarForNewReminders ekEventStore  =
 --
 -- ObjC selector: @- calendarWithIdentifier:@
 calendarWithIdentifier :: (IsEKEventStore ekEventStore, IsNSString identifier) => ekEventStore -> identifier -> IO (Id EKCalendar)
-calendarWithIdentifier ekEventStore  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg ekEventStore (mkSelector "calendarWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+calendarWithIdentifier ekEventStore identifier =
+  sendMessage ekEventStore calendarWithIdentifierSelector (toNSString identifier)
 
 -- | saveCalendar:commit:error:
 --
@@ -237,10 +231,8 @@ calendarWithIdentifier ekEventStore  identifier =
 --
 -- ObjC selector: @- saveCalendar:commit:error:@
 saveCalendar_commit_error :: (IsEKEventStore ekEventStore, IsEKCalendar calendar, IsNSError error_) => ekEventStore -> calendar -> Bool -> error_ -> IO Bool
-saveCalendar_commit_error ekEventStore  calendar commit error_ =
-  withObjCPtr calendar $ \raw_calendar ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "saveCalendar:commit:error:") retCULong [argPtr (castPtr raw_calendar :: Ptr ()), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+saveCalendar_commit_error ekEventStore calendar commit error_ =
+  sendMessage ekEventStore saveCalendar_commit_errorSelector (toEKCalendar calendar) commit (toNSError error_)
 
 -- | removeCalendar:commit:error:
 --
@@ -262,10 +254,8 @@ saveCalendar_commit_error ekEventStore  calendar commit error_ =
 --
 -- ObjC selector: @- removeCalendar:commit:error:@
 removeCalendar_commit_error :: (IsEKEventStore ekEventStore, IsEKCalendar calendar, IsNSError error_) => ekEventStore -> calendar -> Bool -> error_ -> IO Bool
-removeCalendar_commit_error ekEventStore  calendar commit error_ =
-  withObjCPtr calendar $ \raw_calendar ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "removeCalendar:commit:error:") retCULong [argPtr (castPtr raw_calendar :: Ptr ()), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+removeCalendar_commit_error ekEventStore calendar commit error_ =
+  sendMessage ekEventStore removeCalendar_commit_errorSelector (toEKCalendar calendar) commit (toNSError error_)
 
 -- | calendarItemWithIdentifier:
 --
@@ -273,9 +263,8 @@ removeCalendar_commit_error ekEventStore  calendar commit error_ =
 --
 -- ObjC selector: @- calendarItemWithIdentifier:@
 calendarItemWithIdentifier :: (IsEKEventStore ekEventStore, IsNSString identifier) => ekEventStore -> identifier -> IO (Id EKCalendarItem)
-calendarItemWithIdentifier ekEventStore  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg ekEventStore (mkSelector "calendarItemWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+calendarItemWithIdentifier ekEventStore identifier =
+  sendMessage ekEventStore calendarItemWithIdentifierSelector (toNSString identifier)
 
 -- | calendarItemsWithExternalIdentifier:
 --
@@ -289,9 +278,8 @@ calendarItemWithIdentifier ekEventStore  identifier =
 --
 -- ObjC selector: @- calendarItemsWithExternalIdentifier:@
 calendarItemsWithExternalIdentifier :: (IsEKEventStore ekEventStore, IsNSString externalIdentifier) => ekEventStore -> externalIdentifier -> IO (Id NSArray)
-calendarItemsWithExternalIdentifier ekEventStore  externalIdentifier =
-  withObjCPtr externalIdentifier $ \raw_externalIdentifier ->
-      sendMsg ekEventStore (mkSelector "calendarItemsWithExternalIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_externalIdentifier :: Ptr ())] >>= retainedObject . castPtr
+calendarItemsWithExternalIdentifier ekEventStore externalIdentifier =
+  sendMessage ekEventStore calendarItemsWithExternalIdentifierSelector (toNSString externalIdentifier)
 
 -- | saveEvent:span:error:
 --
@@ -311,10 +299,8 @@ calendarItemsWithExternalIdentifier ekEventStore  externalIdentifier =
 --
 -- ObjC selector: @- saveEvent:span:error:@
 saveEvent_span_error :: (IsEKEventStore ekEventStore, IsEKEvent event, IsNSError error_) => ekEventStore -> event -> EKSpan -> error_ -> IO Bool
-saveEvent_span_error ekEventStore  event span error_ =
-  withObjCPtr event $ \raw_event ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "saveEvent:span:error:") retCULong [argPtr (castPtr raw_event :: Ptr ()), argCLong (coerce span), argPtr (castPtr raw_error_ :: Ptr ())]
+saveEvent_span_error ekEventStore event span error_ =
+  sendMessage ekEventStore saveEvent_span_errorSelector (toEKEvent event) span (toNSError error_)
 
 -- | removeEvent:span:error:
 --
@@ -332,24 +318,18 @@ saveEvent_span_error ekEventStore  event span error_ =
 --
 -- ObjC selector: @- removeEvent:span:error:@
 removeEvent_span_error :: (IsEKEventStore ekEventStore, IsEKEvent event, IsNSError error_) => ekEventStore -> event -> EKSpan -> error_ -> IO Bool
-removeEvent_span_error ekEventStore  event span error_ =
-  withObjCPtr event $ \raw_event ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "removeEvent:span:error:") retCULong [argPtr (castPtr raw_event :: Ptr ()), argCLong (coerce span), argPtr (castPtr raw_error_ :: Ptr ())]
+removeEvent_span_error ekEventStore event span error_ =
+  sendMessage ekEventStore removeEvent_span_errorSelector (toEKEvent event) span (toNSError error_)
 
 -- | @- saveEvent:span:commit:error:@
 saveEvent_span_commit_error :: (IsEKEventStore ekEventStore, IsEKEvent event, IsNSError error_) => ekEventStore -> event -> EKSpan -> Bool -> error_ -> IO Bool
-saveEvent_span_commit_error ekEventStore  event span commit error_ =
-  withObjCPtr event $ \raw_event ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "saveEvent:span:commit:error:") retCULong [argPtr (castPtr raw_event :: Ptr ()), argCLong (coerce span), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+saveEvent_span_commit_error ekEventStore event span commit error_ =
+  sendMessage ekEventStore saveEvent_span_commit_errorSelector (toEKEvent event) span commit (toNSError error_)
 
 -- | @- removeEvent:span:commit:error:@
 removeEvent_span_commit_error :: (IsEKEventStore ekEventStore, IsEKEvent event, IsNSError error_) => ekEventStore -> event -> EKSpan -> Bool -> error_ -> IO Bool
-removeEvent_span_commit_error ekEventStore  event span commit error_ =
-  withObjCPtr event $ \raw_event ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "removeEvent:span:commit:error:") retCULong [argPtr (castPtr raw_event :: Ptr ()), argCLong (coerce span), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+removeEvent_span_commit_error ekEventStore event span commit error_ =
+  sendMessage ekEventStore removeEvent_span_commit_errorSelector (toEKEvent event) span commit (toNSError error_)
 
 -- | eventWithIdentifier:
 --
@@ -361,9 +341,8 @@ removeEvent_span_commit_error ekEventStore  event span commit error_ =
 --
 -- ObjC selector: @- eventWithIdentifier:@
 eventWithIdentifier :: (IsEKEventStore ekEventStore, IsNSString identifier) => ekEventStore -> identifier -> IO (Id EKEvent)
-eventWithIdentifier ekEventStore  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg ekEventStore (mkSelector "eventWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+eventWithIdentifier ekEventStore identifier =
+  sendMessage ekEventStore eventWithIdentifierSelector (toNSString identifier)
 
 -- | eventsMatchingPredicate:
 --
@@ -379,9 +358,8 @@ eventWithIdentifier ekEventStore  identifier =
 --
 -- ObjC selector: @- eventsMatchingPredicate:@
 eventsMatchingPredicate :: (IsEKEventStore ekEventStore, IsNSPredicate predicate) => ekEventStore -> predicate -> IO (Id NSArray)
-eventsMatchingPredicate ekEventStore  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg ekEventStore (mkSelector "eventsMatchingPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+eventsMatchingPredicate ekEventStore predicate =
+  sendMessage ekEventStore eventsMatchingPredicateSelector (toNSPredicate predicate)
 
 -- | enumerateEventsMatchingPredicate:usingBlock:
 --
@@ -397,9 +375,8 @@ eventsMatchingPredicate ekEventStore  predicate =
 --
 -- ObjC selector: @- enumerateEventsMatchingPredicate:usingBlock:@
 enumerateEventsMatchingPredicate_usingBlock :: (IsEKEventStore ekEventStore, IsNSPredicate predicate) => ekEventStore -> predicate -> Ptr () -> IO ()
-enumerateEventsMatchingPredicate_usingBlock ekEventStore  predicate block =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg ekEventStore (mkSelector "enumerateEventsMatchingPredicate:usingBlock:") retVoid [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateEventsMatchingPredicate_usingBlock ekEventStore predicate block =
+  sendMessage ekEventStore enumerateEventsMatchingPredicate_usingBlockSelector (toNSPredicate predicate) block
 
 -- | predicateForEventsWithStartDate:endDate:calendars:
 --
@@ -417,11 +394,8 @@ enumerateEventsMatchingPredicate_usingBlock ekEventStore  predicate block =
 --
 -- ObjC selector: @- predicateForEventsWithStartDate:endDate:calendars:@
 predicateForEventsWithStartDate_endDate_calendars :: (IsEKEventStore ekEventStore, IsNSDate startDate, IsNSDate endDate, IsNSArray calendars) => ekEventStore -> startDate -> endDate -> calendars -> IO (Id NSPredicate)
-predicateForEventsWithStartDate_endDate_calendars ekEventStore  startDate endDate calendars =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-      withObjCPtr calendars $ \raw_calendars ->
-          sendMsg ekEventStore (mkSelector "predicateForEventsWithStartDate:endDate:calendars:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+predicateForEventsWithStartDate_endDate_calendars ekEventStore startDate endDate calendars =
+  sendMessage ekEventStore predicateForEventsWithStartDate_endDate_calendarsSelector (toNSDate startDate) (toNSDate endDate) (toNSArray calendars)
 
 -- | saveReminder:commit:error:
 --
@@ -441,10 +415,8 @@ predicateForEventsWithStartDate_endDate_calendars ekEventStore  startDate endDat
 --
 -- ObjC selector: @- saveReminder:commit:error:@
 saveReminder_commit_error :: (IsEKEventStore ekEventStore, IsEKReminder reminder, IsNSError error_) => ekEventStore -> reminder -> Bool -> error_ -> IO Bool
-saveReminder_commit_error ekEventStore  reminder commit error_ =
-  withObjCPtr reminder $ \raw_reminder ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "saveReminder:commit:error:") retCULong [argPtr (castPtr raw_reminder :: Ptr ()), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+saveReminder_commit_error ekEventStore reminder commit error_ =
+  sendMessage ekEventStore saveReminder_commit_errorSelector (toEKReminder reminder) commit (toNSError error_)
 
 -- | removeReminder:commit:error:
 --
@@ -462,10 +434,8 @@ saveReminder_commit_error ekEventStore  reminder commit error_ =
 --
 -- ObjC selector: @- removeReminder:commit:error:@
 removeReminder_commit_error :: (IsEKEventStore ekEventStore, IsEKReminder reminder, IsNSError error_) => ekEventStore -> reminder -> Bool -> error_ -> IO Bool
-removeReminder_commit_error ekEventStore  reminder commit error_ =
-  withObjCPtr reminder $ \raw_reminder ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "removeReminder:commit:error:") retCULong [argPtr (castPtr raw_reminder :: Ptr ()), argCULong (if commit then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+removeReminder_commit_error ekEventStore reminder commit error_ =
+  sendMessage ekEventStore removeReminder_commit_errorSelector (toEKReminder reminder) commit (toNSError error_)
 
 -- | cancelFetchRequest:
 --
@@ -473,8 +443,8 @@ removeReminder_commit_error ekEventStore  reminder commit error_ =
 --
 -- ObjC selector: @- cancelFetchRequest:@
 cancelFetchRequest :: IsEKEventStore ekEventStore => ekEventStore -> RawId -> IO ()
-cancelFetchRequest ekEventStore  fetchIdentifier =
-    sendMsg ekEventStore (mkSelector "cancelFetchRequest:") retVoid [argPtr (castPtr (unRawId fetchIdentifier) :: Ptr ())]
+cancelFetchRequest ekEventStore fetchIdentifier =
+  sendMessage ekEventStore cancelFetchRequestSelector fetchIdentifier
 
 -- | predicateForRemindersInCalendars:
 --
@@ -484,9 +454,8 @@ cancelFetchRequest ekEventStore  fetchIdentifier =
 --
 -- ObjC selector: @- predicateForRemindersInCalendars:@
 predicateForRemindersInCalendars :: (IsEKEventStore ekEventStore, IsNSArray calendars) => ekEventStore -> calendars -> IO (Id NSPredicate)
-predicateForRemindersInCalendars ekEventStore  calendars =
-  withObjCPtr calendars $ \raw_calendars ->
-      sendMsg ekEventStore (mkSelector "predicateForRemindersInCalendars:") (retPtr retVoid) [argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+predicateForRemindersInCalendars ekEventStore calendars =
+  sendMessage ekEventStore predicateForRemindersInCalendarsSelector (toNSArray calendars)
 
 -- | predicateForIncompleteRemindersWithDueDateStarting:ending:calendars:
 --
@@ -496,11 +465,8 @@ predicateForRemindersInCalendars ekEventStore  calendars =
 --
 -- ObjC selector: @- predicateForIncompleteRemindersWithDueDateStarting:ending:calendars:@
 predicateForIncompleteRemindersWithDueDateStarting_ending_calendars :: (IsEKEventStore ekEventStore, IsNSDate startDate, IsNSDate endDate, IsNSArray calendars) => ekEventStore -> startDate -> endDate -> calendars -> IO (Id NSPredicate)
-predicateForIncompleteRemindersWithDueDateStarting_ending_calendars ekEventStore  startDate endDate calendars =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-      withObjCPtr calendars $ \raw_calendars ->
-          sendMsg ekEventStore (mkSelector "predicateForIncompleteRemindersWithDueDateStarting:ending:calendars:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+predicateForIncompleteRemindersWithDueDateStarting_ending_calendars ekEventStore startDate endDate calendars =
+  sendMessage ekEventStore predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector (toNSDate startDate) (toNSDate endDate) (toNSArray calendars)
 
 -- | predicateForCompletedRemindersWithCompletionDateStarting:ending:calendars:
 --
@@ -510,11 +476,8 @@ predicateForIncompleteRemindersWithDueDateStarting_ending_calendars ekEventStore
 --
 -- ObjC selector: @- predicateForCompletedRemindersWithCompletionDateStarting:ending:calendars:@
 predicateForCompletedRemindersWithCompletionDateStarting_ending_calendars :: (IsEKEventStore ekEventStore, IsNSDate startDate, IsNSDate endDate, IsNSArray calendars) => ekEventStore -> startDate -> endDate -> calendars -> IO (Id NSPredicate)
-predicateForCompletedRemindersWithCompletionDateStarting_ending_calendars ekEventStore  startDate endDate calendars =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-      withObjCPtr calendars $ \raw_calendars ->
-          sendMsg ekEventStore (mkSelector "predicateForCompletedRemindersWithCompletionDateStarting:ending:calendars:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+predicateForCompletedRemindersWithCompletionDateStarting_ending_calendars ekEventStore startDate endDate calendars =
+  sendMessage ekEventStore predicateForCompletedRemindersWithCompletionDateStarting_ending_calendarsSelector (toNSDate startDate) (toNSDate endDate) (toNSArray calendars)
 
 -- | commit:
 --
@@ -528,9 +491,8 @@ predicateForCompletedRemindersWithCompletionDateStarting_ending_calendars ekEven
 --
 -- ObjC selector: @- commit:@
 commit :: (IsEKEventStore ekEventStore, IsNSError error_) => ekEventStore -> error_ -> IO Bool
-commit ekEventStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEventStore (mkSelector "commit:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+commit ekEventStore error_ =
+  sendMessage ekEventStore commitSelector (toNSError error_)
 
 -- | reset
 --
@@ -540,8 +502,8 @@ commit ekEventStore  error_ =
 --
 -- ObjC selector: @- reset@
 reset :: IsEKEventStore ekEventStore => ekEventStore -> IO ()
-reset ekEventStore  =
-    sendMsg ekEventStore (mkSelector "reset") retVoid []
+reset ekEventStore =
+  sendMessage ekEventStore resetSelector
 
 -- | refreshSourcesIfNecessary
 --
@@ -551,8 +513,8 @@ reset ekEventStore  =
 --
 -- ObjC selector: @- refreshSourcesIfNecessary@
 refreshSourcesIfNecessary :: IsEKEventStore ekEventStore => ekEventStore -> IO ()
-refreshSourcesIfNecessary ekEventStore  =
-    sendMsg ekEventStore (mkSelector "refreshSourcesIfNecessary") retVoid []
+refreshSourcesIfNecessary ekEventStore =
+  sendMessage ekEventStore refreshSourcesIfNecessarySelector
 
 -- | eventStoreIdentifier
 --
@@ -560,8 +522,8 @@ refreshSourcesIfNecessary ekEventStore  =
 --
 -- ObjC selector: @- eventStoreIdentifier@
 eventStoreIdentifier :: IsEKEventStore ekEventStore => ekEventStore -> IO (Id NSString)
-eventStoreIdentifier ekEventStore  =
-    sendMsg ekEventStore (mkSelector "eventStoreIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+eventStoreIdentifier ekEventStore =
+  sendMessage ekEventStore eventStoreIdentifierSelector
 
 -- | defaultCalendarForNewEvents
 --
@@ -571,150 +533,150 @@ eventStoreIdentifier ekEventStore  =
 --
 -- ObjC selector: @- defaultCalendarForNewEvents@
 defaultCalendarForNewEvents :: IsEKEventStore ekEventStore => ekEventStore -> IO (Id EKCalendar)
-defaultCalendarForNewEvents ekEventStore  =
-    sendMsg ekEventStore (mkSelector "defaultCalendarForNewEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultCalendarForNewEvents ekEventStore =
+  sendMessage ekEventStore defaultCalendarForNewEventsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationStatusForEntityType:@
-authorizationStatusForEntityTypeSelector :: Selector
+authorizationStatusForEntityTypeSelector :: Selector '[EKEntityType] EKAuthorizationStatus
 authorizationStatusForEntityTypeSelector = mkSelector "authorizationStatusForEntityType:"
 
 -- | @Selector@ for @initWithAccessToEntityTypes:@
-initWithAccessToEntityTypesSelector :: Selector
+initWithAccessToEntityTypesSelector :: Selector '[EKEntityMask] RawId
 initWithAccessToEntityTypesSelector = mkSelector "initWithAccessToEntityTypes:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSources:@
-initWithSourcesSelector :: Selector
+initWithSourcesSelector :: Selector '[Id NSArray] (Id EKEventStore)
 initWithSourcesSelector = mkSelector "initWithSources:"
 
 -- | @Selector@ for @requestFullAccessToEventsWithCompletion:@
-requestFullAccessToEventsWithCompletionSelector :: Selector
+requestFullAccessToEventsWithCompletionSelector :: Selector '[Ptr ()] ()
 requestFullAccessToEventsWithCompletionSelector = mkSelector "requestFullAccessToEventsWithCompletion:"
 
 -- | @Selector@ for @requestWriteOnlyAccessToEventsWithCompletion:@
-requestWriteOnlyAccessToEventsWithCompletionSelector :: Selector
+requestWriteOnlyAccessToEventsWithCompletionSelector :: Selector '[Ptr ()] ()
 requestWriteOnlyAccessToEventsWithCompletionSelector = mkSelector "requestWriteOnlyAccessToEventsWithCompletion:"
 
 -- | @Selector@ for @requestFullAccessToRemindersWithCompletion:@
-requestFullAccessToRemindersWithCompletionSelector :: Selector
+requestFullAccessToRemindersWithCompletionSelector :: Selector '[Ptr ()] ()
 requestFullAccessToRemindersWithCompletionSelector = mkSelector "requestFullAccessToRemindersWithCompletion:"
 
 -- | @Selector@ for @requestAccessToEntityType:completion:@
-requestAccessToEntityType_completionSelector :: Selector
+requestAccessToEntityType_completionSelector :: Selector '[EKEntityType, Ptr ()] ()
 requestAccessToEntityType_completionSelector = mkSelector "requestAccessToEntityType:completion:"
 
 -- | @Selector@ for @sourceWithIdentifier:@
-sourceWithIdentifierSelector :: Selector
+sourceWithIdentifierSelector :: Selector '[Id NSString] (Id EKSource)
 sourceWithIdentifierSelector = mkSelector "sourceWithIdentifier:"
 
 -- | @Selector@ for @calendarsForEntityType:@
-calendarsForEntityTypeSelector :: Selector
+calendarsForEntityTypeSelector :: Selector '[EKEntityType] (Id NSArray)
 calendarsForEntityTypeSelector = mkSelector "calendarsForEntityType:"
 
 -- | @Selector@ for @defaultCalendarForNewReminders@
-defaultCalendarForNewRemindersSelector :: Selector
+defaultCalendarForNewRemindersSelector :: Selector '[] (Id EKCalendar)
 defaultCalendarForNewRemindersSelector = mkSelector "defaultCalendarForNewReminders"
 
 -- | @Selector@ for @calendarWithIdentifier:@
-calendarWithIdentifierSelector :: Selector
+calendarWithIdentifierSelector :: Selector '[Id NSString] (Id EKCalendar)
 calendarWithIdentifierSelector = mkSelector "calendarWithIdentifier:"
 
 -- | @Selector@ for @saveCalendar:commit:error:@
-saveCalendar_commit_errorSelector :: Selector
+saveCalendar_commit_errorSelector :: Selector '[Id EKCalendar, Bool, Id NSError] Bool
 saveCalendar_commit_errorSelector = mkSelector "saveCalendar:commit:error:"
 
 -- | @Selector@ for @removeCalendar:commit:error:@
-removeCalendar_commit_errorSelector :: Selector
+removeCalendar_commit_errorSelector :: Selector '[Id EKCalendar, Bool, Id NSError] Bool
 removeCalendar_commit_errorSelector = mkSelector "removeCalendar:commit:error:"
 
 -- | @Selector@ for @calendarItemWithIdentifier:@
-calendarItemWithIdentifierSelector :: Selector
+calendarItemWithIdentifierSelector :: Selector '[Id NSString] (Id EKCalendarItem)
 calendarItemWithIdentifierSelector = mkSelector "calendarItemWithIdentifier:"
 
 -- | @Selector@ for @calendarItemsWithExternalIdentifier:@
-calendarItemsWithExternalIdentifierSelector :: Selector
+calendarItemsWithExternalIdentifierSelector :: Selector '[Id NSString] (Id NSArray)
 calendarItemsWithExternalIdentifierSelector = mkSelector "calendarItemsWithExternalIdentifier:"
 
 -- | @Selector@ for @saveEvent:span:error:@
-saveEvent_span_errorSelector :: Selector
+saveEvent_span_errorSelector :: Selector '[Id EKEvent, EKSpan, Id NSError] Bool
 saveEvent_span_errorSelector = mkSelector "saveEvent:span:error:"
 
 -- | @Selector@ for @removeEvent:span:error:@
-removeEvent_span_errorSelector :: Selector
+removeEvent_span_errorSelector :: Selector '[Id EKEvent, EKSpan, Id NSError] Bool
 removeEvent_span_errorSelector = mkSelector "removeEvent:span:error:"
 
 -- | @Selector@ for @saveEvent:span:commit:error:@
-saveEvent_span_commit_errorSelector :: Selector
+saveEvent_span_commit_errorSelector :: Selector '[Id EKEvent, EKSpan, Bool, Id NSError] Bool
 saveEvent_span_commit_errorSelector = mkSelector "saveEvent:span:commit:error:"
 
 -- | @Selector@ for @removeEvent:span:commit:error:@
-removeEvent_span_commit_errorSelector :: Selector
+removeEvent_span_commit_errorSelector :: Selector '[Id EKEvent, EKSpan, Bool, Id NSError] Bool
 removeEvent_span_commit_errorSelector = mkSelector "removeEvent:span:commit:error:"
 
 -- | @Selector@ for @eventWithIdentifier:@
-eventWithIdentifierSelector :: Selector
+eventWithIdentifierSelector :: Selector '[Id NSString] (Id EKEvent)
 eventWithIdentifierSelector = mkSelector "eventWithIdentifier:"
 
 -- | @Selector@ for @eventsMatchingPredicate:@
-eventsMatchingPredicateSelector :: Selector
+eventsMatchingPredicateSelector :: Selector '[Id NSPredicate] (Id NSArray)
 eventsMatchingPredicateSelector = mkSelector "eventsMatchingPredicate:"
 
 -- | @Selector@ for @enumerateEventsMatchingPredicate:usingBlock:@
-enumerateEventsMatchingPredicate_usingBlockSelector :: Selector
+enumerateEventsMatchingPredicate_usingBlockSelector :: Selector '[Id NSPredicate, Ptr ()] ()
 enumerateEventsMatchingPredicate_usingBlockSelector = mkSelector "enumerateEventsMatchingPredicate:usingBlock:"
 
 -- | @Selector@ for @predicateForEventsWithStartDate:endDate:calendars:@
-predicateForEventsWithStartDate_endDate_calendarsSelector :: Selector
+predicateForEventsWithStartDate_endDate_calendarsSelector :: Selector '[Id NSDate, Id NSDate, Id NSArray] (Id NSPredicate)
 predicateForEventsWithStartDate_endDate_calendarsSelector = mkSelector "predicateForEventsWithStartDate:endDate:calendars:"
 
 -- | @Selector@ for @saveReminder:commit:error:@
-saveReminder_commit_errorSelector :: Selector
+saveReminder_commit_errorSelector :: Selector '[Id EKReminder, Bool, Id NSError] Bool
 saveReminder_commit_errorSelector = mkSelector "saveReminder:commit:error:"
 
 -- | @Selector@ for @removeReminder:commit:error:@
-removeReminder_commit_errorSelector :: Selector
+removeReminder_commit_errorSelector :: Selector '[Id EKReminder, Bool, Id NSError] Bool
 removeReminder_commit_errorSelector = mkSelector "removeReminder:commit:error:"
 
 -- | @Selector@ for @cancelFetchRequest:@
-cancelFetchRequestSelector :: Selector
+cancelFetchRequestSelector :: Selector '[RawId] ()
 cancelFetchRequestSelector = mkSelector "cancelFetchRequest:"
 
 -- | @Selector@ for @predicateForRemindersInCalendars:@
-predicateForRemindersInCalendarsSelector :: Selector
+predicateForRemindersInCalendarsSelector :: Selector '[Id NSArray] (Id NSPredicate)
 predicateForRemindersInCalendarsSelector = mkSelector "predicateForRemindersInCalendars:"
 
 -- | @Selector@ for @predicateForIncompleteRemindersWithDueDateStarting:ending:calendars:@
-predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector :: Selector
+predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector :: Selector '[Id NSDate, Id NSDate, Id NSArray] (Id NSPredicate)
 predicateForIncompleteRemindersWithDueDateStarting_ending_calendarsSelector = mkSelector "predicateForIncompleteRemindersWithDueDateStarting:ending:calendars:"
 
 -- | @Selector@ for @predicateForCompletedRemindersWithCompletionDateStarting:ending:calendars:@
-predicateForCompletedRemindersWithCompletionDateStarting_ending_calendarsSelector :: Selector
+predicateForCompletedRemindersWithCompletionDateStarting_ending_calendarsSelector :: Selector '[Id NSDate, Id NSDate, Id NSArray] (Id NSPredicate)
 predicateForCompletedRemindersWithCompletionDateStarting_ending_calendarsSelector = mkSelector "predicateForCompletedRemindersWithCompletionDateStarting:ending:calendars:"
 
 -- | @Selector@ for @commit:@
-commitSelector :: Selector
+commitSelector :: Selector '[Id NSError] Bool
 commitSelector = mkSelector "commit:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @refreshSourcesIfNecessary@
-refreshSourcesIfNecessarySelector :: Selector
+refreshSourcesIfNecessarySelector :: Selector '[] ()
 refreshSourcesIfNecessarySelector = mkSelector "refreshSourcesIfNecessary"
 
 -- | @Selector@ for @eventStoreIdentifier@
-eventStoreIdentifierSelector :: Selector
+eventStoreIdentifierSelector :: Selector '[] (Id NSString)
 eventStoreIdentifierSelector = mkSelector "eventStoreIdentifier"
 
 -- | @Selector@ for @defaultCalendarForNewEvents@
-defaultCalendarForNewEventsSelector :: Selector
+defaultCalendarForNewEventsSelector :: Selector '[] (Id EKCalendar)
 defaultCalendarForNewEventsSelector = mkSelector "defaultCalendarForNewEvents"
 

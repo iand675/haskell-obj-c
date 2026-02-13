@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.PassKit.PKIdentityNationalIDCardDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,26 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- regionCode@
 regionCode :: IsPKIdentityNationalIDCardDescriptor pkIdentityNationalIDCardDescriptor => pkIdentityNationalIDCardDescriptor -> IO (Id NSString)
-regionCode pkIdentityNationalIDCardDescriptor  =
-    sendMsg pkIdentityNationalIDCardDescriptor (mkSelector "regionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionCode pkIdentityNationalIDCardDescriptor =
+  sendMessage pkIdentityNationalIDCardDescriptor regionCodeSelector
 
 -- | Alpha-2 country code, as defined in ISO 3166-1, of the issuing authority’s country or territory
 --
 -- ObjC selector: @- setRegionCode:@
 setRegionCode :: (IsPKIdentityNationalIDCardDescriptor pkIdentityNationalIDCardDescriptor, IsNSString value) => pkIdentityNationalIDCardDescriptor -> value -> IO ()
-setRegionCode pkIdentityNationalIDCardDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkIdentityNationalIDCardDescriptor (mkSelector "setRegionCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRegionCode pkIdentityNationalIDCardDescriptor value =
+  sendMessage pkIdentityNationalIDCardDescriptor setRegionCodeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @regionCode@
-regionCodeSelector :: Selector
+regionCodeSelector :: Selector '[] (Id NSString)
 regionCodeSelector = mkSelector "regionCode"
 
 -- | @Selector@ for @setRegionCode:@
-setRegionCodeSelector :: Selector
+setRegionCodeSelector :: Selector '[Id NSString] ()
 setRegionCodeSelector = mkSelector "setRegionCode:"
 

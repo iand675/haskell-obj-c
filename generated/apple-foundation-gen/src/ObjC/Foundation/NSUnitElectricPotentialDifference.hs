@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Foundation.NSUnitElectricPotentialDifference
   , volts
   , millivolts
   , microvolts
-  , megavoltsSelector
   , kilovoltsSelector
-  , voltsSelector
-  , millivoltsSelector
+  , megavoltsSelector
   , microvoltsSelector
+  , millivoltsSelector
+  , voltsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,57 +36,57 @@ megavolts :: IO (Id NSUnitElectricPotentialDifference)
 megavolts  =
   do
     cls' <- getRequiredClass "NSUnitElectricPotentialDifference"
-    sendClassMsg cls' (mkSelector "megavolts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megavoltsSelector
 
 -- | @+ kilovolts@
 kilovolts :: IO (Id NSUnitElectricPotentialDifference)
 kilovolts  =
   do
     cls' <- getRequiredClass "NSUnitElectricPotentialDifference"
-    sendClassMsg cls' (mkSelector "kilovolts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilovoltsSelector
 
 -- | @+ volts@
 volts :: IO (Id NSUnitElectricPotentialDifference)
 volts  =
   do
     cls' <- getRequiredClass "NSUnitElectricPotentialDifference"
-    sendClassMsg cls' (mkSelector "volts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' voltsSelector
 
 -- | @+ millivolts@
 millivolts :: IO (Id NSUnitElectricPotentialDifference)
 millivolts  =
   do
     cls' <- getRequiredClass "NSUnitElectricPotentialDifference"
-    sendClassMsg cls' (mkSelector "millivolts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millivoltsSelector
 
 -- | @+ microvolts@
 microvolts :: IO (Id NSUnitElectricPotentialDifference)
 microvolts  =
   do
     cls' <- getRequiredClass "NSUnitElectricPotentialDifference"
-    sendClassMsg cls' (mkSelector "microvolts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microvoltsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @megavolts@
-megavoltsSelector :: Selector
+megavoltsSelector :: Selector '[] (Id NSUnitElectricPotentialDifference)
 megavoltsSelector = mkSelector "megavolts"
 
 -- | @Selector@ for @kilovolts@
-kilovoltsSelector :: Selector
+kilovoltsSelector :: Selector '[] (Id NSUnitElectricPotentialDifference)
 kilovoltsSelector = mkSelector "kilovolts"
 
 -- | @Selector@ for @volts@
-voltsSelector :: Selector
+voltsSelector :: Selector '[] (Id NSUnitElectricPotentialDifference)
 voltsSelector = mkSelector "volts"
 
 -- | @Selector@ for @millivolts@
-millivoltsSelector :: Selector
+millivoltsSelector :: Selector '[] (Id NSUnitElectricPotentialDifference)
 millivoltsSelector = mkSelector "millivolts"
 
 -- | @Selector@ for @microvolts@
-microvoltsSelector :: Selector
+microvoltsSelector :: Selector '[] (Id NSUnitElectricPotentialDifference)
 microvoltsSelector = mkSelector "microvolts"
 

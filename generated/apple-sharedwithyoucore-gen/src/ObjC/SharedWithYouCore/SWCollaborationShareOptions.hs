@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.SharedWithYouCore.SWCollaborationShareOptions
   , setOptionsGroups
   , summary
   , setSummary
-  , initWithOptionsGroups_summarySelector
-  , initWithOptionsGroupsSelector
-  , shareOptionsWithOptionsGroups_summarySelector
-  , shareOptionsWithOptionsGroupsSelector
   , initSelector
   , initWithCoderSelector
+  , initWithOptionsGroupsSelector
+  , initWithOptionsGroups_summarySelector
   , optionsGroupsSelector
   , setOptionsGroupsSelector
-  , summarySelector
   , setSummarySelector
+  , shareOptionsWithOptionsGroupsSelector
+  , shareOptionsWithOptionsGroups_summarySelector
+  , summarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,10 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithOptionsGroups:summary:@
 initWithOptionsGroups_summary :: (IsSWCollaborationShareOptions swCollaborationShareOptions, IsNSArray optionsGroups, IsNSString summary) => swCollaborationShareOptions -> optionsGroups -> summary -> IO (Id SWCollaborationShareOptions)
-initWithOptionsGroups_summary swCollaborationShareOptions  optionsGroups summary =
-  withObjCPtr optionsGroups $ \raw_optionsGroups ->
-    withObjCPtr summary $ \raw_summary ->
-        sendMsg swCollaborationShareOptions (mkSelector "initWithOptionsGroups:summary:") (retPtr retVoid) [argPtr (castPtr raw_optionsGroups :: Ptr ()), argPtr (castPtr raw_summary :: Ptr ())] >>= ownedObject . castPtr
+initWithOptionsGroups_summary swCollaborationShareOptions optionsGroups summary =
+  sendOwnedMessage swCollaborationShareOptions initWithOptionsGroups_summarySelector (toNSArray optionsGroups) (toNSString summary)
 
 -- | Initializes a shareOptions object to represent the available collaboration options for the document and the default summary string "Share Options"
 --
@@ -70,9 +65,8 @@ initWithOptionsGroups_summary swCollaborationShareOptions  optionsGroups summary
 --
 -- ObjC selector: @- initWithOptionsGroups:@
 initWithOptionsGroups :: (IsSWCollaborationShareOptions swCollaborationShareOptions, IsNSArray optionsGroups) => swCollaborationShareOptions -> optionsGroups -> IO (Id SWCollaborationShareOptions)
-initWithOptionsGroups swCollaborationShareOptions  optionsGroups =
-  withObjCPtr optionsGroups $ \raw_optionsGroups ->
-      sendMsg swCollaborationShareOptions (mkSelector "initWithOptionsGroups:") (retPtr retVoid) [argPtr (castPtr raw_optionsGroups :: Ptr ())] >>= ownedObject . castPtr
+initWithOptionsGroups swCollaborationShareOptions optionsGroups =
+  sendOwnedMessage swCollaborationShareOptions initWithOptionsGroupsSelector (toNSArray optionsGroups)
 
 -- | Creates a shareOptions object to represent the available collaboration options for the document and a summary of the selected options
 --
@@ -85,9 +79,7 @@ shareOptionsWithOptionsGroups_summary :: (IsNSArray optionsGroups, IsNSString su
 shareOptionsWithOptionsGroups_summary optionsGroups summary =
   do
     cls' <- getRequiredClass "SWCollaborationShareOptions"
-    withObjCPtr optionsGroups $ \raw_optionsGroups ->
-      withObjCPtr summary $ \raw_summary ->
-        sendClassMsg cls' (mkSelector "shareOptionsWithOptionsGroups:summary:") (retPtr retVoid) [argPtr (castPtr raw_optionsGroups :: Ptr ()), argPtr (castPtr raw_summary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' shareOptionsWithOptionsGroups_summarySelector (toNSArray optionsGroups) (toNSString summary)
 
 -- | Creates a shareOptions object to represent the available collaboration options for the document and a summary of the selected options
 --
@@ -98,91 +90,87 @@ shareOptionsWithOptionsGroups :: IsNSArray optionsGroups => optionsGroups -> IO 
 shareOptionsWithOptionsGroups optionsGroups =
   do
     cls' <- getRequiredClass "SWCollaborationShareOptions"
-    withObjCPtr optionsGroups $ \raw_optionsGroups ->
-      sendClassMsg cls' (mkSelector "shareOptionsWithOptionsGroups:") (retPtr retVoid) [argPtr (castPtr raw_optionsGroups :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' shareOptionsWithOptionsGroupsSelector (toNSArray optionsGroups)
 
 -- | @- init@
 init_ :: IsSWCollaborationShareOptions swCollaborationShareOptions => swCollaborationShareOptions -> IO (Id SWCollaborationShareOptions)
-init_ swCollaborationShareOptions  =
-    sendMsg swCollaborationShareOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swCollaborationShareOptions =
+  sendOwnedMessage swCollaborationShareOptions initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsSWCollaborationShareOptions swCollaborationShareOptions, IsNSCoder coder) => swCollaborationShareOptions -> coder -> IO (Id SWCollaborationShareOptions)
-initWithCoder swCollaborationShareOptions  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg swCollaborationShareOptions (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder swCollaborationShareOptions coder =
+  sendOwnedMessage swCollaborationShareOptions initWithCoderSelector (toNSCoder coder)
 
 -- | SWCollaborationOptionsGroups to customize how the collaboration will be shared
 --
 -- ObjC selector: @- optionsGroups@
 optionsGroups :: IsSWCollaborationShareOptions swCollaborationShareOptions => swCollaborationShareOptions -> IO (Id NSArray)
-optionsGroups swCollaborationShareOptions  =
-    sendMsg swCollaborationShareOptions (mkSelector "optionsGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsGroups swCollaborationShareOptions =
+  sendMessage swCollaborationShareOptions optionsGroupsSelector
 
 -- | SWCollaborationOptionsGroups to customize how the collaboration will be shared
 --
 -- ObjC selector: @- setOptionsGroups:@
 setOptionsGroups :: (IsSWCollaborationShareOptions swCollaborationShareOptions, IsNSArray value) => swCollaborationShareOptions -> value -> IO ()
-setOptionsGroups swCollaborationShareOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationShareOptions (mkSelector "setOptionsGroups:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsGroups swCollaborationShareOptions value =
+  sendMessage swCollaborationShareOptions setOptionsGroupsSelector (toNSArray value)
 
 -- | Localized string to summarize the selected collaboration options. If nil, "Share Options" will be displayed by default.
 --
 -- ObjC selector: @- summary@
 summary :: IsSWCollaborationShareOptions swCollaborationShareOptions => swCollaborationShareOptions -> IO (Id NSString)
-summary swCollaborationShareOptions  =
-    sendMsg swCollaborationShareOptions (mkSelector "summary") (retPtr retVoid) [] >>= retainedObject . castPtr
+summary swCollaborationShareOptions =
+  sendMessage swCollaborationShareOptions summarySelector
 
 -- | Localized string to summarize the selected collaboration options. If nil, "Share Options" will be displayed by default.
 --
 -- ObjC selector: @- setSummary:@
 setSummary :: (IsSWCollaborationShareOptions swCollaborationShareOptions, IsNSString value) => swCollaborationShareOptions -> value -> IO ()
-setSummary swCollaborationShareOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationShareOptions (mkSelector "setSummary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSummary swCollaborationShareOptions value =
+  sendMessage swCollaborationShareOptions setSummarySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOptionsGroups:summary:@
-initWithOptionsGroups_summarySelector :: Selector
+initWithOptionsGroups_summarySelector :: Selector '[Id NSArray, Id NSString] (Id SWCollaborationShareOptions)
 initWithOptionsGroups_summarySelector = mkSelector "initWithOptionsGroups:summary:"
 
 -- | @Selector@ for @initWithOptionsGroups:@
-initWithOptionsGroupsSelector :: Selector
+initWithOptionsGroupsSelector :: Selector '[Id NSArray] (Id SWCollaborationShareOptions)
 initWithOptionsGroupsSelector = mkSelector "initWithOptionsGroups:"
 
 -- | @Selector@ for @shareOptionsWithOptionsGroups:summary:@
-shareOptionsWithOptionsGroups_summarySelector :: Selector
+shareOptionsWithOptionsGroups_summarySelector :: Selector '[Id NSArray, Id NSString] (Id SWCollaborationShareOptions)
 shareOptionsWithOptionsGroups_summarySelector = mkSelector "shareOptionsWithOptionsGroups:summary:"
 
 -- | @Selector@ for @shareOptionsWithOptionsGroups:@
-shareOptionsWithOptionsGroupsSelector :: Selector
+shareOptionsWithOptionsGroupsSelector :: Selector '[Id NSArray] (Id SWCollaborationShareOptions)
 shareOptionsWithOptionsGroupsSelector = mkSelector "shareOptionsWithOptionsGroups:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWCollaborationShareOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SWCollaborationShareOptions)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @optionsGroups@
-optionsGroupsSelector :: Selector
+optionsGroupsSelector :: Selector '[] (Id NSArray)
 optionsGroupsSelector = mkSelector "optionsGroups"
 
 -- | @Selector@ for @setOptionsGroups:@
-setOptionsGroupsSelector :: Selector
+setOptionsGroupsSelector :: Selector '[Id NSArray] ()
 setOptionsGroupsSelector = mkSelector "setOptionsGroups:"
 
 -- | @Selector@ for @summary@
-summarySelector :: Selector
+summarySelector :: Selector '[] (Id NSString)
 summarySelector = mkSelector "summary"
 
 -- | @Selector@ for @setSummary:@
-setSummarySelector :: Selector
+setSummarySelector :: Selector '[Id NSString] ()
 setSummarySelector = mkSelector "setSummary:"
 

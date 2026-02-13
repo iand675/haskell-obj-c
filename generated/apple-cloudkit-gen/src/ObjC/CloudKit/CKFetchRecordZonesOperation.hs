@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.CloudKit.CKFetchRecordZonesOperation
   , fetchAllRecordZonesOperationSelector
   , initSelector
   , initWithRecordZoneIDsSelector
-  , recordZoneIDsSelector
-  , setRecordZoneIDsSelector
   , perRecordZoneCompletionBlockSelector
+  , recordZoneIDsSelector
   , setPerRecordZoneCompletionBlockSelector
+  , setRecordZoneIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,29 +41,27 @@ fetchAllRecordZonesOperation :: IO (Id CKFetchRecordZonesOperation)
 fetchAllRecordZonesOperation  =
   do
     cls' <- getRequiredClass "CKFetchRecordZonesOperation"
-    sendClassMsg cls' (mkSelector "fetchAllRecordZonesOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAllRecordZonesOperationSelector
 
 -- | @- init@
 init_ :: IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation => ckFetchRecordZonesOperation -> IO (Id CKFetchRecordZonesOperation)
-init_ ckFetchRecordZonesOperation  =
-    sendMsg ckFetchRecordZonesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchRecordZonesOperation =
+  sendOwnedMessage ckFetchRecordZonesOperation initSelector
 
 -- | @- initWithRecordZoneIDs:@
 initWithRecordZoneIDs :: (IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation, IsNSArray zoneIDs) => ckFetchRecordZonesOperation -> zoneIDs -> IO (Id CKFetchRecordZonesOperation)
-initWithRecordZoneIDs ckFetchRecordZonesOperation  zoneIDs =
-  withObjCPtr zoneIDs $ \raw_zoneIDs ->
-      sendMsg ckFetchRecordZonesOperation (mkSelector "initWithRecordZoneIDs:") (retPtr retVoid) [argPtr (castPtr raw_zoneIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordZoneIDs ckFetchRecordZonesOperation zoneIDs =
+  sendOwnedMessage ckFetchRecordZonesOperation initWithRecordZoneIDsSelector (toNSArray zoneIDs)
 
 -- | @- recordZoneIDs@
 recordZoneIDs :: IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation => ckFetchRecordZonesOperation -> IO (Id NSArray)
-recordZoneIDs ckFetchRecordZonesOperation  =
-    sendMsg ckFetchRecordZonesOperation (mkSelector "recordZoneIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordZoneIDs ckFetchRecordZonesOperation =
+  sendMessage ckFetchRecordZonesOperation recordZoneIDsSelector
 
 -- | @- setRecordZoneIDs:@
 setRecordZoneIDs :: (IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation, IsNSArray value) => ckFetchRecordZonesOperation -> value -> IO ()
-setRecordZoneIDs ckFetchRecordZonesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordZonesOperation (mkSelector "setRecordZoneIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordZoneIDs ckFetchRecordZonesOperation value =
+  sendMessage ckFetchRecordZonesOperation setRecordZoneIDsSelector (toNSArray value)
 
 -- | Called on success or failure for each record zone.
 --
@@ -74,8 +69,8 @@ setRecordZoneIDs ckFetchRecordZonesOperation  value =
 --
 -- ObjC selector: @- perRecordZoneCompletionBlock@
 perRecordZoneCompletionBlock :: IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation => ckFetchRecordZonesOperation -> IO (Ptr ())
-perRecordZoneCompletionBlock ckFetchRecordZonesOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordZonesOperation (mkSelector "perRecordZoneCompletionBlock") (retPtr retVoid) []
+perRecordZoneCompletionBlock ckFetchRecordZonesOperation =
+  sendMessage ckFetchRecordZonesOperation perRecordZoneCompletionBlockSelector
 
 -- | Called on success or failure for each record zone.
 --
@@ -83,38 +78,38 @@ perRecordZoneCompletionBlock ckFetchRecordZonesOperation  =
 --
 -- ObjC selector: @- setPerRecordZoneCompletionBlock:@
 setPerRecordZoneCompletionBlock :: IsCKFetchRecordZonesOperation ckFetchRecordZonesOperation => ckFetchRecordZonesOperation -> Ptr () -> IO ()
-setPerRecordZoneCompletionBlock ckFetchRecordZonesOperation  value =
-    sendMsg ckFetchRecordZonesOperation (mkSelector "setPerRecordZoneCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordZoneCompletionBlock ckFetchRecordZonesOperation value =
+  sendMessage ckFetchRecordZonesOperation setPerRecordZoneCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchAllRecordZonesOperation@
-fetchAllRecordZonesOperationSelector :: Selector
+fetchAllRecordZonesOperationSelector :: Selector '[] (Id CKFetchRecordZonesOperation)
 fetchAllRecordZonesOperationSelector = mkSelector "fetchAllRecordZonesOperation"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchRecordZonesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRecordZoneIDs:@
-initWithRecordZoneIDsSelector :: Selector
+initWithRecordZoneIDsSelector :: Selector '[Id NSArray] (Id CKFetchRecordZonesOperation)
 initWithRecordZoneIDsSelector = mkSelector "initWithRecordZoneIDs:"
 
 -- | @Selector@ for @recordZoneIDs@
-recordZoneIDsSelector :: Selector
+recordZoneIDsSelector :: Selector '[] (Id NSArray)
 recordZoneIDsSelector = mkSelector "recordZoneIDs"
 
 -- | @Selector@ for @setRecordZoneIDs:@
-setRecordZoneIDsSelector :: Selector
+setRecordZoneIDsSelector :: Selector '[Id NSArray] ()
 setRecordZoneIDsSelector = mkSelector "setRecordZoneIDs:"
 
 -- | @Selector@ for @perRecordZoneCompletionBlock@
-perRecordZoneCompletionBlockSelector :: Selector
+perRecordZoneCompletionBlockSelector :: Selector '[] (Ptr ())
 perRecordZoneCompletionBlockSelector = mkSelector "perRecordZoneCompletionBlock"
 
 -- | @Selector@ for @setPerRecordZoneCompletionBlock:@
-setPerRecordZoneCompletionBlockSelector :: Selector
+setPerRecordZoneCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordZoneCompletionBlockSelector = mkSelector "setPerRecordZoneCompletionBlock:"
 

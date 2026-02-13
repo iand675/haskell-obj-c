@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.AppKit.NSClipView
   , setAutomaticallyAdjustsContentInsets
   , copiesOnScroll
   , setCopiesOnScroll
-  , viewFrameChangedSelector
-  , viewBoundsChangedSelector
+  , automaticallyAdjustsContentInsetsSelector
   , autoscrollSelector
-  , scrollToPointSelector
+  , backgroundColorSelector
   , constrainBoundsRectSelector
   , constrainScrollPointSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , documentViewSelector
-  , setDocumentViewSelector
-  , documentRectSelector
-  , documentCursorSelector
-  , setDocumentCursorSelector
-  , documentVisibleRectSelector
   , contentInsetsSelector
-  , setContentInsetsSelector
-  , automaticallyAdjustsContentInsetsSelector
-  , setAutomaticallyAdjustsContentInsetsSelector
   , copiesOnScrollSelector
+  , documentCursorSelector
+  , documentRectSelector
+  , documentViewSelector
+  , documentVisibleRectSelector
+  , drawsBackgroundSelector
+  , scrollToPointSelector
+  , setAutomaticallyAdjustsContentInsetsSelector
+  , setBackgroundColorSelector
+  , setContentInsetsSelector
   , setCopiesOnScrollSelector
+  , setDocumentCursorSelector
+  , setDocumentViewSelector
+  , setDrawsBackgroundSelector
+  , viewBoundsChangedSelector
+  , viewFrameChangedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,209 +69,203 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- viewFrameChanged:@
 viewFrameChanged :: (IsNSClipView nsClipView, IsNSNotification notification) => nsClipView -> notification -> IO ()
-viewFrameChanged nsClipView  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsClipView (mkSelector "viewFrameChanged:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+viewFrameChanged nsClipView notification =
+  sendMessage nsClipView viewFrameChangedSelector (toNSNotification notification)
 
 -- | @- viewBoundsChanged:@
 viewBoundsChanged :: (IsNSClipView nsClipView, IsNSNotification notification) => nsClipView -> notification -> IO ()
-viewBoundsChanged nsClipView  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsClipView (mkSelector "viewBoundsChanged:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+viewBoundsChanged nsClipView notification =
+  sendMessage nsClipView viewBoundsChangedSelector (toNSNotification notification)
 
 -- | @- autoscroll:@
 autoscroll :: (IsNSClipView nsClipView, IsNSEvent event) => nsClipView -> event -> IO Bool
-autoscroll nsClipView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsClipView (mkSelector "autoscroll:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+autoscroll nsClipView event =
+  sendMessage nsClipView autoscrollSelector (toNSEvent event)
 
 -- | @- scrollToPoint:@
 scrollToPoint :: IsNSClipView nsClipView => nsClipView -> NSPoint -> IO ()
-scrollToPoint nsClipView  newOrigin =
-    sendMsg nsClipView (mkSelector "scrollToPoint:") retVoid [argNSPoint newOrigin]
+scrollToPoint nsClipView newOrigin =
+  sendMessage nsClipView scrollToPointSelector newOrigin
 
 -- | @- constrainBoundsRect:@
 constrainBoundsRect :: IsNSClipView nsClipView => nsClipView -> NSRect -> IO NSRect
-constrainBoundsRect nsClipView  proposedBounds =
-    sendMsgStret nsClipView (mkSelector "constrainBoundsRect:") retNSRect [argNSRect proposedBounds]
+constrainBoundsRect nsClipView proposedBounds =
+  sendMessage nsClipView constrainBoundsRectSelector proposedBounds
 
 -- | @- constrainScrollPoint:@
 constrainScrollPoint :: IsNSClipView nsClipView => nsClipView -> NSPoint -> IO NSPoint
-constrainScrollPoint nsClipView  newOrigin =
-    sendMsgStret nsClipView (mkSelector "constrainScrollPoint:") retNSPoint [argNSPoint newOrigin]
+constrainScrollPoint nsClipView newOrigin =
+  sendMessage nsClipView constrainScrollPointSelector newOrigin
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSClipView nsClipView => nsClipView -> IO (Id NSColor)
-backgroundColor nsClipView  =
-    sendMsg nsClipView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsClipView =
+  sendMessage nsClipView backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSClipView nsClipView, IsNSColor value) => nsClipView -> value -> IO ()
-setBackgroundColor nsClipView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsClipView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsClipView value =
+  sendMessage nsClipView setBackgroundColorSelector (toNSColor value)
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSClipView nsClipView => nsClipView -> IO Bool
-drawsBackground nsClipView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsClipView (mkSelector "drawsBackground") retCULong []
+drawsBackground nsClipView =
+  sendMessage nsClipView drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSClipView nsClipView => nsClipView -> Bool -> IO ()
-setDrawsBackground nsClipView  value =
-    sendMsg nsClipView (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsClipView value =
+  sendMessage nsClipView setDrawsBackgroundSelector value
 
 -- | @- documentView@
 documentView :: IsNSClipView nsClipView => nsClipView -> IO (Id NSView)
-documentView nsClipView  =
-    sendMsg nsClipView (mkSelector "documentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentView nsClipView =
+  sendMessage nsClipView documentViewSelector
 
 -- | @- setDocumentView:@
 setDocumentView :: (IsNSClipView nsClipView, IsNSView value) => nsClipView -> value -> IO ()
-setDocumentView nsClipView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsClipView (mkSelector "setDocumentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentView nsClipView value =
+  sendMessage nsClipView setDocumentViewSelector (toNSView value)
 
 -- | @- documentRect@
 documentRect :: IsNSClipView nsClipView => nsClipView -> IO NSRect
-documentRect nsClipView  =
-    sendMsgStret nsClipView (mkSelector "documentRect") retNSRect []
+documentRect nsClipView =
+  sendMessage nsClipView documentRectSelector
 
 -- | @- documentCursor@
 documentCursor :: IsNSClipView nsClipView => nsClipView -> IO (Id NSCursor)
-documentCursor nsClipView  =
-    sendMsg nsClipView (mkSelector "documentCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentCursor nsClipView =
+  sendMessage nsClipView documentCursorSelector
 
 -- | @- setDocumentCursor:@
 setDocumentCursor :: (IsNSClipView nsClipView, IsNSCursor value) => nsClipView -> value -> IO ()
-setDocumentCursor nsClipView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsClipView (mkSelector "setDocumentCursor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentCursor nsClipView value =
+  sendMessage nsClipView setDocumentCursorSelector (toNSCursor value)
 
 -- | @- documentVisibleRect@
 documentVisibleRect :: IsNSClipView nsClipView => nsClipView -> IO NSRect
-documentVisibleRect nsClipView  =
-    sendMsgStret nsClipView (mkSelector "documentVisibleRect") retNSRect []
+documentVisibleRect nsClipView =
+  sendMessage nsClipView documentVisibleRectSelector
 
 -- | @- contentInsets@
 contentInsets :: IsNSClipView nsClipView => nsClipView -> IO NSEdgeInsets
-contentInsets nsClipView  =
-    sendMsgStret nsClipView (mkSelector "contentInsets") retNSEdgeInsets []
+contentInsets nsClipView =
+  sendMessage nsClipView contentInsetsSelector
 
 -- | @- setContentInsets:@
 setContentInsets :: IsNSClipView nsClipView => nsClipView -> NSEdgeInsets -> IO ()
-setContentInsets nsClipView  value =
-    sendMsg nsClipView (mkSelector "setContentInsets:") retVoid [argNSEdgeInsets value]
+setContentInsets nsClipView value =
+  sendMessage nsClipView setContentInsetsSelector value
 
 -- | @- automaticallyAdjustsContentInsets@
 automaticallyAdjustsContentInsets :: IsNSClipView nsClipView => nsClipView -> IO Bool
-automaticallyAdjustsContentInsets nsClipView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsClipView (mkSelector "automaticallyAdjustsContentInsets") retCULong []
+automaticallyAdjustsContentInsets nsClipView =
+  sendMessage nsClipView automaticallyAdjustsContentInsetsSelector
 
 -- | @- setAutomaticallyAdjustsContentInsets:@
 setAutomaticallyAdjustsContentInsets :: IsNSClipView nsClipView => nsClipView -> Bool -> IO ()
-setAutomaticallyAdjustsContentInsets nsClipView  value =
-    sendMsg nsClipView (mkSelector "setAutomaticallyAdjustsContentInsets:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsContentInsets nsClipView value =
+  sendMessage nsClipView setAutomaticallyAdjustsContentInsetsSelector value
 
 -- | @- copiesOnScroll@
 copiesOnScroll :: IsNSClipView nsClipView => nsClipView -> IO Bool
-copiesOnScroll nsClipView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsClipView (mkSelector "copiesOnScroll") retCULong []
+copiesOnScroll nsClipView =
+  sendMessage nsClipView copiesOnScrollSelector
 
 -- | @- setCopiesOnScroll:@
 setCopiesOnScroll :: IsNSClipView nsClipView => nsClipView -> Bool -> IO ()
-setCopiesOnScroll nsClipView  value =
-    sendMsg nsClipView (mkSelector "setCopiesOnScroll:") retVoid [argCULong (if value then 1 else 0)]
+setCopiesOnScroll nsClipView value =
+  sendMessage nsClipView setCopiesOnScrollSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @viewFrameChanged:@
-viewFrameChangedSelector :: Selector
+viewFrameChangedSelector :: Selector '[Id NSNotification] ()
 viewFrameChangedSelector = mkSelector "viewFrameChanged:"
 
 -- | @Selector@ for @viewBoundsChanged:@
-viewBoundsChangedSelector :: Selector
+viewBoundsChangedSelector :: Selector '[Id NSNotification] ()
 viewBoundsChangedSelector = mkSelector "viewBoundsChanged:"
 
 -- | @Selector@ for @autoscroll:@
-autoscrollSelector :: Selector
+autoscrollSelector :: Selector '[Id NSEvent] Bool
 autoscrollSelector = mkSelector "autoscroll:"
 
 -- | @Selector@ for @scrollToPoint:@
-scrollToPointSelector :: Selector
+scrollToPointSelector :: Selector '[NSPoint] ()
 scrollToPointSelector = mkSelector "scrollToPoint:"
 
 -- | @Selector@ for @constrainBoundsRect:@
-constrainBoundsRectSelector :: Selector
+constrainBoundsRectSelector :: Selector '[NSRect] NSRect
 constrainBoundsRectSelector = mkSelector "constrainBoundsRect:"
 
 -- | @Selector@ for @constrainScrollPoint:@
-constrainScrollPointSelector :: Selector
+constrainScrollPointSelector :: Selector '[NSPoint] NSPoint
 constrainScrollPointSelector = mkSelector "constrainScrollPoint:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @documentView@
-documentViewSelector :: Selector
+documentViewSelector :: Selector '[] (Id NSView)
 documentViewSelector = mkSelector "documentView"
 
 -- | @Selector@ for @setDocumentView:@
-setDocumentViewSelector :: Selector
+setDocumentViewSelector :: Selector '[Id NSView] ()
 setDocumentViewSelector = mkSelector "setDocumentView:"
 
 -- | @Selector@ for @documentRect@
-documentRectSelector :: Selector
+documentRectSelector :: Selector '[] NSRect
 documentRectSelector = mkSelector "documentRect"
 
 -- | @Selector@ for @documentCursor@
-documentCursorSelector :: Selector
+documentCursorSelector :: Selector '[] (Id NSCursor)
 documentCursorSelector = mkSelector "documentCursor"
 
 -- | @Selector@ for @setDocumentCursor:@
-setDocumentCursorSelector :: Selector
+setDocumentCursorSelector :: Selector '[Id NSCursor] ()
 setDocumentCursorSelector = mkSelector "setDocumentCursor:"
 
 -- | @Selector@ for @documentVisibleRect@
-documentVisibleRectSelector :: Selector
+documentVisibleRectSelector :: Selector '[] NSRect
 documentVisibleRectSelector = mkSelector "documentVisibleRect"
 
 -- | @Selector@ for @contentInsets@
-contentInsetsSelector :: Selector
+contentInsetsSelector :: Selector '[] NSEdgeInsets
 contentInsetsSelector = mkSelector "contentInsets"
 
 -- | @Selector@ for @setContentInsets:@
-setContentInsetsSelector :: Selector
+setContentInsetsSelector :: Selector '[NSEdgeInsets] ()
 setContentInsetsSelector = mkSelector "setContentInsets:"
 
 -- | @Selector@ for @automaticallyAdjustsContentInsets@
-automaticallyAdjustsContentInsetsSelector :: Selector
+automaticallyAdjustsContentInsetsSelector :: Selector '[] Bool
 automaticallyAdjustsContentInsetsSelector = mkSelector "automaticallyAdjustsContentInsets"
 
 -- | @Selector@ for @setAutomaticallyAdjustsContentInsets:@
-setAutomaticallyAdjustsContentInsetsSelector :: Selector
+setAutomaticallyAdjustsContentInsetsSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsContentInsetsSelector = mkSelector "setAutomaticallyAdjustsContentInsets:"
 
 -- | @Selector@ for @copiesOnScroll@
-copiesOnScrollSelector :: Selector
+copiesOnScrollSelector :: Selector '[] Bool
 copiesOnScrollSelector = mkSelector "copiesOnScroll"
 
 -- | @Selector@ for @setCopiesOnScroll:@
-setCopiesOnScrollSelector :: Selector
+setCopiesOnScrollSelector :: Selector '[Bool] ()
 setCopiesOnScrollSelector = mkSelector "setCopiesOnScroll:"
 

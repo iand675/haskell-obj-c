@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,39 +33,35 @@ module ObjC.MediaExtension.MEHEVCDependencyInfo
   , setConstraintIndicatorFlags
   , levelIndex
   , setLevelIndex
-  , temporalSubLayerAccessSelector
-  , setTemporalSubLayerAccessSelector
-  , stepwiseTemporalSubLayerAccessSelector
-  , setStepwiseTemporalSubLayerAccessSelector
-  , syncSampleNALUnitTypeSelector
-  , setSyncSampleNALUnitTypeSelector
-  , temporalLevelSelector
-  , setTemporalLevelSelector
-  , profileSpaceSelector
-  , setProfileSpaceSelector
-  , tierFlagSelector
-  , setTierFlagSelector
-  , profileIndexSelector
-  , setProfileIndexSelector
-  , profileCompatibilityFlagsSelector
-  , setProfileCompatibilityFlagsSelector
   , constraintIndicatorFlagsSelector
-  , setConstraintIndicatorFlagsSelector
   , levelIndexSelector
+  , profileCompatibilityFlagsSelector
+  , profileIndexSelector
+  , profileSpaceSelector
+  , setConstraintIndicatorFlagsSelector
   , setLevelIndexSelector
+  , setProfileCompatibilityFlagsSelector
+  , setProfileIndexSelector
+  , setProfileSpaceSelector
+  , setStepwiseTemporalSubLayerAccessSelector
+  , setSyncSampleNALUnitTypeSelector
+  , setTemporalLevelSelector
+  , setTemporalSubLayerAccessSelector
+  , setTierFlagSelector
+  , stepwiseTemporalSubLayerAccessSelector
+  , syncSampleNALUnitTypeSelector
+  , temporalLevelSelector
+  , temporalSubLayerAccessSelector
+  , tierFlagSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- temporalSubLayerAccess@
 temporalSubLayerAccess :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO Bool
-temporalSubLayerAccess mehevcDependencyInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mehevcDependencyInfo (mkSelector "temporalSubLayerAccess") retCULong []
+temporalSubLayerAccess mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo temporalSubLayerAccessSelector
 
 -- | temporalSubLayerAccess
 --
@@ -90,8 +87,8 @@ temporalSubLayerAccess mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setTemporalSubLayerAccess:@
 setTemporalSubLayerAccess :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> Bool -> IO ()
-setTemporalSubLayerAccess mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setTemporalSubLayerAccess:") retVoid [argCULong (if value then 1 else 0)]
+setTemporalSubLayerAccess mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setTemporalSubLayerAccessSelector value
 
 -- | stepwiseTemporalSubLayerAccess
 --
@@ -101,8 +98,8 @@ setTemporalSubLayerAccess mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- stepwiseTemporalSubLayerAccess@
 stepwiseTemporalSubLayerAccess :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO Bool
-stepwiseTemporalSubLayerAccess mehevcDependencyInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mehevcDependencyInfo (mkSelector "stepwiseTemporalSubLayerAccess") retCULong []
+stepwiseTemporalSubLayerAccess mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo stepwiseTemporalSubLayerAccessSelector
 
 -- | stepwiseTemporalSubLayerAccess
 --
@@ -112,8 +109,8 @@ stepwiseTemporalSubLayerAccess mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setStepwiseTemporalSubLayerAccess:@
 setStepwiseTemporalSubLayerAccess :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> Bool -> IO ()
-setStepwiseTemporalSubLayerAccess mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setStepwiseTemporalSubLayerAccess:") retVoid [argCULong (if value then 1 else 0)]
+setStepwiseTemporalSubLayerAccess mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setStepwiseTemporalSubLayerAccessSelector value
 
 -- | syncSampleNALUnitType
 --
@@ -123,8 +120,8 @@ setStepwiseTemporalSubLayerAccess mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- syncSampleNALUnitType@
 syncSampleNALUnitType :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-syncSampleNALUnitType mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "syncSampleNALUnitType") retCInt []
+syncSampleNALUnitType mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo syncSampleNALUnitTypeSelector
 
 -- | syncSampleNALUnitType
 --
@@ -134,8 +131,8 @@ syncSampleNALUnitType mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setSyncSampleNALUnitType:@
 setSyncSampleNALUnitType :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setSyncSampleNALUnitType mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setSyncSampleNALUnitType:") retVoid [argCInt (fromIntegral value)]
+setSyncSampleNALUnitType mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setSyncSampleNALUnitTypeSelector value
 
 -- | temporalLevel
 --
@@ -145,8 +142,8 @@ setSyncSampleNALUnitType mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- temporalLevel@
 temporalLevel :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-temporalLevel mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "temporalLevel") retCInt []
+temporalLevel mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo temporalLevelSelector
 
 -- | temporalLevel
 --
@@ -156,8 +153,8 @@ temporalLevel mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setTemporalLevel:@
 setTemporalLevel :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setTemporalLevel mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setTemporalLevel:") retVoid [argCInt (fromIntegral value)]
+setTemporalLevel mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setTemporalLevelSelector value
 
 -- | profileSpace
 --
@@ -167,8 +164,8 @@ setTemporalLevel mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- profileSpace@
 profileSpace :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-profileSpace mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "profileSpace") retCInt []
+profileSpace mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo profileSpaceSelector
 
 -- | profileSpace
 --
@@ -178,8 +175,8 @@ profileSpace mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setProfileSpace:@
 setProfileSpace :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setProfileSpace mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setProfileSpace:") retVoid [argCInt (fromIntegral value)]
+setProfileSpace mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setProfileSpaceSelector value
 
 -- | tierFlag
 --
@@ -189,8 +186,8 @@ setProfileSpace mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- tierFlag@
 tierFlag :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-tierFlag mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "tierFlag") retCInt []
+tierFlag mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo tierFlagSelector
 
 -- | tierFlag
 --
@@ -200,8 +197,8 @@ tierFlag mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setTierFlag:@
 setTierFlag :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setTierFlag mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setTierFlag:") retVoid [argCInt (fromIntegral value)]
+setTierFlag mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setTierFlagSelector value
 
 -- | profileIndex
 --
@@ -211,8 +208,8 @@ setTierFlag mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- profileIndex@
 profileIndex :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-profileIndex mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "profileIndex") retCInt []
+profileIndex mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo profileIndexSelector
 
 -- | profileIndex
 --
@@ -222,8 +219,8 @@ profileIndex mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setProfileIndex:@
 setProfileIndex :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setProfileIndex mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setProfileIndex:") retVoid [argCInt (fromIntegral value)]
+setProfileIndex mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setProfileIndexSelector value
 
 -- | profileCompatibilityFlags
 --
@@ -233,8 +230,8 @@ setProfileIndex mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- profileCompatibilityFlags@
 profileCompatibilityFlags :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO (Id NSData)
-profileCompatibilityFlags mehevcDependencyInfo  =
-    sendMsg mehevcDependencyInfo (mkSelector "profileCompatibilityFlags") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileCompatibilityFlags mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo profileCompatibilityFlagsSelector
 
 -- | profileCompatibilityFlags
 --
@@ -244,9 +241,8 @@ profileCompatibilityFlags mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setProfileCompatibilityFlags:@
 setProfileCompatibilityFlags :: (IsMEHEVCDependencyInfo mehevcDependencyInfo, IsNSData value) => mehevcDependencyInfo -> value -> IO ()
-setProfileCompatibilityFlags mehevcDependencyInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mehevcDependencyInfo (mkSelector "setProfileCompatibilityFlags:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProfileCompatibilityFlags mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setProfileCompatibilityFlagsSelector (toNSData value)
 
 -- | constraintIndicatorFlags
 --
@@ -256,8 +252,8 @@ setProfileCompatibilityFlags mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- constraintIndicatorFlags@
 constraintIndicatorFlags :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO (Id NSData)
-constraintIndicatorFlags mehevcDependencyInfo  =
-    sendMsg mehevcDependencyInfo (mkSelector "constraintIndicatorFlags") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraintIndicatorFlags mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo constraintIndicatorFlagsSelector
 
 -- | constraintIndicatorFlags
 --
@@ -267,9 +263,8 @@ constraintIndicatorFlags mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setConstraintIndicatorFlags:@
 setConstraintIndicatorFlags :: (IsMEHEVCDependencyInfo mehevcDependencyInfo, IsNSData value) => mehevcDependencyInfo -> value -> IO ()
-setConstraintIndicatorFlags mehevcDependencyInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mehevcDependencyInfo (mkSelector "setConstraintIndicatorFlags:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraintIndicatorFlags mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setConstraintIndicatorFlagsSelector (toNSData value)
 
 -- | levelIndex
 --
@@ -279,8 +274,8 @@ setConstraintIndicatorFlags mehevcDependencyInfo  value =
 --
 -- ObjC selector: @- levelIndex@
 levelIndex :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> IO CShort
-levelIndex mehevcDependencyInfo  =
-    fmap fromIntegral $ sendMsg mehevcDependencyInfo (mkSelector "levelIndex") retCInt []
+levelIndex mehevcDependencyInfo =
+  sendMessage mehevcDependencyInfo levelIndexSelector
 
 -- | levelIndex
 --
@@ -290,90 +285,90 @@ levelIndex mehevcDependencyInfo  =
 --
 -- ObjC selector: @- setLevelIndex:@
 setLevelIndex :: IsMEHEVCDependencyInfo mehevcDependencyInfo => mehevcDependencyInfo -> CShort -> IO ()
-setLevelIndex mehevcDependencyInfo  value =
-    sendMsg mehevcDependencyInfo (mkSelector "setLevelIndex:") retVoid [argCInt (fromIntegral value)]
+setLevelIndex mehevcDependencyInfo value =
+  sendMessage mehevcDependencyInfo setLevelIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @temporalSubLayerAccess@
-temporalSubLayerAccessSelector :: Selector
+temporalSubLayerAccessSelector :: Selector '[] Bool
 temporalSubLayerAccessSelector = mkSelector "temporalSubLayerAccess"
 
 -- | @Selector@ for @setTemporalSubLayerAccess:@
-setTemporalSubLayerAccessSelector :: Selector
+setTemporalSubLayerAccessSelector :: Selector '[Bool] ()
 setTemporalSubLayerAccessSelector = mkSelector "setTemporalSubLayerAccess:"
 
 -- | @Selector@ for @stepwiseTemporalSubLayerAccess@
-stepwiseTemporalSubLayerAccessSelector :: Selector
+stepwiseTemporalSubLayerAccessSelector :: Selector '[] Bool
 stepwiseTemporalSubLayerAccessSelector = mkSelector "stepwiseTemporalSubLayerAccess"
 
 -- | @Selector@ for @setStepwiseTemporalSubLayerAccess:@
-setStepwiseTemporalSubLayerAccessSelector :: Selector
+setStepwiseTemporalSubLayerAccessSelector :: Selector '[Bool] ()
 setStepwiseTemporalSubLayerAccessSelector = mkSelector "setStepwiseTemporalSubLayerAccess:"
 
 -- | @Selector@ for @syncSampleNALUnitType@
-syncSampleNALUnitTypeSelector :: Selector
+syncSampleNALUnitTypeSelector :: Selector '[] CShort
 syncSampleNALUnitTypeSelector = mkSelector "syncSampleNALUnitType"
 
 -- | @Selector@ for @setSyncSampleNALUnitType:@
-setSyncSampleNALUnitTypeSelector :: Selector
+setSyncSampleNALUnitTypeSelector :: Selector '[CShort] ()
 setSyncSampleNALUnitTypeSelector = mkSelector "setSyncSampleNALUnitType:"
 
 -- | @Selector@ for @temporalLevel@
-temporalLevelSelector :: Selector
+temporalLevelSelector :: Selector '[] CShort
 temporalLevelSelector = mkSelector "temporalLevel"
 
 -- | @Selector@ for @setTemporalLevel:@
-setTemporalLevelSelector :: Selector
+setTemporalLevelSelector :: Selector '[CShort] ()
 setTemporalLevelSelector = mkSelector "setTemporalLevel:"
 
 -- | @Selector@ for @profileSpace@
-profileSpaceSelector :: Selector
+profileSpaceSelector :: Selector '[] CShort
 profileSpaceSelector = mkSelector "profileSpace"
 
 -- | @Selector@ for @setProfileSpace:@
-setProfileSpaceSelector :: Selector
+setProfileSpaceSelector :: Selector '[CShort] ()
 setProfileSpaceSelector = mkSelector "setProfileSpace:"
 
 -- | @Selector@ for @tierFlag@
-tierFlagSelector :: Selector
+tierFlagSelector :: Selector '[] CShort
 tierFlagSelector = mkSelector "tierFlag"
 
 -- | @Selector@ for @setTierFlag:@
-setTierFlagSelector :: Selector
+setTierFlagSelector :: Selector '[CShort] ()
 setTierFlagSelector = mkSelector "setTierFlag:"
 
 -- | @Selector@ for @profileIndex@
-profileIndexSelector :: Selector
+profileIndexSelector :: Selector '[] CShort
 profileIndexSelector = mkSelector "profileIndex"
 
 -- | @Selector@ for @setProfileIndex:@
-setProfileIndexSelector :: Selector
+setProfileIndexSelector :: Selector '[CShort] ()
 setProfileIndexSelector = mkSelector "setProfileIndex:"
 
 -- | @Selector@ for @profileCompatibilityFlags@
-profileCompatibilityFlagsSelector :: Selector
+profileCompatibilityFlagsSelector :: Selector '[] (Id NSData)
 profileCompatibilityFlagsSelector = mkSelector "profileCompatibilityFlags"
 
 -- | @Selector@ for @setProfileCompatibilityFlags:@
-setProfileCompatibilityFlagsSelector :: Selector
+setProfileCompatibilityFlagsSelector :: Selector '[Id NSData] ()
 setProfileCompatibilityFlagsSelector = mkSelector "setProfileCompatibilityFlags:"
 
 -- | @Selector@ for @constraintIndicatorFlags@
-constraintIndicatorFlagsSelector :: Selector
+constraintIndicatorFlagsSelector :: Selector '[] (Id NSData)
 constraintIndicatorFlagsSelector = mkSelector "constraintIndicatorFlags"
 
 -- | @Selector@ for @setConstraintIndicatorFlags:@
-setConstraintIndicatorFlagsSelector :: Selector
+setConstraintIndicatorFlagsSelector :: Selector '[Id NSData] ()
 setConstraintIndicatorFlagsSelector = mkSelector "setConstraintIndicatorFlags:"
 
 -- | @Selector@ for @levelIndex@
-levelIndexSelector :: Selector
+levelIndexSelector :: Selector '[] CShort
 levelIndexSelector = mkSelector "levelIndex"
 
 -- | @Selector@ for @setLevelIndex:@
-setLevelIndexSelector :: Selector
+setLevelIndexSelector :: Selector '[CShort] ()
 setLevelIndexSelector = mkSelector "setLevelIndex:"
 

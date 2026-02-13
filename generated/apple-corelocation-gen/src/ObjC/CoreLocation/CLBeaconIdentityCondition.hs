@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.CoreLocation.CLBeaconIdentityCondition
   , initWithUUIDSelector
   , initWithUUID_majorSelector
   , initWithUUID_major_minorSelector
-  , uuidSelector
   , majorSelector
   , minorSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithUUID:@
 initWithUUID :: (IsCLBeaconIdentityCondition clBeaconIdentityCondition, IsNSUUID uuid) => clBeaconIdentityCondition -> uuid -> IO (Id CLBeaconIdentityCondition)
-initWithUUID clBeaconIdentityCondition  uuid =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg clBeaconIdentityCondition (mkSelector "initWithUUID:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ())] >>= ownedObject . castPtr
+initWithUUID clBeaconIdentityCondition uuid =
+  sendOwnedMessage clBeaconIdentityCondition initWithUUIDSelector (toNSUUID uuid)
 
 -- | @- initWithUUID:major:@
 initWithUUID_major :: (IsCLBeaconIdentityCondition clBeaconIdentityCondition, IsNSUUID uuid) => clBeaconIdentityCondition -> uuid -> CUShort -> IO (Id CLBeaconIdentityCondition)
-initWithUUID_major clBeaconIdentityCondition  uuid major =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg clBeaconIdentityCondition (mkSelector "initWithUUID:major:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argCUInt (fromIntegral major)] >>= ownedObject . castPtr
+initWithUUID_major clBeaconIdentityCondition uuid major =
+  sendOwnedMessage clBeaconIdentityCondition initWithUUID_majorSelector (toNSUUID uuid) major
 
 -- | @- initWithUUID:major:minor:@
 initWithUUID_major_minor :: (IsCLBeaconIdentityCondition clBeaconIdentityCondition, IsNSUUID uuid) => clBeaconIdentityCondition -> uuid -> CUShort -> CUShort -> IO (Id CLBeaconIdentityCondition)
-initWithUUID_major_minor clBeaconIdentityCondition  uuid major minor =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg clBeaconIdentityCondition (mkSelector "initWithUUID:major:minor:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argCUInt (fromIntegral major), argCUInt (fromIntegral minor)] >>= ownedObject . castPtr
+initWithUUID_major_minor clBeaconIdentityCondition uuid major minor =
+  sendOwnedMessage clBeaconIdentityCondition initWithUUID_major_minorSelector (toNSUUID uuid) major minor
 
 -- | @- UUID@
 uuid :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentityCondition -> IO (Id NSUUID)
-uuid clBeaconIdentityCondition  =
-    sendMsg clBeaconIdentityCondition (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid clBeaconIdentityCondition =
+  sendMessage clBeaconIdentityCondition uuidSelector
 
 -- | @- major@
 major :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentityCondition -> IO (Id NSNumber)
-major clBeaconIdentityCondition  =
-    sendMsg clBeaconIdentityCondition (mkSelector "major") (retPtr retVoid) [] >>= retainedObject . castPtr
+major clBeaconIdentityCondition =
+  sendMessage clBeaconIdentityCondition majorSelector
 
 -- | @- minor@
 minor :: IsCLBeaconIdentityCondition clBeaconIdentityCondition => clBeaconIdentityCondition -> IO (Id NSNumber)
-minor clBeaconIdentityCondition  =
-    sendMsg clBeaconIdentityCondition (mkSelector "minor") (retPtr retVoid) [] >>= retainedObject . castPtr
+minor clBeaconIdentityCondition =
+  sendMessage clBeaconIdentityCondition minorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUUID:@
-initWithUUIDSelector :: Selector
+initWithUUIDSelector :: Selector '[Id NSUUID] (Id CLBeaconIdentityCondition)
 initWithUUIDSelector = mkSelector "initWithUUID:"
 
 -- | @Selector@ for @initWithUUID:major:@
-initWithUUID_majorSelector :: Selector
+initWithUUID_majorSelector :: Selector '[Id NSUUID, CUShort] (Id CLBeaconIdentityCondition)
 initWithUUID_majorSelector = mkSelector "initWithUUID:major:"
 
 -- | @Selector@ for @initWithUUID:major:minor:@
-initWithUUID_major_minorSelector :: Selector
+initWithUUID_major_minorSelector :: Selector '[Id NSUUID, CUShort, CUShort] (Id CLBeaconIdentityCondition)
 initWithUUID_major_minorSelector = mkSelector "initWithUUID:major:minor:"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @major@
-majorSelector :: Selector
+majorSelector :: Selector '[] (Id NSNumber)
 majorSelector = mkSelector "major"
 
 -- | @Selector@ for @minor@
-minorSelector :: Selector
+minorSelector :: Selector '[] (Id NSNumber)
 minorSelector = mkSelector "minor"
 

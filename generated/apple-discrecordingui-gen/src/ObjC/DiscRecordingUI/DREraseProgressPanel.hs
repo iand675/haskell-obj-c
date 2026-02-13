@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,24 +34,20 @@ module ObjC.DiscRecordingUI.DREraseProgressPanel
   , beginProgressPanelForErase
   , setDescription
   , description
-  , progressPanelSelector
-  , beginProgressSheetForErase_modalForWindowSelector
   , beginProgressPanelForEraseSelector
-  , setDescriptionSelector
+  , beginProgressSheetForErase_modalForWindowSelector
   , descriptionSelector
+  , progressPanelSelector
+  , setDescriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,7 +67,7 @@ progressPanel :: IO (Id DREraseProgressPanel)
 progressPanel  =
   do
     cls' <- getRequiredClass "DREraseProgressPanel"
-    sendClassMsg cls' (mkSelector "progressPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' progressPanelSelector
 
 -- | beginProgressSheetForErase:modalForWindow:
 --
@@ -84,10 +81,8 @@ progressPanel  =
 --
 -- ObjC selector: @- beginProgressSheetForErase:modalForWindow:@
 beginProgressSheetForErase_modalForWindow :: (IsDREraseProgressPanel drEraseProgressPanel, IsDRErase erase, IsNSWindow docWindow) => drEraseProgressPanel -> erase -> docWindow -> IO ()
-beginProgressSheetForErase_modalForWindow drEraseProgressPanel  erase docWindow =
-  withObjCPtr erase $ \raw_erase ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg drEraseProgressPanel (mkSelector "beginProgressSheetForErase:modalForWindow:") retVoid [argPtr (castPtr raw_erase :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ())]
+beginProgressSheetForErase_modalForWindow drEraseProgressPanel erase docWindow =
+  sendMessage drEraseProgressPanel beginProgressSheetForErase_modalForWindowSelector (toDRErase erase) (toNSWindow docWindow)
 
 -- | beginProgressPanelForErase:
 --
@@ -99,9 +94,8 @@ beginProgressSheetForErase_modalForWindow drEraseProgressPanel  erase docWindow 
 --
 -- ObjC selector: @- beginProgressPanelForErase:@
 beginProgressPanelForErase :: (IsDREraseProgressPanel drEraseProgressPanel, IsDRErase erase) => drEraseProgressPanel -> erase -> IO ()
-beginProgressPanelForErase drEraseProgressPanel  erase =
-  withObjCPtr erase $ \raw_erase ->
-      sendMsg drEraseProgressPanel (mkSelector "beginProgressPanelForErase:") retVoid [argPtr (castPtr raw_erase :: Ptr ())]
+beginProgressPanelForErase drEraseProgressPanel erase =
+  sendMessage drEraseProgressPanel beginProgressPanelForEraseSelector (toDRErase erase)
 
 -- | setDescription:
 --
@@ -113,9 +107,8 @@ beginProgressPanelForErase drEraseProgressPanel  erase =
 --
 -- ObjC selector: @- setDescription:@
 setDescription :: (IsDREraseProgressPanel drEraseProgressPanel, IsNSString description) => drEraseProgressPanel -> description -> IO ()
-setDescription drEraseProgressPanel  description =
-  withObjCPtr description $ \raw_description ->
-      sendMsg drEraseProgressPanel (mkSelector "setDescription:") retVoid [argPtr (castPtr raw_description :: Ptr ())]
+setDescription drEraseProgressPanel description =
+  sendMessage drEraseProgressPanel setDescriptionSelector (toNSString description)
 
 -- | description
 --
@@ -127,30 +120,30 @@ setDescription drEraseProgressPanel  description =
 --
 -- ObjC selector: @- description@
 description :: IsDREraseProgressPanel drEraseProgressPanel => drEraseProgressPanel -> IO (Id NSString)
-description drEraseProgressPanel  =
-    sendMsg drEraseProgressPanel (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description drEraseProgressPanel =
+  sendMessage drEraseProgressPanel descriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @progressPanel@
-progressPanelSelector :: Selector
+progressPanelSelector :: Selector '[] (Id DREraseProgressPanel)
 progressPanelSelector = mkSelector "progressPanel"
 
 -- | @Selector@ for @beginProgressSheetForErase:modalForWindow:@
-beginProgressSheetForErase_modalForWindowSelector :: Selector
+beginProgressSheetForErase_modalForWindowSelector :: Selector '[Id DRErase, Id NSWindow] ()
 beginProgressSheetForErase_modalForWindowSelector = mkSelector "beginProgressSheetForErase:modalForWindow:"
 
 -- | @Selector@ for @beginProgressPanelForErase:@
-beginProgressPanelForEraseSelector :: Selector
+beginProgressPanelForEraseSelector :: Selector '[Id DRErase] ()
 beginProgressPanelForEraseSelector = mkSelector "beginProgressPanelForErase:"
 
 -- | @Selector@ for @setDescription:@
-setDescriptionSelector :: Selector
+setDescriptionSelector :: Selector '[Id NSString] ()
 setDescriptionSelector = mkSelector "setDescription:"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 

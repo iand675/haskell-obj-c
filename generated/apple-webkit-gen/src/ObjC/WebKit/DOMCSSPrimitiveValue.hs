@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.WebKit.DOMCSSPrimitiveValue
   , setFloatValue
   , setStringValue
   , primitiveType
-  , setFloatValue_floatValueSelector
-  , getFloatValueSelector
-  , setStringValue_stringValueSelector
-  , getStringValueSelector
   , getCounterValueSelector
-  , getRectValueSelector
+  , getFloatValueSelector
   , getRGBColorValueSelector
-  , setFloatValueSelector
-  , setStringValueSelector
+  , getRectValueSelector
+  , getStringValueSelector
   , primitiveTypeSelector
+  , setFloatValueSelector
+  , setFloatValue_floatValueSelector
+  , setStringValueSelector
+  , setStringValue_stringValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,97 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setFloatValue:floatValue:@
 setFloatValue_floatValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> CUShort -> CFloat -> IO ()
-setFloatValue_floatValue domcssPrimitiveValue  unitType floatValue =
-    sendMsg domcssPrimitiveValue (mkSelector "setFloatValue:floatValue:") retVoid [argCUInt (fromIntegral unitType), argCFloat floatValue]
+setFloatValue_floatValue domcssPrimitiveValue unitType floatValue =
+  sendMessage domcssPrimitiveValue setFloatValue_floatValueSelector unitType floatValue
 
 -- | @- getFloatValue:@
 getFloatValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> CUShort -> IO CFloat
-getFloatValue domcssPrimitiveValue  unitType =
-    sendMsg domcssPrimitiveValue (mkSelector "getFloatValue:") retCFloat [argCUInt (fromIntegral unitType)]
+getFloatValue domcssPrimitiveValue unitType =
+  sendMessage domcssPrimitiveValue getFloatValueSelector unitType
 
 -- | @- setStringValue:stringValue:@
 setStringValue_stringValue :: (IsDOMCSSPrimitiveValue domcssPrimitiveValue, IsNSString stringValue) => domcssPrimitiveValue -> CUShort -> stringValue -> IO ()
-setStringValue_stringValue domcssPrimitiveValue  stringType stringValue =
-  withObjCPtr stringValue $ \raw_stringValue ->
-      sendMsg domcssPrimitiveValue (mkSelector "setStringValue:stringValue:") retVoid [argCUInt (fromIntegral stringType), argPtr (castPtr raw_stringValue :: Ptr ())]
+setStringValue_stringValue domcssPrimitiveValue stringType stringValue =
+  sendMessage domcssPrimitiveValue setStringValue_stringValueSelector stringType (toNSString stringValue)
 
 -- | @- getStringValue@
 getStringValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> IO (Id NSString)
-getStringValue domcssPrimitiveValue  =
-    sendMsg domcssPrimitiveValue (mkSelector "getStringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getStringValue domcssPrimitiveValue =
+  sendMessage domcssPrimitiveValue getStringValueSelector
 
 -- | @- getCounterValue@
 getCounterValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> IO (Id DOMCounter)
-getCounterValue domcssPrimitiveValue  =
-    sendMsg domcssPrimitiveValue (mkSelector "getCounterValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getCounterValue domcssPrimitiveValue =
+  sendMessage domcssPrimitiveValue getCounterValueSelector
 
 -- | @- getRectValue@
 getRectValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> IO (Id DOMRect)
-getRectValue domcssPrimitiveValue  =
-    sendMsg domcssPrimitiveValue (mkSelector "getRectValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getRectValue domcssPrimitiveValue =
+  sendMessage domcssPrimitiveValue getRectValueSelector
 
 -- | @- getRGBColorValue@
 getRGBColorValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> IO (Id DOMRGBColor)
-getRGBColorValue domcssPrimitiveValue  =
-    sendMsg domcssPrimitiveValue (mkSelector "getRGBColorValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getRGBColorValue domcssPrimitiveValue =
+  sendMessage domcssPrimitiveValue getRGBColorValueSelector
 
 -- | @- setFloatValue::@
 setFloatValue :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> CUShort -> CFloat -> IO ()
-setFloatValue domcssPrimitiveValue  unitType floatValue =
-    sendMsg domcssPrimitiveValue (mkSelector "setFloatValue::") retVoid [argCUInt (fromIntegral unitType), argCFloat floatValue]
+setFloatValue domcssPrimitiveValue unitType floatValue =
+  sendMessage domcssPrimitiveValue setFloatValueSelector unitType floatValue
 
 -- | @- setStringValue::@
 setStringValue :: (IsDOMCSSPrimitiveValue domcssPrimitiveValue, IsNSString stringValue) => domcssPrimitiveValue -> CUShort -> stringValue -> IO ()
-setStringValue domcssPrimitiveValue  stringType stringValue =
-  withObjCPtr stringValue $ \raw_stringValue ->
-      sendMsg domcssPrimitiveValue (mkSelector "setStringValue::") retVoid [argCUInt (fromIntegral stringType), argPtr (castPtr raw_stringValue :: Ptr ())]
+setStringValue domcssPrimitiveValue stringType stringValue =
+  sendMessage domcssPrimitiveValue setStringValueSelector stringType (toNSString stringValue)
 
 -- | @- primitiveType@
 primitiveType :: IsDOMCSSPrimitiveValue domcssPrimitiveValue => domcssPrimitiveValue -> IO CUShort
-primitiveType domcssPrimitiveValue  =
-    fmap fromIntegral $ sendMsg domcssPrimitiveValue (mkSelector "primitiveType") retCUInt []
+primitiveType domcssPrimitiveValue =
+  sendMessage domcssPrimitiveValue primitiveTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setFloatValue:floatValue:@
-setFloatValue_floatValueSelector :: Selector
+setFloatValue_floatValueSelector :: Selector '[CUShort, CFloat] ()
 setFloatValue_floatValueSelector = mkSelector "setFloatValue:floatValue:"
 
 -- | @Selector@ for @getFloatValue:@
-getFloatValueSelector :: Selector
+getFloatValueSelector :: Selector '[CUShort] CFloat
 getFloatValueSelector = mkSelector "getFloatValue:"
 
 -- | @Selector@ for @setStringValue:stringValue:@
-setStringValue_stringValueSelector :: Selector
+setStringValue_stringValueSelector :: Selector '[CUShort, Id NSString] ()
 setStringValue_stringValueSelector = mkSelector "setStringValue:stringValue:"
 
 -- | @Selector@ for @getStringValue@
-getStringValueSelector :: Selector
+getStringValueSelector :: Selector '[] (Id NSString)
 getStringValueSelector = mkSelector "getStringValue"
 
 -- | @Selector@ for @getCounterValue@
-getCounterValueSelector :: Selector
+getCounterValueSelector :: Selector '[] (Id DOMCounter)
 getCounterValueSelector = mkSelector "getCounterValue"
 
 -- | @Selector@ for @getRectValue@
-getRectValueSelector :: Selector
+getRectValueSelector :: Selector '[] (Id DOMRect)
 getRectValueSelector = mkSelector "getRectValue"
 
 -- | @Selector@ for @getRGBColorValue@
-getRGBColorValueSelector :: Selector
+getRGBColorValueSelector :: Selector '[] (Id DOMRGBColor)
 getRGBColorValueSelector = mkSelector "getRGBColorValue"
 
 -- | @Selector@ for @setFloatValue::@
-setFloatValueSelector :: Selector
+setFloatValueSelector :: Selector '[CUShort, CFloat] ()
 setFloatValueSelector = mkSelector "setFloatValue::"
 
 -- | @Selector@ for @setStringValue::@
-setStringValueSelector :: Selector
+setStringValueSelector :: Selector '[CUShort, Id NSString] ()
 setStringValueSelector = mkSelector "setStringValue::"
 
 -- | @Selector@ for @primitiveType@
-primitiveTypeSelector :: Selector
+primitiveTypeSelector :: Selector '[] CUShort
 primitiveTypeSelector = mkSelector "primitiveType"
 

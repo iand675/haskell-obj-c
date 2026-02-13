@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CloudKit.CKFetchWebAuthTokenOperation
   , setAPIToken
   , fetchWebAuthTokenCompletionBlock
   , setFetchWebAuthTokenCompletionBlock
+  , apiTokenSelector
+  , fetchWebAuthTokenCompletionBlockSelector
   , initSelector
   , initWithAPITokenSelector
-  , apiTokenSelector
   , setAPITokenSelector
-  , fetchWebAuthTokenCompletionBlockSelector
   , setFetchWebAuthTokenCompletionBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,29 +40,27 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation => ckFetchWebAuthTokenOperation -> IO (Id CKFetchWebAuthTokenOperation)
-init_ ckFetchWebAuthTokenOperation  =
-    sendMsg ckFetchWebAuthTokenOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchWebAuthTokenOperation =
+  sendOwnedMessage ckFetchWebAuthTokenOperation initSelector
 
 -- | @- initWithAPIToken:@
 initWithAPIToken :: (IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation, IsNSString apiToken) => ckFetchWebAuthTokenOperation -> apiToken -> IO (Id CKFetchWebAuthTokenOperation)
-initWithAPIToken ckFetchWebAuthTokenOperation  apiToken =
-  withObjCPtr apiToken $ \raw_apiToken ->
-      sendMsg ckFetchWebAuthTokenOperation (mkSelector "initWithAPIToken:") (retPtr retVoid) [argPtr (castPtr raw_apiToken :: Ptr ())] >>= ownedObject . castPtr
+initWithAPIToken ckFetchWebAuthTokenOperation apiToken =
+  sendOwnedMessage ckFetchWebAuthTokenOperation initWithAPITokenSelector (toNSString apiToken)
 
 -- | APIToken is expected to be set before you begin this operation.
 --
 -- ObjC selector: @- APIToken@
 apiToken :: IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation => ckFetchWebAuthTokenOperation -> IO (Id NSString)
-apiToken ckFetchWebAuthTokenOperation  =
-    sendMsg ckFetchWebAuthTokenOperation (mkSelector "APIToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+apiToken ckFetchWebAuthTokenOperation =
+  sendMessage ckFetchWebAuthTokenOperation apiTokenSelector
 
 -- | APIToken is expected to be set before you begin this operation.
 --
 -- ObjC selector: @- setAPIToken:@
 setAPIToken :: (IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation, IsNSString value) => ckFetchWebAuthTokenOperation -> value -> IO ()
-setAPIToken ckFetchWebAuthTokenOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchWebAuthTokenOperation (mkSelector "setAPIToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAPIToken ckFetchWebAuthTokenOperation value =
+  sendMessage ckFetchWebAuthTokenOperation setAPITokenSelector (toNSString value)
 
 -- | This block is called when the operation completes.
 --
@@ -77,8 +72,8 @@ setAPIToken ckFetchWebAuthTokenOperation  value =
 --
 -- ObjC selector: @- fetchWebAuthTokenCompletionBlock@
 fetchWebAuthTokenCompletionBlock :: IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation => ckFetchWebAuthTokenOperation -> IO (Ptr ())
-fetchWebAuthTokenCompletionBlock ckFetchWebAuthTokenOperation  =
-    fmap castPtr $ sendMsg ckFetchWebAuthTokenOperation (mkSelector "fetchWebAuthTokenCompletionBlock") (retPtr retVoid) []
+fetchWebAuthTokenCompletionBlock ckFetchWebAuthTokenOperation =
+  sendMessage ckFetchWebAuthTokenOperation fetchWebAuthTokenCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -90,34 +85,34 @@ fetchWebAuthTokenCompletionBlock ckFetchWebAuthTokenOperation  =
 --
 -- ObjC selector: @- setFetchWebAuthTokenCompletionBlock:@
 setFetchWebAuthTokenCompletionBlock :: IsCKFetchWebAuthTokenOperation ckFetchWebAuthTokenOperation => ckFetchWebAuthTokenOperation -> Ptr () -> IO ()
-setFetchWebAuthTokenCompletionBlock ckFetchWebAuthTokenOperation  value =
-    sendMsg ckFetchWebAuthTokenOperation (mkSelector "setFetchWebAuthTokenCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setFetchWebAuthTokenCompletionBlock ckFetchWebAuthTokenOperation value =
+  sendMessage ckFetchWebAuthTokenOperation setFetchWebAuthTokenCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchWebAuthTokenOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAPIToken:@
-initWithAPITokenSelector :: Selector
+initWithAPITokenSelector :: Selector '[Id NSString] (Id CKFetchWebAuthTokenOperation)
 initWithAPITokenSelector = mkSelector "initWithAPIToken:"
 
 -- | @Selector@ for @APIToken@
-apiTokenSelector :: Selector
+apiTokenSelector :: Selector '[] (Id NSString)
 apiTokenSelector = mkSelector "APIToken"
 
 -- | @Selector@ for @setAPIToken:@
-setAPITokenSelector :: Selector
+setAPITokenSelector :: Selector '[Id NSString] ()
 setAPITokenSelector = mkSelector "setAPIToken:"
 
 -- | @Selector@ for @fetchWebAuthTokenCompletionBlock@
-fetchWebAuthTokenCompletionBlockSelector :: Selector
+fetchWebAuthTokenCompletionBlockSelector :: Selector '[] (Ptr ())
 fetchWebAuthTokenCompletionBlockSelector = mkSelector "fetchWebAuthTokenCompletionBlock"
 
 -- | @Selector@ for @setFetchWebAuthTokenCompletionBlock:@
-setFetchWebAuthTokenCompletionBlockSelector :: Selector
+setFetchWebAuthTokenCompletionBlockSelector :: Selector '[Ptr ()] ()
 setFetchWebAuthTokenCompletionBlockSelector = mkSelector "setFetchWebAuthTokenCompletionBlock:"
 

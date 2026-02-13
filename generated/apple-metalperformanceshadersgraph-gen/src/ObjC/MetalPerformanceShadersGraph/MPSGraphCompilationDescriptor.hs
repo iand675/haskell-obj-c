@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,21 +25,21 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCompilationDescriptor
   , setCallables
   , reducedPrecisionFastMath
   , setReducedPrecisionFastMath
-  , disableTypeInferenceSelector
-  , optimizationLevelSelector
-  , setOptimizationLevelSelector
-  , waitForCompilationCompletionSelector
-  , setWaitForCompilationCompletionSelector
-  , compilationCompletionHandlerSelector
-  , setCompilationCompletionHandlerSelector
-  , dispatchQueueSelector
-  , setDispatchQueueSelector
-  , optimizationProfileSelector
-  , setOptimizationProfileSelector
   , callablesSelector
-  , setCallablesSelector
+  , compilationCompletionHandlerSelector
+  , disableTypeInferenceSelector
+  , dispatchQueueSelector
+  , optimizationLevelSelector
+  , optimizationProfileSelector
   , reducedPrecisionFastMathSelector
+  , setCallablesSelector
+  , setCompilationCompletionHandlerSelector
+  , setDispatchQueueSelector
+  , setOptimizationLevelSelector
+  , setOptimizationProfileSelector
   , setReducedPrecisionFastMathSelector
+  , setWaitForCompilationCompletionSelector
+  , waitForCompilationCompletionSelector
 
   -- * Enum types
   , MPSGraphOptimization(MPSGraphOptimization)
@@ -55,15 +56,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCompilationDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,36 +72,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- disableTypeInference@
 disableTypeInference :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO ()
-disableTypeInference mpsGraphCompilationDescriptor  =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "disableTypeInference") retVoid []
+disableTypeInference mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor disableTypeInferenceSelector
 
 -- | The optimization level for the graph execution, default is MPSGraphOptimizationLevel1.
 --
 -- ObjC selector: @- optimizationLevel@
 optimizationLevel :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO MPSGraphOptimization
-optimizationLevel mpsGraphCompilationDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphOptimization) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "optimizationLevel") retCULong []
+optimizationLevel mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor optimizationLevelSelector
 
 -- | The optimization level for the graph execution, default is MPSGraphOptimizationLevel1.
 --
 -- ObjC selector: @- setOptimizationLevel:@
 setOptimizationLevel :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> MPSGraphOptimization -> IO ()
-setOptimizationLevel mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setOptimizationLevel:") retVoid [argCULong (coerce value)]
+setOptimizationLevel mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setOptimizationLevelSelector value
 
 -- | Flag that makes the compile or specialize call blocking till the entire compilation is complete, defaults to NO.
 --
 -- ObjC selector: @- waitForCompilationCompletion@
 waitForCompilationCompletion :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO Bool
-waitForCompilationCompletion mpsGraphCompilationDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "waitForCompilationCompletion") retCULong []
+waitForCompilationCompletion mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor waitForCompilationCompletionSelector
 
 -- | Flag that makes the compile or specialize call blocking till the entire compilation is complete, defaults to NO.
 --
 -- ObjC selector: @- setWaitForCompilationCompletion:@
 setWaitForCompilationCompletion :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> Bool -> IO ()
-setWaitForCompilationCompletion mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setWaitForCompilationCompletion:") retVoid [argCULong (if value then 1 else 0)]
+setWaitForCompilationCompletion mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setWaitForCompilationCompletionSelector value
 
 -- | The handler that the graph calls when the compilation completes.
 --
@@ -112,8 +109,8 @@ setWaitForCompilationCompletion mpsGraphCompilationDescriptor  value =
 --
 -- ObjC selector: @- compilationCompletionHandler@
 compilationCompletionHandler :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO (Ptr ())
-compilationCompletionHandler mpsGraphCompilationDescriptor  =
-    fmap castPtr $ sendMsg mpsGraphCompilationDescriptor (mkSelector "compilationCompletionHandler") (retPtr retVoid) []
+compilationCompletionHandler mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor compilationCompletionHandlerSelector
 
 -- | The handler that the graph calls when the compilation completes.
 --
@@ -121,8 +118,8 @@ compilationCompletionHandler mpsGraphCompilationDescriptor  =
 --
 -- ObjC selector: @- setCompilationCompletionHandler:@
 setCompilationCompletionHandler :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> Ptr () -> IO ()
-setCompilationCompletionHandler mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setCompilationCompletionHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCompilationCompletionHandler mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setCompilationCompletionHandlerSelector value
 
 -- | The dispatch queue used for the compilation.
 --
@@ -130,8 +127,8 @@ setCompilationCompletionHandler mpsGraphCompilationDescriptor  value =
 --
 -- ObjC selector: @- dispatchQueue@
 dispatchQueue :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO (Id NSObject)
-dispatchQueue mpsGraphCompilationDescriptor  =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "dispatchQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dispatchQueue mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor dispatchQueueSelector
 
 -- | The dispatch queue used for the compilation.
 --
@@ -139,9 +136,8 @@ dispatchQueue mpsGraphCompilationDescriptor  =
 --
 -- ObjC selector: @- setDispatchQueue:@
 setDispatchQueue :: (IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor, IsNSObject value) => mpsGraphCompilationDescriptor -> value -> IO ()
-setDispatchQueue mpsGraphCompilationDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphCompilationDescriptor (mkSelector "setDispatchQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDispatchQueue mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setDispatchQueueSelector (toNSObject value)
 
 -- | The optimization profile for the graph optimization.
 --
@@ -149,8 +145,8 @@ setDispatchQueue mpsGraphCompilationDescriptor  value =
 --
 -- ObjC selector: @- optimizationProfile@
 optimizationProfile :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO MPSGraphOptimizationProfile
-optimizationProfile mpsGraphCompilationDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphOptimizationProfile) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "optimizationProfile") retCULong []
+optimizationProfile mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor optimizationProfileSelector
 
 -- | The optimization profile for the graph optimization.
 --
@@ -158,98 +154,98 @@ optimizationProfile mpsGraphCompilationDescriptor  =
 --
 -- ObjC selector: @- setOptimizationProfile:@
 setOptimizationProfile :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> MPSGraphOptimizationProfile -> IO ()
-setOptimizationProfile mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setOptimizationProfile:") retVoid [argCULong (coerce value)]
+setOptimizationProfile mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setOptimizationProfileSelector value
 
 -- | The dictionary used during runtime to lookup the ``MPSGraphExecutable`` which correspond to the ``symbolName``.
 --
 -- ObjC selector: @- callables@
 callables :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO RawId
-callables mpsGraphCompilationDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "callables") (retPtr retVoid) []
+callables mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor callablesSelector
 
 -- | The dictionary used during runtime to lookup the ``MPSGraphExecutable`` which correspond to the ``symbolName``.
 --
 -- ObjC selector: @- setCallables:@
 setCallables :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> RawId -> IO ()
-setCallables mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setCallables:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCallables mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setCallablesSelector value
 
 -- | Across the executable allow reduced precision fast math optimizations.
 --
 -- ObjC selector: @- reducedPrecisionFastMath@
 reducedPrecisionFastMath :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> IO MPSGraphReducedPrecisionFastMath
-reducedPrecisionFastMath mpsGraphCompilationDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphReducedPrecisionFastMath) $ sendMsg mpsGraphCompilationDescriptor (mkSelector "reducedPrecisionFastMath") retCULong []
+reducedPrecisionFastMath mpsGraphCompilationDescriptor =
+  sendMessage mpsGraphCompilationDescriptor reducedPrecisionFastMathSelector
 
 -- | Across the executable allow reduced precision fast math optimizations.
 --
 -- ObjC selector: @- setReducedPrecisionFastMath:@
 setReducedPrecisionFastMath :: IsMPSGraphCompilationDescriptor mpsGraphCompilationDescriptor => mpsGraphCompilationDescriptor -> MPSGraphReducedPrecisionFastMath -> IO ()
-setReducedPrecisionFastMath mpsGraphCompilationDescriptor  value =
-    sendMsg mpsGraphCompilationDescriptor (mkSelector "setReducedPrecisionFastMath:") retVoid [argCULong (coerce value)]
+setReducedPrecisionFastMath mpsGraphCompilationDescriptor value =
+  sendMessage mpsGraphCompilationDescriptor setReducedPrecisionFastMathSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @disableTypeInference@
-disableTypeInferenceSelector :: Selector
+disableTypeInferenceSelector :: Selector '[] ()
 disableTypeInferenceSelector = mkSelector "disableTypeInference"
 
 -- | @Selector@ for @optimizationLevel@
-optimizationLevelSelector :: Selector
+optimizationLevelSelector :: Selector '[] MPSGraphOptimization
 optimizationLevelSelector = mkSelector "optimizationLevel"
 
 -- | @Selector@ for @setOptimizationLevel:@
-setOptimizationLevelSelector :: Selector
+setOptimizationLevelSelector :: Selector '[MPSGraphOptimization] ()
 setOptimizationLevelSelector = mkSelector "setOptimizationLevel:"
 
 -- | @Selector@ for @waitForCompilationCompletion@
-waitForCompilationCompletionSelector :: Selector
+waitForCompilationCompletionSelector :: Selector '[] Bool
 waitForCompilationCompletionSelector = mkSelector "waitForCompilationCompletion"
 
 -- | @Selector@ for @setWaitForCompilationCompletion:@
-setWaitForCompilationCompletionSelector :: Selector
+setWaitForCompilationCompletionSelector :: Selector '[Bool] ()
 setWaitForCompilationCompletionSelector = mkSelector "setWaitForCompilationCompletion:"
 
 -- | @Selector@ for @compilationCompletionHandler@
-compilationCompletionHandlerSelector :: Selector
+compilationCompletionHandlerSelector :: Selector '[] (Ptr ())
 compilationCompletionHandlerSelector = mkSelector "compilationCompletionHandler"
 
 -- | @Selector@ for @setCompilationCompletionHandler:@
-setCompilationCompletionHandlerSelector :: Selector
+setCompilationCompletionHandlerSelector :: Selector '[Ptr ()] ()
 setCompilationCompletionHandlerSelector = mkSelector "setCompilationCompletionHandler:"
 
 -- | @Selector@ for @dispatchQueue@
-dispatchQueueSelector :: Selector
+dispatchQueueSelector :: Selector '[] (Id NSObject)
 dispatchQueueSelector = mkSelector "dispatchQueue"
 
 -- | @Selector@ for @setDispatchQueue:@
-setDispatchQueueSelector :: Selector
+setDispatchQueueSelector :: Selector '[Id NSObject] ()
 setDispatchQueueSelector = mkSelector "setDispatchQueue:"
 
 -- | @Selector@ for @optimizationProfile@
-optimizationProfileSelector :: Selector
+optimizationProfileSelector :: Selector '[] MPSGraphOptimizationProfile
 optimizationProfileSelector = mkSelector "optimizationProfile"
 
 -- | @Selector@ for @setOptimizationProfile:@
-setOptimizationProfileSelector :: Selector
+setOptimizationProfileSelector :: Selector '[MPSGraphOptimizationProfile] ()
 setOptimizationProfileSelector = mkSelector "setOptimizationProfile:"
 
 -- | @Selector@ for @callables@
-callablesSelector :: Selector
+callablesSelector :: Selector '[] RawId
 callablesSelector = mkSelector "callables"
 
 -- | @Selector@ for @setCallables:@
-setCallablesSelector :: Selector
+setCallablesSelector :: Selector '[RawId] ()
 setCallablesSelector = mkSelector "setCallables:"
 
 -- | @Selector@ for @reducedPrecisionFastMath@
-reducedPrecisionFastMathSelector :: Selector
+reducedPrecisionFastMathSelector :: Selector '[] MPSGraphReducedPrecisionFastMath
 reducedPrecisionFastMathSelector = mkSelector "reducedPrecisionFastMath"
 
 -- | @Selector@ for @setReducedPrecisionFastMath:@
-setReducedPrecisionFastMathSelector :: Selector
+setReducedPrecisionFastMathSelector :: Selector '[MPSGraphReducedPrecisionFastMath] ()
 setReducedPrecisionFastMathSelector = mkSelector "setReducedPrecisionFastMath:"
 

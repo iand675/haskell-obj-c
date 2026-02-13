@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,15 +28,11 @@ module ObjC.CoreData.NSPersistentCloudKitContainerEventRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,67 +45,64 @@ fetchEventsAfterDate :: IsNSDate date => date -> IO (Id NSPersistentCloudKitCont
 fetchEventsAfterDate date =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEventRequest"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "fetchEventsAfterDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchEventsAfterDateSelector (toNSDate date)
 
 -- | @+ fetchEventsAfterEvent:@
 fetchEventsAfterEvent :: IsNSPersistentCloudKitContainerEvent event => event -> IO (Id NSPersistentCloudKitContainerEventRequest)
 fetchEventsAfterEvent event =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEventRequest"
-    withObjCPtr event $ \raw_event ->
-      sendClassMsg cls' (mkSelector "fetchEventsAfterEvent:") (retPtr retVoid) [argPtr (castPtr raw_event :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchEventsAfterEventSelector (toNSPersistentCloudKitContainerEvent event)
 
 -- | @+ fetchEventsMatchingFetchRequest:@
 fetchEventsMatchingFetchRequest :: IsNSFetchRequest fetchRequest => fetchRequest -> IO (Id NSPersistentCloudKitContainerEventRequest)
 fetchEventsMatchingFetchRequest fetchRequest =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEventRequest"
-    withObjCPtr fetchRequest $ \raw_fetchRequest ->
-      sendClassMsg cls' (mkSelector "fetchEventsMatchingFetchRequest:") (retPtr retVoid) [argPtr (castPtr raw_fetchRequest :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchEventsMatchingFetchRequestSelector (toNSFetchRequest fetchRequest)
 
 -- | @+ fetchRequestForEvents@
 fetchRequestForEvents :: IO (Id NSFetchRequest)
 fetchRequestForEvents  =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEventRequest"
-    sendClassMsg cls' (mkSelector "fetchRequestForEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchRequestForEventsSelector
 
 -- | @- resultType@
 resultType :: IsNSPersistentCloudKitContainerEventRequest nsPersistentCloudKitContainerEventRequest => nsPersistentCloudKitContainerEventRequest -> IO NSPersistentCloudKitContainerEventResultType
-resultType nsPersistentCloudKitContainerEventRequest  =
-    fmap (coerce :: CLong -> NSPersistentCloudKitContainerEventResultType) $ sendMsg nsPersistentCloudKitContainerEventRequest (mkSelector "resultType") retCLong []
+resultType nsPersistentCloudKitContainerEventRequest =
+  sendMessage nsPersistentCloudKitContainerEventRequest resultTypeSelector
 
 -- | @- setResultType:@
 setResultType :: IsNSPersistentCloudKitContainerEventRequest nsPersistentCloudKitContainerEventRequest => nsPersistentCloudKitContainerEventRequest -> NSPersistentCloudKitContainerEventResultType -> IO ()
-setResultType nsPersistentCloudKitContainerEventRequest  value =
-    sendMsg nsPersistentCloudKitContainerEventRequest (mkSelector "setResultType:") retVoid [argCLong (coerce value)]
+setResultType nsPersistentCloudKitContainerEventRequest value =
+  sendMessage nsPersistentCloudKitContainerEventRequest setResultTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchEventsAfterDate:@
-fetchEventsAfterDateSelector :: Selector
+fetchEventsAfterDateSelector :: Selector '[Id NSDate] (Id NSPersistentCloudKitContainerEventRequest)
 fetchEventsAfterDateSelector = mkSelector "fetchEventsAfterDate:"
 
 -- | @Selector@ for @fetchEventsAfterEvent:@
-fetchEventsAfterEventSelector :: Selector
+fetchEventsAfterEventSelector :: Selector '[Id NSPersistentCloudKitContainerEvent] (Id NSPersistentCloudKitContainerEventRequest)
 fetchEventsAfterEventSelector = mkSelector "fetchEventsAfterEvent:"
 
 -- | @Selector@ for @fetchEventsMatchingFetchRequest:@
-fetchEventsMatchingFetchRequestSelector :: Selector
+fetchEventsMatchingFetchRequestSelector :: Selector '[Id NSFetchRequest] (Id NSPersistentCloudKitContainerEventRequest)
 fetchEventsMatchingFetchRequestSelector = mkSelector "fetchEventsMatchingFetchRequest:"
 
 -- | @Selector@ for @fetchRequestForEvents@
-fetchRequestForEventsSelector :: Selector
+fetchRequestForEventsSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestForEventsSelector = mkSelector "fetchRequestForEvents"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSPersistentCloudKitContainerEventResultType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @setResultType:@
-setResultTypeSelector :: Selector
+setResultTypeSelector :: Selector '[NSPersistentCloudKitContainerEventResultType] ()
 setResultTypeSelector = mkSelector "setResultType:"
 

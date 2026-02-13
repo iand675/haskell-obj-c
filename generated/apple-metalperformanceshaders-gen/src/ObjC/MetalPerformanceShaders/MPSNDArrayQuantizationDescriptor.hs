@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -54,15 +55,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayQuantizationDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- quantizationDataType@
 quantizationDataType :: IsMPSNDArrayQuantizationDescriptor mpsndArrayQuantizationDescriptor => mpsndArrayQuantizationDescriptor -> IO MPSDataType
-quantizationDataType mpsndArrayQuantizationDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsndArrayQuantizationDescriptor (mkSelector "quantizationDataType") retCUInt []
+quantizationDataType mpsndArrayQuantizationDescriptor =
+  sendMessage mpsndArrayQuantizationDescriptor quantizationDataTypeSelector
 
 -- | quantizationScheme
 --
@@ -85,18 +82,18 @@ quantizationDataType mpsndArrayQuantizationDescriptor  =
 --
 -- ObjC selector: @- quantizationScheme@
 quantizationScheme :: IsMPSNDArrayQuantizationDescriptor mpsndArrayQuantizationDescriptor => mpsndArrayQuantizationDescriptor -> IO MPSNDArrayQuantizationScheme
-quantizationScheme mpsndArrayQuantizationDescriptor  =
-    fmap (coerce :: CULong -> MPSNDArrayQuantizationScheme) $ sendMsg mpsndArrayQuantizationDescriptor (mkSelector "quantizationScheme") retCULong []
+quantizationScheme mpsndArrayQuantizationDescriptor =
+  sendMessage mpsndArrayQuantizationDescriptor quantizationSchemeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @quantizationDataType@
-quantizationDataTypeSelector :: Selector
+quantizationDataTypeSelector :: Selector '[] MPSDataType
 quantizationDataTypeSelector = mkSelector "quantizationDataType"
 
 -- | @Selector@ for @quantizationScheme@
-quantizationSchemeSelector :: Selector
+quantizationSchemeSelector :: Selector '[] MPSNDArrayQuantizationScheme
 quantizationSchemeSelector = mkSelector "quantizationScheme"
 

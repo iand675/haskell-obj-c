@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreVideo.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CVAttachmentMode@
 newtype CVAttachmentMode = CVAttachmentMode CUInt
@@ -21,6 +24,16 @@ pattern KCVAttachmentMode_ShouldNotPropagate = CVAttachmentMode 0
 
 pattern KCVAttachmentMode_ShouldPropagate :: CVAttachmentMode
 pattern KCVAttachmentMode_ShouldPropagate = CVAttachmentMode 1
+
+instance ObjCArgument CVAttachmentMode where
+  withObjCArg (CVAttachmentMode x) k = k (argCUInt x)
+
+instance ObjCReturn CVAttachmentMode where
+  type RawReturn CVAttachmentMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVAttachmentMode x)
+  fromOwned x = pure (CVAttachmentMode x)
 
 -- | Pixel Buffer Locking Flags
 --
@@ -43,6 +56,16 @@ instance Monoid CVPixelBufferLockFlags where
 pattern KCVPixelBufferLock_ReadOnly :: CVPixelBufferLockFlags
 pattern KCVPixelBufferLock_ReadOnly = CVPixelBufferLockFlags 1
 
+instance ObjCArgument CVPixelBufferLockFlags where
+  withObjCArg (CVPixelBufferLockFlags x) k = k (argCULong x)
+
+instance ObjCReturn CVPixelBufferLockFlags where
+  type RawReturn CVPixelBufferLockFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVPixelBufferLockFlags x)
+  fromOwned x = pure (CVPixelBufferLockFlags x)
+
 -- | CVPixelBufferPoolFlush flags
 --
 -- Flags to pass to CVPixelBufferPoolFlush()
@@ -63,6 +86,16 @@ instance Monoid CVPixelBufferPoolFlushFlags where
 
 pattern KCVPixelBufferPoolFlushExcessBuffers :: CVPixelBufferPoolFlushFlags
 pattern KCVPixelBufferPoolFlushExcessBuffers = CVPixelBufferPoolFlushFlags 1
+
+instance ObjCArgument CVPixelBufferPoolFlushFlags where
+  withObjCArg (CVPixelBufferPoolFlushFlags x) k = k (argCULong x)
+
+instance ObjCReturn CVPixelBufferPoolFlushFlags where
+  type RawReturn CVPixelBufferPoolFlushFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVPixelBufferPoolFlushFlags x)
+  fromOwned x = pure (CVPixelBufferPoolFlushFlags x)
 
 -- | SMPTE State Flags
 --
@@ -91,6 +124,16 @@ pattern KCVSMPTETimeValid = CVSMPTETimeFlags 1
 
 pattern KCVSMPTETimeRunning :: CVSMPTETimeFlags
 pattern KCVSMPTETimeRunning = CVSMPTETimeFlags 2
+
+instance ObjCArgument CVSMPTETimeFlags where
+  withObjCArg (CVSMPTETimeFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CVSMPTETimeFlags where
+  type RawReturn CVSMPTETimeFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVSMPTETimeFlags x)
+  fromOwned x = pure (CVSMPTETimeFlags x)
 
 -- | SMPTE Time Types
 --
@@ -156,6 +199,16 @@ pattern KCVSMPTETimeType60 = CVSMPTETimeType 6
 pattern KCVSMPTETimeType5994 :: CVSMPTETimeType
 pattern KCVSMPTETimeType5994 = CVSMPTETimeType 7
 
+instance ObjCArgument CVSMPTETimeType where
+  withObjCArg (CVSMPTETimeType x) k = k (argCUInt x)
+
+instance ObjCReturn CVSMPTETimeType where
+  type RawReturn CVSMPTETimeType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVSMPTETimeType x)
+  fromOwned x = pure (CVSMPTETimeType x)
+
 -- | @CVTimeFlags@ (bitmask)
 newtype CVTimeFlags = CVTimeFlags CInt
   deriving stock (Eq, Ord, Show)
@@ -169,6 +222,16 @@ instance Monoid CVTimeFlags where
 
 pattern KCVTimeIsIndefinite :: CVTimeFlags
 pattern KCVTimeIsIndefinite = CVTimeFlags 1
+
+instance ObjCArgument CVTimeFlags where
+  withObjCArg (CVTimeFlags x) k = k (argCInt x)
+
+instance ObjCReturn CVTimeFlags where
+  type RawReturn CVTimeFlags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVTimeFlags x)
+  fromOwned x = pure (CVTimeFlags x)
 
 -- | @CVTimeStampFlags@ (bitmask)
 newtype CVTimeStampFlags = CVTimeStampFlags CULong
@@ -207,3 +270,13 @@ pattern KCVTimeStampVideoHostTimeValid = CVTimeStampFlags 3
 
 pattern KCVTimeStampIsInterlaced :: CVTimeStampFlags
 pattern KCVTimeStampIsInterlaced = CVTimeStampFlags 196608
+
+instance ObjCArgument CVTimeStampFlags where
+  withObjCArg (CVTimeStampFlags x) k = k (argCULong x)
+
+instance ObjCReturn CVTimeStampFlags where
+  type RawReturn CVTimeStampFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CVTimeStampFlags x)
+  fromOwned x = pure (CVTimeStampFlags x)

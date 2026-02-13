@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INRelativeReferenceResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithRelativeReferenceToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedRelativeReferenceSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithRelativeReferenceToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedRelativeReferenceSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INRelativeReference(INRelativeReference)
@@ -24,15 +25,11 @@ module ObjC.Intents.INRelativeReferenceResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,46 +42,46 @@ successWithResolvedRelativeReference :: INRelativeReference -> IO (Id INRelative
 successWithResolvedRelativeReference resolvedRelativeReference =
   do
     cls' <- getRequiredClass "INRelativeReferenceResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedRelativeReference:") (retPtr retVoid) [argCLong (coerce resolvedRelativeReference)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedRelativeReferenceSelector resolvedRelativeReference
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INRelativeReference -> IO (Id INRelativeReferenceResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INRelativeReferenceResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithRelativeReferenceToConfirm:@
 confirmationRequiredWithRelativeReferenceToConfirm :: INRelativeReference -> IO (Id INRelativeReferenceResolutionResult)
 confirmationRequiredWithRelativeReferenceToConfirm relativeReferenceToConfirm =
   do
     cls' <- getRequiredClass "INRelativeReferenceResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithRelativeReferenceToConfirm:") (retPtr retVoid) [argCLong (coerce relativeReferenceToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithRelativeReferenceToConfirmSelector relativeReferenceToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INRelativeReference -> IO (Id INRelativeReferenceResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INRelativeReferenceResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedRelativeReference:@
-successWithResolvedRelativeReferenceSelector :: Selector
+successWithResolvedRelativeReferenceSelector :: Selector '[INRelativeReference] (Id INRelativeReferenceResolutionResult)
 successWithResolvedRelativeReferenceSelector = mkSelector "successWithResolvedRelativeReference:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INRelativeReference] (Id INRelativeReferenceResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithRelativeReferenceToConfirm:@
-confirmationRequiredWithRelativeReferenceToConfirmSelector :: Selector
+confirmationRequiredWithRelativeReferenceToConfirmSelector :: Selector '[INRelativeReference] (Id INRelativeReferenceResolutionResult)
 confirmationRequiredWithRelativeReferenceToConfirmSelector = mkSelector "confirmationRequiredWithRelativeReferenceToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INRelativeReference] (Id INRelativeReferenceResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

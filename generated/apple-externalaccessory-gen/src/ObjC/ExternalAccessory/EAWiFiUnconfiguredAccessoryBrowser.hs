@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.ExternalAccessory.EAWiFiUnconfiguredAccessoryBrowser
   , delegate
   , setDelegate
   , unconfiguredAccessories
-  , initWithDelegate_queueSelector
-  , startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector
-  , stopSearchingForUnconfiguredAccessoriesSelector
   , configureAccessory_withConfigurationUIOnViewControllerSelector
   , delegateSelector
+  , initWithDelegate_queueSelector
   , setDelegateSelector
+  , startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector
+  , stopSearchingForUnconfiguredAccessoriesSelector
   , unconfiguredAccessoriesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,9 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDelegate:queue:@
 initWithDelegate_queue :: (IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser, IsNSObject queue) => eaWiFiUnconfiguredAccessoryBrowser -> RawId -> queue -> IO (Id EAWiFiUnconfiguredAccessoryBrowser)
-initWithDelegate_queue eaWiFiUnconfiguredAccessoryBrowser  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "initWithDelegate:queue:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate_queue eaWiFiUnconfiguredAccessoryBrowser delegate queue =
+  sendOwnedMessage eaWiFiUnconfiguredAccessoryBrowser initWithDelegate_queueSelector delegate (toNSObject queue)
 
 -- | Start the search for unconfigured accessories
 --
@@ -67,16 +63,15 @@ initWithDelegate_queue eaWiFiUnconfiguredAccessoryBrowser  delegate queue =
 --
 -- ObjC selector: @- startSearchingForUnconfiguredAccessoriesMatchingPredicate:@
 startSearchingForUnconfiguredAccessoriesMatchingPredicate :: (IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser, IsNSPredicate predicate) => eaWiFiUnconfiguredAccessoryBrowser -> predicate -> IO ()
-startSearchingForUnconfiguredAccessoriesMatchingPredicate eaWiFiUnconfiguredAccessoryBrowser  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "startSearchingForUnconfiguredAccessoriesMatchingPredicate:") retVoid [argPtr (castPtr raw_predicate :: Ptr ())]
+startSearchingForUnconfiguredAccessoriesMatchingPredicate eaWiFiUnconfiguredAccessoryBrowser predicate =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector (toNSPredicate predicate)
 
 -- | Stop the search for unconfigured MFi Wireless Accessory Configuration accessories
 --
 -- ObjC selector: @- stopSearchingForUnconfiguredAccessories@
 stopSearchingForUnconfiguredAccessories :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> IO ()
-stopSearchingForUnconfiguredAccessories eaWiFiUnconfiguredAccessoryBrowser  =
-    sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "stopSearchingForUnconfiguredAccessories") retVoid []
+stopSearchingForUnconfiguredAccessories eaWiFiUnconfiguredAccessoryBrowser =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser stopSearchingForUnconfiguredAccessoriesSelector
 
 -- | Begin the configuration process for the chosen accessory
 --
@@ -88,10 +83,8 @@ stopSearchingForUnconfiguredAccessories eaWiFiUnconfiguredAccessoryBrowser  =
 --
 -- ObjC selector: @- configureAccessory:withConfigurationUIOnViewController:@
 configureAccessory_withConfigurationUIOnViewController :: (IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser, IsEAWiFiUnconfiguredAccessory accessory, IsUIViewController viewController) => eaWiFiUnconfiguredAccessoryBrowser -> accessory -> viewController -> IO ()
-configureAccessory_withConfigurationUIOnViewController eaWiFiUnconfiguredAccessoryBrowser  accessory viewController =
-  withObjCPtr accessory $ \raw_accessory ->
-    withObjCPtr viewController $ \raw_viewController ->
-        sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "configureAccessory:withConfigurationUIOnViewController:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr raw_viewController :: Ptr ())]
+configureAccessory_withConfigurationUIOnViewController eaWiFiUnconfiguredAccessoryBrowser accessory viewController =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser configureAccessory_withConfigurationUIOnViewControllerSelector (toEAWiFiUnconfiguredAccessory accessory) (toUIViewController viewController)
 
 -- | delegate
 --
@@ -99,8 +92,8 @@ configureAccessory_withConfigurationUIOnViewController eaWiFiUnconfiguredAccesso
 --
 -- ObjC selector: @- delegate@
 delegate :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> IO RawId
-delegate eaWiFiUnconfiguredAccessoryBrowser  =
-    fmap (RawId . castPtr) $ sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "delegate") (retPtr retVoid) []
+delegate eaWiFiUnconfiguredAccessoryBrowser =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser delegateSelector
 
 -- | delegate
 --
@@ -108,8 +101,8 @@ delegate eaWiFiUnconfiguredAccessoryBrowser  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> RawId -> IO ()
-setDelegate eaWiFiUnconfiguredAccessoryBrowser  value =
-    sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate eaWiFiUnconfiguredAccessoryBrowser value =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser setDelegateSelector value
 
 -- | unconfiguredAccessories
 --
@@ -117,38 +110,38 @@ setDelegate eaWiFiUnconfiguredAccessoryBrowser  value =
 --
 -- ObjC selector: @- unconfiguredAccessories@
 unconfiguredAccessories :: IsEAWiFiUnconfiguredAccessoryBrowser eaWiFiUnconfiguredAccessoryBrowser => eaWiFiUnconfiguredAccessoryBrowser -> IO (Id NSSet)
-unconfiguredAccessories eaWiFiUnconfiguredAccessoryBrowser  =
-    sendMsg eaWiFiUnconfiguredAccessoryBrowser (mkSelector "unconfiguredAccessories") (retPtr retVoid) [] >>= retainedObject . castPtr
+unconfiguredAccessories eaWiFiUnconfiguredAccessoryBrowser =
+  sendMessage eaWiFiUnconfiguredAccessoryBrowser unconfiguredAccessoriesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDelegate:queue:@
-initWithDelegate_queueSelector :: Selector
+initWithDelegate_queueSelector :: Selector '[RawId, Id NSObject] (Id EAWiFiUnconfiguredAccessoryBrowser)
 initWithDelegate_queueSelector = mkSelector "initWithDelegate:queue:"
 
 -- | @Selector@ for @startSearchingForUnconfiguredAccessoriesMatchingPredicate:@
-startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector :: Selector
+startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector :: Selector '[Id NSPredicate] ()
 startSearchingForUnconfiguredAccessoriesMatchingPredicateSelector = mkSelector "startSearchingForUnconfiguredAccessoriesMatchingPredicate:"
 
 -- | @Selector@ for @stopSearchingForUnconfiguredAccessories@
-stopSearchingForUnconfiguredAccessoriesSelector :: Selector
+stopSearchingForUnconfiguredAccessoriesSelector :: Selector '[] ()
 stopSearchingForUnconfiguredAccessoriesSelector = mkSelector "stopSearchingForUnconfiguredAccessories"
 
 -- | @Selector@ for @configureAccessory:withConfigurationUIOnViewController:@
-configureAccessory_withConfigurationUIOnViewControllerSelector :: Selector
+configureAccessory_withConfigurationUIOnViewControllerSelector :: Selector '[Id EAWiFiUnconfiguredAccessory, Id UIViewController] ()
 configureAccessory_withConfigurationUIOnViewControllerSelector = mkSelector "configureAccessory:withConfigurationUIOnViewController:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @unconfiguredAccessories@
-unconfiguredAccessoriesSelector :: Selector
+unconfiguredAccessoriesSelector :: Selector '[] (Id NSSet)
 unconfiguredAccessoriesSelector = mkSelector "unconfiguredAccessories"
 

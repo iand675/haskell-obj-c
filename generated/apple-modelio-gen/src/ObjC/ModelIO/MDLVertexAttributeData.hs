@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,16 +24,16 @@ module ObjC.ModelIO.MDLVertexAttributeData
   , setFormat
   , bufferSize
   , setBufferSize
-  , mapSelector
-  , setMapSelector
-  , dataStartSelector
-  , setDataStartSelector
-  , strideSelector
-  , setStrideSelector
-  , formatSelector
-  , setFormatSelector
   , bufferSizeSelector
+  , dataStartSelector
+  , formatSelector
+  , mapSelector
   , setBufferSizeSelector
+  , setDataStartSelector
+  , setFormatSelector
+  , setMapSelector
+  , setStrideSelector
+  , strideSelector
 
   -- * Enum types
   , MDLVertexFormat(MDLVertexFormat)
@@ -103,15 +104,11 @@ module ObjC.ModelIO.MDLVertexAttributeData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,96 +118,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- map@
 map_ :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> IO (Id MDLMeshBufferMap)
-map_ mdlVertexAttributeData  =
-    sendMsg mdlVertexAttributeData (mkSelector "map") (retPtr retVoid) [] >>= retainedObject . castPtr
+map_ mdlVertexAttributeData =
+  sendMessage mdlVertexAttributeData mapSelector
 
 -- | @- setMap:@
 setMap :: (IsMDLVertexAttributeData mdlVertexAttributeData, IsMDLMeshBufferMap value) => mdlVertexAttributeData -> value -> IO ()
-setMap mdlVertexAttributeData  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlVertexAttributeData (mkSelector "setMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMap mdlVertexAttributeData value =
+  sendMessage mdlVertexAttributeData setMapSelector (toMDLMeshBufferMap value)
 
 -- | @- dataStart@
 dataStart :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> IO (Ptr ())
-dataStart mdlVertexAttributeData  =
-    fmap castPtr $ sendMsg mdlVertexAttributeData (mkSelector "dataStart") (retPtr retVoid) []
+dataStart mdlVertexAttributeData =
+  sendMessage mdlVertexAttributeData dataStartSelector
 
 -- | @- setDataStart:@
 setDataStart :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> Ptr () -> IO ()
-setDataStart mdlVertexAttributeData  value =
-    sendMsg mdlVertexAttributeData (mkSelector "setDataStart:") retVoid [argPtr value]
+setDataStart mdlVertexAttributeData value =
+  sendMessage mdlVertexAttributeData setDataStartSelector value
 
 -- | @- stride@
 stride :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> IO CULong
-stride mdlVertexAttributeData  =
-    sendMsg mdlVertexAttributeData (mkSelector "stride") retCULong []
+stride mdlVertexAttributeData =
+  sendMessage mdlVertexAttributeData strideSelector
 
 -- | @- setStride:@
 setStride :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> CULong -> IO ()
-setStride mdlVertexAttributeData  value =
-    sendMsg mdlVertexAttributeData (mkSelector "setStride:") retVoid [argCULong value]
+setStride mdlVertexAttributeData value =
+  sendMessage mdlVertexAttributeData setStrideSelector value
 
 -- | @- format@
 format :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> IO MDLVertexFormat
-format mdlVertexAttributeData  =
-    fmap (coerce :: CULong -> MDLVertexFormat) $ sendMsg mdlVertexAttributeData (mkSelector "format") retCULong []
+format mdlVertexAttributeData =
+  sendMessage mdlVertexAttributeData formatSelector
 
 -- | @- setFormat:@
 setFormat :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> MDLVertexFormat -> IO ()
-setFormat mdlVertexAttributeData  value =
-    sendMsg mdlVertexAttributeData (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+setFormat mdlVertexAttributeData value =
+  sendMessage mdlVertexAttributeData setFormatSelector value
 
 -- | @- bufferSize@
 bufferSize :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> IO CULong
-bufferSize mdlVertexAttributeData  =
-    sendMsg mdlVertexAttributeData (mkSelector "bufferSize") retCULong []
+bufferSize mdlVertexAttributeData =
+  sendMessage mdlVertexAttributeData bufferSizeSelector
 
 -- | @- setBufferSize:@
 setBufferSize :: IsMDLVertexAttributeData mdlVertexAttributeData => mdlVertexAttributeData -> CULong -> IO ()
-setBufferSize mdlVertexAttributeData  value =
-    sendMsg mdlVertexAttributeData (mkSelector "setBufferSize:") retVoid [argCULong value]
+setBufferSize mdlVertexAttributeData value =
+  sendMessage mdlVertexAttributeData setBufferSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @map@
-mapSelector :: Selector
+mapSelector :: Selector '[] (Id MDLMeshBufferMap)
 mapSelector = mkSelector "map"
 
 -- | @Selector@ for @setMap:@
-setMapSelector :: Selector
+setMapSelector :: Selector '[Id MDLMeshBufferMap] ()
 setMapSelector = mkSelector "setMap:"
 
 -- | @Selector@ for @dataStart@
-dataStartSelector :: Selector
+dataStartSelector :: Selector '[] (Ptr ())
 dataStartSelector = mkSelector "dataStart"
 
 -- | @Selector@ for @setDataStart:@
-setDataStartSelector :: Selector
+setDataStartSelector :: Selector '[Ptr ()] ()
 setDataStartSelector = mkSelector "setDataStart:"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] CULong
 strideSelector = mkSelector "stride"
 
 -- | @Selector@ for @setStride:@
-setStrideSelector :: Selector
+setStrideSelector :: Selector '[CULong] ()
 setStrideSelector = mkSelector "setStride:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] MDLVertexFormat
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[MDLVertexFormat] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @bufferSize@
-bufferSizeSelector :: Selector
+bufferSizeSelector :: Selector '[] CULong
 bufferSizeSelector = mkSelector "bufferSize"
 
 -- | @Selector@ for @setBufferSize:@
-setBufferSizeSelector :: Selector
+setBufferSizeSelector :: Selector '[CULong] ()
 setBufferSizeSelector = mkSelector "setBufferSize:"
 

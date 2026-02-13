@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.LocalAuthenticationEmbeddedUI.LAAuthenticationView
   , initWithContext_controlSize
   , context
   , controlSize
-  , initWithFrameSelector
+  , contextSelector
+  , controlSizeSelector
   , initWithCoderSelector
   , initWithContextSelector
   , initWithContext_controlSizeSelector
-  , contextSelector
-  , controlSizeSelector
+  , initWithFrameSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -34,15 +35,11 @@ module ObjC.LocalAuthenticationEmbeddedUI.LAAuthenticationView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,14 +52,13 @@ import ObjC.LocalAuthentication.Internal.Classes
 
 -- | @- initWithFrame:@
 initWithFrame :: IsLAAuthenticationView laAuthenticationView => laAuthenticationView -> NSRect -> IO (Id LAAuthenticationView)
-initWithFrame laAuthenticationView  frameRect =
-    sendMsg laAuthenticationView (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frameRect] >>= ownedObject . castPtr
+initWithFrame laAuthenticationView frameRect =
+  sendOwnedMessage laAuthenticationView initWithFrameSelector frameRect
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsLAAuthenticationView laAuthenticationView, IsNSCoder coder) => laAuthenticationView -> coder -> IO (Id LAAuthenticationView)
-initWithCoder laAuthenticationView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg laAuthenticationView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder laAuthenticationView coder =
+  sendOwnedMessage laAuthenticationView initWithCoderSelector (toNSCoder coder)
 
 -- | Creates a new view and pairs it with the specified authentication context.
 --
@@ -72,9 +68,8 @@ initWithCoder laAuthenticationView  coder =
 --
 -- ObjC selector: @- initWithContext:@
 initWithContext :: (IsLAAuthenticationView laAuthenticationView, IsLAContext context) => laAuthenticationView -> context -> IO (Id LAAuthenticationView)
-initWithContext laAuthenticationView  context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg laAuthenticationView (mkSelector "initWithContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= ownedObject . castPtr
+initWithContext laAuthenticationView context =
+  sendOwnedMessage laAuthenticationView initWithContextSelector (toLAContext context)
 
 -- | Creates a new view and pairs it with the specified authentication context.
 --
@@ -86,49 +81,48 @@ initWithContext laAuthenticationView  context =
 --
 -- ObjC selector: @- initWithContext:controlSize:@
 initWithContext_controlSize :: (IsLAAuthenticationView laAuthenticationView, IsLAContext context) => laAuthenticationView -> context -> NSControlSize -> IO (Id LAAuthenticationView)
-initWithContext_controlSize laAuthenticationView  context controlSize =
-  withObjCPtr context $ \raw_context ->
-      sendMsg laAuthenticationView (mkSelector "initWithContext:controlSize:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ()), argCULong (coerce controlSize)] >>= ownedObject . castPtr
+initWithContext_controlSize laAuthenticationView context controlSize =
+  sendOwnedMessage laAuthenticationView initWithContext_controlSizeSelector (toLAContext context) controlSize
 
 -- | @LAContext@ instance passed to the initializer.
 --
 -- ObjC selector: @- context@
 context :: IsLAAuthenticationView laAuthenticationView => laAuthenticationView -> IO (Id LAContext)
-context laAuthenticationView  =
-    sendMsg laAuthenticationView (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context laAuthenticationView =
+  sendMessage laAuthenticationView contextSelector
 
 -- | @NSControlSize@ instance passed to the initializer.
 --
 -- ObjC selector: @- controlSize@
 controlSize :: IsLAAuthenticationView laAuthenticationView => laAuthenticationView -> IO NSControlSize
-controlSize laAuthenticationView  =
-    fmap (coerce :: CULong -> NSControlSize) $ sendMsg laAuthenticationView (mkSelector "controlSize") retCULong []
+controlSize laAuthenticationView =
+  sendMessage laAuthenticationView controlSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] (Id LAAuthenticationView)
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id LAAuthenticationView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithContext:@
-initWithContextSelector :: Selector
+initWithContextSelector :: Selector '[Id LAContext] (Id LAAuthenticationView)
 initWithContextSelector = mkSelector "initWithContext:"
 
 -- | @Selector@ for @initWithContext:controlSize:@
-initWithContext_controlSizeSelector :: Selector
+initWithContext_controlSizeSelector :: Selector '[Id LAContext, NSControlSize] (Id LAAuthenticationView)
 initWithContext_controlSizeSelector = mkSelector "initWithContext:controlSize:"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id LAContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @controlSize@
-controlSizeSelector :: Selector
+controlSizeSelector :: Selector '[] NSControlSize
 controlSizeSelector = mkSelector "controlSize"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,22 @@ module ObjC.Metal.MTL4AccelerationStructureTriangleGeometryDescriptor
   , setTransformationMatrixBuffer
   , transformationMatrixLayout
   , setTransformationMatrixLayout
-  , vertexBufferSelector
-  , setVertexBufferSelector
-  , vertexFormatSelector
-  , setVertexFormatSelector
-  , vertexStrideSelector
-  , setVertexStrideSelector
   , indexBufferSelector
-  , setIndexBufferSelector
   , indexTypeSelector
+  , setIndexBufferSelector
   , setIndexTypeSelector
-  , triangleCountSelector
-  , setTriangleCountSelector
-  , transformationMatrixBufferSelector
   , setTransformationMatrixBufferSelector
-  , transformationMatrixLayoutSelector
   , setTransformationMatrixLayoutSelector
+  , setTriangleCountSelector
+  , setVertexBufferSelector
+  , setVertexFormatSelector
+  , setVertexStrideSelector
+  , transformationMatrixBufferSelector
+  , transformationMatrixLayoutSelector
+  , triangleCountSelector
+  , vertexBufferSelector
+  , vertexFormatSelector
+  , vertexStrideSelector
 
   -- * Enum types
   , MTLAttributeFormat(MTLAttributeFormat)
@@ -109,15 +110,11 @@ module ObjC.Metal.MTL4AccelerationStructureTriangleGeometryDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -132,8 +129,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- vertexBuffer@
 vertexBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTL4BufferRange
-vertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "vertexBuffer") retMTL4BufferRange []
+vertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor vertexBufferSelector
 
 -- | Associates a vertex buffer containing triangle vertices.
 --
@@ -141,8 +138,8 @@ vertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  =
 --
 -- ObjC selector: @- setVertexBuffer:@
 setVertexBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTL4BufferRange -> IO ()
-setVertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setVertexBuffer:") retVoid [argMTL4BufferRange value]
+setVertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setVertexBufferSelector value
 
 -- | Describes the format of the vertices in the vertex buffer.
 --
@@ -152,8 +149,8 @@ setVertexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  value =
 --
 -- ObjC selector: @- vertexFormat@
 vertexFormat :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTLAttributeFormat
-vertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    fmap (coerce :: CULong -> MTLAttributeFormat) $ sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "vertexFormat") retCULong []
+vertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor vertexFormatSelector
 
 -- | Describes the format of the vertices in the vertex buffer.
 --
@@ -163,8 +160,8 @@ vertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor  =
 --
 -- ObjC selector: @- setVertexFormat:@
 setVertexFormat :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTLAttributeFormat -> IO ()
-setVertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setVertexFormat:") retVoid [argCULong (coerce value)]
+setVertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setVertexFormatSelector value
 
 -- | Sets the stride, in bytes, between vertices in the vertex buffer.
 --
@@ -174,8 +171,8 @@ setVertexFormat mtL4AccelerationStructureTriangleGeometryDescriptor  value =
 --
 -- ObjC selector: @- vertexStride@
 vertexStride :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO CULong
-vertexStride mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "vertexStride") retCULong []
+vertexStride mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor vertexStrideSelector
 
 -- | Sets the stride, in bytes, between vertices in the vertex buffer.
 --
@@ -185,8 +182,8 @@ vertexStride mtL4AccelerationStructureTriangleGeometryDescriptor  =
 --
 -- ObjC selector: @- setVertexStride:@
 setVertexStride :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> CULong -> IO ()
-setVertexStride mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setVertexStride:") retVoid [argCULong value]
+setVertexStride mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setVertexStrideSelector value
 
 -- | Sets an optional index buffer containing references to vertices in the @vertexBuffer@.
 --
@@ -194,8 +191,8 @@ setVertexStride mtL4AccelerationStructureTriangleGeometryDescriptor  value =
 --
 -- ObjC selector: @- indexBuffer@
 indexBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTL4BufferRange
-indexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "indexBuffer") retMTL4BufferRange []
+indexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor indexBufferSelector
 
 -- | Sets an optional index buffer containing references to vertices in the @vertexBuffer@.
 --
@@ -203,36 +200,36 @@ indexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  =
 --
 -- ObjC selector: @- setIndexBuffer:@
 setIndexBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTL4BufferRange -> IO ()
-setIndexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setIndexBuffer:") retVoid [argMTL4BufferRange value]
+setIndexBuffer mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setIndexBufferSelector value
 
 -- | Configures the size of the indices the @indexBuffer@ contains, which is typically either 16 or 32-bits for each index.
 --
 -- ObjC selector: @- indexType@
 indexType :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTLIndexType
-indexType mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    fmap (coerce :: CULong -> MTLIndexType) $ sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "indexType") retCULong []
+indexType mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor indexTypeSelector
 
 -- | Configures the size of the indices the @indexBuffer@ contains, which is typically either 16 or 32-bits for each index.
 --
 -- ObjC selector: @- setIndexType:@
 setIndexType :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTLIndexType -> IO ()
-setIndexType mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setIndexType:") retVoid [argCULong (coerce value)]
+setIndexType mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setIndexTypeSelector value
 
 -- | Declares the number of triangles in this geometry descriptor.
 --
 -- ObjC selector: @- triangleCount@
 triangleCount :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO CULong
-triangleCount mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "triangleCount") retCULong []
+triangleCount mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor triangleCountSelector
 
 -- | Declares the number of triangles in this geometry descriptor.
 --
 -- ObjC selector: @- setTriangleCount:@
 setTriangleCount :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> CULong -> IO ()
-setTriangleCount mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setTriangleCount:") retVoid [argCULong value]
+setTriangleCount mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setTriangleCountSelector value
 
 -- | Assigns an optional reference to a buffer containing a @float4x3@ transformation matrix.
 --
@@ -242,8 +239,8 @@ setTriangleCount mtL4AccelerationStructureTriangleGeometryDescriptor  value =
 --
 -- ObjC selector: @- transformationMatrixBuffer@
 transformationMatrixBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTL4BufferRange
-transformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "transformationMatrixBuffer") retMTL4BufferRange []
+transformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor transformationMatrixBufferSelector
 
 -- | Assigns an optional reference to a buffer containing a @float4x3@ transformation matrix.
 --
@@ -253,8 +250,8 @@ transformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  
 --
 -- ObjC selector: @- setTransformationMatrixBuffer:@
 setTransformationMatrixBuffer :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTL4BufferRange -> IO ()
-setTransformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setTransformationMatrixBuffer:") retVoid [argMTL4BufferRange value]
+setTransformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setTransformationMatrixBufferSelector value
 
 -- | Configures the layout for the transformation matrix in the transformation matrix buffer.
 --
@@ -264,8 +261,8 @@ setTransformationMatrixBuffer mtL4AccelerationStructureTriangleGeometryDescripto
 --
 -- ObjC selector: @- transformationMatrixLayout@
 transformationMatrixLayout :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> IO MTLMatrixLayout
-transformationMatrixLayout mtL4AccelerationStructureTriangleGeometryDescriptor  =
-    fmap (coerce :: CLong -> MTLMatrixLayout) $ sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "transformationMatrixLayout") retCLong []
+transformationMatrixLayout mtL4AccelerationStructureTriangleGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor transformationMatrixLayoutSelector
 
 -- | Configures the layout for the transformation matrix in the transformation matrix buffer.
 --
@@ -275,74 +272,74 @@ transformationMatrixLayout mtL4AccelerationStructureTriangleGeometryDescriptor  
 --
 -- ObjC selector: @- setTransformationMatrixLayout:@
 setTransformationMatrixLayout :: IsMTL4AccelerationStructureTriangleGeometryDescriptor mtL4AccelerationStructureTriangleGeometryDescriptor => mtL4AccelerationStructureTriangleGeometryDescriptor -> MTLMatrixLayout -> IO ()
-setTransformationMatrixLayout mtL4AccelerationStructureTriangleGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureTriangleGeometryDescriptor (mkSelector "setTransformationMatrixLayout:") retVoid [argCLong (coerce value)]
+setTransformationMatrixLayout mtL4AccelerationStructureTriangleGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureTriangleGeometryDescriptor setTransformationMatrixLayoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vertexBuffer@
-vertexBufferSelector :: Selector
+vertexBufferSelector :: Selector '[] MTL4BufferRange
 vertexBufferSelector = mkSelector "vertexBuffer"
 
 -- | @Selector@ for @setVertexBuffer:@
-setVertexBufferSelector :: Selector
+setVertexBufferSelector :: Selector '[MTL4BufferRange] ()
 setVertexBufferSelector = mkSelector "setVertexBuffer:"
 
 -- | @Selector@ for @vertexFormat@
-vertexFormatSelector :: Selector
+vertexFormatSelector :: Selector '[] MTLAttributeFormat
 vertexFormatSelector = mkSelector "vertexFormat"
 
 -- | @Selector@ for @setVertexFormat:@
-setVertexFormatSelector :: Selector
+setVertexFormatSelector :: Selector '[MTLAttributeFormat] ()
 setVertexFormatSelector = mkSelector "setVertexFormat:"
 
 -- | @Selector@ for @vertexStride@
-vertexStrideSelector :: Selector
+vertexStrideSelector :: Selector '[] CULong
 vertexStrideSelector = mkSelector "vertexStride"
 
 -- | @Selector@ for @setVertexStride:@
-setVertexStrideSelector :: Selector
+setVertexStrideSelector :: Selector '[CULong] ()
 setVertexStrideSelector = mkSelector "setVertexStride:"
 
 -- | @Selector@ for @indexBuffer@
-indexBufferSelector :: Selector
+indexBufferSelector :: Selector '[] MTL4BufferRange
 indexBufferSelector = mkSelector "indexBuffer"
 
 -- | @Selector@ for @setIndexBuffer:@
-setIndexBufferSelector :: Selector
+setIndexBufferSelector :: Selector '[MTL4BufferRange] ()
 setIndexBufferSelector = mkSelector "setIndexBuffer:"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] MTLIndexType
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @setIndexType:@
-setIndexTypeSelector :: Selector
+setIndexTypeSelector :: Selector '[MTLIndexType] ()
 setIndexTypeSelector = mkSelector "setIndexType:"
 
 -- | @Selector@ for @triangleCount@
-triangleCountSelector :: Selector
+triangleCountSelector :: Selector '[] CULong
 triangleCountSelector = mkSelector "triangleCount"
 
 -- | @Selector@ for @setTriangleCount:@
-setTriangleCountSelector :: Selector
+setTriangleCountSelector :: Selector '[CULong] ()
 setTriangleCountSelector = mkSelector "setTriangleCount:"
 
 -- | @Selector@ for @transformationMatrixBuffer@
-transformationMatrixBufferSelector :: Selector
+transformationMatrixBufferSelector :: Selector '[] MTL4BufferRange
 transformationMatrixBufferSelector = mkSelector "transformationMatrixBuffer"
 
 -- | @Selector@ for @setTransformationMatrixBuffer:@
-setTransformationMatrixBufferSelector :: Selector
+setTransformationMatrixBufferSelector :: Selector '[MTL4BufferRange] ()
 setTransformationMatrixBufferSelector = mkSelector "setTransformationMatrixBuffer:"
 
 -- | @Selector@ for @transformationMatrixLayout@
-transformationMatrixLayoutSelector :: Selector
+transformationMatrixLayoutSelector :: Selector '[] MTLMatrixLayout
 transformationMatrixLayoutSelector = mkSelector "transformationMatrixLayout"
 
 -- | @Selector@ for @setTransformationMatrixLayout:@
-setTransformationMatrixLayoutSelector :: Selector
+setTransformationMatrixLayoutSelector :: Selector '[MTLMatrixLayout] ()
 setTransformationMatrixLayoutSelector = mkSelector "setTransformationMatrixLayout:"
 

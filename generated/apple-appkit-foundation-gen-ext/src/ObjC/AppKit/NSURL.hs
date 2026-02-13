@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSURL
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,24 +31,22 @@ urlFromPasteboard :: IsNSPasteboard pasteBoard => pasteBoard -> IO (Id NSURL)
 urlFromPasteboard pasteBoard =
   do
     cls' <- getRequiredClass "NSURL"
-    withObjCPtr pasteBoard $ \raw_pasteBoard ->
-      sendClassMsg cls' (mkSelector "URLFromPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pasteBoard :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' urlFromPasteboardSelector (toNSPasteboard pasteBoard)
 
 -- | @- writeToPasteboard:@
 writeToPasteboard :: (IsNSURL nsurl, IsNSPasteboard pasteBoard) => nsurl -> pasteBoard -> IO ()
-writeToPasteboard nsurl  pasteBoard =
-  withObjCPtr pasteBoard $ \raw_pasteBoard ->
-      sendMsg nsurl (mkSelector "writeToPasteboard:") retVoid [argPtr (castPtr raw_pasteBoard :: Ptr ())]
+writeToPasteboard nsurl pasteBoard =
+  sendMessage nsurl writeToPasteboardSelector (toNSPasteboard pasteBoard)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URLFromPasteboard:@
-urlFromPasteboardSelector :: Selector
+urlFromPasteboardSelector :: Selector '[Id NSPasteboard] (Id NSURL)
 urlFromPasteboardSelector = mkSelector "URLFromPasteboard:"
 
 -- | @Selector@ for @writeToPasteboard:@
-writeToPasteboardSelector :: Selector
+writeToPasteboardSelector :: Selector '[Id NSPasteboard] ()
 writeToPasteboardSelector = mkSelector "writeToPasteboard:"
 

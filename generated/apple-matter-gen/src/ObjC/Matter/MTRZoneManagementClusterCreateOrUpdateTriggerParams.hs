@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRZoneManagementClusterCreateOrUpdateTriggerParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , triggerSelector
-  , setTriggerSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTriggerSelector
+  , timedInvokeTimeoutMsSelector
+  , triggerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- trigger@
 trigger :: IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> IO (Id MTRZoneManagementClusterZoneTriggerControlStruct)
-trigger mtrZoneManagementClusterCreateOrUpdateTriggerParams  =
-    sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "trigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+trigger mtrZoneManagementClusterCreateOrUpdateTriggerParams =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams triggerSelector
 
 -- | @- setTrigger:@
 setTrigger :: (IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams, IsMTRZoneManagementClusterZoneTriggerControlStruct value) => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> value -> IO ()
-setTrigger mtrZoneManagementClusterCreateOrUpdateTriggerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "setTrigger:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrigger mtrZoneManagementClusterCreateOrUpdateTriggerParams value =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams setTriggerSelector (toMTRZoneManagementClusterZoneTriggerControlStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTrigger mtrZoneManagementClusterCreateOrUpdateTriggerParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams  =
-    sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams, IsNSNumber value) => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams value =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateOrUpdateTriggerParams  val
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrZoneManagementClusterCreateOrUpdateTriggerParams  =
-    sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrZoneManagementClusterCreateOrUpdateTriggerParams =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrZoneManagementClusterCreateOrUpdateTriggerParams 
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRZoneManagementClusterCreateOrUpdateTriggerParams mtrZoneManagementClusterCreateOrUpdateTriggerParams, IsNSNumber value) => mtrZoneManagementClusterCreateOrUpdateTriggerParams -> value -> IO ()
-setServerSideProcessingTimeout mtrZoneManagementClusterCreateOrUpdateTriggerParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateOrUpdateTriggerParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrZoneManagementClusterCreateOrUpdateTriggerParams value =
+  sendMessage mtrZoneManagementClusterCreateOrUpdateTriggerParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trigger@
-triggerSelector :: Selector
+triggerSelector :: Selector '[] (Id MTRZoneManagementClusterZoneTriggerControlStruct)
 triggerSelector = mkSelector "trigger"
 
 -- | @Selector@ for @setTrigger:@
-setTriggerSelector :: Selector
+setTriggerSelector :: Selector '[Id MTRZoneManagementClusterZoneTriggerControlStruct] ()
 setTriggerSelector = mkSelector "setTrigger:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

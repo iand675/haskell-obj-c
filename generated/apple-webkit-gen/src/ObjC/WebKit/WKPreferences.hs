@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,32 +36,32 @@ module ObjC.WebKit.WKPreferences
   , setJavaScriptEnabled
   , isLookToScrollEnabled
   , setIsLookToScrollEnabled
-  , minimumFontSizeSelector
-  , setMinimumFontSizeSelector
-  , javaScriptCanOpenWindowsAutomaticallySelector
-  , setJavaScriptCanOpenWindowsAutomaticallySelector
-  , fraudulentWebsiteWarningEnabledSelector
-  , setFraudulentWebsiteWarningEnabledSelector
-  , shouldPrintBackgroundsSelector
-  , setShouldPrintBackgroundsSelector
-  , tabFocusesLinksSelector
-  , setTabFocusesLinksSelector
-  , textInteractionEnabledSelector
-  , setTextInteractionEnabledSelector
-  , siteSpecificQuirksModeEnabledSelector
-  , setSiteSpecificQuirksModeEnabledSelector
   , elementFullscreenEnabledSelector
-  , setElementFullscreenEnabledSelector
+  , fraudulentWebsiteWarningEnabledSelector
   , inactiveSchedulingPolicySelector
-  , setInactiveSchedulingPolicySelector
-  , javaEnabledSelector
-  , setJavaEnabledSelector
-  , plugInsEnabledSelector
-  , setPlugInsEnabledSelector
-  , javaScriptEnabledSelector
-  , setJavaScriptEnabledSelector
   , isLookToScrollEnabledSelector
+  , javaEnabledSelector
+  , javaScriptCanOpenWindowsAutomaticallySelector
+  , javaScriptEnabledSelector
+  , minimumFontSizeSelector
+  , plugInsEnabledSelector
+  , setElementFullscreenEnabledSelector
+  , setFraudulentWebsiteWarningEnabledSelector
+  , setInactiveSchedulingPolicySelector
   , setIsLookToScrollEnabledSelector
+  , setJavaEnabledSelector
+  , setJavaScriptCanOpenWindowsAutomaticallySelector
+  , setJavaScriptEnabledSelector
+  , setMinimumFontSizeSelector
+  , setPlugInsEnabledSelector
+  , setShouldPrintBackgroundsSelector
+  , setSiteSpecificQuirksModeEnabledSelector
+  , setTabFocusesLinksSelector
+  , setTextInteractionEnabledSelector
+  , shouldPrintBackgroundsSelector
+  , siteSpecificQuirksModeEnabledSelector
+  , tabFocusesLinksSelector
+  , textInteractionEnabledSelector
 
   -- * Enum types
   , WKInactiveSchedulingPolicy(WKInactiveSchedulingPolicy)
@@ -70,15 +71,11 @@ module ObjC.WebKit.WKPreferences
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,8 +89,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- minimumFontSize@
 minimumFontSize :: IsWKPreferences wkPreferences => wkPreferences -> IO CDouble
-minimumFontSize wkPreferences  =
-    sendMsg wkPreferences (mkSelector "minimumFontSize") retCDouble []
+minimumFontSize wkPreferences =
+  sendMessage wkPreferences minimumFontSizeSelector
 
 -- | The minimum font size in points.
 --
@@ -101,8 +98,8 @@ minimumFontSize wkPreferences  =
 --
 -- ObjC selector: @- setMinimumFontSize:@
 setMinimumFontSize :: IsWKPreferences wkPreferences => wkPreferences -> CDouble -> IO ()
-setMinimumFontSize wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setMinimumFontSize:") retVoid [argCDouble value]
+setMinimumFontSize wkPreferences value =
+  sendMessage wkPreferences setMinimumFontSizeSelector value
 
 -- | A Boolean value indicating whether JavaScript can open windows without user interaction.
 --
@@ -110,8 +107,8 @@ setMinimumFontSize wkPreferences  value =
 --
 -- ObjC selector: @- javaScriptCanOpenWindowsAutomatically@
 javaScriptCanOpenWindowsAutomatically :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-javaScriptCanOpenWindowsAutomatically wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "javaScriptCanOpenWindowsAutomatically") retCULong []
+javaScriptCanOpenWindowsAutomatically wkPreferences =
+  sendMessage wkPreferences javaScriptCanOpenWindowsAutomaticallySelector
 
 -- | A Boolean value indicating whether JavaScript can open windows without user interaction.
 --
@@ -119,8 +116,8 @@ javaScriptCanOpenWindowsAutomatically wkPreferences  =
 --
 -- ObjC selector: @- setJavaScriptCanOpenWindowsAutomatically:@
 setJavaScriptCanOpenWindowsAutomatically :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setJavaScriptCanOpenWindowsAutomatically wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setJavaScriptCanOpenWindowsAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setJavaScriptCanOpenWindowsAutomatically wkPreferences value =
+  sendMessage wkPreferences setJavaScriptCanOpenWindowsAutomaticallySelector value
 
 -- | A Boolean value indicating whether warnings should be shown for suspected fraudulent content such as phishing or malware.
 --
@@ -128,8 +125,8 @@ setJavaScriptCanOpenWindowsAutomatically wkPreferences  value =
 --
 -- ObjC selector: @- fraudulentWebsiteWarningEnabled@
 fraudulentWebsiteWarningEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-fraudulentWebsiteWarningEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "fraudulentWebsiteWarningEnabled") retCULong []
+fraudulentWebsiteWarningEnabled wkPreferences =
+  sendMessage wkPreferences fraudulentWebsiteWarningEnabledSelector
 
 -- | A Boolean value indicating whether warnings should be shown for suspected fraudulent content such as phishing or malware.
 --
@@ -137,8 +134,8 @@ fraudulentWebsiteWarningEnabled wkPreferences  =
 --
 -- ObjC selector: @- setFraudulentWebsiteWarningEnabled:@
 setFraudulentWebsiteWarningEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setFraudulentWebsiteWarningEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setFraudulentWebsiteWarningEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFraudulentWebsiteWarningEnabled wkPreferences value =
+  sendMessage wkPreferences setFraudulentWebsiteWarningEnabledSelector value
 
 -- | A Boolean value indicating whether the web view should include backgrounds when printing.
 --
@@ -146,8 +143,8 @@ setFraudulentWebsiteWarningEnabled wkPreferences  value =
 --
 -- ObjC selector: @- shouldPrintBackgrounds@
 shouldPrintBackgrounds :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-shouldPrintBackgrounds wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "shouldPrintBackgrounds") retCULong []
+shouldPrintBackgrounds wkPreferences =
+  sendMessage wkPreferences shouldPrintBackgroundsSelector
 
 -- | A Boolean value indicating whether the web view should include backgrounds when printing.
 --
@@ -155,8 +152,8 @@ shouldPrintBackgrounds wkPreferences  =
 --
 -- ObjC selector: @- setShouldPrintBackgrounds:@
 setShouldPrintBackgrounds :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setShouldPrintBackgrounds wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setShouldPrintBackgrounds:") retVoid [argCULong (if value then 1 else 0)]
+setShouldPrintBackgrounds wkPreferences value =
+  sendMessage wkPreferences setShouldPrintBackgroundsSelector value
 
 -- | tabFocusesLinks
 --
@@ -164,8 +161,8 @@ setShouldPrintBackgrounds wkPreferences  value =
 --
 -- ObjC selector: @- tabFocusesLinks@
 tabFocusesLinks :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-tabFocusesLinks wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "tabFocusesLinks") retCULong []
+tabFocusesLinks wkPreferences =
+  sendMessage wkPreferences tabFocusesLinksSelector
 
 -- | tabFocusesLinks
 --
@@ -173,36 +170,36 @@ tabFocusesLinks wkPreferences  =
 --
 -- ObjC selector: @- setTabFocusesLinks:@
 setTabFocusesLinks :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setTabFocusesLinks wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setTabFocusesLinks:") retVoid [argCULong (if value then 1 else 0)]
+setTabFocusesLinks wkPreferences value =
+  sendMessage wkPreferences setTabFocusesLinksSelector value
 
 -- | A Boolean value indicating whether text interaction is disabled.
 --
 -- ObjC selector: @- textInteractionEnabled@
 textInteractionEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-textInteractionEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "textInteractionEnabled") retCULong []
+textInteractionEnabled wkPreferences =
+  sendMessage wkPreferences textInteractionEnabledSelector
 
 -- | A Boolean value indicating whether text interaction is disabled.
 --
 -- ObjC selector: @- setTextInteractionEnabled:@
 setTextInteractionEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setTextInteractionEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setTextInteractionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setTextInteractionEnabled wkPreferences value =
+  sendMessage wkPreferences setTextInteractionEnabledSelector value
 
 -- | A Boolean value indicating whether WebKit will apply built-in workarounds (quirks) to improve compatibility with certain known websites. You can disable site-specific quirks to help test your website without these workarounds. Enabled by default.
 --
 -- ObjC selector: @- siteSpecificQuirksModeEnabled@
 siteSpecificQuirksModeEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-siteSpecificQuirksModeEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "siteSpecificQuirksModeEnabled") retCULong []
+siteSpecificQuirksModeEnabled wkPreferences =
+  sendMessage wkPreferences siteSpecificQuirksModeEnabledSelector
 
 -- | A Boolean value indicating whether WebKit will apply built-in workarounds (quirks) to improve compatibility with certain known websites. You can disable site-specific quirks to help test your website without these workarounds. Enabled by default.
 --
 -- ObjC selector: @- setSiteSpecificQuirksModeEnabled:@
 setSiteSpecificQuirksModeEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setSiteSpecificQuirksModeEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setSiteSpecificQuirksModeEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setSiteSpecificQuirksModeEnabled wkPreferences value =
+  sendMessage wkPreferences setSiteSpecificQuirksModeEnabledSelector value
 
 -- | A Boolean value indicating whether Fullscreen API is enabled.
 --
@@ -210,8 +207,8 @@ setSiteSpecificQuirksModeEnabled wkPreferences  value =
 --
 -- ObjC selector: @- elementFullscreenEnabled@
 elementFullscreenEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-elementFullscreenEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "elementFullscreenEnabled") retCULong []
+elementFullscreenEnabled wkPreferences =
+  sendMessage wkPreferences elementFullscreenEnabledSelector
 
 -- | A Boolean value indicating whether Fullscreen API is enabled.
 --
@@ -219,52 +216,52 @@ elementFullscreenEnabled wkPreferences  =
 --
 -- ObjC selector: @- setElementFullscreenEnabled:@
 setElementFullscreenEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setElementFullscreenEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setElementFullscreenEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setElementFullscreenEnabled wkPreferences value =
+  sendMessage wkPreferences setElementFullscreenEnabledSelector value
 
 -- | Specify the scheduling policy for the web view when it is inactive and detached from the view hierarchy. Web views are not considered idle when playing media or loading web pages. A suspended web view will pause JavaScript execution and page layout.
 --
 -- ObjC selector: @- inactiveSchedulingPolicy@
 inactiveSchedulingPolicy :: IsWKPreferences wkPreferences => wkPreferences -> IO WKInactiveSchedulingPolicy
-inactiveSchedulingPolicy wkPreferences  =
-    fmap (coerce :: CLong -> WKInactiveSchedulingPolicy) $ sendMsg wkPreferences (mkSelector "inactiveSchedulingPolicy") retCLong []
+inactiveSchedulingPolicy wkPreferences =
+  sendMessage wkPreferences inactiveSchedulingPolicySelector
 
 -- | Specify the scheduling policy for the web view when it is inactive and detached from the view hierarchy. Web views are not considered idle when playing media or loading web pages. A suspended web view will pause JavaScript execution and page layout.
 --
 -- ObjC selector: @- setInactiveSchedulingPolicy:@
 setInactiveSchedulingPolicy :: IsWKPreferences wkPreferences => wkPreferences -> WKInactiveSchedulingPolicy -> IO ()
-setInactiveSchedulingPolicy wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setInactiveSchedulingPolicy:") retVoid [argCLong (coerce value)]
+setInactiveSchedulingPolicy wkPreferences value =
+  sendMessage wkPreferences setInactiveSchedulingPolicySelector value
 
 -- | @- javaEnabled@
 javaEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-javaEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "javaEnabled") retCULong []
+javaEnabled wkPreferences =
+  sendMessage wkPreferences javaEnabledSelector
 
 -- | @- setJavaEnabled:@
 setJavaEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setJavaEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setJavaEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setJavaEnabled wkPreferences value =
+  sendMessage wkPreferences setJavaEnabledSelector value
 
 -- | @- plugInsEnabled@
 plugInsEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-plugInsEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "plugInsEnabled") retCULong []
+plugInsEnabled wkPreferences =
+  sendMessage wkPreferences plugInsEnabledSelector
 
 -- | @- setPlugInsEnabled:@
 setPlugInsEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setPlugInsEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setPlugInsEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPlugInsEnabled wkPreferences value =
+  sendMessage wkPreferences setPlugInsEnabledSelector value
 
 -- | @- javaScriptEnabled@
 javaScriptEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-javaScriptEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "javaScriptEnabled") retCULong []
+javaScriptEnabled wkPreferences =
+  sendMessage wkPreferences javaScriptEnabledSelector
 
 -- | @- setJavaScriptEnabled:@
 setJavaScriptEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setJavaScriptEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setJavaScriptEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setJavaScriptEnabled wkPreferences value =
+  sendMessage wkPreferences setJavaScriptEnabledSelector value
 
 -- | A Boolean value indicating whether LookToScroll is enabled.
 --
@@ -272,8 +269,8 @@ setJavaScriptEnabled wkPreferences  value =
 --
 -- ObjC selector: @- isLookToScrollEnabled@
 isLookToScrollEnabled :: IsWKPreferences wkPreferences => wkPreferences -> IO Bool
-isLookToScrollEnabled wkPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkPreferences (mkSelector "isLookToScrollEnabled") retCULong []
+isLookToScrollEnabled wkPreferences =
+  sendMessage wkPreferences isLookToScrollEnabledSelector
 
 -- | A Boolean value indicating whether LookToScroll is enabled.
 --
@@ -281,114 +278,114 @@ isLookToScrollEnabled wkPreferences  =
 --
 -- ObjC selector: @- setIsLookToScrollEnabled:@
 setIsLookToScrollEnabled :: IsWKPreferences wkPreferences => wkPreferences -> Bool -> IO ()
-setIsLookToScrollEnabled wkPreferences  value =
-    sendMsg wkPreferences (mkSelector "setIsLookToScrollEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setIsLookToScrollEnabled wkPreferences value =
+  sendMessage wkPreferences setIsLookToScrollEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minimumFontSize@
-minimumFontSizeSelector :: Selector
+minimumFontSizeSelector :: Selector '[] CDouble
 minimumFontSizeSelector = mkSelector "minimumFontSize"
 
 -- | @Selector@ for @setMinimumFontSize:@
-setMinimumFontSizeSelector :: Selector
+setMinimumFontSizeSelector :: Selector '[CDouble] ()
 setMinimumFontSizeSelector = mkSelector "setMinimumFontSize:"
 
 -- | @Selector@ for @javaScriptCanOpenWindowsAutomatically@
-javaScriptCanOpenWindowsAutomaticallySelector :: Selector
+javaScriptCanOpenWindowsAutomaticallySelector :: Selector '[] Bool
 javaScriptCanOpenWindowsAutomaticallySelector = mkSelector "javaScriptCanOpenWindowsAutomatically"
 
 -- | @Selector@ for @setJavaScriptCanOpenWindowsAutomatically:@
-setJavaScriptCanOpenWindowsAutomaticallySelector :: Selector
+setJavaScriptCanOpenWindowsAutomaticallySelector :: Selector '[Bool] ()
 setJavaScriptCanOpenWindowsAutomaticallySelector = mkSelector "setJavaScriptCanOpenWindowsAutomatically:"
 
 -- | @Selector@ for @fraudulentWebsiteWarningEnabled@
-fraudulentWebsiteWarningEnabledSelector :: Selector
+fraudulentWebsiteWarningEnabledSelector :: Selector '[] Bool
 fraudulentWebsiteWarningEnabledSelector = mkSelector "fraudulentWebsiteWarningEnabled"
 
 -- | @Selector@ for @setFraudulentWebsiteWarningEnabled:@
-setFraudulentWebsiteWarningEnabledSelector :: Selector
+setFraudulentWebsiteWarningEnabledSelector :: Selector '[Bool] ()
 setFraudulentWebsiteWarningEnabledSelector = mkSelector "setFraudulentWebsiteWarningEnabled:"
 
 -- | @Selector@ for @shouldPrintBackgrounds@
-shouldPrintBackgroundsSelector :: Selector
+shouldPrintBackgroundsSelector :: Selector '[] Bool
 shouldPrintBackgroundsSelector = mkSelector "shouldPrintBackgrounds"
 
 -- | @Selector@ for @setShouldPrintBackgrounds:@
-setShouldPrintBackgroundsSelector :: Selector
+setShouldPrintBackgroundsSelector :: Selector '[Bool] ()
 setShouldPrintBackgroundsSelector = mkSelector "setShouldPrintBackgrounds:"
 
 -- | @Selector@ for @tabFocusesLinks@
-tabFocusesLinksSelector :: Selector
+tabFocusesLinksSelector :: Selector '[] Bool
 tabFocusesLinksSelector = mkSelector "tabFocusesLinks"
 
 -- | @Selector@ for @setTabFocusesLinks:@
-setTabFocusesLinksSelector :: Selector
+setTabFocusesLinksSelector :: Selector '[Bool] ()
 setTabFocusesLinksSelector = mkSelector "setTabFocusesLinks:"
 
 -- | @Selector@ for @textInteractionEnabled@
-textInteractionEnabledSelector :: Selector
+textInteractionEnabledSelector :: Selector '[] Bool
 textInteractionEnabledSelector = mkSelector "textInteractionEnabled"
 
 -- | @Selector@ for @setTextInteractionEnabled:@
-setTextInteractionEnabledSelector :: Selector
+setTextInteractionEnabledSelector :: Selector '[Bool] ()
 setTextInteractionEnabledSelector = mkSelector "setTextInteractionEnabled:"
 
 -- | @Selector@ for @siteSpecificQuirksModeEnabled@
-siteSpecificQuirksModeEnabledSelector :: Selector
+siteSpecificQuirksModeEnabledSelector :: Selector '[] Bool
 siteSpecificQuirksModeEnabledSelector = mkSelector "siteSpecificQuirksModeEnabled"
 
 -- | @Selector@ for @setSiteSpecificQuirksModeEnabled:@
-setSiteSpecificQuirksModeEnabledSelector :: Selector
+setSiteSpecificQuirksModeEnabledSelector :: Selector '[Bool] ()
 setSiteSpecificQuirksModeEnabledSelector = mkSelector "setSiteSpecificQuirksModeEnabled:"
 
 -- | @Selector@ for @elementFullscreenEnabled@
-elementFullscreenEnabledSelector :: Selector
+elementFullscreenEnabledSelector :: Selector '[] Bool
 elementFullscreenEnabledSelector = mkSelector "elementFullscreenEnabled"
 
 -- | @Selector@ for @setElementFullscreenEnabled:@
-setElementFullscreenEnabledSelector :: Selector
+setElementFullscreenEnabledSelector :: Selector '[Bool] ()
 setElementFullscreenEnabledSelector = mkSelector "setElementFullscreenEnabled:"
 
 -- | @Selector@ for @inactiveSchedulingPolicy@
-inactiveSchedulingPolicySelector :: Selector
+inactiveSchedulingPolicySelector :: Selector '[] WKInactiveSchedulingPolicy
 inactiveSchedulingPolicySelector = mkSelector "inactiveSchedulingPolicy"
 
 -- | @Selector@ for @setInactiveSchedulingPolicy:@
-setInactiveSchedulingPolicySelector :: Selector
+setInactiveSchedulingPolicySelector :: Selector '[WKInactiveSchedulingPolicy] ()
 setInactiveSchedulingPolicySelector = mkSelector "setInactiveSchedulingPolicy:"
 
 -- | @Selector@ for @javaEnabled@
-javaEnabledSelector :: Selector
+javaEnabledSelector :: Selector '[] Bool
 javaEnabledSelector = mkSelector "javaEnabled"
 
 -- | @Selector@ for @setJavaEnabled:@
-setJavaEnabledSelector :: Selector
+setJavaEnabledSelector :: Selector '[Bool] ()
 setJavaEnabledSelector = mkSelector "setJavaEnabled:"
 
 -- | @Selector@ for @plugInsEnabled@
-plugInsEnabledSelector :: Selector
+plugInsEnabledSelector :: Selector '[] Bool
 plugInsEnabledSelector = mkSelector "plugInsEnabled"
 
 -- | @Selector@ for @setPlugInsEnabled:@
-setPlugInsEnabledSelector :: Selector
+setPlugInsEnabledSelector :: Selector '[Bool] ()
 setPlugInsEnabledSelector = mkSelector "setPlugInsEnabled:"
 
 -- | @Selector@ for @javaScriptEnabled@
-javaScriptEnabledSelector :: Selector
+javaScriptEnabledSelector :: Selector '[] Bool
 javaScriptEnabledSelector = mkSelector "javaScriptEnabled"
 
 -- | @Selector@ for @setJavaScriptEnabled:@
-setJavaScriptEnabledSelector :: Selector
+setJavaScriptEnabledSelector :: Selector '[Bool] ()
 setJavaScriptEnabledSelector = mkSelector "setJavaScriptEnabled:"
 
 -- | @Selector@ for @isLookToScrollEnabled@
-isLookToScrollEnabledSelector :: Selector
+isLookToScrollEnabledSelector :: Selector '[] Bool
 isLookToScrollEnabledSelector = mkSelector "isLookToScrollEnabled"
 
 -- | @Selector@ for @setIsLookToScrollEnabled:@
-setIsLookToScrollEnabledSelector :: Selector
+setIsLookToScrollEnabledSelector :: Selector '[Bool] ()
 setIsLookToScrollEnabledSelector = mkSelector "setIsLookToScrollEnabled:"
 

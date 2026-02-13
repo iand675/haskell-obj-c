@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.AVFAudio.AVSpeechSynthesisMarker
   , setBookmarkName
   , phoneme
   , setPhoneme
+  , bookmarkNameSelector
+  , byteSampleOffsetSelector
+  , initWithBookmarkName_atByteSampleOffsetSelector
   , initWithMarkerType_forTextRange_atByteSampleOffsetSelector
-  , initWithWordRange_atByteSampleOffsetSelector
-  , initWithSentenceRange_atByteSampleOffsetSelector
   , initWithParagraphRange_atByteSampleOffsetSelector
   , initWithPhonemeString_atByteSampleOffsetSelector
-  , initWithBookmarkName_atByteSampleOffsetSelector
+  , initWithSentenceRange_atByteSampleOffsetSelector
+  , initWithWordRange_atByteSampleOffsetSelector
   , markSelector
-  , setMarkSelector
-  , byteSampleOffsetSelector
-  , setByteSampleOffsetSelector
-  , textRangeSelector
-  , setTextRangeSelector
-  , bookmarkNameSelector
-  , setBookmarkNameSelector
   , phonemeSelector
+  , setBookmarkNameSelector
+  , setByteSampleOffsetSelector
+  , setMarkSelector
   , setPhonemeSelector
+  , setTextRangeSelector
+  , textRangeSelector
 
   -- * Enum types
   , AVSpeechSynthesisMarkerMark(AVSpeechSynthesisMarkerMark)
@@ -50,15 +51,11 @@ module ObjC.AVFAudio.AVSpeechSynthesisMarker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,159 +66,157 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMarkerType:forTextRange:atByteSampleOffset:@
 initWithMarkerType_forTextRange_atByteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> AVSpeechSynthesisMarkerMark -> NSRange -> CULong -> IO (Id AVSpeechSynthesisMarker)
-initWithMarkerType_forTextRange_atByteSampleOffset avSpeechSynthesisMarker  type_ range byteSampleOffset =
-    sendMsg avSpeechSynthesisMarker (mkSelector "initWithMarkerType:forTextRange:atByteSampleOffset:") (retPtr retVoid) [argCLong (coerce type_), argNSRange range, argCULong byteSampleOffset] >>= ownedObject . castPtr
+initWithMarkerType_forTextRange_atByteSampleOffset avSpeechSynthesisMarker type_ range byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithMarkerType_forTextRange_atByteSampleOffsetSelector type_ range byteSampleOffset
 
 -- | @- initWithWordRange:atByteSampleOffset:@
 initWithWordRange_atByteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> NSRange -> CLong -> IO (Id AVSpeechSynthesisMarker)
-initWithWordRange_atByteSampleOffset avSpeechSynthesisMarker  range byteSampleOffset =
-    sendMsg avSpeechSynthesisMarker (mkSelector "initWithWordRange:atByteSampleOffset:") (retPtr retVoid) [argNSRange range, argCLong byteSampleOffset] >>= ownedObject . castPtr
+initWithWordRange_atByteSampleOffset avSpeechSynthesisMarker range byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithWordRange_atByteSampleOffsetSelector range byteSampleOffset
 
 -- | @- initWithSentenceRange:atByteSampleOffset:@
 initWithSentenceRange_atByteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> NSRange -> CLong -> IO (Id AVSpeechSynthesisMarker)
-initWithSentenceRange_atByteSampleOffset avSpeechSynthesisMarker  range byteSampleOffset =
-    sendMsg avSpeechSynthesisMarker (mkSelector "initWithSentenceRange:atByteSampleOffset:") (retPtr retVoid) [argNSRange range, argCLong byteSampleOffset] >>= ownedObject . castPtr
+initWithSentenceRange_atByteSampleOffset avSpeechSynthesisMarker range byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithSentenceRange_atByteSampleOffsetSelector range byteSampleOffset
 
 -- | @- initWithParagraphRange:atByteSampleOffset:@
 initWithParagraphRange_atByteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> NSRange -> CLong -> IO (Id AVSpeechSynthesisMarker)
-initWithParagraphRange_atByteSampleOffset avSpeechSynthesisMarker  range byteSampleOffset =
-    sendMsg avSpeechSynthesisMarker (mkSelector "initWithParagraphRange:atByteSampleOffset:") (retPtr retVoid) [argNSRange range, argCLong byteSampleOffset] >>= ownedObject . castPtr
+initWithParagraphRange_atByteSampleOffset avSpeechSynthesisMarker range byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithParagraphRange_atByteSampleOffsetSelector range byteSampleOffset
 
 -- | @- initWithPhonemeString:atByteSampleOffset:@
 initWithPhonemeString_atByteSampleOffset :: (IsAVSpeechSynthesisMarker avSpeechSynthesisMarker, IsNSString phoneme) => avSpeechSynthesisMarker -> phoneme -> CLong -> IO (Id AVSpeechSynthesisMarker)
-initWithPhonemeString_atByteSampleOffset avSpeechSynthesisMarker  phoneme byteSampleOffset =
-  withObjCPtr phoneme $ \raw_phoneme ->
-      sendMsg avSpeechSynthesisMarker (mkSelector "initWithPhonemeString:atByteSampleOffset:") (retPtr retVoid) [argPtr (castPtr raw_phoneme :: Ptr ()), argCLong byteSampleOffset] >>= ownedObject . castPtr
+initWithPhonemeString_atByteSampleOffset avSpeechSynthesisMarker phoneme byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithPhonemeString_atByteSampleOffsetSelector (toNSString phoneme) byteSampleOffset
 
 -- | @- initWithBookmarkName:atByteSampleOffset:@
 initWithBookmarkName_atByteSampleOffset :: (IsAVSpeechSynthesisMarker avSpeechSynthesisMarker, IsNSString mark) => avSpeechSynthesisMarker -> mark -> CLong -> IO (Id AVSpeechSynthesisMarker)
-initWithBookmarkName_atByteSampleOffset avSpeechSynthesisMarker  mark byteSampleOffset =
-  withObjCPtr mark $ \raw_mark ->
-      sendMsg avSpeechSynthesisMarker (mkSelector "initWithBookmarkName:atByteSampleOffset:") (retPtr retVoid) [argPtr (castPtr raw_mark :: Ptr ()), argCLong byteSampleOffset] >>= ownedObject . castPtr
+initWithBookmarkName_atByteSampleOffset avSpeechSynthesisMarker mark byteSampleOffset =
+  sendOwnedMessage avSpeechSynthesisMarker initWithBookmarkName_atByteSampleOffsetSelector (toNSString mark) byteSampleOffset
 
 -- | @- mark@
 mark :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO AVSpeechSynthesisMarkerMark
-mark avSpeechSynthesisMarker  =
-    fmap (coerce :: CLong -> AVSpeechSynthesisMarkerMark) $ sendMsg avSpeechSynthesisMarker (mkSelector "mark") retCLong []
+mark avSpeechSynthesisMarker =
+  sendMessage avSpeechSynthesisMarker markSelector
 
 -- | @- setMark:@
 setMark :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> AVSpeechSynthesisMarkerMark -> IO ()
-setMark avSpeechSynthesisMarker  value =
-    sendMsg avSpeechSynthesisMarker (mkSelector "setMark:") retVoid [argCLong (coerce value)]
+setMark avSpeechSynthesisMarker value =
+  sendMessage avSpeechSynthesisMarker setMarkSelector value
 
 -- | Byte offset into the associated audio buffer
 --
 -- ObjC selector: @- byteSampleOffset@
 byteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO CULong
-byteSampleOffset avSpeechSynthesisMarker  =
-    sendMsg avSpeechSynthesisMarker (mkSelector "byteSampleOffset") retCULong []
+byteSampleOffset avSpeechSynthesisMarker =
+  sendMessage avSpeechSynthesisMarker byteSampleOffsetSelector
 
 -- | Byte offset into the associated audio buffer
 --
 -- ObjC selector: @- setByteSampleOffset:@
 setByteSampleOffset :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> CULong -> IO ()
-setByteSampleOffset avSpeechSynthesisMarker  value =
-    sendMsg avSpeechSynthesisMarker (mkSelector "setByteSampleOffset:") retVoid [argCULong value]
+setByteSampleOffset avSpeechSynthesisMarker value =
+  sendMessage avSpeechSynthesisMarker setByteSampleOffsetSelector value
 
 -- | The location and length of the pertaining speech request's SSML text. This marker applies to the range of characters represented by the NSString.
 --
 -- ObjC selector: @- textRange@
 textRange :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO NSRange
-textRange avSpeechSynthesisMarker  =
-    sendMsgStret avSpeechSynthesisMarker (mkSelector "textRange") retNSRange []
+textRange avSpeechSynthesisMarker =
+  sendMessage avSpeechSynthesisMarker textRangeSelector
 
 -- | The location and length of the pertaining speech request's SSML text. This marker applies to the range of characters represented by the NSString.
 --
 -- ObjC selector: @- setTextRange:@
 setTextRange :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> NSRange -> IO ()
-setTextRange avSpeechSynthesisMarker  value =
-    sendMsg avSpeechSynthesisMarker (mkSelector "setTextRange:") retVoid [argNSRange value]
+setTextRange avSpeechSynthesisMarker value =
+  sendMessage avSpeechSynthesisMarker setTextRangeSelector value
 
 -- | @- bookmarkName@
 bookmarkName :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO RawId
-bookmarkName avSpeechSynthesisMarker  =
-    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesisMarker (mkSelector "bookmarkName") (retPtr retVoid) []
+bookmarkName avSpeechSynthesisMarker =
+  sendMessage avSpeechSynthesisMarker bookmarkNameSelector
 
 -- | @- setBookmarkName:@
 setBookmarkName :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> RawId -> IO ()
-setBookmarkName avSpeechSynthesisMarker  value =
-    sendMsg avSpeechSynthesisMarker (mkSelector "setBookmarkName:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setBookmarkName avSpeechSynthesisMarker value =
+  sendMessage avSpeechSynthesisMarker setBookmarkNameSelector value
 
 -- | @- phoneme@
 phoneme :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> IO RawId
-phoneme avSpeechSynthesisMarker  =
-    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesisMarker (mkSelector "phoneme") (retPtr retVoid) []
+phoneme avSpeechSynthesisMarker =
+  sendMessage avSpeechSynthesisMarker phonemeSelector
 
 -- | @- setPhoneme:@
 setPhoneme :: IsAVSpeechSynthesisMarker avSpeechSynthesisMarker => avSpeechSynthesisMarker -> RawId -> IO ()
-setPhoneme avSpeechSynthesisMarker  value =
-    sendMsg avSpeechSynthesisMarker (mkSelector "setPhoneme:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPhoneme avSpeechSynthesisMarker value =
+  sendMessage avSpeechSynthesisMarker setPhonemeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMarkerType:forTextRange:atByteSampleOffset:@
-initWithMarkerType_forTextRange_atByteSampleOffsetSelector :: Selector
+initWithMarkerType_forTextRange_atByteSampleOffsetSelector :: Selector '[AVSpeechSynthesisMarkerMark, NSRange, CULong] (Id AVSpeechSynthesisMarker)
 initWithMarkerType_forTextRange_atByteSampleOffsetSelector = mkSelector "initWithMarkerType:forTextRange:atByteSampleOffset:"
 
 -- | @Selector@ for @initWithWordRange:atByteSampleOffset:@
-initWithWordRange_atByteSampleOffsetSelector :: Selector
+initWithWordRange_atByteSampleOffsetSelector :: Selector '[NSRange, CLong] (Id AVSpeechSynthesisMarker)
 initWithWordRange_atByteSampleOffsetSelector = mkSelector "initWithWordRange:atByteSampleOffset:"
 
 -- | @Selector@ for @initWithSentenceRange:atByteSampleOffset:@
-initWithSentenceRange_atByteSampleOffsetSelector :: Selector
+initWithSentenceRange_atByteSampleOffsetSelector :: Selector '[NSRange, CLong] (Id AVSpeechSynthesisMarker)
 initWithSentenceRange_atByteSampleOffsetSelector = mkSelector "initWithSentenceRange:atByteSampleOffset:"
 
 -- | @Selector@ for @initWithParagraphRange:atByteSampleOffset:@
-initWithParagraphRange_atByteSampleOffsetSelector :: Selector
+initWithParagraphRange_atByteSampleOffsetSelector :: Selector '[NSRange, CLong] (Id AVSpeechSynthesisMarker)
 initWithParagraphRange_atByteSampleOffsetSelector = mkSelector "initWithParagraphRange:atByteSampleOffset:"
 
 -- | @Selector@ for @initWithPhonemeString:atByteSampleOffset:@
-initWithPhonemeString_atByteSampleOffsetSelector :: Selector
+initWithPhonemeString_atByteSampleOffsetSelector :: Selector '[Id NSString, CLong] (Id AVSpeechSynthesisMarker)
 initWithPhonemeString_atByteSampleOffsetSelector = mkSelector "initWithPhonemeString:atByteSampleOffset:"
 
 -- | @Selector@ for @initWithBookmarkName:atByteSampleOffset:@
-initWithBookmarkName_atByteSampleOffsetSelector :: Selector
+initWithBookmarkName_atByteSampleOffsetSelector :: Selector '[Id NSString, CLong] (Id AVSpeechSynthesisMarker)
 initWithBookmarkName_atByteSampleOffsetSelector = mkSelector "initWithBookmarkName:atByteSampleOffset:"
 
 -- | @Selector@ for @mark@
-markSelector :: Selector
+markSelector :: Selector '[] AVSpeechSynthesisMarkerMark
 markSelector = mkSelector "mark"
 
 -- | @Selector@ for @setMark:@
-setMarkSelector :: Selector
+setMarkSelector :: Selector '[AVSpeechSynthesisMarkerMark] ()
 setMarkSelector = mkSelector "setMark:"
 
 -- | @Selector@ for @byteSampleOffset@
-byteSampleOffsetSelector :: Selector
+byteSampleOffsetSelector :: Selector '[] CULong
 byteSampleOffsetSelector = mkSelector "byteSampleOffset"
 
 -- | @Selector@ for @setByteSampleOffset:@
-setByteSampleOffsetSelector :: Selector
+setByteSampleOffsetSelector :: Selector '[CULong] ()
 setByteSampleOffsetSelector = mkSelector "setByteSampleOffset:"
 
 -- | @Selector@ for @textRange@
-textRangeSelector :: Selector
+textRangeSelector :: Selector '[] NSRange
 textRangeSelector = mkSelector "textRange"
 
 -- | @Selector@ for @setTextRange:@
-setTextRangeSelector :: Selector
+setTextRangeSelector :: Selector '[NSRange] ()
 setTextRangeSelector = mkSelector "setTextRange:"
 
 -- | @Selector@ for @bookmarkName@
-bookmarkNameSelector :: Selector
+bookmarkNameSelector :: Selector '[] RawId
 bookmarkNameSelector = mkSelector "bookmarkName"
 
 -- | @Selector@ for @setBookmarkName:@
-setBookmarkNameSelector :: Selector
+setBookmarkNameSelector :: Selector '[RawId] ()
 setBookmarkNameSelector = mkSelector "setBookmarkName:"
 
 -- | @Selector@ for @phoneme@
-phonemeSelector :: Selector
+phonemeSelector :: Selector '[] RawId
 phonemeSelector = mkSelector "phoneme"
 
 -- | @Selector@ for @setPhoneme:@
-setPhonemeSelector :: Selector
+setPhonemeSelector :: Selector '[RawId] ()
 setPhonemeSelector = mkSelector "setPhoneme:"
 

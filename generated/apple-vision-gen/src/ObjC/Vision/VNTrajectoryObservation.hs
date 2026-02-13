@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Vision.VNTrajectoryObservation
   , projectedPoints
   , movingAverageRadius
   , detectedPointsSelector
-  , projectedPointsSelector
   , movingAverageRadiusSelector
+  , projectedPointsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- detectedPoints@
 detectedPoints :: IsVNTrajectoryObservation vnTrajectoryObservation => vnTrajectoryObservation -> IO (Id NSArray)
-detectedPoints vnTrajectoryObservation  =
-    sendMsg vnTrajectoryObservation (mkSelector "detectedPoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+detectedPoints vnTrajectoryObservation =
+  sendMessage vnTrajectoryObservation detectedPointsSelector
 
 -- | The centroids of  the calculated trajectory from the detected points.
 --
@@ -52,8 +49,8 @@ detectedPoints vnTrajectoryObservation  =
 --
 -- ObjC selector: @- projectedPoints@
 projectedPoints :: IsVNTrajectoryObservation vnTrajectoryObservation => vnTrajectoryObservation -> IO (Id NSArray)
-projectedPoints vnTrajectoryObservation  =
-    sendMsg vnTrajectoryObservation (mkSelector "projectedPoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+projectedPoints vnTrajectoryObservation =
+  sendMessage vnTrajectoryObservation projectedPointsSelector
 
 -- | The moving average radius of the object being tracked.
 --
@@ -61,22 +58,22 @@ projectedPoints vnTrajectoryObservation  =
 --
 -- ObjC selector: @- movingAverageRadius@
 movingAverageRadius :: IsVNTrajectoryObservation vnTrajectoryObservation => vnTrajectoryObservation -> IO CDouble
-movingAverageRadius vnTrajectoryObservation  =
-    sendMsg vnTrajectoryObservation (mkSelector "movingAverageRadius") retCDouble []
+movingAverageRadius vnTrajectoryObservation =
+  sendMessage vnTrajectoryObservation movingAverageRadiusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @detectedPoints@
-detectedPointsSelector :: Selector
+detectedPointsSelector :: Selector '[] (Id NSArray)
 detectedPointsSelector = mkSelector "detectedPoints"
 
 -- | @Selector@ for @projectedPoints@
-projectedPointsSelector :: Selector
+projectedPointsSelector :: Selector '[] (Id NSArray)
 projectedPointsSelector = mkSelector "projectedPoints"
 
 -- | @Selector@ for @movingAverageRadius@
-movingAverageRadiusSelector :: Selector
+movingAverageRadiusSelector :: Selector '[] CDouble
 movingAverageRadiusSelector = mkSelector "movingAverageRadius"
 

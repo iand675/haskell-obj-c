@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.VideoSubscriberAccount.VSAccountManager
   , delegate
   , setDelegate
   , checkAccessStatusWithOptions_completionHandlerSelector
-  , enqueueAccountMetadataRequest_completionHandlerSelector
   , delegateSelector
+  , enqueueAccountMetadataRequest_completionHandlerSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- checkAccessStatusWithOptions:completionHandler:@
 checkAccessStatusWithOptions_completionHandler :: (IsVSAccountManager vsAccountManager, IsNSDictionary options) => vsAccountManager -> options -> Ptr () -> IO ()
-checkAccessStatusWithOptions_completionHandler vsAccountManager  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vsAccountManager (mkSelector "checkAccessStatusWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+checkAccessStatusWithOptions_completionHandler vsAccountManager options completionHandler =
+  sendMessage vsAccountManager checkAccessStatusWithOptions_completionHandlerSelector (toNSDictionary options) completionHandler
 
 -- | Begins requesting information about the subscriber's account.
 --
@@ -65,41 +61,40 @@ checkAccessStatusWithOptions_completionHandler vsAccountManager  options complet
 --
 -- ObjC selector: @- enqueueAccountMetadataRequest:completionHandler:@
 enqueueAccountMetadataRequest_completionHandler :: (IsVSAccountManager vsAccountManager, IsVSAccountMetadataRequest request) => vsAccountManager -> request -> Ptr () -> IO (Id VSAccountManagerResult)
-enqueueAccountMetadataRequest_completionHandler vsAccountManager  request completionHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg vsAccountManager (mkSelector "enqueueAccountMetadataRequest:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+enqueueAccountMetadataRequest_completionHandler vsAccountManager request completionHandler =
+  sendMessage vsAccountManager enqueueAccountMetadataRequest_completionHandlerSelector (toVSAccountMetadataRequest request) completionHandler
 
 -- | An object that can help the account manager by presenting and dismissing view controllers when needed, and deciding whether to allow authentication with the selected provider. Some requests may fail if a delegate is not provided.  For example, an account metadata request may require a delegate if it allows interruption.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsVSAccountManager vsAccountManager => vsAccountManager -> IO RawId
-delegate vsAccountManager  =
-    fmap (RawId . castPtr) $ sendMsg vsAccountManager (mkSelector "delegate") (retPtr retVoid) []
+delegate vsAccountManager =
+  sendMessage vsAccountManager delegateSelector
 
 -- | An object that can help the account manager by presenting and dismissing view controllers when needed, and deciding whether to allow authentication with the selected provider. Some requests may fail if a delegate is not provided.  For example, an account metadata request may require a delegate if it allows interruption.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsVSAccountManager vsAccountManager => vsAccountManager -> RawId -> IO ()
-setDelegate vsAccountManager  value =
-    sendMsg vsAccountManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate vsAccountManager value =
+  sendMessage vsAccountManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkAccessStatusWithOptions:completionHandler:@
-checkAccessStatusWithOptions_completionHandlerSelector :: Selector
+checkAccessStatusWithOptions_completionHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 checkAccessStatusWithOptions_completionHandlerSelector = mkSelector "checkAccessStatusWithOptions:completionHandler:"
 
 -- | @Selector@ for @enqueueAccountMetadataRequest:completionHandler:@
-enqueueAccountMetadataRequest_completionHandlerSelector :: Selector
+enqueueAccountMetadataRequest_completionHandlerSelector :: Selector '[Id VSAccountMetadataRequest, Ptr ()] (Id VSAccountManagerResult)
 enqueueAccountMetadataRequest_completionHandlerSelector = mkSelector "enqueueAccountMetadataRequest:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

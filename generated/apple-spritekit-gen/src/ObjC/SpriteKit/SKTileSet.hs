@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,20 +24,20 @@ module ObjC.SpriteKit.SKTileSet
   , setType
   , defaultTileGroup
   , setDefaultTileGroup
-  , tileSetWithTileGroupsSelector
-  , tileSetWithTileGroups_tileSetTypeSelector
+  , defaultTileGroupSelector
   , initWithTileGroupsSelector
   , initWithTileGroups_tileSetTypeSelector
-  , tileSetNamedSelector
-  , tileSetFromURLSelector
-  , tileGroupsSelector
-  , setTileGroupsSelector
   , nameSelector
-  , setNameSelector
-  , typeSelector
-  , setTypeSelector
-  , defaultTileGroupSelector
   , setDefaultTileGroupSelector
+  , setNameSelector
+  , setTileGroupsSelector
+  , setTypeSelector
+  , tileGroupsSelector
+  , tileSetFromURLSelector
+  , tileSetNamedSelector
+  , tileSetWithTileGroupsSelector
+  , tileSetWithTileGroups_tileSetTypeSelector
+  , typeSelector
 
   -- * Enum types
   , SKTileSetType(SKTileSetType)
@@ -47,15 +48,11 @@ module ObjC.SpriteKit.SKTileSet
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,7 @@ tileSetWithTileGroups :: IsNSArray tileGroups => tileGroups -> IO (Id SKTileSet)
 tileSetWithTileGroups tileGroups =
   do
     cls' <- getRequiredClass "SKTileSet"
-    withObjCPtr tileGroups $ \raw_tileGroups ->
-      sendClassMsg cls' (mkSelector "tileSetWithTileGroups:") (retPtr retVoid) [argPtr (castPtr raw_tileGroups :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' tileSetWithTileGroupsSelector (toNSArray tileGroups)
 
 -- | Create a tile set with the specified tile groups and tile set type.
 --
@@ -86,8 +82,7 @@ tileSetWithTileGroups_tileSetType :: IsNSArray tileGroups => tileGroups -> SKTil
 tileSetWithTileGroups_tileSetType tileGroups tileSetType =
   do
     cls' <- getRequiredClass "SKTileSet"
-    withObjCPtr tileGroups $ \raw_tileGroups ->
-      sendClassMsg cls' (mkSelector "tileSetWithTileGroups:tileSetType:") (retPtr retVoid) [argPtr (castPtr raw_tileGroups :: Ptr ()), argCULong (coerce tileSetType)] >>= retainedObject . castPtr
+    sendClassMessage cls' tileSetWithTileGroups_tileSetTypeSelector (toNSArray tileGroups) tileSetType
 
 -- | Initilize a tile set with the specified tile groups.
 --
@@ -95,9 +90,8 @@ tileSetWithTileGroups_tileSetType tileGroups tileSetType =
 --
 -- ObjC selector: @- initWithTileGroups:@
 initWithTileGroups :: (IsSKTileSet skTileSet, IsNSArray tileGroups) => skTileSet -> tileGroups -> IO (Id SKTileSet)
-initWithTileGroups skTileSet  tileGroups =
-  withObjCPtr tileGroups $ \raw_tileGroups ->
-      sendMsg skTileSet (mkSelector "initWithTileGroups:") (retPtr retVoid) [argPtr (castPtr raw_tileGroups :: Ptr ())] >>= ownedObject . castPtr
+initWithTileGroups skTileSet tileGroups =
+  sendOwnedMessage skTileSet initWithTileGroupsSelector (toNSArray tileGroups)
 
 -- | Initilize a tile set with the specified tile groups and tile set type.
 --
@@ -107,9 +101,8 @@ initWithTileGroups skTileSet  tileGroups =
 --
 -- ObjC selector: @- initWithTileGroups:tileSetType:@
 initWithTileGroups_tileSetType :: (IsSKTileSet skTileSet, IsNSArray tileGroups) => skTileSet -> tileGroups -> SKTileSetType -> IO (Id SKTileSet)
-initWithTileGroups_tileSetType skTileSet  tileGroups tileSetType =
-  withObjCPtr tileGroups $ \raw_tileGroups ->
-      sendMsg skTileSet (mkSelector "initWithTileGroups:tileSetType:") (retPtr retVoid) [argPtr (castPtr raw_tileGroups :: Ptr ()), argCULong (coerce tileSetType)] >>= ownedObject . castPtr
+initWithTileGroups_tileSetType skTileSet tileGroups tileSetType =
+  sendOwnedMessage skTileSet initWithTileGroups_tileSetTypeSelector (toNSArray tileGroups) tileSetType
 
 -- | Gets the tile set with the specified name from the SpriteKit resource bundle. Returns nil if a tile set with a matching name cannot be found.
 --
@@ -120,8 +113,7 @@ tileSetNamed :: IsNSString name => name -> IO (Id SKTileSet)
 tileSetNamed name =
   do
     cls' <- getRequiredClass "SKTileSet"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "tileSetNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' tileSetNamedSelector (toNSString name)
 
 -- | Creates a tile set from the specified tile set file. Returns nil if the URL doesn't point to a valid tile set file.
 --
@@ -132,121 +124,117 @@ tileSetFromURL :: IsNSURL url => url -> IO (Id SKTileSet)
 tileSetFromURL url =
   do
     cls' <- getRequiredClass "SKTileSet"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "tileSetFromURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' tileSetFromURLSelector (toNSURL url)
 
 -- | The tile groups that this set provides for use.
 --
 -- ObjC selector: @- tileGroups@
 tileGroups :: IsSKTileSet skTileSet => skTileSet -> IO (Id NSArray)
-tileGroups skTileSet  =
-    sendMsg skTileSet (mkSelector "tileGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileGroups skTileSet =
+  sendMessage skTileSet tileGroupsSelector
 
 -- | The tile groups that this set provides for use.
 --
 -- ObjC selector: @- setTileGroups:@
 setTileGroups :: (IsSKTileSet skTileSet, IsNSArray value) => skTileSet -> value -> IO ()
-setTileGroups skTileSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileSet (mkSelector "setTileGroups:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTileGroups skTileSet value =
+  sendMessage skTileSet setTileGroupsSelector (toNSArray value)
 
 -- | Client-assignable name for the tile set. Defaults to nil.
 --
 -- ObjC selector: @- name@
 name :: IsSKTileSet skTileSet => skTileSet -> IO (Id NSString)
-name skTileSet  =
-    sendMsg skTileSet (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name skTileSet =
+  sendMessage skTileSet nameSelector
 
 -- | Client-assignable name for the tile set. Defaults to nil.
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSKTileSet skTileSet, IsNSString value) => skTileSet -> value -> IO ()
-setName skTileSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileSet (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName skTileSet value =
+  sendMessage skTileSet setNameSelector (toNSString value)
 
 -- | The tile set type specifies how the tiles in the set will be arranged when placed in a tile map. Defaults to SKTileSetTypeGrid.
 --
 -- ObjC selector: @- type@
 type_ :: IsSKTileSet skTileSet => skTileSet -> IO SKTileSetType
-type_ skTileSet  =
-    fmap (coerce :: CULong -> SKTileSetType) $ sendMsg skTileSet (mkSelector "type") retCULong []
+type_ skTileSet =
+  sendMessage skTileSet typeSelector
 
 -- | The tile set type specifies how the tiles in the set will be arranged when placed in a tile map. Defaults to SKTileSetTypeGrid.
 --
 -- ObjC selector: @- setType:@
 setType :: IsSKTileSet skTileSet => skTileSet -> SKTileSetType -> IO ()
-setType skTileSet  value =
-    sendMsg skTileSet (mkSelector "setType:") retVoid [argCULong (coerce value)]
+setType skTileSet value =
+  sendMessage skTileSet setTypeSelector value
 
 -- | @- defaultTileGroup@
 defaultTileGroup :: IsSKTileSet skTileSet => skTileSet -> IO (Id SKTileGroup)
-defaultTileGroup skTileSet  =
-    sendMsg skTileSet (mkSelector "defaultTileGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultTileGroup skTileSet =
+  sendMessage skTileSet defaultTileGroupSelector
 
 -- | @- setDefaultTileGroup:@
 setDefaultTileGroup :: (IsSKTileSet skTileSet, IsSKTileGroup value) => skTileSet -> value -> IO ()
-setDefaultTileGroup skTileSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileSet (mkSelector "setDefaultTileGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultTileGroup skTileSet value =
+  sendMessage skTileSet setDefaultTileGroupSelector (toSKTileGroup value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tileSetWithTileGroups:@
-tileSetWithTileGroupsSelector :: Selector
+tileSetWithTileGroupsSelector :: Selector '[Id NSArray] (Id SKTileSet)
 tileSetWithTileGroupsSelector = mkSelector "tileSetWithTileGroups:"
 
 -- | @Selector@ for @tileSetWithTileGroups:tileSetType:@
-tileSetWithTileGroups_tileSetTypeSelector :: Selector
+tileSetWithTileGroups_tileSetTypeSelector :: Selector '[Id NSArray, SKTileSetType] (Id SKTileSet)
 tileSetWithTileGroups_tileSetTypeSelector = mkSelector "tileSetWithTileGroups:tileSetType:"
 
 -- | @Selector@ for @initWithTileGroups:@
-initWithTileGroupsSelector :: Selector
+initWithTileGroupsSelector :: Selector '[Id NSArray] (Id SKTileSet)
 initWithTileGroupsSelector = mkSelector "initWithTileGroups:"
 
 -- | @Selector@ for @initWithTileGroups:tileSetType:@
-initWithTileGroups_tileSetTypeSelector :: Selector
+initWithTileGroups_tileSetTypeSelector :: Selector '[Id NSArray, SKTileSetType] (Id SKTileSet)
 initWithTileGroups_tileSetTypeSelector = mkSelector "initWithTileGroups:tileSetType:"
 
 -- | @Selector@ for @tileSetNamed:@
-tileSetNamedSelector :: Selector
+tileSetNamedSelector :: Selector '[Id NSString] (Id SKTileSet)
 tileSetNamedSelector = mkSelector "tileSetNamed:"
 
 -- | @Selector@ for @tileSetFromURL:@
-tileSetFromURLSelector :: Selector
+tileSetFromURLSelector :: Selector '[Id NSURL] (Id SKTileSet)
 tileSetFromURLSelector = mkSelector "tileSetFromURL:"
 
 -- | @Selector@ for @tileGroups@
-tileGroupsSelector :: Selector
+tileGroupsSelector :: Selector '[] (Id NSArray)
 tileGroupsSelector = mkSelector "tileGroups"
 
 -- | @Selector@ for @setTileGroups:@
-setTileGroupsSelector :: Selector
+setTileGroupsSelector :: Selector '[Id NSArray] ()
 setTileGroupsSelector = mkSelector "setTileGroups:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] SKTileSetType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[SKTileSetType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @defaultTileGroup@
-defaultTileGroupSelector :: Selector
+defaultTileGroupSelector :: Selector '[] (Id SKTileGroup)
 defaultTileGroupSelector = mkSelector "defaultTileGroup"
 
 -- | @Selector@ for @setDefaultTileGroup:@
-setDefaultTileGroupSelector :: Selector
+setDefaultTileGroupSelector :: Selector '[Id SKTileGroup] ()
 setDefaultTileGroupSelector = mkSelector "setDefaultTileGroup:"
 

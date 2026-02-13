@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.PHASE.PHASEOccluder
   , initWithEngine_shapes
   , shapes
   , initSelector
-  , newSelector
   , initWithEngineSelector
   , initWithEngine_shapesSelector
+  , newSelector
   , shapesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEOccluder phaseOccluder => phaseOccluder -> IO (Id PHASEOccluder)
-init_ phaseOccluder  =
-    sendMsg phaseOccluder (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseOccluder =
+  sendOwnedMessage phaseOccluder initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEOccluder)
 new  =
   do
     cls' <- getRequiredClass "PHASEOccluder"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithEngine:@
 initWithEngine :: (IsPHASEOccluder phaseOccluder, IsPHASEEngine engine) => phaseOccluder -> engine -> IO (Id PHASEOccluder)
-initWithEngine phaseOccluder  engine =
-  withObjCPtr engine $ \raw_engine ->
-      sendMsg phaseOccluder (mkSelector "initWithEngine:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine phaseOccluder engine =
+  sendOwnedMessage phaseOccluder initWithEngineSelector (toPHASEEngine engine)
 
 -- | initWithEngine:shapes:
 --
@@ -69,10 +65,8 @@ initWithEngine phaseOccluder  engine =
 --
 -- ObjC selector: @- initWithEngine:shapes:@
 initWithEngine_shapes :: (IsPHASEOccluder phaseOccluder, IsPHASEEngine engine, IsNSArray shapes) => phaseOccluder -> engine -> shapes -> IO (Id PHASEOccluder)
-initWithEngine_shapes phaseOccluder  engine shapes =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr shapes $ \raw_shapes ->
-        sendMsg phaseOccluder (mkSelector "initWithEngine:shapes:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_shapes :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine_shapes phaseOccluder engine shapes =
+  sendOwnedMessage phaseOccluder initWithEngine_shapesSelector (toPHASEEngine engine) (toNSArray shapes)
 
 -- | shapes
 --
@@ -80,30 +74,30 @@ initWithEngine_shapes phaseOccluder  engine shapes =
 --
 -- ObjC selector: @- shapes@
 shapes :: IsPHASEOccluder phaseOccluder => phaseOccluder -> IO (Id NSArray)
-shapes phaseOccluder  =
-    sendMsg phaseOccluder (mkSelector "shapes") (retPtr retVoid) [] >>= retainedObject . castPtr
+shapes phaseOccluder =
+  sendMessage phaseOccluder shapesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEOccluder)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEOccluder)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:@
-initWithEngineSelector :: Selector
+initWithEngineSelector :: Selector '[Id PHASEEngine] (Id PHASEOccluder)
 initWithEngineSelector = mkSelector "initWithEngine:"
 
 -- | @Selector@ for @initWithEngine:shapes:@
-initWithEngine_shapesSelector :: Selector
+initWithEngine_shapesSelector :: Selector '[Id PHASEEngine, Id NSArray] (Id PHASEOccluder)
 initWithEngine_shapesSelector = mkSelector "initWithEngine:shapes:"
 
 -- | @Selector@ for @shapes@
-shapesSelector :: Selector
+shapesSelector :: Selector '[] (Id NSArray)
 shapesSelector = mkSelector "shapes"
 

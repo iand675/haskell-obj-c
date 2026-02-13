@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.PHASE.PHASEMixerParameters
   , IsPHASEMixerParameters(..)
   , addSpatialMixerParametersWithIdentifier_source_listener
   , addAmbientMixerParametersWithIdentifier_listener
-  , addSpatialMixerParametersWithIdentifier_source_listenerSelector
   , addAmbientMixerParametersWithIdentifier_listenerSelector
+  , addSpatialMixerParametersWithIdentifier_source_listenerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,11 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addSpatialMixerParametersWithIdentifier:source:listener:@
 addSpatialMixerParametersWithIdentifier_source_listener :: (IsPHASEMixerParameters phaseMixerParameters, IsNSString identifier, IsPHASESource source, IsPHASEListener listener) => phaseMixerParameters -> identifier -> source -> listener -> IO ()
-addSpatialMixerParametersWithIdentifier_source_listener phaseMixerParameters  identifier source listener =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr listener $ \raw_listener ->
-          sendMsg phaseMixerParameters (mkSelector "addSpatialMixerParametersWithIdentifier:source:listener:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_listener :: Ptr ())]
+addSpatialMixerParametersWithIdentifier_source_listener phaseMixerParameters identifier source listener =
+  sendMessage phaseMixerParameters addSpatialMixerParametersWithIdentifier_source_listenerSelector (toNSString identifier) (toPHASESource source) (toPHASEListener listener)
 
 -- | addAmbientMixerParametersWithIdentifier:listener
 --
@@ -63,20 +57,18 @@ addSpatialMixerParametersWithIdentifier_source_listener phaseMixerParameters  id
 --
 -- ObjC selector: @- addAmbientMixerParametersWithIdentifier:listener:@
 addAmbientMixerParametersWithIdentifier_listener :: (IsPHASEMixerParameters phaseMixerParameters, IsNSString identifier, IsPHASEListener listener) => phaseMixerParameters -> identifier -> listener -> IO ()
-addAmbientMixerParametersWithIdentifier_listener phaseMixerParameters  identifier listener =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr listener $ \raw_listener ->
-        sendMsg phaseMixerParameters (mkSelector "addAmbientMixerParametersWithIdentifier:listener:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_listener :: Ptr ())]
+addAmbientMixerParametersWithIdentifier_listener phaseMixerParameters identifier listener =
+  sendMessage phaseMixerParameters addAmbientMixerParametersWithIdentifier_listenerSelector (toNSString identifier) (toPHASEListener listener)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addSpatialMixerParametersWithIdentifier:source:listener:@
-addSpatialMixerParametersWithIdentifier_source_listenerSelector :: Selector
+addSpatialMixerParametersWithIdentifier_source_listenerSelector :: Selector '[Id NSString, Id PHASESource, Id PHASEListener] ()
 addSpatialMixerParametersWithIdentifier_source_listenerSelector = mkSelector "addSpatialMixerParametersWithIdentifier:source:listener:"
 
 -- | @Selector@ for @addAmbientMixerParametersWithIdentifier:listener:@
-addAmbientMixerParametersWithIdentifier_listenerSelector :: Selector
+addAmbientMixerParametersWithIdentifier_listenerSelector :: Selector '[Id NSString, Id PHASEListener] ()
 addAmbientMixerParametersWithIdentifier_listenerSelector = mkSelector "addAmbientMixerParametersWithIdentifier:listener:"
 

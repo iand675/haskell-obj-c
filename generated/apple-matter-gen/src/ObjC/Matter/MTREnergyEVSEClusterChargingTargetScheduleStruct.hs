@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTREnergyEVSEClusterChargingTargetScheduleStruct
   , setDayOfWeekForSequence
   , chargingTargets
   , setChargingTargets
-  , dayOfWeekForSequenceSelector
-  , setDayOfWeekForSequenceSelector
   , chargingTargetsSelector
+  , dayOfWeekForSequenceSelector
   , setChargingTargetsSelector
+  , setDayOfWeekForSequenceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayOfWeekForSequence@
 dayOfWeekForSequence :: IsMTREnergyEVSEClusterChargingTargetScheduleStruct mtrEnergyEVSEClusterChargingTargetScheduleStruct => mtrEnergyEVSEClusterChargingTargetScheduleStruct -> IO (Id NSNumber)
-dayOfWeekForSequence mtrEnergyEVSEClusterChargingTargetScheduleStruct  =
-    sendMsg mtrEnergyEVSEClusterChargingTargetScheduleStruct (mkSelector "dayOfWeekForSequence") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayOfWeekForSequence mtrEnergyEVSEClusterChargingTargetScheduleStruct =
+  sendMessage mtrEnergyEVSEClusterChargingTargetScheduleStruct dayOfWeekForSequenceSelector
 
 -- | @- setDayOfWeekForSequence:@
 setDayOfWeekForSequence :: (IsMTREnergyEVSEClusterChargingTargetScheduleStruct mtrEnergyEVSEClusterChargingTargetScheduleStruct, IsNSNumber value) => mtrEnergyEVSEClusterChargingTargetScheduleStruct -> value -> IO ()
-setDayOfWeekForSequence mtrEnergyEVSEClusterChargingTargetScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterChargingTargetScheduleStruct (mkSelector "setDayOfWeekForSequence:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayOfWeekForSequence mtrEnergyEVSEClusterChargingTargetScheduleStruct value =
+  sendMessage mtrEnergyEVSEClusterChargingTargetScheduleStruct setDayOfWeekForSequenceSelector (toNSNumber value)
 
 -- | @- chargingTargets@
 chargingTargets :: IsMTREnergyEVSEClusterChargingTargetScheduleStruct mtrEnergyEVSEClusterChargingTargetScheduleStruct => mtrEnergyEVSEClusterChargingTargetScheduleStruct -> IO (Id NSArray)
-chargingTargets mtrEnergyEVSEClusterChargingTargetScheduleStruct  =
-    sendMsg mtrEnergyEVSEClusterChargingTargetScheduleStruct (mkSelector "chargingTargets") (retPtr retVoid) [] >>= retainedObject . castPtr
+chargingTargets mtrEnergyEVSEClusterChargingTargetScheduleStruct =
+  sendMessage mtrEnergyEVSEClusterChargingTargetScheduleStruct chargingTargetsSelector
 
 -- | @- setChargingTargets:@
 setChargingTargets :: (IsMTREnergyEVSEClusterChargingTargetScheduleStruct mtrEnergyEVSEClusterChargingTargetScheduleStruct, IsNSArray value) => mtrEnergyEVSEClusterChargingTargetScheduleStruct -> value -> IO ()
-setChargingTargets mtrEnergyEVSEClusterChargingTargetScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterChargingTargetScheduleStruct (mkSelector "setChargingTargets:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChargingTargets mtrEnergyEVSEClusterChargingTargetScheduleStruct value =
+  sendMessage mtrEnergyEVSEClusterChargingTargetScheduleStruct setChargingTargetsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayOfWeekForSequence@
-dayOfWeekForSequenceSelector :: Selector
+dayOfWeekForSequenceSelector :: Selector '[] (Id NSNumber)
 dayOfWeekForSequenceSelector = mkSelector "dayOfWeekForSequence"
 
 -- | @Selector@ for @setDayOfWeekForSequence:@
-setDayOfWeekForSequenceSelector :: Selector
+setDayOfWeekForSequenceSelector :: Selector '[Id NSNumber] ()
 setDayOfWeekForSequenceSelector = mkSelector "setDayOfWeekForSequence:"
 
 -- | @Selector@ for @chargingTargets@
-chargingTargetsSelector :: Selector
+chargingTargetsSelector :: Selector '[] (Id NSArray)
 chargingTargetsSelector = mkSelector "chargingTargets"
 
 -- | @Selector@ for @setChargingTargets:@
-setChargingTargetsSelector :: Selector
+setChargingTargetsSelector :: Selector '[Id NSArray] ()
 setChargingTargetsSelector = mkSelector "setChargingTargets:"
 

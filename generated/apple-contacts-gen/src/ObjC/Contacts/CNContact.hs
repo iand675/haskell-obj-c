@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,48 +56,48 @@ module ObjC.Contacts.CNContact
   , birthday
   , nonGregorianBirthday
   , dates
-  , isKeyAvailableSelector
   , areKeysAvailableSelector
-  , localizedStringForKeySelector
+  , birthdaySelector
   , comparatorForNameSortOrderSelector
-  , descriptorForAllComparatorKeysSelector
-  , isUnifiedWithContactWithIdentifierSelector
-  , predicateForContactsMatchingNameSelector
-  , predicateForContactsMatchingEmailAddressSelector
-  , predicateForContactsMatchingPhoneNumberSelector
-  , predicateForContactsWithIdentifiersSelector
-  , predicateForContactsInGroupWithIdentifierSelector
-  , predicateForContactsInContainerWithIdentifierSelector
-  , identifierSelector
+  , contactRelationsSelector
   , contactTypeSelector
-  , namePrefixSelector
-  , givenNameSelector
-  , middleNameSelector
+  , datesSelector
+  , departmentNameSelector
+  , descriptorForAllComparatorKeysSelector
+  , emailAddressesSelector
   , familyNameSelector
-  , previousFamilyNameSelector
+  , givenNameSelector
+  , identifierSelector
+  , imageDataAvailableSelector
+  , imageDataSelector
+  , instantMessageAddressesSelector
+  , isKeyAvailableSelector
+  , isUnifiedWithContactWithIdentifierSelector
+  , jobTitleSelector
+  , localizedStringForKeySelector
+  , middleNameSelector
+  , namePrefixSelector
   , nameSuffixSelector
   , nicknameSelector
+  , nonGregorianBirthdaySelector
+  , noteSelector
   , organizationNameSelector
-  , departmentNameSelector
-  , jobTitleSelector
+  , phoneNumbersSelector
+  , phoneticFamilyNameSelector
   , phoneticGivenNameSelector
   , phoneticMiddleNameSelector
-  , phoneticFamilyNameSelector
   , phoneticOrganizationNameSelector
-  , noteSelector
-  , imageDataSelector
-  , thumbnailImageDataSelector
-  , imageDataAvailableSelector
-  , phoneNumbersSelector
-  , emailAddressesSelector
   , postalAddressesSelector
-  , urlAddressesSelector
-  , contactRelationsSelector
+  , predicateForContactsInContainerWithIdentifierSelector
+  , predicateForContactsInGroupWithIdentifierSelector
+  , predicateForContactsMatchingEmailAddressSelector
+  , predicateForContactsMatchingNameSelector
+  , predicateForContactsMatchingPhoneNumberSelector
+  , predicateForContactsWithIdentifiersSelector
+  , previousFamilyNameSelector
   , socialProfilesSelector
-  , instantMessageAddressesSelector
-  , birthdaySelector
-  , nonGregorianBirthdaySelector
-  , datesSelector
+  , thumbnailImageDataSelector
+  , urlAddressesSelector
 
   -- * Enum types
   , CNContactSortOrder(CNContactSortOrder)
@@ -110,15 +111,11 @@ module ObjC.Contacts.CNContact
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -130,17 +127,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isKeyAvailable:@
 isKeyAvailable :: (IsCNContact cnContact, IsNSString key) => cnContact -> key -> IO Bool
-isKeyAvailable cnContact  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContact (mkSelector "isKeyAvailable:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+isKeyAvailable cnContact key =
+  sendMessage cnContact isKeyAvailableSelector (toNSString key)
 
 -- | Returns YES if the values for the keys specified by all the descriptors were fetched.
 --
 -- ObjC selector: @- areKeysAvailable:@
 areKeysAvailable :: (IsCNContact cnContact, IsNSArray keyDescriptors) => cnContact -> keyDescriptors -> IO Bool
-areKeysAvailable cnContact  keyDescriptors =
-  withObjCPtr keyDescriptors $ \raw_keyDescriptors ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContact (mkSelector "areKeysAvailable:") retCULong [argPtr (castPtr raw_keyDescriptors :: Ptr ())]
+areKeysAvailable cnContact keyDescriptors =
+  sendMessage cnContact areKeysAvailableSelector (toNSArray keyDescriptors)
 
 -- | Returns a user displayable property name.
 --
@@ -149,8 +144,7 @@ localizedStringForKey :: IsNSString key => key -> IO (Id NSString)
 localizedStringForKey key =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "localizedStringForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringForKeySelector (toNSString key)
 
 -- | The contact comparator for a given sort order.
 --
@@ -159,7 +153,7 @@ comparatorForNameSortOrder :: CNContactSortOrder -> IO (Ptr ())
 comparatorForNameSortOrder sortOrder =
   do
     cls' <- getRequiredClass "CNContact"
-    fmap castPtr $ sendClassMsg cls' (mkSelector "comparatorForNameSortOrder:") (retPtr retVoid) [argCLong (coerce sortOrder)]
+    sendClassMessage cls' comparatorForNameSortOrderSelector sortOrder
 
 -- | Use to fetch all contact keys required for the contact sort comparator.
 --
@@ -168,15 +162,14 @@ descriptorForAllComparatorKeys :: IO RawId
 descriptorForAllComparatorKeys  =
   do
     cls' <- getRequiredClass "CNContact"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForAllComparatorKeys") (retPtr retVoid) []
+    sendClassMessage cls' descriptorForAllComparatorKeysSelector
 
 -- | Returns YES if the receiver was fetched as a unified contact and includes the contact having contactIdentifier in its unification
 --
 -- ObjC selector: @- isUnifiedWithContactWithIdentifier:@
 isUnifiedWithContactWithIdentifier :: (IsCNContact cnContact, IsNSString contactIdentifier) => cnContact -> contactIdentifier -> IO Bool
-isUnifiedWithContactWithIdentifier cnContact  contactIdentifier =
-  withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContact (mkSelector "isUnifiedWithContactWithIdentifier:") retCULong [argPtr (castPtr raw_contactIdentifier :: Ptr ())]
+isUnifiedWithContactWithIdentifier cnContact contactIdentifier =
+  sendMessage cnContact isUnifiedWithContactWithIdentifierSelector (toNSString contactIdentifier)
 
 -- | To fetch contacts matching a name.
 --
@@ -187,8 +180,7 @@ predicateForContactsMatchingName :: IsNSString name => name -> IO (Id NSPredicat
 predicateForContactsMatchingName name =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "predicateForContactsMatchingName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsMatchingNameSelector (toNSString name)
 
 -- | Fetch contacts matching an email address.
 --
@@ -201,8 +193,7 @@ predicateForContactsMatchingEmailAddress :: IsNSString emailAddress => emailAddr
 predicateForContactsMatchingEmailAddress emailAddress =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr emailAddress $ \raw_emailAddress ->
-      sendClassMsg cls' (mkSelector "predicateForContactsMatchingEmailAddress:") (retPtr retVoid) [argPtr (castPtr raw_emailAddress :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsMatchingEmailAddressSelector (toNSString emailAddress)
 
 -- | Fetch contacts matching a phone number.
 --
@@ -215,8 +206,7 @@ predicateForContactsMatchingPhoneNumber :: IsCNPhoneNumber phoneNumber => phoneN
 predicateForContactsMatchingPhoneNumber phoneNumber =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendClassMsg cls' (mkSelector "predicateForContactsMatchingPhoneNumber:") (retPtr retVoid) [argPtr (castPtr raw_phoneNumber :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsMatchingPhoneNumberSelector (toCNPhoneNumber phoneNumber)
 
 -- | To fetch contacts matching contact identifiers.
 --
@@ -225,352 +215,349 @@ predicateForContactsWithIdentifiers :: IsNSArray identifiers => identifiers -> I
 predicateForContactsWithIdentifiers identifiers =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr identifiers $ \raw_identifiers ->
-      sendClassMsg cls' (mkSelector "predicateForContactsWithIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | @+ predicateForContactsInGroupWithIdentifier:@
 predicateForContactsInGroupWithIdentifier :: IsNSString groupIdentifier => groupIdentifier -> IO (Id NSPredicate)
 predicateForContactsInGroupWithIdentifier groupIdentifier =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr groupIdentifier $ \raw_groupIdentifier ->
-      sendClassMsg cls' (mkSelector "predicateForContactsInGroupWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_groupIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsInGroupWithIdentifierSelector (toNSString groupIdentifier)
 
 -- | @+ predicateForContactsInContainerWithIdentifier:@
 predicateForContactsInContainerWithIdentifier :: IsNSString containerIdentifier => containerIdentifier -> IO (Id NSPredicate)
 predicateForContactsInContainerWithIdentifier containerIdentifier =
   do
     cls' <- getRequiredClass "CNContact"
-    withObjCPtr containerIdentifier $ \raw_containerIdentifier ->
-      sendClassMsg cls' (mkSelector "predicateForContactsInContainerWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_containerIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForContactsInContainerWithIdentifierSelector (toNSString containerIdentifier)
 
 -- | The identifier is unique among contacts on the device. It can be saved and used for fetching contacts next application launch.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-identifier cnContact  =
-    sendMsg cnContact (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier cnContact =
+  sendMessage cnContact identifierSelector
 
 -- | @- contactType@
 contactType :: IsCNContact cnContact => cnContact -> IO CNContactType
-contactType cnContact  =
-    fmap (coerce :: CLong -> CNContactType) $ sendMsg cnContact (mkSelector "contactType") retCLong []
+contactType cnContact =
+  sendMessage cnContact contactTypeSelector
 
 -- | @- namePrefix@
 namePrefix :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-namePrefix cnContact  =
-    sendMsg cnContact (mkSelector "namePrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+namePrefix cnContact =
+  sendMessage cnContact namePrefixSelector
 
 -- | @- givenName@
 givenName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-givenName cnContact  =
-    sendMsg cnContact (mkSelector "givenName") (retPtr retVoid) [] >>= retainedObject . castPtr
+givenName cnContact =
+  sendMessage cnContact givenNameSelector
 
 -- | @- middleName@
 middleName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-middleName cnContact  =
-    sendMsg cnContact (mkSelector "middleName") (retPtr retVoid) [] >>= retainedObject . castPtr
+middleName cnContact =
+  sendMessage cnContact middleNameSelector
 
 -- | @- familyName@
 familyName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-familyName cnContact  =
-    sendMsg cnContact (mkSelector "familyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+familyName cnContact =
+  sendMessage cnContact familyNameSelector
 
 -- | @- previousFamilyName@
 previousFamilyName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-previousFamilyName cnContact  =
-    sendMsg cnContact (mkSelector "previousFamilyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousFamilyName cnContact =
+  sendMessage cnContact previousFamilyNameSelector
 
 -- | @- nameSuffix@
 nameSuffix :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-nameSuffix cnContact  =
-    sendMsg cnContact (mkSelector "nameSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameSuffix cnContact =
+  sendMessage cnContact nameSuffixSelector
 
 -- | @- nickname@
 nickname :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-nickname cnContact  =
-    sendMsg cnContact (mkSelector "nickname") (retPtr retVoid) [] >>= retainedObject . castPtr
+nickname cnContact =
+  sendMessage cnContact nicknameSelector
 
 -- | @- organizationName@
 organizationName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-organizationName cnContact  =
-    sendMsg cnContact (mkSelector "organizationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizationName cnContact =
+  sendMessage cnContact organizationNameSelector
 
 -- | @- departmentName@
 departmentName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-departmentName cnContact  =
-    sendMsg cnContact (mkSelector "departmentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+departmentName cnContact =
+  sendMessage cnContact departmentNameSelector
 
 -- | @- jobTitle@
 jobTitle :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-jobTitle cnContact  =
-    sendMsg cnContact (mkSelector "jobTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+jobTitle cnContact =
+  sendMessage cnContact jobTitleSelector
 
 -- | @- phoneticGivenName@
 phoneticGivenName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-phoneticGivenName cnContact  =
-    sendMsg cnContact (mkSelector "phoneticGivenName") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneticGivenName cnContact =
+  sendMessage cnContact phoneticGivenNameSelector
 
 -- | @- phoneticMiddleName@
 phoneticMiddleName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-phoneticMiddleName cnContact  =
-    sendMsg cnContact (mkSelector "phoneticMiddleName") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneticMiddleName cnContact =
+  sendMessage cnContact phoneticMiddleNameSelector
 
 -- | @- phoneticFamilyName@
 phoneticFamilyName :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-phoneticFamilyName cnContact  =
-    sendMsg cnContact (mkSelector "phoneticFamilyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneticFamilyName cnContact =
+  sendMessage cnContact phoneticFamilyNameSelector
 
 -- | @- phoneticOrganizationName@
 phoneticOrganizationName :: IsCNContact cnContact => cnContact -> IO RawId
-phoneticOrganizationName cnContact  =
-    fmap (RawId . castPtr) $ sendMsg cnContact (mkSelector "phoneticOrganizationName") (retPtr retVoid) []
+phoneticOrganizationName cnContact =
+  sendMessage cnContact phoneticOrganizationNameSelector
 
 -- | @- note@
 note :: IsCNContact cnContact => cnContact -> IO (Id NSString)
-note cnContact  =
-    sendMsg cnContact (mkSelector "note") (retPtr retVoid) [] >>= retainedObject . castPtr
+note cnContact =
+  sendMessage cnContact noteSelector
 
 -- | @- imageData@
 imageData :: IsCNContact cnContact => cnContact -> IO (Id NSData)
-imageData cnContact  =
-    sendMsg cnContact (mkSelector "imageData") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageData cnContact =
+  sendMessage cnContact imageDataSelector
 
 -- | @- thumbnailImageData@
 thumbnailImageData :: IsCNContact cnContact => cnContact -> IO (Id NSData)
-thumbnailImageData cnContact  =
-    sendMsg cnContact (mkSelector "thumbnailImageData") (retPtr retVoid) [] >>= retainedObject . castPtr
+thumbnailImageData cnContact =
+  sendMessage cnContact thumbnailImageDataSelector
 
 -- | @- imageDataAvailable@
 imageDataAvailable :: IsCNContact cnContact => cnContact -> IO Bool
-imageDataAvailable cnContact  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContact (mkSelector "imageDataAvailable") retCULong []
+imageDataAvailable cnContact =
+  sendMessage cnContact imageDataAvailableSelector
 
 -- | @- phoneNumbers@
 phoneNumbers :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-phoneNumbers cnContact  =
-    sendMsg cnContact (mkSelector "phoneNumbers") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumbers cnContact =
+  sendMessage cnContact phoneNumbersSelector
 
 -- | @- emailAddresses@
 emailAddresses :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-emailAddresses cnContact  =
-    sendMsg cnContact (mkSelector "emailAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddresses cnContact =
+  sendMessage cnContact emailAddressesSelector
 
 -- | @- postalAddresses@
 postalAddresses :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-postalAddresses cnContact  =
-    sendMsg cnContact (mkSelector "postalAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalAddresses cnContact =
+  sendMessage cnContact postalAddressesSelector
 
 -- | @- urlAddresses@
 urlAddresses :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-urlAddresses cnContact  =
-    sendMsg cnContact (mkSelector "urlAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlAddresses cnContact =
+  sendMessage cnContact urlAddressesSelector
 
 -- | @- contactRelations@
 contactRelations :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-contactRelations cnContact  =
-    sendMsg cnContact (mkSelector "contactRelations") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactRelations cnContact =
+  sendMessage cnContact contactRelationsSelector
 
 -- | @- socialProfiles@
 socialProfiles :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-socialProfiles cnContact  =
-    sendMsg cnContact (mkSelector "socialProfiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+socialProfiles cnContact =
+  sendMessage cnContact socialProfilesSelector
 
 -- | @- instantMessageAddresses@
 instantMessageAddresses :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-instantMessageAddresses cnContact  =
-    sendMsg cnContact (mkSelector "instantMessageAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+instantMessageAddresses cnContact =
+  sendMessage cnContact instantMessageAddressesSelector
 
 -- | The Gregorian birthday.
 --
 -- ObjC selector: @- birthday@
 birthday :: IsCNContact cnContact => cnContact -> IO (Id NSDateComponents)
-birthday cnContact  =
-    sendMsg cnContact (mkSelector "birthday") (retPtr retVoid) [] >>= retainedObject . castPtr
+birthday cnContact =
+  sendMessage cnContact birthdaySelector
 
 -- | The alternate birthday (Lunisolar).
 --
 -- ObjC selector: @- nonGregorianBirthday@
 nonGregorianBirthday :: IsCNContact cnContact => cnContact -> IO (Id NSDateComponents)
-nonGregorianBirthday cnContact  =
-    sendMsg cnContact (mkSelector "nonGregorianBirthday") (retPtr retVoid) [] >>= retainedObject . castPtr
+nonGregorianBirthday cnContact =
+  sendMessage cnContact nonGregorianBirthdaySelector
 
 -- | Other Gregorian dates (anniversaries, etc).
 --
 -- ObjC selector: @- dates@
 dates :: IsCNContact cnContact => cnContact -> IO (Id NSArray)
-dates cnContact  =
-    sendMsg cnContact (mkSelector "dates") (retPtr retVoid) [] >>= retainedObject . castPtr
+dates cnContact =
+  sendMessage cnContact datesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isKeyAvailable:@
-isKeyAvailableSelector :: Selector
+isKeyAvailableSelector :: Selector '[Id NSString] Bool
 isKeyAvailableSelector = mkSelector "isKeyAvailable:"
 
 -- | @Selector@ for @areKeysAvailable:@
-areKeysAvailableSelector :: Selector
+areKeysAvailableSelector :: Selector '[Id NSArray] Bool
 areKeysAvailableSelector = mkSelector "areKeysAvailable:"
 
 -- | @Selector@ for @localizedStringForKey:@
-localizedStringForKeySelector :: Selector
+localizedStringForKeySelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForKeySelector = mkSelector "localizedStringForKey:"
 
 -- | @Selector@ for @comparatorForNameSortOrder:@
-comparatorForNameSortOrderSelector :: Selector
+comparatorForNameSortOrderSelector :: Selector '[CNContactSortOrder] (Ptr ())
 comparatorForNameSortOrderSelector = mkSelector "comparatorForNameSortOrder:"
 
 -- | @Selector@ for @descriptorForAllComparatorKeys@
-descriptorForAllComparatorKeysSelector :: Selector
+descriptorForAllComparatorKeysSelector :: Selector '[] RawId
 descriptorForAllComparatorKeysSelector = mkSelector "descriptorForAllComparatorKeys"
 
 -- | @Selector@ for @isUnifiedWithContactWithIdentifier:@
-isUnifiedWithContactWithIdentifierSelector :: Selector
+isUnifiedWithContactWithIdentifierSelector :: Selector '[Id NSString] Bool
 isUnifiedWithContactWithIdentifierSelector = mkSelector "isUnifiedWithContactWithIdentifier:"
 
 -- | @Selector@ for @predicateForContactsMatchingName:@
-predicateForContactsMatchingNameSelector :: Selector
+predicateForContactsMatchingNameSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForContactsMatchingNameSelector = mkSelector "predicateForContactsMatchingName:"
 
 -- | @Selector@ for @predicateForContactsMatchingEmailAddress:@
-predicateForContactsMatchingEmailAddressSelector :: Selector
+predicateForContactsMatchingEmailAddressSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForContactsMatchingEmailAddressSelector = mkSelector "predicateForContactsMatchingEmailAddress:"
 
 -- | @Selector@ for @predicateForContactsMatchingPhoneNumber:@
-predicateForContactsMatchingPhoneNumberSelector :: Selector
+predicateForContactsMatchingPhoneNumberSelector :: Selector '[Id CNPhoneNumber] (Id NSPredicate)
 predicateForContactsMatchingPhoneNumberSelector = mkSelector "predicateForContactsMatchingPhoneNumber:"
 
 -- | @Selector@ for @predicateForContactsWithIdentifiers:@
-predicateForContactsWithIdentifiersSelector :: Selector
+predicateForContactsWithIdentifiersSelector :: Selector '[Id NSArray] (Id NSPredicate)
 predicateForContactsWithIdentifiersSelector = mkSelector "predicateForContactsWithIdentifiers:"
 
 -- | @Selector@ for @predicateForContactsInGroupWithIdentifier:@
-predicateForContactsInGroupWithIdentifierSelector :: Selector
+predicateForContactsInGroupWithIdentifierSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForContactsInGroupWithIdentifierSelector = mkSelector "predicateForContactsInGroupWithIdentifier:"
 
 -- | @Selector@ for @predicateForContactsInContainerWithIdentifier:@
-predicateForContactsInContainerWithIdentifierSelector :: Selector
+predicateForContactsInContainerWithIdentifierSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForContactsInContainerWithIdentifierSelector = mkSelector "predicateForContactsInContainerWithIdentifier:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @contactType@
-contactTypeSelector :: Selector
+contactTypeSelector :: Selector '[] CNContactType
 contactTypeSelector = mkSelector "contactType"
 
 -- | @Selector@ for @namePrefix@
-namePrefixSelector :: Selector
+namePrefixSelector :: Selector '[] (Id NSString)
 namePrefixSelector = mkSelector "namePrefix"
 
 -- | @Selector@ for @givenName@
-givenNameSelector :: Selector
+givenNameSelector :: Selector '[] (Id NSString)
 givenNameSelector = mkSelector "givenName"
 
 -- | @Selector@ for @middleName@
-middleNameSelector :: Selector
+middleNameSelector :: Selector '[] (Id NSString)
 middleNameSelector = mkSelector "middleName"
 
 -- | @Selector@ for @familyName@
-familyNameSelector :: Selector
+familyNameSelector :: Selector '[] (Id NSString)
 familyNameSelector = mkSelector "familyName"
 
 -- | @Selector@ for @previousFamilyName@
-previousFamilyNameSelector :: Selector
+previousFamilyNameSelector :: Selector '[] (Id NSString)
 previousFamilyNameSelector = mkSelector "previousFamilyName"
 
 -- | @Selector@ for @nameSuffix@
-nameSuffixSelector :: Selector
+nameSuffixSelector :: Selector '[] (Id NSString)
 nameSuffixSelector = mkSelector "nameSuffix"
 
 -- | @Selector@ for @nickname@
-nicknameSelector :: Selector
+nicknameSelector :: Selector '[] (Id NSString)
 nicknameSelector = mkSelector "nickname"
 
 -- | @Selector@ for @organizationName@
-organizationNameSelector :: Selector
+organizationNameSelector :: Selector '[] (Id NSString)
 organizationNameSelector = mkSelector "organizationName"
 
 -- | @Selector@ for @departmentName@
-departmentNameSelector :: Selector
+departmentNameSelector :: Selector '[] (Id NSString)
 departmentNameSelector = mkSelector "departmentName"
 
 -- | @Selector@ for @jobTitle@
-jobTitleSelector :: Selector
+jobTitleSelector :: Selector '[] (Id NSString)
 jobTitleSelector = mkSelector "jobTitle"
 
 -- | @Selector@ for @phoneticGivenName@
-phoneticGivenNameSelector :: Selector
+phoneticGivenNameSelector :: Selector '[] (Id NSString)
 phoneticGivenNameSelector = mkSelector "phoneticGivenName"
 
 -- | @Selector@ for @phoneticMiddleName@
-phoneticMiddleNameSelector :: Selector
+phoneticMiddleNameSelector :: Selector '[] (Id NSString)
 phoneticMiddleNameSelector = mkSelector "phoneticMiddleName"
 
 -- | @Selector@ for @phoneticFamilyName@
-phoneticFamilyNameSelector :: Selector
+phoneticFamilyNameSelector :: Selector '[] (Id NSString)
 phoneticFamilyNameSelector = mkSelector "phoneticFamilyName"
 
 -- | @Selector@ for @phoneticOrganizationName@
-phoneticOrganizationNameSelector :: Selector
+phoneticOrganizationNameSelector :: Selector '[] RawId
 phoneticOrganizationNameSelector = mkSelector "phoneticOrganizationName"
 
 -- | @Selector@ for @note@
-noteSelector :: Selector
+noteSelector :: Selector '[] (Id NSString)
 noteSelector = mkSelector "note"
 
 -- | @Selector@ for @imageData@
-imageDataSelector :: Selector
+imageDataSelector :: Selector '[] (Id NSData)
 imageDataSelector = mkSelector "imageData"
 
 -- | @Selector@ for @thumbnailImageData@
-thumbnailImageDataSelector :: Selector
+thumbnailImageDataSelector :: Selector '[] (Id NSData)
 thumbnailImageDataSelector = mkSelector "thumbnailImageData"
 
 -- | @Selector@ for @imageDataAvailable@
-imageDataAvailableSelector :: Selector
+imageDataAvailableSelector :: Selector '[] Bool
 imageDataAvailableSelector = mkSelector "imageDataAvailable"
 
 -- | @Selector@ for @phoneNumbers@
-phoneNumbersSelector :: Selector
+phoneNumbersSelector :: Selector '[] (Id NSArray)
 phoneNumbersSelector = mkSelector "phoneNumbers"
 
 -- | @Selector@ for @emailAddresses@
-emailAddressesSelector :: Selector
+emailAddressesSelector :: Selector '[] (Id NSArray)
 emailAddressesSelector = mkSelector "emailAddresses"
 
 -- | @Selector@ for @postalAddresses@
-postalAddressesSelector :: Selector
+postalAddressesSelector :: Selector '[] (Id NSArray)
 postalAddressesSelector = mkSelector "postalAddresses"
 
 -- | @Selector@ for @urlAddresses@
-urlAddressesSelector :: Selector
+urlAddressesSelector :: Selector '[] (Id NSArray)
 urlAddressesSelector = mkSelector "urlAddresses"
 
 -- | @Selector@ for @contactRelations@
-contactRelationsSelector :: Selector
+contactRelationsSelector :: Selector '[] (Id NSArray)
 contactRelationsSelector = mkSelector "contactRelations"
 
 -- | @Selector@ for @socialProfiles@
-socialProfilesSelector :: Selector
+socialProfilesSelector :: Selector '[] (Id NSArray)
 socialProfilesSelector = mkSelector "socialProfiles"
 
 -- | @Selector@ for @instantMessageAddresses@
-instantMessageAddressesSelector :: Selector
+instantMessageAddressesSelector :: Selector '[] (Id NSArray)
 instantMessageAddressesSelector = mkSelector "instantMessageAddresses"
 
 -- | @Selector@ for @birthday@
-birthdaySelector :: Selector
+birthdaySelector :: Selector '[] (Id NSDateComponents)
 birthdaySelector = mkSelector "birthday"
 
 -- | @Selector@ for @nonGregorianBirthday@
-nonGregorianBirthdaySelector :: Selector
+nonGregorianBirthdaySelector :: Selector '[] (Id NSDateComponents)
 nonGregorianBirthdaySelector = mkSelector "nonGregorianBirthday"
 
 -- | @Selector@ for @dates@
-datesSelector :: Selector
+datesSelector :: Selector '[] (Id NSArray)
 datesSelector = mkSelector "dates"
 

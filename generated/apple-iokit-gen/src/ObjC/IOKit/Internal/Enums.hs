@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IOKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | IOHIDElementCollectionType
 --
@@ -55,6 +58,16 @@ pattern KIOHIDElementCollectionTypeUsageSwitch = IOHIDElementCollectionType 5
 
 pattern KIOHIDElementCollectionTypeUsageModifier :: IOHIDElementCollectionType
 pattern KIOHIDElementCollectionTypeUsageModifier = IOHIDElementCollectionType 6
+
+instance ObjCArgument IOHIDElementCollectionType where
+  withObjCArg (IOHIDElementCollectionType x) k = k (argCInt x)
+
+instance ObjCReturn IOHIDElementCollectionType where
+  type RawReturn IOHIDElementCollectionType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOHIDElementCollectionType x)
+  fromOwned x = pure (IOHIDElementCollectionType x)
 
 -- | IOHIDElementType
 --
@@ -106,6 +119,16 @@ pattern KIOHIDElementTypeFeature = IOHIDElementType 257
 pattern KIOHIDElementTypeCollection :: IOHIDElementType
 pattern KIOHIDElementTypeCollection = IOHIDElementType 513
 
+instance ObjCArgument IOHIDElementType where
+  withObjCArg (IOHIDElementType x) k = k (argCInt x)
+
+instance ObjCReturn IOHIDElementType where
+  type RawReturn IOHIDElementType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOHIDElementType x)
+  fromOwned x = pure (IOHIDElementType x)
+
 -- | IOHIDReportType
 --
 -- Describes different type of HID reports.
@@ -126,6 +149,16 @@ pattern KIOHIDReportTypeFeature = IOHIDReportType 2
 pattern KIOHIDReportTypeCount :: IOHIDReportType
 pattern KIOHIDReportTypeCount = IOHIDReportType 3
 
+instance ObjCArgument IOHIDReportType where
+  withObjCArg (IOHIDReportType x) k = k (argCInt x)
+
+instance ObjCReturn IOHIDReportType where
+  type RawReturn IOHIDReportType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOHIDReportType x)
+  fromOwned x = pure (IOHIDReportType x)
+
 -- | IOHIDTransactionDirectionType
 --
 -- Direction for an IOHIDDeviceTransactionInterface.
@@ -143,3 +176,13 @@ pattern KIOHIDTransactionDirectionTypeInput = IOHIDTransactionDirectionType 0
 
 pattern KIOHIDTransactionDirectionTypeOutput :: IOHIDTransactionDirectionType
 pattern KIOHIDTransactionDirectionTypeOutput = IOHIDTransactionDirectionType 1
+
+instance ObjCArgument IOHIDTransactionDirectionType where
+  withObjCArg (IOHIDTransactionDirectionType x) k = k (argCUInt x)
+
+instance ObjCReturn IOHIDTransactionDirectionType where
+  type RawReturn IOHIDTransactionDirectionType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOHIDTransactionDirectionType x)
+  fromOwned x = pure (IOHIDTransactionDirectionType x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.SensorKit.SRApplicationUsage
   , supplementalCategories
   , relativeStartTime
   , bundleIdentifierSelector
-  , usageTimeSelector
-  , reportApplicationIdentifierSelector
-  , textInputSessionsSelector
-  , supplementalCategoriesSelector
   , relativeStartTimeSelector
+  , reportApplicationIdentifierSelector
+  , supplementalCategoriesSelector
+  , textInputSessionsSelector
+  , usageTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSString)
-bundleIdentifier srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier srApplicationUsage =
+  sendMessage srApplicationUsage bundleIdentifierSelector
 
 -- | The amount of time the app is used
 --
 -- ObjC selector: @- usageTime@
 usageTime :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO CDouble
-usageTime srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "usageTime") retCDouble []
+usageTime srApplicationUsage =
+  sendMessage srApplicationUsage usageTimeSelector
 
 -- | reportApplicationIdentifier
 --
@@ -59,8 +56,8 @@ usageTime srApplicationUsage  =
 --
 -- ObjC selector: @- reportApplicationIdentifier@
 reportApplicationIdentifier :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSString)
-reportApplicationIdentifier srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "reportApplicationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+reportApplicationIdentifier srApplicationUsage =
+  sendMessage srApplicationUsage reportApplicationIdentifierSelector
 
 -- | textInputSessions
 --
@@ -70,8 +67,8 @@ reportApplicationIdentifier srApplicationUsage  =
 --
 -- ObjC selector: @- textInputSessions@
 textInputSessions :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSArray)
-textInputSessions srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "textInputSessions") (retPtr retVoid) [] >>= retainedObject . castPtr
+textInputSessions srApplicationUsage =
+  sendMessage srApplicationUsage textInputSessionsSelector
 
 -- | supplementalCategories
 --
@@ -79,8 +76,8 @@ textInputSessions srApplicationUsage  =
 --
 -- ObjC selector: @- supplementalCategories@
 supplementalCategories :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO (Id NSArray)
-supplementalCategories srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "supplementalCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+supplementalCategories srApplicationUsage =
+  sendMessage srApplicationUsage supplementalCategoriesSelector
 
 -- | relativeStartTime
 --
@@ -90,34 +87,34 @@ supplementalCategories srApplicationUsage  =
 --
 -- ObjC selector: @- relativeStartTime@
 relativeStartTime :: IsSRApplicationUsage srApplicationUsage => srApplicationUsage -> IO CDouble
-relativeStartTime srApplicationUsage  =
-    sendMsg srApplicationUsage (mkSelector "relativeStartTime") retCDouble []
+relativeStartTime srApplicationUsage =
+  sendMessage srApplicationUsage relativeStartTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @usageTime@
-usageTimeSelector :: Selector
+usageTimeSelector :: Selector '[] CDouble
 usageTimeSelector = mkSelector "usageTime"
 
 -- | @Selector@ for @reportApplicationIdentifier@
-reportApplicationIdentifierSelector :: Selector
+reportApplicationIdentifierSelector :: Selector '[] (Id NSString)
 reportApplicationIdentifierSelector = mkSelector "reportApplicationIdentifier"
 
 -- | @Selector@ for @textInputSessions@
-textInputSessionsSelector :: Selector
+textInputSessionsSelector :: Selector '[] (Id NSArray)
 textInputSessionsSelector = mkSelector "textInputSessions"
 
 -- | @Selector@ for @supplementalCategories@
-supplementalCategoriesSelector :: Selector
+supplementalCategoriesSelector :: Selector '[] (Id NSArray)
 supplementalCategoriesSelector = mkSelector "supplementalCategories"
 
 -- | @Selector@ for @relativeStartTime@
-relativeStartTimeSelector :: Selector
+relativeStartTimeSelector :: Selector '[] CDouble
 relativeStartTimeSelector = mkSelector "relativeStartTime"
 

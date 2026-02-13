@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AccessorySetupKit.ASDiscoveredAccessory
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bluetoothAdvertisementData@
 bluetoothAdvertisementData :: IsASDiscoveredAccessory asDiscoveredAccessory => asDiscoveredAccessory -> IO (Id NSDictionary)
-bluetoothAdvertisementData asDiscoveredAccessory  =
-    sendMsg asDiscoveredAccessory (mkSelector "bluetoothAdvertisementData") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothAdvertisementData asDiscoveredAccessory =
+  sendMessage asDiscoveredAccessory bluetoothAdvertisementDataSelector
 
 -- | The Bluetooth RSSI (Received Signal Strength Indicator) value from the discovered accessory.
 --
@@ -46,18 +43,18 @@ bluetoothAdvertisementData asDiscoveredAccessory  =
 --
 -- ObjC selector: @- bluetoothRSSI@
 bluetoothRSSI :: IsASDiscoveredAccessory asDiscoveredAccessory => asDiscoveredAccessory -> IO (Id NSNumber)
-bluetoothRSSI asDiscoveredAccessory  =
-    sendMsg asDiscoveredAccessory (mkSelector "bluetoothRSSI") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothRSSI asDiscoveredAccessory =
+  sendMessage asDiscoveredAccessory bluetoothRSSISelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bluetoothAdvertisementData@
-bluetoothAdvertisementDataSelector :: Selector
+bluetoothAdvertisementDataSelector :: Selector '[] (Id NSDictionary)
 bluetoothAdvertisementDataSelector = mkSelector "bluetoothAdvertisementData"
 
 -- | @Selector@ for @bluetoothRSSI@
-bluetoothRSSISelector :: Selector
+bluetoothRSSISelector :: Selector '[] (Id NSNumber)
 bluetoothRSSISelector = mkSelector "bluetoothRSSI"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,54 +42,50 @@ module ObjC.Foundation.NSUnitInformationStorage
   , gibibits
   , mebibits
   , kibibits
-  , bytesSelector
   , bitsSelector
-  , nibblesSelector
-  , yottabytesSelector
-  , zettabytesSelector
-  , exabytesSelector
-  , petabytesSelector
-  , terabytesSelector
-  , gigabytesSelector
-  , megabytesSelector
-  , kilobytesSelector
-  , yottabitsSelector
-  , zettabitsSelector
+  , bytesSelector
   , exabitsSelector
-  , petabitsSelector
-  , terabitsSelector
-  , gigabitsSelector
-  , megabitsSelector
-  , kilobitsSelector
-  , yobibytesSelector
-  , zebibytesSelector
-  , exbibytesSelector
-  , pebibytesSelector
-  , tebibytesSelector
-  , gibibytesSelector
-  , mebibytesSelector
-  , kibibytesSelector
-  , yobibitsSelector
-  , zebibitsSelector
+  , exabytesSelector
   , exbibitsSelector
-  , pebibitsSelector
-  , tebibitsSelector
+  , exbibytesSelector
   , gibibitsSelector
-  , mebibitsSelector
+  , gibibytesSelector
+  , gigabitsSelector
+  , gigabytesSelector
   , kibibitsSelector
+  , kibibytesSelector
+  , kilobitsSelector
+  , kilobytesSelector
+  , mebibitsSelector
+  , mebibytesSelector
+  , megabitsSelector
+  , megabytesSelector
+  , nibblesSelector
+  , pebibitsSelector
+  , pebibytesSelector
+  , petabitsSelector
+  , petabytesSelector
+  , tebibitsSelector
+  , tebibytesSelector
+  , terabitsSelector
+  , terabytesSelector
+  , yobibitsSelector
+  , yobibytesSelector
+  , yottabitsSelector
+  , yottabytesSelector
+  , zebibitsSelector
+  , zebibytesSelector
+  , zettabitsSelector
+  , zettabytesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,387 +96,387 @@ bytes :: IO (Id NSUnitInformationStorage)
 bytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "bytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' bytesSelector
 
 -- | @+ bits@
 bits :: IO (Id NSUnitInformationStorage)
 bits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "bits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' bitsSelector
 
 -- | @+ nibbles@
 nibbles :: IO (Id NSUnitInformationStorage)
 nibbles  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "nibbles") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nibblesSelector
 
 -- | @+ yottabytes@
 yottabytes :: IO (Id NSUnitInformationStorage)
 yottabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "yottabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' yottabytesSelector
 
 -- | @+ zettabytes@
 zettabytes :: IO (Id NSUnitInformationStorage)
 zettabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "zettabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zettabytesSelector
 
 -- | @+ exabytes@
 exabytes :: IO (Id NSUnitInformationStorage)
 exabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "exabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exabytesSelector
 
 -- | @+ petabytes@
 petabytes :: IO (Id NSUnitInformationStorage)
 petabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "petabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' petabytesSelector
 
 -- | @+ terabytes@
 terabytes :: IO (Id NSUnitInformationStorage)
 terabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "terabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' terabytesSelector
 
 -- | @+ gigabytes@
 gigabytes :: IO (Id NSUnitInformationStorage)
 gigabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "gigabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gigabytesSelector
 
 -- | @+ megabytes@
 megabytes :: IO (Id NSUnitInformationStorage)
 megabytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "megabytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megabytesSelector
 
 -- | @+ kilobytes@
 kilobytes :: IO (Id NSUnitInformationStorage)
 kilobytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "kilobytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilobytesSelector
 
 -- | @+ yottabits@
 yottabits :: IO (Id NSUnitInformationStorage)
 yottabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "yottabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' yottabitsSelector
 
 -- | @+ zettabits@
 zettabits :: IO (Id NSUnitInformationStorage)
 zettabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "zettabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zettabitsSelector
 
 -- | @+ exabits@
 exabits :: IO (Id NSUnitInformationStorage)
 exabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "exabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exabitsSelector
 
 -- | @+ petabits@
 petabits :: IO (Id NSUnitInformationStorage)
 petabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "petabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' petabitsSelector
 
 -- | @+ terabits@
 terabits :: IO (Id NSUnitInformationStorage)
 terabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "terabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' terabitsSelector
 
 -- | @+ gigabits@
 gigabits :: IO (Id NSUnitInformationStorage)
 gigabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "gigabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gigabitsSelector
 
 -- | @+ megabits@
 megabits :: IO (Id NSUnitInformationStorage)
 megabits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "megabits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megabitsSelector
 
 -- | @+ kilobits@
 kilobits :: IO (Id NSUnitInformationStorage)
 kilobits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "kilobits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilobitsSelector
 
 -- | @+ yobibytes@
 yobibytes :: IO (Id NSUnitInformationStorage)
 yobibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "yobibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' yobibytesSelector
 
 -- | @+ zebibytes@
 zebibytes :: IO (Id NSUnitInformationStorage)
 zebibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "zebibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zebibytesSelector
 
 -- | @+ exbibytes@
 exbibytes :: IO (Id NSUnitInformationStorage)
 exbibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "exbibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exbibytesSelector
 
 -- | @+ pebibytes@
 pebibytes :: IO (Id NSUnitInformationStorage)
 pebibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "pebibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pebibytesSelector
 
 -- | @+ tebibytes@
 tebibytes :: IO (Id NSUnitInformationStorage)
 tebibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "tebibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' tebibytesSelector
 
 -- | @+ gibibytes@
 gibibytes :: IO (Id NSUnitInformationStorage)
 gibibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "gibibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gibibytesSelector
 
 -- | @+ mebibytes@
 mebibytes :: IO (Id NSUnitInformationStorage)
 mebibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "mebibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mebibytesSelector
 
 -- | @+ kibibytes@
 kibibytes :: IO (Id NSUnitInformationStorage)
 kibibytes  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "kibibytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kibibytesSelector
 
 -- | @+ yobibits@
 yobibits :: IO (Id NSUnitInformationStorage)
 yobibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "yobibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' yobibitsSelector
 
 -- | @+ zebibits@
 zebibits :: IO (Id NSUnitInformationStorage)
 zebibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "zebibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zebibitsSelector
 
 -- | @+ exbibits@
 exbibits :: IO (Id NSUnitInformationStorage)
 exbibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "exbibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exbibitsSelector
 
 -- | @+ pebibits@
 pebibits :: IO (Id NSUnitInformationStorage)
 pebibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "pebibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pebibitsSelector
 
 -- | @+ tebibits@
 tebibits :: IO (Id NSUnitInformationStorage)
 tebibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "tebibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' tebibitsSelector
 
 -- | @+ gibibits@
 gibibits :: IO (Id NSUnitInformationStorage)
 gibibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "gibibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gibibitsSelector
 
 -- | @+ mebibits@
 mebibits :: IO (Id NSUnitInformationStorage)
 mebibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "mebibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mebibitsSelector
 
 -- | @+ kibibits@
 kibibits :: IO (Id NSUnitInformationStorage)
 kibibits  =
   do
     cls' <- getRequiredClass "NSUnitInformationStorage"
-    sendClassMsg cls' (mkSelector "kibibits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kibibitsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bytes@
-bytesSelector :: Selector
+bytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @bits@
-bitsSelector :: Selector
+bitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 bitsSelector = mkSelector "bits"
 
 -- | @Selector@ for @nibbles@
-nibblesSelector :: Selector
+nibblesSelector :: Selector '[] (Id NSUnitInformationStorage)
 nibblesSelector = mkSelector "nibbles"
 
 -- | @Selector@ for @yottabytes@
-yottabytesSelector :: Selector
+yottabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 yottabytesSelector = mkSelector "yottabytes"
 
 -- | @Selector@ for @zettabytes@
-zettabytesSelector :: Selector
+zettabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 zettabytesSelector = mkSelector "zettabytes"
 
 -- | @Selector@ for @exabytes@
-exabytesSelector :: Selector
+exabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 exabytesSelector = mkSelector "exabytes"
 
 -- | @Selector@ for @petabytes@
-petabytesSelector :: Selector
+petabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 petabytesSelector = mkSelector "petabytes"
 
 -- | @Selector@ for @terabytes@
-terabytesSelector :: Selector
+terabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 terabytesSelector = mkSelector "terabytes"
 
 -- | @Selector@ for @gigabytes@
-gigabytesSelector :: Selector
+gigabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 gigabytesSelector = mkSelector "gigabytes"
 
 -- | @Selector@ for @megabytes@
-megabytesSelector :: Selector
+megabytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 megabytesSelector = mkSelector "megabytes"
 
 -- | @Selector@ for @kilobytes@
-kilobytesSelector :: Selector
+kilobytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 kilobytesSelector = mkSelector "kilobytes"
 
 -- | @Selector@ for @yottabits@
-yottabitsSelector :: Selector
+yottabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 yottabitsSelector = mkSelector "yottabits"
 
 -- | @Selector@ for @zettabits@
-zettabitsSelector :: Selector
+zettabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 zettabitsSelector = mkSelector "zettabits"
 
 -- | @Selector@ for @exabits@
-exabitsSelector :: Selector
+exabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 exabitsSelector = mkSelector "exabits"
 
 -- | @Selector@ for @petabits@
-petabitsSelector :: Selector
+petabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 petabitsSelector = mkSelector "petabits"
 
 -- | @Selector@ for @terabits@
-terabitsSelector :: Selector
+terabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 terabitsSelector = mkSelector "terabits"
 
 -- | @Selector@ for @gigabits@
-gigabitsSelector :: Selector
+gigabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 gigabitsSelector = mkSelector "gigabits"
 
 -- | @Selector@ for @megabits@
-megabitsSelector :: Selector
+megabitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 megabitsSelector = mkSelector "megabits"
 
 -- | @Selector@ for @kilobits@
-kilobitsSelector :: Selector
+kilobitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 kilobitsSelector = mkSelector "kilobits"
 
 -- | @Selector@ for @yobibytes@
-yobibytesSelector :: Selector
+yobibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 yobibytesSelector = mkSelector "yobibytes"
 
 -- | @Selector@ for @zebibytes@
-zebibytesSelector :: Selector
+zebibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 zebibytesSelector = mkSelector "zebibytes"
 
 -- | @Selector@ for @exbibytes@
-exbibytesSelector :: Selector
+exbibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 exbibytesSelector = mkSelector "exbibytes"
 
 -- | @Selector@ for @pebibytes@
-pebibytesSelector :: Selector
+pebibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 pebibytesSelector = mkSelector "pebibytes"
 
 -- | @Selector@ for @tebibytes@
-tebibytesSelector :: Selector
+tebibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 tebibytesSelector = mkSelector "tebibytes"
 
 -- | @Selector@ for @gibibytes@
-gibibytesSelector :: Selector
+gibibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 gibibytesSelector = mkSelector "gibibytes"
 
 -- | @Selector@ for @mebibytes@
-mebibytesSelector :: Selector
+mebibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 mebibytesSelector = mkSelector "mebibytes"
 
 -- | @Selector@ for @kibibytes@
-kibibytesSelector :: Selector
+kibibytesSelector :: Selector '[] (Id NSUnitInformationStorage)
 kibibytesSelector = mkSelector "kibibytes"
 
 -- | @Selector@ for @yobibits@
-yobibitsSelector :: Selector
+yobibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 yobibitsSelector = mkSelector "yobibits"
 
 -- | @Selector@ for @zebibits@
-zebibitsSelector :: Selector
+zebibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 zebibitsSelector = mkSelector "zebibits"
 
 -- | @Selector@ for @exbibits@
-exbibitsSelector :: Selector
+exbibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 exbibitsSelector = mkSelector "exbibits"
 
 -- | @Selector@ for @pebibits@
-pebibitsSelector :: Selector
+pebibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 pebibitsSelector = mkSelector "pebibits"
 
 -- | @Selector@ for @tebibits@
-tebibitsSelector :: Selector
+tebibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 tebibitsSelector = mkSelector "tebibits"
 
 -- | @Selector@ for @gibibits@
-gibibitsSelector :: Selector
+gibibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 gibibitsSelector = mkSelector "gibibits"
 
 -- | @Selector@ for @mebibits@
-mebibitsSelector :: Selector
+mebibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 mebibitsSelector = mkSelector "mebibits"
 
 -- | @Selector@ for @kibibits@
-kibibitsSelector :: Selector
+kibibitsSelector :: Selector '[] (Id NSUnitInformationStorage)
 kibibitsSelector = mkSelector "kibibits"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCaptureDeskViewApplicationLaunchConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requiresSetUpModeCompletion@
 requiresSetUpModeCompletion :: IsAVCaptureDeskViewApplicationLaunchConfiguration avCaptureDeskViewApplicationLaunchConfiguration => avCaptureDeskViewApplicationLaunchConfiguration -> IO Bool
-requiresSetUpModeCompletion avCaptureDeskViewApplicationLaunchConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeskViewApplicationLaunchConfiguration (mkSelector "requiresSetUpModeCompletion") retCULong []
+requiresSetUpModeCompletion avCaptureDeskViewApplicationLaunchConfiguration =
+  sendMessage avCaptureDeskViewApplicationLaunchConfiguration requiresSetUpModeCompletionSelector
 
 -- | requiresSetUpModeCompletion
 --
@@ -54,18 +51,18 @@ requiresSetUpModeCompletion avCaptureDeskViewApplicationLaunchConfiguration  =
 --
 -- ObjC selector: @- setRequiresSetUpModeCompletion:@
 setRequiresSetUpModeCompletion :: IsAVCaptureDeskViewApplicationLaunchConfiguration avCaptureDeskViewApplicationLaunchConfiguration => avCaptureDeskViewApplicationLaunchConfiguration -> Bool -> IO ()
-setRequiresSetUpModeCompletion avCaptureDeskViewApplicationLaunchConfiguration  value =
-    sendMsg avCaptureDeskViewApplicationLaunchConfiguration (mkSelector "setRequiresSetUpModeCompletion:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresSetUpModeCompletion avCaptureDeskViewApplicationLaunchConfiguration value =
+  sendMessage avCaptureDeskViewApplicationLaunchConfiguration setRequiresSetUpModeCompletionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requiresSetUpModeCompletion@
-requiresSetUpModeCompletionSelector :: Selector
+requiresSetUpModeCompletionSelector :: Selector '[] Bool
 requiresSetUpModeCompletionSelector = mkSelector "requiresSetUpModeCompletion"
 
 -- | @Selector@ for @setRequiresSetUpModeCompletion:@
-setRequiresSetUpModeCompletionSelector :: Selector
+setRequiresSetUpModeCompletionSelector :: Selector '[Bool] ()
 setRequiresSetUpModeCompletionSelector = mkSelector "setRequiresSetUpModeCompletion:"
 

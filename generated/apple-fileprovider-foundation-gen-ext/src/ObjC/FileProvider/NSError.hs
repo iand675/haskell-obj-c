@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.FileProvider.NSError
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,14 +29,13 @@ fileProviderErrorForNonExistentItemWithIdentifier :: IsNSString itemIdentifier =
 fileProviderErrorForNonExistentItemWithIdentifier itemIdentifier =
   do
     cls' <- getRequiredClass "NSError"
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendClassMsg cls' (mkSelector "fileProviderErrorForNonExistentItemWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_itemIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileProviderErrorForNonExistentItemWithIdentifierSelector (toNSString itemIdentifier)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fileProviderErrorForNonExistentItemWithIdentifier:@
-fileProviderErrorForNonExistentItemWithIdentifierSelector :: Selector
+fileProviderErrorForNonExistentItemWithIdentifierSelector :: Selector '[Id NSString] (Id NSError)
 fileProviderErrorForNonExistentItemWithIdentifierSelector = mkSelector "fileProviderErrorForNonExistentItemWithIdentifier:"
 

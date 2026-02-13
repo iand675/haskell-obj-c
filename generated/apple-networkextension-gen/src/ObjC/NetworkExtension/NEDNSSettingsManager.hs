@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,30 +26,26 @@ module ObjC.NetworkExtension.NEDNSSettingsManager
   , onDemandRules
   , setOnDemandRules
   , enabled
-  , sharedManagerSelector
+  , dnsSettingsSelector
+  , enabledSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , onDemandRulesSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , dnsSettingsSelector
   , setDnsSettingsSelector
-  , onDemandRulesSelector
+  , setLocalizedDescriptionSelector
   , setOnDemandRulesSelector
-  , enabledSelector
+  , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ sharedManager :: IO (Id NEDNSSettingsManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NEDNSSettingsManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | loadFromPreferencesWithCompletionHandler:
 --
@@ -74,8 +71,8 @@ sharedManager  =
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler nednsSettingsManager  completionHandler =
-    sendMsg nednsSettingsManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler nednsSettingsManager completionHandler =
+  sendMessage nednsSettingsManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -85,8 +82,8 @@ loadFromPreferencesWithCompletionHandler nednsSettingsManager  completionHandler
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler nednsSettingsManager  completionHandler =
-    sendMsg nednsSettingsManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler nednsSettingsManager completionHandler =
+  sendMessage nednsSettingsManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -96,8 +93,8 @@ removeFromPreferencesWithCompletionHandler nednsSettingsManager  completionHandl
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler nednsSettingsManager  completionHandler =
-    sendMsg nednsSettingsManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler nednsSettingsManager completionHandler =
+  sendMessage nednsSettingsManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | localizedDescription
 --
@@ -105,8 +102,8 @@ saveToPreferencesWithCompletionHandler nednsSettingsManager  completionHandler =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> IO (Id NSString)
-localizedDescription nednsSettingsManager  =
-    sendMsg nednsSettingsManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription nednsSettingsManager =
+  sendMessage nednsSettingsManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -114,9 +111,8 @@ localizedDescription nednsSettingsManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNEDNSSettingsManager nednsSettingsManager, IsNSString value) => nednsSettingsManager -> value -> IO ()
-setLocalizedDescription nednsSettingsManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettingsManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription nednsSettingsManager value =
+  sendMessage nednsSettingsManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | dnsSettings
 --
@@ -124,8 +120,8 @@ setLocalizedDescription nednsSettingsManager  value =
 --
 -- ObjC selector: @- dnsSettings@
 dnsSettings :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> IO (Id NEDNSSettings)
-dnsSettings nednsSettingsManager  =
-    sendMsg nednsSettingsManager (mkSelector "dnsSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+dnsSettings nednsSettingsManager =
+  sendMessage nednsSettingsManager dnsSettingsSelector
 
 -- | dnsSettings
 --
@@ -133,9 +129,8 @@ dnsSettings nednsSettingsManager  =
 --
 -- ObjC selector: @- setDnsSettings:@
 setDnsSettings :: (IsNEDNSSettingsManager nednsSettingsManager, IsNEDNSSettings value) => nednsSettingsManager -> value -> IO ()
-setDnsSettings nednsSettingsManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettingsManager (mkSelector "setDnsSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDnsSettings nednsSettingsManager value =
+  sendMessage nednsSettingsManager setDnsSettingsSelector (toNEDNSSettings value)
 
 -- | onDemandRules
 --
@@ -143,8 +138,8 @@ setDnsSettings nednsSettingsManager  value =
 --
 -- ObjC selector: @- onDemandRules@
 onDemandRules :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> IO (Id NSArray)
-onDemandRules nednsSettingsManager  =
-    sendMsg nednsSettingsManager (mkSelector "onDemandRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+onDemandRules nednsSettingsManager =
+  sendMessage nednsSettingsManager onDemandRulesSelector
 
 -- | onDemandRules
 --
@@ -152,9 +147,8 @@ onDemandRules nednsSettingsManager  =
 --
 -- ObjC selector: @- setOnDemandRules:@
 setOnDemandRules :: (IsNEDNSSettingsManager nednsSettingsManager, IsNSArray value) => nednsSettingsManager -> value -> IO ()
-setOnDemandRules nednsSettingsManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettingsManager (mkSelector "setOnDemandRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOnDemandRules nednsSettingsManager value =
+  sendMessage nednsSettingsManager setOnDemandRulesSelector (toNSArray value)
 
 -- | enabled
 --
@@ -162,54 +156,54 @@ setOnDemandRules nednsSettingsManager  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNEDNSSettingsManager nednsSettingsManager => nednsSettingsManager -> IO Bool
-enabled nednsSettingsManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsSettingsManager (mkSelector "enabled") retCULong []
+enabled nednsSettingsManager =
+  sendMessage nednsSettingsManager enabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NEDNSSettingsManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @dnsSettings@
-dnsSettingsSelector :: Selector
+dnsSettingsSelector :: Selector '[] (Id NEDNSSettings)
 dnsSettingsSelector = mkSelector "dnsSettings"
 
 -- | @Selector@ for @setDnsSettings:@
-setDnsSettingsSelector :: Selector
+setDnsSettingsSelector :: Selector '[Id NEDNSSettings] ()
 setDnsSettingsSelector = mkSelector "setDnsSettings:"
 
 -- | @Selector@ for @onDemandRules@
-onDemandRulesSelector :: Selector
+onDemandRulesSelector :: Selector '[] (Id NSArray)
 onDemandRulesSelector = mkSelector "onDemandRules"
 
 -- | @Selector@ for @setOnDemandRules:@
-setOnDemandRulesSelector :: Selector
+setOnDemandRulesSelector :: Selector '[Id NSArray] ()
 setOnDemandRulesSelector = mkSelector "setOnDemandRules:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 

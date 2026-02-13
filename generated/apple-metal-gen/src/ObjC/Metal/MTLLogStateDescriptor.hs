@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Metal.MTLLogStateDescriptor
   , setLevel
   , bufferSize
   , setBufferSize
-  , levelSelector
-  , setLevelSelector
   , bufferSizeSelector
+  , levelSelector
   , setBufferSizeSelector
+  , setLevelSelector
 
   -- * Enum types
   , MTLLogLevel(MTLLogLevel)
@@ -27,15 +28,11 @@ module ObjC.Metal.MTLLogStateDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- level@
 level :: IsMTLLogStateDescriptor mtlLogStateDescriptor => mtlLogStateDescriptor -> IO MTLLogLevel
-level mtlLogStateDescriptor  =
-    fmap (coerce :: CLong -> MTLLogLevel) $ sendMsg mtlLogStateDescriptor (mkSelector "level") retCLong []
+level mtlLogStateDescriptor =
+  sendMessage mtlLogStateDescriptor levelSelector
 
 -- | level indicates the minimum level of the logs that will be printed.
 --
@@ -58,40 +55,40 @@ level mtlLogStateDescriptor  =
 --
 -- ObjC selector: @- setLevel:@
 setLevel :: IsMTLLogStateDescriptor mtlLogStateDescriptor => mtlLogStateDescriptor -> MTLLogLevel -> IO ()
-setLevel mtlLogStateDescriptor  value =
-    sendMsg mtlLogStateDescriptor (mkSelector "setLevel:") retVoid [argCLong (coerce value)]
+setLevel mtlLogStateDescriptor value =
+  sendMessage mtlLogStateDescriptor setLevelSelector value
 
 -- | bufferSize indicates the size of the buffer where GPU will store the logging content from shaders. Minimum value is 1KB
 --
 -- ObjC selector: @- bufferSize@
 bufferSize :: IsMTLLogStateDescriptor mtlLogStateDescriptor => mtlLogStateDescriptor -> IO CLong
-bufferSize mtlLogStateDescriptor  =
-    sendMsg mtlLogStateDescriptor (mkSelector "bufferSize") retCLong []
+bufferSize mtlLogStateDescriptor =
+  sendMessage mtlLogStateDescriptor bufferSizeSelector
 
 -- | bufferSize indicates the size of the buffer where GPU will store the logging content from shaders. Minimum value is 1KB
 --
 -- ObjC selector: @- setBufferSize:@
 setBufferSize :: IsMTLLogStateDescriptor mtlLogStateDescriptor => mtlLogStateDescriptor -> CLong -> IO ()
-setBufferSize mtlLogStateDescriptor  value =
-    sendMsg mtlLogStateDescriptor (mkSelector "setBufferSize:") retVoid [argCLong value]
+setBufferSize mtlLogStateDescriptor value =
+  sendMessage mtlLogStateDescriptor setBufferSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] MTLLogLevel
 levelSelector = mkSelector "level"
 
 -- | @Selector@ for @setLevel:@
-setLevelSelector :: Selector
+setLevelSelector :: Selector '[MTLLogLevel] ()
 setLevelSelector = mkSelector "setLevel:"
 
 -- | @Selector@ for @bufferSize@
-bufferSizeSelector :: Selector
+bufferSizeSelector :: Selector '[] CLong
 bufferSizeSelector = mkSelector "bufferSize"
 
 -- | @Selector@ for @setBufferSize:@
-setBufferSizeSelector :: Selector
+setBufferSizeSelector :: Selector '[CLong] ()
 setBufferSizeSelector = mkSelector "setBufferSize:"
 

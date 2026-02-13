@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Foundation.NSCache
   , setCountLimit
   , evictsObjectsWithDiscardedContent
   , setEvictsObjectsWithDiscardedContent
+  , countLimitSelector
+  , delegateSelector
+  , evictsObjectsWithDiscardedContentSelector
+  , nameSelector
   , objectForKeySelector
+  , removeAllObjectsSelector
+  , removeObjectForKeySelector
+  , setCountLimitSelector
+  , setDelegateSelector
+  , setEvictsObjectsWithDiscardedContentSelector
+  , setNameSelector
   , setObject_forKeySelector
   , setObject_forKey_costSelector
-  , removeObjectForKeySelector
-  , removeAllObjectsSelector
-  , nameSelector
-  , setNameSelector
-  , delegateSelector
-  , setDelegateSelector
-  , totalCostLimitSelector
   , setTotalCostLimitSelector
-  , countLimitSelector
-  , setCountLimitSelector
-  , evictsObjectsWithDiscardedContentSelector
-  , setEvictsObjectsWithDiscardedContentSelector
+  , totalCostLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,141 +53,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- objectForKey:@
 objectForKey :: IsNSCache nsCache => nsCache -> RawId -> IO RawId
-objectForKey nsCache  key =
-    fmap (RawId . castPtr) $ sendMsg nsCache (mkSelector "objectForKey:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ())]
+objectForKey nsCache key =
+  sendMessage nsCache objectForKeySelector key
 
 -- | @- setObject:forKey:@
 setObject_forKey :: IsNSCache nsCache => nsCache -> RawId -> RawId -> IO ()
-setObject_forKey nsCache  obj_ key =
-    sendMsg nsCache (mkSelector "setObject:forKey:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+setObject_forKey nsCache obj_ key =
+  sendMessage nsCache setObject_forKeySelector obj_ key
 
 -- | @- setObject:forKey:cost:@
 setObject_forKey_cost :: IsNSCache nsCache => nsCache -> RawId -> RawId -> CULong -> IO ()
-setObject_forKey_cost nsCache  obj_ key g =
-    sendMsg nsCache (mkSelector "setObject:forKey:cost:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ()), argCULong g]
+setObject_forKey_cost nsCache obj_ key g =
+  sendMessage nsCache setObject_forKey_costSelector obj_ key g
 
 -- | @- removeObjectForKey:@
 removeObjectForKey :: IsNSCache nsCache => nsCache -> RawId -> IO ()
-removeObjectForKey nsCache  key =
-    sendMsg nsCache (mkSelector "removeObjectForKey:") retVoid [argPtr (castPtr (unRawId key) :: Ptr ())]
+removeObjectForKey nsCache key =
+  sendMessage nsCache removeObjectForKeySelector key
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSCache nsCache => nsCache -> IO ()
-removeAllObjects nsCache  =
-    sendMsg nsCache (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsCache =
+  sendMessage nsCache removeAllObjectsSelector
 
 -- | @- name@
 name :: IsNSCache nsCache => nsCache -> IO (Id NSString)
-name nsCache  =
-    sendMsg nsCache (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsCache =
+  sendMessage nsCache nameSelector
 
 -- | @- setName:@
 setName :: (IsNSCache nsCache, IsNSString value) => nsCache -> value -> IO ()
-setName nsCache  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCache (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsCache value =
+  sendMessage nsCache setNameSelector (toNSString value)
 
 -- | @- delegate@
 delegate :: IsNSCache nsCache => nsCache -> IO RawId
-delegate nsCache  =
-    fmap (RawId . castPtr) $ sendMsg nsCache (mkSelector "delegate") (retPtr retVoid) []
+delegate nsCache =
+  sendMessage nsCache delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSCache nsCache => nsCache -> RawId -> IO ()
-setDelegate nsCache  value =
-    sendMsg nsCache (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsCache value =
+  sendMessage nsCache setDelegateSelector value
 
 -- | @- totalCostLimit@
 totalCostLimit :: IsNSCache nsCache => nsCache -> IO CULong
-totalCostLimit nsCache  =
-    sendMsg nsCache (mkSelector "totalCostLimit") retCULong []
+totalCostLimit nsCache =
+  sendMessage nsCache totalCostLimitSelector
 
 -- | @- setTotalCostLimit:@
 setTotalCostLimit :: IsNSCache nsCache => nsCache -> CULong -> IO ()
-setTotalCostLimit nsCache  value =
-    sendMsg nsCache (mkSelector "setTotalCostLimit:") retVoid [argCULong value]
+setTotalCostLimit nsCache value =
+  sendMessage nsCache setTotalCostLimitSelector value
 
 -- | @- countLimit@
 countLimit :: IsNSCache nsCache => nsCache -> IO CULong
-countLimit nsCache  =
-    sendMsg nsCache (mkSelector "countLimit") retCULong []
+countLimit nsCache =
+  sendMessage nsCache countLimitSelector
 
 -- | @- setCountLimit:@
 setCountLimit :: IsNSCache nsCache => nsCache -> CULong -> IO ()
-setCountLimit nsCache  value =
-    sendMsg nsCache (mkSelector "setCountLimit:") retVoid [argCULong value]
+setCountLimit nsCache value =
+  sendMessage nsCache setCountLimitSelector value
 
 -- | @- evictsObjectsWithDiscardedContent@
 evictsObjectsWithDiscardedContent :: IsNSCache nsCache => nsCache -> IO Bool
-evictsObjectsWithDiscardedContent nsCache  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCache (mkSelector "evictsObjectsWithDiscardedContent") retCULong []
+evictsObjectsWithDiscardedContent nsCache =
+  sendMessage nsCache evictsObjectsWithDiscardedContentSelector
 
 -- | @- setEvictsObjectsWithDiscardedContent:@
 setEvictsObjectsWithDiscardedContent :: IsNSCache nsCache => nsCache -> Bool -> IO ()
-setEvictsObjectsWithDiscardedContent nsCache  value =
-    sendMsg nsCache (mkSelector "setEvictsObjectsWithDiscardedContent:") retVoid [argCULong (if value then 1 else 0)]
+setEvictsObjectsWithDiscardedContent nsCache value =
+  sendMessage nsCache setEvictsObjectsWithDiscardedContentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectForKey:@
-objectForKeySelector :: Selector
+objectForKeySelector :: Selector '[RawId] RawId
 objectForKeySelector = mkSelector "objectForKey:"
 
 -- | @Selector@ for @setObject:forKey:@
-setObject_forKeySelector :: Selector
+setObject_forKeySelector :: Selector '[RawId, RawId] ()
 setObject_forKeySelector = mkSelector "setObject:forKey:"
 
 -- | @Selector@ for @setObject:forKey:cost:@
-setObject_forKey_costSelector :: Selector
+setObject_forKey_costSelector :: Selector '[RawId, RawId, CULong] ()
 setObject_forKey_costSelector = mkSelector "setObject:forKey:cost:"
 
 -- | @Selector@ for @removeObjectForKey:@
-removeObjectForKeySelector :: Selector
+removeObjectForKeySelector :: Selector '[RawId] ()
 removeObjectForKeySelector = mkSelector "removeObjectForKey:"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @totalCostLimit@
-totalCostLimitSelector :: Selector
+totalCostLimitSelector :: Selector '[] CULong
 totalCostLimitSelector = mkSelector "totalCostLimit"
 
 -- | @Selector@ for @setTotalCostLimit:@
-setTotalCostLimitSelector :: Selector
+setTotalCostLimitSelector :: Selector '[CULong] ()
 setTotalCostLimitSelector = mkSelector "setTotalCostLimit:"
 
 -- | @Selector@ for @countLimit@
-countLimitSelector :: Selector
+countLimitSelector :: Selector '[] CULong
 countLimitSelector = mkSelector "countLimit"
 
 -- | @Selector@ for @setCountLimit:@
-setCountLimitSelector :: Selector
+setCountLimitSelector :: Selector '[CULong] ()
 setCountLimitSelector = mkSelector "setCountLimit:"
 
 -- | @Selector@ for @evictsObjectsWithDiscardedContent@
-evictsObjectsWithDiscardedContentSelector :: Selector
+evictsObjectsWithDiscardedContentSelector :: Selector '[] Bool
 evictsObjectsWithDiscardedContentSelector = mkSelector "evictsObjectsWithDiscardedContent"
 
 -- | @Selector@ for @setEvictsObjectsWithDiscardedContent:@
-setEvictsObjectsWithDiscardedContentSelector :: Selector
+setEvictsObjectsWithDiscardedContentSelector :: Selector '[Bool] ()
 setEvictsObjectsWithDiscardedContentSelector = mkSelector "setEvictsObjectsWithDiscardedContent:"
 

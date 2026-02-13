@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVAssetTrackSegment
   , init_
   , new
   , empty
+  , emptySelector
   , initSelector
   , newSelector
-  , emptySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetTrackSegment avAssetTrackSegment => avAssetTrackSegment -> IO (Id AVAssetTrackSegment)
-init_ avAssetTrackSegment  =
-    sendMsg avAssetTrackSegment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetTrackSegment =
+  sendOwnedMessage avAssetTrackSegment initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetTrackSegment)
 new  =
   do
     cls' <- getRequiredClass "AVAssetTrackSegment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- empty@
 empty :: IsAVAssetTrackSegment avAssetTrackSegment => avAssetTrackSegment -> IO Bool
-empty avAssetTrackSegment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrackSegment (mkSelector "empty") retCULong []
+empty avAssetTrackSegment =
+  sendMessage avAssetTrackSegment emptySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetTrackSegment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetTrackSegment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @empty@
-emptySelector :: Selector
+emptySelector :: Selector '[] Bool
 emptySelector = mkSelector "empty"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AppKit.NSStepperCell
   , setValueWraps
   , autorepeat
   , setAutorepeat
-  , minValueSelector
-  , setMinValueSelector
-  , maxValueSelector
-  , setMaxValueSelector
-  , incrementSelector
-  , setIncrementSelector
-  , valueWrapsSelector
-  , setValueWrapsSelector
   , autorepeatSelector
+  , incrementSelector
+  , maxValueSelector
+  , minValueSelector
   , setAutorepeatSelector
+  , setIncrementSelector
+  , setMaxValueSelector
+  , setMinValueSelector
+  , setValueWrapsSelector
+  , valueWrapsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,95 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- minValue@
 minValue :: IsNSStepperCell nsStepperCell => nsStepperCell -> IO CDouble
-minValue nsStepperCell  =
-    sendMsg nsStepperCell (mkSelector "minValue") retCDouble []
+minValue nsStepperCell =
+  sendMessage nsStepperCell minValueSelector
 
 -- | @- setMinValue:@
 setMinValue :: IsNSStepperCell nsStepperCell => nsStepperCell -> CDouble -> IO ()
-setMinValue nsStepperCell  value =
-    sendMsg nsStepperCell (mkSelector "setMinValue:") retVoid [argCDouble value]
+setMinValue nsStepperCell value =
+  sendMessage nsStepperCell setMinValueSelector value
 
 -- | @- maxValue@
 maxValue :: IsNSStepperCell nsStepperCell => nsStepperCell -> IO CDouble
-maxValue nsStepperCell  =
-    sendMsg nsStepperCell (mkSelector "maxValue") retCDouble []
+maxValue nsStepperCell =
+  sendMessage nsStepperCell maxValueSelector
 
 -- | @- setMaxValue:@
 setMaxValue :: IsNSStepperCell nsStepperCell => nsStepperCell -> CDouble -> IO ()
-setMaxValue nsStepperCell  value =
-    sendMsg nsStepperCell (mkSelector "setMaxValue:") retVoid [argCDouble value]
+setMaxValue nsStepperCell value =
+  sendMessage nsStepperCell setMaxValueSelector value
 
 -- | @- increment@
 increment :: IsNSStepperCell nsStepperCell => nsStepperCell -> IO CDouble
-increment nsStepperCell  =
-    sendMsg nsStepperCell (mkSelector "increment") retCDouble []
+increment nsStepperCell =
+  sendMessage nsStepperCell incrementSelector
 
 -- | @- setIncrement:@
 setIncrement :: IsNSStepperCell nsStepperCell => nsStepperCell -> CDouble -> IO ()
-setIncrement nsStepperCell  value =
-    sendMsg nsStepperCell (mkSelector "setIncrement:") retVoid [argCDouble value]
+setIncrement nsStepperCell value =
+  sendMessage nsStepperCell setIncrementSelector value
 
 -- | @- valueWraps@
 valueWraps :: IsNSStepperCell nsStepperCell => nsStepperCell -> IO Bool
-valueWraps nsStepperCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStepperCell (mkSelector "valueWraps") retCULong []
+valueWraps nsStepperCell =
+  sendMessage nsStepperCell valueWrapsSelector
 
 -- | @- setValueWraps:@
 setValueWraps :: IsNSStepperCell nsStepperCell => nsStepperCell -> Bool -> IO ()
-setValueWraps nsStepperCell  value =
-    sendMsg nsStepperCell (mkSelector "setValueWraps:") retVoid [argCULong (if value then 1 else 0)]
+setValueWraps nsStepperCell value =
+  sendMessage nsStepperCell setValueWrapsSelector value
 
 -- | @- autorepeat@
 autorepeat :: IsNSStepperCell nsStepperCell => nsStepperCell -> IO Bool
-autorepeat nsStepperCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStepperCell (mkSelector "autorepeat") retCULong []
+autorepeat nsStepperCell =
+  sendMessage nsStepperCell autorepeatSelector
 
 -- | @- setAutorepeat:@
 setAutorepeat :: IsNSStepperCell nsStepperCell => nsStepperCell -> Bool -> IO ()
-setAutorepeat nsStepperCell  value =
-    sendMsg nsStepperCell (mkSelector "setAutorepeat:") retVoid [argCULong (if value then 1 else 0)]
+setAutorepeat nsStepperCell value =
+  sendMessage nsStepperCell setAutorepeatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @setMinValue:@
-setMinValueSelector :: Selector
+setMinValueSelector :: Selector '[CDouble] ()
 setMinValueSelector = mkSelector "setMinValue:"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @setMaxValue:@
-setMaxValueSelector :: Selector
+setMaxValueSelector :: Selector '[CDouble] ()
 setMaxValueSelector = mkSelector "setMaxValue:"
 
 -- | @Selector@ for @increment@
-incrementSelector :: Selector
+incrementSelector :: Selector '[] CDouble
 incrementSelector = mkSelector "increment"
 
 -- | @Selector@ for @setIncrement:@
-setIncrementSelector :: Selector
+setIncrementSelector :: Selector '[CDouble] ()
 setIncrementSelector = mkSelector "setIncrement:"
 
 -- | @Selector@ for @valueWraps@
-valueWrapsSelector :: Selector
+valueWrapsSelector :: Selector '[] Bool
 valueWrapsSelector = mkSelector "valueWraps"
 
 -- | @Selector@ for @setValueWraps:@
-setValueWrapsSelector :: Selector
+setValueWrapsSelector :: Selector '[Bool] ()
 setValueWrapsSelector = mkSelector "setValueWraps:"
 
 -- | @Selector@ for @autorepeat@
-autorepeatSelector :: Selector
+autorepeatSelector :: Selector '[] Bool
 autorepeatSelector = mkSelector "autorepeat"
 
 -- | @Selector@ for @setAutorepeat:@
-setAutorepeatSelector :: Selector
+setAutorepeatSelector :: Selector '[Bool] ()
 setAutorepeatSelector = mkSelector "setAutorepeat:"
 

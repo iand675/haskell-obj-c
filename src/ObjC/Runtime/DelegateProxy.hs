@@ -102,7 +102,7 @@ delegateProxyClass = unsafePerformIO $ do
   objc_registerClassPair cls
   pure cls
 
-respondsSel :: Selector
+respondsSel :: Sel
 respondsSel = mkSelector "respondsToSelector:"
 
 -- ---------------------------------------------------------------------------

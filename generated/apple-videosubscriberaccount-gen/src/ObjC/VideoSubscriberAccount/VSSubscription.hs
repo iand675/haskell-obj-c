@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.VideoSubscriberAccount.VSSubscription
   , setTierIdentifiers
   , billingIdentifier
   , setBillingIdentifier
-  , expirationDateSelector
-  , setExpirationDateSelector
   , accessLevelSelector
-  , setAccessLevelSelector
-  , tierIdentifiersSelector
-  , setTierIdentifiersSelector
   , billingIdentifierSelector
+  , expirationDateSelector
+  , setAccessLevelSelector
   , setBillingIdentifierSelector
+  , setExpirationDateSelector
+  , setTierIdentifiersSelector
+  , tierIdentifiersSelector
 
   -- * Enum types
   , VSSubscriptionAccessLevel(VSSubscriptionAccessLevel)
@@ -34,15 +35,11 @@ module ObjC.VideoSubscriberAccount.VSSubscription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- expirationDate@
 expirationDate :: IsVSSubscription vsSubscription => vsSubscription -> IO (Id NSDate)
-expirationDate vsSubscription  =
-    sendMsg vsSubscription (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate vsSubscription =
+  sendMessage vsSubscription expirationDateSelector
 
 -- | After this point in time, the subscription will be considered inactive.
 --
@@ -77,9 +74,8 @@ expirationDate vsSubscription  =
 --
 -- ObjC selector: @- setExpirationDate:@
 setExpirationDate :: (IsVSSubscription vsSubscription, IsNSDate value) => vsSubscription -> value -> IO ()
-setExpirationDate vsSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsSubscription (mkSelector "setExpirationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpirationDate vsSubscription value =
+  sendMessage vsSubscription setExpirationDateSelector (toNSDate value)
 
 -- | Describes the level of access the subscriber has to your catalog of content.
 --
@@ -87,8 +83,8 @@ setExpirationDate vsSubscription  value =
 --
 -- ObjC selector: @- accessLevel@
 accessLevel :: IsVSSubscription vsSubscription => vsSubscription -> IO VSSubscriptionAccessLevel
-accessLevel vsSubscription  =
-    fmap (coerce :: CLong -> VSSubscriptionAccessLevel) $ sendMsg vsSubscription (mkSelector "accessLevel") retCLong []
+accessLevel vsSubscription =
+  sendMessage vsSubscription accessLevelSelector
 
 -- | Describes the level of access the subscriber has to your catalog of content.
 --
@@ -96,8 +92,8 @@ accessLevel vsSubscription  =
 --
 -- ObjC selector: @- setAccessLevel:@
 setAccessLevel :: IsVSSubscription vsSubscription => vsSubscription -> VSSubscriptionAccessLevel -> IO ()
-setAccessLevel vsSubscription  value =
-    sendMsg vsSubscription (mkSelector "setAccessLevel:") retVoid [argCLong (coerce value)]
+setAccessLevel vsSubscription value =
+  sendMessage vsSubscription setAccessLevelSelector value
 
 -- | Identifies a subset of content from your catalog that subscriber can play.
 --
@@ -105,8 +101,8 @@ setAccessLevel vsSubscription  value =
 --
 -- ObjC selector: @- tierIdentifiers@
 tierIdentifiers :: IsVSSubscription vsSubscription => vsSubscription -> IO (Id NSArray)
-tierIdentifiers vsSubscription  =
-    sendMsg vsSubscription (mkSelector "tierIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+tierIdentifiers vsSubscription =
+  sendMessage vsSubscription tierIdentifiersSelector
 
 -- | Identifies a subset of content from your catalog that subscriber can play.
 --
@@ -114,58 +110,56 @@ tierIdentifiers vsSubscription  =
 --
 -- ObjC selector: @- setTierIdentifiers:@
 setTierIdentifiers :: (IsVSSubscription vsSubscription, IsNSArray value) => vsSubscription -> value -> IO ()
-setTierIdentifiers vsSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsSubscription (mkSelector "setTierIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTierIdentifiers vsSubscription value =
+  sendMessage vsSubscription setTierIdentifiersSelector (toNSArray value)
 
 -- | Identifies the billing group associated with the subscription.  May be used, for example, to restrict content availability based on the proximity of the billing address to a specific venue.
 --
 -- ObjC selector: @- billingIdentifier@
 billingIdentifier :: IsVSSubscription vsSubscription => vsSubscription -> IO (Id NSString)
-billingIdentifier vsSubscription  =
-    sendMsg vsSubscription (mkSelector "billingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+billingIdentifier vsSubscription =
+  sendMessage vsSubscription billingIdentifierSelector
 
 -- | Identifies the billing group associated with the subscription.  May be used, for example, to restrict content availability based on the proximity of the billing address to a specific venue.
 --
 -- ObjC selector: @- setBillingIdentifier:@
 setBillingIdentifier :: (IsVSSubscription vsSubscription, IsNSString value) => vsSubscription -> value -> IO ()
-setBillingIdentifier vsSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsSubscription (mkSelector "setBillingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillingIdentifier vsSubscription value =
+  sendMessage vsSubscription setBillingIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @setExpirationDate:@
-setExpirationDateSelector :: Selector
+setExpirationDateSelector :: Selector '[Id NSDate] ()
 setExpirationDateSelector = mkSelector "setExpirationDate:"
 
 -- | @Selector@ for @accessLevel@
-accessLevelSelector :: Selector
+accessLevelSelector :: Selector '[] VSSubscriptionAccessLevel
 accessLevelSelector = mkSelector "accessLevel"
 
 -- | @Selector@ for @setAccessLevel:@
-setAccessLevelSelector :: Selector
+setAccessLevelSelector :: Selector '[VSSubscriptionAccessLevel] ()
 setAccessLevelSelector = mkSelector "setAccessLevel:"
 
 -- | @Selector@ for @tierIdentifiers@
-tierIdentifiersSelector :: Selector
+tierIdentifiersSelector :: Selector '[] (Id NSArray)
 tierIdentifiersSelector = mkSelector "tierIdentifiers"
 
 -- | @Selector@ for @setTierIdentifiers:@
-setTierIdentifiersSelector :: Selector
+setTierIdentifiersSelector :: Selector '[Id NSArray] ()
 setTierIdentifiersSelector = mkSelector "setTierIdentifiers:"
 
 -- | @Selector@ for @billingIdentifier@
-billingIdentifierSelector :: Selector
+billingIdentifierSelector :: Selector '[] (Id NSString)
 billingIdentifierSelector = mkSelector "billingIdentifier"
 
 -- | @Selector@ for @setBillingIdentifier:@
-setBillingIdentifierSelector :: Selector
+setBillingIdentifierSelector :: Selector '[Id NSString] ()
 setBillingIdentifierSelector = mkSelector "setBillingIdentifier:"
 

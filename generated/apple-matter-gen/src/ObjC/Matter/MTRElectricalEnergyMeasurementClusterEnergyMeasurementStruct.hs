@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct
   , setApparentEnergy
   , reactiveEnergy
   , setReactiveEnergy
-  , energySelector
-  , setEnergySelector
-  , startTimestampSelector
-  , setStartTimestampSelector
-  , endTimestampSelector
-  , setEndTimestampSelector
-  , startSystimeSelector
-  , setStartSystimeSelector
-  , endSystimeSelector
-  , setEndSystimeSelector
   , apparentEnergySelector
-  , setApparentEnergySelector
+  , endSystimeSelector
+  , endTimestampSelector
+  , energySelector
   , reactiveEnergySelector
+  , setApparentEnergySelector
+  , setEndSystimeSelector
+  , setEndTimestampSelector
+  , setEnergySelector
   , setReactiveEnergySelector
+  , setStartSystimeSelector
+  , setStartTimestampSelector
+  , startSystimeSelector
+  , startTimestampSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,138 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- energy@
 energy :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-energy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "energy") (retPtr retVoid) [] >>= retainedObject . castPtr
+energy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct energySelector
 
 -- | @- setEnergy:@
 setEnergy :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setEnergy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setEnergySelector (toNSNumber value)
 
 -- | @- startTimestamp@
 startTimestamp :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-startTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "startTimestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct startTimestampSelector
 
 -- | @- setStartTimestamp:@
 setStartTimestamp :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setStartTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setStartTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setStartTimestampSelector (toNSNumber value)
 
 -- | @- endTimestamp@
 endTimestamp :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-endTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "endTimestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+endTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct endTimestampSelector
 
 -- | @- setEndTimestamp:@
 setEndTimestamp :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setEndTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setEndTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndTimestamp mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setEndTimestampSelector (toNSNumber value)
 
 -- | @- startSystime@
 startSystime :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-startSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "startSystime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct startSystimeSelector
 
 -- | @- setStartSystime:@
 setStartSystime :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setStartSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setStartSystime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setStartSystimeSelector (toNSNumber value)
 
 -- | @- endSystime@
 endSystime :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-endSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "endSystime") (retPtr retVoid) [] >>= retainedObject . castPtr
+endSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct endSystimeSelector
 
 -- | @- setEndSystime:@
 setEndSystime :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setEndSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setEndSystime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndSystime mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setEndSystimeSelector (toNSNumber value)
 
 -- | @- apparentEnergy@
 apparentEnergy :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-apparentEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "apparentEnergy") (retPtr retVoid) [] >>= retainedObject . castPtr
+apparentEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct apparentEnergySelector
 
 -- | @- setApparentEnergy:@
 setApparentEnergy :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setApparentEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setApparentEnergy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApparentEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setApparentEnergySelector (toNSNumber value)
 
 -- | @- reactiveEnergy@
 reactiveEnergy :: IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> IO (Id NSNumber)
-reactiveEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "reactiveEnergy") (retPtr retVoid) [] >>= retainedObject . castPtr
+reactiveEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct reactiveEnergySelector
 
 -- | @- setReactiveEnergy:@
 setReactiveEnergy :: (IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct -> value -> IO ()
-setReactiveEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct (mkSelector "setReactiveEnergy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReactiveEnergy mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterEnergyMeasurementStruct setReactiveEnergySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @energy@
-energySelector :: Selector
+energySelector :: Selector '[] (Id NSNumber)
 energySelector = mkSelector "energy"
 
 -- | @Selector@ for @setEnergy:@
-setEnergySelector :: Selector
+setEnergySelector :: Selector '[Id NSNumber] ()
 setEnergySelector = mkSelector "setEnergy:"
 
 -- | @Selector@ for @startTimestamp@
-startTimestampSelector :: Selector
+startTimestampSelector :: Selector '[] (Id NSNumber)
 startTimestampSelector = mkSelector "startTimestamp"
 
 -- | @Selector@ for @setStartTimestamp:@
-setStartTimestampSelector :: Selector
+setStartTimestampSelector :: Selector '[Id NSNumber] ()
 setStartTimestampSelector = mkSelector "setStartTimestamp:"
 
 -- | @Selector@ for @endTimestamp@
-endTimestampSelector :: Selector
+endTimestampSelector :: Selector '[] (Id NSNumber)
 endTimestampSelector = mkSelector "endTimestamp"
 
 -- | @Selector@ for @setEndTimestamp:@
-setEndTimestampSelector :: Selector
+setEndTimestampSelector :: Selector '[Id NSNumber] ()
 setEndTimestampSelector = mkSelector "setEndTimestamp:"
 
 -- | @Selector@ for @startSystime@
-startSystimeSelector :: Selector
+startSystimeSelector :: Selector '[] (Id NSNumber)
 startSystimeSelector = mkSelector "startSystime"
 
 -- | @Selector@ for @setStartSystime:@
-setStartSystimeSelector :: Selector
+setStartSystimeSelector :: Selector '[Id NSNumber] ()
 setStartSystimeSelector = mkSelector "setStartSystime:"
 
 -- | @Selector@ for @endSystime@
-endSystimeSelector :: Selector
+endSystimeSelector :: Selector '[] (Id NSNumber)
 endSystimeSelector = mkSelector "endSystime"
 
 -- | @Selector@ for @setEndSystime:@
-setEndSystimeSelector :: Selector
+setEndSystimeSelector :: Selector '[Id NSNumber] ()
 setEndSystimeSelector = mkSelector "setEndSystime:"
 
 -- | @Selector@ for @apparentEnergy@
-apparentEnergySelector :: Selector
+apparentEnergySelector :: Selector '[] (Id NSNumber)
 apparentEnergySelector = mkSelector "apparentEnergy"
 
 -- | @Selector@ for @setApparentEnergy:@
-setApparentEnergySelector :: Selector
+setApparentEnergySelector :: Selector '[Id NSNumber] ()
 setApparentEnergySelector = mkSelector "setApparentEnergy:"
 
 -- | @Selector@ for @reactiveEnergy@
-reactiveEnergySelector :: Selector
+reactiveEnergySelector :: Selector '[] (Id NSNumber)
 reactiveEnergySelector = mkSelector "reactiveEnergy"
 
 -- | @Selector@ for @setReactiveEnergy:@
-setReactiveEnergySelector :: Selector
+setReactiveEnergySelector :: Selector '[Id NSNumber] ()
 setReactiveEnergySelector = mkSelector "setReactiveEnergy:"
 

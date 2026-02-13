@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MediaPlayer.MPMusicPlayerControllerQueue
   , new
   , init_
   , items
-  , newSelector
   , initSelector
   , itemsSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ new :: IO (Id MPMusicPlayerControllerQueue)
 new  =
   do
     cls' <- getRequiredClass "MPMusicPlayerControllerQueue"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPMusicPlayerControllerQueue mpMusicPlayerControllerQueue => mpMusicPlayerControllerQueue -> IO (Id MPMusicPlayerControllerQueue)
-init_ mpMusicPlayerControllerQueue  =
-    sendMsg mpMusicPlayerControllerQueue (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpMusicPlayerControllerQueue =
+  sendOwnedMessage mpMusicPlayerControllerQueue initSelector
 
 -- | @- items@
 items :: IsMPMusicPlayerControllerQueue mpMusicPlayerControllerQueue => mpMusicPlayerControllerQueue -> IO (Id NSArray)
-items mpMusicPlayerControllerQueue  =
-    sendMsg mpMusicPlayerControllerQueue (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items mpMusicPlayerControllerQueue =
+  sendMessage mpMusicPlayerControllerQueue itemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPMusicPlayerControllerQueue)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPMusicPlayerControllerQueue)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 

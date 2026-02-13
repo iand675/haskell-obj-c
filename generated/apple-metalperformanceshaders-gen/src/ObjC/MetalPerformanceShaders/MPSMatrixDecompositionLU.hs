@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSMatrixDecompositionLU
   , IsMPSMatrixDecompositionLU(..)
   , initWithDevice_rows_columns
   , encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_status
-  , initWithDevice_rows_columnsSelector
   , encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_statusSelector
+  , initWithDevice_rows_columnsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:rows:columns:@
 initWithDevice_rows_columns :: IsMPSMatrixDecompositionLU mpsMatrixDecompositionLU => mpsMatrixDecompositionLU -> RawId -> CULong -> CULong -> IO (Id MPSMatrixDecompositionLU)
-initWithDevice_rows_columns mpsMatrixDecompositionLU  device rows columns =
-    sendMsg mpsMatrixDecompositionLU (mkSelector "initWithDevice:rows:columns:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong rows, argCULong columns] >>= ownedObject . castPtr
+initWithDevice_rows_columns mpsMatrixDecompositionLU device rows columns =
+  sendOwnedMessage mpsMatrixDecompositionLU initWithDevice_rows_columnsSelector device rows columns
 
 -- | Encode a MPSMatrixDecompositionLU kernel into a command Buffer.
 --
@@ -80,21 +77,18 @@ initWithDevice_rows_columns mpsMatrixDecompositionLU  device rows columns =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:resultMatrix:pivotIndices:status:@
 encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_status :: (IsMPSMatrixDecompositionLU mpsMatrixDecompositionLU, IsMPSMatrix sourceMatrix, IsMPSMatrix resultMatrix, IsMPSMatrix pivotIndices) => mpsMatrixDecompositionLU -> RawId -> sourceMatrix -> resultMatrix -> pivotIndices -> RawId -> IO ()
-encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_status mpsMatrixDecompositionLU  commandBuffer sourceMatrix resultMatrix pivotIndices status =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr resultMatrix $ \raw_resultMatrix ->
-      withObjCPtr pivotIndices $ \raw_pivotIndices ->
-          sendMsg mpsMatrixDecompositionLU (mkSelector "encodeToCommandBuffer:sourceMatrix:resultMatrix:pivotIndices:status:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ()), argPtr (castPtr raw_pivotIndices :: Ptr ()), argPtr (castPtr (unRawId status) :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_status mpsMatrixDecompositionLU commandBuffer sourceMatrix resultMatrix pivotIndices status =
+  sendMessage mpsMatrixDecompositionLU encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_statusSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSMatrix resultMatrix) (toMPSMatrix pivotIndices) status
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:rows:columns:@
-initWithDevice_rows_columnsSelector :: Selector
+initWithDevice_rows_columnsSelector :: Selector '[RawId, CULong, CULong] (Id MPSMatrixDecompositionLU)
 initWithDevice_rows_columnsSelector = mkSelector "initWithDevice:rows:columns:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:resultMatrix:pivotIndices:status:@
-encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_statusSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_statusSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix, RawId] ()
 encodeToCommandBuffer_sourceMatrix_resultMatrix_pivotIndices_statusSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:resultMatrix:pivotIndices:status:"
 

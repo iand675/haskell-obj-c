@@ -99,6 +99,18 @@ id hs_objc_retain(id obj) {
     return NULL;
 }
 
+static SEL hs_autorelease_sel = NULL;
+
+id hs_objc_autorelease(id obj) {
+    if (obj) {
+        if (!hs_autorelease_sel) {
+            hs_autorelease_sel = sel_registerName("autorelease");
+        }
+        return ((id (*)(id, SEL))objc_msgSend)(obj, hs_autorelease_sel);
+    }
+    return NULL;
+}
+
 /* -----------------------------------------------------------------------
  * Block support
  *

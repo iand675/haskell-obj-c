@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.GameplayKit.GKCheckerboardNoiseSource
   , setSquareSize
   , checkerboardNoiseWithSquareSizeSelector
   , initWithSquareSizeSelector
-  , squareSizeSelector
   , setSquareSizeSelector
+  , squareSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,40 +37,40 @@ checkerboardNoiseWithSquareSize :: CDouble -> IO (Id GKCheckerboardNoiseSource)
 checkerboardNoiseWithSquareSize squareSize =
   do
     cls' <- getRequiredClass "GKCheckerboardNoiseSource"
-    sendClassMsg cls' (mkSelector "checkerboardNoiseWithSquareSize:") (retPtr retVoid) [argCDouble squareSize] >>= retainedObject . castPtr
+    sendClassMessage cls' checkerboardNoiseWithSquareSizeSelector squareSize
 
 -- | @- initWithSquareSize:@
 initWithSquareSize :: IsGKCheckerboardNoiseSource gkCheckerboardNoiseSource => gkCheckerboardNoiseSource -> CDouble -> IO (Id GKCheckerboardNoiseSource)
-initWithSquareSize gkCheckerboardNoiseSource  squareSize =
-    sendMsg gkCheckerboardNoiseSource (mkSelector "initWithSquareSize:") (retPtr retVoid) [argCDouble squareSize] >>= ownedObject . castPtr
+initWithSquareSize gkCheckerboardNoiseSource squareSize =
+  sendOwnedMessage gkCheckerboardNoiseSource initWithSquareSizeSelector squareSize
 
 -- | @- squareSize@
 squareSize :: IsGKCheckerboardNoiseSource gkCheckerboardNoiseSource => gkCheckerboardNoiseSource -> IO CDouble
-squareSize gkCheckerboardNoiseSource  =
-    sendMsg gkCheckerboardNoiseSource (mkSelector "squareSize") retCDouble []
+squareSize gkCheckerboardNoiseSource =
+  sendMessage gkCheckerboardNoiseSource squareSizeSelector
 
 -- | @- setSquareSize:@
 setSquareSize :: IsGKCheckerboardNoiseSource gkCheckerboardNoiseSource => gkCheckerboardNoiseSource -> CDouble -> IO ()
-setSquareSize gkCheckerboardNoiseSource  value =
-    sendMsg gkCheckerboardNoiseSource (mkSelector "setSquareSize:") retVoid [argCDouble value]
+setSquareSize gkCheckerboardNoiseSource value =
+  sendMessage gkCheckerboardNoiseSource setSquareSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkerboardNoiseWithSquareSize:@
-checkerboardNoiseWithSquareSizeSelector :: Selector
+checkerboardNoiseWithSquareSizeSelector :: Selector '[CDouble] (Id GKCheckerboardNoiseSource)
 checkerboardNoiseWithSquareSizeSelector = mkSelector "checkerboardNoiseWithSquareSize:"
 
 -- | @Selector@ for @initWithSquareSize:@
-initWithSquareSizeSelector :: Selector
+initWithSquareSizeSelector :: Selector '[CDouble] (Id GKCheckerboardNoiseSource)
 initWithSquareSizeSelector = mkSelector "initWithSquareSize:"
 
 -- | @Selector@ for @squareSize@
-squareSizeSelector :: Selector
+squareSizeSelector :: Selector '[] CDouble
 squareSizeSelector = mkSelector "squareSize"
 
 -- | @Selector@ for @setSquareSize:@
-setSquareSizeSelector :: Selector
+setSquareSizeSelector :: Selector '[CDouble] ()
 setSquareSizeSelector = mkSelector "setSquareSize:"
 

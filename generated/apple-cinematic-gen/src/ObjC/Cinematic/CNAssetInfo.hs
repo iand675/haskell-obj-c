@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Cinematic.CNAssetInfo
   , videoCompositionTracks
   , videoCompositionTrackIDs
   , sampleDataTrackIDs
-  , checkIfCinematic_completionHandlerSelector
-  , loadFromAsset_completionHandlerSelector
-  , initSelector
-  , newSelector
-  , assetSelector
   , allCinematicTracksSelector
-  , cinematicVideoTrackSelector
+  , assetSelector
+  , checkIfCinematic_completionHandlerSelector
   , cinematicDisparityTrackSelector
   , cinematicMetadataTrackSelector
+  , cinematicVideoTrackSelector
   , frameTimingTrackSelector
-  , videoCompositionTracksSelector
-  , videoCompositionTrackIDsSelector
+  , initSelector
+  , loadFromAsset_completionHandlerSelector
+  , newSelector
   , sampleDataTrackIDsSelector
+  , videoCompositionTrackIDsSelector
+  , videoCompositionTracksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,7 @@ checkIfCinematic_completionHandler :: IsAVAsset asset => asset -> Ptr () -> IO (
 checkIfCinematic_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "CNAssetInfo"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "checkIfCinematic:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' checkIfCinematic_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | Load cinematic asset information asynchronously.
 --
@@ -71,127 +67,126 @@ loadFromAsset_completionHandler :: IsAVAsset asset => asset -> Ptr () -> IO ()
 loadFromAsset_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "CNAssetInfo"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "loadFromAsset:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromAsset_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | @- init@
 init_ :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id CNAssetInfo)
-init_ cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnAssetInfo =
+  sendOwnedMessage cnAssetInfo initSelector
 
 -- | @+ new@
 new :: IO (Id CNAssetInfo)
 new  =
   do
     cls' <- getRequiredClass "CNAssetInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- asset@
 asset :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id AVAsset)
-asset cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset cnAssetInfo =
+  sendMessage cnAssetInfo assetSelector
 
 -- | @- allCinematicTracks@
 allCinematicTracks :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id NSArray)
-allCinematicTracks cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "allCinematicTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+allCinematicTracks cnAssetInfo =
+  sendMessage cnAssetInfo allCinematicTracksSelector
 
 -- | @- cinematicVideoTrack@
 cinematicVideoTrack :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id AVAssetTrack)
-cinematicVideoTrack cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "cinematicVideoTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+cinematicVideoTrack cnAssetInfo =
+  sendMessage cnAssetInfo cinematicVideoTrackSelector
 
 -- | @- cinematicDisparityTrack@
 cinematicDisparityTrack :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id AVAssetTrack)
-cinematicDisparityTrack cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "cinematicDisparityTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+cinematicDisparityTrack cnAssetInfo =
+  sendMessage cnAssetInfo cinematicDisparityTrackSelector
 
 -- | @- cinematicMetadataTrack@
 cinematicMetadataTrack :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id AVAssetTrack)
-cinematicMetadataTrack cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "cinematicMetadataTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+cinematicMetadataTrack cnAssetInfo =
+  sendMessage cnAssetInfo cinematicMetadataTrackSelector
 
 -- | Track to be used for frame timing
 --
 -- ObjC selector: @- frameTimingTrack@
 frameTimingTrack :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id AVAssetTrack)
-frameTimingTrack cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "frameTimingTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameTimingTrack cnAssetInfo =
+  sendMessage cnAssetInfo frameTimingTrackSelector
 
 -- | Tracks required to construct AVAssetReaderVideoCompositionOutput.
 --
 -- ObjC selector: @- videoCompositionTracks@
 videoCompositionTracks :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id NSArray)
-videoCompositionTracks cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "videoCompositionTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoCompositionTracks cnAssetInfo =
+  sendMessage cnAssetInfo videoCompositionTracksSelector
 
 -- | Source video track IDs required to implement AVVideoCompositionInstruction protocol
 --
 -- ObjC selector: @- videoCompositionTrackIDs@
 videoCompositionTrackIDs :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id NSArray)
-videoCompositionTrackIDs cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "videoCompositionTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoCompositionTrackIDs cnAssetInfo =
+  sendMessage cnAssetInfo videoCompositionTrackIDsSelector
 
 -- | Source metadata track IDs required to implement AVVideoCompositionInstruction protocol
 --
 -- ObjC selector: @- sampleDataTrackIDs@
 sampleDataTrackIDs :: IsCNAssetInfo cnAssetInfo => cnAssetInfo -> IO (Id NSArray)
-sampleDataTrackIDs cnAssetInfo  =
-    sendMsg cnAssetInfo (mkSelector "sampleDataTrackIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleDataTrackIDs cnAssetInfo =
+  sendMessage cnAssetInfo sampleDataTrackIDsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkIfCinematic:completionHandler:@
-checkIfCinematic_completionHandlerSelector :: Selector
+checkIfCinematic_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 checkIfCinematic_completionHandlerSelector = mkSelector "checkIfCinematic:completionHandler:"
 
 -- | @Selector@ for @loadFromAsset:completionHandler:@
-loadFromAsset_completionHandlerSelector :: Selector
+loadFromAsset_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 loadFromAsset_completionHandlerSelector = mkSelector "loadFromAsset:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNAssetInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNAssetInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @allCinematicTracks@
-allCinematicTracksSelector :: Selector
+allCinematicTracksSelector :: Selector '[] (Id NSArray)
 allCinematicTracksSelector = mkSelector "allCinematicTracks"
 
 -- | @Selector@ for @cinematicVideoTrack@
-cinematicVideoTrackSelector :: Selector
+cinematicVideoTrackSelector :: Selector '[] (Id AVAssetTrack)
 cinematicVideoTrackSelector = mkSelector "cinematicVideoTrack"
 
 -- | @Selector@ for @cinematicDisparityTrack@
-cinematicDisparityTrackSelector :: Selector
+cinematicDisparityTrackSelector :: Selector '[] (Id AVAssetTrack)
 cinematicDisparityTrackSelector = mkSelector "cinematicDisparityTrack"
 
 -- | @Selector@ for @cinematicMetadataTrack@
-cinematicMetadataTrackSelector :: Selector
+cinematicMetadataTrackSelector :: Selector '[] (Id AVAssetTrack)
 cinematicMetadataTrackSelector = mkSelector "cinematicMetadataTrack"
 
 -- | @Selector@ for @frameTimingTrack@
-frameTimingTrackSelector :: Selector
+frameTimingTrackSelector :: Selector '[] (Id AVAssetTrack)
 frameTimingTrackSelector = mkSelector "frameTimingTrack"
 
 -- | @Selector@ for @videoCompositionTracks@
-videoCompositionTracksSelector :: Selector
+videoCompositionTracksSelector :: Selector '[] (Id NSArray)
 videoCompositionTracksSelector = mkSelector "videoCompositionTracks"
 
 -- | @Selector@ for @videoCompositionTrackIDs@
-videoCompositionTrackIDsSelector :: Selector
+videoCompositionTrackIDsSelector :: Selector '[] (Id NSArray)
 videoCompositionTrackIDsSelector = mkSelector "videoCompositionTrackIDs"
 
 -- | @Selector@ for @sampleDataTrackIDs@
-sampleDataTrackIDsSelector :: Selector
+sampleDataTrackIDsSelector :: Selector '[] (Id NSArray)
 sampleDataTrackIDsSelector = mkSelector "sampleDataTrackIDs"
 

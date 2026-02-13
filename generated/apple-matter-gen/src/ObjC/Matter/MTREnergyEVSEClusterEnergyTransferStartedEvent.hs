@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTREnergyEVSEClusterEnergyTransferStartedEvent
   , setMaximumCurrent
   , maximumDischargeCurrent
   , setMaximumDischargeCurrent
-  , sessionIDSelector
-  , setSessionIDSelector
-  , stateSelector
-  , setStateSelector
   , maximumCurrentSelector
-  , setMaximumCurrentSelector
   , maximumDischargeCurrentSelector
+  , sessionIDSelector
+  , setMaximumCurrentSelector
   , setMaximumDischargeCurrentSelector
+  , setSessionIDSelector
+  , setStateSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sessionID@
 sessionID :: IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> IO (Id NSNumber)
-sessionID mtrEnergyEVSEClusterEnergyTransferStartedEvent  =
-    sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "sessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionID mtrEnergyEVSEClusterEnergyTransferStartedEvent =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent sessionIDSelector
 
 -- | @- setSessionID:@
 setSessionID :: (IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> value -> IO ()
-setSessionID mtrEnergyEVSEClusterEnergyTransferStartedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "setSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionID mtrEnergyEVSEClusterEnergyTransferStartedEvent value =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent setSessionIDSelector (toNSNumber value)
 
 -- | @- state@
 state :: IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> IO (Id NSNumber)
-state mtrEnergyEVSEClusterEnergyTransferStartedEvent  =
-    sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state mtrEnergyEVSEClusterEnergyTransferStartedEvent =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent stateSelector
 
 -- | @- setState:@
 setState :: (IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> value -> IO ()
-setState mtrEnergyEVSEClusterEnergyTransferStartedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState mtrEnergyEVSEClusterEnergyTransferStartedEvent value =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent setStateSelector (toNSNumber value)
 
 -- | @- maximumCurrent@
 maximumCurrent :: IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> IO (Id NSNumber)
-maximumCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent  =
-    sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "maximumCurrent") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent maximumCurrentSelector
 
 -- | @- setMaximumCurrent:@
 setMaximumCurrent :: (IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> value -> IO ()
-setMaximumCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "setMaximumCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent value =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent setMaximumCurrentSelector (toNSNumber value)
 
 -- | @- maximumDischargeCurrent@
 maximumDischargeCurrent :: IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> IO (Id NSNumber)
-maximumDischargeCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent  =
-    sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "maximumDischargeCurrent") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumDischargeCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent maximumDischargeCurrentSelector
 
 -- | @- setMaximumDischargeCurrent:@
 setMaximumDischargeCurrent :: (IsMTREnergyEVSEClusterEnergyTransferStartedEvent mtrEnergyEVSEClusterEnergyTransferStartedEvent, IsNSNumber value) => mtrEnergyEVSEClusterEnergyTransferStartedEvent -> value -> IO ()
-setMaximumDischargeCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnergyTransferStartedEvent (mkSelector "setMaximumDischargeCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumDischargeCurrent mtrEnergyEVSEClusterEnergyTransferStartedEvent value =
+  sendMessage mtrEnergyEVSEClusterEnergyTransferStartedEvent setMaximumDischargeCurrentSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sessionID@
-sessionIDSelector :: Selector
+sessionIDSelector :: Selector '[] (Id NSNumber)
 sessionIDSelector = mkSelector "sessionID"
 
 -- | @Selector@ for @setSessionID:@
-setSessionIDSelector :: Selector
+setSessionIDSelector :: Selector '[Id NSNumber] ()
 setSessionIDSelector = mkSelector "setSessionID:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSNumber)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSNumber] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @maximumCurrent@
-maximumCurrentSelector :: Selector
+maximumCurrentSelector :: Selector '[] (Id NSNumber)
 maximumCurrentSelector = mkSelector "maximumCurrent"
 
 -- | @Selector@ for @setMaximumCurrent:@
-setMaximumCurrentSelector :: Selector
+setMaximumCurrentSelector :: Selector '[Id NSNumber] ()
 setMaximumCurrentSelector = mkSelector "setMaximumCurrent:"
 
 -- | @Selector@ for @maximumDischargeCurrent@
-maximumDischargeCurrentSelector :: Selector
+maximumDischargeCurrentSelector :: Selector '[] (Id NSNumber)
 maximumDischargeCurrentSelector = mkSelector "maximumDischargeCurrent"
 
 -- | @Selector@ for @setMaximumDischargeCurrent:@
-setMaximumDischargeCurrentSelector :: Selector
+setMaximumDischargeCurrentSelector :: Selector '[Id NSNumber] ()
 setMaximumDischargeCurrentSelector = mkSelector "setMaximumDischargeCurrent:"
 

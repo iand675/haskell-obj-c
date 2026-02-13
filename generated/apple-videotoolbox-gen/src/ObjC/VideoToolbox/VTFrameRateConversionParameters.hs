@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.VideoToolbox.VTFrameRateConversionParameters
   , interpolationPhase
   , submissionMode
   , destinationFrames
-  , initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector
+  , destinationFramesSelector
   , initSelector
+  , initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector
+  , interpolationPhaseSelector
   , newSelector
-  , sourceFrameSelector
   , nextFrameSelector
   , opticalFlowSelector
-  , interpolationPhaseSelector
+  , sourceFrameSelector
   , submissionModeSelector
-  , destinationFramesSelector
 
   -- * Enum types
   , VTFrameRateConversionParametersSubmissionMode(VTFrameRateConversionParametersSubmissionMode)
@@ -40,15 +41,11 @@ module ObjC.VideoToolbox.VTFrameRateConversionParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,39 +61,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSourceFrame:nextFrame:opticalFlow:interpolationPhase:submissionMode:destinationFrames:@
 initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFrames :: (IsVTFrameRateConversionParameters vtFrameRateConversionParameters, IsVTFrameProcessorFrame sourceFrame, IsVTFrameProcessorFrame nextFrame, IsVTFrameProcessorOpticalFlow opticalFlow, IsNSArray interpolationPhase, IsNSArray destinationFrame) => vtFrameRateConversionParameters -> sourceFrame -> nextFrame -> opticalFlow -> interpolationPhase -> VTFrameRateConversionParametersSubmissionMode -> destinationFrame -> IO (Id VTFrameRateConversionParameters)
-initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFrames vtFrameRateConversionParameters  sourceFrame nextFrame opticalFlow interpolationPhase submissionMode destinationFrame =
-  withObjCPtr sourceFrame $ \raw_sourceFrame ->
-    withObjCPtr nextFrame $ \raw_nextFrame ->
-      withObjCPtr opticalFlow $ \raw_opticalFlow ->
-        withObjCPtr interpolationPhase $ \raw_interpolationPhase ->
-          withObjCPtr destinationFrame $ \raw_destinationFrame ->
-              sendMsg vtFrameRateConversionParameters (mkSelector "initWithSourceFrame:nextFrame:opticalFlow:interpolationPhase:submissionMode:destinationFrames:") (retPtr retVoid) [argPtr (castPtr raw_sourceFrame :: Ptr ()), argPtr (castPtr raw_nextFrame :: Ptr ()), argPtr (castPtr raw_opticalFlow :: Ptr ()), argPtr (castPtr raw_interpolationPhase :: Ptr ()), argCLong (coerce submissionMode), argPtr (castPtr raw_destinationFrame :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFrames vtFrameRateConversionParameters sourceFrame nextFrame opticalFlow interpolationPhase submissionMode destinationFrame =
+  sendOwnedMessage vtFrameRateConversionParameters initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector (toVTFrameProcessorFrame sourceFrame) (toVTFrameProcessorFrame nextFrame) (toVTFrameProcessorOpticalFlow opticalFlow) (toNSArray interpolationPhase) submissionMode (toNSArray destinationFrame)
 
 -- | @- init@
 init_ :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id VTFrameRateConversionParameters)
-init_ vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtFrameRateConversionParameters =
+  sendOwnedMessage vtFrameRateConversionParameters initSelector
 
 -- | @+ new@
 new :: IO (Id VTFrameRateConversionParameters)
 new  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Current source frame, which must be non @nil@.
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id VTFrameProcessorFrame)
-sourceFrame vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters sourceFrameSelector
 
 -- | The next source frame in presentation time order, which is @nil@ for the last frame.
 --
 -- ObjC selector: @- nextFrame@
 nextFrame :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id VTFrameProcessorFrame)
-nextFrame vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "nextFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextFrame vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters nextFrameSelector
 
 -- | An optional object that contains forward and backward optical flow with next frame.
 --
@@ -104,8 +96,8 @@ nextFrame vtFrameRateConversionParameters  =
 --
 -- ObjC selector: @- opticalFlow@
 opticalFlow :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id VTFrameProcessorOpticalFlow)
-opticalFlow vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "opticalFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
+opticalFlow vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters opticalFlowSelector
 
 -- | Array of float numbers that indicate intervals at which the processor inserts a frame between the current and next frame.
 --
@@ -113,15 +105,15 @@ opticalFlow vtFrameRateConversionParameters  =
 --
 -- ObjC selector: @- interpolationPhase@
 interpolationPhase :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id NSArray)
-interpolationPhase vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "interpolationPhase") (retPtr retVoid) [] >>= retainedObject . castPtr
+interpolationPhase vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters interpolationPhaseSelector
 
 -- | Ordering of the input frames in this submission relative to the previous submission.
 --
 -- ObjC selector: @- submissionMode@
 submissionMode :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO VTFrameRateConversionParametersSubmissionMode
-submissionMode vtFrameRateConversionParameters  =
-    fmap (coerce :: CLong -> VTFrameRateConversionParametersSubmissionMode) $ sendMsg vtFrameRateConversionParameters (mkSelector "submissionMode") retCLong []
+submissionMode vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters submissionModeSelector
 
 -- | Caller-allocated array of video frame objects that contain pixel buffers to receive the results.
 --
@@ -129,46 +121,46 @@ submissionMode vtFrameRateConversionParameters  =
 --
 -- ObjC selector: @- destinationFrames@
 destinationFrames :: IsVTFrameRateConversionParameters vtFrameRateConversionParameters => vtFrameRateConversionParameters -> IO (Id NSArray)
-destinationFrames vtFrameRateConversionParameters  =
-    sendMsg vtFrameRateConversionParameters (mkSelector "destinationFrames") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationFrames vtFrameRateConversionParameters =
+  sendMessage vtFrameRateConversionParameters destinationFramesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSourceFrame:nextFrame:opticalFlow:interpolationPhase:submissionMode:destinationFrames:@
-initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector :: Selector
+initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector :: Selector '[Id VTFrameProcessorFrame, Id VTFrameProcessorFrame, Id VTFrameProcessorOpticalFlow, Id NSArray, VTFrameRateConversionParametersSubmissionMode, Id NSArray] (Id VTFrameRateConversionParameters)
 initWithSourceFrame_nextFrame_opticalFlow_interpolationPhase_submissionMode_destinationFramesSelector = mkSelector "initWithSourceFrame:nextFrame:opticalFlow:interpolationPhase:submissionMode:destinationFrames:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTFrameRateConversionParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTFrameRateConversionParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @nextFrame@
-nextFrameSelector :: Selector
+nextFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 nextFrameSelector = mkSelector "nextFrame"
 
 -- | @Selector@ for @opticalFlow@
-opticalFlowSelector :: Selector
+opticalFlowSelector :: Selector '[] (Id VTFrameProcessorOpticalFlow)
 opticalFlowSelector = mkSelector "opticalFlow"
 
 -- | @Selector@ for @interpolationPhase@
-interpolationPhaseSelector :: Selector
+interpolationPhaseSelector :: Selector '[] (Id NSArray)
 interpolationPhaseSelector = mkSelector "interpolationPhase"
 
 -- | @Selector@ for @submissionMode@
-submissionModeSelector :: Selector
+submissionModeSelector :: Selector '[] VTFrameRateConversionParametersSubmissionMode
 submissionModeSelector = mkSelector "submissionMode"
 
 -- | @Selector@ for @destinationFrames@
-destinationFramesSelector :: Selector
+destinationFramesSelector :: Selector '[] (Id NSArray)
 destinationFramesSelector = mkSelector "destinationFrames"
 

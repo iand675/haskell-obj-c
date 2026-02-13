@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuronGradientNode
   , initWithSourceGradient_sourceImage_gradientState_descriptor
   , init_
   , descriptor
-  , nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector
-  , initWithSourceGradient_sourceImage_gradientState_descriptorSelector
-  , initSelector
   , descriptorSelector
+  , initSelector
+  , initWithSourceGradient_sourceImage_gradientState_descriptorSelector
+  , nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,11 +43,7 @@ nodeWithSourceGradient_sourceImage_gradientState_descriptor :: (IsMPSNNImageNode
 nodeWithSourceGradient_sourceImage_gradientState_descriptor sourceGradient sourceImage gradientState descriptor =
   do
     cls' <- getRequiredClass "MPSCNNNeuronGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          withObjCPtr descriptor $ \raw_descriptor ->
-            sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) (toMPSNNNeuronDescriptor descriptor)
 
 -- | create a new neuron gradient node
 --
@@ -58,42 +51,38 @@ nodeWithSourceGradient_sourceImage_gradientState_descriptor sourceGradient sourc
 --
 -- ObjC selector: @- initWithSourceGradient:sourceImage:gradientState:descriptor:@
 initWithSourceGradient_sourceImage_gradientState_descriptor :: (IsMPSCNNNeuronGradientNode mpscnnNeuronGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState, IsMPSNNNeuronDescriptor descriptor) => mpscnnNeuronGradientNode -> sourceGradient -> sourceImage -> gradientState -> descriptor -> IO (Id MPSCNNNeuronGradientNode)
-initWithSourceGradient_sourceImage_gradientState_descriptor mpscnnNeuronGradientNode  sourceGradient sourceImage gradientState descriptor =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-        withObjCPtr descriptor $ \raw_descriptor ->
-            sendMsg mpscnnNeuronGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState_descriptor mpscnnNeuronGradientNode sourceGradient sourceImage gradientState descriptor =
+  sendOwnedMessage mpscnnNeuronGradientNode initWithSourceGradient_sourceImage_gradientState_descriptorSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) (toMPSNNNeuronDescriptor descriptor)
 
 -- | @- init@
 init_ :: IsMPSCNNNeuronGradientNode mpscnnNeuronGradientNode => mpscnnNeuronGradientNode -> IO (Id MPSCNNNeuronGradientNode)
-init_ mpscnnNeuronGradientNode  =
-    sendMsg mpscnnNeuronGradientNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnNeuronGradientNode =
+  sendOwnedMessage mpscnnNeuronGradientNode initSelector
 
 -- | The neuron descriptor
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMPSCNNNeuronGradientNode mpscnnNeuronGradientNode => mpscnnNeuronGradientNode -> IO (Id MPSNNNeuronDescriptor)
-descriptor mpscnnNeuronGradientNode  =
-    sendMsg mpscnnNeuronGradientNode (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mpscnnNeuronGradientNode =
+  sendMessage mpscnnNeuronGradientNode descriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:descriptor:@
-nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, Id MPSNNNeuronDescriptor] (Id MPSCNNNeuronGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_descriptorSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:descriptor:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:descriptor:@
-initWithSourceGradient_sourceImage_gradientState_descriptorSelector :: Selector
+initWithSourceGradient_sourceImage_gradientState_descriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, Id MPSNNNeuronDescriptor] (Id MPSCNNNeuronGradientNode)
 initWithSourceGradient_sourceImage_gradientState_descriptorSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:descriptor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNNeuronGradientNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSNNNeuronDescriptor)
 descriptorSelector = mkSelector "descriptor"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.GLKit.GLKEffectPropertyMaterial
   , IsGLKEffectPropertyMaterial(..)
   , shininess
   , setShininess
-  , shininessSelector
   , setShininessSelector
+  , shininessSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- shininess@
 shininess :: IsGLKEffectPropertyMaterial glkEffectPropertyMaterial => glkEffectPropertyMaterial -> IO CFloat
-shininess glkEffectPropertyMaterial  =
-    sendMsg glkEffectPropertyMaterial (mkSelector "shininess") retCFloat []
+shininess glkEffectPropertyMaterial =
+  sendMessage glkEffectPropertyMaterial shininessSelector
 
 -- | @- setShininess:@
 setShininess :: IsGLKEffectPropertyMaterial glkEffectPropertyMaterial => glkEffectPropertyMaterial -> CFloat -> IO ()
-setShininess glkEffectPropertyMaterial  value =
-    sendMsg glkEffectPropertyMaterial (mkSelector "setShininess:") retVoid [argCFloat value]
+setShininess glkEffectPropertyMaterial value =
+  sendMessage glkEffectPropertyMaterial setShininessSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shininess@
-shininessSelector :: Selector
+shininessSelector :: Selector '[] CFloat
 shininessSelector = mkSelector "shininess"
 
 -- | @Selector@ for @setShininess:@
-setShininessSelector :: Selector
+setShininessSelector :: Selector '[CFloat] ()
 setShininessSelector = mkSelector "setShininess:"
 

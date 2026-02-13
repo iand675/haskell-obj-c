@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data CVPlanarComponentInfo = CVPlanarComponentInfo
   { cvPlanarComponentInfoOffset :: !CInt
@@ -36,6 +38,16 @@ argCVPlanarComponentInfo = mkStorableArg cvPlanarComponentInfoStructType
 
 retCVPlanarComponentInfo :: RetType CVPlanarComponentInfo
 retCVPlanarComponentInfo = mkStorableRetType cvPlanarComponentInfoStructType
+
+instance ObjCArgument CVPlanarComponentInfo where
+  withObjCArg x k = k (argCVPlanarComponentInfo x)
+
+instance ObjCReturn CVPlanarComponentInfo where
+  type RawReturn CVPlanarComponentInfo = CVPlanarComponentInfo
+  objcRetType = retCVPlanarComponentInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | CVSMPTETime
 --
@@ -85,6 +97,16 @@ argCVSMPTETime = mkStorableArg cvsmpteTimeStructType
 retCVSMPTETime :: RetType CVSMPTETime
 retCVSMPTETime = mkStorableRetType cvsmpteTimeStructType
 
+instance ObjCArgument CVSMPTETime where
+  withObjCArg x k = k (argCVSMPTETime x)
+
+instance ObjCReturn CVSMPTETime where
+  type RawReturn CVSMPTETime = CVSMPTETime
+  objcRetType = retCVSMPTETime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CVPlanarPixelBufferInfo_YCbCrBiPlanar = CVPlanarPixelBufferInfo_YCbCrBiPlanar
   { cvPlanarPixelBufferInfo_YCbCrBiPlanarComponentInfoY :: !CVPlanarComponentInfo
   , cvPlanarPixelBufferInfo_YCbCrBiPlanarComponentInfoCbCr :: !CVPlanarComponentInfo
@@ -108,6 +130,16 @@ argCVPlanarPixelBufferInfo_YCbCrBiPlanar = mkStorableArg cvPlanarPixelBufferInfo
 
 retCVPlanarPixelBufferInfo_YCbCrBiPlanar :: RetType CVPlanarPixelBufferInfo_YCbCrBiPlanar
 retCVPlanarPixelBufferInfo_YCbCrBiPlanar = mkStorableRetType cvPlanarPixelBufferInfo_YCbCrBiPlanarStructType
+
+instance ObjCArgument CVPlanarPixelBufferInfo_YCbCrBiPlanar where
+  withObjCArg x k = k (argCVPlanarPixelBufferInfo_YCbCrBiPlanar x)
+
+instance ObjCReturn CVPlanarPixelBufferInfo_YCbCrBiPlanar where
+  type RawReturn CVPlanarPixelBufferInfo_YCbCrBiPlanar = CVPlanarPixelBufferInfo_YCbCrBiPlanar
+  objcRetType = retCVPlanarPixelBufferInfo_YCbCrBiPlanar
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CVPlanarPixelBufferInfo_YCbCrPlanar = CVPlanarPixelBufferInfo_YCbCrPlanar
   { cvPlanarPixelBufferInfo_YCbCrPlanarComponentInfoY :: !CVPlanarComponentInfo
@@ -135,3 +167,13 @@ argCVPlanarPixelBufferInfo_YCbCrPlanar = mkStorableArg cvPlanarPixelBufferInfo_Y
 
 retCVPlanarPixelBufferInfo_YCbCrPlanar :: RetType CVPlanarPixelBufferInfo_YCbCrPlanar
 retCVPlanarPixelBufferInfo_YCbCrPlanar = mkStorableRetType cvPlanarPixelBufferInfo_YCbCrPlanarStructType
+
+instance ObjCArgument CVPlanarPixelBufferInfo_YCbCrPlanar where
+  withObjCArg x k = k (argCVPlanarPixelBufferInfo_YCbCrPlanar x)
+
+instance ObjCReturn CVPlanarPixelBufferInfo_YCbCrPlanar where
+  type RawReturn CVPlanarPixelBufferInfo_YCbCrPlanar = CVPlanarPixelBufferInfo_YCbCrPlanar
+  objcRetType = retCVPlanarPixelBufferInfo_YCbCrPlanar
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

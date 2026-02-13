@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,33 +27,29 @@ module ObjC.AVFoundation.AVCaptureSlider
   , symbolName
   , accessibilityIdentifier
   , setAccessibilityIdentifier
+  , accessibilityIdentifierSelector
   , initWithLocalizedTitle_symbolName_minValue_maxValueSelector
   , initWithLocalizedTitle_symbolName_minValue_maxValue_stepSelector
   , initWithLocalizedTitle_symbolName_valuesSelector
-  , setActionQueue_actionSelector
-  , valueSelector
-  , setValueSelector
-  , localizedValueFormatSelector
-  , setLocalizedValueFormatSelector
-  , prominentValuesSelector
-  , setProminentValuesSelector
   , localizedTitleSelector
-  , symbolNameSelector
-  , accessibilityIdentifierSelector
+  , localizedValueFormatSelector
+  , prominentValuesSelector
   , setAccessibilityIdentifierSelector
+  , setActionQueue_actionSelector
+  , setLocalizedValueFormatSelector
+  , setProminentValuesSelector
+  , setValueSelector
+  , symbolNameSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,10 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:minValue:maxValue:@
 initWithLocalizedTitle_symbolName_minValue_maxValue :: (IsAVCaptureSlider avCaptureSlider, IsNSString localizedTitle, IsNSString symbolName) => avCaptureSlider -> localizedTitle -> symbolName -> CFloat -> CFloat -> IO (Id AVCaptureSlider)
-initWithLocalizedTitle_symbolName_minValue_maxValue avCaptureSlider  localizedTitle symbolName minValue maxValue =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-        sendMsg avCaptureSlider (mkSelector "initWithLocalizedTitle:symbolName:minValue:maxValue:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argCFloat minValue, argCFloat maxValue] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_minValue_maxValue avCaptureSlider localizedTitle symbolName minValue maxValue =
+  sendOwnedMessage avCaptureSlider initWithLocalizedTitle_symbolName_minValue_maxValueSelector (toNSString localizedTitle) (toNSString symbolName) minValue maxValue
 
 -- | initWithLocalizedTitle:symbolName:minValue:maxValue:step:
 --
@@ -102,10 +97,8 @@ initWithLocalizedTitle_symbolName_minValue_maxValue avCaptureSlider  localizedTi
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:minValue:maxValue:step:@
 initWithLocalizedTitle_symbolName_minValue_maxValue_step :: (IsAVCaptureSlider avCaptureSlider, IsNSString localizedTitle, IsNSString symbolName) => avCaptureSlider -> localizedTitle -> symbolName -> CFloat -> CFloat -> CFloat -> IO (Id AVCaptureSlider)
-initWithLocalizedTitle_symbolName_minValue_maxValue_step avCaptureSlider  localizedTitle symbolName minValue maxValue step =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-        sendMsg avCaptureSlider (mkSelector "initWithLocalizedTitle:symbolName:minValue:maxValue:step:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argCFloat minValue, argCFloat maxValue, argCFloat step] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_minValue_maxValue_step avCaptureSlider localizedTitle symbolName minValue maxValue step =
+  sendOwnedMessage avCaptureSlider initWithLocalizedTitle_symbolName_minValue_maxValue_stepSelector (toNSString localizedTitle) (toNSString symbolName) minValue maxValue step
 
 -- | initWithLocalizedTitle:symbolName:values:
 --
@@ -123,11 +116,8 @@ initWithLocalizedTitle_symbolName_minValue_maxValue_step avCaptureSlider  locali
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:values:@
 initWithLocalizedTitle_symbolName_values :: (IsAVCaptureSlider avCaptureSlider, IsNSString localizedTitle, IsNSString symbolName, IsNSArray values) => avCaptureSlider -> localizedTitle -> symbolName -> values -> IO (Id AVCaptureSlider)
-initWithLocalizedTitle_symbolName_values avCaptureSlider  localizedTitle symbolName values =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-      withObjCPtr values $ \raw_values ->
-          sendMsg avCaptureSlider (mkSelector "initWithLocalizedTitle:symbolName:values:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argPtr (castPtr raw_values :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_values avCaptureSlider localizedTitle symbolName values =
+  sendOwnedMessage avCaptureSlider initWithLocalizedTitle_symbolName_valuesSelector (toNSString localizedTitle) (toNSString symbolName) (toNSArray values)
 
 -- | setActionQueue:action:
 --
@@ -143,9 +133,8 @@ initWithLocalizedTitle_symbolName_values avCaptureSlider  localizedTitle symbolN
 --
 -- ObjC selector: @- setActionQueue:action:@
 setActionQueue_action :: (IsAVCaptureSlider avCaptureSlider, IsNSObject actionQueue) => avCaptureSlider -> actionQueue -> Ptr () -> IO ()
-setActionQueue_action avCaptureSlider  actionQueue action =
-  withObjCPtr actionQueue $ \raw_actionQueue ->
-      sendMsg avCaptureSlider (mkSelector "setActionQueue:action:") retVoid [argPtr (castPtr raw_actionQueue :: Ptr ()), argPtr (castPtr action :: Ptr ())]
+setActionQueue_action avCaptureSlider actionQueue action =
+  sendMessage avCaptureSlider setActionQueue_actionSelector (toNSObject actionQueue) action
 
 -- | value
 --
@@ -155,8 +144,8 @@ setActionQueue_action avCaptureSlider  actionQueue action =
 --
 -- ObjC selector: @- value@
 value :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO CFloat
-value avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "value") retCFloat []
+value avCaptureSlider =
+  sendMessage avCaptureSlider valueSelector
 
 -- | value
 --
@@ -166,8 +155,8 @@ value avCaptureSlider  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> CFloat -> IO ()
-setValue avCaptureSlider  value =
-    sendMsg avCaptureSlider (mkSelector "setValue:") retVoid [argCFloat value]
+setValue avCaptureSlider value =
+  sendMessage avCaptureSlider setValueSelector value
 
 -- | localizedValueFormat
 --
@@ -181,8 +170,8 @@ setValue avCaptureSlider  value =
 --
 -- ObjC selector: @- localizedValueFormat@
 localizedValueFormat :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSString)
-localizedValueFormat avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "localizedValueFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedValueFormat avCaptureSlider =
+  sendMessage avCaptureSlider localizedValueFormatSelector
 
 -- | localizedValueFormat
 --
@@ -196,9 +185,8 @@ localizedValueFormat avCaptureSlider  =
 --
 -- ObjC selector: @- setLocalizedValueFormat:@
 setLocalizedValueFormat :: (IsAVCaptureSlider avCaptureSlider, IsNSString value) => avCaptureSlider -> value -> IO ()
-setLocalizedValueFormat avCaptureSlider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureSlider (mkSelector "setLocalizedValueFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedValueFormat avCaptureSlider value =
+  sendMessage avCaptureSlider setLocalizedValueFormatSelector (toNSString value)
 
 -- | prominentValues
 --
@@ -206,8 +194,8 @@ setLocalizedValueFormat avCaptureSlider  value =
 --
 -- ObjC selector: @- prominentValues@
 prominentValues :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSArray)
-prominentValues avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "prominentValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+prominentValues avCaptureSlider =
+  sendMessage avCaptureSlider prominentValuesSelector
 
 -- | prominentValues
 --
@@ -215,9 +203,8 @@ prominentValues avCaptureSlider  =
 --
 -- ObjC selector: @- setProminentValues:@
 setProminentValues :: (IsAVCaptureSlider avCaptureSlider, IsNSArray value) => avCaptureSlider -> value -> IO ()
-setProminentValues avCaptureSlider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureSlider (mkSelector "setProminentValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProminentValues avCaptureSlider value =
+  sendMessage avCaptureSlider setProminentValuesSelector (toNSArray value)
 
 -- | localizedTitle
 --
@@ -225,8 +212,8 @@ setProminentValues avCaptureSlider  value =
 --
 -- ObjC selector: @- localizedTitle@
 localizedTitle :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSString)
-localizedTitle avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTitle avCaptureSlider =
+  sendMessage avCaptureSlider localizedTitleSelector
 
 -- | symbolName
 --
@@ -234,8 +221,8 @@ localizedTitle avCaptureSlider  =
 --
 -- ObjC selector: @- symbolName@
 symbolName :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSString)
-symbolName avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "symbolName") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbolName avCaptureSlider =
+  sendMessage avCaptureSlider symbolNameSelector
 
 -- | accessibilityIdentifier
 --
@@ -243,8 +230,8 @@ symbolName avCaptureSlider  =
 --
 -- ObjC selector: @- accessibilityIdentifier@
 accessibilityIdentifier :: IsAVCaptureSlider avCaptureSlider => avCaptureSlider -> IO (Id NSString)
-accessibilityIdentifier avCaptureSlider  =
-    sendMsg avCaptureSlider (mkSelector "accessibilityIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityIdentifier avCaptureSlider =
+  sendMessage avCaptureSlider accessibilityIdentifierSelector
 
 -- | accessibilityIdentifier
 --
@@ -252,67 +239,66 @@ accessibilityIdentifier avCaptureSlider  =
 --
 -- ObjC selector: @- setAccessibilityIdentifier:@
 setAccessibilityIdentifier :: (IsAVCaptureSlider avCaptureSlider, IsNSString value) => avCaptureSlider -> value -> IO ()
-setAccessibilityIdentifier avCaptureSlider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureSlider (mkSelector "setAccessibilityIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityIdentifier avCaptureSlider value =
+  sendMessage avCaptureSlider setAccessibilityIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:minValue:maxValue:@
-initWithLocalizedTitle_symbolName_minValue_maxValueSelector :: Selector
+initWithLocalizedTitle_symbolName_minValue_maxValueSelector :: Selector '[Id NSString, Id NSString, CFloat, CFloat] (Id AVCaptureSlider)
 initWithLocalizedTitle_symbolName_minValue_maxValueSelector = mkSelector "initWithLocalizedTitle:symbolName:minValue:maxValue:"
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:minValue:maxValue:step:@
-initWithLocalizedTitle_symbolName_minValue_maxValue_stepSelector :: Selector
+initWithLocalizedTitle_symbolName_minValue_maxValue_stepSelector :: Selector '[Id NSString, Id NSString, CFloat, CFloat, CFloat] (Id AVCaptureSlider)
 initWithLocalizedTitle_symbolName_minValue_maxValue_stepSelector = mkSelector "initWithLocalizedTitle:symbolName:minValue:maxValue:step:"
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:values:@
-initWithLocalizedTitle_symbolName_valuesSelector :: Selector
+initWithLocalizedTitle_symbolName_valuesSelector :: Selector '[Id NSString, Id NSString, Id NSArray] (Id AVCaptureSlider)
 initWithLocalizedTitle_symbolName_valuesSelector = mkSelector "initWithLocalizedTitle:symbolName:values:"
 
 -- | @Selector@ for @setActionQueue:action:@
-setActionQueue_actionSelector :: Selector
+setActionQueue_actionSelector :: Selector '[Id NSObject, Ptr ()] ()
 setActionQueue_actionSelector = mkSelector "setActionQueue:action:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @localizedValueFormat@
-localizedValueFormatSelector :: Selector
+localizedValueFormatSelector :: Selector '[] (Id NSString)
 localizedValueFormatSelector = mkSelector "localizedValueFormat"
 
 -- | @Selector@ for @setLocalizedValueFormat:@
-setLocalizedValueFormatSelector :: Selector
+setLocalizedValueFormatSelector :: Selector '[Id NSString] ()
 setLocalizedValueFormatSelector = mkSelector "setLocalizedValueFormat:"
 
 -- | @Selector@ for @prominentValues@
-prominentValuesSelector :: Selector
+prominentValuesSelector :: Selector '[] (Id NSArray)
 prominentValuesSelector = mkSelector "prominentValues"
 
 -- | @Selector@ for @setProminentValues:@
-setProminentValuesSelector :: Selector
+setProminentValuesSelector :: Selector '[Id NSArray] ()
 setProminentValuesSelector = mkSelector "setProminentValues:"
 
 -- | @Selector@ for @localizedTitle@
-localizedTitleSelector :: Selector
+localizedTitleSelector :: Selector '[] (Id NSString)
 localizedTitleSelector = mkSelector "localizedTitle"
 
 -- | @Selector@ for @symbolName@
-symbolNameSelector :: Selector
+symbolNameSelector :: Selector '[] (Id NSString)
 symbolNameSelector = mkSelector "symbolName"
 
 -- | @Selector@ for @accessibilityIdentifier@
-accessibilityIdentifierSelector :: Selector
+accessibilityIdentifierSelector :: Selector '[] (Id NSString)
 accessibilityIdentifierSelector = mkSelector "accessibilityIdentifier"
 
 -- | @Selector@ for @setAccessibilityIdentifier:@
-setAccessibilityIdentifierSelector :: Selector
+setAccessibilityIdentifierSelector :: Selector '[Id NSString] ()
 setAccessibilityIdentifierSelector = mkSelector "setAccessibilityIdentifier:"
 

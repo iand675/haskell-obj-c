@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPreset
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , presetIDSelector
-  , setPresetIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setPresetIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- presetID@
 presetID :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> IO (Id NSNumber)
-presetID mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "presetID") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetID mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams presetIDSelector
 
 -- | @- setPresetID:@
 setPresetID :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> value -> IO ()
-setPresetID mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "setPresetID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetID mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams setPresetIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setPresetID mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPres
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToP
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZMov
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @presetID@
-presetIDSelector :: Selector
+presetIDSelector :: Selector '[] (Id NSNumber)
 presetIDSelector = mkSelector "presetID"
 
 -- | @Selector@ for @setPresetID:@
-setPresetIDSelector :: Selector
+setPresetIDSelector :: Selector '[Id NSNumber] ()
 setPresetIDSelector = mkSelector "setPresetID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

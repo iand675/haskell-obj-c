@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.SensorKit.SRMediaEvent
   , IsSRMediaEvent(..)
   , mediaIdentifier
   , eventType
-  , mediaIdentifierSelector
   , eventTypeSelector
+  , mediaIdentifierSelector
 
   -- * Enum types
   , SRMediaEventType(SRMediaEventType)
@@ -19,15 +20,11 @@ module ObjC.SensorKit.SRMediaEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mediaIdentifier@
 mediaIdentifier :: IsSRMediaEvent srMediaEvent => srMediaEvent -> IO (Id NSString)
-mediaIdentifier srMediaEvent  =
-    sendMsg srMediaEvent (mkSelector "mediaIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaIdentifier srMediaEvent =
+  sendMessage srMediaEvent mediaIdentifierSelector
 
 -- | eventType
 --
@@ -54,18 +51,18 @@ mediaIdentifier srMediaEvent  =
 --
 -- ObjC selector: @- eventType@
 eventType :: IsSRMediaEvent srMediaEvent => srMediaEvent -> IO SRMediaEventType
-eventType srMediaEvent  =
-    fmap (coerce :: CLong -> SRMediaEventType) $ sendMsg srMediaEvent (mkSelector "eventType") retCLong []
+eventType srMediaEvent =
+  sendMessage srMediaEvent eventTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaIdentifier@
-mediaIdentifierSelector :: Selector
+mediaIdentifierSelector :: Selector '[] (Id NSString)
 mediaIdentifierSelector = mkSelector "mediaIdentifier"
 
 -- | @Selector@ for @eventType@
-eventTypeSelector :: Selector
+eventTypeSelector :: Selector '[] SRMediaEventType
 eventTypeSelector = mkSelector "eventType"
 

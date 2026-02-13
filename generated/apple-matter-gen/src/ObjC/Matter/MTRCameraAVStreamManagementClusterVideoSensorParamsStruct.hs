@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterVideoSensorParamsStruct
   , setMaxFPS
   , maxHDRFPS
   , setMaxHDRFPS
-  , sensorWidthSelector
-  , setSensorWidthSelector
-  , sensorHeightSelector
-  , setSensorHeightSelector
   , maxFPSSelector
-  , setMaxFPSSelector
   , maxHDRFPSSelector
+  , sensorHeightSelector
+  , sensorWidthSelector
+  , setMaxFPSSelector
   , setMaxHDRFPSSelector
+  , setSensorHeightSelector
+  , setSensorWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sensorWidth@
 sensorWidth :: IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> IO (Id NSNumber)
-sensorWidth mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "sensorWidth") (retPtr retVoid) [] >>= retainedObject . castPtr
+sensorWidth mtrCameraAVStreamManagementClusterVideoSensorParamsStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct sensorWidthSelector
 
 -- | @- setSensorWidth:@
 setSensorWidth :: (IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> value -> IO ()
-setSensorWidth mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "setSensorWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSensorWidth mtrCameraAVStreamManagementClusterVideoSensorParamsStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct setSensorWidthSelector (toNSNumber value)
 
 -- | @- sensorHeight@
 sensorHeight :: IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> IO (Id NSNumber)
-sensorHeight mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "sensorHeight") (retPtr retVoid) [] >>= retainedObject . castPtr
+sensorHeight mtrCameraAVStreamManagementClusterVideoSensorParamsStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct sensorHeightSelector
 
 -- | @- setSensorHeight:@
 setSensorHeight :: (IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> value -> IO ()
-setSensorHeight mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "setSensorHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSensorHeight mtrCameraAVStreamManagementClusterVideoSensorParamsStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct setSensorHeightSelector (toNSNumber value)
 
 -- | @- maxFPS@
 maxFPS :: IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> IO (Id NSNumber)
-maxFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "maxFPS") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct maxFPSSelector
 
 -- | @- setMaxFPS:@
 setMaxFPS :: (IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> value -> IO ()
-setMaxFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "setMaxFPS:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct setMaxFPSSelector (toNSNumber value)
 
 -- | @- maxHDRFPS@
 maxHDRFPS :: IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> IO (Id NSNumber)
-maxHDRFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "maxHDRFPS") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxHDRFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct maxHDRFPSSelector
 
 -- | @- setMaxHDRFPS:@
 setMaxHDRFPS :: (IsMTRCameraAVStreamManagementClusterVideoSensorParamsStruct mtrCameraAVStreamManagementClusterVideoSensorParamsStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoSensorParamsStruct -> value -> IO ()
-setMaxHDRFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoSensorParamsStruct (mkSelector "setMaxHDRFPS:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxHDRFPS mtrCameraAVStreamManagementClusterVideoSensorParamsStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoSensorParamsStruct setMaxHDRFPSSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sensorWidth@
-sensorWidthSelector :: Selector
+sensorWidthSelector :: Selector '[] (Id NSNumber)
 sensorWidthSelector = mkSelector "sensorWidth"
 
 -- | @Selector@ for @setSensorWidth:@
-setSensorWidthSelector :: Selector
+setSensorWidthSelector :: Selector '[Id NSNumber] ()
 setSensorWidthSelector = mkSelector "setSensorWidth:"
 
 -- | @Selector@ for @sensorHeight@
-sensorHeightSelector :: Selector
+sensorHeightSelector :: Selector '[] (Id NSNumber)
 sensorHeightSelector = mkSelector "sensorHeight"
 
 -- | @Selector@ for @setSensorHeight:@
-setSensorHeightSelector :: Selector
+setSensorHeightSelector :: Selector '[Id NSNumber] ()
 setSensorHeightSelector = mkSelector "setSensorHeight:"
 
 -- | @Selector@ for @maxFPS@
-maxFPSSelector :: Selector
+maxFPSSelector :: Selector '[] (Id NSNumber)
 maxFPSSelector = mkSelector "maxFPS"
 
 -- | @Selector@ for @setMaxFPS:@
-setMaxFPSSelector :: Selector
+setMaxFPSSelector :: Selector '[Id NSNumber] ()
 setMaxFPSSelector = mkSelector "setMaxFPS:"
 
 -- | @Selector@ for @maxHDRFPS@
-maxHDRFPSSelector :: Selector
+maxHDRFPSSelector :: Selector '[] (Id NSNumber)
 maxHDRFPSSelector = mkSelector "maxHDRFPS"
 
 -- | @Selector@ for @setMaxHDRFPS:@
-setMaxHDRFPSSelector :: Selector
+setMaxHDRFPSSelector :: Selector '[Id NSNumber] ()
 setMaxHDRFPSSelector = mkSelector "setMaxHDRFPS:"
 

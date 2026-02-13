@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.CoreML.MLModelStructureProgramOperation
   , inputs
   , outputs
   , blocks
+  , blocksSelector
   , initSelector
+  , inputsSelector
   , newSelector
   , operatorNameSelector
-  , inputsSelector
   , outputsSelector
-  , blocksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,69 +38,69 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructureProgramOperation mlModelStructureProgramOperation => mlModelStructureProgramOperation -> IO (Id MLModelStructureProgramOperation)
-init_ mlModelStructureProgramOperation  =
-    sendMsg mlModelStructureProgramOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructureProgramOperation =
+  sendOwnedMessage mlModelStructureProgramOperation initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructureProgramOperation)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructureProgramOperation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The name of the operator, e.g., "conv", "pool", "softmax", etc.
 --
 -- ObjC selector: @- operatorName@
 operatorName :: IsMLModelStructureProgramOperation mlModelStructureProgramOperation => mlModelStructureProgramOperation -> IO (Id NSString)
-operatorName mlModelStructureProgramOperation  =
-    sendMsg mlModelStructureProgramOperation (mkSelector "operatorName") (retPtr retVoid) [] >>= retainedObject . castPtr
+operatorName mlModelStructureProgramOperation =
+  sendMessage mlModelStructureProgramOperation operatorNameSelector
 
 -- | The arguments to the Operation.
 --
 -- ObjC selector: @- inputs@
 inputs :: IsMLModelStructureProgramOperation mlModelStructureProgramOperation => mlModelStructureProgramOperation -> IO (Id NSDictionary)
-inputs mlModelStructureProgramOperation  =
-    sendMsg mlModelStructureProgramOperation (mkSelector "inputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputs mlModelStructureProgramOperation =
+  sendMessage mlModelStructureProgramOperation inputsSelector
 
 -- | The outputs of the Operation.
 --
 -- ObjC selector: @- outputs@
 outputs :: IsMLModelStructureProgramOperation mlModelStructureProgramOperation => mlModelStructureProgramOperation -> IO (Id NSArray)
-outputs mlModelStructureProgramOperation  =
-    sendMsg mlModelStructureProgramOperation (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputs mlModelStructureProgramOperation =
+  sendMessage mlModelStructureProgramOperation outputsSelector
 
 -- | Nested blocks for loops and conditionals, e.g., a conditional block will have two entries here.
 --
 -- ObjC selector: @- blocks@
 blocks :: IsMLModelStructureProgramOperation mlModelStructureProgramOperation => mlModelStructureProgramOperation -> IO (Id NSArray)
-blocks mlModelStructureProgramOperation  =
-    sendMsg mlModelStructureProgramOperation (mkSelector "blocks") (retPtr retVoid) [] >>= retainedObject . castPtr
+blocks mlModelStructureProgramOperation =
+  sendMessage mlModelStructureProgramOperation blocksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructureProgramOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructureProgramOperation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @operatorName@
-operatorNameSelector :: Selector
+operatorNameSelector :: Selector '[] (Id NSString)
 operatorNameSelector = mkSelector "operatorName"
 
 -- | @Selector@ for @inputs@
-inputsSelector :: Selector
+inputsSelector :: Selector '[] (Id NSDictionary)
 inputsSelector = mkSelector "inputs"
 
 -- | @Selector@ for @outputs@
-outputsSelector :: Selector
+outputsSelector :: Selector '[] (Id NSArray)
 outputsSelector = mkSelector "outputs"
 
 -- | @Selector@ for @blocks@
-blocksSelector :: Selector
+blocksSelector :: Selector '[] (Id NSArray)
 blocksSelector = mkSelector "blocks"
 

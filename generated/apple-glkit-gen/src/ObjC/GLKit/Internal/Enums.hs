@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.GLKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @GLKFogMode@
 newtype GLKFogMode = GLKFogMode CInt
@@ -25,6 +28,16 @@ pattern GLKFogModeExp2 = GLKFogMode 1
 pattern GLKFogModeLinear :: GLKFogMode
 pattern GLKFogModeLinear = GLKFogMode 2
 
+instance ObjCArgument GLKFogMode where
+  withObjCArg (GLKFogMode x) k = k (argCInt x)
+
+instance ObjCReturn GLKFogMode where
+  type RawReturn GLKFogMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKFogMode x)
+  fromOwned x = pure (GLKFogMode x)
+
 -- | @GLKLightingType@
 newtype GLKLightingType = GLKLightingType CInt
   deriving stock (Eq, Ord, Show)
@@ -35,6 +48,16 @@ pattern GLKLightingTypePerVertex = GLKLightingType 0
 
 pattern GLKLightingTypePerPixel :: GLKLightingType
 pattern GLKLightingTypePerPixel = GLKLightingType 1
+
+instance ObjCArgument GLKLightingType where
+  withObjCArg (GLKLightingType x) k = k (argCInt x)
+
+instance ObjCReturn GLKLightingType where
+  type RawReturn GLKLightingType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKLightingType x)
+  fromOwned x = pure (GLKLightingType x)
 
 -- | @GLKTextureEnvMode@
 newtype GLKTextureEnvMode = GLKTextureEnvMode CInt
@@ -50,6 +73,16 @@ pattern GLKTextureEnvModeModulate = GLKTextureEnvMode 1
 pattern GLKTextureEnvModeDecal :: GLKTextureEnvMode
 pattern GLKTextureEnvModeDecal = GLKTextureEnvMode 2
 
+instance ObjCArgument GLKTextureEnvMode where
+  withObjCArg (GLKTextureEnvMode x) k = k (argCInt x)
+
+instance ObjCReturn GLKTextureEnvMode where
+  type RawReturn GLKTextureEnvMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKTextureEnvMode x)
+  fromOwned x = pure (GLKTextureEnvMode x)
+
 -- | @GLKTextureInfoAlphaState@
 newtype GLKTextureInfoAlphaState = GLKTextureInfoAlphaState CInt
   deriving stock (Eq, Ord, Show)
@@ -64,6 +97,16 @@ pattern GLKTextureInfoAlphaStateNonPremultiplied = GLKTextureInfoAlphaState 1
 pattern GLKTextureInfoAlphaStatePremultiplied :: GLKTextureInfoAlphaState
 pattern GLKTextureInfoAlphaStatePremultiplied = GLKTextureInfoAlphaState 2
 
+instance ObjCArgument GLKTextureInfoAlphaState where
+  withObjCArg (GLKTextureInfoAlphaState x) k = k (argCInt x)
+
+instance ObjCReturn GLKTextureInfoAlphaState where
+  type RawReturn GLKTextureInfoAlphaState = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKTextureInfoAlphaState x)
+  fromOwned x = pure (GLKTextureInfoAlphaState x)
+
 -- | @GLKTextureInfoOrigin@
 newtype GLKTextureInfoOrigin = GLKTextureInfoOrigin CInt
   deriving stock (Eq, Ord, Show)
@@ -77,6 +120,16 @@ pattern GLKTextureInfoOriginTopLeft = GLKTextureInfoOrigin 1
 
 pattern GLKTextureInfoOriginBottomLeft :: GLKTextureInfoOrigin
 pattern GLKTextureInfoOriginBottomLeft = GLKTextureInfoOrigin 2
+
+instance ObjCArgument GLKTextureInfoOrigin where
+  withObjCArg (GLKTextureInfoOrigin x) k = k (argCInt x)
+
+instance ObjCReturn GLKTextureInfoOrigin where
+  type RawReturn GLKTextureInfoOrigin = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKTextureInfoOrigin x)
+  fromOwned x = pure (GLKTextureInfoOrigin x)
 
 -- | @GLKTextureLoaderError@
 newtype GLKTextureLoaderError = GLKTextureLoaderError CUInt
@@ -143,6 +196,16 @@ pattern GLKTextureLoaderErrorIncompatibleFormatSRGB = GLKTextureLoaderError 18
 pattern GLKTextureLoaderErrorUnsupportedTextureTarget :: GLKTextureLoaderError
 pattern GLKTextureLoaderErrorUnsupportedTextureTarget = GLKTextureLoaderError 19
 
+instance ObjCArgument GLKTextureLoaderError where
+  withObjCArg (GLKTextureLoaderError x) k = k (argCUInt x)
+
+instance ObjCReturn GLKTextureLoaderError where
+  type RawReturn GLKTextureLoaderError = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKTextureLoaderError x)
+  fromOwned x = pure (GLKTextureLoaderError x)
+
 -- | @GLKTextureTarget@
 newtype GLKTextureTarget = GLKTextureTarget CUInt
   deriving stock (Eq, Ord, Show)
@@ -156,6 +219,16 @@ pattern GLKTextureTargetCubeMap = GLKTextureTarget 34067
 
 pattern GLKTextureTargetCt :: GLKTextureTarget
 pattern GLKTextureTargetCt = GLKTextureTarget 2
+
+instance ObjCArgument GLKTextureTarget where
+  withObjCArg (GLKTextureTarget x) k = k (argCUInt x)
+
+instance ObjCReturn GLKTextureTarget where
+  type RawReturn GLKTextureTarget = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKTextureTarget x)
+  fromOwned x = pure (GLKTextureTarget x)
 
 -- | @GLKVertexAttrib@
 newtype GLKVertexAttrib = GLKVertexAttrib CInt
@@ -176,3 +249,13 @@ pattern GLKVertexAttribTexCoord0 = GLKVertexAttrib 3
 
 pattern GLKVertexAttribTexCoord1 :: GLKVertexAttrib
 pattern GLKVertexAttribTexCoord1 = GLKVertexAttrib 4
+
+instance ObjCArgument GLKVertexAttrib where
+  withObjCArg (GLKVertexAttrib x) k = k (argCInt x)
+
+instance ObjCReturn GLKVertexAttrib where
+  type RawReturn GLKVertexAttrib = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GLKVertexAttrib x)
+  fromOwned x = pure (GLKVertexAttrib x)

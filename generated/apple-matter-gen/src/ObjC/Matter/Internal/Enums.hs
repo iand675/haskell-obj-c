@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Matter.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MTRAccessControlAccessRestrictionType@
 newtype MTRAccessControlAccessRestrictionType = MTRAccessControlAccessRestrictionType CUChar
@@ -28,6 +31,16 @@ pattern MTRAccessControlAccessRestrictionTypeCommandForbidden = MTRAccessControl
 pattern MTRAccessControlAccessRestrictionTypeEventForbidden :: MTRAccessControlAccessRestrictionType
 pattern MTRAccessControlAccessRestrictionTypeEventForbidden = MTRAccessControlAccessRestrictionType 3
 
+instance ObjCArgument MTRAccessControlAccessRestrictionType where
+  withObjCArg (MTRAccessControlAccessRestrictionType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlAccessRestrictionType where
+  type RawReturn MTRAccessControlAccessRestrictionType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlAccessRestrictionType x)
+  fromOwned x = pure (MTRAccessControlAccessRestrictionType x)
+
 -- | @MTRAccessControlAuthMode@
 newtype MTRAccessControlAuthMode = MTRAccessControlAuthMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -41,6 +54,16 @@ pattern MTRAccessControlAuthModeCASE = MTRAccessControlAuthMode 2
 
 pattern MTRAccessControlAuthModeGroup :: MTRAccessControlAuthMode
 pattern MTRAccessControlAuthModeGroup = MTRAccessControlAuthMode 3
+
+instance ObjCArgument MTRAccessControlAuthMode where
+  withObjCArg (MTRAccessControlAuthMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlAuthMode where
+  type RawReturn MTRAccessControlAuthMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlAuthMode x)
+  fromOwned x = pure (MTRAccessControlAuthMode x)
 
 -- | @MTRAccessControlChangeType@
 newtype MTRAccessControlChangeType = MTRAccessControlChangeType CUChar
@@ -56,6 +79,16 @@ pattern MTRAccessControlChangeTypeAdded = MTRAccessControlChangeType 1
 pattern MTRAccessControlChangeTypeRemoved :: MTRAccessControlChangeType
 pattern MTRAccessControlChangeTypeRemoved = MTRAccessControlChangeType 2
 
+instance ObjCArgument MTRAccessControlChangeType where
+  withObjCArg (MTRAccessControlChangeType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlChangeType where
+  type RawReturn MTRAccessControlChangeType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlChangeType x)
+  fromOwned x = pure (MTRAccessControlChangeType x)
+
 -- | @MTRAccessControlEntryAuthMode@
 newtype MTRAccessControlEntryAuthMode = MTRAccessControlEntryAuthMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -69,6 +102,16 @@ pattern MTRAccessControlEntryAuthModeCASE = MTRAccessControlEntryAuthMode 2
 
 pattern MTRAccessControlEntryAuthModeGroup :: MTRAccessControlEntryAuthMode
 pattern MTRAccessControlEntryAuthModeGroup = MTRAccessControlEntryAuthMode 3
+
+instance ObjCArgument MTRAccessControlEntryAuthMode where
+  withObjCArg (MTRAccessControlEntryAuthMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlEntryAuthMode where
+  type RawReturn MTRAccessControlEntryAuthMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlEntryAuthMode x)
+  fromOwned x = pure (MTRAccessControlEntryAuthMode x)
 
 -- | @MTRAccessControlEntryPrivilege@
 newtype MTRAccessControlEntryPrivilege = MTRAccessControlEntryPrivilege CUChar
@@ -90,6 +133,16 @@ pattern MTRAccessControlEntryPrivilegeManage = MTRAccessControlEntryPrivilege 4
 pattern MTRAccessControlEntryPrivilegeAdminister :: MTRAccessControlEntryPrivilege
 pattern MTRAccessControlEntryPrivilegeAdminister = MTRAccessControlEntryPrivilege 5
 
+instance ObjCArgument MTRAccessControlEntryPrivilege where
+  withObjCArg (MTRAccessControlEntryPrivilege x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlEntryPrivilege where
+  type RawReturn MTRAccessControlEntryPrivilege = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlEntryPrivilege x)
+  fromOwned x = pure (MTRAccessControlEntryPrivilege x)
+
 -- | @MTRAccessControlFeature@ (bitmask)
 newtype MTRAccessControlFeature = MTRAccessControlFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -106,6 +159,16 @@ pattern MTRAccessControlFeatureExtension = MTRAccessControlFeature 1
 
 pattern MTRAccessControlFeatureManagedDevice :: MTRAccessControlFeature
 pattern MTRAccessControlFeatureManagedDevice = MTRAccessControlFeature 2
+
+instance ObjCArgument MTRAccessControlFeature where
+  withObjCArg (MTRAccessControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAccessControlFeature where
+  type RawReturn MTRAccessControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlFeature x)
+  fromOwned x = pure (MTRAccessControlFeature x)
 
 -- | @MTRAccessControlPrivilege@
 newtype MTRAccessControlPrivilege = MTRAccessControlPrivilege CUChar
@@ -127,6 +190,16 @@ pattern MTRAccessControlPrivilegeManage = MTRAccessControlPrivilege 4
 pattern MTRAccessControlPrivilegeAdminister :: MTRAccessControlPrivilege
 pattern MTRAccessControlPrivilegeAdminister = MTRAccessControlPrivilege 5
 
+instance ObjCArgument MTRAccessControlPrivilege where
+  withObjCArg (MTRAccessControlPrivilege x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAccessControlPrivilege where
+  type RawReturn MTRAccessControlPrivilege = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAccessControlPrivilege x)
+  fromOwned x = pure (MTRAccessControlPrivilege x)
+
 -- | @MTRActionsActionError@
 newtype MTRActionsActionError = MTRActionsActionError CUChar
   deriving stock (Eq, Ord, Show)
@@ -137,6 +210,16 @@ pattern MTRActionsActionErrorUnknown = MTRActionsActionError 0
 
 pattern MTRActionsActionErrorInterrupted :: MTRActionsActionError
 pattern MTRActionsActionErrorInterrupted = MTRActionsActionError 1
+
+instance ObjCArgument MTRActionsActionError where
+  withObjCArg (MTRActionsActionError x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActionsActionError where
+  type RawReturn MTRActionsActionError = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActionsActionError x)
+  fromOwned x = pure (MTRActionsActionError x)
 
 -- | @MTRActionsActionState@
 newtype MTRActionsActionState = MTRActionsActionState CUChar
@@ -154,6 +237,16 @@ pattern MTRActionsActionStatePaused = MTRActionsActionState 2
 
 pattern MTRActionsActionStateDisabled :: MTRActionsActionState
 pattern MTRActionsActionStateDisabled = MTRActionsActionState 3
+
+instance ObjCArgument MTRActionsActionState where
+  withObjCArg (MTRActionsActionState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActionsActionState where
+  type RawReturn MTRActionsActionState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActionsActionState x)
+  fromOwned x = pure (MTRActionsActionState x)
 
 -- | @MTRActionsActionType@
 newtype MTRActionsActionType = MTRActionsActionType CUChar
@@ -180,6 +273,16 @@ pattern MTRActionsActionTypeNotification = MTRActionsActionType 5
 
 pattern MTRActionsActionTypeAlarm :: MTRActionsActionType
 pattern MTRActionsActionTypeAlarm = MTRActionsActionType 6
+
+instance ObjCArgument MTRActionsActionType where
+  withObjCArg (MTRActionsActionType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActionsActionType where
+  type RawReturn MTRActionsActionType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActionsActionType x)
+  fromOwned x = pure (MTRActionsActionType x)
 
 -- | @MTRActionsCommandBits@ (bitmask)
 newtype MTRActionsCommandBits = MTRActionsCommandBits CUShort
@@ -228,6 +331,16 @@ pattern MTRActionsCommandBitsDisableAction = MTRActionsCommandBits 1024
 pattern MTRActionsCommandBitsDisableActionWithDuration :: MTRActionsCommandBits
 pattern MTRActionsCommandBitsDisableActionWithDuration = MTRActionsCommandBits 2048
 
+instance ObjCArgument MTRActionsCommandBits where
+  withObjCArg (MTRActionsCommandBits x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRActionsCommandBits where
+  type RawReturn MTRActionsCommandBits = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActionsCommandBits (fromIntegral x))
+  fromOwned x = pure (MTRActionsCommandBits (fromIntegral x))
+
 -- | @MTRActionsEndpointListType@
 newtype MTRActionsEndpointListType = MTRActionsEndpointListType CUChar
   deriving stock (Eq, Ord, Show)
@@ -241,6 +354,16 @@ pattern MTRActionsEndpointListTypeRoom = MTRActionsEndpointListType 1
 
 pattern MTRActionsEndpointListTypeZone :: MTRActionsEndpointListType
 pattern MTRActionsEndpointListTypeZone = MTRActionsEndpointListType 2
+
+instance ObjCArgument MTRActionsEndpointListType where
+  withObjCArg (MTRActionsEndpointListType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActionsEndpointListType where
+  type RawReturn MTRActionsEndpointListType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActionsEndpointListType x)
+  fromOwned x = pure (MTRActionsEndpointListType x)
 
 -- | @MTRActivatedCarbonFilterMonitoringChangeIndication@
 newtype MTRActivatedCarbonFilterMonitoringChangeIndication = MTRActivatedCarbonFilterMonitoringChangeIndication CUChar
@@ -256,6 +379,16 @@ pattern MTRActivatedCarbonFilterMonitoringChangeIndicationWarning = MTRActivated
 pattern MTRActivatedCarbonFilterMonitoringChangeIndicationCritical :: MTRActivatedCarbonFilterMonitoringChangeIndication
 pattern MTRActivatedCarbonFilterMonitoringChangeIndicationCritical = MTRActivatedCarbonFilterMonitoringChangeIndication 2
 
+instance ObjCArgument MTRActivatedCarbonFilterMonitoringChangeIndication where
+  withObjCArg (MTRActivatedCarbonFilterMonitoringChangeIndication x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActivatedCarbonFilterMonitoringChangeIndication where
+  type RawReturn MTRActivatedCarbonFilterMonitoringChangeIndication = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActivatedCarbonFilterMonitoringChangeIndication x)
+  fromOwned x = pure (MTRActivatedCarbonFilterMonitoringChangeIndication x)
+
 -- | @MTRActivatedCarbonFilterMonitoringDegradationDirection@
 newtype MTRActivatedCarbonFilterMonitoringDegradationDirection = MTRActivatedCarbonFilterMonitoringDegradationDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -266,6 +399,16 @@ pattern MTRActivatedCarbonFilterMonitoringDegradationDirectionUp = MTRActivatedC
 
 pattern MTRActivatedCarbonFilterMonitoringDegradationDirectionDown :: MTRActivatedCarbonFilterMonitoringDegradationDirection
 pattern MTRActivatedCarbonFilterMonitoringDegradationDirectionDown = MTRActivatedCarbonFilterMonitoringDegradationDirection 1
+
+instance ObjCArgument MTRActivatedCarbonFilterMonitoringDegradationDirection where
+  withObjCArg (MTRActivatedCarbonFilterMonitoringDegradationDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActivatedCarbonFilterMonitoringDegradationDirection where
+  type RawReturn MTRActivatedCarbonFilterMonitoringDegradationDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActivatedCarbonFilterMonitoringDegradationDirection x)
+  fromOwned x = pure (MTRActivatedCarbonFilterMonitoringDegradationDirection x)
 
 -- | @MTRActivatedCarbonFilterMonitoringFeature@ (bitmask)
 newtype MTRActivatedCarbonFilterMonitoringFeature = MTRActivatedCarbonFilterMonitoringFeature CUInt
@@ -287,6 +430,16 @@ pattern MTRActivatedCarbonFilterMonitoringFeatureWarning = MTRActivatedCarbonFil
 pattern MTRActivatedCarbonFilterMonitoringFeatureReplacementProductList :: MTRActivatedCarbonFilterMonitoringFeature
 pattern MTRActivatedCarbonFilterMonitoringFeatureReplacementProductList = MTRActivatedCarbonFilterMonitoringFeature 4
 
+instance ObjCArgument MTRActivatedCarbonFilterMonitoringFeature where
+  withObjCArg (MTRActivatedCarbonFilterMonitoringFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRActivatedCarbonFilterMonitoringFeature where
+  type RawReturn MTRActivatedCarbonFilterMonitoringFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActivatedCarbonFilterMonitoringFeature x)
+  fromOwned x = pure (MTRActivatedCarbonFilterMonitoringFeature x)
+
 -- | @MTRActivatedCarbonFilterMonitoringProductIdentifierType@
 newtype MTRActivatedCarbonFilterMonitoringProductIdentifierType = MTRActivatedCarbonFilterMonitoringProductIdentifierType CUChar
   deriving stock (Eq, Ord, Show)
@@ -307,6 +460,16 @@ pattern MTRActivatedCarbonFilterMonitoringProductIdentifierTypeGTIN14 = MTRActiv
 pattern MTRActivatedCarbonFilterMonitoringProductIdentifierTypeOEM :: MTRActivatedCarbonFilterMonitoringProductIdentifierType
 pattern MTRActivatedCarbonFilterMonitoringProductIdentifierTypeOEM = MTRActivatedCarbonFilterMonitoringProductIdentifierType 4
 
+instance ObjCArgument MTRActivatedCarbonFilterMonitoringProductIdentifierType where
+  withObjCArg (MTRActivatedCarbonFilterMonitoringProductIdentifierType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRActivatedCarbonFilterMonitoringProductIdentifierType where
+  type RawReturn MTRActivatedCarbonFilterMonitoringProductIdentifierType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRActivatedCarbonFilterMonitoringProductIdentifierType x)
+  fromOwned x = pure (MTRActivatedCarbonFilterMonitoringProductIdentifierType x)
+
 -- | @MTRAdministratorCommissioningCommissioningWindowStatus@
 newtype MTRAdministratorCommissioningCommissioningWindowStatus = MTRAdministratorCommissioningCommissioningWindowStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -320,6 +483,16 @@ pattern MTRAdministratorCommissioningCommissioningWindowStatusEnhancedWindowOpen
 
 pattern MTRAdministratorCommissioningCommissioningWindowStatusBasicWindowOpen :: MTRAdministratorCommissioningCommissioningWindowStatus
 pattern MTRAdministratorCommissioningCommissioningWindowStatusBasicWindowOpen = MTRAdministratorCommissioningCommissioningWindowStatus 2
+
+instance ObjCArgument MTRAdministratorCommissioningCommissioningWindowStatus where
+  withObjCArg (MTRAdministratorCommissioningCommissioningWindowStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAdministratorCommissioningCommissioningWindowStatus where
+  type RawReturn MTRAdministratorCommissioningCommissioningWindowStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAdministratorCommissioningCommissioningWindowStatus x)
+  fromOwned x = pure (MTRAdministratorCommissioningCommissioningWindowStatus x)
 
 -- | @MTRAdministratorCommissioningFeature@ (bitmask)
 newtype MTRAdministratorCommissioningFeature = MTRAdministratorCommissioningFeature CUInt
@@ -335,6 +508,16 @@ instance Monoid MTRAdministratorCommissioningFeature where
 pattern MTRAdministratorCommissioningFeatureBasic :: MTRAdministratorCommissioningFeature
 pattern MTRAdministratorCommissioningFeatureBasic = MTRAdministratorCommissioningFeature 1
 
+instance ObjCArgument MTRAdministratorCommissioningFeature where
+  withObjCArg (MTRAdministratorCommissioningFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAdministratorCommissioningFeature where
+  type RawReturn MTRAdministratorCommissioningFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAdministratorCommissioningFeature x)
+  fromOwned x = pure (MTRAdministratorCommissioningFeature x)
+
 -- | @MTRAdministratorCommissioningStatusCode@
 newtype MTRAdministratorCommissioningStatusCode = MTRAdministratorCommissioningStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -348,6 +531,16 @@ pattern MTRAdministratorCommissioningStatusCodePAKEParameterError = MTRAdministr
 
 pattern MTRAdministratorCommissioningStatusCodeWindowNotOpen :: MTRAdministratorCommissioningStatusCode
 pattern MTRAdministratorCommissioningStatusCodeWindowNotOpen = MTRAdministratorCommissioningStatusCode 4
+
+instance ObjCArgument MTRAdministratorCommissioningStatusCode where
+  withObjCArg (MTRAdministratorCommissioningStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAdministratorCommissioningStatusCode where
+  type RawReturn MTRAdministratorCommissioningStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAdministratorCommissioningStatusCode x)
+  fromOwned x = pure (MTRAdministratorCommissioningStatusCode x)
 
 -- | @MTRAirQuality@
 newtype MTRAirQuality = MTRAirQuality CUChar
@@ -375,6 +568,16 @@ pattern MTRAirQualityVeryPoor = MTRAirQuality 5
 pattern MTRAirQualityExtremelyPoor :: MTRAirQuality
 pattern MTRAirQualityExtremelyPoor = MTRAirQuality 6
 
+instance ObjCArgument MTRAirQuality where
+  withObjCArg (MTRAirQuality x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAirQuality where
+  type RawReturn MTRAirQuality = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAirQuality x)
+  fromOwned x = pure (MTRAirQuality x)
+
 -- | @MTRAirQualityFeature@ (bitmask)
 newtype MTRAirQualityFeature = MTRAirQualityFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -398,6 +601,16 @@ pattern MTRAirQualityFeatureVeryPoor = MTRAirQualityFeature 4
 pattern MTRAirQualityFeatureExtremelyPoor :: MTRAirQualityFeature
 pattern MTRAirQualityFeatureExtremelyPoor = MTRAirQualityFeature 8
 
+instance ObjCArgument MTRAirQualityFeature where
+  withObjCArg (MTRAirQualityFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAirQualityFeature where
+  type RawReturn MTRAirQualityFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAirQualityFeature x)
+  fromOwned x = pure (MTRAirQualityFeature x)
+
 -- | @MTRAppleLockClusterFeature@ (bitmask)
 newtype MTRAppleLockClusterFeature = MTRAppleLockClusterFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -414,6 +627,16 @@ pattern MTRAppleLockClusterFeatureDraftAliroProvisioning = MTRAppleLockClusterFe
 
 pattern MTRAppleLockClusterFeatureDraftAliroBLEUWB :: MTRAppleLockClusterFeature
 pattern MTRAppleLockClusterFeatureDraftAliroBLEUWB = MTRAppleLockClusterFeature 2
+
+instance ObjCArgument MTRAppleLockClusterFeature where
+  withObjCArg (MTRAppleLockClusterFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAppleLockClusterFeature where
+  type RawReturn MTRAppleLockClusterFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAppleLockClusterFeature x)
+  fromOwned x = pure (MTRAppleLockClusterFeature x)
 
 -- | @MTRAppleLockClusterIntentDetectionBitmask@ (bitmask)
 newtype MTRAppleLockClusterIntentDetectionBitmask = MTRAppleLockClusterIntentDetectionBitmask CUChar
@@ -444,6 +667,16 @@ pattern MTRAppleLockClusterIntentDetectionBitmaskBC = MTRAppleLockClusterIntentD
 pattern MTRAppleLockClusterIntentDetectionBitmaskBR :: MTRAppleLockClusterIntentDetectionBitmask
 pattern MTRAppleLockClusterIntentDetectionBitmaskBR = MTRAppleLockClusterIntentDetectionBitmask 32
 
+instance ObjCArgument MTRAppleLockClusterIntentDetectionBitmask where
+  withObjCArg (MTRAppleLockClusterIntentDetectionBitmask x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAppleLockClusterIntentDetectionBitmask where
+  type RawReturn MTRAppleLockClusterIntentDetectionBitmask = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAppleLockClusterIntentDetectionBitmask x)
+  fromOwned x = pure (MTRAppleLockClusterIntentDetectionBitmask x)
+
 -- | @MTRApplicationBasicApplicationStatus@
 newtype MTRApplicationBasicApplicationStatus = MTRApplicationBasicApplicationStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -461,6 +694,16 @@ pattern MTRApplicationBasicApplicationStatusActiveHidden = MTRApplicationBasicAp
 pattern MTRApplicationBasicApplicationStatusActiveVisibleNotFocus :: MTRApplicationBasicApplicationStatus
 pattern MTRApplicationBasicApplicationStatusActiveVisibleNotFocus = MTRApplicationBasicApplicationStatus 3
 
+instance ObjCArgument MTRApplicationBasicApplicationStatus where
+  withObjCArg (MTRApplicationBasicApplicationStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRApplicationBasicApplicationStatus where
+  type RawReturn MTRApplicationBasicApplicationStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRApplicationBasicApplicationStatus x)
+  fromOwned x = pure (MTRApplicationBasicApplicationStatus x)
+
 -- | @MTRApplicationLauncherFeature@ (bitmask)
 newtype MTRApplicationLauncherFeature = MTRApplicationLauncherFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -474,6 +717,16 @@ instance Monoid MTRApplicationLauncherFeature where
 
 pattern MTRApplicationLauncherFeatureApplicationPlatform :: MTRApplicationLauncherFeature
 pattern MTRApplicationLauncherFeatureApplicationPlatform = MTRApplicationLauncherFeature 1
+
+instance ObjCArgument MTRApplicationLauncherFeature where
+  withObjCArg (MTRApplicationLauncherFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRApplicationLauncherFeature where
+  type RawReturn MTRApplicationLauncherFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRApplicationLauncherFeature x)
+  fromOwned x = pure (MTRApplicationLauncherFeature x)
 
 -- | @MTRApplicationLauncherStatus@
 newtype MTRApplicationLauncherStatus = MTRApplicationLauncherStatus CUChar
@@ -497,6 +750,16 @@ pattern MTRApplicationLauncherStatusDownloading = MTRApplicationLauncherStatus 4
 
 pattern MTRApplicationLauncherStatusInstalling :: MTRApplicationLauncherStatus
 pattern MTRApplicationLauncherStatusInstalling = MTRApplicationLauncherStatus 5
+
+instance ObjCArgument MTRApplicationLauncherStatus where
+  withObjCArg (MTRApplicationLauncherStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRApplicationLauncherStatus where
+  type RawReturn MTRApplicationLauncherStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRApplicationLauncherStatus x)
+  fromOwned x = pure (MTRApplicationLauncherStatus x)
 
 -- | @MTRAttributeIDType@
 newtype MTRAttributeIDType = MTRAttributeIDType CUInt
@@ -9962,6 +10225,16 @@ pattern MTRAttributeIDTypeClusterOnOffSwitchConfigurationAttributeFeatureMapID =
 pattern MTRAttributeIDTypeClusterOnOffSwitchConfigurationAttributeClusterRevisionID :: MTRAttributeIDType
 pattern MTRAttributeIDTypeClusterOnOffSwitchConfigurationAttributeClusterRevisionID = MTRAttributeIDType 65533
 
+instance ObjCArgument MTRAttributeIDType where
+  withObjCArg (MTRAttributeIDType x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAttributeIDType where
+  type RawReturn MTRAttributeIDType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAttributeIDType x)
+  fromOwned x = pure (MTRAttributeIDType x)
+
 -- | @MTRAudioOutputFeature@ (bitmask)
 newtype MTRAudioOutputFeature = MTRAudioOutputFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -9975,6 +10248,16 @@ instance Monoid MTRAudioOutputFeature where
 
 pattern MTRAudioOutputFeatureNameUpdates :: MTRAudioOutputFeature
 pattern MTRAudioOutputFeatureNameUpdates = MTRAudioOutputFeature 1
+
+instance ObjCArgument MTRAudioOutputFeature where
+  withObjCArg (MTRAudioOutputFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRAudioOutputFeature where
+  type RawReturn MTRAudioOutputFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAudioOutputFeature x)
+  fromOwned x = pure (MTRAudioOutputFeature x)
 
 -- | @MTRAudioOutputOutputType@
 newtype MTRAudioOutputOutputType = MTRAudioOutputOutputType CUChar
@@ -10005,6 +10288,16 @@ pattern MTRAudioOutputOutputTypeInternal = MTRAudioOutputOutputType 4
 pattern MTRAudioOutputOutputTypeOther :: MTRAudioOutputOutputType
 pattern MTRAudioOutputOutputTypeOther = MTRAudioOutputOutputType 5
 
+instance ObjCArgument MTRAudioOutputOutputType where
+  withObjCArg (MTRAudioOutputOutputType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRAudioOutputOutputType where
+  type RawReturn MTRAudioOutputOutputType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRAudioOutputOutputType x)
+  fromOwned x = pure (MTRAudioOutputOutputType x)
+
 -- | @MTRBallastConfigurationBallastStatusBitmap@ (bitmask)
 newtype MTRBallastConfigurationBallastStatusBitmap = MTRBallastConfigurationBallastStatusBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -10022,6 +10315,16 @@ pattern MTRBallastConfigurationBallastStatusBitmapBallastNonOperational = MTRBal
 pattern MTRBallastConfigurationBallastStatusBitmapLampFailure :: MTRBallastConfigurationBallastStatusBitmap
 pattern MTRBallastConfigurationBallastStatusBitmapLampFailure = MTRBallastConfigurationBallastStatusBitmap 2
 
+instance ObjCArgument MTRBallastConfigurationBallastStatusBitmap where
+  withObjCArg (MTRBallastConfigurationBallastStatusBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBallastConfigurationBallastStatusBitmap where
+  type RawReturn MTRBallastConfigurationBallastStatusBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBallastConfigurationBallastStatusBitmap x)
+  fromOwned x = pure (MTRBallastConfigurationBallastStatusBitmap x)
+
 -- | @MTRBallastConfigurationLampAlarmModeBitmap@ (bitmask)
 newtype MTRBallastConfigurationLampAlarmModeBitmap = MTRBallastConfigurationLampAlarmModeBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -10035,6 +10338,16 @@ instance Monoid MTRBallastConfigurationLampAlarmModeBitmap where
 
 pattern MTRBallastConfigurationLampAlarmModeBitmapLampBurnHours :: MTRBallastConfigurationLampAlarmModeBitmap
 pattern MTRBallastConfigurationLampAlarmModeBitmapLampBurnHours = MTRBallastConfigurationLampAlarmModeBitmap 1
+
+instance ObjCArgument MTRBallastConfigurationLampAlarmModeBitmap where
+  withObjCArg (MTRBallastConfigurationLampAlarmModeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBallastConfigurationLampAlarmModeBitmap where
+  type RawReturn MTRBallastConfigurationLampAlarmModeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBallastConfigurationLampAlarmModeBitmap x)
+  fromOwned x = pure (MTRBallastConfigurationLampAlarmModeBitmap x)
 
 -- | @MTRBasicInformationColor@
 newtype MTRBasicInformationColor = MTRBasicInformationColor CUChar
@@ -10104,6 +10417,16 @@ pattern MTRBasicInformationColorSilver = MTRBasicInformationColor 19
 pattern MTRBasicInformationColorGold :: MTRBasicInformationColor
 pattern MTRBasicInformationColorGold = MTRBasicInformationColor 20
 
+instance ObjCArgument MTRBasicInformationColor where
+  withObjCArg (MTRBasicInformationColor x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBasicInformationColor where
+  type RawReturn MTRBasicInformationColor = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBasicInformationColor x)
+  fromOwned x = pure (MTRBasicInformationColor x)
+
 -- | @MTRBasicInformationProductFinish@
 newtype MTRBasicInformationProductFinish = MTRBasicInformationProductFinish CUChar
   deriving stock (Eq, Ord, Show)
@@ -10127,6 +10450,16 @@ pattern MTRBasicInformationProductFinishRugged = MTRBasicInformationProductFinis
 pattern MTRBasicInformationProductFinishFabric :: MTRBasicInformationProductFinish
 pattern MTRBasicInformationProductFinishFabric = MTRBasicInformationProductFinish 5
 
+instance ObjCArgument MTRBasicInformationProductFinish where
+  withObjCArg (MTRBasicInformationProductFinish x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBasicInformationProductFinish where
+  type RawReturn MTRBasicInformationProductFinish = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBasicInformationProductFinish x)
+  fromOwned x = pure (MTRBasicInformationProductFinish x)
+
 -- | @MTRBooleanStateConfigurationAlarmModeBitmap@ (bitmask)
 newtype MTRBooleanStateConfigurationAlarmModeBitmap = MTRBooleanStateConfigurationAlarmModeBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -10143,6 +10476,16 @@ pattern MTRBooleanStateConfigurationAlarmModeBitmapVisual = MTRBooleanStateConfi
 
 pattern MTRBooleanStateConfigurationAlarmModeBitmapAudible :: MTRBooleanStateConfigurationAlarmModeBitmap
 pattern MTRBooleanStateConfigurationAlarmModeBitmapAudible = MTRBooleanStateConfigurationAlarmModeBitmap 2
+
+instance ObjCArgument MTRBooleanStateConfigurationAlarmModeBitmap where
+  withObjCArg (MTRBooleanStateConfigurationAlarmModeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBooleanStateConfigurationAlarmModeBitmap where
+  type RawReturn MTRBooleanStateConfigurationAlarmModeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBooleanStateConfigurationAlarmModeBitmap x)
+  fromOwned x = pure (MTRBooleanStateConfigurationAlarmModeBitmap x)
 
 -- | @MTRBooleanStateConfigurationFeature@ (bitmask)
 newtype MTRBooleanStateConfigurationFeature = MTRBooleanStateConfigurationFeature CUInt
@@ -10167,6 +10510,16 @@ pattern MTRBooleanStateConfigurationFeatureAlarmSuppress = MTRBooleanStateConfig
 pattern MTRBooleanStateConfigurationFeatureSensitivityLevel :: MTRBooleanStateConfigurationFeature
 pattern MTRBooleanStateConfigurationFeatureSensitivityLevel = MTRBooleanStateConfigurationFeature 8
 
+instance ObjCArgument MTRBooleanStateConfigurationFeature where
+  withObjCArg (MTRBooleanStateConfigurationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRBooleanStateConfigurationFeature where
+  type RawReturn MTRBooleanStateConfigurationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBooleanStateConfigurationFeature x)
+  fromOwned x = pure (MTRBooleanStateConfigurationFeature x)
+
 -- | @MTRBooleanStateConfigurationSensorFaultBitmap@ (bitmask)
 newtype MTRBooleanStateConfigurationSensorFaultBitmap = MTRBooleanStateConfigurationSensorFaultBitmap CUShort
   deriving stock (Eq, Ord, Show)
@@ -10180,6 +10533,16 @@ instance Monoid MTRBooleanStateConfigurationSensorFaultBitmap where
 
 pattern MTRBooleanStateConfigurationSensorFaultBitmapGeneralFault :: MTRBooleanStateConfigurationSensorFaultBitmap
 pattern MTRBooleanStateConfigurationSensorFaultBitmapGeneralFault = MTRBooleanStateConfigurationSensorFaultBitmap 1
+
+instance ObjCArgument MTRBooleanStateConfigurationSensorFaultBitmap where
+  withObjCArg (MTRBooleanStateConfigurationSensorFaultBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRBooleanStateConfigurationSensorFaultBitmap where
+  type RawReturn MTRBooleanStateConfigurationSensorFaultBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBooleanStateConfigurationSensorFaultBitmap (fromIntegral x))
+  fromOwned x = pure (MTRBooleanStateConfigurationSensorFaultBitmap (fromIntegral x))
 
 -- | @MTRBridgedDeviceBasicInformationColor@
 newtype MTRBridgedDeviceBasicInformationColor = MTRBridgedDeviceBasicInformationColor CUChar
@@ -10249,6 +10612,16 @@ pattern MTRBridgedDeviceBasicInformationColorSilver = MTRBridgedDeviceBasicInfor
 pattern MTRBridgedDeviceBasicInformationColorGold :: MTRBridgedDeviceBasicInformationColor
 pattern MTRBridgedDeviceBasicInformationColorGold = MTRBridgedDeviceBasicInformationColor 20
 
+instance ObjCArgument MTRBridgedDeviceBasicInformationColor where
+  withObjCArg (MTRBridgedDeviceBasicInformationColor x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBridgedDeviceBasicInformationColor where
+  type RawReturn MTRBridgedDeviceBasicInformationColor = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBridgedDeviceBasicInformationColor x)
+  fromOwned x = pure (MTRBridgedDeviceBasicInformationColor x)
+
 -- | @MTRBridgedDeviceBasicInformationFeature@ (bitmask)
 newtype MTRBridgedDeviceBasicInformationFeature = MTRBridgedDeviceBasicInformationFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -10262,6 +10635,16 @@ instance Monoid MTRBridgedDeviceBasicInformationFeature where
 
 pattern MTRBridgedDeviceBasicInformationFeatureBridgedICDSupport :: MTRBridgedDeviceBasicInformationFeature
 pattern MTRBridgedDeviceBasicInformationFeatureBridgedICDSupport = MTRBridgedDeviceBasicInformationFeature 1048576
+
+instance ObjCArgument MTRBridgedDeviceBasicInformationFeature where
+  withObjCArg (MTRBridgedDeviceBasicInformationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRBridgedDeviceBasicInformationFeature where
+  type RawReturn MTRBridgedDeviceBasicInformationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBridgedDeviceBasicInformationFeature x)
+  fromOwned x = pure (MTRBridgedDeviceBasicInformationFeature x)
 
 -- | @MTRBridgedDeviceBasicInformationProductFinish@
 newtype MTRBridgedDeviceBasicInformationProductFinish = MTRBridgedDeviceBasicInformationProductFinish CUChar
@@ -10285,6 +10668,16 @@ pattern MTRBridgedDeviceBasicInformationProductFinishRugged = MTRBridgedDeviceBa
 
 pattern MTRBridgedDeviceBasicInformationProductFinishFabric :: MTRBridgedDeviceBasicInformationProductFinish
 pattern MTRBridgedDeviceBasicInformationProductFinishFabric = MTRBridgedDeviceBasicInformationProductFinish 5
+
+instance ObjCArgument MTRBridgedDeviceBasicInformationProductFinish where
+  withObjCArg (MTRBridgedDeviceBasicInformationProductFinish x) k = k (argCUChar x)
+
+instance ObjCReturn MTRBridgedDeviceBasicInformationProductFinish where
+  type RawReturn MTRBridgedDeviceBasicInformationProductFinish = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRBridgedDeviceBasicInformationProductFinish x)
+  fromOwned x = pure (MTRBridgedDeviceBasicInformationProductFinish x)
 
 -- | @MTRCameraAVSettingsUserLevelManagementFeature@ (bitmask)
 newtype MTRCameraAVSettingsUserLevelManagementFeature = MTRCameraAVSettingsUserLevelManagementFeature CUInt
@@ -10312,6 +10705,16 @@ pattern MTRCameraAVSettingsUserLevelManagementFeatureMechanicalZoom = MTRCameraA
 pattern MTRCameraAVSettingsUserLevelManagementFeatureMechanicalPresets :: MTRCameraAVSettingsUserLevelManagementFeature
 pattern MTRCameraAVSettingsUserLevelManagementFeatureMechanicalPresets = MTRCameraAVSettingsUserLevelManagementFeature 16
 
+instance ObjCArgument MTRCameraAVSettingsUserLevelManagementFeature where
+  withObjCArg (MTRCameraAVSettingsUserLevelManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCameraAVSettingsUserLevelManagementFeature where
+  type RawReturn MTRCameraAVSettingsUserLevelManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVSettingsUserLevelManagementFeature x)
+  fromOwned x = pure (MTRCameraAVSettingsUserLevelManagementFeature x)
+
 -- | @MTRCameraAVSettingsUserLevelManagementPhysicalMovement@
 newtype MTRCameraAVSettingsUserLevelManagementPhysicalMovement = MTRCameraAVSettingsUserLevelManagementPhysicalMovement CUChar
   deriving stock (Eq, Ord, Show)
@@ -10323,6 +10726,16 @@ pattern MTRCameraAVSettingsUserLevelManagementPhysicalMovementIdle = MTRCameraAV
 pattern MTRCameraAVSettingsUserLevelManagementPhysicalMovementMoving :: MTRCameraAVSettingsUserLevelManagementPhysicalMovement
 pattern MTRCameraAVSettingsUserLevelManagementPhysicalMovementMoving = MTRCameraAVSettingsUserLevelManagementPhysicalMovement 1
 
+instance ObjCArgument MTRCameraAVSettingsUserLevelManagementPhysicalMovement where
+  withObjCArg (MTRCameraAVSettingsUserLevelManagementPhysicalMovement x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVSettingsUserLevelManagementPhysicalMovement where
+  type RawReturn MTRCameraAVSettingsUserLevelManagementPhysicalMovement = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVSettingsUserLevelManagementPhysicalMovement x)
+  fromOwned x = pure (MTRCameraAVSettingsUserLevelManagementPhysicalMovement x)
+
 -- | @MTRCameraAVStreamManagementAudioCodec@
 newtype MTRCameraAVStreamManagementAudioCodec = MTRCameraAVStreamManagementAudioCodec CUChar
   deriving stock (Eq, Ord, Show)
@@ -10333,6 +10746,16 @@ pattern MTRCameraAVStreamManagementAudioCodecOPUS = MTRCameraAVStreamManagementA
 
 pattern MTRCameraAVStreamManagementAudioCodecAACLC :: MTRCameraAVStreamManagementAudioCodec
 pattern MTRCameraAVStreamManagementAudioCodecAACLC = MTRCameraAVStreamManagementAudioCodec 1
+
+instance ObjCArgument MTRCameraAVStreamManagementAudioCodec where
+  withObjCArg (MTRCameraAVStreamManagementAudioCodec x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVStreamManagementAudioCodec where
+  type RawReturn MTRCameraAVStreamManagementAudioCodec = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementAudioCodec x)
+  fromOwned x = pure (MTRCameraAVStreamManagementAudioCodec x)
 
 -- | @MTRCameraAVStreamManagementFeature@ (bitmask)
 newtype MTRCameraAVStreamManagementFeature = MTRCameraAVStreamManagementFeature CUInt
@@ -10378,6 +10801,16 @@ pattern MTRCameraAVStreamManagementFeatureHighDynamicRange = MTRCameraAVStreamMa
 pattern MTRCameraAVStreamManagementFeatureNightVision :: MTRCameraAVStreamManagementFeature
 pattern MTRCameraAVStreamManagementFeatureNightVision = MTRCameraAVStreamManagementFeature 1024
 
+instance ObjCArgument MTRCameraAVStreamManagementFeature where
+  withObjCArg (MTRCameraAVStreamManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCameraAVStreamManagementFeature where
+  type RawReturn MTRCameraAVStreamManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementFeature x)
+  fromOwned x = pure (MTRCameraAVStreamManagementFeature x)
+
 -- | @MTRCameraAVStreamManagementImageCodec@
 newtype MTRCameraAVStreamManagementImageCodec = MTRCameraAVStreamManagementImageCodec CUChar
   deriving stock (Eq, Ord, Show)
@@ -10385,6 +10818,16 @@ newtype MTRCameraAVStreamManagementImageCodec = MTRCameraAVStreamManagementImage
 
 pattern MTRCameraAVStreamManagementImageCodecJPEG :: MTRCameraAVStreamManagementImageCodec
 pattern MTRCameraAVStreamManagementImageCodecJPEG = MTRCameraAVStreamManagementImageCodec 0
+
+instance ObjCArgument MTRCameraAVStreamManagementImageCodec where
+  withObjCArg (MTRCameraAVStreamManagementImageCodec x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVStreamManagementImageCodec where
+  type RawReturn MTRCameraAVStreamManagementImageCodec = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementImageCodec x)
+  fromOwned x = pure (MTRCameraAVStreamManagementImageCodec x)
 
 -- | @MTRCameraAVStreamManagementTriStateAuto@
 newtype MTRCameraAVStreamManagementTriStateAuto = MTRCameraAVStreamManagementTriStateAuto CUChar
@@ -10400,6 +10843,16 @@ pattern MTRCameraAVStreamManagementTriStateAutoOn = MTRCameraAVStreamManagementT
 pattern MTRCameraAVStreamManagementTriStateAutoAuto :: MTRCameraAVStreamManagementTriStateAuto
 pattern MTRCameraAVStreamManagementTriStateAutoAuto = MTRCameraAVStreamManagementTriStateAuto 2
 
+instance ObjCArgument MTRCameraAVStreamManagementTriStateAuto where
+  withObjCArg (MTRCameraAVStreamManagementTriStateAuto x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVStreamManagementTriStateAuto where
+  type RawReturn MTRCameraAVStreamManagementTriStateAuto = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementTriStateAuto x)
+  fromOwned x = pure (MTRCameraAVStreamManagementTriStateAuto x)
+
 -- | @MTRCameraAVStreamManagementTwoWayTalkSupportType@
 newtype MTRCameraAVStreamManagementTwoWayTalkSupportType = MTRCameraAVStreamManagementTwoWayTalkSupportType CUChar
   deriving stock (Eq, Ord, Show)
@@ -10413,6 +10866,16 @@ pattern MTRCameraAVStreamManagementTwoWayTalkSupportTypeHalfDuplex = MTRCameraAV
 
 pattern MTRCameraAVStreamManagementTwoWayTalkSupportTypeFullDuplex :: MTRCameraAVStreamManagementTwoWayTalkSupportType
 pattern MTRCameraAVStreamManagementTwoWayTalkSupportTypeFullDuplex = MTRCameraAVStreamManagementTwoWayTalkSupportType 2
+
+instance ObjCArgument MTRCameraAVStreamManagementTwoWayTalkSupportType where
+  withObjCArg (MTRCameraAVStreamManagementTwoWayTalkSupportType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVStreamManagementTwoWayTalkSupportType where
+  type RawReturn MTRCameraAVStreamManagementTwoWayTalkSupportType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementTwoWayTalkSupportType x)
+  fromOwned x = pure (MTRCameraAVStreamManagementTwoWayTalkSupportType x)
 
 -- | @MTRCameraAVStreamManagementVideoCodec@
 newtype MTRCameraAVStreamManagementVideoCodec = MTRCameraAVStreamManagementVideoCodec CUChar
@@ -10430,6 +10893,16 @@ pattern MTRCameraAVStreamManagementVideoCodecVVC = MTRCameraAVStreamManagementVi
 
 pattern MTRCameraAVStreamManagementVideoCodecAV1 :: MTRCameraAVStreamManagementVideoCodec
 pattern MTRCameraAVStreamManagementVideoCodecAV1 = MTRCameraAVStreamManagementVideoCodec 3
+
+instance ObjCArgument MTRCameraAVStreamManagementVideoCodec where
+  withObjCArg (MTRCameraAVStreamManagementVideoCodec x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCameraAVStreamManagementVideoCodec where
+  type RawReturn MTRCameraAVStreamManagementVideoCodec = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCameraAVStreamManagementVideoCodec x)
+  fromOwned x = pure (MTRCameraAVStreamManagementVideoCodec x)
 
 -- | @MTRCarbonDioxideConcentrationMeasurementFeature@ (bitmask)
 newtype MTRCarbonDioxideConcentrationMeasurementFeature = MTRCarbonDioxideConcentrationMeasurementFeature CUInt
@@ -10460,6 +10933,16 @@ pattern MTRCarbonDioxideConcentrationMeasurementFeaturePeakMeasurement = MTRCarb
 pattern MTRCarbonDioxideConcentrationMeasurementFeatureAverageMeasurement :: MTRCarbonDioxideConcentrationMeasurementFeature
 pattern MTRCarbonDioxideConcentrationMeasurementFeatureAverageMeasurement = MTRCarbonDioxideConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRCarbonDioxideConcentrationMeasurementFeature where
+  withObjCArg (MTRCarbonDioxideConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCarbonDioxideConcentrationMeasurementFeature where
+  type RawReturn MTRCarbonDioxideConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonDioxideConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRCarbonDioxideConcentrationMeasurementFeature x)
+
 -- | @MTRCarbonDioxideConcentrationMeasurementLevelValue@
 newtype MTRCarbonDioxideConcentrationMeasurementLevelValue = MTRCarbonDioxideConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -10480,6 +10963,16 @@ pattern MTRCarbonDioxideConcentrationMeasurementLevelValueHigh = MTRCarbonDioxid
 pattern MTRCarbonDioxideConcentrationMeasurementLevelValueCritical :: MTRCarbonDioxideConcentrationMeasurementLevelValue
 pattern MTRCarbonDioxideConcentrationMeasurementLevelValueCritical = MTRCarbonDioxideConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRCarbonDioxideConcentrationMeasurementLevelValue where
+  withObjCArg (MTRCarbonDioxideConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonDioxideConcentrationMeasurementLevelValue where
+  type RawReturn MTRCarbonDioxideConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonDioxideConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRCarbonDioxideConcentrationMeasurementLevelValue x)
+
 -- | @MTRCarbonDioxideConcentrationMeasurementMeasurementMedium@
 newtype MTRCarbonDioxideConcentrationMeasurementMeasurementMedium = MTRCarbonDioxideConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -10493,6 +10986,16 @@ pattern MTRCarbonDioxideConcentrationMeasurementMeasurementMediumWater = MTRCarb
 
 pattern MTRCarbonDioxideConcentrationMeasurementMeasurementMediumSoil :: MTRCarbonDioxideConcentrationMeasurementMeasurementMedium
 pattern MTRCarbonDioxideConcentrationMeasurementMeasurementMediumSoil = MTRCarbonDioxideConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRCarbonDioxideConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRCarbonDioxideConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonDioxideConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRCarbonDioxideConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonDioxideConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRCarbonDioxideConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRCarbonDioxideConcentrationMeasurementMeasurementUnit@
 newtype MTRCarbonDioxideConcentrationMeasurementMeasurementUnit = MTRCarbonDioxideConcentrationMeasurementMeasurementUnit CUChar
@@ -10523,6 +11026,16 @@ pattern MTRCarbonDioxideConcentrationMeasurementMeasurementUnitPM3 = MTRCarbonDi
 pattern MTRCarbonDioxideConcentrationMeasurementMeasurementUnitBQM3 :: MTRCarbonDioxideConcentrationMeasurementMeasurementUnit
 pattern MTRCarbonDioxideConcentrationMeasurementMeasurementUnitBQM3 = MTRCarbonDioxideConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRCarbonDioxideConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRCarbonDioxideConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonDioxideConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRCarbonDioxideConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonDioxideConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRCarbonDioxideConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRCarbonMonoxideConcentrationMeasurementFeature@ (bitmask)
 newtype MTRCarbonMonoxideConcentrationMeasurementFeature = MTRCarbonMonoxideConcentrationMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -10552,6 +11065,16 @@ pattern MTRCarbonMonoxideConcentrationMeasurementFeaturePeakMeasurement = MTRCar
 pattern MTRCarbonMonoxideConcentrationMeasurementFeatureAverageMeasurement :: MTRCarbonMonoxideConcentrationMeasurementFeature
 pattern MTRCarbonMonoxideConcentrationMeasurementFeatureAverageMeasurement = MTRCarbonMonoxideConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRCarbonMonoxideConcentrationMeasurementFeature where
+  withObjCArg (MTRCarbonMonoxideConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCarbonMonoxideConcentrationMeasurementFeature where
+  type RawReturn MTRCarbonMonoxideConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonMonoxideConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRCarbonMonoxideConcentrationMeasurementFeature x)
+
 -- | @MTRCarbonMonoxideConcentrationMeasurementLevelValue@
 newtype MTRCarbonMonoxideConcentrationMeasurementLevelValue = MTRCarbonMonoxideConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -10572,6 +11095,16 @@ pattern MTRCarbonMonoxideConcentrationMeasurementLevelValueHigh = MTRCarbonMonox
 pattern MTRCarbonMonoxideConcentrationMeasurementLevelValueCritical :: MTRCarbonMonoxideConcentrationMeasurementLevelValue
 pattern MTRCarbonMonoxideConcentrationMeasurementLevelValueCritical = MTRCarbonMonoxideConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRCarbonMonoxideConcentrationMeasurementLevelValue where
+  withObjCArg (MTRCarbonMonoxideConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonMonoxideConcentrationMeasurementLevelValue where
+  type RawReturn MTRCarbonMonoxideConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonMonoxideConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRCarbonMonoxideConcentrationMeasurementLevelValue x)
+
 -- | @MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium@
 newtype MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium = MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -10585,6 +11118,16 @@ pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementMediumWater = MTRCar
 
 pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementMediumSoil :: MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium
 pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementMediumSoil = MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRCarbonMonoxideConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit@
 newtype MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit = MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit CUChar
@@ -10615,6 +11158,16 @@ pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementUnitPM3 = MTRCarbonM
 pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementUnitBQM3 :: MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit
 pattern MTRCarbonMonoxideConcentrationMeasurementMeasurementUnitBQM3 = MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRCarbonMonoxideConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRChannelFeature@ (bitmask)
 newtype MTRChannelFeature = MTRChannelFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -10638,6 +11191,16 @@ pattern MTRChannelFeatureElectronicGuide = MTRChannelFeature 4
 pattern MTRChannelFeatureRecordProgram :: MTRChannelFeature
 pattern MTRChannelFeatureRecordProgram = MTRChannelFeature 8
 
+instance ObjCArgument MTRChannelFeature where
+  withObjCArg (MTRChannelFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRChannelFeature where
+  type RawReturn MTRChannelFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRChannelFeature x)
+  fromOwned x = pure (MTRChannelFeature x)
+
 -- | @MTRChannelLineupInfoType@
 newtype MTRChannelLineupInfoType = MTRChannelLineupInfoType CUChar
   deriving stock (Eq, Ord, Show)
@@ -10648,6 +11211,16 @@ pattern MTRChannelLineupInfoTypeMSO = MTRChannelLineupInfoType 0
 
 pattern MTRChannelLineupInfoTypeMso :: MTRChannelLineupInfoType
 pattern MTRChannelLineupInfoTypeMso = MTRChannelLineupInfoType 0
+
+instance ObjCArgument MTRChannelLineupInfoType where
+  withObjCArg (MTRChannelLineupInfoType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRChannelLineupInfoType where
+  type RawReturn MTRChannelLineupInfoType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRChannelLineupInfoType x)
+  fromOwned x = pure (MTRChannelLineupInfoType x)
 
 -- | @MTRChannelRecordingFlagBitmap@ (bitmask)
 newtype MTRChannelRecordingFlagBitmap = MTRChannelRecordingFlagBitmap CUInt
@@ -10669,6 +11242,16 @@ pattern MTRChannelRecordingFlagBitmapRecordSeries = MTRChannelRecordingFlagBitma
 pattern MTRChannelRecordingFlagBitmapRecorded :: MTRChannelRecordingFlagBitmap
 pattern MTRChannelRecordingFlagBitmapRecorded = MTRChannelRecordingFlagBitmap 4
 
+instance ObjCArgument MTRChannelRecordingFlagBitmap where
+  withObjCArg (MTRChannelRecordingFlagBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRChannelRecordingFlagBitmap where
+  type RawReturn MTRChannelRecordingFlagBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRChannelRecordingFlagBitmap x)
+  fromOwned x = pure (MTRChannelRecordingFlagBitmap x)
+
 -- | @MTRChannelStatus@
 newtype MTRChannelStatus = MTRChannelStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -10682,6 +11265,16 @@ pattern MTRChannelStatusMultipleMatches = MTRChannelStatus 1
 
 pattern MTRChannelStatusNoMatches :: MTRChannelStatus
 pattern MTRChannelStatusNoMatches = MTRChannelStatus 2
+
+instance ObjCArgument MTRChannelStatus where
+  withObjCArg (MTRChannelStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRChannelStatus where
+  type RawReturn MTRChannelStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRChannelStatus x)
+  fromOwned x = pure (MTRChannelStatus x)
 
 -- | @MTRChannelType@
 newtype MTRChannelType = MTRChannelType CUChar
@@ -10699,6 +11292,16 @@ pattern MTRChannelTypeTerrestrial = MTRChannelType 2
 
 pattern MTRChannelTypeOTT :: MTRChannelType
 pattern MTRChannelTypeOTT = MTRChannelType 3
+
+instance ObjCArgument MTRChannelType where
+  withObjCArg (MTRChannelType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRChannelType where
+  type RawReturn MTRChannelType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRChannelType x)
+  fromOwned x = pure (MTRChannelType x)
 
 -- | @MTRClosureControlClosureError@
 newtype MTRClosureControlClosureError = MTRClosureControlClosureError CUChar
@@ -10719,6 +11322,16 @@ pattern MTRClosureControlClosureErrorMaintenanceRequired = MTRClosureControlClos
 
 pattern MTRClosureControlClosureErrorInternalInterference :: MTRClosureControlClosureError
 pattern MTRClosureControlClosureErrorInternalInterference = MTRClosureControlClosureError 4
+
+instance ObjCArgument MTRClosureControlClosureError where
+  withObjCArg (MTRClosureControlClosureError x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureControlClosureError where
+  type RawReturn MTRClosureControlClosureError = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlClosureError x)
+  fromOwned x = pure (MTRClosureControlClosureError x)
 
 -- | @MTRClosureControlCurrentPosition@
 newtype MTRClosureControlCurrentPosition = MTRClosureControlCurrentPosition CUChar
@@ -10742,6 +11355,16 @@ pattern MTRClosureControlCurrentPositionOpenedForVentilation = MTRClosureControl
 
 pattern MTRClosureControlCurrentPositionOpenedAtSignature :: MTRClosureControlCurrentPosition
 pattern MTRClosureControlCurrentPositionOpenedAtSignature = MTRClosureControlCurrentPosition 5
+
+instance ObjCArgument MTRClosureControlCurrentPosition where
+  withObjCArg (MTRClosureControlCurrentPosition x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureControlCurrentPosition where
+  type RawReturn MTRClosureControlCurrentPosition = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlCurrentPosition x)
+  fromOwned x = pure (MTRClosureControlCurrentPosition x)
 
 -- | @MTRClosureControlFeature@ (bitmask)
 newtype MTRClosureControlFeature = MTRClosureControlFeature CUInt
@@ -10781,6 +11404,16 @@ pattern MTRClosureControlFeatureProtection = MTRClosureControlFeature 128
 pattern MTRClosureControlFeatureManuallyOperable :: MTRClosureControlFeature
 pattern MTRClosureControlFeatureManuallyOperable = MTRClosureControlFeature 256
 
+instance ObjCArgument MTRClosureControlFeature where
+  withObjCArg (MTRClosureControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRClosureControlFeature where
+  type RawReturn MTRClosureControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlFeature x)
+  fromOwned x = pure (MTRClosureControlFeature x)
+
 -- | @MTRClosureControlLatchControlModesBitmap@ (bitmask)
 newtype MTRClosureControlLatchControlModesBitmap = MTRClosureControlLatchControlModesBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -10797,6 +11430,16 @@ pattern MTRClosureControlLatchControlModesBitmapRemoteLatching = MTRClosureContr
 
 pattern MTRClosureControlLatchControlModesBitmapRemoteUnlatching :: MTRClosureControlLatchControlModesBitmap
 pattern MTRClosureControlLatchControlModesBitmapRemoteUnlatching = MTRClosureControlLatchControlModesBitmap 2
+
+instance ObjCArgument MTRClosureControlLatchControlModesBitmap where
+  withObjCArg (MTRClosureControlLatchControlModesBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureControlLatchControlModesBitmap where
+  type RawReturn MTRClosureControlLatchControlModesBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlLatchControlModesBitmap x)
+  fromOwned x = pure (MTRClosureControlLatchControlModesBitmap x)
 
 -- | @MTRClosureControlMainState@
 newtype MTRClosureControlMainState = MTRClosureControlMainState CUChar
@@ -10827,6 +11470,16 @@ pattern MTRClosureControlMainStateDisengaged = MTRClosureControlMainState 6
 pattern MTRClosureControlMainStateSetupRequired :: MTRClosureControlMainState
 pattern MTRClosureControlMainStateSetupRequired = MTRClosureControlMainState 7
 
+instance ObjCArgument MTRClosureControlMainState where
+  withObjCArg (MTRClosureControlMainState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureControlMainState where
+  type RawReturn MTRClosureControlMainState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlMainState x)
+  fromOwned x = pure (MTRClosureControlMainState x)
+
 -- | @MTRClosureControlTargetPosition@
 newtype MTRClosureControlTargetPosition = MTRClosureControlTargetPosition CUChar
   deriving stock (Eq, Ord, Show)
@@ -10847,6 +11500,16 @@ pattern MTRClosureControlTargetPositionMoveToVentilationPosition = MTRClosureCon
 pattern MTRClosureControlTargetPositionMoveToSignaturePosition :: MTRClosureControlTargetPosition
 pattern MTRClosureControlTargetPositionMoveToSignaturePosition = MTRClosureControlTargetPosition 4
 
+instance ObjCArgument MTRClosureControlTargetPosition where
+  withObjCArg (MTRClosureControlTargetPosition x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureControlTargetPosition where
+  type RawReturn MTRClosureControlTargetPosition = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureControlTargetPosition x)
+  fromOwned x = pure (MTRClosureControlTargetPosition x)
+
 -- | @MTRClosureDimensionClosureUnit@
 newtype MTRClosureDimensionClosureUnit = MTRClosureDimensionClosureUnit CUChar
   deriving stock (Eq, Ord, Show)
@@ -10857,6 +11520,16 @@ pattern MTRClosureDimensionClosureUnitMillimeter = MTRClosureDimensionClosureUni
 
 pattern MTRClosureDimensionClosureUnitDegree :: MTRClosureDimensionClosureUnit
 pattern MTRClosureDimensionClosureUnitDegree = MTRClosureDimensionClosureUnit 1
+
+instance ObjCArgument MTRClosureDimensionClosureUnit where
+  withObjCArg (MTRClosureDimensionClosureUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionClosureUnit where
+  type RawReturn MTRClosureDimensionClosureUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionClosureUnit x)
+  fromOwned x = pure (MTRClosureDimensionClosureUnit x)
 
 -- | @MTRClosureDimensionFeature@ (bitmask)
 newtype MTRClosureDimensionFeature = MTRClosureDimensionFeature CUInt
@@ -10893,6 +11566,16 @@ pattern MTRClosureDimensionFeatureRotation = MTRClosureDimensionFeature 64
 pattern MTRClosureDimensionFeatureModulation :: MTRClosureDimensionFeature
 pattern MTRClosureDimensionFeatureModulation = MTRClosureDimensionFeature 128
 
+instance ObjCArgument MTRClosureDimensionFeature where
+  withObjCArg (MTRClosureDimensionFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRClosureDimensionFeature where
+  type RawReturn MTRClosureDimensionFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionFeature x)
+  fromOwned x = pure (MTRClosureDimensionFeature x)
+
 -- | @MTRClosureDimensionLatchControlModesBitmap@ (bitmask)
 newtype MTRClosureDimensionLatchControlModesBitmap = MTRClosureDimensionLatchControlModesBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -10909,6 +11592,16 @@ pattern MTRClosureDimensionLatchControlModesBitmapRemoteLatching = MTRClosureDim
 
 pattern MTRClosureDimensionLatchControlModesBitmapRemoteUnlatching :: MTRClosureDimensionLatchControlModesBitmap
 pattern MTRClosureDimensionLatchControlModesBitmapRemoteUnlatching = MTRClosureDimensionLatchControlModesBitmap 2
+
+instance ObjCArgument MTRClosureDimensionLatchControlModesBitmap where
+  withObjCArg (MTRClosureDimensionLatchControlModesBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionLatchControlModesBitmap where
+  type RawReturn MTRClosureDimensionLatchControlModesBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionLatchControlModesBitmap x)
+  fromOwned x = pure (MTRClosureDimensionLatchControlModesBitmap x)
 
 -- | @MTRClosureDimensionModulationType@
 newtype MTRClosureDimensionModulationType = MTRClosureDimensionModulationType CUChar
@@ -10929,6 +11622,16 @@ pattern MTRClosureDimensionModulationTypeOpacity = MTRClosureDimensionModulation
 
 pattern MTRClosureDimensionModulationTypeVentilation :: MTRClosureDimensionModulationType
 pattern MTRClosureDimensionModulationTypeVentilation = MTRClosureDimensionModulationType 4
+
+instance ObjCArgument MTRClosureDimensionModulationType where
+  withObjCArg (MTRClosureDimensionModulationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionModulationType where
+  type RawReturn MTRClosureDimensionModulationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionModulationType x)
+  fromOwned x = pure (MTRClosureDimensionModulationType x)
 
 -- | @MTRClosureDimensionOverflow@
 newtype MTRClosureDimensionOverflow = MTRClosureDimensionOverflow CUChar
@@ -10968,6 +11671,16 @@ pattern MTRClosureDimensionOverflowRightInside = MTRClosureDimensionOverflow 9
 pattern MTRClosureDimensionOverflowRightOutside :: MTRClosureDimensionOverflow
 pattern MTRClosureDimensionOverflowRightOutside = MTRClosureDimensionOverflow 10
 
+instance ObjCArgument MTRClosureDimensionOverflow where
+  withObjCArg (MTRClosureDimensionOverflow x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionOverflow where
+  type RawReturn MTRClosureDimensionOverflow = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionOverflow x)
+  fromOwned x = pure (MTRClosureDimensionOverflow x)
+
 -- | @MTRClosureDimensionRotationAxis@
 newtype MTRClosureDimensionRotationAxis = MTRClosureDimensionRotationAxis CUChar
   deriving stock (Eq, Ord, Show)
@@ -11006,6 +11719,16 @@ pattern MTRClosureDimensionRotationAxisLeftAndRightBarriers = MTRClosureDimensio
 pattern MTRClosureDimensionRotationAxisRightBarrier :: MTRClosureDimensionRotationAxis
 pattern MTRClosureDimensionRotationAxisRightBarrier = MTRClosureDimensionRotationAxis 10
 
+instance ObjCArgument MTRClosureDimensionRotationAxis where
+  withObjCArg (MTRClosureDimensionRotationAxis x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionRotationAxis where
+  type RawReturn MTRClosureDimensionRotationAxis = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionRotationAxis x)
+  fromOwned x = pure (MTRClosureDimensionRotationAxis x)
+
 -- | @MTRClosureDimensionStepDirection@
 newtype MTRClosureDimensionStepDirection = MTRClosureDimensionStepDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -11016,6 +11739,16 @@ pattern MTRClosureDimensionStepDirectionDecrease = MTRClosureDimensionStepDirect
 
 pattern MTRClosureDimensionStepDirectionIncrease :: MTRClosureDimensionStepDirection
 pattern MTRClosureDimensionStepDirectionIncrease = MTRClosureDimensionStepDirection 1
+
+instance ObjCArgument MTRClosureDimensionStepDirection where
+  withObjCArg (MTRClosureDimensionStepDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionStepDirection where
+  type RawReturn MTRClosureDimensionStepDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionStepDirection x)
+  fromOwned x = pure (MTRClosureDimensionStepDirection x)
 
 -- | @MTRClosureDimensionTranslationDirection@
 newtype MTRClosureDimensionTranslationDirection = MTRClosureDimensionTranslationDirection CUChar
@@ -11057,6 +11790,16 @@ pattern MTRClosureDimensionTranslationDirectionDepthMask = MTRClosureDimensionTr
 
 pattern MTRClosureDimensionTranslationDirectionDepthSymmetry :: MTRClosureDimensionTranslationDirection
 pattern MTRClosureDimensionTranslationDirectionDepthSymmetry = MTRClosureDimensionTranslationDirection 11
+
+instance ObjCArgument MTRClosureDimensionTranslationDirection where
+  withObjCArg (MTRClosureDimensionTranslationDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRClosureDimensionTranslationDirection where
+  type RawReturn MTRClosureDimensionTranslationDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClosureDimensionTranslationDirection x)
+  fromOwned x = pure (MTRClosureDimensionTranslationDirection x)
 
 -- | @MTRClusterIDType@
 newtype MTRClusterIDType = MTRClusterIDType CUInt
@@ -11690,6 +12433,16 @@ pattern MTRClusterOnOffSwitchConfigurationID = MTRClusterIDType 7
 pattern MTRClusterIDTypeOnOffSwitchConfigurationID :: MTRClusterIDType
 pattern MTRClusterIDTypeOnOffSwitchConfigurationID = MTRClusterIDType 7
 
+instance ObjCArgument MTRClusterIDType where
+  withObjCArg (MTRClusterIDType x) k = k (argCUInt x)
+
+instance ObjCReturn MTRClusterIDType where
+  type RawReturn MTRClusterIDType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRClusterIDType x)
+  fromOwned x = pure (MTRClusterIDType x)
+
 -- | @MTRColorControlColorCapabilities@ (bitmask)
 newtype MTRColorControlColorCapabilities = MTRColorControlColorCapabilities CUShort
   deriving stock (Eq, Ord, Show)
@@ -11715,6 +12468,16 @@ pattern MTRColorControlColorCapabilitiesXYAttributesSupported = MTRColorControlC
 
 pattern MTRColorControlColorCapabilitiesColorTemperatureSupported :: MTRColorControlColorCapabilities
 pattern MTRColorControlColorCapabilitiesColorTemperatureSupported = MTRColorControlColorCapabilities 16
+
+instance ObjCArgument MTRColorControlColorCapabilities where
+  withObjCArg (MTRColorControlColorCapabilities x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRColorControlColorCapabilities where
+  type RawReturn MTRColorControlColorCapabilities = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorCapabilities (fromIntegral x))
+  fromOwned x = pure (MTRColorControlColorCapabilities (fromIntegral x))
 
 -- | @MTRColorControlColorCapabilitiesBitmap@ (bitmask)
 newtype MTRColorControlColorCapabilitiesBitmap = MTRColorControlColorCapabilitiesBitmap CUShort
@@ -11742,6 +12505,16 @@ pattern MTRColorControlColorCapabilitiesBitmapXY = MTRColorControlColorCapabilit
 pattern MTRColorControlColorCapabilitiesBitmapColorTemperature :: MTRColorControlColorCapabilitiesBitmap
 pattern MTRColorControlColorCapabilitiesBitmapColorTemperature = MTRColorControlColorCapabilitiesBitmap 16
 
+instance ObjCArgument MTRColorControlColorCapabilitiesBitmap where
+  withObjCArg (MTRColorControlColorCapabilitiesBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRColorControlColorCapabilitiesBitmap where
+  type RawReturn MTRColorControlColorCapabilitiesBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorCapabilitiesBitmap (fromIntegral x))
+  fromOwned x = pure (MTRColorControlColorCapabilitiesBitmap (fromIntegral x))
+
 -- | @MTRColorControlColorLoopAction@
 newtype MTRColorControlColorLoopAction = MTRColorControlColorLoopAction CUChar
   deriving stock (Eq, Ord, Show)
@@ -11755,6 +12528,16 @@ pattern MTRColorControlColorLoopActionActivateFromColorLoopStartEnhancedHue = MT
 
 pattern MTRColorControlColorLoopActionActivateFromEnhancedCurrentHue :: MTRColorControlColorLoopAction
 pattern MTRColorControlColorLoopActionActivateFromEnhancedCurrentHue = MTRColorControlColorLoopAction 2
+
+instance ObjCArgument MTRColorControlColorLoopAction where
+  withObjCArg (MTRColorControlColorLoopAction x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlColorLoopAction where
+  type RawReturn MTRColorControlColorLoopAction = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorLoopAction x)
+  fromOwned x = pure (MTRColorControlColorLoopAction x)
 
 -- | @MTRColorControlColorLoopDirection@
 newtype MTRColorControlColorLoopDirection = MTRColorControlColorLoopDirection CUChar
@@ -11772,6 +12555,16 @@ pattern MTRColorControlColorLoopDirectionIncrement = MTRColorControlColorLoopDir
 
 pattern MTRColorControlColorLoopDirectionIncrementHue :: MTRColorControlColorLoopDirection
 pattern MTRColorControlColorLoopDirectionIncrementHue = MTRColorControlColorLoopDirection 1
+
+instance ObjCArgument MTRColorControlColorLoopDirection where
+  withObjCArg (MTRColorControlColorLoopDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlColorLoopDirection where
+  type RawReturn MTRColorControlColorLoopDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorLoopDirection x)
+  fromOwned x = pure (MTRColorControlColorLoopDirection x)
 
 -- | @MTRColorControlColorLoopUpdateFlags@ (bitmask)
 newtype MTRColorControlColorLoopUpdateFlags = MTRColorControlColorLoopUpdateFlags CUChar
@@ -11796,6 +12589,16 @@ pattern MTRColorControlColorLoopUpdateFlagsUpdateTime = MTRColorControlColorLoop
 pattern MTRColorControlColorLoopUpdateFlagsUpdateStartHue :: MTRColorControlColorLoopUpdateFlags
 pattern MTRColorControlColorLoopUpdateFlagsUpdateStartHue = MTRColorControlColorLoopUpdateFlags 8
 
+instance ObjCArgument MTRColorControlColorLoopUpdateFlags where
+  withObjCArg (MTRColorControlColorLoopUpdateFlags x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlColorLoopUpdateFlags where
+  type RawReturn MTRColorControlColorLoopUpdateFlags = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorLoopUpdateFlags x)
+  fromOwned x = pure (MTRColorControlColorLoopUpdateFlags x)
+
 -- | @MTRColorControlColorMode@
 newtype MTRColorControlColorMode = MTRColorControlColorMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11813,6 +12616,16 @@ pattern MTRColorControlColorModeColorTemperatureMireds = MTRColorControlColorMod
 pattern MTRColorControlColorModeColorTemperature :: MTRColorControlColorMode
 pattern MTRColorControlColorModeColorTemperature = MTRColorControlColorMode 2
 
+instance ObjCArgument MTRColorControlColorMode where
+  withObjCArg (MTRColorControlColorMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlColorMode where
+  type RawReturn MTRColorControlColorMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlColorMode x)
+  fromOwned x = pure (MTRColorControlColorMode x)
+
 -- | @MTRColorControlDirection@
 newtype MTRColorControlDirection = MTRColorControlDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -11829,6 +12642,16 @@ pattern MTRColorControlDirectionUp = MTRColorControlDirection 2
 
 pattern MTRColorControlDirectionDown :: MTRColorControlDirection
 pattern MTRColorControlDirectionDown = MTRColorControlDirection 3
+
+instance ObjCArgument MTRColorControlDirection where
+  withObjCArg (MTRColorControlDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlDirection where
+  type RawReturn MTRColorControlDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlDirection x)
+  fromOwned x = pure (MTRColorControlDirection x)
 
 -- | @MTRColorControlDriftCompensation@
 newtype MTRColorControlDriftCompensation = MTRColorControlDriftCompensation CUChar
@@ -11850,6 +12673,16 @@ pattern MTRColorControlDriftCompensationOpticalLuminanceMonitoringAndFeedback = 
 pattern MTRColorControlDriftCompensationOpticalColorMonitoringAndFeedback :: MTRColorControlDriftCompensation
 pattern MTRColorControlDriftCompensationOpticalColorMonitoringAndFeedback = MTRColorControlDriftCompensation 4
 
+instance ObjCArgument MTRColorControlDriftCompensation where
+  withObjCArg (MTRColorControlDriftCompensation x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlDriftCompensation where
+  type RawReturn MTRColorControlDriftCompensation = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlDriftCompensation x)
+  fromOwned x = pure (MTRColorControlDriftCompensation x)
+
 -- | @MTRColorControlEnhancedColorMode@
 newtype MTRColorControlEnhancedColorMode = MTRColorControlEnhancedColorMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11866,6 +12699,16 @@ pattern MTRColorControlEnhancedColorModeColorTemperatureMireds = MTRColorControl
 
 pattern MTRColorControlEnhancedColorModeEnhancedCurrentHueAndCurrentSaturation :: MTRColorControlEnhancedColorMode
 pattern MTRColorControlEnhancedColorModeEnhancedCurrentHueAndCurrentSaturation = MTRColorControlEnhancedColorMode 3
+
+instance ObjCArgument MTRColorControlEnhancedColorMode where
+  withObjCArg (MTRColorControlEnhancedColorMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlEnhancedColorMode where
+  type RawReturn MTRColorControlEnhancedColorMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlEnhancedColorMode x)
+  fromOwned x = pure (MTRColorControlEnhancedColorMode x)
 
 -- | @MTRColorControlFeature@ (bitmask)
 newtype MTRColorControlFeature = MTRColorControlFeature CUInt
@@ -11893,6 +12736,16 @@ pattern MTRColorControlFeatureXY = MTRColorControlFeature 8
 pattern MTRColorControlFeatureColorTemperature :: MTRColorControlFeature
 pattern MTRColorControlFeatureColorTemperature = MTRColorControlFeature 16
 
+instance ObjCArgument MTRColorControlFeature where
+  withObjCArg (MTRColorControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRColorControlFeature where
+  type RawReturn MTRColorControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlFeature x)
+  fromOwned x = pure (MTRColorControlFeature x)
+
 -- | @MTRColorControlHueDirection@
 newtype MTRColorControlHueDirection = MTRColorControlHueDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -11910,6 +12763,16 @@ pattern MTRColorControlHueDirectionUp = MTRColorControlHueDirection 2
 pattern MTRColorControlHueDirectionDown :: MTRColorControlHueDirection
 pattern MTRColorControlHueDirectionDown = MTRColorControlHueDirection 3
 
+instance ObjCArgument MTRColorControlHueDirection where
+  withObjCArg (MTRColorControlHueDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlHueDirection where
+  type RawReturn MTRColorControlHueDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlHueDirection x)
+  fromOwned x = pure (MTRColorControlHueDirection x)
+
 -- | @MTRColorControlHueMoveMode@
 newtype MTRColorControlHueMoveMode = MTRColorControlHueMoveMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11924,6 +12787,16 @@ pattern MTRColorControlHueMoveModeUp = MTRColorControlHueMoveMode 1
 pattern MTRColorControlHueMoveModeDown :: MTRColorControlHueMoveMode
 pattern MTRColorControlHueMoveModeDown = MTRColorControlHueMoveMode 3
 
+instance ObjCArgument MTRColorControlHueMoveMode where
+  withObjCArg (MTRColorControlHueMoveMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlHueMoveMode where
+  type RawReturn MTRColorControlHueMoveMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlHueMoveMode x)
+  fromOwned x = pure (MTRColorControlHueMoveMode x)
+
 -- | @MTRColorControlHueStepMode@
 newtype MTRColorControlHueStepMode = MTRColorControlHueStepMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11934,6 +12807,16 @@ pattern MTRColorControlHueStepModeUp = MTRColorControlHueStepMode 1
 
 pattern MTRColorControlHueStepModeDown :: MTRColorControlHueStepMode
 pattern MTRColorControlHueStepModeDown = MTRColorControlHueStepMode 3
+
+instance ObjCArgument MTRColorControlHueStepMode where
+  withObjCArg (MTRColorControlHueStepMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlHueStepMode where
+  type RawReturn MTRColorControlHueStepMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlHueStepMode x)
+  fromOwned x = pure (MTRColorControlHueStepMode x)
 
 -- | @MTRColorControlMoveMode@
 newtype MTRColorControlMoveMode = MTRColorControlMoveMode CUChar
@@ -11949,6 +12832,16 @@ pattern MTRColorControlMoveModeUp = MTRColorControlMoveMode 1
 pattern MTRColorControlMoveModeDown :: MTRColorControlMoveMode
 pattern MTRColorControlMoveModeDown = MTRColorControlMoveMode 3
 
+instance ObjCArgument MTRColorControlMoveMode where
+  withObjCArg (MTRColorControlMoveMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlMoveMode where
+  type RawReturn MTRColorControlMoveMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlMoveMode x)
+  fromOwned x = pure (MTRColorControlMoveMode x)
+
 -- | @MTRColorControlOptionsBitmap@ (bitmask)
 newtype MTRColorControlOptionsBitmap = MTRColorControlOptionsBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -11962,6 +12855,16 @@ instance Monoid MTRColorControlOptionsBitmap where
 
 pattern MTRColorControlOptionsBitmapExecuteIfOff :: MTRColorControlOptionsBitmap
 pattern MTRColorControlOptionsBitmapExecuteIfOff = MTRColorControlOptionsBitmap 1
+
+instance ObjCArgument MTRColorControlOptionsBitmap where
+  withObjCArg (MTRColorControlOptionsBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlOptionsBitmap where
+  type RawReturn MTRColorControlOptionsBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlOptionsBitmap x)
+  fromOwned x = pure (MTRColorControlOptionsBitmap x)
 
 -- | ColorControl used to have HueMoveMode/SaturationMoveMode and HueStepMode/SaturationStepMode that had identical values.  Those got replaced with MoveModeEnum and StepModeEnum respectively.  We codegen HueMoveMode and HueStepMode as aliases of MoveModeEnum and StepModeEnum, but we need manual shims for SaturationMoveMode and SaturationStepMode.
 -- | @MTRColorControlSaturationMoveMode@
@@ -11978,6 +12881,16 @@ pattern MTRColorControlSaturationMoveModeUp = MTRColorControlSaturationMoveMode 
 pattern MTRColorControlSaturationMoveModeDown :: MTRColorControlSaturationMoveMode
 pattern MTRColorControlSaturationMoveModeDown = MTRColorControlSaturationMoveMode 3
 
+instance ObjCArgument MTRColorControlSaturationMoveMode where
+  withObjCArg (MTRColorControlSaturationMoveMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlSaturationMoveMode where
+  type RawReturn MTRColorControlSaturationMoveMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlSaturationMoveMode x)
+  fromOwned x = pure (MTRColorControlSaturationMoveMode x)
+
 -- | @MTRColorControlSaturationStepMode@
 newtype MTRColorControlSaturationStepMode = MTRColorControlSaturationStepMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11989,6 +12902,16 @@ pattern MTRColorControlSaturationStepModeUp = MTRColorControlSaturationStepMode 
 pattern MTRColorControlSaturationStepModeDown :: MTRColorControlSaturationStepMode
 pattern MTRColorControlSaturationStepModeDown = MTRColorControlSaturationStepMode 3
 
+instance ObjCArgument MTRColorControlSaturationStepMode where
+  withObjCArg (MTRColorControlSaturationStepMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlSaturationStepMode where
+  type RawReturn MTRColorControlSaturationStepMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlSaturationStepMode x)
+  fromOwned x = pure (MTRColorControlSaturationStepMode x)
+
 -- | @MTRColorControlStepMode@
 newtype MTRColorControlStepMode = MTRColorControlStepMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -11999,6 +12922,16 @@ pattern MTRColorControlStepModeUp = MTRColorControlStepMode 1
 
 pattern MTRColorControlStepModeDown :: MTRColorControlStepMode
 pattern MTRColorControlStepModeDown = MTRColorControlStepMode 3
+
+instance ObjCArgument MTRColorControlStepMode where
+  withObjCArg (MTRColorControlStepMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlStepMode where
+  type RawReturn MTRColorControlStepMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlStepMode x)
+  fromOwned x = pure (MTRColorControlStepMode x)
 
 -- | @MTRColorControlUpdateFlagsBitmap@ (bitmask)
 newtype MTRColorControlUpdateFlagsBitmap = MTRColorControlUpdateFlagsBitmap CUChar
@@ -12022,6 +12955,16 @@ pattern MTRColorControlUpdateFlagsBitmapUpdateTime = MTRColorControlUpdateFlagsB
 
 pattern MTRColorControlUpdateFlagsBitmapUpdateStartHue :: MTRColorControlUpdateFlagsBitmap
 pattern MTRColorControlUpdateFlagsBitmapUpdateStartHue = MTRColorControlUpdateFlagsBitmap 8
+
+instance ObjCArgument MTRColorControlUpdateFlagsBitmap where
+  withObjCArg (MTRColorControlUpdateFlagsBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRColorControlUpdateFlagsBitmap where
+  type RawReturn MTRColorControlUpdateFlagsBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRColorControlUpdateFlagsBitmap x)
+  fromOwned x = pure (MTRColorControlUpdateFlagsBitmap x)
 
 -- | @MTRCommandIDType@
 newtype MTRCommandIDType = MTRCommandIDType CUInt
@@ -14233,6 +15176,16 @@ pattern MTRCommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfile
 pattern MTRCommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileCommandID :: MTRCommandIDType
 pattern MTRCommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileCommandID = MTRCommandIDType 1
 
+instance ObjCArgument MTRCommandIDType where
+  withObjCArg (MTRCommandIDType x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCommandIDType where
+  type RawReturn MTRCommandIDType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommandIDType x)
+  fromOwned x = pure (MTRCommandIDType x)
+
 -- | @MTRCommissionerControlSupportedDeviceCategoryBitmap@ (bitmask)
 newtype MTRCommissionerControlSupportedDeviceCategoryBitmap = MTRCommissionerControlSupportedDeviceCategoryBitmap CUInt
   deriving stock (Eq, Ord, Show)
@@ -14246,6 +15199,16 @@ instance Monoid MTRCommissionerControlSupportedDeviceCategoryBitmap where
 
 pattern MTRCommissionerControlSupportedDeviceCategoryBitmapFabricSynchronization :: MTRCommissionerControlSupportedDeviceCategoryBitmap
 pattern MTRCommissionerControlSupportedDeviceCategoryBitmapFabricSynchronization = MTRCommissionerControlSupportedDeviceCategoryBitmap 1
+
+instance ObjCArgument MTRCommissionerControlSupportedDeviceCategoryBitmap where
+  withObjCArg (MTRCommissionerControlSupportedDeviceCategoryBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCommissionerControlSupportedDeviceCategoryBitmap where
+  type RawReturn MTRCommissionerControlSupportedDeviceCategoryBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommissionerControlSupportedDeviceCategoryBitmap x)
+  fromOwned x = pure (MTRCommissionerControlSupportedDeviceCategoryBitmap x)
 
 -- | @MTRCommissioningFlow@
 newtype MTRCommissioningFlow = MTRCommissioningFlow CULong
@@ -14264,6 +15227,16 @@ pattern MTRCommissioningFlowCustom = MTRCommissioningFlow 2
 pattern MTRCommissioningFlowInvalid :: MTRCommissioningFlow
 pattern MTRCommissioningFlowInvalid = MTRCommissioningFlow 3
 
+instance ObjCArgument MTRCommissioningFlow where
+  withObjCArg (MTRCommissioningFlow x) k = k (argCULong x)
+
+instance ObjCReturn MTRCommissioningFlow where
+  type RawReturn MTRCommissioningFlow = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommissioningFlow x)
+  fromOwned x = pure (MTRCommissioningFlow x)
+
 -- | @MTRCommissioningStatus@
 newtype MTRCommissioningStatus = MTRCommissioningStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -14280,6 +15253,16 @@ pattern MTRCommissioningStatusFailed = MTRCommissioningStatus 2
 
 pattern MTRCommissioningStatusDiscoveringMoreDevices :: MTRCommissioningStatus
 pattern MTRCommissioningStatusDiscoveringMoreDevices = MTRCommissioningStatus 3
+
+instance ObjCArgument MTRCommissioningStatus where
+  withObjCArg (MTRCommissioningStatus x) k = k (argCLong x)
+
+instance ObjCReturn MTRCommissioningStatus where
+  type RawReturn MTRCommissioningStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommissioningStatus x)
+  fromOwned x = pure (MTRCommissioningStatus x)
 
 -- | @MTRCommodityMeteringMeasurementType@
 newtype MTRCommodityMeteringMeasurementType = MTRCommodityMeteringMeasurementType CUShort
@@ -14337,6 +15320,16 @@ pattern MTRCommodityMeteringMeasurementTypeReactiveEnergy = MTRCommodityMetering
 pattern MTRCommodityMeteringMeasurementTypeApparentEnergy :: MTRCommodityMeteringMeasurementType
 pattern MTRCommodityMeteringMeasurementTypeApparentEnergy = MTRCommodityMeteringMeasurementType 16
 
+instance ObjCArgument MTRCommodityMeteringMeasurementType where
+  withObjCArg (MTRCommodityMeteringMeasurementType x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRCommodityMeteringMeasurementType where
+  type RawReturn MTRCommodityMeteringMeasurementType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityMeteringMeasurementType (fromIntegral x))
+  fromOwned x = pure (MTRCommodityMeteringMeasurementType (fromIntegral x))
+
 -- | @MTRCommodityPriceDetailBitmap@ (bitmask)
 newtype MTRCommodityPriceDetailBitmap = MTRCommodityPriceDetailBitmap CUShort
   deriving stock (Eq, Ord, Show)
@@ -14354,6 +15347,16 @@ pattern MTRCommodityPriceDetailBitmapDescription = MTRCommodityPriceDetailBitmap
 pattern MTRCommodityPriceDetailBitmapComponents :: MTRCommodityPriceDetailBitmap
 pattern MTRCommodityPriceDetailBitmapComponents = MTRCommodityPriceDetailBitmap 2
 
+instance ObjCArgument MTRCommodityPriceDetailBitmap where
+  withObjCArg (MTRCommodityPriceDetailBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRCommodityPriceDetailBitmap where
+  type RawReturn MTRCommodityPriceDetailBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityPriceDetailBitmap (fromIntegral x))
+  fromOwned x = pure (MTRCommodityPriceDetailBitmap (fromIntegral x))
+
 -- | @MTRCommodityPriceFeature@ (bitmask)
 newtype MTRCommodityPriceFeature = MTRCommodityPriceFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -14367,6 +15370,16 @@ instance Monoid MTRCommodityPriceFeature where
 
 pattern MTRCommodityPriceFeatureForecasting :: MTRCommodityPriceFeature
 pattern MTRCommodityPriceFeatureForecasting = MTRCommodityPriceFeature 1
+
+instance ObjCArgument MTRCommodityPriceFeature where
+  withObjCArg (MTRCommodityPriceFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCommodityPriceFeature where
+  type RawReturn MTRCommodityPriceFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityPriceFeature x)
+  fromOwned x = pure (MTRCommodityPriceFeature x)
 
 -- | @MTRCommodityTariffAuxiliaryLoadSetting@
 newtype MTRCommodityTariffAuxiliaryLoadSetting = MTRCommodityTariffAuxiliaryLoadSetting CUChar
@@ -14382,6 +15395,16 @@ pattern MTRCommodityTariffAuxiliaryLoadSettingOn = MTRCommodityTariffAuxiliaryLo
 pattern MTRCommodityTariffAuxiliaryLoadSettingNone :: MTRCommodityTariffAuxiliaryLoadSetting
 pattern MTRCommodityTariffAuxiliaryLoadSettingNone = MTRCommodityTariffAuxiliaryLoadSetting 2
 
+instance ObjCArgument MTRCommodityTariffAuxiliaryLoadSetting where
+  withObjCArg (MTRCommodityTariffAuxiliaryLoadSetting x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffAuxiliaryLoadSetting where
+  type RawReturn MTRCommodityTariffAuxiliaryLoadSetting = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffAuxiliaryLoadSetting x)
+  fromOwned x = pure (MTRCommodityTariffAuxiliaryLoadSetting x)
+
 -- | @MTRCommodityTariffBlockMode@
 newtype MTRCommodityTariffBlockMode = MTRCommodityTariffBlockMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -14395,6 +15418,16 @@ pattern MTRCommodityTariffBlockModeCombined = MTRCommodityTariffBlockMode 1
 
 pattern MTRCommodityTariffBlockModeIndividual :: MTRCommodityTariffBlockMode
 pattern MTRCommodityTariffBlockModeIndividual = MTRCommodityTariffBlockMode 2
+
+instance ObjCArgument MTRCommodityTariffBlockMode where
+  withObjCArg (MTRCommodityTariffBlockMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffBlockMode where
+  type RawReturn MTRCommodityTariffBlockMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffBlockMode x)
+  fromOwned x = pure (MTRCommodityTariffBlockMode x)
 
 -- | @MTRCommodityTariffDayEntryRandomizationType@
 newtype MTRCommodityTariffDayEntryRandomizationType = MTRCommodityTariffDayEntryRandomizationType CUChar
@@ -14415,6 +15448,16 @@ pattern MTRCommodityTariffDayEntryRandomizationTypeRandomPositive = MTRCommodity
 
 pattern MTRCommodityTariffDayEntryRandomizationTypeRandomNegative :: MTRCommodityTariffDayEntryRandomizationType
 pattern MTRCommodityTariffDayEntryRandomizationTypeRandomNegative = MTRCommodityTariffDayEntryRandomizationType 4
+
+instance ObjCArgument MTRCommodityTariffDayEntryRandomizationType where
+  withObjCArg (MTRCommodityTariffDayEntryRandomizationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffDayEntryRandomizationType where
+  type RawReturn MTRCommodityTariffDayEntryRandomizationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffDayEntryRandomizationType x)
+  fromOwned x = pure (MTRCommodityTariffDayEntryRandomizationType x)
 
 -- | @MTRCommodityTariffDayPatternDayOfWeekBitmap@ (bitmask)
 newtype MTRCommodityTariffDayPatternDayOfWeekBitmap = MTRCommodityTariffDayPatternDayOfWeekBitmap CUChar
@@ -14448,6 +15491,16 @@ pattern MTRCommodityTariffDayPatternDayOfWeekBitmapFriday = MTRCommodityTariffDa
 pattern MTRCommodityTariffDayPatternDayOfWeekBitmapSaturday :: MTRCommodityTariffDayPatternDayOfWeekBitmap
 pattern MTRCommodityTariffDayPatternDayOfWeekBitmapSaturday = MTRCommodityTariffDayPatternDayOfWeekBitmap 64
 
+instance ObjCArgument MTRCommodityTariffDayPatternDayOfWeekBitmap where
+  withObjCArg (MTRCommodityTariffDayPatternDayOfWeekBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffDayPatternDayOfWeekBitmap where
+  type RawReturn MTRCommodityTariffDayPatternDayOfWeekBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffDayPatternDayOfWeekBitmap x)
+  fromOwned x = pure (MTRCommodityTariffDayPatternDayOfWeekBitmap x)
+
 -- | @MTRCommodityTariffDayType@
 newtype MTRCommodityTariffDayType = MTRCommodityTariffDayType CUChar
   deriving stock (Eq, Ord, Show)
@@ -14464,6 +15517,16 @@ pattern MTRCommodityTariffDayTypeDynamic = MTRCommodityTariffDayType 2
 
 pattern MTRCommodityTariffDayTypeEvent :: MTRCommodityTariffDayType
 pattern MTRCommodityTariffDayTypeEvent = MTRCommodityTariffDayType 3
+
+instance ObjCArgument MTRCommodityTariffDayType where
+  withObjCArg (MTRCommodityTariffDayType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffDayType where
+  type RawReturn MTRCommodityTariffDayType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffDayType x)
+  fromOwned x = pure (MTRCommodityTariffDayType x)
 
 -- | @MTRCommodityTariffFeature@ (bitmask)
 newtype MTRCommodityTariffFeature = MTRCommodityTariffFeature CUInt
@@ -14494,6 +15557,16 @@ pattern MTRCommodityTariffFeaturePowerThreshold = MTRCommodityTariffFeature 16
 pattern MTRCommodityTariffFeatureRandomization :: MTRCommodityTariffFeature
 pattern MTRCommodityTariffFeatureRandomization = MTRCommodityTariffFeature 32
 
+instance ObjCArgument MTRCommodityTariffFeature where
+  withObjCArg (MTRCommodityTariffFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRCommodityTariffFeature where
+  type RawReturn MTRCommodityTariffFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffFeature x)
+  fromOwned x = pure (MTRCommodityTariffFeature x)
+
 -- | @MTRCommodityTariffPeakPeriodSeverity@
 newtype MTRCommodityTariffPeakPeriodSeverity = MTRCommodityTariffPeakPeriodSeverity CUChar
   deriving stock (Eq, Ord, Show)
@@ -14511,6 +15584,16 @@ pattern MTRCommodityTariffPeakPeriodSeverityMedium = MTRCommodityTariffPeakPerio
 pattern MTRCommodityTariffPeakPeriodSeverityHigh :: MTRCommodityTariffPeakPeriodSeverity
 pattern MTRCommodityTariffPeakPeriodSeverityHigh = MTRCommodityTariffPeakPeriodSeverity 3
 
+instance ObjCArgument MTRCommodityTariffPeakPeriodSeverity where
+  withObjCArg (MTRCommodityTariffPeakPeriodSeverity x) k = k (argCUChar x)
+
+instance ObjCReturn MTRCommodityTariffPeakPeriodSeverity where
+  type RawReturn MTRCommodityTariffPeakPeriodSeverity = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRCommodityTariffPeakPeriodSeverity x)
+  fromOwned x = pure (MTRCommodityTariffPeakPeriodSeverity x)
+
 -- | @MTRContentAppObserverStatus@
 newtype MTRContentAppObserverStatus = MTRContentAppObserverStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -14521,6 +15604,16 @@ pattern MTRContentAppObserverStatusSuccess = MTRContentAppObserverStatus 0
 
 pattern MTRContentAppObserverStatusUnexpectedData :: MTRContentAppObserverStatus
 pattern MTRContentAppObserverStatusUnexpectedData = MTRContentAppObserverStatus 1
+
+instance ObjCArgument MTRContentAppObserverStatus where
+  withObjCArg (MTRContentAppObserverStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentAppObserverStatus where
+  type RawReturn MTRContentAppObserverStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentAppObserverStatus x)
+  fromOwned x = pure (MTRContentAppObserverStatus x)
 
 -- | @MTRContentControlFeature@ (bitmask)
 newtype MTRContentControlFeature = MTRContentControlFeature CUInt
@@ -14547,6 +15640,16 @@ pattern MTRContentControlFeatureOnDemandContentRating = MTRContentControlFeature
 
 pattern MTRContentControlFeatureScheduledContentRating :: MTRContentControlFeature
 pattern MTRContentControlFeatureScheduledContentRating = MTRContentControlFeature 16
+
+instance ObjCArgument MTRContentControlFeature where
+  withObjCArg (MTRContentControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRContentControlFeature where
+  type RawReturn MTRContentControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentControlFeature x)
+  fromOwned x = pure (MTRContentControlFeature x)
 
 -- | @MTRContentLauncherCharacteristic@
 newtype MTRContentLauncherCharacteristic = MTRContentLauncherCharacteristic CUChar
@@ -14607,6 +15710,16 @@ pattern MTRContentLauncherCharacteristicEmergency = MTRContentLauncherCharacteri
 pattern MTRContentLauncherCharacteristicKaraoke :: MTRContentLauncherCharacteristic
 pattern MTRContentLauncherCharacteristicKaraoke = MTRContentLauncherCharacteristic 17
 
+instance ObjCArgument MTRContentLauncherCharacteristic where
+  withObjCArg (MTRContentLauncherCharacteristic x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentLauncherCharacteristic where
+  type RawReturn MTRContentLauncherCharacteristic = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherCharacteristic x)
+  fromOwned x = pure (MTRContentLauncherCharacteristic x)
+
 -- | @MTRContentLauncherContentLaunchStatus@
 newtype MTRContentLauncherContentLaunchStatus = MTRContentLauncherContentLaunchStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -14620,6 +15733,16 @@ pattern MTRContentLauncherContentLaunchStatusUrlNotAvailable = MTRContentLaunche
 
 pattern MTRContentLauncherContentLaunchStatusAuthFailed :: MTRContentLauncherContentLaunchStatus
 pattern MTRContentLauncherContentLaunchStatusAuthFailed = MTRContentLauncherContentLaunchStatus 2
+
+instance ObjCArgument MTRContentLauncherContentLaunchStatus where
+  withObjCArg (MTRContentLauncherContentLaunchStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentLauncherContentLaunchStatus where
+  type RawReturn MTRContentLauncherContentLaunchStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherContentLaunchStatus x)
+  fromOwned x = pure (MTRContentLauncherContentLaunchStatus x)
 
 -- | @MTRContentLauncherFeature@ (bitmask)
 newtype MTRContentLauncherFeature = MTRContentLauncherFeature CUInt
@@ -14647,6 +15770,16 @@ pattern MTRContentLauncherFeatureTextTracks = MTRContentLauncherFeature 8
 pattern MTRContentLauncherFeatureAudioTracks :: MTRContentLauncherFeature
 pattern MTRContentLauncherFeatureAudioTracks = MTRContentLauncherFeature 16
 
+instance ObjCArgument MTRContentLauncherFeature where
+  withObjCArg (MTRContentLauncherFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRContentLauncherFeature where
+  type RawReturn MTRContentLauncherFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherFeature x)
+  fromOwned x = pure (MTRContentLauncherFeature x)
+
 -- | @MTRContentLauncherMetricType@
 newtype MTRContentLauncherMetricType = MTRContentLauncherMetricType CUChar
   deriving stock (Eq, Ord, Show)
@@ -14663,6 +15796,16 @@ pattern MTRContentLauncherMetricTypePercentage = MTRContentLauncherMetricType 1
 
 pattern MTRContentLauncherMetricTypePERCENTAGE :: MTRContentLauncherMetricType
 pattern MTRContentLauncherMetricTypePERCENTAGE = MTRContentLauncherMetricType 1
+
+instance ObjCArgument MTRContentLauncherMetricType where
+  withObjCArg (MTRContentLauncherMetricType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentLauncherMetricType where
+  type RawReturn MTRContentLauncherMetricType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherMetricType x)
+  fromOwned x = pure (MTRContentLauncherMetricType x)
 
 -- | @MTRContentLauncherParameter@
 newtype MTRContentLauncherParameter = MTRContentLauncherParameter CUChar
@@ -14720,6 +15863,16 @@ pattern MTRContentLauncherParameterEpisode = MTRContentLauncherParameter 15
 pattern MTRContentLauncherParameterAny :: MTRContentLauncherParameter
 pattern MTRContentLauncherParameterAny = MTRContentLauncherParameter 16
 
+instance ObjCArgument MTRContentLauncherParameter where
+  withObjCArg (MTRContentLauncherParameter x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentLauncherParameter where
+  type RawReturn MTRContentLauncherParameter = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherParameter x)
+  fromOwned x = pure (MTRContentLauncherParameter x)
+
 -- | @MTRContentLauncherStatus@
 newtype MTRContentLauncherStatus = MTRContentLauncherStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -14740,6 +15893,16 @@ pattern MTRContentLauncherStatusTextTrackNotAvailable = MTRContentLauncherStatus
 pattern MTRContentLauncherStatusAudioTrackNotAvailable :: MTRContentLauncherStatus
 pattern MTRContentLauncherStatusAudioTrackNotAvailable = MTRContentLauncherStatus 4
 
+instance ObjCArgument MTRContentLauncherStatus where
+  withObjCArg (MTRContentLauncherStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRContentLauncherStatus where
+  type RawReturn MTRContentLauncherStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherStatus x)
+  fromOwned x = pure (MTRContentLauncherStatus x)
+
 -- | @MTRContentLauncherSupportedProtocolsBitmap@ (bitmask)
 newtype MTRContentLauncherSupportedProtocolsBitmap = MTRContentLauncherSupportedProtocolsBitmap CUInt
   deriving stock (Eq, Ord, Show)
@@ -14757,6 +15920,16 @@ pattern MTRContentLauncherSupportedProtocolsBitmapDASH = MTRContentLauncherSuppo
 pattern MTRContentLauncherSupportedProtocolsBitmapHLS :: MTRContentLauncherSupportedProtocolsBitmap
 pattern MTRContentLauncherSupportedProtocolsBitmapHLS = MTRContentLauncherSupportedProtocolsBitmap 2
 
+instance ObjCArgument MTRContentLauncherSupportedProtocolsBitmap where
+  withObjCArg (MTRContentLauncherSupportedProtocolsBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRContentLauncherSupportedProtocolsBitmap where
+  type RawReturn MTRContentLauncherSupportedProtocolsBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherSupportedProtocolsBitmap x)
+  fromOwned x = pure (MTRContentLauncherSupportedProtocolsBitmap x)
+
 -- | @MTRContentLauncherSupportedStreamingProtocol@ (bitmask)
 newtype MTRContentLauncherSupportedStreamingProtocol = MTRContentLauncherSupportedStreamingProtocol CUInt
   deriving stock (Eq, Ord, Show)
@@ -14773,6 +15946,16 @@ pattern MTRContentLauncherSupportedStreamingProtocolDASH = MTRContentLauncherSup
 
 pattern MTRContentLauncherSupportedStreamingProtocolHLS :: MTRContentLauncherSupportedStreamingProtocol
 pattern MTRContentLauncherSupportedStreamingProtocolHLS = MTRContentLauncherSupportedStreamingProtocol 2
+
+instance ObjCArgument MTRContentLauncherSupportedStreamingProtocol where
+  withObjCArg (MTRContentLauncherSupportedStreamingProtocol x) k = k (argCUInt x)
+
+instance ObjCReturn MTRContentLauncherSupportedStreamingProtocol where
+  type RawReturn MTRContentLauncherSupportedStreamingProtocol = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRContentLauncherSupportedStreamingProtocol x)
+  fromOwned x = pure (MTRContentLauncherSupportedStreamingProtocol x)
 
 -- | @MTRDataTypeAreaTypeTag@
 newtype MTRDataTypeAreaTypeTag = MTRDataTypeAreaTypeTag CUChar
@@ -15058,6 +16241,16 @@ pattern MTRDataTypeAreaTypeTagWorkshop = MTRDataTypeAreaTypeTag 94
 pattern MTRDataTypeAreaTypeTagToilet :: MTRDataTypeAreaTypeTag
 pattern MTRDataTypeAreaTypeTagToilet = MTRDataTypeAreaTypeTag 95
 
+instance ObjCArgument MTRDataTypeAreaTypeTag where
+  withObjCArg (MTRDataTypeAreaTypeTag x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeAreaTypeTag where
+  type RawReturn MTRDataTypeAreaTypeTag = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeAreaTypeTag x)
+  fromOwned x = pure (MTRDataTypeAreaTypeTag x)
+
 -- | @MTRDataTypeAtomicRequestTypeEnum@
 newtype MTRDataTypeAtomicRequestTypeEnum = MTRDataTypeAtomicRequestTypeEnum CUChar
   deriving stock (Eq, Ord, Show)
@@ -15071,6 +16264,16 @@ pattern MTRDataTypeAtomicRequestTypeEnumCommitWrite = MTRDataTypeAtomicRequestTy
 
 pattern MTRDataTypeAtomicRequestTypeEnumRollbackWrite :: MTRDataTypeAtomicRequestTypeEnum
 pattern MTRDataTypeAtomicRequestTypeEnumRollbackWrite = MTRDataTypeAtomicRequestTypeEnum 2
+
+instance ObjCArgument MTRDataTypeAtomicRequestTypeEnum where
+  withObjCArg (MTRDataTypeAtomicRequestTypeEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeAtomicRequestTypeEnum where
+  type RawReturn MTRDataTypeAtomicRequestTypeEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeAtomicRequestTypeEnum x)
+  fromOwned x = pure (MTRDataTypeAtomicRequestTypeEnum x)
 
 -- | @MTRDataTypeLandmarkTag@
 newtype MTRDataTypeLandmarkTag = MTRDataTypeLandmarkTag CUChar
@@ -15230,6 +16433,16 @@ pattern MTRDataTypeLandmarkTagWindow = MTRDataTypeLandmarkTag 49
 pattern MTRDataTypeLandmarkTagWineCooler :: MTRDataTypeLandmarkTag
 pattern MTRDataTypeLandmarkTagWineCooler = MTRDataTypeLandmarkTag 50
 
+instance ObjCArgument MTRDataTypeLandmarkTag where
+  withObjCArg (MTRDataTypeLandmarkTag x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeLandmarkTag where
+  type RawReturn MTRDataTypeLandmarkTag = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeLandmarkTag x)
+  fromOwned x = pure (MTRDataTypeLandmarkTag x)
+
 -- | @MTRDataTypeLocationTag@
 newtype MTRDataTypeLocationTag = MTRDataTypeLocationTag CUChar
   deriving stock (Eq, Ord, Show)
@@ -15246,6 +16459,16 @@ pattern MTRDataTypeLocationTagInside = MTRDataTypeLocationTag 2
 
 pattern MTRDataTypeLocationTagOutside :: MTRDataTypeLocationTag
 pattern MTRDataTypeLocationTagOutside = MTRDataTypeLocationTag 3
+
+instance ObjCArgument MTRDataTypeLocationTag where
+  withObjCArg (MTRDataTypeLocationTag x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeLocationTag where
+  type RawReturn MTRDataTypeLocationTag = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeLocationTag x)
+  fromOwned x = pure (MTRDataTypeLocationTag x)
 
 -- | @MTRDataTypeMeasurementTypeEnum@
 newtype MTRDataTypeMeasurementTypeEnum = MTRDataTypeMeasurementTypeEnum CUShort
@@ -15306,6 +16529,16 @@ pattern MTRDataTypeMeasurementTypeEnumApparentEnergy = MTRDataTypeMeasurementTyp
 pattern MTRDataTypeMeasurementTypeEnumSoilMoisture :: MTRDataTypeMeasurementTypeEnum
 pattern MTRDataTypeMeasurementTypeEnumSoilMoisture = MTRDataTypeMeasurementTypeEnum 17
 
+instance ObjCArgument MTRDataTypeMeasurementTypeEnum where
+  withObjCArg (MTRDataTypeMeasurementTypeEnum x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDataTypeMeasurementTypeEnum where
+  type RawReturn MTRDataTypeMeasurementTypeEnum = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeMeasurementTypeEnum (fromIntegral x))
+  fromOwned x = pure (MTRDataTypeMeasurementTypeEnum (fromIntegral x))
+
 -- | @MTRDataTypePositionTag@
 newtype MTRDataTypePositionTag = MTRDataTypePositionTag CUChar
   deriving stock (Eq, Ord, Show)
@@ -15332,6 +16565,16 @@ pattern MTRDataTypePositionTagRow = MTRDataTypePositionTag 5
 pattern MTRDataTypePositionTagColumn :: MTRDataTypePositionTag
 pattern MTRDataTypePositionTagColumn = MTRDataTypePositionTag 6
 
+instance ObjCArgument MTRDataTypePositionTag where
+  withObjCArg (MTRDataTypePositionTag x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypePositionTag where
+  type RawReturn MTRDataTypePositionTag = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypePositionTag x)
+  fromOwned x = pure (MTRDataTypePositionTag x)
+
 -- | @MTRDataTypePowerThresholdSourceEnum@
 newtype MTRDataTypePowerThresholdSourceEnum = MTRDataTypePowerThresholdSourceEnum CUChar
   deriving stock (Eq, Ord, Show)
@@ -15345,6 +16588,16 @@ pattern MTRDataTypePowerThresholdSourceEnumRegulator = MTRDataTypePowerThreshold
 
 pattern MTRDataTypePowerThresholdSourceEnumEquipment :: MTRDataTypePowerThresholdSourceEnum
 pattern MTRDataTypePowerThresholdSourceEnumEquipment = MTRDataTypePowerThresholdSourceEnum 2
+
+instance ObjCArgument MTRDataTypePowerThresholdSourceEnum where
+  withObjCArg (MTRDataTypePowerThresholdSourceEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypePowerThresholdSourceEnum where
+  type RawReturn MTRDataTypePowerThresholdSourceEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypePowerThresholdSourceEnum x)
+  fromOwned x = pure (MTRDataTypePowerThresholdSourceEnum x)
 
 -- | @MTRDataTypeRelativePositionTag@
 newtype MTRDataTypeRelativePositionTag = MTRDataTypeRelativePositionTag CUChar
@@ -15372,6 +16625,16 @@ pattern MTRDataTypeRelativePositionTagFrontOf = MTRDataTypeRelativePositionTag 5
 pattern MTRDataTypeRelativePositionTagBehind :: MTRDataTypeRelativePositionTag
 pattern MTRDataTypeRelativePositionTagBehind = MTRDataTypeRelativePositionTag 6
 
+instance ObjCArgument MTRDataTypeRelativePositionTag where
+  withObjCArg (MTRDataTypeRelativePositionTag x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeRelativePositionTag where
+  type RawReturn MTRDataTypeRelativePositionTag = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeRelativePositionTag x)
+  fromOwned x = pure (MTRDataTypeRelativePositionTag x)
+
 -- | @MTRDataTypeStreamUsageEnum@
 newtype MTRDataTypeStreamUsageEnum = MTRDataTypeStreamUsageEnum CUChar
   deriving stock (Eq, Ord, Show)
@@ -15388,6 +16651,16 @@ pattern MTRDataTypeStreamUsageEnumAnalysis = MTRDataTypeStreamUsageEnum 2
 
 pattern MTRDataTypeStreamUsageEnumLiveView :: MTRDataTypeStreamUsageEnum
 pattern MTRDataTypeStreamUsageEnumLiveView = MTRDataTypeStreamUsageEnum 3
+
+instance ObjCArgument MTRDataTypeStreamUsageEnum where
+  withObjCArg (MTRDataTypeStreamUsageEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeStreamUsageEnum where
+  type RawReturn MTRDataTypeStreamUsageEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeStreamUsageEnum x)
+  fromOwned x = pure (MTRDataTypeStreamUsageEnum x)
 
 -- | @MTRDataTypeTariffPriceTypeEnum@
 newtype MTRDataTypeTariffPriceTypeEnum = MTRDataTypeTariffPriceTypeEnum CUChar
@@ -15409,6 +16682,16 @@ pattern MTRDataTypeTariffPriceTypeEnumIncentive = MTRDataTypeTariffPriceTypeEnum
 pattern MTRDataTypeTariffPriceTypeEnumIncentiveSignal :: MTRDataTypeTariffPriceTypeEnum
 pattern MTRDataTypeTariffPriceTypeEnumIncentiveSignal = MTRDataTypeTariffPriceTypeEnum 4
 
+instance ObjCArgument MTRDataTypeTariffPriceTypeEnum where
+  withObjCArg (MTRDataTypeTariffPriceTypeEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeTariffPriceTypeEnum where
+  type RawReturn MTRDataTypeTariffPriceTypeEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeTariffPriceTypeEnum x)
+  fromOwned x = pure (MTRDataTypeTariffPriceTypeEnum x)
+
 -- | @MTRDataTypeTariffUnitEnum@
 newtype MTRDataTypeTariffUnitEnum = MTRDataTypeTariffUnitEnum CUChar
   deriving stock (Eq, Ord, Show)
@@ -15419,6 +16702,16 @@ pattern MTRDataTypeTariffUnitEnumKWh = MTRDataTypeTariffUnitEnum 0
 
 pattern MTRDataTypeTariffUnitEnumKVAh :: MTRDataTypeTariffUnitEnum
 pattern MTRDataTypeTariffUnitEnumKVAh = MTRDataTypeTariffUnitEnum 1
+
+instance ObjCArgument MTRDataTypeTariffUnitEnum where
+  withObjCArg (MTRDataTypeTariffUnitEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeTariffUnitEnum where
+  type RawReturn MTRDataTypeTariffUnitEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeTariffUnitEnum x)
+  fromOwned x = pure (MTRDataTypeTariffUnitEnum x)
 
 -- | @MTRDataTypeTestGlobalEnum@
 newtype MTRDataTypeTestGlobalEnum = MTRDataTypeTestGlobalEnum CUChar
@@ -15433,6 +16726,16 @@ pattern MTRDataTypeTestGlobalEnumSomeOtherValue = MTRDataTypeTestGlobalEnum 1
 
 pattern MTRDataTypeTestGlobalEnumFinalValue :: MTRDataTypeTestGlobalEnum
 pattern MTRDataTypeTestGlobalEnumFinalValue = MTRDataTypeTestGlobalEnum 2
+
+instance ObjCArgument MTRDataTypeTestGlobalEnum where
+  withObjCArg (MTRDataTypeTestGlobalEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeTestGlobalEnum where
+  type RawReturn MTRDataTypeTestGlobalEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeTestGlobalEnum x)
+  fromOwned x = pure (MTRDataTypeTestGlobalEnum x)
 
 -- | @MTRDataTypeThreeLevelAutoEnum@
 newtype MTRDataTypeThreeLevelAutoEnum = MTRDataTypeThreeLevelAutoEnum CUChar
@@ -15450,6 +16753,16 @@ pattern MTRDataTypeThreeLevelAutoEnumMedium = MTRDataTypeThreeLevelAutoEnum 2
 
 pattern MTRDataTypeThreeLevelAutoEnumHigh :: MTRDataTypeThreeLevelAutoEnum
 pattern MTRDataTypeThreeLevelAutoEnumHigh = MTRDataTypeThreeLevelAutoEnum 3
+
+instance ObjCArgument MTRDataTypeThreeLevelAutoEnum where
+  withObjCArg (MTRDataTypeThreeLevelAutoEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeThreeLevelAutoEnum where
+  type RawReturn MTRDataTypeThreeLevelAutoEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeThreeLevelAutoEnum x)
+  fromOwned x = pure (MTRDataTypeThreeLevelAutoEnum x)
 
 -- | @MTRDataTypeWebRTCEndReasonEnum@
 newtype MTRDataTypeWebRTCEndReasonEnum = MTRDataTypeWebRTCEndReasonEnum CUChar
@@ -15495,6 +16808,16 @@ pattern MTRDataTypeWebRTCEndReasonEnumPrivacyMode = MTRDataTypeWebRTCEndReasonEn
 pattern MTRDataTypeWebRTCEndReasonEnumUnknownReason :: MTRDataTypeWebRTCEndReasonEnum
 pattern MTRDataTypeWebRTCEndReasonEnumUnknownReason = MTRDataTypeWebRTCEndReasonEnum 12
 
+instance ObjCArgument MTRDataTypeWebRTCEndReasonEnum where
+  withObjCArg (MTRDataTypeWebRTCEndReasonEnum x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDataTypeWebRTCEndReasonEnum where
+  type RawReturn MTRDataTypeWebRTCEndReasonEnum = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDataTypeWebRTCEndReasonEnum x)
+  fromOwned x = pure (MTRDataTypeWebRTCEndReasonEnum x)
+
 -- | @MTRDescriptorFeature@ (bitmask)
 newtype MTRDescriptorFeature = MTRDescriptorFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -15509,6 +16832,16 @@ instance Monoid MTRDescriptorFeature where
 pattern MTRDescriptorFeatureTagList :: MTRDescriptorFeature
 pattern MTRDescriptorFeatureTagList = MTRDescriptorFeature 1
 
+instance ObjCArgument MTRDescriptorFeature where
+  withObjCArg (MTRDescriptorFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDescriptorFeature where
+  type RawReturn MTRDescriptorFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDescriptorFeature x)
+  fromOwned x = pure (MTRDescriptorFeature x)
+
 -- | @MTRDeviceEnergyManagementAdjustmentCause@
 newtype MTRDeviceEnergyManagementAdjustmentCause = MTRDeviceEnergyManagementAdjustmentCause CUChar
   deriving stock (Eq, Ord, Show)
@@ -15519,6 +16852,16 @@ pattern MTRDeviceEnergyManagementAdjustmentCauseLocalOptimization = MTRDeviceEne
 
 pattern MTRDeviceEnergyManagementAdjustmentCauseGridOptimization :: MTRDeviceEnergyManagementAdjustmentCause
 pattern MTRDeviceEnergyManagementAdjustmentCauseGridOptimization = MTRDeviceEnergyManagementAdjustmentCause 1
+
+instance ObjCArgument MTRDeviceEnergyManagementAdjustmentCause where
+  withObjCArg (MTRDeviceEnergyManagementAdjustmentCause x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementAdjustmentCause where
+  type RawReturn MTRDeviceEnergyManagementAdjustmentCause = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementAdjustmentCause x)
+  fromOwned x = pure (MTRDeviceEnergyManagementAdjustmentCause x)
 
 -- | @MTRDeviceEnergyManagementCause@
 newtype MTRDeviceEnergyManagementCause = MTRDeviceEnergyManagementCause CUChar
@@ -15540,6 +16883,16 @@ pattern MTRDeviceEnergyManagementCauseUserOptOut = MTRDeviceEnergyManagementCaus
 pattern MTRDeviceEnergyManagementCauseCancelled :: MTRDeviceEnergyManagementCause
 pattern MTRDeviceEnergyManagementCauseCancelled = MTRDeviceEnergyManagementCause 4
 
+instance ObjCArgument MTRDeviceEnergyManagementCause where
+  withObjCArg (MTRDeviceEnergyManagementCause x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementCause where
+  type RawReturn MTRDeviceEnergyManagementCause = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementCause x)
+  fromOwned x = pure (MTRDeviceEnergyManagementCause x)
+
 -- | @MTRDeviceEnergyManagementCostType@
 newtype MTRDeviceEnergyManagementCostType = MTRDeviceEnergyManagementCostType CUChar
   deriving stock (Eq, Ord, Show)
@@ -15556,6 +16909,16 @@ pattern MTRDeviceEnergyManagementCostTypeComfort = MTRDeviceEnergyManagementCost
 
 pattern MTRDeviceEnergyManagementCostTypeTemperature :: MTRDeviceEnergyManagementCostType
 pattern MTRDeviceEnergyManagementCostTypeTemperature = MTRDeviceEnergyManagementCostType 3
+
+instance ObjCArgument MTRDeviceEnergyManagementCostType where
+  withObjCArg (MTRDeviceEnergyManagementCostType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementCostType where
+  type RawReturn MTRDeviceEnergyManagementCostType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementCostType x)
+  fromOwned x = pure (MTRDeviceEnergyManagementCostType x)
 
 -- | @MTRDeviceEnergyManagementESAState@
 newtype MTRDeviceEnergyManagementESAState = MTRDeviceEnergyManagementESAState CUChar
@@ -15576,6 +16939,16 @@ pattern MTRDeviceEnergyManagementESAStatePowerAdjustActive = MTRDeviceEnergyMana
 
 pattern MTRDeviceEnergyManagementESAStatePaused :: MTRDeviceEnergyManagementESAState
 pattern MTRDeviceEnergyManagementESAStatePaused = MTRDeviceEnergyManagementESAState 4
+
+instance ObjCArgument MTRDeviceEnergyManagementESAState where
+  withObjCArg (MTRDeviceEnergyManagementESAState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementESAState where
+  type RawReturn MTRDeviceEnergyManagementESAState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementESAState x)
+  fromOwned x = pure (MTRDeviceEnergyManagementESAState x)
 
 -- | @MTRDeviceEnergyManagementESAType@
 newtype MTRDeviceEnergyManagementESAType = MTRDeviceEnergyManagementESAType CUChar
@@ -15627,6 +17000,16 @@ pattern MTRDeviceEnergyManagementESATypePoolPump = MTRDeviceEnergyManagementESAT
 pattern MTRDeviceEnergyManagementESATypeOther :: MTRDeviceEnergyManagementESAType
 pattern MTRDeviceEnergyManagementESATypeOther = MTRDeviceEnergyManagementESAType 255
 
+instance ObjCArgument MTRDeviceEnergyManagementESAType where
+  withObjCArg (MTRDeviceEnergyManagementESAType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementESAType where
+  type RawReturn MTRDeviceEnergyManagementESAType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementESAType x)
+  fromOwned x = pure (MTRDeviceEnergyManagementESAType x)
+
 -- | @MTRDeviceEnergyManagementFeature@ (bitmask)
 newtype MTRDeviceEnergyManagementFeature = MTRDeviceEnergyManagementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -15659,6 +17042,16 @@ pattern MTRDeviceEnergyManagementFeatureForecastAdjustment = MTRDeviceEnergyMana
 pattern MTRDeviceEnergyManagementFeatureConstraintBasedAdjustment :: MTRDeviceEnergyManagementFeature
 pattern MTRDeviceEnergyManagementFeatureConstraintBasedAdjustment = MTRDeviceEnergyManagementFeature 64
 
+instance ObjCArgument MTRDeviceEnergyManagementFeature where
+  withObjCArg (MTRDeviceEnergyManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDeviceEnergyManagementFeature where
+  type RawReturn MTRDeviceEnergyManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementFeature x)
+  fromOwned x = pure (MTRDeviceEnergyManagementFeature x)
+
 -- | @MTRDeviceEnergyManagementForecastUpdateReason@
 newtype MTRDeviceEnergyManagementForecastUpdateReason = MTRDeviceEnergyManagementForecastUpdateReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -15672,6 +17065,16 @@ pattern MTRDeviceEnergyManagementForecastUpdateReasonLocalOptimization = MTRDevi
 
 pattern MTRDeviceEnergyManagementForecastUpdateReasonGridOptimization :: MTRDeviceEnergyManagementForecastUpdateReason
 pattern MTRDeviceEnergyManagementForecastUpdateReasonGridOptimization = MTRDeviceEnergyManagementForecastUpdateReason 2
+
+instance ObjCArgument MTRDeviceEnergyManagementForecastUpdateReason where
+  withObjCArg (MTRDeviceEnergyManagementForecastUpdateReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementForecastUpdateReason where
+  type RawReturn MTRDeviceEnergyManagementForecastUpdateReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementForecastUpdateReason x)
+  fromOwned x = pure (MTRDeviceEnergyManagementForecastUpdateReason x)
 
 -- | @MTRDeviceEnergyManagementModeModeTag@
 newtype MTRDeviceEnergyManagementModeModeTag = MTRDeviceEnergyManagementModeModeTag CUShort
@@ -15720,6 +17123,16 @@ pattern MTRDeviceEnergyManagementModeModeTagLocalOptimization = MTRDeviceEnergyM
 pattern MTRDeviceEnergyManagementModeModeTagGridOptimization :: MTRDeviceEnergyManagementModeModeTag
 pattern MTRDeviceEnergyManagementModeModeTagGridOptimization = MTRDeviceEnergyManagementModeModeTag 16387
 
+instance ObjCArgument MTRDeviceEnergyManagementModeModeTag where
+  withObjCArg (MTRDeviceEnergyManagementModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDeviceEnergyManagementModeModeTag where
+  type RawReturn MTRDeviceEnergyManagementModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRDeviceEnergyManagementModeModeTag (fromIntegral x))
+
 -- | @MTRDeviceEnergyManagementOptOutState@
 newtype MTRDeviceEnergyManagementOptOutState = MTRDeviceEnergyManagementOptOutState CUChar
   deriving stock (Eq, Ord, Show)
@@ -15737,6 +17150,16 @@ pattern MTRDeviceEnergyManagementOptOutStateGridOptOut = MTRDeviceEnergyManageme
 pattern MTRDeviceEnergyManagementOptOutStateOptOut :: MTRDeviceEnergyManagementOptOutState
 pattern MTRDeviceEnergyManagementOptOutStateOptOut = MTRDeviceEnergyManagementOptOutState 3
 
+instance ObjCArgument MTRDeviceEnergyManagementOptOutState where
+  withObjCArg (MTRDeviceEnergyManagementOptOutState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementOptOutState where
+  type RawReturn MTRDeviceEnergyManagementOptOutState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementOptOutState x)
+  fromOwned x = pure (MTRDeviceEnergyManagementOptOutState x)
+
 -- | @MTRDeviceEnergyManagementPowerAdjustReason@
 newtype MTRDeviceEnergyManagementPowerAdjustReason = MTRDeviceEnergyManagementPowerAdjustReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -15751,6 +17174,16 @@ pattern MTRDeviceEnergyManagementPowerAdjustReasonLocalOptimizationAdjustment = 
 pattern MTRDeviceEnergyManagementPowerAdjustReasonGridOptimizationAdjustment :: MTRDeviceEnergyManagementPowerAdjustReason
 pattern MTRDeviceEnergyManagementPowerAdjustReasonGridOptimizationAdjustment = MTRDeviceEnergyManagementPowerAdjustReason 2
 
+instance ObjCArgument MTRDeviceEnergyManagementPowerAdjustReason where
+  withObjCArg (MTRDeviceEnergyManagementPowerAdjustReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDeviceEnergyManagementPowerAdjustReason where
+  type RawReturn MTRDeviceEnergyManagementPowerAdjustReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceEnergyManagementPowerAdjustReason x)
+  fromOwned x = pure (MTRDeviceEnergyManagementPowerAdjustReason x)
+
 -- | @MTRDeviceState@
 newtype MTRDeviceState = MTRDeviceState CULong
   deriving stock (Eq, Ord, Show)
@@ -15764,6 +17197,16 @@ pattern MTRDeviceStateReachable = MTRDeviceState 1
 
 pattern MTRDeviceStateUnreachable :: MTRDeviceState
 pattern MTRDeviceStateUnreachable = MTRDeviceState 2
+
+instance ObjCArgument MTRDeviceState where
+  withObjCArg (MTRDeviceState x) k = k (argCULong x)
+
+instance ObjCReturn MTRDeviceState where
+  type RawReturn MTRDeviceState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceState x)
+  fromOwned x = pure (MTRDeviceState x)
 
 -- | @MTRDeviceTypeIDType@
 newtype MTRDeviceTypeIDType = MTRDeviceTypeIDType CUInt
@@ -16040,6 +17483,16 @@ pattern MTRDeviceTypeIDTypeControlBridgeID = MTRDeviceTypeIDType 2112
 pattern MTRDeviceTypeIDTypeOnOffSensorID :: MTRDeviceTypeIDType
 pattern MTRDeviceTypeIDTypeOnOffSensorID = MTRDeviceTypeIDType 2128
 
+instance ObjCArgument MTRDeviceTypeIDType where
+  withObjCArg (MTRDeviceTypeIDType x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDeviceTypeIDType where
+  type RawReturn MTRDeviceTypeIDType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDeviceTypeIDType x)
+  fromOwned x = pure (MTRDeviceTypeIDType x)
+
 -- | This enum is used to specify the type of log requested from this device.
 --
 -- The log types are : End User Support, Network Diagnostics and Crash logs.
@@ -16057,6 +17510,16 @@ pattern MTRDiagnosticLogTypeNetworkDiagnostics = MTRDiagnosticLogType 1
 pattern MTRDiagnosticLogTypeCrash :: MTRDiagnosticLogType
 pattern MTRDiagnosticLogTypeCrash = MTRDiagnosticLogType 2
 
+instance ObjCArgument MTRDiagnosticLogType where
+  withObjCArg (MTRDiagnosticLogType x) k = k (argCLong x)
+
+instance ObjCReturn MTRDiagnosticLogType where
+  type RawReturn MTRDiagnosticLogType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogType x)
+  fromOwned x = pure (MTRDiagnosticLogType x)
+
 -- | @MTRDiagnosticLogsIntent@
 newtype MTRDiagnosticLogsIntent = MTRDiagnosticLogsIntent CUChar
   deriving stock (Eq, Ord, Show)
@@ -16071,6 +17534,16 @@ pattern MTRDiagnosticLogsIntentNetworkDiag = MTRDiagnosticLogsIntent 1
 pattern MTRDiagnosticLogsIntentCrashLogs :: MTRDiagnosticLogsIntent
 pattern MTRDiagnosticLogsIntentCrashLogs = MTRDiagnosticLogsIntent 2
 
+instance ObjCArgument MTRDiagnosticLogsIntent where
+  withObjCArg (MTRDiagnosticLogsIntent x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsIntent where
+  type RawReturn MTRDiagnosticLogsIntent = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsIntent x)
+  fromOwned x = pure (MTRDiagnosticLogsIntent x)
+
 -- | @MTRDiagnosticLogsLogsIntent@
 newtype MTRDiagnosticLogsLogsIntent = MTRDiagnosticLogsLogsIntent CUChar
   deriving stock (Eq, Ord, Show)
@@ -16084,6 +17557,16 @@ pattern MTRDiagnosticLogsLogsIntentNetworkDiag = MTRDiagnosticLogsLogsIntent 1
 
 pattern MTRDiagnosticLogsLogsIntentCrashLogs :: MTRDiagnosticLogsLogsIntent
 pattern MTRDiagnosticLogsLogsIntentCrashLogs = MTRDiagnosticLogsLogsIntent 2
+
+instance ObjCArgument MTRDiagnosticLogsLogsIntent where
+  withObjCArg (MTRDiagnosticLogsLogsIntent x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsLogsIntent where
+  type RawReturn MTRDiagnosticLogsLogsIntent = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsLogsIntent x)
+  fromOwned x = pure (MTRDiagnosticLogsLogsIntent x)
 
 -- | @MTRDiagnosticLogsLogsStatus@
 newtype MTRDiagnosticLogsLogsStatus = MTRDiagnosticLogsLogsStatus CUChar
@@ -16105,6 +17588,16 @@ pattern MTRDiagnosticLogsLogsStatusBusy = MTRDiagnosticLogsLogsStatus 3
 pattern MTRDiagnosticLogsLogsStatusDenied :: MTRDiagnosticLogsLogsStatus
 pattern MTRDiagnosticLogsLogsStatusDenied = MTRDiagnosticLogsLogsStatus 4
 
+instance ObjCArgument MTRDiagnosticLogsLogsStatus where
+  withObjCArg (MTRDiagnosticLogsLogsStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsLogsStatus where
+  type RawReturn MTRDiagnosticLogsLogsStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsLogsStatus x)
+  fromOwned x = pure (MTRDiagnosticLogsLogsStatus x)
+
 -- | @MTRDiagnosticLogsLogsTransferProtocol@
 newtype MTRDiagnosticLogsLogsTransferProtocol = MTRDiagnosticLogsLogsTransferProtocol CUChar
   deriving stock (Eq, Ord, Show)
@@ -16115,6 +17608,16 @@ pattern MTRDiagnosticLogsLogsTransferProtocolResponsePayload = MTRDiagnosticLogs
 
 pattern MTRDiagnosticLogsLogsTransferProtocolBDX :: MTRDiagnosticLogsLogsTransferProtocol
 pattern MTRDiagnosticLogsLogsTransferProtocolBDX = MTRDiagnosticLogsLogsTransferProtocol 1
+
+instance ObjCArgument MTRDiagnosticLogsLogsTransferProtocol where
+  withObjCArg (MTRDiagnosticLogsLogsTransferProtocol x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsLogsTransferProtocol where
+  type RawReturn MTRDiagnosticLogsLogsTransferProtocol = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsLogsTransferProtocol x)
+  fromOwned x = pure (MTRDiagnosticLogsLogsTransferProtocol x)
 
 -- | @MTRDiagnosticLogsStatus@
 newtype MTRDiagnosticLogsStatus = MTRDiagnosticLogsStatus CUChar
@@ -16136,6 +17639,16 @@ pattern MTRDiagnosticLogsStatusBusy = MTRDiagnosticLogsStatus 3
 pattern MTRDiagnosticLogsStatusDenied :: MTRDiagnosticLogsStatus
 pattern MTRDiagnosticLogsStatusDenied = MTRDiagnosticLogsStatus 4
 
+instance ObjCArgument MTRDiagnosticLogsStatus where
+  withObjCArg (MTRDiagnosticLogsStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsStatus where
+  type RawReturn MTRDiagnosticLogsStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsStatus x)
+  fromOwned x = pure (MTRDiagnosticLogsStatus x)
+
 -- | @MTRDiagnosticLogsTransferProtocol@
 newtype MTRDiagnosticLogsTransferProtocol = MTRDiagnosticLogsTransferProtocol CUChar
   deriving stock (Eq, Ord, Show)
@@ -16146,6 +17659,16 @@ pattern MTRDiagnosticLogsTransferProtocolResponsePayload = MTRDiagnosticLogsTran
 
 pattern MTRDiagnosticLogsTransferProtocolBDX :: MTRDiagnosticLogsTransferProtocol
 pattern MTRDiagnosticLogsTransferProtocolBDX = MTRDiagnosticLogsTransferProtocol 1
+
+instance ObjCArgument MTRDiagnosticLogsTransferProtocol where
+  withObjCArg (MTRDiagnosticLogsTransferProtocol x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDiagnosticLogsTransferProtocol where
+  type RawReturn MTRDiagnosticLogsTransferProtocol = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiagnosticLogsTransferProtocol x)
+  fromOwned x = pure (MTRDiagnosticLogsTransferProtocol x)
 
 -- | @MTRDiscoveryCapabilities@ (bitmask)
 newtype MTRDiscoveryCapabilities = MTRDiscoveryCapabilities CULong
@@ -16179,6 +17702,16 @@ pattern MTRDiscoveryCapabilitiesNFC = MTRDiscoveryCapabilities 16
 pattern MTRDiscoveryCapabilitiesAllMask :: MTRDiscoveryCapabilities
 pattern MTRDiscoveryCapabilitiesAllMask = MTRDiscoveryCapabilities 7
 
+instance ObjCArgument MTRDiscoveryCapabilities where
+  withObjCArg (MTRDiscoveryCapabilities x) k = k (argCULong x)
+
+instance ObjCReturn MTRDiscoveryCapabilities where
+  type RawReturn MTRDiscoveryCapabilities = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDiscoveryCapabilities x)
+  fromOwned x = pure (MTRDiscoveryCapabilities x)
+
 -- | @MTRDishwasherAlarmAlarmBitmap@ (bitmask)
 newtype MTRDishwasherAlarmAlarmBitmap = MTRDishwasherAlarmAlarmBitmap CUInt
   deriving stock (Eq, Ord, Show)
@@ -16208,6 +17741,16 @@ pattern MTRDishwasherAlarmAlarmBitmapTempTooHigh = MTRDishwasherAlarmAlarmBitmap
 pattern MTRDishwasherAlarmAlarmBitmapWaterLevelError :: MTRDishwasherAlarmAlarmBitmap
 pattern MTRDishwasherAlarmAlarmBitmapWaterLevelError = MTRDishwasherAlarmAlarmBitmap 32
 
+instance ObjCArgument MTRDishwasherAlarmAlarmBitmap where
+  withObjCArg (MTRDishwasherAlarmAlarmBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDishwasherAlarmAlarmBitmap where
+  type RawReturn MTRDishwasherAlarmAlarmBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDishwasherAlarmAlarmBitmap x)
+  fromOwned x = pure (MTRDishwasherAlarmAlarmBitmap x)
+
 -- | @MTRDishwasherAlarmFeature@ (bitmask)
 newtype MTRDishwasherAlarmFeature = MTRDishwasherAlarmFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -16221,6 +17764,16 @@ instance Monoid MTRDishwasherAlarmFeature where
 
 pattern MTRDishwasherAlarmFeatureReset :: MTRDishwasherAlarmFeature
 pattern MTRDishwasherAlarmFeatureReset = MTRDishwasherAlarmFeature 1
+
+instance ObjCArgument MTRDishwasherAlarmFeature where
+  withObjCArg (MTRDishwasherAlarmFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDishwasherAlarmFeature where
+  type RawReturn MTRDishwasherAlarmFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDishwasherAlarmFeature x)
+  fromOwned x = pure (MTRDishwasherAlarmFeature x)
 
 -- | @MTRDishwasherModeModeTag@
 newtype MTRDishwasherModeModeTag = MTRDishwasherModeModeTag CUShort
@@ -16266,6 +17819,16 @@ pattern MTRDishwasherModeModeTagHeavy = MTRDishwasherModeModeTag 16385
 pattern MTRDishwasherModeModeTagLight :: MTRDishwasherModeModeTag
 pattern MTRDishwasherModeModeTagLight = MTRDishwasherModeModeTag 16386
 
+instance ObjCArgument MTRDishwasherModeModeTag where
+  withObjCArg (MTRDishwasherModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDishwasherModeModeTag where
+  type RawReturn MTRDishwasherModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDishwasherModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRDishwasherModeModeTag (fromIntegral x))
+
 -- | @MTRDoorLockAlarmCode@
 newtype MTRDoorLockAlarmCode = MTRDoorLockAlarmCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -16295,6 +17858,16 @@ pattern MTRDoorLockAlarmCodeDoorAjar = MTRDoorLockAlarmCode 7
 pattern MTRDoorLockAlarmCodeForcedUser :: MTRDoorLockAlarmCode
 pattern MTRDoorLockAlarmCodeForcedUser = MTRDoorLockAlarmCode 8
 
+instance ObjCArgument MTRDoorLockAlarmCode where
+  withObjCArg (MTRDoorLockAlarmCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockAlarmCode where
+  type RawReturn MTRDoorLockAlarmCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockAlarmCode x)
+  fromOwned x = pure (MTRDoorLockAlarmCode x)
+
 -- | @MTRDoorLockAppleAliroCredentialType@
 newtype MTRDoorLockAppleAliroCredentialType = MTRDoorLockAppleAliroCredentialType CUChar
   deriving stock (Eq, Ord, Show)
@@ -16309,6 +17882,16 @@ pattern MTRDoorLockAppleAliroCredentialTypeAliroEvictableEndpointKey = MTRDoorLo
 pattern MTRDoorLockAppleAliroCredentialTypeAliroNonEvictableEndpointKey :: MTRDoorLockAppleAliroCredentialType
 pattern MTRDoorLockAppleAliroCredentialTypeAliroNonEvictableEndpointKey = MTRDoorLockAppleAliroCredentialType 3
 
+instance ObjCArgument MTRDoorLockAppleAliroCredentialType where
+  withObjCArg (MTRDoorLockAppleAliroCredentialType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockAppleAliroCredentialType where
+  type RawReturn MTRDoorLockAppleAliroCredentialType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockAppleAliroCredentialType x)
+  fromOwned x = pure (MTRDoorLockAppleAliroCredentialType x)
+
 -- | @MTRDoorLockAppleAliroOperationSource@
 newtype MTRDoorLockAppleAliroOperationSource = MTRDoorLockAppleAliroOperationSource CUChar
   deriving stock (Eq, Ord, Show)
@@ -16319,6 +17902,16 @@ pattern MTRDoorLockAppleAliroOperationSourceRemote = MTRDoorLockAppleAliroOperat
 
 pattern MTRDoorLockAppleAliroOperationSourceAliro :: MTRDoorLockAppleAliroOperationSource
 pattern MTRDoorLockAppleAliroOperationSourceAliro = MTRDoorLockAppleAliroOperationSource 2
+
+instance ObjCArgument MTRDoorLockAppleAliroOperationSource where
+  withObjCArg (MTRDoorLockAppleAliroOperationSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockAppleAliroOperationSource where
+  type RawReturn MTRDoorLockAppleAliroOperationSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockAppleAliroOperationSource x)
+  fromOwned x = pure (MTRDoorLockAppleAliroOperationSource x)
 
 -- | @MTRDoorLockCredentialRule@
 newtype MTRDoorLockCredentialRule = MTRDoorLockCredentialRule CUChar
@@ -16333,6 +17926,16 @@ pattern MTRDoorLockCredentialRuleDual = MTRDoorLockCredentialRule 1
 
 pattern MTRDoorLockCredentialRuleTri :: MTRDoorLockCredentialRule
 pattern MTRDoorLockCredentialRuleTri = MTRDoorLockCredentialRule 2
+
+instance ObjCArgument MTRDoorLockCredentialRule where
+  withObjCArg (MTRDoorLockCredentialRule x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockCredentialRule where
+  type RawReturn MTRDoorLockCredentialRule = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockCredentialRule x)
+  fromOwned x = pure (MTRDoorLockCredentialRule x)
 
 -- | @MTRDoorLockCredentialType@
 newtype MTRDoorLockCredentialType = MTRDoorLockCredentialType CUChar
@@ -16366,6 +17969,16 @@ pattern MTRDoorLockCredentialTypeAliroEvictableEndpointKey = MTRDoorLockCredenti
 pattern MTRDoorLockCredentialTypeAliroNonEvictableEndpointKey :: MTRDoorLockCredentialType
 pattern MTRDoorLockCredentialTypeAliroNonEvictableEndpointKey = MTRDoorLockCredentialType 8
 
+instance ObjCArgument MTRDoorLockCredentialType where
+  withObjCArg (MTRDoorLockCredentialType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockCredentialType where
+  type RawReturn MTRDoorLockCredentialType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockCredentialType x)
+  fromOwned x = pure (MTRDoorLockCredentialType x)
+
 -- | @MTRDoorLockDataOperationType@
 newtype MTRDoorLockDataOperationType = MTRDoorLockDataOperationType CUChar
   deriving stock (Eq, Ord, Show)
@@ -16379,6 +17992,16 @@ pattern MTRDoorLockDataOperationTypeClear = MTRDoorLockDataOperationType 1
 
 pattern MTRDoorLockDataOperationTypeModify :: MTRDoorLockDataOperationType
 pattern MTRDoorLockDataOperationTypeModify = MTRDoorLockDataOperationType 2
+
+instance ObjCArgument MTRDoorLockDataOperationType where
+  withObjCArg (MTRDoorLockDataOperationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDataOperationType where
+  type RawReturn MTRDoorLockDataOperationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDataOperationType x)
+  fromOwned x = pure (MTRDoorLockDataOperationType x)
 
 -- | @MTRDoorLockDayOfWeek@ (bitmask)
 newtype MTRDoorLockDayOfWeek = MTRDoorLockDayOfWeek CUChar
@@ -16412,6 +18035,16 @@ pattern MTRDoorLockDayOfWeekFriday = MTRDoorLockDayOfWeek 32
 pattern MTRDoorLockDayOfWeekSaturday :: MTRDoorLockDayOfWeek
 pattern MTRDoorLockDayOfWeekSaturday = MTRDoorLockDayOfWeek 64
 
+instance ObjCArgument MTRDoorLockDayOfWeek where
+  withObjCArg (MTRDoorLockDayOfWeek x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDayOfWeek where
+  type RawReturn MTRDoorLockDayOfWeek = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDayOfWeek x)
+  fromOwned x = pure (MTRDoorLockDayOfWeek x)
+
 -- | @MTRDoorLockDaysMaskMap@ (bitmask)
 newtype MTRDoorLockDaysMaskMap = MTRDoorLockDaysMaskMap CUChar
   deriving stock (Eq, Ord, Show)
@@ -16444,6 +18077,16 @@ pattern MTRDoorLockDaysMaskMapFriday = MTRDoorLockDaysMaskMap 32
 pattern MTRDoorLockDaysMaskMapSaturday :: MTRDoorLockDaysMaskMap
 pattern MTRDoorLockDaysMaskMapSaturday = MTRDoorLockDaysMaskMap 64
 
+instance ObjCArgument MTRDoorLockDaysMaskMap where
+  withObjCArg (MTRDoorLockDaysMaskMap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDaysMaskMap where
+  type RawReturn MTRDoorLockDaysMaskMap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDaysMaskMap x)
+  fromOwned x = pure (MTRDoorLockDaysMaskMap x)
+
 -- | @MTRDoorLockDlAlarmCode@
 newtype MTRDoorLockDlAlarmCode = MTRDoorLockDlAlarmCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -16473,6 +18116,16 @@ pattern MTRDoorLockDlAlarmCodeDoorAjar = MTRDoorLockDlAlarmCode 7
 pattern MTRDoorLockDlAlarmCodeForcedUser :: MTRDoorLockDlAlarmCode
 pattern MTRDoorLockDlAlarmCodeForcedUser = MTRDoorLockDlAlarmCode 8
 
+instance ObjCArgument MTRDoorLockDlAlarmCode where
+  withObjCArg (MTRDoorLockDlAlarmCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlAlarmCode where
+  type RawReturn MTRDoorLockDlAlarmCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlAlarmCode x)
+  fromOwned x = pure (MTRDoorLockDlAlarmCode x)
+
 -- | @MTRDoorLockDlCredentialRule@
 newtype MTRDoorLockDlCredentialRule = MTRDoorLockDlCredentialRule CUChar
   deriving stock (Eq, Ord, Show)
@@ -16483,6 +18136,16 @@ pattern MTRDoorLockDlCredentialRuleSingle = MTRDoorLockDlCredentialRule 0
 
 pattern MTRDoorLockDlCredentialRuleTri :: MTRDoorLockDlCredentialRule
 pattern MTRDoorLockDlCredentialRuleTri = MTRDoorLockDlCredentialRule 2
+
+instance ObjCArgument MTRDoorLockDlCredentialRule where
+  withObjCArg (MTRDoorLockDlCredentialRule x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlCredentialRule where
+  type RawReturn MTRDoorLockDlCredentialRule = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlCredentialRule x)
+  fromOwned x = pure (MTRDoorLockDlCredentialRule x)
 
 -- | @MTRDoorLockDlCredentialRuleMask@ (bitmask)
 newtype MTRDoorLockDlCredentialRuleMask = MTRDoorLockDlCredentialRuleMask CUChar
@@ -16504,6 +18167,16 @@ pattern MTRDoorLockDlCredentialRuleMaskDual = MTRDoorLockDlCredentialRuleMask 2
 pattern MTRDoorLockDlCredentialRuleMaskTri :: MTRDoorLockDlCredentialRuleMask
 pattern MTRDoorLockDlCredentialRuleMaskTri = MTRDoorLockDlCredentialRuleMask 4
 
+instance ObjCArgument MTRDoorLockDlCredentialRuleMask where
+  withObjCArg (MTRDoorLockDlCredentialRuleMask x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlCredentialRuleMask where
+  type RawReturn MTRDoorLockDlCredentialRuleMask = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlCredentialRuleMask x)
+  fromOwned x = pure (MTRDoorLockDlCredentialRuleMask x)
+
 -- | @MTRDoorLockDlCredentialRulesSupport@ (bitmask)
 newtype MTRDoorLockDlCredentialRulesSupport = MTRDoorLockDlCredentialRulesSupport CUChar
   deriving stock (Eq, Ord, Show)
@@ -16523,6 +18196,16 @@ pattern MTRDoorLockDlCredentialRulesSupportDual = MTRDoorLockDlCredentialRulesSu
 
 pattern MTRDoorLockDlCredentialRulesSupportTri :: MTRDoorLockDlCredentialRulesSupport
 pattern MTRDoorLockDlCredentialRulesSupportTri = MTRDoorLockDlCredentialRulesSupport 4
+
+instance ObjCArgument MTRDoorLockDlCredentialRulesSupport where
+  withObjCArg (MTRDoorLockDlCredentialRulesSupport x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlCredentialRulesSupport where
+  type RawReturn MTRDoorLockDlCredentialRulesSupport = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlCredentialRulesSupport x)
+  fromOwned x = pure (MTRDoorLockDlCredentialRulesSupport x)
 
 -- | @MTRDoorLockDlCredentialType@
 newtype MTRDoorLockDlCredentialType = MTRDoorLockDlCredentialType CUChar
@@ -16547,6 +18230,16 @@ pattern MTRDoorLockDlCredentialTypeFingerVein = MTRDoorLockDlCredentialType 4
 pattern MTRDoorLockDlCredentialTypeFace :: MTRDoorLockDlCredentialType
 pattern MTRDoorLockDlCredentialTypeFace = MTRDoorLockDlCredentialType 5
 
+instance ObjCArgument MTRDoorLockDlCredentialType where
+  withObjCArg (MTRDoorLockDlCredentialType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlCredentialType where
+  type RawReturn MTRDoorLockDlCredentialType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlCredentialType x)
+  fromOwned x = pure (MTRDoorLockDlCredentialType x)
+
 -- | @MTRDoorLockDlDataOperationType@
 newtype MTRDoorLockDlDataOperationType = MTRDoorLockDlDataOperationType CUChar
   deriving stock (Eq, Ord, Show)
@@ -16560,6 +18253,16 @@ pattern MTRDoorLockDlDataOperationTypeClear = MTRDoorLockDlDataOperationType 1
 
 pattern MTRDoorLockDlDataOperationTypeModify :: MTRDoorLockDlDataOperationType
 pattern MTRDoorLockDlDataOperationTypeModify = MTRDoorLockDlDataOperationType 2
+
+instance ObjCArgument MTRDoorLockDlDataOperationType where
+  withObjCArg (MTRDoorLockDlDataOperationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlDataOperationType where
+  type RawReturn MTRDoorLockDlDataOperationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlDataOperationType x)
+  fromOwned x = pure (MTRDoorLockDlDataOperationType x)
 
 -- | @MTRDoorLockDlDaysMaskMap@ (bitmask)
 newtype MTRDoorLockDlDaysMaskMap = MTRDoorLockDlDaysMaskMap CUChar
@@ -16593,6 +18296,16 @@ pattern MTRDoorLockDlDaysMaskMapFriday = MTRDoorLockDlDaysMaskMap 32
 pattern MTRDoorLockDlDaysMaskMapSaturday :: MTRDoorLockDlDaysMaskMap
 pattern MTRDoorLockDlDaysMaskMapSaturday = MTRDoorLockDlDaysMaskMap 64
 
+instance ObjCArgument MTRDoorLockDlDaysMaskMap where
+  withObjCArg (MTRDoorLockDlDaysMaskMap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlDaysMaskMap where
+  type RawReturn MTRDoorLockDlDaysMaskMap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlDaysMaskMap x)
+  fromOwned x = pure (MTRDoorLockDlDaysMaskMap x)
+
 -- | @MTRDoorLockDlDefaultConfigurationRegister@ (bitmask)
 newtype MTRDoorLockDlDefaultConfigurationRegister = MTRDoorLockDlDefaultConfigurationRegister CUShort
   deriving stock (Eq, Ord, Show)
@@ -16622,6 +18335,16 @@ pattern MTRDoorLockDlDefaultConfigurationRegisterAutoRelockTimeSet = MTRDoorLock
 pattern MTRDoorLockDlDefaultConfigurationRegisterLEDSettingsSet :: MTRDoorLockDlDefaultConfigurationRegister
 pattern MTRDoorLockDlDefaultConfigurationRegisterLEDSettingsSet = MTRDoorLockDlDefaultConfigurationRegister 128
 
+instance ObjCArgument MTRDoorLockDlDefaultConfigurationRegister where
+  withObjCArg (MTRDoorLockDlDefaultConfigurationRegister x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlDefaultConfigurationRegister where
+  type RawReturn MTRDoorLockDlDefaultConfigurationRegister = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlDefaultConfigurationRegister (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlDefaultConfigurationRegister (fromIntegral x))
+
 -- | @MTRDoorLockDlDoorState@
 newtype MTRDoorLockDlDoorState = MTRDoorLockDlDoorState CUChar
   deriving stock (Eq, Ord, Show)
@@ -16644,6 +18367,16 @@ pattern MTRDoorLockDlDoorStateDoorUnspecifiedError = MTRDoorLockDlDoorState 4
 
 pattern MTRDoorLockDlDoorStateDoorAjar :: MTRDoorLockDlDoorState
 pattern MTRDoorLockDlDoorStateDoorAjar = MTRDoorLockDlDoorState 5
+
+instance ObjCArgument MTRDoorLockDlDoorState where
+  withObjCArg (MTRDoorLockDlDoorState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlDoorState where
+  type RawReturn MTRDoorLockDlDoorState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlDoorState x)
+  fromOwned x = pure (MTRDoorLockDlDoorState x)
 
 -- | @MTRDoorLockDlKeypadOperationEventMask@ (bitmask)
 newtype MTRDoorLockDlKeypadOperationEventMask = MTRDoorLockDlKeypadOperationEventMask CUShort
@@ -16680,6 +18413,16 @@ pattern MTRDoorLockDlKeypadOperationEventMaskUnlockInvalidSchedule = MTRDoorLock
 pattern MTRDoorLockDlKeypadOperationEventMaskNonAccessUserOpEvent :: MTRDoorLockDlKeypadOperationEventMask
 pattern MTRDoorLockDlKeypadOperationEventMaskNonAccessUserOpEvent = MTRDoorLockDlKeypadOperationEventMask 128
 
+instance ObjCArgument MTRDoorLockDlKeypadOperationEventMask where
+  withObjCArg (MTRDoorLockDlKeypadOperationEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlKeypadOperationEventMask where
+  type RawReturn MTRDoorLockDlKeypadOperationEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlKeypadOperationEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlKeypadOperationEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlKeypadProgrammingEventMask@ (bitmask)
 newtype MTRDoorLockDlKeypadProgrammingEventMask = MTRDoorLockDlKeypadProgrammingEventMask CUShort
   deriving stock (Eq, Ord, Show)
@@ -16706,6 +18449,16 @@ pattern MTRDoorLockDlKeypadProgrammingEventMaskPINCleared = MTRDoorLockDlKeypadP
 pattern MTRDoorLockDlKeypadProgrammingEventMaskPINChanged :: MTRDoorLockDlKeypadProgrammingEventMask
 pattern MTRDoorLockDlKeypadProgrammingEventMaskPINChanged = MTRDoorLockDlKeypadProgrammingEventMask 16
 
+instance ObjCArgument MTRDoorLockDlKeypadProgrammingEventMask where
+  withObjCArg (MTRDoorLockDlKeypadProgrammingEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlKeypadProgrammingEventMask where
+  type RawReturn MTRDoorLockDlKeypadProgrammingEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlKeypadProgrammingEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlKeypadProgrammingEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlLocalProgrammingFeatures@ (bitmask)
 newtype MTRDoorLockDlLocalProgrammingFeatures = MTRDoorLockDlLocalProgrammingFeatures CUChar
   deriving stock (Eq, Ord, Show)
@@ -16728,6 +18481,16 @@ pattern MTRDoorLockDlLocalProgrammingFeaturesClearUsersCredentialsSchedulesLocal
 
 pattern MTRDoorLockDlLocalProgrammingFeaturesAdjustLockSettingsLocally :: MTRDoorLockDlLocalProgrammingFeatures
 pattern MTRDoorLockDlLocalProgrammingFeaturesAdjustLockSettingsLocally = MTRDoorLockDlLocalProgrammingFeatures 8
+
+instance ObjCArgument MTRDoorLockDlLocalProgrammingFeatures where
+  withObjCArg (MTRDoorLockDlLocalProgrammingFeatures x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlLocalProgrammingFeatures where
+  type RawReturn MTRDoorLockDlLocalProgrammingFeatures = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlLocalProgrammingFeatures x)
+  fromOwned x = pure (MTRDoorLockDlLocalProgrammingFeatures x)
 
 -- | @MTRDoorLockDlLockDataType@
 newtype MTRDoorLockDlLockDataType = MTRDoorLockDlLockDataType CUChar
@@ -16761,6 +18524,16 @@ pattern MTRDoorLockDlLockDataTypeRFID = MTRDoorLockDlLockDataType 7
 pattern MTRDoorLockDlLockDataTypeFingerprint :: MTRDoorLockDlLockDataType
 pattern MTRDoorLockDlLockDataTypeFingerprint = MTRDoorLockDlLockDataType 8
 
+instance ObjCArgument MTRDoorLockDlLockDataType where
+  withObjCArg (MTRDoorLockDlLockDataType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlLockDataType where
+  type RawReturn MTRDoorLockDlLockDataType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlLockDataType x)
+  fromOwned x = pure (MTRDoorLockDlLockDataType x)
+
 -- | @MTRDoorLockDlLockOperationType@
 newtype MTRDoorLockDlLockOperationType = MTRDoorLockDlLockOperationType CUChar
   deriving stock (Eq, Ord, Show)
@@ -16778,6 +18551,16 @@ pattern MTRDoorLockDlLockOperationTypeNonAccessUserEvent = MTRDoorLockDlLockOper
 pattern MTRDoorLockDlLockOperationTypeForcedUserEvent :: MTRDoorLockDlLockOperationType
 pattern MTRDoorLockDlLockOperationTypeForcedUserEvent = MTRDoorLockDlLockOperationType 3
 
+instance ObjCArgument MTRDoorLockDlLockOperationType where
+  withObjCArg (MTRDoorLockDlLockOperationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlLockOperationType where
+  type RawReturn MTRDoorLockDlLockOperationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlLockOperationType x)
+  fromOwned x = pure (MTRDoorLockDlLockOperationType x)
+
 -- | @MTRDoorLockDlLockState@
 newtype MTRDoorLockDlLockState = MTRDoorLockDlLockState CUChar
   deriving stock (Eq, Ord, Show)
@@ -16794,6 +18577,16 @@ pattern MTRDoorLockDlLockStateUnlocked = MTRDoorLockDlLockState 2
 
 pattern MTRDoorLockDlLockStateUnlatched :: MTRDoorLockDlLockState
 pattern MTRDoorLockDlLockStateUnlatched = MTRDoorLockDlLockState 3
+
+instance ObjCArgument MTRDoorLockDlLockState where
+  withObjCArg (MTRDoorLockDlLockState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlLockState where
+  type RawReturn MTRDoorLockDlLockState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlLockState x)
+  fromOwned x = pure (MTRDoorLockDlLockState x)
 
 -- | @MTRDoorLockDlLockType@
 newtype MTRDoorLockDlLockType = MTRDoorLockDlLockType CUChar
@@ -16835,6 +18628,16 @@ pattern MTRDoorLockDlLockTypeDoorFurniture = MTRDoorLockDlLockType 10
 
 pattern MTRDoorLockDlLockTypeEurocylinder :: MTRDoorLockDlLockType
 pattern MTRDoorLockDlLockTypeEurocylinder = MTRDoorLockDlLockType 11
+
+instance ObjCArgument MTRDoorLockDlLockType where
+  withObjCArg (MTRDoorLockDlLockType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlLockType where
+  type RawReturn MTRDoorLockDlLockType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlLockType x)
+  fromOwned x = pure (MTRDoorLockDlLockType x)
 
 -- | @MTRDoorLockDlManualOperationEventMask@ (bitmask)
 newtype MTRDoorLockDlManualOperationEventMask = MTRDoorLockDlManualOperationEventMask CUShort
@@ -16880,6 +18683,16 @@ pattern MTRDoorLockDlManualOperationEventMaskManualLock = MTRDoorLockDlManualOpe
 pattern MTRDoorLockDlManualOperationEventMaskManualUnlock :: MTRDoorLockDlManualOperationEventMask
 pattern MTRDoorLockDlManualOperationEventMaskManualUnlock = MTRDoorLockDlManualOperationEventMask 1024
 
+instance ObjCArgument MTRDoorLockDlManualOperationEventMask where
+  withObjCArg (MTRDoorLockDlManualOperationEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlManualOperationEventMask where
+  type RawReturn MTRDoorLockDlManualOperationEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlManualOperationEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlManualOperationEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlOperatingMode@
 newtype MTRDoorLockDlOperatingMode = MTRDoorLockDlOperatingMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -16900,6 +18713,16 @@ pattern MTRDoorLockDlOperatingModeNoRemoteLockUnlock = MTRDoorLockDlOperatingMod
 pattern MTRDoorLockDlOperatingModePassage :: MTRDoorLockDlOperatingMode
 pattern MTRDoorLockDlOperatingModePassage = MTRDoorLockDlOperatingMode 4
 
+instance ObjCArgument MTRDoorLockDlOperatingMode where
+  withObjCArg (MTRDoorLockDlOperatingMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlOperatingMode where
+  type RawReturn MTRDoorLockDlOperatingMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlOperatingMode x)
+  fromOwned x = pure (MTRDoorLockDlOperatingMode x)
+
 -- | @MTRDoorLockDlOperationError@
 newtype MTRDoorLockDlOperationError = MTRDoorLockDlOperationError CUChar
   deriving stock (Eq, Ord, Show)
@@ -16919,6 +18742,16 @@ pattern MTRDoorLockDlOperationErrorRestricted = MTRDoorLockDlOperationError 3
 
 pattern MTRDoorLockDlOperationErrorInsufficientBattery :: MTRDoorLockDlOperationError
 pattern MTRDoorLockDlOperationErrorInsufficientBattery = MTRDoorLockDlOperationError 4
+
+instance ObjCArgument MTRDoorLockDlOperationError where
+  withObjCArg (MTRDoorLockDlOperationError x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlOperationError where
+  type RawReturn MTRDoorLockDlOperationError = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlOperationError x)
+  fromOwned x = pure (MTRDoorLockDlOperationError x)
 
 -- | @MTRDoorLockDlOperationSource@
 newtype MTRDoorLockDlOperationSource = MTRDoorLockDlOperationSource CUChar
@@ -16955,6 +18788,16 @@ pattern MTRDoorLockDlOperationSourceRFID = MTRDoorLockDlOperationSource 8
 pattern MTRDoorLockDlOperationSourceBiometric :: MTRDoorLockDlOperationSource
 pattern MTRDoorLockDlOperationSourceBiometric = MTRDoorLockDlOperationSource 9
 
+instance ObjCArgument MTRDoorLockDlOperationSource where
+  withObjCArg (MTRDoorLockDlOperationSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlOperationSource where
+  type RawReturn MTRDoorLockDlOperationSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlOperationSource x)
+  fromOwned x = pure (MTRDoorLockDlOperationSource x)
+
 -- | @MTRDoorLockDlRFIDOperationEventMask@ (bitmask)
 newtype MTRDoorLockDlRFIDOperationEventMask = MTRDoorLockDlRFIDOperationEventMask CUShort
   deriving stock (Eq, Ord, Show)
@@ -16987,6 +18830,16 @@ pattern MTRDoorLockDlRFIDOperationEventMaskUnlockInvalidRFID = MTRDoorLockDlRFID
 pattern MTRDoorLockDlRFIDOperationEventMaskUnlockInvalidSchedule :: MTRDoorLockDlRFIDOperationEventMask
 pattern MTRDoorLockDlRFIDOperationEventMaskUnlockInvalidSchedule = MTRDoorLockDlRFIDOperationEventMask 64
 
+instance ObjCArgument MTRDoorLockDlRFIDOperationEventMask where
+  withObjCArg (MTRDoorLockDlRFIDOperationEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlRFIDOperationEventMask where
+  type RawReturn MTRDoorLockDlRFIDOperationEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlRFIDOperationEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlRFIDOperationEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlRFIDProgrammingEventMask@ (bitmask)
 newtype MTRDoorLockDlRFIDProgrammingEventMask = MTRDoorLockDlRFIDProgrammingEventMask CUShort
   deriving stock (Eq, Ord, Show)
@@ -17006,6 +18859,16 @@ pattern MTRDoorLockDlRFIDProgrammingEventMaskRFIDCodeAdded = MTRDoorLockDlRFIDPr
 
 pattern MTRDoorLockDlRFIDProgrammingEventMaskRFIDCodeCleared :: MTRDoorLockDlRFIDProgrammingEventMask
 pattern MTRDoorLockDlRFIDProgrammingEventMaskRFIDCodeCleared = MTRDoorLockDlRFIDProgrammingEventMask 64
+
+instance ObjCArgument MTRDoorLockDlRFIDProgrammingEventMask where
+  withObjCArg (MTRDoorLockDlRFIDProgrammingEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlRFIDProgrammingEventMask where
+  type RawReturn MTRDoorLockDlRFIDProgrammingEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlRFIDProgrammingEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlRFIDProgrammingEventMask (fromIntegral x))
 
 -- | @MTRDoorLockDlRemoteOperationEventMask@ (bitmask)
 newtype MTRDoorLockDlRemoteOperationEventMask = MTRDoorLockDlRemoteOperationEventMask CUShort
@@ -17039,6 +18902,16 @@ pattern MTRDoorLockDlRemoteOperationEventMaskUnlockInvalidCode = MTRDoorLockDlRe
 pattern MTRDoorLockDlRemoteOperationEventMaskUnlockInvalidSchedule :: MTRDoorLockDlRemoteOperationEventMask
 pattern MTRDoorLockDlRemoteOperationEventMaskUnlockInvalidSchedule = MTRDoorLockDlRemoteOperationEventMask 64
 
+instance ObjCArgument MTRDoorLockDlRemoteOperationEventMask where
+  withObjCArg (MTRDoorLockDlRemoteOperationEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlRemoteOperationEventMask where
+  type RawReturn MTRDoorLockDlRemoteOperationEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlRemoteOperationEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlRemoteOperationEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlRemoteProgrammingEventMask@ (bitmask)
 newtype MTRDoorLockDlRemoteProgrammingEventMask = MTRDoorLockDlRemoteProgrammingEventMask CUShort
   deriving stock (Eq, Ord, Show)
@@ -17071,6 +18944,16 @@ pattern MTRDoorLockDlRemoteProgrammingEventMaskRFIDCodeAdded = MTRDoorLockDlRemo
 pattern MTRDoorLockDlRemoteProgrammingEventMaskRFIDCodeCleared :: MTRDoorLockDlRemoteProgrammingEventMask
 pattern MTRDoorLockDlRemoteProgrammingEventMaskRFIDCodeCleared = MTRDoorLockDlRemoteProgrammingEventMask 64
 
+instance ObjCArgument MTRDoorLockDlRemoteProgrammingEventMask where
+  withObjCArg (MTRDoorLockDlRemoteProgrammingEventMask x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlRemoteProgrammingEventMask where
+  type RawReturn MTRDoorLockDlRemoteProgrammingEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlRemoteProgrammingEventMask (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlRemoteProgrammingEventMask (fromIntegral x))
+
 -- | @MTRDoorLockDlStatus@
 newtype MTRDoorLockDlStatus = MTRDoorLockDlStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -17096,6 +18979,16 @@ pattern MTRDoorLockDlStatusResourceExhausted = MTRDoorLockDlStatus 137
 
 pattern MTRDoorLockDlStatusNotFound :: MTRDoorLockDlStatus
 pattern MTRDoorLockDlStatusNotFound = MTRDoorLockDlStatus 139
+
+instance ObjCArgument MTRDoorLockDlStatus where
+  withObjCArg (MTRDoorLockDlStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlStatus where
+  type RawReturn MTRDoorLockDlStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlStatus x)
+  fromOwned x = pure (MTRDoorLockDlStatus x)
 
 -- | @MTRDoorLockDlSupportedOperatingModes@ (bitmask)
 newtype MTRDoorLockDlSupportedOperatingModes = MTRDoorLockDlSupportedOperatingModes CUShort
@@ -17123,6 +19016,16 @@ pattern MTRDoorLockDlSupportedOperatingModesNoRemoteLockUnlock = MTRDoorLockDlSu
 pattern MTRDoorLockDlSupportedOperatingModesPassage :: MTRDoorLockDlSupportedOperatingModes
 pattern MTRDoorLockDlSupportedOperatingModesPassage = MTRDoorLockDlSupportedOperatingModes 16
 
+instance ObjCArgument MTRDoorLockDlSupportedOperatingModes where
+  withObjCArg (MTRDoorLockDlSupportedOperatingModes x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRDoorLockDlSupportedOperatingModes where
+  type RawReturn MTRDoorLockDlSupportedOperatingModes = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlSupportedOperatingModes (fromIntegral x))
+  fromOwned x = pure (MTRDoorLockDlSupportedOperatingModes (fromIntegral x))
+
 -- | @MTRDoorLockDlUserStatus@
 newtype MTRDoorLockDlUserStatus = MTRDoorLockDlUserStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -17136,6 +19039,16 @@ pattern MTRDoorLockDlUserStatusOccupiedEnabled = MTRDoorLockDlUserStatus 1
 
 pattern MTRDoorLockDlUserStatusOccupiedDisabled :: MTRDoorLockDlUserStatus
 pattern MTRDoorLockDlUserStatusOccupiedDisabled = MTRDoorLockDlUserStatus 3
+
+instance ObjCArgument MTRDoorLockDlUserStatus where
+  withObjCArg (MTRDoorLockDlUserStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlUserStatus where
+  type RawReturn MTRDoorLockDlUserStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlUserStatus x)
+  fromOwned x = pure (MTRDoorLockDlUserStatus x)
 
 -- | @MTRDoorLockDlUserType@
 newtype MTRDoorLockDlUserType = MTRDoorLockDlUserType CUChar
@@ -17172,6 +19085,16 @@ pattern MTRDoorLockDlUserTypeScheduleRestrictedUser = MTRDoorLockDlUserType 8
 pattern MTRDoorLockDlUserTypeRemoteOnlyUser :: MTRDoorLockDlUserType
 pattern MTRDoorLockDlUserTypeRemoteOnlyUser = MTRDoorLockDlUserType 9
 
+instance ObjCArgument MTRDoorLockDlUserType where
+  withObjCArg (MTRDoorLockDlUserType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDlUserType where
+  type RawReturn MTRDoorLockDlUserType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDlUserType x)
+  fromOwned x = pure (MTRDoorLockDlUserType x)
+
 -- | @MTRDoorLockDoorState@
 newtype MTRDoorLockDoorState = MTRDoorLockDoorState CUChar
   deriving stock (Eq, Ord, Show)
@@ -17194,6 +19117,16 @@ pattern MTRDoorLockDoorStateDoorUnspecifiedError = MTRDoorLockDoorState 4
 
 pattern MTRDoorLockDoorStateDoorAjar :: MTRDoorLockDoorState
 pattern MTRDoorLockDoorStateDoorAjar = MTRDoorLockDoorState 5
+
+instance ObjCArgument MTRDoorLockDoorState where
+  withObjCArg (MTRDoorLockDoorState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockDoorState where
+  type RawReturn MTRDoorLockDoorState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockDoorState x)
+  fromOwned x = pure (MTRDoorLockDoorState x)
 
 -- | @MTRDoorLockFeature@ (bitmask)
 newtype MTRDoorLockFeature = MTRDoorLockFeature CUInt
@@ -17272,6 +19205,16 @@ pattern MTRDoorLockFeatureAliroProvisioning = MTRDoorLockFeature 8192
 pattern MTRDoorLockFeatureAliroBLEUWB :: MTRDoorLockFeature
 pattern MTRDoorLockFeatureAliroBLEUWB = MTRDoorLockFeature 16384
 
+instance ObjCArgument MTRDoorLockFeature where
+  withObjCArg (MTRDoorLockFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRDoorLockFeature where
+  type RawReturn MTRDoorLockFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockFeature x)
+  fromOwned x = pure (MTRDoorLockFeature x)
+
 -- | @MTRDoorLockLockDataType@
 newtype MTRDoorLockLockDataType = MTRDoorLockLockDataType CUChar
   deriving stock (Eq, Ord, Show)
@@ -17319,6 +19262,16 @@ pattern MTRDoorLockLockDataTypeAliroEvictableEndpointKey = MTRDoorLockLockDataTy
 pattern MTRDoorLockLockDataTypeAliroNonEvictableEndpointKey :: MTRDoorLockLockDataType
 pattern MTRDoorLockLockDataTypeAliroNonEvictableEndpointKey = MTRDoorLockLockDataType 13
 
+instance ObjCArgument MTRDoorLockLockDataType where
+  withObjCArg (MTRDoorLockLockDataType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockLockDataType where
+  type RawReturn MTRDoorLockLockDataType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockLockDataType x)
+  fromOwned x = pure (MTRDoorLockLockDataType x)
+
 -- | @MTRDoorLockLockOperationType@
 newtype MTRDoorLockLockOperationType = MTRDoorLockLockOperationType CUChar
   deriving stock (Eq, Ord, Show)
@@ -17338,6 +19291,16 @@ pattern MTRDoorLockLockOperationTypeForcedUserEvent = MTRDoorLockLockOperationTy
 
 pattern MTRDoorLockLockOperationTypeUnlatch :: MTRDoorLockLockOperationType
 pattern MTRDoorLockLockOperationTypeUnlatch = MTRDoorLockLockOperationType 4
+
+instance ObjCArgument MTRDoorLockLockOperationType where
+  withObjCArg (MTRDoorLockLockOperationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockLockOperationType where
+  type RawReturn MTRDoorLockLockOperationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockLockOperationType x)
+  fromOwned x = pure (MTRDoorLockLockOperationType x)
 
 -- | @MTRDoorLockOperatingMode@
 newtype MTRDoorLockOperatingMode = MTRDoorLockOperatingMode CUChar
@@ -17359,6 +19322,16 @@ pattern MTRDoorLockOperatingModeNoRemoteLockUnlock = MTRDoorLockOperatingMode 3
 pattern MTRDoorLockOperatingModePassage :: MTRDoorLockOperatingMode
 pattern MTRDoorLockOperatingModePassage = MTRDoorLockOperatingMode 4
 
+instance ObjCArgument MTRDoorLockOperatingMode where
+  withObjCArg (MTRDoorLockOperatingMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockOperatingMode where
+  type RawReturn MTRDoorLockOperatingMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockOperatingMode x)
+  fromOwned x = pure (MTRDoorLockOperatingMode x)
+
 -- | @MTRDoorLockOperationError@
 newtype MTRDoorLockOperationError = MTRDoorLockOperationError CUChar
   deriving stock (Eq, Ord, Show)
@@ -17378,6 +19351,16 @@ pattern MTRDoorLockOperationErrorRestricted = MTRDoorLockOperationError 3
 
 pattern MTRDoorLockOperationErrorInsufficientBattery :: MTRDoorLockOperationError
 pattern MTRDoorLockOperationErrorInsufficientBattery = MTRDoorLockOperationError 4
+
+instance ObjCArgument MTRDoorLockOperationError where
+  withObjCArg (MTRDoorLockOperationError x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockOperationError where
+  type RawReturn MTRDoorLockOperationError = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockOperationError x)
+  fromOwned x = pure (MTRDoorLockOperationError x)
 
 -- | @MTRDoorLockOperationEventCode@
 newtype MTRDoorLockOperationEventCode = MTRDoorLockOperationEventCode CUChar
@@ -17429,6 +19412,16 @@ pattern MTRDoorLockOperationEventCodeManualLock = MTRDoorLockOperationEventCode 
 pattern MTRDoorLockOperationEventCodeManualUnlock :: MTRDoorLockOperationEventCode
 pattern MTRDoorLockOperationEventCodeManualUnlock = MTRDoorLockOperationEventCode 14
 
+instance ObjCArgument MTRDoorLockOperationEventCode where
+  withObjCArg (MTRDoorLockOperationEventCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockOperationEventCode where
+  type RawReturn MTRDoorLockOperationEventCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockOperationEventCode x)
+  fromOwned x = pure (MTRDoorLockOperationEventCode x)
+
 -- | @MTRDoorLockOperationSource@
 newtype MTRDoorLockOperationSource = MTRDoorLockOperationSource CUChar
   deriving stock (Eq, Ord, Show)
@@ -17467,6 +19460,16 @@ pattern MTRDoorLockOperationSourceBiometric = MTRDoorLockOperationSource 9
 pattern MTRDoorLockOperationSourceAliro :: MTRDoorLockOperationSource
 pattern MTRDoorLockOperationSourceAliro = MTRDoorLockOperationSource 10
 
+instance ObjCArgument MTRDoorLockOperationSource where
+  withObjCArg (MTRDoorLockOperationSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockOperationSource where
+  type RawReturn MTRDoorLockOperationSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockOperationSource x)
+  fromOwned x = pure (MTRDoorLockOperationSource x)
+
 -- | @MTRDoorLockProgrammingEventCode@
 newtype MTRDoorLockProgrammingEventCode = MTRDoorLockProgrammingEventCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -17493,6 +19496,16 @@ pattern MTRDoorLockProgrammingEventCodeIdAdded = MTRDoorLockProgrammingEventCode
 pattern MTRDoorLockProgrammingEventCodeIdDeleted :: MTRDoorLockProgrammingEventCode
 pattern MTRDoorLockProgrammingEventCodeIdDeleted = MTRDoorLockProgrammingEventCode 6
 
+instance ObjCArgument MTRDoorLockProgrammingEventCode where
+  withObjCArg (MTRDoorLockProgrammingEventCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockProgrammingEventCode where
+  type RawReturn MTRDoorLockProgrammingEventCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockProgrammingEventCode x)
+  fromOwned x = pure (MTRDoorLockProgrammingEventCode x)
+
 -- | @MTRDoorLockSetPinOrIdStatus@
 newtype MTRDoorLockSetPinOrIdStatus = MTRDoorLockSetPinOrIdStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -17510,6 +19523,16 @@ pattern MTRDoorLockSetPinOrIdStatusMemoryFull = MTRDoorLockSetPinOrIdStatus 2
 pattern MTRDoorLockSetPinOrIdStatusDuplicateCodeError :: MTRDoorLockSetPinOrIdStatus
 pattern MTRDoorLockSetPinOrIdStatusDuplicateCodeError = MTRDoorLockSetPinOrIdStatus 3
 
+instance ObjCArgument MTRDoorLockSetPinOrIdStatus where
+  withObjCArg (MTRDoorLockSetPinOrIdStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockSetPinOrIdStatus where
+  type RawReturn MTRDoorLockSetPinOrIdStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockSetPinOrIdStatus x)
+  fromOwned x = pure (MTRDoorLockSetPinOrIdStatus x)
+
 -- | @MTRDoorLockUserStatus@
 newtype MTRDoorLockUserStatus = MTRDoorLockUserStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -17526,6 +19549,16 @@ pattern MTRDoorLockUserStatusOccupiedDisabled = MTRDoorLockUserStatus 3
 
 pattern MTRDoorLockUserStatusNotSupported :: MTRDoorLockUserStatus
 pattern MTRDoorLockUserStatusNotSupported = MTRDoorLockUserStatus 255
+
+instance ObjCArgument MTRDoorLockUserStatus where
+  withObjCArg (MTRDoorLockUserStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockUserStatus where
+  type RawReturn MTRDoorLockUserStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockUserStatus x)
+  fromOwned x = pure (MTRDoorLockUserStatus x)
 
 -- | @MTRDoorLockUserType@
 newtype MTRDoorLockUserType = MTRDoorLockUserType CUChar
@@ -17571,6 +19604,16 @@ pattern MTRDoorLockUserTypeRemoteOnlyUser = MTRDoorLockUserType 9
 pattern MTRDoorLockUserTypeNotSupported :: MTRDoorLockUserType
 pattern MTRDoorLockUserTypeNotSupported = MTRDoorLockUserType 255
 
+instance ObjCArgument MTRDoorLockUserType where
+  withObjCArg (MTRDoorLockUserType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRDoorLockUserType where
+  type RawReturn MTRDoorLockUserType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRDoorLockUserType x)
+  fromOwned x = pure (MTRDoorLockUserType x)
+
 -- | @MTRElectricalEnergyMeasurementFeature@ (bitmask)
 newtype MTRElectricalEnergyMeasurementFeature = MTRElectricalEnergyMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -17599,6 +19642,16 @@ pattern MTRElectricalEnergyMeasurementFeatureApparentEnergy = MTRElectricalEnerg
 
 pattern MTRElectricalEnergyMeasurementFeatureReactiveEnergy :: MTRElectricalEnergyMeasurementFeature
 pattern MTRElectricalEnergyMeasurementFeatureReactiveEnergy = MTRElectricalEnergyMeasurementFeature 32
+
+instance ObjCArgument MTRElectricalEnergyMeasurementFeature where
+  withObjCArg (MTRElectricalEnergyMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRElectricalEnergyMeasurementFeature where
+  type RawReturn MTRElectricalEnergyMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalEnergyMeasurementFeature x)
+  fromOwned x = pure (MTRElectricalEnergyMeasurementFeature x)
 
 -- | @MTRElectricalEnergyMeasurementMeasurementType@
 newtype MTRElectricalEnergyMeasurementMeasurementType = MTRElectricalEnergyMeasurementMeasurementType CUShort
@@ -17656,6 +19709,16 @@ pattern MTRElectricalEnergyMeasurementMeasurementTypeReactiveEnergy = MTRElectri
 pattern MTRElectricalEnergyMeasurementMeasurementTypeApparentEnergy :: MTRElectricalEnergyMeasurementMeasurementType
 pattern MTRElectricalEnergyMeasurementMeasurementTypeApparentEnergy = MTRElectricalEnergyMeasurementMeasurementType 16
 
+instance ObjCArgument MTRElectricalEnergyMeasurementMeasurementType where
+  withObjCArg (MTRElectricalEnergyMeasurementMeasurementType x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRElectricalEnergyMeasurementMeasurementType where
+  type RawReturn MTRElectricalEnergyMeasurementMeasurementType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalEnergyMeasurementMeasurementType (fromIntegral x))
+  fromOwned x = pure (MTRElectricalEnergyMeasurementMeasurementType (fromIntegral x))
+
 -- | @MTRElectricalGridConditionsFeature@ (bitmask)
 newtype MTRElectricalGridConditionsFeature = MTRElectricalGridConditionsFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -17670,6 +19733,16 @@ instance Monoid MTRElectricalGridConditionsFeature where
 pattern MTRElectricalGridConditionsFeatureForecasting :: MTRElectricalGridConditionsFeature
 pattern MTRElectricalGridConditionsFeatureForecasting = MTRElectricalGridConditionsFeature 1
 
+instance ObjCArgument MTRElectricalGridConditionsFeature where
+  withObjCArg (MTRElectricalGridConditionsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRElectricalGridConditionsFeature where
+  type RawReturn MTRElectricalGridConditionsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalGridConditionsFeature x)
+  fromOwned x = pure (MTRElectricalGridConditionsFeature x)
+
 -- | @MTRElectricalGridConditionsThreeLevel@
 newtype MTRElectricalGridConditionsThreeLevel = MTRElectricalGridConditionsThreeLevel CUChar
   deriving stock (Eq, Ord, Show)
@@ -17683,6 +19756,16 @@ pattern MTRElectricalGridConditionsThreeLevelMedium = MTRElectricalGridCondition
 
 pattern MTRElectricalGridConditionsThreeLevelHigh :: MTRElectricalGridConditionsThreeLevel
 pattern MTRElectricalGridConditionsThreeLevelHigh = MTRElectricalGridConditionsThreeLevel 2
+
+instance ObjCArgument MTRElectricalGridConditionsThreeLevel where
+  withObjCArg (MTRElectricalGridConditionsThreeLevel x) k = k (argCUChar x)
+
+instance ObjCReturn MTRElectricalGridConditionsThreeLevel where
+  type RawReturn MTRElectricalGridConditionsThreeLevel = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalGridConditionsThreeLevel x)
+  fromOwned x = pure (MTRElectricalGridConditionsThreeLevel x)
 
 -- | @MTRElectricalPowerMeasurementFeature@ (bitmask)
 newtype MTRElectricalPowerMeasurementFeature = MTRElectricalPowerMeasurementFeature CUInt
@@ -17709,6 +19792,16 @@ pattern MTRElectricalPowerMeasurementFeatureHarmonics = MTRElectricalPowerMeasur
 
 pattern MTRElectricalPowerMeasurementFeaturePowerQuality :: MTRElectricalPowerMeasurementFeature
 pattern MTRElectricalPowerMeasurementFeaturePowerQuality = MTRElectricalPowerMeasurementFeature 16
+
+instance ObjCArgument MTRElectricalPowerMeasurementFeature where
+  withObjCArg (MTRElectricalPowerMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRElectricalPowerMeasurementFeature where
+  type RawReturn MTRElectricalPowerMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalPowerMeasurementFeature x)
+  fromOwned x = pure (MTRElectricalPowerMeasurementFeature x)
 
 -- | @MTRElectricalPowerMeasurementMeasurementType@
 newtype MTRElectricalPowerMeasurementMeasurementType = MTRElectricalPowerMeasurementMeasurementType CUShort
@@ -17766,6 +19859,16 @@ pattern MTRElectricalPowerMeasurementMeasurementTypeReactiveEnergy = MTRElectric
 pattern MTRElectricalPowerMeasurementMeasurementTypeApparentEnergy :: MTRElectricalPowerMeasurementMeasurementType
 pattern MTRElectricalPowerMeasurementMeasurementTypeApparentEnergy = MTRElectricalPowerMeasurementMeasurementType 16
 
+instance ObjCArgument MTRElectricalPowerMeasurementMeasurementType where
+  withObjCArg (MTRElectricalPowerMeasurementMeasurementType x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRElectricalPowerMeasurementMeasurementType where
+  type RawReturn MTRElectricalPowerMeasurementMeasurementType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalPowerMeasurementMeasurementType (fromIntegral x))
+  fromOwned x = pure (MTRElectricalPowerMeasurementMeasurementType (fromIntegral x))
+
 -- | @MTRElectricalPowerMeasurementPowerMode@
 newtype MTRElectricalPowerMeasurementPowerMode = MTRElectricalPowerMeasurementPowerMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -17780,6 +19883,16 @@ pattern MTRElectricalPowerMeasurementPowerModeDC = MTRElectricalPowerMeasurement
 pattern MTRElectricalPowerMeasurementPowerModeAC :: MTRElectricalPowerMeasurementPowerMode
 pattern MTRElectricalPowerMeasurementPowerModeAC = MTRElectricalPowerMeasurementPowerMode 2
 
+instance ObjCArgument MTRElectricalPowerMeasurementPowerMode where
+  withObjCArg (MTRElectricalPowerMeasurementPowerMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRElectricalPowerMeasurementPowerMode where
+  type RawReturn MTRElectricalPowerMeasurementPowerMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRElectricalPowerMeasurementPowerMode x)
+  fromOwned x = pure (MTRElectricalPowerMeasurementPowerMode x)
+
 -- | @MTREnergyEVSEEnergyTransferStoppedReason@
 newtype MTREnergyEVSEEnergyTransferStoppedReason = MTREnergyEVSEEnergyTransferStoppedReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -17793,6 +19906,16 @@ pattern MTREnergyEVSEEnergyTransferStoppedReasonEVSEStopped = MTREnergyEVSEEnerg
 
 pattern MTREnergyEVSEEnergyTransferStoppedReasonOther :: MTREnergyEVSEEnergyTransferStoppedReason
 pattern MTREnergyEVSEEnergyTransferStoppedReasonOther = MTREnergyEVSEEnergyTransferStoppedReason 2
+
+instance ObjCArgument MTREnergyEVSEEnergyTransferStoppedReason where
+  withObjCArg (MTREnergyEVSEEnergyTransferStoppedReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyEVSEEnergyTransferStoppedReason where
+  type RawReturn MTREnergyEVSEEnergyTransferStoppedReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSEEnergyTransferStoppedReason x)
+  fromOwned x = pure (MTREnergyEVSEEnergyTransferStoppedReason x)
 
 -- | @MTREnergyEVSEFaultState@
 newtype MTREnergyEVSEFaultState = MTREnergyEVSEFaultState CUChar
@@ -17850,6 +19973,16 @@ pattern MTREnergyEVSEFaultStateOverTemperature = MTREnergyEVSEFaultState 15
 pattern MTREnergyEVSEFaultStateOther :: MTREnergyEVSEFaultState
 pattern MTREnergyEVSEFaultStateOther = MTREnergyEVSEFaultState 255
 
+instance ObjCArgument MTREnergyEVSEFaultState where
+  withObjCArg (MTREnergyEVSEFaultState x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyEVSEFaultState where
+  type RawReturn MTREnergyEVSEFaultState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSEFaultState x)
+  fromOwned x = pure (MTREnergyEVSEFaultState x)
+
 -- | @MTREnergyEVSEFeature@ (bitmask)
 newtype MTREnergyEVSEFeature = MTREnergyEVSEFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -17875,6 +20008,16 @@ pattern MTREnergyEVSEFeatureRFID = MTREnergyEVSEFeature 8
 
 pattern MTREnergyEVSEFeatureV2X :: MTREnergyEVSEFeature
 pattern MTREnergyEVSEFeatureV2X = MTREnergyEVSEFeature 16
+
+instance ObjCArgument MTREnergyEVSEFeature where
+  withObjCArg (MTREnergyEVSEFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTREnergyEVSEFeature where
+  type RawReturn MTREnergyEVSEFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSEFeature x)
+  fromOwned x = pure (MTREnergyEVSEFeature x)
 
 -- | @MTREnergyEVSEModeModeTag@
 newtype MTREnergyEVSEModeModeTag = MTREnergyEVSEModeModeTag CUShort
@@ -17923,6 +20066,16 @@ pattern MTREnergyEVSEModeModeTagSolarCharging = MTREnergyEVSEModeModeTag 16386
 pattern MTREnergyEVSEModeModeTagV2X :: MTREnergyEVSEModeModeTag
 pattern MTREnergyEVSEModeModeTagV2X = MTREnergyEVSEModeModeTag 16387
 
+instance ObjCArgument MTREnergyEVSEModeModeTag where
+  withObjCArg (MTREnergyEVSEModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTREnergyEVSEModeModeTag where
+  type RawReturn MTREnergyEVSEModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSEModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTREnergyEVSEModeModeTag (fromIntegral x))
+
 -- | @MTREnergyEVSEState@
 newtype MTREnergyEVSEState = MTREnergyEVSEState CUChar
   deriving stock (Eq, Ord, Show)
@@ -17949,6 +20102,16 @@ pattern MTREnergyEVSEStateSessionEnding = MTREnergyEVSEState 5
 pattern MTREnergyEVSEStateFault :: MTREnergyEVSEState
 pattern MTREnergyEVSEStateFault = MTREnergyEVSEState 6
 
+instance ObjCArgument MTREnergyEVSEState where
+  withObjCArg (MTREnergyEVSEState x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyEVSEState where
+  type RawReturn MTREnergyEVSEState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSEState x)
+  fromOwned x = pure (MTREnergyEVSEState x)
+
 -- | @MTREnergyEVSESupplyState@
 newtype MTREnergyEVSESupplyState = MTREnergyEVSESupplyState CUChar
   deriving stock (Eq, Ord, Show)
@@ -17971,6 +20134,16 @@ pattern MTREnergyEVSESupplyStateDisabledDiagnostics = MTREnergyEVSESupplyState 4
 
 pattern MTREnergyEVSESupplyStateEnabled :: MTREnergyEVSESupplyState
 pattern MTREnergyEVSESupplyStateEnabled = MTREnergyEVSESupplyState 5
+
+instance ObjCArgument MTREnergyEVSESupplyState where
+  withObjCArg (MTREnergyEVSESupplyState x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyEVSESupplyState where
+  type RawReturn MTREnergyEVSESupplyState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSESupplyState x)
+  fromOwned x = pure (MTREnergyEVSESupplyState x)
 
 -- | @MTREnergyEVSETargetDayOfWeekBitmap@ (bitmask)
 newtype MTREnergyEVSETargetDayOfWeekBitmap = MTREnergyEVSETargetDayOfWeekBitmap CUChar
@@ -18004,6 +20177,16 @@ pattern MTREnergyEVSETargetDayOfWeekBitmapFriday = MTREnergyEVSETargetDayOfWeekB
 pattern MTREnergyEVSETargetDayOfWeekBitmapSaturday :: MTREnergyEVSETargetDayOfWeekBitmap
 pattern MTREnergyEVSETargetDayOfWeekBitmapSaturday = MTREnergyEVSETargetDayOfWeekBitmap 64
 
+instance ObjCArgument MTREnergyEVSETargetDayOfWeekBitmap where
+  withObjCArg (MTREnergyEVSETargetDayOfWeekBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyEVSETargetDayOfWeekBitmap where
+  type RawReturn MTREnergyEVSETargetDayOfWeekBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyEVSETargetDayOfWeekBitmap x)
+  fromOwned x = pure (MTREnergyEVSETargetDayOfWeekBitmap x)
+
 -- | @MTREnergyPreferenceEnergyPriority@
 newtype MTREnergyPreferenceEnergyPriority = MTREnergyPreferenceEnergyPriority CUChar
   deriving stock (Eq, Ord, Show)
@@ -18021,6 +20204,16 @@ pattern MTREnergyPreferenceEnergyPriorityEfficiency = MTREnergyPreferenceEnergyP
 pattern MTREnergyPreferenceEnergyPriorityWaterConsumption :: MTREnergyPreferenceEnergyPriority
 pattern MTREnergyPreferenceEnergyPriorityWaterConsumption = MTREnergyPreferenceEnergyPriority 3
 
+instance ObjCArgument MTREnergyPreferenceEnergyPriority where
+  withObjCArg (MTREnergyPreferenceEnergyPriority x) k = k (argCUChar x)
+
+instance ObjCReturn MTREnergyPreferenceEnergyPriority where
+  type RawReturn MTREnergyPreferenceEnergyPriority = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyPreferenceEnergyPriority x)
+  fromOwned x = pure (MTREnergyPreferenceEnergyPriority x)
+
 -- | @MTREnergyPreferenceFeature@ (bitmask)
 newtype MTREnergyPreferenceFeature = MTREnergyPreferenceFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -18037,6 +20230,16 @@ pattern MTREnergyPreferenceFeatureEnergyBalance = MTREnergyPreferenceFeature 1
 
 pattern MTREnergyPreferenceFeatureLowPowerModeSensitivity :: MTREnergyPreferenceFeature
 pattern MTREnergyPreferenceFeatureLowPowerModeSensitivity = MTREnergyPreferenceFeature 2
+
+instance ObjCArgument MTREnergyPreferenceFeature where
+  withObjCArg (MTREnergyPreferenceFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTREnergyPreferenceFeature where
+  type RawReturn MTREnergyPreferenceFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREnergyPreferenceFeature x)
+  fromOwned x = pure (MTREnergyPreferenceFeature x)
 
 -- | MTRErrorDomain contains errors caused by data processing the framework itself is performing.  These can be caused by invalid values provided to a framework API, failure to decode an incoming message, and so forth.
 --
@@ -18105,6 +20308,16 @@ pattern MTRErrorCodeBusy = MTRErrorCode 18
 pattern MTRErrorCodeNotFound :: MTRErrorCode
 pattern MTRErrorCodeNotFound = MTRErrorCode 19
 
+instance ObjCArgument MTRErrorCode where
+  withObjCArg (MTRErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MTRErrorCode where
+  type RawReturn MTRErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRErrorCode x)
+  fromOwned x = pure (MTRErrorCode x)
+
 -- | @MTREthernetNetworkDiagnosticsFeature@ (bitmask)
 newtype MTREthernetNetworkDiagnosticsFeature = MTREthernetNetworkDiagnosticsFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -18121,6 +20334,16 @@ pattern MTREthernetNetworkDiagnosticsFeaturePacketCounts = MTREthernetNetworkDia
 
 pattern MTREthernetNetworkDiagnosticsFeatureErrorCounts :: MTREthernetNetworkDiagnosticsFeature
 pattern MTREthernetNetworkDiagnosticsFeatureErrorCounts = MTREthernetNetworkDiagnosticsFeature 2
+
+instance ObjCArgument MTREthernetNetworkDiagnosticsFeature where
+  withObjCArg (MTREthernetNetworkDiagnosticsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTREthernetNetworkDiagnosticsFeature where
+  type RawReturn MTREthernetNetworkDiagnosticsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREthernetNetworkDiagnosticsFeature x)
+  fromOwned x = pure (MTREthernetNetworkDiagnosticsFeature x)
 
 -- | @MTREthernetNetworkDiagnosticsPHYRate@
 newtype MTREthernetNetworkDiagnosticsPHYRate = MTREthernetNetworkDiagnosticsPHYRate CUChar
@@ -18157,6 +20380,16 @@ pattern MTREthernetNetworkDiagnosticsPHYRateRate200G = MTREthernetNetworkDiagnos
 pattern MTREthernetNetworkDiagnosticsPHYRateRate400G :: MTREthernetNetworkDiagnosticsPHYRate
 pattern MTREthernetNetworkDiagnosticsPHYRateRate400G = MTREthernetNetworkDiagnosticsPHYRate 9
 
+instance ObjCArgument MTREthernetNetworkDiagnosticsPHYRate where
+  withObjCArg (MTREthernetNetworkDiagnosticsPHYRate x) k = k (argCUChar x)
+
+instance ObjCReturn MTREthernetNetworkDiagnosticsPHYRate where
+  type RawReturn MTREthernetNetworkDiagnosticsPHYRate = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREthernetNetworkDiagnosticsPHYRate x)
+  fromOwned x = pure (MTREthernetNetworkDiagnosticsPHYRate x)
+
 -- | @MTREthernetNetworkDiagnosticsPHYRateType@
 newtype MTREthernetNetworkDiagnosticsPHYRateType = MTREthernetNetworkDiagnosticsPHYRateType CUChar
   deriving stock (Eq, Ord, Show)
@@ -18191,6 +20424,16 @@ pattern MTREthernetNetworkDiagnosticsPHYRateType200G = MTREthernetNetworkDiagnos
 
 pattern MTREthernetNetworkDiagnosticsPHYRateType400G :: MTREthernetNetworkDiagnosticsPHYRateType
 pattern MTREthernetNetworkDiagnosticsPHYRateType400G = MTREthernetNetworkDiagnosticsPHYRateType 9
+
+instance ObjCArgument MTREthernetNetworkDiagnosticsPHYRateType where
+  withObjCArg (MTREthernetNetworkDiagnosticsPHYRateType x) k = k (argCUChar x)
+
+instance ObjCReturn MTREthernetNetworkDiagnosticsPHYRateType where
+  type RawReturn MTREthernetNetworkDiagnosticsPHYRateType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREthernetNetworkDiagnosticsPHYRateType x)
+  fromOwned x = pure (MTREthernetNetworkDiagnosticsPHYRateType x)
 
 -- | @MTREventIDType@
 newtype MTREventIDType = MTREventIDType CUInt
@@ -18779,6 +21022,16 @@ pattern MTREventIDTypeClusterUnitTestingEventTestDifferentVendorMeiEventID = MTR
 pattern MTREventIDTypeClusterSampleMEIEventPingCountEventID :: MTREventIDType
 pattern MTREventIDTypeClusterSampleMEIEventPingCountEventID = MTREventIDType 0
 
+instance ObjCArgument MTREventIDType where
+  withObjCArg (MTREventIDType x) k = k (argCUInt x)
+
+instance ObjCReturn MTREventIDType where
+  type RawReturn MTREventIDType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREventIDType x)
+  fromOwned x = pure (MTREventIDType x)
+
 -- | @MTREventPriority@
 newtype MTREventPriority = MTREventPriority CULong
   deriving stock (Eq, Ord, Show)
@@ -18793,6 +21046,16 @@ pattern MTREventPriorityInfo = MTREventPriority 1
 pattern MTREventPriorityCritical :: MTREventPriority
 pattern MTREventPriorityCritical = MTREventPriority 2
 
+instance ObjCArgument MTREventPriority where
+  withObjCArg (MTREventPriority x) k = k (argCULong x)
+
+instance ObjCReturn MTREventPriority where
+  type RawReturn MTREventPriority = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREventPriority x)
+  fromOwned x = pure (MTREventPriority x)
+
 -- | @MTREventTimeType@
 newtype MTREventTimeType = MTREventTimeType CULong
   deriving stock (Eq, Ord, Show)
@@ -18804,6 +21067,16 @@ pattern MTREventTimeTypeSystemUpTime = MTREventTimeType 0
 pattern MTREventTimeTypeTimestampDate :: MTREventTimeType
 pattern MTREventTimeTypeTimestampDate = MTREventTimeType 1
 
+instance ObjCArgument MTREventTimeType where
+  withObjCArg (MTREventTimeType x) k = k (argCULong x)
+
+instance ObjCReturn MTREventTimeType where
+  type RawReturn MTREventTimeType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTREventTimeType x)
+  fromOwned x = pure (MTREventTimeType x)
+
 -- | @MTRFanControlAirflowDirection@
 newtype MTRFanControlAirflowDirection = MTRFanControlAirflowDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -18814,6 +21087,16 @@ pattern MTRFanControlAirflowDirectionForward = MTRFanControlAirflowDirection 0
 
 pattern MTRFanControlAirflowDirectionReverse :: MTRFanControlAirflowDirection
 pattern MTRFanControlAirflowDirectionReverse = MTRFanControlAirflowDirection 1
+
+instance ObjCArgument MTRFanControlAirflowDirection where
+  withObjCArg (MTRFanControlAirflowDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlAirflowDirection where
+  type RawReturn MTRFanControlAirflowDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlAirflowDirection x)
+  fromOwned x = pure (MTRFanControlAirflowDirection x)
 
 -- | @MTRFanControlFanMode@
 newtype MTRFanControlFanMode = MTRFanControlFanMode CUChar
@@ -18840,6 +21123,16 @@ pattern MTRFanControlFanModeAuto = MTRFanControlFanMode 5
 
 pattern MTRFanControlFanModeSmart :: MTRFanControlFanMode
 pattern MTRFanControlFanModeSmart = MTRFanControlFanMode 6
+
+instance ObjCArgument MTRFanControlFanMode where
+  withObjCArg (MTRFanControlFanMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlFanMode where
+  type RawReturn MTRFanControlFanMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlFanMode x)
+  fromOwned x = pure (MTRFanControlFanMode x)
 
 -- | @MTRFanControlFanModeSequence@
 newtype MTRFanControlFanModeSequence = MTRFanControlFanModeSequence CUChar
@@ -18870,6 +21163,16 @@ pattern MTRFanControlFanModeSequenceOffHigh = MTRFanControlFanModeSequence 5
 pattern MTRFanControlFanModeSequenceOffOn :: MTRFanControlFanModeSequence
 pattern MTRFanControlFanModeSequenceOffOn = MTRFanControlFanModeSequence 5
 
+instance ObjCArgument MTRFanControlFanModeSequence where
+  withObjCArg (MTRFanControlFanModeSequence x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlFanModeSequence where
+  type RawReturn MTRFanControlFanModeSequence = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlFanModeSequence x)
+  fromOwned x = pure (MTRFanControlFanModeSequence x)
+
 -- | @MTRFanControlFanModeSequenceType@
 newtype MTRFanControlFanModeSequenceType = MTRFanControlFanModeSequenceType CUChar
   deriving stock (Eq, Ord, Show)
@@ -18892,6 +21195,16 @@ pattern MTRFanControlFanModeSequenceTypeOffOnAuto = MTRFanControlFanModeSequence
 
 pattern MTRFanControlFanModeSequenceTypeOffOn :: MTRFanControlFanModeSequenceType
 pattern MTRFanControlFanModeSequenceTypeOffOn = MTRFanControlFanModeSequenceType 5
+
+instance ObjCArgument MTRFanControlFanModeSequenceType where
+  withObjCArg (MTRFanControlFanModeSequenceType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlFanModeSequenceType where
+  type RawReturn MTRFanControlFanModeSequenceType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlFanModeSequenceType x)
+  fromOwned x = pure (MTRFanControlFanModeSequenceType x)
 
 -- | @MTRFanControlFanModeType@
 newtype MTRFanControlFanModeType = MTRFanControlFanModeType CUChar
@@ -18918,6 +21231,16 @@ pattern MTRFanControlFanModeTypeAuto = MTRFanControlFanModeType 5
 
 pattern MTRFanControlFanModeTypeSmart :: MTRFanControlFanModeType
 pattern MTRFanControlFanModeTypeSmart = MTRFanControlFanModeType 6
+
+instance ObjCArgument MTRFanControlFanModeType where
+  withObjCArg (MTRFanControlFanModeType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlFanModeType where
+  type RawReturn MTRFanControlFanModeType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlFanModeType x)
+  fromOwned x = pure (MTRFanControlFanModeType x)
 
 -- | @MTRFanControlFeature@ (bitmask)
 newtype MTRFanControlFeature = MTRFanControlFeature CUInt
@@ -18948,6 +21271,16 @@ pattern MTRFanControlFeatureStep = MTRFanControlFeature 16
 pattern MTRFanControlFeatureAirflowDirection :: MTRFanControlFeature
 pattern MTRFanControlFeatureAirflowDirection = MTRFanControlFeature 32
 
+instance ObjCArgument MTRFanControlFeature where
+  withObjCArg (MTRFanControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRFanControlFeature where
+  type RawReturn MTRFanControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlFeature x)
+  fromOwned x = pure (MTRFanControlFeature x)
+
 -- | @MTRFanControlRockBitmap@ (bitmask)
 newtype MTRFanControlRockBitmap = MTRFanControlRockBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -18967,6 +21300,16 @@ pattern MTRFanControlRockBitmapRockUpDown = MTRFanControlRockBitmap 2
 
 pattern MTRFanControlRockBitmapRockRound :: MTRFanControlRockBitmap
 pattern MTRFanControlRockBitmapRockRound = MTRFanControlRockBitmap 4
+
+instance ObjCArgument MTRFanControlRockBitmap where
+  withObjCArg (MTRFanControlRockBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlRockBitmap where
+  type RawReturn MTRFanControlRockBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlRockBitmap x)
+  fromOwned x = pure (MTRFanControlRockBitmap x)
 
 -- | @MTRFanControlRockSupportMask@ (bitmask)
 newtype MTRFanControlRockSupportMask = MTRFanControlRockSupportMask CUChar
@@ -18988,6 +21331,16 @@ pattern MTRFanControlRockSupportMaskRockUpDown = MTRFanControlRockSupportMask 2
 pattern MTRFanControlRockSupportMaskRockRound :: MTRFanControlRockSupportMask
 pattern MTRFanControlRockSupportMaskRockRound = MTRFanControlRockSupportMask 4
 
+instance ObjCArgument MTRFanControlRockSupportMask where
+  withObjCArg (MTRFanControlRockSupportMask x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlRockSupportMask where
+  type RawReturn MTRFanControlRockSupportMask = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlRockSupportMask x)
+  fromOwned x = pure (MTRFanControlRockSupportMask x)
+
 -- | @MTRFanControlStepDirection@
 newtype MTRFanControlStepDirection = MTRFanControlStepDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -18998,6 +21351,16 @@ pattern MTRFanControlStepDirectionIncrease = MTRFanControlStepDirection 0
 
 pattern MTRFanControlStepDirectionDecrease :: MTRFanControlStepDirection
 pattern MTRFanControlStepDirectionDecrease = MTRFanControlStepDirection 1
+
+instance ObjCArgument MTRFanControlStepDirection where
+  withObjCArg (MTRFanControlStepDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlStepDirection where
+  type RawReturn MTRFanControlStepDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlStepDirection x)
+  fromOwned x = pure (MTRFanControlStepDirection x)
 
 -- | @MTRFanControlWindBitmap@ (bitmask)
 newtype MTRFanControlWindBitmap = MTRFanControlWindBitmap CUChar
@@ -19015,6 +21378,16 @@ pattern MTRFanControlWindBitmapSleepWind = MTRFanControlWindBitmap 1
 
 pattern MTRFanControlWindBitmapNaturalWind :: MTRFanControlWindBitmap
 pattern MTRFanControlWindBitmapNaturalWind = MTRFanControlWindBitmap 2
+
+instance ObjCArgument MTRFanControlWindBitmap where
+  withObjCArg (MTRFanControlWindBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlWindBitmap where
+  type RawReturn MTRFanControlWindBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlWindBitmap x)
+  fromOwned x = pure (MTRFanControlWindBitmap x)
 
 -- | FanControl used to have WindSettingMask and WindSupportMask that had identical values.  Those got replaced with a single WindBitmap.  We codegen WindSupportMask as an alias of WindBitmap, but we need a manual shim for WindSettingMask.
 -- | @MTRFanControlWindSettingMask@ (bitmask)
@@ -19034,6 +21407,16 @@ pattern MTRFanControlWindSettingMaskSleepWind = MTRFanControlWindSettingMask 1
 pattern MTRFanControlWindSettingMaskNaturalWind :: MTRFanControlWindSettingMask
 pattern MTRFanControlWindSettingMaskNaturalWind = MTRFanControlWindSettingMask 2
 
+instance ObjCArgument MTRFanControlWindSettingMask where
+  withObjCArg (MTRFanControlWindSettingMask x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlWindSettingMask where
+  type RawReturn MTRFanControlWindSettingMask = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlWindSettingMask x)
+  fromOwned x = pure (MTRFanControlWindSettingMask x)
+
 -- | @MTRFanControlWindSupportMask@ (bitmask)
 newtype MTRFanControlWindSupportMask = MTRFanControlWindSupportMask CUChar
   deriving stock (Eq, Ord, Show)
@@ -19050,6 +21433,16 @@ pattern MTRFanControlWindSupportMaskSleepWind = MTRFanControlWindSupportMask 1
 
 pattern MTRFanControlWindSupportMaskNaturalWind :: MTRFanControlWindSupportMask
 pattern MTRFanControlWindSupportMaskNaturalWind = MTRFanControlWindSupportMask 2
+
+instance ObjCArgument MTRFanControlWindSupportMask where
+  withObjCArg (MTRFanControlWindSupportMask x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFanControlWindSupportMask where
+  type RawReturn MTRFanControlWindSupportMask = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFanControlWindSupportMask x)
+  fromOwned x = pure (MTRFanControlWindSupportMask x)
 
 -- | @MTRFormaldehydeConcentrationMeasurementFeature@ (bitmask)
 newtype MTRFormaldehydeConcentrationMeasurementFeature = MTRFormaldehydeConcentrationMeasurementFeature CUInt
@@ -19080,6 +21473,16 @@ pattern MTRFormaldehydeConcentrationMeasurementFeaturePeakMeasurement = MTRForma
 pattern MTRFormaldehydeConcentrationMeasurementFeatureAverageMeasurement :: MTRFormaldehydeConcentrationMeasurementFeature
 pattern MTRFormaldehydeConcentrationMeasurementFeatureAverageMeasurement = MTRFormaldehydeConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRFormaldehydeConcentrationMeasurementFeature where
+  withObjCArg (MTRFormaldehydeConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRFormaldehydeConcentrationMeasurementFeature where
+  type RawReturn MTRFormaldehydeConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFormaldehydeConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRFormaldehydeConcentrationMeasurementFeature x)
+
 -- | @MTRFormaldehydeConcentrationMeasurementLevelValue@
 newtype MTRFormaldehydeConcentrationMeasurementLevelValue = MTRFormaldehydeConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -19100,6 +21503,16 @@ pattern MTRFormaldehydeConcentrationMeasurementLevelValueHigh = MTRFormaldehydeC
 pattern MTRFormaldehydeConcentrationMeasurementLevelValueCritical :: MTRFormaldehydeConcentrationMeasurementLevelValue
 pattern MTRFormaldehydeConcentrationMeasurementLevelValueCritical = MTRFormaldehydeConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRFormaldehydeConcentrationMeasurementLevelValue where
+  withObjCArg (MTRFormaldehydeConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFormaldehydeConcentrationMeasurementLevelValue where
+  type RawReturn MTRFormaldehydeConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFormaldehydeConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRFormaldehydeConcentrationMeasurementLevelValue x)
+
 -- | @MTRFormaldehydeConcentrationMeasurementMeasurementMedium@
 newtype MTRFormaldehydeConcentrationMeasurementMeasurementMedium = MTRFormaldehydeConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -19113,6 +21526,16 @@ pattern MTRFormaldehydeConcentrationMeasurementMeasurementMediumWater = MTRForma
 
 pattern MTRFormaldehydeConcentrationMeasurementMeasurementMediumSoil :: MTRFormaldehydeConcentrationMeasurementMeasurementMedium
 pattern MTRFormaldehydeConcentrationMeasurementMeasurementMediumSoil = MTRFormaldehydeConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRFormaldehydeConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRFormaldehydeConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFormaldehydeConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRFormaldehydeConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFormaldehydeConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRFormaldehydeConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRFormaldehydeConcentrationMeasurementMeasurementUnit@
 newtype MTRFormaldehydeConcentrationMeasurementMeasurementUnit = MTRFormaldehydeConcentrationMeasurementMeasurementUnit CUChar
@@ -19142,6 +21565,16 @@ pattern MTRFormaldehydeConcentrationMeasurementMeasurementUnitPM3 = MTRFormaldeh
 
 pattern MTRFormaldehydeConcentrationMeasurementMeasurementUnitBQM3 :: MTRFormaldehydeConcentrationMeasurementMeasurementUnit
 pattern MTRFormaldehydeConcentrationMeasurementMeasurementUnitBQM3 = MTRFormaldehydeConcentrationMeasurementMeasurementUnit 7
+
+instance ObjCArgument MTRFormaldehydeConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRFormaldehydeConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRFormaldehydeConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRFormaldehydeConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRFormaldehydeConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRFormaldehydeConcentrationMeasurementMeasurementUnit x)
 
 -- | @MTRGeneralCommissioningCommissioningError@
 newtype MTRGeneralCommissioningCommissioningError = MTRGeneralCommissioningCommissioningError CUChar
@@ -19175,6 +21608,16 @@ pattern MTRGeneralCommissioningCommissioningErrorTCAcknowledgementsNotReceived =
 pattern MTRGeneralCommissioningCommissioningErrorTCMinVersionNotMet :: MTRGeneralCommissioningCommissioningError
 pattern MTRGeneralCommissioningCommissioningErrorTCMinVersionNotMet = MTRGeneralCommissioningCommissioningError 7
 
+instance ObjCArgument MTRGeneralCommissioningCommissioningError where
+  withObjCArg (MTRGeneralCommissioningCommissioningError x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralCommissioningCommissioningError where
+  type RawReturn MTRGeneralCommissioningCommissioningError = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralCommissioningCommissioningError x)
+  fromOwned x = pure (MTRGeneralCommissioningCommissioningError x)
+
 -- | @MTRGeneralCommissioningFeature@ (bitmask)
 newtype MTRGeneralCommissioningFeature = MTRGeneralCommissioningFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -19192,6 +21635,16 @@ pattern MTRGeneralCommissioningFeatureTermsAndConditions = MTRGeneralCommissioni
 pattern MTRGeneralCommissioningFeatureNetworkRecovery :: MTRGeneralCommissioningFeature
 pattern MTRGeneralCommissioningFeatureNetworkRecovery = MTRGeneralCommissioningFeature 2
 
+instance ObjCArgument MTRGeneralCommissioningFeature where
+  withObjCArg (MTRGeneralCommissioningFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGeneralCommissioningFeature where
+  type RawReturn MTRGeneralCommissioningFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralCommissioningFeature x)
+  fromOwned x = pure (MTRGeneralCommissioningFeature x)
+
 -- | @MTRGeneralCommissioningNetworkRecoveryReason@
 newtype MTRGeneralCommissioningNetworkRecoveryReason = MTRGeneralCommissioningNetworkRecoveryReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -19206,6 +21659,16 @@ pattern MTRGeneralCommissioningNetworkRecoveryReasonAuth = MTRGeneralCommissioni
 pattern MTRGeneralCommissioningNetworkRecoveryReasonVisibility :: MTRGeneralCommissioningNetworkRecoveryReason
 pattern MTRGeneralCommissioningNetworkRecoveryReasonVisibility = MTRGeneralCommissioningNetworkRecoveryReason 2
 
+instance ObjCArgument MTRGeneralCommissioningNetworkRecoveryReason where
+  withObjCArg (MTRGeneralCommissioningNetworkRecoveryReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralCommissioningNetworkRecoveryReason where
+  type RawReturn MTRGeneralCommissioningNetworkRecoveryReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralCommissioningNetworkRecoveryReason x)
+  fromOwned x = pure (MTRGeneralCommissioningNetworkRecoveryReason x)
+
 -- | @MTRGeneralCommissioningRegulatoryLocationType@
 newtype MTRGeneralCommissioningRegulatoryLocationType = MTRGeneralCommissioningRegulatoryLocationType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19219,6 +21682,16 @@ pattern MTRGeneralCommissioningRegulatoryLocationTypeOutdoor = MTRGeneralCommiss
 
 pattern MTRGeneralCommissioningRegulatoryLocationTypeIndoorOutdoor :: MTRGeneralCommissioningRegulatoryLocationType
 pattern MTRGeneralCommissioningRegulatoryLocationTypeIndoorOutdoor = MTRGeneralCommissioningRegulatoryLocationType 2
+
+instance ObjCArgument MTRGeneralCommissioningRegulatoryLocationType where
+  withObjCArg (MTRGeneralCommissioningRegulatoryLocationType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralCommissioningRegulatoryLocationType where
+  type RawReturn MTRGeneralCommissioningRegulatoryLocationType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralCommissioningRegulatoryLocationType x)
+  fromOwned x = pure (MTRGeneralCommissioningRegulatoryLocationType x)
 
 -- | @MTRGeneralDiagnosticsBootReason@
 newtype MTRGeneralDiagnosticsBootReason = MTRGeneralDiagnosticsBootReason CUChar
@@ -19246,6 +21719,16 @@ pattern MTRGeneralDiagnosticsBootReasonSoftwareUpdateCompleted = MTRGeneralDiagn
 pattern MTRGeneralDiagnosticsBootReasonSoftwareReset :: MTRGeneralDiagnosticsBootReason
 pattern MTRGeneralDiagnosticsBootReasonSoftwareReset = MTRGeneralDiagnosticsBootReason 6
 
+instance ObjCArgument MTRGeneralDiagnosticsBootReason where
+  withObjCArg (MTRGeneralDiagnosticsBootReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsBootReason where
+  type RawReturn MTRGeneralDiagnosticsBootReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsBootReason x)
+  fromOwned x = pure (MTRGeneralDiagnosticsBootReason x)
+
 -- | @MTRGeneralDiagnosticsBootReasonType@
 newtype MTRGeneralDiagnosticsBootReasonType = MTRGeneralDiagnosticsBootReasonType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19272,6 +21755,16 @@ pattern MTRGeneralDiagnosticsBootReasonTypeSoftwareUpdateCompleted = MTRGeneralD
 pattern MTRGeneralDiagnosticsBootReasonTypeSoftwareReset :: MTRGeneralDiagnosticsBootReasonType
 pattern MTRGeneralDiagnosticsBootReasonTypeSoftwareReset = MTRGeneralDiagnosticsBootReasonType 6
 
+instance ObjCArgument MTRGeneralDiagnosticsBootReasonType where
+  withObjCArg (MTRGeneralDiagnosticsBootReasonType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsBootReasonType where
+  type RawReturn MTRGeneralDiagnosticsBootReasonType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsBootReasonType x)
+  fromOwned x = pure (MTRGeneralDiagnosticsBootReasonType x)
+
 -- | @MTRGeneralDiagnosticsFeature@ (bitmask)
 newtype MTRGeneralDiagnosticsFeature = MTRGeneralDiagnosticsFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -19285,6 +21778,16 @@ instance Monoid MTRGeneralDiagnosticsFeature where
 
 pattern MTRGeneralDiagnosticsFeatureDataModelTest :: MTRGeneralDiagnosticsFeature
 pattern MTRGeneralDiagnosticsFeatureDataModelTest = MTRGeneralDiagnosticsFeature 1
+
+instance ObjCArgument MTRGeneralDiagnosticsFeature where
+  withObjCArg (MTRGeneralDiagnosticsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGeneralDiagnosticsFeature where
+  type RawReturn MTRGeneralDiagnosticsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsFeature x)
+  fromOwned x = pure (MTRGeneralDiagnosticsFeature x)
 
 -- | @MTRGeneralDiagnosticsHardwareFault@
 newtype MTRGeneralDiagnosticsHardwareFault = MTRGeneralDiagnosticsHardwareFault CUChar
@@ -19324,6 +21827,16 @@ pattern MTRGeneralDiagnosticsHardwareFaultNonVolatileMemoryError = MTRGeneralDia
 pattern MTRGeneralDiagnosticsHardwareFaultTamperDetected :: MTRGeneralDiagnosticsHardwareFault
 pattern MTRGeneralDiagnosticsHardwareFaultTamperDetected = MTRGeneralDiagnosticsHardwareFault 10
 
+instance ObjCArgument MTRGeneralDiagnosticsHardwareFault where
+  withObjCArg (MTRGeneralDiagnosticsHardwareFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsHardwareFault where
+  type RawReturn MTRGeneralDiagnosticsHardwareFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsHardwareFault x)
+  fromOwned x = pure (MTRGeneralDiagnosticsHardwareFault x)
+
 -- | @MTRGeneralDiagnosticsHardwareFaultType@
 newtype MTRGeneralDiagnosticsHardwareFaultType = MTRGeneralDiagnosticsHardwareFaultType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19362,6 +21875,16 @@ pattern MTRGeneralDiagnosticsHardwareFaultTypeNonVolatileMemoryError = MTRGenera
 pattern MTRGeneralDiagnosticsHardwareFaultTypeTamperDetected :: MTRGeneralDiagnosticsHardwareFaultType
 pattern MTRGeneralDiagnosticsHardwareFaultTypeTamperDetected = MTRGeneralDiagnosticsHardwareFaultType 10
 
+instance ObjCArgument MTRGeneralDiagnosticsHardwareFaultType where
+  withObjCArg (MTRGeneralDiagnosticsHardwareFaultType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsHardwareFaultType where
+  type RawReturn MTRGeneralDiagnosticsHardwareFaultType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsHardwareFaultType x)
+  fromOwned x = pure (MTRGeneralDiagnosticsHardwareFaultType x)
+
 -- | @MTRGeneralDiagnosticsInterfaceType@
 newtype MTRGeneralDiagnosticsInterfaceType = MTRGeneralDiagnosticsInterfaceType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19382,6 +21905,16 @@ pattern MTRGeneralDiagnosticsInterfaceTypeCellular = MTRGeneralDiagnosticsInterf
 pattern MTRGeneralDiagnosticsInterfaceTypeThread :: MTRGeneralDiagnosticsInterfaceType
 pattern MTRGeneralDiagnosticsInterfaceTypeThread = MTRGeneralDiagnosticsInterfaceType 4
 
+instance ObjCArgument MTRGeneralDiagnosticsInterfaceType where
+  withObjCArg (MTRGeneralDiagnosticsInterfaceType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsInterfaceType where
+  type RawReturn MTRGeneralDiagnosticsInterfaceType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsInterfaceType x)
+  fromOwned x = pure (MTRGeneralDiagnosticsInterfaceType x)
+
 -- | @MTRGeneralDiagnosticsNetworkFault@
 newtype MTRGeneralDiagnosticsNetworkFault = MTRGeneralDiagnosticsNetworkFault CUChar
   deriving stock (Eq, Ord, Show)
@@ -19399,6 +21932,16 @@ pattern MTRGeneralDiagnosticsNetworkFaultNetworkJammed = MTRGeneralDiagnosticsNe
 pattern MTRGeneralDiagnosticsNetworkFaultConnectionFailed :: MTRGeneralDiagnosticsNetworkFault
 pattern MTRGeneralDiagnosticsNetworkFaultConnectionFailed = MTRGeneralDiagnosticsNetworkFault 3
 
+instance ObjCArgument MTRGeneralDiagnosticsNetworkFault where
+  withObjCArg (MTRGeneralDiagnosticsNetworkFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsNetworkFault where
+  type RawReturn MTRGeneralDiagnosticsNetworkFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsNetworkFault x)
+  fromOwned x = pure (MTRGeneralDiagnosticsNetworkFault x)
+
 -- | @MTRGeneralDiagnosticsNetworkFaultType@
 newtype MTRGeneralDiagnosticsNetworkFaultType = MTRGeneralDiagnosticsNetworkFaultType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19415,6 +21958,16 @@ pattern MTRGeneralDiagnosticsNetworkFaultTypeNetworkJammed = MTRGeneralDiagnosti
 
 pattern MTRGeneralDiagnosticsNetworkFaultTypeConnectionFailed :: MTRGeneralDiagnosticsNetworkFaultType
 pattern MTRGeneralDiagnosticsNetworkFaultTypeConnectionFailed = MTRGeneralDiagnosticsNetworkFaultType 3
+
+instance ObjCArgument MTRGeneralDiagnosticsNetworkFaultType where
+  withObjCArg (MTRGeneralDiagnosticsNetworkFaultType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsNetworkFaultType where
+  type RawReturn MTRGeneralDiagnosticsNetworkFaultType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsNetworkFaultType x)
+  fromOwned x = pure (MTRGeneralDiagnosticsNetworkFaultType x)
 
 -- | @MTRGeneralDiagnosticsRadioFault@
 newtype MTRGeneralDiagnosticsRadioFault = MTRGeneralDiagnosticsRadioFault CUChar
@@ -19442,6 +21995,16 @@ pattern MTRGeneralDiagnosticsRadioFaultBLEFault = MTRGeneralDiagnosticsRadioFaul
 pattern MTRGeneralDiagnosticsRadioFaultEthernetFault :: MTRGeneralDiagnosticsRadioFault
 pattern MTRGeneralDiagnosticsRadioFaultEthernetFault = MTRGeneralDiagnosticsRadioFault 6
 
+instance ObjCArgument MTRGeneralDiagnosticsRadioFault where
+  withObjCArg (MTRGeneralDiagnosticsRadioFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsRadioFault where
+  type RawReturn MTRGeneralDiagnosticsRadioFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsRadioFault x)
+  fromOwned x = pure (MTRGeneralDiagnosticsRadioFault x)
+
 -- | @MTRGeneralDiagnosticsRadioFaultType@
 newtype MTRGeneralDiagnosticsRadioFaultType = MTRGeneralDiagnosticsRadioFaultType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19468,6 +22031,16 @@ pattern MTRGeneralDiagnosticsRadioFaultTypeBLEFault = MTRGeneralDiagnosticsRadio
 pattern MTRGeneralDiagnosticsRadioFaultTypeEthernetFault :: MTRGeneralDiagnosticsRadioFaultType
 pattern MTRGeneralDiagnosticsRadioFaultTypeEthernetFault = MTRGeneralDiagnosticsRadioFaultType 6
 
+instance ObjCArgument MTRGeneralDiagnosticsRadioFaultType where
+  withObjCArg (MTRGeneralDiagnosticsRadioFaultType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGeneralDiagnosticsRadioFaultType where
+  type RawReturn MTRGeneralDiagnosticsRadioFaultType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGeneralDiagnosticsRadioFaultType x)
+  fromOwned x = pure (MTRGeneralDiagnosticsRadioFaultType x)
+
 -- | @MTRGroupKeyManagementFeature@ (bitmask)
 newtype MTRGroupKeyManagementFeature = MTRGroupKeyManagementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -19482,6 +22055,16 @@ instance Monoid MTRGroupKeyManagementFeature where
 pattern MTRGroupKeyManagementFeatureCacheAndSync :: MTRGroupKeyManagementFeature
 pattern MTRGroupKeyManagementFeatureCacheAndSync = MTRGroupKeyManagementFeature 1
 
+instance ObjCArgument MTRGroupKeyManagementFeature where
+  withObjCArg (MTRGroupKeyManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGroupKeyManagementFeature where
+  type RawReturn MTRGroupKeyManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupKeyManagementFeature x)
+  fromOwned x = pure (MTRGroupKeyManagementFeature x)
+
 -- | @MTRGroupKeyManagementGroupKeySecurityPolicy@
 newtype MTRGroupKeyManagementGroupKeySecurityPolicy = MTRGroupKeyManagementGroupKeySecurityPolicy CUChar
   deriving stock (Eq, Ord, Show)
@@ -19492,6 +22075,16 @@ pattern MTRGroupKeyManagementGroupKeySecurityPolicyTrustFirst = MTRGroupKeyManag
 
 pattern MTRGroupKeyManagementGroupKeySecurityPolicyCacheAndSync :: MTRGroupKeyManagementGroupKeySecurityPolicy
 pattern MTRGroupKeyManagementGroupKeySecurityPolicyCacheAndSync = MTRGroupKeyManagementGroupKeySecurityPolicy 1
+
+instance ObjCArgument MTRGroupKeyManagementGroupKeySecurityPolicy where
+  withObjCArg (MTRGroupKeyManagementGroupKeySecurityPolicy x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGroupKeyManagementGroupKeySecurityPolicy where
+  type RawReturn MTRGroupKeyManagementGroupKeySecurityPolicy = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupKeyManagementGroupKeySecurityPolicy x)
+  fromOwned x = pure (MTRGroupKeyManagementGroupKeySecurityPolicy x)
 
 -- | @MTRGroupcastFeature@ (bitmask)
 newtype MTRGroupcastFeature = MTRGroupcastFeature CUInt
@@ -19510,6 +22103,16 @@ pattern MTRGroupcastFeatureListener = MTRGroupcastFeature 1
 pattern MTRGroupcastFeatureSender :: MTRGroupcastFeature
 pattern MTRGroupcastFeatureSender = MTRGroupcastFeature 2
 
+instance ObjCArgument MTRGroupcastFeature where
+  withObjCArg (MTRGroupcastFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGroupcastFeature where
+  type RawReturn MTRGroupcastFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupcastFeature x)
+  fromOwned x = pure (MTRGroupcastFeature x)
+
 -- | @MTRGroupsFeature@ (bitmask)
 newtype MTRGroupsFeature = MTRGroupsFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -19523,6 +22126,16 @@ instance Monoid MTRGroupsFeature where
 
 pattern MTRGroupsFeatureGroupNames :: MTRGroupsFeature
 pattern MTRGroupsFeatureGroupNames = MTRGroupsFeature 1
+
+instance ObjCArgument MTRGroupsFeature where
+  withObjCArg (MTRGroupsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGroupsFeature where
+  type RawReturn MTRGroupsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupsFeature x)
+  fromOwned x = pure (MTRGroupsFeature x)
 
 -- | @MTRGroupsGroupClusterFeature@ (bitmask)
 newtype MTRGroupsGroupClusterFeature = MTRGroupsGroupClusterFeature CUInt
@@ -19538,6 +22151,16 @@ instance Monoid MTRGroupsGroupClusterFeature where
 pattern MTRGroupsGroupClusterFeatureGroupNames :: MTRGroupsGroupClusterFeature
 pattern MTRGroupsGroupClusterFeatureGroupNames = MTRGroupsGroupClusterFeature 1
 
+instance ObjCArgument MTRGroupsGroupClusterFeature where
+  withObjCArg (MTRGroupsGroupClusterFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRGroupsGroupClusterFeature where
+  type RawReturn MTRGroupsGroupClusterFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupsGroupClusterFeature x)
+  fromOwned x = pure (MTRGroupsGroupClusterFeature x)
+
 -- | @MTRGroupsNameSupportBitmap@ (bitmask)
 newtype MTRGroupsNameSupportBitmap = MTRGroupsNameSupportBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -19551,6 +22174,16 @@ instance Monoid MTRGroupsNameSupportBitmap where
 
 pattern MTRGroupsNameSupportBitmapGroupNames :: MTRGroupsNameSupportBitmap
 pattern MTRGroupsNameSupportBitmapGroupNames = MTRGroupsNameSupportBitmap 128
+
+instance ObjCArgument MTRGroupsNameSupportBitmap where
+  withObjCArg (MTRGroupsNameSupportBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRGroupsNameSupportBitmap where
+  type RawReturn MTRGroupsNameSupportBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRGroupsNameSupportBitmap x)
+  fromOwned x = pure (MTRGroupsNameSupportBitmap x)
 
 -- | @MTRHEPAFilterMonitoringChangeIndication@
 newtype MTRHEPAFilterMonitoringChangeIndication = MTRHEPAFilterMonitoringChangeIndication CUChar
@@ -19566,6 +22199,16 @@ pattern MTRHEPAFilterMonitoringChangeIndicationWarning = MTRHEPAFilterMonitoring
 pattern MTRHEPAFilterMonitoringChangeIndicationCritical :: MTRHEPAFilterMonitoringChangeIndication
 pattern MTRHEPAFilterMonitoringChangeIndicationCritical = MTRHEPAFilterMonitoringChangeIndication 2
 
+instance ObjCArgument MTRHEPAFilterMonitoringChangeIndication where
+  withObjCArg (MTRHEPAFilterMonitoringChangeIndication x) k = k (argCUChar x)
+
+instance ObjCReturn MTRHEPAFilterMonitoringChangeIndication where
+  type RawReturn MTRHEPAFilterMonitoringChangeIndication = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRHEPAFilterMonitoringChangeIndication x)
+  fromOwned x = pure (MTRHEPAFilterMonitoringChangeIndication x)
+
 -- | @MTRHEPAFilterMonitoringDegradationDirection@
 newtype MTRHEPAFilterMonitoringDegradationDirection = MTRHEPAFilterMonitoringDegradationDirection CUChar
   deriving stock (Eq, Ord, Show)
@@ -19576,6 +22219,16 @@ pattern MTRHEPAFilterMonitoringDegradationDirectionUp = MTRHEPAFilterMonitoringD
 
 pattern MTRHEPAFilterMonitoringDegradationDirectionDown :: MTRHEPAFilterMonitoringDegradationDirection
 pattern MTRHEPAFilterMonitoringDegradationDirectionDown = MTRHEPAFilterMonitoringDegradationDirection 1
+
+instance ObjCArgument MTRHEPAFilterMonitoringDegradationDirection where
+  withObjCArg (MTRHEPAFilterMonitoringDegradationDirection x) k = k (argCUChar x)
+
+instance ObjCReturn MTRHEPAFilterMonitoringDegradationDirection where
+  type RawReturn MTRHEPAFilterMonitoringDegradationDirection = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRHEPAFilterMonitoringDegradationDirection x)
+  fromOwned x = pure (MTRHEPAFilterMonitoringDegradationDirection x)
 
 -- | @MTRHEPAFilterMonitoringFeature@ (bitmask)
 newtype MTRHEPAFilterMonitoringFeature = MTRHEPAFilterMonitoringFeature CUInt
@@ -19597,6 +22250,16 @@ pattern MTRHEPAFilterMonitoringFeatureWarning = MTRHEPAFilterMonitoringFeature 2
 pattern MTRHEPAFilterMonitoringFeatureReplacementProductList :: MTRHEPAFilterMonitoringFeature
 pattern MTRHEPAFilterMonitoringFeatureReplacementProductList = MTRHEPAFilterMonitoringFeature 4
 
+instance ObjCArgument MTRHEPAFilterMonitoringFeature where
+  withObjCArg (MTRHEPAFilterMonitoringFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRHEPAFilterMonitoringFeature where
+  type RawReturn MTRHEPAFilterMonitoringFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRHEPAFilterMonitoringFeature x)
+  fromOwned x = pure (MTRHEPAFilterMonitoringFeature x)
+
 -- | @MTRHEPAFilterMonitoringProductIdentifierType@
 newtype MTRHEPAFilterMonitoringProductIdentifierType = MTRHEPAFilterMonitoringProductIdentifierType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19617,6 +22280,16 @@ pattern MTRHEPAFilterMonitoringProductIdentifierTypeGTIN14 = MTRHEPAFilterMonito
 pattern MTRHEPAFilterMonitoringProductIdentifierTypeOEM :: MTRHEPAFilterMonitoringProductIdentifierType
 pattern MTRHEPAFilterMonitoringProductIdentifierTypeOEM = MTRHEPAFilterMonitoringProductIdentifierType 4
 
+instance ObjCArgument MTRHEPAFilterMonitoringProductIdentifierType where
+  withObjCArg (MTRHEPAFilterMonitoringProductIdentifierType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRHEPAFilterMonitoringProductIdentifierType where
+  type RawReturn MTRHEPAFilterMonitoringProductIdentifierType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRHEPAFilterMonitoringProductIdentifierType x)
+  fromOwned x = pure (MTRHEPAFilterMonitoringProductIdentifierType x)
+
 -- | @MTRICDManagementClientType@
 newtype MTRICDManagementClientType = MTRICDManagementClientType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19627,6 +22300,16 @@ pattern MTRICDManagementClientTypePermanent = MTRICDManagementClientType 0
 
 pattern MTRICDManagementClientTypeEphemeral :: MTRICDManagementClientType
 pattern MTRICDManagementClientTypeEphemeral = MTRICDManagementClientType 1
+
+instance ObjCArgument MTRICDManagementClientType where
+  withObjCArg (MTRICDManagementClientType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRICDManagementClientType where
+  type RawReturn MTRICDManagementClientType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRICDManagementClientType x)
+  fromOwned x = pure (MTRICDManagementClientType x)
 
 -- | @MTRICDManagementFeature@ (bitmask)
 newtype MTRICDManagementFeature = MTRICDManagementFeature CUInt
@@ -19651,6 +22334,16 @@ pattern MTRICDManagementFeatureLongIdleTimeSupport = MTRICDManagementFeature 4
 pattern MTRICDManagementFeatureDynamicSitLitSupport :: MTRICDManagementFeature
 pattern MTRICDManagementFeatureDynamicSitLitSupport = MTRICDManagementFeature 8
 
+instance ObjCArgument MTRICDManagementFeature where
+  withObjCArg (MTRICDManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRICDManagementFeature where
+  type RawReturn MTRICDManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRICDManagementFeature x)
+  fromOwned x = pure (MTRICDManagementFeature x)
+
 -- | @MTRICDManagementOperatingMode@
 newtype MTRICDManagementOperatingMode = MTRICDManagementOperatingMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -19661,6 +22354,16 @@ pattern MTRICDManagementOperatingModeSIT = MTRICDManagementOperatingMode 0
 
 pattern MTRICDManagementOperatingModeLIT :: MTRICDManagementOperatingMode
 pattern MTRICDManagementOperatingModeLIT = MTRICDManagementOperatingMode 1
+
+instance ObjCArgument MTRICDManagementOperatingMode where
+  withObjCArg (MTRICDManagementOperatingMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRICDManagementOperatingMode where
+  type RawReturn MTRICDManagementOperatingMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRICDManagementOperatingMode x)
+  fromOwned x = pure (MTRICDManagementOperatingMode x)
 
 -- | @MTRICDManagementUserActiveModeTriggerBitmap@ (bitmask)
 newtype MTRICDManagementUserActiveModeTriggerBitmap = MTRICDManagementUserActiveModeTriggerBitmap CUInt
@@ -19724,6 +22427,16 @@ pattern MTRICDManagementUserActiveModeTriggerBitmapSetupButtonTimes = MTRICDMana
 pattern MTRICDManagementUserActiveModeTriggerBitmapAppDefinedButton :: MTRICDManagementUserActiveModeTriggerBitmap
 pattern MTRICDManagementUserActiveModeTriggerBitmapAppDefinedButton = MTRICDManagementUserActiveModeTriggerBitmap 65536
 
+instance ObjCArgument MTRICDManagementUserActiveModeTriggerBitmap where
+  withObjCArg (MTRICDManagementUserActiveModeTriggerBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRICDManagementUserActiveModeTriggerBitmap where
+  type RawReturn MTRICDManagementUserActiveModeTriggerBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRICDManagementUserActiveModeTriggerBitmap x)
+  fromOwned x = pure (MTRICDManagementUserActiveModeTriggerBitmap x)
+
 -- | @MTRIdentifyEffectIdentifier@
 newtype MTRIdentifyEffectIdentifier = MTRIdentifyEffectIdentifier CUChar
   deriving stock (Eq, Ord, Show)
@@ -19747,6 +22460,16 @@ pattern MTRIdentifyEffectIdentifierFinishEffect = MTRIdentifyEffectIdentifier 25
 pattern MTRIdentifyEffectIdentifierStopEffect :: MTRIdentifyEffectIdentifier
 pattern MTRIdentifyEffectIdentifierStopEffect = MTRIdentifyEffectIdentifier 255
 
+instance ObjCArgument MTRIdentifyEffectIdentifier where
+  withObjCArg (MTRIdentifyEffectIdentifier x) k = k (argCUChar x)
+
+instance ObjCReturn MTRIdentifyEffectIdentifier where
+  type RawReturn MTRIdentifyEffectIdentifier = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRIdentifyEffectIdentifier x)
+  fromOwned x = pure (MTRIdentifyEffectIdentifier x)
+
 -- | @MTRIdentifyEffectVariant@
 newtype MTRIdentifyEffectVariant = MTRIdentifyEffectVariant CUChar
   deriving stock (Eq, Ord, Show)
@@ -19754,6 +22477,16 @@ newtype MTRIdentifyEffectVariant = MTRIdentifyEffectVariant CUChar
 
 pattern MTRIdentifyEffectVariantDefault :: MTRIdentifyEffectVariant
 pattern MTRIdentifyEffectVariantDefault = MTRIdentifyEffectVariant 0
+
+instance ObjCArgument MTRIdentifyEffectVariant where
+  withObjCArg (MTRIdentifyEffectVariant x) k = k (argCUChar x)
+
+instance ObjCReturn MTRIdentifyEffectVariant where
+  type RawReturn MTRIdentifyEffectVariant = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRIdentifyEffectVariant x)
+  fromOwned x = pure (MTRIdentifyEffectVariant x)
 
 -- | @MTRIdentifyType@
 newtype MTRIdentifyType = MTRIdentifyType CUChar
@@ -19784,6 +22517,16 @@ pattern MTRIdentifyTypeDisplay = MTRIdentifyType 4
 pattern MTRIdentifyTypeActuator :: MTRIdentifyType
 pattern MTRIdentifyTypeActuator = MTRIdentifyType 5
 
+instance ObjCArgument MTRIdentifyType where
+  withObjCArg (MTRIdentifyType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRIdentifyType where
+  type RawReturn MTRIdentifyType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRIdentifyType x)
+  fromOwned x = pure (MTRIdentifyType x)
+
 -- | @MTRIlluminanceMeasurementLightSensorType@
 newtype MTRIlluminanceMeasurementLightSensorType = MTRIlluminanceMeasurementLightSensorType CUChar
   deriving stock (Eq, Ord, Show)
@@ -19794,6 +22537,16 @@ pattern MTRIlluminanceMeasurementLightSensorTypePhotodiode = MTRIlluminanceMeasu
 
 pattern MTRIlluminanceMeasurementLightSensorTypeCMOS :: MTRIlluminanceMeasurementLightSensorType
 pattern MTRIlluminanceMeasurementLightSensorTypeCMOS = MTRIlluminanceMeasurementLightSensorType 1
+
+instance ObjCArgument MTRIlluminanceMeasurementLightSensorType where
+  withObjCArg (MTRIlluminanceMeasurementLightSensorType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRIlluminanceMeasurementLightSensorType where
+  type RawReturn MTRIlluminanceMeasurementLightSensorType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRIlluminanceMeasurementLightSensorType x)
+  fromOwned x = pure (MTRIlluminanceMeasurementLightSensorType x)
 
 -- | MTRInteractionErrorDomain contains errors that represent a Matter StatusIB error.  These represent errors reported by the other side of a Matter interaction.
 --
@@ -19893,6 +22646,16 @@ pattern MTRInteractionErrorCodeDynamicConstraintError = MTRInteractionErrorCode 
 pattern MTRInteractionErrorCodeInvalidTransportType :: MTRInteractionErrorCode
 pattern MTRInteractionErrorCodeInvalidTransportType = MTRInteractionErrorCode 209
 
+instance ObjCArgument MTRInteractionErrorCode where
+  withObjCArg (MTRInteractionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MTRInteractionErrorCode where
+  type RawReturn MTRInteractionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRInteractionErrorCode x)
+  fromOwned x = pure (MTRInteractionErrorCode x)
+
 -- | @MTRJointFabricAdministratorICACResponseStatus@
 newtype MTRJointFabricAdministratorICACResponseStatus = MTRJointFabricAdministratorICACResponseStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -19906,6 +22669,16 @@ pattern MTRJointFabricAdministratorICACResponseStatusInvalidPublicKey = MTRJoint
 
 pattern MTRJointFabricAdministratorICACResponseStatusInvalidICAC :: MTRJointFabricAdministratorICACResponseStatus
 pattern MTRJointFabricAdministratorICACResponseStatusInvalidICAC = MTRJointFabricAdministratorICACResponseStatus 2
+
+instance ObjCArgument MTRJointFabricAdministratorICACResponseStatus where
+  withObjCArg (MTRJointFabricAdministratorICACResponseStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricAdministratorICACResponseStatus where
+  type RawReturn MTRJointFabricAdministratorICACResponseStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricAdministratorICACResponseStatus x)
+  fromOwned x = pure (MTRJointFabricAdministratorICACResponseStatus x)
 
 -- | @MTRJointFabricAdministratorStatusCode@
 newtype MTRJointFabricAdministratorStatusCode = MTRJointFabricAdministratorStatusCode CUChar
@@ -19927,6 +22700,16 @@ pattern MTRJointFabricAdministratorStatusCodeVIDNotVerified = MTRJointFabricAdmi
 pattern MTRJointFabricAdministratorStatusCodeInvalidAdministratorFabricIndex :: MTRJointFabricAdministratorStatusCode
 pattern MTRJointFabricAdministratorStatusCodeInvalidAdministratorFabricIndex = MTRJointFabricAdministratorStatusCode 6
 
+instance ObjCArgument MTRJointFabricAdministratorStatusCode where
+  withObjCArg (MTRJointFabricAdministratorStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricAdministratorStatusCode where
+  type RawReturn MTRJointFabricAdministratorStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricAdministratorStatusCode x)
+  fromOwned x = pure (MTRJointFabricAdministratorStatusCode x)
+
 -- | @MTRJointFabricAdministratorTransferAnchorResponseStatus@
 newtype MTRJointFabricAdministratorTransferAnchorResponseStatus = MTRJointFabricAdministratorTransferAnchorResponseStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -19941,6 +22724,16 @@ pattern MTRJointFabricAdministratorTransferAnchorResponseStatusTransferAnchorSta
 pattern MTRJointFabricAdministratorTransferAnchorResponseStatusTransferAnchorStatusNoUserConsent :: MTRJointFabricAdministratorTransferAnchorResponseStatus
 pattern MTRJointFabricAdministratorTransferAnchorResponseStatusTransferAnchorStatusNoUserConsent = MTRJointFabricAdministratorTransferAnchorResponseStatus 2
 
+instance ObjCArgument MTRJointFabricAdministratorTransferAnchorResponseStatus where
+  withObjCArg (MTRJointFabricAdministratorTransferAnchorResponseStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricAdministratorTransferAnchorResponseStatus where
+  type RawReturn MTRJointFabricAdministratorTransferAnchorResponseStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricAdministratorTransferAnchorResponseStatus x)
+  fromOwned x = pure (MTRJointFabricAdministratorTransferAnchorResponseStatus x)
+
 -- | @MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode@
 newtype MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode = MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -19954,6 +22747,16 @@ pattern MTRJointFabricDatastoreDatastoreAccessControlEntryAuthModeCASE = MTRJoin
 
 pattern MTRJointFabricDatastoreDatastoreAccessControlEntryAuthModeGroup :: MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode
 pattern MTRJointFabricDatastoreDatastoreAccessControlEntryAuthModeGroup = MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode 3
+
+instance ObjCArgument MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode where
+  withObjCArg (MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode where
+  type RawReturn MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode x)
+  fromOwned x = pure (MTRJointFabricDatastoreDatastoreAccessControlEntryAuthMode x)
 
 -- | @MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege@
 newtype MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege = MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege CUChar
@@ -19975,6 +22778,16 @@ pattern MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilegeManage = MTRJ
 pattern MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilegeAdminister :: MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege
 pattern MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilegeAdminister = MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege 5
 
+instance ObjCArgument MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege where
+  withObjCArg (MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege where
+  type RawReturn MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege x)
+  fromOwned x = pure (MTRJointFabricDatastoreDatastoreAccessControlEntryPrivilege x)
+
 -- | @MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy@
 newtype MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy = MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy CUChar
   deriving stock (Eq, Ord, Show)
@@ -19986,6 +22799,16 @@ pattern MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicyPerGroupID = MTRJ
 pattern MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicyAllNodes :: MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy
 pattern MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicyAllNodes = MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy 1
 
+instance ObjCArgument MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy where
+  withObjCArg (MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy where
+  type RawReturn MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy x)
+  fromOwned x = pure (MTRJointFabricDatastoreDatastoreGroupKeyMulticastPolicy x)
+
 -- | @MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy@
 newtype MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy = MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy CUChar
   deriving stock (Eq, Ord, Show)
@@ -19993,6 +22816,16 @@ newtype MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy = MTRJointFabricD
 
 pattern MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicyTrustFirst :: MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy
 pattern MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicyTrustFirst = MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy 0
+
+instance ObjCArgument MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy where
+  withObjCArg (MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy where
+  type RawReturn MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy x)
+  fromOwned x = pure (MTRJointFabricDatastoreDatastoreGroupKeySecurityPolicy x)
 
 -- | @MTRJointFabricDatastoreDatastoreState@
 newtype MTRJointFabricDatastoreDatastoreState = MTRJointFabricDatastoreDatastoreState CUChar
@@ -20010,6 +22843,16 @@ pattern MTRJointFabricDatastoreDatastoreStateDeletePending = MTRJointFabricDatas
 
 pattern MTRJointFabricDatastoreDatastoreStateCommitFailed :: MTRJointFabricDatastoreDatastoreState
 pattern MTRJointFabricDatastoreDatastoreStateCommitFailed = MTRJointFabricDatastoreDatastoreState 3
+
+instance ObjCArgument MTRJointFabricDatastoreDatastoreState where
+  withObjCArg (MTRJointFabricDatastoreDatastoreState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRJointFabricDatastoreDatastoreState where
+  type RawReturn MTRJointFabricDatastoreDatastoreState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRJointFabricDatastoreDatastoreState x)
+  fromOwned x = pure (MTRJointFabricDatastoreDatastoreState x)
 
 -- | @MTRKeypadInputCECKeyCode@
 newtype MTRKeypadInputCECKeyCode = MTRKeypadInputCECKeyCode CUChar
@@ -20274,6 +23117,16 @@ pattern MTRKeypadInputCECKeyCodeF5 = MTRKeypadInputCECKeyCode 117
 pattern MTRKeypadInputCECKeyCodeData :: MTRKeypadInputCECKeyCode
 pattern MTRKeypadInputCECKeyCodeData = MTRKeypadInputCECKeyCode 118
 
+instance ObjCArgument MTRKeypadInputCECKeyCode where
+  withObjCArg (MTRKeypadInputCECKeyCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRKeypadInputCECKeyCode where
+  type RawReturn MTRKeypadInputCECKeyCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRKeypadInputCECKeyCode x)
+  fromOwned x = pure (MTRKeypadInputCECKeyCode x)
+
 -- | @MTRKeypadInputCecKeyCode@
 newtype MTRKeypadInputCecKeyCode = MTRKeypadInputCecKeyCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -20537,6 +23390,16 @@ pattern MTRKeypadInputCecKeyCodeF5 = MTRKeypadInputCecKeyCode 117
 pattern MTRKeypadInputCecKeyCodeData :: MTRKeypadInputCecKeyCode
 pattern MTRKeypadInputCecKeyCodeData = MTRKeypadInputCecKeyCode 118
 
+instance ObjCArgument MTRKeypadInputCecKeyCode where
+  withObjCArg (MTRKeypadInputCecKeyCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRKeypadInputCecKeyCode where
+  type RawReturn MTRKeypadInputCecKeyCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRKeypadInputCecKeyCode x)
+  fromOwned x = pure (MTRKeypadInputCecKeyCode x)
+
 -- | @MTRKeypadInputFeature@ (bitmask)
 newtype MTRKeypadInputFeature = MTRKeypadInputFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20557,6 +23420,16 @@ pattern MTRKeypadInputFeatureLocationKeys = MTRKeypadInputFeature 2
 pattern MTRKeypadInputFeatureNumberKeys :: MTRKeypadInputFeature
 pattern MTRKeypadInputFeatureNumberKeys = MTRKeypadInputFeature 4
 
+instance ObjCArgument MTRKeypadInputFeature where
+  withObjCArg (MTRKeypadInputFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRKeypadInputFeature where
+  type RawReturn MTRKeypadInputFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRKeypadInputFeature x)
+  fromOwned x = pure (MTRKeypadInputFeature x)
+
 -- | @MTRKeypadInputStatus@
 newtype MTRKeypadInputStatus = MTRKeypadInputStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -20570,6 +23443,16 @@ pattern MTRKeypadInputStatusUnsupportedKey = MTRKeypadInputStatus 1
 
 pattern MTRKeypadInputStatusInvalidKeyInCurrentState :: MTRKeypadInputStatus
 pattern MTRKeypadInputStatusInvalidKeyInCurrentState = MTRKeypadInputStatus 2
+
+instance ObjCArgument MTRKeypadInputStatus where
+  withObjCArg (MTRKeypadInputStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRKeypadInputStatus where
+  type RawReturn MTRKeypadInputStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRKeypadInputStatus x)
+  fromOwned x = pure (MTRKeypadInputStatus x)
 
 -- | @MTRLaundryDryerControlsDrynessLevel@
 newtype MTRLaundryDryerControlsDrynessLevel = MTRLaundryDryerControlsDrynessLevel CUChar
@@ -20588,6 +23471,16 @@ pattern MTRLaundryDryerControlsDrynessLevelExtra = MTRLaundryDryerControlsDrynes
 pattern MTRLaundryDryerControlsDrynessLevelMax :: MTRLaundryDryerControlsDrynessLevel
 pattern MTRLaundryDryerControlsDrynessLevelMax = MTRLaundryDryerControlsDrynessLevel 3
 
+instance ObjCArgument MTRLaundryDryerControlsDrynessLevel where
+  withObjCArg (MTRLaundryDryerControlsDrynessLevel x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLaundryDryerControlsDrynessLevel where
+  type RawReturn MTRLaundryDryerControlsDrynessLevel = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLaundryDryerControlsDrynessLevel x)
+  fromOwned x = pure (MTRLaundryDryerControlsDrynessLevel x)
+
 -- | @MTRLaundryWasherControlsFeature@ (bitmask)
 newtype MTRLaundryWasherControlsFeature = MTRLaundryWasherControlsFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20605,6 +23498,16 @@ pattern MTRLaundryWasherControlsFeatureSpin = MTRLaundryWasherControlsFeature 1
 pattern MTRLaundryWasherControlsFeatureRinse :: MTRLaundryWasherControlsFeature
 pattern MTRLaundryWasherControlsFeatureRinse = MTRLaundryWasherControlsFeature 2
 
+instance ObjCArgument MTRLaundryWasherControlsFeature where
+  withObjCArg (MTRLaundryWasherControlsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRLaundryWasherControlsFeature where
+  type RawReturn MTRLaundryWasherControlsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLaundryWasherControlsFeature x)
+  fromOwned x = pure (MTRLaundryWasherControlsFeature x)
+
 -- | @MTRLaundryWasherControlsNumberOfRinses@
 newtype MTRLaundryWasherControlsNumberOfRinses = MTRLaundryWasherControlsNumberOfRinses CUChar
   deriving stock (Eq, Ord, Show)
@@ -20621,6 +23524,16 @@ pattern MTRLaundryWasherControlsNumberOfRinsesExtra = MTRLaundryWasherControlsNu
 
 pattern MTRLaundryWasherControlsNumberOfRinsesMax :: MTRLaundryWasherControlsNumberOfRinses
 pattern MTRLaundryWasherControlsNumberOfRinsesMax = MTRLaundryWasherControlsNumberOfRinses 3
+
+instance ObjCArgument MTRLaundryWasherControlsNumberOfRinses where
+  withObjCArg (MTRLaundryWasherControlsNumberOfRinses x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLaundryWasherControlsNumberOfRinses where
+  type RawReturn MTRLaundryWasherControlsNumberOfRinses = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLaundryWasherControlsNumberOfRinses x)
+  fromOwned x = pure (MTRLaundryWasherControlsNumberOfRinses x)
 
 -- | @MTRLaundryWasherModeModeTag@
 newtype MTRLaundryWasherModeModeTag = MTRLaundryWasherModeModeTag CUShort
@@ -20669,6 +23582,16 @@ pattern MTRLaundryWasherModeModeTagHeavy = MTRLaundryWasherModeModeTag 16386
 pattern MTRLaundryWasherModeModeTagWhites :: MTRLaundryWasherModeModeTag
 pattern MTRLaundryWasherModeModeTagWhites = MTRLaundryWasherModeModeTag 16387
 
+instance ObjCArgument MTRLaundryWasherModeModeTag where
+  withObjCArg (MTRLaundryWasherModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRLaundryWasherModeModeTag where
+  type RawReturn MTRLaundryWasherModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLaundryWasherModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRLaundryWasherModeModeTag (fromIntegral x))
+
 -- | @MTRLevelControlFeature@ (bitmask)
 newtype MTRLevelControlFeature = MTRLevelControlFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20689,6 +23612,16 @@ pattern MTRLevelControlFeatureLighting = MTRLevelControlFeature 2
 pattern MTRLevelControlFeatureFrequency :: MTRLevelControlFeature
 pattern MTRLevelControlFeatureFrequency = MTRLevelControlFeature 4
 
+instance ObjCArgument MTRLevelControlFeature where
+  withObjCArg (MTRLevelControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRLevelControlFeature where
+  type RawReturn MTRLevelControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLevelControlFeature x)
+  fromOwned x = pure (MTRLevelControlFeature x)
+
 -- | @MTRLevelControlMoveMode@
 newtype MTRLevelControlMoveMode = MTRLevelControlMoveMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -20699,6 +23632,16 @@ pattern MTRLevelControlMoveModeUp = MTRLevelControlMoveMode 0
 
 pattern MTRLevelControlMoveModeDown :: MTRLevelControlMoveMode
 pattern MTRLevelControlMoveModeDown = MTRLevelControlMoveMode 1
+
+instance ObjCArgument MTRLevelControlMoveMode where
+  withObjCArg (MTRLevelControlMoveMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLevelControlMoveMode where
+  type RawReturn MTRLevelControlMoveMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLevelControlMoveMode x)
+  fromOwned x = pure (MTRLevelControlMoveMode x)
 
 -- | @MTRLevelControlOptions@ (bitmask)
 newtype MTRLevelControlOptions = MTRLevelControlOptions CUChar
@@ -20717,6 +23660,16 @@ pattern MTRLevelControlOptionsExecuteIfOff = MTRLevelControlOptions 1
 pattern MTRLevelControlOptionsCoupleColorTempToLevel :: MTRLevelControlOptions
 pattern MTRLevelControlOptionsCoupleColorTempToLevel = MTRLevelControlOptions 2
 
+instance ObjCArgument MTRLevelControlOptions where
+  withObjCArg (MTRLevelControlOptions x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLevelControlOptions where
+  type RawReturn MTRLevelControlOptions = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLevelControlOptions x)
+  fromOwned x = pure (MTRLevelControlOptions x)
+
 -- | @MTRLevelControlOptionsBitmap@ (bitmask)
 newtype MTRLevelControlOptionsBitmap = MTRLevelControlOptionsBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -20734,6 +23687,16 @@ pattern MTRLevelControlOptionsBitmapExecuteIfOff = MTRLevelControlOptionsBitmap 
 pattern MTRLevelControlOptionsBitmapCoupleColorTempToLevel :: MTRLevelControlOptionsBitmap
 pattern MTRLevelControlOptionsBitmapCoupleColorTempToLevel = MTRLevelControlOptionsBitmap 2
 
+instance ObjCArgument MTRLevelControlOptionsBitmap where
+  withObjCArg (MTRLevelControlOptionsBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLevelControlOptionsBitmap where
+  type RawReturn MTRLevelControlOptionsBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLevelControlOptionsBitmap x)
+  fromOwned x = pure (MTRLevelControlOptionsBitmap x)
+
 -- | @MTRLevelControlStepMode@
 newtype MTRLevelControlStepMode = MTRLevelControlStepMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -20744,6 +23707,16 @@ pattern MTRLevelControlStepModeUp = MTRLevelControlStepMode 0
 
 pattern MTRLevelControlStepModeDown :: MTRLevelControlStepMode
 pattern MTRLevelControlStepModeDown = MTRLevelControlStepMode 1
+
+instance ObjCArgument MTRLevelControlStepMode where
+  withObjCArg (MTRLevelControlStepMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRLevelControlStepMode where
+  type RawReturn MTRLevelControlStepMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLevelControlStepMode x)
+  fromOwned x = pure (MTRLevelControlStepMode x)
 
 -- | @MTRLogType@
 newtype MTRLogType = MTRLogType CLong
@@ -20759,6 +23732,16 @@ pattern MTRLogTypeProgress = MTRLogType 2
 pattern MTRLogTypeDetail :: MTRLogType
 pattern MTRLogTypeDetail = MTRLogType 3
 
+instance ObjCArgument MTRLogType where
+  withObjCArg (MTRLogType x) k = k (argCLong x)
+
+instance ObjCReturn MTRLogType where
+  type RawReturn MTRLogType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRLogType x)
+  fromOwned x = pure (MTRLogType x)
+
 -- | @MTRMediaInputFeature@ (bitmask)
 newtype MTRMediaInputFeature = MTRMediaInputFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20772,6 +23755,16 @@ instance Monoid MTRMediaInputFeature where
 
 pattern MTRMediaInputFeatureNameUpdates :: MTRMediaInputFeature
 pattern MTRMediaInputFeatureNameUpdates = MTRMediaInputFeature 1
+
+instance ObjCArgument MTRMediaInputFeature where
+  withObjCArg (MTRMediaInputFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRMediaInputFeature where
+  type RawReturn MTRMediaInputFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaInputFeature x)
+  fromOwned x = pure (MTRMediaInputFeature x)
 
 -- | @MTRMediaInputInputType@
 newtype MTRMediaInputInputType = MTRMediaInputInputType CUChar
@@ -20822,6 +23815,16 @@ pattern MTRMediaInputInputTypeUsb = MTRMediaInputInputType 10
 
 pattern MTRMediaInputInputTypeOther :: MTRMediaInputInputType
 pattern MTRMediaInputInputTypeOther = MTRMediaInputInputType 11
+
+instance ObjCArgument MTRMediaInputInputType where
+  withObjCArg (MTRMediaInputInputType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMediaInputInputType where
+  type RawReturn MTRMediaInputInputType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaInputInputType x)
+  fromOwned x = pure (MTRMediaInputInputType x)
 
 -- | @MTRMediaPlaybackCharacteristic@
 newtype MTRMediaPlaybackCharacteristic = MTRMediaPlaybackCharacteristic CUChar
@@ -20882,6 +23885,16 @@ pattern MTRMediaPlaybackCharacteristicEmergency = MTRMediaPlaybackCharacteristic
 pattern MTRMediaPlaybackCharacteristicKaraoke :: MTRMediaPlaybackCharacteristic
 pattern MTRMediaPlaybackCharacteristicKaraoke = MTRMediaPlaybackCharacteristic 17
 
+instance ObjCArgument MTRMediaPlaybackCharacteristic where
+  withObjCArg (MTRMediaPlaybackCharacteristic x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMediaPlaybackCharacteristic where
+  type RawReturn MTRMediaPlaybackCharacteristic = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaPlaybackCharacteristic x)
+  fromOwned x = pure (MTRMediaPlaybackCharacteristic x)
+
 -- | @MTRMediaPlaybackFeature@ (bitmask)
 newtype MTRMediaPlaybackFeature = MTRMediaPlaybackFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20908,6 +23921,16 @@ pattern MTRMediaPlaybackFeatureAudioTracks = MTRMediaPlaybackFeature 8
 pattern MTRMediaPlaybackFeatureAudioAdvance :: MTRMediaPlaybackFeature
 pattern MTRMediaPlaybackFeatureAudioAdvance = MTRMediaPlaybackFeature 16
 
+instance ObjCArgument MTRMediaPlaybackFeature where
+  withObjCArg (MTRMediaPlaybackFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRMediaPlaybackFeature where
+  type RawReturn MTRMediaPlaybackFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaPlaybackFeature x)
+  fromOwned x = pure (MTRMediaPlaybackFeature x)
+
 -- | @MTRMediaPlaybackPlaybackState@
 newtype MTRMediaPlaybackPlaybackState = MTRMediaPlaybackPlaybackState CUChar
   deriving stock (Eq, Ord, Show)
@@ -20924,6 +23947,16 @@ pattern MTRMediaPlaybackPlaybackStateNotPlaying = MTRMediaPlaybackPlaybackState 
 
 pattern MTRMediaPlaybackPlaybackStateBuffering :: MTRMediaPlaybackPlaybackState
 pattern MTRMediaPlaybackPlaybackStateBuffering = MTRMediaPlaybackPlaybackState 3
+
+instance ObjCArgument MTRMediaPlaybackPlaybackState where
+  withObjCArg (MTRMediaPlaybackPlaybackState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMediaPlaybackPlaybackState where
+  type RawReturn MTRMediaPlaybackPlaybackState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaPlaybackPlaybackState x)
+  fromOwned x = pure (MTRMediaPlaybackPlaybackState x)
 
 -- | @MTRMediaPlaybackStatus@
 newtype MTRMediaPlaybackStatus = MTRMediaPlaybackStatus CUChar
@@ -20948,6 +23981,16 @@ pattern MTRMediaPlaybackStatusSpeedOutOfRange = MTRMediaPlaybackStatus 4
 pattern MTRMediaPlaybackStatusSeekOutOfRange :: MTRMediaPlaybackStatus
 pattern MTRMediaPlaybackStatusSeekOutOfRange = MTRMediaPlaybackStatus 5
 
+instance ObjCArgument MTRMediaPlaybackStatus where
+  withObjCArg (MTRMediaPlaybackStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMediaPlaybackStatus where
+  type RawReturn MTRMediaPlaybackStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMediaPlaybackStatus x)
+  fromOwned x = pure (MTRMediaPlaybackStatus x)
+
 -- | @MTRMessagesFeature@ (bitmask)
 newtype MTRMessagesFeature = MTRMessagesFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -20971,6 +24014,16 @@ pattern MTRMessagesFeatureConfirmationReply = MTRMessagesFeature 4
 pattern MTRMessagesFeatureProtectedMessages :: MTRMessagesFeature
 pattern MTRMessagesFeatureProtectedMessages = MTRMessagesFeature 8
 
+instance ObjCArgument MTRMessagesFeature where
+  withObjCArg (MTRMessagesFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRMessagesFeature where
+  type RawReturn MTRMessagesFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMessagesFeature x)
+  fromOwned x = pure (MTRMessagesFeature x)
+
 -- | @MTRMessagesFutureMessagePreference@
 newtype MTRMessagesFutureMessagePreference = MTRMessagesFutureMessagePreference CUChar
   deriving stock (Eq, Ord, Show)
@@ -20990,6 +24043,16 @@ pattern MTRMessagesFutureMessagePreferenceDisallowed = MTRMessagesFutureMessageP
 
 pattern MTRMessagesFutureMessagePreferenceBanned :: MTRMessagesFutureMessagePreference
 pattern MTRMessagesFutureMessagePreferenceBanned = MTRMessagesFutureMessagePreference 4
+
+instance ObjCArgument MTRMessagesFutureMessagePreference where
+  withObjCArg (MTRMessagesFutureMessagePreference x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMessagesFutureMessagePreference where
+  type RawReturn MTRMessagesFutureMessagePreference = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMessagesFutureMessagePreference x)
+  fromOwned x = pure (MTRMessagesFutureMessagePreference x)
 
 -- | @MTRMessagesMessageControlBitmap@ (bitmask)
 newtype MTRMessagesMessageControlBitmap = MTRMessagesMessageControlBitmap CUChar
@@ -21017,6 +24080,16 @@ pattern MTRMessagesMessageControlBitmapMessageConfirmed = MTRMessagesMessageCont
 pattern MTRMessagesMessageControlBitmapMessageProtected :: MTRMessagesMessageControlBitmap
 pattern MTRMessagesMessageControlBitmapMessageProtected = MTRMessagesMessageControlBitmap 16
 
+instance ObjCArgument MTRMessagesMessageControlBitmap where
+  withObjCArg (MTRMessagesMessageControlBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMessagesMessageControlBitmap where
+  type RawReturn MTRMessagesMessageControlBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMessagesMessageControlBitmap x)
+  fromOwned x = pure (MTRMessagesMessageControlBitmap x)
+
 -- | @MTRMessagesMessagePriority@
 newtype MTRMessagesMessagePriority = MTRMessagesMessagePriority CUChar
   deriving stock (Eq, Ord, Show)
@@ -21034,6 +24107,16 @@ pattern MTRMessagesMessagePriorityHigh = MTRMessagesMessagePriority 2
 pattern MTRMessagesMessagePriorityCritical :: MTRMessagesMessagePriority
 pattern MTRMessagesMessagePriorityCritical = MTRMessagesMessagePriority 3
 
+instance ObjCArgument MTRMessagesMessagePriority where
+  withObjCArg (MTRMessagesMessagePriority x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMessagesMessagePriority where
+  type RawReturn MTRMessagesMessagePriority = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMessagesMessagePriority x)
+  fromOwned x = pure (MTRMessagesMessagePriority x)
+
 -- | @MTRMeterIdentificationFeature@ (bitmask)
 newtype MTRMeterIdentificationFeature = MTRMeterIdentificationFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -21048,6 +24131,16 @@ instance Monoid MTRMeterIdentificationFeature where
 pattern MTRMeterIdentificationFeaturePowerThreshold :: MTRMeterIdentificationFeature
 pattern MTRMeterIdentificationFeaturePowerThreshold = MTRMeterIdentificationFeature 1
 
+instance ObjCArgument MTRMeterIdentificationFeature where
+  withObjCArg (MTRMeterIdentificationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRMeterIdentificationFeature where
+  type RawReturn MTRMeterIdentificationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMeterIdentificationFeature x)
+  fromOwned x = pure (MTRMeterIdentificationFeature x)
+
 -- | @MTRMeterIdentificationMeterType@
 newtype MTRMeterIdentificationMeterType = MTRMeterIdentificationMeterType CUChar
   deriving stock (Eq, Ord, Show)
@@ -21061,6 +24154,16 @@ pattern MTRMeterIdentificationMeterTypePrivate = MTRMeterIdentificationMeterType
 
 pattern MTRMeterIdentificationMeterTypeGeneric :: MTRMeterIdentificationMeterType
 pattern MTRMeterIdentificationMeterTypeGeneric = MTRMeterIdentificationMeterType 2
+
+instance ObjCArgument MTRMeterIdentificationMeterType where
+  withObjCArg (MTRMeterIdentificationMeterType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRMeterIdentificationMeterType where
+  type RawReturn MTRMeterIdentificationMeterType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMeterIdentificationMeterType x)
+  fromOwned x = pure (MTRMeterIdentificationMeterType x)
 
 -- | @MTRMicrowaveOvenControlFeature@ (bitmask)
 newtype MTRMicrowaveOvenControlFeature = MTRMicrowaveOvenControlFeature CUInt
@@ -21081,6 +24184,16 @@ pattern MTRMicrowaveOvenControlFeaturePowerInWatts = MTRMicrowaveOvenControlFeat
 
 pattern MTRMicrowaveOvenControlFeaturePowerNumberLimits :: MTRMicrowaveOvenControlFeature
 pattern MTRMicrowaveOvenControlFeaturePowerNumberLimits = MTRMicrowaveOvenControlFeature 4
+
+instance ObjCArgument MTRMicrowaveOvenControlFeature where
+  withObjCArg (MTRMicrowaveOvenControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRMicrowaveOvenControlFeature where
+  type RawReturn MTRMicrowaveOvenControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMicrowaveOvenControlFeature x)
+  fromOwned x = pure (MTRMicrowaveOvenControlFeature x)
 
 -- | @MTRMicrowaveOvenModeModeTag@
 newtype MTRMicrowaveOvenModeModeTag = MTRMicrowaveOvenModeModeTag CUShort
@@ -21123,6 +24236,16 @@ pattern MTRMicrowaveOvenModeModeTagNormal = MTRMicrowaveOvenModeModeTag 16384
 pattern MTRMicrowaveOvenModeModeTagDefrost :: MTRMicrowaveOvenModeModeTag
 pattern MTRMicrowaveOvenModeModeTagDefrost = MTRMicrowaveOvenModeModeTag 16385
 
+instance ObjCArgument MTRMicrowaveOvenModeModeTag where
+  withObjCArg (MTRMicrowaveOvenModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRMicrowaveOvenModeModeTag where
+  type RawReturn MTRMicrowaveOvenModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRMicrowaveOvenModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRMicrowaveOvenModeModeTag (fromIntegral x))
+
 -- | @MTRModeSelectFeature@ (bitmask)
 newtype MTRModeSelectFeature = MTRModeSelectFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -21139,6 +24262,16 @@ pattern MTRModeSelectFeatureOnOff = MTRModeSelectFeature 1
 
 pattern MTRModeSelectFeatureDEPONOFF :: MTRModeSelectFeature
 pattern MTRModeSelectFeatureDEPONOFF = MTRModeSelectFeature 1
+
+instance ObjCArgument MTRModeSelectFeature where
+  withObjCArg (MTRModeSelectFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRModeSelectFeature where
+  type RawReturn MTRModeSelectFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRModeSelectFeature x)
+  fromOwned x = pure (MTRModeSelectFeature x)
 
 -- | @MTRNetworkCommissioningFeature@ (bitmask)
 newtype MTRNetworkCommissioningFeature = MTRNetworkCommissioningFeature CUInt
@@ -21162,6 +24295,16 @@ pattern MTRNetworkCommissioningFeatureEthernetNetworkInterface = MTRNetworkCommi
 
 pattern MTRNetworkCommissioningFeaturePerDeviceCredentials :: MTRNetworkCommissioningFeature
 pattern MTRNetworkCommissioningFeaturePerDeviceCredentials = MTRNetworkCommissioningFeature 8
+
+instance ObjCArgument MTRNetworkCommissioningFeature where
+  withObjCArg (MTRNetworkCommissioningFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRNetworkCommissioningFeature where
+  type RawReturn MTRNetworkCommissioningFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningFeature x)
+  fromOwned x = pure (MTRNetworkCommissioningFeature x)
 
 -- | @MTRNetworkCommissioningStatus@
 newtype MTRNetworkCommissioningStatus = MTRNetworkCommissioningStatus CUChar
@@ -21207,6 +24350,16 @@ pattern MTRNetworkCommissioningStatusIPBindFailed = MTRNetworkCommissioningStatu
 pattern MTRNetworkCommissioningStatusUnknownError :: MTRNetworkCommissioningStatus
 pattern MTRNetworkCommissioningStatusUnknownError = MTRNetworkCommissioningStatus 12
 
+instance ObjCArgument MTRNetworkCommissioningStatus where
+  withObjCArg (MTRNetworkCommissioningStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNetworkCommissioningStatus where
+  type RawReturn MTRNetworkCommissioningStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningStatus x)
+  fromOwned x = pure (MTRNetworkCommissioningStatus x)
+
 -- | @MTRNetworkCommissioningThreadCapabilitiesBitmap@ (bitmask)
 newtype MTRNetworkCommissioningThreadCapabilitiesBitmap = MTRNetworkCommissioningThreadCapabilitiesBitmap CUShort
   deriving stock (Eq, Ord, Show)
@@ -21233,6 +24386,16 @@ pattern MTRNetworkCommissioningThreadCapabilitiesBitmapIsFullThreadDevice = MTRN
 pattern MTRNetworkCommissioningThreadCapabilitiesBitmapIsSynchronizedSleepyEndDeviceCapable :: MTRNetworkCommissioningThreadCapabilitiesBitmap
 pattern MTRNetworkCommissioningThreadCapabilitiesBitmapIsSynchronizedSleepyEndDeviceCapable = MTRNetworkCommissioningThreadCapabilitiesBitmap 16
 
+instance ObjCArgument MTRNetworkCommissioningThreadCapabilitiesBitmap where
+  withObjCArg (MTRNetworkCommissioningThreadCapabilitiesBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRNetworkCommissioningThreadCapabilitiesBitmap where
+  type RawReturn MTRNetworkCommissioningThreadCapabilitiesBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningThreadCapabilitiesBitmap (fromIntegral x))
+  fromOwned x = pure (MTRNetworkCommissioningThreadCapabilitiesBitmap (fromIntegral x))
+
 -- | @MTRNetworkCommissioningWiFiBand@
 newtype MTRNetworkCommissioningWiFiBand = MTRNetworkCommissioningWiFiBand CUChar
   deriving stock (Eq, Ord, Show)
@@ -21255,6 +24418,16 @@ pattern MTRNetworkCommissioningWiFiBand60G = MTRNetworkCommissioningWiFiBand 4
 
 pattern MTRNetworkCommissioningWiFiBand1G :: MTRNetworkCommissioningWiFiBand
 pattern MTRNetworkCommissioningWiFiBand1G = MTRNetworkCommissioningWiFiBand 5
+
+instance ObjCArgument MTRNetworkCommissioningWiFiBand where
+  withObjCArg (MTRNetworkCommissioningWiFiBand x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNetworkCommissioningWiFiBand where
+  type RawReturn MTRNetworkCommissioningWiFiBand = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningWiFiBand x)
+  fromOwned x = pure (MTRNetworkCommissioningWiFiBand x)
 
 -- | @MTRNetworkCommissioningWiFiSecurity@ (bitmask)
 newtype MTRNetworkCommissioningWiFiSecurity = MTRNetworkCommissioningWiFiSecurity CUChar
@@ -21294,6 +24467,16 @@ pattern MTRNetworkCommissioningWiFiSecurityWPA3Personal = MTRNetworkCommissionin
 pattern MTRNetworkCommissioningWiFiSecurityWpa3Personal :: MTRNetworkCommissioningWiFiSecurity
 pattern MTRNetworkCommissioningWiFiSecurityWpa3Personal = MTRNetworkCommissioningWiFiSecurity 16
 
+instance ObjCArgument MTRNetworkCommissioningWiFiSecurity where
+  withObjCArg (MTRNetworkCommissioningWiFiSecurity x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNetworkCommissioningWiFiSecurity where
+  type RawReturn MTRNetworkCommissioningWiFiSecurity = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningWiFiSecurity x)
+  fromOwned x = pure (MTRNetworkCommissioningWiFiSecurity x)
+
 -- | @MTRNetworkCommissioningWiFiSecurityBitmap@ (bitmask)
 newtype MTRNetworkCommissioningWiFiSecurityBitmap = MTRNetworkCommissioningWiFiSecurityBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -21322,6 +24505,16 @@ pattern MTRNetworkCommissioningWiFiSecurityBitmapWPA3Personal = MTRNetworkCommis
 
 pattern MTRNetworkCommissioningWiFiSecurityBitmapWPA3MatterPDC :: MTRNetworkCommissioningWiFiSecurityBitmap
 pattern MTRNetworkCommissioningWiFiSecurityBitmapWPA3MatterPDC = MTRNetworkCommissioningWiFiSecurityBitmap 32
+
+instance ObjCArgument MTRNetworkCommissioningWiFiSecurityBitmap where
+  withObjCArg (MTRNetworkCommissioningWiFiSecurityBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNetworkCommissioningWiFiSecurityBitmap where
+  type RawReturn MTRNetworkCommissioningWiFiSecurityBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNetworkCommissioningWiFiSecurityBitmap x)
+  fromOwned x = pure (MTRNetworkCommissioningWiFiSecurityBitmap x)
 
 -- | @MTRNitrogenDioxideConcentrationMeasurementFeature@ (bitmask)
 newtype MTRNitrogenDioxideConcentrationMeasurementFeature = MTRNitrogenDioxideConcentrationMeasurementFeature CUInt
@@ -21352,6 +24545,16 @@ pattern MTRNitrogenDioxideConcentrationMeasurementFeaturePeakMeasurement = MTRNi
 pattern MTRNitrogenDioxideConcentrationMeasurementFeatureAverageMeasurement :: MTRNitrogenDioxideConcentrationMeasurementFeature
 pattern MTRNitrogenDioxideConcentrationMeasurementFeatureAverageMeasurement = MTRNitrogenDioxideConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRNitrogenDioxideConcentrationMeasurementFeature where
+  withObjCArg (MTRNitrogenDioxideConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRNitrogenDioxideConcentrationMeasurementFeature where
+  type RawReturn MTRNitrogenDioxideConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNitrogenDioxideConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRNitrogenDioxideConcentrationMeasurementFeature x)
+
 -- | @MTRNitrogenDioxideConcentrationMeasurementLevelValue@
 newtype MTRNitrogenDioxideConcentrationMeasurementLevelValue = MTRNitrogenDioxideConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -21372,6 +24575,16 @@ pattern MTRNitrogenDioxideConcentrationMeasurementLevelValueHigh = MTRNitrogenDi
 pattern MTRNitrogenDioxideConcentrationMeasurementLevelValueCritical :: MTRNitrogenDioxideConcentrationMeasurementLevelValue
 pattern MTRNitrogenDioxideConcentrationMeasurementLevelValueCritical = MTRNitrogenDioxideConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRNitrogenDioxideConcentrationMeasurementLevelValue where
+  withObjCArg (MTRNitrogenDioxideConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNitrogenDioxideConcentrationMeasurementLevelValue where
+  type RawReturn MTRNitrogenDioxideConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNitrogenDioxideConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRNitrogenDioxideConcentrationMeasurementLevelValue x)
+
 -- | @MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium@
 newtype MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium = MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -21385,6 +24598,16 @@ pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementMediumWater = MTRNi
 
 pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementMediumSoil :: MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium
 pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementMediumSoil = MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRNitrogenDioxideConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit@
 newtype MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit = MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit CUChar
@@ -21414,6 +24637,16 @@ pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementUnitPM3 = MTRNitrog
 
 pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementUnitBQM3 :: MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit
 pattern MTRNitrogenDioxideConcentrationMeasurementMeasurementUnitBQM3 = MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit 7
+
+instance ObjCArgument MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRNitrogenDioxideConcentrationMeasurementMeasurementUnit x)
 
 -- | A representation of an OTA image header as defined in the Matter specification's "Over-the-Air (OTA) Software Update File Format" section.
 -- | @MTROTAImageDigestType@
@@ -21457,6 +24690,16 @@ pattern MTROTAImageDigestTypeSha3_384 = MTROTAImageDigestType 11
 pattern MTROTAImageDigestTypeSha3_512 :: MTROTAImageDigestType
 pattern MTROTAImageDigestTypeSha3_512 = MTROTAImageDigestType 12
 
+instance ObjCArgument MTROTAImageDigestType where
+  withObjCArg (MTROTAImageDigestType x) k = k (argCULong x)
+
+instance ObjCReturn MTROTAImageDigestType where
+  type RawReturn MTROTAImageDigestType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTAImageDigestType x)
+  fromOwned x = pure (MTROTAImageDigestType x)
+
 -- | @MTROTASoftwareUpdateProviderApplyUpdateAction@
 newtype MTROTASoftwareUpdateProviderApplyUpdateAction = MTROTASoftwareUpdateProviderApplyUpdateAction CUChar
   deriving stock (Eq, Ord, Show)
@@ -21470,6 +24713,16 @@ pattern MTROTASoftwareUpdateProviderApplyUpdateActionAwaitNextAction = MTROTASof
 
 pattern MTROTASoftwareUpdateProviderApplyUpdateActionDiscontinue :: MTROTASoftwareUpdateProviderApplyUpdateAction
 pattern MTROTASoftwareUpdateProviderApplyUpdateActionDiscontinue = MTROTASoftwareUpdateProviderApplyUpdateAction 2
+
+instance ObjCArgument MTROTASoftwareUpdateProviderApplyUpdateAction where
+  withObjCArg (MTROTASoftwareUpdateProviderApplyUpdateAction x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderApplyUpdateAction where
+  type RawReturn MTROTASoftwareUpdateProviderApplyUpdateAction = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderApplyUpdateAction x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderApplyUpdateAction x)
 
 -- | @MTROTASoftwareUpdateProviderDownloadProtocol@
 newtype MTROTASoftwareUpdateProviderDownloadProtocol = MTROTASoftwareUpdateProviderDownloadProtocol CUChar
@@ -21488,6 +24741,16 @@ pattern MTROTASoftwareUpdateProviderDownloadProtocolHTTPS = MTROTASoftwareUpdate
 pattern MTROTASoftwareUpdateProviderDownloadProtocolVendorSpecific :: MTROTASoftwareUpdateProviderDownloadProtocol
 pattern MTROTASoftwareUpdateProviderDownloadProtocolVendorSpecific = MTROTASoftwareUpdateProviderDownloadProtocol 3
 
+instance ObjCArgument MTROTASoftwareUpdateProviderDownloadProtocol where
+  withObjCArg (MTROTASoftwareUpdateProviderDownloadProtocol x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderDownloadProtocol where
+  type RawReturn MTROTASoftwareUpdateProviderDownloadProtocol = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderDownloadProtocol x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderDownloadProtocol x)
+
 -- | For the OTA clusters, first we changed the names of the clusters, and then we changed the names of the enums.  That means we now have three names for the enums (newest name, name before enum name change, name before cluster name change).  We can only track one old name for things, so just manually add the intermediate names.
 -- | @MTROTASoftwareUpdateProviderOTAApplyUpdateAction@
 newtype MTROTASoftwareUpdateProviderOTAApplyUpdateAction = MTROTASoftwareUpdateProviderOTAApplyUpdateAction CUChar
@@ -21502,6 +24765,16 @@ pattern MTROTASoftwareUpdateProviderOTAApplyUpdateActionAwaitNextAction = MTROTA
 
 pattern MTROTASoftwareUpdateProviderOTAApplyUpdateActionDiscontinue :: MTROTASoftwareUpdateProviderOTAApplyUpdateAction
 pattern MTROTASoftwareUpdateProviderOTAApplyUpdateActionDiscontinue = MTROTASoftwareUpdateProviderOTAApplyUpdateAction 2
+
+instance ObjCArgument MTROTASoftwareUpdateProviderOTAApplyUpdateAction where
+  withObjCArg (MTROTASoftwareUpdateProviderOTAApplyUpdateAction x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderOTAApplyUpdateAction where
+  type RawReturn MTROTASoftwareUpdateProviderOTAApplyUpdateAction = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderOTAApplyUpdateAction x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderOTAApplyUpdateAction x)
 
 -- | @MTROTASoftwareUpdateProviderOTADownloadProtocol@
 newtype MTROTASoftwareUpdateProviderOTADownloadProtocol = MTROTASoftwareUpdateProviderOTADownloadProtocol CUChar
@@ -21520,6 +24793,16 @@ pattern MTROTASoftwareUpdateProviderOTADownloadProtocolHTTPS = MTROTASoftwareUpd
 pattern MTROTASoftwareUpdateProviderOTADownloadProtocolVendorSpecific :: MTROTASoftwareUpdateProviderOTADownloadProtocol
 pattern MTROTASoftwareUpdateProviderOTADownloadProtocolVendorSpecific = MTROTASoftwareUpdateProviderOTADownloadProtocol 3
 
+instance ObjCArgument MTROTASoftwareUpdateProviderOTADownloadProtocol where
+  withObjCArg (MTROTASoftwareUpdateProviderOTADownloadProtocol x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderOTADownloadProtocol where
+  type RawReturn MTROTASoftwareUpdateProviderOTADownloadProtocol = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderOTADownloadProtocol x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderOTADownloadProtocol x)
+
 -- | @MTROTASoftwareUpdateProviderOTAQueryStatus@
 newtype MTROTASoftwareUpdateProviderOTAQueryStatus = MTROTASoftwareUpdateProviderOTAQueryStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -21536,6 +24819,16 @@ pattern MTROTASoftwareUpdateProviderOTAQueryStatusNotAvailable = MTROTASoftwareU
 
 pattern MTROTASoftwareUpdateProviderOTAQueryStatusDownloadProtocolNotSupported :: MTROTASoftwareUpdateProviderOTAQueryStatus
 pattern MTROTASoftwareUpdateProviderOTAQueryStatusDownloadProtocolNotSupported = MTROTASoftwareUpdateProviderOTAQueryStatus 3
+
+instance ObjCArgument MTROTASoftwareUpdateProviderOTAQueryStatus where
+  withObjCArg (MTROTASoftwareUpdateProviderOTAQueryStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderOTAQueryStatus where
+  type RawReturn MTROTASoftwareUpdateProviderOTAQueryStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderOTAQueryStatus x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderOTAQueryStatus x)
 
 -- | @MTROTASoftwareUpdateProviderStatus@
 newtype MTROTASoftwareUpdateProviderStatus = MTROTASoftwareUpdateProviderStatus CUChar
@@ -21554,6 +24847,16 @@ pattern MTROTASoftwareUpdateProviderStatusNotAvailable = MTROTASoftwareUpdatePro
 pattern MTROTASoftwareUpdateProviderStatusDownloadProtocolNotSupported :: MTROTASoftwareUpdateProviderStatus
 pattern MTROTASoftwareUpdateProviderStatusDownloadProtocolNotSupported = MTROTASoftwareUpdateProviderStatus 3
 
+instance ObjCArgument MTROTASoftwareUpdateProviderStatus where
+  withObjCArg (MTROTASoftwareUpdateProviderStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateProviderStatus where
+  type RawReturn MTROTASoftwareUpdateProviderStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateProviderStatus x)
+  fromOwned x = pure (MTROTASoftwareUpdateProviderStatus x)
+
 -- | @MTROTASoftwareUpdateRequestorAnnouncementReason@
 newtype MTROTASoftwareUpdateRequestorAnnouncementReason = MTROTASoftwareUpdateRequestorAnnouncementReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -21567,6 +24870,16 @@ pattern MTROTASoftwareUpdateRequestorAnnouncementReasonUpdateAvailable = MTROTAS
 
 pattern MTROTASoftwareUpdateRequestorAnnouncementReasonUrgentUpdateAvailable :: MTROTASoftwareUpdateRequestorAnnouncementReason
 pattern MTROTASoftwareUpdateRequestorAnnouncementReasonUrgentUpdateAvailable = MTROTASoftwareUpdateRequestorAnnouncementReason 2
+
+instance ObjCArgument MTROTASoftwareUpdateRequestorAnnouncementReason where
+  withObjCArg (MTROTASoftwareUpdateRequestorAnnouncementReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorAnnouncementReason where
+  type RawReturn MTROTASoftwareUpdateRequestorAnnouncementReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorAnnouncementReason x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorAnnouncementReason x)
 
 -- | @MTROTASoftwareUpdateRequestorChangeReason@
 newtype MTROTASoftwareUpdateRequestorChangeReason = MTROTASoftwareUpdateRequestorChangeReason CUChar
@@ -21588,6 +24901,16 @@ pattern MTROTASoftwareUpdateRequestorChangeReasonTimeOut = MTROTASoftwareUpdateR
 pattern MTROTASoftwareUpdateRequestorChangeReasonDelayByProvider :: MTROTASoftwareUpdateRequestorChangeReason
 pattern MTROTASoftwareUpdateRequestorChangeReasonDelayByProvider = MTROTASoftwareUpdateRequestorChangeReason 4
 
+instance ObjCArgument MTROTASoftwareUpdateRequestorChangeReason where
+  withObjCArg (MTROTASoftwareUpdateRequestorChangeReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorChangeReason where
+  type RawReturn MTROTASoftwareUpdateRequestorChangeReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorChangeReason x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorChangeReason x)
+
 -- | @MTROTASoftwareUpdateRequestorOTAAnnouncementReason@
 newtype MTROTASoftwareUpdateRequestorOTAAnnouncementReason = MTROTASoftwareUpdateRequestorOTAAnnouncementReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -21601,6 +24924,16 @@ pattern MTROTASoftwareUpdateRequestorOTAAnnouncementReasonUpdateAvailable = MTRO
 
 pattern MTROTASoftwareUpdateRequestorOTAAnnouncementReasonUrgentUpdateAvailable :: MTROTASoftwareUpdateRequestorOTAAnnouncementReason
 pattern MTROTASoftwareUpdateRequestorOTAAnnouncementReasonUrgentUpdateAvailable = MTROTASoftwareUpdateRequestorOTAAnnouncementReason 2
+
+instance ObjCArgument MTROTASoftwareUpdateRequestorOTAAnnouncementReason where
+  withObjCArg (MTROTASoftwareUpdateRequestorOTAAnnouncementReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorOTAAnnouncementReason where
+  type RawReturn MTROTASoftwareUpdateRequestorOTAAnnouncementReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorOTAAnnouncementReason x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorOTAAnnouncementReason x)
 
 -- | @MTROTASoftwareUpdateRequestorOTAChangeReason@
 newtype MTROTASoftwareUpdateRequestorOTAChangeReason = MTROTASoftwareUpdateRequestorOTAChangeReason CUChar
@@ -21621,6 +24954,16 @@ pattern MTROTASoftwareUpdateRequestorOTAChangeReasonTimeOut = MTROTASoftwareUpda
 
 pattern MTROTASoftwareUpdateRequestorOTAChangeReasonDelayByProvider :: MTROTASoftwareUpdateRequestorOTAChangeReason
 pattern MTROTASoftwareUpdateRequestorOTAChangeReasonDelayByProvider = MTROTASoftwareUpdateRequestorOTAChangeReason 4
+
+instance ObjCArgument MTROTASoftwareUpdateRequestorOTAChangeReason where
+  withObjCArg (MTROTASoftwareUpdateRequestorOTAChangeReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorOTAChangeReason where
+  type RawReturn MTROTASoftwareUpdateRequestorOTAChangeReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorOTAChangeReason x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorOTAChangeReason x)
 
 -- | @MTROTASoftwareUpdateRequestorOTAUpdateState@
 newtype MTROTASoftwareUpdateRequestorOTAUpdateState = MTROTASoftwareUpdateRequestorOTAUpdateState CUChar
@@ -21654,6 +24997,16 @@ pattern MTROTASoftwareUpdateRequestorOTAUpdateStateRollingBack = MTROTASoftwareU
 pattern MTROTASoftwareUpdateRequestorOTAUpdateStateDelayedOnUserConsent :: MTROTASoftwareUpdateRequestorOTAUpdateState
 pattern MTROTASoftwareUpdateRequestorOTAUpdateStateDelayedOnUserConsent = MTROTASoftwareUpdateRequestorOTAUpdateState 8
 
+instance ObjCArgument MTROTASoftwareUpdateRequestorOTAUpdateState where
+  withObjCArg (MTROTASoftwareUpdateRequestorOTAUpdateState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorOTAUpdateState where
+  type RawReturn MTROTASoftwareUpdateRequestorOTAUpdateState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorOTAUpdateState x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorOTAUpdateState x)
+
 -- | @MTROTASoftwareUpdateRequestorUpdateState@
 newtype MTROTASoftwareUpdateRequestorUpdateState = MTROTASoftwareUpdateRequestorUpdateState CUChar
   deriving stock (Eq, Ord, Show)
@@ -21685,6 +25038,16 @@ pattern MTROTASoftwareUpdateRequestorUpdateStateRollingBack = MTROTASoftwareUpda
 
 pattern MTROTASoftwareUpdateRequestorUpdateStateDelayedOnUserConsent :: MTROTASoftwareUpdateRequestorUpdateState
 pattern MTROTASoftwareUpdateRequestorUpdateStateDelayedOnUserConsent = MTROTASoftwareUpdateRequestorUpdateState 8
+
+instance ObjCArgument MTROTASoftwareUpdateRequestorUpdateState where
+  withObjCArg (MTROTASoftwareUpdateRequestorUpdateState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROTASoftwareUpdateRequestorUpdateState where
+  type RawReturn MTROTASoftwareUpdateRequestorUpdateState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROTASoftwareUpdateRequestorUpdateState x)
+  fromOwned x = pure (MTROTASoftwareUpdateRequestorUpdateState x)
 
 -- | @MTROccupancySensingFeature@ (bitmask)
 newtype MTROccupancySensingFeature = MTROccupancySensingFeature CUInt
@@ -21721,6 +25084,16 @@ pattern MTROccupancySensingFeatureRFSensing = MTROccupancySensingFeature 64
 pattern MTROccupancySensingFeatureVision :: MTROccupancySensingFeature
 pattern MTROccupancySensingFeatureVision = MTROccupancySensingFeature 128
 
+instance ObjCArgument MTROccupancySensingFeature where
+  withObjCArg (MTROccupancySensingFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTROccupancySensingFeature where
+  type RawReturn MTROccupancySensingFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROccupancySensingFeature x)
+  fromOwned x = pure (MTROccupancySensingFeature x)
+
 -- | @MTROccupancySensingOccupancyBitmap@ (bitmask)
 newtype MTROccupancySensingOccupancyBitmap = MTROccupancySensingOccupancyBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -21734,6 +25107,16 @@ instance Monoid MTROccupancySensingOccupancyBitmap where
 
 pattern MTROccupancySensingOccupancyBitmapOccupied :: MTROccupancySensingOccupancyBitmap
 pattern MTROccupancySensingOccupancyBitmapOccupied = MTROccupancySensingOccupancyBitmap 1
+
+instance ObjCArgument MTROccupancySensingOccupancyBitmap where
+  withObjCArg (MTROccupancySensingOccupancyBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTROccupancySensingOccupancyBitmap where
+  type RawReturn MTROccupancySensingOccupancyBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROccupancySensingOccupancyBitmap x)
+  fromOwned x = pure (MTROccupancySensingOccupancyBitmap x)
 
 -- | @MTROccupancySensingOccupancySensorType@
 newtype MTROccupancySensingOccupancySensorType = MTROccupancySensingOccupancySensorType CUChar
@@ -21751,6 +25134,16 @@ pattern MTROccupancySensingOccupancySensorTypePIRAndUltrasonic = MTROccupancySen
 
 pattern MTROccupancySensingOccupancySensorTypePhysicalContact :: MTROccupancySensingOccupancySensorType
 pattern MTROccupancySensingOccupancySensorTypePhysicalContact = MTROccupancySensingOccupancySensorType 3
+
+instance ObjCArgument MTROccupancySensingOccupancySensorType where
+  withObjCArg (MTROccupancySensingOccupancySensorType x) k = k (argCUChar x)
+
+instance ObjCReturn MTROccupancySensingOccupancySensorType where
+  type RawReturn MTROccupancySensingOccupancySensorType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROccupancySensingOccupancySensorType x)
+  fromOwned x = pure (MTROccupancySensingOccupancySensorType x)
 
 -- | @MTROccupancySensingOccupancySensorTypeBitmap@ (bitmask)
 newtype MTROccupancySensingOccupancySensorTypeBitmap = MTROccupancySensingOccupancySensorTypeBitmap CUChar
@@ -21772,6 +25165,16 @@ pattern MTROccupancySensingOccupancySensorTypeBitmapUltrasonic = MTROccupancySen
 pattern MTROccupancySensingOccupancySensorTypeBitmapPhysicalContact :: MTROccupancySensingOccupancySensorTypeBitmap
 pattern MTROccupancySensingOccupancySensorTypeBitmapPhysicalContact = MTROccupancySensingOccupancySensorTypeBitmap 4
 
+instance ObjCArgument MTROccupancySensingOccupancySensorTypeBitmap where
+  withObjCArg (MTROccupancySensingOccupancySensorTypeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTROccupancySensingOccupancySensorTypeBitmap where
+  type RawReturn MTROccupancySensingOccupancySensorTypeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROccupancySensingOccupancySensorTypeBitmap x)
+  fromOwned x = pure (MTROccupancySensingOccupancySensorTypeBitmap x)
+
 -- | @MTROnOffControl@ (bitmask)
 newtype MTROnOffControl = MTROnOffControl CUChar
   deriving stock (Eq, Ord, Show)
@@ -21786,6 +25189,16 @@ instance Monoid MTROnOffControl where
 pattern MTROnOffControlAcceptOnlyWhenOn :: MTROnOffControl
 pattern MTROnOffControlAcceptOnlyWhenOn = MTROnOffControl 1
 
+instance ObjCArgument MTROnOffControl where
+  withObjCArg (MTROnOffControl x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffControl where
+  type RawReturn MTROnOffControl = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffControl x)
+  fromOwned x = pure (MTROnOffControl x)
+
 -- | @MTROnOffControlBitmap@ (bitmask)
 newtype MTROnOffControlBitmap = MTROnOffControlBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -21799,6 +25212,16 @@ instance Monoid MTROnOffControlBitmap where
 
 pattern MTROnOffControlBitmapAcceptOnlyWhenOn :: MTROnOffControlBitmap
 pattern MTROnOffControlBitmapAcceptOnlyWhenOn = MTROnOffControlBitmap 1
+
+instance ObjCArgument MTROnOffControlBitmap where
+  withObjCArg (MTROnOffControlBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffControlBitmap where
+  type RawReturn MTROnOffControlBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffControlBitmap x)
+  fromOwned x = pure (MTROnOffControlBitmap x)
 
 -- | @MTROnOffDelayedAllOffEffectVariant@
 newtype MTROnOffDelayedAllOffEffectVariant = MTROnOffDelayedAllOffEffectVariant CUChar
@@ -21820,6 +25243,16 @@ pattern MTROnOffDelayedAllOffEffectVariantDelayedOffSlowFade = MTROnOffDelayedAl
 pattern MTROnOffDelayedAllOffEffectVariant50PercentDimDownIn0p8SecondsThenFadeToOffIn12Seconds :: MTROnOffDelayedAllOffEffectVariant
 pattern MTROnOffDelayedAllOffEffectVariant50PercentDimDownIn0p8SecondsThenFadeToOffIn12Seconds = MTROnOffDelayedAllOffEffectVariant 2
 
+instance ObjCArgument MTROnOffDelayedAllOffEffectVariant where
+  withObjCArg (MTROnOffDelayedAllOffEffectVariant x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffDelayedAllOffEffectVariant where
+  type RawReturn MTROnOffDelayedAllOffEffectVariant = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffDelayedAllOffEffectVariant x)
+  fromOwned x = pure (MTROnOffDelayedAllOffEffectVariant x)
+
 -- | @MTROnOffDyingLightEffectVariant@
 newtype MTROnOffDyingLightEffectVariant = MTROnOffDyingLightEffectVariant CUChar
   deriving stock (Eq, Ord, Show)
@@ -21831,6 +25264,16 @@ pattern MTROnOffDyingLightEffectVariantDyingLightFadeOff = MTROnOffDyingLightEff
 pattern MTROnOffDyingLightEffectVariant20PercenterDimUpIn0p5SecondsThenFadeToOffIn1Second :: MTROnOffDyingLightEffectVariant
 pattern MTROnOffDyingLightEffectVariant20PercenterDimUpIn0p5SecondsThenFadeToOffIn1Second = MTROnOffDyingLightEffectVariant 0
 
+instance ObjCArgument MTROnOffDyingLightEffectVariant where
+  withObjCArg (MTROnOffDyingLightEffectVariant x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffDyingLightEffectVariant where
+  type RawReturn MTROnOffDyingLightEffectVariant = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffDyingLightEffectVariant x)
+  fromOwned x = pure (MTROnOffDyingLightEffectVariant x)
+
 -- | @MTROnOffEffectIdentifier@
 newtype MTROnOffEffectIdentifier = MTROnOffEffectIdentifier CUChar
   deriving stock (Eq, Ord, Show)
@@ -21841,6 +25284,16 @@ pattern MTROnOffEffectIdentifierDelayedAllOff = MTROnOffEffectIdentifier 0
 
 pattern MTROnOffEffectIdentifierDyingLight :: MTROnOffEffectIdentifier
 pattern MTROnOffEffectIdentifierDyingLight = MTROnOffEffectIdentifier 1
+
+instance ObjCArgument MTROnOffEffectIdentifier where
+  withObjCArg (MTROnOffEffectIdentifier x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffEffectIdentifier where
+  type RawReturn MTROnOffEffectIdentifier = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffEffectIdentifier x)
+  fromOwned x = pure (MTROnOffEffectIdentifier x)
 
 -- | @MTROnOffFeature@ (bitmask)
 newtype MTROnOffFeature = MTROnOffFeature CUInt
@@ -21865,6 +25318,16 @@ pattern MTROnOffFeatureDeadFront = MTROnOffFeature 2
 pattern MTROnOffFeatureOffOnly :: MTROnOffFeature
 pattern MTROnOffFeatureOffOnly = MTROnOffFeature 4
 
+instance ObjCArgument MTROnOffFeature where
+  withObjCArg (MTROnOffFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTROnOffFeature where
+  type RawReturn MTROnOffFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffFeature x)
+  fromOwned x = pure (MTROnOffFeature x)
+
 -- | @MTROnOffStartUpOnOff@
 newtype MTROnOffStartUpOnOff = MTROnOffStartUpOnOff CUChar
   deriving stock (Eq, Ord, Show)
@@ -21882,6 +25345,16 @@ pattern MTROnOffStartUpOnOffToggle = MTROnOffStartUpOnOff 2
 pattern MTROnOffStartUpOnOffTogglePreviousOnOff :: MTROnOffStartUpOnOff
 pattern MTROnOffStartUpOnOffTogglePreviousOnOff = MTROnOffStartUpOnOff 2
 
+instance ObjCArgument MTROnOffStartUpOnOff where
+  withObjCArg (MTROnOffStartUpOnOff x) k = k (argCUChar x)
+
+instance ObjCReturn MTROnOffStartUpOnOff where
+  type RawReturn MTROnOffStartUpOnOff = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnOffStartUpOnOff x)
+  fromOwned x = pure (MTROnOffStartUpOnOff x)
+
 -- | @MTROnboardingPayloadType@
 newtype MTROnboardingPayloadType = MTROnboardingPayloadType CULong
   deriving stock (Eq, Ord, Show)
@@ -21896,6 +25369,16 @@ pattern MTROnboardingPayloadTypeManualCode = MTROnboardingPayloadType 1
 pattern MTROnboardingPayloadTypeNFC :: MTROnboardingPayloadType
 pattern MTROnboardingPayloadTypeNFC = MTROnboardingPayloadType 2
 
+instance ObjCArgument MTROnboardingPayloadType where
+  withObjCArg (MTROnboardingPayloadType x) k = k (argCULong x)
+
+instance ObjCReturn MTROnboardingPayloadType where
+  type RawReturn MTROnboardingPayloadType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROnboardingPayloadType x)
+  fromOwned x = pure (MTROnboardingPayloadType x)
+
 -- | @MTROperationalCredentialsCertificateChainType@
 newtype MTROperationalCredentialsCertificateChainType = MTROperationalCredentialsCertificateChainType CUChar
   deriving stock (Eq, Ord, Show)
@@ -21906,6 +25389,16 @@ pattern MTROperationalCredentialsCertificateChainTypeDACCertificate = MTROperati
 
 pattern MTROperationalCredentialsCertificateChainTypePAICertificate :: MTROperationalCredentialsCertificateChainType
 pattern MTROperationalCredentialsCertificateChainTypePAICertificate = MTROperationalCredentialsCertificateChainType 2
+
+instance ObjCArgument MTROperationalCredentialsCertificateChainType where
+  withObjCArg (MTROperationalCredentialsCertificateChainType x) k = k (argCUChar x)
+
+instance ObjCReturn MTROperationalCredentialsCertificateChainType where
+  type RawReturn MTROperationalCredentialsCertificateChainType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROperationalCredentialsCertificateChainType x)
+  fromOwned x = pure (MTROperationalCredentialsCertificateChainType x)
 
 -- | @MTROperationalCredentialsNodeOperationalCertStatus@
 newtype MTROperationalCredentialsNodeOperationalCertStatus = MTROperationalCredentialsNodeOperationalCertStatus CUChar
@@ -21942,6 +25435,16 @@ pattern MTROperationalCredentialsNodeOperationalCertStatusLabelConflict = MTROpe
 pattern MTROperationalCredentialsNodeOperationalCertStatusInvalidFabricIndex :: MTROperationalCredentialsNodeOperationalCertStatus
 pattern MTROperationalCredentialsNodeOperationalCertStatusInvalidFabricIndex = MTROperationalCredentialsNodeOperationalCertStatus 11
 
+instance ObjCArgument MTROperationalCredentialsNodeOperationalCertStatus where
+  withObjCArg (MTROperationalCredentialsNodeOperationalCertStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTROperationalCredentialsNodeOperationalCertStatus where
+  type RawReturn MTROperationalCredentialsNodeOperationalCertStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROperationalCredentialsNodeOperationalCertStatus x)
+  fromOwned x = pure (MTROperationalCredentialsNodeOperationalCertStatus x)
+
 -- | @MTROperationalCredentialsOperationalCertStatus@
 newtype MTROperationalCredentialsOperationalCertStatus = MTROperationalCredentialsOperationalCertStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -21977,6 +25480,16 @@ pattern MTROperationalCredentialsOperationalCertStatusLabelConflict = MTROperati
 pattern MTROperationalCredentialsOperationalCertStatusInvalidFabricIndex :: MTROperationalCredentialsOperationalCertStatus
 pattern MTROperationalCredentialsOperationalCertStatusInvalidFabricIndex = MTROperationalCredentialsOperationalCertStatus 11
 
+instance ObjCArgument MTROperationalCredentialsOperationalCertStatus where
+  withObjCArg (MTROperationalCredentialsOperationalCertStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTROperationalCredentialsOperationalCertStatus where
+  type RawReturn MTROperationalCredentialsOperationalCertStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROperationalCredentialsOperationalCertStatus x)
+  fromOwned x = pure (MTROperationalCredentialsOperationalCertStatus x)
+
 -- | @MTROperationalState@
 newtype MTROperationalState = MTROperationalState CUChar
   deriving stock (Eq, Ord, Show)
@@ -21993,6 +25506,16 @@ pattern MTROperationalStatePaused = MTROperationalState 2
 
 pattern MTROperationalStateError :: MTROperationalState
 pattern MTROperationalStateError = MTROperationalState 3
+
+instance ObjCArgument MTROperationalState where
+  withObjCArg (MTROperationalState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROperationalState where
+  type RawReturn MTROperationalState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROperationalState x)
+  fromOwned x = pure (MTROperationalState x)
 
 -- | @MTROperationalStateErrorState@
 newtype MTROperationalStateErrorState = MTROperationalStateErrorState CUChar
@@ -22011,6 +25534,16 @@ pattern MTROperationalStateErrorStateUnableToCompleteOperation = MTROperationalS
 pattern MTROperationalStateErrorStateCommandInvalidInState :: MTROperationalStateErrorState
 pattern MTROperationalStateErrorStateCommandInvalidInState = MTROperationalStateErrorState 3
 
+instance ObjCArgument MTROperationalStateErrorState where
+  withObjCArg (MTROperationalStateErrorState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROperationalStateErrorState where
+  type RawReturn MTROperationalStateErrorState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROperationalStateErrorState x)
+  fromOwned x = pure (MTROperationalStateErrorState x)
+
 -- | @MTROptionalQRCodeInfoType@
 newtype MTROptionalQRCodeInfoType = MTROptionalQRCodeInfoType CULong
   deriving stock (Eq, Ord, Show)
@@ -22025,6 +25558,16 @@ pattern MTROptionalQRCodeInfoTypeString = MTROptionalQRCodeInfoType 1
 pattern MTROptionalQRCodeInfoTypeInt32 :: MTROptionalQRCodeInfoType
 pattern MTROptionalQRCodeInfoTypeInt32 = MTROptionalQRCodeInfoType 2
 
+instance ObjCArgument MTROptionalQRCodeInfoType where
+  withObjCArg (MTROptionalQRCodeInfoType x) k = k (argCULong x)
+
+instance ObjCReturn MTROptionalQRCodeInfoType where
+  type RawReturn MTROptionalQRCodeInfoType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROptionalQRCodeInfoType x)
+  fromOwned x = pure (MTROptionalQRCodeInfoType x)
+
 -- | @MTROtaSoftwareUpdateProviderOTAApplyUpdateAction@
 newtype MTROtaSoftwareUpdateProviderOTAApplyUpdateAction = MTROtaSoftwareUpdateProviderOTAApplyUpdateAction CUChar
   deriving stock (Eq, Ord, Show)
@@ -22038,6 +25581,16 @@ pattern MTROtaSoftwareUpdateProviderOTAApplyUpdateActionAwaitNextAction = MTROta
 
 pattern MTROtaSoftwareUpdateProviderOTAApplyUpdateActionDiscontinue :: MTROtaSoftwareUpdateProviderOTAApplyUpdateAction
 pattern MTROtaSoftwareUpdateProviderOTAApplyUpdateActionDiscontinue = MTROtaSoftwareUpdateProviderOTAApplyUpdateAction 2
+
+instance ObjCArgument MTROtaSoftwareUpdateProviderOTAApplyUpdateAction where
+  withObjCArg (MTROtaSoftwareUpdateProviderOTAApplyUpdateAction x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateProviderOTAApplyUpdateAction where
+  type RawReturn MTROtaSoftwareUpdateProviderOTAApplyUpdateAction = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateProviderOTAApplyUpdateAction x)
+  fromOwned x = pure (MTROtaSoftwareUpdateProviderOTAApplyUpdateAction x)
 
 -- | @MTROtaSoftwareUpdateProviderOTADownloadProtocol@
 newtype MTROtaSoftwareUpdateProviderOTADownloadProtocol = MTROtaSoftwareUpdateProviderOTADownloadProtocol CUChar
@@ -22056,6 +25609,16 @@ pattern MTROtaSoftwareUpdateProviderOTADownloadProtocolHTTPS = MTROtaSoftwareUpd
 pattern MTROtaSoftwareUpdateProviderOTADownloadProtocolVendorSpecific :: MTROtaSoftwareUpdateProviderOTADownloadProtocol
 pattern MTROtaSoftwareUpdateProviderOTADownloadProtocolVendorSpecific = MTROtaSoftwareUpdateProviderOTADownloadProtocol 3
 
+instance ObjCArgument MTROtaSoftwareUpdateProviderOTADownloadProtocol where
+  withObjCArg (MTROtaSoftwareUpdateProviderOTADownloadProtocol x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateProviderOTADownloadProtocol where
+  type RawReturn MTROtaSoftwareUpdateProviderOTADownloadProtocol = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateProviderOTADownloadProtocol x)
+  fromOwned x = pure (MTROtaSoftwareUpdateProviderOTADownloadProtocol x)
+
 -- | @MTROtaSoftwareUpdateProviderOTAQueryStatus@
 newtype MTROtaSoftwareUpdateProviderOTAQueryStatus = MTROtaSoftwareUpdateProviderOTAQueryStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -22073,6 +25636,16 @@ pattern MTROtaSoftwareUpdateProviderOTAQueryStatusNotAvailable = MTROtaSoftwareU
 pattern MTROtaSoftwareUpdateProviderOTAQueryStatusDownloadProtocolNotSupported :: MTROtaSoftwareUpdateProviderOTAQueryStatus
 pattern MTROtaSoftwareUpdateProviderOTAQueryStatusDownloadProtocolNotSupported = MTROtaSoftwareUpdateProviderOTAQueryStatus 3
 
+instance ObjCArgument MTROtaSoftwareUpdateProviderOTAQueryStatus where
+  withObjCArg (MTROtaSoftwareUpdateProviderOTAQueryStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateProviderOTAQueryStatus where
+  type RawReturn MTROtaSoftwareUpdateProviderOTAQueryStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateProviderOTAQueryStatus x)
+  fromOwned x = pure (MTROtaSoftwareUpdateProviderOTAQueryStatus x)
+
 -- | @MTROtaSoftwareUpdateRequestorOTAAnnouncementReason@
 newtype MTROtaSoftwareUpdateRequestorOTAAnnouncementReason = MTROtaSoftwareUpdateRequestorOTAAnnouncementReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -22086,6 +25659,16 @@ pattern MTROtaSoftwareUpdateRequestorOTAAnnouncementReasonUpdateAvailable = MTRO
 
 pattern MTROtaSoftwareUpdateRequestorOTAAnnouncementReasonUrgentUpdateAvailable :: MTROtaSoftwareUpdateRequestorOTAAnnouncementReason
 pattern MTROtaSoftwareUpdateRequestorOTAAnnouncementReasonUrgentUpdateAvailable = MTROtaSoftwareUpdateRequestorOTAAnnouncementReason 2
+
+instance ObjCArgument MTROtaSoftwareUpdateRequestorOTAAnnouncementReason where
+  withObjCArg (MTROtaSoftwareUpdateRequestorOTAAnnouncementReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateRequestorOTAAnnouncementReason where
+  type RawReturn MTROtaSoftwareUpdateRequestorOTAAnnouncementReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateRequestorOTAAnnouncementReason x)
+  fromOwned x = pure (MTROtaSoftwareUpdateRequestorOTAAnnouncementReason x)
 
 -- | @MTROtaSoftwareUpdateRequestorOTAChangeReason@
 newtype MTROtaSoftwareUpdateRequestorOTAChangeReason = MTROtaSoftwareUpdateRequestorOTAChangeReason CUChar
@@ -22106,6 +25689,16 @@ pattern MTROtaSoftwareUpdateRequestorOTAChangeReasonTimeOut = MTROtaSoftwareUpda
 
 pattern MTROtaSoftwareUpdateRequestorOTAChangeReasonDelayByProvider :: MTROtaSoftwareUpdateRequestorOTAChangeReason
 pattern MTROtaSoftwareUpdateRequestorOTAChangeReasonDelayByProvider = MTROtaSoftwareUpdateRequestorOTAChangeReason 4
+
+instance ObjCArgument MTROtaSoftwareUpdateRequestorOTAChangeReason where
+  withObjCArg (MTROtaSoftwareUpdateRequestorOTAChangeReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateRequestorOTAChangeReason where
+  type RawReturn MTROtaSoftwareUpdateRequestorOTAChangeReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateRequestorOTAChangeReason x)
+  fromOwned x = pure (MTROtaSoftwareUpdateRequestorOTAChangeReason x)
 
 -- | @MTROtaSoftwareUpdateRequestorOTAUpdateState@
 newtype MTROtaSoftwareUpdateRequestorOTAUpdateState = MTROtaSoftwareUpdateRequestorOTAUpdateState CUChar
@@ -22139,6 +25732,16 @@ pattern MTROtaSoftwareUpdateRequestorOTAUpdateStateRollingBack = MTROtaSoftwareU
 pattern MTROtaSoftwareUpdateRequestorOTAUpdateStateDelayedOnUserConsent :: MTROtaSoftwareUpdateRequestorOTAUpdateState
 pattern MTROtaSoftwareUpdateRequestorOTAUpdateStateDelayedOnUserConsent = MTROtaSoftwareUpdateRequestorOTAUpdateState 8
 
+instance ObjCArgument MTROtaSoftwareUpdateRequestorOTAUpdateState where
+  withObjCArg (MTROtaSoftwareUpdateRequestorOTAUpdateState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROtaSoftwareUpdateRequestorOTAUpdateState where
+  type RawReturn MTROtaSoftwareUpdateRequestorOTAUpdateState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROtaSoftwareUpdateRequestorOTAUpdateState x)
+  fromOwned x = pure (MTROtaSoftwareUpdateRequestorOTAUpdateState x)
+
 -- | @MTROvenCavityOperationalStateErrorState@
 newtype MTROvenCavityOperationalStateErrorState = MTROvenCavityOperationalStateErrorState CUChar
   deriving stock (Eq, Ord, Show)
@@ -22156,6 +25759,16 @@ pattern MTROvenCavityOperationalStateErrorStateUnableToCompleteOperation = MTROv
 pattern MTROvenCavityOperationalStateErrorStateCommandInvalidInState :: MTROvenCavityOperationalStateErrorState
 pattern MTROvenCavityOperationalStateErrorStateCommandInvalidInState = MTROvenCavityOperationalStateErrorState 3
 
+instance ObjCArgument MTROvenCavityOperationalStateErrorState where
+  withObjCArg (MTROvenCavityOperationalStateErrorState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROvenCavityOperationalStateErrorState where
+  type RawReturn MTROvenCavityOperationalStateErrorState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROvenCavityOperationalStateErrorState x)
+  fromOwned x = pure (MTROvenCavityOperationalStateErrorState x)
+
 -- | @MTROvenCavityOperationalStateOperationalState@
 newtype MTROvenCavityOperationalStateOperationalState = MTROvenCavityOperationalStateOperationalState CUChar
   deriving stock (Eq, Ord, Show)
@@ -22172,6 +25785,16 @@ pattern MTROvenCavityOperationalStateOperationalStatePaused = MTROvenCavityOpera
 
 pattern MTROvenCavityOperationalStateOperationalStateError :: MTROvenCavityOperationalStateOperationalState
 pattern MTROvenCavityOperationalStateOperationalStateError = MTROvenCavityOperationalStateOperationalState 3
+
+instance ObjCArgument MTROvenCavityOperationalStateOperationalState where
+  withObjCArg (MTROvenCavityOperationalStateOperationalState x) k = k (argCUChar x)
+
+instance ObjCReturn MTROvenCavityOperationalStateOperationalState where
+  type RawReturn MTROvenCavityOperationalStateOperationalState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROvenCavityOperationalStateOperationalState x)
+  fromOwned x = pure (MTROvenCavityOperationalStateOperationalState x)
 
 -- | @MTROvenModeModeTag@
 newtype MTROvenModeModeTag = MTROvenModeModeTag CUShort
@@ -22235,6 +25858,16 @@ pattern MTROvenModeModeTagWarming = MTROvenModeModeTag 16391
 pattern MTROvenModeModeTagProofing :: MTROvenModeModeTag
 pattern MTROvenModeModeTagProofing = MTROvenModeModeTag 16392
 
+instance ObjCArgument MTROvenModeModeTag where
+  withObjCArg (MTROvenModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTROvenModeModeTag where
+  type RawReturn MTROvenModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROvenModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTROvenModeModeTag (fromIntegral x))
+
 -- | @MTROzoneConcentrationMeasurementFeature@ (bitmask)
 newtype MTROzoneConcentrationMeasurementFeature = MTROzoneConcentrationMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -22264,6 +25897,16 @@ pattern MTROzoneConcentrationMeasurementFeaturePeakMeasurement = MTROzoneConcent
 pattern MTROzoneConcentrationMeasurementFeatureAverageMeasurement :: MTROzoneConcentrationMeasurementFeature
 pattern MTROzoneConcentrationMeasurementFeatureAverageMeasurement = MTROzoneConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTROzoneConcentrationMeasurementFeature where
+  withObjCArg (MTROzoneConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTROzoneConcentrationMeasurementFeature where
+  type RawReturn MTROzoneConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROzoneConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTROzoneConcentrationMeasurementFeature x)
+
 -- | @MTROzoneConcentrationMeasurementLevelValue@
 newtype MTROzoneConcentrationMeasurementLevelValue = MTROzoneConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -22284,6 +25927,16 @@ pattern MTROzoneConcentrationMeasurementLevelValueHigh = MTROzoneConcentrationMe
 pattern MTROzoneConcentrationMeasurementLevelValueCritical :: MTROzoneConcentrationMeasurementLevelValue
 pattern MTROzoneConcentrationMeasurementLevelValueCritical = MTROzoneConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTROzoneConcentrationMeasurementLevelValue where
+  withObjCArg (MTROzoneConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTROzoneConcentrationMeasurementLevelValue where
+  type RawReturn MTROzoneConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROzoneConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTROzoneConcentrationMeasurementLevelValue x)
+
 -- | @MTROzoneConcentrationMeasurementMeasurementMedium@
 newtype MTROzoneConcentrationMeasurementMeasurementMedium = MTROzoneConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -22297,6 +25950,16 @@ pattern MTROzoneConcentrationMeasurementMeasurementMediumWater = MTROzoneConcent
 
 pattern MTROzoneConcentrationMeasurementMeasurementMediumSoil :: MTROzoneConcentrationMeasurementMeasurementMedium
 pattern MTROzoneConcentrationMeasurementMeasurementMediumSoil = MTROzoneConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTROzoneConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTROzoneConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTROzoneConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTROzoneConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROzoneConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTROzoneConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTROzoneConcentrationMeasurementMeasurementUnit@
 newtype MTROzoneConcentrationMeasurementMeasurementUnit = MTROzoneConcentrationMeasurementMeasurementUnit CUChar
@@ -22327,6 +25990,16 @@ pattern MTROzoneConcentrationMeasurementMeasurementUnitPM3 = MTROzoneConcentrati
 pattern MTROzoneConcentrationMeasurementMeasurementUnitBQM3 :: MTROzoneConcentrationMeasurementMeasurementUnit
 pattern MTROzoneConcentrationMeasurementMeasurementUnitBQM3 = MTROzoneConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTROzoneConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTROzoneConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTROzoneConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTROzoneConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTROzoneConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTROzoneConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRPM10ConcentrationMeasurementFeature@ (bitmask)
 newtype MTRPM10ConcentrationMeasurementFeature = MTRPM10ConcentrationMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -22356,6 +26029,16 @@ pattern MTRPM10ConcentrationMeasurementFeaturePeakMeasurement = MTRPM10Concentra
 pattern MTRPM10ConcentrationMeasurementFeatureAverageMeasurement :: MTRPM10ConcentrationMeasurementFeature
 pattern MTRPM10ConcentrationMeasurementFeatureAverageMeasurement = MTRPM10ConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRPM10ConcentrationMeasurementFeature where
+  withObjCArg (MTRPM10ConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPM10ConcentrationMeasurementFeature where
+  type RawReturn MTRPM10ConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM10ConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRPM10ConcentrationMeasurementFeature x)
+
 -- | @MTRPM10ConcentrationMeasurementLevelValue@
 newtype MTRPM10ConcentrationMeasurementLevelValue = MTRPM10ConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -22376,6 +26059,16 @@ pattern MTRPM10ConcentrationMeasurementLevelValueHigh = MTRPM10ConcentrationMeas
 pattern MTRPM10ConcentrationMeasurementLevelValueCritical :: MTRPM10ConcentrationMeasurementLevelValue
 pattern MTRPM10ConcentrationMeasurementLevelValueCritical = MTRPM10ConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRPM10ConcentrationMeasurementLevelValue where
+  withObjCArg (MTRPM10ConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM10ConcentrationMeasurementLevelValue where
+  type RawReturn MTRPM10ConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM10ConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRPM10ConcentrationMeasurementLevelValue x)
+
 -- | @MTRPM10ConcentrationMeasurementMeasurementMedium@
 newtype MTRPM10ConcentrationMeasurementMeasurementMedium = MTRPM10ConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -22389,6 +26082,16 @@ pattern MTRPM10ConcentrationMeasurementMeasurementMediumWater = MTRPM10Concentra
 
 pattern MTRPM10ConcentrationMeasurementMeasurementMediumSoil :: MTRPM10ConcentrationMeasurementMeasurementMedium
 pattern MTRPM10ConcentrationMeasurementMeasurementMediumSoil = MTRPM10ConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRPM10ConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRPM10ConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM10ConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRPM10ConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM10ConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRPM10ConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRPM10ConcentrationMeasurementMeasurementUnit@
 newtype MTRPM10ConcentrationMeasurementMeasurementUnit = MTRPM10ConcentrationMeasurementMeasurementUnit CUChar
@@ -22419,6 +26122,16 @@ pattern MTRPM10ConcentrationMeasurementMeasurementUnitPM3 = MTRPM10Concentration
 pattern MTRPM10ConcentrationMeasurementMeasurementUnitBQM3 :: MTRPM10ConcentrationMeasurementMeasurementUnit
 pattern MTRPM10ConcentrationMeasurementMeasurementUnitBQM3 = MTRPM10ConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRPM10ConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRPM10ConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM10ConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRPM10ConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM10ConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRPM10ConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRPM1ConcentrationMeasurementFeature@ (bitmask)
 newtype MTRPM1ConcentrationMeasurementFeature = MTRPM1ConcentrationMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -22448,6 +26161,16 @@ pattern MTRPM1ConcentrationMeasurementFeaturePeakMeasurement = MTRPM1Concentrati
 pattern MTRPM1ConcentrationMeasurementFeatureAverageMeasurement :: MTRPM1ConcentrationMeasurementFeature
 pattern MTRPM1ConcentrationMeasurementFeatureAverageMeasurement = MTRPM1ConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRPM1ConcentrationMeasurementFeature where
+  withObjCArg (MTRPM1ConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPM1ConcentrationMeasurementFeature where
+  type RawReturn MTRPM1ConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM1ConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRPM1ConcentrationMeasurementFeature x)
+
 -- | @MTRPM1ConcentrationMeasurementLevelValue@
 newtype MTRPM1ConcentrationMeasurementLevelValue = MTRPM1ConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -22468,6 +26191,16 @@ pattern MTRPM1ConcentrationMeasurementLevelValueHigh = MTRPM1ConcentrationMeasur
 pattern MTRPM1ConcentrationMeasurementLevelValueCritical :: MTRPM1ConcentrationMeasurementLevelValue
 pattern MTRPM1ConcentrationMeasurementLevelValueCritical = MTRPM1ConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRPM1ConcentrationMeasurementLevelValue where
+  withObjCArg (MTRPM1ConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM1ConcentrationMeasurementLevelValue where
+  type RawReturn MTRPM1ConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM1ConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRPM1ConcentrationMeasurementLevelValue x)
+
 -- | @MTRPM1ConcentrationMeasurementMeasurementMedium@
 newtype MTRPM1ConcentrationMeasurementMeasurementMedium = MTRPM1ConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -22481,6 +26214,16 @@ pattern MTRPM1ConcentrationMeasurementMeasurementMediumWater = MTRPM1Concentrati
 
 pattern MTRPM1ConcentrationMeasurementMeasurementMediumSoil :: MTRPM1ConcentrationMeasurementMeasurementMedium
 pattern MTRPM1ConcentrationMeasurementMeasurementMediumSoil = MTRPM1ConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRPM1ConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRPM1ConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM1ConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRPM1ConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM1ConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRPM1ConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRPM1ConcentrationMeasurementMeasurementUnit@
 newtype MTRPM1ConcentrationMeasurementMeasurementUnit = MTRPM1ConcentrationMeasurementMeasurementUnit CUChar
@@ -22511,6 +26254,16 @@ pattern MTRPM1ConcentrationMeasurementMeasurementUnitPM3 = MTRPM1ConcentrationMe
 pattern MTRPM1ConcentrationMeasurementMeasurementUnitBQM3 :: MTRPM1ConcentrationMeasurementMeasurementUnit
 pattern MTRPM1ConcentrationMeasurementMeasurementUnitBQM3 = MTRPM1ConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRPM1ConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRPM1ConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM1ConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRPM1ConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM1ConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRPM1ConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRPM25ConcentrationMeasurementFeature@ (bitmask)
 newtype MTRPM25ConcentrationMeasurementFeature = MTRPM25ConcentrationMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -22540,6 +26293,16 @@ pattern MTRPM25ConcentrationMeasurementFeaturePeakMeasurement = MTRPM25Concentra
 pattern MTRPM25ConcentrationMeasurementFeatureAverageMeasurement :: MTRPM25ConcentrationMeasurementFeature
 pattern MTRPM25ConcentrationMeasurementFeatureAverageMeasurement = MTRPM25ConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRPM25ConcentrationMeasurementFeature where
+  withObjCArg (MTRPM25ConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPM25ConcentrationMeasurementFeature where
+  type RawReturn MTRPM25ConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM25ConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRPM25ConcentrationMeasurementFeature x)
+
 -- | @MTRPM25ConcentrationMeasurementLevelValue@
 newtype MTRPM25ConcentrationMeasurementLevelValue = MTRPM25ConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -22560,6 +26323,16 @@ pattern MTRPM25ConcentrationMeasurementLevelValueHigh = MTRPM25ConcentrationMeas
 pattern MTRPM25ConcentrationMeasurementLevelValueCritical :: MTRPM25ConcentrationMeasurementLevelValue
 pattern MTRPM25ConcentrationMeasurementLevelValueCritical = MTRPM25ConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRPM25ConcentrationMeasurementLevelValue where
+  withObjCArg (MTRPM25ConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM25ConcentrationMeasurementLevelValue where
+  type RawReturn MTRPM25ConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM25ConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRPM25ConcentrationMeasurementLevelValue x)
+
 -- | @MTRPM25ConcentrationMeasurementMeasurementMedium@
 newtype MTRPM25ConcentrationMeasurementMeasurementMedium = MTRPM25ConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -22573,6 +26346,16 @@ pattern MTRPM25ConcentrationMeasurementMeasurementMediumWater = MTRPM25Concentra
 
 pattern MTRPM25ConcentrationMeasurementMeasurementMediumSoil :: MTRPM25ConcentrationMeasurementMeasurementMedium
 pattern MTRPM25ConcentrationMeasurementMeasurementMediumSoil = MTRPM25ConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRPM25ConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRPM25ConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM25ConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRPM25ConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM25ConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRPM25ConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRPM25ConcentrationMeasurementMeasurementUnit@
 newtype MTRPM25ConcentrationMeasurementMeasurementUnit = MTRPM25ConcentrationMeasurementMeasurementUnit CUChar
@@ -22603,6 +26386,16 @@ pattern MTRPM25ConcentrationMeasurementMeasurementUnitPM3 = MTRPM25Concentration
 pattern MTRPM25ConcentrationMeasurementMeasurementUnitBQM3 :: MTRPM25ConcentrationMeasurementMeasurementUnit
 pattern MTRPM25ConcentrationMeasurementMeasurementUnitBQM3 = MTRPM25ConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRPM25ConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRPM25ConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPM25ConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRPM25ConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPM25ConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRPM25ConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRPairingStatus@
 newtype MTRPairingStatus = MTRPairingStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -22619,6 +26412,16 @@ pattern MTRPairingStatusFailed = MTRPairingStatus 2
 
 pattern MTRPairingStatusDiscoveringMoreDevices :: MTRPairingStatus
 pattern MTRPairingStatusDiscoveringMoreDevices = MTRPairingStatus 3
+
+instance ObjCArgument MTRPairingStatus where
+  withObjCArg (MTRPairingStatus x) k = k (argCULong x)
+
+instance ObjCReturn MTRPairingStatus where
+  type RawReturn MTRPairingStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPairingStatus x)
+  fromOwned x = pure (MTRPairingStatus x)
 
 -- | @MTRPowerSourceBatApprovedChemistry@
 newtype MTRPowerSourceBatApprovedChemistry = MTRPowerSourceBatApprovedChemistry CUShort
@@ -22724,6 +26527,16 @@ pattern MTRPowerSourceBatApprovedChemistryZincBromide = MTRPowerSourceBatApprove
 pattern MTRPowerSourceBatApprovedChemistryZincCerium :: MTRPowerSourceBatApprovedChemistry
 pattern MTRPowerSourceBatApprovedChemistryZincCerium = MTRPowerSourceBatApprovedChemistry 32
 
+instance ObjCArgument MTRPowerSourceBatApprovedChemistry where
+  withObjCArg (MTRPowerSourceBatApprovedChemistry x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRPowerSourceBatApprovedChemistry where
+  type RawReturn MTRPowerSourceBatApprovedChemistry = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatApprovedChemistry (fromIntegral x))
+  fromOwned x = pure (MTRPowerSourceBatApprovedChemistry (fromIntegral x))
+
 -- | @MTRPowerSourceBatChargeFault@
 newtype MTRPowerSourceBatChargeFault = MTRPowerSourceBatChargeFault CUChar
   deriving stock (Eq, Ord, Show)
@@ -22765,6 +26578,16 @@ pattern MTRPowerSourceBatChargeFaultChargerUnderVoltage = MTRPowerSourceBatCharg
 pattern MTRPowerSourceBatChargeFaultSafetyTimeout :: MTRPowerSourceBatChargeFault
 pattern MTRPowerSourceBatChargeFaultSafetyTimeout = MTRPowerSourceBatChargeFault 10
 
+instance ObjCArgument MTRPowerSourceBatChargeFault where
+  withObjCArg (MTRPowerSourceBatChargeFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceBatChargeFault where
+  type RawReturn MTRPowerSourceBatChargeFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatChargeFault x)
+  fromOwned x = pure (MTRPowerSourceBatChargeFault x)
+
 -- | @MTRPowerSourceBatChargeLevel@
 newtype MTRPowerSourceBatChargeLevel = MTRPowerSourceBatChargeLevel CUChar
   deriving stock (Eq, Ord, Show)
@@ -22782,6 +26605,16 @@ pattern MTRPowerSourceBatChargeLevelWarning = MTRPowerSourceBatChargeLevel 1
 pattern MTRPowerSourceBatChargeLevelCritical :: MTRPowerSourceBatChargeLevel
 pattern MTRPowerSourceBatChargeLevelCritical = MTRPowerSourceBatChargeLevel 2
 
+instance ObjCArgument MTRPowerSourceBatChargeLevel where
+  withObjCArg (MTRPowerSourceBatChargeLevel x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceBatChargeLevel where
+  type RawReturn MTRPowerSourceBatChargeLevel = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatChargeLevel x)
+  fromOwned x = pure (MTRPowerSourceBatChargeLevel x)
+
 -- | @MTRPowerSourceBatChargeState@
 newtype MTRPowerSourceBatChargeState = MTRPowerSourceBatChargeState CUChar
   deriving stock (Eq, Ord, Show)
@@ -22798,6 +26631,16 @@ pattern MTRPowerSourceBatChargeStateIsAtFullCharge = MTRPowerSourceBatChargeStat
 
 pattern MTRPowerSourceBatChargeStateIsNotCharging :: MTRPowerSourceBatChargeState
 pattern MTRPowerSourceBatChargeStateIsNotCharging = MTRPowerSourceBatChargeState 3
+
+instance ObjCArgument MTRPowerSourceBatChargeState where
+  withObjCArg (MTRPowerSourceBatChargeState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceBatChargeState where
+  type RawReturn MTRPowerSourceBatChargeState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatChargeState x)
+  fromOwned x = pure (MTRPowerSourceBatChargeState x)
 
 -- | @MTRPowerSourceBatCommonDesignation@
 newtype MTRPowerSourceBatCommonDesignation = MTRPowerSourceBatCommonDesignation CUShort
@@ -23047,6 +26890,16 @@ pattern MTRPowerSourceBatCommonDesignation26650 = MTRPowerSourceBatCommonDesigna
 pattern MTRPowerSourceBatCommonDesignation32600 :: MTRPowerSourceBatCommonDesignation
 pattern MTRPowerSourceBatCommonDesignation32600 = MTRPowerSourceBatCommonDesignation 80
 
+instance ObjCArgument MTRPowerSourceBatCommonDesignation where
+  withObjCArg (MTRPowerSourceBatCommonDesignation x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRPowerSourceBatCommonDesignation where
+  type RawReturn MTRPowerSourceBatCommonDesignation = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatCommonDesignation (fromIntegral x))
+  fromOwned x = pure (MTRPowerSourceBatCommonDesignation (fromIntegral x))
+
 -- | @MTRPowerSourceBatFault@
 newtype MTRPowerSourceBatFault = MTRPowerSourceBatFault CUChar
   deriving stock (Eq, Ord, Show)
@@ -23064,6 +26917,16 @@ pattern MTRPowerSourceBatFaultOverTemp = MTRPowerSourceBatFault 1
 pattern MTRPowerSourceBatFaultUnderTemp :: MTRPowerSourceBatFault
 pattern MTRPowerSourceBatFaultUnderTemp = MTRPowerSourceBatFault 2
 
+instance ObjCArgument MTRPowerSourceBatFault where
+  withObjCArg (MTRPowerSourceBatFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceBatFault where
+  type RawReturn MTRPowerSourceBatFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatFault x)
+  fromOwned x = pure (MTRPowerSourceBatFault x)
+
 -- | @MTRPowerSourceBatReplaceability@
 newtype MTRPowerSourceBatReplaceability = MTRPowerSourceBatReplaceability CUChar
   deriving stock (Eq, Ord, Show)
@@ -23080,6 +26943,16 @@ pattern MTRPowerSourceBatReplaceabilityUserReplaceable = MTRPowerSourceBatReplac
 
 pattern MTRPowerSourceBatReplaceabilityFactoryReplaceable :: MTRPowerSourceBatReplaceability
 pattern MTRPowerSourceBatReplaceabilityFactoryReplaceable = MTRPowerSourceBatReplaceability 3
+
+instance ObjCArgument MTRPowerSourceBatReplaceability where
+  withObjCArg (MTRPowerSourceBatReplaceability x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceBatReplaceability where
+  type RawReturn MTRPowerSourceBatReplaceability = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceBatReplaceability x)
+  fromOwned x = pure (MTRPowerSourceBatReplaceability x)
 
 -- | @MTRPowerSourceFeature@ (bitmask)
 newtype MTRPowerSourceFeature = MTRPowerSourceFeature CUInt
@@ -23104,6 +26977,16 @@ pattern MTRPowerSourceFeatureRechargeable = MTRPowerSourceFeature 4
 pattern MTRPowerSourceFeatureReplaceable :: MTRPowerSourceFeature
 pattern MTRPowerSourceFeatureReplaceable = MTRPowerSourceFeature 8
 
+instance ObjCArgument MTRPowerSourceFeature where
+  withObjCArg (MTRPowerSourceFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPowerSourceFeature where
+  type RawReturn MTRPowerSourceFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceFeature x)
+  fromOwned x = pure (MTRPowerSourceFeature x)
+
 -- | @MTRPowerSourceStatus@
 newtype MTRPowerSourceStatus = MTRPowerSourceStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -23124,6 +27007,16 @@ pattern MTRPowerSourceStatusStandby = MTRPowerSourceStatus 2
 pattern MTRPowerSourceStatusUnavailable :: MTRPowerSourceStatus
 pattern MTRPowerSourceStatusUnavailable = MTRPowerSourceStatus 3
 
+instance ObjCArgument MTRPowerSourceStatus where
+  withObjCArg (MTRPowerSourceStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceStatus where
+  type RawReturn MTRPowerSourceStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceStatus x)
+  fromOwned x = pure (MTRPowerSourceStatus x)
+
 -- | @MTRPowerSourceWiredCurrentType@
 newtype MTRPowerSourceWiredCurrentType = MTRPowerSourceWiredCurrentType CUChar
   deriving stock (Eq, Ord, Show)
@@ -23134,6 +27027,16 @@ pattern MTRPowerSourceWiredCurrentTypeAC = MTRPowerSourceWiredCurrentType 0
 
 pattern MTRPowerSourceWiredCurrentTypeDC :: MTRPowerSourceWiredCurrentType
 pattern MTRPowerSourceWiredCurrentTypeDC = MTRPowerSourceWiredCurrentType 1
+
+instance ObjCArgument MTRPowerSourceWiredCurrentType where
+  withObjCArg (MTRPowerSourceWiredCurrentType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceWiredCurrentType where
+  type RawReturn MTRPowerSourceWiredCurrentType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceWiredCurrentType x)
+  fromOwned x = pure (MTRPowerSourceWiredCurrentType x)
 
 -- | @MTRPowerSourceWiredFault@
 newtype MTRPowerSourceWiredFault = MTRPowerSourceWiredFault CUChar
@@ -23151,6 +27054,16 @@ pattern MTRPowerSourceWiredFaultOverVoltage = MTRPowerSourceWiredFault 1
 
 pattern MTRPowerSourceWiredFaultUnderVoltage :: MTRPowerSourceWiredFault
 pattern MTRPowerSourceWiredFaultUnderVoltage = MTRPowerSourceWiredFault 2
+
+instance ObjCArgument MTRPowerSourceWiredFault where
+  withObjCArg (MTRPowerSourceWiredFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPowerSourceWiredFault where
+  type RawReturn MTRPowerSourceWiredFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerSourceWiredFault x)
+  fromOwned x = pure (MTRPowerSourceWiredFault x)
 
 -- | @MTRPowerTopologyFeature@ (bitmask)
 newtype MTRPowerTopologyFeature = MTRPowerTopologyFeature CUInt
@@ -23178,6 +27091,16 @@ pattern MTRPowerTopologyFeatureDynamicPowerFlow = MTRPowerTopologyFeature 8
 pattern MTRPowerTopologyFeatureElectricalCircuit :: MTRPowerTopologyFeature
 pattern MTRPowerTopologyFeatureElectricalCircuit = MTRPowerTopologyFeature 16
 
+instance ObjCArgument MTRPowerTopologyFeature where
+  withObjCArg (MTRPowerTopologyFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPowerTopologyFeature where
+  type RawReturn MTRPowerTopologyFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPowerTopologyFeature x)
+  fromOwned x = pure (MTRPowerTopologyFeature x)
+
 -- | @MTRPressureMeasurementFeature@ (bitmask)
 newtype MTRPressureMeasurementFeature = MTRPressureMeasurementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -23191,6 +27114,16 @@ instance Monoid MTRPressureMeasurementFeature where
 
 pattern MTRPressureMeasurementFeatureExtended :: MTRPressureMeasurementFeature
 pattern MTRPressureMeasurementFeatureExtended = MTRPressureMeasurementFeature 1
+
+instance ObjCArgument MTRPressureMeasurementFeature where
+  withObjCArg (MTRPressureMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPressureMeasurementFeature where
+  type RawReturn MTRPressureMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPressureMeasurementFeature x)
+  fromOwned x = pure (MTRPressureMeasurementFeature x)
 
 -- | @MTRPressureMeasurementPressureFeature@ (bitmask)
 newtype MTRPressureMeasurementPressureFeature = MTRPressureMeasurementPressureFeature CUInt
@@ -23208,6 +27141,16 @@ pattern MTRPressureMeasurementPressureFeatureExtended = MTRPressureMeasurementPr
 
 pattern MTRPressureMeasurementPressureFeatureEXT :: MTRPressureMeasurementPressureFeature
 pattern MTRPressureMeasurementPressureFeatureEXT = MTRPressureMeasurementPressureFeature 1
+
+instance ObjCArgument MTRPressureMeasurementPressureFeature where
+  withObjCArg (MTRPressureMeasurementPressureFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPressureMeasurementPressureFeature where
+  type RawReturn MTRPressureMeasurementPressureFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPressureMeasurementPressureFeature x)
+  fromOwned x = pure (MTRPressureMeasurementPressureFeature x)
 
 -- | @MTRPumpConfigurationAndControlControlMode@
 newtype MTRPumpConfigurationAndControlControlMode = MTRPumpConfigurationAndControlControlMode CUChar
@@ -23231,6 +27174,16 @@ pattern MTRPumpConfigurationAndControlControlModeConstantTemperature = MTRPumpCo
 
 pattern MTRPumpConfigurationAndControlControlModeAutomatic :: MTRPumpConfigurationAndControlControlMode
 pattern MTRPumpConfigurationAndControlControlModeAutomatic = MTRPumpConfigurationAndControlControlMode 7
+
+instance ObjCArgument MTRPumpConfigurationAndControlControlMode where
+  withObjCArg (MTRPumpConfigurationAndControlControlMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlControlMode where
+  type RawReturn MTRPumpConfigurationAndControlControlMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlControlMode x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlControlMode x)
 
 -- | @MTRPumpConfigurationAndControlFeature@ (bitmask)
 newtype MTRPumpConfigurationAndControlFeature = MTRPumpConfigurationAndControlFeature CUInt
@@ -23264,6 +27217,16 @@ pattern MTRPumpConfigurationAndControlFeatureAutomatic = MTRPumpConfigurationAnd
 pattern MTRPumpConfigurationAndControlFeatureLocalOperation :: MTRPumpConfigurationAndControlFeature
 pattern MTRPumpConfigurationAndControlFeatureLocalOperation = MTRPumpConfigurationAndControlFeature 64
 
+instance ObjCArgument MTRPumpConfigurationAndControlFeature where
+  withObjCArg (MTRPumpConfigurationAndControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlFeature where
+  type RawReturn MTRPumpConfigurationAndControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlFeature x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlFeature x)
+
 -- | @MTRPumpConfigurationAndControlOperationMode@
 newtype MTRPumpConfigurationAndControlOperationMode = MTRPumpConfigurationAndControlOperationMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -23280,6 +27243,16 @@ pattern MTRPumpConfigurationAndControlOperationModeMaximum = MTRPumpConfiguratio
 
 pattern MTRPumpConfigurationAndControlOperationModeLocal :: MTRPumpConfigurationAndControlOperationMode
 pattern MTRPumpConfigurationAndControlOperationModeLocal = MTRPumpConfigurationAndControlOperationMode 3
+
+instance ObjCArgument MTRPumpConfigurationAndControlOperationMode where
+  withObjCArg (MTRPumpConfigurationAndControlOperationMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlOperationMode where
+  type RawReturn MTRPumpConfigurationAndControlOperationMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlOperationMode x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlOperationMode x)
 
 -- | @MTRPumpConfigurationAndControlPumpControlMode@
 newtype MTRPumpConfigurationAndControlPumpControlMode = MTRPumpConfigurationAndControlPumpControlMode CUChar
@@ -23303,6 +27276,16 @@ pattern MTRPumpConfigurationAndControlPumpControlModeConstantTemperature = MTRPu
 
 pattern MTRPumpConfigurationAndControlPumpControlModeAutomatic :: MTRPumpConfigurationAndControlPumpControlMode
 pattern MTRPumpConfigurationAndControlPumpControlModeAutomatic = MTRPumpConfigurationAndControlPumpControlMode 7
+
+instance ObjCArgument MTRPumpConfigurationAndControlPumpControlMode where
+  withObjCArg (MTRPumpConfigurationAndControlPumpControlMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlPumpControlMode where
+  type RawReturn MTRPumpConfigurationAndControlPumpControlMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlPumpControlMode x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlPumpControlMode x)
 
 -- | @MTRPumpConfigurationAndControlPumpFeature@ (bitmask)
 newtype MTRPumpConfigurationAndControlPumpFeature = MTRPumpConfigurationAndControlPumpFeature CUInt
@@ -23339,6 +27322,16 @@ pattern MTRPumpConfigurationAndControlPumpFeatureLocalOperation = MTRPumpConfigu
 pattern MTRPumpConfigurationAndControlPumpFeatureLocal :: MTRPumpConfigurationAndControlPumpFeature
 pattern MTRPumpConfigurationAndControlPumpFeatureLocal = MTRPumpConfigurationAndControlPumpFeature 64
 
+instance ObjCArgument MTRPumpConfigurationAndControlPumpFeature where
+  withObjCArg (MTRPumpConfigurationAndControlPumpFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlPumpFeature where
+  type RawReturn MTRPumpConfigurationAndControlPumpFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlPumpFeature x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlPumpFeature x)
+
 -- | @MTRPumpConfigurationAndControlPumpOperationMode@
 newtype MTRPumpConfigurationAndControlPumpOperationMode = MTRPumpConfigurationAndControlPumpOperationMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -23355,6 +27348,16 @@ pattern MTRPumpConfigurationAndControlPumpOperationModeMaximum = MTRPumpConfigur
 
 pattern MTRPumpConfigurationAndControlPumpOperationModeLocal :: MTRPumpConfigurationAndControlPumpOperationMode
 pattern MTRPumpConfigurationAndControlPumpOperationModeLocal = MTRPumpConfigurationAndControlPumpOperationMode 3
+
+instance ObjCArgument MTRPumpConfigurationAndControlPumpOperationMode where
+  withObjCArg (MTRPumpConfigurationAndControlPumpOperationMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPumpConfigurationAndControlPumpOperationMode where
+  type RawReturn MTRPumpConfigurationAndControlPumpOperationMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlPumpOperationMode x)
+  fromOwned x = pure (MTRPumpConfigurationAndControlPumpOperationMode x)
 
 -- | @MTRPumpConfigurationAndControlPumpStatus@ (bitmask)
 newtype MTRPumpConfigurationAndControlPumpStatus = MTRPumpConfigurationAndControlPumpStatus CUShort
@@ -23393,6 +27396,16 @@ pattern MTRPumpConfigurationAndControlPumpStatusRemoteFlow = MTRPumpConfiguratio
 
 pattern MTRPumpConfigurationAndControlPumpStatusRemoteTemperature :: MTRPumpConfigurationAndControlPumpStatus
 pattern MTRPumpConfigurationAndControlPumpStatusRemoteTemperature = MTRPumpConfigurationAndControlPumpStatus 256
+
+instance ObjCArgument MTRPumpConfigurationAndControlPumpStatus where
+  withObjCArg (MTRPumpConfigurationAndControlPumpStatus x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRPumpConfigurationAndControlPumpStatus where
+  type RawReturn MTRPumpConfigurationAndControlPumpStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlPumpStatus (fromIntegral x))
+  fromOwned x = pure (MTRPumpConfigurationAndControlPumpStatus (fromIntegral x))
 
 -- | @MTRPumpConfigurationAndControlPumpStatusBitmap@ (bitmask)
 newtype MTRPumpConfigurationAndControlPumpStatusBitmap = MTRPumpConfigurationAndControlPumpStatusBitmap CUShort
@@ -23435,6 +27448,16 @@ pattern MTRPumpConfigurationAndControlPumpStatusBitmapRemoteFlow = MTRPumpConfig
 pattern MTRPumpConfigurationAndControlPumpStatusBitmapRemoteTemperature :: MTRPumpConfigurationAndControlPumpStatusBitmap
 pattern MTRPumpConfigurationAndControlPumpStatusBitmapRemoteTemperature = MTRPumpConfigurationAndControlPumpStatusBitmap 256
 
+instance ObjCArgument MTRPumpConfigurationAndControlPumpStatusBitmap where
+  withObjCArg (MTRPumpConfigurationAndControlPumpStatusBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRPumpConfigurationAndControlPumpStatusBitmap where
+  type RawReturn MTRPumpConfigurationAndControlPumpStatusBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPumpConfigurationAndControlPumpStatusBitmap (fromIntegral x))
+  fromOwned x = pure (MTRPumpConfigurationAndControlPumpStatusBitmap (fromIntegral x))
+
 -- | @MTRPushAVStreamTransportCMAFInterface@
 newtype MTRPushAVStreamTransportCMAFInterface = MTRPushAVStreamTransportCMAFInterface CUChar
   deriving stock (Eq, Ord, Show)
@@ -23449,6 +27472,16 @@ pattern MTRPushAVStreamTransportCMAFInterfaceInterface2DASH = MTRPushAVStreamTra
 pattern MTRPushAVStreamTransportCMAFInterfaceInterface2HLS :: MTRPushAVStreamTransportCMAFInterface
 pattern MTRPushAVStreamTransportCMAFInterfaceInterface2HLS = MTRPushAVStreamTransportCMAFInterface 2
 
+instance ObjCArgument MTRPushAVStreamTransportCMAFInterface where
+  withObjCArg (MTRPushAVStreamTransportCMAFInterface x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportCMAFInterface where
+  type RawReturn MTRPushAVStreamTransportCMAFInterface = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportCMAFInterface x)
+  fromOwned x = pure (MTRPushAVStreamTransportCMAFInterface x)
+
 -- | @MTRPushAVStreamTransportContainerFormat@
 newtype MTRPushAVStreamTransportContainerFormat = MTRPushAVStreamTransportContainerFormat CUChar
   deriving stock (Eq, Ord, Show)
@@ -23456,6 +27489,16 @@ newtype MTRPushAVStreamTransportContainerFormat = MTRPushAVStreamTransportContai
 
 pattern MTRPushAVStreamTransportContainerFormatCMAF :: MTRPushAVStreamTransportContainerFormat
 pattern MTRPushAVStreamTransportContainerFormatCMAF = MTRPushAVStreamTransportContainerFormat 0
+
+instance ObjCArgument MTRPushAVStreamTransportContainerFormat where
+  withObjCArg (MTRPushAVStreamTransportContainerFormat x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportContainerFormat where
+  type RawReturn MTRPushAVStreamTransportContainerFormat = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportContainerFormat x)
+  fromOwned x = pure (MTRPushAVStreamTransportContainerFormat x)
 
 -- | @MTRPushAVStreamTransportFeature@ (bitmask)
 newtype MTRPushAVStreamTransportFeature = MTRPushAVStreamTransportFeature CUInt
@@ -23474,6 +27517,16 @@ pattern MTRPushAVStreamTransportFeaturePerZoneSensitivity = MTRPushAVStreamTrans
 pattern MTRPushAVStreamTransportFeatureMetadata :: MTRPushAVStreamTransportFeature
 pattern MTRPushAVStreamTransportFeatureMetadata = MTRPushAVStreamTransportFeature 2
 
+instance ObjCArgument MTRPushAVStreamTransportFeature where
+  withObjCArg (MTRPushAVStreamTransportFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRPushAVStreamTransportFeature where
+  type RawReturn MTRPushAVStreamTransportFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportFeature x)
+  fromOwned x = pure (MTRPushAVStreamTransportFeature x)
+
 -- | @MTRPushAVStreamTransportIngestMethods@
 newtype MTRPushAVStreamTransportIngestMethods = MTRPushAVStreamTransportIngestMethods CUChar
   deriving stock (Eq, Ord, Show)
@@ -23481,6 +27534,16 @@ newtype MTRPushAVStreamTransportIngestMethods = MTRPushAVStreamTransportIngestMe
 
 pattern MTRPushAVStreamTransportIngestMethodsCMAFIngest :: MTRPushAVStreamTransportIngestMethods
 pattern MTRPushAVStreamTransportIngestMethodsCMAFIngest = MTRPushAVStreamTransportIngestMethods 0
+
+instance ObjCArgument MTRPushAVStreamTransportIngestMethods where
+  withObjCArg (MTRPushAVStreamTransportIngestMethods x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportIngestMethods where
+  type RawReturn MTRPushAVStreamTransportIngestMethods = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportIngestMethods x)
+  fromOwned x = pure (MTRPushAVStreamTransportIngestMethods x)
 
 -- | @MTRPushAVStreamTransportStatusCode@
 newtype MTRPushAVStreamTransportStatusCode = MTRPushAVStreamTransportStatusCode CUChar
@@ -23517,6 +27580,16 @@ pattern MTRPushAVStreamTransportStatusCodeInvalidStreamUsage = MTRPushAVStreamTr
 pattern MTRPushAVStreamTransportStatusCodeInvalidTime :: MTRPushAVStreamTransportStatusCode
 pattern MTRPushAVStreamTransportStatusCodeInvalidTime = MTRPushAVStreamTransportStatusCode 11
 
+instance ObjCArgument MTRPushAVStreamTransportStatusCode where
+  withObjCArg (MTRPushAVStreamTransportStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportStatusCode where
+  type RawReturn MTRPushAVStreamTransportStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportStatusCode x)
+  fromOwned x = pure (MTRPushAVStreamTransportStatusCode x)
+
 -- | @MTRPushAVStreamTransportTransportStatus@
 newtype MTRPushAVStreamTransportTransportStatus = MTRPushAVStreamTransportTransportStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -23527,6 +27600,16 @@ pattern MTRPushAVStreamTransportTransportStatusActive = MTRPushAVStreamTransport
 
 pattern MTRPushAVStreamTransportTransportStatusInactive :: MTRPushAVStreamTransportTransportStatus
 pattern MTRPushAVStreamTransportTransportStatusInactive = MTRPushAVStreamTransportTransportStatus 1
+
+instance ObjCArgument MTRPushAVStreamTransportTransportStatus where
+  withObjCArg (MTRPushAVStreamTransportTransportStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportTransportStatus where
+  type RawReturn MTRPushAVStreamTransportTransportStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportTransportStatus x)
+  fromOwned x = pure (MTRPushAVStreamTransportTransportStatus x)
 
 -- | @MTRPushAVStreamTransportTransportTriggerType@
 newtype MTRPushAVStreamTransportTransportTriggerType = MTRPushAVStreamTransportTransportTriggerType CUChar
@@ -23542,6 +27625,16 @@ pattern MTRPushAVStreamTransportTransportTriggerTypeMotion = MTRPushAVStreamTran
 pattern MTRPushAVStreamTransportTransportTriggerTypeContinuous :: MTRPushAVStreamTransportTransportTriggerType
 pattern MTRPushAVStreamTransportTransportTriggerTypeContinuous = MTRPushAVStreamTransportTransportTriggerType 2
 
+instance ObjCArgument MTRPushAVStreamTransportTransportTriggerType where
+  withObjCArg (MTRPushAVStreamTransportTransportTriggerType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportTransportTriggerType where
+  type RawReturn MTRPushAVStreamTransportTransportTriggerType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportTransportTriggerType x)
+  fromOwned x = pure (MTRPushAVStreamTransportTransportTriggerType x)
+
 -- | @MTRPushAVStreamTransportTriggerActivationReason@
 newtype MTRPushAVStreamTransportTriggerActivationReason = MTRPushAVStreamTransportTriggerActivationReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -23556,6 +27649,16 @@ pattern MTRPushAVStreamTransportTriggerActivationReasonAutomation = MTRPushAVStr
 pattern MTRPushAVStreamTransportTriggerActivationReasonEmergency :: MTRPushAVStreamTransportTriggerActivationReason
 pattern MTRPushAVStreamTransportTriggerActivationReasonEmergency = MTRPushAVStreamTransportTriggerActivationReason 2
 
+instance ObjCArgument MTRPushAVStreamTransportTriggerActivationReason where
+  withObjCArg (MTRPushAVStreamTransportTriggerActivationReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRPushAVStreamTransportTriggerActivationReason where
+  type RawReturn MTRPushAVStreamTransportTriggerActivationReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRPushAVStreamTransportTriggerActivationReason x)
+  fromOwned x = pure (MTRPushAVStreamTransportTriggerActivationReason x)
+
 -- | @MTRRVCCleanModeFeature@ (bitmask)
 newtype MTRRVCCleanModeFeature = MTRRVCCleanModeFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -23569,6 +27672,16 @@ instance Monoid MTRRVCCleanModeFeature where
 
 pattern MTRRVCCleanModeFeatureDirectModeChange :: MTRRVCCleanModeFeature
 pattern MTRRVCCleanModeFeatureDirectModeChange = MTRRVCCleanModeFeature 65536
+
+instance ObjCArgument MTRRVCCleanModeFeature where
+  withObjCArg (MTRRVCCleanModeFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRRVCCleanModeFeature where
+  type RawReturn MTRRVCCleanModeFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCCleanModeFeature x)
+  fromOwned x = pure (MTRRVCCleanModeFeature x)
 
 -- | @MTRRVCCleanModeModeTag@
 newtype MTRRVCCleanModeModeTag = MTRRVCCleanModeModeTag CUShort
@@ -23617,6 +27730,16 @@ pattern MTRRVCCleanModeModeTagMop = MTRRVCCleanModeModeTag 16386
 pattern MTRRVCCleanModeModeTagVacuumThenMop :: MTRRVCCleanModeModeTag
 pattern MTRRVCCleanModeModeTagVacuumThenMop = MTRRVCCleanModeModeTag 16387
 
+instance ObjCArgument MTRRVCCleanModeModeTag where
+  withObjCArg (MTRRVCCleanModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRRVCCleanModeModeTag where
+  type RawReturn MTRRVCCleanModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCCleanModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRRVCCleanModeModeTag (fromIntegral x))
+
 -- | @MTRRVCCleanModeStatusCode@
 newtype MTRRVCCleanModeStatusCode = MTRRVCCleanModeStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -23624,6 +27747,16 @@ newtype MTRRVCCleanModeStatusCode = MTRRVCCleanModeStatusCode CUChar
 
 pattern MTRRVCCleanModeStatusCodeCleaningInProgress :: MTRRVCCleanModeStatusCode
 pattern MTRRVCCleanModeStatusCodeCleaningInProgress = MTRRVCCleanModeStatusCode 64
+
+instance ObjCArgument MTRRVCCleanModeStatusCode where
+  withObjCArg (MTRRVCCleanModeStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRVCCleanModeStatusCode where
+  type RawReturn MTRRVCCleanModeStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCCleanModeStatusCode x)
+  fromOwned x = pure (MTRRVCCleanModeStatusCode x)
 
 -- | @MTRRVCOperationalStateErrorState@
 newtype MTRRVCOperationalStateErrorState = MTRRVCOperationalStateErrorState CUChar
@@ -23687,6 +27820,16 @@ pattern MTRRVCOperationalStateErrorStateBrushJammed = MTRRVCOperationalStateErro
 pattern MTRRVCOperationalStateErrorStateNavigationSensorObscured :: MTRRVCOperationalStateErrorState
 pattern MTRRVCOperationalStateErrorStateNavigationSensorObscured = MTRRVCOperationalStateErrorState 78
 
+instance ObjCArgument MTRRVCOperationalStateErrorState where
+  withObjCArg (MTRRVCOperationalStateErrorState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRVCOperationalStateErrorState where
+  type RawReturn MTRRVCOperationalStateErrorState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCOperationalStateErrorState x)
+  fromOwned x = pure (MTRRVCOperationalStateErrorState x)
+
 -- | @MTRRVCOperationalStateOperationalState@
 newtype MTRRVCOperationalStateOperationalState = MTRRVCOperationalStateOperationalState CUChar
   deriving stock (Eq, Ord, Show)
@@ -23725,6 +27868,16 @@ pattern MTRRVCOperationalStateOperationalStateFillingWaterTank = MTRRVCOperation
 pattern MTRRVCOperationalStateOperationalStateUpdatingMaps :: MTRRVCOperationalStateOperationalState
 pattern MTRRVCOperationalStateOperationalStateUpdatingMaps = MTRRVCOperationalStateOperationalState 70
 
+instance ObjCArgument MTRRVCOperationalStateOperationalState where
+  withObjCArg (MTRRVCOperationalStateOperationalState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRVCOperationalStateOperationalState where
+  type RawReturn MTRRVCOperationalStateOperationalState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCOperationalStateOperationalState x)
+  fromOwned x = pure (MTRRVCOperationalStateOperationalState x)
+
 -- | @MTRRVCRunModeFeature@ (bitmask)
 newtype MTRRVCRunModeFeature = MTRRVCRunModeFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -23738,6 +27891,16 @@ instance Monoid MTRRVCRunModeFeature where
 
 pattern MTRRVCRunModeFeatureDirectModeChange :: MTRRVCRunModeFeature
 pattern MTRRVCRunModeFeatureDirectModeChange = MTRRVCRunModeFeature 65536
+
+instance ObjCArgument MTRRVCRunModeFeature where
+  withObjCArg (MTRRVCRunModeFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRRVCRunModeFeature where
+  type RawReturn MTRRVCRunModeFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCRunModeFeature x)
+  fromOwned x = pure (MTRRVCRunModeFeature x)
 
 -- | @MTRRVCRunModeModeTag@
 newtype MTRRVCRunModeModeTag = MTRRVCRunModeModeTag CUShort
@@ -23783,6 +27946,16 @@ pattern MTRRVCRunModeModeTagCleaning = MTRRVCRunModeModeTag 16385
 pattern MTRRVCRunModeModeTagMapping :: MTRRVCRunModeModeTag
 pattern MTRRVCRunModeModeTagMapping = MTRRVCRunModeModeTag 16386
 
+instance ObjCArgument MTRRVCRunModeModeTag where
+  withObjCArg (MTRRVCRunModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRRVCRunModeModeTag where
+  type RawReturn MTRRVCRunModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCRunModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRRVCRunModeModeTag (fromIntegral x))
+
 -- | @MTRRVCRunModeStatusCode@
 newtype MTRRVCRunModeStatusCode = MTRRVCRunModeStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -23811,6 +27984,16 @@ pattern MTRRVCRunModeStatusCodeMopCleaningPadMissing = MTRRVCRunModeStatusCode 7
 
 pattern MTRRVCRunModeStatusCodeBatteryLow :: MTRRVCRunModeStatusCode
 pattern MTRRVCRunModeStatusCodeBatteryLow = MTRRVCRunModeStatusCode 72
+
+instance ObjCArgument MTRRVCRunModeStatusCode where
+  withObjCArg (MTRRVCRunModeStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRVCRunModeStatusCode where
+  type RawReturn MTRRVCRunModeStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRVCRunModeStatusCode x)
+  fromOwned x = pure (MTRRVCRunModeStatusCode x)
 
 -- | @MTRRadonConcentrationMeasurementFeature@ (bitmask)
 newtype MTRRadonConcentrationMeasurementFeature = MTRRadonConcentrationMeasurementFeature CUInt
@@ -23841,6 +28024,16 @@ pattern MTRRadonConcentrationMeasurementFeaturePeakMeasurement = MTRRadonConcent
 pattern MTRRadonConcentrationMeasurementFeatureAverageMeasurement :: MTRRadonConcentrationMeasurementFeature
 pattern MTRRadonConcentrationMeasurementFeatureAverageMeasurement = MTRRadonConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRRadonConcentrationMeasurementFeature where
+  withObjCArg (MTRRadonConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRRadonConcentrationMeasurementFeature where
+  type RawReturn MTRRadonConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRadonConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRRadonConcentrationMeasurementFeature x)
+
 -- | @MTRRadonConcentrationMeasurementLevelValue@
 newtype MTRRadonConcentrationMeasurementLevelValue = MTRRadonConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -23861,6 +28054,16 @@ pattern MTRRadonConcentrationMeasurementLevelValueHigh = MTRRadonConcentrationMe
 pattern MTRRadonConcentrationMeasurementLevelValueCritical :: MTRRadonConcentrationMeasurementLevelValue
 pattern MTRRadonConcentrationMeasurementLevelValueCritical = MTRRadonConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRRadonConcentrationMeasurementLevelValue where
+  withObjCArg (MTRRadonConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRadonConcentrationMeasurementLevelValue where
+  type RawReturn MTRRadonConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRadonConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRRadonConcentrationMeasurementLevelValue x)
+
 -- | @MTRRadonConcentrationMeasurementMeasurementMedium@
 newtype MTRRadonConcentrationMeasurementMeasurementMedium = MTRRadonConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -23874,6 +28077,16 @@ pattern MTRRadonConcentrationMeasurementMeasurementMediumWater = MTRRadonConcent
 
 pattern MTRRadonConcentrationMeasurementMeasurementMediumSoil :: MTRRadonConcentrationMeasurementMeasurementMedium
 pattern MTRRadonConcentrationMeasurementMeasurementMediumSoil = MTRRadonConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRRadonConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRRadonConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRadonConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRRadonConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRadonConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRRadonConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRRadonConcentrationMeasurementMeasurementUnit@
 newtype MTRRadonConcentrationMeasurementMeasurementUnit = MTRRadonConcentrationMeasurementMeasurementUnit CUChar
@@ -23904,6 +28117,16 @@ pattern MTRRadonConcentrationMeasurementMeasurementUnitPM3 = MTRRadonConcentrati
 pattern MTRRadonConcentrationMeasurementMeasurementUnitBQM3 :: MTRRadonConcentrationMeasurementMeasurementUnit
 pattern MTRRadonConcentrationMeasurementMeasurementUnitBQM3 = MTRRadonConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRRadonConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRRadonConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRRadonConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRRadonConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRadonConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRRadonConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRRefrigeratorAlarmAlarmBitmap@ (bitmask)
 newtype MTRRefrigeratorAlarmAlarmBitmap = MTRRefrigeratorAlarmAlarmBitmap CUInt
   deriving stock (Eq, Ord, Show)
@@ -23917,6 +28140,16 @@ instance Monoid MTRRefrigeratorAlarmAlarmBitmap where
 
 pattern MTRRefrigeratorAlarmAlarmBitmapDoorOpen :: MTRRefrigeratorAlarmAlarmBitmap
 pattern MTRRefrigeratorAlarmAlarmBitmapDoorOpen = MTRRefrigeratorAlarmAlarmBitmap 1
+
+instance ObjCArgument MTRRefrigeratorAlarmAlarmBitmap where
+  withObjCArg (MTRRefrigeratorAlarmAlarmBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRRefrigeratorAlarmAlarmBitmap where
+  type RawReturn MTRRefrigeratorAlarmAlarmBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRefrigeratorAlarmAlarmBitmap x)
+  fromOwned x = pure (MTRRefrigeratorAlarmAlarmBitmap x)
 
 -- | @MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag@
 newtype MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag = MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag CUShort
@@ -23959,6 +28192,16 @@ pattern MTRRefrigeratorAndTemperatureControlledCabinetModeModeTagRapidCool = MTR
 pattern MTRRefrigeratorAndTemperatureControlledCabinetModeModeTagRapidFreeze :: MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag
 pattern MTRRefrigeratorAndTemperatureControlledCabinetModeModeTagRapidFreeze = MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag 16385
 
+instance ObjCArgument MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag where
+  withObjCArg (MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag where
+  type RawReturn MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRRefrigeratorAndTemperatureControlledCabinetModeModeTag (fromIntegral x))
+
 -- | @MTRScenesManagementCopyModeBitmap@ (bitmask)
 newtype MTRScenesManagementCopyModeBitmap = MTRScenesManagementCopyModeBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -23973,6 +28216,16 @@ instance Monoid MTRScenesManagementCopyModeBitmap where
 pattern MTRScenesManagementCopyModeBitmapCopyAllScenes :: MTRScenesManagementCopyModeBitmap
 pattern MTRScenesManagementCopyModeBitmapCopyAllScenes = MTRScenesManagementCopyModeBitmap 1
 
+instance ObjCArgument MTRScenesManagementCopyModeBitmap where
+  withObjCArg (MTRScenesManagementCopyModeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRScenesManagementCopyModeBitmap where
+  type RawReturn MTRScenesManagementCopyModeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRScenesManagementCopyModeBitmap x)
+  fromOwned x = pure (MTRScenesManagementCopyModeBitmap x)
+
 -- | @MTRScenesManagementFeature@ (bitmask)
 newtype MTRScenesManagementFeature = MTRScenesManagementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -23986,6 +28239,16 @@ instance Monoid MTRScenesManagementFeature where
 
 pattern MTRScenesManagementFeatureSceneNames :: MTRScenesManagementFeature
 pattern MTRScenesManagementFeatureSceneNames = MTRScenesManagementFeature 1
+
+instance ObjCArgument MTRScenesManagementFeature where
+  withObjCArg (MTRScenesManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRScenesManagementFeature where
+  type RawReturn MTRScenesManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRScenesManagementFeature x)
+  fromOwned x = pure (MTRScenesManagementFeature x)
 
 -- | @MTRServiceAreaFeature@ (bitmask)
 newtype MTRServiceAreaFeature = MTRServiceAreaFeature CUInt
@@ -24007,6 +28270,16 @@ pattern MTRServiceAreaFeatureProgressReporting = MTRServiceAreaFeature 2
 pattern MTRServiceAreaFeatureMaps :: MTRServiceAreaFeature
 pattern MTRServiceAreaFeatureMaps = MTRServiceAreaFeature 4
 
+instance ObjCArgument MTRServiceAreaFeature where
+  withObjCArg (MTRServiceAreaFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRServiceAreaFeature where
+  type RawReturn MTRServiceAreaFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRServiceAreaFeature x)
+  fromOwned x = pure (MTRServiceAreaFeature x)
+
 -- | @MTRServiceAreaOperationalStatus@
 newtype MTRServiceAreaOperationalStatus = MTRServiceAreaOperationalStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -24023,6 +28296,16 @@ pattern MTRServiceAreaOperationalStatusSkipped = MTRServiceAreaOperationalStatus
 
 pattern MTRServiceAreaOperationalStatusCompleted :: MTRServiceAreaOperationalStatus
 pattern MTRServiceAreaOperationalStatusCompleted = MTRServiceAreaOperationalStatus 3
+
+instance ObjCArgument MTRServiceAreaOperationalStatus where
+  withObjCArg (MTRServiceAreaOperationalStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRServiceAreaOperationalStatus where
+  type RawReturn MTRServiceAreaOperationalStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRServiceAreaOperationalStatus x)
+  fromOwned x = pure (MTRServiceAreaOperationalStatus x)
 
 -- | @MTRServiceAreaSelectAreasStatus@
 newtype MTRServiceAreaSelectAreasStatus = MTRServiceAreaSelectAreasStatus CUChar
@@ -24041,6 +28324,16 @@ pattern MTRServiceAreaSelectAreasStatusInvalidInMode = MTRServiceAreaSelectAreas
 pattern MTRServiceAreaSelectAreasStatusInvalidSet :: MTRServiceAreaSelectAreasStatus
 pattern MTRServiceAreaSelectAreasStatusInvalidSet = MTRServiceAreaSelectAreasStatus 3
 
+instance ObjCArgument MTRServiceAreaSelectAreasStatus where
+  withObjCArg (MTRServiceAreaSelectAreasStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRServiceAreaSelectAreasStatus where
+  type RawReturn MTRServiceAreaSelectAreasStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRServiceAreaSelectAreasStatus x)
+  fromOwned x = pure (MTRServiceAreaSelectAreasStatus x)
+
 -- | @MTRServiceAreaSkipAreaStatus@
 newtype MTRServiceAreaSkipAreaStatus = MTRServiceAreaSkipAreaStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -24058,6 +28351,16 @@ pattern MTRServiceAreaSkipAreaStatusInvalidInMode = MTRServiceAreaSkipAreaStatus
 pattern MTRServiceAreaSkipAreaStatusInvalidSkippedArea :: MTRServiceAreaSkipAreaStatus
 pattern MTRServiceAreaSkipAreaStatusInvalidSkippedArea = MTRServiceAreaSkipAreaStatus 3
 
+instance ObjCArgument MTRServiceAreaSkipAreaStatus where
+  withObjCArg (MTRServiceAreaSkipAreaStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRServiceAreaSkipAreaStatus where
+  type RawReturn MTRServiceAreaSkipAreaStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRServiceAreaSkipAreaStatus x)
+  fromOwned x = pure (MTRServiceAreaSkipAreaStatus x)
+
 -- | @MTRSmokeCOAlarmAlarmState@
 newtype MTRSmokeCOAlarmAlarmState = MTRSmokeCOAlarmAlarmState CUChar
   deriving stock (Eq, Ord, Show)
@@ -24071,6 +28374,16 @@ pattern MTRSmokeCOAlarmAlarmStateWarning = MTRSmokeCOAlarmAlarmState 1
 
 pattern MTRSmokeCOAlarmAlarmStateCritical :: MTRSmokeCOAlarmAlarmState
 pattern MTRSmokeCOAlarmAlarmStateCritical = MTRSmokeCOAlarmAlarmState 2
+
+instance ObjCArgument MTRSmokeCOAlarmAlarmState where
+  withObjCArg (MTRSmokeCOAlarmAlarmState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmAlarmState where
+  type RawReturn MTRSmokeCOAlarmAlarmState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmAlarmState x)
+  fromOwned x = pure (MTRSmokeCOAlarmAlarmState x)
 
 -- | @MTRSmokeCOAlarmContaminationState@
 newtype MTRSmokeCOAlarmContaminationState = MTRSmokeCOAlarmContaminationState CUChar
@@ -24089,6 +28402,16 @@ pattern MTRSmokeCOAlarmContaminationStateWarning = MTRSmokeCOAlarmContaminationS
 pattern MTRSmokeCOAlarmContaminationStateCritical :: MTRSmokeCOAlarmContaminationState
 pattern MTRSmokeCOAlarmContaminationStateCritical = MTRSmokeCOAlarmContaminationState 3
 
+instance ObjCArgument MTRSmokeCOAlarmContaminationState where
+  withObjCArg (MTRSmokeCOAlarmContaminationState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmContaminationState where
+  type RawReturn MTRSmokeCOAlarmContaminationState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmContaminationState x)
+  fromOwned x = pure (MTRSmokeCOAlarmContaminationState x)
+
 -- | @MTRSmokeCOAlarmEndOfService@
 newtype MTRSmokeCOAlarmEndOfService = MTRSmokeCOAlarmEndOfService CUChar
   deriving stock (Eq, Ord, Show)
@@ -24099,6 +28422,16 @@ pattern MTRSmokeCOAlarmEndOfServiceNormal = MTRSmokeCOAlarmEndOfService 0
 
 pattern MTRSmokeCOAlarmEndOfServiceExpired :: MTRSmokeCOAlarmEndOfService
 pattern MTRSmokeCOAlarmEndOfServiceExpired = MTRSmokeCOAlarmEndOfService 1
+
+instance ObjCArgument MTRSmokeCOAlarmEndOfService where
+  withObjCArg (MTRSmokeCOAlarmEndOfService x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmEndOfService where
+  type RawReturn MTRSmokeCOAlarmEndOfService = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmEndOfService x)
+  fromOwned x = pure (MTRSmokeCOAlarmEndOfService x)
 
 -- | @MTRSmokeCOAlarmExpressedState@
 newtype MTRSmokeCOAlarmExpressedState = MTRSmokeCOAlarmExpressedState CUChar
@@ -24132,6 +28465,16 @@ pattern MTRSmokeCOAlarmExpressedStateInterconnectSmoke = MTRSmokeCOAlarmExpresse
 pattern MTRSmokeCOAlarmExpressedStateInterconnectCO :: MTRSmokeCOAlarmExpressedState
 pattern MTRSmokeCOAlarmExpressedStateInterconnectCO = MTRSmokeCOAlarmExpressedState 8
 
+instance ObjCArgument MTRSmokeCOAlarmExpressedState where
+  withObjCArg (MTRSmokeCOAlarmExpressedState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmExpressedState where
+  type RawReturn MTRSmokeCOAlarmExpressedState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmExpressedState x)
+  fromOwned x = pure (MTRSmokeCOAlarmExpressedState x)
+
 -- | @MTRSmokeCOAlarmFeature@ (bitmask)
 newtype MTRSmokeCOAlarmFeature = MTRSmokeCOAlarmFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -24149,6 +28492,16 @@ pattern MTRSmokeCOAlarmFeatureSmokeAlarm = MTRSmokeCOAlarmFeature 1
 pattern MTRSmokeCOAlarmFeatureCOAlarm :: MTRSmokeCOAlarmFeature
 pattern MTRSmokeCOAlarmFeatureCOAlarm = MTRSmokeCOAlarmFeature 2
 
+instance ObjCArgument MTRSmokeCOAlarmFeature where
+  withObjCArg (MTRSmokeCOAlarmFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRSmokeCOAlarmFeature where
+  type RawReturn MTRSmokeCOAlarmFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmFeature x)
+  fromOwned x = pure (MTRSmokeCOAlarmFeature x)
+
 -- | @MTRSmokeCOAlarmMuteState@
 newtype MTRSmokeCOAlarmMuteState = MTRSmokeCOAlarmMuteState CUChar
   deriving stock (Eq, Ord, Show)
@@ -24159,6 +28512,16 @@ pattern MTRSmokeCOAlarmMuteStateNotMuted = MTRSmokeCOAlarmMuteState 0
 
 pattern MTRSmokeCOAlarmMuteStateMuted :: MTRSmokeCOAlarmMuteState
 pattern MTRSmokeCOAlarmMuteStateMuted = MTRSmokeCOAlarmMuteState 1
+
+instance ObjCArgument MTRSmokeCOAlarmMuteState where
+  withObjCArg (MTRSmokeCOAlarmMuteState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmMuteState where
+  type RawReturn MTRSmokeCOAlarmMuteState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmMuteState x)
+  fromOwned x = pure (MTRSmokeCOAlarmMuteState x)
 
 -- | @MTRSmokeCOAlarmSensitivity@
 newtype MTRSmokeCOAlarmSensitivity = MTRSmokeCOAlarmSensitivity CUChar
@@ -24173,6 +28536,16 @@ pattern MTRSmokeCOAlarmSensitivityStandard = MTRSmokeCOAlarmSensitivity 1
 
 pattern MTRSmokeCOAlarmSensitivityLow :: MTRSmokeCOAlarmSensitivity
 pattern MTRSmokeCOAlarmSensitivityLow = MTRSmokeCOAlarmSensitivity 2
+
+instance ObjCArgument MTRSmokeCOAlarmSensitivity where
+  withObjCArg (MTRSmokeCOAlarmSensitivity x) k = k (argCUChar x)
+
+instance ObjCReturn MTRSmokeCOAlarmSensitivity where
+  type RawReturn MTRSmokeCOAlarmSensitivity = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSmokeCOAlarmSensitivity x)
+  fromOwned x = pure (MTRSmokeCOAlarmSensitivity x)
 
 -- | @MTRSoftwareDiagnosticsFeature@ (bitmask)
 newtype MTRSoftwareDiagnosticsFeature = MTRSoftwareDiagnosticsFeature CUInt
@@ -24191,6 +28564,16 @@ pattern MTRSoftwareDiagnosticsFeatureWatermarks = MTRSoftwareDiagnosticsFeature 
 pattern MTRSoftwareDiagnosticsFeatureWaterMarks :: MTRSoftwareDiagnosticsFeature
 pattern MTRSoftwareDiagnosticsFeatureWaterMarks = MTRSoftwareDiagnosticsFeature 1
 
+instance ObjCArgument MTRSoftwareDiagnosticsFeature where
+  withObjCArg (MTRSoftwareDiagnosticsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRSoftwareDiagnosticsFeature where
+  type RawReturn MTRSoftwareDiagnosticsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSoftwareDiagnosticsFeature x)
+  fromOwned x = pure (MTRSoftwareDiagnosticsFeature x)
+
 -- | @MTRStorageSecurityLevel@
 newtype MTRStorageSecurityLevel = MTRStorageSecurityLevel CULong
   deriving stock (Eq, Ord, Show)
@@ -24201,6 +28584,16 @@ pattern MTRStorageSecurityLevelSecure = MTRStorageSecurityLevel 0
 
 pattern MTRStorageSecurityLevelNotSecure :: MTRStorageSecurityLevel
 pattern MTRStorageSecurityLevelNotSecure = MTRStorageSecurityLevel 1
+
+instance ObjCArgument MTRStorageSecurityLevel where
+  withObjCArg (MTRStorageSecurityLevel x) k = k (argCULong x)
+
+instance ObjCReturn MTRStorageSecurityLevel where
+  type RawReturn MTRStorageSecurityLevel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRStorageSecurityLevel x)
+  fromOwned x = pure (MTRStorageSecurityLevel x)
 
 -- | @MTRStorageSharingType@
 newtype MTRStorageSharingType = MTRStorageSharingType CULong
@@ -24218,6 +28611,16 @@ pattern MTRStorageSharingTypeSameACLs = MTRStorageSharingType 2
 
 pattern MTRStorageSharingTypeSameFabric :: MTRStorageSharingType
 pattern MTRStorageSharingTypeSameFabric = MTRStorageSharingType 3
+
+instance ObjCArgument MTRStorageSharingType where
+  withObjCArg (MTRStorageSharingType x) k = k (argCULong x)
+
+instance ObjCReturn MTRStorageSharingType where
+  type RawReturn MTRStorageSharingType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRStorageSharingType x)
+  fromOwned x = pure (MTRStorageSharingType x)
 
 -- | @MTRSwitchFeature@ (bitmask)
 newtype MTRSwitchFeature = MTRSwitchFeature CUInt
@@ -24248,6 +28651,16 @@ pattern MTRSwitchFeatureMomentarySwitchMultiPress = MTRSwitchFeature 16
 pattern MTRSwitchFeatureActionSwitch :: MTRSwitchFeature
 pattern MTRSwitchFeatureActionSwitch = MTRSwitchFeature 32
 
+instance ObjCArgument MTRSwitchFeature where
+  withObjCArg (MTRSwitchFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRSwitchFeature where
+  type RawReturn MTRSwitchFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRSwitchFeature x)
+  fromOwned x = pure (MTRSwitchFeature x)
+
 -- | @MTRTLSClientManagementStatusCode@
 newtype MTRTLSClientManagementStatusCode = MTRTLSClientManagementStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -24268,6 +28681,16 @@ pattern MTRTLSClientManagementStatusCodeEndpointInUse = MTRTLSClientManagementSt
 pattern MTRTLSClientManagementStatusCodeInvalidTime :: MTRTLSClientManagementStatusCode
 pattern MTRTLSClientManagementStatusCodeInvalidTime = MTRTLSClientManagementStatusCode 6
 
+instance ObjCArgument MTRTLSClientManagementStatusCode where
+  withObjCArg (MTRTLSClientManagementStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTLSClientManagementStatusCode where
+  type RawReturn MTRTLSClientManagementStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTLSClientManagementStatusCode x)
+  fromOwned x = pure (MTRTLSClientManagementStatusCode x)
+
 -- | @MTRTargetNavigatorStatus@
 newtype MTRTargetNavigatorStatus = MTRTargetNavigatorStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -24281,6 +28704,16 @@ pattern MTRTargetNavigatorStatusTargetNotFound = MTRTargetNavigatorStatus 1
 
 pattern MTRTargetNavigatorStatusNotAllowed :: MTRTargetNavigatorStatus
 pattern MTRTargetNavigatorStatusNotAllowed = MTRTargetNavigatorStatus 2
+
+instance ObjCArgument MTRTargetNavigatorStatus where
+  withObjCArg (MTRTargetNavigatorStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTargetNavigatorStatus where
+  type RawReturn MTRTargetNavigatorStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTargetNavigatorStatus x)
+  fromOwned x = pure (MTRTargetNavigatorStatus x)
 
 -- | @MTRTemperatureControlFeature@ (bitmask)
 newtype MTRTemperatureControlFeature = MTRTemperatureControlFeature CUInt
@@ -24301,6 +28734,16 @@ pattern MTRTemperatureControlFeatureTemperatureLevel = MTRTemperatureControlFeat
 
 pattern MTRTemperatureControlFeatureTemperatureStep :: MTRTemperatureControlFeature
 pattern MTRTemperatureControlFeatureTemperatureStep = MTRTemperatureControlFeature 4
+
+instance ObjCArgument MTRTemperatureControlFeature where
+  withObjCArg (MTRTemperatureControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTemperatureControlFeature where
+  type RawReturn MTRTemperatureControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTemperatureControlFeature x)
+  fromOwned x = pure (MTRTemperatureControlFeature x)
 
 -- | @MTRTestClusterBitmap16MaskMap@ (bitmask)
 newtype MTRTestClusterBitmap16MaskMap = MTRTestClusterBitmap16MaskMap CUShort
@@ -24325,6 +28768,16 @@ pattern MTRTestClusterBitmap16MaskMapMaskVal3 = MTRTestClusterBitmap16MaskMap 4
 pattern MTRTestClusterBitmap16MaskMapMaskVal4 :: MTRTestClusterBitmap16MaskMap
 pattern MTRTestClusterBitmap16MaskMapMaskVal4 = MTRTestClusterBitmap16MaskMap 16384
 
+instance ObjCArgument MTRTestClusterBitmap16MaskMap where
+  withObjCArg (MTRTestClusterBitmap16MaskMap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRTestClusterBitmap16MaskMap where
+  type RawReturn MTRTestClusterBitmap16MaskMap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterBitmap16MaskMap (fromIntegral x))
+  fromOwned x = pure (MTRTestClusterBitmap16MaskMap (fromIntegral x))
+
 -- | @MTRTestClusterBitmap32MaskMap@ (bitmask)
 newtype MTRTestClusterBitmap32MaskMap = MTRTestClusterBitmap32MaskMap CUInt
   deriving stock (Eq, Ord, Show)
@@ -24347,6 +28800,16 @@ pattern MTRTestClusterBitmap32MaskMapMaskVal3 = MTRTestClusterBitmap32MaskMap 4
 
 pattern MTRTestClusterBitmap32MaskMapMaskVal4 :: MTRTestClusterBitmap32MaskMap
 pattern MTRTestClusterBitmap32MaskMapMaskVal4 = MTRTestClusterBitmap32MaskMap 1073741824
+
+instance ObjCArgument MTRTestClusterBitmap32MaskMap where
+  withObjCArg (MTRTestClusterBitmap32MaskMap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTestClusterBitmap32MaskMap where
+  type RawReturn MTRTestClusterBitmap32MaskMap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterBitmap32MaskMap x)
+  fromOwned x = pure (MTRTestClusterBitmap32MaskMap x)
 
 -- | @MTRTestClusterBitmap64MaskMap@ (bitmask)
 newtype MTRTestClusterBitmap64MaskMap = MTRTestClusterBitmap64MaskMap CULong
@@ -24371,6 +28834,16 @@ pattern MTRTestClusterBitmap64MaskMapMaskVal3 = MTRTestClusterBitmap64MaskMap 4
 pattern MTRTestClusterBitmap64MaskMapMaskVal4 :: MTRTestClusterBitmap64MaskMap
 pattern MTRTestClusterBitmap64MaskMapMaskVal4 = MTRTestClusterBitmap64MaskMap 4611686018427387904
 
+instance ObjCArgument MTRTestClusterBitmap64MaskMap where
+  withObjCArg (MTRTestClusterBitmap64MaskMap x) k = k (argCULong x)
+
+instance ObjCReturn MTRTestClusterBitmap64MaskMap where
+  type RawReturn MTRTestClusterBitmap64MaskMap = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterBitmap64MaskMap x)
+  fromOwned x = pure (MTRTestClusterBitmap64MaskMap x)
+
 -- | @MTRTestClusterBitmap8MaskMap@ (bitmask)
 newtype MTRTestClusterBitmap8MaskMap = MTRTestClusterBitmap8MaskMap CUChar
   deriving stock (Eq, Ord, Show)
@@ -24394,6 +28867,16 @@ pattern MTRTestClusterBitmap8MaskMapMaskVal3 = MTRTestClusterBitmap8MaskMap 4
 pattern MTRTestClusterBitmap8MaskMapMaskVal4 :: MTRTestClusterBitmap8MaskMap
 pattern MTRTestClusterBitmap8MaskMapMaskVal4 = MTRTestClusterBitmap8MaskMap 64
 
+instance ObjCArgument MTRTestClusterBitmap8MaskMap where
+  withObjCArg (MTRTestClusterBitmap8MaskMap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTestClusterBitmap8MaskMap where
+  type RawReturn MTRTestClusterBitmap8MaskMap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterBitmap8MaskMap x)
+  fromOwned x = pure (MTRTestClusterBitmap8MaskMap x)
+
 -- | @MTRTestClusterSimple@
 newtype MTRTestClusterSimple = MTRTestClusterSimple CUChar
   deriving stock (Eq, Ord, Show)
@@ -24410,6 +28893,16 @@ pattern MTRTestClusterSimpleValueB = MTRTestClusterSimple 2
 
 pattern MTRTestClusterSimpleValueC :: MTRTestClusterSimple
 pattern MTRTestClusterSimpleValueC = MTRTestClusterSimple 3
+
+instance ObjCArgument MTRTestClusterSimple where
+  withObjCArg (MTRTestClusterSimple x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTestClusterSimple where
+  type RawReturn MTRTestClusterSimple = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterSimple x)
+  fromOwned x = pure (MTRTestClusterSimple x)
 
 -- | @MTRTestClusterSimpleBitmap@ (bitmask)
 newtype MTRTestClusterSimpleBitmap = MTRTestClusterSimpleBitmap CUChar
@@ -24431,6 +28924,16 @@ pattern MTRTestClusterSimpleBitmapValueB = MTRTestClusterSimpleBitmap 2
 pattern MTRTestClusterSimpleBitmapValueC :: MTRTestClusterSimpleBitmap
 pattern MTRTestClusterSimpleBitmapValueC = MTRTestClusterSimpleBitmap 4
 
+instance ObjCArgument MTRTestClusterSimpleBitmap where
+  withObjCArg (MTRTestClusterSimpleBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTestClusterSimpleBitmap where
+  type RawReturn MTRTestClusterSimpleBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTestClusterSimpleBitmap x)
+  fromOwned x = pure (MTRTestClusterSimpleBitmap x)
+
 -- | @MTRThermostatACCapacityFormat@
 newtype MTRThermostatACCapacityFormat = MTRThermostatACCapacityFormat CUChar
   deriving stock (Eq, Ord, Show)
@@ -24438,6 +28941,16 @@ newtype MTRThermostatACCapacityFormat = MTRThermostatACCapacityFormat CUChar
 
 pattern MTRThermostatACCapacityFormatBTUh :: MTRThermostatACCapacityFormat
 pattern MTRThermostatACCapacityFormatBTUh = MTRThermostatACCapacityFormat 0
+
+instance ObjCArgument MTRThermostatACCapacityFormat where
+  withObjCArg (MTRThermostatACCapacityFormat x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatACCapacityFormat where
+  type RawReturn MTRThermostatACCapacityFormat = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACCapacityFormat x)
+  fromOwned x = pure (MTRThermostatACCapacityFormat x)
 
 -- | @MTRThermostatACCompressorType@
 newtype MTRThermostatACCompressorType = MTRThermostatACCompressorType CUChar
@@ -24455,6 +28968,16 @@ pattern MTRThermostatACCompressorTypeT2 = MTRThermostatACCompressorType 2
 
 pattern MTRThermostatACCompressorTypeT3 :: MTRThermostatACCompressorType
 pattern MTRThermostatACCompressorTypeT3 = MTRThermostatACCompressorType 3
+
+instance ObjCArgument MTRThermostatACCompressorType where
+  withObjCArg (MTRThermostatACCompressorType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatACCompressorType where
+  type RawReturn MTRThermostatACCompressorType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACCompressorType x)
+  fromOwned x = pure (MTRThermostatACCompressorType x)
 
 -- | @MTRThermostatACErrorCodeBitmap@ (bitmask)
 newtype MTRThermostatACErrorCodeBitmap = MTRThermostatACErrorCodeBitmap CUInt
@@ -24482,6 +29005,16 @@ pattern MTRThermostatACErrorCodeBitmapCoilSensorFail = MTRThermostatACErrorCodeB
 pattern MTRThermostatACErrorCodeBitmapFanFail :: MTRThermostatACErrorCodeBitmap
 pattern MTRThermostatACErrorCodeBitmapFanFail = MTRThermostatACErrorCodeBitmap 16
 
+instance ObjCArgument MTRThermostatACErrorCodeBitmap where
+  withObjCArg (MTRThermostatACErrorCodeBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRThermostatACErrorCodeBitmap where
+  type RawReturn MTRThermostatACErrorCodeBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACErrorCodeBitmap x)
+  fromOwned x = pure (MTRThermostatACErrorCodeBitmap x)
+
 -- | @MTRThermostatACLouverPosition@
 newtype MTRThermostatACLouverPosition = MTRThermostatACLouverPosition CUChar
   deriving stock (Eq, Ord, Show)
@@ -24502,6 +29035,16 @@ pattern MTRThermostatACLouverPositionHalf = MTRThermostatACLouverPosition 4
 pattern MTRThermostatACLouverPositionThreeQuarters :: MTRThermostatACLouverPosition
 pattern MTRThermostatACLouverPositionThreeQuarters = MTRThermostatACLouverPosition 5
 
+instance ObjCArgument MTRThermostatACLouverPosition where
+  withObjCArg (MTRThermostatACLouverPosition x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatACLouverPosition where
+  type RawReturn MTRThermostatACLouverPosition = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACLouverPosition x)
+  fromOwned x = pure (MTRThermostatACLouverPosition x)
+
 -- | @MTRThermostatACRefrigerantType@
 newtype MTRThermostatACRefrigerantType = MTRThermostatACRefrigerantType CUChar
   deriving stock (Eq, Ord, Show)
@@ -24518,6 +29061,16 @@ pattern MTRThermostatACRefrigerantTypeR410a = MTRThermostatACRefrigerantType 2
 
 pattern MTRThermostatACRefrigerantTypeR407c :: MTRThermostatACRefrigerantType
 pattern MTRThermostatACRefrigerantTypeR407c = MTRThermostatACRefrigerantType 3
+
+instance ObjCArgument MTRThermostatACRefrigerantType where
+  withObjCArg (MTRThermostatACRefrigerantType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatACRefrigerantType where
+  type RawReturn MTRThermostatACRefrigerantType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACRefrigerantType x)
+  fromOwned x = pure (MTRThermostatACRefrigerantType x)
 
 -- | @MTRThermostatACType@
 newtype MTRThermostatACType = MTRThermostatACType CUChar
@@ -24538,6 +29091,16 @@ pattern MTRThermostatACTypeCoolingInverter = MTRThermostatACType 3
 
 pattern MTRThermostatACTypeHeatPumpInverter :: MTRThermostatACType
 pattern MTRThermostatACTypeHeatPumpInverter = MTRThermostatACType 4
+
+instance ObjCArgument MTRThermostatACType where
+  withObjCArg (MTRThermostatACType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatACType where
+  type RawReturn MTRThermostatACType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatACType x)
+  fromOwned x = pure (MTRThermostatACType x)
 
 -- | @MTRThermostatControlSequence@
 newtype MTRThermostatControlSequence = MTRThermostatControlSequence CUChar
@@ -24562,6 +29125,16 @@ pattern MTRThermostatControlSequenceCoolingAndHeating = MTRThermostatControlSequ
 pattern MTRThermostatControlSequenceCoolingAndHeatingWithReheat :: MTRThermostatControlSequence
 pattern MTRThermostatControlSequenceCoolingAndHeatingWithReheat = MTRThermostatControlSequence 5
 
+instance ObjCArgument MTRThermostatControlSequence where
+  withObjCArg (MTRThermostatControlSequence x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatControlSequence where
+  type RawReturn MTRThermostatControlSequence = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatControlSequence x)
+  fromOwned x = pure (MTRThermostatControlSequence x)
+
 -- | @MTRThermostatControlSequenceOfOperation@
 newtype MTRThermostatControlSequenceOfOperation = MTRThermostatControlSequenceOfOperation CUChar
   deriving stock (Eq, Ord, Show)
@@ -24584,6 +29157,16 @@ pattern MTRThermostatControlSequenceOfOperationCoolingAndHeating = MTRThermostat
 
 pattern MTRThermostatControlSequenceOfOperationCoolingAndHeatingWithReheat :: MTRThermostatControlSequenceOfOperation
 pattern MTRThermostatControlSequenceOfOperationCoolingAndHeatingWithReheat = MTRThermostatControlSequenceOfOperation 5
+
+instance ObjCArgument MTRThermostatControlSequenceOfOperation where
+  withObjCArg (MTRThermostatControlSequenceOfOperation x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatControlSequenceOfOperation where
+  type RawReturn MTRThermostatControlSequenceOfOperation = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatControlSequenceOfOperation x)
+  fromOwned x = pure (MTRThermostatControlSequenceOfOperation x)
 
 -- | @MTRThermostatDayOfWeek@ (bitmask)
 newtype MTRThermostatDayOfWeek = MTRThermostatDayOfWeek CUChar
@@ -24622,6 +29205,16 @@ pattern MTRThermostatDayOfWeekAway = MTRThermostatDayOfWeek 128
 
 pattern MTRThermostatDayOfWeekAwayOrVacation :: MTRThermostatDayOfWeek
 pattern MTRThermostatDayOfWeekAwayOrVacation = MTRThermostatDayOfWeek 128
+
+instance ObjCArgument MTRThermostatDayOfWeek where
+  withObjCArg (MTRThermostatDayOfWeek x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatDayOfWeek where
+  type RawReturn MTRThermostatDayOfWeek = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatDayOfWeek x)
+  fromOwned x = pure (MTRThermostatDayOfWeek x)
 
 -- | @MTRThermostatFeature@ (bitmask)
 newtype MTRThermostatFeature = MTRThermostatFeature CUInt
@@ -24673,6 +29266,16 @@ pattern MTRThermostatFeatureEvents = MTRThermostatFeature 512
 pattern MTRThermostatFeatureThermostatSuggestions :: MTRThermostatFeature
 pattern MTRThermostatFeatureThermostatSuggestions = MTRThermostatFeature 1024
 
+instance ObjCArgument MTRThermostatFeature where
+  withObjCArg (MTRThermostatFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRThermostatFeature where
+  type RawReturn MTRThermostatFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatFeature x)
+  fromOwned x = pure (MTRThermostatFeature x)
+
 -- | @MTRThermostatHVACSystemTypeBitmap@ (bitmask)
 newtype MTRThermostatHVACSystemTypeBitmap = MTRThermostatHVACSystemTypeBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -24695,6 +29298,16 @@ pattern MTRThermostatHVACSystemTypeBitmapHeatingIsHeatPump = MTRThermostatHVACSy
 
 pattern MTRThermostatHVACSystemTypeBitmapHeatingUsesFuel :: MTRThermostatHVACSystemTypeBitmap
 pattern MTRThermostatHVACSystemTypeBitmapHeatingUsesFuel = MTRThermostatHVACSystemTypeBitmap 32
+
+instance ObjCArgument MTRThermostatHVACSystemTypeBitmap where
+  withObjCArg (MTRThermostatHVACSystemTypeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatHVACSystemTypeBitmap where
+  type RawReturn MTRThermostatHVACSystemTypeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatHVACSystemTypeBitmap x)
+  fromOwned x = pure (MTRThermostatHVACSystemTypeBitmap x)
 
 -- | @MTRThermostatModeForSequence@ (bitmask)
 newtype MTRThermostatModeForSequence = MTRThermostatModeForSequence CUChar
@@ -24719,6 +29332,16 @@ pattern MTRThermostatModeForSequenceCoolSetpointPresent = MTRThermostatModeForSe
 pattern MTRThermostatModeForSequenceCoolSetpointFieldPresent :: MTRThermostatModeForSequence
 pattern MTRThermostatModeForSequenceCoolSetpointFieldPresent = MTRThermostatModeForSequence 2
 
+instance ObjCArgument MTRThermostatModeForSequence where
+  withObjCArg (MTRThermostatModeForSequence x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatModeForSequence where
+  type RawReturn MTRThermostatModeForSequence = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatModeForSequence x)
+  fromOwned x = pure (MTRThermostatModeForSequence x)
+
 -- | @MTRThermostatOccupancyBitmap@ (bitmask)
 newtype MTRThermostatOccupancyBitmap = MTRThermostatOccupancyBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -24732,6 +29355,16 @@ instance Monoid MTRThermostatOccupancyBitmap where
 
 pattern MTRThermostatOccupancyBitmapOccupied :: MTRThermostatOccupancyBitmap
 pattern MTRThermostatOccupancyBitmapOccupied = MTRThermostatOccupancyBitmap 1
+
+instance ObjCArgument MTRThermostatOccupancyBitmap where
+  withObjCArg (MTRThermostatOccupancyBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatOccupancyBitmap where
+  type RawReturn MTRThermostatOccupancyBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatOccupancyBitmap x)
+  fromOwned x = pure (MTRThermostatOccupancyBitmap x)
 
 -- | @MTRThermostatPresetScenario@
 newtype MTRThermostatPresetScenario = MTRThermostatPresetScenario CUChar
@@ -24759,6 +29392,16 @@ pattern MTRThermostatPresetScenarioGoingToSleep = MTRThermostatPresetScenario 6
 pattern MTRThermostatPresetScenarioUserDefined :: MTRThermostatPresetScenario
 pattern MTRThermostatPresetScenarioUserDefined = MTRThermostatPresetScenario 254
 
+instance ObjCArgument MTRThermostatPresetScenario where
+  withObjCArg (MTRThermostatPresetScenario x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatPresetScenario where
+  type RawReturn MTRThermostatPresetScenario = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatPresetScenario x)
+  fromOwned x = pure (MTRThermostatPresetScenario x)
+
 -- | @MTRThermostatPresetTypeFeaturesBitmap@ (bitmask)
 newtype MTRThermostatPresetTypeFeaturesBitmap = MTRThermostatPresetTypeFeaturesBitmap CUShort
   deriving stock (Eq, Ord, Show)
@@ -24775,6 +29418,16 @@ pattern MTRThermostatPresetTypeFeaturesBitmapAutomatic = MTRThermostatPresetType
 
 pattern MTRThermostatPresetTypeFeaturesBitmapSupportsNames :: MTRThermostatPresetTypeFeaturesBitmap
 pattern MTRThermostatPresetTypeFeaturesBitmapSupportsNames = MTRThermostatPresetTypeFeaturesBitmap 2
+
+instance ObjCArgument MTRThermostatPresetTypeFeaturesBitmap where
+  withObjCArg (MTRThermostatPresetTypeFeaturesBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRThermostatPresetTypeFeaturesBitmap where
+  type RawReturn MTRThermostatPresetTypeFeaturesBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatPresetTypeFeaturesBitmap (fromIntegral x))
+  fromOwned x = pure (MTRThermostatPresetTypeFeaturesBitmap (fromIntegral x))
 
 -- | @MTRThermostatProgrammingOperationModeBitmap@ (bitmask)
 newtype MTRThermostatProgrammingOperationModeBitmap = MTRThermostatProgrammingOperationModeBitmap CUChar
@@ -24795,6 +29448,16 @@ pattern MTRThermostatProgrammingOperationModeBitmapAutoRecovery = MTRThermostatP
 
 pattern MTRThermostatProgrammingOperationModeBitmapEconomy :: MTRThermostatProgrammingOperationModeBitmap
 pattern MTRThermostatProgrammingOperationModeBitmapEconomy = MTRThermostatProgrammingOperationModeBitmap 4
+
+instance ObjCArgument MTRThermostatProgrammingOperationModeBitmap where
+  withObjCArg (MTRThermostatProgrammingOperationModeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatProgrammingOperationModeBitmap where
+  type RawReturn MTRThermostatProgrammingOperationModeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatProgrammingOperationModeBitmap x)
+  fromOwned x = pure (MTRThermostatProgrammingOperationModeBitmap x)
 
 -- | @MTRThermostatRelayStateBitmap@ (bitmask)
 newtype MTRThermostatRelayStateBitmap = MTRThermostatRelayStateBitmap CUShort
@@ -24828,6 +29491,16 @@ pattern MTRThermostatRelayStateBitmapFanStage2 = MTRThermostatRelayStateBitmap 3
 pattern MTRThermostatRelayStateBitmapFanStage3 :: MTRThermostatRelayStateBitmap
 pattern MTRThermostatRelayStateBitmapFanStage3 = MTRThermostatRelayStateBitmap 64
 
+instance ObjCArgument MTRThermostatRelayStateBitmap where
+  withObjCArg (MTRThermostatRelayStateBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRThermostatRelayStateBitmap where
+  type RawReturn MTRThermostatRelayStateBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatRelayStateBitmap (fromIntegral x))
+  fromOwned x = pure (MTRThermostatRelayStateBitmap (fromIntegral x))
+
 -- | @MTRThermostatRemoteSensingBitmap@ (bitmask)
 newtype MTRThermostatRemoteSensingBitmap = MTRThermostatRemoteSensingBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -24848,6 +29521,16 @@ pattern MTRThermostatRemoteSensingBitmapOutdoorTemperature = MTRThermostatRemote
 pattern MTRThermostatRemoteSensingBitmapOccupancy :: MTRThermostatRemoteSensingBitmap
 pattern MTRThermostatRemoteSensingBitmapOccupancy = MTRThermostatRemoteSensingBitmap 4
 
+instance ObjCArgument MTRThermostatRemoteSensingBitmap where
+  withObjCArg (MTRThermostatRemoteSensingBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatRemoteSensingBitmap where
+  type RawReturn MTRThermostatRemoteSensingBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatRemoteSensingBitmap x)
+  fromOwned x = pure (MTRThermostatRemoteSensingBitmap x)
+
 -- | @MTRThermostatRunningMode@
 newtype MTRThermostatRunningMode = MTRThermostatRunningMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -24861,6 +29544,16 @@ pattern MTRThermostatRunningModeCool = MTRThermostatRunningMode 3
 
 pattern MTRThermostatRunningModeHeat :: MTRThermostatRunningMode
 pattern MTRThermostatRunningModeHeat = MTRThermostatRunningMode 4
+
+instance ObjCArgument MTRThermostatRunningMode where
+  withObjCArg (MTRThermostatRunningMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatRunningMode where
+  type RawReturn MTRThermostatRunningMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatRunningMode x)
+  fromOwned x = pure (MTRThermostatRunningMode x)
 
 -- | @MTRThermostatScheduleDayOfWeekBitmap@ (bitmask)
 newtype MTRThermostatScheduleDayOfWeekBitmap = MTRThermostatScheduleDayOfWeekBitmap CUChar
@@ -24897,6 +29590,16 @@ pattern MTRThermostatScheduleDayOfWeekBitmapSaturday = MTRThermostatScheduleDayO
 pattern MTRThermostatScheduleDayOfWeekBitmapAway :: MTRThermostatScheduleDayOfWeekBitmap
 pattern MTRThermostatScheduleDayOfWeekBitmapAway = MTRThermostatScheduleDayOfWeekBitmap 128
 
+instance ObjCArgument MTRThermostatScheduleDayOfWeekBitmap where
+  withObjCArg (MTRThermostatScheduleDayOfWeekBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatScheduleDayOfWeekBitmap where
+  type RawReturn MTRThermostatScheduleDayOfWeekBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatScheduleDayOfWeekBitmap x)
+  fromOwned x = pure (MTRThermostatScheduleDayOfWeekBitmap x)
+
 -- | @MTRThermostatScheduleModeBitmap@ (bitmask)
 newtype MTRThermostatScheduleModeBitmap = MTRThermostatScheduleModeBitmap CUChar
   deriving stock (Eq, Ord, Show)
@@ -24913,6 +29616,16 @@ pattern MTRThermostatScheduleModeBitmapHeatSetpointPresent = MTRThermostatSchedu
 
 pattern MTRThermostatScheduleModeBitmapCoolSetpointPresent :: MTRThermostatScheduleModeBitmap
 pattern MTRThermostatScheduleModeBitmapCoolSetpointPresent = MTRThermostatScheduleModeBitmap 2
+
+instance ObjCArgument MTRThermostatScheduleModeBitmap where
+  withObjCArg (MTRThermostatScheduleModeBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatScheduleModeBitmap where
+  type RawReturn MTRThermostatScheduleModeBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatScheduleModeBitmap x)
+  fromOwned x = pure (MTRThermostatScheduleModeBitmap x)
 
 -- | @MTRThermostatScheduleTypeFeaturesBitmap@ (bitmask)
 newtype MTRThermostatScheduleTypeFeaturesBitmap = MTRThermostatScheduleTypeFeaturesBitmap CUShort
@@ -24937,6 +29650,16 @@ pattern MTRThermostatScheduleTypeFeaturesBitmapSupportsNames = MTRThermostatSche
 pattern MTRThermostatScheduleTypeFeaturesBitmapSupportsOff :: MTRThermostatScheduleTypeFeaturesBitmap
 pattern MTRThermostatScheduleTypeFeaturesBitmapSupportsOff = MTRThermostatScheduleTypeFeaturesBitmap 8
 
+instance ObjCArgument MTRThermostatScheduleTypeFeaturesBitmap where
+  withObjCArg (MTRThermostatScheduleTypeFeaturesBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRThermostatScheduleTypeFeaturesBitmap where
+  type RawReturn MTRThermostatScheduleTypeFeaturesBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatScheduleTypeFeaturesBitmap (fromIntegral x))
+  fromOwned x = pure (MTRThermostatScheduleTypeFeaturesBitmap (fromIntegral x))
+
 -- | @MTRThermostatSetpointAdjustMode@
 newtype MTRThermostatSetpointAdjustMode = MTRThermostatSetpointAdjustMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -24960,6 +29683,16 @@ pattern MTRThermostatSetpointAdjustModeBoth = MTRThermostatSetpointAdjustMode 2
 pattern MTRThermostatSetpointAdjustModeHeatAndCoolSetpoints :: MTRThermostatSetpointAdjustMode
 pattern MTRThermostatSetpointAdjustModeHeatAndCoolSetpoints = MTRThermostatSetpointAdjustMode 2
 
+instance ObjCArgument MTRThermostatSetpointAdjustMode where
+  withObjCArg (MTRThermostatSetpointAdjustMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatSetpointAdjustMode where
+  type RawReturn MTRThermostatSetpointAdjustMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatSetpointAdjustMode x)
+  fromOwned x = pure (MTRThermostatSetpointAdjustMode x)
+
 -- | @MTRThermostatSetpointChangeSource@
 newtype MTRThermostatSetpointChangeSource = MTRThermostatSetpointChangeSource CUChar
   deriving stock (Eq, Ord, Show)
@@ -24974,6 +29707,16 @@ pattern MTRThermostatSetpointChangeSourceSchedule = MTRThermostatSetpointChangeS
 pattern MTRThermostatSetpointChangeSourceExternal :: MTRThermostatSetpointChangeSource
 pattern MTRThermostatSetpointChangeSourceExternal = MTRThermostatSetpointChangeSource 2
 
+instance ObjCArgument MTRThermostatSetpointChangeSource where
+  withObjCArg (MTRThermostatSetpointChangeSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatSetpointChangeSource where
+  type RawReturn MTRThermostatSetpointChangeSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatSetpointChangeSource x)
+  fromOwned x = pure (MTRThermostatSetpointChangeSource x)
+
 -- | @MTRThermostatSetpointRaiseLowerMode@
 newtype MTRThermostatSetpointRaiseLowerMode = MTRThermostatSetpointRaiseLowerMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -24987,6 +29730,16 @@ pattern MTRThermostatSetpointRaiseLowerModeCool = MTRThermostatSetpointRaiseLowe
 
 pattern MTRThermostatSetpointRaiseLowerModeBoth :: MTRThermostatSetpointRaiseLowerMode
 pattern MTRThermostatSetpointRaiseLowerModeBoth = MTRThermostatSetpointRaiseLowerMode 2
+
+instance ObjCArgument MTRThermostatSetpointRaiseLowerMode where
+  withObjCArg (MTRThermostatSetpointRaiseLowerMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatSetpointRaiseLowerMode where
+  type RawReturn MTRThermostatSetpointRaiseLowerMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatSetpointRaiseLowerMode x)
+  fromOwned x = pure (MTRThermostatSetpointRaiseLowerMode x)
 
 -- | @MTRThermostatStartOfWeek@
 newtype MTRThermostatStartOfWeek = MTRThermostatStartOfWeek CUChar
@@ -25013,6 +29766,16 @@ pattern MTRThermostatStartOfWeekFriday = MTRThermostatStartOfWeek 5
 
 pattern MTRThermostatStartOfWeekSaturday :: MTRThermostatStartOfWeek
 pattern MTRThermostatStartOfWeekSaturday = MTRThermostatStartOfWeek 6
+
+instance ObjCArgument MTRThermostatStartOfWeek where
+  withObjCArg (MTRThermostatStartOfWeek x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatStartOfWeek where
+  type RawReturn MTRThermostatStartOfWeek = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatStartOfWeek x)
+  fromOwned x = pure (MTRThermostatStartOfWeek x)
 
 -- | @MTRThermostatSuggestionNotFollowingReasonBitmap@ (bitmask)
 newtype MTRThermostatSuggestionNotFollowingReasonBitmap = MTRThermostatSuggestionNotFollowingReasonBitmap CUShort
@@ -25049,6 +29812,16 @@ pattern MTRThermostatSuggestionNotFollowingReasonBitmapPreCoolingOrPreHeating = 
 pattern MTRThermostatSuggestionNotFollowingReasonBitmapConflictingSuggestions :: MTRThermostatSuggestionNotFollowingReasonBitmap
 pattern MTRThermostatSuggestionNotFollowingReasonBitmapConflictingSuggestions = MTRThermostatSuggestionNotFollowingReasonBitmap 128
 
+instance ObjCArgument MTRThermostatSuggestionNotFollowingReasonBitmap where
+  withObjCArg (MTRThermostatSuggestionNotFollowingReasonBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRThermostatSuggestionNotFollowingReasonBitmap where
+  type RawReturn MTRThermostatSuggestionNotFollowingReasonBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatSuggestionNotFollowingReasonBitmap (fromIntegral x))
+  fromOwned x = pure (MTRThermostatSuggestionNotFollowingReasonBitmap (fromIntegral x))
+
 -- | @MTRThermostatSystemMode@
 newtype MTRThermostatSystemMode = MTRThermostatSystemMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -25084,6 +29857,16 @@ pattern MTRThermostatSystemModeDry = MTRThermostatSystemMode 8
 pattern MTRThermostatSystemModeSleep :: MTRThermostatSystemMode
 pattern MTRThermostatSystemModeSleep = MTRThermostatSystemMode 9
 
+instance ObjCArgument MTRThermostatSystemMode where
+  withObjCArg (MTRThermostatSystemMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatSystemMode where
+  type RawReturn MTRThermostatSystemMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatSystemMode x)
+  fromOwned x = pure (MTRThermostatSystemMode x)
+
 -- | @MTRThermostatTemperatureSetpointHold@
 newtype MTRThermostatTemperatureSetpointHold = MTRThermostatTemperatureSetpointHold CUChar
   deriving stock (Eq, Ord, Show)
@@ -25094,6 +29877,16 @@ pattern MTRThermostatTemperatureSetpointHoldSetpointHoldOff = MTRThermostatTempe
 
 pattern MTRThermostatTemperatureSetpointHoldSetpointHoldOn :: MTRThermostatTemperatureSetpointHold
 pattern MTRThermostatTemperatureSetpointHoldSetpointHoldOn = MTRThermostatTemperatureSetpointHold 1
+
+instance ObjCArgument MTRThermostatTemperatureSetpointHold where
+  withObjCArg (MTRThermostatTemperatureSetpointHold x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatTemperatureSetpointHold where
+  type RawReturn MTRThermostatTemperatureSetpointHold = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatTemperatureSetpointHold x)
+  fromOwned x = pure (MTRThermostatTemperatureSetpointHold x)
 
 -- | @MTRThermostatUserInterfaceConfigurationKeypadLockout@
 newtype MTRThermostatUserInterfaceConfigurationKeypadLockout = MTRThermostatUserInterfaceConfigurationKeypadLockout CUChar
@@ -25118,6 +29911,16 @@ pattern MTRThermostatUserInterfaceConfigurationKeypadLockoutLockout4 = MTRThermo
 pattern MTRThermostatUserInterfaceConfigurationKeypadLockoutLockout5 :: MTRThermostatUserInterfaceConfigurationKeypadLockout
 pattern MTRThermostatUserInterfaceConfigurationKeypadLockoutLockout5 = MTRThermostatUserInterfaceConfigurationKeypadLockout 5
 
+instance ObjCArgument MTRThermostatUserInterfaceConfigurationKeypadLockout where
+  withObjCArg (MTRThermostatUserInterfaceConfigurationKeypadLockout x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatUserInterfaceConfigurationKeypadLockout where
+  type RawReturn MTRThermostatUserInterfaceConfigurationKeypadLockout = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatUserInterfaceConfigurationKeypadLockout x)
+  fromOwned x = pure (MTRThermostatUserInterfaceConfigurationKeypadLockout x)
+
 -- | @MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility@
 newtype MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility = MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility CUChar
   deriving stock (Eq, Ord, Show)
@@ -25129,6 +29932,16 @@ pattern MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibilitySche
 pattern MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibilityScheduleProgrammingDenied :: MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility
 pattern MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibilityScheduleProgrammingDenied = MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility 1
 
+instance ObjCArgument MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility where
+  withObjCArg (MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility where
+  type RawReturn MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility x)
+  fromOwned x = pure (MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility x)
+
 -- | @MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode@
 newtype MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode = MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -25139,6 +29952,16 @@ pattern MTRThermostatUserInterfaceConfigurationTemperatureDisplayModeCelsius = M
 
 pattern MTRThermostatUserInterfaceConfigurationTemperatureDisplayModeFahrenheit :: MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode
 pattern MTRThermostatUserInterfaceConfigurationTemperatureDisplayModeFahrenheit = MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode 1
+
+instance ObjCArgument MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode where
+  withObjCArg (MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode where
+  type RawReturn MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode x)
+  fromOwned x = pure (MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode x)
 
 -- | @MTRThreadBorderRouterManagementFeature@ (bitmask)
 newtype MTRThreadBorderRouterManagementFeature = MTRThreadBorderRouterManagementFeature CUInt
@@ -25154,6 +29977,16 @@ instance Monoid MTRThreadBorderRouterManagementFeature where
 pattern MTRThreadBorderRouterManagementFeaturePANChange :: MTRThreadBorderRouterManagementFeature
 pattern MTRThreadBorderRouterManagementFeaturePANChange = MTRThreadBorderRouterManagementFeature 1
 
+instance ObjCArgument MTRThreadBorderRouterManagementFeature where
+  withObjCArg (MTRThreadBorderRouterManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRThreadBorderRouterManagementFeature where
+  type RawReturn MTRThreadBorderRouterManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadBorderRouterManagementFeature x)
+  fromOwned x = pure (MTRThreadBorderRouterManagementFeature x)
+
 -- | @MTRThreadNetworkDiagnosticsConnectionStatus@
 newtype MTRThreadNetworkDiagnosticsConnectionStatus = MTRThreadNetworkDiagnosticsConnectionStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -25164,6 +29997,16 @@ pattern MTRThreadNetworkDiagnosticsConnectionStatusConnected = MTRThreadNetworkD
 
 pattern MTRThreadNetworkDiagnosticsConnectionStatusNotConnected :: MTRThreadNetworkDiagnosticsConnectionStatus
 pattern MTRThreadNetworkDiagnosticsConnectionStatusNotConnected = MTRThreadNetworkDiagnosticsConnectionStatus 1
+
+instance ObjCArgument MTRThreadNetworkDiagnosticsConnectionStatus where
+  withObjCArg (MTRThreadNetworkDiagnosticsConnectionStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThreadNetworkDiagnosticsConnectionStatus where
+  type RawReturn MTRThreadNetworkDiagnosticsConnectionStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadNetworkDiagnosticsConnectionStatus x)
+  fromOwned x = pure (MTRThreadNetworkDiagnosticsConnectionStatus x)
 
 -- | @MTRThreadNetworkDiagnosticsFeature@ (bitmask)
 newtype MTRThreadNetworkDiagnosticsFeature = MTRThreadNetworkDiagnosticsFeature CUInt
@@ -25188,6 +30031,16 @@ pattern MTRThreadNetworkDiagnosticsFeatureMLECounts = MTRThreadNetworkDiagnostic
 pattern MTRThreadNetworkDiagnosticsFeatureMACCounts :: MTRThreadNetworkDiagnosticsFeature
 pattern MTRThreadNetworkDiagnosticsFeatureMACCounts = MTRThreadNetworkDiagnosticsFeature 8
 
+instance ObjCArgument MTRThreadNetworkDiagnosticsFeature where
+  withObjCArg (MTRThreadNetworkDiagnosticsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRThreadNetworkDiagnosticsFeature where
+  type RawReturn MTRThreadNetworkDiagnosticsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadNetworkDiagnosticsFeature x)
+  fromOwned x = pure (MTRThreadNetworkDiagnosticsFeature x)
+
 -- | @MTRThreadNetworkDiagnosticsNetworkFault@
 newtype MTRThreadNetworkDiagnosticsNetworkFault = MTRThreadNetworkDiagnosticsNetworkFault CUChar
   deriving stock (Eq, Ord, Show)
@@ -25204,6 +30057,16 @@ pattern MTRThreadNetworkDiagnosticsNetworkFaultHardwareFailure = MTRThreadNetwor
 
 pattern MTRThreadNetworkDiagnosticsNetworkFaultNetworkJammed :: MTRThreadNetworkDiagnosticsNetworkFault
 pattern MTRThreadNetworkDiagnosticsNetworkFaultNetworkJammed = MTRThreadNetworkDiagnosticsNetworkFault 3
+
+instance ObjCArgument MTRThreadNetworkDiagnosticsNetworkFault where
+  withObjCArg (MTRThreadNetworkDiagnosticsNetworkFault x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThreadNetworkDiagnosticsNetworkFault where
+  type RawReturn MTRThreadNetworkDiagnosticsNetworkFault = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadNetworkDiagnosticsNetworkFault x)
+  fromOwned x = pure (MTRThreadNetworkDiagnosticsNetworkFault x)
 
 -- | @MTRThreadNetworkDiagnosticsRoutingRole@
 newtype MTRThreadNetworkDiagnosticsRoutingRole = MTRThreadNetworkDiagnosticsRoutingRole CUChar
@@ -25231,6 +30094,16 @@ pattern MTRThreadNetworkDiagnosticsRoutingRoleRouter = MTRThreadNetworkDiagnosti
 pattern MTRThreadNetworkDiagnosticsRoutingRoleLeader :: MTRThreadNetworkDiagnosticsRoutingRole
 pattern MTRThreadNetworkDiagnosticsRoutingRoleLeader = MTRThreadNetworkDiagnosticsRoutingRole 6
 
+instance ObjCArgument MTRThreadNetworkDiagnosticsRoutingRole where
+  withObjCArg (MTRThreadNetworkDiagnosticsRoutingRole x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThreadNetworkDiagnosticsRoutingRole where
+  type RawReturn MTRThreadNetworkDiagnosticsRoutingRole = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadNetworkDiagnosticsRoutingRole x)
+  fromOwned x = pure (MTRThreadNetworkDiagnosticsRoutingRole x)
+
 -- | @MTRThreadNetworkDiagnosticsThreadConnectionStatus@
 newtype MTRThreadNetworkDiagnosticsThreadConnectionStatus = MTRThreadNetworkDiagnosticsThreadConnectionStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -25241,6 +30114,16 @@ pattern MTRThreadNetworkDiagnosticsThreadConnectionStatusConnected = MTRThreadNe
 
 pattern MTRThreadNetworkDiagnosticsThreadConnectionStatusNotConnected :: MTRThreadNetworkDiagnosticsThreadConnectionStatus
 pattern MTRThreadNetworkDiagnosticsThreadConnectionStatusNotConnected = MTRThreadNetworkDiagnosticsThreadConnectionStatus 1
+
+instance ObjCArgument MTRThreadNetworkDiagnosticsThreadConnectionStatus where
+  withObjCArg (MTRThreadNetworkDiagnosticsThreadConnectionStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRThreadNetworkDiagnosticsThreadConnectionStatus where
+  type RawReturn MTRThreadNetworkDiagnosticsThreadConnectionStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRThreadNetworkDiagnosticsThreadConnectionStatus x)
+  fromOwned x = pure (MTRThreadNetworkDiagnosticsThreadConnectionStatus x)
 
 -- | @MTRTimeFormatLocalizationCalendarType@
 newtype MTRTimeFormatLocalizationCalendarType = MTRTimeFormatLocalizationCalendarType CUChar
@@ -25286,6 +30169,16 @@ pattern MTRTimeFormatLocalizationCalendarTypeTaiwanese = MTRTimeFormatLocalizati
 pattern MTRTimeFormatLocalizationCalendarTypeUseActiveLocale :: MTRTimeFormatLocalizationCalendarType
 pattern MTRTimeFormatLocalizationCalendarTypeUseActiveLocale = MTRTimeFormatLocalizationCalendarType 255
 
+instance ObjCArgument MTRTimeFormatLocalizationCalendarType where
+  withObjCArg (MTRTimeFormatLocalizationCalendarType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeFormatLocalizationCalendarType where
+  type RawReturn MTRTimeFormatLocalizationCalendarType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeFormatLocalizationCalendarType x)
+  fromOwned x = pure (MTRTimeFormatLocalizationCalendarType x)
+
 -- | @MTRTimeFormatLocalizationFeature@ (bitmask)
 newtype MTRTimeFormatLocalizationFeature = MTRTimeFormatLocalizationFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -25300,6 +30193,16 @@ instance Monoid MTRTimeFormatLocalizationFeature where
 pattern MTRTimeFormatLocalizationFeatureCalendarFormat :: MTRTimeFormatLocalizationFeature
 pattern MTRTimeFormatLocalizationFeatureCalendarFormat = MTRTimeFormatLocalizationFeature 1
 
+instance ObjCArgument MTRTimeFormatLocalizationFeature where
+  withObjCArg (MTRTimeFormatLocalizationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTimeFormatLocalizationFeature where
+  type RawReturn MTRTimeFormatLocalizationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeFormatLocalizationFeature x)
+  fromOwned x = pure (MTRTimeFormatLocalizationFeature x)
+
 -- | @MTRTimeFormatLocalizationHourFormat@
 newtype MTRTimeFormatLocalizationHourFormat = MTRTimeFormatLocalizationHourFormat CUChar
   deriving stock (Eq, Ord, Show)
@@ -25313,6 +30216,16 @@ pattern MTRTimeFormatLocalizationHourFormat24hr = MTRTimeFormatLocalizationHourF
 
 pattern MTRTimeFormatLocalizationHourFormatUseActiveLocale :: MTRTimeFormatLocalizationHourFormat
 pattern MTRTimeFormatLocalizationHourFormatUseActiveLocale = MTRTimeFormatLocalizationHourFormat 255
+
+instance ObjCArgument MTRTimeFormatLocalizationHourFormat where
+  withObjCArg (MTRTimeFormatLocalizationHourFormat x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeFormatLocalizationHourFormat where
+  type RawReturn MTRTimeFormatLocalizationHourFormat = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeFormatLocalizationHourFormat x)
+  fromOwned x = pure (MTRTimeFormatLocalizationHourFormat x)
 
 -- | @MTRTimeSynchronizationFeature@ (bitmask)
 newtype MTRTimeSynchronizationFeature = MTRTimeSynchronizationFeature CUInt
@@ -25337,6 +30250,16 @@ pattern MTRTimeSynchronizationFeatureNTPServer = MTRTimeSynchronizationFeature 4
 pattern MTRTimeSynchronizationFeatureTimeSyncClient :: MTRTimeSynchronizationFeature
 pattern MTRTimeSynchronizationFeatureTimeSyncClient = MTRTimeSynchronizationFeature 8
 
+instance ObjCArgument MTRTimeSynchronizationFeature where
+  withObjCArg (MTRTimeSynchronizationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTimeSynchronizationFeature where
+  type RawReturn MTRTimeSynchronizationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeSynchronizationFeature x)
+  fromOwned x = pure (MTRTimeSynchronizationFeature x)
+
 -- | @MTRTimeSynchronizationGranularity@
 newtype MTRTimeSynchronizationGranularity = MTRTimeSynchronizationGranularity CUChar
   deriving stock (Eq, Ord, Show)
@@ -25357,6 +30280,16 @@ pattern MTRTimeSynchronizationGranularityMillisecondsGranularity = MTRTimeSynchr
 pattern MTRTimeSynchronizationGranularityMicrosecondsGranularity :: MTRTimeSynchronizationGranularity
 pattern MTRTimeSynchronizationGranularityMicrosecondsGranularity = MTRTimeSynchronizationGranularity 4
 
+instance ObjCArgument MTRTimeSynchronizationGranularity where
+  withObjCArg (MTRTimeSynchronizationGranularity x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeSynchronizationGranularity where
+  type RawReturn MTRTimeSynchronizationGranularity = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeSynchronizationGranularity x)
+  fromOwned x = pure (MTRTimeSynchronizationGranularity x)
+
 -- | @MTRTimeSynchronizationStatusCode@
 newtype MTRTimeSynchronizationStatusCode = MTRTimeSynchronizationStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -25364,6 +30297,16 @@ newtype MTRTimeSynchronizationStatusCode = MTRTimeSynchronizationStatusCode CUCh
 
 pattern MTRTimeSynchronizationStatusCodeTimeNotAccepted :: MTRTimeSynchronizationStatusCode
 pattern MTRTimeSynchronizationStatusCodeTimeNotAccepted = MTRTimeSynchronizationStatusCode 2
+
+instance ObjCArgument MTRTimeSynchronizationStatusCode where
+  withObjCArg (MTRTimeSynchronizationStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeSynchronizationStatusCode where
+  type RawReturn MTRTimeSynchronizationStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeSynchronizationStatusCode x)
+  fromOwned x = pure (MTRTimeSynchronizationStatusCode x)
 
 -- | @MTRTimeSynchronizationTimeSource@
 newtype MTRTimeSynchronizationTimeSource = MTRTimeSynchronizationTimeSource CUChar
@@ -25457,6 +30400,16 @@ pattern MTRTimeSynchronizationTimeSourceGNSS = MTRTimeSynchronizationTimeSource 
 pattern MTRTimeSynchronizationTimeSourceGnss :: MTRTimeSynchronizationTimeSource
 pattern MTRTimeSynchronizationTimeSourceGnss = MTRTimeSynchronizationTimeSource 16
 
+instance ObjCArgument MTRTimeSynchronizationTimeSource where
+  withObjCArg (MTRTimeSynchronizationTimeSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeSynchronizationTimeSource where
+  type RawReturn MTRTimeSynchronizationTimeSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeSynchronizationTimeSource x)
+  fromOwned x = pure (MTRTimeSynchronizationTimeSource x)
+
 -- | @MTRTimeSynchronizationTimeZoneDatabase@
 newtype MTRTimeSynchronizationTimeZoneDatabase = MTRTimeSynchronizationTimeZoneDatabase CUChar
   deriving stock (Eq, Ord, Show)
@@ -25471,6 +30424,16 @@ pattern MTRTimeSynchronizationTimeZoneDatabasePartial = MTRTimeSynchronizationTi
 pattern MTRTimeSynchronizationTimeZoneDatabaseNone :: MTRTimeSynchronizationTimeZoneDatabase
 pattern MTRTimeSynchronizationTimeZoneDatabaseNone = MTRTimeSynchronizationTimeZoneDatabase 2
 
+instance ObjCArgument MTRTimeSynchronizationTimeZoneDatabase where
+  withObjCArg (MTRTimeSynchronizationTimeZoneDatabase x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimeSynchronizationTimeZoneDatabase where
+  type RawReturn MTRTimeSynchronizationTimeZoneDatabase = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimeSynchronizationTimeZoneDatabase x)
+  fromOwned x = pure (MTRTimeSynchronizationTimeZoneDatabase x)
+
 -- | @MTRTimerFeature@ (bitmask)
 newtype MTRTimerFeature = MTRTimerFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -25484,6 +30447,16 @@ instance Monoid MTRTimerFeature where
 
 pattern MTRTimerFeatureReset :: MTRTimerFeature
 pattern MTRTimerFeatureReset = MTRTimerFeature 1
+
+instance ObjCArgument MTRTimerFeature where
+  withObjCArg (MTRTimerFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTimerFeature where
+  type RawReturn MTRTimerFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimerFeature x)
+  fromOwned x = pure (MTRTimerFeature x)
 
 -- | @MTRTimerStatus@
 newtype MTRTimerStatus = MTRTimerStatus CUChar
@@ -25501,6 +30474,16 @@ pattern MTRTimerStatusExpired = MTRTimerStatus 2
 
 pattern MTRTimerStatusReady :: MTRTimerStatus
 pattern MTRTimerStatusReady = MTRTimerStatus 3
+
+instance ObjCArgument MTRTimerStatus where
+  withObjCArg (MTRTimerStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTimerStatus where
+  type RawReturn MTRTimerStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTimerStatus x)
+  fromOwned x = pure (MTRTimerStatus x)
 
 -- | @MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature@ (bitmask)
 newtype MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature CUInt
@@ -25531,6 +30514,16 @@ pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeaturePeakMeasu
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeatureAverageMeasurement :: MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeatureAverageMeasurement = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature 32
 
+instance ObjCArgument MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature where
+  withObjCArg (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature where
+  type RawReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature x)
+  fromOwned x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementFeature x)
+
 -- | @MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue@
 newtype MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue CUChar
   deriving stock (Eq, Ord, Show)
@@ -25551,6 +30544,16 @@ pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValueHigh =
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValueCritical :: MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValueCritical = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue 4
 
+instance ObjCArgument MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue where
+  withObjCArg (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue where
+  type RawReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue x)
+  fromOwned x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementLevelValue x)
+
 -- | @MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium@
 newtype MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium CUChar
   deriving stock (Eq, Ord, Show)
@@ -25564,6 +30567,16 @@ pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMediu
 
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMediumSoil :: MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMediumSoil = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium 2
+
+instance ObjCArgument MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium where
+  withObjCArg (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium where
+  type RawReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium x)
+  fromOwned x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementMedium x)
 
 -- | @MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit@
 newtype MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit CUChar
@@ -25594,6 +30607,16 @@ pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnitP
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnitBQM3 :: MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit
 pattern MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnitBQM3 = MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit 7
 
+instance ObjCArgument MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit where
+  withObjCArg (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit where
+  type RawReturn MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit x)
+  fromOwned x = pure (MTRTotalVolatileOrganicCompoundsConcentrationMeasurementMeasurementUnit x)
+
 -- | @MTRTransportType@
 newtype MTRTransportType = MTRTransportType CUChar
   deriving stock (Eq, Ord, Show)
@@ -25611,6 +30634,16 @@ pattern MTRTransportTypeBLE = MTRTransportType 2
 pattern MTRTransportTypeTCP :: MTRTransportType
 pattern MTRTransportTypeTCP = MTRTransportType 3
 
+instance ObjCArgument MTRTransportType where
+  withObjCArg (MTRTransportType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRTransportType where
+  type RawReturn MTRTransportType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRTransportType x)
+  fromOwned x = pure (MTRTransportType x)
+
 -- | @MTRUnitLocalizationFeature@ (bitmask)
 newtype MTRUnitLocalizationFeature = MTRUnitLocalizationFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -25625,6 +30658,16 @@ instance Monoid MTRUnitLocalizationFeature where
 pattern MTRUnitLocalizationFeatureTemperatureUnit :: MTRUnitLocalizationFeature
 pattern MTRUnitLocalizationFeatureTemperatureUnit = MTRUnitLocalizationFeature 1
 
+instance ObjCArgument MTRUnitLocalizationFeature where
+  withObjCArg (MTRUnitLocalizationFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRUnitLocalizationFeature where
+  type RawReturn MTRUnitLocalizationFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitLocalizationFeature x)
+  fromOwned x = pure (MTRUnitLocalizationFeature x)
+
 -- | @MTRUnitLocalizationTempUnit@
 newtype MTRUnitLocalizationTempUnit = MTRUnitLocalizationTempUnit CUChar
   deriving stock (Eq, Ord, Show)
@@ -25638,6 +30681,16 @@ pattern MTRUnitLocalizationTempUnitCelsius = MTRUnitLocalizationTempUnit 1
 
 pattern MTRUnitLocalizationTempUnitKelvin :: MTRUnitLocalizationTempUnit
 pattern MTRUnitLocalizationTempUnitKelvin = MTRUnitLocalizationTempUnit 2
+
+instance ObjCArgument MTRUnitLocalizationTempUnit where
+  withObjCArg (MTRUnitLocalizationTempUnit x) k = k (argCUChar x)
+
+instance ObjCReturn MTRUnitLocalizationTempUnit where
+  type RawReturn MTRUnitLocalizationTempUnit = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitLocalizationTempUnit x)
+  fromOwned x = pure (MTRUnitLocalizationTempUnit x)
 
 -- | @MTRUnitTestingBitmap16MaskMap@ (bitmask)
 newtype MTRUnitTestingBitmap16MaskMap = MTRUnitTestingBitmap16MaskMap CUShort
@@ -25662,6 +30715,16 @@ pattern MTRUnitTestingBitmap16MaskMapMaskVal3 = MTRUnitTestingBitmap16MaskMap 4
 pattern MTRUnitTestingBitmap16MaskMapMaskVal4 :: MTRUnitTestingBitmap16MaskMap
 pattern MTRUnitTestingBitmap16MaskMapMaskVal4 = MTRUnitTestingBitmap16MaskMap 16384
 
+instance ObjCArgument MTRUnitTestingBitmap16MaskMap where
+  withObjCArg (MTRUnitTestingBitmap16MaskMap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRUnitTestingBitmap16MaskMap where
+  type RawReturn MTRUnitTestingBitmap16MaskMap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingBitmap16MaskMap (fromIntegral x))
+  fromOwned x = pure (MTRUnitTestingBitmap16MaskMap (fromIntegral x))
+
 -- | @MTRUnitTestingBitmap32MaskMap@ (bitmask)
 newtype MTRUnitTestingBitmap32MaskMap = MTRUnitTestingBitmap32MaskMap CUInt
   deriving stock (Eq, Ord, Show)
@@ -25684,6 +30747,16 @@ pattern MTRUnitTestingBitmap32MaskMapMaskVal3 = MTRUnitTestingBitmap32MaskMap 4
 
 pattern MTRUnitTestingBitmap32MaskMapMaskVal4 :: MTRUnitTestingBitmap32MaskMap
 pattern MTRUnitTestingBitmap32MaskMapMaskVal4 = MTRUnitTestingBitmap32MaskMap 1073741824
+
+instance ObjCArgument MTRUnitTestingBitmap32MaskMap where
+  withObjCArg (MTRUnitTestingBitmap32MaskMap x) k = k (argCUInt x)
+
+instance ObjCReturn MTRUnitTestingBitmap32MaskMap where
+  type RawReturn MTRUnitTestingBitmap32MaskMap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingBitmap32MaskMap x)
+  fromOwned x = pure (MTRUnitTestingBitmap32MaskMap x)
 
 -- | @MTRUnitTestingBitmap64MaskMap@ (bitmask)
 newtype MTRUnitTestingBitmap64MaskMap = MTRUnitTestingBitmap64MaskMap CULong
@@ -25708,6 +30781,16 @@ pattern MTRUnitTestingBitmap64MaskMapMaskVal3 = MTRUnitTestingBitmap64MaskMap 4
 pattern MTRUnitTestingBitmap64MaskMapMaskVal4 :: MTRUnitTestingBitmap64MaskMap
 pattern MTRUnitTestingBitmap64MaskMapMaskVal4 = MTRUnitTestingBitmap64MaskMap 4611686018427387904
 
+instance ObjCArgument MTRUnitTestingBitmap64MaskMap where
+  withObjCArg (MTRUnitTestingBitmap64MaskMap x) k = k (argCULong x)
+
+instance ObjCReturn MTRUnitTestingBitmap64MaskMap where
+  type RawReturn MTRUnitTestingBitmap64MaskMap = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingBitmap64MaskMap x)
+  fromOwned x = pure (MTRUnitTestingBitmap64MaskMap x)
+
 -- | @MTRUnitTestingBitmap8MaskMap@ (bitmask)
 newtype MTRUnitTestingBitmap8MaskMap = MTRUnitTestingBitmap8MaskMap CUChar
   deriving stock (Eq, Ord, Show)
@@ -25731,6 +30814,16 @@ pattern MTRUnitTestingBitmap8MaskMapMaskVal3 = MTRUnitTestingBitmap8MaskMap 4
 pattern MTRUnitTestingBitmap8MaskMapMaskVal4 :: MTRUnitTestingBitmap8MaskMap
 pattern MTRUnitTestingBitmap8MaskMapMaskVal4 = MTRUnitTestingBitmap8MaskMap 64
 
+instance ObjCArgument MTRUnitTestingBitmap8MaskMap where
+  withObjCArg (MTRUnitTestingBitmap8MaskMap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRUnitTestingBitmap8MaskMap where
+  type RawReturn MTRUnitTestingBitmap8MaskMap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingBitmap8MaskMap x)
+  fromOwned x = pure (MTRUnitTestingBitmap8MaskMap x)
+
 -- | @MTRUnitTestingSimple@
 newtype MTRUnitTestingSimple = MTRUnitTestingSimple CUChar
   deriving stock (Eq, Ord, Show)
@@ -25747,6 +30840,16 @@ pattern MTRUnitTestingSimpleValueB = MTRUnitTestingSimple 2
 
 pattern MTRUnitTestingSimpleValueC :: MTRUnitTestingSimple
 pattern MTRUnitTestingSimpleValueC = MTRUnitTestingSimple 3
+
+instance ObjCArgument MTRUnitTestingSimple where
+  withObjCArg (MTRUnitTestingSimple x) k = k (argCUChar x)
+
+instance ObjCReturn MTRUnitTestingSimple where
+  type RawReturn MTRUnitTestingSimple = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingSimple x)
+  fromOwned x = pure (MTRUnitTestingSimple x)
 
 -- | @MTRUnitTestingSimpleBitmap@ (bitmask)
 newtype MTRUnitTestingSimpleBitmap = MTRUnitTestingSimpleBitmap CUChar
@@ -25768,6 +30871,16 @@ pattern MTRUnitTestingSimpleBitmapValueB = MTRUnitTestingSimpleBitmap 2
 pattern MTRUnitTestingSimpleBitmapValueC :: MTRUnitTestingSimpleBitmap
 pattern MTRUnitTestingSimpleBitmapValueC = MTRUnitTestingSimpleBitmap 4
 
+instance ObjCArgument MTRUnitTestingSimpleBitmap where
+  withObjCArg (MTRUnitTestingSimpleBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRUnitTestingSimpleBitmap where
+  type RawReturn MTRUnitTestingSimpleBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRUnitTestingSimpleBitmap x)
+  fromOwned x = pure (MTRUnitTestingSimpleBitmap x)
+
 -- | @MTRValveConfigurationAndControlFeature@ (bitmask)
 newtype MTRValveConfigurationAndControlFeature = MTRValveConfigurationAndControlFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -25785,6 +30898,16 @@ pattern MTRValveConfigurationAndControlFeatureTimeSync = MTRValveConfigurationAn
 pattern MTRValveConfigurationAndControlFeatureLevel :: MTRValveConfigurationAndControlFeature
 pattern MTRValveConfigurationAndControlFeatureLevel = MTRValveConfigurationAndControlFeature 2
 
+instance ObjCArgument MTRValveConfigurationAndControlFeature where
+  withObjCArg (MTRValveConfigurationAndControlFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRValveConfigurationAndControlFeature where
+  type RawReturn MTRValveConfigurationAndControlFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRValveConfigurationAndControlFeature x)
+  fromOwned x = pure (MTRValveConfigurationAndControlFeature x)
+
 -- | @MTRValveConfigurationAndControlStatusCode@
 newtype MTRValveConfigurationAndControlStatusCode = MTRValveConfigurationAndControlStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -25792,6 +30915,16 @@ newtype MTRValveConfigurationAndControlStatusCode = MTRValveConfigurationAndCont
 
 pattern MTRValveConfigurationAndControlStatusCodeFailureDueToFault :: MTRValveConfigurationAndControlStatusCode
 pattern MTRValveConfigurationAndControlStatusCodeFailureDueToFault = MTRValveConfigurationAndControlStatusCode 2
+
+instance ObjCArgument MTRValveConfigurationAndControlStatusCode where
+  withObjCArg (MTRValveConfigurationAndControlStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRValveConfigurationAndControlStatusCode where
+  type RawReturn MTRValveConfigurationAndControlStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRValveConfigurationAndControlStatusCode x)
+  fromOwned x = pure (MTRValveConfigurationAndControlStatusCode x)
 
 -- | @MTRValveConfigurationAndControlValveFaultBitmap@ (bitmask)
 newtype MTRValveConfigurationAndControlValveFaultBitmap = MTRValveConfigurationAndControlValveFaultBitmap CUShort
@@ -25822,6 +30955,16 @@ pattern MTRValveConfigurationAndControlValveFaultBitmapShortCircuit = MTRValveCo
 pattern MTRValveConfigurationAndControlValveFaultBitmapCurrentExceeded :: MTRValveConfigurationAndControlValveFaultBitmap
 pattern MTRValveConfigurationAndControlValveFaultBitmapCurrentExceeded = MTRValveConfigurationAndControlValveFaultBitmap 32
 
+instance ObjCArgument MTRValveConfigurationAndControlValveFaultBitmap where
+  withObjCArg (MTRValveConfigurationAndControlValveFaultBitmap x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRValveConfigurationAndControlValveFaultBitmap where
+  type RawReturn MTRValveConfigurationAndControlValveFaultBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRValveConfigurationAndControlValveFaultBitmap (fromIntegral x))
+  fromOwned x = pure (MTRValveConfigurationAndControlValveFaultBitmap (fromIntegral x))
+
 -- | @MTRValveConfigurationAndControlValveState@
 newtype MTRValveConfigurationAndControlValveState = MTRValveConfigurationAndControlValveState CUChar
   deriving stock (Eq, Ord, Show)
@@ -25836,6 +30979,16 @@ pattern MTRValveConfigurationAndControlValveStateOpen = MTRValveConfigurationAnd
 pattern MTRValveConfigurationAndControlValveStateTransitioning :: MTRValveConfigurationAndControlValveState
 pattern MTRValveConfigurationAndControlValveStateTransitioning = MTRValveConfigurationAndControlValveState 2
 
+instance ObjCArgument MTRValveConfigurationAndControlValveState where
+  withObjCArg (MTRValveConfigurationAndControlValveState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRValveConfigurationAndControlValveState where
+  type RawReturn MTRValveConfigurationAndControlValveState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRValveConfigurationAndControlValveState x)
+  fromOwned x = pure (MTRValveConfigurationAndControlValveState x)
+
 -- | @MTRWaterHeaterManagementBoostState@
 newtype MTRWaterHeaterManagementBoostState = MTRWaterHeaterManagementBoostState CUChar
   deriving stock (Eq, Ord, Show)
@@ -25846,6 +30999,16 @@ pattern MTRWaterHeaterManagementBoostStateInactive = MTRWaterHeaterManagementBoo
 
 pattern MTRWaterHeaterManagementBoostStateActive :: MTRWaterHeaterManagementBoostState
 pattern MTRWaterHeaterManagementBoostStateActive = MTRWaterHeaterManagementBoostState 1
+
+instance ObjCArgument MTRWaterHeaterManagementBoostState where
+  withObjCArg (MTRWaterHeaterManagementBoostState x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWaterHeaterManagementBoostState where
+  type RawReturn MTRWaterHeaterManagementBoostState = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWaterHeaterManagementBoostState x)
+  fromOwned x = pure (MTRWaterHeaterManagementBoostState x)
 
 -- | @MTRWaterHeaterManagementFeature@ (bitmask)
 newtype MTRWaterHeaterManagementFeature = MTRWaterHeaterManagementFeature CUInt
@@ -25863,6 +31026,16 @@ pattern MTRWaterHeaterManagementFeatureEnergyManagement = MTRWaterHeaterManageme
 
 pattern MTRWaterHeaterManagementFeatureTankPercent :: MTRWaterHeaterManagementFeature
 pattern MTRWaterHeaterManagementFeatureTankPercent = MTRWaterHeaterManagementFeature 2
+
+instance ObjCArgument MTRWaterHeaterManagementFeature where
+  withObjCArg (MTRWaterHeaterManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRWaterHeaterManagementFeature where
+  type RawReturn MTRWaterHeaterManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWaterHeaterManagementFeature x)
+  fromOwned x = pure (MTRWaterHeaterManagementFeature x)
 
 -- | @MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap@ (bitmask)
 newtype MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap = MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap CUChar
@@ -25889,6 +31062,16 @@ pattern MTRWaterHeaterManagementWaterHeaterHeatSourceBitmapBoiler = MTRWaterHeat
 
 pattern MTRWaterHeaterManagementWaterHeaterHeatSourceBitmapOther :: MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap
 pattern MTRWaterHeaterManagementWaterHeaterHeatSourceBitmapOther = MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap 16
+
+instance ObjCArgument MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap where
+  withObjCArg (MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap where
+  type RawReturn MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap x)
+  fromOwned x = pure (MTRWaterHeaterManagementWaterHeaterHeatSourceBitmap x)
 
 -- | @MTRWaterHeaterModeModeTag@
 newtype MTRWaterHeaterModeModeTag = MTRWaterHeaterModeModeTag CUShort
@@ -25934,6 +31117,16 @@ pattern MTRWaterHeaterModeModeTagManual = MTRWaterHeaterModeModeTag 16385
 pattern MTRWaterHeaterModeModeTagTimed :: MTRWaterHeaterModeModeTag
 pattern MTRWaterHeaterModeModeTagTimed = MTRWaterHeaterModeModeTag 16386
 
+instance ObjCArgument MTRWaterHeaterModeModeTag where
+  withObjCArg (MTRWaterHeaterModeModeTag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRWaterHeaterModeModeTag where
+  type RawReturn MTRWaterHeaterModeModeTag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWaterHeaterModeModeTag (fromIntegral x))
+  fromOwned x = pure (MTRWaterHeaterModeModeTag (fromIntegral x))
+
 -- | @MTRWebRTCTransportProviderFeature@ (bitmask)
 newtype MTRWebRTCTransportProviderFeature = MTRWebRTCTransportProviderFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -25947,6 +31140,16 @@ instance Monoid MTRWebRTCTransportProviderFeature where
 
 pattern MTRWebRTCTransportProviderFeatureMetadata :: MTRWebRTCTransportProviderFeature
 pattern MTRWebRTCTransportProviderFeatureMetadata = MTRWebRTCTransportProviderFeature 1
+
+instance ObjCArgument MTRWebRTCTransportProviderFeature where
+  withObjCArg (MTRWebRTCTransportProviderFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRWebRTCTransportProviderFeature where
+  type RawReturn MTRWebRTCTransportProviderFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWebRTCTransportProviderFeature x)
+  fromOwned x = pure (MTRWebRTCTransportProviderFeature x)
 
 -- | @MTRWiFiNetworkDiagnosticsAssociationFailureCause@
 newtype MTRWiFiNetworkDiagnosticsAssociationFailureCause = MTRWiFiNetworkDiagnosticsAssociationFailureCause CUChar
@@ -25965,6 +31168,16 @@ pattern MTRWiFiNetworkDiagnosticsAssociationFailureCauseAuthenticationFailed = M
 pattern MTRWiFiNetworkDiagnosticsAssociationFailureCauseSsidNotFound :: MTRWiFiNetworkDiagnosticsAssociationFailureCause
 pattern MTRWiFiNetworkDiagnosticsAssociationFailureCauseSsidNotFound = MTRWiFiNetworkDiagnosticsAssociationFailureCause 3
 
+instance ObjCArgument MTRWiFiNetworkDiagnosticsAssociationFailureCause where
+  withObjCArg (MTRWiFiNetworkDiagnosticsAssociationFailureCause x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsAssociationFailureCause where
+  type RawReturn MTRWiFiNetworkDiagnosticsAssociationFailureCause = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsAssociationFailureCause x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsAssociationFailureCause x)
+
 -- | @MTRWiFiNetworkDiagnosticsConnectionStatus@
 newtype MTRWiFiNetworkDiagnosticsConnectionStatus = MTRWiFiNetworkDiagnosticsConnectionStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -25975,6 +31188,16 @@ pattern MTRWiFiNetworkDiagnosticsConnectionStatusConnected = MTRWiFiNetworkDiagn
 
 pattern MTRWiFiNetworkDiagnosticsConnectionStatusNotConnected :: MTRWiFiNetworkDiagnosticsConnectionStatus
 pattern MTRWiFiNetworkDiagnosticsConnectionStatusNotConnected = MTRWiFiNetworkDiagnosticsConnectionStatus 1
+
+instance ObjCArgument MTRWiFiNetworkDiagnosticsConnectionStatus where
+  withObjCArg (MTRWiFiNetworkDiagnosticsConnectionStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsConnectionStatus where
+  type RawReturn MTRWiFiNetworkDiagnosticsConnectionStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsConnectionStatus x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsConnectionStatus x)
 
 -- | @MTRWiFiNetworkDiagnosticsFeature@ (bitmask)
 newtype MTRWiFiNetworkDiagnosticsFeature = MTRWiFiNetworkDiagnosticsFeature CUInt
@@ -25992,6 +31215,16 @@ pattern MTRWiFiNetworkDiagnosticsFeaturePacketCounts = MTRWiFiNetworkDiagnostics
 
 pattern MTRWiFiNetworkDiagnosticsFeatureErrorCounts :: MTRWiFiNetworkDiagnosticsFeature
 pattern MTRWiFiNetworkDiagnosticsFeatureErrorCounts = MTRWiFiNetworkDiagnosticsFeature 2
+
+instance ObjCArgument MTRWiFiNetworkDiagnosticsFeature where
+  withObjCArg (MTRWiFiNetworkDiagnosticsFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsFeature where
+  type RawReturn MTRWiFiNetworkDiagnosticsFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsFeature x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsFeature x)
 
 -- | @MTRWiFiNetworkDiagnosticsSecurityType@
 newtype MTRWiFiNetworkDiagnosticsSecurityType = MTRWiFiNetworkDiagnosticsSecurityType CUChar
@@ -26016,6 +31249,16 @@ pattern MTRWiFiNetworkDiagnosticsSecurityTypeWPA2 = MTRWiFiNetworkDiagnosticsSec
 pattern MTRWiFiNetworkDiagnosticsSecurityTypeWPA3 :: MTRWiFiNetworkDiagnosticsSecurityType
 pattern MTRWiFiNetworkDiagnosticsSecurityTypeWPA3 = MTRWiFiNetworkDiagnosticsSecurityType 5
 
+instance ObjCArgument MTRWiFiNetworkDiagnosticsSecurityType where
+  withObjCArg (MTRWiFiNetworkDiagnosticsSecurityType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsSecurityType where
+  type RawReturn MTRWiFiNetworkDiagnosticsSecurityType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsSecurityType x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsSecurityType x)
+
 -- | @MTRWiFiNetworkDiagnosticsWiFiConnectionStatus@
 newtype MTRWiFiNetworkDiagnosticsWiFiConnectionStatus = MTRWiFiNetworkDiagnosticsWiFiConnectionStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -26026,6 +31269,16 @@ pattern MTRWiFiNetworkDiagnosticsWiFiConnectionStatusConnected = MTRWiFiNetworkD
 
 pattern MTRWiFiNetworkDiagnosticsWiFiConnectionStatusNotConnected :: MTRWiFiNetworkDiagnosticsWiFiConnectionStatus
 pattern MTRWiFiNetworkDiagnosticsWiFiConnectionStatusNotConnected = MTRWiFiNetworkDiagnosticsWiFiConnectionStatus 1
+
+instance ObjCArgument MTRWiFiNetworkDiagnosticsWiFiConnectionStatus where
+  withObjCArg (MTRWiFiNetworkDiagnosticsWiFiConnectionStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsWiFiConnectionStatus where
+  type RawReturn MTRWiFiNetworkDiagnosticsWiFiConnectionStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsWiFiConnectionStatus x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsWiFiConnectionStatus x)
 
 -- | @MTRWiFiNetworkDiagnosticsWiFiVersion@
 newtype MTRWiFiNetworkDiagnosticsWiFiVersion = MTRWiFiNetworkDiagnosticsWiFiVersion CUChar
@@ -26052,6 +31305,16 @@ pattern MTRWiFiNetworkDiagnosticsWiFiVersionAx = MTRWiFiNetworkDiagnosticsWiFiVe
 
 pattern MTRWiFiNetworkDiagnosticsWiFiVersionAh :: MTRWiFiNetworkDiagnosticsWiFiVersion
 pattern MTRWiFiNetworkDiagnosticsWiFiVersionAh = MTRWiFiNetworkDiagnosticsWiFiVersion 6
+
+instance ObjCArgument MTRWiFiNetworkDiagnosticsWiFiVersion where
+  withObjCArg (MTRWiFiNetworkDiagnosticsWiFiVersion x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsWiFiVersion where
+  type RawReturn MTRWiFiNetworkDiagnosticsWiFiVersion = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsWiFiVersion x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsWiFiVersion x)
 
 -- | @MTRWiFiNetworkDiagnosticsWiFiVersionType@
 newtype MTRWiFiNetworkDiagnosticsWiFiVersionType = MTRWiFiNetworkDiagnosticsWiFiVersionType CUChar
@@ -26094,6 +31357,16 @@ pattern MTRWiFiNetworkDiagnosticsWiFiVersionTypeAx = MTRWiFiNetworkDiagnosticsWi
 pattern MTRWiFiNetworkDiagnosticsWiFiVersionType80211ax :: MTRWiFiNetworkDiagnosticsWiFiVersionType
 pattern MTRWiFiNetworkDiagnosticsWiFiVersionType80211ax = MTRWiFiNetworkDiagnosticsWiFiVersionType 5
 
+instance ObjCArgument MTRWiFiNetworkDiagnosticsWiFiVersionType where
+  withObjCArg (MTRWiFiNetworkDiagnosticsWiFiVersionType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWiFiNetworkDiagnosticsWiFiVersionType where
+  type RawReturn MTRWiFiNetworkDiagnosticsWiFiVersionType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWiFiNetworkDiagnosticsWiFiVersionType x)
+  fromOwned x = pure (MTRWiFiNetworkDiagnosticsWiFiVersionType x)
+
 -- | @MTRWindowCoveringConfigStatus@ (bitmask)
 newtype MTRWindowCoveringConfigStatus = MTRWindowCoveringConfigStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -26125,6 +31398,16 @@ pattern MTRWindowCoveringConfigStatusLiftEncoderControlled = MTRWindowCoveringCo
 
 pattern MTRWindowCoveringConfigStatusTiltEncoderControlled :: MTRWindowCoveringConfigStatus
 pattern MTRWindowCoveringConfigStatusTiltEncoderControlled = MTRWindowCoveringConfigStatus 64
+
+instance ObjCArgument MTRWindowCoveringConfigStatus where
+  withObjCArg (MTRWindowCoveringConfigStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWindowCoveringConfigStatus where
+  type RawReturn MTRWindowCoveringConfigStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringConfigStatus x)
+  fromOwned x = pure (MTRWindowCoveringConfigStatus x)
 
 -- | @MTRWindowCoveringEndProductType@
 newtype MTRWindowCoveringEndProductType = MTRWindowCoveringEndProductType CUChar
@@ -26206,6 +31489,16 @@ pattern MTRWindowCoveringEndProductTypeSlidingShutter = MTRWindowCoveringEndProd
 pattern MTRWindowCoveringEndProductTypeUnknown :: MTRWindowCoveringEndProductType
 pattern MTRWindowCoveringEndProductTypeUnknown = MTRWindowCoveringEndProductType 255
 
+instance ObjCArgument MTRWindowCoveringEndProductType where
+  withObjCArg (MTRWindowCoveringEndProductType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWindowCoveringEndProductType where
+  type RawReturn MTRWindowCoveringEndProductType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringEndProductType x)
+  fromOwned x = pure (MTRWindowCoveringEndProductType x)
+
 -- | @MTRWindowCoveringFeature@ (bitmask)
 newtype MTRWindowCoveringFeature = MTRWindowCoveringFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -26232,6 +31525,16 @@ pattern MTRWindowCoveringFeatureAbsolutePosition = MTRWindowCoveringFeature 8
 pattern MTRWindowCoveringFeaturePositionAwareTilt :: MTRWindowCoveringFeature
 pattern MTRWindowCoveringFeaturePositionAwareTilt = MTRWindowCoveringFeature 16
 
+instance ObjCArgument MTRWindowCoveringFeature where
+  withObjCArg (MTRWindowCoveringFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRWindowCoveringFeature where
+  type RawReturn MTRWindowCoveringFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringFeature x)
+  fromOwned x = pure (MTRWindowCoveringFeature x)
+
 -- | @MTRWindowCoveringMode@ (bitmask)
 newtype MTRWindowCoveringMode = MTRWindowCoveringMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -26255,6 +31558,16 @@ pattern MTRWindowCoveringModeMaintenanceMode = MTRWindowCoveringMode 4
 pattern MTRWindowCoveringModeLedFeedback :: MTRWindowCoveringMode
 pattern MTRWindowCoveringModeLedFeedback = MTRWindowCoveringMode 8
 
+instance ObjCArgument MTRWindowCoveringMode where
+  withObjCArg (MTRWindowCoveringMode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWindowCoveringMode where
+  type RawReturn MTRWindowCoveringMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringMode x)
+  fromOwned x = pure (MTRWindowCoveringMode x)
+
 -- | @MTRWindowCoveringOperationalStatus@ (bitmask)
 newtype MTRWindowCoveringOperationalStatus = MTRWindowCoveringOperationalStatus CUChar
   deriving stock (Eq, Ord, Show)
@@ -26274,6 +31587,16 @@ pattern MTRWindowCoveringOperationalStatusLift = MTRWindowCoveringOperationalSta
 
 pattern MTRWindowCoveringOperationalStatusTilt :: MTRWindowCoveringOperationalStatus
 pattern MTRWindowCoveringOperationalStatusTilt = MTRWindowCoveringOperationalStatus 48
+
+instance ObjCArgument MTRWindowCoveringOperationalStatus where
+  withObjCArg (MTRWindowCoveringOperationalStatus x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWindowCoveringOperationalStatus where
+  type RawReturn MTRWindowCoveringOperationalStatus = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringOperationalStatus x)
+  fromOwned x = pure (MTRWindowCoveringOperationalStatus x)
 
 -- | @MTRWindowCoveringSafetyStatus@ (bitmask)
 newtype MTRWindowCoveringSafetyStatus = MTRWindowCoveringSafetyStatus CUShort
@@ -26322,6 +31645,16 @@ pattern MTRWindowCoveringSafetyStatusManualOperation = MTRWindowCoveringSafetySt
 pattern MTRWindowCoveringSafetyStatusProtection :: MTRWindowCoveringSafetyStatus
 pattern MTRWindowCoveringSafetyStatusProtection = MTRWindowCoveringSafetyStatus 2048
 
+instance ObjCArgument MTRWindowCoveringSafetyStatus where
+  withObjCArg (MTRWindowCoveringSafetyStatus x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MTRWindowCoveringSafetyStatus where
+  type RawReturn MTRWindowCoveringSafetyStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringSafetyStatus (fromIntegral x))
+  fromOwned x = pure (MTRWindowCoveringSafetyStatus (fromIntegral x))
+
 -- | @MTRWindowCoveringType@
 newtype MTRWindowCoveringType = MTRWindowCoveringType CUChar
   deriving stock (Eq, Ord, Show)
@@ -26360,6 +31693,16 @@ pattern MTRWindowCoveringTypeProjectorScreen = MTRWindowCoveringType 9
 pattern MTRWindowCoveringTypeUnknown :: MTRWindowCoveringType
 pattern MTRWindowCoveringTypeUnknown = MTRWindowCoveringType 255
 
+instance ObjCArgument MTRWindowCoveringType where
+  withObjCArg (MTRWindowCoveringType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRWindowCoveringType where
+  type RawReturn MTRWindowCoveringType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRWindowCoveringType x)
+  fromOwned x = pure (MTRWindowCoveringType x)
+
 -- | @MTRZoneManagementFeature@ (bitmask)
 newtype MTRZoneManagementFeature = MTRZoneManagementFeature CUInt
   deriving stock (Eq, Ord, Show)
@@ -26383,6 +31726,16 @@ pattern MTRZoneManagementFeatureUserDefined = MTRZoneManagementFeature 4
 pattern MTRZoneManagementFeatureFocusZones :: MTRZoneManagementFeature
 pattern MTRZoneManagementFeatureFocusZones = MTRZoneManagementFeature 8
 
+instance ObjCArgument MTRZoneManagementFeature where
+  withObjCArg (MTRZoneManagementFeature x) k = k (argCUInt x)
+
+instance ObjCReturn MTRZoneManagementFeature where
+  type RawReturn MTRZoneManagementFeature = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementFeature x)
+  fromOwned x = pure (MTRZoneManagementFeature x)
+
 -- | @MTRZoneManagementStatusCode@
 newtype MTRZoneManagementStatusCode = MTRZoneManagementStatusCode CUChar
   deriving stock (Eq, Ord, Show)
@@ -26393,6 +31746,16 @@ pattern MTRZoneManagementStatusCodeZoneNotFound = MTRZoneManagementStatusCode 2
 
 pattern MTRZoneManagementStatusCodeZoneInUse :: MTRZoneManagementStatusCode
 pattern MTRZoneManagementStatusCodeZoneInUse = MTRZoneManagementStatusCode 3
+
+instance ObjCArgument MTRZoneManagementStatusCode where
+  withObjCArg (MTRZoneManagementStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementStatusCode where
+  type RawReturn MTRZoneManagementStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementStatusCode x)
+  fromOwned x = pure (MTRZoneManagementStatusCode x)
 
 -- | @MTRZoneManagementZoneEventStoppedReason@
 newtype MTRZoneManagementZoneEventStoppedReason = MTRZoneManagementZoneEventStoppedReason CUChar
@@ -26405,6 +31768,16 @@ pattern MTRZoneManagementZoneEventStoppedReasonActionStopped = MTRZoneManagement
 pattern MTRZoneManagementZoneEventStoppedReasonTimeout :: MTRZoneManagementZoneEventStoppedReason
 pattern MTRZoneManagementZoneEventStoppedReasonTimeout = MTRZoneManagementZoneEventStoppedReason 1
 
+instance ObjCArgument MTRZoneManagementZoneEventStoppedReason where
+  withObjCArg (MTRZoneManagementZoneEventStoppedReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementZoneEventStoppedReason where
+  type RawReturn MTRZoneManagementZoneEventStoppedReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementZoneEventStoppedReason x)
+  fromOwned x = pure (MTRZoneManagementZoneEventStoppedReason x)
+
 -- | @MTRZoneManagementZoneEventTriggeredReason@
 newtype MTRZoneManagementZoneEventTriggeredReason = MTRZoneManagementZoneEventTriggeredReason CUChar
   deriving stock (Eq, Ord, Show)
@@ -26412,6 +31785,16 @@ newtype MTRZoneManagementZoneEventTriggeredReason = MTRZoneManagementZoneEventTr
 
 pattern MTRZoneManagementZoneEventTriggeredReasonMotion :: MTRZoneManagementZoneEventTriggeredReason
 pattern MTRZoneManagementZoneEventTriggeredReasonMotion = MTRZoneManagementZoneEventTriggeredReason 0
+
+instance ObjCArgument MTRZoneManagementZoneEventTriggeredReason where
+  withObjCArg (MTRZoneManagementZoneEventTriggeredReason x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementZoneEventTriggeredReason where
+  type RawReturn MTRZoneManagementZoneEventTriggeredReason = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementZoneEventTriggeredReason x)
+  fromOwned x = pure (MTRZoneManagementZoneEventTriggeredReason x)
 
 -- | @MTRZoneManagementZoneSource@
 newtype MTRZoneManagementZoneSource = MTRZoneManagementZoneSource CUChar
@@ -26424,6 +31807,16 @@ pattern MTRZoneManagementZoneSourceMfg = MTRZoneManagementZoneSource 0
 pattern MTRZoneManagementZoneSourceUser :: MTRZoneManagementZoneSource
 pattern MTRZoneManagementZoneSourceUser = MTRZoneManagementZoneSource 1
 
+instance ObjCArgument MTRZoneManagementZoneSource where
+  withObjCArg (MTRZoneManagementZoneSource x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementZoneSource where
+  type RawReturn MTRZoneManagementZoneSource = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementZoneSource x)
+  fromOwned x = pure (MTRZoneManagementZoneSource x)
+
 -- | @MTRZoneManagementZoneType@
 newtype MTRZoneManagementZoneType = MTRZoneManagementZoneType CUChar
   deriving stock (Eq, Ord, Show)
@@ -26431,6 +31824,16 @@ newtype MTRZoneManagementZoneType = MTRZoneManagementZoneType CUChar
 
 pattern MTRZoneManagementZoneTypeTwoDCARTZone :: MTRZoneManagementZoneType
 pattern MTRZoneManagementZoneTypeTwoDCARTZone = MTRZoneManagementZoneType 0
+
+instance ObjCArgument MTRZoneManagementZoneType where
+  withObjCArg (MTRZoneManagementZoneType x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementZoneType where
+  type RawReturn MTRZoneManagementZoneType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementZoneType x)
+  fromOwned x = pure (MTRZoneManagementZoneType x)
 
 -- | @MTRZoneManagementZoneUse@
 newtype MTRZoneManagementZoneUse = MTRZoneManagementZoneUse CUChar
@@ -26445,3 +31848,13 @@ pattern MTRZoneManagementZoneUsePrivacy = MTRZoneManagementZoneUse 1
 
 pattern MTRZoneManagementZoneUseFocus :: MTRZoneManagementZoneUse
 pattern MTRZoneManagementZoneUseFocus = MTRZoneManagementZoneUse 2
+
+instance ObjCArgument MTRZoneManagementZoneUse where
+  withObjCArg (MTRZoneManagementZoneUse x) k = k (argCUChar x)
+
+instance ObjCReturn MTRZoneManagementZoneUse where
+  type RawReturn MTRZoneManagementZoneUse = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MTRZoneManagementZoneUse x)
+  fromOwned x = pure (MTRZoneManagementZoneUse x)

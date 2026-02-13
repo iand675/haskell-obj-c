@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -133,144 +134,140 @@ module ObjC.Matter.MTRClusterColorControl
   , moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler
   , stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , stepHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
-  , stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveColorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , stepColorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector
-  , enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector
-  , enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
   , colorLoopSetWithParams_expectedValues_expectedValueInterval_completionSelector
-  , stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector
+  , enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
   , moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector
-  , stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveColorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeColorCapabilitiesWithParamsSelector
+  , readAttributeColorLoopActiveWithParamsSelector
+  , readAttributeColorLoopDirectionWithParamsSelector
+  , readAttributeColorLoopStartEnhancedHueWithParamsSelector
+  , readAttributeColorLoopStoredEnhancedHueWithParamsSelector
+  , readAttributeColorLoopTimeWithParamsSelector
+  , readAttributeColorModeWithParamsSelector
+  , readAttributeColorPointBIntensityWithParamsSelector
+  , readAttributeColorPointBXWithParamsSelector
+  , readAttributeColorPointBYWithParamsSelector
+  , readAttributeColorPointGIntensityWithParamsSelector
+  , readAttributeColorPointGXWithParamsSelector
+  , readAttributeColorPointGYWithParamsSelector
+  , readAttributeColorPointRIntensityWithParamsSelector
+  , readAttributeColorPointRXWithParamsSelector
+  , readAttributeColorPointRYWithParamsSelector
+  , readAttributeColorTempPhysicalMaxMiredsWithParamsSelector
+  , readAttributeColorTempPhysicalMinMiredsWithParamsSelector
+  , readAttributeColorTemperatureMiredsWithParamsSelector
+  , readAttributeCompensationTextWithParamsSelector
+  , readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector
   , readAttributeCurrentHueWithParamsSelector
   , readAttributeCurrentSaturationWithParamsSelector
-  , readAttributeRemainingTimeWithParamsSelector
   , readAttributeCurrentXWithParamsSelector
   , readAttributeCurrentYWithParamsSelector
   , readAttributeDriftCompensationWithParamsSelector
-  , readAttributeCompensationTextWithParamsSelector
-  , readAttributeColorTemperatureMiredsWithParamsSelector
-  , readAttributeColorModeWithParamsSelector
-  , readAttributeOptionsWithParamsSelector
-  , writeAttributeOptionsWithValue_expectedValueIntervalSelector
-  , writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector
+  , readAttributeEnhancedColorModeWithParamsSelector
+  , readAttributeEnhancedCurrentHueWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeNumberOfPrimariesWithParamsSelector
+  , readAttributeOptionsWithParamsSelector
+  , readAttributePrimary1IntensityWithParamsSelector
   , readAttributePrimary1XWithParamsSelector
   , readAttributePrimary1YWithParamsSelector
-  , readAttributePrimary1IntensityWithParamsSelector
+  , readAttributePrimary2IntensityWithParamsSelector
   , readAttributePrimary2XWithParamsSelector
   , readAttributePrimary2YWithParamsSelector
-  , readAttributePrimary2IntensityWithParamsSelector
+  , readAttributePrimary3IntensityWithParamsSelector
   , readAttributePrimary3XWithParamsSelector
   , readAttributePrimary3YWithParamsSelector
-  , readAttributePrimary3IntensityWithParamsSelector
+  , readAttributePrimary4IntensityWithParamsSelector
   , readAttributePrimary4XWithParamsSelector
   , readAttributePrimary4YWithParamsSelector
-  , readAttributePrimary4IntensityWithParamsSelector
+  , readAttributePrimary5IntensityWithParamsSelector
   , readAttributePrimary5XWithParamsSelector
   , readAttributePrimary5YWithParamsSelector
-  , readAttributePrimary5IntensityWithParamsSelector
+  , readAttributePrimary6IntensityWithParamsSelector
   , readAttributePrimary6XWithParamsSelector
   , readAttributePrimary6YWithParamsSelector
-  , readAttributePrimary6IntensityWithParamsSelector
+  , readAttributeRemainingTimeWithParamsSelector
+  , readAttributeStartUpColorTemperatureMiredsWithParamsSelector
   , readAttributeWhitePointXWithParamsSelector
   , readAttributeWhitePointYWithParamsSelector
-  , readAttributeColorPointRXWithParamsSelector
-  , readAttributeColorPointRYWithParamsSelector
-  , readAttributeColorPointRIntensityWithParamsSelector
-  , readAttributeColorPointGXWithParamsSelector
-  , readAttributeColorPointGYWithParamsSelector
-  , readAttributeColorPointGIntensityWithParamsSelector
-  , readAttributeColorPointBXWithParamsSelector
-  , readAttributeColorPointBYWithParamsSelector
-  , readAttributeColorPointBIntensityWithParamsSelector
-  , readAttributeEnhancedCurrentHueWithParamsSelector
-  , readAttributeEnhancedColorModeWithParamsSelector
-  , readAttributeColorLoopActiveWithParamsSelector
-  , readAttributeColorLoopDirectionWithParamsSelector
-  , readAttributeColorLoopTimeWithParamsSelector
-  , readAttributeColorLoopStartEnhancedHueWithParamsSelector
-  , readAttributeColorLoopStoredEnhancedHueWithParamsSelector
-  , readAttributeColorCapabilitiesWithParamsSelector
-  , readAttributeColorTempPhysicalMinMiredsWithParamsSelector
-  , readAttributeColorTempPhysicalMaxMiredsWithParamsSelector
-  , readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector
-  , readAttributeStartUpColorTemperatureMiredsWithParamsSelector
-  , writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector
-  , writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , writeAttributeWhitePointXWithValue_expectedValueIntervalSelector
-  , writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeWhitePointYWithValue_expectedValueIntervalSelector
-  , writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointRXWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointRYWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointGXWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointGYWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector
+  , stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector
+  , stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , stepColorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , stepHueWithParams_expectedValues_expectedValueInterval_completionSelector
+  , stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector
+  , stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector
   , writeAttributeColorPointBXWithValue_expectedValueIntervalSelector
   , writeAttributeColorPointBXWithValue_expectedValueInterval_paramsSelector
   , writeAttributeColorPointBYWithValue_expectedValueIntervalSelector
   , writeAttributeColorPointBYWithValue_expectedValueInterval_paramsSelector
-  , writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector
-  , writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector
-  , initWithDevice_endpoint_queueSelector
-  , moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeColorPointGXWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeColorPointGYWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeColorPointRXWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeColorPointRYWithValue_expectedValueIntervalSelector
+  , writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOptionsWithValue_expectedValueIntervalSelector
+  , writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector
+  , writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeWhitePointXWithValue_expectedValueIntervalSelector
+  , writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeWhitePointYWithValue_expectedValueIntervalSelector
+  , writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -279,1375 +276,1134 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- moveToHueWithParams:expectedValues:expectedValueInterval:completion:@
 moveToHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveToHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveToHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveHueWithParams:expectedValues:expectedValueInterval:completion:@
 moveHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stepHueWithParams:expectedValues:expectedValueInterval:completion:@
 stepHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl stepHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterStepHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveToSaturationWithParams:expectedValues:expectedValueInterval:completion:@
 moveToSaturationWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToSaturationWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveToSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveToSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveSaturationWithParams:expectedValues:expectedValueInterval:completion:@
 moveSaturationWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveSaturationWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stepSaturationWithParams:expectedValues:expectedValueInterval:completion:@
 stepSaturationWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepSaturationWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterStepSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:@
 moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToHueAndSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveToHueAndSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveToColorWithParams:expectedValues:expectedValueInterval:completion:@
 moveToColorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToColorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveToColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveToColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveColorWithParams:expectedValues:expectedValueInterval:completion:@
 moveColorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveColorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveColorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stepColorWithParams:expectedValues:expectedValueInterval:completion:@
 stepColorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepColorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepColorWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl stepColorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterStepColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
 moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveToColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completion:@
 enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveToHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterEnhancedMoveToHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completion:@
 enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterEnhancedMoveHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enhancedStepHueWithParams:expectedValues:expectedValueInterval:completion:@
 enhancedStepHueWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedStepHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedStepHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedStepHueWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enhancedStepHueWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterEnhancedStepHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:@
 enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveToHueAndSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterEnhancedMoveToHueAndSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- colorLoopSetWithParams:expectedValues:expectedValueInterval:completion:@
 colorLoopSetWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterColorLoopSetParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-colorLoopSetWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "colorLoopSetWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+colorLoopSetWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl colorLoopSetWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterColorLoopSetParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stopMoveStepWithParams:expectedValues:expectedValueInterval:completion:@
 stopMoveStepWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStopMoveStepParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stopMoveStepWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stopMoveStepWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stopMoveStepWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterStopMoveStepParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
 moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterMoveColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
 stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completion mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterColorControl stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRColorControlClusterStepColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeCurrentHueWithParams:@
 readAttributeCurrentHueWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCurrentHueWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCurrentHueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentHueWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCurrentHueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentSaturationWithParams:@
 readAttributeCurrentSaturationWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCurrentSaturationWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCurrentSaturationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentSaturationWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCurrentSaturationWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRemainingTimeWithParams:@
 readAttributeRemainingTimeWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeRemainingTimeWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeRemainingTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRemainingTimeWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeRemainingTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentXWithParams:@
 readAttributeCurrentXWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCurrentXWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCurrentXWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentXWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCurrentXWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentYWithParams:@
 readAttributeCurrentYWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCurrentYWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCurrentYWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentYWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCurrentYWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDriftCompensationWithParams:@
 readAttributeDriftCompensationWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeDriftCompensationWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeDriftCompensationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDriftCompensationWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeDriftCompensationWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCompensationTextWithParams:@
 readAttributeCompensationTextWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCompensationTextWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCompensationTextWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCompensationTextWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCompensationTextWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorTemperatureMiredsWithParams:@
 readAttributeColorTemperatureMiredsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorTemperatureMiredsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorTemperatureMiredsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorTemperatureMiredsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorTemperatureMiredsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorModeWithParams:@
 readAttributeColorModeWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorModeWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorModeWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOptionsWithParams:@
 readAttributeOptionsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeOptionsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeOptionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOptionsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeOptionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOptionsWithValue:expectedValueInterval:@
 writeAttributeOptionsWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOptionsWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeOptionsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOptionsWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeOptionsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOptionsWithValue:expectedValueInterval:params:@
 writeAttributeOptionsWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOptionsWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeOptionsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOptionsWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeNumberOfPrimariesWithParams:@
 readAttributeNumberOfPrimariesWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeNumberOfPrimariesWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeNumberOfPrimariesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfPrimariesWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeNumberOfPrimariesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary1XWithParams:@
 readAttributePrimary1XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary1XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary1XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary1XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary1XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary1YWithParams:@
 readAttributePrimary1YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary1YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary1YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary1YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary1YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary1IntensityWithParams:@
 readAttributePrimary1IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary1IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary1IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary1IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary1IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary2XWithParams:@
 readAttributePrimary2XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary2XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary2XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary2XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary2XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary2YWithParams:@
 readAttributePrimary2YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary2YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary2YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary2YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary2YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary2IntensityWithParams:@
 readAttributePrimary2IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary2IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary2IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary2IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary2IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary3XWithParams:@
 readAttributePrimary3XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary3XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary3XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary3XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary3XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary3YWithParams:@
 readAttributePrimary3YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary3YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary3YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary3YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary3YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary3IntensityWithParams:@
 readAttributePrimary3IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary3IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary3IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary3IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary3IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary4XWithParams:@
 readAttributePrimary4XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary4XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary4XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary4XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary4XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary4YWithParams:@
 readAttributePrimary4YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary4YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary4YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary4YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary4YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary4IntensityWithParams:@
 readAttributePrimary4IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary4IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary4IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary4IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary4IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary5XWithParams:@
 readAttributePrimary5XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary5XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary5XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary5XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary5XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary5YWithParams:@
 readAttributePrimary5YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary5YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary5YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary5YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary5YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary5IntensityWithParams:@
 readAttributePrimary5IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary5IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary5IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary5IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary5IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary6XWithParams:@
 readAttributePrimary6XWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary6XWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary6XWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary6XWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary6XWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary6YWithParams:@
 readAttributePrimary6YWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary6YWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary6YWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary6YWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary6YWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePrimary6IntensityWithParams:@
 readAttributePrimary6IntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributePrimary6IntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributePrimary6IntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePrimary6IntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributePrimary6IntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeWhitePointXWithParams:@
 readAttributeWhitePointXWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeWhitePointXWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeWhitePointXWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeWhitePointXWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeWhitePointXWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeWhitePointYWithParams:@
 readAttributeWhitePointYWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeWhitePointYWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeWhitePointYWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeWhitePointYWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeWhitePointYWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointRXWithParams:@
 readAttributeColorPointRXWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointRXWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointRXWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointRXWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointRXWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointRYWithParams:@
 readAttributeColorPointRYWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointRYWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointRYWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointRYWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointRYWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointRIntensityWithParams:@
 readAttributeColorPointRIntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointRIntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointRIntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointRIntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointRIntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointGXWithParams:@
 readAttributeColorPointGXWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointGXWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointGXWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointGXWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointGXWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointGYWithParams:@
 readAttributeColorPointGYWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointGYWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointGYWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointGYWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointGYWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointGIntensityWithParams:@
 readAttributeColorPointGIntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointGIntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointGIntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointGIntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointGIntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointBXWithParams:@
 readAttributeColorPointBXWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointBXWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointBXWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointBXWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointBXWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointBYWithParams:@
 readAttributeColorPointBYWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointBYWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointBYWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointBYWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointBYWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorPointBIntensityWithParams:@
 readAttributeColorPointBIntensityWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorPointBIntensityWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorPointBIntensityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorPointBIntensityWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorPointBIntensityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEnhancedCurrentHueWithParams:@
 readAttributeEnhancedCurrentHueWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeEnhancedCurrentHueWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeEnhancedCurrentHueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnhancedCurrentHueWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeEnhancedCurrentHueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEnhancedColorModeWithParams:@
 readAttributeEnhancedColorModeWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeEnhancedColorModeWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeEnhancedColorModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnhancedColorModeWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeEnhancedColorModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorLoopActiveWithParams:@
 readAttributeColorLoopActiveWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorLoopActiveWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorLoopActiveWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorLoopActiveWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorLoopActiveWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorLoopDirectionWithParams:@
 readAttributeColorLoopDirectionWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorLoopDirectionWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorLoopDirectionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorLoopDirectionWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorLoopDirectionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorLoopTimeWithParams:@
 readAttributeColorLoopTimeWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorLoopTimeWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorLoopTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorLoopTimeWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorLoopTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorLoopStartEnhancedHueWithParams:@
 readAttributeColorLoopStartEnhancedHueWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorLoopStartEnhancedHueWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorLoopStartEnhancedHueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorLoopStartEnhancedHueWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorLoopStartEnhancedHueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorLoopStoredEnhancedHueWithParams:@
 readAttributeColorLoopStoredEnhancedHueWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorLoopStoredEnhancedHueWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorLoopStoredEnhancedHueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorLoopStoredEnhancedHueWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorLoopStoredEnhancedHueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorCapabilitiesWithParams:@
 readAttributeColorCapabilitiesWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorCapabilitiesWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorCapabilitiesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorCapabilitiesWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorCapabilitiesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorTempPhysicalMinMiredsWithParams:@
 readAttributeColorTempPhysicalMinMiredsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorTempPhysicalMinMiredsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorTempPhysicalMinMiredsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorTempPhysicalMinMiredsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorTempPhysicalMinMiredsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeColorTempPhysicalMaxMiredsWithParams:@
 readAttributeColorTempPhysicalMaxMiredsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeColorTempPhysicalMaxMiredsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeColorTempPhysicalMaxMiredsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeColorTempPhysicalMaxMiredsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeColorTempPhysicalMaxMiredsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCoupleColorTempToLevelMinMiredsWithParams:@
 readAttributeCoupleColorTempToLevelMinMiredsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeCoupleColorTempToLevelMinMiredsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeCoupleColorTempToLevelMinMiredsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCoupleColorTempToLevelMinMiredsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeStartUpColorTemperatureMiredsWithParams:@
 readAttributeStartUpColorTemperatureMiredsWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeStartUpColorTemperatureMiredsWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeStartUpColorTemperatureMiredsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStartUpColorTemperatureMiredsWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeStartUpColorTemperatureMiredsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:@
 writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:params:@
 writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRReadParams params) => mtrClusterColorControl -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterColorControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterColorControl (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterColorControl params =
+  sendMessage mtrClusterColorControl readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterColorControl mtrClusterColorControl => mtrClusterColorControl -> IO (Id MTRClusterColorControl)
-init_ mtrClusterColorControl  =
-    sendMsg mtrClusterColorControl (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterColorControl =
+  sendOwnedMessage mtrClusterColorControl initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterColorControl)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterColorControl"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- writeAttributeWhitePointXWithValue:expectedValueInterval:@
 writeAttributeWhitePointXWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeWhitePointXWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeWhitePointXWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeWhitePointXWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeWhitePointXWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeWhitePointXWithValue:expectedValueInterval:params:@
 writeAttributeWhitePointXWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeWhitePointXWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeWhitePointXWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeWhitePointXWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeWhitePointYWithValue:expectedValueInterval:@
 writeAttributeWhitePointYWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeWhitePointYWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeWhitePointYWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeWhitePointYWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeWhitePointYWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeWhitePointYWithValue:expectedValueInterval:params:@
 writeAttributeWhitePointYWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeWhitePointYWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeWhitePointYWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeWhitePointYWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointRXWithValue:expectedValueInterval:@
 writeAttributeColorPointRXWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointRXWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRXWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointRXWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRXWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointRXWithValue:expectedValueInterval:params:@
 writeAttributeColorPointRXWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointRXWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRXWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointRXWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointRYWithValue:expectedValueInterval:@
 writeAttributeColorPointRYWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointRYWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRYWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointRYWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRYWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointRYWithValue:expectedValueInterval:params:@
 writeAttributeColorPointRYWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointRYWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRYWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointRYWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointRIntensityWithValue:expectedValueInterval:@
 writeAttributeColorPointRIntensityWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointRIntensityWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointRIntensityWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:@
 writeAttributeColorPointRIntensityWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointRIntensityWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointRIntensityWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointGXWithValue:expectedValueInterval:@
 writeAttributeColorPointGXWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointGXWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGXWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointGXWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGXWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointGXWithValue:expectedValueInterval:params:@
 writeAttributeColorPointGXWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointGXWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGXWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointGXWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointGYWithValue:expectedValueInterval:@
 writeAttributeColorPointGYWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointGYWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGYWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointGYWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGYWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointGYWithValue:expectedValueInterval:params:@
 writeAttributeColorPointGYWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointGYWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGYWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointGYWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointGIntensityWithValue:expectedValueInterval:@
 writeAttributeColorPointGIntensityWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointGIntensityWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointGIntensityWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:@
 writeAttributeColorPointGIntensityWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointGIntensityWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointGIntensityWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointBXWithValue:expectedValueInterval:@
 writeAttributeColorPointBXWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointBXWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBXWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointBXWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBXWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointBXWithValue:expectedValueInterval:params:@
 writeAttributeColorPointBXWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointBXWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBXWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointBXWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBXWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointBYWithValue:expectedValueInterval:@
 writeAttributeColorPointBYWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointBYWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBYWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointBYWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBYWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointBYWithValue:expectedValueInterval:params:@
 writeAttributeColorPointBYWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointBYWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBYWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointBYWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBYWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- writeAttributeColorPointBIntensityWithValue:expectedValueInterval:@
 writeAttributeColorPointBIntensityWithValue_expectedValueInterval :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeColorPointBIntensityWithValue_expectedValueInterval mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeColorPointBIntensityWithValue_expectedValueInterval mtrClusterColorControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:@
 writeAttributeColorPointBIntensityWithValue_expectedValueInterval_params :: (IsMTRClusterColorControl mtrClusterColorControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterColorControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeColorPointBIntensityWithValue_expectedValueInterval_params mtrClusterColorControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterColorControl (mkSelector "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeColorPointBIntensityWithValue_expectedValueInterval_params mtrClusterColorControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterColorControl writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRDevice device, IsNSObject queue) => mtrClusterColorControl -> device -> CUShort -> queue -> IO (Id MTRClusterColorControl)
-initWithDevice_endpoint_queue mtrClusterColorControl  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterColorControl (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterColorControl device endpoint queue =
+  sendOwnedMessage mtrClusterColorControl initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- moveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveToHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveToHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveToHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- stepHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 stepHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stepHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterStepHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveToSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveToSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- stepSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
 stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterStepSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToHueAndSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveToHueAndSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveToColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveToColorWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToColorWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveToColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveToColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveColorWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveColorWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- stepColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
 stepColorWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepColorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepColorWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stepColorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterStepColorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveToColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveToColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveToHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterEnhancedMoveToHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterEnhancedMoveHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- enhancedStepHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
 enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedStepHueParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedStepHueWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterEnhancedStepHueParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
 enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterEnhancedMoveToHueAndSaturationParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterEnhancedMoveToHueAndSaturationParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- colorLoopSetWithParams:expectedValues:expectedValueInterval:completionHandler:@
 colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterColorLoopSetParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "colorLoopSetWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterColorLoopSetParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- stopMoveStepWithParams:expectedValues:expectedValueInterval:completionHandler:@
 stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStopMoveStepParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stopMoveStepWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterStopMoveStepParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
 moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterMoveColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterMoveColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
 stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRColorControlClusterStepColorTemperatureParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterColorControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterColorControl (mkSelector "stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterColorControl params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterColorControl stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRColorControlClusterStepColorTemperatureParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterColorControl mtrClusterColorControl, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterColorControl -> device -> endpointID -> queue -> IO (Id MTRClusterColorControl)
-initWithDevice_endpointID_queue mtrClusterColorControl  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterColorControl (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterColorControl device endpointID queue =
+  sendOwnedMessage mtrClusterColorControl initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @moveToHueWithParams:expectedValues:expectedValueInterval:completion:@
-moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveToHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveToHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveHueWithParams:expectedValues:expectedValueInterval:completion:@
-moveHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stepHueWithParams:expectedValues:expectedValueInterval:completion:@
-stepHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stepHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterStepHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stepHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveToSaturationWithParams:expectedValues:expectedValueInterval:completion:@
-moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveToSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToSaturationWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveToSaturationWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveSaturationWithParams:expectedValues:expectedValueInterval:completion:@
-moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveSaturationWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveSaturationWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stepSaturationWithParams:expectedValues:expectedValueInterval:completion:@
-stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterStepSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepSaturationWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stepSaturationWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:@
-moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveToHueAndSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveToColorWithParams:expectedValues:expectedValueInterval:completion:@
-moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveToColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToColorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveToColorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveColorWithParams:expectedValues:expectedValueInterval:completion:@
-moveColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveColorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveColorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stepColorWithParams:expectedValues:expectedValueInterval:completion:@
-stepColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stepColorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterStepColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepColorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stepColorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
-moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveToColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completion:@
-enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveToHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completion:@
-enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enhancedStepHueWithParams:expectedValues:expectedValueInterval:completion:@
-enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterEnhancedStepHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enhancedStepHueWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:@
-enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveToHueAndSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @colorLoopSetWithParams:expectedValues:expectedValueInterval:completion:@
-colorLoopSetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+colorLoopSetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterColorLoopSetParams, Id NSArray, Id NSNumber, Ptr ()] ()
 colorLoopSetWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "colorLoopSetWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stopMoveStepWithParams:expectedValues:expectedValueInterval:completion:@
-stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterStopMoveStepParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stopMoveStepWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stopMoveStepWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
-moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterMoveColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:@
-stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRColorControlClusterStepColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeCurrentHueWithParams:@
-readAttributeCurrentHueWithParamsSelector :: Selector
+readAttributeCurrentHueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentHueWithParamsSelector = mkSelector "readAttributeCurrentHueWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentSaturationWithParams:@
-readAttributeCurrentSaturationWithParamsSelector :: Selector
+readAttributeCurrentSaturationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentSaturationWithParamsSelector = mkSelector "readAttributeCurrentSaturationWithParams:"
 
 -- | @Selector@ for @readAttributeRemainingTimeWithParams:@
-readAttributeRemainingTimeWithParamsSelector :: Selector
+readAttributeRemainingTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRemainingTimeWithParamsSelector = mkSelector "readAttributeRemainingTimeWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentXWithParams:@
-readAttributeCurrentXWithParamsSelector :: Selector
+readAttributeCurrentXWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentXWithParamsSelector = mkSelector "readAttributeCurrentXWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentYWithParams:@
-readAttributeCurrentYWithParamsSelector :: Selector
+readAttributeCurrentYWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentYWithParamsSelector = mkSelector "readAttributeCurrentYWithParams:"
 
 -- | @Selector@ for @readAttributeDriftCompensationWithParams:@
-readAttributeDriftCompensationWithParamsSelector :: Selector
+readAttributeDriftCompensationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDriftCompensationWithParamsSelector = mkSelector "readAttributeDriftCompensationWithParams:"
 
 -- | @Selector@ for @readAttributeCompensationTextWithParams:@
-readAttributeCompensationTextWithParamsSelector :: Selector
+readAttributeCompensationTextWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCompensationTextWithParamsSelector = mkSelector "readAttributeCompensationTextWithParams:"
 
 -- | @Selector@ for @readAttributeColorTemperatureMiredsWithParams:@
-readAttributeColorTemperatureMiredsWithParamsSelector :: Selector
+readAttributeColorTemperatureMiredsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorTemperatureMiredsWithParamsSelector = mkSelector "readAttributeColorTemperatureMiredsWithParams:"
 
 -- | @Selector@ for @readAttributeColorModeWithParams:@
-readAttributeColorModeWithParamsSelector :: Selector
+readAttributeColorModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorModeWithParamsSelector = mkSelector "readAttributeColorModeWithParams:"
 
 -- | @Selector@ for @readAttributeOptionsWithParams:@
-readAttributeOptionsWithParamsSelector :: Selector
+readAttributeOptionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOptionsWithParamsSelector = mkSelector "readAttributeOptionsWithParams:"
 
 -- | @Selector@ for @writeAttributeOptionsWithValue:expectedValueInterval:@
-writeAttributeOptionsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOptionsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOptionsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOptionsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOptionsWithValue:expectedValueInterval:params:@
-writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOptionsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOptionsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeNumberOfPrimariesWithParams:@
-readAttributeNumberOfPrimariesWithParamsSelector :: Selector
+readAttributeNumberOfPrimariesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfPrimariesWithParamsSelector = mkSelector "readAttributeNumberOfPrimariesWithParams:"
 
 -- | @Selector@ for @readAttributePrimary1XWithParams:@
-readAttributePrimary1XWithParamsSelector :: Selector
+readAttributePrimary1XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary1XWithParamsSelector = mkSelector "readAttributePrimary1XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary1YWithParams:@
-readAttributePrimary1YWithParamsSelector :: Selector
+readAttributePrimary1YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary1YWithParamsSelector = mkSelector "readAttributePrimary1YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary1IntensityWithParams:@
-readAttributePrimary1IntensityWithParamsSelector :: Selector
+readAttributePrimary1IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary1IntensityWithParamsSelector = mkSelector "readAttributePrimary1IntensityWithParams:"
 
 -- | @Selector@ for @readAttributePrimary2XWithParams:@
-readAttributePrimary2XWithParamsSelector :: Selector
+readAttributePrimary2XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary2XWithParamsSelector = mkSelector "readAttributePrimary2XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary2YWithParams:@
-readAttributePrimary2YWithParamsSelector :: Selector
+readAttributePrimary2YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary2YWithParamsSelector = mkSelector "readAttributePrimary2YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary2IntensityWithParams:@
-readAttributePrimary2IntensityWithParamsSelector :: Selector
+readAttributePrimary2IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary2IntensityWithParamsSelector = mkSelector "readAttributePrimary2IntensityWithParams:"
 
 -- | @Selector@ for @readAttributePrimary3XWithParams:@
-readAttributePrimary3XWithParamsSelector :: Selector
+readAttributePrimary3XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary3XWithParamsSelector = mkSelector "readAttributePrimary3XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary3YWithParams:@
-readAttributePrimary3YWithParamsSelector :: Selector
+readAttributePrimary3YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary3YWithParamsSelector = mkSelector "readAttributePrimary3YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary3IntensityWithParams:@
-readAttributePrimary3IntensityWithParamsSelector :: Selector
+readAttributePrimary3IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary3IntensityWithParamsSelector = mkSelector "readAttributePrimary3IntensityWithParams:"
 
 -- | @Selector@ for @readAttributePrimary4XWithParams:@
-readAttributePrimary4XWithParamsSelector :: Selector
+readAttributePrimary4XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary4XWithParamsSelector = mkSelector "readAttributePrimary4XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary4YWithParams:@
-readAttributePrimary4YWithParamsSelector :: Selector
+readAttributePrimary4YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary4YWithParamsSelector = mkSelector "readAttributePrimary4YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary4IntensityWithParams:@
-readAttributePrimary4IntensityWithParamsSelector :: Selector
+readAttributePrimary4IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary4IntensityWithParamsSelector = mkSelector "readAttributePrimary4IntensityWithParams:"
 
 -- | @Selector@ for @readAttributePrimary5XWithParams:@
-readAttributePrimary5XWithParamsSelector :: Selector
+readAttributePrimary5XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary5XWithParamsSelector = mkSelector "readAttributePrimary5XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary5YWithParams:@
-readAttributePrimary5YWithParamsSelector :: Selector
+readAttributePrimary5YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary5YWithParamsSelector = mkSelector "readAttributePrimary5YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary5IntensityWithParams:@
-readAttributePrimary5IntensityWithParamsSelector :: Selector
+readAttributePrimary5IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary5IntensityWithParamsSelector = mkSelector "readAttributePrimary5IntensityWithParams:"
 
 -- | @Selector@ for @readAttributePrimary6XWithParams:@
-readAttributePrimary6XWithParamsSelector :: Selector
+readAttributePrimary6XWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary6XWithParamsSelector = mkSelector "readAttributePrimary6XWithParams:"
 
 -- | @Selector@ for @readAttributePrimary6YWithParams:@
-readAttributePrimary6YWithParamsSelector :: Selector
+readAttributePrimary6YWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary6YWithParamsSelector = mkSelector "readAttributePrimary6YWithParams:"
 
 -- | @Selector@ for @readAttributePrimary6IntensityWithParams:@
-readAttributePrimary6IntensityWithParamsSelector :: Selector
+readAttributePrimary6IntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePrimary6IntensityWithParamsSelector = mkSelector "readAttributePrimary6IntensityWithParams:"
 
 -- | @Selector@ for @readAttributeWhitePointXWithParams:@
-readAttributeWhitePointXWithParamsSelector :: Selector
+readAttributeWhitePointXWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeWhitePointXWithParamsSelector = mkSelector "readAttributeWhitePointXWithParams:"
 
 -- | @Selector@ for @readAttributeWhitePointYWithParams:@
-readAttributeWhitePointYWithParamsSelector :: Selector
+readAttributeWhitePointYWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeWhitePointYWithParamsSelector = mkSelector "readAttributeWhitePointYWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointRXWithParams:@
-readAttributeColorPointRXWithParamsSelector :: Selector
+readAttributeColorPointRXWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointRXWithParamsSelector = mkSelector "readAttributeColorPointRXWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointRYWithParams:@
-readAttributeColorPointRYWithParamsSelector :: Selector
+readAttributeColorPointRYWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointRYWithParamsSelector = mkSelector "readAttributeColorPointRYWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointRIntensityWithParams:@
-readAttributeColorPointRIntensityWithParamsSelector :: Selector
+readAttributeColorPointRIntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointRIntensityWithParamsSelector = mkSelector "readAttributeColorPointRIntensityWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointGXWithParams:@
-readAttributeColorPointGXWithParamsSelector :: Selector
+readAttributeColorPointGXWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointGXWithParamsSelector = mkSelector "readAttributeColorPointGXWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointGYWithParams:@
-readAttributeColorPointGYWithParamsSelector :: Selector
+readAttributeColorPointGYWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointGYWithParamsSelector = mkSelector "readAttributeColorPointGYWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointGIntensityWithParams:@
-readAttributeColorPointGIntensityWithParamsSelector :: Selector
+readAttributeColorPointGIntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointGIntensityWithParamsSelector = mkSelector "readAttributeColorPointGIntensityWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointBXWithParams:@
-readAttributeColorPointBXWithParamsSelector :: Selector
+readAttributeColorPointBXWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointBXWithParamsSelector = mkSelector "readAttributeColorPointBXWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointBYWithParams:@
-readAttributeColorPointBYWithParamsSelector :: Selector
+readAttributeColorPointBYWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointBYWithParamsSelector = mkSelector "readAttributeColorPointBYWithParams:"
 
 -- | @Selector@ for @readAttributeColorPointBIntensityWithParams:@
-readAttributeColorPointBIntensityWithParamsSelector :: Selector
+readAttributeColorPointBIntensityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorPointBIntensityWithParamsSelector = mkSelector "readAttributeColorPointBIntensityWithParams:"
 
 -- | @Selector@ for @readAttributeEnhancedCurrentHueWithParams:@
-readAttributeEnhancedCurrentHueWithParamsSelector :: Selector
+readAttributeEnhancedCurrentHueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnhancedCurrentHueWithParamsSelector = mkSelector "readAttributeEnhancedCurrentHueWithParams:"
 
 -- | @Selector@ for @readAttributeEnhancedColorModeWithParams:@
-readAttributeEnhancedColorModeWithParamsSelector :: Selector
+readAttributeEnhancedColorModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnhancedColorModeWithParamsSelector = mkSelector "readAttributeEnhancedColorModeWithParams:"
 
 -- | @Selector@ for @readAttributeColorLoopActiveWithParams:@
-readAttributeColorLoopActiveWithParamsSelector :: Selector
+readAttributeColorLoopActiveWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorLoopActiveWithParamsSelector = mkSelector "readAttributeColorLoopActiveWithParams:"
 
 -- | @Selector@ for @readAttributeColorLoopDirectionWithParams:@
-readAttributeColorLoopDirectionWithParamsSelector :: Selector
+readAttributeColorLoopDirectionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorLoopDirectionWithParamsSelector = mkSelector "readAttributeColorLoopDirectionWithParams:"
 
 -- | @Selector@ for @readAttributeColorLoopTimeWithParams:@
-readAttributeColorLoopTimeWithParamsSelector :: Selector
+readAttributeColorLoopTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorLoopTimeWithParamsSelector = mkSelector "readAttributeColorLoopTimeWithParams:"
 
 -- | @Selector@ for @readAttributeColorLoopStartEnhancedHueWithParams:@
-readAttributeColorLoopStartEnhancedHueWithParamsSelector :: Selector
+readAttributeColorLoopStartEnhancedHueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorLoopStartEnhancedHueWithParamsSelector = mkSelector "readAttributeColorLoopStartEnhancedHueWithParams:"
 
 -- | @Selector@ for @readAttributeColorLoopStoredEnhancedHueWithParams:@
-readAttributeColorLoopStoredEnhancedHueWithParamsSelector :: Selector
+readAttributeColorLoopStoredEnhancedHueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorLoopStoredEnhancedHueWithParamsSelector = mkSelector "readAttributeColorLoopStoredEnhancedHueWithParams:"
 
 -- | @Selector@ for @readAttributeColorCapabilitiesWithParams:@
-readAttributeColorCapabilitiesWithParamsSelector :: Selector
+readAttributeColorCapabilitiesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorCapabilitiesWithParamsSelector = mkSelector "readAttributeColorCapabilitiesWithParams:"
 
 -- | @Selector@ for @readAttributeColorTempPhysicalMinMiredsWithParams:@
-readAttributeColorTempPhysicalMinMiredsWithParamsSelector :: Selector
+readAttributeColorTempPhysicalMinMiredsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorTempPhysicalMinMiredsWithParamsSelector = mkSelector "readAttributeColorTempPhysicalMinMiredsWithParams:"
 
 -- | @Selector@ for @readAttributeColorTempPhysicalMaxMiredsWithParams:@
-readAttributeColorTempPhysicalMaxMiredsWithParamsSelector :: Selector
+readAttributeColorTempPhysicalMaxMiredsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeColorTempPhysicalMaxMiredsWithParamsSelector = mkSelector "readAttributeColorTempPhysicalMaxMiredsWithParams:"
 
 -- | @Selector@ for @readAttributeCoupleColorTempToLevelMinMiredsWithParams:@
-readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector :: Selector
+readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCoupleColorTempToLevelMinMiredsWithParamsSelector = mkSelector "readAttributeCoupleColorTempToLevelMinMiredsWithParams:"
 
 -- | @Selector@ for @readAttributeStartUpColorTemperatureMiredsWithParams:@
-readAttributeStartUpColorTemperatureMiredsWithParamsSelector :: Selector
+readAttributeStartUpColorTemperatureMiredsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStartUpColorTemperatureMiredsWithParamsSelector = mkSelector "readAttributeStartUpColorTemperatureMiredsWithParams:"
 
 -- | @Selector@ for @writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:@
-writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:params:@
-writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeStartUpColorTemperatureMiredsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeStartUpColorTemperatureMiredsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterColorControl)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterColorControl)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @writeAttributeWhitePointXWithValue:expectedValueInterval:@
-writeAttributeWhitePointXWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeWhitePointXWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeWhitePointXWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeWhitePointXWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeWhitePointXWithValue:expectedValueInterval:params:@
-writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeWhitePointXWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeWhitePointXWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeWhitePointYWithValue:expectedValueInterval:@
-writeAttributeWhitePointYWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeWhitePointYWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeWhitePointYWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeWhitePointYWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeWhitePointYWithValue:expectedValueInterval:params:@
-writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeWhitePointYWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeWhitePointYWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointRXWithValue:expectedValueInterval:@
-writeAttributeColorPointRXWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointRXWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointRXWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointRXWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointRXWithValue:expectedValueInterval:params:@
-writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointRXWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointRXWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointRYWithValue:expectedValueInterval:@
-writeAttributeColorPointRYWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointRYWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointRYWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointRYWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointRYWithValue:expectedValueInterval:params:@
-writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointRYWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointRYWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointRIntensityWithValue:expectedValueInterval:@
-writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointRIntensityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:@
-writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointRIntensityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointRIntensityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointGXWithValue:expectedValueInterval:@
-writeAttributeColorPointGXWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointGXWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointGXWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointGXWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointGXWithValue:expectedValueInterval:params:@
-writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointGXWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointGXWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointGYWithValue:expectedValueInterval:@
-writeAttributeColorPointGYWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointGYWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointGYWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointGYWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointGYWithValue:expectedValueInterval:params:@
-writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointGYWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointGYWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointGIntensityWithValue:expectedValueInterval:@
-writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointGIntensityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:@
-writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointGIntensityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointGIntensityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointBXWithValue:expectedValueInterval:@
-writeAttributeColorPointBXWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointBXWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointBXWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointBXWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointBXWithValue:expectedValueInterval:params:@
-writeAttributeColorPointBXWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointBXWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointBXWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointBXWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointBYWithValue:expectedValueInterval:@
-writeAttributeColorPointBYWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointBYWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointBYWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointBYWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointBYWithValue:expectedValueInterval:params:@
-writeAttributeColorPointBYWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointBYWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointBYWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointBYWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @writeAttributeColorPointBIntensityWithValue:expectedValueInterval:@
-writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeColorPointBIntensityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:@
-writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeColorPointBIntensityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeColorPointBIntensityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterColorControl)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @moveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveToHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @stepHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterStepHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "stepHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveToSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveToSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveToSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @stepSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
-stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterStepSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "stepSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveToHueAndSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveToColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveToColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveToColorWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveColorWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @stepColorWithParams:expectedValues:expectedValueInterval:completionHandler:@
-stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterStepColorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepColorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "stepColorWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveToColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveToColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveToColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveToHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveToHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "enhancedMoveToHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "enhancedMoveHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @enhancedStepHueWithParams:expectedValues:expectedValueInterval:completionHandler:@
-enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterEnhancedStepHueParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedStepHueWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "enhancedStepHueWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:@
-enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterEnhancedMoveToHueAndSaturationParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enhancedMoveToHueAndSaturationWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "enhancedMoveToHueAndSaturationWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @colorLoopSetWithParams:expectedValues:expectedValueInterval:completionHandler:@
-colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterColorLoopSetParams, Id NSArray, Id NSNumber, Ptr ()] ()
 colorLoopSetWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "colorLoopSetWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @stopMoveStepWithParams:expectedValues:expectedValueInterval:completionHandler:@
-stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterStopMoveStepParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stopMoveStepWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "stopMoveStepWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
-moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterMoveColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 moveColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "moveColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:@
-stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRColorControlClusterStepColorTemperatureParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepColorTemperatureWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "stepColorTemperatureWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterColorControl)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

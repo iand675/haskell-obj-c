@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,24 +32,24 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayDescriptor
   , setNumberOfDimensions
   , preferPackedRows
   , setPreferPackedRows
-  , lengthOfDimensionSelector
-  , sliceRangeForDimensionSelector
-  , sliceDimension_withSubrangeSelector
-  , transposeDimension_withDimensionSelector
-  , permuteWithDimensionOrderSelector
-  , getShapeSelector
+  , dataTypeSelector
   , descriptorWithDataType_dimensionCount_dimensionSizesSelector
-  , descriptorWithDataType_shapeSelector
   , descriptorWithDataType_dimensionSizesSelector
+  , descriptorWithDataType_shapeSelector
+  , getShapeSelector
+  , initSelector
+  , lengthOfDimensionSelector
+  , numberOfDimensionsSelector
+  , permuteWithDimensionOrderSelector
+  , preferPackedRowsSelector
   , reshapeWithDimensionCount_dimensionSizesSelector
   , reshapeWithShapeSelector
-  , initSelector
-  , dataTypeSelector
   , setDataTypeSelector
-  , numberOfDimensionsSelector
   , setNumberOfDimensionsSelector
-  , preferPackedRowsSelector
   , setPreferPackedRowsSelector
+  , sliceDimension_withSubrangeSelector
+  , sliceRangeForDimensionSelector
+  , transposeDimension_withDimensionSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -82,15 +83,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,8 +106,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- lengthOfDimension:@
 lengthOfDimension :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> IO CULong
-lengthOfDimension mpsndArrayDescriptor  dimensionIndex =
-    sendMsg mpsndArrayDescriptor (mkSelector "lengthOfDimension:") retCULong [argCULong dimensionIndex]
+lengthOfDimension mpsndArrayDescriptor dimensionIndex =
+  sendMessage mpsndArrayDescriptor lengthOfDimensionSelector dimensionIndex
 
 -- | The slice dimensions for each dimension
 --
@@ -122,8 +119,8 @@ lengthOfDimension mpsndArrayDescriptor  dimensionIndex =
 --
 -- ObjC selector: @- sliceRangeForDimension:@
 sliceRangeForDimension :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> IO MPSDimensionSlice
-sliceRangeForDimension mpsndArrayDescriptor  dimensionIndex =
-    sendMsgStret mpsndArrayDescriptor (mkSelector "sliceRangeForDimension:") retMPSDimensionSlice [argCULong dimensionIndex]
+sliceRangeForDimension mpsndArrayDescriptor dimensionIndex =
+  sendMessage mpsndArrayDescriptor sliceRangeForDimensionSelector dimensionIndex
 
 -- | The slice dimensions for each dimension
 --
@@ -137,8 +134,8 @@ sliceRangeForDimension mpsndArrayDescriptor  dimensionIndex =
 --
 -- ObjC selector: @- sliceDimension:withSubrange:@
 sliceDimension_withSubrange :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> MPSDimensionSlice -> IO ()
-sliceDimension_withSubrange mpsndArrayDescriptor  dimensionIndex subRange =
-    sendMsg mpsndArrayDescriptor (mkSelector "sliceDimension:withSubrange:") retVoid [argCULong dimensionIndex, argMPSDimensionSlice subRange]
+sliceDimension_withSubrange mpsndArrayDescriptor dimensionIndex subRange =
+  sendMessage mpsndArrayDescriptor sliceDimension_withSubrangeSelector dimensionIndex subRange
 
 -- | transpose two dimensions
 --
@@ -150,8 +147,8 @@ sliceDimension_withSubrange mpsndArrayDescriptor  dimensionIndex subRange =
 --
 -- ObjC selector: @- transposeDimension:withDimension:@
 transposeDimension_withDimension :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> CULong -> IO ()
-transposeDimension_withDimension mpsndArrayDescriptor  dimensionIndex dimensionIndex2 =
-    sendMsg mpsndArrayDescriptor (mkSelector "transposeDimension:withDimension:") retVoid [argCULong dimensionIndex, argCULong dimensionIndex2]
+transposeDimension_withDimension mpsndArrayDescriptor dimensionIndex dimensionIndex2 =
+  sendMessage mpsndArrayDescriptor transposeDimension_withDimensionSelector dimensionIndex dimensionIndex2
 
 -- | Permutes the dimensions of the current descriptor
 --
@@ -161,8 +158,8 @@ transposeDimension_withDimension mpsndArrayDescriptor  dimensionIndex dimensionI
 --
 -- ObjC selector: @- permuteWithDimensionOrder:@
 permuteWithDimensionOrder :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> Ptr CULong -> IO ()
-permuteWithDimensionOrder mpsndArrayDescriptor  dimensionOrder =
-    sendMsg mpsndArrayDescriptor (mkSelector "permuteWithDimensionOrder:") retVoid [argPtr dimensionOrder]
+permuteWithDimensionOrder mpsndArrayDescriptor dimensionOrder =
+  sendMessage mpsndArrayDescriptor permuteWithDimensionOrderSelector dimensionOrder
 
 -- | Returns the shape of the NDArray as MPSShape
 --
@@ -170,8 +167,8 @@ permuteWithDimensionOrder mpsndArrayDescriptor  dimensionOrder =
 --
 -- ObjC selector: @- getShape@
 getShape :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> IO (Id NSArray)
-getShape mpsndArrayDescriptor  =
-    sendMsg mpsndArrayDescriptor (mkSelector "getShape") (retPtr retVoid) [] >>= retainedObject . castPtr
+getShape mpsndArrayDescriptor =
+  sendMessage mpsndArrayDescriptor getShapeSelector
 
 -- | Create an MPSNDArrayDescriptor object for a given size of dimensions.
 --
@@ -196,7 +193,7 @@ descriptorWithDataType_dimensionCount_dimensionSizes :: MPSDataType -> CULong ->
 descriptorWithDataType_dimensionCount_dimensionSizes dataType numberOfDimensions dimensionSizes =
   do
     cls' <- getRequiredClass "MPSNDArrayDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithDataType:dimensionCount:dimensionSizes:") (retPtr retVoid) [argCUInt (coerce dataType), argCULong numberOfDimensions, argPtr dimensionSizes] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithDataType_dimensionCount_dimensionSizesSelector dataType numberOfDimensions dimensionSizes
 
 -- | A convenience function to create an MPSNDArrayDescriptor object for a given size of dimensions.
 --
@@ -218,8 +215,7 @@ descriptorWithDataType_shape :: IsNSArray shape => MPSDataType -> shape -> IO (I
 descriptorWithDataType_shape dataType shape =
   do
     cls' <- getRequiredClass "MPSNDArrayDescriptor"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "descriptorWithDataType:shape:") (retPtr retVoid) [argCUInt (coerce dataType), argPtr (castPtr raw_shape :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithDataType_shapeSelector dataType (toNSArray shape)
 
 -- | Create an MPSNDArrayDescriptor object for a given size of dimensions.
 --
@@ -240,7 +236,7 @@ descriptorWithDataType_dimensionSizes :: MPSDataType -> CULong -> IO (Id MPSNDAr
 descriptorWithDataType_dimensionSizes dataType dimension0 =
   do
     cls' <- getRequiredClass "MPSNDArrayDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithDataType:dimensionSizes:") (retPtr retVoid) [argCUInt (coerce dataType), argCULong dimension0] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithDataType_dimensionSizesSelector dataType dimension0
 
 -- | Changes dimension sizes and number of dimensions on the current descriptor
 --
@@ -250,8 +246,8 @@ descriptorWithDataType_dimensionSizes dataType dimension0 =
 --
 -- ObjC selector: @- reshapeWithDimensionCount:dimensionSizes:@
 reshapeWithDimensionCount_dimensionSizes :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> Ptr CULong -> IO ()
-reshapeWithDimensionCount_dimensionSizes mpsndArrayDescriptor  numberOfDimensions dimensionSizes =
-    sendMsg mpsndArrayDescriptor (mkSelector "reshapeWithDimensionCount:dimensionSizes:") retVoid [argCULong numberOfDimensions, argPtr dimensionSizes]
+reshapeWithDimensionCount_dimensionSizes mpsndArrayDescriptor numberOfDimensions dimensionSizes =
+  sendMessage mpsndArrayDescriptor reshapeWithDimensionCount_dimensionSizesSelector numberOfDimensions dimensionSizes
 
 -- | Changes dimension sizes and number of dimensions on the current descriptor
 --
@@ -259,30 +255,29 @@ reshapeWithDimensionCount_dimensionSizes mpsndArrayDescriptor  numberOfDimension
 --
 -- ObjC selector: @- reshapeWithShape:@
 reshapeWithShape :: (IsMPSNDArrayDescriptor mpsndArrayDescriptor, IsNSArray shape) => mpsndArrayDescriptor -> shape -> IO ()
-reshapeWithShape mpsndArrayDescriptor  shape =
-  withObjCPtr shape $ \raw_shape ->
-      sendMsg mpsndArrayDescriptor (mkSelector "reshapeWithShape:") retVoid [argPtr (castPtr raw_shape :: Ptr ())]
+reshapeWithShape mpsndArrayDescriptor shape =
+  sendMessage mpsndArrayDescriptor reshapeWithShapeSelector (toNSArray shape)
 
 -- | Use -descriptorWithDataType:... instead
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> IO (Id MPSNDArrayDescriptor)
-init_ mpsndArrayDescriptor  =
-    sendMsg mpsndArrayDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsndArrayDescriptor =
+  sendOwnedMessage mpsndArrayDescriptor initSelector
 
 -- | Data Type of the MPSNDArray elements
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> IO MPSDataType
-dataType mpsndArrayDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsndArrayDescriptor (mkSelector "dataType") retCUInt []
+dataType mpsndArrayDescriptor =
+  sendMessage mpsndArrayDescriptor dataTypeSelector
 
 -- | Data Type of the MPSNDArray elements
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> MPSDataType -> IO ()
-setDataType mpsndArrayDescriptor  value =
-    sendMsg mpsndArrayDescriptor (mkSelector "setDataType:") retVoid [argCUInt (coerce value)]
+setDataType mpsndArrayDescriptor value =
+  sendMessage mpsndArrayDescriptor setDataTypeSelector value
 
 -- | The number of dimensions in the NDArray.
 --
@@ -290,8 +285,8 @@ setDataType mpsndArrayDescriptor  value =
 --
 -- ObjC selector: @- numberOfDimensions@
 numberOfDimensions :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> IO CULong
-numberOfDimensions mpsndArrayDescriptor  =
-    sendMsg mpsndArrayDescriptor (mkSelector "numberOfDimensions") retCULong []
+numberOfDimensions mpsndArrayDescriptor =
+  sendMessage mpsndArrayDescriptor numberOfDimensionsSelector
 
 -- | The number of dimensions in the NDArray.
 --
@@ -299,8 +294,8 @@ numberOfDimensions mpsndArrayDescriptor  =
 --
 -- ObjC selector: @- setNumberOfDimensions:@
 setNumberOfDimensions :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> CULong -> IO ()
-setNumberOfDimensions mpsndArrayDescriptor  value =
-    sendMsg mpsndArrayDescriptor (mkSelector "setNumberOfDimensions:") retVoid [argCULong value]
+setNumberOfDimensions mpsndArrayDescriptor value =
+  sendMessage mpsndArrayDescriptor setNumberOfDimensionsSelector value
 
 -- | preferPackedRows
 --
@@ -308,8 +303,8 @@ setNumberOfDimensions mpsndArrayDescriptor  value =
 --
 -- ObjC selector: @- preferPackedRows@
 preferPackedRows :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> IO Bool
-preferPackedRows mpsndArrayDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsndArrayDescriptor (mkSelector "preferPackedRows") retCULong []
+preferPackedRows mpsndArrayDescriptor =
+  sendMessage mpsndArrayDescriptor preferPackedRowsSelector
 
 -- | preferPackedRows
 --
@@ -317,82 +312,82 @@ preferPackedRows mpsndArrayDescriptor  =
 --
 -- ObjC selector: @- setPreferPackedRows:@
 setPreferPackedRows :: IsMPSNDArrayDescriptor mpsndArrayDescriptor => mpsndArrayDescriptor -> Bool -> IO ()
-setPreferPackedRows mpsndArrayDescriptor  value =
-    sendMsg mpsndArrayDescriptor (mkSelector "setPreferPackedRows:") retVoid [argCULong (if value then 1 else 0)]
+setPreferPackedRows mpsndArrayDescriptor value =
+  sendMessage mpsndArrayDescriptor setPreferPackedRowsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lengthOfDimension:@
-lengthOfDimensionSelector :: Selector
+lengthOfDimensionSelector :: Selector '[CULong] CULong
 lengthOfDimensionSelector = mkSelector "lengthOfDimension:"
 
 -- | @Selector@ for @sliceRangeForDimension:@
-sliceRangeForDimensionSelector :: Selector
+sliceRangeForDimensionSelector :: Selector '[CULong] MPSDimensionSlice
 sliceRangeForDimensionSelector = mkSelector "sliceRangeForDimension:"
 
 -- | @Selector@ for @sliceDimension:withSubrange:@
-sliceDimension_withSubrangeSelector :: Selector
+sliceDimension_withSubrangeSelector :: Selector '[CULong, MPSDimensionSlice] ()
 sliceDimension_withSubrangeSelector = mkSelector "sliceDimension:withSubrange:"
 
 -- | @Selector@ for @transposeDimension:withDimension:@
-transposeDimension_withDimensionSelector :: Selector
+transposeDimension_withDimensionSelector :: Selector '[CULong, CULong] ()
 transposeDimension_withDimensionSelector = mkSelector "transposeDimension:withDimension:"
 
 -- | @Selector@ for @permuteWithDimensionOrder:@
-permuteWithDimensionOrderSelector :: Selector
+permuteWithDimensionOrderSelector :: Selector '[Ptr CULong] ()
 permuteWithDimensionOrderSelector = mkSelector "permuteWithDimensionOrder:"
 
 -- | @Selector@ for @getShape@
-getShapeSelector :: Selector
+getShapeSelector :: Selector '[] (Id NSArray)
 getShapeSelector = mkSelector "getShape"
 
 -- | @Selector@ for @descriptorWithDataType:dimensionCount:dimensionSizes:@
-descriptorWithDataType_dimensionCount_dimensionSizesSelector :: Selector
+descriptorWithDataType_dimensionCount_dimensionSizesSelector :: Selector '[MPSDataType, CULong, Ptr CULong] (Id MPSNDArrayDescriptor)
 descriptorWithDataType_dimensionCount_dimensionSizesSelector = mkSelector "descriptorWithDataType:dimensionCount:dimensionSizes:"
 
 -- | @Selector@ for @descriptorWithDataType:shape:@
-descriptorWithDataType_shapeSelector :: Selector
+descriptorWithDataType_shapeSelector :: Selector '[MPSDataType, Id NSArray] (Id MPSNDArrayDescriptor)
 descriptorWithDataType_shapeSelector = mkSelector "descriptorWithDataType:shape:"
 
 -- | @Selector@ for @descriptorWithDataType:dimensionSizes:@
-descriptorWithDataType_dimensionSizesSelector :: Selector
+descriptorWithDataType_dimensionSizesSelector :: Selector '[MPSDataType, CULong] (Id MPSNDArrayDescriptor)
 descriptorWithDataType_dimensionSizesSelector = mkSelector "descriptorWithDataType:dimensionSizes:"
 
 -- | @Selector@ for @reshapeWithDimensionCount:dimensionSizes:@
-reshapeWithDimensionCount_dimensionSizesSelector :: Selector
+reshapeWithDimensionCount_dimensionSizesSelector :: Selector '[CULong, Ptr CULong] ()
 reshapeWithDimensionCount_dimensionSizesSelector = mkSelector "reshapeWithDimensionCount:dimensionSizes:"
 
 -- | @Selector@ for @reshapeWithShape:@
-reshapeWithShapeSelector :: Selector
+reshapeWithShapeSelector :: Selector '[Id NSArray] ()
 reshapeWithShapeSelector = mkSelector "reshapeWithShape:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNDArrayDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MPSDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @numberOfDimensions@
-numberOfDimensionsSelector :: Selector
+numberOfDimensionsSelector :: Selector '[] CULong
 numberOfDimensionsSelector = mkSelector "numberOfDimensions"
 
 -- | @Selector@ for @setNumberOfDimensions:@
-setNumberOfDimensionsSelector :: Selector
+setNumberOfDimensionsSelector :: Selector '[CULong] ()
 setNumberOfDimensionsSelector = mkSelector "setNumberOfDimensions:"
 
 -- | @Selector@ for @preferPackedRows@
-preferPackedRowsSelector :: Selector
+preferPackedRowsSelector :: Selector '[] Bool
 preferPackedRowsSelector = mkSelector "preferPackedRows"
 
 -- | @Selector@ for @setPreferPackedRows:@
-setPreferPackedRowsSelector :: Selector
+setPreferPackedRowsSelector :: Selector '[Bool] ()
 setPreferPackedRowsSelector = mkSelector "setPreferPackedRows:"
 

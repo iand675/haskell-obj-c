@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.AVFoundation.AVMetricPlayerItemVariantSwitchEvent
   , audioRendition
   , subtitleRendition
   , didSucceed
-  , initSelector
-  , newSelector
-  , fromVariantSelector
-  , toVariantSelector
-  , loadedTimeRangesSelector
-  , videoRenditionSelector
   , audioRenditionSelector
-  , subtitleRenditionSelector
   , didSucceedSelector
+  , fromVariantSelector
+  , initSelector
+  , loadedTimeRangesSelector
+  , newSelector
+  , subtitleRenditionSelector
+  , toVariantSelector
+  , videoRenditionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,29 +46,29 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVMetricPlayerItemVariantSwitchEvent)
-init_ avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricPlayerItemVariantSwitchEvent =
+  sendOwnedMessage avMetricPlayerItemVariantSwitchEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricPlayerItemVariantSwitchEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricPlayerItemVariantSwitchEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the variant before the switch. If no value is available, returns nil
 --
 -- ObjC selector: @- fromVariant@
 fromVariant :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVAssetVariant)
-fromVariant avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "fromVariant") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromVariant avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent fromVariantSelector
 
 -- | Returns the variant after the switch.
 --
 -- ObjC selector: @- toVariant@
 toVariant :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVAssetVariant)
-toVariant avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "toVariant") (retPtr retVoid) [] >>= retainedObject . castPtr
+toVariant avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent toVariantSelector
 
 -- | This property provides a collection of time ranges for which the player has the media data readily available. The ranges provided might be discontinuous.
 --
@@ -79,8 +76,8 @@ toVariant avMetricPlayerItemVariantSwitchEvent  =
 --
 -- ObjC selector: @- loadedTimeRanges@
 loadedTimeRanges :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id NSArray)
-loadedTimeRanges avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadedTimeRanges avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent loadedTimeRangesSelector
 
 -- | Represents the currently selected video rendition's identifiers.
 --
@@ -88,8 +85,8 @@ loadedTimeRanges avMetricPlayerItemVariantSwitchEvent  =
 --
 -- ObjC selector: @- videoRendition@
 videoRendition :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVMetricMediaRendition)
-videoRendition avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "videoRendition") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoRendition avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent videoRenditionSelector
 
 -- | Represents the currently selected video rendition's identifiers.
 --
@@ -97,8 +94,8 @@ videoRendition avMetricPlayerItemVariantSwitchEvent  =
 --
 -- ObjC selector: @- audioRendition@
 audioRendition :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVMetricMediaRendition)
-audioRendition avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "audioRendition") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioRendition avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent audioRenditionSelector
 
 -- | Represents the currently selected audio rendition's identifiers.
 --
@@ -106,53 +103,53 @@ audioRendition avMetricPlayerItemVariantSwitchEvent  =
 --
 -- ObjC selector: @- subtitleRendition@
 subtitleRendition :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO (Id AVMetricMediaRendition)
-subtitleRendition avMetricPlayerItemVariantSwitchEvent  =
-    sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "subtitleRendition") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitleRendition avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent subtitleRenditionSelector
 
 -- | Returns if the switch did succeed.
 --
 -- ObjC selector: @- didSucceed@
 didSucceed :: IsAVMetricPlayerItemVariantSwitchEvent avMetricPlayerItemVariantSwitchEvent => avMetricPlayerItemVariantSwitchEvent -> IO Bool
-didSucceed avMetricPlayerItemVariantSwitchEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricPlayerItemVariantSwitchEvent (mkSelector "didSucceed") retCULong []
+didSucceed avMetricPlayerItemVariantSwitchEvent =
+  sendMessage avMetricPlayerItemVariantSwitchEvent didSucceedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricPlayerItemVariantSwitchEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricPlayerItemVariantSwitchEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fromVariant@
-fromVariantSelector :: Selector
+fromVariantSelector :: Selector '[] (Id AVAssetVariant)
 fromVariantSelector = mkSelector "fromVariant"
 
 -- | @Selector@ for @toVariant@
-toVariantSelector :: Selector
+toVariantSelector :: Selector '[] (Id AVAssetVariant)
 toVariantSelector = mkSelector "toVariant"
 
 -- | @Selector@ for @loadedTimeRanges@
-loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector :: Selector '[] (Id NSArray)
 loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 
 -- | @Selector@ for @videoRendition@
-videoRenditionSelector :: Selector
+videoRenditionSelector :: Selector '[] (Id AVMetricMediaRendition)
 videoRenditionSelector = mkSelector "videoRendition"
 
 -- | @Selector@ for @audioRendition@
-audioRenditionSelector :: Selector
+audioRenditionSelector :: Selector '[] (Id AVMetricMediaRendition)
 audioRenditionSelector = mkSelector "audioRendition"
 
 -- | @Selector@ for @subtitleRendition@
-subtitleRenditionSelector :: Selector
+subtitleRenditionSelector :: Selector '[] (Id AVMetricMediaRendition)
 subtitleRenditionSelector = mkSelector "subtitleRendition"
 
 -- | @Selector@ for @didSucceed@
-didSucceedSelector :: Selector
+didSucceedSelector :: Selector '[] Bool
 didSucceedSelector = mkSelector "didSucceed"
 

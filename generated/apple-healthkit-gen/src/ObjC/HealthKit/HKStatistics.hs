@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,38 +30,34 @@ module ObjC.HealthKit.HKStatistics
   , startDate
   , endDate
   , sources
-  , initSelector
   , averageQuantityForSourceSelector
   , averageQuantitySelector
-  , minimumQuantityForSourceSelector
-  , minimumQuantitySelector
+  , durationForSourceSelector
+  , durationSelector
+  , endDateSelector
+  , initSelector
   , maximumQuantityForSourceSelector
   , maximumQuantitySelector
-  , mostRecentQuantityForSourceSelector
-  , mostRecentQuantitySelector
+  , minimumQuantityForSourceSelector
+  , minimumQuantitySelector
   , mostRecentQuantityDateIntervalForSourceSelector
   , mostRecentQuantityDateIntervalSelector
+  , mostRecentQuantityForSourceSelector
+  , mostRecentQuantitySelector
+  , quantityTypeSelector
+  , sourcesSelector
+  , startDateSelector
   , sumQuantityForSourceSelector
   , sumQuantitySelector
-  , durationSelector
-  , durationForSourceSelector
-  , quantityTypeSelector
-  , startDateSelector
-  , endDateSelector
-  , sourcesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKStatistics)
-init_ hkStatistics  =
-    sendMsg hkStatistics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkStatistics =
+  sendOwnedMessage hkStatistics initSelector
 
 -- | averageQuantityForSource:
 --
@@ -80,9 +77,8 @@ init_ hkStatistics  =
 --
 -- ObjC selector: @- averageQuantityForSource:@
 averageQuantityForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-averageQuantityForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "averageQuantityForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+averageQuantityForSource hkStatistics source =
+  sendMessage hkStatistics averageQuantityForSourceSelector (toHKSource source)
 
 -- | averageQuantity
 --
@@ -90,8 +86,8 @@ averageQuantityForSource hkStatistics  source =
 --
 -- ObjC selector: @- averageQuantity@
 averageQuantity :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-averageQuantity hkStatistics  =
-    sendMsg hkStatistics (mkSelector "averageQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageQuantity hkStatistics =
+  sendMessage hkStatistics averageQuantitySelector
 
 -- | minimumQuantityForSource:
 --
@@ -101,9 +97,8 @@ averageQuantity hkStatistics  =
 --
 -- ObjC selector: @- minimumQuantityForSource:@
 minimumQuantityForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-minimumQuantityForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "minimumQuantityForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+minimumQuantityForSource hkStatistics source =
+  sendMessage hkStatistics minimumQuantityForSourceSelector (toHKSource source)
 
 -- | minimumQuantity
 --
@@ -111,8 +106,8 @@ minimumQuantityForSource hkStatistics  source =
 --
 -- ObjC selector: @- minimumQuantity@
 minimumQuantity :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-minimumQuantity hkStatistics  =
-    sendMsg hkStatistics (mkSelector "minimumQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimumQuantity hkStatistics =
+  sendMessage hkStatistics minimumQuantitySelector
 
 -- | maximumQuantityForSource:
 --
@@ -122,9 +117,8 @@ minimumQuantity hkStatistics  =
 --
 -- ObjC selector: @- maximumQuantityForSource:@
 maximumQuantityForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-maximumQuantityForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "maximumQuantityForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+maximumQuantityForSource hkStatistics source =
+  sendMessage hkStatistics maximumQuantityForSourceSelector (toHKSource source)
 
 -- | maximumQuantity
 --
@@ -132,8 +126,8 @@ maximumQuantityForSource hkStatistics  source =
 --
 -- ObjC selector: @- maximumQuantity@
 maximumQuantity :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-maximumQuantity hkStatistics  =
-    sendMsg hkStatistics (mkSelector "maximumQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumQuantity hkStatistics =
+  sendMessage hkStatistics maximumQuantitySelector
 
 -- | mostRecentQuantityForSource:
 --
@@ -143,9 +137,8 @@ maximumQuantity hkStatistics  =
 --
 -- ObjC selector: @- mostRecentQuantityForSource:@
 mostRecentQuantityForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-mostRecentQuantityForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "mostRecentQuantityForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+mostRecentQuantityForSource hkStatistics source =
+  sendMessage hkStatistics mostRecentQuantityForSourceSelector (toHKSource source)
 
 -- | mostRecentQuantity
 --
@@ -153,8 +146,8 @@ mostRecentQuantityForSource hkStatistics  source =
 --
 -- ObjC selector: @- mostRecentQuantity@
 mostRecentQuantity :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-mostRecentQuantity hkStatistics  =
-    sendMsg hkStatistics (mkSelector "mostRecentQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+mostRecentQuantity hkStatistics =
+  sendMessage hkStatistics mostRecentQuantitySelector
 
 -- | mostRecentQuantityDateIntervalForSource:
 --
@@ -164,9 +157,8 @@ mostRecentQuantity hkStatistics  =
 --
 -- ObjC selector: @- mostRecentQuantityDateIntervalForSource:@
 mostRecentQuantityDateIntervalForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id NSDateInterval)
-mostRecentQuantityDateIntervalForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "mostRecentQuantityDateIntervalForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+mostRecentQuantityDateIntervalForSource hkStatistics source =
+  sendMessage hkStatistics mostRecentQuantityDateIntervalForSourceSelector (toHKSource source)
 
 -- | mostRecentQuantityDateInterval
 --
@@ -174,8 +166,8 @@ mostRecentQuantityDateIntervalForSource hkStatistics  source =
 --
 -- ObjC selector: @- mostRecentQuantityDateInterval@
 mostRecentQuantityDateInterval :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id NSDateInterval)
-mostRecentQuantityDateInterval hkStatistics  =
-    sendMsg hkStatistics (mkSelector "mostRecentQuantityDateInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+mostRecentQuantityDateInterval hkStatistics =
+  sendMessage hkStatistics mostRecentQuantityDateIntervalSelector
 
 -- | sumQuantityForSource:
 --
@@ -185,9 +177,8 @@ mostRecentQuantityDateInterval hkStatistics  =
 --
 -- ObjC selector: @- sumQuantityForSource:@
 sumQuantityForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-sumQuantityForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "sumQuantityForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+sumQuantityForSource hkStatistics source =
+  sendMessage hkStatistics sumQuantityForSourceSelector (toHKSource source)
 
 -- | sumQuantity
 --
@@ -195,8 +186,8 @@ sumQuantityForSource hkStatistics  source =
 --
 -- ObjC selector: @- sumQuantity@
 sumQuantity :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-sumQuantity hkStatistics  =
-    sendMsg hkStatistics (mkSelector "sumQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+sumQuantity hkStatistics =
+  sendMessage hkStatistics sumQuantitySelector
 
 -- | Total duration (in seconds) covered by the samples represented by these statistics. Only present if HKStatisticsOptionDuration is is specified.
 --
@@ -208,8 +199,8 @@ sumQuantity hkStatistics  =
 --
 -- ObjC selector: @- duration@
 duration :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantity)
-duration hkStatistics  =
-    sendMsg hkStatistics (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration hkStatistics =
+  sendMessage hkStatistics durationSelector
 
 -- | durationForSource:
 --
@@ -219,107 +210,106 @@ duration hkStatistics  =
 --
 -- ObjC selector: @- durationForSource:@
 durationForSource :: (IsHKStatistics hkStatistics, IsHKSource source) => hkStatistics -> source -> IO (Id HKQuantity)
-durationForSource hkStatistics  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg hkStatistics (mkSelector "durationForSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+durationForSource hkStatistics source =
+  sendMessage hkStatistics durationForSourceSelector (toHKSource source)
 
 -- | @- quantityType@
 quantityType :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id HKQuantityType)
-quantityType hkStatistics  =
-    sendMsg hkStatistics (mkSelector "quantityType") (retPtr retVoid) [] >>= retainedObject . castPtr
+quantityType hkStatistics =
+  sendMessage hkStatistics quantityTypeSelector
 
 -- | @- startDate@
 startDate :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id NSDate)
-startDate hkStatistics  =
-    sendMsg hkStatistics (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate hkStatistics =
+  sendMessage hkStatistics startDateSelector
 
 -- | @- endDate@
 endDate :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id NSDate)
-endDate hkStatistics  =
-    sendMsg hkStatistics (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate hkStatistics =
+  sendMessage hkStatistics endDateSelector
 
 -- | @- sources@
 sources :: IsHKStatistics hkStatistics => hkStatistics -> IO (Id NSArray)
-sources hkStatistics  =
-    sendMsg hkStatistics (mkSelector "sources") (retPtr retVoid) [] >>= retainedObject . castPtr
+sources hkStatistics =
+  sendMessage hkStatistics sourcesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKStatistics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @averageQuantityForSource:@
-averageQuantityForSourceSelector :: Selector
+averageQuantityForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 averageQuantityForSourceSelector = mkSelector "averageQuantityForSource:"
 
 -- | @Selector@ for @averageQuantity@
-averageQuantitySelector :: Selector
+averageQuantitySelector :: Selector '[] (Id HKQuantity)
 averageQuantitySelector = mkSelector "averageQuantity"
 
 -- | @Selector@ for @minimumQuantityForSource:@
-minimumQuantityForSourceSelector :: Selector
+minimumQuantityForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 minimumQuantityForSourceSelector = mkSelector "minimumQuantityForSource:"
 
 -- | @Selector@ for @minimumQuantity@
-minimumQuantitySelector :: Selector
+minimumQuantitySelector :: Selector '[] (Id HKQuantity)
 minimumQuantitySelector = mkSelector "minimumQuantity"
 
 -- | @Selector@ for @maximumQuantityForSource:@
-maximumQuantityForSourceSelector :: Selector
+maximumQuantityForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 maximumQuantityForSourceSelector = mkSelector "maximumQuantityForSource:"
 
 -- | @Selector@ for @maximumQuantity@
-maximumQuantitySelector :: Selector
+maximumQuantitySelector :: Selector '[] (Id HKQuantity)
 maximumQuantitySelector = mkSelector "maximumQuantity"
 
 -- | @Selector@ for @mostRecentQuantityForSource:@
-mostRecentQuantityForSourceSelector :: Selector
+mostRecentQuantityForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 mostRecentQuantityForSourceSelector = mkSelector "mostRecentQuantityForSource:"
 
 -- | @Selector@ for @mostRecentQuantity@
-mostRecentQuantitySelector :: Selector
+mostRecentQuantitySelector :: Selector '[] (Id HKQuantity)
 mostRecentQuantitySelector = mkSelector "mostRecentQuantity"
 
 -- | @Selector@ for @mostRecentQuantityDateIntervalForSource:@
-mostRecentQuantityDateIntervalForSourceSelector :: Selector
+mostRecentQuantityDateIntervalForSourceSelector :: Selector '[Id HKSource] (Id NSDateInterval)
 mostRecentQuantityDateIntervalForSourceSelector = mkSelector "mostRecentQuantityDateIntervalForSource:"
 
 -- | @Selector@ for @mostRecentQuantityDateInterval@
-mostRecentQuantityDateIntervalSelector :: Selector
+mostRecentQuantityDateIntervalSelector :: Selector '[] (Id NSDateInterval)
 mostRecentQuantityDateIntervalSelector = mkSelector "mostRecentQuantityDateInterval"
 
 -- | @Selector@ for @sumQuantityForSource:@
-sumQuantityForSourceSelector :: Selector
+sumQuantityForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 sumQuantityForSourceSelector = mkSelector "sumQuantityForSource:"
 
 -- | @Selector@ for @sumQuantity@
-sumQuantitySelector :: Selector
+sumQuantitySelector :: Selector '[] (Id HKQuantity)
 sumQuantitySelector = mkSelector "sumQuantity"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id HKQuantity)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @durationForSource:@
-durationForSourceSelector :: Selector
+durationForSourceSelector :: Selector '[Id HKSource] (Id HKQuantity)
 durationForSourceSelector = mkSelector "durationForSource:"
 
 -- | @Selector@ for @quantityType@
-quantityTypeSelector :: Selector
+quantityTypeSelector :: Selector '[] (Id HKQuantityType)
 quantityTypeSelector = mkSelector "quantityType"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @sources@
-sourcesSelector :: Selector
+sourcesSelector :: Selector '[] (Id NSArray)
 sourcesSelector = mkSelector "sources"
 

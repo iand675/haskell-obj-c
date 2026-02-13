@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.CloudKit.CKRecordZoneID
   , zoneName
   , ownerName
   , initSelector
-  , newSelector
   , initWithZoneName_ownerNameSelector
-  , zoneNameSelector
+  , newSelector
   , ownerNameSelector
+  , zoneNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,54 +36,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsCKRecordZoneID ckRecordZoneID => ckRecordZoneID -> IO (Id CKRecordZoneID)
-init_ ckRecordZoneID  =
-    sendMsg ckRecordZoneID (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckRecordZoneID =
+  sendOwnedMessage ckRecordZoneID initSelector
 
 -- | @+ new@
 new :: IO (Id CKRecordZoneID)
 new  =
   do
     cls' <- getRequiredClass "CKRecordZoneID"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithZoneName:ownerName:@
 initWithZoneName_ownerName :: (IsCKRecordZoneID ckRecordZoneID, IsNSString zoneName, IsNSString ownerName) => ckRecordZoneID -> zoneName -> ownerName -> IO (Id CKRecordZoneID)
-initWithZoneName_ownerName ckRecordZoneID  zoneName ownerName =
-  withObjCPtr zoneName $ \raw_zoneName ->
-    withObjCPtr ownerName $ \raw_ownerName ->
-        sendMsg ckRecordZoneID (mkSelector "initWithZoneName:ownerName:") (retPtr retVoid) [argPtr (castPtr raw_zoneName :: Ptr ()), argPtr (castPtr raw_ownerName :: Ptr ())] >>= ownedObject . castPtr
+initWithZoneName_ownerName ckRecordZoneID zoneName ownerName =
+  sendOwnedMessage ckRecordZoneID initWithZoneName_ownerNameSelector (toNSString zoneName) (toNSString ownerName)
 
 -- | @- zoneName@
 zoneName :: IsCKRecordZoneID ckRecordZoneID => ckRecordZoneID -> IO (Id NSString)
-zoneName ckRecordZoneID  =
-    sendMsg ckRecordZoneID (mkSelector "zoneName") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneName ckRecordZoneID =
+  sendMessage ckRecordZoneID zoneNameSelector
 
 -- | @- ownerName@
 ownerName :: IsCKRecordZoneID ckRecordZoneID => ckRecordZoneID -> IO (Id NSString)
-ownerName ckRecordZoneID  =
-    sendMsg ckRecordZoneID (mkSelector "ownerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+ownerName ckRecordZoneID =
+  sendMessage ckRecordZoneID ownerNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKRecordZoneID)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKRecordZoneID)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithZoneName:ownerName:@
-initWithZoneName_ownerNameSelector :: Selector
+initWithZoneName_ownerNameSelector :: Selector '[Id NSString, Id NSString] (Id CKRecordZoneID)
 initWithZoneName_ownerNameSelector = mkSelector "initWithZoneName:ownerName:"
 
 -- | @Selector@ for @zoneName@
-zoneNameSelector :: Selector
+zoneNameSelector :: Selector '[] (Id NSString)
 zoneNameSelector = mkSelector "zoneName"
 
 -- | @Selector@ for @ownerName@
-ownerNameSelector :: Selector
+ownerNameSelector :: Selector '[] (Id NSString)
 ownerNameSelector = mkSelector "ownerName"
 

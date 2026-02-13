@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,15 +36,11 @@ module ObjC.FSKit.FSDirectoryEntryPacker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSDirectoryEntryPacker fsDirectoryEntryPacker => fsDirectoryEntryPacker -> IO (Id FSDirectoryEntryPacker)
-init_ fsDirectoryEntryPacker  =
-    sendMsg fsDirectoryEntryPacker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsDirectoryEntryPacker =
+  sendOwnedMessage fsDirectoryEntryPacker initSelector
 
 -- | Provides a directory entry during enumeration.
 --
@@ -64,20 +61,18 @@ init_ fsDirectoryEntryPacker  =
 --
 -- ObjC selector: @- packEntryWithName:itemType:itemID:nextCookie:attributes:@
 packEntryWithName_itemType_itemID_nextCookie_attributes :: (IsFSDirectoryEntryPacker fsDirectoryEntryPacker, IsFSFileName name, IsFSItemAttributes attributes) => fsDirectoryEntryPacker -> name -> FSItemType -> FSItemID -> CULong -> attributes -> IO Bool
-packEntryWithName_itemType_itemID_nextCookie_attributes fsDirectoryEntryPacker  name itemType itemID nextCookie attributes =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr attributes $ \raw_attributes ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsDirectoryEntryPacker (mkSelector "packEntryWithName:itemType:itemID:nextCookie:attributes:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argCLong (coerce itemType), argCULong (coerce itemID), argCULong nextCookie, argPtr (castPtr raw_attributes :: Ptr ())]
+packEntryWithName_itemType_itemID_nextCookie_attributes fsDirectoryEntryPacker name itemType itemID nextCookie attributes =
+  sendMessage fsDirectoryEntryPacker packEntryWithName_itemType_itemID_nextCookie_attributesSelector (toFSFileName name) itemType itemID nextCookie (toFSItemAttributes attributes)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSDirectoryEntryPacker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @packEntryWithName:itemType:itemID:nextCookie:attributes:@
-packEntryWithName_itemType_itemID_nextCookie_attributesSelector :: Selector
+packEntryWithName_itemType_itemID_nextCookie_attributesSelector :: Selector '[Id FSFileName, FSItemType, FSItemID, CULong, Id FSItemAttributes] Bool
 packEntryWithName_itemType_itemID_nextCookie_attributesSelector = mkSelector "packEntryWithName:itemType:itemID:nextCookie:attributes:"
 

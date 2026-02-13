@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INPlayMediaIntentResponse
   , code
   , nowPlayingInfo
   , setNowPlayingInfo
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , nowPlayingInfoSelector
   , setNowPlayingInfoSelector
 
@@ -35,15 +36,11 @@ module ObjC.Intents.INPlayMediaIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,52 +50,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINPlayMediaIntentResponse inPlayMediaIntentResponse => inPlayMediaIntentResponse -> IO RawId
-init_ inPlayMediaIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inPlayMediaIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inPlayMediaIntentResponse =
+  sendOwnedMessage inPlayMediaIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINPlayMediaIntentResponse inPlayMediaIntentResponse, IsNSUserActivity userActivity) => inPlayMediaIntentResponse -> INPlayMediaIntentResponseCode -> userActivity -> IO (Id INPlayMediaIntentResponse)
-initWithCode_userActivity inPlayMediaIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inPlayMediaIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inPlayMediaIntentResponse code userActivity =
+  sendOwnedMessage inPlayMediaIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINPlayMediaIntentResponse inPlayMediaIntentResponse => inPlayMediaIntentResponse -> IO INPlayMediaIntentResponseCode
-code inPlayMediaIntentResponse  =
-    fmap (coerce :: CLong -> INPlayMediaIntentResponseCode) $ sendMsg inPlayMediaIntentResponse (mkSelector "code") retCLong []
+code inPlayMediaIntentResponse =
+  sendMessage inPlayMediaIntentResponse codeSelector
 
 -- | @- nowPlayingInfo@
 nowPlayingInfo :: IsINPlayMediaIntentResponse inPlayMediaIntentResponse => inPlayMediaIntentResponse -> IO (Id NSDictionary)
-nowPlayingInfo inPlayMediaIntentResponse  =
-    sendMsg inPlayMediaIntentResponse (mkSelector "nowPlayingInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+nowPlayingInfo inPlayMediaIntentResponse =
+  sendMessage inPlayMediaIntentResponse nowPlayingInfoSelector
 
 -- | @- setNowPlayingInfo:@
 setNowPlayingInfo :: (IsINPlayMediaIntentResponse inPlayMediaIntentResponse, IsNSDictionary value) => inPlayMediaIntentResponse -> value -> IO ()
-setNowPlayingInfo inPlayMediaIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPlayMediaIntentResponse (mkSelector "setNowPlayingInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNowPlayingInfo inPlayMediaIntentResponse value =
+  sendMessage inPlayMediaIntentResponse setNowPlayingInfoSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INPlayMediaIntentResponseCode, Id NSUserActivity] (Id INPlayMediaIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INPlayMediaIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @nowPlayingInfo@
-nowPlayingInfoSelector :: Selector
+nowPlayingInfoSelector :: Selector '[] (Id NSDictionary)
 nowPlayingInfoSelector = mkSelector "nowPlayingInfo"
 
 -- | @Selector@ for @setNowPlayingInfo:@
-setNowPlayingInfoSelector :: Selector
+setNowPlayingInfoSelector :: Selector '[Id NSDictionary] ()
 setNowPlayingInfoSelector = mkSelector "setNowPlayingInfo:"
 

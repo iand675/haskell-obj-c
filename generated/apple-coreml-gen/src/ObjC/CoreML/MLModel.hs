@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,36 +28,32 @@ module ObjC.CoreML.MLModel
   , modelDescription
   , configuration
   , availableComputeDevices
-  , modelWithContentsOfURL_errorSelector
-  , modelWithContentsOfURL_configuration_errorSelector
+  , availableComputeDevicesSelector
+  , compileModelAtURL_completionHandlerSelector
+  , compileModelAtURL_errorSelector
+  , configurationSelector
   , loadContentsOfURL_configuration_completionHandlerSelector
+  , loadModelAsset_configuration_completionHandlerSelector
+  , modelDescriptionSelector
+  , modelWithContentsOfURL_configuration_errorSelector
+  , modelWithContentsOfURL_errorSelector
+  , newStateSelector
+  , parameterValueForKey_errorSelector
   , predictionFromFeatures_errorSelector
   , predictionFromFeatures_options_errorSelector
-  , predictionsFromBatch_errorSelector
-  , predictionsFromBatch_options_errorSelector
-  , parameterValueForKey_errorSelector
-  , loadModelAsset_configuration_completionHandlerSelector
-  , newStateSelector
   , predictionFromFeatures_usingState_errorSelector
   , predictionFromFeatures_usingState_options_errorSelector
-  , compileModelAtURL_errorSelector
-  , compileModelAtURL_completionHandlerSelector
-  , modelDescriptionSelector
-  , configurationSelector
-  , availableComputeDevicesSelector
+  , predictionsFromBatch_errorSelector
+  , predictionsFromBatch_options_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,9 +67,7 @@ modelWithContentsOfURL_error :: (IsNSURL url, IsNSError error_) => url -> error_
 modelWithContentsOfURL_error url error_ =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "modelWithContentsOfURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelWithContentsOfURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | Construct a model given the location of its on-disk representation. Returns nil on error.
 --
@@ -81,10 +76,7 @@ modelWithContentsOfURL_configuration_error :: (IsNSURL url, IsMLModelConfigurati
 modelWithContentsOfURL_configuration_error url configuration error_ =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr configuration $ \raw_configuration ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "modelWithContentsOfURL:configuration:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelWithContentsOfURL_configuration_errorSelector (toNSURL url) (toMLModelConfiguration configuration) (toNSError error_)
 
 -- | Construct a model asynchronously given the location of its on-disk representation and configuration.
 --
@@ -101,9 +93,7 @@ loadContentsOfURL_configuration_completionHandler :: (IsNSURL url, IsMLModelConf
 loadContentsOfURL_configuration_completionHandler url configuration handler =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "loadContentsOfURL:configuration:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadContentsOfURL_configuration_completionHandlerSelector (toNSURL url) (toMLModelConfiguration configuration) handler
 
 -- | Run a prediction on a model synchronously.
 --
@@ -113,9 +103,8 @@ loadContentsOfURL_configuration_completionHandler url configuration handler =
 --
 -- ObjC selector: @- predictionFromFeatures:error:@
 predictionFromFeatures_error :: (IsMLModel mlModel, IsNSError error_) => mlModel -> RawId -> error_ -> IO RawId
-predictionFromFeatures_error mlModel  input error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionFromFeatures:error:") (retPtr retVoid) [argPtr (castPtr (unRawId input) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionFromFeatures_error mlModel input error_ =
+  sendMessage mlModel predictionFromFeatures_errorSelector input (toNSError error_)
 
 -- | Run a prediction on a model synchronously
 --
@@ -123,36 +112,29 @@ predictionFromFeatures_error mlModel  input error_ =
 --
 -- ObjC selector: @- predictionFromFeatures:options:error:@
 predictionFromFeatures_options_error :: (IsMLModel mlModel, IsMLPredictionOptions options, IsNSError error_) => mlModel -> RawId -> options -> error_ -> IO RawId
-predictionFromFeatures_options_error mlModel  input options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionFromFeatures:options:error:") (retPtr retVoid) [argPtr (castPtr (unRawId input) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionFromFeatures_options_error mlModel input options error_ =
+  sendMessage mlModel predictionFromFeatures_options_errorSelector input (toMLPredictionOptions options) (toNSError error_)
 
 -- | Batch prediction without explicit options
 --
 -- ObjC selector: @- predictionsFromBatch:error:@
 predictionsFromBatch_error :: (IsMLModel mlModel, IsNSError error_) => mlModel -> RawId -> error_ -> IO RawId
-predictionsFromBatch_error mlModel  inputBatch error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionsFromBatch:error:") (retPtr retVoid) [argPtr (castPtr (unRawId inputBatch) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionsFromBatch_error mlModel inputBatch error_ =
+  sendMessage mlModel predictionsFromBatch_errorSelector inputBatch (toNSError error_)
 
 -- | Batch prediction with explicit options
 --
 -- ObjC selector: @- predictionsFromBatch:options:error:@
 predictionsFromBatch_options_error :: (IsMLModel mlModel, IsMLPredictionOptions options, IsNSError error_) => mlModel -> RawId -> options -> error_ -> IO RawId
-predictionsFromBatch_options_error mlModel  inputBatch options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionsFromBatch:options:error:") (retPtr retVoid) [argPtr (castPtr (unRawId inputBatch) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionsFromBatch_options_error mlModel inputBatch options error_ =
+  sendMessage mlModel predictionsFromBatch_options_errorSelector inputBatch (toMLPredictionOptions options) (toNSError error_)
 
 -- | Provides value for the given parameter. Returns nil on error.
 --
 -- ObjC selector: @- parameterValueForKey:error:@
 parameterValueForKey_error :: (IsMLModel mlModel, IsMLParameterKey key, IsNSError error_) => mlModel -> key -> error_ -> IO RawId
-parameterValueForKey_error mlModel  key error_ =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "parameterValueForKey:error:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+parameterValueForKey_error mlModel key error_ =
+  sendMessage mlModel parameterValueForKey_errorSelector (toMLParameterKey key) (toNSError error_)
 
 -- | Construct a model asynchronously from a compiled model asset.
 --
@@ -167,9 +149,7 @@ loadModelAsset_configuration_completionHandler :: (IsMLModelAsset asset, IsMLMod
 loadModelAsset_configuration_completionHandler asset configuration handler =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "loadModelAsset:configuration:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadModelAsset_configuration_completionHandlerSelector (toMLModelAsset asset) (toMLModelConfiguration configuration) handler
 
 -- | Creates a new state object.
 --
@@ -183,8 +163,8 @@ loadModelAsset_configuration_completionHandler asset configuration handler =
 --
 -- ObjC selector: @- newState@
 newState :: IsMLModel mlModel => mlModel -> IO (Id MLState)
-newState mlModel  =
-    sendMsg mlModel (mkSelector "newState") (retPtr retVoid) [] >>= ownedObject . castPtr
+newState mlModel =
+  sendOwnedMessage mlModel newStateSelector
 
 -- | Run a stateful prediction synchronously.
 --
@@ -196,10 +176,8 @@ newState mlModel  =
 --
 -- ObjC selector: @- predictionFromFeatures:usingState:error:@
 predictionFromFeatures_usingState_error :: (IsMLModel mlModel, IsMLState state, IsNSError error_) => mlModel -> RawId -> state -> error_ -> IO RawId
-predictionFromFeatures_usingState_error mlModel  inputFeatures state error_ =
-  withObjCPtr state $ \raw_state ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionFromFeatures:usingState:error:") (retPtr retVoid) [argPtr (castPtr (unRawId inputFeatures) :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionFromFeatures_usingState_error mlModel inputFeatures state error_ =
+  sendMessage mlModel predictionFromFeatures_usingState_errorSelector inputFeatures (toMLState state) (toNSError error_)
 
 -- | Run a stateful prediction synchronously with options.
 --
@@ -211,11 +189,8 @@ predictionFromFeatures_usingState_error mlModel  inputFeatures state error_ =
 --
 -- ObjC selector: @- predictionFromFeatures:usingState:options:error:@
 predictionFromFeatures_usingState_options_error :: (IsMLModel mlModel, IsMLState state, IsMLPredictionOptions options, IsNSError error_) => mlModel -> RawId -> state -> options -> error_ -> IO RawId
-predictionFromFeatures_usingState_options_error mlModel  inputFeatures state options error_ =
-  withObjCPtr state $ \raw_state ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap (RawId . castPtr) $ sendMsg mlModel (mkSelector "predictionFromFeatures:usingState:options:error:") (retPtr retVoid) [argPtr (castPtr (unRawId inputFeatures) :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+predictionFromFeatures_usingState_options_error mlModel inputFeatures state options error_ =
+  sendMessage mlModel predictionFromFeatures_usingState_options_errorSelector inputFeatures (toMLState state) (toMLPredictionOptions options) (toNSError error_)
 
 -- | Compile a .mlmodel for this device
 --
@@ -234,9 +209,7 @@ compileModelAtURL_error :: (IsNSURL modelURL, IsNSError error_) => modelURL -> e
 compileModelAtURL_error modelURL error_ =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr modelURL $ \raw_modelURL ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "compileModelAtURL:error:") (retPtr retVoid) [argPtr (castPtr raw_modelURL :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' compileModelAtURL_errorSelector (toNSURL modelURL) (toNSError error_)
 
 -- | Compile a .mlmodel or .mlpackage for this device. Perform the compilation asynchronously.
 --
@@ -253,22 +226,21 @@ compileModelAtURL_completionHandler :: IsNSURL modelURL => modelURL -> Ptr () ->
 compileModelAtURL_completionHandler modelURL handler =
   do
     cls' <- getRequiredClass "MLModel"
-    withObjCPtr modelURL $ \raw_modelURL ->
-      sendClassMsg cls' (mkSelector "compileModelAtURL:completionHandler:") retVoid [argPtr (castPtr raw_modelURL :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' compileModelAtURL_completionHandlerSelector (toNSURL modelURL) handler
 
 -- | A model holds a description of its required inputs and expected outputs.
 --
 -- ObjC selector: @- modelDescription@
 modelDescription :: IsMLModel mlModel => mlModel -> IO (Id MLModelDescription)
-modelDescription mlModel  =
-    sendMsg mlModel (mkSelector "modelDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelDescription mlModel =
+  sendMessage mlModel modelDescriptionSelector
 
 -- | The load-time parameters used to instantiate this MLModel object.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsMLModel mlModel => mlModel -> IO (Id MLModelConfiguration)
-configuration mlModel  =
-    sendMsg mlModel (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration mlModel =
+  sendMessage mlModel configurationSelector
 
 -- | The list of available compute devices for CoreML.
 --
@@ -281,77 +253,77 @@ availableComputeDevices :: IO (Id NSArray)
 availableComputeDevices  =
   do
     cls' <- getRequiredClass "MLModel"
-    sendClassMsg cls' (mkSelector "availableComputeDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableComputeDevicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @modelWithContentsOfURL:error:@
-modelWithContentsOfURL_errorSelector :: Selector
+modelWithContentsOfURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id MLModel)
 modelWithContentsOfURL_errorSelector = mkSelector "modelWithContentsOfURL:error:"
 
 -- | @Selector@ for @modelWithContentsOfURL:configuration:error:@
-modelWithContentsOfURL_configuration_errorSelector :: Selector
+modelWithContentsOfURL_configuration_errorSelector :: Selector '[Id NSURL, Id MLModelConfiguration, Id NSError] (Id MLModel)
 modelWithContentsOfURL_configuration_errorSelector = mkSelector "modelWithContentsOfURL:configuration:error:"
 
 -- | @Selector@ for @loadContentsOfURL:configuration:completionHandler:@
-loadContentsOfURL_configuration_completionHandlerSelector :: Selector
+loadContentsOfURL_configuration_completionHandlerSelector :: Selector '[Id NSURL, Id MLModelConfiguration, Ptr ()] ()
 loadContentsOfURL_configuration_completionHandlerSelector = mkSelector "loadContentsOfURL:configuration:completionHandler:"
 
 -- | @Selector@ for @predictionFromFeatures:error:@
-predictionFromFeatures_errorSelector :: Selector
+predictionFromFeatures_errorSelector :: Selector '[RawId, Id NSError] RawId
 predictionFromFeatures_errorSelector = mkSelector "predictionFromFeatures:error:"
 
 -- | @Selector@ for @predictionFromFeatures:options:error:@
-predictionFromFeatures_options_errorSelector :: Selector
+predictionFromFeatures_options_errorSelector :: Selector '[RawId, Id MLPredictionOptions, Id NSError] RawId
 predictionFromFeatures_options_errorSelector = mkSelector "predictionFromFeatures:options:error:"
 
 -- | @Selector@ for @predictionsFromBatch:error:@
-predictionsFromBatch_errorSelector :: Selector
+predictionsFromBatch_errorSelector :: Selector '[RawId, Id NSError] RawId
 predictionsFromBatch_errorSelector = mkSelector "predictionsFromBatch:error:"
 
 -- | @Selector@ for @predictionsFromBatch:options:error:@
-predictionsFromBatch_options_errorSelector :: Selector
+predictionsFromBatch_options_errorSelector :: Selector '[RawId, Id MLPredictionOptions, Id NSError] RawId
 predictionsFromBatch_options_errorSelector = mkSelector "predictionsFromBatch:options:error:"
 
 -- | @Selector@ for @parameterValueForKey:error:@
-parameterValueForKey_errorSelector :: Selector
+parameterValueForKey_errorSelector :: Selector '[Id MLParameterKey, Id NSError] RawId
 parameterValueForKey_errorSelector = mkSelector "parameterValueForKey:error:"
 
 -- | @Selector@ for @loadModelAsset:configuration:completionHandler:@
-loadModelAsset_configuration_completionHandlerSelector :: Selector
+loadModelAsset_configuration_completionHandlerSelector :: Selector '[Id MLModelAsset, Id MLModelConfiguration, Ptr ()] ()
 loadModelAsset_configuration_completionHandlerSelector = mkSelector "loadModelAsset:configuration:completionHandler:"
 
 -- | @Selector@ for @newState@
-newStateSelector :: Selector
+newStateSelector :: Selector '[] (Id MLState)
 newStateSelector = mkSelector "newState"
 
 -- | @Selector@ for @predictionFromFeatures:usingState:error:@
-predictionFromFeatures_usingState_errorSelector :: Selector
+predictionFromFeatures_usingState_errorSelector :: Selector '[RawId, Id MLState, Id NSError] RawId
 predictionFromFeatures_usingState_errorSelector = mkSelector "predictionFromFeatures:usingState:error:"
 
 -- | @Selector@ for @predictionFromFeatures:usingState:options:error:@
-predictionFromFeatures_usingState_options_errorSelector :: Selector
+predictionFromFeatures_usingState_options_errorSelector :: Selector '[RawId, Id MLState, Id MLPredictionOptions, Id NSError] RawId
 predictionFromFeatures_usingState_options_errorSelector = mkSelector "predictionFromFeatures:usingState:options:error:"
 
 -- | @Selector@ for @compileModelAtURL:error:@
-compileModelAtURL_errorSelector :: Selector
+compileModelAtURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id NSURL)
 compileModelAtURL_errorSelector = mkSelector "compileModelAtURL:error:"
 
 -- | @Selector@ for @compileModelAtURL:completionHandler:@
-compileModelAtURL_completionHandlerSelector :: Selector
+compileModelAtURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 compileModelAtURL_completionHandlerSelector = mkSelector "compileModelAtURL:completionHandler:"
 
 -- | @Selector@ for @modelDescription@
-modelDescriptionSelector :: Selector
+modelDescriptionSelector :: Selector '[] (Id MLModelDescription)
 modelDescriptionSelector = mkSelector "modelDescription"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id MLModelConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @availableComputeDevices@
-availableComputeDevicesSelector :: Selector
+availableComputeDevicesSelector :: Selector '[] (Id NSArray)
 availableComputeDevicesSelector = mkSelector "availableComputeDevices"
 

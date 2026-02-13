@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,46 +34,42 @@ module ObjC.Quartz.QCCompositionPickerView
   , setNumberOfColumns
   , numberOfRows
   , setNumberOfRows
-  , setCompositionsFromRepositoryWithProtocol_andAttributesSelector
+  , allowsEmptySelectionSelector
+  , backgroundColorSelector
+  , compositionAspectRatioSelector
   , compositionsSelector
-  , setDelegateSelector
   , delegateSelector
+  , drawsBackgroundSelector
+  , isAnimatingSelector
+  , maxAnimationFrameRateSelector
+  , numberOfColumnsSelector
+  , numberOfRowsSelector
+  , resetDefaultInputValuesSelector
+  , selectedCompositionSelector
+  , setAllowsEmptySelectionSelector
+  , setBackgroundColorSelector
+  , setCompositionAspectRatioSelector
+  , setCompositionsFromRepositoryWithProtocol_andAttributesSelector
+  , setDefaultValue_forInputKeySelector
+  , setDelegateSelector
+  , setDrawsBackgroundSelector
+  , setMaxAnimationFrameRateSelector
+  , setNumberOfColumnsSelector
+  , setNumberOfRowsSelector
+  , setSelectedCompositionSelector
   , setShowsCompositionNamesSelector
   , showsCompositionNamesSelector
-  , setAllowsEmptySelectionSelector
-  , allowsEmptySelectionSelector
-  , setCompositionAspectRatioSelector
-  , compositionAspectRatioSelector
-  , setDefaultValue_forInputKeySelector
-  , resetDefaultInputValuesSelector
-  , setSelectedCompositionSelector
-  , selectedCompositionSelector
   , startAnimationSelector
   , stopAnimationSelector
-  , isAnimatingSelector
-  , setMaxAnimationFrameRateSelector
-  , maxAnimationFrameRateSelector
-  , setBackgroundColorSelector
-  , backgroundColorSelector
-  , setDrawsBackgroundSelector
-  , drawsBackgroundSelector
-  , numberOfColumnsSelector
-  , setNumberOfColumnsSelector
-  , numberOfRowsSelector
-  , setNumberOfRowsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,253 +80,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setCompositionsFromRepositoryWithProtocol:andAttributes:@
 setCompositionsFromRepositoryWithProtocol_andAttributes :: (IsQCCompositionPickerView qcCompositionPickerView, IsNSString protocol, IsNSDictionary attributes) => qcCompositionPickerView -> protocol -> attributes -> IO ()
-setCompositionsFromRepositoryWithProtocol_andAttributes qcCompositionPickerView  protocol attributes =
-  withObjCPtr protocol $ \raw_protocol ->
-    withObjCPtr attributes $ \raw_attributes ->
-        sendMsg qcCompositionPickerView (mkSelector "setCompositionsFromRepositoryWithProtocol:andAttributes:") retVoid [argPtr (castPtr raw_protocol :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())]
+setCompositionsFromRepositoryWithProtocol_andAttributes qcCompositionPickerView protocol attributes =
+  sendMessage qcCompositionPickerView setCompositionsFromRepositoryWithProtocol_andAttributesSelector (toNSString protocol) (toNSDictionary attributes)
 
 -- | @- compositions@
 compositions :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO (Id NSArray)
-compositions qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "compositions") (retPtr retVoid) [] >>= retainedObject . castPtr
+compositions qcCompositionPickerView =
+  sendMessage qcCompositionPickerView compositionsSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> RawId -> IO ()
-setDelegate qcCompositionPickerView  delegate =
-    sendMsg qcCompositionPickerView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setDelegate qcCompositionPickerView delegate =
+  sendMessage qcCompositionPickerView setDelegateSelector delegate
 
 -- | @- delegate@
 delegate :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO RawId
-delegate qcCompositionPickerView  =
-    fmap (RawId . castPtr) $ sendMsg qcCompositionPickerView (mkSelector "delegate") (retPtr retVoid) []
+delegate qcCompositionPickerView =
+  sendMessage qcCompositionPickerView delegateSelector
 
 -- | @- setShowsCompositionNames:@
 setShowsCompositionNames :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> Bool -> IO ()
-setShowsCompositionNames qcCompositionPickerView  flag =
-    sendMsg qcCompositionPickerView (mkSelector "setShowsCompositionNames:") retVoid [argCULong (if flag then 1 else 0)]
+setShowsCompositionNames qcCompositionPickerView flag =
+  sendMessage qcCompositionPickerView setShowsCompositionNamesSelector flag
 
 -- | @- showsCompositionNames@
 showsCompositionNames :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO Bool
-showsCompositionNames qcCompositionPickerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionPickerView (mkSelector "showsCompositionNames") retCULong []
+showsCompositionNames qcCompositionPickerView =
+  sendMessage qcCompositionPickerView showsCompositionNamesSelector
 
 -- | @- setAllowsEmptySelection:@
 setAllowsEmptySelection :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> Bool -> IO ()
-setAllowsEmptySelection qcCompositionPickerView  flag =
-    sendMsg qcCompositionPickerView (mkSelector "setAllowsEmptySelection:") retVoid [argCULong (if flag then 1 else 0)]
+setAllowsEmptySelection qcCompositionPickerView flag =
+  sendMessage qcCompositionPickerView setAllowsEmptySelectionSelector flag
 
 -- | @- allowsEmptySelection@
 allowsEmptySelection :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO Bool
-allowsEmptySelection qcCompositionPickerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionPickerView (mkSelector "allowsEmptySelection") retCULong []
+allowsEmptySelection qcCompositionPickerView =
+  sendMessage qcCompositionPickerView allowsEmptySelectionSelector
 
 -- | @- setCompositionAspectRatio:@
 setCompositionAspectRatio :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> NSSize -> IO ()
-setCompositionAspectRatio qcCompositionPickerView  ratio =
-    sendMsg qcCompositionPickerView (mkSelector "setCompositionAspectRatio:") retVoid [argNSSize ratio]
+setCompositionAspectRatio qcCompositionPickerView ratio =
+  sendMessage qcCompositionPickerView setCompositionAspectRatioSelector ratio
 
 -- | @- compositionAspectRatio@
 compositionAspectRatio :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO NSSize
-compositionAspectRatio qcCompositionPickerView  =
-    sendMsgStret qcCompositionPickerView (mkSelector "compositionAspectRatio") retNSSize []
+compositionAspectRatio qcCompositionPickerView =
+  sendMessage qcCompositionPickerView compositionAspectRatioSelector
 
 -- | @- setDefaultValue:forInputKey:@
 setDefaultValue_forInputKey :: (IsQCCompositionPickerView qcCompositionPickerView, IsNSString key) => qcCompositionPickerView -> RawId -> key -> IO ()
-setDefaultValue_forInputKey qcCompositionPickerView  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg qcCompositionPickerView (mkSelector "setDefaultValue:forInputKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setDefaultValue_forInputKey qcCompositionPickerView value key =
+  sendMessage qcCompositionPickerView setDefaultValue_forInputKeySelector value (toNSString key)
 
 -- | @- resetDefaultInputValues@
 resetDefaultInputValues :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO ()
-resetDefaultInputValues qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "resetDefaultInputValues") retVoid []
+resetDefaultInputValues qcCompositionPickerView =
+  sendMessage qcCompositionPickerView resetDefaultInputValuesSelector
 
 -- | @- setSelectedComposition:@
 setSelectedComposition :: (IsQCCompositionPickerView qcCompositionPickerView, IsQCComposition composition) => qcCompositionPickerView -> composition -> IO ()
-setSelectedComposition qcCompositionPickerView  composition =
-  withObjCPtr composition $ \raw_composition ->
-      sendMsg qcCompositionPickerView (mkSelector "setSelectedComposition:") retVoid [argPtr (castPtr raw_composition :: Ptr ())]
+setSelectedComposition qcCompositionPickerView composition =
+  sendMessage qcCompositionPickerView setSelectedCompositionSelector (toQCComposition composition)
 
 -- | @- selectedComposition@
 selectedComposition :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO (Id QCComposition)
-selectedComposition qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "selectedComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedComposition qcCompositionPickerView =
+  sendMessage qcCompositionPickerView selectedCompositionSelector
 
 -- | @- startAnimation:@
 startAnimation :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> RawId -> IO ()
-startAnimation qcCompositionPickerView  sender =
-    sendMsg qcCompositionPickerView (mkSelector "startAnimation:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+startAnimation qcCompositionPickerView sender =
+  sendMessage qcCompositionPickerView startAnimationSelector sender
 
 -- | @- stopAnimation:@
 stopAnimation :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> RawId -> IO ()
-stopAnimation qcCompositionPickerView  sender =
-    sendMsg qcCompositionPickerView (mkSelector "stopAnimation:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopAnimation qcCompositionPickerView sender =
+  sendMessage qcCompositionPickerView stopAnimationSelector sender
 
 -- | @- isAnimating@
 isAnimating :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO Bool
-isAnimating qcCompositionPickerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionPickerView (mkSelector "isAnimating") retCULong []
+isAnimating qcCompositionPickerView =
+  sendMessage qcCompositionPickerView isAnimatingSelector
 
 -- | @- setMaxAnimationFrameRate:@
 setMaxAnimationFrameRate :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> CFloat -> IO ()
-setMaxAnimationFrameRate qcCompositionPickerView  maxFPS =
-    sendMsg qcCompositionPickerView (mkSelector "setMaxAnimationFrameRate:") retVoid [argCFloat maxFPS]
+setMaxAnimationFrameRate qcCompositionPickerView maxFPS =
+  sendMessage qcCompositionPickerView setMaxAnimationFrameRateSelector maxFPS
 
 -- | @- maxAnimationFrameRate@
 maxAnimationFrameRate :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO CFloat
-maxAnimationFrameRate qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "maxAnimationFrameRate") retCFloat []
+maxAnimationFrameRate qcCompositionPickerView =
+  sendMessage qcCompositionPickerView maxAnimationFrameRateSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsQCCompositionPickerView qcCompositionPickerView, IsNSColor color) => qcCompositionPickerView -> color -> IO ()
-setBackgroundColor qcCompositionPickerView  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg qcCompositionPickerView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setBackgroundColor qcCompositionPickerView color =
+  sendMessage qcCompositionPickerView setBackgroundColorSelector (toNSColor color)
 
 -- | @- backgroundColor@
 backgroundColor :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO (Id NSColor)
-backgroundColor qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor qcCompositionPickerView =
+  sendMessage qcCompositionPickerView backgroundColorSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> Bool -> IO ()
-setDrawsBackground qcCompositionPickerView  flag =
-    sendMsg qcCompositionPickerView (mkSelector "setDrawsBackground:") retVoid [argCULong (if flag then 1 else 0)]
+setDrawsBackground qcCompositionPickerView flag =
+  sendMessage qcCompositionPickerView setDrawsBackgroundSelector flag
 
 -- | @- drawsBackground@
 drawsBackground :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO Bool
-drawsBackground qcCompositionPickerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionPickerView (mkSelector "drawsBackground") retCULong []
+drawsBackground qcCompositionPickerView =
+  sendMessage qcCompositionPickerView drawsBackgroundSelector
 
 -- | @- numberOfColumns@
 numberOfColumns :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO CULong
-numberOfColumns qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "numberOfColumns") retCULong []
+numberOfColumns qcCompositionPickerView =
+  sendMessage qcCompositionPickerView numberOfColumnsSelector
 
 -- | @- setNumberOfColumns:@
 setNumberOfColumns :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> CULong -> IO ()
-setNumberOfColumns qcCompositionPickerView  columns =
-    sendMsg qcCompositionPickerView (mkSelector "setNumberOfColumns:") retVoid [argCULong columns]
+setNumberOfColumns qcCompositionPickerView columns =
+  sendMessage qcCompositionPickerView setNumberOfColumnsSelector columns
 
 -- | @- numberOfRows@
 numberOfRows :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> IO CULong
-numberOfRows qcCompositionPickerView  =
-    sendMsg qcCompositionPickerView (mkSelector "numberOfRows") retCULong []
+numberOfRows qcCompositionPickerView =
+  sendMessage qcCompositionPickerView numberOfRowsSelector
 
 -- | @- setNumberOfRows:@
 setNumberOfRows :: IsQCCompositionPickerView qcCompositionPickerView => qcCompositionPickerView -> CULong -> IO ()
-setNumberOfRows qcCompositionPickerView  rows =
-    sendMsg qcCompositionPickerView (mkSelector "setNumberOfRows:") retVoid [argCULong rows]
+setNumberOfRows qcCompositionPickerView rows =
+  sendMessage qcCompositionPickerView setNumberOfRowsSelector rows
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setCompositionsFromRepositoryWithProtocol:andAttributes:@
-setCompositionsFromRepositoryWithProtocol_andAttributesSelector :: Selector
+setCompositionsFromRepositoryWithProtocol_andAttributesSelector :: Selector '[Id NSString, Id NSDictionary] ()
 setCompositionsFromRepositoryWithProtocol_andAttributesSelector = mkSelector "setCompositionsFromRepositoryWithProtocol:andAttributes:"
 
 -- | @Selector@ for @compositions@
-compositionsSelector :: Selector
+compositionsSelector :: Selector '[] (Id NSArray)
 compositionsSelector = mkSelector "compositions"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setShowsCompositionNames:@
-setShowsCompositionNamesSelector :: Selector
+setShowsCompositionNamesSelector :: Selector '[Bool] ()
 setShowsCompositionNamesSelector = mkSelector "setShowsCompositionNames:"
 
 -- | @Selector@ for @showsCompositionNames@
-showsCompositionNamesSelector :: Selector
+showsCompositionNamesSelector :: Selector '[] Bool
 showsCompositionNamesSelector = mkSelector "showsCompositionNames"
 
 -- | @Selector@ for @setAllowsEmptySelection:@
-setAllowsEmptySelectionSelector :: Selector
+setAllowsEmptySelectionSelector :: Selector '[Bool] ()
 setAllowsEmptySelectionSelector = mkSelector "setAllowsEmptySelection:"
 
 -- | @Selector@ for @allowsEmptySelection@
-allowsEmptySelectionSelector :: Selector
+allowsEmptySelectionSelector :: Selector '[] Bool
 allowsEmptySelectionSelector = mkSelector "allowsEmptySelection"
 
 -- | @Selector@ for @setCompositionAspectRatio:@
-setCompositionAspectRatioSelector :: Selector
+setCompositionAspectRatioSelector :: Selector '[NSSize] ()
 setCompositionAspectRatioSelector = mkSelector "setCompositionAspectRatio:"
 
 -- | @Selector@ for @compositionAspectRatio@
-compositionAspectRatioSelector :: Selector
+compositionAspectRatioSelector :: Selector '[] NSSize
 compositionAspectRatioSelector = mkSelector "compositionAspectRatio"
 
 -- | @Selector@ for @setDefaultValue:forInputKey:@
-setDefaultValue_forInputKeySelector :: Selector
+setDefaultValue_forInputKeySelector :: Selector '[RawId, Id NSString] ()
 setDefaultValue_forInputKeySelector = mkSelector "setDefaultValue:forInputKey:"
 
 -- | @Selector@ for @resetDefaultInputValues@
-resetDefaultInputValuesSelector :: Selector
+resetDefaultInputValuesSelector :: Selector '[] ()
 resetDefaultInputValuesSelector = mkSelector "resetDefaultInputValues"
 
 -- | @Selector@ for @setSelectedComposition:@
-setSelectedCompositionSelector :: Selector
+setSelectedCompositionSelector :: Selector '[Id QCComposition] ()
 setSelectedCompositionSelector = mkSelector "setSelectedComposition:"
 
 -- | @Selector@ for @selectedComposition@
-selectedCompositionSelector :: Selector
+selectedCompositionSelector :: Selector '[] (Id QCComposition)
 selectedCompositionSelector = mkSelector "selectedComposition"
 
 -- | @Selector@ for @startAnimation:@
-startAnimationSelector :: Selector
+startAnimationSelector :: Selector '[RawId] ()
 startAnimationSelector = mkSelector "startAnimation:"
 
 -- | @Selector@ for @stopAnimation:@
-stopAnimationSelector :: Selector
+stopAnimationSelector :: Selector '[RawId] ()
 stopAnimationSelector = mkSelector "stopAnimation:"
 
 -- | @Selector@ for @isAnimating@
-isAnimatingSelector :: Selector
+isAnimatingSelector :: Selector '[] Bool
 isAnimatingSelector = mkSelector "isAnimating"
 
 -- | @Selector@ for @setMaxAnimationFrameRate:@
-setMaxAnimationFrameRateSelector :: Selector
+setMaxAnimationFrameRateSelector :: Selector '[CFloat] ()
 setMaxAnimationFrameRateSelector = mkSelector "setMaxAnimationFrameRate:"
 
 -- | @Selector@ for @maxAnimationFrameRate@
-maxAnimationFrameRateSelector :: Selector
+maxAnimationFrameRateSelector :: Selector '[] CFloat
 maxAnimationFrameRateSelector = mkSelector "maxAnimationFrameRate"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CULong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @setNumberOfColumns:@
-setNumberOfColumnsSelector :: Selector
+setNumberOfColumnsSelector :: Selector '[CULong] ()
 setNumberOfColumnsSelector = mkSelector "setNumberOfColumns:"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CULong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @setNumberOfRows:@
-setNumberOfRowsSelector :: Selector
+setNumberOfRowsSelector :: Selector '[CULong] ()
 setNumberOfRowsSelector = mkSelector "setNumberOfRows:"
 

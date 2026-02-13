@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.AccessorySetupKit.ASAccessoryEvent
   , eventType
   , accessory
   , error_
-  , initSelector
-  , newSelector
-  , eventTypeSelector
   , accessorySelector
   , errorSelector
+  , eventTypeSelector
+  , initSelector
+  , newSelector
 
   -- * Enum types
   , ASAccessoryEventType(ASAccessoryEventType)
@@ -39,15 +40,11 @@ module ObjC.AccessorySetupKit.ASAccessoryEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,13 +54,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASAccessoryEvent asAccessoryEvent => asAccessoryEvent -> IO (Id ASAccessoryEvent)
-init_ asAccessoryEvent  =
-    sendMsg asAccessoryEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAccessoryEvent =
+  sendOwnedMessage asAccessoryEvent initSelector
 
 -- | @- new@
 new :: IsASAccessoryEvent asAccessoryEvent => asAccessoryEvent -> IO (Id ASAccessoryEvent)
-new asAccessoryEvent  =
-    sendMsg asAccessoryEvent (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new asAccessoryEvent =
+  sendOwnedMessage asAccessoryEvent newSelector
 
 -- | The type of event, such as accessory addition or removal, or picker presentation or removal.
 --
@@ -71,8 +68,8 @@ new asAccessoryEvent  =
 --
 -- ObjC selector: @- eventType@
 eventType :: IsASAccessoryEvent asAccessoryEvent => asAccessoryEvent -> IO ASAccessoryEventType
-eventType asAccessoryEvent  =
-    fmap (coerce :: CLong -> ASAccessoryEventType) $ sendMsg asAccessoryEvent (mkSelector "eventType") retCLong []
+eventType asAccessoryEvent =
+  sendMessage asAccessoryEvent eventTypeSelector
 
 -- | The accessory involved in the event, if any.
 --
@@ -80,37 +77,37 @@ eventType asAccessoryEvent  =
 --
 -- ObjC selector: @- accessory@
 accessory :: IsASAccessoryEvent asAccessoryEvent => asAccessoryEvent -> IO (Id ASAccessory)
-accessory asAccessoryEvent  =
-    sendMsg asAccessoryEvent (mkSelector "accessory") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessory asAccessoryEvent =
+  sendMessage asAccessoryEvent accessorySelector
 
 -- | The error associated with the event, if any.
 --
 -- ObjC selector: @- error@
 error_ :: IsASAccessoryEvent asAccessoryEvent => asAccessoryEvent -> IO (Id NSError)
-error_ asAccessoryEvent  =
-    sendMsg asAccessoryEvent (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ asAccessoryEvent =
+  sendMessage asAccessoryEvent errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAccessoryEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAccessoryEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @eventType@
-eventTypeSelector :: Selector
+eventTypeSelector :: Selector '[] ASAccessoryEventType
 eventTypeSelector = mkSelector "eventType"
 
 -- | @Selector@ for @accessory@
-accessorySelector :: Selector
+accessorySelector :: Selector '[] (Id ASAccessory)
 accessorySelector = mkSelector "accessory"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

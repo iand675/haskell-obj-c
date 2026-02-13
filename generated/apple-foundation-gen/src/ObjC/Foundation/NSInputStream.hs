@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Foundation.NSInputStream
   , inputStreamWithFileAtPath
   , inputStreamWithURL
   , hasBytesAvailable
-  , read_maxLengthSelector
   , getBuffer_lengthSelector
+  , hasBytesAvailableSelector
   , initWithDataSelector
-  , initWithURLSelector
   , initWithFileAtPathSelector
+  , initWithURLSelector
   , inputStreamWithDataSelector
   , inputStreamWithFileAtPathSelector
   , inputStreamWithURLSelector
-  , hasBytesAvailableSelector
+  , read_maxLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,98 +41,92 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- read:maxLength:@
 read_maxLength :: IsNSInputStream nsInputStream => nsInputStream -> Ptr CUChar -> CULong -> IO CLong
-read_maxLength nsInputStream  buffer len =
-    sendMsg nsInputStream (mkSelector "read:maxLength:") retCLong [argPtr buffer, argCULong len]
+read_maxLength nsInputStream buffer len =
+  sendMessage nsInputStream read_maxLengthSelector buffer len
 
 -- | @- getBuffer:length:@
 getBuffer_length :: IsNSInputStream nsInputStream => nsInputStream -> Ptr (Ptr CUChar) -> Ptr CULong -> IO Bool
-getBuffer_length nsInputStream  buffer len =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsInputStream (mkSelector "getBuffer:length:") retCULong [argPtr buffer, argPtr len]
+getBuffer_length nsInputStream buffer len =
+  sendMessage nsInputStream getBuffer_lengthSelector buffer len
 
 -- | @- initWithData:@
 initWithData :: (IsNSInputStream nsInputStream, IsNSData data_) => nsInputStream -> data_ -> IO (Id NSInputStream)
-initWithData nsInputStream  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsInputStream (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData nsInputStream data_ =
+  sendOwnedMessage nsInputStream initWithDataSelector (toNSData data_)
 
 -- | @- initWithURL:@
 initWithURL :: (IsNSInputStream nsInputStream, IsNSURL url) => nsInputStream -> url -> IO (Id NSInputStream)
-initWithURL nsInputStream  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsInputStream (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL nsInputStream url =
+  sendOwnedMessage nsInputStream initWithURLSelector (toNSURL url)
 
 -- | @- initWithFileAtPath:@
 initWithFileAtPath :: (IsNSInputStream nsInputStream, IsNSString path) => nsInputStream -> path -> IO (Id NSInputStream)
-initWithFileAtPath nsInputStream  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsInputStream (mkSelector "initWithFileAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithFileAtPath nsInputStream path =
+  sendOwnedMessage nsInputStream initWithFileAtPathSelector (toNSString path)
 
 -- | @+ inputStreamWithData:@
 inputStreamWithData :: IsNSData data_ => data_ -> IO (Id NSInputStream)
 inputStreamWithData data_ =
   do
     cls' <- getRequiredClass "NSInputStream"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "inputStreamWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inputStreamWithDataSelector (toNSData data_)
 
 -- | @+ inputStreamWithFileAtPath:@
 inputStreamWithFileAtPath :: IsNSString path => path -> IO (Id NSInputStream)
 inputStreamWithFileAtPath path =
   do
     cls' <- getRequiredClass "NSInputStream"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "inputStreamWithFileAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inputStreamWithFileAtPathSelector (toNSString path)
 
 -- | @+ inputStreamWithURL:@
 inputStreamWithURL :: IsNSURL url => url -> IO (Id NSInputStream)
 inputStreamWithURL url =
   do
     cls' <- getRequiredClass "NSInputStream"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "inputStreamWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inputStreamWithURLSelector (toNSURL url)
 
 -- | @- hasBytesAvailable@
 hasBytesAvailable :: IsNSInputStream nsInputStream => nsInputStream -> IO Bool
-hasBytesAvailable nsInputStream  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsInputStream (mkSelector "hasBytesAvailable") retCULong []
+hasBytesAvailable nsInputStream =
+  sendMessage nsInputStream hasBytesAvailableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @read:maxLength:@
-read_maxLengthSelector :: Selector
+read_maxLengthSelector :: Selector '[Ptr CUChar, CULong] CLong
 read_maxLengthSelector = mkSelector "read:maxLength:"
 
 -- | @Selector@ for @getBuffer:length:@
-getBuffer_lengthSelector :: Selector
+getBuffer_lengthSelector :: Selector '[Ptr (Ptr CUChar), Ptr CULong] Bool
 getBuffer_lengthSelector = mkSelector "getBuffer:length:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSInputStream)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id NSInputStream)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithFileAtPath:@
-initWithFileAtPathSelector :: Selector
+initWithFileAtPathSelector :: Selector '[Id NSString] (Id NSInputStream)
 initWithFileAtPathSelector = mkSelector "initWithFileAtPath:"
 
 -- | @Selector@ for @inputStreamWithData:@
-inputStreamWithDataSelector :: Selector
+inputStreamWithDataSelector :: Selector '[Id NSData] (Id NSInputStream)
 inputStreamWithDataSelector = mkSelector "inputStreamWithData:"
 
 -- | @Selector@ for @inputStreamWithFileAtPath:@
-inputStreamWithFileAtPathSelector :: Selector
+inputStreamWithFileAtPathSelector :: Selector '[Id NSString] (Id NSInputStream)
 inputStreamWithFileAtPathSelector = mkSelector "inputStreamWithFileAtPath:"
 
 -- | @Selector@ for @inputStreamWithURL:@
-inputStreamWithURLSelector :: Selector
+inputStreamWithURLSelector :: Selector '[Id NSURL] (Id NSInputStream)
 inputStreamWithURLSelector = mkSelector "inputStreamWithURL:"
 
 -- | @Selector@ for @hasBytesAvailable@
-hasBytesAvailableSelector :: Selector
+hasBytesAvailableSelector :: Selector '[] Bool
 hasBytesAvailableSelector = mkSelector "hasBytesAvailable"
 

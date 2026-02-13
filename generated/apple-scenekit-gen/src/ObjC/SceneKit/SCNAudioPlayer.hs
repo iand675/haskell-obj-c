@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.SceneKit.SCNAudioPlayer
   , setDidFinishPlayback
   , audioNode
   , audioSource
-  , initSelector
-  , initWithSourceSelector
-  , initWithAVAudioNodeSelector
-  , audioPlayerWithSourceSelector
-  , audioPlayerWithAVAudioNodeSelector
-  , willStartPlaybackSelector
-  , setWillStartPlaybackSelector
-  , didFinishPlaybackSelector
-  , setDidFinishPlaybackSelector
   , audioNodeSelector
+  , audioPlayerWithAVAudioNodeSelector
+  , audioPlayerWithSourceSelector
   , audioSourceSelector
+  , didFinishPlaybackSelector
+  , initSelector
+  , initWithAVAudioNodeSelector
+  , initWithSourceSelector
+  , setDidFinishPlaybackSelector
+  , setWillStartPlaybackSelector
+  , willStartPlaybackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> IO (Id SCNAudioPlayer)
-init_ scnAudioPlayer  =
-    sendMsg scnAudioPlayer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scnAudioPlayer =
+  sendOwnedMessage scnAudioPlayer initSelector
 
 -- | initWithSource:
 --
@@ -59,9 +56,8 @@ init_ scnAudioPlayer  =
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsSCNAudioPlayer scnAudioPlayer, IsSCNAudioSource source) => scnAudioPlayer -> source -> IO (Id SCNAudioPlayer)
-initWithSource scnAudioPlayer  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg scnAudioPlayer (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= ownedObject . castPtr
+initWithSource scnAudioPlayer source =
+  sendOwnedMessage scnAudioPlayer initWithSourceSelector (toSCNAudioSource source)
 
 -- | initWithAVAudioNode:
 --
@@ -69,9 +65,8 @@ initWithSource scnAudioPlayer  source =
 --
 -- ObjC selector: @- initWithAVAudioNode:@
 initWithAVAudioNode :: (IsSCNAudioPlayer scnAudioPlayer, IsAVAudioNode audioNode) => scnAudioPlayer -> audioNode -> IO (Id SCNAudioPlayer)
-initWithAVAudioNode scnAudioPlayer  audioNode =
-  withObjCPtr audioNode $ \raw_audioNode ->
-      sendMsg scnAudioPlayer (mkSelector "initWithAVAudioNode:") (retPtr retVoid) [argPtr (castPtr raw_audioNode :: Ptr ())] >>= ownedObject . castPtr
+initWithAVAudioNode scnAudioPlayer audioNode =
+  sendOwnedMessage scnAudioPlayer initWithAVAudioNodeSelector (toAVAudioNode audioNode)
 
 -- | audioPlayerWithSource:
 --
@@ -82,8 +77,7 @@ audioPlayerWithSource :: IsSCNAudioSource source => source -> IO (Id SCNAudioPla
 audioPlayerWithSource source =
   do
     cls' <- getRequiredClass "SCNAudioPlayer"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "audioPlayerWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' audioPlayerWithSourceSelector (toSCNAudioSource source)
 
 -- | audioPlayerWithAVAudioNode:
 --
@@ -94,8 +88,7 @@ audioPlayerWithAVAudioNode :: IsAVAudioNode audioNode => audioNode -> IO (Id SCN
 audioPlayerWithAVAudioNode audioNode =
   do
     cls' <- getRequiredClass "SCNAudioPlayer"
-    withObjCPtr audioNode $ \raw_audioNode ->
-      sendClassMsg cls' (mkSelector "audioPlayerWithAVAudioNode:") (retPtr retVoid) [argPtr (castPtr raw_audioNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' audioPlayerWithAVAudioNodeSelector (toAVAudioNode audioNode)
 
 -- | playbackStarted
 --
@@ -103,8 +96,8 @@ audioPlayerWithAVAudioNode audioNode =
 --
 -- ObjC selector: @- willStartPlayback@
 willStartPlayback :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> IO (Ptr ())
-willStartPlayback scnAudioPlayer  =
-    fmap castPtr $ sendMsg scnAudioPlayer (mkSelector "willStartPlayback") (retPtr retVoid) []
+willStartPlayback scnAudioPlayer =
+  sendMessage scnAudioPlayer willStartPlaybackSelector
 
 -- | playbackStarted
 --
@@ -112,8 +105,8 @@ willStartPlayback scnAudioPlayer  =
 --
 -- ObjC selector: @- setWillStartPlayback:@
 setWillStartPlayback :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> Ptr () -> IO ()
-setWillStartPlayback scnAudioPlayer  value =
-    sendMsg scnAudioPlayer (mkSelector "setWillStartPlayback:") retVoid [argPtr (castPtr value :: Ptr ())]
+setWillStartPlayback scnAudioPlayer value =
+  sendMessage scnAudioPlayer setWillStartPlaybackSelector value
 
 -- | playbackFinished
 --
@@ -121,8 +114,8 @@ setWillStartPlayback scnAudioPlayer  value =
 --
 -- ObjC selector: @- didFinishPlayback@
 didFinishPlayback :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> IO (Ptr ())
-didFinishPlayback scnAudioPlayer  =
-    fmap castPtr $ sendMsg scnAudioPlayer (mkSelector "didFinishPlayback") (retPtr retVoid) []
+didFinishPlayback scnAudioPlayer =
+  sendMessage scnAudioPlayer didFinishPlaybackSelector
 
 -- | playbackFinished
 --
@@ -130,8 +123,8 @@ didFinishPlayback scnAudioPlayer  =
 --
 -- ObjC selector: @- setDidFinishPlayback:@
 setDidFinishPlayback :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> Ptr () -> IO ()
-setDidFinishPlayback scnAudioPlayer  value =
-    sendMsg scnAudioPlayer (mkSelector "setDidFinishPlayback:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDidFinishPlayback scnAudioPlayer value =
+  sendMessage scnAudioPlayer setDidFinishPlaybackSelector value
 
 -- | audioNode
 --
@@ -139,8 +132,8 @@ setDidFinishPlayback scnAudioPlayer  value =
 --
 -- ObjC selector: @- audioNode@
 audioNode :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> IO (Id AVAudioNode)
-audioNode scnAudioPlayer  =
-    sendMsg scnAudioPlayer (mkSelector "audioNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioNode scnAudioPlayer =
+  sendMessage scnAudioPlayer audioNodeSelector
 
 -- | audioSource
 --
@@ -148,54 +141,54 @@ audioNode scnAudioPlayer  =
 --
 -- ObjC selector: @- audioSource@
 audioSource :: IsSCNAudioPlayer scnAudioPlayer => scnAudioPlayer -> IO (Id SCNAudioSource)
-audioSource scnAudioPlayer  =
-    sendMsg scnAudioPlayer (mkSelector "audioSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSource scnAudioPlayer =
+  sendMessage scnAudioPlayer audioSourceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCNAudioPlayer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id SCNAudioSource] (Id SCNAudioPlayer)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @initWithAVAudioNode:@
-initWithAVAudioNodeSelector :: Selector
+initWithAVAudioNodeSelector :: Selector '[Id AVAudioNode] (Id SCNAudioPlayer)
 initWithAVAudioNodeSelector = mkSelector "initWithAVAudioNode:"
 
 -- | @Selector@ for @audioPlayerWithSource:@
-audioPlayerWithSourceSelector :: Selector
+audioPlayerWithSourceSelector :: Selector '[Id SCNAudioSource] (Id SCNAudioPlayer)
 audioPlayerWithSourceSelector = mkSelector "audioPlayerWithSource:"
 
 -- | @Selector@ for @audioPlayerWithAVAudioNode:@
-audioPlayerWithAVAudioNodeSelector :: Selector
+audioPlayerWithAVAudioNodeSelector :: Selector '[Id AVAudioNode] (Id SCNAudioPlayer)
 audioPlayerWithAVAudioNodeSelector = mkSelector "audioPlayerWithAVAudioNode:"
 
 -- | @Selector@ for @willStartPlayback@
-willStartPlaybackSelector :: Selector
+willStartPlaybackSelector :: Selector '[] (Ptr ())
 willStartPlaybackSelector = mkSelector "willStartPlayback"
 
 -- | @Selector@ for @setWillStartPlayback:@
-setWillStartPlaybackSelector :: Selector
+setWillStartPlaybackSelector :: Selector '[Ptr ()] ()
 setWillStartPlaybackSelector = mkSelector "setWillStartPlayback:"
 
 -- | @Selector@ for @didFinishPlayback@
-didFinishPlaybackSelector :: Selector
+didFinishPlaybackSelector :: Selector '[] (Ptr ())
 didFinishPlaybackSelector = mkSelector "didFinishPlayback"
 
 -- | @Selector@ for @setDidFinishPlayback:@
-setDidFinishPlaybackSelector :: Selector
+setDidFinishPlaybackSelector :: Selector '[Ptr ()] ()
 setDidFinishPlaybackSelector = mkSelector "setDidFinishPlayback:"
 
 -- | @Selector@ for @audioNode@
-audioNodeSelector :: Selector
+audioNodeSelector :: Selector '[] (Id AVAudioNode)
 audioNodeSelector = mkSelector "audioNode"
 
 -- | @Selector@ for @audioSource@
-audioSourceSelector :: Selector
+audioSourceSelector :: Selector '[] (Id SCNAudioSource)
 audioSourceSelector = mkSelector "audioSource"
 

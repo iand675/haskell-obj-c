@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Virtualization.VZLinuxRosettaAbstractSocketCachingOptions
   , name
   , maximumNameLength
   , initWithName_errorSelector
-  , nameSelector
   , maximumNameLengthSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,10 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:error:@
 initWithName_error :: (IsVZLinuxRosettaAbstractSocketCachingOptions vzLinuxRosettaAbstractSocketCachingOptions, IsNSString name, IsNSError error_) => vzLinuxRosettaAbstractSocketCachingOptions -> name -> error_ -> IO (Id VZLinuxRosettaAbstractSocketCachingOptions)
-initWithName_error vzLinuxRosettaAbstractSocketCachingOptions  name error_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzLinuxRosettaAbstractSocketCachingOptions (mkSelector "initWithName:error:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithName_error vzLinuxRosettaAbstractSocketCachingOptions name error_ =
+  sendOwnedMessage vzLinuxRosettaAbstractSocketCachingOptions initWithName_errorSelector (toNSString name) (toNSError error_)
 
 -- | Name set by initWithName.
 --
@@ -58,8 +53,8 @@ initWithName_error vzLinuxRosettaAbstractSocketCachingOptions  name error_ =
 --
 -- ObjC selector: @- name@
 name :: IsVZLinuxRosettaAbstractSocketCachingOptions vzLinuxRosettaAbstractSocketCachingOptions => vzLinuxRosettaAbstractSocketCachingOptions -> IO (Id NSString)
-name vzLinuxRosettaAbstractSocketCachingOptions  =
-    sendMsg vzLinuxRosettaAbstractSocketCachingOptions (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name vzLinuxRosettaAbstractSocketCachingOptions =
+  sendMessage vzLinuxRosettaAbstractSocketCachingOptions nameSelector
 
 -- | The maximum allowed length of name, as defined by the sockaddr_un structure in Linux.
 --
@@ -68,21 +63,21 @@ maximumNameLength :: IO CULong
 maximumNameLength  =
   do
     cls' <- getRequiredClass "VZLinuxRosettaAbstractSocketCachingOptions"
-    sendClassMsg cls' (mkSelector "maximumNameLength") retCULong []
+    sendClassMessage cls' maximumNameLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:error:@
-initWithName_errorSelector :: Selector
+initWithName_errorSelector :: Selector '[Id NSString, Id NSError] (Id VZLinuxRosettaAbstractSocketCachingOptions)
 initWithName_errorSelector = mkSelector "initWithName:error:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @maximumNameLength@
-maximumNameLengthSelector :: Selector
+maximumNameLengthSelector :: Selector '[] CULong
 maximumNameLengthSelector = mkSelector "maximumNameLength"
 

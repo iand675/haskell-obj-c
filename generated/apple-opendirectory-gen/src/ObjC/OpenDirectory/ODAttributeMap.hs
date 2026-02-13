@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.OpenDirectory.ODAttributeMap
   , setCustomAttributes
   , value
   , setValue
-  , attributeMapWithValueSelector
   , attributeMapWithStaticValueSelector
-  , setStaticValueSelector
-  , setVariableSubstitutionSelector
-  , customQueryFunctionSelector
-  , setCustomQueryFunctionSelector
-  , customTranslationFunctionSelector
-  , setCustomTranslationFunctionSelector
+  , attributeMapWithValueSelector
   , customAttributesSelector
+  , customQueryFunctionSelector
+  , customTranslationFunctionSelector
   , setCustomAttributesSelector
-  , valueSelector
+  , setCustomQueryFunctionSelector
+  , setCustomTranslationFunctionSelector
+  , setStaticValueSelector
   , setValueSelector
+  , setVariableSubstitutionSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,7 @@ attributeMapWithValue :: IsNSString value => value -> IO (Id ODAttributeMap)
 attributeMapWithValue value =
   do
     cls' <- getRequiredClass "ODAttributeMap"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "attributeMapWithValue:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attributeMapWithValueSelector (toNSString value)
 
 -- | attributeMapWithStaticValue:
 --
@@ -74,8 +70,7 @@ attributeMapWithStaticValue :: IsNSString staticValue => staticValue -> IO (Id O
 attributeMapWithStaticValue staticValue =
   do
     cls' <- getRequiredClass "ODAttributeMap"
-    withObjCPtr staticValue $ \raw_staticValue ->
-      sendClassMsg cls' (mkSelector "attributeMapWithStaticValue:") (retPtr retVoid) [argPtr (castPtr raw_staticValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attributeMapWithStaticValueSelector (toNSString staticValue)
 
 -- | setStaticValue:
 --
@@ -85,9 +80,8 @@ attributeMapWithStaticValue staticValue =
 --
 -- ObjC selector: @- setStaticValue:@
 setStaticValue :: (IsODAttributeMap odAttributeMap, IsNSString staticValue) => odAttributeMap -> staticValue -> IO ()
-setStaticValue odAttributeMap  staticValue =
-  withObjCPtr staticValue $ \raw_staticValue ->
-      sendMsg odAttributeMap (mkSelector "setStaticValue:") retVoid [argPtr (castPtr raw_staticValue :: Ptr ())]
+setStaticValue odAttributeMap staticValue =
+  sendMessage odAttributeMap setStaticValueSelector (toNSString staticValue)
 
 -- | setVariableSubstitution:
 --
@@ -97,103 +91,98 @@ setStaticValue odAttributeMap  staticValue =
 --
 -- ObjC selector: @- setVariableSubstitution:@
 setVariableSubstitution :: (IsODAttributeMap odAttributeMap, IsNSString variableSubstitution) => odAttributeMap -> variableSubstitution -> IO ()
-setVariableSubstitution odAttributeMap  variableSubstitution =
-  withObjCPtr variableSubstitution $ \raw_variableSubstitution ->
-      sendMsg odAttributeMap (mkSelector "setVariableSubstitution:") retVoid [argPtr (castPtr raw_variableSubstitution :: Ptr ())]
+setVariableSubstitution odAttributeMap variableSubstitution =
+  sendMessage odAttributeMap setVariableSubstitutionSelector (toNSString variableSubstitution)
 
 -- | @- customQueryFunction@
 customQueryFunction :: IsODAttributeMap odAttributeMap => odAttributeMap -> IO (Id NSString)
-customQueryFunction odAttributeMap  =
-    sendMsg odAttributeMap (mkSelector "customQueryFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+customQueryFunction odAttributeMap =
+  sendMessage odAttributeMap customQueryFunctionSelector
 
 -- | @- setCustomQueryFunction:@
 setCustomQueryFunction :: (IsODAttributeMap odAttributeMap, IsNSString value) => odAttributeMap -> value -> IO ()
-setCustomQueryFunction odAttributeMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odAttributeMap (mkSelector "setCustomQueryFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomQueryFunction odAttributeMap value =
+  sendMessage odAttributeMap setCustomQueryFunctionSelector (toNSString value)
 
 -- | @- customTranslationFunction@
 customTranslationFunction :: IsODAttributeMap odAttributeMap => odAttributeMap -> IO (Id NSString)
-customTranslationFunction odAttributeMap  =
-    sendMsg odAttributeMap (mkSelector "customTranslationFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+customTranslationFunction odAttributeMap =
+  sendMessage odAttributeMap customTranslationFunctionSelector
 
 -- | @- setCustomTranslationFunction:@
 setCustomTranslationFunction :: (IsODAttributeMap odAttributeMap, IsNSString value) => odAttributeMap -> value -> IO ()
-setCustomTranslationFunction odAttributeMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odAttributeMap (mkSelector "setCustomTranslationFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomTranslationFunction odAttributeMap value =
+  sendMessage odAttributeMap setCustomTranslationFunctionSelector (toNSString value)
 
 -- | @- customAttributes@
 customAttributes :: IsODAttributeMap odAttributeMap => odAttributeMap -> IO (Id NSArray)
-customAttributes odAttributeMap  =
-    sendMsg odAttributeMap (mkSelector "customAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+customAttributes odAttributeMap =
+  sendMessage odAttributeMap customAttributesSelector
 
 -- | @- setCustomAttributes:@
 setCustomAttributes :: (IsODAttributeMap odAttributeMap, IsNSArray value) => odAttributeMap -> value -> IO ()
-setCustomAttributes odAttributeMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odAttributeMap (mkSelector "setCustomAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomAttributes odAttributeMap value =
+  sendMessage odAttributeMap setCustomAttributesSelector (toNSArray value)
 
 -- | @- value@
 value :: IsODAttributeMap odAttributeMap => odAttributeMap -> IO (Id NSString)
-value odAttributeMap  =
-    sendMsg odAttributeMap (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value odAttributeMap =
+  sendMessage odAttributeMap valueSelector
 
 -- | @- setValue:@
 setValue :: (IsODAttributeMap odAttributeMap, IsNSString value) => odAttributeMap -> value -> IO ()
-setValue odAttributeMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odAttributeMap (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue odAttributeMap value =
+  sendMessage odAttributeMap setValueSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributeMapWithValue:@
-attributeMapWithValueSelector :: Selector
+attributeMapWithValueSelector :: Selector '[Id NSString] (Id ODAttributeMap)
 attributeMapWithValueSelector = mkSelector "attributeMapWithValue:"
 
 -- | @Selector@ for @attributeMapWithStaticValue:@
-attributeMapWithStaticValueSelector :: Selector
+attributeMapWithStaticValueSelector :: Selector '[Id NSString] (Id ODAttributeMap)
 attributeMapWithStaticValueSelector = mkSelector "attributeMapWithStaticValue:"
 
 -- | @Selector@ for @setStaticValue:@
-setStaticValueSelector :: Selector
+setStaticValueSelector :: Selector '[Id NSString] ()
 setStaticValueSelector = mkSelector "setStaticValue:"
 
 -- | @Selector@ for @setVariableSubstitution:@
-setVariableSubstitutionSelector :: Selector
+setVariableSubstitutionSelector :: Selector '[Id NSString] ()
 setVariableSubstitutionSelector = mkSelector "setVariableSubstitution:"
 
 -- | @Selector@ for @customQueryFunction@
-customQueryFunctionSelector :: Selector
+customQueryFunctionSelector :: Selector '[] (Id NSString)
 customQueryFunctionSelector = mkSelector "customQueryFunction"
 
 -- | @Selector@ for @setCustomQueryFunction:@
-setCustomQueryFunctionSelector :: Selector
+setCustomQueryFunctionSelector :: Selector '[Id NSString] ()
 setCustomQueryFunctionSelector = mkSelector "setCustomQueryFunction:"
 
 -- | @Selector@ for @customTranslationFunction@
-customTranslationFunctionSelector :: Selector
+customTranslationFunctionSelector :: Selector '[] (Id NSString)
 customTranslationFunctionSelector = mkSelector "customTranslationFunction"
 
 -- | @Selector@ for @setCustomTranslationFunction:@
-setCustomTranslationFunctionSelector :: Selector
+setCustomTranslationFunctionSelector :: Selector '[Id NSString] ()
 setCustomTranslationFunctionSelector = mkSelector "setCustomTranslationFunction:"
 
 -- | @Selector@ for @customAttributes@
-customAttributesSelector :: Selector
+customAttributesSelector :: Selector '[] (Id NSArray)
 customAttributesSelector = mkSelector "customAttributes"
 
 -- | @Selector@ for @setCustomAttributes:@
-setCustomAttributesSelector :: Selector
+setCustomAttributesSelector :: Selector '[Id NSArray] ()
 setCustomAttributesSelector = mkSelector "setCustomAttributes:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.GameController.GCSteeringWheelElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGCSteeringWheelElement gcSteeringWheelElement => gcSteeringWheelElement -> IO (Id GCSteeringWheelElement)
-init_ gcSteeringWheelElement  =
-    sendMsg gcSteeringWheelElement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gcSteeringWheelElement =
+  sendOwnedMessage gcSteeringWheelElement initSelector
 
 -- | @- maximumDegreesOfRotation@
 maximumDegreesOfRotation :: IsGCSteeringWheelElement gcSteeringWheelElement => gcSteeringWheelElement -> IO CFloat
-maximumDegreesOfRotation gcSteeringWheelElement  =
-    sendMsg gcSteeringWheelElement (mkSelector "maximumDegreesOfRotation") retCFloat []
+maximumDegreesOfRotation gcSteeringWheelElement =
+  sendMessage gcSteeringWheelElement maximumDegreesOfRotationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GCSteeringWheelElement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @maximumDegreesOfRotation@
-maximumDegreesOfRotationSelector :: Selector
+maximumDegreesOfRotationSelector :: Selector '[] CFloat
 maximumDegreesOfRotationSelector = mkSelector "maximumDegreesOfRotation"
 

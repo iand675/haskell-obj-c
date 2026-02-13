@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRAccessControlClusterAccessControlEntryStruct
   , setTargets
   , fabricIndex
   , setFabricIndex
-  , privilegeSelector
-  , setPrivilegeSelector
   , authModeSelector
-  , setAuthModeSelector
-  , subjectsSelector
-  , setSubjectsSelector
-  , targetsSelector
-  , setTargetsSelector
   , fabricIndexSelector
+  , privilegeSelector
+  , setAuthModeSelector
   , setFabricIndexSelector
+  , setPrivilegeSelector
+  , setSubjectsSelector
+  , setTargetsSelector
+  , subjectsSelector
+  , targetsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- privilege@
 privilege :: IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct => mtrAccessControlClusterAccessControlEntryStruct -> IO (Id NSNumber)
-privilege mtrAccessControlClusterAccessControlEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "privilege") (retPtr retVoid) [] >>= retainedObject . castPtr
+privilege mtrAccessControlClusterAccessControlEntryStruct =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct privilegeSelector
 
 -- | @- setPrivilege:@
 setPrivilege :: (IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessControlEntryStruct -> value -> IO ()
-setPrivilege mtrAccessControlClusterAccessControlEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "setPrivilege:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrivilege mtrAccessControlClusterAccessControlEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct setPrivilegeSelector (toNSNumber value)
 
 -- | @- authMode@
 authMode :: IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct => mtrAccessControlClusterAccessControlEntryStruct -> IO (Id NSNumber)
-authMode mtrAccessControlClusterAccessControlEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "authMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+authMode mtrAccessControlClusterAccessControlEntryStruct =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct authModeSelector
 
 -- | @- setAuthMode:@
 setAuthMode :: (IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessControlEntryStruct -> value -> IO ()
-setAuthMode mtrAccessControlClusterAccessControlEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "setAuthMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthMode mtrAccessControlClusterAccessControlEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct setAuthModeSelector (toNSNumber value)
 
 -- | @- subjects@
 subjects :: IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct => mtrAccessControlClusterAccessControlEntryStruct -> IO (Id NSArray)
-subjects mtrAccessControlClusterAccessControlEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "subjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+subjects mtrAccessControlClusterAccessControlEntryStruct =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct subjectsSelector
 
 -- | @- setSubjects:@
 setSubjects :: (IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct, IsNSArray value) => mtrAccessControlClusterAccessControlEntryStruct -> value -> IO ()
-setSubjects mtrAccessControlClusterAccessControlEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "setSubjects:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubjects mtrAccessControlClusterAccessControlEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct setSubjectsSelector (toNSArray value)
 
 -- | @- targets@
 targets :: IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct => mtrAccessControlClusterAccessControlEntryStruct -> IO (Id NSArray)
-targets mtrAccessControlClusterAccessControlEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "targets") (retPtr retVoid) [] >>= retainedObject . castPtr
+targets mtrAccessControlClusterAccessControlEntryStruct =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct targetsSelector
 
 -- | @- setTargets:@
 setTargets :: (IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct, IsNSArray value) => mtrAccessControlClusterAccessControlEntryStruct -> value -> IO ()
-setTargets mtrAccessControlClusterAccessControlEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "setTargets:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargets mtrAccessControlClusterAccessControlEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct setTargetsSelector (toNSArray value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct => mtrAccessControlClusterAccessControlEntryStruct -> IO (Id NSNumber)
-fabricIndex mtrAccessControlClusterAccessControlEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrAccessControlClusterAccessControlEntryStruct =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRAccessControlClusterAccessControlEntryStruct mtrAccessControlClusterAccessControlEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessControlEntryStruct -> value -> IO ()
-setFabricIndex mtrAccessControlClusterAccessControlEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlEntryStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrAccessControlClusterAccessControlEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessControlEntryStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @privilege@
-privilegeSelector :: Selector
+privilegeSelector :: Selector '[] (Id NSNumber)
 privilegeSelector = mkSelector "privilege"
 
 -- | @Selector@ for @setPrivilege:@
-setPrivilegeSelector :: Selector
+setPrivilegeSelector :: Selector '[Id NSNumber] ()
 setPrivilegeSelector = mkSelector "setPrivilege:"
 
 -- | @Selector@ for @authMode@
-authModeSelector :: Selector
+authModeSelector :: Selector '[] (Id NSNumber)
 authModeSelector = mkSelector "authMode"
 
 -- | @Selector@ for @setAuthMode:@
-setAuthModeSelector :: Selector
+setAuthModeSelector :: Selector '[Id NSNumber] ()
 setAuthModeSelector = mkSelector "setAuthMode:"
 
 -- | @Selector@ for @subjects@
-subjectsSelector :: Selector
+subjectsSelector :: Selector '[] (Id NSArray)
 subjectsSelector = mkSelector "subjects"
 
 -- | @Selector@ for @setSubjects:@
-setSubjectsSelector :: Selector
+setSubjectsSelector :: Selector '[Id NSArray] ()
 setSubjectsSelector = mkSelector "setSubjects:"
 
 -- | @Selector@ for @targets@
-targetsSelector :: Selector
+targetsSelector :: Selector '[] (Id NSArray)
 targetsSelector = mkSelector "targets"
 
 -- | @Selector@ for @setTargets:@
-setTargetsSelector :: Selector
+setTargetsSelector :: Selector '[Id NSArray] ()
 setTargetsSelector = mkSelector "setTargets:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

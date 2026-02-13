@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AVFoundation.AVMovieTrack
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,8 +28,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- alternateGroupID@
 alternateGroupID :: IsAVMovieTrack avMovieTrack => avMovieTrack -> IO CLong
-alternateGroupID avMovieTrack  =
-    sendMsg avMovieTrack (mkSelector "alternateGroupID") retCLong []
+alternateGroupID avMovieTrack =
+  sendMessage avMovieTrack alternateGroupIDSelector
 
 -- | mediaDataStorage
 --
@@ -42,18 +39,18 @@ alternateGroupID avMovieTrack  =
 --
 -- ObjC selector: @- mediaDataStorage@
 mediaDataStorage :: IsAVMovieTrack avMovieTrack => avMovieTrack -> IO (Id AVMediaDataStorage)
-mediaDataStorage avMovieTrack  =
-    sendMsg avMovieTrack (mkSelector "mediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaDataStorage avMovieTrack =
+  sendMessage avMovieTrack mediaDataStorageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alternateGroupID@
-alternateGroupIDSelector :: Selector
+alternateGroupIDSelector :: Selector '[] CLong
 alternateGroupIDSelector = mkSelector "alternateGroupID"
 
 -- | @Selector@ for @mediaDataStorage@
-mediaDataStorageSelector :: Selector
+mediaDataStorageSelector :: Selector '[] (Id AVMediaDataStorage)
 mediaDataStorageSelector = mkSelector "mediaDataStorage"
 

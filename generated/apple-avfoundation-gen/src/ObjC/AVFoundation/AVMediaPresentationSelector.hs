@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVMediaPresentationSelector
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,37 +36,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- displayNameForLocaleIdentifier:@
 displayNameForLocaleIdentifier :: (IsAVMediaPresentationSelector avMediaPresentationSelector, IsNSString localeIdentifier) => avMediaPresentationSelector -> localeIdentifier -> IO (Id NSString)
-displayNameForLocaleIdentifier avMediaPresentationSelector  localeIdentifier =
-  withObjCPtr localeIdentifier $ \raw_localeIdentifier ->
-      sendMsg avMediaPresentationSelector (mkSelector "displayNameForLocaleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_localeIdentifier :: Ptr ())] >>= retainedObject . castPtr
+displayNameForLocaleIdentifier avMediaPresentationSelector localeIdentifier =
+  sendMessage avMediaPresentationSelector displayNameForLocaleIdentifierSelector (toNSString localeIdentifier)
 
 -- | Provides the authored identifier for the selector.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVMediaPresentationSelector avMediaPresentationSelector => avMediaPresentationSelector -> IO (Id NSString)
-identifier avMediaPresentationSelector  =
-    sendMsg avMediaPresentationSelector (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avMediaPresentationSelector =
+  sendMessage avMediaPresentationSelector identifierSelector
 
 -- | Provides selectable mutually exclusive settings for the selector.
 --
 -- ObjC selector: @- settings@
 settings :: IsAVMediaPresentationSelector avMediaPresentationSelector => avMediaPresentationSelector -> IO (Id NSArray)
-settings avMediaPresentationSelector  =
-    sendMsg avMediaPresentationSelector (mkSelector "settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+settings avMediaPresentationSelector =
+  sendMessage avMediaPresentationSelector settingsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayNameForLocaleIdentifier:@
-displayNameForLocaleIdentifierSelector :: Selector
+displayNameForLocaleIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 displayNameForLocaleIdentifierSelector = mkSelector "displayNameForLocaleIdentifier:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @settings@
-settingsSelector :: Selector
+settingsSelector :: Selector '[] (Id NSArray)
 settingsSelector = mkSelector "settings"
 

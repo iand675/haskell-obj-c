@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRControllerFactoryParams
   , setPaaCerts
   , cdCerts
   , setCdCerts
-  , storageDelegateSelector
-  , startServerSelector
-  , setStartServerSelector
-  , paaCertsSelector
-  , setPaaCertsSelector
   , cdCertsSelector
+  , paaCertsSelector
   , setCdCertsSelector
+  , setPaaCertsSelector
+  , setStartServerSelector
+  , startServerSelector
+  , storageDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,70 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- storageDelegate@
 storageDelegate :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO RawId
-storageDelegate mtrControllerFactoryParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrControllerFactoryParams (mkSelector "storageDelegate") (retPtr retVoid) []
+storageDelegate mtrControllerFactoryParams =
+  sendMessage mtrControllerFactoryParams storageDelegateSelector
 
 -- | @- startServer@
 startServer :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO Bool
-startServer mtrControllerFactoryParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrControllerFactoryParams (mkSelector "startServer") retCULong []
+startServer mtrControllerFactoryParams =
+  sendMessage mtrControllerFactoryParams startServerSelector
 
 -- | @- setStartServer:@
 setStartServer :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> Bool -> IO ()
-setStartServer mtrControllerFactoryParams  value =
-    sendMsg mtrControllerFactoryParams (mkSelector "setStartServer:") retVoid [argCULong (if value then 1 else 0)]
+setStartServer mtrControllerFactoryParams value =
+  sendMessage mtrControllerFactoryParams setStartServerSelector value
 
 -- | @- paaCerts@
 paaCerts :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO (Id NSArray)
-paaCerts mtrControllerFactoryParams  =
-    sendMsg mtrControllerFactoryParams (mkSelector "paaCerts") (retPtr retVoid) [] >>= retainedObject . castPtr
+paaCerts mtrControllerFactoryParams =
+  sendMessage mtrControllerFactoryParams paaCertsSelector
 
 -- | @- setPaaCerts:@
 setPaaCerts :: (IsMTRControllerFactoryParams mtrControllerFactoryParams, IsNSArray value) => mtrControllerFactoryParams -> value -> IO ()
-setPaaCerts mtrControllerFactoryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrControllerFactoryParams (mkSelector "setPaaCerts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaaCerts mtrControllerFactoryParams value =
+  sendMessage mtrControllerFactoryParams setPaaCertsSelector (toNSArray value)
 
 -- | @- cdCerts@
 cdCerts :: IsMTRControllerFactoryParams mtrControllerFactoryParams => mtrControllerFactoryParams -> IO (Id NSArray)
-cdCerts mtrControllerFactoryParams  =
-    sendMsg mtrControllerFactoryParams (mkSelector "cdCerts") (retPtr retVoid) [] >>= retainedObject . castPtr
+cdCerts mtrControllerFactoryParams =
+  sendMessage mtrControllerFactoryParams cdCertsSelector
 
 -- | @- setCdCerts:@
 setCdCerts :: (IsMTRControllerFactoryParams mtrControllerFactoryParams, IsNSArray value) => mtrControllerFactoryParams -> value -> IO ()
-setCdCerts mtrControllerFactoryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrControllerFactoryParams (mkSelector "setCdCerts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCdCerts mtrControllerFactoryParams value =
+  sendMessage mtrControllerFactoryParams setCdCertsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @storageDelegate@
-storageDelegateSelector :: Selector
+storageDelegateSelector :: Selector '[] RawId
 storageDelegateSelector = mkSelector "storageDelegate"
 
 -- | @Selector@ for @startServer@
-startServerSelector :: Selector
+startServerSelector :: Selector '[] Bool
 startServerSelector = mkSelector "startServer"
 
 -- | @Selector@ for @setStartServer:@
-setStartServerSelector :: Selector
+setStartServerSelector :: Selector '[Bool] ()
 setStartServerSelector = mkSelector "setStartServer:"
 
 -- | @Selector@ for @paaCerts@
-paaCertsSelector :: Selector
+paaCertsSelector :: Selector '[] (Id NSArray)
 paaCertsSelector = mkSelector "paaCerts"
 
 -- | @Selector@ for @setPaaCerts:@
-setPaaCertsSelector :: Selector
+setPaaCertsSelector :: Selector '[Id NSArray] ()
 setPaaCertsSelector = mkSelector "setPaaCerts:"
 
 -- | @Selector@ for @cdCerts@
-cdCertsSelector :: Selector
+cdCertsSelector :: Selector '[] (Id NSArray)
 cdCertsSelector = mkSelector "cdCerts"
 
 -- | @Selector@ for @setCdCerts:@
-setCdCertsSelector :: Selector
+setCdCertsSelector :: Selector '[Id NSArray] ()
 setCdCertsSelector = mkSelector "setCdCerts:"
 

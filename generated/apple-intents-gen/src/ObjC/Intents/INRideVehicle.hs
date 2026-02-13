@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Intents.INRideVehicle
   , setModel
   , mapAnnotationImage
   , setMapAnnotationImage
-  , registrationPlateSelector
-  , setRegistrationPlateSelector
   , manufacturerSelector
-  , setManufacturerSelector
-  , modelSelector
-  , setModelSelector
   , mapAnnotationImageSelector
+  , modelSelector
+  , registrationPlateSelector
+  , setManufacturerSelector
   , setMapAnnotationImageSelector
+  , setModelSelector
+  , setRegistrationPlateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- registrationPlate@
 registrationPlate :: IsINRideVehicle inRideVehicle => inRideVehicle -> IO (Id NSString)
-registrationPlate inRideVehicle  =
-    sendMsg inRideVehicle (mkSelector "registrationPlate") (retPtr retVoid) [] >>= retainedObject . castPtr
+registrationPlate inRideVehicle =
+  sendMessage inRideVehicle registrationPlateSelector
 
 -- | @- setRegistrationPlate:@
 setRegistrationPlate :: (IsINRideVehicle inRideVehicle, IsNSString value) => inRideVehicle -> value -> IO ()
-setRegistrationPlate inRideVehicle  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideVehicle (mkSelector "setRegistrationPlate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRegistrationPlate inRideVehicle value =
+  sendMessage inRideVehicle setRegistrationPlateSelector (toNSString value)
 
 -- | @- manufacturer@
 manufacturer :: IsINRideVehicle inRideVehicle => inRideVehicle -> IO (Id NSString)
-manufacturer inRideVehicle  =
-    sendMsg inRideVehicle (mkSelector "manufacturer") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturer inRideVehicle =
+  sendMessage inRideVehicle manufacturerSelector
 
 -- | @- setManufacturer:@
 setManufacturer :: (IsINRideVehicle inRideVehicle, IsNSString value) => inRideVehicle -> value -> IO ()
-setManufacturer inRideVehicle  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideVehicle (mkSelector "setManufacturer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManufacturer inRideVehicle value =
+  sendMessage inRideVehicle setManufacturerSelector (toNSString value)
 
 -- | @- model@
 model :: IsINRideVehicle inRideVehicle => inRideVehicle -> IO (Id NSString)
-model inRideVehicle  =
-    sendMsg inRideVehicle (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model inRideVehicle =
+  sendMessage inRideVehicle modelSelector
 
 -- | @- setModel:@
 setModel :: (IsINRideVehicle inRideVehicle, IsNSString value) => inRideVehicle -> value -> IO ()
-setModel inRideVehicle  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideVehicle (mkSelector "setModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModel inRideVehicle value =
+  sendMessage inRideVehicle setModelSelector (toNSString value)
 
 -- | @- mapAnnotationImage@
 mapAnnotationImage :: IsINRideVehicle inRideVehicle => inRideVehicle -> IO (Id INImage)
-mapAnnotationImage inRideVehicle  =
-    sendMsg inRideVehicle (mkSelector "mapAnnotationImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapAnnotationImage inRideVehicle =
+  sendMessage inRideVehicle mapAnnotationImageSelector
 
 -- | @- setMapAnnotationImage:@
 setMapAnnotationImage :: (IsINRideVehicle inRideVehicle, IsINImage value) => inRideVehicle -> value -> IO ()
-setMapAnnotationImage inRideVehicle  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideVehicle (mkSelector "setMapAnnotationImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMapAnnotationImage inRideVehicle value =
+  sendMessage inRideVehicle setMapAnnotationImageSelector (toINImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registrationPlate@
-registrationPlateSelector :: Selector
+registrationPlateSelector :: Selector '[] (Id NSString)
 registrationPlateSelector = mkSelector "registrationPlate"
 
 -- | @Selector@ for @setRegistrationPlate:@
-setRegistrationPlateSelector :: Selector
+setRegistrationPlateSelector :: Selector '[Id NSString] ()
 setRegistrationPlateSelector = mkSelector "setRegistrationPlate:"
 
 -- | @Selector@ for @manufacturer@
-manufacturerSelector :: Selector
+manufacturerSelector :: Selector '[] (Id NSString)
 manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @setManufacturer:@
-setManufacturerSelector :: Selector
+setManufacturerSelector :: Selector '[Id NSString] ()
 setManufacturerSelector = mkSelector "setManufacturer:"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id NSString)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @setModel:@
-setModelSelector :: Selector
+setModelSelector :: Selector '[Id NSString] ()
 setModelSelector = mkSelector "setModel:"
 
 -- | @Selector@ for @mapAnnotationImage@
-mapAnnotationImageSelector :: Selector
+mapAnnotationImageSelector :: Selector '[] (Id INImage)
 mapAnnotationImageSelector = mkSelector "mapAnnotationImage"
 
 -- | @Selector@ for @setMapAnnotationImage:@
-setMapAnnotationImageSelector :: Selector
+setMapAnnotationImageSelector :: Selector '[Id INImage] ()
 setMapAnnotationImageSelector = mkSelector "setMapAnnotationImage:"
 

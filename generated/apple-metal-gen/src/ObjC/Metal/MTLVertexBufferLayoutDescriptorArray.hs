@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Metal.MTLVertexBufferLayoutDescriptorArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMTLVertexBufferLayoutDescriptorArray mtlVertexBufferLayoutDescriptorArray => mtlVertexBufferLayoutDescriptorArray -> CULong -> IO (Id MTLVertexBufferLayoutDescriptor)
-objectAtIndexedSubscript mtlVertexBufferLayoutDescriptorArray  index =
-    sendMsg mtlVertexBufferLayoutDescriptorArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+objectAtIndexedSubscript mtlVertexBufferLayoutDescriptorArray index =
+  sendMessage mtlVertexBufferLayoutDescriptorArray objectAtIndexedSubscriptSelector index
 
 -- | @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsMTLVertexBufferLayoutDescriptorArray mtlVertexBufferLayoutDescriptorArray, IsMTLVertexBufferLayoutDescriptor bufferDesc) => mtlVertexBufferLayoutDescriptorArray -> bufferDesc -> CULong -> IO ()
-setObject_atIndexedSubscript mtlVertexBufferLayoutDescriptorArray  bufferDesc index =
-  withObjCPtr bufferDesc $ \raw_bufferDesc ->
-      sendMsg mtlVertexBufferLayoutDescriptorArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_bufferDesc :: Ptr ()), argCULong index]
+setObject_atIndexedSubscript mtlVertexBufferLayoutDescriptorArray bufferDesc index =
+  sendMessage mtlVertexBufferLayoutDescriptorArray setObject_atIndexedSubscriptSelector (toMTLVertexBufferLayoutDescriptor bufferDesc) index
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MTLVertexBufferLayoutDescriptor)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id MTLVertexBufferLayoutDescriptor, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 

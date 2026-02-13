@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.BackgroundAssets.BADownloadManager
   , sharedManager
   , delegate
   , setDelegate
+  , cancelDownload_errorSelector
+  , delegateSelector
+  , fetchCurrentDownloadsSelector
   , initSelector
   , newSelector
-  , fetchCurrentDownloadsSelector
-  , scheduleDownload_errorSelector
-  , performWithExclusiveControlSelector
   , performWithExclusiveControlBeforeDate_performHandlerSelector
-  , startForegroundDownload_errorSelector
-  , cancelDownload_errorSelector
-  , sharedManagerSelector
-  , delegateSelector
+  , performWithExclusiveControlSelector
+  , scheduleDownload_errorSelector
   , setDelegateSelector
+  , sharedManagerSelector
+  , startForegroundDownload_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBADownloadManager baDownloadManager => baDownloadManager -> IO (Id BADownloadManager)
-init_ baDownloadManager  =
-    sendMsg baDownloadManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ baDownloadManager =
+  sendOwnedMessage baDownloadManager initSelector
 
 -- | @+ new@
 new :: IO (Id BADownloadManager)
 new  =
   do
     cls' <- getRequiredClass "BADownloadManager"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Fetches current downloads.
 --
@@ -73,9 +70,8 @@ new  =
 --
 -- ObjC selector: @- fetchCurrentDownloads:@
 fetchCurrentDownloads :: (IsBADownloadManager baDownloadManager, IsNSError error_) => baDownloadManager -> error_ -> IO (Id NSArray)
-fetchCurrentDownloads baDownloadManager  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg baDownloadManager (mkSelector "fetchCurrentDownloads:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+fetchCurrentDownloads baDownloadManager error_ =
+  sendMessage baDownloadManager fetchCurrentDownloadsSelector (toNSError error_)
 
 -- | Schedules a background download.
 --
@@ -89,10 +85,8 @@ fetchCurrentDownloads baDownloadManager  error_ =
 --
 -- ObjC selector: @- scheduleDownload:error:@
 scheduleDownload_error :: (IsBADownloadManager baDownloadManager, IsBADownload download, IsNSError error_) => baDownloadManager -> download -> error_ -> IO Bool
-scheduleDownload_error baDownloadManager  download error_ =
-  withObjCPtr download $ \raw_download ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg baDownloadManager (mkSelector "scheduleDownload:error:") retCULong [argPtr (castPtr raw_download :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+scheduleDownload_error baDownloadManager download error_ =
+  sendMessage baDownloadManager scheduleDownload_errorSelector (toBADownload download) (toNSError error_)
 
 -- | Acquires exclusive access to the BADownloadManager across the app and application extension.
 --
@@ -102,8 +96,8 @@ scheduleDownload_error baDownloadManager  download error_ =
 --
 -- ObjC selector: @- performWithExclusiveControl:@
 performWithExclusiveControl :: IsBADownloadManager baDownloadManager => baDownloadManager -> Ptr () -> IO ()
-performWithExclusiveControl baDownloadManager  performHandler =
-    sendMsg baDownloadManager (mkSelector "performWithExclusiveControl:") retVoid [argPtr (castPtr performHandler :: Ptr ())]
+performWithExclusiveControl baDownloadManager performHandler =
+  sendMessage baDownloadManager performWithExclusiveControlSelector performHandler
 
 -- | Acquires exclusive access to the BADownloadManager across the app and application extension.
 --
@@ -115,9 +109,8 @@ performWithExclusiveControl baDownloadManager  performHandler =
 --
 -- ObjC selector: @- performWithExclusiveControlBeforeDate:performHandler:@
 performWithExclusiveControlBeforeDate_performHandler :: (IsBADownloadManager baDownloadManager, IsNSDate date) => baDownloadManager -> date -> Ptr () -> IO ()
-performWithExclusiveControlBeforeDate_performHandler baDownloadManager  date performHandler =
-  withObjCPtr date $ \raw_date ->
-      sendMsg baDownloadManager (mkSelector "performWithExclusiveControlBeforeDate:performHandler:") retVoid [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr performHandler :: Ptr ())]
+performWithExclusiveControlBeforeDate_performHandler baDownloadManager date performHandler =
+  sendMessage baDownloadManager performWithExclusiveControlBeforeDate_performHandlerSelector (toNSDate date) performHandler
 
 -- | Attempts to schedule a BADownload in foreground mode.
 --
@@ -125,10 +118,8 @@ performWithExclusiveControlBeforeDate_performHandler baDownloadManager  date per
 --
 -- ObjC selector: @- startForegroundDownload:error:@
 startForegroundDownload_error :: (IsBADownloadManager baDownloadManager, IsBADownload download, IsNSError error_) => baDownloadManager -> download -> error_ -> IO Bool
-startForegroundDownload_error baDownloadManager  download error_ =
-  withObjCPtr download $ \raw_download ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg baDownloadManager (mkSelector "startForegroundDownload:error:") retCULong [argPtr (castPtr raw_download :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startForegroundDownload_error baDownloadManager download error_ =
+  sendMessage baDownloadManager startForegroundDownload_errorSelector (toBADownload download) (toNSError error_)
 
 -- | Cancels a download.
 --
@@ -138,10 +129,8 @@ startForegroundDownload_error baDownloadManager  download error_ =
 --
 -- ObjC selector: @- cancelDownload:error:@
 cancelDownload_error :: (IsBADownloadManager baDownloadManager, IsBADownload download, IsNSError error_) => baDownloadManager -> download -> error_ -> IO Bool
-cancelDownload_error baDownloadManager  download error_ =
-  withObjCPtr download $ \raw_download ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg baDownloadManager (mkSelector "cancelDownload:error:") retCULong [argPtr (castPtr raw_download :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+cancelDownload_error baDownloadManager download error_ =
+  sendMessage baDownloadManager cancelDownload_errorSelector (toBADownload download) (toNSError error_)
 
 -- | Gets the singleton downloader object.
 --
@@ -150,67 +139,67 @@ sharedManager :: IO (Id BADownloadManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "BADownloadManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | A object confroming to BADownloadManagerDelegate to get notified when actions occur.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsBADownloadManager baDownloadManager => baDownloadManager -> IO RawId
-delegate baDownloadManager  =
-    fmap (RawId . castPtr) $ sendMsg baDownloadManager (mkSelector "delegate") (retPtr retVoid) []
+delegate baDownloadManager =
+  sendMessage baDownloadManager delegateSelector
 
 -- | A object confroming to BADownloadManagerDelegate to get notified when actions occur.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsBADownloadManager baDownloadManager => baDownloadManager -> RawId -> IO ()
-setDelegate baDownloadManager  value =
-    sendMsg baDownloadManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate baDownloadManager value =
+  sendMessage baDownloadManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BADownloadManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BADownloadManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fetchCurrentDownloads:@
-fetchCurrentDownloadsSelector :: Selector
+fetchCurrentDownloadsSelector :: Selector '[Id NSError] (Id NSArray)
 fetchCurrentDownloadsSelector = mkSelector "fetchCurrentDownloads:"
 
 -- | @Selector@ for @scheduleDownload:error:@
-scheduleDownload_errorSelector :: Selector
+scheduleDownload_errorSelector :: Selector '[Id BADownload, Id NSError] Bool
 scheduleDownload_errorSelector = mkSelector "scheduleDownload:error:"
 
 -- | @Selector@ for @performWithExclusiveControl:@
-performWithExclusiveControlSelector :: Selector
+performWithExclusiveControlSelector :: Selector '[Ptr ()] ()
 performWithExclusiveControlSelector = mkSelector "performWithExclusiveControl:"
 
 -- | @Selector@ for @performWithExclusiveControlBeforeDate:performHandler:@
-performWithExclusiveControlBeforeDate_performHandlerSelector :: Selector
+performWithExclusiveControlBeforeDate_performHandlerSelector :: Selector '[Id NSDate, Ptr ()] ()
 performWithExclusiveControlBeforeDate_performHandlerSelector = mkSelector "performWithExclusiveControlBeforeDate:performHandler:"
 
 -- | @Selector@ for @startForegroundDownload:error:@
-startForegroundDownload_errorSelector :: Selector
+startForegroundDownload_errorSelector :: Selector '[Id BADownload, Id NSError] Bool
 startForegroundDownload_errorSelector = mkSelector "startForegroundDownload:error:"
 
 -- | @Selector@ for @cancelDownload:error:@
-cancelDownload_errorSelector :: Selector
+cancelDownload_errorSelector :: Selector '[Id BADownload, Id NSError] Bool
 cancelDownload_errorSelector = mkSelector "cancelDownload:error:"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id BADownloadManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

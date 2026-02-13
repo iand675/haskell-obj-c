@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,13 +16,13 @@ module ObjC.Intents.INSetTaskAttributeIntent
   , priority
   , spatialEventTrigger
   , temporalEventTrigger
-  , initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector
   , initWithTargetTask_status_spatialEventTrigger_temporalEventTriggerSelector
-  , targetTaskSelector
-  , taskTitleSelector
-  , statusSelector
+  , initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector
   , prioritySelector
   , spatialEventTriggerSelector
+  , statusSelector
+  , targetTaskSelector
+  , taskTitleSelector
   , temporalEventTriggerSelector
 
   -- * Enum types
@@ -36,15 +37,11 @@ module ObjC.Intents.INSetTaskAttributeIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,84 +51,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTargetTask:taskTitle:status:priority:spatialEventTrigger:temporalEventTrigger:@
 initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTrigger :: (IsINSetTaskAttributeIntent inSetTaskAttributeIntent, IsINTask targetTask, IsINSpeakableString taskTitle, IsINSpatialEventTrigger spatialEventTrigger, IsINTemporalEventTrigger temporalEventTrigger) => inSetTaskAttributeIntent -> targetTask -> taskTitle -> INTaskStatus -> INTaskPriority -> spatialEventTrigger -> temporalEventTrigger -> IO (Id INSetTaskAttributeIntent)
-initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTrigger inSetTaskAttributeIntent  targetTask taskTitle status priority spatialEventTrigger temporalEventTrigger =
-  withObjCPtr targetTask $ \raw_targetTask ->
-    withObjCPtr taskTitle $ \raw_taskTitle ->
-      withObjCPtr spatialEventTrigger $ \raw_spatialEventTrigger ->
-        withObjCPtr temporalEventTrigger $ \raw_temporalEventTrigger ->
-            sendMsg inSetTaskAttributeIntent (mkSelector "initWithTargetTask:taskTitle:status:priority:spatialEventTrigger:temporalEventTrigger:") (retPtr retVoid) [argPtr (castPtr raw_targetTask :: Ptr ()), argPtr (castPtr raw_taskTitle :: Ptr ()), argCLong (coerce status), argCLong (coerce priority), argPtr (castPtr raw_spatialEventTrigger :: Ptr ()), argPtr (castPtr raw_temporalEventTrigger :: Ptr ())] >>= ownedObject . castPtr
+initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTrigger inSetTaskAttributeIntent targetTask taskTitle status priority spatialEventTrigger temporalEventTrigger =
+  sendOwnedMessage inSetTaskAttributeIntent initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector (toINTask targetTask) (toINSpeakableString taskTitle) status priority (toINSpatialEventTrigger spatialEventTrigger) (toINTemporalEventTrigger temporalEventTrigger)
 
 -- | @- initWithTargetTask:status:spatialEventTrigger:temporalEventTrigger:@
 initWithTargetTask_status_spatialEventTrigger_temporalEventTrigger :: (IsINSetTaskAttributeIntent inSetTaskAttributeIntent, IsINTask targetTask, IsINSpatialEventTrigger spatialEventTrigger, IsINTemporalEventTrigger temporalEventTrigger) => inSetTaskAttributeIntent -> targetTask -> INTaskStatus -> spatialEventTrigger -> temporalEventTrigger -> IO (Id INSetTaskAttributeIntent)
-initWithTargetTask_status_spatialEventTrigger_temporalEventTrigger inSetTaskAttributeIntent  targetTask status spatialEventTrigger temporalEventTrigger =
-  withObjCPtr targetTask $ \raw_targetTask ->
-    withObjCPtr spatialEventTrigger $ \raw_spatialEventTrigger ->
-      withObjCPtr temporalEventTrigger $ \raw_temporalEventTrigger ->
-          sendMsg inSetTaskAttributeIntent (mkSelector "initWithTargetTask:status:spatialEventTrigger:temporalEventTrigger:") (retPtr retVoid) [argPtr (castPtr raw_targetTask :: Ptr ()), argCLong (coerce status), argPtr (castPtr raw_spatialEventTrigger :: Ptr ()), argPtr (castPtr raw_temporalEventTrigger :: Ptr ())] >>= ownedObject . castPtr
+initWithTargetTask_status_spatialEventTrigger_temporalEventTrigger inSetTaskAttributeIntent targetTask status spatialEventTrigger temporalEventTrigger =
+  sendOwnedMessage inSetTaskAttributeIntent initWithTargetTask_status_spatialEventTrigger_temporalEventTriggerSelector (toINTask targetTask) status (toINSpatialEventTrigger spatialEventTrigger) (toINTemporalEventTrigger temporalEventTrigger)
 
 -- | @- targetTask@
 targetTask :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO (Id INTask)
-targetTask inSetTaskAttributeIntent  =
-    sendMsg inSetTaskAttributeIntent (mkSelector "targetTask") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTask inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent targetTaskSelector
 
 -- | @- taskTitle@
 taskTitle :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO (Id INSpeakableString)
-taskTitle inSetTaskAttributeIntent  =
-    sendMsg inSetTaskAttributeIntent (mkSelector "taskTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskTitle inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent taskTitleSelector
 
 -- | @- status@
 status :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO INTaskStatus
-status inSetTaskAttributeIntent  =
-    fmap (coerce :: CLong -> INTaskStatus) $ sendMsg inSetTaskAttributeIntent (mkSelector "status") retCLong []
+status inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent statusSelector
 
 -- | @- priority@
 priority :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO INTaskPriority
-priority inSetTaskAttributeIntent  =
-    fmap (coerce :: CLong -> INTaskPriority) $ sendMsg inSetTaskAttributeIntent (mkSelector "priority") retCLong []
+priority inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent prioritySelector
 
 -- | @- spatialEventTrigger@
 spatialEventTrigger :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO (Id INSpatialEventTrigger)
-spatialEventTrigger inSetTaskAttributeIntent  =
-    sendMsg inSetTaskAttributeIntent (mkSelector "spatialEventTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialEventTrigger inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent spatialEventTriggerSelector
 
 -- | @- temporalEventTrigger@
 temporalEventTrigger :: IsINSetTaskAttributeIntent inSetTaskAttributeIntent => inSetTaskAttributeIntent -> IO (Id INTemporalEventTrigger)
-temporalEventTrigger inSetTaskAttributeIntent  =
-    sendMsg inSetTaskAttributeIntent (mkSelector "temporalEventTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+temporalEventTrigger inSetTaskAttributeIntent =
+  sendMessage inSetTaskAttributeIntent temporalEventTriggerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTargetTask:taskTitle:status:priority:spatialEventTrigger:temporalEventTrigger:@
-initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector :: Selector
+initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector :: Selector '[Id INTask, Id INSpeakableString, INTaskStatus, INTaskPriority, Id INSpatialEventTrigger, Id INTemporalEventTrigger] (Id INSetTaskAttributeIntent)
 initWithTargetTask_taskTitle_status_priority_spatialEventTrigger_temporalEventTriggerSelector = mkSelector "initWithTargetTask:taskTitle:status:priority:spatialEventTrigger:temporalEventTrigger:"
 
 -- | @Selector@ for @initWithTargetTask:status:spatialEventTrigger:temporalEventTrigger:@
-initWithTargetTask_status_spatialEventTrigger_temporalEventTriggerSelector :: Selector
+initWithTargetTask_status_spatialEventTrigger_temporalEventTriggerSelector :: Selector '[Id INTask, INTaskStatus, Id INSpatialEventTrigger, Id INTemporalEventTrigger] (Id INSetTaskAttributeIntent)
 initWithTargetTask_status_spatialEventTrigger_temporalEventTriggerSelector = mkSelector "initWithTargetTask:status:spatialEventTrigger:temporalEventTrigger:"
 
 -- | @Selector@ for @targetTask@
-targetTaskSelector :: Selector
+targetTaskSelector :: Selector '[] (Id INTask)
 targetTaskSelector = mkSelector "targetTask"
 
 -- | @Selector@ for @taskTitle@
-taskTitleSelector :: Selector
+taskTitleSelector :: Selector '[] (Id INSpeakableString)
 taskTitleSelector = mkSelector "taskTitle"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] INTaskStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] INTaskPriority
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @spatialEventTrigger@
-spatialEventTriggerSelector :: Selector
+spatialEventTriggerSelector :: Selector '[] (Id INSpatialEventTrigger)
 spatialEventTriggerSelector = mkSelector "spatialEventTrigger"
 
 -- | @Selector@ for @temporalEventTrigger@
-temporalEventTriggerSelector :: Selector
+temporalEventTriggerSelector :: Selector '[] (Id INTemporalEventTrigger)
 temporalEventTriggerSelector = mkSelector "temporalEventTrigger"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphImToColOpDescriptor
   , setPaddingBottom
   , dataLayout
   , setDataLayout
-  , descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector
-  , descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector
-  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector
-  , kernelWidthSelector
-  , setKernelWidthSelector
-  , kernelHeightSelector
-  , setKernelHeightSelector
-  , strideInXSelector
-  , setStrideInXSelector
-  , strideInYSelector
-  , setStrideInYSelector
-  , dilationRateInXSelector
-  , setDilationRateInXSelector
-  , dilationRateInYSelector
-  , setDilationRateInYSelector
-  , paddingLeftSelector
-  , setPaddingLeftSelector
-  , paddingRightSelector
-  , setPaddingRightSelector
-  , paddingTopSelector
-  , setPaddingTopSelector
-  , paddingBottomSelector
-  , setPaddingBottomSelector
   , dataLayoutSelector
+  , descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector
+  , descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector
+  , dilationRateInXSelector
+  , dilationRateInYSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
+  , paddingBottomSelector
+  , paddingLeftSelector
+  , paddingRightSelector
+  , paddingTopSelector
   , setDataLayoutSelector
+  , setDilationRateInXSelector
+  , setDilationRateInYSelector
+  , setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector
+  , setKernelHeightSelector
+  , setKernelWidthSelector
+  , setPaddingBottomSelector
+  , setPaddingLeftSelector
+  , setPaddingRightSelector
+  , setPaddingTopSelector
+  , setStrideInXSelector
+  , setStrideInYSelector
+  , strideInXSelector
+  , strideInYSelector
 
   -- * Enum types
   , MPSGraphTensorNamedDataLayout(MPSGraphTensorNamedDataLayout)
@@ -78,15 +79,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphImToColOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,7 +98,7 @@ descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilat
 descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayout kernelWidth kernelHeight strideInX strideInY dilationRateInX dilationRateInY paddingLeft paddingRight paddingTop paddingBottom dataLayout =
   do
     cls' <- getRequiredClass "MPSGraphImToColOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:dataLayout:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong strideInX, argCULong strideInY, argCULong dilationRateInX, argCULong dilationRateInY, argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom, argCULong (coerce dataLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector kernelWidth kernelHeight strideInX strideInY dilationRateInX dilationRateInY paddingLeft paddingRight paddingTop paddingBottom dataLayout
 
 -- | Creates column to image descriptor with given values for parameters. - Parameters:   - kernelWidth: See @kernelWidth@ property.   - kernelHeight: See @kernelHeight@ property.   - strideInX: See @strideInX@ property.   - strideInY: See @strideInY@ property.   - dilationRateInX: See @dilationRateInX@ property.   - dilationRateInY: See @dilationRateInY@ property.   - dataLayout: See @dataLayout@ property. - Returns: A valid MPSGraphImToColOpDescriptor on autoreleasepool.
 --
@@ -110,270 +107,270 @@ descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilat
 descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayout kernelWidth kernelHeight strideInX strideInY dilationRateInX dilationRateInY dataLayout =
   do
     cls' <- getRequiredClass "MPSGraphImToColOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:dataLayout:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong strideInX, argCULong strideInY, argCULong dilationRateInX, argCULong dilationRateInY, argCULong (coerce dataLayout)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector kernelWidth kernelHeight strideInX strideInY dilationRateInX dilationRateInY dataLayout
 
 -- | Sets the descriptor's padding to the given values. - Parameters:   - paddingLeft: See @paddingLeft@ property.   - paddingRight: See @paddingRight@ property.   - paddingTop: See @paddingTop@ property.   - paddingBottom: See @paddingBottom@ property.
 --
 -- ObjC selector: @- setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:@
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> CULong -> CULong -> CULong -> IO ()
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom mpsGraphImToColOpDescriptor  paddingLeft paddingRight paddingTop paddingBottom =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:") retVoid [argCULong paddingLeft, argCULong paddingRight, argCULong paddingTop, argCULong paddingBottom]
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottom mpsGraphImToColOpDescriptor paddingLeft paddingRight paddingTop paddingBottom =
+  sendMessage mpsGraphImToColOpDescriptor setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector paddingLeft paddingRight paddingTop paddingBottom
 
 -- | The property that defines the kernel size in width dimension.
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-kernelWidth mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "kernelWidth") retCULong []
+kernelWidth mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor kernelWidthSelector
 
 -- | The property that defines the kernel size in width dimension.
 --
 -- ObjC selector: @- setKernelWidth:@
 setKernelWidth :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setKernelWidth mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setKernelWidth:") retVoid [argCULong value]
+setKernelWidth mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setKernelWidthSelector value
 
 -- | The property that defines the kernel size  in height dimension.
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-kernelHeight mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "kernelHeight") retCULong []
+kernelHeight mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor kernelHeightSelector
 
 -- | The property that defines the kernel size  in height dimension.
 --
 -- ObjC selector: @- setKernelHeight:@
 setKernelHeight :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setKernelHeight mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setKernelHeight:") retVoid [argCULong value]
+setKernelHeight mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setKernelHeightSelector value
 
 -- | The property that defines the stride in width dimension.
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-strideInX mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "strideInX") retCULong []
+strideInX mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor strideInXSelector
 
 -- | The property that defines the stride in width dimension.
 --
 -- ObjC selector: @- setStrideInX:@
 setStrideInX :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setStrideInX mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setStrideInX:") retVoid [argCULong value]
+setStrideInX mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setStrideInXSelector value
 
 -- | The property that defines the stride in height dimension.
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-strideInY mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "strideInY") retCULong []
+strideInY mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor strideInYSelector
 
 -- | The property that defines the stride in height dimension.
 --
 -- ObjC selector: @- setStrideInY:@
 setStrideInY :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setStrideInY mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setStrideInY:") retVoid [argCULong value]
+setStrideInY mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setStrideInYSelector value
 
 -- | The property that defines the dilation in width dimension.
 --
 -- ObjC selector: @- dilationRateInX@
 dilationRateInX :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-dilationRateInX mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "dilationRateInX") retCULong []
+dilationRateInX mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor dilationRateInXSelector
 
 -- | The property that defines the dilation in width dimension.
 --
 -- ObjC selector: @- setDilationRateInX:@
 setDilationRateInX :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setDilationRateInX mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setDilationRateInX:") retVoid [argCULong value]
+setDilationRateInX mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setDilationRateInXSelector value
 
 -- | The property that defines the dilation in height dimension.
 --
 -- ObjC selector: @- dilationRateInY@
 dilationRateInY :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-dilationRateInY mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "dilationRateInY") retCULong []
+dilationRateInY mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor dilationRateInYSelector
 
 -- | The property that defines the dilation in height dimension.
 --
 -- ObjC selector: @- setDilationRateInY:@
 setDilationRateInY :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setDilationRateInY mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setDilationRateInY:") retVoid [argCULong value]
+setDilationRateInY mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setDilationRateInYSelector value
 
 -- | The property that defines the padding in width dimension on the left side.
 --
 -- ObjC selector: @- paddingLeft@
 paddingLeft :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-paddingLeft mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "paddingLeft") retCULong []
+paddingLeft mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor paddingLeftSelector
 
 -- | The property that defines the padding in width dimension on the left side.
 --
 -- ObjC selector: @- setPaddingLeft:@
 setPaddingLeft :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setPaddingLeft mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setPaddingLeft:") retVoid [argCULong value]
+setPaddingLeft mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setPaddingLeftSelector value
 
 -- | The property that defines the padding in width dimension on the right side.
 --
 -- ObjC selector: @- paddingRight@
 paddingRight :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-paddingRight mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "paddingRight") retCULong []
+paddingRight mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor paddingRightSelector
 
 -- | The property that defines the padding in width dimension on the right side.
 --
 -- ObjC selector: @- setPaddingRight:@
 setPaddingRight :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setPaddingRight mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setPaddingRight:") retVoid [argCULong value]
+setPaddingRight mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setPaddingRightSelector value
 
 -- | The property that defines the padding in height dimension at the top.
 --
 -- ObjC selector: @- paddingTop@
 paddingTop :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-paddingTop mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "paddingTop") retCULong []
+paddingTop mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor paddingTopSelector
 
 -- | The property that defines the padding in height dimension at the top.
 --
 -- ObjC selector: @- setPaddingTop:@
 setPaddingTop :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setPaddingTop mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setPaddingTop:") retVoid [argCULong value]
+setPaddingTop mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setPaddingTopSelector value
 
 -- | The property that defines the padding in height dimension at the bottom.
 --
 -- ObjC selector: @- paddingBottom@
 paddingBottom :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO CULong
-paddingBottom mpsGraphImToColOpDescriptor  =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "paddingBottom") retCULong []
+paddingBottom mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor paddingBottomSelector
 
 -- | The property that defines the padding in height dimension at the bottom.
 --
 -- ObjC selector: @- setPaddingBottom:@
 setPaddingBottom :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> CULong -> IO ()
-setPaddingBottom mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setPaddingBottom:") retVoid [argCULong value]
+setPaddingBottom mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setPaddingBottomSelector value
 
 -- | The property that defines the layout of source or output  tensor. e.g. @batch x channels x width x height@ for @NCHW@ layout
 --
 -- ObjC selector: @- dataLayout@
 dataLayout :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> IO MPSGraphTensorNamedDataLayout
-dataLayout mpsGraphImToColOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphTensorNamedDataLayout) $ sendMsg mpsGraphImToColOpDescriptor (mkSelector "dataLayout") retCULong []
+dataLayout mpsGraphImToColOpDescriptor =
+  sendMessage mpsGraphImToColOpDescriptor dataLayoutSelector
 
 -- | The property that defines the layout of source or output  tensor. e.g. @batch x channels x width x height@ for @NCHW@ layout
 --
 -- ObjC selector: @- setDataLayout:@
 setDataLayout :: IsMPSGraphImToColOpDescriptor mpsGraphImToColOpDescriptor => mpsGraphImToColOpDescriptor -> MPSGraphTensorNamedDataLayout -> IO ()
-setDataLayout mpsGraphImToColOpDescriptor  value =
-    sendMsg mpsGraphImToColOpDescriptor (mkSelector "setDataLayout:") retVoid [argCULong (coerce value)]
+setDataLayout mpsGraphImToColOpDescriptor value =
+  sendMessage mpsGraphImToColOpDescriptor setDataLayoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:dataLayout:@
-descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector :: Selector
+descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, CULong, MPSGraphTensorNamedDataLayout] (Id MPSGraphImToColOpDescriptor)
 descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_paddingLeft_paddingRight_paddingTop_paddingBottom_dataLayoutSelector = mkSelector "descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:paddingLeft:paddingRight:paddingTop:paddingBottom:dataLayout:"
 
 -- | @Selector@ for @descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:dataLayout:@
-descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector :: Selector
+descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, CULong, MPSGraphTensorNamedDataLayout] (Id MPSGraphImToColOpDescriptor)
 descriptorWithKernelWidth_kernelHeight_strideInX_strideInY_dilationRateInX_dilationRateInY_dataLayoutSelector = mkSelector "descriptorWithKernelWidth:kernelHeight:strideInX:strideInY:dilationRateInX:dilationRateInY:dataLayout:"
 
 -- | @Selector@ for @setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:@
-setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector :: Selector
+setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector :: Selector '[CULong, CULong, CULong, CULong] ()
 setExplicitPaddingWithPaddingLeft_paddingRight_paddingTop_paddingBottomSelector = mkSelector "setExplicitPaddingWithPaddingLeft:paddingRight:paddingTop:paddingBottom:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @setKernelWidth:@
-setKernelWidthSelector :: Selector
+setKernelWidthSelector :: Selector '[CULong] ()
 setKernelWidthSelector = mkSelector "setKernelWidth:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @setKernelHeight:@
-setKernelHeightSelector :: Selector
+setKernelHeightSelector :: Selector '[CULong] ()
 setKernelHeightSelector = mkSelector "setKernelHeight:"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @setStrideInX:@
-setStrideInXSelector :: Selector
+setStrideInXSelector :: Selector '[CULong] ()
 setStrideInXSelector = mkSelector "setStrideInX:"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @setStrideInY:@
-setStrideInYSelector :: Selector
+setStrideInYSelector :: Selector '[CULong] ()
 setStrideInYSelector = mkSelector "setStrideInY:"
 
 -- | @Selector@ for @dilationRateInX@
-dilationRateInXSelector :: Selector
+dilationRateInXSelector :: Selector '[] CULong
 dilationRateInXSelector = mkSelector "dilationRateInX"
 
 -- | @Selector@ for @setDilationRateInX:@
-setDilationRateInXSelector :: Selector
+setDilationRateInXSelector :: Selector '[CULong] ()
 setDilationRateInXSelector = mkSelector "setDilationRateInX:"
 
 -- | @Selector@ for @dilationRateInY@
-dilationRateInYSelector :: Selector
+dilationRateInYSelector :: Selector '[] CULong
 dilationRateInYSelector = mkSelector "dilationRateInY"
 
 -- | @Selector@ for @setDilationRateInY:@
-setDilationRateInYSelector :: Selector
+setDilationRateInYSelector :: Selector '[CULong] ()
 setDilationRateInYSelector = mkSelector "setDilationRateInY:"
 
 -- | @Selector@ for @paddingLeft@
-paddingLeftSelector :: Selector
+paddingLeftSelector :: Selector '[] CULong
 paddingLeftSelector = mkSelector "paddingLeft"
 
 -- | @Selector@ for @setPaddingLeft:@
-setPaddingLeftSelector :: Selector
+setPaddingLeftSelector :: Selector '[CULong] ()
 setPaddingLeftSelector = mkSelector "setPaddingLeft:"
 
 -- | @Selector@ for @paddingRight@
-paddingRightSelector :: Selector
+paddingRightSelector :: Selector '[] CULong
 paddingRightSelector = mkSelector "paddingRight"
 
 -- | @Selector@ for @setPaddingRight:@
-setPaddingRightSelector :: Selector
+setPaddingRightSelector :: Selector '[CULong] ()
 setPaddingRightSelector = mkSelector "setPaddingRight:"
 
 -- | @Selector@ for @paddingTop@
-paddingTopSelector :: Selector
+paddingTopSelector :: Selector '[] CULong
 paddingTopSelector = mkSelector "paddingTop"
 
 -- | @Selector@ for @setPaddingTop:@
-setPaddingTopSelector :: Selector
+setPaddingTopSelector :: Selector '[CULong] ()
 setPaddingTopSelector = mkSelector "setPaddingTop:"
 
 -- | @Selector@ for @paddingBottom@
-paddingBottomSelector :: Selector
+paddingBottomSelector :: Selector '[] CULong
 paddingBottomSelector = mkSelector "paddingBottom"
 
 -- | @Selector@ for @setPaddingBottom:@
-setPaddingBottomSelector :: Selector
+setPaddingBottomSelector :: Selector '[CULong] ()
 setPaddingBottomSelector = mkSelector "setPaddingBottom:"
 
 -- | @Selector@ for @dataLayout@
-dataLayoutSelector :: Selector
+dataLayoutSelector :: Selector '[] MPSGraphTensorNamedDataLayout
 dataLayoutSelector = mkSelector "dataLayout"
 
 -- | @Selector@ for @setDataLayout:@
-setDataLayoutSelector :: Selector
+setDataLayoutSelector :: Selector '[MPSGraphTensorNamedDataLayout] ()
 setDataLayoutSelector = mkSelector "setDataLayout:"
 

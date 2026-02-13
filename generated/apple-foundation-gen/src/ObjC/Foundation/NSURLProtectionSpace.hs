@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.Foundation.NSURLProtectionSpace
   , authenticationMethod
   , serverTrust
   , distinguishedNames
+  , authenticationMethodSelector
+  , distinguishedNamesSelector
+  , hostSelector
   , initWithHost_port_protocol_realm_authenticationMethodSelector
   , initWithProxyHost_port_type_realm_authenticationMethodSelector
+  , isProxySelector
+  , portSelector
+  , protocolSelector
+  , proxyTypeSelector
   , realmSelector
   , receivesCredentialSecurelySelector
-  , isProxySelector
-  , hostSelector
-  , portSelector
-  , proxyTypeSelector
-  , protocolSelector
-  , authenticationMethodSelector
   , serverTrustSelector
-  , distinguishedNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,12 +67,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHost:port:protocol:realm:authenticationMethod:@
 initWithHost_port_protocol_realm_authenticationMethod :: (IsNSURLProtectionSpace nsurlProtectionSpace, IsNSString host, IsNSString protocol, IsNSString realm, IsNSString authenticationMethod) => nsurlProtectionSpace -> host -> CLong -> protocol -> realm -> authenticationMethod -> IO (Id NSURLProtectionSpace)
-initWithHost_port_protocol_realm_authenticationMethod nsurlProtectionSpace  host port protocol realm authenticationMethod =
-  withObjCPtr host $ \raw_host ->
-    withObjCPtr protocol $ \raw_protocol ->
-      withObjCPtr realm $ \raw_realm ->
-        withObjCPtr authenticationMethod $ \raw_authenticationMethod ->
-            sendMsg nsurlProtectionSpace (mkSelector "initWithHost:port:protocol:realm:authenticationMethod:") (retPtr retVoid) [argPtr (castPtr raw_host :: Ptr ()), argCLong port, argPtr (castPtr raw_protocol :: Ptr ()), argPtr (castPtr raw_realm :: Ptr ()), argPtr (castPtr raw_authenticationMethod :: Ptr ())] >>= ownedObject . castPtr
+initWithHost_port_protocol_realm_authenticationMethod nsurlProtectionSpace host port protocol realm authenticationMethod =
+  sendOwnedMessage nsurlProtectionSpace initWithHost_port_protocol_realm_authenticationMethodSelector (toNSString host) port (toNSString protocol) (toNSString realm) (toNSString authenticationMethod)
 
 -- | initWithProxyHost:port:type:realm:authenticationMethod:
 --
@@ -95,12 +88,8 @@ initWithHost_port_protocol_realm_authenticationMethod nsurlProtectionSpace  host
 --
 -- ObjC selector: @- initWithProxyHost:port:type:realm:authenticationMethod:@
 initWithProxyHost_port_type_realm_authenticationMethod :: (IsNSURLProtectionSpace nsurlProtectionSpace, IsNSString host, IsNSString type_, IsNSString realm, IsNSString authenticationMethod) => nsurlProtectionSpace -> host -> CLong -> type_ -> realm -> authenticationMethod -> IO (Id NSURLProtectionSpace)
-initWithProxyHost_port_type_realm_authenticationMethod nsurlProtectionSpace  host port type_ realm authenticationMethod =
-  withObjCPtr host $ \raw_host ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr realm $ \raw_realm ->
-        withObjCPtr authenticationMethod $ \raw_authenticationMethod ->
-            sendMsg nsurlProtectionSpace (mkSelector "initWithProxyHost:port:type:realm:authenticationMethod:") (retPtr retVoid) [argPtr (castPtr raw_host :: Ptr ()), argCLong port, argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_realm :: Ptr ()), argPtr (castPtr raw_authenticationMethod :: Ptr ())] >>= ownedObject . castPtr
+initWithProxyHost_port_type_realm_authenticationMethod nsurlProtectionSpace host port type_ realm authenticationMethod =
+  sendOwnedMessage nsurlProtectionSpace initWithProxyHost_port_type_realm_authenticationMethodSelector (toNSString host) port (toNSString type_) (toNSString realm) (toNSString authenticationMethod)
 
 -- | Get the authentication realm for which the protection space that    needs authentication
 --
@@ -110,8 +99,8 @@ initWithProxyHost_port_type_realm_authenticationMethod nsurlProtectionSpace  hos
 --
 -- ObjC selector: @- realm@
 realm :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSString)
-realm nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "realm") (retPtr retVoid) [] >>= retainedObject . castPtr
+realm nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace realmSelector
 
 -- | Determine if the password for this protection space can be sent securely
 --
@@ -119,8 +108,8 @@ realm nsurlProtectionSpace  =
 --
 -- ObjC selector: @- receivesCredentialSecurely@
 receivesCredentialSecurely :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO Bool
-receivesCredentialSecurely nsurlProtectionSpace  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlProtectionSpace (mkSelector "receivesCredentialSecurely") retCULong []
+receivesCredentialSecurely nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace receivesCredentialSecurelySelector
 
 -- | Determine if this authenticating protection space is a proxy server
 --
@@ -128,8 +117,8 @@ receivesCredentialSecurely nsurlProtectionSpace  =
 --
 -- ObjC selector: @- isProxy@
 isProxy :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO Bool
-isProxy nsurlProtectionSpace  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlProtectionSpace (mkSelector "isProxy") retCULong []
+isProxy nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace isProxySelector
 
 -- | Get the proxy host if this is a proxy authentication, or the host from the URL.
 --
@@ -137,8 +126,8 @@ isProxy nsurlProtectionSpace  =
 --
 -- ObjC selector: @- host@
 host :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSString)
-host nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace hostSelector
 
 -- | Get the proxy port if this is a proxy authentication, or the port from the URL.
 --
@@ -146,8 +135,8 @@ host nsurlProtectionSpace  =
 --
 -- ObjC selector: @- port@
 port :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO CLong
-port nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "port") retCLong []
+port nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace portSelector
 
 -- | Get the type of this protection space, if a proxy
 --
@@ -155,8 +144,8 @@ port nsurlProtectionSpace  =
 --
 -- ObjC selector: @- proxyType@
 proxyType :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSString)
-proxyType nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "proxyType") (retPtr retVoid) [] >>= retainedObject . castPtr
+proxyType nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace proxyTypeSelector
 
 -- | Get the protocol of this protection space, if not a proxy
 --
@@ -164,8 +153,8 @@ proxyType nsurlProtectionSpace  =
 --
 -- ObjC selector: @- protocol@
 protocol :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSString)
-protocol nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "protocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocol nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace protocolSelector
 
 -- | Get the authentication method to be used for this protection space
 --
@@ -173,8 +162,8 @@ protocol nsurlProtectionSpace  =
 --
 -- ObjC selector: @- authenticationMethod@
 authenticationMethod :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSString)
-authenticationMethod nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "authenticationMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationMethod nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace authenticationMethodSelector
 
 -- | Returns a SecTrustRef which represents the state of the servers SSL transaction state
 --
@@ -182,8 +171,8 @@ authenticationMethod nsurlProtectionSpace  =
 --
 -- ObjC selector: @- serverTrust@
 serverTrust :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Ptr ())
-serverTrust nsurlProtectionSpace  =
-    fmap castPtr $ sendMsg nsurlProtectionSpace (mkSelector "serverTrust") (retPtr retVoid) []
+serverTrust nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace serverTrustSelector
 
 -- | Returns an array of acceptable certificate issuing authorities for client certification authentication. Issuers are identified by their distinguished name and returned as a DER encoded data.
 --
@@ -191,58 +180,58 @@ serverTrust nsurlProtectionSpace  =
 --
 -- ObjC selector: @- distinguishedNames@
 distinguishedNames :: IsNSURLProtectionSpace nsurlProtectionSpace => nsurlProtectionSpace -> IO (Id NSArray)
-distinguishedNames nsurlProtectionSpace  =
-    sendMsg nsurlProtectionSpace (mkSelector "distinguishedNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+distinguishedNames nsurlProtectionSpace =
+  sendMessage nsurlProtectionSpace distinguishedNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHost:port:protocol:realm:authenticationMethod:@
-initWithHost_port_protocol_realm_authenticationMethodSelector :: Selector
+initWithHost_port_protocol_realm_authenticationMethodSelector :: Selector '[Id NSString, CLong, Id NSString, Id NSString, Id NSString] (Id NSURLProtectionSpace)
 initWithHost_port_protocol_realm_authenticationMethodSelector = mkSelector "initWithHost:port:protocol:realm:authenticationMethod:"
 
 -- | @Selector@ for @initWithProxyHost:port:type:realm:authenticationMethod:@
-initWithProxyHost_port_type_realm_authenticationMethodSelector :: Selector
+initWithProxyHost_port_type_realm_authenticationMethodSelector :: Selector '[Id NSString, CLong, Id NSString, Id NSString, Id NSString] (Id NSURLProtectionSpace)
 initWithProxyHost_port_type_realm_authenticationMethodSelector = mkSelector "initWithProxyHost:port:type:realm:authenticationMethod:"
 
 -- | @Selector@ for @realm@
-realmSelector :: Selector
+realmSelector :: Selector '[] (Id NSString)
 realmSelector = mkSelector "realm"
 
 -- | @Selector@ for @receivesCredentialSecurely@
-receivesCredentialSecurelySelector :: Selector
+receivesCredentialSecurelySelector :: Selector '[] Bool
 receivesCredentialSecurelySelector = mkSelector "receivesCredentialSecurely"
 
 -- | @Selector@ for @isProxy@
-isProxySelector :: Selector
+isProxySelector :: Selector '[] Bool
 isProxySelector = mkSelector "isProxy"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] CLong
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @proxyType@
-proxyTypeSelector :: Selector
+proxyTypeSelector :: Selector '[] (Id NSString)
 proxyTypeSelector = mkSelector "proxyType"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] (Id NSString)
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @authenticationMethod@
-authenticationMethodSelector :: Selector
+authenticationMethodSelector :: Selector '[] (Id NSString)
 authenticationMethodSelector = mkSelector "authenticationMethod"
 
 -- | @Selector@ for @serverTrust@
-serverTrustSelector :: Selector
+serverTrustSelector :: Selector '[] (Ptr ())
 serverTrustSelector = mkSelector "serverTrust"
 
 -- | @Selector@ for @distinguishedNames@
-distinguishedNamesSelector :: Selector
+distinguishedNamesSelector :: Selector '[] (Id NSArray)
 distinguishedNamesSelector = mkSelector "distinguishedNames"
 

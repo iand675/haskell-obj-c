@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,15 +33,11 @@ module ObjC.CoreML.MLState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,35 +52,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getMultiArrayForStateNamed:handler:@
 getMultiArrayForStateNamed_handler :: (IsMLState mlState, IsNSString stateName) => mlState -> stateName -> Ptr () -> IO ()
-getMultiArrayForStateNamed_handler mlState  stateName handler =
-  withObjCPtr stateName $ \raw_stateName ->
-      sendMsg mlState (mkSelector "getMultiArrayForStateNamed:handler:") retVoid [argPtr (castPtr raw_stateName :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+getMultiArrayForStateNamed_handler mlState stateName handler =
+  sendMessage mlState getMultiArrayForStateNamed_handlerSelector (toNSString stateName) handler
 
 -- | @- init@
 init_ :: IsMLState mlState => mlState -> IO (Id MLState)
-init_ mlState  =
-    sendMsg mlState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlState =
+  sendOwnedMessage mlState initSelector
 
 -- | @+ new@
 new :: IO (Id MLState)
 new  =
   do
     cls' <- getRequiredClass "MLState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getMultiArrayForStateNamed:handler:@
-getMultiArrayForStateNamed_handlerSelector :: Selector
+getMultiArrayForStateNamed_handlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getMultiArrayForStateNamed_handlerSelector = mkSelector "getMultiArrayForStateNamed:handler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLState)
 newSelector = mkSelector "new"
 

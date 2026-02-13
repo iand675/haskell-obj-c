@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRDoorLockClusterAppleSetAliroReaderConfigParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , signingKeySelector
-  , setSigningKeySelector
-  , verificationKeySelector
-  , setVerificationKeySelector
   , groupIdentifierSelector
-  , setGroupIdentifierSelector
   , groupResolvingKeySelector
-  , setGroupResolvingKeySelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupIdentifierSelector
+  , setGroupResolvingKeySelector
   , setServerSideProcessingTimeoutSelector
+  , setSigningKeySelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVerificationKeySelector
+  , signingKeySelector
+  , timedInvokeTimeoutMsSelector
+  , verificationKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,47 +48,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- signingKey@
 signingKey :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSData)
-signingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "signingKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+signingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams signingKeySelector
 
 -- | @- setSigningKey:@
 setSigningKey :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSData value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setSigningKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setSigningKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSigningKey mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setSigningKeySelector (toNSData value)
 
 -- | @- verificationKey@
 verificationKey :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSData)
-verificationKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "verificationKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+verificationKey mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams verificationKeySelector
 
 -- | @- setVerificationKey:@
 setVerificationKey :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSData value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setVerificationKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setVerificationKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVerificationKey mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setVerificationKeySelector (toNSData value)
 
 -- | @- groupIdentifier@
 groupIdentifier :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSData)
-groupIdentifier mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "groupIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifier mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams groupIdentifierSelector
 
 -- | @- setGroupIdentifier:@
 setGroupIdentifier :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSData value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setGroupIdentifier mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setGroupIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupIdentifier mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setGroupIdentifierSelector (toNSData value)
 
 -- | @- groupResolvingKey@
 groupResolvingKey :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSData)
-groupResolvingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "groupResolvingKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupResolvingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams groupResolvingKeySelector
 
 -- | @- setGroupResolvingKey:@
 setGroupResolvingKey :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSData value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setGroupResolvingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setGroupResolvingKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupResolvingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setGroupResolvingKeySelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -101,8 +94,8 @@ setGroupResolvingKey mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,9 +105,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSNumber value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -124,8 +116,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterAppleSetAliroReaderConfigParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
-    sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterAppleSetAliroReaderConfigParams =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -135,59 +127,58 @@ serverSideProcessingTimeout mtrDoorLockClusterAppleSetAliroReaderConfigParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterAppleSetAliroReaderConfigParams mtrDoorLockClusterAppleSetAliroReaderConfigParams, IsNSNumber value) => mtrDoorLockClusterAppleSetAliroReaderConfigParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterAppleSetAliroReaderConfigParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleSetAliroReaderConfigParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterAppleSetAliroReaderConfigParams value =
+  sendMessage mtrDoorLockClusterAppleSetAliroReaderConfigParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signingKey@
-signingKeySelector :: Selector
+signingKeySelector :: Selector '[] (Id NSData)
 signingKeySelector = mkSelector "signingKey"
 
 -- | @Selector@ for @setSigningKey:@
-setSigningKeySelector :: Selector
+setSigningKeySelector :: Selector '[Id NSData] ()
 setSigningKeySelector = mkSelector "setSigningKey:"
 
 -- | @Selector@ for @verificationKey@
-verificationKeySelector :: Selector
+verificationKeySelector :: Selector '[] (Id NSData)
 verificationKeySelector = mkSelector "verificationKey"
 
 -- | @Selector@ for @setVerificationKey:@
-setVerificationKeySelector :: Selector
+setVerificationKeySelector :: Selector '[Id NSData] ()
 setVerificationKeySelector = mkSelector "setVerificationKey:"
 
 -- | @Selector@ for @groupIdentifier@
-groupIdentifierSelector :: Selector
+groupIdentifierSelector :: Selector '[] (Id NSData)
 groupIdentifierSelector = mkSelector "groupIdentifier"
 
 -- | @Selector@ for @setGroupIdentifier:@
-setGroupIdentifierSelector :: Selector
+setGroupIdentifierSelector :: Selector '[Id NSData] ()
 setGroupIdentifierSelector = mkSelector "setGroupIdentifier:"
 
 -- | @Selector@ for @groupResolvingKey@
-groupResolvingKeySelector :: Selector
+groupResolvingKeySelector :: Selector '[] (Id NSData)
 groupResolvingKeySelector = mkSelector "groupResolvingKey"
 
 -- | @Selector@ for @setGroupResolvingKey:@
-setGroupResolvingKeySelector :: Selector
+setGroupResolvingKeySelector :: Selector '[Id NSData] ()
 setGroupResolvingKeySelector = mkSelector "setGroupResolvingKey:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

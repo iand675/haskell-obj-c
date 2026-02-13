@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AppKit.NSRotationGestureRecognizer
   , setRotation
   , rotationInDegrees
   , setRotationInDegrees
-  , rotationSelector
-  , setRotationSelector
   , rotationInDegreesSelector
+  , rotationSelector
   , setRotationInDegreesSelector
+  , setRotationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rotation@
 rotation :: IsNSRotationGestureRecognizer nsRotationGestureRecognizer => nsRotationGestureRecognizer -> IO CDouble
-rotation nsRotationGestureRecognizer  =
-    sendMsg nsRotationGestureRecognizer (mkSelector "rotation") retCDouble []
+rotation nsRotationGestureRecognizer =
+  sendMessage nsRotationGestureRecognizer rotationSelector
 
 -- | @- setRotation:@
 setRotation :: IsNSRotationGestureRecognizer nsRotationGestureRecognizer => nsRotationGestureRecognizer -> CDouble -> IO ()
-setRotation nsRotationGestureRecognizer  value =
-    sendMsg nsRotationGestureRecognizer (mkSelector "setRotation:") retVoid [argCDouble value]
+setRotation nsRotationGestureRecognizer value =
+  sendMessage nsRotationGestureRecognizer setRotationSelector value
 
 -- | @- rotationInDegrees@
 rotationInDegrees :: IsNSRotationGestureRecognizer nsRotationGestureRecognizer => nsRotationGestureRecognizer -> IO CDouble
-rotationInDegrees nsRotationGestureRecognizer  =
-    sendMsg nsRotationGestureRecognizer (mkSelector "rotationInDegrees") retCDouble []
+rotationInDegrees nsRotationGestureRecognizer =
+  sendMessage nsRotationGestureRecognizer rotationInDegreesSelector
 
 -- | @- setRotationInDegrees:@
 setRotationInDegrees :: IsNSRotationGestureRecognizer nsRotationGestureRecognizer => nsRotationGestureRecognizer -> CDouble -> IO ()
-setRotationInDegrees nsRotationGestureRecognizer  value =
-    sendMsg nsRotationGestureRecognizer (mkSelector "setRotationInDegrees:") retVoid [argCDouble value]
+setRotationInDegrees nsRotationGestureRecognizer value =
+  sendMessage nsRotationGestureRecognizer setRotationInDegreesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rotation@
-rotationSelector :: Selector
+rotationSelector :: Selector '[] CDouble
 rotationSelector = mkSelector "rotation"
 
 -- | @Selector@ for @setRotation:@
-setRotationSelector :: Selector
+setRotationSelector :: Selector '[CDouble] ()
 setRotationSelector = mkSelector "setRotation:"
 
 -- | @Selector@ for @rotationInDegrees@
-rotationInDegreesSelector :: Selector
+rotationInDegreesSelector :: Selector '[] CDouble
 rotationInDegreesSelector = mkSelector "rotationInDegrees"
 
 -- | @Selector@ for @setRotationInDegrees:@
-setRotationInDegreesSelector :: Selector
+setRotationInDegreesSelector :: Selector '[CDouble] ()
 setRotationInDegreesSelector = mkSelector "setRotationInDegrees:"
 

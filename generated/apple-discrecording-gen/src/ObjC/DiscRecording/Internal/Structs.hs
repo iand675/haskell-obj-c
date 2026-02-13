@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | DRFileForkSizeInfo
 --
@@ -42,6 +44,16 @@ argDRFileForkSizeInfo = mkStorableArg drFileForkSizeInfoStructType
 
 retDRFileForkSizeInfo :: RetType DRFileForkSizeInfo
 retDRFileForkSizeInfo = mkStorableRetType drFileForkSizeInfoStructType
+
+instance ObjCArgument DRFileForkSizeInfo where
+  withObjCArg x k = k (argDRFileForkSizeInfo x)
+
+instance ObjCReturn DRFileForkSizeInfo where
+  type RawReturn DRFileForkSizeInfo = DRFileForkSizeInfo
+  objcRetType = retDRFileForkSizeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DRFileProductionInfo
 --
@@ -86,6 +98,16 @@ argDRFileProductionInfo = mkStorableArg drFileProductionInfoStructType
 retDRFileProductionInfo :: RetType DRFileProductionInfo
 retDRFileProductionInfo = mkStorableRetType drFileProductionInfoStructType
 
+instance ObjCArgument DRFileProductionInfo where
+  withObjCArg x k = k (argDRFileProductionInfo x)
+
+instance ObjCReturn DRFileProductionInfo where
+  type RawReturn DRFileProductionInfo = DRFileProductionInfo
+  objcRetType = retDRFileProductionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | DRRefConCallbacks
 --
 -- Contains a set of callbacks for use by a Disc Recording object in managing its				reference context.			version	The version of this structure. The value must be a known version, or zero.			retain	An optional callback used by a Disc Recording object to retain its reference 						context. When NULL, the Disc Recording object will not retain the  						reference context when set.			release An optional callback used by a Disc Recording object to remove a retain 						previously added for its reference context. When NULL, the Disc						Recording objecting will not release its reference context when the 						object is destroyed or when a new reference context value is set.
@@ -115,6 +137,16 @@ argDRRefConCallbacks = mkStorableArg drRefConCallbacksStructType
 
 retDRRefConCallbacks :: RetType DRRefConCallbacks
 retDRRefConCallbacks = mkStorableRetType drRefConCallbacksStructType
+
+instance ObjCArgument DRRefConCallbacks where
+  withObjCArg x k = k (argDRRefConCallbacks x)
+
+instance ObjCReturn DRRefConCallbacks where
+  type RawReturn DRRefConCallbacks = DRRefConCallbacks
+  objcRetType = retDRRefConCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DRTrackProductionInfo
 --
@@ -154,3 +186,13 @@ argDRTrackProductionInfo = mkStorableArg drTrackProductionInfoStructType
 
 retDRTrackProductionInfo :: RetType DRTrackProductionInfo
 retDRTrackProductionInfo = mkStorableRetType drTrackProductionInfoStructType
+
+instance ObjCArgument DRTrackProductionInfo where
+  withObjCArg x k = k (argDRTrackProductionInfo x)
+
+instance ObjCReturn DRTrackProductionInfo where
+  type RawReturn DRTrackProductionInfo = DRTrackProductionInfo
+  objcRetType = retDRTrackProductionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

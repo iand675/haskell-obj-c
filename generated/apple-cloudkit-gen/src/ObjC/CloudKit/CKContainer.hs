@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,29 +37,29 @@ module ObjC.CloudKit.CKContainer
   , privateCloudDatabase
   , publicCloudDatabase
   , sharedCloudDatabase
-  , initSelector
-  , newSelector
-  , defaultContainerSelector
-  , containerWithIdentifierSelector
-  , addOperationSelector
-  , fetchLongLivedOperationWithID_completionHandlerSelector
-  , fetchShareParticipantWithEmailAddress_completionHandlerSelector
-  , fetchShareParticipantWithPhoneNumber_completionHandlerSelector
-  , fetchShareParticipantWithUserRecordID_completionHandlerSelector
-  , fetchShareMetadataWithURL_completionHandlerSelector
   , acceptShareMetadata_completionHandlerSelector
-  , fetchUserRecordIDWithCompletionHandlerSelector
+  , accountStatusWithCompletionHandlerSelector
+  , addOperationSelector
+  , containerIdentifierSelector
+  , containerWithIdentifierSelector
+  , databaseWithDatabaseScopeSelector
+  , defaultContainerSelector
   , discoverUserIdentityWithEmailAddress_completionHandlerSelector
   , discoverUserIdentityWithPhoneNumber_completionHandlerSelector
   , discoverUserIdentityWithUserRecordID_completionHandlerSelector
-  , statusForApplicationPermission_completionHandlerSelector
-  , requestApplicationPermission_completionHandlerSelector
-  , accountStatusWithCompletionHandlerSelector
-  , databaseWithDatabaseScopeSelector
-  , containerIdentifierSelector
+  , fetchLongLivedOperationWithID_completionHandlerSelector
+  , fetchShareMetadataWithURL_completionHandlerSelector
+  , fetchShareParticipantWithEmailAddress_completionHandlerSelector
+  , fetchShareParticipantWithPhoneNumber_completionHandlerSelector
+  , fetchShareParticipantWithUserRecordID_completionHandlerSelector
+  , fetchUserRecordIDWithCompletionHandlerSelector
+  , initSelector
+  , newSelector
   , privateCloudDatabaseSelector
   , publicCloudDatabaseSelector
+  , requestApplicationPermission_completionHandlerSelector
   , sharedCloudDatabaseSelector
+  , statusForApplicationPermission_completionHandlerSelector
 
   -- * Enum types
   , CKApplicationPermissions(CKApplicationPermissions)
@@ -70,15 +71,11 @@ module ObjC.CloudKit.CKContainer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,15 +85,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKContainer ckContainer => ckContainer -> IO (Id CKContainer)
-init_ ckContainer  =
-    sendMsg ckContainer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckContainer =
+  sendOwnedMessage ckContainer initSelector
 
 -- | @+ new@
 new :: IO (Id CKContainer)
 new  =
   do
     cls' <- getRequiredClass "CKContainer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Convenience method that uses the calling process' "iCloud.\\(application-identifier)" as the container identifier
 --
@@ -107,7 +104,7 @@ defaultContainer :: IO (Id CKContainer)
 defaultContainer  =
   do
     cls' <- getRequiredClass "CKContainer"
-    sendClassMsg cls' (mkSelector "defaultContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultContainerSelector
 
 -- | Obtain a CKContainer for the given containerIdentifier
 --
@@ -118,20 +115,17 @@ containerWithIdentifier :: IsNSString containerIdentifier => containerIdentifier
 containerWithIdentifier containerIdentifier =
   do
     cls' <- getRequiredClass "CKContainer"
-    withObjCPtr containerIdentifier $ \raw_containerIdentifier ->
-      sendClassMsg cls' (mkSelector "containerWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_containerIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' containerWithIdentifierSelector (toNSString containerIdentifier)
 
 -- | @- addOperation:@
 addOperation :: (IsCKContainer ckContainer, IsCKOperation operation) => ckContainer -> operation -> IO ()
-addOperation ckContainer  operation =
-  withObjCPtr operation $ \raw_operation ->
-      sendMsg ckContainer (mkSelector "addOperation:") retVoid [argPtr (castPtr raw_operation :: Ptr ())]
+addOperation ckContainer operation =
+  sendMessage ckContainer addOperationSelector (toCKOperation operation)
 
 -- | @- fetchLongLivedOperationWithID:completionHandler:@
 fetchLongLivedOperationWithID_completionHandler :: (IsCKContainer ckContainer, IsNSString operationID) => ckContainer -> operationID -> Ptr () -> IO ()
-fetchLongLivedOperationWithID_completionHandler ckContainer  operationID completionHandler =
-  withObjCPtr operationID $ \raw_operationID ->
-      sendMsg ckContainer (mkSelector "fetchLongLivedOperationWithID:completionHandler:") retVoid [argPtr (castPtr raw_operationID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchLongLivedOperationWithID_completionHandler ckContainer operationID completionHandler =
+  sendMessage ckContainer fetchLongLivedOperationWithID_completionHandlerSelector (toNSString operationID) completionHandler
 
 -- | Fetches share participants matching the provided info.
 --
@@ -139,33 +133,28 @@ fetchLongLivedOperationWithID_completionHandler ckContainer  operationID complet
 --
 -- ObjC selector: @- fetchShareParticipantWithEmailAddress:completionHandler:@
 fetchShareParticipantWithEmailAddress_completionHandler :: (IsCKContainer ckContainer, IsNSString emailAddress) => ckContainer -> emailAddress -> Ptr () -> IO ()
-fetchShareParticipantWithEmailAddress_completionHandler ckContainer  emailAddress completionHandler =
-  withObjCPtr emailAddress $ \raw_emailAddress ->
-      sendMsg ckContainer (mkSelector "fetchShareParticipantWithEmailAddress:completionHandler:") retVoid [argPtr (castPtr raw_emailAddress :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchShareParticipantWithEmailAddress_completionHandler ckContainer emailAddress completionHandler =
+  sendMessage ckContainer fetchShareParticipantWithEmailAddress_completionHandlerSelector (toNSString emailAddress) completionHandler
 
 -- | @- fetchShareParticipantWithPhoneNumber:completionHandler:@
 fetchShareParticipantWithPhoneNumber_completionHandler :: (IsCKContainer ckContainer, IsNSString phoneNumber) => ckContainer -> phoneNumber -> Ptr () -> IO ()
-fetchShareParticipantWithPhoneNumber_completionHandler ckContainer  phoneNumber completionHandler =
-  withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendMsg ckContainer (mkSelector "fetchShareParticipantWithPhoneNumber:completionHandler:") retVoid [argPtr (castPtr raw_phoneNumber :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchShareParticipantWithPhoneNumber_completionHandler ckContainer phoneNumber completionHandler =
+  sendMessage ckContainer fetchShareParticipantWithPhoneNumber_completionHandlerSelector (toNSString phoneNumber) completionHandler
 
 -- | @- fetchShareParticipantWithUserRecordID:completionHandler:@
 fetchShareParticipantWithUserRecordID_completionHandler :: (IsCKContainer ckContainer, IsCKRecordID userRecordID) => ckContainer -> userRecordID -> Ptr () -> IO ()
-fetchShareParticipantWithUserRecordID_completionHandler ckContainer  userRecordID completionHandler =
-  withObjCPtr userRecordID $ \raw_userRecordID ->
-      sendMsg ckContainer (mkSelector "fetchShareParticipantWithUserRecordID:completionHandler:") retVoid [argPtr (castPtr raw_userRecordID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchShareParticipantWithUserRecordID_completionHandler ckContainer userRecordID completionHandler =
+  sendMessage ckContainer fetchShareParticipantWithUserRecordID_completionHandlerSelector (toCKRecordID userRecordID) completionHandler
 
 -- | @- fetchShareMetadataWithURL:completionHandler:@
 fetchShareMetadataWithURL_completionHandler :: (IsCKContainer ckContainer, IsNSURL url) => ckContainer -> url -> Ptr () -> IO ()
-fetchShareMetadataWithURL_completionHandler ckContainer  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg ckContainer (mkSelector "fetchShareMetadataWithURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchShareMetadataWithURL_completionHandler ckContainer url completionHandler =
+  sendMessage ckContainer fetchShareMetadataWithURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | @- acceptShareMetadata:completionHandler:@
 acceptShareMetadata_completionHandler :: (IsCKContainer ckContainer, IsCKShareMetadata metadata) => ckContainer -> metadata -> Ptr () -> IO ()
-acceptShareMetadata_completionHandler ckContainer  metadata completionHandler =
-  withObjCPtr metadata $ \raw_metadata ->
-      sendMsg ckContainer (mkSelector "acceptShareMetadata:completionHandler:") retVoid [argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+acceptShareMetadata_completionHandler ckContainer metadata completionHandler =
+  sendMessage ckContainer acceptShareMetadata_completionHandlerSelector (toCKShareMetadata metadata) completionHandler
 
 -- | If there is no iCloud account configured, or if access is restricted, a @CKErrorNotAuthenticated@ error will be returned.
 --
@@ -173,8 +162,8 @@ acceptShareMetadata_completionHandler ckContainer  metadata completionHandler =
 --
 -- ObjC selector: @- fetchUserRecordIDWithCompletionHandler:@
 fetchUserRecordIDWithCompletionHandler :: IsCKContainer ckContainer => ckContainer -> Ptr () -> IO ()
-fetchUserRecordIDWithCompletionHandler ckContainer  completionHandler =
-    sendMsg ckContainer (mkSelector "fetchUserRecordIDWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+fetchUserRecordIDWithCompletionHandler ckContainer completionHandler =
+  sendMessage ckContainer fetchUserRecordIDWithCompletionHandlerSelector completionHandler
 
 -- | Fetches the user identity that corresponds to the given email address.
 --
@@ -182,9 +171,8 @@ fetchUserRecordIDWithCompletionHandler ckContainer  completionHandler =
 --
 -- ObjC selector: @- discoverUserIdentityWithEmailAddress:completionHandler:@
 discoverUserIdentityWithEmailAddress_completionHandler :: (IsCKContainer ckContainer, IsNSString email) => ckContainer -> email -> Ptr () -> IO ()
-discoverUserIdentityWithEmailAddress_completionHandler ckContainer  email completionHandler =
-  withObjCPtr email $ \raw_email ->
-      sendMsg ckContainer (mkSelector "discoverUserIdentityWithEmailAddress:completionHandler:") retVoid [argPtr (castPtr raw_email :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+discoverUserIdentityWithEmailAddress_completionHandler ckContainer email completionHandler =
+  sendMessage ckContainer discoverUserIdentityWithEmailAddress_completionHandlerSelector (toNSString email) completionHandler
 
 -- | Fetches the user identity that corresponds to the given phone number.
 --
@@ -192,9 +180,8 @@ discoverUserIdentityWithEmailAddress_completionHandler ckContainer  email comple
 --
 -- ObjC selector: @- discoverUserIdentityWithPhoneNumber:completionHandler:@
 discoverUserIdentityWithPhoneNumber_completionHandler :: (IsCKContainer ckContainer, IsNSString phoneNumber) => ckContainer -> phoneNumber -> Ptr () -> IO ()
-discoverUserIdentityWithPhoneNumber_completionHandler ckContainer  phoneNumber completionHandler =
-  withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendMsg ckContainer (mkSelector "discoverUserIdentityWithPhoneNumber:completionHandler:") retVoid [argPtr (castPtr raw_phoneNumber :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+discoverUserIdentityWithPhoneNumber_completionHandler ckContainer phoneNumber completionHandler =
+  sendMessage ckContainer discoverUserIdentityWithPhoneNumber_completionHandlerSelector (toNSString phoneNumber) completionHandler
 
 -- | Fetches the user identity that corresponds to the given user record id.
 --
@@ -202,24 +189,23 @@ discoverUserIdentityWithPhoneNumber_completionHandler ckContainer  phoneNumber c
 --
 -- ObjC selector: @- discoverUserIdentityWithUserRecordID:completionHandler:@
 discoverUserIdentityWithUserRecordID_completionHandler :: (IsCKContainer ckContainer, IsCKRecordID userRecordID) => ckContainer -> userRecordID -> Ptr () -> IO ()
-discoverUserIdentityWithUserRecordID_completionHandler ckContainer  userRecordID completionHandler =
-  withObjCPtr userRecordID $ \raw_userRecordID ->
-      sendMsg ckContainer (mkSelector "discoverUserIdentityWithUserRecordID:completionHandler:") retVoid [argPtr (castPtr raw_userRecordID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+discoverUserIdentityWithUserRecordID_completionHandler ckContainer userRecordID completionHandler =
+  sendMessage ckContainer discoverUserIdentityWithUserRecordID_completionHandlerSelector (toCKRecordID userRecordID) completionHandler
 
 -- | @- statusForApplicationPermission:completionHandler:@
 statusForApplicationPermission_completionHandler :: IsCKContainer ckContainer => ckContainer -> CKApplicationPermissions -> Ptr () -> IO ()
-statusForApplicationPermission_completionHandler ckContainer  applicationPermission completionHandler =
-    sendMsg ckContainer (mkSelector "statusForApplicationPermission:completionHandler:") retVoid [argCULong (coerce applicationPermission), argPtr (castPtr completionHandler :: Ptr ())]
+statusForApplicationPermission_completionHandler ckContainer applicationPermission completionHandler =
+  sendMessage ckContainer statusForApplicationPermission_completionHandlerSelector applicationPermission completionHandler
 
 -- | @- requestApplicationPermission:completionHandler:@
 requestApplicationPermission_completionHandler :: IsCKContainer ckContainer => ckContainer -> CKApplicationPermissions -> Ptr () -> IO ()
-requestApplicationPermission_completionHandler ckContainer  applicationPermission completionHandler =
-    sendMsg ckContainer (mkSelector "requestApplicationPermission:completionHandler:") retVoid [argCULong (coerce applicationPermission), argPtr (castPtr completionHandler :: Ptr ())]
+requestApplicationPermission_completionHandler ckContainer applicationPermission completionHandler =
+  sendMessage ckContainer requestApplicationPermission_completionHandlerSelector applicationPermission completionHandler
 
 -- | @- accountStatusWithCompletionHandler:@
 accountStatusWithCompletionHandler :: IsCKContainer ckContainer => ckContainer -> Ptr () -> IO ()
-accountStatusWithCompletionHandler ckContainer  completionHandler =
-    sendMsg ckContainer (mkSelector "accountStatusWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+accountStatusWithCompletionHandler ckContainer completionHandler =
+  sendMessage ckContainer accountStatusWithCompletionHandlerSelector completionHandler
 
 -- | Convenience methods
 --
@@ -227,122 +213,122 @@ accountStatusWithCompletionHandler ckContainer  completionHandler =
 --
 -- ObjC selector: @- databaseWithDatabaseScope:@
 databaseWithDatabaseScope :: IsCKContainer ckContainer => ckContainer -> CKDatabaseScope -> IO (Id CKDatabase)
-databaseWithDatabaseScope ckContainer  databaseScope =
-    sendMsg ckContainer (mkSelector "databaseWithDatabaseScope:") (retPtr retVoid) [argCLong (coerce databaseScope)] >>= retainedObject . castPtr
+databaseWithDatabaseScope ckContainer databaseScope =
+  sendMessage ckContainer databaseWithDatabaseScopeSelector databaseScope
 
 -- | @- containerIdentifier@
 containerIdentifier :: IsCKContainer ckContainer => ckContainer -> IO (Id NSString)
-containerIdentifier ckContainer  =
-    sendMsg ckContainer (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier ckContainer =
+  sendMessage ckContainer containerIdentifierSelector
 
 -- | @- privateCloudDatabase@
 privateCloudDatabase :: IsCKContainer ckContainer => ckContainer -> IO (Id CKDatabase)
-privateCloudDatabase ckContainer  =
-    sendMsg ckContainer (mkSelector "privateCloudDatabase") (retPtr retVoid) [] >>= retainedObject . castPtr
+privateCloudDatabase ckContainer =
+  sendMessage ckContainer privateCloudDatabaseSelector
 
 -- | @- publicCloudDatabase@
 publicCloudDatabase :: IsCKContainer ckContainer => ckContainer -> IO (Id CKDatabase)
-publicCloudDatabase ckContainer  =
-    sendMsg ckContainer (mkSelector "publicCloudDatabase") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicCloudDatabase ckContainer =
+  sendMessage ckContainer publicCloudDatabaseSelector
 
 -- | @- sharedCloudDatabase@
 sharedCloudDatabase :: IsCKContainer ckContainer => ckContainer -> IO (Id CKDatabase)
-sharedCloudDatabase ckContainer  =
-    sendMsg ckContainer (mkSelector "sharedCloudDatabase") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedCloudDatabase ckContainer =
+  sendMessage ckContainer sharedCloudDatabaseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKContainer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKContainer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @defaultContainer@
-defaultContainerSelector :: Selector
+defaultContainerSelector :: Selector '[] (Id CKContainer)
 defaultContainerSelector = mkSelector "defaultContainer"
 
 -- | @Selector@ for @containerWithIdentifier:@
-containerWithIdentifierSelector :: Selector
+containerWithIdentifierSelector :: Selector '[Id NSString] (Id CKContainer)
 containerWithIdentifierSelector = mkSelector "containerWithIdentifier:"
 
 -- | @Selector@ for @addOperation:@
-addOperationSelector :: Selector
+addOperationSelector :: Selector '[Id CKOperation] ()
 addOperationSelector = mkSelector "addOperation:"
 
 -- | @Selector@ for @fetchLongLivedOperationWithID:completionHandler:@
-fetchLongLivedOperationWithID_completionHandlerSelector :: Selector
+fetchLongLivedOperationWithID_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 fetchLongLivedOperationWithID_completionHandlerSelector = mkSelector "fetchLongLivedOperationWithID:completionHandler:"
 
 -- | @Selector@ for @fetchShareParticipantWithEmailAddress:completionHandler:@
-fetchShareParticipantWithEmailAddress_completionHandlerSelector :: Selector
+fetchShareParticipantWithEmailAddress_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 fetchShareParticipantWithEmailAddress_completionHandlerSelector = mkSelector "fetchShareParticipantWithEmailAddress:completionHandler:"
 
 -- | @Selector@ for @fetchShareParticipantWithPhoneNumber:completionHandler:@
-fetchShareParticipantWithPhoneNumber_completionHandlerSelector :: Selector
+fetchShareParticipantWithPhoneNumber_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 fetchShareParticipantWithPhoneNumber_completionHandlerSelector = mkSelector "fetchShareParticipantWithPhoneNumber:completionHandler:"
 
 -- | @Selector@ for @fetchShareParticipantWithUserRecordID:completionHandler:@
-fetchShareParticipantWithUserRecordID_completionHandlerSelector :: Selector
+fetchShareParticipantWithUserRecordID_completionHandlerSelector :: Selector '[Id CKRecordID, Ptr ()] ()
 fetchShareParticipantWithUserRecordID_completionHandlerSelector = mkSelector "fetchShareParticipantWithUserRecordID:completionHandler:"
 
 -- | @Selector@ for @fetchShareMetadataWithURL:completionHandler:@
-fetchShareMetadataWithURL_completionHandlerSelector :: Selector
+fetchShareMetadataWithURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 fetchShareMetadataWithURL_completionHandlerSelector = mkSelector "fetchShareMetadataWithURL:completionHandler:"
 
 -- | @Selector@ for @acceptShareMetadata:completionHandler:@
-acceptShareMetadata_completionHandlerSelector :: Selector
+acceptShareMetadata_completionHandlerSelector :: Selector '[Id CKShareMetadata, Ptr ()] ()
 acceptShareMetadata_completionHandlerSelector = mkSelector "acceptShareMetadata:completionHandler:"
 
 -- | @Selector@ for @fetchUserRecordIDWithCompletionHandler:@
-fetchUserRecordIDWithCompletionHandlerSelector :: Selector
+fetchUserRecordIDWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchUserRecordIDWithCompletionHandlerSelector = mkSelector "fetchUserRecordIDWithCompletionHandler:"
 
 -- | @Selector@ for @discoverUserIdentityWithEmailAddress:completionHandler:@
-discoverUserIdentityWithEmailAddress_completionHandlerSelector :: Selector
+discoverUserIdentityWithEmailAddress_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 discoverUserIdentityWithEmailAddress_completionHandlerSelector = mkSelector "discoverUserIdentityWithEmailAddress:completionHandler:"
 
 -- | @Selector@ for @discoverUserIdentityWithPhoneNumber:completionHandler:@
-discoverUserIdentityWithPhoneNumber_completionHandlerSelector :: Selector
+discoverUserIdentityWithPhoneNumber_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 discoverUserIdentityWithPhoneNumber_completionHandlerSelector = mkSelector "discoverUserIdentityWithPhoneNumber:completionHandler:"
 
 -- | @Selector@ for @discoverUserIdentityWithUserRecordID:completionHandler:@
-discoverUserIdentityWithUserRecordID_completionHandlerSelector :: Selector
+discoverUserIdentityWithUserRecordID_completionHandlerSelector :: Selector '[Id CKRecordID, Ptr ()] ()
 discoverUserIdentityWithUserRecordID_completionHandlerSelector = mkSelector "discoverUserIdentityWithUserRecordID:completionHandler:"
 
 -- | @Selector@ for @statusForApplicationPermission:completionHandler:@
-statusForApplicationPermission_completionHandlerSelector :: Selector
+statusForApplicationPermission_completionHandlerSelector :: Selector '[CKApplicationPermissions, Ptr ()] ()
 statusForApplicationPermission_completionHandlerSelector = mkSelector "statusForApplicationPermission:completionHandler:"
 
 -- | @Selector@ for @requestApplicationPermission:completionHandler:@
-requestApplicationPermission_completionHandlerSelector :: Selector
+requestApplicationPermission_completionHandlerSelector :: Selector '[CKApplicationPermissions, Ptr ()] ()
 requestApplicationPermission_completionHandlerSelector = mkSelector "requestApplicationPermission:completionHandler:"
 
 -- | @Selector@ for @accountStatusWithCompletionHandler:@
-accountStatusWithCompletionHandlerSelector :: Selector
+accountStatusWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 accountStatusWithCompletionHandlerSelector = mkSelector "accountStatusWithCompletionHandler:"
 
 -- | @Selector@ for @databaseWithDatabaseScope:@
-databaseWithDatabaseScopeSelector :: Selector
+databaseWithDatabaseScopeSelector :: Selector '[CKDatabaseScope] (Id CKDatabase)
 databaseWithDatabaseScopeSelector = mkSelector "databaseWithDatabaseScope:"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 
 -- | @Selector@ for @privateCloudDatabase@
-privateCloudDatabaseSelector :: Selector
+privateCloudDatabaseSelector :: Selector '[] (Id CKDatabase)
 privateCloudDatabaseSelector = mkSelector "privateCloudDatabase"
 
 -- | @Selector@ for @publicCloudDatabase@
-publicCloudDatabaseSelector :: Selector
+publicCloudDatabaseSelector :: Selector '[] (Id CKDatabase)
 publicCloudDatabaseSelector = mkSelector "publicCloudDatabase"
 
 -- | @Selector@ for @sharedCloudDatabase@
-sharedCloudDatabaseSelector :: Selector
+sharedCloudDatabaseSelector :: Selector '[] (Id CKDatabase)
 sharedCloudDatabaseSelector = mkSelector "sharedCloudDatabase"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFAssertio
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithInputValues:perCredentialInputValues:@
 initWithInputValues_perCredentialInputValues :: (IsASAuthorizationPublicKeyCredentialPRFAssertionInput asAuthorizationPublicKeyCredentialPRFAssertionInput, IsASAuthorizationPublicKeyCredentialPRFAssertionInputValues inputValues, IsNSDictionary perCredentialInputValues) => asAuthorizationPublicKeyCredentialPRFAssertionInput -> inputValues -> perCredentialInputValues -> IO (Id ASAuthorizationPublicKeyCredentialPRFAssertionInput)
-initWithInputValues_perCredentialInputValues asAuthorizationPublicKeyCredentialPRFAssertionInput  inputValues perCredentialInputValues =
-  withObjCPtr inputValues $ \raw_inputValues ->
-    withObjCPtr perCredentialInputValues $ \raw_perCredentialInputValues ->
-        sendMsg asAuthorizationPublicKeyCredentialPRFAssertionInput (mkSelector "initWithInputValues:perCredentialInputValues:") (retPtr retVoid) [argPtr (castPtr raw_inputValues :: Ptr ()), argPtr (castPtr raw_perCredentialInputValues :: Ptr ())] >>= ownedObject . castPtr
+initWithInputValues_perCredentialInputValues asAuthorizationPublicKeyCredentialPRFAssertionInput inputValues perCredentialInputValues =
+  sendOwnedMessage asAuthorizationPublicKeyCredentialPRFAssertionInput initWithInputValues_perCredentialInputValuesSelector (toASAuthorizationPublicKeyCredentialPRFAssertionInputValues inputValues) (toNSDictionary perCredentialInputValues)
 
 -- | @- inputValues@
 inputValues :: IsASAuthorizationPublicKeyCredentialPRFAssertionInput asAuthorizationPublicKeyCredentialPRFAssertionInput => asAuthorizationPublicKeyCredentialPRFAssertionInput -> IO (Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues)
-inputValues asAuthorizationPublicKeyCredentialPRFAssertionInput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFAssertionInput (mkSelector "inputValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputValues asAuthorizationPublicKeyCredentialPRFAssertionInput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFAssertionInput inputValuesSelector
 
 -- | @- perCredentialInputValues@
 perCredentialInputValues :: IsASAuthorizationPublicKeyCredentialPRFAssertionInput asAuthorizationPublicKeyCredentialPRFAssertionInput => asAuthorizationPublicKeyCredentialPRFAssertionInput -> IO (Id NSDictionary)
-perCredentialInputValues asAuthorizationPublicKeyCredentialPRFAssertionInput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFAssertionInput (mkSelector "perCredentialInputValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+perCredentialInputValues asAuthorizationPublicKeyCredentialPRFAssertionInput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFAssertionInput perCredentialInputValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInputValues:perCredentialInputValues:@
-initWithInputValues_perCredentialInputValuesSelector :: Selector
+initWithInputValues_perCredentialInputValuesSelector :: Selector '[Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues, Id NSDictionary] (Id ASAuthorizationPublicKeyCredentialPRFAssertionInput)
 initWithInputValues_perCredentialInputValuesSelector = mkSelector "initWithInputValues:perCredentialInputValues:"
 
 -- | @Selector@ for @inputValues@
-inputValuesSelector :: Selector
+inputValuesSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues)
 inputValuesSelector = mkSelector "inputValues"
 
 -- | @Selector@ for @perCredentialInputValues@
-perCredentialInputValuesSelector :: Selector
+perCredentialInputValuesSelector :: Selector '[] (Id NSDictionary)
 perCredentialInputValuesSelector = mkSelector "perCredentialInputValues"
 

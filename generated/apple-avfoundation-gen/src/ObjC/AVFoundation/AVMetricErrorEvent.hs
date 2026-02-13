@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVMetricErrorEvent
   , new
   , didRecover
   , error_
-  , initSelector
-  , newSelector
   , didRecoverSelector
   , errorSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,47 +36,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricErrorEvent avMetricErrorEvent => avMetricErrorEvent -> IO (Id AVMetricErrorEvent)
-init_ avMetricErrorEvent  =
-    sendMsg avMetricErrorEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricErrorEvent =
+  sendOwnedMessage avMetricErrorEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricErrorEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricErrorEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns whether the error was recoverable.
 --
 -- ObjC selector: @- didRecover@
 didRecover :: IsAVMetricErrorEvent avMetricErrorEvent => avMetricErrorEvent -> IO Bool
-didRecover avMetricErrorEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricErrorEvent (mkSelector "didRecover") retCULong []
+didRecover avMetricErrorEvent =
+  sendMessage avMetricErrorEvent didRecoverSelector
 
 -- | Returns the error encountered.
 --
 -- ObjC selector: @- error@
 error_ :: IsAVMetricErrorEvent avMetricErrorEvent => avMetricErrorEvent -> IO (Id NSError)
-error_ avMetricErrorEvent  =
-    sendMsg avMetricErrorEvent (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avMetricErrorEvent =
+  sendMessage avMetricErrorEvent errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricErrorEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricErrorEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @didRecover@
-didRecoverSelector :: Selector
+didRecoverSelector :: Selector '[] Bool
 didRecoverSelector = mkSelector "didRecover"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,68 +56,64 @@ module ObjC.OpenDirectory.ODConfiguration
   , setDiscoveryModuleEntries
   , generalModuleEntries
   , setGeneralModuleEntries
+  , addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector
+  , authenticationModuleEntriesSelector
+  , commentSelector
   , configurationSelector
+  , connectionIdleTimeoutInSecondsSelector
+  , connectionSetupTimeoutInSecondsSelector
+  , defaultMappingsSelector
+  , defaultModuleEntriesSelector
+  , discoveryModuleEntriesSelector
+  , generalModuleEntriesSelector
+  , hideRegistrationSelector
+  , manInTheMiddleProtectionSelector
+  , nodeNameSelector
+  , packetEncryptionSelector
+  , packetSigningSelector
+  , preferredDestinationHostNameSelector
+  , preferredDestinationHostPortSelector
+  , queryTimeoutInSecondsSelector
+  , removeTrustUsingUsername_password_deleteTrustAccount_errorSelector
+  , saveUsingAuthorization_errorSelector
+  , setAuthenticationModuleEntriesSelector
+  , setCommentSelector
+  , setConnectionIdleTimeoutInSecondsSelector
+  , setConnectionSetupTimeoutInSecondsSelector
+  , setDefaultMappingsSelector
+  , setDefaultModuleEntriesSelector
+  , setDiscoveryModuleEntriesSelector
+  , setGeneralModuleEntriesSelector
+  , setHideRegistrationSelector
+  , setManInTheMiddleProtectionSelector
+  , setNodeNameSelector
+  , setPacketEncryptionSelector
+  , setPacketSigningSelector
+  , setPreferredDestinationHostNameSelector
+  , setPreferredDestinationHostPortSelector
+  , setQueryTimeoutInSecondsSelector
+  , setTemplateNameSelector
+  , setVirtualSubnodesSelector
   , suggestedTrustAccountSelector
   , suggestedTrustPasswordSelector
-  , saveUsingAuthorization_errorSelector
-  , addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector
-  , removeTrustUsingUsername_password_deleteTrustAccount_errorSelector
-  , nodeNameSelector
-  , setNodeNameSelector
-  , commentSelector
-  , setCommentSelector
-  , defaultMappingsSelector
-  , setDefaultMappingsSelector
   , templateNameSelector
-  , setTemplateNameSelector
-  , virtualSubnodesSelector
-  , setVirtualSubnodesSelector
-  , hideRegistrationSelector
-  , setHideRegistrationSelector
-  , preferredDestinationHostNameSelector
-  , setPreferredDestinationHostNameSelector
-  , preferredDestinationHostPortSelector
-  , setPreferredDestinationHostPortSelector
   , trustAccountSelector
-  , trustMetaAccountSelector
   , trustKerberosPrincipalSelector
+  , trustMetaAccountSelector
   , trustTypeSelector
-  , trustUsesMutualAuthenticationSelector
   , trustUsesKerberosKeytabSelector
+  , trustUsesMutualAuthenticationSelector
   , trustUsesSystemKeychainSelector
-  , packetSigningSelector
-  , setPacketSigningSelector
-  , packetEncryptionSelector
-  , setPacketEncryptionSelector
-  , manInTheMiddleProtectionSelector
-  , setManInTheMiddleProtectionSelector
-  , queryTimeoutInSecondsSelector
-  , setQueryTimeoutInSecondsSelector
-  , connectionSetupTimeoutInSecondsSelector
-  , setConnectionSetupTimeoutInSecondsSelector
-  , connectionIdleTimeoutInSecondsSelector
-  , setConnectionIdleTimeoutInSecondsSelector
-  , defaultModuleEntriesSelector
-  , setDefaultModuleEntriesSelector
-  , authenticationModuleEntriesSelector
-  , setAuthenticationModuleEntriesSelector
-  , discoveryModuleEntriesSelector
-  , setDiscoveryModuleEntriesSelector
-  , generalModuleEntriesSelector
-  , setGeneralModuleEntriesSelector
+  , virtualSubnodesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -135,7 +132,7 @@ configuration :: IO (Id ODConfiguration)
 configuration  =
   do
     cls' <- getRequiredClass "ODConfiguration"
-    sendClassMsg cls' (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationSelector
 
 -- | suggestedTrustAccount:
 --
@@ -148,8 +145,7 @@ suggestedTrustAccount :: IsNSString hostname => hostname -> IO (Id NSString)
 suggestedTrustAccount hostname =
   do
     cls' <- getRequiredClass "ODConfiguration"
-    withObjCPtr hostname $ \raw_hostname ->
-      sendClassMsg cls' (mkSelector "suggestedTrustAccount:") (retPtr retVoid) [argPtr (castPtr raw_hostname :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' suggestedTrustAccountSelector (toNSString hostname)
 
 -- | suggestedTrustPassword:
 --
@@ -162,7 +158,7 @@ suggestedTrustPassword :: CULong -> IO (Id NSString)
 suggestedTrustPassword length_ =
   do
     cls' <- getRequiredClass "ODConfiguration"
-    sendClassMsg cls' (mkSelector "suggestedTrustPassword:") (retPtr retVoid) [argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' suggestedTrustPasswordSelector length_
 
 -- | saveUsingAuthorization:error:
 --
@@ -172,10 +168,8 @@ suggestedTrustPassword length_ =
 --
 -- ObjC selector: @- saveUsingAuthorization:error:@
 saveUsingAuthorization_error :: (IsODConfiguration odConfiguration, IsSFAuthorization authorization, IsNSError error_) => odConfiguration -> authorization -> error_ -> IO Bool
-saveUsingAuthorization_error odConfiguration  authorization error_ =
-  withObjCPtr authorization $ \raw_authorization ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "saveUsingAuthorization:error:") retCULong [argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+saveUsingAuthorization_error odConfiguration authorization error_ =
+  sendMessage odConfiguration saveUsingAuthorization_errorSelector (toSFAuthorization authorization) (toNSError error_)
 
 -- | addTrustType:trustAccount:trustPassword:username:password:joinExisting:error:
 --
@@ -185,14 +179,8 @@ saveUsingAuthorization_error odConfiguration  authorization error_ =
 --
 -- ObjC selector: @- addTrustType:trustAccount:trustPassword:username:password:joinExisting:error:@
 addTrustType_trustAccount_trustPassword_username_password_joinExisting_error :: (IsODConfiguration odConfiguration, IsNSString trustType, IsNSString account, IsNSString accountPassword, IsNSString username, IsNSString password, IsNSError error_) => odConfiguration -> trustType -> account -> accountPassword -> username -> password -> Bool -> error_ -> IO Bool
-addTrustType_trustAccount_trustPassword_username_password_joinExisting_error odConfiguration  trustType account accountPassword username password join error_ =
-  withObjCPtr trustType $ \raw_trustType ->
-    withObjCPtr account $ \raw_account ->
-      withObjCPtr accountPassword $ \raw_accountPassword ->
-        withObjCPtr username $ \raw_username ->
-          withObjCPtr password $ \raw_password ->
-            withObjCPtr error_ $ \raw_error_ ->
-                fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "addTrustType:trustAccount:trustPassword:username:password:joinExisting:error:") retCULong [argPtr (castPtr raw_trustType :: Ptr ()), argPtr (castPtr raw_account :: Ptr ()), argPtr (castPtr raw_accountPassword :: Ptr ()), argPtr (castPtr raw_username :: Ptr ()), argPtr (castPtr raw_password :: Ptr ()), argCULong (if join then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+addTrustType_trustAccount_trustPassword_username_password_joinExisting_error odConfiguration trustType account accountPassword username password join error_ =
+  sendMessage odConfiguration addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector (toNSString trustType) (toNSString account) (toNSString accountPassword) (toNSString username) (toNSString password) join (toNSError error_)
 
 -- | removeTrustUsingUsername:password:deleteTrustAccount:error:
 --
@@ -202,434 +190,421 @@ addTrustType_trustAccount_trustPassword_username_password_joinExisting_error odC
 --
 -- ObjC selector: @- removeTrustUsingUsername:password:deleteTrustAccount:error:@
 removeTrustUsingUsername_password_deleteTrustAccount_error :: (IsODConfiguration odConfiguration, IsNSString username, IsNSString password, IsNSError error_) => odConfiguration -> username -> password -> Bool -> error_ -> IO Bool
-removeTrustUsingUsername_password_deleteTrustAccount_error odConfiguration  username password deleteAccount error_ =
-  withObjCPtr username $ \raw_username ->
-    withObjCPtr password $ \raw_password ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "removeTrustUsingUsername:password:deleteTrustAccount:error:") retCULong [argPtr (castPtr raw_username :: Ptr ()), argPtr (castPtr raw_password :: Ptr ()), argCULong (if deleteAccount then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+removeTrustUsingUsername_password_deleteTrustAccount_error odConfiguration username password deleteAccount error_ =
+  sendMessage odConfiguration removeTrustUsingUsername_password_deleteTrustAccount_errorSelector (toNSString username) (toNSString password) deleteAccount (toNSError error_)
 
 -- | @- nodeName@
 nodeName :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-nodeName odConfiguration  =
-    sendMsg odConfiguration (mkSelector "nodeName") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeName odConfiguration =
+  sendMessage odConfiguration nodeNameSelector
 
 -- | @- setNodeName:@
 setNodeName :: (IsODConfiguration odConfiguration, IsNSString value) => odConfiguration -> value -> IO ()
-setNodeName odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setNodeName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeName odConfiguration value =
+  sendMessage odConfiguration setNodeNameSelector (toNSString value)
 
 -- | @- comment@
 comment :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-comment odConfiguration  =
-    sendMsg odConfiguration (mkSelector "comment") (retPtr retVoid) [] >>= retainedObject . castPtr
+comment odConfiguration =
+  sendMessage odConfiguration commentSelector
 
 -- | @- setComment:@
 setComment :: (IsODConfiguration odConfiguration, IsNSString value) => odConfiguration -> value -> IO ()
-setComment odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setComment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setComment odConfiguration value =
+  sendMessage odConfiguration setCommentSelector (toNSString value)
 
 -- | @- defaultMappings@
 defaultMappings :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id ODMappings)
-defaultMappings odConfiguration  =
-    sendMsg odConfiguration (mkSelector "defaultMappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultMappings odConfiguration =
+  sendMessage odConfiguration defaultMappingsSelector
 
 -- | @- setDefaultMappings:@
 setDefaultMappings :: (IsODConfiguration odConfiguration, IsODMappings value) => odConfiguration -> value -> IO ()
-setDefaultMappings odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setDefaultMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultMappings odConfiguration value =
+  sendMessage odConfiguration setDefaultMappingsSelector (toODMappings value)
 
 -- | @- templateName@
 templateName :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-templateName odConfiguration  =
-    sendMsg odConfiguration (mkSelector "templateName") (retPtr retVoid) [] >>= retainedObject . castPtr
+templateName odConfiguration =
+  sendMessage odConfiguration templateNameSelector
 
 -- | @- setTemplateName:@
 setTemplateName :: (IsODConfiguration odConfiguration, IsNSString value) => odConfiguration -> value -> IO ()
-setTemplateName odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setTemplateName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTemplateName odConfiguration value =
+  sendMessage odConfiguration setTemplateNameSelector (toNSString value)
 
 -- | @- virtualSubnodes@
 virtualSubnodes :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSArray)
-virtualSubnodes odConfiguration  =
-    sendMsg odConfiguration (mkSelector "virtualSubnodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualSubnodes odConfiguration =
+  sendMessage odConfiguration virtualSubnodesSelector
 
 -- | @- setVirtualSubnodes:@
 setVirtualSubnodes :: (IsODConfiguration odConfiguration, IsNSArray value) => odConfiguration -> value -> IO ()
-setVirtualSubnodes odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setVirtualSubnodes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVirtualSubnodes odConfiguration value =
+  sendMessage odConfiguration setVirtualSubnodesSelector (toNSArray value)
 
 -- | @- hideRegistration@
 hideRegistration :: IsODConfiguration odConfiguration => odConfiguration -> IO Bool
-hideRegistration odConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "hideRegistration") retCULong []
+hideRegistration odConfiguration =
+  sendMessage odConfiguration hideRegistrationSelector
 
 -- | @- setHideRegistration:@
 setHideRegistration :: IsODConfiguration odConfiguration => odConfiguration -> Bool -> IO ()
-setHideRegistration odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setHideRegistration:") retVoid [argCULong (if value then 1 else 0)]
+setHideRegistration odConfiguration value =
+  sendMessage odConfiguration setHideRegistrationSelector value
 
 -- | @- preferredDestinationHostName@
 preferredDestinationHostName :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-preferredDestinationHostName odConfiguration  =
-    sendMsg odConfiguration (mkSelector "preferredDestinationHostName") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredDestinationHostName odConfiguration =
+  sendMessage odConfiguration preferredDestinationHostNameSelector
 
 -- | @- setPreferredDestinationHostName:@
 setPreferredDestinationHostName :: (IsODConfiguration odConfiguration, IsNSString value) => odConfiguration -> value -> IO ()
-setPreferredDestinationHostName odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setPreferredDestinationHostName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredDestinationHostName odConfiguration value =
+  sendMessage odConfiguration setPreferredDestinationHostNameSelector (toNSString value)
 
 -- | @- preferredDestinationHostPort@
 preferredDestinationHostPort :: IsODConfiguration odConfiguration => odConfiguration -> IO CUShort
-preferredDestinationHostPort odConfiguration  =
-    fmap fromIntegral $ sendMsg odConfiguration (mkSelector "preferredDestinationHostPort") retCUInt []
+preferredDestinationHostPort odConfiguration =
+  sendMessage odConfiguration preferredDestinationHostPortSelector
 
 -- | @- setPreferredDestinationHostPort:@
 setPreferredDestinationHostPort :: IsODConfiguration odConfiguration => odConfiguration -> CUShort -> IO ()
-setPreferredDestinationHostPort odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setPreferredDestinationHostPort:") retVoid [argCUInt (fromIntegral value)]
+setPreferredDestinationHostPort odConfiguration value =
+  sendMessage odConfiguration setPreferredDestinationHostPortSelector value
 
 -- | @- trustAccount@
 trustAccount :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-trustAccount odConfiguration  =
-    sendMsg odConfiguration (mkSelector "trustAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustAccount odConfiguration =
+  sendMessage odConfiguration trustAccountSelector
 
 -- | @- trustMetaAccount@
 trustMetaAccount :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-trustMetaAccount odConfiguration  =
-    sendMsg odConfiguration (mkSelector "trustMetaAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustMetaAccount odConfiguration =
+  sendMessage odConfiguration trustMetaAccountSelector
 
 -- | @- trustKerberosPrincipal@
 trustKerberosPrincipal :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-trustKerberosPrincipal odConfiguration  =
-    sendMsg odConfiguration (mkSelector "trustKerberosPrincipal") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustKerberosPrincipal odConfiguration =
+  sendMessage odConfiguration trustKerberosPrincipalSelector
 
 -- | @- trustType@
 trustType :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSString)
-trustType odConfiguration  =
-    sendMsg odConfiguration (mkSelector "trustType") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustType odConfiguration =
+  sendMessage odConfiguration trustTypeSelector
 
 -- | @- trustUsesMutualAuthentication@
 trustUsesMutualAuthentication :: IsODConfiguration odConfiguration => odConfiguration -> IO Bool
-trustUsesMutualAuthentication odConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "trustUsesMutualAuthentication") retCULong []
+trustUsesMutualAuthentication odConfiguration =
+  sendMessage odConfiguration trustUsesMutualAuthenticationSelector
 
 -- | @- trustUsesKerberosKeytab@
 trustUsesKerberosKeytab :: IsODConfiguration odConfiguration => odConfiguration -> IO Bool
-trustUsesKerberosKeytab odConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "trustUsesKerberosKeytab") retCULong []
+trustUsesKerberosKeytab odConfiguration =
+  sendMessage odConfiguration trustUsesKerberosKeytabSelector
 
 -- | @- trustUsesSystemKeychain@
 trustUsesSystemKeychain :: IsODConfiguration odConfiguration => odConfiguration -> IO Bool
-trustUsesSystemKeychain odConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "trustUsesSystemKeychain") retCULong []
+trustUsesSystemKeychain odConfiguration =
+  sendMessage odConfiguration trustUsesSystemKeychainSelector
 
 -- | @- packetSigning@
 packetSigning :: IsODConfiguration odConfiguration => odConfiguration -> IO CLong
-packetSigning odConfiguration  =
-    sendMsg odConfiguration (mkSelector "packetSigning") retCLong []
+packetSigning odConfiguration =
+  sendMessage odConfiguration packetSigningSelector
 
 -- | @- setPacketSigning:@
 setPacketSigning :: IsODConfiguration odConfiguration => odConfiguration -> CLong -> IO ()
-setPacketSigning odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setPacketSigning:") retVoid [argCLong value]
+setPacketSigning odConfiguration value =
+  sendMessage odConfiguration setPacketSigningSelector value
 
 -- | @- packetEncryption@
 packetEncryption :: IsODConfiguration odConfiguration => odConfiguration -> IO CLong
-packetEncryption odConfiguration  =
-    sendMsg odConfiguration (mkSelector "packetEncryption") retCLong []
+packetEncryption odConfiguration =
+  sendMessage odConfiguration packetEncryptionSelector
 
 -- | @- setPacketEncryption:@
 setPacketEncryption :: IsODConfiguration odConfiguration => odConfiguration -> CLong -> IO ()
-setPacketEncryption odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setPacketEncryption:") retVoid [argCLong value]
+setPacketEncryption odConfiguration value =
+  sendMessage odConfiguration setPacketEncryptionSelector value
 
 -- | @- manInTheMiddleProtection@
 manInTheMiddleProtection :: IsODConfiguration odConfiguration => odConfiguration -> IO Bool
-manInTheMiddleProtection odConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odConfiguration (mkSelector "manInTheMiddleProtection") retCULong []
+manInTheMiddleProtection odConfiguration =
+  sendMessage odConfiguration manInTheMiddleProtectionSelector
 
 -- | @- setManInTheMiddleProtection:@
 setManInTheMiddleProtection :: IsODConfiguration odConfiguration => odConfiguration -> Bool -> IO ()
-setManInTheMiddleProtection odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setManInTheMiddleProtection:") retVoid [argCULong (if value then 1 else 0)]
+setManInTheMiddleProtection odConfiguration value =
+  sendMessage odConfiguration setManInTheMiddleProtectionSelector value
 
 -- | @- queryTimeoutInSeconds@
 queryTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> IO CLong
-queryTimeoutInSeconds odConfiguration  =
-    sendMsg odConfiguration (mkSelector "queryTimeoutInSeconds") retCLong []
+queryTimeoutInSeconds odConfiguration =
+  sendMessage odConfiguration queryTimeoutInSecondsSelector
 
 -- | @- setQueryTimeoutInSeconds:@
 setQueryTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> CLong -> IO ()
-setQueryTimeoutInSeconds odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setQueryTimeoutInSeconds:") retVoid [argCLong value]
+setQueryTimeoutInSeconds odConfiguration value =
+  sendMessage odConfiguration setQueryTimeoutInSecondsSelector value
 
 -- | @- connectionSetupTimeoutInSeconds@
 connectionSetupTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> IO CLong
-connectionSetupTimeoutInSeconds odConfiguration  =
-    sendMsg odConfiguration (mkSelector "connectionSetupTimeoutInSeconds") retCLong []
+connectionSetupTimeoutInSeconds odConfiguration =
+  sendMessage odConfiguration connectionSetupTimeoutInSecondsSelector
 
 -- | @- setConnectionSetupTimeoutInSeconds:@
 setConnectionSetupTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> CLong -> IO ()
-setConnectionSetupTimeoutInSeconds odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setConnectionSetupTimeoutInSeconds:") retVoid [argCLong value]
+setConnectionSetupTimeoutInSeconds odConfiguration value =
+  sendMessage odConfiguration setConnectionSetupTimeoutInSecondsSelector value
 
 -- | @- connectionIdleTimeoutInSeconds@
 connectionIdleTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> IO CLong
-connectionIdleTimeoutInSeconds odConfiguration  =
-    sendMsg odConfiguration (mkSelector "connectionIdleTimeoutInSeconds") retCLong []
+connectionIdleTimeoutInSeconds odConfiguration =
+  sendMessage odConfiguration connectionIdleTimeoutInSecondsSelector
 
 -- | @- setConnectionIdleTimeoutInSeconds:@
 setConnectionIdleTimeoutInSeconds :: IsODConfiguration odConfiguration => odConfiguration -> CLong -> IO ()
-setConnectionIdleTimeoutInSeconds odConfiguration  value =
-    sendMsg odConfiguration (mkSelector "setConnectionIdleTimeoutInSeconds:") retVoid [argCLong value]
+setConnectionIdleTimeoutInSeconds odConfiguration value =
+  sendMessage odConfiguration setConnectionIdleTimeoutInSecondsSelector value
 
 -- | @- defaultModuleEntries@
 defaultModuleEntries :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSArray)
-defaultModuleEntries odConfiguration  =
-    sendMsg odConfiguration (mkSelector "defaultModuleEntries") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultModuleEntries odConfiguration =
+  sendMessage odConfiguration defaultModuleEntriesSelector
 
 -- | @- setDefaultModuleEntries:@
 setDefaultModuleEntries :: (IsODConfiguration odConfiguration, IsNSArray value) => odConfiguration -> value -> IO ()
-setDefaultModuleEntries odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setDefaultModuleEntries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultModuleEntries odConfiguration value =
+  sendMessage odConfiguration setDefaultModuleEntriesSelector (toNSArray value)
 
 -- | @- authenticationModuleEntries@
 authenticationModuleEntries :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSArray)
-authenticationModuleEntries odConfiguration  =
-    sendMsg odConfiguration (mkSelector "authenticationModuleEntries") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationModuleEntries odConfiguration =
+  sendMessage odConfiguration authenticationModuleEntriesSelector
 
 -- | @- setAuthenticationModuleEntries:@
 setAuthenticationModuleEntries :: (IsODConfiguration odConfiguration, IsNSArray value) => odConfiguration -> value -> IO ()
-setAuthenticationModuleEntries odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setAuthenticationModuleEntries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthenticationModuleEntries odConfiguration value =
+  sendMessage odConfiguration setAuthenticationModuleEntriesSelector (toNSArray value)
 
 -- | @- discoveryModuleEntries@
 discoveryModuleEntries :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSArray)
-discoveryModuleEntries odConfiguration  =
-    sendMsg odConfiguration (mkSelector "discoveryModuleEntries") (retPtr retVoid) [] >>= retainedObject . castPtr
+discoveryModuleEntries odConfiguration =
+  sendMessage odConfiguration discoveryModuleEntriesSelector
 
 -- | @- setDiscoveryModuleEntries:@
 setDiscoveryModuleEntries :: (IsODConfiguration odConfiguration, IsNSArray value) => odConfiguration -> value -> IO ()
-setDiscoveryModuleEntries odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setDiscoveryModuleEntries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDiscoveryModuleEntries odConfiguration value =
+  sendMessage odConfiguration setDiscoveryModuleEntriesSelector (toNSArray value)
 
 -- | @- generalModuleEntries@
 generalModuleEntries :: IsODConfiguration odConfiguration => odConfiguration -> IO (Id NSArray)
-generalModuleEntries odConfiguration  =
-    sendMsg odConfiguration (mkSelector "generalModuleEntries") (retPtr retVoid) [] >>= retainedObject . castPtr
+generalModuleEntries odConfiguration =
+  sendMessage odConfiguration generalModuleEntriesSelector
 
 -- | @- setGeneralModuleEntries:@
 setGeneralModuleEntries :: (IsODConfiguration odConfiguration, IsNSArray value) => odConfiguration -> value -> IO ()
-setGeneralModuleEntries odConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odConfiguration (mkSelector "setGeneralModuleEntries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGeneralModuleEntries odConfiguration value =
+  sendMessage odConfiguration setGeneralModuleEntriesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id ODConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @suggestedTrustAccount:@
-suggestedTrustAccountSelector :: Selector
+suggestedTrustAccountSelector :: Selector '[Id NSString] (Id NSString)
 suggestedTrustAccountSelector = mkSelector "suggestedTrustAccount:"
 
 -- | @Selector@ for @suggestedTrustPassword:@
-suggestedTrustPasswordSelector :: Selector
+suggestedTrustPasswordSelector :: Selector '[CULong] (Id NSString)
 suggestedTrustPasswordSelector = mkSelector "suggestedTrustPassword:"
 
 -- | @Selector@ for @saveUsingAuthorization:error:@
-saveUsingAuthorization_errorSelector :: Selector
+saveUsingAuthorization_errorSelector :: Selector '[Id SFAuthorization, Id NSError] Bool
 saveUsingAuthorization_errorSelector = mkSelector "saveUsingAuthorization:error:"
 
 -- | @Selector@ for @addTrustType:trustAccount:trustPassword:username:password:joinExisting:error:@
-addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector :: Selector
+addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSString, Id NSString, Bool, Id NSError] Bool
 addTrustType_trustAccount_trustPassword_username_password_joinExisting_errorSelector = mkSelector "addTrustType:trustAccount:trustPassword:username:password:joinExisting:error:"
 
 -- | @Selector@ for @removeTrustUsingUsername:password:deleteTrustAccount:error:@
-removeTrustUsingUsername_password_deleteTrustAccount_errorSelector :: Selector
+removeTrustUsingUsername_password_deleteTrustAccount_errorSelector :: Selector '[Id NSString, Id NSString, Bool, Id NSError] Bool
 removeTrustUsingUsername_password_deleteTrustAccount_errorSelector = mkSelector "removeTrustUsingUsername:password:deleteTrustAccount:error:"
 
 -- | @Selector@ for @nodeName@
-nodeNameSelector :: Selector
+nodeNameSelector :: Selector '[] (Id NSString)
 nodeNameSelector = mkSelector "nodeName"
 
 -- | @Selector@ for @setNodeName:@
-setNodeNameSelector :: Selector
+setNodeNameSelector :: Selector '[Id NSString] ()
 setNodeNameSelector = mkSelector "setNodeName:"
 
 -- | @Selector@ for @comment@
-commentSelector :: Selector
+commentSelector :: Selector '[] (Id NSString)
 commentSelector = mkSelector "comment"
 
 -- | @Selector@ for @setComment:@
-setCommentSelector :: Selector
+setCommentSelector :: Selector '[Id NSString] ()
 setCommentSelector = mkSelector "setComment:"
 
 -- | @Selector@ for @defaultMappings@
-defaultMappingsSelector :: Selector
+defaultMappingsSelector :: Selector '[] (Id ODMappings)
 defaultMappingsSelector = mkSelector "defaultMappings"
 
 -- | @Selector@ for @setDefaultMappings:@
-setDefaultMappingsSelector :: Selector
+setDefaultMappingsSelector :: Selector '[Id ODMappings] ()
 setDefaultMappingsSelector = mkSelector "setDefaultMappings:"
 
 -- | @Selector@ for @templateName@
-templateNameSelector :: Selector
+templateNameSelector :: Selector '[] (Id NSString)
 templateNameSelector = mkSelector "templateName"
 
 -- | @Selector@ for @setTemplateName:@
-setTemplateNameSelector :: Selector
+setTemplateNameSelector :: Selector '[Id NSString] ()
 setTemplateNameSelector = mkSelector "setTemplateName:"
 
 -- | @Selector@ for @virtualSubnodes@
-virtualSubnodesSelector :: Selector
+virtualSubnodesSelector :: Selector '[] (Id NSArray)
 virtualSubnodesSelector = mkSelector "virtualSubnodes"
 
 -- | @Selector@ for @setVirtualSubnodes:@
-setVirtualSubnodesSelector :: Selector
+setVirtualSubnodesSelector :: Selector '[Id NSArray] ()
 setVirtualSubnodesSelector = mkSelector "setVirtualSubnodes:"
 
 -- | @Selector@ for @hideRegistration@
-hideRegistrationSelector :: Selector
+hideRegistrationSelector :: Selector '[] Bool
 hideRegistrationSelector = mkSelector "hideRegistration"
 
 -- | @Selector@ for @setHideRegistration:@
-setHideRegistrationSelector :: Selector
+setHideRegistrationSelector :: Selector '[Bool] ()
 setHideRegistrationSelector = mkSelector "setHideRegistration:"
 
 -- | @Selector@ for @preferredDestinationHostName@
-preferredDestinationHostNameSelector :: Selector
+preferredDestinationHostNameSelector :: Selector '[] (Id NSString)
 preferredDestinationHostNameSelector = mkSelector "preferredDestinationHostName"
 
 -- | @Selector@ for @setPreferredDestinationHostName:@
-setPreferredDestinationHostNameSelector :: Selector
+setPreferredDestinationHostNameSelector :: Selector '[Id NSString] ()
 setPreferredDestinationHostNameSelector = mkSelector "setPreferredDestinationHostName:"
 
 -- | @Selector@ for @preferredDestinationHostPort@
-preferredDestinationHostPortSelector :: Selector
+preferredDestinationHostPortSelector :: Selector '[] CUShort
 preferredDestinationHostPortSelector = mkSelector "preferredDestinationHostPort"
 
 -- | @Selector@ for @setPreferredDestinationHostPort:@
-setPreferredDestinationHostPortSelector :: Selector
+setPreferredDestinationHostPortSelector :: Selector '[CUShort] ()
 setPreferredDestinationHostPortSelector = mkSelector "setPreferredDestinationHostPort:"
 
 -- | @Selector@ for @trustAccount@
-trustAccountSelector :: Selector
+trustAccountSelector :: Selector '[] (Id NSString)
 trustAccountSelector = mkSelector "trustAccount"
 
 -- | @Selector@ for @trustMetaAccount@
-trustMetaAccountSelector :: Selector
+trustMetaAccountSelector :: Selector '[] (Id NSString)
 trustMetaAccountSelector = mkSelector "trustMetaAccount"
 
 -- | @Selector@ for @trustKerberosPrincipal@
-trustKerberosPrincipalSelector :: Selector
+trustKerberosPrincipalSelector :: Selector '[] (Id NSString)
 trustKerberosPrincipalSelector = mkSelector "trustKerberosPrincipal"
 
 -- | @Selector@ for @trustType@
-trustTypeSelector :: Selector
+trustTypeSelector :: Selector '[] (Id NSString)
 trustTypeSelector = mkSelector "trustType"
 
 -- | @Selector@ for @trustUsesMutualAuthentication@
-trustUsesMutualAuthenticationSelector :: Selector
+trustUsesMutualAuthenticationSelector :: Selector '[] Bool
 trustUsesMutualAuthenticationSelector = mkSelector "trustUsesMutualAuthentication"
 
 -- | @Selector@ for @trustUsesKerberosKeytab@
-trustUsesKerberosKeytabSelector :: Selector
+trustUsesKerberosKeytabSelector :: Selector '[] Bool
 trustUsesKerberosKeytabSelector = mkSelector "trustUsesKerberosKeytab"
 
 -- | @Selector@ for @trustUsesSystemKeychain@
-trustUsesSystemKeychainSelector :: Selector
+trustUsesSystemKeychainSelector :: Selector '[] Bool
 trustUsesSystemKeychainSelector = mkSelector "trustUsesSystemKeychain"
 
 -- | @Selector@ for @packetSigning@
-packetSigningSelector :: Selector
+packetSigningSelector :: Selector '[] CLong
 packetSigningSelector = mkSelector "packetSigning"
 
 -- | @Selector@ for @setPacketSigning:@
-setPacketSigningSelector :: Selector
+setPacketSigningSelector :: Selector '[CLong] ()
 setPacketSigningSelector = mkSelector "setPacketSigning:"
 
 -- | @Selector@ for @packetEncryption@
-packetEncryptionSelector :: Selector
+packetEncryptionSelector :: Selector '[] CLong
 packetEncryptionSelector = mkSelector "packetEncryption"
 
 -- | @Selector@ for @setPacketEncryption:@
-setPacketEncryptionSelector :: Selector
+setPacketEncryptionSelector :: Selector '[CLong] ()
 setPacketEncryptionSelector = mkSelector "setPacketEncryption:"
 
 -- | @Selector@ for @manInTheMiddleProtection@
-manInTheMiddleProtectionSelector :: Selector
+manInTheMiddleProtectionSelector :: Selector '[] Bool
 manInTheMiddleProtectionSelector = mkSelector "manInTheMiddleProtection"
 
 -- | @Selector@ for @setManInTheMiddleProtection:@
-setManInTheMiddleProtectionSelector :: Selector
+setManInTheMiddleProtectionSelector :: Selector '[Bool] ()
 setManInTheMiddleProtectionSelector = mkSelector "setManInTheMiddleProtection:"
 
 -- | @Selector@ for @queryTimeoutInSeconds@
-queryTimeoutInSecondsSelector :: Selector
+queryTimeoutInSecondsSelector :: Selector '[] CLong
 queryTimeoutInSecondsSelector = mkSelector "queryTimeoutInSeconds"
 
 -- | @Selector@ for @setQueryTimeoutInSeconds:@
-setQueryTimeoutInSecondsSelector :: Selector
+setQueryTimeoutInSecondsSelector :: Selector '[CLong] ()
 setQueryTimeoutInSecondsSelector = mkSelector "setQueryTimeoutInSeconds:"
 
 -- | @Selector@ for @connectionSetupTimeoutInSeconds@
-connectionSetupTimeoutInSecondsSelector :: Selector
+connectionSetupTimeoutInSecondsSelector :: Selector '[] CLong
 connectionSetupTimeoutInSecondsSelector = mkSelector "connectionSetupTimeoutInSeconds"
 
 -- | @Selector@ for @setConnectionSetupTimeoutInSeconds:@
-setConnectionSetupTimeoutInSecondsSelector :: Selector
+setConnectionSetupTimeoutInSecondsSelector :: Selector '[CLong] ()
 setConnectionSetupTimeoutInSecondsSelector = mkSelector "setConnectionSetupTimeoutInSeconds:"
 
 -- | @Selector@ for @connectionIdleTimeoutInSeconds@
-connectionIdleTimeoutInSecondsSelector :: Selector
+connectionIdleTimeoutInSecondsSelector :: Selector '[] CLong
 connectionIdleTimeoutInSecondsSelector = mkSelector "connectionIdleTimeoutInSeconds"
 
 -- | @Selector@ for @setConnectionIdleTimeoutInSeconds:@
-setConnectionIdleTimeoutInSecondsSelector :: Selector
+setConnectionIdleTimeoutInSecondsSelector :: Selector '[CLong] ()
 setConnectionIdleTimeoutInSecondsSelector = mkSelector "setConnectionIdleTimeoutInSeconds:"
 
 -- | @Selector@ for @defaultModuleEntries@
-defaultModuleEntriesSelector :: Selector
+defaultModuleEntriesSelector :: Selector '[] (Id NSArray)
 defaultModuleEntriesSelector = mkSelector "defaultModuleEntries"
 
 -- | @Selector@ for @setDefaultModuleEntries:@
-setDefaultModuleEntriesSelector :: Selector
+setDefaultModuleEntriesSelector :: Selector '[Id NSArray] ()
 setDefaultModuleEntriesSelector = mkSelector "setDefaultModuleEntries:"
 
 -- | @Selector@ for @authenticationModuleEntries@
-authenticationModuleEntriesSelector :: Selector
+authenticationModuleEntriesSelector :: Selector '[] (Id NSArray)
 authenticationModuleEntriesSelector = mkSelector "authenticationModuleEntries"
 
 -- | @Selector@ for @setAuthenticationModuleEntries:@
-setAuthenticationModuleEntriesSelector :: Selector
+setAuthenticationModuleEntriesSelector :: Selector '[Id NSArray] ()
 setAuthenticationModuleEntriesSelector = mkSelector "setAuthenticationModuleEntries:"
 
 -- | @Selector@ for @discoveryModuleEntries@
-discoveryModuleEntriesSelector :: Selector
+discoveryModuleEntriesSelector :: Selector '[] (Id NSArray)
 discoveryModuleEntriesSelector = mkSelector "discoveryModuleEntries"
 
 -- | @Selector@ for @setDiscoveryModuleEntries:@
-setDiscoveryModuleEntriesSelector :: Selector
+setDiscoveryModuleEntriesSelector :: Selector '[Id NSArray] ()
 setDiscoveryModuleEntriesSelector = mkSelector "setDiscoveryModuleEntries:"
 
 -- | @Selector@ for @generalModuleEntries@
-generalModuleEntriesSelector :: Selector
+generalModuleEntriesSelector :: Selector '[] (Id NSArray)
 generalModuleEntriesSelector = mkSelector "generalModuleEntries"
 
 -- | @Selector@ for @setGeneralModuleEntries:@
-setGeneralModuleEntriesSelector :: Selector
+setGeneralModuleEntriesSelector :: Selector '[Id NSArray] ()
 setGeneralModuleEntriesSelector = mkSelector "setGeneralModuleEntries:"
 

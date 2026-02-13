@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AppKit.NSAffineTransform
   , transformBezierPath
   , set
   , concat_
-  , transformBezierPathSelector
-  , setSelector
   , concatSelector
+  , setSelector
+  , transformBezierPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- transformBezierPath:@
 transformBezierPath :: (IsNSAffineTransform nsAffineTransform, IsNSBezierPath path) => nsAffineTransform -> path -> IO (Id NSBezierPath)
-transformBezierPath nsAffineTransform  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsAffineTransform (mkSelector "transformBezierPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+transformBezierPath nsAffineTransform path =
+  sendMessage nsAffineTransform transformBezierPathSelector (toNSBezierPath path)
 
 -- | @- set@
 set :: IsNSAffineTransform nsAffineTransform => nsAffineTransform -> IO ()
-set nsAffineTransform  =
-    sendMsg nsAffineTransform (mkSelector "set") retVoid []
+set nsAffineTransform =
+  sendMessage nsAffineTransform setSelector
 
 -- | @- concat@
 concat_ :: IsNSAffineTransform nsAffineTransform => nsAffineTransform -> IO ()
-concat_ nsAffineTransform  =
-    sendMsg nsAffineTransform (mkSelector "concat") retVoid []
+concat_ nsAffineTransform =
+  sendMessage nsAffineTransform concatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transformBezierPath:@
-transformBezierPathSelector :: Selector
+transformBezierPathSelector :: Selector '[Id NSBezierPath] (Id NSBezierPath)
 transformBezierPathSelector = mkSelector "transformBezierPath:"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] ()
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @concat@
-concatSelector :: Selector
+concatSelector :: Selector '[] ()
 concatSelector = mkSelector "concat"
 

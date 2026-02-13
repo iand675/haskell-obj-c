@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MediaExtension.MERAWProcessingListElementParameter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,10 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:description:elementID:@
 initWithName_description_elementID :: (IsMERAWProcessingListElementParameter merawProcessingListElementParameter, IsNSString name, IsNSString description) => merawProcessingListElementParameter -> name -> description -> CLong -> IO (Id MERAWProcessingListElementParameter)
-initWithName_description_elementID merawProcessingListElementParameter  name description elementID =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr description $ \raw_description ->
-        sendMsg merawProcessingListElementParameter (mkSelector "initWithName:description:elementID:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCLong elementID] >>= ownedObject . castPtr
+initWithName_description_elementID merawProcessingListElementParameter name description elementID =
+  sendOwnedMessage merawProcessingListElementParameter initWithName_description_elementIDSelector (toNSString name) (toNSString description) elementID
 
 -- | listElementID
 --
@@ -50,18 +45,18 @@ initWithName_description_elementID merawProcessingListElementParameter  name des
 --
 -- ObjC selector: @- listElementID@
 listElementID :: IsMERAWProcessingListElementParameter merawProcessingListElementParameter => merawProcessingListElementParameter -> IO CLong
-listElementID merawProcessingListElementParameter  =
-    sendMsg merawProcessingListElementParameter (mkSelector "listElementID") retCLong []
+listElementID merawProcessingListElementParameter =
+  sendMessage merawProcessingListElementParameter listElementIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:description:elementID:@
-initWithName_description_elementIDSelector :: Selector
+initWithName_description_elementIDSelector :: Selector '[Id NSString, Id NSString, CLong] (Id MERAWProcessingListElementParameter)
 initWithName_description_elementIDSelector = mkSelector "initWithName:description:elementID:"
 
 -- | @Selector@ for @listElementID@
-listElementIDSelector :: Selector
+listElementIDSelector :: Selector '[] CLong
 listElementIDSelector = mkSelector "listElementID"
 

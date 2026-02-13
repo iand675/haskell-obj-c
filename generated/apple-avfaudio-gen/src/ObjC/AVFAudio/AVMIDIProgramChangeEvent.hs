@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.AVFAudio.AVMIDIProgramChangeEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:programNumber:@
 initWithChannel_programNumber :: IsAVMIDIProgramChangeEvent avmidiProgramChangeEvent => avmidiProgramChangeEvent -> CUInt -> CUInt -> IO (Id AVMIDIProgramChangeEvent)
-initWithChannel_programNumber avmidiProgramChangeEvent  channel programNumber =
-    sendMsg avmidiProgramChangeEvent (mkSelector "initWithChannel:programNumber:") (retPtr retVoid) [argCUInt channel, argCUInt programNumber] >>= ownedObject . castPtr
+initWithChannel_programNumber avmidiProgramChangeEvent channel programNumber =
+  sendOwnedMessage avmidiProgramChangeEvent initWithChannel_programNumberSelector channel programNumber
 
 -- | programNumber
 --
@@ -58,8 +55,8 @@ initWithChannel_programNumber avmidiProgramChangeEvent  channel programNumber =
 --
 -- ObjC selector: @- programNumber@
 programNumber :: IsAVMIDIProgramChangeEvent avmidiProgramChangeEvent => avmidiProgramChangeEvent -> IO CUInt
-programNumber avmidiProgramChangeEvent  =
-    sendMsg avmidiProgramChangeEvent (mkSelector "programNumber") retCUInt []
+programNumber avmidiProgramChangeEvent =
+  sendMessage avmidiProgramChangeEvent programNumberSelector
 
 -- | programNumber
 --
@@ -67,22 +64,22 @@ programNumber avmidiProgramChangeEvent  =
 --
 -- ObjC selector: @- setProgramNumber:@
 setProgramNumber :: IsAVMIDIProgramChangeEvent avmidiProgramChangeEvent => avmidiProgramChangeEvent -> CUInt -> IO ()
-setProgramNumber avmidiProgramChangeEvent  value =
-    sendMsg avmidiProgramChangeEvent (mkSelector "setProgramNumber:") retVoid [argCUInt value]
+setProgramNumber avmidiProgramChangeEvent value =
+  sendMessage avmidiProgramChangeEvent setProgramNumberSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:programNumber:@
-initWithChannel_programNumberSelector :: Selector
+initWithChannel_programNumberSelector :: Selector '[CUInt, CUInt] (Id AVMIDIProgramChangeEvent)
 initWithChannel_programNumberSelector = mkSelector "initWithChannel:programNumber:"
 
 -- | @Selector@ for @programNumber@
-programNumberSelector :: Selector
+programNumberSelector :: Selector '[] CUInt
 programNumberSelector = mkSelector "programNumber"
 
 -- | @Selector@ for @setProgramNumber:@
-setProgramNumberSelector :: Selector
+setProgramNumberSelector :: Selector '[CUInt] ()
 setProgramNumberSelector = mkSelector "setProgramNumber:"
 

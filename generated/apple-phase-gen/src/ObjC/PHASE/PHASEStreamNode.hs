@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.PHASE.PHASEStreamNode
   , rateMetaParameter
   , mixer
   , format
-  , initSelector
-  , newSelector
-  , gainMetaParameterSelector
-  , rateMetaParameterSelector
-  , mixerSelector
   , formatSelector
+  , gainMetaParameterSelector
+  , initSelector
+  , mixerSelector
+  , newSelector
+  , rateMetaParameterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,15 +43,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEStreamNode phaseStreamNode => phaseStreamNode -> IO (Id PHASEStreamNode)
-init_ phaseStreamNode  =
-    sendMsg phaseStreamNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseStreamNode =
+  sendOwnedMessage phaseStreamNode initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEStreamNode)
 new  =
   do
     cls' <- getRequiredClass "PHASEStreamNode"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | gainMetaParameter
 --
@@ -62,8 +59,8 @@ new  =
 --
 -- ObjC selector: @- gainMetaParameter@
 gainMetaParameter :: IsPHASEStreamNode phaseStreamNode => phaseStreamNode -> IO (Id PHASENumberMetaParameter)
-gainMetaParameter phaseStreamNode  =
-    sendMsg phaseStreamNode (mkSelector "gainMetaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+gainMetaParameter phaseStreamNode =
+  sendMessage phaseStreamNode gainMetaParameterSelector
 
 -- | rateMetaParameter
 --
@@ -71,8 +68,8 @@ gainMetaParameter phaseStreamNode  =
 --
 -- ObjC selector: @- rateMetaParameter@
 rateMetaParameter :: IsPHASEStreamNode phaseStreamNode => phaseStreamNode -> IO (Id PHASENumberMetaParameter)
-rateMetaParameter phaseStreamNode  =
-    sendMsg phaseStreamNode (mkSelector "rateMetaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+rateMetaParameter phaseStreamNode =
+  sendMessage phaseStreamNode rateMetaParameterSelector
 
 -- | mixer
 --
@@ -80,8 +77,8 @@ rateMetaParameter phaseStreamNode  =
 --
 -- ObjC selector: @- mixer@
 mixer :: IsPHASEStreamNode phaseStreamNode => phaseStreamNode -> IO (Id PHASEMixer)
-mixer phaseStreamNode  =
-    sendMsg phaseStreamNode (mkSelector "mixer") (retPtr retVoid) [] >>= retainedObject . castPtr
+mixer phaseStreamNode =
+  sendMessage phaseStreamNode mixerSelector
 
 -- | format
 --
@@ -89,34 +86,34 @@ mixer phaseStreamNode  =
 --
 -- ObjC selector: @- format@
 format :: IsPHASEStreamNode phaseStreamNode => phaseStreamNode -> IO (Id AVAudioFormat)
-format phaseStreamNode  =
-    sendMsg phaseStreamNode (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format phaseStreamNode =
+  sendMessage phaseStreamNode formatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEStreamNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEStreamNode)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @gainMetaParameter@
-gainMetaParameterSelector :: Selector
+gainMetaParameterSelector :: Selector '[] (Id PHASENumberMetaParameter)
 gainMetaParameterSelector = mkSelector "gainMetaParameter"
 
 -- | @Selector@ for @rateMetaParameter@
-rateMetaParameterSelector :: Selector
+rateMetaParameterSelector :: Selector '[] (Id PHASENumberMetaParameter)
 rateMetaParameterSelector = mkSelector "rateMetaParameter"
 
 -- | @Selector@ for @mixer@
-mixerSelector :: Selector
+mixerSelector :: Selector '[] (Id PHASEMixer)
 mixerSelector = mkSelector "mixer"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id AVAudioFormat)
 formatSelector = mkSelector "format"
 

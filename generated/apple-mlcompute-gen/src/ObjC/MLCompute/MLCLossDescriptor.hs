@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.MLCompute.MLCLossDescriptor
   , classCount
   , epsilon
   , delta
-  , newSelector
-  , initSelector
+  , classCountSelector
+  , deltaSelector
   , descriptorWithType_reductionTypeSelector
   , descriptorWithType_reductionType_weightSelector
   , descriptorWithType_reductionType_weight_labelSmoothing_classCountSelector
   , descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_deltaSelector
+  , epsilonSelector
+  , initSelector
+  , labelSmoothingSelector
   , lossTypeSelector
+  , newSelector
   , reductionTypeSelector
   , weightSelector
-  , labelSmoothingSelector
-  , classCountSelector
-  , epsilonSelector
-  , deltaSelector
 
   -- * Enum types
   , MLCLossType(MLCLossType)
@@ -65,15 +66,11 @@ module ObjC.MLCompute.MLCLossDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,12 +83,12 @@ new :: IO (Id MLCLossDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCLossDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO (Id MLCLossDescriptor)
-init_ mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcLossDescriptor =
+  sendOwnedMessage mlcLossDescriptor initSelector
 
 -- | Create a loss descriptor object
 --
@@ -106,7 +103,7 @@ descriptorWithType_reductionType :: MLCLossType -> MLCReductionType -> IO (Id ML
 descriptorWithType_reductionType lossType reductionType =
   do
     cls' <- getRequiredClass "MLCLossDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:reductionType:") (retPtr retVoid) [argCInt (coerce lossType), argCInt (coerce reductionType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_reductionTypeSelector lossType reductionType
 
 -- | Create a loss descriptor object
 --
@@ -123,7 +120,7 @@ descriptorWithType_reductionType_weight :: MLCLossType -> MLCReductionType -> CF
 descriptorWithType_reductionType_weight lossType reductionType weight =
   do
     cls' <- getRequiredClass "MLCLossDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:reductionType:weight:") (retPtr retVoid) [argCInt (coerce lossType), argCInt (coerce reductionType), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_reductionType_weightSelector lossType reductionType weight
 
 -- | Create a loss descriptor object
 --
@@ -144,7 +141,7 @@ descriptorWithType_reductionType_weight_labelSmoothing_classCount :: MLCLossType
 descriptorWithType_reductionType_weight_labelSmoothing_classCount lossType reductionType weight labelSmoothing classCount =
   do
     cls' <- getRequiredClass "MLCLossDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:reductionType:weight:labelSmoothing:classCount:") (retPtr retVoid) [argCInt (coerce lossType), argCInt (coerce reductionType), argCFloat weight, argCFloat labelSmoothing, argCULong classCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_reductionType_weight_labelSmoothing_classCountSelector lossType reductionType weight labelSmoothing classCount
 
 -- | Create a loss descriptor object
 --
@@ -169,7 +166,7 @@ descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_delta 
 descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_delta lossType reductionType weight labelSmoothing classCount epsilon delta =
   do
     cls' <- getRequiredClass "MLCLossDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:reductionType:weight:labelSmoothing:classCount:epsilon:delta:") (retPtr retVoid) [argCInt (coerce lossType), argCInt (coerce reductionType), argCFloat weight, argCFloat labelSmoothing, argCULong classCount, argCFloat epsilon, argCFloat delta] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_deltaSelector lossType reductionType weight labelSmoothing classCount epsilon delta
 
 -- | lossType
 --
@@ -177,8 +174,8 @@ descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_delta 
 --
 -- ObjC selector: @- lossType@
 lossType :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO MLCLossType
-lossType mlcLossDescriptor  =
-    fmap (coerce :: CInt -> MLCLossType) $ sendMsg mlcLossDescriptor (mkSelector "lossType") retCInt []
+lossType mlcLossDescriptor =
+  sendMessage mlcLossDescriptor lossTypeSelector
 
 -- | reductionType
 --
@@ -186,8 +183,8 @@ lossType mlcLossDescriptor  =
 --
 -- ObjC selector: @- reductionType@
 reductionType :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO MLCReductionType
-reductionType mlcLossDescriptor  =
-    fmap (coerce :: CInt -> MLCReductionType) $ sendMsg mlcLossDescriptor (mkSelector "reductionType") retCInt []
+reductionType mlcLossDescriptor =
+  sendMessage mlcLossDescriptor reductionTypeSelector
 
 -- | weight
 --
@@ -195,8 +192,8 @@ reductionType mlcLossDescriptor  =
 --
 -- ObjC selector: @- weight@
 weight :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO CFloat
-weight mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "weight") retCFloat []
+weight mlcLossDescriptor =
+  sendMessage mlcLossDescriptor weightSelector
 
 -- | labelSmoothing
 --
@@ -206,8 +203,8 @@ weight mlcLossDescriptor  =
 --
 -- ObjC selector: @- labelSmoothing@
 labelSmoothing :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO CFloat
-labelSmoothing mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "labelSmoothing") retCFloat []
+labelSmoothing mlcLossDescriptor =
+  sendMessage mlcLossDescriptor labelSmoothingSelector
 
 -- | numberOfClasses
 --
@@ -217,8 +214,8 @@ labelSmoothing mlcLossDescriptor  =
 --
 -- ObjC selector: @- classCount@
 classCount :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO CULong
-classCount mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "classCount") retCULong []
+classCount mlcLossDescriptor =
+  sendMessage mlcLossDescriptor classCountSelector
 
 -- | epsilon
 --
@@ -228,8 +225,8 @@ classCount mlcLossDescriptor  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO CFloat
-epsilon mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "epsilon") retCFloat []
+epsilon mlcLossDescriptor =
+  sendMessage mlcLossDescriptor epsilonSelector
 
 -- | delta
 --
@@ -239,62 +236,62 @@ epsilon mlcLossDescriptor  =
 --
 -- ObjC selector: @- delta@
 delta :: IsMLCLossDescriptor mlcLossDescriptor => mlcLossDescriptor -> IO CFloat
-delta mlcLossDescriptor  =
-    sendMsg mlcLossDescriptor (mkSelector "delta") retCFloat []
+delta mlcLossDescriptor =
+  sendMessage mlcLossDescriptor deltaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCLossDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCLossDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithType:reductionType:@
-descriptorWithType_reductionTypeSelector :: Selector
+descriptorWithType_reductionTypeSelector :: Selector '[MLCLossType, MLCReductionType] (Id MLCLossDescriptor)
 descriptorWithType_reductionTypeSelector = mkSelector "descriptorWithType:reductionType:"
 
 -- | @Selector@ for @descriptorWithType:reductionType:weight:@
-descriptorWithType_reductionType_weightSelector :: Selector
+descriptorWithType_reductionType_weightSelector :: Selector '[MLCLossType, MLCReductionType, CFloat] (Id MLCLossDescriptor)
 descriptorWithType_reductionType_weightSelector = mkSelector "descriptorWithType:reductionType:weight:"
 
 -- | @Selector@ for @descriptorWithType:reductionType:weight:labelSmoothing:classCount:@
-descriptorWithType_reductionType_weight_labelSmoothing_classCountSelector :: Selector
+descriptorWithType_reductionType_weight_labelSmoothing_classCountSelector :: Selector '[MLCLossType, MLCReductionType, CFloat, CFloat, CULong] (Id MLCLossDescriptor)
 descriptorWithType_reductionType_weight_labelSmoothing_classCountSelector = mkSelector "descriptorWithType:reductionType:weight:labelSmoothing:classCount:"
 
 -- | @Selector@ for @descriptorWithType:reductionType:weight:labelSmoothing:classCount:epsilon:delta:@
-descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_deltaSelector :: Selector
+descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_deltaSelector :: Selector '[MLCLossType, MLCReductionType, CFloat, CFloat, CULong, CFloat, CFloat] (Id MLCLossDescriptor)
 descriptorWithType_reductionType_weight_labelSmoothing_classCount_epsilon_deltaSelector = mkSelector "descriptorWithType:reductionType:weight:labelSmoothing:classCount:epsilon:delta:"
 
 -- | @Selector@ for @lossType@
-lossTypeSelector :: Selector
+lossTypeSelector :: Selector '[] MLCLossType
 lossTypeSelector = mkSelector "lossType"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MLCReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @labelSmoothing@
-labelSmoothingSelector :: Selector
+labelSmoothingSelector :: Selector '[] CFloat
 labelSmoothingSelector = mkSelector "labelSmoothing"
 
 -- | @Selector@ for @classCount@
-classCountSelector :: Selector
+classCountSelector :: Selector '[] CULong
 classCountSelector = mkSelector "classCount"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 

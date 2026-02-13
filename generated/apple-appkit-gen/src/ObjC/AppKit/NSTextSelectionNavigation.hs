@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.AppKit.NSTextSelectionNavigation
   , setAllowsNonContiguousRanges
   , rotatesCoordinateSystemForLayoutOrientation
   , setRotatesCoordinateSystemForLayoutOrientation
+  , allowsNonContiguousRangesSelector
+  , deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector
+  , destinationSelectionForTextSelection_direction_destination_extending_confinedSelector
+  , flushLayoutCacheSelector
+  , initSelector
   , initWithDataSourceSelector
   , newSelector
-  , initSelector
-  , flushLayoutCacheSelector
-  , destinationSelectionForTextSelection_direction_destination_extending_confinedSelector
-  , textSelectionForSelectionGranularity_enclosingTextSelectionSelector
   , resolvedInsertionLocationForTextSelection_writingDirectionSelector
-  , deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector
-  , textSelectionDataSourceSelector
-  , allowsNonContiguousRangesSelector
-  , setAllowsNonContiguousRangesSelector
   , rotatesCoordinateSystemForLayoutOrientationSelector
+  , setAllowsNonContiguousRangesSelector
   , setRotatesCoordinateSystemForLayoutOrientationSelector
+  , textSelectionDataSourceSelector
+  , textSelectionForSelectionGranularity_enclosingTextSelectionSelector
 
   -- * Enum types
   , NSTextSelectionGranularity(NSTextSelectionGranularity)
@@ -66,15 +67,11 @@ module ObjC.AppKit.NSTextSelectionNavigation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,128 +81,124 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDataSource:@
 initWithDataSource :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> RawId -> IO (Id NSTextSelectionNavigation)
-initWithDataSource nsTextSelectionNavigation  dataSource =
-    sendMsg nsTextSelectionNavigation (mkSelector "initWithDataSource:") (retPtr retVoid) [argPtr (castPtr (unRawId dataSource) :: Ptr ())] >>= ownedObject . castPtr
+initWithDataSource nsTextSelectionNavigation dataSource =
+  sendOwnedMessage nsTextSelectionNavigation initWithDataSourceSelector dataSource
 
 -- | @+ new@
 new :: IO (Id NSTextSelectionNavigation)
 new  =
   do
     cls' <- getRequiredClass "NSTextSelectionNavigation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO (Id NSTextSelectionNavigation)
-init_ nsTextSelectionNavigation  =
-    sendMsg nsTextSelectionNavigation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextSelectionNavigation =
+  sendOwnedMessage nsTextSelectionNavigation initSelector
 
 -- | @- flushLayoutCache@
 flushLayoutCache :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO ()
-flushLayoutCache nsTextSelectionNavigation  =
-    sendMsg nsTextSelectionNavigation (mkSelector "flushLayoutCache") retVoid []
+flushLayoutCache nsTextSelectionNavigation =
+  sendMessage nsTextSelectionNavigation flushLayoutCacheSelector
 
 -- | @- destinationSelectionForTextSelection:direction:destination:extending:confined:@
 destinationSelectionForTextSelection_direction_destination_extending_confined :: (IsNSTextSelectionNavigation nsTextSelectionNavigation, IsNSTextSelection textSelection) => nsTextSelectionNavigation -> textSelection -> NSTextSelectionNavigationDirection -> NSTextSelectionNavigationDestination -> Bool -> Bool -> IO (Id NSTextSelection)
-destinationSelectionForTextSelection_direction_destination_extending_confined nsTextSelectionNavigation  textSelection direction destination extending confined =
-  withObjCPtr textSelection $ \raw_textSelection ->
-      sendMsg nsTextSelectionNavigation (mkSelector "destinationSelectionForTextSelection:direction:destination:extending:confined:") (retPtr retVoid) [argPtr (castPtr raw_textSelection :: Ptr ()), argCLong (coerce direction), argCLong (coerce destination), argCULong (if extending then 1 else 0), argCULong (if confined then 1 else 0)] >>= retainedObject . castPtr
+destinationSelectionForTextSelection_direction_destination_extending_confined nsTextSelectionNavigation textSelection direction destination extending confined =
+  sendMessage nsTextSelectionNavigation destinationSelectionForTextSelection_direction_destination_extending_confinedSelector (toNSTextSelection textSelection) direction destination extending confined
 
 -- | @- textSelectionForSelectionGranularity:enclosingTextSelection:@
 textSelectionForSelectionGranularity_enclosingTextSelection :: (IsNSTextSelectionNavigation nsTextSelectionNavigation, IsNSTextSelection textSelection) => nsTextSelectionNavigation -> NSTextSelectionGranularity -> textSelection -> IO (Id NSTextSelection)
-textSelectionForSelectionGranularity_enclosingTextSelection nsTextSelectionNavigation  selectionGranularity textSelection =
-  withObjCPtr textSelection $ \raw_textSelection ->
-      sendMsg nsTextSelectionNavigation (mkSelector "textSelectionForSelectionGranularity:enclosingTextSelection:") (retPtr retVoid) [argCLong (coerce selectionGranularity), argPtr (castPtr raw_textSelection :: Ptr ())] >>= retainedObject . castPtr
+textSelectionForSelectionGranularity_enclosingTextSelection nsTextSelectionNavigation selectionGranularity textSelection =
+  sendMessage nsTextSelectionNavigation textSelectionForSelectionGranularity_enclosingTextSelectionSelector selectionGranularity (toNSTextSelection textSelection)
 
 -- | @- resolvedInsertionLocationForTextSelection:writingDirection:@
 resolvedInsertionLocationForTextSelection_writingDirection :: (IsNSTextSelectionNavigation nsTextSelectionNavigation, IsNSTextSelection textSelection) => nsTextSelectionNavigation -> textSelection -> NSTextSelectionNavigationWritingDirection -> IO RawId
-resolvedInsertionLocationForTextSelection_writingDirection nsTextSelectionNavigation  textSelection writingDirection =
-  withObjCPtr textSelection $ \raw_textSelection ->
-      fmap (RawId . castPtr) $ sendMsg nsTextSelectionNavigation (mkSelector "resolvedInsertionLocationForTextSelection:writingDirection:") (retPtr retVoid) [argPtr (castPtr raw_textSelection :: Ptr ()), argCLong (coerce writingDirection)]
+resolvedInsertionLocationForTextSelection_writingDirection nsTextSelectionNavigation textSelection writingDirection =
+  sendMessage nsTextSelectionNavigation resolvedInsertionLocationForTextSelection_writingDirectionSelector (toNSTextSelection textSelection) writingDirection
 
 -- | @- deletionRangesForTextSelection:direction:destination:allowsDecomposition:@
 deletionRangesForTextSelection_direction_destination_allowsDecomposition :: (IsNSTextSelectionNavigation nsTextSelectionNavigation, IsNSTextSelection textSelection) => nsTextSelectionNavigation -> textSelection -> NSTextSelectionNavigationDirection -> NSTextSelectionNavigationDestination -> Bool -> IO (Id NSArray)
-deletionRangesForTextSelection_direction_destination_allowsDecomposition nsTextSelectionNavigation  textSelection direction destination allowsDecomposition =
-  withObjCPtr textSelection $ \raw_textSelection ->
-      sendMsg nsTextSelectionNavigation (mkSelector "deletionRangesForTextSelection:direction:destination:allowsDecomposition:") (retPtr retVoid) [argPtr (castPtr raw_textSelection :: Ptr ()), argCLong (coerce direction), argCLong (coerce destination), argCULong (if allowsDecomposition then 1 else 0)] >>= retainedObject . castPtr
+deletionRangesForTextSelection_direction_destination_allowsDecomposition nsTextSelectionNavigation textSelection direction destination allowsDecomposition =
+  sendMessage nsTextSelectionNavigation deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector (toNSTextSelection textSelection) direction destination allowsDecomposition
 
 -- | @- textSelectionDataSource@
 textSelectionDataSource :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO RawId
-textSelectionDataSource nsTextSelectionNavigation  =
-    fmap (RawId . castPtr) $ sendMsg nsTextSelectionNavigation (mkSelector "textSelectionDataSource") (retPtr retVoid) []
+textSelectionDataSource nsTextSelectionNavigation =
+  sendMessage nsTextSelectionNavigation textSelectionDataSourceSelector
 
 -- | @- allowsNonContiguousRanges@
 allowsNonContiguousRanges :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO Bool
-allowsNonContiguousRanges nsTextSelectionNavigation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextSelectionNavigation (mkSelector "allowsNonContiguousRanges") retCULong []
+allowsNonContiguousRanges nsTextSelectionNavigation =
+  sendMessage nsTextSelectionNavigation allowsNonContiguousRangesSelector
 
 -- | @- setAllowsNonContiguousRanges:@
 setAllowsNonContiguousRanges :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> Bool -> IO ()
-setAllowsNonContiguousRanges nsTextSelectionNavigation  value =
-    sendMsg nsTextSelectionNavigation (mkSelector "setAllowsNonContiguousRanges:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsNonContiguousRanges nsTextSelectionNavigation value =
+  sendMessage nsTextSelectionNavigation setAllowsNonContiguousRangesSelector value
 
 -- | @- rotatesCoordinateSystemForLayoutOrientation@
 rotatesCoordinateSystemForLayoutOrientation :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> IO Bool
-rotatesCoordinateSystemForLayoutOrientation nsTextSelectionNavigation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextSelectionNavigation (mkSelector "rotatesCoordinateSystemForLayoutOrientation") retCULong []
+rotatesCoordinateSystemForLayoutOrientation nsTextSelectionNavigation =
+  sendMessage nsTextSelectionNavigation rotatesCoordinateSystemForLayoutOrientationSelector
 
 -- | @- setRotatesCoordinateSystemForLayoutOrientation:@
 setRotatesCoordinateSystemForLayoutOrientation :: IsNSTextSelectionNavigation nsTextSelectionNavigation => nsTextSelectionNavigation -> Bool -> IO ()
-setRotatesCoordinateSystemForLayoutOrientation nsTextSelectionNavigation  value =
-    sendMsg nsTextSelectionNavigation (mkSelector "setRotatesCoordinateSystemForLayoutOrientation:") retVoid [argCULong (if value then 1 else 0)]
+setRotatesCoordinateSystemForLayoutOrientation nsTextSelectionNavigation value =
+  sendMessage nsTextSelectionNavigation setRotatesCoordinateSystemForLayoutOrientationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDataSource:@
-initWithDataSourceSelector :: Selector
+initWithDataSourceSelector :: Selector '[RawId] (Id NSTextSelectionNavigation)
 initWithDataSourceSelector = mkSelector "initWithDataSource:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSTextSelectionNavigation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextSelectionNavigation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @flushLayoutCache@
-flushLayoutCacheSelector :: Selector
+flushLayoutCacheSelector :: Selector '[] ()
 flushLayoutCacheSelector = mkSelector "flushLayoutCache"
 
 -- | @Selector@ for @destinationSelectionForTextSelection:direction:destination:extending:confined:@
-destinationSelectionForTextSelection_direction_destination_extending_confinedSelector :: Selector
+destinationSelectionForTextSelection_direction_destination_extending_confinedSelector :: Selector '[Id NSTextSelection, NSTextSelectionNavigationDirection, NSTextSelectionNavigationDestination, Bool, Bool] (Id NSTextSelection)
 destinationSelectionForTextSelection_direction_destination_extending_confinedSelector = mkSelector "destinationSelectionForTextSelection:direction:destination:extending:confined:"
 
 -- | @Selector@ for @textSelectionForSelectionGranularity:enclosingTextSelection:@
-textSelectionForSelectionGranularity_enclosingTextSelectionSelector :: Selector
+textSelectionForSelectionGranularity_enclosingTextSelectionSelector :: Selector '[NSTextSelectionGranularity, Id NSTextSelection] (Id NSTextSelection)
 textSelectionForSelectionGranularity_enclosingTextSelectionSelector = mkSelector "textSelectionForSelectionGranularity:enclosingTextSelection:"
 
 -- | @Selector@ for @resolvedInsertionLocationForTextSelection:writingDirection:@
-resolvedInsertionLocationForTextSelection_writingDirectionSelector :: Selector
+resolvedInsertionLocationForTextSelection_writingDirectionSelector :: Selector '[Id NSTextSelection, NSTextSelectionNavigationWritingDirection] RawId
 resolvedInsertionLocationForTextSelection_writingDirectionSelector = mkSelector "resolvedInsertionLocationForTextSelection:writingDirection:"
 
 -- | @Selector@ for @deletionRangesForTextSelection:direction:destination:allowsDecomposition:@
-deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector :: Selector
+deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector :: Selector '[Id NSTextSelection, NSTextSelectionNavigationDirection, NSTextSelectionNavigationDestination, Bool] (Id NSArray)
 deletionRangesForTextSelection_direction_destination_allowsDecompositionSelector = mkSelector "deletionRangesForTextSelection:direction:destination:allowsDecomposition:"
 
 -- | @Selector@ for @textSelectionDataSource@
-textSelectionDataSourceSelector :: Selector
+textSelectionDataSourceSelector :: Selector '[] RawId
 textSelectionDataSourceSelector = mkSelector "textSelectionDataSource"
 
 -- | @Selector@ for @allowsNonContiguousRanges@
-allowsNonContiguousRangesSelector :: Selector
+allowsNonContiguousRangesSelector :: Selector '[] Bool
 allowsNonContiguousRangesSelector = mkSelector "allowsNonContiguousRanges"
 
 -- | @Selector@ for @setAllowsNonContiguousRanges:@
-setAllowsNonContiguousRangesSelector :: Selector
+setAllowsNonContiguousRangesSelector :: Selector '[Bool] ()
 setAllowsNonContiguousRangesSelector = mkSelector "setAllowsNonContiguousRanges:"
 
 -- | @Selector@ for @rotatesCoordinateSystemForLayoutOrientation@
-rotatesCoordinateSystemForLayoutOrientationSelector :: Selector
+rotatesCoordinateSystemForLayoutOrientationSelector :: Selector '[] Bool
 rotatesCoordinateSystemForLayoutOrientationSelector = mkSelector "rotatesCoordinateSystemForLayoutOrientation"
 
 -- | @Selector@ for @setRotatesCoordinateSystemForLayoutOrientation:@
-setRotatesCoordinateSystemForLayoutOrientationSelector :: Selector
+setRotatesCoordinateSystemForLayoutOrientationSelector :: Selector '[Bool] ()
 setRotatesCoordinateSystemForLayoutOrientationSelector = mkSelector "setRotatesCoordinateSystemForLayoutOrientation:"
 

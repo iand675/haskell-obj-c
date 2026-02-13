@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.GLKit.GLKEffectPropertyLight
   , setQuadraticAttenuation
   , transform
   , setTransform
-  , enabledSelector
-  , setEnabledSelector
-  , spotExponentSelector
-  , setSpotExponentSelector
-  , spotCutoffSelector
-  , setSpotCutoffSelector
   , constantAttenuationSelector
-  , setConstantAttenuationSelector
+  , enabledSelector
   , linearAttenuationSelector
-  , setLinearAttenuationSelector
   , quadraticAttenuationSelector
+  , setConstantAttenuationSelector
+  , setEnabledSelector
+  , setLinearAttenuationSelector
   , setQuadraticAttenuationSelector
-  , transformSelector
+  , setSpotCutoffSelector
+  , setSpotExponentSelector
   , setTransformSelector
+  , spotCutoffSelector
+  , spotExponentSelector
+  , transformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,132 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- enabled@
 enabled :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CUChar
-enabled glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "enabled") retCUChar []
+enabled glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CUChar -> IO ()
-setEnabled glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setEnabled:") retVoid [argCUChar value]
+setEnabled glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setEnabledSelector value
 
 -- | @- spotExponent@
 spotExponent :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CFloat
-spotExponent glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "spotExponent") retCFloat []
+spotExponent glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight spotExponentSelector
 
 -- | @- setSpotExponent:@
 setSpotExponent :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CFloat -> IO ()
-setSpotExponent glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setSpotExponent:") retVoid [argCFloat value]
+setSpotExponent glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setSpotExponentSelector value
 
 -- | @- spotCutoff@
 spotCutoff :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CFloat
-spotCutoff glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "spotCutoff") retCFloat []
+spotCutoff glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight spotCutoffSelector
 
 -- | @- setSpotCutoff:@
 setSpotCutoff :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CFloat -> IO ()
-setSpotCutoff glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setSpotCutoff:") retVoid [argCFloat value]
+setSpotCutoff glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setSpotCutoffSelector value
 
 -- | @- constantAttenuation@
 constantAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CFloat
-constantAttenuation glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "constantAttenuation") retCFloat []
+constantAttenuation glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight constantAttenuationSelector
 
 -- | @- setConstantAttenuation:@
 setConstantAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CFloat -> IO ()
-setConstantAttenuation glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setConstantAttenuation:") retVoid [argCFloat value]
+setConstantAttenuation glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setConstantAttenuationSelector value
 
 -- | @- linearAttenuation@
 linearAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CFloat
-linearAttenuation glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "linearAttenuation") retCFloat []
+linearAttenuation glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight linearAttenuationSelector
 
 -- | @- setLinearAttenuation:@
 setLinearAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CFloat -> IO ()
-setLinearAttenuation glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setLinearAttenuation:") retVoid [argCFloat value]
+setLinearAttenuation glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setLinearAttenuationSelector value
 
 -- | @- quadraticAttenuation@
 quadraticAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO CFloat
-quadraticAttenuation glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "quadraticAttenuation") retCFloat []
+quadraticAttenuation glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight quadraticAttenuationSelector
 
 -- | @- setQuadraticAttenuation:@
 setQuadraticAttenuation :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> CFloat -> IO ()
-setQuadraticAttenuation glkEffectPropertyLight  value =
-    sendMsg glkEffectPropertyLight (mkSelector "setQuadraticAttenuation:") retVoid [argCFloat value]
+setQuadraticAttenuation glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setQuadraticAttenuationSelector value
 
 -- | @- transform@
 transform :: IsGLKEffectPropertyLight glkEffectPropertyLight => glkEffectPropertyLight -> IO (Id GLKEffectPropertyTransform)
-transform glkEffectPropertyLight  =
-    sendMsg glkEffectPropertyLight (mkSelector "transform") (retPtr retVoid) [] >>= retainedObject . castPtr
+transform glkEffectPropertyLight =
+  sendMessage glkEffectPropertyLight transformSelector
 
 -- | @- setTransform:@
 setTransform :: (IsGLKEffectPropertyLight glkEffectPropertyLight, IsGLKEffectPropertyTransform value) => glkEffectPropertyLight -> value -> IO ()
-setTransform glkEffectPropertyLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg glkEffectPropertyLight (mkSelector "setTransform:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransform glkEffectPropertyLight value =
+  sendMessage glkEffectPropertyLight setTransformSelector (toGLKEffectPropertyTransform value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] CUChar
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[CUChar] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @spotExponent@
-spotExponentSelector :: Selector
+spotExponentSelector :: Selector '[] CFloat
 spotExponentSelector = mkSelector "spotExponent"
 
 -- | @Selector@ for @setSpotExponent:@
-setSpotExponentSelector :: Selector
+setSpotExponentSelector :: Selector '[CFloat] ()
 setSpotExponentSelector = mkSelector "setSpotExponent:"
 
 -- | @Selector@ for @spotCutoff@
-spotCutoffSelector :: Selector
+spotCutoffSelector :: Selector '[] CFloat
 spotCutoffSelector = mkSelector "spotCutoff"
 
 -- | @Selector@ for @setSpotCutoff:@
-setSpotCutoffSelector :: Selector
+setSpotCutoffSelector :: Selector '[CFloat] ()
 setSpotCutoffSelector = mkSelector "setSpotCutoff:"
 
 -- | @Selector@ for @constantAttenuation@
-constantAttenuationSelector :: Selector
+constantAttenuationSelector :: Selector '[] CFloat
 constantAttenuationSelector = mkSelector "constantAttenuation"
 
 -- | @Selector@ for @setConstantAttenuation:@
-setConstantAttenuationSelector :: Selector
+setConstantAttenuationSelector :: Selector '[CFloat] ()
 setConstantAttenuationSelector = mkSelector "setConstantAttenuation:"
 
 -- | @Selector@ for @linearAttenuation@
-linearAttenuationSelector :: Selector
+linearAttenuationSelector :: Selector '[] CFloat
 linearAttenuationSelector = mkSelector "linearAttenuation"
 
 -- | @Selector@ for @setLinearAttenuation:@
-setLinearAttenuationSelector :: Selector
+setLinearAttenuationSelector :: Selector '[CFloat] ()
 setLinearAttenuationSelector = mkSelector "setLinearAttenuation:"
 
 -- | @Selector@ for @quadraticAttenuation@
-quadraticAttenuationSelector :: Selector
+quadraticAttenuationSelector :: Selector '[] CFloat
 quadraticAttenuationSelector = mkSelector "quadraticAttenuation"
 
 -- | @Selector@ for @setQuadraticAttenuation:@
-setQuadraticAttenuationSelector :: Selector
+setQuadraticAttenuationSelector :: Selector '[CFloat] ()
 setQuadraticAttenuationSelector = mkSelector "setQuadraticAttenuation:"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] (Id GLKEffectPropertyTransform)
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @setTransform:@
-setTransformSelector :: Selector
+setTransformSelector :: Selector '[Id GLKEffectPropertyTransform] ()
 setTransformSelector = mkSelector "setTransform:"
 

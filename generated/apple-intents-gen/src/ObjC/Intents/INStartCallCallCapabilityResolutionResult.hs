@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INStartCallCallCapabilityResolutionResult
   , IsINStartCallCallCapabilityResolutionResult(..)
   , unsupportedForReason
   , initWithCallCapabilityResolutionResult
-  , unsupportedForReasonSelector
   , initWithCallCapabilityResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INStartCallCallCapabilityUnsupportedReason(INStartCallCallCapabilityUnsupportedReason)
@@ -20,15 +21,11 @@ module ObjC.Intents.INStartCallCallCapabilityResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,23 +38,22 @@ unsupportedForReason :: INStartCallCallCapabilityUnsupportedReason -> IO (Id INS
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INStartCallCallCapabilityResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithCallCapabilityResolutionResult:@
 initWithCallCapabilityResolutionResult :: (IsINStartCallCallCapabilityResolutionResult inStartCallCallCapabilityResolutionResult, IsINCallCapabilityResolutionResult callCapabilityResolutionResult) => inStartCallCallCapabilityResolutionResult -> callCapabilityResolutionResult -> IO (Id INStartCallCallCapabilityResolutionResult)
-initWithCallCapabilityResolutionResult inStartCallCallCapabilityResolutionResult  callCapabilityResolutionResult =
-  withObjCPtr callCapabilityResolutionResult $ \raw_callCapabilityResolutionResult ->
-      sendMsg inStartCallCallCapabilityResolutionResult (mkSelector "initWithCallCapabilityResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_callCapabilityResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithCallCapabilityResolutionResult inStartCallCallCapabilityResolutionResult callCapabilityResolutionResult =
+  sendOwnedMessage inStartCallCallCapabilityResolutionResult initWithCallCapabilityResolutionResultSelector (toINCallCapabilityResolutionResult callCapabilityResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INStartCallCallCapabilityUnsupportedReason] (Id INStartCallCallCapabilityResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithCallCapabilityResolutionResult:@
-initWithCallCapabilityResolutionResultSelector :: Selector
+initWithCallCapabilityResolutionResultSelector :: Selector '[Id INCallCapabilityResolutionResult] (Id INStartCallCallCapabilityResolutionResult)
 initWithCallCapabilityResolutionResultSelector = mkSelector "initWithCallCapabilityResolutionResult:"
 

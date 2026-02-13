@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.AVFoundation.AVAssetResourceLoadingRequest
   , redirect
   , setRedirect
   , requestor
-  , initSelector
-  , newSelector
-  , finishLoadingSelector
-  , finishLoadingWithErrorSelector
-  , finishLoadingWithResponse_data_redirectSelector
-  , streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector
-  , persistentContentKeyFromKeyVendorResponse_options_errorSelector
-  , requestSelector
-  , finishedSelector
   , cancelledSelector
   , contentInformationRequestSelector
   , dataRequestSelector
-  , responseSelector
-  , setResponseSelector
+  , finishLoadingSelector
+  , finishLoadingWithErrorSelector
+  , finishLoadingWithResponse_data_redirectSelector
+  , finishedSelector
+  , initSelector
+  , newSelector
+  , persistentContentKeyFromKeyVendorResponse_options_errorSelector
   , redirectSelector
-  , setRedirectSelector
+  , requestSelector
   , requestorSelector
+  , responseSelector
+  , setRedirectSelector
+  , setResponseSelector
+  , streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingRequest)
-init_ avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetResourceLoadingRequest =
+  sendOwnedMessage avAssetResourceLoadingRequest initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetResourceLoadingRequest)
 new  =
   do
     cls' <- getRequiredClass "AVAssetResourceLoadingRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | finishLoading
 --
@@ -79,8 +76,8 @@ new  =
 --
 -- ObjC selector: @- finishLoading@
 finishLoading :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO ()
-finishLoading avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "finishLoading") retVoid []
+finishLoading avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest finishLoadingSelector
 
 -- | finishLoadingWithError:
 --
@@ -90,9 +87,8 @@ finishLoading avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- finishLoadingWithError:@
 finishLoadingWithError :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSError error_) => avAssetResourceLoadingRequest -> error_ -> IO ()
-finishLoadingWithError avAssetResourceLoadingRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg avAssetResourceLoadingRequest (mkSelector "finishLoadingWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+finishLoadingWithError avAssetResourceLoadingRequest error_ =
+  sendMessage avAssetResourceLoadingRequest finishLoadingWithErrorSelector (toNSError error_)
 
 -- | finishLoadingWithResponse:data:redirect:
 --
@@ -108,11 +104,8 @@ finishLoadingWithError avAssetResourceLoadingRequest  error_ =
 --
 -- ObjC selector: @- finishLoadingWithResponse:data:redirect:@
 finishLoadingWithResponse_data_redirect :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSURLResponse response, IsNSData data_, IsNSURLRequest redirect) => avAssetResourceLoadingRequest -> response -> data_ -> redirect -> IO ()
-finishLoadingWithResponse_data_redirect avAssetResourceLoadingRequest  response data_ redirect =
-  withObjCPtr response $ \raw_response ->
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr redirect $ \raw_redirect ->
-          sendMsg avAssetResourceLoadingRequest (mkSelector "finishLoadingWithResponse:data:redirect:") retVoid [argPtr (castPtr raw_response :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_redirect :: Ptr ())]
+finishLoadingWithResponse_data_redirect avAssetResourceLoadingRequest response data_ redirect =
+  sendMessage avAssetResourceLoadingRequest finishLoadingWithResponse_data_redirectSelector (toNSURLResponse response) (toNSData data_) (toNSURLRequest redirect)
 
 -- | streamingContentKeyRequestDataForApp:contentIdentifier:options:error:
 --
@@ -130,12 +123,8 @@ finishLoadingWithResponse_data_redirect avAssetResourceLoadingRequest  response 
 --
 -- ObjC selector: @- streamingContentKeyRequestDataForApp:contentIdentifier:options:error:@
 streamingContentKeyRequestDataForApp_contentIdentifier_options_error :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSData appIdentifier, IsNSData contentIdentifier, IsNSDictionary options, IsNSError outError) => avAssetResourceLoadingRequest -> appIdentifier -> contentIdentifier -> options -> outError -> IO (Id NSData)
-streamingContentKeyRequestDataForApp_contentIdentifier_options_error avAssetResourceLoadingRequest  appIdentifier contentIdentifier options outError =
-  withObjCPtr appIdentifier $ \raw_appIdentifier ->
-    withObjCPtr contentIdentifier $ \raw_contentIdentifier ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr outError $ \raw_outError ->
-            sendMsg avAssetResourceLoadingRequest (mkSelector "streamingContentKeyRequestDataForApp:contentIdentifier:options:error:") (retPtr retVoid) [argPtr (castPtr raw_appIdentifier :: Ptr ()), argPtr (castPtr raw_contentIdentifier :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+streamingContentKeyRequestDataForApp_contentIdentifier_options_error avAssetResourceLoadingRequest appIdentifier contentIdentifier options outError =
+  sendMessage avAssetResourceLoadingRequest streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector (toNSData appIdentifier) (toNSData contentIdentifier) (toNSDictionary options) (toNSError outError)
 
 -- | persistentContentKeyFromKeyVendorResponse:options:error:
 --
@@ -153,11 +142,8 @@ streamingContentKeyRequestDataForApp_contentIdentifier_options_error avAssetReso
 --
 -- ObjC selector: @- persistentContentKeyFromKeyVendorResponse:options:error:@
 persistentContentKeyFromKeyVendorResponse_options_error :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSData keyVendorResponse, IsNSDictionary options, IsNSError outError) => avAssetResourceLoadingRequest -> keyVendorResponse -> options -> outError -> IO (Id NSData)
-persistentContentKeyFromKeyVendorResponse_options_error avAssetResourceLoadingRequest  keyVendorResponse options outError =
-  withObjCPtr keyVendorResponse $ \raw_keyVendorResponse ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avAssetResourceLoadingRequest (mkSelector "persistentContentKeyFromKeyVendorResponse:options:error:") (retPtr retVoid) [argPtr (castPtr raw_keyVendorResponse :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+persistentContentKeyFromKeyVendorResponse_options_error avAssetResourceLoadingRequest keyVendorResponse options outError =
+  sendMessage avAssetResourceLoadingRequest persistentContentKeyFromKeyVendorResponse_options_errorSelector (toNSData keyVendorResponse) (toNSDictionary options) (toNSError outError)
 
 -- | request
 --
@@ -165,8 +151,8 @@ persistentContentKeyFromKeyVendorResponse_options_error avAssetResourceLoadingRe
 --
 -- ObjC selector: @- request@
 request :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id NSURLRequest)
-request avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest requestSelector
 
 -- | finished
 --
@@ -176,8 +162,8 @@ request avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- finished@
 finished :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO Bool
-finished avAssetResourceLoadingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingRequest (mkSelector "finished") retCULong []
+finished avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest finishedSelector
 
 -- | cancelled
 --
@@ -187,8 +173,8 @@ finished avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- cancelled@
 cancelled :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO Bool
-cancelled avAssetResourceLoadingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingRequest (mkSelector "cancelled") retCULong []
+cancelled avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest cancelledSelector
 
 -- | contentInformationRequest
 --
@@ -196,8 +182,8 @@ cancelled avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- contentInformationRequest@
 contentInformationRequest :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingContentInformationRequest)
-contentInformationRequest avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "contentInformationRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentInformationRequest avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest contentInformationRequestSelector
 
 -- | dataRequest
 --
@@ -205,8 +191,8 @@ contentInformationRequest avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- dataRequest@
 dataRequest :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingDataRequest)
-dataRequest avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "dataRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRequest avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest dataRequestSelector
 
 -- | response
 --
@@ -214,8 +200,8 @@ dataRequest avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- response@
 response :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id NSURLResponse)
-response avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest responseSelector
 
 -- | response
 --
@@ -223,9 +209,8 @@ response avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- setResponse:@
 setResponse :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSURLResponse value) => avAssetResourceLoadingRequest -> value -> IO ()
-setResponse avAssetResourceLoadingRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetResourceLoadingRequest (mkSelector "setResponse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResponse avAssetResourceLoadingRequest value =
+  sendMessage avAssetResourceLoadingRequest setResponseSelector (toNSURLResponse value)
 
 -- | redirect
 --
@@ -235,8 +220,8 @@ setResponse avAssetResourceLoadingRequest  value =
 --
 -- ObjC selector: @- redirect@
 redirect :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id NSURLRequest)
-redirect avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "redirect") (retPtr retVoid) [] >>= retainedObject . castPtr
+redirect avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest redirectSelector
 
 -- | redirect
 --
@@ -246,9 +231,8 @@ redirect avAssetResourceLoadingRequest  =
 --
 -- ObjC selector: @- setRedirect:@
 setRedirect :: (IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest, IsNSURLRequest value) => avAssetResourceLoadingRequest -> value -> IO ()
-setRedirect avAssetResourceLoadingRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetResourceLoadingRequest (mkSelector "setRedirect:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRedirect avAssetResourceLoadingRequest value =
+  sendMessage avAssetResourceLoadingRequest setRedirectSelector (toNSURLRequest value)
 
 -- | requestor
 --
@@ -256,78 +240,78 @@ setRedirect avAssetResourceLoadingRequest  value =
 --
 -- ObjC selector: @- requestor@
 requestor :: IsAVAssetResourceLoadingRequest avAssetResourceLoadingRequest => avAssetResourceLoadingRequest -> IO (Id AVAssetResourceLoadingRequestor)
-requestor avAssetResourceLoadingRequest  =
-    sendMsg avAssetResourceLoadingRequest (mkSelector "requestor") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestor avAssetResourceLoadingRequest =
+  sendMessage avAssetResourceLoadingRequest requestorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetResourceLoadingRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetResourceLoadingRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @finishLoading@
-finishLoadingSelector :: Selector
+finishLoadingSelector :: Selector '[] ()
 finishLoadingSelector = mkSelector "finishLoading"
 
 -- | @Selector@ for @finishLoadingWithError:@
-finishLoadingWithErrorSelector :: Selector
+finishLoadingWithErrorSelector :: Selector '[Id NSError] ()
 finishLoadingWithErrorSelector = mkSelector "finishLoadingWithError:"
 
 -- | @Selector@ for @finishLoadingWithResponse:data:redirect:@
-finishLoadingWithResponse_data_redirectSelector :: Selector
+finishLoadingWithResponse_data_redirectSelector :: Selector '[Id NSURLResponse, Id NSData, Id NSURLRequest] ()
 finishLoadingWithResponse_data_redirectSelector = mkSelector "finishLoadingWithResponse:data:redirect:"
 
 -- | @Selector@ for @streamingContentKeyRequestDataForApp:contentIdentifier:options:error:@
-streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector :: Selector
+streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector :: Selector '[Id NSData, Id NSData, Id NSDictionary, Id NSError] (Id NSData)
 streamingContentKeyRequestDataForApp_contentIdentifier_options_errorSelector = mkSelector "streamingContentKeyRequestDataForApp:contentIdentifier:options:error:"
 
 -- | @Selector@ for @persistentContentKeyFromKeyVendorResponse:options:error:@
-persistentContentKeyFromKeyVendorResponse_options_errorSelector :: Selector
+persistentContentKeyFromKeyVendorResponse_options_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] (Id NSData)
 persistentContentKeyFromKeyVendorResponse_options_errorSelector = mkSelector "persistentContentKeyFromKeyVendorResponse:options:error:"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @finished@
-finishedSelector :: Selector
+finishedSelector :: Selector '[] Bool
 finishedSelector = mkSelector "finished"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @contentInformationRequest@
-contentInformationRequestSelector :: Selector
+contentInformationRequestSelector :: Selector '[] (Id AVAssetResourceLoadingContentInformationRequest)
 contentInformationRequestSelector = mkSelector "contentInformationRequest"
 
 -- | @Selector@ for @dataRequest@
-dataRequestSelector :: Selector
+dataRequestSelector :: Selector '[] (Id AVAssetResourceLoadingDataRequest)
 dataRequestSelector = mkSelector "dataRequest"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @setResponse:@
-setResponseSelector :: Selector
+setResponseSelector :: Selector '[Id NSURLResponse] ()
 setResponseSelector = mkSelector "setResponse:"
 
 -- | @Selector@ for @redirect@
-redirectSelector :: Selector
+redirectSelector :: Selector '[] (Id NSURLRequest)
 redirectSelector = mkSelector "redirect"
 
 -- | @Selector@ for @setRedirect:@
-setRedirectSelector :: Selector
+setRedirectSelector :: Selector '[Id NSURLRequest] ()
 setRedirectSelector = mkSelector "setRedirect:"
 
 -- | @Selector@ for @requestor@
-requestorSelector :: Selector
+requestorSelector :: Selector '[] (Id AVAssetResourceLoadingRequestor)
 requestorSelector = mkSelector "requestor"
 

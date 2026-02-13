@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTROnOffClusterOffWithEffectParams
   , setServerSideProcessingTimeout
   , effectId
   , setEffectId
-  , effectIdentifierSelector
-  , setEffectIdentifierSelector
-  , effectVariantSelector
-  , setEffectVariantSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
   , effectIdSelector
+  , effectIdentifierSelector
+  , effectVariantSelector
+  , serverSideProcessingTimeoutSelector
   , setEffectIdSelector
+  , setEffectIdentifierSelector
+  , setEffectVariantSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,25 +44,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- effectIdentifier@
 effectIdentifier :: IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams => mtrOnOffClusterOffWithEffectParams -> IO (Id NSNumber)
-effectIdentifier mtrOnOffClusterOffWithEffectParams  =
-    sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "effectIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectIdentifier mtrOnOffClusterOffWithEffectParams =
+  sendMessage mtrOnOffClusterOffWithEffectParams effectIdentifierSelector
 
 -- | @- setEffectIdentifier:@
 setEffectIdentifier :: (IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams, IsNSNumber value) => mtrOnOffClusterOffWithEffectParams -> value -> IO ()
-setEffectIdentifier mtrOnOffClusterOffWithEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "setEffectIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectIdentifier mtrOnOffClusterOffWithEffectParams value =
+  sendMessage mtrOnOffClusterOffWithEffectParams setEffectIdentifierSelector (toNSNumber value)
 
 -- | @- effectVariant@
 effectVariant :: IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams => mtrOnOffClusterOffWithEffectParams -> IO (Id NSNumber)
-effectVariant mtrOnOffClusterOffWithEffectParams  =
-    sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "effectVariant") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectVariant mtrOnOffClusterOffWithEffectParams =
+  sendMessage mtrOnOffClusterOffWithEffectParams effectVariantSelector
 
 -- | @- setEffectVariant:@
 setEffectVariant :: (IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams, IsNSNumber value) => mtrOnOffClusterOffWithEffectParams -> value -> IO ()
-setEffectVariant mtrOnOffClusterOffWithEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "setEffectVariant:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectVariant mtrOnOffClusterOffWithEffectParams value =
+  sendMessage mtrOnOffClusterOffWithEffectParams setEffectVariantSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -75,8 +70,8 @@ setEffectVariant mtrOnOffClusterOffWithEffectParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams => mtrOnOffClusterOffWithEffectParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams  =
-    sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams =
+  sendMessage mtrOnOffClusterOffWithEffectParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,9 +81,8 @@ timedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams, IsNSNumber value) => mtrOnOffClusterOffWithEffectParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams value =
+  sendMessage mtrOnOffClusterOffWithEffectParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -98,8 +92,8 @@ setTimedInvokeTimeoutMs mtrOnOffClusterOffWithEffectParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams => mtrOnOffClusterOffWithEffectParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOnOffClusterOffWithEffectParams  =
-    sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOnOffClusterOffWithEffectParams =
+  sendMessage mtrOnOffClusterOffWithEffectParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,62 +103,60 @@ serverSideProcessingTimeout mtrOnOffClusterOffWithEffectParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams, IsNSNumber value) => mtrOnOffClusterOffWithEffectParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOnOffClusterOffWithEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOnOffClusterOffWithEffectParams value =
+  sendMessage mtrOnOffClusterOffWithEffectParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- | @- effectId@
 effectId :: IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams => mtrOnOffClusterOffWithEffectParams -> IO (Id NSNumber)
-effectId mtrOnOffClusterOffWithEffectParams  =
-    sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "effectId") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectId mtrOnOffClusterOffWithEffectParams =
+  sendMessage mtrOnOffClusterOffWithEffectParams effectIdSelector
 
 -- | @- setEffectId:@
 setEffectId :: (IsMTROnOffClusterOffWithEffectParams mtrOnOffClusterOffWithEffectParams, IsNSNumber value) => mtrOnOffClusterOffWithEffectParams -> value -> IO ()
-setEffectId mtrOnOffClusterOffWithEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOffWithEffectParams (mkSelector "setEffectId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectId mtrOnOffClusterOffWithEffectParams value =
+  sendMessage mtrOnOffClusterOffWithEffectParams setEffectIdSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effectIdentifier@
-effectIdentifierSelector :: Selector
+effectIdentifierSelector :: Selector '[] (Id NSNumber)
 effectIdentifierSelector = mkSelector "effectIdentifier"
 
 -- | @Selector@ for @setEffectIdentifier:@
-setEffectIdentifierSelector :: Selector
+setEffectIdentifierSelector :: Selector '[Id NSNumber] ()
 setEffectIdentifierSelector = mkSelector "setEffectIdentifier:"
 
 -- | @Selector@ for @effectVariant@
-effectVariantSelector :: Selector
+effectVariantSelector :: Selector '[] (Id NSNumber)
 effectVariantSelector = mkSelector "effectVariant"
 
 -- | @Selector@ for @setEffectVariant:@
-setEffectVariantSelector :: Selector
+setEffectVariantSelector :: Selector '[Id NSNumber] ()
 setEffectVariantSelector = mkSelector "setEffectVariant:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 
 -- | @Selector@ for @effectId@
-effectIdSelector :: Selector
+effectIdSelector :: Selector '[] (Id NSNumber)
 effectIdSelector = mkSelector "effectId"
 
 -- | @Selector@ for @setEffectId:@
-setEffectIdSelector :: Selector
+setEffectIdSelector :: Selector '[Id NSNumber] ()
 setEffectIdSelector = mkSelector "setEffectId:"
 

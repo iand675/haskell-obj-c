@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,37 +31,33 @@ module ObjC.Foundation.NSHTTPCookie
   , commentURL
   , portList
   , sameSitePolicy
-  , initWithPropertiesSelector
-  , cookieWithPropertiesSelector
-  , requestHeaderFieldsWithCookiesSelector
-  , cookiesWithResponseHeaderFields_forURLSelector
-  , propertiesSelector
-  , versionSelector
-  , nameSelector
-  , valueSelector
-  , expiresDateSelector
-  , sessionOnlySelector
-  , domainSelector
-  , pathSelector
-  , secureSelector
-  , httpOnlySelector
   , commentSelector
   , commentURLSelector
+  , cookieWithPropertiesSelector
+  , cookiesWithResponseHeaderFields_forURLSelector
+  , domainSelector
+  , expiresDateSelector
+  , httpOnlySelector
+  , initWithPropertiesSelector
+  , nameSelector
+  , pathSelector
   , portListSelector
+  , propertiesSelector
+  , requestHeaderFieldsWithCookiesSelector
   , sameSitePolicySelector
+  , secureSelector
+  , sessionOnlySelector
+  , valueSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,9 +79,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithProperties:@
 initWithProperties :: (IsNSHTTPCookie nshttpCookie, IsNSDictionary properties) => nshttpCookie -> properties -> IO (Id NSHTTPCookie)
-initWithProperties nshttpCookie  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg nshttpCookie (mkSelector "initWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= ownedObject . castPtr
+initWithProperties nshttpCookie properties =
+  sendOwnedMessage nshttpCookie initWithPropertiesSelector (toNSDictionary properties)
 
 -- | cookieWithProperties:
 --
@@ -101,8 +97,7 @@ cookieWithProperties :: IsNSDictionary properties => properties -> IO (Id NSHTTP
 cookieWithProperties properties =
   do
     cls' <- getRequiredClass "NSHTTPCookie"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "cookieWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cookieWithPropertiesSelector (toNSDictionary properties)
 
 -- | requestHeaderFieldsWithCookies:
 --
@@ -117,8 +112,7 @@ requestHeaderFieldsWithCookies :: IsNSArray cookies => cookies -> IO (Id NSDicti
 requestHeaderFieldsWithCookies cookies =
   do
     cls' <- getRequiredClass "NSHTTPCookie"
-    withObjCPtr cookies $ \raw_cookies ->
-      sendClassMsg cls' (mkSelector "requestHeaderFieldsWithCookies:") (retPtr retVoid) [argPtr (castPtr raw_cookies :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requestHeaderFieldsWithCookiesSelector (toNSArray cookies)
 
 -- | cookiesWithResponseHeaderFields:forURL:
 --
@@ -137,9 +131,7 @@ cookiesWithResponseHeaderFields_forURL :: (IsNSDictionary headerFields, IsNSURL 
 cookiesWithResponseHeaderFields_forURL headerFields url =
   do
     cls' <- getRequiredClass "NSHTTPCookie"
-    withObjCPtr headerFields $ \raw_headerFields ->
-      withObjCPtr url $ \raw_url ->
-        sendClassMsg cls' (mkSelector "cookiesWithResponseHeaderFields:forURL:") (retPtr retVoid) [argPtr (castPtr raw_headerFields :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cookiesWithResponseHeaderFields_forURLSelector (toNSDictionary headerFields) (toNSURL url)
 
 -- | Returns a dictionary representation of the receiver.
 --
@@ -149,8 +141,8 @@ cookiesWithResponseHeaderFields_forURL headerFields url =
 --
 -- ObjC selector: @- properties@
 properties :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSDictionary)
-properties nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties nshttpCookie =
+  sendMessage nshttpCookie propertiesSelector
 
 -- | Returns the version of the receiver.
 --
@@ -160,8 +152,8 @@ properties nshttpCookie  =
 --
 -- ObjC selector: @- version@
 version :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO CULong
-version nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "version") retCULong []
+version nshttpCookie =
+  sendMessage nshttpCookie versionSelector
 
 -- | Returns the name of the receiver.
 --
@@ -169,8 +161,8 @@ version nshttpCookie  =
 --
 -- ObjC selector: @- name@
 name :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-name nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nshttpCookie =
+  sendMessage nshttpCookie nameSelector
 
 -- | Returns the value of the receiver.
 --
@@ -178,8 +170,8 @@ name nshttpCookie  =
 --
 -- ObjC selector: @- value@
 value :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-value nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value nshttpCookie =
+  sendMessage nshttpCookie valueSelector
 
 -- | Returns the expires date of the receiver.
 --
@@ -191,8 +183,8 @@ value nshttpCookie  =
 --
 -- ObjC selector: @- expiresDate@
 expiresDate :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSDate)
-expiresDate nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "expiresDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expiresDate nshttpCookie =
+  sendMessage nshttpCookie expiresDateSelector
 
 -- | Returns whether the receiver is session-only.
 --
@@ -200,8 +192,8 @@ expiresDate nshttpCookie  =
 --
 -- ObjC selector: @- sessionOnly@
 sessionOnly :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO Bool
-sessionOnly nshttpCookie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nshttpCookie (mkSelector "sessionOnly") retCULong []
+sessionOnly nshttpCookie =
+  sendMessage nshttpCookie sessionOnlySelector
 
 -- | Returns the domain of the receiver.
 --
@@ -211,8 +203,8 @@ sessionOnly nshttpCookie  =
 --
 -- ObjC selector: @- domain@
 domain :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-domain nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nshttpCookie =
+  sendMessage nshttpCookie domainSelector
 
 -- | Returns the path of the receiver.
 --
@@ -222,8 +214,8 @@ domain nshttpCookie  =
 --
 -- ObjC selector: @- path@
 path :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-path nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path nshttpCookie =
+  sendMessage nshttpCookie pathSelector
 
 -- | Returns whether the receiver should be sent only over    secure channels
 --
@@ -233,8 +225,8 @@ path nshttpCookie  =
 --
 -- ObjC selector: @- secure@
 secure :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO Bool
-secure nshttpCookie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nshttpCookie (mkSelector "secure") retCULong []
+secure nshttpCookie =
+  sendMessage nshttpCookie secureSelector
 
 -- | Returns whether the receiver should only be sent to HTTP servers    per RFC 2965
 --
@@ -244,8 +236,8 @@ secure nshttpCookie  =
 --
 -- ObjC selector: @- HTTPOnly@
 httpOnly :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO Bool
-httpOnly nshttpCookie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nshttpCookie (mkSelector "HTTPOnly") retCULong []
+httpOnly nshttpCookie =
+  sendMessage nshttpCookie httpOnlySelector
 
 -- | Returns the comment of the receiver.
 --
@@ -255,8 +247,8 @@ httpOnly nshttpCookie  =
 --
 -- ObjC selector: @- comment@
 comment :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-comment nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "comment") (retPtr retVoid) [] >>= retainedObject . castPtr
+comment nshttpCookie =
+  sendMessage nshttpCookie commentSelector
 
 -- | Returns the comment URL of the receiver.
 --
@@ -266,8 +258,8 @@ comment nshttpCookie  =
 --
 -- ObjC selector: @- commentURL@
 commentURL :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSURL)
-commentURL nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "commentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+commentURL nshttpCookie =
+  sendMessage nshttpCookie commentURLSelector
 
 -- | Returns the list ports to which the receiver should be    sent.
 --
@@ -277,8 +269,8 @@ commentURL nshttpCookie  =
 --
 -- ObjC selector: @- portList@
 portList :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSArray)
-portList nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "portList") (retPtr retVoid) [] >>= retainedObject . castPtr
+portList nshttpCookie =
+  sendMessage nshttpCookie portListSelector
 
 -- | Returns the value of the same site attribute on the cookie.
 --
@@ -288,82 +280,82 @@ portList nshttpCookie  =
 --
 -- ObjC selector: @- sameSitePolicy@
 sameSitePolicy :: IsNSHTTPCookie nshttpCookie => nshttpCookie -> IO (Id NSString)
-sameSitePolicy nshttpCookie  =
-    sendMsg nshttpCookie (mkSelector "sameSitePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+sameSitePolicy nshttpCookie =
+  sendMessage nshttpCookie sameSitePolicySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProperties:@
-initWithPropertiesSelector :: Selector
+initWithPropertiesSelector :: Selector '[Id NSDictionary] (Id NSHTTPCookie)
 initWithPropertiesSelector = mkSelector "initWithProperties:"
 
 -- | @Selector@ for @cookieWithProperties:@
-cookieWithPropertiesSelector :: Selector
+cookieWithPropertiesSelector :: Selector '[Id NSDictionary] (Id NSHTTPCookie)
 cookieWithPropertiesSelector = mkSelector "cookieWithProperties:"
 
 -- | @Selector@ for @requestHeaderFieldsWithCookies:@
-requestHeaderFieldsWithCookiesSelector :: Selector
+requestHeaderFieldsWithCookiesSelector :: Selector '[Id NSArray] (Id NSDictionary)
 requestHeaderFieldsWithCookiesSelector = mkSelector "requestHeaderFieldsWithCookies:"
 
 -- | @Selector@ for @cookiesWithResponseHeaderFields:forURL:@
-cookiesWithResponseHeaderFields_forURLSelector :: Selector
+cookiesWithResponseHeaderFields_forURLSelector :: Selector '[Id NSDictionary, Id NSURL] (Id NSArray)
 cookiesWithResponseHeaderFields_forURLSelector = mkSelector "cookiesWithResponseHeaderFields:forURL:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CULong
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @expiresDate@
-expiresDateSelector :: Selector
+expiresDateSelector :: Selector '[] (Id NSDate)
 expiresDateSelector = mkSelector "expiresDate"
 
 -- | @Selector@ for @sessionOnly@
-sessionOnlySelector :: Selector
+sessionOnlySelector :: Selector '[] Bool
 sessionOnlySelector = mkSelector "sessionOnly"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @secure@
-secureSelector :: Selector
+secureSelector :: Selector '[] Bool
 secureSelector = mkSelector "secure"
 
 -- | @Selector@ for @HTTPOnly@
-httpOnlySelector :: Selector
+httpOnlySelector :: Selector '[] Bool
 httpOnlySelector = mkSelector "HTTPOnly"
 
 -- | @Selector@ for @comment@
-commentSelector :: Selector
+commentSelector :: Selector '[] (Id NSString)
 commentSelector = mkSelector "comment"
 
 -- | @Selector@ for @commentURL@
-commentURLSelector :: Selector
+commentURLSelector :: Selector '[] (Id NSURL)
 commentURLSelector = mkSelector "commentURL"
 
 -- | @Selector@ for @portList@
-portListSelector :: Selector
+portListSelector :: Selector '[] (Id NSArray)
 portListSelector = mkSelector "portList"
 
 -- | @Selector@ for @sameSitePolicy@
-sameSitePolicySelector :: Selector
+sameSitePolicySelector :: Selector '[] (Id NSString)
 sameSitePolicySelector = mkSelector "sameSitePolicy"
 

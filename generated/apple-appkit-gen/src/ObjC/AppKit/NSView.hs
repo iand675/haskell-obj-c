@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -348,347 +349,347 @@ module ObjC.AppKit.NSView
   , setFocusRingType
   , defaultFocusRingType
   , focusRingMaskBounds
-  , initWithFrameSelector
-  , initWithCoderSelector
-  , isDescendantOfSelector
-  , ancestorSharedWithViewSelector
-  , getRectsBeingDrawn_countSelector
-  , needsToDrawRectSelector
-  , viewDidHideSelector
-  , viewDidUnhideSelector
-  , addSubviewSelector
-  , addSubview_positioned_relativeToSelector
-  , sortSubviewsUsingFunction_contextSelector
-  , viewWillMoveToWindowSelector
-  , viewDidMoveToWindowSelector
-  , viewWillMoveToSuperviewSelector
-  , viewDidMoveToSuperviewSelector
-  , didAddSubviewSelector
-  , willRemoveSubviewSelector
-  , removeFromSuperviewSelector
-  , replaceSubview_withSelector
-  , removeFromSuperviewWithoutNeedingDisplaySelector
-  , viewDidChangeBackingPropertiesSelector
-  , resizeSubviewsWithOldSizeSelector
-  , resizeWithOldSuperviewSizeSelector
-  , setFrameOriginSelector
-  , setFrameSizeSelector
-  , setBoundsOriginSelector
-  , setBoundsSizeSelector
-  , translateOriginToPointSelector
-  , scaleUnitSquareToSizeSelector
-  , rotateByAngleSelector
-  , convertPoint_fromViewSelector
-  , convertPoint_toViewSelector
-  , convertSize_fromViewSelector
-  , convertSize_toViewSelector
-  , convertRect_fromViewSelector
-  , convertRect_toViewSelector
-  , backingAlignedRect_optionsSelector
-  , centerScanRectSelector
-  , convertPointToBackingSelector
-  , convertPointFromBackingSelector
-  , convertSizeToBackingSelector
-  , convertSizeFromBackingSelector
-  , convertRectToBackingSelector
-  , convertRectFromBackingSelector
-  , convertPointToLayerSelector
-  , convertPointFromLayerSelector
-  , convertSizeToLayerSelector
-  , convertSizeFromLayerSelector
-  , convertRectToLayerSelector
-  , convertRectFromLayerSelector
-  , setNeedsDisplayInRectSelector
-  , lockFocusSelector
-  , unlockFocusSelector
-  , lockFocusIfCanDrawSelector
-  , lockFocusIfCanDrawInContextSelector
-  , displaySelector
-  , displayIfNeededSelector
-  , displayIfNeededIgnoringOpacitySelector
-  , displayRectSelector
-  , displayIfNeededInRectSelector
-  , displayRectIgnoringOpacitySelector
-  , displayIfNeededInRectIgnoringOpacitySelector
-  , drawRectSelector
-  , displayRectIgnoringOpacity_inContextSelector
-  , bitmapImageRepForCachingDisplayInRectSelector
-  , cacheDisplayInRect_toBitmapImageRepSelector
-  , viewWillDrawSelector
-  , scrollPointSelector
-  , scrollRectToVisibleSelector
-  , autoscrollSelector
-  , adjustScrollSelector
-  , scrollRect_bySelector
-  , translateRectsNeedingDisplayInRect_bySelector
-  , hitTestSelector
-  , mouse_inRectSelector
-  , viewWithTagSelector
-  , performKeyEquivalentSelector
   , acceptsFirstMouseSelector
-  , shouldDelayWindowOrderingForEventSelector
-  , makeBackingLayerSelector
-  , updateLayerSelector
-  , layoutSubtreeIfNeededSelector
-  , layoutSelector
-  , menuForEventSelector
-  , willOpenMenu_withEventSelector
-  , didCloseMenu_withEventSelector
-  , addToolTipRect_owner_userDataSelector
-  , removeToolTipSelector
-  , removeAllToolTipsSelector
-  , viewWillStartLiveResizeSelector
-  , viewDidEndLiveResizeSelector
-  , getRectsExposedDuringLiveResize_countSelector
-  , rectForSmartMagnificationAtPoint_inRectSelector
-  , prepareForReuseSelector
-  , prepareContentInRectSelector
-  , viewDidChangeEffectiveAppearanceSelector
-  , rulerView_shouldMoveMarkerSelector
-  , rulerView_willMoveMarker_toLocationSelector
-  , rulerView_didMoveMarkerSelector
-  , rulerView_shouldRemoveMarkerSelector
-  , rulerView_didRemoveMarkerSelector
-  , rulerView_shouldAddMarkerSelector
-  , rulerView_willAddMarker_atLocationSelector
-  , rulerView_didAddMarkerSelector
-  , rulerView_handleMouseDownSelector
-  , rulerView_willSetClientViewSelector
-  , rulerView_locationForPointSelector
-  , rulerView_pointForLocationSelector
-  , layoutGuideForLayoutRegionSelector
-  , edgeInsetsForLayoutRegionSelector
-  , rectForLayoutRegionSelector
-  , addLayoutGuideSelector
-  , removeLayoutGuideSelector
-  , constraintsAffectingLayoutForOrientationSelector
-  , exerciseAmbiguityInLayoutSelector
-  , alignmentRectForFrameSelector
-  , frameForAlignmentRectSelector
-  , invalidateIntrinsicContentSizeSelector
-  , contentHuggingPriorityForOrientationSelector
-  , setContentHuggingPriority_forOrientationSelector
-  , contentCompressionResistancePriorityForOrientationSelector
-  , setContentCompressionResistancePriority_forOrientationSelector
-  , updateConstraintsForSubtreeIfNeededSelector
-  , updateConstraintsSelector
+  , acceptsTouchEventsSelector
   , addConstraintSelector
   , addConstraintsSelector
-  , removeConstraintSelector
-  , removeConstraintsSelector
-  , reflectScrolledClipViewSelector
-  , scrollClipView_toPointSelector
-  , dragImage_at_offset_event_pasteboard_source_slideBackSelector
-  , dragFile_fromRect_slideBack_eventSelector
-  , dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector
-  , convertPointToBaseSelector
-  , convertPointFromBaseSelector
-  , convertSizeToBaseSelector
-  , convertSizeFromBaseSelector
-  , convertRectToBaseSelector
-  , convertRectFromBaseSelector
-  , performMnemonicSelector
-  , shouldDrawColorSelector
-  , gStateSelector
-  , allocateGStateSelector
-  , releaseGStateSelector
-  , setUpGStateSelector
-  , renewGStateSelector
-  , displayLinkWithTarget_selectorSelector
-  , addTrackingAreaSelector
-  , removeTrackingAreaSelector
-  , updateTrackingAreasSelector
   , addCursorRect_cursorSelector
-  , removeCursorRect_cursorSelector
-  , discardCursorRectsSelector
-  , resetCursorRectsSelector
-  , addTrackingRect_owner_userData_assumeInsideSelector
-  , removeTrackingRectSelector
   , addGestureRecognizerSelector
-  , removeGestureRecognizerSelector
-  , showDefinitionForAttributedString_atPointSelector
-  , showDefinitionForAttributedString_range_options_baselineOriginProviderSelector
-  , enterFullScreenMode_withOptionsSelector
-  , exitFullScreenModeWithOptionsSelector
-  , beginDraggingSessionWithItems_event_sourceSelector
-  , registerForDraggedTypesSelector
-  , unregisterDraggedTypesSelector
-  , writeEPSInsideRect_toPasteboardSelector
-  , dataWithEPSInsideRectSelector
-  , writePDFInsideRect_toPasteboardSelector
-  , dataWithPDFInsideRectSelector
-  , printSelector
-  , knowsPageRangeSelector
-  , adjustPageWidthNew_left_right_limitSelector
+  , addLayoutGuideSelector
+  , addSubviewSelector
+  , addSubview_positioned_relativeToSelector
+  , addToolTipRect_owner_userDataSelector
+  , addTrackingAreaSelector
+  , addTrackingRect_owner_userData_assumeInsideSelector
+  , additionalSafeAreaInsetsSelector
   , adjustPageHeightNew_top_bottom_limitSelector
-  , rectForPageSelector
-  , locationOfPrintRectSelector
-  , drawPageBorderWithSizeSelector
-  , drawSheetBorderWithSizeSelector
-  , beginDocumentSelector
-  , endDocumentSelector
-  , beginPageInRect_atPlacementSelector
-  , endPageSelector
-  , setKeyboardFocusRingNeedsDisplayInRectSelector
-  , drawFocusRingMaskSelector
-  , noteFocusRingMaskChangedSelector
-  , windowSelector
-  , superviewSelector
-  , subviewsSelector
-  , setSubviewsSelector
-  , opaqueAncestorSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , hiddenOrHasHiddenAncestorSelector
-  , wantsDefaultClippingSelector
-  , postsFrameChangedNotificationsSelector
-  , setPostsFrameChangedNotificationsSelector
-  , autoresizesSubviewsSelector
-  , setAutoresizesSubviewsSelector
-  , autoresizingMaskSelector
-  , setAutoresizingMaskSelector
-  , frameSelector
-  , setFrameSelector
-  , frameRotationSelector
-  , setFrameRotationSelector
-  , frameCenterRotationSelector
-  , setFrameCenterRotationSelector
-  , boundsRotationSelector
-  , setBoundsRotationSelector
-  , boundsSelector
-  , setBoundsSelector
-  , flippedSelector
-  , rotatedFromBaseSelector
-  , rotatedOrScaledFromBaseSelector
-  , opaqueSelector
-  , canDrawConcurrentlySelector
-  , setCanDrawConcurrentlySelector
-  , canDrawSelector
-  , needsDisplaySelector
-  , setNeedsDisplaySelector
-  , focusViewSelector
-  , visibleRectSelector
-  , tagSelector
-  , needsPanelToBecomeKeySelector
-  , mouseDownCanMoveWindowSelector
-  , acceptsTouchEventsSelector
-  , setAcceptsTouchEventsSelector
-  , wantsRestingTouchesSelector
-  , setWantsRestingTouchesSelector
-  , layerContentsRedrawPolicySelector
-  , setLayerContentsRedrawPolicySelector
-  , layerContentsPlacementSelector
-  , setLayerContentsPlacementSelector
-  , wantsLayerSelector
-  , setWantsLayerSelector
-  , layerSelector
-  , setLayerSelector
-  , wantsUpdateLayerSelector
-  , canDrawSubviewsIntoLayerSelector
-  , setCanDrawSubviewsIntoLayerSelector
-  , needsLayoutSelector
-  , setNeedsLayoutSelector
-  , alphaValueSelector
-  , setAlphaValueSelector
-  , layerUsesCoreImageFiltersSelector
-  , setLayerUsesCoreImageFiltersSelector
-  , backgroundFiltersSelector
-  , setBackgroundFiltersSelector
-  , compositingFilterSelector
-  , setCompositingFilterSelector
-  , contentFiltersSelector
-  , setContentFiltersSelector
-  , shadowSelector
-  , setShadowSelector
-  , clipsToBoundsSelector
-  , setClipsToBoundsSelector
-  , postsBoundsChangedNotificationsSelector
-  , setPostsBoundsChangedNotificationsSelector
-  , enclosingScrollViewSelector
-  , defaultMenuSelector
-  , toolTipSelector
-  , setToolTipSelector
-  , inLiveResizeSelector
-  , preservesContentDuringLiveResizeSelector
-  , rectPreservedDuringLiveResizeSelector
-  , inputContextSelector
-  , userInterfaceLayoutDirectionSelector
-  , setUserInterfaceLayoutDirectionSelector
-  , compatibleWithResponsiveScrollingSelector
-  , preparedContentRectSelector
-  , setPreparedContentRectSelector
-  , allowsVibrancySelector
-  , pressureConfigurationSelector
-  , setPressureConfigurationSelector
-  , wantsExtendedDynamicRangeOpenGLSurfaceSelector
-  , setWantsExtendedDynamicRangeOpenGLSurfaceSelector
-  , wantsBestResolutionOpenGLSurfaceSelector
-  , setWantsBestResolutionOpenGLSurfaceSelector
-  , layoutGuidesSelector
-  , hasAmbiguousLayoutSelector
-  , fittingSizeSelector
+  , adjustPageWidthNew_left_right_limitSelector
+  , adjustScrollSelector
+  , alignmentRectForFrameSelector
   , alignmentRectInsetsSelector
-  , firstBaselineOffsetFromTopSelector
-  , lastBaselineOffsetFromBottomSelector
+  , allocateGStateSelector
+  , allowedTouchTypesSelector
+  , allowsVibrancySelector
+  , alphaValueSelector
+  , ancestorSharedWithViewSelector
+  , autoresizesSubviewsSelector
+  , autoresizingMaskSelector
+  , autoscrollSelector
+  , backgroundFiltersSelector
+  , backingAlignedRect_optionsSelector
   , baselineOffsetFromBottomSelector
-  , intrinsicContentSizeSelector
-  , horizontalContentSizeConstraintActiveSelector
-  , setHorizontalContentSizeConstraintActiveSelector
-  , verticalContentSizeConstraintActiveSelector
-  , setVerticalContentSizeConstraintActiveSelector
-  , translatesAutoresizingMaskIntoConstraintsSelector
-  , setTranslatesAutoresizingMaskIntoConstraintsSelector
-  , requiresConstraintBasedLayoutSelector
-  , needsUpdateConstraintsSelector
-  , setNeedsUpdateConstraintsSelector
-  , leadingAnchorSelector
-  , trailingAnchorSelector
-  , leftAnchorSelector
-  , rightAnchorSelector
-  , topAnchorSelector
+  , beginDocumentSelector
+  , beginDraggingSessionWithItems_event_sourceSelector
+  , beginPageInRect_atPlacementSelector
+  , bitmapImageRepForCachingDisplayInRectSelector
   , bottomAnchorSelector
-  , widthAnchorSelector
-  , heightAnchorSelector
+  , boundsRotationSelector
+  , boundsSelector
+  , cacheDisplayInRect_toBitmapImageRepSelector
+  , canBecomeKeyViewSelector
+  , canDrawConcurrentlySelector
+  , canDrawSelector
+  , canDrawSubviewsIntoLayerSelector
+  , candidateListTouchBarItemSelector
+  , centerScanRectSelector
   , centerXAnchorSelector
   , centerYAnchorSelector
-  , firstBaselineAnchorSelector
-  , lastBaselineAnchorSelector
+  , clipsToBoundsSelector
+  , compatibleWithResponsiveScrollingSelector
+  , compositingFilterSelector
+  , constraintsAffectingLayoutForOrientationSelector
   , constraintsSelector
-  , candidateListTouchBarItemSelector
+  , contentCompressionResistancePriorityForOrientationSelector
+  , contentFiltersSelector
+  , contentHuggingPriorityForOrientationSelector
+  , convertPointFromBackingSelector
+  , convertPointFromBaseSelector
+  , convertPointFromLayerSelector
+  , convertPointToBackingSelector
+  , convertPointToBaseSelector
+  , convertPointToLayerSelector
+  , convertPoint_fromViewSelector
+  , convertPoint_toViewSelector
+  , convertRectFromBackingSelector
+  , convertRectFromBaseSelector
+  , convertRectFromLayerSelector
+  , convertRectToBackingSelector
+  , convertRectToBaseSelector
+  , convertRectToLayerSelector
+  , convertRect_fromViewSelector
+  , convertRect_toViewSelector
+  , convertSizeFromBackingSelector
+  , convertSizeFromBaseSelector
+  , convertSizeFromLayerSelector
+  , convertSizeToBackingSelector
+  , convertSizeToBaseSelector
+  , convertSizeToLayerSelector
+  , convertSize_fromViewSelector
+  , convertSize_toViewSelector
+  , dataWithEPSInsideRectSelector
+  , dataWithPDFInsideRectSelector
+  , defaultFocusRingTypeSelector
+  , defaultMenuSelector
+  , didAddSubviewSelector
+  , didCloseMenu_withEventSelector
+  , discardCursorRectsSelector
+  , displayIfNeededIgnoringOpacitySelector
+  , displayIfNeededInRectIgnoringOpacitySelector
+  , displayIfNeededInRectSelector
+  , displayIfNeededSelector
+  , displayLinkWithTarget_selectorSelector
+  , displayRectIgnoringOpacitySelector
+  , displayRectIgnoringOpacity_inContextSelector
+  , displayRectSelector
+  , displaySelector
+  , dragFile_fromRect_slideBack_eventSelector
+  , dragImage_at_offset_event_pasteboard_source_slideBackSelector
+  , dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector
+  , drawFocusRingMaskSelector
+  , drawPageBorderWithSizeSelector
+  , drawRectSelector
+  , drawSheetBorderWithSizeSelector
+  , drawingFindIndicatorSelector
+  , edgeInsetsForLayoutRegionSelector
   , enclosingMenuItemSelector
-  , writingToolsCoordinatorSelector
-  , setWritingToolsCoordinatorSelector
-  , trackingAreasSelector
+  , enclosingScrollViewSelector
+  , endDocumentSelector
+  , endPageSelector
+  , enterFullScreenMode_withOptionsSelector
+  , exerciseAmbiguityInLayoutSelector
+  , exitFullScreenModeWithOptionsSelector
+  , firstBaselineAnchorSelector
+  , firstBaselineOffsetFromTopSelector
+  , fittingSizeSelector
+  , flippedSelector
+  , focusRingMaskBoundsSelector
+  , focusRingTypeSelector
+  , focusViewSelector
+  , frameCenterRotationSelector
+  , frameForAlignmentRectSelector
+  , frameRotationSelector
+  , frameSelector
+  , gStateSelector
+  , gestureRecognizersSelector
+  , getRectsBeingDrawn_countSelector
+  , getRectsExposedDuringLiveResize_countSelector
+  , hasAmbiguousLayoutSelector
+  , heightAdjustLimitSelector
+  , heightAnchorSelector
+  , hiddenOrHasHiddenAncestorSelector
+  , hiddenSelector
+  , hitTestSelector
+  , horizontalContentSizeConstraintActiveSelector
+  , inFullScreenModeSelector
+  , inLiveResizeSelector
+  , initWithCoderSelector
+  , initWithFrameSelector
+  , inputContextSelector
+  , intrinsicContentSizeSelector
+  , invalidateIntrinsicContentSizeSelector
+  , isDescendantOfSelector
+  , knowsPageRangeSelector
+  , lastBaselineAnchorSelector
+  , lastBaselineOffsetFromBottomSelector
+  , layerContentsPlacementSelector
+  , layerContentsRedrawPolicySelector
+  , layerSelector
+  , layerUsesCoreImageFiltersSelector
+  , layoutGuideForLayoutRegionSelector
+  , layoutGuidesSelector
+  , layoutMarginsGuideSelector
+  , layoutSelector
+  , layoutSubtreeIfNeededSelector
+  , leadingAnchorSelector
+  , leftAnchorSelector
+  , locationOfPrintRectSelector
+  , lockFocusIfCanDrawInContextSelector
+  , lockFocusIfCanDrawSelector
+  , lockFocusSelector
+  , makeBackingLayerSelector
+  , menuForEventSelector
+  , mouseDownCanMoveWindowSelector
+  , mouse_inRectSelector
+  , needsDisplaySelector
+  , needsLayoutSelector
+  , needsPanelToBecomeKeySelector
+  , needsToDrawRectSelector
+  , needsUpdateConstraintsSelector
+  , nextKeyViewSelector
+  , nextValidKeyViewSelector
+  , noteFocusRingMaskChangedSelector
+  , opaqueAncestorSelector
+  , opaqueSelector
+  , pageFooterSelector
+  , pageHeaderSelector
+  , performKeyEquivalentSelector
+  , performMnemonicSelector
+  , postsBoundsChangedNotificationsSelector
+  , postsFrameChangedNotificationsSelector
   , prefersCompactControlSizeMetricsSelector
-  , setPrefersCompactControlSizeMetricsSelector
+  , prepareContentInRectSelector
+  , prepareForReuseSelector
+  , preparedContentRectSelector
+  , preservesContentDuringLiveResizeSelector
+  , pressureConfigurationSelector
+  , previousKeyViewSelector
+  , previousValidKeyViewSelector
+  , printJobTitleSelector
+  , printSelector
+  , rectForLayoutRegionSelector
+  , rectForPageSelector
+  , rectForSmartMagnificationAtPoint_inRectSelector
+  , rectPreservedDuringLiveResizeSelector
+  , reflectScrolledClipViewSelector
+  , registerForDraggedTypesSelector
+  , registeredDraggedTypesSelector
+  , releaseGStateSelector
+  , removeAllToolTipsSelector
+  , removeConstraintSelector
+  , removeConstraintsSelector
+  , removeCursorRect_cursorSelector
+  , removeFromSuperviewSelector
+  , removeFromSuperviewWithoutNeedingDisplaySelector
+  , removeGestureRecognizerSelector
+  , removeLayoutGuideSelector
+  , removeToolTipSelector
+  , removeTrackingAreaSelector
+  , removeTrackingRectSelector
+  , renewGStateSelector
+  , replaceSubview_withSelector
+  , requiresConstraintBasedLayoutSelector
+  , resetCursorRectsSelector
+  , resizeSubviewsWithOldSizeSelector
+  , resizeWithOldSuperviewSizeSelector
+  , rightAnchorSelector
+  , rotateByAngleSelector
+  , rotatedFromBaseSelector
+  , rotatedOrScaledFromBaseSelector
+  , rulerView_didAddMarkerSelector
+  , rulerView_didMoveMarkerSelector
+  , rulerView_didRemoveMarkerSelector
+  , rulerView_handleMouseDownSelector
+  , rulerView_locationForPointSelector
+  , rulerView_pointForLocationSelector
+  , rulerView_shouldAddMarkerSelector
+  , rulerView_shouldMoveMarkerSelector
+  , rulerView_shouldRemoveMarkerSelector
+  , rulerView_willAddMarker_atLocationSelector
+  , rulerView_willMoveMarker_toLocationSelector
+  , rulerView_willSetClientViewSelector
   , safeAreaInsetsSelector
-  , additionalSafeAreaInsetsSelector
-  , setAdditionalSafeAreaInsetsSelector
   , safeAreaLayoutGuideSelector
   , safeAreaRectSelector
-  , layoutMarginsGuideSelector
-  , allowedTouchTypesSelector
+  , scaleUnitSquareToSizeSelector
+  , scrollClipView_toPointSelector
+  , scrollPointSelector
+  , scrollRectToVisibleSelector
+  , scrollRect_bySelector
+  , setAcceptsTouchEventsSelector
+  , setAdditionalSafeAreaInsetsSelector
   , setAllowedTouchTypesSelector
-  , gestureRecognizersSelector
-  , setGestureRecognizersSelector
-  , drawingFindIndicatorSelector
-  , inFullScreenModeSelector
-  , registeredDraggedTypesSelector
-  , heightAdjustLimitSelector
-  , widthAdjustLimitSelector
-  , pageHeaderSelector
-  , pageFooterSelector
-  , printJobTitleSelector
-  , nextKeyViewSelector
-  , setNextKeyViewSelector
-  , previousKeyViewSelector
-  , nextValidKeyViewSelector
-  , previousValidKeyViewSelector
-  , canBecomeKeyViewSelector
-  , focusRingTypeSelector
+  , setAlphaValueSelector
+  , setAutoresizesSubviewsSelector
+  , setAutoresizingMaskSelector
+  , setBackgroundFiltersSelector
+  , setBoundsOriginSelector
+  , setBoundsRotationSelector
+  , setBoundsSelector
+  , setBoundsSizeSelector
+  , setCanDrawConcurrentlySelector
+  , setCanDrawSubviewsIntoLayerSelector
+  , setClipsToBoundsSelector
+  , setCompositingFilterSelector
+  , setContentCompressionResistancePriority_forOrientationSelector
+  , setContentFiltersSelector
+  , setContentHuggingPriority_forOrientationSelector
   , setFocusRingTypeSelector
-  , defaultFocusRingTypeSelector
-  , focusRingMaskBoundsSelector
+  , setFrameCenterRotationSelector
+  , setFrameOriginSelector
+  , setFrameRotationSelector
+  , setFrameSelector
+  , setFrameSizeSelector
+  , setGestureRecognizersSelector
+  , setHiddenSelector
+  , setHorizontalContentSizeConstraintActiveSelector
+  , setKeyboardFocusRingNeedsDisplayInRectSelector
+  , setLayerContentsPlacementSelector
+  , setLayerContentsRedrawPolicySelector
+  , setLayerSelector
+  , setLayerUsesCoreImageFiltersSelector
+  , setNeedsDisplayInRectSelector
+  , setNeedsDisplaySelector
+  , setNeedsLayoutSelector
+  , setNeedsUpdateConstraintsSelector
+  , setNextKeyViewSelector
+  , setPostsBoundsChangedNotificationsSelector
+  , setPostsFrameChangedNotificationsSelector
+  , setPrefersCompactControlSizeMetricsSelector
+  , setPreparedContentRectSelector
+  , setPressureConfigurationSelector
+  , setShadowSelector
+  , setSubviewsSelector
+  , setToolTipSelector
+  , setTranslatesAutoresizingMaskIntoConstraintsSelector
+  , setUpGStateSelector
+  , setUserInterfaceLayoutDirectionSelector
+  , setVerticalContentSizeConstraintActiveSelector
+  , setWantsBestResolutionOpenGLSurfaceSelector
+  , setWantsExtendedDynamicRangeOpenGLSurfaceSelector
+  , setWantsLayerSelector
+  , setWantsRestingTouchesSelector
+  , setWritingToolsCoordinatorSelector
+  , shadowSelector
+  , shouldDelayWindowOrderingForEventSelector
+  , shouldDrawColorSelector
+  , showDefinitionForAttributedString_atPointSelector
+  , showDefinitionForAttributedString_range_options_baselineOriginProviderSelector
+  , sortSubviewsUsingFunction_contextSelector
+  , subviewsSelector
+  , superviewSelector
+  , tagSelector
+  , toolTipSelector
+  , topAnchorSelector
+  , trackingAreasSelector
+  , trailingAnchorSelector
+  , translateOriginToPointSelector
+  , translateRectsNeedingDisplayInRect_bySelector
+  , translatesAutoresizingMaskIntoConstraintsSelector
+  , unlockFocusSelector
+  , unregisterDraggedTypesSelector
+  , updateConstraintsForSubtreeIfNeededSelector
+  , updateConstraintsSelector
+  , updateLayerSelector
+  , updateTrackingAreasSelector
+  , userInterfaceLayoutDirectionSelector
+  , verticalContentSizeConstraintActiveSelector
+  , viewDidChangeBackingPropertiesSelector
+  , viewDidChangeEffectiveAppearanceSelector
+  , viewDidEndLiveResizeSelector
+  , viewDidHideSelector
+  , viewDidMoveToSuperviewSelector
+  , viewDidMoveToWindowSelector
+  , viewDidUnhideSelector
+  , viewWillDrawSelector
+  , viewWillMoveToSuperviewSelector
+  , viewWillMoveToWindowSelector
+  , viewWillStartLiveResizeSelector
+  , viewWithTagSelector
+  , visibleRectSelector
+  , wantsBestResolutionOpenGLSurfaceSelector
+  , wantsDefaultClippingSelector
+  , wantsExtendedDynamicRangeOpenGLSurfaceSelector
+  , wantsLayerSelector
+  , wantsRestingTouchesSelector
+  , wantsUpdateLayerSelector
+  , widthAdjustLimitSelector
+  , widthAnchorSelector
+  , willOpenMenu_withEventSelector
+  , willRemoveSubviewSelector
+  , windowSelector
+  , writeEPSInsideRect_toPasteboardSelector
+  , writePDFInsideRect_toPasteboardSelector
+  , writingToolsCoordinatorSelector
 
   -- * Enum types
   , NSAlignmentOptions(NSAlignmentOptions)
@@ -761,15 +762,11 @@ module ObjC.AppKit.NSView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -782,449 +779,423 @@ import ObjC.QuartzCore.Internal.Classes
 
 -- | @- initWithFrame:@
 initWithFrame :: IsNSView nsView => nsView -> NSRect -> IO (Id NSView)
-initWithFrame nsView  frameRect =
-    sendMsg nsView (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frameRect] >>= ownedObject . castPtr
+initWithFrame nsView frameRect =
+  sendOwnedMessage nsView initWithFrameSelector frameRect
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSView nsView, IsNSCoder coder) => nsView -> coder -> IO (Id NSView)
-initWithCoder nsView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsView coder =
+  sendOwnedMessage nsView initWithCoderSelector (toNSCoder coder)
 
 -- | @- isDescendantOf:@
 isDescendantOf :: (IsNSView nsView, IsNSView view) => nsView -> view -> IO Bool
-isDescendantOf nsView  view =
-  withObjCPtr view $ \raw_view ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "isDescendantOf:") retCULong [argPtr (castPtr raw_view :: Ptr ())]
+isDescendantOf nsView view =
+  sendMessage nsView isDescendantOfSelector (toNSView view)
 
 -- | @- ancestorSharedWithView:@
 ancestorSharedWithView :: (IsNSView nsView, IsNSView view) => nsView -> view -> IO (Id NSView)
-ancestorSharedWithView nsView  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsView (mkSelector "ancestorSharedWithView:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ())] >>= retainedObject . castPtr
+ancestorSharedWithView nsView view =
+  sendMessage nsView ancestorSharedWithViewSelector (toNSView view)
 
 -- | @- getRectsBeingDrawn:count:@
 getRectsBeingDrawn_count :: IsNSView nsView => nsView -> Const (Ptr NSRect) -> Ptr CLong -> IO ()
-getRectsBeingDrawn_count nsView  rects count =
-    sendMsg nsView (mkSelector "getRectsBeingDrawn:count:") retVoid [argPtr (unConst rects), argPtr count]
+getRectsBeingDrawn_count nsView rects count =
+  sendMessage nsView getRectsBeingDrawn_countSelector rects count
 
 -- | @- needsToDrawRect:@
 needsToDrawRect :: IsNSView nsView => nsView -> NSRect -> IO Bool
-needsToDrawRect nsView  rect =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "needsToDrawRect:") retCULong [argNSRect rect]
+needsToDrawRect nsView rect =
+  sendMessage nsView needsToDrawRectSelector rect
 
 -- | @- viewDidHide@
 viewDidHide :: IsNSView nsView => nsView -> IO ()
-viewDidHide nsView  =
-    sendMsg nsView (mkSelector "viewDidHide") retVoid []
+viewDidHide nsView =
+  sendMessage nsView viewDidHideSelector
 
 -- | @- viewDidUnhide@
 viewDidUnhide :: IsNSView nsView => nsView -> IO ()
-viewDidUnhide nsView  =
-    sendMsg nsView (mkSelector "viewDidUnhide") retVoid []
+viewDidUnhide nsView =
+  sendMessage nsView viewDidUnhideSelector
 
 -- | @- addSubview:@
 addSubview :: (IsNSView nsView, IsNSView view) => nsView -> view -> IO ()
-addSubview nsView  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsView (mkSelector "addSubview:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+addSubview nsView view =
+  sendMessage nsView addSubviewSelector (toNSView view)
 
 -- | @- addSubview:positioned:relativeTo:@
 addSubview_positioned_relativeTo :: (IsNSView nsView, IsNSView view, IsNSView otherView) => nsView -> view -> NSWindowOrderingMode -> otherView -> IO ()
-addSubview_positioned_relativeTo nsView  view place otherView =
-  withObjCPtr view $ \raw_view ->
-    withObjCPtr otherView $ \raw_otherView ->
-        sendMsg nsView (mkSelector "addSubview:positioned:relativeTo:") retVoid [argPtr (castPtr raw_view :: Ptr ()), argCLong (coerce place), argPtr (castPtr raw_otherView :: Ptr ())]
+addSubview_positioned_relativeTo nsView view place otherView =
+  sendMessage nsView addSubview_positioned_relativeToSelector (toNSView view) place (toNSView otherView)
 
 -- | @- sortSubviewsUsingFunction:context:@
 sortSubviewsUsingFunction_context :: IsNSView nsView => nsView -> Ptr () -> Ptr () -> IO ()
-sortSubviewsUsingFunction_context nsView  compare_ context =
-    sendMsg nsView (mkSelector "sortSubviewsUsingFunction:context:") retVoid [argPtr compare_, argPtr context]
+sortSubviewsUsingFunction_context nsView compare_ context =
+  sendMessage nsView sortSubviewsUsingFunction_contextSelector compare_ context
 
 -- | @- viewWillMoveToWindow:@
 viewWillMoveToWindow :: (IsNSView nsView, IsNSWindow newWindow) => nsView -> newWindow -> IO ()
-viewWillMoveToWindow nsView  newWindow =
-  withObjCPtr newWindow $ \raw_newWindow ->
-      sendMsg nsView (mkSelector "viewWillMoveToWindow:") retVoid [argPtr (castPtr raw_newWindow :: Ptr ())]
+viewWillMoveToWindow nsView newWindow =
+  sendMessage nsView viewWillMoveToWindowSelector (toNSWindow newWindow)
 
 -- | @- viewDidMoveToWindow@
 viewDidMoveToWindow :: IsNSView nsView => nsView -> IO ()
-viewDidMoveToWindow nsView  =
-    sendMsg nsView (mkSelector "viewDidMoveToWindow") retVoid []
+viewDidMoveToWindow nsView =
+  sendMessage nsView viewDidMoveToWindowSelector
 
 -- | @- viewWillMoveToSuperview:@
 viewWillMoveToSuperview :: (IsNSView nsView, IsNSView newSuperview) => nsView -> newSuperview -> IO ()
-viewWillMoveToSuperview nsView  newSuperview =
-  withObjCPtr newSuperview $ \raw_newSuperview ->
-      sendMsg nsView (mkSelector "viewWillMoveToSuperview:") retVoid [argPtr (castPtr raw_newSuperview :: Ptr ())]
+viewWillMoveToSuperview nsView newSuperview =
+  sendMessage nsView viewWillMoveToSuperviewSelector (toNSView newSuperview)
 
 -- | @- viewDidMoveToSuperview@
 viewDidMoveToSuperview :: IsNSView nsView => nsView -> IO ()
-viewDidMoveToSuperview nsView  =
-    sendMsg nsView (mkSelector "viewDidMoveToSuperview") retVoid []
+viewDidMoveToSuperview nsView =
+  sendMessage nsView viewDidMoveToSuperviewSelector
 
 -- | @- didAddSubview:@
 didAddSubview :: (IsNSView nsView, IsNSView subview) => nsView -> subview -> IO ()
-didAddSubview nsView  subview =
-  withObjCPtr subview $ \raw_subview ->
-      sendMsg nsView (mkSelector "didAddSubview:") retVoid [argPtr (castPtr raw_subview :: Ptr ())]
+didAddSubview nsView subview =
+  sendMessage nsView didAddSubviewSelector (toNSView subview)
 
 -- | @- willRemoveSubview:@
 willRemoveSubview :: (IsNSView nsView, IsNSView subview) => nsView -> subview -> IO ()
-willRemoveSubview nsView  subview =
-  withObjCPtr subview $ \raw_subview ->
-      sendMsg nsView (mkSelector "willRemoveSubview:") retVoid [argPtr (castPtr raw_subview :: Ptr ())]
+willRemoveSubview nsView subview =
+  sendMessage nsView willRemoveSubviewSelector (toNSView subview)
 
 -- | @- removeFromSuperview@
 removeFromSuperview :: IsNSView nsView => nsView -> IO ()
-removeFromSuperview nsView  =
-    sendMsg nsView (mkSelector "removeFromSuperview") retVoid []
+removeFromSuperview nsView =
+  sendMessage nsView removeFromSuperviewSelector
 
 -- | @- replaceSubview:with:@
 replaceSubview_with :: (IsNSView nsView, IsNSView oldView, IsNSView newView) => nsView -> oldView -> newView -> IO ()
-replaceSubview_with nsView  oldView newView =
-  withObjCPtr oldView $ \raw_oldView ->
-    withObjCPtr newView $ \raw_newView ->
-        sendMsg nsView (mkSelector "replaceSubview:with:") retVoid [argPtr (castPtr raw_oldView :: Ptr ()), argPtr (castPtr raw_newView :: Ptr ())]
+replaceSubview_with nsView oldView newView =
+  sendMessage nsView replaceSubview_withSelector (toNSView oldView) (toNSView newView)
 
 -- | @- removeFromSuperviewWithoutNeedingDisplay@
 removeFromSuperviewWithoutNeedingDisplay :: IsNSView nsView => nsView -> IO ()
-removeFromSuperviewWithoutNeedingDisplay nsView  =
-    sendMsg nsView (mkSelector "removeFromSuperviewWithoutNeedingDisplay") retVoid []
+removeFromSuperviewWithoutNeedingDisplay nsView =
+  sendMessage nsView removeFromSuperviewWithoutNeedingDisplaySelector
 
 -- | @- viewDidChangeBackingProperties@
 viewDidChangeBackingProperties :: IsNSView nsView => nsView -> IO ()
-viewDidChangeBackingProperties nsView  =
-    sendMsg nsView (mkSelector "viewDidChangeBackingProperties") retVoid []
+viewDidChangeBackingProperties nsView =
+  sendMessage nsView viewDidChangeBackingPropertiesSelector
 
 -- | @- resizeSubviewsWithOldSize:@
 resizeSubviewsWithOldSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-resizeSubviewsWithOldSize nsView  oldSize =
-    sendMsg nsView (mkSelector "resizeSubviewsWithOldSize:") retVoid [argNSSize oldSize]
+resizeSubviewsWithOldSize nsView oldSize =
+  sendMessage nsView resizeSubviewsWithOldSizeSelector oldSize
 
 -- | @- resizeWithOldSuperviewSize:@
 resizeWithOldSuperviewSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-resizeWithOldSuperviewSize nsView  oldSize =
-    sendMsg nsView (mkSelector "resizeWithOldSuperviewSize:") retVoid [argNSSize oldSize]
+resizeWithOldSuperviewSize nsView oldSize =
+  sendMessage nsView resizeWithOldSuperviewSizeSelector oldSize
 
 -- | @- setFrameOrigin:@
 setFrameOrigin :: IsNSView nsView => nsView -> NSPoint -> IO ()
-setFrameOrigin nsView  newOrigin =
-    sendMsg nsView (mkSelector "setFrameOrigin:") retVoid [argNSPoint newOrigin]
+setFrameOrigin nsView newOrigin =
+  sendMessage nsView setFrameOriginSelector newOrigin
 
 -- | @- setFrameSize:@
 setFrameSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-setFrameSize nsView  newSize =
-    sendMsg nsView (mkSelector "setFrameSize:") retVoid [argNSSize newSize]
+setFrameSize nsView newSize =
+  sendMessage nsView setFrameSizeSelector newSize
 
 -- | @- setBoundsOrigin:@
 setBoundsOrigin :: IsNSView nsView => nsView -> NSPoint -> IO ()
-setBoundsOrigin nsView  newOrigin =
-    sendMsg nsView (mkSelector "setBoundsOrigin:") retVoid [argNSPoint newOrigin]
+setBoundsOrigin nsView newOrigin =
+  sendMessage nsView setBoundsOriginSelector newOrigin
 
 -- | @- setBoundsSize:@
 setBoundsSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-setBoundsSize nsView  newSize =
-    sendMsg nsView (mkSelector "setBoundsSize:") retVoid [argNSSize newSize]
+setBoundsSize nsView newSize =
+  sendMessage nsView setBoundsSizeSelector newSize
 
 -- | @- translateOriginToPoint:@
 translateOriginToPoint :: IsNSView nsView => nsView -> NSPoint -> IO ()
-translateOriginToPoint nsView  translation =
-    sendMsg nsView (mkSelector "translateOriginToPoint:") retVoid [argNSPoint translation]
+translateOriginToPoint nsView translation =
+  sendMessage nsView translateOriginToPointSelector translation
 
 -- | @- scaleUnitSquareToSize:@
 scaleUnitSquareToSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-scaleUnitSquareToSize nsView  newUnitSize =
-    sendMsg nsView (mkSelector "scaleUnitSquareToSize:") retVoid [argNSSize newUnitSize]
+scaleUnitSquareToSize nsView newUnitSize =
+  sendMessage nsView scaleUnitSquareToSizeSelector newUnitSize
 
 -- | @- rotateByAngle:@
 rotateByAngle :: IsNSView nsView => nsView -> CDouble -> IO ()
-rotateByAngle nsView  angle =
-    sendMsg nsView (mkSelector "rotateByAngle:") retVoid [argCDouble angle]
+rotateByAngle nsView angle =
+  sendMessage nsView rotateByAngleSelector angle
 
 -- | @- convertPoint:fromView:@
 convertPoint_fromView :: (IsNSView nsView, IsNSView view) => nsView -> NSPoint -> view -> IO NSPoint
-convertPoint_fromView nsView  point view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertPoint:fromView:") retNSPoint [argNSPoint point, argPtr (castPtr raw_view :: Ptr ())]
+convertPoint_fromView nsView point view =
+  sendMessage nsView convertPoint_fromViewSelector point (toNSView view)
 
 -- | @- convertPoint:toView:@
 convertPoint_toView :: (IsNSView nsView, IsNSView view) => nsView -> NSPoint -> view -> IO NSPoint
-convertPoint_toView nsView  point view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertPoint:toView:") retNSPoint [argNSPoint point, argPtr (castPtr raw_view :: Ptr ())]
+convertPoint_toView nsView point view =
+  sendMessage nsView convertPoint_toViewSelector point (toNSView view)
 
 -- | @- convertSize:fromView:@
 convertSize_fromView :: (IsNSView nsView, IsNSView view) => nsView -> NSSize -> view -> IO NSSize
-convertSize_fromView nsView  size view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertSize:fromView:") retNSSize [argNSSize size, argPtr (castPtr raw_view :: Ptr ())]
+convertSize_fromView nsView size view =
+  sendMessage nsView convertSize_fromViewSelector size (toNSView view)
 
 -- | @- convertSize:toView:@
 convertSize_toView :: (IsNSView nsView, IsNSView view) => nsView -> NSSize -> view -> IO NSSize
-convertSize_toView nsView  size view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertSize:toView:") retNSSize [argNSSize size, argPtr (castPtr raw_view :: Ptr ())]
+convertSize_toView nsView size view =
+  sendMessage nsView convertSize_toViewSelector size (toNSView view)
 
 -- | @- convertRect:fromView:@
 convertRect_fromView :: (IsNSView nsView, IsNSView view) => nsView -> NSRect -> view -> IO NSRect
-convertRect_fromView nsView  rect view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertRect:fromView:") retNSRect [argNSRect rect, argPtr (castPtr raw_view :: Ptr ())]
+convertRect_fromView nsView rect view =
+  sendMessage nsView convertRect_fromViewSelector rect (toNSView view)
 
 -- | @- convertRect:toView:@
 convertRect_toView :: (IsNSView nsView, IsNSView view) => nsView -> NSRect -> view -> IO NSRect
-convertRect_toView nsView  rect view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsView (mkSelector "convertRect:toView:") retNSRect [argNSRect rect, argPtr (castPtr raw_view :: Ptr ())]
+convertRect_toView nsView rect view =
+  sendMessage nsView convertRect_toViewSelector rect (toNSView view)
 
 -- | @- backingAlignedRect:options:@
 backingAlignedRect_options :: IsNSView nsView => nsView -> NSRect -> NSAlignmentOptions -> IO NSRect
-backingAlignedRect_options nsView  rect options =
-    sendMsgStret nsView (mkSelector "backingAlignedRect:options:") retNSRect [argNSRect rect, argCULong (coerce options)]
+backingAlignedRect_options nsView rect options =
+  sendMessage nsView backingAlignedRect_optionsSelector rect options
 
 -- | @- centerScanRect:@
 centerScanRect :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-centerScanRect nsView  rect =
-    sendMsgStret nsView (mkSelector "centerScanRect:") retNSRect [argNSRect rect]
+centerScanRect nsView rect =
+  sendMessage nsView centerScanRectSelector rect
 
 -- | @- convertPointToBacking:@
 convertPointToBacking :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointToBacking nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointToBacking:") retNSPoint [argNSPoint point]
+convertPointToBacking nsView point =
+  sendMessage nsView convertPointToBackingSelector point
 
 -- | @- convertPointFromBacking:@
 convertPointFromBacking :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointFromBacking nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointFromBacking:") retNSPoint [argNSPoint point]
+convertPointFromBacking nsView point =
+  sendMessage nsView convertPointFromBackingSelector point
 
 -- | @- convertSizeToBacking:@
 convertSizeToBacking :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeToBacking nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeToBacking:") retNSSize [argNSSize size]
+convertSizeToBacking nsView size =
+  sendMessage nsView convertSizeToBackingSelector size
 
 -- | @- convertSizeFromBacking:@
 convertSizeFromBacking :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeFromBacking nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeFromBacking:") retNSSize [argNSSize size]
+convertSizeFromBacking nsView size =
+  sendMessage nsView convertSizeFromBackingSelector size
 
 -- | @- convertRectToBacking:@
 convertRectToBacking :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectToBacking nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectToBacking:") retNSRect [argNSRect rect]
+convertRectToBacking nsView rect =
+  sendMessage nsView convertRectToBackingSelector rect
 
 -- | @- convertRectFromBacking:@
 convertRectFromBacking :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectFromBacking nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectFromBacking:") retNSRect [argNSRect rect]
+convertRectFromBacking nsView rect =
+  sendMessage nsView convertRectFromBackingSelector rect
 
 -- | @- convertPointToLayer:@
 convertPointToLayer :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointToLayer nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointToLayer:") retNSPoint [argNSPoint point]
+convertPointToLayer nsView point =
+  sendMessage nsView convertPointToLayerSelector point
 
 -- | @- convertPointFromLayer:@
 convertPointFromLayer :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointFromLayer nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointFromLayer:") retNSPoint [argNSPoint point]
+convertPointFromLayer nsView point =
+  sendMessage nsView convertPointFromLayerSelector point
 
 -- | @- convertSizeToLayer:@
 convertSizeToLayer :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeToLayer nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeToLayer:") retNSSize [argNSSize size]
+convertSizeToLayer nsView size =
+  sendMessage nsView convertSizeToLayerSelector size
 
 -- | @- convertSizeFromLayer:@
 convertSizeFromLayer :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeFromLayer nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeFromLayer:") retNSSize [argNSSize size]
+convertSizeFromLayer nsView size =
+  sendMessage nsView convertSizeFromLayerSelector size
 
 -- | @- convertRectToLayer:@
 convertRectToLayer :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectToLayer nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectToLayer:") retNSRect [argNSRect rect]
+convertRectToLayer nsView rect =
+  sendMessage nsView convertRectToLayerSelector rect
 
 -- | @- convertRectFromLayer:@
 convertRectFromLayer :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectFromLayer nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectFromLayer:") retNSRect [argNSRect rect]
+convertRectFromLayer nsView rect =
+  sendMessage nsView convertRectFromLayerSelector rect
 
 -- | @- setNeedsDisplayInRect:@
 setNeedsDisplayInRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-setNeedsDisplayInRect nsView  invalidRect =
-    sendMsg nsView (mkSelector "setNeedsDisplayInRect:") retVoid [argNSRect invalidRect]
+setNeedsDisplayInRect nsView invalidRect =
+  sendMessage nsView setNeedsDisplayInRectSelector invalidRect
 
 -- | @- lockFocus@
 lockFocus :: IsNSView nsView => nsView -> IO ()
-lockFocus nsView  =
-    sendMsg nsView (mkSelector "lockFocus") retVoid []
+lockFocus nsView =
+  sendMessage nsView lockFocusSelector
 
 -- | @- unlockFocus@
 unlockFocus :: IsNSView nsView => nsView -> IO ()
-unlockFocus nsView  =
-    sendMsg nsView (mkSelector "unlockFocus") retVoid []
+unlockFocus nsView =
+  sendMessage nsView unlockFocusSelector
 
 -- | @- lockFocusIfCanDraw@
 lockFocusIfCanDraw :: IsNSView nsView => nsView -> IO Bool
-lockFocusIfCanDraw nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "lockFocusIfCanDraw") retCULong []
+lockFocusIfCanDraw nsView =
+  sendMessage nsView lockFocusIfCanDrawSelector
 
 -- | @- lockFocusIfCanDrawInContext:@
 lockFocusIfCanDrawInContext :: (IsNSView nsView, IsNSGraphicsContext context) => nsView -> context -> IO Bool
-lockFocusIfCanDrawInContext nsView  context =
-  withObjCPtr context $ \raw_context ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "lockFocusIfCanDrawInContext:") retCULong [argPtr (castPtr raw_context :: Ptr ())]
+lockFocusIfCanDrawInContext nsView context =
+  sendMessage nsView lockFocusIfCanDrawInContextSelector (toNSGraphicsContext context)
 
 -- | @- display@
 display :: IsNSView nsView => nsView -> IO ()
-display nsView  =
-    sendMsg nsView (mkSelector "display") retVoid []
+display nsView =
+  sendMessage nsView displaySelector
 
 -- | @- displayIfNeeded@
 displayIfNeeded :: IsNSView nsView => nsView -> IO ()
-displayIfNeeded nsView  =
-    sendMsg nsView (mkSelector "displayIfNeeded") retVoid []
+displayIfNeeded nsView =
+  sendMessage nsView displayIfNeededSelector
 
 -- | @- displayIfNeededIgnoringOpacity@
 displayIfNeededIgnoringOpacity :: IsNSView nsView => nsView -> IO ()
-displayIfNeededIgnoringOpacity nsView  =
-    sendMsg nsView (mkSelector "displayIfNeededIgnoringOpacity") retVoid []
+displayIfNeededIgnoringOpacity nsView =
+  sendMessage nsView displayIfNeededIgnoringOpacitySelector
 
 -- | @- displayRect:@
 displayRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-displayRect nsView  rect =
-    sendMsg nsView (mkSelector "displayRect:") retVoid [argNSRect rect]
+displayRect nsView rect =
+  sendMessage nsView displayRectSelector rect
 
 -- | @- displayIfNeededInRect:@
 displayIfNeededInRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-displayIfNeededInRect nsView  rect =
-    sendMsg nsView (mkSelector "displayIfNeededInRect:") retVoid [argNSRect rect]
+displayIfNeededInRect nsView rect =
+  sendMessage nsView displayIfNeededInRectSelector rect
 
 -- | @- displayRectIgnoringOpacity:@
 displayRectIgnoringOpacity :: IsNSView nsView => nsView -> NSRect -> IO ()
-displayRectIgnoringOpacity nsView  rect =
-    sendMsg nsView (mkSelector "displayRectIgnoringOpacity:") retVoid [argNSRect rect]
+displayRectIgnoringOpacity nsView rect =
+  sendMessage nsView displayRectIgnoringOpacitySelector rect
 
 -- | @- displayIfNeededInRectIgnoringOpacity:@
 displayIfNeededInRectIgnoringOpacity :: IsNSView nsView => nsView -> NSRect -> IO ()
-displayIfNeededInRectIgnoringOpacity nsView  rect =
-    sendMsg nsView (mkSelector "displayIfNeededInRectIgnoringOpacity:") retVoid [argNSRect rect]
+displayIfNeededInRectIgnoringOpacity nsView rect =
+  sendMessage nsView displayIfNeededInRectIgnoringOpacitySelector rect
 
 -- | @- drawRect:@
 drawRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-drawRect nsView  dirtyRect =
-    sendMsg nsView (mkSelector "drawRect:") retVoid [argNSRect dirtyRect]
+drawRect nsView dirtyRect =
+  sendMessage nsView drawRectSelector dirtyRect
 
 -- | @- displayRectIgnoringOpacity:inContext:@
 displayRectIgnoringOpacity_inContext :: (IsNSView nsView, IsNSGraphicsContext context) => nsView -> NSRect -> context -> IO ()
-displayRectIgnoringOpacity_inContext nsView  rect context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg nsView (mkSelector "displayRectIgnoringOpacity:inContext:") retVoid [argNSRect rect, argPtr (castPtr raw_context :: Ptr ())]
+displayRectIgnoringOpacity_inContext nsView rect context =
+  sendMessage nsView displayRectIgnoringOpacity_inContextSelector rect (toNSGraphicsContext context)
 
 -- | @- bitmapImageRepForCachingDisplayInRect:@
 bitmapImageRepForCachingDisplayInRect :: IsNSView nsView => nsView -> NSRect -> IO (Id NSBitmapImageRep)
-bitmapImageRepForCachingDisplayInRect nsView  rect =
-    sendMsg nsView (mkSelector "bitmapImageRepForCachingDisplayInRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+bitmapImageRepForCachingDisplayInRect nsView rect =
+  sendMessage nsView bitmapImageRepForCachingDisplayInRectSelector rect
 
 -- | @- cacheDisplayInRect:toBitmapImageRep:@
 cacheDisplayInRect_toBitmapImageRep :: (IsNSView nsView, IsNSBitmapImageRep bitmapImageRep) => nsView -> NSRect -> bitmapImageRep -> IO ()
-cacheDisplayInRect_toBitmapImageRep nsView  rect bitmapImageRep =
-  withObjCPtr bitmapImageRep $ \raw_bitmapImageRep ->
-      sendMsg nsView (mkSelector "cacheDisplayInRect:toBitmapImageRep:") retVoid [argNSRect rect, argPtr (castPtr raw_bitmapImageRep :: Ptr ())]
+cacheDisplayInRect_toBitmapImageRep nsView rect bitmapImageRep =
+  sendMessage nsView cacheDisplayInRect_toBitmapImageRepSelector rect (toNSBitmapImageRep bitmapImageRep)
 
 -- | @- viewWillDraw@
 viewWillDraw :: IsNSView nsView => nsView -> IO ()
-viewWillDraw nsView  =
-    sendMsg nsView (mkSelector "viewWillDraw") retVoid []
+viewWillDraw nsView =
+  sendMessage nsView viewWillDrawSelector
 
 -- | @- scrollPoint:@
 scrollPoint :: IsNSView nsView => nsView -> NSPoint -> IO ()
-scrollPoint nsView  point =
-    sendMsg nsView (mkSelector "scrollPoint:") retVoid [argNSPoint point]
+scrollPoint nsView point =
+  sendMessage nsView scrollPointSelector point
 
 -- | @- scrollRectToVisible:@
 scrollRectToVisible :: IsNSView nsView => nsView -> NSRect -> IO Bool
-scrollRectToVisible nsView  rect =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "scrollRectToVisible:") retCULong [argNSRect rect]
+scrollRectToVisible nsView rect =
+  sendMessage nsView scrollRectToVisibleSelector rect
 
 -- | @- autoscroll:@
 autoscroll :: (IsNSView nsView, IsNSEvent event) => nsView -> event -> IO Bool
-autoscroll nsView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "autoscroll:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+autoscroll nsView event =
+  sendMessage nsView autoscrollSelector (toNSEvent event)
 
 -- | @- adjustScroll:@
 adjustScroll :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-adjustScroll nsView  newVisible =
-    sendMsgStret nsView (mkSelector "adjustScroll:") retNSRect [argNSRect newVisible]
+adjustScroll nsView newVisible =
+  sendMessage nsView adjustScrollSelector newVisible
 
 -- | @- scrollRect:by:@
 scrollRect_by :: IsNSView nsView => nsView -> NSRect -> NSSize -> IO ()
-scrollRect_by nsView  rect delta =
-    sendMsg nsView (mkSelector "scrollRect:by:") retVoid [argNSRect rect, argNSSize delta]
+scrollRect_by nsView rect delta =
+  sendMessage nsView scrollRect_bySelector rect delta
 
 -- | @- translateRectsNeedingDisplayInRect:by:@
 translateRectsNeedingDisplayInRect_by :: IsNSView nsView => nsView -> NSRect -> NSSize -> IO ()
-translateRectsNeedingDisplayInRect_by nsView  clipRect delta =
-    sendMsg nsView (mkSelector "translateRectsNeedingDisplayInRect:by:") retVoid [argNSRect clipRect, argNSSize delta]
+translateRectsNeedingDisplayInRect_by nsView clipRect delta =
+  sendMessage nsView translateRectsNeedingDisplayInRect_bySelector clipRect delta
 
 -- | @- hitTest:@
 hitTest :: IsNSView nsView => nsView -> NSPoint -> IO (Id NSView)
-hitTest nsView  point =
-    sendMsg nsView (mkSelector "hitTest:") (retPtr retVoid) [argNSPoint point] >>= retainedObject . castPtr
+hitTest nsView point =
+  sendMessage nsView hitTestSelector point
 
 -- | @- mouse:inRect:@
 mouse_inRect :: IsNSView nsView => nsView -> NSPoint -> NSRect -> IO Bool
-mouse_inRect nsView  point rect =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "mouse:inRect:") retCULong [argNSPoint point, argNSRect rect]
+mouse_inRect nsView point rect =
+  sendMessage nsView mouse_inRectSelector point rect
 
 -- | @- viewWithTag:@
 viewWithTag :: IsNSView nsView => nsView -> CLong -> IO (Id NSView)
-viewWithTag nsView  tag =
-    sendMsg nsView (mkSelector "viewWithTag:") (retPtr retVoid) [argCLong tag] >>= retainedObject . castPtr
+viewWithTag nsView tag =
+  sendMessage nsView viewWithTagSelector tag
 
 -- | @- performKeyEquivalent:@
 performKeyEquivalent :: (IsNSView nsView, IsNSEvent event) => nsView -> event -> IO Bool
-performKeyEquivalent nsView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "performKeyEquivalent:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+performKeyEquivalent nsView event =
+  sendMessage nsView performKeyEquivalentSelector (toNSEvent event)
 
 -- | @- acceptsFirstMouse:@
 acceptsFirstMouse :: (IsNSView nsView, IsNSEvent event) => nsView -> event -> IO Bool
-acceptsFirstMouse nsView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "acceptsFirstMouse:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+acceptsFirstMouse nsView event =
+  sendMessage nsView acceptsFirstMouseSelector (toNSEvent event)
 
 -- | @- shouldDelayWindowOrderingForEvent:@
 shouldDelayWindowOrderingForEvent :: (IsNSView nsView, IsNSEvent event) => nsView -> event -> IO Bool
-shouldDelayWindowOrderingForEvent nsView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "shouldDelayWindowOrderingForEvent:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+shouldDelayWindowOrderingForEvent nsView event =
+  sendMessage nsView shouldDelayWindowOrderingForEventSelector (toNSEvent event)
 
 -- | @- makeBackingLayer@
 makeBackingLayer :: IsNSView nsView => nsView -> IO (Id CALayer)
-makeBackingLayer nsView  =
-    sendMsg nsView (mkSelector "makeBackingLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeBackingLayer nsView =
+  sendMessage nsView makeBackingLayerSelector
 
 -- | @- updateLayer@
 updateLayer :: IsNSView nsView => nsView -> IO ()
-updateLayer nsView  =
-    sendMsg nsView (mkSelector "updateLayer") retVoid []
+updateLayer nsView =
+  sendMessage nsView updateLayerSelector
 
 -- | @- layoutSubtreeIfNeeded@
 layoutSubtreeIfNeeded :: IsNSView nsView => nsView -> IO ()
-layoutSubtreeIfNeeded nsView  =
-    sendMsg nsView (mkSelector "layoutSubtreeIfNeeded") retVoid []
+layoutSubtreeIfNeeded nsView =
+  sendMessage nsView layoutSubtreeIfNeededSelector
 
 -- | @- layout@
 layout :: IsNSView nsView => nsView -> IO ()
-layout nsView  =
-    sendMsg nsView (mkSelector "layout") retVoid []
+layout nsView =
+  sendMessage nsView layoutSelector
 
 -- | @- menuForEvent:@
 menuForEvent :: (IsNSView nsView, IsNSEvent event) => nsView -> event -> IO (Id NSMenu)
-menuForEvent nsView  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsView (mkSelector "menuForEvent:") (retPtr retVoid) [argPtr (castPtr raw_event :: Ptr ())] >>= retainedObject . castPtr
+menuForEvent nsView event =
+  sendMessage nsView menuForEventSelector (toNSEvent event)
 
 -- | A contextual menu is being opened from the receiving view. The view should update any visual state in response — such as making a selection.
 --
@@ -1234,10 +1205,8 @@ menuForEvent nsView  event =
 --
 -- ObjC selector: @- willOpenMenu:withEvent:@
 willOpenMenu_withEvent :: (IsNSView nsView, IsNSMenu menu, IsNSEvent event) => nsView -> menu -> event -> IO ()
-willOpenMenu_withEvent nsView  menu event =
-  withObjCPtr menu $ \raw_menu ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsView (mkSelector "willOpenMenu:withEvent:") retVoid [argPtr (castPtr raw_menu :: Ptr ()), argPtr (castPtr raw_event :: Ptr ())]
+willOpenMenu_withEvent nsView menu event =
+  sendMessage nsView willOpenMenu_withEventSelector (toNSMenu menu) (toNSEvent event)
 
 -- | A contextual menu shown from the receiving view has been closed. This is only called if the menu had been opened and the view previously received @-willOpenMenu:withEvent:.@ The view should update any visual state in response — such as removing a temporary selection.
 --
@@ -1247,740 +1216,679 @@ willOpenMenu_withEvent nsView  menu event =
 --
 -- ObjC selector: @- didCloseMenu:withEvent:@
 didCloseMenu_withEvent :: (IsNSView nsView, IsNSMenu menu, IsNSEvent event) => nsView -> menu -> event -> IO ()
-didCloseMenu_withEvent nsView  menu event =
-  withObjCPtr menu $ \raw_menu ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsView (mkSelector "didCloseMenu:withEvent:") retVoid [argPtr (castPtr raw_menu :: Ptr ()), argPtr (castPtr raw_event :: Ptr ())]
+didCloseMenu_withEvent nsView menu event =
+  sendMessage nsView didCloseMenu_withEventSelector (toNSMenu menu) (toNSEvent event)
 
 -- | @- addToolTipRect:owner:userData:@
 addToolTipRect_owner_userData :: IsNSView nsView => nsView -> NSRect -> RawId -> Ptr () -> IO CLong
-addToolTipRect_owner_userData nsView  rect owner data_ =
-    sendMsg nsView (mkSelector "addToolTipRect:owner:userData:") retCLong [argNSRect rect, argPtr (castPtr (unRawId owner) :: Ptr ()), argPtr data_]
+addToolTipRect_owner_userData nsView rect owner data_ =
+  sendMessage nsView addToolTipRect_owner_userDataSelector rect owner data_
 
 -- | @- removeToolTip:@
 removeToolTip :: IsNSView nsView => nsView -> CLong -> IO ()
-removeToolTip nsView  tag =
-    sendMsg nsView (mkSelector "removeToolTip:") retVoid [argCLong tag]
+removeToolTip nsView tag =
+  sendMessage nsView removeToolTipSelector tag
 
 -- | @- removeAllToolTips@
 removeAllToolTips :: IsNSView nsView => nsView -> IO ()
-removeAllToolTips nsView  =
-    sendMsg nsView (mkSelector "removeAllToolTips") retVoid []
+removeAllToolTips nsView =
+  sendMessage nsView removeAllToolTipsSelector
 
 -- | @- viewWillStartLiveResize@
 viewWillStartLiveResize :: IsNSView nsView => nsView -> IO ()
-viewWillStartLiveResize nsView  =
-    sendMsg nsView (mkSelector "viewWillStartLiveResize") retVoid []
+viewWillStartLiveResize nsView =
+  sendMessage nsView viewWillStartLiveResizeSelector
 
 -- | @- viewDidEndLiveResize@
 viewDidEndLiveResize :: IsNSView nsView => nsView -> IO ()
-viewDidEndLiveResize nsView  =
-    sendMsg nsView (mkSelector "viewDidEndLiveResize") retVoid []
+viewDidEndLiveResize nsView =
+  sendMessage nsView viewDidEndLiveResizeSelector
 
 -- | @- getRectsExposedDuringLiveResize:count:@
 getRectsExposedDuringLiveResize_count :: IsNSView nsView => nsView -> Ptr NSRect -> Ptr CLong -> IO ()
-getRectsExposedDuringLiveResize_count nsView  exposedRects count =
-    sendMsg nsView (mkSelector "getRectsExposedDuringLiveResize:count:") retVoid [argPtr exposedRects, argPtr count]
+getRectsExposedDuringLiveResize_count nsView exposedRects count =
+  sendMessage nsView getRectsExposedDuringLiveResize_countSelector exposedRects count
 
 -- | @- rectForSmartMagnificationAtPoint:inRect:@
 rectForSmartMagnificationAtPoint_inRect :: IsNSView nsView => nsView -> NSPoint -> NSRect -> IO NSRect
-rectForSmartMagnificationAtPoint_inRect nsView  location visibleRect =
-    sendMsgStret nsView (mkSelector "rectForSmartMagnificationAtPoint:inRect:") retNSRect [argNSPoint location, argNSRect visibleRect]
+rectForSmartMagnificationAtPoint_inRect nsView location visibleRect =
+  sendMessage nsView rectForSmartMagnificationAtPoint_inRectSelector location visibleRect
 
 -- | @- prepareForReuse@
 prepareForReuse :: IsNSView nsView => nsView -> IO ()
-prepareForReuse nsView  =
-    sendMsg nsView (mkSelector "prepareForReuse") retVoid []
+prepareForReuse nsView =
+  sendMessage nsView prepareForReuseSelector
 
 -- | @- prepareContentInRect:@
 prepareContentInRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-prepareContentInRect nsView  rect =
-    sendMsg nsView (mkSelector "prepareContentInRect:") retVoid [argNSRect rect]
+prepareContentInRect nsView rect =
+  sendMessage nsView prepareContentInRectSelector rect
 
 -- | Override point for reacting to the effective appearance of the receiver changing. At this point @effectiveAppearance@ property reflects the new appearance.
 --
 -- ObjC selector: @- viewDidChangeEffectiveAppearance@
 viewDidChangeEffectiveAppearance :: IsNSView nsView => nsView -> IO ()
-viewDidChangeEffectiveAppearance nsView  =
-    sendMsg nsView (mkSelector "viewDidChangeEffectiveAppearance") retVoid []
+viewDidChangeEffectiveAppearance nsView =
+  sendMessage nsView viewDidChangeEffectiveAppearanceSelector
 
 -- | @- rulerView:shouldMoveMarker:@
 rulerView_shouldMoveMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO Bool
-rulerView_shouldMoveMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "rulerView:shouldMoveMarker:") retCULong [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_shouldMoveMarker nsView ruler marker =
+  sendMessage nsView rulerView_shouldMoveMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:willMoveMarker:toLocation:@
 rulerView_willMoveMarker_toLocation :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> CDouble -> IO CDouble
-rulerView_willMoveMarker_toLocation nsView  ruler marker location =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        sendMsg nsView (mkSelector "rulerView:willMoveMarker:toLocation:") retCDouble [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ()), argCDouble location]
+rulerView_willMoveMarker_toLocation nsView ruler marker location =
+  sendMessage nsView rulerView_willMoveMarker_toLocationSelector (toNSRulerView ruler) (toNSRulerMarker marker) location
 
 -- | @- rulerView:didMoveMarker:@
 rulerView_didMoveMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO ()
-rulerView_didMoveMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        sendMsg nsView (mkSelector "rulerView:didMoveMarker:") retVoid [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_didMoveMarker nsView ruler marker =
+  sendMessage nsView rulerView_didMoveMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:shouldRemoveMarker:@
 rulerView_shouldRemoveMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO Bool
-rulerView_shouldRemoveMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "rulerView:shouldRemoveMarker:") retCULong [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_shouldRemoveMarker nsView ruler marker =
+  sendMessage nsView rulerView_shouldRemoveMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:didRemoveMarker:@
 rulerView_didRemoveMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO ()
-rulerView_didRemoveMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        sendMsg nsView (mkSelector "rulerView:didRemoveMarker:") retVoid [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_didRemoveMarker nsView ruler marker =
+  sendMessage nsView rulerView_didRemoveMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:shouldAddMarker:@
 rulerView_shouldAddMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO Bool
-rulerView_shouldAddMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "rulerView:shouldAddMarker:") retCULong [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_shouldAddMarker nsView ruler marker =
+  sendMessage nsView rulerView_shouldAddMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:willAddMarker:atLocation:@
 rulerView_willAddMarker_atLocation :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> CDouble -> IO CDouble
-rulerView_willAddMarker_atLocation nsView  ruler marker location =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        sendMsg nsView (mkSelector "rulerView:willAddMarker:atLocation:") retCDouble [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ()), argCDouble location]
+rulerView_willAddMarker_atLocation nsView ruler marker location =
+  sendMessage nsView rulerView_willAddMarker_atLocationSelector (toNSRulerView ruler) (toNSRulerMarker marker) location
 
 -- | @- rulerView:didAddMarker:@
 rulerView_didAddMarker :: (IsNSView nsView, IsNSRulerView ruler, IsNSRulerMarker marker) => nsView -> ruler -> marker -> IO ()
-rulerView_didAddMarker nsView  ruler marker =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr marker $ \raw_marker ->
-        sendMsg nsView (mkSelector "rulerView:didAddMarker:") retVoid [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_marker :: Ptr ())]
+rulerView_didAddMarker nsView ruler marker =
+  sendMessage nsView rulerView_didAddMarkerSelector (toNSRulerView ruler) (toNSRulerMarker marker)
 
 -- | @- rulerView:handleMouseDown:@
 rulerView_handleMouseDown :: (IsNSView nsView, IsNSRulerView ruler, IsNSEvent event) => nsView -> ruler -> event -> IO ()
-rulerView_handleMouseDown nsView  ruler event =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsView (mkSelector "rulerView:handleMouseDown:") retVoid [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_event :: Ptr ())]
+rulerView_handleMouseDown nsView ruler event =
+  sendMessage nsView rulerView_handleMouseDownSelector (toNSRulerView ruler) (toNSEvent event)
 
 -- | @- rulerView:willSetClientView:@
 rulerView_willSetClientView :: (IsNSView nsView, IsNSRulerView ruler, IsNSView newClient) => nsView -> ruler -> newClient -> IO ()
-rulerView_willSetClientView nsView  ruler newClient =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr newClient $ \raw_newClient ->
-        sendMsg nsView (mkSelector "rulerView:willSetClientView:") retVoid [argPtr (castPtr raw_ruler :: Ptr ()), argPtr (castPtr raw_newClient :: Ptr ())]
+rulerView_willSetClientView nsView ruler newClient =
+  sendMessage nsView rulerView_willSetClientViewSelector (toNSRulerView ruler) (toNSView newClient)
 
 -- | @- rulerView:locationForPoint:@
 rulerView_locationForPoint :: (IsNSView nsView, IsNSRulerView ruler) => nsView -> ruler -> NSPoint -> IO CDouble
-rulerView_locationForPoint nsView  ruler point =
-  withObjCPtr ruler $ \raw_ruler ->
-      sendMsg nsView (mkSelector "rulerView:locationForPoint:") retCDouble [argPtr (castPtr raw_ruler :: Ptr ()), argNSPoint point]
+rulerView_locationForPoint nsView ruler point =
+  sendMessage nsView rulerView_locationForPointSelector (toNSRulerView ruler) point
 
 -- | @- rulerView:pointForLocation:@
 rulerView_pointForLocation :: (IsNSView nsView, IsNSRulerView ruler) => nsView -> ruler -> CDouble -> IO NSPoint
-rulerView_pointForLocation nsView  ruler point =
-  withObjCPtr ruler $ \raw_ruler ->
-      sendMsgStret nsView (mkSelector "rulerView:pointForLocation:") retNSPoint [argPtr (castPtr raw_ruler :: Ptr ()), argCDouble point]
+rulerView_pointForLocation nsView ruler point =
+  sendMessage nsView rulerView_pointForLocationSelector (toNSRulerView ruler) point
 
 -- | @- layoutGuideForLayoutRegion:@
 layoutGuideForLayoutRegion :: (IsNSView nsView, IsNSViewLayoutRegion layoutRegion) => nsView -> layoutRegion -> IO (Id NSLayoutGuide)
-layoutGuideForLayoutRegion nsView  layoutRegion =
-  withObjCPtr layoutRegion $ \raw_layoutRegion ->
-      sendMsg nsView (mkSelector "layoutGuideForLayoutRegion:") (retPtr retVoid) [argPtr (castPtr raw_layoutRegion :: Ptr ())] >>= retainedObject . castPtr
+layoutGuideForLayoutRegion nsView layoutRegion =
+  sendMessage nsView layoutGuideForLayoutRegionSelector (toNSViewLayoutRegion layoutRegion)
 
 -- | @- edgeInsetsForLayoutRegion:@
 edgeInsetsForLayoutRegion :: (IsNSView nsView, IsNSViewLayoutRegion layoutRegion) => nsView -> layoutRegion -> IO NSEdgeInsets
-edgeInsetsForLayoutRegion nsView  layoutRegion =
-  withObjCPtr layoutRegion $ \raw_layoutRegion ->
-      sendMsgStret nsView (mkSelector "edgeInsetsForLayoutRegion:") retNSEdgeInsets [argPtr (castPtr raw_layoutRegion :: Ptr ())]
+edgeInsetsForLayoutRegion nsView layoutRegion =
+  sendMessage nsView edgeInsetsForLayoutRegionSelector (toNSViewLayoutRegion layoutRegion)
 
 -- | @- rectForLayoutRegion:@
 rectForLayoutRegion :: (IsNSView nsView, IsNSViewLayoutRegion layoutRegion) => nsView -> layoutRegion -> IO NSRect
-rectForLayoutRegion nsView  layoutRegion =
-  withObjCPtr layoutRegion $ \raw_layoutRegion ->
-      sendMsgStret nsView (mkSelector "rectForLayoutRegion:") retNSRect [argPtr (castPtr raw_layoutRegion :: Ptr ())]
+rectForLayoutRegion nsView layoutRegion =
+  sendMessage nsView rectForLayoutRegionSelector (toNSViewLayoutRegion layoutRegion)
 
 -- | @- addLayoutGuide:@
 addLayoutGuide :: (IsNSView nsView, IsNSLayoutGuide guide) => nsView -> guide -> IO ()
-addLayoutGuide nsView  guide =
-  withObjCPtr guide $ \raw_guide ->
-      sendMsg nsView (mkSelector "addLayoutGuide:") retVoid [argPtr (castPtr raw_guide :: Ptr ())]
+addLayoutGuide nsView guide =
+  sendMessage nsView addLayoutGuideSelector (toNSLayoutGuide guide)
 
 -- | @- removeLayoutGuide:@
 removeLayoutGuide :: (IsNSView nsView, IsNSLayoutGuide guide) => nsView -> guide -> IO ()
-removeLayoutGuide nsView  guide =
-  withObjCPtr guide $ \raw_guide ->
-      sendMsg nsView (mkSelector "removeLayoutGuide:") retVoid [argPtr (castPtr raw_guide :: Ptr ())]
+removeLayoutGuide nsView guide =
+  sendMessage nsView removeLayoutGuideSelector (toNSLayoutGuide guide)
 
 -- | @- constraintsAffectingLayoutForOrientation:@
 constraintsAffectingLayoutForOrientation :: IsNSView nsView => nsView -> NSLayoutConstraintOrientation -> IO (Id NSArray)
-constraintsAffectingLayoutForOrientation nsView  orientation =
-    sendMsg nsView (mkSelector "constraintsAffectingLayoutForOrientation:") (retPtr retVoid) [argCLong (coerce orientation)] >>= retainedObject . castPtr
+constraintsAffectingLayoutForOrientation nsView orientation =
+  sendMessage nsView constraintsAffectingLayoutForOrientationSelector orientation
 
 -- | @- exerciseAmbiguityInLayout@
 exerciseAmbiguityInLayout :: IsNSView nsView => nsView -> IO ()
-exerciseAmbiguityInLayout nsView  =
-    sendMsg nsView (mkSelector "exerciseAmbiguityInLayout") retVoid []
+exerciseAmbiguityInLayout nsView =
+  sendMessage nsView exerciseAmbiguityInLayoutSelector
 
 -- | @- alignmentRectForFrame:@
 alignmentRectForFrame :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-alignmentRectForFrame nsView  frame =
-    sendMsgStret nsView (mkSelector "alignmentRectForFrame:") retNSRect [argNSRect frame]
+alignmentRectForFrame nsView frame =
+  sendMessage nsView alignmentRectForFrameSelector frame
 
 -- | @- frameForAlignmentRect:@
 frameForAlignmentRect :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-frameForAlignmentRect nsView  alignmentRect =
-    sendMsgStret nsView (mkSelector "frameForAlignmentRect:") retNSRect [argNSRect alignmentRect]
+frameForAlignmentRect nsView alignmentRect =
+  sendMessage nsView frameForAlignmentRectSelector alignmentRect
 
 -- | @- invalidateIntrinsicContentSize@
 invalidateIntrinsicContentSize :: IsNSView nsView => nsView -> IO ()
-invalidateIntrinsicContentSize nsView  =
-    sendMsg nsView (mkSelector "invalidateIntrinsicContentSize") retVoid []
+invalidateIntrinsicContentSize nsView =
+  sendMessage nsView invalidateIntrinsicContentSizeSelector
 
 -- | @- contentHuggingPriorityForOrientation:@
 contentHuggingPriorityForOrientation :: IsNSView nsView => nsView -> NSLayoutConstraintOrientation -> IO CFloat
-contentHuggingPriorityForOrientation nsView  orientation =
-    sendMsg nsView (mkSelector "contentHuggingPriorityForOrientation:") retCFloat [argCLong (coerce orientation)]
+contentHuggingPriorityForOrientation nsView orientation =
+  sendMessage nsView contentHuggingPriorityForOrientationSelector orientation
 
 -- | @- setContentHuggingPriority:forOrientation:@
 setContentHuggingPriority_forOrientation :: IsNSView nsView => nsView -> CFloat -> NSLayoutConstraintOrientation -> IO ()
-setContentHuggingPriority_forOrientation nsView  priority orientation =
-    sendMsg nsView (mkSelector "setContentHuggingPriority:forOrientation:") retVoid [argCFloat priority, argCLong (coerce orientation)]
+setContentHuggingPriority_forOrientation nsView priority orientation =
+  sendMessage nsView setContentHuggingPriority_forOrientationSelector priority orientation
 
 -- | @- contentCompressionResistancePriorityForOrientation:@
 contentCompressionResistancePriorityForOrientation :: IsNSView nsView => nsView -> NSLayoutConstraintOrientation -> IO CFloat
-contentCompressionResistancePriorityForOrientation nsView  orientation =
-    sendMsg nsView (mkSelector "contentCompressionResistancePriorityForOrientation:") retCFloat [argCLong (coerce orientation)]
+contentCompressionResistancePriorityForOrientation nsView orientation =
+  sendMessage nsView contentCompressionResistancePriorityForOrientationSelector orientation
 
 -- | @- setContentCompressionResistancePriority:forOrientation:@
 setContentCompressionResistancePriority_forOrientation :: IsNSView nsView => nsView -> CFloat -> NSLayoutConstraintOrientation -> IO ()
-setContentCompressionResistancePriority_forOrientation nsView  priority orientation =
-    sendMsg nsView (mkSelector "setContentCompressionResistancePriority:forOrientation:") retVoid [argCFloat priority, argCLong (coerce orientation)]
+setContentCompressionResistancePriority_forOrientation nsView priority orientation =
+  sendMessage nsView setContentCompressionResistancePriority_forOrientationSelector priority orientation
 
 -- | @- updateConstraintsForSubtreeIfNeeded@
 updateConstraintsForSubtreeIfNeeded :: IsNSView nsView => nsView -> IO ()
-updateConstraintsForSubtreeIfNeeded nsView  =
-    sendMsg nsView (mkSelector "updateConstraintsForSubtreeIfNeeded") retVoid []
+updateConstraintsForSubtreeIfNeeded nsView =
+  sendMessage nsView updateConstraintsForSubtreeIfNeededSelector
 
 -- | @- updateConstraints@
 updateConstraints :: IsNSView nsView => nsView -> IO ()
-updateConstraints nsView  =
-    sendMsg nsView (mkSelector "updateConstraints") retVoid []
+updateConstraints nsView =
+  sendMessage nsView updateConstraintsSelector
 
 -- | @- addConstraint:@
 addConstraint :: (IsNSView nsView, IsNSLayoutConstraint constraint) => nsView -> constraint -> IO ()
-addConstraint nsView  constraint =
-  withObjCPtr constraint $ \raw_constraint ->
-      sendMsg nsView (mkSelector "addConstraint:") retVoid [argPtr (castPtr raw_constraint :: Ptr ())]
+addConstraint nsView constraint =
+  sendMessage nsView addConstraintSelector (toNSLayoutConstraint constraint)
 
 -- | @- addConstraints:@
 addConstraints :: (IsNSView nsView, IsNSArray constraints) => nsView -> constraints -> IO ()
-addConstraints nsView  constraints =
-  withObjCPtr constraints $ \raw_constraints ->
-      sendMsg nsView (mkSelector "addConstraints:") retVoid [argPtr (castPtr raw_constraints :: Ptr ())]
+addConstraints nsView constraints =
+  sendMessage nsView addConstraintsSelector (toNSArray constraints)
 
 -- | @- removeConstraint:@
 removeConstraint :: (IsNSView nsView, IsNSLayoutConstraint constraint) => nsView -> constraint -> IO ()
-removeConstraint nsView  constraint =
-  withObjCPtr constraint $ \raw_constraint ->
-      sendMsg nsView (mkSelector "removeConstraint:") retVoid [argPtr (castPtr raw_constraint :: Ptr ())]
+removeConstraint nsView constraint =
+  sendMessage nsView removeConstraintSelector (toNSLayoutConstraint constraint)
 
 -- | @- removeConstraints:@
 removeConstraints :: (IsNSView nsView, IsNSArray constraints) => nsView -> constraints -> IO ()
-removeConstraints nsView  constraints =
-  withObjCPtr constraints $ \raw_constraints ->
-      sendMsg nsView (mkSelector "removeConstraints:") retVoid [argPtr (castPtr raw_constraints :: Ptr ())]
+removeConstraints nsView constraints =
+  sendMessage nsView removeConstraintsSelector (toNSArray constraints)
 
 -- | @- reflectScrolledClipView:@
 reflectScrolledClipView :: (IsNSView nsView, IsNSClipView clipView) => nsView -> clipView -> IO ()
-reflectScrolledClipView nsView  clipView =
-  withObjCPtr clipView $ \raw_clipView ->
-      sendMsg nsView (mkSelector "reflectScrolledClipView:") retVoid [argPtr (castPtr raw_clipView :: Ptr ())]
+reflectScrolledClipView nsView clipView =
+  sendMessage nsView reflectScrolledClipViewSelector (toNSClipView clipView)
 
 -- | @- scrollClipView:toPoint:@
 scrollClipView_toPoint :: (IsNSView nsView, IsNSClipView clipView) => nsView -> clipView -> NSPoint -> IO ()
-scrollClipView_toPoint nsView  clipView point =
-  withObjCPtr clipView $ \raw_clipView ->
-      sendMsg nsView (mkSelector "scrollClipView:toPoint:") retVoid [argPtr (castPtr raw_clipView :: Ptr ()), argNSPoint point]
+scrollClipView_toPoint nsView clipView point =
+  sendMessage nsView scrollClipView_toPointSelector (toNSClipView clipView) point
 
 -- | @- dragImage:at:offset:event:pasteboard:source:slideBack:@
 dragImage_at_offset_event_pasteboard_source_slideBack :: (IsNSView nsView, IsNSImage image, IsNSEvent event, IsNSPasteboard pboard) => nsView -> image -> NSPoint -> NSSize -> event -> pboard -> RawId -> Bool -> IO ()
-dragImage_at_offset_event_pasteboard_source_slideBack nsView  image viewLocation initialOffset event pboard sourceObj slideFlag =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr event $ \raw_event ->
-      withObjCPtr pboard $ \raw_pboard ->
-          sendMsg nsView (mkSelector "dragImage:at:offset:event:pasteboard:source:slideBack:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argNSPoint viewLocation, argNSSize initialOffset, argPtr (castPtr raw_event :: Ptr ()), argPtr (castPtr raw_pboard :: Ptr ()), argPtr (castPtr (unRawId sourceObj) :: Ptr ()), argCULong (if slideFlag then 1 else 0)]
+dragImage_at_offset_event_pasteboard_source_slideBack nsView image viewLocation initialOffset event pboard sourceObj slideFlag =
+  sendMessage nsView dragImage_at_offset_event_pasteboard_source_slideBackSelector (toNSImage image) viewLocation initialOffset (toNSEvent event) (toNSPasteboard pboard) sourceObj slideFlag
 
 -- | @- dragFile:fromRect:slideBack:event:@
 dragFile_fromRect_slideBack_event :: (IsNSView nsView, IsNSString filename, IsNSEvent event) => nsView -> filename -> NSRect -> Bool -> event -> IO Bool
-dragFile_fromRect_slideBack_event nsView  filename rect flag event =
-  withObjCPtr filename $ \raw_filename ->
-    withObjCPtr event $ \raw_event ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "dragFile:fromRect:slideBack:event:") retCULong [argPtr (castPtr raw_filename :: Ptr ()), argNSRect rect, argCULong (if flag then 1 else 0), argPtr (castPtr raw_event :: Ptr ())]
+dragFile_fromRect_slideBack_event nsView filename rect flag event =
+  sendMessage nsView dragFile_fromRect_slideBack_eventSelector (toNSString filename) rect flag (toNSEvent event)
 
 -- | @- dragPromisedFilesOfTypes:fromRect:source:slideBack:event:@
 dragPromisedFilesOfTypes_fromRect_source_slideBack_event :: (IsNSView nsView, IsNSArray typeArray, IsNSEvent event) => nsView -> typeArray -> NSRect -> RawId -> Bool -> event -> IO Bool
-dragPromisedFilesOfTypes_fromRect_source_slideBack_event nsView  typeArray rect sourceObject flag event =
-  withObjCPtr typeArray $ \raw_typeArray ->
-    withObjCPtr event $ \raw_event ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "dragPromisedFilesOfTypes:fromRect:source:slideBack:event:") retCULong [argPtr (castPtr raw_typeArray :: Ptr ()), argNSRect rect, argPtr (castPtr (unRawId sourceObject) :: Ptr ()), argCULong (if flag then 1 else 0), argPtr (castPtr raw_event :: Ptr ())]
+dragPromisedFilesOfTypes_fromRect_source_slideBack_event nsView typeArray rect sourceObject flag event =
+  sendMessage nsView dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector (toNSArray typeArray) rect sourceObject flag (toNSEvent event)
 
 -- | @- convertPointToBase:@
 convertPointToBase :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointToBase nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointToBase:") retNSPoint [argNSPoint point]
+convertPointToBase nsView point =
+  sendMessage nsView convertPointToBaseSelector point
 
 -- | @- convertPointFromBase:@
 convertPointFromBase :: IsNSView nsView => nsView -> NSPoint -> IO NSPoint
-convertPointFromBase nsView  point =
-    sendMsgStret nsView (mkSelector "convertPointFromBase:") retNSPoint [argNSPoint point]
+convertPointFromBase nsView point =
+  sendMessage nsView convertPointFromBaseSelector point
 
 -- | @- convertSizeToBase:@
 convertSizeToBase :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeToBase nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeToBase:") retNSSize [argNSSize size]
+convertSizeToBase nsView size =
+  sendMessage nsView convertSizeToBaseSelector size
 
 -- | @- convertSizeFromBase:@
 convertSizeFromBase :: IsNSView nsView => nsView -> NSSize -> IO NSSize
-convertSizeFromBase nsView  size =
-    sendMsgStret nsView (mkSelector "convertSizeFromBase:") retNSSize [argNSSize size]
+convertSizeFromBase nsView size =
+  sendMessage nsView convertSizeFromBaseSelector size
 
 -- | @- convertRectToBase:@
 convertRectToBase :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectToBase nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectToBase:") retNSRect [argNSRect rect]
+convertRectToBase nsView rect =
+  sendMessage nsView convertRectToBaseSelector rect
 
 -- | @- convertRectFromBase:@
 convertRectFromBase :: IsNSView nsView => nsView -> NSRect -> IO NSRect
-convertRectFromBase nsView  rect =
-    sendMsgStret nsView (mkSelector "convertRectFromBase:") retNSRect [argNSRect rect]
+convertRectFromBase nsView rect =
+  sendMessage nsView convertRectFromBaseSelector rect
 
 -- | @- performMnemonic:@
 performMnemonic :: (IsNSView nsView, IsNSString string) => nsView -> string -> IO Bool
-performMnemonic nsView  string =
-  withObjCPtr string $ \raw_string ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "performMnemonic:") retCULong [argPtr (castPtr raw_string :: Ptr ())]
+performMnemonic nsView string =
+  sendMessage nsView performMnemonicSelector (toNSString string)
 
 -- | @- shouldDrawColor@
 shouldDrawColor :: IsNSView nsView => nsView -> IO Bool
-shouldDrawColor nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "shouldDrawColor") retCULong []
+shouldDrawColor nsView =
+  sendMessage nsView shouldDrawColorSelector
 
 -- | @- gState@
 gState :: IsNSView nsView => nsView -> IO CLong
-gState nsView  =
-    sendMsg nsView (mkSelector "gState") retCLong []
+gState nsView =
+  sendMessage nsView gStateSelector
 
 -- | @- allocateGState@
 allocateGState :: IsNSView nsView => nsView -> IO ()
-allocateGState nsView  =
-    sendMsg nsView (mkSelector "allocateGState") retVoid []
+allocateGState nsView =
+  sendOwnedMessage nsView allocateGStateSelector
 
 -- | @- releaseGState@
 releaseGState :: IsNSView nsView => nsView -> IO ()
-releaseGState nsView  =
-    sendMsg nsView (mkSelector "releaseGState") retVoid []
+releaseGState nsView =
+  sendMessage nsView releaseGStateSelector
 
 -- | @- setUpGState@
 setUpGState :: IsNSView nsView => nsView -> IO ()
-setUpGState nsView  =
-    sendMsg nsView (mkSelector "setUpGState") retVoid []
+setUpGState nsView =
+  sendMessage nsView setUpGStateSelector
 
 -- | @- renewGState@
 renewGState :: IsNSView nsView => nsView -> IO ()
-renewGState nsView  =
-    sendMsg nsView (mkSelector "renewGState") retVoid []
+renewGState nsView =
+  sendMessage nsView renewGStateSelector
 
 -- | @- displayLinkWithTarget:selector:@
-displayLinkWithTarget_selector :: IsNSView nsView => nsView -> RawId -> Selector -> IO (Id CADisplayLink)
-displayLinkWithTarget_selector nsView  target selector =
-    sendMsg nsView (mkSelector "displayLinkWithTarget:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+displayLinkWithTarget_selector :: IsNSView nsView => nsView -> RawId -> Sel -> IO (Id CADisplayLink)
+displayLinkWithTarget_selector nsView target selector =
+  sendMessage nsView displayLinkWithTarget_selectorSelector target selector
 
 -- | @- addTrackingArea:@
 addTrackingArea :: (IsNSView nsView, IsNSTrackingArea trackingArea) => nsView -> trackingArea -> IO ()
-addTrackingArea nsView  trackingArea =
-  withObjCPtr trackingArea $ \raw_trackingArea ->
-      sendMsg nsView (mkSelector "addTrackingArea:") retVoid [argPtr (castPtr raw_trackingArea :: Ptr ())]
+addTrackingArea nsView trackingArea =
+  sendMessage nsView addTrackingAreaSelector (toNSTrackingArea trackingArea)
 
 -- | @- removeTrackingArea:@
 removeTrackingArea :: (IsNSView nsView, IsNSTrackingArea trackingArea) => nsView -> trackingArea -> IO ()
-removeTrackingArea nsView  trackingArea =
-  withObjCPtr trackingArea $ \raw_trackingArea ->
-      sendMsg nsView (mkSelector "removeTrackingArea:") retVoid [argPtr (castPtr raw_trackingArea :: Ptr ())]
+removeTrackingArea nsView trackingArea =
+  sendMessage nsView removeTrackingAreaSelector (toNSTrackingArea trackingArea)
 
 -- | @- updateTrackingAreas@
 updateTrackingAreas :: IsNSView nsView => nsView -> IO ()
-updateTrackingAreas nsView  =
-    sendMsg nsView (mkSelector "updateTrackingAreas") retVoid []
+updateTrackingAreas nsView =
+  sendMessage nsView updateTrackingAreasSelector
 
 -- | @- addCursorRect:cursor:@
 addCursorRect_cursor :: (IsNSView nsView, IsNSCursor object) => nsView -> NSRect -> object -> IO ()
-addCursorRect_cursor nsView  rect object =
-  withObjCPtr object $ \raw_object ->
-      sendMsg nsView (mkSelector "addCursorRect:cursor:") retVoid [argNSRect rect, argPtr (castPtr raw_object :: Ptr ())]
+addCursorRect_cursor nsView rect object =
+  sendMessage nsView addCursorRect_cursorSelector rect (toNSCursor object)
 
 -- | @- removeCursorRect:cursor:@
 removeCursorRect_cursor :: (IsNSView nsView, IsNSCursor object) => nsView -> NSRect -> object -> IO ()
-removeCursorRect_cursor nsView  rect object =
-  withObjCPtr object $ \raw_object ->
-      sendMsg nsView (mkSelector "removeCursorRect:cursor:") retVoid [argNSRect rect, argPtr (castPtr raw_object :: Ptr ())]
+removeCursorRect_cursor nsView rect object =
+  sendMessage nsView removeCursorRect_cursorSelector rect (toNSCursor object)
 
 -- | @- discardCursorRects@
 discardCursorRects :: IsNSView nsView => nsView -> IO ()
-discardCursorRects nsView  =
-    sendMsg nsView (mkSelector "discardCursorRects") retVoid []
+discardCursorRects nsView =
+  sendMessage nsView discardCursorRectsSelector
 
 -- | @- resetCursorRects@
 resetCursorRects :: IsNSView nsView => nsView -> IO ()
-resetCursorRects nsView  =
-    sendMsg nsView (mkSelector "resetCursorRects") retVoid []
+resetCursorRects nsView =
+  sendMessage nsView resetCursorRectsSelector
 
 -- | @- addTrackingRect:owner:userData:assumeInside:@
 addTrackingRect_owner_userData_assumeInside :: IsNSView nsView => nsView -> NSRect -> RawId -> Ptr () -> Bool -> IO CLong
-addTrackingRect_owner_userData_assumeInside nsView  rect owner data_ flag =
-    sendMsg nsView (mkSelector "addTrackingRect:owner:userData:assumeInside:") retCLong [argNSRect rect, argPtr (castPtr (unRawId owner) :: Ptr ()), argPtr data_, argCULong (if flag then 1 else 0)]
+addTrackingRect_owner_userData_assumeInside nsView rect owner data_ flag =
+  sendMessage nsView addTrackingRect_owner_userData_assumeInsideSelector rect owner data_ flag
 
 -- | @- removeTrackingRect:@
 removeTrackingRect :: IsNSView nsView => nsView -> CLong -> IO ()
-removeTrackingRect nsView  tag =
-    sendMsg nsView (mkSelector "removeTrackingRect:") retVoid [argCLong tag]
+removeTrackingRect nsView tag =
+  sendMessage nsView removeTrackingRectSelector tag
 
 -- | @- addGestureRecognizer:@
 addGestureRecognizer :: (IsNSView nsView, IsNSGestureRecognizer gestureRecognizer) => nsView -> gestureRecognizer -> IO ()
-addGestureRecognizer nsView  gestureRecognizer =
-  withObjCPtr gestureRecognizer $ \raw_gestureRecognizer ->
-      sendMsg nsView (mkSelector "addGestureRecognizer:") retVoid [argPtr (castPtr raw_gestureRecognizer :: Ptr ())]
+addGestureRecognizer nsView gestureRecognizer =
+  sendMessage nsView addGestureRecognizerSelector (toNSGestureRecognizer gestureRecognizer)
 
 -- | @- removeGestureRecognizer:@
 removeGestureRecognizer :: (IsNSView nsView, IsNSGestureRecognizer gestureRecognizer) => nsView -> gestureRecognizer -> IO ()
-removeGestureRecognizer nsView  gestureRecognizer =
-  withObjCPtr gestureRecognizer $ \raw_gestureRecognizer ->
-      sendMsg nsView (mkSelector "removeGestureRecognizer:") retVoid [argPtr (castPtr raw_gestureRecognizer :: Ptr ())]
+removeGestureRecognizer nsView gestureRecognizer =
+  sendMessage nsView removeGestureRecognizerSelector (toNSGestureRecognizer gestureRecognizer)
 
 -- | @- showDefinitionForAttributedString:atPoint:@
 showDefinitionForAttributedString_atPoint :: (IsNSView nsView, IsNSAttributedString attrString) => nsView -> attrString -> NSPoint -> IO ()
-showDefinitionForAttributedString_atPoint nsView  attrString textBaselineOrigin =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsView (mkSelector "showDefinitionForAttributedString:atPoint:") retVoid [argPtr (castPtr raw_attrString :: Ptr ()), argNSPoint textBaselineOrigin]
+showDefinitionForAttributedString_atPoint nsView attrString textBaselineOrigin =
+  sendMessage nsView showDefinitionForAttributedString_atPointSelector (toNSAttributedString attrString) textBaselineOrigin
 
 -- | @- showDefinitionForAttributedString:range:options:baselineOriginProvider:@
 showDefinitionForAttributedString_range_options_baselineOriginProvider :: (IsNSView nsView, IsNSAttributedString attrString, IsNSDictionary options) => nsView -> attrString -> NSRange -> options -> Ptr () -> IO ()
-showDefinitionForAttributedString_range_options_baselineOriginProvider nsView  attrString targetRange options originProvider =
-  withObjCPtr attrString $ \raw_attrString ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg nsView (mkSelector "showDefinitionForAttributedString:range:options:baselineOriginProvider:") retVoid [argPtr (castPtr raw_attrString :: Ptr ()), argNSRange targetRange, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr originProvider :: Ptr ())]
+showDefinitionForAttributedString_range_options_baselineOriginProvider nsView attrString targetRange options originProvider =
+  sendMessage nsView showDefinitionForAttributedString_range_options_baselineOriginProviderSelector (toNSAttributedString attrString) targetRange (toNSDictionary options) originProvider
 
 -- | @- enterFullScreenMode:withOptions:@
 enterFullScreenMode_withOptions :: (IsNSView nsView, IsNSScreen screen, IsNSDictionary options) => nsView -> screen -> options -> IO Bool
-enterFullScreenMode_withOptions nsView  screen options =
-  withObjCPtr screen $ \raw_screen ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "enterFullScreenMode:withOptions:") retCULong [argPtr (castPtr raw_screen :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+enterFullScreenMode_withOptions nsView screen options =
+  sendMessage nsView enterFullScreenMode_withOptionsSelector (toNSScreen screen) (toNSDictionary options)
 
 -- | @- exitFullScreenModeWithOptions:@
 exitFullScreenModeWithOptions :: (IsNSView nsView, IsNSDictionary options) => nsView -> options -> IO ()
-exitFullScreenModeWithOptions nsView  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nsView (mkSelector "exitFullScreenModeWithOptions:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
+exitFullScreenModeWithOptions nsView options =
+  sendMessage nsView exitFullScreenModeWithOptionsSelector (toNSDictionary options)
 
 -- | @- beginDraggingSessionWithItems:event:source:@
 beginDraggingSessionWithItems_event_source :: (IsNSView nsView, IsNSArray items, IsNSEvent event) => nsView -> items -> event -> RawId -> IO (Id NSDraggingSession)
-beginDraggingSessionWithItems_event_source nsView  items event source =
-  withObjCPtr items $ \raw_items ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsView (mkSelector "beginDraggingSessionWithItems:event:source:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr raw_event :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+beginDraggingSessionWithItems_event_source nsView items event source =
+  sendMessage nsView beginDraggingSessionWithItems_event_sourceSelector (toNSArray items) (toNSEvent event) source
 
 -- | @- registerForDraggedTypes:@
 registerForDraggedTypes :: (IsNSView nsView, IsNSArray newTypes) => nsView -> newTypes -> IO ()
-registerForDraggedTypes nsView  newTypes =
-  withObjCPtr newTypes $ \raw_newTypes ->
-      sendMsg nsView (mkSelector "registerForDraggedTypes:") retVoid [argPtr (castPtr raw_newTypes :: Ptr ())]
+registerForDraggedTypes nsView newTypes =
+  sendMessage nsView registerForDraggedTypesSelector (toNSArray newTypes)
 
 -- | @- unregisterDraggedTypes@
 unregisterDraggedTypes :: IsNSView nsView => nsView -> IO ()
-unregisterDraggedTypes nsView  =
-    sendMsg nsView (mkSelector "unregisterDraggedTypes") retVoid []
+unregisterDraggedTypes nsView =
+  sendMessage nsView unregisterDraggedTypesSelector
 
 -- | @- writeEPSInsideRect:toPasteboard:@
 writeEPSInsideRect_toPasteboard :: (IsNSView nsView, IsNSPasteboard pasteboard) => nsView -> NSRect -> pasteboard -> IO ()
-writeEPSInsideRect_toPasteboard nsView  rect pasteboard =
-  withObjCPtr pasteboard $ \raw_pasteboard ->
-      sendMsg nsView (mkSelector "writeEPSInsideRect:toPasteboard:") retVoid [argNSRect rect, argPtr (castPtr raw_pasteboard :: Ptr ())]
+writeEPSInsideRect_toPasteboard nsView rect pasteboard =
+  sendMessage nsView writeEPSInsideRect_toPasteboardSelector rect (toNSPasteboard pasteboard)
 
 -- | @- dataWithEPSInsideRect:@
 dataWithEPSInsideRect :: IsNSView nsView => nsView -> NSRect -> IO (Id NSData)
-dataWithEPSInsideRect nsView  rect =
-    sendMsg nsView (mkSelector "dataWithEPSInsideRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+dataWithEPSInsideRect nsView rect =
+  sendMessage nsView dataWithEPSInsideRectSelector rect
 
 -- | @- writePDFInsideRect:toPasteboard:@
 writePDFInsideRect_toPasteboard :: (IsNSView nsView, IsNSPasteboard pasteboard) => nsView -> NSRect -> pasteboard -> IO ()
-writePDFInsideRect_toPasteboard nsView  rect pasteboard =
-  withObjCPtr pasteboard $ \raw_pasteboard ->
-      sendMsg nsView (mkSelector "writePDFInsideRect:toPasteboard:") retVoid [argNSRect rect, argPtr (castPtr raw_pasteboard :: Ptr ())]
+writePDFInsideRect_toPasteboard nsView rect pasteboard =
+  sendMessage nsView writePDFInsideRect_toPasteboardSelector rect (toNSPasteboard pasteboard)
 
 -- | @- dataWithPDFInsideRect:@
 dataWithPDFInsideRect :: IsNSView nsView => nsView -> NSRect -> IO (Id NSData)
-dataWithPDFInsideRect nsView  rect =
-    sendMsg nsView (mkSelector "dataWithPDFInsideRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+dataWithPDFInsideRect nsView rect =
+  sendMessage nsView dataWithPDFInsideRectSelector rect
 
 -- | @- print:@
 print_ :: IsNSView nsView => nsView -> RawId -> IO ()
-print_ nsView  sender =
-    sendMsg nsView (mkSelector "print:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+print_ nsView sender =
+  sendMessage nsView printSelector sender
 
 -- | @- knowsPageRange:@
 knowsPageRange :: IsNSView nsView => nsView -> Ptr NSRange -> IO Bool
-knowsPageRange nsView  range =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "knowsPageRange:") retCULong [argPtr range]
+knowsPageRange nsView range =
+  sendMessage nsView knowsPageRangeSelector range
 
 -- | @- adjustPageWidthNew:left:right:limit:@
 adjustPageWidthNew_left_right_limit :: IsNSView nsView => nsView -> Ptr CDouble -> CDouble -> CDouble -> CDouble -> IO ()
-adjustPageWidthNew_left_right_limit nsView  newRight oldLeft oldRight rightLimit =
-    sendMsg nsView (mkSelector "adjustPageWidthNew:left:right:limit:") retVoid [argPtr newRight, argCDouble oldLeft, argCDouble oldRight, argCDouble rightLimit]
+adjustPageWidthNew_left_right_limit nsView newRight oldLeft oldRight rightLimit =
+  sendMessage nsView adjustPageWidthNew_left_right_limitSelector newRight oldLeft oldRight rightLimit
 
 -- | @- adjustPageHeightNew:top:bottom:limit:@
 adjustPageHeightNew_top_bottom_limit :: IsNSView nsView => nsView -> Ptr CDouble -> CDouble -> CDouble -> CDouble -> IO ()
-adjustPageHeightNew_top_bottom_limit nsView  newBottom oldTop oldBottom bottomLimit =
-    sendMsg nsView (mkSelector "adjustPageHeightNew:top:bottom:limit:") retVoid [argPtr newBottom, argCDouble oldTop, argCDouble oldBottom, argCDouble bottomLimit]
+adjustPageHeightNew_top_bottom_limit nsView newBottom oldTop oldBottom bottomLimit =
+  sendMessage nsView adjustPageHeightNew_top_bottom_limitSelector newBottom oldTop oldBottom bottomLimit
 
 -- | @- rectForPage:@
 rectForPage :: IsNSView nsView => nsView -> CLong -> IO NSRect
-rectForPage nsView  page =
-    sendMsgStret nsView (mkSelector "rectForPage:") retNSRect [argCLong page]
+rectForPage nsView page =
+  sendMessage nsView rectForPageSelector page
 
 -- | @- locationOfPrintRect:@
 locationOfPrintRect :: IsNSView nsView => nsView -> NSRect -> IO NSPoint
-locationOfPrintRect nsView  rect =
-    sendMsgStret nsView (mkSelector "locationOfPrintRect:") retNSPoint [argNSRect rect]
+locationOfPrintRect nsView rect =
+  sendMessage nsView locationOfPrintRectSelector rect
 
 -- | @- drawPageBorderWithSize:@
 drawPageBorderWithSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-drawPageBorderWithSize nsView  borderSize =
-    sendMsg nsView (mkSelector "drawPageBorderWithSize:") retVoid [argNSSize borderSize]
+drawPageBorderWithSize nsView borderSize =
+  sendMessage nsView drawPageBorderWithSizeSelector borderSize
 
 -- | * This method is obsolete.  It will never be invoked from within AppKit, and NSView's implementation of it does nothing. **
 --
 -- ObjC selector: @- drawSheetBorderWithSize:@
 drawSheetBorderWithSize :: IsNSView nsView => nsView -> NSSize -> IO ()
-drawSheetBorderWithSize nsView  borderSize =
-    sendMsg nsView (mkSelector "drawSheetBorderWithSize:") retVoid [argNSSize borderSize]
+drawSheetBorderWithSize nsView borderSize =
+  sendMessage nsView drawSheetBorderWithSizeSelector borderSize
 
 -- | @- beginDocument@
 beginDocument :: IsNSView nsView => nsView -> IO ()
-beginDocument nsView  =
-    sendMsg nsView (mkSelector "beginDocument") retVoid []
+beginDocument nsView =
+  sendMessage nsView beginDocumentSelector
 
 -- | @- endDocument@
 endDocument :: IsNSView nsView => nsView -> IO ()
-endDocument nsView  =
-    sendMsg nsView (mkSelector "endDocument") retVoid []
+endDocument nsView =
+  sendMessage nsView endDocumentSelector
 
 -- | @- beginPageInRect:atPlacement:@
 beginPageInRect_atPlacement :: IsNSView nsView => nsView -> NSRect -> NSPoint -> IO ()
-beginPageInRect_atPlacement nsView  rect location =
-    sendMsg nsView (mkSelector "beginPageInRect:atPlacement:") retVoid [argNSRect rect, argNSPoint location]
+beginPageInRect_atPlacement nsView rect location =
+  sendMessage nsView beginPageInRect_atPlacementSelector rect location
 
 -- | @- endPage@
 endPage :: IsNSView nsView => nsView -> IO ()
-endPage nsView  =
-    sendMsg nsView (mkSelector "endPage") retVoid []
+endPage nsView =
+  sendMessage nsView endPageSelector
 
 -- | @- setKeyboardFocusRingNeedsDisplayInRect:@
 setKeyboardFocusRingNeedsDisplayInRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-setKeyboardFocusRingNeedsDisplayInRect nsView  rect =
-    sendMsg nsView (mkSelector "setKeyboardFocusRingNeedsDisplayInRect:") retVoid [argNSRect rect]
+setKeyboardFocusRingNeedsDisplayInRect nsView rect =
+  sendMessage nsView setKeyboardFocusRingNeedsDisplayInRectSelector rect
 
 -- | @- drawFocusRingMask@
 drawFocusRingMask :: IsNSView nsView => nsView -> IO ()
-drawFocusRingMask nsView  =
-    sendMsg nsView (mkSelector "drawFocusRingMask") retVoid []
+drawFocusRingMask nsView =
+  sendMessage nsView drawFocusRingMaskSelector
 
 -- | @- noteFocusRingMaskChanged@
 noteFocusRingMaskChanged :: IsNSView nsView => nsView -> IO ()
-noteFocusRingMaskChanged nsView  =
-    sendMsg nsView (mkSelector "noteFocusRingMaskChanged") retVoid []
+noteFocusRingMaskChanged nsView =
+  sendMessage nsView noteFocusRingMaskChangedSelector
 
 -- | @- window@
 window :: IsNSView nsView => nsView -> IO (Id NSWindow)
-window nsView  =
-    sendMsg nsView (mkSelector "window") (retPtr retVoid) [] >>= retainedObject . castPtr
+window nsView =
+  sendMessage nsView windowSelector
 
 -- | @- superview@
 superview :: IsNSView nsView => nsView -> IO (Id NSView)
-superview nsView  =
-    sendMsg nsView (mkSelector "superview") (retPtr retVoid) [] >>= retainedObject . castPtr
+superview nsView =
+  sendMessage nsView superviewSelector
 
 -- | @- subviews@
 subviews :: IsNSView nsView => nsView -> IO (Id NSArray)
-subviews nsView  =
-    sendMsg nsView (mkSelector "subviews") (retPtr retVoid) [] >>= retainedObject . castPtr
+subviews nsView =
+  sendMessage nsView subviewsSelector
 
 -- | @- setSubviews:@
 setSubviews :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
-setSubviews nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setSubviews:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubviews nsView value =
+  sendMessage nsView setSubviewsSelector (toNSArray value)
 
 -- | @- opaqueAncestor@
 opaqueAncestor :: IsNSView nsView => nsView -> IO (Id NSView)
-opaqueAncestor nsView  =
-    sendMsg nsView (mkSelector "opaqueAncestor") (retPtr retVoid) [] >>= retainedObject . castPtr
+opaqueAncestor nsView =
+  sendMessage nsView opaqueAncestorSelector
 
 -- | @- hidden@
 hidden :: IsNSView nsView => nsView -> IO Bool
-hidden nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "hidden") retCULong []
+hidden nsView =
+  sendMessage nsView hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsNSView nsView => nsView -> Bool -> IO ()
-setHidden nsView  value =
-    sendMsg nsView (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsView value =
+  sendMessage nsView setHiddenSelector value
 
 -- | @- hiddenOrHasHiddenAncestor@
 hiddenOrHasHiddenAncestor :: IsNSView nsView => nsView -> IO Bool
-hiddenOrHasHiddenAncestor nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "hiddenOrHasHiddenAncestor") retCULong []
+hiddenOrHasHiddenAncestor nsView =
+  sendMessage nsView hiddenOrHasHiddenAncestorSelector
 
 -- | @- wantsDefaultClipping@
 wantsDefaultClipping :: IsNSView nsView => nsView -> IO Bool
-wantsDefaultClipping nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsDefaultClipping") retCULong []
+wantsDefaultClipping nsView =
+  sendMessage nsView wantsDefaultClippingSelector
 
 -- | @- postsFrameChangedNotifications@
 postsFrameChangedNotifications :: IsNSView nsView => nsView -> IO Bool
-postsFrameChangedNotifications nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "postsFrameChangedNotifications") retCULong []
+postsFrameChangedNotifications nsView =
+  sendMessage nsView postsFrameChangedNotificationsSelector
 
 -- | @- setPostsFrameChangedNotifications:@
 setPostsFrameChangedNotifications :: IsNSView nsView => nsView -> Bool -> IO ()
-setPostsFrameChangedNotifications nsView  value =
-    sendMsg nsView (mkSelector "setPostsFrameChangedNotifications:") retVoid [argCULong (if value then 1 else 0)]
+setPostsFrameChangedNotifications nsView value =
+  sendMessage nsView setPostsFrameChangedNotificationsSelector value
 
 -- | @- autoresizesSubviews@
 autoresizesSubviews :: IsNSView nsView => nsView -> IO Bool
-autoresizesSubviews nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "autoresizesSubviews") retCULong []
+autoresizesSubviews nsView =
+  sendMessage nsView autoresizesSubviewsSelector
 
 -- | @- setAutoresizesSubviews:@
 setAutoresizesSubviews :: IsNSView nsView => nsView -> Bool -> IO ()
-setAutoresizesSubviews nsView  value =
-    sendMsg nsView (mkSelector "setAutoresizesSubviews:") retVoid [argCULong (if value then 1 else 0)]
+setAutoresizesSubviews nsView value =
+  sendMessage nsView setAutoresizesSubviewsSelector value
 
 -- | @- autoresizingMask@
 autoresizingMask :: IsNSView nsView => nsView -> IO NSAutoresizingMaskOptions
-autoresizingMask nsView  =
-    fmap (coerce :: CULong -> NSAutoresizingMaskOptions) $ sendMsg nsView (mkSelector "autoresizingMask") retCULong []
+autoresizingMask nsView =
+  sendMessage nsView autoresizingMaskSelector
 
 -- | @- setAutoresizingMask:@
 setAutoresizingMask :: IsNSView nsView => nsView -> NSAutoresizingMaskOptions -> IO ()
-setAutoresizingMask nsView  value =
-    sendMsg nsView (mkSelector "setAutoresizingMask:") retVoid [argCULong (coerce value)]
+setAutoresizingMask nsView value =
+  sendMessage nsView setAutoresizingMaskSelector value
 
 -- | @- frame@
 frame :: IsNSView nsView => nsView -> IO NSRect
-frame nsView  =
-    sendMsgStret nsView (mkSelector "frame") retNSRect []
+frame nsView =
+  sendMessage nsView frameSelector
 
 -- | @- setFrame:@
 setFrame :: IsNSView nsView => nsView -> NSRect -> IO ()
-setFrame nsView  value =
-    sendMsg nsView (mkSelector "setFrame:") retVoid [argNSRect value]
+setFrame nsView value =
+  sendMessage nsView setFrameSelector value
 
 -- | @- frameRotation@
 frameRotation :: IsNSView nsView => nsView -> IO CDouble
-frameRotation nsView  =
-    sendMsg nsView (mkSelector "frameRotation") retCDouble []
+frameRotation nsView =
+  sendMessage nsView frameRotationSelector
 
 -- | @- setFrameRotation:@
 setFrameRotation :: IsNSView nsView => nsView -> CDouble -> IO ()
-setFrameRotation nsView  value =
-    sendMsg nsView (mkSelector "setFrameRotation:") retVoid [argCDouble value]
+setFrameRotation nsView value =
+  sendMessage nsView setFrameRotationSelector value
 
 -- | @- frameCenterRotation@
 frameCenterRotation :: IsNSView nsView => nsView -> IO CDouble
-frameCenterRotation nsView  =
-    sendMsg nsView (mkSelector "frameCenterRotation") retCDouble []
+frameCenterRotation nsView =
+  sendMessage nsView frameCenterRotationSelector
 
 -- | @- setFrameCenterRotation:@
 setFrameCenterRotation :: IsNSView nsView => nsView -> CDouble -> IO ()
-setFrameCenterRotation nsView  value =
-    sendMsg nsView (mkSelector "setFrameCenterRotation:") retVoid [argCDouble value]
+setFrameCenterRotation nsView value =
+  sendMessage nsView setFrameCenterRotationSelector value
 
 -- | @- boundsRotation@
 boundsRotation :: IsNSView nsView => nsView -> IO CDouble
-boundsRotation nsView  =
-    sendMsg nsView (mkSelector "boundsRotation") retCDouble []
+boundsRotation nsView =
+  sendMessage nsView boundsRotationSelector
 
 -- | @- setBoundsRotation:@
 setBoundsRotation :: IsNSView nsView => nsView -> CDouble -> IO ()
-setBoundsRotation nsView  value =
-    sendMsg nsView (mkSelector "setBoundsRotation:") retVoid [argCDouble value]
+setBoundsRotation nsView value =
+  sendMessage nsView setBoundsRotationSelector value
 
 -- | @- bounds@
 bounds :: IsNSView nsView => nsView -> IO NSRect
-bounds nsView  =
-    sendMsgStret nsView (mkSelector "bounds") retNSRect []
+bounds nsView =
+  sendMessage nsView boundsSelector
 
 -- | @- setBounds:@
 setBounds :: IsNSView nsView => nsView -> NSRect -> IO ()
-setBounds nsView  value =
-    sendMsg nsView (mkSelector "setBounds:") retVoid [argNSRect value]
+setBounds nsView value =
+  sendMessage nsView setBoundsSelector value
 
 -- | @- flipped@
 flipped :: IsNSView nsView => nsView -> IO Bool
-flipped nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "flipped") retCULong []
+flipped nsView =
+  sendMessage nsView flippedSelector
 
 -- | @- rotatedFromBase@
 rotatedFromBase :: IsNSView nsView => nsView -> IO Bool
-rotatedFromBase nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "rotatedFromBase") retCULong []
+rotatedFromBase nsView =
+  sendMessage nsView rotatedFromBaseSelector
 
 -- | @- rotatedOrScaledFromBase@
 rotatedOrScaledFromBase :: IsNSView nsView => nsView -> IO Bool
-rotatedOrScaledFromBase nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "rotatedOrScaledFromBase") retCULong []
+rotatedOrScaledFromBase nsView =
+  sendMessage nsView rotatedOrScaledFromBaseSelector
 
 -- | @- opaque@
 opaque :: IsNSView nsView => nsView -> IO Bool
-opaque nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "opaque") retCULong []
+opaque nsView =
+  sendMessage nsView opaqueSelector
 
 -- | @- canDrawConcurrently@
 canDrawConcurrently :: IsNSView nsView => nsView -> IO Bool
-canDrawConcurrently nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "canDrawConcurrently") retCULong []
+canDrawConcurrently nsView =
+  sendMessage nsView canDrawConcurrentlySelector
 
 -- | @- setCanDrawConcurrently:@
 setCanDrawConcurrently :: IsNSView nsView => nsView -> Bool -> IO ()
-setCanDrawConcurrently nsView  value =
-    sendMsg nsView (mkSelector "setCanDrawConcurrently:") retVoid [argCULong (if value then 1 else 0)]
+setCanDrawConcurrently nsView value =
+  sendMessage nsView setCanDrawConcurrentlySelector value
 
 -- | @- canDraw@
 canDraw :: IsNSView nsView => nsView -> IO Bool
-canDraw nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "canDraw") retCULong []
+canDraw nsView =
+  sendMessage nsView canDrawSelector
 
 -- | @- needsDisplay@
 needsDisplay :: IsNSView nsView => nsView -> IO Bool
-needsDisplay nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "needsDisplay") retCULong []
+needsDisplay nsView =
+  sendMessage nsView needsDisplaySelector
 
 -- | @- setNeedsDisplay:@
 setNeedsDisplay :: IsNSView nsView => nsView -> Bool -> IO ()
-setNeedsDisplay nsView  value =
-    sendMsg nsView (mkSelector "setNeedsDisplay:") retVoid [argCULong (if value then 1 else 0)]
+setNeedsDisplay nsView value =
+  sendMessage nsView setNeedsDisplaySelector value
 
 -- | @+ focusView@
 focusView :: IO (Id NSView)
 focusView  =
   do
     cls' <- getRequiredClass "NSView"
-    sendClassMsg cls' (mkSelector "focusView") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' focusViewSelector
 
 -- | The portion of the view that isn’t clipped by its superviews.
 --
@@ -1990,2001 +1898,1991 @@ focusView  =
 --
 -- ObjC selector: @- visibleRect@
 visibleRect :: IsNSView nsView => nsView -> IO NSRect
-visibleRect nsView  =
-    sendMsgStret nsView (mkSelector "visibleRect") retNSRect []
+visibleRect nsView =
+  sendMessage nsView visibleRectSelector
 
 -- | @- tag@
 tag :: IsNSView nsView => nsView -> IO CLong
-tag nsView  =
-    sendMsg nsView (mkSelector "tag") retCLong []
+tag nsView =
+  sendMessage nsView tagSelector
 
 -- | @- needsPanelToBecomeKey@
 needsPanelToBecomeKey :: IsNSView nsView => nsView -> IO Bool
-needsPanelToBecomeKey nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "needsPanelToBecomeKey") retCULong []
+needsPanelToBecomeKey nsView =
+  sendMessage nsView needsPanelToBecomeKeySelector
 
 -- | @- mouseDownCanMoveWindow@
 mouseDownCanMoveWindow :: IsNSView nsView => nsView -> IO Bool
-mouseDownCanMoveWindow nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "mouseDownCanMoveWindow") retCULong []
+mouseDownCanMoveWindow nsView =
+  sendMessage nsView mouseDownCanMoveWindowSelector
 
 -- | @- acceptsTouchEvents@
 acceptsTouchEvents :: IsNSView nsView => nsView -> IO Bool
-acceptsTouchEvents nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "acceptsTouchEvents") retCULong []
+acceptsTouchEvents nsView =
+  sendMessage nsView acceptsTouchEventsSelector
 
 -- | @- setAcceptsTouchEvents:@
 setAcceptsTouchEvents :: IsNSView nsView => nsView -> Bool -> IO ()
-setAcceptsTouchEvents nsView  value =
-    sendMsg nsView (mkSelector "setAcceptsTouchEvents:") retVoid [argCULong (if value then 1 else 0)]
+setAcceptsTouchEvents nsView value =
+  sendMessage nsView setAcceptsTouchEventsSelector value
 
 -- | @- wantsRestingTouches@
 wantsRestingTouches :: IsNSView nsView => nsView -> IO Bool
-wantsRestingTouches nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsRestingTouches") retCULong []
+wantsRestingTouches nsView =
+  sendMessage nsView wantsRestingTouchesSelector
 
 -- | @- setWantsRestingTouches:@
 setWantsRestingTouches :: IsNSView nsView => nsView -> Bool -> IO ()
-setWantsRestingTouches nsView  value =
-    sendMsg nsView (mkSelector "setWantsRestingTouches:") retVoid [argCULong (if value then 1 else 0)]
+setWantsRestingTouches nsView value =
+  sendMessage nsView setWantsRestingTouchesSelector value
 
 -- | @- layerContentsRedrawPolicy@
 layerContentsRedrawPolicy :: IsNSView nsView => nsView -> IO NSViewLayerContentsRedrawPolicy
-layerContentsRedrawPolicy nsView  =
-    fmap (coerce :: CLong -> NSViewLayerContentsRedrawPolicy) $ sendMsg nsView (mkSelector "layerContentsRedrawPolicy") retCLong []
+layerContentsRedrawPolicy nsView =
+  sendMessage nsView layerContentsRedrawPolicySelector
 
 -- | @- setLayerContentsRedrawPolicy:@
 setLayerContentsRedrawPolicy :: IsNSView nsView => nsView -> NSViewLayerContentsRedrawPolicy -> IO ()
-setLayerContentsRedrawPolicy nsView  value =
-    sendMsg nsView (mkSelector "setLayerContentsRedrawPolicy:") retVoid [argCLong (coerce value)]
+setLayerContentsRedrawPolicy nsView value =
+  sendMessage nsView setLayerContentsRedrawPolicySelector value
 
 -- | @- layerContentsPlacement@
 layerContentsPlacement :: IsNSView nsView => nsView -> IO NSViewLayerContentsPlacement
-layerContentsPlacement nsView  =
-    fmap (coerce :: CLong -> NSViewLayerContentsPlacement) $ sendMsg nsView (mkSelector "layerContentsPlacement") retCLong []
+layerContentsPlacement nsView =
+  sendMessage nsView layerContentsPlacementSelector
 
 -- | @- setLayerContentsPlacement:@
 setLayerContentsPlacement :: IsNSView nsView => nsView -> NSViewLayerContentsPlacement -> IO ()
-setLayerContentsPlacement nsView  value =
-    sendMsg nsView (mkSelector "setLayerContentsPlacement:") retVoid [argCLong (coerce value)]
+setLayerContentsPlacement nsView value =
+  sendMessage nsView setLayerContentsPlacementSelector value
 
 -- | @- wantsLayer@
 wantsLayer :: IsNSView nsView => nsView -> IO Bool
-wantsLayer nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsLayer") retCULong []
+wantsLayer nsView =
+  sendMessage nsView wantsLayerSelector
 
 -- | @- setWantsLayer:@
 setWantsLayer :: IsNSView nsView => nsView -> Bool -> IO ()
-setWantsLayer nsView  value =
-    sendMsg nsView (mkSelector "setWantsLayer:") retVoid [argCULong (if value then 1 else 0)]
+setWantsLayer nsView value =
+  sendMessage nsView setWantsLayerSelector value
 
 -- | @- layer@
 layer :: IsNSView nsView => nsView -> IO (Id CALayer)
-layer nsView  =
-    sendMsg nsView (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+layer nsView =
+  sendMessage nsView layerSelector
 
 -- | @- setLayer:@
 setLayer :: (IsNSView nsView, IsCALayer value) => nsView -> value -> IO ()
-setLayer nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setLayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayer nsView value =
+  sendMessage nsView setLayerSelector (toCALayer value)
 
 -- | @- wantsUpdateLayer@
 wantsUpdateLayer :: IsNSView nsView => nsView -> IO Bool
-wantsUpdateLayer nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsUpdateLayer") retCULong []
+wantsUpdateLayer nsView =
+  sendMessage nsView wantsUpdateLayerSelector
 
 -- | @- canDrawSubviewsIntoLayer@
 canDrawSubviewsIntoLayer :: IsNSView nsView => nsView -> IO Bool
-canDrawSubviewsIntoLayer nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "canDrawSubviewsIntoLayer") retCULong []
+canDrawSubviewsIntoLayer nsView =
+  sendMessage nsView canDrawSubviewsIntoLayerSelector
 
 -- | @- setCanDrawSubviewsIntoLayer:@
 setCanDrawSubviewsIntoLayer :: IsNSView nsView => nsView -> Bool -> IO ()
-setCanDrawSubviewsIntoLayer nsView  value =
-    sendMsg nsView (mkSelector "setCanDrawSubviewsIntoLayer:") retVoid [argCULong (if value then 1 else 0)]
+setCanDrawSubviewsIntoLayer nsView value =
+  sendMessage nsView setCanDrawSubviewsIntoLayerSelector value
 
 -- | @- needsLayout@
 needsLayout :: IsNSView nsView => nsView -> IO Bool
-needsLayout nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "needsLayout") retCULong []
+needsLayout nsView =
+  sendMessage nsView needsLayoutSelector
 
 -- | @- setNeedsLayout:@
 setNeedsLayout :: IsNSView nsView => nsView -> Bool -> IO ()
-setNeedsLayout nsView  value =
-    sendMsg nsView (mkSelector "setNeedsLayout:") retVoid [argCULong (if value then 1 else 0)]
+setNeedsLayout nsView value =
+  sendMessage nsView setNeedsLayoutSelector value
 
 -- | @- alphaValue@
 alphaValue :: IsNSView nsView => nsView -> IO CDouble
-alphaValue nsView  =
-    sendMsg nsView (mkSelector "alphaValue") retCDouble []
+alphaValue nsView =
+  sendMessage nsView alphaValueSelector
 
 -- | @- setAlphaValue:@
 setAlphaValue :: IsNSView nsView => nsView -> CDouble -> IO ()
-setAlphaValue nsView  value =
-    sendMsg nsView (mkSelector "setAlphaValue:") retVoid [argCDouble value]
+setAlphaValue nsView value =
+  sendMessage nsView setAlphaValueSelector value
 
 -- | @- layerUsesCoreImageFilters@
 layerUsesCoreImageFilters :: IsNSView nsView => nsView -> IO Bool
-layerUsesCoreImageFilters nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "layerUsesCoreImageFilters") retCULong []
+layerUsesCoreImageFilters nsView =
+  sendMessage nsView layerUsesCoreImageFiltersSelector
 
 -- | @- setLayerUsesCoreImageFilters:@
 setLayerUsesCoreImageFilters :: IsNSView nsView => nsView -> Bool -> IO ()
-setLayerUsesCoreImageFilters nsView  value =
-    sendMsg nsView (mkSelector "setLayerUsesCoreImageFilters:") retVoid [argCULong (if value then 1 else 0)]
+setLayerUsesCoreImageFilters nsView value =
+  sendMessage nsView setLayerUsesCoreImageFiltersSelector value
 
 -- | @- backgroundFilters@
 backgroundFilters :: IsNSView nsView => nsView -> IO (Id NSArray)
-backgroundFilters nsView  =
-    sendMsg nsView (mkSelector "backgroundFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundFilters nsView =
+  sendMessage nsView backgroundFiltersSelector
 
 -- | @- setBackgroundFilters:@
 setBackgroundFilters :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
-setBackgroundFilters nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setBackgroundFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundFilters nsView value =
+  sendMessage nsView setBackgroundFiltersSelector (toNSArray value)
 
 -- | @- compositingFilter@
 compositingFilter :: IsNSView nsView => nsView -> IO (Id CIFilter)
-compositingFilter nsView  =
-    sendMsg nsView (mkSelector "compositingFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+compositingFilter nsView =
+  sendMessage nsView compositingFilterSelector
 
 -- | @- setCompositingFilter:@
 setCompositingFilter :: (IsNSView nsView, IsCIFilter value) => nsView -> value -> IO ()
-setCompositingFilter nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setCompositingFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompositingFilter nsView value =
+  sendMessage nsView setCompositingFilterSelector (toCIFilter value)
 
 -- | @- contentFilters@
 contentFilters :: IsNSView nsView => nsView -> IO (Id NSArray)
-contentFilters nsView  =
-    sendMsg nsView (mkSelector "contentFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentFilters nsView =
+  sendMessage nsView contentFiltersSelector
 
 -- | @- setContentFilters:@
 setContentFilters :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
-setContentFilters nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setContentFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentFilters nsView value =
+  sendMessage nsView setContentFiltersSelector (toNSArray value)
 
 -- | @- shadow@
 shadow :: IsNSView nsView => nsView -> IO (Id NSShadow)
-shadow nsView  =
-    sendMsg nsView (mkSelector "shadow") (retPtr retVoid) [] >>= retainedObject . castPtr
+shadow nsView =
+  sendMessage nsView shadowSelector
 
 -- | @- setShadow:@
 setShadow :: (IsNSView nsView, IsNSShadow value) => nsView -> value -> IO ()
-setShadow nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setShadow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShadow nsView value =
+  sendMessage nsView setShadowSelector (toNSShadow value)
 
 -- | @- clipsToBounds@
 clipsToBounds :: IsNSView nsView => nsView -> IO Bool
-clipsToBounds nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "clipsToBounds") retCULong []
+clipsToBounds nsView =
+  sendMessage nsView clipsToBoundsSelector
 
 -- | @- setClipsToBounds:@
 setClipsToBounds :: IsNSView nsView => nsView -> Bool -> IO ()
-setClipsToBounds nsView  value =
-    sendMsg nsView (mkSelector "setClipsToBounds:") retVoid [argCULong (if value then 1 else 0)]
+setClipsToBounds nsView value =
+  sendMessage nsView setClipsToBoundsSelector value
 
 -- | @- postsBoundsChangedNotifications@
 postsBoundsChangedNotifications :: IsNSView nsView => nsView -> IO Bool
-postsBoundsChangedNotifications nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "postsBoundsChangedNotifications") retCULong []
+postsBoundsChangedNotifications nsView =
+  sendMessage nsView postsBoundsChangedNotificationsSelector
 
 -- | @- setPostsBoundsChangedNotifications:@
 setPostsBoundsChangedNotifications :: IsNSView nsView => nsView -> Bool -> IO ()
-setPostsBoundsChangedNotifications nsView  value =
-    sendMsg nsView (mkSelector "setPostsBoundsChangedNotifications:") retVoid [argCULong (if value then 1 else 0)]
+setPostsBoundsChangedNotifications nsView value =
+  sendMessage nsView setPostsBoundsChangedNotificationsSelector value
 
 -- | @- enclosingScrollView@
 enclosingScrollView :: IsNSView nsView => nsView -> IO (Id NSScrollView)
-enclosingScrollView nsView  =
-    sendMsg nsView (mkSelector "enclosingScrollView") (retPtr retVoid) [] >>= retainedObject . castPtr
+enclosingScrollView nsView =
+  sendMessage nsView enclosingScrollViewSelector
 
 -- | @+ defaultMenu@
 defaultMenu :: IO (Id NSMenu)
 defaultMenu  =
   do
     cls' <- getRequiredClass "NSView"
-    sendClassMsg cls' (mkSelector "defaultMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultMenuSelector
 
 -- | @- toolTip@
 toolTip :: IsNSView nsView => nsView -> IO (Id NSString)
-toolTip nsView  =
-    sendMsg nsView (mkSelector "toolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolTip nsView =
+  sendMessage nsView toolTipSelector
 
 -- | @- setToolTip:@
 setToolTip :: (IsNSView nsView, IsNSString value) => nsView -> value -> IO ()
-setToolTip nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToolTip nsView value =
+  sendMessage nsView setToolTipSelector (toNSString value)
 
 -- | @- inLiveResize@
 inLiveResize :: IsNSView nsView => nsView -> IO Bool
-inLiveResize nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "inLiveResize") retCULong []
+inLiveResize nsView =
+  sendMessage nsView inLiveResizeSelector
 
 -- | @- preservesContentDuringLiveResize@
 preservesContentDuringLiveResize :: IsNSView nsView => nsView -> IO Bool
-preservesContentDuringLiveResize nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "preservesContentDuringLiveResize") retCULong []
+preservesContentDuringLiveResize nsView =
+  sendMessage nsView preservesContentDuringLiveResizeSelector
 
 -- | @- rectPreservedDuringLiveResize@
 rectPreservedDuringLiveResize :: IsNSView nsView => nsView -> IO NSRect
-rectPreservedDuringLiveResize nsView  =
-    sendMsgStret nsView (mkSelector "rectPreservedDuringLiveResize") retNSRect []
+rectPreservedDuringLiveResize nsView =
+  sendMessage nsView rectPreservedDuringLiveResizeSelector
 
 -- | @- inputContext@
 inputContext :: IsNSView nsView => nsView -> IO (Id NSTextInputContext)
-inputContext nsView  =
-    sendMsg nsView (mkSelector "inputContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputContext nsView =
+  sendMessage nsView inputContextSelector
 
 -- | @- userInterfaceLayoutDirection@
 userInterfaceLayoutDirection :: IsNSView nsView => nsView -> IO NSUserInterfaceLayoutDirection
-userInterfaceLayoutDirection nsView  =
-    fmap (coerce :: CLong -> NSUserInterfaceLayoutDirection) $ sendMsg nsView (mkSelector "userInterfaceLayoutDirection") retCLong []
+userInterfaceLayoutDirection nsView =
+  sendMessage nsView userInterfaceLayoutDirectionSelector
 
 -- | @- setUserInterfaceLayoutDirection:@
 setUserInterfaceLayoutDirection :: IsNSView nsView => nsView -> NSUserInterfaceLayoutDirection -> IO ()
-setUserInterfaceLayoutDirection nsView  value =
-    sendMsg nsView (mkSelector "setUserInterfaceLayoutDirection:") retVoid [argCLong (coerce value)]
+setUserInterfaceLayoutDirection nsView value =
+  sendMessage nsView setUserInterfaceLayoutDirectionSelector value
 
 -- | @+ compatibleWithResponsiveScrolling@
 compatibleWithResponsiveScrolling :: IO Bool
 compatibleWithResponsiveScrolling  =
   do
     cls' <- getRequiredClass "NSView"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "compatibleWithResponsiveScrolling") retCULong []
+    sendClassMessage cls' compatibleWithResponsiveScrollingSelector
 
 -- | @- preparedContentRect@
 preparedContentRect :: IsNSView nsView => nsView -> IO NSRect
-preparedContentRect nsView  =
-    sendMsgStret nsView (mkSelector "preparedContentRect") retNSRect []
+preparedContentRect nsView =
+  sendMessage nsView preparedContentRectSelector
 
 -- | @- setPreparedContentRect:@
 setPreparedContentRect :: IsNSView nsView => nsView -> NSRect -> IO ()
-setPreparedContentRect nsView  value =
-    sendMsg nsView (mkSelector "setPreparedContentRect:") retVoid [argNSRect value]
+setPreparedContentRect nsView value =
+  sendMessage nsView setPreparedContentRectSelector value
 
 -- | @- allowsVibrancy@
 allowsVibrancy :: IsNSView nsView => nsView -> IO Bool
-allowsVibrancy nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "allowsVibrancy") retCULong []
+allowsVibrancy nsView =
+  sendMessage nsView allowsVibrancySelector
 
 -- | @- pressureConfiguration@
 pressureConfiguration :: IsNSView nsView => nsView -> IO (Id NSPressureConfiguration)
-pressureConfiguration nsView  =
-    sendMsg nsView (mkSelector "pressureConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+pressureConfiguration nsView =
+  sendMessage nsView pressureConfigurationSelector
 
 -- | @- setPressureConfiguration:@
 setPressureConfiguration :: (IsNSView nsView, IsNSPressureConfiguration value) => nsView -> value -> IO ()
-setPressureConfiguration nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setPressureConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPressureConfiguration nsView value =
+  sendMessage nsView setPressureConfigurationSelector (toNSPressureConfiguration value)
 
 -- | @- wantsExtendedDynamicRangeOpenGLSurface@
 wantsExtendedDynamicRangeOpenGLSurface :: IsNSView nsView => nsView -> IO Bool
-wantsExtendedDynamicRangeOpenGLSurface nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsExtendedDynamicRangeOpenGLSurface") retCULong []
+wantsExtendedDynamicRangeOpenGLSurface nsView =
+  sendMessage nsView wantsExtendedDynamicRangeOpenGLSurfaceSelector
 
 -- | @- setWantsExtendedDynamicRangeOpenGLSurface:@
 setWantsExtendedDynamicRangeOpenGLSurface :: IsNSView nsView => nsView -> Bool -> IO ()
-setWantsExtendedDynamicRangeOpenGLSurface nsView  value =
-    sendMsg nsView (mkSelector "setWantsExtendedDynamicRangeOpenGLSurface:") retVoid [argCULong (if value then 1 else 0)]
+setWantsExtendedDynamicRangeOpenGLSurface nsView value =
+  sendMessage nsView setWantsExtendedDynamicRangeOpenGLSurfaceSelector value
 
 -- | @- wantsBestResolutionOpenGLSurface@
 wantsBestResolutionOpenGLSurface :: IsNSView nsView => nsView -> IO Bool
-wantsBestResolutionOpenGLSurface nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "wantsBestResolutionOpenGLSurface") retCULong []
+wantsBestResolutionOpenGLSurface nsView =
+  sendMessage nsView wantsBestResolutionOpenGLSurfaceSelector
 
 -- | @- setWantsBestResolutionOpenGLSurface:@
 setWantsBestResolutionOpenGLSurface :: IsNSView nsView => nsView -> Bool -> IO ()
-setWantsBestResolutionOpenGLSurface nsView  value =
-    sendMsg nsView (mkSelector "setWantsBestResolutionOpenGLSurface:") retVoid [argCULong (if value then 1 else 0)]
+setWantsBestResolutionOpenGLSurface nsView value =
+  sendMessage nsView setWantsBestResolutionOpenGLSurfaceSelector value
 
 -- | @- layoutGuides@
 layoutGuides :: IsNSView nsView => nsView -> IO (Id NSArray)
-layoutGuides nsView  =
-    sendMsg nsView (mkSelector "layoutGuides") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutGuides nsView =
+  sendMessage nsView layoutGuidesSelector
 
 -- | @- hasAmbiguousLayout@
 hasAmbiguousLayout :: IsNSView nsView => nsView -> IO Bool
-hasAmbiguousLayout nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "hasAmbiguousLayout") retCULong []
+hasAmbiguousLayout nsView =
+  sendMessage nsView hasAmbiguousLayoutSelector
 
 -- | @- fittingSize@
 fittingSize :: IsNSView nsView => nsView -> IO NSSize
-fittingSize nsView  =
-    sendMsgStret nsView (mkSelector "fittingSize") retNSSize []
+fittingSize nsView =
+  sendMessage nsView fittingSizeSelector
 
 -- | @- alignmentRectInsets@
 alignmentRectInsets :: IsNSView nsView => nsView -> IO NSEdgeInsets
-alignmentRectInsets nsView  =
-    sendMsgStret nsView (mkSelector "alignmentRectInsets") retNSEdgeInsets []
+alignmentRectInsets nsView =
+  sendMessage nsView alignmentRectInsetsSelector
 
 -- | @- firstBaselineOffsetFromTop@
 firstBaselineOffsetFromTop :: IsNSView nsView => nsView -> IO CDouble
-firstBaselineOffsetFromTop nsView  =
-    sendMsg nsView (mkSelector "firstBaselineOffsetFromTop") retCDouble []
+firstBaselineOffsetFromTop nsView =
+  sendMessage nsView firstBaselineOffsetFromTopSelector
 
 -- | @- lastBaselineOffsetFromBottom@
 lastBaselineOffsetFromBottom :: IsNSView nsView => nsView -> IO CDouble
-lastBaselineOffsetFromBottom nsView  =
-    sendMsg nsView (mkSelector "lastBaselineOffsetFromBottom") retCDouble []
+lastBaselineOffsetFromBottom nsView =
+  sendMessage nsView lastBaselineOffsetFromBottomSelector
 
 -- | @- baselineOffsetFromBottom@
 baselineOffsetFromBottom :: IsNSView nsView => nsView -> IO CDouble
-baselineOffsetFromBottom nsView  =
-    sendMsg nsView (mkSelector "baselineOffsetFromBottom") retCDouble []
+baselineOffsetFromBottom nsView =
+  sendMessage nsView baselineOffsetFromBottomSelector
 
 -- | @- intrinsicContentSize@
 intrinsicContentSize :: IsNSView nsView => nsView -> IO NSSize
-intrinsicContentSize nsView  =
-    sendMsgStret nsView (mkSelector "intrinsicContentSize") retNSSize []
+intrinsicContentSize nsView =
+  sendMessage nsView intrinsicContentSizeSelector
 
 -- | @- horizontalContentSizeConstraintActive@
 horizontalContentSizeConstraintActive :: IsNSView nsView => nsView -> IO Bool
-horizontalContentSizeConstraintActive nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "horizontalContentSizeConstraintActive") retCULong []
+horizontalContentSizeConstraintActive nsView =
+  sendMessage nsView horizontalContentSizeConstraintActiveSelector
 
 -- | @- setHorizontalContentSizeConstraintActive:@
 setHorizontalContentSizeConstraintActive :: IsNSView nsView => nsView -> Bool -> IO ()
-setHorizontalContentSizeConstraintActive nsView  value =
-    sendMsg nsView (mkSelector "setHorizontalContentSizeConstraintActive:") retVoid [argCULong (if value then 1 else 0)]
+setHorizontalContentSizeConstraintActive nsView value =
+  sendMessage nsView setHorizontalContentSizeConstraintActiveSelector value
 
 -- | @- verticalContentSizeConstraintActive@
 verticalContentSizeConstraintActive :: IsNSView nsView => nsView -> IO Bool
-verticalContentSizeConstraintActive nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "verticalContentSizeConstraintActive") retCULong []
+verticalContentSizeConstraintActive nsView =
+  sendMessage nsView verticalContentSizeConstraintActiveSelector
 
 -- | @- setVerticalContentSizeConstraintActive:@
 setVerticalContentSizeConstraintActive :: IsNSView nsView => nsView -> Bool -> IO ()
-setVerticalContentSizeConstraintActive nsView  value =
-    sendMsg nsView (mkSelector "setVerticalContentSizeConstraintActive:") retVoid [argCULong (if value then 1 else 0)]
+setVerticalContentSizeConstraintActive nsView value =
+  sendMessage nsView setVerticalContentSizeConstraintActiveSelector value
 
 -- | @- translatesAutoresizingMaskIntoConstraints@
 translatesAutoresizingMaskIntoConstraints :: IsNSView nsView => nsView -> IO Bool
-translatesAutoresizingMaskIntoConstraints nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "translatesAutoresizingMaskIntoConstraints") retCULong []
+translatesAutoresizingMaskIntoConstraints nsView =
+  sendMessage nsView translatesAutoresizingMaskIntoConstraintsSelector
 
 -- | @- setTranslatesAutoresizingMaskIntoConstraints:@
 setTranslatesAutoresizingMaskIntoConstraints :: IsNSView nsView => nsView -> Bool -> IO ()
-setTranslatesAutoresizingMaskIntoConstraints nsView  value =
-    sendMsg nsView (mkSelector "setTranslatesAutoresizingMaskIntoConstraints:") retVoid [argCULong (if value then 1 else 0)]
+setTranslatesAutoresizingMaskIntoConstraints nsView value =
+  sendMessage nsView setTranslatesAutoresizingMaskIntoConstraintsSelector value
 
 -- | @+ requiresConstraintBasedLayout@
 requiresConstraintBasedLayout :: IO Bool
 requiresConstraintBasedLayout  =
   do
     cls' <- getRequiredClass "NSView"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "requiresConstraintBasedLayout") retCULong []
+    sendClassMessage cls' requiresConstraintBasedLayoutSelector
 
 -- | @- needsUpdateConstraints@
 needsUpdateConstraints :: IsNSView nsView => nsView -> IO Bool
-needsUpdateConstraints nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "needsUpdateConstraints") retCULong []
+needsUpdateConstraints nsView =
+  sendMessage nsView needsUpdateConstraintsSelector
 
 -- | @- setNeedsUpdateConstraints:@
 setNeedsUpdateConstraints :: IsNSView nsView => nsView -> Bool -> IO ()
-setNeedsUpdateConstraints nsView  value =
-    sendMsg nsView (mkSelector "setNeedsUpdateConstraints:") retVoid [argCULong (if value then 1 else 0)]
+setNeedsUpdateConstraints nsView value =
+  sendMessage nsView setNeedsUpdateConstraintsSelector value
 
 -- | @- leadingAnchor@
 leadingAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
-leadingAnchor nsView  =
-    sendMsg nsView (mkSelector "leadingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+leadingAnchor nsView =
+  sendMessage nsView leadingAnchorSelector
 
 -- | @- trailingAnchor@
 trailingAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
-trailingAnchor nsView  =
-    sendMsg nsView (mkSelector "trailingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+trailingAnchor nsView =
+  sendMessage nsView trailingAnchorSelector
 
 -- | @- leftAnchor@
 leftAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
-leftAnchor nsView  =
-    sendMsg nsView (mkSelector "leftAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftAnchor nsView =
+  sendMessage nsView leftAnchorSelector
 
 -- | @- rightAnchor@
 rightAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
-rightAnchor nsView  =
-    sendMsg nsView (mkSelector "rightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightAnchor nsView =
+  sendMessage nsView rightAnchorSelector
 
 -- | @- topAnchor@
 topAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
-topAnchor nsView  =
-    sendMsg nsView (mkSelector "topAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+topAnchor nsView =
+  sendMessage nsView topAnchorSelector
 
 -- | @- bottomAnchor@
 bottomAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
-bottomAnchor nsView  =
-    sendMsg nsView (mkSelector "bottomAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bottomAnchor nsView =
+  sendMessage nsView bottomAnchorSelector
 
 -- | @- widthAnchor@
 widthAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutDimension)
-widthAnchor nsView  =
-    sendMsg nsView (mkSelector "widthAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+widthAnchor nsView =
+  sendMessage nsView widthAnchorSelector
 
 -- | @- heightAnchor@
 heightAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutDimension)
-heightAnchor nsView  =
-    sendMsg nsView (mkSelector "heightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+heightAnchor nsView =
+  sendMessage nsView heightAnchorSelector
 
 -- | @- centerXAnchor@
 centerXAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutXAxisAnchor)
-centerXAnchor nsView  =
-    sendMsg nsView (mkSelector "centerXAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+centerXAnchor nsView =
+  sendMessage nsView centerXAnchorSelector
 
 -- | @- centerYAnchor@
 centerYAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
-centerYAnchor nsView  =
-    sendMsg nsView (mkSelector "centerYAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+centerYAnchor nsView =
+  sendMessage nsView centerYAnchorSelector
 
 -- | @- firstBaselineAnchor@
 firstBaselineAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
-firstBaselineAnchor nsView  =
-    sendMsg nsView (mkSelector "firstBaselineAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstBaselineAnchor nsView =
+  sendMessage nsView firstBaselineAnchorSelector
 
 -- | @- lastBaselineAnchor@
 lastBaselineAnchor :: IsNSView nsView => nsView -> IO (Id NSLayoutYAxisAnchor)
-lastBaselineAnchor nsView  =
-    sendMsg nsView (mkSelector "lastBaselineAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastBaselineAnchor nsView =
+  sendMessage nsView lastBaselineAnchorSelector
 
 -- | @- constraints@
 constraints :: IsNSView nsView => nsView -> IO (Id NSArray)
-constraints nsView  =
-    sendMsg nsView (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints nsView =
+  sendMessage nsView constraintsSelector
 
 -- | @- candidateListTouchBarItem@
 candidateListTouchBarItem :: IsNSView nsView => nsView -> IO (Id NSCandidateListTouchBarItem)
-candidateListTouchBarItem nsView  =
-    sendMsg nsView (mkSelector "candidateListTouchBarItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+candidateListTouchBarItem nsView =
+  sendMessage nsView candidateListTouchBarItemSelector
 
 -- | @- enclosingMenuItem@
 enclosingMenuItem :: IsNSView nsView => nsView -> IO (Id NSMenuItem)
-enclosingMenuItem nsView  =
-    sendMsg nsView (mkSelector "enclosingMenuItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+enclosingMenuItem nsView =
+  sendMessage nsView enclosingMenuItemSelector
 
 -- | @- writingToolsCoordinator@
 writingToolsCoordinator :: IsNSView nsView => nsView -> IO (Id NSWritingToolsCoordinator)
-writingToolsCoordinator nsView  =
-    sendMsg nsView (mkSelector "writingToolsCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
+writingToolsCoordinator nsView =
+  sendMessage nsView writingToolsCoordinatorSelector
 
 -- | @- setWritingToolsCoordinator:@
 setWritingToolsCoordinator :: (IsNSView nsView, IsNSWritingToolsCoordinator value) => nsView -> value -> IO ()
-setWritingToolsCoordinator nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setWritingToolsCoordinator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWritingToolsCoordinator nsView value =
+  sendMessage nsView setWritingToolsCoordinatorSelector (toNSWritingToolsCoordinator value)
 
 -- | @- trackingAreas@
 trackingAreas :: IsNSView nsView => nsView -> IO (Id NSArray)
-trackingAreas nsView  =
-    sendMsg nsView (mkSelector "trackingAreas") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackingAreas nsView =
+  sendMessage nsView trackingAreasSelector
 
 -- | When this property is true, any NSControls in the view or its descendants will be sized with compact metrics compatible with macOS 15 and earlier. Defaults to false
 --
 -- ObjC selector: @- prefersCompactControlSizeMetrics@
 prefersCompactControlSizeMetrics :: IsNSView nsView => nsView -> IO Bool
-prefersCompactControlSizeMetrics nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "prefersCompactControlSizeMetrics") retCULong []
+prefersCompactControlSizeMetrics nsView =
+  sendMessage nsView prefersCompactControlSizeMetricsSelector
 
 -- | When this property is true, any NSControls in the view or its descendants will be sized with compact metrics compatible with macOS 15 and earlier. Defaults to false
 --
 -- ObjC selector: @- setPrefersCompactControlSizeMetrics:@
 setPrefersCompactControlSizeMetrics :: IsNSView nsView => nsView -> Bool -> IO ()
-setPrefersCompactControlSizeMetrics nsView  value =
-    sendMsg nsView (mkSelector "setPrefersCompactControlSizeMetrics:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersCompactControlSizeMetrics nsView value =
+  sendMessage nsView setPrefersCompactControlSizeMetricsSelector value
 
 -- | @- safeAreaInsets@
 safeAreaInsets :: IsNSView nsView => nsView -> IO NSEdgeInsets
-safeAreaInsets nsView  =
-    sendMsgStret nsView (mkSelector "safeAreaInsets") retNSEdgeInsets []
+safeAreaInsets nsView =
+  sendMessage nsView safeAreaInsetsSelector
 
 -- | @- additionalSafeAreaInsets@
 additionalSafeAreaInsets :: IsNSView nsView => nsView -> IO NSEdgeInsets
-additionalSafeAreaInsets nsView  =
-    sendMsgStret nsView (mkSelector "additionalSafeAreaInsets") retNSEdgeInsets []
+additionalSafeAreaInsets nsView =
+  sendMessage nsView additionalSafeAreaInsetsSelector
 
 -- | @- setAdditionalSafeAreaInsets:@
 setAdditionalSafeAreaInsets :: IsNSView nsView => nsView -> NSEdgeInsets -> IO ()
-setAdditionalSafeAreaInsets nsView  value =
-    sendMsg nsView (mkSelector "setAdditionalSafeAreaInsets:") retVoid [argNSEdgeInsets value]
+setAdditionalSafeAreaInsets nsView value =
+  sendMessage nsView setAdditionalSafeAreaInsetsSelector value
 
 -- | @- safeAreaLayoutGuide@
 safeAreaLayoutGuide :: IsNSView nsView => nsView -> IO (Id NSLayoutGuide)
-safeAreaLayoutGuide nsView  =
-    sendMsg nsView (mkSelector "safeAreaLayoutGuide") (retPtr retVoid) [] >>= retainedObject . castPtr
+safeAreaLayoutGuide nsView =
+  sendMessage nsView safeAreaLayoutGuideSelector
 
 -- | @- safeAreaRect@
 safeAreaRect :: IsNSView nsView => nsView -> IO NSRect
-safeAreaRect nsView  =
-    sendMsgStret nsView (mkSelector "safeAreaRect") retNSRect []
+safeAreaRect nsView =
+  sendMessage nsView safeAreaRectSelector
 
 -- | @- layoutMarginsGuide@
 layoutMarginsGuide :: IsNSView nsView => nsView -> IO (Id NSLayoutGuide)
-layoutMarginsGuide nsView  =
-    sendMsg nsView (mkSelector "layoutMarginsGuide") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutMarginsGuide nsView =
+  sendMessage nsView layoutMarginsGuideSelector
 
 -- | @- allowedTouchTypes@
 allowedTouchTypes :: IsNSView nsView => nsView -> IO NSTouchTypeMask
-allowedTouchTypes nsView  =
-    fmap (coerce :: CULong -> NSTouchTypeMask) $ sendMsg nsView (mkSelector "allowedTouchTypes") retCULong []
+allowedTouchTypes nsView =
+  sendMessage nsView allowedTouchTypesSelector
 
 -- | @- setAllowedTouchTypes:@
 setAllowedTouchTypes :: IsNSView nsView => nsView -> NSTouchTypeMask -> IO ()
-setAllowedTouchTypes nsView  value =
-    sendMsg nsView (mkSelector "setAllowedTouchTypes:") retVoid [argCULong (coerce value)]
+setAllowedTouchTypes nsView value =
+  sendMessage nsView setAllowedTouchTypesSelector value
 
 -- | @- gestureRecognizers@
 gestureRecognizers :: IsNSView nsView => nsView -> IO (Id NSArray)
-gestureRecognizers nsView  =
-    sendMsg nsView (mkSelector "gestureRecognizers") (retPtr retVoid) [] >>= retainedObject . castPtr
+gestureRecognizers nsView =
+  sendMessage nsView gestureRecognizersSelector
 
 -- | @- setGestureRecognizers:@
 setGestureRecognizers :: (IsNSView nsView, IsNSArray value) => nsView -> value -> IO ()
-setGestureRecognizers nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setGestureRecognizers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGestureRecognizers nsView value =
+  sendMessage nsView setGestureRecognizersSelector (toNSArray value)
 
 -- | @- drawingFindIndicator@
 drawingFindIndicator :: IsNSView nsView => nsView -> IO Bool
-drawingFindIndicator nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "drawingFindIndicator") retCULong []
+drawingFindIndicator nsView =
+  sendMessage nsView drawingFindIndicatorSelector
 
 -- | @- inFullScreenMode@
 inFullScreenMode :: IsNSView nsView => nsView -> IO Bool
-inFullScreenMode nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "inFullScreenMode") retCULong []
+inFullScreenMode nsView =
+  sendMessage nsView inFullScreenModeSelector
 
 -- | @- registeredDraggedTypes@
 registeredDraggedTypes :: IsNSView nsView => nsView -> IO (Id NSArray)
-registeredDraggedTypes nsView  =
-    sendMsg nsView (mkSelector "registeredDraggedTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+registeredDraggedTypes nsView =
+  sendMessage nsView registeredDraggedTypesSelector
 
 -- | @- heightAdjustLimit@
 heightAdjustLimit :: IsNSView nsView => nsView -> IO CDouble
-heightAdjustLimit nsView  =
-    sendMsg nsView (mkSelector "heightAdjustLimit") retCDouble []
+heightAdjustLimit nsView =
+  sendMessage nsView heightAdjustLimitSelector
 
 -- | @- widthAdjustLimit@
 widthAdjustLimit :: IsNSView nsView => nsView -> IO CDouble
-widthAdjustLimit nsView  =
-    sendMsg nsView (mkSelector "widthAdjustLimit") retCDouble []
+widthAdjustLimit nsView =
+  sendMessage nsView widthAdjustLimitSelector
 
 -- | @- pageHeader@
 pageHeader :: IsNSView nsView => nsView -> IO (Id NSAttributedString)
-pageHeader nsView  =
-    sendMsg nsView (mkSelector "pageHeader") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageHeader nsView =
+  sendMessage nsView pageHeaderSelector
 
 -- | @- pageFooter@
 pageFooter :: IsNSView nsView => nsView -> IO (Id NSAttributedString)
-pageFooter nsView  =
-    sendMsg nsView (mkSelector "pageFooter") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageFooter nsView =
+  sendMessage nsView pageFooterSelector
 
 -- | @- printJobTitle@
 printJobTitle :: IsNSView nsView => nsView -> IO (Id NSString)
-printJobTitle nsView  =
-    sendMsg nsView (mkSelector "printJobTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+printJobTitle nsView =
+  sendMessage nsView printJobTitleSelector
 
 -- | @- nextKeyView@
 nextKeyView :: IsNSView nsView => nsView -> IO (Id NSView)
-nextKeyView nsView  =
-    sendMsg nsView (mkSelector "nextKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextKeyView nsView =
+  sendMessage nsView nextKeyViewSelector
 
 -- | @- setNextKeyView:@
 setNextKeyView :: (IsNSView nsView, IsNSView value) => nsView -> value -> IO ()
-setNextKeyView nsView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsView (mkSelector "setNextKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNextKeyView nsView value =
+  sendMessage nsView setNextKeyViewSelector (toNSView value)
 
 -- | @- previousKeyView@
 previousKeyView :: IsNSView nsView => nsView -> IO (Id NSView)
-previousKeyView nsView  =
-    sendMsg nsView (mkSelector "previousKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousKeyView nsView =
+  sendMessage nsView previousKeyViewSelector
 
 -- | @- nextValidKeyView@
 nextValidKeyView :: IsNSView nsView => nsView -> IO (Id NSView)
-nextValidKeyView nsView  =
-    sendMsg nsView (mkSelector "nextValidKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextValidKeyView nsView =
+  sendMessage nsView nextValidKeyViewSelector
 
 -- | @- previousValidKeyView@
 previousValidKeyView :: IsNSView nsView => nsView -> IO (Id NSView)
-previousValidKeyView nsView  =
-    sendMsg nsView (mkSelector "previousValidKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousValidKeyView nsView =
+  sendMessage nsView previousValidKeyViewSelector
 
 -- | @- canBecomeKeyView@
 canBecomeKeyView :: IsNSView nsView => nsView -> IO Bool
-canBecomeKeyView nsView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsView (mkSelector "canBecomeKeyView") retCULong []
+canBecomeKeyView nsView =
+  sendMessage nsView canBecomeKeyViewSelector
 
 -- | @- focusRingType@
 focusRingType :: IsNSView nsView => nsView -> IO NSFocusRingType
-focusRingType nsView  =
-    fmap (coerce :: CULong -> NSFocusRingType) $ sendMsg nsView (mkSelector "focusRingType") retCULong []
+focusRingType nsView =
+  sendMessage nsView focusRingTypeSelector
 
 -- | @- setFocusRingType:@
 setFocusRingType :: IsNSView nsView => nsView -> NSFocusRingType -> IO ()
-setFocusRingType nsView  value =
-    sendMsg nsView (mkSelector "setFocusRingType:") retVoid [argCULong (coerce value)]
+setFocusRingType nsView value =
+  sendMessage nsView setFocusRingTypeSelector value
 
 -- | @+ defaultFocusRingType@
 defaultFocusRingType :: IO NSFocusRingType
 defaultFocusRingType  =
   do
     cls' <- getRequiredClass "NSView"
-    fmap (coerce :: CULong -> NSFocusRingType) $ sendClassMsg cls' (mkSelector "defaultFocusRingType") retCULong []
+    sendClassMessage cls' defaultFocusRingTypeSelector
 
 -- | @- focusRingMaskBounds@
 focusRingMaskBounds :: IsNSView nsView => nsView -> IO NSRect
-focusRingMaskBounds nsView  =
-    sendMsgStret nsView (mkSelector "focusRingMaskBounds") retNSRect []
+focusRingMaskBounds nsView =
+  sendMessage nsView focusRingMaskBoundsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] (Id NSView)
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @isDescendantOf:@
-isDescendantOfSelector :: Selector
+isDescendantOfSelector :: Selector '[Id NSView] Bool
 isDescendantOfSelector = mkSelector "isDescendantOf:"
 
 -- | @Selector@ for @ancestorSharedWithView:@
-ancestorSharedWithViewSelector :: Selector
+ancestorSharedWithViewSelector :: Selector '[Id NSView] (Id NSView)
 ancestorSharedWithViewSelector = mkSelector "ancestorSharedWithView:"
 
 -- | @Selector@ for @getRectsBeingDrawn:count:@
-getRectsBeingDrawn_countSelector :: Selector
+getRectsBeingDrawn_countSelector :: Selector '[Const (Ptr NSRect), Ptr CLong] ()
 getRectsBeingDrawn_countSelector = mkSelector "getRectsBeingDrawn:count:"
 
 -- | @Selector@ for @needsToDrawRect:@
-needsToDrawRectSelector :: Selector
+needsToDrawRectSelector :: Selector '[NSRect] Bool
 needsToDrawRectSelector = mkSelector "needsToDrawRect:"
 
 -- | @Selector@ for @viewDidHide@
-viewDidHideSelector :: Selector
+viewDidHideSelector :: Selector '[] ()
 viewDidHideSelector = mkSelector "viewDidHide"
 
 -- | @Selector@ for @viewDidUnhide@
-viewDidUnhideSelector :: Selector
+viewDidUnhideSelector :: Selector '[] ()
 viewDidUnhideSelector = mkSelector "viewDidUnhide"
 
 -- | @Selector@ for @addSubview:@
-addSubviewSelector :: Selector
+addSubviewSelector :: Selector '[Id NSView] ()
 addSubviewSelector = mkSelector "addSubview:"
 
 -- | @Selector@ for @addSubview:positioned:relativeTo:@
-addSubview_positioned_relativeToSelector :: Selector
+addSubview_positioned_relativeToSelector :: Selector '[Id NSView, NSWindowOrderingMode, Id NSView] ()
 addSubview_positioned_relativeToSelector = mkSelector "addSubview:positioned:relativeTo:"
 
 -- | @Selector@ for @sortSubviewsUsingFunction:context:@
-sortSubviewsUsingFunction_contextSelector :: Selector
+sortSubviewsUsingFunction_contextSelector :: Selector '[Ptr (), Ptr ()] ()
 sortSubviewsUsingFunction_contextSelector = mkSelector "sortSubviewsUsingFunction:context:"
 
 -- | @Selector@ for @viewWillMoveToWindow:@
-viewWillMoveToWindowSelector :: Selector
+viewWillMoveToWindowSelector :: Selector '[Id NSWindow] ()
 viewWillMoveToWindowSelector = mkSelector "viewWillMoveToWindow:"
 
 -- | @Selector@ for @viewDidMoveToWindow@
-viewDidMoveToWindowSelector :: Selector
+viewDidMoveToWindowSelector :: Selector '[] ()
 viewDidMoveToWindowSelector = mkSelector "viewDidMoveToWindow"
 
 -- | @Selector@ for @viewWillMoveToSuperview:@
-viewWillMoveToSuperviewSelector :: Selector
+viewWillMoveToSuperviewSelector :: Selector '[Id NSView] ()
 viewWillMoveToSuperviewSelector = mkSelector "viewWillMoveToSuperview:"
 
 -- | @Selector@ for @viewDidMoveToSuperview@
-viewDidMoveToSuperviewSelector :: Selector
+viewDidMoveToSuperviewSelector :: Selector '[] ()
 viewDidMoveToSuperviewSelector = mkSelector "viewDidMoveToSuperview"
 
 -- | @Selector@ for @didAddSubview:@
-didAddSubviewSelector :: Selector
+didAddSubviewSelector :: Selector '[Id NSView] ()
 didAddSubviewSelector = mkSelector "didAddSubview:"
 
 -- | @Selector@ for @willRemoveSubview:@
-willRemoveSubviewSelector :: Selector
+willRemoveSubviewSelector :: Selector '[Id NSView] ()
 willRemoveSubviewSelector = mkSelector "willRemoveSubview:"
 
 -- | @Selector@ for @removeFromSuperview@
-removeFromSuperviewSelector :: Selector
+removeFromSuperviewSelector :: Selector '[] ()
 removeFromSuperviewSelector = mkSelector "removeFromSuperview"
 
 -- | @Selector@ for @replaceSubview:with:@
-replaceSubview_withSelector :: Selector
+replaceSubview_withSelector :: Selector '[Id NSView, Id NSView] ()
 replaceSubview_withSelector = mkSelector "replaceSubview:with:"
 
 -- | @Selector@ for @removeFromSuperviewWithoutNeedingDisplay@
-removeFromSuperviewWithoutNeedingDisplaySelector :: Selector
+removeFromSuperviewWithoutNeedingDisplaySelector :: Selector '[] ()
 removeFromSuperviewWithoutNeedingDisplaySelector = mkSelector "removeFromSuperviewWithoutNeedingDisplay"
 
 -- | @Selector@ for @viewDidChangeBackingProperties@
-viewDidChangeBackingPropertiesSelector :: Selector
+viewDidChangeBackingPropertiesSelector :: Selector '[] ()
 viewDidChangeBackingPropertiesSelector = mkSelector "viewDidChangeBackingProperties"
 
 -- | @Selector@ for @resizeSubviewsWithOldSize:@
-resizeSubviewsWithOldSizeSelector :: Selector
+resizeSubviewsWithOldSizeSelector :: Selector '[NSSize] ()
 resizeSubviewsWithOldSizeSelector = mkSelector "resizeSubviewsWithOldSize:"
 
 -- | @Selector@ for @resizeWithOldSuperviewSize:@
-resizeWithOldSuperviewSizeSelector :: Selector
+resizeWithOldSuperviewSizeSelector :: Selector '[NSSize] ()
 resizeWithOldSuperviewSizeSelector = mkSelector "resizeWithOldSuperviewSize:"
 
 -- | @Selector@ for @setFrameOrigin:@
-setFrameOriginSelector :: Selector
+setFrameOriginSelector :: Selector '[NSPoint] ()
 setFrameOriginSelector = mkSelector "setFrameOrigin:"
 
 -- | @Selector@ for @setFrameSize:@
-setFrameSizeSelector :: Selector
+setFrameSizeSelector :: Selector '[NSSize] ()
 setFrameSizeSelector = mkSelector "setFrameSize:"
 
 -- | @Selector@ for @setBoundsOrigin:@
-setBoundsOriginSelector :: Selector
+setBoundsOriginSelector :: Selector '[NSPoint] ()
 setBoundsOriginSelector = mkSelector "setBoundsOrigin:"
 
 -- | @Selector@ for @setBoundsSize:@
-setBoundsSizeSelector :: Selector
+setBoundsSizeSelector :: Selector '[NSSize] ()
 setBoundsSizeSelector = mkSelector "setBoundsSize:"
 
 -- | @Selector@ for @translateOriginToPoint:@
-translateOriginToPointSelector :: Selector
+translateOriginToPointSelector :: Selector '[NSPoint] ()
 translateOriginToPointSelector = mkSelector "translateOriginToPoint:"
 
 -- | @Selector@ for @scaleUnitSquareToSize:@
-scaleUnitSquareToSizeSelector :: Selector
+scaleUnitSquareToSizeSelector :: Selector '[NSSize] ()
 scaleUnitSquareToSizeSelector = mkSelector "scaleUnitSquareToSize:"
 
 -- | @Selector@ for @rotateByAngle:@
-rotateByAngleSelector :: Selector
+rotateByAngleSelector :: Selector '[CDouble] ()
 rotateByAngleSelector = mkSelector "rotateByAngle:"
 
 -- | @Selector@ for @convertPoint:fromView:@
-convertPoint_fromViewSelector :: Selector
+convertPoint_fromViewSelector :: Selector '[NSPoint, Id NSView] NSPoint
 convertPoint_fromViewSelector = mkSelector "convertPoint:fromView:"
 
 -- | @Selector@ for @convertPoint:toView:@
-convertPoint_toViewSelector :: Selector
+convertPoint_toViewSelector :: Selector '[NSPoint, Id NSView] NSPoint
 convertPoint_toViewSelector = mkSelector "convertPoint:toView:"
 
 -- | @Selector@ for @convertSize:fromView:@
-convertSize_fromViewSelector :: Selector
+convertSize_fromViewSelector :: Selector '[NSSize, Id NSView] NSSize
 convertSize_fromViewSelector = mkSelector "convertSize:fromView:"
 
 -- | @Selector@ for @convertSize:toView:@
-convertSize_toViewSelector :: Selector
+convertSize_toViewSelector :: Selector '[NSSize, Id NSView] NSSize
 convertSize_toViewSelector = mkSelector "convertSize:toView:"
 
 -- | @Selector@ for @convertRect:fromView:@
-convertRect_fromViewSelector :: Selector
+convertRect_fromViewSelector :: Selector '[NSRect, Id NSView] NSRect
 convertRect_fromViewSelector = mkSelector "convertRect:fromView:"
 
 -- | @Selector@ for @convertRect:toView:@
-convertRect_toViewSelector :: Selector
+convertRect_toViewSelector :: Selector '[NSRect, Id NSView] NSRect
 convertRect_toViewSelector = mkSelector "convertRect:toView:"
 
 -- | @Selector@ for @backingAlignedRect:options:@
-backingAlignedRect_optionsSelector :: Selector
+backingAlignedRect_optionsSelector :: Selector '[NSRect, NSAlignmentOptions] NSRect
 backingAlignedRect_optionsSelector = mkSelector "backingAlignedRect:options:"
 
 -- | @Selector@ for @centerScanRect:@
-centerScanRectSelector :: Selector
+centerScanRectSelector :: Selector '[NSRect] NSRect
 centerScanRectSelector = mkSelector "centerScanRect:"
 
 -- | @Selector@ for @convertPointToBacking:@
-convertPointToBackingSelector :: Selector
+convertPointToBackingSelector :: Selector '[NSPoint] NSPoint
 convertPointToBackingSelector = mkSelector "convertPointToBacking:"
 
 -- | @Selector@ for @convertPointFromBacking:@
-convertPointFromBackingSelector :: Selector
+convertPointFromBackingSelector :: Selector '[NSPoint] NSPoint
 convertPointFromBackingSelector = mkSelector "convertPointFromBacking:"
 
 -- | @Selector@ for @convertSizeToBacking:@
-convertSizeToBackingSelector :: Selector
+convertSizeToBackingSelector :: Selector '[NSSize] NSSize
 convertSizeToBackingSelector = mkSelector "convertSizeToBacking:"
 
 -- | @Selector@ for @convertSizeFromBacking:@
-convertSizeFromBackingSelector :: Selector
+convertSizeFromBackingSelector :: Selector '[NSSize] NSSize
 convertSizeFromBackingSelector = mkSelector "convertSizeFromBacking:"
 
 -- | @Selector@ for @convertRectToBacking:@
-convertRectToBackingSelector :: Selector
+convertRectToBackingSelector :: Selector '[NSRect] NSRect
 convertRectToBackingSelector = mkSelector "convertRectToBacking:"
 
 -- | @Selector@ for @convertRectFromBacking:@
-convertRectFromBackingSelector :: Selector
+convertRectFromBackingSelector :: Selector '[NSRect] NSRect
 convertRectFromBackingSelector = mkSelector "convertRectFromBacking:"
 
 -- | @Selector@ for @convertPointToLayer:@
-convertPointToLayerSelector :: Selector
+convertPointToLayerSelector :: Selector '[NSPoint] NSPoint
 convertPointToLayerSelector = mkSelector "convertPointToLayer:"
 
 -- | @Selector@ for @convertPointFromLayer:@
-convertPointFromLayerSelector :: Selector
+convertPointFromLayerSelector :: Selector '[NSPoint] NSPoint
 convertPointFromLayerSelector = mkSelector "convertPointFromLayer:"
 
 -- | @Selector@ for @convertSizeToLayer:@
-convertSizeToLayerSelector :: Selector
+convertSizeToLayerSelector :: Selector '[NSSize] NSSize
 convertSizeToLayerSelector = mkSelector "convertSizeToLayer:"
 
 -- | @Selector@ for @convertSizeFromLayer:@
-convertSizeFromLayerSelector :: Selector
+convertSizeFromLayerSelector :: Selector '[NSSize] NSSize
 convertSizeFromLayerSelector = mkSelector "convertSizeFromLayer:"
 
 -- | @Selector@ for @convertRectToLayer:@
-convertRectToLayerSelector :: Selector
+convertRectToLayerSelector :: Selector '[NSRect] NSRect
 convertRectToLayerSelector = mkSelector "convertRectToLayer:"
 
 -- | @Selector@ for @convertRectFromLayer:@
-convertRectFromLayerSelector :: Selector
+convertRectFromLayerSelector :: Selector '[NSRect] NSRect
 convertRectFromLayerSelector = mkSelector "convertRectFromLayer:"
 
 -- | @Selector@ for @setNeedsDisplayInRect:@
-setNeedsDisplayInRectSelector :: Selector
+setNeedsDisplayInRectSelector :: Selector '[NSRect] ()
 setNeedsDisplayInRectSelector = mkSelector "setNeedsDisplayInRect:"
 
 -- | @Selector@ for @lockFocus@
-lockFocusSelector :: Selector
+lockFocusSelector :: Selector '[] ()
 lockFocusSelector = mkSelector "lockFocus"
 
 -- | @Selector@ for @unlockFocus@
-unlockFocusSelector :: Selector
+unlockFocusSelector :: Selector '[] ()
 unlockFocusSelector = mkSelector "unlockFocus"
 
 -- | @Selector@ for @lockFocusIfCanDraw@
-lockFocusIfCanDrawSelector :: Selector
+lockFocusIfCanDrawSelector :: Selector '[] Bool
 lockFocusIfCanDrawSelector = mkSelector "lockFocusIfCanDraw"
 
 -- | @Selector@ for @lockFocusIfCanDrawInContext:@
-lockFocusIfCanDrawInContextSelector :: Selector
+lockFocusIfCanDrawInContextSelector :: Selector '[Id NSGraphicsContext] Bool
 lockFocusIfCanDrawInContextSelector = mkSelector "lockFocusIfCanDrawInContext:"
 
 -- | @Selector@ for @display@
-displaySelector :: Selector
+displaySelector :: Selector '[] ()
 displaySelector = mkSelector "display"
 
 -- | @Selector@ for @displayIfNeeded@
-displayIfNeededSelector :: Selector
+displayIfNeededSelector :: Selector '[] ()
 displayIfNeededSelector = mkSelector "displayIfNeeded"
 
 -- | @Selector@ for @displayIfNeededIgnoringOpacity@
-displayIfNeededIgnoringOpacitySelector :: Selector
+displayIfNeededIgnoringOpacitySelector :: Selector '[] ()
 displayIfNeededIgnoringOpacitySelector = mkSelector "displayIfNeededIgnoringOpacity"
 
 -- | @Selector@ for @displayRect:@
-displayRectSelector :: Selector
+displayRectSelector :: Selector '[NSRect] ()
 displayRectSelector = mkSelector "displayRect:"
 
 -- | @Selector@ for @displayIfNeededInRect:@
-displayIfNeededInRectSelector :: Selector
+displayIfNeededInRectSelector :: Selector '[NSRect] ()
 displayIfNeededInRectSelector = mkSelector "displayIfNeededInRect:"
 
 -- | @Selector@ for @displayRectIgnoringOpacity:@
-displayRectIgnoringOpacitySelector :: Selector
+displayRectIgnoringOpacitySelector :: Selector '[NSRect] ()
 displayRectIgnoringOpacitySelector = mkSelector "displayRectIgnoringOpacity:"
 
 -- | @Selector@ for @displayIfNeededInRectIgnoringOpacity:@
-displayIfNeededInRectIgnoringOpacitySelector :: Selector
+displayIfNeededInRectIgnoringOpacitySelector :: Selector '[NSRect] ()
 displayIfNeededInRectIgnoringOpacitySelector = mkSelector "displayIfNeededInRectIgnoringOpacity:"
 
 -- | @Selector@ for @drawRect:@
-drawRectSelector :: Selector
+drawRectSelector :: Selector '[NSRect] ()
 drawRectSelector = mkSelector "drawRect:"
 
 -- | @Selector@ for @displayRectIgnoringOpacity:inContext:@
-displayRectIgnoringOpacity_inContextSelector :: Selector
+displayRectIgnoringOpacity_inContextSelector :: Selector '[NSRect, Id NSGraphicsContext] ()
 displayRectIgnoringOpacity_inContextSelector = mkSelector "displayRectIgnoringOpacity:inContext:"
 
 -- | @Selector@ for @bitmapImageRepForCachingDisplayInRect:@
-bitmapImageRepForCachingDisplayInRectSelector :: Selector
+bitmapImageRepForCachingDisplayInRectSelector :: Selector '[NSRect] (Id NSBitmapImageRep)
 bitmapImageRepForCachingDisplayInRectSelector = mkSelector "bitmapImageRepForCachingDisplayInRect:"
 
 -- | @Selector@ for @cacheDisplayInRect:toBitmapImageRep:@
-cacheDisplayInRect_toBitmapImageRepSelector :: Selector
+cacheDisplayInRect_toBitmapImageRepSelector :: Selector '[NSRect, Id NSBitmapImageRep] ()
 cacheDisplayInRect_toBitmapImageRepSelector = mkSelector "cacheDisplayInRect:toBitmapImageRep:"
 
 -- | @Selector@ for @viewWillDraw@
-viewWillDrawSelector :: Selector
+viewWillDrawSelector :: Selector '[] ()
 viewWillDrawSelector = mkSelector "viewWillDraw"
 
 -- | @Selector@ for @scrollPoint:@
-scrollPointSelector :: Selector
+scrollPointSelector :: Selector '[NSPoint] ()
 scrollPointSelector = mkSelector "scrollPoint:"
 
 -- | @Selector@ for @scrollRectToVisible:@
-scrollRectToVisibleSelector :: Selector
+scrollRectToVisibleSelector :: Selector '[NSRect] Bool
 scrollRectToVisibleSelector = mkSelector "scrollRectToVisible:"
 
 -- | @Selector@ for @autoscroll:@
-autoscrollSelector :: Selector
+autoscrollSelector :: Selector '[Id NSEvent] Bool
 autoscrollSelector = mkSelector "autoscroll:"
 
 -- | @Selector@ for @adjustScroll:@
-adjustScrollSelector :: Selector
+adjustScrollSelector :: Selector '[NSRect] NSRect
 adjustScrollSelector = mkSelector "adjustScroll:"
 
 -- | @Selector@ for @scrollRect:by:@
-scrollRect_bySelector :: Selector
+scrollRect_bySelector :: Selector '[NSRect, NSSize] ()
 scrollRect_bySelector = mkSelector "scrollRect:by:"
 
 -- | @Selector@ for @translateRectsNeedingDisplayInRect:by:@
-translateRectsNeedingDisplayInRect_bySelector :: Selector
+translateRectsNeedingDisplayInRect_bySelector :: Selector '[NSRect, NSSize] ()
 translateRectsNeedingDisplayInRect_bySelector = mkSelector "translateRectsNeedingDisplayInRect:by:"
 
 -- | @Selector@ for @hitTest:@
-hitTestSelector :: Selector
+hitTestSelector :: Selector '[NSPoint] (Id NSView)
 hitTestSelector = mkSelector "hitTest:"
 
 -- | @Selector@ for @mouse:inRect:@
-mouse_inRectSelector :: Selector
+mouse_inRectSelector :: Selector '[NSPoint, NSRect] Bool
 mouse_inRectSelector = mkSelector "mouse:inRect:"
 
 -- | @Selector@ for @viewWithTag:@
-viewWithTagSelector :: Selector
+viewWithTagSelector :: Selector '[CLong] (Id NSView)
 viewWithTagSelector = mkSelector "viewWithTag:"
 
 -- | @Selector@ for @performKeyEquivalent:@
-performKeyEquivalentSelector :: Selector
+performKeyEquivalentSelector :: Selector '[Id NSEvent] Bool
 performKeyEquivalentSelector = mkSelector "performKeyEquivalent:"
 
 -- | @Selector@ for @acceptsFirstMouse:@
-acceptsFirstMouseSelector :: Selector
+acceptsFirstMouseSelector :: Selector '[Id NSEvent] Bool
 acceptsFirstMouseSelector = mkSelector "acceptsFirstMouse:"
 
 -- | @Selector@ for @shouldDelayWindowOrderingForEvent:@
-shouldDelayWindowOrderingForEventSelector :: Selector
+shouldDelayWindowOrderingForEventSelector :: Selector '[Id NSEvent] Bool
 shouldDelayWindowOrderingForEventSelector = mkSelector "shouldDelayWindowOrderingForEvent:"
 
 -- | @Selector@ for @makeBackingLayer@
-makeBackingLayerSelector :: Selector
+makeBackingLayerSelector :: Selector '[] (Id CALayer)
 makeBackingLayerSelector = mkSelector "makeBackingLayer"
 
 -- | @Selector@ for @updateLayer@
-updateLayerSelector :: Selector
+updateLayerSelector :: Selector '[] ()
 updateLayerSelector = mkSelector "updateLayer"
 
 -- | @Selector@ for @layoutSubtreeIfNeeded@
-layoutSubtreeIfNeededSelector :: Selector
+layoutSubtreeIfNeededSelector :: Selector '[] ()
 layoutSubtreeIfNeededSelector = mkSelector "layoutSubtreeIfNeeded"
 
 -- | @Selector@ for @layout@
-layoutSelector :: Selector
+layoutSelector :: Selector '[] ()
 layoutSelector = mkSelector "layout"
 
 -- | @Selector@ for @menuForEvent:@
-menuForEventSelector :: Selector
+menuForEventSelector :: Selector '[Id NSEvent] (Id NSMenu)
 menuForEventSelector = mkSelector "menuForEvent:"
 
 -- | @Selector@ for @willOpenMenu:withEvent:@
-willOpenMenu_withEventSelector :: Selector
+willOpenMenu_withEventSelector :: Selector '[Id NSMenu, Id NSEvent] ()
 willOpenMenu_withEventSelector = mkSelector "willOpenMenu:withEvent:"
 
 -- | @Selector@ for @didCloseMenu:withEvent:@
-didCloseMenu_withEventSelector :: Selector
+didCloseMenu_withEventSelector :: Selector '[Id NSMenu, Id NSEvent] ()
 didCloseMenu_withEventSelector = mkSelector "didCloseMenu:withEvent:"
 
 -- | @Selector@ for @addToolTipRect:owner:userData:@
-addToolTipRect_owner_userDataSelector :: Selector
+addToolTipRect_owner_userDataSelector :: Selector '[NSRect, RawId, Ptr ()] CLong
 addToolTipRect_owner_userDataSelector = mkSelector "addToolTipRect:owner:userData:"
 
 -- | @Selector@ for @removeToolTip:@
-removeToolTipSelector :: Selector
+removeToolTipSelector :: Selector '[CLong] ()
 removeToolTipSelector = mkSelector "removeToolTip:"
 
 -- | @Selector@ for @removeAllToolTips@
-removeAllToolTipsSelector :: Selector
+removeAllToolTipsSelector :: Selector '[] ()
 removeAllToolTipsSelector = mkSelector "removeAllToolTips"
 
 -- | @Selector@ for @viewWillStartLiveResize@
-viewWillStartLiveResizeSelector :: Selector
+viewWillStartLiveResizeSelector :: Selector '[] ()
 viewWillStartLiveResizeSelector = mkSelector "viewWillStartLiveResize"
 
 -- | @Selector@ for @viewDidEndLiveResize@
-viewDidEndLiveResizeSelector :: Selector
+viewDidEndLiveResizeSelector :: Selector '[] ()
 viewDidEndLiveResizeSelector = mkSelector "viewDidEndLiveResize"
 
 -- | @Selector@ for @getRectsExposedDuringLiveResize:count:@
-getRectsExposedDuringLiveResize_countSelector :: Selector
+getRectsExposedDuringLiveResize_countSelector :: Selector '[Ptr NSRect, Ptr CLong] ()
 getRectsExposedDuringLiveResize_countSelector = mkSelector "getRectsExposedDuringLiveResize:count:"
 
 -- | @Selector@ for @rectForSmartMagnificationAtPoint:inRect:@
-rectForSmartMagnificationAtPoint_inRectSelector :: Selector
+rectForSmartMagnificationAtPoint_inRectSelector :: Selector '[NSPoint, NSRect] NSRect
 rectForSmartMagnificationAtPoint_inRectSelector = mkSelector "rectForSmartMagnificationAtPoint:inRect:"
 
 -- | @Selector@ for @prepareForReuse@
-prepareForReuseSelector :: Selector
+prepareForReuseSelector :: Selector '[] ()
 prepareForReuseSelector = mkSelector "prepareForReuse"
 
 -- | @Selector@ for @prepareContentInRect:@
-prepareContentInRectSelector :: Selector
+prepareContentInRectSelector :: Selector '[NSRect] ()
 prepareContentInRectSelector = mkSelector "prepareContentInRect:"
 
 -- | @Selector@ for @viewDidChangeEffectiveAppearance@
-viewDidChangeEffectiveAppearanceSelector :: Selector
+viewDidChangeEffectiveAppearanceSelector :: Selector '[] ()
 viewDidChangeEffectiveAppearanceSelector = mkSelector "viewDidChangeEffectiveAppearance"
 
 -- | @Selector@ for @rulerView:shouldMoveMarker:@
-rulerView_shouldMoveMarkerSelector :: Selector
+rulerView_shouldMoveMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] Bool
 rulerView_shouldMoveMarkerSelector = mkSelector "rulerView:shouldMoveMarker:"
 
 -- | @Selector@ for @rulerView:willMoveMarker:toLocation:@
-rulerView_willMoveMarker_toLocationSelector :: Selector
+rulerView_willMoveMarker_toLocationSelector :: Selector '[Id NSRulerView, Id NSRulerMarker, CDouble] CDouble
 rulerView_willMoveMarker_toLocationSelector = mkSelector "rulerView:willMoveMarker:toLocation:"
 
 -- | @Selector@ for @rulerView:didMoveMarker:@
-rulerView_didMoveMarkerSelector :: Selector
+rulerView_didMoveMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] ()
 rulerView_didMoveMarkerSelector = mkSelector "rulerView:didMoveMarker:"
 
 -- | @Selector@ for @rulerView:shouldRemoveMarker:@
-rulerView_shouldRemoveMarkerSelector :: Selector
+rulerView_shouldRemoveMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] Bool
 rulerView_shouldRemoveMarkerSelector = mkSelector "rulerView:shouldRemoveMarker:"
 
 -- | @Selector@ for @rulerView:didRemoveMarker:@
-rulerView_didRemoveMarkerSelector :: Selector
+rulerView_didRemoveMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] ()
 rulerView_didRemoveMarkerSelector = mkSelector "rulerView:didRemoveMarker:"
 
 -- | @Selector@ for @rulerView:shouldAddMarker:@
-rulerView_shouldAddMarkerSelector :: Selector
+rulerView_shouldAddMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] Bool
 rulerView_shouldAddMarkerSelector = mkSelector "rulerView:shouldAddMarker:"
 
 -- | @Selector@ for @rulerView:willAddMarker:atLocation:@
-rulerView_willAddMarker_atLocationSelector :: Selector
+rulerView_willAddMarker_atLocationSelector :: Selector '[Id NSRulerView, Id NSRulerMarker, CDouble] CDouble
 rulerView_willAddMarker_atLocationSelector = mkSelector "rulerView:willAddMarker:atLocation:"
 
 -- | @Selector@ for @rulerView:didAddMarker:@
-rulerView_didAddMarkerSelector :: Selector
+rulerView_didAddMarkerSelector :: Selector '[Id NSRulerView, Id NSRulerMarker] ()
 rulerView_didAddMarkerSelector = mkSelector "rulerView:didAddMarker:"
 
 -- | @Selector@ for @rulerView:handleMouseDown:@
-rulerView_handleMouseDownSelector :: Selector
+rulerView_handleMouseDownSelector :: Selector '[Id NSRulerView, Id NSEvent] ()
 rulerView_handleMouseDownSelector = mkSelector "rulerView:handleMouseDown:"
 
 -- | @Selector@ for @rulerView:willSetClientView:@
-rulerView_willSetClientViewSelector :: Selector
+rulerView_willSetClientViewSelector :: Selector '[Id NSRulerView, Id NSView] ()
 rulerView_willSetClientViewSelector = mkSelector "rulerView:willSetClientView:"
 
 -- | @Selector@ for @rulerView:locationForPoint:@
-rulerView_locationForPointSelector :: Selector
+rulerView_locationForPointSelector :: Selector '[Id NSRulerView, NSPoint] CDouble
 rulerView_locationForPointSelector = mkSelector "rulerView:locationForPoint:"
 
 -- | @Selector@ for @rulerView:pointForLocation:@
-rulerView_pointForLocationSelector :: Selector
+rulerView_pointForLocationSelector :: Selector '[Id NSRulerView, CDouble] NSPoint
 rulerView_pointForLocationSelector = mkSelector "rulerView:pointForLocation:"
 
 -- | @Selector@ for @layoutGuideForLayoutRegion:@
-layoutGuideForLayoutRegionSelector :: Selector
+layoutGuideForLayoutRegionSelector :: Selector '[Id NSViewLayoutRegion] (Id NSLayoutGuide)
 layoutGuideForLayoutRegionSelector = mkSelector "layoutGuideForLayoutRegion:"
 
 -- | @Selector@ for @edgeInsetsForLayoutRegion:@
-edgeInsetsForLayoutRegionSelector :: Selector
+edgeInsetsForLayoutRegionSelector :: Selector '[Id NSViewLayoutRegion] NSEdgeInsets
 edgeInsetsForLayoutRegionSelector = mkSelector "edgeInsetsForLayoutRegion:"
 
 -- | @Selector@ for @rectForLayoutRegion:@
-rectForLayoutRegionSelector :: Selector
+rectForLayoutRegionSelector :: Selector '[Id NSViewLayoutRegion] NSRect
 rectForLayoutRegionSelector = mkSelector "rectForLayoutRegion:"
 
 -- | @Selector@ for @addLayoutGuide:@
-addLayoutGuideSelector :: Selector
+addLayoutGuideSelector :: Selector '[Id NSLayoutGuide] ()
 addLayoutGuideSelector = mkSelector "addLayoutGuide:"
 
 -- | @Selector@ for @removeLayoutGuide:@
-removeLayoutGuideSelector :: Selector
+removeLayoutGuideSelector :: Selector '[Id NSLayoutGuide] ()
 removeLayoutGuideSelector = mkSelector "removeLayoutGuide:"
 
 -- | @Selector@ for @constraintsAffectingLayoutForOrientation:@
-constraintsAffectingLayoutForOrientationSelector :: Selector
+constraintsAffectingLayoutForOrientationSelector :: Selector '[NSLayoutConstraintOrientation] (Id NSArray)
 constraintsAffectingLayoutForOrientationSelector = mkSelector "constraintsAffectingLayoutForOrientation:"
 
 -- | @Selector@ for @exerciseAmbiguityInLayout@
-exerciseAmbiguityInLayoutSelector :: Selector
+exerciseAmbiguityInLayoutSelector :: Selector '[] ()
 exerciseAmbiguityInLayoutSelector = mkSelector "exerciseAmbiguityInLayout"
 
 -- | @Selector@ for @alignmentRectForFrame:@
-alignmentRectForFrameSelector :: Selector
+alignmentRectForFrameSelector :: Selector '[NSRect] NSRect
 alignmentRectForFrameSelector = mkSelector "alignmentRectForFrame:"
 
 -- | @Selector@ for @frameForAlignmentRect:@
-frameForAlignmentRectSelector :: Selector
+frameForAlignmentRectSelector :: Selector '[NSRect] NSRect
 frameForAlignmentRectSelector = mkSelector "frameForAlignmentRect:"
 
 -- | @Selector@ for @invalidateIntrinsicContentSize@
-invalidateIntrinsicContentSizeSelector :: Selector
+invalidateIntrinsicContentSizeSelector :: Selector '[] ()
 invalidateIntrinsicContentSizeSelector = mkSelector "invalidateIntrinsicContentSize"
 
 -- | @Selector@ for @contentHuggingPriorityForOrientation:@
-contentHuggingPriorityForOrientationSelector :: Selector
+contentHuggingPriorityForOrientationSelector :: Selector '[NSLayoutConstraintOrientation] CFloat
 contentHuggingPriorityForOrientationSelector = mkSelector "contentHuggingPriorityForOrientation:"
 
 -- | @Selector@ for @setContentHuggingPriority:forOrientation:@
-setContentHuggingPriority_forOrientationSelector :: Selector
+setContentHuggingPriority_forOrientationSelector :: Selector '[CFloat, NSLayoutConstraintOrientation] ()
 setContentHuggingPriority_forOrientationSelector = mkSelector "setContentHuggingPriority:forOrientation:"
 
 -- | @Selector@ for @contentCompressionResistancePriorityForOrientation:@
-contentCompressionResistancePriorityForOrientationSelector :: Selector
+contentCompressionResistancePriorityForOrientationSelector :: Selector '[NSLayoutConstraintOrientation] CFloat
 contentCompressionResistancePriorityForOrientationSelector = mkSelector "contentCompressionResistancePriorityForOrientation:"
 
 -- | @Selector@ for @setContentCompressionResistancePriority:forOrientation:@
-setContentCompressionResistancePriority_forOrientationSelector :: Selector
+setContentCompressionResistancePriority_forOrientationSelector :: Selector '[CFloat, NSLayoutConstraintOrientation] ()
 setContentCompressionResistancePriority_forOrientationSelector = mkSelector "setContentCompressionResistancePriority:forOrientation:"
 
 -- | @Selector@ for @updateConstraintsForSubtreeIfNeeded@
-updateConstraintsForSubtreeIfNeededSelector :: Selector
+updateConstraintsForSubtreeIfNeededSelector :: Selector '[] ()
 updateConstraintsForSubtreeIfNeededSelector = mkSelector "updateConstraintsForSubtreeIfNeeded"
 
 -- | @Selector@ for @updateConstraints@
-updateConstraintsSelector :: Selector
+updateConstraintsSelector :: Selector '[] ()
 updateConstraintsSelector = mkSelector "updateConstraints"
 
 -- | @Selector@ for @addConstraint:@
-addConstraintSelector :: Selector
+addConstraintSelector :: Selector '[Id NSLayoutConstraint] ()
 addConstraintSelector = mkSelector "addConstraint:"
 
 -- | @Selector@ for @addConstraints:@
-addConstraintsSelector :: Selector
+addConstraintsSelector :: Selector '[Id NSArray] ()
 addConstraintsSelector = mkSelector "addConstraints:"
 
 -- | @Selector@ for @removeConstraint:@
-removeConstraintSelector :: Selector
+removeConstraintSelector :: Selector '[Id NSLayoutConstraint] ()
 removeConstraintSelector = mkSelector "removeConstraint:"
 
 -- | @Selector@ for @removeConstraints:@
-removeConstraintsSelector :: Selector
+removeConstraintsSelector :: Selector '[Id NSArray] ()
 removeConstraintsSelector = mkSelector "removeConstraints:"
 
 -- | @Selector@ for @reflectScrolledClipView:@
-reflectScrolledClipViewSelector :: Selector
+reflectScrolledClipViewSelector :: Selector '[Id NSClipView] ()
 reflectScrolledClipViewSelector = mkSelector "reflectScrolledClipView:"
 
 -- | @Selector@ for @scrollClipView:toPoint:@
-scrollClipView_toPointSelector :: Selector
+scrollClipView_toPointSelector :: Selector '[Id NSClipView, NSPoint] ()
 scrollClipView_toPointSelector = mkSelector "scrollClipView:toPoint:"
 
 -- | @Selector@ for @dragImage:at:offset:event:pasteboard:source:slideBack:@
-dragImage_at_offset_event_pasteboard_source_slideBackSelector :: Selector
+dragImage_at_offset_event_pasteboard_source_slideBackSelector :: Selector '[Id NSImage, NSPoint, NSSize, Id NSEvent, Id NSPasteboard, RawId, Bool] ()
 dragImage_at_offset_event_pasteboard_source_slideBackSelector = mkSelector "dragImage:at:offset:event:pasteboard:source:slideBack:"
 
 -- | @Selector@ for @dragFile:fromRect:slideBack:event:@
-dragFile_fromRect_slideBack_eventSelector :: Selector
+dragFile_fromRect_slideBack_eventSelector :: Selector '[Id NSString, NSRect, Bool, Id NSEvent] Bool
 dragFile_fromRect_slideBack_eventSelector = mkSelector "dragFile:fromRect:slideBack:event:"
 
 -- | @Selector@ for @dragPromisedFilesOfTypes:fromRect:source:slideBack:event:@
-dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector :: Selector
+dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector :: Selector '[Id NSArray, NSRect, RawId, Bool, Id NSEvent] Bool
 dragPromisedFilesOfTypes_fromRect_source_slideBack_eventSelector = mkSelector "dragPromisedFilesOfTypes:fromRect:source:slideBack:event:"
 
 -- | @Selector@ for @convertPointToBase:@
-convertPointToBaseSelector :: Selector
+convertPointToBaseSelector :: Selector '[NSPoint] NSPoint
 convertPointToBaseSelector = mkSelector "convertPointToBase:"
 
 -- | @Selector@ for @convertPointFromBase:@
-convertPointFromBaseSelector :: Selector
+convertPointFromBaseSelector :: Selector '[NSPoint] NSPoint
 convertPointFromBaseSelector = mkSelector "convertPointFromBase:"
 
 -- | @Selector@ for @convertSizeToBase:@
-convertSizeToBaseSelector :: Selector
+convertSizeToBaseSelector :: Selector '[NSSize] NSSize
 convertSizeToBaseSelector = mkSelector "convertSizeToBase:"
 
 -- | @Selector@ for @convertSizeFromBase:@
-convertSizeFromBaseSelector :: Selector
+convertSizeFromBaseSelector :: Selector '[NSSize] NSSize
 convertSizeFromBaseSelector = mkSelector "convertSizeFromBase:"
 
 -- | @Selector@ for @convertRectToBase:@
-convertRectToBaseSelector :: Selector
+convertRectToBaseSelector :: Selector '[NSRect] NSRect
 convertRectToBaseSelector = mkSelector "convertRectToBase:"
 
 -- | @Selector@ for @convertRectFromBase:@
-convertRectFromBaseSelector :: Selector
+convertRectFromBaseSelector :: Selector '[NSRect] NSRect
 convertRectFromBaseSelector = mkSelector "convertRectFromBase:"
 
 -- | @Selector@ for @performMnemonic:@
-performMnemonicSelector :: Selector
+performMnemonicSelector :: Selector '[Id NSString] Bool
 performMnemonicSelector = mkSelector "performMnemonic:"
 
 -- | @Selector@ for @shouldDrawColor@
-shouldDrawColorSelector :: Selector
+shouldDrawColorSelector :: Selector '[] Bool
 shouldDrawColorSelector = mkSelector "shouldDrawColor"
 
 -- | @Selector@ for @gState@
-gStateSelector :: Selector
+gStateSelector :: Selector '[] CLong
 gStateSelector = mkSelector "gState"
 
 -- | @Selector@ for @allocateGState@
-allocateGStateSelector :: Selector
+allocateGStateSelector :: Selector '[] ()
 allocateGStateSelector = mkSelector "allocateGState"
 
 -- | @Selector@ for @releaseGState@
-releaseGStateSelector :: Selector
+releaseGStateSelector :: Selector '[] ()
 releaseGStateSelector = mkSelector "releaseGState"
 
 -- | @Selector@ for @setUpGState@
-setUpGStateSelector :: Selector
+setUpGStateSelector :: Selector '[] ()
 setUpGStateSelector = mkSelector "setUpGState"
 
 -- | @Selector@ for @renewGState@
-renewGStateSelector :: Selector
+renewGStateSelector :: Selector '[] ()
 renewGStateSelector = mkSelector "renewGState"
 
 -- | @Selector@ for @displayLinkWithTarget:selector:@
-displayLinkWithTarget_selectorSelector :: Selector
+displayLinkWithTarget_selectorSelector :: Selector '[RawId, Sel] (Id CADisplayLink)
 displayLinkWithTarget_selectorSelector = mkSelector "displayLinkWithTarget:selector:"
 
 -- | @Selector@ for @addTrackingArea:@
-addTrackingAreaSelector :: Selector
+addTrackingAreaSelector :: Selector '[Id NSTrackingArea] ()
 addTrackingAreaSelector = mkSelector "addTrackingArea:"
 
 -- | @Selector@ for @removeTrackingArea:@
-removeTrackingAreaSelector :: Selector
+removeTrackingAreaSelector :: Selector '[Id NSTrackingArea] ()
 removeTrackingAreaSelector = mkSelector "removeTrackingArea:"
 
 -- | @Selector@ for @updateTrackingAreas@
-updateTrackingAreasSelector :: Selector
+updateTrackingAreasSelector :: Selector '[] ()
 updateTrackingAreasSelector = mkSelector "updateTrackingAreas"
 
 -- | @Selector@ for @addCursorRect:cursor:@
-addCursorRect_cursorSelector :: Selector
+addCursorRect_cursorSelector :: Selector '[NSRect, Id NSCursor] ()
 addCursorRect_cursorSelector = mkSelector "addCursorRect:cursor:"
 
 -- | @Selector@ for @removeCursorRect:cursor:@
-removeCursorRect_cursorSelector :: Selector
+removeCursorRect_cursorSelector :: Selector '[NSRect, Id NSCursor] ()
 removeCursorRect_cursorSelector = mkSelector "removeCursorRect:cursor:"
 
 -- | @Selector@ for @discardCursorRects@
-discardCursorRectsSelector :: Selector
+discardCursorRectsSelector :: Selector '[] ()
 discardCursorRectsSelector = mkSelector "discardCursorRects"
 
 -- | @Selector@ for @resetCursorRects@
-resetCursorRectsSelector :: Selector
+resetCursorRectsSelector :: Selector '[] ()
 resetCursorRectsSelector = mkSelector "resetCursorRects"
 
 -- | @Selector@ for @addTrackingRect:owner:userData:assumeInside:@
-addTrackingRect_owner_userData_assumeInsideSelector :: Selector
+addTrackingRect_owner_userData_assumeInsideSelector :: Selector '[NSRect, RawId, Ptr (), Bool] CLong
 addTrackingRect_owner_userData_assumeInsideSelector = mkSelector "addTrackingRect:owner:userData:assumeInside:"
 
 -- | @Selector@ for @removeTrackingRect:@
-removeTrackingRectSelector :: Selector
+removeTrackingRectSelector :: Selector '[CLong] ()
 removeTrackingRectSelector = mkSelector "removeTrackingRect:"
 
 -- | @Selector@ for @addGestureRecognizer:@
-addGestureRecognizerSelector :: Selector
+addGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] ()
 addGestureRecognizerSelector = mkSelector "addGestureRecognizer:"
 
 -- | @Selector@ for @removeGestureRecognizer:@
-removeGestureRecognizerSelector :: Selector
+removeGestureRecognizerSelector :: Selector '[Id NSGestureRecognizer] ()
 removeGestureRecognizerSelector = mkSelector "removeGestureRecognizer:"
 
 -- | @Selector@ for @showDefinitionForAttributedString:atPoint:@
-showDefinitionForAttributedString_atPointSelector :: Selector
+showDefinitionForAttributedString_atPointSelector :: Selector '[Id NSAttributedString, NSPoint] ()
 showDefinitionForAttributedString_atPointSelector = mkSelector "showDefinitionForAttributedString:atPoint:"
 
 -- | @Selector@ for @showDefinitionForAttributedString:range:options:baselineOriginProvider:@
-showDefinitionForAttributedString_range_options_baselineOriginProviderSelector :: Selector
+showDefinitionForAttributedString_range_options_baselineOriginProviderSelector :: Selector '[Id NSAttributedString, NSRange, Id NSDictionary, Ptr ()] ()
 showDefinitionForAttributedString_range_options_baselineOriginProviderSelector = mkSelector "showDefinitionForAttributedString:range:options:baselineOriginProvider:"
 
 -- | @Selector@ for @enterFullScreenMode:withOptions:@
-enterFullScreenMode_withOptionsSelector :: Selector
+enterFullScreenMode_withOptionsSelector :: Selector '[Id NSScreen, Id NSDictionary] Bool
 enterFullScreenMode_withOptionsSelector = mkSelector "enterFullScreenMode:withOptions:"
 
 -- | @Selector@ for @exitFullScreenModeWithOptions:@
-exitFullScreenModeWithOptionsSelector :: Selector
+exitFullScreenModeWithOptionsSelector :: Selector '[Id NSDictionary] ()
 exitFullScreenModeWithOptionsSelector = mkSelector "exitFullScreenModeWithOptions:"
 
 -- | @Selector@ for @beginDraggingSessionWithItems:event:source:@
-beginDraggingSessionWithItems_event_sourceSelector :: Selector
+beginDraggingSessionWithItems_event_sourceSelector :: Selector '[Id NSArray, Id NSEvent, RawId] (Id NSDraggingSession)
 beginDraggingSessionWithItems_event_sourceSelector = mkSelector "beginDraggingSessionWithItems:event:source:"
 
 -- | @Selector@ for @registerForDraggedTypes:@
-registerForDraggedTypesSelector :: Selector
+registerForDraggedTypesSelector :: Selector '[Id NSArray] ()
 registerForDraggedTypesSelector = mkSelector "registerForDraggedTypes:"
 
 -- | @Selector@ for @unregisterDraggedTypes@
-unregisterDraggedTypesSelector :: Selector
+unregisterDraggedTypesSelector :: Selector '[] ()
 unregisterDraggedTypesSelector = mkSelector "unregisterDraggedTypes"
 
 -- | @Selector@ for @writeEPSInsideRect:toPasteboard:@
-writeEPSInsideRect_toPasteboardSelector :: Selector
+writeEPSInsideRect_toPasteboardSelector :: Selector '[NSRect, Id NSPasteboard] ()
 writeEPSInsideRect_toPasteboardSelector = mkSelector "writeEPSInsideRect:toPasteboard:"
 
 -- | @Selector@ for @dataWithEPSInsideRect:@
-dataWithEPSInsideRectSelector :: Selector
+dataWithEPSInsideRectSelector :: Selector '[NSRect] (Id NSData)
 dataWithEPSInsideRectSelector = mkSelector "dataWithEPSInsideRect:"
 
 -- | @Selector@ for @writePDFInsideRect:toPasteboard:@
-writePDFInsideRect_toPasteboardSelector :: Selector
+writePDFInsideRect_toPasteboardSelector :: Selector '[NSRect, Id NSPasteboard] ()
 writePDFInsideRect_toPasteboardSelector = mkSelector "writePDFInsideRect:toPasteboard:"
 
 -- | @Selector@ for @dataWithPDFInsideRect:@
-dataWithPDFInsideRectSelector :: Selector
+dataWithPDFInsideRectSelector :: Selector '[NSRect] (Id NSData)
 dataWithPDFInsideRectSelector = mkSelector "dataWithPDFInsideRect:"
 
 -- | @Selector@ for @print:@
-printSelector :: Selector
+printSelector :: Selector '[RawId] ()
 printSelector = mkSelector "print:"
 
 -- | @Selector@ for @knowsPageRange:@
-knowsPageRangeSelector :: Selector
+knowsPageRangeSelector :: Selector '[Ptr NSRange] Bool
 knowsPageRangeSelector = mkSelector "knowsPageRange:"
 
 -- | @Selector@ for @adjustPageWidthNew:left:right:limit:@
-adjustPageWidthNew_left_right_limitSelector :: Selector
+adjustPageWidthNew_left_right_limitSelector :: Selector '[Ptr CDouble, CDouble, CDouble, CDouble] ()
 adjustPageWidthNew_left_right_limitSelector = mkSelector "adjustPageWidthNew:left:right:limit:"
 
 -- | @Selector@ for @adjustPageHeightNew:top:bottom:limit:@
-adjustPageHeightNew_top_bottom_limitSelector :: Selector
+adjustPageHeightNew_top_bottom_limitSelector :: Selector '[Ptr CDouble, CDouble, CDouble, CDouble] ()
 adjustPageHeightNew_top_bottom_limitSelector = mkSelector "adjustPageHeightNew:top:bottom:limit:"
 
 -- | @Selector@ for @rectForPage:@
-rectForPageSelector :: Selector
+rectForPageSelector :: Selector '[CLong] NSRect
 rectForPageSelector = mkSelector "rectForPage:"
 
 -- | @Selector@ for @locationOfPrintRect:@
-locationOfPrintRectSelector :: Selector
+locationOfPrintRectSelector :: Selector '[NSRect] NSPoint
 locationOfPrintRectSelector = mkSelector "locationOfPrintRect:"
 
 -- | @Selector@ for @drawPageBorderWithSize:@
-drawPageBorderWithSizeSelector :: Selector
+drawPageBorderWithSizeSelector :: Selector '[NSSize] ()
 drawPageBorderWithSizeSelector = mkSelector "drawPageBorderWithSize:"
 
 -- | @Selector@ for @drawSheetBorderWithSize:@
-drawSheetBorderWithSizeSelector :: Selector
+drawSheetBorderWithSizeSelector :: Selector '[NSSize] ()
 drawSheetBorderWithSizeSelector = mkSelector "drawSheetBorderWithSize:"
 
 -- | @Selector@ for @beginDocument@
-beginDocumentSelector :: Selector
+beginDocumentSelector :: Selector '[] ()
 beginDocumentSelector = mkSelector "beginDocument"
 
 -- | @Selector@ for @endDocument@
-endDocumentSelector :: Selector
+endDocumentSelector :: Selector '[] ()
 endDocumentSelector = mkSelector "endDocument"
 
 -- | @Selector@ for @beginPageInRect:atPlacement:@
-beginPageInRect_atPlacementSelector :: Selector
+beginPageInRect_atPlacementSelector :: Selector '[NSRect, NSPoint] ()
 beginPageInRect_atPlacementSelector = mkSelector "beginPageInRect:atPlacement:"
 
 -- | @Selector@ for @endPage@
-endPageSelector :: Selector
+endPageSelector :: Selector '[] ()
 endPageSelector = mkSelector "endPage"
 
 -- | @Selector@ for @setKeyboardFocusRingNeedsDisplayInRect:@
-setKeyboardFocusRingNeedsDisplayInRectSelector :: Selector
+setKeyboardFocusRingNeedsDisplayInRectSelector :: Selector '[NSRect] ()
 setKeyboardFocusRingNeedsDisplayInRectSelector = mkSelector "setKeyboardFocusRingNeedsDisplayInRect:"
 
 -- | @Selector@ for @drawFocusRingMask@
-drawFocusRingMaskSelector :: Selector
+drawFocusRingMaskSelector :: Selector '[] ()
 drawFocusRingMaskSelector = mkSelector "drawFocusRingMask"
 
 -- | @Selector@ for @noteFocusRingMaskChanged@
-noteFocusRingMaskChangedSelector :: Selector
+noteFocusRingMaskChangedSelector :: Selector '[] ()
 noteFocusRingMaskChangedSelector = mkSelector "noteFocusRingMaskChanged"
 
 -- | @Selector@ for @window@
-windowSelector :: Selector
+windowSelector :: Selector '[] (Id NSWindow)
 windowSelector = mkSelector "window"
 
 -- | @Selector@ for @superview@
-superviewSelector :: Selector
+superviewSelector :: Selector '[] (Id NSView)
 superviewSelector = mkSelector "superview"
 
 -- | @Selector@ for @subviews@
-subviewsSelector :: Selector
+subviewsSelector :: Selector '[] (Id NSArray)
 subviewsSelector = mkSelector "subviews"
 
 -- | @Selector@ for @setSubviews:@
-setSubviewsSelector :: Selector
+setSubviewsSelector :: Selector '[Id NSArray] ()
 setSubviewsSelector = mkSelector "setSubviews:"
 
 -- | @Selector@ for @opaqueAncestor@
-opaqueAncestorSelector :: Selector
+opaqueAncestorSelector :: Selector '[] (Id NSView)
 opaqueAncestorSelector = mkSelector "opaqueAncestor"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @hiddenOrHasHiddenAncestor@
-hiddenOrHasHiddenAncestorSelector :: Selector
+hiddenOrHasHiddenAncestorSelector :: Selector '[] Bool
 hiddenOrHasHiddenAncestorSelector = mkSelector "hiddenOrHasHiddenAncestor"
 
 -- | @Selector@ for @wantsDefaultClipping@
-wantsDefaultClippingSelector :: Selector
+wantsDefaultClippingSelector :: Selector '[] Bool
 wantsDefaultClippingSelector = mkSelector "wantsDefaultClipping"
 
 -- | @Selector@ for @postsFrameChangedNotifications@
-postsFrameChangedNotificationsSelector :: Selector
+postsFrameChangedNotificationsSelector :: Selector '[] Bool
 postsFrameChangedNotificationsSelector = mkSelector "postsFrameChangedNotifications"
 
 -- | @Selector@ for @setPostsFrameChangedNotifications:@
-setPostsFrameChangedNotificationsSelector :: Selector
+setPostsFrameChangedNotificationsSelector :: Selector '[Bool] ()
 setPostsFrameChangedNotificationsSelector = mkSelector "setPostsFrameChangedNotifications:"
 
 -- | @Selector@ for @autoresizesSubviews@
-autoresizesSubviewsSelector :: Selector
+autoresizesSubviewsSelector :: Selector '[] Bool
 autoresizesSubviewsSelector = mkSelector "autoresizesSubviews"
 
 -- | @Selector@ for @setAutoresizesSubviews:@
-setAutoresizesSubviewsSelector :: Selector
+setAutoresizesSubviewsSelector :: Selector '[Bool] ()
 setAutoresizesSubviewsSelector = mkSelector "setAutoresizesSubviews:"
 
 -- | @Selector@ for @autoresizingMask@
-autoresizingMaskSelector :: Selector
+autoresizingMaskSelector :: Selector '[] NSAutoresizingMaskOptions
 autoresizingMaskSelector = mkSelector "autoresizingMask"
 
 -- | @Selector@ for @setAutoresizingMask:@
-setAutoresizingMaskSelector :: Selector
+setAutoresizingMaskSelector :: Selector '[NSAutoresizingMaskOptions] ()
 setAutoresizingMaskSelector = mkSelector "setAutoresizingMask:"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @setFrame:@
-setFrameSelector :: Selector
+setFrameSelector :: Selector '[NSRect] ()
 setFrameSelector = mkSelector "setFrame:"
 
 -- | @Selector@ for @frameRotation@
-frameRotationSelector :: Selector
+frameRotationSelector :: Selector '[] CDouble
 frameRotationSelector = mkSelector "frameRotation"
 
 -- | @Selector@ for @setFrameRotation:@
-setFrameRotationSelector :: Selector
+setFrameRotationSelector :: Selector '[CDouble] ()
 setFrameRotationSelector = mkSelector "setFrameRotation:"
 
 -- | @Selector@ for @frameCenterRotation@
-frameCenterRotationSelector :: Selector
+frameCenterRotationSelector :: Selector '[] CDouble
 frameCenterRotationSelector = mkSelector "frameCenterRotation"
 
 -- | @Selector@ for @setFrameCenterRotation:@
-setFrameCenterRotationSelector :: Selector
+setFrameCenterRotationSelector :: Selector '[CDouble] ()
 setFrameCenterRotationSelector = mkSelector "setFrameCenterRotation:"
 
 -- | @Selector@ for @boundsRotation@
-boundsRotationSelector :: Selector
+boundsRotationSelector :: Selector '[] CDouble
 boundsRotationSelector = mkSelector "boundsRotation"
 
 -- | @Selector@ for @setBoundsRotation:@
-setBoundsRotationSelector :: Selector
+setBoundsRotationSelector :: Selector '[CDouble] ()
 setBoundsRotationSelector = mkSelector "setBoundsRotation:"
 
 -- | @Selector@ for @bounds@
-boundsSelector :: Selector
+boundsSelector :: Selector '[] NSRect
 boundsSelector = mkSelector "bounds"
 
 -- | @Selector@ for @setBounds:@
-setBoundsSelector :: Selector
+setBoundsSelector :: Selector '[NSRect] ()
 setBoundsSelector = mkSelector "setBounds:"
 
 -- | @Selector@ for @flipped@
-flippedSelector :: Selector
+flippedSelector :: Selector '[] Bool
 flippedSelector = mkSelector "flipped"
 
 -- | @Selector@ for @rotatedFromBase@
-rotatedFromBaseSelector :: Selector
+rotatedFromBaseSelector :: Selector '[] Bool
 rotatedFromBaseSelector = mkSelector "rotatedFromBase"
 
 -- | @Selector@ for @rotatedOrScaledFromBase@
-rotatedOrScaledFromBaseSelector :: Selector
+rotatedOrScaledFromBaseSelector :: Selector '[] Bool
 rotatedOrScaledFromBaseSelector = mkSelector "rotatedOrScaledFromBase"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @canDrawConcurrently@
-canDrawConcurrentlySelector :: Selector
+canDrawConcurrentlySelector :: Selector '[] Bool
 canDrawConcurrentlySelector = mkSelector "canDrawConcurrently"
 
 -- | @Selector@ for @setCanDrawConcurrently:@
-setCanDrawConcurrentlySelector :: Selector
+setCanDrawConcurrentlySelector :: Selector '[Bool] ()
 setCanDrawConcurrentlySelector = mkSelector "setCanDrawConcurrently:"
 
 -- | @Selector@ for @canDraw@
-canDrawSelector :: Selector
+canDrawSelector :: Selector '[] Bool
 canDrawSelector = mkSelector "canDraw"
 
 -- | @Selector@ for @needsDisplay@
-needsDisplaySelector :: Selector
+needsDisplaySelector :: Selector '[] Bool
 needsDisplaySelector = mkSelector "needsDisplay"
 
 -- | @Selector@ for @setNeedsDisplay:@
-setNeedsDisplaySelector :: Selector
+setNeedsDisplaySelector :: Selector '[Bool] ()
 setNeedsDisplaySelector = mkSelector "setNeedsDisplay:"
 
 -- | @Selector@ for @focusView@
-focusViewSelector :: Selector
+focusViewSelector :: Selector '[] (Id NSView)
 focusViewSelector = mkSelector "focusView"
 
 -- | @Selector@ for @visibleRect@
-visibleRectSelector :: Selector
+visibleRectSelector :: Selector '[] NSRect
 visibleRectSelector = mkSelector "visibleRect"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] CLong
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @needsPanelToBecomeKey@
-needsPanelToBecomeKeySelector :: Selector
+needsPanelToBecomeKeySelector :: Selector '[] Bool
 needsPanelToBecomeKeySelector = mkSelector "needsPanelToBecomeKey"
 
 -- | @Selector@ for @mouseDownCanMoveWindow@
-mouseDownCanMoveWindowSelector :: Selector
+mouseDownCanMoveWindowSelector :: Selector '[] Bool
 mouseDownCanMoveWindowSelector = mkSelector "mouseDownCanMoveWindow"
 
 -- | @Selector@ for @acceptsTouchEvents@
-acceptsTouchEventsSelector :: Selector
+acceptsTouchEventsSelector :: Selector '[] Bool
 acceptsTouchEventsSelector = mkSelector "acceptsTouchEvents"
 
 -- | @Selector@ for @setAcceptsTouchEvents:@
-setAcceptsTouchEventsSelector :: Selector
+setAcceptsTouchEventsSelector :: Selector '[Bool] ()
 setAcceptsTouchEventsSelector = mkSelector "setAcceptsTouchEvents:"
 
 -- | @Selector@ for @wantsRestingTouches@
-wantsRestingTouchesSelector :: Selector
+wantsRestingTouchesSelector :: Selector '[] Bool
 wantsRestingTouchesSelector = mkSelector "wantsRestingTouches"
 
 -- | @Selector@ for @setWantsRestingTouches:@
-setWantsRestingTouchesSelector :: Selector
+setWantsRestingTouchesSelector :: Selector '[Bool] ()
 setWantsRestingTouchesSelector = mkSelector "setWantsRestingTouches:"
 
 -- | @Selector@ for @layerContentsRedrawPolicy@
-layerContentsRedrawPolicySelector :: Selector
+layerContentsRedrawPolicySelector :: Selector '[] NSViewLayerContentsRedrawPolicy
 layerContentsRedrawPolicySelector = mkSelector "layerContentsRedrawPolicy"
 
 -- | @Selector@ for @setLayerContentsRedrawPolicy:@
-setLayerContentsRedrawPolicySelector :: Selector
+setLayerContentsRedrawPolicySelector :: Selector '[NSViewLayerContentsRedrawPolicy] ()
 setLayerContentsRedrawPolicySelector = mkSelector "setLayerContentsRedrawPolicy:"
 
 -- | @Selector@ for @layerContentsPlacement@
-layerContentsPlacementSelector :: Selector
+layerContentsPlacementSelector :: Selector '[] NSViewLayerContentsPlacement
 layerContentsPlacementSelector = mkSelector "layerContentsPlacement"
 
 -- | @Selector@ for @setLayerContentsPlacement:@
-setLayerContentsPlacementSelector :: Selector
+setLayerContentsPlacementSelector :: Selector '[NSViewLayerContentsPlacement] ()
 setLayerContentsPlacementSelector = mkSelector "setLayerContentsPlacement:"
 
 -- | @Selector@ for @wantsLayer@
-wantsLayerSelector :: Selector
+wantsLayerSelector :: Selector '[] Bool
 wantsLayerSelector = mkSelector "wantsLayer"
 
 -- | @Selector@ for @setWantsLayer:@
-setWantsLayerSelector :: Selector
+setWantsLayerSelector :: Selector '[Bool] ()
 setWantsLayerSelector = mkSelector "setWantsLayer:"
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] (Id CALayer)
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @setLayer:@
-setLayerSelector :: Selector
+setLayerSelector :: Selector '[Id CALayer] ()
 setLayerSelector = mkSelector "setLayer:"
 
 -- | @Selector@ for @wantsUpdateLayer@
-wantsUpdateLayerSelector :: Selector
+wantsUpdateLayerSelector :: Selector '[] Bool
 wantsUpdateLayerSelector = mkSelector "wantsUpdateLayer"
 
 -- | @Selector@ for @canDrawSubviewsIntoLayer@
-canDrawSubviewsIntoLayerSelector :: Selector
+canDrawSubviewsIntoLayerSelector :: Selector '[] Bool
 canDrawSubviewsIntoLayerSelector = mkSelector "canDrawSubviewsIntoLayer"
 
 -- | @Selector@ for @setCanDrawSubviewsIntoLayer:@
-setCanDrawSubviewsIntoLayerSelector :: Selector
+setCanDrawSubviewsIntoLayerSelector :: Selector '[Bool] ()
 setCanDrawSubviewsIntoLayerSelector = mkSelector "setCanDrawSubviewsIntoLayer:"
 
 -- | @Selector@ for @needsLayout@
-needsLayoutSelector :: Selector
+needsLayoutSelector :: Selector '[] Bool
 needsLayoutSelector = mkSelector "needsLayout"
 
 -- | @Selector@ for @setNeedsLayout:@
-setNeedsLayoutSelector :: Selector
+setNeedsLayoutSelector :: Selector '[Bool] ()
 setNeedsLayoutSelector = mkSelector "setNeedsLayout:"
 
 -- | @Selector@ for @alphaValue@
-alphaValueSelector :: Selector
+alphaValueSelector :: Selector '[] CDouble
 alphaValueSelector = mkSelector "alphaValue"
 
 -- | @Selector@ for @setAlphaValue:@
-setAlphaValueSelector :: Selector
+setAlphaValueSelector :: Selector '[CDouble] ()
 setAlphaValueSelector = mkSelector "setAlphaValue:"
 
 -- | @Selector@ for @layerUsesCoreImageFilters@
-layerUsesCoreImageFiltersSelector :: Selector
+layerUsesCoreImageFiltersSelector :: Selector '[] Bool
 layerUsesCoreImageFiltersSelector = mkSelector "layerUsesCoreImageFilters"
 
 -- | @Selector@ for @setLayerUsesCoreImageFilters:@
-setLayerUsesCoreImageFiltersSelector :: Selector
+setLayerUsesCoreImageFiltersSelector :: Selector '[Bool] ()
 setLayerUsesCoreImageFiltersSelector = mkSelector "setLayerUsesCoreImageFilters:"
 
 -- | @Selector@ for @backgroundFilters@
-backgroundFiltersSelector :: Selector
+backgroundFiltersSelector :: Selector '[] (Id NSArray)
 backgroundFiltersSelector = mkSelector "backgroundFilters"
 
 -- | @Selector@ for @setBackgroundFilters:@
-setBackgroundFiltersSelector :: Selector
+setBackgroundFiltersSelector :: Selector '[Id NSArray] ()
 setBackgroundFiltersSelector = mkSelector "setBackgroundFilters:"
 
 -- | @Selector@ for @compositingFilter@
-compositingFilterSelector :: Selector
+compositingFilterSelector :: Selector '[] (Id CIFilter)
 compositingFilterSelector = mkSelector "compositingFilter"
 
 -- | @Selector@ for @setCompositingFilter:@
-setCompositingFilterSelector :: Selector
+setCompositingFilterSelector :: Selector '[Id CIFilter] ()
 setCompositingFilterSelector = mkSelector "setCompositingFilter:"
 
 -- | @Selector@ for @contentFilters@
-contentFiltersSelector :: Selector
+contentFiltersSelector :: Selector '[] (Id NSArray)
 contentFiltersSelector = mkSelector "contentFilters"
 
 -- | @Selector@ for @setContentFilters:@
-setContentFiltersSelector :: Selector
+setContentFiltersSelector :: Selector '[Id NSArray] ()
 setContentFiltersSelector = mkSelector "setContentFilters:"
 
 -- | @Selector@ for @shadow@
-shadowSelector :: Selector
+shadowSelector :: Selector '[] (Id NSShadow)
 shadowSelector = mkSelector "shadow"
 
 -- | @Selector@ for @setShadow:@
-setShadowSelector :: Selector
+setShadowSelector :: Selector '[Id NSShadow] ()
 setShadowSelector = mkSelector "setShadow:"
 
 -- | @Selector@ for @clipsToBounds@
-clipsToBoundsSelector :: Selector
+clipsToBoundsSelector :: Selector '[] Bool
 clipsToBoundsSelector = mkSelector "clipsToBounds"
 
 -- | @Selector@ for @setClipsToBounds:@
-setClipsToBoundsSelector :: Selector
+setClipsToBoundsSelector :: Selector '[Bool] ()
 setClipsToBoundsSelector = mkSelector "setClipsToBounds:"
 
 -- | @Selector@ for @postsBoundsChangedNotifications@
-postsBoundsChangedNotificationsSelector :: Selector
+postsBoundsChangedNotificationsSelector :: Selector '[] Bool
 postsBoundsChangedNotificationsSelector = mkSelector "postsBoundsChangedNotifications"
 
 -- | @Selector@ for @setPostsBoundsChangedNotifications:@
-setPostsBoundsChangedNotificationsSelector :: Selector
+setPostsBoundsChangedNotificationsSelector :: Selector '[Bool] ()
 setPostsBoundsChangedNotificationsSelector = mkSelector "setPostsBoundsChangedNotifications:"
 
 -- | @Selector@ for @enclosingScrollView@
-enclosingScrollViewSelector :: Selector
+enclosingScrollViewSelector :: Selector '[] (Id NSScrollView)
 enclosingScrollViewSelector = mkSelector "enclosingScrollView"
 
 -- | @Selector@ for @defaultMenu@
-defaultMenuSelector :: Selector
+defaultMenuSelector :: Selector '[] (Id NSMenu)
 defaultMenuSelector = mkSelector "defaultMenu"
 
 -- | @Selector@ for @toolTip@
-toolTipSelector :: Selector
+toolTipSelector :: Selector '[] (Id NSString)
 toolTipSelector = mkSelector "toolTip"
 
 -- | @Selector@ for @setToolTip:@
-setToolTipSelector :: Selector
+setToolTipSelector :: Selector '[Id NSString] ()
 setToolTipSelector = mkSelector "setToolTip:"
 
 -- | @Selector@ for @inLiveResize@
-inLiveResizeSelector :: Selector
+inLiveResizeSelector :: Selector '[] Bool
 inLiveResizeSelector = mkSelector "inLiveResize"
 
 -- | @Selector@ for @preservesContentDuringLiveResize@
-preservesContentDuringLiveResizeSelector :: Selector
+preservesContentDuringLiveResizeSelector :: Selector '[] Bool
 preservesContentDuringLiveResizeSelector = mkSelector "preservesContentDuringLiveResize"
 
 -- | @Selector@ for @rectPreservedDuringLiveResize@
-rectPreservedDuringLiveResizeSelector :: Selector
+rectPreservedDuringLiveResizeSelector :: Selector '[] NSRect
 rectPreservedDuringLiveResizeSelector = mkSelector "rectPreservedDuringLiveResize"
 
 -- | @Selector@ for @inputContext@
-inputContextSelector :: Selector
+inputContextSelector :: Selector '[] (Id NSTextInputContext)
 inputContextSelector = mkSelector "inputContext"
 
 -- | @Selector@ for @userInterfaceLayoutDirection@
-userInterfaceLayoutDirectionSelector :: Selector
+userInterfaceLayoutDirectionSelector :: Selector '[] NSUserInterfaceLayoutDirection
 userInterfaceLayoutDirectionSelector = mkSelector "userInterfaceLayoutDirection"
 
 -- | @Selector@ for @setUserInterfaceLayoutDirection:@
-setUserInterfaceLayoutDirectionSelector :: Selector
+setUserInterfaceLayoutDirectionSelector :: Selector '[NSUserInterfaceLayoutDirection] ()
 setUserInterfaceLayoutDirectionSelector = mkSelector "setUserInterfaceLayoutDirection:"
 
 -- | @Selector@ for @compatibleWithResponsiveScrolling@
-compatibleWithResponsiveScrollingSelector :: Selector
+compatibleWithResponsiveScrollingSelector :: Selector '[] Bool
 compatibleWithResponsiveScrollingSelector = mkSelector "compatibleWithResponsiveScrolling"
 
 -- | @Selector@ for @preparedContentRect@
-preparedContentRectSelector :: Selector
+preparedContentRectSelector :: Selector '[] NSRect
 preparedContentRectSelector = mkSelector "preparedContentRect"
 
 -- | @Selector@ for @setPreparedContentRect:@
-setPreparedContentRectSelector :: Selector
+setPreparedContentRectSelector :: Selector '[NSRect] ()
 setPreparedContentRectSelector = mkSelector "setPreparedContentRect:"
 
 -- | @Selector@ for @allowsVibrancy@
-allowsVibrancySelector :: Selector
+allowsVibrancySelector :: Selector '[] Bool
 allowsVibrancySelector = mkSelector "allowsVibrancy"
 
 -- | @Selector@ for @pressureConfiguration@
-pressureConfigurationSelector :: Selector
+pressureConfigurationSelector :: Selector '[] (Id NSPressureConfiguration)
 pressureConfigurationSelector = mkSelector "pressureConfiguration"
 
 -- | @Selector@ for @setPressureConfiguration:@
-setPressureConfigurationSelector :: Selector
+setPressureConfigurationSelector :: Selector '[Id NSPressureConfiguration] ()
 setPressureConfigurationSelector = mkSelector "setPressureConfiguration:"
 
 -- | @Selector@ for @wantsExtendedDynamicRangeOpenGLSurface@
-wantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector
+wantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector '[] Bool
 wantsExtendedDynamicRangeOpenGLSurfaceSelector = mkSelector "wantsExtendedDynamicRangeOpenGLSurface"
 
 -- | @Selector@ for @setWantsExtendedDynamicRangeOpenGLSurface:@
-setWantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector
+setWantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector '[Bool] ()
 setWantsExtendedDynamicRangeOpenGLSurfaceSelector = mkSelector "setWantsExtendedDynamicRangeOpenGLSurface:"
 
 -- | @Selector@ for @wantsBestResolutionOpenGLSurface@
-wantsBestResolutionOpenGLSurfaceSelector :: Selector
+wantsBestResolutionOpenGLSurfaceSelector :: Selector '[] Bool
 wantsBestResolutionOpenGLSurfaceSelector = mkSelector "wantsBestResolutionOpenGLSurface"
 
 -- | @Selector@ for @setWantsBestResolutionOpenGLSurface:@
-setWantsBestResolutionOpenGLSurfaceSelector :: Selector
+setWantsBestResolutionOpenGLSurfaceSelector :: Selector '[Bool] ()
 setWantsBestResolutionOpenGLSurfaceSelector = mkSelector "setWantsBestResolutionOpenGLSurface:"
 
 -- | @Selector@ for @layoutGuides@
-layoutGuidesSelector :: Selector
+layoutGuidesSelector :: Selector '[] (Id NSArray)
 layoutGuidesSelector = mkSelector "layoutGuides"
 
 -- | @Selector@ for @hasAmbiguousLayout@
-hasAmbiguousLayoutSelector :: Selector
+hasAmbiguousLayoutSelector :: Selector '[] Bool
 hasAmbiguousLayoutSelector = mkSelector "hasAmbiguousLayout"
 
 -- | @Selector@ for @fittingSize@
-fittingSizeSelector :: Selector
+fittingSizeSelector :: Selector '[] NSSize
 fittingSizeSelector = mkSelector "fittingSize"
 
 -- | @Selector@ for @alignmentRectInsets@
-alignmentRectInsetsSelector :: Selector
+alignmentRectInsetsSelector :: Selector '[] NSEdgeInsets
 alignmentRectInsetsSelector = mkSelector "alignmentRectInsets"
 
 -- | @Selector@ for @firstBaselineOffsetFromTop@
-firstBaselineOffsetFromTopSelector :: Selector
+firstBaselineOffsetFromTopSelector :: Selector '[] CDouble
 firstBaselineOffsetFromTopSelector = mkSelector "firstBaselineOffsetFromTop"
 
 -- | @Selector@ for @lastBaselineOffsetFromBottom@
-lastBaselineOffsetFromBottomSelector :: Selector
+lastBaselineOffsetFromBottomSelector :: Selector '[] CDouble
 lastBaselineOffsetFromBottomSelector = mkSelector "lastBaselineOffsetFromBottom"
 
 -- | @Selector@ for @baselineOffsetFromBottom@
-baselineOffsetFromBottomSelector :: Selector
+baselineOffsetFromBottomSelector :: Selector '[] CDouble
 baselineOffsetFromBottomSelector = mkSelector "baselineOffsetFromBottom"
 
 -- | @Selector@ for @intrinsicContentSize@
-intrinsicContentSizeSelector :: Selector
+intrinsicContentSizeSelector :: Selector '[] NSSize
 intrinsicContentSizeSelector = mkSelector "intrinsicContentSize"
 
 -- | @Selector@ for @horizontalContentSizeConstraintActive@
-horizontalContentSizeConstraintActiveSelector :: Selector
+horizontalContentSizeConstraintActiveSelector :: Selector '[] Bool
 horizontalContentSizeConstraintActiveSelector = mkSelector "horizontalContentSizeConstraintActive"
 
 -- | @Selector@ for @setHorizontalContentSizeConstraintActive:@
-setHorizontalContentSizeConstraintActiveSelector :: Selector
+setHorizontalContentSizeConstraintActiveSelector :: Selector '[Bool] ()
 setHorizontalContentSizeConstraintActiveSelector = mkSelector "setHorizontalContentSizeConstraintActive:"
 
 -- | @Selector@ for @verticalContentSizeConstraintActive@
-verticalContentSizeConstraintActiveSelector :: Selector
+verticalContentSizeConstraintActiveSelector :: Selector '[] Bool
 verticalContentSizeConstraintActiveSelector = mkSelector "verticalContentSizeConstraintActive"
 
 -- | @Selector@ for @setVerticalContentSizeConstraintActive:@
-setVerticalContentSizeConstraintActiveSelector :: Selector
+setVerticalContentSizeConstraintActiveSelector :: Selector '[Bool] ()
 setVerticalContentSizeConstraintActiveSelector = mkSelector "setVerticalContentSizeConstraintActive:"
 
 -- | @Selector@ for @translatesAutoresizingMaskIntoConstraints@
-translatesAutoresizingMaskIntoConstraintsSelector :: Selector
+translatesAutoresizingMaskIntoConstraintsSelector :: Selector '[] Bool
 translatesAutoresizingMaskIntoConstraintsSelector = mkSelector "translatesAutoresizingMaskIntoConstraints"
 
 -- | @Selector@ for @setTranslatesAutoresizingMaskIntoConstraints:@
-setTranslatesAutoresizingMaskIntoConstraintsSelector :: Selector
+setTranslatesAutoresizingMaskIntoConstraintsSelector :: Selector '[Bool] ()
 setTranslatesAutoresizingMaskIntoConstraintsSelector = mkSelector "setTranslatesAutoresizingMaskIntoConstraints:"
 
 -- | @Selector@ for @requiresConstraintBasedLayout@
-requiresConstraintBasedLayoutSelector :: Selector
+requiresConstraintBasedLayoutSelector :: Selector '[] Bool
 requiresConstraintBasedLayoutSelector = mkSelector "requiresConstraintBasedLayout"
 
 -- | @Selector@ for @needsUpdateConstraints@
-needsUpdateConstraintsSelector :: Selector
+needsUpdateConstraintsSelector :: Selector '[] Bool
 needsUpdateConstraintsSelector = mkSelector "needsUpdateConstraints"
 
 -- | @Selector@ for @setNeedsUpdateConstraints:@
-setNeedsUpdateConstraintsSelector :: Selector
+setNeedsUpdateConstraintsSelector :: Selector '[Bool] ()
 setNeedsUpdateConstraintsSelector = mkSelector "setNeedsUpdateConstraints:"
 
 -- | @Selector@ for @leadingAnchor@
-leadingAnchorSelector :: Selector
+leadingAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 leadingAnchorSelector = mkSelector "leadingAnchor"
 
 -- | @Selector@ for @trailingAnchor@
-trailingAnchorSelector :: Selector
+trailingAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 trailingAnchorSelector = mkSelector "trailingAnchor"
 
 -- | @Selector@ for @leftAnchor@
-leftAnchorSelector :: Selector
+leftAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 leftAnchorSelector = mkSelector "leftAnchor"
 
 -- | @Selector@ for @rightAnchor@
-rightAnchorSelector :: Selector
+rightAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 rightAnchorSelector = mkSelector "rightAnchor"
 
 -- | @Selector@ for @topAnchor@
-topAnchorSelector :: Selector
+topAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 topAnchorSelector = mkSelector "topAnchor"
 
 -- | @Selector@ for @bottomAnchor@
-bottomAnchorSelector :: Selector
+bottomAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 bottomAnchorSelector = mkSelector "bottomAnchor"
 
 -- | @Selector@ for @widthAnchor@
-widthAnchorSelector :: Selector
+widthAnchorSelector :: Selector '[] (Id NSLayoutDimension)
 widthAnchorSelector = mkSelector "widthAnchor"
 
 -- | @Selector@ for @heightAnchor@
-heightAnchorSelector :: Selector
+heightAnchorSelector :: Selector '[] (Id NSLayoutDimension)
 heightAnchorSelector = mkSelector "heightAnchor"
 
 -- | @Selector@ for @centerXAnchor@
-centerXAnchorSelector :: Selector
+centerXAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 centerXAnchorSelector = mkSelector "centerXAnchor"
 
 -- | @Selector@ for @centerYAnchor@
-centerYAnchorSelector :: Selector
+centerYAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 centerYAnchorSelector = mkSelector "centerYAnchor"
 
 -- | @Selector@ for @firstBaselineAnchor@
-firstBaselineAnchorSelector :: Selector
+firstBaselineAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 firstBaselineAnchorSelector = mkSelector "firstBaselineAnchor"
 
 -- | @Selector@ for @lastBaselineAnchor@
-lastBaselineAnchorSelector :: Selector
+lastBaselineAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 lastBaselineAnchorSelector = mkSelector "lastBaselineAnchor"
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSArray)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @candidateListTouchBarItem@
-candidateListTouchBarItemSelector :: Selector
+candidateListTouchBarItemSelector :: Selector '[] (Id NSCandidateListTouchBarItem)
 candidateListTouchBarItemSelector = mkSelector "candidateListTouchBarItem"
 
 -- | @Selector@ for @enclosingMenuItem@
-enclosingMenuItemSelector :: Selector
+enclosingMenuItemSelector :: Selector '[] (Id NSMenuItem)
 enclosingMenuItemSelector = mkSelector "enclosingMenuItem"
 
 -- | @Selector@ for @writingToolsCoordinator@
-writingToolsCoordinatorSelector :: Selector
+writingToolsCoordinatorSelector :: Selector '[] (Id NSWritingToolsCoordinator)
 writingToolsCoordinatorSelector = mkSelector "writingToolsCoordinator"
 
 -- | @Selector@ for @setWritingToolsCoordinator:@
-setWritingToolsCoordinatorSelector :: Selector
+setWritingToolsCoordinatorSelector :: Selector '[Id NSWritingToolsCoordinator] ()
 setWritingToolsCoordinatorSelector = mkSelector "setWritingToolsCoordinator:"
 
 -- | @Selector@ for @trackingAreas@
-trackingAreasSelector :: Selector
+trackingAreasSelector :: Selector '[] (Id NSArray)
 trackingAreasSelector = mkSelector "trackingAreas"
 
 -- | @Selector@ for @prefersCompactControlSizeMetrics@
-prefersCompactControlSizeMetricsSelector :: Selector
+prefersCompactControlSizeMetricsSelector :: Selector '[] Bool
 prefersCompactControlSizeMetricsSelector = mkSelector "prefersCompactControlSizeMetrics"
 
 -- | @Selector@ for @setPrefersCompactControlSizeMetrics:@
-setPrefersCompactControlSizeMetricsSelector :: Selector
+setPrefersCompactControlSizeMetricsSelector :: Selector '[Bool] ()
 setPrefersCompactControlSizeMetricsSelector = mkSelector "setPrefersCompactControlSizeMetrics:"
 
 -- | @Selector@ for @safeAreaInsets@
-safeAreaInsetsSelector :: Selector
+safeAreaInsetsSelector :: Selector '[] NSEdgeInsets
 safeAreaInsetsSelector = mkSelector "safeAreaInsets"
 
 -- | @Selector@ for @additionalSafeAreaInsets@
-additionalSafeAreaInsetsSelector :: Selector
+additionalSafeAreaInsetsSelector :: Selector '[] NSEdgeInsets
 additionalSafeAreaInsetsSelector = mkSelector "additionalSafeAreaInsets"
 
 -- | @Selector@ for @setAdditionalSafeAreaInsets:@
-setAdditionalSafeAreaInsetsSelector :: Selector
+setAdditionalSafeAreaInsetsSelector :: Selector '[NSEdgeInsets] ()
 setAdditionalSafeAreaInsetsSelector = mkSelector "setAdditionalSafeAreaInsets:"
 
 -- | @Selector@ for @safeAreaLayoutGuide@
-safeAreaLayoutGuideSelector :: Selector
+safeAreaLayoutGuideSelector :: Selector '[] (Id NSLayoutGuide)
 safeAreaLayoutGuideSelector = mkSelector "safeAreaLayoutGuide"
 
 -- | @Selector@ for @safeAreaRect@
-safeAreaRectSelector :: Selector
+safeAreaRectSelector :: Selector '[] NSRect
 safeAreaRectSelector = mkSelector "safeAreaRect"
 
 -- | @Selector@ for @layoutMarginsGuide@
-layoutMarginsGuideSelector :: Selector
+layoutMarginsGuideSelector :: Selector '[] (Id NSLayoutGuide)
 layoutMarginsGuideSelector = mkSelector "layoutMarginsGuide"
 
 -- | @Selector@ for @allowedTouchTypes@
-allowedTouchTypesSelector :: Selector
+allowedTouchTypesSelector :: Selector '[] NSTouchTypeMask
 allowedTouchTypesSelector = mkSelector "allowedTouchTypes"
 
 -- | @Selector@ for @setAllowedTouchTypes:@
-setAllowedTouchTypesSelector :: Selector
+setAllowedTouchTypesSelector :: Selector '[NSTouchTypeMask] ()
 setAllowedTouchTypesSelector = mkSelector "setAllowedTouchTypes:"
 
 -- | @Selector@ for @gestureRecognizers@
-gestureRecognizersSelector :: Selector
+gestureRecognizersSelector :: Selector '[] (Id NSArray)
 gestureRecognizersSelector = mkSelector "gestureRecognizers"
 
 -- | @Selector@ for @setGestureRecognizers:@
-setGestureRecognizersSelector :: Selector
+setGestureRecognizersSelector :: Selector '[Id NSArray] ()
 setGestureRecognizersSelector = mkSelector "setGestureRecognizers:"
 
 -- | @Selector@ for @drawingFindIndicator@
-drawingFindIndicatorSelector :: Selector
+drawingFindIndicatorSelector :: Selector '[] Bool
 drawingFindIndicatorSelector = mkSelector "drawingFindIndicator"
 
 -- | @Selector@ for @inFullScreenMode@
-inFullScreenModeSelector :: Selector
+inFullScreenModeSelector :: Selector '[] Bool
 inFullScreenModeSelector = mkSelector "inFullScreenMode"
 
 -- | @Selector@ for @registeredDraggedTypes@
-registeredDraggedTypesSelector :: Selector
+registeredDraggedTypesSelector :: Selector '[] (Id NSArray)
 registeredDraggedTypesSelector = mkSelector "registeredDraggedTypes"
 
 -- | @Selector@ for @heightAdjustLimit@
-heightAdjustLimitSelector :: Selector
+heightAdjustLimitSelector :: Selector '[] CDouble
 heightAdjustLimitSelector = mkSelector "heightAdjustLimit"
 
 -- | @Selector@ for @widthAdjustLimit@
-widthAdjustLimitSelector :: Selector
+widthAdjustLimitSelector :: Selector '[] CDouble
 widthAdjustLimitSelector = mkSelector "widthAdjustLimit"
 
 -- | @Selector@ for @pageHeader@
-pageHeaderSelector :: Selector
+pageHeaderSelector :: Selector '[] (Id NSAttributedString)
 pageHeaderSelector = mkSelector "pageHeader"
 
 -- | @Selector@ for @pageFooter@
-pageFooterSelector :: Selector
+pageFooterSelector :: Selector '[] (Id NSAttributedString)
 pageFooterSelector = mkSelector "pageFooter"
 
 -- | @Selector@ for @printJobTitle@
-printJobTitleSelector :: Selector
+printJobTitleSelector :: Selector '[] (Id NSString)
 printJobTitleSelector = mkSelector "printJobTitle"
 
 -- | @Selector@ for @nextKeyView@
-nextKeyViewSelector :: Selector
+nextKeyViewSelector :: Selector '[] (Id NSView)
 nextKeyViewSelector = mkSelector "nextKeyView"
 
 -- | @Selector@ for @setNextKeyView:@
-setNextKeyViewSelector :: Selector
+setNextKeyViewSelector :: Selector '[Id NSView] ()
 setNextKeyViewSelector = mkSelector "setNextKeyView:"
 
 -- | @Selector@ for @previousKeyView@
-previousKeyViewSelector :: Selector
+previousKeyViewSelector :: Selector '[] (Id NSView)
 previousKeyViewSelector = mkSelector "previousKeyView"
 
 -- | @Selector@ for @nextValidKeyView@
-nextValidKeyViewSelector :: Selector
+nextValidKeyViewSelector :: Selector '[] (Id NSView)
 nextValidKeyViewSelector = mkSelector "nextValidKeyView"
 
 -- | @Selector@ for @previousValidKeyView@
-previousValidKeyViewSelector :: Selector
+previousValidKeyViewSelector :: Selector '[] (Id NSView)
 previousValidKeyViewSelector = mkSelector "previousValidKeyView"
 
 -- | @Selector@ for @canBecomeKeyView@
-canBecomeKeyViewSelector :: Selector
+canBecomeKeyViewSelector :: Selector '[] Bool
 canBecomeKeyViewSelector = mkSelector "canBecomeKeyView"
 
 -- | @Selector@ for @focusRingType@
-focusRingTypeSelector :: Selector
+focusRingTypeSelector :: Selector '[] NSFocusRingType
 focusRingTypeSelector = mkSelector "focusRingType"
 
 -- | @Selector@ for @setFocusRingType:@
-setFocusRingTypeSelector :: Selector
+setFocusRingTypeSelector :: Selector '[NSFocusRingType] ()
 setFocusRingTypeSelector = mkSelector "setFocusRingType:"
 
 -- | @Selector@ for @defaultFocusRingType@
-defaultFocusRingTypeSelector :: Selector
+defaultFocusRingTypeSelector :: Selector '[] NSFocusRingType
 defaultFocusRingTypeSelector = mkSelector "defaultFocusRingType"
 
 -- | @Selector@ for @focusRingMaskBounds@
-focusRingMaskBoundsSelector :: Selector
+focusRingMaskBoundsSelector :: Selector '[] NSRect
 focusRingMaskBoundsSelector = mkSelector "focusRingMaskBounds"
 

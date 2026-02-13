@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.VideoSubscriberAccount.VSAccountManagerResult
   , init_
   , new
   , cancel
+  , cancelSelector
   , initSelector
   , newSelector
-  , cancelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVSAccountManagerResult vsAccountManagerResult => vsAccountManagerResult -> IO (Id VSAccountManagerResult)
-init_ vsAccountManagerResult  =
-    sendMsg vsAccountManagerResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vsAccountManagerResult =
+  sendOwnedMessage vsAccountManagerResult initSelector
 
 -- | @+ new@
 new :: IO (Id VSAccountManagerResult)
 new  =
   do
     cls' <- getRequiredClass "VSAccountManagerResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Advise the account manager that the app no longer needs the requested work to be done.
 --
 -- ObjC selector: @- cancel@
 cancel :: IsVSAccountManagerResult vsAccountManagerResult => vsAccountManagerResult -> IO ()
-cancel vsAccountManagerResult  =
-    sendMsg vsAccountManagerResult (mkSelector "cancel") retVoid []
+cancel vsAccountManagerResult =
+  sendMessage vsAccountManagerResult cancelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VSAccountManagerResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VSAccountManagerResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 

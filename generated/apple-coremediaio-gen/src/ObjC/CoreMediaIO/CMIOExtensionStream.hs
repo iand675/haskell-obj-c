@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,22 +29,22 @@ module ObjC.CoreMediaIO.CMIOExtensionStream
   , customClockConfiguration
   , source
   , streamingClients
+  , clockTypeSelector
+  , consumeSampleBufferFromClient_completionHandlerSelector
+  , customClockConfigurationSelector
+  , directionSelector
   , initSelector
-  , newSelector
-  , streamWithLocalizedName_streamID_direction_clockType_sourceSelector
-  , streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector
   , initWithLocalizedName_streamID_direction_clockType_sourceSelector
   , initWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector
-  , notifyPropertiesChangedSelector
-  , sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector
-  , consumeSampleBufferFromClient_completionHandlerSelector
-  , notifyScheduledOutputChangedSelector
   , localizedNameSelector
-  , streamIDSelector
-  , directionSelector
-  , clockTypeSelector
-  , customClockConfigurationSelector
+  , newSelector
+  , notifyPropertiesChangedSelector
+  , notifyScheduledOutputChangedSelector
+  , sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector
   , sourceSelector
+  , streamIDSelector
+  , streamWithLocalizedName_streamID_direction_clockType_sourceSelector
+  , streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector
   , streamingClientsSelector
 
   -- * Enum types
@@ -62,15 +63,11 @@ module ObjC.CoreMediaIO.CMIOExtensionStream
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,15 +77,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO (Id CMIOExtensionStream)
-init_ cmioExtensionStream  =
-    sendMsg cmioExtensionStream (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionStream =
+  sendOwnedMessage cmioExtensionStream initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionStream)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionStream"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | streamWithLocalizedName:streamID:direction:clockType:source:
 --
@@ -113,9 +110,7 @@ streamWithLocalizedName_streamID_direction_clockType_source :: (IsNSString local
 streamWithLocalizedName_streamID_direction_clockType_source localizedName streamID direction clockType source =
   do
     cls' <- getRequiredClass "CMIOExtensionStream"
-    withObjCPtr localizedName $ \raw_localizedName ->
-      withObjCPtr streamID $ \raw_streamID ->
-        sendClassMsg cls' (mkSelector "streamWithLocalizedName:streamID:direction:clockType:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_streamID :: Ptr ()), argCLong (coerce direction), argCLong (coerce clockType), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' streamWithLocalizedName_streamID_direction_clockType_sourceSelector (toNSString localizedName) (toNSUUID streamID) direction clockType source
 
 -- | streamWithLocalizedName:streamID:direction:customClockConfiguration:source:
 --
@@ -138,10 +133,7 @@ streamWithLocalizedName_streamID_direction_customClockConfiguration_source :: (I
 streamWithLocalizedName_streamID_direction_customClockConfiguration_source localizedName streamID direction customClockConfiguration source =
   do
     cls' <- getRequiredClass "CMIOExtensionStream"
-    withObjCPtr localizedName $ \raw_localizedName ->
-      withObjCPtr streamID $ \raw_streamID ->
-        withObjCPtr customClockConfiguration $ \raw_customClockConfiguration ->
-          sendClassMsg cls' (mkSelector "streamWithLocalizedName:streamID:direction:customClockConfiguration:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_streamID :: Ptr ()), argCLong (coerce direction), argPtr (castPtr raw_customClockConfiguration :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector (toNSString localizedName) (toNSUUID streamID) direction (toCMIOExtensionStreamCustomClockConfiguration customClockConfiguration) source
 
 -- | initWithLocalizedName:streamID:direction:clockType:source:
 --
@@ -163,10 +155,8 @@ streamWithLocalizedName_streamID_direction_customClockConfiguration_source local
 --
 -- ObjC selector: @- initWithLocalizedName:streamID:direction:clockType:source:@
 initWithLocalizedName_streamID_direction_clockType_source :: (IsCMIOExtensionStream cmioExtensionStream, IsNSString localizedName, IsNSUUID streamID) => cmioExtensionStream -> localizedName -> streamID -> CMIOExtensionStreamDirection -> CMIOExtensionStreamClockType -> RawId -> IO (Id CMIOExtensionStream)
-initWithLocalizedName_streamID_direction_clockType_source cmioExtensionStream  localizedName streamID direction clockType source =
-  withObjCPtr localizedName $ \raw_localizedName ->
-    withObjCPtr streamID $ \raw_streamID ->
-        sendMsg cmioExtensionStream (mkSelector "initWithLocalizedName:streamID:direction:clockType:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_streamID :: Ptr ()), argCLong (coerce direction), argCLong (coerce clockType), argPtr (castPtr (unRawId source) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedName_streamID_direction_clockType_source cmioExtensionStream localizedName streamID direction clockType source =
+  sendOwnedMessage cmioExtensionStream initWithLocalizedName_streamID_direction_clockType_sourceSelector (toNSString localizedName) (toNSUUID streamID) direction clockType source
 
 -- | initWithLocalizedName:streamID:direction:clockType:source:
 --
@@ -186,11 +176,8 @@ initWithLocalizedName_streamID_direction_clockType_source cmioExtensionStream  l
 --
 -- ObjC selector: @- initWithLocalizedName:streamID:direction:customClockConfiguration:source:@
 initWithLocalizedName_streamID_direction_customClockConfiguration_source :: (IsCMIOExtensionStream cmioExtensionStream, IsNSString localizedName, IsNSUUID streamID, IsCMIOExtensionStreamCustomClockConfiguration customClockConfiguration) => cmioExtensionStream -> localizedName -> streamID -> CMIOExtensionStreamDirection -> customClockConfiguration -> RawId -> IO (Id CMIOExtensionStream)
-initWithLocalizedName_streamID_direction_customClockConfiguration_source cmioExtensionStream  localizedName streamID direction customClockConfiguration source =
-  withObjCPtr localizedName $ \raw_localizedName ->
-    withObjCPtr streamID $ \raw_streamID ->
-      withObjCPtr customClockConfiguration $ \raw_customClockConfiguration ->
-          sendMsg cmioExtensionStream (mkSelector "initWithLocalizedName:streamID:direction:customClockConfiguration:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_streamID :: Ptr ()), argCLong (coerce direction), argPtr (castPtr raw_customClockConfiguration :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedName_streamID_direction_customClockConfiguration_source cmioExtensionStream localizedName streamID direction customClockConfiguration source =
+  sendOwnedMessage cmioExtensionStream initWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector (toNSString localizedName) (toNSUUID streamID) direction (toCMIOExtensionStreamCustomClockConfiguration customClockConfiguration) source
 
 -- | notifyPropertiesChanged:
 --
@@ -200,9 +187,8 @@ initWithLocalizedName_streamID_direction_customClockConfiguration_source cmioExt
 --
 -- ObjC selector: @- notifyPropertiesChanged:@
 notifyPropertiesChanged :: (IsCMIOExtensionStream cmioExtensionStream, IsNSDictionary propertyStates) => cmioExtensionStream -> propertyStates -> IO ()
-notifyPropertiesChanged cmioExtensionStream  propertyStates =
-  withObjCPtr propertyStates $ \raw_propertyStates ->
-      sendMsg cmioExtensionStream (mkSelector "notifyPropertiesChanged:") retVoid [argPtr (castPtr raw_propertyStates :: Ptr ())]
+notifyPropertiesChanged cmioExtensionStream propertyStates =
+  sendMessage cmioExtensionStream notifyPropertiesChangedSelector (toNSDictionary propertyStates)
 
 -- | sendSampleBuffer:discontinuity:hostTimeInNanoseconds:
 --
@@ -218,8 +204,8 @@ notifyPropertiesChanged cmioExtensionStream  propertyStates =
 --
 -- ObjC selector: @- sendSampleBuffer:discontinuity:hostTimeInNanoseconds:@
 sendSampleBuffer_discontinuity_hostTimeInNanoseconds :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> Ptr () -> CMIOExtensionStreamDiscontinuityFlags -> CULong -> IO ()
-sendSampleBuffer_discontinuity_hostTimeInNanoseconds cmioExtensionStream  sampleBuffer discontinuity hostTimeInNanoseconds =
-    sendMsg cmioExtensionStream (mkSelector "sendSampleBuffer:discontinuity:hostTimeInNanoseconds:") retVoid [argPtr sampleBuffer, argCUInt (coerce discontinuity), argCULong hostTimeInNanoseconds]
+sendSampleBuffer_discontinuity_hostTimeInNanoseconds cmioExtensionStream sampleBuffer discontinuity hostTimeInNanoseconds =
+  sendMessage cmioExtensionStream sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector sampleBuffer discontinuity hostTimeInNanoseconds
 
 -- | consumeSampleBufferFromClient:completionHandler:
 --
@@ -231,9 +217,8 @@ sendSampleBuffer_discontinuity_hostTimeInNanoseconds cmioExtensionStream  sample
 --
 -- ObjC selector: @- consumeSampleBufferFromClient:completionHandler:@
 consumeSampleBufferFromClient_completionHandler :: (IsCMIOExtensionStream cmioExtensionStream, IsCMIOExtensionClient client) => cmioExtensionStream -> client -> Ptr () -> IO ()
-consumeSampleBufferFromClient_completionHandler cmioExtensionStream  client completionHandler =
-  withObjCPtr client $ \raw_client ->
-      sendMsg cmioExtensionStream (mkSelector "consumeSampleBufferFromClient:completionHandler:") retVoid [argPtr (castPtr raw_client :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+consumeSampleBufferFromClient_completionHandler cmioExtensionStream client completionHandler =
+  sendMessage cmioExtensionStream consumeSampleBufferFromClient_completionHandlerSelector (toCMIOExtensionClient client) completionHandler
 
 -- | notifyScheduledOutputChanged:
 --
@@ -243,9 +228,8 @@ consumeSampleBufferFromClient_completionHandler cmioExtensionStream  client comp
 --
 -- ObjC selector: @- notifyScheduledOutputChanged:@
 notifyScheduledOutputChanged :: (IsCMIOExtensionStream cmioExtensionStream, IsCMIOExtensionScheduledOutput scheduledOutput) => cmioExtensionStream -> scheduledOutput -> IO ()
-notifyScheduledOutputChanged cmioExtensionStream  scheduledOutput =
-  withObjCPtr scheduledOutput $ \raw_scheduledOutput ->
-      sendMsg cmioExtensionStream (mkSelector "notifyScheduledOutputChanged:") retVoid [argPtr (castPtr raw_scheduledOutput :: Ptr ())]
+notifyScheduledOutputChanged cmioExtensionStream scheduledOutput =
+  sendMessage cmioExtensionStream notifyScheduledOutputChangedSelector (toCMIOExtensionScheduledOutput scheduledOutput)
 
 -- | localizedName
 --
@@ -253,8 +237,8 @@ notifyScheduledOutputChanged cmioExtensionStream  scheduledOutput =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO (Id NSString)
-localizedName cmioExtensionStream  =
-    sendMsg cmioExtensionStream (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName cmioExtensionStream =
+  sendMessage cmioExtensionStream localizedNameSelector
 
 -- | streamID
 --
@@ -262,8 +246,8 @@ localizedName cmioExtensionStream  =
 --
 -- ObjC selector: @- streamID@
 streamID :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO (Id NSUUID)
-streamID cmioExtensionStream  =
-    sendMsg cmioExtensionStream (mkSelector "streamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamID cmioExtensionStream =
+  sendMessage cmioExtensionStream streamIDSelector
 
 -- | direction
 --
@@ -271,8 +255,8 @@ streamID cmioExtensionStream  =
 --
 -- ObjC selector: @- direction@
 direction :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO CMIOExtensionStreamDirection
-direction cmioExtensionStream  =
-    fmap (coerce :: CLong -> CMIOExtensionStreamDirection) $ sendMsg cmioExtensionStream (mkSelector "direction") retCLong []
+direction cmioExtensionStream =
+  sendMessage cmioExtensionStream directionSelector
 
 -- | clockType
 --
@@ -282,8 +266,8 @@ direction cmioExtensionStream  =
 --
 -- ObjC selector: @- clockType@
 clockType :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO CMIOExtensionStreamClockType
-clockType cmioExtensionStream  =
-    fmap (coerce :: CLong -> CMIOExtensionStreamClockType) $ sendMsg cmioExtensionStream (mkSelector "clockType") retCLong []
+clockType cmioExtensionStream =
+  sendMessage cmioExtensionStream clockTypeSelector
 
 -- | customClockConfiguration
 --
@@ -293,8 +277,8 @@ clockType cmioExtensionStream  =
 --
 -- ObjC selector: @- customClockConfiguration@
 customClockConfiguration :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO (Id CMIOExtensionStreamCustomClockConfiguration)
-customClockConfiguration cmioExtensionStream  =
-    sendMsg cmioExtensionStream (mkSelector "customClockConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+customClockConfiguration cmioExtensionStream =
+  sendMessage cmioExtensionStream customClockConfigurationSelector
 
 -- | source
 --
@@ -302,8 +286,8 @@ customClockConfiguration cmioExtensionStream  =
 --
 -- ObjC selector: @- source@
 source :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO RawId
-source cmioExtensionStream  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionStream (mkSelector "source") (retPtr retVoid) []
+source cmioExtensionStream =
+  sendMessage cmioExtensionStream sourceSelector
 
 -- | streamingClients
 --
@@ -313,78 +297,78 @@ source cmioExtensionStream  =
 --
 -- ObjC selector: @- streamingClients@
 streamingClients :: IsCMIOExtensionStream cmioExtensionStream => cmioExtensionStream -> IO (Id NSArray)
-streamingClients cmioExtensionStream  =
-    sendMsg cmioExtensionStream (mkSelector "streamingClients") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamingClients cmioExtensionStream =
+  sendMessage cmioExtensionStream streamingClientsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionStream)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionStream)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @streamWithLocalizedName:streamID:direction:clockType:source:@
-streamWithLocalizedName_streamID_direction_clockType_sourceSelector :: Selector
+streamWithLocalizedName_streamID_direction_clockType_sourceSelector :: Selector '[Id NSString, Id NSUUID, CMIOExtensionStreamDirection, CMIOExtensionStreamClockType, RawId] (Id CMIOExtensionStream)
 streamWithLocalizedName_streamID_direction_clockType_sourceSelector = mkSelector "streamWithLocalizedName:streamID:direction:clockType:source:"
 
 -- | @Selector@ for @streamWithLocalizedName:streamID:direction:customClockConfiguration:source:@
-streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector :: Selector
+streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector :: Selector '[Id NSString, Id NSUUID, CMIOExtensionStreamDirection, Id CMIOExtensionStreamCustomClockConfiguration, RawId] (Id CMIOExtensionStream)
 streamWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector = mkSelector "streamWithLocalizedName:streamID:direction:customClockConfiguration:source:"
 
 -- | @Selector@ for @initWithLocalizedName:streamID:direction:clockType:source:@
-initWithLocalizedName_streamID_direction_clockType_sourceSelector :: Selector
+initWithLocalizedName_streamID_direction_clockType_sourceSelector :: Selector '[Id NSString, Id NSUUID, CMIOExtensionStreamDirection, CMIOExtensionStreamClockType, RawId] (Id CMIOExtensionStream)
 initWithLocalizedName_streamID_direction_clockType_sourceSelector = mkSelector "initWithLocalizedName:streamID:direction:clockType:source:"
 
 -- | @Selector@ for @initWithLocalizedName:streamID:direction:customClockConfiguration:source:@
-initWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector :: Selector
+initWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector :: Selector '[Id NSString, Id NSUUID, CMIOExtensionStreamDirection, Id CMIOExtensionStreamCustomClockConfiguration, RawId] (Id CMIOExtensionStream)
 initWithLocalizedName_streamID_direction_customClockConfiguration_sourceSelector = mkSelector "initWithLocalizedName:streamID:direction:customClockConfiguration:source:"
 
 -- | @Selector@ for @notifyPropertiesChanged:@
-notifyPropertiesChangedSelector :: Selector
+notifyPropertiesChangedSelector :: Selector '[Id NSDictionary] ()
 notifyPropertiesChangedSelector = mkSelector "notifyPropertiesChanged:"
 
 -- | @Selector@ for @sendSampleBuffer:discontinuity:hostTimeInNanoseconds:@
-sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector :: Selector
+sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector :: Selector '[Ptr (), CMIOExtensionStreamDiscontinuityFlags, CULong] ()
 sendSampleBuffer_discontinuity_hostTimeInNanosecondsSelector = mkSelector "sendSampleBuffer:discontinuity:hostTimeInNanoseconds:"
 
 -- | @Selector@ for @consumeSampleBufferFromClient:completionHandler:@
-consumeSampleBufferFromClient_completionHandlerSelector :: Selector
+consumeSampleBufferFromClient_completionHandlerSelector :: Selector '[Id CMIOExtensionClient, Ptr ()] ()
 consumeSampleBufferFromClient_completionHandlerSelector = mkSelector "consumeSampleBufferFromClient:completionHandler:"
 
 -- | @Selector@ for @notifyScheduledOutputChanged:@
-notifyScheduledOutputChangedSelector :: Selector
+notifyScheduledOutputChangedSelector :: Selector '[Id CMIOExtensionScheduledOutput] ()
 notifyScheduledOutputChangedSelector = mkSelector "notifyScheduledOutputChanged:"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @streamID@
-streamIDSelector :: Selector
+streamIDSelector :: Selector '[] (Id NSUUID)
 streamIDSelector = mkSelector "streamID"
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] CMIOExtensionStreamDirection
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @clockType@
-clockTypeSelector :: Selector
+clockTypeSelector :: Selector '[] CMIOExtensionStreamClockType
 clockTypeSelector = mkSelector "clockType"
 
 -- | @Selector@ for @customClockConfiguration@
-customClockConfigurationSelector :: Selector
+customClockConfigurationSelector :: Selector '[] (Id CMIOExtensionStreamCustomClockConfiguration)
 customClockConfigurationSelector = mkSelector "customClockConfiguration"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] RawId
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @streamingClients@
-streamingClientsSelector :: Selector
+streamingClientsSelector :: Selector '[] (Id NSArray)
 streamingClientsSelector = mkSelector "streamingClients"
 

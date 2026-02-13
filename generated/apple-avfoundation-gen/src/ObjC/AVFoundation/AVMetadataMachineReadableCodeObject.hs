@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,21 +19,17 @@ module ObjC.AVFoundation.AVMetadataMachineReadableCodeObject
   , stringValue
   , descriptor
   , cornersSelector
-  , stringValueSelector
   , descriptorSelector
+  , stringValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- corners@
 corners :: IsAVMetadataMachineReadableCodeObject avMetadataMachineReadableCodeObject => avMetadataMachineReadableCodeObject -> IO (Id NSArray)
-corners avMetadataMachineReadableCodeObject  =
-    sendMsg avMetadataMachineReadableCodeObject (mkSelector "corners") (retPtr retVoid) [] >>= retainedObject . castPtr
+corners avMetadataMachineReadableCodeObject =
+  sendMessage avMetadataMachineReadableCodeObject cornersSelector
 
 -- | stringValue
 --
@@ -59,8 +56,8 @@ corners avMetadataMachineReadableCodeObject  =
 --
 -- ObjC selector: @- stringValue@
 stringValue :: IsAVMetadataMachineReadableCodeObject avMetadataMachineReadableCodeObject => avMetadataMachineReadableCodeObject -> IO (Id NSString)
-stringValue avMetadataMachineReadableCodeObject  =
-    sendMsg avMetadataMachineReadableCodeObject (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue avMetadataMachineReadableCodeObject =
+  sendMessage avMetadataMachineReadableCodeObject stringValueSelector
 
 -- | descriptor
 --
@@ -70,22 +67,22 @@ stringValue avMetadataMachineReadableCodeObject  =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsAVMetadataMachineReadableCodeObject avMetadataMachineReadableCodeObject => avMetadataMachineReadableCodeObject -> IO (Id CIBarcodeDescriptor)
-descriptor avMetadataMachineReadableCodeObject  =
-    sendMsg avMetadataMachineReadableCodeObject (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor avMetadataMachineReadableCodeObject =
+  sendMessage avMetadataMachineReadableCodeObject descriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @corners@
-cornersSelector :: Selector
+cornersSelector :: Selector '[] (Id NSArray)
 cornersSelector = mkSelector "corners"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id CIBarcodeDescriptor)
 descriptorSelector = mkSelector "descriptor"
 

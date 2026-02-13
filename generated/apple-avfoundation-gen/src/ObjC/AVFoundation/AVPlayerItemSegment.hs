@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,11 +21,11 @@ module ObjC.AVFoundation.AVPlayerItemSegment
   , startDate
   , interstitialEvent
   , initSelector
+  , interstitialEventSelector
+  , loadedTimeRangesSelector
   , newSelector
   , segmentTypeSelector
-  , loadedTimeRangesSelector
   , startDateSelector
-  , interstitialEventSelector
 
   -- * Enum types
   , AVPlayerItemSegmentType(AVPlayerItemSegmentType)
@@ -33,15 +34,11 @@ module ObjC.AVFoundation.AVPlayerItemSegment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO (Id AVPlayerItemSegment)
-init_ avPlayerItemSegment  =
-    sendMsg avPlayerItemSegment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemSegment =
+  sendOwnedMessage avPlayerItemSegment initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemSegment)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemSegment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | segmentType
 --
@@ -67,8 +64,8 @@ new  =
 --
 -- ObjC selector: @- segmentType@
 segmentType :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO AVPlayerItemSegmentType
-segmentType avPlayerItemSegment  =
-    fmap (coerce :: CLong -> AVPlayerItemSegmentType) $ sendMsg avPlayerItemSegment (mkSelector "segmentType") retCLong []
+segmentType avPlayerItemSegment =
+  sendMessage avPlayerItemSegment segmentTypeSelector
 
 -- | loadedTimeRanges
 --
@@ -78,8 +75,8 @@ segmentType avPlayerItemSegment  =
 --
 -- ObjC selector: @- loadedTimeRanges@
 loadedTimeRanges :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO (Id NSArray)
-loadedTimeRanges avPlayerItemSegment  =
-    sendMsg avPlayerItemSegment (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadedTimeRanges avPlayerItemSegment =
+  sendMessage avPlayerItemSegment loadedTimeRangesSelector
 
 -- | startDate
 --
@@ -89,8 +86,8 @@ loadedTimeRanges avPlayerItemSegment  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO (Id NSDate)
-startDate avPlayerItemSegment  =
-    sendMsg avPlayerItemSegment (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate avPlayerItemSegment =
+  sendMessage avPlayerItemSegment startDateSelector
 
 -- | interstitialEvent
 --
@@ -100,34 +97,34 @@ startDate avPlayerItemSegment  =
 --
 -- ObjC selector: @- interstitialEvent@
 interstitialEvent :: IsAVPlayerItemSegment avPlayerItemSegment => avPlayerItemSegment -> IO (Id AVPlayerInterstitialEvent)
-interstitialEvent avPlayerItemSegment  =
-    sendMsg avPlayerItemSegment (mkSelector "interstitialEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+interstitialEvent avPlayerItemSegment =
+  sendMessage avPlayerItemSegment interstitialEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemSegment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemSegment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @segmentType@
-segmentTypeSelector :: Selector
+segmentTypeSelector :: Selector '[] AVPlayerItemSegmentType
 segmentTypeSelector = mkSelector "segmentType"
 
 -- | @Selector@ for @loadedTimeRanges@
-loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector :: Selector '[] (Id NSArray)
 loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @interstitialEvent@
-interstitialEventSelector :: Selector
+interstitialEventSelector :: Selector '[] (Id AVPlayerInterstitialEvent)
 interstitialEventSelector = mkSelector "interstitialEvent"
 

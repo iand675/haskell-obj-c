@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,20 +34,20 @@ module ObjC.AVFoundation.AVDepthData
   , depthDataFiltered
   , depthDataAccuracy
   , cameraCalibrationData
-  , initSelector
-  , newSelector
-  , depthDataFromDictionaryRepresentation_errorSelector
-  , depthDataByConvertingToDepthDataTypeSelector
-  , depthDataByApplyingExifOrientationSelector
-  , depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector
-  , dictionaryRepresentationForAuxiliaryDataTypeSelector
   , availableDepthDataTypesSelector
-  , depthDataTypeSelector
+  , cameraCalibrationDataSelector
+  , depthDataAccuracySelector
+  , depthDataByApplyingExifOrientationSelector
+  , depthDataByConvertingToDepthDataTypeSelector
+  , depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector
+  , depthDataFilteredSelector
+  , depthDataFromDictionaryRepresentation_errorSelector
   , depthDataMapSelector
   , depthDataQualitySelector
-  , depthDataFilteredSelector
-  , depthDataAccuracySelector
-  , cameraCalibrationDataSelector
+  , depthDataTypeSelector
+  , dictionaryRepresentationForAuxiliaryDataTypeSelector
+  , initSelector
+  , newSelector
 
   -- * Enum types
   , AVDepthDataAccuracy(AVDepthDataAccuracy)
@@ -58,15 +59,11 @@ module ObjC.AVFoundation.AVDepthData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,15 +73,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVDepthData avDepthData => avDepthData -> IO (Id AVDepthData)
-init_ avDepthData  =
-    sendMsg avDepthData (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avDepthData =
+  sendOwnedMessage avDepthData initSelector
 
 -- | @+ new@
 new :: IO (Id AVDepthData)
 new  =
   do
     cls' <- getRequiredClass "AVDepthData"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | depthDataFromDictionaryRepresentation:error:
 --
@@ -103,9 +100,7 @@ depthDataFromDictionaryRepresentation_error :: (IsNSDictionary imageSourceAuxDat
 depthDataFromDictionaryRepresentation_error imageSourceAuxDataInfoDictionary outError =
   do
     cls' <- getRequiredClass "AVDepthData"
-    withObjCPtr imageSourceAuxDataInfoDictionary $ \raw_imageSourceAuxDataInfoDictionary ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "depthDataFromDictionaryRepresentation:error:") (retPtr retVoid) [argPtr (castPtr raw_imageSourceAuxDataInfoDictionary :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' depthDataFromDictionaryRepresentation_errorSelector (toNSDictionary imageSourceAuxDataInfoDictionary) (toNSError outError)
 
 -- | depthDataByConvertingToDepthDataType:
 --
@@ -119,8 +114,8 @@ depthDataFromDictionaryRepresentation_error imageSourceAuxDataInfoDictionary out
 --
 -- ObjC selector: @- depthDataByConvertingToDepthDataType:@
 depthDataByConvertingToDepthDataType :: IsAVDepthData avDepthData => avDepthData -> CUInt -> IO (Id AVDepthData)
-depthDataByConvertingToDepthDataType avDepthData  depthDataType =
-    sendMsg avDepthData (mkSelector "depthDataByConvertingToDepthDataType:") (retPtr retVoid) [argCUInt depthDataType] >>= retainedObject . castPtr
+depthDataByConvertingToDepthDataType avDepthData depthDataType =
+  sendMessage avDepthData depthDataByConvertingToDepthDataTypeSelector depthDataType
 
 -- | depthDataByApplyingExifOrientation:
 --
@@ -134,8 +129,8 @@ depthDataByConvertingToDepthDataType avDepthData  depthDataType =
 --
 -- ObjC selector: @- depthDataByApplyingExifOrientation:@
 depthDataByApplyingExifOrientation :: IsAVDepthData avDepthData => avDepthData -> CInt -> IO (Id AVDepthData)
-depthDataByApplyingExifOrientation avDepthData  exifOrientation =
-    sendMsg avDepthData (mkSelector "depthDataByApplyingExifOrientation:") (retPtr retVoid) [argCInt (fromIntegral exifOrientation)] >>= retainedObject . castPtr
+depthDataByApplyingExifOrientation avDepthData exifOrientation =
+  sendMessage avDepthData depthDataByApplyingExifOrientationSelector exifOrientation
 
 -- | depthDataByReplacingDepthDataMapWithPixelBuffer:error:
 --
@@ -151,9 +146,8 @@ depthDataByApplyingExifOrientation avDepthData  exifOrientation =
 --
 -- ObjC selector: @- depthDataByReplacingDepthDataMapWithPixelBuffer:error:@
 depthDataByReplacingDepthDataMapWithPixelBuffer_error :: (IsAVDepthData avDepthData, IsNSError outError) => avDepthData -> Ptr () -> outError -> IO (Id AVDepthData)
-depthDataByReplacingDepthDataMapWithPixelBuffer_error avDepthData  pixelBuffer outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avDepthData (mkSelector "depthDataByReplacingDepthDataMapWithPixelBuffer:error:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+depthDataByReplacingDepthDataMapWithPixelBuffer_error avDepthData pixelBuffer outError =
+  sendMessage avDepthData depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector pixelBuffer (toNSError outError)
 
 -- | dictionaryRepresentationForAuxiliaryDataType:
 --
@@ -167,9 +161,8 @@ depthDataByReplacingDepthDataMapWithPixelBuffer_error avDepthData  pixelBuffer o
 --
 -- ObjC selector: @- dictionaryRepresentationForAuxiliaryDataType:@
 dictionaryRepresentationForAuxiliaryDataType :: (IsAVDepthData avDepthData, IsNSString outAuxDataType) => avDepthData -> outAuxDataType -> IO (Id NSDictionary)
-dictionaryRepresentationForAuxiliaryDataType avDepthData  outAuxDataType =
-  withObjCPtr outAuxDataType $ \raw_outAuxDataType ->
-      sendMsg avDepthData (mkSelector "dictionaryRepresentationForAuxiliaryDataType:") (retPtr retVoid) [argPtr (castPtr raw_outAuxDataType :: Ptr ())] >>= retainedObject . castPtr
+dictionaryRepresentationForAuxiliaryDataType avDepthData outAuxDataType =
+  sendMessage avDepthData dictionaryRepresentationForAuxiliaryDataTypeSelector (toNSString outAuxDataType)
 
 -- | availableDepthDataTypes
 --
@@ -179,8 +172,8 @@ dictionaryRepresentationForAuxiliaryDataType avDepthData  outAuxDataType =
 --
 -- ObjC selector: @- availableDepthDataTypes@
 availableDepthDataTypes :: IsAVDepthData avDepthData => avDepthData -> IO (Id NSArray)
-availableDepthDataTypes avDepthData  =
-    sendMsg avDepthData (mkSelector "availableDepthDataTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableDepthDataTypes avDepthData =
+  sendMessage avDepthData availableDepthDataTypesSelector
 
 -- | depthDataType
 --
@@ -190,8 +183,8 @@ availableDepthDataTypes avDepthData  =
 --
 -- ObjC selector: @- depthDataType@
 depthDataType :: IsAVDepthData avDepthData => avDepthData -> IO CUInt
-depthDataType avDepthData  =
-    sendMsg avDepthData (mkSelector "depthDataType") retCUInt []
+depthDataType avDepthData =
+  sendMessage avDepthData depthDataTypeSelector
 
 -- | depthDataMap
 --
@@ -201,8 +194,8 @@ depthDataType avDepthData  =
 --
 -- ObjC selector: @- depthDataMap@
 depthDataMap :: IsAVDepthData avDepthData => avDepthData -> IO (Ptr ())
-depthDataMap avDepthData  =
-    fmap castPtr $ sendMsg avDepthData (mkSelector "depthDataMap") (retPtr retVoid) []
+depthDataMap avDepthData =
+  sendMessage avDepthData depthDataMapSelector
 
 -- | depthDataQuality
 --
@@ -212,8 +205,8 @@ depthDataMap avDepthData  =
 --
 -- ObjC selector: @- depthDataQuality@
 depthDataQuality :: IsAVDepthData avDepthData => avDepthData -> IO AVDepthDataQuality
-depthDataQuality avDepthData  =
-    fmap (coerce :: CLong -> AVDepthDataQuality) $ sendMsg avDepthData (mkSelector "depthDataQuality") retCLong []
+depthDataQuality avDepthData =
+  sendMessage avDepthData depthDataQualitySelector
 
 -- | depthDataFiltered
 --
@@ -223,8 +216,8 @@ depthDataQuality avDepthData  =
 --
 -- ObjC selector: @- depthDataFiltered@
 depthDataFiltered :: IsAVDepthData avDepthData => avDepthData -> IO Bool
-depthDataFiltered avDepthData  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avDepthData (mkSelector "depthDataFiltered") retCULong []
+depthDataFiltered avDepthData =
+  sendMessage avDepthData depthDataFilteredSelector
 
 -- | depthDataAccuracy
 --
@@ -234,8 +227,8 @@ depthDataFiltered avDepthData  =
 --
 -- ObjC selector: @- depthDataAccuracy@
 depthDataAccuracy :: IsAVDepthData avDepthData => avDepthData -> IO AVDepthDataAccuracy
-depthDataAccuracy avDepthData  =
-    fmap (coerce :: CLong -> AVDepthDataAccuracy) $ sendMsg avDepthData (mkSelector "depthDataAccuracy") retCLong []
+depthDataAccuracy avDepthData =
+  sendMessage avDepthData depthDataAccuracySelector
 
 -- | cameraCalibrationData
 --
@@ -245,66 +238,66 @@ depthDataAccuracy avDepthData  =
 --
 -- ObjC selector: @- cameraCalibrationData@
 cameraCalibrationData :: IsAVDepthData avDepthData => avDepthData -> IO (Id AVCameraCalibrationData)
-cameraCalibrationData avDepthData  =
-    sendMsg avDepthData (mkSelector "cameraCalibrationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraCalibrationData avDepthData =
+  sendMessage avDepthData cameraCalibrationDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVDepthData)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVDepthData)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @depthDataFromDictionaryRepresentation:error:@
-depthDataFromDictionaryRepresentation_errorSelector :: Selector
+depthDataFromDictionaryRepresentation_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id AVDepthData)
 depthDataFromDictionaryRepresentation_errorSelector = mkSelector "depthDataFromDictionaryRepresentation:error:"
 
 -- | @Selector@ for @depthDataByConvertingToDepthDataType:@
-depthDataByConvertingToDepthDataTypeSelector :: Selector
+depthDataByConvertingToDepthDataTypeSelector :: Selector '[CUInt] (Id AVDepthData)
 depthDataByConvertingToDepthDataTypeSelector = mkSelector "depthDataByConvertingToDepthDataType:"
 
 -- | @Selector@ for @depthDataByApplyingExifOrientation:@
-depthDataByApplyingExifOrientationSelector :: Selector
+depthDataByApplyingExifOrientationSelector :: Selector '[CInt] (Id AVDepthData)
 depthDataByApplyingExifOrientationSelector = mkSelector "depthDataByApplyingExifOrientation:"
 
 -- | @Selector@ for @depthDataByReplacingDepthDataMapWithPixelBuffer:error:@
-depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector :: Selector
+depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector :: Selector '[Ptr (), Id NSError] (Id AVDepthData)
 depthDataByReplacingDepthDataMapWithPixelBuffer_errorSelector = mkSelector "depthDataByReplacingDepthDataMapWithPixelBuffer:error:"
 
 -- | @Selector@ for @dictionaryRepresentationForAuxiliaryDataType:@
-dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector
+dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector '[Id NSString] (Id NSDictionary)
 dictionaryRepresentationForAuxiliaryDataTypeSelector = mkSelector "dictionaryRepresentationForAuxiliaryDataType:"
 
 -- | @Selector@ for @availableDepthDataTypes@
-availableDepthDataTypesSelector :: Selector
+availableDepthDataTypesSelector :: Selector '[] (Id NSArray)
 availableDepthDataTypesSelector = mkSelector "availableDepthDataTypes"
 
 -- | @Selector@ for @depthDataType@
-depthDataTypeSelector :: Selector
+depthDataTypeSelector :: Selector '[] CUInt
 depthDataTypeSelector = mkSelector "depthDataType"
 
 -- | @Selector@ for @depthDataMap@
-depthDataMapSelector :: Selector
+depthDataMapSelector :: Selector '[] (Ptr ())
 depthDataMapSelector = mkSelector "depthDataMap"
 
 -- | @Selector@ for @depthDataQuality@
-depthDataQualitySelector :: Selector
+depthDataQualitySelector :: Selector '[] AVDepthDataQuality
 depthDataQualitySelector = mkSelector "depthDataQuality"
 
 -- | @Selector@ for @depthDataFiltered@
-depthDataFilteredSelector :: Selector
+depthDataFilteredSelector :: Selector '[] Bool
 depthDataFilteredSelector = mkSelector "depthDataFiltered"
 
 -- | @Selector@ for @depthDataAccuracy@
-depthDataAccuracySelector :: Selector
+depthDataAccuracySelector :: Selector '[] AVDepthDataAccuracy
 depthDataAccuracySelector = mkSelector "depthDataAccuracy"
 
 -- | @Selector@ for @cameraCalibrationData@
-cameraCalibrationDataSelector :: Selector
+cameraCalibrationDataSelector :: Selector '[] (Id AVCameraCalibrationData)
 cameraCalibrationDataSelector = mkSelector "cameraCalibrationData"
 

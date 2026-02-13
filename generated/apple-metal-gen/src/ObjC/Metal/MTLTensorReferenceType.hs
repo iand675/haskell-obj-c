@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.Metal.MTLTensorReferenceType
   , indexType
   , dimensions
   , access
-  , tensorDataTypeSelector
-  , indexTypeSelector
-  , dimensionsSelector
   , accessSelector
+  , dimensionsSelector
+  , indexTypeSelector
+  , tensorDataTypeSelector
 
   -- * Enum types
   , MTLBindingAccess(MTLBindingAccess)
@@ -138,15 +139,11 @@ module ObjC.Metal.MTLTensorReferenceType
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -158,15 +155,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- tensorDataType@
 tensorDataType :: IsMTLTensorReferenceType mtlTensorReferenceType => mtlTensorReferenceType -> IO MTLTensorDataType
-tensorDataType mtlTensorReferenceType  =
-    fmap (coerce :: CLong -> MTLTensorDataType) $ sendMsg mtlTensorReferenceType (mkSelector "tensorDataType") retCLong []
+tensorDataType mtlTensorReferenceType =
+  sendMessage mtlTensorReferenceType tensorDataTypeSelector
 
 -- | The data format you use for indexing into the tensor.
 --
 -- ObjC selector: @- indexType@
 indexType :: IsMTLTensorReferenceType mtlTensorReferenceType => mtlTensorReferenceType -> IO MTLDataType
-indexType mtlTensorReferenceType  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlTensorReferenceType (mkSelector "indexType") retCULong []
+indexType mtlTensorReferenceType =
+  sendMessage mtlTensorReferenceType indexTypeSelector
 
 -- | The array of sizes, in elements, one for each dimension of this tensor.
 --
@@ -174,33 +171,33 @@ indexType mtlTensorReferenceType  =
 --
 -- ObjC selector: @- dimensions@
 dimensions :: IsMTLTensorReferenceType mtlTensorReferenceType => mtlTensorReferenceType -> IO (Id MTLTensorExtents)
-dimensions mtlTensorReferenceType  =
-    sendMsg mtlTensorReferenceType (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+dimensions mtlTensorReferenceType =
+  sendMessage mtlTensorReferenceType dimensionsSelector
 
 -- | A value that represents the read/write permissions of the tensor.
 --
 -- ObjC selector: @- access@
 access :: IsMTLTensorReferenceType mtlTensorReferenceType => mtlTensorReferenceType -> IO MTLBindingAccess
-access mtlTensorReferenceType  =
-    fmap (coerce :: CULong -> MTLBindingAccess) $ sendMsg mtlTensorReferenceType (mkSelector "access") retCULong []
+access mtlTensorReferenceType =
+  sendMessage mtlTensorReferenceType accessSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tensorDataType@
-tensorDataTypeSelector :: Selector
+tensorDataTypeSelector :: Selector '[] MTLTensorDataType
 tensorDataTypeSelector = mkSelector "tensorDataType"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] MTLDataType
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @dimensions@
-dimensionsSelector :: Selector
+dimensionsSelector :: Selector '[] (Id MTLTensorExtents)
 dimensionsSelector = mkSelector "dimensions"
 
 -- | @Selector@ for @access@
-accessSelector :: Selector
+accessSelector :: Selector '[] MTLBindingAccess
 accessSelector = mkSelector "access"
 

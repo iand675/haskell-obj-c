@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.Accessibility.AXNumericDataAxisDescriptor
   , setValueDescriptionProvider
   , gridlinePositions
   , setGridlinePositions
-  , initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
-  , initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
+  , gridlinePositionsSelector
   , initSelector
+  , initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
+  , initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector
+  , lowerBoundSelector
   , newSelector
   , scaleTypeSelector
-  , setScaleTypeSelector
-  , lowerBoundSelector
-  , setLowerBoundSelector
-  , upperBoundSelector
-  , setUpperBoundSelector
-  , valueDescriptionProviderSelector
-  , setValueDescriptionProviderSelector
-  , gridlinePositionsSelector
   , setGridlinePositionsSelector
+  , setLowerBoundSelector
+  , setScaleTypeSelector
+  , setUpperBoundSelector
+  , setValueDescriptionProviderSelector
+  , upperBoundSelector
+  , valueDescriptionProviderSelector
 
   -- * Enum types
   , AXNumericDataAxisDescriptorScale(AXNumericDataAxisDescriptorScale)
@@ -44,15 +45,11 @@ module ObjC.Accessibility.AXNumericDataAxisDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,158 +59,153 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:@
 initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider :: (IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor, IsNSString title, IsNSArray gridlinePositions) => axNumericDataAxisDescriptor -> title -> CDouble -> CDouble -> gridlinePositions -> Ptr () -> IO (Id AXNumericDataAxisDescriptor)
-initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider axNumericDataAxisDescriptor  title lowerbound upperBound gridlinePositions valueDescriptionProvider =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr gridlinePositions $ \raw_gridlinePositions ->
-        sendMsg axNumericDataAxisDescriptor (mkSelector "initWithTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argCDouble lowerbound, argCDouble upperBound, argPtr (castPtr raw_gridlinePositions :: Ptr ()), argPtr (castPtr valueDescriptionProvider :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider axNumericDataAxisDescriptor title lowerbound upperBound gridlinePositions valueDescriptionProvider =
+  sendOwnedMessage axNumericDataAxisDescriptor initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector (toNSString title) lowerbound upperBound (toNSArray gridlinePositions) valueDescriptionProvider
 
 -- | @- initWithAttributedTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:@
 initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider :: (IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor, IsNSAttributedString attributedTitle, IsNSArray gridlinePositions) => axNumericDataAxisDescriptor -> attributedTitle -> CDouble -> CDouble -> gridlinePositions -> Ptr () -> IO (Id AXNumericDataAxisDescriptor)
-initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider axNumericDataAxisDescriptor  attributedTitle lowerbound upperBound gridlinePositions valueDescriptionProvider =
-  withObjCPtr attributedTitle $ \raw_attributedTitle ->
-    withObjCPtr gridlinePositions $ \raw_gridlinePositions ->
-        sendMsg axNumericDataAxisDescriptor (mkSelector "initWithAttributedTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:") (retPtr retVoid) [argPtr (castPtr raw_attributedTitle :: Ptr ()), argCDouble lowerbound, argCDouble upperBound, argPtr (castPtr raw_gridlinePositions :: Ptr ()), argPtr (castPtr valueDescriptionProvider :: Ptr ())] >>= ownedObject . castPtr
+initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProvider axNumericDataAxisDescriptor attributedTitle lowerbound upperBound gridlinePositions valueDescriptionProvider =
+  sendOwnedMessage axNumericDataAxisDescriptor initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector (toNSAttributedString attributedTitle) lowerbound upperBound (toNSArray gridlinePositions) valueDescriptionProvider
 
 -- | @- init@
 init_ :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO (Id AXNumericDataAxisDescriptor)
-init_ axNumericDataAxisDescriptor  =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ axNumericDataAxisDescriptor =
+  sendOwnedMessage axNumericDataAxisDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id AXNumericDataAxisDescriptor)
 new  =
   do
     cls' <- getRequiredClass "AXNumericDataAxisDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The scale to use for this axis. This should match the visual representation in the chart. If not set explicitly, this will default to @linear@.
 --
 -- ObjC selector: @- scaleType@
 scaleType :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO AXNumericDataAxisDescriptorScale
-scaleType axNumericDataAxisDescriptor  =
-    fmap (coerce :: CLong -> AXNumericDataAxisDescriptorScale) $ sendMsg axNumericDataAxisDescriptor (mkSelector "scaleType") retCLong []
+scaleType axNumericDataAxisDescriptor =
+  sendMessage axNumericDataAxisDescriptor scaleTypeSelector
 
 -- | The scale to use for this axis. This should match the visual representation in the chart. If not set explicitly, this will default to @linear@.
 --
 -- ObjC selector: @- setScaleType:@
 setScaleType :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> AXNumericDataAxisDescriptorScale -> IO ()
-setScaleType axNumericDataAxisDescriptor  value =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "setScaleType:") retVoid [argCLong (coerce value)]
+setScaleType axNumericDataAxisDescriptor value =
+  sendMessage axNumericDataAxisDescriptor setScaleTypeSelector value
 
 -- | The minimum displayable value for the axis.
 --
 -- ObjC selector: @- lowerBound@
 lowerBound :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO CDouble
-lowerBound axNumericDataAxisDescriptor  =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "lowerBound") retCDouble []
+lowerBound axNumericDataAxisDescriptor =
+  sendMessage axNumericDataAxisDescriptor lowerBoundSelector
 
 -- | The minimum displayable value for the axis.
 --
 -- ObjC selector: @- setLowerBound:@
 setLowerBound :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> CDouble -> IO ()
-setLowerBound axNumericDataAxisDescriptor  value =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "setLowerBound:") retVoid [argCDouble value]
+setLowerBound axNumericDataAxisDescriptor value =
+  sendMessage axNumericDataAxisDescriptor setLowerBoundSelector value
 
 -- | The maximum displayable value for the axis.
 --
 -- ObjC selector: @- upperBound@
 upperBound :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO CDouble
-upperBound axNumericDataAxisDescriptor  =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "upperBound") retCDouble []
+upperBound axNumericDataAxisDescriptor =
+  sendMessage axNumericDataAxisDescriptor upperBoundSelector
 
 -- | The maximum displayable value for the axis.
 --
 -- ObjC selector: @- setUpperBound:@
 setUpperBound :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> CDouble -> IO ()
-setUpperBound axNumericDataAxisDescriptor  value =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "setUpperBound:") retVoid [argCDouble value]
+setUpperBound axNumericDataAxisDescriptor value =
+  sendMessage axNumericDataAxisDescriptor setUpperBoundSelector value
 
 -- | Provides a value description to be spoken for a particular data value on this axis. Use this to format data values to string representations that include units, dates, times, etc.
 --
 -- ObjC selector: @- valueDescriptionProvider@
 valueDescriptionProvider :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO (Ptr ())
-valueDescriptionProvider axNumericDataAxisDescriptor  =
-    fmap castPtr $ sendMsg axNumericDataAxisDescriptor (mkSelector "valueDescriptionProvider") (retPtr retVoid) []
+valueDescriptionProvider axNumericDataAxisDescriptor =
+  sendMessage axNumericDataAxisDescriptor valueDescriptionProviderSelector
 
 -- | Provides a value description to be spoken for a particular data value on this axis. Use this to format data values to string representations that include units, dates, times, etc.
 --
 -- ObjC selector: @- setValueDescriptionProvider:@
 setValueDescriptionProvider :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> Ptr () -> IO ()
-setValueDescriptionProvider axNumericDataAxisDescriptor  value =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "setValueDescriptionProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueDescriptionProvider axNumericDataAxisDescriptor value =
+  sendMessage axNumericDataAxisDescriptor setValueDescriptionProviderSelector value
 
 -- | The positions of any gridlines along this axis.
 --
 -- ObjC selector: @- gridlinePositions@
 gridlinePositions :: IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor => axNumericDataAxisDescriptor -> IO (Id NSArray)
-gridlinePositions axNumericDataAxisDescriptor  =
-    sendMsg axNumericDataAxisDescriptor (mkSelector "gridlinePositions") (retPtr retVoid) [] >>= retainedObject . castPtr
+gridlinePositions axNumericDataAxisDescriptor =
+  sendMessage axNumericDataAxisDescriptor gridlinePositionsSelector
 
 -- | The positions of any gridlines along this axis.
 --
 -- ObjC selector: @- setGridlinePositions:@
 setGridlinePositions :: (IsAXNumericDataAxisDescriptor axNumericDataAxisDescriptor, IsNSArray value) => axNumericDataAxisDescriptor -> value -> IO ()
-setGridlinePositions axNumericDataAxisDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axNumericDataAxisDescriptor (mkSelector "setGridlinePositions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGridlinePositions axNumericDataAxisDescriptor value =
+  sendMessage axNumericDataAxisDescriptor setGridlinePositionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:@
-initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector :: Selector
+initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector :: Selector '[Id NSString, CDouble, CDouble, Id NSArray, Ptr ()] (Id AXNumericDataAxisDescriptor)
 initWithTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector = mkSelector "initWithTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:"
 
 -- | @Selector@ for @initWithAttributedTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:@
-initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector :: Selector
+initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector :: Selector '[Id NSAttributedString, CDouble, CDouble, Id NSArray, Ptr ()] (Id AXNumericDataAxisDescriptor)
 initWithAttributedTitle_lowerBound_upperBound_gridlinePositions_valueDescriptionProviderSelector = mkSelector "initWithAttributedTitle:lowerBound:upperBound:gridlinePositions:valueDescriptionProvider:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AXNumericDataAxisDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AXNumericDataAxisDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @scaleType@
-scaleTypeSelector :: Selector
+scaleTypeSelector :: Selector '[] AXNumericDataAxisDescriptorScale
 scaleTypeSelector = mkSelector "scaleType"
 
 -- | @Selector@ for @setScaleType:@
-setScaleTypeSelector :: Selector
+setScaleTypeSelector :: Selector '[AXNumericDataAxisDescriptorScale] ()
 setScaleTypeSelector = mkSelector "setScaleType:"
 
 -- | @Selector@ for @lowerBound@
-lowerBoundSelector :: Selector
+lowerBoundSelector :: Selector '[] CDouble
 lowerBoundSelector = mkSelector "lowerBound"
 
 -- | @Selector@ for @setLowerBound:@
-setLowerBoundSelector :: Selector
+setLowerBoundSelector :: Selector '[CDouble] ()
 setLowerBoundSelector = mkSelector "setLowerBound:"
 
 -- | @Selector@ for @upperBound@
-upperBoundSelector :: Selector
+upperBoundSelector :: Selector '[] CDouble
 upperBoundSelector = mkSelector "upperBound"
 
 -- | @Selector@ for @setUpperBound:@
-setUpperBoundSelector :: Selector
+setUpperBoundSelector :: Selector '[CDouble] ()
 setUpperBoundSelector = mkSelector "setUpperBound:"
 
 -- | @Selector@ for @valueDescriptionProvider@
-valueDescriptionProviderSelector :: Selector
+valueDescriptionProviderSelector :: Selector '[] (Ptr ())
 valueDescriptionProviderSelector = mkSelector "valueDescriptionProvider"
 
 -- | @Selector@ for @setValueDescriptionProvider:@
-setValueDescriptionProviderSelector :: Selector
+setValueDescriptionProviderSelector :: Selector '[Ptr ()] ()
 setValueDescriptionProviderSelector = mkSelector "setValueDescriptionProvider:"
 
 -- | @Selector@ for @gridlinePositions@
-gridlinePositionsSelector :: Selector
+gridlinePositionsSelector :: Selector '[] (Id NSArray)
 gridlinePositionsSelector = mkSelector "gridlinePositions"
 
 -- | @Selector@ for @setGridlinePositions:@
-setGridlinePositionsSelector :: Selector
+setGridlinePositionsSelector :: Selector '[Id NSArray] ()
 setGridlinePositionsSelector = mkSelector "setGridlinePositions:"
 

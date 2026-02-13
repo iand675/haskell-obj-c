@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INEnergyResolutionResult
   , successWithResolvedEnergy
   , disambiguationWithEnergyToDisambiguate
   , confirmationRequiredWithEnergyToConfirm
-  , successWithResolvedEnergySelector
-  , disambiguationWithEnergyToDisambiguateSelector
   , confirmationRequiredWithEnergyToConfirmSelector
+  , disambiguationWithEnergyToDisambiguateSelector
+  , successWithResolvedEnergySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedEnergy :: IsNSMeasurement resolvedEnergy => resolvedEnergy ->
 successWithResolvedEnergy resolvedEnergy =
   do
     cls' <- getRequiredClass "INEnergyResolutionResult"
-    withObjCPtr resolvedEnergy $ \raw_resolvedEnergy ->
-      sendClassMsg cls' (mkSelector "successWithResolvedEnergy:") (retPtr retVoid) [argPtr (castPtr raw_resolvedEnergy :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedEnergySelector (toNSMeasurement resolvedEnergy)
 
 -- | @+ disambiguationWithEnergyToDisambiguate:@
 disambiguationWithEnergyToDisambiguate :: IsNSArray energyToDisambiguate => energyToDisambiguate -> IO (Id INEnergyResolutionResult)
 disambiguationWithEnergyToDisambiguate energyToDisambiguate =
   do
     cls' <- getRequiredClass "INEnergyResolutionResult"
-    withObjCPtr energyToDisambiguate $ \raw_energyToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithEnergyToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_energyToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithEnergyToDisambiguateSelector (toNSArray energyToDisambiguate)
 
 -- | @+ confirmationRequiredWithEnergyToConfirm:@
 confirmationRequiredWithEnergyToConfirm :: IsNSMeasurement energyToConfirm => energyToConfirm -> IO (Id INEnergyResolutionResult)
 confirmationRequiredWithEnergyToConfirm energyToConfirm =
   do
     cls' <- getRequiredClass "INEnergyResolutionResult"
-    withObjCPtr energyToConfirm $ \raw_energyToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithEnergyToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_energyToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithEnergyToConfirmSelector (toNSMeasurement energyToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedEnergy:@
-successWithResolvedEnergySelector :: Selector
+successWithResolvedEnergySelector :: Selector '[Id NSMeasurement] (Id INEnergyResolutionResult)
 successWithResolvedEnergySelector = mkSelector "successWithResolvedEnergy:"
 
 -- | @Selector@ for @disambiguationWithEnergyToDisambiguate:@
-disambiguationWithEnergyToDisambiguateSelector :: Selector
+disambiguationWithEnergyToDisambiguateSelector :: Selector '[Id NSArray] (Id INEnergyResolutionResult)
 disambiguationWithEnergyToDisambiguateSelector = mkSelector "disambiguationWithEnergyToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithEnergyToConfirm:@
-confirmationRequiredWithEnergyToConfirmSelector :: Selector
+confirmationRequiredWithEnergyToConfirmSelector :: Selector '[Id NSMeasurement] (Id INEnergyResolutionResult)
 confirmationRequiredWithEnergyToConfirmSelector = mkSelector "confirmationRequiredWithEnergyToConfirm:"
 

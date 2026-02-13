@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVExternalStorageDeviceDiscoverySession
   , sharedSession
   , externalStorageDevices
   , supported
+  , externalStorageDevicesSelector
   , initSelector
   , newSelector
   , sharedSessionSelector
-  , externalStorageDevicesSelector
   , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVExternalStorageDeviceDiscoverySession avExternalStorageDeviceDiscoverySession => avExternalStorageDeviceDiscoverySession -> IO (Id AVExternalStorageDeviceDiscoverySession)
-init_ avExternalStorageDeviceDiscoverySession  =
-    sendMsg avExternalStorageDeviceDiscoverySession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avExternalStorageDeviceDiscoverySession =
+  sendOwnedMessage avExternalStorageDeviceDiscoverySession initSelector
 
 -- | @+ new@
 new :: IO (Id AVExternalStorageDeviceDiscoverySession)
 new  =
   do
     cls' <- getRequiredClass "AVExternalStorageDeviceDiscoverySession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | \@property sharedSession
 --
@@ -64,7 +61,7 @@ sharedSession :: IO (Id AVExternalStorageDeviceDiscoverySession)
 sharedSession  =
   do
     cls' <- getRequiredClass "AVExternalStorageDeviceDiscoverySession"
-    sendClassMsg cls' (mkSelector "sharedSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSessionSelector
 
 -- | externalStorageDevices
 --
@@ -74,8 +71,8 @@ sharedSession  =
 --
 -- ObjC selector: @- externalStorageDevices@
 externalStorageDevices :: IsAVExternalStorageDeviceDiscoverySession avExternalStorageDeviceDiscoverySession => avExternalStorageDeviceDiscoverySession -> IO (Id NSArray)
-externalStorageDevices avExternalStorageDeviceDiscoverySession  =
-    sendMsg avExternalStorageDeviceDiscoverySession (mkSelector "externalStorageDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+externalStorageDevices avExternalStorageDeviceDiscoverySession =
+  sendMessage avExternalStorageDeviceDiscoverySession externalStorageDevicesSelector
 
 -- | supported
 --
@@ -88,29 +85,29 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "AVExternalStorageDeviceDiscoverySession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVExternalStorageDeviceDiscoverySession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVExternalStorageDeviceDiscoverySession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sharedSession@
-sharedSessionSelector :: Selector
+sharedSessionSelector :: Selector '[] (Id AVExternalStorageDeviceDiscoverySession)
 sharedSessionSelector = mkSelector "sharedSession"
 
 -- | @Selector@ for @externalStorageDevices@
-externalStorageDevicesSelector :: Selector
+externalStorageDevicesSelector :: Selector '[] (Id NSArray)
 externalStorageDevicesSelector = mkSelector "externalStorageDevices"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 

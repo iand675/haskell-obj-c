@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.VideoToolbox.VTFrameProcessorOpticalFlow
   , new
   , forwardFlow
   , backwardFlow
-  , initWithForwardFlow_backwardFlowSelector
-  , initSelector
-  , newSelector
-  , forwardFlowSelector
   , backwardFlowSelector
+  , forwardFlowSelector
+  , initSelector
+  , initWithForwardFlow_backwardFlowSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,56 +44,56 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithForwardFlow:backwardFlow:@
 initWithForwardFlow_backwardFlow :: IsVTFrameProcessorOpticalFlow vtFrameProcessorOpticalFlow => vtFrameProcessorOpticalFlow -> Ptr () -> Ptr () -> IO (Id VTFrameProcessorOpticalFlow)
-initWithForwardFlow_backwardFlow vtFrameProcessorOpticalFlow  forwardFlow backwardFlow =
-    sendMsg vtFrameProcessorOpticalFlow (mkSelector "initWithForwardFlow:backwardFlow:") (retPtr retVoid) [argPtr forwardFlow, argPtr backwardFlow] >>= ownedObject . castPtr
+initWithForwardFlow_backwardFlow vtFrameProcessorOpticalFlow forwardFlow backwardFlow =
+  sendOwnedMessage vtFrameProcessorOpticalFlow initWithForwardFlow_backwardFlowSelector forwardFlow backwardFlow
 
 -- | @- init@
 init_ :: IsVTFrameProcessorOpticalFlow vtFrameProcessorOpticalFlow => vtFrameProcessorOpticalFlow -> IO (Id VTFrameProcessorOpticalFlow)
-init_ vtFrameProcessorOpticalFlow  =
-    sendMsg vtFrameProcessorOpticalFlow (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtFrameProcessorOpticalFlow =
+  sendOwnedMessage vtFrameProcessorOpticalFlow initSelector
 
 -- | @+ new@
 new :: IO (Id VTFrameProcessorOpticalFlow)
 new  =
   do
     cls' <- getRequiredClass "VTFrameProcessorOpticalFlow"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the forward optical flow @CVPixelBuffer@ that you provided when you initialized the object.
 --
 -- ObjC selector: @- forwardFlow@
 forwardFlow :: IsVTFrameProcessorOpticalFlow vtFrameProcessorOpticalFlow => vtFrameProcessorOpticalFlow -> IO (Ptr ())
-forwardFlow vtFrameProcessorOpticalFlow  =
-    fmap castPtr $ sendMsg vtFrameProcessorOpticalFlow (mkSelector "forwardFlow") (retPtr retVoid) []
+forwardFlow vtFrameProcessorOpticalFlow =
+  sendMessage vtFrameProcessorOpticalFlow forwardFlowSelector
 
 -- | Returns the backward optical flow @CVPixelBuffer@ that you provided when you initialized the object.
 --
 -- ObjC selector: @- backwardFlow@
 backwardFlow :: IsVTFrameProcessorOpticalFlow vtFrameProcessorOpticalFlow => vtFrameProcessorOpticalFlow -> IO (Ptr ())
-backwardFlow vtFrameProcessorOpticalFlow  =
-    fmap castPtr $ sendMsg vtFrameProcessorOpticalFlow (mkSelector "backwardFlow") (retPtr retVoid) []
+backwardFlow vtFrameProcessorOpticalFlow =
+  sendMessage vtFrameProcessorOpticalFlow backwardFlowSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithForwardFlow:backwardFlow:@
-initWithForwardFlow_backwardFlowSelector :: Selector
+initWithForwardFlow_backwardFlowSelector :: Selector '[Ptr (), Ptr ()] (Id VTFrameProcessorOpticalFlow)
 initWithForwardFlow_backwardFlowSelector = mkSelector "initWithForwardFlow:backwardFlow:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTFrameProcessorOpticalFlow)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTFrameProcessorOpticalFlow)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @forwardFlow@
-forwardFlowSelector :: Selector
+forwardFlowSelector :: Selector '[] (Ptr ())
 forwardFlowSelector = mkSelector "forwardFlow"
 
 -- | @Selector@ for @backwardFlow@
-backwardFlowSelector :: Selector
+backwardFlowSelector :: Selector '[] (Ptr ())
 backwardFlowSelector = mkSelector "backwardFlow"
 

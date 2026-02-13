@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,21 +27,21 @@ module ObjC.NetworkExtension.NWTCPConnection
   , remoteAddress
   , txtRecord
   , error_
-  , initWithUpgradeForConnectionSelector
   , cancelSelector
+  , connectedPathSelector
+  , endpointSelector
+  , errorSelector
+  , hasBetterPathSelector
+  , initWithUpgradeForConnectionSelector
+  , localAddressSelector
   , readLength_completionHandlerSelector
   , readMinimumLength_maximumLength_completionHandlerSelector
-  , write_completionHandlerSelector
-  , writeCloseSelector
-  , stateSelector
-  , viableSelector
-  , hasBetterPathSelector
-  , endpointSelector
-  , connectedPathSelector
-  , localAddressSelector
   , remoteAddressSelector
+  , stateSelector
   , txtRecordSelector
-  , errorSelector
+  , viableSelector
+  , writeCloseSelector
+  , write_completionHandlerSelector
 
   -- * Enum types
   , NWTCPConnectionState(NWTCPConnectionState)
@@ -53,15 +54,11 @@ module ObjC.NetworkExtension.NWTCPConnection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,9 +80,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUpgradeForConnection:@
 initWithUpgradeForConnection :: (IsNWTCPConnection nwtcpConnection, IsNWTCPConnection connection) => nwtcpConnection -> connection -> IO (Id NWTCPConnection)
-initWithUpgradeForConnection nwtcpConnection  connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg nwtcpConnection (mkSelector "initWithUpgradeForConnection:") (retPtr retVoid) [argPtr (castPtr raw_connection :: Ptr ())] >>= ownedObject . castPtr
+initWithUpgradeForConnection nwtcpConnection connection =
+  sendOwnedMessage nwtcpConnection initWithUpgradeForConnectionSelector (toNWTCPConnection connection)
 
 -- | cancel:
 --
@@ -93,8 +89,8 @@ initWithUpgradeForConnection nwtcpConnection  connection =
 --
 -- ObjC selector: @- cancel@
 cancel :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO ()
-cancel nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "cancel") retVoid []
+cancel nwtcpConnection =
+  sendMessage nwtcpConnection cancelSelector
 
 -- | readLength:completionHandler:
 --
@@ -106,8 +102,8 @@ cancel nwtcpConnection  =
 --
 -- ObjC selector: @- readLength:completionHandler:@
 readLength_completionHandler :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> CULong -> Ptr () -> IO ()
-readLength_completionHandler nwtcpConnection  length_ completion =
-    sendMsg nwtcpConnection (mkSelector "readLength:completionHandler:") retVoid [argCULong length_, argPtr (castPtr completion :: Ptr ())]
+readLength_completionHandler nwtcpConnection length_ completion =
+  sendMessage nwtcpConnection readLength_completionHandlerSelector length_ completion
 
 -- | readMinimumLength:maximumLength:completionHandler:
 --
@@ -129,8 +125,8 @@ readLength_completionHandler nwtcpConnection  length_ completion =
 --
 -- ObjC selector: @- readMinimumLength:maximumLength:completionHandler:@
 readMinimumLength_maximumLength_completionHandler :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> CULong -> CULong -> Ptr () -> IO ()
-readMinimumLength_maximumLength_completionHandler nwtcpConnection  minimum_ maximum_ completion =
-    sendMsg nwtcpConnection (mkSelector "readMinimumLength:maximumLength:completionHandler:") retVoid [argCULong minimum_, argCULong maximum_, argPtr (castPtr completion :: Ptr ())]
+readMinimumLength_maximumLength_completionHandler nwtcpConnection minimum_ maximum_ completion =
+  sendMessage nwtcpConnection readMinimumLength_maximumLength_completionHandlerSelector minimum_ maximum_ completion
 
 -- | write:completionHandler:
 --
@@ -142,9 +138,8 @@ readMinimumLength_maximumLength_completionHandler nwtcpConnection  minimum_ maxi
 --
 -- ObjC selector: @- write:completionHandler:@
 write_completionHandler :: (IsNWTCPConnection nwtcpConnection, IsNSData data_) => nwtcpConnection -> data_ -> Ptr () -> IO ()
-write_completionHandler nwtcpConnection  data_ completion =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nwtcpConnection (mkSelector "write:completionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+write_completionHandler nwtcpConnection data_ completion =
+  sendMessage nwtcpConnection write_completionHandlerSelector (toNSData data_) completion
 
 -- | writeClose:
 --
@@ -152,8 +147,8 @@ write_completionHandler nwtcpConnection  data_ completion =
 --
 -- ObjC selector: @- writeClose@
 writeClose :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO ()
-writeClose nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "writeClose") retVoid []
+writeClose nwtcpConnection =
+  sendMessage nwtcpConnection writeCloseSelector
 
 -- | state
 --
@@ -161,8 +156,8 @@ writeClose nwtcpConnection  =
 --
 -- ObjC selector: @- state@
 state :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO NWTCPConnectionState
-state nwtcpConnection  =
-    fmap (coerce :: CLong -> NWTCPConnectionState) $ sendMsg nwtcpConnection (mkSelector "state") retCLong []
+state nwtcpConnection =
+  sendMessage nwtcpConnection stateSelector
 
 -- | viable
 --
@@ -170,8 +165,8 @@ state nwtcpConnection  =
 --
 -- ObjC selector: @- viable@
 viable :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO Bool
-viable nwtcpConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwtcpConnection (mkSelector "viable") retCULong []
+viable nwtcpConnection =
+  sendMessage nwtcpConnection viableSelector
 
 -- | hasBetterPath
 --
@@ -179,8 +174,8 @@ viable nwtcpConnection  =
 --
 -- ObjC selector: @- hasBetterPath@
 hasBetterPath :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO Bool
-hasBetterPath nwtcpConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwtcpConnection (mkSelector "hasBetterPath") retCULong []
+hasBetterPath nwtcpConnection =
+  sendMessage nwtcpConnection hasBetterPathSelector
 
 -- | endpoint
 --
@@ -188,8 +183,8 @@ hasBetterPath nwtcpConnection  =
 --
 -- ObjC selector: @- endpoint@
 endpoint :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
-endpoint nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint nwtcpConnection =
+  sendMessage nwtcpConnection endpointSelector
 
 -- | connectedPath
 --
@@ -199,8 +194,8 @@ endpoint nwtcpConnection  =
 --
 -- ObjC selector: @- connectedPath@
 connectedPath :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWPath)
-connectedPath nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "connectedPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectedPath nwtcpConnection =
+  sendMessage nwtcpConnection connectedPathSelector
 
 -- | localAddress
 --
@@ -208,8 +203,8 @@ connectedPath nwtcpConnection  =
 --
 -- ObjC selector: @- localAddress@
 localAddress :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
-localAddress nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "localAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+localAddress nwtcpConnection =
+  sendMessage nwtcpConnection localAddressSelector
 
 -- | remoteAddress
 --
@@ -217,8 +212,8 @@ localAddress nwtcpConnection  =
 --
 -- ObjC selector: @- remoteAddress@
 remoteAddress :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NWEndpoint)
-remoteAddress nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "remoteAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteAddress nwtcpConnection =
+  sendMessage nwtcpConnection remoteAddressSelector
 
 -- | txtRecord
 --
@@ -226,8 +221,8 @@ remoteAddress nwtcpConnection  =
 --
 -- ObjC selector: @- txtRecord@
 txtRecord :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NSData)
-txtRecord nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "txtRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+txtRecord nwtcpConnection =
+  sendMessage nwtcpConnection txtRecordSelector
 
 -- | error
 --
@@ -235,70 +230,70 @@ txtRecord nwtcpConnection  =
 --
 -- ObjC selector: @- error@
 error_ :: IsNWTCPConnection nwtcpConnection => nwtcpConnection -> IO (Id NSError)
-error_ nwtcpConnection  =
-    sendMsg nwtcpConnection (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ nwtcpConnection =
+  sendMessage nwtcpConnection errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUpgradeForConnection:@
-initWithUpgradeForConnectionSelector :: Selector
+initWithUpgradeForConnectionSelector :: Selector '[Id NWTCPConnection] (Id NWTCPConnection)
 initWithUpgradeForConnectionSelector = mkSelector "initWithUpgradeForConnection:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @readLength:completionHandler:@
-readLength_completionHandlerSelector :: Selector
+readLength_completionHandlerSelector :: Selector '[CULong, Ptr ()] ()
 readLength_completionHandlerSelector = mkSelector "readLength:completionHandler:"
 
 -- | @Selector@ for @readMinimumLength:maximumLength:completionHandler:@
-readMinimumLength_maximumLength_completionHandlerSelector :: Selector
+readMinimumLength_maximumLength_completionHandlerSelector :: Selector '[CULong, CULong, Ptr ()] ()
 readMinimumLength_maximumLength_completionHandlerSelector = mkSelector "readMinimumLength:maximumLength:completionHandler:"
 
 -- | @Selector@ for @write:completionHandler:@
-write_completionHandlerSelector :: Selector
+write_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 write_completionHandlerSelector = mkSelector "write:completionHandler:"
 
 -- | @Selector@ for @writeClose@
-writeCloseSelector :: Selector
+writeCloseSelector :: Selector '[] ()
 writeCloseSelector = mkSelector "writeClose"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NWTCPConnectionState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @viable@
-viableSelector :: Selector
+viableSelector :: Selector '[] Bool
 viableSelector = mkSelector "viable"
 
 -- | @Selector@ for @hasBetterPath@
-hasBetterPathSelector :: Selector
+hasBetterPathSelector :: Selector '[] Bool
 hasBetterPathSelector = mkSelector "hasBetterPath"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NWEndpoint)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @connectedPath@
-connectedPathSelector :: Selector
+connectedPathSelector :: Selector '[] (Id NWPath)
 connectedPathSelector = mkSelector "connectedPath"
 
 -- | @Selector@ for @localAddress@
-localAddressSelector :: Selector
+localAddressSelector :: Selector '[] (Id NWEndpoint)
 localAddressSelector = mkSelector "localAddress"
 
 -- | @Selector@ for @remoteAddress@
-remoteAddressSelector :: Selector
+remoteAddressSelector :: Selector '[] (Id NWEndpoint)
 remoteAddressSelector = mkSelector "remoteAddress"
 
 -- | @Selector@ for @txtRecord@
-txtRecordSelector :: Selector
+txtRecordSelector :: Selector '[] (Id NSData)
 txtRecordSelector = mkSelector "txtRecord"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

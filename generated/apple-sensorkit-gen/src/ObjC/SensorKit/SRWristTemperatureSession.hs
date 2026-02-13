@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.SensorKit.SRWristTemperatureSession
   , duration
   , version
   , temperatures
+  , durationSelector
   , initSelector
   , newSelector
   , startDateSelector
-  , durationSelector
-  , versionSelector
   , temperaturesSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO (Id SRWristTemperatureSession)
-init_ srWristTemperatureSession  =
-    sendMsg srWristTemperatureSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srWristTemperatureSession =
+  sendOwnedMessage srWristTemperatureSession initSelector
 
 -- | @+ new@
 new :: IO (Id SRWristTemperatureSession)
 new  =
   do
     cls' <- getRequiredClass "SRWristTemperatureSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | startDate
 --
@@ -55,8 +52,8 @@ new  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO (Id NSDate)
-startDate srWristTemperatureSession  =
-    sendMsg srWristTemperatureSession (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate srWristTemperatureSession =
+  sendMessage srWristTemperatureSession startDateSelector
 
 -- | duration
 --
@@ -64,8 +61,8 @@ startDate srWristTemperatureSession  =
 --
 -- ObjC selector: @- duration@
 duration :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO CDouble
-duration srWristTemperatureSession  =
-    sendMsg srWristTemperatureSession (mkSelector "duration") retCDouble []
+duration srWristTemperatureSession =
+  sendMessage srWristTemperatureSession durationSelector
 
 -- | version
 --
@@ -73,8 +70,8 @@ duration srWristTemperatureSession  =
 --
 -- ObjC selector: @- version@
 version :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO (Id NSString)
-version srWristTemperatureSession  =
-    sendMsg srWristTemperatureSession (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version srWristTemperatureSession =
+  sendMessage srWristTemperatureSession versionSelector
 
 -- | temperatures
 --
@@ -82,34 +79,34 @@ version srWristTemperatureSession  =
 --
 -- ObjC selector: @- temperatures@
 temperatures :: IsSRWristTemperatureSession srWristTemperatureSession => srWristTemperatureSession -> IO (Id NSEnumerator)
-temperatures srWristTemperatureSession  =
-    sendMsg srWristTemperatureSession (mkSelector "temperatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+temperatures srWristTemperatureSession =
+  sendMessage srWristTemperatureSession temperaturesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRWristTemperatureSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRWristTemperatureSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @temperatures@
-temperaturesSelector :: Selector
+temperaturesSelector :: Selector '[] (Id NSEnumerator)
 temperaturesSelector = mkSelector "temperatures"
 

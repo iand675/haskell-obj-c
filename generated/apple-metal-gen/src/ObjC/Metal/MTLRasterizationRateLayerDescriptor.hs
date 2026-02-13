@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.Metal.MTLRasterizationRateLayerDescriptor
   , verticalSampleStorage
   , horizontal
   , vertical
-  , initSelector
   , horizontalSampleStorageSelector
-  , verticalSampleStorageSelector
   , horizontalSelector
+  , initSelector
+  , verticalSampleStorageSelector
   , verticalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMTLRasterizationRateLayerDescriptor mtlRasterizationRateLayerDescriptor => mtlRasterizationRateLayerDescriptor -> IO (Id MTLRasterizationRateLayerDescriptor)
-init_ mtlRasterizationRateLayerDescriptor  =
-    sendMsg mtlRasterizationRateLayerDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtlRasterizationRateLayerDescriptor =
+  sendOwnedMessage mtlRasterizationRateLayerDescriptor initSelector
 
 -- | horizontalSampleStorage
 --
@@ -60,8 +57,8 @@ init_ mtlRasterizationRateLayerDescriptor  =
 --
 -- ObjC selector: @- horizontalSampleStorage@
 horizontalSampleStorage :: IsMTLRasterizationRateLayerDescriptor mtlRasterizationRateLayerDescriptor => mtlRasterizationRateLayerDescriptor -> IO (Ptr CFloat)
-horizontalSampleStorage mtlRasterizationRateLayerDescriptor  =
-    fmap castPtr $ sendMsg mtlRasterizationRateLayerDescriptor (mkSelector "horizontalSampleStorage") (retPtr retVoid) []
+horizontalSampleStorage mtlRasterizationRateLayerDescriptor =
+  sendMessage mtlRasterizationRateLayerDescriptor horizontalSampleStorageSelector
 
 -- | verticalSampleStorage
 --
@@ -73,8 +70,8 @@ horizontalSampleStorage mtlRasterizationRateLayerDescriptor  =
 --
 -- ObjC selector: @- verticalSampleStorage@
 verticalSampleStorage :: IsMTLRasterizationRateLayerDescriptor mtlRasterizationRateLayerDescriptor => mtlRasterizationRateLayerDescriptor -> IO (Ptr CFloat)
-verticalSampleStorage mtlRasterizationRateLayerDescriptor  =
-    fmap castPtr $ sendMsg mtlRasterizationRateLayerDescriptor (mkSelector "verticalSampleStorage") (retPtr retVoid) []
+verticalSampleStorage mtlRasterizationRateLayerDescriptor =
+  sendMessage mtlRasterizationRateLayerDescriptor verticalSampleStorageSelector
 
 -- | horizontal
 --
@@ -84,8 +81,8 @@ verticalSampleStorage mtlRasterizationRateLayerDescriptor  =
 --
 -- ObjC selector: @- horizontal@
 horizontal :: IsMTLRasterizationRateLayerDescriptor mtlRasterizationRateLayerDescriptor => mtlRasterizationRateLayerDescriptor -> IO (Id MTLRasterizationRateSampleArray)
-horizontal mtlRasterizationRateLayerDescriptor  =
-    sendMsg mtlRasterizationRateLayerDescriptor (mkSelector "horizontal") (retPtr retVoid) [] >>= retainedObject . castPtr
+horizontal mtlRasterizationRateLayerDescriptor =
+  sendMessage mtlRasterizationRateLayerDescriptor horizontalSelector
 
 -- | vertical
 --
@@ -95,30 +92,30 @@ horizontal mtlRasterizationRateLayerDescriptor  =
 --
 -- ObjC selector: @- vertical@
 vertical :: IsMTLRasterizationRateLayerDescriptor mtlRasterizationRateLayerDescriptor => mtlRasterizationRateLayerDescriptor -> IO (Id MTLRasterizationRateSampleArray)
-vertical mtlRasterizationRateLayerDescriptor  =
-    sendMsg mtlRasterizationRateLayerDescriptor (mkSelector "vertical") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertical mtlRasterizationRateLayerDescriptor =
+  sendMessage mtlRasterizationRateLayerDescriptor verticalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTLRasterizationRateLayerDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @horizontalSampleStorage@
-horizontalSampleStorageSelector :: Selector
+horizontalSampleStorageSelector :: Selector '[] (Ptr CFloat)
 horizontalSampleStorageSelector = mkSelector "horizontalSampleStorage"
 
 -- | @Selector@ for @verticalSampleStorage@
-verticalSampleStorageSelector :: Selector
+verticalSampleStorageSelector :: Selector '[] (Ptr CFloat)
 verticalSampleStorageSelector = mkSelector "verticalSampleStorage"
 
 -- | @Selector@ for @horizontal@
-horizontalSelector :: Selector
+horizontalSelector :: Selector '[] (Id MTLRasterizationRateSampleArray)
 horizontalSelector = mkSelector "horizontal"
 
 -- | @Selector@ for @vertical@
-verticalSelector :: Selector
+verticalSelector :: Selector '[] (Id MTLRasterizationRateSampleArray)
 verticalSelector = mkSelector "vertical"
 

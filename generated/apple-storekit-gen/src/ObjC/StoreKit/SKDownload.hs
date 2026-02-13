@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,17 +21,17 @@ module ObjC.StoreKit.SKDownload
   , progress
   , timeRemaining
   , transaction
-  , contentURLForProductIDSelector
-  , deleteContentForProductIDSelector
-  , stateSelector
-  , downloadStateSelector
-  , contentLengthSelector
-  , expectedContentLengthSelector
   , contentIdentifierSelector
+  , contentLengthSelector
+  , contentURLForProductIDSelector
   , contentURLSelector
   , contentVersionSelector
+  , deleteContentForProductIDSelector
+  , downloadStateSelector
   , errorSelector
+  , expectedContentLengthSelector
   , progressSelector
+  , stateSelector
   , timeRemainingSelector
   , transactionSelector
 
@@ -45,15 +46,11 @@ module ObjC.StoreKit.SKDownload
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,125 +63,123 @@ contentURLForProductID :: IsNSString productID => productID -> IO (Id NSURL)
 contentURLForProductID productID =
   do
     cls' <- getRequiredClass "SKDownload"
-    withObjCPtr productID $ \raw_productID ->
-      sendClassMsg cls' (mkSelector "contentURLForProductID:") (retPtr retVoid) [argPtr (castPtr raw_productID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contentURLForProductIDSelector (toNSString productID)
 
 -- | @+ deleteContentForProductID:@
 deleteContentForProductID :: IsNSString productID => productID -> IO ()
 deleteContentForProductID productID =
   do
     cls' <- getRequiredClass "SKDownload"
-    withObjCPtr productID $ \raw_productID ->
-      sendClassMsg cls' (mkSelector "deleteContentForProductID:") retVoid [argPtr (castPtr raw_productID :: Ptr ())]
+    sendClassMessage cls' deleteContentForProductIDSelector (toNSString productID)
 
 -- | @- state@
 state :: IsSKDownload skDownload => skDownload -> IO SKDownloadState
-state skDownload  =
-    fmap (coerce :: CLong -> SKDownloadState) $ sendMsg skDownload (mkSelector "state") retCLong []
+state skDownload =
+  sendMessage skDownload stateSelector
 
 -- | @- downloadState@
 downloadState :: IsSKDownload skDownload => skDownload -> IO SKDownloadState
-downloadState skDownload  =
-    fmap (coerce :: CLong -> SKDownloadState) $ sendMsg skDownload (mkSelector "downloadState") retCLong []
+downloadState skDownload =
+  sendMessage skDownload downloadStateSelector
 
 -- | @- contentLength@
 contentLength :: IsSKDownload skDownload => skDownload -> IO (Id NSNumber)
-contentLength skDownload  =
-    sendMsg skDownload (mkSelector "contentLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentLength skDownload =
+  sendMessage skDownload contentLengthSelector
 
 -- | @- expectedContentLength@
 expectedContentLength :: IsSKDownload skDownload => skDownload -> IO CLong
-expectedContentLength skDownload  =
-    sendMsg skDownload (mkSelector "expectedContentLength") retCLong []
+expectedContentLength skDownload =
+  sendMessage skDownload expectedContentLengthSelector
 
 -- | @- contentIdentifier@
 contentIdentifier :: IsSKDownload skDownload => skDownload -> IO (Id NSString)
-contentIdentifier skDownload  =
-    sendMsg skDownload (mkSelector "contentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentIdentifier skDownload =
+  sendMessage skDownload contentIdentifierSelector
 
 -- | @- contentURL@
 contentURL :: IsSKDownload skDownload => skDownload -> IO (Id NSURL)
-contentURL skDownload  =
-    sendMsg skDownload (mkSelector "contentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentURL skDownload =
+  sendMessage skDownload contentURLSelector
 
 -- | @- contentVersion@
 contentVersion :: IsSKDownload skDownload => skDownload -> IO (Id NSString)
-contentVersion skDownload  =
-    sendMsg skDownload (mkSelector "contentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentVersion skDownload =
+  sendMessage skDownload contentVersionSelector
 
 -- | @- error@
 error_ :: IsSKDownload skDownload => skDownload -> IO (Id NSError)
-error_ skDownload  =
-    sendMsg skDownload (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ skDownload =
+  sendMessage skDownload errorSelector
 
 -- | @- progress@
 progress :: IsSKDownload skDownload => skDownload -> IO CFloat
-progress skDownload  =
-    sendMsg skDownload (mkSelector "progress") retCFloat []
+progress skDownload =
+  sendMessage skDownload progressSelector
 
 -- | @- timeRemaining@
 timeRemaining :: IsSKDownload skDownload => skDownload -> IO CDouble
-timeRemaining skDownload  =
-    sendMsg skDownload (mkSelector "timeRemaining") retCDouble []
+timeRemaining skDownload =
+  sendMessage skDownload timeRemainingSelector
 
 -- | @- transaction@
 transaction :: IsSKDownload skDownload => skDownload -> IO (Id SKPaymentTransaction)
-transaction skDownload  =
-    sendMsg skDownload (mkSelector "transaction") (retPtr retVoid) [] >>= retainedObject . castPtr
+transaction skDownload =
+  sendMessage skDownload transactionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentURLForProductID:@
-contentURLForProductIDSelector :: Selector
+contentURLForProductIDSelector :: Selector '[Id NSString] (Id NSURL)
 contentURLForProductIDSelector = mkSelector "contentURLForProductID:"
 
 -- | @Selector@ for @deleteContentForProductID:@
-deleteContentForProductIDSelector :: Selector
+deleteContentForProductIDSelector :: Selector '[Id NSString] ()
 deleteContentForProductIDSelector = mkSelector "deleteContentForProductID:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] SKDownloadState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @downloadState@
-downloadStateSelector :: Selector
+downloadStateSelector :: Selector '[] SKDownloadState
 downloadStateSelector = mkSelector "downloadState"
 
 -- | @Selector@ for @contentLength@
-contentLengthSelector :: Selector
+contentLengthSelector :: Selector '[] (Id NSNumber)
 contentLengthSelector = mkSelector "contentLength"
 
 -- | @Selector@ for @expectedContentLength@
-expectedContentLengthSelector :: Selector
+expectedContentLengthSelector :: Selector '[] CLong
 expectedContentLengthSelector = mkSelector "expectedContentLength"
 
 -- | @Selector@ for @contentIdentifier@
-contentIdentifierSelector :: Selector
+contentIdentifierSelector :: Selector '[] (Id NSString)
 contentIdentifierSelector = mkSelector "contentIdentifier"
 
 -- | @Selector@ for @contentURL@
-contentURLSelector :: Selector
+contentURLSelector :: Selector '[] (Id NSURL)
 contentURLSelector = mkSelector "contentURL"
 
 -- | @Selector@ for @contentVersion@
-contentVersionSelector :: Selector
+contentVersionSelector :: Selector '[] (Id NSString)
 contentVersionSelector = mkSelector "contentVersion"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] CFloat
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @timeRemaining@
-timeRemainingSelector :: Selector
+timeRemainingSelector :: Selector '[] CDouble
 timeRemainingSelector = mkSelector "timeRemaining"
 
 -- | @Selector@ for @transaction@
-transactionSelector :: Selector
+transactionSelector :: Selector '[] (Id SKPaymentTransaction)
 transactionSelector = mkSelector "transaction"
 

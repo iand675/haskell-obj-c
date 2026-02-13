@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreMIDI.Internal.Enums
 
 -- | MIDIControlTransform
@@ -59,6 +61,16 @@ argMIDIControlTransform = mkStorableArg midiControlTransformStructType
 
 retMIDIControlTransform :: RetType MIDIControlTransform
 retMIDIControlTransform = mkStorableRetType midiControlTransformStructType
+
+instance ObjCArgument MIDIControlTransform where
+  withObjCArg x k = k (argMIDIControlTransform x)
+
+instance ObjCReturn MIDIControlTransform where
+  type RawReturn MIDIControlTransform = MIDIControlTransform
+  objcRetType = retMIDIControlTransform
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MIDIDriverInterface
 --
@@ -127,6 +139,16 @@ argMIDIDriverInterface = mkStorableArg midiDriverInterfaceStructType
 retMIDIDriverInterface :: RetType MIDIDriverInterface
 retMIDIDriverInterface = mkStorableRetType midiDriverInterfaceStructType
 
+instance ObjCArgument MIDIDriverInterface where
+  withObjCArg x k = k (argMIDIDriverInterface x)
+
+instance ObjCReturn MIDIDriverInterface where
+  type RawReturn MIDIDriverInterface = MIDIDriverInterface
+  objcRetType = retMIDIDriverInterface
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MIDIIOErrorNotification = MIDIIOErrorNotification
   { midiioErrorNotificationMessageID :: !MIDINotificationMessageID
   , midiioErrorNotificationMessageSize :: !CUInt
@@ -156,6 +178,16 @@ argMIDIIOErrorNotification = mkStorableArg midiioErrorNotificationStructType
 
 retMIDIIOErrorNotification :: RetType MIDIIOErrorNotification
 retMIDIIOErrorNotification = mkStorableRetType midiioErrorNotificationStructType
+
+instance ObjCArgument MIDIIOErrorNotification where
+  withObjCArg x k = k (argMIDIIOErrorNotification x)
+
+instance ObjCReturn MIDIIOErrorNotification where
+  type RawReturn MIDIIOErrorNotification = MIDIIOErrorNotification
+  objcRetType = retMIDIIOErrorNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MIDIMessage_128 = MIDIMessage_128
   { midiMessage_128Word0 :: !CUInt
@@ -187,6 +219,16 @@ argMIDIMessage_128 = mkStorableArg midiMessage_128StructType
 retMIDIMessage_128 :: RetType MIDIMessage_128
 retMIDIMessage_128 = mkStorableRetType midiMessage_128StructType
 
+instance ObjCArgument MIDIMessage_128 where
+  withObjCArg x k = k (argMIDIMessage_128 x)
+
+instance ObjCReturn MIDIMessage_128 where
+  type RawReturn MIDIMessage_128 = MIDIMessage_128
+  objcRetType = retMIDIMessage_128
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MIDIMessage_64 = MIDIMessage_64
   { midiMessage_64Word0 :: !CUInt
   , midiMessage_64Word1 :: !CUInt
@@ -210,6 +252,16 @@ argMIDIMessage_64 = mkStorableArg midiMessage_64StructType
 
 retMIDIMessage_64 :: RetType MIDIMessage_64
 retMIDIMessage_64 = mkStorableRetType midiMessage_64StructType
+
+instance ObjCArgument MIDIMessage_64 where
+  withObjCArg x k = k (argMIDIMessage_64 x)
+
+instance ObjCReturn MIDIMessage_64 where
+  type RawReturn MIDIMessage_64 = MIDIMessage_64
+  objcRetType = retMIDIMessage_64
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MIDIMessage_96 = MIDIMessage_96
   { midiMessage_96Word0 :: !CUInt
@@ -237,6 +289,16 @@ argMIDIMessage_96 = mkStorableArg midiMessage_96StructType
 
 retMIDIMessage_96 :: RetType MIDIMessage_96
 retMIDIMessage_96 = mkStorableRetType midiMessage_96StructType
+
+instance ObjCArgument MIDIMessage_96 where
+  withObjCArg x k = k (argMIDIMessage_96 x)
+
+instance ObjCReturn MIDIMessage_96 where
+  type RawReturn MIDIMessage_96 = MIDIMessage_96
+  objcRetType = retMIDIMessage_96
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MIDINotification
 --
@@ -268,6 +330,16 @@ argMIDINotification = mkStorableArg midiNotificationStructType
 
 retMIDINotification :: RetType MIDINotification
 retMIDINotification = mkStorableRetType midiNotificationStructType
+
+instance ObjCArgument MIDINotification where
+  withObjCArg x k = k (argMIDINotification x)
+
+instance ObjCReturn MIDINotification where
+  type RawReturn MIDINotification = MIDINotification
+  objcRetType = retMIDINotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MIDIObjectAddRemoveNotification
 --
@@ -310,6 +382,16 @@ argMIDIObjectAddRemoveNotification = mkStorableArg midiObjectAddRemoveNotificati
 retMIDIObjectAddRemoveNotification :: RetType MIDIObjectAddRemoveNotification
 retMIDIObjectAddRemoveNotification = mkStorableRetType midiObjectAddRemoveNotificationStructType
 
+instance ObjCArgument MIDIObjectAddRemoveNotification where
+  withObjCArg x k = k (argMIDIObjectAddRemoveNotification x)
+
+instance ObjCReturn MIDIObjectAddRemoveNotification where
+  type RawReturn MIDIObjectAddRemoveNotification = MIDIObjectAddRemoveNotification
+  objcRetType = retMIDIObjectAddRemoveNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MIDIObjectPropertyChangeNotification
 --
 -- A message describing the addition or removal of an object.
@@ -348,6 +430,16 @@ argMIDIObjectPropertyChangeNotification = mkStorableArg midiObjectPropertyChange
 retMIDIObjectPropertyChangeNotification :: RetType MIDIObjectPropertyChangeNotification
 retMIDIObjectPropertyChangeNotification = mkStorableRetType midiObjectPropertyChangeNotificationStructType
 
+instance ObjCArgument MIDIObjectPropertyChangeNotification where
+  withObjCArg x k = k (argMIDIObjectPropertyChangeNotification x)
+
+instance ObjCReturn MIDIObjectPropertyChangeNotification where
+  type RawReturn MIDIObjectPropertyChangeNotification = MIDIObjectPropertyChangeNotification
+  objcRetType = retMIDIObjectPropertyChangeNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MIDIThruConnectionEndpoint
 --
 -- Describes a source or destination in a MIDIThruConnection.
@@ -381,6 +473,16 @@ argMIDIThruConnectionEndpoint = mkStorableArg midiThruConnectionEndpointStructTy
 retMIDIThruConnectionEndpoint :: RetType MIDIThruConnectionEndpoint
 retMIDIThruConnectionEndpoint = mkStorableRetType midiThruConnectionEndpointStructType
 
+instance ObjCArgument MIDIThruConnectionEndpoint where
+  withObjCArg x k = k (argMIDIThruConnectionEndpoint x)
+
+instance ObjCReturn MIDIThruConnectionEndpoint where
+  type RawReturn MIDIThruConnectionEndpoint = MIDIThruConnectionEndpoint
+  objcRetType = retMIDIThruConnectionEndpoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MIDITransform
 --
 -- Describes how a single type of MIDI event is transformed.
@@ -411,3 +513,13 @@ argMIDITransform = mkStorableArg midiTransformStructType
 
 retMIDITransform :: RetType MIDITransform
 retMIDITransform = mkStorableRetType midiTransformStructType
+
+instance ObjCArgument MIDITransform where
+  withObjCArg x k = k (argMIDITransform x)
+
+instance ObjCReturn MIDITransform where
+  type RawReturn MIDITransform = MIDITransform
+  objcRetType = retMIDITransform
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

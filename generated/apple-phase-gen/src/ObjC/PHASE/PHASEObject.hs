@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.PHASE.PHASEObject
   , removeChildren
   , parent
   , children
-  , initSelector
-  , newSelector
-  , initWithEngineSelector
   , addChild_errorSelector
+  , childrenSelector
+  , initSelector
+  , initWithEngineSelector
+  , newSelector
+  , parentSelector
   , removeChildSelector
   , removeChildrenSelector
-  , parentSelector
-  , childrenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEObject phaseObject => phaseObject -> IO (Id PHASEObject)
-init_ phaseObject  =
-    sendMsg phaseObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseObject =
+  sendOwnedMessage phaseObject initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEObject)
 new  =
   do
     cls' <- getRequiredClass "PHASEObject"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine:
 --
@@ -65,9 +62,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:@
 initWithEngine :: (IsPHASEObject phaseObject, IsPHASEEngine engine) => phaseObject -> engine -> IO (Id PHASEObject)
-initWithEngine phaseObject  engine =
-  withObjCPtr engine $ \raw_engine ->
-      sendMsg phaseObject (mkSelector "initWithEngine:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine phaseObject engine =
+  sendOwnedMessage phaseObject initWithEngineSelector (toPHASEEngine engine)
 
 -- | addChild:error:
 --
@@ -81,10 +77,8 @@ initWithEngine phaseObject  engine =
 --
 -- ObjC selector: @- addChild:error:@
 addChild_error :: (IsPHASEObject phaseObject, IsPHASEObject child, IsNSError error_) => phaseObject -> child -> error_ -> IO Bool
-addChild_error phaseObject  child error_ =
-  withObjCPtr child $ \raw_child ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg phaseObject (mkSelector "addChild:error:") retCULong [argPtr (castPtr raw_child :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addChild_error phaseObject child error_ =
+  sendMessage phaseObject addChild_errorSelector (toPHASEObject child) (toNSError error_)
 
 -- | removeChild:
 --
@@ -92,9 +86,8 @@ addChild_error phaseObject  child error_ =
 --
 -- ObjC selector: @- removeChild:@
 removeChild :: (IsPHASEObject phaseObject, IsPHASEObject child) => phaseObject -> child -> IO ()
-removeChild phaseObject  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg phaseObject (mkSelector "removeChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+removeChild phaseObject child =
+  sendMessage phaseObject removeChildSelector (toPHASEObject child)
 
 -- | removeChildren
 --
@@ -102,8 +95,8 @@ removeChild phaseObject  child =
 --
 -- ObjC selector: @- removeChildren@
 removeChildren :: IsPHASEObject phaseObject => phaseObject -> IO ()
-removeChildren phaseObject  =
-    sendMsg phaseObject (mkSelector "removeChildren") retVoid []
+removeChildren phaseObject =
+  sendMessage phaseObject removeChildrenSelector
 
 -- | parent
 --
@@ -111,8 +104,8 @@ removeChildren phaseObject  =
 --
 -- ObjC selector: @- parent@
 parent :: IsPHASEObject phaseObject => phaseObject -> IO (Id PHASEObject)
-parent phaseObject  =
-    sendMsg phaseObject (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent phaseObject =
+  sendMessage phaseObject parentSelector
 
 -- | children
 --
@@ -120,42 +113,42 @@ parent phaseObject  =
 --
 -- ObjC selector: @- children@
 children :: IsPHASEObject phaseObject => phaseObject -> IO (Id NSArray)
-children phaseObject  =
-    sendMsg phaseObject (mkSelector "children") (retPtr retVoid) [] >>= retainedObject . castPtr
+children phaseObject =
+  sendMessage phaseObject childrenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEObject)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:@
-initWithEngineSelector :: Selector
+initWithEngineSelector :: Selector '[Id PHASEEngine] (Id PHASEObject)
 initWithEngineSelector = mkSelector "initWithEngine:"
 
 -- | @Selector@ for @addChild:error:@
-addChild_errorSelector :: Selector
+addChild_errorSelector :: Selector '[Id PHASEObject, Id NSError] Bool
 addChild_errorSelector = mkSelector "addChild:error:"
 
 -- | @Selector@ for @removeChild:@
-removeChildSelector :: Selector
+removeChildSelector :: Selector '[Id PHASEObject] ()
 removeChildSelector = mkSelector "removeChild:"
 
 -- | @Selector@ for @removeChildren@
-removeChildrenSelector :: Selector
+removeChildrenSelector :: Selector '[] ()
 removeChildrenSelector = mkSelector "removeChildren"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id PHASEObject)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @children@
-childrenSelector :: Selector
+childrenSelector :: Selector '[] (Id NSArray)
 childrenSelector = mkSelector "children"
 

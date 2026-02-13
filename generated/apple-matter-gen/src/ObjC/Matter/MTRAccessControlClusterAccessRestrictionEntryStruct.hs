@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRAccessControlClusterAccessRestrictionEntryStruct
   , setRestrictions
   , fabricIndex
   , setFabricIndex
-  , endpointSelector
-  , setEndpointSelector
   , clusterSelector
-  , setClusterSelector
-  , restrictionsSelector
-  , setRestrictionsSelector
+  , endpointSelector
   , fabricIndexSelector
+  , restrictionsSelector
+  , setClusterSelector
+  , setEndpointSelector
   , setFabricIndexSelector
+  , setRestrictionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- endpoint@
 endpoint :: IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct => mtrAccessControlClusterAccessRestrictionEntryStruct -> IO (Id NSNumber)
-endpoint mtrAccessControlClusterAccessRestrictionEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint mtrAccessControlClusterAccessRestrictionEntryStruct =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct endpointSelector
 
 -- | @- setEndpoint:@
 setEndpoint :: (IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessRestrictionEntryStruct -> value -> IO ()
-setEndpoint mtrAccessControlClusterAccessRestrictionEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "setEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoint mtrAccessControlClusterAccessRestrictionEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct setEndpointSelector (toNSNumber value)
 
 -- | @- cluster@
 cluster :: IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct => mtrAccessControlClusterAccessRestrictionEntryStruct -> IO (Id NSNumber)
-cluster mtrAccessControlClusterAccessRestrictionEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "cluster") (retPtr retVoid) [] >>= retainedObject . castPtr
+cluster mtrAccessControlClusterAccessRestrictionEntryStruct =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct clusterSelector
 
 -- | @- setCluster:@
 setCluster :: (IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessRestrictionEntryStruct -> value -> IO ()
-setCluster mtrAccessControlClusterAccessRestrictionEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "setCluster:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCluster mtrAccessControlClusterAccessRestrictionEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct setClusterSelector (toNSNumber value)
 
 -- | @- restrictions@
 restrictions :: IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct => mtrAccessControlClusterAccessRestrictionEntryStruct -> IO (Id NSArray)
-restrictions mtrAccessControlClusterAccessRestrictionEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "restrictions") (retPtr retVoid) [] >>= retainedObject . castPtr
+restrictions mtrAccessControlClusterAccessRestrictionEntryStruct =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct restrictionsSelector
 
 -- | @- setRestrictions:@
 setRestrictions :: (IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct, IsNSArray value) => mtrAccessControlClusterAccessRestrictionEntryStruct -> value -> IO ()
-setRestrictions mtrAccessControlClusterAccessRestrictionEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "setRestrictions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRestrictions mtrAccessControlClusterAccessRestrictionEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct setRestrictionsSelector (toNSArray value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct => mtrAccessControlClusterAccessRestrictionEntryStruct -> IO (Id NSNumber)
-fabricIndex mtrAccessControlClusterAccessRestrictionEntryStruct  =
-    sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrAccessControlClusterAccessRestrictionEntryStruct =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRAccessControlClusterAccessRestrictionEntryStruct mtrAccessControlClusterAccessRestrictionEntryStruct, IsNSNumber value) => mtrAccessControlClusterAccessRestrictionEntryStruct -> value -> IO ()
-setFabricIndex mtrAccessControlClusterAccessRestrictionEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessRestrictionEntryStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrAccessControlClusterAccessRestrictionEntryStruct value =
+  sendMessage mtrAccessControlClusterAccessRestrictionEntryStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSNumber)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @setEndpoint:@
-setEndpointSelector :: Selector
+setEndpointSelector :: Selector '[Id NSNumber] ()
 setEndpointSelector = mkSelector "setEndpoint:"
 
 -- | @Selector@ for @cluster@
-clusterSelector :: Selector
+clusterSelector :: Selector '[] (Id NSNumber)
 clusterSelector = mkSelector "cluster"
 
 -- | @Selector@ for @setCluster:@
-setClusterSelector :: Selector
+setClusterSelector :: Selector '[Id NSNumber] ()
 setClusterSelector = mkSelector "setCluster:"
 
 -- | @Selector@ for @restrictions@
-restrictionsSelector :: Selector
+restrictionsSelector :: Selector '[] (Id NSArray)
 restrictionsSelector = mkSelector "restrictions"
 
 -- | @Selector@ for @setRestrictions:@
-setRestrictionsSelector :: Selector
+setRestrictionsSelector :: Selector '[Id NSArray] ()
 setRestrictionsSelector = mkSelector "setRestrictions:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

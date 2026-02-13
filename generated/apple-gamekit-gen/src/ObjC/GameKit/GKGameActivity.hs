@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,40 +45,40 @@ module ObjC.GameKit.GKGameActivity
   , achievements
   , leaderboardScores
   , validPartyCodeAlphabet
-  , initSelector
-  , startWithDefinition_partyCode_errorSelector
-  , startWithDefinition_errorSelector
-  , isValidPartyCodeSelector
-  , initWithDefinitionSelector
-  , startSelector
-  , pauseSelector
-  , resumeSelector
-  , endSelector
-  , setScoreOnLeaderboard_toScore_contextSelector
-  , setScoreOnLeaderboard_toScoreSelector
-  , getScoreOnLeaderboardSelector
-  , removeScoresFromLeaderboardsSelector
-  , setProgressOnAchievement_toPercentCompleteSelector
-  , setAchievementCompletedSelector
-  , getProgressOnAchievementSelector
-  , removeAchievementsSelector
-  , checkPendingGameActivityExistenceWithCompletionHandlerSelector
-  , makeMatchRequestSelector
-  , findMatchWithCompletionHandlerSelector
-  , identifierSelector
+  , achievementsSelector
   , activityDefinitionSelector
-  , propertiesSelector
-  , setPropertiesSelector
-  , stateSelector
+  , checkPendingGameActivityExistenceWithCompletionHandlerSelector
+  , creationDateSelector
+  , durationSelector
+  , endDateSelector
+  , endSelector
+  , findMatchWithCompletionHandlerSelector
+  , getProgressOnAchievementSelector
+  , getScoreOnLeaderboardSelector
+  , identifierSelector
+  , initSelector
+  , initWithDefinitionSelector
+  , isValidPartyCodeSelector
+  , lastResumeDateSelector
+  , leaderboardScoresSelector
+  , makeMatchRequestSelector
   , partyCodeSelector
   , partyURLSelector
-  , creationDateSelector
+  , pauseSelector
+  , propertiesSelector
+  , removeAchievementsSelector
+  , removeScoresFromLeaderboardsSelector
+  , resumeSelector
+  , setAchievementCompletedSelector
+  , setProgressOnAchievement_toPercentCompleteSelector
+  , setPropertiesSelector
+  , setScoreOnLeaderboard_toScoreSelector
+  , setScoreOnLeaderboard_toScore_contextSelector
   , startDateSelector
-  , lastResumeDateSelector
-  , endDateSelector
-  , durationSelector
-  , achievementsSelector
-  , leaderboardScoresSelector
+  , startSelector
+  , startWithDefinition_errorSelector
+  , startWithDefinition_partyCode_errorSelector
+  , stateSelector
   , validPartyCodeAlphabetSelector
 
   -- * Enum types
@@ -89,15 +90,11 @@ module ObjC.GameKit.GKGameActivity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,8 +104,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id GKGameActivity)
-init_ gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkGameActivity =
+  sendOwnedMessage gkGameActivity initSelector
 
 -- | Creates and starts a new game activity with a custom party code.
 --
@@ -119,10 +116,7 @@ startWithDefinition_partyCode_error :: (IsGKGameActivityDefinition activityDefin
 startWithDefinition_partyCode_error activityDefinition partyCode error_ =
   do
     cls' <- getRequiredClass "GKGameActivity"
-    withObjCPtr activityDefinition $ \raw_activityDefinition ->
-      withObjCPtr partyCode $ \raw_partyCode ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "startWithDefinition:partyCode:error:") (retPtr retVoid) [argPtr (castPtr raw_activityDefinition :: Ptr ()), argPtr (castPtr raw_partyCode :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' startWithDefinition_partyCode_errorSelector (toGKGameActivityDefinition activityDefinition) (toNSString partyCode) (toNSError error_)
 
 -- | Creates and starts a game activity with a definition.
 --
@@ -131,9 +125,7 @@ startWithDefinition_error :: (IsGKGameActivityDefinition activityDefinition, IsN
 startWithDefinition_error activityDefinition error_ =
   do
     cls' <- getRequiredClass "GKGameActivity"
-    withObjCPtr activityDefinition $ \raw_activityDefinition ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "startWithDefinition:error:") (retPtr retVoid) [argPtr (castPtr raw_activityDefinition :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' startWithDefinition_errorSelector (toGKGameActivityDefinition activityDefinition) (toNSError error_)
 
 -- | Checks whether a party code is in valid format.
 --
@@ -144,37 +136,35 @@ isValidPartyCode :: IsNSString partyCode => partyCode -> IO Bool
 isValidPartyCode partyCode =
   do
     cls' <- getRequiredClass "GKGameActivity"
-    withObjCPtr partyCode $ \raw_partyCode ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isValidPartyCode:") retCULong [argPtr (castPtr raw_partyCode :: Ptr ())]
+    sendClassMessage cls' isValidPartyCodeSelector (toNSString partyCode)
 
 -- | Creates a game activity with definition.
 --
 -- ObjC selector: @- initWithDefinition:@
 initWithDefinition :: (IsGKGameActivity gkGameActivity, IsGKGameActivityDefinition activityDefinition) => gkGameActivity -> activityDefinition -> IO (Id GKGameActivity)
-initWithDefinition gkGameActivity  activityDefinition =
-  withObjCPtr activityDefinition $ \raw_activityDefinition ->
-      sendMsg gkGameActivity (mkSelector "initWithDefinition:") (retPtr retVoid) [argPtr (castPtr raw_activityDefinition :: Ptr ())] >>= ownedObject . castPtr
+initWithDefinition gkGameActivity activityDefinition =
+  sendOwnedMessage gkGameActivity initWithDefinitionSelector (toGKGameActivityDefinition activityDefinition)
 
 -- | Starts the game activity if it's not already started.
 --
 -- ObjC selector: @- start@
 start :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO ()
-start gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "start") retVoid []
+start gkGameActivity =
+  sendMessage gkGameActivity startSelector
 
 -- | Pauses the game activity if it's not already paused.
 --
 -- ObjC selector: @- pause@
 pause :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO ()
-pause gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "pause") retVoid []
+pause gkGameActivity =
+  sendMessage gkGameActivity pauseSelector
 
 -- | Resumes the game activity if it was paused.
 --
 -- ObjC selector: @- resume@
 resume :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO ()
-resume gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "resume") retVoid []
+resume gkGameActivity =
+  sendMessage gkGameActivity resumeSelector
 
 -- | Ends the game activity if it's not already ended.
 --
@@ -182,8 +172,8 @@ resume gkGameActivity  =
 --
 -- ObjC selector: @- end@
 end :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO ()
-end gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "end") retVoid []
+end gkGameActivity =
+  sendMessage gkGameActivity endSelector
 
 -- | Set a score of a leaderboard with a context for a player.
 --
@@ -191,9 +181,8 @@ end gkGameActivity  =
 --
 -- ObjC selector: @- setScoreOnLeaderboard:toScore:context:@
 setScoreOnLeaderboard_toScore_context :: (IsGKGameActivity gkGameActivity, IsGKLeaderboard leaderboard) => gkGameActivity -> leaderboard -> CLong -> CULong -> IO ()
-setScoreOnLeaderboard_toScore_context gkGameActivity  leaderboard score context =
-  withObjCPtr leaderboard $ \raw_leaderboard ->
-      sendMsg gkGameActivity (mkSelector "setScoreOnLeaderboard:toScore:context:") retVoid [argPtr (castPtr raw_leaderboard :: Ptr ()), argCLong score, argCULong context]
+setScoreOnLeaderboard_toScore_context gkGameActivity leaderboard score context =
+  sendMessage gkGameActivity setScoreOnLeaderboard_toScore_contextSelector (toGKLeaderboard leaderboard) score context
 
 -- | Set a score of a leaderboard for a player.
 --
@@ -201,25 +190,22 @@ setScoreOnLeaderboard_toScore_context gkGameActivity  leaderboard score context 
 --
 -- ObjC selector: @- setScoreOnLeaderboard:toScore:@
 setScoreOnLeaderboard_toScore :: (IsGKGameActivity gkGameActivity, IsGKLeaderboard leaderboard) => gkGameActivity -> leaderboard -> CLong -> IO ()
-setScoreOnLeaderboard_toScore gkGameActivity  leaderboard score =
-  withObjCPtr leaderboard $ \raw_leaderboard ->
-      sendMsg gkGameActivity (mkSelector "setScoreOnLeaderboard:toScore:") retVoid [argPtr (castPtr raw_leaderboard :: Ptr ()), argCLong score]
+setScoreOnLeaderboard_toScore gkGameActivity leaderboard score =
+  sendMessage gkGameActivity setScoreOnLeaderboard_toScoreSelector (toGKLeaderboard leaderboard) score
 
 -- | Get the leaderboard score from a specific leaderboard of the local player if previously set.
 --
 -- ObjC selector: @- getScoreOnLeaderboard:@
 getScoreOnLeaderboard :: (IsGKGameActivity gkGameActivity, IsGKLeaderboard leaderboard) => gkGameActivity -> leaderboard -> IO (Id GKLeaderboardScore)
-getScoreOnLeaderboard gkGameActivity  leaderboard =
-  withObjCPtr leaderboard $ \raw_leaderboard ->
-      sendMsg gkGameActivity (mkSelector "getScoreOnLeaderboard:") (retPtr retVoid) [argPtr (castPtr raw_leaderboard :: Ptr ())] >>= retainedObject . castPtr
+getScoreOnLeaderboard gkGameActivity leaderboard =
+  sendMessage gkGameActivity getScoreOnLeaderboardSelector (toGKLeaderboard leaderboard)
 
 -- | Removes all scores from leaderboards for a player if exist.
 --
 -- ObjC selector: @- removeScoresFromLeaderboards:@
 removeScoresFromLeaderboards :: (IsGKGameActivity gkGameActivity, IsNSArray leaderboards) => gkGameActivity -> leaderboards -> IO ()
-removeScoresFromLeaderboards gkGameActivity  leaderboards =
-  withObjCPtr leaderboards $ \raw_leaderboards ->
-      sendMsg gkGameActivity (mkSelector "removeScoresFromLeaderboards:") retVoid [argPtr (castPtr raw_leaderboards :: Ptr ())]
+removeScoresFromLeaderboards gkGameActivity leaderboards =
+  sendMessage gkGameActivity removeScoresFromLeaderboardsSelector (toNSArray leaderboards)
 
 -- | Set a progress for an achievement for a player.
 --
@@ -227,9 +213,8 @@ removeScoresFromLeaderboards gkGameActivity  leaderboards =
 --
 -- ObjC selector: @- setProgressOnAchievement:toPercentComplete:@
 setProgressOnAchievement_toPercentComplete :: (IsGKGameActivity gkGameActivity, IsGKAchievement achievement) => gkGameActivity -> achievement -> CDouble -> IO ()
-setProgressOnAchievement_toPercentComplete gkGameActivity  achievement percentComplete =
-  withObjCPtr achievement $ \raw_achievement ->
-      sendMsg gkGameActivity (mkSelector "setProgressOnAchievement:toPercentComplete:") retVoid [argPtr (castPtr raw_achievement :: Ptr ()), argCDouble percentComplete]
+setProgressOnAchievement_toPercentComplete gkGameActivity achievement percentComplete =
+  sendMessage gkGameActivity setProgressOnAchievement_toPercentCompleteSelector (toGKAchievement achievement) percentComplete
 
 -- | Set progress to 100% for an achievement for a player.
 --
@@ -237,9 +222,8 @@ setProgressOnAchievement_toPercentComplete gkGameActivity  achievement percentCo
 --
 -- ObjC selector: @- setAchievementCompleted:@
 setAchievementCompleted :: (IsGKGameActivity gkGameActivity, IsGKAchievement achievement) => gkGameActivity -> achievement -> IO ()
-setAchievementCompleted gkGameActivity  achievement =
-  withObjCPtr achievement $ \raw_achievement ->
-      sendMsg gkGameActivity (mkSelector "setAchievementCompleted:") retVoid [argPtr (castPtr raw_achievement :: Ptr ())]
+setAchievementCompleted gkGameActivity achievement =
+  sendMessage gkGameActivity setAchievementCompletedSelector (toGKAchievement achievement)
 
 -- | Get the achievement progress from a specific achievement of the local player if previously set.
 --
@@ -247,17 +231,15 @@ setAchievementCompleted gkGameActivity  achievement =
 --
 -- ObjC selector: @- getProgressOnAchievement:@
 getProgressOnAchievement :: (IsGKGameActivity gkGameActivity, IsGKAchievement achievement) => gkGameActivity -> achievement -> IO CDouble
-getProgressOnAchievement gkGameActivity  achievement =
-  withObjCPtr achievement $ \raw_achievement ->
-      sendMsg gkGameActivity (mkSelector "getProgressOnAchievement:") retCDouble [argPtr (castPtr raw_achievement :: Ptr ())]
+getProgressOnAchievement gkGameActivity achievement =
+  sendMessage gkGameActivity getProgressOnAchievementSelector (toGKAchievement achievement)
 
 -- | Removes all achievements if they exist.
 --
 -- ObjC selector: @- removeAchievements:@
 removeAchievements :: (IsGKGameActivity gkGameActivity, IsNSArray achievements) => gkGameActivity -> achievements -> IO ()
-removeAchievements gkGameActivity  achievements =
-  withObjCPtr achievements $ \raw_achievements ->
-      sendMsg gkGameActivity (mkSelector "removeAchievements:") retVoid [argPtr (castPtr raw_achievements :: Ptr ())]
+removeAchievements gkGameActivity achievements =
+  sendMessage gkGameActivity removeAchievementsSelector (toNSArray achievements)
 
 -- | Checks whether there is a pending activity to handle for the current game.
 --
@@ -268,14 +250,14 @@ checkPendingGameActivityExistenceWithCompletionHandler :: Ptr () -> IO ()
 checkPendingGameActivityExistenceWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "GKGameActivity"
-    sendClassMsg cls' (mkSelector "checkPendingGameActivityExistenceWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' checkPendingGameActivityExistenceWithCompletionHandlerSelector completionHandler
 
 -- | Makes a match request object with information from the activity, which you can use to find matches for the local player.
 --
 -- ObjC selector: @- makeMatchRequest@
 makeMatchRequest :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id GKMatchRequest)
-makeMatchRequest gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "makeMatchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeMatchRequest gkGameActivity =
+  sendMessage gkGameActivity makeMatchRequestSelector
 
 -- | Use information from the activity to find matches for the local player.
 --
@@ -283,22 +265,22 @@ makeMatchRequest gkGameActivity  =
 --
 -- ObjC selector: @- findMatchWithCompletionHandler:@
 findMatchWithCompletionHandler :: IsGKGameActivity gkGameActivity => gkGameActivity -> Ptr () -> IO ()
-findMatchWithCompletionHandler gkGameActivity  completionHandler =
-    sendMsg gkGameActivity (mkSelector "findMatchWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+findMatchWithCompletionHandler gkGameActivity completionHandler =
+  sendMessage gkGameActivity findMatchWithCompletionHandlerSelector completionHandler
 
 -- | The identifier of this activity instance.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSString)
-identifier gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier gkGameActivity =
+  sendMessage gkGameActivity identifierSelector
 
 -- | The activity definition that this activity instance is based on.
 --
 -- ObjC selector: @- activityDefinition@
 activityDefinition :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id GKGameActivityDefinition)
-activityDefinition gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "activityDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+activityDefinition gkGameActivity =
+  sendMessage gkGameActivity activityDefinitionSelector
 
 -- | Properties that contain additional information about the activity.
 --
@@ -308,8 +290,8 @@ activityDefinition gkGameActivity  =
 --
 -- ObjC selector: @- properties@
 properties :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSDictionary)
-properties gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties gkGameActivity =
+  sendMessage gkGameActivity propertiesSelector
 
 -- | Properties that contain additional information about the activity.
 --
@@ -319,16 +301,15 @@ properties gkGameActivity  =
 --
 -- ObjC selector: @- setProperties:@
 setProperties :: (IsGKGameActivity gkGameActivity, IsNSDictionary value) => gkGameActivity -> value -> IO ()
-setProperties gkGameActivity  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkGameActivity (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProperties gkGameActivity value =
+  sendMessage gkGameActivity setPropertiesSelector (toNSDictionary value)
 
 -- | The state of the game activity.
 --
 -- ObjC selector: @- state@
 state :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO GKGameActivityState
-state gkGameActivity  =
-    fmap (coerce :: CULong -> GKGameActivityState) $ sendMsg gkGameActivity (mkSelector "state") retCULong []
+state gkGameActivity =
+  sendMessage gkGameActivity stateSelector
 
 -- | If the game supports party code, this is the party code that can be shared among players to join the party.
 --
@@ -336,29 +317,29 @@ state gkGameActivity  =
 --
 -- ObjC selector: @- partyCode@
 partyCode :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSString)
-partyCode gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "partyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+partyCode gkGameActivity =
+  sendMessage gkGameActivity partyCodeSelector
 
 -- | If the game supports party code, this is the URL that can be shared among players to join the party.
 --
 -- ObjC selector: @- partyURL@
 partyURL :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSURL)
-partyURL gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "partyURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+partyURL gkGameActivity =
+  sendMessage gkGameActivity partyURLSelector
 
 -- | The date when the activity was created.
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSDate)
-creationDate gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate gkGameActivity =
+  sendMessage gkGameActivity creationDateSelector
 
 -- | The date when the activity was initially started.
 --
 -- ObjC selector: @- startDate@
 startDate :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSDate)
-startDate gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate gkGameActivity =
+  sendMessage gkGameActivity startDateSelector
 
 -- | The date when the activity was last resumed.
 --
@@ -366,22 +347,22 @@ startDate gkGameActivity  =
 --
 -- ObjC selector: @- lastResumeDate@
 lastResumeDate :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSDate)
-lastResumeDate gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "lastResumeDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastResumeDate gkGameActivity =
+  sendMessage gkGameActivity lastResumeDateSelector
 
 -- | The date when the activity was officially ended.
 --
 -- ObjC selector: @- endDate@
 endDate :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSDate)
-endDate gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate gkGameActivity =
+  sendMessage gkGameActivity endDateSelector
 
 -- | The total time elapsed while in active state.
 --
 -- ObjC selector: @- duration@
 duration :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO CDouble
-duration gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "duration") retCDouble []
+duration gkGameActivity =
+  sendMessage gkGameActivity durationSelector
 
 -- | All achievements that have been associated with this activity.
 --
@@ -389,8 +370,8 @@ duration gkGameActivity  =
 --
 -- ObjC selector: @- achievements@
 achievements :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSSet)
-achievements gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "achievements") (retPtr retVoid) [] >>= retainedObject . castPtr
+achievements gkGameActivity =
+  sendMessage gkGameActivity achievementsSelector
 
 -- | All leaderboard scores that have been associated with this activity.
 --
@@ -398,8 +379,8 @@ achievements gkGameActivity  =
 --
 -- ObjC selector: @- leaderboardScores@
 leaderboardScores :: IsGKGameActivity gkGameActivity => gkGameActivity -> IO (Id NSSet)
-leaderboardScores gkGameActivity  =
-    sendMsg gkGameActivity (mkSelector "leaderboardScores") (retPtr retVoid) [] >>= retainedObject . castPtr
+leaderboardScores gkGameActivity =
+  sendMessage gkGameActivity leaderboardScoresSelector
 
 -- | Allowed characters for the party code to be used to share this activity.
 --
@@ -408,149 +389,149 @@ validPartyCodeAlphabet :: IO (Id NSArray)
 validPartyCodeAlphabet  =
   do
     cls' <- getRequiredClass "GKGameActivity"
-    sendClassMsg cls' (mkSelector "validPartyCodeAlphabet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' validPartyCodeAlphabetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKGameActivity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @startWithDefinition:partyCode:error:@
-startWithDefinition_partyCode_errorSelector :: Selector
+startWithDefinition_partyCode_errorSelector :: Selector '[Id GKGameActivityDefinition, Id NSString, Id NSError] (Id GKGameActivity)
 startWithDefinition_partyCode_errorSelector = mkSelector "startWithDefinition:partyCode:error:"
 
 -- | @Selector@ for @startWithDefinition:error:@
-startWithDefinition_errorSelector :: Selector
+startWithDefinition_errorSelector :: Selector '[Id GKGameActivityDefinition, Id NSError] (Id GKGameActivity)
 startWithDefinition_errorSelector = mkSelector "startWithDefinition:error:"
 
 -- | @Selector@ for @isValidPartyCode:@
-isValidPartyCodeSelector :: Selector
+isValidPartyCodeSelector :: Selector '[Id NSString] Bool
 isValidPartyCodeSelector = mkSelector "isValidPartyCode:"
 
 -- | @Selector@ for @initWithDefinition:@
-initWithDefinitionSelector :: Selector
+initWithDefinitionSelector :: Selector '[Id GKGameActivityDefinition] (Id GKGameActivity)
 initWithDefinitionSelector = mkSelector "initWithDefinition:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @end@
-endSelector :: Selector
+endSelector :: Selector '[] ()
 endSelector = mkSelector "end"
 
 -- | @Selector@ for @setScoreOnLeaderboard:toScore:context:@
-setScoreOnLeaderboard_toScore_contextSelector :: Selector
+setScoreOnLeaderboard_toScore_contextSelector :: Selector '[Id GKLeaderboard, CLong, CULong] ()
 setScoreOnLeaderboard_toScore_contextSelector = mkSelector "setScoreOnLeaderboard:toScore:context:"
 
 -- | @Selector@ for @setScoreOnLeaderboard:toScore:@
-setScoreOnLeaderboard_toScoreSelector :: Selector
+setScoreOnLeaderboard_toScoreSelector :: Selector '[Id GKLeaderboard, CLong] ()
 setScoreOnLeaderboard_toScoreSelector = mkSelector "setScoreOnLeaderboard:toScore:"
 
 -- | @Selector@ for @getScoreOnLeaderboard:@
-getScoreOnLeaderboardSelector :: Selector
+getScoreOnLeaderboardSelector :: Selector '[Id GKLeaderboard] (Id GKLeaderboardScore)
 getScoreOnLeaderboardSelector = mkSelector "getScoreOnLeaderboard:"
 
 -- | @Selector@ for @removeScoresFromLeaderboards:@
-removeScoresFromLeaderboardsSelector :: Selector
+removeScoresFromLeaderboardsSelector :: Selector '[Id NSArray] ()
 removeScoresFromLeaderboardsSelector = mkSelector "removeScoresFromLeaderboards:"
 
 -- | @Selector@ for @setProgressOnAchievement:toPercentComplete:@
-setProgressOnAchievement_toPercentCompleteSelector :: Selector
+setProgressOnAchievement_toPercentCompleteSelector :: Selector '[Id GKAchievement, CDouble] ()
 setProgressOnAchievement_toPercentCompleteSelector = mkSelector "setProgressOnAchievement:toPercentComplete:"
 
 -- | @Selector@ for @setAchievementCompleted:@
-setAchievementCompletedSelector :: Selector
+setAchievementCompletedSelector :: Selector '[Id GKAchievement] ()
 setAchievementCompletedSelector = mkSelector "setAchievementCompleted:"
 
 -- | @Selector@ for @getProgressOnAchievement:@
-getProgressOnAchievementSelector :: Selector
+getProgressOnAchievementSelector :: Selector '[Id GKAchievement] CDouble
 getProgressOnAchievementSelector = mkSelector "getProgressOnAchievement:"
 
 -- | @Selector@ for @removeAchievements:@
-removeAchievementsSelector :: Selector
+removeAchievementsSelector :: Selector '[Id NSArray] ()
 removeAchievementsSelector = mkSelector "removeAchievements:"
 
 -- | @Selector@ for @checkPendingGameActivityExistenceWithCompletionHandler:@
-checkPendingGameActivityExistenceWithCompletionHandlerSelector :: Selector
+checkPendingGameActivityExistenceWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 checkPendingGameActivityExistenceWithCompletionHandlerSelector = mkSelector "checkPendingGameActivityExistenceWithCompletionHandler:"
 
 -- | @Selector@ for @makeMatchRequest@
-makeMatchRequestSelector :: Selector
+makeMatchRequestSelector :: Selector '[] (Id GKMatchRequest)
 makeMatchRequestSelector = mkSelector "makeMatchRequest"
 
 -- | @Selector@ for @findMatchWithCompletionHandler:@
-findMatchWithCompletionHandlerSelector :: Selector
+findMatchWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 findMatchWithCompletionHandlerSelector = mkSelector "findMatchWithCompletionHandler:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @activityDefinition@
-activityDefinitionSelector :: Selector
+activityDefinitionSelector :: Selector '[] (Id GKGameActivityDefinition)
 activityDefinitionSelector = mkSelector "activityDefinition"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id NSDictionary] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] GKGameActivityState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @partyCode@
-partyCodeSelector :: Selector
+partyCodeSelector :: Selector '[] (Id NSString)
 partyCodeSelector = mkSelector "partyCode"
 
 -- | @Selector@ for @partyURL@
-partyURLSelector :: Selector
+partyURLSelector :: Selector '[] (Id NSURL)
 partyURLSelector = mkSelector "partyURL"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @lastResumeDate@
-lastResumeDateSelector :: Selector
+lastResumeDateSelector :: Selector '[] (Id NSDate)
 lastResumeDateSelector = mkSelector "lastResumeDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @achievements@
-achievementsSelector :: Selector
+achievementsSelector :: Selector '[] (Id NSSet)
 achievementsSelector = mkSelector "achievements"
 
 -- | @Selector@ for @leaderboardScores@
-leaderboardScoresSelector :: Selector
+leaderboardScoresSelector :: Selector '[] (Id NSSet)
 leaderboardScoresSelector = mkSelector "leaderboardScores"
 
 -- | @Selector@ for @validPartyCodeAlphabet@
-validPartyCodeAlphabetSelector :: Selector
+validPartyCodeAlphabetSelector :: Selector '[] (Id NSArray)
 validPartyCodeAlphabetSelector = mkSelector "validPartyCodeAlphabet"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AppKit.NSLayoutXAxisAnchor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- anchorWithOffsetToAnchor:@
 anchorWithOffsetToAnchor :: (IsNSLayoutXAxisAnchor nsLayoutXAxisAnchor, IsNSLayoutXAxisAnchor otherAnchor) => nsLayoutXAxisAnchor -> otherAnchor -> IO (Id NSLayoutDimension)
-anchorWithOffsetToAnchor nsLayoutXAxisAnchor  otherAnchor =
-  withObjCPtr otherAnchor $ \raw_otherAnchor ->
-      sendMsg nsLayoutXAxisAnchor (mkSelector "anchorWithOffsetToAnchor:") (retPtr retVoid) [argPtr (castPtr raw_otherAnchor :: Ptr ())] >>= retainedObject . castPtr
+anchorWithOffsetToAnchor nsLayoutXAxisAnchor otherAnchor =
+  sendMessage nsLayoutXAxisAnchor anchorWithOffsetToAnchorSelector (toNSLayoutXAxisAnchor otherAnchor)
 
 -- | @- constraintEqualToSystemSpacingAfterAnchor:multiplier:@
 constraintEqualToSystemSpacingAfterAnchor_multiplier :: (IsNSLayoutXAxisAnchor nsLayoutXAxisAnchor, IsNSLayoutXAxisAnchor anchor) => nsLayoutXAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutXAxisAnchor (mkSelector "constraintEqualToSystemSpacingAfterAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor anchor multiplier =
+  sendMessage nsLayoutXAxisAnchor constraintEqualToSystemSpacingAfterAnchor_multiplierSelector (toNSLayoutXAxisAnchor anchor) multiplier
 
 -- | @- constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:multiplier:@
 constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplier :: (IsNSLayoutXAxisAnchor nsLayoutXAxisAnchor, IsNSLayoutXAxisAnchor anchor) => nsLayoutXAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutXAxisAnchor (mkSelector "constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor anchor multiplier =
+  sendMessage nsLayoutXAxisAnchor constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector (toNSLayoutXAxisAnchor anchor) multiplier
 
 -- | @- constraintLessThanOrEqualToSystemSpacingAfterAnchor:multiplier:@
 constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplier :: (IsNSLayoutXAxisAnchor nsLayoutXAxisAnchor, IsNSLayoutXAxisAnchor anchor) => nsLayoutXAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutXAxisAnchor (mkSelector "constraintLessThanOrEqualToSystemSpacingAfterAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplier nsLayoutXAxisAnchor anchor multiplier =
+  sendMessage nsLayoutXAxisAnchor constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector (toNSLayoutXAxisAnchor anchor) multiplier
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @anchorWithOffsetToAnchor:@
-anchorWithOffsetToAnchorSelector :: Selector
+anchorWithOffsetToAnchorSelector :: Selector '[Id NSLayoutXAxisAnchor] (Id NSLayoutDimension)
 anchorWithOffsetToAnchorSelector = mkSelector "anchorWithOffsetToAnchor:"
 
 -- | @Selector@ for @constraintEqualToSystemSpacingAfterAnchor:multiplier:@
-constraintEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector
+constraintEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector '[Id NSLayoutXAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintEqualToSystemSpacingAfterAnchor_multiplierSelector = mkSelector "constraintEqualToSystemSpacingAfterAnchor:multiplier:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:multiplier:@
-constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector
+constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector '[Id NSLayoutXAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector = mkSelector "constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:multiplier:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToSystemSpacingAfterAnchor:multiplier:@
-constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector
+constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector :: Selector '[Id NSLayoutXAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToSystemSpacingAfterAnchor_multiplierSelector = mkSelector "constraintLessThanOrEqualToSystemSpacingAfterAnchor:multiplier:"
 

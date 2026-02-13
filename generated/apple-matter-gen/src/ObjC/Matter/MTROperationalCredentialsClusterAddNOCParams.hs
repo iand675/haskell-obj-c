@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTROperationalCredentialsClusterAddNOCParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , nocValueSelector
-  , setNocValueSelector
-  , icacValueSelector
-  , setIcacValueSelector
-  , ipkValueSelector
-  , setIpkValueSelector
-  , caseAdminSubjectSelector
-  , setCaseAdminSubjectSelector
   , adminVendorIdSelector
-  , setAdminVendorIdSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , caseAdminSubjectSelector
+  , icacValueSelector
+  , ipkValueSelector
+  , nocValueSelector
   , serverSideProcessingTimeoutSelector
+  , setAdminVendorIdSelector
+  , setCaseAdminSubjectSelector
+  , setIcacValueSelector
+  , setIpkValueSelector
+  , setNocValueSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nocValue@
 nocValue :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSData)
-nocValue mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "nocValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+nocValue mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams nocValueSelector
 
 -- | @- setNocValue:@
 setNocValue :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSData value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setNocValue mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setNocValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNocValue mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setNocValueSelector (toNSData value)
 
 -- | @- icacValue@
 icacValue :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSData)
-icacValue mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "icacValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+icacValue mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams icacValueSelector
 
 -- | @- setIcacValue:@
 setIcacValue :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSData value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setIcacValue mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setIcacValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcacValue mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setIcacValueSelector (toNSData value)
 
 -- | @- ipkValue@
 ipkValue :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSData)
-ipkValue mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "ipkValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+ipkValue mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams ipkValueSelector
 
 -- | @- setIpkValue:@
 setIpkValue :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSData value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setIpkValue mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setIpkValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIpkValue mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setIpkValueSelector (toNSData value)
 
 -- | @- caseAdminSubject@
 caseAdminSubject :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSNumber)
-caseAdminSubject mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "caseAdminSubject") (retPtr retVoid) [] >>= retainedObject . castPtr
+caseAdminSubject mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams caseAdminSubjectSelector
 
 -- | @- setCaseAdminSubject:@
 setCaseAdminSubject :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setCaseAdminSubject mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setCaseAdminSubject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaseAdminSubject mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setCaseAdminSubjectSelector (toNSNumber value)
 
 -- | @- adminVendorId@
 adminVendorId :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSNumber)
-adminVendorId mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "adminVendorId") (retPtr retVoid) [] >>= retainedObject . castPtr
+adminVendorId mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams adminVendorIdSelector
 
 -- | @- setAdminVendorId:@
 setAdminVendorId :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setAdminVendorId mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setAdminVendorId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdminVendorId mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setAdminVendorIdSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setAdminVendorId mtrOperationalCredentialsClusterAddNOCParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddNOCParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams => mtrOperationalCredentialsClusterAddNOCParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterAddNOCParams  =
-    sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterAddNOCParams =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterAddNOCParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterAddNOCParams mtrOperationalCredentialsClusterAddNOCParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddNOCParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterAddNOCParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddNOCParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterAddNOCParams value =
+  sendMessage mtrOperationalCredentialsClusterAddNOCParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nocValue@
-nocValueSelector :: Selector
+nocValueSelector :: Selector '[] (Id NSData)
 nocValueSelector = mkSelector "nocValue"
 
 -- | @Selector@ for @setNocValue:@
-setNocValueSelector :: Selector
+setNocValueSelector :: Selector '[Id NSData] ()
 setNocValueSelector = mkSelector "setNocValue:"
 
 -- | @Selector@ for @icacValue@
-icacValueSelector :: Selector
+icacValueSelector :: Selector '[] (Id NSData)
 icacValueSelector = mkSelector "icacValue"
 
 -- | @Selector@ for @setIcacValue:@
-setIcacValueSelector :: Selector
+setIcacValueSelector :: Selector '[Id NSData] ()
 setIcacValueSelector = mkSelector "setIcacValue:"
 
 -- | @Selector@ for @ipkValue@
-ipkValueSelector :: Selector
+ipkValueSelector :: Selector '[] (Id NSData)
 ipkValueSelector = mkSelector "ipkValue"
 
 -- | @Selector@ for @setIpkValue:@
-setIpkValueSelector :: Selector
+setIpkValueSelector :: Selector '[Id NSData] ()
 setIpkValueSelector = mkSelector "setIpkValue:"
 
 -- | @Selector@ for @caseAdminSubject@
-caseAdminSubjectSelector :: Selector
+caseAdminSubjectSelector :: Selector '[] (Id NSNumber)
 caseAdminSubjectSelector = mkSelector "caseAdminSubject"
 
 -- | @Selector@ for @setCaseAdminSubject:@
-setCaseAdminSubjectSelector :: Selector
+setCaseAdminSubjectSelector :: Selector '[Id NSNumber] ()
 setCaseAdminSubjectSelector = mkSelector "setCaseAdminSubject:"
 
 -- | @Selector@ for @adminVendorId@
-adminVendorIdSelector :: Selector
+adminVendorIdSelector :: Selector '[] (Id NSNumber)
 adminVendorIdSelector = mkSelector "adminVendorId"
 
 -- | @Selector@ for @setAdminVendorId:@
-setAdminVendorIdSelector :: Selector
+setAdminVendorIdSelector :: Selector '[Id NSNumber] ()
 setAdminVendorIdSelector = mkSelector "setAdminVendorId:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

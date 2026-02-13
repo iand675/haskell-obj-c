@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,15 +33,11 @@ module ObjC.AppKit.CIColor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,14 @@ import ObjC.CoreImage.Internal.Classes
 
 -- | @- initWithColor:@
 initWithColor :: (IsCIColor ciColor, IsNSColor color) => ciColor -> color -> IO (Id CIColor)
-initWithColor ciColor  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg ciColor (mkSelector "initWithColor:") (retPtr retVoid) [argPtr (castPtr raw_color :: Ptr ())] >>= ownedObject . castPtr
+initWithColor ciColor color =
+  sendOwnedMessage ciColor initWithColorSelector (toNSColor color)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithColor:@
-initWithColorSelector :: Selector
+initWithColorSelector :: Selector '[Id NSColor] (Id CIColor)
 initWithColorSelector = mkSelector "initWithColor:"
 

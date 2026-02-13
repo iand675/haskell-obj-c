@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AuthenticationServices.ASOneTimeCodeCredentialRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,8 +28,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASOneTimeCodeCredentialRequest asOneTimeCodeCredentialRequest => asOneTimeCodeCredentialRequest -> IO (Id ASOneTimeCodeCredentialRequest)
-init_ asOneTimeCodeCredentialRequest  =
-    sendMsg asOneTimeCodeCredentialRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asOneTimeCodeCredentialRequest =
+  sendOwnedMessage asOneTimeCodeCredentialRequest initSelector
 
 -- | Initializes an instance of ASOneTimeCodeCredentialRequest.
 --
@@ -40,19 +37,18 @@ init_ asOneTimeCodeCredentialRequest  =
 --
 -- ObjC selector: @- initWithCredentialIdentity:@
 initWithCredentialIdentity :: (IsASOneTimeCodeCredentialRequest asOneTimeCodeCredentialRequest, IsASOneTimeCodeCredentialIdentity credentialIdentity) => asOneTimeCodeCredentialRequest -> credentialIdentity -> IO (Id ASOneTimeCodeCredentialRequest)
-initWithCredentialIdentity asOneTimeCodeCredentialRequest  credentialIdentity =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-      sendMsg asOneTimeCodeCredentialRequest (mkSelector "initWithCredentialIdentity:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentity :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialIdentity asOneTimeCodeCredentialRequest credentialIdentity =
+  sendOwnedMessage asOneTimeCodeCredentialRequest initWithCredentialIdentitySelector (toASOneTimeCodeCredentialIdentity credentialIdentity)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASOneTimeCodeCredentialRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCredentialIdentity:@
-initWithCredentialIdentitySelector :: Selector
+initWithCredentialIdentitySelector :: Selector '[Id ASOneTimeCodeCredentialIdentity] (Id ASOneTimeCodeCredentialRequest)
 initWithCredentialIdentitySelector = mkSelector "initWithCredentialIdentity:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.WebKit.WKSnapshotConfiguration
   , setSnapshotWidth
   , afterScreenUpdates
   , setAfterScreenUpdates
-  , snapshotWidthSelector
-  , setSnapshotWidthSelector
   , afterScreenUpdatesSelector
   , setAfterScreenUpdatesSelector
+  , setSnapshotWidthSelector
+  , snapshotWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- snapshotWidth@
 snapshotWidth :: IsWKSnapshotConfiguration wkSnapshotConfiguration => wkSnapshotConfiguration -> IO (Id NSNumber)
-snapshotWidth wkSnapshotConfiguration  =
-    sendMsg wkSnapshotConfiguration (mkSelector "snapshotWidth") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshotWidth wkSnapshotConfiguration =
+  sendMessage wkSnapshotConfiguration snapshotWidthSelector
 
 -- | Specify a custom width to control the size of image you get back. The height will be  computed to maintain the aspect ratio established by rect.
 --
@@ -48,9 +45,8 @@ snapshotWidth wkSnapshotConfiguration  =
 --
 -- ObjC selector: @- setSnapshotWidth:@
 setSnapshotWidth :: (IsWKSnapshotConfiguration wkSnapshotConfiguration, IsNSNumber value) => wkSnapshotConfiguration -> value -> IO ()
-setSnapshotWidth wkSnapshotConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkSnapshotConfiguration (mkSelector "setSnapshotWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSnapshotWidth wkSnapshotConfiguration value =
+  sendMessage wkSnapshotConfiguration setSnapshotWidthSelector (toNSNumber value)
 
 -- | A Boolean value that specifies whether the snapshot should be taken after recent changes have been incorporated. The value NO will capture the screen in its current state, which might not include recent changes.
 --
@@ -58,8 +54,8 @@ setSnapshotWidth wkSnapshotConfiguration  value =
 --
 -- ObjC selector: @- afterScreenUpdates@
 afterScreenUpdates :: IsWKSnapshotConfiguration wkSnapshotConfiguration => wkSnapshotConfiguration -> IO Bool
-afterScreenUpdates wkSnapshotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkSnapshotConfiguration (mkSelector "afterScreenUpdates") retCULong []
+afterScreenUpdates wkSnapshotConfiguration =
+  sendMessage wkSnapshotConfiguration afterScreenUpdatesSelector
 
 -- | A Boolean value that specifies whether the snapshot should be taken after recent changes have been incorporated. The value NO will capture the screen in its current state, which might not include recent changes.
 --
@@ -67,26 +63,26 @@ afterScreenUpdates wkSnapshotConfiguration  =
 --
 -- ObjC selector: @- setAfterScreenUpdates:@
 setAfterScreenUpdates :: IsWKSnapshotConfiguration wkSnapshotConfiguration => wkSnapshotConfiguration -> Bool -> IO ()
-setAfterScreenUpdates wkSnapshotConfiguration  value =
-    sendMsg wkSnapshotConfiguration (mkSelector "setAfterScreenUpdates:") retVoid [argCULong (if value then 1 else 0)]
+setAfterScreenUpdates wkSnapshotConfiguration value =
+  sendMessage wkSnapshotConfiguration setAfterScreenUpdatesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @snapshotWidth@
-snapshotWidthSelector :: Selector
+snapshotWidthSelector :: Selector '[] (Id NSNumber)
 snapshotWidthSelector = mkSelector "snapshotWidth"
 
 -- | @Selector@ for @setSnapshotWidth:@
-setSnapshotWidthSelector :: Selector
+setSnapshotWidthSelector :: Selector '[Id NSNumber] ()
 setSnapshotWidthSelector = mkSelector "setSnapshotWidth:"
 
 -- | @Selector@ for @afterScreenUpdates@
-afterScreenUpdatesSelector :: Selector
+afterScreenUpdatesSelector :: Selector '[] Bool
 afterScreenUpdatesSelector = mkSelector "afterScreenUpdates"
 
 -- | @Selector@ for @setAfterScreenUpdates:@
-setAfterScreenUpdatesSelector :: Selector
+setAfterScreenUpdatesSelector :: Selector '[Bool] ()
 setAfterScreenUpdatesSelector = mkSelector "setAfterScreenUpdates:"
 

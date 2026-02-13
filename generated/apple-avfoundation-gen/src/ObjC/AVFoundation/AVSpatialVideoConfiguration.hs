@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.AVFoundation.AVSpatialVideoConfiguration
   , setCameraSystemBaseline
   , disparityAdjustment
   , setDisparityAdjustment
+  , cameraCalibrationDataLensCollectionSelector
+  , cameraSystemBaselineSelector
+  , disparityAdjustmentSelector
+  , horizontalFieldOfViewSelector
   , initSelector
   , initWithFormatDescriptionSelector
-  , cameraCalibrationDataLensCollectionSelector
   , setCameraCalibrationDataLensCollectionSelector
-  , horizontalFieldOfViewSelector
-  , setHorizontalFieldOfViewSelector
-  , cameraSystemBaselineSelector
   , setCameraSystemBaselineSelector
-  , disparityAdjustmentSelector
   , setDisparityAdjustmentSelector
+  , setHorizontalFieldOfViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> IO (Id AVSpatialVideoConfiguration)
-init_ avSpatialVideoConfiguration  =
-    sendMsg avSpatialVideoConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSpatialVideoConfiguration =
+  sendOwnedMessage avSpatialVideoConfiguration initSelector
 
 -- | Initializes an AVSpatialVideoConfiguration with a format description.
 --
@@ -60,8 +57,8 @@ init_ avSpatialVideoConfiguration  =
 --
 -- ObjC selector: @- initWithFormatDescription:@
 initWithFormatDescription :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> RawId -> IO (Id AVSpatialVideoConfiguration)
-initWithFormatDescription avSpatialVideoConfiguration  formatDescription =
-    sendMsg avSpatialVideoConfiguration (mkSelector "initWithFormatDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId formatDescription) :: Ptr ())] >>= ownedObject . castPtr
+initWithFormatDescription avSpatialVideoConfiguration formatDescription =
+  sendOwnedMessage avSpatialVideoConfiguration initWithFormatDescriptionSelector formatDescription
 
 -- | Specifies intrinsic and extrinsic parameters for single or multiple lenses.
 --
@@ -69,8 +66,8 @@ initWithFormatDescription avSpatialVideoConfiguration  formatDescription =
 --
 -- ObjC selector: @- cameraCalibrationDataLensCollection@
 cameraCalibrationDataLensCollection :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> IO (Id NSArray)
-cameraCalibrationDataLensCollection avSpatialVideoConfiguration  =
-    sendMsg avSpatialVideoConfiguration (mkSelector "cameraCalibrationDataLensCollection") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraCalibrationDataLensCollection avSpatialVideoConfiguration =
+  sendMessage avSpatialVideoConfiguration cameraCalibrationDataLensCollectionSelector
 
 -- | Specifies intrinsic and extrinsic parameters for single or multiple lenses.
 --
@@ -78,24 +75,22 @@ cameraCalibrationDataLensCollection avSpatialVideoConfiguration  =
 --
 -- ObjC selector: @- setCameraCalibrationDataLensCollection:@
 setCameraCalibrationDataLensCollection :: (IsAVSpatialVideoConfiguration avSpatialVideoConfiguration, IsNSArray value) => avSpatialVideoConfiguration -> value -> IO ()
-setCameraCalibrationDataLensCollection avSpatialVideoConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpatialVideoConfiguration (mkSelector "setCameraCalibrationDataLensCollection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCameraCalibrationDataLensCollection avSpatialVideoConfiguration value =
+  sendMessage avSpatialVideoConfiguration setCameraCalibrationDataLensCollectionSelector (toNSArray value)
 
 -- | Specifies horizontal field of view in thousandths of a degree. Can be nil if the value is unknown.
 --
 -- ObjC selector: @- horizontalFieldOfView@
 horizontalFieldOfView :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> IO (Id NSNumber)
-horizontalFieldOfView avSpatialVideoConfiguration  =
-    sendMsg avSpatialVideoConfiguration (mkSelector "horizontalFieldOfView") (retPtr retVoid) [] >>= retainedObject . castPtr
+horizontalFieldOfView avSpatialVideoConfiguration =
+  sendMessage avSpatialVideoConfiguration horizontalFieldOfViewSelector
 
 -- | Specifies horizontal field of view in thousandths of a degree. Can be nil if the value is unknown.
 --
 -- ObjC selector: @- setHorizontalFieldOfView:@
 setHorizontalFieldOfView :: (IsAVSpatialVideoConfiguration avSpatialVideoConfiguration, IsNSNumber value) => avSpatialVideoConfiguration -> value -> IO ()
-setHorizontalFieldOfView avSpatialVideoConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpatialVideoConfiguration (mkSelector "setHorizontalFieldOfView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHorizontalFieldOfView avSpatialVideoConfiguration value =
+  sendMessage avSpatialVideoConfiguration setHorizontalFieldOfViewSelector (toNSNumber value)
 
 -- | Specifies the distance between centers of the lenses of the camera system that created the video.
 --
@@ -103,8 +98,8 @@ setHorizontalFieldOfView avSpatialVideoConfiguration  value =
 --
 -- ObjC selector: @- cameraSystemBaseline@
 cameraSystemBaseline :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> IO (Id NSNumber)
-cameraSystemBaseline avSpatialVideoConfiguration  =
-    sendMsg avSpatialVideoConfiguration (mkSelector "cameraSystemBaseline") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraSystemBaseline avSpatialVideoConfiguration =
+  sendMessage avSpatialVideoConfiguration cameraSystemBaselineSelector
 
 -- | Specifies the distance between centers of the lenses of the camera system that created the video.
 --
@@ -112,9 +107,8 @@ cameraSystemBaseline avSpatialVideoConfiguration  =
 --
 -- ObjC selector: @- setCameraSystemBaseline:@
 setCameraSystemBaseline :: (IsAVSpatialVideoConfiguration avSpatialVideoConfiguration, IsNSNumber value) => avSpatialVideoConfiguration -> value -> IO ()
-setCameraSystemBaseline avSpatialVideoConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpatialVideoConfiguration (mkSelector "setCameraSystemBaseline:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCameraSystemBaseline avSpatialVideoConfiguration value =
+  sendMessage avSpatialVideoConfiguration setCameraSystemBaselineSelector (toNSNumber value)
 
 -- | Specifies a relative shift of the left and right images, which changes the zero parallax plane.
 --
@@ -122,8 +116,8 @@ setCameraSystemBaseline avSpatialVideoConfiguration  value =
 --
 -- ObjC selector: @- disparityAdjustment@
 disparityAdjustment :: IsAVSpatialVideoConfiguration avSpatialVideoConfiguration => avSpatialVideoConfiguration -> IO (Id NSNumber)
-disparityAdjustment avSpatialVideoConfiguration  =
-    sendMsg avSpatialVideoConfiguration (mkSelector "disparityAdjustment") (retPtr retVoid) [] >>= retainedObject . castPtr
+disparityAdjustment avSpatialVideoConfiguration =
+  sendMessage avSpatialVideoConfiguration disparityAdjustmentSelector
 
 -- | Specifies a relative shift of the left and right images, which changes the zero parallax plane.
 --
@@ -131,51 +125,50 @@ disparityAdjustment avSpatialVideoConfiguration  =
 --
 -- ObjC selector: @- setDisparityAdjustment:@
 setDisparityAdjustment :: (IsAVSpatialVideoConfiguration avSpatialVideoConfiguration, IsNSNumber value) => avSpatialVideoConfiguration -> value -> IO ()
-setDisparityAdjustment avSpatialVideoConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpatialVideoConfiguration (mkSelector "setDisparityAdjustment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisparityAdjustment avSpatialVideoConfiguration value =
+  sendMessage avSpatialVideoConfiguration setDisparityAdjustmentSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSpatialVideoConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithFormatDescription:@
-initWithFormatDescriptionSelector :: Selector
+initWithFormatDescriptionSelector :: Selector '[RawId] (Id AVSpatialVideoConfiguration)
 initWithFormatDescriptionSelector = mkSelector "initWithFormatDescription:"
 
 -- | @Selector@ for @cameraCalibrationDataLensCollection@
-cameraCalibrationDataLensCollectionSelector :: Selector
+cameraCalibrationDataLensCollectionSelector :: Selector '[] (Id NSArray)
 cameraCalibrationDataLensCollectionSelector = mkSelector "cameraCalibrationDataLensCollection"
 
 -- | @Selector@ for @setCameraCalibrationDataLensCollection:@
-setCameraCalibrationDataLensCollectionSelector :: Selector
+setCameraCalibrationDataLensCollectionSelector :: Selector '[Id NSArray] ()
 setCameraCalibrationDataLensCollectionSelector = mkSelector "setCameraCalibrationDataLensCollection:"
 
 -- | @Selector@ for @horizontalFieldOfView@
-horizontalFieldOfViewSelector :: Selector
+horizontalFieldOfViewSelector :: Selector '[] (Id NSNumber)
 horizontalFieldOfViewSelector = mkSelector "horizontalFieldOfView"
 
 -- | @Selector@ for @setHorizontalFieldOfView:@
-setHorizontalFieldOfViewSelector :: Selector
+setHorizontalFieldOfViewSelector :: Selector '[Id NSNumber] ()
 setHorizontalFieldOfViewSelector = mkSelector "setHorizontalFieldOfView:"
 
 -- | @Selector@ for @cameraSystemBaseline@
-cameraSystemBaselineSelector :: Selector
+cameraSystemBaselineSelector :: Selector '[] (Id NSNumber)
 cameraSystemBaselineSelector = mkSelector "cameraSystemBaseline"
 
 -- | @Selector@ for @setCameraSystemBaseline:@
-setCameraSystemBaselineSelector :: Selector
+setCameraSystemBaselineSelector :: Selector '[Id NSNumber] ()
 setCameraSystemBaselineSelector = mkSelector "setCameraSystemBaseline:"
 
 -- | @Selector@ for @disparityAdjustment@
-disparityAdjustmentSelector :: Selector
+disparityAdjustmentSelector :: Selector '[] (Id NSNumber)
 disparityAdjustmentSelector = mkSelector "disparityAdjustment"
 
 -- | @Selector@ for @setDisparityAdjustment:@
-setDisparityAdjustmentSelector :: Selector
+setDisparityAdjustmentSelector :: Selector '[Id NSNumber] ()
 setDisparityAdjustmentSelector = mkSelector "setDisparityAdjustment:"
 

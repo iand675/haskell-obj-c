@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.OSLog.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | OSLogEntryLogLevel
 --
@@ -37,6 +40,16 @@ pattern OSLogEntryLogLevelError = OSLogEntryLogLevel 4
 pattern OSLogEntryLogLevelFault :: OSLogEntryLogLevel
 pattern OSLogEntryLogLevelFault = OSLogEntryLogLevel 5
 
+instance ObjCArgument OSLogEntryLogLevel where
+  withObjCArg (OSLogEntryLogLevel x) k = k (argCLong x)
+
+instance ObjCReturn OSLogEntryLogLevel where
+  type RawReturn OSLogEntryLogLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogEntryLogLevel x)
+  fromOwned x = pure (OSLogEntryLogLevel x)
+
 -- | OSLogEntrySignpostType
 --
 -- The kind of of signpost emitted.
@@ -56,6 +69,16 @@ pattern OSLogEntrySignpostTypeIntervalEnd = OSLogEntrySignpostType 2
 
 pattern OSLogEntrySignpostTypeEvent :: OSLogEntrySignpostType
 pattern OSLogEntrySignpostTypeEvent = OSLogEntrySignpostType 3
+
+instance ObjCArgument OSLogEntrySignpostType where
+  withObjCArg (OSLogEntrySignpostType x) k = k (argCLong x)
+
+instance ObjCReturn OSLogEntrySignpostType where
+  type RawReturn OSLogEntrySignpostType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogEntrySignpostType x)
+  fromOwned x = pure (OSLogEntrySignpostType x)
 
 -- | OSLogEntryStoreCategory
 --
@@ -118,6 +141,16 @@ pattern OSLogEntryStoreCategoryLongTerm14 = OSLogEntryStoreCategory 7
 pattern OSLogEntryStoreCategoryLongTerm30 :: OSLogEntryStoreCategory
 pattern OSLogEntryStoreCategoryLongTerm30 = OSLogEntryStoreCategory 8
 
+instance ObjCArgument OSLogEntryStoreCategory where
+  withObjCArg (OSLogEntryStoreCategory x) k = k (argCLong x)
+
+instance ObjCReturn OSLogEntryStoreCategory where
+  type RawReturn OSLogEntryStoreCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogEntryStoreCategory x)
+  fromOwned x = pure (OSLogEntryStoreCategory x)
+
 -- | OSLogEnumeratorOptions
 --
 -- Control the direction of the iteration.
@@ -138,6 +171,16 @@ instance Monoid OSLogEnumeratorOptions where
 
 pattern OSLogEnumeratorReverse :: OSLogEnumeratorOptions
 pattern OSLogEnumeratorReverse = OSLogEnumeratorOptions 1
+
+instance ObjCArgument OSLogEnumeratorOptions where
+  withObjCArg (OSLogEnumeratorOptions x) k = k (argCULong x)
+
+instance ObjCReturn OSLogEnumeratorOptions where
+  type RawReturn OSLogEnumeratorOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogEnumeratorOptions x)
+  fromOwned x = pure (OSLogEnumeratorOptions x)
 
 -- | OSLogMessageComponentArgumentCategory
 --
@@ -165,6 +208,16 @@ pattern OSLogMessageComponentArgumentCategoryString = OSLogMessageComponentArgum
 pattern OSLogMessageComponentArgumentCategoryUInt64 :: OSLogMessageComponentArgumentCategory
 pattern OSLogMessageComponentArgumentCategoryUInt64 = OSLogMessageComponentArgumentCategory 5
 
+instance ObjCArgument OSLogMessageComponentArgumentCategory where
+  withObjCArg (OSLogMessageComponentArgumentCategory x) k = k (argCLong x)
+
+instance ObjCReturn OSLogMessageComponentArgumentCategory where
+  type RawReturn OSLogMessageComponentArgumentCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogMessageComponentArgumentCategory x)
+  fromOwned x = pure (OSLogMessageComponentArgumentCategory x)
+
 -- | OSLogStoreScope
 --
 -- Create a store to a subset of the libtrace entries.
@@ -184,3 +237,13 @@ pattern OSLogStoreSystem = OSLogStoreScope 0
 
 pattern OSLogStoreCurrentProcessIdentifier :: OSLogStoreScope
 pattern OSLogStoreCurrentProcessIdentifier = OSLogStoreScope 1
+
+instance ObjCArgument OSLogStoreScope where
+  withObjCArg (OSLogStoreScope x) k = k (argCLong x)
+
+instance ObjCReturn OSLogStoreScope where
+  type RawReturn OSLogStoreScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSLogStoreScope x)
+  fromOwned x = pure (OSLogStoreScope x)

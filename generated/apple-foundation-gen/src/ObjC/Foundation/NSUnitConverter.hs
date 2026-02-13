@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Foundation.NSUnitConverter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -30,23 +27,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- baseUnitValueFromValue:@
 baseUnitValueFromValue :: IsNSUnitConverter nsUnitConverter => nsUnitConverter -> CDouble -> IO CDouble
-baseUnitValueFromValue nsUnitConverter  value =
-    sendMsg nsUnitConverter (mkSelector "baseUnitValueFromValue:") retCDouble [argCDouble value]
+baseUnitValueFromValue nsUnitConverter value =
+  sendMessage nsUnitConverter baseUnitValueFromValueSelector value
 
 -- | @- valueFromBaseUnitValue:@
 valueFromBaseUnitValue :: IsNSUnitConverter nsUnitConverter => nsUnitConverter -> CDouble -> IO CDouble
-valueFromBaseUnitValue nsUnitConverter  baseUnitValue =
-    sendMsg nsUnitConverter (mkSelector "valueFromBaseUnitValue:") retCDouble [argCDouble baseUnitValue]
+valueFromBaseUnitValue nsUnitConverter baseUnitValue =
+  sendMessage nsUnitConverter valueFromBaseUnitValueSelector baseUnitValue
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @baseUnitValueFromValue:@
-baseUnitValueFromValueSelector :: Selector
+baseUnitValueFromValueSelector :: Selector '[CDouble] CDouble
 baseUnitValueFromValueSelector = mkSelector "baseUnitValueFromValue:"
 
 -- | @Selector@ for @valueFromBaseUnitValue:@
-valueFromBaseUnitValueSelector :: Selector
+valueFromBaseUnitValueSelector :: Selector '[CDouble] CDouble
 valueFromBaseUnitValueSelector = mkSelector "valueFromBaseUnitValue:"
 

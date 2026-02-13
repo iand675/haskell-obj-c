@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,9 +17,9 @@ module ObjC.PencilKit.PKStroke
   , randomSeed
   , requiredContentVersion
   , inkSelector
-  , pathSelector
   , maskSelector
   , maskedPathRangesSelector
+  , pathSelector
   , randomSeedSelector
   , requiredContentVersionSelector
 
@@ -32,15 +33,11 @@ module ObjC.PencilKit.PKStroke
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,67 +50,67 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- ink@
 ink :: IsPKStroke pkStroke => pkStroke -> IO (Id PKInk)
-ink pkStroke  =
-    sendMsg pkStroke (mkSelector "ink") (retPtr retVoid) [] >>= retainedObject . castPtr
+ink pkStroke =
+  sendMessage pkStroke inkSelector
 
 -- | The B-spline path that describes this stroke.
 --
 -- ObjC selector: @- path@
 path :: IsPKStroke pkStroke => pkStroke -> IO (Id PKStrokePath)
-path pkStroke  =
-    sendMsg pkStroke (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path pkStroke =
+  sendMessage pkStroke pathSelector
 
 -- | @- mask@
 mask :: IsPKStroke pkStroke => pkStroke -> IO (Id NSBezierPath)
-mask pkStroke  =
-    sendMsg pkStroke (mkSelector "mask") (retPtr retVoid) [] >>= retainedObject . castPtr
+mask pkStroke =
+  sendMessage pkStroke maskSelector
 
 -- | These are the parametric parameter ranges of points in @strokePath@ that intersect the stroke's mask.
 --
 -- ObjC selector: @- maskedPathRanges@
 maskedPathRanges :: IsPKStroke pkStroke => pkStroke -> IO (Id NSArray)
-maskedPathRanges pkStroke  =
-    sendMsg pkStroke (mkSelector "maskedPathRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+maskedPathRanges pkStroke =
+  sendMessage pkStroke maskedPathRangesSelector
 
 -- | The random seed for drawing strokes that use randomized effects.
 --
 -- ObjC selector: @- randomSeed@
 randomSeed :: IsPKStroke pkStroke => pkStroke -> IO CUInt
-randomSeed pkStroke  =
-    sendMsg pkStroke (mkSelector "randomSeed") retCUInt []
+randomSeed pkStroke =
+  sendMessage pkStroke randomSeedSelector
 
 -- | The PencilKit version required to use this stroke.
 --
 -- ObjC selector: @- requiredContentVersion@
 requiredContentVersion :: IsPKStroke pkStroke => pkStroke -> IO PKContentVersion
-requiredContentVersion pkStroke  =
-    fmap (coerce :: CLong -> PKContentVersion) $ sendMsg pkStroke (mkSelector "requiredContentVersion") retCLong []
+requiredContentVersion pkStroke =
+  sendMessage pkStroke requiredContentVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ink@
-inkSelector :: Selector
+inkSelector :: Selector '[] (Id PKInk)
 inkSelector = mkSelector "ink"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id PKStrokePath)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @mask@
-maskSelector :: Selector
+maskSelector :: Selector '[] (Id NSBezierPath)
 maskSelector = mkSelector "mask"
 
 -- | @Selector@ for @maskedPathRanges@
-maskedPathRangesSelector :: Selector
+maskedPathRangesSelector :: Selector '[] (Id NSArray)
 maskedPathRangesSelector = mkSelector "maskedPathRanges"
 
 -- | @Selector@ for @randomSeed@
-randomSeedSelector :: Selector
+randomSeedSelector :: Selector '[] CUInt
 randomSeedSelector = mkSelector "randomSeed"
 
 -- | @Selector@ for @requiredContentVersion@
-requiredContentVersionSelector :: Selector
+requiredContentVersionSelector :: Selector '[] PKContentVersion
 requiredContentVersionSelector = mkSelector "requiredContentVersion"
 

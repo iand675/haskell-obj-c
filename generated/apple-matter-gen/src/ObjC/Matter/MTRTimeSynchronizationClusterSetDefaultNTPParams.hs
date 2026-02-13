@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTimeSynchronizationClusterSetDefaultNTPParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , defaultNTPSelector
-  , setDefaultNTPSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDefaultNTPSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- defaultNTP@
 defaultNTP :: IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams => mtrTimeSynchronizationClusterSetDefaultNTPParams -> IO (Id NSString)
-defaultNTP mtrTimeSynchronizationClusterSetDefaultNTPParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "defaultNTP") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultNTP mtrTimeSynchronizationClusterSetDefaultNTPParams =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams defaultNTPSelector
 
 -- | @- setDefaultNTP:@
 setDefaultNTP :: (IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams, IsNSString value) => mtrTimeSynchronizationClusterSetDefaultNTPParams -> value -> IO ()
-setDefaultNTP mtrTimeSynchronizationClusterSetDefaultNTPParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "setDefaultNTP:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultNTP mtrTimeSynchronizationClusterSetDefaultNTPParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams setDefaultNTPSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setDefaultNTP mtrTimeSynchronizationClusterSetDefaultNTPParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams => mtrTimeSynchronizationClusterSetDefaultNTPParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetDefaultNTPParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDefaultNTPParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams => mtrTimeSynchronizationClusterSetDefaultNTPParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDefaultNTPParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDefaultNTPParams =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDefaultNTPParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetDefaultNTPParams mtrTimeSynchronizationClusterSetDefaultNTPParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetDefaultNTPParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetDefaultNTPParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDefaultNTPParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetDefaultNTPParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDefaultNTPParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultNTP@
-defaultNTPSelector :: Selector
+defaultNTPSelector :: Selector '[] (Id NSString)
 defaultNTPSelector = mkSelector "defaultNTP"
 
 -- | @Selector@ for @setDefaultNTP:@
-setDefaultNTPSelector :: Selector
+setDefaultNTPSelector :: Selector '[Id NSString] ()
 setDefaultNTPSelector = mkSelector "setDefaultNTP:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

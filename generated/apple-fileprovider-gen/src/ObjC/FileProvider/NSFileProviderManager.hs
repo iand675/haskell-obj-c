@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -53,42 +54,42 @@ module ObjC.FileProvider.NSFileProviderManager
   , defaultManager
   , providerIdentifier
   , documentStorageURL
-  , initSelector
-  , managerForDomainSelector
-  , signalEnumeratorForContainerItemIdentifier_completionHandlerSelector
-  , getUserVisibleURLForItemIdentifier_completionHandlerSelector
-  , getIdentifierForUserVisibleFileAtURL_completionHandlerSelector
-  , registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector
-  , temporaryDirectoryURLWithErrorSelector
-  , placeholderURLForURLSelector
   , addDomain_completionHandlerSelector
+  , checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector
+  , claimKnownFolders_localizedReason_completionHandlerSelector
+  , defaultManagerSelector
+  , disconnectWithReason_options_completionHandlerSelector
+  , documentStorageURLSelector
+  , enumeratorForMaterializedItemsSelector
+  , enumeratorForPendingItemsSelector
+  , evictItemWithIdentifier_completionHandlerSelector
+  , getIdentifierForUserVisibleFileAtURL_completionHandlerSelector
+  , getServiceWithName_itemIdentifier_completionHandlerSelector
+  , getUserVisibleURLForItemIdentifier_completionHandlerSelector
+  , globalProgressForKindSelector
+  , importDomain_fromDirectoryAtURL_completionHandlerSelector
+  , initSelector
+  , listAvailableTestingOperationsWithErrorSelector
+  , managerForDomainSelector
+  , placeholderURLForURLSelector
+  , providerIdentifierSelector
+  , reconnectWithCompletionHandlerSelector
+  , registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector
+  , reimportItemsBelowItemWithIdentifier_completionHandlerSelector
+  , releaseKnownFolders_localizedReason_completionHandlerSelector
+  , removeAllDomainsWithCompletionHandlerSelector
   , removeDomain_completionHandlerSelector
   , removeDomain_mode_completionHandlerSelector
-  , removeAllDomainsWithCompletionHandlerSelector
-  , signalErrorResolved_completionHandlerSelector
-  , globalProgressForKindSelector
-  , claimKnownFolders_localizedReason_completionHandlerSelector
-  , releaseKnownFolders_localizedReason_completionHandlerSelector
-  , listAvailableTestingOperationsWithErrorSelector
-  , runTestingOperations_errorSelector
-  , getServiceWithName_itemIdentifier_completionHandlerSelector
   , requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandlerSelector
-  , checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector
-  , stateDirectoryURLWithErrorSelector
   , requestDownloadForItemWithIdentifier_requestedRange_completionHandlerSelector
-  , disconnectWithReason_options_completionHandlerSelector
-  , reconnectWithCompletionHandlerSelector
-  , waitForStabilizationWithCompletionHandlerSelector
-  , waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector
-  , evictItemWithIdentifier_completionHandlerSelector
-  , importDomain_fromDirectoryAtURL_completionHandlerSelector
-  , reimportItemsBelowItemWithIdentifier_completionHandlerSelector
   , requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector
-  , enumeratorForPendingItemsSelector
-  , enumeratorForMaterializedItemsSelector
-  , defaultManagerSelector
-  , providerIdentifierSelector
-  , documentStorageURLSelector
+  , runTestingOperations_errorSelector
+  , signalEnumeratorForContainerItemIdentifier_completionHandlerSelector
+  , signalErrorResolved_completionHandlerSelector
+  , stateDirectoryURLWithErrorSelector
+  , temporaryDirectoryURLWithErrorSelector
+  , waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector
+  , waitForStabilizationWithCompletionHandlerSelector
 
   -- * Enum types
   , NSFileProviderDomainRemovalMode(NSFileProviderDomainRemovalMode)
@@ -119,15 +120,11 @@ module ObjC.FileProvider.NSFileProviderManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -138,8 +135,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> IO (Id NSFileProviderManager)
-init_ nsFileProviderManager  =
-    sendMsg nsFileProviderManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsFileProviderManager =
+  sendOwnedMessage nsFileProviderManager initSelector
 
 -- | Return the manager for the specified domain.
 --
@@ -148,8 +145,7 @@ managerForDomain :: IsNSFileProviderDomain domain => domain -> IO (Id NSFileProv
 managerForDomain domain =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr domain $ \raw_domain ->
-      sendClassMsg cls' (mkSelector "managerForDomain:") (retPtr retVoid) [argPtr (castPtr raw_domain :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' managerForDomainSelector (toNSFileProviderDomain domain)
 
 -- | Call this method either in the app or in the extension to trigger an enumeration, typically in response to a push.
 --
@@ -163,9 +159,8 @@ managerForDomain domain =
 --
 -- ObjC selector: @- signalEnumeratorForContainerItemIdentifier:completionHandler:@
 signalEnumeratorForContainerItemIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString containerItemIdentifier) => nsFileProviderManager -> containerItemIdentifier -> Ptr () -> IO ()
-signalEnumeratorForContainerItemIdentifier_completionHandler nsFileProviderManager  containerItemIdentifier completion =
-  withObjCPtr containerItemIdentifier $ \raw_containerItemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "signalEnumeratorForContainerItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_containerItemIdentifier :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+signalEnumeratorForContainerItemIdentifier_completionHandler nsFileProviderManager containerItemIdentifier completion =
+  sendMessage nsFileProviderManager signalEnumeratorForContainerItemIdentifier_completionHandlerSelector (toNSString containerItemIdentifier) completion
 
 -- | Return the security scoped URL to the user visible location for an item identifier.
 --
@@ -181,9 +176,8 @@ signalEnumeratorForContainerItemIdentifier_completionHandler nsFileProviderManag
 --
 -- ObjC selector: @- getUserVisibleURLForItemIdentifier:completionHandler:@
 getUserVisibleURLForItemIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> itemIdentifier -> Ptr () -> IO ()
-getUserVisibleURLForItemIdentifier_completionHandler nsFileProviderManager  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "getUserVisibleURLForItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getUserVisibleURLForItemIdentifier_completionHandler nsFileProviderManager itemIdentifier completionHandler =
+  sendMessage nsFileProviderManager getUserVisibleURLForItemIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Return the identifier and domain for a user visible URL.
 --
@@ -194,17 +188,14 @@ getIdentifierForUserVisibleFileAtURL_completionHandler :: IsNSURL url => url -> 
 getIdentifierForUserVisibleFileAtURL_completionHandler url completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "getIdentifierForUserVisibleFileAtURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' getIdentifierForUserVisibleFileAtURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Registers the given NSURLSessionTask to be responsible for the specified item. A given item can only have one task registered at a time. The task must be suspended at the time of calling. The task's progress is displayed on the item when the task is executed.
 --
 -- ObjC selector: @- registerURLSessionTask:forItemWithIdentifier:completionHandler:@
 registerURLSessionTask_forItemWithIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSURLSessionTask task, IsNSString identifier) => nsFileProviderManager -> task -> identifier -> Ptr () -> IO ()
-registerURLSessionTask_forItemWithIdentifier_completionHandler nsFileProviderManager  task identifier completion =
-  withObjCPtr task $ \raw_task ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg nsFileProviderManager (mkSelector "registerURLSessionTask:forItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_task :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+registerURLSessionTask_forItemWithIdentifier_completionHandler nsFileProviderManager task identifier completion =
+  sendMessage nsFileProviderManager registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector (toNSURLSessionTask task) (toNSString identifier) completion
 
 -- | A temporary directory suitable to store files that will be exchanged with the system.
 --
@@ -216,9 +207,8 @@ registerURLSessionTask_forItemWithIdentifier_completionHandler nsFileProviderMan
 --
 -- ObjC selector: @- temporaryDirectoryURLWithError:@
 temporaryDirectoryURLWithError :: (IsNSFileProviderManager nsFileProviderManager, IsNSError error_) => nsFileProviderManager -> error_ -> IO (Id NSURL)
-temporaryDirectoryURLWithError nsFileProviderManager  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileProviderManager (mkSelector "temporaryDirectoryURLWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+temporaryDirectoryURLWithError nsFileProviderManager error_ =
+  sendMessage nsFileProviderManager temporaryDirectoryURLWithErrorSelector (toNSError error_)
 
 -- | Returns the designated placeholder URL for a given file URL. Used in conjunction with writePlaceholderAtURL.
 --
@@ -227,8 +217,7 @@ placeholderURLForURL :: IsNSURL url => url -> IO (Id NSURL)
 placeholderURLForURL url =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "placeholderURLForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' placeholderURLForURLSelector (toNSURL url)
 
 -- | Register a domain in which items can be stored.
 --
@@ -241,8 +230,7 @@ addDomain_completionHandler :: IsNSFileProviderDomain domain => domain -> Ptr ()
 addDomain_completionHandler domain completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr domain $ \raw_domain ->
-      sendClassMsg cls' (mkSelector "addDomain:completionHandler:") retVoid [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' addDomain_completionHandlerSelector (toNSFileProviderDomain domain) completionHandler
 
 -- | Remove a domain.
 --
@@ -251,8 +239,7 @@ removeDomain_completionHandler :: IsNSFileProviderDomain domain => domain -> Ptr
 removeDomain_completionHandler domain completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr domain $ \raw_domain ->
-      sendClassMsg cls' (mkSelector "removeDomain:completionHandler:") retVoid [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' removeDomain_completionHandlerSelector (toNSFileProviderDomain domain) completionHandler
 
 -- | Remove a domain with options
 --
@@ -261,8 +248,7 @@ removeDomain_mode_completionHandler :: IsNSFileProviderDomain domain => domain -
 removeDomain_mode_completionHandler domain mode completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr domain $ \raw_domain ->
-      sendClassMsg cls' (mkSelector "removeDomain:mode:completionHandler:") retVoid [argPtr (castPtr raw_domain :: Ptr ()), argCLong (coerce mode), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' removeDomain_mode_completionHandlerSelector (toNSFileProviderDomain domain) mode completionHandler
 
 -- | Remove all registered domains.
 --
@@ -271,7 +257,7 @@ removeAllDomainsWithCompletionHandler :: Ptr () -> IO ()
 removeAllDomainsWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    sendClassMsg cls' (mkSelector "removeAllDomainsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' removeAllDomainsWithCompletionHandlerSelector completionHandler
 
 -- | Calling this method will cause the system to cancel throttling on every item which has been throttled due to the given error.
 --
@@ -279,9 +265,8 @@ removeAllDomainsWithCompletionHandler completionHandler =
 --
 -- ObjC selector: @- signalErrorResolved:completionHandler:@
 signalErrorResolved_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSError error_) => nsFileProviderManager -> error_ -> Ptr () -> IO ()
-signalErrorResolved_completionHandler nsFileProviderManager  error_ completionHandler =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileProviderManager (mkSelector "signalErrorResolved:completionHandler:") retVoid [argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+signalErrorResolved_completionHandler nsFileProviderManager error_ completionHandler =
+  sendMessage nsFileProviderManager signalErrorResolved_completionHandlerSelector (toNSError error_) completionHandler
 
 -- | Returns the global progress for the specified kind of operations
 --
@@ -301,9 +286,8 @@ signalErrorResolved_completionHandler nsFileProviderManager  error_ completionHa
 --
 -- ObjC selector: @- globalProgressForKind:@
 globalProgressForKind :: (IsNSFileProviderManager nsFileProviderManager, IsNSString kind) => nsFileProviderManager -> kind -> IO (Id NSProgress)
-globalProgressForKind nsFileProviderManager  kind =
-  withObjCPtr kind $ \raw_kind ->
-      sendMsg nsFileProviderManager (mkSelector "globalProgressForKind:") (retPtr retVoid) [argPtr (castPtr raw_kind :: Ptr ())] >>= retainedObject . castPtr
+globalProgressForKind nsFileProviderManager kind =
+  sendMessage nsFileProviderManager globalProgressForKindSelector (toNSString kind)
 
 -- | Request the specified known folders to be synced by this domain.
 --
@@ -323,10 +307,8 @@ globalProgressForKind nsFileProviderManager  kind =
 --
 -- ObjC selector: @- claimKnownFolders:localizedReason:completionHandler:@
 claimKnownFolders_localizedReason_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSFileProviderKnownFolderLocations knownFolders, IsNSString localizedReason) => nsFileProviderManager -> knownFolders -> localizedReason -> Ptr () -> IO ()
-claimKnownFolders_localizedReason_completionHandler nsFileProviderManager  knownFolders localizedReason completionHandler =
-  withObjCPtr knownFolders $ \raw_knownFolders ->
-    withObjCPtr localizedReason $ \raw_localizedReason ->
-        sendMsg nsFileProviderManager (mkSelector "claimKnownFolders:localizedReason:completionHandler:") retVoid [argPtr (castPtr raw_knownFolders :: Ptr ()), argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+claimKnownFolders_localizedReason_completionHandler nsFileProviderManager knownFolders localizedReason completionHandler =
+  sendMessage nsFileProviderManager claimKnownFolders_localizedReason_completionHandlerSelector (toNSFileProviderKnownFolderLocations knownFolders) (toNSString localizedReason) completionHandler
 
 -- | Request that the system stops replicating the specified known folders in the domain.
 --
@@ -334,9 +316,8 @@ claimKnownFolders_localizedReason_completionHandler nsFileProviderManager  known
 --
 -- ObjC selector: @- releaseKnownFolders:localizedReason:completionHandler:@
 releaseKnownFolders_localizedReason_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString localizedReason) => nsFileProviderManager -> NSFileProviderKnownFolders -> localizedReason -> Ptr () -> IO ()
-releaseKnownFolders_localizedReason_completionHandler nsFileProviderManager  knownFolders localizedReason completionHandler =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg nsFileProviderManager (mkSelector "releaseKnownFolders:localizedReason:completionHandler:") retVoid [argCULong (coerce knownFolders), argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+releaseKnownFolders_localizedReason_completionHandler nsFileProviderManager knownFolders localizedReason completionHandler =
+  sendMessage nsFileProviderManager releaseKnownFolders_localizedReason_completionHandlerSelector knownFolders (toNSString localizedReason) completionHandler
 
 -- | List the available operations.
 --
@@ -346,9 +327,8 @@ releaseKnownFolders_localizedReason_completionHandler nsFileProviderManager  kno
 --
 -- ObjC selector: @- listAvailableTestingOperationsWithError:@
 listAvailableTestingOperationsWithError :: (IsNSFileProviderManager nsFileProviderManager, IsNSError error_) => nsFileProviderManager -> error_ -> IO (Id NSArray)
-listAvailableTestingOperationsWithError nsFileProviderManager  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileProviderManager (mkSelector "listAvailableTestingOperationsWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+listAvailableTestingOperationsWithError nsFileProviderManager error_ =
+  sendMessage nsFileProviderManager listAvailableTestingOperationsWithErrorSelector (toNSError error_)
 
 -- | Run a set of operations.
 --
@@ -356,19 +336,15 @@ listAvailableTestingOperationsWithError nsFileProviderManager  error_ =
 --
 -- ObjC selector: @- runTestingOperations:error:@
 runTestingOperations_error :: (IsNSFileProviderManager nsFileProviderManager, IsNSArray operations, IsNSError error_) => nsFileProviderManager -> operations -> error_ -> IO (Id NSDictionary)
-runTestingOperations_error nsFileProviderManager  operations error_ =
-  withObjCPtr operations $ \raw_operations ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsFileProviderManager (mkSelector "runTestingOperations:error:") (retPtr retVoid) [argPtr (castPtr raw_operations :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+runTestingOperations_error nsFileProviderManager operations error_ =
+  sendMessage nsFileProviderManager runTestingOperations_errorSelector (toNSArray operations) (toNSError error_)
 
 -- | Retrieve the service with the specified named for the specified item.
 --
 -- ObjC selector: @- getServiceWithName:itemIdentifier:completionHandler:@
 getServiceWithName_itemIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString serviceName, IsNSString itemIdentifier) => nsFileProviderManager -> serviceName -> itemIdentifier -> Ptr () -> IO ()
-getServiceWithName_itemIdentifier_completionHandler nsFileProviderManager  serviceName itemIdentifier completionHandler =
-  withObjCPtr serviceName $ \raw_serviceName ->
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-        sendMsg nsFileProviderManager (mkSelector "getServiceWithName:itemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_serviceName :: Ptr ()), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getServiceWithName_itemIdentifier_completionHandler nsFileProviderManager serviceName itemIdentifier completionHandler =
+  sendMessage nsFileProviderManager getServiceWithName_itemIdentifier_completionHandlerSelector (toNSString serviceName) (toNSString itemIdentifier) completionHandler
 
 -- | Request diagnostics collection for the item.
 --
@@ -384,10 +360,8 @@ getServiceWithName_itemIdentifier_completionHandler nsFileProviderManager  servi
 --
 -- ObjC selector: @- requestDiagnosticCollectionForItemWithIdentifier:errorReason:completionHandler:@
 requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier, IsNSError errorReason) => nsFileProviderManager -> itemIdentifier -> errorReason -> Ptr () -> IO ()
-requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandler nsFileProviderManager  itemIdentifier errorReason completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-    withObjCPtr errorReason $ \raw_errorReason ->
-        sendMsg nsFileProviderManager (mkSelector "requestDiagnosticCollectionForItemWithIdentifier:errorReason:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_errorReason :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandler nsFileProviderManager itemIdentifier errorReason completionHandler =
+  sendMessage nsFileProviderManager requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandlerSelector (toNSString itemIdentifier) (toNSError errorReason) completionHandler
 
 -- | Check if a URL is eligible for storing a domain.
 --
@@ -406,9 +380,7 @@ checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_error :: (IsNSURL url, I
 checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_error eligible url unsupportedReason error_ =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "checkDomainsCanBeStored:onVolumeAtURL:unsupportedReason:error:") retCULong [argPtr eligible, argPtr (castPtr raw_url :: Ptr ()), argPtr unsupportedReason, argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector eligible (toNSURL url) unsupportedReason (toNSError error_)
 
 -- | A directory suitable for storing state information for the domain.
 --
@@ -424,9 +396,8 @@ checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_error eligible url unsup
 --
 -- ObjC selector: @- stateDirectoryURLWithError:@
 stateDirectoryURLWithError :: (IsNSFileProviderManager nsFileProviderManager, IsNSError error_) => nsFileProviderManager -> error_ -> IO (Id NSURL)
-stateDirectoryURLWithError nsFileProviderManager  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileProviderManager (mkSelector "stateDirectoryURLWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+stateDirectoryURLWithError nsFileProviderManager error_ =
+  sendMessage nsFileProviderManager stateDirectoryURLWithErrorSelector (toNSError error_)
 
 -- | Request that the system schedule a download for an item.
 --
@@ -438,20 +409,18 @@ stateDirectoryURLWithError nsFileProviderManager  error_ =
 --
 -- ObjC selector: @- requestDownloadForItemWithIdentifier:requestedRange:completionHandler:@
 requestDownloadForItemWithIdentifier_requestedRange_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> itemIdentifier -> NSRange -> Ptr () -> IO ()
-requestDownloadForItemWithIdentifier_requestedRange_completionHandler nsFileProviderManager  itemIdentifier rangeToMaterialize completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "requestDownloadForItemWithIdentifier:requestedRange:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argNSRange rangeToMaterialize, argPtr (castPtr completionHandler :: Ptr ())]
+requestDownloadForItemWithIdentifier_requestedRange_completionHandler nsFileProviderManager itemIdentifier rangeToMaterialize completionHandler =
+  sendMessage nsFileProviderManager requestDownloadForItemWithIdentifier_requestedRange_completionHandlerSelector (toNSString itemIdentifier) rangeToMaterialize completionHandler
 
 -- | @- disconnectWithReason:options:completionHandler:@
 disconnectWithReason_options_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString localizedReason) => nsFileProviderManager -> localizedReason -> NSFileProviderManagerDisconnectionOptions -> Ptr () -> IO ()
-disconnectWithReason_options_completionHandler nsFileProviderManager  localizedReason options completionHandler =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg nsFileProviderManager (mkSelector "disconnectWithReason:options:completionHandler:") retVoid [argPtr (castPtr raw_localizedReason :: Ptr ()), argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+disconnectWithReason_options_completionHandler nsFileProviderManager localizedReason options completionHandler =
+  sendMessage nsFileProviderManager disconnectWithReason_options_completionHandlerSelector (toNSString localizedReason) options completionHandler
 
 -- | @- reconnectWithCompletionHandler:@
 reconnectWithCompletionHandler :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> Ptr () -> IO ()
-reconnectWithCompletionHandler nsFileProviderManager  completionHandler =
-    sendMsg nsFileProviderManager (mkSelector "reconnectWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+reconnectWithCompletionHandler nsFileProviderManager completionHandler =
+  sendMessage nsFileProviderManager reconnectWithCompletionHandlerSelector completionHandler
 
 -- | Wait for stabilization of the domain.
 --
@@ -461,8 +430,8 @@ reconnectWithCompletionHandler nsFileProviderManager  completionHandler =
 --
 -- ObjC selector: @- waitForStabilizationWithCompletionHandler:@
 waitForStabilizationWithCompletionHandler :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> Ptr () -> IO ()
-waitForStabilizationWithCompletionHandler nsFileProviderManager  completionHandler =
-    sendMsg nsFileProviderManager (mkSelector "waitForStabilizationWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+waitForStabilizationWithCompletionHandler nsFileProviderManager completionHandler =
+  sendMessage nsFileProviderManager waitForStabilizationWithCompletionHandlerSelector completionHandler
 
 -- | Wait for all changes on disk in the sub-hierarchy of the item to be acknowledged by the extension.
 --
@@ -474,9 +443,8 @@ waitForStabilizationWithCompletionHandler nsFileProviderManager  completionHandl
 --
 -- ObjC selector: @- waitForChangesOnItemsBelowItemWithIdentifier:completionHandler:@
 waitForChangesOnItemsBelowItemWithIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> itemIdentifier -> Ptr () -> IO ()
-waitForChangesOnItemsBelowItemWithIdentifier_completionHandler nsFileProviderManager  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "waitForChangesOnItemsBelowItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+waitForChangesOnItemsBelowItemWithIdentifier_completionHandler nsFileProviderManager itemIdentifier completionHandler =
+  sendMessage nsFileProviderManager waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Request that the system remove an item from its cache.
 --
@@ -492,9 +460,8 @@ waitForChangesOnItemsBelowItemWithIdentifier_completionHandler nsFileProviderMan
 --
 -- ObjC selector: @- evictItemWithIdentifier:completionHandler:@
 evictItemWithIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> itemIdentifier -> Ptr () -> IO ()
-evictItemWithIdentifier_completionHandler nsFileProviderManager  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "evictItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+evictItemWithIdentifier_completionHandler nsFileProviderManager itemIdentifier completionHandler =
+  sendMessage nsFileProviderManager evictItemWithIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Request the creation of a new domain that will take ownership of on-disk data that were previously managed without a file provider.
 --
@@ -513,9 +480,7 @@ importDomain_fromDirectoryAtURL_completionHandler :: (IsNSFileProviderDomain dom
 importDomain_fromDirectoryAtURL_completionHandler domain url completionHandler =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    withObjCPtr domain $ \raw_domain ->
-      withObjCPtr url $ \raw_url ->
-        sendClassMsg cls' (mkSelector "importDomain:fromDirectoryAtURL:completionHandler:") retVoid [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' importDomain_fromDirectoryAtURL_completionHandlerSelector (toNSFileProviderDomain domain) (toNSURL url) completionHandler
 
 -- | Notify the system that the itemIdentifiers known by the system are not valid anymore.
 --
@@ -535,17 +500,15 @@ importDomain_fromDirectoryAtURL_completionHandler domain url completionHandler =
 --
 -- ObjC selector: @- reimportItemsBelowItemWithIdentifier:completionHandler:@
 reimportItemsBelowItemWithIdentifier_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> itemIdentifier -> Ptr () -> IO ()
-reimportItemsBelowItemWithIdentifier_completionHandler nsFileProviderManager  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "reimportItemsBelowItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+reimportItemsBelowItemWithIdentifier_completionHandler nsFileProviderManager itemIdentifier completionHandler =
+  sendMessage nsFileProviderManager reimportItemsBelowItemWithIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Request that the system schedules a call to -[NSFileProviderReplicatedExtension modifyItem:] for the given item identifier.  The fields passed to modifyItem will contain at least the set requested via the @fields@ parameter.  The completion handler is called when the system has persisted the request. There is no guarantee as to when the  modifyItem call will be scheduled.  The completion handler may be called with an error. If the provider passes the @.content@ field when the item  is not downloaded, or when the item is a folder, then the system will return CocoaError(.ubiquitousFileUnavailable).
 --
 -- ObjC selector: @- requestModificationOfFields:forItemWithIdentifier:options:completionHandler:@
 requestModificationOfFields_forItemWithIdentifier_options_completionHandler :: (IsNSFileProviderManager nsFileProviderManager, IsNSString itemIdentifier) => nsFileProviderManager -> NSFileProviderItemFields -> itemIdentifier -> NSFileProviderModifyItemOptions -> Ptr () -> IO ()
-requestModificationOfFields_forItemWithIdentifier_options_completionHandler nsFileProviderManager  fields itemIdentifier options completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderManager (mkSelector "requestModificationOfFields:forItemWithIdentifier:options:completionHandler:") retVoid [argCULong (coerce fields), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+requestModificationOfFields_forItemWithIdentifier_options_completionHandler nsFileProviderManager fields itemIdentifier options completionHandler =
+  sendMessage nsFileProviderManager requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector fields (toNSString itemIdentifier) options completionHandler
 
 -- | Returns an enumerator for the set of pending items.
 --
@@ -553,8 +516,8 @@ requestModificationOfFields_forItemWithIdentifier_options_completionHandler nsFi
 --
 -- ObjC selector: @- enumeratorForPendingItems@
 enumeratorForPendingItems :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> IO RawId
-enumeratorForPendingItems nsFileProviderManager  =
-    fmap (RawId . castPtr) $ sendMsg nsFileProviderManager (mkSelector "enumeratorForPendingItems") (retPtr retVoid) []
+enumeratorForPendingItems nsFileProviderManager =
+  sendMessage nsFileProviderManager enumeratorForPendingItemsSelector
 
 -- | Returns an enumerator for the set of materialized items.
 --
@@ -564,8 +527,8 @@ enumeratorForPendingItems nsFileProviderManager  =
 --
 -- ObjC selector: @- enumeratorForMaterializedItems@
 enumeratorForMaterializedItems :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> IO RawId
-enumeratorForMaterializedItems nsFileProviderManager  =
-    fmap (RawId . castPtr) $ sendMsg nsFileProviderManager (mkSelector "enumeratorForMaterializedItems") (retPtr retVoid) []
+enumeratorForMaterializedItems nsFileProviderManager =
+  sendMessage nsFileProviderManager enumeratorForMaterializedItemsSelector
 
 -- | Return the manager responsible for the default domain.
 --
@@ -574,14 +537,14 @@ defaultManager :: IO (Id NSFileProviderManager)
 defaultManager  =
   do
     cls' <- getRequiredClass "NSFileProviderManager"
-    sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultManagerSelector
 
 -- | The purpose identifier of your file provider extension. A coordination using a file coordinator with this purpose identifier set will not trigger your file provider extension. You can use this to e.g. perform speculative work on behalf of the file provider from the main app.
 --
 -- ObjC selector: @- providerIdentifier@
 providerIdentifier :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> IO (Id NSString)
-providerIdentifier nsFileProviderManager  =
-    sendMsg nsFileProviderManager (mkSelector "providerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerIdentifier nsFileProviderManager =
+  sendMessage nsFileProviderManager providerIdentifierSelector
 
 -- | The root URL for provided documents. This URL is derived by consulting the NSExtensionFileProviderDocumentGroup property on your extension. The document storage URL is the folder "File Provider Storage" in the corresponding container.
 --
@@ -589,154 +552,154 @@ providerIdentifier nsFileProviderManager  =
 --
 -- ObjC selector: @- documentStorageURL@
 documentStorageURL :: IsNSFileProviderManager nsFileProviderManager => nsFileProviderManager -> IO (Id NSURL)
-documentStorageURL nsFileProviderManager  =
-    sendMsg nsFileProviderManager (mkSelector "documentStorageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentStorageURL nsFileProviderManager =
+  sendMessage nsFileProviderManager documentStorageURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSFileProviderManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @managerForDomain:@
-managerForDomainSelector :: Selector
+managerForDomainSelector :: Selector '[Id NSFileProviderDomain] (Id NSFileProviderManager)
 managerForDomainSelector = mkSelector "managerForDomain:"
 
 -- | @Selector@ for @signalEnumeratorForContainerItemIdentifier:completionHandler:@
-signalEnumeratorForContainerItemIdentifier_completionHandlerSelector :: Selector
+signalEnumeratorForContainerItemIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 signalEnumeratorForContainerItemIdentifier_completionHandlerSelector = mkSelector "signalEnumeratorForContainerItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @getUserVisibleURLForItemIdentifier:completionHandler:@
-getUserVisibleURLForItemIdentifier_completionHandlerSelector :: Selector
+getUserVisibleURLForItemIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getUserVisibleURLForItemIdentifier_completionHandlerSelector = mkSelector "getUserVisibleURLForItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @getIdentifierForUserVisibleFileAtURL:completionHandler:@
-getIdentifierForUserVisibleFileAtURL_completionHandlerSelector :: Selector
+getIdentifierForUserVisibleFileAtURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 getIdentifierForUserVisibleFileAtURL_completionHandlerSelector = mkSelector "getIdentifierForUserVisibleFileAtURL:completionHandler:"
 
 -- | @Selector@ for @registerURLSessionTask:forItemWithIdentifier:completionHandler:@
-registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector :: Selector
+registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSURLSessionTask, Id NSString, Ptr ()] ()
 registerURLSessionTask_forItemWithIdentifier_completionHandlerSelector = mkSelector "registerURLSessionTask:forItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @temporaryDirectoryURLWithError:@
-temporaryDirectoryURLWithErrorSelector :: Selector
+temporaryDirectoryURLWithErrorSelector :: Selector '[Id NSError] (Id NSURL)
 temporaryDirectoryURLWithErrorSelector = mkSelector "temporaryDirectoryURLWithError:"
 
 -- | @Selector@ for @placeholderURLForURL:@
-placeholderURLForURLSelector :: Selector
+placeholderURLForURLSelector :: Selector '[Id NSURL] (Id NSURL)
 placeholderURLForURLSelector = mkSelector "placeholderURLForURL:"
 
 -- | @Selector@ for @addDomain:completionHandler:@
-addDomain_completionHandlerSelector :: Selector
+addDomain_completionHandlerSelector :: Selector '[Id NSFileProviderDomain, Ptr ()] ()
 addDomain_completionHandlerSelector = mkSelector "addDomain:completionHandler:"
 
 -- | @Selector@ for @removeDomain:completionHandler:@
-removeDomain_completionHandlerSelector :: Selector
+removeDomain_completionHandlerSelector :: Selector '[Id NSFileProviderDomain, Ptr ()] ()
 removeDomain_completionHandlerSelector = mkSelector "removeDomain:completionHandler:"
 
 -- | @Selector@ for @removeDomain:mode:completionHandler:@
-removeDomain_mode_completionHandlerSelector :: Selector
+removeDomain_mode_completionHandlerSelector :: Selector '[Id NSFileProviderDomain, NSFileProviderDomainRemovalMode, Ptr ()] ()
 removeDomain_mode_completionHandlerSelector = mkSelector "removeDomain:mode:completionHandler:"
 
 -- | @Selector@ for @removeAllDomainsWithCompletionHandler:@
-removeAllDomainsWithCompletionHandlerSelector :: Selector
+removeAllDomainsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeAllDomainsWithCompletionHandlerSelector = mkSelector "removeAllDomainsWithCompletionHandler:"
 
 -- | @Selector@ for @signalErrorResolved:completionHandler:@
-signalErrorResolved_completionHandlerSelector :: Selector
+signalErrorResolved_completionHandlerSelector :: Selector '[Id NSError, Ptr ()] ()
 signalErrorResolved_completionHandlerSelector = mkSelector "signalErrorResolved:completionHandler:"
 
 -- | @Selector@ for @globalProgressForKind:@
-globalProgressForKindSelector :: Selector
+globalProgressForKindSelector :: Selector '[Id NSString] (Id NSProgress)
 globalProgressForKindSelector = mkSelector "globalProgressForKind:"
 
 -- | @Selector@ for @claimKnownFolders:localizedReason:completionHandler:@
-claimKnownFolders_localizedReason_completionHandlerSelector :: Selector
+claimKnownFolders_localizedReason_completionHandlerSelector :: Selector '[Id NSFileProviderKnownFolderLocations, Id NSString, Ptr ()] ()
 claimKnownFolders_localizedReason_completionHandlerSelector = mkSelector "claimKnownFolders:localizedReason:completionHandler:"
 
 -- | @Selector@ for @releaseKnownFolders:localizedReason:completionHandler:@
-releaseKnownFolders_localizedReason_completionHandlerSelector :: Selector
+releaseKnownFolders_localizedReason_completionHandlerSelector :: Selector '[NSFileProviderKnownFolders, Id NSString, Ptr ()] ()
 releaseKnownFolders_localizedReason_completionHandlerSelector = mkSelector "releaseKnownFolders:localizedReason:completionHandler:"
 
 -- | @Selector@ for @listAvailableTestingOperationsWithError:@
-listAvailableTestingOperationsWithErrorSelector :: Selector
+listAvailableTestingOperationsWithErrorSelector :: Selector '[Id NSError] (Id NSArray)
 listAvailableTestingOperationsWithErrorSelector = mkSelector "listAvailableTestingOperationsWithError:"
 
 -- | @Selector@ for @runTestingOperations:error:@
-runTestingOperations_errorSelector :: Selector
+runTestingOperations_errorSelector :: Selector '[Id NSArray, Id NSError] (Id NSDictionary)
 runTestingOperations_errorSelector = mkSelector "runTestingOperations:error:"
 
 -- | @Selector@ for @getServiceWithName:itemIdentifier:completionHandler:@
-getServiceWithName_itemIdentifier_completionHandlerSelector :: Selector
+getServiceWithName_itemIdentifier_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 getServiceWithName_itemIdentifier_completionHandlerSelector = mkSelector "getServiceWithName:itemIdentifier:completionHandler:"
 
 -- | @Selector@ for @requestDiagnosticCollectionForItemWithIdentifier:errorReason:completionHandler:@
-requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandlerSelector :: Selector
+requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandlerSelector :: Selector '[Id NSString, Id NSError, Ptr ()] ()
 requestDiagnosticCollectionForItemWithIdentifier_errorReason_completionHandlerSelector = mkSelector "requestDiagnosticCollectionForItemWithIdentifier:errorReason:completionHandler:"
 
 -- | @Selector@ for @checkDomainsCanBeStored:onVolumeAtURL:unsupportedReason:error:@
-checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector :: Selector
+checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector :: Selector '[Ptr Bool, Id NSURL, Ptr NSFileProviderVolumeUnsupportedReason, Id NSError] Bool
 checkDomainsCanBeStored_onVolumeAtURL_unsupportedReason_errorSelector = mkSelector "checkDomainsCanBeStored:onVolumeAtURL:unsupportedReason:error:"
 
 -- | @Selector@ for @stateDirectoryURLWithError:@
-stateDirectoryURLWithErrorSelector :: Selector
+stateDirectoryURLWithErrorSelector :: Selector '[Id NSError] (Id NSURL)
 stateDirectoryURLWithErrorSelector = mkSelector "stateDirectoryURLWithError:"
 
 -- | @Selector@ for @requestDownloadForItemWithIdentifier:requestedRange:completionHandler:@
-requestDownloadForItemWithIdentifier_requestedRange_completionHandlerSelector :: Selector
+requestDownloadForItemWithIdentifier_requestedRange_completionHandlerSelector :: Selector '[Id NSString, NSRange, Ptr ()] ()
 requestDownloadForItemWithIdentifier_requestedRange_completionHandlerSelector = mkSelector "requestDownloadForItemWithIdentifier:requestedRange:completionHandler:"
 
 -- | @Selector@ for @disconnectWithReason:options:completionHandler:@
-disconnectWithReason_options_completionHandlerSelector :: Selector
+disconnectWithReason_options_completionHandlerSelector :: Selector '[Id NSString, NSFileProviderManagerDisconnectionOptions, Ptr ()] ()
 disconnectWithReason_options_completionHandlerSelector = mkSelector "disconnectWithReason:options:completionHandler:"
 
 -- | @Selector@ for @reconnectWithCompletionHandler:@
-reconnectWithCompletionHandlerSelector :: Selector
+reconnectWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 reconnectWithCompletionHandlerSelector = mkSelector "reconnectWithCompletionHandler:"
 
 -- | @Selector@ for @waitForStabilizationWithCompletionHandler:@
-waitForStabilizationWithCompletionHandlerSelector :: Selector
+waitForStabilizationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 waitForStabilizationWithCompletionHandlerSelector = mkSelector "waitForStabilizationWithCompletionHandler:"
 
 -- | @Selector@ for @waitForChangesOnItemsBelowItemWithIdentifier:completionHandler:@
-waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector :: Selector
+waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 waitForChangesOnItemsBelowItemWithIdentifier_completionHandlerSelector = mkSelector "waitForChangesOnItemsBelowItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @evictItemWithIdentifier:completionHandler:@
-evictItemWithIdentifier_completionHandlerSelector :: Selector
+evictItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 evictItemWithIdentifier_completionHandlerSelector = mkSelector "evictItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @importDomain:fromDirectoryAtURL:completionHandler:@
-importDomain_fromDirectoryAtURL_completionHandlerSelector :: Selector
+importDomain_fromDirectoryAtURL_completionHandlerSelector :: Selector '[Id NSFileProviderDomain, Id NSURL, Ptr ()] ()
 importDomain_fromDirectoryAtURL_completionHandlerSelector = mkSelector "importDomain:fromDirectoryAtURL:completionHandler:"
 
 -- | @Selector@ for @reimportItemsBelowItemWithIdentifier:completionHandler:@
-reimportItemsBelowItemWithIdentifier_completionHandlerSelector :: Selector
+reimportItemsBelowItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 reimportItemsBelowItemWithIdentifier_completionHandlerSelector = mkSelector "reimportItemsBelowItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @requestModificationOfFields:forItemWithIdentifier:options:completionHandler:@
-requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector :: Selector
+requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector :: Selector '[NSFileProviderItemFields, Id NSString, NSFileProviderModifyItemOptions, Ptr ()] ()
 requestModificationOfFields_forItemWithIdentifier_options_completionHandlerSelector = mkSelector "requestModificationOfFields:forItemWithIdentifier:options:completionHandler:"
 
 -- | @Selector@ for @enumeratorForPendingItems@
-enumeratorForPendingItemsSelector :: Selector
+enumeratorForPendingItemsSelector :: Selector '[] RawId
 enumeratorForPendingItemsSelector = mkSelector "enumeratorForPendingItems"
 
 -- | @Selector@ for @enumeratorForMaterializedItems@
-enumeratorForMaterializedItemsSelector :: Selector
+enumeratorForMaterializedItemsSelector :: Selector '[] RawId
 enumeratorForMaterializedItemsSelector = mkSelector "enumeratorForMaterializedItems"
 
 -- | @Selector@ for @defaultManager@
-defaultManagerSelector :: Selector
+defaultManagerSelector :: Selector '[] (Id NSFileProviderManager)
 defaultManagerSelector = mkSelector "defaultManager"
 
 -- | @Selector@ for @providerIdentifier@
-providerIdentifierSelector :: Selector
+providerIdentifierSelector :: Selector '[] (Id NSString)
 providerIdentifierSelector = mkSelector "providerIdentifier"
 
 -- | @Selector@ for @documentStorageURL@
-documentStorageURLSelector :: Selector
+documentStorageURLSelector :: Selector '[] (Id NSURL)
 documentStorageURLSelector = mkSelector "documentStorageURL"
 

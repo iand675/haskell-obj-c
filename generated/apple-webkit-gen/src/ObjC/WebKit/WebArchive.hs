@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.WebKit.WebArchive
   , subresources
   , subframeArchives
   , data_
-  , initWithMainResource_subresources_subframeArchivesSelector
-  , initWithDataSelector
-  , mainResourceSelector
-  , subresourcesSelector
-  , subframeArchivesSelector
   , dataSelector
+  , initWithDataSelector
+  , initWithMainResource_subresources_subframeArchivesSelector
+  , mainResourceSelector
+  , subframeArchivesSelector
+  , subresourcesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,11 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithMainResource:subresources:subframeArchives:@
 initWithMainResource_subresources_subframeArchives :: (IsWebArchive webArchive, IsWebResource mainResource, IsNSArray subresources, IsNSArray subframeArchives) => webArchive -> mainResource -> subresources -> subframeArchives -> IO (Id WebArchive)
-initWithMainResource_subresources_subframeArchives webArchive  mainResource subresources subframeArchives =
-  withObjCPtr mainResource $ \raw_mainResource ->
-    withObjCPtr subresources $ \raw_subresources ->
-      withObjCPtr subframeArchives $ \raw_subframeArchives ->
-          sendMsg webArchive (mkSelector "initWithMainResource:subresources:subframeArchives:") (retPtr retVoid) [argPtr (castPtr raw_mainResource :: Ptr ()), argPtr (castPtr raw_subresources :: Ptr ()), argPtr (castPtr raw_subframeArchives :: Ptr ())] >>= ownedObject . castPtr
+initWithMainResource_subresources_subframeArchives webArchive mainResource subresources subframeArchives =
+  sendOwnedMessage webArchive initWithMainResource_subresources_subframeArchivesSelector (toWebResource mainResource) (toNSArray subresources) (toNSArray subframeArchives)
 
 -- | initWithData:
 --
@@ -71,9 +65,8 @@ initWithMainResource_subresources_subframeArchives webArchive  mainResource subr
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: (IsWebArchive webArchive, IsNSData data_) => webArchive -> data_ -> IO (Id WebArchive)
-initWithData webArchive  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg webArchive (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData webArchive data_ =
+  sendOwnedMessage webArchive initWithDataSelector (toNSData data_)
 
 -- | mainResource
 --
@@ -81,8 +74,8 @@ initWithData webArchive  data_ =
 --
 -- ObjC selector: @- mainResource@
 mainResource :: IsWebArchive webArchive => webArchive -> IO (Id WebResource)
-mainResource webArchive  =
-    sendMsg webArchive (mkSelector "mainResource") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainResource webArchive =
+  sendMessage webArchive mainResourceSelector
 
 -- | subresources
 --
@@ -90,8 +83,8 @@ mainResource webArchive  =
 --
 -- ObjC selector: @- subresources@
 subresources :: IsWebArchive webArchive => webArchive -> IO (Id NSArray)
-subresources webArchive  =
-    sendMsg webArchive (mkSelector "subresources") (retPtr retVoid) [] >>= retainedObject . castPtr
+subresources webArchive =
+  sendMessage webArchive subresourcesSelector
 
 -- | subframeArchives
 --
@@ -99,8 +92,8 @@ subresources webArchive  =
 --
 -- ObjC selector: @- subframeArchives@
 subframeArchives :: IsWebArchive webArchive => webArchive -> IO (Id NSArray)
-subframeArchives webArchive  =
-    sendMsg webArchive (mkSelector "subframeArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+subframeArchives webArchive =
+  sendMessage webArchive subframeArchivesSelector
 
 -- | data
 --
@@ -110,34 +103,34 @@ subframeArchives webArchive  =
 --
 -- ObjC selector: @- data@
 data_ :: IsWebArchive webArchive => webArchive -> IO (Id NSData)
-data_ webArchive  =
-    sendMsg webArchive (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ webArchive =
+  sendMessage webArchive dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMainResource:subresources:subframeArchives:@
-initWithMainResource_subresources_subframeArchivesSelector :: Selector
+initWithMainResource_subresources_subframeArchivesSelector :: Selector '[Id WebResource, Id NSArray, Id NSArray] (Id WebArchive)
 initWithMainResource_subresources_subframeArchivesSelector = mkSelector "initWithMainResource:subresources:subframeArchives:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id WebArchive)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @mainResource@
-mainResourceSelector :: Selector
+mainResourceSelector :: Selector '[] (Id WebResource)
 mainResourceSelector = mkSelector "mainResource"
 
 -- | @Selector@ for @subresources@
-subresourcesSelector :: Selector
+subresourcesSelector :: Selector '[] (Id NSArray)
 subresourcesSelector = mkSelector "subresources"
 
 -- | @Selector@ for @subframeArchives@
-subframeArchivesSelector :: Selector
+subframeArchivesSelector :: Selector '[] (Id NSArray)
 subframeArchivesSelector = mkSelector "subframeArchives"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

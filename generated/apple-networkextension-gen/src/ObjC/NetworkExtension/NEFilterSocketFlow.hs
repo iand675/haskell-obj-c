@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.NetworkExtension.NEFilterSocketFlow
   , socketFamily
   , socketType
   , socketProtocol
-  , remoteFlowEndpointSelector
-  , remoteEndpointSelector
-  , remoteHostnameSelector
-  , localFlowEndpointSelector
   , localEndpointSelector
+  , localFlowEndpointSelector
+  , remoteEndpointSelector
+  , remoteFlowEndpointSelector
+  , remoteHostnameSelector
   , socketFamilySelector
-  , socketTypeSelector
   , socketProtocolSelector
+  , socketTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- remoteFlowEndpoint@
 remoteFlowEndpoint :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO (Id NSObject)
-remoteFlowEndpoint neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "remoteFlowEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteFlowEndpoint neFilterSocketFlow =
+  sendMessage neFilterSocketFlow remoteFlowEndpointSelector
 
 -- | remoteEndpoint
 --
@@ -62,8 +59,8 @@ remoteFlowEndpoint neFilterSocketFlow  =
 --
 -- ObjC selector: @- remoteEndpoint@
 remoteEndpoint :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO (Id NWEndpoint)
-remoteEndpoint neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "remoteEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteEndpoint neFilterSocketFlow =
+  sendMessage neFilterSocketFlow remoteEndpointSelector
 
 -- | remoteHostname
 --
@@ -71,8 +68,8 @@ remoteEndpoint neFilterSocketFlow  =
 --
 -- ObjC selector: @- remoteHostname@
 remoteHostname :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO (Id NSString)
-remoteHostname neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "remoteHostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteHostname neFilterSocketFlow =
+  sendMessage neFilterSocketFlow remoteHostnameSelector
 
 -- | localFlowEndpoint
 --
@@ -80,8 +77,8 @@ remoteHostname neFilterSocketFlow  =
 --
 -- ObjC selector: @- localFlowEndpoint@
 localFlowEndpoint :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO (Id NSObject)
-localFlowEndpoint neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "localFlowEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+localFlowEndpoint neFilterSocketFlow =
+  sendMessage neFilterSocketFlow localFlowEndpointSelector
 
 -- | localEndpoint
 --
@@ -89,8 +86,8 @@ localFlowEndpoint neFilterSocketFlow  =
 --
 -- ObjC selector: @- localEndpoint@
 localEndpoint :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO (Id NWEndpoint)
-localEndpoint neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "localEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+localEndpoint neFilterSocketFlow =
+  sendMessage neFilterSocketFlow localEndpointSelector
 
 -- | socketFamily
 --
@@ -98,8 +95,8 @@ localEndpoint neFilterSocketFlow  =
 --
 -- ObjC selector: @- socketFamily@
 socketFamily :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO CInt
-socketFamily neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "socketFamily") retCInt []
+socketFamily neFilterSocketFlow =
+  sendMessage neFilterSocketFlow socketFamilySelector
 
 -- | socketType
 --
@@ -107,8 +104,8 @@ socketFamily neFilterSocketFlow  =
 --
 -- ObjC selector: @- socketType@
 socketType :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO CInt
-socketType neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "socketType") retCInt []
+socketType neFilterSocketFlow =
+  sendMessage neFilterSocketFlow socketTypeSelector
 
 -- | socketProtocol
 --
@@ -116,42 +113,42 @@ socketType neFilterSocketFlow  =
 --
 -- ObjC selector: @- socketProtocol@
 socketProtocol :: IsNEFilterSocketFlow neFilterSocketFlow => neFilterSocketFlow -> IO CInt
-socketProtocol neFilterSocketFlow  =
-    sendMsg neFilterSocketFlow (mkSelector "socketProtocol") retCInt []
+socketProtocol neFilterSocketFlow =
+  sendMessage neFilterSocketFlow socketProtocolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @remoteFlowEndpoint@
-remoteFlowEndpointSelector :: Selector
+remoteFlowEndpointSelector :: Selector '[] (Id NSObject)
 remoteFlowEndpointSelector = mkSelector "remoteFlowEndpoint"
 
 -- | @Selector@ for @remoteEndpoint@
-remoteEndpointSelector :: Selector
+remoteEndpointSelector :: Selector '[] (Id NWEndpoint)
 remoteEndpointSelector = mkSelector "remoteEndpoint"
 
 -- | @Selector@ for @remoteHostname@
-remoteHostnameSelector :: Selector
+remoteHostnameSelector :: Selector '[] (Id NSString)
 remoteHostnameSelector = mkSelector "remoteHostname"
 
 -- | @Selector@ for @localFlowEndpoint@
-localFlowEndpointSelector :: Selector
+localFlowEndpointSelector :: Selector '[] (Id NSObject)
 localFlowEndpointSelector = mkSelector "localFlowEndpoint"
 
 -- | @Selector@ for @localEndpoint@
-localEndpointSelector :: Selector
+localEndpointSelector :: Selector '[] (Id NWEndpoint)
 localEndpointSelector = mkSelector "localEndpoint"
 
 -- | @Selector@ for @socketFamily@
-socketFamilySelector :: Selector
+socketFamilySelector :: Selector '[] CInt
 socketFamilySelector = mkSelector "socketFamily"
 
 -- | @Selector@ for @socketType@
-socketTypeSelector :: Selector
+socketTypeSelector :: Selector '[] CInt
 socketTypeSelector = mkSelector "socketType"
 
 -- | @Selector@ for @socketProtocol@
-socketProtocolSelector :: Selector
+socketProtocolSelector :: Selector '[] CInt
 socketProtocolSelector = mkSelector "socketProtocol"
 

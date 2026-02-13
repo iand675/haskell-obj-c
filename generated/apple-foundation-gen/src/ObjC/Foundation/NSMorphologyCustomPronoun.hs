@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Foundation.NSMorphologyCustomPronoun
   , reflexiveForm
   , setReflexiveForm
   , isSupportedForLanguageSelector
-  , requiredKeysForLanguageSelector
-  , subjectFormSelector
-  , setSubjectFormSelector
   , objectFormSelector
-  , setObjectFormSelector
-  , possessiveFormSelector
-  , setPossessiveFormSelector
   , possessiveAdjectiveFormSelector
-  , setPossessiveAdjectiveFormSelector
+  , possessiveFormSelector
   , reflexiveFormSelector
+  , requiredKeysForLanguageSelector
+  , setObjectFormSelector
+  , setPossessiveAdjectiveFormSelector
+  , setPossessiveFormSelector
   , setReflexiveFormSelector
+  , setSubjectFormSelector
+  , subjectFormSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,121 +50,114 @@ isSupportedForLanguage :: IsNSString language => language -> IO Bool
 isSupportedForLanguage language =
   do
     cls' <- getRequiredClass "NSMorphologyCustomPronoun"
-    withObjCPtr language $ \raw_language ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isSupportedForLanguage:") retCULong [argPtr (castPtr raw_language :: Ptr ())]
+    sendClassMessage cls' isSupportedForLanguageSelector (toNSString language)
 
 -- | @+ requiredKeysForLanguage:@
 requiredKeysForLanguage :: IsNSString language => language -> IO (Id NSArray)
 requiredKeysForLanguage language =
   do
     cls' <- getRequiredClass "NSMorphologyCustomPronoun"
-    withObjCPtr language $ \raw_language ->
-      sendClassMsg cls' (mkSelector "requiredKeysForLanguage:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requiredKeysForLanguageSelector (toNSString language)
 
 -- | @- subjectForm@
 subjectForm :: IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun => nsMorphologyCustomPronoun -> IO (Id NSString)
-subjectForm nsMorphologyCustomPronoun  =
-    sendMsg nsMorphologyCustomPronoun (mkSelector "subjectForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+subjectForm nsMorphologyCustomPronoun =
+  sendMessage nsMorphologyCustomPronoun subjectFormSelector
 
 -- | @- setSubjectForm:@
 setSubjectForm :: (IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun, IsNSString value) => nsMorphologyCustomPronoun -> value -> IO ()
-setSubjectForm nsMorphologyCustomPronoun  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMorphologyCustomPronoun (mkSelector "setSubjectForm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubjectForm nsMorphologyCustomPronoun value =
+  sendMessage nsMorphologyCustomPronoun setSubjectFormSelector (toNSString value)
 
 -- | @- objectForm@
 objectForm :: IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun => nsMorphologyCustomPronoun -> IO (Id NSString)
-objectForm nsMorphologyCustomPronoun  =
-    sendMsg nsMorphologyCustomPronoun (mkSelector "objectForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectForm nsMorphologyCustomPronoun =
+  sendMessage nsMorphologyCustomPronoun objectFormSelector
 
 -- | @- setObjectForm:@
 setObjectForm :: (IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun, IsNSString value) => nsMorphologyCustomPronoun -> value -> IO ()
-setObjectForm nsMorphologyCustomPronoun  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMorphologyCustomPronoun (mkSelector "setObjectForm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectForm nsMorphologyCustomPronoun value =
+  sendMessage nsMorphologyCustomPronoun setObjectFormSelector (toNSString value)
 
 -- | @- possessiveForm@
 possessiveForm :: IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun => nsMorphologyCustomPronoun -> IO (Id NSString)
-possessiveForm nsMorphologyCustomPronoun  =
-    sendMsg nsMorphologyCustomPronoun (mkSelector "possessiveForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+possessiveForm nsMorphologyCustomPronoun =
+  sendMessage nsMorphologyCustomPronoun possessiveFormSelector
 
 -- | @- setPossessiveForm:@
 setPossessiveForm :: (IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun, IsNSString value) => nsMorphologyCustomPronoun -> value -> IO ()
-setPossessiveForm nsMorphologyCustomPronoun  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMorphologyCustomPronoun (mkSelector "setPossessiveForm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPossessiveForm nsMorphologyCustomPronoun value =
+  sendMessage nsMorphologyCustomPronoun setPossessiveFormSelector (toNSString value)
 
 -- | @- possessiveAdjectiveForm@
 possessiveAdjectiveForm :: IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun => nsMorphologyCustomPronoun -> IO (Id NSString)
-possessiveAdjectiveForm nsMorphologyCustomPronoun  =
-    sendMsg nsMorphologyCustomPronoun (mkSelector "possessiveAdjectiveForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+possessiveAdjectiveForm nsMorphologyCustomPronoun =
+  sendMessage nsMorphologyCustomPronoun possessiveAdjectiveFormSelector
 
 -- | @- setPossessiveAdjectiveForm:@
 setPossessiveAdjectiveForm :: (IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun, IsNSString value) => nsMorphologyCustomPronoun -> value -> IO ()
-setPossessiveAdjectiveForm nsMorphologyCustomPronoun  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMorphologyCustomPronoun (mkSelector "setPossessiveAdjectiveForm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPossessiveAdjectiveForm nsMorphologyCustomPronoun value =
+  sendMessage nsMorphologyCustomPronoun setPossessiveAdjectiveFormSelector (toNSString value)
 
 -- | @- reflexiveForm@
 reflexiveForm :: IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun => nsMorphologyCustomPronoun -> IO (Id NSString)
-reflexiveForm nsMorphologyCustomPronoun  =
-    sendMsg nsMorphologyCustomPronoun (mkSelector "reflexiveForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+reflexiveForm nsMorphologyCustomPronoun =
+  sendMessage nsMorphologyCustomPronoun reflexiveFormSelector
 
 -- | @- setReflexiveForm:@
 setReflexiveForm :: (IsNSMorphologyCustomPronoun nsMorphologyCustomPronoun, IsNSString value) => nsMorphologyCustomPronoun -> value -> IO ()
-setReflexiveForm nsMorphologyCustomPronoun  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMorphologyCustomPronoun (mkSelector "setReflexiveForm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReflexiveForm nsMorphologyCustomPronoun value =
+  sendMessage nsMorphologyCustomPronoun setReflexiveFormSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isSupportedForLanguage:@
-isSupportedForLanguageSelector :: Selector
+isSupportedForLanguageSelector :: Selector '[Id NSString] Bool
 isSupportedForLanguageSelector = mkSelector "isSupportedForLanguage:"
 
 -- | @Selector@ for @requiredKeysForLanguage:@
-requiredKeysForLanguageSelector :: Selector
+requiredKeysForLanguageSelector :: Selector '[Id NSString] (Id NSArray)
 requiredKeysForLanguageSelector = mkSelector "requiredKeysForLanguage:"
 
 -- | @Selector@ for @subjectForm@
-subjectFormSelector :: Selector
+subjectFormSelector :: Selector '[] (Id NSString)
 subjectFormSelector = mkSelector "subjectForm"
 
 -- | @Selector@ for @setSubjectForm:@
-setSubjectFormSelector :: Selector
+setSubjectFormSelector :: Selector '[Id NSString] ()
 setSubjectFormSelector = mkSelector "setSubjectForm:"
 
 -- | @Selector@ for @objectForm@
-objectFormSelector :: Selector
+objectFormSelector :: Selector '[] (Id NSString)
 objectFormSelector = mkSelector "objectForm"
 
 -- | @Selector@ for @setObjectForm:@
-setObjectFormSelector :: Selector
+setObjectFormSelector :: Selector '[Id NSString] ()
 setObjectFormSelector = mkSelector "setObjectForm:"
 
 -- | @Selector@ for @possessiveForm@
-possessiveFormSelector :: Selector
+possessiveFormSelector :: Selector '[] (Id NSString)
 possessiveFormSelector = mkSelector "possessiveForm"
 
 -- | @Selector@ for @setPossessiveForm:@
-setPossessiveFormSelector :: Selector
+setPossessiveFormSelector :: Selector '[Id NSString] ()
 setPossessiveFormSelector = mkSelector "setPossessiveForm:"
 
 -- | @Selector@ for @possessiveAdjectiveForm@
-possessiveAdjectiveFormSelector :: Selector
+possessiveAdjectiveFormSelector :: Selector '[] (Id NSString)
 possessiveAdjectiveFormSelector = mkSelector "possessiveAdjectiveForm"
 
 -- | @Selector@ for @setPossessiveAdjectiveForm:@
-setPossessiveAdjectiveFormSelector :: Selector
+setPossessiveAdjectiveFormSelector :: Selector '[Id NSString] ()
 setPossessiveAdjectiveFormSelector = mkSelector "setPossessiveAdjectiveForm:"
 
 -- | @Selector@ for @reflexiveForm@
-reflexiveFormSelector :: Selector
+reflexiveFormSelector :: Selector '[] (Id NSString)
 reflexiveFormSelector = mkSelector "reflexiveForm"
 
 -- | @Selector@ for @setReflexiveForm:@
-setReflexiveFormSelector :: Selector
+setReflexiveFormSelector :: Selector '[Id NSString] ()
 setReflexiveFormSelector = mkSelector "setReflexiveForm:"
 

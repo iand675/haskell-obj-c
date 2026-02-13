@@ -37,7 +37,7 @@ import ObjC.Runtime.StableIvar
 -- selector).  'Just' provides the Haskell implementation.
 data NSInputServiceProviderOverrides = NSInputServiceProviderOverrides
   { _insertText_client :: !(Maybe (RawId -> RawId -> IO ()))
-  , _doCommandBySelector_client :: !(Maybe (Selector -> RawId -> IO ()))
+  , _doCommandBySelector_client :: !(Maybe (Sel -> RawId -> IO ()))
   , _markedTextAbandoned :: !(Maybe (RawId -> IO ()))
   , _terminate :: !(Maybe (RawId -> IO ()))
   , _canBeDisabled :: !(Maybe (IO Bool))

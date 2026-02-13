@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.LocalAuthentication.LAEnvironmentMechanismCompanion
   , IsLAEnvironmentMechanismCompanion(..)
   , type_
   , stateHash
-  , typeSelector
   , stateHashSelector
+  , typeSelector
 
   -- * Enum types
   , LACompanionType(LACompanionType)
@@ -20,15 +21,11 @@ module ObjC.LocalAuthentication.LAEnvironmentMechanismCompanion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,8 +37,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsLAEnvironmentMechanismCompanion laEnvironmentMechanismCompanion => laEnvironmentMechanismCompanion -> IO LACompanionType
-type_ laEnvironmentMechanismCompanion  =
-    fmap (coerce :: CLong -> LACompanionType) $ sendMsg laEnvironmentMechanismCompanion (mkSelector "type") retCLong []
+type_ laEnvironmentMechanismCompanion =
+  sendMessage laEnvironmentMechanismCompanion typeSelector
 
 -- | Hash of the current companion pairing as returned by @LAContext.domainState.companion.stateHash(for:)@
 --
@@ -49,18 +46,18 @@ type_ laEnvironmentMechanismCompanion  =
 --
 -- ObjC selector: @- stateHash@
 stateHash :: IsLAEnvironmentMechanismCompanion laEnvironmentMechanismCompanion => laEnvironmentMechanismCompanion -> IO (Id NSData)
-stateHash laEnvironmentMechanismCompanion  =
-    sendMsg laEnvironmentMechanismCompanion (mkSelector "stateHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateHash laEnvironmentMechanismCompanion =
+  sendMessage laEnvironmentMechanismCompanion stateHashSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] LACompanionType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @stateHash@
-stateHashSelector :: Selector
+stateHashSelector :: Selector '[] (Id NSData)
 stateHashSelector = mkSelector "stateHash"
 

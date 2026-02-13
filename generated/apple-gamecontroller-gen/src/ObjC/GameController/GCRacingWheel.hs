@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.GameController.GCRacingWheel
   , acquired
   , wheelInput
   , snapshot
-  , initSelector
   , acquireDeviceWithErrorSelector
-  , relinquishDeviceSelector
+  , acquiredSelector
   , captureSelector
   , connectedRacingWheelsSelector
-  , acquiredSelector
-  , wheelInputSelector
+  , initSelector
+  , relinquishDeviceSelector
   , snapshotSelector
+  , wheelInputSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,23 +40,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO (Id GCRacingWheel)
-init_ gcRacingWheel  =
-    sendMsg gcRacingWheel (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gcRacingWheel =
+  sendOwnedMessage gcRacingWheel initSelector
 
 -- | A GCRacingWheel must be acquired before your application can begin receiving events from it.  Prior to acquisition, your application may only query the properties of the racing wheel.  Acquisition is exclusive and may fail.
 --
 -- ObjC selector: @- acquireDeviceWithError:@
 acquireDeviceWithError :: (IsGCRacingWheel gcRacingWheel, IsNSError error_) => gcRacingWheel -> error_ -> IO Bool
-acquireDeviceWithError gcRacingWheel  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcRacingWheel (mkSelector "acquireDeviceWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+acquireDeviceWithError gcRacingWheel error_ =
+  sendMessage gcRacingWheel acquireDeviceWithErrorSelector (toNSError error_)
 
 -- | Releases a previous acquisition of the racing wheel.
 --
 -- ObjC selector: @- relinquishDevice@
 relinquishDevice :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO ()
-relinquishDevice gcRacingWheel  =
-    sendMsg gcRacingWheel (mkSelector "relinquishDevice") retVoid []
+relinquishDevice gcRacingWheel =
+  sendMessage gcRacingWheel relinquishDeviceSelector
 
 -- | Polls the state vector of the racing wheel and saves it to a new instance of GCRacingWheel.
 --
@@ -71,8 +67,8 @@ relinquishDevice gcRacingWheel  =
 --
 -- ObjC selector: @- capture@
 capture :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO (Id GCRacingWheel)
-capture gcRacingWheel  =
-    sendMsg gcRacingWheel (mkSelector "capture") (retPtr retVoid) [] >>= retainedObject . castPtr
+capture gcRacingWheel =
+  sendMessage gcRacingWheel captureSelector
 
 -- | Get the collection of racing wheels currently attached to the system.
 --
@@ -85,7 +81,7 @@ connectedRacingWheels :: IO (Id NSSet)
 connectedRacingWheels  =
   do
     cls' <- getRequiredClass "GCRacingWheel"
-    sendClassMsg cls' (mkSelector "connectedRacingWheels") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' connectedRacingWheelsSelector
 
 -- | Checks if the racing wheel has been acquired by the application.
 --
@@ -93,15 +89,15 @@ connectedRacingWheels  =
 --
 -- ObjC selector: @- acquired@
 acquired :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO Bool
-acquired gcRacingWheel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcRacingWheel (mkSelector "acquired") retCULong []
+acquired gcRacingWheel =
+  sendMessage gcRacingWheel acquiredSelector
 
 -- | Get the physical input profile for the racing wheel.
 --
 -- ObjC selector: @- wheelInput@
 wheelInput :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO (Id GCRacingWheelInput)
-wheelInput gcRacingWheel  =
-    sendMsg gcRacingWheel (mkSelector "wheelInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+wheelInput gcRacingWheel =
+  sendMessage gcRacingWheel wheelInputSelector
 
 -- | A GCRacingWheel may represent a real device managed by the operating system, or a snapshot created by the developer.
 --
@@ -109,42 +105,42 @@ wheelInput gcRacingWheel  =
 --
 -- ObjC selector: @- snapshot@
 snapshot :: IsGCRacingWheel gcRacingWheel => gcRacingWheel -> IO Bool
-snapshot gcRacingWheel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcRacingWheel (mkSelector "snapshot") retCULong []
+snapshot gcRacingWheel =
+  sendMessage gcRacingWheel snapshotSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GCRacingWheel)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @acquireDeviceWithError:@
-acquireDeviceWithErrorSelector :: Selector
+acquireDeviceWithErrorSelector :: Selector '[Id NSError] Bool
 acquireDeviceWithErrorSelector = mkSelector "acquireDeviceWithError:"
 
 -- | @Selector@ for @relinquishDevice@
-relinquishDeviceSelector :: Selector
+relinquishDeviceSelector :: Selector '[] ()
 relinquishDeviceSelector = mkSelector "relinquishDevice"
 
 -- | @Selector@ for @capture@
-captureSelector :: Selector
+captureSelector :: Selector '[] (Id GCRacingWheel)
 captureSelector = mkSelector "capture"
 
 -- | @Selector@ for @connectedRacingWheels@
-connectedRacingWheelsSelector :: Selector
+connectedRacingWheelsSelector :: Selector '[] (Id NSSet)
 connectedRacingWheelsSelector = mkSelector "connectedRacingWheels"
 
 -- | @Selector@ for @acquired@
-acquiredSelector :: Selector
+acquiredSelector :: Selector '[] Bool
 acquiredSelector = mkSelector "acquired"
 
 -- | @Selector@ for @wheelInput@
-wheelInputSelector :: Selector
+wheelInputSelector :: Selector '[] (Id GCRacingWheelInput)
 wheelInputSelector = mkSelector "wheelInput"
 
 -- | @Selector@ for @snapshot@
-snapshotSelector :: Selector
+snapshotSelector :: Selector '[] Bool
 snapshotSelector = mkSelector "snapshot"
 

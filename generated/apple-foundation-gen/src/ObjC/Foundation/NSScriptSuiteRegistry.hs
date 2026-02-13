@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Foundation.NSScriptSuiteRegistry
   , commandDescriptionWithAppleEventClass_andAppleEventCode
   , aeteResource
   , suiteNames
-  , sharedScriptSuiteRegistrySelector
-  , setSharedScriptSuiteRegistrySelector
-  , loadSuitesFromBundleSelector
-  , loadSuiteWithDictionary_fromBundleSelector
-  , registerClassDescriptionSelector
-  , registerCommandDescriptionSelector
+  , aeteResourceSelector
   , appleEventCodeForSuiteSelector
   , bundleForSuiteSelector
-  , classDescriptionsInSuiteSelector
-  , commandDescriptionsInSuiteSelector
-  , suiteForAppleEventCodeSelector
   , classDescriptionWithAppleEventCodeSelector
+  , classDescriptionsInSuiteSelector
   , commandDescriptionWithAppleEventClass_andAppleEventCodeSelector
-  , aeteResourceSelector
+  , commandDescriptionsInSuiteSelector
+  , loadSuiteWithDictionary_fromBundleSelector
+  , loadSuitesFromBundleSelector
+  , registerClassDescriptionSelector
+  , registerCommandDescriptionSelector
+  , setSharedScriptSuiteRegistrySelector
+  , sharedScriptSuiteRegistrySelector
+  , suiteForAppleEventCodeSelector
   , suiteNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,152 +56,141 @@ sharedScriptSuiteRegistry :: IO (Id NSScriptSuiteRegistry)
 sharedScriptSuiteRegistry  =
   do
     cls' <- getRequiredClass "NSScriptSuiteRegistry"
-    sendClassMsg cls' (mkSelector "sharedScriptSuiteRegistry") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedScriptSuiteRegistrySelector
 
 -- | @+ setSharedScriptSuiteRegistry:@
 setSharedScriptSuiteRegistry :: IsNSScriptSuiteRegistry registry => registry -> IO ()
 setSharedScriptSuiteRegistry registry =
   do
     cls' <- getRequiredClass "NSScriptSuiteRegistry"
-    withObjCPtr registry $ \raw_registry ->
-      sendClassMsg cls' (mkSelector "setSharedScriptSuiteRegistry:") retVoid [argPtr (castPtr raw_registry :: Ptr ())]
+    sendClassMessage cls' setSharedScriptSuiteRegistrySelector (toNSScriptSuiteRegistry registry)
 
 -- | @- loadSuitesFromBundle:@
 loadSuitesFromBundle :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSBundle bundle) => nsScriptSuiteRegistry -> bundle -> IO ()
-loadSuitesFromBundle nsScriptSuiteRegistry  bundle =
-  withObjCPtr bundle $ \raw_bundle ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "loadSuitesFromBundle:") retVoid [argPtr (castPtr raw_bundle :: Ptr ())]
+loadSuitesFromBundle nsScriptSuiteRegistry bundle =
+  sendMessage nsScriptSuiteRegistry loadSuitesFromBundleSelector (toNSBundle bundle)
 
 -- | @- loadSuiteWithDictionary:fromBundle:@
 loadSuiteWithDictionary_fromBundle :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSDictionary suiteDeclaration, IsNSBundle bundle) => nsScriptSuiteRegistry -> suiteDeclaration -> bundle -> IO ()
-loadSuiteWithDictionary_fromBundle nsScriptSuiteRegistry  suiteDeclaration bundle =
-  withObjCPtr suiteDeclaration $ \raw_suiteDeclaration ->
-    withObjCPtr bundle $ \raw_bundle ->
-        sendMsg nsScriptSuiteRegistry (mkSelector "loadSuiteWithDictionary:fromBundle:") retVoid [argPtr (castPtr raw_suiteDeclaration :: Ptr ()), argPtr (castPtr raw_bundle :: Ptr ())]
+loadSuiteWithDictionary_fromBundle nsScriptSuiteRegistry suiteDeclaration bundle =
+  sendMessage nsScriptSuiteRegistry loadSuiteWithDictionary_fromBundleSelector (toNSDictionary suiteDeclaration) (toNSBundle bundle)
 
 -- | @- registerClassDescription:@
 registerClassDescription :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSScriptClassDescription classDescription) => nsScriptSuiteRegistry -> classDescription -> IO ()
-registerClassDescription nsScriptSuiteRegistry  classDescription =
-  withObjCPtr classDescription $ \raw_classDescription ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "registerClassDescription:") retVoid [argPtr (castPtr raw_classDescription :: Ptr ())]
+registerClassDescription nsScriptSuiteRegistry classDescription =
+  sendMessage nsScriptSuiteRegistry registerClassDescriptionSelector (toNSScriptClassDescription classDescription)
 
 -- | @- registerCommandDescription:@
 registerCommandDescription :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSScriptCommandDescription commandDescription) => nsScriptSuiteRegistry -> commandDescription -> IO ()
-registerCommandDescription nsScriptSuiteRegistry  commandDescription =
-  withObjCPtr commandDescription $ \raw_commandDescription ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "registerCommandDescription:") retVoid [argPtr (castPtr raw_commandDescription :: Ptr ())]
+registerCommandDescription nsScriptSuiteRegistry commandDescription =
+  sendMessage nsScriptSuiteRegistry registerCommandDescriptionSelector (toNSScriptCommandDescription commandDescription)
 
 -- | @- appleEventCodeForSuite:@
 appleEventCodeForSuite :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSString suiteName) => nsScriptSuiteRegistry -> suiteName -> IO CUInt
-appleEventCodeForSuite nsScriptSuiteRegistry  suiteName =
-  withObjCPtr suiteName $ \raw_suiteName ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "appleEventCodeForSuite:") retCUInt [argPtr (castPtr raw_suiteName :: Ptr ())]
+appleEventCodeForSuite nsScriptSuiteRegistry suiteName =
+  sendMessage nsScriptSuiteRegistry appleEventCodeForSuiteSelector (toNSString suiteName)
 
 -- | @- bundleForSuite:@
 bundleForSuite :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSString suiteName) => nsScriptSuiteRegistry -> suiteName -> IO (Id NSBundle)
-bundleForSuite nsScriptSuiteRegistry  suiteName =
-  withObjCPtr suiteName $ \raw_suiteName ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "bundleForSuite:") (retPtr retVoid) [argPtr (castPtr raw_suiteName :: Ptr ())] >>= retainedObject . castPtr
+bundleForSuite nsScriptSuiteRegistry suiteName =
+  sendMessage nsScriptSuiteRegistry bundleForSuiteSelector (toNSString suiteName)
 
 -- | @- classDescriptionsInSuite:@
 classDescriptionsInSuite :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSString suiteName) => nsScriptSuiteRegistry -> suiteName -> IO (Id NSDictionary)
-classDescriptionsInSuite nsScriptSuiteRegistry  suiteName =
-  withObjCPtr suiteName $ \raw_suiteName ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "classDescriptionsInSuite:") (retPtr retVoid) [argPtr (castPtr raw_suiteName :: Ptr ())] >>= retainedObject . castPtr
+classDescriptionsInSuite nsScriptSuiteRegistry suiteName =
+  sendMessage nsScriptSuiteRegistry classDescriptionsInSuiteSelector (toNSString suiteName)
 
 -- | @- commandDescriptionsInSuite:@
 commandDescriptionsInSuite :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSString suiteName) => nsScriptSuiteRegistry -> suiteName -> IO (Id NSDictionary)
-commandDescriptionsInSuite nsScriptSuiteRegistry  suiteName =
-  withObjCPtr suiteName $ \raw_suiteName ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "commandDescriptionsInSuite:") (retPtr retVoid) [argPtr (castPtr raw_suiteName :: Ptr ())] >>= retainedObject . castPtr
+commandDescriptionsInSuite nsScriptSuiteRegistry suiteName =
+  sendMessage nsScriptSuiteRegistry commandDescriptionsInSuiteSelector (toNSString suiteName)
 
 -- | @- suiteForAppleEventCode:@
 suiteForAppleEventCode :: IsNSScriptSuiteRegistry nsScriptSuiteRegistry => nsScriptSuiteRegistry -> CUInt -> IO (Id NSString)
-suiteForAppleEventCode nsScriptSuiteRegistry  appleEventCode =
-    sendMsg nsScriptSuiteRegistry (mkSelector "suiteForAppleEventCode:") (retPtr retVoid) [argCUInt appleEventCode] >>= retainedObject . castPtr
+suiteForAppleEventCode nsScriptSuiteRegistry appleEventCode =
+  sendMessage nsScriptSuiteRegistry suiteForAppleEventCodeSelector appleEventCode
 
 -- | @- classDescriptionWithAppleEventCode:@
 classDescriptionWithAppleEventCode :: IsNSScriptSuiteRegistry nsScriptSuiteRegistry => nsScriptSuiteRegistry -> CUInt -> IO (Id NSScriptClassDescription)
-classDescriptionWithAppleEventCode nsScriptSuiteRegistry  appleEventCode =
-    sendMsg nsScriptSuiteRegistry (mkSelector "classDescriptionWithAppleEventCode:") (retPtr retVoid) [argCUInt appleEventCode] >>= retainedObject . castPtr
+classDescriptionWithAppleEventCode nsScriptSuiteRegistry appleEventCode =
+  sendMessage nsScriptSuiteRegistry classDescriptionWithAppleEventCodeSelector appleEventCode
 
 -- | @- commandDescriptionWithAppleEventClass:andAppleEventCode:@
 commandDescriptionWithAppleEventClass_andAppleEventCode :: IsNSScriptSuiteRegistry nsScriptSuiteRegistry => nsScriptSuiteRegistry -> CUInt -> CUInt -> IO (Id NSScriptCommandDescription)
-commandDescriptionWithAppleEventClass_andAppleEventCode nsScriptSuiteRegistry  appleEventClassCode appleEventIDCode =
-    sendMsg nsScriptSuiteRegistry (mkSelector "commandDescriptionWithAppleEventClass:andAppleEventCode:") (retPtr retVoid) [argCUInt appleEventClassCode, argCUInt appleEventIDCode] >>= retainedObject . castPtr
+commandDescriptionWithAppleEventClass_andAppleEventCode nsScriptSuiteRegistry appleEventClassCode appleEventIDCode =
+  sendMessage nsScriptSuiteRegistry commandDescriptionWithAppleEventClass_andAppleEventCodeSelector appleEventClassCode appleEventIDCode
 
 -- | @- aeteResource:@
 aeteResource :: (IsNSScriptSuiteRegistry nsScriptSuiteRegistry, IsNSString languageName) => nsScriptSuiteRegistry -> languageName -> IO (Id NSData)
-aeteResource nsScriptSuiteRegistry  languageName =
-  withObjCPtr languageName $ \raw_languageName ->
-      sendMsg nsScriptSuiteRegistry (mkSelector "aeteResource:") (retPtr retVoid) [argPtr (castPtr raw_languageName :: Ptr ())] >>= retainedObject . castPtr
+aeteResource nsScriptSuiteRegistry languageName =
+  sendMessage nsScriptSuiteRegistry aeteResourceSelector (toNSString languageName)
 
 -- | @- suiteNames@
 suiteNames :: IsNSScriptSuiteRegistry nsScriptSuiteRegistry => nsScriptSuiteRegistry -> IO (Id NSArray)
-suiteNames nsScriptSuiteRegistry  =
-    sendMsg nsScriptSuiteRegistry (mkSelector "suiteNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+suiteNames nsScriptSuiteRegistry =
+  sendMessage nsScriptSuiteRegistry suiteNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedScriptSuiteRegistry@
-sharedScriptSuiteRegistrySelector :: Selector
+sharedScriptSuiteRegistrySelector :: Selector '[] (Id NSScriptSuiteRegistry)
 sharedScriptSuiteRegistrySelector = mkSelector "sharedScriptSuiteRegistry"
 
 -- | @Selector@ for @setSharedScriptSuiteRegistry:@
-setSharedScriptSuiteRegistrySelector :: Selector
+setSharedScriptSuiteRegistrySelector :: Selector '[Id NSScriptSuiteRegistry] ()
 setSharedScriptSuiteRegistrySelector = mkSelector "setSharedScriptSuiteRegistry:"
 
 -- | @Selector@ for @loadSuitesFromBundle:@
-loadSuitesFromBundleSelector :: Selector
+loadSuitesFromBundleSelector :: Selector '[Id NSBundle] ()
 loadSuitesFromBundleSelector = mkSelector "loadSuitesFromBundle:"
 
 -- | @Selector@ for @loadSuiteWithDictionary:fromBundle:@
-loadSuiteWithDictionary_fromBundleSelector :: Selector
+loadSuiteWithDictionary_fromBundleSelector :: Selector '[Id NSDictionary, Id NSBundle] ()
 loadSuiteWithDictionary_fromBundleSelector = mkSelector "loadSuiteWithDictionary:fromBundle:"
 
 -- | @Selector@ for @registerClassDescription:@
-registerClassDescriptionSelector :: Selector
+registerClassDescriptionSelector :: Selector '[Id NSScriptClassDescription] ()
 registerClassDescriptionSelector = mkSelector "registerClassDescription:"
 
 -- | @Selector@ for @registerCommandDescription:@
-registerCommandDescriptionSelector :: Selector
+registerCommandDescriptionSelector :: Selector '[Id NSScriptCommandDescription] ()
 registerCommandDescriptionSelector = mkSelector "registerCommandDescription:"
 
 -- | @Selector@ for @appleEventCodeForSuite:@
-appleEventCodeForSuiteSelector :: Selector
+appleEventCodeForSuiteSelector :: Selector '[Id NSString] CUInt
 appleEventCodeForSuiteSelector = mkSelector "appleEventCodeForSuite:"
 
 -- | @Selector@ for @bundleForSuite:@
-bundleForSuiteSelector :: Selector
+bundleForSuiteSelector :: Selector '[Id NSString] (Id NSBundle)
 bundleForSuiteSelector = mkSelector "bundleForSuite:"
 
 -- | @Selector@ for @classDescriptionsInSuite:@
-classDescriptionsInSuiteSelector :: Selector
+classDescriptionsInSuiteSelector :: Selector '[Id NSString] (Id NSDictionary)
 classDescriptionsInSuiteSelector = mkSelector "classDescriptionsInSuite:"
 
 -- | @Selector@ for @commandDescriptionsInSuite:@
-commandDescriptionsInSuiteSelector :: Selector
+commandDescriptionsInSuiteSelector :: Selector '[Id NSString] (Id NSDictionary)
 commandDescriptionsInSuiteSelector = mkSelector "commandDescriptionsInSuite:"
 
 -- | @Selector@ for @suiteForAppleEventCode:@
-suiteForAppleEventCodeSelector :: Selector
+suiteForAppleEventCodeSelector :: Selector '[CUInt] (Id NSString)
 suiteForAppleEventCodeSelector = mkSelector "suiteForAppleEventCode:"
 
 -- | @Selector@ for @classDescriptionWithAppleEventCode:@
-classDescriptionWithAppleEventCodeSelector :: Selector
+classDescriptionWithAppleEventCodeSelector :: Selector '[CUInt] (Id NSScriptClassDescription)
 classDescriptionWithAppleEventCodeSelector = mkSelector "classDescriptionWithAppleEventCode:"
 
 -- | @Selector@ for @commandDescriptionWithAppleEventClass:andAppleEventCode:@
-commandDescriptionWithAppleEventClass_andAppleEventCodeSelector :: Selector
+commandDescriptionWithAppleEventClass_andAppleEventCodeSelector :: Selector '[CUInt, CUInt] (Id NSScriptCommandDescription)
 commandDescriptionWithAppleEventClass_andAppleEventCodeSelector = mkSelector "commandDescriptionWithAppleEventClass:andAppleEventCode:"
 
 -- | @Selector@ for @aeteResource:@
-aeteResourceSelector :: Selector
+aeteResourceSelector :: Selector '[Id NSString] (Id NSData)
 aeteResourceSelector = mkSelector "aeteResource:"
 
 -- | @Selector@ for @suiteNames@
-suiteNamesSelector :: Selector
+suiteNamesSelector :: Selector '[] (Id NSArray)
 suiteNamesSelector = mkSelector "suiteNames"
 

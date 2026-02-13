@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Intents.INBusTrip
   , departurePlatform
   , arrivalBusStopLocation
   , arrivalPlatform
+  , arrivalBusStopLocationSelector
+  , arrivalPlatformSelector
+  , busNameSelector
+  , busNumberSelector
+  , departureBusStopLocationSelector
+  , departurePlatformSelector
   , initSelector
   , initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatformSelector
   , providerSelector
-  , busNameSelector
-  , busNumberSelector
   , tripDurationSelector
-  , departureBusStopLocationSelector
-  , departurePlatformSelector
-  , arrivalBusStopLocationSelector
-  , arrivalPlatformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,103 +45,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id INBusTrip)
-init_ inBusTrip  =
-    sendMsg inBusTrip (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inBusTrip =
+  sendOwnedMessage inBusTrip initSelector
 
 -- | @- initWithProvider:busName:busNumber:tripDuration:departureBusStopLocation:departurePlatform:arrivalBusStopLocation:arrivalPlatform:@
 initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatform :: (IsINBusTrip inBusTrip, IsNSString provider, IsNSString busName, IsNSString busNumber, IsINDateComponentsRange tripDuration, IsCLPlacemark departureBusStopLocation, IsNSString departurePlatform, IsCLPlacemark arrivalBusStopLocation, IsNSString arrivalPlatform) => inBusTrip -> provider -> busName -> busNumber -> tripDuration -> departureBusStopLocation -> departurePlatform -> arrivalBusStopLocation -> arrivalPlatform -> IO (Id INBusTrip)
-initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatform inBusTrip  provider busName busNumber tripDuration departureBusStopLocation departurePlatform arrivalBusStopLocation arrivalPlatform =
-  withObjCPtr provider $ \raw_provider ->
-    withObjCPtr busName $ \raw_busName ->
-      withObjCPtr busNumber $ \raw_busNumber ->
-        withObjCPtr tripDuration $ \raw_tripDuration ->
-          withObjCPtr departureBusStopLocation $ \raw_departureBusStopLocation ->
-            withObjCPtr departurePlatform $ \raw_departurePlatform ->
-              withObjCPtr arrivalBusStopLocation $ \raw_arrivalBusStopLocation ->
-                withObjCPtr arrivalPlatform $ \raw_arrivalPlatform ->
-                    sendMsg inBusTrip (mkSelector "initWithProvider:busName:busNumber:tripDuration:departureBusStopLocation:departurePlatform:arrivalBusStopLocation:arrivalPlatform:") (retPtr retVoid) [argPtr (castPtr raw_provider :: Ptr ()), argPtr (castPtr raw_busName :: Ptr ()), argPtr (castPtr raw_busNumber :: Ptr ()), argPtr (castPtr raw_tripDuration :: Ptr ()), argPtr (castPtr raw_departureBusStopLocation :: Ptr ()), argPtr (castPtr raw_departurePlatform :: Ptr ()), argPtr (castPtr raw_arrivalBusStopLocation :: Ptr ()), argPtr (castPtr raw_arrivalPlatform :: Ptr ())] >>= ownedObject . castPtr
+initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatform inBusTrip provider busName busNumber tripDuration departureBusStopLocation departurePlatform arrivalBusStopLocation arrivalPlatform =
+  sendOwnedMessage inBusTrip initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatformSelector (toNSString provider) (toNSString busName) (toNSString busNumber) (toINDateComponentsRange tripDuration) (toCLPlacemark departureBusStopLocation) (toNSString departurePlatform) (toCLPlacemark arrivalBusStopLocation) (toNSString arrivalPlatform)
 
 -- | @- provider@
 provider :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id NSString)
-provider inBusTrip  =
-    sendMsg inBusTrip (mkSelector "provider") (retPtr retVoid) [] >>= retainedObject . castPtr
+provider inBusTrip =
+  sendMessage inBusTrip providerSelector
 
 -- | @- busName@
 busName :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id NSString)
-busName inBusTrip  =
-    sendMsg inBusTrip (mkSelector "busName") (retPtr retVoid) [] >>= retainedObject . castPtr
+busName inBusTrip =
+  sendMessage inBusTrip busNameSelector
 
 -- | @- busNumber@
 busNumber :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id NSString)
-busNumber inBusTrip  =
-    sendMsg inBusTrip (mkSelector "busNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+busNumber inBusTrip =
+  sendMessage inBusTrip busNumberSelector
 
 -- | @- tripDuration@
 tripDuration :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id INDateComponentsRange)
-tripDuration inBusTrip  =
-    sendMsg inBusTrip (mkSelector "tripDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+tripDuration inBusTrip =
+  sendMessage inBusTrip tripDurationSelector
 
 -- | @- departureBusStopLocation@
 departureBusStopLocation :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id CLPlacemark)
-departureBusStopLocation inBusTrip  =
-    sendMsg inBusTrip (mkSelector "departureBusStopLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+departureBusStopLocation inBusTrip =
+  sendMessage inBusTrip departureBusStopLocationSelector
 
 -- | @- departurePlatform@
 departurePlatform :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id NSString)
-departurePlatform inBusTrip  =
-    sendMsg inBusTrip (mkSelector "departurePlatform") (retPtr retVoid) [] >>= retainedObject . castPtr
+departurePlatform inBusTrip =
+  sendMessage inBusTrip departurePlatformSelector
 
 -- | @- arrivalBusStopLocation@
 arrivalBusStopLocation :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id CLPlacemark)
-arrivalBusStopLocation inBusTrip  =
-    sendMsg inBusTrip (mkSelector "arrivalBusStopLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+arrivalBusStopLocation inBusTrip =
+  sendMessage inBusTrip arrivalBusStopLocationSelector
 
 -- | @- arrivalPlatform@
 arrivalPlatform :: IsINBusTrip inBusTrip => inBusTrip -> IO (Id NSString)
-arrivalPlatform inBusTrip  =
-    sendMsg inBusTrip (mkSelector "arrivalPlatform") (retPtr retVoid) [] >>= retainedObject . castPtr
+arrivalPlatform inBusTrip =
+  sendMessage inBusTrip arrivalPlatformSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INBusTrip)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithProvider:busName:busNumber:tripDuration:departureBusStopLocation:departurePlatform:arrivalBusStopLocation:arrivalPlatform:@
-initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatformSelector :: Selector
+initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatformSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id INDateComponentsRange, Id CLPlacemark, Id NSString, Id CLPlacemark, Id NSString] (Id INBusTrip)
 initWithProvider_busName_busNumber_tripDuration_departureBusStopLocation_departurePlatform_arrivalBusStopLocation_arrivalPlatformSelector = mkSelector "initWithProvider:busName:busNumber:tripDuration:departureBusStopLocation:departurePlatform:arrivalBusStopLocation:arrivalPlatform:"
 
 -- | @Selector@ for @provider@
-providerSelector :: Selector
+providerSelector :: Selector '[] (Id NSString)
 providerSelector = mkSelector "provider"
 
 -- | @Selector@ for @busName@
-busNameSelector :: Selector
+busNameSelector :: Selector '[] (Id NSString)
 busNameSelector = mkSelector "busName"
 
 -- | @Selector@ for @busNumber@
-busNumberSelector :: Selector
+busNumberSelector :: Selector '[] (Id NSString)
 busNumberSelector = mkSelector "busNumber"
 
 -- | @Selector@ for @tripDuration@
-tripDurationSelector :: Selector
+tripDurationSelector :: Selector '[] (Id INDateComponentsRange)
 tripDurationSelector = mkSelector "tripDuration"
 
 -- | @Selector@ for @departureBusStopLocation@
-departureBusStopLocationSelector :: Selector
+departureBusStopLocationSelector :: Selector '[] (Id CLPlacemark)
 departureBusStopLocationSelector = mkSelector "departureBusStopLocation"
 
 -- | @Selector@ for @departurePlatform@
-departurePlatformSelector :: Selector
+departurePlatformSelector :: Selector '[] (Id NSString)
 departurePlatformSelector = mkSelector "departurePlatform"
 
 -- | @Selector@ for @arrivalBusStopLocation@
-arrivalBusStopLocationSelector :: Selector
+arrivalBusStopLocationSelector :: Selector '[] (Id CLPlacemark)
 arrivalBusStopLocationSelector = mkSelector "arrivalBusStopLocation"
 
 -- | @Selector@ for @arrivalPlatform@
-arrivalPlatformSelector :: Selector
+arrivalPlatformSelector :: Selector '[] (Id NSString)
 arrivalPlatformSelector = mkSelector "arrivalPlatform"
 

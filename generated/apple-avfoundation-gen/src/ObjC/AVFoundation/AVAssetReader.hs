@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,18 +32,18 @@ module ObjC.AVFoundation.AVAssetReader
   , status
   , error_
   , outputs
-  , initSelector
-  , newSelector
-  , assetReaderWithAsset_errorSelector
-  , initWithAsset_errorSelector
-  , canAddOutputSelector
   , addOutputSelector
-  , startReadingSelector
-  , cancelReadingSelector
+  , assetReaderWithAsset_errorSelector
   , assetSelector
-  , statusSelector
+  , canAddOutputSelector
+  , cancelReadingSelector
   , errorSelector
+  , initSelector
+  , initWithAsset_errorSelector
+  , newSelector
   , outputsSelector
+  , startReadingSelector
+  , statusSelector
 
   -- * Enum types
   , AVAssetReaderStatus(AVAssetReaderStatus)
@@ -54,15 +55,11 @@ module ObjC.AVFoundation.AVAssetReader
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,15 +69,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReader avAssetReader => avAssetReader -> IO (Id AVAssetReader)
-init_ avAssetReader  =
-    sendMsg avAssetReader (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReader =
+  sendOwnedMessage avAssetReader initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReader)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReader"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderWithAsset:error:
 --
@@ -99,9 +96,7 @@ assetReaderWithAsset_error :: (IsAVAsset asset, IsNSError outError) => asset -> 
 assetReaderWithAsset_error asset outError =
   do
     cls' <- getRequiredClass "AVAssetReader"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "assetReaderWithAsset:error:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderWithAsset_errorSelector (toAVAsset asset) (toNSError outError)
 
 -- | initWithAsset:error:
 --
@@ -117,10 +112,8 @@ assetReaderWithAsset_error asset outError =
 --
 -- ObjC selector: @- initWithAsset:error:@
 initWithAsset_error :: (IsAVAssetReader avAssetReader, IsAVAsset asset, IsNSError outError) => avAssetReader -> asset -> outError -> IO (Id AVAssetReader)
-initWithAsset_error avAssetReader  asset outError =
-  withObjCPtr asset $ \raw_asset ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avAssetReader (mkSelector "initWithAsset:error:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithAsset_error avAssetReader asset outError =
+  sendOwnedMessage avAssetReader initWithAsset_errorSelector (toAVAsset asset) (toNSError outError)
 
 -- | canAddOutput:
 --
@@ -134,9 +127,8 @@ initWithAsset_error avAssetReader  asset outError =
 --
 -- ObjC selector: @- canAddOutput:@
 canAddOutput :: (IsAVAssetReader avAssetReader, IsAVAssetReaderOutput output) => avAssetReader -> output -> IO Bool
-canAddOutput avAssetReader  output =
-  withObjCPtr output $ \raw_output ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetReader (mkSelector "canAddOutput:") retCULong [argPtr (castPtr raw_output :: Ptr ())]
+canAddOutput avAssetReader output =
+  sendMessage avAssetReader canAddOutputSelector (toAVAssetReaderOutput output)
 
 -- | addOutput:
 --
@@ -150,9 +142,8 @@ canAddOutput avAssetReader  output =
 --
 -- ObjC selector: @- addOutput:@
 addOutput :: (IsAVAssetReader avAssetReader, IsAVAssetReaderOutput output) => avAssetReader -> output -> IO ()
-addOutput avAssetReader  output =
-  withObjCPtr output $ \raw_output ->
-      sendMsg avAssetReader (mkSelector "addOutput:") retVoid [argPtr (castPtr raw_output :: Ptr ())]
+addOutput avAssetReader output =
+  sendMessage avAssetReader addOutputSelector (toAVAssetReaderOutput output)
 
 -- | startReading
 --
@@ -168,8 +159,8 @@ addOutput avAssetReader  output =
 --
 -- ObjC selector: @- startReading@
 startReading :: IsAVAssetReader avAssetReader => avAssetReader -> IO Bool
-startReading avAssetReader  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetReader (mkSelector "startReading") retCULong []
+startReading avAssetReader =
+  sendMessage avAssetReader startReadingSelector
 
 -- | cancelReading
 --
@@ -181,8 +172,8 @@ startReading avAssetReader  =
 --
 -- ObjC selector: @- cancelReading@
 cancelReading :: IsAVAssetReader avAssetReader => avAssetReader -> IO ()
-cancelReading avAssetReader  =
-    sendMsg avAssetReader (mkSelector "cancelReading") retVoid []
+cancelReading avAssetReader =
+  sendMessage avAssetReader cancelReadingSelector
 
 -- | asset
 --
@@ -192,8 +183,8 @@ cancelReading avAssetReader  =
 --
 -- ObjC selector: @- asset@
 asset :: IsAVAssetReader avAssetReader => avAssetReader -> IO (Id AVAsset)
-asset avAssetReader  =
-    sendMsg avAssetReader (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset avAssetReader =
+  sendMessage avAssetReader assetSelector
 
 -- | status
 --
@@ -203,8 +194,8 @@ asset avAssetReader  =
 --
 -- ObjC selector: @- status@
 status :: IsAVAssetReader avAssetReader => avAssetReader -> IO AVAssetReaderStatus
-status avAssetReader  =
-    fmap (coerce :: CLong -> AVAssetReaderStatus) $ sendMsg avAssetReader (mkSelector "status") retCLong []
+status avAssetReader =
+  sendMessage avAssetReader statusSelector
 
 -- | error
 --
@@ -214,8 +205,8 @@ status avAssetReader  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVAssetReader avAssetReader => avAssetReader -> IO (Id NSError)
-error_ avAssetReader  =
-    sendMsg avAssetReader (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avAssetReader =
+  sendMessage avAssetReader errorSelector
 
 -- | outputs
 --
@@ -225,58 +216,58 @@ error_ avAssetReader  =
 --
 -- ObjC selector: @- outputs@
 outputs :: IsAVAssetReader avAssetReader => avAssetReader -> IO (Id NSArray)
-outputs avAssetReader  =
-    sendMsg avAssetReader (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputs avAssetReader =
+  sendMessage avAssetReader outputsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReader)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReader)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderWithAsset:error:@
-assetReaderWithAsset_errorSelector :: Selector
+assetReaderWithAsset_errorSelector :: Selector '[Id AVAsset, Id NSError] (Id AVAssetReader)
 assetReaderWithAsset_errorSelector = mkSelector "assetReaderWithAsset:error:"
 
 -- | @Selector@ for @initWithAsset:error:@
-initWithAsset_errorSelector :: Selector
+initWithAsset_errorSelector :: Selector '[Id AVAsset, Id NSError] (Id AVAssetReader)
 initWithAsset_errorSelector = mkSelector "initWithAsset:error:"
 
 -- | @Selector@ for @canAddOutput:@
-canAddOutputSelector :: Selector
+canAddOutputSelector :: Selector '[Id AVAssetReaderOutput] Bool
 canAddOutputSelector = mkSelector "canAddOutput:"
 
 -- | @Selector@ for @addOutput:@
-addOutputSelector :: Selector
+addOutputSelector :: Selector '[Id AVAssetReaderOutput] ()
 addOutputSelector = mkSelector "addOutput:"
 
 -- | @Selector@ for @startReading@
-startReadingSelector :: Selector
+startReadingSelector :: Selector '[] Bool
 startReadingSelector = mkSelector "startReading"
 
 -- | @Selector@ for @cancelReading@
-cancelReadingSelector :: Selector
+cancelReadingSelector :: Selector '[] ()
 cancelReadingSelector = mkSelector "cancelReading"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVAssetReaderStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @outputs@
-outputsSelector :: Selector
+outputsSelector :: Selector '[] (Id NSArray)
 outputsSelector = mkSelector "outputs"
 

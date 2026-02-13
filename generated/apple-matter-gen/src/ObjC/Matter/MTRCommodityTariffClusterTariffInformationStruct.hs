@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRCommodityTariffClusterTariffInformationStruct
   , setCurrency
   , blockMode
   , setBlockMode
-  , tariffLabelSelector
-  , setTariffLabelSelector
-  , providerNameSelector
-  , setProviderNameSelector
-  , currencySelector
-  , setCurrencySelector
   , blockModeSelector
+  , currencySelector
+  , providerNameSelector
   , setBlockModeSelector
+  , setCurrencySelector
+  , setProviderNameSelector
+  , setTariffLabelSelector
+  , tariffLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tariffLabel@
 tariffLabel :: IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct => mtrCommodityTariffClusterTariffInformationStruct -> IO (Id NSString)
-tariffLabel mtrCommodityTariffClusterTariffInformationStruct  =
-    sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "tariffLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+tariffLabel mtrCommodityTariffClusterTariffInformationStruct =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct tariffLabelSelector
 
 -- | @- setTariffLabel:@
 setTariffLabel :: (IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct, IsNSString value) => mtrCommodityTariffClusterTariffInformationStruct -> value -> IO ()
-setTariffLabel mtrCommodityTariffClusterTariffInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "setTariffLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTariffLabel mtrCommodityTariffClusterTariffInformationStruct value =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct setTariffLabelSelector (toNSString value)
 
 -- | @- providerName@
 providerName :: IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct => mtrCommodityTariffClusterTariffInformationStruct -> IO (Id NSString)
-providerName mtrCommodityTariffClusterTariffInformationStruct  =
-    sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "providerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerName mtrCommodityTariffClusterTariffInformationStruct =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct providerNameSelector
 
 -- | @- setProviderName:@
 setProviderName :: (IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct, IsNSString value) => mtrCommodityTariffClusterTariffInformationStruct -> value -> IO ()
-setProviderName mtrCommodityTariffClusterTariffInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "setProviderName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderName mtrCommodityTariffClusterTariffInformationStruct value =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct setProviderNameSelector (toNSString value)
 
 -- | @- currency@
 currency :: IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct => mtrCommodityTariffClusterTariffInformationStruct -> IO (Id MTRDataTypeCurrencyStruct)
-currency mtrCommodityTariffClusterTariffInformationStruct  =
-    sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "currency") (retPtr retVoid) [] >>= retainedObject . castPtr
+currency mtrCommodityTariffClusterTariffInformationStruct =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct currencySelector
 
 -- | @- setCurrency:@
 setCurrency :: (IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct, IsMTRDataTypeCurrencyStruct value) => mtrCommodityTariffClusterTariffInformationStruct -> value -> IO ()
-setCurrency mtrCommodityTariffClusterTariffInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "setCurrency:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrency mtrCommodityTariffClusterTariffInformationStruct value =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct setCurrencySelector (toMTRDataTypeCurrencyStruct value)
 
 -- | @- blockMode@
 blockMode :: IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct => mtrCommodityTariffClusterTariffInformationStruct -> IO (Id NSNumber)
-blockMode mtrCommodityTariffClusterTariffInformationStruct  =
-    sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "blockMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+blockMode mtrCommodityTariffClusterTariffInformationStruct =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct blockModeSelector
 
 -- | @- setBlockMode:@
 setBlockMode :: (IsMTRCommodityTariffClusterTariffInformationStruct mtrCommodityTariffClusterTariffInformationStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffInformationStruct -> value -> IO ()
-setBlockMode mtrCommodityTariffClusterTariffInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffInformationStruct (mkSelector "setBlockMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBlockMode mtrCommodityTariffClusterTariffInformationStruct value =
+  sendMessage mtrCommodityTariffClusterTariffInformationStruct setBlockModeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tariffLabel@
-tariffLabelSelector :: Selector
+tariffLabelSelector :: Selector '[] (Id NSString)
 tariffLabelSelector = mkSelector "tariffLabel"
 
 -- | @Selector@ for @setTariffLabel:@
-setTariffLabelSelector :: Selector
+setTariffLabelSelector :: Selector '[Id NSString] ()
 setTariffLabelSelector = mkSelector "setTariffLabel:"
 
 -- | @Selector@ for @providerName@
-providerNameSelector :: Selector
+providerNameSelector :: Selector '[] (Id NSString)
 providerNameSelector = mkSelector "providerName"
 
 -- | @Selector@ for @setProviderName:@
-setProviderNameSelector :: Selector
+setProviderNameSelector :: Selector '[Id NSString] ()
 setProviderNameSelector = mkSelector "setProviderName:"
 
 -- | @Selector@ for @currency@
-currencySelector :: Selector
+currencySelector :: Selector '[] (Id MTRDataTypeCurrencyStruct)
 currencySelector = mkSelector "currency"
 
 -- | @Selector@ for @setCurrency:@
-setCurrencySelector :: Selector
+setCurrencySelector :: Selector '[Id MTRDataTypeCurrencyStruct] ()
 setCurrencySelector = mkSelector "setCurrency:"
 
 -- | @Selector@ for @blockMode@
-blockModeSelector :: Selector
+blockModeSelector :: Selector '[] (Id NSNumber)
 blockModeSelector = mkSelector "blockMode"
 
 -- | @Selector@ for @setBlockMode:@
-setBlockModeSelector :: Selector
+setBlockModeSelector :: Selector '[Id NSNumber] ()
 setBlockModeSelector = mkSelector "setBlockMode:"
 

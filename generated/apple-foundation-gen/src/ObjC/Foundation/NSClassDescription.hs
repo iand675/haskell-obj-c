@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSClassDescription
   , attributeKeys
   , toOneRelationshipKeys
   , toManyRelationshipKeys
-  , registerClassDescription_forClassSelector
-  , invalidateClassDescriptionCacheSelector
-  , classDescriptionForClassSelector
-  , inverseForRelationshipKeySelector
   , attributeKeysSelector
-  , toOneRelationshipKeysSelector
+  , classDescriptionForClassSelector
+  , invalidateClassDescriptionCacheSelector
+  , inverseForRelationshipKeySelector
+  , registerClassDescription_forClassSelector
   , toManyRelationshipKeysSelector
+  , toOneRelationshipKeysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,73 +40,71 @@ registerClassDescription_forClass :: IsNSClassDescription description => descrip
 registerClassDescription_forClass description aClass =
   do
     cls' <- getRequiredClass "NSClassDescription"
-    withObjCPtr description $ \raw_description ->
-      sendClassMsg cls' (mkSelector "registerClassDescription:forClass:") retVoid [argPtr (castPtr raw_description :: Ptr ()), argPtr (unClass aClass)]
+    sendClassMessage cls' registerClassDescription_forClassSelector (toNSClassDescription description) aClass
 
 -- | @+ invalidateClassDescriptionCache@
 invalidateClassDescriptionCache :: IO ()
 invalidateClassDescriptionCache  =
   do
     cls' <- getRequiredClass "NSClassDescription"
-    sendClassMsg cls' (mkSelector "invalidateClassDescriptionCache") retVoid []
+    sendClassMessage cls' invalidateClassDescriptionCacheSelector
 
 -- | @+ classDescriptionForClass:@
 classDescriptionForClass :: Class -> IO (Id NSClassDescription)
 classDescriptionForClass aClass =
   do
     cls' <- getRequiredClass "NSClassDescription"
-    sendClassMsg cls' (mkSelector "classDescriptionForClass:") (retPtr retVoid) [argPtr (unClass aClass)] >>= retainedObject . castPtr
+    sendClassMessage cls' classDescriptionForClassSelector aClass
 
 -- | @- inverseForRelationshipKey:@
 inverseForRelationshipKey :: (IsNSClassDescription nsClassDescription, IsNSString relationshipKey) => nsClassDescription -> relationshipKey -> IO (Id NSString)
-inverseForRelationshipKey nsClassDescription  relationshipKey =
-  withObjCPtr relationshipKey $ \raw_relationshipKey ->
-      sendMsg nsClassDescription (mkSelector "inverseForRelationshipKey:") (retPtr retVoid) [argPtr (castPtr raw_relationshipKey :: Ptr ())] >>= retainedObject . castPtr
+inverseForRelationshipKey nsClassDescription relationshipKey =
+  sendMessage nsClassDescription inverseForRelationshipKeySelector (toNSString relationshipKey)
 
 -- | @- attributeKeys@
 attributeKeys :: IsNSClassDescription nsClassDescription => nsClassDescription -> IO (Id NSArray)
-attributeKeys nsClassDescription  =
-    sendMsg nsClassDescription (mkSelector "attributeKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeKeys nsClassDescription =
+  sendMessage nsClassDescription attributeKeysSelector
 
 -- | @- toOneRelationshipKeys@
 toOneRelationshipKeys :: IsNSClassDescription nsClassDescription => nsClassDescription -> IO (Id NSArray)
-toOneRelationshipKeys nsClassDescription  =
-    sendMsg nsClassDescription (mkSelector "toOneRelationshipKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+toOneRelationshipKeys nsClassDescription =
+  sendMessage nsClassDescription toOneRelationshipKeysSelector
 
 -- | @- toManyRelationshipKeys@
 toManyRelationshipKeys :: IsNSClassDescription nsClassDescription => nsClassDescription -> IO (Id NSArray)
-toManyRelationshipKeys nsClassDescription  =
-    sendMsg nsClassDescription (mkSelector "toManyRelationshipKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+toManyRelationshipKeys nsClassDescription =
+  sendMessage nsClassDescription toManyRelationshipKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerClassDescription:forClass:@
-registerClassDescription_forClassSelector :: Selector
+registerClassDescription_forClassSelector :: Selector '[Id NSClassDescription, Class] ()
 registerClassDescription_forClassSelector = mkSelector "registerClassDescription:forClass:"
 
 -- | @Selector@ for @invalidateClassDescriptionCache@
-invalidateClassDescriptionCacheSelector :: Selector
+invalidateClassDescriptionCacheSelector :: Selector '[] ()
 invalidateClassDescriptionCacheSelector = mkSelector "invalidateClassDescriptionCache"
 
 -- | @Selector@ for @classDescriptionForClass:@
-classDescriptionForClassSelector :: Selector
+classDescriptionForClassSelector :: Selector '[Class] (Id NSClassDescription)
 classDescriptionForClassSelector = mkSelector "classDescriptionForClass:"
 
 -- | @Selector@ for @inverseForRelationshipKey:@
-inverseForRelationshipKeySelector :: Selector
+inverseForRelationshipKeySelector :: Selector '[Id NSString] (Id NSString)
 inverseForRelationshipKeySelector = mkSelector "inverseForRelationshipKey:"
 
 -- | @Selector@ for @attributeKeys@
-attributeKeysSelector :: Selector
+attributeKeysSelector :: Selector '[] (Id NSArray)
 attributeKeysSelector = mkSelector "attributeKeys"
 
 -- | @Selector@ for @toOneRelationshipKeys@
-toOneRelationshipKeysSelector :: Selector
+toOneRelationshipKeysSelector :: Selector '[] (Id NSArray)
 toOneRelationshipKeysSelector = mkSelector "toOneRelationshipKeys"
 
 -- | @Selector@ for @toManyRelationshipKeys@
-toManyRelationshipKeysSelector :: Selector
+toManyRelationshipKeysSelector :: Selector '[] (Id NSArray)
 toManyRelationshipKeysSelector = mkSelector "toManyRelationshipKeys"
 

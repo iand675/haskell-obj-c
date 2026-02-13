@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,21 +19,17 @@ module ObjC.Virtualization.VZEFIBootLoader
   , variableStore
   , setVariableStore
   , initSelector
-  , variableStoreSelector
   , setVariableStoreSelector
+  , variableStoreSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,37 +38,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZEFIBootLoader vzefiBootLoader => vzefiBootLoader -> IO (Id VZEFIBootLoader)
-init_ vzefiBootLoader  =
-    sendMsg vzefiBootLoader (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzefiBootLoader =
+  sendOwnedMessage vzefiBootLoader initSelector
 
 -- | The EFI variable store.
 --
 -- ObjC selector: @- variableStore@
 variableStore :: IsVZEFIBootLoader vzefiBootLoader => vzefiBootLoader -> IO (Id VZEFIVariableStore)
-variableStore vzefiBootLoader  =
-    sendMsg vzefiBootLoader (mkSelector "variableStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+variableStore vzefiBootLoader =
+  sendMessage vzefiBootLoader variableStoreSelector
 
 -- | The EFI variable store.
 --
 -- ObjC selector: @- setVariableStore:@
 setVariableStore :: (IsVZEFIBootLoader vzefiBootLoader, IsVZEFIVariableStore value) => vzefiBootLoader -> value -> IO ()
-setVariableStore vzefiBootLoader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzefiBootLoader (mkSelector "setVariableStore:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVariableStore vzefiBootLoader value =
+  sendMessage vzefiBootLoader setVariableStoreSelector (toVZEFIVariableStore value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZEFIBootLoader)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @variableStore@
-variableStoreSelector :: Selector
+variableStoreSelector :: Selector '[] (Id VZEFIVariableStore)
 variableStoreSelector = mkSelector "variableStore"
 
 -- | @Selector@ for @setVariableStore:@
-setVariableStoreSelector :: Selector
+setVariableStoreSelector :: Selector '[Id VZEFIVariableStore] ()
 setVariableStoreSelector = mkSelector "setVariableStore:"
 

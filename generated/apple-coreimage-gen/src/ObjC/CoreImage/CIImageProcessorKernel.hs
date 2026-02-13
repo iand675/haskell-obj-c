@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,25 +49,21 @@ module ObjC.CoreImage.CIImageProcessorKernel
   , outputFormatAtIndex_arguments
   , applyWithExtents_inputs_arguments_error
   , outputFormat
-  , processWithInputs_arguments_output_errorSelector
-  , formatForInputAtIndexSelector
-  , processWithInputs_arguments_outputs_errorSelector
-  , outputFormatAtIndex_argumentsSelector
   , applyWithExtents_inputs_arguments_errorSelector
+  , formatForInputAtIndexSelector
+  , outputFormatAtIndex_argumentsSelector
   , outputFormatSelector
+  , processWithInputs_arguments_output_errorSelector
+  , processWithInputs_arguments_outputs_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,10 +85,7 @@ processWithInputs_arguments_output_error :: (IsNSArray inputs, IsNSDictionary ar
 processWithInputs_arguments_output_error inputs arguments output error_ =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    withObjCPtr inputs $ \raw_inputs ->
-      withObjCPtr arguments $ \raw_arguments ->
-        withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "processWithInputs:arguments:output:error:") retCULong [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr (unRawId output) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' processWithInputs_arguments_output_errorSelector (toNSArray inputs) (toNSDictionary arguments) output (toNSError error_)
 
 -- | Override this class method if you want your any of the inputs to be in a specific pixel format.
 --
@@ -106,7 +100,7 @@ formatForInputAtIndex :: CInt -> IO CInt
 formatForInputAtIndex inputIndex =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    sendClassMsg cls' (mkSelector "formatForInputAtIndex:") retCInt [argCInt inputIndex]
+    sendClassMessage cls' formatForInputAtIndexSelector inputIndex
 
 -- | Override this class method of your Core Image Processor Kernel subclass if it needs to produce multiple outputs.
 --
@@ -125,11 +119,7 @@ processWithInputs_arguments_outputs_error :: (IsNSArray inputs, IsNSDictionary a
 processWithInputs_arguments_outputs_error inputs arguments outputs error_ =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    withObjCPtr inputs $ \raw_inputs ->
-      withObjCPtr arguments $ \raw_arguments ->
-        withObjCPtr outputs $ \raw_outputs ->
-          withObjCPtr error_ $ \raw_error_ ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "processWithInputs:arguments:outputs:error:") retCULong [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr raw_outputs :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' processWithInputs_arguments_outputs_errorSelector (toNSArray inputs) (toNSDictionary arguments) (toNSArray outputs) (toNSError error_)
 
 -- | Override this class method if your processor has more than one output and  you want your processor's output to be in a specific supported @CIPixelFormat@.
 --
@@ -144,8 +134,7 @@ outputFormatAtIndex_arguments :: IsNSDictionary arguments => CInt -> arguments -
 outputFormatAtIndex_arguments outputIndex arguments =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    withObjCPtr arguments $ \raw_arguments ->
-      sendClassMsg cls' (mkSelector "outputFormatAtIndex:arguments:") retCInt [argCInt outputIndex, argPtr (castPtr raw_arguments :: Ptr ())]
+    sendClassMessage cls' outputFormatAtIndex_argumentsSelector outputIndex (toNSDictionary arguments)
 
 -- | Call this method on your multiple-output Core Image Processor Kernel subclass  to create an array of new image objects given the specified array of extents.
 --
@@ -160,11 +149,7 @@ applyWithExtents_inputs_arguments_error :: (IsNSArray extents, IsNSArray inputs,
 applyWithExtents_inputs_arguments_error extents inputs arguments error_ =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    withObjCPtr extents $ \raw_extents ->
-      withObjCPtr inputs $ \raw_inputs ->
-        withObjCPtr arguments $ \raw_arguments ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "applyWithExtents:inputs:arguments:error:") (retPtr retVoid) [argPtr (castPtr raw_extents :: Ptr ()), argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' applyWithExtents_inputs_arguments_errorSelector (toNSArray extents) (toNSArray inputs) (toNSDictionary arguments) (toNSError error_)
 
 -- | Override this class property if you want your processor's output to be in a specific pixel format.
 --
@@ -179,33 +164,33 @@ outputFormat :: IO CInt
 outputFormat  =
   do
     cls' <- getRequiredClass "CIImageProcessorKernel"
-    sendClassMsg cls' (mkSelector "outputFormat") retCInt []
+    sendClassMessage cls' outputFormatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @processWithInputs:arguments:output:error:@
-processWithInputs_arguments_output_errorSelector :: Selector
+processWithInputs_arguments_output_errorSelector :: Selector '[Id NSArray, Id NSDictionary, RawId, Id NSError] Bool
 processWithInputs_arguments_output_errorSelector = mkSelector "processWithInputs:arguments:output:error:"
 
 -- | @Selector@ for @formatForInputAtIndex:@
-formatForInputAtIndexSelector :: Selector
+formatForInputAtIndexSelector :: Selector '[CInt] CInt
 formatForInputAtIndexSelector = mkSelector "formatForInputAtIndex:"
 
 -- | @Selector@ for @processWithInputs:arguments:outputs:error:@
-processWithInputs_arguments_outputs_errorSelector :: Selector
+processWithInputs_arguments_outputs_errorSelector :: Selector '[Id NSArray, Id NSDictionary, Id NSArray, Id NSError] Bool
 processWithInputs_arguments_outputs_errorSelector = mkSelector "processWithInputs:arguments:outputs:error:"
 
 -- | @Selector@ for @outputFormatAtIndex:arguments:@
-outputFormatAtIndex_argumentsSelector :: Selector
+outputFormatAtIndex_argumentsSelector :: Selector '[CInt, Id NSDictionary] CInt
 outputFormatAtIndex_argumentsSelector = mkSelector "outputFormatAtIndex:arguments:"
 
 -- | @Selector@ for @applyWithExtents:inputs:arguments:error:@
-applyWithExtents_inputs_arguments_errorSelector :: Selector
+applyWithExtents_inputs_arguments_errorSelector :: Selector '[Id NSArray, Id NSArray, Id NSDictionary, Id NSError] (Id NSArray)
 applyWithExtents_inputs_arguments_errorSelector = mkSelector "applyWithExtents:inputs:arguments:error:"
 
 -- | @Selector@ for @outputFormat@
-outputFormatSelector :: Selector
+outputFormatSelector :: Selector '[] CInt
 outputFormatSelector = mkSelector "outputFormat"
 

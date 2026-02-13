@@ -118,7 +118,7 @@ foreign import ccall unsafe "class_setVersion"
   c_class_setVersion :: Class -> CInt -> IO ()
 
 foreign import ccall unsafe "class_respondsToSelector"
-  c_class_respondsToSelector :: Class -> Selector -> IO ObjCBool
+  c_class_respondsToSelector :: Class -> Ptr ObjCSel -> IO ObjCBool
 
 -- ---------------------------------------------------------------------------
 -- Raw FFI — Instance variables
@@ -138,22 +138,22 @@ foreign import ccall unsafe "class_copyIvarList"
 -- ---------------------------------------------------------------------------
 
 foreign import ccall unsafe "class_getInstanceMethod"
-  c_class_getInstanceMethod :: Class -> Selector -> IO Method
+  c_class_getInstanceMethod :: Class -> Ptr ObjCSel -> IO Method
 
 foreign import ccall unsafe "class_getClassMethod"
-  c_class_getClassMethod :: Class -> Selector -> IO Method
+  c_class_getClassMethod :: Class -> Ptr ObjCSel -> IO Method
 
 foreign import ccall unsafe "class_copyMethodList"
   c_class_copyMethodList :: Class -> Ptr CUInt -> IO (Ptr Method)
 
 foreign import ccall unsafe "class_getMethodImplementation"
-  c_class_getMethodImplementation :: Class -> Selector -> IO IMP
+  c_class_getMethodImplementation :: Class -> Ptr ObjCSel -> IO IMP
 
 foreign import ccall unsafe "class_addMethod"
-  c_class_addMethod :: Class -> Selector -> IMP -> CString -> IO ObjCBool
+  c_class_addMethod :: Class -> Ptr ObjCSel -> IMP -> CString -> IO ObjCBool
 
 foreign import ccall unsafe "class_replaceMethod"
-  c_class_replaceMethod :: Class -> Selector -> IMP -> CString -> IO IMP
+  c_class_replaceMethod :: Class -> Ptr ObjCSel -> IMP -> CString -> IO IMP
 
 -- ---------------------------------------------------------------------------
 -- Raw FFI — Protocols
@@ -269,8 +269,8 @@ class_setVersion :: Class -> CInt -> IO ()
 class_setVersion = c_class_setVersion
 
 -- | Test whether instances of a class respond to a selector.
-class_respondsToSelector :: Class -> Selector -> IO Bool
-class_respondsToSelector cls sel = fromObjCBool <$> c_class_respondsToSelector cls sel
+class_respondsToSelector :: Class -> Selector args ret -> IO Bool
+class_respondsToSelector cls (Selector sel) = fromObjCBool <$> c_class_respondsToSelector cls sel
 
 class_getInstanceVariable :: Class -> CString -> IO Ivar
 class_getInstanceVariable = c_class_getInstanceVariable
@@ -293,11 +293,11 @@ class_copyIvarList cls =
         free arr
         pure result
 
-class_getInstanceMethod :: Class -> Selector -> IO Method
-class_getInstanceMethod = c_class_getInstanceMethod
+class_getInstanceMethod :: Class -> Selector args ret -> IO Method
+class_getInstanceMethod cls (Selector sel) = c_class_getInstanceMethod cls sel
 
-class_getClassMethod :: Class -> Selector -> IO Method
-class_getClassMethod = c_class_getClassMethod
+class_getClassMethod :: Class -> Selector args ret -> IO Method
+class_getClassMethod cls (Selector sel) = c_class_getClassMethod cls sel
 
 -- | Copy the list of instance methods implemented directly by a class.
 class_copyMethodList :: Class -> IO [Method]
@@ -313,16 +313,16 @@ class_copyMethodList cls =
         pure result
 
 -- | Get the IMP for a given selector on a class.
-class_getMethodImplementation :: Class -> Selector -> IO IMP
-class_getMethodImplementation = c_class_getMethodImplementation
+class_getMethodImplementation :: Class -> Selector args ret -> IO IMP
+class_getMethodImplementation cls (Selector sel) = c_class_getMethodImplementation cls sel
 
 -- | Add a method to a class. Returns 'True' if successful.
-class_addMethod :: Class -> Selector -> IMP -> CString -> IO Bool
-class_addMethod cls sel imp types = fromObjCBool <$> c_class_addMethod cls sel imp types
+class_addMethod :: Class -> Selector args ret -> IMP -> CString -> IO Bool
+class_addMethod cls (Selector sel) imp types = fromObjCBool <$> c_class_addMethod cls sel imp types
 
 -- | Replace the implementation of a method. Returns the old IMP.
-class_replaceMethod :: Class -> Selector -> IMP -> CString -> IO IMP
-class_replaceMethod = c_class_replaceMethod
+class_replaceMethod :: Class -> Selector args ret -> IMP -> CString -> IO IMP
+class_replaceMethod cls (Selector sel) imp types = c_class_replaceMethod cls sel imp types
 
 -- | Test whether a class conforms to a protocol.
 class_conformsToProtocol :: Class -> Protocol -> IO Bool

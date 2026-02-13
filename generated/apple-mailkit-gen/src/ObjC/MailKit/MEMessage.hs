@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,21 +25,21 @@ module ObjC.MailKit.MEMessage
   , dateReceived
   , headers
   , rawData
+  , allRecipientAddressesSelector
+  , bccAddressesSelector
+  , ccAddressesSelector
+  , dateReceivedSelector
+  , dateSentSelector
+  , encryptionStateSelector
+  , fromAddressSelector
+  , headersSelector
   , initSelector
   , newSelector
-  , stateSelector
-  , encryptionStateSelector
-  , subjectSelector
-  , fromAddressSelector
-  , toAddressesSelector
-  , ccAddressesSelector
-  , bccAddressesSelector
-  , replyToAddressesSelector
-  , allRecipientAddressesSelector
-  , dateSentSelector
-  , dateReceivedSelector
-  , headersSelector
   , rawDataSelector
+  , replyToAddressesSelector
+  , stateSelector
+  , subjectSelector
+  , toAddressesSelector
 
   -- * Enum types
   , MEMessageEncryptionState(MEMessageEncryptionState)
@@ -52,15 +53,11 @@ module ObjC.MailKit.MEMessage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,168 +67,168 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMEMessage meMessage => meMessage -> IO (Id MEMessage)
-init_ meMessage  =
-    sendMsg meMessage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meMessage =
+  sendOwnedMessage meMessage initSelector
 
 -- | @+ new@
 new :: IO (Id MEMessage)
 new  =
   do
     cls' <- getRequiredClass "MEMessage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The state of the mail message.
 --
 -- ObjC selector: @- state@
 state :: IsMEMessage meMessage => meMessage -> IO MEMessageState
-state meMessage  =
-    fmap (coerce :: CLong -> MEMessageState) $ sendMsg meMessage (mkSelector "state") retCLong []
+state meMessage =
+  sendMessage meMessage stateSelector
 
 -- | The encryption state of the mail message.
 --
 -- ObjC selector: @- encryptionState@
 encryptionState :: IsMEMessage meMessage => meMessage -> IO MEMessageEncryptionState
-encryptionState meMessage  =
-    fmap (coerce :: CLong -> MEMessageEncryptionState) $ sendMsg meMessage (mkSelector "encryptionState") retCLong []
+encryptionState meMessage =
+  sendMessage meMessage encryptionStateSelector
 
 -- | The subject of the mail message.
 --
 -- ObjC selector: @- subject@
 subject :: IsMEMessage meMessage => meMessage -> IO (Id NSString)
-subject meMessage  =
-    sendMsg meMessage (mkSelector "subject") (retPtr retVoid) [] >>= retainedObject . castPtr
+subject meMessage =
+  sendMessage meMessage subjectSelector
 
 -- | Message sender's email address.
 --
 -- ObjC selector: @- fromAddress@
 fromAddress :: IsMEMessage meMessage => meMessage -> IO (Id MEEmailAddress)
-fromAddress meMessage  =
-    sendMsg meMessage (mkSelector "fromAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromAddress meMessage =
+  sendMessage meMessage fromAddressSelector
 
 -- | Recipient email addresses in the "To" address field of the message.
 --
 -- ObjC selector: @- toAddresses@
 toAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
-toAddresses meMessage  =
-    sendMsg meMessage (mkSelector "toAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+toAddresses meMessage =
+  sendMessage meMessage toAddressesSelector
 
 -- | Recipient email addresses in the "Cc" address field of the message.
 --
 -- ObjC selector: @- ccAddresses@
 ccAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
-ccAddresses meMessage  =
-    sendMsg meMessage (mkSelector "ccAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+ccAddresses meMessage =
+  sendMessage meMessage ccAddressesSelector
 
 -- | Recipient email addresses in the "Bcc" address field of the message.
 --
 -- ObjC selector: @- bccAddresses@
 bccAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
-bccAddresses meMessage  =
-    sendMsg meMessage (mkSelector "bccAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+bccAddresses meMessage =
+  sendMessage meMessage bccAddressesSelector
 
 -- | Recipient email addresses in the "Reply-To" field of the message.
 --
 -- ObjC selector: @- replyToAddresses@
 replyToAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
-replyToAddresses meMessage  =
-    sendMsg meMessage (mkSelector "replyToAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+replyToAddresses meMessage =
+  sendMessage meMessage replyToAddressesSelector
 
 -- | An array containing all recipients of the message.
 --
 -- ObjC selector: @- allRecipientAddresses@
 allRecipientAddresses :: IsMEMessage meMessage => meMessage -> IO (Id NSArray)
-allRecipientAddresses meMessage  =
-    sendMsg meMessage (mkSelector "allRecipientAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+allRecipientAddresses meMessage =
+  sendMessage meMessage allRecipientAddressesSelector
 
 -- | The date the mail message was sent. Optionally set by the by the sender.
 --
 -- ObjC selector: @- dateSent@
 dateSent :: IsMEMessage meMessage => meMessage -> IO (Id NSDate)
-dateSent meMessage  =
-    sendMsg meMessage (mkSelector "dateSent") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateSent meMessage =
+  sendMessage meMessage dateSentSelector
 
 -- | The date the mail message was received. Only present if the message has been received.
 --
 -- ObjC selector: @- dateReceived@
 dateReceived :: IsMEMessage meMessage => meMessage -> IO (Id NSDate)
-dateReceived meMessage  =
-    sendMsg meMessage (mkSelector "dateReceived") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateReceived meMessage =
+  sendMessage meMessage dateReceivedSelector
 
 -- | The headers for the message. Might only be a subset if the full body has not been downloaded.
 --
 -- ObjC selector: @- headers@
 headers :: IsMEMessage meMessage => meMessage -> IO (Id NSDictionary)
-headers meMessage  =
-    sendMsg meMessage (mkSelector "headers") (retPtr retVoid) [] >>= retainedObject . castPtr
+headers meMessage =
+  sendMessage meMessage headersSelector
 
 -- | The full raw RFC822 message data if it has been downloaded and the extension has permissions to access.
 --
 -- ObjC selector: @- rawData@
 rawData :: IsMEMessage meMessage => meMessage -> IO (Id NSData)
-rawData meMessage  =
-    sendMsg meMessage (mkSelector "rawData") (retPtr retVoid) [] >>= retainedObject . castPtr
+rawData meMessage =
+  sendMessage meMessage rawDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEMessage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEMessage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] MEMessageState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @encryptionState@
-encryptionStateSelector :: Selector
+encryptionStateSelector :: Selector '[] MEMessageEncryptionState
 encryptionStateSelector = mkSelector "encryptionState"
 
 -- | @Selector@ for @subject@
-subjectSelector :: Selector
+subjectSelector :: Selector '[] (Id NSString)
 subjectSelector = mkSelector "subject"
 
 -- | @Selector@ for @fromAddress@
-fromAddressSelector :: Selector
+fromAddressSelector :: Selector '[] (Id MEEmailAddress)
 fromAddressSelector = mkSelector "fromAddress"
 
 -- | @Selector@ for @toAddresses@
-toAddressesSelector :: Selector
+toAddressesSelector :: Selector '[] (Id NSArray)
 toAddressesSelector = mkSelector "toAddresses"
 
 -- | @Selector@ for @ccAddresses@
-ccAddressesSelector :: Selector
+ccAddressesSelector :: Selector '[] (Id NSArray)
 ccAddressesSelector = mkSelector "ccAddresses"
 
 -- | @Selector@ for @bccAddresses@
-bccAddressesSelector :: Selector
+bccAddressesSelector :: Selector '[] (Id NSArray)
 bccAddressesSelector = mkSelector "bccAddresses"
 
 -- | @Selector@ for @replyToAddresses@
-replyToAddressesSelector :: Selector
+replyToAddressesSelector :: Selector '[] (Id NSArray)
 replyToAddressesSelector = mkSelector "replyToAddresses"
 
 -- | @Selector@ for @allRecipientAddresses@
-allRecipientAddressesSelector :: Selector
+allRecipientAddressesSelector :: Selector '[] (Id NSArray)
 allRecipientAddressesSelector = mkSelector "allRecipientAddresses"
 
 -- | @Selector@ for @dateSent@
-dateSentSelector :: Selector
+dateSentSelector :: Selector '[] (Id NSDate)
 dateSentSelector = mkSelector "dateSent"
 
 -- | @Selector@ for @dateReceived@
-dateReceivedSelector :: Selector
+dateReceivedSelector :: Selector '[] (Id NSDate)
 dateReceivedSelector = mkSelector "dateReceived"
 
 -- | @Selector@ for @headers@
-headersSelector :: Selector
+headersSelector :: Selector '[] (Id NSDictionary)
 headersSelector = mkSelector "headers"
 
 -- | @Selector@ for @rawData@
-rawDataSelector :: Selector
+rawDataSelector :: Selector '[] (Id NSData)
 rawDataSelector = mkSelector "rawData"
 

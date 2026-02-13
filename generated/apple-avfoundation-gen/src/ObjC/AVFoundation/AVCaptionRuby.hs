@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.AVFoundation.AVCaptionRuby
   , text
   , position
   , alignment
+  , alignmentSelector
   , initSelector
-  , newSelector
   , initWithTextSelector
   , initWithText_position_alignmentSelector
-  , textSelector
+  , newSelector
   , positionSelector
-  , alignmentSelector
+  , textSelector
 
   -- * Enum types
   , AVCaptionRubyAlignment(AVCaptionRubyAlignment)
@@ -38,15 +39,11 @@ module ObjC.AVFoundation.AVCaptionRuby
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,27 +53,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionRuby avCaptionRuby => avCaptionRuby -> IO (Id AVCaptionRuby)
-init_ avCaptionRuby  =
-    sendMsg avCaptionRuby (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionRuby =
+  sendOwnedMessage avCaptionRuby initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionRuby)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionRuby"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithText:@
 initWithText :: (IsAVCaptionRuby avCaptionRuby, IsNSString text) => avCaptionRuby -> text -> IO (Id AVCaptionRuby)
-initWithText avCaptionRuby  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg avCaptionRuby (mkSelector "initWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= ownedObject . castPtr
+initWithText avCaptionRuby text =
+  sendOwnedMessage avCaptionRuby initWithTextSelector (toNSString text)
 
 -- | @- initWithText:position:alignment:@
 initWithText_position_alignment :: (IsAVCaptionRuby avCaptionRuby, IsNSString text) => avCaptionRuby -> text -> AVCaptionRubyPosition -> AVCaptionRubyAlignment -> IO (Id AVCaptionRuby)
-initWithText_position_alignment avCaptionRuby  text position alignment =
-  withObjCPtr text $ \raw_text ->
-      sendMsg avCaptionRuby (mkSelector "initWithText:position:alignment:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ()), argCLong (coerce position), argCLong (coerce alignment)] >>= ownedObject . castPtr
+initWithText_position_alignment avCaptionRuby text position alignment =
+  sendOwnedMessage avCaptionRuby initWithText_position_alignmentSelector (toNSString text) position alignment
 
 -- | text
 --
@@ -84,8 +79,8 @@ initWithText_position_alignment avCaptionRuby  text position alignment =
 --
 -- ObjC selector: @- text@
 text :: IsAVCaptionRuby avCaptionRuby => avCaptionRuby -> IO (Id NSString)
-text avCaptionRuby  =
-    sendMsg avCaptionRuby (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text avCaptionRuby =
+  sendMessage avCaptionRuby textSelector
 
 -- | position
 --
@@ -93,8 +88,8 @@ text avCaptionRuby  =
 --
 -- ObjC selector: @- position@
 position :: IsAVCaptionRuby avCaptionRuby => avCaptionRuby -> IO AVCaptionRubyPosition
-position avCaptionRuby  =
-    fmap (coerce :: CLong -> AVCaptionRubyPosition) $ sendMsg avCaptionRuby (mkSelector "position") retCLong []
+position avCaptionRuby =
+  sendMessage avCaptionRuby positionSelector
 
 -- | alignment
 --
@@ -102,38 +97,38 @@ position avCaptionRuby  =
 --
 -- ObjC selector: @- alignment@
 alignment :: IsAVCaptionRuby avCaptionRuby => avCaptionRuby -> IO AVCaptionRubyAlignment
-alignment avCaptionRuby  =
-    fmap (coerce :: CLong -> AVCaptionRubyAlignment) $ sendMsg avCaptionRuby (mkSelector "alignment") retCLong []
+alignment avCaptionRuby =
+  sendMessage avCaptionRuby alignmentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionRuby)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionRuby)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithText:@
-initWithTextSelector :: Selector
+initWithTextSelector :: Selector '[Id NSString] (Id AVCaptionRuby)
 initWithTextSelector = mkSelector "initWithText:"
 
 -- | @Selector@ for @initWithText:position:alignment:@
-initWithText_position_alignmentSelector :: Selector
+initWithText_position_alignmentSelector :: Selector '[Id NSString, AVCaptionRubyPosition, AVCaptionRubyAlignment] (Id AVCaptionRuby)
 initWithText_position_alignmentSelector = mkSelector "initWithText:position:alignment:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] AVCaptionRubyPosition
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] AVCaptionRubyAlignment
 alignmentSelector = mkSelector "alignment"
 

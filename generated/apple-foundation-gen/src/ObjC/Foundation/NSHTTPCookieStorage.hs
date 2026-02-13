@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.Foundation.NSHTTPCookieStorage
   , cookies
   , cookieAcceptPolicy
   , setCookieAcceptPolicy
-  , sharedCookieStorageForGroupContainerIdentifierSelector
-  , setCookieSelector
+  , cookieAcceptPolicySelector
+  , cookiesForURLSelector
+  , cookiesSelector
   , deleteCookieSelector
   , removeCookiesSinceDateSelector
-  , cookiesForURLSelector
+  , setCookieAcceptPolicySelector
+  , setCookieSelector
   , setCookies_forURL_mainDocumentURLSelector
+  , sharedCookieStorageForGroupContainerIdentifierSelector
+  , sharedHTTPCookieStorageSelector
   , sortedCookiesUsingDescriptorsSelector
   , storeCookies_forTaskSelector
-  , sharedHTTPCookieStorageSelector
-  , cookiesSelector
-  , cookieAcceptPolicySelector
-  , setCookieAcceptPolicySelector
 
   -- * Enum types
   , NSHTTPCookieAcceptPolicy(NSHTTPCookieAcceptPolicy)
@@ -44,15 +45,11 @@ module ObjC.Foundation.NSHTTPCookieStorage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,7 @@ sharedCookieStorageForGroupContainerIdentifier :: IsNSString identifier => ident
 sharedCookieStorageForGroupContainerIdentifier identifier =
   do
     cls' <- getRequiredClass "NSHTTPCookieStorage"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "sharedCookieStorageForGroupContainerIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCookieStorageForGroupContainerIdentifierSelector (toNSString identifier)
 
 -- | setCookie:
 --
@@ -85,9 +81,8 @@ sharedCookieStorageForGroupContainerIdentifier identifier =
 --
 -- ObjC selector: @- setCookie:@
 setCookie :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSHTTPCookie cookie) => nshttpCookieStorage -> cookie -> IO ()
-setCookie nshttpCookieStorage  cookie =
-  withObjCPtr cookie $ \raw_cookie ->
-      sendMsg nshttpCookieStorage (mkSelector "setCookie:") retVoid [argPtr (castPtr raw_cookie :: Ptr ())]
+setCookie nshttpCookieStorage cookie =
+  sendMessage nshttpCookieStorage setCookieSelector (toNSHTTPCookie cookie)
 
 -- | deleteCookie:
 --
@@ -95,9 +90,8 @@ setCookie nshttpCookieStorage  cookie =
 --
 -- ObjC selector: @- deleteCookie:@
 deleteCookie :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSHTTPCookie cookie) => nshttpCookieStorage -> cookie -> IO ()
-deleteCookie nshttpCookieStorage  cookie =
-  withObjCPtr cookie $ \raw_cookie ->
-      sendMsg nshttpCookieStorage (mkSelector "deleteCookie:") retVoid [argPtr (castPtr raw_cookie :: Ptr ())]
+deleteCookie nshttpCookieStorage cookie =
+  sendMessage nshttpCookieStorage deleteCookieSelector (toNSHTTPCookie cookie)
 
 -- | removeCookiesSince:
 --
@@ -105,9 +99,8 @@ deleteCookie nshttpCookieStorage  cookie =
 --
 -- ObjC selector: @- removeCookiesSinceDate:@
 removeCookiesSinceDate :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSDate date) => nshttpCookieStorage -> date -> IO ()
-removeCookiesSinceDate nshttpCookieStorage  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nshttpCookieStorage (mkSelector "removeCookiesSinceDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+removeCookiesSinceDate nshttpCookieStorage date =
+  sendMessage nshttpCookieStorage removeCookiesSinceDateSelector (toNSDate date)
 
 -- | cookiesForURL:
 --
@@ -121,9 +114,8 @@ removeCookiesSinceDate nshttpCookieStorage  date =
 --
 -- ObjC selector: @- cookiesForURL:@
 cookiesForURL :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSURL url) => nshttpCookieStorage -> url -> IO (Id NSArray)
-cookiesForURL nshttpCookieStorage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nshttpCookieStorage (mkSelector "cookiesForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+cookiesForURL nshttpCookieStorage url =
+  sendMessage nshttpCookieStorage cookiesForURLSelector (toNSURL url)
 
 -- | setCookies:forURL:mainDocumentURL:
 --
@@ -139,11 +131,8 @@ cookiesForURL nshttpCookieStorage  url =
 --
 -- ObjC selector: @- setCookies:forURL:mainDocumentURL:@
 setCookies_forURL_mainDocumentURL :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSArray cookies, IsNSURL url, IsNSURL mainDocumentURL) => nshttpCookieStorage -> cookies -> url -> mainDocumentURL -> IO ()
-setCookies_forURL_mainDocumentURL nshttpCookieStorage  cookies url mainDocumentURL =
-  withObjCPtr cookies $ \raw_cookies ->
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr mainDocumentURL $ \raw_mainDocumentURL ->
-          sendMsg nshttpCookieStorage (mkSelector "setCookies:forURL:mainDocumentURL:") retVoid [argPtr (castPtr raw_cookies :: Ptr ()), argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_mainDocumentURL :: Ptr ())]
+setCookies_forURL_mainDocumentURL nshttpCookieStorage cookies url mainDocumentURL =
+  sendMessage nshttpCookieStorage setCookies_forURL_mainDocumentURLSelector (toNSArray cookies) (toNSURL url) (toNSURL mainDocumentURL)
 
 -- | sortedCookiesUsingDescriptors:
 --
@@ -155,16 +144,13 @@ setCookies_forURL_mainDocumentURL nshttpCookieStorage  cookies url mainDocumentU
 --
 -- ObjC selector: @- sortedCookiesUsingDescriptors:@
 sortedCookiesUsingDescriptors :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSArray sortOrder) => nshttpCookieStorage -> sortOrder -> IO (Id NSArray)
-sortedCookiesUsingDescriptors nshttpCookieStorage  sortOrder =
-  withObjCPtr sortOrder $ \raw_sortOrder ->
-      sendMsg nshttpCookieStorage (mkSelector "sortedCookiesUsingDescriptors:") (retPtr retVoid) [argPtr (castPtr raw_sortOrder :: Ptr ())] >>= retainedObject . castPtr
+sortedCookiesUsingDescriptors nshttpCookieStorage sortOrder =
+  sendMessage nshttpCookieStorage sortedCookiesUsingDescriptorsSelector (toNSArray sortOrder)
 
 -- | @- storeCookies:forTask:@
 storeCookies_forTask :: (IsNSHTTPCookieStorage nshttpCookieStorage, IsNSArray cookies, IsNSURLSessionTask task) => nshttpCookieStorage -> cookies -> task -> IO ()
-storeCookies_forTask nshttpCookieStorage  cookies task =
-  withObjCPtr cookies $ \raw_cookies ->
-    withObjCPtr task $ \raw_task ->
-        sendMsg nshttpCookieStorage (mkSelector "storeCookies:forTask:") retVoid [argPtr (castPtr raw_cookies :: Ptr ()), argPtr (castPtr raw_task :: Ptr ())]
+storeCookies_forTask nshttpCookieStorage cookies task =
+  sendMessage nshttpCookieStorage storeCookies_forTaskSelector (toNSArray cookies) (toNSURLSessionTask task)
 
 -- | sharedHTTPCookieStorage
 --
@@ -179,7 +165,7 @@ sharedHTTPCookieStorage :: IO (Id NSHTTPCookieStorage)
 sharedHTTPCookieStorage  =
   do
     cls' <- getRequiredClass "NSHTTPCookieStorage"
-    sendClassMsg cls' (mkSelector "sharedHTTPCookieStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedHTTPCookieStorageSelector
 
 -- | Get all the cookies
 --
@@ -187,72 +173,72 @@ sharedHTTPCookieStorage  =
 --
 -- ObjC selector: @- cookies@
 cookies :: IsNSHTTPCookieStorage nshttpCookieStorage => nshttpCookieStorage -> IO (Id NSArray)
-cookies nshttpCookieStorage  =
-    sendMsg nshttpCookieStorage (mkSelector "cookies") (retPtr retVoid) [] >>= retainedObject . castPtr
+cookies nshttpCookieStorage =
+  sendMessage nshttpCookieStorage cookiesSelector
 
 -- | The cookie accept policy preference of the    receiver.
 --
 -- ObjC selector: @- cookieAcceptPolicy@
 cookieAcceptPolicy :: IsNSHTTPCookieStorage nshttpCookieStorage => nshttpCookieStorage -> IO NSHTTPCookieAcceptPolicy
-cookieAcceptPolicy nshttpCookieStorage  =
-    fmap (coerce :: CULong -> NSHTTPCookieAcceptPolicy) $ sendMsg nshttpCookieStorage (mkSelector "cookieAcceptPolicy") retCULong []
+cookieAcceptPolicy nshttpCookieStorage =
+  sendMessage nshttpCookieStorage cookieAcceptPolicySelector
 
 -- | The cookie accept policy preference of the    receiver.
 --
 -- ObjC selector: @- setCookieAcceptPolicy:@
 setCookieAcceptPolicy :: IsNSHTTPCookieStorage nshttpCookieStorage => nshttpCookieStorage -> NSHTTPCookieAcceptPolicy -> IO ()
-setCookieAcceptPolicy nshttpCookieStorage  value =
-    sendMsg nshttpCookieStorage (mkSelector "setCookieAcceptPolicy:") retVoid [argCULong (coerce value)]
+setCookieAcceptPolicy nshttpCookieStorage value =
+  sendMessage nshttpCookieStorage setCookieAcceptPolicySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCookieStorageForGroupContainerIdentifier:@
-sharedCookieStorageForGroupContainerIdentifierSelector :: Selector
+sharedCookieStorageForGroupContainerIdentifierSelector :: Selector '[Id NSString] (Id NSHTTPCookieStorage)
 sharedCookieStorageForGroupContainerIdentifierSelector = mkSelector "sharedCookieStorageForGroupContainerIdentifier:"
 
 -- | @Selector@ for @setCookie:@
-setCookieSelector :: Selector
+setCookieSelector :: Selector '[Id NSHTTPCookie] ()
 setCookieSelector = mkSelector "setCookie:"
 
 -- | @Selector@ for @deleteCookie:@
-deleteCookieSelector :: Selector
+deleteCookieSelector :: Selector '[Id NSHTTPCookie] ()
 deleteCookieSelector = mkSelector "deleteCookie:"
 
 -- | @Selector@ for @removeCookiesSinceDate:@
-removeCookiesSinceDateSelector :: Selector
+removeCookiesSinceDateSelector :: Selector '[Id NSDate] ()
 removeCookiesSinceDateSelector = mkSelector "removeCookiesSinceDate:"
 
 -- | @Selector@ for @cookiesForURL:@
-cookiesForURLSelector :: Selector
+cookiesForURLSelector :: Selector '[Id NSURL] (Id NSArray)
 cookiesForURLSelector = mkSelector "cookiesForURL:"
 
 -- | @Selector@ for @setCookies:forURL:mainDocumentURL:@
-setCookies_forURL_mainDocumentURLSelector :: Selector
+setCookies_forURL_mainDocumentURLSelector :: Selector '[Id NSArray, Id NSURL, Id NSURL] ()
 setCookies_forURL_mainDocumentURLSelector = mkSelector "setCookies:forURL:mainDocumentURL:"
 
 -- | @Selector@ for @sortedCookiesUsingDescriptors:@
-sortedCookiesUsingDescriptorsSelector :: Selector
+sortedCookiesUsingDescriptorsSelector :: Selector '[Id NSArray] (Id NSArray)
 sortedCookiesUsingDescriptorsSelector = mkSelector "sortedCookiesUsingDescriptors:"
 
 -- | @Selector@ for @storeCookies:forTask:@
-storeCookies_forTaskSelector :: Selector
+storeCookies_forTaskSelector :: Selector '[Id NSArray, Id NSURLSessionTask] ()
 storeCookies_forTaskSelector = mkSelector "storeCookies:forTask:"
 
 -- | @Selector@ for @sharedHTTPCookieStorage@
-sharedHTTPCookieStorageSelector :: Selector
+sharedHTTPCookieStorageSelector :: Selector '[] (Id NSHTTPCookieStorage)
 sharedHTTPCookieStorageSelector = mkSelector "sharedHTTPCookieStorage"
 
 -- | @Selector@ for @cookies@
-cookiesSelector :: Selector
+cookiesSelector :: Selector '[] (Id NSArray)
 cookiesSelector = mkSelector "cookies"
 
 -- | @Selector@ for @cookieAcceptPolicy@
-cookieAcceptPolicySelector :: Selector
+cookieAcceptPolicySelector :: Selector '[] NSHTTPCookieAcceptPolicy
 cookieAcceptPolicySelector = mkSelector "cookieAcceptPolicy"
 
 -- | @Selector@ for @setCookieAcceptPolicy:@
-setCookieAcceptPolicySelector :: Selector
+setCookieAcceptPolicySelector :: Selector '[NSHTTPCookieAcceptPolicy] ()
 setCookieAcceptPolicySelector = mkSelector "setCookieAcceptPolicy:"
 

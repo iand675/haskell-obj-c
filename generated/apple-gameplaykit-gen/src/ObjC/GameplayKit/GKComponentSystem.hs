@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.GameplayKit.GKComponentSystem
   , classForGenericArgumentAtIndex
   , componentClass
   , components
-  , objectAtIndexedSubscriptSelector
-  , initWithComponentClassSelector
   , addComponentSelector
   , addComponentWithEntitySelector
-  , removeComponentWithEntitySelector
-  , removeComponentSelector
-  , updateWithDeltaTimeSelector
   , classForGenericArgumentAtIndexSelector
   , componentClassSelector
   , componentsSelector
+  , initWithComponentClassSelector
+  , objectAtIndexedSubscriptSelector
+  , removeComponentSelector
+  , removeComponentWithEntitySelector
+  , updateWithDeltaTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> CULong -> IO (Id GKComponent)
-objectAtIndexedSubscript gkComponentSystem  idx =
-    sendMsg gkComponentSystem (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong idx] >>= retainedObject . castPtr
+objectAtIndexedSubscript gkComponentSystem idx =
+  sendMessage gkComponentSystem objectAtIndexedSubscriptSelector idx
 
 -- | Initializes a system for the given component class. The receiver can now only accept components of the given class.
 --
 -- ObjC selector: @- initWithComponentClass:@
 initWithComponentClass :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> Class -> IO (Id GKComponentSystem)
-initWithComponentClass gkComponentSystem  cls =
-    sendMsg gkComponentSystem (mkSelector "initWithComponentClass:") (retPtr retVoid) [argPtr (unClass cls)] >>= ownedObject . castPtr
+initWithComponentClass gkComponentSystem cls =
+  sendOwnedMessage gkComponentSystem initWithComponentClassSelector cls
 
 -- | Adds a component to the system. The component must be of the same class as the system's componentClass. The component is added to the tail of the collection and will be processed after components that were added before it.
 --
@@ -67,9 +64,8 @@ initWithComponentClass gkComponentSystem  cls =
 --
 -- ObjC selector: @- addComponent:@
 addComponent :: (IsGKComponentSystem gkComponentSystem, IsGKComponent component) => gkComponentSystem -> component -> IO ()
-addComponent gkComponentSystem  component =
-  withObjCPtr component $ \raw_component ->
-      sendMsg gkComponentSystem (mkSelector "addComponent:") retVoid [argPtr (castPtr raw_component :: Ptr ())]
+addComponent gkComponentSystem component =
+  sendMessage gkComponentSystem addComponentSelector (toGKComponent component)
 
 -- | Adds the supported component from the entity's component collection. This is conceptually the same as the pseudo-code:
 --
@@ -79,9 +75,8 @@ addComponent gkComponentSystem  component =
 --
 -- ObjC selector: @- addComponentWithEntity:@
 addComponentWithEntity :: (IsGKComponentSystem gkComponentSystem, IsGKEntity entity) => gkComponentSystem -> entity -> IO ()
-addComponentWithEntity gkComponentSystem  entity =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg gkComponentSystem (mkSelector "addComponentWithEntity:") retVoid [argPtr (castPtr raw_entity :: Ptr ())]
+addComponentWithEntity gkComponentSystem entity =
+  sendMessage gkComponentSystem addComponentWithEntitySelector (toGKEntity entity)
 
 -- | Removes the supported component from the entity's component collection This is conceptually the same as the pseudo-code:
 --
@@ -89,9 +84,8 @@ addComponentWithEntity gkComponentSystem  entity =
 --
 -- ObjC selector: @- removeComponentWithEntity:@
 removeComponentWithEntity :: (IsGKComponentSystem gkComponentSystem, IsGKEntity entity) => gkComponentSystem -> entity -> IO ()
-removeComponentWithEntity gkComponentSystem  entity =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg gkComponentSystem (mkSelector "removeComponentWithEntity:") retVoid [argPtr (castPtr raw_entity :: Ptr ())]
+removeComponentWithEntity gkComponentSystem entity =
+  sendMessage gkComponentSystem removeComponentWithEntitySelector (toGKEntity entity)
 
 -- | Removes a component from the system
 --
@@ -99,79 +93,78 @@ removeComponentWithEntity gkComponentSystem  entity =
 --
 -- ObjC selector: @- removeComponent:@
 removeComponent :: (IsGKComponentSystem gkComponentSystem, IsGKComponent component) => gkComponentSystem -> component -> IO ()
-removeComponent gkComponentSystem  component =
-  withObjCPtr component $ \raw_component ->
-      sendMsg gkComponentSystem (mkSelector "removeComponent:") retVoid [argPtr (castPtr raw_component :: Ptr ())]
+removeComponent gkComponentSystem component =
+  sendMessage gkComponentSystem removeComponentSelector (toGKComponent component)
 
 -- | Updates each component with the given delta time since the last update. Each component thus performs its time based logic with a single message.
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> CDouble -> IO ()
-updateWithDeltaTime gkComponentSystem  seconds =
-    sendMsg gkComponentSystem (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkComponentSystem seconds =
+  sendMessage gkComponentSystem updateWithDeltaTimeSelector seconds
 
 -- | Returns the class of the specified generic index
 --
 -- ObjC selector: @- classForGenericArgumentAtIndex:@
 classForGenericArgumentAtIndex :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> CULong -> IO Class
-classForGenericArgumentAtIndex gkComponentSystem  index =
-    fmap (Class . castPtr) $ sendMsg gkComponentSystem (mkSelector "classForGenericArgumentAtIndex:") (retPtr retVoid) [argCULong index]
+classForGenericArgumentAtIndex gkComponentSystem index =
+  sendMessage gkComponentSystem classForGenericArgumentAtIndexSelector index
 
 -- | The collection's component class. Any selector the component supports can be called on the system and it will be forwarded to each of the components in the collection.
 --
 -- ObjC selector: @- componentClass@
 componentClass :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> IO Class
-componentClass gkComponentSystem  =
-    fmap (Class . castPtr) $ sendMsg gkComponentSystem (mkSelector "componentClass") (retPtr retVoid) []
+componentClass gkComponentSystem =
+  sendMessage gkComponentSystem componentClassSelector
 
 -- | The array of components currently in the system.
 --
 -- ObjC selector: @- components@
 components :: IsGKComponentSystem gkComponentSystem => gkComponentSystem -> IO (Id NSArray)
-components gkComponentSystem  =
-    sendMsg gkComponentSystem (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+components gkComponentSystem =
+  sendMessage gkComponentSystem componentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id GKComponent)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @initWithComponentClass:@
-initWithComponentClassSelector :: Selector
+initWithComponentClassSelector :: Selector '[Class] (Id GKComponentSystem)
 initWithComponentClassSelector = mkSelector "initWithComponentClass:"
 
 -- | @Selector@ for @addComponent:@
-addComponentSelector :: Selector
+addComponentSelector :: Selector '[Id GKComponent] ()
 addComponentSelector = mkSelector "addComponent:"
 
 -- | @Selector@ for @addComponentWithEntity:@
-addComponentWithEntitySelector :: Selector
+addComponentWithEntitySelector :: Selector '[Id GKEntity] ()
 addComponentWithEntitySelector = mkSelector "addComponentWithEntity:"
 
 -- | @Selector@ for @removeComponentWithEntity:@
-removeComponentWithEntitySelector :: Selector
+removeComponentWithEntitySelector :: Selector '[Id GKEntity] ()
 removeComponentWithEntitySelector = mkSelector "removeComponentWithEntity:"
 
 -- | @Selector@ for @removeComponent:@
-removeComponentSelector :: Selector
+removeComponentSelector :: Selector '[Id GKComponent] ()
 removeComponentSelector = mkSelector "removeComponent:"
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @classForGenericArgumentAtIndex:@
-classForGenericArgumentAtIndexSelector :: Selector
+classForGenericArgumentAtIndexSelector :: Selector '[CULong] Class
 classForGenericArgumentAtIndexSelector = mkSelector "classForGenericArgumentAtIndex:"
 
 -- | @Selector@ for @componentClass@
-componentClassSelector :: Selector
+componentClassSelector :: Selector '[] Class
 componentClassSelector = mkSelector "componentClass"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] (Id NSArray)
 componentsSelector = mkSelector "components"
 

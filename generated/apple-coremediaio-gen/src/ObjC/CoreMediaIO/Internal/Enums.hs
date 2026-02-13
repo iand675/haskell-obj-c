@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreMediaIO.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CMIOExtensionStreamClockType
 --
@@ -40,6 +43,16 @@ pattern CMIOExtensionStreamClockTypeLinkedCoreAudioDeviceUID = CMIOExtensionStre
 pattern CMIOExtensionStreamClockTypeCustom :: CMIOExtensionStreamClockType
 pattern CMIOExtensionStreamClockTypeCustom = CMIOExtensionStreamClockType 2
 
+instance ObjCArgument CMIOExtensionStreamClockType where
+  withObjCArg (CMIOExtensionStreamClockType x) k = k (argCLong x)
+
+instance ObjCReturn CMIOExtensionStreamClockType where
+  type RawReturn CMIOExtensionStreamClockType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMIOExtensionStreamClockType x)
+  fromOwned x = pure (CMIOExtensionStreamClockType x)
+
 -- | CMIOExtensionStreamDirection
 --
 -- Constants indicating the direction of the stream.
@@ -61,6 +74,16 @@ pattern CMIOExtensionStreamDirectionSource = CMIOExtensionStreamDirection 0
 
 pattern CMIOExtensionStreamDirectionSink :: CMIOExtensionStreamDirection
 pattern CMIOExtensionStreamDirectionSink = CMIOExtensionStreamDirection 1
+
+instance ObjCArgument CMIOExtensionStreamDirection where
+  withObjCArg (CMIOExtensionStreamDirection x) k = k (argCLong x)
+
+instance ObjCReturn CMIOExtensionStreamDirection where
+  type RawReturn CMIOExtensionStreamDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMIOExtensionStreamDirection x)
+  fromOwned x = pure (CMIOExtensionStreamDirection x)
 
 -- | CMIOExtensionStreamDiscontinuityFlags
 --
@@ -103,3 +126,13 @@ pattern CMIOExtensionStreamDiscontinuityFlagTime = CMIOExtensionStreamDiscontinu
 
 pattern CMIOExtensionStreamDiscontinuityFlagSampleDropped :: CMIOExtensionStreamDiscontinuityFlags
 pattern CMIOExtensionStreamDiscontinuityFlagSampleDropped = CMIOExtensionStreamDiscontinuityFlags 64
+
+instance ObjCArgument CMIOExtensionStreamDiscontinuityFlags where
+  withObjCArg (CMIOExtensionStreamDiscontinuityFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CMIOExtensionStreamDiscontinuityFlags where
+  type RawReturn CMIOExtensionStreamDiscontinuityFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMIOExtensionStreamDiscontinuityFlags x)
+  fromOwned x = pure (CMIOExtensionStreamDiscontinuityFlags x)

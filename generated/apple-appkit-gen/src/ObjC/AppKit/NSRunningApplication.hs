@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,30 +44,30 @@ module ObjC.AppKit.NSRunningApplication
   , icon
   , executableArchitecture
   , currentApplication
-  , hideSelector
-  , unhideSelector
   , activateFromApplication_optionsSelector
   , activateWithOptionsSelector
-  , terminateSelector
-  , forceTerminateSelector
-  , runningApplicationsWithBundleIdentifierSelector
-  , runningApplicationWithProcessIdentifierSelector
-  , terminateAutomaticallyTerminableApplicationsSelector
-  , terminatedSelector
-  , finishedLaunchingSelector
-  , hiddenSelector
-  , activeSelector
-  , ownsMenuBarSelector
   , activationPolicySelector
-  , localizedNameSelector
+  , activeSelector
   , bundleIdentifierSelector
   , bundleURLSelector
-  , executableURLSelector
-  , processIdentifierSelector
-  , launchDateSelector
-  , iconSelector
-  , executableArchitectureSelector
   , currentApplicationSelector
+  , executableArchitectureSelector
+  , executableURLSelector
+  , finishedLaunchingSelector
+  , forceTerminateSelector
+  , hiddenSelector
+  , hideSelector
+  , iconSelector
+  , launchDateSelector
+  , localizedNameSelector
+  , ownsMenuBarSelector
+  , processIdentifierSelector
+  , runningApplicationWithProcessIdentifierSelector
+  , runningApplicationsWithBundleIdentifierSelector
+  , terminateAutomaticallyTerminableApplicationsSelector
+  , terminateSelector
+  , terminatedSelector
+  , unhideSelector
 
   -- * Enum types
   , NSApplicationActivationOptions(NSApplicationActivationOptions)
@@ -79,15 +80,11 @@ module ObjC.AppKit.NSRunningApplication
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,8 +98,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- hide@
 hide :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-hide nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "hide") retCULong []
+hide nsRunningApplication =
+  sendMessage nsRunningApplication hideSelector
 
 -- | Attempts to unhide the receiver.
 --
@@ -110,8 +107,8 @@ hide nsRunningApplication  =
 --
 -- ObjC selector: @- unhide@
 unhide :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-unhide nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "unhide") retCULong []
+unhide nsRunningApplication =
+  sendMessage nsRunningApplication unhideSelector
 
 -- | Attempts to activate the application using the specified options.
 --
@@ -123,9 +120,8 @@ unhide nsRunningApplication  =
 --
 -- ObjC selector: @- activateFromApplication:options:@
 activateFromApplication_options :: (IsNSRunningApplication nsRunningApplication, IsNSRunningApplication application) => nsRunningApplication -> application -> NSApplicationActivationOptions -> IO Bool
-activateFromApplication_options nsRunningApplication  application options =
-  withObjCPtr application $ \raw_application ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "activateFromApplication:options:") retCULong [argPtr (castPtr raw_application :: Ptr ()), argCULong (coerce options)]
+activateFromApplication_options nsRunningApplication application options =
+  sendMessage nsRunningApplication activateFromApplication_optionsSelector (toNSRunningApplication application) options
 
 -- | Attempts to activate the receiver.
 --
@@ -133,8 +129,8 @@ activateFromApplication_options nsRunningApplication  application options =
 --
 -- ObjC selector: @- activateWithOptions:@
 activateWithOptions :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> NSApplicationActivationOptions -> IO Bool
-activateWithOptions nsRunningApplication  options =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "activateWithOptions:") retCULong [argCULong (coerce options)]
+activateWithOptions nsRunningApplication options =
+  sendMessage nsRunningApplication activateWithOptionsSelector options
 
 -- | Attempts to quit the receiver normally.
 --
@@ -142,8 +138,8 @@ activateWithOptions nsRunningApplication  options =
 --
 -- ObjC selector: @- terminate@
 terminate :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-terminate nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "terminate") retCULong []
+terminate nsRunningApplication =
+  sendMessage nsRunningApplication terminateSelector
 
 -- | Attempts to force the receiver to quit.
 --
@@ -151,8 +147,8 @@ terminate nsRunningApplication  =
 --
 -- ObjC selector: @- forceTerminate@
 forceTerminate :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-forceTerminate nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "forceTerminate") retCULong []
+forceTerminate nsRunningApplication =
+  sendMessage nsRunningApplication forceTerminateSelector
 
 -- | Returns: An array of currently running applications with the given bundle identifier, or an empty array if no apps match.
 --
@@ -161,8 +157,7 @@ runningApplicationsWithBundleIdentifier :: IsNSString bundleIdentifier => bundle
 runningApplicationsWithBundleIdentifier bundleIdentifier =
   do
     cls' <- getRequiredClass "NSRunningApplication"
-    withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-      sendClassMsg cls' (mkSelector "runningApplicationsWithBundleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_bundleIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runningApplicationsWithBundleIdentifierSelector (toNSString bundleIdentifier)
 
 -- | Returns: The running application with the given process identifier, or nil if no application has that pid. Applications that do not have PIDs cannot be returned from this method.
 --
@@ -171,7 +166,7 @@ runningApplicationWithProcessIdentifier :: CInt -> IO (Id NSRunningApplication)
 runningApplicationWithProcessIdentifier pid =
   do
     cls' <- getRequiredClass "NSRunningApplication"
-    sendClassMsg cls' (mkSelector "runningApplicationWithProcessIdentifier:") (retPtr retVoid) [argCInt pid] >>= retainedObject . castPtr
+    sendClassMessage cls' runningApplicationWithProcessIdentifierSelector pid
 
 -- | Cause any applications that are invisibly still running (see @NSProcessInfo.h@ automatic termination methods and docs) to terminate as if triggered by system memory pressure.  This is intended for installer apps and the like to make sure that nothing is unexpectedly relying on the files they're replacing.
 --
@@ -180,77 +175,77 @@ terminateAutomaticallyTerminableApplications :: IO ()
 terminateAutomaticallyTerminableApplications  =
   do
     cls' <- getRequiredClass "NSRunningApplication"
-    sendClassMsg cls' (mkSelector "terminateAutomaticallyTerminableApplications") retVoid []
+    sendClassMessage cls' terminateAutomaticallyTerminableApplicationsSelector
 
 -- | Indicates that the process is an exited application. This is observable through KVO.
 --
 -- ObjC selector: @- terminated@
 terminated :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-terminated nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "terminated") retCULong []
+terminated nsRunningApplication =
+  sendMessage nsRunningApplication terminatedSelector
 
 -- | Indicates that the process is finished launching, which corresponds to the @NSApplicationDidFinishLaunching@ internal notification.  This is observable through KVO.  Some applications do not post this notification and so are never reported as finished launching.
 --
 -- ObjC selector: @- finishedLaunching@
 finishedLaunching :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-finishedLaunching nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "finishedLaunching") retCULong []
+finishedLaunching nsRunningApplication =
+  sendMessage nsRunningApplication finishedLaunchingSelector
 
 -- | Indicates whether the application is currently hidden. This is observable through KVO.
 --
 -- ObjC selector: @- hidden@
 hidden :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-hidden nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "hidden") retCULong []
+hidden nsRunningApplication =
+  sendMessage nsRunningApplication hiddenSelector
 
 -- | Indicates whether the application is currently frontmost. This is observable through KVO.
 --
 -- ObjC selector: @- active@
 active :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-active nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "active") retCULong []
+active nsRunningApplication =
+  sendMessage nsRunningApplication activeSelector
 
 -- | Indicates whether the application currently owns the menu bar. This is observable through KVO.
 --
 -- ObjC selector: @- ownsMenuBar@
 ownsMenuBar :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO Bool
-ownsMenuBar nsRunningApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRunningApplication (mkSelector "ownsMenuBar") retCULong []
+ownsMenuBar nsRunningApplication =
+  sendMessage nsRunningApplication ownsMenuBarSelector
 
 -- | Indicates the activation policy of the application. This is observable through KVO (the type is usually fixed, but may be changed through a call to @-[NSApplication setActivationPolicy:]@).
 --
 -- ObjC selector: @- activationPolicy@
 activationPolicy :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO NSApplicationActivationPolicy
-activationPolicy nsRunningApplication  =
-    fmap (coerce :: CLong -> NSApplicationActivationPolicy) $ sendMsg nsRunningApplication (mkSelector "activationPolicy") retCLong []
+activationPolicy nsRunningApplication =
+  sendMessage nsRunningApplication activationPolicySelector
 
 -- | Indicates the name of the application. This is dependent on the current localization of the referenced app, and is suitable for presentation to the user.
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSString)
-localizedName nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName nsRunningApplication =
+  sendMessage nsRunningApplication localizedNameSelector
 
 -- | Indicates the @CFBundleIdentifier@ of the application, or nil if the application does not have an @Info.plist@.
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSString)
-bundleIdentifier nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier nsRunningApplication =
+  sendMessage nsRunningApplication bundleIdentifierSelector
 
 -- | Indicates the URL to the application's bundle, or nil if the application does not have a bundle.
 --
 -- ObjC selector: @- bundleURL@
 bundleURL :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSURL)
-bundleURL nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "bundleURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleURL nsRunningApplication =
+  sendMessage nsRunningApplication bundleURLSelector
 
 -- | Indicates the URL to the application's executable.
 --
 -- ObjC selector: @- executableURL@
 executableURL :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSURL)
-executableURL nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "executableURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+executableURL nsRunningApplication =
+  sendMessage nsRunningApplication executableURLSelector
 
 -- | Indicates the process identifier (pid) of the application. Do not rely on this for comparing processes.  Use @-isEqual:@ instead.
 --
@@ -258,29 +253,29 @@ executableURL nsRunningApplication  =
 --
 -- ObjC selector: @- processIdentifier@
 processIdentifier :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO CInt
-processIdentifier nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "processIdentifier") retCInt []
+processIdentifier nsRunningApplication =
+  sendMessage nsRunningApplication processIdentifierSelector
 
 -- | Indicates the date when the application was launched.  This property is not available for all applications.  Specifically, it is not available for applications that were launched without going through @LaunchServices@.
 --
 -- ObjC selector: @- launchDate@
 launchDate :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSDate)
-launchDate nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "launchDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+launchDate nsRunningApplication =
+  sendMessage nsRunningApplication launchDateSelector
 
 -- | Returns: The icon of the application.
 --
 -- ObjC selector: @- icon@
 icon :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO (Id NSImage)
-icon nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "icon") (retPtr retVoid) [] >>= retainedObject . castPtr
+icon nsRunningApplication =
+  sendMessage nsRunningApplication iconSelector
 
 -- | Indicates the executing processor architecture for the application, as an @NSBundleExecutableArchitecture@ from @NSBundle.h@.
 --
 -- ObjC selector: @- executableArchitecture@
 executableArchitecture :: IsNSRunningApplication nsRunningApplication => nsRunningApplication -> IO CLong
-executableArchitecture nsRunningApplication  =
-    sendMsg nsRunningApplication (mkSelector "executableArchitecture") retCLong []
+executableArchitecture nsRunningApplication =
+  sendMessage nsRunningApplication executableArchitectureSelector
 
 -- | Returns: An @NSRunningApplication@ representing this application.
 --
@@ -289,105 +284,105 @@ currentApplication :: IO (Id NSRunningApplication)
 currentApplication  =
   do
     cls' <- getRequiredClass "NSRunningApplication"
-    sendClassMsg cls' (mkSelector "currentApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentApplicationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hide@
-hideSelector :: Selector
+hideSelector :: Selector '[] Bool
 hideSelector = mkSelector "hide"
 
 -- | @Selector@ for @unhide@
-unhideSelector :: Selector
+unhideSelector :: Selector '[] Bool
 unhideSelector = mkSelector "unhide"
 
 -- | @Selector@ for @activateFromApplication:options:@
-activateFromApplication_optionsSelector :: Selector
+activateFromApplication_optionsSelector :: Selector '[Id NSRunningApplication, NSApplicationActivationOptions] Bool
 activateFromApplication_optionsSelector = mkSelector "activateFromApplication:options:"
 
 -- | @Selector@ for @activateWithOptions:@
-activateWithOptionsSelector :: Selector
+activateWithOptionsSelector :: Selector '[NSApplicationActivationOptions] Bool
 activateWithOptionsSelector = mkSelector "activateWithOptions:"
 
 -- | @Selector@ for @terminate@
-terminateSelector :: Selector
+terminateSelector :: Selector '[] Bool
 terminateSelector = mkSelector "terminate"
 
 -- | @Selector@ for @forceTerminate@
-forceTerminateSelector :: Selector
+forceTerminateSelector :: Selector '[] Bool
 forceTerminateSelector = mkSelector "forceTerminate"
 
 -- | @Selector@ for @runningApplicationsWithBundleIdentifier:@
-runningApplicationsWithBundleIdentifierSelector :: Selector
+runningApplicationsWithBundleIdentifierSelector :: Selector '[Id NSString] (Id NSArray)
 runningApplicationsWithBundleIdentifierSelector = mkSelector "runningApplicationsWithBundleIdentifier:"
 
 -- | @Selector@ for @runningApplicationWithProcessIdentifier:@
-runningApplicationWithProcessIdentifierSelector :: Selector
+runningApplicationWithProcessIdentifierSelector :: Selector '[CInt] (Id NSRunningApplication)
 runningApplicationWithProcessIdentifierSelector = mkSelector "runningApplicationWithProcessIdentifier:"
 
 -- | @Selector@ for @terminateAutomaticallyTerminableApplications@
-terminateAutomaticallyTerminableApplicationsSelector :: Selector
+terminateAutomaticallyTerminableApplicationsSelector :: Selector '[] ()
 terminateAutomaticallyTerminableApplicationsSelector = mkSelector "terminateAutomaticallyTerminableApplications"
 
 -- | @Selector@ for @terminated@
-terminatedSelector :: Selector
+terminatedSelector :: Selector '[] Bool
 terminatedSelector = mkSelector "terminated"
 
 -- | @Selector@ for @finishedLaunching@
-finishedLaunchingSelector :: Selector
+finishedLaunchingSelector :: Selector '[] Bool
 finishedLaunchingSelector = mkSelector "finishedLaunching"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @ownsMenuBar@
-ownsMenuBarSelector :: Selector
+ownsMenuBarSelector :: Selector '[] Bool
 ownsMenuBarSelector = mkSelector "ownsMenuBar"
 
 -- | @Selector@ for @activationPolicy@
-activationPolicySelector :: Selector
+activationPolicySelector :: Selector '[] NSApplicationActivationPolicy
 activationPolicySelector = mkSelector "activationPolicy"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @bundleURL@
-bundleURLSelector :: Selector
+bundleURLSelector :: Selector '[] (Id NSURL)
 bundleURLSelector = mkSelector "bundleURL"
 
 -- | @Selector@ for @executableURL@
-executableURLSelector :: Selector
+executableURLSelector :: Selector '[] (Id NSURL)
 executableURLSelector = mkSelector "executableURL"
 
 -- | @Selector@ for @processIdentifier@
-processIdentifierSelector :: Selector
+processIdentifierSelector :: Selector '[] CInt
 processIdentifierSelector = mkSelector "processIdentifier"
 
 -- | @Selector@ for @launchDate@
-launchDateSelector :: Selector
+launchDateSelector :: Selector '[] (Id NSDate)
 launchDateSelector = mkSelector "launchDate"
 
 -- | @Selector@ for @icon@
-iconSelector :: Selector
+iconSelector :: Selector '[] (Id NSImage)
 iconSelector = mkSelector "icon"
 
 -- | @Selector@ for @executableArchitecture@
-executableArchitectureSelector :: Selector
+executableArchitectureSelector :: Selector '[] CLong
 executableArchitectureSelector = mkSelector "executableArchitecture"
 
 -- | @Selector@ for @currentApplication@
-currentApplicationSelector :: Selector
+currentApplicationSelector :: Selector '[] (Id NSRunningApplication)
 currentApplicationSelector = mkSelector "currentApplication"
 

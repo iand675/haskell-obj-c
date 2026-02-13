@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.ModelIO.MDLTextureSampler
   , setHardwareFilter
   , transform
   , setTransform
-  , textureSelector
-  , setTextureSelector
   , hardwareFilterSelector
   , setHardwareFilterSelector
-  , transformSelector
+  , setTextureSelector
   , setTransformSelector
+  , textureSelector
+  , transformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- texture@
 texture :: IsMDLTextureSampler mdlTextureSampler => mdlTextureSampler -> IO (Id MDLTexture)
-texture mdlTextureSampler  =
-    sendMsg mdlTextureSampler (mkSelector "texture") (retPtr retVoid) [] >>= retainedObject . castPtr
+texture mdlTextureSampler =
+  sendMessage mdlTextureSampler textureSelector
 
 -- | @- setTexture:@
 setTexture :: (IsMDLTextureSampler mdlTextureSampler, IsMDLTexture value) => mdlTextureSampler -> value -> IO ()
-setTexture mdlTextureSampler  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlTextureSampler (mkSelector "setTexture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTexture mdlTextureSampler value =
+  sendMessage mdlTextureSampler setTextureSelector (toMDLTexture value)
 
 -- | @- hardwareFilter@
 hardwareFilter :: IsMDLTextureSampler mdlTextureSampler => mdlTextureSampler -> IO (Id MDLTextureFilter)
-hardwareFilter mdlTextureSampler  =
-    sendMsg mdlTextureSampler (mkSelector "hardwareFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareFilter mdlTextureSampler =
+  sendMessage mdlTextureSampler hardwareFilterSelector
 
 -- | @- setHardwareFilter:@
 setHardwareFilter :: (IsMDLTextureSampler mdlTextureSampler, IsMDLTextureFilter value) => mdlTextureSampler -> value -> IO ()
-setHardwareFilter mdlTextureSampler  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlTextureSampler (mkSelector "setHardwareFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHardwareFilter mdlTextureSampler value =
+  sendMessage mdlTextureSampler setHardwareFilterSelector (toMDLTextureFilter value)
 
 -- | @- transform@
 transform :: IsMDLTextureSampler mdlTextureSampler => mdlTextureSampler -> IO (Id MDLTransform)
-transform mdlTextureSampler  =
-    sendMsg mdlTextureSampler (mkSelector "transform") (retPtr retVoid) [] >>= retainedObject . castPtr
+transform mdlTextureSampler =
+  sendMessage mdlTextureSampler transformSelector
 
 -- | @- setTransform:@
 setTransform :: (IsMDLTextureSampler mdlTextureSampler, IsMDLTransform value) => mdlTextureSampler -> value -> IO ()
-setTransform mdlTextureSampler  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlTextureSampler (mkSelector "setTransform:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransform mdlTextureSampler value =
+  sendMessage mdlTextureSampler setTransformSelector (toMDLTransform value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @texture@
-textureSelector :: Selector
+textureSelector :: Selector '[] (Id MDLTexture)
 textureSelector = mkSelector "texture"
 
 -- | @Selector@ for @setTexture:@
-setTextureSelector :: Selector
+setTextureSelector :: Selector '[Id MDLTexture] ()
 setTextureSelector = mkSelector "setTexture:"
 
 -- | @Selector@ for @hardwareFilter@
-hardwareFilterSelector :: Selector
+hardwareFilterSelector :: Selector '[] (Id MDLTextureFilter)
 hardwareFilterSelector = mkSelector "hardwareFilter"
 
 -- | @Selector@ for @setHardwareFilter:@
-setHardwareFilterSelector :: Selector
+setHardwareFilterSelector :: Selector '[Id MDLTextureFilter] ()
 setHardwareFilterSelector = mkSelector "setHardwareFilter:"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] (Id MDLTransform)
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @setTransform:@
-setTransformSelector :: Selector
+setTransformSelector :: Selector '[Id MDLTransform] ()
 setTransformSelector = mkSelector "setTransform:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreImage.CIImageAccumulator
   , setImage
   , clear
   , format
-  , imageSelector
-  , setImageSelector
   , clearSelector
   , formatSelector
+  , imageSelector
+  , setImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- image@
 image :: IsCIImageAccumulator ciImageAccumulator => ciImageAccumulator -> IO (Id CIImage)
-image ciImageAccumulator  =
-    sendMsg ciImageAccumulator (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image ciImageAccumulator =
+  sendMessage ciImageAccumulator imageSelector
 
 -- | @- setImage:@
 setImage :: (IsCIImageAccumulator ciImageAccumulator, IsCIImage image) => ciImageAccumulator -> image -> IO ()
-setImage ciImageAccumulator  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg ciImageAccumulator (mkSelector "setImage:") retVoid [argPtr (castPtr raw_image :: Ptr ())]
+setImage ciImageAccumulator image =
+  sendMessage ciImageAccumulator setImageSelector (toCIImage image)
 
 -- | @- clear@
 clear :: IsCIImageAccumulator ciImageAccumulator => ciImageAccumulator -> IO ()
-clear ciImageAccumulator  =
-    sendMsg ciImageAccumulator (mkSelector "clear") retVoid []
+clear ciImageAccumulator =
+  sendMessage ciImageAccumulator clearSelector
 
 -- | @- format@
 format :: IsCIImageAccumulator ciImageAccumulator => ciImageAccumulator -> IO CInt
-format ciImageAccumulator  =
-    sendMsg ciImageAccumulator (mkSelector "format") retCInt []
+format ciImageAccumulator =
+  sendMessage ciImageAccumulator formatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id CIImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id CIImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @clear@
-clearSelector :: Selector
+clearSelector :: Selector '[] ()
 clearSelector = mkSelector "clear"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] CInt
 formatSelector = mkSelector "format"
 

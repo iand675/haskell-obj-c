@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterAddAdminParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , nodeIDSelector
-  , setNodeIDSelector
   , friendlyNameSelector
-  , setFriendlyNameSelector
-  , vendorIDSelector
-  , setVendorIDSelector
   , icacSelector
-  , setIcacSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , nodeIDSelector
   , serverSideProcessingTimeoutSelector
+  , setFriendlyNameSelector
+  , setIcacSelector
+  , setNodeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVendorIDSelector
+  , timedInvokeTimeoutMsSelector
+  , vendorIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,47 +48,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setNodeIDSelector (toNSNumber value)
 
 -- | @- friendlyName@
 friendlyName :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSString)
-friendlyName mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "friendlyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+friendlyName mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams friendlyNameSelector
 
 -- | @- setFriendlyName:@
 setFriendlyName :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSString value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setFriendlyName mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setFriendlyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFriendlyName mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setFriendlyNameSelector (toNSString value)
 
 -- | @- vendorID@
 vendorID :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSNumber)
-vendorID mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams vendorIDSelector
 
 -- | @- setVendorID:@
 setVendorID :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setVendorID mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setVendorIDSelector (toNSNumber value)
 
 -- | @- icac@
 icac :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSData)
-icac mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "icac") (retPtr retVoid) [] >>= retainedObject . castPtr
+icac mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams icacSelector
 
 -- | @- setIcac:@
 setIcac :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSData value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setIcac mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setIcac:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcac mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setIcacSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -101,8 +94,8 @@ setIcac mtrJointFabricDatastoreClusterAddAdminParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,9 +105,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -124,8 +116,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddAdminParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams => mtrJointFabricDatastoreClusterAddAdminParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddAdminParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddAdminParams =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -135,59 +127,58 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddAdminParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterAddAdminParams mtrJointFabricDatastoreClusterAddAdminParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddAdminParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterAddAdminParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddAdminParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterAddAdminParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddAdminParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @friendlyName@
-friendlyNameSelector :: Selector
+friendlyNameSelector :: Selector '[] (Id NSString)
 friendlyNameSelector = mkSelector "friendlyName"
 
 -- | @Selector@ for @setFriendlyName:@
-setFriendlyNameSelector :: Selector
+setFriendlyNameSelector :: Selector '[Id NSString] ()
 setFriendlyNameSelector = mkSelector "setFriendlyName:"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @icac@
-icacSelector :: Selector
+icacSelector :: Selector '[] (Id NSData)
 icacSelector = mkSelector "icac"
 
 -- | @Selector@ for @setIcac:@
-setIcacSelector :: Selector
+setIcacSelector :: Selector '[Id NSData] ()
 setIcacSelector = mkSelector "setIcac:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

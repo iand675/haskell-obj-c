@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INGetCarLockStatusIntentResponse
   , code
   , locked
   , setLocked
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , lockedSelector
   , setLockedSelector
 
@@ -29,15 +30,11 @@ module ObjC.Intents.INGetCarLockStatusIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse => inGetCarLockStatusIntentResponse -> IO RawId
-init_ inGetCarLockStatusIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inGetCarLockStatusIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inGetCarLockStatusIntentResponse =
+  sendOwnedMessage inGetCarLockStatusIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse, IsNSUserActivity userActivity) => inGetCarLockStatusIntentResponse -> INGetCarLockStatusIntentResponseCode -> userActivity -> IO (Id INGetCarLockStatusIntentResponse)
-initWithCode_userActivity inGetCarLockStatusIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inGetCarLockStatusIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inGetCarLockStatusIntentResponse code userActivity =
+  sendOwnedMessage inGetCarLockStatusIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse => inGetCarLockStatusIntentResponse -> IO INGetCarLockStatusIntentResponseCode
-code inGetCarLockStatusIntentResponse  =
-    fmap (coerce :: CLong -> INGetCarLockStatusIntentResponseCode) $ sendMsg inGetCarLockStatusIntentResponse (mkSelector "code") retCLong []
+code inGetCarLockStatusIntentResponse =
+  sendMessage inGetCarLockStatusIntentResponse codeSelector
 
 -- | @- locked@
 locked :: IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse => inGetCarLockStatusIntentResponse -> IO (Id NSNumber)
-locked inGetCarLockStatusIntentResponse  =
-    sendMsg inGetCarLockStatusIntentResponse (mkSelector "locked") (retPtr retVoid) [] >>= retainedObject . castPtr
+locked inGetCarLockStatusIntentResponse =
+  sendMessage inGetCarLockStatusIntentResponse lockedSelector
 
 -- | @- setLocked:@
 setLocked :: (IsINGetCarLockStatusIntentResponse inGetCarLockStatusIntentResponse, IsNSNumber value) => inGetCarLockStatusIntentResponse -> value -> IO ()
-setLocked inGetCarLockStatusIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetCarLockStatusIntentResponse (mkSelector "setLocked:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocked inGetCarLockStatusIntentResponse value =
+  sendMessage inGetCarLockStatusIntentResponse setLockedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INGetCarLockStatusIntentResponseCode, Id NSUserActivity] (Id INGetCarLockStatusIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetCarLockStatusIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @locked@
-lockedSelector :: Selector
+lockedSelector :: Selector '[] (Id NSNumber)
 lockedSelector = mkSelector "locked"
 
 -- | @Selector@ for @setLocked:@
-setLockedSelector :: Selector
+setLockedSelector :: Selector '[Id NSNumber] ()
 setLockedSelector = mkSelector "setLocked:"
 

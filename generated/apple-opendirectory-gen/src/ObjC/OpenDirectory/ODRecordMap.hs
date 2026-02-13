@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.OpenDirectory.ODRecordMap
   , setOdPredicate
   , attributes
   , standardAttributeTypes
-  , recordMapSelector
   , attributeMapForStandardAttributeSelector
-  , setAttributeMap_forStandardAttributeSelector
-  , nativeSelector
-  , setNativeSelector
-  , odPredicateSelector
-  , setOdPredicateSelector
   , attributesSelector
+  , nativeSelector
+  , odPredicateSelector
+  , recordMapSelector
+  , setAttributeMap_forStandardAttributeSelector
+  , setNativeSelector
+  , setOdPredicateSelector
   , standardAttributeTypesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,7 +51,7 @@ recordMap :: IO (Id ODRecordMap)
 recordMap  =
   do
     cls' <- getRequiredClass "ODRecordMap"
-    sendClassMsg cls' (mkSelector "recordMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' recordMapSelector
 
 -- | attributeMapForStandardAttribute:
 --
@@ -64,9 +61,8 @@ recordMap  =
 --
 -- ObjC selector: @- attributeMapForStandardAttribute:@
 attributeMapForStandardAttribute :: (IsODRecordMap odRecordMap, IsNSString standardAttribute) => odRecordMap -> standardAttribute -> IO (Id ODAttributeMap)
-attributeMapForStandardAttribute odRecordMap  standardAttribute =
-  withObjCPtr standardAttribute $ \raw_standardAttribute ->
-      sendMsg odRecordMap (mkSelector "attributeMapForStandardAttribute:") (retPtr retVoid) [argPtr (castPtr raw_standardAttribute :: Ptr ())] >>= retainedObject . castPtr
+attributeMapForStandardAttribute odRecordMap standardAttribute =
+  sendMessage odRecordMap attributeMapForStandardAttributeSelector (toNSString standardAttribute)
 
 -- | setAttributeMap:forStandardAttribute:
 --
@@ -76,80 +72,76 @@ attributeMapForStandardAttribute odRecordMap  standardAttribute =
 --
 -- ObjC selector: @- setAttributeMap:forStandardAttribute:@
 setAttributeMap_forStandardAttribute :: (IsODRecordMap odRecordMap, IsODAttributeMap attributeMap, IsNSString standardAttribute) => odRecordMap -> attributeMap -> standardAttribute -> IO ()
-setAttributeMap_forStandardAttribute odRecordMap  attributeMap standardAttribute =
-  withObjCPtr attributeMap $ \raw_attributeMap ->
-    withObjCPtr standardAttribute $ \raw_standardAttribute ->
-        sendMsg odRecordMap (mkSelector "setAttributeMap:forStandardAttribute:") retVoid [argPtr (castPtr raw_attributeMap :: Ptr ()), argPtr (castPtr raw_standardAttribute :: Ptr ())]
+setAttributeMap_forStandardAttribute odRecordMap attributeMap standardAttribute =
+  sendMessage odRecordMap setAttributeMap_forStandardAttributeSelector (toODAttributeMap attributeMap) (toNSString standardAttribute)
 
 -- | @- native@
 native :: IsODRecordMap odRecordMap => odRecordMap -> IO (Id NSString)
-native odRecordMap  =
-    sendMsg odRecordMap (mkSelector "native") (retPtr retVoid) [] >>= retainedObject . castPtr
+native odRecordMap =
+  sendMessage odRecordMap nativeSelector
 
 -- | @- setNative:@
 setNative :: (IsODRecordMap odRecordMap, IsNSString value) => odRecordMap -> value -> IO ()
-setNative odRecordMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odRecordMap (mkSelector "setNative:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNative odRecordMap value =
+  sendMessage odRecordMap setNativeSelector (toNSString value)
 
 -- | @- odPredicate@
 odPredicate :: IsODRecordMap odRecordMap => odRecordMap -> IO (Id NSDictionary)
-odPredicate odRecordMap  =
-    sendMsg odRecordMap (mkSelector "odPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+odPredicate odRecordMap =
+  sendMessage odRecordMap odPredicateSelector
 
 -- | @- setOdPredicate:@
 setOdPredicate :: (IsODRecordMap odRecordMap, IsNSDictionary value) => odRecordMap -> value -> IO ()
-setOdPredicate odRecordMap  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odRecordMap (mkSelector "setOdPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOdPredicate odRecordMap value =
+  sendMessage odRecordMap setOdPredicateSelector (toNSDictionary value)
 
 -- | @- attributes@
 attributes :: IsODRecordMap odRecordMap => odRecordMap -> IO (Id NSDictionary)
-attributes odRecordMap  =
-    sendMsg odRecordMap (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes odRecordMap =
+  sendMessage odRecordMap attributesSelector
 
 -- | @- standardAttributeTypes@
 standardAttributeTypes :: IsODRecordMap odRecordMap => odRecordMap -> IO (Id NSArray)
-standardAttributeTypes odRecordMap  =
-    sendMsg odRecordMap (mkSelector "standardAttributeTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardAttributeTypes odRecordMap =
+  sendMessage odRecordMap standardAttributeTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recordMap@
-recordMapSelector :: Selector
+recordMapSelector :: Selector '[] (Id ODRecordMap)
 recordMapSelector = mkSelector "recordMap"
 
 -- | @Selector@ for @attributeMapForStandardAttribute:@
-attributeMapForStandardAttributeSelector :: Selector
+attributeMapForStandardAttributeSelector :: Selector '[Id NSString] (Id ODAttributeMap)
 attributeMapForStandardAttributeSelector = mkSelector "attributeMapForStandardAttribute:"
 
 -- | @Selector@ for @setAttributeMap:forStandardAttribute:@
-setAttributeMap_forStandardAttributeSelector :: Selector
+setAttributeMap_forStandardAttributeSelector :: Selector '[Id ODAttributeMap, Id NSString] ()
 setAttributeMap_forStandardAttributeSelector = mkSelector "setAttributeMap:forStandardAttribute:"
 
 -- | @Selector@ for @native@
-nativeSelector :: Selector
+nativeSelector :: Selector '[] (Id NSString)
 nativeSelector = mkSelector "native"
 
 -- | @Selector@ for @setNative:@
-setNativeSelector :: Selector
+setNativeSelector :: Selector '[Id NSString] ()
 setNativeSelector = mkSelector "setNative:"
 
 -- | @Selector@ for @odPredicate@
-odPredicateSelector :: Selector
+odPredicateSelector :: Selector '[] (Id NSDictionary)
 odPredicateSelector = mkSelector "odPredicate"
 
 -- | @Selector@ for @setOdPredicate:@
-setOdPredicateSelector :: Selector
+setOdPredicateSelector :: Selector '[Id NSDictionary] ()
 setOdPredicateSelector = mkSelector "setOdPredicate:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @standardAttributeTypes@
-standardAttributeTypesSelector :: Selector
+standardAttributeTypesSelector :: Selector '[] (Id NSArray)
 standardAttributeTypesSelector = mkSelector "standardAttributeTypes"
 

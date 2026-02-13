@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVMutableAssetDownloadStorageManagementPolicy
   , setPriority
   , expirationDate
   , setExpirationDate
-  , prioritySelector
-  , setPrioritySelector
   , expirationDateSelector
+  , prioritySelector
   , setExpirationDateSelector
+  , setPrioritySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- priority@
 priority :: IsAVMutableAssetDownloadStorageManagementPolicy avMutableAssetDownloadStorageManagementPolicy => avMutableAssetDownloadStorageManagementPolicy -> IO (Id NSString)
-priority avMutableAssetDownloadStorageManagementPolicy  =
-    sendMsg avMutableAssetDownloadStorageManagementPolicy (mkSelector "priority") (retPtr retVoid) [] >>= retainedObject . castPtr
+priority avMutableAssetDownloadStorageManagementPolicy =
+  sendMessage avMutableAssetDownloadStorageManagementPolicy prioritySelector
 
 -- | Indicates the eviction priority of downloaded asset.
 --
@@ -52,42 +49,40 @@ priority avMutableAssetDownloadStorageManagementPolicy  =
 --
 -- ObjC selector: @- setPriority:@
 setPriority :: (IsAVMutableAssetDownloadStorageManagementPolicy avMutableAssetDownloadStorageManagementPolicy, IsNSString value) => avMutableAssetDownloadStorageManagementPolicy -> value -> IO ()
-setPriority avMutableAssetDownloadStorageManagementPolicy  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableAssetDownloadStorageManagementPolicy (mkSelector "setPriority:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriority avMutableAssetDownloadStorageManagementPolicy value =
+  sendMessage avMutableAssetDownloadStorageManagementPolicy setPrioritySelector (toNSString value)
 
 -- | Returns the expiration date of asset.
 --
 -- ObjC selector: @- expirationDate@
 expirationDate :: IsAVMutableAssetDownloadStorageManagementPolicy avMutableAssetDownloadStorageManagementPolicy => avMutableAssetDownloadStorageManagementPolicy -> IO (Id NSDate)
-expirationDate avMutableAssetDownloadStorageManagementPolicy  =
-    sendMsg avMutableAssetDownloadStorageManagementPolicy (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate avMutableAssetDownloadStorageManagementPolicy =
+  sendMessage avMutableAssetDownloadStorageManagementPolicy expirationDateSelector
 
 -- | Returns the expiration date of asset.
 --
 -- ObjC selector: @- setExpirationDate:@
 setExpirationDate :: (IsAVMutableAssetDownloadStorageManagementPolicy avMutableAssetDownloadStorageManagementPolicy, IsNSDate value) => avMutableAssetDownloadStorageManagementPolicy -> value -> IO ()
-setExpirationDate avMutableAssetDownloadStorageManagementPolicy  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableAssetDownloadStorageManagementPolicy (mkSelector "setExpirationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpirationDate avMutableAssetDownloadStorageManagementPolicy value =
+  sendMessage avMutableAssetDownloadStorageManagementPolicy setExpirationDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] (Id NSString)
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[Id NSString] ()
 setPrioritySelector = mkSelector "setPriority:"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @setExpirationDate:@
-setExpirationDateSelector :: Selector
+setExpirationDateSelector :: Selector '[Id NSDate] ()
 setExpirationDateSelector = mkSelector "setExpirationDate:"
 

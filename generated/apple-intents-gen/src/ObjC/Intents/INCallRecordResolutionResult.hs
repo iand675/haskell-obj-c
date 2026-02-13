@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INCallRecordResolutionResult
   , successWithResolvedCallRecord
   , disambiguationWithCallRecordsToDisambiguate
   , confirmationRequiredWithCallRecordToConfirm
-  , successWithResolvedCallRecordSelector
-  , disambiguationWithCallRecordsToDisambiguateSelector
   , confirmationRequiredWithCallRecordToConfirmSelector
+  , disambiguationWithCallRecordsToDisambiguateSelector
+  , successWithResolvedCallRecordSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedCallRecord :: IsINCallRecord resolvedCallRecord => resolvedCa
 successWithResolvedCallRecord resolvedCallRecord =
   do
     cls' <- getRequiredClass "INCallRecordResolutionResult"
-    withObjCPtr resolvedCallRecord $ \raw_resolvedCallRecord ->
-      sendClassMsg cls' (mkSelector "successWithResolvedCallRecord:") (retPtr retVoid) [argPtr (castPtr raw_resolvedCallRecord :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCallRecordSelector (toINCallRecord resolvedCallRecord)
 
 -- | @+ disambiguationWithCallRecordsToDisambiguate:@
 disambiguationWithCallRecordsToDisambiguate :: IsNSArray callRecordsToDisambiguate => callRecordsToDisambiguate -> IO (Id INCallRecordResolutionResult)
 disambiguationWithCallRecordsToDisambiguate callRecordsToDisambiguate =
   do
     cls' <- getRequiredClass "INCallRecordResolutionResult"
-    withObjCPtr callRecordsToDisambiguate $ \raw_callRecordsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithCallRecordsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_callRecordsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithCallRecordsToDisambiguateSelector (toNSArray callRecordsToDisambiguate)
 
 -- | @+ confirmationRequiredWithCallRecordToConfirm:@
 confirmationRequiredWithCallRecordToConfirm :: IsINCallRecord callRecordToConfirm => callRecordToConfirm -> IO (Id INCallRecordResolutionResult)
 confirmationRequiredWithCallRecordToConfirm callRecordToConfirm =
   do
     cls' <- getRequiredClass "INCallRecordResolutionResult"
-    withObjCPtr callRecordToConfirm $ \raw_callRecordToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithCallRecordToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_callRecordToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCallRecordToConfirmSelector (toINCallRecord callRecordToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCallRecord:@
-successWithResolvedCallRecordSelector :: Selector
+successWithResolvedCallRecordSelector :: Selector '[Id INCallRecord] (Id INCallRecordResolutionResult)
 successWithResolvedCallRecordSelector = mkSelector "successWithResolvedCallRecord:"
 
 -- | @Selector@ for @disambiguationWithCallRecordsToDisambiguate:@
-disambiguationWithCallRecordsToDisambiguateSelector :: Selector
+disambiguationWithCallRecordsToDisambiguateSelector :: Selector '[Id NSArray] (Id INCallRecordResolutionResult)
 disambiguationWithCallRecordsToDisambiguateSelector = mkSelector "disambiguationWithCallRecordsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithCallRecordToConfirm:@
-confirmationRequiredWithCallRecordToConfirmSelector :: Selector
+confirmationRequiredWithCallRecordToConfirmSelector :: Selector '[Id INCallRecord] (Id INCallRecordResolutionResult)
 confirmationRequiredWithCallRecordToConfirmSelector = mkSelector "confirmationRequiredWithCallRecordToConfirm:"
 

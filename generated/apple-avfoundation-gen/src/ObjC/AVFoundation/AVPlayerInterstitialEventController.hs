@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.AVFoundation.AVPlayerInterstitialEventController
   , setLocalizedStringsBundle
   , localizedStringsTableName
   , setLocalizedStringsTableName
-  , interstitialEventControllerWithPrimaryPlayerSelector
-  , initWithPrimaryPlayerSelector
-  , skipCurrentEventSelector
   , eventsSelector
-  , setEventsSelector
+  , initWithPrimaryPlayerSelector
+  , interstitialEventControllerWithPrimaryPlayerSelector
   , localizedStringsBundleSelector
-  , setLocalizedStringsBundleSelector
   , localizedStringsTableNameSelector
+  , setEventsSelector
+  , setLocalizedStringsBundleSelector
   , setLocalizedStringsTableNameSelector
+  , skipCurrentEventSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,16 +59,14 @@ interstitialEventControllerWithPrimaryPlayer :: IsAVPlayer primaryPlayer => prim
 interstitialEventControllerWithPrimaryPlayer primaryPlayer =
   do
     cls' <- getRequiredClass "AVPlayerInterstitialEventController"
-    withObjCPtr primaryPlayer $ \raw_primaryPlayer ->
-      sendClassMsg cls' (mkSelector "interstitialEventControllerWithPrimaryPlayer:") (retPtr retVoid) [argPtr (castPtr raw_primaryPlayer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' interstitialEventControllerWithPrimaryPlayerSelector (toAVPlayer primaryPlayer)
 
 -- | This method throws an exception if the primary player is an interstitial player.
 --
 -- ObjC selector: @- initWithPrimaryPlayer:@
 initWithPrimaryPlayer :: (IsAVPlayerInterstitialEventController avPlayerInterstitialEventController, IsAVPlayer primaryPlayer) => avPlayerInterstitialEventController -> primaryPlayer -> IO (Id AVPlayerInterstitialEventController)
-initWithPrimaryPlayer avPlayerInterstitialEventController  primaryPlayer =
-  withObjCPtr primaryPlayer $ \raw_primaryPlayer ->
-      sendMsg avPlayerInterstitialEventController (mkSelector "initWithPrimaryPlayer:") (retPtr retVoid) [argPtr (castPtr raw_primaryPlayer :: Ptr ())] >>= ownedObject . castPtr
+initWithPrimaryPlayer avPlayerInterstitialEventController primaryPlayer =
+  sendOwnedMessage avPlayerInterstitialEventController initWithPrimaryPlayerSelector (toAVPlayer primaryPlayer)
 
 -- | Causes the playback of the currently playing interstital event to be abandoned.
 --
@@ -79,8 +74,8 @@ initWithPrimaryPlayer avPlayerInterstitialEventController  primaryPlayer =
 --
 -- ObjC selector: @- skipCurrentEvent@
 skipCurrentEvent :: IsAVPlayerInterstitialEventController avPlayerInterstitialEventController => avPlayerInterstitialEventController -> IO ()
-skipCurrentEvent avPlayerInterstitialEventController  =
-    sendMsg avPlayerInterstitialEventController (mkSelector "skipCurrentEvent") retVoid []
+skipCurrentEvent avPlayerInterstitialEventController =
+  sendMessage avPlayerInterstitialEventController skipCurrentEventSelector
 
 -- | Specifies the current schedule of interstitial events.
 --
@@ -98,8 +93,8 @@ skipCurrentEvent avPlayerInterstitialEventController  =
 --
 -- ObjC selector: @- events@
 events :: IsAVPlayerInterstitialEventController avPlayerInterstitialEventController => avPlayerInterstitialEventController -> IO (Id NSArray)
-events avPlayerInterstitialEventController  =
-    sendMsg avPlayerInterstitialEventController (mkSelector "events") (retPtr retVoid) [] >>= retainedObject . castPtr
+events avPlayerInterstitialEventController =
+  sendMessage avPlayerInterstitialEventController eventsSelector
 
 -- | Specifies the current schedule of interstitial events.
 --
@@ -117,9 +112,8 @@ events avPlayerInterstitialEventController  =
 --
 -- ObjC selector: @- setEvents:@
 setEvents :: (IsAVPlayerInterstitialEventController avPlayerInterstitialEventController, IsNSArray value) => avPlayerInterstitialEventController -> value -> IO ()
-setEvents avPlayerInterstitialEventController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEventController (mkSelector "setEvents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEvents avPlayerInterstitialEventController value =
+  sendMessage avPlayerInterstitialEventController setEventsSelector (toNSArray value)
 
 -- | The bundle that contains the localized strings to be used by the AVPlayerInterstitialEventController.
 --
@@ -127,8 +121,8 @@ setEvents avPlayerInterstitialEventController  value =
 --
 -- ObjC selector: @- localizedStringsBundle@
 localizedStringsBundle :: IsAVPlayerInterstitialEventController avPlayerInterstitialEventController => avPlayerInterstitialEventController -> IO (Id NSBundle)
-localizedStringsBundle avPlayerInterstitialEventController  =
-    sendMsg avPlayerInterstitialEventController (mkSelector "localizedStringsBundle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedStringsBundle avPlayerInterstitialEventController =
+  sendMessage avPlayerInterstitialEventController localizedStringsBundleSelector
 
 -- | The bundle that contains the localized strings to be used by the AVPlayerInterstitialEventController.
 --
@@ -136,9 +130,8 @@ localizedStringsBundle avPlayerInterstitialEventController  =
 --
 -- ObjC selector: @- setLocalizedStringsBundle:@
 setLocalizedStringsBundle :: (IsAVPlayerInterstitialEventController avPlayerInterstitialEventController, IsNSBundle value) => avPlayerInterstitialEventController -> value -> IO ()
-setLocalizedStringsBundle avPlayerInterstitialEventController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEventController (mkSelector "setLocalizedStringsBundle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedStringsBundle avPlayerInterstitialEventController value =
+  sendMessage avPlayerInterstitialEventController setLocalizedStringsBundleSelector (toNSBundle value)
 
 -- | The name of the table in the bundle that contains the localized strings to be used by the AVPlayerInterstitialEventController.
 --
@@ -146,8 +139,8 @@ setLocalizedStringsBundle avPlayerInterstitialEventController  value =
 --
 -- ObjC selector: @- localizedStringsTableName@
 localizedStringsTableName :: IsAVPlayerInterstitialEventController avPlayerInterstitialEventController => avPlayerInterstitialEventController -> IO (Id NSString)
-localizedStringsTableName avPlayerInterstitialEventController  =
-    sendMsg avPlayerInterstitialEventController (mkSelector "localizedStringsTableName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedStringsTableName avPlayerInterstitialEventController =
+  sendMessage avPlayerInterstitialEventController localizedStringsTableNameSelector
 
 -- | The name of the table in the bundle that contains the localized strings to be used by the AVPlayerInterstitialEventController.
 --
@@ -155,47 +148,46 @@ localizedStringsTableName avPlayerInterstitialEventController  =
 --
 -- ObjC selector: @- setLocalizedStringsTableName:@
 setLocalizedStringsTableName :: (IsAVPlayerInterstitialEventController avPlayerInterstitialEventController, IsNSString value) => avPlayerInterstitialEventController -> value -> IO ()
-setLocalizedStringsTableName avPlayerInterstitialEventController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEventController (mkSelector "setLocalizedStringsTableName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedStringsTableName avPlayerInterstitialEventController value =
+  sendMessage avPlayerInterstitialEventController setLocalizedStringsTableNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interstitialEventControllerWithPrimaryPlayer:@
-interstitialEventControllerWithPrimaryPlayerSelector :: Selector
+interstitialEventControllerWithPrimaryPlayerSelector :: Selector '[Id AVPlayer] (Id AVPlayerInterstitialEventController)
 interstitialEventControllerWithPrimaryPlayerSelector = mkSelector "interstitialEventControllerWithPrimaryPlayer:"
 
 -- | @Selector@ for @initWithPrimaryPlayer:@
-initWithPrimaryPlayerSelector :: Selector
+initWithPrimaryPlayerSelector :: Selector '[Id AVPlayer] (Id AVPlayerInterstitialEventController)
 initWithPrimaryPlayerSelector = mkSelector "initWithPrimaryPlayer:"
 
 -- | @Selector@ for @skipCurrentEvent@
-skipCurrentEventSelector :: Selector
+skipCurrentEventSelector :: Selector '[] ()
 skipCurrentEventSelector = mkSelector "skipCurrentEvent"
 
 -- | @Selector@ for @events@
-eventsSelector :: Selector
+eventsSelector :: Selector '[] (Id NSArray)
 eventsSelector = mkSelector "events"
 
 -- | @Selector@ for @setEvents:@
-setEventsSelector :: Selector
+setEventsSelector :: Selector '[Id NSArray] ()
 setEventsSelector = mkSelector "setEvents:"
 
 -- | @Selector@ for @localizedStringsBundle@
-localizedStringsBundleSelector :: Selector
+localizedStringsBundleSelector :: Selector '[] (Id NSBundle)
 localizedStringsBundleSelector = mkSelector "localizedStringsBundle"
 
 -- | @Selector@ for @setLocalizedStringsBundle:@
-setLocalizedStringsBundleSelector :: Selector
+setLocalizedStringsBundleSelector :: Selector '[Id NSBundle] ()
 setLocalizedStringsBundleSelector = mkSelector "setLocalizedStringsBundle:"
 
 -- | @Selector@ for @localizedStringsTableName@
-localizedStringsTableNameSelector :: Selector
+localizedStringsTableNameSelector :: Selector '[] (Id NSString)
 localizedStringsTableNameSelector = mkSelector "localizedStringsTableName"
 
 -- | @Selector@ for @setLocalizedStringsTableName:@
-setLocalizedStringsTableNameSelector :: Selector
+setLocalizedStringsTableNameSelector :: Selector '[Id NSString] ()
 setLocalizedStringsTableNameSelector = mkSelector "setLocalizedStringsTableName:"
 

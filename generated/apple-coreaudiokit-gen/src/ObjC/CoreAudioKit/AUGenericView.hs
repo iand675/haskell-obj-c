@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.CoreAudioKit.AUGenericView
   , audioUnit
   , showsExpertParameters
   , setShowsExpertParameters
+  , audioUnitSelector
   , initWithAudioUnitSelector
   , initWithAudioUnit_displayFlagsSelector
-  , audioUnitSelector
-  , showsExpertParametersSelector
   , setShowsExpertParametersSelector
+  , showsExpertParametersSelector
 
   -- * Enum types
   , AUGenericViewDisplayFlags(AUGenericViewDisplayFlags)
@@ -30,15 +31,11 @@ module ObjC.CoreAudioKit.AUGenericView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAudioUnit:@
 initWithAudioUnit :: IsAUGenericView auGenericView => auGenericView -> Ptr () -> IO (Id AUGenericView)
-initWithAudioUnit auGenericView  au =
-    sendMsg auGenericView (mkSelector "initWithAudioUnit:") (retPtr retVoid) [argPtr au] >>= ownedObject . castPtr
+initWithAudioUnit auGenericView au =
+  sendOwnedMessage auGenericView initWithAudioUnitSelector au
 
 -- | initWithAudioUnit:displayFlags:
 --
@@ -72,45 +69,45 @@ initWithAudioUnit auGenericView  au =
 --
 -- ObjC selector: @- initWithAudioUnit:displayFlags:@
 initWithAudioUnit_displayFlags :: IsAUGenericView auGenericView => auGenericView -> Ptr () -> AUGenericViewDisplayFlags -> IO (Id AUGenericView)
-initWithAudioUnit_displayFlags auGenericView  inAudioUnit inFlags =
-    sendMsg auGenericView (mkSelector "initWithAudioUnit:displayFlags:") (retPtr retVoid) [argPtr inAudioUnit, argCUInt (coerce inFlags)] >>= ownedObject . castPtr
+initWithAudioUnit_displayFlags auGenericView inAudioUnit inFlags =
+  sendOwnedMessage auGenericView initWithAudioUnit_displayFlagsSelector inAudioUnit inFlags
 
 -- | @- audioUnit@
 audioUnit :: IsAUGenericView auGenericView => auGenericView -> IO (Ptr ())
-audioUnit auGenericView  =
-    fmap castPtr $ sendMsg auGenericView (mkSelector "audioUnit") (retPtr retVoid) []
+audioUnit auGenericView =
+  sendMessage auGenericView audioUnitSelector
 
 -- | @- showsExpertParameters@
 showsExpertParameters :: IsAUGenericView auGenericView => auGenericView -> IO Bool
-showsExpertParameters auGenericView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auGenericView (mkSelector "showsExpertParameters") retCULong []
+showsExpertParameters auGenericView =
+  sendMessage auGenericView showsExpertParametersSelector
 
 -- | @- setShowsExpertParameters:@
 setShowsExpertParameters :: IsAUGenericView auGenericView => auGenericView -> Bool -> IO ()
-setShowsExpertParameters auGenericView  value =
-    sendMsg auGenericView (mkSelector "setShowsExpertParameters:") retVoid [argCULong (if value then 1 else 0)]
+setShowsExpertParameters auGenericView value =
+  sendMessage auGenericView setShowsExpertParametersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAudioUnit:@
-initWithAudioUnitSelector :: Selector
+initWithAudioUnitSelector :: Selector '[Ptr ()] (Id AUGenericView)
 initWithAudioUnitSelector = mkSelector "initWithAudioUnit:"
 
 -- | @Selector@ for @initWithAudioUnit:displayFlags:@
-initWithAudioUnit_displayFlagsSelector :: Selector
+initWithAudioUnit_displayFlagsSelector :: Selector '[Ptr (), AUGenericViewDisplayFlags] (Id AUGenericView)
 initWithAudioUnit_displayFlagsSelector = mkSelector "initWithAudioUnit:displayFlags:"
 
 -- | @Selector@ for @audioUnit@
-audioUnitSelector :: Selector
+audioUnitSelector :: Selector '[] (Ptr ())
 audioUnitSelector = mkSelector "audioUnit"
 
 -- | @Selector@ for @showsExpertParameters@
-showsExpertParametersSelector :: Selector
+showsExpertParametersSelector :: Selector '[] Bool
 showsExpertParametersSelector = mkSelector "showsExpertParameters"
 
 -- | @Selector@ for @setShowsExpertParameters:@
-setShowsExpertParametersSelector :: Selector
+setShowsExpertParametersSelector :: Selector '[Bool] ()
 setShowsExpertParametersSelector = mkSelector "setShowsExpertParameters:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.MediaExtension.MEByteSource
   , fileName
   , fileLength
   , relatedFileNamesInSameDirectory
-  , newSelector
-  , initSelector
-  , readDataOfLength_fromOffset_toDestination_completionHandlerSelector
-  , readDataOfLength_fromOffset_completionHandlerSelector
   , availableLengthAtOffsetSelector
   , byteSourceForRelatedFileName_errorSelector
-  , fileNameSelector
   , fileLengthSelector
+  , fileNameSelector
+  , initSelector
+  , newSelector
+  , readDataOfLength_fromOffset_completionHandlerSelector
+  , readDataOfLength_fromOffset_toDestination_completionHandlerSelector
   , relatedFileNamesInSameDirectorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,12 +51,12 @@ new :: IO (Id MEByteSource)
 new  =
   do
     cls' <- getRequiredClass "MEByteSource"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEByteSource meByteSource => meByteSource -> IO (Id MEByteSource)
-init_ meByteSource  =
-    sendMsg meByteSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meByteSource =
+  sendOwnedMessage meByteSource initSelector
 
 -- | readDataOfLength:fromOffset:toDestination:completionHandler:
 --
@@ -77,8 +74,8 @@ init_ meByteSource  =
 --
 -- ObjC selector: @- readDataOfLength:fromOffset:toDestination:completionHandler:@
 readDataOfLength_fromOffset_toDestination_completionHandler :: IsMEByteSource meByteSource => meByteSource -> CULong -> CLong -> Ptr () -> Ptr () -> IO ()
-readDataOfLength_fromOffset_toDestination_completionHandler meByteSource  length_ offset dest completionHandler =
-    sendMsg meByteSource (mkSelector "readDataOfLength:fromOffset:toDestination:completionHandler:") retVoid [argCULong length_, argCLong offset, argPtr dest, argPtr (castPtr completionHandler :: Ptr ())]
+readDataOfLength_fromOffset_toDestination_completionHandler meByteSource length_ offset dest completionHandler =
+  sendMessage meByteSource readDataOfLength_fromOffset_toDestination_completionHandlerSelector length_ offset dest completionHandler
 
 -- | readDataOfLength:fromOffset:completionHandler:
 --
@@ -94,8 +91,8 @@ readDataOfLength_fromOffset_toDestination_completionHandler meByteSource  length
 --
 -- ObjC selector: @- readDataOfLength:fromOffset:completionHandler:@
 readDataOfLength_fromOffset_completionHandler :: IsMEByteSource meByteSource => meByteSource -> CULong -> CLong -> Ptr () -> IO ()
-readDataOfLength_fromOffset_completionHandler meByteSource  length_ offset completionHandler =
-    sendMsg meByteSource (mkSelector "readDataOfLength:fromOffset:completionHandler:") retVoid [argCULong length_, argCLong offset, argPtr (castPtr completionHandler :: Ptr ())]
+readDataOfLength_fromOffset_completionHandler meByteSource length_ offset completionHandler =
+  sendMessage meByteSource readDataOfLength_fromOffset_completionHandlerSelector length_ offset completionHandler
 
 -- | availableLengthAtOffset:
 --
@@ -109,8 +106,8 @@ readDataOfLength_fromOffset_completionHandler meByteSource  length_ offset compl
 --
 -- ObjC selector: @- availableLengthAtOffset:@
 availableLengthAtOffset :: IsMEByteSource meByteSource => meByteSource -> CLong -> IO CLong
-availableLengthAtOffset meByteSource  offset =
-    sendMsg meByteSource (mkSelector "availableLengthAtOffset:") retCLong [argCLong offset]
+availableLengthAtOffset meByteSource offset =
+  sendMessage meByteSource availableLengthAtOffsetSelector offset
 
 -- | byteSourceForRelatedFileName:error:
 --
@@ -126,10 +123,8 @@ availableLengthAtOffset meByteSource  offset =
 --
 -- ObjC selector: @- byteSourceForRelatedFileName:error:@
 byteSourceForRelatedFileName_error :: (IsMEByteSource meByteSource, IsNSString fileName, IsNSError errorOut) => meByteSource -> fileName -> errorOut -> IO (Id MEByteSource)
-byteSourceForRelatedFileName_error meByteSource  fileName errorOut =
-  withObjCPtr fileName $ \raw_fileName ->
-    withObjCPtr errorOut $ \raw_errorOut ->
-        sendMsg meByteSource (mkSelector "byteSourceForRelatedFileName:error:") (retPtr retVoid) [argPtr (castPtr raw_fileName :: Ptr ()), argPtr (castPtr raw_errorOut :: Ptr ())] >>= retainedObject . castPtr
+byteSourceForRelatedFileName_error meByteSource fileName errorOut =
+  sendMessage meByteSource byteSourceForRelatedFileName_errorSelector (toNSString fileName) (toNSError errorOut)
 
 -- | fileName
 --
@@ -139,8 +134,8 @@ byteSourceForRelatedFileName_error meByteSource  fileName errorOut =
 --
 -- ObjC selector: @- fileName@
 fileName :: IsMEByteSource meByteSource => meByteSource -> IO (Id NSString)
-fileName meByteSource  =
-    sendMsg meByteSource (mkSelector "fileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileName meByteSource =
+  sendMessage meByteSource fileNameSelector
 
 -- | fileLength
 --
@@ -150,8 +145,8 @@ fileName meByteSource  =
 --
 -- ObjC selector: @- fileLength@
 fileLength :: IsMEByteSource meByteSource => meByteSource -> IO CLong
-fileLength meByteSource  =
-    sendMsg meByteSource (mkSelector "fileLength") retCLong []
+fileLength meByteSource =
+  sendMessage meByteSource fileLengthSelector
 
 -- | relatedFileNamesInSameDirectory
 --
@@ -161,46 +156,46 @@ fileLength meByteSource  =
 --
 -- ObjC selector: @- relatedFileNamesInSameDirectory@
 relatedFileNamesInSameDirectory :: IsMEByteSource meByteSource => meByteSource -> IO (Id NSArray)
-relatedFileNamesInSameDirectory meByteSource  =
-    sendMsg meByteSource (mkSelector "relatedFileNamesInSameDirectory") (retPtr retVoid) [] >>= retainedObject . castPtr
+relatedFileNamesInSameDirectory meByteSource =
+  sendMessage meByteSource relatedFileNamesInSameDirectorySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEByteSource)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEByteSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @readDataOfLength:fromOffset:toDestination:completionHandler:@
-readDataOfLength_fromOffset_toDestination_completionHandlerSelector :: Selector
+readDataOfLength_fromOffset_toDestination_completionHandlerSelector :: Selector '[CULong, CLong, Ptr (), Ptr ()] ()
 readDataOfLength_fromOffset_toDestination_completionHandlerSelector = mkSelector "readDataOfLength:fromOffset:toDestination:completionHandler:"
 
 -- | @Selector@ for @readDataOfLength:fromOffset:completionHandler:@
-readDataOfLength_fromOffset_completionHandlerSelector :: Selector
+readDataOfLength_fromOffset_completionHandlerSelector :: Selector '[CULong, CLong, Ptr ()] ()
 readDataOfLength_fromOffset_completionHandlerSelector = mkSelector "readDataOfLength:fromOffset:completionHandler:"
 
 -- | @Selector@ for @availableLengthAtOffset:@
-availableLengthAtOffsetSelector :: Selector
+availableLengthAtOffsetSelector :: Selector '[CLong] CLong
 availableLengthAtOffsetSelector = mkSelector "availableLengthAtOffset:"
 
 -- | @Selector@ for @byteSourceForRelatedFileName:error:@
-byteSourceForRelatedFileName_errorSelector :: Selector
+byteSourceForRelatedFileName_errorSelector :: Selector '[Id NSString, Id NSError] (Id MEByteSource)
 byteSourceForRelatedFileName_errorSelector = mkSelector "byteSourceForRelatedFileName:error:"
 
 -- | @Selector@ for @fileName@
-fileNameSelector :: Selector
+fileNameSelector :: Selector '[] (Id NSString)
 fileNameSelector = mkSelector "fileName"
 
 -- | @Selector@ for @fileLength@
-fileLengthSelector :: Selector
+fileLengthSelector :: Selector '[] CLong
 fileLengthSelector = mkSelector "fileLength"
 
 -- | @Selector@ for @relatedFileNamesInSameDirectory@
-relatedFileNamesInSameDirectorySelector :: Selector
+relatedFileNamesInSameDirectorySelector :: Selector '[] (Id NSArray)
 relatedFileNamesInSameDirectorySelector = mkSelector "relatedFileNamesInSameDirectory"
 

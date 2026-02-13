@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,44 +38,40 @@ module ObjC.AVFoundation.AVCaptureVideoDataOutput
   , setPreparesCellularRadioForNetworkConnection
   , preservesDynamicHDRMetadata
   , setPreservesDynamicHDRMetadata
+  , alwaysDiscardsLateVideoFramesSelector
+  , automaticallyConfiguresOutputBufferDimensionsSelector
+  , availableVideoCVPixelFormatTypesSelector
+  , availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector
+  , availableVideoCodecTypesSelector
+  , deliversPreviewSizedOutputBuffersSelector
   , initSelector
   , newSelector
-  , setSampleBufferDelegate_queueSelector
+  , preparesCellularRadioForNetworkConnectionSelector
+  , preservesDynamicHDRMetadataSelector
+  , recommendedMediaTimeScaleForAssetWriterSelector
+  , recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector
   , recommendedVideoSettingsForAssetWriterWithOutputFileTypeSelector
-  , availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector
   , recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector
-  , recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector
-  , sampleBufferDelegateSelector
   , sampleBufferCallbackQueueSelector
-  , videoSettingsSelector
-  , setVideoSettingsSelector
-  , recommendedMediaTimeScaleForAssetWriterSelector
-  , availableVideoCVPixelFormatTypesSelector
-  , availableVideoCodecTypesSelector
-  , alwaysDiscardsLateVideoFramesSelector
+  , sampleBufferDelegateSelector
   , setAlwaysDiscardsLateVideoFramesSelector
-  , automaticallyConfiguresOutputBufferDimensionsSelector
   , setAutomaticallyConfiguresOutputBufferDimensionsSelector
-  , deliversPreviewSizedOutputBuffersSelector
   , setDeliversPreviewSizedOutputBuffersSelector
-  , preparesCellularRadioForNetworkConnectionSelector
   , setPreparesCellularRadioForNetworkConnectionSelector
-  , preservesDynamicHDRMetadataSelector
   , setPreservesDynamicHDRMetadataSelector
+  , setSampleBufferDelegate_queueSelector
+  , setVideoSettingsSelector
+  , videoSettingsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,15 +80,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id AVCaptureVideoDataOutput)
-init_ avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureVideoDataOutput =
+  sendOwnedMessage avCaptureVideoDataOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureVideoDataOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureVideoDataOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setSampleBufferDelegate:queue:
 --
@@ -109,9 +106,8 @@ new  =
 --
 -- ObjC selector: @- setSampleBufferDelegate:queue:@
 setSampleBufferDelegate_queue :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSObject sampleBufferCallbackQueue) => avCaptureVideoDataOutput -> RawId -> sampleBufferCallbackQueue -> IO ()
-setSampleBufferDelegate_queue avCaptureVideoDataOutput  sampleBufferDelegate sampleBufferCallbackQueue =
-  withObjCPtr sampleBufferCallbackQueue $ \raw_sampleBufferCallbackQueue ->
-      sendMsg avCaptureVideoDataOutput (mkSelector "setSampleBufferDelegate:queue:") retVoid [argPtr (castPtr (unRawId sampleBufferDelegate) :: Ptr ()), argPtr (castPtr raw_sampleBufferCallbackQueue :: Ptr ())]
+setSampleBufferDelegate_queue avCaptureVideoDataOutput sampleBufferDelegate sampleBufferCallbackQueue =
+  sendMessage avCaptureVideoDataOutput setSampleBufferDelegate_queueSelector sampleBufferDelegate (toNSObject sampleBufferCallbackQueue)
 
 -- | recommendedVideoSettingsForAssetWriterWithOutputFileType:
 --
@@ -131,9 +127,8 @@ setSampleBufferDelegate_queue avCaptureVideoDataOutput  sampleBufferDelegate sam
 --
 -- ObjC selector: @- recommendedVideoSettingsForAssetWriterWithOutputFileType:@
 recommendedVideoSettingsForAssetWriterWithOutputFileType :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSString outputFileType) => avCaptureVideoDataOutput -> outputFileType -> IO (Id NSDictionary)
-recommendedVideoSettingsForAssetWriterWithOutputFileType avCaptureVideoDataOutput  outputFileType =
-  withObjCPtr outputFileType $ \raw_outputFileType ->
-      sendMsg avCaptureVideoDataOutput (mkSelector "recommendedVideoSettingsForAssetWriterWithOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+recommendedVideoSettingsForAssetWriterWithOutputFileType avCaptureVideoDataOutput outputFileType =
+  sendMessage avCaptureVideoDataOutput recommendedVideoSettingsForAssetWriterWithOutputFileTypeSelector (toNSString outputFileType)
 
 -- | availableVideoCodecTypesForAssetWriterWithOutputFileType:
 --
@@ -147,9 +142,8 @@ recommendedVideoSettingsForAssetWriterWithOutputFileType avCaptureVideoDataOutpu
 --
 -- ObjC selector: @- availableVideoCodecTypesForAssetWriterWithOutputFileType:@
 availableVideoCodecTypesForAssetWriterWithOutputFileType :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSString outputFileType) => avCaptureVideoDataOutput -> outputFileType -> IO (Id NSArray)
-availableVideoCodecTypesForAssetWriterWithOutputFileType avCaptureVideoDataOutput  outputFileType =
-  withObjCPtr outputFileType $ \raw_outputFileType ->
-      sendMsg avCaptureVideoDataOutput (mkSelector "availableVideoCodecTypesForAssetWriterWithOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+availableVideoCodecTypesForAssetWriterWithOutputFileType avCaptureVideoDataOutput outputFileType =
+  sendMessage avCaptureVideoDataOutput availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector (toNSString outputFileType)
 
 -- | recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:
 --
@@ -173,10 +167,8 @@ availableVideoCodecTypesForAssetWriterWithOutputFileType avCaptureVideoDataOutpu
 --
 -- ObjC selector: @- recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:@
 recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSString videoCodecType, IsNSString outputFileType) => avCaptureVideoDataOutput -> videoCodecType -> outputFileType -> IO (Id NSDictionary)
-recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType avCaptureVideoDataOutput  videoCodecType outputFileType =
-  withObjCPtr videoCodecType $ \raw_videoCodecType ->
-    withObjCPtr outputFileType $ \raw_outputFileType ->
-        sendMsg avCaptureVideoDataOutput (mkSelector "recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_videoCodecType :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType avCaptureVideoDataOutput videoCodecType outputFileType =
+  sendMessage avCaptureVideoDataOutput recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector (toNSString videoCodecType) (toNSString outputFileType)
 
 -- | recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:outputFileURL:
 --
@@ -206,11 +198,8 @@ recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType avCaptureVid
 --
 -- ObjC selector: @- recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:outputFileURL:@
 recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURL :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSString videoCodecType, IsNSString outputFileType, IsNSURL outputFileURL) => avCaptureVideoDataOutput -> videoCodecType -> outputFileType -> outputFileURL -> IO (Id NSDictionary)
-recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURL avCaptureVideoDataOutput  videoCodecType outputFileType outputFileURL =
-  withObjCPtr videoCodecType $ \raw_videoCodecType ->
-    withObjCPtr outputFileType $ \raw_outputFileType ->
-      withObjCPtr outputFileURL $ \raw_outputFileURL ->
-          sendMsg avCaptureVideoDataOutput (mkSelector "recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:outputFileURL:") (retPtr retVoid) [argPtr (castPtr raw_videoCodecType :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ()), argPtr (castPtr raw_outputFileURL :: Ptr ())] >>= retainedObject . castPtr
+recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURL avCaptureVideoDataOutput videoCodecType outputFileType outputFileURL =
+  sendMessage avCaptureVideoDataOutput recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector (toNSString videoCodecType) (toNSString outputFileType) (toNSURL outputFileURL)
 
 -- | Recommends movie-level metadata for a particular video codec type and output file type, to be used with an asset writer input.
 --
@@ -226,10 +215,8 @@ recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileUR
 --
 -- ObjC selector: @- recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:@
 recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSString videoCodecType, IsNSString outputFileType) => avCaptureVideoDataOutput -> videoCodecType -> outputFileType -> IO (Id NSArray)
-recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType avCaptureVideoDataOutput  videoCodecType outputFileType =
-  withObjCPtr videoCodecType $ \raw_videoCodecType ->
-    withObjCPtr outputFileType $ \raw_outputFileType ->
-        sendMsg avCaptureVideoDataOutput (mkSelector "recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:") (retPtr retVoid) [argPtr (castPtr raw_videoCodecType :: Ptr ()), argPtr (castPtr raw_outputFileType :: Ptr ())] >>= retainedObject . castPtr
+recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType avCaptureVideoDataOutput videoCodecType outputFileType =
+  sendMessage avCaptureVideoDataOutput recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector (toNSString videoCodecType) (toNSString outputFileType)
 
 -- | sampleBufferDelegate
 --
@@ -239,8 +226,8 @@ recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileType avCaptureVid
 --
 -- ObjC selector: @- sampleBufferDelegate@
 sampleBufferDelegate :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO RawId
-sampleBufferDelegate avCaptureVideoDataOutput  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureVideoDataOutput (mkSelector "sampleBufferDelegate") (retPtr retVoid) []
+sampleBufferDelegate avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput sampleBufferDelegateSelector
 
 -- | sampleBufferCallbackQueue
 --
@@ -250,8 +237,8 @@ sampleBufferDelegate avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- sampleBufferCallbackQueue@
 sampleBufferCallbackQueue :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSObject)
-sampleBufferCallbackQueue avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "sampleBufferCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferCallbackQueue avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput sampleBufferCallbackQueueSelector
 
 -- | videoSettings
 --
@@ -263,8 +250,8 @@ sampleBufferCallbackQueue avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- videoSettings@
 videoSettings :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSDictionary)
-videoSettings avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "videoSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoSettings avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput videoSettingsSelector
 
 -- | videoSettings
 --
@@ -276,9 +263,8 @@ videoSettings avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setVideoSettings:@
 setVideoSettings :: (IsAVCaptureVideoDataOutput avCaptureVideoDataOutput, IsNSDictionary value) => avCaptureVideoDataOutput -> value -> IO ()
-setVideoSettings avCaptureVideoDataOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureVideoDataOutput (mkSelector "setVideoSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoSettings avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setVideoSettingsSelector (toNSDictionary value)
 
 -- | Indicates the recommended media timescale for the video track.
 --
@@ -286,8 +272,8 @@ setVideoSettings avCaptureVideoDataOutput  value =
 --
 -- ObjC selector: @- recommendedMediaTimeScaleForAssetWriter@
 recommendedMediaTimeScaleForAssetWriter :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO CInt
-recommendedMediaTimeScaleForAssetWriter avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "recommendedMediaTimeScaleForAssetWriter") retCInt []
+recommendedMediaTimeScaleForAssetWriter avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput recommendedMediaTimeScaleForAssetWriterSelector
 
 -- | availableVideoCVPixelFormatTypes
 --
@@ -297,8 +283,8 @@ recommendedMediaTimeScaleForAssetWriter avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- availableVideoCVPixelFormatTypes@
 availableVideoCVPixelFormatTypes :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSArray)
-availableVideoCVPixelFormatTypes avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "availableVideoCVPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableVideoCVPixelFormatTypes avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput availableVideoCVPixelFormatTypesSelector
 
 -- | availableVideoCodecTypes
 --
@@ -308,8 +294,8 @@ availableVideoCVPixelFormatTypes avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- availableVideoCodecTypes@
 availableVideoCodecTypes :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO (Id NSArray)
-availableVideoCodecTypes avCaptureVideoDataOutput  =
-    sendMsg avCaptureVideoDataOutput (mkSelector "availableVideoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableVideoCodecTypes avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput availableVideoCodecTypesSelector
 
 -- | alwaysDiscardsLateVideoFrames
 --
@@ -319,8 +305,8 @@ availableVideoCodecTypes avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- alwaysDiscardsLateVideoFrames@
 alwaysDiscardsLateVideoFrames :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO Bool
-alwaysDiscardsLateVideoFrames avCaptureVideoDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoDataOutput (mkSelector "alwaysDiscardsLateVideoFrames") retCULong []
+alwaysDiscardsLateVideoFrames avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput alwaysDiscardsLateVideoFramesSelector
 
 -- | alwaysDiscardsLateVideoFrames
 --
@@ -330,8 +316,8 @@ alwaysDiscardsLateVideoFrames avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setAlwaysDiscardsLateVideoFrames:@
 setAlwaysDiscardsLateVideoFrames :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> Bool -> IO ()
-setAlwaysDiscardsLateVideoFrames avCaptureVideoDataOutput  value =
-    sendMsg avCaptureVideoDataOutput (mkSelector "setAlwaysDiscardsLateVideoFrames:") retVoid [argCULong (if value then 1 else 0)]
+setAlwaysDiscardsLateVideoFrames avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setAlwaysDiscardsLateVideoFramesSelector value
 
 -- | automaticallyConfiguresOutputBufferDimensions
 --
@@ -341,8 +327,8 @@ setAlwaysDiscardsLateVideoFrames avCaptureVideoDataOutput  value =
 --
 -- ObjC selector: @- automaticallyConfiguresOutputBufferDimensions@
 automaticallyConfiguresOutputBufferDimensions :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO Bool
-automaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoDataOutput (mkSelector "automaticallyConfiguresOutputBufferDimensions") retCULong []
+automaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput automaticallyConfiguresOutputBufferDimensionsSelector
 
 -- | automaticallyConfiguresOutputBufferDimensions
 --
@@ -352,8 +338,8 @@ automaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setAutomaticallyConfiguresOutputBufferDimensions:@
 setAutomaticallyConfiguresOutputBufferDimensions :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> Bool -> IO ()
-setAutomaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput  value =
-    sendMsg avCaptureVideoDataOutput (mkSelector "setAutomaticallyConfiguresOutputBufferDimensions:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setAutomaticallyConfiguresOutputBufferDimensionsSelector value
 
 -- | deliversPreviewSizedOutputBuffers
 --
@@ -365,8 +351,8 @@ setAutomaticallyConfiguresOutputBufferDimensions avCaptureVideoDataOutput  value
 --
 -- ObjC selector: @- deliversPreviewSizedOutputBuffers@
 deliversPreviewSizedOutputBuffers :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO Bool
-deliversPreviewSizedOutputBuffers avCaptureVideoDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoDataOutput (mkSelector "deliversPreviewSizedOutputBuffers") retCULong []
+deliversPreviewSizedOutputBuffers avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput deliversPreviewSizedOutputBuffersSelector
 
 -- | deliversPreviewSizedOutputBuffers
 --
@@ -378,8 +364,8 @@ deliversPreviewSizedOutputBuffers avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setDeliversPreviewSizedOutputBuffers:@
 setDeliversPreviewSizedOutputBuffers :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> Bool -> IO ()
-setDeliversPreviewSizedOutputBuffers avCaptureVideoDataOutput  value =
-    sendMsg avCaptureVideoDataOutput (mkSelector "setDeliversPreviewSizedOutputBuffers:") retVoid [argCULong (if value then 1 else 0)]
+setDeliversPreviewSizedOutputBuffers avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setDeliversPreviewSizedOutputBuffersSelector value
 
 -- | Indicates whether the receiver should prepare the cellular radio for imminent network activity.
 --
@@ -389,8 +375,8 @@ setDeliversPreviewSizedOutputBuffers avCaptureVideoDataOutput  value =
 --
 -- ObjC selector: @- preparesCellularRadioForNetworkConnection@
 preparesCellularRadioForNetworkConnection :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO Bool
-preparesCellularRadioForNetworkConnection avCaptureVideoDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoDataOutput (mkSelector "preparesCellularRadioForNetworkConnection") retCULong []
+preparesCellularRadioForNetworkConnection avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput preparesCellularRadioForNetworkConnectionSelector
 
 -- | Indicates whether the receiver should prepare the cellular radio for imminent network activity.
 --
@@ -400,8 +386,8 @@ preparesCellularRadioForNetworkConnection avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setPreparesCellularRadioForNetworkConnection:@
 setPreparesCellularRadioForNetworkConnection :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> Bool -> IO ()
-setPreparesCellularRadioForNetworkConnection avCaptureVideoDataOutput  value =
-    sendMsg avCaptureVideoDataOutput (mkSelector "setPreparesCellularRadioForNetworkConnection:") retVoid [argCULong (if value then 1 else 0)]
+setPreparesCellularRadioForNetworkConnection avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setPreparesCellularRadioForNetworkConnectionSelector value
 
 -- | Indicates whether the receiver should preserve dynamic HDR metadata as an attachment on the output sample buffer's underlying pixel buffer.
 --
@@ -409,8 +395,8 @@ setPreparesCellularRadioForNetworkConnection avCaptureVideoDataOutput  value =
 --
 -- ObjC selector: @- preservesDynamicHDRMetadata@
 preservesDynamicHDRMetadata :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> IO Bool
-preservesDynamicHDRMetadata avCaptureVideoDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoDataOutput (mkSelector "preservesDynamicHDRMetadata") retCULong []
+preservesDynamicHDRMetadata avCaptureVideoDataOutput =
+  sendMessage avCaptureVideoDataOutput preservesDynamicHDRMetadataSelector
 
 -- | Indicates whether the receiver should preserve dynamic HDR metadata as an attachment on the output sample buffer's underlying pixel buffer.
 --
@@ -418,110 +404,110 @@ preservesDynamicHDRMetadata avCaptureVideoDataOutput  =
 --
 -- ObjC selector: @- setPreservesDynamicHDRMetadata:@
 setPreservesDynamicHDRMetadata :: IsAVCaptureVideoDataOutput avCaptureVideoDataOutput => avCaptureVideoDataOutput -> Bool -> IO ()
-setPreservesDynamicHDRMetadata avCaptureVideoDataOutput  value =
-    sendMsg avCaptureVideoDataOutput (mkSelector "setPreservesDynamicHDRMetadata:") retVoid [argCULong (if value then 1 else 0)]
+setPreservesDynamicHDRMetadata avCaptureVideoDataOutput value =
+  sendMessage avCaptureVideoDataOutput setPreservesDynamicHDRMetadataSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureVideoDataOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureVideoDataOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setSampleBufferDelegate:queue:@
-setSampleBufferDelegate_queueSelector :: Selector
+setSampleBufferDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setSampleBufferDelegate_queueSelector = mkSelector "setSampleBufferDelegate:queue:"
 
 -- | @Selector@ for @recommendedVideoSettingsForAssetWriterWithOutputFileType:@
-recommendedVideoSettingsForAssetWriterWithOutputFileTypeSelector :: Selector
+recommendedVideoSettingsForAssetWriterWithOutputFileTypeSelector :: Selector '[Id NSString] (Id NSDictionary)
 recommendedVideoSettingsForAssetWriterWithOutputFileTypeSelector = mkSelector "recommendedVideoSettingsForAssetWriterWithOutputFileType:"
 
 -- | @Selector@ for @availableVideoCodecTypesForAssetWriterWithOutputFileType:@
-availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector :: Selector
+availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector :: Selector '[Id NSString] (Id NSArray)
 availableVideoCodecTypesForAssetWriterWithOutputFileTypeSelector = mkSelector "availableVideoCodecTypesForAssetWriterWithOutputFileType:"
 
 -- | @Selector@ for @recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:@
-recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector :: Selector
+recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector :: Selector '[Id NSString, Id NSString] (Id NSDictionary)
 recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileTypeSelector = mkSelector "recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:"
 
 -- | @Selector@ for @recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:outputFileURL:@
-recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector :: Selector
+recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector :: Selector '[Id NSString, Id NSString, Id NSURL] (Id NSDictionary)
 recommendedVideoSettingsForVideoCodecType_assetWriterOutputFileType_outputFileURLSelector = mkSelector "recommendedVideoSettingsForVideoCodecType:assetWriterOutputFileType:outputFileURL:"
 
 -- | @Selector@ for @recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:@
-recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector :: Selector
+recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector :: Selector '[Id NSString, Id NSString] (Id NSArray)
 recommendedMovieMetadataForVideoCodecType_assetWriterOutputFileTypeSelector = mkSelector "recommendedMovieMetadataForVideoCodecType:assetWriterOutputFileType:"
 
 -- | @Selector@ for @sampleBufferDelegate@
-sampleBufferDelegateSelector :: Selector
+sampleBufferDelegateSelector :: Selector '[] RawId
 sampleBufferDelegateSelector = mkSelector "sampleBufferDelegate"
 
 -- | @Selector@ for @sampleBufferCallbackQueue@
-sampleBufferCallbackQueueSelector :: Selector
+sampleBufferCallbackQueueSelector :: Selector '[] (Id NSObject)
 sampleBufferCallbackQueueSelector = mkSelector "sampleBufferCallbackQueue"
 
 -- | @Selector@ for @videoSettings@
-videoSettingsSelector :: Selector
+videoSettingsSelector :: Selector '[] (Id NSDictionary)
 videoSettingsSelector = mkSelector "videoSettings"
 
 -- | @Selector@ for @setVideoSettings:@
-setVideoSettingsSelector :: Selector
+setVideoSettingsSelector :: Selector '[Id NSDictionary] ()
 setVideoSettingsSelector = mkSelector "setVideoSettings:"
 
 -- | @Selector@ for @recommendedMediaTimeScaleForAssetWriter@
-recommendedMediaTimeScaleForAssetWriterSelector :: Selector
+recommendedMediaTimeScaleForAssetWriterSelector :: Selector '[] CInt
 recommendedMediaTimeScaleForAssetWriterSelector = mkSelector "recommendedMediaTimeScaleForAssetWriter"
 
 -- | @Selector@ for @availableVideoCVPixelFormatTypes@
-availableVideoCVPixelFormatTypesSelector :: Selector
+availableVideoCVPixelFormatTypesSelector :: Selector '[] (Id NSArray)
 availableVideoCVPixelFormatTypesSelector = mkSelector "availableVideoCVPixelFormatTypes"
 
 -- | @Selector@ for @availableVideoCodecTypes@
-availableVideoCodecTypesSelector :: Selector
+availableVideoCodecTypesSelector :: Selector '[] (Id NSArray)
 availableVideoCodecTypesSelector = mkSelector "availableVideoCodecTypes"
 
 -- | @Selector@ for @alwaysDiscardsLateVideoFrames@
-alwaysDiscardsLateVideoFramesSelector :: Selector
+alwaysDiscardsLateVideoFramesSelector :: Selector '[] Bool
 alwaysDiscardsLateVideoFramesSelector = mkSelector "alwaysDiscardsLateVideoFrames"
 
 -- | @Selector@ for @setAlwaysDiscardsLateVideoFrames:@
-setAlwaysDiscardsLateVideoFramesSelector :: Selector
+setAlwaysDiscardsLateVideoFramesSelector :: Selector '[Bool] ()
 setAlwaysDiscardsLateVideoFramesSelector = mkSelector "setAlwaysDiscardsLateVideoFrames:"
 
 -- | @Selector@ for @automaticallyConfiguresOutputBufferDimensions@
-automaticallyConfiguresOutputBufferDimensionsSelector :: Selector
+automaticallyConfiguresOutputBufferDimensionsSelector :: Selector '[] Bool
 automaticallyConfiguresOutputBufferDimensionsSelector = mkSelector "automaticallyConfiguresOutputBufferDimensions"
 
 -- | @Selector@ for @setAutomaticallyConfiguresOutputBufferDimensions:@
-setAutomaticallyConfiguresOutputBufferDimensionsSelector :: Selector
+setAutomaticallyConfiguresOutputBufferDimensionsSelector :: Selector '[Bool] ()
 setAutomaticallyConfiguresOutputBufferDimensionsSelector = mkSelector "setAutomaticallyConfiguresOutputBufferDimensions:"
 
 -- | @Selector@ for @deliversPreviewSizedOutputBuffers@
-deliversPreviewSizedOutputBuffersSelector :: Selector
+deliversPreviewSizedOutputBuffersSelector :: Selector '[] Bool
 deliversPreviewSizedOutputBuffersSelector = mkSelector "deliversPreviewSizedOutputBuffers"
 
 -- | @Selector@ for @setDeliversPreviewSizedOutputBuffers:@
-setDeliversPreviewSizedOutputBuffersSelector :: Selector
+setDeliversPreviewSizedOutputBuffersSelector :: Selector '[Bool] ()
 setDeliversPreviewSizedOutputBuffersSelector = mkSelector "setDeliversPreviewSizedOutputBuffers:"
 
 -- | @Selector@ for @preparesCellularRadioForNetworkConnection@
-preparesCellularRadioForNetworkConnectionSelector :: Selector
+preparesCellularRadioForNetworkConnectionSelector :: Selector '[] Bool
 preparesCellularRadioForNetworkConnectionSelector = mkSelector "preparesCellularRadioForNetworkConnection"
 
 -- | @Selector@ for @setPreparesCellularRadioForNetworkConnection:@
-setPreparesCellularRadioForNetworkConnectionSelector :: Selector
+setPreparesCellularRadioForNetworkConnectionSelector :: Selector '[Bool] ()
 setPreparesCellularRadioForNetworkConnectionSelector = mkSelector "setPreparesCellularRadioForNetworkConnection:"
 
 -- | @Selector@ for @preservesDynamicHDRMetadata@
-preservesDynamicHDRMetadataSelector :: Selector
+preservesDynamicHDRMetadataSelector :: Selector '[] Bool
 preservesDynamicHDRMetadataSelector = mkSelector "preservesDynamicHDRMetadata"
 
 -- | @Selector@ for @setPreservesDynamicHDRMetadata:@
-setPreservesDynamicHDRMetadataSelector :: Selector
+setPreservesDynamicHDRMetadataSelector :: Selector '[Bool] ()
 setPreservesDynamicHDRMetadataSelector = mkSelector "setPreservesDynamicHDRMetadata:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Intents.INImageNoteContent
   , IsINImageNoteContent(..)
   , initWithImage
   , image
-  , initWithImageSelector
   , imageSelector
+  , initWithImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithImage:@
 initWithImage :: (IsINImageNoteContent inImageNoteContent, IsINImage image) => inImageNoteContent -> image -> IO (Id INImageNoteContent)
-initWithImage inImageNoteContent  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg inImageNoteContent (mkSelector "initWithImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initWithImage inImageNoteContent image =
+  sendOwnedMessage inImageNoteContent initWithImageSelector (toINImage image)
 
 -- | @- image@
 image :: IsINImageNoteContent inImageNoteContent => inImageNoteContent -> IO (Id INImage)
-image inImageNoteContent  =
-    sendMsg inImageNoteContent (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image inImageNoteContent =
+  sendMessage inImageNoteContent imageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithImage:@
-initWithImageSelector :: Selector
+initWithImageSelector :: Selector '[Id INImage] (Id INImageNoteContent)
 initWithImageSelector = mkSelector "initWithImage:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id INImage)
 imageSelector = mkSelector "image"
 

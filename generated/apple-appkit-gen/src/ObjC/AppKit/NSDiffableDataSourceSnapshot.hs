@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,44 +32,40 @@ module ObjC.AppKit.NSDiffableDataSourceSnapshot
   , numberOfSections
   , sectionIdentifiers
   , itemIdentifiers
-  , numberOfItemsInSectionSelector
-  , itemIdentifiersInSectionWithIdentifierSelector
-  , sectionIdentifierForSectionContainingItemIdentifierSelector
-  , indexOfItemIdentifierSelector
-  , indexOfSectionIdentifierSelector
   , appendItemsWithIdentifiersSelector
   , appendItemsWithIdentifiers_intoSectionWithIdentifierSelector
-  , insertItemsWithIdentifiers_beforeItemWithIdentifierSelector
-  , insertItemsWithIdentifiers_afterItemWithIdentifierSelector
-  , deleteItemsWithIdentifiersSelector
-  , deleteAllItemsSelector
-  , moveItemWithIdentifier_beforeItemWithIdentifierSelector
-  , moveItemWithIdentifier_afterItemWithIdentifierSelector
-  , reloadItemsWithIdentifiersSelector
   , appendSectionsWithIdentifiersSelector
-  , insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector
-  , insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector
+  , deleteAllItemsSelector
+  , deleteItemsWithIdentifiersSelector
   , deleteSectionsWithIdentifiersSelector
-  , moveSectionWithIdentifier_beforeSectionWithIdentifierSelector
+  , indexOfItemIdentifierSelector
+  , indexOfSectionIdentifierSelector
+  , insertItemsWithIdentifiers_afterItemWithIdentifierSelector
+  , insertItemsWithIdentifiers_beforeItemWithIdentifierSelector
+  , insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector
+  , insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector
+  , itemIdentifiersInSectionWithIdentifierSelector
+  , itemIdentifiersSelector
+  , moveItemWithIdentifier_afterItemWithIdentifierSelector
+  , moveItemWithIdentifier_beforeItemWithIdentifierSelector
   , moveSectionWithIdentifier_afterSectionWithIdentifierSelector
-  , reloadSectionsWithIdentifiersSelector
+  , moveSectionWithIdentifier_beforeSectionWithIdentifierSelector
+  , numberOfItemsInSectionSelector
   , numberOfItemsSelector
   , numberOfSectionsSelector
+  , reloadItemsWithIdentifiersSelector
+  , reloadSectionsWithIdentifiersSelector
+  , sectionIdentifierForSectionContainingItemIdentifierSelector
   , sectionIdentifiersSelector
-  , itemIdentifiersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,241 +74,230 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- numberOfItemsInSection:@
 numberOfItemsInSection :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> IO CLong
-numberOfItemsInSection nsDiffableDataSourceSnapshot  sectionIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "numberOfItemsInSection:") retCLong [argPtr (castPtr (unRawId sectionIdentifier) :: Ptr ())]
+numberOfItemsInSection nsDiffableDataSourceSnapshot sectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot numberOfItemsInSectionSelector sectionIdentifier
 
 -- | @- itemIdentifiersInSectionWithIdentifier:@
 itemIdentifiersInSectionWithIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> IO (Id NSArray)
-itemIdentifiersInSectionWithIdentifier nsDiffableDataSourceSnapshot  sectionIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "itemIdentifiersInSectionWithIdentifier:") (retPtr retVoid) [argPtr (castPtr (unRawId sectionIdentifier) :: Ptr ())] >>= retainedObject . castPtr
+itemIdentifiersInSectionWithIdentifier nsDiffableDataSourceSnapshot sectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot itemIdentifiersInSectionWithIdentifierSelector sectionIdentifier
 
 -- | @- sectionIdentifierForSectionContainingItemIdentifier:@
 sectionIdentifierForSectionContainingItemIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> IO RawId
-sectionIdentifierForSectionContainingItemIdentifier nsDiffableDataSourceSnapshot  itemIdentifier =
-    fmap (RawId . castPtr) $ sendMsg nsDiffableDataSourceSnapshot (mkSelector "sectionIdentifierForSectionContainingItemIdentifier:") (retPtr retVoid) [argPtr (castPtr (unRawId itemIdentifier) :: Ptr ())]
+sectionIdentifierForSectionContainingItemIdentifier nsDiffableDataSourceSnapshot itemIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot sectionIdentifierForSectionContainingItemIdentifierSelector itemIdentifier
 
 -- | @- indexOfItemIdentifier:@
 indexOfItemIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> IO CLong
-indexOfItemIdentifier nsDiffableDataSourceSnapshot  itemIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "indexOfItemIdentifier:") retCLong [argPtr (castPtr (unRawId itemIdentifier) :: Ptr ())]
+indexOfItemIdentifier nsDiffableDataSourceSnapshot itemIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot indexOfItemIdentifierSelector itemIdentifier
 
 -- | @- indexOfSectionIdentifier:@
 indexOfSectionIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> IO CLong
-indexOfSectionIdentifier nsDiffableDataSourceSnapshot  sectionIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "indexOfSectionIdentifier:") retCLong [argPtr (castPtr (unRawId sectionIdentifier) :: Ptr ())]
+indexOfSectionIdentifier nsDiffableDataSourceSnapshot sectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot indexOfSectionIdentifierSelector sectionIdentifier
 
 -- | @- appendItemsWithIdentifiers:@
 appendItemsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> IO ()
-appendItemsWithIdentifiers nsDiffableDataSourceSnapshot  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "appendItemsWithIdentifiers:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ())]
+appendItemsWithIdentifiers nsDiffableDataSourceSnapshot identifiers =
+  sendMessage nsDiffableDataSourceSnapshot appendItemsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | @- appendItemsWithIdentifiers:intoSectionWithIdentifier:@
 appendItemsWithIdentifiers_intoSectionWithIdentifier :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> RawId -> IO ()
-appendItemsWithIdentifiers_intoSectionWithIdentifier nsDiffableDataSourceSnapshot  identifiers sectionIdentifier =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "appendItemsWithIdentifiers:intoSectionWithIdentifier:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr (unRawId sectionIdentifier) :: Ptr ())]
+appendItemsWithIdentifiers_intoSectionWithIdentifier nsDiffableDataSourceSnapshot identifiers sectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot appendItemsWithIdentifiers_intoSectionWithIdentifierSelector (toNSArray identifiers) sectionIdentifier
 
 -- | @- insertItemsWithIdentifiers:beforeItemWithIdentifier:@
 insertItemsWithIdentifiers_beforeItemWithIdentifier :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> RawId -> IO ()
-insertItemsWithIdentifiers_beforeItemWithIdentifier nsDiffableDataSourceSnapshot  identifiers itemIdentifier =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "insertItemsWithIdentifiers:beforeItemWithIdentifier:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr (unRawId itemIdentifier) :: Ptr ())]
+insertItemsWithIdentifiers_beforeItemWithIdentifier nsDiffableDataSourceSnapshot identifiers itemIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot insertItemsWithIdentifiers_beforeItemWithIdentifierSelector (toNSArray identifiers) itemIdentifier
 
 -- | @- insertItemsWithIdentifiers:afterItemWithIdentifier:@
 insertItemsWithIdentifiers_afterItemWithIdentifier :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> RawId -> IO ()
-insertItemsWithIdentifiers_afterItemWithIdentifier nsDiffableDataSourceSnapshot  identifiers itemIdentifier =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "insertItemsWithIdentifiers:afterItemWithIdentifier:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr (unRawId itemIdentifier) :: Ptr ())]
+insertItemsWithIdentifiers_afterItemWithIdentifier nsDiffableDataSourceSnapshot identifiers itemIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot insertItemsWithIdentifiers_afterItemWithIdentifierSelector (toNSArray identifiers) itemIdentifier
 
 -- | @- deleteItemsWithIdentifiers:@
 deleteItemsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> IO ()
-deleteItemsWithIdentifiers nsDiffableDataSourceSnapshot  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "deleteItemsWithIdentifiers:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ())]
+deleteItemsWithIdentifiers nsDiffableDataSourceSnapshot identifiers =
+  sendMessage nsDiffableDataSourceSnapshot deleteItemsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | @- deleteAllItems@
 deleteAllItems :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> IO ()
-deleteAllItems nsDiffableDataSourceSnapshot  =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "deleteAllItems") retVoid []
+deleteAllItems nsDiffableDataSourceSnapshot =
+  sendMessage nsDiffableDataSourceSnapshot deleteAllItemsSelector
 
 -- | @- moveItemWithIdentifier:beforeItemWithIdentifier:@
 moveItemWithIdentifier_beforeItemWithIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> RawId -> IO ()
-moveItemWithIdentifier_beforeItemWithIdentifier nsDiffableDataSourceSnapshot  fromIdentifier toIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "moveItemWithIdentifier:beforeItemWithIdentifier:") retVoid [argPtr (castPtr (unRawId fromIdentifier) :: Ptr ()), argPtr (castPtr (unRawId toIdentifier) :: Ptr ())]
+moveItemWithIdentifier_beforeItemWithIdentifier nsDiffableDataSourceSnapshot fromIdentifier toIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot moveItemWithIdentifier_beforeItemWithIdentifierSelector fromIdentifier toIdentifier
 
 -- | @- moveItemWithIdentifier:afterItemWithIdentifier:@
 moveItemWithIdentifier_afterItemWithIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> RawId -> IO ()
-moveItemWithIdentifier_afterItemWithIdentifier nsDiffableDataSourceSnapshot  fromIdentifier toIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "moveItemWithIdentifier:afterItemWithIdentifier:") retVoid [argPtr (castPtr (unRawId fromIdentifier) :: Ptr ()), argPtr (castPtr (unRawId toIdentifier) :: Ptr ())]
+moveItemWithIdentifier_afterItemWithIdentifier nsDiffableDataSourceSnapshot fromIdentifier toIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot moveItemWithIdentifier_afterItemWithIdentifierSelector fromIdentifier toIdentifier
 
 -- | @- reloadItemsWithIdentifiers:@
 reloadItemsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray identifiers) => nsDiffableDataSourceSnapshot -> identifiers -> IO ()
-reloadItemsWithIdentifiers nsDiffableDataSourceSnapshot  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "reloadItemsWithIdentifiers:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ())]
+reloadItemsWithIdentifiers nsDiffableDataSourceSnapshot identifiers =
+  sendMessage nsDiffableDataSourceSnapshot reloadItemsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | @- appendSectionsWithIdentifiers:@
 appendSectionsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray sectionIdentifiers) => nsDiffableDataSourceSnapshot -> sectionIdentifiers -> IO ()
-appendSectionsWithIdentifiers nsDiffableDataSourceSnapshot  sectionIdentifiers =
-  withObjCPtr sectionIdentifiers $ \raw_sectionIdentifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "appendSectionsWithIdentifiers:") retVoid [argPtr (castPtr raw_sectionIdentifiers :: Ptr ())]
+appendSectionsWithIdentifiers nsDiffableDataSourceSnapshot sectionIdentifiers =
+  sendMessage nsDiffableDataSourceSnapshot appendSectionsWithIdentifiersSelector (toNSArray sectionIdentifiers)
 
 -- | @- insertSectionsWithIdentifiers:beforeSectionWithIdentifier:@
 insertSectionsWithIdentifiers_beforeSectionWithIdentifier :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray sectionIdentifiers) => nsDiffableDataSourceSnapshot -> sectionIdentifiers -> RawId -> IO ()
-insertSectionsWithIdentifiers_beforeSectionWithIdentifier nsDiffableDataSourceSnapshot  sectionIdentifiers toSectionIdentifier =
-  withObjCPtr sectionIdentifiers $ \raw_sectionIdentifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "insertSectionsWithIdentifiers:beforeSectionWithIdentifier:") retVoid [argPtr (castPtr raw_sectionIdentifiers :: Ptr ()), argPtr (castPtr (unRawId toSectionIdentifier) :: Ptr ())]
+insertSectionsWithIdentifiers_beforeSectionWithIdentifier nsDiffableDataSourceSnapshot sectionIdentifiers toSectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector (toNSArray sectionIdentifiers) toSectionIdentifier
 
 -- | @- insertSectionsWithIdentifiers:afterSectionWithIdentifier:@
 insertSectionsWithIdentifiers_afterSectionWithIdentifier :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray sectionIdentifiers) => nsDiffableDataSourceSnapshot -> sectionIdentifiers -> RawId -> IO ()
-insertSectionsWithIdentifiers_afterSectionWithIdentifier nsDiffableDataSourceSnapshot  sectionIdentifiers toSectionIdentifier =
-  withObjCPtr sectionIdentifiers $ \raw_sectionIdentifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "insertSectionsWithIdentifiers:afterSectionWithIdentifier:") retVoid [argPtr (castPtr raw_sectionIdentifiers :: Ptr ()), argPtr (castPtr (unRawId toSectionIdentifier) :: Ptr ())]
+insertSectionsWithIdentifiers_afterSectionWithIdentifier nsDiffableDataSourceSnapshot sectionIdentifiers toSectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector (toNSArray sectionIdentifiers) toSectionIdentifier
 
 -- | @- deleteSectionsWithIdentifiers:@
 deleteSectionsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray sectionIdentifiers) => nsDiffableDataSourceSnapshot -> sectionIdentifiers -> IO ()
-deleteSectionsWithIdentifiers nsDiffableDataSourceSnapshot  sectionIdentifiers =
-  withObjCPtr sectionIdentifiers $ \raw_sectionIdentifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "deleteSectionsWithIdentifiers:") retVoid [argPtr (castPtr raw_sectionIdentifiers :: Ptr ())]
+deleteSectionsWithIdentifiers nsDiffableDataSourceSnapshot sectionIdentifiers =
+  sendMessage nsDiffableDataSourceSnapshot deleteSectionsWithIdentifiersSelector (toNSArray sectionIdentifiers)
 
 -- | @- moveSectionWithIdentifier:beforeSectionWithIdentifier:@
 moveSectionWithIdentifier_beforeSectionWithIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> RawId -> IO ()
-moveSectionWithIdentifier_beforeSectionWithIdentifier nsDiffableDataSourceSnapshot  fromSectionIdentifier toSectionIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "moveSectionWithIdentifier:beforeSectionWithIdentifier:") retVoid [argPtr (castPtr (unRawId fromSectionIdentifier) :: Ptr ()), argPtr (castPtr (unRawId toSectionIdentifier) :: Ptr ())]
+moveSectionWithIdentifier_beforeSectionWithIdentifier nsDiffableDataSourceSnapshot fromSectionIdentifier toSectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot moveSectionWithIdentifier_beforeSectionWithIdentifierSelector fromSectionIdentifier toSectionIdentifier
 
 -- | @- moveSectionWithIdentifier:afterSectionWithIdentifier:@
 moveSectionWithIdentifier_afterSectionWithIdentifier :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> RawId -> RawId -> IO ()
-moveSectionWithIdentifier_afterSectionWithIdentifier nsDiffableDataSourceSnapshot  fromSectionIdentifier toSectionIdentifier =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "moveSectionWithIdentifier:afterSectionWithIdentifier:") retVoid [argPtr (castPtr (unRawId fromSectionIdentifier) :: Ptr ()), argPtr (castPtr (unRawId toSectionIdentifier) :: Ptr ())]
+moveSectionWithIdentifier_afterSectionWithIdentifier nsDiffableDataSourceSnapshot fromSectionIdentifier toSectionIdentifier =
+  sendMessage nsDiffableDataSourceSnapshot moveSectionWithIdentifier_afterSectionWithIdentifierSelector fromSectionIdentifier toSectionIdentifier
 
 -- | @- reloadSectionsWithIdentifiers:@
 reloadSectionsWithIdentifiers :: (IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot, IsNSArray sectionIdentifiers) => nsDiffableDataSourceSnapshot -> sectionIdentifiers -> IO ()
-reloadSectionsWithIdentifiers nsDiffableDataSourceSnapshot  sectionIdentifiers =
-  withObjCPtr sectionIdentifiers $ \raw_sectionIdentifiers ->
-      sendMsg nsDiffableDataSourceSnapshot (mkSelector "reloadSectionsWithIdentifiers:") retVoid [argPtr (castPtr raw_sectionIdentifiers :: Ptr ())]
+reloadSectionsWithIdentifiers nsDiffableDataSourceSnapshot sectionIdentifiers =
+  sendMessage nsDiffableDataSourceSnapshot reloadSectionsWithIdentifiersSelector (toNSArray sectionIdentifiers)
 
 -- | @- numberOfItems@
 numberOfItems :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> IO CLong
-numberOfItems nsDiffableDataSourceSnapshot  =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "numberOfItems") retCLong []
+numberOfItems nsDiffableDataSourceSnapshot =
+  sendMessage nsDiffableDataSourceSnapshot numberOfItemsSelector
 
 -- | @- numberOfSections@
 numberOfSections :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> IO CLong
-numberOfSections nsDiffableDataSourceSnapshot  =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "numberOfSections") retCLong []
+numberOfSections nsDiffableDataSourceSnapshot =
+  sendMessage nsDiffableDataSourceSnapshot numberOfSectionsSelector
 
 -- | @- sectionIdentifiers@
 sectionIdentifiers :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> IO (Id NSArray)
-sectionIdentifiers nsDiffableDataSourceSnapshot  =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "sectionIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+sectionIdentifiers nsDiffableDataSourceSnapshot =
+  sendMessage nsDiffableDataSourceSnapshot sectionIdentifiersSelector
 
 -- | @- itemIdentifiers@
 itemIdentifiers :: IsNSDiffableDataSourceSnapshot nsDiffableDataSourceSnapshot => nsDiffableDataSourceSnapshot -> IO (Id NSArray)
-itemIdentifiers nsDiffableDataSourceSnapshot  =
-    sendMsg nsDiffableDataSourceSnapshot (mkSelector "itemIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemIdentifiers nsDiffableDataSourceSnapshot =
+  sendMessage nsDiffableDataSourceSnapshot itemIdentifiersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @numberOfItemsInSection:@
-numberOfItemsInSectionSelector :: Selector
+numberOfItemsInSectionSelector :: Selector '[RawId] CLong
 numberOfItemsInSectionSelector = mkSelector "numberOfItemsInSection:"
 
 -- | @Selector@ for @itemIdentifiersInSectionWithIdentifier:@
-itemIdentifiersInSectionWithIdentifierSelector :: Selector
+itemIdentifiersInSectionWithIdentifierSelector :: Selector '[RawId] (Id NSArray)
 itemIdentifiersInSectionWithIdentifierSelector = mkSelector "itemIdentifiersInSectionWithIdentifier:"
 
 -- | @Selector@ for @sectionIdentifierForSectionContainingItemIdentifier:@
-sectionIdentifierForSectionContainingItemIdentifierSelector :: Selector
+sectionIdentifierForSectionContainingItemIdentifierSelector :: Selector '[RawId] RawId
 sectionIdentifierForSectionContainingItemIdentifierSelector = mkSelector "sectionIdentifierForSectionContainingItemIdentifier:"
 
 -- | @Selector@ for @indexOfItemIdentifier:@
-indexOfItemIdentifierSelector :: Selector
+indexOfItemIdentifierSelector :: Selector '[RawId] CLong
 indexOfItemIdentifierSelector = mkSelector "indexOfItemIdentifier:"
 
 -- | @Selector@ for @indexOfSectionIdentifier:@
-indexOfSectionIdentifierSelector :: Selector
+indexOfSectionIdentifierSelector :: Selector '[RawId] CLong
 indexOfSectionIdentifierSelector = mkSelector "indexOfSectionIdentifier:"
 
 -- | @Selector@ for @appendItemsWithIdentifiers:@
-appendItemsWithIdentifiersSelector :: Selector
+appendItemsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 appendItemsWithIdentifiersSelector = mkSelector "appendItemsWithIdentifiers:"
 
 -- | @Selector@ for @appendItemsWithIdentifiers:intoSectionWithIdentifier:@
-appendItemsWithIdentifiers_intoSectionWithIdentifierSelector :: Selector
+appendItemsWithIdentifiers_intoSectionWithIdentifierSelector :: Selector '[Id NSArray, RawId] ()
 appendItemsWithIdentifiers_intoSectionWithIdentifierSelector = mkSelector "appendItemsWithIdentifiers:intoSectionWithIdentifier:"
 
 -- | @Selector@ for @insertItemsWithIdentifiers:beforeItemWithIdentifier:@
-insertItemsWithIdentifiers_beforeItemWithIdentifierSelector :: Selector
+insertItemsWithIdentifiers_beforeItemWithIdentifierSelector :: Selector '[Id NSArray, RawId] ()
 insertItemsWithIdentifiers_beforeItemWithIdentifierSelector = mkSelector "insertItemsWithIdentifiers:beforeItemWithIdentifier:"
 
 -- | @Selector@ for @insertItemsWithIdentifiers:afterItemWithIdentifier:@
-insertItemsWithIdentifiers_afterItemWithIdentifierSelector :: Selector
+insertItemsWithIdentifiers_afterItemWithIdentifierSelector :: Selector '[Id NSArray, RawId] ()
 insertItemsWithIdentifiers_afterItemWithIdentifierSelector = mkSelector "insertItemsWithIdentifiers:afterItemWithIdentifier:"
 
 -- | @Selector@ for @deleteItemsWithIdentifiers:@
-deleteItemsWithIdentifiersSelector :: Selector
+deleteItemsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 deleteItemsWithIdentifiersSelector = mkSelector "deleteItemsWithIdentifiers:"
 
 -- | @Selector@ for @deleteAllItems@
-deleteAllItemsSelector :: Selector
+deleteAllItemsSelector :: Selector '[] ()
 deleteAllItemsSelector = mkSelector "deleteAllItems"
 
 -- | @Selector@ for @moveItemWithIdentifier:beforeItemWithIdentifier:@
-moveItemWithIdentifier_beforeItemWithIdentifierSelector :: Selector
+moveItemWithIdentifier_beforeItemWithIdentifierSelector :: Selector '[RawId, RawId] ()
 moveItemWithIdentifier_beforeItemWithIdentifierSelector = mkSelector "moveItemWithIdentifier:beforeItemWithIdentifier:"
 
 -- | @Selector@ for @moveItemWithIdentifier:afterItemWithIdentifier:@
-moveItemWithIdentifier_afterItemWithIdentifierSelector :: Selector
+moveItemWithIdentifier_afterItemWithIdentifierSelector :: Selector '[RawId, RawId] ()
 moveItemWithIdentifier_afterItemWithIdentifierSelector = mkSelector "moveItemWithIdentifier:afterItemWithIdentifier:"
 
 -- | @Selector@ for @reloadItemsWithIdentifiers:@
-reloadItemsWithIdentifiersSelector :: Selector
+reloadItemsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 reloadItemsWithIdentifiersSelector = mkSelector "reloadItemsWithIdentifiers:"
 
 -- | @Selector@ for @appendSectionsWithIdentifiers:@
-appendSectionsWithIdentifiersSelector :: Selector
+appendSectionsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 appendSectionsWithIdentifiersSelector = mkSelector "appendSectionsWithIdentifiers:"
 
 -- | @Selector@ for @insertSectionsWithIdentifiers:beforeSectionWithIdentifier:@
-insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector :: Selector
+insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector :: Selector '[Id NSArray, RawId] ()
 insertSectionsWithIdentifiers_beforeSectionWithIdentifierSelector = mkSelector "insertSectionsWithIdentifiers:beforeSectionWithIdentifier:"
 
 -- | @Selector@ for @insertSectionsWithIdentifiers:afterSectionWithIdentifier:@
-insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector :: Selector
+insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector :: Selector '[Id NSArray, RawId] ()
 insertSectionsWithIdentifiers_afterSectionWithIdentifierSelector = mkSelector "insertSectionsWithIdentifiers:afterSectionWithIdentifier:"
 
 -- | @Selector@ for @deleteSectionsWithIdentifiers:@
-deleteSectionsWithIdentifiersSelector :: Selector
+deleteSectionsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 deleteSectionsWithIdentifiersSelector = mkSelector "deleteSectionsWithIdentifiers:"
 
 -- | @Selector@ for @moveSectionWithIdentifier:beforeSectionWithIdentifier:@
-moveSectionWithIdentifier_beforeSectionWithIdentifierSelector :: Selector
+moveSectionWithIdentifier_beforeSectionWithIdentifierSelector :: Selector '[RawId, RawId] ()
 moveSectionWithIdentifier_beforeSectionWithIdentifierSelector = mkSelector "moveSectionWithIdentifier:beforeSectionWithIdentifier:"
 
 -- | @Selector@ for @moveSectionWithIdentifier:afterSectionWithIdentifier:@
-moveSectionWithIdentifier_afterSectionWithIdentifierSelector :: Selector
+moveSectionWithIdentifier_afterSectionWithIdentifierSelector :: Selector '[RawId, RawId] ()
 moveSectionWithIdentifier_afterSectionWithIdentifierSelector = mkSelector "moveSectionWithIdentifier:afterSectionWithIdentifier:"
 
 -- | @Selector@ for @reloadSectionsWithIdentifiers:@
-reloadSectionsWithIdentifiersSelector :: Selector
+reloadSectionsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 reloadSectionsWithIdentifiersSelector = mkSelector "reloadSectionsWithIdentifiers:"
 
 -- | @Selector@ for @numberOfItems@
-numberOfItemsSelector :: Selector
+numberOfItemsSelector :: Selector '[] CLong
 numberOfItemsSelector = mkSelector "numberOfItems"
 
 -- | @Selector@ for @numberOfSections@
-numberOfSectionsSelector :: Selector
+numberOfSectionsSelector :: Selector '[] CLong
 numberOfSectionsSelector = mkSelector "numberOfSections"
 
 -- | @Selector@ for @sectionIdentifiers@
-sectionIdentifiersSelector :: Selector
+sectionIdentifiersSelector :: Selector '[] (Id NSArray)
 sectionIdentifiersSelector = mkSelector "sectionIdentifiers"
 
 -- | @Selector@ for @itemIdentifiers@
-itemIdentifiersSelector :: Selector
+itemIdentifiersSelector :: Selector '[] (Id NSArray)
 itemIdentifiersSelector = mkSelector "itemIdentifiers"
 

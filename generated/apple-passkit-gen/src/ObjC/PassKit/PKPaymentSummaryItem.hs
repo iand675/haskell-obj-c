@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.PassKit.PKPaymentSummaryItem
   , setAmount
   , type_
   , setType
+  , amountSelector
+  , labelSelector
+  , setAmountSelector
+  , setLabelSelector
+  , setTypeSelector
   , summaryItemWithLabel_amountSelector
   , summaryItemWithLabel_amount_typeSelector
-  , labelSelector
-  , setLabelSelector
-  , amountSelector
-  , setAmountSelector
   , typeSelector
-  , setTypeSelector
 
   -- * Enum types
   , PKPaymentSummaryItemType(PKPaymentSummaryItemType)
@@ -31,15 +32,11 @@ module ObjC.PassKit.PKPaymentSummaryItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,84 +49,78 @@ summaryItemWithLabel_amount :: (IsNSString label, IsNSDecimalNumber amount) => l
 summaryItemWithLabel_amount label amount =
   do
     cls' <- getRequiredClass "PKPaymentSummaryItem"
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr amount $ \raw_amount ->
-        sendClassMsg cls' (mkSelector "summaryItemWithLabel:amount:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_amount :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' summaryItemWithLabel_amountSelector (toNSString label) (toNSDecimalNumber amount)
 
 -- | @+ summaryItemWithLabel:amount:type:@
 summaryItemWithLabel_amount_type :: (IsNSString label, IsNSDecimalNumber amount) => label -> amount -> PKPaymentSummaryItemType -> IO (Id PKPaymentSummaryItem)
 summaryItemWithLabel_amount_type label amount type_ =
   do
     cls' <- getRequiredClass "PKPaymentSummaryItem"
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr amount $ \raw_amount ->
-        sendClassMsg cls' (mkSelector "summaryItemWithLabel:amount:type:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_amount :: Ptr ()), argCULong (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' summaryItemWithLabel_amount_typeSelector (toNSString label) (toNSDecimalNumber amount) type_
 
 -- | @- label@
 label :: IsPKPaymentSummaryItem pkPaymentSummaryItem => pkPaymentSummaryItem -> IO (Id NSString)
-label pkPaymentSummaryItem  =
-    sendMsg pkPaymentSummaryItem (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label pkPaymentSummaryItem =
+  sendMessage pkPaymentSummaryItem labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsPKPaymentSummaryItem pkPaymentSummaryItem, IsNSString value) => pkPaymentSummaryItem -> value -> IO ()
-setLabel pkPaymentSummaryItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentSummaryItem (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel pkPaymentSummaryItem value =
+  sendMessage pkPaymentSummaryItem setLabelSelector (toNSString value)
 
 -- | @- amount@
 amount :: IsPKPaymentSummaryItem pkPaymentSummaryItem => pkPaymentSummaryItem -> IO (Id NSDecimalNumber)
-amount pkPaymentSummaryItem  =
-    sendMsg pkPaymentSummaryItem (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount pkPaymentSummaryItem =
+  sendMessage pkPaymentSummaryItem amountSelector
 
 -- | @- setAmount:@
 setAmount :: (IsPKPaymentSummaryItem pkPaymentSummaryItem, IsNSDecimalNumber value) => pkPaymentSummaryItem -> value -> IO ()
-setAmount pkPaymentSummaryItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentSummaryItem (mkSelector "setAmount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAmount pkPaymentSummaryItem value =
+  sendMessage pkPaymentSummaryItem setAmountSelector (toNSDecimalNumber value)
 
 -- | @- type@
 type_ :: IsPKPaymentSummaryItem pkPaymentSummaryItem => pkPaymentSummaryItem -> IO PKPaymentSummaryItemType
-type_ pkPaymentSummaryItem  =
-    fmap (coerce :: CULong -> PKPaymentSummaryItemType) $ sendMsg pkPaymentSummaryItem (mkSelector "type") retCULong []
+type_ pkPaymentSummaryItem =
+  sendMessage pkPaymentSummaryItem typeSelector
 
 -- | @- setType:@
 setType :: IsPKPaymentSummaryItem pkPaymentSummaryItem => pkPaymentSummaryItem -> PKPaymentSummaryItemType -> IO ()
-setType pkPaymentSummaryItem  value =
-    sendMsg pkPaymentSummaryItem (mkSelector "setType:") retVoid [argCULong (coerce value)]
+setType pkPaymentSummaryItem value =
+  sendMessage pkPaymentSummaryItem setTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @summaryItemWithLabel:amount:@
-summaryItemWithLabel_amountSelector :: Selector
+summaryItemWithLabel_amountSelector :: Selector '[Id NSString, Id NSDecimalNumber] (Id PKPaymentSummaryItem)
 summaryItemWithLabel_amountSelector = mkSelector "summaryItemWithLabel:amount:"
 
 -- | @Selector@ for @summaryItemWithLabel:amount:type:@
-summaryItemWithLabel_amount_typeSelector :: Selector
+summaryItemWithLabel_amount_typeSelector :: Selector '[Id NSString, Id NSDecimalNumber, PKPaymentSummaryItemType] (Id PKPaymentSummaryItem)
 summaryItemWithLabel_amount_typeSelector = mkSelector "summaryItemWithLabel:amount:type:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id NSDecimalNumber)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @setAmount:@
-setAmountSelector :: Selector
+setAmountSelector :: Selector '[Id NSDecimalNumber] ()
 setAmountSelector = mkSelector "setAmount:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] PKPaymentSummaryItemType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[PKPaymentSummaryItemType] ()
 setTypeSelector = mkSelector "setType:"
 

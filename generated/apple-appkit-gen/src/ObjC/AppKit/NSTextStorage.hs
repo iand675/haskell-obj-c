@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,32 +36,32 @@ module ObjC.AppKit.NSTextStorage
   , foregroundColor
   , setForegroundColor
   , addLayoutManagerSelector
-  , removeLayoutManagerSelector
-  , edited_range_changeInLengthSelector
-  , processEditingSelector
-  , invalidateAttributesInRangeSelector
-  , ensureAttributesAreFixedInRangeSelector
-  , layoutManagersSelector
+  , attributeRunsSelector
+  , changeInLengthSelector
+  , charactersSelector
+  , delegateSelector
   , editedMaskSelector
   , editedRangeSelector
-  , changeInLengthSelector
-  , delegateSelector
-  , setDelegateSelector
+  , edited_range_changeInLengthSelector
+  , ensureAttributesAreFixedInRangeSelector
   , fixesAttributesLazilySelector
-  , textStorageObserverSelector
-  , setTextStorageObserverSelector
-  , attributeRunsSelector
-  , setAttributeRunsSelector
-  , paragraphsSelector
-  , setParagraphsSelector
-  , wordsSelector
-  , setWordsSelector
-  , charactersSelector
-  , setCharactersSelector
   , fontSelector
-  , setFontSelector
   , foregroundColorSelector
+  , invalidateAttributesInRangeSelector
+  , layoutManagersSelector
+  , paragraphsSelector
+  , processEditingSelector
+  , removeLayoutManagerSelector
+  , setAttributeRunsSelector
+  , setCharactersSelector
+  , setDelegateSelector
+  , setFontSelector
   , setForegroundColorSelector
+  , setParagraphsSelector
+  , setTextStorageObserverSelector
+  , setWordsSelector
+  , textStorageObserverSelector
+  , wordsSelector
 
   -- * Enum types
   , NSTextStorageEditActions(NSTextStorageEditActions)
@@ -69,15 +70,11 @@ module ObjC.AppKit.NSTextStorage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,272 +85,264 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addLayoutManager:@
 addLayoutManager :: (IsNSTextStorage nsTextStorage, IsNSLayoutManager aLayoutManager) => nsTextStorage -> aLayoutManager -> IO ()
-addLayoutManager nsTextStorage  aLayoutManager =
-  withObjCPtr aLayoutManager $ \raw_aLayoutManager ->
-      sendMsg nsTextStorage (mkSelector "addLayoutManager:") retVoid [argPtr (castPtr raw_aLayoutManager :: Ptr ())]
+addLayoutManager nsTextStorage aLayoutManager =
+  sendMessage nsTextStorage addLayoutManagerSelector (toNSLayoutManager aLayoutManager)
 
 -- | @- removeLayoutManager:@
 removeLayoutManager :: (IsNSTextStorage nsTextStorage, IsNSLayoutManager aLayoutManager) => nsTextStorage -> aLayoutManager -> IO ()
-removeLayoutManager nsTextStorage  aLayoutManager =
-  withObjCPtr aLayoutManager $ \raw_aLayoutManager ->
-      sendMsg nsTextStorage (mkSelector "removeLayoutManager:") retVoid [argPtr (castPtr raw_aLayoutManager :: Ptr ())]
+removeLayoutManager nsTextStorage aLayoutManager =
+  sendMessage nsTextStorage removeLayoutManagerSelector (toNSLayoutManager aLayoutManager)
 
 -- | ************************** Edit management ***************************
 --
 -- ObjC selector: @- edited:range:changeInLength:@
 edited_range_changeInLength :: IsNSTextStorage nsTextStorage => nsTextStorage -> NSTextStorageEditActions -> NSRange -> CLong -> IO ()
-edited_range_changeInLength nsTextStorage  editedMask editedRange delta =
-    sendMsg nsTextStorage (mkSelector "edited:range:changeInLength:") retVoid [argCULong (coerce editedMask), argNSRange editedRange, argCLong delta]
+edited_range_changeInLength nsTextStorage editedMask editedRange delta =
+  sendMessage nsTextStorage edited_range_changeInLengthSelector editedMask editedRange delta
 
 -- | @- processEditing@
 processEditing :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO ()
-processEditing nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "processEditing") retVoid []
+processEditing nsTextStorage =
+  sendMessage nsTextStorage processEditingSelector
 
 -- | @- invalidateAttributesInRange:@
 invalidateAttributesInRange :: IsNSTextStorage nsTextStorage => nsTextStorage -> NSRange -> IO ()
-invalidateAttributesInRange nsTextStorage  range =
-    sendMsg nsTextStorage (mkSelector "invalidateAttributesInRange:") retVoid [argNSRange range]
+invalidateAttributesInRange nsTextStorage range =
+  sendMessage nsTextStorage invalidateAttributesInRangeSelector range
 
 -- | @- ensureAttributesAreFixedInRange:@
 ensureAttributesAreFixedInRange :: IsNSTextStorage nsTextStorage => nsTextStorage -> NSRange -> IO ()
-ensureAttributesAreFixedInRange nsTextStorage  range =
-    sendMsg nsTextStorage (mkSelector "ensureAttributesAreFixedInRange:") retVoid [argNSRange range]
+ensureAttributesAreFixedInRange nsTextStorage range =
+  sendMessage nsTextStorage ensureAttributesAreFixedInRangeSelector range
 
 -- | ************************** Layout manager ***************************
 --
 -- ObjC selector: @- layoutManagers@
 layoutManagers :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
-layoutManagers nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "layoutManagers") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutManagers nsTextStorage =
+  sendMessage nsTextStorage layoutManagersSelector
 
 -- | ************************** Pending edit info ***************************
 --
 -- ObjC selector: @- editedMask@
 editedMask :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO NSTextStorageEditActions
-editedMask nsTextStorage  =
-    fmap (coerce :: CULong -> NSTextStorageEditActions) $ sendMsg nsTextStorage (mkSelector "editedMask") retCULong []
+editedMask nsTextStorage =
+  sendMessage nsTextStorage editedMaskSelector
 
 -- | @- editedRange@
 editedRange :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO NSRange
-editedRange nsTextStorage  =
-    sendMsgStret nsTextStorage (mkSelector "editedRange") retNSRange []
+editedRange nsTextStorage =
+  sendMessage nsTextStorage editedRangeSelector
 
 -- | @- changeInLength@
 changeInLength :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO CLong
-changeInLength nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "changeInLength") retCLong []
+changeInLength nsTextStorage =
+  sendMessage nsTextStorage changeInLengthSelector
 
 -- | ************************** Delegate ***************************
 --
 -- ObjC selector: @- delegate@
 delegate :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO RawId
-delegate nsTextStorage  =
-    fmap (RawId . castPtr) $ sendMsg nsTextStorage (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextStorage =
+  sendMessage nsTextStorage delegateSelector
 
 -- | ************************** Delegate ***************************
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsNSTextStorage nsTextStorage => nsTextStorage -> RawId -> IO ()
-setDelegate nsTextStorage  value =
-    sendMsg nsTextStorage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextStorage value =
+  sendMessage nsTextStorage setDelegateSelector value
 
 -- | ************************** Attribute fixing ***************************
 --
 -- ObjC selector: @- fixesAttributesLazily@
 fixesAttributesLazily :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO Bool
-fixesAttributesLazily nsTextStorage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextStorage (mkSelector "fixesAttributesLazily") retCULong []
+fixesAttributesLazily nsTextStorage =
+  sendMessage nsTextStorage fixesAttributesLazilySelector
 
 -- | ************************** NSTextStorageObserving ***************************
 --
 -- ObjC selector: @- textStorageObserver@
 textStorageObserver :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO RawId
-textStorageObserver nsTextStorage  =
-    fmap (RawId . castPtr) $ sendMsg nsTextStorage (mkSelector "textStorageObserver") (retPtr retVoid) []
+textStorageObserver nsTextStorage =
+  sendMessage nsTextStorage textStorageObserverSelector
 
 -- | ************************** NSTextStorageObserving ***************************
 --
 -- ObjC selector: @- setTextStorageObserver:@
 setTextStorageObserver :: IsNSTextStorage nsTextStorage => nsTextStorage -> RawId -> IO ()
-setTextStorageObserver nsTextStorage  value =
-    sendMsg nsTextStorage (mkSelector "setTextStorageObserver:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTextStorageObserver nsTextStorage value =
+  sendMessage nsTextStorage setTextStorageObserverSelector value
 
 -- | @- attributeRuns@
 attributeRuns :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
-attributeRuns nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "attributeRuns") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeRuns nsTextStorage =
+  sendMessage nsTextStorage attributeRunsSelector
 
 -- | @- setAttributeRuns:@
 setAttributeRuns :: (IsNSTextStorage nsTextStorage, IsNSArray value) => nsTextStorage -> value -> IO ()
-setAttributeRuns nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setAttributeRuns:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeRuns nsTextStorage value =
+  sendMessage nsTextStorage setAttributeRunsSelector (toNSArray value)
 
 -- | @- paragraphs@
 paragraphs :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
-paragraphs nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "paragraphs") (retPtr retVoid) [] >>= retainedObject . castPtr
+paragraphs nsTextStorage =
+  sendMessage nsTextStorage paragraphsSelector
 
 -- | @- setParagraphs:@
 setParagraphs :: (IsNSTextStorage nsTextStorage, IsNSArray value) => nsTextStorage -> value -> IO ()
-setParagraphs nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setParagraphs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParagraphs nsTextStorage value =
+  sendMessage nsTextStorage setParagraphsSelector (toNSArray value)
 
 -- | @- words@
 words_ :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
-words_ nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "words") (retPtr retVoid) [] >>= retainedObject . castPtr
+words_ nsTextStorage =
+  sendMessage nsTextStorage wordsSelector
 
 -- | @- setWords:@
 setWords :: (IsNSTextStorage nsTextStorage, IsNSArray value) => nsTextStorage -> value -> IO ()
-setWords nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setWords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWords nsTextStorage value =
+  sendMessage nsTextStorage setWordsSelector (toNSArray value)
 
 -- | @- characters@
 characters :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSArray)
-characters nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "characters") (retPtr retVoid) [] >>= retainedObject . castPtr
+characters nsTextStorage =
+  sendMessage nsTextStorage charactersSelector
 
 -- | @- setCharacters:@
 setCharacters :: (IsNSTextStorage nsTextStorage, IsNSArray value) => nsTextStorage -> value -> IO ()
-setCharacters nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setCharacters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharacters nsTextStorage value =
+  sendMessage nsTextStorage setCharactersSelector (toNSArray value)
 
 -- | @- font@
 font :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSFont)
-font nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font nsTextStorage =
+  sendMessage nsTextStorage fontSelector
 
 -- | @- setFont:@
 setFont :: (IsNSTextStorage nsTextStorage, IsNSFont value) => nsTextStorage -> value -> IO ()
-setFont nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFont nsTextStorage value =
+  sendMessage nsTextStorage setFontSelector (toNSFont value)
 
 -- | @- foregroundColor@
 foregroundColor :: IsNSTextStorage nsTextStorage => nsTextStorage -> IO (Id NSColor)
-foregroundColor nsTextStorage  =
-    sendMsg nsTextStorage (mkSelector "foregroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+foregroundColor nsTextStorage =
+  sendMessage nsTextStorage foregroundColorSelector
 
 -- | @- setForegroundColor:@
 setForegroundColor :: (IsNSTextStorage nsTextStorage, IsNSColor value) => nsTextStorage -> value -> IO ()
-setForegroundColor nsTextStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextStorage (mkSelector "setForegroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setForegroundColor nsTextStorage value =
+  sendMessage nsTextStorage setForegroundColorSelector (toNSColor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addLayoutManager:@
-addLayoutManagerSelector :: Selector
+addLayoutManagerSelector :: Selector '[Id NSLayoutManager] ()
 addLayoutManagerSelector = mkSelector "addLayoutManager:"
 
 -- | @Selector@ for @removeLayoutManager:@
-removeLayoutManagerSelector :: Selector
+removeLayoutManagerSelector :: Selector '[Id NSLayoutManager] ()
 removeLayoutManagerSelector = mkSelector "removeLayoutManager:"
 
 -- | @Selector@ for @edited:range:changeInLength:@
-edited_range_changeInLengthSelector :: Selector
+edited_range_changeInLengthSelector :: Selector '[NSTextStorageEditActions, NSRange, CLong] ()
 edited_range_changeInLengthSelector = mkSelector "edited:range:changeInLength:"
 
 -- | @Selector@ for @processEditing@
-processEditingSelector :: Selector
+processEditingSelector :: Selector '[] ()
 processEditingSelector = mkSelector "processEditing"
 
 -- | @Selector@ for @invalidateAttributesInRange:@
-invalidateAttributesInRangeSelector :: Selector
+invalidateAttributesInRangeSelector :: Selector '[NSRange] ()
 invalidateAttributesInRangeSelector = mkSelector "invalidateAttributesInRange:"
 
 -- | @Selector@ for @ensureAttributesAreFixedInRange:@
-ensureAttributesAreFixedInRangeSelector :: Selector
+ensureAttributesAreFixedInRangeSelector :: Selector '[NSRange] ()
 ensureAttributesAreFixedInRangeSelector = mkSelector "ensureAttributesAreFixedInRange:"
 
 -- | @Selector@ for @layoutManagers@
-layoutManagersSelector :: Selector
+layoutManagersSelector :: Selector '[] (Id NSArray)
 layoutManagersSelector = mkSelector "layoutManagers"
 
 -- | @Selector@ for @editedMask@
-editedMaskSelector :: Selector
+editedMaskSelector :: Selector '[] NSTextStorageEditActions
 editedMaskSelector = mkSelector "editedMask"
 
 -- | @Selector@ for @editedRange@
-editedRangeSelector :: Selector
+editedRangeSelector :: Selector '[] NSRange
 editedRangeSelector = mkSelector "editedRange"
 
 -- | @Selector@ for @changeInLength@
-changeInLengthSelector :: Selector
+changeInLengthSelector :: Selector '[] CLong
 changeInLengthSelector = mkSelector "changeInLength"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @fixesAttributesLazily@
-fixesAttributesLazilySelector :: Selector
+fixesAttributesLazilySelector :: Selector '[] Bool
 fixesAttributesLazilySelector = mkSelector "fixesAttributesLazily"
 
 -- | @Selector@ for @textStorageObserver@
-textStorageObserverSelector :: Selector
+textStorageObserverSelector :: Selector '[] RawId
 textStorageObserverSelector = mkSelector "textStorageObserver"
 
 -- | @Selector@ for @setTextStorageObserver:@
-setTextStorageObserverSelector :: Selector
+setTextStorageObserverSelector :: Selector '[RawId] ()
 setTextStorageObserverSelector = mkSelector "setTextStorageObserver:"
 
 -- | @Selector@ for @attributeRuns@
-attributeRunsSelector :: Selector
+attributeRunsSelector :: Selector '[] (Id NSArray)
 attributeRunsSelector = mkSelector "attributeRuns"
 
 -- | @Selector@ for @setAttributeRuns:@
-setAttributeRunsSelector :: Selector
+setAttributeRunsSelector :: Selector '[Id NSArray] ()
 setAttributeRunsSelector = mkSelector "setAttributeRuns:"
 
 -- | @Selector@ for @paragraphs@
-paragraphsSelector :: Selector
+paragraphsSelector :: Selector '[] (Id NSArray)
 paragraphsSelector = mkSelector "paragraphs"
 
 -- | @Selector@ for @setParagraphs:@
-setParagraphsSelector :: Selector
+setParagraphsSelector :: Selector '[Id NSArray] ()
 setParagraphsSelector = mkSelector "setParagraphs:"
 
 -- | @Selector@ for @words@
-wordsSelector :: Selector
+wordsSelector :: Selector '[] (Id NSArray)
 wordsSelector = mkSelector "words"
 
 -- | @Selector@ for @setWords:@
-setWordsSelector :: Selector
+setWordsSelector :: Selector '[Id NSArray] ()
 setWordsSelector = mkSelector "setWords:"
 
 -- | @Selector@ for @characters@
-charactersSelector :: Selector
+charactersSelector :: Selector '[] (Id NSArray)
 charactersSelector = mkSelector "characters"
 
 -- | @Selector@ for @setCharacters:@
-setCharactersSelector :: Selector
+setCharactersSelector :: Selector '[Id NSArray] ()
 setCharactersSelector = mkSelector "setCharacters:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @foregroundColor@
-foregroundColorSelector :: Selector
+foregroundColorSelector :: Selector '[] (Id NSColor)
 foregroundColorSelector = mkSelector "foregroundColor"
 
 -- | @Selector@ for @setForegroundColor:@
-setForegroundColorSelector :: Selector
+setForegroundColorSelector :: Selector '[Id NSColor] ()
 setForegroundColorSelector = mkSelector "setForegroundColor:"
 

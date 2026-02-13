@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.Matter.MTRDeviceControllerFactoryParams
   , setPort
   , shouldStartServer
   , setShouldStartServer
+  , certificationDeclarationCertificatesSelector
   , initSelector
   , initWithStorageSelector
-  , storageSelector
   , otaProviderDelegateSelector
-  , setOtaProviderDelegateSelector
-  , productAttestationAuthorityCertificatesSelector
-  , setProductAttestationAuthorityCertificatesSelector
-  , certificationDeclarationCertificatesSelector
-  , setCertificationDeclarationCertificatesSelector
   , portSelector
+  , productAttestationAuthorityCertificatesSelector
+  , setCertificationDeclarationCertificatesSelector
+  , setOtaProviderDelegateSelector
   , setPortSelector
-  , shouldStartServerSelector
+  , setProductAttestationAuthorityCertificatesSelector
   , setShouldStartServerSelector
+  , shouldStartServerSelector
+  , storageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,125 +50,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO (Id MTRDeviceControllerFactoryParams)
-init_ mtrDeviceControllerFactoryParams  =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceControllerFactoryParams =
+  sendOwnedMessage mtrDeviceControllerFactoryParams initSelector
 
 -- | @- initWithStorage:@
 initWithStorage :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> RawId -> IO (Id MTRDeviceControllerFactoryParams)
-initWithStorage mtrDeviceControllerFactoryParams  storage =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "initWithStorage:") (retPtr retVoid) [argPtr (castPtr (unRawId storage) :: Ptr ())] >>= ownedObject . castPtr
+initWithStorage mtrDeviceControllerFactoryParams storage =
+  sendOwnedMessage mtrDeviceControllerFactoryParams initWithStorageSelector storage
 
 -- | @- storage@
 storage :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO RawId
-storage mtrDeviceControllerFactoryParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerFactoryParams (mkSelector "storage") (retPtr retVoid) []
+storage mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams storageSelector
 
 -- | @- otaProviderDelegate@
 otaProviderDelegate :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO RawId
-otaProviderDelegate mtrDeviceControllerFactoryParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerFactoryParams (mkSelector "otaProviderDelegate") (retPtr retVoid) []
+otaProviderDelegate mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams otaProviderDelegateSelector
 
 -- | @- setOtaProviderDelegate:@
 setOtaProviderDelegate :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> RawId -> IO ()
-setOtaProviderDelegate mtrDeviceControllerFactoryParams  value =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "setOtaProviderDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOtaProviderDelegate mtrDeviceControllerFactoryParams value =
+  sendMessage mtrDeviceControllerFactoryParams setOtaProviderDelegateSelector value
 
 -- | @- productAttestationAuthorityCertificates@
 productAttestationAuthorityCertificates :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO (Id NSArray)
-productAttestationAuthorityCertificates mtrDeviceControllerFactoryParams  =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "productAttestationAuthorityCertificates") (retPtr retVoid) [] >>= retainedObject . castPtr
+productAttestationAuthorityCertificates mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams productAttestationAuthorityCertificatesSelector
 
 -- | @- setProductAttestationAuthorityCertificates:@
 setProductAttestationAuthorityCertificates :: (IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams, IsNSArray value) => mtrDeviceControllerFactoryParams -> value -> IO ()
-setProductAttestationAuthorityCertificates mtrDeviceControllerFactoryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerFactoryParams (mkSelector "setProductAttestationAuthorityCertificates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductAttestationAuthorityCertificates mtrDeviceControllerFactoryParams value =
+  sendMessage mtrDeviceControllerFactoryParams setProductAttestationAuthorityCertificatesSelector (toNSArray value)
 
 -- | @- certificationDeclarationCertificates@
 certificationDeclarationCertificates :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO (Id NSArray)
-certificationDeclarationCertificates mtrDeviceControllerFactoryParams  =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "certificationDeclarationCertificates") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificationDeclarationCertificates mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams certificationDeclarationCertificatesSelector
 
 -- | @- setCertificationDeclarationCertificates:@
 setCertificationDeclarationCertificates :: (IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams, IsNSArray value) => mtrDeviceControllerFactoryParams -> value -> IO ()
-setCertificationDeclarationCertificates mtrDeviceControllerFactoryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerFactoryParams (mkSelector "setCertificationDeclarationCertificates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificationDeclarationCertificates mtrDeviceControllerFactoryParams value =
+  sendMessage mtrDeviceControllerFactoryParams setCertificationDeclarationCertificatesSelector (toNSArray value)
 
 -- | @- port@
 port :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO (Id NSNumber)
-port mtrDeviceControllerFactoryParams  =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams portSelector
 
 -- | @- setPort:@
 setPort :: (IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams, IsNSNumber value) => mtrDeviceControllerFactoryParams -> value -> IO ()
-setPort mtrDeviceControllerFactoryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerFactoryParams (mkSelector "setPort:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPort mtrDeviceControllerFactoryParams value =
+  sendMessage mtrDeviceControllerFactoryParams setPortSelector (toNSNumber value)
 
 -- | @- shouldStartServer@
 shouldStartServer :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> IO Bool
-shouldStartServer mtrDeviceControllerFactoryParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceControllerFactoryParams (mkSelector "shouldStartServer") retCULong []
+shouldStartServer mtrDeviceControllerFactoryParams =
+  sendMessage mtrDeviceControllerFactoryParams shouldStartServerSelector
 
 -- | @- setShouldStartServer:@
 setShouldStartServer :: IsMTRDeviceControllerFactoryParams mtrDeviceControllerFactoryParams => mtrDeviceControllerFactoryParams -> Bool -> IO ()
-setShouldStartServer mtrDeviceControllerFactoryParams  value =
-    sendMsg mtrDeviceControllerFactoryParams (mkSelector "setShouldStartServer:") retVoid [argCULong (if value then 1 else 0)]
+setShouldStartServer mtrDeviceControllerFactoryParams value =
+  sendMessage mtrDeviceControllerFactoryParams setShouldStartServerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceControllerFactoryParams)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithStorage:@
-initWithStorageSelector :: Selector
+initWithStorageSelector :: Selector '[RawId] (Id MTRDeviceControllerFactoryParams)
 initWithStorageSelector = mkSelector "initWithStorage:"
 
 -- | @Selector@ for @storage@
-storageSelector :: Selector
+storageSelector :: Selector '[] RawId
 storageSelector = mkSelector "storage"
 
 -- | @Selector@ for @otaProviderDelegate@
-otaProviderDelegateSelector :: Selector
+otaProviderDelegateSelector :: Selector '[] RawId
 otaProviderDelegateSelector = mkSelector "otaProviderDelegate"
 
 -- | @Selector@ for @setOtaProviderDelegate:@
-setOtaProviderDelegateSelector :: Selector
+setOtaProviderDelegateSelector :: Selector '[RawId] ()
 setOtaProviderDelegateSelector = mkSelector "setOtaProviderDelegate:"
 
 -- | @Selector@ for @productAttestationAuthorityCertificates@
-productAttestationAuthorityCertificatesSelector :: Selector
+productAttestationAuthorityCertificatesSelector :: Selector '[] (Id NSArray)
 productAttestationAuthorityCertificatesSelector = mkSelector "productAttestationAuthorityCertificates"
 
 -- | @Selector@ for @setProductAttestationAuthorityCertificates:@
-setProductAttestationAuthorityCertificatesSelector :: Selector
+setProductAttestationAuthorityCertificatesSelector :: Selector '[Id NSArray] ()
 setProductAttestationAuthorityCertificatesSelector = mkSelector "setProductAttestationAuthorityCertificates:"
 
 -- | @Selector@ for @certificationDeclarationCertificates@
-certificationDeclarationCertificatesSelector :: Selector
+certificationDeclarationCertificatesSelector :: Selector '[] (Id NSArray)
 certificationDeclarationCertificatesSelector = mkSelector "certificationDeclarationCertificates"
 
 -- | @Selector@ for @setCertificationDeclarationCertificates:@
-setCertificationDeclarationCertificatesSelector :: Selector
+setCertificationDeclarationCertificatesSelector :: Selector '[Id NSArray] ()
 setCertificationDeclarationCertificatesSelector = mkSelector "setCertificationDeclarationCertificates:"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSNumber)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @setPort:@
-setPortSelector :: Selector
+setPortSelector :: Selector '[Id NSNumber] ()
 setPortSelector = mkSelector "setPort:"
 
 -- | @Selector@ for @shouldStartServer@
-shouldStartServerSelector :: Selector
+shouldStartServerSelector :: Selector '[] Bool
 shouldStartServerSelector = mkSelector "shouldStartServer"
 
 -- | @Selector@ for @setShouldStartServer:@
-setShouldStartServerSelector :: Selector
+setShouldStartServerSelector :: Selector '[Bool] ()
 setShouldStartServerSelector = mkSelector "setShouldStartServer:"
 

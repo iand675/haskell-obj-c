@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.FSKit.FSGenericURLResource
   , initWithURL
   , init_
   , url
-  , initWithURLSelector
   , initSelector
+  , initWithURLSelector
   , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,35 +38,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsFSGenericURLResource fsGenericURLResource, IsNSURL url) => fsGenericURLResource -> url -> IO (Id FSGenericURLResource)
-initWithURL fsGenericURLResource  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg fsGenericURLResource (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL fsGenericURLResource url =
+  sendOwnedMessage fsGenericURLResource initWithURLSelector (toNSURL url)
 
 -- | @- init@
 init_ :: IsFSGenericURLResource fsGenericURLResource => fsGenericURLResource -> IO (Id FSGenericURLResource)
-init_ fsGenericURLResource  =
-    sendMsg fsGenericURLResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsGenericURLResource =
+  sendOwnedMessage fsGenericURLResource initSelector
 
 -- | The URL represented by the resource.
 --
 -- ObjC selector: @- url@
 url :: IsFSGenericURLResource fsGenericURLResource => fsGenericURLResource -> IO (Id NSURL)
-url fsGenericURLResource  =
-    sendMsg fsGenericURLResource (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url fsGenericURLResource =
+  sendMessage fsGenericURLResource urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id FSGenericURLResource)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSGenericURLResource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 

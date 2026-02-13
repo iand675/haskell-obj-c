@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,25 +23,21 @@ module ObjC.FSKit.FSEntityIdentifier
   , setQualifier
   , initSelector
   , initWithUUIDSelector
-  , initWithUUID_qualifierSelector
   , initWithUUID_dataSelector
-  , uuidSelector
-  , setUuidSelector
+  , initWithUUID_qualifierSelector
   , qualifierSelector
   , setQualifierSelector
+  , setUuidSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsFSEntityIdentifier fsEntityIdentifier => fsEntityIdentifier -> IO (Id FSEntityIdentifier)
-init_ fsEntityIdentifier  =
-    sendMsg fsEntityIdentifier (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsEntityIdentifier =
+  sendOwnedMessage fsEntityIdentifier initSelector
 
 -- | Creates an entity identifier with the given UUID.
 --
@@ -60,17 +57,15 @@ init_ fsEntityIdentifier  =
 --
 -- ObjC selector: @- initWithUUID:@
 initWithUUID :: (IsFSEntityIdentifier fsEntityIdentifier, IsNSUUID uuid) => fsEntityIdentifier -> uuid -> IO (Id FSEntityIdentifier)
-initWithUUID fsEntityIdentifier  uuid =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg fsEntityIdentifier (mkSelector "initWithUUID:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ())] >>= ownedObject . castPtr
+initWithUUID fsEntityIdentifier uuid =
+  sendOwnedMessage fsEntityIdentifier initWithUUIDSelector (toNSUUID uuid)
 
 -- | Creates an entity identifier with the given UUID and qualifier data as a 64-bit unsigned integer. - Parameters:   - uuid: The UUID to use for this identifier.   - qualifier: The data to distinguish entities that otherwise share the same UUID.
 --
 -- ObjC selector: @- initWithUUID:qualifier:@
 initWithUUID_qualifier :: (IsFSEntityIdentifier fsEntityIdentifier, IsNSUUID uuid) => fsEntityIdentifier -> uuid -> CULong -> IO (Id FSEntityIdentifier)
-initWithUUID_qualifier fsEntityIdentifier  uuid qualifier =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg fsEntityIdentifier (mkSelector "initWithUUID:qualifier:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argCULong qualifier] >>= ownedObject . castPtr
+initWithUUID_qualifier fsEntityIdentifier uuid qualifier =
+  sendOwnedMessage fsEntityIdentifier initWithUUID_qualifierSelector (toNSUUID uuid) qualifier
 
 -- | Creates an entity identifier with the given UUID and qualifier data.
 --
@@ -78,74 +73,70 @@ initWithUUID_qualifier fsEntityIdentifier  uuid qualifier =
 --
 -- ObjC selector: @- initWithUUID:data:@
 initWithUUID_data :: (IsFSEntityIdentifier fsEntityIdentifier, IsNSUUID uuid, IsNSData qualifierData) => fsEntityIdentifier -> uuid -> qualifierData -> IO (Id FSEntityIdentifier)
-initWithUUID_data fsEntityIdentifier  uuid qualifierData =
-  withObjCPtr uuid $ \raw_uuid ->
-    withObjCPtr qualifierData $ \raw_qualifierData ->
-        sendMsg fsEntityIdentifier (mkSelector "initWithUUID:data:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argPtr (castPtr raw_qualifierData :: Ptr ())] >>= ownedObject . castPtr
+initWithUUID_data fsEntityIdentifier uuid qualifierData =
+  sendOwnedMessage fsEntityIdentifier initWithUUID_dataSelector (toNSUUID uuid) (toNSData qualifierData)
 
 -- | A UUID to uniquely identify this entity.
 --
 -- ObjC selector: @- uuid@
 uuid :: IsFSEntityIdentifier fsEntityIdentifier => fsEntityIdentifier -> IO (Id NSUUID)
-uuid fsEntityIdentifier  =
-    sendMsg fsEntityIdentifier (mkSelector "uuid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid fsEntityIdentifier =
+  sendMessage fsEntityIdentifier uuidSelector
 
 -- | A UUID to uniquely identify this entity.
 --
 -- ObjC selector: @- setUuid:@
 setUuid :: (IsFSEntityIdentifier fsEntityIdentifier, IsNSUUID value) => fsEntityIdentifier -> value -> IO ()
-setUuid fsEntityIdentifier  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg fsEntityIdentifier (mkSelector "setUuid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUuid fsEntityIdentifier value =
+  sendMessage fsEntityIdentifier setUuidSelector (toNSUUID value)
 
 -- | An optional piece of data to distinguish entities that otherwise share the same UUID.
 --
 -- ObjC selector: @- qualifier@
 qualifier :: IsFSEntityIdentifier fsEntityIdentifier => fsEntityIdentifier -> IO (Id NSData)
-qualifier fsEntityIdentifier  =
-    sendMsg fsEntityIdentifier (mkSelector "qualifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+qualifier fsEntityIdentifier =
+  sendMessage fsEntityIdentifier qualifierSelector
 
 -- | An optional piece of data to distinguish entities that otherwise share the same UUID.
 --
 -- ObjC selector: @- setQualifier:@
 setQualifier :: (IsFSEntityIdentifier fsEntityIdentifier, IsNSData value) => fsEntityIdentifier -> value -> IO ()
-setQualifier fsEntityIdentifier  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg fsEntityIdentifier (mkSelector "setQualifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQualifier fsEntityIdentifier value =
+  sendMessage fsEntityIdentifier setQualifierSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSEntityIdentifier)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithUUID:@
-initWithUUIDSelector :: Selector
+initWithUUIDSelector :: Selector '[Id NSUUID] (Id FSEntityIdentifier)
 initWithUUIDSelector = mkSelector "initWithUUID:"
 
 -- | @Selector@ for @initWithUUID:qualifier:@
-initWithUUID_qualifierSelector :: Selector
+initWithUUID_qualifierSelector :: Selector '[Id NSUUID, CULong] (Id FSEntityIdentifier)
 initWithUUID_qualifierSelector = mkSelector "initWithUUID:qualifier:"
 
 -- | @Selector@ for @initWithUUID:data:@
-initWithUUID_dataSelector :: Selector
+initWithUUID_dataSelector :: Selector '[Id NSUUID, Id NSData] (Id FSEntityIdentifier)
 initWithUUID_dataSelector = mkSelector "initWithUUID:data:"
 
 -- | @Selector@ for @uuid@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "uuid"
 
 -- | @Selector@ for @setUuid:@
-setUuidSelector :: Selector
+setUuidSelector :: Selector '[Id NSUUID] ()
 setUuidSelector = mkSelector "setUuid:"
 
 -- | @Selector@ for @qualifier@
-qualifierSelector :: Selector
+qualifierSelector :: Selector '[] (Id NSData)
 qualifierSelector = mkSelector "qualifier"
 
 -- | @Selector@ for @setQualifier:@
-setQualifierSelector :: Selector
+setQualifierSelector :: Selector '[Id NSData] ()
 setQualifierSelector = mkSelector "setQualifier:"
 

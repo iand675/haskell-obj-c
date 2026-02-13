@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.AppKit.NSTextFinder
   , incrementalSearchingShouldDimContentView
   , setIncrementalSearchingShouldDimContentView
   , incrementalMatchRanges
+  , cancelFindIndicatorSelector
+  , clientSelector
+  , drawIncrementalMatchHighlightInRectSelector
+  , findBarContainerSelector
+  , findIndicatorNeedsUpdateSelector
+  , incrementalMatchRangesSelector
+  , incrementalSearchingEnabledSelector
+  , incrementalSearchingShouldDimContentViewSelector
   , initSelector
   , initWithCoderSelector
-  , performActionSelector
-  , validateActionSelector
-  , cancelFindIndicatorSelector
-  , drawIncrementalMatchHighlightInRectSelector
   , noteClientStringWillChangeSelector
-  , clientSelector
+  , performActionSelector
   , setClientSelector
-  , findBarContainerSelector
   , setFindBarContainerSelector
-  , findIndicatorNeedsUpdateSelector
   , setFindIndicatorNeedsUpdateSelector
-  , incrementalSearchingEnabledSelector
   , setIncrementalSearchingEnabledSelector
-  , incrementalSearchingShouldDimContentViewSelector
   , setIncrementalSearchingShouldDimContentViewSelector
-  , incrementalMatchRangesSelector
+  , validateActionSelector
 
   -- * Enum types
   , NSTextFinderAction(NSTextFinderAction)
@@ -62,15 +63,11 @@ module ObjC.AppKit.NSTextFinder
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,170 +78,169 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO (Id NSTextFinder)
-init_ nsTextFinder  =
-    sendMsg nsTextFinder (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextFinder =
+  sendOwnedMessage nsTextFinder initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextFinder nsTextFinder, IsNSCoder coder) => nsTextFinder -> coder -> IO (Id NSTextFinder)
-initWithCoder nsTextFinder  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextFinder (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextFinder coder =
+  sendOwnedMessage nsTextFinder initWithCoderSelector (toNSCoder coder)
 
 -- | @- performAction:@
 performAction :: IsNSTextFinder nsTextFinder => nsTextFinder -> NSTextFinderAction -> IO ()
-performAction nsTextFinder  op =
-    sendMsg nsTextFinder (mkSelector "performAction:") retVoid [argCLong (coerce op)]
+performAction nsTextFinder op =
+  sendMessage nsTextFinder performActionSelector op
 
 -- | @- validateAction:@
 validateAction :: IsNSTextFinder nsTextFinder => nsTextFinder -> NSTextFinderAction -> IO Bool
-validateAction nsTextFinder  op =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextFinder (mkSelector "validateAction:") retCULong [argCLong (coerce op)]
+validateAction nsTextFinder op =
+  sendMessage nsTextFinder validateActionSelector op
 
 -- | @- cancelFindIndicator@
 cancelFindIndicator :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO ()
-cancelFindIndicator nsTextFinder  =
-    sendMsg nsTextFinder (mkSelector "cancelFindIndicator") retVoid []
+cancelFindIndicator nsTextFinder =
+  sendMessage nsTextFinder cancelFindIndicatorSelector
 
 -- | @+ drawIncrementalMatchHighlightInRect:@
 drawIncrementalMatchHighlightInRect :: NSRect -> IO ()
 drawIncrementalMatchHighlightInRect rect =
   do
     cls' <- getRequiredClass "NSTextFinder"
-    sendClassMsg cls' (mkSelector "drawIncrementalMatchHighlightInRect:") retVoid [argNSRect rect]
+    sendClassMessage cls' drawIncrementalMatchHighlightInRectSelector rect
 
 -- | @- noteClientStringWillChange@
 noteClientStringWillChange :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO ()
-noteClientStringWillChange nsTextFinder  =
-    sendMsg nsTextFinder (mkSelector "noteClientStringWillChange") retVoid []
+noteClientStringWillChange nsTextFinder =
+  sendMessage nsTextFinder noteClientStringWillChangeSelector
 
 -- | @- client@
 client :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO RawId
-client nsTextFinder  =
-    fmap (RawId . castPtr) $ sendMsg nsTextFinder (mkSelector "client") (retPtr retVoid) []
+client nsTextFinder =
+  sendMessage nsTextFinder clientSelector
 
 -- | @- setClient:@
 setClient :: IsNSTextFinder nsTextFinder => nsTextFinder -> RawId -> IO ()
-setClient nsTextFinder  value =
-    sendMsg nsTextFinder (mkSelector "setClient:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setClient nsTextFinder value =
+  sendMessage nsTextFinder setClientSelector value
 
 -- | @- findBarContainer@
 findBarContainer :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO RawId
-findBarContainer nsTextFinder  =
-    fmap (RawId . castPtr) $ sendMsg nsTextFinder (mkSelector "findBarContainer") (retPtr retVoid) []
+findBarContainer nsTextFinder =
+  sendMessage nsTextFinder findBarContainerSelector
 
 -- | @- setFindBarContainer:@
 setFindBarContainer :: IsNSTextFinder nsTextFinder => nsTextFinder -> RawId -> IO ()
-setFindBarContainer nsTextFinder  value =
-    sendMsg nsTextFinder (mkSelector "setFindBarContainer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFindBarContainer nsTextFinder value =
+  sendMessage nsTextFinder setFindBarContainerSelector value
 
 -- | @- findIndicatorNeedsUpdate@
 findIndicatorNeedsUpdate :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO Bool
-findIndicatorNeedsUpdate nsTextFinder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextFinder (mkSelector "findIndicatorNeedsUpdate") retCULong []
+findIndicatorNeedsUpdate nsTextFinder =
+  sendMessage nsTextFinder findIndicatorNeedsUpdateSelector
 
 -- | @- setFindIndicatorNeedsUpdate:@
 setFindIndicatorNeedsUpdate :: IsNSTextFinder nsTextFinder => nsTextFinder -> Bool -> IO ()
-setFindIndicatorNeedsUpdate nsTextFinder  value =
-    sendMsg nsTextFinder (mkSelector "setFindIndicatorNeedsUpdate:") retVoid [argCULong (if value then 1 else 0)]
+setFindIndicatorNeedsUpdate nsTextFinder value =
+  sendMessage nsTextFinder setFindIndicatorNeedsUpdateSelector value
 
 -- | @- incrementalSearchingEnabled@
 incrementalSearchingEnabled :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO Bool
-incrementalSearchingEnabled nsTextFinder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextFinder (mkSelector "incrementalSearchingEnabled") retCULong []
+incrementalSearchingEnabled nsTextFinder =
+  sendMessage nsTextFinder incrementalSearchingEnabledSelector
 
 -- | @- setIncrementalSearchingEnabled:@
 setIncrementalSearchingEnabled :: IsNSTextFinder nsTextFinder => nsTextFinder -> Bool -> IO ()
-setIncrementalSearchingEnabled nsTextFinder  value =
-    sendMsg nsTextFinder (mkSelector "setIncrementalSearchingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setIncrementalSearchingEnabled nsTextFinder value =
+  sendMessage nsTextFinder setIncrementalSearchingEnabledSelector value
 
 -- | @- incrementalSearchingShouldDimContentView@
 incrementalSearchingShouldDimContentView :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO Bool
-incrementalSearchingShouldDimContentView nsTextFinder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextFinder (mkSelector "incrementalSearchingShouldDimContentView") retCULong []
+incrementalSearchingShouldDimContentView nsTextFinder =
+  sendMessage nsTextFinder incrementalSearchingShouldDimContentViewSelector
 
 -- | @- setIncrementalSearchingShouldDimContentView:@
 setIncrementalSearchingShouldDimContentView :: IsNSTextFinder nsTextFinder => nsTextFinder -> Bool -> IO ()
-setIncrementalSearchingShouldDimContentView nsTextFinder  value =
-    sendMsg nsTextFinder (mkSelector "setIncrementalSearchingShouldDimContentView:") retVoid [argCULong (if value then 1 else 0)]
+setIncrementalSearchingShouldDimContentView nsTextFinder value =
+  sendMessage nsTextFinder setIncrementalSearchingShouldDimContentViewSelector value
 
 -- | @- incrementalMatchRanges@
 incrementalMatchRanges :: IsNSTextFinder nsTextFinder => nsTextFinder -> IO (Id NSArray)
-incrementalMatchRanges nsTextFinder  =
-    sendMsg nsTextFinder (mkSelector "incrementalMatchRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+incrementalMatchRanges nsTextFinder =
+  sendMessage nsTextFinder incrementalMatchRangesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextFinder)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextFinder)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @performAction:@
-performActionSelector :: Selector
+performActionSelector :: Selector '[NSTextFinderAction] ()
 performActionSelector = mkSelector "performAction:"
 
 -- | @Selector@ for @validateAction:@
-validateActionSelector :: Selector
+validateActionSelector :: Selector '[NSTextFinderAction] Bool
 validateActionSelector = mkSelector "validateAction:"
 
 -- | @Selector@ for @cancelFindIndicator@
-cancelFindIndicatorSelector :: Selector
+cancelFindIndicatorSelector :: Selector '[] ()
 cancelFindIndicatorSelector = mkSelector "cancelFindIndicator"
 
 -- | @Selector@ for @drawIncrementalMatchHighlightInRect:@
-drawIncrementalMatchHighlightInRectSelector :: Selector
+drawIncrementalMatchHighlightInRectSelector :: Selector '[NSRect] ()
 drawIncrementalMatchHighlightInRectSelector = mkSelector "drawIncrementalMatchHighlightInRect:"
 
 -- | @Selector@ for @noteClientStringWillChange@
-noteClientStringWillChangeSelector :: Selector
+noteClientStringWillChangeSelector :: Selector '[] ()
 noteClientStringWillChangeSelector = mkSelector "noteClientStringWillChange"
 
 -- | @Selector@ for @client@
-clientSelector :: Selector
+clientSelector :: Selector '[] RawId
 clientSelector = mkSelector "client"
 
 -- | @Selector@ for @setClient:@
-setClientSelector :: Selector
+setClientSelector :: Selector '[RawId] ()
 setClientSelector = mkSelector "setClient:"
 
 -- | @Selector@ for @findBarContainer@
-findBarContainerSelector :: Selector
+findBarContainerSelector :: Selector '[] RawId
 findBarContainerSelector = mkSelector "findBarContainer"
 
 -- | @Selector@ for @setFindBarContainer:@
-setFindBarContainerSelector :: Selector
+setFindBarContainerSelector :: Selector '[RawId] ()
 setFindBarContainerSelector = mkSelector "setFindBarContainer:"
 
 -- | @Selector@ for @findIndicatorNeedsUpdate@
-findIndicatorNeedsUpdateSelector :: Selector
+findIndicatorNeedsUpdateSelector :: Selector '[] Bool
 findIndicatorNeedsUpdateSelector = mkSelector "findIndicatorNeedsUpdate"
 
 -- | @Selector@ for @setFindIndicatorNeedsUpdate:@
-setFindIndicatorNeedsUpdateSelector :: Selector
+setFindIndicatorNeedsUpdateSelector :: Selector '[Bool] ()
 setFindIndicatorNeedsUpdateSelector = mkSelector "setFindIndicatorNeedsUpdate:"
 
 -- | @Selector@ for @incrementalSearchingEnabled@
-incrementalSearchingEnabledSelector :: Selector
+incrementalSearchingEnabledSelector :: Selector '[] Bool
 incrementalSearchingEnabledSelector = mkSelector "incrementalSearchingEnabled"
 
 -- | @Selector@ for @setIncrementalSearchingEnabled:@
-setIncrementalSearchingEnabledSelector :: Selector
+setIncrementalSearchingEnabledSelector :: Selector '[Bool] ()
 setIncrementalSearchingEnabledSelector = mkSelector "setIncrementalSearchingEnabled:"
 
 -- | @Selector@ for @incrementalSearchingShouldDimContentView@
-incrementalSearchingShouldDimContentViewSelector :: Selector
+incrementalSearchingShouldDimContentViewSelector :: Selector '[] Bool
 incrementalSearchingShouldDimContentViewSelector = mkSelector "incrementalSearchingShouldDimContentView"
 
 -- | @Selector@ for @setIncrementalSearchingShouldDimContentView:@
-setIncrementalSearchingShouldDimContentViewSelector :: Selector
+setIncrementalSearchingShouldDimContentViewSelector :: Selector '[Bool] ()
 setIncrementalSearchingShouldDimContentViewSelector = mkSelector "setIncrementalSearchingShouldDimContentView:"
 
 -- | @Selector@ for @incrementalMatchRanges@
-incrementalMatchRangesSelector :: Selector
+incrementalMatchRangesSelector :: Selector '[] (Id NSArray)
 incrementalMatchRangesSelector = mkSelector "incrementalMatchRanges"
 

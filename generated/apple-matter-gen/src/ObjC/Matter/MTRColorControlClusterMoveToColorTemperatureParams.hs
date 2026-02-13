@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRColorControlClusterMoveToColorTemperatureParams
   , colorTemperature
   , setColorTemperature
   , colorTemperatureMiredsSelector
-  , setColorTemperatureMiredsSelector
-  , transitionTimeSelector
-  , setTransitionTimeSelector
-  , optionsMaskSelector
-  , setOptionsMaskSelector
-  , optionsOverrideSelector
-  , setOptionsOverrideSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
   , colorTemperatureSelector
+  , optionsMaskSelector
+  , optionsOverrideSelector
+  , serverSideProcessingTimeoutSelector
+  , setColorTemperatureMiredsSelector
   , setColorTemperatureSelector
+  , setOptionsMaskSelector
+  , setOptionsOverrideSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTransitionTimeSelector
+  , timedInvokeTimeoutMsSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,47 +52,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- colorTemperatureMireds@
 colorTemperatureMireds :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-colorTemperatureMireds mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "colorTemperatureMireds") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorTemperatureMireds mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams colorTemperatureMiredsSelector
 
 -- | @- setColorTemperatureMireds:@
 setColorTemperatureMireds :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setColorTemperatureMireds mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setColorTemperatureMireds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColorTemperatureMireds mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setColorTemperatureMiredsSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-transitionTime mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setTransitionTime mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setTransitionTimeSelector (toNSNumber value)
 
 -- | @- optionsMask@
 optionsMask :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-optionsMask mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "optionsMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsMask mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams optionsMaskSelector
 
 -- | @- setOptionsMask:@
 setOptionsMask :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setOptionsMask mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setOptionsMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsMask mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setOptionsMaskSelector (toNSNumber value)
 
 -- | @- optionsOverride@
 optionsOverride :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-optionsOverride mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "optionsOverride") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsOverride mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams optionsOverrideSelector
 
 -- | @- setOptionsOverride:@
 setOptionsOverride :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setOptionsOverride mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setOptionsOverride:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsOverride mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setOptionsOverrideSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -105,8 +98,8 @@ setOptionsOverride mtrColorControlClusterMoveToColorTemperatureParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,9 +109,8 @@ timedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -128,8 +120,8 @@ setTimedInvokeTimeoutMs mtrColorControlClusterMoveToColorTemperatureParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,78 +131,76 @@ serverSideProcessingTimeout mtrColorControlClusterMoveToColorTemperatureParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setServerSideProcessingTimeout mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- | @- colorTemperature@
 colorTemperature :: IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams => mtrColorControlClusterMoveToColorTemperatureParams -> IO (Id NSNumber)
-colorTemperature mtrColorControlClusterMoveToColorTemperatureParams  =
-    sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "colorTemperature") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorTemperature mtrColorControlClusterMoveToColorTemperatureParams =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams colorTemperatureSelector
 
 -- | @- setColorTemperature:@
 setColorTemperature :: (IsMTRColorControlClusterMoveToColorTemperatureParams mtrColorControlClusterMoveToColorTemperatureParams, IsNSNumber value) => mtrColorControlClusterMoveToColorTemperatureParams -> value -> IO ()
-setColorTemperature mtrColorControlClusterMoveToColorTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToColorTemperatureParams (mkSelector "setColorTemperature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColorTemperature mtrColorControlClusterMoveToColorTemperatureParams value =
+  sendMessage mtrColorControlClusterMoveToColorTemperatureParams setColorTemperatureSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @colorTemperatureMireds@
-colorTemperatureMiredsSelector :: Selector
+colorTemperatureMiredsSelector :: Selector '[] (Id NSNumber)
 colorTemperatureMiredsSelector = mkSelector "colorTemperatureMireds"
 
 -- | @Selector@ for @setColorTemperatureMireds:@
-setColorTemperatureMiredsSelector :: Selector
+setColorTemperatureMiredsSelector :: Selector '[Id NSNumber] ()
 setColorTemperatureMiredsSelector = mkSelector "setColorTemperatureMireds:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @optionsMask@
-optionsMaskSelector :: Selector
+optionsMaskSelector :: Selector '[] (Id NSNumber)
 optionsMaskSelector = mkSelector "optionsMask"
 
 -- | @Selector@ for @setOptionsMask:@
-setOptionsMaskSelector :: Selector
+setOptionsMaskSelector :: Selector '[Id NSNumber] ()
 setOptionsMaskSelector = mkSelector "setOptionsMask:"
 
 -- | @Selector@ for @optionsOverride@
-optionsOverrideSelector :: Selector
+optionsOverrideSelector :: Selector '[] (Id NSNumber)
 optionsOverrideSelector = mkSelector "optionsOverride"
 
 -- | @Selector@ for @setOptionsOverride:@
-setOptionsOverrideSelector :: Selector
+setOptionsOverrideSelector :: Selector '[Id NSNumber] ()
 setOptionsOverrideSelector = mkSelector "setOptionsOverride:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 
 -- | @Selector@ for @colorTemperature@
-colorTemperatureSelector :: Selector
+colorTemperatureSelector :: Selector '[] (Id NSNumber)
 colorTemperatureSelector = mkSelector "colorTemperature"
 
 -- | @Selector@ for @setColorTemperature:@
-setColorTemperatureSelector :: Selector
+setColorTemperatureSelector :: Selector '[Id NSNumber] ()
 setColorTemperatureSelector = mkSelector "setColorTemperature:"
 

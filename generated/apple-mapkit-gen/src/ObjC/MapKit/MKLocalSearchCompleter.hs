@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,23 +25,23 @@ module ObjC.MapKit.MKLocalSearchCompleter
   , setDelegate
   , results
   , searching
-  , cancelSelector
-  , queryFragmentSelector
-  , setQueryFragmentSelector
-  , regionPrioritySelector
-  , setRegionPrioritySelector
-  , filterTypeSelector
-  , setFilterTypeSelector
-  , resultTypesSelector
-  , setResultTypesSelector
-  , pointOfInterestFilterSelector
-  , setPointOfInterestFilterSelector
   , addressFilterSelector
-  , setAddressFilterSelector
+  , cancelSelector
   , delegateSelector
-  , setDelegateSelector
+  , filterTypeSelector
+  , pointOfInterestFilterSelector
+  , queryFragmentSelector
+  , regionPrioritySelector
+  , resultTypesSelector
   , resultsSelector
   , searchingSelector
+  , setAddressFilterSelector
+  , setDelegateSelector
+  , setFilterTypeSelector
+  , setPointOfInterestFilterSelector
+  , setQueryFragmentSelector
+  , setRegionPrioritySelector
+  , setResultTypesSelector
 
   -- * Enum types
   , MKLocalSearchCompleterResultType(MKLocalSearchCompleterResultType)
@@ -57,15 +58,11 @@ module ObjC.MapKit.MKLocalSearchCompleter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,161 +72,158 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cancel@
 cancel :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO ()
-cancel mkLocalSearchCompleter  =
-    sendMsg mkLocalSearchCompleter (mkSelector "cancel") retVoid []
+cancel mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter cancelSelector
 
 -- | @- queryFragment@
 queryFragment :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO (Id NSString)
-queryFragment mkLocalSearchCompleter  =
-    sendMsg mkLocalSearchCompleter (mkSelector "queryFragment") (retPtr retVoid) [] >>= retainedObject . castPtr
+queryFragment mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter queryFragmentSelector
 
 -- | @- setQueryFragment:@
 setQueryFragment :: (IsMKLocalSearchCompleter mkLocalSearchCompleter, IsNSString value) => mkLocalSearchCompleter -> value -> IO ()
-setQueryFragment mkLocalSearchCompleter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkLocalSearchCompleter (mkSelector "setQueryFragment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQueryFragment mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setQueryFragmentSelector (toNSString value)
 
 -- | @- regionPriority@
 regionPriority :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO MKLocalSearchRegionPriority
-regionPriority mkLocalSearchCompleter  =
-    fmap (coerce :: CLong -> MKLocalSearchRegionPriority) $ sendMsg mkLocalSearchCompleter (mkSelector "regionPriority") retCLong []
+regionPriority mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter regionPrioritySelector
 
 -- | @- setRegionPriority:@
 setRegionPriority :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> MKLocalSearchRegionPriority -> IO ()
-setRegionPriority mkLocalSearchCompleter  value =
-    sendMsg mkLocalSearchCompleter (mkSelector "setRegionPriority:") retVoid [argCLong (coerce value)]
+setRegionPriority mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setRegionPrioritySelector value
 
 -- | @- filterType@
 filterType :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO MKSearchCompletionFilterType
-filterType mkLocalSearchCompleter  =
-    fmap (coerce :: CLong -> MKSearchCompletionFilterType) $ sendMsg mkLocalSearchCompleter (mkSelector "filterType") retCLong []
+filterType mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter filterTypeSelector
 
 -- | @- setFilterType:@
 setFilterType :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> MKSearchCompletionFilterType -> IO ()
-setFilterType mkLocalSearchCompleter  value =
-    sendMsg mkLocalSearchCompleter (mkSelector "setFilterType:") retVoid [argCLong (coerce value)]
+setFilterType mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setFilterTypeSelector value
 
 -- | @- resultTypes@
 resultTypes :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO MKLocalSearchCompleterResultType
-resultTypes mkLocalSearchCompleter  =
-    fmap (coerce :: CULong -> MKLocalSearchCompleterResultType) $ sendMsg mkLocalSearchCompleter (mkSelector "resultTypes") retCULong []
+resultTypes mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter resultTypesSelector
 
 -- | @- setResultTypes:@
 setResultTypes :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> MKLocalSearchCompleterResultType -> IO ()
-setResultTypes mkLocalSearchCompleter  value =
-    sendMsg mkLocalSearchCompleter (mkSelector "setResultTypes:") retVoid [argCULong (coerce value)]
+setResultTypes mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setResultTypesSelector value
 
 -- | @- pointOfInterestFilter@
 pointOfInterestFilter :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO (Id MKPointOfInterestFilter)
-pointOfInterestFilter mkLocalSearchCompleter  =
-    sendMsg mkLocalSearchCompleter (mkSelector "pointOfInterestFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfInterestFilter mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter pointOfInterestFilterSelector
 
 -- | @- setPointOfInterestFilter:@
 setPointOfInterestFilter :: (IsMKLocalSearchCompleter mkLocalSearchCompleter, IsMKPointOfInterestFilter value) => mkLocalSearchCompleter -> value -> IO ()
-setPointOfInterestFilter mkLocalSearchCompleter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkLocalSearchCompleter (mkSelector "setPointOfInterestFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfInterestFilter mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setPointOfInterestFilterSelector (toMKPointOfInterestFilter value)
 
 -- | @- addressFilter@
 addressFilter :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO (Id MKAddressFilter)
-addressFilter mkLocalSearchCompleter  =
-    sendMsg mkLocalSearchCompleter (mkSelector "addressFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressFilter mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter addressFilterSelector
 
 -- | @- setAddressFilter:@
 setAddressFilter :: (IsMKLocalSearchCompleter mkLocalSearchCompleter, IsMKAddressFilter value) => mkLocalSearchCompleter -> value -> IO ()
-setAddressFilter mkLocalSearchCompleter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkLocalSearchCompleter (mkSelector "setAddressFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAddressFilter mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setAddressFilterSelector (toMKAddressFilter value)
 
 -- | @- delegate@
 delegate :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO RawId
-delegate mkLocalSearchCompleter  =
-    fmap (RawId . castPtr) $ sendMsg mkLocalSearchCompleter (mkSelector "delegate") (retPtr retVoid) []
+delegate mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> RawId -> IO ()
-setDelegate mkLocalSearchCompleter  value =
-    sendMsg mkLocalSearchCompleter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mkLocalSearchCompleter value =
+  sendMessage mkLocalSearchCompleter setDelegateSelector value
 
 -- | @- results@
 results :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO (Id NSArray)
-results mkLocalSearchCompleter  =
-    sendMsg mkLocalSearchCompleter (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter resultsSelector
 
 -- | @- searching@
 searching :: IsMKLocalSearchCompleter mkLocalSearchCompleter => mkLocalSearchCompleter -> IO Bool
-searching mkLocalSearchCompleter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkLocalSearchCompleter (mkSelector "searching") retCULong []
+searching mkLocalSearchCompleter =
+  sendMessage mkLocalSearchCompleter searchingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @queryFragment@
-queryFragmentSelector :: Selector
+queryFragmentSelector :: Selector '[] (Id NSString)
 queryFragmentSelector = mkSelector "queryFragment"
 
 -- | @Selector@ for @setQueryFragment:@
-setQueryFragmentSelector :: Selector
+setQueryFragmentSelector :: Selector '[Id NSString] ()
 setQueryFragmentSelector = mkSelector "setQueryFragment:"
 
 -- | @Selector@ for @regionPriority@
-regionPrioritySelector :: Selector
+regionPrioritySelector :: Selector '[] MKLocalSearchRegionPriority
 regionPrioritySelector = mkSelector "regionPriority"
 
 -- | @Selector@ for @setRegionPriority:@
-setRegionPrioritySelector :: Selector
+setRegionPrioritySelector :: Selector '[MKLocalSearchRegionPriority] ()
 setRegionPrioritySelector = mkSelector "setRegionPriority:"
 
 -- | @Selector@ for @filterType@
-filterTypeSelector :: Selector
+filterTypeSelector :: Selector '[] MKSearchCompletionFilterType
 filterTypeSelector = mkSelector "filterType"
 
 -- | @Selector@ for @setFilterType:@
-setFilterTypeSelector :: Selector
+setFilterTypeSelector :: Selector '[MKSearchCompletionFilterType] ()
 setFilterTypeSelector = mkSelector "setFilterType:"
 
 -- | @Selector@ for @resultTypes@
-resultTypesSelector :: Selector
+resultTypesSelector :: Selector '[] MKLocalSearchCompleterResultType
 resultTypesSelector = mkSelector "resultTypes"
 
 -- | @Selector@ for @setResultTypes:@
-setResultTypesSelector :: Selector
+setResultTypesSelector :: Selector '[MKLocalSearchCompleterResultType] ()
 setResultTypesSelector = mkSelector "setResultTypes:"
 
 -- | @Selector@ for @pointOfInterestFilter@
-pointOfInterestFilterSelector :: Selector
+pointOfInterestFilterSelector :: Selector '[] (Id MKPointOfInterestFilter)
 pointOfInterestFilterSelector = mkSelector "pointOfInterestFilter"
 
 -- | @Selector@ for @setPointOfInterestFilter:@
-setPointOfInterestFilterSelector :: Selector
+setPointOfInterestFilterSelector :: Selector '[Id MKPointOfInterestFilter] ()
 setPointOfInterestFilterSelector = mkSelector "setPointOfInterestFilter:"
 
 -- | @Selector@ for @addressFilter@
-addressFilterSelector :: Selector
+addressFilterSelector :: Selector '[] (Id MKAddressFilter)
 addressFilterSelector = mkSelector "addressFilter"
 
 -- | @Selector@ for @setAddressFilter:@
-setAddressFilterSelector :: Selector
+setAddressFilterSelector :: Selector '[Id MKAddressFilter] ()
 setAddressFilterSelector = mkSelector "setAddressFilter:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 
 -- | @Selector@ for @searching@
-searchingSelector :: Selector
+searchingSelector :: Selector '[] Bool
 searchingSelector = mkSelector "searching"
 

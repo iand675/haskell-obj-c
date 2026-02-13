@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSSecureTextFieldCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- echosBullets@
 echosBullets :: IsNSSecureTextFieldCell nsSecureTextFieldCell => nsSecureTextFieldCell -> IO Bool
-echosBullets nsSecureTextFieldCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSecureTextFieldCell (mkSelector "echosBullets") retCULong []
+echosBullets nsSecureTextFieldCell =
+  sendMessage nsSecureTextFieldCell echosBulletsSelector
 
 -- | @- setEchosBullets:@
 setEchosBullets :: IsNSSecureTextFieldCell nsSecureTextFieldCell => nsSecureTextFieldCell -> Bool -> IO ()
-setEchosBullets nsSecureTextFieldCell  value =
-    sendMsg nsSecureTextFieldCell (mkSelector "setEchosBullets:") retVoid [argCULong (if value then 1 else 0)]
+setEchosBullets nsSecureTextFieldCell value =
+  sendMessage nsSecureTextFieldCell setEchosBulletsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @echosBullets@
-echosBulletsSelector :: Selector
+echosBulletsSelector :: Selector '[] Bool
 echosBulletsSelector = mkSelector "echosBullets"
 
 -- | @Selector@ for @setEchosBullets:@
-setEchosBulletsSelector :: Selector
+setEchosBulletsSelector :: Selector '[Bool] ()
 setEchosBulletsSelector = mkSelector "setEchosBullets:"
 

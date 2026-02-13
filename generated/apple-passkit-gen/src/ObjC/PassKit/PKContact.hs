@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.PassKit.PKContact
   , setEmailAddress
   , supplementarySubLocality
   , setSupplementarySubLocality
-  , nameSelector
-  , setNameSelector
   , emailAddressSelector
+  , nameSelector
   , setEmailAddressSelector
-  , supplementarySubLocalitySelector
+  , setNameSelector
   , setSupplementarySubLocalitySelector
+  , supplementarySubLocalitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsPKContact pkContact => pkContact -> IO (Id NSPersonNameComponents)
-name pkContact  =
-    sendMsg pkContact (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name pkContact =
+  sendMessage pkContact nameSelector
 
 -- | @- setName:@
 setName :: (IsPKContact pkContact, IsNSPersonNameComponents value) => pkContact -> value -> IO ()
-setName pkContact  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkContact (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName pkContact value =
+  sendMessage pkContact setNameSelector (toNSPersonNameComponents value)
 
 -- | @- emailAddress@
 emailAddress :: IsPKContact pkContact => pkContact -> IO (Id NSString)
-emailAddress pkContact  =
-    sendMsg pkContact (mkSelector "emailAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddress pkContact =
+  sendMessage pkContact emailAddressSelector
 
 -- | @- setEmailAddress:@
 setEmailAddress :: (IsPKContact pkContact, IsNSString value) => pkContact -> value -> IO ()
-setEmailAddress pkContact  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkContact (mkSelector "setEmailAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEmailAddress pkContact value =
+  sendMessage pkContact setEmailAddressSelector (toNSString value)
 
 -- | @- supplementarySubLocality@
 supplementarySubLocality :: IsPKContact pkContact => pkContact -> IO (Id NSString)
-supplementarySubLocality pkContact  =
-    sendMsg pkContact (mkSelector "supplementarySubLocality") (retPtr retVoid) [] >>= retainedObject . castPtr
+supplementarySubLocality pkContact =
+  sendMessage pkContact supplementarySubLocalitySelector
 
 -- | @- setSupplementarySubLocality:@
 setSupplementarySubLocality :: (IsPKContact pkContact, IsNSString value) => pkContact -> value -> IO ()
-setSupplementarySubLocality pkContact  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkContact (mkSelector "setSupplementarySubLocality:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupplementarySubLocality pkContact value =
+  sendMessage pkContact setSupplementarySubLocalitySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSPersonNameComponents)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSPersonNameComponents] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @emailAddress@
-emailAddressSelector :: Selector
+emailAddressSelector :: Selector '[] (Id NSString)
 emailAddressSelector = mkSelector "emailAddress"
 
 -- | @Selector@ for @setEmailAddress:@
-setEmailAddressSelector :: Selector
+setEmailAddressSelector :: Selector '[Id NSString] ()
 setEmailAddressSelector = mkSelector "setEmailAddress:"
 
 -- | @Selector@ for @supplementarySubLocality@
-supplementarySubLocalitySelector :: Selector
+supplementarySubLocalitySelector :: Selector '[] (Id NSString)
 supplementarySubLocalitySelector = mkSelector "supplementarySubLocality"
 
 -- | @Selector@ for @setSupplementarySubLocality:@
-setSupplementarySubLocalitySelector :: Selector
+setSupplementarySubLocalitySelector :: Selector '[Id NSString] ()
 setSupplementarySubLocalitySelector = mkSelector "setSupplementarySubLocality:"
 

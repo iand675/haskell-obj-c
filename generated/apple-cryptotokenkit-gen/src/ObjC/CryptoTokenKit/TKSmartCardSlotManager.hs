@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.CryptoTokenKit.TKSmartCardSlotManager
   , isNFCSupported
   , defaultManager
   , slotNames
-  , getSlotWithName_replySelector
-  , slotNamedSelector
   , createNFCSlotWithMessage_completionSelector
-  , isNFCSupportedSelector
   , defaultManagerSelector
+  , getSlotWithName_replySelector
+  , isNFCSupportedSelector
+  , slotNamedSelector
   , slotNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,17 +40,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getSlotWithName:reply:@
 getSlotWithName_reply :: (IsTKSmartCardSlotManager tkSmartCardSlotManager, IsNSString name) => tkSmartCardSlotManager -> name -> Ptr () -> IO ()
-getSlotWithName_reply tkSmartCardSlotManager  name reply =
-  withObjCPtr name $ \raw_name ->
-      sendMsg tkSmartCardSlotManager (mkSelector "getSlotWithName:reply:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr reply :: Ptr ())]
+getSlotWithName_reply tkSmartCardSlotManager name reply =
+  sendMessage tkSmartCardSlotManager getSlotWithName_replySelector (toNSString name) reply
 
 -- | Gets SmartCard reader slot with specified name.  If reader slot with this name does not exist, returns nil.
 --
 -- ObjC selector: @- slotNamed:@
 slotNamed :: (IsTKSmartCardSlotManager tkSmartCardSlotManager, IsNSString name) => tkSmartCardSlotManager -> name -> IO (Id TKSmartCardSlot)
-slotNamed tkSmartCardSlotManager  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg tkSmartCardSlotManager (mkSelector "slotNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+slotNamed tkSmartCardSlotManager name =
+  sendMessage tkSmartCardSlotManager slotNamedSelector (toNSString name)
 
 -- | Creates an NFC smart card slot using the device's hardware and presents a system UI.
 --
@@ -69,9 +64,8 @@ slotNamed tkSmartCardSlotManager  name =
 --
 -- ObjC selector: @- createNFCSlotWithMessage:completion:@
 createNFCSlotWithMessage_completion :: (IsTKSmartCardSlotManager tkSmartCardSlotManager, IsNSString message) => tkSmartCardSlotManager -> message -> Ptr () -> IO ()
-createNFCSlotWithMessage_completion tkSmartCardSlotManager  message completion =
-  withObjCPtr message $ \raw_message ->
-      sendMsg tkSmartCardSlotManager (mkSelector "createNFCSlotWithMessage:completion:") retVoid [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+createNFCSlotWithMessage_completion tkSmartCardSlotManager message completion =
+  sendMessage tkSmartCardSlotManager createNFCSlotWithMessage_completionSelector (toNSString message) completion
 
 -- | Determines whether NFC (Near Field Communication) is supported on this device.
 --
@@ -79,8 +73,8 @@ createNFCSlotWithMessage_completion tkSmartCardSlotManager  message completion =
 --
 -- ObjC selector: @- isNFCSupported@
 isNFCSupported :: IsTKSmartCardSlotManager tkSmartCardSlotManager => tkSmartCardSlotManager -> IO Bool
-isNFCSupported tkSmartCardSlotManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardSlotManager (mkSelector "isNFCSupported") retCULong []
+isNFCSupported tkSmartCardSlotManager =
+  sendMessage tkSmartCardSlotManager isNFCSupportedSelector
 
 -- | Global pool of SmartCard reader slots. macOS: Note that defaultManager instance is accessible only if the calling application has 'com.apple.security.smartcard' entitlement set to Boolean:YES.  If the calling application does not have this entitlement, defaultManager is always set to nil. iOS: The defaultManager instance is always accessible.
 --
@@ -89,40 +83,40 @@ defaultManager :: IO (Id TKSmartCardSlotManager)
 defaultManager  =
   do
     cls' <- getRequiredClass "TKSmartCardSlotManager"
-    sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultManagerSelector
 
 -- | Array of currently known slots in the system.  Slots are identified by NSString name instances.  Use KVO to be notified about slots arrivals and removals.
 --
 -- ObjC selector: @- slotNames@
 slotNames :: IsTKSmartCardSlotManager tkSmartCardSlotManager => tkSmartCardSlotManager -> IO (Id NSArray)
-slotNames tkSmartCardSlotManager  =
-    sendMsg tkSmartCardSlotManager (mkSelector "slotNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+slotNames tkSmartCardSlotManager =
+  sendMessage tkSmartCardSlotManager slotNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getSlotWithName:reply:@
-getSlotWithName_replySelector :: Selector
+getSlotWithName_replySelector :: Selector '[Id NSString, Ptr ()] ()
 getSlotWithName_replySelector = mkSelector "getSlotWithName:reply:"
 
 -- | @Selector@ for @slotNamed:@
-slotNamedSelector :: Selector
+slotNamedSelector :: Selector '[Id NSString] (Id TKSmartCardSlot)
 slotNamedSelector = mkSelector "slotNamed:"
 
 -- | @Selector@ for @createNFCSlotWithMessage:completion:@
-createNFCSlotWithMessage_completionSelector :: Selector
+createNFCSlotWithMessage_completionSelector :: Selector '[Id NSString, Ptr ()] ()
 createNFCSlotWithMessage_completionSelector = mkSelector "createNFCSlotWithMessage:completion:"
 
 -- | @Selector@ for @isNFCSupported@
-isNFCSupportedSelector :: Selector
+isNFCSupportedSelector :: Selector '[] Bool
 isNFCSupportedSelector = mkSelector "isNFCSupported"
 
 -- | @Selector@ for @defaultManager@
-defaultManagerSelector :: Selector
+defaultManagerSelector :: Selector '[] (Id TKSmartCardSlotManager)
 defaultManagerSelector = mkSelector "defaultManager"
 
 -- | @Selector@ for @slotNames@
-slotNamesSelector :: Selector
+slotNamesSelector :: Selector '[] (Id NSArray)
 slotNamesSelector = mkSelector "slotNames"
 

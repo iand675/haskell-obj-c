@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.JavaRuntimeSupport.JRSInputMethodController
   , currentInputMethodName
   , currentInputMethodLocale
   , setCurrentInputMethodForLocale
-  , controllerSelector
   , availableInputMethodLocalesSelector
-  , currentInputMethodNameSelector
+  , controllerSelector
   , currentInputMethodLocaleSelector
+  , currentInputMethodNameSelector
   , setCurrentInputMethodForLocaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,50 +37,49 @@ controller :: IO (Id JRSInputMethodController)
 controller  =
   do
     cls' <- getRequiredClass "JRSInputMethodController"
-    sendClassMsg cls' (mkSelector "controller") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' controllerSelector
 
 -- | @- availableInputMethodLocales@
 availableInputMethodLocales :: IsJRSInputMethodController jrsInputMethodController => jrsInputMethodController -> IO (Id NSArray)
-availableInputMethodLocales jrsInputMethodController  =
-    sendMsg jrsInputMethodController (mkSelector "availableInputMethodLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableInputMethodLocales jrsInputMethodController =
+  sendMessage jrsInputMethodController availableInputMethodLocalesSelector
 
 -- | @- currentInputMethodName@
 currentInputMethodName :: IsJRSInputMethodController jrsInputMethodController => jrsInputMethodController -> IO (Id NSString)
-currentInputMethodName jrsInputMethodController  =
-    sendMsg jrsInputMethodController (mkSelector "currentInputMethodName") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentInputMethodName jrsInputMethodController =
+  sendMessage jrsInputMethodController currentInputMethodNameSelector
 
 -- | @- currentInputMethodLocale@
 currentInputMethodLocale :: IsJRSInputMethodController jrsInputMethodController => jrsInputMethodController -> IO (Id NSString)
-currentInputMethodLocale jrsInputMethodController  =
-    sendMsg jrsInputMethodController (mkSelector "currentInputMethodLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentInputMethodLocale jrsInputMethodController =
+  sendMessage jrsInputMethodController currentInputMethodLocaleSelector
 
 -- | @- setCurrentInputMethodForLocale:@
 setCurrentInputMethodForLocale :: (IsJRSInputMethodController jrsInputMethodController, IsNSString theLocale) => jrsInputMethodController -> theLocale -> IO ()
-setCurrentInputMethodForLocale jrsInputMethodController  theLocale =
-  withObjCPtr theLocale $ \raw_theLocale ->
-      sendMsg jrsInputMethodController (mkSelector "setCurrentInputMethodForLocale:") retVoid [argPtr (castPtr raw_theLocale :: Ptr ())]
+setCurrentInputMethodForLocale jrsInputMethodController theLocale =
+  sendMessage jrsInputMethodController setCurrentInputMethodForLocaleSelector (toNSString theLocale)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controller@
-controllerSelector :: Selector
+controllerSelector :: Selector '[] (Id JRSInputMethodController)
 controllerSelector = mkSelector "controller"
 
 -- | @Selector@ for @availableInputMethodLocales@
-availableInputMethodLocalesSelector :: Selector
+availableInputMethodLocalesSelector :: Selector '[] (Id NSArray)
 availableInputMethodLocalesSelector = mkSelector "availableInputMethodLocales"
 
 -- | @Selector@ for @currentInputMethodName@
-currentInputMethodNameSelector :: Selector
+currentInputMethodNameSelector :: Selector '[] (Id NSString)
 currentInputMethodNameSelector = mkSelector "currentInputMethodName"
 
 -- | @Selector@ for @currentInputMethodLocale@
-currentInputMethodLocaleSelector :: Selector
+currentInputMethodLocaleSelector :: Selector '[] (Id NSString)
 currentInputMethodLocaleSelector = mkSelector "currentInputMethodLocale"
 
 -- | @Selector@ for @setCurrentInputMethodForLocale:@
-setCurrentInputMethodForLocaleSelector :: Selector
+setCurrentInputMethodForLocaleSelector :: Selector '[Id NSString] ()
 setCurrentInputMethodForLocaleSelector = mkSelector "setCurrentInputMethodForLocale:"
 

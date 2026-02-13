@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,49 +37,45 @@ module ObjC.MLCompute.MLCActivationLayer
   , tanhShrinkLayer
   , geluLayer
   , hardSwishLayer
-  , layerWithDescriptorSelector
-  , leakyReLULayerWithNegativeSlopeSelector
-  , linearLayerWithScale_biasSelector
-  , softPlusLayerWithBetaSelector
-  , eluLayerWithASelector
-  , relunLayerWithA_bSelector
+  , absoluteLayerSelector
+  , celuLayerSelector
   , celuLayerWithASelector
-  , hardShrinkLayerWithASelector
-  , softShrinkLayerWithASelector
-  , thresholdLayerWithThreshold_replacementSelector
   , clampLayerWithMinValue_maxValueSelector
   , descriptorSelector
-  , reluLayerSelector
-  , relu6LayerSelector
-  , leakyReLULayerSelector
-  , sigmoidLayerSelector
-  , hardSigmoidLayerSelector
-  , tanhLayerSelector
-  , absoluteLayerSelector
-  , softPlusLayerSelector
-  , softSignLayerSelector
   , eluLayerSelector
-  , logSigmoidLayerSelector
-  , seluLayerSelector
-  , celuLayerSelector
-  , hardShrinkLayerSelector
-  , softShrinkLayerSelector
-  , tanhShrinkLayerSelector
+  , eluLayerWithASelector
   , geluLayerSelector
+  , hardShrinkLayerSelector
+  , hardShrinkLayerWithASelector
+  , hardSigmoidLayerSelector
   , hardSwishLayerSelector
+  , layerWithDescriptorSelector
+  , leakyReLULayerSelector
+  , leakyReLULayerWithNegativeSlopeSelector
+  , linearLayerWithScale_biasSelector
+  , logSigmoidLayerSelector
+  , relu6LayerSelector
+  , reluLayerSelector
+  , relunLayerWithA_bSelector
+  , seluLayerSelector
+  , sigmoidLayerSelector
+  , softPlusLayerSelector
+  , softPlusLayerWithBetaSelector
+  , softShrinkLayerSelector
+  , softShrinkLayerWithASelector
+  , softSignLayerSelector
+  , tanhLayerSelector
+  , tanhShrinkLayerSelector
+  , thresholdLayerWithThreshold_replacementSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -96,8 +93,7 @@ layerWithDescriptor :: IsMLCActivationDescriptor descriptor => descriptor -> IO 
 layerWithDescriptor descriptor =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "layerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptorSelector (toMLCActivationDescriptor descriptor)
 
 -- | Create a leaky ReLU activation layer
 --
@@ -110,7 +106,7 @@ leakyReLULayerWithNegativeSlope :: CFloat -> IO (Id MLCActivationLayer)
 leakyReLULayerWithNegativeSlope negativeSlope =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "leakyReLULayerWithNegativeSlope:") (retPtr retVoid) [argCFloat negativeSlope] >>= retainedObject . castPtr
+    sendClassMessage cls' leakyReLULayerWithNegativeSlopeSelector negativeSlope
 
 -- | Create a linear activation layer
 --
@@ -125,7 +121,7 @@ linearLayerWithScale_bias :: CFloat -> CFloat -> IO (Id MLCActivationLayer)
 linearLayerWithScale_bias scale bias =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "linearLayerWithScale:bias:") (retPtr retVoid) [argCFloat scale, argCFloat bias] >>= retainedObject . castPtr
+    sendClassMessage cls' linearLayerWithScale_biasSelector scale bias
 
 -- | Create a soft plus activation layer
 --
@@ -138,7 +134,7 @@ softPlusLayerWithBeta :: CFloat -> IO (Id MLCActivationLayer)
 softPlusLayerWithBeta beta =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "softPlusLayerWithBeta:") (retPtr retVoid) [argCFloat beta] >>= retainedObject . castPtr
+    sendClassMessage cls' softPlusLayerWithBetaSelector beta
 
 -- | Create an ELU activation layer
 --
@@ -151,7 +147,7 @@ eluLayerWithA :: CFloat -> IO (Id MLCActivationLayer)
 eluLayerWithA a =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "eluLayerWithA:") (retPtr retVoid) [argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' eluLayerWithASelector a
 
 -- | Create a ReLUN activation layer
 --
@@ -168,7 +164,7 @@ relunLayerWithA_b :: CFloat -> CFloat -> IO (Id MLCActivationLayer)
 relunLayerWithA_b a b =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "relunLayerWithA:b:") (retPtr retVoid) [argCFloat a, argCFloat b] >>= retainedObject . castPtr
+    sendClassMessage cls' relunLayerWithA_bSelector a b
 
 -- | Create a CELU activation layer
 --
@@ -181,7 +177,7 @@ celuLayerWithA :: CFloat -> IO (Id MLCActivationLayer)
 celuLayerWithA a =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "celuLayerWithA:") (retPtr retVoid) [argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' celuLayerWithASelector a
 
 -- | Create a hard shrink activation layer
 --
@@ -194,7 +190,7 @@ hardShrinkLayerWithA :: CFloat -> IO (Id MLCActivationLayer)
 hardShrinkLayerWithA a =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "hardShrinkLayerWithA:") (retPtr retVoid) [argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' hardShrinkLayerWithASelector a
 
 -- | Create a soft shrink activation layer
 --
@@ -207,7 +203,7 @@ softShrinkLayerWithA :: CFloat -> IO (Id MLCActivationLayer)
 softShrinkLayerWithA a =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "softShrinkLayerWithA:") (retPtr retVoid) [argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' softShrinkLayerWithASelector a
 
 -- | Create a threshold activation layer
 --
@@ -222,7 +218,7 @@ thresholdLayerWithThreshold_replacement :: CFloat -> CFloat -> IO (Id MLCActivat
 thresholdLayerWithThreshold_replacement threshold replacement =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "thresholdLayerWithThreshold:replacement:") (retPtr retVoid) [argCFloat threshold, argCFloat replacement] >>= retainedObject . castPtr
+    sendClassMessage cls' thresholdLayerWithThreshold_replacementSelector threshold replacement
 
 -- | Create a clamp activation layer
 --
@@ -237,7 +233,7 @@ clampLayerWithMinValue_maxValue :: CFloat -> CFloat -> IO (Id MLCActivationLayer
 clampLayerWithMinValue_maxValue minValue maxValue =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "clampLayerWithMinValue:maxValue:") (retPtr retVoid) [argCFloat minValue, argCFloat maxValue] >>= retainedObject . castPtr
+    sendClassMessage cls' clampLayerWithMinValue_maxValueSelector minValue maxValue
 
 -- | descriptor
 --
@@ -245,8 +241,8 @@ clampLayerWithMinValue_maxValue minValue maxValue =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCActivationLayer mlcActivationLayer => mlcActivationLayer -> IO (Id MLCActivationDescriptor)
-descriptor mlcActivationLayer  =
-    sendMsg mlcActivationLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcActivationLayer =
+  sendMessage mlcActivationLayer descriptorSelector
 
 -- | Create a ReLU activation layer
 --
@@ -257,7 +253,7 @@ reluLayer :: IO (Id MLCActivationLayer)
 reluLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "reluLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' reluLayerSelector
 
 -- | Create a ReLU6 activation layer
 --
@@ -268,7 +264,7 @@ relu6Layer :: IO (Id MLCActivationLayer)
 relu6Layer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "relu6Layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' relu6LayerSelector
 
 -- | Create a leaky ReLU activation layer
 --
@@ -279,7 +275,7 @@ leakyReLULayer :: IO (Id MLCActivationLayer)
 leakyReLULayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "leakyReLULayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' leakyReLULayerSelector
 
 -- | Create a sigmoid activation layer
 --
@@ -290,7 +286,7 @@ sigmoidLayer :: IO (Id MLCActivationLayer)
 sigmoidLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "sigmoidLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sigmoidLayerSelector
 
 -- | Create a hard sigmoid activation layer
 --
@@ -301,7 +297,7 @@ hardSigmoidLayer :: IO (Id MLCActivationLayer)
 hardSigmoidLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "hardSigmoidLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardSigmoidLayerSelector
 
 -- | Create a tanh activation layer
 --
@@ -312,7 +308,7 @@ tanhLayer :: IO (Id MLCActivationLayer)
 tanhLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "tanhLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' tanhLayerSelector
 
 -- | Create an absolute activation layer
 --
@@ -323,7 +319,7 @@ absoluteLayer :: IO (Id MLCActivationLayer)
 absoluteLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "absoluteLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' absoluteLayerSelector
 
 -- | Create a soft plus activation layer
 --
@@ -334,7 +330,7 @@ softPlusLayer :: IO (Id MLCActivationLayer)
 softPlusLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "softPlusLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' softPlusLayerSelector
 
 -- | Create a soft sign activation layer
 --
@@ -345,7 +341,7 @@ softSignLayer :: IO (Id MLCActivationLayer)
 softSignLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "softSignLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' softSignLayerSelector
 
 -- | Create an ELU activation layer
 --
@@ -356,7 +352,7 @@ eluLayer :: IO (Id MLCActivationLayer)
 eluLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "eluLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' eluLayerSelector
 
 -- | Create a log sigmoid activation layer
 --
@@ -367,7 +363,7 @@ logSigmoidLayer :: IO (Id MLCActivationLayer)
 logSigmoidLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "logSigmoidLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' logSigmoidLayerSelector
 
 -- | Create a SELU activation layer
 --
@@ -378,7 +374,7 @@ seluLayer :: IO (Id MLCActivationLayer)
 seluLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "seluLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' seluLayerSelector
 
 -- | Create a CELU activation layer
 --
@@ -389,7 +385,7 @@ celuLayer :: IO (Id MLCActivationLayer)
 celuLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "celuLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' celuLayerSelector
 
 -- | Create a hard shrink activation layer
 --
@@ -400,7 +396,7 @@ hardShrinkLayer :: IO (Id MLCActivationLayer)
 hardShrinkLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "hardShrinkLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardShrinkLayerSelector
 
 -- | Create a soft shrink activation layer
 --
@@ -411,7 +407,7 @@ softShrinkLayer :: IO (Id MLCActivationLayer)
 softShrinkLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "softShrinkLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' softShrinkLayerSelector
 
 -- | Create a TanhShrink activation layer
 --
@@ -422,7 +418,7 @@ tanhShrinkLayer :: IO (Id MLCActivationLayer)
 tanhShrinkLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "tanhShrinkLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' tanhShrinkLayerSelector
 
 -- | Create a GELU activation layer
 --
@@ -433,7 +429,7 @@ geluLayer :: IO (Id MLCActivationLayer)
 geluLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "geluLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' geluLayerSelector
 
 -- | Create a hardswish activation layer
 --
@@ -444,129 +440,129 @@ hardSwishLayer :: IO (Id MLCActivationLayer)
 hardSwishLayer  =
   do
     cls' <- getRequiredClass "MLCActivationLayer"
-    sendClassMsg cls' (mkSelector "hardSwishLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardSwishLayerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:@
-layerWithDescriptorSelector :: Selector
+layerWithDescriptorSelector :: Selector '[Id MLCActivationDescriptor] (Id MLCActivationLayer)
 layerWithDescriptorSelector = mkSelector "layerWithDescriptor:"
 
 -- | @Selector@ for @leakyReLULayerWithNegativeSlope:@
-leakyReLULayerWithNegativeSlopeSelector :: Selector
+leakyReLULayerWithNegativeSlopeSelector :: Selector '[CFloat] (Id MLCActivationLayer)
 leakyReLULayerWithNegativeSlopeSelector = mkSelector "leakyReLULayerWithNegativeSlope:"
 
 -- | @Selector@ for @linearLayerWithScale:bias:@
-linearLayerWithScale_biasSelector :: Selector
+linearLayerWithScale_biasSelector :: Selector '[CFloat, CFloat] (Id MLCActivationLayer)
 linearLayerWithScale_biasSelector = mkSelector "linearLayerWithScale:bias:"
 
 -- | @Selector@ for @softPlusLayerWithBeta:@
-softPlusLayerWithBetaSelector :: Selector
+softPlusLayerWithBetaSelector :: Selector '[CFloat] (Id MLCActivationLayer)
 softPlusLayerWithBetaSelector = mkSelector "softPlusLayerWithBeta:"
 
 -- | @Selector@ for @eluLayerWithA:@
-eluLayerWithASelector :: Selector
+eluLayerWithASelector :: Selector '[CFloat] (Id MLCActivationLayer)
 eluLayerWithASelector = mkSelector "eluLayerWithA:"
 
 -- | @Selector@ for @relunLayerWithA:b:@
-relunLayerWithA_bSelector :: Selector
+relunLayerWithA_bSelector :: Selector '[CFloat, CFloat] (Id MLCActivationLayer)
 relunLayerWithA_bSelector = mkSelector "relunLayerWithA:b:"
 
 -- | @Selector@ for @celuLayerWithA:@
-celuLayerWithASelector :: Selector
+celuLayerWithASelector :: Selector '[CFloat] (Id MLCActivationLayer)
 celuLayerWithASelector = mkSelector "celuLayerWithA:"
 
 -- | @Selector@ for @hardShrinkLayerWithA:@
-hardShrinkLayerWithASelector :: Selector
+hardShrinkLayerWithASelector :: Selector '[CFloat] (Id MLCActivationLayer)
 hardShrinkLayerWithASelector = mkSelector "hardShrinkLayerWithA:"
 
 -- | @Selector@ for @softShrinkLayerWithA:@
-softShrinkLayerWithASelector :: Selector
+softShrinkLayerWithASelector :: Selector '[CFloat] (Id MLCActivationLayer)
 softShrinkLayerWithASelector = mkSelector "softShrinkLayerWithA:"
 
 -- | @Selector@ for @thresholdLayerWithThreshold:replacement:@
-thresholdLayerWithThreshold_replacementSelector :: Selector
+thresholdLayerWithThreshold_replacementSelector :: Selector '[CFloat, CFloat] (Id MLCActivationLayer)
 thresholdLayerWithThreshold_replacementSelector = mkSelector "thresholdLayerWithThreshold:replacement:"
 
 -- | @Selector@ for @clampLayerWithMinValue:maxValue:@
-clampLayerWithMinValue_maxValueSelector :: Selector
+clampLayerWithMinValue_maxValueSelector :: Selector '[CFloat, CFloat] (Id MLCActivationLayer)
 clampLayerWithMinValue_maxValueSelector = mkSelector "clampLayerWithMinValue:maxValue:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCActivationDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @reluLayer@
-reluLayerSelector :: Selector
+reluLayerSelector :: Selector '[] (Id MLCActivationLayer)
 reluLayerSelector = mkSelector "reluLayer"
 
 -- | @Selector@ for @relu6Layer@
-relu6LayerSelector :: Selector
+relu6LayerSelector :: Selector '[] (Id MLCActivationLayer)
 relu6LayerSelector = mkSelector "relu6Layer"
 
 -- | @Selector@ for @leakyReLULayer@
-leakyReLULayerSelector :: Selector
+leakyReLULayerSelector :: Selector '[] (Id MLCActivationLayer)
 leakyReLULayerSelector = mkSelector "leakyReLULayer"
 
 -- | @Selector@ for @sigmoidLayer@
-sigmoidLayerSelector :: Selector
+sigmoidLayerSelector :: Selector '[] (Id MLCActivationLayer)
 sigmoidLayerSelector = mkSelector "sigmoidLayer"
 
 -- | @Selector@ for @hardSigmoidLayer@
-hardSigmoidLayerSelector :: Selector
+hardSigmoidLayerSelector :: Selector '[] (Id MLCActivationLayer)
 hardSigmoidLayerSelector = mkSelector "hardSigmoidLayer"
 
 -- | @Selector@ for @tanhLayer@
-tanhLayerSelector :: Selector
+tanhLayerSelector :: Selector '[] (Id MLCActivationLayer)
 tanhLayerSelector = mkSelector "tanhLayer"
 
 -- | @Selector@ for @absoluteLayer@
-absoluteLayerSelector :: Selector
+absoluteLayerSelector :: Selector '[] (Id MLCActivationLayer)
 absoluteLayerSelector = mkSelector "absoluteLayer"
 
 -- | @Selector@ for @softPlusLayer@
-softPlusLayerSelector :: Selector
+softPlusLayerSelector :: Selector '[] (Id MLCActivationLayer)
 softPlusLayerSelector = mkSelector "softPlusLayer"
 
 -- | @Selector@ for @softSignLayer@
-softSignLayerSelector :: Selector
+softSignLayerSelector :: Selector '[] (Id MLCActivationLayer)
 softSignLayerSelector = mkSelector "softSignLayer"
 
 -- | @Selector@ for @eluLayer@
-eluLayerSelector :: Selector
+eluLayerSelector :: Selector '[] (Id MLCActivationLayer)
 eluLayerSelector = mkSelector "eluLayer"
 
 -- | @Selector@ for @logSigmoidLayer@
-logSigmoidLayerSelector :: Selector
+logSigmoidLayerSelector :: Selector '[] (Id MLCActivationLayer)
 logSigmoidLayerSelector = mkSelector "logSigmoidLayer"
 
 -- | @Selector@ for @seluLayer@
-seluLayerSelector :: Selector
+seluLayerSelector :: Selector '[] (Id MLCActivationLayer)
 seluLayerSelector = mkSelector "seluLayer"
 
 -- | @Selector@ for @celuLayer@
-celuLayerSelector :: Selector
+celuLayerSelector :: Selector '[] (Id MLCActivationLayer)
 celuLayerSelector = mkSelector "celuLayer"
 
 -- | @Selector@ for @hardShrinkLayer@
-hardShrinkLayerSelector :: Selector
+hardShrinkLayerSelector :: Selector '[] (Id MLCActivationLayer)
 hardShrinkLayerSelector = mkSelector "hardShrinkLayer"
 
 -- | @Selector@ for @softShrinkLayer@
-softShrinkLayerSelector :: Selector
+softShrinkLayerSelector :: Selector '[] (Id MLCActivationLayer)
 softShrinkLayerSelector = mkSelector "softShrinkLayer"
 
 -- | @Selector@ for @tanhShrinkLayer@
-tanhShrinkLayerSelector :: Selector
+tanhShrinkLayerSelector :: Selector '[] (Id MLCActivationLayer)
 tanhShrinkLayerSelector = mkSelector "tanhShrinkLayer"
 
 -- | @Selector@ for @geluLayer@
-geluLayerSelector :: Selector
+geluLayerSelector :: Selector '[] (Id MLCActivationLayer)
 geluLayerSelector = mkSelector "geluLayer"
 
 -- | @Selector@ for @hardSwishLayer@
-hardSwishLayerSelector :: Selector
+hardSwishLayerSelector :: Selector '[] (Id MLCActivationLayer)
 hardSwishLayerSelector = mkSelector "hardSwishLayer"
 

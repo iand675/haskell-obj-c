@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,10 +19,10 @@ module ObjC.SafetyKit.SACrashDetectionManager
   , authorizationStatus
   , delegate
   , setDelegate
-  , requestAuthorizationWithCompletionHandlerSelector
-  , availableSelector
   , authorizationStatusSelector
+  , availableSelector
   , delegateSelector
+  , requestAuthorizationWithCompletionHandlerSelector
   , setDelegateSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.SafetyKit.SACrashDetectionManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestAuthorizationWithCompletionHandler:@
 requestAuthorizationWithCompletionHandler :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> Ptr () -> IO ()
-requestAuthorizationWithCompletionHandler saCrashDetectionManager  handler =
-    sendMsg saCrashDetectionManager (mkSelector "requestAuthorizationWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+requestAuthorizationWithCompletionHandler saCrashDetectionManager handler =
+  sendMessage saCrashDetectionManager requestAuthorizationWithCompletionHandlerSelector handler
 
 -- | available
 --
@@ -66,7 +63,7 @@ available :: IO Bool
 available  =
   do
     cls' <- getRequiredClass "SACrashDetectionManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "available") retCULong []
+    sendClassMessage cls' availableSelector
 
 -- | authorizationStatus
 --
@@ -74,8 +71,8 @@ available  =
 --
 -- ObjC selector: @- authorizationStatus@
 authorizationStatus :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> IO SAAuthorizationStatus
-authorizationStatus saCrashDetectionManager  =
-    fmap (coerce :: CLong -> SAAuthorizationStatus) $ sendMsg saCrashDetectionManager (mkSelector "authorizationStatus") retCLong []
+authorizationStatus saCrashDetectionManager =
+  sendMessage saCrashDetectionManager authorizationStatusSelector
 
 -- | delegate
 --
@@ -83,8 +80,8 @@ authorizationStatus saCrashDetectionManager  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> IO RawId
-delegate saCrashDetectionManager  =
-    fmap (RawId . castPtr) $ sendMsg saCrashDetectionManager (mkSelector "delegate") (retPtr retVoid) []
+delegate saCrashDetectionManager =
+  sendMessage saCrashDetectionManager delegateSelector
 
 -- | delegate
 --
@@ -92,30 +89,30 @@ delegate saCrashDetectionManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSACrashDetectionManager saCrashDetectionManager => saCrashDetectionManager -> RawId -> IO ()
-setDelegate saCrashDetectionManager  value =
-    sendMsg saCrashDetectionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate saCrashDetectionManager value =
+  sendMessage saCrashDetectionManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestAuthorizationWithCompletionHandler:@
-requestAuthorizationWithCompletionHandlerSelector :: Selector
+requestAuthorizationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestAuthorizationWithCompletionHandlerSelector = mkSelector "requestAuthorizationWithCompletionHandler:"
 
 -- | @Selector@ for @available@
-availableSelector :: Selector
+availableSelector :: Selector '[] Bool
 availableSelector = mkSelector "available"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] SAAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

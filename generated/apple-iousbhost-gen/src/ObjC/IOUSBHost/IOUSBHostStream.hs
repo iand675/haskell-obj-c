@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,11 +14,11 @@ module ObjC.IOUSBHost.IOUSBHostStream
   , enqueueIORequestWithData_error_completionHandler
   , hostPipe
   , streamID
-  , abortWithOption_errorSelector
   , abortWithErrorSelector
-  , sendIORequestWithData_bytesTransferred_errorSelector
+  , abortWithOption_errorSelector
   , enqueueIORequestWithData_error_completionHandlerSelector
   , hostPipeSelector
+  , sendIORequestWithData_bytesTransferred_errorSelector
   , streamIDSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.IOUSBHost.IOUSBHostStream
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- abortWithOption:error:@
 abortWithOption_error :: (IsIOUSBHostStream iousbHostStream, IsNSError error_) => iousbHostStream -> IOUSBHostAbortOption -> error_ -> IO Bool
-abortWithOption_error iousbHostStream  option error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostStream (mkSelector "abortWithOption:error:") retCULong [argCULong (coerce option), argPtr (castPtr raw_error_ :: Ptr ())]
+abortWithOption_error iousbHostStream option error_ =
+  sendMessage iousbHostStream abortWithOption_errorSelector option (toNSError error_)
 
 -- | Abort pending I/O requests.
 --
@@ -65,9 +61,8 @@ abortWithOption_error iousbHostStream  option error_ =
 --
 -- ObjC selector: @- abortWithError:@
 abortWithError :: (IsIOUSBHostStream iousbHostStream, IsNSError error_) => iousbHostStream -> error_ -> IO Bool
-abortWithError iousbHostStream  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostStream (mkSelector "abortWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+abortWithError iousbHostStream error_ =
+  sendMessage iousbHostStream abortWithErrorSelector (toNSError error_)
 
 -- | Send an IO request on the source
 --
@@ -81,10 +76,8 @@ abortWithError iousbHostStream  error_ =
 --
 -- ObjC selector: @- sendIORequestWithData:bytesTransferred:error:@
 sendIORequestWithData_bytesTransferred_error :: (IsIOUSBHostStream iousbHostStream, IsNSMutableData data_, IsNSError error_) => iousbHostStream -> data_ -> Ptr CULong -> error_ -> IO Bool
-sendIORequestWithData_bytesTransferred_error iousbHostStream  data_ bytesTransferred error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostStream (mkSelector "sendIORequestWithData:bytesTransferred:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr bytesTransferred, argPtr (castPtr raw_error_ :: Ptr ())]
+sendIORequestWithData_bytesTransferred_error iousbHostStream data_ bytesTransferred error_ =
+  sendMessage iousbHostStream sendIORequestWithData_bytesTransferred_errorSelector (toNSMutableData data_) bytesTransferred (toNSError error_)
 
 -- | Enqueue an IO request on the source
 --
@@ -96,10 +89,8 @@ sendIORequestWithData_bytesTransferred_error iousbHostStream  data_ bytesTransfe
 --
 -- ObjC selector: @- enqueueIORequestWithData:error:completionHandler:@
 enqueueIORequestWithData_error_completionHandler :: (IsIOUSBHostStream iousbHostStream, IsNSMutableData data_, IsNSError error_) => iousbHostStream -> data_ -> error_ -> Ptr () -> IO Bool
-enqueueIORequestWithData_error_completionHandler iousbHostStream  data_ error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostStream (mkSelector "enqueueIORequestWithData:error:completionHandler:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueIORequestWithData_error_completionHandler iousbHostStream data_ error_ completionHandler =
+  sendMessage iousbHostStream enqueueIORequestWithData_error_completionHandlerSelector (toNSMutableData data_) (toNSError error_) completionHandler
 
 -- | Returns the IOUSBHostPipe this stream was created from
 --
@@ -107,8 +98,8 @@ enqueueIORequestWithData_error_completionHandler iousbHostStream  data_ error_ c
 --
 -- ObjC selector: @- hostPipe@
 hostPipe :: IsIOUSBHostStream iousbHostStream => iousbHostStream -> IO (Id IOUSBHostPipe)
-hostPipe iousbHostStream  =
-    sendMsg iousbHostStream (mkSelector "hostPipe") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostPipe iousbHostStream =
+  sendMessage iousbHostStream hostPipeSelector
 
 -- | Returns streamID associated with this IOUSBHostStream.
 --
@@ -116,34 +107,34 @@ hostPipe iousbHostStream  =
 --
 -- ObjC selector: @- streamID@
 streamID :: IsIOUSBHostStream iousbHostStream => iousbHostStream -> IO CULong
-streamID iousbHostStream  =
-    sendMsg iousbHostStream (mkSelector "streamID") retCULong []
+streamID iousbHostStream =
+  sendMessage iousbHostStream streamIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @abortWithOption:error:@
-abortWithOption_errorSelector :: Selector
+abortWithOption_errorSelector :: Selector '[IOUSBHostAbortOption, Id NSError] Bool
 abortWithOption_errorSelector = mkSelector "abortWithOption:error:"
 
 -- | @Selector@ for @abortWithError:@
-abortWithErrorSelector :: Selector
+abortWithErrorSelector :: Selector '[Id NSError] Bool
 abortWithErrorSelector = mkSelector "abortWithError:"
 
 -- | @Selector@ for @sendIORequestWithData:bytesTransferred:error:@
-sendIORequestWithData_bytesTransferred_errorSelector :: Selector
+sendIORequestWithData_bytesTransferred_errorSelector :: Selector '[Id NSMutableData, Ptr CULong, Id NSError] Bool
 sendIORequestWithData_bytesTransferred_errorSelector = mkSelector "sendIORequestWithData:bytesTransferred:error:"
 
 -- | @Selector@ for @enqueueIORequestWithData:error:completionHandler:@
-enqueueIORequestWithData_error_completionHandlerSelector :: Selector
+enqueueIORequestWithData_error_completionHandlerSelector :: Selector '[Id NSMutableData, Id NSError, Ptr ()] Bool
 enqueueIORequestWithData_error_completionHandlerSelector = mkSelector "enqueueIORequestWithData:error:completionHandler:"
 
 -- | @Selector@ for @hostPipe@
-hostPipeSelector :: Selector
+hostPipeSelector :: Selector '[] (Id IOUSBHostPipe)
 hostPipeSelector = mkSelector "hostPipe"
 
 -- | @Selector@ for @streamID@
-streamIDSelector :: Selector
+streamIDSelector :: Selector '[] CULong
 streamIDSelector = mkSelector "streamID"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.Vision.VNTrackTranslationalImageRegistrationRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVNTrackTranslationalImageRegistrationRequest vnTrackTranslationalImageRegistrationRequest => vnTrackTranslationalImageRegistrationRequest -> IO (Id VNTrackTranslationalImageRegistrationRequest)
-init_ vnTrackTranslationalImageRegistrationRequest  =
-    sendMsg vnTrackTranslationalImageRegistrationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackTranslationalImageRegistrationRequest =
+  sendOwnedMessage vnTrackTranslationalImageRegistrationRequest initSelector
 
 -- | Create a new request that can statefully track the translational registration of two images.
 --
@@ -50,29 +47,29 @@ init_ vnTrackTranslationalImageRegistrationRequest  =
 --
 -- ObjC selector: @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackTranslationalImageRegistrationRequest vnTrackTranslationalImageRegistrationRequest => vnTrackTranslationalImageRegistrationRequest -> Ptr () -> IO (Id VNTrackTranslationalImageRegistrationRequest)
-initWithCompletionHandler vnTrackTranslationalImageRegistrationRequest  completionHandler =
-    sendMsg vnTrackTranslationalImageRegistrationRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackTranslationalImageRegistrationRequest completionHandler =
+  sendOwnedMessage vnTrackTranslationalImageRegistrationRequest initWithCompletionHandlerSelector completionHandler
 
 -- | VNImageTranslationAlignmentObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNTrackTranslationalImageRegistrationRequest vnTrackTranslationalImageRegistrationRequest => vnTrackTranslationalImageRegistrationRequest -> IO (Id NSArray)
-results vnTrackTranslationalImageRegistrationRequest  =
-    sendMsg vnTrackTranslationalImageRegistrationRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnTrackTranslationalImageRegistrationRequest =
+  sendMessage vnTrackTranslationalImageRegistrationRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackTranslationalImageRegistrationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackTranslationalImageRegistrationRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

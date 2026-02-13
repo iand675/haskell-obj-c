@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.ITunesLibrary.ITLibArtwork
   , IsITLibArtwork(..)
   , imageData
   , imageDataFormat
-  , imageDataSelector
   , imageDataFormatSelector
+  , imageDataSelector
 
   -- * Enum types
   , ITLibArtworkFormat(ITLibArtworkFormat)
@@ -28,15 +29,11 @@ module ObjC.ITunesLibrary.ITLibArtwork
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,25 +45,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- imageData@
 imageData :: IsITLibArtwork itLibArtwork => itLibArtwork -> IO (Id NSData)
-imageData itLibArtwork  =
-    sendMsg itLibArtwork (mkSelector "imageData") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageData itLibArtwork =
+  sendMessage itLibArtwork imageDataSelector
 
 -- | The fortmat of the data returned by the imageData method.
 --
 -- ObjC selector: @- imageDataFormat@
 imageDataFormat :: IsITLibArtwork itLibArtwork => itLibArtwork -> IO ITLibArtworkFormat
-imageDataFormat itLibArtwork  =
-    fmap (coerce :: CULong -> ITLibArtworkFormat) $ sendMsg itLibArtwork (mkSelector "imageDataFormat") retCULong []
+imageDataFormat itLibArtwork =
+  sendMessage itLibArtwork imageDataFormatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageData@
-imageDataSelector :: Selector
+imageDataSelector :: Selector '[] (Id NSData)
 imageDataSelector = mkSelector "imageData"
 
 -- | @Selector@ for @imageDataFormat@
-imageDataFormatSelector :: Selector
+imageDataFormatSelector :: Selector '[] ITLibArtworkFormat
 imageDataFormatSelector = mkSelector "imageDataFormat"
 

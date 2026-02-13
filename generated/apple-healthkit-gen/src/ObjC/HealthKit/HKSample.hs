@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.HealthKit.HKSample
   , startDate
   , endDate
   , hasUndeterminedDuration
-  , sampleTypeSelector
-  , startDateSelector
   , endDateSelector
   , hasUndeterminedDurationSelector
+  , sampleTypeSelector
+  , startDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,18 +36,18 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sampleType@
 sampleType :: IsHKSample hkSample => hkSample -> IO (Id HKSampleType)
-sampleType hkSample  =
-    sendMsg hkSample (mkSelector "sampleType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleType hkSample =
+  sendMessage hkSample sampleTypeSelector
 
 -- | @- startDate@
 startDate :: IsHKSample hkSample => hkSample -> IO (Id NSDate)
-startDate hkSample  =
-    sendMsg hkSample (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate hkSample =
+  sendMessage hkSample startDateSelector
 
 -- | @- endDate@
 endDate :: IsHKSample hkSample => hkSample -> IO (Id NSDate)
-endDate hkSample  =
-    sendMsg hkSample (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate hkSample =
+  sendMessage hkSample endDateSelector
 
 -- | hasUndeterminedDuration
 --
@@ -60,26 +57,26 @@ endDate hkSample  =
 --
 -- ObjC selector: @- hasUndeterminedDuration@
 hasUndeterminedDuration :: IsHKSample hkSample => hkSample -> IO Bool
-hasUndeterminedDuration hkSample  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkSample (mkSelector "hasUndeterminedDuration") retCULong []
+hasUndeterminedDuration hkSample =
+  sendMessage hkSample hasUndeterminedDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sampleType@
-sampleTypeSelector :: Selector
+sampleTypeSelector :: Selector '[] (Id HKSampleType)
 sampleTypeSelector = mkSelector "sampleType"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @hasUndeterminedDuration@
-hasUndeterminedDurationSelector :: Selector
+hasUndeterminedDurationSelector :: Selector '[] Bool
 hasUndeterminedDurationSelector = mkSelector "hasUndeterminedDuration"
 

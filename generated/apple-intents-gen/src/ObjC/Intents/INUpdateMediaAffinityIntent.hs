@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INUpdateMediaAffinityIntent
   , mediaItems
   , mediaSearch
   , affinityType
+  , affinityTypeSelector
   , initWithMediaItems_mediaSearch_affinityTypeSelector
   , mediaItemsSelector
   , mediaSearchSelector
-  , affinityTypeSelector
 
   -- * Enum types
   , INMediaAffinityType(INMediaAffinityType)
@@ -24,15 +25,11 @@ module ObjC.Intents.INUpdateMediaAffinityIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,43 +39,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMediaItems:mediaSearch:affinityType:@
 initWithMediaItems_mediaSearch_affinityType :: (IsINUpdateMediaAffinityIntent inUpdateMediaAffinityIntent, IsNSArray mediaItems, IsINMediaSearch mediaSearch) => inUpdateMediaAffinityIntent -> mediaItems -> mediaSearch -> INMediaAffinityType -> IO (Id INUpdateMediaAffinityIntent)
-initWithMediaItems_mediaSearch_affinityType inUpdateMediaAffinityIntent  mediaItems mediaSearch affinityType =
-  withObjCPtr mediaItems $ \raw_mediaItems ->
-    withObjCPtr mediaSearch $ \raw_mediaSearch ->
-        sendMsg inUpdateMediaAffinityIntent (mkSelector "initWithMediaItems:mediaSearch:affinityType:") (retPtr retVoid) [argPtr (castPtr raw_mediaItems :: Ptr ()), argPtr (castPtr raw_mediaSearch :: Ptr ()), argCLong (coerce affinityType)] >>= ownedObject . castPtr
+initWithMediaItems_mediaSearch_affinityType inUpdateMediaAffinityIntent mediaItems mediaSearch affinityType =
+  sendOwnedMessage inUpdateMediaAffinityIntent initWithMediaItems_mediaSearch_affinityTypeSelector (toNSArray mediaItems) (toINMediaSearch mediaSearch) affinityType
 
 -- | @- mediaItems@
 mediaItems :: IsINUpdateMediaAffinityIntent inUpdateMediaAffinityIntent => inUpdateMediaAffinityIntent -> IO (Id NSArray)
-mediaItems inUpdateMediaAffinityIntent  =
-    sendMsg inUpdateMediaAffinityIntent (mkSelector "mediaItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaItems inUpdateMediaAffinityIntent =
+  sendMessage inUpdateMediaAffinityIntent mediaItemsSelector
 
 -- | @- mediaSearch@
 mediaSearch :: IsINUpdateMediaAffinityIntent inUpdateMediaAffinityIntent => inUpdateMediaAffinityIntent -> IO (Id INMediaSearch)
-mediaSearch inUpdateMediaAffinityIntent  =
-    sendMsg inUpdateMediaAffinityIntent (mkSelector "mediaSearch") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSearch inUpdateMediaAffinityIntent =
+  sendMessage inUpdateMediaAffinityIntent mediaSearchSelector
 
 -- | @- affinityType@
 affinityType :: IsINUpdateMediaAffinityIntent inUpdateMediaAffinityIntent => inUpdateMediaAffinityIntent -> IO INMediaAffinityType
-affinityType inUpdateMediaAffinityIntent  =
-    fmap (coerce :: CLong -> INMediaAffinityType) $ sendMsg inUpdateMediaAffinityIntent (mkSelector "affinityType") retCLong []
+affinityType inUpdateMediaAffinityIntent =
+  sendMessage inUpdateMediaAffinityIntent affinityTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMediaItems:mediaSearch:affinityType:@
-initWithMediaItems_mediaSearch_affinityTypeSelector :: Selector
+initWithMediaItems_mediaSearch_affinityTypeSelector :: Selector '[Id NSArray, Id INMediaSearch, INMediaAffinityType] (Id INUpdateMediaAffinityIntent)
 initWithMediaItems_mediaSearch_affinityTypeSelector = mkSelector "initWithMediaItems:mediaSearch:affinityType:"
 
 -- | @Selector@ for @mediaItems@
-mediaItemsSelector :: Selector
+mediaItemsSelector :: Selector '[] (Id NSArray)
 mediaItemsSelector = mkSelector "mediaItems"
 
 -- | @Selector@ for @mediaSearch@
-mediaSearchSelector :: Selector
+mediaSearchSelector :: Selector '[] (Id INMediaSearch)
 mediaSearchSelector = mkSelector "mediaSearch"
 
 -- | @Selector@ for @affinityType@
-affinityTypeSelector :: Selector
+affinityTypeSelector :: Selector '[] INMediaAffinityType
 affinityTypeSelector = mkSelector "affinityType"
 

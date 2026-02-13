@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.ShazamKit.SHSignatureGenerator
   , generateSignatureFromAsset_completionHandler
   , appendBuffer_atTime_error
   , signature
-  , generateSignatureFromAsset_completionHandlerSelector
   , appendBuffer_atTime_errorSelector
+  , generateSignatureFromAsset_completionHandlerSelector
   , signatureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,7 @@ generateSignatureFromAsset_completionHandler :: IsAVAsset asset => asset -> Ptr 
 generateSignatureFromAsset_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "SHSignatureGenerator"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "generateSignatureFromAsset:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' generateSignatureFromAsset_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | Adds audio to the generator.
 --
@@ -69,11 +65,8 @@ generateSignatureFromAsset_completionHandler asset completionHandler =
 --
 -- ObjC selector: @- appendBuffer:atTime:error:@
 appendBuffer_atTime_error :: (IsSHSignatureGenerator shSignatureGenerator, IsAVAudioPCMBuffer buffer, IsAVAudioTime time, IsNSError error_) => shSignatureGenerator -> buffer -> time -> error_ -> IO Bool
-appendBuffer_atTime_error shSignatureGenerator  buffer time error_ =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr time $ \raw_time ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg shSignatureGenerator (mkSelector "appendBuffer:atTime:error:") retCULong [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_time :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+appendBuffer_atTime_error shSignatureGenerator buffer time error_ =
+  sendMessage shSignatureGenerator appendBuffer_atTime_errorSelector (toAVAudioPCMBuffer buffer) (toAVAudioTime time) (toNSError error_)
 
 -- | Converts the audio buffer into a signature.
 --
@@ -81,22 +74,22 @@ appendBuffer_atTime_error shSignatureGenerator  buffer time error_ =
 --
 -- ObjC selector: @- signature@
 signature :: IsSHSignatureGenerator shSignatureGenerator => shSignatureGenerator -> IO (Id SHSignature)
-signature shSignatureGenerator  =
-    sendMsg shSignatureGenerator (mkSelector "signature") (retPtr retVoid) [] >>= retainedObject . castPtr
+signature shSignatureGenerator =
+  sendMessage shSignatureGenerator signatureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @generateSignatureFromAsset:completionHandler:@
-generateSignatureFromAsset_completionHandlerSelector :: Selector
+generateSignatureFromAsset_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 generateSignatureFromAsset_completionHandlerSelector = mkSelector "generateSignatureFromAsset:completionHandler:"
 
 -- | @Selector@ for @appendBuffer:atTime:error:@
-appendBuffer_atTime_errorSelector :: Selector
+appendBuffer_atTime_errorSelector :: Selector '[Id AVAudioPCMBuffer, Id AVAudioTime, Id NSError] Bool
 appendBuffer_atTime_errorSelector = mkSelector "appendBuffer:atTime:error:"
 
 -- | @Selector@ for @signature@
-signatureSelector :: Selector
+signatureSelector :: Selector '[] (Id SHSignature)
 signatureSelector = mkSelector "signature"
 

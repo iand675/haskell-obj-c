@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.GameController.GCXboxGamepad
   , paddleButton3
   , paddleButton4
   , buttonShare
+  , buttonShareSelector
   , paddleButton1Selector
   , paddleButton2Selector
   , paddleButton3Selector
   , paddleButton4Selector
-  , buttonShareSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,23 +46,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- paddleButton1@
 paddleButton1 :: IsGCXboxGamepad gcXboxGamepad => gcXboxGamepad -> IO (Id GCControllerButtonInput)
-paddleButton1 gcXboxGamepad  =
-    sendMsg gcXboxGamepad (mkSelector "paddleButton1") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddleButton1 gcXboxGamepad =
+  sendMessage gcXboxGamepad paddleButton1Selector
 
 -- | @- paddleButton2@
 paddleButton2 :: IsGCXboxGamepad gcXboxGamepad => gcXboxGamepad -> IO (Id GCControllerButtonInput)
-paddleButton2 gcXboxGamepad  =
-    sendMsg gcXboxGamepad (mkSelector "paddleButton2") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddleButton2 gcXboxGamepad =
+  sendMessage gcXboxGamepad paddleButton2Selector
 
 -- | @- paddleButton3@
 paddleButton3 :: IsGCXboxGamepad gcXboxGamepad => gcXboxGamepad -> IO (Id GCControllerButtonInput)
-paddleButton3 gcXboxGamepad  =
-    sendMsg gcXboxGamepad (mkSelector "paddleButton3") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddleButton3 gcXboxGamepad =
+  sendMessage gcXboxGamepad paddleButton3Selector
 
 -- | @- paddleButton4@
 paddleButton4 :: IsGCXboxGamepad gcXboxGamepad => gcXboxGamepad -> IO (Id GCControllerButtonInput)
-paddleButton4 gcXboxGamepad  =
-    sendMsg gcXboxGamepad (mkSelector "paddleButton4") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddleButton4 gcXboxGamepad =
+  sendMessage gcXboxGamepad paddleButton4Selector
 
 -- | Some Xbox controller variants feature a Share button.
 --
@@ -77,30 +74,30 @@ paddleButton4 gcXboxGamepad  =
 --
 -- ObjC selector: @- buttonShare@
 buttonShare :: IsGCXboxGamepad gcXboxGamepad => gcXboxGamepad -> IO (Id GCControllerButtonInput)
-buttonShare gcXboxGamepad  =
-    sendMsg gcXboxGamepad (mkSelector "buttonShare") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonShare gcXboxGamepad =
+  sendMessage gcXboxGamepad buttonShareSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @paddleButton1@
-paddleButton1Selector :: Selector
+paddleButton1Selector :: Selector '[] (Id GCControllerButtonInput)
 paddleButton1Selector = mkSelector "paddleButton1"
 
 -- | @Selector@ for @paddleButton2@
-paddleButton2Selector :: Selector
+paddleButton2Selector :: Selector '[] (Id GCControllerButtonInput)
 paddleButton2Selector = mkSelector "paddleButton2"
 
 -- | @Selector@ for @paddleButton3@
-paddleButton3Selector :: Selector
+paddleButton3Selector :: Selector '[] (Id GCControllerButtonInput)
 paddleButton3Selector = mkSelector "paddleButton3"
 
 -- | @Selector@ for @paddleButton4@
-paddleButton4Selector :: Selector
+paddleButton4Selector :: Selector '[] (Id GCControllerButtonInput)
 paddleButton4Selector = mkSelector "paddleButton4"
 
 -- | @Selector@ for @buttonShare@
-buttonShareSelector :: Selector
+buttonShareSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonShareSelector = mkSelector "buttonShare"
 

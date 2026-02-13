@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTREcosystemInformationClusterEcosystemDeviceStruct
   , setUniqueLocationIDsLastEdit
   , fabricIndex
   , setFabricIndex
-  , deviceNameSelector
-  , setDeviceNameSelector
-  , deviceNameLastEditSelector
-  , setDeviceNameLastEditSelector
   , bridgedEndpointSelector
-  , setBridgedEndpointSelector
-  , originalEndpointSelector
-  , setOriginalEndpointSelector
+  , deviceNameLastEditSelector
+  , deviceNameSelector
   , deviceTypesSelector
+  , fabricIndexSelector
+  , originalEndpointSelector
+  , setBridgedEndpointSelector
+  , setDeviceNameLastEditSelector
+  , setDeviceNameSelector
   , setDeviceTypesSelector
-  , uniqueLocationIDsSelector
+  , setFabricIndexSelector
+  , setOriginalEndpointSelector
+  , setUniqueLocationIDsLastEditSelector
   , setUniqueLocationIDsSelector
   , uniqueLocationIDsLastEditSelector
-  , setUniqueLocationIDsLastEditSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
+  , uniqueLocationIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- deviceName@
 deviceName :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSString)
-deviceName mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "deviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceName mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct deviceNameSelector
 
 -- | @- setDeviceName:@
 setDeviceName :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSString value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setDeviceName mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setDeviceName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeviceName mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setDeviceNameSelector (toNSString value)
 
 -- | @- deviceNameLastEdit@
 deviceNameLastEdit :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSNumber)
-deviceNameLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "deviceNameLastEdit") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceNameLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct deviceNameLastEditSelector
 
 -- | @- setDeviceNameLastEdit:@
 setDeviceNameLastEdit :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setDeviceNameLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setDeviceNameLastEdit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeviceNameLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setDeviceNameLastEditSelector (toNSNumber value)
 
 -- | @- bridgedEndpoint@
 bridgedEndpoint :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSNumber)
-bridgedEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "bridgedEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+bridgedEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct bridgedEndpointSelector
 
 -- | @- setBridgedEndpoint:@
 setBridgedEndpoint :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setBridgedEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setBridgedEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBridgedEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setBridgedEndpointSelector (toNSNumber value)
 
 -- | @- originalEndpoint@
 originalEndpoint :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSNumber)
-originalEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "originalEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct originalEndpointSelector
 
 -- | @- setOriginalEndpoint:@
 setOriginalEndpoint :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setOriginalEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setOriginalEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOriginalEndpoint mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setOriginalEndpointSelector (toNSNumber value)
 
 -- | @- deviceTypes@
 deviceTypes :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSArray)
-deviceTypes mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "deviceTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceTypes mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct deviceTypesSelector
 
 -- | @- setDeviceTypes:@
 setDeviceTypes :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSArray value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setDeviceTypes mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setDeviceTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeviceTypes mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setDeviceTypesSelector (toNSArray value)
 
 -- | @- uniqueLocationIDs@
 uniqueLocationIDs :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSArray)
-uniqueLocationIDs mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "uniqueLocationIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueLocationIDs mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct uniqueLocationIDsSelector
 
 -- | @- setUniqueLocationIDs:@
 setUniqueLocationIDs :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSArray value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setUniqueLocationIDs mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setUniqueLocationIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueLocationIDs mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setUniqueLocationIDsSelector (toNSArray value)
 
 -- | @- uniqueLocationIDsLastEdit@
 uniqueLocationIDsLastEdit :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSNumber)
-uniqueLocationIDsLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "uniqueLocationIDsLastEdit") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueLocationIDsLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct uniqueLocationIDsLastEditSelector
 
 -- | @- setUniqueLocationIDsLastEdit:@
 setUniqueLocationIDsLastEdit :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setUniqueLocationIDsLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setUniqueLocationIDsLastEdit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueLocationIDsLastEdit mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setUniqueLocationIDsLastEditSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct => mtrEcosystemInformationClusterEcosystemDeviceStruct -> IO (Id NSNumber)
-fabricIndex mtrEcosystemInformationClusterEcosystemDeviceStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrEcosystemInformationClusterEcosystemDeviceStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTREcosystemInformationClusterEcosystemDeviceStruct mtrEcosystemInformationClusterEcosystemDeviceStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemDeviceStruct -> value -> IO ()
-setFabricIndex mtrEcosystemInformationClusterEcosystemDeviceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemDeviceStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrEcosystemInformationClusterEcosystemDeviceStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemDeviceStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deviceName@
-deviceNameSelector :: Selector
+deviceNameSelector :: Selector '[] (Id NSString)
 deviceNameSelector = mkSelector "deviceName"
 
 -- | @Selector@ for @setDeviceName:@
-setDeviceNameSelector :: Selector
+setDeviceNameSelector :: Selector '[Id NSString] ()
 setDeviceNameSelector = mkSelector "setDeviceName:"
 
 -- | @Selector@ for @deviceNameLastEdit@
-deviceNameLastEditSelector :: Selector
+deviceNameLastEditSelector :: Selector '[] (Id NSNumber)
 deviceNameLastEditSelector = mkSelector "deviceNameLastEdit"
 
 -- | @Selector@ for @setDeviceNameLastEdit:@
-setDeviceNameLastEditSelector :: Selector
+setDeviceNameLastEditSelector :: Selector '[Id NSNumber] ()
 setDeviceNameLastEditSelector = mkSelector "setDeviceNameLastEdit:"
 
 -- | @Selector@ for @bridgedEndpoint@
-bridgedEndpointSelector :: Selector
+bridgedEndpointSelector :: Selector '[] (Id NSNumber)
 bridgedEndpointSelector = mkSelector "bridgedEndpoint"
 
 -- | @Selector@ for @setBridgedEndpoint:@
-setBridgedEndpointSelector :: Selector
+setBridgedEndpointSelector :: Selector '[Id NSNumber] ()
 setBridgedEndpointSelector = mkSelector "setBridgedEndpoint:"
 
 -- | @Selector@ for @originalEndpoint@
-originalEndpointSelector :: Selector
+originalEndpointSelector :: Selector '[] (Id NSNumber)
 originalEndpointSelector = mkSelector "originalEndpoint"
 
 -- | @Selector@ for @setOriginalEndpoint:@
-setOriginalEndpointSelector :: Selector
+setOriginalEndpointSelector :: Selector '[Id NSNumber] ()
 setOriginalEndpointSelector = mkSelector "setOriginalEndpoint:"
 
 -- | @Selector@ for @deviceTypes@
-deviceTypesSelector :: Selector
+deviceTypesSelector :: Selector '[] (Id NSArray)
 deviceTypesSelector = mkSelector "deviceTypes"
 
 -- | @Selector@ for @setDeviceTypes:@
-setDeviceTypesSelector :: Selector
+setDeviceTypesSelector :: Selector '[Id NSArray] ()
 setDeviceTypesSelector = mkSelector "setDeviceTypes:"
 
 -- | @Selector@ for @uniqueLocationIDs@
-uniqueLocationIDsSelector :: Selector
+uniqueLocationIDsSelector :: Selector '[] (Id NSArray)
 uniqueLocationIDsSelector = mkSelector "uniqueLocationIDs"
 
 -- | @Selector@ for @setUniqueLocationIDs:@
-setUniqueLocationIDsSelector :: Selector
+setUniqueLocationIDsSelector :: Selector '[Id NSArray] ()
 setUniqueLocationIDsSelector = mkSelector "setUniqueLocationIDs:"
 
 -- | @Selector@ for @uniqueLocationIDsLastEdit@
-uniqueLocationIDsLastEditSelector :: Selector
+uniqueLocationIDsLastEditSelector :: Selector '[] (Id NSNumber)
 uniqueLocationIDsLastEditSelector = mkSelector "uniqueLocationIDsLastEdit"
 
 -- | @Selector@ for @setUniqueLocationIDsLastEdit:@
-setUniqueLocationIDsLastEditSelector :: Selector
+setUniqueLocationIDsLastEditSelector :: Selector '[Id NSNumber] ()
 setUniqueLocationIDsLastEditSelector = mkSelector "setUniqueLocationIDsLastEdit:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreImage.CIRenderInfo
   , kernelCompileTime
   , passCount
   , pixelsProcessed
-  , kernelExecutionTimeSelector
   , kernelCompileTimeSelector
+  , kernelExecutionTimeSelector
   , passCountSelector
   , pixelsProcessedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- kernelExecutionTime@
 kernelExecutionTime :: IsCIRenderInfo ciRenderInfo => ciRenderInfo -> IO CDouble
-kernelExecutionTime ciRenderInfo  =
-    sendMsg ciRenderInfo (mkSelector "kernelExecutionTime") retCDouble []
+kernelExecutionTime ciRenderInfo =
+  sendMessage ciRenderInfo kernelExecutionTimeSelector
 
 -- | @- kernelCompileTime@
 kernelCompileTime :: IsCIRenderInfo ciRenderInfo => ciRenderInfo -> IO CDouble
-kernelCompileTime ciRenderInfo  =
-    sendMsg ciRenderInfo (mkSelector "kernelCompileTime") retCDouble []
+kernelCompileTime ciRenderInfo =
+  sendMessage ciRenderInfo kernelCompileTimeSelector
 
 -- | @- passCount@
 passCount :: IsCIRenderInfo ciRenderInfo => ciRenderInfo -> IO CLong
-passCount ciRenderInfo  =
-    sendMsg ciRenderInfo (mkSelector "passCount") retCLong []
+passCount ciRenderInfo =
+  sendMessage ciRenderInfo passCountSelector
 
 -- | @- pixelsProcessed@
 pixelsProcessed :: IsCIRenderInfo ciRenderInfo => ciRenderInfo -> IO CLong
-pixelsProcessed ciRenderInfo  =
-    sendMsg ciRenderInfo (mkSelector "pixelsProcessed") retCLong []
+pixelsProcessed ciRenderInfo =
+  sendMessage ciRenderInfo pixelsProcessedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kernelExecutionTime@
-kernelExecutionTimeSelector :: Selector
+kernelExecutionTimeSelector :: Selector '[] CDouble
 kernelExecutionTimeSelector = mkSelector "kernelExecutionTime"
 
 -- | @Selector@ for @kernelCompileTime@
-kernelCompileTimeSelector :: Selector
+kernelCompileTimeSelector :: Selector '[] CDouble
 kernelCompileTimeSelector = mkSelector "kernelCompileTime"
 
 -- | @Selector@ for @passCount@
-passCountSelector :: Selector
+passCountSelector :: Selector '[] CLong
 passCountSelector = mkSelector "passCount"
 
 -- | @Selector@ for @pixelsProcessed@
-pixelsProcessedSelector :: Selector
+pixelsProcessedSelector :: Selector '[] CLong
 pixelsProcessedSelector = mkSelector "pixelsProcessed"
 

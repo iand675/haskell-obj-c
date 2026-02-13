@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRDoorLockClusterAppleAliroCredentialStruct
   , setCredentialType
   , credentialIndex
   , setCredentialIndex
-  , credentialTypeSelector
-  , setCredentialTypeSelector
   , credentialIndexSelector
+  , credentialTypeSelector
   , setCredentialIndexSelector
+  , setCredentialTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- credentialType@
 credentialType :: IsMTRDoorLockClusterAppleAliroCredentialStruct mtrDoorLockClusterAppleAliroCredentialStruct => mtrDoorLockClusterAppleAliroCredentialStruct -> IO (Id NSNumber)
-credentialType mtrDoorLockClusterAppleAliroCredentialStruct  =
-    sendMsg mtrDoorLockClusterAppleAliroCredentialStruct (mkSelector "credentialType") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialType mtrDoorLockClusterAppleAliroCredentialStruct =
+  sendMessage mtrDoorLockClusterAppleAliroCredentialStruct credentialTypeSelector
 
 -- | @- setCredentialType:@
 setCredentialType :: (IsMTRDoorLockClusterAppleAliroCredentialStruct mtrDoorLockClusterAppleAliroCredentialStruct, IsNSNumber value) => mtrDoorLockClusterAppleAliroCredentialStruct -> value -> IO ()
-setCredentialType mtrDoorLockClusterAppleAliroCredentialStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroCredentialStruct (mkSelector "setCredentialType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentialType mtrDoorLockClusterAppleAliroCredentialStruct value =
+  sendMessage mtrDoorLockClusterAppleAliroCredentialStruct setCredentialTypeSelector (toNSNumber value)
 
 -- | @- credentialIndex@
 credentialIndex :: IsMTRDoorLockClusterAppleAliroCredentialStruct mtrDoorLockClusterAppleAliroCredentialStruct => mtrDoorLockClusterAppleAliroCredentialStruct -> IO (Id NSNumber)
-credentialIndex mtrDoorLockClusterAppleAliroCredentialStruct  =
-    sendMsg mtrDoorLockClusterAppleAliroCredentialStruct (mkSelector "credentialIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialIndex mtrDoorLockClusterAppleAliroCredentialStruct =
+  sendMessage mtrDoorLockClusterAppleAliroCredentialStruct credentialIndexSelector
 
 -- | @- setCredentialIndex:@
 setCredentialIndex :: (IsMTRDoorLockClusterAppleAliroCredentialStruct mtrDoorLockClusterAppleAliroCredentialStruct, IsNSNumber value) => mtrDoorLockClusterAppleAliroCredentialStruct -> value -> IO ()
-setCredentialIndex mtrDoorLockClusterAppleAliroCredentialStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroCredentialStruct (mkSelector "setCredentialIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentialIndex mtrDoorLockClusterAppleAliroCredentialStruct value =
+  sendMessage mtrDoorLockClusterAppleAliroCredentialStruct setCredentialIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @credentialType@
-credentialTypeSelector :: Selector
+credentialTypeSelector :: Selector '[] (Id NSNumber)
 credentialTypeSelector = mkSelector "credentialType"
 
 -- | @Selector@ for @setCredentialType:@
-setCredentialTypeSelector :: Selector
+setCredentialTypeSelector :: Selector '[Id NSNumber] ()
 setCredentialTypeSelector = mkSelector "setCredentialType:"
 
 -- | @Selector@ for @credentialIndex@
-credentialIndexSelector :: Selector
+credentialIndexSelector :: Selector '[] (Id NSNumber)
 credentialIndexSelector = mkSelector "credentialIndex"
 
 -- | @Selector@ for @setCredentialIndex:@
-setCredentialIndexSelector :: Selector
+setCredentialIndexSelector :: Selector '[Id NSNumber] ()
 setCredentialIndexSelector = mkSelector "setCredentialIndex:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.VideoSubscriberAccount.VSSubscriptionRegistrationCenter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,7 +35,7 @@ defaultSubscriptionRegistrationCenter :: IO (Id VSSubscriptionRegistrationCenter
 defaultSubscriptionRegistrationCenter  =
   do
     cls' <- getRequiredClass "VSSubscriptionRegistrationCenter"
-    sendClassMsg cls' (mkSelector "defaultSubscriptionRegistrationCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSubscriptionRegistrationCenterSelector
 
 -- | Provide a subscription when the subscriber first authenticates, and when the subscription changes.
 --
@@ -50,19 +47,18 @@ defaultSubscriptionRegistrationCenter  =
 --
 -- ObjC selector: @- setCurrentSubscription:@
 setCurrentSubscription :: (IsVSSubscriptionRegistrationCenter vsSubscriptionRegistrationCenter, IsVSSubscription currentSubscription) => vsSubscriptionRegistrationCenter -> currentSubscription -> IO ()
-setCurrentSubscription vsSubscriptionRegistrationCenter  currentSubscription =
-  withObjCPtr currentSubscription $ \raw_currentSubscription ->
-      sendMsg vsSubscriptionRegistrationCenter (mkSelector "setCurrentSubscription:") retVoid [argPtr (castPtr raw_currentSubscription :: Ptr ())]
+setCurrentSubscription vsSubscriptionRegistrationCenter currentSubscription =
+  sendMessage vsSubscriptionRegistrationCenter setCurrentSubscriptionSelector (toVSSubscription currentSubscription)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSubscriptionRegistrationCenter@
-defaultSubscriptionRegistrationCenterSelector :: Selector
+defaultSubscriptionRegistrationCenterSelector :: Selector '[] (Id VSSubscriptionRegistrationCenter)
 defaultSubscriptionRegistrationCenterSelector = mkSelector "defaultSubscriptionRegistrationCenter"
 
 -- | @Selector@ for @setCurrentSubscription:@
-setCurrentSubscriptionSelector :: Selector
+setCurrentSubscriptionSelector :: Selector '[Id VSSubscription] ()
 setCurrentSubscriptionSelector = mkSelector "setCurrentSubscription:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SharedWithYouCore.SWStartCollaborationAction
   , init_
   , new
   , collaborationMetadata
+  , collaborationMetadataSelector
   , fulfillUsingURL_collaborationIdentifierSelector
   , initSelector
   , newSelector
-  , collaborationMetadataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fulfillUsingURL:collaborationIdentifier:@
 fulfillUsingURL_collaborationIdentifier :: (IsSWStartCollaborationAction swStartCollaborationAction, IsNSURL url, IsNSString collaborationIdentifier) => swStartCollaborationAction -> url -> collaborationIdentifier -> IO ()
-fulfillUsingURL_collaborationIdentifier swStartCollaborationAction  url collaborationIdentifier =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr collaborationIdentifier $ \raw_collaborationIdentifier ->
-        sendMsg swStartCollaborationAction (mkSelector "fulfillUsingURL:collaborationIdentifier:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_collaborationIdentifier :: Ptr ())]
+fulfillUsingURL_collaborationIdentifier swStartCollaborationAction url collaborationIdentifier =
+  sendMessage swStartCollaborationAction fulfillUsingURL_collaborationIdentifierSelector (toNSURL url) (toNSString collaborationIdentifier)
 
 -- | @- init@
 init_ :: IsSWStartCollaborationAction swStartCollaborationAction => swStartCollaborationAction -> IO (Id SWStartCollaborationAction)
-init_ swStartCollaborationAction  =
-    sendMsg swStartCollaborationAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swStartCollaborationAction =
+  sendOwnedMessage swStartCollaborationAction initSelector
 
 -- | @+ new@
 new :: IO (Id SWStartCollaborationAction)
 new  =
   do
     cls' <- getRequiredClass "SWStartCollaborationAction"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- collaborationMetadata@
 collaborationMetadata :: IsSWStartCollaborationAction swStartCollaborationAction => swStartCollaborationAction -> IO (Id SWCollaborationMetadata)
-collaborationMetadata swStartCollaborationAction  =
-    sendMsg swStartCollaborationAction (mkSelector "collaborationMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+collaborationMetadata swStartCollaborationAction =
+  sendMessage swStartCollaborationAction collaborationMetadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fulfillUsingURL:collaborationIdentifier:@
-fulfillUsingURL_collaborationIdentifierSelector :: Selector
+fulfillUsingURL_collaborationIdentifierSelector :: Selector '[Id NSURL, Id NSString] ()
 fulfillUsingURL_collaborationIdentifierSelector = mkSelector "fulfillUsingURL:collaborationIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWStartCollaborationAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWStartCollaborationAction)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @collaborationMetadata@
-collaborationMetadataSelector :: Selector
+collaborationMetadataSelector :: Selector '[] (Id SWCollaborationMetadata)
 collaborationMetadataSelector = mkSelector "collaborationMetadata"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,24 +32,24 @@ module ObjC.MetalPerformanceShaders.MPSCNNLossDescriptor
   , setEpsilon
   , delta
   , setDelta
-  , initSelector
   , cnnLossDescriptorWithType_reductionTypeSelector
-  , lossTypeSelector
-  , setLossTypeSelector
-  , reductionTypeSelector
-  , setReductionTypeSelector
-  , reduceAcrossBatchSelector
-  , setReduceAcrossBatchSelector
-  , weightSelector
-  , setWeightSelector
-  , labelSmoothingSelector
-  , setLabelSmoothingSelector
-  , numberOfClassesSelector
-  , setNumberOfClassesSelector
-  , epsilonSelector
-  , setEpsilonSelector
   , deltaSelector
+  , epsilonSelector
+  , initSelector
+  , labelSmoothingSelector
+  , lossTypeSelector
+  , numberOfClassesSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
   , setDeltaSelector
+  , setEpsilonSelector
+  , setLabelSmoothingSelector
+  , setLossTypeSelector
+  , setNumberOfClassesSelector
+  , setReduceAcrossBatchSelector
+  , setReductionTypeSelector
+  , setWeightSelector
+  , weightSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -72,15 +73,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNLossDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -90,8 +87,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO (Id MPSCNNLossDescriptor)
-init_ mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnLossDescriptor =
+  sendOwnedMessage mpscnnLossDescriptor initSelector
 
 -- | Make a descriptor for a MPSCNNLoss or MPSNNLossGradient object.
 --
@@ -106,7 +103,7 @@ cnnLossDescriptorWithType_reductionType :: MPSCNNLossType -> MPSCNNReductionType
 cnnLossDescriptorWithType_reductionType lossType reductionType =
   do
     cls' <- getRequiredClass "MPSCNNLossDescriptor"
-    sendClassMsg cls' (mkSelector "cnnLossDescriptorWithType:reductionType:") (retPtr retVoid) [argCUInt (coerce lossType), argCInt (coerce reductionType)] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnLossDescriptorWithType_reductionTypeSelector lossType reductionType
 
 -- | lossType
 --
@@ -116,8 +113,8 @@ cnnLossDescriptorWithType_reductionType lossType reductionType =
 --
 -- ObjC selector: @- lossType@
 lossType :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO MPSCNNLossType
-lossType mpscnnLossDescriptor  =
-    fmap (coerce :: CUInt -> MPSCNNLossType) $ sendMsg mpscnnLossDescriptor (mkSelector "lossType") retCUInt []
+lossType mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor lossTypeSelector
 
 -- | lossType
 --
@@ -127,8 +124,8 @@ lossType mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setLossType:@
 setLossType :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> MPSCNNLossType -> IO ()
-setLossType mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setLossType:") retVoid [argCUInt (coerce value)]
+setLossType mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setLossTypeSelector value
 
 -- | reductionType
 --
@@ -138,8 +135,8 @@ setLossType mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- reductionType@
 reductionType :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO MPSCNNReductionType
-reductionType mpscnnLossDescriptor  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpscnnLossDescriptor (mkSelector "reductionType") retCInt []
+reductionType mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor reductionTypeSelector
 
 -- | reductionType
 --
@@ -149,8 +146,8 @@ reductionType mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setReductionType:@
 setReductionType :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> MPSCNNReductionType -> IO ()
-setReductionType mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setReductionType:") retVoid [argCInt (coerce value)]
+setReductionType mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setReductionTypeSelector value
 
 -- | reduceAcrossBatch
 --
@@ -158,8 +155,8 @@ setReductionType mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO Bool
-reduceAcrossBatch mpscnnLossDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnLossDescriptor (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor reduceAcrossBatchSelector
 
 -- | reduceAcrossBatch
 --
@@ -167,8 +164,8 @@ reduceAcrossBatch mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setReduceAcrossBatch:@
 setReduceAcrossBatch :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> Bool -> IO ()
-setReduceAcrossBatch mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setReduceAcrossBatch:") retVoid [argCULong (if value then 1 else 0)]
+setReduceAcrossBatch mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setReduceAcrossBatchSelector value
 
 -- | weight
 --
@@ -178,8 +175,8 @@ setReduceAcrossBatch mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- weight@
 weight :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO CFloat
-weight mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "weight") retCFloat []
+weight mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor weightSelector
 
 -- | weight
 --
@@ -189,8 +186,8 @@ weight mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setWeight:@
 setWeight :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> CFloat -> IO ()
-setWeight mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setWeight:") retVoid [argCFloat value]
+setWeight mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setWeightSelector value
 
 -- | labelSmoothing
 --
@@ -204,8 +201,8 @@ setWeight mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- labelSmoothing@
 labelSmoothing :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO CFloat
-labelSmoothing mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "labelSmoothing") retCFloat []
+labelSmoothing mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor labelSmoothingSelector
 
 -- | labelSmoothing
 --
@@ -219,8 +216,8 @@ labelSmoothing mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setLabelSmoothing:@
 setLabelSmoothing :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> CFloat -> IO ()
-setLabelSmoothing mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setLabelSmoothing:") retVoid [argCFloat value]
+setLabelSmoothing mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setLabelSmoothingSelector value
 
 -- | numberOfClasses
 --
@@ -232,8 +229,8 @@ setLabelSmoothing mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- numberOfClasses@
 numberOfClasses :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO CULong
-numberOfClasses mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "numberOfClasses") retCULong []
+numberOfClasses mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor numberOfClassesSelector
 
 -- | numberOfClasses
 --
@@ -245,8 +242,8 @@ numberOfClasses mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setNumberOfClasses:@
 setNumberOfClasses :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> CULong -> IO ()
-setNumberOfClasses mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setNumberOfClasses:") retVoid [argCULong value]
+setNumberOfClasses mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setNumberOfClassesSelector value
 
 -- | epsilon
 --
@@ -258,8 +255,8 @@ setNumberOfClasses mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO CFloat
-epsilon mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "epsilon") retCFloat []
+epsilon mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor epsilonSelector
 
 -- | epsilon
 --
@@ -271,8 +268,8 @@ epsilon mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setEpsilon:@
 setEpsilon :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> CFloat -> IO ()
-setEpsilon mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setEpsilonSelector value
 
 -- | delta
 --
@@ -284,8 +281,8 @@ setEpsilon mpscnnLossDescriptor  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> IO CFloat
-delta mpscnnLossDescriptor  =
-    sendMsg mpscnnLossDescriptor (mkSelector "delta") retCFloat []
+delta mpscnnLossDescriptor =
+  sendMessage mpscnnLossDescriptor deltaSelector
 
 -- | delta
 --
@@ -297,82 +294,82 @@ delta mpscnnLossDescriptor  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNLossDescriptor mpscnnLossDescriptor => mpscnnLossDescriptor -> CFloat -> IO ()
-setDelta mpscnnLossDescriptor  value =
-    sendMsg mpscnnLossDescriptor (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnLossDescriptor value =
+  sendMessage mpscnnLossDescriptor setDeltaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNLossDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @cnnLossDescriptorWithType:reductionType:@
-cnnLossDescriptorWithType_reductionTypeSelector :: Selector
+cnnLossDescriptorWithType_reductionTypeSelector :: Selector '[MPSCNNLossType, MPSCNNReductionType] (Id MPSCNNLossDescriptor)
 cnnLossDescriptorWithType_reductionTypeSelector = mkSelector "cnnLossDescriptorWithType:reductionType:"
 
 -- | @Selector@ for @lossType@
-lossTypeSelector :: Selector
+lossTypeSelector :: Selector '[] MPSCNNLossType
 lossTypeSelector = mkSelector "lossType"
 
 -- | @Selector@ for @setLossType:@
-setLossTypeSelector :: Selector
+setLossTypeSelector :: Selector '[MPSCNNLossType] ()
 setLossTypeSelector = mkSelector "setLossType:"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @setReductionType:@
-setReductionTypeSelector :: Selector
+setReductionTypeSelector :: Selector '[MPSCNNReductionType] ()
 setReductionTypeSelector = mkSelector "setReductionType:"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 
 -- | @Selector@ for @setReduceAcrossBatch:@
-setReduceAcrossBatchSelector :: Selector
+setReduceAcrossBatchSelector :: Selector '[Bool] ()
 setReduceAcrossBatchSelector = mkSelector "setReduceAcrossBatch:"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @setWeight:@
-setWeightSelector :: Selector
+setWeightSelector :: Selector '[CFloat] ()
 setWeightSelector = mkSelector "setWeight:"
 
 -- | @Selector@ for @labelSmoothing@
-labelSmoothingSelector :: Selector
+labelSmoothingSelector :: Selector '[] CFloat
 labelSmoothingSelector = mkSelector "labelSmoothing"
 
 -- | @Selector@ for @setLabelSmoothing:@
-setLabelSmoothingSelector :: Selector
+setLabelSmoothingSelector :: Selector '[CFloat] ()
 setLabelSmoothingSelector = mkSelector "setLabelSmoothing:"
 
 -- | @Selector@ for @numberOfClasses@
-numberOfClassesSelector :: Selector
+numberOfClassesSelector :: Selector '[] CULong
 numberOfClassesSelector = mkSelector "numberOfClasses"
 
 -- | @Selector@ for @setNumberOfClasses:@
-setNumberOfClassesSelector :: Selector
+setNumberOfClassesSelector :: Selector '[CULong] ()
 setNumberOfClassesSelector = mkSelector "setNumberOfClasses:"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 

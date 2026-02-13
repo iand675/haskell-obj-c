@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRNetworkCommissioningClusterQueryIdentityParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , keyIdentifierSelector
-  , setKeyIdentifierSelector
   , possessionNonceSelector
-  , setPossessionNonceSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setKeyIdentifierSelector
+  , setPossessionNonceSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- keyIdentifier@
 keyIdentifier :: IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams => mtrNetworkCommissioningClusterQueryIdentityParams -> IO (Id NSData)
-keyIdentifier mtrNetworkCommissioningClusterQueryIdentityParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "keyIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyIdentifier mtrNetworkCommissioningClusterQueryIdentityParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams keyIdentifierSelector
 
 -- | @- setKeyIdentifier:@
 setKeyIdentifier :: (IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams, IsNSData value) => mtrNetworkCommissioningClusterQueryIdentityParams -> value -> IO ()
-setKeyIdentifier mtrNetworkCommissioningClusterQueryIdentityParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "setKeyIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyIdentifier mtrNetworkCommissioningClusterQueryIdentityParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams setKeyIdentifierSelector (toNSData value)
 
 -- | @- possessionNonce@
 possessionNonce :: IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams => mtrNetworkCommissioningClusterQueryIdentityParams -> IO (Id NSData)
-possessionNonce mtrNetworkCommissioningClusterQueryIdentityParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "possessionNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+possessionNonce mtrNetworkCommissioningClusterQueryIdentityParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams possessionNonceSelector
 
 -- | @- setPossessionNonce:@
 setPossessionNonce :: (IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams, IsNSData value) => mtrNetworkCommissioningClusterQueryIdentityParams -> value -> IO ()
-setPossessionNonce mtrNetworkCommissioningClusterQueryIdentityParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "setPossessionNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPossessionNonce mtrNetworkCommissioningClusterQueryIdentityParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams setPossessionNonceSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setPossessionNonce mtrNetworkCommissioningClusterQueryIdentityParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams => mtrNetworkCommissioningClusterQueryIdentityParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams, IsNSNumber value) => mtrNetworkCommissioningClusterQueryIdentityParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterQueryIdentityParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams => mtrNetworkCommissioningClusterQueryIdentityParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrNetworkCommissioningClusterQueryIdentityParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrNetworkCommissioningClusterQueryIdentityParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrNetworkCommissioningClusterQueryIdentityParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRNetworkCommissioningClusterQueryIdentityParams mtrNetworkCommissioningClusterQueryIdentityParams, IsNSNumber value) => mtrNetworkCommissioningClusterQueryIdentityParams -> value -> IO ()
-setServerSideProcessingTimeout mtrNetworkCommissioningClusterQueryIdentityParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrNetworkCommissioningClusterQueryIdentityParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @keyIdentifier@
-keyIdentifierSelector :: Selector
+keyIdentifierSelector :: Selector '[] (Id NSData)
 keyIdentifierSelector = mkSelector "keyIdentifier"
 
 -- | @Selector@ for @setKeyIdentifier:@
-setKeyIdentifierSelector :: Selector
+setKeyIdentifierSelector :: Selector '[Id NSData] ()
 setKeyIdentifierSelector = mkSelector "setKeyIdentifier:"
 
 -- | @Selector@ for @possessionNonce@
-possessionNonceSelector :: Selector
+possessionNonceSelector :: Selector '[] (Id NSData)
 possessionNonceSelector = mkSelector "possessionNonce"
 
 -- | @Selector@ for @setPossessionNonce:@
-setPossessionNonceSelector :: Selector
+setPossessionNonceSelector :: Selector '[Id NSData] ()
 setPossessionNonceSelector = mkSelector "setPossessionNonce:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.Intents.INMediaSearch
   , reference
   , mediaIdentifier
   , activityNames
+  , activityNamesSelector
+  , albumNameSelector
+  , artistNameSelector
+  , genreNamesSelector
   , initSelector
   , initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifierSelector
-  , mediaTypeSelector
-  , sortOrderSelector
-  , mediaNameSelector
-  , artistNameSelector
-  , albumNameSelector
-  , genreNamesSelector
-  , moodNamesSelector
-  , releaseDateSelector
-  , referenceSelector
   , mediaIdentifierSelector
-  , activityNamesSelector
+  , mediaNameSelector
+  , mediaTypeSelector
+  , moodNamesSelector
+  , referenceSelector
+  , releaseDateSelector
+  , sortOrderSelector
 
   -- * Enum types
   , INMediaItemType(INMediaItemType)
@@ -74,15 +75,11 @@ module ObjC.Intents.INMediaSearch
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,129 +89,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id INMediaSearch)
-init_ inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inMediaSearch =
+  sendOwnedMessage inMediaSearch initSelector
 
 -- | @- initWithMediaType:sortOrder:mediaName:artistName:albumName:genreNames:moodNames:releaseDate:reference:mediaIdentifier:@
 initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifier :: (IsINMediaSearch inMediaSearch, IsNSString mediaName, IsNSString artistName, IsNSString albumName, IsNSArray genreNames, IsNSArray moodNames, IsINDateComponentsRange releaseDate, IsNSString mediaIdentifier) => inMediaSearch -> INMediaItemType -> INMediaSortOrder -> mediaName -> artistName -> albumName -> genreNames -> moodNames -> releaseDate -> INMediaReference -> mediaIdentifier -> IO (Id INMediaSearch)
-initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifier inMediaSearch  mediaType sortOrder mediaName artistName albumName genreNames moodNames releaseDate reference mediaIdentifier =
-  withObjCPtr mediaName $ \raw_mediaName ->
-    withObjCPtr artistName $ \raw_artistName ->
-      withObjCPtr albumName $ \raw_albumName ->
-        withObjCPtr genreNames $ \raw_genreNames ->
-          withObjCPtr moodNames $ \raw_moodNames ->
-            withObjCPtr releaseDate $ \raw_releaseDate ->
-              withObjCPtr mediaIdentifier $ \raw_mediaIdentifier ->
-                  sendMsg inMediaSearch (mkSelector "initWithMediaType:sortOrder:mediaName:artistName:albumName:genreNames:moodNames:releaseDate:reference:mediaIdentifier:") (retPtr retVoid) [argCLong (coerce mediaType), argCLong (coerce sortOrder), argPtr (castPtr raw_mediaName :: Ptr ()), argPtr (castPtr raw_artistName :: Ptr ()), argPtr (castPtr raw_albumName :: Ptr ()), argPtr (castPtr raw_genreNames :: Ptr ()), argPtr (castPtr raw_moodNames :: Ptr ()), argPtr (castPtr raw_releaseDate :: Ptr ()), argCLong (coerce reference), argPtr (castPtr raw_mediaIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifier inMediaSearch mediaType sortOrder mediaName artistName albumName genreNames moodNames releaseDate reference mediaIdentifier =
+  sendOwnedMessage inMediaSearch initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifierSelector mediaType sortOrder (toNSString mediaName) (toNSString artistName) (toNSString albumName) (toNSArray genreNames) (toNSArray moodNames) (toINDateComponentsRange releaseDate) reference (toNSString mediaIdentifier)
 
 -- | @- mediaType@
 mediaType :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO INMediaItemType
-mediaType inMediaSearch  =
-    fmap (coerce :: CLong -> INMediaItemType) $ sendMsg inMediaSearch (mkSelector "mediaType") retCLong []
+mediaType inMediaSearch =
+  sendMessage inMediaSearch mediaTypeSelector
 
 -- | @- sortOrder@
 sortOrder :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO INMediaSortOrder
-sortOrder inMediaSearch  =
-    fmap (coerce :: CLong -> INMediaSortOrder) $ sendMsg inMediaSearch (mkSelector "sortOrder") retCLong []
+sortOrder inMediaSearch =
+  sendMessage inMediaSearch sortOrderSelector
 
 -- | @- mediaName@
 mediaName :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSString)
-mediaName inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "mediaName") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaName inMediaSearch =
+  sendMessage inMediaSearch mediaNameSelector
 
 -- | @- artistName@
 artistName :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSString)
-artistName inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "artistName") (retPtr retVoid) [] >>= retainedObject . castPtr
+artistName inMediaSearch =
+  sendMessage inMediaSearch artistNameSelector
 
 -- | @- albumName@
 albumName :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSString)
-albumName inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "albumName") (retPtr retVoid) [] >>= retainedObject . castPtr
+albumName inMediaSearch =
+  sendMessage inMediaSearch albumNameSelector
 
 -- | @- genreNames@
 genreNames :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSArray)
-genreNames inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "genreNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+genreNames inMediaSearch =
+  sendMessage inMediaSearch genreNamesSelector
 
 -- | @- moodNames@
 moodNames :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSArray)
-moodNames inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "moodNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+moodNames inMediaSearch =
+  sendMessage inMediaSearch moodNamesSelector
 
 -- | @- releaseDate@
 releaseDate :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id INDateComponentsRange)
-releaseDate inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "releaseDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+releaseDate inMediaSearch =
+  sendMessage inMediaSearch releaseDateSelector
 
 -- | @- reference@
 reference :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO INMediaReference
-reference inMediaSearch  =
-    fmap (coerce :: CLong -> INMediaReference) $ sendMsg inMediaSearch (mkSelector "reference") retCLong []
+reference inMediaSearch =
+  sendMessage inMediaSearch referenceSelector
 
 -- | @- mediaIdentifier@
 mediaIdentifier :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSString)
-mediaIdentifier inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "mediaIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaIdentifier inMediaSearch =
+  sendMessage inMediaSearch mediaIdentifierSelector
 
 -- | @- activityNames@
 activityNames :: IsINMediaSearch inMediaSearch => inMediaSearch -> IO (Id NSArray)
-activityNames inMediaSearch  =
-    sendMsg inMediaSearch (mkSelector "activityNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+activityNames inMediaSearch =
+  sendMessage inMediaSearch activityNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INMediaSearch)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMediaType:sortOrder:mediaName:artistName:albumName:genreNames:moodNames:releaseDate:reference:mediaIdentifier:@
-initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifierSelector :: Selector
+initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifierSelector :: Selector '[INMediaItemType, INMediaSortOrder, Id NSString, Id NSString, Id NSString, Id NSArray, Id NSArray, Id INDateComponentsRange, INMediaReference, Id NSString] (Id INMediaSearch)
 initWithMediaType_sortOrder_mediaName_artistName_albumName_genreNames_moodNames_releaseDate_reference_mediaIdentifierSelector = mkSelector "initWithMediaType:sortOrder:mediaName:artistName:albumName:genreNames:moodNames:releaseDate:reference:mediaIdentifier:"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] INMediaItemType
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @sortOrder@
-sortOrderSelector :: Selector
+sortOrderSelector :: Selector '[] INMediaSortOrder
 sortOrderSelector = mkSelector "sortOrder"
 
 -- | @Selector@ for @mediaName@
-mediaNameSelector :: Selector
+mediaNameSelector :: Selector '[] (Id NSString)
 mediaNameSelector = mkSelector "mediaName"
 
 -- | @Selector@ for @artistName@
-artistNameSelector :: Selector
+artistNameSelector :: Selector '[] (Id NSString)
 artistNameSelector = mkSelector "artistName"
 
 -- | @Selector@ for @albumName@
-albumNameSelector :: Selector
+albumNameSelector :: Selector '[] (Id NSString)
 albumNameSelector = mkSelector "albumName"
 
 -- | @Selector@ for @genreNames@
-genreNamesSelector :: Selector
+genreNamesSelector :: Selector '[] (Id NSArray)
 genreNamesSelector = mkSelector "genreNames"
 
 -- | @Selector@ for @moodNames@
-moodNamesSelector :: Selector
+moodNamesSelector :: Selector '[] (Id NSArray)
 moodNamesSelector = mkSelector "moodNames"
 
 -- | @Selector@ for @releaseDate@
-releaseDateSelector :: Selector
+releaseDateSelector :: Selector '[] (Id INDateComponentsRange)
 releaseDateSelector = mkSelector "releaseDate"
 
 -- | @Selector@ for @reference@
-referenceSelector :: Selector
+referenceSelector :: Selector '[] INMediaReference
 referenceSelector = mkSelector "reference"
 
 -- | @Selector@ for @mediaIdentifier@
-mediaIdentifierSelector :: Selector
+mediaIdentifierSelector :: Selector '[] (Id NSString)
 mediaIdentifierSelector = mkSelector "mediaIdentifier"
 
 -- | @Selector@ for @activityNames@
-activityNamesSelector :: Selector
+activityNamesSelector :: Selector '[] (Id NSArray)
 activityNamesSelector = mkSelector "activityNames"
 

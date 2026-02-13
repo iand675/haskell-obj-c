@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,29 +31,29 @@ module ObjC.Foundation.NSOperation
   , setQualityOfService
   , name
   , setName
-  , startSelector
-  , mainSelector
-  , cancelSelector
   , addDependencySelector
-  , removeDependencySelector
-  , waitUntilFinishedSelector
+  , asynchronousSelector
+  , cancelSelector
   , cancelledSelector
+  , completionBlockSelector
+  , concurrentSelector
+  , dependenciesSelector
   , executingSelector
   , finishedSelector
-  , concurrentSelector
-  , asynchronousSelector
-  , readySelector
-  , dependenciesSelector
-  , queuePrioritySelector
-  , setQueuePrioritySelector
-  , completionBlockSelector
-  , setCompletionBlockSelector
-  , threadPrioritySelector
-  , setThreadPrioritySelector
-  , qualityOfServiceSelector
-  , setQualityOfServiceSelector
+  , mainSelector
   , nameSelector
+  , qualityOfServiceSelector
+  , queuePrioritySelector
+  , readySelector
+  , removeDependencySelector
+  , setCompletionBlockSelector
   , setNameSelector
+  , setQualityOfServiceSelector
+  , setQueuePrioritySelector
+  , setThreadPrioritySelector
+  , startSelector
+  , threadPrioritySelector
+  , waitUntilFinishedSelector
 
   -- * Enum types
   , NSOperationQueuePriority(NSOperationQueuePriority)
@@ -70,15 +71,11 @@ module ObjC.Foundation.NSOperation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,215 +84,212 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- start@
 start :: IsNSOperation nsOperation => nsOperation -> IO ()
-start nsOperation  =
-    sendMsg nsOperation (mkSelector "start") retVoid []
+start nsOperation =
+  sendMessage nsOperation startSelector
 
 -- | @- main@
 main :: IsNSOperation nsOperation => nsOperation -> IO ()
-main nsOperation  =
-    sendMsg nsOperation (mkSelector "main") retVoid []
+main nsOperation =
+  sendMessage nsOperation mainSelector
 
 -- | @- cancel@
 cancel :: IsNSOperation nsOperation => nsOperation -> IO ()
-cancel nsOperation  =
-    sendMsg nsOperation (mkSelector "cancel") retVoid []
+cancel nsOperation =
+  sendMessage nsOperation cancelSelector
 
 -- | @- addDependency:@
 addDependency :: (IsNSOperation nsOperation, IsNSOperation op) => nsOperation -> op -> IO ()
-addDependency nsOperation  op =
-  withObjCPtr op $ \raw_op ->
-      sendMsg nsOperation (mkSelector "addDependency:") retVoid [argPtr (castPtr raw_op :: Ptr ())]
+addDependency nsOperation op =
+  sendMessage nsOperation addDependencySelector (toNSOperation op)
 
 -- | @- removeDependency:@
 removeDependency :: (IsNSOperation nsOperation, IsNSOperation op) => nsOperation -> op -> IO ()
-removeDependency nsOperation  op =
-  withObjCPtr op $ \raw_op ->
-      sendMsg nsOperation (mkSelector "removeDependency:") retVoid [argPtr (castPtr raw_op :: Ptr ())]
+removeDependency nsOperation op =
+  sendMessage nsOperation removeDependencySelector (toNSOperation op)
 
 -- | @- waitUntilFinished@
 waitUntilFinished :: IsNSOperation nsOperation => nsOperation -> IO ()
-waitUntilFinished nsOperation  =
-    sendMsg nsOperation (mkSelector "waitUntilFinished") retVoid []
+waitUntilFinished nsOperation =
+  sendMessage nsOperation waitUntilFinishedSelector
 
 -- | @- cancelled@
 cancelled :: IsNSOperation nsOperation => nsOperation -> IO Bool
-cancelled nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "cancelled") retCULong []
+cancelled nsOperation =
+  sendMessage nsOperation cancelledSelector
 
 -- | @- executing@
 executing :: IsNSOperation nsOperation => nsOperation -> IO Bool
-executing nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "executing") retCULong []
+executing nsOperation =
+  sendMessage nsOperation executingSelector
 
 -- | @- finished@
 finished :: IsNSOperation nsOperation => nsOperation -> IO Bool
-finished nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "finished") retCULong []
+finished nsOperation =
+  sendMessage nsOperation finishedSelector
 
 -- | @- concurrent@
 concurrent :: IsNSOperation nsOperation => nsOperation -> IO Bool
-concurrent nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "concurrent") retCULong []
+concurrent nsOperation =
+  sendMessage nsOperation concurrentSelector
 
 -- | @- asynchronous@
 asynchronous :: IsNSOperation nsOperation => nsOperation -> IO Bool
-asynchronous nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "asynchronous") retCULong []
+asynchronous nsOperation =
+  sendMessage nsOperation asynchronousSelector
 
 -- | @- ready@
 ready :: IsNSOperation nsOperation => nsOperation -> IO Bool
-ready nsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperation (mkSelector "ready") retCULong []
+ready nsOperation =
+  sendMessage nsOperation readySelector
 
 -- | @- dependencies@
 dependencies :: IsNSOperation nsOperation => nsOperation -> IO (Id NSArray)
-dependencies nsOperation  =
-    sendMsg nsOperation (mkSelector "dependencies") (retPtr retVoid) [] >>= retainedObject . castPtr
+dependencies nsOperation =
+  sendMessage nsOperation dependenciesSelector
 
 -- | @- queuePriority@
 queuePriority :: IsNSOperation nsOperation => nsOperation -> IO NSOperationQueuePriority
-queuePriority nsOperation  =
-    fmap (coerce :: CLong -> NSOperationQueuePriority) $ sendMsg nsOperation (mkSelector "queuePriority") retCLong []
+queuePriority nsOperation =
+  sendMessage nsOperation queuePrioritySelector
 
 -- | @- setQueuePriority:@
 setQueuePriority :: IsNSOperation nsOperation => nsOperation -> NSOperationQueuePriority -> IO ()
-setQueuePriority nsOperation  value =
-    sendMsg nsOperation (mkSelector "setQueuePriority:") retVoid [argCLong (coerce value)]
+setQueuePriority nsOperation value =
+  sendMessage nsOperation setQueuePrioritySelector value
 
 -- | @- completionBlock@
 completionBlock :: IsNSOperation nsOperation => nsOperation -> IO (Ptr ())
-completionBlock nsOperation  =
-    fmap castPtr $ sendMsg nsOperation (mkSelector "completionBlock") (retPtr retVoid) []
+completionBlock nsOperation =
+  sendMessage nsOperation completionBlockSelector
 
 -- | @- setCompletionBlock:@
 setCompletionBlock :: IsNSOperation nsOperation => nsOperation -> Ptr () -> IO ()
-setCompletionBlock nsOperation  value =
-    sendMsg nsOperation (mkSelector "setCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCompletionBlock nsOperation value =
+  sendMessage nsOperation setCompletionBlockSelector value
 
 -- | @- threadPriority@
 threadPriority :: IsNSOperation nsOperation => nsOperation -> IO CDouble
-threadPriority nsOperation  =
-    sendMsg nsOperation (mkSelector "threadPriority") retCDouble []
+threadPriority nsOperation =
+  sendMessage nsOperation threadPrioritySelector
 
 -- | @- setThreadPriority:@
 setThreadPriority :: IsNSOperation nsOperation => nsOperation -> CDouble -> IO ()
-setThreadPriority nsOperation  value =
-    sendMsg nsOperation (mkSelector "setThreadPriority:") retVoid [argCDouble value]
+setThreadPriority nsOperation value =
+  sendMessage nsOperation setThreadPrioritySelector value
 
 -- | @- qualityOfService@
 qualityOfService :: IsNSOperation nsOperation => nsOperation -> IO NSQualityOfService
-qualityOfService nsOperation  =
-    fmap (coerce :: CLong -> NSQualityOfService) $ sendMsg nsOperation (mkSelector "qualityOfService") retCLong []
+qualityOfService nsOperation =
+  sendMessage nsOperation qualityOfServiceSelector
 
 -- | @- setQualityOfService:@
 setQualityOfService :: IsNSOperation nsOperation => nsOperation -> NSQualityOfService -> IO ()
-setQualityOfService nsOperation  value =
-    sendMsg nsOperation (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
+setQualityOfService nsOperation value =
+  sendMessage nsOperation setQualityOfServiceSelector value
 
 -- | @- name@
 name :: IsNSOperation nsOperation => nsOperation -> IO (Id NSString)
-name nsOperation  =
-    sendMsg nsOperation (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsOperation =
+  sendMessage nsOperation nameSelector
 
 -- | @- setName:@
 setName :: (IsNSOperation nsOperation, IsNSString value) => nsOperation -> value -> IO ()
-setName nsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOperation (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsOperation value =
+  sendMessage nsOperation setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @main@
-mainSelector :: Selector
+mainSelector :: Selector '[] ()
 mainSelector = mkSelector "main"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @addDependency:@
-addDependencySelector :: Selector
+addDependencySelector :: Selector '[Id NSOperation] ()
 addDependencySelector = mkSelector "addDependency:"
 
 -- | @Selector@ for @removeDependency:@
-removeDependencySelector :: Selector
+removeDependencySelector :: Selector '[Id NSOperation] ()
 removeDependencySelector = mkSelector "removeDependency:"
 
 -- | @Selector@ for @waitUntilFinished@
-waitUntilFinishedSelector :: Selector
+waitUntilFinishedSelector :: Selector '[] ()
 waitUntilFinishedSelector = mkSelector "waitUntilFinished"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @executing@
-executingSelector :: Selector
+executingSelector :: Selector '[] Bool
 executingSelector = mkSelector "executing"
 
 -- | @Selector@ for @finished@
-finishedSelector :: Selector
+finishedSelector :: Selector '[] Bool
 finishedSelector = mkSelector "finished"
 
 -- | @Selector@ for @concurrent@
-concurrentSelector :: Selector
+concurrentSelector :: Selector '[] Bool
 concurrentSelector = mkSelector "concurrent"
 
 -- | @Selector@ for @asynchronous@
-asynchronousSelector :: Selector
+asynchronousSelector :: Selector '[] Bool
 asynchronousSelector = mkSelector "asynchronous"
 
 -- | @Selector@ for @ready@
-readySelector :: Selector
+readySelector :: Selector '[] Bool
 readySelector = mkSelector "ready"
 
 -- | @Selector@ for @dependencies@
-dependenciesSelector :: Selector
+dependenciesSelector :: Selector '[] (Id NSArray)
 dependenciesSelector = mkSelector "dependencies"
 
 -- | @Selector@ for @queuePriority@
-queuePrioritySelector :: Selector
+queuePrioritySelector :: Selector '[] NSOperationQueuePriority
 queuePrioritySelector = mkSelector "queuePriority"
 
 -- | @Selector@ for @setQueuePriority:@
-setQueuePrioritySelector :: Selector
+setQueuePrioritySelector :: Selector '[NSOperationQueuePriority] ()
 setQueuePrioritySelector = mkSelector "setQueuePriority:"
 
 -- | @Selector@ for @completionBlock@
-completionBlockSelector :: Selector
+completionBlockSelector :: Selector '[] (Ptr ())
 completionBlockSelector = mkSelector "completionBlock"
 
 -- | @Selector@ for @setCompletionBlock:@
-setCompletionBlockSelector :: Selector
+setCompletionBlockSelector :: Selector '[Ptr ()] ()
 setCompletionBlockSelector = mkSelector "setCompletionBlock:"
 
 -- | @Selector@ for @threadPriority@
-threadPrioritySelector :: Selector
+threadPrioritySelector :: Selector '[] CDouble
 threadPrioritySelector = mkSelector "threadPriority"
 
 -- | @Selector@ for @setThreadPriority:@
-setThreadPrioritySelector :: Selector
+setThreadPrioritySelector :: Selector '[CDouble] ()
 setThreadPrioritySelector = mkSelector "setThreadPriority:"
 
 -- | @Selector@ for @qualityOfService@
-qualityOfServiceSelector :: Selector
+qualityOfServiceSelector :: Selector '[] NSQualityOfService
 qualityOfServiceSelector = mkSelector "qualityOfService"
 
 -- | @Selector@ for @setQualityOfService:@
-setQualityOfServiceSelector :: Selector
+setQualityOfServiceSelector :: Selector '[NSQualityOfService] ()
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Accounts.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @ACAccountCredentialRenewResult@
 newtype ACAccountCredentialRenewResult = ACAccountCredentialRenewResult CLong
@@ -24,6 +27,16 @@ pattern ACAccountCredentialRenewResultRejected = ACAccountCredentialRenewResult 
 
 pattern ACAccountCredentialRenewResultFailed :: ACAccountCredentialRenewResult
 pattern ACAccountCredentialRenewResultFailed = ACAccountCredentialRenewResult 2
+
+instance ObjCArgument ACAccountCredentialRenewResult where
+  withObjCArg (ACAccountCredentialRenewResult x) k = k (argCLong x)
+
+instance ObjCReturn ACAccountCredentialRenewResult where
+  type RawReturn ACAccountCredentialRenewResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ACAccountCredentialRenewResult x)
+  fromOwned x = pure (ACAccountCredentialRenewResult x)
 
 -- | @ACErrorCode@
 newtype ACErrorCode = ACErrorCode CInt
@@ -98,3 +111,13 @@ pattern ACErrorCredentialItemNotFound = ACErrorCode 22
 
 pattern ACErrorCredentialItemNotExpired :: ACErrorCode
 pattern ACErrorCredentialItemNotExpired = ACErrorCode 23
+
+instance ObjCArgument ACErrorCode where
+  withObjCArg (ACErrorCode x) k = k (argCInt x)
+
+instance ObjCReturn ACErrorCode where
+  type RawReturn ACErrorCode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ACErrorCode x)
+  fromOwned x = pure (ACErrorCode x)

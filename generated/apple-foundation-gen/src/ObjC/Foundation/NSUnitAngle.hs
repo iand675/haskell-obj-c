@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSUnitAngle
   , radians
   , gradians
   , revolutions
-  , degreesSelector
   , arcMinutesSelector
   , arcSecondsSelector
-  , radiansSelector
+  , degreesSelector
   , gradiansSelector
+  , radiansSelector
   , revolutionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,68 +38,68 @@ degrees :: IO (Id NSUnitAngle)
 degrees  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "degrees") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' degreesSelector
 
 -- | @+ arcMinutes@
 arcMinutes :: IO (Id NSUnitAngle)
 arcMinutes  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "arcMinutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' arcMinutesSelector
 
 -- | @+ arcSeconds@
 arcSeconds :: IO (Id NSUnitAngle)
 arcSeconds  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "arcSeconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' arcSecondsSelector
 
 -- | @+ radians@
 radians :: IO (Id NSUnitAngle)
 radians  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "radians") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' radiansSelector
 
 -- | @+ gradians@
 gradians :: IO (Id NSUnitAngle)
 gradians  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "gradians") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gradiansSelector
 
 -- | @+ revolutions@
 revolutions :: IO (Id NSUnitAngle)
 revolutions  =
   do
     cls' <- getRequiredClass "NSUnitAngle"
-    sendClassMsg cls' (mkSelector "revolutions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' revolutionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @degrees@
-degreesSelector :: Selector
+degreesSelector :: Selector '[] (Id NSUnitAngle)
 degreesSelector = mkSelector "degrees"
 
 -- | @Selector@ for @arcMinutes@
-arcMinutesSelector :: Selector
+arcMinutesSelector :: Selector '[] (Id NSUnitAngle)
 arcMinutesSelector = mkSelector "arcMinutes"
 
 -- | @Selector@ for @arcSeconds@
-arcSecondsSelector :: Selector
+arcSecondsSelector :: Selector '[] (Id NSUnitAngle)
 arcSecondsSelector = mkSelector "arcSeconds"
 
 -- | @Selector@ for @radians@
-radiansSelector :: Selector
+radiansSelector :: Selector '[] (Id NSUnitAngle)
 radiansSelector = mkSelector "radians"
 
 -- | @Selector@ for @gradians@
-gradiansSelector :: Selector
+gradiansSelector :: Selector '[] (Id NSUnitAngle)
 gradiansSelector = mkSelector "gradians"
 
 -- | @Selector@ for @revolutions@
-revolutionsSelector :: Selector
+revolutionsSelector :: Selector '[] (Id NSUnitAngle)
 revolutionsSelector = mkSelector "revolutions"
 

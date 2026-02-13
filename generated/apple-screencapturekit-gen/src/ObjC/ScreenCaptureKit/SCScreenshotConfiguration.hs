@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.ScreenCaptureKit.SCScreenshotConfiguration
   , setDynamicRange
   , fileURL
   , setFileURL
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , showsCursorSelector
-  , setShowsCursorSelector
-  , ignoreShadowsSelector
-  , setIgnoreShadowsSelector
-  , ignoreClippingSelector
-  , setIgnoreClippingSelector
-  , includeChildWindowsSelector
-  , setIncludeChildWindowsSelector
   , displayIntentSelector
-  , setDisplayIntentSelector
   , dynamicRangeSelector
-  , setDynamicRangeSelector
   , fileURLSelector
+  , heightSelector
+  , ignoreClippingSelector
+  , ignoreShadowsSelector
+  , includeChildWindowsSelector
+  , setDisplayIntentSelector
+  , setDynamicRangeSelector
   , setFileURLSelector
+  , setHeightSelector
+  , setIgnoreClippingSelector
+  , setIgnoreShadowsSelector
+  , setIncludeChildWindowsSelector
+  , setShowsCursorSelector
+  , setWidthSelector
+  , showsCursorSelector
+  , widthSelector
 
   -- * Enum types
   , SCScreenshotDisplayIntent(SCScreenshotDisplayIntent)
@@ -55,15 +56,11 @@ module ObjC.ScreenCaptureKit.SCScreenshotConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,202 +72,201 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- width@
 width :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO CLong
-width scScreenshotConfiguration  =
-    sendMsg scScreenshotConfiguration (mkSelector "width") retCLong []
+width scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration widthSelector
 
 -- | SCScreenshotProperty for output width as measured in pixels. Default is the width of the content being captured.
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> CLong -> IO ()
-setWidth scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setWidth:") retVoid [argCLong value]
+setWidth scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setWidthSelector value
 
 -- | SCScreenshotProperty for output height as measured in pixels. Default is the height of the content being captured.
 --
 -- ObjC selector: @- height@
 height :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO CLong
-height scScreenshotConfiguration  =
-    sendMsg scScreenshotConfiguration (mkSelector "height") retCLong []
+height scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration heightSelector
 
 -- | SCScreenshotProperty for output height as measured in pixels. Default is the height of the content being captured.
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> CLong -> IO ()
-setHeight scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setHeight:") retVoid [argCLong value]
+setHeight scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setHeightSelector value
 
 -- | SCScreenshotProperty that specifies whether the cursor should appear in the screenshot.  By default the cursor is visible.
 --
 -- ObjC selector: @- showsCursor@
 showsCursor :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO Bool
-showsCursor scScreenshotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scScreenshotConfiguration (mkSelector "showsCursor") retCULong []
+showsCursor scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration showsCursorSelector
 
 -- | SCScreenshotProperty that specifies whether the cursor should appear in the screenshot.  By default the cursor is visible.
 --
 -- ObjC selector: @- setShowsCursor:@
 setShowsCursor :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> Bool -> IO ()
-setShowsCursor scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setShowsCursor:") retVoid [argCULong (if value then 1 else 0)]
+setShowsCursor scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setShowsCursorSelector value
 
 -- | SCScreenshotProperty to ignore framing on windows (will ignore shadows).
 --
 -- ObjC selector: @- ignoreShadows@
 ignoreShadows :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO Bool
-ignoreShadows scScreenshotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scScreenshotConfiguration (mkSelector "ignoreShadows") retCULong []
+ignoreShadows scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration ignoreShadowsSelector
 
 -- | SCScreenshotProperty to ignore framing on windows (will ignore shadows).
 --
 -- ObjC selector: @- setIgnoreShadows:@
 setIgnoreShadows :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> Bool -> IO ()
-setIgnoreShadows scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setIgnoreShadows:") retVoid [argCULong (if value then 1 else 0)]
+setIgnoreShadows scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setIgnoreShadowsSelector value
 
 -- | SCScreenshotProperty to ignore framing on windows in the display bounded sharing case (will ignore shadows).
 --
 -- ObjC selector: @- ignoreClipping@
 ignoreClipping :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO Bool
-ignoreClipping scScreenshotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scScreenshotConfiguration (mkSelector "ignoreClipping") retCULong []
+ignoreClipping scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration ignoreClippingSelector
 
 -- | SCScreenshotProperty to ignore framing on windows in the display bounded sharing case (will ignore shadows).
 --
 -- ObjC selector: @- setIgnoreClipping:@
 setIgnoreClipping :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> Bool -> IO ()
-setIgnoreClipping scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setIgnoreClipping:") retVoid [argCULong (if value then 1 else 0)]
+setIgnoreClipping scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setIgnoreClippingSelector value
 
 -- | SCScreenshotProperty to show the child windows of the applications and windows being captured.  Child windows are included by default.
 --
 -- ObjC selector: @- includeChildWindows@
 includeChildWindows :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO Bool
-includeChildWindows scScreenshotConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scScreenshotConfiguration (mkSelector "includeChildWindows") retCULong []
+includeChildWindows scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration includeChildWindowsSelector
 
 -- | SCScreenshotProperty to show the child windows of the applications and windows being captured.  Child windows are included by default.
 --
 -- ObjC selector: @- setIncludeChildWindows:@
 setIncludeChildWindows :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> Bool -> IO ()
-setIncludeChildWindows scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setIncludeChildWindows:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeChildWindows scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setIncludeChildWindowsSelector value
 
 -- | Specifies the render type of the screenshot.
 --
 -- ObjC selector: @- displayIntent@
 displayIntent :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO SCScreenshotDisplayIntent
-displayIntent scScreenshotConfiguration  =
-    fmap (coerce :: CLong -> SCScreenshotDisplayIntent) $ sendMsg scScreenshotConfiguration (mkSelector "displayIntent") retCLong []
+displayIntent scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration displayIntentSelector
 
 -- | Specifies the render type of the screenshot.
 --
 -- ObjC selector: @- setDisplayIntent:@
 setDisplayIntent :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> SCScreenshotDisplayIntent -> IO ()
-setDisplayIntent scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setDisplayIntent:") retVoid [argCLong (coerce value)]
+setDisplayIntent scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setDisplayIntentSelector value
 
 -- | Specifies the CGImage to return to the client.
 --
 -- ObjC selector: @- dynamicRange@
 dynamicRange :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO SCScreenshotDynamicRange
-dynamicRange scScreenshotConfiguration  =
-    fmap (coerce :: CLong -> SCScreenshotDynamicRange) $ sendMsg scScreenshotConfiguration (mkSelector "dynamicRange") retCLong []
+dynamicRange scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration dynamicRangeSelector
 
 -- | Specifies the CGImage to return to the client.
 --
 -- ObjC selector: @- setDynamicRange:@
 setDynamicRange :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> SCScreenshotDynamicRange -> IO ()
-setDynamicRange scScreenshotConfiguration  value =
-    sendMsg scScreenshotConfiguration (mkSelector "setDynamicRange:") retVoid [argCLong (coerce value)]
+setDynamicRange scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setDynamicRangeSelector value
 
 -- | Specifies output URL to save the screenshot.  If the imageOutputURL is nil, then the file will not be saved.
 --
 -- ObjC selector: @- fileURL@
 fileURL :: IsSCScreenshotConfiguration scScreenshotConfiguration => scScreenshotConfiguration -> IO (Id NSURL)
-fileURL scScreenshotConfiguration  =
-    sendMsg scScreenshotConfiguration (mkSelector "fileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileURL scScreenshotConfiguration =
+  sendMessage scScreenshotConfiguration fileURLSelector
 
 -- | Specifies output URL to save the screenshot.  If the imageOutputURL is nil, then the file will not be saved.
 --
 -- ObjC selector: @- setFileURL:@
 setFileURL :: (IsSCScreenshotConfiguration scScreenshotConfiguration, IsNSURL value) => scScreenshotConfiguration -> value -> IO ()
-setFileURL scScreenshotConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scScreenshotConfiguration (mkSelector "setFileURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileURL scScreenshotConfiguration value =
+  sendMessage scScreenshotConfiguration setFileURLSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CLong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CLong] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CLong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CLong] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @showsCursor@
-showsCursorSelector :: Selector
+showsCursorSelector :: Selector '[] Bool
 showsCursorSelector = mkSelector "showsCursor"
 
 -- | @Selector@ for @setShowsCursor:@
-setShowsCursorSelector :: Selector
+setShowsCursorSelector :: Selector '[Bool] ()
 setShowsCursorSelector = mkSelector "setShowsCursor:"
 
 -- | @Selector@ for @ignoreShadows@
-ignoreShadowsSelector :: Selector
+ignoreShadowsSelector :: Selector '[] Bool
 ignoreShadowsSelector = mkSelector "ignoreShadows"
 
 -- | @Selector@ for @setIgnoreShadows:@
-setIgnoreShadowsSelector :: Selector
+setIgnoreShadowsSelector :: Selector '[Bool] ()
 setIgnoreShadowsSelector = mkSelector "setIgnoreShadows:"
 
 -- | @Selector@ for @ignoreClipping@
-ignoreClippingSelector :: Selector
+ignoreClippingSelector :: Selector '[] Bool
 ignoreClippingSelector = mkSelector "ignoreClipping"
 
 -- | @Selector@ for @setIgnoreClipping:@
-setIgnoreClippingSelector :: Selector
+setIgnoreClippingSelector :: Selector '[Bool] ()
 setIgnoreClippingSelector = mkSelector "setIgnoreClipping:"
 
 -- | @Selector@ for @includeChildWindows@
-includeChildWindowsSelector :: Selector
+includeChildWindowsSelector :: Selector '[] Bool
 includeChildWindowsSelector = mkSelector "includeChildWindows"
 
 -- | @Selector@ for @setIncludeChildWindows:@
-setIncludeChildWindowsSelector :: Selector
+setIncludeChildWindowsSelector :: Selector '[Bool] ()
 setIncludeChildWindowsSelector = mkSelector "setIncludeChildWindows:"
 
 -- | @Selector@ for @displayIntent@
-displayIntentSelector :: Selector
+displayIntentSelector :: Selector '[] SCScreenshotDisplayIntent
 displayIntentSelector = mkSelector "displayIntent"
 
 -- | @Selector@ for @setDisplayIntent:@
-setDisplayIntentSelector :: Selector
+setDisplayIntentSelector :: Selector '[SCScreenshotDisplayIntent] ()
 setDisplayIntentSelector = mkSelector "setDisplayIntent:"
 
 -- | @Selector@ for @dynamicRange@
-dynamicRangeSelector :: Selector
+dynamicRangeSelector :: Selector '[] SCScreenshotDynamicRange
 dynamicRangeSelector = mkSelector "dynamicRange"
 
 -- | @Selector@ for @setDynamicRange:@
-setDynamicRangeSelector :: Selector
+setDynamicRangeSelector :: Selector '[SCScreenshotDynamicRange] ()
 setDynamicRangeSelector = mkSelector "setDynamicRange:"
 
 -- | @Selector@ for @fileURL@
-fileURLSelector :: Selector
+fileURLSelector :: Selector '[] (Id NSURL)
 fileURLSelector = mkSelector "fileURL"
 
 -- | @Selector@ for @setFileURL:@
-setFileURLSelector :: Selector
+setFileURLSelector :: Selector '[Id NSURL] ()
 setFileURLSelector = mkSelector "setFileURL:"
 

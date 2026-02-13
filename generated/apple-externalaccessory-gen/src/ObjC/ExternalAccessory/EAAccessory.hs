@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.ExternalAccessory.EAAccessory
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- connected@
 connected :: IsEAAccessory eaAccessory => eaAccessory -> IO Bool
-connected eaAccessory  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg eaAccessory (mkSelector "connected") retCULong []
+connected eaAccessory =
+  sendMessage eaAccessory connectedSelector
 
 -- | @- connectionID@
 connectionID :: IsEAAccessory eaAccessory => eaAccessory -> IO CULong
-connectionID eaAccessory  =
-    sendMsg eaAccessory (mkSelector "connectionID") retCULong []
+connectionID eaAccessory =
+  sendMessage eaAccessory connectionIDSelector
 
 -- | @- dockType@
 dockType :: IsEAAccessory eaAccessory => eaAccessory -> IO (Id NSString)
-dockType eaAccessory  =
-    sendMsg eaAccessory (mkSelector "dockType") (retPtr retVoid) [] >>= retainedObject . castPtr
+dockType eaAccessory =
+  sendMessage eaAccessory dockTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @connectionID@
-connectionIDSelector :: Selector
+connectionIDSelector :: Selector '[] CULong
 connectionIDSelector = mkSelector "connectionID"
 
 -- | @Selector@ for @dockType@
-dockTypeSelector :: Selector
+dockTypeSelector :: Selector '[] (Id NSString)
 dockTypeSelector = mkSelector "dockType"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSMatrixDecompositionCholesky
   , IsMPSMatrixDecompositionCholesky(..)
   , initWithDevice_lower_order
   , encodeToCommandBuffer_sourceMatrix_resultMatrix_status
-  , initWithDevice_lower_orderSelector
   , encodeToCommandBuffer_sourceMatrix_resultMatrix_statusSelector
+  , initWithDevice_lower_orderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:lower:order:@
 initWithDevice_lower_order :: IsMPSMatrixDecompositionCholesky mpsMatrixDecompositionCholesky => mpsMatrixDecompositionCholesky -> RawId -> Bool -> CULong -> IO (Id MPSMatrixDecompositionCholesky)
-initWithDevice_lower_order mpsMatrixDecompositionCholesky  device lower order =
-    sendMsg mpsMatrixDecompositionCholesky (mkSelector "initWithDevice:lower:order:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if lower then 1 else 0), argCULong order] >>= ownedObject . castPtr
+initWithDevice_lower_order mpsMatrixDecompositionCholesky device lower order =
+  sendOwnedMessage mpsMatrixDecompositionCholesky initWithDevice_lower_orderSelector device lower order
 
 -- | Encode a MPSMatrixDecompositionCholesky kernel into a command Buffer.
 --
@@ -76,20 +73,18 @@ initWithDevice_lower_order mpsMatrixDecompositionCholesky  device lower order =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:resultMatrix:status:@
 encodeToCommandBuffer_sourceMatrix_resultMatrix_status :: (IsMPSMatrixDecompositionCholesky mpsMatrixDecompositionCholesky, IsMPSMatrix sourceMatrix, IsMPSMatrix resultMatrix) => mpsMatrixDecompositionCholesky -> RawId -> sourceMatrix -> resultMatrix -> RawId -> IO ()
-encodeToCommandBuffer_sourceMatrix_resultMatrix_status mpsMatrixDecompositionCholesky  commandBuffer sourceMatrix resultMatrix status =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr resultMatrix $ \raw_resultMatrix ->
-        sendMsg mpsMatrixDecompositionCholesky (mkSelector "encodeToCommandBuffer:sourceMatrix:resultMatrix:status:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ()), argPtr (castPtr (unRawId status) :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_resultMatrix_status mpsMatrixDecompositionCholesky commandBuffer sourceMatrix resultMatrix status =
+  sendMessage mpsMatrixDecompositionCholesky encodeToCommandBuffer_sourceMatrix_resultMatrix_statusSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSMatrix resultMatrix) status
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:lower:order:@
-initWithDevice_lower_orderSelector :: Selector
+initWithDevice_lower_orderSelector :: Selector '[RawId, Bool, CULong] (Id MPSMatrixDecompositionCholesky)
 initWithDevice_lower_orderSelector = mkSelector "initWithDevice:lower:order:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:resultMatrix:status:@
-encodeToCommandBuffer_sourceMatrix_resultMatrix_statusSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_resultMatrix_statusSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, RawId] ()
 encodeToCommandBuffer_sourceMatrix_resultMatrix_statusSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:resultMatrix:status:"
 

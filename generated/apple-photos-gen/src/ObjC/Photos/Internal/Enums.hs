@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Photos.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @PHAccessLevel@
 newtype PHAccessLevel = PHAccessLevel CLong
@@ -21,6 +24,16 @@ pattern PHAccessLevelAddOnly = PHAccessLevel 1
 
 pattern PHAccessLevelReadWrite :: PHAccessLevel
 pattern PHAccessLevelReadWrite = PHAccessLevel 2
+
+instance ObjCArgument PHAccessLevel where
+  withObjCArg (PHAccessLevel x) k = k (argCLong x)
+
+instance ObjCReturn PHAccessLevel where
+  type RawReturn PHAccessLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAccessLevel x)
+  fromOwned x = pure (PHAccessLevel x)
 
 -- | @PHAssetBurstSelectionType@ (bitmask)
 newtype PHAssetBurstSelectionType = PHAssetBurstSelectionType CULong
@@ -41,6 +54,16 @@ pattern PHAssetBurstSelectionTypeAutoPick = PHAssetBurstSelectionType 1
 
 pattern PHAssetBurstSelectionTypeUserPick :: PHAssetBurstSelectionType
 pattern PHAssetBurstSelectionTypeUserPick = PHAssetBurstSelectionType 2
+
+instance ObjCArgument PHAssetBurstSelectionType where
+  withObjCArg (PHAssetBurstSelectionType x) k = k (argCULong x)
+
+instance ObjCReturn PHAssetBurstSelectionType where
+  type RawReturn PHAssetBurstSelectionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetBurstSelectionType x)
+  fromOwned x = pure (PHAssetBurstSelectionType x)
 
 -- | @PHAssetCollectionSubtype@
 newtype PHAssetCollectionSubtype = PHAssetCollectionSubtype CLong
@@ -134,6 +157,16 @@ pattern PHAssetCollectionSubtypeSmartAlbumScreenRecordings = PHAssetCollectionSu
 pattern PHAssetCollectionSubtypeAny :: PHAssetCollectionSubtype
 pattern PHAssetCollectionSubtypeAny = PHAssetCollectionSubtype 9223372036854775807
 
+instance ObjCArgument PHAssetCollectionSubtype where
+  withObjCArg (PHAssetCollectionSubtype x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetCollectionSubtype where
+  type RawReturn PHAssetCollectionSubtype = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetCollectionSubtype x)
+  fromOwned x = pure (PHAssetCollectionSubtype x)
+
 -- | @PHAssetCollectionType@
 newtype PHAssetCollectionType = PHAssetCollectionType CLong
   deriving stock (Eq, Ord, Show)
@@ -148,6 +181,16 @@ pattern PHAssetCollectionTypeSmartAlbum = PHAssetCollectionType 2
 pattern PHAssetCollectionTypeMoment :: PHAssetCollectionType
 pattern PHAssetCollectionTypeMoment = PHAssetCollectionType 3
 
+instance ObjCArgument PHAssetCollectionType where
+  withObjCArg (PHAssetCollectionType x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetCollectionType where
+  type RawReturn PHAssetCollectionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetCollectionType x)
+  fromOwned x = pure (PHAssetCollectionType x)
+
 -- | @PHAssetEditOperation@
 newtype PHAssetEditOperation = PHAssetEditOperation CLong
   deriving stock (Eq, Ord, Show)
@@ -161,6 +204,16 @@ pattern PHAssetEditOperationContent = PHAssetEditOperation 2
 
 pattern PHAssetEditOperationProperties :: PHAssetEditOperation
 pattern PHAssetEditOperationProperties = PHAssetEditOperation 3
+
+instance ObjCArgument PHAssetEditOperation where
+  withObjCArg (PHAssetEditOperation x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetEditOperation where
+  type RawReturn PHAssetEditOperation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetEditOperation x)
+  fromOwned x = pure (PHAssetEditOperation x)
 
 -- | @PHAssetMediaSubtype@ (bitmask)
 newtype PHAssetMediaSubtype = PHAssetMediaSubtype CULong
@@ -209,6 +262,16 @@ pattern PHAssetMediaSubtypeVideoScreenRecording = PHAssetMediaSubtype 524288
 pattern PHAssetMediaSubtypeVideoCinematic :: PHAssetMediaSubtype
 pattern PHAssetMediaSubtypeVideoCinematic = PHAssetMediaSubtype 2097152
 
+instance ObjCArgument PHAssetMediaSubtype where
+  withObjCArg (PHAssetMediaSubtype x) k = k (argCULong x)
+
+instance ObjCReturn PHAssetMediaSubtype where
+  type RawReturn PHAssetMediaSubtype = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetMediaSubtype x)
+  fromOwned x = pure (PHAssetMediaSubtype x)
+
 -- | @PHAssetMediaType@
 newtype PHAssetMediaType = PHAssetMediaType CLong
   deriving stock (Eq, Ord, Show)
@@ -225,6 +288,16 @@ pattern PHAssetMediaTypeVideo = PHAssetMediaType 2
 
 pattern PHAssetMediaTypeAudio :: PHAssetMediaType
 pattern PHAssetMediaTypeAudio = PHAssetMediaType 3
+
+instance ObjCArgument PHAssetMediaType where
+  withObjCArg (PHAssetMediaType x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetMediaType where
+  type RawReturn PHAssetMediaType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetMediaType x)
+  fromOwned x = pure (PHAssetMediaType x)
 
 -- | @PHAssetPlaybackStyle@
 newtype PHAssetPlaybackStyle = PHAssetPlaybackStyle CLong
@@ -248,6 +321,16 @@ pattern PHAssetPlaybackStyleVideo = PHAssetPlaybackStyle 4
 
 pattern PHAssetPlaybackStyleVideoLooping :: PHAssetPlaybackStyle
 pattern PHAssetPlaybackStyleVideoLooping = PHAssetPlaybackStyle 5
+
+instance ObjCArgument PHAssetPlaybackStyle where
+  withObjCArg (PHAssetPlaybackStyle x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetPlaybackStyle where
+  type RawReturn PHAssetPlaybackStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetPlaybackStyle x)
+  fromOwned x = pure (PHAssetPlaybackStyle x)
 
 -- | @PHAssetResourceType@
 newtype PHAssetResourceType = PHAssetResourceType CLong
@@ -293,6 +376,16 @@ pattern PHAssetResourceTypeAdjustmentBaseVideo = PHAssetResourceType 12
 pattern PHAssetResourceTypePhotoProxy :: PHAssetResourceType
 pattern PHAssetResourceTypePhotoProxy = PHAssetResourceType 19
 
+instance ObjCArgument PHAssetResourceType where
+  withObjCArg (PHAssetResourceType x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetResourceType where
+  type RawReturn PHAssetResourceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetResourceType x)
+  fromOwned x = pure (PHAssetResourceType x)
+
 -- | An action to perform on an upload job.
 --
 -- Determine the available jobs for an action by calling the ``PHAssetResourceUploadJob/fetchJobsWithAction:options:`` method.
@@ -306,6 +399,16 @@ pattern PHAssetResourceUploadJobActionAcknowledge = PHAssetResourceUploadJobActi
 
 pattern PHAssetResourceUploadJobActionRetry :: PHAssetResourceUploadJobAction
 pattern PHAssetResourceUploadJobActionRetry = PHAssetResourceUploadJobAction 2
+
+instance ObjCArgument PHAssetResourceUploadJobAction where
+  withObjCArg (PHAssetResourceUploadJobAction x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetResourceUploadJobAction where
+  type RawReturn PHAssetResourceUploadJobAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetResourceUploadJobAction x)
+  fromOwned x = pure (PHAssetResourceUploadJobAction x)
 
 -- | The states of an upload job.
 -- | @PHAssetResourceUploadJobState@
@@ -324,6 +427,16 @@ pattern PHAssetResourceUploadJobStateFailed = PHAssetResourceUploadJobState 3
 
 pattern PHAssetResourceUploadJobStateSucceeded :: PHAssetResourceUploadJobState
 pattern PHAssetResourceUploadJobStateSucceeded = PHAssetResourceUploadJobState 4
+
+instance ObjCArgument PHAssetResourceUploadJobState where
+  withObjCArg (PHAssetResourceUploadJobState x) k = k (argCLong x)
+
+instance ObjCReturn PHAssetResourceUploadJobState where
+  type RawReturn PHAssetResourceUploadJobState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetResourceUploadJobState x)
+  fromOwned x = pure (PHAssetResourceUploadJobState x)
 
 -- | @PHAssetSourceType@ (bitmask)
 newtype PHAssetSourceType = PHAssetSourceType CULong
@@ -348,6 +461,16 @@ pattern PHAssetSourceTypeCloudShared = PHAssetSourceType 2
 pattern PHAssetSourceTypeiTunesSynced :: PHAssetSourceType
 pattern PHAssetSourceTypeiTunesSynced = PHAssetSourceType 4
 
+instance ObjCArgument PHAssetSourceType where
+  withObjCArg (PHAssetSourceType x) k = k (argCULong x)
+
+instance ObjCReturn PHAssetSourceType where
+  type RawReturn PHAssetSourceType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAssetSourceType x)
+  fromOwned x = pure (PHAssetSourceType x)
+
 -- | @PHAuthorizationStatus@
 newtype PHAuthorizationStatus = PHAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -367,6 +490,16 @@ pattern PHAuthorizationStatusAuthorized = PHAuthorizationStatus 3
 
 pattern PHAuthorizationStatusLimited :: PHAuthorizationStatus
 pattern PHAuthorizationStatusLimited = PHAuthorizationStatus 4
+
+instance ObjCArgument PHAuthorizationStatus where
+  withObjCArg (PHAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn PHAuthorizationStatus where
+  type RawReturn PHAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHAuthorizationStatus x)
+  fromOwned x = pure (PHAuthorizationStatus x)
 
 -- | @PHCollectionEditOperation@
 newtype PHCollectionEditOperation = PHCollectionEditOperation CLong
@@ -394,6 +527,16 @@ pattern PHCollectionEditOperationDelete = PHCollectionEditOperation 6
 pattern PHCollectionEditOperationRename :: PHCollectionEditOperation
 pattern PHCollectionEditOperationRename = PHCollectionEditOperation 7
 
+instance ObjCArgument PHCollectionEditOperation where
+  withObjCArg (PHCollectionEditOperation x) k = k (argCLong x)
+
+instance ObjCReturn PHCollectionEditOperation where
+  type RawReturn PHCollectionEditOperation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHCollectionEditOperation x)
+  fromOwned x = pure (PHCollectionEditOperation x)
+
 -- | @PHCollectionListSubtype@
 newtype PHCollectionListSubtype = PHCollectionListSubtype CLong
   deriving stock (Eq, Ord, Show)
@@ -417,6 +560,16 @@ pattern PHCollectionListSubtypeSmartFolderFaces = PHCollectionListSubtype 201
 pattern PHCollectionListSubtypeAny :: PHCollectionListSubtype
 pattern PHCollectionListSubtypeAny = PHCollectionListSubtype 9223372036854775807
 
+instance ObjCArgument PHCollectionListSubtype where
+  withObjCArg (PHCollectionListSubtype x) k = k (argCLong x)
+
+instance ObjCReturn PHCollectionListSubtype where
+  type RawReturn PHCollectionListSubtype = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHCollectionListSubtype x)
+  fromOwned x = pure (PHCollectionListSubtype x)
+
 -- | @PHCollectionListType@
 newtype PHCollectionListType = PHCollectionListType CLong
   deriving stock (Eq, Ord, Show)
@@ -430,6 +583,16 @@ pattern PHCollectionListTypeFolder = PHCollectionListType 2
 
 pattern PHCollectionListTypeSmartFolder :: PHCollectionListType
 pattern PHCollectionListTypeSmartFolder = PHCollectionListType 3
+
+instance ObjCArgument PHCollectionListType where
+  withObjCArg (PHCollectionListType x) k = k (argCLong x)
+
+instance ObjCReturn PHCollectionListType where
+  type RawReturn PHCollectionListType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHCollectionListType x)
+  fromOwned x = pure (PHCollectionListType x)
 
 -- | @PHImageContentMode@
 newtype PHImageContentMode = PHImageContentMode CLong
@@ -445,6 +608,16 @@ pattern PHImageContentModeAspectFill = PHImageContentMode 1
 pattern PHImageContentModeDefault :: PHImageContentMode
 pattern PHImageContentModeDefault = PHImageContentMode 0
 
+instance ObjCArgument PHImageContentMode where
+  withObjCArg (PHImageContentMode x) k = k (argCLong x)
+
+instance ObjCReturn PHImageContentMode where
+  type RawReturn PHImageContentMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHImageContentMode x)
+  fromOwned x = pure (PHImageContentMode x)
+
 -- | @PHImageRequestOptionsDeliveryMode@
 newtype PHImageRequestOptionsDeliveryMode = PHImageRequestOptionsDeliveryMode CLong
   deriving stock (Eq, Ord, Show)
@@ -458,6 +631,16 @@ pattern PHImageRequestOptionsDeliveryModeHighQualityFormat = PHImageRequestOptio
 
 pattern PHImageRequestOptionsDeliveryModeFastFormat :: PHImageRequestOptionsDeliveryMode
 pattern PHImageRequestOptionsDeliveryModeFastFormat = PHImageRequestOptionsDeliveryMode 2
+
+instance ObjCArgument PHImageRequestOptionsDeliveryMode where
+  withObjCArg (PHImageRequestOptionsDeliveryMode x) k = k (argCLong x)
+
+instance ObjCReturn PHImageRequestOptionsDeliveryMode where
+  type RawReturn PHImageRequestOptionsDeliveryMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHImageRequestOptionsDeliveryMode x)
+  fromOwned x = pure (PHImageRequestOptionsDeliveryMode x)
 
 -- | @PHImageRequestOptionsResizeMode@
 newtype PHImageRequestOptionsResizeMode = PHImageRequestOptionsResizeMode CLong
@@ -473,6 +656,16 @@ pattern PHImageRequestOptionsResizeModeFast = PHImageRequestOptionsResizeMode 1
 pattern PHImageRequestOptionsResizeModeExact :: PHImageRequestOptionsResizeMode
 pattern PHImageRequestOptionsResizeModeExact = PHImageRequestOptionsResizeMode 2
 
+instance ObjCArgument PHImageRequestOptionsResizeMode where
+  withObjCArg (PHImageRequestOptionsResizeMode x) k = k (argCLong x)
+
+instance ObjCReturn PHImageRequestOptionsResizeMode where
+  type RawReturn PHImageRequestOptionsResizeMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHImageRequestOptionsResizeMode x)
+  fromOwned x = pure (PHImageRequestOptionsResizeMode x)
+
 -- | @PHImageRequestOptionsVersion@
 newtype PHImageRequestOptionsVersion = PHImageRequestOptionsVersion CLong
   deriving stock (Eq, Ord, Show)
@@ -487,6 +680,16 @@ pattern PHImageRequestOptionsVersionUnadjusted = PHImageRequestOptionsVersion 1
 pattern PHImageRequestOptionsVersionOriginal :: PHImageRequestOptionsVersion
 pattern PHImageRequestOptionsVersionOriginal = PHImageRequestOptionsVersion 2
 
+instance ObjCArgument PHImageRequestOptionsVersion where
+  withObjCArg (PHImageRequestOptionsVersion x) k = k (argCLong x)
+
+instance ObjCReturn PHImageRequestOptionsVersion where
+  type RawReturn PHImageRequestOptionsVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHImageRequestOptionsVersion x)
+  fromOwned x = pure (PHImageRequestOptionsVersion x)
+
 -- | Error code for Live Photo Editing errors (Deprecated)
 -- | @PHLivePhotoEditingErrorCode@
 newtype PHLivePhotoEditingErrorCode = PHLivePhotoEditingErrorCode CLong
@@ -499,6 +702,16 @@ pattern PHLivePhotoEditingErrorCodeUnknown = PHLivePhotoEditingErrorCode 0
 pattern PHLivePhotoEditingErrorCodeAborted :: PHLivePhotoEditingErrorCode
 pattern PHLivePhotoEditingErrorCodeAborted = PHLivePhotoEditingErrorCode 1
 
+instance ObjCArgument PHLivePhotoEditingErrorCode where
+  withObjCArg (PHLivePhotoEditingErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PHLivePhotoEditingErrorCode where
+  type RawReturn PHLivePhotoEditingErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHLivePhotoEditingErrorCode x)
+  fromOwned x = pure (PHLivePhotoEditingErrorCode x)
+
 -- | The type of frame in the Live Photo
 -- | @PHLivePhotoFrameType@
 newtype PHLivePhotoFrameType = PHLivePhotoFrameType CLong
@@ -510,6 +723,16 @@ pattern PHLivePhotoFrameTypePhoto = PHLivePhotoFrameType 0
 
 pattern PHLivePhotoFrameTypeVideo :: PHLivePhotoFrameType
 pattern PHLivePhotoFrameTypeVideo = PHLivePhotoFrameType 1
+
+instance ObjCArgument PHLivePhotoFrameType where
+  withObjCArg (PHLivePhotoFrameType x) k = k (argCLong x)
+
+instance ObjCReturn PHLivePhotoFrameType where
+  type RawReturn PHLivePhotoFrameType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHLivePhotoFrameType x)
+  fromOwned x = pure (PHLivePhotoFrameType x)
 
 -- | @PHObjectType@
 newtype PHObjectType = PHObjectType CLong
@@ -524,6 +747,16 @@ pattern PHObjectTypeAssetCollection = PHObjectType 2
 
 pattern PHObjectTypeCollectionList :: PHObjectType
 pattern PHObjectTypeCollectionList = PHObjectType 3
+
+instance ObjCArgument PHObjectType where
+  withObjCArg (PHObjectType x) k = k (argCLong x)
+
+instance ObjCReturn PHObjectType where
+  type RawReturn PHObjectType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHObjectType x)
+  fromOwned x = pure (PHObjectType x)
 
 -- | @PHPhotosError@
 newtype PHPhotosError = PHPhotosError CLong
@@ -596,6 +829,16 @@ pattern PHPhotosErrorPersistentChangeDetailsUnavailable = PHPhotosError 3210
 pattern PHPhotosErrorInvalid :: PHPhotosError
 pattern PHPhotosErrorInvalid = PHPhotosError (-1)
 
+instance ObjCArgument PHPhotosError where
+  withObjCArg (PHPhotosError x) k = k (argCLong x)
+
+instance ObjCReturn PHPhotosError where
+  type RawReturn PHPhotosError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHPhotosError x)
+  fromOwned x = pure (PHPhotosError x)
+
 -- | @PHVideoRequestOptionsDeliveryMode@
 newtype PHVideoRequestOptionsDeliveryMode = PHVideoRequestOptionsDeliveryMode CLong
   deriving stock (Eq, Ord, Show)
@@ -613,6 +856,16 @@ pattern PHVideoRequestOptionsDeliveryModeMediumQualityFormat = PHVideoRequestOpt
 pattern PHVideoRequestOptionsDeliveryModeFastFormat :: PHVideoRequestOptionsDeliveryMode
 pattern PHVideoRequestOptionsDeliveryModeFastFormat = PHVideoRequestOptionsDeliveryMode 3
 
+instance ObjCArgument PHVideoRequestOptionsDeliveryMode where
+  withObjCArg (PHVideoRequestOptionsDeliveryMode x) k = k (argCLong x)
+
+instance ObjCReturn PHVideoRequestOptionsDeliveryMode where
+  type RawReturn PHVideoRequestOptionsDeliveryMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHVideoRequestOptionsDeliveryMode x)
+  fromOwned x = pure (PHVideoRequestOptionsDeliveryMode x)
+
 -- | @PHVideoRequestOptionsVersion@
 newtype PHVideoRequestOptionsVersion = PHVideoRequestOptionsVersion CLong
   deriving stock (Eq, Ord, Show)
@@ -623,3 +876,13 @@ pattern PHVideoRequestOptionsVersionCurrent = PHVideoRequestOptionsVersion 0
 
 pattern PHVideoRequestOptionsVersionOriginal :: PHVideoRequestOptionsVersion
 pattern PHVideoRequestOptionsVersionOriginal = PHVideoRequestOptionsVersion 1
+
+instance ObjCArgument PHVideoRequestOptionsVersion where
+  withObjCArg (PHVideoRequestOptionsVersion x) k = k (argCLong x)
+
+instance ObjCReturn PHVideoRequestOptionsVersion where
+  type RawReturn PHVideoRequestOptionsVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHVideoRequestOptionsVersion x)
+  fromOwned x = pure (PHVideoRequestOptionsVersion x)

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,35 +40,38 @@ module ObjC.Foundation.NSThread
   , executing
   , finished
   , cancelled
-  , detachNewThreadWithBlockSelector
-  , detachNewThreadSelector_toTarget_withObjectSelector
-  , isMultiThreadedSelector
-  , sleepUntilDateSelector
-  , sleepForTimeIntervalSelector
-  , exitSelector
-  , threadPrioritySelector
-  , setThreadPrioritySelector
-  , initSelector
-  , initWithTarget_selector_objectSelector
-  , initWithBlockSelector
-  , cancelSelector
-  , startSelector
-  , mainSelector
-  , currentThreadSelector
-  , threadDictionarySelector
-  , qualityOfServiceSelector
-  , setQualityOfServiceSelector
   , callStackReturnAddressesSelector
   , callStackSymbolsSelector
-  , nameSelector
-  , setNameSelector
-  , stackSizeSelector
-  , setStackSizeSelector
-  , isMainThreadSelector
-  , mainThreadSelector
-  , executingSelector
-  , finishedSelector
+  , cancelSelector
   , cancelledSelector
+  , currentThreadSelector
+  , detachNewThreadSelector_toTarget_withObjectSelector
+  , detachNewThreadWithBlockSelector
+  , executingSelector
+  , exitSelector
+  , finishedSelector
+  , initSelector
+  , initWithBlockSelector
+  , initWithTarget_selector_objectSelector
+  , isMainThreadSelector
+  , isMultiThreadedSelector
+  , mainSelector
+  , mainThreadSelector
+  , nameSelector
+  , nsThreadIsMainThreadSelector
+  , nsThreadSetThreadPrioritySelector
+  , nsThreadThreadPrioritySelector
+  , qualityOfServiceSelector
+  , setNameSelector
+  , setQualityOfServiceSelector
+  , setStackSizeSelector
+  , setThreadPrioritySelector
+  , sleepForTimeIntervalSelector
+  , sleepUntilDateSelector
+  , stackSizeSelector
+  , startSelector
+  , threadDictionarySelector
+  , threadPrioritySelector
 
   -- * Enum types
   , NSQualityOfService(NSQualityOfService)
@@ -79,15 +83,11 @@ module ObjC.Foundation.NSThread
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,306 +99,316 @@ detachNewThreadWithBlock :: Ptr () -> IO ()
 detachNewThreadWithBlock block =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "detachNewThreadWithBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+    sendClassMessage cls' detachNewThreadWithBlockSelector block
 
 -- | @+ detachNewThreadSelector:toTarget:withObject:@
-detachNewThreadSelector_toTarget_withObject :: Selector -> RawId -> RawId -> IO ()
+detachNewThreadSelector_toTarget_withObject :: Sel -> RawId -> RawId -> IO ()
 detachNewThreadSelector_toTarget_withObject selector target argument =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "detachNewThreadSelector:toTarget:withObject:") retVoid [argPtr (unSelector selector), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr (unRawId argument) :: Ptr ())]
+    sendClassMessage cls' detachNewThreadSelector_toTarget_withObjectSelector selector target argument
 
 -- | @+ isMultiThreaded@
 isMultiThreaded :: IO Bool
 isMultiThreaded  =
   do
     cls' <- getRequiredClass "NSThread"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isMultiThreaded") retCULong []
+    sendClassMessage cls' isMultiThreadedSelector
 
 -- | @+ sleepUntilDate:@
 sleepUntilDate :: IsNSDate date => date -> IO ()
 sleepUntilDate date =
   do
     cls' <- getRequiredClass "NSThread"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "sleepUntilDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+    sendClassMessage cls' sleepUntilDateSelector (toNSDate date)
 
 -- | @+ sleepForTimeInterval:@
 sleepForTimeInterval :: CDouble -> IO ()
 sleepForTimeInterval ti =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "sleepForTimeInterval:") retVoid [argCDouble ti]
+    sendClassMessage cls' sleepForTimeIntervalSelector ti
 
 -- | @+ exit@
 exit :: IO ()
 exit  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "exit") retVoid []
+    sendClassMessage cls' exitSelector
 
 -- | @+ threadPriority@
 nsThreadThreadPriority :: IO CDouble
 nsThreadThreadPriority  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "threadPriority") retCDouble []
+    sendClassMessage cls' nsThreadThreadPrioritySelector
 
 -- | @+ setThreadPriority:@
 nsThreadSetThreadPriority :: CDouble -> IO Bool
 nsThreadSetThreadPriority p =
   do
     cls' <- getRequiredClass "NSThread"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "setThreadPriority:") retCULong [argCDouble p]
+    sendClassMessage cls' nsThreadSetThreadPrioritySelector p
 
 -- | @- init@
 init_ :: IsNSThread nsThread => nsThread -> IO (Id NSThread)
-init_ nsThread  =
-    sendMsg nsThread (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsThread =
+  sendOwnedMessage nsThread initSelector
 
 -- | @- initWithTarget:selector:object:@
-initWithTarget_selector_object :: IsNSThread nsThread => nsThread -> RawId -> Selector -> RawId -> IO (Id NSThread)
-initWithTarget_selector_object nsThread  target selector argument =
-    sendMsg nsThread (mkSelector "initWithTarget:selector:object:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector selector), argPtr (castPtr (unRawId argument) :: Ptr ())] >>= ownedObject . castPtr
+initWithTarget_selector_object :: IsNSThread nsThread => nsThread -> RawId -> Sel -> RawId -> IO (Id NSThread)
+initWithTarget_selector_object nsThread target selector argument =
+  sendOwnedMessage nsThread initWithTarget_selector_objectSelector target selector argument
 
 -- | @- initWithBlock:@
 initWithBlock :: IsNSThread nsThread => nsThread -> Ptr () -> IO (Id NSThread)
-initWithBlock nsThread  block =
-    sendMsg nsThread (mkSelector "initWithBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= ownedObject . castPtr
+initWithBlock nsThread block =
+  sendOwnedMessage nsThread initWithBlockSelector block
 
 -- | @- cancel@
 cancel :: IsNSThread nsThread => nsThread -> IO ()
-cancel nsThread  =
-    sendMsg nsThread (mkSelector "cancel") retVoid []
+cancel nsThread =
+  sendMessage nsThread cancelSelector
 
 -- | @- start@
 start :: IsNSThread nsThread => nsThread -> IO ()
-start nsThread  =
-    sendMsg nsThread (mkSelector "start") retVoid []
+start nsThread =
+  sendMessage nsThread startSelector
 
 -- | @- main@
 main :: IsNSThread nsThread => nsThread -> IO ()
-main nsThread  =
-    sendMsg nsThread (mkSelector "main") retVoid []
+main nsThread =
+  sendMessage nsThread mainSelector
 
 -- | @+ currentThread@
 currentThread :: IO (Id NSThread)
 currentThread  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "currentThread") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentThreadSelector
 
 -- | @- threadDictionary@
 threadDictionary :: IsNSThread nsThread => nsThread -> IO (Id NSMutableDictionary)
-threadDictionary nsThread  =
-    sendMsg nsThread (mkSelector "threadDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+threadDictionary nsThread =
+  sendMessage nsThread threadDictionarySelector
 
 -- | @- threadPriority@
 threadPriority :: IsNSThread nsThread => nsThread -> IO CDouble
-threadPriority nsThread  =
-    sendMsg nsThread (mkSelector "threadPriority") retCDouble []
+threadPriority nsThread =
+  sendMessage nsThread threadPrioritySelector
 
 -- | @- setThreadPriority:@
 setThreadPriority :: IsNSThread nsThread => nsThread -> CDouble -> IO ()
-setThreadPriority nsThread  value =
-    sendMsg nsThread (mkSelector "setThreadPriority:") retVoid [argCDouble value]
+setThreadPriority nsThread value =
+  sendMessage nsThread setThreadPrioritySelector value
 
 -- | @- qualityOfService@
 qualityOfService :: IsNSThread nsThread => nsThread -> IO NSQualityOfService
-qualityOfService nsThread  =
-    fmap (coerce :: CLong -> NSQualityOfService) $ sendMsg nsThread (mkSelector "qualityOfService") retCLong []
+qualityOfService nsThread =
+  sendMessage nsThread qualityOfServiceSelector
 
 -- | @- setQualityOfService:@
 setQualityOfService :: IsNSThread nsThread => nsThread -> NSQualityOfService -> IO ()
-setQualityOfService nsThread  value =
-    sendMsg nsThread (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
+setQualityOfService nsThread value =
+  sendMessage nsThread setQualityOfServiceSelector value
 
 -- | @+ callStackReturnAddresses@
 callStackReturnAddresses :: IO (Id NSArray)
 callStackReturnAddresses  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "callStackReturnAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' callStackReturnAddressesSelector
 
 -- | @+ callStackSymbols@
 callStackSymbols :: IO (Id NSArray)
 callStackSymbols  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "callStackSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' callStackSymbolsSelector
 
 -- | @- name@
 name :: IsNSThread nsThread => nsThread -> IO (Id NSString)
-name nsThread  =
-    sendMsg nsThread (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsThread =
+  sendMessage nsThread nameSelector
 
 -- | @- setName:@
 setName :: (IsNSThread nsThread, IsNSString value) => nsThread -> value -> IO ()
-setName nsThread  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsThread (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsThread value =
+  sendMessage nsThread setNameSelector (toNSString value)
 
 -- | @- stackSize@
 stackSize :: IsNSThread nsThread => nsThread -> IO CULong
-stackSize nsThread  =
-    sendMsg nsThread (mkSelector "stackSize") retCULong []
+stackSize nsThread =
+  sendMessage nsThread stackSizeSelector
 
 -- | @- setStackSize:@
 setStackSize :: IsNSThread nsThread => nsThread -> CULong -> IO ()
-setStackSize nsThread  value =
-    sendMsg nsThread (mkSelector "setStackSize:") retVoid [argCULong value]
+setStackSize nsThread value =
+  sendMessage nsThread setStackSizeSelector value
 
 -- | @- isMainThread@
 isMainThread :: IsNSThread nsThread => nsThread -> IO Bool
-isMainThread nsThread  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsThread (mkSelector "isMainThread") retCULong []
+isMainThread nsThread =
+  sendMessage nsThread isMainThreadSelector
 
 -- | @+ isMainThread@
 nsThreadIsMainThread :: IO Bool
 nsThreadIsMainThread  =
   do
     cls' <- getRequiredClass "NSThread"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isMainThread") retCULong []
+    sendClassMessage cls' nsThreadIsMainThreadSelector
 
 -- | @+ mainThread@
 mainThread :: IO (Id NSThread)
 mainThread  =
   do
     cls' <- getRequiredClass "NSThread"
-    sendClassMsg cls' (mkSelector "mainThread") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mainThreadSelector
 
 -- | @- executing@
 executing :: IsNSThread nsThread => nsThread -> IO Bool
-executing nsThread  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsThread (mkSelector "executing") retCULong []
+executing nsThread =
+  sendMessage nsThread executingSelector
 
 -- | @- finished@
 finished :: IsNSThread nsThread => nsThread -> IO Bool
-finished nsThread  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsThread (mkSelector "finished") retCULong []
+finished nsThread =
+  sendMessage nsThread finishedSelector
 
 -- | @- cancelled@
 cancelled :: IsNSThread nsThread => nsThread -> IO Bool
-cancelled nsThread  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsThread (mkSelector "cancelled") retCULong []
+cancelled nsThread =
+  sendMessage nsThread cancelledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @detachNewThreadWithBlock:@
-detachNewThreadWithBlockSelector :: Selector
+detachNewThreadWithBlockSelector :: Selector '[Ptr ()] ()
 detachNewThreadWithBlockSelector = mkSelector "detachNewThreadWithBlock:"
 
 -- | @Selector@ for @detachNewThreadSelector:toTarget:withObject:@
-detachNewThreadSelector_toTarget_withObjectSelector :: Selector
+detachNewThreadSelector_toTarget_withObjectSelector :: Selector '[Sel, RawId, RawId] ()
 detachNewThreadSelector_toTarget_withObjectSelector = mkSelector "detachNewThreadSelector:toTarget:withObject:"
 
 -- | @Selector@ for @isMultiThreaded@
-isMultiThreadedSelector :: Selector
+isMultiThreadedSelector :: Selector '[] Bool
 isMultiThreadedSelector = mkSelector "isMultiThreaded"
 
 -- | @Selector@ for @sleepUntilDate:@
-sleepUntilDateSelector :: Selector
+sleepUntilDateSelector :: Selector '[Id NSDate] ()
 sleepUntilDateSelector = mkSelector "sleepUntilDate:"
 
 -- | @Selector@ for @sleepForTimeInterval:@
-sleepForTimeIntervalSelector :: Selector
+sleepForTimeIntervalSelector :: Selector '[CDouble] ()
 sleepForTimeIntervalSelector = mkSelector "sleepForTimeInterval:"
 
 -- | @Selector@ for @exit@
-exitSelector :: Selector
+exitSelector :: Selector '[] ()
 exitSelector = mkSelector "exit"
 
 -- | @Selector@ for @threadPriority@
-threadPrioritySelector :: Selector
-threadPrioritySelector = mkSelector "threadPriority"
+nsThreadThreadPrioritySelector :: Selector '[] CDouble
+nsThreadThreadPrioritySelector = mkSelector "threadPriority"
 
 -- | @Selector@ for @setThreadPriority:@
-setThreadPrioritySelector :: Selector
-setThreadPrioritySelector = mkSelector "setThreadPriority:"
+nsThreadSetThreadPrioritySelector :: Selector '[CDouble] Bool
+nsThreadSetThreadPrioritySelector = mkSelector "setThreadPriority:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSThread)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTarget:selector:object:@
-initWithTarget_selector_objectSelector :: Selector
+initWithTarget_selector_objectSelector :: Selector '[RawId, Sel, RawId] (Id NSThread)
 initWithTarget_selector_objectSelector = mkSelector "initWithTarget:selector:object:"
 
 -- | @Selector@ for @initWithBlock:@
-initWithBlockSelector :: Selector
+initWithBlockSelector :: Selector '[Ptr ()] (Id NSThread)
 initWithBlockSelector = mkSelector "initWithBlock:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @main@
-mainSelector :: Selector
+mainSelector :: Selector '[] ()
 mainSelector = mkSelector "main"
 
 -- | @Selector@ for @currentThread@
-currentThreadSelector :: Selector
+currentThreadSelector :: Selector '[] (Id NSThread)
 currentThreadSelector = mkSelector "currentThread"
 
 -- | @Selector@ for @threadDictionary@
-threadDictionarySelector :: Selector
+threadDictionarySelector :: Selector '[] (Id NSMutableDictionary)
 threadDictionarySelector = mkSelector "threadDictionary"
 
+-- | @Selector@ for @threadPriority@
+threadPrioritySelector :: Selector '[] CDouble
+threadPrioritySelector = mkSelector "threadPriority"
+
+-- | @Selector@ for @setThreadPriority:@
+setThreadPrioritySelector :: Selector '[CDouble] ()
+setThreadPrioritySelector = mkSelector "setThreadPriority:"
+
 -- | @Selector@ for @qualityOfService@
-qualityOfServiceSelector :: Selector
+qualityOfServiceSelector :: Selector '[] NSQualityOfService
 qualityOfServiceSelector = mkSelector "qualityOfService"
 
 -- | @Selector@ for @setQualityOfService:@
-setQualityOfServiceSelector :: Selector
+setQualityOfServiceSelector :: Selector '[NSQualityOfService] ()
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
 
 -- | @Selector@ for @callStackReturnAddresses@
-callStackReturnAddressesSelector :: Selector
+callStackReturnAddressesSelector :: Selector '[] (Id NSArray)
 callStackReturnAddressesSelector = mkSelector "callStackReturnAddresses"
 
 -- | @Selector@ for @callStackSymbols@
-callStackSymbolsSelector :: Selector
+callStackSymbolsSelector :: Selector '[] (Id NSArray)
 callStackSymbolsSelector = mkSelector "callStackSymbols"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @stackSize@
-stackSizeSelector :: Selector
+stackSizeSelector :: Selector '[] CULong
 stackSizeSelector = mkSelector "stackSize"
 
 -- | @Selector@ for @setStackSize:@
-setStackSizeSelector :: Selector
+setStackSizeSelector :: Selector '[CULong] ()
 setStackSizeSelector = mkSelector "setStackSize:"
 
 -- | @Selector@ for @isMainThread@
-isMainThreadSelector :: Selector
+isMainThreadSelector :: Selector '[] Bool
 isMainThreadSelector = mkSelector "isMainThread"
 
+-- | @Selector@ for @isMainThread@
+nsThreadIsMainThreadSelector :: Selector '[] Bool
+nsThreadIsMainThreadSelector = mkSelector "isMainThread"
+
 -- | @Selector@ for @mainThread@
-mainThreadSelector :: Selector
+mainThreadSelector :: Selector '[] (Id NSThread)
 mainThreadSelector = mkSelector "mainThread"
 
 -- | @Selector@ for @executing@
-executingSelector :: Selector
+executingSelector :: Selector '[] Bool
 executingSelector = mkSelector "executing"
 
 -- | @Selector@ for @finished@
-finishedSelector :: Selector
+finishedSelector :: Selector '[] Bool
 finishedSelector = mkSelector "finished"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 

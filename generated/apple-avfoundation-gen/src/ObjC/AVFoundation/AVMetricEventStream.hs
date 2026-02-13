@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AVFoundation.AVMetricEventStream
   , subscribeToMetricEvent
   , subscribeToMetricEvents
   , subscribeToAllMetricEvents
+  , addPublisherSelector
+  , eventStreamSelector
   , initSelector
   , newSelector
-  , eventStreamSelector
-  , addPublisherSelector
   , setSubscriber_queueSelector
+  , subscribeToAllMetricEventsSelector
   , subscribeToMetricEventSelector
   , subscribeToMetricEventsSelector
-  , subscribeToAllMetricEventsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricEventStream avMetricEventStream => avMetricEventStream -> IO (Id AVMetricEventStream)
-init_ avMetricEventStream  =
-    sendMsg avMetricEventStream (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricEventStream =
+  sendOwnedMessage avMetricEventStream initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricEventStream)
 new  =
   do
     cls' <- getRequiredClass "AVMetricEventStream"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns an autoreleased instance.
 --
@@ -62,14 +59,14 @@ eventStream :: IO (Id AVMetricEventStream)
 eventStream  =
   do
     cls' <- getRequiredClass "AVMetricEventStream"
-    sendClassMsg cls' (mkSelector "eventStream") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' eventStreamSelector
 
 -- | The publisher should be an AVFoundation instance conforming to AVMetricEventStreamPublisher.
 --
 -- ObjC selector: @- addPublisher:@
 addPublisher :: IsAVMetricEventStream avMetricEventStream => avMetricEventStream -> RawId -> IO Bool
-addPublisher avMetricEventStream  publisher =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricEventStream (mkSelector "addPublisher:") retCULong [argPtr (castPtr (unRawId publisher) :: Ptr ())]
+addPublisher avMetricEventStream publisher =
+  sendMessage avMetricEventStream addPublisherSelector publisher
 
 -- | Set a subscriber delegate.
 --
@@ -77,9 +74,8 @@ addPublisher avMetricEventStream  publisher =
 --
 -- ObjC selector: @- setSubscriber:queue:@
 setSubscriber_queue :: (IsAVMetricEventStream avMetricEventStream, IsNSObject queue) => avMetricEventStream -> RawId -> queue -> IO Bool
-setSubscriber_queue avMetricEventStream  subscriber queue =
-  withObjCPtr queue $ \raw_queue ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricEventStream (mkSelector "setSubscriber:queue:") retCULong [argPtr (castPtr (unRawId subscriber) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setSubscriber_queue avMetricEventStream subscriber queue =
+  sendMessage avMetricEventStream setSubscriber_queueSelector subscriber (toNSObject queue)
 
 -- | Subscribe to a specific metric event class.
 --
@@ -87,8 +83,8 @@ setSubscriber_queue avMetricEventStream  subscriber queue =
 --
 -- ObjC selector: @- subscribeToMetricEvent:@
 subscribeToMetricEvent :: IsAVMetricEventStream avMetricEventStream => avMetricEventStream -> Class -> IO ()
-subscribeToMetricEvent avMetricEventStream  metricEventClass =
-    sendMsg avMetricEventStream (mkSelector "subscribeToMetricEvent:") retVoid [argPtr (unClass metricEventClass)]
+subscribeToMetricEvent avMetricEventStream metricEventClass =
+  sendMessage avMetricEventStream subscribeToMetricEventSelector metricEventClass
 
 -- | Subscribe to set of metric event classes.
 --
@@ -96,50 +92,49 @@ subscribeToMetricEvent avMetricEventStream  metricEventClass =
 --
 -- ObjC selector: @- subscribeToMetricEvents:@
 subscribeToMetricEvents :: (IsAVMetricEventStream avMetricEventStream, IsNSArray metricEventClasses) => avMetricEventStream -> metricEventClasses -> IO ()
-subscribeToMetricEvents avMetricEventStream  metricEventClasses =
-  withObjCPtr metricEventClasses $ \raw_metricEventClasses ->
-      sendMsg avMetricEventStream (mkSelector "subscribeToMetricEvents:") retVoid [argPtr (castPtr raw_metricEventClasses :: Ptr ())]
+subscribeToMetricEvents avMetricEventStream metricEventClasses =
+  sendMessage avMetricEventStream subscribeToMetricEventsSelector (toNSArray metricEventClasses)
 
 -- | Subscribe to all metric event classes.
 --
 -- ObjC selector: @- subscribeToAllMetricEvents@
 subscribeToAllMetricEvents :: IsAVMetricEventStream avMetricEventStream => avMetricEventStream -> IO ()
-subscribeToAllMetricEvents avMetricEventStream  =
-    sendMsg avMetricEventStream (mkSelector "subscribeToAllMetricEvents") retVoid []
+subscribeToAllMetricEvents avMetricEventStream =
+  sendMessage avMetricEventStream subscribeToAllMetricEventsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricEventStream)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricEventStream)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @eventStream@
-eventStreamSelector :: Selector
+eventStreamSelector :: Selector '[] (Id AVMetricEventStream)
 eventStreamSelector = mkSelector "eventStream"
 
 -- | @Selector@ for @addPublisher:@
-addPublisherSelector :: Selector
+addPublisherSelector :: Selector '[RawId] Bool
 addPublisherSelector = mkSelector "addPublisher:"
 
 -- | @Selector@ for @setSubscriber:queue:@
-setSubscriber_queueSelector :: Selector
+setSubscriber_queueSelector :: Selector '[RawId, Id NSObject] Bool
 setSubscriber_queueSelector = mkSelector "setSubscriber:queue:"
 
 -- | @Selector@ for @subscribeToMetricEvent:@
-subscribeToMetricEventSelector :: Selector
+subscribeToMetricEventSelector :: Selector '[Class] ()
 subscribeToMetricEventSelector = mkSelector "subscribeToMetricEvent:"
 
 -- | @Selector@ for @subscribeToMetricEvents:@
-subscribeToMetricEventsSelector :: Selector
+subscribeToMetricEventsSelector :: Selector '[Id NSArray] ()
 subscribeToMetricEventsSelector = mkSelector "subscribeToMetricEvents:"
 
 -- | @Selector@ for @subscribeToAllMetricEvents@
-subscribeToAllMetricEventsSelector :: Selector
+subscribeToAllMetricEventsSelector :: Selector '[] ()
 subscribeToAllMetricEventsSelector = mkSelector "subscribeToAllMetricEvents"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,36 +38,36 @@ module ObjC.AppKit.NSScroller
   , setArrowsPosition
   , controlTint
   , setControlTint
-  , scrollerWidthForControlSize_scrollerStyleSelector
-  , rectForPartSelector
+  , arrowsPositionSelector
   , checkSpaceForPartsSelector
+  , compatibleWithOverlayScrollersSelector
+  , controlSizeSelector
+  , controlTintSelector
+  , drawArrow_highlightSelector
   , drawKnobSelector
   , drawKnobSlotInRect_highlightSelector
-  , testPartSelector
-  , trackKnobSelector
-  , setKnobProportionSelector
-  , scrollerWidthForControlSizeSelector
-  , scrollerWidthSelector
-  , setFloatValue_knobProportionSelector
-  , highlightSelector
-  , trackScrollButtonsSelector
   , drawPartsSelector
-  , drawArrow_highlightSelector
-  , compatibleWithOverlayScrollersSelector
-  , preferredScrollerStyleSelector
-  , scrollerStyleSelector
-  , setScrollerStyleSelector
-  , knobStyleSelector
-  , setKnobStyleSelector
-  , usablePartsSelector
-  , controlSizeSelector
-  , setControlSizeSelector
+  , highlightSelector
   , hitPartSelector
   , knobProportionSelector
-  , arrowsPositionSelector
+  , knobStyleSelector
+  , preferredScrollerStyleSelector
+  , rectForPartSelector
+  , scrollerStyleSelector
+  , scrollerWidthForControlSizeSelector
+  , scrollerWidthForControlSize_scrollerStyleSelector
+  , scrollerWidthSelector
   , setArrowsPositionSelector
-  , controlTintSelector
+  , setControlSizeSelector
   , setControlTintSelector
+  , setFloatValue_knobProportionSelector
+  , setKnobProportionSelector
+  , setKnobStyleSelector
+  , setScrollerStyleSelector
+  , testPartSelector
+  , trackKnobSelector
+  , trackScrollButtonsSelector
+  , usablePartsSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -110,15 +111,11 @@ module ObjC.AppKit.NSScroller
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -132,284 +129,282 @@ scrollerWidthForControlSize_scrollerStyle :: NSControlSize -> NSScrollerStyle ->
 scrollerWidthForControlSize_scrollerStyle controlSize scrollerStyle =
   do
     cls' <- getRequiredClass "NSScroller"
-    sendClassMsg cls' (mkSelector "scrollerWidthForControlSize:scrollerStyle:") retCDouble [argCULong (coerce controlSize), argCLong (coerce scrollerStyle)]
+    sendClassMessage cls' scrollerWidthForControlSize_scrollerStyleSelector controlSize scrollerStyle
 
 -- | @- rectForPart:@
 rectForPart :: IsNSScroller nsScroller => nsScroller -> NSScrollerPart -> IO NSRect
-rectForPart nsScroller  partCode =
-    sendMsgStret nsScroller (mkSelector "rectForPart:") retNSRect [argCULong (coerce partCode)]
+rectForPart nsScroller partCode =
+  sendMessage nsScroller rectForPartSelector partCode
 
 -- | @- checkSpaceForParts@
 checkSpaceForParts :: IsNSScroller nsScroller => nsScroller -> IO ()
-checkSpaceForParts nsScroller  =
-    sendMsg nsScroller (mkSelector "checkSpaceForParts") retVoid []
+checkSpaceForParts nsScroller =
+  sendMessage nsScroller checkSpaceForPartsSelector
 
 -- | @- drawKnob@
 drawKnob :: IsNSScroller nsScroller => nsScroller -> IO ()
-drawKnob nsScroller  =
-    sendMsg nsScroller (mkSelector "drawKnob") retVoid []
+drawKnob nsScroller =
+  sendMessage nsScroller drawKnobSelector
 
 -- | @- drawKnobSlotInRect:highlight:@
 drawKnobSlotInRect_highlight :: IsNSScroller nsScroller => nsScroller -> NSRect -> Bool -> IO ()
-drawKnobSlotInRect_highlight nsScroller  slotRect flag =
-    sendMsg nsScroller (mkSelector "drawKnobSlotInRect:highlight:") retVoid [argNSRect slotRect, argCULong (if flag then 1 else 0)]
+drawKnobSlotInRect_highlight nsScroller slotRect flag =
+  sendMessage nsScroller drawKnobSlotInRect_highlightSelector slotRect flag
 
 -- | @- testPart:@
 testPart :: IsNSScroller nsScroller => nsScroller -> NSPoint -> IO NSScrollerPart
-testPart nsScroller  point =
-    fmap (coerce :: CULong -> NSScrollerPart) $ sendMsg nsScroller (mkSelector "testPart:") retCULong [argNSPoint point]
+testPart nsScroller point =
+  sendMessage nsScroller testPartSelector point
 
 -- | @- trackKnob:@
 trackKnob :: (IsNSScroller nsScroller, IsNSEvent event) => nsScroller -> event -> IO ()
-trackKnob nsScroller  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsScroller (mkSelector "trackKnob:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+trackKnob nsScroller event =
+  sendMessage nsScroller trackKnobSelector (toNSEvent event)
 
 -- | @- setKnobProportion:@
 setKnobProportion :: IsNSScroller nsScroller => nsScroller -> CDouble -> IO ()
-setKnobProportion nsScroller  proportion =
-    sendMsg nsScroller (mkSelector "setKnobProportion:") retVoid [argCDouble proportion]
+setKnobProportion nsScroller proportion =
+  sendMessage nsScroller setKnobProportionSelector proportion
 
 -- | @+ scrollerWidthForControlSize:@
 scrollerWidthForControlSize :: NSControlSize -> IO CDouble
 scrollerWidthForControlSize controlSize =
   do
     cls' <- getRequiredClass "NSScroller"
-    sendClassMsg cls' (mkSelector "scrollerWidthForControlSize:") retCDouble [argCULong (coerce controlSize)]
+    sendClassMessage cls' scrollerWidthForControlSizeSelector controlSize
 
 -- | @+ scrollerWidth@
 scrollerWidth :: IO CDouble
 scrollerWidth  =
   do
     cls' <- getRequiredClass "NSScroller"
-    sendClassMsg cls' (mkSelector "scrollerWidth") retCDouble []
+    sendClassMessage cls' scrollerWidthSelector
 
 -- | @- setFloatValue:knobProportion:@
 setFloatValue_knobProportion :: IsNSScroller nsScroller => nsScroller -> CFloat -> CDouble -> IO ()
-setFloatValue_knobProportion nsScroller  value proportion =
-    sendMsg nsScroller (mkSelector "setFloatValue:knobProportion:") retVoid [argCFloat value, argCDouble proportion]
+setFloatValue_knobProportion nsScroller value proportion =
+  sendMessage nsScroller setFloatValue_knobProportionSelector value proportion
 
 -- | @- highlight:@
 highlight :: IsNSScroller nsScroller => nsScroller -> Bool -> IO ()
-highlight nsScroller  flag =
-    sendMsg nsScroller (mkSelector "highlight:") retVoid [argCULong (if flag then 1 else 0)]
+highlight nsScroller flag =
+  sendMessage nsScroller highlightSelector flag
 
 -- | @- trackScrollButtons:@
 trackScrollButtons :: (IsNSScroller nsScroller, IsNSEvent event) => nsScroller -> event -> IO ()
-trackScrollButtons nsScroller  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsScroller (mkSelector "trackScrollButtons:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+trackScrollButtons nsScroller event =
+  sendMessage nsScroller trackScrollButtonsSelector (toNSEvent event)
 
 -- | @- drawParts@
 drawParts :: IsNSScroller nsScroller => nsScroller -> IO ()
-drawParts nsScroller  =
-    sendMsg nsScroller (mkSelector "drawParts") retVoid []
+drawParts nsScroller =
+  sendMessage nsScroller drawPartsSelector
 
 -- | @- drawArrow:highlight:@
 drawArrow_highlight :: IsNSScroller nsScroller => nsScroller -> NSScrollerArrow -> Bool -> IO ()
-drawArrow_highlight nsScroller  whichArrow flag =
-    sendMsg nsScroller (mkSelector "drawArrow:highlight:") retVoid [argCULong (coerce whichArrow), argCULong (if flag then 1 else 0)]
+drawArrow_highlight nsScroller whichArrow flag =
+  sendMessage nsScroller drawArrow_highlightSelector whichArrow flag
 
 -- | @+ compatibleWithOverlayScrollers@
 compatibleWithOverlayScrollers :: IO Bool
 compatibleWithOverlayScrollers  =
   do
     cls' <- getRequiredClass "NSScroller"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "compatibleWithOverlayScrollers") retCULong []
+    sendClassMessage cls' compatibleWithOverlayScrollersSelector
 
 -- | @+ preferredScrollerStyle@
 preferredScrollerStyle :: IO NSScrollerStyle
 preferredScrollerStyle  =
   do
     cls' <- getRequiredClass "NSScroller"
-    fmap (coerce :: CLong -> NSScrollerStyle) $ sendClassMsg cls' (mkSelector "preferredScrollerStyle") retCLong []
+    sendClassMessage cls' preferredScrollerStyleSelector
 
 -- | @- scrollerStyle@
 scrollerStyle :: IsNSScroller nsScroller => nsScroller -> IO NSScrollerStyle
-scrollerStyle nsScroller  =
-    fmap (coerce :: CLong -> NSScrollerStyle) $ sendMsg nsScroller (mkSelector "scrollerStyle") retCLong []
+scrollerStyle nsScroller =
+  sendMessage nsScroller scrollerStyleSelector
 
 -- | @- setScrollerStyle:@
 setScrollerStyle :: IsNSScroller nsScroller => nsScroller -> NSScrollerStyle -> IO ()
-setScrollerStyle nsScroller  value =
-    sendMsg nsScroller (mkSelector "setScrollerStyle:") retVoid [argCLong (coerce value)]
+setScrollerStyle nsScroller value =
+  sendMessage nsScroller setScrollerStyleSelector value
 
 -- | @- knobStyle@
 knobStyle :: IsNSScroller nsScroller => nsScroller -> IO NSScrollerKnobStyle
-knobStyle nsScroller  =
-    fmap (coerce :: CLong -> NSScrollerKnobStyle) $ sendMsg nsScroller (mkSelector "knobStyle") retCLong []
+knobStyle nsScroller =
+  sendMessage nsScroller knobStyleSelector
 
 -- | @- setKnobStyle:@
 setKnobStyle :: IsNSScroller nsScroller => nsScroller -> NSScrollerKnobStyle -> IO ()
-setKnobStyle nsScroller  value =
-    sendMsg nsScroller (mkSelector "setKnobStyle:") retVoid [argCLong (coerce value)]
+setKnobStyle nsScroller value =
+  sendMessage nsScroller setKnobStyleSelector value
 
 -- | @- usableParts@
 usableParts :: IsNSScroller nsScroller => nsScroller -> IO NSUsableScrollerParts
-usableParts nsScroller  =
-    fmap (coerce :: CULong -> NSUsableScrollerParts) $ sendMsg nsScroller (mkSelector "usableParts") retCULong []
+usableParts nsScroller =
+  sendMessage nsScroller usablePartsSelector
 
 -- | @- controlSize@
 controlSize :: IsNSScroller nsScroller => nsScroller -> IO NSControlSize
-controlSize nsScroller  =
-    fmap (coerce :: CULong -> NSControlSize) $ sendMsg nsScroller (mkSelector "controlSize") retCULong []
+controlSize nsScroller =
+  sendMessage nsScroller controlSizeSelector
 
 -- | @- setControlSize:@
 setControlSize :: IsNSScroller nsScroller => nsScroller -> NSControlSize -> IO ()
-setControlSize nsScroller  value =
-    sendMsg nsScroller (mkSelector "setControlSize:") retVoid [argCULong (coerce value)]
+setControlSize nsScroller value =
+  sendMessage nsScroller setControlSizeSelector value
 
 -- | @- hitPart@
 hitPart :: IsNSScroller nsScroller => nsScroller -> IO NSScrollerPart
-hitPart nsScroller  =
-    fmap (coerce :: CULong -> NSScrollerPart) $ sendMsg nsScroller (mkSelector "hitPart") retCULong []
+hitPart nsScroller =
+  sendMessage nsScroller hitPartSelector
 
 -- | @- knobProportion@
 knobProportion :: IsNSScroller nsScroller => nsScroller -> IO CDouble
-knobProportion nsScroller  =
-    sendMsg nsScroller (mkSelector "knobProportion") retCDouble []
+knobProportion nsScroller =
+  sendMessage nsScroller knobProportionSelector
 
 -- | @- arrowsPosition@
 arrowsPosition :: IsNSScroller nsScroller => nsScroller -> IO NSScrollArrowPosition
-arrowsPosition nsScroller  =
-    fmap (coerce :: CULong -> NSScrollArrowPosition) $ sendMsg nsScroller (mkSelector "arrowsPosition") retCULong []
+arrowsPosition nsScroller =
+  sendMessage nsScroller arrowsPositionSelector
 
 -- | @- setArrowsPosition:@
 setArrowsPosition :: IsNSScroller nsScroller => nsScroller -> NSScrollArrowPosition -> IO ()
-setArrowsPosition nsScroller  value =
-    sendMsg nsScroller (mkSelector "setArrowsPosition:") retVoid [argCULong (coerce value)]
+setArrowsPosition nsScroller value =
+  sendMessage nsScroller setArrowsPositionSelector value
 
 -- | @- controlTint@
 controlTint :: IsNSScroller nsScroller => nsScroller -> IO NSControlTint
-controlTint nsScroller  =
-    fmap (coerce :: CULong -> NSControlTint) $ sendMsg nsScroller (mkSelector "controlTint") retCULong []
+controlTint nsScroller =
+  sendMessage nsScroller controlTintSelector
 
 -- | @- setControlTint:@
 setControlTint :: IsNSScroller nsScroller => nsScroller -> NSControlTint -> IO ()
-setControlTint nsScroller  value =
-    sendMsg nsScroller (mkSelector "setControlTint:") retVoid [argCULong (coerce value)]
+setControlTint nsScroller value =
+  sendMessage nsScroller setControlTintSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scrollerWidthForControlSize:scrollerStyle:@
-scrollerWidthForControlSize_scrollerStyleSelector :: Selector
+scrollerWidthForControlSize_scrollerStyleSelector :: Selector '[NSControlSize, NSScrollerStyle] CDouble
 scrollerWidthForControlSize_scrollerStyleSelector = mkSelector "scrollerWidthForControlSize:scrollerStyle:"
 
 -- | @Selector@ for @rectForPart:@
-rectForPartSelector :: Selector
+rectForPartSelector :: Selector '[NSScrollerPart] NSRect
 rectForPartSelector = mkSelector "rectForPart:"
 
 -- | @Selector@ for @checkSpaceForParts@
-checkSpaceForPartsSelector :: Selector
+checkSpaceForPartsSelector :: Selector '[] ()
 checkSpaceForPartsSelector = mkSelector "checkSpaceForParts"
 
 -- | @Selector@ for @drawKnob@
-drawKnobSelector :: Selector
+drawKnobSelector :: Selector '[] ()
 drawKnobSelector = mkSelector "drawKnob"
 
 -- | @Selector@ for @drawKnobSlotInRect:highlight:@
-drawKnobSlotInRect_highlightSelector :: Selector
+drawKnobSlotInRect_highlightSelector :: Selector '[NSRect, Bool] ()
 drawKnobSlotInRect_highlightSelector = mkSelector "drawKnobSlotInRect:highlight:"
 
 -- | @Selector@ for @testPart:@
-testPartSelector :: Selector
+testPartSelector :: Selector '[NSPoint] NSScrollerPart
 testPartSelector = mkSelector "testPart:"
 
 -- | @Selector@ for @trackKnob:@
-trackKnobSelector :: Selector
+trackKnobSelector :: Selector '[Id NSEvent] ()
 trackKnobSelector = mkSelector "trackKnob:"
 
 -- | @Selector@ for @setKnobProportion:@
-setKnobProportionSelector :: Selector
+setKnobProportionSelector :: Selector '[CDouble] ()
 setKnobProportionSelector = mkSelector "setKnobProportion:"
 
 -- | @Selector@ for @scrollerWidthForControlSize:@
-scrollerWidthForControlSizeSelector :: Selector
+scrollerWidthForControlSizeSelector :: Selector '[NSControlSize] CDouble
 scrollerWidthForControlSizeSelector = mkSelector "scrollerWidthForControlSize:"
 
 -- | @Selector@ for @scrollerWidth@
-scrollerWidthSelector :: Selector
+scrollerWidthSelector :: Selector '[] CDouble
 scrollerWidthSelector = mkSelector "scrollerWidth"
 
 -- | @Selector@ for @setFloatValue:knobProportion:@
-setFloatValue_knobProportionSelector :: Selector
+setFloatValue_knobProportionSelector :: Selector '[CFloat, CDouble] ()
 setFloatValue_knobProportionSelector = mkSelector "setFloatValue:knobProportion:"
 
 -- | @Selector@ for @highlight:@
-highlightSelector :: Selector
+highlightSelector :: Selector '[Bool] ()
 highlightSelector = mkSelector "highlight:"
 
 -- | @Selector@ for @trackScrollButtons:@
-trackScrollButtonsSelector :: Selector
+trackScrollButtonsSelector :: Selector '[Id NSEvent] ()
 trackScrollButtonsSelector = mkSelector "trackScrollButtons:"
 
 -- | @Selector@ for @drawParts@
-drawPartsSelector :: Selector
+drawPartsSelector :: Selector '[] ()
 drawPartsSelector = mkSelector "drawParts"
 
 -- | @Selector@ for @drawArrow:highlight:@
-drawArrow_highlightSelector :: Selector
+drawArrow_highlightSelector :: Selector '[NSScrollerArrow, Bool] ()
 drawArrow_highlightSelector = mkSelector "drawArrow:highlight:"
 
 -- | @Selector@ for @compatibleWithOverlayScrollers@
-compatibleWithOverlayScrollersSelector :: Selector
+compatibleWithOverlayScrollersSelector :: Selector '[] Bool
 compatibleWithOverlayScrollersSelector = mkSelector "compatibleWithOverlayScrollers"
 
 -- | @Selector@ for @preferredScrollerStyle@
-preferredScrollerStyleSelector :: Selector
+preferredScrollerStyleSelector :: Selector '[] NSScrollerStyle
 preferredScrollerStyleSelector = mkSelector "preferredScrollerStyle"
 
 -- | @Selector@ for @scrollerStyle@
-scrollerStyleSelector :: Selector
+scrollerStyleSelector :: Selector '[] NSScrollerStyle
 scrollerStyleSelector = mkSelector "scrollerStyle"
 
 -- | @Selector@ for @setScrollerStyle:@
-setScrollerStyleSelector :: Selector
+setScrollerStyleSelector :: Selector '[NSScrollerStyle] ()
 setScrollerStyleSelector = mkSelector "setScrollerStyle:"
 
 -- | @Selector@ for @knobStyle@
-knobStyleSelector :: Selector
+knobStyleSelector :: Selector '[] NSScrollerKnobStyle
 knobStyleSelector = mkSelector "knobStyle"
 
 -- | @Selector@ for @setKnobStyle:@
-setKnobStyleSelector :: Selector
+setKnobStyleSelector :: Selector '[NSScrollerKnobStyle] ()
 setKnobStyleSelector = mkSelector "setKnobStyle:"
 
 -- | @Selector@ for @usableParts@
-usablePartsSelector :: Selector
+usablePartsSelector :: Selector '[] NSUsableScrollerParts
 usablePartsSelector = mkSelector "usableParts"
 
 -- | @Selector@ for @controlSize@
-controlSizeSelector :: Selector
+controlSizeSelector :: Selector '[] NSControlSize
 controlSizeSelector = mkSelector "controlSize"
 
 -- | @Selector@ for @setControlSize:@
-setControlSizeSelector :: Selector
+setControlSizeSelector :: Selector '[NSControlSize] ()
 setControlSizeSelector = mkSelector "setControlSize:"
 
 -- | @Selector@ for @hitPart@
-hitPartSelector :: Selector
+hitPartSelector :: Selector '[] NSScrollerPart
 hitPartSelector = mkSelector "hitPart"
 
 -- | @Selector@ for @knobProportion@
-knobProportionSelector :: Selector
+knobProportionSelector :: Selector '[] CDouble
 knobProportionSelector = mkSelector "knobProportion"
 
 -- | @Selector@ for @arrowsPosition@
-arrowsPositionSelector :: Selector
+arrowsPositionSelector :: Selector '[] NSScrollArrowPosition
 arrowsPositionSelector = mkSelector "arrowsPosition"
 
 -- | @Selector@ for @setArrowsPosition:@
-setArrowsPositionSelector :: Selector
+setArrowsPositionSelector :: Selector '[NSScrollArrowPosition] ()
 setArrowsPositionSelector = mkSelector "setArrowsPosition:"
 
 -- | @Selector@ for @controlTint@
-controlTintSelector :: Selector
+controlTintSelector :: Selector '[] NSControlTint
 controlTintSelector = mkSelector "controlTint"
 
 -- | @Selector@ for @setControlTint:@
-setControlTintSelector :: Selector
+setControlTintSelector :: Selector '[NSControlTint] ()
 setControlTintSelector = mkSelector "setControlTint:"
 

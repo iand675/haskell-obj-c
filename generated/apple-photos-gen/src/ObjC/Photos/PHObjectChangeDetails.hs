@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Photos.PHObjectChangeDetails
   , objectAfterChanges
   , assetContentChanged
   , objectWasDeleted
-  , objectBeforeChangesSelector
-  , objectAfterChangesSelector
   , assetContentChangedSelector
+  , objectAfterChangesSelector
+  , objectBeforeChangesSelector
   , objectWasDeletedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- objectBeforeChanges@
 objectBeforeChanges :: IsPHObjectChangeDetails phObjectChangeDetails => phObjectChangeDetails -> IO (Id PHObject)
-objectBeforeChanges phObjectChangeDetails  =
-    sendMsg phObjectChangeDetails (mkSelector "objectBeforeChanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectBeforeChanges phObjectChangeDetails =
+  sendMessage phObjectChangeDetails objectBeforeChangesSelector
 
 -- | @- objectAfterChanges@
 objectAfterChanges :: IsPHObjectChangeDetails phObjectChangeDetails => phObjectChangeDetails -> IO (Id PHObject)
-objectAfterChanges phObjectChangeDetails  =
-    sendMsg phObjectChangeDetails (mkSelector "objectAfterChanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectAfterChanges phObjectChangeDetails =
+  sendMessage phObjectChangeDetails objectAfterChangesSelector
 
 -- | @- assetContentChanged@
 assetContentChanged :: IsPHObjectChangeDetails phObjectChangeDetails => phObjectChangeDetails -> IO Bool
-assetContentChanged phObjectChangeDetails  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phObjectChangeDetails (mkSelector "assetContentChanged") retCULong []
+assetContentChanged phObjectChangeDetails =
+  sendMessage phObjectChangeDetails assetContentChangedSelector
 
 -- | @- objectWasDeleted@
 objectWasDeleted :: IsPHObjectChangeDetails phObjectChangeDetails => phObjectChangeDetails -> IO Bool
-objectWasDeleted phObjectChangeDetails  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phObjectChangeDetails (mkSelector "objectWasDeleted") retCULong []
+objectWasDeleted phObjectChangeDetails =
+  sendMessage phObjectChangeDetails objectWasDeletedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectBeforeChanges@
-objectBeforeChangesSelector :: Selector
+objectBeforeChangesSelector :: Selector '[] (Id PHObject)
 objectBeforeChangesSelector = mkSelector "objectBeforeChanges"
 
 -- | @Selector@ for @objectAfterChanges@
-objectAfterChangesSelector :: Selector
+objectAfterChangesSelector :: Selector '[] (Id PHObject)
 objectAfterChangesSelector = mkSelector "objectAfterChanges"
 
 -- | @Selector@ for @assetContentChanged@
-assetContentChangedSelector :: Selector
+assetContentChangedSelector :: Selector '[] Bool
 assetContentChangedSelector = mkSelector "assetContentChanged"
 
 -- | @Selector@ for @objectWasDeleted@
-objectWasDeletedSelector :: Selector
+objectWasDeletedSelector :: Selector '[] Bool
 objectWasDeletedSelector = mkSelector "objectWasDeleted"
 

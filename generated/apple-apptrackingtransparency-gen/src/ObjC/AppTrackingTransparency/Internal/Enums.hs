@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AppTrackingTransparency.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The status values for app tracking authorization.
 --
@@ -36,3 +39,13 @@ pattern ATTrackingManagerAuthorizationStatusDenied = ATTrackingManagerAuthorizat
 
 pattern ATTrackingManagerAuthorizationStatusAuthorized :: ATTrackingManagerAuthorizationStatus
 pattern ATTrackingManagerAuthorizationStatusAuthorized = ATTrackingManagerAuthorizationStatus 3
+
+instance ObjCArgument ATTrackingManagerAuthorizationStatus where
+  withObjCArg (ATTrackingManagerAuthorizationStatus x) k = k (argCULong x)
+
+instance ObjCReturn ATTrackingManagerAuthorizationStatus where
+  type RawReturn ATTrackingManagerAuthorizationStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ATTrackingManagerAuthorizationStatus x)
+  fromOwned x = pure (ATTrackingManagerAuthorizationStatus x)

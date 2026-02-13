@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.Matter.MTRClusterBinding
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeBindingWithParamsSelector
-  , writeAttributeBindingWithValue_expectedValueIntervalSelector
-  , writeAttributeBindingWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeBindingWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , writeAttributeBindingWithValue_expectedValueIntervalSelector
+  , writeAttributeBindingWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,133 +50,117 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeBindingWithParams:@
 readAttributeBindingWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeBindingWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeBindingWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBindingWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeBindingWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeBindingWithValue:expectedValueInterval:@
 writeAttributeBindingWithValue_expectedValueInterval :: (IsMTRClusterBinding mtrClusterBinding, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBinding -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeBindingWithValue_expectedValueInterval mtrClusterBinding  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBinding (mkSelector "writeAttributeBindingWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeBindingWithValue_expectedValueInterval mtrClusterBinding dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBinding writeAttributeBindingWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeBindingWithValue:expectedValueInterval:params:@
 writeAttributeBindingWithValue_expectedValueInterval_params :: (IsMTRClusterBinding mtrClusterBinding, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBinding -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeBindingWithValue_expectedValueInterval_params mtrClusterBinding  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBinding (mkSelector "writeAttributeBindingWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeBindingWithValue_expectedValueInterval_params mtrClusterBinding dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBinding writeAttributeBindingWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterBinding mtrClusterBinding, IsMTRReadParams params) => mtrClusterBinding -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterBinding  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBinding (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterBinding params =
+  sendMessage mtrClusterBinding readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterBinding mtrClusterBinding => mtrClusterBinding -> IO (Id MTRClusterBinding)
-init_ mtrClusterBinding  =
-    sendMsg mtrClusterBinding (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterBinding =
+  sendOwnedMessage mtrClusterBinding initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterBinding)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterBinding"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterBinding mtrClusterBinding, IsMTRDevice device, IsNSObject queue) => mtrClusterBinding -> device -> CUShort -> queue -> IO (Id MTRClusterBinding)
-initWithDevice_endpoint_queue mtrClusterBinding  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterBinding (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterBinding device endpoint queue =
+  sendOwnedMessage mtrClusterBinding initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterBinding mtrClusterBinding, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterBinding -> device -> endpointID -> queue -> IO (Id MTRClusterBinding)
-initWithDevice_endpointID_queue mtrClusterBinding  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterBinding (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterBinding device endpointID queue =
+  sendOwnedMessage mtrClusterBinding initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeBindingWithParams:@
-readAttributeBindingWithParamsSelector :: Selector
+readAttributeBindingWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBindingWithParamsSelector = mkSelector "readAttributeBindingWithParams:"
 
 -- | @Selector@ for @writeAttributeBindingWithValue:expectedValueInterval:@
-writeAttributeBindingWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeBindingWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeBindingWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeBindingWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeBindingWithValue:expectedValueInterval:params:@
-writeAttributeBindingWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeBindingWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeBindingWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeBindingWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterBinding)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterBinding)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterBinding)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterBinding)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

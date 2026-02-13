@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.QuartzCore.CATextLayer
   , setAlignmentMode
   , allowsFontSubpixelQuantization
   , setAllowsFontSubpixelQuantization
-  , stringSelector
-  , setStringSelector
-  , fontSelector
-  , setFontSelector
-  , fontSizeSelector
-  , setFontSizeSelector
-  , foregroundColorSelector
-  , setForegroundColorSelector
-  , wrappedSelector
-  , setWrappedSelector
-  , truncationModeSelector
-  , setTruncationModeSelector
   , alignmentModeSelector
-  , setAlignmentModeSelector
   , allowsFontSubpixelQuantizationSelector
+  , fontSelector
+  , fontSizeSelector
+  , foregroundColorSelector
+  , setAlignmentModeSelector
   , setAllowsFontSubpixelQuantizationSelector
+  , setFontSelector
+  , setFontSizeSelector
+  , setForegroundColorSelector
+  , setStringSelector
+  , setTruncationModeSelector
+  , setWrappedSelector
+  , stringSelector
+  , truncationModeSelector
+  , wrappedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,151 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- string@
 string :: IsCATextLayer caTextLayer => caTextLayer -> IO RawId
-string caTextLayer  =
-    fmap (RawId . castPtr) $ sendMsg caTextLayer (mkSelector "string") (retPtr retVoid) []
+string caTextLayer =
+  sendMessage caTextLayer stringSelector
 
 -- | @- setString:@
 setString :: IsCATextLayer caTextLayer => caTextLayer -> RawId -> IO ()
-setString caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setString:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setString caTextLayer value =
+  sendMessage caTextLayer setStringSelector value
 
 -- | @- font@
 font :: IsCATextLayer caTextLayer => caTextLayer -> IO RawId
-font caTextLayer  =
-    fmap (RawId . castPtr) $ sendMsg caTextLayer (mkSelector "font") (retPtr retVoid) []
+font caTextLayer =
+  sendMessage caTextLayer fontSelector
 
 -- | @- setFont:@
 setFont :: IsCATextLayer caTextLayer => caTextLayer -> RawId -> IO ()
-setFont caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setFont:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFont caTextLayer value =
+  sendMessage caTextLayer setFontSelector value
 
 -- | @- fontSize@
 fontSize :: IsCATextLayer caTextLayer => caTextLayer -> IO CDouble
-fontSize caTextLayer  =
-    sendMsg caTextLayer (mkSelector "fontSize") retCDouble []
+fontSize caTextLayer =
+  sendMessage caTextLayer fontSizeSelector
 
 -- | @- setFontSize:@
 setFontSize :: IsCATextLayer caTextLayer => caTextLayer -> CDouble -> IO ()
-setFontSize caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setFontSize:") retVoid [argCDouble value]
+setFontSize caTextLayer value =
+  sendMessage caTextLayer setFontSizeSelector value
 
 -- | @- foregroundColor@
 foregroundColor :: IsCATextLayer caTextLayer => caTextLayer -> IO (Ptr ())
-foregroundColor caTextLayer  =
-    fmap castPtr $ sendMsg caTextLayer (mkSelector "foregroundColor") (retPtr retVoid) []
+foregroundColor caTextLayer =
+  sendMessage caTextLayer foregroundColorSelector
 
 -- | @- setForegroundColor:@
 setForegroundColor :: IsCATextLayer caTextLayer => caTextLayer -> Ptr () -> IO ()
-setForegroundColor caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setForegroundColor:") retVoid [argPtr value]
+setForegroundColor caTextLayer value =
+  sendMessage caTextLayer setForegroundColorSelector value
 
 -- | @- wrapped@
 wrapped :: IsCATextLayer caTextLayer => caTextLayer -> IO Bool
-wrapped caTextLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caTextLayer (mkSelector "wrapped") retCULong []
+wrapped caTextLayer =
+  sendMessage caTextLayer wrappedSelector
 
 -- | @- setWrapped:@
 setWrapped :: IsCATextLayer caTextLayer => caTextLayer -> Bool -> IO ()
-setWrapped caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setWrapped:") retVoid [argCULong (if value then 1 else 0)]
+setWrapped caTextLayer value =
+  sendMessage caTextLayer setWrappedSelector value
 
 -- | @- truncationMode@
 truncationMode :: IsCATextLayer caTextLayer => caTextLayer -> IO (Id NSString)
-truncationMode caTextLayer  =
-    sendMsg caTextLayer (mkSelector "truncationMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+truncationMode caTextLayer =
+  sendMessage caTextLayer truncationModeSelector
 
 -- | @- setTruncationMode:@
 setTruncationMode :: (IsCATextLayer caTextLayer, IsNSString value) => caTextLayer -> value -> IO ()
-setTruncationMode caTextLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caTextLayer (mkSelector "setTruncationMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTruncationMode caTextLayer value =
+  sendMessage caTextLayer setTruncationModeSelector (toNSString value)
 
 -- | @- alignmentMode@
 alignmentMode :: IsCATextLayer caTextLayer => caTextLayer -> IO (Id NSString)
-alignmentMode caTextLayer  =
-    sendMsg caTextLayer (mkSelector "alignmentMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+alignmentMode caTextLayer =
+  sendMessage caTextLayer alignmentModeSelector
 
 -- | @- setAlignmentMode:@
 setAlignmentMode :: (IsCATextLayer caTextLayer, IsNSString value) => caTextLayer -> value -> IO ()
-setAlignmentMode caTextLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caTextLayer (mkSelector "setAlignmentMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlignmentMode caTextLayer value =
+  sendMessage caTextLayer setAlignmentModeSelector (toNSString value)
 
 -- | @- allowsFontSubpixelQuantization@
 allowsFontSubpixelQuantization :: IsCATextLayer caTextLayer => caTextLayer -> IO Bool
-allowsFontSubpixelQuantization caTextLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caTextLayer (mkSelector "allowsFontSubpixelQuantization") retCULong []
+allowsFontSubpixelQuantization caTextLayer =
+  sendMessage caTextLayer allowsFontSubpixelQuantizationSelector
 
 -- | @- setAllowsFontSubpixelQuantization:@
 setAllowsFontSubpixelQuantization :: IsCATextLayer caTextLayer => caTextLayer -> Bool -> IO ()
-setAllowsFontSubpixelQuantization caTextLayer  value =
-    sendMsg caTextLayer (mkSelector "setAllowsFontSubpixelQuantization:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsFontSubpixelQuantization caTextLayer value =
+  sendMessage caTextLayer setAllowsFontSubpixelQuantizationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] RawId
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[RawId] ()
 setStringSelector = mkSelector "setString:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] RawId
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[RawId] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @fontSize@
-fontSizeSelector :: Selector
+fontSizeSelector :: Selector '[] CDouble
 fontSizeSelector = mkSelector "fontSize"
 
 -- | @Selector@ for @setFontSize:@
-setFontSizeSelector :: Selector
+setFontSizeSelector :: Selector '[CDouble] ()
 setFontSizeSelector = mkSelector "setFontSize:"
 
 -- | @Selector@ for @foregroundColor@
-foregroundColorSelector :: Selector
+foregroundColorSelector :: Selector '[] (Ptr ())
 foregroundColorSelector = mkSelector "foregroundColor"
 
 -- | @Selector@ for @setForegroundColor:@
-setForegroundColorSelector :: Selector
+setForegroundColorSelector :: Selector '[Ptr ()] ()
 setForegroundColorSelector = mkSelector "setForegroundColor:"
 
 -- | @Selector@ for @wrapped@
-wrappedSelector :: Selector
+wrappedSelector :: Selector '[] Bool
 wrappedSelector = mkSelector "wrapped"
 
 -- | @Selector@ for @setWrapped:@
-setWrappedSelector :: Selector
+setWrappedSelector :: Selector '[Bool] ()
 setWrappedSelector = mkSelector "setWrapped:"
 
 -- | @Selector@ for @truncationMode@
-truncationModeSelector :: Selector
+truncationModeSelector :: Selector '[] (Id NSString)
 truncationModeSelector = mkSelector "truncationMode"
 
 -- | @Selector@ for @setTruncationMode:@
-setTruncationModeSelector :: Selector
+setTruncationModeSelector :: Selector '[Id NSString] ()
 setTruncationModeSelector = mkSelector "setTruncationMode:"
 
 -- | @Selector@ for @alignmentMode@
-alignmentModeSelector :: Selector
+alignmentModeSelector :: Selector '[] (Id NSString)
 alignmentModeSelector = mkSelector "alignmentMode"
 
 -- | @Selector@ for @setAlignmentMode:@
-setAlignmentModeSelector :: Selector
+setAlignmentModeSelector :: Selector '[Id NSString] ()
 setAlignmentModeSelector = mkSelector "setAlignmentMode:"
 
 -- | @Selector@ for @allowsFontSubpixelQuantization@
-allowsFontSubpixelQuantizationSelector :: Selector
+allowsFontSubpixelQuantizationSelector :: Selector '[] Bool
 allowsFontSubpixelQuantizationSelector = mkSelector "allowsFontSubpixelQuantization"
 
 -- | @Selector@ for @setAllowsFontSubpixelQuantization:@
-setAllowsFontSubpixelQuantizationSelector :: Selector
+setAllowsFontSubpixelQuantizationSelector :: Selector '[Bool] ()
 setAllowsFontSubpixelQuantizationSelector = mkSelector "setAllowsFontSubpixelQuantization:"
 

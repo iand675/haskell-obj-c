@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: varargs-0.1.0.1@sha256:1a7db2596fa418c0a45cd4de3fa6f3742b853a2e495168005fbfb9148f857596,2828
+    pantry-tree:
+      sha256: 6838c9466faf471ff379a4d1fa071a0e8321d71e579e5c05208a46084a8e7e1e
+      size: 361
+  original:
+    hackage: varargs-0.1.0.1
 snapshots:
 - completed:
     sha256: 72cdd5851794184138551f43f0897c28f1a5acdda303b266aa9e910461103b3c

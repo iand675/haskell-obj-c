@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.CoreMotion.CMSensorRecorder
   , isAuthorizedForRecording
   , accelerometerDataFromDate_toDate
   , recordAccelerometerForDuration
-  , isAccelerometerRecordingAvailableSelector
-  , authorizationStatusSelector
-  , isAuthorizedForRecordingSelector
   , accelerometerDataFromDate_toDateSelector
+  , authorizationStatusSelector
+  , isAccelerometerRecordingAvailableSelector
+  , isAuthorizedForRecordingSelector
   , recordAccelerometerForDurationSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.CoreMotion.CMSensorRecorder
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,55 +45,53 @@ isAccelerometerRecordingAvailable :: IO Bool
 isAccelerometerRecordingAvailable  =
   do
     cls' <- getRequiredClass "CMSensorRecorder"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAccelerometerRecordingAvailable") retCULong []
+    sendClassMessage cls' isAccelerometerRecordingAvailableSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMSensorRecorder"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @+ isAuthorizedForRecording@
 isAuthorizedForRecording :: IO Bool
 isAuthorizedForRecording  =
   do
     cls' <- getRequiredClass "CMSensorRecorder"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAuthorizedForRecording") retCULong []
+    sendClassMessage cls' isAuthorizedForRecordingSelector
 
 -- | @- accelerometerDataFromDate:toDate:@
 accelerometerDataFromDate_toDate :: (IsCMSensorRecorder cmSensorRecorder, IsNSDate fromDate, IsNSDate toDate) => cmSensorRecorder -> fromDate -> toDate -> IO (Id CMSensorDataList)
-accelerometerDataFromDate_toDate cmSensorRecorder  fromDate toDate =
-  withObjCPtr fromDate $ \raw_fromDate ->
-    withObjCPtr toDate $ \raw_toDate ->
-        sendMsg cmSensorRecorder (mkSelector "accelerometerDataFromDate:toDate:") (retPtr retVoid) [argPtr (castPtr raw_fromDate :: Ptr ()), argPtr (castPtr raw_toDate :: Ptr ())] >>= retainedObject . castPtr
+accelerometerDataFromDate_toDate cmSensorRecorder fromDate toDate =
+  sendMessage cmSensorRecorder accelerometerDataFromDate_toDateSelector (toNSDate fromDate) (toNSDate toDate)
 
 -- | @- recordAccelerometerForDuration:@
 recordAccelerometerForDuration :: IsCMSensorRecorder cmSensorRecorder => cmSensorRecorder -> CDouble -> IO ()
-recordAccelerometerForDuration cmSensorRecorder  duration =
-    sendMsg cmSensorRecorder (mkSelector "recordAccelerometerForDuration:") retVoid [argCDouble duration]
+recordAccelerometerForDuration cmSensorRecorder duration =
+  sendMessage cmSensorRecorder recordAccelerometerForDurationSelector duration
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isAccelerometerRecordingAvailable@
-isAccelerometerRecordingAvailableSelector :: Selector
+isAccelerometerRecordingAvailableSelector :: Selector '[] Bool
 isAccelerometerRecordingAvailableSelector = mkSelector "isAccelerometerRecordingAvailable"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @isAuthorizedForRecording@
-isAuthorizedForRecordingSelector :: Selector
+isAuthorizedForRecordingSelector :: Selector '[] Bool
 isAuthorizedForRecordingSelector = mkSelector "isAuthorizedForRecording"
 
 -- | @Selector@ for @accelerometerDataFromDate:toDate:@
-accelerometerDataFromDate_toDateSelector :: Selector
+accelerometerDataFromDate_toDateSelector :: Selector '[Id NSDate, Id NSDate] (Id CMSensorDataList)
 accelerometerDataFromDate_toDateSelector = mkSelector "accelerometerDataFromDate:toDate:"
 
 -- | @Selector@ for @recordAccelerometerForDuration:@
-recordAccelerometerForDurationSelector :: Selector
+recordAccelerometerForDurationSelector :: Selector '[CDouble] ()
 recordAccelerometerForDurationSelector = mkSelector "recordAccelerometerForDuration:"
 

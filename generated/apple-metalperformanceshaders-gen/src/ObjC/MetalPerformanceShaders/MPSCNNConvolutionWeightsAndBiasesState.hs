@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionWeightsAndBiasesState
   , biases
   , weightsOffset
   , biasesOffset
-  , initWithWeights_biasesSelector
-  , initWithDevice_cnnConvolutionDescriptorSelector
-  , temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector
-  , initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector
-  , weightsSelector
-  , biasesSelector
-  , weightsOffsetSelector
   , biasesOffsetSelector
+  , biasesSelector
+  , initWithDevice_cnnConvolutionDescriptorSelector
+  , initWithWeights_biasesSelector
+  , initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector
+  , temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector
+  , weightsOffsetSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithWeights:biases:@
 initWithWeights_biases :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> RawId -> RawId -> IO (Id MPSCNNConvolutionWeightsAndBiasesState)
-initWithWeights_biases mpscnnConvolutionWeightsAndBiasesState  weights biases =
-    sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "initWithWeights:biases:") (retPtr retVoid) [argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId biases) :: Ptr ())] >>= ownedObject . castPtr
+initWithWeights_biases mpscnnConvolutionWeightsAndBiasesState weights biases =
+  sendOwnedMessage mpscnnConvolutionWeightsAndBiasesState initWithWeights_biasesSelector weights biases
 
 -- | Create and initialize MPSCNNConvolutionWeightsAndBiasesState with application provided convolution descriptor
 --
@@ -60,9 +57,8 @@ initWithWeights_biases mpscnnConvolutionWeightsAndBiasesState  weights biases =
 --
 -- ObjC selector: @- initWithDevice:cnnConvolutionDescriptor:@
 initWithDevice_cnnConvolutionDescriptor :: (IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState, IsMPSCNNConvolutionDescriptor descriptor) => mpscnnConvolutionWeightsAndBiasesState -> RawId -> descriptor -> IO (Id MPSCNNConvolutionWeightsAndBiasesState)
-initWithDevice_cnnConvolutionDescriptor mpscnnConvolutionWeightsAndBiasesState  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "initWithDevice:cnnConvolutionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_cnnConvolutionDescriptor mpscnnConvolutionWeightsAndBiasesState device descriptor =
+  sendOwnedMessage mpscnnConvolutionWeightsAndBiasesState initWithDevice_cnnConvolutionDescriptorSelector device (toMPSCNNConvolutionDescriptor descriptor)
 
 -- | Create and initialize temporary MPSCNNConvolutionWeightsAndBiasesState with application provided convolution descriptor
 --
@@ -73,8 +69,7 @@ temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDesc
 temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptor commandBuffer descriptor =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionWeightsAndBiasesState"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer:cnnConvolutionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector commandBuffer (toMPSCNNConvolutionDescriptor descriptor)
 
 -- | Create and initialize MPSCNNConvolutionWeightsAndBiasesState with application              provided weights and biases buffers.
 --
@@ -82,9 +77,8 @@ temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDesc
 --
 -- ObjC selector: @- initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:@
 initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor :: (IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState, IsMPSCNNConvolutionDescriptor descriptor) => mpscnnConvolutionWeightsAndBiasesState -> RawId -> CULong -> RawId -> CULong -> descriptor -> IO (Id MPSCNNConvolutionWeightsAndBiasesState)
-initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor mpscnnConvolutionWeightsAndBiasesState  weights weightsOffset biases biasesOffset descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId weights) :: Ptr ()), argCULong weightsOffset, argPtr (castPtr (unRawId biases) :: Ptr ()), argCULong biasesOffset, argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor mpscnnConvolutionWeightsAndBiasesState weights weightsOffset biases biasesOffset descriptor =
+  sendOwnedMessage mpscnnConvolutionWeightsAndBiasesState initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector weights weightsOffset biases biasesOffset (toMPSCNNConvolutionDescriptor descriptor)
 
 -- | weights
 --
@@ -94,8 +88,8 @@ initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptor mpscn
 --
 -- ObjC selector: @- weights@
 weights :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO RawId
-weights mpscnnConvolutionWeightsAndBiasesState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "weights") (retPtr retVoid) []
+weights mpscnnConvolutionWeightsAndBiasesState =
+  sendMessage mpscnnConvolutionWeightsAndBiasesState weightsSelector
 
 -- | biases
 --
@@ -103,8 +97,8 @@ weights mpscnnConvolutionWeightsAndBiasesState  =
 --
 -- ObjC selector: @- biases@
 biases :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO RawId
-biases mpscnnConvolutionWeightsAndBiasesState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "biases") (retPtr retVoid) []
+biases mpscnnConvolutionWeightsAndBiasesState =
+  sendMessage mpscnnConvolutionWeightsAndBiasesState biasesSelector
 
 -- | weightsOffset
 --
@@ -112,8 +106,8 @@ biases mpscnnConvolutionWeightsAndBiasesState  =
 --
 -- ObjC selector: @- weightsOffset@
 weightsOffset :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO CULong
-weightsOffset mpscnnConvolutionWeightsAndBiasesState  =
-    sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "weightsOffset") retCULong []
+weightsOffset mpscnnConvolutionWeightsAndBiasesState =
+  sendMessage mpscnnConvolutionWeightsAndBiasesState weightsOffsetSelector
 
 -- | biasesOffset
 --
@@ -121,42 +115,42 @@ weightsOffset mpscnnConvolutionWeightsAndBiasesState  =
 --
 -- ObjC selector: @- biasesOffset@
 biasesOffset :: IsMPSCNNConvolutionWeightsAndBiasesState mpscnnConvolutionWeightsAndBiasesState => mpscnnConvolutionWeightsAndBiasesState -> IO CULong
-biasesOffset mpscnnConvolutionWeightsAndBiasesState  =
-    sendMsg mpscnnConvolutionWeightsAndBiasesState (mkSelector "biasesOffset") retCULong []
+biasesOffset mpscnnConvolutionWeightsAndBiasesState =
+  sendMessage mpscnnConvolutionWeightsAndBiasesState biasesOffsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWeights:biases:@
-initWithWeights_biasesSelector :: Selector
+initWithWeights_biasesSelector :: Selector '[RawId, RawId] (Id MPSCNNConvolutionWeightsAndBiasesState)
 initWithWeights_biasesSelector = mkSelector "initWithWeights:biases:"
 
 -- | @Selector@ for @initWithDevice:cnnConvolutionDescriptor:@
-initWithDevice_cnnConvolutionDescriptorSelector :: Selector
+initWithDevice_cnnConvolutionDescriptorSelector :: Selector '[RawId, Id MPSCNNConvolutionDescriptor] (Id MPSCNNConvolutionWeightsAndBiasesState)
 initWithDevice_cnnConvolutionDescriptorSelector = mkSelector "initWithDevice:cnnConvolutionDescriptor:"
 
 -- | @Selector@ for @temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer:cnnConvolutionDescriptor:@
-temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector :: Selector
+temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector :: Selector '[RawId, Id MPSCNNConvolutionDescriptor] (Id MPSCNNConvolutionWeightsAndBiasesState)
 temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer_cnnConvolutionDescriptorSelector = mkSelector "temporaryCNNConvolutionWeightsAndBiasesStateWithCommandBuffer:cnnConvolutionDescriptor:"
 
 -- | @Selector@ for @initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:@
-initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector :: Selector
+initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector :: Selector '[RawId, CULong, RawId, CULong, Id MPSCNNConvolutionDescriptor] (Id MPSCNNConvolutionWeightsAndBiasesState)
 initWithWeights_weightsOffset_biases_biasesOffset_cnnConvolutionDescriptorSelector = mkSelector "initWithWeights:weightsOffset:biases:biasesOffset:cnnConvolutionDescriptor:"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] RawId
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] RawId
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @weightsOffset@
-weightsOffsetSelector :: Selector
+weightsOffsetSelector :: Selector '[] CULong
 weightsOffsetSelector = mkSelector "weightsOffset"
 
 -- | @Selector@ for @biasesOffset@
-biasesOffsetSelector :: Selector
+biasesOffsetSelector :: Selector '[] CULong
 biasesOffsetSelector = mkSelector "biasesOffset"
 

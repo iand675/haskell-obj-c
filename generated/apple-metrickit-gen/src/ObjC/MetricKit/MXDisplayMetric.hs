@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.MetricKit.MXDisplayMetric
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,14 +40,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- averagePixelLuminance@
 averagePixelLuminance :: IsMXDisplayMetric mxDisplayMetric => mxDisplayMetric -> IO (Id MXAverage)
-averagePixelLuminance mxDisplayMetric  =
-    sendMsg mxDisplayMetric (mkSelector "averagePixelLuminance") (retPtr retVoid) [] >>= retainedObject . castPtr
+averagePixelLuminance mxDisplayMetric =
+  sendMessage mxDisplayMetric averagePixelLuminanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @averagePixelLuminance@
-averagePixelLuminanceSelector :: Selector
+averagePixelLuminanceSelector :: Selector '[] (Id MXAverage)
 averagePixelLuminanceSelector = mkSelector "averagePixelLuminance"
 

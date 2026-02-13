@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.MapKit.MKLookAroundSnapshotter
   , getSnapshotWithCompletionHandler
   , cancel
   , loading
-  , newSelector
+  , cancelSelector
+  , getSnapshotWithCompletionHandlerSelector
   , initSelector
   , initWithScene_optionsSelector
-  , getSnapshotWithCompletionHandlerSelector
-  , cancelSelector
   , loadingSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,60 +39,58 @@ new :: IO (Id MKLookAroundSnapshotter)
 new  =
   do
     cls' <- getRequiredClass "MKLookAroundSnapshotter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMKLookAroundSnapshotter mkLookAroundSnapshotter => mkLookAroundSnapshotter -> IO (Id MKLookAroundSnapshotter)
-init_ mkLookAroundSnapshotter  =
-    sendMsg mkLookAroundSnapshotter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkLookAroundSnapshotter =
+  sendOwnedMessage mkLookAroundSnapshotter initSelector
 
 -- | @- initWithScene:options:@
 initWithScene_options :: (IsMKLookAroundSnapshotter mkLookAroundSnapshotter, IsMKLookAroundScene scene, IsMKLookAroundSnapshotOptions options) => mkLookAroundSnapshotter -> scene -> options -> IO (Id MKLookAroundSnapshotter)
-initWithScene_options mkLookAroundSnapshotter  scene options =
-  withObjCPtr scene $ \raw_scene ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg mkLookAroundSnapshotter (mkSelector "initWithScene:options:") (retPtr retVoid) [argPtr (castPtr raw_scene :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithScene_options mkLookAroundSnapshotter scene options =
+  sendOwnedMessage mkLookAroundSnapshotter initWithScene_optionsSelector (toMKLookAroundScene scene) (toMKLookAroundSnapshotOptions options)
 
 -- | @- getSnapshotWithCompletionHandler:@
 getSnapshotWithCompletionHandler :: IsMKLookAroundSnapshotter mkLookAroundSnapshotter => mkLookAroundSnapshotter -> Ptr () -> IO ()
-getSnapshotWithCompletionHandler mkLookAroundSnapshotter  completionHandler =
-    sendMsg mkLookAroundSnapshotter (mkSelector "getSnapshotWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getSnapshotWithCompletionHandler mkLookAroundSnapshotter completionHandler =
+  sendMessage mkLookAroundSnapshotter getSnapshotWithCompletionHandlerSelector completionHandler
 
 -- | @- cancel@
 cancel :: IsMKLookAroundSnapshotter mkLookAroundSnapshotter => mkLookAroundSnapshotter -> IO ()
-cancel mkLookAroundSnapshotter  =
-    sendMsg mkLookAroundSnapshotter (mkSelector "cancel") retVoid []
+cancel mkLookAroundSnapshotter =
+  sendMessage mkLookAroundSnapshotter cancelSelector
 
 -- | @- loading@
 loading :: IsMKLookAroundSnapshotter mkLookAroundSnapshotter => mkLookAroundSnapshotter -> IO Bool
-loading mkLookAroundSnapshotter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkLookAroundSnapshotter (mkSelector "loading") retCULong []
+loading mkLookAroundSnapshotter =
+  sendMessage mkLookAroundSnapshotter loadingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKLookAroundSnapshotter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKLookAroundSnapshotter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithScene:options:@
-initWithScene_optionsSelector :: Selector
+initWithScene_optionsSelector :: Selector '[Id MKLookAroundScene, Id MKLookAroundSnapshotOptions] (Id MKLookAroundSnapshotter)
 initWithScene_optionsSelector = mkSelector "initWithScene:options:"
 
 -- | @Selector@ for @getSnapshotWithCompletionHandler:@
-getSnapshotWithCompletionHandlerSelector :: Selector
+getSnapshotWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 getSnapshotWithCompletionHandlerSelector = mkSelector "getSnapshotWithCompletionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 

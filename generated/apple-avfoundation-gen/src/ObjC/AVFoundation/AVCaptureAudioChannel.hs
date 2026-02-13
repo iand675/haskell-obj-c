@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AVFoundation.AVCaptureAudioChannel
   , setVolume
   , enabled
   , setEnabled
+  , averagePowerLevelSelector
+  , enabledSelector
   , initSelector
   , newSelector
-  , averagePowerLevelSelector
   , peakHoldLevelSelector
-  , volumeSelector
-  , setVolumeSelector
-  , enabledSelector
   , setEnabledSelector
+  , setVolumeSelector
+  , volumeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> IO (Id AVCaptureAudioChannel)
-init_ avCaptureAudioChannel  =
-    sendMsg avCaptureAudioChannel (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureAudioChannel =
+  sendOwnedMessage avCaptureAudioChannel initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureAudioChannel)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureAudioChannel"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | averagePowerLevel
 --
@@ -67,8 +64,8 @@ new  =
 --
 -- ObjC selector: @- averagePowerLevel@
 averagePowerLevel :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> IO CFloat
-averagePowerLevel avCaptureAudioChannel  =
-    sendMsg avCaptureAudioChannel (mkSelector "averagePowerLevel") retCFloat []
+averagePowerLevel avCaptureAudioChannel =
+  sendMessage avCaptureAudioChannel averagePowerLevelSelector
 
 -- | peakHoldLevel
 --
@@ -78,8 +75,8 @@ averagePowerLevel avCaptureAudioChannel  =
 --
 -- ObjC selector: @- peakHoldLevel@
 peakHoldLevel :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> IO CFloat
-peakHoldLevel avCaptureAudioChannel  =
-    sendMsg avCaptureAudioChannel (mkSelector "peakHoldLevel") retCFloat []
+peakHoldLevel avCaptureAudioChannel =
+  sendMessage avCaptureAudioChannel peakHoldLevelSelector
 
 -- | volume
 --
@@ -89,8 +86,8 @@ peakHoldLevel avCaptureAudioChannel  =
 --
 -- ObjC selector: @- volume@
 volume :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> IO CFloat
-volume avCaptureAudioChannel  =
-    sendMsg avCaptureAudioChannel (mkSelector "volume") retCFloat []
+volume avCaptureAudioChannel =
+  sendMessage avCaptureAudioChannel volumeSelector
 
 -- | volume
 --
@@ -100,8 +97,8 @@ volume avCaptureAudioChannel  =
 --
 -- ObjC selector: @- setVolume:@
 setVolume :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> CFloat -> IO ()
-setVolume avCaptureAudioChannel  value =
-    sendMsg avCaptureAudioChannel (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume avCaptureAudioChannel value =
+  sendMessage avCaptureAudioChannel setVolumeSelector value
 
 -- | enabled
 --
@@ -111,8 +108,8 @@ setVolume avCaptureAudioChannel  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> IO Bool
-enabled avCaptureAudioChannel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureAudioChannel (mkSelector "enabled") retCULong []
+enabled avCaptureAudioChannel =
+  sendMessage avCaptureAudioChannel enabledSelector
 
 -- | enabled
 --
@@ -122,42 +119,42 @@ enabled avCaptureAudioChannel  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVCaptureAudioChannel avCaptureAudioChannel => avCaptureAudioChannel -> Bool -> IO ()
-setEnabled avCaptureAudioChannel  value =
-    sendMsg avCaptureAudioChannel (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avCaptureAudioChannel value =
+  sendMessage avCaptureAudioChannel setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureAudioChannel)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureAudioChannel)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @averagePowerLevel@
-averagePowerLevelSelector :: Selector
+averagePowerLevelSelector :: Selector '[] CFloat
 averagePowerLevelSelector = mkSelector "averagePowerLevel"
 
 -- | @Selector@ for @peakHoldLevel@
-peakHoldLevelSelector :: Selector
+peakHoldLevelSelector :: Selector '[] CFloat
 peakHoldLevelSelector = mkSelector "peakHoldLevel"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

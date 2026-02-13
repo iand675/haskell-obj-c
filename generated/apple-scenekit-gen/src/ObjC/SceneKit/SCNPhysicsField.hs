@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,38 +44,38 @@ module ObjC.SceneKit.SCNPhysicsField
   , setDirection
   , categoryBitMask
   , setCategoryBitMask
-  , dragFieldSelector
-  , vortexFieldSelector
-  , radialGravityFieldSelector
-  , linearGravityFieldSelector
-  , noiseFieldWithSmoothness_animationSpeedSelector
-  , turbulenceFieldWithSmoothness_animationSpeedSelector
-  , springFieldSelector
-  , electricFieldSelector
-  , magneticFieldSelector
-  , customFieldWithEvaluationBlockSelector
-  , strengthSelector
-  , setStrengthSelector
-  , falloffExponentSelector
-  , setFalloffExponentSelector
-  , minimumDistanceSelector
-  , setMinimumDistanceSelector
   , activeSelector
-  , setActiveSelector
-  , exclusiveSelector
-  , setExclusiveSelector
-  , halfExtentSelector
-  , setHalfExtentSelector
-  , usesEllipsoidalExtentSelector
-  , setUsesEllipsoidalExtentSelector
-  , scopeSelector
-  , setScopeSelector
-  , offsetSelector
-  , setOffsetSelector
-  , directionSelector
-  , setDirectionSelector
   , categoryBitMaskSelector
+  , customFieldWithEvaluationBlockSelector
+  , directionSelector
+  , dragFieldSelector
+  , electricFieldSelector
+  , exclusiveSelector
+  , falloffExponentSelector
+  , halfExtentSelector
+  , linearGravityFieldSelector
+  , magneticFieldSelector
+  , minimumDistanceSelector
+  , noiseFieldWithSmoothness_animationSpeedSelector
+  , offsetSelector
+  , radialGravityFieldSelector
+  , scopeSelector
+  , setActiveSelector
   , setCategoryBitMaskSelector
+  , setDirectionSelector
+  , setExclusiveSelector
+  , setFalloffExponentSelector
+  , setHalfExtentSelector
+  , setMinimumDistanceSelector
+  , setOffsetSelector
+  , setScopeSelector
+  , setStrengthSelector
+  , setUsesEllipsoidalExtentSelector
+  , springFieldSelector
+  , strengthSelector
+  , turbulenceFieldWithSmoothness_animationSpeedSelector
+  , usesEllipsoidalExtentSelector
+  , vortexFieldSelector
 
   -- * Enum types
   , SCNPhysicsFieldScope(SCNPhysicsFieldScope)
@@ -83,15 +84,11 @@ module ObjC.SceneKit.SCNPhysicsField
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,7 +104,7 @@ dragField :: IO (Id SCNPhysicsField)
 dragField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "dragField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dragFieldSelector
 
 -- | Applies a force tangential to the direction from the sample point to the field's position. The force will be CCW to the direction. Make the strength negative to apply force in the CW direction. Amount is proportional to distance from center and the object's mass. Use this to create effects such as tornadoes.
 --
@@ -116,7 +113,7 @@ vortexField :: IO (Id SCNPhysicsField)
 vortexField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "vortexField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' vortexFieldSelector
 
 -- | Applies a force in the direction of the origin of the field in local space. To repel objects, use a negative strength. The force is proportional to the distance from the field origin. Varies with the mass of the object according to F = ma The field node's rotation property can be used to orient the gravity in a particular direction.
 --
@@ -125,7 +122,7 @@ radialGravityField :: IO (Id SCNPhysicsField)
 radialGravityField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "radialGravityField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' radialGravityFieldSelector
 
 -- | Applies a force in the direction of the "direction" vector in the local space. To repel objects, use a negative strength. The force is the same everywhere in the field. Varies with the mass of the object according to F = ma The field node's rotation property can be used to orient the gravity in a particular direction.
 --
@@ -134,7 +131,7 @@ linearGravityField :: IO (Id SCNPhysicsField)
 linearGravityField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "linearGravityField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linearGravityFieldSelector
 
 -- | A time varying differentiable Perlin simplex noise field. A smoothness of 0 means as noisy as possible. Use this to simulate such effects as fireflies, or snow. To freeze the noise in place, set animationSpeed to 0.0. Mass is ignored. You can change the "smoothness" and "animationSpeed" using KVC.
 --
@@ -143,7 +140,7 @@ noiseFieldWithSmoothness_animationSpeed :: CDouble -> CDouble -> IO (Id SCNPhysi
 noiseFieldWithSmoothness_animationSpeed smoothness speed =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "noiseFieldWithSmoothness:animationSpeed:") (retPtr retVoid) [argCDouble smoothness, argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseFieldWithSmoothness_animationSpeedSelector smoothness speed
 
 -- | Just like Noise, except the strength of the noise is proportional to the velocity of the object in the field.
 --
@@ -152,7 +149,7 @@ turbulenceFieldWithSmoothness_animationSpeed :: CDouble -> CDouble -> IO (Id SCN
 turbulenceFieldWithSmoothness_animationSpeed smoothness speed =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "turbulenceFieldWithSmoothness:animationSpeed:") (retPtr retVoid) [argCDouble smoothness, argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' turbulenceFieldWithSmoothness_animationSpeedSelector smoothness speed
 
 -- | A Hooke’s law force - a force linearly proportional to distance from the center of the field. An object in this field will oscillate with a period proportional to the inverse of the mass. An example use is to keep objects confined to a particular region.
 --
@@ -161,7 +158,7 @@ springField :: IO (Id SCNPhysicsField)
 springField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "springField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' springFieldSelector
 
 -- | A force proportional to the charge on the object. An example use of this field is to make objects behavior differently from one another when they enter a region, or to make an object's behavior different than its mass based behavior This field models the first part of the Lorentz equation, F = qE
 --
@@ -170,7 +167,7 @@ electricField :: IO (Id SCNPhysicsField)
 electricField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "electricField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' electricFieldSelector
 
 -- | A force proportional to the charge on the object and the object’s velocity.  An example use of this field is to make objects behavior differently from one another when they enter a region, or to make an object's behavior different than its mass based behavior This field models the second part of the Lorentz equation, F = qvB
 --
@@ -179,7 +176,7 @@ magneticField :: IO (Id SCNPhysicsField)
 magneticField  =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "magneticField") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' magneticFieldSelector
 
 -- | A field force with a custom force evaluator.
 --
@@ -188,107 +185,107 @@ customFieldWithEvaluationBlock :: Ptr () -> IO (Id SCNPhysicsField)
 customFieldWithEvaluationBlock block =
   do
     cls' <- getRequiredClass "SCNPhysicsField"
-    sendClassMsg cls' (mkSelector "customFieldWithEvaluationBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customFieldWithEvaluationBlockSelector block
 
 -- | @- strength@
 strength :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO CDouble
-strength scnPhysicsField  =
-    sendMsg scnPhysicsField (mkSelector "strength") retCDouble []
+strength scnPhysicsField =
+  sendMessage scnPhysicsField strengthSelector
 
 -- | @- setStrength:@
 setStrength :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> CDouble -> IO ()
-setStrength scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setStrength:") retVoid [argCDouble value]
+setStrength scnPhysicsField value =
+  sendMessage scnPhysicsField setStrengthSelector value
 
 -- | @- falloffExponent@
 falloffExponent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO CDouble
-falloffExponent scnPhysicsField  =
-    sendMsg scnPhysicsField (mkSelector "falloffExponent") retCDouble []
+falloffExponent scnPhysicsField =
+  sendMessage scnPhysicsField falloffExponentSelector
 
 -- | @- setFalloffExponent:@
 setFalloffExponent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> CDouble -> IO ()
-setFalloffExponent scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setFalloffExponent:") retVoid [argCDouble value]
+setFalloffExponent scnPhysicsField value =
+  sendMessage scnPhysicsField setFalloffExponentSelector value
 
 -- | @- minimumDistance@
 minimumDistance :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO CDouble
-minimumDistance scnPhysicsField  =
-    sendMsg scnPhysicsField (mkSelector "minimumDistance") retCDouble []
+minimumDistance scnPhysicsField =
+  sendMessage scnPhysicsField minimumDistanceSelector
 
 -- | @- setMinimumDistance:@
 setMinimumDistance :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> CDouble -> IO ()
-setMinimumDistance scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setMinimumDistance:") retVoid [argCDouble value]
+setMinimumDistance scnPhysicsField value =
+  sendMessage scnPhysicsField setMinimumDistanceSelector value
 
 -- | @- active@
 active :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO Bool
-active scnPhysicsField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsField (mkSelector "active") retCULong []
+active scnPhysicsField =
+  sendMessage scnPhysicsField activeSelector
 
 -- | @- setActive:@
 setActive :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> Bool -> IO ()
-setActive scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setActive:") retVoid [argCULong (if value then 1 else 0)]
+setActive scnPhysicsField value =
+  sendMessage scnPhysicsField setActiveSelector value
 
 -- | @- exclusive@
 exclusive :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO Bool
-exclusive scnPhysicsField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsField (mkSelector "exclusive") retCULong []
+exclusive scnPhysicsField =
+  sendMessage scnPhysicsField exclusiveSelector
 
 -- | @- setExclusive:@
 setExclusive :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> Bool -> IO ()
-setExclusive scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setExclusive:") retVoid [argCULong (if value then 1 else 0)]
+setExclusive scnPhysicsField value =
+  sendMessage scnPhysicsField setExclusiveSelector value
 
 -- | @- halfExtent@
 halfExtent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO SCNVector3
-halfExtent scnPhysicsField  =
-    sendMsgStret scnPhysicsField (mkSelector "halfExtent") retSCNVector3 []
+halfExtent scnPhysicsField =
+  sendMessage scnPhysicsField halfExtentSelector
 
 -- | @- setHalfExtent:@
 setHalfExtent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> SCNVector3 -> IO ()
-setHalfExtent scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setHalfExtent:") retVoid [argSCNVector3 value]
+setHalfExtent scnPhysicsField value =
+  sendMessage scnPhysicsField setHalfExtentSelector value
 
 -- | @- usesEllipsoidalExtent@
 usesEllipsoidalExtent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO Bool
-usesEllipsoidalExtent scnPhysicsField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsField (mkSelector "usesEllipsoidalExtent") retCULong []
+usesEllipsoidalExtent scnPhysicsField =
+  sendMessage scnPhysicsField usesEllipsoidalExtentSelector
 
 -- | @- setUsesEllipsoidalExtent:@
 setUsesEllipsoidalExtent :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> Bool -> IO ()
-setUsesEllipsoidalExtent scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setUsesEllipsoidalExtent:") retVoid [argCULong (if value then 1 else 0)]
+setUsesEllipsoidalExtent scnPhysicsField value =
+  sendMessage scnPhysicsField setUsesEllipsoidalExtentSelector value
 
 -- | @- scope@
 scope :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO SCNPhysicsFieldScope
-scope scnPhysicsField  =
-    fmap (coerce :: CLong -> SCNPhysicsFieldScope) $ sendMsg scnPhysicsField (mkSelector "scope") retCLong []
+scope scnPhysicsField =
+  sendMessage scnPhysicsField scopeSelector
 
 -- | @- setScope:@
 setScope :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> SCNPhysicsFieldScope -> IO ()
-setScope scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setScope:") retVoid [argCLong (coerce value)]
+setScope scnPhysicsField value =
+  sendMessage scnPhysicsField setScopeSelector value
 
 -- | @- offset@
 offset :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO SCNVector3
-offset scnPhysicsField  =
-    sendMsgStret scnPhysicsField (mkSelector "offset") retSCNVector3 []
+offset scnPhysicsField =
+  sendMessage scnPhysicsField offsetSelector
 
 -- | @- setOffset:@
 setOffset :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> SCNVector3 -> IO ()
-setOffset scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setOffset:") retVoid [argSCNVector3 value]
+setOffset scnPhysicsField value =
+  sendMessage scnPhysicsField setOffsetSelector value
 
 -- | @- direction@
 direction :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO SCNVector3
-direction scnPhysicsField  =
-    sendMsgStret scnPhysicsField (mkSelector "direction") retSCNVector3 []
+direction scnPhysicsField =
+  sendMessage scnPhysicsField directionSelector
 
 -- | @- setDirection:@
 setDirection :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> SCNVector3 -> IO ()
-setDirection scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setDirection:") retVoid [argSCNVector3 value]
+setDirection scnPhysicsField value =
+  sendMessage scnPhysicsField setDirectionSelector value
 
 -- | categoryBitMask
 --
@@ -296,8 +293,8 @@ setDirection scnPhysicsField  value =
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> IO CULong
-categoryBitMask scnPhysicsField  =
-    sendMsg scnPhysicsField (mkSelector "categoryBitMask") retCULong []
+categoryBitMask scnPhysicsField =
+  sendMessage scnPhysicsField categoryBitMaskSelector
 
 -- | categoryBitMask
 --
@@ -305,138 +302,138 @@ categoryBitMask scnPhysicsField  =
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSCNPhysicsField scnPhysicsField => scnPhysicsField -> CULong -> IO ()
-setCategoryBitMask scnPhysicsField  value =
-    sendMsg scnPhysicsField (mkSelector "setCategoryBitMask:") retVoid [argCULong value]
+setCategoryBitMask scnPhysicsField value =
+  sendMessage scnPhysicsField setCategoryBitMaskSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dragField@
-dragFieldSelector :: Selector
+dragFieldSelector :: Selector '[] (Id SCNPhysicsField)
 dragFieldSelector = mkSelector "dragField"
 
 -- | @Selector@ for @vortexField@
-vortexFieldSelector :: Selector
+vortexFieldSelector :: Selector '[] (Id SCNPhysicsField)
 vortexFieldSelector = mkSelector "vortexField"
 
 -- | @Selector@ for @radialGravityField@
-radialGravityFieldSelector :: Selector
+radialGravityFieldSelector :: Selector '[] (Id SCNPhysicsField)
 radialGravityFieldSelector = mkSelector "radialGravityField"
 
 -- | @Selector@ for @linearGravityField@
-linearGravityFieldSelector :: Selector
+linearGravityFieldSelector :: Selector '[] (Id SCNPhysicsField)
 linearGravityFieldSelector = mkSelector "linearGravityField"
 
 -- | @Selector@ for @noiseFieldWithSmoothness:animationSpeed:@
-noiseFieldWithSmoothness_animationSpeedSelector :: Selector
+noiseFieldWithSmoothness_animationSpeedSelector :: Selector '[CDouble, CDouble] (Id SCNPhysicsField)
 noiseFieldWithSmoothness_animationSpeedSelector = mkSelector "noiseFieldWithSmoothness:animationSpeed:"
 
 -- | @Selector@ for @turbulenceFieldWithSmoothness:animationSpeed:@
-turbulenceFieldWithSmoothness_animationSpeedSelector :: Selector
+turbulenceFieldWithSmoothness_animationSpeedSelector :: Selector '[CDouble, CDouble] (Id SCNPhysicsField)
 turbulenceFieldWithSmoothness_animationSpeedSelector = mkSelector "turbulenceFieldWithSmoothness:animationSpeed:"
 
 -- | @Selector@ for @springField@
-springFieldSelector :: Selector
+springFieldSelector :: Selector '[] (Id SCNPhysicsField)
 springFieldSelector = mkSelector "springField"
 
 -- | @Selector@ for @electricField@
-electricFieldSelector :: Selector
+electricFieldSelector :: Selector '[] (Id SCNPhysicsField)
 electricFieldSelector = mkSelector "electricField"
 
 -- | @Selector@ for @magneticField@
-magneticFieldSelector :: Selector
+magneticFieldSelector :: Selector '[] (Id SCNPhysicsField)
 magneticFieldSelector = mkSelector "magneticField"
 
 -- | @Selector@ for @customFieldWithEvaluationBlock:@
-customFieldWithEvaluationBlockSelector :: Selector
+customFieldWithEvaluationBlockSelector :: Selector '[Ptr ()] (Id SCNPhysicsField)
 customFieldWithEvaluationBlockSelector = mkSelector "customFieldWithEvaluationBlock:"
 
 -- | @Selector@ for @strength@
-strengthSelector :: Selector
+strengthSelector :: Selector '[] CDouble
 strengthSelector = mkSelector "strength"
 
 -- | @Selector@ for @setStrength:@
-setStrengthSelector :: Selector
+setStrengthSelector :: Selector '[CDouble] ()
 setStrengthSelector = mkSelector "setStrength:"
 
 -- | @Selector@ for @falloffExponent@
-falloffExponentSelector :: Selector
+falloffExponentSelector :: Selector '[] CDouble
 falloffExponentSelector = mkSelector "falloffExponent"
 
 -- | @Selector@ for @setFalloffExponent:@
-setFalloffExponentSelector :: Selector
+setFalloffExponentSelector :: Selector '[CDouble] ()
 setFalloffExponentSelector = mkSelector "setFalloffExponent:"
 
 -- | @Selector@ for @minimumDistance@
-minimumDistanceSelector :: Selector
+minimumDistanceSelector :: Selector '[] CDouble
 minimumDistanceSelector = mkSelector "minimumDistance"
 
 -- | @Selector@ for @setMinimumDistance:@
-setMinimumDistanceSelector :: Selector
+setMinimumDistanceSelector :: Selector '[CDouble] ()
 setMinimumDistanceSelector = mkSelector "setMinimumDistance:"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @setActive:@
-setActiveSelector :: Selector
+setActiveSelector :: Selector '[Bool] ()
 setActiveSelector = mkSelector "setActive:"
 
 -- | @Selector@ for @exclusive@
-exclusiveSelector :: Selector
+exclusiveSelector :: Selector '[] Bool
 exclusiveSelector = mkSelector "exclusive"
 
 -- | @Selector@ for @setExclusive:@
-setExclusiveSelector :: Selector
+setExclusiveSelector :: Selector '[Bool] ()
 setExclusiveSelector = mkSelector "setExclusive:"
 
 -- | @Selector@ for @halfExtent@
-halfExtentSelector :: Selector
+halfExtentSelector :: Selector '[] SCNVector3
 halfExtentSelector = mkSelector "halfExtent"
 
 -- | @Selector@ for @setHalfExtent:@
-setHalfExtentSelector :: Selector
+setHalfExtentSelector :: Selector '[SCNVector3] ()
 setHalfExtentSelector = mkSelector "setHalfExtent:"
 
 -- | @Selector@ for @usesEllipsoidalExtent@
-usesEllipsoidalExtentSelector :: Selector
+usesEllipsoidalExtentSelector :: Selector '[] Bool
 usesEllipsoidalExtentSelector = mkSelector "usesEllipsoidalExtent"
 
 -- | @Selector@ for @setUsesEllipsoidalExtent:@
-setUsesEllipsoidalExtentSelector :: Selector
+setUsesEllipsoidalExtentSelector :: Selector '[Bool] ()
 setUsesEllipsoidalExtentSelector = mkSelector "setUsesEllipsoidalExtent:"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] SCNPhysicsFieldScope
 scopeSelector = mkSelector "scope"
 
 -- | @Selector@ for @setScope:@
-setScopeSelector :: Selector
+setScopeSelector :: Selector '[SCNPhysicsFieldScope] ()
 setScopeSelector = mkSelector "setScope:"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] SCNVector3
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[SCNVector3] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] SCNVector3
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @setDirection:@
-setDirectionSelector :: Selector
+setDirectionSelector :: Selector '[SCNVector3] ()
 setDirectionSelector = mkSelector "setDirection:"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CULong
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CULong] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 

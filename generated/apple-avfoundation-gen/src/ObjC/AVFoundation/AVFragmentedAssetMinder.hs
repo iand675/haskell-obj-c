@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.AVFoundation.AVFragmentedAssetMinder
   , mindingInterval
   , setMindingInterval
   , assets
+  , addFragmentedAssetSelector
+  , assetsSelector
   , fragmentedAssetMinderWithAsset_mindingIntervalSelector
   , initWithAsset_mindingIntervalSelector
-  , addFragmentedAssetSelector
-  , removeFragmentedAssetSelector
   , mindingIntervalSelector
+  , removeFragmentedAssetSelector
   , setMindingIntervalSelector
-  , assetsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ fragmentedAssetMinderWithAsset_mindingInterval :: IsAVAsset asset => asset -> CD
 fragmentedAssetMinderWithAsset_mindingInterval asset mindingInterval =
   do
     cls' <- getRequiredClass "AVFragmentedAssetMinder"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "fragmentedAssetMinderWithAsset:mindingInterval:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argCDouble mindingInterval] >>= retainedObject . castPtr
+    sendClassMessage cls' fragmentedAssetMinderWithAsset_mindingIntervalSelector (toAVAsset asset) mindingInterval
 
 -- | Creates an AVFragmentedAssetMinder, adds the specified asset to it, and sets the mindingInterval to the specified value.
 --
@@ -63,9 +59,8 @@ fragmentedAssetMinderWithAsset_mindingInterval asset mindingInterval =
 --
 -- ObjC selector: @- initWithAsset:mindingInterval:@
 initWithAsset_mindingInterval :: (IsAVFragmentedAssetMinder avFragmentedAssetMinder, IsAVAsset asset) => avFragmentedAssetMinder -> asset -> CDouble -> IO (Id AVFragmentedAssetMinder)
-initWithAsset_mindingInterval avFragmentedAssetMinder  asset mindingInterval =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg avFragmentedAssetMinder (mkSelector "initWithAsset:mindingInterval:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argCDouble mindingInterval] >>= ownedObject . castPtr
+initWithAsset_mindingInterval avFragmentedAssetMinder asset mindingInterval =
+  sendOwnedMessage avFragmentedAssetMinder initWithAsset_mindingIntervalSelector (toAVAsset asset) mindingInterval
 
 -- | Adds a fragmented asset to the array of assets being minded.
 --
@@ -75,9 +70,8 @@ initWithAsset_mindingInterval avFragmentedAssetMinder  asset mindingInterval =
 --
 -- ObjC selector: @- addFragmentedAsset:@
 addFragmentedAsset :: (IsAVFragmentedAssetMinder avFragmentedAssetMinder, IsAVAsset asset) => avFragmentedAssetMinder -> asset -> IO ()
-addFragmentedAsset avFragmentedAssetMinder  asset =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg avFragmentedAssetMinder (mkSelector "addFragmentedAsset:") retVoid [argPtr (castPtr raw_asset :: Ptr ())]
+addFragmentedAsset avFragmentedAssetMinder asset =
+  sendMessage avFragmentedAssetMinder addFragmentedAssetSelector (toAVAsset asset)
 
 -- | Removes a fragmented asset from the array of assets being minded.
 --
@@ -87,9 +81,8 @@ addFragmentedAsset avFragmentedAssetMinder  asset =
 --
 -- ObjC selector: @- removeFragmentedAsset:@
 removeFragmentedAsset :: (IsAVFragmentedAssetMinder avFragmentedAssetMinder, IsAVAsset asset) => avFragmentedAssetMinder -> asset -> IO ()
-removeFragmentedAsset avFragmentedAssetMinder  asset =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg avFragmentedAssetMinder (mkSelector "removeFragmentedAsset:") retVoid [argPtr (castPtr raw_asset :: Ptr ())]
+removeFragmentedAsset avFragmentedAssetMinder asset =
+  sendMessage avFragmentedAssetMinder removeFragmentedAssetSelector (toAVAsset asset)
 
 -- | An NSTimeInterval indicating how often a check for additional fragments should be performed. The default interval is 10.0.
 --
@@ -97,8 +90,8 @@ removeFragmentedAsset avFragmentedAssetMinder  asset =
 --
 -- ObjC selector: @- mindingInterval@
 mindingInterval :: IsAVFragmentedAssetMinder avFragmentedAssetMinder => avFragmentedAssetMinder -> IO CDouble
-mindingInterval avFragmentedAssetMinder  =
-    sendMsg avFragmentedAssetMinder (mkSelector "mindingInterval") retCDouble []
+mindingInterval avFragmentedAssetMinder =
+  sendMessage avFragmentedAssetMinder mindingIntervalSelector
 
 -- | An NSTimeInterval indicating how often a check for additional fragments should be performed. The default interval is 10.0.
 --
@@ -106,45 +99,45 @@ mindingInterval avFragmentedAssetMinder  =
 --
 -- ObjC selector: @- setMindingInterval:@
 setMindingInterval :: IsAVFragmentedAssetMinder avFragmentedAssetMinder => avFragmentedAssetMinder -> CDouble -> IO ()
-setMindingInterval avFragmentedAssetMinder  value =
-    sendMsg avFragmentedAssetMinder (mkSelector "setMindingInterval:") retVoid [argCDouble value]
+setMindingInterval avFragmentedAssetMinder value =
+  sendMessage avFragmentedAssetMinder setMindingIntervalSelector value
 
 -- | An NSArray of the AVFragmentedAsset objects being minded.
 --
 -- ObjC selector: @- assets@
 assets :: IsAVFragmentedAssetMinder avFragmentedAssetMinder => avFragmentedAssetMinder -> IO (Id NSArray)
-assets avFragmentedAssetMinder  =
-    sendMsg avFragmentedAssetMinder (mkSelector "assets") (retPtr retVoid) [] >>= retainedObject . castPtr
+assets avFragmentedAssetMinder =
+  sendMessage avFragmentedAssetMinder assetsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fragmentedAssetMinderWithAsset:mindingInterval:@
-fragmentedAssetMinderWithAsset_mindingIntervalSelector :: Selector
+fragmentedAssetMinderWithAsset_mindingIntervalSelector :: Selector '[Id AVAsset, CDouble] (Id AVFragmentedAssetMinder)
 fragmentedAssetMinderWithAsset_mindingIntervalSelector = mkSelector "fragmentedAssetMinderWithAsset:mindingInterval:"
 
 -- | @Selector@ for @initWithAsset:mindingInterval:@
-initWithAsset_mindingIntervalSelector :: Selector
+initWithAsset_mindingIntervalSelector :: Selector '[Id AVAsset, CDouble] (Id AVFragmentedAssetMinder)
 initWithAsset_mindingIntervalSelector = mkSelector "initWithAsset:mindingInterval:"
 
 -- | @Selector@ for @addFragmentedAsset:@
-addFragmentedAssetSelector :: Selector
+addFragmentedAssetSelector :: Selector '[Id AVAsset] ()
 addFragmentedAssetSelector = mkSelector "addFragmentedAsset:"
 
 -- | @Selector@ for @removeFragmentedAsset:@
-removeFragmentedAssetSelector :: Selector
+removeFragmentedAssetSelector :: Selector '[Id AVAsset] ()
 removeFragmentedAssetSelector = mkSelector "removeFragmentedAsset:"
 
 -- | @Selector@ for @mindingInterval@
-mindingIntervalSelector :: Selector
+mindingIntervalSelector :: Selector '[] CDouble
 mindingIntervalSelector = mkSelector "mindingInterval"
 
 -- | @Selector@ for @setMindingInterval:@
-setMindingIntervalSelector :: Selector
+setMindingIntervalSelector :: Selector '[CDouble] ()
 setMindingIntervalSelector = mkSelector "setMindingInterval:"
 
 -- | @Selector@ for @assets@
-assetsSelector :: Selector
+assetsSelector :: Selector '[] (Id NSArray)
 assetsSelector = mkSelector "assets"
 

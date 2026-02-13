@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,16 +32,16 @@ module ObjC.ServiceManagement.SMAppService
   , openSystemSettingsLoginItems
   , mainAppService
   , status
-  , loginItemServiceWithIdentifierSelector
   , agentServiceWithPlistNameSelector
   , daemonServiceWithPlistNameSelector
+  , loginItemServiceWithIdentifierSelector
+  , mainAppServiceSelector
+  , openSystemSettingsLoginItemsSelector
   , registerAndReturnErrorSelector
+  , statusForLegacyURLSelector
+  , statusSelector
   , unregisterAndReturnErrorSelector
   , unregisterWithCompletionHandlerSelector
-  , statusForLegacyURLSelector
-  , openSystemSettingsLoginItemsSelector
-  , mainAppServiceSelector
-  , statusSelector
 
   -- * Enum types
   , SMAppServiceStatus(SMAppServiceStatus)
@@ -51,15 +52,11 @@ module ObjC.ServiceManagement.SMAppService
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,8 +77,7 @@ loginItemServiceWithIdentifier :: IsNSString identifier => identifier -> IO (Id 
 loginItemServiceWithIdentifier identifier =
   do
     cls' <- getRequiredClass "SMAppService"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "loginItemServiceWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' loginItemServiceWithIdentifierSelector (toNSString identifier)
 
 -- | agentServiceWithPlistName
 --
@@ -98,8 +94,7 @@ agentServiceWithPlistName :: IsNSString plistName => plistName -> IO (Id SMAppSe
 agentServiceWithPlistName plistName =
   do
     cls' <- getRequiredClass "SMAppService"
-    withObjCPtr plistName $ \raw_plistName ->
-      sendClassMsg cls' (mkSelector "agentServiceWithPlistName:") (retPtr retVoid) [argPtr (castPtr raw_plistName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' agentServiceWithPlistNameSelector (toNSString plistName)
 
 -- | daemonServiceWithPlistName
 --
@@ -118,8 +113,7 @@ daemonServiceWithPlistName :: IsNSString plistName => plistName -> IO (Id SMAppS
 daemonServiceWithPlistName plistName =
   do
     cls' <- getRequiredClass "SMAppService"
-    withObjCPtr plistName $ \raw_plistName ->
-      sendClassMsg cls' (mkSelector "daemonServiceWithPlistName:") (retPtr retVoid) [argPtr (castPtr raw_plistName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' daemonServiceWithPlistNameSelector (toNSString plistName)
 
 -- | registerAndReturnError
 --
@@ -149,9 +143,8 @@ daemonServiceWithPlistName plistName =
 --
 -- ObjC selector: @- registerAndReturnError:@
 registerAndReturnError :: (IsSMAppService smAppService, IsNSError error_) => smAppService -> error_ -> IO Bool
-registerAndReturnError smAppService  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg smAppService (mkSelector "registerAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+registerAndReturnError smAppService error_ =
+  sendMessage smAppService registerAndReturnErrorSelector (toNSError error_)
 
 -- | unregisterAndReturnError
 --
@@ -173,9 +166,8 @@ registerAndReturnError smAppService  error_ =
 --
 -- ObjC selector: @- unregisterAndReturnError:@
 unregisterAndReturnError :: (IsSMAppService smAppService, IsNSError error_) => smAppService -> error_ -> IO Bool
-unregisterAndReturnError smAppService  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg smAppService (mkSelector "unregisterAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+unregisterAndReturnError smAppService error_ =
+  sendMessage smAppService unregisterAndReturnErrorSelector (toNSError error_)
 
 -- | unregisterWithCompletionHandler
 --
@@ -197,16 +189,15 @@ unregisterAndReturnError smAppService  error_ =
 --
 -- ObjC selector: @- unregisterWithCompletionHandler:@
 unregisterWithCompletionHandler :: IsSMAppService smAppService => smAppService -> Ptr () -> IO ()
-unregisterWithCompletionHandler smAppService  handler =
-    sendMsg smAppService (mkSelector "unregisterWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+unregisterWithCompletionHandler smAppService handler =
+  sendMessage smAppService unregisterWithCompletionHandlerSelector handler
 
 -- | @+ statusForLegacyURL:@
 statusForLegacyURL :: IsNSURL url => url -> IO SMAppServiceStatus
 statusForLegacyURL url =
   do
     cls' <- getRequiredClass "SMAppService"
-    withObjCPtr url $ \raw_url ->
-      fmap (coerce :: CLong -> SMAppServiceStatus) $ sendClassMsg cls' (mkSelector "statusForLegacyURL:") retCLong [argPtr (castPtr raw_url :: Ptr ())]
+    sendClassMessage cls' statusForLegacyURLSelector (toNSURL url)
 
 -- | openSystemSettingsLoginItems
 --
@@ -219,7 +210,7 @@ openSystemSettingsLoginItems :: IO ()
 openSystemSettingsLoginItems  =
   do
     cls' <- getRequiredClass "SMAppService"
-    sendClassMsg cls' (mkSelector "openSystemSettingsLoginItems") retVoid []
+    sendClassMessage cls' openSystemSettingsLoginItemsSelector
 
 -- | mainAppService
 --
@@ -232,7 +223,7 @@ mainAppService :: IO (Id SMAppService)
 mainAppService  =
   do
     cls' <- getRequiredClass "SMAppService"
-    sendClassMsg cls' (mkSelector "mainAppService") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mainAppServiceSelector
 
 -- | status
 --
@@ -246,50 +237,50 @@ mainAppService  =
 --
 -- ObjC selector: @- status@
 status :: IsSMAppService smAppService => smAppService -> IO SMAppServiceStatus
-status smAppService  =
-    fmap (coerce :: CLong -> SMAppServiceStatus) $ sendMsg smAppService (mkSelector "status") retCLong []
+status smAppService =
+  sendMessage smAppService statusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loginItemServiceWithIdentifier:@
-loginItemServiceWithIdentifierSelector :: Selector
+loginItemServiceWithIdentifierSelector :: Selector '[Id NSString] (Id SMAppService)
 loginItemServiceWithIdentifierSelector = mkSelector "loginItemServiceWithIdentifier:"
 
 -- | @Selector@ for @agentServiceWithPlistName:@
-agentServiceWithPlistNameSelector :: Selector
+agentServiceWithPlistNameSelector :: Selector '[Id NSString] (Id SMAppService)
 agentServiceWithPlistNameSelector = mkSelector "agentServiceWithPlistName:"
 
 -- | @Selector@ for @daemonServiceWithPlistName:@
-daemonServiceWithPlistNameSelector :: Selector
+daemonServiceWithPlistNameSelector :: Selector '[Id NSString] (Id SMAppService)
 daemonServiceWithPlistNameSelector = mkSelector "daemonServiceWithPlistName:"
 
 -- | @Selector@ for @registerAndReturnError:@
-registerAndReturnErrorSelector :: Selector
+registerAndReturnErrorSelector :: Selector '[Id NSError] Bool
 registerAndReturnErrorSelector = mkSelector "registerAndReturnError:"
 
 -- | @Selector@ for @unregisterAndReturnError:@
-unregisterAndReturnErrorSelector :: Selector
+unregisterAndReturnErrorSelector :: Selector '[Id NSError] Bool
 unregisterAndReturnErrorSelector = mkSelector "unregisterAndReturnError:"
 
 -- | @Selector@ for @unregisterWithCompletionHandler:@
-unregisterWithCompletionHandlerSelector :: Selector
+unregisterWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 unregisterWithCompletionHandlerSelector = mkSelector "unregisterWithCompletionHandler:"
 
 -- | @Selector@ for @statusForLegacyURL:@
-statusForLegacyURLSelector :: Selector
+statusForLegacyURLSelector :: Selector '[Id NSURL] SMAppServiceStatus
 statusForLegacyURLSelector = mkSelector "statusForLegacyURL:"
 
 -- | @Selector@ for @openSystemSettingsLoginItems@
-openSystemSettingsLoginItemsSelector :: Selector
+openSystemSettingsLoginItemsSelector :: Selector '[] ()
 openSystemSettingsLoginItemsSelector = mkSelector "openSystemSettingsLoginItems"
 
 -- | @Selector@ for @mainAppService@
-mainAppServiceSelector :: Selector
+mainAppServiceSelector :: Selector '[] (Id SMAppService)
 mainAppServiceSelector = mkSelector "mainAppService"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] SMAppServiceStatus
 statusSelector = mkSelector "status"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.MLCompute.MLCInstanceNormalizationLayer
   , gammaParameter
   , varianceEpsilon
   , momentum
+  , betaParameterSelector
+  , betaSelector
+  , featureChannelCountSelector
+  , gammaParameterSelector
+  , gammaSelector
   , layerWithFeatureChannelCount_beta_gamma_varianceEpsilonSelector
   , layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentumSelector
   , layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentumSelector
-  , featureChannelCountSelector
   , meanSelector
-  , varianceSelector
-  , betaSelector
-  , gammaSelector
-  , betaParameterSelector
-  , gammaParameterSelector
-  , varianceEpsilonSelector
   , momentumSelector
+  , varianceEpsilonSelector
+  , varianceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,9 +67,7 @@ layerWithFeatureChannelCount_beta_gamma_varianceEpsilon :: (IsMLCTensor beta, Is
 layerWithFeatureChannelCount_beta_gamma_varianceEpsilon featureChannelCount beta gamma varianceEpsilon =
   do
     cls' <- getRequiredClass "MLCInstanceNormalizationLayer"
-    withObjCPtr beta $ \raw_beta ->
-      withObjCPtr gamma $ \raw_gamma ->
-        sendClassMsg cls' (mkSelector "layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:") (retPtr retVoid) [argCULong featureChannelCount, argPtr (castPtr raw_beta :: Ptr ()), argPtr (castPtr raw_gamma :: Ptr ()), argCFloat varianceEpsilon] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithFeatureChannelCount_beta_gamma_varianceEpsilonSelector featureChannelCount (toMLCTensor beta) (toMLCTensor gamma) varianceEpsilon
 
 -- | Create an instance normalization layer
 --
@@ -93,9 +88,7 @@ layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentum :: (IsMLCTensor
 layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentum featureChannelCount beta gamma varianceEpsilon momentum =
   do
     cls' <- getRequiredClass "MLCInstanceNormalizationLayer"
-    withObjCPtr beta $ \raw_beta ->
-      withObjCPtr gamma $ \raw_gamma ->
-        sendClassMsg cls' (mkSelector "layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:momentum:") (retPtr retVoid) [argCULong featureChannelCount, argPtr (castPtr raw_beta :: Ptr ()), argPtr (castPtr raw_gamma :: Ptr ()), argCFloat varianceEpsilon, argCFloat momentum] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentumSelector featureChannelCount (toMLCTensor beta) (toMLCTensor gamma) varianceEpsilon momentum
 
 -- | Create an instance normalization layer
 --
@@ -120,11 +113,7 @@ layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentum :
 layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentum featureChannelCount mean variance beta gamma varianceEpsilon momentum =
   do
     cls' <- getRequiredClass "MLCInstanceNormalizationLayer"
-    withObjCPtr mean $ \raw_mean ->
-      withObjCPtr variance $ \raw_variance ->
-        withObjCPtr beta $ \raw_beta ->
-          withObjCPtr gamma $ \raw_gamma ->
-            sendClassMsg cls' (mkSelector "layerWithFeatureChannelCount:mean:variance:beta:gamma:varianceEpsilon:momentum:") (retPtr retVoid) [argCULong featureChannelCount, argPtr (castPtr raw_mean :: Ptr ()), argPtr (castPtr raw_variance :: Ptr ()), argPtr (castPtr raw_beta :: Ptr ()), argPtr (castPtr raw_gamma :: Ptr ()), argCFloat varianceEpsilon, argCFloat momentum] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentumSelector featureChannelCount (toMLCTensor mean) (toMLCTensor variance) (toMLCTensor beta) (toMLCTensor gamma) varianceEpsilon momentum
 
 -- | featureChannelCount
 --
@@ -132,8 +121,8 @@ layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentum f
 --
 -- ObjC selector: @- featureChannelCount@
 featureChannelCount :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO CULong
-featureChannelCount mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "featureChannelCount") retCULong []
+featureChannelCount mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer featureChannelCountSelector
 
 -- | mean
 --
@@ -141,8 +130,8 @@ featureChannelCount mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- mean@
 mean :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensor)
-mean mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "mean") (retPtr retVoid) [] >>= retainedObject . castPtr
+mean mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer meanSelector
 
 -- | variance
 --
@@ -150,8 +139,8 @@ mean mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- variance@
 variance :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensor)
-variance mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "variance") (retPtr retVoid) [] >>= retainedObject . castPtr
+variance mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer varianceSelector
 
 -- | beta
 --
@@ -159,8 +148,8 @@ variance mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- beta@
 beta :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensor)
-beta mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "beta") (retPtr retVoid) [] >>= retainedObject . castPtr
+beta mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer betaSelector
 
 -- | gamma
 --
@@ -168,8 +157,8 @@ beta mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- gamma@
 gamma :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensor)
-gamma mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "gamma") (retPtr retVoid) [] >>= retainedObject . castPtr
+gamma mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer gammaSelector
 
 -- | betaParameter
 --
@@ -177,8 +166,8 @@ gamma mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- betaParameter@
 betaParameter :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensorParameter)
-betaParameter mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "betaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+betaParameter mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer betaParameterSelector
 
 -- | gammaParameter
 --
@@ -186,8 +175,8 @@ betaParameter mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- gammaParameter@
 gammaParameter :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO (Id MLCTensorParameter)
-gammaParameter mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "gammaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+gammaParameter mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer gammaParameterSelector
 
 -- | varianceEpsilon
 --
@@ -195,8 +184,8 @@ gammaParameter mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- varianceEpsilon@
 varianceEpsilon :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO CFloat
-varianceEpsilon mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "varianceEpsilon") retCFloat []
+varianceEpsilon mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer varianceEpsilonSelector
 
 -- | momentum
 --
@@ -206,58 +195,58 @@ varianceEpsilon mlcInstanceNormalizationLayer  =
 --
 -- ObjC selector: @- momentum@
 momentum :: IsMLCInstanceNormalizationLayer mlcInstanceNormalizationLayer => mlcInstanceNormalizationLayer -> IO CFloat
-momentum mlcInstanceNormalizationLayer  =
-    sendMsg mlcInstanceNormalizationLayer (mkSelector "momentum") retCFloat []
+momentum mlcInstanceNormalizationLayer =
+  sendMessage mlcInstanceNormalizationLayer momentumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:@
-layerWithFeatureChannelCount_beta_gamma_varianceEpsilonSelector :: Selector
+layerWithFeatureChannelCount_beta_gamma_varianceEpsilonSelector :: Selector '[CULong, Id MLCTensor, Id MLCTensor, CFloat] (Id MLCInstanceNormalizationLayer)
 layerWithFeatureChannelCount_beta_gamma_varianceEpsilonSelector = mkSelector "layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:"
 
 -- | @Selector@ for @layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:momentum:@
-layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentumSelector :: Selector
+layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentumSelector :: Selector '[CULong, Id MLCTensor, Id MLCTensor, CFloat, CFloat] (Id MLCInstanceNormalizationLayer)
 layerWithFeatureChannelCount_beta_gamma_varianceEpsilon_momentumSelector = mkSelector "layerWithFeatureChannelCount:beta:gamma:varianceEpsilon:momentum:"
 
 -- | @Selector@ for @layerWithFeatureChannelCount:mean:variance:beta:gamma:varianceEpsilon:momentum:@
-layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentumSelector :: Selector
+layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentumSelector :: Selector '[CULong, Id MLCTensor, Id MLCTensor, Id MLCTensor, Id MLCTensor, CFloat, CFloat] (Id MLCInstanceNormalizationLayer)
 layerWithFeatureChannelCount_mean_variance_beta_gamma_varianceEpsilon_momentumSelector = mkSelector "layerWithFeatureChannelCount:mean:variance:beta:gamma:varianceEpsilon:momentum:"
 
 -- | @Selector@ for @featureChannelCount@
-featureChannelCountSelector :: Selector
+featureChannelCountSelector :: Selector '[] CULong
 featureChannelCountSelector = mkSelector "featureChannelCount"
 
 -- | @Selector@ for @mean@
-meanSelector :: Selector
+meanSelector :: Selector '[] (Id MLCTensor)
 meanSelector = mkSelector "mean"
 
 -- | @Selector@ for @variance@
-varianceSelector :: Selector
+varianceSelector :: Selector '[] (Id MLCTensor)
 varianceSelector = mkSelector "variance"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] (Id MLCTensor)
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @gamma@
-gammaSelector :: Selector
+gammaSelector :: Selector '[] (Id MLCTensor)
 gammaSelector = mkSelector "gamma"
 
 -- | @Selector@ for @betaParameter@
-betaParameterSelector :: Selector
+betaParameterSelector :: Selector '[] (Id MLCTensorParameter)
 betaParameterSelector = mkSelector "betaParameter"
 
 -- | @Selector@ for @gammaParameter@
-gammaParameterSelector :: Selector
+gammaParameterSelector :: Selector '[] (Id MLCTensorParameter)
 gammaParameterSelector = mkSelector "gammaParameter"
 
 -- | @Selector@ for @varianceEpsilon@
-varianceEpsilonSelector :: Selector
+varianceEpsilonSelector :: Selector '[] CFloat
 varianceEpsilonSelector = mkSelector "varianceEpsilon"
 
 -- | @Selector@ for @momentum@
-momentumSelector :: Selector
+momentumSelector :: Selector '[] CFloat
 momentumSelector = mkSelector "momentum"
 

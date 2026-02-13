@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,33 +35,33 @@ module ObjC.AppKit.NSPrinter
   , type_
   , languageLevel
   , deviceDescription
-  , printerWithNameSelector
-  , printerWithTypeSelector
-  , pageSizeForPaperSelector
-  , statusForTableSelector
-  , isKey_inTableSelector
-  , booleanForKey_inTableSelector
-  , floatForKey_inTableSelector
-  , intForKey_inTableSelector
-  , rectForKey_inTableSelector
-  , sizeForKey_inTableSelector
-  , stringForKey_inTableSelector
-  , stringListForKey_inTableSelector
-  , imageRectForPaperSelector
   , acceptsBinarySelector
+  , booleanForKey_inTableSelector
+  , deviceDescriptionSelector
+  , domainSelector
+  , floatForKey_inTableSelector
+  , hostSelector
+  , imageRectForPaperSelector
+  , intForKey_inTableSelector
   , isColorSelector
   , isFontAvailableSelector
+  , isKey_inTableSelector
   , isOutputStackInReverseOrderSelector
-  , printerWithName_domain_includeUnavailableSelector
-  , domainSelector
-  , hostSelector
+  , languageLevelSelector
+  , nameSelector
   , noteSelector
+  , pageSizeForPaperSelector
   , printerNamesSelector
   , printerTypesSelector
-  , nameSelector
+  , printerWithNameSelector
+  , printerWithName_domain_includeUnavailableSelector
+  , printerWithTypeSelector
+  , rectForKey_inTableSelector
+  , sizeForKey_inTableSelector
+  , statusForTableSelector
+  , stringForKey_inTableSelector
+  , stringListForKey_inTableSelector
   , typeSelector
-  , languageLevelSelector
-  , deviceDescriptionSelector
 
   -- * Enum types
   , NSPrinterTableStatus(NSPrinterTableStatus)
@@ -70,15 +71,11 @@ module ObjC.AppKit.NSPrinter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,279 +89,255 @@ printerWithName :: IsNSString name => name -> IO (Id NSPrinter)
 printerWithName name =
   do
     cls' <- getRequiredClass "NSPrinter"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "printerWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' printerWithNameSelector (toNSString name)
 
 -- | @+ printerWithType:@
 printerWithType :: IsNSString type_ => type_ -> IO (Id NSPrinter)
 printerWithType type_ =
   do
     cls' <- getRequiredClass "NSPrinter"
-    withObjCPtr type_ $ \raw_type_ ->
-      sendClassMsg cls' (mkSelector "printerWithType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' printerWithTypeSelector (toNSString type_)
 
 -- | @- pageSizeForPaper:@
 pageSizeForPaper :: (IsNSPrinter nsPrinter, IsNSString paperName) => nsPrinter -> paperName -> IO NSSize
-pageSizeForPaper nsPrinter  paperName =
-  withObjCPtr paperName $ \raw_paperName ->
-      sendMsgStret nsPrinter (mkSelector "pageSizeForPaper:") retNSSize [argPtr (castPtr raw_paperName :: Ptr ())]
+pageSizeForPaper nsPrinter paperName =
+  sendMessage nsPrinter pageSizeForPaperSelector (toNSString paperName)
 
 -- | @- statusForTable:@
 statusForTable :: (IsNSPrinter nsPrinter, IsNSString tableName) => nsPrinter -> tableName -> IO NSPrinterTableStatus
-statusForTable nsPrinter  tableName =
-  withObjCPtr tableName $ \raw_tableName ->
-      fmap (coerce :: CULong -> NSPrinterTableStatus) $ sendMsg nsPrinter (mkSelector "statusForTable:") retCULong [argPtr (castPtr raw_tableName :: Ptr ())]
+statusForTable nsPrinter tableName =
+  sendMessage nsPrinter statusForTableSelector (toNSString tableName)
 
 -- | @- isKey:inTable:@
 isKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO Bool
-isKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "isKey:inTable:") retCULong [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+isKey_inTable nsPrinter key table =
+  sendMessage nsPrinter isKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- booleanForKey:inTable:@
 booleanForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO Bool
-booleanForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "booleanForKey:inTable:") retCULong [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+booleanForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter booleanForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- floatForKey:inTable:@
 floatForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO CFloat
-floatForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsg nsPrinter (mkSelector "floatForKey:inTable:") retCFloat [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+floatForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter floatForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- intForKey:inTable:@
 intForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO CInt
-intForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsg nsPrinter (mkSelector "intForKey:inTable:") retCInt [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+intForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter intForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- rectForKey:inTable:@
 rectForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO NSRect
-rectForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsgStret nsPrinter (mkSelector "rectForKey:inTable:") retNSRect [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+rectForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter rectForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- sizeForKey:inTable:@
 sizeForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO NSSize
-sizeForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsgStret nsPrinter (mkSelector "sizeForKey:inTable:") retNSSize [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())]
+sizeForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter sizeForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- stringForKey:inTable:@
 stringForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO (Id NSString)
-stringForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsg nsPrinter (mkSelector "stringForKey:inTable:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())] >>= retainedObject . castPtr
+stringForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter stringForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- stringListForKey:inTable:@
 stringListForKey_inTable :: (IsNSPrinter nsPrinter, IsNSString key, IsNSString table) => nsPrinter -> key -> table -> IO (Id NSArray)
-stringListForKey_inTable nsPrinter  key table =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr table $ \raw_table ->
-        sendMsg nsPrinter (mkSelector "stringListForKey:inTable:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())] >>= retainedObject . castPtr
+stringListForKey_inTable nsPrinter key table =
+  sendMessage nsPrinter stringListForKey_inTableSelector (toNSString key) (toNSString table)
 
 -- | @- imageRectForPaper:@
 imageRectForPaper :: (IsNSPrinter nsPrinter, IsNSString paperName) => nsPrinter -> paperName -> IO NSRect
-imageRectForPaper nsPrinter  paperName =
-  withObjCPtr paperName $ \raw_paperName ->
-      sendMsgStret nsPrinter (mkSelector "imageRectForPaper:") retNSRect [argPtr (castPtr raw_paperName :: Ptr ())]
+imageRectForPaper nsPrinter paperName =
+  sendMessage nsPrinter imageRectForPaperSelector (toNSString paperName)
 
 -- | @- acceptsBinary@
 acceptsBinary :: IsNSPrinter nsPrinter => nsPrinter -> IO Bool
-acceptsBinary nsPrinter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "acceptsBinary") retCULong []
+acceptsBinary nsPrinter =
+  sendMessage nsPrinter acceptsBinarySelector
 
 -- | @- isColor@
 isColor :: IsNSPrinter nsPrinter => nsPrinter -> IO Bool
-isColor nsPrinter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "isColor") retCULong []
+isColor nsPrinter =
+  sendMessage nsPrinter isColorSelector
 
 -- | @- isFontAvailable:@
 isFontAvailable :: (IsNSPrinter nsPrinter, IsNSString faceName) => nsPrinter -> faceName -> IO Bool
-isFontAvailable nsPrinter  faceName =
-  withObjCPtr faceName $ \raw_faceName ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "isFontAvailable:") retCULong [argPtr (castPtr raw_faceName :: Ptr ())]
+isFontAvailable nsPrinter faceName =
+  sendMessage nsPrinter isFontAvailableSelector (toNSString faceName)
 
 -- | @- isOutputStackInReverseOrder@
 isOutputStackInReverseOrder :: IsNSPrinter nsPrinter => nsPrinter -> IO Bool
-isOutputStackInReverseOrder nsPrinter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrinter (mkSelector "isOutputStackInReverseOrder") retCULong []
+isOutputStackInReverseOrder nsPrinter =
+  sendMessage nsPrinter isOutputStackInReverseOrderSelector
 
 -- | @+ printerWithName:domain:includeUnavailable:@
 printerWithName_domain_includeUnavailable :: (IsNSString name, IsNSString domain) => name -> domain -> Bool -> IO (Id NSPrinter)
 printerWithName_domain_includeUnavailable name domain flag =
   do
     cls' <- getRequiredClass "NSPrinter"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr domain $ \raw_domain ->
-        sendClassMsg cls' (mkSelector "printerWithName:domain:includeUnavailable:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_domain :: Ptr ()), argCULong (if flag then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' printerWithName_domain_includeUnavailableSelector (toNSString name) (toNSString domain) flag
 
 -- | @- domain@
 domain :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSString)
-domain nsPrinter  =
-    sendMsg nsPrinter (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nsPrinter =
+  sendMessage nsPrinter domainSelector
 
 -- | @- host@
 host :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSString)
-host nsPrinter  =
-    sendMsg nsPrinter (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host nsPrinter =
+  sendMessage nsPrinter hostSelector
 
 -- | @- note@
 note :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSString)
-note nsPrinter  =
-    sendMsg nsPrinter (mkSelector "note") (retPtr retVoid) [] >>= retainedObject . castPtr
+note nsPrinter =
+  sendMessage nsPrinter noteSelector
 
 -- | @+ printerNames@
 printerNames :: IO (Id NSArray)
 printerNames  =
   do
     cls' <- getRequiredClass "NSPrinter"
-    sendClassMsg cls' (mkSelector "printerNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' printerNamesSelector
 
 -- | @+ printerTypes@
 printerTypes :: IO (Id NSArray)
 printerTypes  =
   do
     cls' <- getRequiredClass "NSPrinter"
-    sendClassMsg cls' (mkSelector "printerTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' printerTypesSelector
 
 -- | @- name@
 name :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSString)
-name nsPrinter  =
-    sendMsg nsPrinter (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsPrinter =
+  sendMessage nsPrinter nameSelector
 
 -- | @- type@
 type_ :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSString)
-type_ nsPrinter  =
-    sendMsg nsPrinter (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ nsPrinter =
+  sendMessage nsPrinter typeSelector
 
 -- | @- languageLevel@
 languageLevel :: IsNSPrinter nsPrinter => nsPrinter -> IO CLong
-languageLevel nsPrinter  =
-    sendMsg nsPrinter (mkSelector "languageLevel") retCLong []
+languageLevel nsPrinter =
+  sendMessage nsPrinter languageLevelSelector
 
 -- | @- deviceDescription@
 deviceDescription :: IsNSPrinter nsPrinter => nsPrinter -> IO (Id NSDictionary)
-deviceDescription nsPrinter  =
-    sendMsg nsPrinter (mkSelector "deviceDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceDescription nsPrinter =
+  sendMessage nsPrinter deviceDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @printerWithName:@
-printerWithNameSelector :: Selector
+printerWithNameSelector :: Selector '[Id NSString] (Id NSPrinter)
 printerWithNameSelector = mkSelector "printerWithName:"
 
 -- | @Selector@ for @printerWithType:@
-printerWithTypeSelector :: Selector
+printerWithTypeSelector :: Selector '[Id NSString] (Id NSPrinter)
 printerWithTypeSelector = mkSelector "printerWithType:"
 
 -- | @Selector@ for @pageSizeForPaper:@
-pageSizeForPaperSelector :: Selector
+pageSizeForPaperSelector :: Selector '[Id NSString] NSSize
 pageSizeForPaperSelector = mkSelector "pageSizeForPaper:"
 
 -- | @Selector@ for @statusForTable:@
-statusForTableSelector :: Selector
+statusForTableSelector :: Selector '[Id NSString] NSPrinterTableStatus
 statusForTableSelector = mkSelector "statusForTable:"
 
 -- | @Selector@ for @isKey:inTable:@
-isKey_inTableSelector :: Selector
+isKey_inTableSelector :: Selector '[Id NSString, Id NSString] Bool
 isKey_inTableSelector = mkSelector "isKey:inTable:"
 
 -- | @Selector@ for @booleanForKey:inTable:@
-booleanForKey_inTableSelector :: Selector
+booleanForKey_inTableSelector :: Selector '[Id NSString, Id NSString] Bool
 booleanForKey_inTableSelector = mkSelector "booleanForKey:inTable:"
 
 -- | @Selector@ for @floatForKey:inTable:@
-floatForKey_inTableSelector :: Selector
+floatForKey_inTableSelector :: Selector '[Id NSString, Id NSString] CFloat
 floatForKey_inTableSelector = mkSelector "floatForKey:inTable:"
 
 -- | @Selector@ for @intForKey:inTable:@
-intForKey_inTableSelector :: Selector
+intForKey_inTableSelector :: Selector '[Id NSString, Id NSString] CInt
 intForKey_inTableSelector = mkSelector "intForKey:inTable:"
 
 -- | @Selector@ for @rectForKey:inTable:@
-rectForKey_inTableSelector :: Selector
+rectForKey_inTableSelector :: Selector '[Id NSString, Id NSString] NSRect
 rectForKey_inTableSelector = mkSelector "rectForKey:inTable:"
 
 -- | @Selector@ for @sizeForKey:inTable:@
-sizeForKey_inTableSelector :: Selector
+sizeForKey_inTableSelector :: Selector '[Id NSString, Id NSString] NSSize
 sizeForKey_inTableSelector = mkSelector "sizeForKey:inTable:"
 
 -- | @Selector@ for @stringForKey:inTable:@
-stringForKey_inTableSelector :: Selector
+stringForKey_inTableSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 stringForKey_inTableSelector = mkSelector "stringForKey:inTable:"
 
 -- | @Selector@ for @stringListForKey:inTable:@
-stringListForKey_inTableSelector :: Selector
+stringListForKey_inTableSelector :: Selector '[Id NSString, Id NSString] (Id NSArray)
 stringListForKey_inTableSelector = mkSelector "stringListForKey:inTable:"
 
 -- | @Selector@ for @imageRectForPaper:@
-imageRectForPaperSelector :: Selector
+imageRectForPaperSelector :: Selector '[Id NSString] NSRect
 imageRectForPaperSelector = mkSelector "imageRectForPaper:"
 
 -- | @Selector@ for @acceptsBinary@
-acceptsBinarySelector :: Selector
+acceptsBinarySelector :: Selector '[] Bool
 acceptsBinarySelector = mkSelector "acceptsBinary"
 
 -- | @Selector@ for @isColor@
-isColorSelector :: Selector
+isColorSelector :: Selector '[] Bool
 isColorSelector = mkSelector "isColor"
 
 -- | @Selector@ for @isFontAvailable:@
-isFontAvailableSelector :: Selector
+isFontAvailableSelector :: Selector '[Id NSString] Bool
 isFontAvailableSelector = mkSelector "isFontAvailable:"
 
 -- | @Selector@ for @isOutputStackInReverseOrder@
-isOutputStackInReverseOrderSelector :: Selector
+isOutputStackInReverseOrderSelector :: Selector '[] Bool
 isOutputStackInReverseOrderSelector = mkSelector "isOutputStackInReverseOrder"
 
 -- | @Selector@ for @printerWithName:domain:includeUnavailable:@
-printerWithName_domain_includeUnavailableSelector :: Selector
+printerWithName_domain_includeUnavailableSelector :: Selector '[Id NSString, Id NSString, Bool] (Id NSPrinter)
 printerWithName_domain_includeUnavailableSelector = mkSelector "printerWithName:domain:includeUnavailable:"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @note@
-noteSelector :: Selector
+noteSelector :: Selector '[] (Id NSString)
 noteSelector = mkSelector "note"
 
 -- | @Selector@ for @printerNames@
-printerNamesSelector :: Selector
+printerNamesSelector :: Selector '[] (Id NSArray)
 printerNamesSelector = mkSelector "printerNames"
 
 -- | @Selector@ for @printerTypes@
-printerTypesSelector :: Selector
+printerTypesSelector :: Selector '[] (Id NSArray)
 printerTypesSelector = mkSelector "printerTypes"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @languageLevel@
-languageLevelSelector :: Selector
+languageLevelSelector :: Selector '[] CLong
 languageLevelSelector = mkSelector "languageLevel"
 
 -- | @Selector@ for @deviceDescription@
-deviceDescriptionSelector :: Selector
+deviceDescriptionSelector :: Selector '[] (Id NSDictionary)
 deviceDescriptionSelector = mkSelector "deviceDescription"
 

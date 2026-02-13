@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.FileProviderUI.FPUIActionExtensionContext
   , completeRequestReturningItems_completionHandler
   , cancelRequestWithError
   , domainIdentifier
-  , completeRequestSelector
-  , completeRequestReturningItems_completionHandlerSelector
   , cancelRequestWithErrorSelector
+  , completeRequestReturningItems_completionHandlerSelector
+  , completeRequestSelector
   , domainIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,14 +38,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- completeRequest@
 completeRequest :: IsFPUIActionExtensionContext fpuiActionExtensionContext => fpuiActionExtensionContext -> IO ()
-completeRequest fpuiActionExtensionContext  =
-    sendMsg fpuiActionExtensionContext (mkSelector "completeRequest") retVoid []
+completeRequest fpuiActionExtensionContext =
+  sendMessage fpuiActionExtensionContext completeRequestSelector
 
 -- | @- completeRequestReturningItems:completionHandler:@
 completeRequestReturningItems_completionHandler :: (IsFPUIActionExtensionContext fpuiActionExtensionContext, IsNSArray items) => fpuiActionExtensionContext -> items -> Ptr () -> IO ()
-completeRequestReturningItems_completionHandler fpuiActionExtensionContext  items completionHandler =
-  withObjCPtr items $ \raw_items ->
-      sendMsg fpuiActionExtensionContext (mkSelector "completeRequestReturningItems:completionHandler:") retVoid [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeRequestReturningItems_completionHandler fpuiActionExtensionContext items completionHandler =
+  sendMessage fpuiActionExtensionContext completeRequestReturningItems_completionHandlerSelector (toNSArray items) completionHandler
 
 -- | Cancels the action and returns the provided error.
 --
@@ -56,34 +52,33 @@ completeRequestReturningItems_completionHandler fpuiActionExtensionContext  item
 --
 -- ObjC selector: @- cancelRequestWithError:@
 cancelRequestWithError :: (IsFPUIActionExtensionContext fpuiActionExtensionContext, IsNSError error_) => fpuiActionExtensionContext -> error_ -> IO ()
-cancelRequestWithError fpuiActionExtensionContext  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg fpuiActionExtensionContext (mkSelector "cancelRequestWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelRequestWithError fpuiActionExtensionContext error_ =
+  sendMessage fpuiActionExtensionContext cancelRequestWithErrorSelector (toNSError error_)
 
 -- | The identifier for the domain managed by the current file provider.
 --
 -- ObjC selector: @- domainIdentifier@
 domainIdentifier :: IsFPUIActionExtensionContext fpuiActionExtensionContext => fpuiActionExtensionContext -> IO (Id NSString)
-domainIdentifier fpuiActionExtensionContext  =
-    sendMsg fpuiActionExtensionContext (mkSelector "domainIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainIdentifier fpuiActionExtensionContext =
+  sendMessage fpuiActionExtensionContext domainIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @completeRequest@
-completeRequestSelector :: Selector
+completeRequestSelector :: Selector '[] ()
 completeRequestSelector = mkSelector "completeRequest"
 
 -- | @Selector@ for @completeRequestReturningItems:completionHandler:@
-completeRequestReturningItems_completionHandlerSelector :: Selector
+completeRequestReturningItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 completeRequestReturningItems_completionHandlerSelector = mkSelector "completeRequestReturningItems:completionHandler:"
 
 -- | @Selector@ for @cancelRequestWithError:@
-cancelRequestWithErrorSelector :: Selector
+cancelRequestWithErrorSelector :: Selector '[Id NSError] ()
 cancelRequestWithErrorSelector = mkSelector "cancelRequestWithError:"
 
 -- | @Selector@ for @domainIdentifier@
-domainIdentifierSelector :: Selector
+domainIdentifierSelector :: Selector '[] (Id NSString)
 domainIdentifierSelector = mkSelector "domainIdentifier"
 

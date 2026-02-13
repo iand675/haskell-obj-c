@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.HealthKit.HKAudiogramSensitivityPointClampingRange
   , clampingRangeWithLowerBound_upperBound_error
   , lowerBound
   , upperBound
-  , initSelector
   , clampingRangeWithLowerBound_upperBound_errorSelector
+  , initSelector
   , lowerBoundSelector
   , upperBoundSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKAudiogramSensitivityPointClampingRange hkAudiogramSensitivityPointClampingRange => hkAudiogramSensitivityPointClampingRange -> IO (Id HKAudiogramSensitivityPointClampingRange)
-init_ hkAudiogramSensitivityPointClampingRange  =
-    sendMsg hkAudiogramSensitivityPointClampingRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkAudiogramSensitivityPointClampingRange =
+  sendOwnedMessage hkAudiogramSensitivityPointClampingRange initSelector
 
 -- | clampingRangeWithLowerBound:upperBound:error:
 --
@@ -59,10 +56,7 @@ clampingRangeWithLowerBound_upperBound_error :: (IsNSNumber lowerBound, IsNSNumb
 clampingRangeWithLowerBound_upperBound_error lowerBound upperBound errorOut =
   do
     cls' <- getRequiredClass "HKAudiogramSensitivityPointClampingRange"
-    withObjCPtr lowerBound $ \raw_lowerBound ->
-      withObjCPtr upperBound $ \raw_upperBound ->
-        withObjCPtr errorOut $ \raw_errorOut ->
-          sendClassMsg cls' (mkSelector "clampingRangeWithLowerBound:upperBound:error:") (retPtr retVoid) [argPtr (castPtr raw_lowerBound :: Ptr ()), argPtr (castPtr raw_upperBound :: Ptr ()), argPtr (castPtr raw_errorOut :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' clampingRangeWithLowerBound_upperBound_errorSelector (toNSNumber lowerBound) (toNSNumber upperBound) (toNSError errorOut)
 
 -- | lowerBound
 --
@@ -70,8 +64,8 @@ clampingRangeWithLowerBound_upperBound_error lowerBound upperBound errorOut =
 --
 -- ObjC selector: @- lowerBound@
 lowerBound :: IsHKAudiogramSensitivityPointClampingRange hkAudiogramSensitivityPointClampingRange => hkAudiogramSensitivityPointClampingRange -> IO (Id HKQuantity)
-lowerBound hkAudiogramSensitivityPointClampingRange  =
-    sendMsg hkAudiogramSensitivityPointClampingRange (mkSelector "lowerBound") (retPtr retVoid) [] >>= retainedObject . castPtr
+lowerBound hkAudiogramSensitivityPointClampingRange =
+  sendMessage hkAudiogramSensitivityPointClampingRange lowerBoundSelector
 
 -- | upperBound
 --
@@ -79,26 +73,26 @@ lowerBound hkAudiogramSensitivityPointClampingRange  =
 --
 -- ObjC selector: @- upperBound@
 upperBound :: IsHKAudiogramSensitivityPointClampingRange hkAudiogramSensitivityPointClampingRange => hkAudiogramSensitivityPointClampingRange -> IO (Id HKQuantity)
-upperBound hkAudiogramSensitivityPointClampingRange  =
-    sendMsg hkAudiogramSensitivityPointClampingRange (mkSelector "upperBound") (retPtr retVoid) [] >>= retainedObject . castPtr
+upperBound hkAudiogramSensitivityPointClampingRange =
+  sendMessage hkAudiogramSensitivityPointClampingRange upperBoundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKAudiogramSensitivityPointClampingRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @clampingRangeWithLowerBound:upperBound:error:@
-clampingRangeWithLowerBound_upperBound_errorSelector :: Selector
+clampingRangeWithLowerBound_upperBound_errorSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSError] (Id HKAudiogramSensitivityPointClampingRange)
 clampingRangeWithLowerBound_upperBound_errorSelector = mkSelector "clampingRangeWithLowerBound:upperBound:error:"
 
 -- | @Selector@ for @lowerBound@
-lowerBoundSelector :: Selector
+lowerBoundSelector :: Selector '[] (Id HKQuantity)
 lowerBoundSelector = mkSelector "lowerBound"
 
 -- | @Selector@ for @upperBound@
-upperBoundSelector :: Selector
+upperBoundSelector :: Selector '[] (Id HKQuantity)
 upperBoundSelector = mkSelector "upperBound"
 

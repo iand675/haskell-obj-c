@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.MapKit.MKHybridMapConfiguration
   , initWithElevationStyleSelector
   , pointOfInterestFilterSelector
   , setPointOfInterestFilterSelector
-  , showsTrafficSelector
   , setShowsTrafficSelector
+  , showsTrafficSelector
 
   -- * Enum types
   , MKMapElevationStyle(MKMapElevationStyle)
@@ -27,15 +28,11 @@ module ObjC.MapKit.MKHybridMapConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,60 +42,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMKHybridMapConfiguration mkHybridMapConfiguration => mkHybridMapConfiguration -> IO (Id MKHybridMapConfiguration)
-init_ mkHybridMapConfiguration  =
-    sendMsg mkHybridMapConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkHybridMapConfiguration =
+  sendOwnedMessage mkHybridMapConfiguration initSelector
 
 -- | @- initWithElevationStyle:@
 initWithElevationStyle :: IsMKHybridMapConfiguration mkHybridMapConfiguration => mkHybridMapConfiguration -> MKMapElevationStyle -> IO (Id MKHybridMapConfiguration)
-initWithElevationStyle mkHybridMapConfiguration  elevationStyle =
-    sendMsg mkHybridMapConfiguration (mkSelector "initWithElevationStyle:") (retPtr retVoid) [argCLong (coerce elevationStyle)] >>= ownedObject . castPtr
+initWithElevationStyle mkHybridMapConfiguration elevationStyle =
+  sendOwnedMessage mkHybridMapConfiguration initWithElevationStyleSelector elevationStyle
 
 -- | @- pointOfInterestFilter@
 pointOfInterestFilter :: IsMKHybridMapConfiguration mkHybridMapConfiguration => mkHybridMapConfiguration -> IO (Id MKPointOfInterestFilter)
-pointOfInterestFilter mkHybridMapConfiguration  =
-    sendMsg mkHybridMapConfiguration (mkSelector "pointOfInterestFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfInterestFilter mkHybridMapConfiguration =
+  sendMessage mkHybridMapConfiguration pointOfInterestFilterSelector
 
 -- | @- setPointOfInterestFilter:@
 setPointOfInterestFilter :: (IsMKHybridMapConfiguration mkHybridMapConfiguration, IsMKPointOfInterestFilter value) => mkHybridMapConfiguration -> value -> IO ()
-setPointOfInterestFilter mkHybridMapConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkHybridMapConfiguration (mkSelector "setPointOfInterestFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfInterestFilter mkHybridMapConfiguration value =
+  sendMessage mkHybridMapConfiguration setPointOfInterestFilterSelector (toMKPointOfInterestFilter value)
 
 -- | @- showsTraffic@
 showsTraffic :: IsMKHybridMapConfiguration mkHybridMapConfiguration => mkHybridMapConfiguration -> IO Bool
-showsTraffic mkHybridMapConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkHybridMapConfiguration (mkSelector "showsTraffic") retCULong []
+showsTraffic mkHybridMapConfiguration =
+  sendMessage mkHybridMapConfiguration showsTrafficSelector
 
 -- | @- setShowsTraffic:@
 setShowsTraffic :: IsMKHybridMapConfiguration mkHybridMapConfiguration => mkHybridMapConfiguration -> Bool -> IO ()
-setShowsTraffic mkHybridMapConfiguration  value =
-    sendMsg mkHybridMapConfiguration (mkSelector "setShowsTraffic:") retVoid [argCULong (if value then 1 else 0)]
+setShowsTraffic mkHybridMapConfiguration value =
+  sendMessage mkHybridMapConfiguration setShowsTrafficSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKHybridMapConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithElevationStyle:@
-initWithElevationStyleSelector :: Selector
+initWithElevationStyleSelector :: Selector '[MKMapElevationStyle] (Id MKHybridMapConfiguration)
 initWithElevationStyleSelector = mkSelector "initWithElevationStyle:"
 
 -- | @Selector@ for @pointOfInterestFilter@
-pointOfInterestFilterSelector :: Selector
+pointOfInterestFilterSelector :: Selector '[] (Id MKPointOfInterestFilter)
 pointOfInterestFilterSelector = mkSelector "pointOfInterestFilter"
 
 -- | @Selector@ for @setPointOfInterestFilter:@
-setPointOfInterestFilterSelector :: Selector
+setPointOfInterestFilterSelector :: Selector '[Id MKPointOfInterestFilter] ()
 setPointOfInterestFilterSelector = mkSelector "setPointOfInterestFilter:"
 
 -- | @Selector@ for @showsTraffic@
-showsTrafficSelector :: Selector
+showsTrafficSelector :: Selector '[] Bool
 showsTrafficSelector = mkSelector "showsTraffic"
 
 -- | @Selector@ for @setShowsTraffic:@
-setShowsTrafficSelector :: Selector
+setShowsTrafficSelector :: Selector '[Bool] ()
 setShowsTrafficSelector = mkSelector "setShowsTraffic:"
 

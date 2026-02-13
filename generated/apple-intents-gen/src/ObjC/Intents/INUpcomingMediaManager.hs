@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.Intents.INUpcomingMediaManager
   , setSuggestedMediaIntents
   , setPredictionMode_forType
   , sharedManager
-  , setSuggestedMediaIntentsSelector
   , setPredictionMode_forTypeSelector
+  , setSuggestedMediaIntentsSelector
   , sharedManagerSelector
 
   -- * Enum types
@@ -43,15 +44,11 @@ module ObjC.Intents.INUpcomingMediaManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,35 +58,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setSuggestedMediaIntents:@
 setSuggestedMediaIntents :: (IsINUpcomingMediaManager inUpcomingMediaManager, IsNSOrderedSet intents) => inUpcomingMediaManager -> intents -> IO ()
-setSuggestedMediaIntents inUpcomingMediaManager  intents =
-  withObjCPtr intents $ \raw_intents ->
-      sendMsg inUpcomingMediaManager (mkSelector "setSuggestedMediaIntents:") retVoid [argPtr (castPtr raw_intents :: Ptr ())]
+setSuggestedMediaIntents inUpcomingMediaManager intents =
+  sendMessage inUpcomingMediaManager setSuggestedMediaIntentsSelector (toNSOrderedSet intents)
 
 -- | @- setPredictionMode:forType:@
 setPredictionMode_forType :: IsINUpcomingMediaManager inUpcomingMediaManager => inUpcomingMediaManager -> INUpcomingMediaPredictionMode -> INMediaItemType -> IO ()
-setPredictionMode_forType inUpcomingMediaManager  mode type_ =
-    sendMsg inUpcomingMediaManager (mkSelector "setPredictionMode:forType:") retVoid [argCLong (coerce mode), argCLong (coerce type_)]
+setPredictionMode_forType inUpcomingMediaManager mode type_ =
+  sendMessage inUpcomingMediaManager setPredictionMode_forTypeSelector mode type_
 
 -- | @+ sharedManager@
 sharedManager :: IO (Id INUpcomingMediaManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "INUpcomingMediaManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setSuggestedMediaIntents:@
-setSuggestedMediaIntentsSelector :: Selector
+setSuggestedMediaIntentsSelector :: Selector '[Id NSOrderedSet] ()
 setSuggestedMediaIntentsSelector = mkSelector "setSuggestedMediaIntents:"
 
 -- | @Selector@ for @setPredictionMode:forType:@
-setPredictionMode_forTypeSelector :: Selector
+setPredictionMode_forTypeSelector :: Selector '[INUpcomingMediaPredictionMode, INMediaItemType] ()
 setPredictionMode_forTypeSelector = mkSelector "setPredictionMode:forType:"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id INUpcomingMediaManager)
 sharedManagerSelector = mkSelector "sharedManager"
 

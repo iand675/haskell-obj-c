@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTLSCertificateManagementClusterLookupRootCertificateParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , fingerprintSelector
-  , setFingerprintSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setFingerprintSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fingerprint@
 fingerprint :: IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> IO (Id NSData)
-fingerprint mtrtlsCertificateManagementClusterLookupRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "fingerprint") (retPtr retVoid) [] >>= retainedObject . castPtr
+fingerprint mtrtlsCertificateManagementClusterLookupRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams fingerprintSelector
 
 -- | @- setFingerprint:@
 setFingerprint :: (IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams, IsNSData value) => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> value -> IO ()
-setFingerprint mtrtlsCertificateManagementClusterLookupRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "setFingerprint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFingerprint mtrtlsCertificateManagementClusterLookupRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams setFingerprintSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setFingerprint mtrtlsCertificateManagementClusterLookupRootCertificateParams  va
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificatePara
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams, IsNSNumber value) => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterLookupRootCertificateP
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrtlsCertificateManagementClusterLookupRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrtlsCertificateManagementClusterLookupRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrtlsCertificateManagementClusterLookupRootCertific
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTLSCertificateManagementClusterLookupRootCertificateParams mtrtlsCertificateManagementClusterLookupRootCertificateParams, IsNSNumber value) => mtrtlsCertificateManagementClusterLookupRootCertificateParams -> value -> IO ()
-setServerSideProcessingTimeout mtrtlsCertificateManagementClusterLookupRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterLookupRootCertificateParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrtlsCertificateManagementClusterLookupRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterLookupRootCertificateParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fingerprint@
-fingerprintSelector :: Selector
+fingerprintSelector :: Selector '[] (Id NSData)
 fingerprintSelector = mkSelector "fingerprint"
 
 -- | @Selector@ for @setFingerprint:@
-setFingerprintSelector :: Selector
+setFingerprintSelector :: Selector '[Id NSData] ()
 setFingerprintSelector = mkSelector "setFingerprint:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

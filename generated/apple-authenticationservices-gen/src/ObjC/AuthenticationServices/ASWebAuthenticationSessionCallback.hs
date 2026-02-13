@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSessionCallback
   , callbackWithCustomSchemeSelector
   , callbackWithHTTPSHost_pathSelector
   , initSelector
-  , newSelector
   , matchesURLSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,7 @@ callbackWithCustomScheme :: IsNSString customScheme => customScheme -> IO (Id AS
 callbackWithCustomScheme customScheme =
   do
     cls' <- getRequiredClass "ASWebAuthenticationSessionCallback"
-    withObjCPtr customScheme $ \raw_customScheme ->
-      sendClassMsg cls' (mkSelector "callbackWithCustomScheme:") (retPtr retVoid) [argPtr (castPtr raw_customScheme :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' callbackWithCustomSchemeSelector (toNSString customScheme)
 
 -- | Creates a callback object that matches against HTTPS URLs with the given host and path.
 --
@@ -60,21 +56,19 @@ callbackWithHTTPSHost_path :: (IsNSString host, IsNSString path) => host -> path
 callbackWithHTTPSHost_path host path =
   do
     cls' <- getRequiredClass "ASWebAuthenticationSessionCallback"
-    withObjCPtr host $ \raw_host ->
-      withObjCPtr path $ \raw_path ->
-        sendClassMsg cls' (mkSelector "callbackWithHTTPSHost:path:") (retPtr retVoid) [argPtr (castPtr raw_host :: Ptr ()), argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' callbackWithHTTPSHost_pathSelector (toNSString host) (toNSString path)
 
 -- | @- init@
 init_ :: IsASWebAuthenticationSessionCallback asWebAuthenticationSessionCallback => asWebAuthenticationSessionCallback -> IO (Id ASWebAuthenticationSessionCallback)
-init_ asWebAuthenticationSessionCallback  =
-    sendMsg asWebAuthenticationSessionCallback (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asWebAuthenticationSessionCallback =
+  sendOwnedMessage asWebAuthenticationSessionCallback initSelector
 
 -- | @+ new@
 new :: IO (Id ASWebAuthenticationSessionCallback)
 new  =
   do
     cls' <- getRequiredClass "ASWebAuthenticationSessionCallback"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Check whether a given main-frame navigation URL matches the callback expected by the client app. Handles all URL-based callback strategies, including custom schemes and HTTPS navigations. This is mainly meant for web browsers adopting the ASWebAuthenticationWebBrowser API, but may also be useful for other apps for debugging purposes.
 --
@@ -82,31 +76,30 @@ new  =
 --
 -- ObjC selector: @- matchesURL:@
 matchesURL :: (IsASWebAuthenticationSessionCallback asWebAuthenticationSessionCallback, IsNSURL url) => asWebAuthenticationSessionCallback -> url -> IO Bool
-matchesURL asWebAuthenticationSessionCallback  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSessionCallback (mkSelector "matchesURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+matchesURL asWebAuthenticationSessionCallback url =
+  sendMessage asWebAuthenticationSessionCallback matchesURLSelector (toNSURL url)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @callbackWithCustomScheme:@
-callbackWithCustomSchemeSelector :: Selector
+callbackWithCustomSchemeSelector :: Selector '[Id NSString] (Id ASWebAuthenticationSessionCallback)
 callbackWithCustomSchemeSelector = mkSelector "callbackWithCustomScheme:"
 
 -- | @Selector@ for @callbackWithHTTPSHost:path:@
-callbackWithHTTPSHost_pathSelector :: Selector
+callbackWithHTTPSHost_pathSelector :: Selector '[Id NSString, Id NSString] (Id ASWebAuthenticationSessionCallback)
 callbackWithHTTPSHost_pathSelector = mkSelector "callbackWithHTTPSHost:path:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASWebAuthenticationSessionCallback)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASWebAuthenticationSessionCallback)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @matchesURL:@
-matchesURLSelector :: Selector
+matchesURLSelector :: Selector '[Id NSURL] Bool
 matchesURLSelector = mkSelector "matchesURL:"
 

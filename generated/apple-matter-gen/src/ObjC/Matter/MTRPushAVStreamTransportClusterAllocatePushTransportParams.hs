@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterAllocatePushTransportParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , transportOptionsSelector
-  , setTransportOptionsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTransportOptionsSelector
+  , timedInvokeTimeoutMsSelector
+  , transportOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- transportOptions@
 transportOptions :: IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> IO (Id MTRPushAVStreamTransportClusterTransportOptionsStruct)
-transportOptions mtrPushAVStreamTransportClusterAllocatePushTransportParams  =
-    sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "transportOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportOptions mtrPushAVStreamTransportClusterAllocatePushTransportParams =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams transportOptionsSelector
 
 -- | @- setTransportOptions:@
 setTransportOptions :: (IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams, IsMTRPushAVStreamTransportClusterTransportOptionsStruct value) => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> value -> IO ()
-setTransportOptions mtrPushAVStreamTransportClusterAllocatePushTransportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "setTransportOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransportOptions mtrPushAVStreamTransportClusterAllocatePushTransportParams value =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams setTransportOptionsSelector (toMTRPushAVStreamTransportClusterTransportOptionsStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTransportOptions mtrPushAVStreamTransportClusterAllocatePushTransportParams  
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportParams  =
-    sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportParams =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportParams 
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams, IsNSNumber value) => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportParams value =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrPushAVStreamTransportClusterAllocatePushTransportPara
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrPushAVStreamTransportClusterAllocatePushTransportParams  =
-    sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrPushAVStreamTransportClusterAllocatePushTransportParams =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrPushAVStreamTransportClusterAllocatePushTransport
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRPushAVStreamTransportClusterAllocatePushTransportParams mtrPushAVStreamTransportClusterAllocatePushTransportParams, IsNSNumber value) => mtrPushAVStreamTransportClusterAllocatePushTransportParams -> value -> IO ()
-setServerSideProcessingTimeout mtrPushAVStreamTransportClusterAllocatePushTransportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterAllocatePushTransportParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrPushAVStreamTransportClusterAllocatePushTransportParams value =
+  sendMessage mtrPushAVStreamTransportClusterAllocatePushTransportParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transportOptions@
-transportOptionsSelector :: Selector
+transportOptionsSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterTransportOptionsStruct)
 transportOptionsSelector = mkSelector "transportOptions"
 
 -- | @Selector@ for @setTransportOptions:@
-setTransportOptionsSelector :: Selector
+setTransportOptionsSelector :: Selector '[Id MTRPushAVStreamTransportClusterTransportOptionsStruct] ()
 setTransportOptionsSelector = mkSelector "setTransportOptions:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

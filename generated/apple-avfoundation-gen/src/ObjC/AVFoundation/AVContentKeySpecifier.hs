@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVContentKeySpecifier
   , identifier
   , options
   , contentKeySpecifierForKeySystem_identifier_optionsSelector
+  , identifierSelector
   , initForKeySystem_identifier_optionsSelector
   , keySystemSelector
-  , identifierSelector
   , optionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,7 @@ contentKeySpecifierForKeySystem_identifier_options :: (IsNSString keySystem, IsN
 contentKeySpecifierForKeySystem_identifier_options keySystem contentKeyIdentifier options =
   do
     cls' <- getRequiredClass "AVContentKeySpecifier"
-    withObjCPtr keySystem $ \raw_keySystem ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "contentKeySpecifierForKeySystem:identifier:options:") (retPtr retVoid) [argPtr (castPtr raw_keySystem :: Ptr ()), argPtr (castPtr (unRawId contentKeyIdentifier) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contentKeySpecifierForKeySystem_identifier_optionsSelector (toNSString keySystem) contentKeyIdentifier (toNSDictionary options)
 
 -- | Initialize an instance of AVContentKeySpecifier.
 --
@@ -64,53 +59,51 @@ contentKeySpecifierForKeySystem_identifier_options keySystem contentKeyIdentifie
 --
 -- ObjC selector: @- initForKeySystem:identifier:options:@
 initForKeySystem_identifier_options :: (IsAVContentKeySpecifier avContentKeySpecifier, IsNSString keySystem, IsNSDictionary options) => avContentKeySpecifier -> keySystem -> RawId -> options -> IO (Id AVContentKeySpecifier)
-initForKeySystem_identifier_options avContentKeySpecifier  keySystem contentKeyIdentifier options =
-  withObjCPtr keySystem $ \raw_keySystem ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avContentKeySpecifier (mkSelector "initForKeySystem:identifier:options:") (retPtr retVoid) [argPtr (castPtr raw_keySystem :: Ptr ()), argPtr (castPtr (unRawId contentKeyIdentifier) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initForKeySystem_identifier_options avContentKeySpecifier keySystem contentKeyIdentifier options =
+  sendOwnedMessage avContentKeySpecifier initForKeySystem_identifier_optionsSelector (toNSString keySystem) contentKeyIdentifier (toNSDictionary options)
 
 -- | A valid key system for content keys.
 --
 -- ObjC selector: @- keySystem@
 keySystem :: IsAVContentKeySpecifier avContentKeySpecifier => avContentKeySpecifier -> IO (Id NSString)
-keySystem avContentKeySpecifier  =
-    sendMsg avContentKeySpecifier (mkSelector "keySystem") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySystem avContentKeySpecifier =
+  sendMessage avContentKeySpecifier keySystemSelector
 
 -- | Container and protocol-specific key identifier.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVContentKeySpecifier avContentKeySpecifier => avContentKeySpecifier -> IO RawId
-identifier avContentKeySpecifier  =
-    fmap (RawId . castPtr) $ sendMsg avContentKeySpecifier (mkSelector "identifier") (retPtr retVoid) []
+identifier avContentKeySpecifier =
+  sendMessage avContentKeySpecifier identifierSelector
 
 -- | Additional information necessary to obtain the key, can be empty if none needed.
 --
 -- ObjC selector: @- options@
 options :: IsAVContentKeySpecifier avContentKeySpecifier => avContentKeySpecifier -> IO (Id NSDictionary)
-options avContentKeySpecifier  =
-    sendMsg avContentKeySpecifier (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options avContentKeySpecifier =
+  sendMessage avContentKeySpecifier optionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentKeySpecifierForKeySystem:identifier:options:@
-contentKeySpecifierForKeySystem_identifier_optionsSelector :: Selector
+contentKeySpecifierForKeySystem_identifier_optionsSelector :: Selector '[Id NSString, RawId, Id NSDictionary] (Id AVContentKeySpecifier)
 contentKeySpecifierForKeySystem_identifier_optionsSelector = mkSelector "contentKeySpecifierForKeySystem:identifier:options:"
 
 -- | @Selector@ for @initForKeySystem:identifier:options:@
-initForKeySystem_identifier_optionsSelector :: Selector
+initForKeySystem_identifier_optionsSelector :: Selector '[Id NSString, RawId, Id NSDictionary] (Id AVContentKeySpecifier)
 initForKeySystem_identifier_optionsSelector = mkSelector "initForKeySystem:identifier:options:"
 
 -- | @Selector@ for @keySystem@
-keySystemSelector :: Selector
+keySystemSelector :: Selector '[] (Id NSString)
 keySystemSelector = mkSelector "keySystem"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSDictionary)
 optionsSelector = mkSelector "options"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.Virtualization.VZVirtioConsoleDevice
   , delegate
   , setDelegate
   , ports
-  , newSelector
-  , initSelector
   , delegateSelector
-  , setDelegateSelector
+  , initSelector
+  , newSelector
   , portsSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,55 +43,55 @@ new :: IO (Id VZVirtioConsoleDevice)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioConsoleDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> IO (Id VZVirtioConsoleDevice)
-init_ vzVirtioConsoleDevice  =
-    sendMsg vzVirtioConsoleDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioConsoleDevice =
+  sendOwnedMessage vzVirtioConsoleDevice initSelector
 
 -- | Pointer to a delegate object for the console device.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> IO RawId
-delegate vzVirtioConsoleDevice  =
-    fmap (RawId . castPtr) $ sendMsg vzVirtioConsoleDevice (mkSelector "delegate") (retPtr retVoid) []
+delegate vzVirtioConsoleDevice =
+  sendMessage vzVirtioConsoleDevice delegateSelector
 
 -- | Pointer to a delegate object for the console device.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> RawId -> IO ()
-setDelegate vzVirtioConsoleDevice  value =
-    sendMsg vzVirtioConsoleDevice (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate vzVirtioConsoleDevice value =
+  sendMessage vzVirtioConsoleDevice setDelegateSelector value
 
 -- | The console ports currently being used by this console device.
 --
 -- ObjC selector: @- ports@
 ports :: IsVZVirtioConsoleDevice vzVirtioConsoleDevice => vzVirtioConsoleDevice -> IO (Id VZVirtioConsolePortArray)
-ports vzVirtioConsoleDevice  =
-    sendMsg vzVirtioConsoleDevice (mkSelector "ports") (retPtr retVoid) [] >>= retainedObject . castPtr
+ports vzVirtioConsoleDevice =
+  sendMessage vzVirtioConsoleDevice portsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioConsoleDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioConsoleDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @ports@
-portsSelector :: Selector
+portsSelector :: Selector '[] (Id VZVirtioConsolePortArray)
 portsSelector = mkSelector "ports"
 

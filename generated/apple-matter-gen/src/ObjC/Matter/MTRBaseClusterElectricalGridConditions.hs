@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,48 +40,44 @@ module ObjC.Matter.MTRBaseClusterElectricalGridConditions
   , init_
   , new
   , initWithDevice_endpointID_queue
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCurrentConditionsWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeForecastConditionsWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector
   , readAttributeLocalGenerationAvailableWithCompletionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector
   , writeAttributeLocalGenerationAvailableWithValue_completionSelector
   , writeAttributeLocalGenerationAvailableWithValue_params_completionSelector
-  , subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeCurrentConditionsWithCompletionSelector
-  , subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeForecastConditionsWithCompletionSelector
-  , subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,324 +86,286 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeLocalGenerationAvailableWithCompletion:@
 readAttributeLocalGenerationAvailableWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeLocalGenerationAvailableWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeLocalGenerationAvailableWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLocalGenerationAvailableWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeLocalGenerationAvailableWithCompletionSelector completion
 
 -- | @- writeAttributeLocalGenerationAvailableWithValue:completion:@
 writeAttributeLocalGenerationAvailableWithValue_completion :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsNSNumber value) => mtrBaseClusterElectricalGridConditions -> value -> Ptr () -> IO ()
-writeAttributeLocalGenerationAvailableWithValue_completion mtrBaseClusterElectricalGridConditions  value completion =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "writeAttributeLocalGenerationAvailableWithValue:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeLocalGenerationAvailableWithValue_completion mtrBaseClusterElectricalGridConditions value completion =
+  sendMessage mtrBaseClusterElectricalGridConditions writeAttributeLocalGenerationAvailableWithValue_completionSelector (toNSNumber value) completion
 
 -- | @- writeAttributeLocalGenerationAvailableWithValue:params:completion:@
 writeAttributeLocalGenerationAvailableWithValue_params_completion :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsNSNumber value, IsMTRWriteParams params) => mtrBaseClusterElectricalGridConditions -> value -> params -> Ptr () -> IO ()
-writeAttributeLocalGenerationAvailableWithValue_params_completion mtrBaseClusterElectricalGridConditions  value params completion =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr params $ \raw_params ->
-        sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "writeAttributeLocalGenerationAvailableWithValue:params:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeLocalGenerationAvailableWithValue_params_completion mtrBaseClusterElectricalGridConditions value params completion =
+  sendMessage mtrBaseClusterElectricalGridConditions writeAttributeLocalGenerationAvailableWithValue_params_completionSelector (toNSNumber value) (toMTRWriteParams params) completion
 
 -- | @- subscribeAttributeLocalGenerationAvailableWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeLocalGenerationAvailableWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLocalGenerationAvailableWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLocalGenerationAvailableWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeCurrentConditionsWithCompletion:@
 readAttributeCurrentConditionsWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeCurrentConditionsWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeCurrentConditionsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeCurrentConditionsWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeCurrentConditionsWithCompletionSelector completion
 
 -- | @- subscribeAttributeCurrentConditionsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeCurrentConditionsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCurrentConditionsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCurrentConditionsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeForecastConditionsWithCompletion:@
 readAttributeForecastConditionsWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeForecastConditionsWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeForecastConditionsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeForecastConditionsWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeForecastConditionsWithCompletionSelector completion
 
 -- | @- subscribeAttributeForecastConditionsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeForecastConditionsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeForecastConditionsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeForecastConditionsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterElectricalGridConditions  completion =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterElectricalGridConditions completion =
+  sendMessage mtrBaseClusterElectricalGridConditions readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRSubscribeParams params) => mtrBaseClusterElectricalGridConditions -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterElectricalGridConditions params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterElectricalGridConditions subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions => mtrBaseClusterElectricalGridConditions -> IO (Id MTRBaseClusterElectricalGridConditions)
-init_ mtrBaseClusterElectricalGridConditions  =
-    sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterElectricalGridConditions =
+  sendOwnedMessage mtrBaseClusterElectricalGridConditions initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterElectricalGridConditions)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterElectricalGridConditions"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterElectricalGridConditions mtrBaseClusterElectricalGridConditions, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterElectricalGridConditions -> device -> endpointID -> queue -> IO (Id MTRBaseClusterElectricalGridConditions)
-initWithDevice_endpointID_queue mtrBaseClusterElectricalGridConditions  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterElectricalGridConditions (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterElectricalGridConditions device endpointID queue =
+  sendOwnedMessage mtrBaseClusterElectricalGridConditions initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeLocalGenerationAvailableWithCompletion:@
-readAttributeLocalGenerationAvailableWithCompletionSelector :: Selector
+readAttributeLocalGenerationAvailableWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLocalGenerationAvailableWithCompletionSelector = mkSelector "readAttributeLocalGenerationAvailableWithCompletion:"
 
 -- | @Selector@ for @writeAttributeLocalGenerationAvailableWithValue:completion:@
-writeAttributeLocalGenerationAvailableWithValue_completionSelector :: Selector
+writeAttributeLocalGenerationAvailableWithValue_completionSelector :: Selector '[Id NSNumber, Ptr ()] ()
 writeAttributeLocalGenerationAvailableWithValue_completionSelector = mkSelector "writeAttributeLocalGenerationAvailableWithValue:completion:"
 
 -- | @Selector@ for @writeAttributeLocalGenerationAvailableWithValue:params:completion:@
-writeAttributeLocalGenerationAvailableWithValue_params_completionSelector :: Selector
+writeAttributeLocalGenerationAvailableWithValue_params_completionSelector :: Selector '[Id NSNumber, Id MTRWriteParams, Ptr ()] ()
 writeAttributeLocalGenerationAvailableWithValue_params_completionSelector = mkSelector "writeAttributeLocalGenerationAvailableWithValue:params:completion:"
 
 -- | @Selector@ for @subscribeAttributeLocalGenerationAvailableWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLocalGenerationAvailableWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLocalGenerationAvailableWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLocalGenerationAvailableWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLocalGenerationAvailableWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLocalGenerationAvailableWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeCurrentConditionsWithCompletion:@
-readAttributeCurrentConditionsWithCompletionSelector :: Selector
+readAttributeCurrentConditionsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeCurrentConditionsWithCompletionSelector = mkSelector "readAttributeCurrentConditionsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeCurrentConditionsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCurrentConditionsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCurrentConditionsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCurrentConditionsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCurrentConditionsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCurrentConditionsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeForecastConditionsWithCompletion:@
-readAttributeForecastConditionsWithCompletionSelector :: Selector
+readAttributeForecastConditionsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeForecastConditionsWithCompletionSelector = mkSelector "readAttributeForecastConditionsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeForecastConditionsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeForecastConditionsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeForecastConditionsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeForecastConditionsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeForecastConditionsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeForecastConditionsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterElectricalGridConditions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterElectricalGridConditions)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterElectricalGridConditions)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

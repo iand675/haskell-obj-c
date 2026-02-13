@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INOutgoingMessageTypeResolutionResult
   , IsINOutgoingMessageTypeResolutionResult(..)
   , successWithResolvedOutgoingMessageType
   , confirmationRequiredWithOutgoingMessageTypeToConfirm
-  , successWithResolvedOutgoingMessageTypeSelector
   , confirmationRequiredWithOutgoingMessageTypeToConfirmSelector
+  , successWithResolvedOutgoingMessageTypeSelector
 
   -- * Enum types
   , INOutgoingMessageType(INOutgoingMessageType)
@@ -20,15 +21,11 @@ module ObjC.Intents.INOutgoingMessageTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,24 +38,24 @@ successWithResolvedOutgoingMessageType :: INOutgoingMessageType -> IO (Id INOutg
 successWithResolvedOutgoingMessageType resolvedOutgoingMessageType =
   do
     cls' <- getRequiredClass "INOutgoingMessageTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedOutgoingMessageType:") (retPtr retVoid) [argCLong (coerce resolvedOutgoingMessageType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedOutgoingMessageTypeSelector resolvedOutgoingMessageType
 
 -- | @+ confirmationRequiredWithOutgoingMessageTypeToConfirm:@
 confirmationRequiredWithOutgoingMessageTypeToConfirm :: INOutgoingMessageType -> IO (Id INOutgoingMessageTypeResolutionResult)
 confirmationRequiredWithOutgoingMessageTypeToConfirm outgoingMessageTypeToConfirm =
   do
     cls' <- getRequiredClass "INOutgoingMessageTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithOutgoingMessageTypeToConfirm:") (retPtr retVoid) [argCLong (coerce outgoingMessageTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithOutgoingMessageTypeToConfirmSelector outgoingMessageTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedOutgoingMessageType:@
-successWithResolvedOutgoingMessageTypeSelector :: Selector
+successWithResolvedOutgoingMessageTypeSelector :: Selector '[INOutgoingMessageType] (Id INOutgoingMessageTypeResolutionResult)
 successWithResolvedOutgoingMessageTypeSelector = mkSelector "successWithResolvedOutgoingMessageType:"
 
 -- | @Selector@ for @confirmationRequiredWithOutgoingMessageTypeToConfirm:@
-confirmationRequiredWithOutgoingMessageTypeToConfirmSelector :: Selector
+confirmationRequiredWithOutgoingMessageTypeToConfirmSelector :: Selector '[INOutgoingMessageType] (Id INOutgoingMessageTypeResolutionResult)
 confirmationRequiredWithOutgoingMessageTypeToConfirmSelector = mkSelector "confirmationRequiredWithOutgoingMessageTypeToConfirm:"
 

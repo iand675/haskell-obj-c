@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -74,87 +75,83 @@ module ObjC.CoreImage.CIRAWFilter
   , semanticSegmentationGlassesMatte
   , semanticSegmentationSkyMatte
   , semanticSegmentationTeethMatte
-  , filterWithImageURLSelector
-  , filterWithImageData_identifierHintSelector
-  , filterWithCVPixelBuffer_propertiesSelector
-  , supportedCameraModelsSelector
-  , supportedDecoderVersionsSelector
-  , propertiesSelector
-  , orientationSelector
-  , setOrientationSelector
-  , draftModeEnabledSelector
-  , setDraftModeEnabledSelector
-  , decoderVersionSelector
-  , setDecoderVersionSelector
-  , scaleFactorSelector
-  , setScaleFactorSelector
-  , exposureSelector
-  , setExposureSelector
   , baselineExposureSelector
-  , setBaselineExposureSelector
-  , shadowBiasSelector
-  , setShadowBiasSelector
   , boostAmountSelector
-  , setBoostAmountSelector
   , boostShadowAmountSelector
-  , setBoostShadowAmountSelector
-  , highlightRecoverySupportedSelector
-  , highlightRecoveryEnabledSelector
-  , setHighlightRecoveryEnabledSelector
-  , gamutMappingEnabledSelector
-  , setGamutMappingEnabledSelector
-  , lensCorrectionSupportedSelector
-  , lensCorrectionEnabledSelector
-  , setLensCorrectionEnabledSelector
-  , luminanceNoiseReductionSupportedSelector
-  , luminanceNoiseReductionAmountSelector
-  , setLuminanceNoiseReductionAmountSelector
-  , colorNoiseReductionSupportedSelector
   , colorNoiseReductionAmountSelector
-  , setColorNoiseReductionAmountSelector
-  , sharpnessSupportedSelector
-  , sharpnessAmountSelector
-  , setSharpnessAmountSelector
-  , contrastSupportedSelector
+  , colorNoiseReductionSupportedSelector
   , contrastAmountSelector
-  , setContrastAmountSelector
-  , detailSupportedSelector
+  , contrastSupportedSelector
+  , decoderVersionSelector
   , detailAmountSelector
-  , setDetailAmountSelector
-  , moireReductionSupportedSelector
-  , moireReductionAmountSelector
-  , setMoireReductionAmountSelector
-  , localToneMapSupportedSelector
-  , localToneMapAmountSelector
-  , setLocalToneMapAmountSelector
+  , detailSupportedSelector
+  , draftModeEnabledSelector
+  , exposureSelector
   , extendedDynamicRangeAmountSelector
-  , setExtendedDynamicRangeAmountSelector
-  , neutralTemperatureSelector
-  , setNeutralTemperatureSelector
-  , neutralTintSelector
-  , setNeutralTintSelector
+  , filterWithCVPixelBuffer_propertiesSelector
+  , filterWithImageData_identifierHintSelector
+  , filterWithImageURLSelector
+  , gamutMappingEnabledSelector
+  , highlightRecoveryEnabledSelector
+  , highlightRecoverySupportedSelector
+  , lensCorrectionEnabledSelector
+  , lensCorrectionSupportedSelector
   , linearSpaceFilterSelector
-  , setLinearSpaceFilterSelector
-  , previewImageSelector
+  , localToneMapAmountSelector
+  , localToneMapSupportedSelector
+  , luminanceNoiseReductionAmountSelector
+  , luminanceNoiseReductionSupportedSelector
+  , moireReductionAmountSelector
+  , moireReductionSupportedSelector
+  , neutralTemperatureSelector
+  , neutralTintSelector
+  , orientationSelector
   , portraitEffectsMatteSelector
-  , semanticSegmentationSkinMatteSelector
-  , semanticSegmentationHairMatteSelector
+  , previewImageSelector
+  , propertiesSelector
+  , scaleFactorSelector
   , semanticSegmentationGlassesMatteSelector
+  , semanticSegmentationHairMatteSelector
+  , semanticSegmentationSkinMatteSelector
   , semanticSegmentationSkyMatteSelector
   , semanticSegmentationTeethMatteSelector
+  , setBaselineExposureSelector
+  , setBoostAmountSelector
+  , setBoostShadowAmountSelector
+  , setColorNoiseReductionAmountSelector
+  , setContrastAmountSelector
+  , setDecoderVersionSelector
+  , setDetailAmountSelector
+  , setDraftModeEnabledSelector
+  , setExposureSelector
+  , setExtendedDynamicRangeAmountSelector
+  , setGamutMappingEnabledSelector
+  , setHighlightRecoveryEnabledSelector
+  , setLensCorrectionEnabledSelector
+  , setLinearSpaceFilterSelector
+  , setLocalToneMapAmountSelector
+  , setLuminanceNoiseReductionAmountSelector
+  , setMoireReductionAmountSelector
+  , setNeutralTemperatureSelector
+  , setNeutralTintSelector
+  , setOrientationSelector
+  , setScaleFactorSelector
+  , setShadowBiasSelector
+  , setSharpnessAmountSelector
+  , shadowBiasSelector
+  , sharpnessAmountSelector
+  , sharpnessSupportedSelector
+  , supportedCameraModelsSelector
+  , supportedDecoderVersionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -166,628 +163,622 @@ filterWithImageURL :: IsNSURL url => url -> IO (Id CIRAWFilter)
 filterWithImageURL url =
   do
     cls' <- getRequiredClass "CIRAWFilter"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "filterWithImageURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithImageURLSelector (toNSURL url)
 
 -- | @+ filterWithImageData:identifierHint:@
 filterWithImageData_identifierHint :: (IsNSData data_, IsNSString identifierHint) => data_ -> identifierHint -> IO (Id CIRAWFilter)
 filterWithImageData_identifierHint data_ identifierHint =
   do
     cls' <- getRequiredClass "CIRAWFilter"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr identifierHint $ \raw_identifierHint ->
-        sendClassMsg cls' (mkSelector "filterWithImageData:identifierHint:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_identifierHint :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithImageData_identifierHintSelector (toNSData data_) (toNSString identifierHint)
 
 -- | @+ filterWithCVPixelBuffer:properties:@
 filterWithCVPixelBuffer_properties :: IsNSDictionary properties => Ptr () -> properties -> IO (Id CIRAWFilter)
 filterWithCVPixelBuffer_properties buffer properties =
   do
     cls' <- getRequiredClass "CIRAWFilter"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "filterWithCVPixelBuffer:properties:") (retPtr retVoid) [argPtr buffer, argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithCVPixelBuffer_propertiesSelector buffer (toNSDictionary properties)
 
 -- | @+ supportedCameraModels@
 supportedCameraModels :: IO (Id NSArray)
 supportedCameraModels  =
   do
     cls' <- getRequiredClass "CIRAWFilter"
-    sendClassMsg cls' (mkSelector "supportedCameraModels") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedCameraModelsSelector
 
 -- | @- supportedDecoderVersions@
 supportedDecoderVersions :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id NSArray)
-supportedDecoderVersions cirawFilter  =
-    sendMsg cirawFilter (mkSelector "supportedDecoderVersions") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDecoderVersions cirawFilter =
+  sendMessage cirawFilter supportedDecoderVersionsSelector
 
 -- | @- properties@
 properties :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id NSDictionary)
-properties cirawFilter  =
-    sendMsg cirawFilter (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties cirawFilter =
+  sendMessage cirawFilter propertiesSelector
 
 -- | @- orientation@
 orientation :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CInt
-orientation cirawFilter  =
-    sendMsg cirawFilter (mkSelector "orientation") retCInt []
+orientation cirawFilter =
+  sendMessage cirawFilter orientationSelector
 
 -- | @- setOrientation:@
 setOrientation :: IsCIRAWFilter cirawFilter => cirawFilter -> CInt -> IO ()
-setOrientation cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setOrientation:") retVoid [argCInt (fromIntegral value)]
+setOrientation cirawFilter value =
+  sendMessage cirawFilter setOrientationSelector value
 
 -- | @- draftModeEnabled@
 draftModeEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-draftModeEnabled cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "draftModeEnabled") retCULong []
+draftModeEnabled cirawFilter =
+  sendMessage cirawFilter draftModeEnabledSelector
 
 -- | @- setDraftModeEnabled:@
 setDraftModeEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> Bool -> IO ()
-setDraftModeEnabled cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setDraftModeEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDraftModeEnabled cirawFilter value =
+  sendMessage cirawFilter setDraftModeEnabledSelector value
 
 -- | @- decoderVersion@
 decoderVersion :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id NSString)
-decoderVersion cirawFilter  =
-    sendMsg cirawFilter (mkSelector "decoderVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+decoderVersion cirawFilter =
+  sendMessage cirawFilter decoderVersionSelector
 
 -- | @- setDecoderVersion:@
 setDecoderVersion :: (IsCIRAWFilter cirawFilter, IsNSString value) => cirawFilter -> value -> IO ()
-setDecoderVersion cirawFilter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cirawFilter (mkSelector "setDecoderVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDecoderVersion cirawFilter value =
+  sendMessage cirawFilter setDecoderVersionSelector (toNSString value)
 
 -- | @- scaleFactor@
 scaleFactor :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-scaleFactor cirawFilter  =
-    sendMsg cirawFilter (mkSelector "scaleFactor") retCFloat []
+scaleFactor cirawFilter =
+  sendMessage cirawFilter scaleFactorSelector
 
 -- | @- setScaleFactor:@
 setScaleFactor :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setScaleFactor cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setScaleFactor:") retVoid [argCFloat value]
+setScaleFactor cirawFilter value =
+  sendMessage cirawFilter setScaleFactorSelector value
 
 -- | @- exposure@
 exposure :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-exposure cirawFilter  =
-    sendMsg cirawFilter (mkSelector "exposure") retCFloat []
+exposure cirawFilter =
+  sendMessage cirawFilter exposureSelector
 
 -- | @- setExposure:@
 setExposure :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setExposure cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setExposure:") retVoid [argCFloat value]
+setExposure cirawFilter value =
+  sendMessage cirawFilter setExposureSelector value
 
 -- | @- baselineExposure@
 baselineExposure :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-baselineExposure cirawFilter  =
-    sendMsg cirawFilter (mkSelector "baselineExposure") retCFloat []
+baselineExposure cirawFilter =
+  sendMessage cirawFilter baselineExposureSelector
 
 -- | @- setBaselineExposure:@
 setBaselineExposure :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setBaselineExposure cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setBaselineExposure:") retVoid [argCFloat value]
+setBaselineExposure cirawFilter value =
+  sendMessage cirawFilter setBaselineExposureSelector value
 
 -- | @- shadowBias@
 shadowBias :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-shadowBias cirawFilter  =
-    sendMsg cirawFilter (mkSelector "shadowBias") retCFloat []
+shadowBias cirawFilter =
+  sendMessage cirawFilter shadowBiasSelector
 
 -- | @- setShadowBias:@
 setShadowBias :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setShadowBias cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setShadowBias:") retVoid [argCFloat value]
+setShadowBias cirawFilter value =
+  sendMessage cirawFilter setShadowBiasSelector value
 
 -- | @- boostAmount@
 boostAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-boostAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "boostAmount") retCFloat []
+boostAmount cirawFilter =
+  sendMessage cirawFilter boostAmountSelector
 
 -- | @- setBoostAmount:@
 setBoostAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setBoostAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setBoostAmount:") retVoid [argCFloat value]
+setBoostAmount cirawFilter value =
+  sendMessage cirawFilter setBoostAmountSelector value
 
 -- | @- boostShadowAmount@
 boostShadowAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-boostShadowAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "boostShadowAmount") retCFloat []
+boostShadowAmount cirawFilter =
+  sendMessage cirawFilter boostShadowAmountSelector
 
 -- | @- setBoostShadowAmount:@
 setBoostShadowAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setBoostShadowAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setBoostShadowAmount:") retVoid [argCFloat value]
+setBoostShadowAmount cirawFilter value =
+  sendMessage cirawFilter setBoostShadowAmountSelector value
 
 -- | @- highlightRecoverySupported@
 highlightRecoverySupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-highlightRecoverySupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "highlightRecoverySupported") retCULong []
+highlightRecoverySupported cirawFilter =
+  sendMessage cirawFilter highlightRecoverySupportedSelector
 
 -- | @- highlightRecoveryEnabled@
 highlightRecoveryEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-highlightRecoveryEnabled cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "highlightRecoveryEnabled") retCULong []
+highlightRecoveryEnabled cirawFilter =
+  sendMessage cirawFilter highlightRecoveryEnabledSelector
 
 -- | @- setHighlightRecoveryEnabled:@
 setHighlightRecoveryEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> Bool -> IO ()
-setHighlightRecoveryEnabled cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setHighlightRecoveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setHighlightRecoveryEnabled cirawFilter value =
+  sendMessage cirawFilter setHighlightRecoveryEnabledSelector value
 
 -- | @- gamutMappingEnabled@
 gamutMappingEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-gamutMappingEnabled cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "gamutMappingEnabled") retCULong []
+gamutMappingEnabled cirawFilter =
+  sendMessage cirawFilter gamutMappingEnabledSelector
 
 -- | @- setGamutMappingEnabled:@
 setGamutMappingEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> Bool -> IO ()
-setGamutMappingEnabled cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setGamutMappingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setGamutMappingEnabled cirawFilter value =
+  sendMessage cirawFilter setGamutMappingEnabledSelector value
 
 -- | @- lensCorrectionSupported@
 lensCorrectionSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-lensCorrectionSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "lensCorrectionSupported") retCULong []
+lensCorrectionSupported cirawFilter =
+  sendMessage cirawFilter lensCorrectionSupportedSelector
 
 -- | @- lensCorrectionEnabled@
 lensCorrectionEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-lensCorrectionEnabled cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "lensCorrectionEnabled") retCULong []
+lensCorrectionEnabled cirawFilter =
+  sendMessage cirawFilter lensCorrectionEnabledSelector
 
 -- | @- setLensCorrectionEnabled:@
 setLensCorrectionEnabled :: IsCIRAWFilter cirawFilter => cirawFilter -> Bool -> IO ()
-setLensCorrectionEnabled cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setLensCorrectionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLensCorrectionEnabled cirawFilter value =
+  sendMessage cirawFilter setLensCorrectionEnabledSelector value
 
 -- | @- luminanceNoiseReductionSupported@
 luminanceNoiseReductionSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-luminanceNoiseReductionSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "luminanceNoiseReductionSupported") retCULong []
+luminanceNoiseReductionSupported cirawFilter =
+  sendMessage cirawFilter luminanceNoiseReductionSupportedSelector
 
 -- | @- luminanceNoiseReductionAmount@
 luminanceNoiseReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-luminanceNoiseReductionAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "luminanceNoiseReductionAmount") retCFloat []
+luminanceNoiseReductionAmount cirawFilter =
+  sendMessage cirawFilter luminanceNoiseReductionAmountSelector
 
 -- | @- setLuminanceNoiseReductionAmount:@
 setLuminanceNoiseReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setLuminanceNoiseReductionAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setLuminanceNoiseReductionAmount:") retVoid [argCFloat value]
+setLuminanceNoiseReductionAmount cirawFilter value =
+  sendMessage cirawFilter setLuminanceNoiseReductionAmountSelector value
 
 -- | @- colorNoiseReductionSupported@
 colorNoiseReductionSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-colorNoiseReductionSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "colorNoiseReductionSupported") retCULong []
+colorNoiseReductionSupported cirawFilter =
+  sendMessage cirawFilter colorNoiseReductionSupportedSelector
 
 -- | @- colorNoiseReductionAmount@
 colorNoiseReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-colorNoiseReductionAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "colorNoiseReductionAmount") retCFloat []
+colorNoiseReductionAmount cirawFilter =
+  sendMessage cirawFilter colorNoiseReductionAmountSelector
 
 -- | @- setColorNoiseReductionAmount:@
 setColorNoiseReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setColorNoiseReductionAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setColorNoiseReductionAmount:") retVoid [argCFloat value]
+setColorNoiseReductionAmount cirawFilter value =
+  sendMessage cirawFilter setColorNoiseReductionAmountSelector value
 
 -- | @- sharpnessSupported@
 sharpnessSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-sharpnessSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "sharpnessSupported") retCULong []
+sharpnessSupported cirawFilter =
+  sendMessage cirawFilter sharpnessSupportedSelector
 
 -- | @- sharpnessAmount@
 sharpnessAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-sharpnessAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "sharpnessAmount") retCFloat []
+sharpnessAmount cirawFilter =
+  sendMessage cirawFilter sharpnessAmountSelector
 
 -- | @- setSharpnessAmount:@
 setSharpnessAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setSharpnessAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setSharpnessAmount:") retVoid [argCFloat value]
+setSharpnessAmount cirawFilter value =
+  sendMessage cirawFilter setSharpnessAmountSelector value
 
 -- | @- contrastSupported@
 contrastSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-contrastSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "contrastSupported") retCULong []
+contrastSupported cirawFilter =
+  sendMessage cirawFilter contrastSupportedSelector
 
 -- | @- contrastAmount@
 contrastAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-contrastAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "contrastAmount") retCFloat []
+contrastAmount cirawFilter =
+  sendMessage cirawFilter contrastAmountSelector
 
 -- | @- setContrastAmount:@
 setContrastAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setContrastAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setContrastAmount:") retVoid [argCFloat value]
+setContrastAmount cirawFilter value =
+  sendMessage cirawFilter setContrastAmountSelector value
 
 -- | @- detailSupported@
 detailSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-detailSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "detailSupported") retCULong []
+detailSupported cirawFilter =
+  sendMessage cirawFilter detailSupportedSelector
 
 -- | @- detailAmount@
 detailAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-detailAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "detailAmount") retCFloat []
+detailAmount cirawFilter =
+  sendMessage cirawFilter detailAmountSelector
 
 -- | @- setDetailAmount:@
 setDetailAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setDetailAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setDetailAmount:") retVoid [argCFloat value]
+setDetailAmount cirawFilter value =
+  sendMessage cirawFilter setDetailAmountSelector value
 
 -- | @- moireReductionSupported@
 moireReductionSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-moireReductionSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "moireReductionSupported") retCULong []
+moireReductionSupported cirawFilter =
+  sendMessage cirawFilter moireReductionSupportedSelector
 
 -- | @- moireReductionAmount@
 moireReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-moireReductionAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "moireReductionAmount") retCFloat []
+moireReductionAmount cirawFilter =
+  sendMessage cirawFilter moireReductionAmountSelector
 
 -- | @- setMoireReductionAmount:@
 setMoireReductionAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setMoireReductionAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setMoireReductionAmount:") retVoid [argCFloat value]
+setMoireReductionAmount cirawFilter value =
+  sendMessage cirawFilter setMoireReductionAmountSelector value
 
 -- | @- localToneMapSupported@
 localToneMapSupported :: IsCIRAWFilter cirawFilter => cirawFilter -> IO Bool
-localToneMapSupported cirawFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cirawFilter (mkSelector "localToneMapSupported") retCULong []
+localToneMapSupported cirawFilter =
+  sendMessage cirawFilter localToneMapSupportedSelector
 
 -- | @- localToneMapAmount@
 localToneMapAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-localToneMapAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "localToneMapAmount") retCFloat []
+localToneMapAmount cirawFilter =
+  sendMessage cirawFilter localToneMapAmountSelector
 
 -- | @- setLocalToneMapAmount:@
 setLocalToneMapAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setLocalToneMapAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setLocalToneMapAmount:") retVoid [argCFloat value]
+setLocalToneMapAmount cirawFilter value =
+  sendMessage cirawFilter setLocalToneMapAmountSelector value
 
 -- | @- extendedDynamicRangeAmount@
 extendedDynamicRangeAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-extendedDynamicRangeAmount cirawFilter  =
-    sendMsg cirawFilter (mkSelector "extendedDynamicRangeAmount") retCFloat []
+extendedDynamicRangeAmount cirawFilter =
+  sendMessage cirawFilter extendedDynamicRangeAmountSelector
 
 -- | @- setExtendedDynamicRangeAmount:@
 setExtendedDynamicRangeAmount :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setExtendedDynamicRangeAmount cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setExtendedDynamicRangeAmount:") retVoid [argCFloat value]
+setExtendedDynamicRangeAmount cirawFilter value =
+  sendMessage cirawFilter setExtendedDynamicRangeAmountSelector value
 
 -- | @- neutralTemperature@
 neutralTemperature :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-neutralTemperature cirawFilter  =
-    sendMsg cirawFilter (mkSelector "neutralTemperature") retCFloat []
+neutralTemperature cirawFilter =
+  sendMessage cirawFilter neutralTemperatureSelector
 
 -- | @- setNeutralTemperature:@
 setNeutralTemperature :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setNeutralTemperature cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setNeutralTemperature:") retVoid [argCFloat value]
+setNeutralTemperature cirawFilter value =
+  sendMessage cirawFilter setNeutralTemperatureSelector value
 
 -- | @- neutralTint@
 neutralTint :: IsCIRAWFilter cirawFilter => cirawFilter -> IO CFloat
-neutralTint cirawFilter  =
-    sendMsg cirawFilter (mkSelector "neutralTint") retCFloat []
+neutralTint cirawFilter =
+  sendMessage cirawFilter neutralTintSelector
 
 -- | @- setNeutralTint:@
 setNeutralTint :: IsCIRAWFilter cirawFilter => cirawFilter -> CFloat -> IO ()
-setNeutralTint cirawFilter  value =
-    sendMsg cirawFilter (mkSelector "setNeutralTint:") retVoid [argCFloat value]
+setNeutralTint cirawFilter value =
+  sendMessage cirawFilter setNeutralTintSelector value
 
 -- | @- linearSpaceFilter@
 linearSpaceFilter :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIFilter)
-linearSpaceFilter cirawFilter  =
-    sendMsg cirawFilter (mkSelector "linearSpaceFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+linearSpaceFilter cirawFilter =
+  sendMessage cirawFilter linearSpaceFilterSelector
 
 -- | @- setLinearSpaceFilter:@
 setLinearSpaceFilter :: (IsCIRAWFilter cirawFilter, IsCIFilter value) => cirawFilter -> value -> IO ()
-setLinearSpaceFilter cirawFilter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cirawFilter (mkSelector "setLinearSpaceFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinearSpaceFilter cirawFilter value =
+  sendMessage cirawFilter setLinearSpaceFilterSelector (toCIFilter value)
 
 -- | @- previewImage@
 previewImage :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-previewImage cirawFilter  =
-    sendMsg cirawFilter (mkSelector "previewImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+previewImage cirawFilter =
+  sendMessage cirawFilter previewImageSelector
 
 -- | @- portraitEffectsMatte@
 portraitEffectsMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-portraitEffectsMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "portraitEffectsMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+portraitEffectsMatte cirawFilter =
+  sendMessage cirawFilter portraitEffectsMatteSelector
 
 -- | @- semanticSegmentationSkinMatte@
 semanticSegmentationSkinMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-semanticSegmentationSkinMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "semanticSegmentationSkinMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+semanticSegmentationSkinMatte cirawFilter =
+  sendMessage cirawFilter semanticSegmentationSkinMatteSelector
 
 -- | @- semanticSegmentationHairMatte@
 semanticSegmentationHairMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-semanticSegmentationHairMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "semanticSegmentationHairMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+semanticSegmentationHairMatte cirawFilter =
+  sendMessage cirawFilter semanticSegmentationHairMatteSelector
 
 -- | @- semanticSegmentationGlassesMatte@
 semanticSegmentationGlassesMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-semanticSegmentationGlassesMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "semanticSegmentationGlassesMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+semanticSegmentationGlassesMatte cirawFilter =
+  sendMessage cirawFilter semanticSegmentationGlassesMatteSelector
 
 -- | @- semanticSegmentationSkyMatte@
 semanticSegmentationSkyMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-semanticSegmentationSkyMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "semanticSegmentationSkyMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+semanticSegmentationSkyMatte cirawFilter =
+  sendMessage cirawFilter semanticSegmentationSkyMatteSelector
 
 -- | @- semanticSegmentationTeethMatte@
 semanticSegmentationTeethMatte :: IsCIRAWFilter cirawFilter => cirawFilter -> IO (Id CIImage)
-semanticSegmentationTeethMatte cirawFilter  =
-    sendMsg cirawFilter (mkSelector "semanticSegmentationTeethMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+semanticSegmentationTeethMatte cirawFilter =
+  sendMessage cirawFilter semanticSegmentationTeethMatteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterWithImageURL:@
-filterWithImageURLSelector :: Selector
+filterWithImageURLSelector :: Selector '[Id NSURL] (Id CIRAWFilter)
 filterWithImageURLSelector = mkSelector "filterWithImageURL:"
 
 -- | @Selector@ for @filterWithImageData:identifierHint:@
-filterWithImageData_identifierHintSelector :: Selector
+filterWithImageData_identifierHintSelector :: Selector '[Id NSData, Id NSString] (Id CIRAWFilter)
 filterWithImageData_identifierHintSelector = mkSelector "filterWithImageData:identifierHint:"
 
 -- | @Selector@ for @filterWithCVPixelBuffer:properties:@
-filterWithCVPixelBuffer_propertiesSelector :: Selector
+filterWithCVPixelBuffer_propertiesSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIRAWFilter)
 filterWithCVPixelBuffer_propertiesSelector = mkSelector "filterWithCVPixelBuffer:properties:"
 
 -- | @Selector@ for @supportedCameraModels@
-supportedCameraModelsSelector :: Selector
+supportedCameraModelsSelector :: Selector '[] (Id NSArray)
 supportedCameraModelsSelector = mkSelector "supportedCameraModels"
 
 -- | @Selector@ for @supportedDecoderVersions@
-supportedDecoderVersionsSelector :: Selector
+supportedDecoderVersionsSelector :: Selector '[] (Id NSArray)
 supportedDecoderVersionsSelector = mkSelector "supportedDecoderVersions"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] CInt
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[CInt] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @draftModeEnabled@
-draftModeEnabledSelector :: Selector
+draftModeEnabledSelector :: Selector '[] Bool
 draftModeEnabledSelector = mkSelector "draftModeEnabled"
 
 -- | @Selector@ for @setDraftModeEnabled:@
-setDraftModeEnabledSelector :: Selector
+setDraftModeEnabledSelector :: Selector '[Bool] ()
 setDraftModeEnabledSelector = mkSelector "setDraftModeEnabled:"
 
 -- | @Selector@ for @decoderVersion@
-decoderVersionSelector :: Selector
+decoderVersionSelector :: Selector '[] (Id NSString)
 decoderVersionSelector = mkSelector "decoderVersion"
 
 -- | @Selector@ for @setDecoderVersion:@
-setDecoderVersionSelector :: Selector
+setDecoderVersionSelector :: Selector '[Id NSString] ()
 setDecoderVersionSelector = mkSelector "setDecoderVersion:"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CFloat
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @setScaleFactor:@
-setScaleFactorSelector :: Selector
+setScaleFactorSelector :: Selector '[CFloat] ()
 setScaleFactorSelector = mkSelector "setScaleFactor:"
 
 -- | @Selector@ for @exposure@
-exposureSelector :: Selector
+exposureSelector :: Selector '[] CFloat
 exposureSelector = mkSelector "exposure"
 
 -- | @Selector@ for @setExposure:@
-setExposureSelector :: Selector
+setExposureSelector :: Selector '[CFloat] ()
 setExposureSelector = mkSelector "setExposure:"
 
 -- | @Selector@ for @baselineExposure@
-baselineExposureSelector :: Selector
+baselineExposureSelector :: Selector '[] CFloat
 baselineExposureSelector = mkSelector "baselineExposure"
 
 -- | @Selector@ for @setBaselineExposure:@
-setBaselineExposureSelector :: Selector
+setBaselineExposureSelector :: Selector '[CFloat] ()
 setBaselineExposureSelector = mkSelector "setBaselineExposure:"
 
 -- | @Selector@ for @shadowBias@
-shadowBiasSelector :: Selector
+shadowBiasSelector :: Selector '[] CFloat
 shadowBiasSelector = mkSelector "shadowBias"
 
 -- | @Selector@ for @setShadowBias:@
-setShadowBiasSelector :: Selector
+setShadowBiasSelector :: Selector '[CFloat] ()
 setShadowBiasSelector = mkSelector "setShadowBias:"
 
 -- | @Selector@ for @boostAmount@
-boostAmountSelector :: Selector
+boostAmountSelector :: Selector '[] CFloat
 boostAmountSelector = mkSelector "boostAmount"
 
 -- | @Selector@ for @setBoostAmount:@
-setBoostAmountSelector :: Selector
+setBoostAmountSelector :: Selector '[CFloat] ()
 setBoostAmountSelector = mkSelector "setBoostAmount:"
 
 -- | @Selector@ for @boostShadowAmount@
-boostShadowAmountSelector :: Selector
+boostShadowAmountSelector :: Selector '[] CFloat
 boostShadowAmountSelector = mkSelector "boostShadowAmount"
 
 -- | @Selector@ for @setBoostShadowAmount:@
-setBoostShadowAmountSelector :: Selector
+setBoostShadowAmountSelector :: Selector '[CFloat] ()
 setBoostShadowAmountSelector = mkSelector "setBoostShadowAmount:"
 
 -- | @Selector@ for @highlightRecoverySupported@
-highlightRecoverySupportedSelector :: Selector
+highlightRecoverySupportedSelector :: Selector '[] Bool
 highlightRecoverySupportedSelector = mkSelector "highlightRecoverySupported"
 
 -- | @Selector@ for @highlightRecoveryEnabled@
-highlightRecoveryEnabledSelector :: Selector
+highlightRecoveryEnabledSelector :: Selector '[] Bool
 highlightRecoveryEnabledSelector = mkSelector "highlightRecoveryEnabled"
 
 -- | @Selector@ for @setHighlightRecoveryEnabled:@
-setHighlightRecoveryEnabledSelector :: Selector
+setHighlightRecoveryEnabledSelector :: Selector '[Bool] ()
 setHighlightRecoveryEnabledSelector = mkSelector "setHighlightRecoveryEnabled:"
 
 -- | @Selector@ for @gamutMappingEnabled@
-gamutMappingEnabledSelector :: Selector
+gamutMappingEnabledSelector :: Selector '[] Bool
 gamutMappingEnabledSelector = mkSelector "gamutMappingEnabled"
 
 -- | @Selector@ for @setGamutMappingEnabled:@
-setGamutMappingEnabledSelector :: Selector
+setGamutMappingEnabledSelector :: Selector '[Bool] ()
 setGamutMappingEnabledSelector = mkSelector "setGamutMappingEnabled:"
 
 -- | @Selector@ for @lensCorrectionSupported@
-lensCorrectionSupportedSelector :: Selector
+lensCorrectionSupportedSelector :: Selector '[] Bool
 lensCorrectionSupportedSelector = mkSelector "lensCorrectionSupported"
 
 -- | @Selector@ for @lensCorrectionEnabled@
-lensCorrectionEnabledSelector :: Selector
+lensCorrectionEnabledSelector :: Selector '[] Bool
 lensCorrectionEnabledSelector = mkSelector "lensCorrectionEnabled"
 
 -- | @Selector@ for @setLensCorrectionEnabled:@
-setLensCorrectionEnabledSelector :: Selector
+setLensCorrectionEnabledSelector :: Selector '[Bool] ()
 setLensCorrectionEnabledSelector = mkSelector "setLensCorrectionEnabled:"
 
 -- | @Selector@ for @luminanceNoiseReductionSupported@
-luminanceNoiseReductionSupportedSelector :: Selector
+luminanceNoiseReductionSupportedSelector :: Selector '[] Bool
 luminanceNoiseReductionSupportedSelector = mkSelector "luminanceNoiseReductionSupported"
 
 -- | @Selector@ for @luminanceNoiseReductionAmount@
-luminanceNoiseReductionAmountSelector :: Selector
+luminanceNoiseReductionAmountSelector :: Selector '[] CFloat
 luminanceNoiseReductionAmountSelector = mkSelector "luminanceNoiseReductionAmount"
 
 -- | @Selector@ for @setLuminanceNoiseReductionAmount:@
-setLuminanceNoiseReductionAmountSelector :: Selector
+setLuminanceNoiseReductionAmountSelector :: Selector '[CFloat] ()
 setLuminanceNoiseReductionAmountSelector = mkSelector "setLuminanceNoiseReductionAmount:"
 
 -- | @Selector@ for @colorNoiseReductionSupported@
-colorNoiseReductionSupportedSelector :: Selector
+colorNoiseReductionSupportedSelector :: Selector '[] Bool
 colorNoiseReductionSupportedSelector = mkSelector "colorNoiseReductionSupported"
 
 -- | @Selector@ for @colorNoiseReductionAmount@
-colorNoiseReductionAmountSelector :: Selector
+colorNoiseReductionAmountSelector :: Selector '[] CFloat
 colorNoiseReductionAmountSelector = mkSelector "colorNoiseReductionAmount"
 
 -- | @Selector@ for @setColorNoiseReductionAmount:@
-setColorNoiseReductionAmountSelector :: Selector
+setColorNoiseReductionAmountSelector :: Selector '[CFloat] ()
 setColorNoiseReductionAmountSelector = mkSelector "setColorNoiseReductionAmount:"
 
 -- | @Selector@ for @sharpnessSupported@
-sharpnessSupportedSelector :: Selector
+sharpnessSupportedSelector :: Selector '[] Bool
 sharpnessSupportedSelector = mkSelector "sharpnessSupported"
 
 -- | @Selector@ for @sharpnessAmount@
-sharpnessAmountSelector :: Selector
+sharpnessAmountSelector :: Selector '[] CFloat
 sharpnessAmountSelector = mkSelector "sharpnessAmount"
 
 -- | @Selector@ for @setSharpnessAmount:@
-setSharpnessAmountSelector :: Selector
+setSharpnessAmountSelector :: Selector '[CFloat] ()
 setSharpnessAmountSelector = mkSelector "setSharpnessAmount:"
 
 -- | @Selector@ for @contrastSupported@
-contrastSupportedSelector :: Selector
+contrastSupportedSelector :: Selector '[] Bool
 contrastSupportedSelector = mkSelector "contrastSupported"
 
 -- | @Selector@ for @contrastAmount@
-contrastAmountSelector :: Selector
+contrastAmountSelector :: Selector '[] CFloat
 contrastAmountSelector = mkSelector "contrastAmount"
 
 -- | @Selector@ for @setContrastAmount:@
-setContrastAmountSelector :: Selector
+setContrastAmountSelector :: Selector '[CFloat] ()
 setContrastAmountSelector = mkSelector "setContrastAmount:"
 
 -- | @Selector@ for @detailSupported@
-detailSupportedSelector :: Selector
+detailSupportedSelector :: Selector '[] Bool
 detailSupportedSelector = mkSelector "detailSupported"
 
 -- | @Selector@ for @detailAmount@
-detailAmountSelector :: Selector
+detailAmountSelector :: Selector '[] CFloat
 detailAmountSelector = mkSelector "detailAmount"
 
 -- | @Selector@ for @setDetailAmount:@
-setDetailAmountSelector :: Selector
+setDetailAmountSelector :: Selector '[CFloat] ()
 setDetailAmountSelector = mkSelector "setDetailAmount:"
 
 -- | @Selector@ for @moireReductionSupported@
-moireReductionSupportedSelector :: Selector
+moireReductionSupportedSelector :: Selector '[] Bool
 moireReductionSupportedSelector = mkSelector "moireReductionSupported"
 
 -- | @Selector@ for @moireReductionAmount@
-moireReductionAmountSelector :: Selector
+moireReductionAmountSelector :: Selector '[] CFloat
 moireReductionAmountSelector = mkSelector "moireReductionAmount"
 
 -- | @Selector@ for @setMoireReductionAmount:@
-setMoireReductionAmountSelector :: Selector
+setMoireReductionAmountSelector :: Selector '[CFloat] ()
 setMoireReductionAmountSelector = mkSelector "setMoireReductionAmount:"
 
 -- | @Selector@ for @localToneMapSupported@
-localToneMapSupportedSelector :: Selector
+localToneMapSupportedSelector :: Selector '[] Bool
 localToneMapSupportedSelector = mkSelector "localToneMapSupported"
 
 -- | @Selector@ for @localToneMapAmount@
-localToneMapAmountSelector :: Selector
+localToneMapAmountSelector :: Selector '[] CFloat
 localToneMapAmountSelector = mkSelector "localToneMapAmount"
 
 -- | @Selector@ for @setLocalToneMapAmount:@
-setLocalToneMapAmountSelector :: Selector
+setLocalToneMapAmountSelector :: Selector '[CFloat] ()
 setLocalToneMapAmountSelector = mkSelector "setLocalToneMapAmount:"
 
 -- | @Selector@ for @extendedDynamicRangeAmount@
-extendedDynamicRangeAmountSelector :: Selector
+extendedDynamicRangeAmountSelector :: Selector '[] CFloat
 extendedDynamicRangeAmountSelector = mkSelector "extendedDynamicRangeAmount"
 
 -- | @Selector@ for @setExtendedDynamicRangeAmount:@
-setExtendedDynamicRangeAmountSelector :: Selector
+setExtendedDynamicRangeAmountSelector :: Selector '[CFloat] ()
 setExtendedDynamicRangeAmountSelector = mkSelector "setExtendedDynamicRangeAmount:"
 
 -- | @Selector@ for @neutralTemperature@
-neutralTemperatureSelector :: Selector
+neutralTemperatureSelector :: Selector '[] CFloat
 neutralTemperatureSelector = mkSelector "neutralTemperature"
 
 -- | @Selector@ for @setNeutralTemperature:@
-setNeutralTemperatureSelector :: Selector
+setNeutralTemperatureSelector :: Selector '[CFloat] ()
 setNeutralTemperatureSelector = mkSelector "setNeutralTemperature:"
 
 -- | @Selector@ for @neutralTint@
-neutralTintSelector :: Selector
+neutralTintSelector :: Selector '[] CFloat
 neutralTintSelector = mkSelector "neutralTint"
 
 -- | @Selector@ for @setNeutralTint:@
-setNeutralTintSelector :: Selector
+setNeutralTintSelector :: Selector '[CFloat] ()
 setNeutralTintSelector = mkSelector "setNeutralTint:"
 
 -- | @Selector@ for @linearSpaceFilter@
-linearSpaceFilterSelector :: Selector
+linearSpaceFilterSelector :: Selector '[] (Id CIFilter)
 linearSpaceFilterSelector = mkSelector "linearSpaceFilter"
 
 -- | @Selector@ for @setLinearSpaceFilter:@
-setLinearSpaceFilterSelector :: Selector
+setLinearSpaceFilterSelector :: Selector '[Id CIFilter] ()
 setLinearSpaceFilterSelector = mkSelector "setLinearSpaceFilter:"
 
 -- | @Selector@ for @previewImage@
-previewImageSelector :: Selector
+previewImageSelector :: Selector '[] (Id CIImage)
 previewImageSelector = mkSelector "previewImage"
 
 -- | @Selector@ for @portraitEffectsMatte@
-portraitEffectsMatteSelector :: Selector
+portraitEffectsMatteSelector :: Selector '[] (Id CIImage)
 portraitEffectsMatteSelector = mkSelector "portraitEffectsMatte"
 
 -- | @Selector@ for @semanticSegmentationSkinMatte@
-semanticSegmentationSkinMatteSelector :: Selector
+semanticSegmentationSkinMatteSelector :: Selector '[] (Id CIImage)
 semanticSegmentationSkinMatteSelector = mkSelector "semanticSegmentationSkinMatte"
 
 -- | @Selector@ for @semanticSegmentationHairMatte@
-semanticSegmentationHairMatteSelector :: Selector
+semanticSegmentationHairMatteSelector :: Selector '[] (Id CIImage)
 semanticSegmentationHairMatteSelector = mkSelector "semanticSegmentationHairMatte"
 
 -- | @Selector@ for @semanticSegmentationGlassesMatte@
-semanticSegmentationGlassesMatteSelector :: Selector
+semanticSegmentationGlassesMatteSelector :: Selector '[] (Id CIImage)
 semanticSegmentationGlassesMatteSelector = mkSelector "semanticSegmentationGlassesMatte"
 
 -- | @Selector@ for @semanticSegmentationSkyMatte@
-semanticSegmentationSkyMatteSelector :: Selector
+semanticSegmentationSkyMatteSelector :: Selector '[] (Id CIImage)
 semanticSegmentationSkyMatteSelector = mkSelector "semanticSegmentationSkyMatte"
 
 -- | @Selector@ for @semanticSegmentationTeethMatte@
-semanticSegmentationTeethMatteSelector :: Selector
+semanticSegmentationTeethMatteSelector :: Selector '[] (Id CIImage)
 semanticSegmentationTeethMatteSelector = mkSelector "semanticSegmentationTeethMatte"
 

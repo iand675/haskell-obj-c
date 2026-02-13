@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTREthernetNetworkDiagnosticsClusterResetCountsParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTREthernetNetworkDiagnosticsClusterResetCountsParams mtrEthernetNetworkDiagnosticsClusterResetCountsParams => mtrEthernetNetworkDiagnosticsClusterResetCountsParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams  =
-    sendMsg mtrEthernetNetworkDiagnosticsClusterResetCountsParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams =
+  sendMessage mtrEthernetNetworkDiagnosticsClusterResetCountsParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,9 +49,8 @@ timedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTREthernetNetworkDiagnosticsClusterResetCountsParams mtrEthernetNetworkDiagnosticsClusterResetCountsParams, IsNSNumber value) => mtrEthernetNetworkDiagnosticsClusterResetCountsParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEthernetNetworkDiagnosticsClusterResetCountsParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams value =
+  sendMessage mtrEthernetNetworkDiagnosticsClusterResetCountsParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -64,8 +60,8 @@ setTimedInvokeTimeoutMs mtrEthernetNetworkDiagnosticsClusterResetCountsParams  v
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTREthernetNetworkDiagnosticsClusterResetCountsParams mtrEthernetNetworkDiagnosticsClusterResetCountsParams => mtrEthernetNetworkDiagnosticsClusterResetCountsParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrEthernetNetworkDiagnosticsClusterResetCountsParams  =
-    sendMsg mtrEthernetNetworkDiagnosticsClusterResetCountsParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrEthernetNetworkDiagnosticsClusterResetCountsParams =
+  sendMessage mtrEthernetNetworkDiagnosticsClusterResetCountsParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -75,27 +71,26 @@ serverSideProcessingTimeout mtrEthernetNetworkDiagnosticsClusterResetCountsParam
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTREthernetNetworkDiagnosticsClusterResetCountsParams mtrEthernetNetworkDiagnosticsClusterResetCountsParams, IsNSNumber value) => mtrEthernetNetworkDiagnosticsClusterResetCountsParams -> value -> IO ()
-setServerSideProcessingTimeout mtrEthernetNetworkDiagnosticsClusterResetCountsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEthernetNetworkDiagnosticsClusterResetCountsParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrEthernetNetworkDiagnosticsClusterResetCountsParams value =
+  sendMessage mtrEthernetNetworkDiagnosticsClusterResetCountsParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

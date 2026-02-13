@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.PHASE.PHASENumericPair
   , setFirst
   , second
   , setSecond
-  , initWithFirstValue_secondValueSelector
   , firstSelector
-  , setFirstSelector
+  , initWithFirstValue_secondValueSelector
   , secondSelector
+  , setFirstSelector
   , setSecondSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFirstValue:secondValue:@
 initWithFirstValue_secondValue :: IsPHASENumericPair phaseNumericPair => phaseNumericPair -> CDouble -> CDouble -> IO (Id PHASENumericPair)
-initWithFirstValue_secondValue phaseNumericPair  first second =
-    sendMsg phaseNumericPair (mkSelector "initWithFirstValue:secondValue:") (retPtr retVoid) [argCDouble first, argCDouble second] >>= ownedObject . castPtr
+initWithFirstValue_secondValue phaseNumericPair first second =
+  sendOwnedMessage phaseNumericPair initWithFirstValue_secondValueSelector first second
 
 -- | first
 --
@@ -64,8 +61,8 @@ initWithFirstValue_secondValue phaseNumericPair  first second =
 --
 -- ObjC selector: @- first@
 first :: IsPHASENumericPair phaseNumericPair => phaseNumericPair -> IO CDouble
-first phaseNumericPair  =
-    sendMsg phaseNumericPair (mkSelector "first") retCDouble []
+first phaseNumericPair =
+  sendMessage phaseNumericPair firstSelector
 
 -- | first
 --
@@ -75,8 +72,8 @@ first phaseNumericPair  =
 --
 -- ObjC selector: @- setFirst:@
 setFirst :: IsPHASENumericPair phaseNumericPair => phaseNumericPair -> CDouble -> IO ()
-setFirst phaseNumericPair  value =
-    sendMsg phaseNumericPair (mkSelector "setFirst:") retVoid [argCDouble value]
+setFirst phaseNumericPair value =
+  sendMessage phaseNumericPair setFirstSelector value
 
 -- | second
 --
@@ -86,8 +83,8 @@ setFirst phaseNumericPair  value =
 --
 -- ObjC selector: @- second@
 second :: IsPHASENumericPair phaseNumericPair => phaseNumericPair -> IO CDouble
-second phaseNumericPair  =
-    sendMsg phaseNumericPair (mkSelector "second") retCDouble []
+second phaseNumericPair =
+  sendMessage phaseNumericPair secondSelector
 
 -- | second
 --
@@ -97,30 +94,30 @@ second phaseNumericPair  =
 --
 -- ObjC selector: @- setSecond:@
 setSecond :: IsPHASENumericPair phaseNumericPair => phaseNumericPair -> CDouble -> IO ()
-setSecond phaseNumericPair  value =
-    sendMsg phaseNumericPair (mkSelector "setSecond:") retVoid [argCDouble value]
+setSecond phaseNumericPair value =
+  sendMessage phaseNumericPair setSecondSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFirstValue:secondValue:@
-initWithFirstValue_secondValueSelector :: Selector
+initWithFirstValue_secondValueSelector :: Selector '[CDouble, CDouble] (Id PHASENumericPair)
 initWithFirstValue_secondValueSelector = mkSelector "initWithFirstValue:secondValue:"
 
 -- | @Selector@ for @first@
-firstSelector :: Selector
+firstSelector :: Selector '[] CDouble
 firstSelector = mkSelector "first"
 
 -- | @Selector@ for @setFirst:@
-setFirstSelector :: Selector
+setFirstSelector :: Selector '[CDouble] ()
 setFirstSelector = mkSelector "setFirst:"
 
 -- | @Selector@ for @second@
-secondSelector :: Selector
+secondSelector :: Selector '[] CDouble
 secondSelector = mkSelector "second"
 
 -- | @Selector@ for @setSecond:@
-setSecondSelector :: Selector
+setSecondSelector :: Selector '[CDouble] ()
 setSecondSelector = mkSelector "setSecond:"
 

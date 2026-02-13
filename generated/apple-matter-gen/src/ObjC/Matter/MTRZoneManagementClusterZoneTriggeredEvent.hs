@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRZoneManagementClusterZoneTriggeredEvent
   , setZone
   , reason
   , setReason
-  , zoneSelector
-  , setZoneSelector
   , reasonSelector
   , setReasonSelector
+  , setZoneSelector
+  , zoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- zone@
 zone :: IsMTRZoneManagementClusterZoneTriggeredEvent mtrZoneManagementClusterZoneTriggeredEvent => mtrZoneManagementClusterZoneTriggeredEvent -> IO (Id NSNumber)
-zone mtrZoneManagementClusterZoneTriggeredEvent  =
-    sendMsg mtrZoneManagementClusterZoneTriggeredEvent (mkSelector "zone") (retPtr retVoid) [] >>= retainedObject . castPtr
+zone mtrZoneManagementClusterZoneTriggeredEvent =
+  sendMessage mtrZoneManagementClusterZoneTriggeredEvent zoneSelector
 
 -- | @- setZone:@
 setZone :: (IsMTRZoneManagementClusterZoneTriggeredEvent mtrZoneManagementClusterZoneTriggeredEvent, IsNSNumber value) => mtrZoneManagementClusterZoneTriggeredEvent -> value -> IO ()
-setZone mtrZoneManagementClusterZoneTriggeredEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterZoneTriggeredEvent (mkSelector "setZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZone mtrZoneManagementClusterZoneTriggeredEvent value =
+  sendMessage mtrZoneManagementClusterZoneTriggeredEvent setZoneSelector (toNSNumber value)
 
 -- | @- reason@
 reason :: IsMTRZoneManagementClusterZoneTriggeredEvent mtrZoneManagementClusterZoneTriggeredEvent => mtrZoneManagementClusterZoneTriggeredEvent -> IO (Id NSNumber)
-reason mtrZoneManagementClusterZoneTriggeredEvent  =
-    sendMsg mtrZoneManagementClusterZoneTriggeredEvent (mkSelector "reason") (retPtr retVoid) [] >>= retainedObject . castPtr
+reason mtrZoneManagementClusterZoneTriggeredEvent =
+  sendMessage mtrZoneManagementClusterZoneTriggeredEvent reasonSelector
 
 -- | @- setReason:@
 setReason :: (IsMTRZoneManagementClusterZoneTriggeredEvent mtrZoneManagementClusterZoneTriggeredEvent, IsNSNumber value) => mtrZoneManagementClusterZoneTriggeredEvent -> value -> IO ()
-setReason mtrZoneManagementClusterZoneTriggeredEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterZoneTriggeredEvent (mkSelector "setReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReason mtrZoneManagementClusterZoneTriggeredEvent value =
+  sendMessage mtrZoneManagementClusterZoneTriggeredEvent setReasonSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @zone@
-zoneSelector :: Selector
+zoneSelector :: Selector '[] (Id NSNumber)
 zoneSelector = mkSelector "zone"
 
 -- | @Selector@ for @setZone:@
-setZoneSelector :: Selector
+setZoneSelector :: Selector '[Id NSNumber] ()
 setZoneSelector = mkSelector "setZone:"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] (Id NSNumber)
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @setReason:@
-setReasonSelector :: Selector
+setReasonSelector :: Selector '[Id NSNumber] ()
 setReasonSelector = mkSelector "setReason:"
 

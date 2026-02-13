@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayAffineInt4Dequantize
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNDArrayAffineInt4Dequantize mpsndArrayAffineInt4Dequantize => mpsndArrayAffineInt4Dequantize -> RawId -> IO (Id MPSNDArrayAffineInt4Dequantize)
-initWithDevice mpsndArrayAffineInt4Dequantize  device =
-    sendMsg mpsndArrayAffineInt4Dequantize (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsndArrayAffineInt4Dequantize device =
+  sendOwnedMessage mpsndArrayAffineInt4Dequantize initWithDeviceSelector device
 
 -- | Initializes a kernel for 4-bit affine dequantization.
 --
@@ -54,28 +51,27 @@ initWithDevice mpsndArrayAffineInt4Dequantize  device =
 --
 -- ObjC selector: @- initWithDevice:quantizationDescriptor:@
 initWithDevice_quantizationDescriptor :: (IsMPSNDArrayAffineInt4Dequantize mpsndArrayAffineInt4Dequantize, IsMPSNDArrayAffineQuantizationDescriptor quantizationDescriptor) => mpsndArrayAffineInt4Dequantize -> RawId -> quantizationDescriptor -> IO (Id MPSNDArrayAffineInt4Dequantize)
-initWithDevice_quantizationDescriptor mpsndArrayAffineInt4Dequantize  device quantizationDescriptor =
-  withObjCPtr quantizationDescriptor $ \raw_quantizationDescriptor ->
-      sendMsg mpsndArrayAffineInt4Dequantize (mkSelector "initWithDevice:quantizationDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_quantizationDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_quantizationDescriptor mpsndArrayAffineInt4Dequantize device quantizationDescriptor =
+  sendOwnedMessage mpsndArrayAffineInt4Dequantize initWithDevice_quantizationDescriptorSelector device (toMPSNDArrayAffineQuantizationDescriptor quantizationDescriptor)
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayAffineInt4Dequantize mpsndArrayAffineInt4Dequantize => mpsndArrayAffineInt4Dequantize -> RawId -> CULong -> IO (Id MPSNDArrayAffineInt4Dequantize)
-initWithDevice_sourceCount mpsndArrayAffineInt4Dequantize  device sourceCount =
-    sendMsg mpsndArrayAffineInt4Dequantize (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong sourceCount] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayAffineInt4Dequantize device sourceCount =
+  sendOwnedMessage mpsndArrayAffineInt4Dequantize initWithDevice_sourceCountSelector device sourceCount
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNDArrayAffineInt4Dequantize)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:quantizationDescriptor:@
-initWithDevice_quantizationDescriptorSelector :: Selector
+initWithDevice_quantizationDescriptorSelector :: Selector '[RawId, Id MPSNDArrayAffineQuantizationDescriptor] (Id MPSNDArrayAffineInt4Dequantize)
 initWithDevice_quantizationDescriptorSelector = mkSelector "initWithDevice:quantizationDescriptor:"
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayAffineInt4Dequantize)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,21 +33,17 @@ module ObjC.CoreAudioKit.AUAudioUnit
   , supportedViewConfigurations
   , selectViewConfiguration
   , requestViewControllerWithCompletionHandlerSelector
-  , supportedViewConfigurationsSelector
   , selectViewConfigurationSelector
+  , supportedViewConfigurationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestViewControllerWithCompletionHandler:@
 requestViewControllerWithCompletionHandler :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-requestViewControllerWithCompletionHandler auAudioUnit  completionHandler =
-    sendMsg auAudioUnit (mkSelector "requestViewControllerWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestViewControllerWithCompletionHandler auAudioUnit completionHandler =
+  sendMessage auAudioUnit requestViewControllerWithCompletionHandlerSelector completionHandler
 
 -- | supportedViewConfigurations
 --
@@ -81,9 +78,8 @@ requestViewControllerWithCompletionHandler auAudioUnit  completionHandler =
 --
 -- ObjC selector: @- supportedViewConfigurations:@
 supportedViewConfigurations :: (IsAUAudioUnit auAudioUnit, IsNSArray availableViewConfigurations) => auAudioUnit -> availableViewConfigurations -> IO (Id NSIndexSet)
-supportedViewConfigurations auAudioUnit  availableViewConfigurations =
-  withObjCPtr availableViewConfigurations $ \raw_availableViewConfigurations ->
-      sendMsg auAudioUnit (mkSelector "supportedViewConfigurations:") (retPtr retVoid) [argPtr (castPtr raw_availableViewConfigurations :: Ptr ())] >>= retainedObject . castPtr
+supportedViewConfigurations auAudioUnit availableViewConfigurations =
+  sendMessage auAudioUnit supportedViewConfigurationsSelector (toNSArray availableViewConfigurations)
 
 -- | selectViewConfiguration
 --
@@ -97,23 +93,22 @@ supportedViewConfigurations auAudioUnit  availableViewConfigurations =
 --
 -- ObjC selector: @- selectViewConfiguration:@
 selectViewConfiguration :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitViewConfiguration viewConfiguration) => auAudioUnit -> viewConfiguration -> IO ()
-selectViewConfiguration auAudioUnit  viewConfiguration =
-  withObjCPtr viewConfiguration $ \raw_viewConfiguration ->
-      sendMsg auAudioUnit (mkSelector "selectViewConfiguration:") retVoid [argPtr (castPtr raw_viewConfiguration :: Ptr ())]
+selectViewConfiguration auAudioUnit viewConfiguration =
+  sendMessage auAudioUnit selectViewConfigurationSelector (toAUAudioUnitViewConfiguration viewConfiguration)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestViewControllerWithCompletionHandler:@
-requestViewControllerWithCompletionHandlerSelector :: Selector
+requestViewControllerWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestViewControllerWithCompletionHandlerSelector = mkSelector "requestViewControllerWithCompletionHandler:"
 
 -- | @Selector@ for @supportedViewConfigurations:@
-supportedViewConfigurationsSelector :: Selector
+supportedViewConfigurationsSelector :: Selector '[Id NSArray] (Id NSIndexSet)
 supportedViewConfigurationsSelector = mkSelector "supportedViewConfigurations:"
 
 -- | @Selector@ for @selectViewConfiguration:@
-selectViewConfigurationSelector :: Selector
+selectViewConfigurationSelector :: Selector '[Id AUAudioUnitViewConfiguration] ()
 selectViewConfigurationSelector = mkSelector "selectViewConfiguration:"
 

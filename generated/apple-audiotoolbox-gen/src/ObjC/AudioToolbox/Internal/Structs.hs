@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreAudioTypes.Internal.Structs
 import ObjC.AudioToolbox.Internal.Enums
 
@@ -42,6 +44,16 @@ argAUChannelInfo = mkStorableArg auChannelInfoStructType
 retAUChannelInfo :: RetType AUChannelInfo
 retAUChannelInfo = mkStorableRetType auChannelInfoStructType
 
+instance ObjCArgument AUChannelInfo where
+  withObjCArg x k = k (argAUChannelInfo x)
+
+instance ObjCReturn AUChannelInfo where
+  type RawReturn AUChannelInfo = AUChannelInfo
+  objcRetType = retAUChannelInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUDependentParameter
 --
 -- Used to represent a dependent parameter that can change as a result of its parent meta-parameter					changing
@@ -69,6 +81,16 @@ argAUDependentParameter = mkStorableArg auDependentParameterStructType
 retAUDependentParameter :: RetType AUDependentParameter
 retAUDependentParameter = mkStorableRetType auDependentParameterStructType
 
+instance ObjCArgument AUDependentParameter where
+  withObjCArg x k = k (argAUDependentParameter x)
+
+instance ObjCReturn AUDependentParameter where
+  type RawReturn AUDependentParameter = AUDependentParameter
+  objcRetType = retAUDependentParameter
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AUDistanceAttenuationData = AUDistanceAttenuationData
   { auDistanceAttenuationDataInNumberOfPairs :: !CUInt
   , auDistanceAttenuationDataPairs :: !(Ptr ())
@@ -92,6 +114,16 @@ argAUDistanceAttenuationData = mkStorableArg auDistanceAttenuationDataStructType
 
 retAUDistanceAttenuationData :: RetType AUDistanceAttenuationData
 retAUDistanceAttenuationData = mkStorableRetType auDistanceAttenuationDataStructType
+
+instance ObjCArgument AUDistanceAttenuationData where
+  withObjCArg x k = k (argAUDistanceAttenuationData x)
+
+instance ObjCReturn AUDistanceAttenuationData where
+  type RawReturn AUDistanceAttenuationData = AUDistanceAttenuationData
+  objcRetType = retAUDistanceAttenuationData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AUHostVersionIdentifier
 --
@@ -120,6 +152,16 @@ argAUHostVersionIdentifier = mkStorableArg auHostVersionIdentifierStructType
 retAUHostVersionIdentifier :: RetType AUHostVersionIdentifier
 retAUHostVersionIdentifier = mkStorableRetType auHostVersionIdentifierStructType
 
+instance ObjCArgument AUHostVersionIdentifier where
+  withObjCArg x k = k (argAUHostVersionIdentifier x)
+
+instance ObjCReturn AUHostVersionIdentifier where
+  type RawReturn AUHostVersionIdentifier = AUHostVersionIdentifier
+  objcRetType = retAUHostVersionIdentifier
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUInputSamplesInOutputCallbackStruct
 --
 -- Used by a host when registering a callback with an audio unit, to provide 					input-to-output samples mapping
@@ -146,6 +188,16 @@ argAUInputSamplesInOutputCallbackStruct = mkStorableArg auInputSamplesInOutputCa
 
 retAUInputSamplesInOutputCallbackStruct :: RetType AUInputSamplesInOutputCallbackStruct
 retAUInputSamplesInOutputCallbackStruct = mkStorableRetType auInputSamplesInOutputCallbackStructStructType
+
+instance ObjCArgument AUInputSamplesInOutputCallbackStruct where
+  withObjCArg x k = k (argAUInputSamplesInOutputCallbackStruct x)
+
+instance ObjCReturn AUInputSamplesInOutputCallbackStruct where
+  type RawReturn AUInputSamplesInOutputCallbackStruct = AUInputSamplesInOutputCallbackStruct
+  objcRetType = retAUInputSamplesInOutputCallbackStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | Describes a single scheduled MIDIEventList.
 data AUMIDIEventList = AUMIDIEventList
@@ -184,6 +236,16 @@ argAUMIDIEventList = mkStorableArg aumidiEventListStructType
 retAUMIDIEventList :: RetType AUMIDIEventList
 retAUMIDIEventList = mkStorableRetType aumidiEventListStructType
 
+instance ObjCArgument AUMIDIEventList where
+  withObjCArg x k = k (argAUMIDIEventList x)
+
+instance ObjCReturn AUMIDIEventList where
+  type RawReturn AUMIDIEventList = AUMIDIEventList
+  objcRetType = retAUMIDIEventList
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUMIDIOutputCallbackStruct
 --
 -- Set by host application to provide the callback and user data for an audio 					unit that provides MIDI output
@@ -210,6 +272,16 @@ argAUMIDIOutputCallbackStruct = mkStorableArg aumidiOutputCallbackStructStructTy
 
 retAUMIDIOutputCallbackStruct :: RetType AUMIDIOutputCallbackStruct
 retAUMIDIOutputCallbackStruct = mkStorableRetType aumidiOutputCallbackStructStructType
+
+instance ObjCArgument AUMIDIOutputCallbackStruct where
+  withObjCArg x k = k (argAUMIDIOutputCallbackStruct x)
+
+instance ObjCReturn AUMIDIOutputCallbackStruct where
+  type RawReturn AUMIDIOutputCallbackStruct = AUMIDIOutputCallbackStruct
+  objcRetType = retAUMIDIOutputCallbackStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitNodeConnection
 --
@@ -252,6 +324,16 @@ argAUNodeConnection = mkStorableArg auNodeConnectionStructType
 retAUNodeConnection :: RetType AUNodeConnection
 retAUNodeConnection = mkStorableRetType auNodeConnectionStructType
 
+instance ObjCArgument AUNodeConnection where
+  withObjCArg x k = k (argAUNodeConnection x)
+
+instance ObjCReturn AUNodeConnection where
+  type RawReturn AUNodeConnection = AUNodeConnection
+  objcRetType = retAUNodeConnection
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AUNumVersion = AUNumVersion
   { auNumVersionNonRelRev :: !CUChar
   , auNumVersionStage :: !CUChar
@@ -281,6 +363,16 @@ argAUNumVersion = mkStorableArg auNumVersionStructType
 
 retAUNumVersion :: RetType AUNumVersion
 retAUNumVersion = mkStorableRetType auNumVersionStructType
+
+instance ObjCArgument AUNumVersion where
+  withObjCArg x k = k (argAUNumVersion x)
+
+instance ObjCReturn AUNumVersion where
+  type RawReturn AUNumVersion = AUNumVersion
+  objcRetType = retAUNumVersion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AUParameterAutomationEvent
 --
@@ -317,6 +409,16 @@ argAUParameterAutomationEvent = mkStorableArg auParameterAutomationEventStructTy
 
 retAUParameterAutomationEvent :: RetType AUParameterAutomationEvent
 retAUParameterAutomationEvent = mkStorableRetType auParameterAutomationEventStructType
+
+instance ObjCArgument AUParameterAutomationEvent where
+  withObjCArg x k = k (argAUParameterAutomationEvent x)
+
+instance ObjCReturn AUParameterAutomationEvent where
+  type RawReturn AUParameterAutomationEvent = AUParameterAutomationEvent
+  objcRetType = retAUParameterAutomationEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AUParameterMIDIMapping
 --
@@ -374,6 +476,16 @@ argAUParameterMIDIMapping = mkStorableArg auParameterMIDIMappingStructType
 retAUParameterMIDIMapping :: RetType AUParameterMIDIMapping
 retAUParameterMIDIMapping = mkStorableRetType auParameterMIDIMappingStructType
 
+instance ObjCArgument AUParameterMIDIMapping where
+  withObjCArg x k = k (argAUParameterMIDIMapping x)
+
+instance ObjCReturn AUParameterMIDIMapping where
+  type RawReturn AUParameterMIDIMapping = AUParameterMIDIMapping
+  objcRetType = retAUParameterMIDIMapping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUPreset
 --
 -- Used to publish and set factory presets on an audio unit
@@ -409,6 +521,16 @@ argAUPreset = mkStorableArg auPresetStructType
 retAUPreset :: RetType AUPreset
 retAUPreset = mkStorableRetType auPresetStructType
 
+instance ObjCArgument AUPreset where
+  withObjCArg x k = k (argAUPreset x)
+
+instance ObjCReturn AUPreset where
+  type RawReturn AUPreset = AUPreset
+  objcRetType = retAUPreset
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUPresetEvent
 --
 -- The parameters to specify a preset for an audio unit.
@@ -438,6 +560,16 @@ argAUPresetEvent = mkStorableArg auPresetEventStructType
 
 retAUPresetEvent :: RetType AUPresetEvent
 retAUPresetEvent = mkStorableRetType auPresetEventStructType
+
+instance ObjCArgument AUPresetEvent where
+  withObjCArg x k = k (argAUPresetEvent x)
+
+instance ObjCReturn AUPresetEvent where
+  type RawReturn AUPresetEvent = AUPresetEvent
+  objcRetType = retAUPresetEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AURecordedParameterEvent
 --
@@ -469,6 +601,16 @@ argAURecordedParameterEvent = mkStorableArg auRecordedParameterEventStructType
 retAURecordedParameterEvent :: RetType AURecordedParameterEvent
 retAURecordedParameterEvent = mkStorableRetType auRecordedParameterEventStructType
 
+instance ObjCArgument AURecordedParameterEvent where
+  withObjCArg x k = k (argAURecordedParameterEvent x)
+
+instance ObjCReturn AURecordedParameterEvent where
+  type RawReturn AURecordedParameterEvent = AURecordedParameterEvent
+  objcRetType = retAURecordedParameterEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AURenderCallbackStruct
 --
 -- Used by a host when registering a callback with the audio unit to provide input
@@ -495,6 +637,16 @@ argAURenderCallbackStruct = mkStorableArg auRenderCallbackStructStructType
 
 retAURenderCallbackStruct :: RetType AURenderCallbackStruct
 retAURenderCallbackStruct = mkStorableRetType auRenderCallbackStructStructType
+
+instance ObjCArgument AURenderCallbackStruct where
+  withObjCArg x k = k (argAURenderCallbackStruct x)
+
+instance ObjCReturn AURenderCallbackStruct where
+  type RawReturn AURenderCallbackStruct = AURenderCallbackStruct
+  objcRetType = retAURenderCallbackStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | Common header for an AURenderEvent.
 data AURenderEventHeader = AURenderEventHeader
@@ -526,6 +678,16 @@ argAURenderEventHeader = mkStorableArg auRenderEventHeaderStructType
 
 retAURenderEventHeader :: RetType AURenderEventHeader
 retAURenderEventHeader = mkStorableRetType auRenderEventHeaderStructType
+
+instance ObjCArgument AURenderEventHeader where
+  withObjCArg x k = k (argAURenderEventHeader x)
+
+instance ObjCReturn AURenderEventHeader where
+  type RawReturn AURenderEventHeader = AURenderEventHeader
+  objcRetType = retAURenderEventHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AUSamplerBankPresetData = AUSamplerBankPresetData
   { auSamplerBankPresetDataBankURL :: !(Ptr ())
@@ -560,6 +722,16 @@ argAUSamplerBankPresetData = mkStorableArg auSamplerBankPresetDataStructType
 retAUSamplerBankPresetData :: RetType AUSamplerBankPresetData
 retAUSamplerBankPresetData = mkStorableRetType auSamplerBankPresetDataStructType
 
+instance ObjCArgument AUSamplerBankPresetData where
+  withObjCArg x k = k (argAUSamplerBankPresetData x)
+
+instance ObjCReturn AUSamplerBankPresetData where
+  type RawReturn AUSamplerBankPresetData = AUSamplerBankPresetData
+  objcRetType = retAUSamplerBankPresetData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AUSamplerInstrumentData = AUSamplerInstrumentData
   { auSamplerInstrumentDataFileURL :: !(Ptr ())
   , auSamplerInstrumentDataInstrumentType :: !CUChar
@@ -592,6 +764,16 @@ argAUSamplerInstrumentData = mkStorableArg auSamplerInstrumentDataStructType
 
 retAUSamplerInstrumentData :: RetType AUSamplerInstrumentData
 retAUSamplerInstrumentData = mkStorableRetType auSamplerInstrumentDataStructType
+
+instance ObjCArgument AUSamplerInstrumentData where
+  withObjCArg x k = k (argAUSamplerInstrumentData x)
+
+instance ObjCReturn AUSamplerInstrumentData where
+  type RawReturn AUSamplerInstrumentData = AUSamplerInstrumentData
+  objcRetType = retAUSamplerInstrumentData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AUVoiceIOOtherAudioDuckingConfiguration
 --
@@ -627,6 +809,16 @@ argAUVoiceIOOtherAudioDuckingConfiguration = mkStorableArg auVoiceIOOtherAudioDu
 
 retAUVoiceIOOtherAudioDuckingConfiguration :: RetType AUVoiceIOOtherAudioDuckingConfiguration
 retAUVoiceIOOtherAudioDuckingConfiguration = mkStorableRetType auVoiceIOOtherAudioDuckingConfigurationStructType
+
+instance ObjCArgument AUVoiceIOOtherAudioDuckingConfiguration where
+  withObjCArg x k = k (argAUVoiceIOOtherAudioDuckingConfiguration x)
+
+instance ObjCReturn AUVoiceIOOtherAudioDuckingConfiguration where
+  type RawReturn AUVoiceIOOtherAudioDuckingConfiguration = AUVoiceIOOtherAudioDuckingConfiguration
+  objcRetType = retAUVoiceIOOtherAudioDuckingConfiguration
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioBytePacketTranslation
 --
@@ -671,6 +863,16 @@ argAudioBytePacketTranslation = mkStorableArg audioBytePacketTranslationStructTy
 retAudioBytePacketTranslation :: RetType AudioBytePacketTranslation
 retAudioBytePacketTranslation = mkStorableRetType audioBytePacketTranslationStructType
 
+instance ObjCArgument AudioBytePacketTranslation where
+  withObjCArg x k = k (argAudioBytePacketTranslation x)
+
+instance ObjCReturn AudioBytePacketTranslation where
+  type RawReturn AudioBytePacketTranslation = AudioBytePacketTranslation
+  objcRetType = retAudioBytePacketTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioCodecMagicCookieInfo
 --
 -- Structure holding the magic cookie information.
@@ -708,6 +910,16 @@ argAudioCodecMagicCookieInfo = mkStorableArg audioCodecMagicCookieInfoStructType
 retAudioCodecMagicCookieInfo :: RetType AudioCodecMagicCookieInfo
 retAudioCodecMagicCookieInfo = mkStorableRetType audioCodecMagicCookieInfoStructType
 
+instance ObjCArgument AudioCodecMagicCookieInfo where
+  withObjCArg x k = k (argAudioCodecMagicCookieInfo x)
+
+instance ObjCReturn AudioCodecMagicCookieInfo where
+  type RawReturn AudioCodecMagicCookieInfo = AudioCodecMagicCookieInfo
+  objcRetType = retAudioCodecMagicCookieInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioCodecPrimeInfo
 --
 -- Specifies the number of leading and trailing empty frames					which have to be inserted.
@@ -743,6 +955,16 @@ argAudioCodecPrimeInfo = mkStorableArg audioCodecPrimeInfoStructType
 retAudioCodecPrimeInfo :: RetType AudioCodecPrimeInfo
 retAudioCodecPrimeInfo = mkStorableRetType audioCodecPrimeInfoStructType
 
+instance ObjCArgument AudioCodecPrimeInfo where
+  withObjCArg x k = k (argAudioCodecPrimeInfo x)
+
+instance ObjCReturn AudioCodecPrimeInfo where
+  type RawReturn AudioCodecPrimeInfo = AudioCodecPrimeInfo
+  objcRetType = retAudioCodecPrimeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AudioComponentDescription = AudioComponentDescription
   { audioComponentDescriptionComponentType :: !CUInt
   , audioComponentDescriptionComponentSubType :: !CUInt
@@ -775,6 +997,16 @@ argAudioComponentDescription = mkStorableArg audioComponentDescriptionStructType
 
 retAudioComponentDescription :: RetType AudioComponentDescription
 retAudioComponentDescription = mkStorableRetType audioComponentDescriptionStructType
+
+instance ObjCArgument AudioComponentDescription where
+  withObjCArg x k = k (argAudioComponentDescription x)
+
+instance ObjCReturn AudioComponentDescription where
+  type RawReturn AudioComponentDescription = AudioComponentDescription
+  objcRetType = retAudioComponentDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioComponentPlugInInterface
 --
@@ -825,6 +1057,16 @@ argAudioComponentPlugInInterface = mkStorableArg audioComponentPlugInInterfaceSt
 retAudioComponentPlugInInterface :: RetType AudioComponentPlugInInterface
 retAudioComponentPlugInInterface = mkStorableRetType audioComponentPlugInInterfaceStructType
 
+instance ObjCArgument AudioComponentPlugInInterface where
+  withObjCArg x k = k (argAudioComponentPlugInInterface x)
+
+instance ObjCReturn AudioComponentPlugInInterface where
+  type RawReturn AudioComponentPlugInInterface = AudioComponentPlugInInterface
+  objcRetType = retAudioComponentPlugInInterface
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioConverterPrimeInfo
 --
 -- Specifies priming information.
@@ -871,6 +1113,16 @@ argAudioConverterPrimeInfo = mkStorableArg audioConverterPrimeInfoStructType
 
 retAudioConverterPrimeInfo :: RetType AudioConverterPrimeInfo
 retAudioConverterPrimeInfo = mkStorableRetType audioConverterPrimeInfoStructType
+
+instance ObjCArgument AudioConverterPrimeInfo where
+  withObjCArg x k = k (argAudioConverterPrimeInfo x)
+
+instance ObjCReturn AudioConverterPrimeInfo where
+  type RawReturn AudioConverterPrimeInfo = AudioConverterPrimeInfo
+  objcRetType = retAudioConverterPrimeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AudioFileFDFTable = AudioFileFDFTable
   { audioFileFDFTableMComponentStorage :: !(Ptr ())
@@ -925,6 +1177,16 @@ argAudioFileFDFTable = mkStorableArg audioFileFDFTableStructType
 
 retAudioFileFDFTable :: RetType AudioFileFDFTable
 retAudioFileFDFTable = mkStorableRetType audioFileFDFTableStructType
+
+instance ObjCArgument AudioFileFDFTable where
+  withObjCArg x k = k (argAudioFileFDFTable x)
+
+instance ObjCReturn AudioFileFDFTable where
+  type RawReturn AudioFileFDFTable = AudioFileFDFTable
+  objcRetType = retAudioFileFDFTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AudioFileFDFTableExtended = AudioFileFDFTableExtended
   { audioFileFDFTableExtendedMComponentStorage :: !(Ptr ())
@@ -983,6 +1245,16 @@ argAudioFileFDFTableExtended = mkStorableArg audioFileFDFTableExtendedStructType
 retAudioFileFDFTableExtended :: RetType AudioFileFDFTableExtended
 retAudioFileFDFTableExtended = mkStorableRetType audioFileFDFTableExtendedStructType
 
+instance ObjCArgument AudioFileFDFTableExtended where
+  withObjCArg x k = k (argAudioFileFDFTableExtended x)
+
+instance ObjCReturn AudioFileFDFTableExtended where
+  type RawReturn AudioFileFDFTableExtended = AudioFileFDFTableExtended
+  objcRetType = retAudioFileFDFTableExtended
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioFilePacketTableInfo
 --
 -- This contains information about the number of valid frames in a file and where they begin and end.
@@ -1021,6 +1293,16 @@ argAudioFilePacketTableInfo = mkStorableArg audioFilePacketTableInfoStructType
 retAudioFilePacketTableInfo :: RetType AudioFilePacketTableInfo
 retAudioFilePacketTableInfo = mkStorableRetType audioFilePacketTableInfoStructType
 
+instance ObjCArgument AudioFilePacketTableInfo where
+  withObjCArg x k = k (argAudioFilePacketTableInfo x)
+
+instance ObjCReturn AudioFilePacketTableInfo where
+  type RawReturn AudioFilePacketTableInfo = AudioFilePacketTableInfo
+  objcRetType = retAudioFilePacketTableInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioFileTypeAndFormatID
 --
 -- This is used as a specifier for kAudioFileGlobalInfo_AvailableStreamDescriptions
@@ -1057,6 +1339,16 @@ argAudioFileTypeAndFormatID = mkStorableArg audioFileTypeAndFormatIDStructType
 
 retAudioFileTypeAndFormatID :: RetType AudioFileTypeAndFormatID
 retAudioFileTypeAndFormatID = mkStorableRetType audioFileTypeAndFormatIDStructType
+
+instance ObjCArgument AudioFileTypeAndFormatID where
+  withObjCArg x k = k (argAudioFileTypeAndFormatID x)
+
+instance ObjCReturn AudioFileTypeAndFormatID where
+  type RawReturn AudioFileTypeAndFormatID = AudioFileTypeAndFormatID
+  objcRetType = retAudioFileTypeAndFormatID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioFile_SMPTE_Time
 --
@@ -1104,6 +1396,16 @@ argAudioFile_SMPTE_Time = mkStorableArg audioFile_SMPTE_TimeStructType
 retAudioFile_SMPTE_Time :: RetType AudioFile_SMPTE_Time
 retAudioFile_SMPTE_Time = mkStorableRetType audioFile_SMPTE_TimeStructType
 
+instance ObjCArgument AudioFile_SMPTE_Time where
+  withObjCArg x k = k (argAudioFile_SMPTE_Time x)
+
+instance ObjCReturn AudioFile_SMPTE_Time where
+  type RawReturn AudioFile_SMPTE_Time = AudioFile_SMPTE_Time
+  objcRetType = retAudioFile_SMPTE_Time
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioFramePacketTranslation
 --
 -- used for properties kAudioFilePropertyPacketToFrame and kAudioFilePropertyFrameToPacket
@@ -1142,6 +1444,16 @@ argAudioFramePacketTranslation = mkStorableArg audioFramePacketTranslationStruct
 retAudioFramePacketTranslation :: RetType AudioFramePacketTranslation
 retAudioFramePacketTranslation = mkStorableRetType audioFramePacketTranslationStructType
 
+instance ObjCArgument AudioFramePacketTranslation where
+  withObjCArg x k = k (argAudioFramePacketTranslation x)
+
+instance ObjCReturn AudioFramePacketTranslation where
+  type RawReturn AudioFramePacketTranslation = AudioFramePacketTranslation
+  objcRetType = retAudioFramePacketTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioIndependentPacketTranslation
 --
 -- used for property kAudioFilePropertyPreviousIndependentPacket and kAudioFilePropertyNextIndependentPacket
@@ -1175,6 +1487,16 @@ argAudioIndependentPacketTranslation = mkStorableArg audioIndependentPacketTrans
 retAudioIndependentPacketTranslation :: RetType AudioIndependentPacketTranslation
 retAudioIndependentPacketTranslation = mkStorableRetType audioIndependentPacketTranslationStructType
 
+instance ObjCArgument AudioIndependentPacketTranslation where
+  withObjCArg x k = k (argAudioIndependentPacketTranslation x)
+
+instance ObjCReturn AudioIndependentPacketTranslation where
+  type RawReturn AudioIndependentPacketTranslation = AudioIndependentPacketTranslation
+  objcRetType = retAudioIndependentPacketTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioOutputUnitMIDICallbacks
 --
 -- For inter-app audio, callbacks for receiving MIDI messages.
@@ -1206,6 +1528,16 @@ argAudioOutputUnitMIDICallbacks = mkStorableArg audioOutputUnitMIDICallbacksStru
 
 retAudioOutputUnitMIDICallbacks :: RetType AudioOutputUnitMIDICallbacks
 retAudioOutputUnitMIDICallbacks = mkStorableRetType audioOutputUnitMIDICallbacksStructType
+
+instance ObjCArgument AudioOutputUnitMIDICallbacks where
+  withObjCArg x k = k (argAudioOutputUnitMIDICallbacks x)
+
+instance ObjCReturn AudioOutputUnitMIDICallbacks where
+  type RawReturn AudioOutputUnitMIDICallbacks = AudioOutputUnitMIDICallbacks
+  objcRetType = retAudioOutputUnitMIDICallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioPacketDependencyInfoTranslation
 --
@@ -1245,6 +1577,16 @@ argAudioPacketDependencyInfoTranslation = mkStorableArg audioPacketDependencyInf
 retAudioPacketDependencyInfoTranslation :: RetType AudioPacketDependencyInfoTranslation
 retAudioPacketDependencyInfoTranslation = mkStorableRetType audioPacketDependencyInfoTranslationStructType
 
+instance ObjCArgument AudioPacketDependencyInfoTranslation where
+  withObjCArg x k = k (argAudioPacketDependencyInfoTranslation x)
+
+instance ObjCReturn AudioPacketDependencyInfoTranslation where
+  type RawReturn AudioPacketDependencyInfoTranslation = AudioPacketDependencyInfoTranslation
+  objcRetType = retAudioPacketDependencyInfoTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioPacketRangeByteCountTranslation
 --
 -- used for property kAudioFilePropertyPacketRangeByteCountUpperBound
@@ -1283,6 +1625,16 @@ argAudioPacketRangeByteCountTranslation = mkStorableArg audioPacketRangeByteCoun
 retAudioPacketRangeByteCountTranslation :: RetType AudioPacketRangeByteCountTranslation
 retAudioPacketRangeByteCountTranslation = mkStorableRetType audioPacketRangeByteCountTranslationStructType
 
+instance ObjCArgument AudioPacketRangeByteCountTranslation where
+  withObjCArg x k = k (argAudioPacketRangeByteCountTranslation x)
+
+instance ObjCReturn AudioPacketRangeByteCountTranslation where
+  type RawReturn AudioPacketRangeByteCountTranslation = AudioPacketRangeByteCountTranslation
+  objcRetType = retAudioPacketRangeByteCountTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioPacketRollDistanceTranslation
 --
 -- used for property kAudioFilePropertyPacketToRollDistance
@@ -1315,6 +1667,16 @@ argAudioPacketRollDistanceTranslation = mkStorableArg audioPacketRollDistanceTra
 
 retAudioPacketRollDistanceTranslation :: RetType AudioPacketRollDistanceTranslation
 retAudioPacketRollDistanceTranslation = mkStorableRetType audioPacketRollDistanceTranslationStructType
+
+instance ObjCArgument AudioPacketRollDistanceTranslation where
+  withObjCArg x k = k (argAudioPacketRollDistanceTranslation x)
+
+instance ObjCReturn AudioPacketRollDistanceTranslation where
+  type RawReturn AudioPacketRollDistanceTranslation = AudioPacketRollDistanceTranslation
+  objcRetType = retAudioPacketRollDistanceTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioQueueChannelAssignment
 --
@@ -1351,6 +1713,16 @@ argAudioQueueChannelAssignment = mkStorableArg audioQueueChannelAssignmentStruct
 retAudioQueueChannelAssignment :: RetType AudioQueueChannelAssignment
 retAudioQueueChannelAssignment = mkStorableRetType audioQueueChannelAssignmentStructType
 
+instance ObjCArgument AudioQueueChannelAssignment where
+  withObjCArg x k = k (argAudioQueueChannelAssignment x)
+
+instance ObjCReturn AudioQueueChannelAssignment where
+  type RawReturn AudioQueueChannelAssignment = AudioQueueChannelAssignment
+  objcRetType = retAudioQueueChannelAssignment
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioQueueLevelMeterState
 --
 -- Specifies the current level metering information for one channel of an audio queue.
@@ -1385,6 +1757,16 @@ argAudioQueueLevelMeterState = mkStorableArg audioQueueLevelMeterStateStructType
 
 retAudioQueueLevelMeterState :: RetType AudioQueueLevelMeterState
 retAudioQueueLevelMeterState = mkStorableRetType audioQueueLevelMeterStateStructType
+
+instance ObjCArgument AudioQueueLevelMeterState where
+  withObjCArg x k = k (argAudioQueueLevelMeterState x)
+
+instance ObjCReturn AudioQueueLevelMeterState where
+  type RawReturn AudioQueueLevelMeterState = AudioQueueLevelMeterState
+  objcRetType = retAudioQueueLevelMeterState
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioQueueParameterEvent
 --
@@ -1431,6 +1813,16 @@ argAudioQueueParameterEvent = mkStorableArg audioQueueParameterEventStructType
 retAudioQueueParameterEvent :: RetType AudioQueueParameterEvent
 retAudioQueueParameterEvent = mkStorableRetType audioQueueParameterEventStructType
 
+instance ObjCArgument AudioQueueParameterEvent where
+  withObjCArg x k = k (argAudioQueueParameterEvent x)
+
+instance ObjCReturn AudioQueueParameterEvent where
+  type RawReturn AudioQueueParameterEvent = AudioQueueParameterEvent
+  objcRetType = retAudioQueueParameterEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitConnection
 --
 -- This structure contains the information needed to make a connection between a source					and destination audio unit.
@@ -1475,6 +1867,16 @@ argAudioUnitConnection = mkStorableArg audioUnitConnectionStructType
 retAudioUnitConnection :: RetType AudioUnitConnection
 retAudioUnitConnection = mkStorableRetType audioUnitConnectionStructType
 
+instance ObjCArgument AudioUnitConnection where
+  withObjCArg x k = k (argAudioUnitConnection x)
+
+instance ObjCReturn AudioUnitConnection where
+  type RawReturn AudioUnitConnection = AudioUnitConnection
+  objcRetType = retAudioUnitConnection
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitFrequencyResponseBin
 --
 -- Structure used to get the magnitude of the frequency response at a particular frequency via kAudioUnitProperty_FrequencyResponse.
@@ -1503,6 +1905,16 @@ argAudioUnitFrequencyResponseBin = mkStorableArg audioUnitFrequencyResponseBinSt
 
 retAudioUnitFrequencyResponseBin :: RetType AudioUnitFrequencyResponseBin
 retAudioUnitFrequencyResponseBin = mkStorableRetType audioUnitFrequencyResponseBinStructType
+
+instance ObjCArgument AudioUnitFrequencyResponseBin where
+  withObjCArg x k = k (argAudioUnitFrequencyResponseBin x)
+
+instance ObjCReturn AudioUnitFrequencyResponseBin where
+  type RawReturn AudioUnitFrequencyResponseBin = AudioUnitFrequencyResponseBin
+  objcRetType = retAudioUnitFrequencyResponseBin
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AudioUnitMIDIControlMapping = AudioUnitMIDIControlMapping
   { audioUnitMIDIControlMappingMidiNRPN :: !CUShort
@@ -1536,6 +1948,16 @@ argAudioUnitMIDIControlMapping = mkStorableArg audioUnitMIDIControlMappingStruct
 
 retAudioUnitMIDIControlMapping :: RetType AudioUnitMIDIControlMapping
 retAudioUnitMIDIControlMapping = mkStorableRetType audioUnitMIDIControlMappingStructType
+
+instance ObjCArgument AudioUnitMIDIControlMapping where
+  withObjCArg x k = k (argAudioUnitMIDIControlMapping x)
+
+instance ObjCReturn AudioUnitMIDIControlMapping where
+  type RawReturn AudioUnitMIDIControlMapping = AudioUnitMIDIControlMapping
+  objcRetType = retAudioUnitMIDIControlMapping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitMeterClipping
 --
@@ -1577,6 +1999,16 @@ argAudioUnitMeterClipping = mkStorableArg audioUnitMeterClippingStructType
 retAudioUnitMeterClipping :: RetType AudioUnitMeterClipping
 retAudioUnitMeterClipping = mkStorableRetType audioUnitMeterClippingStructType
 
+instance ObjCArgument AudioUnitMeterClipping where
+  withObjCArg x k = k (argAudioUnitMeterClipping x)
+
+instance ObjCReturn AudioUnitMeterClipping where
+  type RawReturn AudioUnitMeterClipping = AudioUnitMeterClipping
+  objcRetType = retAudioUnitMeterClipping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitNodeConnection
 --
 -- A connection between two nodes
@@ -1617,6 +2049,16 @@ argAudioUnitNodeConnection = mkStorableArg audioUnitNodeConnectionStructType
 
 retAudioUnitNodeConnection :: RetType AudioUnitNodeConnection
 retAudioUnitNodeConnection = mkStorableRetType audioUnitNodeConnectionStructType
+
+instance ObjCArgument AudioUnitNodeConnection where
+  withObjCArg x k = k (argAudioUnitNodeConnection x)
+
+instance ObjCReturn AudioUnitNodeConnection where
+  type RawReturn AudioUnitNodeConnection = AudioUnitNodeConnection
+  objcRetType = retAudioUnitNodeConnection
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitParameter
 --
@@ -1667,6 +2109,16 @@ argAudioUnitParameter = mkStorableArg audioUnitParameterStructType
 retAudioUnitParameter :: RetType AudioUnitParameter
 retAudioUnitParameter = mkStorableRetType audioUnitParameterStructType
 
+instance ObjCArgument AudioUnitParameter where
+  withObjCArg x k = k (argAudioUnitParameter x)
+
+instance ObjCReturn AudioUnitParameter where
+  type RawReturn AudioUnitParameter = AudioUnitParameter
+  objcRetType = retAudioUnitParameter
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitParameterHistoryInfo
 --
 -- This structure contains the suggested update rate and history duration for parameters which have the kAudioUnitParameterFlag_PlotHistory flag set.					The structure is filled out by getting kAudioUnitProperty_ParameterHistoryInfo.
@@ -1702,6 +2154,16 @@ argAudioUnitParameterHistoryInfo = mkStorableArg audioUnitParameterHistoryInfoSt
 retAudioUnitParameterHistoryInfo :: RetType AudioUnitParameterHistoryInfo
 retAudioUnitParameterHistoryInfo = mkStorableRetType audioUnitParameterHistoryInfoStructType
 
+instance ObjCArgument AudioUnitParameterHistoryInfo where
+  withObjCArg x k = k (argAudioUnitParameterHistoryInfo x)
+
+instance ObjCReturn AudioUnitParameterHistoryInfo where
+  type RawReturn AudioUnitParameterHistoryInfo = AudioUnitParameterHistoryInfo
+  objcRetType = retAudioUnitParameterHistoryInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitParameterNameInfo
 --
 -- Used to provide shorter names for a specified parameter
@@ -1731,6 +2193,16 @@ argAudioUnitParameterIDName = mkStorableArg audioUnitParameterIDNameStructType
 
 retAudioUnitParameterIDName :: RetType AudioUnitParameterIDName
 retAudioUnitParameterIDName = mkStorableRetType audioUnitParameterIDNameStructType
+
+instance ObjCArgument AudioUnitParameterIDName where
+  withObjCArg x k = k (argAudioUnitParameterIDName x)
+
+instance ObjCReturn AudioUnitParameterIDName where
+  type RawReturn AudioUnitParameterIDName = AudioUnitParameterIDName
+  objcRetType = retAudioUnitParameterIDName
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitParameterNameInfo
 --
@@ -1762,6 +2234,16 @@ argAudioUnitParameterNameInfo = mkStorableArg audioUnitParameterNameInfoStructTy
 retAudioUnitParameterNameInfo :: RetType AudioUnitParameterNameInfo
 retAudioUnitParameterNameInfo = mkStorableRetType audioUnitParameterNameInfoStructType
 
+instance ObjCArgument AudioUnitParameterNameInfo where
+  withObjCArg x k = k (argAudioUnitParameterNameInfo x)
+
+instance ObjCReturn AudioUnitParameterNameInfo where
+  type RawReturn AudioUnitParameterNameInfo = AudioUnitParameterNameInfo
+  objcRetType = retAudioUnitParameterNameInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitParameterValueFromString
 --
 -- Provide the parameter's value for a given string representation of it
@@ -1791,6 +2273,16 @@ argAudioUnitParameterValueFromString = mkStorableArg audioUnitParameterValueFrom
 
 retAudioUnitParameterValueFromString :: RetType AudioUnitParameterValueFromString
 retAudioUnitParameterValueFromString = mkStorableRetType audioUnitParameterValueFromStringStructType
+
+instance ObjCArgument AudioUnitParameterValueFromString where
+  withObjCArg x k = k (argAudioUnitParameterValueFromString x)
+
+instance ObjCReturn AudioUnitParameterValueFromString where
+  type RawReturn AudioUnitParameterValueFromString = AudioUnitParameterValueFromString
+  objcRetType = retAudioUnitParameterValueFromString
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitProperty
 --
@@ -1840,6 +2332,16 @@ argAudioUnitProperty = mkStorableArg audioUnitPropertyStructType
 
 retAudioUnitProperty :: RetType AudioUnitProperty
 retAudioUnitProperty = mkStorableRetType audioUnitPropertyStructType
+
+instance ObjCArgument AudioUnitProperty where
+  withObjCArg x k = k (argAudioUnitProperty x)
+
+instance ObjCReturn AudioUnitProperty where
+  type RawReturn AudioUnitProperty = AudioUnitProperty
+  objcRetType = retAudioUnitProperty
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | CABarBeatTime
 --
@@ -1901,6 +2403,16 @@ argCABarBeatTime = mkStorableArg caBarBeatTimeStructType
 retCABarBeatTime :: RetType CABarBeatTime
 retCABarBeatTime = mkStorableRetType caBarBeatTimeStructType
 
+instance ObjCArgument CABarBeatTime where
+  withObjCArg x k = k (argCABarBeatTime x)
+
+instance ObjCReturn CABarBeatTime where
+  type RawReturn CABarBeatTime = CABarBeatTime
+  objcRetType = retCABarBeatTime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFAudioDescription = CAFAudioDescription
   { cafAudioDescriptionMSampleRate :: !CDouble
   , cafAudioDescriptionMFormatID :: !CUInt
@@ -1940,6 +2452,16 @@ argCAFAudioDescription = mkStorableArg cafAudioDescriptionStructType
 retCAFAudioDescription :: RetType CAFAudioDescription
 retCAFAudioDescription = mkStorableRetType cafAudioDescriptionStructType
 
+instance ObjCArgument CAFAudioDescription where
+  withObjCArg x k = k (argCAFAudioDescription x)
+
+instance ObjCReturn CAFAudioDescription where
+  type RawReturn CAFAudioDescription = CAFAudioDescription
+  objcRetType = retCAFAudioDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFChunkHeader = CAFChunkHeader
   { cafChunkHeaderMChunkType :: !CUInt
   , cafChunkHeaderMChunkSize :: !CLong
@@ -1963,6 +2485,16 @@ argCAFChunkHeader = mkStorableArg cafChunkHeaderStructType
 
 retCAFChunkHeader :: RetType CAFChunkHeader
 retCAFChunkHeader = mkStorableRetType cafChunkHeaderStructType
+
+instance ObjCArgument CAFChunkHeader where
+  withObjCArg x k = k (argCAFChunkHeader x)
+
+instance ObjCReturn CAFChunkHeader where
+  type RawReturn CAFChunkHeader = CAFChunkHeader
+  objcRetType = retCAFChunkHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CAFFileHeader = CAFFileHeader
   { cafFileHeaderMFileType :: !CUInt
@@ -1991,6 +2523,16 @@ argCAFFileHeader = mkStorableArg cafFileHeaderStructType
 retCAFFileHeader :: RetType CAFFileHeader
 retCAFFileHeader = mkStorableRetType cafFileHeaderStructType
 
+instance ObjCArgument CAFFileHeader where
+  withObjCArg x k = k (argCAFFileHeader x)
+
+instance ObjCReturn CAFFileHeader where
+  type RawReturn CAFFileHeader = CAFFileHeader
+  objcRetType = retCAFFileHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFInfoStrings = CAFInfoStrings
   { cafInfoStringsMNumEntries :: !CUInt
   } deriving (Eq, Show)
@@ -2011,6 +2553,16 @@ argCAFInfoStrings = mkStorableArg cafInfoStringsStructType
 
 retCAFInfoStrings :: RetType CAFInfoStrings
 retCAFInfoStrings = mkStorableRetType cafInfoStringsStructType
+
+instance ObjCArgument CAFInfoStrings where
+  withObjCArg x k = k (argCAFInfoStrings x)
+
+instance ObjCReturn CAFInfoStrings where
+  type RawReturn CAFInfoStrings = CAFInfoStrings
+  objcRetType = retCAFInfoStrings
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CAFInstrumentChunk = CAFInstrumentChunk
   { cafInstrumentChunkMBaseNote :: !CFloat
@@ -2060,6 +2612,16 @@ argCAFInstrumentChunk = mkStorableArg cafInstrumentChunkStructType
 retCAFInstrumentChunk :: RetType CAFInstrumentChunk
 retCAFInstrumentChunk = mkStorableRetType cafInstrumentChunkStructType
 
+instance ObjCArgument CAFInstrumentChunk where
+  withObjCArg x k = k (argCAFInstrumentChunk x)
+
+instance ObjCReturn CAFInstrumentChunk where
+  type RawReturn CAFInstrumentChunk = CAFInstrumentChunk
+  objcRetType = retCAFInstrumentChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFOverviewSample = CAFOverviewSample
   { cafOverviewSampleMMinValue :: !CShort
   , cafOverviewSampleMMaxValue :: !CShort
@@ -2083,6 +2645,16 @@ argCAFOverviewSample = mkStorableArg cafOverviewSampleStructType
 
 retCAFOverviewSample :: RetType CAFOverviewSample
 retCAFOverviewSample = mkStorableRetType cafOverviewSampleStructType
+
+instance ObjCArgument CAFOverviewSample where
+  withObjCArg x k = k (argCAFOverviewSample x)
+
+instance ObjCReturn CAFOverviewSample where
+  type RawReturn CAFOverviewSample = CAFOverviewSample
+  objcRetType = retCAFOverviewSample
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CAFPositionPeak = CAFPositionPeak
   { cafPositionPeakMValue :: !CFloat
@@ -2108,6 +2680,16 @@ argCAFPositionPeak = mkStorableArg cafPositionPeakStructType
 retCAFPositionPeak :: RetType CAFPositionPeak
 retCAFPositionPeak = mkStorableRetType cafPositionPeakStructType
 
+instance ObjCArgument CAFPositionPeak where
+  withObjCArg x k = k (argCAFPositionPeak x)
+
+instance ObjCReturn CAFPositionPeak where
+  type RawReturn CAFPositionPeak = CAFPositionPeak
+  objcRetType = retCAFPositionPeak
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFStringID = CAFStringID
   { cafStringIDMStringID :: !CUInt
   , cafStringIDMStringStartByteOffset :: !CLong
@@ -2131,6 +2713,16 @@ argCAFStringID = mkStorableArg cafStringIDStructType
 
 retCAFStringID :: RetType CAFStringID
 retCAFStringID = mkStorableRetType cafStringIDStructType
+
+instance ObjCArgument CAFStringID where
+  withObjCArg x k = k (argCAFStringID x)
+
+instance ObjCReturn CAFStringID where
+  type RawReturn CAFStringID = CAFStringID
+  objcRetType = retCAFStringID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CAF_SMPTE_Time = CAF_SMPTE_Time
   { caF_SMPTE_TimeMHours :: !CSChar
@@ -2164,6 +2756,16 @@ argCAF_SMPTE_Time = mkStorableArg caF_SMPTE_TimeStructType
 
 retCAF_SMPTE_Time :: RetType CAF_SMPTE_Time
 retCAF_SMPTE_Time = mkStorableRetType caF_SMPTE_TimeStructType
+
+instance ObjCArgument CAF_SMPTE_Time where
+  withObjCArg x k = k (argCAF_SMPTE_Time x)
+
+instance ObjCReturn CAF_SMPTE_Time where
+  type RawReturn CAF_SMPTE_Time = CAF_SMPTE_Time
+  objcRetType = retCAF_SMPTE_Time
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | CAMeterTrackEntry
 --
@@ -2209,6 +2811,16 @@ argCAMeterTrackEntry = mkStorableArg caMeterTrackEntryStructType
 retCAMeterTrackEntry :: RetType CAMeterTrackEntry
 retCAMeterTrackEntry = mkStorableRetType caMeterTrackEntryStructType
 
+instance ObjCArgument CAMeterTrackEntry where
+  withObjCArg x k = k (argCAMeterTrackEntry x)
+
+instance ObjCReturn CAMeterTrackEntry where
+  type RawReturn CAMeterTrackEntry = CAMeterTrackEntry
+  objcRetType = retCAMeterTrackEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | CATempoMapEntry
 --
 -- A tempo change event.
@@ -2246,6 +2858,16 @@ argCATempoMapEntry = mkStorableArg caTempoMapEntryStructType
 retCATempoMapEntry :: RetType CATempoMapEntry
 retCATempoMapEntry = mkStorableRetType caTempoMapEntryStructType
 
+instance ObjCArgument CATempoMapEntry where
+  withObjCArg x k = k (argCATempoMapEntry x)
+
+instance ObjCReturn CATempoMapEntry where
+  type RawReturn CATempoMapEntry = CATempoMapEntry
+  objcRetType = retCATempoMapEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ExtendedControlEvent = ExtendedControlEvent
   { extendedControlEventGroupID :: !CUInt
   , extendedControlEventControlID :: !CUInt
@@ -2272,6 +2894,16 @@ argExtendedControlEvent = mkStorableArg extendedControlEventStructType
 
 retExtendedControlEvent :: RetType ExtendedControlEvent
 retExtendedControlEvent = mkStorableRetType extendedControlEventStructType
+
+instance ObjCArgument ExtendedControlEvent where
+  withObjCArg x k = k (argExtendedControlEvent x)
+
+instance ObjCReturn ExtendedControlEvent where
+  type RawReturn ExtendedControlEvent = ExtendedControlEvent
+  objcRetType = retExtendedControlEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ExtendedNoteOnEvent
 --
@@ -2306,6 +2938,16 @@ argExtendedNoteOnEvent = mkStorableArg extendedNoteOnEventStructType
 retExtendedNoteOnEvent :: RetType ExtendedNoteOnEvent
 retExtendedNoteOnEvent = mkStorableRetType extendedNoteOnEventStructType
 
+instance ObjCArgument ExtendedNoteOnEvent where
+  withObjCArg x k = k (argExtendedNoteOnEvent x)
+
+instance ObjCReturn ExtendedNoteOnEvent where
+  type RawReturn ExtendedNoteOnEvent = ExtendedNoteOnEvent
+  objcRetType = retExtendedNoteOnEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ExtendedTempoEvent
 --
 -- specifies the value for a tempo in beats per minute
@@ -2329,6 +2971,16 @@ argExtendedTempoEvent = mkStorableArg extendedTempoEventStructType
 
 retExtendedTempoEvent :: RetType ExtendedTempoEvent
 retExtendedTempoEvent = mkStorableRetType extendedTempoEventStructType
+
+instance ObjCArgument ExtendedTempoEvent where
+  withObjCArg x k = k (argExtendedTempoEvent x)
+
+instance ObjCReturn ExtendedTempoEvent where
+  type RawReturn ExtendedTempoEvent = ExtendedTempoEvent
+  objcRetType = retExtendedTempoEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | HostCallbackInfo
 --
@@ -2368,6 +3020,16 @@ argHostCallbackInfo = mkStorableArg hostCallbackInfoStructType
 retHostCallbackInfo :: RetType HostCallbackInfo
 retHostCallbackInfo = mkStorableRetType hostCallbackInfoStructType
 
+instance ObjCArgument HostCallbackInfo where
+  withObjCArg x k = k (argHostCallbackInfo x)
+
+instance ObjCReturn HostCallbackInfo where
+  type RawReturn HostCallbackInfo = HostCallbackInfo
+  objcRetType = retHostCallbackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MIDIChannelMessage
 --
 -- The parameters to specify a MIDI channel message
@@ -2400,6 +3062,16 @@ argMIDIChannelMessage = mkStorableArg midiChannelMessageStructType
 
 retMIDIChannelMessage :: RetType MIDIChannelMessage
 retMIDIChannelMessage = mkStorableRetType midiChannelMessageStructType
+
+instance ObjCArgument MIDIChannelMessage where
+  withObjCArg x k = k (argMIDIChannelMessage x)
+
+instance ObjCReturn MIDIChannelMessage where
+  type RawReturn MIDIChannelMessage = MIDIChannelMessage
+  objcRetType = retMIDIChannelMessage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MIDINoteMessage
 --
@@ -2436,6 +3108,16 @@ argMIDINoteMessage = mkStorableArg midiNoteMessageStructType
 
 retMIDINoteMessage :: RetType MIDINoteMessage
 retMIDINoteMessage = mkStorableRetType midiNoteMessageStructType
+
+instance ObjCArgument MIDINoteMessage where
+  withObjCArg x k = k (argMIDINoteMessage x)
+
+instance ObjCReturn MIDINoteMessage where
+  type RawReturn MIDINoteMessage = MIDINoteMessage
+  objcRetType = retMIDINoteMessage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioCodecMagicCookieInfo
 --
@@ -2474,6 +3156,16 @@ argMagicCookieInfo = mkStorableArg magicCookieInfoStructType
 retMagicCookieInfo :: RetType MagicCookieInfo
 retMagicCookieInfo = mkStorableRetType magicCookieInfoStructType
 
+instance ObjCArgument MagicCookieInfo where
+  withObjCArg x k = k (argMagicCookieInfo x)
+
+instance ObjCReturn MagicCookieInfo where
+  type RawReturn MagicCookieInfo = MagicCookieInfo
+  objcRetType = retMagicCookieInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MixerDistanceParams
 data MixerDistanceParams = MixerDistanceParams
   { mixerDistanceParamsMReferenceDistance :: !CFloat
@@ -2501,6 +3193,16 @@ argMixerDistanceParams = mkStorableArg mixerDistanceParamsStructType
 
 retMixerDistanceParams :: RetType MixerDistanceParams
 retMixerDistanceParams = mkStorableRetType mixerDistanceParamsStructType
+
+instance ObjCArgument MixerDistanceParams where
+  withObjCArg x k = k (argMixerDistanceParams x)
+
+instance ObjCReturn MixerDistanceParams where
+  type RawReturn MixerDistanceParams = MixerDistanceParams
+  objcRetType = retMixerDistanceParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MusicDeviceStdNoteParams
 --
@@ -2546,6 +3248,16 @@ argMusicDeviceStdNoteParams = mkStorableArg musicDeviceStdNoteParamsStructType
 retMusicDeviceStdNoteParams :: RetType MusicDeviceStdNoteParams
 retMusicDeviceStdNoteParams = mkStorableRetType musicDeviceStdNoteParamsStructType
 
+instance ObjCArgument MusicDeviceStdNoteParams where
+  withObjCArg x k = k (argMusicDeviceStdNoteParams x)
+
+instance ObjCReturn MusicDeviceStdNoteParams where
+  type RawReturn MusicDeviceStdNoteParams = MusicDeviceStdNoteParams
+  objcRetType = retMusicDeviceStdNoteParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MusicTrackLoopInfo
 --
 -- Used to control the looping behaviour of a track
@@ -2572,6 +3284,16 @@ argMusicTrackLoopInfo = mkStorableArg musicTrackLoopInfoStructType
 
 retMusicTrackLoopInfo :: RetType MusicTrackLoopInfo
 retMusicTrackLoopInfo = mkStorableRetType musicTrackLoopInfoStructType
+
+instance ObjCArgument MusicTrackLoopInfo where
+  withObjCArg x k = k (argMusicTrackLoopInfo x)
+
+instance ObjCReturn MusicTrackLoopInfo where
+  type RawReturn MusicTrackLoopInfo = MusicTrackLoopInfo
+  objcRetType = retMusicTrackLoopInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | NoteParamsControlValue
 --
@@ -2610,6 +3332,16 @@ argNoteParamsControlValue = mkStorableArg noteParamsControlValueStructType
 retNoteParamsControlValue :: RetType NoteParamsControlValue
 retNoteParamsControlValue = mkStorableRetType noteParamsControlValueStructType
 
+instance ObjCArgument NoteParamsControlValue where
+  withObjCArg x k = k (argNoteParamsControlValue x)
+
+instance ObjCReturn NoteParamsControlValue where
+  type RawReturn NoteParamsControlValue = NoteParamsControlValue
+  objcRetType = retNoteParamsControlValue
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ParameterEvent
 --
 -- The parameters to specify a parameter event to an audio unit.
@@ -2643,6 +3375,16 @@ argParameterEvent = mkStorableArg parameterEventStructType
 retParameterEvent :: RetType ParameterEvent
 retParameterEvent = mkStorableRetType parameterEventStructType
 
+instance ObjCArgument ParameterEvent where
+  withObjCArg x k = k (argParameterEvent x)
+
+instance ObjCReturn ParameterEvent where
+  type RawReturn ParameterEvent = ParameterEvent
+  objcRetType = retParameterEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AUHostIdentifier
 --
 -- Used to describe the name and version of the audio unit's host
@@ -2669,6 +3411,16 @@ argAUHostIdentifier = mkStorableArg auHostIdentifierStructType
 
 retAUHostIdentifier :: RetType AUHostIdentifier
 retAUHostIdentifier = mkStorableRetType auHostIdentifierStructType
+
+instance ObjCArgument AUHostIdentifier where
+  withObjCArg x k = k (argAUHostIdentifier x)
+
+instance ObjCReturn AUHostIdentifier where
+  type RawReturn AUHostIdentifier = AUHostIdentifier
+  objcRetType = retAUHostIdentifier
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AUNodeRenderCallback
 --
@@ -2707,6 +3459,16 @@ argAUNodeRenderCallback = mkStorableArg auNodeRenderCallbackStructType
 
 retAUNodeRenderCallback :: RetType AUNodeRenderCallback
 retAUNodeRenderCallback = mkStorableRetType auNodeRenderCallbackStructType
+
+instance ObjCArgument AUNodeRenderCallback where
+  withObjCArg x k = k (argAUNodeRenderCallback x)
+
+instance ObjCReturn AUNodeRenderCallback where
+  type RawReturn AUNodeRenderCallback = AUNodeRenderCallback
+  objcRetType = retAUNodeRenderCallback
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioFileMarker
 --
@@ -2766,6 +3528,16 @@ argAudioFileMarker = mkStorableArg audioFileMarkerStructType
 retAudioFileMarker :: RetType AudioFileMarker
 retAudioFileMarker = mkStorableRetType audioFileMarkerStructType
 
+instance ObjCArgument AudioFileMarker where
+  withObjCArg x k = k (argAudioFileMarker x)
+
+instance ObjCReturn AudioFileMarker where
+  type RawReturn AudioFileMarker = AudioFileMarker
+  objcRetType = retAudioFileMarker
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioFormatInfo
 --
 -- this struct is used as a specifier for the kAudioFormatProperty_FormatList property
@@ -2808,6 +3580,16 @@ argAudioFormatInfo = mkStorableArg audioFormatInfoStructType
 retAudioFormatInfo :: RetType AudioFormatInfo
 retAudioFormatInfo = mkStorableRetType audioFormatInfoStructType
 
+instance ObjCArgument AudioFormatInfo where
+  withObjCArg x k = k (argAudioFormatInfo x)
+
+instance ObjCReturn AudioFormatInfo where
+  type RawReturn AudioFormatInfo = AudioFormatInfo
+  objcRetType = retAudioFormatInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioUnitOtherPluginDesc
 --
 -- format
@@ -2843,6 +3625,16 @@ argAudioUnitOtherPluginDesc = mkStorableArg audioUnitOtherPluginDescStructType
 retAudioUnitOtherPluginDesc :: RetType AudioUnitOtherPluginDesc
 retAudioUnitOtherPluginDesc = mkStorableRetType audioUnitOtherPluginDescStructType
 
+instance ObjCArgument AudioUnitOtherPluginDesc where
+  withObjCArg x k = k (argAudioUnitOtherPluginDesc x)
+
+instance ObjCReturn AudioUnitOtherPluginDesc where
+  type RawReturn AudioUnitOtherPluginDesc = AudioUnitOtherPluginDesc
+  objcRetType = retAudioUnitOtherPluginDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CAFMarker = CAFMarker
   { cafMarkerMType :: !CUInt
   , cafMarkerMFramePosition :: !CDouble
@@ -2875,6 +3667,16 @@ argCAFMarker = mkStorableArg cafMarkerStructType
 
 retCAFMarker :: RetType CAFMarker
 retCAFMarker = mkStorableRetType cafMarkerStructType
+
+instance ObjCArgument CAFMarker where
+  withObjCArg x k = k (argCAFMarker x)
+
+instance ObjCReturn CAFMarker where
+  type RawReturn CAFMarker = CAFMarker
+  objcRetType = retCAFMarker
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ExtendedAudioFormatInfo
 --
@@ -2925,6 +3727,16 @@ argExtendedAudioFormatInfo = mkStorableArg extendedAudioFormatInfoStructType
 retExtendedAudioFormatInfo :: RetType ExtendedAudioFormatInfo
 retExtendedAudioFormatInfo = mkStorableRetType extendedAudioFormatInfoStructType
 
+instance ObjCArgument ExtendedAudioFormatInfo where
+  withObjCArg x k = k (argExtendedAudioFormatInfo x)
+
+instance ObjCReturn ExtendedAudioFormatInfo where
+  type RawReturn ExtendedAudioFormatInfo = ExtendedAudioFormatInfo
+  objcRetType = retExtendedAudioFormatInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioOutputUnitStartAtTimeParams
 data AudioOutputUnitStartAtTimeParams = AudioOutputUnitStartAtTimeParams
   { audioOutputUnitStartAtTimeParamsMTimestamp :: !AudioTimeStamp
@@ -2949,6 +3761,16 @@ argAudioOutputUnitStartAtTimeParams = mkStorableArg audioOutputUnitStartAtTimePa
 
 retAudioOutputUnitStartAtTimeParams :: RetType AudioOutputUnitStartAtTimeParams
 retAudioOutputUnitStartAtTimeParams = mkStorableRetType audioOutputUnitStartAtTimeParamsStructType
+
+instance ObjCArgument AudioOutputUnitStartAtTimeParams where
+  withObjCArg x k = k (argAudioOutputUnitStartAtTimeParams x)
+
+instance ObjCReturn AudioOutputUnitStartAtTimeParams where
+  type RawReturn AudioOutputUnitStartAtTimeParams = AudioOutputUnitStartAtTimeParams
+  objcRetType = retAudioOutputUnitStartAtTimeParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioUnitParameterValueTranslation
 --
@@ -2985,6 +3807,16 @@ argAudioUnitParameterValueTranslation = mkStorableArg audioUnitParameterValueTra
 
 retAudioUnitParameterValueTranslation :: RetType AudioUnitParameterValueTranslation
 retAudioUnitParameterValueTranslation = mkStorableRetType audioUnitParameterValueTranslationStructType
+
+instance ObjCArgument AudioUnitParameterValueTranslation where
+  withObjCArg x k = k (argAudioUnitParameterValueTranslation x)
+
+instance ObjCReturn AudioUnitParameterValueTranslation where
+  type RawReturn AudioUnitParameterValueTranslation = AudioUnitParameterValueTranslation
+  objcRetType = retAudioUnitParameterValueTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ScheduledAudioFileRegion
 --
@@ -3049,3 +3881,13 @@ argScheduledAudioFileRegion = mkStorableArg scheduledAudioFileRegionStructType
 
 retScheduledAudioFileRegion :: RetType ScheduledAudioFileRegion
 retScheduledAudioFileRegion = mkStorableRetType scheduledAudioFileRegionStructType
+
+instance ObjCArgument ScheduledAudioFileRegion where
+  withObjCArg x k = k (argScheduledAudioFileRegion x)
+
+instance ObjCReturn ScheduledAudioFileRegion where
+  type RawReturn ScheduledAudioFileRegion = ScheduledAudioFileRegion
+  objcRetType = retScheduledAudioFileRegion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

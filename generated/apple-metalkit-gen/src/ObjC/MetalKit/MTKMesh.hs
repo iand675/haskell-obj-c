@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.MetalKit.MTKMesh
   , setName
   , initSelector
   , initWithMesh_device_errorSelector
-  , newMeshesFromAsset_device_sourceMeshes_errorSelector
-  , vertexBuffersSelector
-  , vertexDescriptorSelector
-  , submeshesSelector
-  , vertexCountSelector
   , nameSelector
+  , newMeshesFromAsset_device_sourceMeshes_errorSelector
   , setNameSelector
+  , submeshesSelector
+  , vertexBuffersSelector
+  , vertexCountSelector
+  , vertexDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.ModelIO.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMTKMesh mtkMesh => mtkMesh -> IO (Id MTKMesh)
-init_ mtkMesh  =
-    sendMsg mtkMesh (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtkMesh =
+  sendOwnedMessage mtkMesh initSelector
 
 -- | initWithMesh:device:error:
 --
@@ -71,10 +68,8 @@ init_ mtkMesh  =
 --
 -- ObjC selector: @- initWithMesh:device:error:@
 initWithMesh_device_error :: (IsMTKMesh mtkMesh, IsMDLMesh mesh, IsNSError error_) => mtkMesh -> mesh -> RawId -> error_ -> IO (Id MTKMesh)
-initWithMesh_device_error mtkMesh  mesh device error_ =
-  withObjCPtr mesh $ \raw_mesh ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtkMesh (mkSelector "initWithMesh:device:error:") (retPtr retVoid) [argPtr (castPtr raw_mesh :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithMesh_device_error mtkMesh mesh device error_ =
+  sendOwnedMessage mtkMesh initWithMesh_device_errorSelector (toMDLMesh mesh) device (toNSError error_)
 
 -- | newMeshesFromAsset:device:sourceMeshes:error:
 --
@@ -97,10 +92,7 @@ newMeshesFromAsset_device_sourceMeshes_error :: (IsMDLAsset asset, IsNSArray sou
 newMeshesFromAsset_device_sourceMeshes_error asset device sourceMeshes error_ =
   do
     cls' <- getRequiredClass "MTKMesh"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr sourceMeshes $ \raw_sourceMeshes ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "newMeshesFromAsset:device:sourceMeshes:error:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_sourceMeshes :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newMeshesFromAsset_device_sourceMeshes_errorSelector (toMDLAsset asset) device (toNSArray sourceMeshes) (toNSError error_)
 
 -- | vertexBuffers
 --
@@ -110,8 +102,8 @@ newMeshesFromAsset_device_sourceMeshes_error asset device sourceMeshes error_ =
 --
 -- ObjC selector: @- vertexBuffers@
 vertexBuffers :: IsMTKMesh mtkMesh => mtkMesh -> IO (Id NSArray)
-vertexBuffers mtkMesh  =
-    sendMsg mtkMesh (mkSelector "vertexBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexBuffers mtkMesh =
+  sendMessage mtkMesh vertexBuffersSelector
 
 -- | vertexDescriptor
 --
@@ -121,8 +113,8 @@ vertexBuffers mtkMesh  =
 --
 -- ObjC selector: @- vertexDescriptor@
 vertexDescriptor :: IsMTKMesh mtkMesh => mtkMesh -> IO (Id MDLVertexDescriptor)
-vertexDescriptor mtkMesh  =
-    sendMsg mtkMesh (mkSelector "vertexDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexDescriptor mtkMesh =
+  sendMessage mtkMesh vertexDescriptorSelector
 
 -- | submeshes
 --
@@ -130,8 +122,8 @@ vertexDescriptor mtkMesh  =
 --
 -- ObjC selector: @- submeshes@
 submeshes :: IsMTKMesh mtkMesh => mtkMesh -> IO (Id NSArray)
-submeshes mtkMesh  =
-    sendMsg mtkMesh (mkSelector "submeshes") (retPtr retVoid) [] >>= retainedObject . castPtr
+submeshes mtkMesh =
+  sendMessage mtkMesh submeshesSelector
 
 -- | vertexCount
 --
@@ -139,8 +131,8 @@ submeshes mtkMesh  =
 --
 -- ObjC selector: @- vertexCount@
 vertexCount :: IsMTKMesh mtkMesh => mtkMesh -> IO CULong
-vertexCount mtkMesh  =
-    sendMsg mtkMesh (mkSelector "vertexCount") retCULong []
+vertexCount mtkMesh =
+  sendMessage mtkMesh vertexCountSelector
 
 -- | name
 --
@@ -150,8 +142,8 @@ vertexCount mtkMesh  =
 --
 -- ObjC selector: @- name@
 name :: IsMTKMesh mtkMesh => mtkMesh -> IO (Id NSString)
-name mtkMesh  =
-    sendMsg mtkMesh (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtkMesh =
+  sendMessage mtkMesh nameSelector
 
 -- | name
 --
@@ -161,47 +153,46 @@ name mtkMesh  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMTKMesh mtkMesh, IsNSString value) => mtkMesh -> value -> IO ()
-setName mtkMesh  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtkMesh (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtkMesh value =
+  sendMessage mtkMesh setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTKMesh)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMesh:device:error:@
-initWithMesh_device_errorSelector :: Selector
+initWithMesh_device_errorSelector :: Selector '[Id MDLMesh, RawId, Id NSError] (Id MTKMesh)
 initWithMesh_device_errorSelector = mkSelector "initWithMesh:device:error:"
 
 -- | @Selector@ for @newMeshesFromAsset:device:sourceMeshes:error:@
-newMeshesFromAsset_device_sourceMeshes_errorSelector :: Selector
+newMeshesFromAsset_device_sourceMeshes_errorSelector :: Selector '[Id MDLAsset, RawId, Id NSArray, Id NSError] (Id NSArray)
 newMeshesFromAsset_device_sourceMeshes_errorSelector = mkSelector "newMeshesFromAsset:device:sourceMeshes:error:"
 
 -- | @Selector@ for @vertexBuffers@
-vertexBuffersSelector :: Selector
+vertexBuffersSelector :: Selector '[] (Id NSArray)
 vertexBuffersSelector = mkSelector "vertexBuffers"
 
 -- | @Selector@ for @vertexDescriptor@
-vertexDescriptorSelector :: Selector
+vertexDescriptorSelector :: Selector '[] (Id MDLVertexDescriptor)
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
 
 -- | @Selector@ for @submeshes@
-submeshesSelector :: Selector
+submeshesSelector :: Selector '[] (Id NSArray)
 submeshesSelector = mkSelector "submeshes"
 
 -- | @Selector@ for @vertexCount@
-vertexCountSelector :: Selector
+vertexCountSelector :: Selector '[] CULong
 vertexCountSelector = mkSelector "vertexCount"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

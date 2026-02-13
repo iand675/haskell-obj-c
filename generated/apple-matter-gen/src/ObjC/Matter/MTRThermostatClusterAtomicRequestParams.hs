@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRThermostatClusterAtomicRequestParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , requestTypeSelector
-  , setRequestTypeSelector
   , attributeRequestsSelector
+  , requestTypeSelector
+  , serverSideProcessingTimeoutSelector
   , setAttributeRequestsSelector
-  , timeoutSelector
+  , setRequestTypeSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
   , setTimeoutSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , timeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestType@
 requestType :: IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams => mtrThermostatClusterAtomicRequestParams -> IO (Id NSNumber)
-requestType mtrThermostatClusterAtomicRequestParams  =
-    sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "requestType") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestType mtrThermostatClusterAtomicRequestParams =
+  sendMessage mtrThermostatClusterAtomicRequestParams requestTypeSelector
 
 -- | @- setRequestType:@
 setRequestType :: (IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams, IsNSNumber value) => mtrThermostatClusterAtomicRequestParams -> value -> IO ()
-setRequestType mtrThermostatClusterAtomicRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "setRequestType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestType mtrThermostatClusterAtomicRequestParams value =
+  sendMessage mtrThermostatClusterAtomicRequestParams setRequestTypeSelector (toNSNumber value)
 
 -- | @- attributeRequests@
 attributeRequests :: IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams => mtrThermostatClusterAtomicRequestParams -> IO (Id NSArray)
-attributeRequests mtrThermostatClusterAtomicRequestParams  =
-    sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "attributeRequests") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeRequests mtrThermostatClusterAtomicRequestParams =
+  sendMessage mtrThermostatClusterAtomicRequestParams attributeRequestsSelector
 
 -- | @- setAttributeRequests:@
 setAttributeRequests :: (IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams, IsNSArray value) => mtrThermostatClusterAtomicRequestParams -> value -> IO ()
-setAttributeRequests mtrThermostatClusterAtomicRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "setAttributeRequests:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeRequests mtrThermostatClusterAtomicRequestParams value =
+  sendMessage mtrThermostatClusterAtomicRequestParams setAttributeRequestsSelector (toNSArray value)
 
 -- | @- timeout@
 timeout :: IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams => mtrThermostatClusterAtomicRequestParams -> IO (Id NSNumber)
-timeout mtrThermostatClusterAtomicRequestParams  =
-    sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "timeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeout mtrThermostatClusterAtomicRequestParams =
+  sendMessage mtrThermostatClusterAtomicRequestParams timeoutSelector
 
 -- | @- setTimeout:@
 setTimeout :: (IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams, IsNSNumber value) => mtrThermostatClusterAtomicRequestParams -> value -> IO ()
-setTimeout mtrThermostatClusterAtomicRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "setTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeout mtrThermostatClusterAtomicRequestParams value =
+  sendMessage mtrThermostatClusterAtomicRequestParams setTimeoutSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setTimeout mtrThermostatClusterAtomicRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams => mtrThermostatClusterAtomicRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams  =
-    sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams =
+  sendMessage mtrThermostatClusterAtomicRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams, IsNSNumber value) => mtrThermostatClusterAtomicRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams value =
+  sendMessage mtrThermostatClusterAtomicRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrThermostatClusterAtomicRequestParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams => mtrThermostatClusterAtomicRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThermostatClusterAtomicRequestParams  =
-    sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThermostatClusterAtomicRequestParams =
+  sendMessage mtrThermostatClusterAtomicRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrThermostatClusterAtomicRequestParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThermostatClusterAtomicRequestParams mtrThermostatClusterAtomicRequestParams, IsNSNumber value) => mtrThermostatClusterAtomicRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThermostatClusterAtomicRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThermostatClusterAtomicRequestParams value =
+  sendMessage mtrThermostatClusterAtomicRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestType@
-requestTypeSelector :: Selector
+requestTypeSelector :: Selector '[] (Id NSNumber)
 requestTypeSelector = mkSelector "requestType"
 
 -- | @Selector@ for @setRequestType:@
-setRequestTypeSelector :: Selector
+setRequestTypeSelector :: Selector '[Id NSNumber] ()
 setRequestTypeSelector = mkSelector "setRequestType:"
 
 -- | @Selector@ for @attributeRequests@
-attributeRequestsSelector :: Selector
+attributeRequestsSelector :: Selector '[] (Id NSArray)
 attributeRequestsSelector = mkSelector "attributeRequests"
 
 -- | @Selector@ for @setAttributeRequests:@
-setAttributeRequestsSelector :: Selector
+setAttributeRequestsSelector :: Selector '[Id NSArray] ()
 setAttributeRequestsSelector = mkSelector "setAttributeRequests:"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] (Id NSNumber)
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @setTimeout:@
-setTimeoutSelector :: Selector
+setTimeoutSelector :: Selector '[Id NSNumber] ()
 setTimeoutSelector = mkSelector "setTimeout:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

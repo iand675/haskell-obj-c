@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,15 +59,11 @@ module ObjC.AVFAudio.AVMIDIControlChangeEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,8 +83,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:messageType:value:@
 initWithChannel_messageType_value :: IsAVMIDIControlChangeEvent avmidiControlChangeEvent => avmidiControlChangeEvent -> CUInt -> AVMIDIControlChangeMessageType -> CUInt -> IO (Id AVMIDIControlChangeEvent)
-initWithChannel_messageType_value avmidiControlChangeEvent  channel messageType value =
-    sendMsg avmidiControlChangeEvent (mkSelector "initWithChannel:messageType:value:") (retPtr retVoid) [argCUInt channel, argCLong (coerce messageType), argCUInt value] >>= ownedObject . castPtr
+initWithChannel_messageType_value avmidiControlChangeEvent channel messageType value =
+  sendOwnedMessage avmidiControlChangeEvent initWithChannel_messageType_valueSelector channel messageType value
 
 -- | messageType
 --
@@ -95,8 +92,8 @@ initWithChannel_messageType_value avmidiControlChangeEvent  channel messageType 
 --
 -- ObjC selector: @- messageType@
 messageType :: IsAVMIDIControlChangeEvent avmidiControlChangeEvent => avmidiControlChangeEvent -> IO AVMIDIControlChangeMessageType
-messageType avmidiControlChangeEvent  =
-    fmap (coerce :: CLong -> AVMIDIControlChangeMessageType) $ sendMsg avmidiControlChangeEvent (mkSelector "messageType") retCLong []
+messageType avmidiControlChangeEvent =
+  sendMessage avmidiControlChangeEvent messageTypeSelector
 
 -- | value
 --
@@ -104,22 +101,22 @@ messageType avmidiControlChangeEvent  =
 --
 -- ObjC selector: @- value@
 value :: IsAVMIDIControlChangeEvent avmidiControlChangeEvent => avmidiControlChangeEvent -> IO CUInt
-value avmidiControlChangeEvent  =
-    sendMsg avmidiControlChangeEvent (mkSelector "value") retCUInt []
+value avmidiControlChangeEvent =
+  sendMessage avmidiControlChangeEvent valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:messageType:value:@
-initWithChannel_messageType_valueSelector :: Selector
+initWithChannel_messageType_valueSelector :: Selector '[CUInt, AVMIDIControlChangeMessageType, CUInt] (Id AVMIDIControlChangeEvent)
 initWithChannel_messageType_valueSelector = mkSelector "initWithChannel:messageType:value:"
 
 -- | @Selector@ for @messageType@
-messageTypeSelector :: Selector
+messageTypeSelector :: Selector '[] AVMIDIControlChangeMessageType
 messageTypeSelector = mkSelector "messageType"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CUInt
 valueSelector = mkSelector "value"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,13 +20,13 @@ module ObjC.Metal.MTLStitchedLibraryDescriptor
   , setBinaryArchives
   , options
   , setOptions
-  , functionGraphsSelector
-  , setFunctionGraphsSelector
-  , functionsSelector
-  , setFunctionsSelector
   , binaryArchivesSelector
-  , setBinaryArchivesSelector
+  , functionGraphsSelector
+  , functionsSelector
   , optionsSelector
+  , setBinaryArchivesSelector
+  , setFunctionGraphsSelector
+  , setFunctionsSelector
   , setOptionsSelector
 
   -- * Enum types
@@ -36,15 +37,11 @@ module ObjC.Metal.MTLStitchedLibraryDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,25 +51,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- functionGraphs@
 functionGraphs :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO (Id NSArray)
-functionGraphs mtlStitchedLibraryDescriptor  =
-    sendMsg mtlStitchedLibraryDescriptor (mkSelector "functionGraphs") (retPtr retVoid) [] >>= retainedObject . castPtr
+functionGraphs mtlStitchedLibraryDescriptor =
+  sendMessage mtlStitchedLibraryDescriptor functionGraphsSelector
 
 -- | @- setFunctionGraphs:@
 setFunctionGraphs :: (IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor, IsNSArray value) => mtlStitchedLibraryDescriptor -> value -> IO ()
-setFunctionGraphs mtlStitchedLibraryDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlStitchedLibraryDescriptor (mkSelector "setFunctionGraphs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctionGraphs mtlStitchedLibraryDescriptor value =
+  sendMessage mtlStitchedLibraryDescriptor setFunctionGraphsSelector (toNSArray value)
 
 -- | @- functions@
 functions :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO (Id NSArray)
-functions mtlStitchedLibraryDescriptor  =
-    sendMsg mtlStitchedLibraryDescriptor (mkSelector "functions") (retPtr retVoid) [] >>= retainedObject . castPtr
+functions mtlStitchedLibraryDescriptor =
+  sendMessage mtlStitchedLibraryDescriptor functionsSelector
 
 -- | @- setFunctions:@
 setFunctions :: (IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor, IsNSArray value) => mtlStitchedLibraryDescriptor -> value -> IO ()
-setFunctions mtlStitchedLibraryDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlStitchedLibraryDescriptor (mkSelector "setFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctions mtlStitchedLibraryDescriptor value =
+  sendMessage mtlStitchedLibraryDescriptor setFunctionsSelector (toNSArray value)
 
 -- | binaryArchives
 --
@@ -82,8 +77,8 @@ setFunctions mtlStitchedLibraryDescriptor  value =
 --
 -- ObjC selector: @- binaryArchives@
 binaryArchives :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO (Id NSArray)
-binaryArchives mtlStitchedLibraryDescriptor  =
-    sendMsg mtlStitchedLibraryDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryArchives mtlStitchedLibraryDescriptor =
+  sendMessage mtlStitchedLibraryDescriptor binaryArchivesSelector
 
 -- | binaryArchives
 --
@@ -93,9 +88,8 @@ binaryArchives mtlStitchedLibraryDescriptor  =
 --
 -- ObjC selector: @- setBinaryArchives:@
 setBinaryArchives :: (IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor, IsNSArray value) => mtlStitchedLibraryDescriptor -> value -> IO ()
-setBinaryArchives mtlStitchedLibraryDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlStitchedLibraryDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryArchives mtlStitchedLibraryDescriptor value =
+  sendMessage mtlStitchedLibraryDescriptor setBinaryArchivesSelector (toNSArray value)
 
 -- | options
 --
@@ -103,8 +97,8 @@ setBinaryArchives mtlStitchedLibraryDescriptor  value =
 --
 -- ObjC selector: @- options@
 options :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> IO MTLStitchedLibraryOptions
-options mtlStitchedLibraryDescriptor  =
-    fmap (coerce :: CULong -> MTLStitchedLibraryOptions) $ sendMsg mtlStitchedLibraryDescriptor (mkSelector "options") retCULong []
+options mtlStitchedLibraryDescriptor =
+  sendMessage mtlStitchedLibraryDescriptor optionsSelector
 
 -- | options
 --
@@ -112,42 +106,42 @@ options mtlStitchedLibraryDescriptor  =
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsMTLStitchedLibraryDescriptor mtlStitchedLibraryDescriptor => mtlStitchedLibraryDescriptor -> MTLStitchedLibraryOptions -> IO ()
-setOptions mtlStitchedLibraryDescriptor  value =
-    sendMsg mtlStitchedLibraryDescriptor (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions mtlStitchedLibraryDescriptor value =
+  sendMessage mtlStitchedLibraryDescriptor setOptionsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @functionGraphs@
-functionGraphsSelector :: Selector
+functionGraphsSelector :: Selector '[] (Id NSArray)
 functionGraphsSelector = mkSelector "functionGraphs"
 
 -- | @Selector@ for @setFunctionGraphs:@
-setFunctionGraphsSelector :: Selector
+setFunctionGraphsSelector :: Selector '[Id NSArray] ()
 setFunctionGraphsSelector = mkSelector "setFunctionGraphs:"
 
 -- | @Selector@ for @functions@
-functionsSelector :: Selector
+functionsSelector :: Selector '[] (Id NSArray)
 functionsSelector = mkSelector "functions"
 
 -- | @Selector@ for @setFunctions:@
-setFunctionsSelector :: Selector
+setFunctionsSelector :: Selector '[Id NSArray] ()
 setFunctionsSelector = mkSelector "setFunctions:"
 
 -- | @Selector@ for @binaryArchives@
-binaryArchivesSelector :: Selector
+binaryArchivesSelector :: Selector '[] (Id NSArray)
 binaryArchivesSelector = mkSelector "binaryArchives"
 
 -- | @Selector@ for @setBinaryArchives:@
-setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector :: Selector '[Id NSArray] ()
 setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] MTLStitchedLibraryOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[MTLStitchedLibraryOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 

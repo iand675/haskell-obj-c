@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.AVFoundation.AVMediaSelectionGroup
   , defaultOption
   , allowsEmptySelection
   , customMediaSelectionScheme
+  , allowsEmptySelectionSelector
+  , customMediaSelectionSchemeSelector
+  , defaultOptionSelector
   , mediaSelectionOptionWithPropertyListSelector
-  , playableMediaSelectionOptionsFromArraySelector
   , mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector
   , mediaSelectionOptionsFromArray_withLocaleSelector
   , mediaSelectionOptionsFromArray_withMediaCharacteristicsSelector
   , mediaSelectionOptionsFromArray_withoutMediaCharacteristicsSelector
   , optionsSelector
-  , defaultOptionSelector
-  , allowsEmptySelectionSelector
-  , customMediaSelectionSchemeSelector
+  , playableMediaSelectionOptionsFromArraySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mediaSelectionOptionWithPropertyList:@
 mediaSelectionOptionWithPropertyList :: IsAVMediaSelectionGroup avMediaSelectionGroup => avMediaSelectionGroup -> RawId -> IO (Id AVMediaSelectionOption)
-mediaSelectionOptionWithPropertyList avMediaSelectionGroup  plist =
-    sendMsg avMediaSelectionGroup (mkSelector "mediaSelectionOptionWithPropertyList:") (retPtr retVoid) [argPtr (castPtr (unRawId plist) :: Ptr ())] >>= retainedObject . castPtr
+mediaSelectionOptionWithPropertyList avMediaSelectionGroup plist =
+  sendMessage avMediaSelectionGroup mediaSelectionOptionWithPropertyListSelector plist
 
 -- | Filters an array of AVMediaSelectionOptions according to whether they are playable.
 --
@@ -69,8 +66,7 @@ playableMediaSelectionOptionsFromArray :: IsNSArray mediaSelectionOptions => med
 playableMediaSelectionOptionsFromArray mediaSelectionOptions =
   do
     cls' <- getRequiredClass "AVMediaSelectionGroup"
-    withObjCPtr mediaSelectionOptions $ \raw_mediaSelectionOptions ->
-      sendClassMsg cls' (mkSelector "playableMediaSelectionOptionsFromArray:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionOptions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playableMediaSelectionOptionsFromArraySelector (toNSArray mediaSelectionOptions)
 
 -- | Filters an array of AVMediaSelectionOptions according to whether their locales match any language identifier in the specified array of preferred languages. The returned array is sorted according to the order of preference of the language each matches.
 --
@@ -83,9 +79,7 @@ mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguages ::
 mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguages mediaSelectionOptions preferredLanguages =
   do
     cls' <- getRequiredClass "AVMediaSelectionGroup"
-    withObjCPtr mediaSelectionOptions $ \raw_mediaSelectionOptions ->
-      withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-        sendClassMsg cls' (mkSelector "mediaSelectionOptionsFromArray:filteredAndSortedAccordingToPreferredLanguages:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionOptions :: Ptr ()), argPtr (castPtr raw_preferredLanguages :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector (toNSArray mediaSelectionOptions) (toNSArray preferredLanguages)
 
 -- | Filters an array of AVMediaSelectionOptions according to locale.
 --
@@ -98,9 +92,7 @@ mediaSelectionOptionsFromArray_withLocale :: (IsNSArray mediaSelectionOptions, I
 mediaSelectionOptionsFromArray_withLocale mediaSelectionOptions locale =
   do
     cls' <- getRequiredClass "AVMediaSelectionGroup"
-    withObjCPtr mediaSelectionOptions $ \raw_mediaSelectionOptions ->
-      withObjCPtr locale $ \raw_locale ->
-        sendClassMsg cls' (mkSelector "mediaSelectionOptionsFromArray:withLocale:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionOptions :: Ptr ()), argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mediaSelectionOptionsFromArray_withLocaleSelector (toNSArray mediaSelectionOptions) (toNSLocale locale)
 
 -- | Filters an array of AVMediaSelectionOptions according to one or more media characteristics.
 --
@@ -113,9 +105,7 @@ mediaSelectionOptionsFromArray_withMediaCharacteristics :: (IsNSArray mediaSelec
 mediaSelectionOptionsFromArray_withMediaCharacteristics mediaSelectionOptions mediaCharacteristics =
   do
     cls' <- getRequiredClass "AVMediaSelectionGroup"
-    withObjCPtr mediaSelectionOptions $ \raw_mediaSelectionOptions ->
-      withObjCPtr mediaCharacteristics $ \raw_mediaCharacteristics ->
-        sendClassMsg cls' (mkSelector "mediaSelectionOptionsFromArray:withMediaCharacteristics:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionOptions :: Ptr ()), argPtr (castPtr raw_mediaCharacteristics :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mediaSelectionOptionsFromArray_withMediaCharacteristicsSelector (toNSArray mediaSelectionOptions) (toNSArray mediaCharacteristics)
 
 -- | Filters an array of AVMediaSelectionOptions according to whether they lack one or more media characteristics.
 --
@@ -128,9 +118,7 @@ mediaSelectionOptionsFromArray_withoutMediaCharacteristics :: (IsNSArray mediaSe
 mediaSelectionOptionsFromArray_withoutMediaCharacteristics mediaSelectionOptions mediaCharacteristics =
   do
     cls' <- getRequiredClass "AVMediaSelectionGroup"
-    withObjCPtr mediaSelectionOptions $ \raw_mediaSelectionOptions ->
-      withObjCPtr mediaCharacteristics $ \raw_mediaCharacteristics ->
-        sendClassMsg cls' (mkSelector "mediaSelectionOptionsFromArray:withoutMediaCharacteristics:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionOptions :: Ptr ()), argPtr (castPtr raw_mediaCharacteristics :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mediaSelectionOptionsFromArray_withoutMediaCharacteristicsSelector (toNSArray mediaSelectionOptions) (toNSArray mediaCharacteristics)
 
 -- | A collection of mutually exclusive media selection options.
 --
@@ -138,8 +126,8 @@ mediaSelectionOptionsFromArray_withoutMediaCharacteristics mediaSelectionOptions
 --
 -- ObjC selector: @- options@
 options :: IsAVMediaSelectionGroup avMediaSelectionGroup => avMediaSelectionGroup -> IO (Id NSArray)
-options avMediaSelectionGroup  =
-    sendMsg avMediaSelectionGroup (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options avMediaSelectionGroup =
+  sendMessage avMediaSelectionGroup optionsSelector
 
 -- | Indicates the default option in the group, i.e. the option that's intended for use in the absence of a specific end-user selection or preference.
 --
@@ -147,8 +135,8 @@ options avMediaSelectionGroup  =
 --
 -- ObjC selector: @- defaultOption@
 defaultOption :: IsAVMediaSelectionGroup avMediaSelectionGroup => avMediaSelectionGroup -> IO (Id AVMediaSelectionOption)
-defaultOption avMediaSelectionGroup  =
-    sendMsg avMediaSelectionGroup (mkSelector "defaultOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultOption avMediaSelectionGroup =
+  sendMessage avMediaSelectionGroup defaultOptionSelector
 
 -- | Indicates whether it's possible to present none of the options in the group when an associated AVPlayerItem is played.
 --
@@ -156,57 +144,57 @@ defaultOption avMediaSelectionGroup  =
 --
 -- ObjC selector: @- allowsEmptySelection@
 allowsEmptySelection :: IsAVMediaSelectionGroup avMediaSelectionGroup => avMediaSelectionGroup -> IO Bool
-allowsEmptySelection avMediaSelectionGroup  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMediaSelectionGroup (mkSelector "allowsEmptySelection") retCULong []
+allowsEmptySelection avMediaSelectionGroup =
+  sendMessage avMediaSelectionGroup allowsEmptySelectionSelector
 
 -- | For content that has been authored with the express intent of offering an alternative selection interface for AVMediaSelectionOptions, AVCustomMediaSelectionScheme provides a collection of custom settings for controlling the presentation of the media.
 --
 -- ObjC selector: @- customMediaSelectionScheme@
 customMediaSelectionScheme :: IsAVMediaSelectionGroup avMediaSelectionGroup => avMediaSelectionGroup -> IO (Id AVCustomMediaSelectionScheme)
-customMediaSelectionScheme avMediaSelectionGroup  =
-    sendMsg avMediaSelectionGroup (mkSelector "customMediaSelectionScheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+customMediaSelectionScheme avMediaSelectionGroup =
+  sendMessage avMediaSelectionGroup customMediaSelectionSchemeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaSelectionOptionWithPropertyList:@
-mediaSelectionOptionWithPropertyListSelector :: Selector
+mediaSelectionOptionWithPropertyListSelector :: Selector '[RawId] (Id AVMediaSelectionOption)
 mediaSelectionOptionWithPropertyListSelector = mkSelector "mediaSelectionOptionWithPropertyList:"
 
 -- | @Selector@ for @playableMediaSelectionOptionsFromArray:@
-playableMediaSelectionOptionsFromArraySelector :: Selector
+playableMediaSelectionOptionsFromArraySelector :: Selector '[Id NSArray] (Id NSArray)
 playableMediaSelectionOptionsFromArraySelector = mkSelector "playableMediaSelectionOptionsFromArray:"
 
 -- | @Selector@ for @mediaSelectionOptionsFromArray:filteredAndSortedAccordingToPreferredLanguages:@
-mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector :: Selector
+mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector :: Selector '[Id NSArray, Id NSArray] (Id NSArray)
 mediaSelectionOptionsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector = mkSelector "mediaSelectionOptionsFromArray:filteredAndSortedAccordingToPreferredLanguages:"
 
 -- | @Selector@ for @mediaSelectionOptionsFromArray:withLocale:@
-mediaSelectionOptionsFromArray_withLocaleSelector :: Selector
+mediaSelectionOptionsFromArray_withLocaleSelector :: Selector '[Id NSArray, Id NSLocale] (Id NSArray)
 mediaSelectionOptionsFromArray_withLocaleSelector = mkSelector "mediaSelectionOptionsFromArray:withLocale:"
 
 -- | @Selector@ for @mediaSelectionOptionsFromArray:withMediaCharacteristics:@
-mediaSelectionOptionsFromArray_withMediaCharacteristicsSelector :: Selector
+mediaSelectionOptionsFromArray_withMediaCharacteristicsSelector :: Selector '[Id NSArray, Id NSArray] (Id NSArray)
 mediaSelectionOptionsFromArray_withMediaCharacteristicsSelector = mkSelector "mediaSelectionOptionsFromArray:withMediaCharacteristics:"
 
 -- | @Selector@ for @mediaSelectionOptionsFromArray:withoutMediaCharacteristics:@
-mediaSelectionOptionsFromArray_withoutMediaCharacteristicsSelector :: Selector
+mediaSelectionOptionsFromArray_withoutMediaCharacteristicsSelector :: Selector '[Id NSArray, Id NSArray] (Id NSArray)
 mediaSelectionOptionsFromArray_withoutMediaCharacteristicsSelector = mkSelector "mediaSelectionOptionsFromArray:withoutMediaCharacteristics:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSArray)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @defaultOption@
-defaultOptionSelector :: Selector
+defaultOptionSelector :: Selector '[] (Id AVMediaSelectionOption)
 defaultOptionSelector = mkSelector "defaultOption"
 
 -- | @Selector@ for @allowsEmptySelection@
-allowsEmptySelectionSelector :: Selector
+allowsEmptySelectionSelector :: Selector '[] Bool
 allowsEmptySelectionSelector = mkSelector "allowsEmptySelection"
 
 -- | @Selector@ for @customMediaSelectionScheme@
-customMediaSelectionSchemeSelector :: Selector
+customMediaSelectionSchemeSelector :: Selector '[] (Id AVCustomMediaSelectionScheme)
 customMediaSelectionSchemeSelector = mkSelector "customMediaSelectionScheme"
 

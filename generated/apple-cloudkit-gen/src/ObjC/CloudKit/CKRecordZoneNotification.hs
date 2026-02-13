@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,8 +14,8 @@ module ObjC.CloudKit.CKRecordZoneNotification
   , IsCKRecordZoneNotification(..)
   , recordZoneID
   , databaseScope
-  , recordZoneIDSelector
   , databaseScopeSelector
+  , recordZoneIDSelector
 
   -- * Enum types
   , CKDatabaseScope(CKDatabaseScope)
@@ -24,15 +25,11 @@ module ObjC.CloudKit.CKRecordZoneNotification
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,23 +39,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- recordZoneID@
 recordZoneID :: IsCKRecordZoneNotification ckRecordZoneNotification => ckRecordZoneNotification -> IO (Id CKRecordZoneID)
-recordZoneID ckRecordZoneNotification  =
-    sendMsg ckRecordZoneNotification (mkSelector "recordZoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordZoneID ckRecordZoneNotification =
+  sendMessage ckRecordZoneNotification recordZoneIDSelector
 
 -- | @- databaseScope@
 databaseScope :: IsCKRecordZoneNotification ckRecordZoneNotification => ckRecordZoneNotification -> IO CKDatabaseScope
-databaseScope ckRecordZoneNotification  =
-    fmap (coerce :: CLong -> CKDatabaseScope) $ sendMsg ckRecordZoneNotification (mkSelector "databaseScope") retCLong []
+databaseScope ckRecordZoneNotification =
+  sendMessage ckRecordZoneNotification databaseScopeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recordZoneID@
-recordZoneIDSelector :: Selector
+recordZoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 recordZoneIDSelector = mkSelector "recordZoneID"
 
 -- | @Selector@ for @databaseScope@
-databaseScopeSelector :: Selector
+databaseScopeSelector :: Selector '[] CKDatabaseScope
 databaseScopeSelector = mkSelector "databaseScope"
 

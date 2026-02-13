@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSUserNotificationCenter
   , scheduledNotifications
   , setScheduledNotifications
   , deliveredNotifications
-  , scheduleNotificationSelector
-  , removeScheduledNotificationSelector
-  , deliverNotificationSelector
-  , removeDeliveredNotificationSelector
-  , removeAllDeliveredNotificationsSelector
   , defaultUserNotificationCenterSelector
   , delegateSelector
-  , setDelegateSelector
-  , scheduledNotificationsSelector
-  , setScheduledNotificationsSelector
+  , deliverNotificationSelector
   , deliveredNotificationsSelector
+  , removeAllDeliveredNotificationsSelector
+  , removeDeliveredNotificationSelector
+  , removeScheduledNotificationSelector
+  , scheduleNotificationSelector
+  , scheduledNotificationsSelector
+  , setDelegateSelector
+  , setScheduledNotificationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,111 +45,106 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- scheduleNotification:@
 scheduleNotification :: (IsNSUserNotificationCenter nsUserNotificationCenter, IsNSUserNotification notification) => nsUserNotificationCenter -> notification -> IO ()
-scheduleNotification nsUserNotificationCenter  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsUserNotificationCenter (mkSelector "scheduleNotification:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+scheduleNotification nsUserNotificationCenter notification =
+  sendMessage nsUserNotificationCenter scheduleNotificationSelector (toNSUserNotification notification)
 
 -- | @- removeScheduledNotification:@
 removeScheduledNotification :: (IsNSUserNotificationCenter nsUserNotificationCenter, IsNSUserNotification notification) => nsUserNotificationCenter -> notification -> IO ()
-removeScheduledNotification nsUserNotificationCenter  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsUserNotificationCenter (mkSelector "removeScheduledNotification:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+removeScheduledNotification nsUserNotificationCenter notification =
+  sendMessage nsUserNotificationCenter removeScheduledNotificationSelector (toNSUserNotification notification)
 
 -- | @- deliverNotification:@
 deliverNotification :: (IsNSUserNotificationCenter nsUserNotificationCenter, IsNSUserNotification notification) => nsUserNotificationCenter -> notification -> IO ()
-deliverNotification nsUserNotificationCenter  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsUserNotificationCenter (mkSelector "deliverNotification:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+deliverNotification nsUserNotificationCenter notification =
+  sendMessage nsUserNotificationCenter deliverNotificationSelector (toNSUserNotification notification)
 
 -- | @- removeDeliveredNotification:@
 removeDeliveredNotification :: (IsNSUserNotificationCenter nsUserNotificationCenter, IsNSUserNotification notification) => nsUserNotificationCenter -> notification -> IO ()
-removeDeliveredNotification nsUserNotificationCenter  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsUserNotificationCenter (mkSelector "removeDeliveredNotification:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+removeDeliveredNotification nsUserNotificationCenter notification =
+  sendMessage nsUserNotificationCenter removeDeliveredNotificationSelector (toNSUserNotification notification)
 
 -- | @- removeAllDeliveredNotifications@
 removeAllDeliveredNotifications :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO ()
-removeAllDeliveredNotifications nsUserNotificationCenter  =
-    sendMsg nsUserNotificationCenter (mkSelector "removeAllDeliveredNotifications") retVoid []
+removeAllDeliveredNotifications nsUserNotificationCenter =
+  sendMessage nsUserNotificationCenter removeAllDeliveredNotificationsSelector
 
 -- | @+ defaultUserNotificationCenter@
 defaultUserNotificationCenter :: IO (Id NSUserNotificationCenter)
 defaultUserNotificationCenter  =
   do
     cls' <- getRequiredClass "NSUserNotificationCenter"
-    sendClassMsg cls' (mkSelector "defaultUserNotificationCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultUserNotificationCenterSelector
 
 -- | @- delegate@
 delegate :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO RawId
-delegate nsUserNotificationCenter  =
-    fmap (RawId . castPtr) $ sendMsg nsUserNotificationCenter (mkSelector "delegate") (retPtr retVoid) []
+delegate nsUserNotificationCenter =
+  sendMessage nsUserNotificationCenter delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> RawId -> IO ()
-setDelegate nsUserNotificationCenter  value =
-    sendMsg nsUserNotificationCenter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsUserNotificationCenter value =
+  sendMessage nsUserNotificationCenter setDelegateSelector value
 
 -- | @- scheduledNotifications@
 scheduledNotifications :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO (Id NSArray)
-scheduledNotifications nsUserNotificationCenter  =
-    sendMsg nsUserNotificationCenter (mkSelector "scheduledNotifications") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduledNotifications nsUserNotificationCenter =
+  sendMessage nsUserNotificationCenter scheduledNotificationsSelector
 
 -- | @- setScheduledNotifications:@
 setScheduledNotifications :: (IsNSUserNotificationCenter nsUserNotificationCenter, IsNSArray value) => nsUserNotificationCenter -> value -> IO ()
-setScheduledNotifications nsUserNotificationCenter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserNotificationCenter (mkSelector "setScheduledNotifications:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheduledNotifications nsUserNotificationCenter value =
+  sendMessage nsUserNotificationCenter setScheduledNotificationsSelector (toNSArray value)
 
 -- | @- deliveredNotifications@
 deliveredNotifications :: IsNSUserNotificationCenter nsUserNotificationCenter => nsUserNotificationCenter -> IO (Id NSArray)
-deliveredNotifications nsUserNotificationCenter  =
-    sendMsg nsUserNotificationCenter (mkSelector "deliveredNotifications") (retPtr retVoid) [] >>= retainedObject . castPtr
+deliveredNotifications nsUserNotificationCenter =
+  sendMessage nsUserNotificationCenter deliveredNotificationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scheduleNotification:@
-scheduleNotificationSelector :: Selector
+scheduleNotificationSelector :: Selector '[Id NSUserNotification] ()
 scheduleNotificationSelector = mkSelector "scheduleNotification:"
 
 -- | @Selector@ for @removeScheduledNotification:@
-removeScheduledNotificationSelector :: Selector
+removeScheduledNotificationSelector :: Selector '[Id NSUserNotification] ()
 removeScheduledNotificationSelector = mkSelector "removeScheduledNotification:"
 
 -- | @Selector@ for @deliverNotification:@
-deliverNotificationSelector :: Selector
+deliverNotificationSelector :: Selector '[Id NSUserNotification] ()
 deliverNotificationSelector = mkSelector "deliverNotification:"
 
 -- | @Selector@ for @removeDeliveredNotification:@
-removeDeliveredNotificationSelector :: Selector
+removeDeliveredNotificationSelector :: Selector '[Id NSUserNotification] ()
 removeDeliveredNotificationSelector = mkSelector "removeDeliveredNotification:"
 
 -- | @Selector@ for @removeAllDeliveredNotifications@
-removeAllDeliveredNotificationsSelector :: Selector
+removeAllDeliveredNotificationsSelector :: Selector '[] ()
 removeAllDeliveredNotificationsSelector = mkSelector "removeAllDeliveredNotifications"
 
 -- | @Selector@ for @defaultUserNotificationCenter@
-defaultUserNotificationCenterSelector :: Selector
+defaultUserNotificationCenterSelector :: Selector '[] (Id NSUserNotificationCenter)
 defaultUserNotificationCenterSelector = mkSelector "defaultUserNotificationCenter"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scheduledNotifications@
-scheduledNotificationsSelector :: Selector
+scheduledNotificationsSelector :: Selector '[] (Id NSArray)
 scheduledNotificationsSelector = mkSelector "scheduledNotifications"
 
 -- | @Selector@ for @setScheduledNotifications:@
-setScheduledNotificationsSelector :: Selector
+setScheduledNotificationsSelector :: Selector '[Id NSArray] ()
 setScheduledNotificationsSelector = mkSelector "setScheduledNotifications:"
 
 -- | @Selector@ for @deliveredNotifications@
-deliveredNotificationsSelector :: Selector
+deliveredNotificationsSelector :: Selector '[] (Id NSArray)
 deliveredNotificationsSelector = mkSelector "deliveredNotifications"
 

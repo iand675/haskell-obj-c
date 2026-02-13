@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.AppKit.NSOpenGLView
   , setWantsBestResolutionOpenGLSurface
   , wantsExtendedDynamicRangeOpenGLSurface
   , setWantsExtendedDynamicRangeOpenGLSurface
+  , clearGLContextSelector
   , defaultPixelFormatSelector
   , initWithFrame_pixelFormatSelector
-  , clearGLContextSelector
-  , updateSelector
-  , reshapeSelector
-  , prepareOpenGLSelector
   , openGLContextSelector
-  , setOpenGLContextSelector
   , pixelFormatSelector
+  , prepareOpenGLSelector
+  , reshapeSelector
+  , setOpenGLContextSelector
   , setPixelFormatSelector
-  , wantsBestResolutionOpenGLSurfaceSelector
   , setWantsBestResolutionOpenGLSurfaceSelector
-  , wantsExtendedDynamicRangeOpenGLSurfaceSelector
   , setWantsExtendedDynamicRangeOpenGLSurfaceSelector
+  , updateSelector
+  , wantsBestResolutionOpenGLSurfaceSelector
+  , wantsExtendedDynamicRangeOpenGLSurfaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,133 +56,130 @@ defaultPixelFormat :: IO (Id NSOpenGLPixelFormat)
 defaultPixelFormat  =
   do
     cls' <- getRequiredClass "NSOpenGLView"
-    sendClassMsg cls' (mkSelector "defaultPixelFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultPixelFormatSelector
 
 -- | @- initWithFrame:pixelFormat:@
 initWithFrame_pixelFormat :: (IsNSOpenGLView nsOpenGLView, IsNSOpenGLPixelFormat format) => nsOpenGLView -> NSRect -> format -> IO (Id NSOpenGLView)
-initWithFrame_pixelFormat nsOpenGLView  frameRect format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg nsOpenGLView (mkSelector "initWithFrame:pixelFormat:") (retPtr retVoid) [argNSRect frameRect, argPtr (castPtr raw_format :: Ptr ())] >>= ownedObject . castPtr
+initWithFrame_pixelFormat nsOpenGLView frameRect format =
+  sendOwnedMessage nsOpenGLView initWithFrame_pixelFormatSelector frameRect (toNSOpenGLPixelFormat format)
 
 -- | @- clearGLContext@
 clearGLContext :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO ()
-clearGLContext nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "clearGLContext") retVoid []
+clearGLContext nsOpenGLView =
+  sendMessage nsOpenGLView clearGLContextSelector
 
 -- | @- update@
 update :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO ()
-update nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "update") retVoid []
+update nsOpenGLView =
+  sendMessage nsOpenGLView updateSelector
 
 -- | @- reshape@
 reshape :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO ()
-reshape nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "reshape") retVoid []
+reshape nsOpenGLView =
+  sendMessage nsOpenGLView reshapeSelector
 
 -- | @- prepareOpenGL@
 prepareOpenGL :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO ()
-prepareOpenGL nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "prepareOpenGL") retVoid []
+prepareOpenGL nsOpenGLView =
+  sendMessage nsOpenGLView prepareOpenGLSelector
 
 -- | @- openGLContext@
 openGLContext :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO (Id NSOpenGLContext)
-openGLContext nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "openGLContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+openGLContext nsOpenGLView =
+  sendMessage nsOpenGLView openGLContextSelector
 
 -- | @- setOpenGLContext:@
 setOpenGLContext :: (IsNSOpenGLView nsOpenGLView, IsNSOpenGLContext value) => nsOpenGLView -> value -> IO ()
-setOpenGLContext nsOpenGLView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOpenGLView (mkSelector "setOpenGLContext:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOpenGLContext nsOpenGLView value =
+  sendMessage nsOpenGLView setOpenGLContextSelector (toNSOpenGLContext value)
 
 -- | @- pixelFormat@
 pixelFormat :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO (Id NSOpenGLPixelFormat)
-pixelFormat nsOpenGLView  =
-    sendMsg nsOpenGLView (mkSelector "pixelFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelFormat nsOpenGLView =
+  sendMessage nsOpenGLView pixelFormatSelector
 
 -- | @- setPixelFormat:@
 setPixelFormat :: (IsNSOpenGLView nsOpenGLView, IsNSOpenGLPixelFormat value) => nsOpenGLView -> value -> IO ()
-setPixelFormat nsOpenGLView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOpenGLView (mkSelector "setPixelFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelFormat nsOpenGLView value =
+  sendMessage nsOpenGLView setPixelFormatSelector (toNSOpenGLPixelFormat value)
 
 -- | @- wantsBestResolutionOpenGLSurface@
 wantsBestResolutionOpenGLSurface :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO Bool
-wantsBestResolutionOpenGLSurface nsOpenGLView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOpenGLView (mkSelector "wantsBestResolutionOpenGLSurface") retCULong []
+wantsBestResolutionOpenGLSurface nsOpenGLView =
+  sendMessage nsOpenGLView wantsBestResolutionOpenGLSurfaceSelector
 
 -- | @- setWantsBestResolutionOpenGLSurface:@
 setWantsBestResolutionOpenGLSurface :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> Bool -> IO ()
-setWantsBestResolutionOpenGLSurface nsOpenGLView  value =
-    sendMsg nsOpenGLView (mkSelector "setWantsBestResolutionOpenGLSurface:") retVoid [argCULong (if value then 1 else 0)]
+setWantsBestResolutionOpenGLSurface nsOpenGLView value =
+  sendMessage nsOpenGLView setWantsBestResolutionOpenGLSurfaceSelector value
 
 -- | @- wantsExtendedDynamicRangeOpenGLSurface@
 wantsExtendedDynamicRangeOpenGLSurface :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> IO Bool
-wantsExtendedDynamicRangeOpenGLSurface nsOpenGLView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOpenGLView (mkSelector "wantsExtendedDynamicRangeOpenGLSurface") retCULong []
+wantsExtendedDynamicRangeOpenGLSurface nsOpenGLView =
+  sendMessage nsOpenGLView wantsExtendedDynamicRangeOpenGLSurfaceSelector
 
 -- | @- setWantsExtendedDynamicRangeOpenGLSurface:@
 setWantsExtendedDynamicRangeOpenGLSurface :: IsNSOpenGLView nsOpenGLView => nsOpenGLView -> Bool -> IO ()
-setWantsExtendedDynamicRangeOpenGLSurface nsOpenGLView  value =
-    sendMsg nsOpenGLView (mkSelector "setWantsExtendedDynamicRangeOpenGLSurface:") retVoid [argCULong (if value then 1 else 0)]
+setWantsExtendedDynamicRangeOpenGLSurface nsOpenGLView value =
+  sendMessage nsOpenGLView setWantsExtendedDynamicRangeOpenGLSurfaceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultPixelFormat@
-defaultPixelFormatSelector :: Selector
+defaultPixelFormatSelector :: Selector '[] (Id NSOpenGLPixelFormat)
 defaultPixelFormatSelector = mkSelector "defaultPixelFormat"
 
 -- | @Selector@ for @initWithFrame:pixelFormat:@
-initWithFrame_pixelFormatSelector :: Selector
+initWithFrame_pixelFormatSelector :: Selector '[NSRect, Id NSOpenGLPixelFormat] (Id NSOpenGLView)
 initWithFrame_pixelFormatSelector = mkSelector "initWithFrame:pixelFormat:"
 
 -- | @Selector@ for @clearGLContext@
-clearGLContextSelector :: Selector
+clearGLContextSelector :: Selector '[] ()
 clearGLContextSelector = mkSelector "clearGLContext"
 
 -- | @Selector@ for @update@
-updateSelector :: Selector
+updateSelector :: Selector '[] ()
 updateSelector = mkSelector "update"
 
 -- | @Selector@ for @reshape@
-reshapeSelector :: Selector
+reshapeSelector :: Selector '[] ()
 reshapeSelector = mkSelector "reshape"
 
 -- | @Selector@ for @prepareOpenGL@
-prepareOpenGLSelector :: Selector
+prepareOpenGLSelector :: Selector '[] ()
 prepareOpenGLSelector = mkSelector "prepareOpenGL"
 
 -- | @Selector@ for @openGLContext@
-openGLContextSelector :: Selector
+openGLContextSelector :: Selector '[] (Id NSOpenGLContext)
 openGLContextSelector = mkSelector "openGLContext"
 
 -- | @Selector@ for @setOpenGLContext:@
-setOpenGLContextSelector :: Selector
+setOpenGLContextSelector :: Selector '[Id NSOpenGLContext] ()
 setOpenGLContextSelector = mkSelector "setOpenGLContext:"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] (Id NSOpenGLPixelFormat)
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[Id NSOpenGLPixelFormat] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 
 -- | @Selector@ for @wantsBestResolutionOpenGLSurface@
-wantsBestResolutionOpenGLSurfaceSelector :: Selector
+wantsBestResolutionOpenGLSurfaceSelector :: Selector '[] Bool
 wantsBestResolutionOpenGLSurfaceSelector = mkSelector "wantsBestResolutionOpenGLSurface"
 
 -- | @Selector@ for @setWantsBestResolutionOpenGLSurface:@
-setWantsBestResolutionOpenGLSurfaceSelector :: Selector
+setWantsBestResolutionOpenGLSurfaceSelector :: Selector '[Bool] ()
 setWantsBestResolutionOpenGLSurfaceSelector = mkSelector "setWantsBestResolutionOpenGLSurface:"
 
 -- | @Selector@ for @wantsExtendedDynamicRangeOpenGLSurface@
-wantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector
+wantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector '[] Bool
 wantsExtendedDynamicRangeOpenGLSurfaceSelector = mkSelector "wantsExtendedDynamicRangeOpenGLSurface"
 
 -- | @Selector@ for @setWantsExtendedDynamicRangeOpenGLSurface:@
-setWantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector
+setWantsExtendedDynamicRangeOpenGLSurfaceSelector :: Selector '[Bool] ()
 setWantsExtendedDynamicRangeOpenGLSurfaceSelector = mkSelector "setWantsExtendedDynamicRangeOpenGLSurface:"
 

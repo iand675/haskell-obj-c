@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Quartz.QuartzFilterManager
   , setDelegate
   , delegate
   , importFilter
+  , delegateSelector
   , filterManagerSelector
-  , filtersInDomainsSelector
   , filterPanelSelector
   , filterViewSelector
-  , selectedFilterSelector
-  , selectFilterSelector
-  , setDelegateSelector
-  , delegateSelector
+  , filtersInDomainsSelector
   , importFilterSelector
+  , selectFilterSelector
+  , selectedFilterSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,90 +46,87 @@ filterManager :: IO (Id QuartzFilterManager)
 filterManager  =
   do
     cls' <- getRequiredClass "QuartzFilterManager"
-    sendClassMsg cls' (mkSelector "filterManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' filterManagerSelector
 
 -- | @+ filtersInDomains:@
 filtersInDomains :: IsNSArray domains => domains -> IO (Id NSArray)
 filtersInDomains domains =
   do
     cls' <- getRequiredClass "QuartzFilterManager"
-    withObjCPtr domains $ \raw_domains ->
-      sendClassMsg cls' (mkSelector "filtersInDomains:") (retPtr retVoid) [argPtr (castPtr raw_domains :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filtersInDomainsSelector (toNSArray domains)
 
 -- | @- filterPanel@
 filterPanel :: IsQuartzFilterManager quartzFilterManager => quartzFilterManager -> IO (Id NSPanel)
-filterPanel quartzFilterManager  =
-    sendMsg quartzFilterManager (mkSelector "filterPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterPanel quartzFilterManager =
+  sendMessage quartzFilterManager filterPanelSelector
 
 -- | @- filterView@
 filterView :: IsQuartzFilterManager quartzFilterManager => quartzFilterManager -> IO (Id QuartzFilterView)
-filterView quartzFilterManager  =
-    sendMsg quartzFilterManager (mkSelector "filterView") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterView quartzFilterManager =
+  sendMessage quartzFilterManager filterViewSelector
 
 -- | @- selectedFilter@
 selectedFilter :: IsQuartzFilterManager quartzFilterManager => quartzFilterManager -> IO (Id QuartzFilter)
-selectedFilter quartzFilterManager  =
-    sendMsg quartzFilterManager (mkSelector "selectedFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedFilter quartzFilterManager =
+  sendMessage quartzFilterManager selectedFilterSelector
 
 -- | @- selectFilter:@
 selectFilter :: (IsQuartzFilterManager quartzFilterManager, IsQuartzFilter filter_) => quartzFilterManager -> filter_ -> IO Bool
-selectFilter quartzFilterManager  filter_ =
-  withObjCPtr filter_ $ \raw_filter_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg quartzFilterManager (mkSelector "selectFilter:") retCULong [argPtr (castPtr raw_filter_ :: Ptr ())]
+selectFilter quartzFilterManager filter_ =
+  sendMessage quartzFilterManager selectFilterSelector (toQuartzFilter filter_)
 
 -- | @- setDelegate:@
 setDelegate :: IsQuartzFilterManager quartzFilterManager => quartzFilterManager -> RawId -> IO ()
-setDelegate quartzFilterManager  aDelegate =
-    sendMsg quartzFilterManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId aDelegate) :: Ptr ())]
+setDelegate quartzFilterManager aDelegate =
+  sendMessage quartzFilterManager setDelegateSelector aDelegate
 
 -- | @- delegate@
 delegate :: IsQuartzFilterManager quartzFilterManager => quartzFilterManager -> IO RawId
-delegate quartzFilterManager  =
-    fmap (RawId . castPtr) $ sendMsg quartzFilterManager (mkSelector "delegate") (retPtr retVoid) []
+delegate quartzFilterManager =
+  sendMessage quartzFilterManager delegateSelector
 
 -- | @- importFilter:@
 importFilter :: (IsQuartzFilterManager quartzFilterManager, IsNSDictionary filterProperties) => quartzFilterManager -> filterProperties -> IO (Id QuartzFilter)
-importFilter quartzFilterManager  filterProperties =
-  withObjCPtr filterProperties $ \raw_filterProperties ->
-      sendMsg quartzFilterManager (mkSelector "importFilter:") (retPtr retVoid) [argPtr (castPtr raw_filterProperties :: Ptr ())] >>= retainedObject . castPtr
+importFilter quartzFilterManager filterProperties =
+  sendMessage quartzFilterManager importFilterSelector (toNSDictionary filterProperties)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterManager@
-filterManagerSelector :: Selector
+filterManagerSelector :: Selector '[] (Id QuartzFilterManager)
 filterManagerSelector = mkSelector "filterManager"
 
 -- | @Selector@ for @filtersInDomains:@
-filtersInDomainsSelector :: Selector
+filtersInDomainsSelector :: Selector '[Id NSArray] (Id NSArray)
 filtersInDomainsSelector = mkSelector "filtersInDomains:"
 
 -- | @Selector@ for @filterPanel@
-filterPanelSelector :: Selector
+filterPanelSelector :: Selector '[] (Id NSPanel)
 filterPanelSelector = mkSelector "filterPanel"
 
 -- | @Selector@ for @filterView@
-filterViewSelector :: Selector
+filterViewSelector :: Selector '[] (Id QuartzFilterView)
 filterViewSelector = mkSelector "filterView"
 
 -- | @Selector@ for @selectedFilter@
-selectedFilterSelector :: Selector
+selectedFilterSelector :: Selector '[] (Id QuartzFilter)
 selectedFilterSelector = mkSelector "selectedFilter"
 
 -- | @Selector@ for @selectFilter:@
-selectFilterSelector :: Selector
+selectFilterSelector :: Selector '[Id QuartzFilter] Bool
 selectFilterSelector = mkSelector "selectFilter:"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @importFilter:@
-importFilterSelector :: Selector
+importFilterSelector :: Selector '[Id NSDictionary] (Id QuartzFilter)
 importFilterSelector = mkSelector "importFilter:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSPressGestureRecognizer
   , setAllowableMovement
   , numberOfTouchesRequired
   , setNumberOfTouchesRequired
-  , buttonMaskSelector
-  , setButtonMaskSelector
-  , minimumPressDurationSelector
-  , setMinimumPressDurationSelector
   , allowableMovementSelector
-  , setAllowableMovementSelector
+  , buttonMaskSelector
+  , minimumPressDurationSelector
   , numberOfTouchesRequiredSelector
+  , setAllowableMovementSelector
+  , setButtonMaskSelector
+  , setMinimumPressDurationSelector
   , setNumberOfTouchesRequiredSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,77 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- buttonMask@
 buttonMask :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> IO CULong
-buttonMask nsPressGestureRecognizer  =
-    sendMsg nsPressGestureRecognizer (mkSelector "buttonMask") retCULong []
+buttonMask nsPressGestureRecognizer =
+  sendMessage nsPressGestureRecognizer buttonMaskSelector
 
 -- | @- setButtonMask:@
 setButtonMask :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> CULong -> IO ()
-setButtonMask nsPressGestureRecognizer  value =
-    sendMsg nsPressGestureRecognizer (mkSelector "setButtonMask:") retVoid [argCULong value]
+setButtonMask nsPressGestureRecognizer value =
+  sendMessage nsPressGestureRecognizer setButtonMaskSelector value
 
 -- | @- minimumPressDuration@
 minimumPressDuration :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> IO CDouble
-minimumPressDuration nsPressGestureRecognizer  =
-    sendMsg nsPressGestureRecognizer (mkSelector "minimumPressDuration") retCDouble []
+minimumPressDuration nsPressGestureRecognizer =
+  sendMessage nsPressGestureRecognizer minimumPressDurationSelector
 
 -- | @- setMinimumPressDuration:@
 setMinimumPressDuration :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> CDouble -> IO ()
-setMinimumPressDuration nsPressGestureRecognizer  value =
-    sendMsg nsPressGestureRecognizer (mkSelector "setMinimumPressDuration:") retVoid [argCDouble value]
+setMinimumPressDuration nsPressGestureRecognizer value =
+  sendMessage nsPressGestureRecognizer setMinimumPressDurationSelector value
 
 -- | @- allowableMovement@
 allowableMovement :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> IO CDouble
-allowableMovement nsPressGestureRecognizer  =
-    sendMsg nsPressGestureRecognizer (mkSelector "allowableMovement") retCDouble []
+allowableMovement nsPressGestureRecognizer =
+  sendMessage nsPressGestureRecognizer allowableMovementSelector
 
 -- | @- setAllowableMovement:@
 setAllowableMovement :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> CDouble -> IO ()
-setAllowableMovement nsPressGestureRecognizer  value =
-    sendMsg nsPressGestureRecognizer (mkSelector "setAllowableMovement:") retVoid [argCDouble value]
+setAllowableMovement nsPressGestureRecognizer value =
+  sendMessage nsPressGestureRecognizer setAllowableMovementSelector value
 
 -- | @- numberOfTouchesRequired@
 numberOfTouchesRequired :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> IO CLong
-numberOfTouchesRequired nsPressGestureRecognizer  =
-    sendMsg nsPressGestureRecognizer (mkSelector "numberOfTouchesRequired") retCLong []
+numberOfTouchesRequired nsPressGestureRecognizer =
+  sendMessage nsPressGestureRecognizer numberOfTouchesRequiredSelector
 
 -- | @- setNumberOfTouchesRequired:@
 setNumberOfTouchesRequired :: IsNSPressGestureRecognizer nsPressGestureRecognizer => nsPressGestureRecognizer -> CLong -> IO ()
-setNumberOfTouchesRequired nsPressGestureRecognizer  value =
-    sendMsg nsPressGestureRecognizer (mkSelector "setNumberOfTouchesRequired:") retVoid [argCLong value]
+setNumberOfTouchesRequired nsPressGestureRecognizer value =
+  sendMessage nsPressGestureRecognizer setNumberOfTouchesRequiredSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonMask@
-buttonMaskSelector :: Selector
+buttonMaskSelector :: Selector '[] CULong
 buttonMaskSelector = mkSelector "buttonMask"
 
 -- | @Selector@ for @setButtonMask:@
-setButtonMaskSelector :: Selector
+setButtonMaskSelector :: Selector '[CULong] ()
 setButtonMaskSelector = mkSelector "setButtonMask:"
 
 -- | @Selector@ for @minimumPressDuration@
-minimumPressDurationSelector :: Selector
+minimumPressDurationSelector :: Selector '[] CDouble
 minimumPressDurationSelector = mkSelector "minimumPressDuration"
 
 -- | @Selector@ for @setMinimumPressDuration:@
-setMinimumPressDurationSelector :: Selector
+setMinimumPressDurationSelector :: Selector '[CDouble] ()
 setMinimumPressDurationSelector = mkSelector "setMinimumPressDuration:"
 
 -- | @Selector@ for @allowableMovement@
-allowableMovementSelector :: Selector
+allowableMovementSelector :: Selector '[] CDouble
 allowableMovementSelector = mkSelector "allowableMovement"
 
 -- | @Selector@ for @setAllowableMovement:@
-setAllowableMovementSelector :: Selector
+setAllowableMovementSelector :: Selector '[CDouble] ()
 setAllowableMovementSelector = mkSelector "setAllowableMovement:"
 
 -- | @Selector@ for @numberOfTouchesRequired@
-numberOfTouchesRequiredSelector :: Selector
+numberOfTouchesRequiredSelector :: Selector '[] CLong
 numberOfTouchesRequiredSelector = mkSelector "numberOfTouchesRequired"
 
 -- | @Selector@ for @setNumberOfTouchesRequired:@
-setNumberOfTouchesRequiredSelector :: Selector
+setNumberOfTouchesRequiredSelector :: Selector '[CLong] ()
 setNumberOfTouchesRequiredSelector = mkSelector "setNumberOfTouchesRequired:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,47 +43,43 @@ module ObjC.Matter.MTRBaseClusterPushAVStreamTransport
   , initWithDevice_endpointID_queue
   , allocatePushTransportWithParams_completionSelector
   , deallocatePushTransportWithParams_completionSelector
-  , modifyPushTransportWithParams_completionSelector
-  , setTransportStatusWithParams_completionSelector
-  , manuallyTriggerTransportWithParams_completionSelector
   , findTransportWithParams_completionSelector
-  , readAttributeSupportedFormatsWithCompletionSelector
-  , subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeCurrentConnectionsWithParams_completionSelector
-  , subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , manuallyTriggerTransportWithParams_completionSelector
+  , modifyPushTransportWithParams_completionSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCurrentConnectionsWithParams_completionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeSupportedFormatsWithCompletionSelector
+  , setTransportStatusWithParams_completionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -95,9 +92,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- allocatePushTransportWithParams:completion:@
 allocatePushTransportWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterAllocatePushTransportParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-allocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "allocatePushTransportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+allocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendOwnedMessage mtrBaseClusterPushAVStreamTransport allocatePushTransportWithParams_completionSelector (toMTRPushAVStreamTransportClusterAllocatePushTransportParams params) completion
 
 -- | Command DeallocatePushTransport
 --
@@ -105,9 +101,8 @@ allocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  
 --
 -- ObjC selector: @- deallocatePushTransportWithParams:completion:@
 deallocatePushTransportWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterDeallocatePushTransportParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-deallocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "deallocatePushTransportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+deallocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport deallocatePushTransportWithParams_completionSelector (toMTRPushAVStreamTransportClusterDeallocatePushTransportParams params) completion
 
 -- | Command ModifyPushTransport
 --
@@ -115,9 +110,8 @@ deallocatePushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport
 --
 -- ObjC selector: @- modifyPushTransportWithParams:completion:@
 modifyPushTransportWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterModifyPushTransportParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-modifyPushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "modifyPushTransportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+modifyPushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport modifyPushTransportWithParams_completionSelector (toMTRPushAVStreamTransportClusterModifyPushTransportParams params) completion
 
 -- | Command SetTransportStatus
 --
@@ -125,9 +119,8 @@ modifyPushTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  pa
 --
 -- ObjC selector: @- setTransportStatusWithParams:completion:@
 setTransportStatusWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterSetTransportStatusParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-setTransportStatusWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "setTransportStatusWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTransportStatusWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport setTransportStatusWithParams_completionSelector (toMTRPushAVStreamTransportClusterSetTransportStatusParams params) completion
 
 -- | Command ManuallyTriggerTransport
 --
@@ -135,9 +128,8 @@ setTransportStatusWithParams_completion mtrBaseClusterPushAVStreamTransport  par
 --
 -- ObjC selector: @- manuallyTriggerTransportWithParams:completion:@
 manuallyTriggerTransportWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterManuallyTriggerTransportParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-manuallyTriggerTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "manuallyTriggerTransportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+manuallyTriggerTransportWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport manuallyTriggerTransportWithParams_completionSelector (toMTRPushAVStreamTransportClusterManuallyTriggerTransportParams params) completion
 
 -- | Command FindTransport
 --
@@ -145,301 +137,268 @@ manuallyTriggerTransportWithParams_completion mtrBaseClusterPushAVStreamTranspor
 --
 -- ObjC selector: @- findTransportWithParams:completion:@
 findTransportWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRPushAVStreamTransportClusterFindTransportParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-findTransportWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "findTransportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+findTransportWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport findTransportWithParams_completionSelector (toMTRPushAVStreamTransportClusterFindTransportParams params) completion
 
 -- | @- readAttributeSupportedFormatsWithCompletion:@
 readAttributeSupportedFormatsWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeSupportedFormatsWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeSupportedFormatsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSupportedFormatsWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeSupportedFormatsWithCompletionSelector completion
 
 -- | @- subscribeAttributeSupportedFormatsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeSupportedFormatsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSupportedFormatsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSupportedFormatsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeCurrentConnectionsWithParams:completion:@
 readAttributeCurrentConnectionsWithParams_completion :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRReadParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> IO ()
-readAttributeCurrentConnectionsWithParams_completion mtrBaseClusterPushAVStreamTransport  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeCurrentConnectionsWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+readAttributeCurrentConnectionsWithParams_completion mtrBaseClusterPushAVStreamTransport params completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeCurrentConnectionsWithParams_completionSelector (toMTRReadParams params) completion
 
 -- | @- subscribeAttributeCurrentConnectionsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeCurrentConnectionsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCurrentConnectionsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCurrentConnectionsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterPushAVStreamTransport  completion =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterPushAVStreamTransport completion =
+  sendMessage mtrBaseClusterPushAVStreamTransport readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRSubscribeParams params) => mtrBaseClusterPushAVStreamTransport -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterPushAVStreamTransport params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterPushAVStreamTransport subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport => mtrBaseClusterPushAVStreamTransport -> IO (Id MTRBaseClusterPushAVStreamTransport)
-init_ mtrBaseClusterPushAVStreamTransport  =
-    sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterPushAVStreamTransport =
+  sendOwnedMessage mtrBaseClusterPushAVStreamTransport initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterPushAVStreamTransport)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterPushAVStreamTransport"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterPushAVStreamTransport mtrBaseClusterPushAVStreamTransport, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterPushAVStreamTransport -> device -> endpointID -> queue -> IO (Id MTRBaseClusterPushAVStreamTransport)
-initWithDevice_endpointID_queue mtrBaseClusterPushAVStreamTransport  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterPushAVStreamTransport (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterPushAVStreamTransport device endpointID queue =
+  sendOwnedMessage mtrBaseClusterPushAVStreamTransport initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allocatePushTransportWithParams:completion:@
-allocatePushTransportWithParams_completionSelector :: Selector
+allocatePushTransportWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterAllocatePushTransportParams, Ptr ()] ()
 allocatePushTransportWithParams_completionSelector = mkSelector "allocatePushTransportWithParams:completion:"
 
 -- | @Selector@ for @deallocatePushTransportWithParams:completion:@
-deallocatePushTransportWithParams_completionSelector :: Selector
+deallocatePushTransportWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterDeallocatePushTransportParams, Ptr ()] ()
 deallocatePushTransportWithParams_completionSelector = mkSelector "deallocatePushTransportWithParams:completion:"
 
 -- | @Selector@ for @modifyPushTransportWithParams:completion:@
-modifyPushTransportWithParams_completionSelector :: Selector
+modifyPushTransportWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterModifyPushTransportParams, Ptr ()] ()
 modifyPushTransportWithParams_completionSelector = mkSelector "modifyPushTransportWithParams:completion:"
 
 -- | @Selector@ for @setTransportStatusWithParams:completion:@
-setTransportStatusWithParams_completionSelector :: Selector
+setTransportStatusWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterSetTransportStatusParams, Ptr ()] ()
 setTransportStatusWithParams_completionSelector = mkSelector "setTransportStatusWithParams:completion:"
 
 -- | @Selector@ for @manuallyTriggerTransportWithParams:completion:@
-manuallyTriggerTransportWithParams_completionSelector :: Selector
+manuallyTriggerTransportWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterManuallyTriggerTransportParams, Ptr ()] ()
 manuallyTriggerTransportWithParams_completionSelector = mkSelector "manuallyTriggerTransportWithParams:completion:"
 
 -- | @Selector@ for @findTransportWithParams:completion:@
-findTransportWithParams_completionSelector :: Selector
+findTransportWithParams_completionSelector :: Selector '[Id MTRPushAVStreamTransportClusterFindTransportParams, Ptr ()] ()
 findTransportWithParams_completionSelector = mkSelector "findTransportWithParams:completion:"
 
 -- | @Selector@ for @readAttributeSupportedFormatsWithCompletion:@
-readAttributeSupportedFormatsWithCompletionSelector :: Selector
+readAttributeSupportedFormatsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSupportedFormatsWithCompletionSelector = mkSelector "readAttributeSupportedFormatsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeSupportedFormatsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSupportedFormatsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSupportedFormatsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSupportedFormatsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSupportedFormatsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSupportedFormatsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeCurrentConnectionsWithParams:completion:@
-readAttributeCurrentConnectionsWithParams_completionSelector :: Selector
+readAttributeCurrentConnectionsWithParams_completionSelector :: Selector '[Id MTRReadParams, Ptr ()] ()
 readAttributeCurrentConnectionsWithParams_completionSelector = mkSelector "readAttributeCurrentConnectionsWithParams:completion:"
 
 -- | @Selector@ for @subscribeAttributeCurrentConnectionsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCurrentConnectionsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCurrentConnectionsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCurrentConnectionsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCurrentConnectionsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCurrentConnectionsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterPushAVStreamTransport)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterPushAVStreamTransport)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterPushAVStreamTransport)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

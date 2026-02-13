@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSPredicateEditor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rowTemplates@
 rowTemplates :: IsNSPredicateEditor nsPredicateEditor => nsPredicateEditor -> IO (Id NSArray)
-rowTemplates nsPredicateEditor  =
-    sendMsg nsPredicateEditor (mkSelector "rowTemplates") (retPtr retVoid) [] >>= retainedObject . castPtr
+rowTemplates nsPredicateEditor =
+  sendMessage nsPredicateEditor rowTemplatesSelector
 
 -- | @- setRowTemplates:@
 setRowTemplates :: (IsNSPredicateEditor nsPredicateEditor, IsNSArray value) => nsPredicateEditor -> value -> IO ()
-setRowTemplates nsPredicateEditor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPredicateEditor (mkSelector "setRowTemplates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRowTemplates nsPredicateEditor value =
+  sendMessage nsPredicateEditor setRowTemplatesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rowTemplates@
-rowTemplatesSelector :: Selector
+rowTemplatesSelector :: Selector '[] (Id NSArray)
 rowTemplatesSelector = mkSelector "rowTemplates"
 
 -- | @Selector@ for @setRowTemplates:@
-setRowTemplatesSelector :: Selector
+setRowTemplatesSelector :: Selector '[Id NSArray] ()
 setRowTemplatesSelector = mkSelector "setRowTemplates:"
 

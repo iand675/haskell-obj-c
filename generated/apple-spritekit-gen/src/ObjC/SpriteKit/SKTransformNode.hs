@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.SpriteKit.SKTransformNode
   , setXRotation
   , yRotation
   , setYRotation
-  , xRotationSelector
   , setXRotationSelector
-  , yRotationSelector
   , setYRotationSelector
+  , xRotationSelector
+  , yRotationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,41 +35,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- xRotation@
 xRotation :: IsSKTransformNode skTransformNode => skTransformNode -> IO CDouble
-xRotation skTransformNode  =
-    sendMsg skTransformNode (mkSelector "xRotation") retCDouble []
+xRotation skTransformNode =
+  sendMessage skTransformNode xRotationSelector
 
 -- | @- setXRotation:@
 setXRotation :: IsSKTransformNode skTransformNode => skTransformNode -> CDouble -> IO ()
-setXRotation skTransformNode  value =
-    sendMsg skTransformNode (mkSelector "setXRotation:") retVoid [argCDouble value]
+setXRotation skTransformNode value =
+  sendMessage skTransformNode setXRotationSelector value
 
 -- | @- yRotation@
 yRotation :: IsSKTransformNode skTransformNode => skTransformNode -> IO CDouble
-yRotation skTransformNode  =
-    sendMsg skTransformNode (mkSelector "yRotation") retCDouble []
+yRotation skTransformNode =
+  sendMessage skTransformNode yRotationSelector
 
 -- | @- setYRotation:@
 setYRotation :: IsSKTransformNode skTransformNode => skTransformNode -> CDouble -> IO ()
-setYRotation skTransformNode  value =
-    sendMsg skTransformNode (mkSelector "setYRotation:") retVoid [argCDouble value]
+setYRotation skTransformNode value =
+  sendMessage skTransformNode setYRotationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @xRotation@
-xRotationSelector :: Selector
+xRotationSelector :: Selector '[] CDouble
 xRotationSelector = mkSelector "xRotation"
 
 -- | @Selector@ for @setXRotation:@
-setXRotationSelector :: Selector
+setXRotationSelector :: Selector '[CDouble] ()
 setXRotationSelector = mkSelector "setXRotation:"
 
 -- | @Selector@ for @yRotation@
-yRotationSelector :: Selector
+yRotationSelector :: Selector '[] CDouble
 yRotationSelector = mkSelector "yRotation"
 
 -- | @Selector@ for @setYRotation:@
-setYRotationSelector :: Selector
+setYRotationSelector :: Selector '[CDouble] ()
 setYRotationSelector = mkSelector "setYRotation:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,34 +26,30 @@ module ObjC.SceneKit.SCNReplicatorConstraint
   , setPositionOffset
   , scaleOffset
   , setScaleOffset
-  , replicatorConstraintWithTargetSelector
-  , targetSelector
-  , setTargetSelector
-  , replicatesOrientationSelector
-  , setReplicatesOrientationSelector
-  , replicatesPositionSelector
-  , setReplicatesPositionSelector
-  , replicatesScaleSelector
-  , setReplicatesScaleSelector
   , orientationOffsetSelector
-  , setOrientationOffsetSelector
   , positionOffsetSelector
-  , setPositionOffsetSelector
+  , replicatesOrientationSelector
+  , replicatesPositionSelector
+  , replicatesScaleSelector
+  , replicatorConstraintWithTargetSelector
   , scaleOffsetSelector
+  , setOrientationOffsetSelector
+  , setPositionOffsetSelector
+  , setReplicatesOrientationSelector
+  , setReplicatesPositionSelector
+  , setReplicatesScaleSelector
   , setScaleOffsetSelector
+  , setTargetSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,7 @@ replicatorConstraintWithTarget :: IsSCNNode target => target -> IO (Id SCNReplic
 replicatorConstraintWithTarget target =
   do
     cls' <- getRequiredClass "SCNReplicatorConstraint"
-    withObjCPtr target $ \raw_target ->
-      sendClassMsg cls' (mkSelector "replicatorConstraintWithTarget:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' replicatorConstraintWithTargetSelector (toSCNNode target)
 
 -- | target
 --
@@ -78,8 +74,8 @@ replicatorConstraintWithTarget target =
 --
 -- ObjC selector: @- target@
 target :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO (Id SCNNode)
-target scnReplicatorConstraint  =
-    sendMsg scnReplicatorConstraint (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint targetSelector
 
 -- | target
 --
@@ -87,9 +83,8 @@ target scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setTarget:@
 setTarget :: (IsSCNReplicatorConstraint scnReplicatorConstraint, IsSCNNode value) => scnReplicatorConstraint -> value -> IO ()
-setTarget scnReplicatorConstraint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnReplicatorConstraint (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setTargetSelector (toSCNNode value)
 
 -- | replicatesOrientation
 --
@@ -97,8 +92,8 @@ setTarget scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- replicatesOrientation@
 replicatesOrientation :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO Bool
-replicatesOrientation scnReplicatorConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnReplicatorConstraint (mkSelector "replicatesOrientation") retCULong []
+replicatesOrientation scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint replicatesOrientationSelector
 
 -- | replicatesOrientation
 --
@@ -106,8 +101,8 @@ replicatesOrientation scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setReplicatesOrientation:@
 setReplicatesOrientation :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> Bool -> IO ()
-setReplicatesOrientation scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setReplicatesOrientation:") retVoid [argCULong (if value then 1 else 0)]
+setReplicatesOrientation scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setReplicatesOrientationSelector value
 
 -- | replicatesPosition
 --
@@ -115,8 +110,8 @@ setReplicatesOrientation scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- replicatesPosition@
 replicatesPosition :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO Bool
-replicatesPosition scnReplicatorConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnReplicatorConstraint (mkSelector "replicatesPosition") retCULong []
+replicatesPosition scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint replicatesPositionSelector
 
 -- | replicatesPosition
 --
@@ -124,8 +119,8 @@ replicatesPosition scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setReplicatesPosition:@
 setReplicatesPosition :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> Bool -> IO ()
-setReplicatesPosition scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setReplicatesPosition:") retVoid [argCULong (if value then 1 else 0)]
+setReplicatesPosition scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setReplicatesPositionSelector value
 
 -- | replicatesScale
 --
@@ -133,8 +128,8 @@ setReplicatesPosition scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- replicatesScale@
 replicatesScale :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO Bool
-replicatesScale scnReplicatorConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnReplicatorConstraint (mkSelector "replicatesScale") retCULong []
+replicatesScale scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint replicatesScaleSelector
 
 -- | replicatesScale
 --
@@ -142,8 +137,8 @@ replicatesScale scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setReplicatesScale:@
 setReplicatesScale :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> Bool -> IO ()
-setReplicatesScale scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setReplicatesScale:") retVoid [argCULong (if value then 1 else 0)]
+setReplicatesScale scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setReplicatesScaleSelector value
 
 -- | orientationOffset
 --
@@ -151,8 +146,8 @@ setReplicatesScale scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- orientationOffset@
 orientationOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO SCNQuaternion
-orientationOffset scnReplicatorConstraint  =
-    sendMsgStret scnReplicatorConstraint (mkSelector "orientationOffset") retSCNQuaternion []
+orientationOffset scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint orientationOffsetSelector
 
 -- | orientationOffset
 --
@@ -160,8 +155,8 @@ orientationOffset scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setOrientationOffset:@
 setOrientationOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> SCNQuaternion -> IO ()
-setOrientationOffset scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setOrientationOffset:") retVoid [argSCNQuaternion value]
+setOrientationOffset scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setOrientationOffsetSelector value
 
 -- | positionOffset
 --
@@ -169,8 +164,8 @@ setOrientationOffset scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- positionOffset@
 positionOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO SCNVector3
-positionOffset scnReplicatorConstraint  =
-    sendMsgStret scnReplicatorConstraint (mkSelector "positionOffset") retSCNVector3 []
+positionOffset scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint positionOffsetSelector
 
 -- | positionOffset
 --
@@ -178,8 +173,8 @@ positionOffset scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setPositionOffset:@
 setPositionOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> SCNVector3 -> IO ()
-setPositionOffset scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setPositionOffset:") retVoid [argSCNVector3 value]
+setPositionOffset scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setPositionOffsetSelector value
 
 -- | scaleOffset
 --
@@ -187,8 +182,8 @@ setPositionOffset scnReplicatorConstraint  value =
 --
 -- ObjC selector: @- scaleOffset@
 scaleOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> IO SCNVector3
-scaleOffset scnReplicatorConstraint  =
-    sendMsgStret scnReplicatorConstraint (mkSelector "scaleOffset") retSCNVector3 []
+scaleOffset scnReplicatorConstraint =
+  sendMessage scnReplicatorConstraint scaleOffsetSelector
 
 -- | scaleOffset
 --
@@ -196,70 +191,70 @@ scaleOffset scnReplicatorConstraint  =
 --
 -- ObjC selector: @- setScaleOffset:@
 setScaleOffset :: IsSCNReplicatorConstraint scnReplicatorConstraint => scnReplicatorConstraint -> SCNVector3 -> IO ()
-setScaleOffset scnReplicatorConstraint  value =
-    sendMsg scnReplicatorConstraint (mkSelector "setScaleOffset:") retVoid [argSCNVector3 value]
+setScaleOffset scnReplicatorConstraint value =
+  sendMessage scnReplicatorConstraint setScaleOffsetSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @replicatorConstraintWithTarget:@
-replicatorConstraintWithTargetSelector :: Selector
+replicatorConstraintWithTargetSelector :: Selector '[Id SCNNode] (Id SCNReplicatorConstraint)
 replicatorConstraintWithTargetSelector = mkSelector "replicatorConstraintWithTarget:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id SCNNode)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id SCNNode] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @replicatesOrientation@
-replicatesOrientationSelector :: Selector
+replicatesOrientationSelector :: Selector '[] Bool
 replicatesOrientationSelector = mkSelector "replicatesOrientation"
 
 -- | @Selector@ for @setReplicatesOrientation:@
-setReplicatesOrientationSelector :: Selector
+setReplicatesOrientationSelector :: Selector '[Bool] ()
 setReplicatesOrientationSelector = mkSelector "setReplicatesOrientation:"
 
 -- | @Selector@ for @replicatesPosition@
-replicatesPositionSelector :: Selector
+replicatesPositionSelector :: Selector '[] Bool
 replicatesPositionSelector = mkSelector "replicatesPosition"
 
 -- | @Selector@ for @setReplicatesPosition:@
-setReplicatesPositionSelector :: Selector
+setReplicatesPositionSelector :: Selector '[Bool] ()
 setReplicatesPositionSelector = mkSelector "setReplicatesPosition:"
 
 -- | @Selector@ for @replicatesScale@
-replicatesScaleSelector :: Selector
+replicatesScaleSelector :: Selector '[] Bool
 replicatesScaleSelector = mkSelector "replicatesScale"
 
 -- | @Selector@ for @setReplicatesScale:@
-setReplicatesScaleSelector :: Selector
+setReplicatesScaleSelector :: Selector '[Bool] ()
 setReplicatesScaleSelector = mkSelector "setReplicatesScale:"
 
 -- | @Selector@ for @orientationOffset@
-orientationOffsetSelector :: Selector
+orientationOffsetSelector :: Selector '[] SCNQuaternion
 orientationOffsetSelector = mkSelector "orientationOffset"
 
 -- | @Selector@ for @setOrientationOffset:@
-setOrientationOffsetSelector :: Selector
+setOrientationOffsetSelector :: Selector '[SCNQuaternion] ()
 setOrientationOffsetSelector = mkSelector "setOrientationOffset:"
 
 -- | @Selector@ for @positionOffset@
-positionOffsetSelector :: Selector
+positionOffsetSelector :: Selector '[] SCNVector3
 positionOffsetSelector = mkSelector "positionOffset"
 
 -- | @Selector@ for @setPositionOffset:@
-setPositionOffsetSelector :: Selector
+setPositionOffsetSelector :: Selector '[SCNVector3] ()
 setPositionOffsetSelector = mkSelector "setPositionOffset:"
 
 -- | @Selector@ for @scaleOffset@
-scaleOffsetSelector :: Selector
+scaleOffsetSelector :: Selector '[] SCNVector3
 scaleOffsetSelector = mkSelector "scaleOffset"
 
 -- | @Selector@ for @setScaleOffset:@
-setScaleOffsetSelector :: Selector
+setScaleOffsetSelector :: Selector '[SCNVector3] ()
 setScaleOffsetSelector = mkSelector "setScaleOffset:"
 

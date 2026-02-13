@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Speech.SFAcousticFeature
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- acousticFeatureValuePerFrame@
 acousticFeatureValuePerFrame :: IsSFAcousticFeature sfAcousticFeature => sfAcousticFeature -> IO (Id NSArray)
-acousticFeatureValuePerFrame sfAcousticFeature  =
-    sendMsg sfAcousticFeature (mkSelector "acousticFeatureValuePerFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+acousticFeatureValuePerFrame sfAcousticFeature =
+  sendMessage sfAcousticFeature acousticFeatureValuePerFrameSelector
 
 -- | The duration of the audio frame.
 --
 -- ObjC selector: @- frameDuration@
 frameDuration :: IsSFAcousticFeature sfAcousticFeature => sfAcousticFeature -> IO CDouble
-frameDuration sfAcousticFeature  =
-    sendMsg sfAcousticFeature (mkSelector "frameDuration") retCDouble []
+frameDuration sfAcousticFeature =
+  sendMessage sfAcousticFeature frameDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @acousticFeatureValuePerFrame@
-acousticFeatureValuePerFrameSelector :: Selector
+acousticFeatureValuePerFrameSelector :: Selector '[] (Id NSArray)
 acousticFeatureValuePerFrameSelector = mkSelector "acousticFeatureValuePerFrame"
 
 -- | @Selector@ for @frameDuration@
-frameDurationSelector :: Selector
+frameDurationSelector :: Selector '[] CDouble
 frameDurationSelector = mkSelector "frameDuration"
 

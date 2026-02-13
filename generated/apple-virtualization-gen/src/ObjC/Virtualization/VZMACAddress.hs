@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.Virtualization.VZMACAddress
   , isUnicastAddress
   , isLocallyAdministeredAddress
   , isUniversallyAdministeredAddress
-  , newSelector
   , initSelector
   , initWithStringSelector
-  , randomLocallyAdministeredAddressSelector
-  , stringSelector
   , isBroadcastAddressSelector
+  , isLocallyAdministeredAddressSelector
   , isMulticastAddressSelector
   , isUnicastAddressSelector
-  , isLocallyAdministeredAddressSelector
   , isUniversallyAdministeredAddressSelector
+  , newSelector
+  , randomLocallyAdministeredAddressSelector
+  , stringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ new :: IO (Id VZMACAddress)
 new  =
   do
     cls' <- getRequiredClass "VZMACAddress"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO (Id VZMACAddress)
-init_ vzmacAddress  =
-    sendMsg vzmacAddress (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzmacAddress =
+  sendOwnedMessage vzmacAddress initSelector
 
 -- | Initialize the VZMACAddress from a string representation of a MAC address.
 --
@@ -73,9 +70,8 @@ init_ vzmacAddress  =
 --
 -- ObjC selector: @- initWithString:@
 initWithString :: (IsVZMACAddress vzmacAddress, IsNSString string) => vzmacAddress -> string -> IO (Id VZMACAddress)
-initWithString vzmacAddress  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg vzmacAddress (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithString vzmacAddress string =
+  sendOwnedMessage vzmacAddress initWithStringSelector (toNSString string)
 
 -- | Create a valid, random, unicast, locally administered address.
 --
@@ -86,7 +82,7 @@ randomLocallyAdministeredAddress :: IO (Id VZMACAddress)
 randomLocallyAdministeredAddress  =
   do
     cls' <- getRequiredClass "VZMACAddress"
-    sendClassMsg cls' (mkSelector "randomLocallyAdministeredAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' randomLocallyAdministeredAddressSelector
 
 -- | The address represented as a string.
 --
@@ -96,85 +92,85 @@ randomLocallyAdministeredAddress  =
 --
 -- ObjC selector: @- string@
 string :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO (Id NSString)
-string vzmacAddress  =
-    sendMsg vzmacAddress (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string vzmacAddress =
+  sendMessage vzmacAddress stringSelector
 
 -- | True if the address is the broadcast address, false otherwise.
 --
 -- ObjC selector: @- isBroadcastAddress@
 isBroadcastAddress :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO Bool
-isBroadcastAddress vzmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzmacAddress (mkSelector "isBroadcastAddress") retCULong []
+isBroadcastAddress vzmacAddress =
+  sendMessage vzmacAddress isBroadcastAddressSelector
 
 -- | True if the address is a multicast address, false otherwise.
 --
 -- ObjC selector: @- isMulticastAddress@
 isMulticastAddress :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO Bool
-isMulticastAddress vzmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzmacAddress (mkSelector "isMulticastAddress") retCULong []
+isMulticastAddress vzmacAddress =
+  sendMessage vzmacAddress isMulticastAddressSelector
 
 -- | True if the address is a unicast address, false otherwise.
 --
 -- ObjC selector: @- isUnicastAddress@
 isUnicastAddress :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO Bool
-isUnicastAddress vzmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzmacAddress (mkSelector "isUnicastAddress") retCULong []
+isUnicastAddress vzmacAddress =
+  sendMessage vzmacAddress isUnicastAddressSelector
 
 -- | True if the address is a locally administered addresses (LAA), false otherwise.
 --
 -- ObjC selector: @- isLocallyAdministeredAddress@
 isLocallyAdministeredAddress :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO Bool
-isLocallyAdministeredAddress vzmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzmacAddress (mkSelector "isLocallyAdministeredAddress") retCULong []
+isLocallyAdministeredAddress vzmacAddress =
+  sendMessage vzmacAddress isLocallyAdministeredAddressSelector
 
 -- | True if the address is a universally administered addresses (UAA), false otherwise.
 --
 -- ObjC selector: @- isUniversallyAdministeredAddress@
 isUniversallyAdministeredAddress :: IsVZMACAddress vzmacAddress => vzmacAddress -> IO Bool
-isUniversallyAdministeredAddress vzmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzmacAddress (mkSelector "isUniversallyAdministeredAddress") retCULong []
+isUniversallyAdministeredAddress vzmacAddress =
+  sendMessage vzmacAddress isUniversallyAdministeredAddressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMACAddress)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMACAddress)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithString:@
-initWithStringSelector :: Selector
+initWithStringSelector :: Selector '[Id NSString] (Id VZMACAddress)
 initWithStringSelector = mkSelector "initWithString:"
 
 -- | @Selector@ for @randomLocallyAdministeredAddress@
-randomLocallyAdministeredAddressSelector :: Selector
+randomLocallyAdministeredAddressSelector :: Selector '[] (Id VZMACAddress)
 randomLocallyAdministeredAddressSelector = mkSelector "randomLocallyAdministeredAddress"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @isBroadcastAddress@
-isBroadcastAddressSelector :: Selector
+isBroadcastAddressSelector :: Selector '[] Bool
 isBroadcastAddressSelector = mkSelector "isBroadcastAddress"
 
 -- | @Selector@ for @isMulticastAddress@
-isMulticastAddressSelector :: Selector
+isMulticastAddressSelector :: Selector '[] Bool
 isMulticastAddressSelector = mkSelector "isMulticastAddress"
 
 -- | @Selector@ for @isUnicastAddress@
-isUnicastAddressSelector :: Selector
+isUnicastAddressSelector :: Selector '[] Bool
 isUnicastAddressSelector = mkSelector "isUnicastAddress"
 
 -- | @Selector@ for @isLocallyAdministeredAddress@
-isLocallyAdministeredAddressSelector :: Selector
+isLocallyAdministeredAddressSelector :: Selector '[] Bool
 isLocallyAdministeredAddressSelector = mkSelector "isLocallyAdministeredAddress"
 
 -- | @Selector@ for @isUniversallyAdministeredAddress@
-isUniversallyAdministeredAddressSelector :: Selector
+isUniversallyAdministeredAddressSelector :: Selector '[] Bool
 isUniversallyAdministeredAddressSelector = mkSelector "isUniversallyAdministeredAddress"
 

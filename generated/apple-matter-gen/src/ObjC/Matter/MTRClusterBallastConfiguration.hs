@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -54,65 +55,61 @@ module ObjC.Matter.MTRClusterBallastConfiguration
   , writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval
   , writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_params
   , initWithDevice_endpointID_queue
-  , readAttributePhysicalMinLevelWithParamsSelector
-  , readAttributePhysicalMaxLevelWithParamsSelector
-  , readAttributeBallastStatusWithParamsSelector
-  , readAttributeMinLevelWithParamsSelector
-  , writeAttributeMinLevelWithValue_expectedValueIntervalSelector
-  , writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMaxLevelWithParamsSelector
-  , writeAttributeMaxLevelWithValue_expectedValueIntervalSelector
-  , writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector
-  , readAttributeIntrinsicBallastFactorWithParamsSelector
-  , writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector
-  , writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector
-  , readAttributeBallastFactorAdjustmentWithParamsSelector
-  , writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector
-  , writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampQuantityWithParamsSelector
-  , readAttributeLampTypeWithParamsSelector
-  , writeAttributeLampTypeWithValue_expectedValueIntervalSelector
-  , writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampManufacturerWithParamsSelector
-  , writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector
-  , writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampRatedHoursWithParamsSelector
-  , writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector
-  , writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampBurnHoursWithParamsSelector
-  , writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector
-  , writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampAlarmModeWithParamsSelector
-  , writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector
-  , writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLampBurnHoursTripPointWithParamsSelector
-  , writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector
-  , writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeBallastFactorAdjustmentWithParamsSelector
+  , readAttributeBallastStatusWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeIntrinsicBalanceFactorWithParamsSelector
+  , readAttributeIntrinsicBallastFactorWithParamsSelector
+  , readAttributeLampAlarmModeWithParamsSelector
+  , readAttributeLampBurnHoursTripPointWithParamsSelector
+  , readAttributeLampBurnHoursWithParamsSelector
+  , readAttributeLampManufacturerWithParamsSelector
+  , readAttributeLampQuantityWithParamsSelector
+  , readAttributeLampRatedHoursWithParamsSelector
+  , readAttributeLampTypeWithParamsSelector
+  , readAttributeMaxLevelWithParamsSelector
+  , readAttributeMinLevelWithParamsSelector
+  , readAttributePhysicalMaxLevelWithParamsSelector
+  , readAttributePhysicalMinLevelWithParamsSelector
+  , writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector
+  , writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector
   , writeAttributeIntrinsicBalanceFactorWithValue_expectedValueIntervalSelector
   , writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_paramsSelector
-  , initWithDevice_endpointID_queueSelector
+  , writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector
+  , writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector
+  , writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector
+  , writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector
+  , writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector
+  , writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector
+  , writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLampTypeWithValue_expectedValueIntervalSelector
+  , writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMaxLevelWithValue_expectedValueIntervalSelector
+  , writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMinLevelWithValue_expectedValueIntervalSelector
+  , writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,503 +118,423 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributePhysicalMinLevelWithParams:@
 readAttributePhysicalMinLevelWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributePhysicalMinLevelWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributePhysicalMinLevelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePhysicalMinLevelWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributePhysicalMinLevelWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePhysicalMaxLevelWithParams:@
 readAttributePhysicalMaxLevelWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributePhysicalMaxLevelWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributePhysicalMaxLevelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePhysicalMaxLevelWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributePhysicalMaxLevelWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBallastStatusWithParams:@
 readAttributeBallastStatusWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeBallastStatusWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeBallastStatusWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBallastStatusWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeBallastStatusWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinLevelWithParams:@
 readAttributeMinLevelWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeMinLevelWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeMinLevelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinLevelWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeMinLevelWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMinLevelWithValue:expectedValueInterval:@
 writeAttributeMinLevelWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMinLevelWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeMinLevelWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMinLevelWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeMinLevelWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMinLevelWithValue:expectedValueInterval:params:@
 writeAttributeMinLevelWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMinLevelWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeMinLevelWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMinLevelWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMaxLevelWithParams:@
 readAttributeMaxLevelWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeMaxLevelWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeMaxLevelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxLevelWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeMaxLevelWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMaxLevelWithValue:expectedValueInterval:@
 writeAttributeMaxLevelWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMaxLevelWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeMaxLevelWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMaxLevelWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeMaxLevelWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMaxLevelWithValue:expectedValueInterval:params:@
 writeAttributeMaxLevelWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMaxLevelWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeMaxLevelWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMaxLevelWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeIntrinsicBallastFactorWithParams:@
 readAttributeIntrinsicBallastFactorWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeIntrinsicBallastFactorWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeIntrinsicBallastFactorWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeIntrinsicBallastFactorWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeIntrinsicBallastFactorWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:@
 writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:params:@
 writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeBallastFactorAdjustmentWithParams:@
 readAttributeBallastFactorAdjustmentWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeBallastFactorAdjustmentWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeBallastFactorAdjustmentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBallastFactorAdjustmentWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeBallastFactorAdjustmentWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:@
 writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:params:@
 writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampQuantityWithParams:@
 readAttributeLampQuantityWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampQuantityWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampQuantityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampQuantityWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampQuantityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLampTypeWithParams:@
 readAttributeLampTypeWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampTypeWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampTypeWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampTypeWithValue:expectedValueInterval:@
 writeAttributeLampTypeWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampTypeWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampTypeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampTypeWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampTypeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampTypeWithValue:expectedValueInterval:params:@
 writeAttributeLampTypeWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampTypeWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampTypeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampTypeWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampManufacturerWithParams:@
 readAttributeLampManufacturerWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampManufacturerWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampManufacturerWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampManufacturerWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampManufacturerWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampManufacturerWithValue:expectedValueInterval:@
 writeAttributeLampManufacturerWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampManufacturerWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampManufacturerWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampManufacturerWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampManufacturerWithValue:expectedValueInterval:params:@
 writeAttributeLampManufacturerWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampManufacturerWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampManufacturerWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampManufacturerWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampRatedHoursWithParams:@
 readAttributeLampRatedHoursWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampRatedHoursWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampRatedHoursWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampRatedHoursWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampRatedHoursWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampRatedHoursWithValue:expectedValueInterval:@
 writeAttributeLampRatedHoursWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampRatedHoursWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampRatedHoursWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampRatedHoursWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampRatedHoursWithValue:expectedValueInterval:params:@
 writeAttributeLampRatedHoursWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampRatedHoursWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampRatedHoursWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampRatedHoursWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampBurnHoursWithParams:@
 readAttributeLampBurnHoursWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampBurnHoursWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampBurnHoursWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampBurnHoursWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampBurnHoursWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampBurnHoursWithValue:expectedValueInterval:@
 writeAttributeLampBurnHoursWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampBurnHoursWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampBurnHoursWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampBurnHoursWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampBurnHoursWithValue:expectedValueInterval:params:@
 writeAttributeLampBurnHoursWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampBurnHoursWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampBurnHoursWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampBurnHoursWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampAlarmModeWithParams:@
 readAttributeLampAlarmModeWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampAlarmModeWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampAlarmModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampAlarmModeWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampAlarmModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampAlarmModeWithValue:expectedValueInterval:@
 writeAttributeLampAlarmModeWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampAlarmModeWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampAlarmModeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampAlarmModeWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampAlarmModeWithValue:expectedValueInterval:params:@
 writeAttributeLampAlarmModeWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampAlarmModeWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampAlarmModeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampAlarmModeWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLampBurnHoursTripPointWithParams:@
 readAttributeLampBurnHoursTripPointWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeLampBurnHoursTripPointWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeLampBurnHoursTripPointWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLampBurnHoursTripPointWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeLampBurnHoursTripPointWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:@
 writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:params:@
 writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration => mtrClusterBallastConfiguration -> IO (Id MTRClusterBallastConfiguration)
-init_ mtrClusterBallastConfiguration  =
-    sendMsg mtrClusterBallastConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterBallastConfiguration =
+  sendOwnedMessage mtrClusterBallastConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterBallastConfiguration)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterBallastConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRDevice device, IsNSObject queue) => mtrClusterBallastConfiguration -> device -> CUShort -> queue -> IO (Id MTRClusterBallastConfiguration)
-initWithDevice_endpoint_queue mtrClusterBallastConfiguration  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterBallastConfiguration device endpoint queue =
+  sendOwnedMessage mtrClusterBallastConfiguration initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- readAttributeIntrinsicBalanceFactorWithParams:@
 readAttributeIntrinsicBalanceFactorWithParams :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRReadParams params) => mtrClusterBallastConfiguration -> params -> IO (Id NSDictionary)
-readAttributeIntrinsicBalanceFactorWithParams mtrClusterBallastConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBallastConfiguration (mkSelector "readAttributeIntrinsicBalanceFactorWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeIntrinsicBalanceFactorWithParams mtrClusterBallastConfiguration params =
+  sendMessage mtrClusterBallastConfiguration readAttributeIntrinsicBalanceFactorWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:@
 writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBallastConfiguration writeAttributeIntrinsicBalanceFactorWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:params:@
 writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_params :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBallastConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_params mtrClusterBallastConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_params mtrClusterBallastConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBallastConfiguration writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterBallastConfiguration mtrClusterBallastConfiguration, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterBallastConfiguration -> device -> endpointID -> queue -> IO (Id MTRClusterBallastConfiguration)
-initWithDevice_endpointID_queue mtrClusterBallastConfiguration  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterBallastConfiguration (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterBallastConfiguration device endpointID queue =
+  sendOwnedMessage mtrClusterBallastConfiguration initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributePhysicalMinLevelWithParams:@
-readAttributePhysicalMinLevelWithParamsSelector :: Selector
+readAttributePhysicalMinLevelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePhysicalMinLevelWithParamsSelector = mkSelector "readAttributePhysicalMinLevelWithParams:"
 
 -- | @Selector@ for @readAttributePhysicalMaxLevelWithParams:@
-readAttributePhysicalMaxLevelWithParamsSelector :: Selector
+readAttributePhysicalMaxLevelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePhysicalMaxLevelWithParamsSelector = mkSelector "readAttributePhysicalMaxLevelWithParams:"
 
 -- | @Selector@ for @readAttributeBallastStatusWithParams:@
-readAttributeBallastStatusWithParamsSelector :: Selector
+readAttributeBallastStatusWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBallastStatusWithParamsSelector = mkSelector "readAttributeBallastStatusWithParams:"
 
 -- | @Selector@ for @readAttributeMinLevelWithParams:@
-readAttributeMinLevelWithParamsSelector :: Selector
+readAttributeMinLevelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinLevelWithParamsSelector = mkSelector "readAttributeMinLevelWithParams:"
 
 -- | @Selector@ for @writeAttributeMinLevelWithValue:expectedValueInterval:@
-writeAttributeMinLevelWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMinLevelWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMinLevelWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMinLevelWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMinLevelWithValue:expectedValueInterval:params:@
-writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMinLevelWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMinLevelWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMaxLevelWithParams:@
-readAttributeMaxLevelWithParamsSelector :: Selector
+readAttributeMaxLevelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxLevelWithParamsSelector = mkSelector "readAttributeMaxLevelWithParams:"
 
 -- | @Selector@ for @writeAttributeMaxLevelWithValue:expectedValueInterval:@
-writeAttributeMaxLevelWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMaxLevelWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMaxLevelWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMaxLevelWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMaxLevelWithValue:expectedValueInterval:params:@
-writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMaxLevelWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMaxLevelWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeIntrinsicBallastFactorWithParams:@
-readAttributeIntrinsicBallastFactorWithParamsSelector :: Selector
+readAttributeIntrinsicBallastFactorWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeIntrinsicBallastFactorWithParamsSelector = mkSelector "readAttributeIntrinsicBallastFactorWithParams:"
 
 -- | @Selector@ for @writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:@
-writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeIntrinsicBallastFactorWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:params:@
-writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeIntrinsicBallastFactorWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeIntrinsicBallastFactorWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeBallastFactorAdjustmentWithParams:@
-readAttributeBallastFactorAdjustmentWithParamsSelector :: Selector
+readAttributeBallastFactorAdjustmentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBallastFactorAdjustmentWithParamsSelector = mkSelector "readAttributeBallastFactorAdjustmentWithParams:"
 
 -- | @Selector@ for @writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:@
-writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeBallastFactorAdjustmentWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:params:@
-writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeBallastFactorAdjustmentWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeBallastFactorAdjustmentWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampQuantityWithParams:@
-readAttributeLampQuantityWithParamsSelector :: Selector
+readAttributeLampQuantityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampQuantityWithParamsSelector = mkSelector "readAttributeLampQuantityWithParams:"
 
 -- | @Selector@ for @readAttributeLampTypeWithParams:@
-readAttributeLampTypeWithParamsSelector :: Selector
+readAttributeLampTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampTypeWithParamsSelector = mkSelector "readAttributeLampTypeWithParams:"
 
 -- | @Selector@ for @writeAttributeLampTypeWithValue:expectedValueInterval:@
-writeAttributeLampTypeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampTypeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampTypeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampTypeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampTypeWithValue:expectedValueInterval:params:@
-writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampTypeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampTypeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampManufacturerWithParams:@
-readAttributeLampManufacturerWithParamsSelector :: Selector
+readAttributeLampManufacturerWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampManufacturerWithParamsSelector = mkSelector "readAttributeLampManufacturerWithParams:"
 
 -- | @Selector@ for @writeAttributeLampManufacturerWithValue:expectedValueInterval:@
-writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampManufacturerWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampManufacturerWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampManufacturerWithValue:expectedValueInterval:params:@
-writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampManufacturerWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampManufacturerWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampRatedHoursWithParams:@
-readAttributeLampRatedHoursWithParamsSelector :: Selector
+readAttributeLampRatedHoursWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampRatedHoursWithParamsSelector = mkSelector "readAttributeLampRatedHoursWithParams:"
 
 -- | @Selector@ for @writeAttributeLampRatedHoursWithValue:expectedValueInterval:@
-writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampRatedHoursWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampRatedHoursWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampRatedHoursWithValue:expectedValueInterval:params:@
-writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampRatedHoursWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampRatedHoursWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampBurnHoursWithParams:@
-readAttributeLampBurnHoursWithParamsSelector :: Selector
+readAttributeLampBurnHoursWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampBurnHoursWithParamsSelector = mkSelector "readAttributeLampBurnHoursWithParams:"
 
 -- | @Selector@ for @writeAttributeLampBurnHoursWithValue:expectedValueInterval:@
-writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampBurnHoursWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampBurnHoursWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampBurnHoursWithValue:expectedValueInterval:params:@
-writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampBurnHoursWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampBurnHoursWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampAlarmModeWithParams:@
-readAttributeLampAlarmModeWithParamsSelector :: Selector
+readAttributeLampAlarmModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampAlarmModeWithParamsSelector = mkSelector "readAttributeLampAlarmModeWithParams:"
 
 -- | @Selector@ for @writeAttributeLampAlarmModeWithValue:expectedValueInterval:@
-writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampAlarmModeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampAlarmModeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampAlarmModeWithValue:expectedValueInterval:params:@
-writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampAlarmModeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampAlarmModeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLampBurnHoursTripPointWithParams:@
-readAttributeLampBurnHoursTripPointWithParamsSelector :: Selector
+readAttributeLampBurnHoursTripPointWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLampBurnHoursTripPointWithParamsSelector = mkSelector "readAttributeLampBurnHoursTripPointWithParams:"
 
 -- | @Selector@ for @writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:@
-writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLampBurnHoursTripPointWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:params:@
-writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLampBurnHoursTripPointWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLampBurnHoursTripPointWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterBallastConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterBallastConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterBallastConfiguration)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @readAttributeIntrinsicBalanceFactorWithParams:@
-readAttributeIntrinsicBalanceFactorWithParamsSelector :: Selector
+readAttributeIntrinsicBalanceFactorWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeIntrinsicBalanceFactorWithParamsSelector = mkSelector "readAttributeIntrinsicBalanceFactorWithParams:"
 
 -- | @Selector@ for @writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:@
-writeAttributeIntrinsicBalanceFactorWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeIntrinsicBalanceFactorWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeIntrinsicBalanceFactorWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:params:@
-writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeIntrinsicBalanceFactorWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeIntrinsicBalanceFactorWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterBallastConfiguration)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

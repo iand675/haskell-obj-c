@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.SharedWithYouCore.SWPerson
   , initWithHandle_identity_displayName_thumbnailImageData
   , init_
   , new
-  , initWithHandle_identity_displayName_thumbnailImageDataSelector
   , initSelector
+  , initWithHandle_identity_displayName_thumbnailImageDataSelector
   , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,38 +40,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHandle:identity:displayName:thumbnailImageData:@
 initWithHandle_identity_displayName_thumbnailImageData :: (IsSWPerson swPerson, IsNSString handle, IsSWPersonIdentity identity, IsNSString displayName, IsNSData thumbnailImageData) => swPerson -> handle -> identity -> displayName -> thumbnailImageData -> IO (Id SWPerson)
-initWithHandle_identity_displayName_thumbnailImageData swPerson  handle identity displayName thumbnailImageData =
-  withObjCPtr handle $ \raw_handle ->
-    withObjCPtr identity $ \raw_identity ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr thumbnailImageData $ \raw_thumbnailImageData ->
-            sendMsg swPerson (mkSelector "initWithHandle:identity:displayName:thumbnailImageData:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ()), argPtr (castPtr raw_identity :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_thumbnailImageData :: Ptr ())] >>= ownedObject . castPtr
+initWithHandle_identity_displayName_thumbnailImageData swPerson handle identity displayName thumbnailImageData =
+  sendOwnedMessage swPerson initWithHandle_identity_displayName_thumbnailImageDataSelector (toNSString handle) (toSWPersonIdentity identity) (toNSString displayName) (toNSData thumbnailImageData)
 
 -- | @- init@
 init_ :: IsSWPerson swPerson => swPerson -> IO (Id SWPerson)
-init_ swPerson  =
-    sendMsg swPerson (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swPerson =
+  sendOwnedMessage swPerson initSelector
 
 -- | @+ new@
 new :: IO (Id SWPerson)
 new  =
   do
     cls' <- getRequiredClass "SWPerson"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHandle:identity:displayName:thumbnailImageData:@
-initWithHandle_identity_displayName_thumbnailImageDataSelector :: Selector
+initWithHandle_identity_displayName_thumbnailImageDataSelector :: Selector '[Id NSString, Id SWPersonIdentity, Id NSString, Id NSData] (Id SWPerson)
 initWithHandle_identity_displayName_thumbnailImageDataSelector = mkSelector "initWithHandle:identity:displayName:thumbnailImageData:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWPerson)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWPerson)
 newSelector = mkSelector "new"
 

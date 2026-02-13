@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRTimeSynchronizationClusterTimeZoneStatusEvent
   , setOffset
   , name
   , setName
-  , offsetSelector
-  , setOffsetSelector
   , nameSelector
+  , offsetSelector
   , setNameSelector
+  , setOffsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- offset@
 offset :: IsMTRTimeSynchronizationClusterTimeZoneStatusEvent mtrTimeSynchronizationClusterTimeZoneStatusEvent => mtrTimeSynchronizationClusterTimeZoneStatusEvent -> IO (Id NSNumber)
-offset mtrTimeSynchronizationClusterTimeZoneStatusEvent  =
-    sendMsg mtrTimeSynchronizationClusterTimeZoneStatusEvent (mkSelector "offset") (retPtr retVoid) [] >>= retainedObject . castPtr
+offset mtrTimeSynchronizationClusterTimeZoneStatusEvent =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStatusEvent offsetSelector
 
 -- | @- setOffset:@
 setOffset :: (IsMTRTimeSynchronizationClusterTimeZoneStatusEvent mtrTimeSynchronizationClusterTimeZoneStatusEvent, IsNSNumber value) => mtrTimeSynchronizationClusterTimeZoneStatusEvent -> value -> IO ()
-setOffset mtrTimeSynchronizationClusterTimeZoneStatusEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterTimeZoneStatusEvent (mkSelector "setOffset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffset mtrTimeSynchronizationClusterTimeZoneStatusEvent value =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStatusEvent setOffsetSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRTimeSynchronizationClusterTimeZoneStatusEvent mtrTimeSynchronizationClusterTimeZoneStatusEvent => mtrTimeSynchronizationClusterTimeZoneStatusEvent -> IO (Id NSString)
-name mtrTimeSynchronizationClusterTimeZoneStatusEvent  =
-    sendMsg mtrTimeSynchronizationClusterTimeZoneStatusEvent (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrTimeSynchronizationClusterTimeZoneStatusEvent =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStatusEvent nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRTimeSynchronizationClusterTimeZoneStatusEvent mtrTimeSynchronizationClusterTimeZoneStatusEvent, IsNSString value) => mtrTimeSynchronizationClusterTimeZoneStatusEvent -> value -> IO ()
-setName mtrTimeSynchronizationClusterTimeZoneStatusEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterTimeZoneStatusEvent (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrTimeSynchronizationClusterTimeZoneStatusEvent value =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStatusEvent setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] (Id NSNumber)
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[Id NSNumber] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

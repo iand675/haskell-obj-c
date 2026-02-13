@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.SharedWithYou.SWHighlight
   , new
   , identifier
   , url
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
   , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,47 +38,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSWHighlight swHighlight => swHighlight -> IO (Id SWHighlight)
-init_ swHighlight  =
-    sendMsg swHighlight (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swHighlight =
+  sendOwnedMessage swHighlight initSelector
 
 -- | @+ new@
 new :: IO (Id SWHighlight)
 new  =
   do
     cls' <- getRequiredClass "SWHighlight"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The unique identifier for this highlight
 --
 -- ObjC selector: @- identifier@
 identifier :: IsSWHighlight swHighlight => swHighlight -> IO RawId
-identifier swHighlight  =
-    fmap (RawId . castPtr) $ sendMsg swHighlight (mkSelector "identifier") (retPtr retVoid) []
+identifier swHighlight =
+  sendMessage swHighlight identifierSelector
 
 -- | The surfaced content URL
 --
 -- ObjC selector: @- URL@
 url :: IsSWHighlight swHighlight => swHighlight -> IO (Id NSURL)
-url swHighlight  =
-    sendMsg swHighlight (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url swHighlight =
+  sendMessage swHighlight urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWHighlight)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWHighlight)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

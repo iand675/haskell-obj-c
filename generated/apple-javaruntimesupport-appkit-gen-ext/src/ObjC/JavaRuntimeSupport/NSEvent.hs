@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.JavaRuntimeSupport.NSEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,23 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- deadKeyCharacter@
 deadKeyCharacter :: IsNSEvent nsEvent => nsEvent -> IO CUShort
-deadKeyCharacter nsEvent  =
-    fmap fromIntegral $ sendMsg nsEvent (mkSelector "deadKeyCharacter") retCUInt []
+deadKeyCharacter nsEvent =
+  sendMessage nsEvent deadKeyCharacterSelector
 
 -- | @- willBeHandledByComplexInputMethod@
 willBeHandledByComplexInputMethod :: IsNSEvent nsEvent => nsEvent -> IO Bool
-willBeHandledByComplexInputMethod nsEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsEvent (mkSelector "willBeHandledByComplexInputMethod") retCULong []
+willBeHandledByComplexInputMethod nsEvent =
+  sendMessage nsEvent willBeHandledByComplexInputMethodSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deadKeyCharacter@
-deadKeyCharacterSelector :: Selector
+deadKeyCharacterSelector :: Selector '[] CUShort
 deadKeyCharacterSelector = mkSelector "deadKeyCharacter"
 
 -- | @Selector@ for @willBeHandledByComplexInputMethod@
-willBeHandledByComplexInputMethodSelector :: Selector
+willBeHandledByComplexInputMethodSelector :: Selector '[] Bool
 willBeHandledByComplexInputMethodSelector = mkSelector "willBeHandledByComplexInputMethod"
 

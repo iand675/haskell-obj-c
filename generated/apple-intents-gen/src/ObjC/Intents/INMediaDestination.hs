@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,8 +15,8 @@ module ObjC.Intents.INMediaDestination
   , playlistName
   , initSelector
   , libraryDestinationSelector
-  , playlistDestinationWithNameSelector
   , mediaDestinationTypeSelector
+  , playlistDestinationWithNameSelector
   , playlistNameSelector
 
   -- * Enum types
@@ -26,15 +27,11 @@ module ObjC.Intents.INMediaDestination
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,55 +41,54 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINMediaDestination inMediaDestination => inMediaDestination -> IO (Id INMediaDestination)
-init_ inMediaDestination  =
-    sendMsg inMediaDestination (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inMediaDestination =
+  sendOwnedMessage inMediaDestination initSelector
 
 -- | @+ libraryDestination@
 libraryDestination :: IO (Id INMediaDestination)
 libraryDestination  =
   do
     cls' <- getRequiredClass "INMediaDestination"
-    sendClassMsg cls' (mkSelector "libraryDestination") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' libraryDestinationSelector
 
 -- | @+ playlistDestinationWithName:@
 playlistDestinationWithName :: IsNSString playlistName => playlistName -> IO (Id INMediaDestination)
 playlistDestinationWithName playlistName =
   do
     cls' <- getRequiredClass "INMediaDestination"
-    withObjCPtr playlistName $ \raw_playlistName ->
-      sendClassMsg cls' (mkSelector "playlistDestinationWithName:") (retPtr retVoid) [argPtr (castPtr raw_playlistName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playlistDestinationWithNameSelector (toNSString playlistName)
 
 -- | @- mediaDestinationType@
 mediaDestinationType :: IsINMediaDestination inMediaDestination => inMediaDestination -> IO INMediaDestinationType
-mediaDestinationType inMediaDestination  =
-    fmap (coerce :: CLong -> INMediaDestinationType) $ sendMsg inMediaDestination (mkSelector "mediaDestinationType") retCLong []
+mediaDestinationType inMediaDestination =
+  sendMessage inMediaDestination mediaDestinationTypeSelector
 
 -- | @- playlistName@
 playlistName :: IsINMediaDestination inMediaDestination => inMediaDestination -> IO (Id NSString)
-playlistName inMediaDestination  =
-    sendMsg inMediaDestination (mkSelector "playlistName") (retPtr retVoid) [] >>= retainedObject . castPtr
+playlistName inMediaDestination =
+  sendMessage inMediaDestination playlistNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INMediaDestination)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @libraryDestination@
-libraryDestinationSelector :: Selector
+libraryDestinationSelector :: Selector '[] (Id INMediaDestination)
 libraryDestinationSelector = mkSelector "libraryDestination"
 
 -- | @Selector@ for @playlistDestinationWithName:@
-playlistDestinationWithNameSelector :: Selector
+playlistDestinationWithNameSelector :: Selector '[Id NSString] (Id INMediaDestination)
 playlistDestinationWithNameSelector = mkSelector "playlistDestinationWithName:"
 
 -- | @Selector@ for @mediaDestinationType@
-mediaDestinationTypeSelector :: Selector
+mediaDestinationTypeSelector :: Selector '[] INMediaDestinationType
 mediaDestinationTypeSelector = mkSelector "mediaDestinationType"
 
 -- | @Selector@ for @playlistName@
-playlistNameSelector :: Selector
+playlistNameSelector :: Selector '[] (Id NSString)
 playlistNameSelector = mkSelector "playlistName"
 

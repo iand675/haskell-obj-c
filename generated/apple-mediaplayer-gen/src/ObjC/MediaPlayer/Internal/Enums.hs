@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MediaPlayer.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MPChangeLanguageOptionSetting@
 newtype MPChangeLanguageOptionSetting = MPChangeLanguageOptionSetting CLong
@@ -24,6 +27,16 @@ pattern MPChangeLanguageOptionSettingNowPlayingItemOnly = MPChangeLanguageOption
 
 pattern MPChangeLanguageOptionSettingPermanent :: MPChangeLanguageOptionSetting
 pattern MPChangeLanguageOptionSettingPermanent = MPChangeLanguageOptionSetting 2
+
+instance ObjCArgument MPChangeLanguageOptionSetting where
+  withObjCArg (MPChangeLanguageOptionSetting x) k = k (argCLong x)
+
+instance ObjCReturn MPChangeLanguageOptionSetting where
+  type RawReturn MPChangeLanguageOptionSetting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPChangeLanguageOptionSetting x)
+  fromOwned x = pure (MPChangeLanguageOptionSetting x)
 
 -- | @MPErrorCode@
 newtype MPErrorCode = MPErrorCode CLong
@@ -54,6 +67,16 @@ pattern MPErrorCancelled = MPErrorCode 6
 pattern MPErrorRequestTimedOut :: MPErrorCode
 pattern MPErrorRequestTimedOut = MPErrorCode 7
 
+instance ObjCArgument MPErrorCode where
+  withObjCArg (MPErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MPErrorCode where
+  type RawReturn MPErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPErrorCode x)
+  fromOwned x = pure (MPErrorCode x)
+
 -- | @MPMediaGrouping@
 newtype MPMediaGrouping = MPMediaGrouping CLong
   deriving stock (Eq, Ord, Show)
@@ -83,6 +106,16 @@ pattern MPMediaGroupingPlaylist = MPMediaGrouping 6
 pattern MPMediaGroupingPodcastTitle :: MPMediaGrouping
 pattern MPMediaGroupingPodcastTitle = MPMediaGrouping 7
 
+instance ObjCArgument MPMediaGrouping where
+  withObjCArg (MPMediaGrouping x) k = k (argCLong x)
+
+instance ObjCReturn MPMediaGrouping where
+  type RawReturn MPMediaGrouping = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMediaGrouping x)
+  fromOwned x = pure (MPMediaGrouping x)
+
 -- | @MPMediaLibraryAuthorizationStatus@
 newtype MPMediaLibraryAuthorizationStatus = MPMediaLibraryAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -99,6 +132,16 @@ pattern MPMediaLibraryAuthorizationStatusRestricted = MPMediaLibraryAuthorizatio
 
 pattern MPMediaLibraryAuthorizationStatusAuthorized :: MPMediaLibraryAuthorizationStatus
 pattern MPMediaLibraryAuthorizationStatusAuthorized = MPMediaLibraryAuthorizationStatus 3
+
+instance ObjCArgument MPMediaLibraryAuthorizationStatus where
+  withObjCArg (MPMediaLibraryAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn MPMediaLibraryAuthorizationStatus where
+  type RawReturn MPMediaLibraryAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMediaLibraryAuthorizationStatus x)
+  fromOwned x = pure (MPMediaLibraryAuthorizationStatus x)
 
 -- | @MPMediaPlaylistAttribute@ (bitmask)
 newtype MPMediaPlaylistAttribute = MPMediaPlaylistAttribute CULong
@@ -123,6 +166,16 @@ pattern MPMediaPlaylistAttributeSmart = MPMediaPlaylistAttribute 2
 pattern MPMediaPlaylistAttributeGenius :: MPMediaPlaylistAttribute
 pattern MPMediaPlaylistAttributeGenius = MPMediaPlaylistAttribute 4
 
+instance ObjCArgument MPMediaPlaylistAttribute where
+  withObjCArg (MPMediaPlaylistAttribute x) k = k (argCULong x)
+
+instance ObjCReturn MPMediaPlaylistAttribute where
+  type RawReturn MPMediaPlaylistAttribute = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMediaPlaylistAttribute x)
+  fromOwned x = pure (MPMediaPlaylistAttribute x)
+
 -- | @MPMediaPredicateComparison@
 newtype MPMediaPredicateComparison = MPMediaPredicateComparison CLong
   deriving stock (Eq, Ord, Show)
@@ -133,6 +186,16 @@ pattern MPMediaPredicateComparisonEqualTo = MPMediaPredicateComparison 0
 
 pattern MPMediaPredicateComparisonContains :: MPMediaPredicateComparison
 pattern MPMediaPredicateComparisonContains = MPMediaPredicateComparison 1
+
+instance ObjCArgument MPMediaPredicateComparison where
+  withObjCArg (MPMediaPredicateComparison x) k = k (argCLong x)
+
+instance ObjCReturn MPMediaPredicateComparison where
+  type RawReturn MPMediaPredicateComparison = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMediaPredicateComparison x)
+  fromOwned x = pure (MPMediaPredicateComparison x)
 
 -- | @MPMediaType@ (bitmask)
 newtype MPMediaType = MPMediaType CULong
@@ -184,6 +247,16 @@ pattern MPMediaTypeAnyVideo = MPMediaType 65280
 pattern MPMediaTypeAny :: MPMediaType
 pattern MPMediaTypeAny = MPMediaType 18446744073709551615
 
+instance ObjCArgument MPMediaType where
+  withObjCArg (MPMediaType x) k = k (argCULong x)
+
+instance ObjCReturn MPMediaType where
+  type RawReturn MPMediaType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMediaType x)
+  fromOwned x = pure (MPMediaType x)
+
 -- | @MPMusicPlaybackState@
 newtype MPMusicPlaybackState = MPMusicPlaybackState CLong
   deriving stock (Eq, Ord, Show)
@@ -207,6 +280,16 @@ pattern MPMusicPlaybackStateSeekingForward = MPMusicPlaybackState 4
 pattern MPMusicPlaybackStateSeekingBackward :: MPMusicPlaybackState
 pattern MPMusicPlaybackStateSeekingBackward = MPMusicPlaybackState 5
 
+instance ObjCArgument MPMusicPlaybackState where
+  withObjCArg (MPMusicPlaybackState x) k = k (argCLong x)
+
+instance ObjCReturn MPMusicPlaybackState where
+  type RawReturn MPMusicPlaybackState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMusicPlaybackState x)
+  fromOwned x = pure (MPMusicPlaybackState x)
+
 -- | @MPMusicRepeatMode@
 newtype MPMusicRepeatMode = MPMusicRepeatMode CLong
   deriving stock (Eq, Ord, Show)
@@ -223,6 +306,16 @@ pattern MPMusicRepeatModeOne = MPMusicRepeatMode 2
 
 pattern MPMusicRepeatModeAll :: MPMusicRepeatMode
 pattern MPMusicRepeatModeAll = MPMusicRepeatMode 3
+
+instance ObjCArgument MPMusicRepeatMode where
+  withObjCArg (MPMusicRepeatMode x) k = k (argCLong x)
+
+instance ObjCReturn MPMusicRepeatMode where
+  type RawReturn MPMusicRepeatMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMusicRepeatMode x)
+  fromOwned x = pure (MPMusicRepeatMode x)
 
 -- | @MPMusicShuffleMode@
 newtype MPMusicShuffleMode = MPMusicShuffleMode CLong
@@ -241,6 +334,16 @@ pattern MPMusicShuffleModeSongs = MPMusicShuffleMode 2
 pattern MPMusicShuffleModeAlbums :: MPMusicShuffleMode
 pattern MPMusicShuffleModeAlbums = MPMusicShuffleMode 3
 
+instance ObjCArgument MPMusicShuffleMode where
+  withObjCArg (MPMusicShuffleMode x) k = k (argCLong x)
+
+instance ObjCReturn MPMusicShuffleMode where
+  type RawReturn MPMusicShuffleMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPMusicShuffleMode x)
+  fromOwned x = pure (MPMusicShuffleMode x)
+
 -- | @MPNowPlayingInfoLanguageOptionType@
 newtype MPNowPlayingInfoLanguageOptionType = MPNowPlayingInfoLanguageOptionType CULong
   deriving stock (Eq, Ord, Show)
@@ -251,6 +354,16 @@ pattern MPNowPlayingInfoLanguageOptionTypeAudible = MPNowPlayingInfoLanguageOpti
 
 pattern MPNowPlayingInfoLanguageOptionTypeLegible :: MPNowPlayingInfoLanguageOptionType
 pattern MPNowPlayingInfoLanguageOptionTypeLegible = MPNowPlayingInfoLanguageOptionType 1
+
+instance ObjCArgument MPNowPlayingInfoLanguageOptionType where
+  withObjCArg (MPNowPlayingInfoLanguageOptionType x) k = k (argCULong x)
+
+instance ObjCReturn MPNowPlayingInfoLanguageOptionType where
+  type RawReturn MPNowPlayingInfoLanguageOptionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPNowPlayingInfoLanguageOptionType x)
+  fromOwned x = pure (MPNowPlayingInfoLanguageOptionType x)
 
 -- | @MPNowPlayingInfoMediaType@
 newtype MPNowPlayingInfoMediaType = MPNowPlayingInfoMediaType CULong
@@ -265,6 +378,16 @@ pattern MPNowPlayingInfoMediaTypeAudio = MPNowPlayingInfoMediaType 1
 
 pattern MPNowPlayingInfoMediaTypeVideo :: MPNowPlayingInfoMediaType
 pattern MPNowPlayingInfoMediaTypeVideo = MPNowPlayingInfoMediaType 2
+
+instance ObjCArgument MPNowPlayingInfoMediaType where
+  withObjCArg (MPNowPlayingInfoMediaType x) k = k (argCULong x)
+
+instance ObjCReturn MPNowPlayingInfoMediaType where
+  type RawReturn MPNowPlayingInfoMediaType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPNowPlayingInfoMediaType x)
+  fromOwned x = pure (MPNowPlayingInfoMediaType x)
 
 -- | @MPNowPlayingPlaybackState@
 newtype MPNowPlayingPlaybackState = MPNowPlayingPlaybackState CULong
@@ -286,6 +409,16 @@ pattern MPNowPlayingPlaybackStateStopped = MPNowPlayingPlaybackState 3
 pattern MPNowPlayingPlaybackStateInterrupted :: MPNowPlayingPlaybackState
 pattern MPNowPlayingPlaybackStateInterrupted = MPNowPlayingPlaybackState 4
 
+instance ObjCArgument MPNowPlayingPlaybackState where
+  withObjCArg (MPNowPlayingPlaybackState x) k = k (argCULong x)
+
+instance ObjCReturn MPNowPlayingPlaybackState where
+  type RawReturn MPNowPlayingPlaybackState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPNowPlayingPlaybackState x)
+  fromOwned x = pure (MPNowPlayingPlaybackState x)
+
 -- | @MPRemoteCommandHandlerStatus@
 newtype MPRemoteCommandHandlerStatus = MPRemoteCommandHandlerStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -306,6 +439,16 @@ pattern MPRemoteCommandHandlerStatusDeviceNotFound = MPRemoteCommandHandlerStatu
 pattern MPRemoteCommandHandlerStatusCommandFailed :: MPRemoteCommandHandlerStatus
 pattern MPRemoteCommandHandlerStatusCommandFailed = MPRemoteCommandHandlerStatus 200
 
+instance ObjCArgument MPRemoteCommandHandlerStatus where
+  withObjCArg (MPRemoteCommandHandlerStatus x) k = k (argCLong x)
+
+instance ObjCReturn MPRemoteCommandHandlerStatus where
+  type RawReturn MPRemoteCommandHandlerStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPRemoteCommandHandlerStatus x)
+  fromOwned x = pure (MPRemoteCommandHandlerStatus x)
+
 -- | @MPRepeatType@
 newtype MPRepeatType = MPRepeatType CLong
   deriving stock (Eq, Ord, Show)
@@ -320,6 +463,16 @@ pattern MPRepeatTypeOne = MPRepeatType 1
 pattern MPRepeatTypeAll :: MPRepeatType
 pattern MPRepeatTypeAll = MPRepeatType 2
 
+instance ObjCArgument MPRepeatType where
+  withObjCArg (MPRepeatType x) k = k (argCLong x)
+
+instance ObjCReturn MPRepeatType where
+  type RawReturn MPRepeatType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPRepeatType x)
+  fromOwned x = pure (MPRepeatType x)
+
 -- | @MPSeekCommandEventType@
 newtype MPSeekCommandEventType = MPSeekCommandEventType CULong
   deriving stock (Eq, Ord, Show)
@@ -330,6 +483,16 @@ pattern MPSeekCommandEventTypeBeginSeeking = MPSeekCommandEventType 0
 
 pattern MPSeekCommandEventTypeEndSeeking :: MPSeekCommandEventType
 pattern MPSeekCommandEventTypeEndSeeking = MPSeekCommandEventType 1
+
+instance ObjCArgument MPSeekCommandEventType where
+  withObjCArg (MPSeekCommandEventType x) k = k (argCULong x)
+
+instance ObjCReturn MPSeekCommandEventType where
+  type RawReturn MPSeekCommandEventType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPSeekCommandEventType x)
+  fromOwned x = pure (MPSeekCommandEventType x)
 
 -- | @MPShuffleType@
 newtype MPShuffleType = MPShuffleType CLong
@@ -344,3 +507,13 @@ pattern MPShuffleTypeItems = MPShuffleType 1
 
 pattern MPShuffleTypeCollections :: MPShuffleType
 pattern MPShuffleTypeCollections = MPShuffleType 2
+
+instance ObjCArgument MPShuffleType where
+  withObjCArg (MPShuffleType x) k = k (argCLong x)
+
+instance ObjCReturn MPShuffleType where
+  type RawReturn MPShuffleType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPShuffleType x)
+  fromOwned x = pure (MPShuffleType x)

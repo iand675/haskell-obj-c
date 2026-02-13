@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRDeviceControllerFactory
   , preWarmCommissioningSession
   , running
   , knownFabrics
+  , createControllerOnExistingFabric_errorSelector
+  , createControllerOnNewFabric_errorSelector
   , initSelector
+  , knownFabricsSelector
   , newSelector
+  , preWarmCommissioningSessionSelector
+  , runningSelector
   , sharedInstanceSelector
   , startControllerFactory_errorSelector
   , stopControllerFactorySelector
-  , createControllerOnExistingFabric_errorSelector
-  , createControllerOnNewFabric_errorSelector
-  , preWarmCommissioningSessionSelector
-  , runningSelector
-  , knownFabricsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRDeviceControllerFactory mtrDeviceControllerFactory => mtrDeviceControllerFactory -> IO (Id MTRDeviceControllerFactory)
-init_ mtrDeviceControllerFactory  =
-    sendMsg mtrDeviceControllerFactory (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceControllerFactory =
+  sendOwnedMessage mtrDeviceControllerFactory initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDeviceControllerFactory)
 new  =
   do
     cls' <- getRequiredClass "MTRDeviceControllerFactory"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Return the single MTRDeviceControllerFactory we support existing.  It starts off in a "not started" state.
 --
@@ -64,7 +61,7 @@ sharedInstance :: IO (Id MTRDeviceControllerFactory)
 sharedInstance  =
   do
     cls' <- getRequiredClass "MTRDeviceControllerFactory"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | Start the controller factory. Repeated calls to startControllerFactory without calls to stopControllerFactory in between are NO-OPs. Use the isRunning property to check whether the controller factory needs to be started up.
 --
@@ -74,10 +71,8 @@ sharedInstance  =
 --
 -- ObjC selector: @- startControllerFactory:error:@
 startControllerFactory_error :: (IsMTRDeviceControllerFactory mtrDeviceControllerFactory, IsMTRDeviceControllerFactoryParams startupParams, IsNSError error_) => mtrDeviceControllerFactory -> startupParams -> error_ -> IO Bool
-startControllerFactory_error mtrDeviceControllerFactory  startupParams error_ =
-  withObjCPtr startupParams $ \raw_startupParams ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceControllerFactory (mkSelector "startControllerFactory:error:") retCULong [argPtr (castPtr raw_startupParams :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startControllerFactory_error mtrDeviceControllerFactory startupParams error_ =
+  sendMessage mtrDeviceControllerFactory startControllerFactory_errorSelector (toMTRDeviceControllerFactoryParams startupParams) (toNSError error_)
 
 -- | Stop the controller factory. This will shut down any outstanding controllers as part of the factory stopping.
 --
@@ -85,8 +80,8 @@ startControllerFactory_error mtrDeviceControllerFactory  startupParams error_ =
 --
 -- ObjC selector: @- stopControllerFactory@
 stopControllerFactory :: IsMTRDeviceControllerFactory mtrDeviceControllerFactory => mtrDeviceControllerFactory -> IO ()
-stopControllerFactory mtrDeviceControllerFactory  =
-    sendMsg mtrDeviceControllerFactory (mkSelector "stopControllerFactory") retVoid []
+stopControllerFactory mtrDeviceControllerFactory =
+  sendMessage mtrDeviceControllerFactory stopControllerFactorySelector
 
 -- | Create a MTRDeviceController on an existing fabric.  Returns nil on failure.
 --
@@ -98,10 +93,8 @@ stopControllerFactory mtrDeviceControllerFactory  =
 --
 -- ObjC selector: @- createControllerOnExistingFabric:error:@
 createControllerOnExistingFabric_error :: (IsMTRDeviceControllerFactory mtrDeviceControllerFactory, IsMTRDeviceControllerStartupParams startupParams, IsNSError error_) => mtrDeviceControllerFactory -> startupParams -> error_ -> IO (Id MTRDeviceController)
-createControllerOnExistingFabric_error mtrDeviceControllerFactory  startupParams error_ =
-  withObjCPtr startupParams $ \raw_startupParams ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDeviceControllerFactory (mkSelector "createControllerOnExistingFabric:error:") (retPtr retVoid) [argPtr (castPtr raw_startupParams :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+createControllerOnExistingFabric_error mtrDeviceControllerFactory startupParams error_ =
+  sendMessage mtrDeviceControllerFactory createControllerOnExistingFabric_errorSelector (toMTRDeviceControllerStartupParams startupParams) (toNSError error_)
 
 -- | Create a MTRDeviceController on a new fabric.  Returns nil on failure.
 --
@@ -113,10 +106,8 @@ createControllerOnExistingFabric_error mtrDeviceControllerFactory  startupParams
 --
 -- ObjC selector: @- createControllerOnNewFabric:error:@
 createControllerOnNewFabric_error :: (IsMTRDeviceControllerFactory mtrDeviceControllerFactory, IsMTRDeviceControllerStartupParams startupParams, IsNSError error_) => mtrDeviceControllerFactory -> startupParams -> error_ -> IO (Id MTRDeviceController)
-createControllerOnNewFabric_error mtrDeviceControllerFactory  startupParams error_ =
-  withObjCPtr startupParams $ \raw_startupParams ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDeviceControllerFactory (mkSelector "createControllerOnNewFabric:error:") (retPtr retVoid) [argPtr (castPtr raw_startupParams :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+createControllerOnNewFabric_error mtrDeviceControllerFactory startupParams error_ =
+  sendMessage mtrDeviceControllerFactory createControllerOnNewFabric_errorSelector (toMTRDeviceControllerStartupParams startupParams) (toNSError error_)
 
 -- | If possible, pre-warm the Matter stack for setting up a commissioning session.
 --
@@ -126,15 +117,15 @@ createControllerOnNewFabric_error mtrDeviceControllerFactory  startupParams erro
 --
 -- ObjC selector: @- preWarmCommissioningSession@
 preWarmCommissioningSession :: IsMTRDeviceControllerFactory mtrDeviceControllerFactory => mtrDeviceControllerFactory -> IO ()
-preWarmCommissioningSession mtrDeviceControllerFactory  =
-    sendMsg mtrDeviceControllerFactory (mkSelector "preWarmCommissioningSession") retVoid []
+preWarmCommissioningSession mtrDeviceControllerFactory =
+  sendMessage mtrDeviceControllerFactory preWarmCommissioningSessionSelector
 
 -- | If true, the factory is in a state where it can create controllers: startControllerFactory has been called, but stopControllerFactory has not been called since then.
 --
 -- ObjC selector: @- running@
 running :: IsMTRDeviceControllerFactory mtrDeviceControllerFactory => mtrDeviceControllerFactory -> IO Bool
-running mtrDeviceControllerFactory  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceControllerFactory (mkSelector "running") retCULong []
+running mtrDeviceControllerFactory =
+  sendMessage mtrDeviceControllerFactory runningSelector
 
 -- | Returns the list of MTRFabricInfo representing the fabrics the MTRDeviceControllerFactory knows about and the corresponding node identities of the controller factory on those fabrics.  Returns nil if the factory is not running or if there is an error reading fabric information.
 --
@@ -142,50 +133,50 @@ running mtrDeviceControllerFactory  =
 --
 -- ObjC selector: @- knownFabrics@
 knownFabrics :: IsMTRDeviceControllerFactory mtrDeviceControllerFactory => mtrDeviceControllerFactory -> IO (Id NSArray)
-knownFabrics mtrDeviceControllerFactory  =
-    sendMsg mtrDeviceControllerFactory (mkSelector "knownFabrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+knownFabrics mtrDeviceControllerFactory =
+  sendMessage mtrDeviceControllerFactory knownFabricsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceControllerFactory)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDeviceControllerFactory)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id MTRDeviceControllerFactory)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @startControllerFactory:error:@
-startControllerFactory_errorSelector :: Selector
+startControllerFactory_errorSelector :: Selector '[Id MTRDeviceControllerFactoryParams, Id NSError] Bool
 startControllerFactory_errorSelector = mkSelector "startControllerFactory:error:"
 
 -- | @Selector@ for @stopControllerFactory@
-stopControllerFactorySelector :: Selector
+stopControllerFactorySelector :: Selector '[] ()
 stopControllerFactorySelector = mkSelector "stopControllerFactory"
 
 -- | @Selector@ for @createControllerOnExistingFabric:error:@
-createControllerOnExistingFabric_errorSelector :: Selector
+createControllerOnExistingFabric_errorSelector :: Selector '[Id MTRDeviceControllerStartupParams, Id NSError] (Id MTRDeviceController)
 createControllerOnExistingFabric_errorSelector = mkSelector "createControllerOnExistingFabric:error:"
 
 -- | @Selector@ for @createControllerOnNewFabric:error:@
-createControllerOnNewFabric_errorSelector :: Selector
+createControllerOnNewFabric_errorSelector :: Selector '[Id MTRDeviceControllerStartupParams, Id NSError] (Id MTRDeviceController)
 createControllerOnNewFabric_errorSelector = mkSelector "createControllerOnNewFabric:error:"
 
 -- | @Selector@ for @preWarmCommissioningSession@
-preWarmCommissioningSessionSelector :: Selector
+preWarmCommissioningSessionSelector :: Selector '[] ()
 preWarmCommissioningSessionSelector = mkSelector "preWarmCommissioningSession"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @knownFabrics@
-knownFabricsSelector :: Selector
+knownFabricsSelector :: Selector '[] (Id NSArray)
 knownFabricsSelector = mkSelector "knownFabrics"
 

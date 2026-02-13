@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PassKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @PKAddIdentityDocumentType@
 newtype PKAddIdentityDocumentType = PKAddIdentityDocumentType CLong
@@ -25,6 +28,16 @@ pattern PKAddIdentityDocumentTypeMDL = PKAddIdentityDocumentType 1
 pattern PKAddIdentityDocumentTypePhotoID :: PKAddIdentityDocumentType
 pattern PKAddIdentityDocumentTypePhotoID = PKAddIdentityDocumentType 2
 
+instance ObjCArgument PKAddIdentityDocumentType where
+  withObjCArg (PKAddIdentityDocumentType x) k = k (argCLong x)
+
+instance ObjCReturn PKAddIdentityDocumentType where
+  type RawReturn PKAddIdentityDocumentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddIdentityDocumentType x)
+  fromOwned x = pure (PKAddIdentityDocumentType x)
+
 -- | @PKAddPaymentPassError@
 newtype PKAddPaymentPassError = PKAddPaymentPassError CLong
   deriving stock (Eq, Ord, Show)
@@ -39,6 +52,16 @@ pattern PKAddPaymentPassErrorUserCancelled = PKAddPaymentPassError 1
 pattern PKAddPaymentPassErrorSystemCancelled :: PKAddPaymentPassError
 pattern PKAddPaymentPassErrorSystemCancelled = PKAddPaymentPassError 2
 
+instance ObjCArgument PKAddPaymentPassError where
+  withObjCArg (PKAddPaymentPassError x) k = k (argCLong x)
+
+instance ObjCReturn PKAddPaymentPassError where
+  type RawReturn PKAddPaymentPassError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddPaymentPassError x)
+  fromOwned x = pure (PKAddPaymentPassError x)
+
 -- | @PKAddPaymentPassStyle@
 newtype PKAddPaymentPassStyle = PKAddPaymentPassStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -49,6 +72,16 @@ pattern PKAddPaymentPassStylePayment = PKAddPaymentPassStyle 0
 
 pattern PKAddPaymentPassStyleAccess :: PKAddPaymentPassStyle
 pattern PKAddPaymentPassStyleAccess = PKAddPaymentPassStyle 1
+
+instance ObjCArgument PKAddPaymentPassStyle where
+  withObjCArg (PKAddPaymentPassStyle x) k = k (argCLong x)
+
+instance ObjCReturn PKAddPaymentPassStyle where
+  type RawReturn PKAddPaymentPassStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddPaymentPassStyle x)
+  fromOwned x = pure (PKAddPaymentPassStyle x)
 
 -- | @PKAddSecureElementPassErrorCode@
 newtype PKAddSecureElementPassErrorCode = PKAddSecureElementPassErrorCode CLong
@@ -79,6 +112,16 @@ pattern PKAddSecureElementPassDeviceNotReadyError = PKAddSecureElementPassErrorC
 pattern PKAddSecureElementPassOSVersionNotSupportedError :: PKAddSecureElementPassErrorCode
 pattern PKAddSecureElementPassOSVersionNotSupportedError = PKAddSecureElementPassErrorCode 6
 
+instance ObjCArgument PKAddSecureElementPassErrorCode where
+  withObjCArg (PKAddSecureElementPassErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKAddSecureElementPassErrorCode where
+  type RawReturn PKAddSecureElementPassErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddSecureElementPassErrorCode x)
+  fromOwned x = pure (PKAddSecureElementPassErrorCode x)
+
 -- | @PKAddShareablePassConfigurationPrimaryAction@
 newtype PKAddShareablePassConfigurationPrimaryAction = PKAddShareablePassConfigurationPrimaryAction CULong
   deriving stock (Eq, Ord, Show)
@@ -89,6 +132,16 @@ pattern PKAddShareablePassConfigurationPrimaryActionAdd = PKAddShareablePassConf
 
 pattern PKAddShareablePassConfigurationPrimaryActionShare :: PKAddShareablePassConfigurationPrimaryAction
 pattern PKAddShareablePassConfigurationPrimaryActionShare = PKAddShareablePassConfigurationPrimaryAction 1
+
+instance ObjCArgument PKAddShareablePassConfigurationPrimaryAction where
+  withObjCArg (PKAddShareablePassConfigurationPrimaryAction x) k = k (argCULong x)
+
+instance ObjCReturn PKAddShareablePassConfigurationPrimaryAction where
+  type RawReturn PKAddShareablePassConfigurationPrimaryAction = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddShareablePassConfigurationPrimaryAction x)
+  fromOwned x = pure (PKAddShareablePassConfigurationPrimaryAction x)
 
 -- | @PKAddressField@ (bitmask)
 newtype PKAddressField = PKAddressField CULong
@@ -119,6 +172,16 @@ pattern PKAddressFieldName = PKAddressField 8
 pattern PKAddressFieldAll :: PKAddressField
 pattern PKAddressFieldAll = PKAddressField 15
 
+instance ObjCArgument PKAddressField where
+  withObjCArg (PKAddressField x) k = k (argCULong x)
+
+instance ObjCReturn PKAddressField where
+  type RawReturn PKAddressField = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAddressField x)
+  fromOwned x = pure (PKAddressField x)
+
 -- | @PKApplePayLaterAvailability@
 newtype PKApplePayLaterAvailability = PKApplePayLaterAvailability CLong
   deriving stock (Eq, Ord, Show)
@@ -132,6 +195,16 @@ pattern PKApplePayLaterUnavailableItemIneligible = PKApplePayLaterAvailability 1
 
 pattern PKApplePayLaterUnavailableRecurringTransaction :: PKApplePayLaterAvailability
 pattern PKApplePayLaterUnavailableRecurringTransaction = PKApplePayLaterAvailability 2
+
+instance ObjCArgument PKApplePayLaterAvailability where
+  withObjCArg (PKApplePayLaterAvailability x) k = k (argCLong x)
+
+instance ObjCReturn PKApplePayLaterAvailability where
+  type RawReturn PKApplePayLaterAvailability = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKApplePayLaterAvailability x)
+  fromOwned x = pure (PKApplePayLaterAvailability x)
 
 -- | @PKAutomaticPassPresentationSuppressionResult@
 newtype PKAutomaticPassPresentationSuppressionResult = PKAutomaticPassPresentationSuppressionResult CULong
@@ -153,6 +226,16 @@ pattern PKAutomaticPassPresentationSuppressionResultCancelled = PKAutomaticPassP
 pattern PKAutomaticPassPresentationSuppressionResultSuccess :: PKAutomaticPassPresentationSuppressionResult
 pattern PKAutomaticPassPresentationSuppressionResultSuccess = PKAutomaticPassPresentationSuppressionResult 4
 
+instance ObjCArgument PKAutomaticPassPresentationSuppressionResult where
+  withObjCArg (PKAutomaticPassPresentationSuppressionResult x) k = k (argCULong x)
+
+instance ObjCReturn PKAutomaticPassPresentationSuppressionResult where
+  type RawReturn PKAutomaticPassPresentationSuppressionResult = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKAutomaticPassPresentationSuppressionResult x)
+  fromOwned x = pure (PKAutomaticPassPresentationSuppressionResult x)
+
 -- | @PKBarcodeEventConfigurationDataType@
 newtype PKBarcodeEventConfigurationDataType = PKBarcodeEventConfigurationDataType CLong
   deriving stock (Eq, Ord, Show)
@@ -167,6 +250,16 @@ pattern PKBarcodeEventConfigurationDataTypeSigningKeyMaterial = PKBarcodeEventCo
 pattern PKBarcodeEventConfigurationDataTypeSigningCertificate :: PKBarcodeEventConfigurationDataType
 pattern PKBarcodeEventConfigurationDataTypeSigningCertificate = PKBarcodeEventConfigurationDataType 2
 
+instance ObjCArgument PKBarcodeEventConfigurationDataType where
+  withObjCArg (PKBarcodeEventConfigurationDataType x) k = k (argCLong x)
+
+instance ObjCReturn PKBarcodeEventConfigurationDataType where
+  type RawReturn PKBarcodeEventConfigurationDataType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKBarcodeEventConfigurationDataType x)
+  fromOwned x = pure (PKBarcodeEventConfigurationDataType x)
+
 -- | @PKDisbursementErrorCode@
 newtype PKDisbursementErrorCode = PKDisbursementErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -180,6 +273,16 @@ pattern PKDisbursementUnsupportedCardError = PKDisbursementErrorCode 1
 
 pattern PKDisbursementRecipientContactInvalidError :: PKDisbursementErrorCode
 pattern PKDisbursementRecipientContactInvalidError = PKDisbursementErrorCode 2
+
+instance ObjCArgument PKDisbursementErrorCode where
+  withObjCArg (PKDisbursementErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKDisbursementErrorCode where
+  type RawReturn PKDisbursementErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKDisbursementErrorCode x)
+  fromOwned x = pure (PKDisbursementErrorCode x)
 
 -- | Identity error codes.
 -- | @PKIdentityError@
@@ -214,6 +317,16 @@ pattern PKIdentityErrorInvalidElement = PKIdentityError 7
 pattern PKIdentityErrorRegionNotSupported :: PKIdentityError
 pattern PKIdentityErrorRegionNotSupported = PKIdentityError 8
 
+instance ObjCArgument PKIdentityError where
+  withObjCArg (PKIdentityError x) k = k (argCLong x)
+
+instance ObjCReturn PKIdentityError where
+  type RawReturn PKIdentityError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKIdentityError x)
+  fromOwned x = pure (PKIdentityError x)
+
 -- | @PKIssuerProvisioningExtensionAuthorizationResult@
 newtype PKIssuerProvisioningExtensionAuthorizationResult = PKIssuerProvisioningExtensionAuthorizationResult CLong
   deriving stock (Eq, Ord, Show)
@@ -224,6 +337,16 @@ pattern PKIssuerProvisioningExtensionAuthorizationResultCanceled = PKIssuerProvi
 
 pattern PKIssuerProvisioningExtensionAuthorizationResultAuthorized :: PKIssuerProvisioningExtensionAuthorizationResult
 pattern PKIssuerProvisioningExtensionAuthorizationResultAuthorized = PKIssuerProvisioningExtensionAuthorizationResult 1
+
+instance ObjCArgument PKIssuerProvisioningExtensionAuthorizationResult where
+  withObjCArg (PKIssuerProvisioningExtensionAuthorizationResult x) k = k (argCLong x)
+
+instance ObjCReturn PKIssuerProvisioningExtensionAuthorizationResult where
+  type RawReturn PKIssuerProvisioningExtensionAuthorizationResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKIssuerProvisioningExtensionAuthorizationResult x)
+  fromOwned x = pure (PKIssuerProvisioningExtensionAuthorizationResult x)
 
 -- | @PKMerchantCapability@ (bitmask)
 newtype PKMerchantCapability = PKMerchantCapability CULong
@@ -251,6 +374,16 @@ pattern PKMerchantCapabilityDebit = PKMerchantCapability 8
 pattern PKMerchantCapabilityInstantFundsOut :: PKMerchantCapability
 pattern PKMerchantCapabilityInstantFundsOut = PKMerchantCapability 128
 
+instance ObjCArgument PKMerchantCapability where
+  withObjCArg (PKMerchantCapability x) k = k (argCULong x)
+
+instance ObjCReturn PKMerchantCapability where
+  type RawReturn PKMerchantCapability = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKMerchantCapability x)
+  fromOwned x = pure (PKMerchantCapability x)
+
 -- | @PKPassKitErrorCode@
 newtype PKPassKitErrorCode = PKPassKitErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -271,6 +404,16 @@ pattern PKInvalidSignature = PKPassKitErrorCode 3
 pattern PKNotEntitledError :: PKPassKitErrorCode
 pattern PKNotEntitledError = PKPassKitErrorCode 4
 
+instance ObjCArgument PKPassKitErrorCode where
+  withObjCArg (PKPassKitErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKPassKitErrorCode where
+  type RawReturn PKPassKitErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPassKitErrorCode x)
+  fromOwned x = pure (PKPassKitErrorCode x)
+
 -- | @PKPassLibraryAddPassesStatus@
 newtype PKPassLibraryAddPassesStatus = PKPassLibraryAddPassesStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -284,6 +427,16 @@ pattern PKPassLibraryShouldReviewPasses = PKPassLibraryAddPassesStatus 1
 
 pattern PKPassLibraryDidCancelAddPasses :: PKPassLibraryAddPassesStatus
 pattern PKPassLibraryDidCancelAddPasses = PKPassLibraryAddPassesStatus 2
+
+instance ObjCArgument PKPassLibraryAddPassesStatus where
+  withObjCArg (PKPassLibraryAddPassesStatus x) k = k (argCLong x)
+
+instance ObjCReturn PKPassLibraryAddPassesStatus where
+  type RawReturn PKPassLibraryAddPassesStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPassLibraryAddPassesStatus x)
+  fromOwned x = pure (PKPassLibraryAddPassesStatus x)
 
 -- | @PKPassLibraryAuthorizationStatus@
 newtype PKPassLibraryAuthorizationStatus = PKPassLibraryAuthorizationStatus CLong
@@ -302,6 +455,16 @@ pattern PKPassLibraryAuthorizationStatusAuthorized = PKPassLibraryAuthorizationS
 pattern PKPassLibraryAuthorizationStatusRestricted :: PKPassLibraryAuthorizationStatus
 pattern PKPassLibraryAuthorizationStatusRestricted = PKPassLibraryAuthorizationStatus 2
 
+instance ObjCArgument PKPassLibraryAuthorizationStatus where
+  withObjCArg (PKPassLibraryAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn PKPassLibraryAuthorizationStatus where
+  type RawReturn PKPassLibraryAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPassLibraryAuthorizationStatus x)
+  fromOwned x = pure (PKPassLibraryAuthorizationStatus x)
+
 -- | @PKPassLibraryCapability@
 newtype PKPassLibraryCapability = PKPassLibraryCapability CLong
   deriving stock (Eq, Ord, Show)
@@ -309,6 +472,16 @@ newtype PKPassLibraryCapability = PKPassLibraryCapability CLong
 
 pattern PKPassLibraryCapabilityBackgroundAddPasses :: PKPassLibraryCapability
 pattern PKPassLibraryCapabilityBackgroundAddPasses = PKPassLibraryCapability 0
+
+instance ObjCArgument PKPassLibraryCapability where
+  withObjCArg (PKPassLibraryCapability x) k = k (argCLong x)
+
+instance ObjCReturn PKPassLibraryCapability where
+  type RawReturn PKPassLibraryCapability = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPassLibraryCapability x)
+  fromOwned x = pure (PKPassLibraryCapability x)
 
 -- | @PKPassType@
 newtype PKPassType = PKPassType CULong
@@ -326,6 +499,16 @@ pattern PKPassTypePayment = PKPassType 1
 
 pattern PKPassTypeAny :: PKPassType
 pattern PKPassTypeAny = PKPassType 18446744073709551615
+
+instance ObjCArgument PKPassType where
+  withObjCArg (PKPassType x) k = k (argCULong x)
+
+instance ObjCReturn PKPassType where
+  type RawReturn PKPassType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPassType x)
+  fromOwned x = pure (PKPassType x)
 
 -- | @PKPaymentAuthorizationStatus@
 newtype PKPaymentAuthorizationStatus = PKPaymentAuthorizationStatus CLong
@@ -356,6 +539,16 @@ pattern PKPaymentAuthorizationStatusPINIncorrect = PKPaymentAuthorizationStatus 
 pattern PKPaymentAuthorizationStatusPINLockout :: PKPaymentAuthorizationStatus
 pattern PKPaymentAuthorizationStatusPINLockout = PKPaymentAuthorizationStatus 7
 
+instance ObjCArgument PKPaymentAuthorizationStatus where
+  withObjCArg (PKPaymentAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn PKPaymentAuthorizationStatus where
+  type RawReturn PKPaymentAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentAuthorizationStatus x)
+  fromOwned x = pure (PKPaymentAuthorizationStatus x)
+
 -- | @PKPaymentButtonStyle@
 newtype PKPaymentButtonStyle = PKPaymentButtonStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -372,6 +565,16 @@ pattern PKPaymentButtonStyleBlack = PKPaymentButtonStyle 2
 
 pattern PKPaymentButtonStyleAutomatic :: PKPaymentButtonStyle
 pattern PKPaymentButtonStyleAutomatic = PKPaymentButtonStyle 3
+
+instance ObjCArgument PKPaymentButtonStyle where
+  withObjCArg (PKPaymentButtonStyle x) k = k (argCLong x)
+
+instance ObjCReturn PKPaymentButtonStyle where
+  type RawReturn PKPaymentButtonStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentButtonStyle x)
+  fromOwned x = pure (PKPaymentButtonStyle x)
 
 -- | @PKPaymentButtonType@
 newtype PKPaymentButtonType = PKPaymentButtonType CLong
@@ -429,6 +632,16 @@ pattern PKPaymentButtonTypeTip = PKPaymentButtonType 15
 pattern PKPaymentButtonTypeContinue :: PKPaymentButtonType
 pattern PKPaymentButtonTypeContinue = PKPaymentButtonType 16
 
+instance ObjCArgument PKPaymentButtonType where
+  withObjCArg (PKPaymentButtonType x) k = k (argCLong x)
+
+instance ObjCReturn PKPaymentButtonType where
+  type RawReturn PKPaymentButtonType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentButtonType x)
+  fromOwned x = pure (PKPaymentButtonType x)
+
 -- | @PKPaymentErrorCode@
 newtype PKPaymentErrorCode = PKPaymentErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -451,6 +664,16 @@ pattern PKPaymentCouponCodeInvalidError = PKPaymentErrorCode 4
 
 pattern PKPaymentCouponCodeExpiredError :: PKPaymentErrorCode
 pattern PKPaymentCouponCodeExpiredError = PKPaymentErrorCode 5
+
+instance ObjCArgument PKPaymentErrorCode where
+  withObjCArg (PKPaymentErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKPaymentErrorCode where
+  type RawReturn PKPaymentErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentErrorCode x)
+  fromOwned x = pure (PKPaymentErrorCode x)
 
 -- | @PKPaymentMethodType@
 newtype PKPaymentMethodType = PKPaymentMethodType CULong
@@ -475,6 +698,16 @@ pattern PKPaymentMethodTypeStore = PKPaymentMethodType 4
 pattern PKPaymentMethodTypeEMoney :: PKPaymentMethodType
 pattern PKPaymentMethodTypeEMoney = PKPaymentMethodType 5
 
+instance ObjCArgument PKPaymentMethodType where
+  withObjCArg (PKPaymentMethodType x) k = k (argCULong x)
+
+instance ObjCReturn PKPaymentMethodType where
+  type RawReturn PKPaymentMethodType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentMethodType x)
+  fromOwned x = pure (PKPaymentMethodType x)
+
 -- | @PKPaymentPassActivationState@
 newtype PKPaymentPassActivationState = PKPaymentPassActivationState CULong
   deriving stock (Eq, Ord, Show)
@@ -495,6 +728,16 @@ pattern PKPaymentPassActivationStateSuspended = PKPaymentPassActivationState 3
 pattern PKPaymentPassActivationStateDeactivated :: PKPaymentPassActivationState
 pattern PKPaymentPassActivationStateDeactivated = PKPaymentPassActivationState 4
 
+instance ObjCArgument PKPaymentPassActivationState where
+  withObjCArg (PKPaymentPassActivationState x) k = k (argCULong x)
+
+instance ObjCReturn PKPaymentPassActivationState where
+  type RawReturn PKPaymentPassActivationState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentPassActivationState x)
+  fromOwned x = pure (PKPaymentPassActivationState x)
+
 -- | @PKPaymentSummaryItemType@
 newtype PKPaymentSummaryItemType = PKPaymentSummaryItemType CULong
   deriving stock (Eq, Ord, Show)
@@ -505,6 +748,16 @@ pattern PKPaymentSummaryItemTypeFinal = PKPaymentSummaryItemType 0
 
 pattern PKPaymentSummaryItemTypePending :: PKPaymentSummaryItemType
 pattern PKPaymentSummaryItemTypePending = PKPaymentSummaryItemType 1
+
+instance ObjCArgument PKPaymentSummaryItemType where
+  withObjCArg (PKPaymentSummaryItemType x) k = k (argCULong x)
+
+instance ObjCReturn PKPaymentSummaryItemType where
+  type RawReturn PKPaymentSummaryItemType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKPaymentSummaryItemType x)
+  fromOwned x = pure (PKPaymentSummaryItemType x)
 
 -- | @PKRadioTechnology@ (bitmask)
 newtype PKRadioTechnology = PKRadioTechnology CULong
@@ -526,6 +779,16 @@ pattern PKRadioTechnologyNFC = PKRadioTechnology 1
 pattern PKRadioTechnologyBluetooth :: PKRadioTechnology
 pattern PKRadioTechnologyBluetooth = PKRadioTechnology 2
 
+instance ObjCArgument PKRadioTechnology where
+  withObjCArg (PKRadioTechnology x) k = k (argCULong x)
+
+instance ObjCReturn PKRadioTechnology where
+  type RawReturn PKRadioTechnology = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKRadioTechnology x)
+  fromOwned x = pure (PKRadioTechnology x)
+
 -- | @PKSecureElementPassActivationState@
 newtype PKSecureElementPassActivationState = PKSecureElementPassActivationState CLong
   deriving stock (Eq, Ord, Show)
@@ -546,6 +809,16 @@ pattern PKSecureElementPassActivationStateSuspended = PKSecureElementPassActivat
 pattern PKSecureElementPassActivationStateDeactivated :: PKSecureElementPassActivationState
 pattern PKSecureElementPassActivationStateDeactivated = PKSecureElementPassActivationState 4
 
+instance ObjCArgument PKSecureElementPassActivationState where
+  withObjCArg (PKSecureElementPassActivationState x) k = k (argCLong x)
+
+instance ObjCReturn PKSecureElementPassActivationState where
+  type RawReturn PKSecureElementPassActivationState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKSecureElementPassActivationState x)
+  fromOwned x = pure (PKSecureElementPassActivationState x)
+
 -- | @PKShareSecureElementPassErrorCode@
 newtype PKShareSecureElementPassErrorCode = PKShareSecureElementPassErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -556,6 +829,16 @@ pattern PKShareSecureElementPassUnknownError = PKShareSecureElementPassErrorCode
 
 pattern PKShareSecureElementPassSetupError :: PKShareSecureElementPassErrorCode
 pattern PKShareSecureElementPassSetupError = PKShareSecureElementPassErrorCode 1
+
+instance ObjCArgument PKShareSecureElementPassErrorCode where
+  withObjCArg (PKShareSecureElementPassErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKShareSecureElementPassErrorCode where
+  type RawReturn PKShareSecureElementPassErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKShareSecureElementPassErrorCode x)
+  fromOwned x = pure (PKShareSecureElementPassErrorCode x)
 
 -- | @PKShippingContactEditingMode@
 newtype PKShippingContactEditingMode = PKShippingContactEditingMode CULong
@@ -570,6 +853,16 @@ pattern PKShippingContactEditingModeStorePickup = PKShippingContactEditingMode 2
 
 pattern PKShippingContactEditingModeEnabled :: PKShippingContactEditingMode
 pattern PKShippingContactEditingModeEnabled = PKShippingContactEditingMode 1
+
+instance ObjCArgument PKShippingContactEditingMode where
+  withObjCArg (PKShippingContactEditingMode x) k = k (argCULong x)
+
+instance ObjCReturn PKShippingContactEditingMode where
+  type RawReturn PKShippingContactEditingMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKShippingContactEditingMode x)
+  fromOwned x = pure (PKShippingContactEditingMode x)
 
 -- | @PKShippingType@
 newtype PKShippingType = PKShippingType CULong
@@ -588,6 +881,16 @@ pattern PKShippingTypeStorePickup = PKShippingType 2
 pattern PKShippingTypeServicePickup :: PKShippingType
 pattern PKShippingTypeServicePickup = PKShippingType 3
 
+instance ObjCArgument PKShippingType where
+  withObjCArg (PKShippingType x) k = k (argCULong x)
+
+instance ObjCReturn PKShippingType where
+  type RawReturn PKShippingType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKShippingType x)
+  fromOwned x = pure (PKShippingType x)
+
 -- | @PKVehicleConnectionErrorCode@
 newtype PKVehicleConnectionErrorCode = PKVehicleConnectionErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -601,6 +904,16 @@ pattern PKVehicleConnectionErrorCodeSessionUnableToStart = PKVehicleConnectionEr
 
 pattern PKVehicleConnectionErrorCodeSessionNotActive :: PKVehicleConnectionErrorCode
 pattern PKVehicleConnectionErrorCodeSessionNotActive = PKVehicleConnectionErrorCode 2
+
+instance ObjCArgument PKVehicleConnectionErrorCode where
+  withObjCArg (PKVehicleConnectionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn PKVehicleConnectionErrorCode where
+  type RawReturn PKVehicleConnectionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKVehicleConnectionErrorCode x)
+  fromOwned x = pure (PKVehicleConnectionErrorCode x)
 
 -- | @PKVehicleConnectionSessionConnectionState@
 newtype PKVehicleConnectionSessionConnectionState = PKVehicleConnectionSessionConnectionState CLong
@@ -618,3 +931,13 @@ pattern PKVehicleConnectionSessionConnectionStateConnecting = PKVehicleConnectio
 
 pattern PKVehicleConnectionSessionConnectionStateFailedToConnect :: PKVehicleConnectionSessionConnectionState
 pattern PKVehicleConnectionSessionConnectionStateFailedToConnect = PKVehicleConnectionSessionConnectionState 3
+
+instance ObjCArgument PKVehicleConnectionSessionConnectionState where
+  withObjCArg (PKVehicleConnectionSessionConnectionState x) k = k (argCLong x)
+
+instance ObjCReturn PKVehicleConnectionSessionConnectionState where
+  type RawReturn PKVehicleConnectionSessionConnectionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKVehicleConnectionSessionConnectionState x)
+  fromOwned x = pure (PKVehicleConnectionSessionConnectionState x)

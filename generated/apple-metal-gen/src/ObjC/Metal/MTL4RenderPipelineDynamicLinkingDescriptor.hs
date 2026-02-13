@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Metal.MTL4RenderPipelineDynamicLinkingDescriptor
   , tileLinkingDescriptor
   , objectLinkingDescriptor
   , meshLinkingDescriptor
-  , vertexLinkingDescriptorSelector
   , fragmentLinkingDescriptorSelector
-  , tileLinkingDescriptorSelector
-  , objectLinkingDescriptorSelector
   , meshLinkingDescriptorSelector
+  , objectLinkingDescriptorSelector
+  , tileLinkingDescriptorSelector
+  , vertexLinkingDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,58 +38,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- vertexLinkingDescriptor@
 vertexLinkingDescriptor :: IsMTL4RenderPipelineDynamicLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor => mtL4RenderPipelineDynamicLinkingDescriptor -> IO (Id MTL4PipelineStageDynamicLinkingDescriptor)
-vertexLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor  =
-    sendMsg mtL4RenderPipelineDynamicLinkingDescriptor (mkSelector "vertexLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor =
+  sendMessage mtL4RenderPipelineDynamicLinkingDescriptor vertexLinkingDescriptorSelector
 
 -- | Controls properties for linking the fragment stage of the render pipeline.
 --
 -- ObjC selector: @- fragmentLinkingDescriptor@
 fragmentLinkingDescriptor :: IsMTL4RenderPipelineDynamicLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor => mtL4RenderPipelineDynamicLinkingDescriptor -> IO (Id MTL4PipelineStageDynamicLinkingDescriptor)
-fragmentLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor  =
-    sendMsg mtL4RenderPipelineDynamicLinkingDescriptor (mkSelector "fragmentLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor =
+  sendMessage mtL4RenderPipelineDynamicLinkingDescriptor fragmentLinkingDescriptorSelector
 
 -- | Controls properties for linking the tile stage of the render pipeline.
 --
 -- ObjC selector: @- tileLinkingDescriptor@
 tileLinkingDescriptor :: IsMTL4RenderPipelineDynamicLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor => mtL4RenderPipelineDynamicLinkingDescriptor -> IO (Id MTL4PipelineStageDynamicLinkingDescriptor)
-tileLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor  =
-    sendMsg mtL4RenderPipelineDynamicLinkingDescriptor (mkSelector "tileLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor =
+  sendMessage mtL4RenderPipelineDynamicLinkingDescriptor tileLinkingDescriptorSelector
 
 -- | Controls properties for link the object stage of the render pipeline.
 --
 -- ObjC selector: @- objectLinkingDescriptor@
 objectLinkingDescriptor :: IsMTL4RenderPipelineDynamicLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor => mtL4RenderPipelineDynamicLinkingDescriptor -> IO (Id MTL4PipelineStageDynamicLinkingDescriptor)
-objectLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor  =
-    sendMsg mtL4RenderPipelineDynamicLinkingDescriptor (mkSelector "objectLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor =
+  sendMessage mtL4RenderPipelineDynamicLinkingDescriptor objectLinkingDescriptorSelector
 
 -- | Controls properties for linking the mesh stage of the render pipeline.
 --
 -- ObjC selector: @- meshLinkingDescriptor@
 meshLinkingDescriptor :: IsMTL4RenderPipelineDynamicLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor => mtL4RenderPipelineDynamicLinkingDescriptor -> IO (Id MTL4PipelineStageDynamicLinkingDescriptor)
-meshLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor  =
-    sendMsg mtL4RenderPipelineDynamicLinkingDescriptor (mkSelector "meshLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshLinkingDescriptor mtL4RenderPipelineDynamicLinkingDescriptor =
+  sendMessage mtL4RenderPipelineDynamicLinkingDescriptor meshLinkingDescriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vertexLinkingDescriptor@
-vertexLinkingDescriptorSelector :: Selector
+vertexLinkingDescriptorSelector :: Selector '[] (Id MTL4PipelineStageDynamicLinkingDescriptor)
 vertexLinkingDescriptorSelector = mkSelector "vertexLinkingDescriptor"
 
 -- | @Selector@ for @fragmentLinkingDescriptor@
-fragmentLinkingDescriptorSelector :: Selector
+fragmentLinkingDescriptorSelector :: Selector '[] (Id MTL4PipelineStageDynamicLinkingDescriptor)
 fragmentLinkingDescriptorSelector = mkSelector "fragmentLinkingDescriptor"
 
 -- | @Selector@ for @tileLinkingDescriptor@
-tileLinkingDescriptorSelector :: Selector
+tileLinkingDescriptorSelector :: Selector '[] (Id MTL4PipelineStageDynamicLinkingDescriptor)
 tileLinkingDescriptorSelector = mkSelector "tileLinkingDescriptor"
 
 -- | @Selector@ for @objectLinkingDescriptor@
-objectLinkingDescriptorSelector :: Selector
+objectLinkingDescriptorSelector :: Selector '[] (Id MTL4PipelineStageDynamicLinkingDescriptor)
 objectLinkingDescriptorSelector = mkSelector "objectLinkingDescriptor"
 
 -- | @Selector@ for @meshLinkingDescriptor@
-meshLinkingDescriptorSelector :: Selector
+meshLinkingDescriptorSelector :: Selector '[] (Id MTL4PipelineStageDynamicLinkingDescriptor)
 meshLinkingDescriptorSelector = mkSelector "meshLinkingDescriptor"
 

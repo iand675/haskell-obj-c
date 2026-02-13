@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,33 +45,33 @@ module ObjC.IOBluetooth.IOBluetoothHandsFree
   , delegate
   , setDelegate
   , connected
-  , indicatorSelector
-  , setIndicator_valueSelector
-  , initWithDevice_delegateSelector
-  , connectSelector
-  , disconnectSelector
   , connectSCOSelector
-  , disconnectSCOSelector
-  , isSCOConnectedSelector
-  , supportedFeaturesSelector
-  , setSupportedFeaturesSelector
-  , inputVolumeSelector
-  , setInputVolumeSelector
-  , inputMutedSelector
-  , setInputMutedSelector
-  , outputVolumeSelector
-  , setOutputVolumeSelector
-  , outputMutedSelector
-  , setOutputMutedSelector
+  , connectSelector
+  , connectedSelector
+  , delegateSelector
+  , deviceCallHoldModesSelector
   , deviceSelector
   , deviceSupportedFeaturesSelector
   , deviceSupportedSMSServicesSelector
-  , deviceCallHoldModesSelector
-  , smsModeSelector
-  , smsEnabledSelector
-  , delegateSelector
+  , disconnectSCOSelector
+  , disconnectSelector
+  , indicatorSelector
+  , initWithDevice_delegateSelector
+  , inputMutedSelector
+  , inputVolumeSelector
+  , isSCOConnectedSelector
+  , outputMutedSelector
+  , outputVolumeSelector
   , setDelegateSelector
-  , connectedSelector
+  , setIndicator_valueSelector
+  , setInputMutedSelector
+  , setInputVolumeSelector
+  , setOutputMutedSelector
+  , setOutputVolumeSelector
+  , setSupportedFeaturesSelector
+  , smsEnabledSelector
+  , smsModeSelector
+  , supportedFeaturesSelector
 
   -- * Enum types
   , IOBluetoothSMSMode(IOBluetoothSMSMode)
@@ -79,15 +80,11 @@ module ObjC.IOBluetooth.IOBluetoothHandsFree
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -105,9 +102,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- indicator:@
 indicator :: (IsIOBluetoothHandsFree ioBluetoothHandsFree, IsNSString indicatorName) => ioBluetoothHandsFree -> indicatorName -> IO CInt
-indicator ioBluetoothHandsFree  indicatorName =
-  withObjCPtr indicatorName $ \raw_indicatorName ->
-      sendMsg ioBluetoothHandsFree (mkSelector "indicator:") retCInt [argPtr (castPtr raw_indicatorName :: Ptr ())]
+indicator ioBluetoothHandsFree indicatorName =
+  sendMessage ioBluetoothHandsFree indicatorSelector (toNSString indicatorName)
 
 -- | setIndicator:indicatorName:indicatorValue
 --
@@ -121,9 +117,8 @@ indicator ioBluetoothHandsFree  indicatorName =
 --
 -- ObjC selector: @- setIndicator:value:@
 setIndicator_value :: (IsIOBluetoothHandsFree ioBluetoothHandsFree, IsNSString indicatorName) => ioBluetoothHandsFree -> indicatorName -> CInt -> IO ()
-setIndicator_value ioBluetoothHandsFree  indicatorName indicatorValue =
-  withObjCPtr indicatorName $ \raw_indicatorName ->
-      sendMsg ioBluetoothHandsFree (mkSelector "setIndicator:value:") retVoid [argPtr (castPtr raw_indicatorName :: Ptr ()), argCInt indicatorValue]
+setIndicator_value ioBluetoothHandsFree indicatorName indicatorValue =
+  sendMessage ioBluetoothHandsFree setIndicator_valueSelector (toNSString indicatorName) indicatorValue
 
 -- | initWithDevice:delegate:
 --
@@ -139,9 +134,8 @@ setIndicator_value ioBluetoothHandsFree  indicatorName indicatorValue =
 --
 -- ObjC selector: @- initWithDevice:delegate:@
 initWithDevice_delegate :: (IsIOBluetoothHandsFree ioBluetoothHandsFree, IsIOBluetoothDevice device) => ioBluetoothHandsFree -> device -> RawId -> IO (Id IOBluetoothHandsFree)
-initWithDevice_delegate ioBluetoothHandsFree  device inDelegate =
-  withObjCPtr device $ \raw_device ->
-      sendMsg ioBluetoothHandsFree (mkSelector "initWithDevice:delegate:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr (unRawId inDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_delegate ioBluetoothHandsFree device inDelegate =
+  sendOwnedMessage ioBluetoothHandsFree initWithDevice_delegateSelector (toIOBluetoothDevice device) inDelegate
 
 -- | connect
 --
@@ -151,8 +145,8 @@ initWithDevice_delegate ioBluetoothHandsFree  device inDelegate =
 --
 -- ObjC selector: @- connect@
 connect :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO ()
-connect ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "connect") retVoid []
+connect ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree connectSelector
 
 -- | disconnect
 --
@@ -162,8 +156,8 @@ connect ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- disconnect@
 disconnect :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO ()
-disconnect ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "disconnect") retVoid []
+disconnect ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree disconnectSelector
 
 -- | connectSCO
 --
@@ -173,8 +167,8 @@ disconnect ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- connectSCO@
 connectSCO :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO ()
-connectSCO ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "connectSCO") retVoid []
+connectSCO ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree connectSCOSelector
 
 -- | disconnectSCO
 --
@@ -184,8 +178,8 @@ connectSCO ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- disconnectSCO@
 disconnectSCO :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO ()
-disconnectSCO ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "disconnectSCO") retVoid []
+disconnectSCO ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree disconnectSCOSelector
 
 -- | isSCOConnected
 --
@@ -197,8 +191,8 @@ disconnectSCO ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- isSCOConnected@
 isSCOConnected :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO Bool
-isSCOConnected ioBluetoothHandsFree  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "isSCOConnected") retCULong []
+isSCOConnected ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree isSCOConnectedSelector
 
 -- | supportedFeatures
 --
@@ -218,8 +212,8 @@ isSCOConnected ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- supportedFeatures@
 supportedFeatures :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CUInt
-supportedFeatures ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "supportedFeatures") retCUInt []
+supportedFeatures ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree supportedFeaturesSelector
 
 -- | supportedFeatures
 --
@@ -239,8 +233,8 @@ supportedFeatures ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setSupportedFeatures:@
 setSupportedFeatures :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> CUInt -> IO ()
-setSupportedFeatures ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setSupportedFeatures:") retVoid [argCUInt value]
+setSupportedFeatures ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setSupportedFeaturesSelector value
 
 -- | inputVolume
 --
@@ -260,8 +254,8 @@ setSupportedFeatures ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- inputVolume@
 inputVolume :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CFloat
-inputVolume ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "inputVolume") retCFloat []
+inputVolume ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree inputVolumeSelector
 
 -- | inputVolume
 --
@@ -281,8 +275,8 @@ inputVolume ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setInputVolume:@
 setInputVolume :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> CFloat -> IO ()
-setInputVolume ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setInputVolume:") retVoid [argCFloat value]
+setInputVolume ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setInputVolumeSelector value
 
 -- | isInputMuted
 --
@@ -302,8 +296,8 @@ setInputVolume ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- inputMuted@
 inputMuted :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO Bool
-inputMuted ioBluetoothHandsFree  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "inputMuted") retCULong []
+inputMuted ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree inputMutedSelector
 
 -- | isInputMuted
 --
@@ -323,8 +317,8 @@ inputMuted ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setInputMuted:@
 setInputMuted :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> Bool -> IO ()
-setInputMuted ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setInputMuted:") retVoid [argCULong (if value then 1 else 0)]
+setInputMuted ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setInputMutedSelector value
 
 -- | outputVolume
 --
@@ -344,8 +338,8 @@ setInputMuted ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- outputVolume@
 outputVolume :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CFloat
-outputVolume ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "outputVolume") retCFloat []
+outputVolume ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree outputVolumeSelector
 
 -- | outputVolume
 --
@@ -365,8 +359,8 @@ outputVolume ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setOutputVolume:@
 setOutputVolume :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> CFloat -> IO ()
-setOutputVolume ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setOutputVolume:") retVoid [argCFloat value]
+setOutputVolume ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setOutputVolumeSelector value
 
 -- | isOutputMuted
 --
@@ -386,8 +380,8 @@ setOutputVolume ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- outputMuted@
 outputMuted :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO Bool
-outputMuted ioBluetoothHandsFree  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "outputMuted") retCULong []
+outputMuted ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree outputMutedSelector
 
 -- | isOutputMuted
 --
@@ -407,8 +401,8 @@ outputMuted ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setOutputMuted:@
 setOutputMuted :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> Bool -> IO ()
-setOutputMuted ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setOutputMuted:") retVoid [argCULong (if value then 1 else 0)]
+setOutputMuted ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setOutputMutedSelector value
 
 -- | device
 --
@@ -420,8 +414,8 @@ setOutputMuted ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- device@
 device :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO (Id IOBluetoothDevice)
-device ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree deviceSelector
 
 -- | deviceSupportedFeatures
 --
@@ -433,8 +427,8 @@ device ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- deviceSupportedFeatures@
 deviceSupportedFeatures :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CUInt
-deviceSupportedFeatures ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "deviceSupportedFeatures") retCUInt []
+deviceSupportedFeatures ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree deviceSupportedFeaturesSelector
 
 -- | deviceSupportedSMSServices
 --
@@ -446,8 +440,8 @@ deviceSupportedFeatures ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- deviceSupportedSMSServices@
 deviceSupportedSMSServices :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CUInt
-deviceSupportedSMSServices ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "deviceSupportedSMSServices") retCUInt []
+deviceSupportedSMSServices ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree deviceSupportedSMSServicesSelector
 
 -- | deviceCallHoldModes
 --
@@ -459,8 +453,8 @@ deviceSupportedSMSServices ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- deviceCallHoldModes@
 deviceCallHoldModes :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO CUInt
-deviceCallHoldModes ioBluetoothHandsFree  =
-    sendMsg ioBluetoothHandsFree (mkSelector "deviceCallHoldModes") retCUInt []
+deviceCallHoldModes ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree deviceCallHoldModesSelector
 
 -- | SMSMode
 --
@@ -472,8 +466,8 @@ deviceCallHoldModes ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- SMSMode@
 smsMode :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO IOBluetoothSMSMode
-smsMode ioBluetoothHandsFree  =
-    fmap (coerce :: CULong -> IOBluetoothSMSMode) $ sendMsg ioBluetoothHandsFree (mkSelector "SMSMode") retCULong []
+smsMode ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree smsModeSelector
 
 -- | isSMSEnabled
 --
@@ -485,8 +479,8 @@ smsMode ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- SMSEnabled@
 smsEnabled :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO Bool
-smsEnabled ioBluetoothHandsFree  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "SMSEnabled") retCULong []
+smsEnabled ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree smsEnabledSelector
 
 -- | delegate
 --
@@ -506,8 +500,8 @@ smsEnabled ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO RawId
-delegate ioBluetoothHandsFree  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothHandsFree (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree delegateSelector
 
 -- | delegate
 --
@@ -527,8 +521,8 @@ delegate ioBluetoothHandsFree  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> RawId -> IO ()
-setDelegate ioBluetoothHandsFree  value =
-    sendMsg ioBluetoothHandsFree (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ioBluetoothHandsFree value =
+  sendMessage ioBluetoothHandsFree setDelegateSelector value
 
 -- | isConnected
 --
@@ -540,118 +534,118 @@ setDelegate ioBluetoothHandsFree  value =
 --
 -- ObjC selector: @- connected@
 connected :: IsIOBluetoothHandsFree ioBluetoothHandsFree => ioBluetoothHandsFree -> IO Bool
-connected ioBluetoothHandsFree  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothHandsFree (mkSelector "connected") retCULong []
+connected ioBluetoothHandsFree =
+  sendMessage ioBluetoothHandsFree connectedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indicator:@
-indicatorSelector :: Selector
+indicatorSelector :: Selector '[Id NSString] CInt
 indicatorSelector = mkSelector "indicator:"
 
 -- | @Selector@ for @setIndicator:value:@
-setIndicator_valueSelector :: Selector
+setIndicator_valueSelector :: Selector '[Id NSString, CInt] ()
 setIndicator_valueSelector = mkSelector "setIndicator:value:"
 
 -- | @Selector@ for @initWithDevice:delegate:@
-initWithDevice_delegateSelector :: Selector
+initWithDevice_delegateSelector :: Selector '[Id IOBluetoothDevice, RawId] (Id IOBluetoothHandsFree)
 initWithDevice_delegateSelector = mkSelector "initWithDevice:delegate:"
 
 -- | @Selector@ for @connect@
-connectSelector :: Selector
+connectSelector :: Selector '[] ()
 connectSelector = mkSelector "connect"
 
 -- | @Selector@ for @disconnect@
-disconnectSelector :: Selector
+disconnectSelector :: Selector '[] ()
 disconnectSelector = mkSelector "disconnect"
 
 -- | @Selector@ for @connectSCO@
-connectSCOSelector :: Selector
+connectSCOSelector :: Selector '[] ()
 connectSCOSelector = mkSelector "connectSCO"
 
 -- | @Selector@ for @disconnectSCO@
-disconnectSCOSelector :: Selector
+disconnectSCOSelector :: Selector '[] ()
 disconnectSCOSelector = mkSelector "disconnectSCO"
 
 -- | @Selector@ for @isSCOConnected@
-isSCOConnectedSelector :: Selector
+isSCOConnectedSelector :: Selector '[] Bool
 isSCOConnectedSelector = mkSelector "isSCOConnected"
 
 -- | @Selector@ for @supportedFeatures@
-supportedFeaturesSelector :: Selector
+supportedFeaturesSelector :: Selector '[] CUInt
 supportedFeaturesSelector = mkSelector "supportedFeatures"
 
 -- | @Selector@ for @setSupportedFeatures:@
-setSupportedFeaturesSelector :: Selector
+setSupportedFeaturesSelector :: Selector '[CUInt] ()
 setSupportedFeaturesSelector = mkSelector "setSupportedFeatures:"
 
 -- | @Selector@ for @inputVolume@
-inputVolumeSelector :: Selector
+inputVolumeSelector :: Selector '[] CFloat
 inputVolumeSelector = mkSelector "inputVolume"
 
 -- | @Selector@ for @setInputVolume:@
-setInputVolumeSelector :: Selector
+setInputVolumeSelector :: Selector '[CFloat] ()
 setInputVolumeSelector = mkSelector "setInputVolume:"
 
 -- | @Selector@ for @inputMuted@
-inputMutedSelector :: Selector
+inputMutedSelector :: Selector '[] Bool
 inputMutedSelector = mkSelector "inputMuted"
 
 -- | @Selector@ for @setInputMuted:@
-setInputMutedSelector :: Selector
+setInputMutedSelector :: Selector '[Bool] ()
 setInputMutedSelector = mkSelector "setInputMuted:"
 
 -- | @Selector@ for @outputVolume@
-outputVolumeSelector :: Selector
+outputVolumeSelector :: Selector '[] CFloat
 outputVolumeSelector = mkSelector "outputVolume"
 
 -- | @Selector@ for @setOutputVolume:@
-setOutputVolumeSelector :: Selector
+setOutputVolumeSelector :: Selector '[CFloat] ()
 setOutputVolumeSelector = mkSelector "setOutputVolume:"
 
 -- | @Selector@ for @outputMuted@
-outputMutedSelector :: Selector
+outputMutedSelector :: Selector '[] Bool
 outputMutedSelector = mkSelector "outputMuted"
 
 -- | @Selector@ for @setOutputMuted:@
-setOutputMutedSelector :: Selector
+setOutputMutedSelector :: Selector '[Bool] ()
 setOutputMutedSelector = mkSelector "setOutputMuted:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id IOBluetoothDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @deviceSupportedFeatures@
-deviceSupportedFeaturesSelector :: Selector
+deviceSupportedFeaturesSelector :: Selector '[] CUInt
 deviceSupportedFeaturesSelector = mkSelector "deviceSupportedFeatures"
 
 -- | @Selector@ for @deviceSupportedSMSServices@
-deviceSupportedSMSServicesSelector :: Selector
+deviceSupportedSMSServicesSelector :: Selector '[] CUInt
 deviceSupportedSMSServicesSelector = mkSelector "deviceSupportedSMSServices"
 
 -- | @Selector@ for @deviceCallHoldModes@
-deviceCallHoldModesSelector :: Selector
+deviceCallHoldModesSelector :: Selector '[] CUInt
 deviceCallHoldModesSelector = mkSelector "deviceCallHoldModes"
 
 -- | @Selector@ for @SMSMode@
-smsModeSelector :: Selector
+smsModeSelector :: Selector '[] IOBluetoothSMSMode
 smsModeSelector = mkSelector "SMSMode"
 
 -- | @Selector@ for @SMSEnabled@
-smsEnabledSelector :: Selector
+smsEnabledSelector :: Selector '[] Bool
 smsEnabledSelector = mkSelector "SMSEnabled"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Metal.MTLVertexAttribute
   , active
   , patchData
   , patchControlPointData
-  , nameSelector
+  , activeSelector
   , attributeIndexSelector
   , attributeTypeSelector
-  , activeSelector
-  , patchDataSelector
+  , nameSelector
   , patchControlPointDataSelector
+  , patchDataSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -122,15 +123,11 @@ module ObjC.Metal.MTLVertexAttribute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,59 +137,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO (Id NSString)
-name mtlVertexAttribute  =
-    sendMsg mtlVertexAttribute (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlVertexAttribute =
+  sendMessage mtlVertexAttribute nameSelector
 
 -- | @- attributeIndex@
 attributeIndex :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO CULong
-attributeIndex mtlVertexAttribute  =
-    sendMsg mtlVertexAttribute (mkSelector "attributeIndex") retCULong []
+attributeIndex mtlVertexAttribute =
+  sendMessage mtlVertexAttribute attributeIndexSelector
 
 -- | @- attributeType@
 attributeType :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO MTLDataType
-attributeType mtlVertexAttribute  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlVertexAttribute (mkSelector "attributeType") retCULong []
+attributeType mtlVertexAttribute =
+  sendMessage mtlVertexAttribute attributeTypeSelector
 
 -- | @- active@
 active :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO Bool
-active mtlVertexAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlVertexAttribute (mkSelector "active") retCULong []
+active mtlVertexAttribute =
+  sendMessage mtlVertexAttribute activeSelector
 
 -- | @- patchData@
 patchData :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO Bool
-patchData mtlVertexAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlVertexAttribute (mkSelector "patchData") retCULong []
+patchData mtlVertexAttribute =
+  sendMessage mtlVertexAttribute patchDataSelector
 
 -- | @- patchControlPointData@
 patchControlPointData :: IsMTLVertexAttribute mtlVertexAttribute => mtlVertexAttribute -> IO Bool
-patchControlPointData mtlVertexAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlVertexAttribute (mkSelector "patchControlPointData") retCULong []
+patchControlPointData mtlVertexAttribute =
+  sendMessage mtlVertexAttribute patchControlPointDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @attributeIndex@
-attributeIndexSelector :: Selector
+attributeIndexSelector :: Selector '[] CULong
 attributeIndexSelector = mkSelector "attributeIndex"
 
 -- | @Selector@ for @attributeType@
-attributeTypeSelector :: Selector
+attributeTypeSelector :: Selector '[] MTLDataType
 attributeTypeSelector = mkSelector "attributeType"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @patchData@
-patchDataSelector :: Selector
+patchDataSelector :: Selector '[] Bool
 patchDataSelector = mkSelector "patchData"
 
 -- | @Selector@ for @patchControlPointData@
-patchControlPointDataSelector :: Selector
+patchControlPointDataSelector :: Selector '[] Bool
 patchControlPointDataSelector = mkSelector "patchControlPointData"
 

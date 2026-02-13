@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.AVFoundation.AVCaptureSystemExposureBiasSlider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: (IsAVCaptureSystemExposureBiasSlider avCaptureSystemExposureBiasSlider, IsAVCaptureDevice device) => avCaptureSystemExposureBiasSlider -> device -> IO (Id AVCaptureSystemExposureBiasSlider)
-initWithDevice avCaptureSystemExposureBiasSlider  device =
-  withObjCPtr device $ \raw_device ->
-      sendMsg avCaptureSystemExposureBiasSlider (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice avCaptureSystemExposureBiasSlider device =
+  sendOwnedMessage avCaptureSystemExposureBiasSlider initWithDeviceSelector (toAVCaptureDevice device)
 
 -- | initWithDevice:action
 --
@@ -67,19 +63,18 @@ initWithDevice avCaptureSystemExposureBiasSlider  device =
 --
 -- ObjC selector: @- initWithDevice:action:@
 initWithDevice_action :: (IsAVCaptureSystemExposureBiasSlider avCaptureSystemExposureBiasSlider, IsAVCaptureDevice device) => avCaptureSystemExposureBiasSlider -> device -> Ptr () -> IO (Id AVCaptureSystemExposureBiasSlider)
-initWithDevice_action avCaptureSystemExposureBiasSlider  device action =
-  withObjCPtr device $ \raw_device ->
-      sendMsg avCaptureSystemExposureBiasSlider (mkSelector "initWithDevice:action:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr action :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_action avCaptureSystemExposureBiasSlider device action =
+  sendOwnedMessage avCaptureSystemExposureBiasSlider initWithDevice_actionSelector (toAVCaptureDevice device) action
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[Id AVCaptureDevice] (Id AVCaptureSystemExposureBiasSlider)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:action:@
-initWithDevice_actionSelector :: Selector
+initWithDevice_actionSelector :: Selector '[Id AVCaptureDevice, Ptr ()] (Id AVCaptureSystemExposureBiasSlider)
 initWithDevice_actionSelector = mkSelector "initWithDevice:action:"
 

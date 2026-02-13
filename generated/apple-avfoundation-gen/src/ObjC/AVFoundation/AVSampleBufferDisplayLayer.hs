@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,30 +32,30 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
   , requiresFlushToResumeDecoding
   , readyForMoreMediaData
   , hasSufficientMediaDataForReliablePlaybackStart
-  , enqueueSampleBufferSelector
-  , flushSelector
-  , flushAndRemoveImageSelector
-  , requestMediaDataWhenReadyOnQueue_usingBlockSelector
-  , stopRequestingMediaDataSelector
   , controlTimebaseSelector
-  , setControlTimebaseSelector
-  , videoGravitySelector
-  , setVideoGravitySelector
-  , readyForDisplaySelector
-  , sampleBufferRendererSelector
+  , enqueueSampleBufferSelector
+  , errorSelector
+  , flushAndRemoveImageSelector
+  , flushSelector
+  , hasSufficientMediaDataForReliablePlaybackStartSelector
   , outputObscuredDueToInsufficientExternalProtectionSelector
   , preventsAutomaticBackgroundingDuringVideoPlaybackSelector
-  , setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector
-  , preventsDisplaySleepDuringVideoPlaybackSelector
-  , setPreventsDisplaySleepDuringVideoPlaybackSelector
   , preventsCaptureSelector
-  , setPreventsCaptureSelector
-  , timebaseSelector
-  , statusSelector
-  , errorSelector
-  , requiresFlushToResumeDecodingSelector
+  , preventsDisplaySleepDuringVideoPlaybackSelector
+  , readyForDisplaySelector
   , readyForMoreMediaDataSelector
-  , hasSufficientMediaDataForReliablePlaybackStartSelector
+  , requestMediaDataWhenReadyOnQueue_usingBlockSelector
+  , requiresFlushToResumeDecodingSelector
+  , sampleBufferRendererSelector
+  , setControlTimebaseSelector
+  , setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector
+  , setPreventsCaptureSelector
+  , setPreventsDisplaySleepDuringVideoPlaybackSelector
+  , setVideoGravitySelector
+  , statusSelector
+  , stopRequestingMediaDataSelector
+  , timebaseSelector
+  , videoGravitySelector
 
   -- * Enum types
   , AVQueuedSampleBufferRenderingStatus(AVQueuedSampleBufferRenderingStatus)
@@ -64,15 +65,11 @@ module ObjC.AVFoundation.AVSampleBufferDisplayLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,8 +94,8 @@ import ObjC.QuartzCore.Internal.Classes
 --
 -- ObjC selector: @- enqueueSampleBuffer:@
 enqueueSampleBuffer :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> Ptr () -> IO ()
-enqueueSampleBuffer avSampleBufferDisplayLayer  sampleBuffer =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "enqueueSampleBuffer:") retVoid [argPtr sampleBuffer]
+enqueueSampleBuffer avSampleBufferDisplayLayer sampleBuffer =
+  sendMessage avSampleBufferDisplayLayer enqueueSampleBufferSelector sampleBuffer
 
 -- | flush
 --
@@ -108,8 +105,8 @@ enqueueSampleBuffer avSampleBufferDisplayLayer  sampleBuffer =
 --
 -- ObjC selector: @- flush@
 flush :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO ()
-flush avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "flush") retVoid []
+flush avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer flushSelector
 
 -- | flushAndRemoveImage
 --
@@ -119,8 +116,8 @@ flush avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- flushAndRemoveImage@
 flushAndRemoveImage :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO ()
-flushAndRemoveImage avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "flushAndRemoveImage") retVoid []
+flushAndRemoveImage avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer flushAndRemoveImageSelector
 
 -- | requestMediaDataWhenReadyOnQueue:usingBlock:
 --
@@ -130,9 +127,8 @@ flushAndRemoveImage avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- requestMediaDataWhenReadyOnQueue:usingBlock:@
 requestMediaDataWhenReadyOnQueue_usingBlock :: (IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer, IsNSObject queue) => avSampleBufferDisplayLayer -> queue -> Ptr () -> IO ()
-requestMediaDataWhenReadyOnQueue_usingBlock avSampleBufferDisplayLayer  queue block =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg avSampleBufferDisplayLayer (mkSelector "requestMediaDataWhenReadyOnQueue:usingBlock:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+requestMediaDataWhenReadyOnQueue_usingBlock avSampleBufferDisplayLayer queue block =
+  sendMessage avSampleBufferDisplayLayer requestMediaDataWhenReadyOnQueue_usingBlockSelector (toNSObject queue) block
 
 -- | stopRequestingMediaData
 --
@@ -142,8 +138,8 @@ requestMediaDataWhenReadyOnQueue_usingBlock avSampleBufferDisplayLayer  queue bl
 --
 -- ObjC selector: @- stopRequestingMediaData@
 stopRequestingMediaData :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO ()
-stopRequestingMediaData avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "stopRequestingMediaData") retVoid []
+stopRequestingMediaData avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer stopRequestingMediaDataSelector
 
 -- | controlTimebase
 --
@@ -157,8 +153,8 @@ stopRequestingMediaData avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- controlTimebase@
 controlTimebase :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Ptr ())
-controlTimebase avSampleBufferDisplayLayer  =
-    fmap castPtr $ sendMsg avSampleBufferDisplayLayer (mkSelector "controlTimebase") (retPtr retVoid) []
+controlTimebase avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer controlTimebaseSelector
 
 -- | controlTimebase
 --
@@ -172,8 +168,8 @@ controlTimebase avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- setControlTimebase:@
 setControlTimebase :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> Ptr () -> IO ()
-setControlTimebase avSampleBufferDisplayLayer  value =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "setControlTimebase:") retVoid [argPtr value]
+setControlTimebase avSampleBufferDisplayLayer value =
+  sendMessage avSampleBufferDisplayLayer setControlTimebaseSelector value
 
 -- | videoGravity
 --
@@ -183,8 +179,8 @@ setControlTimebase avSampleBufferDisplayLayer  value =
 --
 -- ObjC selector: @- videoGravity@
 videoGravity :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Id NSString)
-videoGravity avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "videoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoGravity avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer videoGravitySelector
 
 -- | videoGravity
 --
@@ -194,9 +190,8 @@ videoGravity avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- setVideoGravity:@
 setVideoGravity :: (IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer, IsNSString value) => avSampleBufferDisplayLayer -> value -> IO ()
-setVideoGravity avSampleBufferDisplayLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSampleBufferDisplayLayer (mkSelector "setVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoGravity avSampleBufferDisplayLayer value =
+  sendMessage avSampleBufferDisplayLayer setVideoGravitySelector (toNSString value)
 
 -- | readyForDisplay
 --
@@ -206,8 +201,8 @@ setVideoGravity avSampleBufferDisplayLayer  value =
 --
 -- ObjC selector: @- readyForDisplay@
 readyForDisplay :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-readyForDisplay avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "readyForDisplay") retCULong []
+readyForDisplay avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer readyForDisplaySelector
 
 -- | sampleBufferRenderer
 --
@@ -217,8 +212,8 @@ readyForDisplay avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- sampleBufferRenderer@
 sampleBufferRenderer :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Id AVSampleBufferVideoRenderer)
-sampleBufferRenderer avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "sampleBufferRenderer") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferRenderer avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer sampleBufferRendererSelector
 
 -- | outputObscuredDueToInsufficientExternalProtection
 --
@@ -232,8 +227,8 @@ sampleBufferRenderer avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- outputObscuredDueToInsufficientExternalProtection@
 outputObscuredDueToInsufficientExternalProtection :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-outputObscuredDueToInsufficientExternalProtection avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "outputObscuredDueToInsufficientExternalProtection") retCULong []
+outputObscuredDueToInsufficientExternalProtection avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer outputObscuredDueToInsufficientExternalProtectionSelector
 
 -- | preventsAutomaticBackgroundingDuringVideoPlayback
 --
@@ -243,8 +238,8 @@ outputObscuredDueToInsufficientExternalProtection avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- preventsAutomaticBackgroundingDuringVideoPlayback@
 preventsAutomaticBackgroundingDuringVideoPlayback :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-preventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "preventsAutomaticBackgroundingDuringVideoPlayback") retCULong []
+preventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer preventsAutomaticBackgroundingDuringVideoPlaybackSelector
 
 -- | preventsAutomaticBackgroundingDuringVideoPlayback
 --
@@ -254,8 +249,8 @@ preventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- setPreventsAutomaticBackgroundingDuringVideoPlayback:@
 setPreventsAutomaticBackgroundingDuringVideoPlayback :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> Bool -> IO ()
-setPreventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer  value =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "setPreventsAutomaticBackgroundingDuringVideoPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer value =
+  sendMessage avSampleBufferDisplayLayer setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector value
 
 -- | preventsDisplaySleepDuringVideoPlayback
 --
@@ -265,8 +260,8 @@ setPreventsAutomaticBackgroundingDuringVideoPlayback avSampleBufferDisplayLayer 
 --
 -- ObjC selector: @- preventsDisplaySleepDuringVideoPlayback@
 preventsDisplaySleepDuringVideoPlayback :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-preventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "preventsDisplaySleepDuringVideoPlayback") retCULong []
+preventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer preventsDisplaySleepDuringVideoPlaybackSelector
 
 -- | preventsDisplaySleepDuringVideoPlayback
 --
@@ -276,8 +271,8 @@ preventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- setPreventsDisplaySleepDuringVideoPlayback:@
 setPreventsDisplaySleepDuringVideoPlayback :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> Bool -> IO ()
-setPreventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer  value =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "setPreventsDisplaySleepDuringVideoPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer value =
+  sendMessage avSampleBufferDisplayLayer setPreventsDisplaySleepDuringVideoPlaybackSelector value
 
 -- | preventsCapture
 --
@@ -285,8 +280,8 @@ setPreventsDisplaySleepDuringVideoPlayback avSampleBufferDisplayLayer  value =
 --
 -- ObjC selector: @- preventsCapture@
 preventsCapture :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-preventsCapture avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "preventsCapture") retCULong []
+preventsCapture avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer preventsCaptureSelector
 
 -- | preventsCapture
 --
@@ -294,8 +289,8 @@ preventsCapture avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- setPreventsCapture:@
 setPreventsCapture :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> Bool -> IO ()
-setPreventsCapture avSampleBufferDisplayLayer  value =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "setPreventsCapture:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsCapture avSampleBufferDisplayLayer value =
+  sendMessage avSampleBufferDisplayLayer setPreventsCaptureSelector value
 
 -- | timebase
 --
@@ -307,8 +302,8 @@ setPreventsCapture avSampleBufferDisplayLayer  value =
 --
 -- ObjC selector: @- timebase@
 timebase :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Ptr ())
-timebase avSampleBufferDisplayLayer  =
-    fmap castPtr $ sendMsg avSampleBufferDisplayLayer (mkSelector "timebase") (retPtr retVoid) []
+timebase avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer timebaseSelector
 
 -- | status
 --
@@ -320,8 +315,8 @@ timebase avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- status@
 status :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO AVQueuedSampleBufferRenderingStatus
-status avSampleBufferDisplayLayer  =
-    fmap (coerce :: CLong -> AVQueuedSampleBufferRenderingStatus) $ sendMsg avSampleBufferDisplayLayer (mkSelector "status") retCLong []
+status avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer statusSelector
 
 -- | error
 --
@@ -331,8 +326,8 @@ status avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO (Id NSError)
-error_ avSampleBufferDisplayLayer  =
-    sendMsg avSampleBufferDisplayLayer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer errorSelector
 
 -- | requiresFlushToResumeDecoding
 --
@@ -342,8 +337,8 @@ error_ avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- requiresFlushToResumeDecoding@
 requiresFlushToResumeDecoding :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-requiresFlushToResumeDecoding avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "requiresFlushToResumeDecoding") retCULong []
+requiresFlushToResumeDecoding avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer requiresFlushToResumeDecodingSelector
 
 -- | readyForMoreMediaData
 --
@@ -363,8 +358,8 @@ requiresFlushToResumeDecoding avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- readyForMoreMediaData@
 readyForMoreMediaData :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-readyForMoreMediaData avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "readyForMoreMediaData") retCULong []
+readyForMoreMediaData avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer readyForMoreMediaDataSelector
 
 -- | hasSufficientMediaDataForReliablePlaybackStart
 --
@@ -374,106 +369,106 @@ readyForMoreMediaData avSampleBufferDisplayLayer  =
 --
 -- ObjC selector: @- hasSufficientMediaDataForReliablePlaybackStart@
 hasSufficientMediaDataForReliablePlaybackStart :: IsAVSampleBufferDisplayLayer avSampleBufferDisplayLayer => avSampleBufferDisplayLayer -> IO Bool
-hasSufficientMediaDataForReliablePlaybackStart avSampleBufferDisplayLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferDisplayLayer (mkSelector "hasSufficientMediaDataForReliablePlaybackStart") retCULong []
+hasSufficientMediaDataForReliablePlaybackStart avSampleBufferDisplayLayer =
+  sendMessage avSampleBufferDisplayLayer hasSufficientMediaDataForReliablePlaybackStartSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enqueueSampleBuffer:@
-enqueueSampleBufferSelector :: Selector
+enqueueSampleBufferSelector :: Selector '[Ptr ()] ()
 enqueueSampleBufferSelector = mkSelector "enqueueSampleBuffer:"
 
 -- | @Selector@ for @flush@
-flushSelector :: Selector
+flushSelector :: Selector '[] ()
 flushSelector = mkSelector "flush"
 
 -- | @Selector@ for @flushAndRemoveImage@
-flushAndRemoveImageSelector :: Selector
+flushAndRemoveImageSelector :: Selector '[] ()
 flushAndRemoveImageSelector = mkSelector "flushAndRemoveImage"
 
 -- | @Selector@ for @requestMediaDataWhenReadyOnQueue:usingBlock:@
-requestMediaDataWhenReadyOnQueue_usingBlockSelector :: Selector
+requestMediaDataWhenReadyOnQueue_usingBlockSelector :: Selector '[Id NSObject, Ptr ()] ()
 requestMediaDataWhenReadyOnQueue_usingBlockSelector = mkSelector "requestMediaDataWhenReadyOnQueue:usingBlock:"
 
 -- | @Selector@ for @stopRequestingMediaData@
-stopRequestingMediaDataSelector :: Selector
+stopRequestingMediaDataSelector :: Selector '[] ()
 stopRequestingMediaDataSelector = mkSelector "stopRequestingMediaData"
 
 -- | @Selector@ for @controlTimebase@
-controlTimebaseSelector :: Selector
+controlTimebaseSelector :: Selector '[] (Ptr ())
 controlTimebaseSelector = mkSelector "controlTimebase"
 
 -- | @Selector@ for @setControlTimebase:@
-setControlTimebaseSelector :: Selector
+setControlTimebaseSelector :: Selector '[Ptr ()] ()
 setControlTimebaseSelector = mkSelector "setControlTimebase:"
 
 -- | @Selector@ for @videoGravity@
-videoGravitySelector :: Selector
+videoGravitySelector :: Selector '[] (Id NSString)
 videoGravitySelector = mkSelector "videoGravity"
 
 -- | @Selector@ for @setVideoGravity:@
-setVideoGravitySelector :: Selector
+setVideoGravitySelector :: Selector '[Id NSString] ()
 setVideoGravitySelector = mkSelector "setVideoGravity:"
 
 -- | @Selector@ for @readyForDisplay@
-readyForDisplaySelector :: Selector
+readyForDisplaySelector :: Selector '[] Bool
 readyForDisplaySelector = mkSelector "readyForDisplay"
 
 -- | @Selector@ for @sampleBufferRenderer@
-sampleBufferRendererSelector :: Selector
+sampleBufferRendererSelector :: Selector '[] (Id AVSampleBufferVideoRenderer)
 sampleBufferRendererSelector = mkSelector "sampleBufferRenderer"
 
 -- | @Selector@ for @outputObscuredDueToInsufficientExternalProtection@
-outputObscuredDueToInsufficientExternalProtectionSelector :: Selector
+outputObscuredDueToInsufficientExternalProtectionSelector :: Selector '[] Bool
 outputObscuredDueToInsufficientExternalProtectionSelector = mkSelector "outputObscuredDueToInsufficientExternalProtection"
 
 -- | @Selector@ for @preventsAutomaticBackgroundingDuringVideoPlayback@
-preventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector
+preventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector '[] Bool
 preventsAutomaticBackgroundingDuringVideoPlaybackSelector = mkSelector "preventsAutomaticBackgroundingDuringVideoPlayback"
 
 -- | @Selector@ for @setPreventsAutomaticBackgroundingDuringVideoPlayback:@
-setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector
+setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector '[Bool] ()
 setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector = mkSelector "setPreventsAutomaticBackgroundingDuringVideoPlayback:"
 
 -- | @Selector@ for @preventsDisplaySleepDuringVideoPlayback@
-preventsDisplaySleepDuringVideoPlaybackSelector :: Selector
+preventsDisplaySleepDuringVideoPlaybackSelector :: Selector '[] Bool
 preventsDisplaySleepDuringVideoPlaybackSelector = mkSelector "preventsDisplaySleepDuringVideoPlayback"
 
 -- | @Selector@ for @setPreventsDisplaySleepDuringVideoPlayback:@
-setPreventsDisplaySleepDuringVideoPlaybackSelector :: Selector
+setPreventsDisplaySleepDuringVideoPlaybackSelector :: Selector '[Bool] ()
 setPreventsDisplaySleepDuringVideoPlaybackSelector = mkSelector "setPreventsDisplaySleepDuringVideoPlayback:"
 
 -- | @Selector@ for @preventsCapture@
-preventsCaptureSelector :: Selector
+preventsCaptureSelector :: Selector '[] Bool
 preventsCaptureSelector = mkSelector "preventsCapture"
 
 -- | @Selector@ for @setPreventsCapture:@
-setPreventsCaptureSelector :: Selector
+setPreventsCaptureSelector :: Selector '[Bool] ()
 setPreventsCaptureSelector = mkSelector "setPreventsCapture:"
 
 -- | @Selector@ for @timebase@
-timebaseSelector :: Selector
+timebaseSelector :: Selector '[] (Ptr ())
 timebaseSelector = mkSelector "timebase"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVQueuedSampleBufferRenderingStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @requiresFlushToResumeDecoding@
-requiresFlushToResumeDecodingSelector :: Selector
+requiresFlushToResumeDecodingSelector :: Selector '[] Bool
 requiresFlushToResumeDecodingSelector = mkSelector "requiresFlushToResumeDecoding"
 
 -- | @Selector@ for @readyForMoreMediaData@
-readyForMoreMediaDataSelector :: Selector
+readyForMoreMediaDataSelector :: Selector '[] Bool
 readyForMoreMediaDataSelector = mkSelector "readyForMoreMediaData"
 
 -- | @Selector@ for @hasSufficientMediaDataForReliablePlaybackStart@
-hasSufficientMediaDataForReliablePlaybackStartSelector :: Selector
+hasSufficientMediaDataForReliablePlaybackStartSelector :: Selector '[] Bool
 hasSufficientMediaDataForReliablePlaybackStartSelector = mkSelector "hasSufficientMediaDataForReliablePlaybackStart"
 

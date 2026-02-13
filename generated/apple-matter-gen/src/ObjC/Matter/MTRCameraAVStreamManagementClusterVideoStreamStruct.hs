@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,45 +33,41 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterVideoStreamStruct
   , setOsdEnabled
   , referenceCount
   , setReferenceCount
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
-  , streamUsageSelector
-  , setStreamUsageSelector
-  , videoCodecSelector
-  , setVideoCodecSelector
-  , minFrameRateSelector
-  , setMinFrameRateSelector
-  , maxFrameRateSelector
-  , setMaxFrameRateSelector
-  , minResolutionSelector
-  , setMinResolutionSelector
-  , maxResolutionSelector
-  , setMaxResolutionSelector
-  , minBitRateSelector
-  , setMinBitRateSelector
-  , maxBitRateSelector
-  , setMaxBitRateSelector
   , keyFrameIntervalSelector
-  , setKeyFrameIntervalSelector
-  , watermarkEnabledSelector
-  , setWatermarkEnabledSelector
+  , maxBitRateSelector
+  , maxFrameRateSelector
+  , maxResolutionSelector
+  , minBitRateSelector
+  , minFrameRateSelector
+  , minResolutionSelector
   , osdEnabledSelector
-  , setOsdEnabledSelector
   , referenceCountSelector
+  , setKeyFrameIntervalSelector
+  , setMaxBitRateSelector
+  , setMaxFrameRateSelector
+  , setMaxResolutionSelector
+  , setMinBitRateSelector
+  , setMinFrameRateSelector
+  , setMinResolutionSelector
+  , setOsdEnabledSelector
   , setReferenceCountSelector
+  , setStreamUsageSelector
+  , setVideoCodecSelector
+  , setVideoStreamIDSelector
+  , setWatermarkEnabledSelector
+  , streamUsageSelector
+  , videoCodecSelector
+  , videoStreamIDSelector
+  , watermarkEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,252 +76,239 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-videoStreamID mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- streamUsage@
 streamUsage :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-streamUsage mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "streamUsage") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamUsage mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct streamUsageSelector
 
 -- | @- setStreamUsage:@
 setStreamUsage :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setStreamUsage mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setStreamUsage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamUsage mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setStreamUsageSelector (toNSNumber value)
 
 -- | @- videoCodec@
 videoCodec :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-videoCodec mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "videoCodec") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoCodec mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct videoCodecSelector
 
 -- | @- setVideoCodec:@
 setVideoCodec :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setVideoCodec mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setVideoCodec:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoCodec mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setVideoCodecSelector (toNSNumber value)
 
 -- | @- minFrameRate@
 minFrameRate :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-minFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "minFrameRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+minFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct minFrameRateSelector
 
 -- | @- setMinFrameRate:@
 setMinFrameRate :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMinFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMinFrameRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMinFrameRateSelector (toNSNumber value)
 
 -- | @- maxFrameRate@
 maxFrameRate :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-maxFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "maxFrameRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct maxFrameRateSelector
 
 -- | @- setMaxFrameRate:@
 setMaxFrameRate :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMaxFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMaxFrameRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxFrameRate mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMaxFrameRateSelector (toNSNumber value)
 
 -- | @- minResolution@
 minResolution :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
-minResolution mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "minResolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+minResolution mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct minResolutionSelector
 
 -- | @- setMinResolution:@
 setMinResolution :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsMTRCameraAVStreamManagementClusterVideoResolutionStruct value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMinResolution mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMinResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinResolution mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMinResolutionSelector (toMTRCameraAVStreamManagementClusterVideoResolutionStruct value)
 
 -- | @- maxResolution@
 maxResolution :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
-maxResolution mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "maxResolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxResolution mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct maxResolutionSelector
 
 -- | @- setMaxResolution:@
 setMaxResolution :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsMTRCameraAVStreamManagementClusterVideoResolutionStruct value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMaxResolution mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMaxResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxResolution mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMaxResolutionSelector (toMTRCameraAVStreamManagementClusterVideoResolutionStruct value)
 
 -- | @- minBitRate@
 minBitRate :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-minBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "minBitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+minBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct minBitRateSelector
 
 -- | @- setMinBitRate:@
 setMinBitRate :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMinBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMinBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMinBitRateSelector (toNSNumber value)
 
 -- | @- maxBitRate@
 maxBitRate :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-maxBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "maxBitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct maxBitRateSelector
 
 -- | @- setMaxBitRate:@
 setMaxBitRate :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setMaxBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setMaxBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxBitRate mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setMaxBitRateSelector (toNSNumber value)
 
 -- | @- keyFrameInterval@
 keyFrameInterval :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-keyFrameInterval mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "keyFrameInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyFrameInterval mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct keyFrameIntervalSelector
 
 -- | @- setKeyFrameInterval:@
 setKeyFrameInterval :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setKeyFrameInterval mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setKeyFrameInterval:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyFrameInterval mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setKeyFrameIntervalSelector (toNSNumber value)
 
 -- | @- watermarkEnabled@
 watermarkEnabled :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-watermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "watermarkEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+watermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct watermarkEnabledSelector
 
 -- | @- setWatermarkEnabled:@
 setWatermarkEnabled :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setWatermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setWatermarkEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWatermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setWatermarkEnabledSelector (toNSNumber value)
 
 -- | @- osdEnabled@
 osdEnabled :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-osdEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "osdEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+osdEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct osdEnabledSelector
 
 -- | @- setOsdEnabled:@
 setOsdEnabled :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setOsdEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setOsdEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOsdEnabled mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setOsdEnabledSelector (toNSNumber value)
 
 -- | @- referenceCount@
 referenceCount :: IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct => mtrCameraAVStreamManagementClusterVideoStreamStruct -> IO (Id NSNumber)
-referenceCount mtrCameraAVStreamManagementClusterVideoStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "referenceCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+referenceCount mtrCameraAVStreamManagementClusterVideoStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct referenceCountSelector
 
 -- | @- setReferenceCount:@
 setReferenceCount :: (IsMTRCameraAVStreamManagementClusterVideoStreamStruct mtrCameraAVStreamManagementClusterVideoStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamStruct -> value -> IO ()
-setReferenceCount mtrCameraAVStreamManagementClusterVideoStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamStruct (mkSelector "setReferenceCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReferenceCount mtrCameraAVStreamManagementClusterVideoStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamStruct setReferenceCountSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @streamUsage@
-streamUsageSelector :: Selector
+streamUsageSelector :: Selector '[] (Id NSNumber)
 streamUsageSelector = mkSelector "streamUsage"
 
 -- | @Selector@ for @setStreamUsage:@
-setStreamUsageSelector :: Selector
+setStreamUsageSelector :: Selector '[Id NSNumber] ()
 setStreamUsageSelector = mkSelector "setStreamUsage:"
 
 -- | @Selector@ for @videoCodec@
-videoCodecSelector :: Selector
+videoCodecSelector :: Selector '[] (Id NSNumber)
 videoCodecSelector = mkSelector "videoCodec"
 
 -- | @Selector@ for @setVideoCodec:@
-setVideoCodecSelector :: Selector
+setVideoCodecSelector :: Selector '[Id NSNumber] ()
 setVideoCodecSelector = mkSelector "setVideoCodec:"
 
 -- | @Selector@ for @minFrameRate@
-minFrameRateSelector :: Selector
+minFrameRateSelector :: Selector '[] (Id NSNumber)
 minFrameRateSelector = mkSelector "minFrameRate"
 
 -- | @Selector@ for @setMinFrameRate:@
-setMinFrameRateSelector :: Selector
+setMinFrameRateSelector :: Selector '[Id NSNumber] ()
 setMinFrameRateSelector = mkSelector "setMinFrameRate:"
 
 -- | @Selector@ for @maxFrameRate@
-maxFrameRateSelector :: Selector
+maxFrameRateSelector :: Selector '[] (Id NSNumber)
 maxFrameRateSelector = mkSelector "maxFrameRate"
 
 -- | @Selector@ for @setMaxFrameRate:@
-setMaxFrameRateSelector :: Selector
+setMaxFrameRateSelector :: Selector '[Id NSNumber] ()
 setMaxFrameRateSelector = mkSelector "setMaxFrameRate:"
 
 -- | @Selector@ for @minResolution@
-minResolutionSelector :: Selector
+minResolutionSelector :: Selector '[] (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
 minResolutionSelector = mkSelector "minResolution"
 
 -- | @Selector@ for @setMinResolution:@
-setMinResolutionSelector :: Selector
+setMinResolutionSelector :: Selector '[Id MTRCameraAVStreamManagementClusterVideoResolutionStruct] ()
 setMinResolutionSelector = mkSelector "setMinResolution:"
 
 -- | @Selector@ for @maxResolution@
-maxResolutionSelector :: Selector
+maxResolutionSelector :: Selector '[] (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
 maxResolutionSelector = mkSelector "maxResolution"
 
 -- | @Selector@ for @setMaxResolution:@
-setMaxResolutionSelector :: Selector
+setMaxResolutionSelector :: Selector '[Id MTRCameraAVStreamManagementClusterVideoResolutionStruct] ()
 setMaxResolutionSelector = mkSelector "setMaxResolution:"
 
 -- | @Selector@ for @minBitRate@
-minBitRateSelector :: Selector
+minBitRateSelector :: Selector '[] (Id NSNumber)
 minBitRateSelector = mkSelector "minBitRate"
 
 -- | @Selector@ for @setMinBitRate:@
-setMinBitRateSelector :: Selector
+setMinBitRateSelector :: Selector '[Id NSNumber] ()
 setMinBitRateSelector = mkSelector "setMinBitRate:"
 
 -- | @Selector@ for @maxBitRate@
-maxBitRateSelector :: Selector
+maxBitRateSelector :: Selector '[] (Id NSNumber)
 maxBitRateSelector = mkSelector "maxBitRate"
 
 -- | @Selector@ for @setMaxBitRate:@
-setMaxBitRateSelector :: Selector
+setMaxBitRateSelector :: Selector '[Id NSNumber] ()
 setMaxBitRateSelector = mkSelector "setMaxBitRate:"
 
 -- | @Selector@ for @keyFrameInterval@
-keyFrameIntervalSelector :: Selector
+keyFrameIntervalSelector :: Selector '[] (Id NSNumber)
 keyFrameIntervalSelector = mkSelector "keyFrameInterval"
 
 -- | @Selector@ for @setKeyFrameInterval:@
-setKeyFrameIntervalSelector :: Selector
+setKeyFrameIntervalSelector :: Selector '[Id NSNumber] ()
 setKeyFrameIntervalSelector = mkSelector "setKeyFrameInterval:"
 
 -- | @Selector@ for @watermarkEnabled@
-watermarkEnabledSelector :: Selector
+watermarkEnabledSelector :: Selector '[] (Id NSNumber)
 watermarkEnabledSelector = mkSelector "watermarkEnabled"
 
 -- | @Selector@ for @setWatermarkEnabled:@
-setWatermarkEnabledSelector :: Selector
+setWatermarkEnabledSelector :: Selector '[Id NSNumber] ()
 setWatermarkEnabledSelector = mkSelector "setWatermarkEnabled:"
 
 -- | @Selector@ for @osdEnabled@
-osdEnabledSelector :: Selector
+osdEnabledSelector :: Selector '[] (Id NSNumber)
 osdEnabledSelector = mkSelector "osdEnabled"
 
 -- | @Selector@ for @setOsdEnabled:@
-setOsdEnabledSelector :: Selector
+setOsdEnabledSelector :: Selector '[Id NSNumber] ()
 setOsdEnabledSelector = mkSelector "setOsdEnabled:"
 
 -- | @Selector@ for @referenceCount@
-referenceCountSelector :: Selector
+referenceCountSelector :: Selector '[] (Id NSNumber)
 referenceCountSelector = mkSelector "referenceCount"
 
 -- | @Selector@ for @setReferenceCount:@
-setReferenceCountSelector :: Selector
+setReferenceCountSelector :: Selector '[Id NSNumber] ()
 setReferenceCountSelector = mkSelector "setReferenceCount:"
 

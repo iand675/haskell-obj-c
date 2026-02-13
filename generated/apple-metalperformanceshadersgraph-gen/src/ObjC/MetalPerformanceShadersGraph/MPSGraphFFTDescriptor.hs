@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,11 +21,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphFFTDescriptor
   , setRoundToOddHermitean
   , descriptorSelector
   , inverseSelector
-  , setInverseSelector
-  , scalingModeSelector
-  , setScalingModeSelector
   , roundToOddHermiteanSelector
+  , scalingModeSelector
+  , setInverseSelector
   , setRoundToOddHermiteanSelector
+  , setScalingModeSelector
 
   -- * Enum types
   , MPSGraphFFTScalingMode(MPSGraphFFTScalingMode)
@@ -34,15 +35,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphFFTDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,7 +54,7 @@ descriptor :: IO (Id MPSGraphFFTDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MPSGraphFFTDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | A Boolean-valued parameter that defines the phase factor sign for Fourier transforms.
 --
@@ -65,8 +62,8 @@ descriptor  =
 --
 -- ObjC selector: @- inverse@
 inverse :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> IO Bool
-inverse mpsGraphFFTDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphFFTDescriptor (mkSelector "inverse") retCULong []
+inverse mpsGraphFFTDescriptor =
+  sendMessage mpsGraphFFTDescriptor inverseSelector
 
 -- | A Boolean-valued parameter that defines the phase factor sign for Fourier transforms.
 --
@@ -74,8 +71,8 @@ inverse mpsGraphFFTDescriptor  =
 --
 -- ObjC selector: @- setInverse:@
 setInverse :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> Bool -> IO ()
-setInverse mpsGraphFFTDescriptor  value =
-    sendMsg mpsGraphFFTDescriptor (mkSelector "setInverse:") retVoid [argCULong (if value then 1 else 0)]
+setInverse mpsGraphFFTDescriptor value =
+  sendMessage mpsGraphFFTDescriptor setInverseSelector value
 
 -- | The scaling mode of the fast fourier transform (FFT) operation.
 --
@@ -83,8 +80,8 @@ setInverse mpsGraphFFTDescriptor  value =
 --
 -- ObjC selector: @- scalingMode@
 scalingMode :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> IO MPSGraphFFTScalingMode
-scalingMode mpsGraphFFTDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphFFTScalingMode) $ sendMsg mpsGraphFFTDescriptor (mkSelector "scalingMode") retCULong []
+scalingMode mpsGraphFFTDescriptor =
+  sendMessage mpsGraphFFTDescriptor scalingModeSelector
 
 -- | The scaling mode of the fast fourier transform (FFT) operation.
 --
@@ -92,8 +89,8 @@ scalingMode mpsGraphFFTDescriptor  =
 --
 -- ObjC selector: @- setScalingMode:@
 setScalingMode :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> MPSGraphFFTScalingMode -> IO ()
-setScalingMode mpsGraphFFTDescriptor  value =
-    sendMsg mpsGraphFFTDescriptor (mkSelector "setScalingMode:") retVoid [argCULong (coerce value)]
+setScalingMode mpsGraphFFTDescriptor value =
+  sendMessage mpsGraphFFTDescriptor setScalingModeSelector value
 
 -- | A parameter which controls how graph rounds the output tensor size for a Hermitean-to-real Fourier transform.
 --
@@ -101,8 +98,8 @@ setScalingMode mpsGraphFFTDescriptor  value =
 --
 -- ObjC selector: @- roundToOddHermitean@
 roundToOddHermitean :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> IO Bool
-roundToOddHermitean mpsGraphFFTDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphFFTDescriptor (mkSelector "roundToOddHermitean") retCULong []
+roundToOddHermitean mpsGraphFFTDescriptor =
+  sendMessage mpsGraphFFTDescriptor roundToOddHermiteanSelector
 
 -- | A parameter which controls how graph rounds the output tensor size for a Hermitean-to-real Fourier transform.
 --
@@ -110,38 +107,38 @@ roundToOddHermitean mpsGraphFFTDescriptor  =
 --
 -- ObjC selector: @- setRoundToOddHermitean:@
 setRoundToOddHermitean :: IsMPSGraphFFTDescriptor mpsGraphFFTDescriptor => mpsGraphFFTDescriptor -> Bool -> IO ()
-setRoundToOddHermitean mpsGraphFFTDescriptor  value =
-    sendMsg mpsGraphFFTDescriptor (mkSelector "setRoundToOddHermitean:") retVoid [argCULong (if value then 1 else 0)]
+setRoundToOddHermitean mpsGraphFFTDescriptor value =
+  sendMessage mpsGraphFFTDescriptor setRoundToOddHermiteanSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSGraphFFTDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @inverse@
-inverseSelector :: Selector
+inverseSelector :: Selector '[] Bool
 inverseSelector = mkSelector "inverse"
 
 -- | @Selector@ for @setInverse:@
-setInverseSelector :: Selector
+setInverseSelector :: Selector '[Bool] ()
 setInverseSelector = mkSelector "setInverse:"
 
 -- | @Selector@ for @scalingMode@
-scalingModeSelector :: Selector
+scalingModeSelector :: Selector '[] MPSGraphFFTScalingMode
 scalingModeSelector = mkSelector "scalingMode"
 
 -- | @Selector@ for @setScalingMode:@
-setScalingModeSelector :: Selector
+setScalingModeSelector :: Selector '[MPSGraphFFTScalingMode] ()
 setScalingModeSelector = mkSelector "setScalingMode:"
 
 -- | @Selector@ for @roundToOddHermitean@
-roundToOddHermiteanSelector :: Selector
+roundToOddHermiteanSelector :: Selector '[] Bool
 roundToOddHermiteanSelector = mkSelector "roundToOddHermitean"
 
 -- | @Selector@ for @setRoundToOddHermitean:@
-setRoundToOddHermiteanSelector :: Selector
+setRoundToOddHermiteanSelector :: Selector '[Bool] ()
 setRoundToOddHermiteanSelector = mkSelector "setRoundToOddHermitean:"
 

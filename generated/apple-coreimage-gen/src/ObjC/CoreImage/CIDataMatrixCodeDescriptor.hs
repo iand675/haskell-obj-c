@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.CoreImage.CIDataMatrixCodeDescriptor
   , rowCount
   , columnCount
   , eccVersion
-  , initWithPayload_rowCount_columnCount_eccVersionSelector
-  , descriptorWithPayload_rowCount_columnCount_eccVersionSelector
-  , errorCorrectedPayloadSelector
-  , rowCountSelector
   , columnCountSelector
+  , descriptorWithPayload_rowCount_columnCount_eccVersionSelector
   , eccVersionSelector
+  , errorCorrectedPayloadSelector
+  , initWithPayload_rowCount_columnCount_eccVersionSelector
+  , rowCountSelector
 
   -- * Enum types
   , CIDataMatrixCodeECCVersion(CIDataMatrixCodeECCVersion)
@@ -35,15 +36,11 @@ module ObjC.CoreImage.CIDataMatrixCodeDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,9 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPayload:rowCount:columnCount:eccVersion:@
 initWithPayload_rowCount_columnCount_eccVersion :: (IsCIDataMatrixCodeDescriptor ciDataMatrixCodeDescriptor, IsNSData errorCorrectedPayload) => ciDataMatrixCodeDescriptor -> errorCorrectedPayload -> CLong -> CLong -> CIDataMatrixCodeECCVersion -> IO (Id CIDataMatrixCodeDescriptor)
-initWithPayload_rowCount_columnCount_eccVersion ciDataMatrixCodeDescriptor  errorCorrectedPayload rowCount columnCount eccVersion =
-  withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendMsg ciDataMatrixCodeDescriptor (mkSelector "initWithPayload:rowCount:columnCount:eccVersion:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCLong rowCount, argCLong columnCount, argCLong (coerce eccVersion)] >>= ownedObject . castPtr
+initWithPayload_rowCount_columnCount_eccVersion ciDataMatrixCodeDescriptor errorCorrectedPayload rowCount columnCount eccVersion =
+  sendOwnedMessage ciDataMatrixCodeDescriptor initWithPayload_rowCount_columnCount_eccVersionSelector (toNSData errorCorrectedPayload) rowCount columnCount eccVersion
 
 -- | Creates a Data Matrix code descriptor for the given payload and parameters.
 --
@@ -70,8 +66,7 @@ descriptorWithPayload_rowCount_columnCount_eccVersion :: IsNSData errorCorrected
 descriptorWithPayload_rowCount_columnCount_eccVersion errorCorrectedPayload rowCount columnCount eccVersion =
   do
     cls' <- getRequiredClass "CIDataMatrixCodeDescriptor"
-    withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendClassMsg cls' (mkSelector "descriptorWithPayload:rowCount:columnCount:eccVersion:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCLong rowCount, argCLong columnCount, argCLong (coerce eccVersion)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPayload_rowCount_columnCount_eccVersionSelector (toNSData errorCorrectedPayload) rowCount columnCount eccVersion
 
 -- | The error-corrected payload containing the data encoded in the Data Matrix code symbol.
 --
@@ -81,8 +76,8 @@ descriptorWithPayload_rowCount_columnCount_eccVersion errorCorrectedPayload rowC
 --
 -- ObjC selector: @- errorCorrectedPayload@
 errorCorrectedPayload :: IsCIDataMatrixCodeDescriptor ciDataMatrixCodeDescriptor => ciDataMatrixCodeDescriptor -> IO (Id NSData)
-errorCorrectedPayload ciDataMatrixCodeDescriptor  =
-    sendMsg ciDataMatrixCodeDescriptor (mkSelector "errorCorrectedPayload") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorCorrectedPayload ciDataMatrixCodeDescriptor =
+  sendMessage ciDataMatrixCodeDescriptor errorCorrectedPayloadSelector
 
 -- | The number of rows in the Data Matrix code symbol.
 --
@@ -90,8 +85,8 @@ errorCorrectedPayload ciDataMatrixCodeDescriptor  =
 --
 -- ObjC selector: @- rowCount@
 rowCount :: IsCIDataMatrixCodeDescriptor ciDataMatrixCodeDescriptor => ciDataMatrixCodeDescriptor -> IO CLong
-rowCount ciDataMatrixCodeDescriptor  =
-    sendMsg ciDataMatrixCodeDescriptor (mkSelector "rowCount") retCLong []
+rowCount ciDataMatrixCodeDescriptor =
+  sendMessage ciDataMatrixCodeDescriptor rowCountSelector
 
 -- | The number of columns in the Data Matrix code symbol.
 --
@@ -99,8 +94,8 @@ rowCount ciDataMatrixCodeDescriptor  =
 --
 -- ObjC selector: @- columnCount@
 columnCount :: IsCIDataMatrixCodeDescriptor ciDataMatrixCodeDescriptor => ciDataMatrixCodeDescriptor -> IO CLong
-columnCount ciDataMatrixCodeDescriptor  =
-    sendMsg ciDataMatrixCodeDescriptor (mkSelector "columnCount") retCLong []
+columnCount ciDataMatrixCodeDescriptor =
+  sendMessage ciDataMatrixCodeDescriptor columnCountSelector
 
 -- | The error correction version of the Data Matrix code symbol.
 --
@@ -108,34 +103,34 @@ columnCount ciDataMatrixCodeDescriptor  =
 --
 -- ObjC selector: @- eccVersion@
 eccVersion :: IsCIDataMatrixCodeDescriptor ciDataMatrixCodeDescriptor => ciDataMatrixCodeDescriptor -> IO CIDataMatrixCodeECCVersion
-eccVersion ciDataMatrixCodeDescriptor  =
-    fmap (coerce :: CLong -> CIDataMatrixCodeECCVersion) $ sendMsg ciDataMatrixCodeDescriptor (mkSelector "eccVersion") retCLong []
+eccVersion ciDataMatrixCodeDescriptor =
+  sendMessage ciDataMatrixCodeDescriptor eccVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayload:rowCount:columnCount:eccVersion:@
-initWithPayload_rowCount_columnCount_eccVersionSelector :: Selector
+initWithPayload_rowCount_columnCount_eccVersionSelector :: Selector '[Id NSData, CLong, CLong, CIDataMatrixCodeECCVersion] (Id CIDataMatrixCodeDescriptor)
 initWithPayload_rowCount_columnCount_eccVersionSelector = mkSelector "initWithPayload:rowCount:columnCount:eccVersion:"
 
 -- | @Selector@ for @descriptorWithPayload:rowCount:columnCount:eccVersion:@
-descriptorWithPayload_rowCount_columnCount_eccVersionSelector :: Selector
+descriptorWithPayload_rowCount_columnCount_eccVersionSelector :: Selector '[Id NSData, CLong, CLong, CIDataMatrixCodeECCVersion] (Id CIDataMatrixCodeDescriptor)
 descriptorWithPayload_rowCount_columnCount_eccVersionSelector = mkSelector "descriptorWithPayload:rowCount:columnCount:eccVersion:"
 
 -- | @Selector@ for @errorCorrectedPayload@
-errorCorrectedPayloadSelector :: Selector
+errorCorrectedPayloadSelector :: Selector '[] (Id NSData)
 errorCorrectedPayloadSelector = mkSelector "errorCorrectedPayload"
 
 -- | @Selector@ for @rowCount@
-rowCountSelector :: Selector
+rowCountSelector :: Selector '[] CLong
 rowCountSelector = mkSelector "rowCount"
 
 -- | @Selector@ for @columnCount@
-columnCountSelector :: Selector
+columnCountSelector :: Selector '[] CLong
 columnCountSelector = mkSelector "columnCount"
 
 -- | @Selector@ for @eccVersion@
-eccVersionSelector :: Selector
+eccVersionSelector :: Selector '[] CIDataMatrixCodeECCVersion
 eccVersionSelector = mkSelector "eccVersion"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,12 +17,12 @@ module ObjC.Vision.VNCoreMLRequest
   , model
   , imageCropAndScaleOption
   , setImageCropAndScaleOption
-  , initWithModelSelector
-  , initWithModel_completionHandlerSelector
+  , imageCropAndScaleOptionSelector
   , initSelector
   , initWithCompletionHandlerSelector
+  , initWithModelSelector
+  , initWithModel_completionHandlerSelector
   , modelSelector
-  , imageCropAndScaleOptionSelector
   , setImageCropAndScaleOptionSelector
 
   -- * Enum types
@@ -34,15 +35,11 @@ module ObjC.Vision.VNCoreMLRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,9 +53,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithModel:@
 initWithModel :: (IsVNCoreMLRequest vnCoreMLRequest, IsVNCoreMLModel model) => vnCoreMLRequest -> model -> IO (Id VNCoreMLRequest)
-initWithModel vnCoreMLRequest  model =
-  withObjCPtr model $ \raw_model ->
-      sendMsg vnCoreMLRequest (mkSelector "initWithModel:") (retPtr retVoid) [argPtr (castPtr raw_model :: Ptr ())] >>= ownedObject . castPtr
+initWithModel vnCoreMLRequest model =
+  sendOwnedMessage vnCoreMLRequest initWithModelSelector (toVNCoreMLModel model)
 
 -- | Create a new request with a model.
 --
@@ -68,66 +64,65 @@ initWithModel vnCoreMLRequest  model =
 --
 -- ObjC selector: @- initWithModel:completionHandler:@
 initWithModel_completionHandler :: (IsVNCoreMLRequest vnCoreMLRequest, IsVNCoreMLModel model) => vnCoreMLRequest -> model -> Ptr () -> IO (Id VNCoreMLRequest)
-initWithModel_completionHandler vnCoreMLRequest  model completionHandler =
-  withObjCPtr model $ \raw_model ->
-      sendMsg vnCoreMLRequest (mkSelector "initWithModel:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_model :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithModel_completionHandler vnCoreMLRequest model completionHandler =
+  sendOwnedMessage vnCoreMLRequest initWithModel_completionHandlerSelector (toVNCoreMLModel model) completionHandler
 
 -- | @- init@
 init_ :: IsVNCoreMLRequest vnCoreMLRequest => vnCoreMLRequest -> IO (Id VNCoreMLRequest)
-init_ vnCoreMLRequest  =
-    sendMsg vnCoreMLRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnCoreMLRequest =
+  sendOwnedMessage vnCoreMLRequest initSelector
 
 -- | @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNCoreMLRequest vnCoreMLRequest => vnCoreMLRequest -> Ptr () -> IO (Id VNCoreMLRequest)
-initWithCompletionHandler vnCoreMLRequest  completionHandler =
-    sendMsg vnCoreMLRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnCoreMLRequest completionHandler =
+  sendOwnedMessage vnCoreMLRequest initWithCompletionHandlerSelector completionHandler
 
 -- | The model from CoreML wrapped in a VNCoreMLModel.
 --
 -- ObjC selector: @- model@
 model :: IsVNCoreMLRequest vnCoreMLRequest => vnCoreMLRequest -> IO (Id VNCoreMLModel)
-model vnCoreMLRequest  =
-    sendMsg vnCoreMLRequest (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model vnCoreMLRequest =
+  sendMessage vnCoreMLRequest modelSelector
 
 -- | @- imageCropAndScaleOption@
 imageCropAndScaleOption :: IsVNCoreMLRequest vnCoreMLRequest => vnCoreMLRequest -> IO VNImageCropAndScaleOption
-imageCropAndScaleOption vnCoreMLRequest  =
-    fmap (coerce :: CULong -> VNImageCropAndScaleOption) $ sendMsg vnCoreMLRequest (mkSelector "imageCropAndScaleOption") retCULong []
+imageCropAndScaleOption vnCoreMLRequest =
+  sendMessage vnCoreMLRequest imageCropAndScaleOptionSelector
 
 -- | @- setImageCropAndScaleOption:@
 setImageCropAndScaleOption :: IsVNCoreMLRequest vnCoreMLRequest => vnCoreMLRequest -> VNImageCropAndScaleOption -> IO ()
-setImageCropAndScaleOption vnCoreMLRequest  value =
-    sendMsg vnCoreMLRequest (mkSelector "setImageCropAndScaleOption:") retVoid [argCULong (coerce value)]
+setImageCropAndScaleOption vnCoreMLRequest value =
+  sendMessage vnCoreMLRequest setImageCropAndScaleOptionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithModel:@
-initWithModelSelector :: Selector
+initWithModelSelector :: Selector '[Id VNCoreMLModel] (Id VNCoreMLRequest)
 initWithModelSelector = mkSelector "initWithModel:"
 
 -- | @Selector@ for @initWithModel:completionHandler:@
-initWithModel_completionHandlerSelector :: Selector
+initWithModel_completionHandlerSelector :: Selector '[Id VNCoreMLModel, Ptr ()] (Id VNCoreMLRequest)
 initWithModel_completionHandlerSelector = mkSelector "initWithModel:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNCoreMLRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNCoreMLRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id VNCoreMLModel)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @imageCropAndScaleOption@
-imageCropAndScaleOptionSelector :: Selector
+imageCropAndScaleOptionSelector :: Selector '[] VNImageCropAndScaleOption
 imageCropAndScaleOptionSelector = mkSelector "imageCropAndScaleOption"
 
 -- | @Selector@ for @setImageCropAndScaleOption:@
-setImageCropAndScaleOptionSelector :: Selector
+setImageCropAndScaleOptionSelector :: Selector '[VNImageCropAndScaleOption] ()
 setImageCropAndScaleOptionSelector = mkSelector "setImageCropAndScaleOption:"
 

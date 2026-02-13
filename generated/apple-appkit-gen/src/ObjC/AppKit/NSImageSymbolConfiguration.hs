@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.AppKit.NSImageSymbolConfiguration
   , configurationWithVariableValueMode
   , configurationWithColorRenderingMode
   , configurationByApplyingConfiguration
-  , configurationWithPointSize_weight_scaleSelector
-  , configurationWithPointSize_weightSelector
-  , configurationWithTextStyle_scaleSelector
-  , configurationWithTextStyleSelector
-  , configurationWithScaleSelector
-  , configurationPreferringMonochromeSelector
+  , configurationByApplyingConfigurationSelector
   , configurationPreferringHierarchicalSelector
+  , configurationPreferringMonochromeSelector
+  , configurationPreferringMulticolorSelector
+  , configurationWithColorRenderingModeSelector
   , configurationWithHierarchicalColorSelector
   , configurationWithPaletteColorsSelector
-  , configurationPreferringMulticolorSelector
+  , configurationWithPointSize_weightSelector
+  , configurationWithPointSize_weight_scaleSelector
+  , configurationWithScaleSelector
+  , configurationWithTextStyleSelector
+  , configurationWithTextStyle_scaleSelector
   , configurationWithVariableValueModeSelector
-  , configurationWithColorRenderingModeSelector
-  , configurationByApplyingConfigurationSelector
 
   -- * Enum types
   , NSImageSymbolColorRenderingMode(NSImageSymbolColorRenderingMode)
@@ -50,15 +51,11 @@ module ObjC.AppKit.NSImageSymbolConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,37 +68,35 @@ configurationWithPointSize_weight_scale :: CDouble -> CDouble -> NSImageSymbolSc
 configurationWithPointSize_weight_scale pointSize weight scale =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithPointSize:weight:scale:") (retPtr retVoid) [argCDouble pointSize, argCDouble weight, argCLong (coerce scale)] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithPointSize_weight_scaleSelector pointSize weight scale
 
 -- | @+ configurationWithPointSize:weight:@
 configurationWithPointSize_weight :: CDouble -> CDouble -> IO (Id NSImageSymbolConfiguration)
 configurationWithPointSize_weight pointSize weight =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithPointSize:weight:") (retPtr retVoid) [argCDouble pointSize, argCDouble weight] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithPointSize_weightSelector pointSize weight
 
 -- | @+ configurationWithTextStyle:scale:@
 configurationWithTextStyle_scale :: IsNSString style => style -> NSImageSymbolScale -> IO (Id NSImageSymbolConfiguration)
 configurationWithTextStyle_scale style scale =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    withObjCPtr style $ \raw_style ->
-      sendClassMsg cls' (mkSelector "configurationWithTextStyle:scale:") (retPtr retVoid) [argPtr (castPtr raw_style :: Ptr ()), argCLong (coerce scale)] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithTextStyle_scaleSelector (toNSString style) scale
 
 -- | @+ configurationWithTextStyle:@
 configurationWithTextStyle :: IsNSString style => style -> IO (Id NSImageSymbolConfiguration)
 configurationWithTextStyle style =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    withObjCPtr style $ \raw_style ->
-      sendClassMsg cls' (mkSelector "configurationWithTextStyle:") (retPtr retVoid) [argPtr (castPtr raw_style :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithTextStyleSelector (toNSString style)
 
 -- | @+ configurationWithScale:@
 configurationWithScale :: NSImageSymbolScale -> IO (Id NSImageSymbolConfiguration)
 configurationWithScale scale =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithScale:") (retPtr retVoid) [argCLong (coerce scale)] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithScaleSelector scale
 
 -- | Create a configuration that specifies that the symbol should prefer its monochrome variant.
 --
@@ -110,7 +105,7 @@ configurationPreferringMonochrome :: IO (Id NSImageSymbolConfiguration)
 configurationPreferringMonochrome  =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationPreferringMonochrome") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationPreferringMonochromeSelector
 
 -- | Create a configuration that specifies that the symbol should prefer its hierarchical variant, if one exists.
 --
@@ -121,7 +116,7 @@ configurationPreferringHierarchical :: IO (Id NSImageSymbolConfiguration)
 configurationPreferringHierarchical  =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationPreferringHierarchical") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationPreferringHierarchicalSelector
 
 -- | Create a color configuration with a palette derived from one color.
 --
@@ -136,8 +131,7 @@ configurationWithHierarchicalColor :: IsNSColor hierarchicalColor => hierarchica
 configurationWithHierarchicalColor hierarchicalColor =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    withObjCPtr hierarchicalColor $ \raw_hierarchicalColor ->
-      sendClassMsg cls' (mkSelector "configurationWithHierarchicalColor:") (retPtr retVoid) [argPtr (castPtr raw_hierarchicalColor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithHierarchicalColorSelector (toNSColor hierarchicalColor)
 
 -- | Create a color configuration by specifying a palette of colors. The colors are used sequentially per layer: the first color for the first layer, the second color for the second layer etc. This is independent of the hierarchy level of the layer.
 --
@@ -150,8 +144,7 @@ configurationWithPaletteColors :: IsNSArray paletteColors => paletteColors -> IO
 configurationWithPaletteColors paletteColors =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    withObjCPtr paletteColors $ \raw_paletteColors ->
-      sendClassMsg cls' (mkSelector "configurationWithPaletteColors:") (retPtr retVoid) [argPtr (castPtr raw_paletteColors :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithPaletteColorsSelector (toNSArray paletteColors)
 
 -- | Create a configuration that specifies that the symbol should prefer its multicolor variant, if one exists.
 --
@@ -164,7 +157,7 @@ configurationPreferringMulticolor :: IO (Id NSImageSymbolConfiguration)
 configurationPreferringMulticolor  =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationPreferringMulticolor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationPreferringMulticolorSelector
 
 -- | Create a configuration with a specified variable value mode.
 --
@@ -173,7 +166,7 @@ configurationWithVariableValueMode :: NSImageSymbolVariableValueMode -> IO (Id N
 configurationWithVariableValueMode variableValueMode =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithVariableValueMode:") (retPtr retVoid) [argCLong (coerce variableValueMode)] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithVariableValueModeSelector variableValueMode
 
 -- | Create a configuration with a specific color rendering mode.
 --
@@ -182,7 +175,7 @@ configurationWithColorRenderingMode :: NSImageSymbolColorRenderingMode -> IO (Id
 configurationWithColorRenderingMode mode =
   do
     cls' <- getRequiredClass "NSImageSymbolConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithColorRenderingMode:") (retPtr retVoid) [argCLong (coerce mode)] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithColorRenderingModeSelector mode
 
 -- | Returns a new configuration object whose values are defined by applying values from the provided configuration and the receiver.
 --
@@ -190,63 +183,62 @@ configurationWithColorRenderingMode mode =
 --
 -- ObjC selector: @- configurationByApplyingConfiguration:@
 configurationByApplyingConfiguration :: (IsNSImageSymbolConfiguration nsImageSymbolConfiguration, IsNSImageSymbolConfiguration configuration) => nsImageSymbolConfiguration -> configuration -> IO (Id NSImageSymbolConfiguration)
-configurationByApplyingConfiguration nsImageSymbolConfiguration  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg nsImageSymbolConfiguration (mkSelector "configurationByApplyingConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= retainedObject . castPtr
+configurationByApplyingConfiguration nsImageSymbolConfiguration configuration =
+  sendMessage nsImageSymbolConfiguration configurationByApplyingConfigurationSelector (toNSImageSymbolConfiguration configuration)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configurationWithPointSize:weight:scale:@
-configurationWithPointSize_weight_scaleSelector :: Selector
+configurationWithPointSize_weight_scaleSelector :: Selector '[CDouble, CDouble, NSImageSymbolScale] (Id NSImageSymbolConfiguration)
 configurationWithPointSize_weight_scaleSelector = mkSelector "configurationWithPointSize:weight:scale:"
 
 -- | @Selector@ for @configurationWithPointSize:weight:@
-configurationWithPointSize_weightSelector :: Selector
+configurationWithPointSize_weightSelector :: Selector '[CDouble, CDouble] (Id NSImageSymbolConfiguration)
 configurationWithPointSize_weightSelector = mkSelector "configurationWithPointSize:weight:"
 
 -- | @Selector@ for @configurationWithTextStyle:scale:@
-configurationWithTextStyle_scaleSelector :: Selector
+configurationWithTextStyle_scaleSelector :: Selector '[Id NSString, NSImageSymbolScale] (Id NSImageSymbolConfiguration)
 configurationWithTextStyle_scaleSelector = mkSelector "configurationWithTextStyle:scale:"
 
 -- | @Selector@ for @configurationWithTextStyle:@
-configurationWithTextStyleSelector :: Selector
+configurationWithTextStyleSelector :: Selector '[Id NSString] (Id NSImageSymbolConfiguration)
 configurationWithTextStyleSelector = mkSelector "configurationWithTextStyle:"
 
 -- | @Selector@ for @configurationWithScale:@
-configurationWithScaleSelector :: Selector
+configurationWithScaleSelector :: Selector '[NSImageSymbolScale] (Id NSImageSymbolConfiguration)
 configurationWithScaleSelector = mkSelector "configurationWithScale:"
 
 -- | @Selector@ for @configurationPreferringMonochrome@
-configurationPreferringMonochromeSelector :: Selector
+configurationPreferringMonochromeSelector :: Selector '[] (Id NSImageSymbolConfiguration)
 configurationPreferringMonochromeSelector = mkSelector "configurationPreferringMonochrome"
 
 -- | @Selector@ for @configurationPreferringHierarchical@
-configurationPreferringHierarchicalSelector :: Selector
+configurationPreferringHierarchicalSelector :: Selector '[] (Id NSImageSymbolConfiguration)
 configurationPreferringHierarchicalSelector = mkSelector "configurationPreferringHierarchical"
 
 -- | @Selector@ for @configurationWithHierarchicalColor:@
-configurationWithHierarchicalColorSelector :: Selector
+configurationWithHierarchicalColorSelector :: Selector '[Id NSColor] (Id NSImageSymbolConfiguration)
 configurationWithHierarchicalColorSelector = mkSelector "configurationWithHierarchicalColor:"
 
 -- | @Selector@ for @configurationWithPaletteColors:@
-configurationWithPaletteColorsSelector :: Selector
+configurationWithPaletteColorsSelector :: Selector '[Id NSArray] (Id NSImageSymbolConfiguration)
 configurationWithPaletteColorsSelector = mkSelector "configurationWithPaletteColors:"
 
 -- | @Selector@ for @configurationPreferringMulticolor@
-configurationPreferringMulticolorSelector :: Selector
+configurationPreferringMulticolorSelector :: Selector '[] (Id NSImageSymbolConfiguration)
 configurationPreferringMulticolorSelector = mkSelector "configurationPreferringMulticolor"
 
 -- | @Selector@ for @configurationWithVariableValueMode:@
-configurationWithVariableValueModeSelector :: Selector
+configurationWithVariableValueModeSelector :: Selector '[NSImageSymbolVariableValueMode] (Id NSImageSymbolConfiguration)
 configurationWithVariableValueModeSelector = mkSelector "configurationWithVariableValueMode:"
 
 -- | @Selector@ for @configurationWithColorRenderingMode:@
-configurationWithColorRenderingModeSelector :: Selector
+configurationWithColorRenderingModeSelector :: Selector '[NSImageSymbolColorRenderingMode] (Id NSImageSymbolConfiguration)
 configurationWithColorRenderingModeSelector = mkSelector "configurationWithColorRenderingMode:"
 
 -- | @Selector@ for @configurationByApplyingConfiguration:@
-configurationByApplyingConfigurationSelector :: Selector
+configurationByApplyingConfigurationSelector :: Selector '[Id NSImageSymbolConfiguration] (Id NSImageSymbolConfiguration)
 configurationByApplyingConfigurationSelector = mkSelector "configurationByApplyingConfiguration:"
 

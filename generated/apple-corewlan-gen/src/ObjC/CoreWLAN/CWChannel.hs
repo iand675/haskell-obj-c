@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.CoreWLAN.CWChannel
   , channelNumber
   , channelWidth
   , channelBand
-  , isEqualToChannelSelector
+  , channelBandSelector
   , channelNumberSelector
   , channelWidthSelector
-  , channelBandSelector
+  , isEqualToChannelSelector
 
   -- * Enum types
   , CWChannelBand(CWChannelBand)
@@ -35,15 +36,11 @@ module ObjC.CoreWLAN.CWChannel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,48 +58,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isEqualToChannel:@
 isEqualToChannel :: (IsCWChannel cwChannel, IsCWChannel channel) => cwChannel -> channel -> IO Bool
-isEqualToChannel cwChannel  channel =
-  withObjCPtr channel $ \raw_channel ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwChannel (mkSelector "isEqualToChannel:") retCULong [argPtr (castPtr raw_channel :: Ptr ())]
+isEqualToChannel cwChannel channel =
+  sendMessage cwChannel isEqualToChannelSelector (toCWChannel channel)
 
 -- | The channel number represented as an integer value.
 --
 -- ObjC selector: @- channelNumber@
 channelNumber :: IsCWChannel cwChannel => cwChannel -> IO CLong
-channelNumber cwChannel  =
-    sendMsg cwChannel (mkSelector "channelNumber") retCLong []
+channelNumber cwChannel =
+  sendMessage cwChannel channelNumberSelector
 
 -- | The channel width as indicated by the CWChannelWidth type.
 --
 -- ObjC selector: @- channelWidth@
 channelWidth :: IsCWChannel cwChannel => cwChannel -> IO CWChannelWidth
-channelWidth cwChannel  =
-    fmap (coerce :: CLong -> CWChannelWidth) $ sendMsg cwChannel (mkSelector "channelWidth") retCLong []
+channelWidth cwChannel =
+  sendMessage cwChannel channelWidthSelector
 
 -- | The channel band as indicated by the CWChannelBand type.
 --
 -- ObjC selector: @- channelBand@
 channelBand :: IsCWChannel cwChannel => cwChannel -> IO CWChannelBand
-channelBand cwChannel  =
-    fmap (coerce :: CLong -> CWChannelBand) $ sendMsg cwChannel (mkSelector "channelBand") retCLong []
+channelBand cwChannel =
+  sendMessage cwChannel channelBandSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isEqualToChannel:@
-isEqualToChannelSelector :: Selector
+isEqualToChannelSelector :: Selector '[Id CWChannel] Bool
 isEqualToChannelSelector = mkSelector "isEqualToChannel:"
 
 -- | @Selector@ for @channelNumber@
-channelNumberSelector :: Selector
+channelNumberSelector :: Selector '[] CLong
 channelNumberSelector = mkSelector "channelNumber"
 
 -- | @Selector@ for @channelWidth@
-channelWidthSelector :: Selector
+channelWidthSelector :: Selector '[] CWChannelWidth
 channelWidthSelector = mkSelector "channelWidth"
 
 -- | @Selector@ for @channelBand@
-channelBandSelector :: Selector
+channelBandSelector :: Selector '[] CWChannelBand
 channelBandSelector = mkSelector "channelBand"
 

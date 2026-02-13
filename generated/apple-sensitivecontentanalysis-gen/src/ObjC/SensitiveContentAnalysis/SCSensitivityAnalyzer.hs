@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.SensitiveContentAnalysis.SCSensitivityAnalyzer
   , analyzeCGImage_completionHandler
   , analyzeVideoFile_completionHandler
   , analysisPolicy
-  , initSelector
-  , analyzeImageFile_completionHandlerSelector
-  , analyzeCGImage_completionHandlerSelector
-  , analyzeVideoFile_completionHandlerSelector
   , analysisPolicySelector
+  , analyzeCGImage_completionHandlerSelector
+  , analyzeImageFile_completionHandlerSelector
+  , analyzeVideoFile_completionHandlerSelector
+  , initSelector
 
   -- * Enum types
   , SCSensitivityAnalysisPolicy(SCSensitivityAnalysisPolicy)
@@ -28,15 +29,11 @@ module ObjC.SensitiveContentAnalysis.SCSensitivityAnalyzer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCSensitivityAnalyzer scSensitivityAnalyzer => scSensitivityAnalyzer -> IO (Id SCSensitivityAnalyzer)
-init_ scSensitivityAnalyzer  =
-    sendMsg scSensitivityAnalyzer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scSensitivityAnalyzer =
+  sendOwnedMessage scSensitivityAnalyzer initSelector
 
 -- | Analyze sensitivity of Image File on disk (only local fileURL)
 --
@@ -57,9 +54,8 @@ init_ scSensitivityAnalyzer  =
 --
 -- ObjC selector: @- analyzeImageFile:completionHandler:@
 analyzeImageFile_completionHandler :: (IsSCSensitivityAnalyzer scSensitivityAnalyzer, IsNSURL fileURL) => scSensitivityAnalyzer -> fileURL -> Ptr () -> IO ()
-analyzeImageFile_completionHandler scSensitivityAnalyzer  fileURL completionHandler =
-  withObjCPtr fileURL $ \raw_fileURL ->
-      sendMsg scSensitivityAnalyzer (mkSelector "analyzeImageFile:completionHandler:") retVoid [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+analyzeImageFile_completionHandler scSensitivityAnalyzer fileURL completionHandler =
+  sendMessage scSensitivityAnalyzer analyzeImageFile_completionHandlerSelector (toNSURL fileURL) completionHandler
 
 -- | Analyze sensitivity of CGImage in memory
 --
@@ -69,8 +65,8 @@ analyzeImageFile_completionHandler scSensitivityAnalyzer  fileURL completionHand
 --
 -- ObjC selector: @- analyzeCGImage:completionHandler:@
 analyzeCGImage_completionHandler :: IsSCSensitivityAnalyzer scSensitivityAnalyzer => scSensitivityAnalyzer -> Ptr () -> Ptr () -> IO ()
-analyzeCGImage_completionHandler scSensitivityAnalyzer  image completionHandler =
-    sendMsg scSensitivityAnalyzer (mkSelector "analyzeCGImage:completionHandler:") retVoid [argPtr image, argPtr (castPtr completionHandler :: Ptr ())]
+analyzeCGImage_completionHandler scSensitivityAnalyzer image completionHandler =
+  sendMessage scSensitivityAnalyzer analyzeCGImage_completionHandlerSelector image completionHandler
 
 -- | Analyze sensitivity of Video File on disk.
 --
@@ -82,38 +78,37 @@ analyzeCGImage_completionHandler scSensitivityAnalyzer  image completionHandler 
 --
 -- ObjC selector: @- analyzeVideoFile:completionHandler:@
 analyzeVideoFile_completionHandler :: (IsSCSensitivityAnalyzer scSensitivityAnalyzer, IsNSURL fileURL) => scSensitivityAnalyzer -> fileURL -> Ptr () -> IO (Id NSProgress)
-analyzeVideoFile_completionHandler scSensitivityAnalyzer  fileURL completionHandler =
-  withObjCPtr fileURL $ \raw_fileURL ->
-      sendMsg scSensitivityAnalyzer (mkSelector "analyzeVideoFile:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+analyzeVideoFile_completionHandler scSensitivityAnalyzer fileURL completionHandler =
+  sendMessage scSensitivityAnalyzer analyzeVideoFile_completionHandlerSelector (toNSURL fileURL) completionHandler
 
 -- | Current SCSensitivityAnalysisPolicy set on device. Can be used to determine whether analysis is available or not
 --
 -- ObjC selector: @- analysisPolicy@
 analysisPolicy :: IsSCSensitivityAnalyzer scSensitivityAnalyzer => scSensitivityAnalyzer -> IO SCSensitivityAnalysisPolicy
-analysisPolicy scSensitivityAnalyzer  =
-    fmap (coerce :: CLong -> SCSensitivityAnalysisPolicy) $ sendMsg scSensitivityAnalyzer (mkSelector "analysisPolicy") retCLong []
+analysisPolicy scSensitivityAnalyzer =
+  sendMessage scSensitivityAnalyzer analysisPolicySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCSensitivityAnalyzer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @analyzeImageFile:completionHandler:@
-analyzeImageFile_completionHandlerSelector :: Selector
+analyzeImageFile_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 analyzeImageFile_completionHandlerSelector = mkSelector "analyzeImageFile:completionHandler:"
 
 -- | @Selector@ for @analyzeCGImage:completionHandler:@
-analyzeCGImage_completionHandlerSelector :: Selector
+analyzeCGImage_completionHandlerSelector :: Selector '[Ptr (), Ptr ()] ()
 analyzeCGImage_completionHandlerSelector = mkSelector "analyzeCGImage:completionHandler:"
 
 -- | @Selector@ for @analyzeVideoFile:completionHandler:@
-analyzeVideoFile_completionHandlerSelector :: Selector
+analyzeVideoFile_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] (Id NSProgress)
 analyzeVideoFile_completionHandlerSelector = mkSelector "analyzeVideoFile:completionHandler:"
 
 -- | @Selector@ for @analysisPolicy@
-analysisPolicySelector :: Selector
+analysisPolicySelector :: Selector '[] SCSensitivityAnalysisPolicy
 analysisPolicySelector = mkSelector "analysisPolicy"
 

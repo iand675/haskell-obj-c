@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.CloudKit.CKSyncEnginePendingDatabaseChange
   , type_
   , initSelector
   , newSelector
-  , zoneIDSelector
   , typeSelector
+  , zoneIDSelector
 
   -- * Enum types
   , CKSyncEnginePendingDatabaseChangeType(CKSyncEnginePendingDatabaseChangeType)
@@ -25,15 +26,11 @@ module ObjC.CloudKit.CKSyncEnginePendingDatabaseChange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,43 +40,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEnginePendingDatabaseChange ckSyncEnginePendingDatabaseChange => ckSyncEnginePendingDatabaseChange -> IO (Id CKSyncEnginePendingDatabaseChange)
-init_ ckSyncEnginePendingDatabaseChange  =
-    sendMsg ckSyncEnginePendingDatabaseChange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEnginePendingDatabaseChange =
+  sendOwnedMessage ckSyncEnginePendingDatabaseChange initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEnginePendingDatabaseChange)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEnginePendingDatabaseChange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- zoneID@
 zoneID :: IsCKSyncEnginePendingDatabaseChange ckSyncEnginePendingDatabaseChange => ckSyncEnginePendingDatabaseChange -> IO (Id CKRecordZoneID)
-zoneID ckSyncEnginePendingDatabaseChange  =
-    sendMsg ckSyncEnginePendingDatabaseChange (mkSelector "zoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneID ckSyncEnginePendingDatabaseChange =
+  sendMessage ckSyncEnginePendingDatabaseChange zoneIDSelector
 
 -- | @- type@
 type_ :: IsCKSyncEnginePendingDatabaseChange ckSyncEnginePendingDatabaseChange => ckSyncEnginePendingDatabaseChange -> IO CKSyncEnginePendingDatabaseChangeType
-type_ ckSyncEnginePendingDatabaseChange  =
-    fmap (coerce :: CLong -> CKSyncEnginePendingDatabaseChangeType) $ sendMsg ckSyncEnginePendingDatabaseChange (mkSelector "type") retCLong []
+type_ ckSyncEnginePendingDatabaseChange =
+  sendMessage ckSyncEnginePendingDatabaseChange typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEnginePendingDatabaseChange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEnginePendingDatabaseChange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @zoneID@
-zoneIDSelector :: Selector
+zoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 zoneIDSelector = mkSelector "zoneID"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CKSyncEnginePendingDatabaseChangeType
 typeSelector = mkSelector "type"
 

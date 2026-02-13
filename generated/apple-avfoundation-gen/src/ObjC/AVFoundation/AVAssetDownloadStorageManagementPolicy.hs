@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.AVFoundation.AVAssetDownloadStorageManagementPolicy
   , IsAVAssetDownloadStorageManagementPolicy(..)
   , priority
   , expirationDate
-  , prioritySelector
   , expirationDateSelector
+  , prioritySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,25 +36,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- priority@
 priority :: IsAVAssetDownloadStorageManagementPolicy avAssetDownloadStorageManagementPolicy => avAssetDownloadStorageManagementPolicy -> IO (Id NSString)
-priority avAssetDownloadStorageManagementPolicy  =
-    sendMsg avAssetDownloadStorageManagementPolicy (mkSelector "priority") (retPtr retVoid) [] >>= retainedObject . castPtr
+priority avAssetDownloadStorageManagementPolicy =
+  sendMessage avAssetDownloadStorageManagementPolicy prioritySelector
 
 -- | Returns the expiration date of asset.
 --
 -- ObjC selector: @- expirationDate@
 expirationDate :: IsAVAssetDownloadStorageManagementPolicy avAssetDownloadStorageManagementPolicy => avAssetDownloadStorageManagementPolicy -> IO (Id NSDate)
-expirationDate avAssetDownloadStorageManagementPolicy  =
-    sendMsg avAssetDownloadStorageManagementPolicy (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate avAssetDownloadStorageManagementPolicy =
+  sendMessage avAssetDownloadStorageManagementPolicy expirationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] (Id NSString)
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 

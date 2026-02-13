@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.AVFAudio.AVAudioUnitReverb
   , wetDryMix
   , setWetDryMix
   , loadFactoryPresetSelector
-  , wetDryMixSelector
   , setWetDryMixSelector
+  , wetDryMixSelector
 
   -- * Enum types
   , AVAudioUnitReverbPreset(AVAudioUnitReverbPreset)
@@ -38,15 +39,11 @@ module ObjC.AVFAudio.AVAudioUnitReverb
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadFactoryPreset:@
 loadFactoryPreset :: IsAVAudioUnitReverb avAudioUnitReverb => avAudioUnitReverb -> AVAudioUnitReverbPreset -> IO ()
-loadFactoryPreset avAudioUnitReverb  preset =
-    sendMsg avAudioUnitReverb (mkSelector "loadFactoryPreset:") retVoid [argCLong (coerce preset)]
+loadFactoryPreset avAudioUnitReverb preset =
+  sendMessage avAudioUnitReverb loadFactoryPresetSelector preset
 
 -- | wetDryMix
 --
@@ -69,8 +66,8 @@ loadFactoryPreset avAudioUnitReverb  preset =
 --
 -- ObjC selector: @- wetDryMix@
 wetDryMix :: IsAVAudioUnitReverb avAudioUnitReverb => avAudioUnitReverb -> IO CFloat
-wetDryMix avAudioUnitReverb  =
-    sendMsg avAudioUnitReverb (mkSelector "wetDryMix") retCFloat []
+wetDryMix avAudioUnitReverb =
+  sendMessage avAudioUnitReverb wetDryMixSelector
 
 -- | wetDryMix
 --
@@ -78,22 +75,22 @@ wetDryMix avAudioUnitReverb  =
 --
 -- ObjC selector: @- setWetDryMix:@
 setWetDryMix :: IsAVAudioUnitReverb avAudioUnitReverb => avAudioUnitReverb -> CFloat -> IO ()
-setWetDryMix avAudioUnitReverb  value =
-    sendMsg avAudioUnitReverb (mkSelector "setWetDryMix:") retVoid [argCFloat value]
+setWetDryMix avAudioUnitReverb value =
+  sendMessage avAudioUnitReverb setWetDryMixSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFactoryPreset:@
-loadFactoryPresetSelector :: Selector
+loadFactoryPresetSelector :: Selector '[AVAudioUnitReverbPreset] ()
 loadFactoryPresetSelector = mkSelector "loadFactoryPreset:"
 
 -- | @Selector@ for @wetDryMix@
-wetDryMixSelector :: Selector
+wetDryMixSelector :: Selector '[] CFloat
 wetDryMixSelector = mkSelector "wetDryMix"
 
 -- | @Selector@ for @setWetDryMix:@
-setWetDryMixSelector :: Selector
+setWetDryMixSelector :: Selector '[CFloat] ()
 setWetDryMixSelector = mkSelector "setWetDryMix:"
 

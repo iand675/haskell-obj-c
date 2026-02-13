@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,19 +28,19 @@ module ObjC.AVFoundation.AVCaptionRegion
   , scroll
   , displayAlignment
   , writingMode
-  , encodeWithCoderSelector
-  , isEqualSelector
-  , mutableCopyWithZoneSelector
-  , appleITTTopRegionSelector
   , appleITTBottomRegionSelector
   , appleITTLeftRegionSelector
   , appleITTRightRegionSelector
-  , subRipTextBottomRegionSelector
-  , identifierSelector
-  , originSelector
-  , sizeSelector
-  , scrollSelector
+  , appleITTTopRegionSelector
   , displayAlignmentSelector
+  , encodeWithCoderSelector
+  , identifierSelector
+  , isEqualSelector
+  , mutableCopyWithZoneSelector
+  , originSelector
+  , scrollSelector
+  , sizeSelector
+  , subRipTextBottomRegionSelector
   , writingModeSelector
 
   -- * Enum types
@@ -56,15 +57,11 @@ module ObjC.AVFoundation.AVCaptionRegion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,9 +78,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- encodeWithCoder:@
 encodeWithCoder :: (IsAVCaptionRegion avCaptionRegion, IsNSCoder encoder) => avCaptionRegion -> encoder -> IO ()
-encodeWithCoder avCaptionRegion  encoder =
-  withObjCPtr encoder $ \raw_encoder ->
-      sendMsg avCaptionRegion (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_encoder :: Ptr ())]
+encodeWithCoder avCaptionRegion encoder =
+  sendMessage avCaptionRegion encodeWithCoderSelector (toNSCoder encoder)
 
 -- | isEqual:
 --
@@ -93,8 +89,8 @@ encodeWithCoder avCaptionRegion  encoder =
 --
 -- ObjC selector: @- isEqual:@
 isEqual :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> RawId -> IO Bool
-isEqual avCaptionRegion  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptionRegion (mkSelector "isEqual:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isEqual avCaptionRegion object =
+  sendMessage avCaptionRegion isEqualSelector object
 
 -- | mutableCopyWithZone:
 --
@@ -104,8 +100,8 @@ isEqual avCaptionRegion  object =
 --
 -- ObjC selector: @- mutableCopyWithZone:@
 mutableCopyWithZone :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> Ptr () -> IO RawId
-mutableCopyWithZone avCaptionRegion  zone =
-    fmap (RawId . castPtr) $ sendMsg avCaptionRegion (mkSelector "mutableCopyWithZone:") (retPtr retVoid) [argPtr zone]
+mutableCopyWithZone avCaptionRegion zone =
+  sendOwnedMessage avCaptionRegion mutableCopyWithZoneSelector zone
 
 -- | appleITTTopRegion
 --
@@ -118,7 +114,7 @@ appleITTTopRegion :: IO (Id AVCaptionRegion)
 appleITTTopRegion  =
   do
     cls' <- getRequiredClass "AVCaptionRegion"
-    sendClassMsg cls' (mkSelector "appleITTTopRegion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appleITTTopRegionSelector
 
 -- | appleITTBottomRegion
 --
@@ -131,7 +127,7 @@ appleITTBottomRegion :: IO (Id AVCaptionRegion)
 appleITTBottomRegion  =
   do
     cls' <- getRequiredClass "AVCaptionRegion"
-    sendClassMsg cls' (mkSelector "appleITTBottomRegion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appleITTBottomRegionSelector
 
 -- | appleITTLeftRegion
 --
@@ -144,7 +140,7 @@ appleITTLeftRegion :: IO (Id AVCaptionRegion)
 appleITTLeftRegion  =
   do
     cls' <- getRequiredClass "AVCaptionRegion"
-    sendClassMsg cls' (mkSelector "appleITTLeftRegion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appleITTLeftRegionSelector
 
 -- | appleITTRightRegion
 --
@@ -157,7 +153,7 @@ appleITTRightRegion :: IO (Id AVCaptionRegion)
 appleITTRightRegion  =
   do
     cls' <- getRequiredClass "AVCaptionRegion"
-    sendClassMsg cls' (mkSelector "appleITTRightRegion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appleITTRightRegionSelector
 
 -- | subRipTextBottomRegion
 --
@@ -170,7 +166,7 @@ subRipTextBottomRegion :: IO (Id AVCaptionRegion)
 subRipTextBottomRegion  =
   do
     cls' <- getRequiredClass "AVCaptionRegion"
-    sendClassMsg cls' (mkSelector "subRipTextBottomRegion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' subRipTextBottomRegionSelector
 
 -- | identifier
 --
@@ -182,8 +178,8 @@ subRipTextBottomRegion  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO (Id NSString)
-identifier avCaptionRegion  =
-    sendMsg avCaptionRegion (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avCaptionRegion =
+  sendMessage avCaptionRegion identifierSelector
 
 -- | origin
 --
@@ -193,8 +189,8 @@ identifier avCaptionRegion  =
 --
 -- ObjC selector: @- origin@
 origin :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO AVCaptionPoint
-origin avCaptionRegion  =
-    sendMsgStret avCaptionRegion (mkSelector "origin") retAVCaptionPoint []
+origin avCaptionRegion =
+  sendMessage avCaptionRegion originSelector
 
 -- | size
 --
@@ -204,8 +200,8 @@ origin avCaptionRegion  =
 --
 -- ObjC selector: @- size@
 size :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO AVCaptionSize
-size avCaptionRegion  =
-    sendMsgStret avCaptionRegion (mkSelector "size") retAVCaptionSize []
+size avCaptionRegion =
+  sendMessage avCaptionRegion sizeSelector
 
 -- | scroll
 --
@@ -215,8 +211,8 @@ size avCaptionRegion  =
 --
 -- ObjC selector: @- scroll@
 scroll :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO AVCaptionRegionScroll
-scroll avCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionScroll) $ sendMsg avCaptionRegion (mkSelector "scroll") retCLong []
+scroll avCaptionRegion =
+  sendMessage avCaptionRegion scrollSelector
 
 -- | displayAlignment
 --
@@ -224,8 +220,8 @@ scroll avCaptionRegion  =
 --
 -- ObjC selector: @- displayAlignment@
 displayAlignment :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO AVCaptionRegionDisplayAlignment
-displayAlignment avCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionDisplayAlignment) $ sendMsg avCaptionRegion (mkSelector "displayAlignment") retCLong []
+displayAlignment avCaptionRegion =
+  sendMessage avCaptionRegion displayAlignmentSelector
 
 -- | writingMode
 --
@@ -233,66 +229,66 @@ displayAlignment avCaptionRegion  =
 --
 -- ObjC selector: @- writingMode@
 writingMode :: IsAVCaptionRegion avCaptionRegion => avCaptionRegion -> IO AVCaptionRegionWritingMode
-writingMode avCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionWritingMode) $ sendMsg avCaptionRegion (mkSelector "writingMode") retCLong []
+writingMode avCaptionRegion =
+  sendMessage avCaptionRegion writingModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @isEqual:@
-isEqualSelector :: Selector
+isEqualSelector :: Selector '[RawId] Bool
 isEqualSelector = mkSelector "isEqual:"
 
 -- | @Selector@ for @mutableCopyWithZone:@
-mutableCopyWithZoneSelector :: Selector
+mutableCopyWithZoneSelector :: Selector '[Ptr ()] RawId
 mutableCopyWithZoneSelector = mkSelector "mutableCopyWithZone:"
 
 -- | @Selector@ for @appleITTTopRegion@
-appleITTTopRegionSelector :: Selector
+appleITTTopRegionSelector :: Selector '[] (Id AVCaptionRegion)
 appleITTTopRegionSelector = mkSelector "appleITTTopRegion"
 
 -- | @Selector@ for @appleITTBottomRegion@
-appleITTBottomRegionSelector :: Selector
+appleITTBottomRegionSelector :: Selector '[] (Id AVCaptionRegion)
 appleITTBottomRegionSelector = mkSelector "appleITTBottomRegion"
 
 -- | @Selector@ for @appleITTLeftRegion@
-appleITTLeftRegionSelector :: Selector
+appleITTLeftRegionSelector :: Selector '[] (Id AVCaptionRegion)
 appleITTLeftRegionSelector = mkSelector "appleITTLeftRegion"
 
 -- | @Selector@ for @appleITTRightRegion@
-appleITTRightRegionSelector :: Selector
+appleITTRightRegionSelector :: Selector '[] (Id AVCaptionRegion)
 appleITTRightRegionSelector = mkSelector "appleITTRightRegion"
 
 -- | @Selector@ for @subRipTextBottomRegion@
-subRipTextBottomRegionSelector :: Selector
+subRipTextBottomRegionSelector :: Selector '[] (Id AVCaptionRegion)
 subRipTextBottomRegionSelector = mkSelector "subRipTextBottomRegion"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @origin@
-originSelector :: Selector
+originSelector :: Selector '[] AVCaptionPoint
 originSelector = mkSelector "origin"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] AVCaptionSize
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @scroll@
-scrollSelector :: Selector
+scrollSelector :: Selector '[] AVCaptionRegionScroll
 scrollSelector = mkSelector "scroll"
 
 -- | @Selector@ for @displayAlignment@
-displayAlignmentSelector :: Selector
+displayAlignmentSelector :: Selector '[] AVCaptionRegionDisplayAlignment
 displayAlignmentSelector = mkSelector "displayAlignment"
 
 -- | @Selector@ for @writingMode@
-writingModeSelector :: Selector
+writingModeSelector :: Selector '[] AVCaptionRegionWritingMode
 writingModeSelector = mkSelector "writingMode"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVZoomRange
   , containsZoomFactor
   , minZoomFactor
   , maxZoomFactor
-  , initSelector
-  , newSelector
   , containsZoomFactorSelector
-  , minZoomFactorSelector
+  , initSelector
   , maxZoomFactorSelector
+  , minZoomFactorSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVZoomRange avZoomRange => avZoomRange -> IO (Id AVZoomRange)
-init_ avZoomRange  =
-    sendMsg avZoomRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avZoomRange =
+  sendOwnedMessage avZoomRange initSelector
 
 -- | @+ new@
 new :: IO (Id AVZoomRange)
 new  =
   do
     cls' <- getRequiredClass "AVZoomRange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | containsZoomFactor:
 --
@@ -65,8 +62,8 @@ new  =
 --
 -- ObjC selector: @- containsZoomFactor:@
 containsZoomFactor :: IsAVZoomRange avZoomRange => avZoomRange -> CDouble -> IO Bool
-containsZoomFactor avZoomRange  zoomFactor =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avZoomRange (mkSelector "containsZoomFactor:") retCULong [argCDouble zoomFactor]
+containsZoomFactor avZoomRange zoomFactor =
+  sendMessage avZoomRange containsZoomFactorSelector zoomFactor
 
 -- | minZoomFactor
 --
@@ -74,8 +71,8 @@ containsZoomFactor avZoomRange  zoomFactor =
 --
 -- ObjC selector: @- minZoomFactor@
 minZoomFactor :: IsAVZoomRange avZoomRange => avZoomRange -> IO CDouble
-minZoomFactor avZoomRange  =
-    sendMsg avZoomRange (mkSelector "minZoomFactor") retCDouble []
+minZoomFactor avZoomRange =
+  sendMessage avZoomRange minZoomFactorSelector
 
 -- | maxZoomFactor
 --
@@ -83,30 +80,30 @@ minZoomFactor avZoomRange  =
 --
 -- ObjC selector: @- maxZoomFactor@
 maxZoomFactor :: IsAVZoomRange avZoomRange => avZoomRange -> IO CDouble
-maxZoomFactor avZoomRange  =
-    sendMsg avZoomRange (mkSelector "maxZoomFactor") retCDouble []
+maxZoomFactor avZoomRange =
+  sendMessage avZoomRange maxZoomFactorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVZoomRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVZoomRange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @containsZoomFactor:@
-containsZoomFactorSelector :: Selector
+containsZoomFactorSelector :: Selector '[CDouble] Bool
 containsZoomFactorSelector = mkSelector "containsZoomFactor:"
 
 -- | @Selector@ for @minZoomFactor@
-minZoomFactorSelector :: Selector
+minZoomFactorSelector :: Selector '[] CDouble
 minZoomFactorSelector = mkSelector "minZoomFactor"
 
 -- | @Selector@ for @maxZoomFactor@
-maxZoomFactorSelector :: Selector
+maxZoomFactorSelector :: Selector '[] CDouble
 maxZoomFactorSelector = mkSelector "maxZoomFactor"
 

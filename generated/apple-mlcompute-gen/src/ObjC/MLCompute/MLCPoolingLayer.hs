@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MLCompute.MLCPoolingLayer
   , IsMLCPoolingLayer(..)
   , layerWithDescriptor
   , descriptor
-  , layerWithDescriptorSelector
   , descriptorSelector
+  , layerWithDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ layerWithDescriptor :: IsMLCPoolingDescriptor descriptor => descriptor -> IO (Id
 layerWithDescriptor descriptor =
   do
     cls' <- getRequiredClass "MLCPoolingLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "layerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptorSelector (toMLCPoolingDescriptor descriptor)
 
 -- | descriptor
 --
@@ -53,18 +49,18 @@ layerWithDescriptor descriptor =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCPoolingLayer mlcPoolingLayer => mlcPoolingLayer -> IO (Id MLCPoolingDescriptor)
-descriptor mlcPoolingLayer  =
-    sendMsg mlcPoolingLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcPoolingLayer =
+  sendMessage mlcPoolingLayer descriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:@
-layerWithDescriptorSelector :: Selector
+layerWithDescriptorSelector :: Selector '[Id MLCPoolingDescriptor] (Id MLCPoolingLayer)
 layerWithDescriptorSelector = mkSelector "layerWithDescriptor:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCPoolingDescriptor)
 descriptorSelector = mkSelector "descriptor"
 

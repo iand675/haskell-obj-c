@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,33 +37,33 @@ module ObjC.SpriteKit.SKTileMapNode
   , setLightingBitMask
   , enableAutomapping
   , setEnableAutomapping
-  , valueForAttributeNamedSelector
-  , setValue_forAttributeNamedSelector
+  , attributeValuesSelector
+  , blendModeSelector
+  , colorBlendFactorSelector
+  , colorSelector
+  , enableAutomappingSelector
   , fillWithTileGroupSelector
+  , lightingBitMaskSelector
+  , numberOfColumnsSelector
+  , numberOfRowsSelector
+  , setAttributeValuesSelector
+  , setBlendModeSelector
+  , setColorBlendFactorSelector
+  , setColorSelector
+  , setEnableAutomappingSelector
+  , setLightingBitMaskSelector
+  , setNumberOfColumnsSelector
+  , setNumberOfRowsSelector
+  , setShaderSelector
+  , setTileGroup_andTileDefinition_forColumn_rowSelector
+  , setTileGroup_forColumn_rowSelector
+  , setTileSetSelector
+  , setValue_forAttributeNamedSelector
+  , shaderSelector
   , tileDefinitionAtColumn_rowSelector
   , tileGroupAtColumn_rowSelector
-  , setTileGroup_forColumn_rowSelector
-  , setTileGroup_andTileDefinition_forColumn_rowSelector
-  , numberOfColumnsSelector
-  , setNumberOfColumnsSelector
-  , numberOfRowsSelector
-  , setNumberOfRowsSelector
   , tileSetSelector
-  , setTileSetSelector
-  , colorBlendFactorSelector
-  , setColorBlendFactorSelector
-  , colorSelector
-  , setColorSelector
-  , blendModeSelector
-  , setBlendModeSelector
-  , shaderSelector
-  , setShaderSelector
-  , attributeValuesSelector
-  , setAttributeValuesSelector
-  , lightingBitMaskSelector
-  , setLightingBitMaskSelector
-  , enableAutomappingSelector
-  , setEnableAutomappingSelector
+  , valueForAttributeNamedSelector
 
   -- * Enum types
   , SKBlendMode(SKBlendMode)
@@ -77,15 +78,11 @@ module ObjC.SpriteKit.SKTileMapNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -96,16 +93,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- valueForAttributeNamed:@
 valueForAttributeNamed :: (IsSKTileMapNode skTileMapNode, IsNSString key) => skTileMapNode -> key -> IO (Id SKAttributeValue)
-valueForAttributeNamed skTileMapNode  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skTileMapNode (mkSelector "valueForAttributeNamed:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+valueForAttributeNamed skTileMapNode key =
+  sendMessage skTileMapNode valueForAttributeNamedSelector (toNSString key)
 
 -- | @- setValue:forAttributeNamed:@
 setValue_forAttributeNamed :: (IsSKTileMapNode skTileMapNode, IsSKAttributeValue value, IsNSString key) => skTileMapNode -> value -> key -> IO ()
-setValue_forAttributeNamed skTileMapNode  value key =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg skTileMapNode (mkSelector "setValue:forAttributeNamed:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forAttributeNamed skTileMapNode value key =
+  sendMessage skTileMapNode setValue_forAttributeNamedSelector (toSKAttributeValue value) (toNSString key)
 
 -- | Fill the entire tile map with the provided tile group.
 --
@@ -113,9 +107,8 @@ setValue_forAttributeNamed skTileMapNode  value key =
 --
 -- ObjC selector: @- fillWithTileGroup:@
 fillWithTileGroup :: (IsSKTileMapNode skTileMapNode, IsSKTileGroup tileGroup) => skTileMapNode -> tileGroup -> IO ()
-fillWithTileGroup skTileMapNode  tileGroup =
-  withObjCPtr tileGroup $ \raw_tileGroup ->
-      sendMsg skTileMapNode (mkSelector "fillWithTileGroup:") retVoid [argPtr (castPtr raw_tileGroup :: Ptr ())]
+fillWithTileGroup skTileMapNode tileGroup =
+  sendMessage skTileMapNode fillWithTileGroupSelector (toSKTileGroup tileGroup)
 
 -- | Look up the tile definition at the specified tile index.
 --
@@ -125,8 +118,8 @@ fillWithTileGroup skTileMapNode  tileGroup =
 --
 -- ObjC selector: @- tileDefinitionAtColumn:row:@
 tileDefinitionAtColumn_row :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CULong -> CULong -> IO (Id SKTileDefinition)
-tileDefinitionAtColumn_row skTileMapNode  column row =
-    sendMsg skTileMapNode (mkSelector "tileDefinitionAtColumn:row:") (retPtr retVoid) [argCULong column, argCULong row] >>= retainedObject . castPtr
+tileDefinitionAtColumn_row skTileMapNode column row =
+  sendMessage skTileMapNode tileDefinitionAtColumn_rowSelector column row
 
 -- | Look up the tile group at the specified tile index.
 --
@@ -136,8 +129,8 @@ tileDefinitionAtColumn_row skTileMapNode  column row =
 --
 -- ObjC selector: @- tileGroupAtColumn:row:@
 tileGroupAtColumn_row :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CULong -> CULong -> IO (Id SKTileGroup)
-tileGroupAtColumn_row skTileMapNode  column row =
-    sendMsg skTileMapNode (mkSelector "tileGroupAtColumn:row:") (retPtr retVoid) [argCULong column, argCULong row] >>= retainedObject . castPtr
+tileGroupAtColumn_row skTileMapNode column row =
+  sendMessage skTileMapNode tileGroupAtColumn_rowSelector column row
 
 -- | Set the tile group at the specified tile index. When automapping is enabled, the appropriate tile definitions will automatically be selected and placed, possibly modifying neighboring tiles. When automapping is disabled, it will simply place the default center tile definition for the group, and will not modify any of the neihboring tiles.
 --
@@ -149,9 +142,8 @@ tileGroupAtColumn_row skTileMapNode  column row =
 --
 -- ObjC selector: @- setTileGroup:forColumn:row:@
 setTileGroup_forColumn_row :: (IsSKTileMapNode skTileMapNode, IsSKTileGroup tileGroup) => skTileMapNode -> tileGroup -> CULong -> CULong -> IO ()
-setTileGroup_forColumn_row skTileMapNode  tileGroup column row =
-  withObjCPtr tileGroup $ \raw_tileGroup ->
-      sendMsg skTileMapNode (mkSelector "setTileGroup:forColumn:row:") retVoid [argPtr (castPtr raw_tileGroup :: Ptr ()), argCULong column, argCULong row]
+setTileGroup_forColumn_row skTileMapNode tileGroup column row =
+  sendMessage skTileMapNode setTileGroup_forColumn_rowSelector (toSKTileGroup tileGroup) column row
 
 -- | Set the tile group and tile defintion at the specified tile index. When automapping is enabled, it will attempt to resolve the surrounding tiles to allow the specified tile definition to be placed. When automapping is disabled, it will simply place the tile definition and not modify any of the neighboring tiles.
 --
@@ -165,82 +157,78 @@ setTileGroup_forColumn_row skTileMapNode  tileGroup column row =
 --
 -- ObjC selector: @- setTileGroup:andTileDefinition:forColumn:row:@
 setTileGroup_andTileDefinition_forColumn_row :: (IsSKTileMapNode skTileMapNode, IsSKTileGroup tileGroup, IsSKTileDefinition tileDefinition) => skTileMapNode -> tileGroup -> tileDefinition -> CULong -> CULong -> IO ()
-setTileGroup_andTileDefinition_forColumn_row skTileMapNode  tileGroup tileDefinition column row =
-  withObjCPtr tileGroup $ \raw_tileGroup ->
-    withObjCPtr tileDefinition $ \raw_tileDefinition ->
-        sendMsg skTileMapNode (mkSelector "setTileGroup:andTileDefinition:forColumn:row:") retVoid [argPtr (castPtr raw_tileGroup :: Ptr ()), argPtr (castPtr raw_tileDefinition :: Ptr ()), argCULong column, argCULong row]
+setTileGroup_andTileDefinition_forColumn_row skTileMapNode tileGroup tileDefinition column row =
+  sendMessage skTileMapNode setTileGroup_andTileDefinition_forColumn_rowSelector (toSKTileGroup tileGroup) (toSKTileDefinition tileDefinition) column row
 
 -- | The number of columns in the tile map.
 --
 -- ObjC selector: @- numberOfColumns@
 numberOfColumns :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO CULong
-numberOfColumns skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "numberOfColumns") retCULong []
+numberOfColumns skTileMapNode =
+  sendMessage skTileMapNode numberOfColumnsSelector
 
 -- | The number of columns in the tile map.
 --
 -- ObjC selector: @- setNumberOfColumns:@
 setNumberOfColumns :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CULong -> IO ()
-setNumberOfColumns skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setNumberOfColumns:") retVoid [argCULong value]
+setNumberOfColumns skTileMapNode value =
+  sendMessage skTileMapNode setNumberOfColumnsSelector value
 
 -- | The number of rows in the tile map.
 --
 -- ObjC selector: @- numberOfRows@
 numberOfRows :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO CULong
-numberOfRows skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "numberOfRows") retCULong []
+numberOfRows skTileMapNode =
+  sendMessage skTileMapNode numberOfRowsSelector
 
 -- | The number of rows in the tile map.
 --
 -- ObjC selector: @- setNumberOfRows:@
 setNumberOfRows :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CULong -> IO ()
-setNumberOfRows skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setNumberOfRows:") retVoid [argCULong value]
+setNumberOfRows skTileMapNode value =
+  sendMessage skTileMapNode setNumberOfRowsSelector value
 
 -- | The tile set being used by this tile map.
 --
 -- ObjC selector: @- tileSet@
 tileSet :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO (Id SKTileSet)
-tileSet skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "tileSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileSet skTileMapNode =
+  sendMessage skTileMapNode tileSetSelector
 
 -- | The tile set being used by this tile map.
 --
 -- ObjC selector: @- setTileSet:@
 setTileSet :: (IsSKTileMapNode skTileMapNode, IsSKTileSet value) => skTileMapNode -> value -> IO ()
-setTileSet skTileMapNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileMapNode (mkSelector "setTileSet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTileSet skTileMapNode value =
+  sendMessage skTileMapNode setTileSetSelector (toSKTileSet value)
 
 -- | Controls the blending between the texture and the tile map color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- colorBlendFactor@
 colorBlendFactor :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO CDouble
-colorBlendFactor skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "colorBlendFactor") retCDouble []
+colorBlendFactor skTileMapNode =
+  sendMessage skTileMapNode colorBlendFactorSelector
 
 -- | Controls the blending between the texture and the tile map color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- setColorBlendFactor:@
 setColorBlendFactor :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CDouble -> IO ()
-setColorBlendFactor skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setColorBlendFactor:") retVoid [argCDouble value]
+setColorBlendFactor skTileMapNode value =
+  sendMessage skTileMapNode setColorBlendFactorSelector value
 
 -- | Base color for the tile map (If no texture is present, the color still is drawn).
 --
 -- ObjC selector: @- color@
 color :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO (Id NSColor)
-color skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color skTileMapNode =
+  sendMessage skTileMapNode colorSelector
 
 -- | Base color for the tile map (If no texture is present, the color still is drawn).
 --
 -- ObjC selector: @- setColor:@
 setColor :: (IsSKTileMapNode skTileMapNode, IsNSColor value) => skTileMapNode -> value -> IO ()
-setColor skTileMapNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileMapNode (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor skTileMapNode value =
+  sendMessage skTileMapNode setColorSelector (toNSColor value)
 
 -- | Sets the blend mode to use when composing the tile map with the final framebuffer.
 --
@@ -248,8 +236,8 @@ setColor skTileMapNode  value =
 --
 -- ObjC selector: @- blendMode@
 blendMode :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO SKBlendMode
-blendMode skTileMapNode  =
-    fmap (coerce :: CLong -> SKBlendMode) $ sendMsg skTileMapNode (mkSelector "blendMode") retCLong []
+blendMode skTileMapNode =
+  sendMessage skTileMapNode blendModeSelector
 
 -- | Sets the blend mode to use when composing the tile map with the final framebuffer.
 --
@@ -257,38 +245,36 @@ blendMode skTileMapNode  =
 --
 -- ObjC selector: @- setBlendMode:@
 setBlendMode :: IsSKTileMapNode skTileMapNode => skTileMapNode -> SKBlendMode -> IO ()
-setBlendMode skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setBlendMode:") retVoid [argCLong (coerce value)]
+setBlendMode skTileMapNode value =
+  sendMessage skTileMapNode setBlendModeSelector value
 
 -- | A property that determines whether the tile map is rendered using a custom shader.
 --
 -- ObjC selector: @- shader@
 shader :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO (Id SKShader)
-shader skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "shader") (retPtr retVoid) [] >>= retainedObject . castPtr
+shader skTileMapNode =
+  sendMessage skTileMapNode shaderSelector
 
 -- | A property that determines whether the tile map is rendered using a custom shader.
 --
 -- ObjC selector: @- setShader:@
 setShader :: (IsSKTileMapNode skTileMapNode, IsSKShader value) => skTileMapNode -> value -> IO ()
-setShader skTileMapNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileMapNode (mkSelector "setShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShader skTileMapNode value =
+  sendMessage skTileMapNode setShaderSelector (toSKShader value)
 
 -- | Optional dictionary of SKAttributeValues Attributes can be used with custom SKShaders.
 --
 -- ObjC selector: @- attributeValues@
 attributeValues :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO (Id NSDictionary)
-attributeValues skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "attributeValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeValues skTileMapNode =
+  sendMessage skTileMapNode attributeValuesSelector
 
 -- | Optional dictionary of SKAttributeValues Attributes can be used with custom SKShaders.
 --
 -- ObjC selector: @- setAttributeValues:@
 setAttributeValues :: (IsSKTileMapNode skTileMapNode, IsNSDictionary value) => skTileMapNode -> value -> IO ()
-setAttributeValues skTileMapNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileMapNode (mkSelector "setAttributeValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeValues skTileMapNode value =
+  sendMessage skTileMapNode setAttributeValuesSelector (toNSDictionary value)
 
 -- | Bitmask to indicate being lit by a set of lights using overlapping lighting categories.
 --
@@ -298,8 +284,8 @@ setAttributeValues skTileMapNode  value =
 --
 -- ObjC selector: @- lightingBitMask@
 lightingBitMask :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO CUInt
-lightingBitMask skTileMapNode  =
-    sendMsg skTileMapNode (mkSelector "lightingBitMask") retCUInt []
+lightingBitMask skTileMapNode =
+  sendMessage skTileMapNode lightingBitMaskSelector
 
 -- | Bitmask to indicate being lit by a set of lights using overlapping lighting categories.
 --
@@ -309,128 +295,128 @@ lightingBitMask skTileMapNode  =
 --
 -- ObjC selector: @- setLightingBitMask:@
 setLightingBitMask :: IsSKTileMapNode skTileMapNode => skTileMapNode -> CUInt -> IO ()
-setLightingBitMask skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setLightingBitMask:") retVoid [argCUInt value]
+setLightingBitMask skTileMapNode value =
+  sendMessage skTileMapNode setLightingBitMaskSelector value
 
 -- | @- enableAutomapping@
 enableAutomapping :: IsSKTileMapNode skTileMapNode => skTileMapNode -> IO Bool
-enableAutomapping skTileMapNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skTileMapNode (mkSelector "enableAutomapping") retCULong []
+enableAutomapping skTileMapNode =
+  sendMessage skTileMapNode enableAutomappingSelector
 
 -- | @- setEnableAutomapping:@
 setEnableAutomapping :: IsSKTileMapNode skTileMapNode => skTileMapNode -> Bool -> IO ()
-setEnableAutomapping skTileMapNode  value =
-    sendMsg skTileMapNode (mkSelector "setEnableAutomapping:") retVoid [argCULong (if value then 1 else 0)]
+setEnableAutomapping skTileMapNode value =
+  sendMessage skTileMapNode setEnableAutomappingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @valueForAttributeNamed:@
-valueForAttributeNamedSelector :: Selector
+valueForAttributeNamedSelector :: Selector '[Id NSString] (Id SKAttributeValue)
 valueForAttributeNamedSelector = mkSelector "valueForAttributeNamed:"
 
 -- | @Selector@ for @setValue:forAttributeNamed:@
-setValue_forAttributeNamedSelector :: Selector
+setValue_forAttributeNamedSelector :: Selector '[Id SKAttributeValue, Id NSString] ()
 setValue_forAttributeNamedSelector = mkSelector "setValue:forAttributeNamed:"
 
 -- | @Selector@ for @fillWithTileGroup:@
-fillWithTileGroupSelector :: Selector
+fillWithTileGroupSelector :: Selector '[Id SKTileGroup] ()
 fillWithTileGroupSelector = mkSelector "fillWithTileGroup:"
 
 -- | @Selector@ for @tileDefinitionAtColumn:row:@
-tileDefinitionAtColumn_rowSelector :: Selector
+tileDefinitionAtColumn_rowSelector :: Selector '[CULong, CULong] (Id SKTileDefinition)
 tileDefinitionAtColumn_rowSelector = mkSelector "tileDefinitionAtColumn:row:"
 
 -- | @Selector@ for @tileGroupAtColumn:row:@
-tileGroupAtColumn_rowSelector :: Selector
+tileGroupAtColumn_rowSelector :: Selector '[CULong, CULong] (Id SKTileGroup)
 tileGroupAtColumn_rowSelector = mkSelector "tileGroupAtColumn:row:"
 
 -- | @Selector@ for @setTileGroup:forColumn:row:@
-setTileGroup_forColumn_rowSelector :: Selector
+setTileGroup_forColumn_rowSelector :: Selector '[Id SKTileGroup, CULong, CULong] ()
 setTileGroup_forColumn_rowSelector = mkSelector "setTileGroup:forColumn:row:"
 
 -- | @Selector@ for @setTileGroup:andTileDefinition:forColumn:row:@
-setTileGroup_andTileDefinition_forColumn_rowSelector :: Selector
+setTileGroup_andTileDefinition_forColumn_rowSelector :: Selector '[Id SKTileGroup, Id SKTileDefinition, CULong, CULong] ()
 setTileGroup_andTileDefinition_forColumn_rowSelector = mkSelector "setTileGroup:andTileDefinition:forColumn:row:"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CULong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @setNumberOfColumns:@
-setNumberOfColumnsSelector :: Selector
+setNumberOfColumnsSelector :: Selector '[CULong] ()
 setNumberOfColumnsSelector = mkSelector "setNumberOfColumns:"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CULong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @setNumberOfRows:@
-setNumberOfRowsSelector :: Selector
+setNumberOfRowsSelector :: Selector '[CULong] ()
 setNumberOfRowsSelector = mkSelector "setNumberOfRows:"
 
 -- | @Selector@ for @tileSet@
-tileSetSelector :: Selector
+tileSetSelector :: Selector '[] (Id SKTileSet)
 tileSetSelector = mkSelector "tileSet"
 
 -- | @Selector@ for @setTileSet:@
-setTileSetSelector :: Selector
+setTileSetSelector :: Selector '[Id SKTileSet] ()
 setTileSetSelector = mkSelector "setTileSet:"
 
 -- | @Selector@ for @colorBlendFactor@
-colorBlendFactorSelector :: Selector
+colorBlendFactorSelector :: Selector '[] CDouble
 colorBlendFactorSelector = mkSelector "colorBlendFactor"
 
 -- | @Selector@ for @setColorBlendFactor:@
-setColorBlendFactorSelector :: Selector
+setColorBlendFactorSelector :: Selector '[CDouble] ()
 setColorBlendFactorSelector = mkSelector "setColorBlendFactor:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @blendMode@
-blendModeSelector :: Selector
+blendModeSelector :: Selector '[] SKBlendMode
 blendModeSelector = mkSelector "blendMode"
 
 -- | @Selector@ for @setBlendMode:@
-setBlendModeSelector :: Selector
+setBlendModeSelector :: Selector '[SKBlendMode] ()
 setBlendModeSelector = mkSelector "setBlendMode:"
 
 -- | @Selector@ for @shader@
-shaderSelector :: Selector
+shaderSelector :: Selector '[] (Id SKShader)
 shaderSelector = mkSelector "shader"
 
 -- | @Selector@ for @setShader:@
-setShaderSelector :: Selector
+setShaderSelector :: Selector '[Id SKShader] ()
 setShaderSelector = mkSelector "setShader:"
 
 -- | @Selector@ for @attributeValues@
-attributeValuesSelector :: Selector
+attributeValuesSelector :: Selector '[] (Id NSDictionary)
 attributeValuesSelector = mkSelector "attributeValues"
 
 -- | @Selector@ for @setAttributeValues:@
-setAttributeValuesSelector :: Selector
+setAttributeValuesSelector :: Selector '[Id NSDictionary] ()
 setAttributeValuesSelector = mkSelector "setAttributeValues:"
 
 -- | @Selector@ for @lightingBitMask@
-lightingBitMaskSelector :: Selector
+lightingBitMaskSelector :: Selector '[] CUInt
 lightingBitMaskSelector = mkSelector "lightingBitMask"
 
 -- | @Selector@ for @setLightingBitMask:@
-setLightingBitMaskSelector :: Selector
+setLightingBitMaskSelector :: Selector '[CUInt] ()
 setLightingBitMaskSelector = mkSelector "setLightingBitMask:"
 
 -- | @Selector@ for @enableAutomapping@
-enableAutomappingSelector :: Selector
+enableAutomappingSelector :: Selector '[] Bool
 enableAutomappingSelector = mkSelector "enableAutomapping"
 
 -- | @Selector@ for @setEnableAutomapping:@
-setEnableAutomappingSelector :: Selector
+setEnableAutomappingSelector :: Selector '[Bool] ()
 setEnableAutomappingSelector = mkSelector "setEnableAutomapping:"
 

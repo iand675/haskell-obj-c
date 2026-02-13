@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.PDFKit.PDFAnnotationButtonWidget
   , setFieldName
   , onStateValue
   , setOnStateValue
-  , controlTypeSelector
-  , setControlTypeSelector
-  , stateSelector
-  , setStateSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
   , allowsToggleToOffSelector
-  , setAllowsToggleToOffSelector
-  , fontSelector
-  , setFontSelector
-  , fontColorSelector
-  , setFontColorSelector
+  , backgroundColorSelector
   , captionSelector
-  , setCaptionSelector
+  , controlTypeSelector
   , fieldNameSelector
-  , setFieldNameSelector
+  , fontColorSelector
+  , fontSelector
   , onStateValueSelector
+  , setAllowsToggleToOffSelector
+  , setBackgroundColorSelector
+  , setCaptionSelector
+  , setControlTypeSelector
+  , setFieldNameSelector
+  , setFontColorSelector
+  , setFontSelector
   , setOnStateValueSelector
+  , setStateSelector
+  , stateSelector
 
   -- * Enum types
   , PDFWidgetControlType(PDFWidgetControlType)
@@ -53,15 +54,11 @@ module ObjC.PDFKit.PDFAnnotationButtonWidget
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,173 +69,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- controlType@
 controlType :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO PDFWidgetControlType
-controlType pdfAnnotationButtonWidget  =
-    fmap (coerce :: CLong -> PDFWidgetControlType) $ sendMsg pdfAnnotationButtonWidget (mkSelector "controlType") retCLong []
+controlType pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget controlTypeSelector
 
 -- | @- setControlType:@
 setControlType :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> PDFWidgetControlType -> IO ()
-setControlType pdfAnnotationButtonWidget  type_ =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "setControlType:") retVoid [argCLong (coerce type_)]
+setControlType pdfAnnotationButtonWidget type_ =
+  sendMessage pdfAnnotationButtonWidget setControlTypeSelector type_
 
 -- | @- state@
 state :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO CLong
-state pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "state") retCLong []
+state pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget stateSelector
 
 -- | @- setState:@
 setState :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> CLong -> IO ()
-setState pdfAnnotationButtonWidget  value =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "setState:") retVoid [argCLong value]
+setState pdfAnnotationButtonWidget value =
+  sendMessage pdfAnnotationButtonWidget setStateSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSColor)
-backgroundColor pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSColor color) => pdfAnnotationButtonWidget -> color -> IO ()
-setBackgroundColor pdfAnnotationButtonWidget  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setBackgroundColor pdfAnnotationButtonWidget color =
+  sendMessage pdfAnnotationButtonWidget setBackgroundColorSelector (toNSColor color)
 
 -- | @- allowsToggleToOff@
 allowsToggleToOff :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO Bool
-allowsToggleToOff pdfAnnotationButtonWidget  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfAnnotationButtonWidget (mkSelector "allowsToggleToOff") retCULong []
+allowsToggleToOff pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget allowsToggleToOffSelector
 
 -- | @- setAllowsToggleToOff:@
 setAllowsToggleToOff :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> Bool -> IO ()
-setAllowsToggleToOff pdfAnnotationButtonWidget  allowOff =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "setAllowsToggleToOff:") retVoid [argCULong (if allowOff then 1 else 0)]
+setAllowsToggleToOff pdfAnnotationButtonWidget allowOff =
+  sendMessage pdfAnnotationButtonWidget setAllowsToggleToOffSelector allowOff
 
 -- | @- font@
 font :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSFont)
-font pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget fontSelector
 
 -- | @- setFont:@
 setFont :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSFont font) => pdfAnnotationButtonWidget -> font -> IO ()
-setFont pdfAnnotationButtonWidget  font =
-  withObjCPtr font $ \raw_font ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setFont:") retVoid [argPtr (castPtr raw_font :: Ptr ())]
+setFont pdfAnnotationButtonWidget font =
+  sendMessage pdfAnnotationButtonWidget setFontSelector (toNSFont font)
 
 -- | @- fontColor@
 fontColor :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSColor)
-fontColor pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "fontColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontColor pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget fontColorSelector
 
 -- | @- setFontColor:@
 setFontColor :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSColor color) => pdfAnnotationButtonWidget -> color -> IO ()
-setFontColor pdfAnnotationButtonWidget  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setFontColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setFontColor pdfAnnotationButtonWidget color =
+  sendMessage pdfAnnotationButtonWidget setFontColorSelector (toNSColor color)
 
 -- | @- caption@
 caption :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSString)
-caption pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "caption") (retPtr retVoid) [] >>= retainedObject . castPtr
+caption pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget captionSelector
 
 -- | @- setCaption:@
 setCaption :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSString name) => pdfAnnotationButtonWidget -> name -> IO ()
-setCaption pdfAnnotationButtonWidget  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setCaption:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+setCaption pdfAnnotationButtonWidget name =
+  sendMessage pdfAnnotationButtonWidget setCaptionSelector (toNSString name)
 
 -- | @- fieldName@
 fieldName :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSString)
-fieldName pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "fieldName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fieldName pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget fieldNameSelector
 
 -- | @- setFieldName:@
 setFieldName :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSString name) => pdfAnnotationButtonWidget -> name -> IO ()
-setFieldName pdfAnnotationButtonWidget  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setFieldName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+setFieldName pdfAnnotationButtonWidget name =
+  sendMessage pdfAnnotationButtonWidget setFieldNameSelector (toNSString name)
 
 -- | @- onStateValue@
 onStateValue :: IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget => pdfAnnotationButtonWidget -> IO (Id NSString)
-onStateValue pdfAnnotationButtonWidget  =
-    sendMsg pdfAnnotationButtonWidget (mkSelector "onStateValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+onStateValue pdfAnnotationButtonWidget =
+  sendMessage pdfAnnotationButtonWidget onStateValueSelector
 
 -- | @- setOnStateValue:@
 setOnStateValue :: (IsPDFAnnotationButtonWidget pdfAnnotationButtonWidget, IsNSString name) => pdfAnnotationButtonWidget -> name -> IO ()
-setOnStateValue pdfAnnotationButtonWidget  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg pdfAnnotationButtonWidget (mkSelector "setOnStateValue:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+setOnStateValue pdfAnnotationButtonWidget name =
+  sendMessage pdfAnnotationButtonWidget setOnStateValueSelector (toNSString name)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controlType@
-controlTypeSelector :: Selector
+controlTypeSelector :: Selector '[] PDFWidgetControlType
 controlTypeSelector = mkSelector "controlType"
 
 -- | @Selector@ for @setControlType:@
-setControlTypeSelector :: Selector
+setControlTypeSelector :: Selector '[PDFWidgetControlType] ()
 setControlTypeSelector = mkSelector "setControlType:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] CLong
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[CLong] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @allowsToggleToOff@
-allowsToggleToOffSelector :: Selector
+allowsToggleToOffSelector :: Selector '[] Bool
 allowsToggleToOffSelector = mkSelector "allowsToggleToOff"
 
 -- | @Selector@ for @setAllowsToggleToOff:@
-setAllowsToggleToOffSelector :: Selector
+setAllowsToggleToOffSelector :: Selector '[Bool] ()
 setAllowsToggleToOffSelector = mkSelector "setAllowsToggleToOff:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @fontColor@
-fontColorSelector :: Selector
+fontColorSelector :: Selector '[] (Id NSColor)
 fontColorSelector = mkSelector "fontColor"
 
 -- | @Selector@ for @setFontColor:@
-setFontColorSelector :: Selector
+setFontColorSelector :: Selector '[Id NSColor] ()
 setFontColorSelector = mkSelector "setFontColor:"
 
 -- | @Selector@ for @caption@
-captionSelector :: Selector
+captionSelector :: Selector '[] (Id NSString)
 captionSelector = mkSelector "caption"
 
 -- | @Selector@ for @setCaption:@
-setCaptionSelector :: Selector
+setCaptionSelector :: Selector '[Id NSString] ()
 setCaptionSelector = mkSelector "setCaption:"
 
 -- | @Selector@ for @fieldName@
-fieldNameSelector :: Selector
+fieldNameSelector :: Selector '[] (Id NSString)
 fieldNameSelector = mkSelector "fieldName"
 
 -- | @Selector@ for @setFieldName:@
-setFieldNameSelector :: Selector
+setFieldNameSelector :: Selector '[Id NSString] ()
 setFieldNameSelector = mkSelector "setFieldName:"
 
 -- | @Selector@ for @onStateValue@
-onStateValueSelector :: Selector
+onStateValueSelector :: Selector '[] (Id NSString)
 onStateValueSelector = mkSelector "onStateValue"
 
 -- | @Selector@ for @setOnStateValue:@
-setOnStateValueSelector :: Selector
+setOnStateValueSelector :: Selector '[Id NSString] ()
 setOnStateValueSelector = mkSelector "setOnStateValue:"
 

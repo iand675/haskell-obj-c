@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.Speech.SFSpeechRecognitionResult
   , final
   , speechRecognitionMetadata
   , bestTranscriptionSelector
-  , transcriptionsSelector
   , finalSelector
   , speechRecognitionMetadataSelector
+  , transcriptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bestTranscription@
 bestTranscription :: IsSFSpeechRecognitionResult sfSpeechRecognitionResult => sfSpeechRecognitionResult -> IO (Id SFTranscription)
-bestTranscription sfSpeechRecognitionResult  =
-    sendMsg sfSpeechRecognitionResult (mkSelector "bestTranscription") (retPtr retVoid) [] >>= retainedObject . castPtr
+bestTranscription sfSpeechRecognitionResult =
+  sendMessage sfSpeechRecognitionResult bestTranscriptionSelector
 
 -- | An array of potential transcriptions, sorted in descending order of confidence.
 --
@@ -54,8 +51,8 @@ bestTranscription sfSpeechRecognitionResult  =
 --
 -- ObjC selector: @- transcriptions@
 transcriptions :: IsSFSpeechRecognitionResult sfSpeechRecognitionResult => sfSpeechRecognitionResult -> IO (Id NSArray)
-transcriptions sfSpeechRecognitionResult  =
-    sendMsg sfSpeechRecognitionResult (mkSelector "transcriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transcriptions sfSpeechRecognitionResult =
+  sendMessage sfSpeechRecognitionResult transcriptionsSelector
 
 -- | A Boolean value that indicates whether speech recognition is complete and whether the transcriptions are final.
 --
@@ -63,33 +60,33 @@ transcriptions sfSpeechRecognitionResult  =
 --
 -- ObjC selector: @- final@
 final :: IsSFSpeechRecognitionResult sfSpeechRecognitionResult => sfSpeechRecognitionResult -> IO Bool
-final sfSpeechRecognitionResult  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionResult (mkSelector "final") retCULong []
+final sfSpeechRecognitionResult =
+  sendMessage sfSpeechRecognitionResult finalSelector
 
 -- | An object that contains the metadata results for a speech recognition request.
 --
 -- ObjC selector: @- speechRecognitionMetadata@
 speechRecognitionMetadata :: IsSFSpeechRecognitionResult sfSpeechRecognitionResult => sfSpeechRecognitionResult -> IO (Id SFSpeechRecognitionMetadata)
-speechRecognitionMetadata sfSpeechRecognitionResult  =
-    sendMsg sfSpeechRecognitionResult (mkSelector "speechRecognitionMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+speechRecognitionMetadata sfSpeechRecognitionResult =
+  sendMessage sfSpeechRecognitionResult speechRecognitionMetadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bestTranscription@
-bestTranscriptionSelector :: Selector
+bestTranscriptionSelector :: Selector '[] (Id SFTranscription)
 bestTranscriptionSelector = mkSelector "bestTranscription"
 
 -- | @Selector@ for @transcriptions@
-transcriptionsSelector :: Selector
+transcriptionsSelector :: Selector '[] (Id NSArray)
 transcriptionsSelector = mkSelector "transcriptions"
 
 -- | @Selector@ for @final@
-finalSelector :: Selector
+finalSelector :: Selector '[] Bool
 finalSelector = mkSelector "final"
 
 -- | @Selector@ for @speechRecognitionMetadata@
-speechRecognitionMetadataSelector :: Selector
+speechRecognitionMetadataSelector :: Selector '[] (Id SFSpeechRecognitionMetadata)
 speechRecognitionMetadataSelector = mkSelector "speechRecognitionMetadata"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.Metal.MTLLinkedFunctions
   , setGroups
   , privateFunctions
   , setPrivateFunctions
-  , linkedFunctionsSelector
-  , functionsSelector
-  , setFunctionsSelector
   , binaryFunctionsSelector
-  , setBinaryFunctionsSelector
+  , functionsSelector
   , groupsSelector
-  , setGroupsSelector
+  , linkedFunctionsSelector
   , privateFunctionsSelector
+  , setBinaryFunctionsSelector
+  , setFunctionsSelector
+  , setGroupsSelector
   , setPrivateFunctionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,7 +55,7 @@ linkedFunctions :: IO (Id MTLLinkedFunctions)
 linkedFunctions  =
   do
     cls' <- getRequiredClass "MTLLinkedFunctions"
-    sendClassMsg cls' (mkSelector "linkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linkedFunctionsSelector
 
 -- | functions
 --
@@ -66,8 +63,8 @@ linkedFunctions  =
 --
 -- ObjC selector: @- functions@
 functions :: IsMTLLinkedFunctions mtlLinkedFunctions => mtlLinkedFunctions -> IO (Id NSArray)
-functions mtlLinkedFunctions  =
-    sendMsg mtlLinkedFunctions (mkSelector "functions") (retPtr retVoid) [] >>= retainedObject . castPtr
+functions mtlLinkedFunctions =
+  sendMessage mtlLinkedFunctions functionsSelector
 
 -- | functions
 --
@@ -75,9 +72,8 @@ functions mtlLinkedFunctions  =
 --
 -- ObjC selector: @- setFunctions:@
 setFunctions :: (IsMTLLinkedFunctions mtlLinkedFunctions, IsNSArray value) => mtlLinkedFunctions -> value -> IO ()
-setFunctions mtlLinkedFunctions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlLinkedFunctions (mkSelector "setFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctions mtlLinkedFunctions value =
+  sendMessage mtlLinkedFunctions setFunctionsSelector (toNSArray value)
 
 -- | binaryFunctions
 --
@@ -85,8 +81,8 @@ setFunctions mtlLinkedFunctions  value =
 --
 -- ObjC selector: @- binaryFunctions@
 binaryFunctions :: IsMTLLinkedFunctions mtlLinkedFunctions => mtlLinkedFunctions -> IO (Id NSArray)
-binaryFunctions mtlLinkedFunctions  =
-    sendMsg mtlLinkedFunctions (mkSelector "binaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryFunctions mtlLinkedFunctions =
+  sendMessage mtlLinkedFunctions binaryFunctionsSelector
 
 -- | binaryFunctions
 --
@@ -94,9 +90,8 @@ binaryFunctions mtlLinkedFunctions  =
 --
 -- ObjC selector: @- setBinaryFunctions:@
 setBinaryFunctions :: (IsMTLLinkedFunctions mtlLinkedFunctions, IsNSArray value) => mtlLinkedFunctions -> value -> IO ()
-setBinaryFunctions mtlLinkedFunctions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlLinkedFunctions (mkSelector "setBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryFunctions mtlLinkedFunctions value =
+  sendMessage mtlLinkedFunctions setBinaryFunctionsSelector (toNSArray value)
 
 -- | groups
 --
@@ -104,8 +99,8 @@ setBinaryFunctions mtlLinkedFunctions  value =
 --
 -- ObjC selector: @- groups@
 groups :: IsMTLLinkedFunctions mtlLinkedFunctions => mtlLinkedFunctions -> IO (Id NSDictionary)
-groups mtlLinkedFunctions  =
-    sendMsg mtlLinkedFunctions (mkSelector "groups") (retPtr retVoid) [] >>= retainedObject . castPtr
+groups mtlLinkedFunctions =
+  sendMessage mtlLinkedFunctions groupsSelector
 
 -- | groups
 --
@@ -113,9 +108,8 @@ groups mtlLinkedFunctions  =
 --
 -- ObjC selector: @- setGroups:@
 setGroups :: (IsMTLLinkedFunctions mtlLinkedFunctions, IsNSDictionary value) => mtlLinkedFunctions -> value -> IO ()
-setGroups mtlLinkedFunctions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlLinkedFunctions (mkSelector "setGroups:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroups mtlLinkedFunctions value =
+  sendMessage mtlLinkedFunctions setGroupsSelector (toNSDictionary value)
 
 -- | privateFunctions
 --
@@ -125,8 +119,8 @@ setGroups mtlLinkedFunctions  value =
 --
 -- ObjC selector: @- privateFunctions@
 privateFunctions :: IsMTLLinkedFunctions mtlLinkedFunctions => mtlLinkedFunctions -> IO (Id NSArray)
-privateFunctions mtlLinkedFunctions  =
-    sendMsg mtlLinkedFunctions (mkSelector "privateFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+privateFunctions mtlLinkedFunctions =
+  sendMessage mtlLinkedFunctions privateFunctionsSelector
 
 -- | privateFunctions
 --
@@ -136,47 +130,46 @@ privateFunctions mtlLinkedFunctions  =
 --
 -- ObjC selector: @- setPrivateFunctions:@
 setPrivateFunctions :: (IsMTLLinkedFunctions mtlLinkedFunctions, IsNSArray value) => mtlLinkedFunctions -> value -> IO ()
-setPrivateFunctions mtlLinkedFunctions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlLinkedFunctions (mkSelector "setPrivateFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrivateFunctions mtlLinkedFunctions value =
+  sendMessage mtlLinkedFunctions setPrivateFunctionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @linkedFunctions@
-linkedFunctionsSelector :: Selector
+linkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 linkedFunctionsSelector = mkSelector "linkedFunctions"
 
 -- | @Selector@ for @functions@
-functionsSelector :: Selector
+functionsSelector :: Selector '[] (Id NSArray)
 functionsSelector = mkSelector "functions"
 
 -- | @Selector@ for @setFunctions:@
-setFunctionsSelector :: Selector
+setFunctionsSelector :: Selector '[Id NSArray] ()
 setFunctionsSelector = mkSelector "setFunctions:"
 
 -- | @Selector@ for @binaryFunctions@
-binaryFunctionsSelector :: Selector
+binaryFunctionsSelector :: Selector '[] (Id NSArray)
 binaryFunctionsSelector = mkSelector "binaryFunctions"
 
 -- | @Selector@ for @setBinaryFunctions:@
-setBinaryFunctionsSelector :: Selector
+setBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setBinaryFunctionsSelector = mkSelector "setBinaryFunctions:"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] (Id NSDictionary)
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @setGroups:@
-setGroupsSelector :: Selector
+setGroupsSelector :: Selector '[Id NSDictionary] ()
 setGroupsSelector = mkSelector "setGroups:"
 
 -- | @Selector@ for @privateFunctions@
-privateFunctionsSelector :: Selector
+privateFunctionsSelector :: Selector '[] (Id NSArray)
 privateFunctionsSelector = mkSelector "privateFunctions"
 
 -- | @Selector@ for @setPrivateFunctions:@
-setPrivateFunctionsSelector :: Selector
+setPrivateFunctionsSelector :: Selector '[Id NSArray] ()
 setPrivateFunctionsSelector = mkSelector "setPrivateFunctions:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.NetworkExtension.NEAppProxyFlow
   , setNetworkInterface
   , remoteHostname
   , isBound
-  , openWithLocalFlowEndpoint_completionHandlerSelector
-  , openWithLocalEndpoint_completionHandlerSelector
   , closeReadWithErrorSelector
   , closeWriteWithErrorSelector
-  , setMetadataSelector
+  , isBoundSelector
   , metaDataSelector
   , networkInterfaceSelector
-  , setNetworkInterfaceSelector
+  , openWithLocalEndpoint_completionHandlerSelector
+  , openWithLocalFlowEndpoint_completionHandlerSelector
   , remoteHostnameSelector
-  , isBoundSelector
+  , setMetadataSelector
+  , setNetworkInterfaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,9 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- openWithLocalFlowEndpoint:completionHandler:@
 openWithLocalFlowEndpoint_completionHandler :: (IsNEAppProxyFlow neAppProxyFlow, IsNSObject localEndpoint) => neAppProxyFlow -> localEndpoint -> Ptr () -> IO ()
-openWithLocalFlowEndpoint_completionHandler neAppProxyFlow  localEndpoint completionHandler =
-  withObjCPtr localEndpoint $ \raw_localEndpoint ->
-      sendMsg neAppProxyFlow (mkSelector "openWithLocalFlowEndpoint:completionHandler:") retVoid [argPtr (castPtr raw_localEndpoint :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+openWithLocalFlowEndpoint_completionHandler neAppProxyFlow localEndpoint completionHandler =
+  sendMessage neAppProxyFlow openWithLocalFlowEndpoint_completionHandlerSelector (toNSObject localEndpoint) completionHandler
 
 -- | openWithLocalEndpoint:completionHandler:
 --
@@ -77,9 +73,8 @@ openWithLocalFlowEndpoint_completionHandler neAppProxyFlow  localEndpoint comple
 --
 -- ObjC selector: @- openWithLocalEndpoint:completionHandler:@
 openWithLocalEndpoint_completionHandler :: (IsNEAppProxyFlow neAppProxyFlow, IsNWHostEndpoint localEndpoint) => neAppProxyFlow -> localEndpoint -> Ptr () -> IO ()
-openWithLocalEndpoint_completionHandler neAppProxyFlow  localEndpoint completionHandler =
-  withObjCPtr localEndpoint $ \raw_localEndpoint ->
-      sendMsg neAppProxyFlow (mkSelector "openWithLocalEndpoint:completionHandler:") retVoid [argPtr (castPtr raw_localEndpoint :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+openWithLocalEndpoint_completionHandler neAppProxyFlow localEndpoint completionHandler =
+  sendMessage neAppProxyFlow openWithLocalEndpoint_completionHandlerSelector (toNWHostEndpoint localEndpoint) completionHandler
 
 -- | closeReadWithError:
 --
@@ -89,9 +84,8 @@ openWithLocalEndpoint_completionHandler neAppProxyFlow  localEndpoint completion
 --
 -- ObjC selector: @- closeReadWithError:@
 closeReadWithError :: (IsNEAppProxyFlow neAppProxyFlow, IsNSError error_) => neAppProxyFlow -> error_ -> IO ()
-closeReadWithError neAppProxyFlow  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg neAppProxyFlow (mkSelector "closeReadWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+closeReadWithError neAppProxyFlow error_ =
+  sendMessage neAppProxyFlow closeReadWithErrorSelector (toNSError error_)
 
 -- | closeWriteWithError:
 --
@@ -101,9 +95,8 @@ closeReadWithError neAppProxyFlow  error_ =
 --
 -- ObjC selector: @- closeWriteWithError:@
 closeWriteWithError :: (IsNEAppProxyFlow neAppProxyFlow, IsNSError error_) => neAppProxyFlow -> error_ -> IO ()
-closeWriteWithError neAppProxyFlow  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg neAppProxyFlow (mkSelector "closeWriteWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+closeWriteWithError neAppProxyFlow error_ =
+  sendMessage neAppProxyFlow closeWriteWithErrorSelector (toNSError error_)
 
 -- | setMetadata:
 --
@@ -113,9 +106,8 @@ closeWriteWithError neAppProxyFlow  error_ =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsNEAppProxyFlow neAppProxyFlow, IsNSObject parameters) => neAppProxyFlow -> parameters -> IO ()
-setMetadata neAppProxyFlow  parameters =
-  withObjCPtr parameters $ \raw_parameters ->
-      sendMsg neAppProxyFlow (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_parameters :: Ptr ())]
+setMetadata neAppProxyFlow parameters =
+  sendMessage neAppProxyFlow setMetadataSelector (toNSObject parameters)
 
 -- | metaData
 --
@@ -123,8 +115,8 @@ setMetadata neAppProxyFlow  parameters =
 --
 -- ObjC selector: @- metaData@
 metaData :: IsNEAppProxyFlow neAppProxyFlow => neAppProxyFlow -> IO (Id NEFlowMetaData)
-metaData neAppProxyFlow  =
-    sendMsg neAppProxyFlow (mkSelector "metaData") (retPtr retVoid) [] >>= retainedObject . castPtr
+metaData neAppProxyFlow =
+  sendMessage neAppProxyFlow metaDataSelector
 
 -- | networkInterface
 --
@@ -132,8 +124,8 @@ metaData neAppProxyFlow  =
 --
 -- ObjC selector: @- networkInterface@
 networkInterface :: IsNEAppProxyFlow neAppProxyFlow => neAppProxyFlow -> IO (Id NSObject)
-networkInterface neAppProxyFlow  =
-    sendMsg neAppProxyFlow (mkSelector "networkInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkInterface neAppProxyFlow =
+  sendMessage neAppProxyFlow networkInterfaceSelector
 
 -- | networkInterface
 --
@@ -141,9 +133,8 @@ networkInterface neAppProxyFlow  =
 --
 -- ObjC selector: @- setNetworkInterface:@
 setNetworkInterface :: (IsNEAppProxyFlow neAppProxyFlow, IsNSObject value) => neAppProxyFlow -> value -> IO ()
-setNetworkInterface neAppProxyFlow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppProxyFlow (mkSelector "setNetworkInterface:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkInterface neAppProxyFlow value =
+  sendMessage neAppProxyFlow setNetworkInterfaceSelector (toNSObject value)
 
 -- | remoteHostname
 --
@@ -151,8 +142,8 @@ setNetworkInterface neAppProxyFlow  value =
 --
 -- ObjC selector: @- remoteHostname@
 remoteHostname :: IsNEAppProxyFlow neAppProxyFlow => neAppProxyFlow -> IO (Id NSString)
-remoteHostname neAppProxyFlow  =
-    sendMsg neAppProxyFlow (mkSelector "remoteHostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteHostname neAppProxyFlow =
+  sendMessage neAppProxyFlow remoteHostnameSelector
 
 -- | isBound
 --
@@ -160,50 +151,50 @@ remoteHostname neAppProxyFlow  =
 --
 -- ObjC selector: @- isBound@
 isBound :: IsNEAppProxyFlow neAppProxyFlow => neAppProxyFlow -> IO Bool
-isBound neAppProxyFlow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neAppProxyFlow (mkSelector "isBound") retCULong []
+isBound neAppProxyFlow =
+  sendMessage neAppProxyFlow isBoundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @openWithLocalFlowEndpoint:completionHandler:@
-openWithLocalFlowEndpoint_completionHandlerSelector :: Selector
+openWithLocalFlowEndpoint_completionHandlerSelector :: Selector '[Id NSObject, Ptr ()] ()
 openWithLocalFlowEndpoint_completionHandlerSelector = mkSelector "openWithLocalFlowEndpoint:completionHandler:"
 
 -- | @Selector@ for @openWithLocalEndpoint:completionHandler:@
-openWithLocalEndpoint_completionHandlerSelector :: Selector
+openWithLocalEndpoint_completionHandlerSelector :: Selector '[Id NWHostEndpoint, Ptr ()] ()
 openWithLocalEndpoint_completionHandlerSelector = mkSelector "openWithLocalEndpoint:completionHandler:"
 
 -- | @Selector@ for @closeReadWithError:@
-closeReadWithErrorSelector :: Selector
+closeReadWithErrorSelector :: Selector '[Id NSError] ()
 closeReadWithErrorSelector = mkSelector "closeReadWithError:"
 
 -- | @Selector@ for @closeWriteWithError:@
-closeWriteWithErrorSelector :: Selector
+closeWriteWithErrorSelector :: Selector '[Id NSError] ()
 closeWriteWithErrorSelector = mkSelector "closeWriteWithError:"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSObject] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @metaData@
-metaDataSelector :: Selector
+metaDataSelector :: Selector '[] (Id NEFlowMetaData)
 metaDataSelector = mkSelector "metaData"
 
 -- | @Selector@ for @networkInterface@
-networkInterfaceSelector :: Selector
+networkInterfaceSelector :: Selector '[] (Id NSObject)
 networkInterfaceSelector = mkSelector "networkInterface"
 
 -- | @Selector@ for @setNetworkInterface:@
-setNetworkInterfaceSelector :: Selector
+setNetworkInterfaceSelector :: Selector '[Id NSObject] ()
 setNetworkInterfaceSelector = mkSelector "setNetworkInterface:"
 
 -- | @Selector@ for @remoteHostname@
-remoteHostnameSelector :: Selector
+remoteHostnameSelector :: Selector '[] (Id NSString)
 remoteHostnameSelector = mkSelector "remoteHostname"
 
 -- | @Selector@ for @isBound@
-isBoundSelector :: Selector
+isBoundSelector :: Selector '[] Bool
 isBoundSelector = mkSelector "isBound"
 

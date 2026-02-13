@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,42 +30,38 @@ module ObjC.MediaPlayer.MPRemoteCommandCenter
   , likeCommand
   , dislikeCommand
   , bookmarkCommand
-  , sharedCommandCenterSelector
-  , newSelector
-  , initSelector
-  , pauseCommandSelector
-  , playCommandSelector
-  , stopCommandSelector
-  , togglePlayPauseCommandSelector
-  , enableLanguageOptionCommandSelector
-  , disableLanguageOptionCommandSelector
+  , bookmarkCommandSelector
+  , changePlaybackPositionCommandSelector
   , changePlaybackRateCommandSelector
   , changeRepeatModeCommandSelector
   , changeShuffleModeCommandSelector
-  , nextTrackCommandSelector
-  , previousTrackCommandSelector
-  , skipForwardCommandSelector
-  , skipBackwardCommandSelector
-  , seekForwardCommandSelector
-  , seekBackwardCommandSelector
-  , changePlaybackPositionCommandSelector
-  , ratingCommandSelector
-  , likeCommandSelector
+  , disableLanguageOptionCommandSelector
   , dislikeCommandSelector
-  , bookmarkCommandSelector
+  , enableLanguageOptionCommandSelector
+  , initSelector
+  , likeCommandSelector
+  , newSelector
+  , nextTrackCommandSelector
+  , pauseCommandSelector
+  , playCommandSelector
+  , previousTrackCommandSelector
+  , ratingCommandSelector
+  , seekBackwardCommandSelector
+  , seekForwardCommandSelector
+  , sharedCommandCenterSelector
+  , skipBackwardCommandSelector
+  , skipForwardCommandSelector
+  , stopCommandSelector
+  , togglePlayPauseCommandSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,213 +73,213 @@ sharedCommandCenter :: IO (Id MPRemoteCommandCenter)
 sharedCommandCenter  =
   do
     cls' <- getRequiredClass "MPRemoteCommandCenter"
-    sendClassMsg cls' (mkSelector "sharedCommandCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCommandCenterSelector
 
 -- | @+ new@
 new :: IO (Id MPRemoteCommandCenter)
 new  =
   do
     cls' <- getRequiredClass "MPRemoteCommandCenter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommandCenter)
-init_ mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpRemoteCommandCenter =
+  sendOwnedMessage mpRemoteCommandCenter initSelector
 
 -- | @- pauseCommand@
 pauseCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-pauseCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "pauseCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+pauseCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter pauseCommandSelector
 
 -- | @- playCommand@
 playCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-playCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "playCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+playCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter playCommandSelector
 
 -- | @- stopCommand@
 stopCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-stopCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "stopCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+stopCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter stopCommandSelector
 
 -- | @- togglePlayPauseCommand@
 togglePlayPauseCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-togglePlayPauseCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "togglePlayPauseCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+togglePlayPauseCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter togglePlayPauseCommandSelector
 
 -- | @- enableLanguageOptionCommand@
 enableLanguageOptionCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-enableLanguageOptionCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "enableLanguageOptionCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+enableLanguageOptionCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter enableLanguageOptionCommandSelector
 
 -- | @- disableLanguageOptionCommand@
 disableLanguageOptionCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-disableLanguageOptionCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "disableLanguageOptionCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+disableLanguageOptionCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter disableLanguageOptionCommandSelector
 
 -- | @- changePlaybackRateCommand@
 changePlaybackRateCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPChangePlaybackRateCommand)
-changePlaybackRateCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "changePlaybackRateCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+changePlaybackRateCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter changePlaybackRateCommandSelector
 
 -- | @- changeRepeatModeCommand@
 changeRepeatModeCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPChangeRepeatModeCommand)
-changeRepeatModeCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "changeRepeatModeCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+changeRepeatModeCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter changeRepeatModeCommandSelector
 
 -- | @- changeShuffleModeCommand@
 changeShuffleModeCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPChangeShuffleModeCommand)
-changeShuffleModeCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "changeShuffleModeCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+changeShuffleModeCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter changeShuffleModeCommandSelector
 
 -- | @- nextTrackCommand@
 nextTrackCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-nextTrackCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "nextTrackCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextTrackCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter nextTrackCommandSelector
 
 -- | @- previousTrackCommand@
 previousTrackCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-previousTrackCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "previousTrackCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousTrackCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter previousTrackCommandSelector
 
 -- | @- skipForwardCommand@
 skipForwardCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPSkipIntervalCommand)
-skipForwardCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "skipForwardCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+skipForwardCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter skipForwardCommandSelector
 
 -- | @- skipBackwardCommand@
 skipBackwardCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPSkipIntervalCommand)
-skipBackwardCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "skipBackwardCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+skipBackwardCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter skipBackwardCommandSelector
 
 -- | @- seekForwardCommand@
 seekForwardCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-seekForwardCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "seekForwardCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+seekForwardCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter seekForwardCommandSelector
 
 -- | @- seekBackwardCommand@
 seekBackwardCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRemoteCommand)
-seekBackwardCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "seekBackwardCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+seekBackwardCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter seekBackwardCommandSelector
 
 -- | @- changePlaybackPositionCommand@
 changePlaybackPositionCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPChangePlaybackPositionCommand)
-changePlaybackPositionCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "changePlaybackPositionCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+changePlaybackPositionCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter changePlaybackPositionCommandSelector
 
 -- | @- ratingCommand@
 ratingCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPRatingCommand)
-ratingCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "ratingCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter ratingCommandSelector
 
 -- | @- likeCommand@
 likeCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPFeedbackCommand)
-likeCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "likeCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+likeCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter likeCommandSelector
 
 -- | @- dislikeCommand@
 dislikeCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPFeedbackCommand)
-dislikeCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "dislikeCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+dislikeCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter dislikeCommandSelector
 
 -- | @- bookmarkCommand@
 bookmarkCommand :: IsMPRemoteCommandCenter mpRemoteCommandCenter => mpRemoteCommandCenter -> IO (Id MPFeedbackCommand)
-bookmarkCommand mpRemoteCommandCenter  =
-    sendMsg mpRemoteCommandCenter (mkSelector "bookmarkCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookmarkCommand mpRemoteCommandCenter =
+  sendMessage mpRemoteCommandCenter bookmarkCommandSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCommandCenter@
-sharedCommandCenterSelector :: Selector
+sharedCommandCenterSelector :: Selector '[] (Id MPRemoteCommandCenter)
 sharedCommandCenterSelector = mkSelector "sharedCommandCenter"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPRemoteCommandCenter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPRemoteCommandCenter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @pauseCommand@
-pauseCommandSelector :: Selector
+pauseCommandSelector :: Selector '[] (Id MPRemoteCommand)
 pauseCommandSelector = mkSelector "pauseCommand"
 
 -- | @Selector@ for @playCommand@
-playCommandSelector :: Selector
+playCommandSelector :: Selector '[] (Id MPRemoteCommand)
 playCommandSelector = mkSelector "playCommand"
 
 -- | @Selector@ for @stopCommand@
-stopCommandSelector :: Selector
+stopCommandSelector :: Selector '[] (Id MPRemoteCommand)
 stopCommandSelector = mkSelector "stopCommand"
 
 -- | @Selector@ for @togglePlayPauseCommand@
-togglePlayPauseCommandSelector :: Selector
+togglePlayPauseCommandSelector :: Selector '[] (Id MPRemoteCommand)
 togglePlayPauseCommandSelector = mkSelector "togglePlayPauseCommand"
 
 -- | @Selector@ for @enableLanguageOptionCommand@
-enableLanguageOptionCommandSelector :: Selector
+enableLanguageOptionCommandSelector :: Selector '[] (Id MPRemoteCommand)
 enableLanguageOptionCommandSelector = mkSelector "enableLanguageOptionCommand"
 
 -- | @Selector@ for @disableLanguageOptionCommand@
-disableLanguageOptionCommandSelector :: Selector
+disableLanguageOptionCommandSelector :: Selector '[] (Id MPRemoteCommand)
 disableLanguageOptionCommandSelector = mkSelector "disableLanguageOptionCommand"
 
 -- | @Selector@ for @changePlaybackRateCommand@
-changePlaybackRateCommandSelector :: Selector
+changePlaybackRateCommandSelector :: Selector '[] (Id MPChangePlaybackRateCommand)
 changePlaybackRateCommandSelector = mkSelector "changePlaybackRateCommand"
 
 -- | @Selector@ for @changeRepeatModeCommand@
-changeRepeatModeCommandSelector :: Selector
+changeRepeatModeCommandSelector :: Selector '[] (Id MPChangeRepeatModeCommand)
 changeRepeatModeCommandSelector = mkSelector "changeRepeatModeCommand"
 
 -- | @Selector@ for @changeShuffleModeCommand@
-changeShuffleModeCommandSelector :: Selector
+changeShuffleModeCommandSelector :: Selector '[] (Id MPChangeShuffleModeCommand)
 changeShuffleModeCommandSelector = mkSelector "changeShuffleModeCommand"
 
 -- | @Selector@ for @nextTrackCommand@
-nextTrackCommandSelector :: Selector
+nextTrackCommandSelector :: Selector '[] (Id MPRemoteCommand)
 nextTrackCommandSelector = mkSelector "nextTrackCommand"
 
 -- | @Selector@ for @previousTrackCommand@
-previousTrackCommandSelector :: Selector
+previousTrackCommandSelector :: Selector '[] (Id MPRemoteCommand)
 previousTrackCommandSelector = mkSelector "previousTrackCommand"
 
 -- | @Selector@ for @skipForwardCommand@
-skipForwardCommandSelector :: Selector
+skipForwardCommandSelector :: Selector '[] (Id MPSkipIntervalCommand)
 skipForwardCommandSelector = mkSelector "skipForwardCommand"
 
 -- | @Selector@ for @skipBackwardCommand@
-skipBackwardCommandSelector :: Selector
+skipBackwardCommandSelector :: Selector '[] (Id MPSkipIntervalCommand)
 skipBackwardCommandSelector = mkSelector "skipBackwardCommand"
 
 -- | @Selector@ for @seekForwardCommand@
-seekForwardCommandSelector :: Selector
+seekForwardCommandSelector :: Selector '[] (Id MPRemoteCommand)
 seekForwardCommandSelector = mkSelector "seekForwardCommand"
 
 -- | @Selector@ for @seekBackwardCommand@
-seekBackwardCommandSelector :: Selector
+seekBackwardCommandSelector :: Selector '[] (Id MPRemoteCommand)
 seekBackwardCommandSelector = mkSelector "seekBackwardCommand"
 
 -- | @Selector@ for @changePlaybackPositionCommand@
-changePlaybackPositionCommandSelector :: Selector
+changePlaybackPositionCommandSelector :: Selector '[] (Id MPChangePlaybackPositionCommand)
 changePlaybackPositionCommandSelector = mkSelector "changePlaybackPositionCommand"
 
 -- | @Selector@ for @ratingCommand@
-ratingCommandSelector :: Selector
+ratingCommandSelector :: Selector '[] (Id MPRatingCommand)
 ratingCommandSelector = mkSelector "ratingCommand"
 
 -- | @Selector@ for @likeCommand@
-likeCommandSelector :: Selector
+likeCommandSelector :: Selector '[] (Id MPFeedbackCommand)
 likeCommandSelector = mkSelector "likeCommand"
 
 -- | @Selector@ for @dislikeCommand@
-dislikeCommandSelector :: Selector
+dislikeCommandSelector :: Selector '[] (Id MPFeedbackCommand)
 dislikeCommandSelector = mkSelector "dislikeCommand"
 
 -- | @Selector@ for @bookmarkCommand@
-bookmarkCommandSelector :: Selector
+bookmarkCommandSelector :: Selector '[] (Id MPFeedbackCommand)
 bookmarkCommandSelector = mkSelector "bookmarkCommand"
 

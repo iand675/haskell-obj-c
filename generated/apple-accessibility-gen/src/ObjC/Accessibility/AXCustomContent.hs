@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.Accessibility.AXCustomContent
   , attributedValue
   , importance
   , setImportance
-  , customContentWithLabel_valueSelector
-  , customContentWithAttributedLabel_attributedValueSelector
-  , initSelector
-  , newSelector
-  , labelSelector
   , attributedLabelSelector
-  , valueSelector
   , attributedValueSelector
+  , customContentWithAttributedLabel_attributedValueSelector
+  , customContentWithLabel_valueSelector
   , importanceSelector
+  , initSelector
+  , labelSelector
+  , newSelector
   , setImportanceSelector
+  , valueSelector
 
   -- * Enum types
   , AXCustomContentImportance(AXCustomContentImportance)
@@ -35,15 +36,11 @@ module ObjC.Accessibility.AXCustomContent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,102 +53,98 @@ customContentWithLabel_value :: (IsNSString label, IsNSString value) => label ->
 customContentWithLabel_value label value =
   do
     cls' <- getRequiredClass "AXCustomContent"
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr value $ \raw_value ->
-        sendClassMsg cls' (mkSelector "customContentWithLabel:value:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customContentWithLabel_valueSelector (toNSString label) (toNSString value)
 
 -- | @+ customContentWithAttributedLabel:attributedValue:@
 customContentWithAttributedLabel_attributedValue :: (IsNSAttributedString label, IsNSAttributedString value) => label -> value -> IO (Id AXCustomContent)
 customContentWithAttributedLabel_attributedValue label value =
   do
     cls' <- getRequiredClass "AXCustomContent"
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr value $ \raw_value ->
-        sendClassMsg cls' (mkSelector "customContentWithAttributedLabel:attributedValue:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customContentWithAttributedLabel_attributedValueSelector (toNSAttributedString label) (toNSAttributedString value)
 
 -- | @- init@
 init_ :: IsAXCustomContent axCustomContent => axCustomContent -> IO (Id AXCustomContent)
-init_ axCustomContent  =
-    sendMsg axCustomContent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ axCustomContent =
+  sendOwnedMessage axCustomContent initSelector
 
 -- | @+ new@
 new :: IO (Id AXCustomContent)
 new  =
   do
     cls' <- getRequiredClass "AXCustomContent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- label@
 label :: IsAXCustomContent axCustomContent => axCustomContent -> IO (Id NSString)
-label axCustomContent  =
-    sendMsg axCustomContent (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label axCustomContent =
+  sendMessage axCustomContent labelSelector
 
 -- | @- attributedLabel@
 attributedLabel :: IsAXCustomContent axCustomContent => axCustomContent -> IO (Id NSAttributedString)
-attributedLabel axCustomContent  =
-    sendMsg axCustomContent (mkSelector "attributedLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedLabel axCustomContent =
+  sendMessage axCustomContent attributedLabelSelector
 
 -- | @- value@
 value :: IsAXCustomContent axCustomContent => axCustomContent -> IO (Id NSString)
-value axCustomContent  =
-    sendMsg axCustomContent (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value axCustomContent =
+  sendMessage axCustomContent valueSelector
 
 -- | @- attributedValue@
 attributedValue :: IsAXCustomContent axCustomContent => axCustomContent -> IO (Id NSAttributedString)
-attributedValue axCustomContent  =
-    sendMsg axCustomContent (mkSelector "attributedValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedValue axCustomContent =
+  sendMessage axCustomContent attributedValueSelector
 
 -- | @- importance@
 importance :: IsAXCustomContent axCustomContent => axCustomContent -> IO AXCustomContentImportance
-importance axCustomContent  =
-    fmap (coerce :: CULong -> AXCustomContentImportance) $ sendMsg axCustomContent (mkSelector "importance") retCULong []
+importance axCustomContent =
+  sendMessage axCustomContent importanceSelector
 
 -- | @- setImportance:@
 setImportance :: IsAXCustomContent axCustomContent => axCustomContent -> AXCustomContentImportance -> IO ()
-setImportance axCustomContent  value =
-    sendMsg axCustomContent (mkSelector "setImportance:") retVoid [argCULong (coerce value)]
+setImportance axCustomContent value =
+  sendMessage axCustomContent setImportanceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @customContentWithLabel:value:@
-customContentWithLabel_valueSelector :: Selector
+customContentWithLabel_valueSelector :: Selector '[Id NSString, Id NSString] (Id AXCustomContent)
 customContentWithLabel_valueSelector = mkSelector "customContentWithLabel:value:"
 
 -- | @Selector@ for @customContentWithAttributedLabel:attributedValue:@
-customContentWithAttributedLabel_attributedValueSelector :: Selector
+customContentWithAttributedLabel_attributedValueSelector :: Selector '[Id NSAttributedString, Id NSAttributedString] (Id AXCustomContent)
 customContentWithAttributedLabel_attributedValueSelector = mkSelector "customContentWithAttributedLabel:attributedValue:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AXCustomContent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AXCustomContent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @attributedLabel@
-attributedLabelSelector :: Selector
+attributedLabelSelector :: Selector '[] (Id NSAttributedString)
 attributedLabelSelector = mkSelector "attributedLabel"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @attributedValue@
-attributedValueSelector :: Selector
+attributedValueSelector :: Selector '[] (Id NSAttributedString)
 attributedValueSelector = mkSelector "attributedValue"
 
 -- | @Selector@ for @importance@
-importanceSelector :: Selector
+importanceSelector :: Selector '[] AXCustomContentImportance
 importanceSelector = mkSelector "importance"
 
 -- | @Selector@ for @setImportance:@
-setImportanceSelector :: Selector
+setImportanceSelector :: Selector '[AXCustomContentImportance] ()
 setImportanceSelector = mkSelector "setImportance:"
 

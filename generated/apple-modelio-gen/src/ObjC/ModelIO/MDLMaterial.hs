@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,25 +27,25 @@ module ObjC.ModelIO.MDLMaterial
   , count
   , materialFace
   , setMaterialFace
+  , baseMaterialSelector
+  , countSelector
   , initWithName_scatteringFunctionSelector
-  , setPropertySelector
-  , removePropertySelector
-  , propertyNamedSelector
-  , propertyWithSemanticSelector
-  , propertiesWithSemanticSelector
-  , removeAllPropertiesSelector
-  , resolveTexturesWithResolverSelector
   , loadTexturesUsingResolverSelector
+  , materialFaceSelector
+  , nameSelector
   , objectAtIndexedSubscriptSelector
   , objectForKeyedSubscriptSelector
+  , propertiesWithSemanticSelector
+  , propertyNamedSelector
+  , propertyWithSemanticSelector
+  , removeAllPropertiesSelector
+  , removePropertySelector
+  , resolveTexturesWithResolverSelector
   , scatteringFunctionSelector
-  , nameSelector
-  , setNameSelector
-  , baseMaterialSelector
   , setBaseMaterialSelector
-  , countSelector
-  , materialFaceSelector
   , setMaterialFaceSelector
+  , setNameSelector
+  , setPropertySelector
 
   -- * Enum types
   , MDLMaterialFace(MDLMaterialFace)
@@ -81,15 +82,11 @@ module ObjC.ModelIO.MDLMaterial
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,188 +96,180 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:scatteringFunction:@
 initWithName_scatteringFunction :: (IsMDLMaterial mdlMaterial, IsNSString name, IsMDLScatteringFunction scatteringFunction) => mdlMaterial -> name -> scatteringFunction -> IO (Id MDLMaterial)
-initWithName_scatteringFunction mdlMaterial  name scatteringFunction =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr scatteringFunction $ \raw_scatteringFunction ->
-        sendMsg mdlMaterial (mkSelector "initWithName:scatteringFunction:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_scatteringFunction :: Ptr ())] >>= ownedObject . castPtr
+initWithName_scatteringFunction mdlMaterial name scatteringFunction =
+  sendOwnedMessage mdlMaterial initWithName_scatteringFunctionSelector (toNSString name) (toMDLScatteringFunction scatteringFunction)
 
 -- | @- setProperty:@
 setProperty :: (IsMDLMaterial mdlMaterial, IsMDLMaterialProperty property) => mdlMaterial -> property -> IO ()
-setProperty mdlMaterial  property =
-  withObjCPtr property $ \raw_property ->
-      sendMsg mdlMaterial (mkSelector "setProperty:") retVoid [argPtr (castPtr raw_property :: Ptr ())]
+setProperty mdlMaterial property =
+  sendMessage mdlMaterial setPropertySelector (toMDLMaterialProperty property)
 
 -- | @- removeProperty:@
 removeProperty :: (IsMDLMaterial mdlMaterial, IsMDLMaterialProperty property) => mdlMaterial -> property -> IO ()
-removeProperty mdlMaterial  property =
-  withObjCPtr property $ \raw_property ->
-      sendMsg mdlMaterial (mkSelector "removeProperty:") retVoid [argPtr (castPtr raw_property :: Ptr ())]
+removeProperty mdlMaterial property =
+  sendMessage mdlMaterial removePropertySelector (toMDLMaterialProperty property)
 
 -- | @- propertyNamed:@
 propertyNamed :: (IsMDLMaterial mdlMaterial, IsNSString name) => mdlMaterial -> name -> IO (Id MDLMaterialProperty)
-propertyNamed mdlMaterial  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMaterial (mkSelector "propertyNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+propertyNamed mdlMaterial name =
+  sendMessage mdlMaterial propertyNamedSelector (toNSString name)
 
 -- | @- propertyWithSemantic:@
 propertyWithSemantic :: IsMDLMaterial mdlMaterial => mdlMaterial -> MDLMaterialSemantic -> IO (Id MDLMaterialProperty)
-propertyWithSemantic mdlMaterial  semantic =
-    sendMsg mdlMaterial (mkSelector "propertyWithSemantic:") (retPtr retVoid) [argCULong (coerce semantic)] >>= retainedObject . castPtr
+propertyWithSemantic mdlMaterial semantic =
+  sendMessage mdlMaterial propertyWithSemanticSelector semantic
 
 -- | @- propertiesWithSemantic:@
 propertiesWithSemantic :: IsMDLMaterial mdlMaterial => mdlMaterial -> MDLMaterialSemantic -> IO (Id NSArray)
-propertiesWithSemantic mdlMaterial  semantic =
-    sendMsg mdlMaterial (mkSelector "propertiesWithSemantic:") (retPtr retVoid) [argCULong (coerce semantic)] >>= retainedObject . castPtr
+propertiesWithSemantic mdlMaterial semantic =
+  sendMessage mdlMaterial propertiesWithSemanticSelector semantic
 
 -- | @- removeAllProperties@
 removeAllProperties :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO ()
-removeAllProperties mdlMaterial  =
-    sendMsg mdlMaterial (mkSelector "removeAllProperties") retVoid []
+removeAllProperties mdlMaterial =
+  sendMessage mdlMaterial removeAllPropertiesSelector
 
 -- | @- resolveTexturesWithResolver:@
 resolveTexturesWithResolver :: IsMDLMaterial mdlMaterial => mdlMaterial -> RawId -> IO ()
-resolveTexturesWithResolver mdlMaterial  resolver =
-    sendMsg mdlMaterial (mkSelector "resolveTexturesWithResolver:") retVoid [argPtr (castPtr (unRawId resolver) :: Ptr ())]
+resolveTexturesWithResolver mdlMaterial resolver =
+  sendMessage mdlMaterial resolveTexturesWithResolverSelector resolver
 
 -- | @- loadTexturesUsingResolver:@
 loadTexturesUsingResolver :: IsMDLMaterial mdlMaterial => mdlMaterial -> RawId -> IO ()
-loadTexturesUsingResolver mdlMaterial  resolver =
-    sendMsg mdlMaterial (mkSelector "loadTexturesUsingResolver:") retVoid [argPtr (castPtr (unRawId resolver) :: Ptr ())]
+loadTexturesUsingResolver mdlMaterial resolver =
+  sendMessage mdlMaterial loadTexturesUsingResolverSelector resolver
 
 -- | @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMDLMaterial mdlMaterial => mdlMaterial -> CULong -> IO (Id MDLMaterialProperty)
-objectAtIndexedSubscript mdlMaterial  idx =
-    sendMsg mdlMaterial (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong idx] >>= retainedObject . castPtr
+objectAtIndexedSubscript mdlMaterial idx =
+  sendMessage mdlMaterial objectAtIndexedSubscriptSelector idx
 
 -- | @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsMDLMaterial mdlMaterial, IsNSString name) => mdlMaterial -> name -> IO (Id MDLMaterialProperty)
-objectForKeyedSubscript mdlMaterial  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMaterial (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript mdlMaterial name =
+  sendMessage mdlMaterial objectForKeyedSubscriptSelector (toNSString name)
 
 -- | @- scatteringFunction@
 scatteringFunction :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO (Id MDLScatteringFunction)
-scatteringFunction mdlMaterial  =
-    sendMsg mdlMaterial (mkSelector "scatteringFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+scatteringFunction mdlMaterial =
+  sendMessage mdlMaterial scatteringFunctionSelector
 
 -- | See: MDLNamed
 --
 -- ObjC selector: @- name@
 name :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO (Id NSString)
-name mdlMaterial  =
-    sendMsg mdlMaterial (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlMaterial =
+  sendMessage mdlMaterial nameSelector
 
 -- | See: MDLNamed
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMDLMaterial mdlMaterial, IsNSString value) => mdlMaterial -> value -> IO ()
-setName mdlMaterial  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterial (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mdlMaterial value =
+  sendMessage mdlMaterial setNameSelector (toNSString value)
 
 -- | @- baseMaterial@
 baseMaterial :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO (Id MDLMaterial)
-baseMaterial mdlMaterial  =
-    sendMsg mdlMaterial (mkSelector "baseMaterial") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseMaterial mdlMaterial =
+  sendMessage mdlMaterial baseMaterialSelector
 
 -- | @- setBaseMaterial:@
 setBaseMaterial :: (IsMDLMaterial mdlMaterial, IsMDLMaterial value) => mdlMaterial -> value -> IO ()
-setBaseMaterial mdlMaterial  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterial (mkSelector "setBaseMaterial:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBaseMaterial mdlMaterial value =
+  sendMessage mdlMaterial setBaseMaterialSelector (toMDLMaterial value)
 
 -- | @- count@
 count :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO CULong
-count mdlMaterial  =
-    sendMsg mdlMaterial (mkSelector "count") retCULong []
+count mdlMaterial =
+  sendMessage mdlMaterial countSelector
 
 -- | @- materialFace@
 materialFace :: IsMDLMaterial mdlMaterial => mdlMaterial -> IO MDLMaterialFace
-materialFace mdlMaterial  =
-    fmap (coerce :: CULong -> MDLMaterialFace) $ sendMsg mdlMaterial (mkSelector "materialFace") retCULong []
+materialFace mdlMaterial =
+  sendMessage mdlMaterial materialFaceSelector
 
 -- | @- setMaterialFace:@
 setMaterialFace :: IsMDLMaterial mdlMaterial => mdlMaterial -> MDLMaterialFace -> IO ()
-setMaterialFace mdlMaterial  value =
-    sendMsg mdlMaterial (mkSelector "setMaterialFace:") retVoid [argCULong (coerce value)]
+setMaterialFace mdlMaterial value =
+  sendMessage mdlMaterial setMaterialFaceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:scatteringFunction:@
-initWithName_scatteringFunctionSelector :: Selector
+initWithName_scatteringFunctionSelector :: Selector '[Id NSString, Id MDLScatteringFunction] (Id MDLMaterial)
 initWithName_scatteringFunctionSelector = mkSelector "initWithName:scatteringFunction:"
 
 -- | @Selector@ for @setProperty:@
-setPropertySelector :: Selector
+setPropertySelector :: Selector '[Id MDLMaterialProperty] ()
 setPropertySelector = mkSelector "setProperty:"
 
 -- | @Selector@ for @removeProperty:@
-removePropertySelector :: Selector
+removePropertySelector :: Selector '[Id MDLMaterialProperty] ()
 removePropertySelector = mkSelector "removeProperty:"
 
 -- | @Selector@ for @propertyNamed:@
-propertyNamedSelector :: Selector
+propertyNamedSelector :: Selector '[Id NSString] (Id MDLMaterialProperty)
 propertyNamedSelector = mkSelector "propertyNamed:"
 
 -- | @Selector@ for @propertyWithSemantic:@
-propertyWithSemanticSelector :: Selector
+propertyWithSemanticSelector :: Selector '[MDLMaterialSemantic] (Id MDLMaterialProperty)
 propertyWithSemanticSelector = mkSelector "propertyWithSemantic:"
 
 -- | @Selector@ for @propertiesWithSemantic:@
-propertiesWithSemanticSelector :: Selector
+propertiesWithSemanticSelector :: Selector '[MDLMaterialSemantic] (Id NSArray)
 propertiesWithSemanticSelector = mkSelector "propertiesWithSemantic:"
 
 -- | @Selector@ for @removeAllProperties@
-removeAllPropertiesSelector :: Selector
+removeAllPropertiesSelector :: Selector '[] ()
 removeAllPropertiesSelector = mkSelector "removeAllProperties"
 
 -- | @Selector@ for @resolveTexturesWithResolver:@
-resolveTexturesWithResolverSelector :: Selector
+resolveTexturesWithResolverSelector :: Selector '[RawId] ()
 resolveTexturesWithResolverSelector = mkSelector "resolveTexturesWithResolver:"
 
 -- | @Selector@ for @loadTexturesUsingResolver:@
-loadTexturesUsingResolverSelector :: Selector
+loadTexturesUsingResolverSelector :: Selector '[RawId] ()
 loadTexturesUsingResolverSelector = mkSelector "loadTexturesUsingResolver:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MDLMaterialProperty)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] (Id MDLMaterialProperty)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @scatteringFunction@
-scatteringFunctionSelector :: Selector
+scatteringFunctionSelector :: Selector '[] (Id MDLScatteringFunction)
 scatteringFunctionSelector = mkSelector "scatteringFunction"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @baseMaterial@
-baseMaterialSelector :: Selector
+baseMaterialSelector :: Selector '[] (Id MDLMaterial)
 baseMaterialSelector = mkSelector "baseMaterial"
 
 -- | @Selector@ for @setBaseMaterial:@
-setBaseMaterialSelector :: Selector
+setBaseMaterialSelector :: Selector '[Id MDLMaterial] ()
 setBaseMaterialSelector = mkSelector "setBaseMaterial:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @materialFace@
-materialFaceSelector :: Selector
+materialFaceSelector :: Selector '[] MDLMaterialFace
 materialFaceSelector = mkSelector "materialFace"
 
 -- | @Selector@ for @setMaterialFace:@
-setMaterialFaceSelector :: Selector
+setMaterialFaceSelector :: Selector '[MDLMaterialFace] ()
 setMaterialFaceSelector = mkSelector "setMaterialFace:"
 

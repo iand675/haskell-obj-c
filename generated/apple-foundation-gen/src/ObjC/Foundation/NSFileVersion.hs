@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.Foundation.NSFileVersion
   , setDiscardable
   , hasLocalContents
   , hasThumbnail
-  , currentVersionOfItemAtURLSelector
-  , otherVersionsOfItemAtURLSelector
-  , unresolvedConflictVersionsOfItemAtURLSelector
-  , versionOfItemAtURL_forPersistentIdentifierSelector
   , addVersionOfItemAtURL_withContentsOfURL_options_errorSelector
-  , temporaryDirectoryURLForNewVersionOfItemAtURLSelector
-  , replaceItemAtURL_options_errorSelector
-  , removeAndReturnErrorSelector
-  , removeOtherVersionsOfItemAtURL_errorSelector
-  , urlSelector
-  , localizedNameSelector
-  , localizedNameOfSavingComputerSelector
-  , originatorNameComponentsSelector
-  , modificationDateSelector
-  , persistentIdentifierSelector
   , conflictSelector
-  , resolvedSelector
-  , setResolvedSelector
+  , currentVersionOfItemAtURLSelector
   , discardableSelector
-  , setDiscardableSelector
   , hasLocalContentsSelector
   , hasThumbnailSelector
+  , localizedNameOfSavingComputerSelector
+  , localizedNameSelector
+  , modificationDateSelector
+  , originatorNameComponentsSelector
+  , otherVersionsOfItemAtURLSelector
+  , persistentIdentifierSelector
+  , removeAndReturnErrorSelector
+  , removeOtherVersionsOfItemAtURL_errorSelector
+  , replaceItemAtURL_options_errorSelector
+  , resolvedSelector
+  , setDiscardableSelector
+  , setResolvedSelector
+  , temporaryDirectoryURLForNewVersionOfItemAtURLSelector
+  , unresolvedConflictVersionsOfItemAtURLSelector
+  , urlSelector
+  , versionOfItemAtURL_forPersistentIdentifierSelector
 
   -- * Enum types
   , NSFileVersionAddingOptions(NSFileVersionAddingOptions)
@@ -60,15 +61,11 @@ module ObjC.Foundation.NSFileVersion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,227 +77,214 @@ currentVersionOfItemAtURL :: IsNSURL url => url -> IO (Id NSFileVersion)
 currentVersionOfItemAtURL url =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "currentVersionOfItemAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' currentVersionOfItemAtURLSelector (toNSURL url)
 
 -- | @+ otherVersionsOfItemAtURL:@
 otherVersionsOfItemAtURL :: IsNSURL url => url -> IO (Id NSArray)
 otherVersionsOfItemAtURL url =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "otherVersionsOfItemAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' otherVersionsOfItemAtURLSelector (toNSURL url)
 
 -- | @+ unresolvedConflictVersionsOfItemAtURL:@
 unresolvedConflictVersionsOfItemAtURL :: IsNSURL url => url -> IO (Id NSArray)
 unresolvedConflictVersionsOfItemAtURL url =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "unresolvedConflictVersionsOfItemAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unresolvedConflictVersionsOfItemAtURLSelector (toNSURL url)
 
 -- | @+ versionOfItemAtURL:forPersistentIdentifier:@
 versionOfItemAtURL_forPersistentIdentifier :: IsNSURL url => url -> RawId -> IO (Id NSFileVersion)
 versionOfItemAtURL_forPersistentIdentifier url persistentIdentifier =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "versionOfItemAtURL:forPersistentIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr (unRawId persistentIdentifier) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' versionOfItemAtURL_forPersistentIdentifierSelector (toNSURL url) persistentIdentifier
 
 -- | @+ addVersionOfItemAtURL:withContentsOfURL:options:error:@
 addVersionOfItemAtURL_withContentsOfURL_options_error :: (IsNSURL url, IsNSURL contentsURL, IsNSError outError) => url -> contentsURL -> NSFileVersionAddingOptions -> outError -> IO (Id NSFileVersion)
 addVersionOfItemAtURL_withContentsOfURL_options_error url contentsURL options outError =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr contentsURL $ \raw_contentsURL ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "addVersionOfItemAtURL:withContentsOfURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_contentsURL :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' addVersionOfItemAtURL_withContentsOfURL_options_errorSelector (toNSURL url) (toNSURL contentsURL) options (toNSError outError)
 
 -- | @+ temporaryDirectoryURLForNewVersionOfItemAtURL:@
 temporaryDirectoryURLForNewVersionOfItemAtURL :: IsNSURL url => url -> IO (Id NSURL)
 temporaryDirectoryURLForNewVersionOfItemAtURL url =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "temporaryDirectoryURLForNewVersionOfItemAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryDirectoryURLForNewVersionOfItemAtURLSelector (toNSURL url)
 
 -- | @- replaceItemAtURL:options:error:@
 replaceItemAtURL_options_error :: (IsNSFileVersion nsFileVersion, IsNSURL url, IsNSError error_) => nsFileVersion -> url -> NSFileVersionReplacingOptions -> error_ -> IO (Id NSURL)
-replaceItemAtURL_options_error nsFileVersion  url options error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsFileVersion (mkSelector "replaceItemAtURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+replaceItemAtURL_options_error nsFileVersion url options error_ =
+  sendMessage nsFileVersion replaceItemAtURL_options_errorSelector (toNSURL url) options (toNSError error_)
 
 -- | @- removeAndReturnError:@
 removeAndReturnError :: (IsNSFileVersion nsFileVersion, IsNSError outError) => nsFileVersion -> outError -> IO Bool
-removeAndReturnError nsFileVersion  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "removeAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+removeAndReturnError nsFileVersion outError =
+  sendMessage nsFileVersion removeAndReturnErrorSelector (toNSError outError)
 
 -- | @+ removeOtherVersionsOfItemAtURL:error:@
 removeOtherVersionsOfItemAtURL_error :: (IsNSURL url, IsNSError outError) => url -> outError -> IO Bool
 removeOtherVersionsOfItemAtURL_error url outError =
   do
     cls' <- getRequiredClass "NSFileVersion"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "removeOtherVersionsOfItemAtURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+    sendClassMessage cls' removeOtherVersionsOfItemAtURL_errorSelector (toNSURL url) (toNSError outError)
 
 -- | @- URL@
 url :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSURL)
-url nsFileVersion  =
-    sendMsg nsFileVersion (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsFileVersion =
+  sendMessage nsFileVersion urlSelector
 
 -- | @- localizedName@
 localizedName :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSString)
-localizedName nsFileVersion  =
-    sendMsg nsFileVersion (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName nsFileVersion =
+  sendMessage nsFileVersion localizedNameSelector
 
 -- | @- localizedNameOfSavingComputer@
 localizedNameOfSavingComputer :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSString)
-localizedNameOfSavingComputer nsFileVersion  =
-    sendMsg nsFileVersion (mkSelector "localizedNameOfSavingComputer") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedNameOfSavingComputer nsFileVersion =
+  sendMessage nsFileVersion localizedNameOfSavingComputerSelector
 
 -- | @- originatorNameComponents@
 originatorNameComponents :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSPersonNameComponents)
-originatorNameComponents nsFileVersion  =
-    sendMsg nsFileVersion (mkSelector "originatorNameComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+originatorNameComponents nsFileVersion =
+  sendMessage nsFileVersion originatorNameComponentsSelector
 
 -- | @- modificationDate@
 modificationDate :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO (Id NSDate)
-modificationDate nsFileVersion  =
-    sendMsg nsFileVersion (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate nsFileVersion =
+  sendMessage nsFileVersion modificationDateSelector
 
 -- | @- persistentIdentifier@
 persistentIdentifier :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO RawId
-persistentIdentifier nsFileVersion  =
-    fmap (RawId . castPtr) $ sendMsg nsFileVersion (mkSelector "persistentIdentifier") (retPtr retVoid) []
+persistentIdentifier nsFileVersion =
+  sendMessage nsFileVersion persistentIdentifierSelector
 
 -- | @- conflict@
 conflict :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
-conflict nsFileVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "conflict") retCULong []
+conflict nsFileVersion =
+  sendMessage nsFileVersion conflictSelector
 
 -- | @- resolved@
 resolved :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
-resolved nsFileVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "resolved") retCULong []
+resolved nsFileVersion =
+  sendMessage nsFileVersion resolvedSelector
 
 -- | @- setResolved:@
 setResolved :: IsNSFileVersion nsFileVersion => nsFileVersion -> Bool -> IO ()
-setResolved nsFileVersion  value =
-    sendMsg nsFileVersion (mkSelector "setResolved:") retVoid [argCULong (if value then 1 else 0)]
+setResolved nsFileVersion value =
+  sendMessage nsFileVersion setResolvedSelector value
 
 -- | @- discardable@
 discardable :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
-discardable nsFileVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "discardable") retCULong []
+discardable nsFileVersion =
+  sendMessage nsFileVersion discardableSelector
 
 -- | @- setDiscardable:@
 setDiscardable :: IsNSFileVersion nsFileVersion => nsFileVersion -> Bool -> IO ()
-setDiscardable nsFileVersion  value =
-    sendMsg nsFileVersion (mkSelector "setDiscardable:") retVoid [argCULong (if value then 1 else 0)]
+setDiscardable nsFileVersion value =
+  sendMessage nsFileVersion setDiscardableSelector value
 
 -- | @- hasLocalContents@
 hasLocalContents :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
-hasLocalContents nsFileVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "hasLocalContents") retCULong []
+hasLocalContents nsFileVersion =
+  sendMessage nsFileVersion hasLocalContentsSelector
 
 -- | @- hasThumbnail@
 hasThumbnail :: IsNSFileVersion nsFileVersion => nsFileVersion -> IO Bool
-hasThumbnail nsFileVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileVersion (mkSelector "hasThumbnail") retCULong []
+hasThumbnail nsFileVersion =
+  sendMessage nsFileVersion hasThumbnailSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentVersionOfItemAtURL:@
-currentVersionOfItemAtURLSelector :: Selector
+currentVersionOfItemAtURLSelector :: Selector '[Id NSURL] (Id NSFileVersion)
 currentVersionOfItemAtURLSelector = mkSelector "currentVersionOfItemAtURL:"
 
 -- | @Selector@ for @otherVersionsOfItemAtURL:@
-otherVersionsOfItemAtURLSelector :: Selector
+otherVersionsOfItemAtURLSelector :: Selector '[Id NSURL] (Id NSArray)
 otherVersionsOfItemAtURLSelector = mkSelector "otherVersionsOfItemAtURL:"
 
 -- | @Selector@ for @unresolvedConflictVersionsOfItemAtURL:@
-unresolvedConflictVersionsOfItemAtURLSelector :: Selector
+unresolvedConflictVersionsOfItemAtURLSelector :: Selector '[Id NSURL] (Id NSArray)
 unresolvedConflictVersionsOfItemAtURLSelector = mkSelector "unresolvedConflictVersionsOfItemAtURL:"
 
 -- | @Selector@ for @versionOfItemAtURL:forPersistentIdentifier:@
-versionOfItemAtURL_forPersistentIdentifierSelector :: Selector
+versionOfItemAtURL_forPersistentIdentifierSelector :: Selector '[Id NSURL, RawId] (Id NSFileVersion)
 versionOfItemAtURL_forPersistentIdentifierSelector = mkSelector "versionOfItemAtURL:forPersistentIdentifier:"
 
 -- | @Selector@ for @addVersionOfItemAtURL:withContentsOfURL:options:error:@
-addVersionOfItemAtURL_withContentsOfURL_options_errorSelector :: Selector
+addVersionOfItemAtURL_withContentsOfURL_options_errorSelector :: Selector '[Id NSURL, Id NSURL, NSFileVersionAddingOptions, Id NSError] (Id NSFileVersion)
 addVersionOfItemAtURL_withContentsOfURL_options_errorSelector = mkSelector "addVersionOfItemAtURL:withContentsOfURL:options:error:"
 
 -- | @Selector@ for @temporaryDirectoryURLForNewVersionOfItemAtURL:@
-temporaryDirectoryURLForNewVersionOfItemAtURLSelector :: Selector
+temporaryDirectoryURLForNewVersionOfItemAtURLSelector :: Selector '[Id NSURL] (Id NSURL)
 temporaryDirectoryURLForNewVersionOfItemAtURLSelector = mkSelector "temporaryDirectoryURLForNewVersionOfItemAtURL:"
 
 -- | @Selector@ for @replaceItemAtURL:options:error:@
-replaceItemAtURL_options_errorSelector :: Selector
+replaceItemAtURL_options_errorSelector :: Selector '[Id NSURL, NSFileVersionReplacingOptions, Id NSError] (Id NSURL)
 replaceItemAtURL_options_errorSelector = mkSelector "replaceItemAtURL:options:error:"
 
 -- | @Selector@ for @removeAndReturnError:@
-removeAndReturnErrorSelector :: Selector
+removeAndReturnErrorSelector :: Selector '[Id NSError] Bool
 removeAndReturnErrorSelector = mkSelector "removeAndReturnError:"
 
 -- | @Selector@ for @removeOtherVersionsOfItemAtURL:error:@
-removeOtherVersionsOfItemAtURL_errorSelector :: Selector
+removeOtherVersionsOfItemAtURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 removeOtherVersionsOfItemAtURL_errorSelector = mkSelector "removeOtherVersionsOfItemAtURL:error:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @localizedNameOfSavingComputer@
-localizedNameOfSavingComputerSelector :: Selector
+localizedNameOfSavingComputerSelector :: Selector '[] (Id NSString)
 localizedNameOfSavingComputerSelector = mkSelector "localizedNameOfSavingComputer"
 
 -- | @Selector@ for @originatorNameComponents@
-originatorNameComponentsSelector :: Selector
+originatorNameComponentsSelector :: Selector '[] (Id NSPersonNameComponents)
 originatorNameComponentsSelector = mkSelector "originatorNameComponents"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @persistentIdentifier@
-persistentIdentifierSelector :: Selector
+persistentIdentifierSelector :: Selector '[] RawId
 persistentIdentifierSelector = mkSelector "persistentIdentifier"
 
 -- | @Selector@ for @conflict@
-conflictSelector :: Selector
+conflictSelector :: Selector '[] Bool
 conflictSelector = mkSelector "conflict"
 
 -- | @Selector@ for @resolved@
-resolvedSelector :: Selector
+resolvedSelector :: Selector '[] Bool
 resolvedSelector = mkSelector "resolved"
 
 -- | @Selector@ for @setResolved:@
-setResolvedSelector :: Selector
+setResolvedSelector :: Selector '[Bool] ()
 setResolvedSelector = mkSelector "setResolved:"
 
 -- | @Selector@ for @discardable@
-discardableSelector :: Selector
+discardableSelector :: Selector '[] Bool
 discardableSelector = mkSelector "discardable"
 
 -- | @Selector@ for @setDiscardable:@
-setDiscardableSelector :: Selector
+setDiscardableSelector :: Selector '[Bool] ()
 setDiscardableSelector = mkSelector "setDiscardable:"
 
 -- | @Selector@ for @hasLocalContents@
-hasLocalContentsSelector :: Selector
+hasLocalContentsSelector :: Selector '[] Bool
 hasLocalContentsSelector = mkSelector "hasLocalContents"
 
 -- | @Selector@ for @hasThumbnail@
-hasThumbnailSelector :: Selector
+hasThumbnailSelector :: Selector '[] Bool
 hasThumbnailSelector = mkSelector "hasThumbnail"
 

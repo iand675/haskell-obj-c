@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.CoreImage.CIPlugIn
   , loadPlugIn_allowExecutableCode
   , loadNonExecutablePlugIn
   , loadAllPlugInsSelector
-  , loadNonExecutablePlugInsSelector
-  , loadPlugIn_allowNonExecutableSelector
-  , loadPlugIn_allowExecutableCodeSelector
   , loadNonExecutablePlugInSelector
+  , loadNonExecutablePlugInsSelector
+  , loadPlugIn_allowExecutableCodeSelector
+  , loadPlugIn_allowNonExecutableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ loadAllPlugIns :: IO ()
 loadAllPlugIns  =
   do
     cls' <- getRequiredClass "CIPlugIn"
-    sendClassMsg cls' (mkSelector "loadAllPlugIns") retVoid []
+    sendClassMessage cls' loadAllPlugInsSelector
 
 -- | Same as loadAllPlugIns does not load filters that contain executable code.
 --
@@ -57,7 +54,7 @@ loadNonExecutablePlugIns :: IO ()
 loadNonExecutablePlugIns  =
   do
     cls' <- getRequiredClass "CIPlugIn"
-    sendClassMsg cls' (mkSelector "loadNonExecutablePlugIns") retVoid []
+    sendClassMessage cls' loadNonExecutablePlugInsSelector
 
 -- | Loads a plug-in specified by its URL.
 --
@@ -66,8 +63,7 @@ loadPlugIn_allowNonExecutable :: IsNSURL url => url -> Bool -> IO ()
 loadPlugIn_allowNonExecutable url allowNonExecutable =
   do
     cls' <- getRequiredClass "CIPlugIn"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "loadPlugIn:allowNonExecutable:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argCULong (if allowNonExecutable then 1 else 0)]
+    sendClassMessage cls' loadPlugIn_allowNonExecutableSelector (toNSURL url) allowNonExecutable
 
 -- | Loads a plug-in specified by its URL. If allowExecutableCode is NO, filters containing executable code will not be loaded. If YES, any kind of filter will be loaded.
 --
@@ -76,8 +72,7 @@ loadPlugIn_allowExecutableCode :: IsNSURL url => url -> Bool -> IO ()
 loadPlugIn_allowExecutableCode url allowExecutableCode =
   do
     cls' <- getRequiredClass "CIPlugIn"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "loadPlugIn:allowExecutableCode:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argCULong (if allowExecutableCode then 1 else 0)]
+    sendClassMessage cls' loadPlugIn_allowExecutableCodeSelector (toNSURL url) allowExecutableCode
 
 -- | Loads a non-executable plug-in specified by its URL. If the filters containing executable code, it will not be loaded.
 --
@@ -86,30 +81,29 @@ loadNonExecutablePlugIn :: IsNSURL url => url -> IO ()
 loadNonExecutablePlugIn url =
   do
     cls' <- getRequiredClass "CIPlugIn"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "loadNonExecutablePlugIn:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+    sendClassMessage cls' loadNonExecutablePlugInSelector (toNSURL url)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadAllPlugIns@
-loadAllPlugInsSelector :: Selector
+loadAllPlugInsSelector :: Selector '[] ()
 loadAllPlugInsSelector = mkSelector "loadAllPlugIns"
 
 -- | @Selector@ for @loadNonExecutablePlugIns@
-loadNonExecutablePlugInsSelector :: Selector
+loadNonExecutablePlugInsSelector :: Selector '[] ()
 loadNonExecutablePlugInsSelector = mkSelector "loadNonExecutablePlugIns"
 
 -- | @Selector@ for @loadPlugIn:allowNonExecutable:@
-loadPlugIn_allowNonExecutableSelector :: Selector
+loadPlugIn_allowNonExecutableSelector :: Selector '[Id NSURL, Bool] ()
 loadPlugIn_allowNonExecutableSelector = mkSelector "loadPlugIn:allowNonExecutable:"
 
 -- | @Selector@ for @loadPlugIn:allowExecutableCode:@
-loadPlugIn_allowExecutableCodeSelector :: Selector
+loadPlugIn_allowExecutableCodeSelector :: Selector '[Id NSURL, Bool] ()
 loadPlugIn_allowExecutableCodeSelector = mkSelector "loadPlugIn:allowExecutableCode:"
 
 -- | @Selector@ for @loadNonExecutablePlugIn:@
-loadNonExecutablePlugInSelector :: Selector
+loadNonExecutablePlugInSelector :: Selector '[Id NSURL] ()
 loadNonExecutablePlugInSelector = mkSelector "loadNonExecutablePlugIn:"
 

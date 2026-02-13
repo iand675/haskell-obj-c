@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MLCompute.MLCSGDOptimizer
   , optimizerWithDescriptor_momentumScale_usesNesterovMomentum
   , momentumScale
   , usesNesterovMomentum
+  , momentumScaleSelector
   , optimizerWithDescriptorSelector
   , optimizerWithDescriptor_momentumScale_usesNesterovMomentumSelector
-  , momentumScaleSelector
   , usesNesterovMomentumSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,7 @@ optimizerWithDescriptor :: IsMLCOptimizerDescriptor optimizerDescriptor => optim
 optimizerWithDescriptor optimizerDescriptor =
   do
     cls' <- getRequiredClass "MLCSGDOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptorSelector (toMLCOptimizerDescriptor optimizerDescriptor)
 
 -- | Create an MLCSGDOptimizer object
 --
@@ -64,8 +60,7 @@ optimizerWithDescriptor_momentumScale_usesNesterovMomentum :: IsMLCOptimizerDesc
 optimizerWithDescriptor_momentumScale_usesNesterovMomentum optimizerDescriptor momentumScale usesNesterovMomentum =
   do
     cls' <- getRequiredClass "MLCSGDOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:momentumScale:usesNesterovMomentum:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ()), argCFloat momentumScale, argCULong (if usesNesterovMomentum then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptor_momentumScale_usesNesterovMomentumSelector (toMLCOptimizerDescriptor optimizerDescriptor) momentumScale usesNesterovMomentum
 
 -- | momentumScale
 --
@@ -75,8 +70,8 @@ optimizerWithDescriptor_momentumScale_usesNesterovMomentum optimizerDescriptor m
 --
 -- ObjC selector: @- momentumScale@
 momentumScale :: IsMLCSGDOptimizer mlcsgdOptimizer => mlcsgdOptimizer -> IO CFloat
-momentumScale mlcsgdOptimizer  =
-    sendMsg mlcsgdOptimizer (mkSelector "momentumScale") retCFloat []
+momentumScale mlcsgdOptimizer =
+  sendMessage mlcsgdOptimizer momentumScaleSelector
 
 -- | usesNesterovMomentum
 --
@@ -86,26 +81,26 @@ momentumScale mlcsgdOptimizer  =
 --
 -- ObjC selector: @- usesNesterovMomentum@
 usesNesterovMomentum :: IsMLCSGDOptimizer mlcsgdOptimizer => mlcsgdOptimizer -> IO Bool
-usesNesterovMomentum mlcsgdOptimizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcsgdOptimizer (mkSelector "usesNesterovMomentum") retCULong []
+usesNesterovMomentum mlcsgdOptimizer =
+  sendMessage mlcsgdOptimizer usesNesterovMomentumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optimizerWithDescriptor:@
-optimizerWithDescriptorSelector :: Selector
+optimizerWithDescriptorSelector :: Selector '[Id MLCOptimizerDescriptor] (Id MLCSGDOptimizer)
 optimizerWithDescriptorSelector = mkSelector "optimizerWithDescriptor:"
 
 -- | @Selector@ for @optimizerWithDescriptor:momentumScale:usesNesterovMomentum:@
-optimizerWithDescriptor_momentumScale_usesNesterovMomentumSelector :: Selector
+optimizerWithDescriptor_momentumScale_usesNesterovMomentumSelector :: Selector '[Id MLCOptimizerDescriptor, CFloat, Bool] (Id MLCSGDOptimizer)
 optimizerWithDescriptor_momentumScale_usesNesterovMomentumSelector = mkSelector "optimizerWithDescriptor:momentumScale:usesNesterovMomentum:"
 
 -- | @Selector@ for @momentumScale@
-momentumScaleSelector :: Selector
+momentumScaleSelector :: Selector '[] CFloat
 momentumScaleSelector = mkSelector "momentumScale"
 
 -- | @Selector@ for @usesNesterovMomentum@
-usesNesterovMomentumSelector :: Selector
+usesNesterovMomentumSelector :: Selector '[] Bool
 usesNesterovMomentumSelector = mkSelector "usesNesterovMomentum"
 

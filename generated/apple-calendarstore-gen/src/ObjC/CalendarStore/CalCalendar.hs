@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.CalendarStore.CalCalendar
   , uid
   , isEditable
   , calendarSelector
+  , isEditableSelector
   , notesSelector
   , setNotesSelector
-  , titleSelector
   , setTitleSelector
+  , titleSelector
   , typeSelector
   , uidSelector
-  , isEditableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,78 +43,76 @@ calendar :: IO RawId
 calendar  =
   do
     cls' <- getRequiredClass "CalCalendar"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "calendar") (retPtr retVoid) []
+    sendClassMessage cls' calendarSelector
 
 -- | @- notes@
 notes :: IsCalCalendar calCalendar => calCalendar -> IO (Id NSString)
-notes calCalendar  =
-    sendMsg calCalendar (mkSelector "notes") (retPtr retVoid) [] >>= retainedObject . castPtr
+notes calCalendar =
+  sendMessage calCalendar notesSelector
 
 -- | @- setNotes:@
 setNotes :: (IsCalCalendar calCalendar, IsNSString value) => calCalendar -> value -> IO ()
-setNotes calCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calCalendar (mkSelector "setNotes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotes calCalendar value =
+  sendMessage calCalendar setNotesSelector (toNSString value)
 
 -- | @- title@
 title :: IsCalCalendar calCalendar => calCalendar -> IO (Id NSString)
-title calCalendar  =
-    sendMsg calCalendar (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title calCalendar =
+  sendMessage calCalendar titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsCalCalendar calCalendar, IsNSString value) => calCalendar -> value -> IO ()
-setTitle calCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calCalendar (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle calCalendar value =
+  sendMessage calCalendar setTitleSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsCalCalendar calCalendar => calCalendar -> IO (Id NSString)
-type_ calCalendar  =
-    sendMsg calCalendar (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ calCalendar =
+  sendMessage calCalendar typeSelector
 
 -- | @- uid@
 uid :: IsCalCalendar calCalendar => calCalendar -> IO (Id NSString)
-uid calCalendar  =
-    sendMsg calCalendar (mkSelector "uid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uid calCalendar =
+  sendMessage calCalendar uidSelector
 
 -- | @- isEditable@
 isEditable :: IsCalCalendar calCalendar => calCalendar -> IO Bool
-isEditable calCalendar  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg calCalendar (mkSelector "isEditable") retCULong []
+isEditable calCalendar =
+  sendMessage calCalendar isEditableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] RawId
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @notes@
-notesSelector :: Selector
+notesSelector :: Selector '[] (Id NSString)
 notesSelector = mkSelector "notes"
 
 -- | @Selector@ for @setNotes:@
-setNotesSelector :: Selector
+setNotesSelector :: Selector '[Id NSString] ()
 setNotesSelector = mkSelector "setNotes:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @uid@
-uidSelector :: Selector
+uidSelector :: Selector '[] (Id NSString)
 uidSelector = mkSelector "uid"
 
 -- | @Selector@ for @isEditable@
-isEditableSelector :: Selector
+isEditableSelector :: Selector '[] Bool
 isEditableSelector = mkSelector "isEditable"
 

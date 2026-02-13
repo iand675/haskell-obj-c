@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,26 +34,26 @@ module ObjC.PHASE.PHASESoundEvent
   , pushStreamNodes
   , pullStreamNodes
   , indefinite
+  , indefiniteSelector
   , initSelector
-  , newSelector
-  , initWithEngine_assetIdentifier_mixerParameters_errorSelector
   , initWithEngine_assetIdentifier_errorSelector
-  , prepareWithCompletionSelector
-  , startWithCompletionSelector
-  , startAtTime_completionSelector
-  , seekToTime_completionSelector
-  , seekToTime_resumeAtEngineTime_completionSelector
-  , pauseSelector
-  , resumeSelector
-  , resumeAtTimeSelector
-  , stopAndInvalidateSelector
-  , renderingStateSelector
-  , prepareStateSelector
+  , initWithEngine_assetIdentifier_mixerParameters_errorSelector
   , metaParametersSelector
   , mixersSelector
-  , pushStreamNodesSelector
+  , newSelector
+  , pauseSelector
+  , prepareStateSelector
+  , prepareWithCompletionSelector
   , pullStreamNodesSelector
-  , indefiniteSelector
+  , pushStreamNodesSelector
+  , renderingStateSelector
+  , resumeAtTimeSelector
+  , resumeSelector
+  , seekToTime_completionSelector
+  , seekToTime_resumeAtEngineTime_completionSelector
+  , startAtTime_completionSelector
+  , startWithCompletionSelector
+  , stopAndInvalidateSelector
 
   -- * Enum types
   , PHASERenderingState(PHASERenderingState)
@@ -66,15 +67,11 @@ module ObjC.PHASE.PHASESoundEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,15 +82,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id PHASESoundEvent)
-init_ phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseSoundEvent =
+  sendOwnedMessage phaseSoundEvent initSelector
 
 -- | @+ new@
 new :: IO (Id PHASESoundEvent)
 new  =
   do
     cls' <- getRequiredClass "PHASESoundEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine:assetIdentifier:mixerParameters:error
 --
@@ -109,12 +106,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:assetIdentifier:mixerParameters:error:@
 initWithEngine_assetIdentifier_mixerParameters_error :: (IsPHASESoundEvent phaseSoundEvent, IsPHASEEngine engine, IsNSString assetIdentifier, IsPHASEMixerParameters mixerParameters, IsNSError error_) => phaseSoundEvent -> engine -> assetIdentifier -> mixerParameters -> error_ -> IO (Id PHASESoundEvent)
-initWithEngine_assetIdentifier_mixerParameters_error phaseSoundEvent  engine assetIdentifier mixerParameters error_ =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr assetIdentifier $ \raw_assetIdentifier ->
-      withObjCPtr mixerParameters $ \raw_mixerParameters ->
-        withObjCPtr error_ $ \raw_error_ ->
-            sendMsg phaseSoundEvent (mkSelector "initWithEngine:assetIdentifier:mixerParameters:error:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_assetIdentifier :: Ptr ()), argPtr (castPtr raw_mixerParameters :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine_assetIdentifier_mixerParameters_error phaseSoundEvent engine assetIdentifier mixerParameters error_ =
+  sendOwnedMessage phaseSoundEvent initWithEngine_assetIdentifier_mixerParameters_errorSelector (toPHASEEngine engine) (toNSString assetIdentifier) (toPHASEMixerParameters mixerParameters) (toNSError error_)
 
 -- | initWithEngine:assetIdentifier:error
 --
@@ -128,11 +121,8 @@ initWithEngine_assetIdentifier_mixerParameters_error phaseSoundEvent  engine ass
 --
 -- ObjC selector: @- initWithEngine:assetIdentifier:error:@
 initWithEngine_assetIdentifier_error :: (IsPHASESoundEvent phaseSoundEvent, IsPHASEEngine engine, IsNSString assetIdentifier, IsNSError error_) => phaseSoundEvent -> engine -> assetIdentifier -> error_ -> IO (Id PHASESoundEvent)
-initWithEngine_assetIdentifier_error phaseSoundEvent  engine assetIdentifier error_ =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr assetIdentifier $ \raw_assetIdentifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg phaseSoundEvent (mkSelector "initWithEngine:assetIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_assetIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine_assetIdentifier_error phaseSoundEvent engine assetIdentifier error_ =
+  sendOwnedMessage phaseSoundEvent initWithEngine_assetIdentifier_errorSelector (toPHASEEngine engine) (toNSString assetIdentifier) (toNSError error_)
 
 -- | prepareWithCompletion
 --
@@ -144,8 +134,8 @@ initWithEngine_assetIdentifier_error phaseSoundEvent  engine assetIdentifier err
 --
 -- ObjC selector: @- prepareWithCompletion:@
 prepareWithCompletion :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> Ptr () -> IO ()
-prepareWithCompletion phaseSoundEvent  handler =
-    sendMsg phaseSoundEvent (mkSelector "prepareWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+prepareWithCompletion phaseSoundEvent handler =
+  sendMessage phaseSoundEvent prepareWithCompletionSelector handler
 
 -- | startWithCompletion
 --
@@ -157,8 +147,8 @@ prepareWithCompletion phaseSoundEvent  handler =
 --
 -- ObjC selector: @- startWithCompletion:@
 startWithCompletion :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> Ptr () -> IO ()
-startWithCompletion phaseSoundEvent  handler =
-    sendMsg phaseSoundEvent (mkSelector "startWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+startWithCompletion phaseSoundEvent handler =
+  sendMessage phaseSoundEvent startWithCompletionSelector handler
 
 -- | startAtTime:completion
 --
@@ -172,9 +162,8 @@ startWithCompletion phaseSoundEvent  handler =
 --
 -- ObjC selector: @- startAtTime:completion:@
 startAtTime_completion :: (IsPHASESoundEvent phaseSoundEvent, IsAVAudioTime when) => phaseSoundEvent -> when -> Ptr () -> IO ()
-startAtTime_completion phaseSoundEvent  when handler =
-  withObjCPtr when $ \raw_when ->
-      sendMsg phaseSoundEvent (mkSelector "startAtTime:completion:") retVoid [argPtr (castPtr raw_when :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startAtTime_completion phaseSoundEvent when handler =
+  sendMessage phaseSoundEvent startAtTime_completionSelector (toAVAudioTime when) handler
 
 -- | seekToTime:completion
 --
@@ -186,8 +175,8 @@ startAtTime_completion phaseSoundEvent  when handler =
 --
 -- ObjC selector: @- seekToTime:completion:@
 seekToTime_completion :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> CDouble -> Ptr () -> IO ()
-seekToTime_completion phaseSoundEvent  time handler =
-    sendMsg phaseSoundEvent (mkSelector "seekToTime:completion:") retVoid [argCDouble time, argPtr (castPtr handler :: Ptr ())]
+seekToTime_completion phaseSoundEvent time handler =
+  sendMessage phaseSoundEvent seekToTime_completionSelector time handler
 
 -- | seekToTime:resumeAtEngineTime:completion
 --
@@ -203,9 +192,8 @@ seekToTime_completion phaseSoundEvent  time handler =
 --
 -- ObjC selector: @- seekToTime:resumeAtEngineTime:completion:@
 seekToTime_resumeAtEngineTime_completion :: (IsPHASESoundEvent phaseSoundEvent, IsAVAudioTime engineTime) => phaseSoundEvent -> CDouble -> engineTime -> Ptr () -> IO ()
-seekToTime_resumeAtEngineTime_completion phaseSoundEvent  time engineTime handler =
-  withObjCPtr engineTime $ \raw_engineTime ->
-      sendMsg phaseSoundEvent (mkSelector "seekToTime:resumeAtEngineTime:completion:") retVoid [argCDouble time, argPtr (castPtr raw_engineTime :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+seekToTime_resumeAtEngineTime_completion phaseSoundEvent time engineTime handler =
+  sendMessage phaseSoundEvent seekToTime_resumeAtEngineTime_completionSelector time (toAVAudioTime engineTime) handler
 
 -- | pause
 --
@@ -213,8 +201,8 @@ seekToTime_resumeAtEngineTime_completion phaseSoundEvent  time engineTime handle
 --
 -- ObjC selector: @- pause@
 pause :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO ()
-pause phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "pause") retVoid []
+pause phaseSoundEvent =
+  sendMessage phaseSoundEvent pauseSelector
 
 -- | resume
 --
@@ -222,8 +210,8 @@ pause phaseSoundEvent  =
 --
 -- ObjC selector: @- resume@
 resume :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO ()
-resume phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "resume") retVoid []
+resume phaseSoundEvent =
+  sendMessage phaseSoundEvent resumeSelector
 
 -- | resumeAtTime
 --
@@ -235,9 +223,8 @@ resume phaseSoundEvent  =
 --
 -- ObjC selector: @- resumeAtTime:@
 resumeAtTime :: (IsPHASESoundEvent phaseSoundEvent, IsAVAudioTime time) => phaseSoundEvent -> time -> IO ()
-resumeAtTime phaseSoundEvent  time =
-  withObjCPtr time $ \raw_time ->
-      sendMsg phaseSoundEvent (mkSelector "resumeAtTime:") retVoid [argPtr (castPtr raw_time :: Ptr ())]
+resumeAtTime phaseSoundEvent time =
+  sendMessage phaseSoundEvent resumeAtTimeSelector (toAVAudioTime time)
 
 -- | stopAndInvalidate
 --
@@ -245,8 +232,8 @@ resumeAtTime phaseSoundEvent  time =
 --
 -- ObjC selector: @- stopAndInvalidate@
 stopAndInvalidate :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO ()
-stopAndInvalidate phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "stopAndInvalidate") retVoid []
+stopAndInvalidate phaseSoundEvent =
+  sendMessage phaseSoundEvent stopAndInvalidateSelector
 
 -- | renderingState
 --
@@ -254,8 +241,8 @@ stopAndInvalidate phaseSoundEvent  =
 --
 -- ObjC selector: @- renderingState@
 renderingState :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO PHASERenderingState
-renderingState phaseSoundEvent  =
-    fmap (coerce :: CLong -> PHASERenderingState) $ sendMsg phaseSoundEvent (mkSelector "renderingState") retCLong []
+renderingState phaseSoundEvent =
+  sendMessage phaseSoundEvent renderingStateSelector
 
 -- | prepareState
 --
@@ -263,8 +250,8 @@ renderingState phaseSoundEvent  =
 --
 -- ObjC selector: @- prepareState@
 prepareState :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO PHASESoundEventPrepareState
-prepareState phaseSoundEvent  =
-    fmap (coerce :: CLong -> PHASESoundEventPrepareState) $ sendMsg phaseSoundEvent (mkSelector "prepareState") retCLong []
+prepareState phaseSoundEvent =
+  sendMessage phaseSoundEvent prepareStateSelector
 
 -- | metaParameters
 --
@@ -272,8 +259,8 @@ prepareState phaseSoundEvent  =
 --
 -- ObjC selector: @- metaParameters@
 metaParameters :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id NSDictionary)
-metaParameters phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "metaParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+metaParameters phaseSoundEvent =
+  sendMessage phaseSoundEvent metaParametersSelector
 
 -- | mixNodes
 --
@@ -281,8 +268,8 @@ metaParameters phaseSoundEvent  =
 --
 -- ObjC selector: @- mixers@
 mixers :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id NSDictionary)
-mixers phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "mixers") (retPtr retVoid) [] >>= retainedObject . castPtr
+mixers phaseSoundEvent =
+  sendMessage phaseSoundEvent mixersSelector
 
 -- | pushStreamNodes
 --
@@ -290,8 +277,8 @@ mixers phaseSoundEvent  =
 --
 -- ObjC selector: @- pushStreamNodes@
 pushStreamNodes :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id NSDictionary)
-pushStreamNodes phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "pushStreamNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+pushStreamNodes phaseSoundEvent =
+  sendMessage phaseSoundEvent pushStreamNodesSelector
 
 -- | pullStreamNodes
 --
@@ -299,8 +286,8 @@ pushStreamNodes phaseSoundEvent  =
 --
 -- ObjC selector: @- pullStreamNodes@
 pullStreamNodes :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO (Id NSDictionary)
-pullStreamNodes phaseSoundEvent  =
-    sendMsg phaseSoundEvent (mkSelector "pullStreamNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+pullStreamNodes phaseSoundEvent =
+  sendMessage phaseSoundEvent pullStreamNodesSelector
 
 -- | indefinite
 --
@@ -308,90 +295,90 @@ pullStreamNodes phaseSoundEvent  =
 --
 -- ObjC selector: @- indefinite@
 indefinite :: IsPHASESoundEvent phaseSoundEvent => phaseSoundEvent -> IO Bool
-indefinite phaseSoundEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phaseSoundEvent (mkSelector "indefinite") retCULong []
+indefinite phaseSoundEvent =
+  sendMessage phaseSoundEvent indefiniteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASESoundEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASESoundEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:assetIdentifier:mixerParameters:error:@
-initWithEngine_assetIdentifier_mixerParameters_errorSelector :: Selector
+initWithEngine_assetIdentifier_mixerParameters_errorSelector :: Selector '[Id PHASEEngine, Id NSString, Id PHASEMixerParameters, Id NSError] (Id PHASESoundEvent)
 initWithEngine_assetIdentifier_mixerParameters_errorSelector = mkSelector "initWithEngine:assetIdentifier:mixerParameters:error:"
 
 -- | @Selector@ for @initWithEngine:assetIdentifier:error:@
-initWithEngine_assetIdentifier_errorSelector :: Selector
+initWithEngine_assetIdentifier_errorSelector :: Selector '[Id PHASEEngine, Id NSString, Id NSError] (Id PHASESoundEvent)
 initWithEngine_assetIdentifier_errorSelector = mkSelector "initWithEngine:assetIdentifier:error:"
 
 -- | @Selector@ for @prepareWithCompletion:@
-prepareWithCompletionSelector :: Selector
+prepareWithCompletionSelector :: Selector '[Ptr ()] ()
 prepareWithCompletionSelector = mkSelector "prepareWithCompletion:"
 
 -- | @Selector@ for @startWithCompletion:@
-startWithCompletionSelector :: Selector
+startWithCompletionSelector :: Selector '[Ptr ()] ()
 startWithCompletionSelector = mkSelector "startWithCompletion:"
 
 -- | @Selector@ for @startAtTime:completion:@
-startAtTime_completionSelector :: Selector
+startAtTime_completionSelector :: Selector '[Id AVAudioTime, Ptr ()] ()
 startAtTime_completionSelector = mkSelector "startAtTime:completion:"
 
 -- | @Selector@ for @seekToTime:completion:@
-seekToTime_completionSelector :: Selector
+seekToTime_completionSelector :: Selector '[CDouble, Ptr ()] ()
 seekToTime_completionSelector = mkSelector "seekToTime:completion:"
 
 -- | @Selector@ for @seekToTime:resumeAtEngineTime:completion:@
-seekToTime_resumeAtEngineTime_completionSelector :: Selector
+seekToTime_resumeAtEngineTime_completionSelector :: Selector '[CDouble, Id AVAudioTime, Ptr ()] ()
 seekToTime_resumeAtEngineTime_completionSelector = mkSelector "seekToTime:resumeAtEngineTime:completion:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @resumeAtTime:@
-resumeAtTimeSelector :: Selector
+resumeAtTimeSelector :: Selector '[Id AVAudioTime] ()
 resumeAtTimeSelector = mkSelector "resumeAtTime:"
 
 -- | @Selector@ for @stopAndInvalidate@
-stopAndInvalidateSelector :: Selector
+stopAndInvalidateSelector :: Selector '[] ()
 stopAndInvalidateSelector = mkSelector "stopAndInvalidate"
 
 -- | @Selector@ for @renderingState@
-renderingStateSelector :: Selector
+renderingStateSelector :: Selector '[] PHASERenderingState
 renderingStateSelector = mkSelector "renderingState"
 
 -- | @Selector@ for @prepareState@
-prepareStateSelector :: Selector
+prepareStateSelector :: Selector '[] PHASESoundEventPrepareState
 prepareStateSelector = mkSelector "prepareState"
 
 -- | @Selector@ for @metaParameters@
-metaParametersSelector :: Selector
+metaParametersSelector :: Selector '[] (Id NSDictionary)
 metaParametersSelector = mkSelector "metaParameters"
 
 -- | @Selector@ for @mixers@
-mixersSelector :: Selector
+mixersSelector :: Selector '[] (Id NSDictionary)
 mixersSelector = mkSelector "mixers"
 
 -- | @Selector@ for @pushStreamNodes@
-pushStreamNodesSelector :: Selector
+pushStreamNodesSelector :: Selector '[] (Id NSDictionary)
 pushStreamNodesSelector = mkSelector "pushStreamNodes"
 
 -- | @Selector@ for @pullStreamNodes@
-pullStreamNodesSelector :: Selector
+pullStreamNodesSelector :: Selector '[] (Id NSDictionary)
 pullStreamNodesSelector = mkSelector "pullStreamNodes"
 
 -- | @Selector@ for @indefinite@
-indefiniteSelector :: Selector
+indefiniteSelector :: Selector '[] Bool
 indefiniteSelector = mkSelector "indefinite"
 

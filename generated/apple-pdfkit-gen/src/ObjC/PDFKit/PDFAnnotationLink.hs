@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.PDFKit.PDFAnnotationLink
   , setURL
   , destinationSelector
   , setDestinationSelector
-  , urlSelector
   , setURLSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- destination@
 destination :: IsPDFAnnotationLink pdfAnnotationLink => pdfAnnotationLink -> IO (Id PDFDestination)
-destination pdfAnnotationLink  =
-    sendMsg pdfAnnotationLink (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination pdfAnnotationLink =
+  sendMessage pdfAnnotationLink destinationSelector
 
 -- | @- setDestination:@
 setDestination :: (IsPDFAnnotationLink pdfAnnotationLink, IsPDFDestination destination) => pdfAnnotationLink -> destination -> IO ()
-setDestination pdfAnnotationLink  destination =
-  withObjCPtr destination $ \raw_destination ->
-      sendMsg pdfAnnotationLink (mkSelector "setDestination:") retVoid [argPtr (castPtr raw_destination :: Ptr ())]
+setDestination pdfAnnotationLink destination =
+  sendMessage pdfAnnotationLink setDestinationSelector (toPDFDestination destination)
 
 -- | @- URL@
 url :: IsPDFAnnotationLink pdfAnnotationLink => pdfAnnotationLink -> IO (Id NSURL)
-url pdfAnnotationLink  =
-    sendMsg pdfAnnotationLink (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url pdfAnnotationLink =
+  sendMessage pdfAnnotationLink urlSelector
 
 -- | @- setURL:@
 setURL :: (IsPDFAnnotationLink pdfAnnotationLink, IsNSURL url) => pdfAnnotationLink -> url -> IO ()
-setURL pdfAnnotationLink  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg pdfAnnotationLink (mkSelector "setURL:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+setURL pdfAnnotationLink url =
+  sendMessage pdfAnnotationLink setURLSelector (toNSURL url)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id PDFDestination)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @setDestination:@
-setDestinationSelector :: Selector
+setDestinationSelector :: Selector '[Id PDFDestination] ()
 setDestinationSelector = mkSelector "setDestination:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 

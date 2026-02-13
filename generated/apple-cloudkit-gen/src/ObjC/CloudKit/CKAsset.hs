@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CloudKit.CKAsset
   , new
   , initWithFileURL
   , fileURL
-  , initSelector
-  , newSelector
-  , initWithFileURLSelector
   , fileURLSelector
+  , initSelector
+  , initWithFileURLSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,48 +32,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKAsset ckAsset => ckAsset -> IO (Id CKAsset)
-init_ ckAsset  =
-    sendMsg ckAsset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckAsset =
+  sendOwnedMessage ckAsset initSelector
 
 -- | @+ new@
 new :: IO (Id CKAsset)
 new  =
   do
     cls' <- getRequiredClass "CKAsset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Initialize an asset to be saved with the content at the given file URL
 --
 -- ObjC selector: @- initWithFileURL:@
 initWithFileURL :: (IsCKAsset ckAsset, IsNSURL fileURL) => ckAsset -> fileURL -> IO (Id CKAsset)
-initWithFileURL ckAsset  fileURL =
-  withObjCPtr fileURL $ \raw_fileURL ->
-      sendMsg ckAsset (mkSelector "initWithFileURL:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ())] >>= ownedObject . castPtr
+initWithFileURL ckAsset fileURL =
+  sendOwnedMessage ckAsset initWithFileURLSelector (toNSURL fileURL)
 
 -- | Local file URL where fetched records are cached and saved records originate from.
 --
 -- ObjC selector: @- fileURL@
 fileURL :: IsCKAsset ckAsset => ckAsset -> IO (Id NSURL)
-fileURL ckAsset  =
-    sendMsg ckAsset (mkSelector "fileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileURL ckAsset =
+  sendMessage ckAsset fileURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKAsset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKAsset)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithFileURL:@
-initWithFileURLSelector :: Selector
+initWithFileURLSelector :: Selector '[Id NSURL] (Id CKAsset)
 initWithFileURLSelector = mkSelector "initWithFileURL:"
 
 -- | @Selector@ for @fileURL@
-fileURLSelector :: Selector
+fileURLSelector :: Selector '[] (Id NSURL)
 fileURLSelector = mkSelector "fileURL"
 

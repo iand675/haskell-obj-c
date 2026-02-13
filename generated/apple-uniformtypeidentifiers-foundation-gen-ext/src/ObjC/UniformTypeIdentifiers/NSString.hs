@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,15 +16,11 @@ module ObjC.UniformTypeIdentifiers.NSString
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,10 +45,8 @@ import ObjC.Runtime.NSString (pureNSString)
 --
 -- ObjC selector: @- stringByAppendingPathComponent:conformingToType:@
 stringByAppendingPathComponent_conformingToType :: (IsNSString nsString, IsNSString partialName, IsUTType contentType) => nsString -> partialName -> contentType -> IO (Id NSString)
-stringByAppendingPathComponent_conformingToType nsString  partialName contentType =
-  withObjCPtr partialName $ \raw_partialName ->
-    withObjCPtr contentType $ \raw_contentType ->
-        sendMsg nsString (mkSelector "stringByAppendingPathComponent:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_partialName :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ())] >>= retainedObject . castPtr
+stringByAppendingPathComponent_conformingToType nsString partialName contentType =
+  sendMessage nsString stringByAppendingPathComponent_conformingToTypeSelector (toNSString partialName) (toUTType contentType)
 
 -- | Generate a string based on a partial filename or path and a		file type.
 --
@@ -67,9 +62,8 @@ stringByAppendingPathComponent_conformingToType nsString  partialName contentTyp
 --
 -- ObjC selector: @- stringByAppendingPathExtensionForType:@
 stringByAppendingPathExtensionForType :: (IsNSString nsString, IsUTType contentType) => nsString -> contentType -> IO (Id NSString)
-stringByAppendingPathExtensionForType nsString  contentType =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsString (mkSelector "stringByAppendingPathExtensionForType:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ())] >>= retainedObject . castPtr
+stringByAppendingPathExtensionForType nsString contentType =
+  sendMessage nsString stringByAppendingPathExtensionForTypeSelector (toUTType contentType)
 
 
 -- | Allows using @OverloadedStrings@ for @Id NSString@.
@@ -83,10 +77,10 @@ instance IsString (Id NSString) where
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringByAppendingPathComponent:conformingToType:@
-stringByAppendingPathComponent_conformingToTypeSelector :: Selector
+stringByAppendingPathComponent_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id NSString)
 stringByAppendingPathComponent_conformingToTypeSelector = mkSelector "stringByAppendingPathComponent:conformingToType:"
 
 -- | @Selector@ for @stringByAppendingPathExtensionForType:@
-stringByAppendingPathExtensionForTypeSelector :: Selector
+stringByAppendingPathExtensionForTypeSelector :: Selector '[Id UTType] (Id NSString)
 stringByAppendingPathExtensionForTypeSelector = mkSelector "stringByAppendingPathExtensionForType:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.AVFoundation.AVMetricMediaResourceRequestEvent
   , readFromCache
   , errorEvent
   , networkTransactionMetrics
-  , initSelector
-  , newSelector
-  , urlSelector
-  , serverAddressSelector
-  , requestStartTimeSelector
-  , requestEndTimeSelector
-  , responseStartTimeSelector
-  , responseEndTimeSelector
   , byteRangeSelector
-  , readFromCacheSelector
   , errorEventSelector
+  , initSelector
   , networkTransactionMetricsSelector
+  , newSelector
+  , readFromCacheSelector
+  , requestEndTimeSelector
+  , requestStartTimeSelector
+  , responseEndTimeSelector
+  , responseStartTimeSelector
+  , serverAddressSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,135 +53,135 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id AVMetricMediaResourceRequestEvent)
-init_ avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricMediaResourceRequestEvent =
+  sendOwnedMessage avMetricMediaResourceRequestEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricMediaResourceRequestEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricMediaResourceRequestEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the URL of the resource request. If no value is available, returns nil.
 --
 -- ObjC selector: @- url@
 url :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSURL)
-url avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent urlSelector
 
 -- | The IP address of the server. If not available, the value is nil.
 --
 -- ObjC selector: @- serverAddress@
 serverAddress :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSString)
-serverAddress avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "serverAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverAddress avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent serverAddressSelector
 
 -- | Returns the start time of the resource request.
 --
 -- ObjC selector: @- requestStartTime@
 requestStartTime :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSDate)
-requestStartTime avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "requestStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestStartTime avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent requestStartTimeSelector
 
 -- | Returns the end time of the resource request.
 --
 -- ObjC selector: @- requestEndTime@
 requestEndTime :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSDate)
-requestEndTime avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "requestEndTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestEndTime avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent requestEndTimeSelector
 
 -- | Returns the start time of the resource request response.
 --
 -- ObjC selector: @- responseStartTime@
 responseStartTime :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSDate)
-responseStartTime avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "responseStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseStartTime avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent responseStartTimeSelector
 
 -- | Returns the end time of the resource request response.
 --
 -- ObjC selector: @- responseEndTime@
 responseEndTime :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSDate)
-responseEndTime avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "responseEndTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseEndTime avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent responseEndTimeSelector
 
 -- | Returns the byte range downloaded for the resource request. If not available, the range start and end will be 0.
 --
 -- ObjC selector: @- byteRange@
 byteRange :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO NSRange
-byteRange avMetricMediaResourceRequestEvent  =
-    sendMsgStret avMetricMediaResourceRequestEvent (mkSelector "byteRange") retNSRange []
+byteRange avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent byteRangeSelector
 
 -- | Returns true if the resource was read from the cache.
 --
 -- ObjC selector: @- readFromCache@
 readFromCache :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO Bool
-readFromCache avMetricMediaResourceRequestEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricMediaResourceRequestEvent (mkSelector "readFromCache") retCULong []
+readFromCache avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent readFromCacheSelector
 
 -- | Returns the error event, if any, encountered during the resource request. If no value is present, returns nil.
 --
 -- ObjC selector: @- errorEvent@
 errorEvent :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id AVMetricErrorEvent)
-errorEvent avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "errorEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorEvent avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent errorEventSelector
 
 -- | Returns the NSURLSessionTaskMetrics associated with the resource request. If no value is present, returns nil
 --
 -- ObjC selector: @- networkTransactionMetrics@
 networkTransactionMetrics :: IsAVMetricMediaResourceRequestEvent avMetricMediaResourceRequestEvent => avMetricMediaResourceRequestEvent -> IO (Id NSURLSessionTaskMetrics)
-networkTransactionMetrics avMetricMediaResourceRequestEvent  =
-    sendMsg avMetricMediaResourceRequestEvent (mkSelector "networkTransactionMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkTransactionMetrics avMetricMediaResourceRequestEvent =
+  sendMessage avMetricMediaResourceRequestEvent networkTransactionMetricsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricMediaResourceRequestEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricMediaResourceRequestEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @serverAddress@
-serverAddressSelector :: Selector
+serverAddressSelector :: Selector '[] (Id NSString)
 serverAddressSelector = mkSelector "serverAddress"
 
 -- | @Selector@ for @requestStartTime@
-requestStartTimeSelector :: Selector
+requestStartTimeSelector :: Selector '[] (Id NSDate)
 requestStartTimeSelector = mkSelector "requestStartTime"
 
 -- | @Selector@ for @requestEndTime@
-requestEndTimeSelector :: Selector
+requestEndTimeSelector :: Selector '[] (Id NSDate)
 requestEndTimeSelector = mkSelector "requestEndTime"
 
 -- | @Selector@ for @responseStartTime@
-responseStartTimeSelector :: Selector
+responseStartTimeSelector :: Selector '[] (Id NSDate)
 responseStartTimeSelector = mkSelector "responseStartTime"
 
 -- | @Selector@ for @responseEndTime@
-responseEndTimeSelector :: Selector
+responseEndTimeSelector :: Selector '[] (Id NSDate)
 responseEndTimeSelector = mkSelector "responseEndTime"
 
 -- | @Selector@ for @byteRange@
-byteRangeSelector :: Selector
+byteRangeSelector :: Selector '[] NSRange
 byteRangeSelector = mkSelector "byteRange"
 
 -- | @Selector@ for @readFromCache@
-readFromCacheSelector :: Selector
+readFromCacheSelector :: Selector '[] Bool
 readFromCacheSelector = mkSelector "readFromCache"
 
 -- | @Selector@ for @errorEvent@
-errorEventSelector :: Selector
+errorEventSelector :: Selector '[] (Id AVMetricErrorEvent)
 errorEventSelector = mkSelector "errorEvent"
 
 -- | @Selector@ for @networkTransactionMetrics@
-networkTransactionMetricsSelector :: Selector
+networkTransactionMetricsSelector :: Selector '[] (Id NSURLSessionTaskMetrics)
 networkTransactionMetricsSelector = mkSelector "networkTransactionMetrics"
 

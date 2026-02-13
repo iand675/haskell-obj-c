@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,22 @@ module ObjC.ScreenCaptureKit.SCContentSharingPicker
   , setMaximumStreamCount
   , active
   , setActive
-  , initSelector
-  , newSelector
+  , activeSelector
   , addObserverSelector
-  , removeObserverSelector
-  , setConfiguration_forStreamSelector
-  , presentSelector
-  , presentPickerUsingContentStyleSelector
+  , defaultConfigurationSelector
+  , initSelector
+  , maximumStreamCountSelector
+  , newSelector
   , presentPickerForStreamSelector
   , presentPickerForStream_usingContentStyleSelector
-  , sharedPickerSelector
-  , defaultConfigurationSelector
-  , setDefaultConfigurationSelector
-  , maximumStreamCountSelector
-  , setMaximumStreamCountSelector
-  , activeSelector
+  , presentPickerUsingContentStyleSelector
+  , presentSelector
+  , removeObserverSelector
   , setActiveSelector
+  , setConfiguration_forStreamSelector
+  , setDefaultConfigurationSelector
+  , setMaximumStreamCountSelector
+  , sharedPickerSelector
 
   -- * Enum types
   , SCShareableContentStyle(SCShareableContentStyle)
@@ -53,15 +54,11 @@ module ObjC.ScreenCaptureKit.SCContentSharingPicker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,15 +68,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO (Id SCContentSharingPicker)
-init_ scContentSharingPicker  =
-    sendMsg scContentSharingPicker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scContentSharingPicker =
+  sendOwnedMessage scContentSharingPicker initSelector
 
 -- | @+ new@
 new :: IO (Id SCContentSharingPicker)
 new  =
   do
     cls' <- getRequiredClass "SCContentSharingPicker"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | addObserver:
 --
@@ -89,8 +86,8 @@ new  =
 --
 -- ObjC selector: @- addObserver:@
 addObserver :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> RawId -> IO ()
-addObserver scContentSharingPicker  observer =
-    sendMsg scContentSharingPicker (mkSelector "addObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+addObserver scContentSharingPicker observer =
+  sendMessage scContentSharingPicker addObserverSelector observer
 
 -- | removeObserver:
 --
@@ -100,8 +97,8 @@ addObserver scContentSharingPicker  observer =
 --
 -- ObjC selector: @- removeObserver:@
 removeObserver :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> RawId -> IO ()
-removeObserver scContentSharingPicker  observer =
-    sendMsg scContentSharingPicker (mkSelector "removeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeObserver scContentSharingPicker observer =
+  sendMessage scContentSharingPicker removeObserverSelector observer
 
 -- | setConfiguration:forStream:
 --
@@ -113,10 +110,8 @@ removeObserver scContentSharingPicker  observer =
 --
 -- ObjC selector: @- setConfiguration:forStream:@
 setConfiguration_forStream :: (IsSCContentSharingPicker scContentSharingPicker, IsSCContentSharingPickerConfiguration pickerConfig, IsSCStream stream) => scContentSharingPicker -> pickerConfig -> stream -> IO ()
-setConfiguration_forStream scContentSharingPicker  pickerConfig stream =
-  withObjCPtr pickerConfig $ \raw_pickerConfig ->
-    withObjCPtr stream $ \raw_stream ->
-        sendMsg scContentSharingPicker (mkSelector "setConfiguration:forStream:") retVoid [argPtr (castPtr raw_pickerConfig :: Ptr ()), argPtr (castPtr raw_stream :: Ptr ())]
+setConfiguration_forStream scContentSharingPicker pickerConfig stream =
+  sendMessage scContentSharingPicker setConfiguration_forStreamSelector (toSCContentSharingPickerConfiguration pickerConfig) (toSCStream stream)
 
 -- | present
 --
@@ -124,8 +119,8 @@ setConfiguration_forStream scContentSharingPicker  pickerConfig stream =
 --
 -- ObjC selector: @- present@
 present :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO ()
-present scContentSharingPicker  =
-    sendMsg scContentSharingPicker (mkSelector "present") retVoid []
+present scContentSharingPicker =
+  sendMessage scContentSharingPicker presentSelector
 
 -- | presentPickerUsingContentStyle:
 --
@@ -135,8 +130,8 @@ present scContentSharingPicker  =
 --
 -- ObjC selector: @- presentPickerUsingContentStyle:@
 presentPickerUsingContentStyle :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> SCShareableContentStyle -> IO ()
-presentPickerUsingContentStyle scContentSharingPicker  contentStyle =
-    sendMsg scContentSharingPicker (mkSelector "presentPickerUsingContentStyle:") retVoid [argCLong (coerce contentStyle)]
+presentPickerUsingContentStyle scContentSharingPicker contentStyle =
+  sendMessage scContentSharingPicker presentPickerUsingContentStyleSelector contentStyle
 
 -- | presentPickerForStream:
 --
@@ -146,9 +141,8 @@ presentPickerUsingContentStyle scContentSharingPicker  contentStyle =
 --
 -- ObjC selector: @- presentPickerForStream:@
 presentPickerForStream :: (IsSCContentSharingPicker scContentSharingPicker, IsSCStream stream) => scContentSharingPicker -> stream -> IO ()
-presentPickerForStream scContentSharingPicker  stream =
-  withObjCPtr stream $ \raw_stream ->
-      sendMsg scContentSharingPicker (mkSelector "presentPickerForStream:") retVoid [argPtr (castPtr raw_stream :: Ptr ())]
+presentPickerForStream scContentSharingPicker stream =
+  sendMessage scContentSharingPicker presentPickerForStreamSelector (toSCStream stream)
 
 -- | presentPickerForStream:usingContentStyle:
 --
@@ -160,9 +154,8 @@ presentPickerForStream scContentSharingPicker  stream =
 --
 -- ObjC selector: @- presentPickerForStream:usingContentStyle:@
 presentPickerForStream_usingContentStyle :: (IsSCContentSharingPicker scContentSharingPicker, IsSCStream stream) => scContentSharingPicker -> stream -> SCShareableContentStyle -> IO ()
-presentPickerForStream_usingContentStyle scContentSharingPicker  stream contentStyle =
-  withObjCPtr stream $ \raw_stream ->
-      sendMsg scContentSharingPicker (mkSelector "presentPickerForStream:usingContentStyle:") retVoid [argPtr (castPtr raw_stream :: Ptr ()), argCLong (coerce contentStyle)]
+presentPickerForStream_usingContentStyle scContentSharingPicker stream contentStyle =
+  sendMessage scContentSharingPicker presentPickerForStream_usingContentStyleSelector (toSCStream stream) contentStyle
 
 -- | sharedPicker the singleton shared picker for the application
 --
@@ -171,117 +164,115 @@ sharedPicker :: IO (Id SCContentSharingPicker)
 sharedPicker  =
   do
     cls' <- getRequiredClass "SCContentSharingPicker"
-    sendClassMsg cls' (mkSelector "sharedPicker") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedPickerSelector
 
 -- | defaultConfiguration for the content sharing picker. If a stream does not have a configuration, the default configuration will be used.
 --
 -- ObjC selector: @- defaultConfiguration@
 defaultConfiguration :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO (Id SCContentSharingPickerConfiguration)
-defaultConfiguration scContentSharingPicker  =
-    sendMsg scContentSharingPicker (mkSelector "defaultConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultConfiguration scContentSharingPicker =
+  sendMessage scContentSharingPicker defaultConfigurationSelector
 
 -- | defaultConfiguration for the content sharing picker. If a stream does not have a configuration, the default configuration will be used.
 --
 -- ObjC selector: @- setDefaultConfiguration:@
 setDefaultConfiguration :: (IsSCContentSharingPicker scContentSharingPicker, IsSCContentSharingPickerConfiguration value) => scContentSharingPicker -> value -> IO ()
-setDefaultConfiguration scContentSharingPicker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scContentSharingPicker (mkSelector "setDefaultConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultConfiguration scContentSharingPicker value =
+  sendMessage scContentSharingPicker setDefaultConfigurationSelector (toSCContentSharingPickerConfiguration value)
 
 -- | maximumStreamCount An integer value that, if set, limits when Control Center will show the UI to present a picker with no associated stream. If set to 0, Control Center will never ever show UI to present a picker without an associated stream.
 --
 -- ObjC selector: @- maximumStreamCount@
 maximumStreamCount :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO (Id NSNumber)
-maximumStreamCount scContentSharingPicker  =
-    sendMsg scContentSharingPicker (mkSelector "maximumStreamCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumStreamCount scContentSharingPicker =
+  sendMessage scContentSharingPicker maximumStreamCountSelector
 
 -- | maximumStreamCount An integer value that, if set, limits when Control Center will show the UI to present a picker with no associated stream. If set to 0, Control Center will never ever show UI to present a picker without an associated stream.
 --
 -- ObjC selector: @- setMaximumStreamCount:@
 setMaximumStreamCount :: (IsSCContentSharingPicker scContentSharingPicker, IsNSNumber value) => scContentSharingPicker -> value -> IO ()
-setMaximumStreamCount scContentSharingPicker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scContentSharingPicker (mkSelector "setMaximumStreamCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumStreamCount scContentSharingPicker value =
+  sendMessage scContentSharingPicker setMaximumStreamCountSelector (toNSNumber value)
 
 -- | active A picker needs to be marked as active for its UI to appear. If @startPickingContent@ is called and the picker is not marked as active, the picker will not appear.
 --
 -- ObjC selector: @- active@
 active :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> IO Bool
-active scContentSharingPicker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scContentSharingPicker (mkSelector "active") retCULong []
+active scContentSharingPicker =
+  sendMessage scContentSharingPicker activeSelector
 
 -- | active A picker needs to be marked as active for its UI to appear. If @startPickingContent@ is called and the picker is not marked as active, the picker will not appear.
 --
 -- ObjC selector: @- setActive:@
 setActive :: IsSCContentSharingPicker scContentSharingPicker => scContentSharingPicker -> Bool -> IO ()
-setActive scContentSharingPicker  value =
-    sendMsg scContentSharingPicker (mkSelector "setActive:") retVoid [argCULong (if value then 1 else 0)]
+setActive scContentSharingPicker value =
+  sendMessage scContentSharingPicker setActiveSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCContentSharingPicker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SCContentSharingPicker)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @addObserver:@
-addObserverSelector :: Selector
+addObserverSelector :: Selector '[RawId] ()
 addObserverSelector = mkSelector "addObserver:"
 
 -- | @Selector@ for @removeObserver:@
-removeObserverSelector :: Selector
+removeObserverSelector :: Selector '[RawId] ()
 removeObserverSelector = mkSelector "removeObserver:"
 
 -- | @Selector@ for @setConfiguration:forStream:@
-setConfiguration_forStreamSelector :: Selector
+setConfiguration_forStreamSelector :: Selector '[Id SCContentSharingPickerConfiguration, Id SCStream] ()
 setConfiguration_forStreamSelector = mkSelector "setConfiguration:forStream:"
 
 -- | @Selector@ for @present@
-presentSelector :: Selector
+presentSelector :: Selector '[] ()
 presentSelector = mkSelector "present"
 
 -- | @Selector@ for @presentPickerUsingContentStyle:@
-presentPickerUsingContentStyleSelector :: Selector
+presentPickerUsingContentStyleSelector :: Selector '[SCShareableContentStyle] ()
 presentPickerUsingContentStyleSelector = mkSelector "presentPickerUsingContentStyle:"
 
 -- | @Selector@ for @presentPickerForStream:@
-presentPickerForStreamSelector :: Selector
+presentPickerForStreamSelector :: Selector '[Id SCStream] ()
 presentPickerForStreamSelector = mkSelector "presentPickerForStream:"
 
 -- | @Selector@ for @presentPickerForStream:usingContentStyle:@
-presentPickerForStream_usingContentStyleSelector :: Selector
+presentPickerForStream_usingContentStyleSelector :: Selector '[Id SCStream, SCShareableContentStyle] ()
 presentPickerForStream_usingContentStyleSelector = mkSelector "presentPickerForStream:usingContentStyle:"
 
 -- | @Selector@ for @sharedPicker@
-sharedPickerSelector :: Selector
+sharedPickerSelector :: Selector '[] (Id SCContentSharingPicker)
 sharedPickerSelector = mkSelector "sharedPicker"
 
 -- | @Selector@ for @defaultConfiguration@
-defaultConfigurationSelector :: Selector
+defaultConfigurationSelector :: Selector '[] (Id SCContentSharingPickerConfiguration)
 defaultConfigurationSelector = mkSelector "defaultConfiguration"
 
 -- | @Selector@ for @setDefaultConfiguration:@
-setDefaultConfigurationSelector :: Selector
+setDefaultConfigurationSelector :: Selector '[Id SCContentSharingPickerConfiguration] ()
 setDefaultConfigurationSelector = mkSelector "setDefaultConfiguration:"
 
 -- | @Selector@ for @maximumStreamCount@
-maximumStreamCountSelector :: Selector
+maximumStreamCountSelector :: Selector '[] (Id NSNumber)
 maximumStreamCountSelector = mkSelector "maximumStreamCount"
 
 -- | @Selector@ for @setMaximumStreamCount:@
-setMaximumStreamCountSelector :: Selector
+setMaximumStreamCountSelector :: Selector '[Id NSNumber] ()
 setMaximumStreamCountSelector = mkSelector "setMaximumStreamCount:"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @setActive:@
-setActiveSelector :: Selector
+setActiveSelector :: Selector '[Bool] ()
 setActiveSelector = mkSelector "setActive:"
 

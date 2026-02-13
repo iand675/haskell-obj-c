@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.FSKit.FSTask
   , didCompleteWithError
   , cancellationHandler
   , setCancellationHandler
-  , logMessageSelector
-  , didCompleteWithErrorSelector
   , cancellationHandlerSelector
+  , didCompleteWithErrorSelector
+  , logMessageSelector
   , setCancellationHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- logMessage:@
 logMessage :: (IsFSTask fsTask, IsNSString str) => fsTask -> str -> IO ()
-logMessage fsTask  str =
-  withObjCPtr str $ \raw_str ->
-      sendMsg fsTask (mkSelector "logMessage:") retVoid [argPtr (castPtr raw_str :: Ptr ())]
+logMessage fsTask str =
+  sendMessage fsTask logMessageSelector (toNSString str)
 
 -- | Informs the client that the task completed.
 --
@@ -53,9 +49,8 @@ logMessage fsTask  str =
 --
 -- ObjC selector: @- didCompleteWithError:@
 didCompleteWithError :: (IsFSTask fsTask, IsNSError error_) => fsTask -> error_ -> IO ()
-didCompleteWithError fsTask  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg fsTask (mkSelector "didCompleteWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+didCompleteWithError fsTask error_ =
+  sendMessage fsTask didCompleteWithErrorSelector (toNSError error_)
 
 -- | A handler called by FSKit upon canceling the task.
 --
@@ -89,8 +84,8 @@ didCompleteWithError fsTask  error_ =
 --
 -- ObjC selector: @- cancellationHandler@
 cancellationHandler :: IsFSTask fsTask => fsTask -> IO (Ptr ())
-cancellationHandler fsTask  =
-    fmap castPtr $ sendMsg fsTask (mkSelector "cancellationHandler") (retPtr retVoid) []
+cancellationHandler fsTask =
+  sendMessage fsTask cancellationHandlerSelector
 
 -- | A handler called by FSKit upon canceling the task.
 --
@@ -124,26 +119,26 @@ cancellationHandler fsTask  =
 --
 -- ObjC selector: @- setCancellationHandler:@
 setCancellationHandler :: IsFSTask fsTask => fsTask -> Ptr () -> IO ()
-setCancellationHandler fsTask  value =
-    sendMsg fsTask (mkSelector "setCancellationHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCancellationHandler fsTask value =
+  sendMessage fsTask setCancellationHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @logMessage:@
-logMessageSelector :: Selector
+logMessageSelector :: Selector '[Id NSString] ()
 logMessageSelector = mkSelector "logMessage:"
 
 -- | @Selector@ for @didCompleteWithError:@
-didCompleteWithErrorSelector :: Selector
+didCompleteWithErrorSelector :: Selector '[Id NSError] ()
 didCompleteWithErrorSelector = mkSelector "didCompleteWithError:"
 
 -- | @Selector@ for @cancellationHandler@
-cancellationHandlerSelector :: Selector
+cancellationHandlerSelector :: Selector '[] (Ptr ())
 cancellationHandlerSelector = mkSelector "cancellationHandler"
 
 -- | @Selector@ for @setCancellationHandler:@
-setCancellationHandlerSelector :: Selector
+setCancellationHandlerSelector :: Selector '[Ptr ()] ()
 setCancellationHandlerSelector = mkSelector "setCancellationHandler:"
 

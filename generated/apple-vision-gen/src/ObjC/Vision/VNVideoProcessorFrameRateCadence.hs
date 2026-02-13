@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Vision.VNVideoProcessorFrameRateCadence
   , init_
   , initWithFrameRate
   , frameRate
+  , frameRateSelector
   , initSelector
   , initWithFrameRateSelector
-  , frameRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,32 +32,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVNVideoProcessorFrameRateCadence vnVideoProcessorFrameRateCadence => vnVideoProcessorFrameRateCadence -> IO (Id VNVideoProcessorFrameRateCadence)
-init_ vnVideoProcessorFrameRateCadence  =
-    sendMsg vnVideoProcessorFrameRateCadence (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnVideoProcessorFrameRateCadence =
+  sendOwnedMessage vnVideoProcessorFrameRateCadence initSelector
 
 -- | @- initWithFrameRate:@
 initWithFrameRate :: IsVNVideoProcessorFrameRateCadence vnVideoProcessorFrameRateCadence => vnVideoProcessorFrameRateCadence -> CLong -> IO (Id VNVideoProcessorFrameRateCadence)
-initWithFrameRate vnVideoProcessorFrameRateCadence  frameRate =
-    sendMsg vnVideoProcessorFrameRateCadence (mkSelector "initWithFrameRate:") (retPtr retVoid) [argCLong frameRate] >>= ownedObject . castPtr
+initWithFrameRate vnVideoProcessorFrameRateCadence frameRate =
+  sendOwnedMessage vnVideoProcessorFrameRateCadence initWithFrameRateSelector frameRate
 
 -- | @- frameRate@
 frameRate :: IsVNVideoProcessorFrameRateCadence vnVideoProcessorFrameRateCadence => vnVideoProcessorFrameRateCadence -> IO CLong
-frameRate vnVideoProcessorFrameRateCadence  =
-    sendMsg vnVideoProcessorFrameRateCadence (mkSelector "frameRate") retCLong []
+frameRate vnVideoProcessorFrameRateCadence =
+  sendMessage vnVideoProcessorFrameRateCadence frameRateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNVideoProcessorFrameRateCadence)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithFrameRate:@
-initWithFrameRateSelector :: Selector
+initWithFrameRateSelector :: Selector '[CLong] (Id VNVideoProcessorFrameRateCadence)
 initWithFrameRateSelector = mkSelector "initWithFrameRate:"
 
 -- | @Selector@ for @frameRate@
-frameRateSelector :: Selector
+frameRateSelector :: Selector '[] CLong
 frameRateSelector = mkSelector "frameRate"
 

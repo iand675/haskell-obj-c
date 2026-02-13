@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Foundation.NSMetadataQueryAttributeValueTuple
   , value
   , count
   , attributeSelector
-  , valueSelector
   , countSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,32 +29,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- attribute@
 attribute :: IsNSMetadataQueryAttributeValueTuple nsMetadataQueryAttributeValueTuple => nsMetadataQueryAttributeValueTuple -> IO (Id NSString)
-attribute nsMetadataQueryAttributeValueTuple  =
-    sendMsg nsMetadataQueryAttributeValueTuple (mkSelector "attribute") (retPtr retVoid) [] >>= retainedObject . castPtr
+attribute nsMetadataQueryAttributeValueTuple =
+  sendMessage nsMetadataQueryAttributeValueTuple attributeSelector
 
 -- | @- value@
 value :: IsNSMetadataQueryAttributeValueTuple nsMetadataQueryAttributeValueTuple => nsMetadataQueryAttributeValueTuple -> IO RawId
-value nsMetadataQueryAttributeValueTuple  =
-    fmap (RawId . castPtr) $ sendMsg nsMetadataQueryAttributeValueTuple (mkSelector "value") (retPtr retVoid) []
+value nsMetadataQueryAttributeValueTuple =
+  sendMessage nsMetadataQueryAttributeValueTuple valueSelector
 
 -- | @- count@
 count :: IsNSMetadataQueryAttributeValueTuple nsMetadataQueryAttributeValueTuple => nsMetadataQueryAttributeValueTuple -> IO CULong
-count nsMetadataQueryAttributeValueTuple  =
-    sendMsg nsMetadataQueryAttributeValueTuple (mkSelector "count") retCULong []
+count nsMetadataQueryAttributeValueTuple =
+  sendMessage nsMetadataQueryAttributeValueTuple countSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attribute@
-attributeSelector :: Selector
+attributeSelector :: Selector '[] (Id NSString)
 attributeSelector = mkSelector "attribute"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 

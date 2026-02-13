@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MLCompute.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | MLCActivationType
 --
@@ -84,6 +87,16 @@ pattern MLCActivationTypeClamp = MLCActivationType 20
 
 pattern MLCActivationTypeCount :: MLCActivationType
 pattern MLCActivationTypeCount = MLCActivationType 21
+
+instance ObjCArgument MLCActivationType where
+  withObjCArg (MLCActivationType x) k = k (argCInt x)
+
+instance ObjCReturn MLCActivationType where
+  type RawReturn MLCActivationType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCActivationType x)
+  fromOwned x = pure (MLCActivationType x)
 
 -- | MLCArithmeticOperation
 --
@@ -186,6 +199,16 @@ pattern MLCArithmeticOperationMax = MLCArithmeticOperation 29
 pattern MLCArithmeticOperationCount :: MLCArithmeticOperation
 pattern MLCArithmeticOperationCount = MLCArithmeticOperation 30
 
+instance ObjCArgument MLCArithmeticOperation where
+  withObjCArg (MLCArithmeticOperation x) k = k (argCInt x)
+
+instance ObjCReturn MLCArithmeticOperation where
+  type RawReturn MLCArithmeticOperation = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCArithmeticOperation x)
+  fromOwned x = pure (MLCArithmeticOperation x)
+
 -- | MLCComparisonOperation
 --
 -- A comparison operation.
@@ -233,6 +256,16 @@ pattern MLCComparisonOperationLogicalXOR = MLCComparisonOperation 11
 pattern MLCComparisonOperationCount :: MLCComparisonOperation
 pattern MLCComparisonOperationCount = MLCComparisonOperation 12
 
+instance ObjCArgument MLCComparisonOperation where
+  withObjCArg (MLCComparisonOperation x) k = k (argCInt x)
+
+instance ObjCReturn MLCComparisonOperation where
+  type RawReturn MLCComparisonOperation = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCComparisonOperation x)
+  fromOwned x = pure (MLCComparisonOperation x)
+
 -- | MLCConvolutionType
 --
 -- A convolution type that you specify for a convolution descriptor.
@@ -249,6 +282,16 @@ pattern MLCConvolutionTypeTransposed = MLCConvolutionType 1
 
 pattern MLCConvolutionTypeDepthwise :: MLCConvolutionType
 pattern MLCConvolutionTypeDepthwise = MLCConvolutionType 2
+
+instance ObjCArgument MLCConvolutionType where
+  withObjCArg (MLCConvolutionType x) k = k (argCInt x)
+
+instance ObjCReturn MLCConvolutionType where
+  type RawReturn MLCConvolutionType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCConvolutionType x)
+  fromOwned x = pure (MLCConvolutionType x)
 
 -- | MLCDataType
 --
@@ -285,6 +328,16 @@ pattern MLCDataTypeUInt8 = MLCDataType 9
 pattern MLCDataTypeCount :: MLCDataType
 pattern MLCDataTypeCount = MLCDataType 10
 
+instance ObjCArgument MLCDataType where
+  withObjCArg (MLCDataType x) k = k (argCInt x)
+
+instance ObjCReturn MLCDataType where
+  type RawReturn MLCDataType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCDataType x)
+  fromOwned x = pure (MLCDataType x)
+
 -- | MLCDeviceType
 --
 -- A device type for execution of a neural network.
@@ -307,6 +360,16 @@ pattern MLCDeviceTypeANE = MLCDeviceType 3
 
 pattern MLCDeviceTypeCount :: MLCDeviceType
 pattern MLCDeviceTypeCount = MLCDeviceType 4
+
+instance ObjCArgument MLCDeviceType where
+  withObjCArg (MLCDeviceType x) k = k (argCInt x)
+
+instance ObjCReturn MLCDeviceType where
+  type RawReturn MLCDeviceType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCDeviceType x)
+  fromOwned x = pure (MLCDeviceType x)
 
 -- | MLCExecutionOptions
 --
@@ -340,6 +403,16 @@ pattern MLCExecutionOptionsForwardForInference = MLCExecutionOptions 8
 pattern MLCExecutionOptionsPerLayerProfiling :: MLCExecutionOptions
 pattern MLCExecutionOptionsPerLayerProfiling = MLCExecutionOptions 16
 
+instance ObjCArgument MLCExecutionOptions where
+  withObjCArg (MLCExecutionOptions x) k = k (argCULong x)
+
+instance ObjCReturn MLCExecutionOptions where
+  type RawReturn MLCExecutionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCExecutionOptions x)
+  fromOwned x = pure (MLCExecutionOptions x)
+
 -- | MLCGradientClippingType
 --
 -- The type of clipping applied to gradient
@@ -356,6 +429,16 @@ pattern MLCGradientClippingTypeByNorm = MLCGradientClippingType 1
 
 pattern MLCGradientClippingTypeByGlobalNorm :: MLCGradientClippingType
 pattern MLCGradientClippingTypeByGlobalNorm = MLCGradientClippingType 2
+
+instance ObjCArgument MLCGradientClippingType where
+  withObjCArg (MLCGradientClippingType x) k = k (argCInt x)
+
+instance ObjCReturn MLCGradientClippingType where
+  type RawReturn MLCGradientClippingType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCGradientClippingType x)
+  fromOwned x = pure (MLCGradientClippingType x)
 
 -- | MLCGraphCompilationOptions
 --
@@ -388,6 +471,16 @@ pattern MLCGraphCompilationOptionsLinkGraphs = MLCGraphCompilationOptions 4
 pattern MLCGraphCompilationOptionsComputeAllGradients :: MLCGraphCompilationOptions
 pattern MLCGraphCompilationOptionsComputeAllGradients = MLCGraphCompilationOptions 8
 
+instance ObjCArgument MLCGraphCompilationOptions where
+  withObjCArg (MLCGraphCompilationOptions x) k = k (argCULong x)
+
+instance ObjCReturn MLCGraphCompilationOptions where
+  type RawReturn MLCGraphCompilationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCGraphCompilationOptions x)
+  fromOwned x = pure (MLCGraphCompilationOptions x)
+
 -- | MLCLSTMResultMode
 --
 -- A result mode for an LSTM layer.
@@ -401,6 +494,16 @@ pattern MLCLSTMResultModeOutput = MLCLSTMResultMode 0
 
 pattern MLCLSTMResultModeOutputAndStates :: MLCLSTMResultMode
 pattern MLCLSTMResultModeOutputAndStates = MLCLSTMResultMode 1
+
+instance ObjCArgument MLCLSTMResultMode where
+  withObjCArg (MLCLSTMResultMode x) k = k (argCULong x)
+
+instance ObjCReturn MLCLSTMResultMode where
+  type RawReturn MLCLSTMResultMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCLSTMResultMode x)
+  fromOwned x = pure (MLCLSTMResultMode x)
 
 -- | MLCLossType
 --
@@ -440,6 +543,16 @@ pattern MLCLossTypeLog = MLCLossType 8
 pattern MLCLossTypeCount :: MLCLossType
 pattern MLCLossTypeCount = MLCLossType 9
 
+instance ObjCArgument MLCLossType where
+  withObjCArg (MLCLossType x) k = k (argCInt x)
+
+instance ObjCReturn MLCLossType where
+  type RawReturn MLCLossType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCLossType x)
+  fromOwned x = pure (MLCLossType x)
+
 -- | MLCPaddingPolicy
 --
 -- A padding policy that you specify for a convolution or pooling layer.
@@ -456,6 +569,16 @@ pattern MLCPaddingPolicyValid = MLCPaddingPolicy 1
 
 pattern MLCPaddingPolicyUsePaddingSize :: MLCPaddingPolicy
 pattern MLCPaddingPolicyUsePaddingSize = MLCPaddingPolicy 2
+
+instance ObjCArgument MLCPaddingPolicy where
+  withObjCArg (MLCPaddingPolicy x) k = k (argCInt x)
+
+instance ObjCReturn MLCPaddingPolicy where
+  type RawReturn MLCPaddingPolicy = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCPaddingPolicy x)
+  fromOwned x = pure (MLCPaddingPolicy x)
 
 -- | MLCPaddingType
 --
@@ -477,6 +600,16 @@ pattern MLCPaddingTypeSymmetric = MLCPaddingType 2
 pattern MLCPaddingTypeConstant :: MLCPaddingType
 pattern MLCPaddingTypeConstant = MLCPaddingType 3
 
+instance ObjCArgument MLCPaddingType where
+  withObjCArg (MLCPaddingType x) k = k (argCInt x)
+
+instance ObjCReturn MLCPaddingType where
+  type RawReturn MLCPaddingType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCPaddingType x)
+  fromOwned x = pure (MLCPaddingType x)
+
 -- | MLCPoolingType
 --
 -- A pooling function type for a pooling layer.
@@ -496,6 +629,16 @@ pattern MLCPoolingTypeL2Norm = MLCPoolingType 3
 
 pattern MLCPoolingTypeCount :: MLCPoolingType
 pattern MLCPoolingTypeCount = MLCPoolingType 4
+
+instance ObjCArgument MLCPoolingType where
+  withObjCArg (MLCPoolingType x) k = k (argCInt x)
+
+instance ObjCReturn MLCPoolingType where
+  type RawReturn MLCPoolingType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCPoolingType x)
+  fromOwned x = pure (MLCPoolingType x)
 
 -- | MLCRandomInitializerType
 --
@@ -519,6 +662,16 @@ pattern MLCRandomInitializerTypeXavier = MLCRandomInitializerType 3
 
 pattern MLCRandomInitializerTypeCount :: MLCRandomInitializerType
 pattern MLCRandomInitializerTypeCount = MLCRandomInitializerType 4
+
+instance ObjCArgument MLCRandomInitializerType where
+  withObjCArg (MLCRandomInitializerType x) k = k (argCInt x)
+
+instance ObjCReturn MLCRandomInitializerType where
+  type RawReturn MLCRandomInitializerType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCRandomInitializerType x)
+  fromOwned x = pure (MLCRandomInitializerType x)
 
 -- | MLCReductionType
 --
@@ -561,6 +714,16 @@ pattern MLCReductionTypeAll = MLCReductionType 9
 pattern MLCReductionTypeCount :: MLCReductionType
 pattern MLCReductionTypeCount = MLCReductionType 10
 
+instance ObjCArgument MLCReductionType where
+  withObjCArg (MLCReductionType x) k = k (argCInt x)
+
+instance ObjCReturn MLCReductionType where
+  type RawReturn MLCReductionType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCReductionType x)
+  fromOwned x = pure (MLCReductionType x)
+
 -- | MLCRegularizationType
 -- | @MLCRegularizationType@
 newtype MLCRegularizationType = MLCRegularizationType CInt
@@ -576,6 +739,16 @@ pattern MLCRegularizationTypeL1 = MLCRegularizationType 1
 pattern MLCRegularizationTypeL2 :: MLCRegularizationType
 pattern MLCRegularizationTypeL2 = MLCRegularizationType 2
 
+instance ObjCArgument MLCRegularizationType where
+  withObjCArg (MLCRegularizationType x) k = k (argCInt x)
+
+instance ObjCReturn MLCRegularizationType where
+  type RawReturn MLCRegularizationType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCRegularizationType x)
+  fromOwned x = pure (MLCRegularizationType x)
+
 -- | MLCSampleMode
 --
 -- A sampling mode for an upsample layer.
@@ -590,6 +763,16 @@ pattern MLCSampleModeNearest = MLCSampleMode 0
 pattern MLCSampleModeLinear :: MLCSampleMode
 pattern MLCSampleModeLinear = MLCSampleMode 1
 
+instance ObjCArgument MLCSampleMode where
+  withObjCArg (MLCSampleMode x) k = k (argCInt x)
+
+instance ObjCReturn MLCSampleMode where
+  type RawReturn MLCSampleMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCSampleMode x)
+  fromOwned x = pure (MLCSampleMode x)
+
 -- | MLCSoftmaxOperation
 --
 -- A softmax operation.
@@ -603,3 +786,13 @@ pattern MLCSoftmaxOperationSoftmax = MLCSoftmaxOperation 0
 
 pattern MLCSoftmaxOperationLogSoftmax :: MLCSoftmaxOperation
 pattern MLCSoftmaxOperationLogSoftmax = MLCSoftmaxOperation 1
+
+instance ObjCArgument MLCSoftmaxOperation where
+  withObjCArg (MLCSoftmaxOperation x) k = k (argCInt x)
+
+instance ObjCReturn MLCSoftmaxOperation where
+  type RawReturn MLCSoftmaxOperation = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLCSoftmaxOperation x)
+  fromOwned x = pure (MLCSoftmaxOperation x)

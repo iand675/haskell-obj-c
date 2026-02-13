@@ -44,7 +44,7 @@ data NSControlTextEditingDelegateOverrides = NSControlTextEditingDelegateOverrid
   , _control_didFailToFormatString_errorDescription :: !(Maybe (RawId -> RawId -> RawId -> IO Bool))
   , _control_didFailToValidatePartialString_errorDescription :: !(Maybe (RawId -> RawId -> RawId -> IO ()))
   , _control_isValidObject :: !(Maybe (RawId -> RawId -> IO Bool))
-  , _control_textView_doCommandBySelector :: !(Maybe (RawId -> RawId -> Selector -> IO Bool))
+  , _control_textView_doCommandBySelector :: !(Maybe (RawId -> RawId -> Sel -> IO Bool))
   }
 
 -- | Default overrides with all methods unimplemented.

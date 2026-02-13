@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryConvolutionNode
   , nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags
   , initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags
   , convolutionGradientState
-  , nodeWithSource_weights_scaleValue_type_flagsSelector
+  , convolutionGradientStateSelector
+  , initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
   , initWithSource_weights_scaleValue_type_flagsSelector
   , nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
-  , initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
-  , convolutionGradientStateSelector
+  , nodeWithSource_weights_scaleValue_type_flagsSelector
 
   -- * Enum types
   , MPSCNNBinaryConvolutionFlags(MPSCNNBinaryConvolutionFlags)
@@ -31,15 +32,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryConvolutionNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ nodeWithSource_weights_scaleValue_type_flags :: IsMPSNNImageNode sourceNode => s
 nodeWithSource_weights_scaleValue_type_flags sourceNode weights scaleValue type_ flags =
   do
     cls' <- getRequiredClass "MPSCNNBinaryConvolutionNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:weights:scaleValue:type:flags:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argCFloat scaleValue, argCULong (coerce type_), argCULong (coerce flags)] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_weights_scaleValue_type_flagsSelector (toMPSNNImageNode sourceNode) weights scaleValue type_ flags
 
 -- | Init a node representing a MPSCNNBinaryConvolution kernel
 --
@@ -85,9 +81,8 @@ nodeWithSource_weights_scaleValue_type_flags sourceNode weights scaleValue type_
 --
 -- ObjC selector: @- initWithSource:weights:scaleValue:type:flags:@
 initWithSource_weights_scaleValue_type_flags :: (IsMPSCNNBinaryConvolutionNode mpscnnBinaryConvolutionNode, IsMPSNNImageNode sourceNode) => mpscnnBinaryConvolutionNode -> sourceNode -> RawId -> CFloat -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryConvolutionNode)
-initWithSource_weights_scaleValue_type_flags mpscnnBinaryConvolutionNode  sourceNode weights scaleValue type_ flags =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnBinaryConvolutionNode (mkSelector "initWithSource:weights:scaleValue:type:flags:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argCFloat scaleValue, argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithSource_weights_scaleValue_type_flags mpscnnBinaryConvolutionNode sourceNode weights scaleValue type_ flags =
+  sendOwnedMessage mpscnnBinaryConvolutionNode initWithSource_weights_scaleValue_type_flagsSelector (toMPSNNImageNode sourceNode) weights scaleValue type_ flags
 
 -- | Init an autoreleased node representing a MPSCNNBinaryConvolution kernel
 --
@@ -114,8 +109,7 @@ nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScal
 nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags sourceNode weights outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
   do
     cls' <- getRequiredClass "MPSCNNBinaryConvolutionNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (unConst outputBiasTerms), argPtr (unConst outputScaleTerms), argPtr (unConst inputBiasTerms), argPtr (unConst inputScaleTerms), argCULong (coerce type_), argCULong (coerce flags)] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector (toMPSNNImageNode sourceNode) weights outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags
 
 -- | Init a node representing a MPSCNNBinaryConvolution kernel
 --
@@ -139,38 +133,37 @@ nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScal
 --
 -- ObjC selector: @- initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
 initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags :: (IsMPSCNNBinaryConvolutionNode mpscnnBinaryConvolutionNode, IsMPSNNImageNode sourceNode) => mpscnnBinaryConvolutionNode -> sourceNode -> RawId -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryConvolutionNode)
-initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryConvolutionNode  sourceNode weights outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnBinaryConvolutionNode (mkSelector "initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (unConst outputBiasTerms), argPtr (unConst outputScaleTerms), argPtr (unConst inputBiasTerms), argPtr (unConst inputScaleTerms), argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryConvolutionNode sourceNode weights outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
+  sendOwnedMessage mpscnnBinaryConvolutionNode initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector (toMPSNNImageNode sourceNode) weights outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags
 
 -- | unavailable
 --
 -- ObjC selector: @- convolutionGradientState@
 convolutionGradientState :: IsMPSCNNBinaryConvolutionNode mpscnnBinaryConvolutionNode => mpscnnBinaryConvolutionNode -> IO RawId
-convolutionGradientState mpscnnBinaryConvolutionNode  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBinaryConvolutionNode (mkSelector "convolutionGradientState") (retPtr retVoid) []
+convolutionGradientState mpscnnBinaryConvolutionNode =
+  sendMessage mpscnnBinaryConvolutionNode convolutionGradientStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:weights:scaleValue:type:flags:@
-nodeWithSource_weights_scaleValue_type_flagsSelector :: Selector
+nodeWithSource_weights_scaleValue_type_flagsSelector :: Selector '[Id MPSNNImageNode, RawId, CFloat, MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolutionNode)
 nodeWithSource_weights_scaleValue_type_flagsSelector = mkSelector "nodeWithSource:weights:scaleValue:type:flags:"
 
 -- | @Selector@ for @initWithSource:weights:scaleValue:type:flags:@
-initWithSource_weights_scaleValue_type_flagsSelector :: Selector
+initWithSource_weights_scaleValue_type_flagsSelector :: Selector '[Id MPSNNImageNode, RawId, CFloat, MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolutionNode)
 initWithSource_weights_scaleValue_type_flagsSelector = mkSelector "initWithSource:weights:scaleValue:type:flags:"
 
 -- | @Selector@ for @nodeWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
-nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector
+nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector '[Id MPSNNImageNode, RawId, Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolutionNode)
 nodeWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector = mkSelector "nodeWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:"
 
 -- | @Selector@ for @initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
-initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector
+initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector '[Id MPSNNImageNode, RawId, Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolutionNode)
 initWithSource_weights_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector = mkSelector "initWithSource:weights:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:"
 
 -- | @Selector@ for @convolutionGradientState@
-convolutionGradientStateSelector :: Selector
+convolutionGradientStateSelector :: Selector '[] RawId
 convolutionGradientStateSelector = mkSelector "convolutionGradientState"
 

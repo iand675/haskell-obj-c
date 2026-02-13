@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,48 +56,48 @@ module ObjC.ClassKit.CLSContext
   , currentActivity
   , parent
   , navigationChildContexts
-  , newSelector
-  , initSelector
-  , initWithType_identifier_titleSelector
-  , becomeActiveSelector
-  , resignActiveSelector
-  , setTypeSelector
-  , addProgressReportingCapabilitiesSelector
-  , resetProgressReportingCapabilitiesSelector
-  , createNewActivitySelector
-  , removeFromParentSelector
+  , activeSelector
   , addChildContextSelector
-  , descendantMatchingIdentifierPath_completionSelector
   , addNavigationChildContextSelector
-  , removeNavigationChildContextSelector
+  , addProgressReportingCapabilitiesSelector
+  , assignableSelector
+  , becomeActiveSelector
+  , createNewActivitySelector
+  , currentActivitySelector
+  , customTypeNameSelector
+  , descendantMatchingIdentifierPath_completionSelector
+  , displayOrderSelector
   , identifierPathSelector
   , identifierSelector
-  , universalLinkURLSelector
-  , setUniversalLinkURLSelector
-  , typeSelector
-  , customTypeNameSelector
-  , setCustomTypeNameSelector
-  , titleSelector
-  , setTitleSelector
-  , displayOrderSelector
-  , setDisplayOrderSelector
-  , topicSelector
-  , setTopicSelector
-  , assignableSelector
-  , setAssignableSelector
-  , suggestedAgeSelector
-  , setSuggestedAgeSelector
-  , suggestedCompletionTimeSelector
-  , setSuggestedCompletionTimeSelector
-  , progressReportingCapabilitiesSelector
-  , summarySelector
-  , setSummarySelector
-  , thumbnailSelector
-  , setThumbnailSelector
-  , activeSelector
-  , currentActivitySelector
-  , parentSelector
+  , initSelector
+  , initWithType_identifier_titleSelector
   , navigationChildContextsSelector
+  , newSelector
+  , parentSelector
+  , progressReportingCapabilitiesSelector
+  , removeFromParentSelector
+  , removeNavigationChildContextSelector
+  , resetProgressReportingCapabilitiesSelector
+  , resignActiveSelector
+  , setAssignableSelector
+  , setCustomTypeNameSelector
+  , setDisplayOrderSelector
+  , setSuggestedAgeSelector
+  , setSuggestedCompletionTimeSelector
+  , setSummarySelector
+  , setThumbnailSelector
+  , setTitleSelector
+  , setTopicSelector
+  , setTypeSelector
+  , setUniversalLinkURLSelector
+  , suggestedAgeSelector
+  , suggestedCompletionTimeSelector
+  , summarySelector
+  , thumbnailSelector
+  , titleSelector
+  , topicSelector
+  , typeSelector
+  , universalLinkURLSelector
 
   -- * Enum types
   , CLSContextType(CLSContextType)
@@ -121,15 +122,11 @@ module ObjC.ClassKit.CLSContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -143,12 +140,12 @@ new :: IO (Id CLSContext)
 new  =
   do
     cls' <- getRequiredClass "CLSContext"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCLSContext clsContext => clsContext -> IO (Id CLSContext)
-init_ clsContext  =
-    sendMsg clsContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clsContext =
+  sendOwnedMessage clsContext initSelector
 
 -- | Initialize and configure the type of content this context represents.
 --
@@ -160,10 +157,8 @@ init_ clsContext  =
 --
 -- ObjC selector: @- initWithType:identifier:title:@
 initWithType_identifier_title :: (IsCLSContext clsContext, IsNSString identifier, IsNSString title) => clsContext -> CLSContextType -> identifier -> title -> IO (Id CLSContext)
-initWithType_identifier_title clsContext  type_ identifier title =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg clsContext (mkSelector "initWithType:identifier:title:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ())] >>= ownedObject . castPtr
+initWithType_identifier_title clsContext type_ identifier title =
+  sendOwnedMessage clsContext initWithType_identifier_titleSelector type_ (toNSString identifier) (toNSString title)
 
 -- | Marks contexts as active.
 --
@@ -171,8 +166,8 @@ initWithType_identifier_title clsContext  type_ identifier title =
 --
 -- ObjC selector: @- becomeActive@
 becomeActive :: IsCLSContext clsContext => clsContext -> IO ()
-becomeActive clsContext  =
-    sendMsg clsContext (mkSelector "becomeActive") retVoid []
+becomeActive clsContext =
+  sendMessage clsContext becomeActiveSelector
 
 -- | Resign being active.
 --
@@ -180,8 +175,8 @@ becomeActive clsContext  =
 --
 -- ObjC selector: @- resignActive@
 resignActive :: IsCLSContext clsContext => clsContext -> IO ()
-resignActive clsContext  =
-    sendMsg clsContext (mkSelector "resignActive") retVoid []
+resignActive clsContext =
+  sendMessage clsContext resignActiveSelector
 
 -- | Sets the type.
 --
@@ -189,8 +184,8 @@ resignActive clsContext  =
 --
 -- ObjC selector: @- setType:@
 setType :: IsCLSContext clsContext => clsContext -> CLSContextType -> IO ()
-setType clsContext  type_ =
-    sendMsg clsContext (mkSelector "setType:") retVoid [argCLong (coerce type_)]
+setType clsContext type_ =
+  sendMessage clsContext setTypeSelector type_
 
 -- | Add or replace additional progress reporting capabilities of the app for this context.
 --
@@ -200,9 +195,8 @@ setType clsContext  type_ =
 --
 -- ObjC selector: @- addProgressReportingCapabilities:@
 addProgressReportingCapabilities :: (IsCLSContext clsContext, IsNSSet capabilities) => clsContext -> capabilities -> IO ()
-addProgressReportingCapabilities clsContext  capabilities =
-  withObjCPtr capabilities $ \raw_capabilities ->
-      sendMsg clsContext (mkSelector "addProgressReportingCapabilities:") retVoid [argPtr (castPtr raw_capabilities :: Ptr ())]
+addProgressReportingCapabilities clsContext capabilities =
+  sendMessage clsContext addProgressReportingCapabilitiesSelector (toNSSet capabilities)
 
 -- | Clears CLSProgressReportingCapability objects added to the receiver.
 --
@@ -210,8 +204,8 @@ addProgressReportingCapabilities clsContext  capabilities =
 --
 -- ObjC selector: @- resetProgressReportingCapabilities@
 resetProgressReportingCapabilities :: IsCLSContext clsContext => clsContext -> IO ()
-resetProgressReportingCapabilities clsContext  =
-    sendMsg clsContext (mkSelector "resetProgressReportingCapabilities") retVoid []
+resetProgressReportingCapabilities clsContext =
+  sendMessage clsContext resetProgressReportingCapabilitiesSelector
 
 -- | Creates a new activity
 --
@@ -219,8 +213,8 @@ resetProgressReportingCapabilities clsContext  =
 --
 -- ObjC selector: @- createNewActivity@
 createNewActivity :: IsCLSContext clsContext => clsContext -> IO (Id CLSActivity)
-createNewActivity clsContext  =
-    sendMsg clsContext (mkSelector "createNewActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+createNewActivity clsContext =
+  sendMessage clsContext createNewActivitySelector
 
 -- | Removes this child context from its parent.
 --
@@ -228,8 +222,8 @@ createNewActivity clsContext  =
 --
 -- ObjC selector: @- removeFromParent@
 removeFromParent :: IsCLSContext clsContext => clsContext -> IO ()
-removeFromParent clsContext  =
-    sendMsg clsContext (mkSelector "removeFromParent") retVoid []
+removeFromParent clsContext =
+  sendMessage clsContext removeFromParentSelector
 
 -- | Adds a child context.
 --
@@ -239,9 +233,8 @@ removeFromParent clsContext  =
 --
 -- ObjC selector: @- addChildContext:@
 addChildContext :: (IsCLSContext clsContext, IsCLSContext child) => clsContext -> child -> IO ()
-addChildContext clsContext  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg clsContext (mkSelector "addChildContext:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChildContext clsContext child =
+  sendMessage clsContext addChildContextSelector (toCLSContext child)
 
 -- | Returns a descendant of this context matching the context path you provide. Context path must start with an identifier of a child context of the context to which this message is sent.
 --
@@ -253,9 +246,8 @@ addChildContext clsContext  child =
 --
 -- ObjC selector: @- descendantMatchingIdentifierPath:completion:@
 descendantMatchingIdentifierPath_completion :: (IsCLSContext clsContext, IsNSArray identifierPath) => clsContext -> identifierPath -> Ptr () -> IO ()
-descendantMatchingIdentifierPath_completion clsContext  identifierPath completion =
-  withObjCPtr identifierPath $ \raw_identifierPath ->
-      sendMsg clsContext (mkSelector "descendantMatchingIdentifierPath:completion:") retVoid [argPtr (castPtr raw_identifierPath :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+descendantMatchingIdentifierPath_completion clsContext identifierPath completion =
+  sendMessage clsContext descendantMatchingIdentifierPath_completionSelector (toNSArray identifierPath) completion
 
 -- | Adds a child context to specify the user can navigate to the child from this context.
 --
@@ -267,9 +259,8 @@ descendantMatchingIdentifierPath_completion clsContext  identifierPath completio
 --
 -- ObjC selector: @- addNavigationChildContext:@
 addNavigationChildContext :: (IsCLSContext clsContext, IsCLSContext child) => clsContext -> child -> IO ()
-addNavigationChildContext clsContext  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg clsContext (mkSelector "addNavigationChildContext:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addNavigationChildContext clsContext child =
+  sendMessage clsContext addNavigationChildContextSelector (toCLSContext child)
 
 -- | Removes the navigation path to the child context from this context.
 --
@@ -281,9 +272,8 @@ addNavigationChildContext clsContext  child =
 --
 -- ObjC selector: @- removeNavigationChildContext:@
 removeNavigationChildContext :: (IsCLSContext clsContext, IsCLSContext child) => clsContext -> child -> IO ()
-removeNavigationChildContext clsContext  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg clsContext (mkSelector "removeNavigationChildContext:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+removeNavigationChildContext clsContext child =
+  sendMessage clsContext removeNavigationChildContextSelector (toCLSContext child)
 
 -- | Context identifier path of this context.
 --
@@ -295,8 +285,8 @@ removeNavigationChildContext clsContext  child =
 --
 -- ObjC selector: @- identifierPath@
 identifierPath :: IsCLSContext clsContext => clsContext -> IO (Id NSArray)
-identifierPath clsContext  =
-    sendMsg clsContext (mkSelector "identifierPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifierPath clsContext =
+  sendMessage clsContext identifierPathSelector
 
 -- | App-assigned identifier. This identifier should work across users and devices and be unique with regards to its siblings within its parent.
 --
@@ -304,8 +294,8 @@ identifierPath clsContext  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsCLSContext clsContext => clsContext -> IO (Id NSString)
-identifier clsContext  =
-    sendMsg clsContext (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier clsContext =
+  sendMessage clsContext identifierSelector
 
 -- | Alternative deep link URL using universal links.
 --
@@ -313,8 +303,8 @@ identifier clsContext  =
 --
 -- ObjC selector: @- universalLinkURL@
 universalLinkURL :: IsCLSContext clsContext => clsContext -> IO (Id NSURL)
-universalLinkURL clsContext  =
-    sendMsg clsContext (mkSelector "universalLinkURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+universalLinkURL clsContext =
+  sendMessage clsContext universalLinkURLSelector
 
 -- | Alternative deep link URL using universal links.
 --
@@ -322,9 +312,8 @@ universalLinkURL clsContext  =
 --
 -- ObjC selector: @- setUniversalLinkURL:@
 setUniversalLinkURL :: (IsCLSContext clsContext, IsNSURL value) => clsContext -> value -> IO ()
-setUniversalLinkURL clsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsContext (mkSelector "setUniversalLinkURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniversalLinkURL clsContext value =
+  sendMessage clsContext setUniversalLinkURLSelector (toNSURL value)
 
 -- | Type of this context
 --
@@ -332,8 +321,8 @@ setUniversalLinkURL clsContext  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsCLSContext clsContext => clsContext -> IO CLSContextType
-type_ clsContext  =
-    fmap (coerce :: CLong -> CLSContextType) $ sendMsg clsContext (mkSelector "type") retCLong []
+type_ clsContext =
+  sendMessage clsContext typeSelector
 
 -- | An optional user-visible name for the context if its type is CLSContextTypeCustom.
 --
@@ -341,8 +330,8 @@ type_ clsContext  =
 --
 -- ObjC selector: @- customTypeName@
 customTypeName :: IsCLSContext clsContext => clsContext -> IO (Id NSString)
-customTypeName clsContext  =
-    sendMsg clsContext (mkSelector "customTypeName") (retPtr retVoid) [] >>= retainedObject . castPtr
+customTypeName clsContext =
+  sendMessage clsContext customTypeNameSelector
 
 -- | An optional user-visible name for the context if its type is CLSContextTypeCustom.
 --
@@ -350,9 +339,8 @@ customTypeName clsContext  =
 --
 -- ObjC selector: @- setCustomTypeName:@
 setCustomTypeName :: (IsCLSContext clsContext, IsNSString value) => clsContext -> value -> IO ()
-setCustomTypeName clsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsContext (mkSelector "setCustomTypeName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomTypeName clsContext value =
+  sendMessage clsContext setCustomTypeNameSelector (toNSString value)
 
 -- | Title of this context.
 --
@@ -360,8 +348,8 @@ setCustomTypeName clsContext  value =
 --
 -- ObjC selector: @- title@
 title :: IsCLSContext clsContext => clsContext -> IO (Id NSString)
-title clsContext  =
-    sendMsg clsContext (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title clsContext =
+  sendMessage clsContext titleSelector
 
 -- | Title of this context.
 --
@@ -369,9 +357,8 @@ title clsContext  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsCLSContext clsContext, IsNSString value) => clsContext -> value -> IO ()
-setTitle clsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsContext (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle clsContext value =
+  sendMessage clsContext setTitleSelector (toNSString value)
 
 -- | The displayOrder is by default sorted ascending.
 --
@@ -379,8 +366,8 @@ setTitle clsContext  value =
 --
 -- ObjC selector: @- displayOrder@
 displayOrder :: IsCLSContext clsContext => clsContext -> IO CLong
-displayOrder clsContext  =
-    sendMsg clsContext (mkSelector "displayOrder") retCLong []
+displayOrder clsContext =
+  sendMessage clsContext displayOrderSelector
 
 -- | The displayOrder is by default sorted ascending.
 --
@@ -388,8 +375,8 @@ displayOrder clsContext  =
 --
 -- ObjC selector: @- setDisplayOrder:@
 setDisplayOrder :: IsCLSContext clsContext => clsContext -> CLong -> IO ()
-setDisplayOrder clsContext  value =
-    sendMsg clsContext (mkSelector "setDisplayOrder:") retVoid [argCLong value]
+setDisplayOrder clsContext value =
+  sendMessage clsContext setDisplayOrderSelector value
 
 -- | Topic associated with this context.
 --
@@ -397,8 +384,8 @@ setDisplayOrder clsContext  value =
 --
 -- ObjC selector: @- topic@
 topic :: IsCLSContext clsContext => clsContext -> IO (Id NSString)
-topic clsContext  =
-    sendMsg clsContext (mkSelector "topic") (retPtr retVoid) [] >>= retainedObject . castPtr
+topic clsContext =
+  sendMessage clsContext topicSelector
 
 -- | Topic associated with this context.
 --
@@ -406,9 +393,8 @@ topic clsContext  =
 --
 -- ObjC selector: @- setTopic:@
 setTopic :: (IsCLSContext clsContext, IsNSString value) => clsContext -> value -> IO ()
-setTopic clsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsContext (mkSelector "setTopic:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTopic clsContext value =
+  sendMessage clsContext setTopicSelector (toNSString value)
 
 -- | This property is true if the context can be assigned as an activity.
 --
@@ -416,8 +402,8 @@ setTopic clsContext  value =
 --
 -- ObjC selector: @- assignable@
 assignable :: IsCLSContext clsContext => clsContext -> IO Bool
-assignable clsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clsContext (mkSelector "assignable") retCULong []
+assignable clsContext =
+  sendMessage clsContext assignableSelector
 
 -- | This property is true if the context can be assigned as an activity.
 --
@@ -425,8 +411,8 @@ assignable clsContext  =
 --
 -- ObjC selector: @- setAssignable:@
 setAssignable :: IsCLSContext clsContext => clsContext -> Bool -> IO ()
-setAssignable clsContext  value =
-    sendMsg clsContext (mkSelector "setAssignable:") retVoid [argCULong (if value then 1 else 0)]
+setAssignable clsContext value =
+  sendMessage clsContext setAssignableSelector value
 
 -- | Suggested age range of students, expressed in years, for whom this context is suitable. This information is intended to help teachers to choose age-appropriate activities for their students.
 --
@@ -440,8 +426,8 @@ setAssignable clsContext  value =
 --
 -- ObjC selector: @- suggestedAge@
 suggestedAge :: IsCLSContext clsContext => clsContext -> IO NSRange
-suggestedAge clsContext  =
-    sendMsgStret clsContext (mkSelector "suggestedAge") retNSRange []
+suggestedAge clsContext =
+  sendMessage clsContext suggestedAgeSelector
 
 -- | Suggested age range of students, expressed in years, for whom this context is suitable. This information is intended to help teachers to choose age-appropriate activities for their students.
 --
@@ -455,8 +441,8 @@ suggestedAge clsContext  =
 --
 -- ObjC selector: @- setSuggestedAge:@
 setSuggestedAge :: IsCLSContext clsContext => clsContext -> NSRange -> IO ()
-setSuggestedAge clsContext  value =
-    sendMsg clsContext (mkSelector "setSuggestedAge:") retVoid [argNSRange value]
+setSuggestedAge clsContext value =
+  sendMessage clsContext setSuggestedAgeSelector value
 
 -- | Suggested time range, expressed in minutes, to complete the activity. This information will help teachers as they choose activities for their students.
 --
@@ -470,8 +456,8 @@ setSuggestedAge clsContext  value =
 --
 -- ObjC selector: @- suggestedCompletionTime@
 suggestedCompletionTime :: IsCLSContext clsContext => clsContext -> IO NSRange
-suggestedCompletionTime clsContext  =
-    sendMsgStret clsContext (mkSelector "suggestedCompletionTime") retNSRange []
+suggestedCompletionTime clsContext =
+  sendMessage clsContext suggestedCompletionTimeSelector
 
 -- | Suggested time range, expressed in minutes, to complete the activity. This information will help teachers as they choose activities for their students.
 --
@@ -485,8 +471,8 @@ suggestedCompletionTime clsContext  =
 --
 -- ObjC selector: @- setSuggestedCompletionTime:@
 setSuggestedCompletionTime :: IsCLSContext clsContext => clsContext -> NSRange -> IO ()
-setSuggestedCompletionTime clsContext  value =
-    sendMsg clsContext (mkSelector "setSuggestedCompletionTime:") retVoid [argNSRange value]
+setSuggestedCompletionTime clsContext value =
+  sendMessage clsContext setSuggestedCompletionTimeSelector value
 
 -- | Specifies progress reporting capablities of the app for this context.
 --
@@ -494,8 +480,8 @@ setSuggestedCompletionTime clsContext  value =
 --
 -- ObjC selector: @- progressReportingCapabilities@
 progressReportingCapabilities :: IsCLSContext clsContext => clsContext -> IO (Id NSSet)
-progressReportingCapabilities clsContext  =
-    sendMsg clsContext (mkSelector "progressReportingCapabilities") (retPtr retVoid) [] >>= retainedObject . castPtr
+progressReportingCapabilities clsContext =
+  sendMessage clsContext progressReportingCapabilitiesSelector
 
 -- | An optional user-visible summary describing the context limited to 4000 characters in length.
 --
@@ -503,8 +489,8 @@ progressReportingCapabilities clsContext  =
 --
 -- ObjC selector: @- summary@
 summary :: IsCLSContext clsContext => clsContext -> IO (Id NSString)
-summary clsContext  =
-    sendMsg clsContext (mkSelector "summary") (retPtr retVoid) [] >>= retainedObject . castPtr
+summary clsContext =
+  sendMessage clsContext summarySelector
 
 -- | An optional user-visible summary describing the context limited to 4000 characters in length.
 --
@@ -512,9 +498,8 @@ summary clsContext  =
 --
 -- ObjC selector: @- setSummary:@
 setSummary :: (IsCLSContext clsContext, IsNSString value) => clsContext -> value -> IO ()
-setSummary clsContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsContext (mkSelector "setSummary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSummary clsContext value =
+  sendMessage clsContext setSummarySelector (toNSString value)
 
 -- | An optional thumbnail image associated with the context.
 --
@@ -522,8 +507,8 @@ setSummary clsContext  value =
 --
 -- ObjC selector: @- thumbnail@
 thumbnail :: IsCLSContext clsContext => clsContext -> IO (Ptr ())
-thumbnail clsContext  =
-    fmap castPtr $ sendMsg clsContext (mkSelector "thumbnail") (retPtr retVoid) []
+thumbnail clsContext =
+  sendMessage clsContext thumbnailSelector
 
 -- | An optional thumbnail image associated with the context.
 --
@@ -531,15 +516,15 @@ thumbnail clsContext  =
 --
 -- ObjC selector: @- setThumbnail:@
 setThumbnail :: IsCLSContext clsContext => clsContext -> Ptr () -> IO ()
-setThumbnail clsContext  value =
-    sendMsg clsContext (mkSelector "setThumbnail:") retVoid [argPtr value]
+setThumbnail clsContext value =
+  sendMessage clsContext setThumbnailSelector value
 
 -- | Returns true if self is the active context.
 --
 -- ObjC selector: @- active@
 active :: IsCLSContext clsContext => clsContext -> IO Bool
-active clsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clsContext (mkSelector "active") retCULong []
+active clsContext =
+  sendMessage clsContext activeSelector
 
 -- | Returns the current activity.
 --
@@ -547,15 +532,15 @@ active clsContext  =
 --
 -- ObjC selector: @- currentActivity@
 currentActivity :: IsCLSContext clsContext => clsContext -> IO (Id CLSActivity)
-currentActivity clsContext  =
-    sendMsg clsContext (mkSelector "currentActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentActivity clsContext =
+  sendMessage clsContext currentActivitySelector
 
 -- | Returns the parent of this context.
 --
 -- ObjC selector: @- parent@
 parent :: IsCLSContext clsContext => clsContext -> IO (Id CLSContext)
-parent clsContext  =
-    sendMsg clsContext (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent clsContext =
+  sendMessage clsContext parentSelector
 
 -- | Child contexts that can be navigated to from this context.
 --
@@ -565,178 +550,178 @@ parent clsContext  =
 --
 -- ObjC selector: @- navigationChildContexts@
 navigationChildContexts :: IsCLSContext clsContext => clsContext -> IO (Id NSArray)
-navigationChildContexts clsContext  =
-    sendMsg clsContext (mkSelector "navigationChildContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+navigationChildContexts clsContext =
+  sendMessage clsContext navigationChildContextsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLSContext)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLSContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithType:identifier:title:@
-initWithType_identifier_titleSelector :: Selector
+initWithType_identifier_titleSelector :: Selector '[CLSContextType, Id NSString, Id NSString] (Id CLSContext)
 initWithType_identifier_titleSelector = mkSelector "initWithType:identifier:title:"
 
 -- | @Selector@ for @becomeActive@
-becomeActiveSelector :: Selector
+becomeActiveSelector :: Selector '[] ()
 becomeActiveSelector = mkSelector "becomeActive"
 
 -- | @Selector@ for @resignActive@
-resignActiveSelector :: Selector
+resignActiveSelector :: Selector '[] ()
 resignActiveSelector = mkSelector "resignActive"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[CLSContextType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @addProgressReportingCapabilities:@
-addProgressReportingCapabilitiesSelector :: Selector
+addProgressReportingCapabilitiesSelector :: Selector '[Id NSSet] ()
 addProgressReportingCapabilitiesSelector = mkSelector "addProgressReportingCapabilities:"
 
 -- | @Selector@ for @resetProgressReportingCapabilities@
-resetProgressReportingCapabilitiesSelector :: Selector
+resetProgressReportingCapabilitiesSelector :: Selector '[] ()
 resetProgressReportingCapabilitiesSelector = mkSelector "resetProgressReportingCapabilities"
 
 -- | @Selector@ for @createNewActivity@
-createNewActivitySelector :: Selector
+createNewActivitySelector :: Selector '[] (Id CLSActivity)
 createNewActivitySelector = mkSelector "createNewActivity"
 
 -- | @Selector@ for @removeFromParent@
-removeFromParentSelector :: Selector
+removeFromParentSelector :: Selector '[] ()
 removeFromParentSelector = mkSelector "removeFromParent"
 
 -- | @Selector@ for @addChildContext:@
-addChildContextSelector :: Selector
+addChildContextSelector :: Selector '[Id CLSContext] ()
 addChildContextSelector = mkSelector "addChildContext:"
 
 -- | @Selector@ for @descendantMatchingIdentifierPath:completion:@
-descendantMatchingIdentifierPath_completionSelector :: Selector
+descendantMatchingIdentifierPath_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 descendantMatchingIdentifierPath_completionSelector = mkSelector "descendantMatchingIdentifierPath:completion:"
 
 -- | @Selector@ for @addNavigationChildContext:@
-addNavigationChildContextSelector :: Selector
+addNavigationChildContextSelector :: Selector '[Id CLSContext] ()
 addNavigationChildContextSelector = mkSelector "addNavigationChildContext:"
 
 -- | @Selector@ for @removeNavigationChildContext:@
-removeNavigationChildContextSelector :: Selector
+removeNavigationChildContextSelector :: Selector '[Id CLSContext] ()
 removeNavigationChildContextSelector = mkSelector "removeNavigationChildContext:"
 
 -- | @Selector@ for @identifierPath@
-identifierPathSelector :: Selector
+identifierPathSelector :: Selector '[] (Id NSArray)
 identifierPathSelector = mkSelector "identifierPath"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @universalLinkURL@
-universalLinkURLSelector :: Selector
+universalLinkURLSelector :: Selector '[] (Id NSURL)
 universalLinkURLSelector = mkSelector "universalLinkURL"
 
 -- | @Selector@ for @setUniversalLinkURL:@
-setUniversalLinkURLSelector :: Selector
+setUniversalLinkURLSelector :: Selector '[Id NSURL] ()
 setUniversalLinkURLSelector = mkSelector "setUniversalLinkURL:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CLSContextType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @customTypeName@
-customTypeNameSelector :: Selector
+customTypeNameSelector :: Selector '[] (Id NSString)
 customTypeNameSelector = mkSelector "customTypeName"
 
 -- | @Selector@ for @setCustomTypeName:@
-setCustomTypeNameSelector :: Selector
+setCustomTypeNameSelector :: Selector '[Id NSString] ()
 setCustomTypeNameSelector = mkSelector "setCustomTypeName:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @displayOrder@
-displayOrderSelector :: Selector
+displayOrderSelector :: Selector '[] CLong
 displayOrderSelector = mkSelector "displayOrder"
 
 -- | @Selector@ for @setDisplayOrder:@
-setDisplayOrderSelector :: Selector
+setDisplayOrderSelector :: Selector '[CLong] ()
 setDisplayOrderSelector = mkSelector "setDisplayOrder:"
 
 -- | @Selector@ for @topic@
-topicSelector :: Selector
+topicSelector :: Selector '[] (Id NSString)
 topicSelector = mkSelector "topic"
 
 -- | @Selector@ for @setTopic:@
-setTopicSelector :: Selector
+setTopicSelector :: Selector '[Id NSString] ()
 setTopicSelector = mkSelector "setTopic:"
 
 -- | @Selector@ for @assignable@
-assignableSelector :: Selector
+assignableSelector :: Selector '[] Bool
 assignableSelector = mkSelector "assignable"
 
 -- | @Selector@ for @setAssignable:@
-setAssignableSelector :: Selector
+setAssignableSelector :: Selector '[Bool] ()
 setAssignableSelector = mkSelector "setAssignable:"
 
 -- | @Selector@ for @suggestedAge@
-suggestedAgeSelector :: Selector
+suggestedAgeSelector :: Selector '[] NSRange
 suggestedAgeSelector = mkSelector "suggestedAge"
 
 -- | @Selector@ for @setSuggestedAge:@
-setSuggestedAgeSelector :: Selector
+setSuggestedAgeSelector :: Selector '[NSRange] ()
 setSuggestedAgeSelector = mkSelector "setSuggestedAge:"
 
 -- | @Selector@ for @suggestedCompletionTime@
-suggestedCompletionTimeSelector :: Selector
+suggestedCompletionTimeSelector :: Selector '[] NSRange
 suggestedCompletionTimeSelector = mkSelector "suggestedCompletionTime"
 
 -- | @Selector@ for @setSuggestedCompletionTime:@
-setSuggestedCompletionTimeSelector :: Selector
+setSuggestedCompletionTimeSelector :: Selector '[NSRange] ()
 setSuggestedCompletionTimeSelector = mkSelector "setSuggestedCompletionTime:"
 
 -- | @Selector@ for @progressReportingCapabilities@
-progressReportingCapabilitiesSelector :: Selector
+progressReportingCapabilitiesSelector :: Selector '[] (Id NSSet)
 progressReportingCapabilitiesSelector = mkSelector "progressReportingCapabilities"
 
 -- | @Selector@ for @summary@
-summarySelector :: Selector
+summarySelector :: Selector '[] (Id NSString)
 summarySelector = mkSelector "summary"
 
 -- | @Selector@ for @setSummary:@
-setSummarySelector :: Selector
+setSummarySelector :: Selector '[Id NSString] ()
 setSummarySelector = mkSelector "setSummary:"
 
 -- | @Selector@ for @thumbnail@
-thumbnailSelector :: Selector
+thumbnailSelector :: Selector '[] (Ptr ())
 thumbnailSelector = mkSelector "thumbnail"
 
 -- | @Selector@ for @setThumbnail:@
-setThumbnailSelector :: Selector
+setThumbnailSelector :: Selector '[Ptr ()] ()
 setThumbnailSelector = mkSelector "setThumbnail:"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @currentActivity@
-currentActivitySelector :: Selector
+currentActivitySelector :: Selector '[] (Id CLSActivity)
 currentActivitySelector = mkSelector "currentActivity"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id CLSContext)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @navigationChildContexts@
-navigationChildContextsSelector :: Selector
+navigationChildContextsSelector :: Selector '[] (Id NSArray)
 navigationChildContextsSelector = mkSelector "navigationChildContexts"
 

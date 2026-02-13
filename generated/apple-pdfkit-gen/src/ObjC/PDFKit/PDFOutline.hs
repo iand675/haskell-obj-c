@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.PDFKit.PDFOutline
   , setDestination
   , action
   , setAction
-  , initSelector
-  , childAtIndexSelector
-  , insertChild_atIndexSelector
-  , removeFromParentSelector
-  , documentSelector
-  , parentSelector
-  , numberOfChildrenSelector
-  , indexSelector
-  , labelSelector
-  , setLabelSelector
-  , isOpenSelector
-  , setIsOpenSelector
-  , destinationSelector
-  , setDestinationSelector
   , actionSelector
+  , childAtIndexSelector
+  , destinationSelector
+  , documentSelector
+  , indexSelector
+  , initSelector
+  , insertChild_atIndexSelector
+  , isOpenSelector
+  , labelSelector
+  , numberOfChildrenSelector
+  , parentSelector
+  , removeFromParentSelector
   , setActionSelector
+  , setDestinationSelector
+  , setIsOpenSelector
+  , setLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,152 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPDFOutline pdfOutline => pdfOutline -> IO (Id PDFOutline)
-init_ pdfOutline  =
-    sendMsg pdfOutline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pdfOutline =
+  sendOwnedMessage pdfOutline initSelector
 
 -- | @- childAtIndex:@
 childAtIndex :: IsPDFOutline pdfOutline => pdfOutline -> CULong -> IO (Id PDFOutline)
-childAtIndex pdfOutline  index =
-    sendMsg pdfOutline (mkSelector "childAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+childAtIndex pdfOutline index =
+  sendMessage pdfOutline childAtIndexSelector index
 
 -- | @- insertChild:atIndex:@
 insertChild_atIndex :: (IsPDFOutline pdfOutline, IsPDFOutline child) => pdfOutline -> child -> CULong -> IO ()
-insertChild_atIndex pdfOutline  child index =
-  withObjCPtr child $ \raw_child ->
-      sendMsg pdfOutline (mkSelector "insertChild:atIndex:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCULong index]
+insertChild_atIndex pdfOutline child index =
+  sendMessage pdfOutline insertChild_atIndexSelector (toPDFOutline child) index
 
 -- | @- removeFromParent@
 removeFromParent :: IsPDFOutline pdfOutline => pdfOutline -> IO ()
-removeFromParent pdfOutline  =
-    sendMsg pdfOutline (mkSelector "removeFromParent") retVoid []
+removeFromParent pdfOutline =
+  sendMessage pdfOutline removeFromParentSelector
 
 -- | @- document@
 document :: IsPDFOutline pdfOutline => pdfOutline -> IO (Id PDFDocument)
-document pdfOutline  =
-    sendMsg pdfOutline (mkSelector "document") (retPtr retVoid) [] >>= retainedObject . castPtr
+document pdfOutline =
+  sendMessage pdfOutline documentSelector
 
 -- | @- parent@
 parent :: IsPDFOutline pdfOutline => pdfOutline -> IO RawId
-parent pdfOutline  =
-    fmap (RawId . castPtr) $ sendMsg pdfOutline (mkSelector "parent") (retPtr retVoid) []
+parent pdfOutline =
+  sendMessage pdfOutline parentSelector
 
 -- | @- numberOfChildren@
 numberOfChildren :: IsPDFOutline pdfOutline => pdfOutline -> IO CULong
-numberOfChildren pdfOutline  =
-    sendMsg pdfOutline (mkSelector "numberOfChildren") retCULong []
+numberOfChildren pdfOutline =
+  sendMessage pdfOutline numberOfChildrenSelector
 
 -- | @- index@
 index :: IsPDFOutline pdfOutline => pdfOutline -> IO CULong
-index pdfOutline  =
-    sendMsg pdfOutline (mkSelector "index") retCULong []
+index pdfOutline =
+  sendMessage pdfOutline indexSelector
 
 -- | @- label@
 label :: IsPDFOutline pdfOutline => pdfOutline -> IO (Id NSString)
-label pdfOutline  =
-    sendMsg pdfOutline (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label pdfOutline =
+  sendMessage pdfOutline labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsPDFOutline pdfOutline, IsNSString value) => pdfOutline -> value -> IO ()
-setLabel pdfOutline  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfOutline (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel pdfOutline value =
+  sendMessage pdfOutline setLabelSelector (toNSString value)
 
 -- | @- isOpen@
 isOpen :: IsPDFOutline pdfOutline => pdfOutline -> IO Bool
-isOpen pdfOutline  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfOutline (mkSelector "isOpen") retCULong []
+isOpen pdfOutline =
+  sendMessage pdfOutline isOpenSelector
 
 -- | @- setIsOpen:@
 setIsOpen :: IsPDFOutline pdfOutline => pdfOutline -> Bool -> IO ()
-setIsOpen pdfOutline  value =
-    sendMsg pdfOutline (mkSelector "setIsOpen:") retVoid [argCULong (if value then 1 else 0)]
+setIsOpen pdfOutline value =
+  sendMessage pdfOutline setIsOpenSelector value
 
 -- | @- destination@
 destination :: IsPDFOutline pdfOutline => pdfOutline -> IO (Id PDFDestination)
-destination pdfOutline  =
-    sendMsg pdfOutline (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination pdfOutline =
+  sendMessage pdfOutline destinationSelector
 
 -- | @- setDestination:@
 setDestination :: (IsPDFOutline pdfOutline, IsPDFDestination value) => pdfOutline -> value -> IO ()
-setDestination pdfOutline  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfOutline (mkSelector "setDestination:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDestination pdfOutline value =
+  sendMessage pdfOutline setDestinationSelector (toPDFDestination value)
 
 -- | @- action@
 action :: IsPDFOutline pdfOutline => pdfOutline -> IO RawId
-action pdfOutline  =
-    fmap (RawId . castPtr) $ sendMsg pdfOutline (mkSelector "action") (retPtr retVoid) []
+action pdfOutline =
+  sendMessage pdfOutline actionSelector
 
 -- | @- setAction:@
 setAction :: IsPDFOutline pdfOutline => pdfOutline -> RawId -> IO ()
-setAction pdfOutline  value =
-    sendMsg pdfOutline (mkSelector "setAction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAction pdfOutline value =
+  sendMessage pdfOutline setActionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PDFOutline)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @childAtIndex:@
-childAtIndexSelector :: Selector
+childAtIndexSelector :: Selector '[CULong] (Id PDFOutline)
 childAtIndexSelector = mkSelector "childAtIndex:"
 
 -- | @Selector@ for @insertChild:atIndex:@
-insertChild_atIndexSelector :: Selector
+insertChild_atIndexSelector :: Selector '[Id PDFOutline, CULong] ()
 insertChild_atIndexSelector = mkSelector "insertChild:atIndex:"
 
 -- | @Selector@ for @removeFromParent@
-removeFromParentSelector :: Selector
+removeFromParentSelector :: Selector '[] ()
 removeFromParentSelector = mkSelector "removeFromParent"
 
 -- | @Selector@ for @document@
-documentSelector :: Selector
+documentSelector :: Selector '[] (Id PDFDocument)
 documentSelector = mkSelector "document"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] RawId
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @numberOfChildren@
-numberOfChildrenSelector :: Selector
+numberOfChildrenSelector :: Selector '[] CULong
 numberOfChildrenSelector = mkSelector "numberOfChildren"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @isOpen@
-isOpenSelector :: Selector
+isOpenSelector :: Selector '[] Bool
 isOpenSelector = mkSelector "isOpen"
 
 -- | @Selector@ for @setIsOpen:@
-setIsOpenSelector :: Selector
+setIsOpenSelector :: Selector '[Bool] ()
 setIsOpenSelector = mkSelector "setIsOpen:"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id PDFDestination)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @setDestination:@
-setDestinationSelector :: Selector
+setDestinationSelector :: Selector '[Id PDFDestination] ()
 setDestinationSelector = mkSelector "setDestination:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] RawId
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[RawId] ()
 setActionSelector = mkSelector "setAction:"
 

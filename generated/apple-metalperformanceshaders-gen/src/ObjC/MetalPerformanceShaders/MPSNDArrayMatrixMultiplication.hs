@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,18 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMatrixMultiplication
   , beta
   , setBeta
   , alphaSelector
-  , setAlphaSelector
   , betaSelector
+  , setAlphaSelector
   , setBetaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSNDArrayMatrixMultiplication mpsndArrayMatrixMultiplication => mpsndArrayMatrixMultiplication -> IO CDouble
-alpha mpsndArrayMatrixMultiplication  =
-    sendMsg mpsndArrayMatrixMultiplication (mkSelector "alpha") retCDouble []
+alpha mpsndArrayMatrixMultiplication =
+  sendMessage mpsndArrayMatrixMultiplication alphaSelector
 
 -- | alpha
 --
@@ -62,8 +59,8 @@ alpha mpsndArrayMatrixMultiplication  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSNDArrayMatrixMultiplication mpsndArrayMatrixMultiplication => mpsndArrayMatrixMultiplication -> CDouble -> IO ()
-setAlpha mpsndArrayMatrixMultiplication  value =
-    sendMsg mpsndArrayMatrixMultiplication (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha mpsndArrayMatrixMultiplication value =
+  sendMessage mpsndArrayMatrixMultiplication setAlphaSelector value
 
 -- | beta
 --
@@ -71,8 +68,8 @@ setAlpha mpsndArrayMatrixMultiplication  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSNDArrayMatrixMultiplication mpsndArrayMatrixMultiplication => mpsndArrayMatrixMultiplication -> IO CDouble
-beta mpsndArrayMatrixMultiplication  =
-    sendMsg mpsndArrayMatrixMultiplication (mkSelector "beta") retCDouble []
+beta mpsndArrayMatrixMultiplication =
+  sendMessage mpsndArrayMatrixMultiplication betaSelector
 
 -- | beta
 --
@@ -80,26 +77,26 @@ beta mpsndArrayMatrixMultiplication  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSNDArrayMatrixMultiplication mpsndArrayMatrixMultiplication => mpsndArrayMatrixMultiplication -> CDouble -> IO ()
-setBeta mpsndArrayMatrixMultiplication  value =
-    sendMsg mpsndArrayMatrixMultiplication (mkSelector "setBeta:") retVoid [argCDouble value]
+setBeta mpsndArrayMatrixMultiplication value =
+  sendMessage mpsndArrayMatrixMultiplication setBetaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CDouble
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CDouble] ()
 setBetaSelector = mkSelector "setBeta:"
 

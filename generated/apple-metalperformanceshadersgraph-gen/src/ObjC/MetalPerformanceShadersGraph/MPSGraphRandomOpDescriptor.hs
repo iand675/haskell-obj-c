@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,25 +29,25 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphRandomOpDescriptor
   , setStandardDeviation
   , samplingMethod
   , setSamplingMethod
+  , dataTypeSelector
   , descriptorWithDistribution_dataTypeSelector
   , distributionSelector
-  , setDistributionSelector
-  , dataTypeSelector
-  , setDataTypeSelector
-  , minSelector
-  , setMinSelector
-  , maxSelector
-  , setMaxSelector
-  , minIntegerSelector
-  , setMinIntegerSelector
   , maxIntegerSelector
-  , setMaxIntegerSelector
+  , maxSelector
   , meanSelector
-  , setMeanSelector
-  , standardDeviationSelector
-  , setStandardDeviationSelector
+  , minIntegerSelector
+  , minSelector
   , samplingMethodSelector
+  , setDataTypeSelector
+  , setDistributionSelector
+  , setMaxIntegerSelector
+  , setMaxSelector
+  , setMeanSelector
+  , setMinIntegerSelector
+  , setMinSelector
   , setSamplingMethodSelector
+  , setStandardDeviationSelector
+  , standardDeviationSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -87,15 +88,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphRandomOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -111,21 +108,21 @@ descriptorWithDistribution_dataType :: MPSGraphRandomDistribution -> MPSDataType
 descriptorWithDistribution_dataType distribution dataType =
   do
     cls' <- getRequiredClass "MPSGraphRandomOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithDistribution:dataType:") (retPtr retVoid) [argCULong (coerce distribution), argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithDistribution_dataTypeSelector distribution dataType
 
 -- | The type of distribution to draw samples from. See MPSGraphRandomDistribution.
 --
 -- ObjC selector: @- distribution@
 distribution :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO MPSGraphRandomDistribution
-distribution mpsGraphRandomOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRandomDistribution) $ sendMsg mpsGraphRandomOpDescriptor (mkSelector "distribution") retCULong []
+distribution mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor distributionSelector
 
 -- | The type of distribution to draw samples from. See MPSGraphRandomDistribution.
 --
 -- ObjC selector: @- setDistribution:@
 setDistribution :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> MPSGraphRandomDistribution -> IO ()
-setDistribution mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setDistribution:") retVoid [argCULong (coerce value)]
+setDistribution mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setDistributionSelector value
 
 -- | The data type of the generated result values.
 --
@@ -133,8 +130,8 @@ setDistribution mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO MPSDataType
-dataType mpsGraphRandomOpDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphRandomOpDescriptor (mkSelector "dataType") retCUInt []
+dataType mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor dataTypeSelector
 
 -- | The data type of the generated result values.
 --
@@ -142,8 +139,8 @@ dataType mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> MPSDataType -> IO ()
-setDataType mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setDataType:") retVoid [argCUInt (coerce value)]
+setDataType mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setDataTypeSelector value
 
 -- | The lower range of the distribution.
 --
@@ -151,8 +148,8 @@ setDataType mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- min@
 min_ :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CFloat
-min_ mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "min") retCFloat []
+min_ mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor minSelector
 
 -- | The lower range of the distribution.
 --
@@ -160,8 +157,8 @@ min_ mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setMin:@
 setMin :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CFloat -> IO ()
-setMin mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setMin:") retVoid [argCFloat value]
+setMin mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setMinSelector value
 
 -- | The upper range of the distribution.
 --
@@ -169,8 +166,8 @@ setMin mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- max@
 max_ :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CFloat
-max_ mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "max") retCFloat []
+max_ mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor maxSelector
 
 -- | The upper range of the distribution.
 --
@@ -178,8 +175,8 @@ max_ mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setMax:@
 setMax :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CFloat -> IO ()
-setMax mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setMax:") retVoid [argCFloat value]
+setMax mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setMaxSelector value
 
 -- | The lower range of the distribution.
 --
@@ -187,8 +184,8 @@ setMax mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- minInteger@
 minInteger :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CLong
-minInteger mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "minInteger") retCLong []
+minInteger mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor minIntegerSelector
 
 -- | The lower range of the distribution.
 --
@@ -196,8 +193,8 @@ minInteger mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setMinInteger:@
 setMinInteger :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CLong -> IO ()
-setMinInteger mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setMinInteger:") retVoid [argCLong value]
+setMinInteger mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setMinIntegerSelector value
 
 -- | The upper range of the distribution.
 --
@@ -205,8 +202,8 @@ setMinInteger mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- maxInteger@
 maxInteger :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CLong
-maxInteger mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "maxInteger") retCLong []
+maxInteger mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor maxIntegerSelector
 
 -- | The upper range of the distribution.
 --
@@ -214,8 +211,8 @@ maxInteger mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setMaxInteger:@
 setMaxInteger :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CLong -> IO ()
-setMaxInteger mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setMaxInteger:") retVoid [argCLong value]
+setMaxInteger mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setMaxIntegerSelector value
 
 -- | The mean of the distribution.
 --
@@ -223,8 +220,8 @@ setMaxInteger mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- mean@
 mean :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CFloat
-mean mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "mean") retCFloat []
+mean mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor meanSelector
 
 -- | The mean of the distribution.
 --
@@ -232,8 +229,8 @@ mean mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setMean:@
 setMean :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CFloat -> IO ()
-setMean mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setMean:") retVoid [argCFloat value]
+setMean mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setMeanSelector value
 
 -- | The standard deviation of the distribution.
 --
@@ -241,8 +238,8 @@ setMean mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- standardDeviation@
 standardDeviation :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO CFloat
-standardDeviation mpsGraphRandomOpDescriptor  =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "standardDeviation") retCFloat []
+standardDeviation mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor standardDeviationSelector
 
 -- | The standard deviation of the distribution.
 --
@@ -250,8 +247,8 @@ standardDeviation mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setStandardDeviation:@
 setStandardDeviation :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> CFloat -> IO ()
-setStandardDeviation mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setStandardDeviation:") retVoid [argCFloat value]
+setStandardDeviation mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setStandardDeviationSelector value
 
 -- | The sampling method of the distribution.
 --
@@ -259,8 +256,8 @@ setStandardDeviation mpsGraphRandomOpDescriptor  value =
 --
 -- ObjC selector: @- samplingMethod@
 samplingMethod :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> IO MPSGraphRandomNormalSamplingMethod
-samplingMethod mpsGraphRandomOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRandomNormalSamplingMethod) $ sendMsg mpsGraphRandomOpDescriptor (mkSelector "samplingMethod") retCULong []
+samplingMethod mpsGraphRandomOpDescriptor =
+  sendMessage mpsGraphRandomOpDescriptor samplingMethodSelector
 
 -- | The sampling method of the distribution.
 --
@@ -268,86 +265,86 @@ samplingMethod mpsGraphRandomOpDescriptor  =
 --
 -- ObjC selector: @- setSamplingMethod:@
 setSamplingMethod :: IsMPSGraphRandomOpDescriptor mpsGraphRandomOpDescriptor => mpsGraphRandomOpDescriptor -> MPSGraphRandomNormalSamplingMethod -> IO ()
-setSamplingMethod mpsGraphRandomOpDescriptor  value =
-    sendMsg mpsGraphRandomOpDescriptor (mkSelector "setSamplingMethod:") retVoid [argCULong (coerce value)]
+setSamplingMethod mpsGraphRandomOpDescriptor value =
+  sendMessage mpsGraphRandomOpDescriptor setSamplingMethodSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithDistribution:dataType:@
-descriptorWithDistribution_dataTypeSelector :: Selector
+descriptorWithDistribution_dataTypeSelector :: Selector '[MPSGraphRandomDistribution, MPSDataType] (Id MPSGraphRandomOpDescriptor)
 descriptorWithDistribution_dataTypeSelector = mkSelector "descriptorWithDistribution:dataType:"
 
 -- | @Selector@ for @distribution@
-distributionSelector :: Selector
+distributionSelector :: Selector '[] MPSGraphRandomDistribution
 distributionSelector = mkSelector "distribution"
 
 -- | @Selector@ for @setDistribution:@
-setDistributionSelector :: Selector
+setDistributionSelector :: Selector '[MPSGraphRandomDistribution] ()
 setDistributionSelector = mkSelector "setDistribution:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MPSDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @min@
-minSelector :: Selector
+minSelector :: Selector '[] CFloat
 minSelector = mkSelector "min"
 
 -- | @Selector@ for @setMin:@
-setMinSelector :: Selector
+setMinSelector :: Selector '[CFloat] ()
 setMinSelector = mkSelector "setMin:"
 
 -- | @Selector@ for @max@
-maxSelector :: Selector
+maxSelector :: Selector '[] CFloat
 maxSelector = mkSelector "max"
 
 -- | @Selector@ for @setMax:@
-setMaxSelector :: Selector
+setMaxSelector :: Selector '[CFloat] ()
 setMaxSelector = mkSelector "setMax:"
 
 -- | @Selector@ for @minInteger@
-minIntegerSelector :: Selector
+minIntegerSelector :: Selector '[] CLong
 minIntegerSelector = mkSelector "minInteger"
 
 -- | @Selector@ for @setMinInteger:@
-setMinIntegerSelector :: Selector
+setMinIntegerSelector :: Selector '[CLong] ()
 setMinIntegerSelector = mkSelector "setMinInteger:"
 
 -- | @Selector@ for @maxInteger@
-maxIntegerSelector :: Selector
+maxIntegerSelector :: Selector '[] CLong
 maxIntegerSelector = mkSelector "maxInteger"
 
 -- | @Selector@ for @setMaxInteger:@
-setMaxIntegerSelector :: Selector
+setMaxIntegerSelector :: Selector '[CLong] ()
 setMaxIntegerSelector = mkSelector "setMaxInteger:"
 
 -- | @Selector@ for @mean@
-meanSelector :: Selector
+meanSelector :: Selector '[] CFloat
 meanSelector = mkSelector "mean"
 
 -- | @Selector@ for @setMean:@
-setMeanSelector :: Selector
+setMeanSelector :: Selector '[CFloat] ()
 setMeanSelector = mkSelector "setMean:"
 
 -- | @Selector@ for @standardDeviation@
-standardDeviationSelector :: Selector
+standardDeviationSelector :: Selector '[] CFloat
 standardDeviationSelector = mkSelector "standardDeviation"
 
 -- | @Selector@ for @setStandardDeviation:@
-setStandardDeviationSelector :: Selector
+setStandardDeviationSelector :: Selector '[CFloat] ()
 setStandardDeviationSelector = mkSelector "setStandardDeviation:"
 
 -- | @Selector@ for @samplingMethod@
-samplingMethodSelector :: Selector
+samplingMethodSelector :: Selector '[] MPSGraphRandomNormalSamplingMethod
 samplingMethodSelector = mkSelector "samplingMethod"
 
 -- | @Selector@ for @setSamplingMethod:@
-setSamplingMethodSelector :: Selector
+setSamplingMethodSelector :: Selector '[MPSGraphRandomNormalSamplingMethod] ()
 setSamplingMethodSelector = mkSelector "setSamplingMethod:"
 

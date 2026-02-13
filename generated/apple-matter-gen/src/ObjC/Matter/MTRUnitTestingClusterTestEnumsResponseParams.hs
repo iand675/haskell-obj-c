@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRUnitTestingClusterTestEnumsResponseParams
   , setArg2
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
   , arg1Selector
-  , setArg1Selector
   , arg2Selector
+  , initWithResponseValue_errorSelector
+  , setArg1Selector
   , setArg2Selector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrUnitTestingClusterTestEnumsResponseParams -> responseValue -> error_ -> IO (Id MTRUnitTestingClusterTestEnumsResponseParams)
-initWithResponseValue_error mtrUnitTestingClusterTestEnumsResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrUnitTestingClusterTestEnumsResponseParams responseValue error_ =
+  sendOwnedMessage mtrUnitTestingClusterTestEnumsResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- arg1@
 arg1 :: IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams => mtrUnitTestingClusterTestEnumsResponseParams -> IO (Id NSNumber)
-arg1 mtrUnitTestingClusterTestEnumsResponseParams  =
-    sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "arg1") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg1 mtrUnitTestingClusterTestEnumsResponseParams =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams arg1Selector
 
 -- | @- setArg1:@
 setArg1 :: (IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams, IsNSNumber value) => mtrUnitTestingClusterTestEnumsResponseParams -> value -> IO ()
-setArg1 mtrUnitTestingClusterTestEnumsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "setArg1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg1 mtrUnitTestingClusterTestEnumsResponseParams value =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams setArg1Selector (toNSNumber value)
 
 -- | @- arg2@
 arg2 :: IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams => mtrUnitTestingClusterTestEnumsResponseParams -> IO (Id NSNumber)
-arg2 mtrUnitTestingClusterTestEnumsResponseParams  =
-    sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "arg2") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg2 mtrUnitTestingClusterTestEnumsResponseParams =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams arg2Selector
 
 -- | @- setArg2:@
 setArg2 :: (IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams, IsNSNumber value) => mtrUnitTestingClusterTestEnumsResponseParams -> value -> IO ()
-setArg2 mtrUnitTestingClusterTestEnumsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "setArg2:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg2 mtrUnitTestingClusterTestEnumsResponseParams value =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams setArg2Selector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setArg2 mtrUnitTestingClusterTestEnumsResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams => mtrUnitTestingClusterTestEnumsResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestEnumsResponseParams  =
-    sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestEnumsResponseParams =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestEnumsResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestEnumsResponseParams mtrUnitTestingClusterTestEnumsResponseParams, IsNSNumber value) => mtrUnitTestingClusterTestEnumsResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestEnumsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEnumsResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestEnumsResponseParams value =
+  sendMessage mtrUnitTestingClusterTestEnumsResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRUnitTestingClusterTestEnumsResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @arg1@
-arg1Selector :: Selector
+arg1Selector :: Selector '[] (Id NSNumber)
 arg1Selector = mkSelector "arg1"
 
 -- | @Selector@ for @setArg1:@
-setArg1Selector :: Selector
+setArg1Selector :: Selector '[Id NSNumber] ()
 setArg1Selector = mkSelector "setArg1:"
 
 -- | @Selector@ for @arg2@
-arg2Selector :: Selector
+arg2Selector :: Selector '[] (Id NSNumber)
 arg2Selector = mkSelector "arg2"
 
 -- | @Selector@ for @setArg2:@
-setArg2Selector :: Selector
+setArg2Selector :: Selector '[Id NSNumber] ()
 setArg2Selector = mkSelector "setArg2:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

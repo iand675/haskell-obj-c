@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,24 +28,24 @@ module ObjC.PhotosUI.PHPickerConfiguration
   , setEdgesWithoutContentMargins
   , disabledCapabilities
   , setDisabledCapabilities
-  , initWithPhotoLibrarySelector
-  , initSelector
-  , preferredAssetRepresentationModeSelector
-  , setPreferredAssetRepresentationModeSelector
-  , selectionSelector
-  , setSelectionSelector
-  , selectionLimitSelector
-  , setSelectionLimitSelector
-  , filterSelector
-  , setFilterSelector
-  , preselectedAssetIdentifiersSelector
-  , setPreselectedAssetIdentifiersSelector
-  , modeSelector
-  , setModeSelector
-  , edgesWithoutContentMarginsSelector
-  , setEdgesWithoutContentMarginsSelector
   , disabledCapabilitiesSelector
+  , edgesWithoutContentMarginsSelector
+  , filterSelector
+  , initSelector
+  , initWithPhotoLibrarySelector
+  , modeSelector
+  , preferredAssetRepresentationModeSelector
+  , preselectedAssetIdentifiersSelector
+  , selectionLimitSelector
+  , selectionSelector
   , setDisabledCapabilitiesSelector
+  , setEdgesWithoutContentMarginsSelector
+  , setFilterSelector
+  , setModeSelector
+  , setPreferredAssetRepresentationModeSelector
+  , setPreselectedAssetIdentifiersSelector
+  , setSelectionLimitSelector
+  , setSelectionSelector
 
   -- * Enum types
   , NSDirectionalRectEdge(NSDirectionalRectEdge)
@@ -76,15 +77,11 @@ module ObjC.PhotosUI.PHPickerConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -98,16 +95,15 @@ import ObjC.Photos.Internal.Classes
 --
 -- ObjC selector: @- initWithPhotoLibrary:@
 initWithPhotoLibrary :: (IsPHPickerConfiguration phPickerConfiguration, IsPHPhotoLibrary photoLibrary) => phPickerConfiguration -> photoLibrary -> IO (Id PHPickerConfiguration)
-initWithPhotoLibrary phPickerConfiguration  photoLibrary =
-  withObjCPtr photoLibrary $ \raw_photoLibrary ->
-      sendMsg phPickerConfiguration (mkSelector "initWithPhotoLibrary:") (retPtr retVoid) [argPtr (castPtr raw_photoLibrary :: Ptr ())] >>= ownedObject . castPtr
+initWithPhotoLibrary phPickerConfiguration photoLibrary =
+  sendOwnedMessage phPickerConfiguration initWithPhotoLibrarySelector (toPHPhotoLibrary photoLibrary)
 
 -- | Initializes a new configuration with the system photo library. This configuration never returns asset identifiers.
 --
 -- ObjC selector: @- init@
 init_ :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO (Id PHPickerConfiguration)
-init_ phPickerConfiguration  =
-    sendMsg phPickerConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPickerConfiguration =
+  sendOwnedMessage phPickerConfiguration initSelector
 
 -- | The preferred representation mode of selected assets. Default is @PHPickerConfigurationAssetRepresentationModeAutomatic.@
 --
@@ -115,8 +111,8 @@ init_ phPickerConfiguration  =
 --
 -- ObjC selector: @- preferredAssetRepresentationMode@
 preferredAssetRepresentationMode :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO PHPickerConfigurationAssetRepresentationMode
-preferredAssetRepresentationMode phPickerConfiguration  =
-    fmap (coerce :: CLong -> PHPickerConfigurationAssetRepresentationMode) $ sendMsg phPickerConfiguration (mkSelector "preferredAssetRepresentationMode") retCLong []
+preferredAssetRepresentationMode phPickerConfiguration =
+  sendMessage phPickerConfiguration preferredAssetRepresentationModeSelector
 
 -- | The preferred representation mode of selected assets. Default is @PHPickerConfigurationAssetRepresentationModeAutomatic.@
 --
@@ -124,22 +120,22 @@ preferredAssetRepresentationMode phPickerConfiguration  =
 --
 -- ObjC selector: @- setPreferredAssetRepresentationMode:@
 setPreferredAssetRepresentationMode :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> PHPickerConfigurationAssetRepresentationMode -> IO ()
-setPreferredAssetRepresentationMode phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setPreferredAssetRepresentationMode:") retVoid [argCLong (coerce value)]
+setPreferredAssetRepresentationMode phPickerConfiguration value =
+  sendMessage phPickerConfiguration setPreferredAssetRepresentationModeSelector value
 
 -- | The selection behavior of the picker. Default is @PHPickerConfigurationSelectionDefault.@
 --
 -- ObjC selector: @- selection@
 selection :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO PHPickerConfigurationSelection
-selection phPickerConfiguration  =
-    fmap (coerce :: CLong -> PHPickerConfigurationSelection) $ sendMsg phPickerConfiguration (mkSelector "selection") retCLong []
+selection phPickerConfiguration =
+  sendMessage phPickerConfiguration selectionSelector
 
 -- | The selection behavior of the picker. Default is @PHPickerConfigurationSelectionDefault.@
 --
 -- ObjC selector: @- setSelection:@
 setSelection :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> PHPickerConfigurationSelection -> IO ()
-setSelection phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setSelection:") retVoid [argCLong (coerce value)]
+setSelection phPickerConfiguration value =
+  sendMessage phPickerConfiguration setSelectionSelector value
 
 -- | The maximum number of assets that can be selected. Default is 1.
 --
@@ -147,8 +143,8 @@ setSelection phPickerConfiguration  value =
 --
 -- ObjC selector: @- selectionLimit@
 selectionLimit :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO CLong
-selectionLimit phPickerConfiguration  =
-    sendMsg phPickerConfiguration (mkSelector "selectionLimit") retCLong []
+selectionLimit phPickerConfiguration =
+  sendMessage phPickerConfiguration selectionLimitSelector
 
 -- | The maximum number of assets that can be selected. Default is 1.
 --
@@ -156,8 +152,8 @@ selectionLimit phPickerConfiguration  =
 --
 -- ObjC selector: @- setSelectionLimit:@
 setSelectionLimit :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> CLong -> IO ()
-setSelectionLimit phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setSelectionLimit:") retVoid [argCLong value]
+setSelectionLimit phPickerConfiguration value =
+  sendMessage phPickerConfiguration setSelectionLimitSelector value
 
 -- | Types of assets that can be shown. Default is @nil.@
 --
@@ -165,8 +161,8 @@ setSelectionLimit phPickerConfiguration  value =
 --
 -- ObjC selector: @- filter@
 filter_ :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO (Id PHPickerFilter)
-filter_ phPickerConfiguration  =
-    sendMsg phPickerConfiguration (mkSelector "filter") (retPtr retVoid) [] >>= retainedObject . castPtr
+filter_ phPickerConfiguration =
+  sendMessage phPickerConfiguration filterSelector
 
 -- | Types of assets that can be shown. Default is @nil.@
 --
@@ -174,9 +170,8 @@ filter_ phPickerConfiguration  =
 --
 -- ObjC selector: @- setFilter:@
 setFilter :: (IsPHPickerConfiguration phPickerConfiguration, IsPHPickerFilter value) => phPickerConfiguration -> value -> IO ()
-setFilter phPickerConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phPickerConfiguration (mkSelector "setFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilter phPickerConfiguration value =
+  sendMessage phPickerConfiguration setFilterSelector (toPHPickerFilter value)
 
 -- | Local identifiers of assets to be shown as selected when the picker is presented. Default is an empty array.
 --
@@ -184,8 +179,8 @@ setFilter phPickerConfiguration  value =
 --
 -- ObjC selector: @- preselectedAssetIdentifiers@
 preselectedAssetIdentifiers :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO (Id NSArray)
-preselectedAssetIdentifiers phPickerConfiguration  =
-    sendMsg phPickerConfiguration (mkSelector "preselectedAssetIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+preselectedAssetIdentifiers phPickerConfiguration =
+  sendMessage phPickerConfiguration preselectedAssetIdentifiersSelector
 
 -- | Local identifiers of assets to be shown as selected when the picker is presented. Default is an empty array.
 --
@@ -193,125 +188,124 @@ preselectedAssetIdentifiers phPickerConfiguration  =
 --
 -- ObjC selector: @- setPreselectedAssetIdentifiers:@
 setPreselectedAssetIdentifiers :: (IsPHPickerConfiguration phPickerConfiguration, IsNSArray value) => phPickerConfiguration -> value -> IO ()
-setPreselectedAssetIdentifiers phPickerConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phPickerConfiguration (mkSelector "setPreselectedAssetIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreselectedAssetIdentifiers phPickerConfiguration value =
+  sendMessage phPickerConfiguration setPreselectedAssetIdentifiersSelector (toNSArray value)
 
 -- | The mode of the picker. Default is @PHPickerModeDefault.@
 --
 -- ObjC selector: @- mode@
 mode :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO PHPickerMode
-mode phPickerConfiguration  =
-    fmap (coerce :: CLong -> PHPickerMode) $ sendMsg phPickerConfiguration (mkSelector "mode") retCLong []
+mode phPickerConfiguration =
+  sendMessage phPickerConfiguration modeSelector
 
 -- | The mode of the picker. Default is @PHPickerModeDefault.@
 --
 -- ObjC selector: @- setMode:@
 setMode :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> PHPickerMode -> IO ()
-setMode phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode phPickerConfiguration value =
+  sendMessage phPickerConfiguration setModeSelector value
 
 -- | Edges of the picker that have no margin between the content and the edge (e.g. without bars in between). Default is @NSDirectionalRectEdgeNone.@
 --
 -- ObjC selector: @- edgesWithoutContentMargins@
 edgesWithoutContentMargins :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO NSDirectionalRectEdge
-edgesWithoutContentMargins phPickerConfiguration  =
-    fmap (coerce :: CULong -> NSDirectionalRectEdge) $ sendMsg phPickerConfiguration (mkSelector "edgesWithoutContentMargins") retCULong []
+edgesWithoutContentMargins phPickerConfiguration =
+  sendMessage phPickerConfiguration edgesWithoutContentMarginsSelector
 
 -- | Edges of the picker that have no margin between the content and the edge (e.g. without bars in between). Default is @NSDirectionalRectEdgeNone.@
 --
 -- ObjC selector: @- setEdgesWithoutContentMargins:@
 setEdgesWithoutContentMargins :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> NSDirectionalRectEdge -> IO ()
-setEdgesWithoutContentMargins phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setEdgesWithoutContentMargins:") retVoid [argCULong (coerce value)]
+setEdgesWithoutContentMargins phPickerConfiguration value =
+  sendMessage phPickerConfiguration setEdgesWithoutContentMarginsSelector value
 
 -- | Capabilities of the picker that should be disabled. Default is @PHPickerCapabilitiesNone.@
 --
 -- ObjC selector: @- disabledCapabilities@
 disabledCapabilities :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> IO PHPickerCapabilities
-disabledCapabilities phPickerConfiguration  =
-    fmap (coerce :: CULong -> PHPickerCapabilities) $ sendMsg phPickerConfiguration (mkSelector "disabledCapabilities") retCULong []
+disabledCapabilities phPickerConfiguration =
+  sendMessage phPickerConfiguration disabledCapabilitiesSelector
 
 -- | Capabilities of the picker that should be disabled. Default is @PHPickerCapabilitiesNone.@
 --
 -- ObjC selector: @- setDisabledCapabilities:@
 setDisabledCapabilities :: IsPHPickerConfiguration phPickerConfiguration => phPickerConfiguration -> PHPickerCapabilities -> IO ()
-setDisabledCapabilities phPickerConfiguration  value =
-    sendMsg phPickerConfiguration (mkSelector "setDisabledCapabilities:") retVoid [argCULong (coerce value)]
+setDisabledCapabilities phPickerConfiguration value =
+  sendMessage phPickerConfiguration setDisabledCapabilitiesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPhotoLibrary:@
-initWithPhotoLibrarySelector :: Selector
+initWithPhotoLibrarySelector :: Selector '[Id PHPhotoLibrary] (Id PHPickerConfiguration)
 initWithPhotoLibrarySelector = mkSelector "initWithPhotoLibrary:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPickerConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @preferredAssetRepresentationMode@
-preferredAssetRepresentationModeSelector :: Selector
+preferredAssetRepresentationModeSelector :: Selector '[] PHPickerConfigurationAssetRepresentationMode
 preferredAssetRepresentationModeSelector = mkSelector "preferredAssetRepresentationMode"
 
 -- | @Selector@ for @setPreferredAssetRepresentationMode:@
-setPreferredAssetRepresentationModeSelector :: Selector
+setPreferredAssetRepresentationModeSelector :: Selector '[PHPickerConfigurationAssetRepresentationMode] ()
 setPreferredAssetRepresentationModeSelector = mkSelector "setPreferredAssetRepresentationMode:"
 
 -- | @Selector@ for @selection@
-selectionSelector :: Selector
+selectionSelector :: Selector '[] PHPickerConfigurationSelection
 selectionSelector = mkSelector "selection"
 
 -- | @Selector@ for @setSelection:@
-setSelectionSelector :: Selector
+setSelectionSelector :: Selector '[PHPickerConfigurationSelection] ()
 setSelectionSelector = mkSelector "setSelection:"
 
 -- | @Selector@ for @selectionLimit@
-selectionLimitSelector :: Selector
+selectionLimitSelector :: Selector '[] CLong
 selectionLimitSelector = mkSelector "selectionLimit"
 
 -- | @Selector@ for @setSelectionLimit:@
-setSelectionLimitSelector :: Selector
+setSelectionLimitSelector :: Selector '[CLong] ()
 setSelectionLimitSelector = mkSelector "setSelectionLimit:"
 
 -- | @Selector@ for @filter@
-filterSelector :: Selector
+filterSelector :: Selector '[] (Id PHPickerFilter)
 filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @setFilter:@
-setFilterSelector :: Selector
+setFilterSelector :: Selector '[Id PHPickerFilter] ()
 setFilterSelector = mkSelector "setFilter:"
 
 -- | @Selector@ for @preselectedAssetIdentifiers@
-preselectedAssetIdentifiersSelector :: Selector
+preselectedAssetIdentifiersSelector :: Selector '[] (Id NSArray)
 preselectedAssetIdentifiersSelector = mkSelector "preselectedAssetIdentifiers"
 
 -- | @Selector@ for @setPreselectedAssetIdentifiers:@
-setPreselectedAssetIdentifiersSelector :: Selector
+setPreselectedAssetIdentifiersSelector :: Selector '[Id NSArray] ()
 setPreselectedAssetIdentifiersSelector = mkSelector "setPreselectedAssetIdentifiers:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] PHPickerMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[PHPickerMode] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @edgesWithoutContentMargins@
-edgesWithoutContentMarginsSelector :: Selector
+edgesWithoutContentMarginsSelector :: Selector '[] NSDirectionalRectEdge
 edgesWithoutContentMarginsSelector = mkSelector "edgesWithoutContentMargins"
 
 -- | @Selector@ for @setEdgesWithoutContentMargins:@
-setEdgesWithoutContentMarginsSelector :: Selector
+setEdgesWithoutContentMarginsSelector :: Selector '[NSDirectionalRectEdge] ()
 setEdgesWithoutContentMarginsSelector = mkSelector "setEdgesWithoutContentMargins:"
 
 -- | @Selector@ for @disabledCapabilities@
-disabledCapabilitiesSelector :: Selector
+disabledCapabilitiesSelector :: Selector '[] PHPickerCapabilities
 disabledCapabilitiesSelector = mkSelector "disabledCapabilities"
 
 -- | @Selector@ for @setDisabledCapabilities:@
-setDisabledCapabilitiesSelector :: Selector
+setDisabledCapabilitiesSelector :: Selector '[PHPickerCapabilities] ()
 setDisabledCapabilitiesSelector = mkSelector "setDisabledCapabilities:"
 

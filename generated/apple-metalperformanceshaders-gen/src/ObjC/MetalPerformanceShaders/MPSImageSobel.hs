@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSImageSobel
   , initWithDevice_linearGrayColorTransform
   , initWithCoder_device
   , colorTransform
+  , colorTransformSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_linearGrayColorTransformSelector
-  , initWithCoder_deviceSelector
-  , colorTransformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSImageSobel mpsImageSobel => mpsImageSobel -> RawId -> IO (Id MPSImageSobel)
-initWithDevice mpsImageSobel  device =
-    sendMsg mpsImageSobel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageSobel device =
+  sendOwnedMessage mpsImageSobel initWithDeviceSelector device
 
 -- | Initialize a Sobel filter on a given device with a non-default color transform
 --
@@ -66,8 +63,8 @@ initWithDevice mpsImageSobel  device =
 --
 -- ObjC selector: @- initWithDevice:linearGrayColorTransform:@
 initWithDevice_linearGrayColorTransform :: IsMPSImageSobel mpsImageSobel => mpsImageSobel -> RawId -> Const (Ptr CFloat) -> IO (Id MPSImageSobel)
-initWithDevice_linearGrayColorTransform mpsImageSobel  device transform =
-    sendMsg mpsImageSobel (mkSelector "initWithDevice:linearGrayColorTransform:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (unConst transform)] >>= ownedObject . castPtr
+initWithDevice_linearGrayColorTransform mpsImageSobel device transform =
+  sendOwnedMessage mpsImageSobel initWithDevice_linearGrayColorTransformSelector device transform
 
 -- | NSSecureCoding compatability
 --
@@ -81,9 +78,8 @@ initWithDevice_linearGrayColorTransform mpsImageSobel  device transform =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageSobel mpsImageSobel, IsNSCoder aDecoder) => mpsImageSobel -> aDecoder -> RawId -> IO (Id MPSImageSobel)
-initWithCoder_device mpsImageSobel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageSobel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageSobel aDecoder device =
+  sendOwnedMessage mpsImageSobel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | colorTransform
 --
@@ -91,26 +87,26 @@ initWithCoder_device mpsImageSobel  aDecoder device =
 --
 -- ObjC selector: @- colorTransform@
 colorTransform :: IsMPSImageSobel mpsImageSobel => mpsImageSobel -> IO (Const (Ptr CFloat))
-colorTransform mpsImageSobel  =
-    fmap Const $ fmap castPtr $ sendMsg mpsImageSobel (mkSelector "colorTransform") (retPtr retVoid) []
+colorTransform mpsImageSobel =
+  sendMessage mpsImageSobel colorTransformSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageSobel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:linearGrayColorTransform:@
-initWithDevice_linearGrayColorTransformSelector :: Selector
+initWithDevice_linearGrayColorTransformSelector :: Selector '[RawId, Const (Ptr CFloat)] (Id MPSImageSobel)
 initWithDevice_linearGrayColorTransformSelector = mkSelector "initWithDevice:linearGrayColorTransform:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageSobel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @colorTransform@
-colorTransformSelector :: Selector
+colorTransformSelector :: Selector '[] (Const (Ptr CFloat))
 colorTransformSelector = mkSelector "colorTransform"
 

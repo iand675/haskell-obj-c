@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,36 +38,32 @@ module ObjC.ScriptingBridge.SBApplication
   , setSendMode
   , timeout
   , setTimeout
-  , initWithBundleIdentifierSelector
-  , initWithURLSelector
-  , initWithProcessIdentifierSelector
-  , applicationWithBundleIdentifierSelector
-  , applicationWithURLSelector
-  , applicationWithProcessIdentifierSelector
-  , classForScriptingClassSelector
   , activateSelector
-  , runningSelector
+  , applicationWithBundleIdentifierSelector
+  , applicationWithProcessIdentifierSelector
+  , applicationWithURLSelector
+  , classForScriptingClassSelector
   , delegateSelector
-  , setDelegateSelector
+  , initWithBundleIdentifierSelector
+  , initWithProcessIdentifierSelector
+  , initWithURLSelector
   , launchFlagsSelector
-  , setLaunchFlagsSelector
+  , runningSelector
   , sendModeSelector
+  , setDelegateSelector
+  , setLaunchFlagsSelector
   , setSendModeSelector
-  , timeoutSelector
   , setTimeoutSelector
+  , timeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,9 +82,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBundleIdentifier:@
 initWithBundleIdentifier :: (IsSBApplication sbApplication, IsNSString ident) => sbApplication -> ident -> IO (Id SBApplication)
-initWithBundleIdentifier sbApplication  ident =
-  withObjCPtr ident $ \raw_ident ->
-      sendMsg sbApplication (mkSelector "initWithBundleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_ident :: Ptr ())] >>= ownedObject . castPtr
+initWithBundleIdentifier sbApplication ident =
+  sendOwnedMessage sbApplication initWithBundleIdentifierSelector (toNSString ident)
 
 -- | Returns an instance of an @SBApplication@ subclass that represents the target application identified by the given URL.
 --
@@ -101,9 +97,8 @@ initWithBundleIdentifier sbApplication  ident =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsSBApplication sbApplication, IsNSURL url) => sbApplication -> url -> IO (Id SBApplication)
-initWithURL sbApplication  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg sbApplication (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL sbApplication url =
+  sendOwnedMessage sbApplication initWithURLSelector (toNSURL url)
 
 -- | Returns an instance of an @SBApplication@ subclass that represents the target application identified by the given process identifier.
 --
@@ -115,8 +110,8 @@ initWithURL sbApplication  url =
 --
 -- ObjC selector: @- initWithProcessIdentifier:@
 initWithProcessIdentifier :: IsSBApplication sbApplication => sbApplication -> CInt -> IO (Id SBApplication)
-initWithProcessIdentifier sbApplication  pid =
-    sendMsg sbApplication (mkSelector "initWithProcessIdentifier:") (retPtr retVoid) [argCInt pid] >>= ownedObject . castPtr
+initWithProcessIdentifier sbApplication pid =
+  sendOwnedMessage sbApplication initWithProcessIdentifierSelector pid
 
 -- | Returns the shared instance representing the target application specified by its bundle identifier.
 --
@@ -131,8 +126,7 @@ applicationWithBundleIdentifier :: IsNSString ident => ident -> IO (Id SBApplica
 applicationWithBundleIdentifier ident =
   do
     cls' <- getRequiredClass "SBApplication"
-    withObjCPtr ident $ \raw_ident ->
-      sendClassMsg cls' (mkSelector "applicationWithBundleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_ident :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' applicationWithBundleIdentifierSelector (toNSString ident)
 
 -- | Returns the shared instance representing a target application specified by the given URL.
 --
@@ -149,8 +143,7 @@ applicationWithURL :: IsNSURL url => url -> IO (Id SBApplication)
 applicationWithURL url =
   do
     cls' <- getRequiredClass "SBApplication"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "applicationWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' applicationWithURLSelector (toNSURL url)
 
 -- | Returns the shared instance representing a target application specified by its process identifier.
 --
@@ -165,7 +158,7 @@ applicationWithProcessIdentifier :: CInt -> IO (Id SBApplication)
 applicationWithProcessIdentifier pid =
   do
     cls' <- getRequiredClass "SBApplication"
-    sendClassMsg cls' (mkSelector "applicationWithProcessIdentifier:") (retPtr retVoid) [argCInt pid] >>= retainedObject . castPtr
+    sendClassMessage cls' applicationWithProcessIdentifierSelector pid
 
 -- | Returns a class object that represents a particular class in the target application.
 --
@@ -177,9 +170,8 @@ applicationWithProcessIdentifier pid =
 --
 -- ObjC selector: @- classForScriptingClass:@
 classForScriptingClass :: (IsSBApplication sbApplication, IsNSString className) => sbApplication -> className -> IO Class
-classForScriptingClass sbApplication  className =
-  withObjCPtr className $ \raw_className ->
-      fmap (Class . castPtr) $ sendMsg sbApplication (mkSelector "classForScriptingClass:") (retPtr retVoid) [argPtr (castPtr raw_className :: Ptr ())]
+classForScriptingClass sbApplication className =
+  sendMessage sbApplication classForScriptingClassSelector (toNSString className)
 
 -- | Moves the target application to the foreground immediately.
 --
@@ -187,8 +179,8 @@ classForScriptingClass sbApplication  className =
 --
 -- ObjC selector: @- activate@
 activate :: IsSBApplication sbApplication => sbApplication -> IO ()
-activate sbApplication  =
-    sendMsg sbApplication (mkSelector "activate") retVoid []
+activate sbApplication =
+  sendMessage sbApplication activateSelector
 
 -- | A Boolean that indicates whether the target application represented by the receiver is running.
 --
@@ -198,8 +190,8 @@ activate sbApplication  =
 --
 -- ObjC selector: @- running@
 running :: IsSBApplication sbApplication => sbApplication -> IO Bool
-running sbApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sbApplication (mkSelector "running") retCULong []
+running sbApplication =
+  sendMessage sbApplication runningSelector
 
 -- | The error-handling delegate of the receiver.
 --
@@ -207,8 +199,8 @@ running sbApplication  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSBApplication sbApplication => sbApplication -> IO RawId
-delegate sbApplication  =
-    fmap (RawId . castPtr) $ sendMsg sbApplication (mkSelector "delegate") (retPtr retVoid) []
+delegate sbApplication =
+  sendMessage sbApplication delegateSelector
 
 -- | The error-handling delegate of the receiver.
 --
@@ -216,8 +208,8 @@ delegate sbApplication  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSBApplication sbApplication => sbApplication -> RawId -> IO ()
-setDelegate sbApplication  value =
-    sendMsg sbApplication (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate sbApplication value =
+  sendMessage sbApplication setDelegateSelector value
 
 -- | The launch flags for the application represented by the receiver.
 --
@@ -225,8 +217,8 @@ setDelegate sbApplication  value =
 --
 -- ObjC selector: @- launchFlags@
 launchFlags :: IsSBApplication sbApplication => sbApplication -> IO CInt
-launchFlags sbApplication  =
-    sendMsg sbApplication (mkSelector "launchFlags") retCInt []
+launchFlags sbApplication =
+  sendMessage sbApplication launchFlagsSelector
 
 -- | The launch flags for the application represented by the receiver.
 --
@@ -234,8 +226,8 @@ launchFlags sbApplication  =
 --
 -- ObjC selector: @- setLaunchFlags:@
 setLaunchFlags :: IsSBApplication sbApplication => sbApplication -> CInt -> IO ()
-setLaunchFlags sbApplication  value =
-    sendMsg sbApplication (mkSelector "setLaunchFlags:") retVoid [argCInt (fromIntegral value)]
+setLaunchFlags sbApplication value =
+  sendMessage sbApplication setLaunchFlagsSelector value
 
 -- | The mode for sending Apple events to the target application.
 --
@@ -245,8 +237,8 @@ setLaunchFlags sbApplication  value =
 --
 -- ObjC selector: @- sendMode@
 sendMode :: IsSBApplication sbApplication => sbApplication -> IO CInt
-sendMode sbApplication  =
-    sendMsg sbApplication (mkSelector "sendMode") retCInt []
+sendMode sbApplication =
+  sendMessage sbApplication sendModeSelector
 
 -- | The mode for sending Apple events to the target application.
 --
@@ -256,8 +248,8 @@ sendMode sbApplication  =
 --
 -- ObjC selector: @- setSendMode:@
 setSendMode :: IsSBApplication sbApplication => sbApplication -> CInt -> IO ()
-setSendMode sbApplication  value =
-    sendMsg sbApplication (mkSelector "setSendMode:") retVoid [argCInt value]
+setSendMode sbApplication value =
+  sendMessage sbApplication setSendModeSelector value
 
 -- | The period the application will wait to receive reply Apple events.
 --
@@ -267,8 +259,8 @@ setSendMode sbApplication  value =
 --
 -- ObjC selector: @- timeout@
 timeout :: IsSBApplication sbApplication => sbApplication -> IO CLong
-timeout sbApplication  =
-    sendMsg sbApplication (mkSelector "timeout") retCLong []
+timeout sbApplication =
+  sendMessage sbApplication timeoutSelector
 
 -- | The period the application will wait to receive reply Apple events.
 --
@@ -278,78 +270,78 @@ timeout sbApplication  =
 --
 -- ObjC selector: @- setTimeout:@
 setTimeout :: IsSBApplication sbApplication => sbApplication -> CLong -> IO ()
-setTimeout sbApplication  value =
-    sendMsg sbApplication (mkSelector "setTimeout:") retVoid [argCLong value]
+setTimeout sbApplication value =
+  sendMessage sbApplication setTimeoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBundleIdentifier:@
-initWithBundleIdentifierSelector :: Selector
+initWithBundleIdentifierSelector :: Selector '[Id NSString] (Id SBApplication)
 initWithBundleIdentifierSelector = mkSelector "initWithBundleIdentifier:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SBApplication)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithProcessIdentifier:@
-initWithProcessIdentifierSelector :: Selector
+initWithProcessIdentifierSelector :: Selector '[CInt] (Id SBApplication)
 initWithProcessIdentifierSelector = mkSelector "initWithProcessIdentifier:"
 
 -- | @Selector@ for @applicationWithBundleIdentifier:@
-applicationWithBundleIdentifierSelector :: Selector
+applicationWithBundleIdentifierSelector :: Selector '[Id NSString] (Id SBApplication)
 applicationWithBundleIdentifierSelector = mkSelector "applicationWithBundleIdentifier:"
 
 -- | @Selector@ for @applicationWithURL:@
-applicationWithURLSelector :: Selector
+applicationWithURLSelector :: Selector '[Id NSURL] (Id SBApplication)
 applicationWithURLSelector = mkSelector "applicationWithURL:"
 
 -- | @Selector@ for @applicationWithProcessIdentifier:@
-applicationWithProcessIdentifierSelector :: Selector
+applicationWithProcessIdentifierSelector :: Selector '[CInt] (Id SBApplication)
 applicationWithProcessIdentifierSelector = mkSelector "applicationWithProcessIdentifier:"
 
 -- | @Selector@ for @classForScriptingClass:@
-classForScriptingClassSelector :: Selector
+classForScriptingClassSelector :: Selector '[Id NSString] Class
 classForScriptingClassSelector = mkSelector "classForScriptingClass:"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @launchFlags@
-launchFlagsSelector :: Selector
+launchFlagsSelector :: Selector '[] CInt
 launchFlagsSelector = mkSelector "launchFlags"
 
 -- | @Selector@ for @setLaunchFlags:@
-setLaunchFlagsSelector :: Selector
+setLaunchFlagsSelector :: Selector '[CInt] ()
 setLaunchFlagsSelector = mkSelector "setLaunchFlags:"
 
 -- | @Selector@ for @sendMode@
-sendModeSelector :: Selector
+sendModeSelector :: Selector '[] CInt
 sendModeSelector = mkSelector "sendMode"
 
 -- | @Selector@ for @setSendMode:@
-setSendModeSelector :: Selector
+setSendModeSelector :: Selector '[CInt] ()
 setSendModeSelector = mkSelector "setSendMode:"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] CLong
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @setTimeout:@
-setTimeoutSelector :: Selector
+setTimeoutSelector :: Selector '[CLong] ()
 setTimeoutSelector = mkSelector "setTimeout:"
 

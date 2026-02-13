@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSListFormatter
   , setLocale
   , itemFormatter
   , setItemFormatter
-  , localizedStringByJoiningStringsSelector
-  , stringFromItemsSelector
-  , stringForObjectValueSelector
-  , localeSelector
-  , setLocaleSelector
   , itemFormatterSelector
+  , localeSelector
+  , localizedStringByJoiningStringsSelector
   , setItemFormatterSelector
+  , setLocaleSelector
+  , stringForObjectValueSelector
+  , stringFromItemsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,71 +40,67 @@ localizedStringByJoiningStrings :: IsNSArray strings => strings -> IO (Id NSStri
 localizedStringByJoiningStrings strings =
   do
     cls' <- getRequiredClass "NSListFormatter"
-    withObjCPtr strings $ \raw_strings ->
-      sendClassMsg cls' (mkSelector "localizedStringByJoiningStrings:") (retPtr retVoid) [argPtr (castPtr raw_strings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringByJoiningStringsSelector (toNSArray strings)
 
 -- | @- stringFromItems:@
 stringFromItems :: (IsNSListFormatter nsListFormatter, IsNSArray items) => nsListFormatter -> items -> IO (Id NSString)
-stringFromItems nsListFormatter  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg nsListFormatter (mkSelector "stringFromItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= retainedObject . castPtr
+stringFromItems nsListFormatter items =
+  sendMessage nsListFormatter stringFromItemsSelector (toNSArray items)
 
 -- | @- stringForObjectValue:@
 stringForObjectValue :: IsNSListFormatter nsListFormatter => nsListFormatter -> RawId -> IO (Id NSString)
-stringForObjectValue nsListFormatter  obj_ =
-    sendMsg nsListFormatter (mkSelector "stringForObjectValue:") (retPtr retVoid) [argPtr (castPtr (unRawId obj_) :: Ptr ())] >>= retainedObject . castPtr
+stringForObjectValue nsListFormatter obj_ =
+  sendMessage nsListFormatter stringForObjectValueSelector obj_
 
 -- | @- locale@
 locale :: IsNSListFormatter nsListFormatter => nsListFormatter -> IO (Id NSLocale)
-locale nsListFormatter  =
-    sendMsg nsListFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsListFormatter =
+  sendMessage nsListFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSListFormatter nsListFormatter, IsNSLocale value) => nsListFormatter -> value -> IO ()
-setLocale nsListFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsListFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsListFormatter value =
+  sendMessage nsListFormatter setLocaleSelector (toNSLocale value)
 
 -- | @- itemFormatter@
 itemFormatter :: IsNSListFormatter nsListFormatter => nsListFormatter -> IO (Id NSFormatter)
-itemFormatter nsListFormatter  =
-    sendMsg nsListFormatter (mkSelector "itemFormatter") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemFormatter nsListFormatter =
+  sendMessage nsListFormatter itemFormatterSelector
 
 -- | @- setItemFormatter:@
 setItemFormatter :: (IsNSListFormatter nsListFormatter, IsNSFormatter value) => nsListFormatter -> value -> IO ()
-setItemFormatter nsListFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsListFormatter (mkSelector "setItemFormatter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setItemFormatter nsListFormatter value =
+  sendMessage nsListFormatter setItemFormatterSelector (toNSFormatter value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localizedStringByJoiningStrings:@
-localizedStringByJoiningStringsSelector :: Selector
+localizedStringByJoiningStringsSelector :: Selector '[Id NSArray] (Id NSString)
 localizedStringByJoiningStringsSelector = mkSelector "localizedStringByJoiningStrings:"
 
 -- | @Selector@ for @stringFromItems:@
-stringFromItemsSelector :: Selector
+stringFromItemsSelector :: Selector '[Id NSArray] (Id NSString)
 stringFromItemsSelector = mkSelector "stringFromItems:"
 
 -- | @Selector@ for @stringForObjectValue:@
-stringForObjectValueSelector :: Selector
+stringForObjectValueSelector :: Selector '[RawId] (Id NSString)
 stringForObjectValueSelector = mkSelector "stringForObjectValue:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @itemFormatter@
-itemFormatterSelector :: Selector
+itemFormatterSelector :: Selector '[] (Id NSFormatter)
 itemFormatterSelector = mkSelector "itemFormatter"
 
 -- | @Selector@ for @setItemFormatter:@
-setItemFormatterSelector :: Selector
+setItemFormatterSelector :: Selector '[Id NSFormatter] ()
 setItemFormatterSelector = mkSelector "setItemFormatter:"
 

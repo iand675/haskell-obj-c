@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.Matter.MTRClusterIdentify
   , identifyWithParams_expectedValues_expectedValueInterval_completionHandler
   , triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
+  , identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
   , identifyWithParams_expectedValues_expectedValueInterval_completionSelector
-  , triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeIdentifyTimeWithParamsSelector
-  , writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector
-  , writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeIdentifyTypeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeIdentifyTimeWithParamsSelector
+  , readAttributeIdentifyTypeWithParamsSelector
   , triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector
+  , writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,191 +60,162 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- identifyWithParams:expectedValues:expectedValueInterval:completion:@
 identifyWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRIdentifyClusterIdentifyParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterIdentify -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-identifyWithParams_expectedValues_expectedValueInterval_completion mtrClusterIdentify  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterIdentify (mkSelector "identifyWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+identifyWithParams_expectedValues_expectedValueInterval_completion mtrClusterIdentify params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterIdentify identifyWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRIdentifyClusterIdentifyParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- triggerEffectWithParams:expectedValues:expectedValueInterval:completion:@
 triggerEffectWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRIdentifyClusterTriggerEffectParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterIdentify -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-triggerEffectWithParams_expectedValues_expectedValueInterval_completion mtrClusterIdentify  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterIdentify (mkSelector "triggerEffectWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+triggerEffectWithParams_expectedValues_expectedValueInterval_completion mtrClusterIdentify params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterIdentify triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRIdentifyClusterTriggerEffectParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeIdentifyTimeWithParams:@
 readAttributeIdentifyTimeWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeIdentifyTimeWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeIdentifyTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeIdentifyTimeWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeIdentifyTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeIdentifyTimeWithValue:expectedValueInterval:@
 writeAttributeIdentifyTimeWithValue_expectedValueInterval :: (IsMTRClusterIdentify mtrClusterIdentify, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterIdentify -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeIdentifyTimeWithValue_expectedValueInterval mtrClusterIdentify  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterIdentify (mkSelector "writeAttributeIdentifyTimeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeIdentifyTimeWithValue_expectedValueInterval mtrClusterIdentify dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterIdentify writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeIdentifyTimeWithValue:expectedValueInterval:params:@
 writeAttributeIdentifyTimeWithValue_expectedValueInterval_params :: (IsMTRClusterIdentify mtrClusterIdentify, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterIdentify -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeIdentifyTimeWithValue_expectedValueInterval_params mtrClusterIdentify  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterIdentify (mkSelector "writeAttributeIdentifyTimeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeIdentifyTimeWithValue_expectedValueInterval_params mtrClusterIdentify dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterIdentify writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeIdentifyTypeWithParams:@
 readAttributeIdentifyTypeWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeIdentifyTypeWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeIdentifyTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeIdentifyTypeWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeIdentifyTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRReadParams params) => mtrClusterIdentify -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterIdentify  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIdentify (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterIdentify params =
+  sendMessage mtrClusterIdentify readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterIdentify mtrClusterIdentify => mtrClusterIdentify -> IO (Id MTRClusterIdentify)
-init_ mtrClusterIdentify  =
-    sendMsg mtrClusterIdentify (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterIdentify =
+  sendOwnedMessage mtrClusterIdentify initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterIdentify)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterIdentify"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRDevice device, IsNSObject queue) => mtrClusterIdentify -> device -> CUShort -> queue -> IO (Id MTRClusterIdentify)
-initWithDevice_endpoint_queue mtrClusterIdentify  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterIdentify (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterIdentify device endpoint queue =
+  sendOwnedMessage mtrClusterIdentify initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- identifyWithParams:expectedValues:expectedValueInterval:completionHandler:@
 identifyWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRIdentifyClusterIdentifyParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterIdentify -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-identifyWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterIdentify  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterIdentify (mkSelector "identifyWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+identifyWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterIdentify params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterIdentify identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRIdentifyClusterIdentifyParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- triggerEffectWithParams:expectedValues:expectedValueInterval:completionHandler:@
 triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRIdentifyClusterTriggerEffectParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterIdentify -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterIdentify  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterIdentify (mkSelector "triggerEffectWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterIdentify params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterIdentify triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRIdentifyClusterTriggerEffectParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterIdentify mtrClusterIdentify, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterIdentify -> device -> endpointID -> queue -> IO (Id MTRClusterIdentify)
-initWithDevice_endpointID_queue mtrClusterIdentify  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterIdentify (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterIdentify device endpointID queue =
+  sendOwnedMessage mtrClusterIdentify initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @identifyWithParams:expectedValues:expectedValueInterval:completion:@
-identifyWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+identifyWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRIdentifyClusterIdentifyParams, Id NSArray, Id NSNumber, Ptr ()] ()
 identifyWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "identifyWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @triggerEffectWithParams:expectedValues:expectedValueInterval:completion:@
-triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRIdentifyClusterTriggerEffectParams, Id NSArray, Id NSNumber, Ptr ()] ()
 triggerEffectWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "triggerEffectWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeIdentifyTimeWithParams:@
-readAttributeIdentifyTimeWithParamsSelector :: Selector
+readAttributeIdentifyTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeIdentifyTimeWithParamsSelector = mkSelector "readAttributeIdentifyTimeWithParams:"
 
 -- | @Selector@ for @writeAttributeIdentifyTimeWithValue:expectedValueInterval:@
-writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeIdentifyTimeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeIdentifyTimeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeIdentifyTimeWithValue:expectedValueInterval:params:@
-writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeIdentifyTimeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeIdentifyTimeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeIdentifyTypeWithParams:@
-readAttributeIdentifyTypeWithParamsSelector :: Selector
+readAttributeIdentifyTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeIdentifyTypeWithParamsSelector = mkSelector "readAttributeIdentifyTypeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterIdentify)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterIdentify)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterIdentify)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @identifyWithParams:expectedValues:expectedValueInterval:completionHandler:@
-identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRIdentifyClusterIdentifyParams, Id NSArray, Id NSNumber, Ptr ()] ()
 identifyWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "identifyWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @triggerEffectWithParams:expectedValues:expectedValueInterval:completionHandler:@
-triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRIdentifyClusterTriggerEffectParams, Id NSArray, Id NSNumber, Ptr ()] ()
 triggerEffectWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "triggerEffectWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterIdentify)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

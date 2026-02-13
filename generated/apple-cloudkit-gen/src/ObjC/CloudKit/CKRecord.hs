@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,45 +33,41 @@ module ObjC.CloudKit.CKRecord
   , parent
   , setParent
   , encryptedValues
+  , allKeysSelector
+  , allTokensSelector
+  , changedKeysSelector
+  , creationDateSelector
+  , creatorUserRecordIDSelector
+  , encodeSystemFieldsWithCoderSelector
+  , encryptedValuesSelector
   , initSelector
-  , newSelector
   , initWithRecordTypeSelector
   , initWithRecordType_recordIDSelector
   , initWithRecordType_zoneIDSelector
-  , objectForKeySelector
-  , setObject_forKeySelector
-  , allKeysSelector
-  , allTokensSelector
-  , objectForKeyedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , changedKeysSelector
-  , encodeSystemFieldsWithCoderSelector
-  , setParentReferenceFromRecordSelector
-  , setParentReferenceFromRecordIDSelector
-  , recordTypeSelector
-  , recordIDSelector
-  , recordChangeTagSelector
-  , creatorUserRecordIDSelector
-  , creationDateSelector
   , lastModifiedUserRecordIDSelector
   , modificationDateSelector
-  , shareSelector
+  , newSelector
+  , objectForKeySelector
+  , objectForKeyedSubscriptSelector
   , parentSelector
+  , recordChangeTagSelector
+  , recordIDSelector
+  , recordTypeSelector
+  , setObject_forKeySelector
+  , setObject_forKeyedSubscriptSelector
+  , setParentReferenceFromRecordIDSelector
+  , setParentReferenceFromRecordSelector
   , setParentSelector
-  , encryptedValuesSelector
+  , shareSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,37 +76,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKRecord ckRecord => ckRecord -> IO (Id CKRecord)
-init_ ckRecord  =
-    sendMsg ckRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckRecord =
+  sendOwnedMessage ckRecord initSelector
 
 -- | @+ new@
 new :: IO (Id CKRecord)
 new  =
   do
     cls' <- getRequiredClass "CKRecord"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | This creates the record in the default zone.
 --
 -- ObjC selector: @- initWithRecordType:@
 initWithRecordType :: (IsCKRecord ckRecord, IsNSString recordType) => ckRecord -> recordType -> IO (Id CKRecord)
-initWithRecordType ckRecord  recordType =
-  withObjCPtr recordType $ \raw_recordType ->
-      sendMsg ckRecord (mkSelector "initWithRecordType:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType ckRecord recordType =
+  sendOwnedMessage ckRecord initWithRecordTypeSelector (toNSString recordType)
 
 -- | @- initWithRecordType:recordID:@
 initWithRecordType_recordID :: (IsCKRecord ckRecord, IsNSString recordType, IsCKRecordID recordID) => ckRecord -> recordType -> recordID -> IO (Id CKRecord)
-initWithRecordType_recordID ckRecord  recordType recordID =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr recordID $ \raw_recordID ->
-        sendMsg ckRecord (mkSelector "initWithRecordType:recordID:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_recordID :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType_recordID ckRecord recordType recordID =
+  sendOwnedMessage ckRecord initWithRecordType_recordIDSelector (toNSString recordType) (toCKRecordID recordID)
 
 -- | @- initWithRecordType:zoneID:@
 initWithRecordType_zoneID :: (IsCKRecord ckRecord, IsNSString recordType, IsCKRecordZoneID zoneID) => ckRecord -> recordType -> zoneID -> IO (Id CKRecord)
-initWithRecordType_zoneID ckRecord  recordType zoneID =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr zoneID $ \raw_zoneID ->
-        sendMsg ckRecord (mkSelector "initWithRecordType:zoneID:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_zoneID :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType_zoneID ckRecord recordType zoneID =
+  sendOwnedMessage ckRecord initWithRecordType_zoneIDSelector (toNSString recordType) (toCKRecordZoneID zoneID)
 
 -- | In addition to @objectForKey:@ and @setObject:forKey:,@ dictionary-style subscripting (@record[key]@ and
 --
@@ -127,20 +119,18 @@ initWithRecordType_zoneID ckRecord  recordType zoneID =
 --
 -- ObjC selector: @- objectForKey:@
 objectForKey :: (IsCKRecord ckRecord, IsNSString key) => ckRecord -> key -> IO RawId
-objectForKey ckRecord  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg ckRecord (mkSelector "objectForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+objectForKey ckRecord key =
+  sendMessage ckRecord objectForKeySelector (toNSString key)
 
 -- | @- setObject:forKey:@
 setObject_forKey :: (IsCKRecord ckRecord, IsNSString key) => ckRecord -> RawId -> key -> IO ()
-setObject_forKey ckRecord  object key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg ckRecord (mkSelector "setObject:forKey:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setObject_forKey ckRecord object key =
+  sendMessage ckRecord setObject_forKeySelector object (toNSString key)
 
 -- | @- allKeys@
 allKeys :: IsCKRecord ckRecord => ckRecord -> IO (Id NSArray)
-allKeys ckRecord  =
-    sendMsg ckRecord (mkSelector "allKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+allKeys ckRecord =
+  sendMessage ckRecord allKeysSelector
 
 -- | A special property that returns an array of token generated from all the string field values in the record.
 --
@@ -148,35 +138,32 @@ allKeys ckRecord  =
 --
 -- ObjC selector: @- allTokens@
 allTokens :: IsCKRecord ckRecord => ckRecord -> IO (Id NSArray)
-allTokens ckRecord  =
-    sendMsg ckRecord (mkSelector "allTokens") (retPtr retVoid) [] >>= retainedObject . castPtr
+allTokens ckRecord =
+  sendMessage ckRecord allTokensSelector
 
 -- | @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsCKRecord ckRecord, IsNSString key) => ckRecord -> key -> IO RawId
-objectForKeyedSubscript ckRecord  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg ckRecord (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+objectForKeyedSubscript ckRecord key =
+  sendMessage ckRecord objectForKeyedSubscriptSelector (toNSString key)
 
 -- | @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: (IsCKRecord ckRecord, IsNSString key) => ckRecord -> RawId -> key -> IO ()
-setObject_forKeyedSubscript ckRecord  object key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg ckRecord (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setObject_forKeyedSubscript ckRecord object key =
+  sendMessage ckRecord setObject_forKeyedSubscriptSelector object (toNSString key)
 
 -- | A list of keys that have been modified on the local CKRecord instance
 --
 -- ObjC selector: @- changedKeys@
 changedKeys :: IsCKRecord ckRecord => ckRecord -> IO (Id NSArray)
-changedKeys ckRecord  =
-    sendMsg ckRecord (mkSelector "changedKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+changedKeys ckRecord =
+  sendMessage ckRecord changedKeysSelector
 
 -- | @CKRecord@ supports @NSSecureCoding.@  When you invoke @encodeWithCoder:@ on a @CKRecord,@ it encodes all its values.  Including the record values you've set.  If you want to store a @CKRecord@ instance locally, AND you're already storing the record values locally, that's overkill.  In that case, you can use @encodeSystemFieldsWithCoder:.@  This will encode all parts of a @CKRecord@ except the record keys / values you have access to via the @changedKeys@ and @objectForKey:@ methods.  If you use @initWithCoder:@ to reconstitute a @CKRecord@ you encoded via @encodeSystemFieldsWithCoder:,@ then be aware that  - any record values you had set on the original instance, but had not saved, will be lost  - the reconstituted CKRecord's @changedKeys@ will be empty
 --
 -- ObjC selector: @- encodeSystemFieldsWithCoder:@
 encodeSystemFieldsWithCoder :: (IsCKRecord ckRecord, IsNSCoder coder) => ckRecord -> coder -> IO ()
-encodeSystemFieldsWithCoder ckRecord  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg ckRecord (mkSelector "encodeSystemFieldsWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeSystemFieldsWithCoder ckRecord coder =
+  sendMessage ckRecord encodeSystemFieldsWithCoderSelector (toNSCoder coder)
 
 -- | Convenience wrappers around creating a @CKReference@ to a parent record. The resulting @CKReference@ will have
 --
@@ -184,56 +171,54 @@ encodeSystemFieldsWithCoder ckRecord  coder =
 --
 -- ObjC selector: @- setParentReferenceFromRecord:@
 setParentReferenceFromRecord :: (IsCKRecord ckRecord, IsCKRecord parentRecord) => ckRecord -> parentRecord -> IO ()
-setParentReferenceFromRecord ckRecord  parentRecord =
-  withObjCPtr parentRecord $ \raw_parentRecord ->
-      sendMsg ckRecord (mkSelector "setParentReferenceFromRecord:") retVoid [argPtr (castPtr raw_parentRecord :: Ptr ())]
+setParentReferenceFromRecord ckRecord parentRecord =
+  sendMessage ckRecord setParentReferenceFromRecordSelector (toCKRecord parentRecord)
 
 -- | @- setParentReferenceFromRecordID:@
 setParentReferenceFromRecordID :: (IsCKRecord ckRecord, IsCKRecordID parentRecordID) => ckRecord -> parentRecordID -> IO ()
-setParentReferenceFromRecordID ckRecord  parentRecordID =
-  withObjCPtr parentRecordID $ \raw_parentRecordID ->
-      sendMsg ckRecord (mkSelector "setParentReferenceFromRecordID:") retVoid [argPtr (castPtr raw_parentRecordID :: Ptr ())]
+setParentReferenceFromRecordID ckRecord parentRecordID =
+  sendMessage ckRecord setParentReferenceFromRecordIDSelector (toCKRecordID parentRecordID)
 
 -- | @- recordType@
 recordType :: IsCKRecord ckRecord => ckRecord -> IO (Id NSString)
-recordType ckRecord  =
-    sendMsg ckRecord (mkSelector "recordType") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordType ckRecord =
+  sendMessage ckRecord recordTypeSelector
 
 -- | @- recordID@
 recordID :: IsCKRecord ckRecord => ckRecord -> IO (Id CKRecordID)
-recordID ckRecord  =
-    sendMsg ckRecord (mkSelector "recordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordID ckRecord =
+  sendMessage ckRecord recordIDSelector
 
 -- | Change tags are updated by the server to a unique value every time a record is modified.  A different change tag necessarily means that the contents of the record are different.
 --
 -- ObjC selector: @- recordChangeTag@
 recordChangeTag :: IsCKRecord ckRecord => ckRecord -> IO (Id NSString)
-recordChangeTag ckRecord  =
-    sendMsg ckRecord (mkSelector "recordChangeTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordChangeTag ckRecord =
+  sendMessage ckRecord recordChangeTagSelector
 
 -- | This is a User Record recordID, identifying the user that created this record.
 --
 -- ObjC selector: @- creatorUserRecordID@
 creatorUserRecordID :: IsCKRecord ckRecord => ckRecord -> IO (Id CKRecordID)
-creatorUserRecordID ckRecord  =
-    sendMsg ckRecord (mkSelector "creatorUserRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+creatorUserRecordID ckRecord =
+  sendMessage ckRecord creatorUserRecordIDSelector
 
 -- | @- creationDate@
 creationDate :: IsCKRecord ckRecord => ckRecord -> IO (Id NSDate)
-creationDate ckRecord  =
-    sendMsg ckRecord (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate ckRecord =
+  sendMessage ckRecord creationDateSelector
 
 -- | This is a User Record recordID, identifying the user that last modified this record.
 --
 -- ObjC selector: @- lastModifiedUserRecordID@
 lastModifiedUserRecordID :: IsCKRecord ckRecord => ckRecord -> IO (Id CKRecordID)
-lastModifiedUserRecordID ckRecord  =
-    sendMsg ckRecord (mkSelector "lastModifiedUserRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastModifiedUserRecordID ckRecord =
+  sendMessage ckRecord lastModifiedUserRecordIDSelector
 
 -- | @- modificationDate@
 modificationDate :: IsCKRecord ckRecord => ckRecord -> IO (Id NSDate)
-modificationDate ckRecord  =
-    sendMsg ckRecord (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate ckRecord =
+  sendMessage ckRecord modificationDateSelector
 
 -- | The share property on a record can be set by creating a share using
 --
@@ -259,8 +244,8 @@ modificationDate ckRecord  =
 --
 -- ObjC selector: @- share@
 share :: IsCKRecord ckRecord => ckRecord -> IO (Id CKReference)
-share ckRecord  =
-    sendMsg ckRecord (mkSelector "share") (retPtr retVoid) [] >>= retainedObject . castPtr
+share ckRecord =
+  sendMessage ckRecord shareSelector
 
 -- | Use a parent reference to teach CloudKit about the hierarchy of your records.
 --
@@ -274,8 +259,8 @@ share ckRecord  =
 --
 -- ObjC selector: @- parent@
 parent :: IsCKRecord ckRecord => ckRecord -> IO (Id CKReference)
-parent ckRecord  =
-    sendMsg ckRecord (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent ckRecord =
+  sendMessage ckRecord parentSelector
 
 -- | Use a parent reference to teach CloudKit about the hierarchy of your records.
 --
@@ -289,122 +274,121 @@ parent ckRecord  =
 --
 -- ObjC selector: @- setParent:@
 setParent :: (IsCKRecord ckRecord, IsCKReference value) => ckRecord -> value -> IO ()
-setParent ckRecord  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckRecord (mkSelector "setParent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParent ckRecord value =
+  sendMessage ckRecord setParentSelector (toCKReference value)
 
 -- | Any values set here will be locally encrypted before being saved to the server and locally decrypted when fetched from the server. Encryption and decryption is handled by the CloudKit framework. Key material necessary for decryption are available to the owner of the record, as well as any users that can access this record via a CKShare. All CKRecordValue types can be set here except CKAsset and CKReference.
 --
 -- ObjC selector: @- encryptedValues@
 encryptedValues :: IsCKRecord ckRecord => ckRecord -> IO RawId
-encryptedValues ckRecord  =
-    fmap (RawId . castPtr) $ sendMsg ckRecord (mkSelector "encryptedValues") (retPtr retVoid) []
+encryptedValues ckRecord =
+  sendMessage ckRecord encryptedValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKRecord)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithRecordType:@
-initWithRecordTypeSelector :: Selector
+initWithRecordTypeSelector :: Selector '[Id NSString] (Id CKRecord)
 initWithRecordTypeSelector = mkSelector "initWithRecordType:"
 
 -- | @Selector@ for @initWithRecordType:recordID:@
-initWithRecordType_recordIDSelector :: Selector
+initWithRecordType_recordIDSelector :: Selector '[Id NSString, Id CKRecordID] (Id CKRecord)
 initWithRecordType_recordIDSelector = mkSelector "initWithRecordType:recordID:"
 
 -- | @Selector@ for @initWithRecordType:zoneID:@
-initWithRecordType_zoneIDSelector :: Selector
+initWithRecordType_zoneIDSelector :: Selector '[Id NSString, Id CKRecordZoneID] (Id CKRecord)
 initWithRecordType_zoneIDSelector = mkSelector "initWithRecordType:zoneID:"
 
 -- | @Selector@ for @objectForKey:@
-objectForKeySelector :: Selector
+objectForKeySelector :: Selector '[Id NSString] RawId
 objectForKeySelector = mkSelector "objectForKey:"
 
 -- | @Selector@ for @setObject:forKey:@
-setObject_forKeySelector :: Selector
+setObject_forKeySelector :: Selector '[RawId, Id NSString] ()
 setObject_forKeySelector = mkSelector "setObject:forKey:"
 
 -- | @Selector@ for @allKeys@
-allKeysSelector :: Selector
+allKeysSelector :: Selector '[] (Id NSArray)
 allKeysSelector = mkSelector "allKeys"
 
 -- | @Selector@ for @allTokens@
-allTokensSelector :: Selector
+allTokensSelector :: Selector '[] (Id NSArray)
 allTokensSelector = mkSelector "allTokens"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] RawId
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, Id NSString] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @changedKeys@
-changedKeysSelector :: Selector
+changedKeysSelector :: Selector '[] (Id NSArray)
 changedKeysSelector = mkSelector "changedKeys"
 
 -- | @Selector@ for @encodeSystemFieldsWithCoder:@
-encodeSystemFieldsWithCoderSelector :: Selector
+encodeSystemFieldsWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeSystemFieldsWithCoderSelector = mkSelector "encodeSystemFieldsWithCoder:"
 
 -- | @Selector@ for @setParentReferenceFromRecord:@
-setParentReferenceFromRecordSelector :: Selector
+setParentReferenceFromRecordSelector :: Selector '[Id CKRecord] ()
 setParentReferenceFromRecordSelector = mkSelector "setParentReferenceFromRecord:"
 
 -- | @Selector@ for @setParentReferenceFromRecordID:@
-setParentReferenceFromRecordIDSelector :: Selector
+setParentReferenceFromRecordIDSelector :: Selector '[Id CKRecordID] ()
 setParentReferenceFromRecordIDSelector = mkSelector "setParentReferenceFromRecordID:"
 
 -- | @Selector@ for @recordType@
-recordTypeSelector :: Selector
+recordTypeSelector :: Selector '[] (Id NSString)
 recordTypeSelector = mkSelector "recordType"
 
 -- | @Selector@ for @recordID@
-recordIDSelector :: Selector
+recordIDSelector :: Selector '[] (Id CKRecordID)
 recordIDSelector = mkSelector "recordID"
 
 -- | @Selector@ for @recordChangeTag@
-recordChangeTagSelector :: Selector
+recordChangeTagSelector :: Selector '[] (Id NSString)
 recordChangeTagSelector = mkSelector "recordChangeTag"
 
 -- | @Selector@ for @creatorUserRecordID@
-creatorUserRecordIDSelector :: Selector
+creatorUserRecordIDSelector :: Selector '[] (Id CKRecordID)
 creatorUserRecordIDSelector = mkSelector "creatorUserRecordID"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @lastModifiedUserRecordID@
-lastModifiedUserRecordIDSelector :: Selector
+lastModifiedUserRecordIDSelector :: Selector '[] (Id CKRecordID)
 lastModifiedUserRecordIDSelector = mkSelector "lastModifiedUserRecordID"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @share@
-shareSelector :: Selector
+shareSelector :: Selector '[] (Id CKReference)
 shareSelector = mkSelector "share"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id CKReference)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @setParent:@
-setParentSelector :: Selector
+setParentSelector :: Selector '[Id CKReference] ()
 setParentSelector = mkSelector "setParent:"
 
 -- | @Selector@ for @encryptedValues@
-encryptedValuesSelector :: Selector
+encryptedValuesSelector :: Selector '[] RawId
 encryptedValuesSelector = mkSelector "encryptedValues"
 

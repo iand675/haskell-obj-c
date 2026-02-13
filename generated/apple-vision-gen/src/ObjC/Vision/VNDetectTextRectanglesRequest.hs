@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Vision.VNDetectTextRectanglesRequest
   , setReportCharacterBoxes
   , results
   , reportCharacterBoxesSelector
-  , setReportCharacterBoxesSelector
   , resultsSelector
+  , setReportCharacterBoxesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,36 +36,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reportCharacterBoxes@
 reportCharacterBoxes :: IsVNDetectTextRectanglesRequest vnDetectTextRectanglesRequest => vnDetectTextRectanglesRequest -> IO Bool
-reportCharacterBoxes vnDetectTextRectanglesRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnDetectTextRectanglesRequest (mkSelector "reportCharacterBoxes") retCULong []
+reportCharacterBoxes vnDetectTextRectanglesRequest =
+  sendMessage vnDetectTextRectanglesRequest reportCharacterBoxesSelector
 
 -- | Specify whether or not the bounding boxes of individual characters should also be returned in the resultant VNTextObservations. Default is NO.
 --
 -- ObjC selector: @- setReportCharacterBoxes:@
 setReportCharacterBoxes :: IsVNDetectTextRectanglesRequest vnDetectTextRectanglesRequest => vnDetectTextRectanglesRequest -> Bool -> IO ()
-setReportCharacterBoxes vnDetectTextRectanglesRequest  value =
-    sendMsg vnDetectTextRectanglesRequest (mkSelector "setReportCharacterBoxes:") retVoid [argCULong (if value then 1 else 0)]
+setReportCharacterBoxes vnDetectTextRectanglesRequest value =
+  sendMessage vnDetectTextRectanglesRequest setReportCharacterBoxesSelector value
 
 -- | VNTextObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectTextRectanglesRequest vnDetectTextRectanglesRequest => vnDetectTextRectanglesRequest -> IO (Id NSArray)
-results vnDetectTextRectanglesRequest  =
-    sendMsg vnDetectTextRectanglesRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectTextRectanglesRequest =
+  sendMessage vnDetectTextRectanglesRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reportCharacterBoxes@
-reportCharacterBoxesSelector :: Selector
+reportCharacterBoxesSelector :: Selector '[] Bool
 reportCharacterBoxesSelector = mkSelector "reportCharacterBoxes"
 
 -- | @Selector@ for @setReportCharacterBoxes:@
-setReportCharacterBoxesSelector :: Selector
+setReportCharacterBoxesSelector :: Selector '[Bool] ()
 setReportCharacterBoxesSelector = mkSelector "setReportCharacterBoxes:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

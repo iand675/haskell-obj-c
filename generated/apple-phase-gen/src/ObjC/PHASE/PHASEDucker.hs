@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,20 +28,20 @@ module ObjC.PHASE.PHASEDucker
   , attackCurve
   , releaseCurve
   , identifier
-  , initSelector
-  , newSelector
-  , initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector
   , activateSelector
+  , activeSelector
+  , attackCurveSelector
+  , attackTimeSelector
   , deactivateSelector
+  , gainSelector
+  , identifierSelector
+  , initSelector
+  , initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector
+  , newSelector
+  , releaseCurveSelector
+  , releaseTimeSelector
   , sourceGroupsSelector
   , targetGroupsSelector
-  , activeSelector
-  , gainSelector
-  , attackTimeSelector
-  , releaseTimeSelector
-  , attackCurveSelector
-  , releaseCurveSelector
-  , identifierSelector
 
   -- * Enum types
   , PHASECurveType(PHASECurveType)
@@ -58,15 +59,11 @@ module ObjC.PHASE.PHASEDucker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,15 +73,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEDucker phaseDucker => phaseDucker -> IO (Id PHASEDucker)
-init_ phaseDucker  =
-    sendMsg phaseDucker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseDucker =
+  sendOwnedMessage phaseDucker initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEDucker)
 new  =
   do
     cls' <- getRequiredClass "PHASEDucker"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithSourceGroups:targetGroups:attenuation:attackTime:releaseTime:
 --
@@ -110,11 +107,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:sourceGroups:targetGroups:gain:attackTime:releaseTime:attackCurve:releaseCurve:@
 initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurve :: (IsPHASEDucker phaseDucker, IsPHASEEngine engine, IsNSSet sourceGroups, IsNSSet targetGroups) => phaseDucker -> engine -> sourceGroups -> targetGroups -> CDouble -> CDouble -> CDouble -> PHASECurveType -> PHASECurveType -> IO (Id PHASEDucker)
-initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurve phaseDucker  engine sourceGroups targetGroups gain attackTime releaseTime attackCurve releaseCurve =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr sourceGroups $ \raw_sourceGroups ->
-      withObjCPtr targetGroups $ \raw_targetGroups ->
-          sendMsg phaseDucker (mkSelector "initWithEngine:sourceGroups:targetGroups:gain:attackTime:releaseTime:attackCurve:releaseCurve:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_sourceGroups :: Ptr ()), argPtr (castPtr raw_targetGroups :: Ptr ()), argCDouble gain, argCDouble attackTime, argCDouble releaseTime, argCLong (coerce attackCurve), argCLong (coerce releaseCurve)] >>= ownedObject . castPtr
+initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurve phaseDucker engine sourceGroups targetGroups gain attackTime releaseTime attackCurve releaseCurve =
+  sendOwnedMessage phaseDucker initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector (toPHASEEngine engine) (toNSSet sourceGroups) (toNSSet targetGroups) gain attackTime releaseTime attackCurve releaseCurve
 
 -- | activate
 --
@@ -122,8 +116,8 @@ initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve
 --
 -- ObjC selector: @- activate@
 activate :: IsPHASEDucker phaseDucker => phaseDucker -> IO ()
-activate phaseDucker  =
-    sendMsg phaseDucker (mkSelector "activate") retVoid []
+activate phaseDucker =
+  sendMessage phaseDucker activateSelector
 
 -- | deactivate
 --
@@ -131,8 +125,8 @@ activate phaseDucker  =
 --
 -- ObjC selector: @- deactivate@
 deactivate :: IsPHASEDucker phaseDucker => phaseDucker -> IO ()
-deactivate phaseDucker  =
-    sendMsg phaseDucker (mkSelector "deactivate") retVoid []
+deactivate phaseDucker =
+  sendMessage phaseDucker deactivateSelector
 
 -- | sourceGroups
 --
@@ -140,8 +134,8 @@ deactivate phaseDucker  =
 --
 -- ObjC selector: @- sourceGroups@
 sourceGroups :: IsPHASEDucker phaseDucker => phaseDucker -> IO (Id NSSet)
-sourceGroups phaseDucker  =
-    sendMsg phaseDucker (mkSelector "sourceGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceGroups phaseDucker =
+  sendMessage phaseDucker sourceGroupsSelector
 
 -- | targetGroups
 --
@@ -149,8 +143,8 @@ sourceGroups phaseDucker  =
 --
 -- ObjC selector: @- targetGroups@
 targetGroups :: IsPHASEDucker phaseDucker => phaseDucker -> IO (Id NSSet)
-targetGroups phaseDucker  =
-    sendMsg phaseDucker (mkSelector "targetGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetGroups phaseDucker =
+  sendMessage phaseDucker targetGroupsSelector
 
 -- | active
 --
@@ -158,8 +152,8 @@ targetGroups phaseDucker  =
 --
 -- ObjC selector: @- active@
 active :: IsPHASEDucker phaseDucker => phaseDucker -> IO Bool
-active phaseDucker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phaseDucker (mkSelector "active") retCULong []
+active phaseDucker =
+  sendMessage phaseDucker activeSelector
 
 -- | gain
 --
@@ -169,8 +163,8 @@ active phaseDucker  =
 --
 -- ObjC selector: @- gain@
 gain :: IsPHASEDucker phaseDucker => phaseDucker -> IO CDouble
-gain phaseDucker  =
-    sendMsg phaseDucker (mkSelector "gain") retCDouble []
+gain phaseDucker =
+  sendMessage phaseDucker gainSelector
 
 -- | attackTime
 --
@@ -180,8 +174,8 @@ gain phaseDucker  =
 --
 -- ObjC selector: @- attackTime@
 attackTime :: IsPHASEDucker phaseDucker => phaseDucker -> IO CDouble
-attackTime phaseDucker  =
-    sendMsg phaseDucker (mkSelector "attackTime") retCDouble []
+attackTime phaseDucker =
+  sendMessage phaseDucker attackTimeSelector
 
 -- | releaseTime
 --
@@ -191,8 +185,8 @@ attackTime phaseDucker  =
 --
 -- ObjC selector: @- releaseTime@
 releaseTime :: IsPHASEDucker phaseDucker => phaseDucker -> IO CDouble
-releaseTime phaseDucker  =
-    sendMsg phaseDucker (mkSelector "releaseTime") retCDouble []
+releaseTime phaseDucker =
+  sendMessage phaseDucker releaseTimeSelector
 
 -- | attackCurve
 --
@@ -200,8 +194,8 @@ releaseTime phaseDucker  =
 --
 -- ObjC selector: @- attackCurve@
 attackCurve :: IsPHASEDucker phaseDucker => phaseDucker -> IO PHASECurveType
-attackCurve phaseDucker  =
-    fmap (coerce :: CLong -> PHASECurveType) $ sendMsg phaseDucker (mkSelector "attackCurve") retCLong []
+attackCurve phaseDucker =
+  sendMessage phaseDucker attackCurveSelector
 
 -- | releaseCurve
 --
@@ -209,8 +203,8 @@ attackCurve phaseDucker  =
 --
 -- ObjC selector: @- releaseCurve@
 releaseCurve :: IsPHASEDucker phaseDucker => phaseDucker -> IO PHASECurveType
-releaseCurve phaseDucker  =
-    fmap (coerce :: CLong -> PHASECurveType) $ sendMsg phaseDucker (mkSelector "releaseCurve") retCLong []
+releaseCurve phaseDucker =
+  sendMessage phaseDucker releaseCurveSelector
 
 -- | identifier
 --
@@ -218,66 +212,66 @@ releaseCurve phaseDucker  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsPHASEDucker phaseDucker => phaseDucker -> IO (Id NSString)
-identifier phaseDucker  =
-    sendMsg phaseDucker (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier phaseDucker =
+  sendMessage phaseDucker identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEDucker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEDucker)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:sourceGroups:targetGroups:gain:attackTime:releaseTime:attackCurve:releaseCurve:@
-initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector :: Selector
+initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector :: Selector '[Id PHASEEngine, Id NSSet, Id NSSet, CDouble, CDouble, CDouble, PHASECurveType, PHASECurveType] (Id PHASEDucker)
 initWithEngine_sourceGroups_targetGroups_gain_attackTime_releaseTime_attackCurve_releaseCurveSelector = mkSelector "initWithEngine:sourceGroups:targetGroups:gain:attackTime:releaseTime:attackCurve:releaseCurve:"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @deactivate@
-deactivateSelector :: Selector
+deactivateSelector :: Selector '[] ()
 deactivateSelector = mkSelector "deactivate"
 
 -- | @Selector@ for @sourceGroups@
-sourceGroupsSelector :: Selector
+sourceGroupsSelector :: Selector '[] (Id NSSet)
 sourceGroupsSelector = mkSelector "sourceGroups"
 
 -- | @Selector@ for @targetGroups@
-targetGroupsSelector :: Selector
+targetGroupsSelector :: Selector '[] (Id NSSet)
 targetGroupsSelector = mkSelector "targetGroups"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CDouble
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @attackTime@
-attackTimeSelector :: Selector
+attackTimeSelector :: Selector '[] CDouble
 attackTimeSelector = mkSelector "attackTime"
 
 -- | @Selector@ for @releaseTime@
-releaseTimeSelector :: Selector
+releaseTimeSelector :: Selector '[] CDouble
 releaseTimeSelector = mkSelector "releaseTime"
 
 -- | @Selector@ for @attackCurve@
-attackCurveSelector :: Selector
+attackCurveSelector :: Selector '[] PHASECurveType
 attackCurveSelector = mkSelector "attackCurve"
 
 -- | @Selector@ for @releaseCurve@
-releaseCurveSelector :: Selector
+releaseCurveSelector :: Selector '[] PHASECurveType
 releaseCurveSelector = mkSelector "releaseCurve"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

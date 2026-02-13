@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRContentLauncherClusterBrandingInformation
   , setSplash
   , waterMark
   , setWaterMark
-  , providerNameSelector
-  , setProviderNameSelector
   , backgroundSelector
-  , setBackgroundSelector
   , logoSelector
-  , setLogoSelector
   , progressBarSelector
+  , providerNameSelector
+  , setBackgroundSelector
+  , setLogoSelector
   , setProgressBarSelector
-  , splashSelector
+  , setProviderNameSelector
   , setSplashSelector
-  , waterMarkSelector
   , setWaterMarkSelector
+  , splashSelector
+  , waterMarkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- providerName@
 providerName :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id NSString)
-providerName mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "providerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerName mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation providerNameSelector
 
 -- | @- setProviderName:@
 setProviderName :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsNSString value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setProviderName mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setProviderName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderName mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setProviderNameSelector (toNSString value)
 
 -- | @- background@
 background :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id MTRContentLauncherClusterStyleInformationStruct)
-background mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "background") (retPtr retVoid) [] >>= retainedObject . castPtr
+background mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation backgroundSelector
 
 -- | @- setBackground:@
 setBackground :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsMTRContentLauncherClusterStyleInformationStruct value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setBackground mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setBackground:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackground mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setBackgroundSelector (toMTRContentLauncherClusterStyleInformationStruct value)
 
 -- | @- logo@
 logo :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id MTRContentLauncherClusterStyleInformationStruct)
-logo mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "logo") (retPtr retVoid) [] >>= retainedObject . castPtr
+logo mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation logoSelector
 
 -- | @- setLogo:@
 setLogo :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsMTRContentLauncherClusterStyleInformationStruct value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setLogo mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setLogo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLogo mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setLogoSelector (toMTRContentLauncherClusterStyleInformationStruct value)
 
 -- | @- progressBar@
 progressBar :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id MTRContentLauncherClusterStyleInformationStruct)
-progressBar mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "progressBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+progressBar mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation progressBarSelector
 
 -- | @- setProgressBar:@
 setProgressBar :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsMTRContentLauncherClusterStyleInformationStruct value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setProgressBar mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setProgressBar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProgressBar mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setProgressBarSelector (toMTRContentLauncherClusterStyleInformationStruct value)
 
 -- | @- splash@
 splash :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id MTRContentLauncherClusterStyleInformationStruct)
-splash mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "splash") (retPtr retVoid) [] >>= retainedObject . castPtr
+splash mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation splashSelector
 
 -- | @- setSplash:@
 setSplash :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsMTRContentLauncherClusterStyleInformationStruct value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setSplash mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setSplash:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSplash mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setSplashSelector (toMTRContentLauncherClusterStyleInformationStruct value)
 
 -- | @- waterMark@
 waterMark :: IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation => mtrContentLauncherClusterBrandingInformation -> IO (Id MTRContentLauncherClusterStyleInformationStruct)
-waterMark mtrContentLauncherClusterBrandingInformation  =
-    sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "waterMark") (retPtr retVoid) [] >>= retainedObject . castPtr
+waterMark mtrContentLauncherClusterBrandingInformation =
+  sendMessage mtrContentLauncherClusterBrandingInformation waterMarkSelector
 
 -- | @- setWaterMark:@
 setWaterMark :: (IsMTRContentLauncherClusterBrandingInformation mtrContentLauncherClusterBrandingInformation, IsMTRContentLauncherClusterStyleInformationStruct value) => mtrContentLauncherClusterBrandingInformation -> value -> IO ()
-setWaterMark mtrContentLauncherClusterBrandingInformation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterBrandingInformation (mkSelector "setWaterMark:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWaterMark mtrContentLauncherClusterBrandingInformation value =
+  sendMessage mtrContentLauncherClusterBrandingInformation setWaterMarkSelector (toMTRContentLauncherClusterStyleInformationStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @providerName@
-providerNameSelector :: Selector
+providerNameSelector :: Selector '[] (Id NSString)
 providerNameSelector = mkSelector "providerName"
 
 -- | @Selector@ for @setProviderName:@
-setProviderNameSelector :: Selector
+setProviderNameSelector :: Selector '[Id NSString] ()
 setProviderNameSelector = mkSelector "setProviderName:"
 
 -- | @Selector@ for @background@
-backgroundSelector :: Selector
+backgroundSelector :: Selector '[] (Id MTRContentLauncherClusterStyleInformationStruct)
 backgroundSelector = mkSelector "background"
 
 -- | @Selector@ for @setBackground:@
-setBackgroundSelector :: Selector
+setBackgroundSelector :: Selector '[Id MTRContentLauncherClusterStyleInformationStruct] ()
 setBackgroundSelector = mkSelector "setBackground:"
 
 -- | @Selector@ for @logo@
-logoSelector :: Selector
+logoSelector :: Selector '[] (Id MTRContentLauncherClusterStyleInformationStruct)
 logoSelector = mkSelector "logo"
 
 -- | @Selector@ for @setLogo:@
-setLogoSelector :: Selector
+setLogoSelector :: Selector '[Id MTRContentLauncherClusterStyleInformationStruct] ()
 setLogoSelector = mkSelector "setLogo:"
 
 -- | @Selector@ for @progressBar@
-progressBarSelector :: Selector
+progressBarSelector :: Selector '[] (Id MTRContentLauncherClusterStyleInformationStruct)
 progressBarSelector = mkSelector "progressBar"
 
 -- | @Selector@ for @setProgressBar:@
-setProgressBarSelector :: Selector
+setProgressBarSelector :: Selector '[Id MTRContentLauncherClusterStyleInformationStruct] ()
 setProgressBarSelector = mkSelector "setProgressBar:"
 
 -- | @Selector@ for @splash@
-splashSelector :: Selector
+splashSelector :: Selector '[] (Id MTRContentLauncherClusterStyleInformationStruct)
 splashSelector = mkSelector "splash"
 
 -- | @Selector@ for @setSplash:@
-setSplashSelector :: Selector
+setSplashSelector :: Selector '[Id MTRContentLauncherClusterStyleInformationStruct] ()
 setSplashSelector = mkSelector "setSplash:"
 
 -- | @Selector@ for @waterMark@
-waterMarkSelector :: Selector
+waterMarkSelector :: Selector '[] (Id MTRContentLauncherClusterStyleInformationStruct)
 waterMarkSelector = mkSelector "waterMark"
 
 -- | @Selector@ for @setWaterMark:@
-setWaterMarkSelector :: Selector
+setWaterMarkSelector :: Selector '[Id MTRContentLauncherClusterStyleInformationStruct] ()
 setWaterMarkSelector = mkSelector "setWaterMark:"
 

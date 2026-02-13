@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,16 +47,16 @@ module ObjC.SensitiveContentAnalysis.SCVideoStreamAnalyzer
   , analysis
   , analysisChangedHandler
   , setAnalysisChangedHandler
-  , initWithParticipantUUID_streamDirection_errorSelector
-  , initSelector
-  , newSelector
-  , analyzePixelBufferSelector
-  , beginAnalysisOfDecompressionSession_errorSelector
-  , beginAnalysisOfCaptureDeviceInput_errorSelector
-  , endAnalysisSelector
-  , continueStreamSelector
-  , analysisSelector
   , analysisChangedHandlerSelector
+  , analysisSelector
+  , analyzePixelBufferSelector
+  , beginAnalysisOfCaptureDeviceInput_errorSelector
+  , beginAnalysisOfDecompressionSession_errorSelector
+  , continueStreamSelector
+  , endAnalysisSelector
+  , initSelector
+  , initWithParticipantUUID_streamDirection_errorSelector
+  , newSelector
   , setAnalysisChangedHandlerSelector
 
   -- * Enum types
@@ -65,15 +66,11 @@ module ObjC.SensitiveContentAnalysis.SCVideoStreamAnalyzer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -90,20 +87,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithParticipantUUID:streamDirection:error:@
 initWithParticipantUUID_streamDirection_error :: (IsSCVideoStreamAnalyzer scVideoStreamAnalyzer, IsNSString participantUUID, IsNSError error_) => scVideoStreamAnalyzer -> participantUUID -> SCVideoStreamAnalyzerStreamDirection -> error_ -> IO (Id SCVideoStreamAnalyzer)
-initWithParticipantUUID_streamDirection_error scVideoStreamAnalyzer  participantUUID streamDirection error_ =
-  withObjCPtr participantUUID $ \raw_participantUUID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg scVideoStreamAnalyzer (mkSelector "initWithParticipantUUID:streamDirection:error:") (retPtr retVoid) [argPtr (castPtr raw_participantUUID :: Ptr ()), argCLong (coerce streamDirection), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithParticipantUUID_streamDirection_error scVideoStreamAnalyzer participantUUID streamDirection error_ =
+  sendOwnedMessage scVideoStreamAnalyzer initWithParticipantUUID_streamDirection_errorSelector (toNSString participantUUID) streamDirection (toNSError error_)
 
 -- | @- init@
 init_ :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO (Id SCVideoStreamAnalyzer)
-init_ scVideoStreamAnalyzer  =
-    sendMsg scVideoStreamAnalyzer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scVideoStreamAnalyzer =
+  sendOwnedMessage scVideoStreamAnalyzer initSelector
 
 -- | @- new@
 new :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO (Id SCVideoStreamAnalyzer)
-new scVideoStreamAnalyzer  =
-    sendMsg scVideoStreamAnalyzer (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new scVideoStreamAnalyzer =
+  sendOwnedMessage scVideoStreamAnalyzer newSelector
 
 -- | Analyzes individual video-stream frames for sensitive content.
 --
@@ -111,8 +106,8 @@ new scVideoStreamAnalyzer  =
 --
 -- ObjC selector: @- analyzePixelBuffer:@
 analyzePixelBuffer :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> Ptr () -> IO ()
-analyzePixelBuffer scVideoStreamAnalyzer  pixelBuffer =
-    sendMsg scVideoStreamAnalyzer (mkSelector "analyzePixelBuffer:") retVoid [argPtr pixelBuffer]
+analyzePixelBuffer scVideoStreamAnalyzer pixelBuffer =
+  sendMessage scVideoStreamAnalyzer analyzePixelBufferSelector pixelBuffer
 
 -- | Analyzes video frames for the given decompression session.
 --
@@ -122,9 +117,8 @@ analyzePixelBuffer scVideoStreamAnalyzer  pixelBuffer =
 --
 -- ObjC selector: @- beginAnalysisOfDecompressionSession:error:@
 beginAnalysisOfDecompressionSession_error :: (IsSCVideoStreamAnalyzer scVideoStreamAnalyzer, IsNSError error_) => scVideoStreamAnalyzer -> Ptr () -> error_ -> IO Bool
-beginAnalysisOfDecompressionSession_error scVideoStreamAnalyzer  decompressionSession error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg scVideoStreamAnalyzer (mkSelector "beginAnalysisOfDecompressionSession:error:") retCULong [argPtr decompressionSession, argPtr (castPtr raw_error_ :: Ptr ())]
+beginAnalysisOfDecompressionSession_error scVideoStreamAnalyzer decompressionSession error_ =
+  sendMessage scVideoStreamAnalyzer beginAnalysisOfDecompressionSession_errorSelector decompressionSession (toNSError error_)
 
 -- | Analyzes video frames for the given capture device input.
 --
@@ -134,10 +128,8 @@ beginAnalysisOfDecompressionSession_error scVideoStreamAnalyzer  decompressionSe
 --
 -- ObjC selector: @- beginAnalysisOfCaptureDeviceInput:error:@
 beginAnalysisOfCaptureDeviceInput_error :: (IsSCVideoStreamAnalyzer scVideoStreamAnalyzer, IsAVCaptureDeviceInput captureDeviceInput, IsNSError error_) => scVideoStreamAnalyzer -> captureDeviceInput -> error_ -> IO Bool
-beginAnalysisOfCaptureDeviceInput_error scVideoStreamAnalyzer  captureDeviceInput error_ =
-  withObjCPtr captureDeviceInput $ \raw_captureDeviceInput ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg scVideoStreamAnalyzer (mkSelector "beginAnalysisOfCaptureDeviceInput:error:") retCULong [argPtr (castPtr raw_captureDeviceInput :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+beginAnalysisOfCaptureDeviceInput_error scVideoStreamAnalyzer captureDeviceInput error_ =
+  sendMessage scVideoStreamAnalyzer beginAnalysisOfCaptureDeviceInput_errorSelector (toAVCaptureDeviceInput captureDeviceInput) (toNSError error_)
 
 -- | Stops stream analysis.
 --
@@ -145,8 +137,8 @@ beginAnalysisOfCaptureDeviceInput_error scVideoStreamAnalyzer  captureDeviceInpu
 --
 -- ObjC selector: @- endAnalysis@
 endAnalysis :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO ()
-endAnalysis scVideoStreamAnalyzer  =
-    sendMsg scVideoStreamAnalyzer (mkSelector "endAnalysis") retVoid []
+endAnalysis scVideoStreamAnalyzer =
+  sendMessage scVideoStreamAnalyzer endAnalysisSelector
 
 -- | Indicates that your app is ready to resume video stream analysis.
 --
@@ -154,8 +146,8 @@ endAnalysis scVideoStreamAnalyzer  =
 --
 -- ObjC selector: @- continueStream@
 continueStream :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO ()
-continueStream scVideoStreamAnalyzer  =
-    sendMsg scVideoStreamAnalyzer (mkSelector "continueStream") retVoid []
+continueStream scVideoStreamAnalyzer =
+  sendMessage scVideoStreamAnalyzer continueStreamSelector
 
 -- | The results of the first detected sensitive video frame.
 --
@@ -163,8 +155,8 @@ continueStream scVideoStreamAnalyzer  =
 --
 -- ObjC selector: @- analysis@
 analysis :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO (Id SCSensitivityAnalysis)
-analysis scVideoStreamAnalyzer  =
-    sendMsg scVideoStreamAnalyzer (mkSelector "analysis") (retPtr retVoid) [] >>= retainedObject . castPtr
+analysis scVideoStreamAnalyzer =
+  sendMessage scVideoStreamAnalyzer analysisSelector
 
 -- | A handler that your app provides to react to sensitive content detection.
 --
@@ -172,8 +164,8 @@ analysis scVideoStreamAnalyzer  =
 --
 -- ObjC selector: @- analysisChangedHandler@
 analysisChangedHandler :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> IO (Ptr ())
-analysisChangedHandler scVideoStreamAnalyzer  =
-    fmap castPtr $ sendMsg scVideoStreamAnalyzer (mkSelector "analysisChangedHandler") (retPtr retVoid) []
+analysisChangedHandler scVideoStreamAnalyzer =
+  sendMessage scVideoStreamAnalyzer analysisChangedHandlerSelector
 
 -- | A handler that your app provides to react to sensitive content detection.
 --
@@ -181,54 +173,54 @@ analysisChangedHandler scVideoStreamAnalyzer  =
 --
 -- ObjC selector: @- setAnalysisChangedHandler:@
 setAnalysisChangedHandler :: IsSCVideoStreamAnalyzer scVideoStreamAnalyzer => scVideoStreamAnalyzer -> Ptr () -> IO ()
-setAnalysisChangedHandler scVideoStreamAnalyzer  value =
-    sendMsg scVideoStreamAnalyzer (mkSelector "setAnalysisChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAnalysisChangedHandler scVideoStreamAnalyzer value =
+  sendMessage scVideoStreamAnalyzer setAnalysisChangedHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithParticipantUUID:streamDirection:error:@
-initWithParticipantUUID_streamDirection_errorSelector :: Selector
+initWithParticipantUUID_streamDirection_errorSelector :: Selector '[Id NSString, SCVideoStreamAnalyzerStreamDirection, Id NSError] (Id SCVideoStreamAnalyzer)
 initWithParticipantUUID_streamDirection_errorSelector = mkSelector "initWithParticipantUUID:streamDirection:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCVideoStreamAnalyzer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SCVideoStreamAnalyzer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @analyzePixelBuffer:@
-analyzePixelBufferSelector :: Selector
+analyzePixelBufferSelector :: Selector '[Ptr ()] ()
 analyzePixelBufferSelector = mkSelector "analyzePixelBuffer:"
 
 -- | @Selector@ for @beginAnalysisOfDecompressionSession:error:@
-beginAnalysisOfDecompressionSession_errorSelector :: Selector
+beginAnalysisOfDecompressionSession_errorSelector :: Selector '[Ptr (), Id NSError] Bool
 beginAnalysisOfDecompressionSession_errorSelector = mkSelector "beginAnalysisOfDecompressionSession:error:"
 
 -- | @Selector@ for @beginAnalysisOfCaptureDeviceInput:error:@
-beginAnalysisOfCaptureDeviceInput_errorSelector :: Selector
+beginAnalysisOfCaptureDeviceInput_errorSelector :: Selector '[Id AVCaptureDeviceInput, Id NSError] Bool
 beginAnalysisOfCaptureDeviceInput_errorSelector = mkSelector "beginAnalysisOfCaptureDeviceInput:error:"
 
 -- | @Selector@ for @endAnalysis@
-endAnalysisSelector :: Selector
+endAnalysisSelector :: Selector '[] ()
 endAnalysisSelector = mkSelector "endAnalysis"
 
 -- | @Selector@ for @continueStream@
-continueStreamSelector :: Selector
+continueStreamSelector :: Selector '[] ()
 continueStreamSelector = mkSelector "continueStream"
 
 -- | @Selector@ for @analysis@
-analysisSelector :: Selector
+analysisSelector :: Selector '[] (Id SCSensitivityAnalysis)
 analysisSelector = mkSelector "analysis"
 
 -- | @Selector@ for @analysisChangedHandler@
-analysisChangedHandlerSelector :: Selector
+analysisChangedHandlerSelector :: Selector '[] (Ptr ())
 analysisChangedHandlerSelector = mkSelector "analysisChangedHandler"
 
 -- | @Selector@ for @setAnalysisChangedHandler:@
-setAnalysisChangedHandlerSelector :: Selector
+setAnalysisChangedHandlerSelector :: Selector '[Ptr ()] ()
 setAnalysisChangedHandlerSelector = mkSelector "setAnalysisChangedHandler:"
 

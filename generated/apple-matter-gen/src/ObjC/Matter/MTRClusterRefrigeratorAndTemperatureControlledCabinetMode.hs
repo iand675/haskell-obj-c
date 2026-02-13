@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Matter.MTRClusterRefrigeratorAndTemperatureControlledCabinetMode
   , new
   , initWithDevice_endpointID_queue
   , changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeSupportedModesWithParamsSelector
-  , readAttributeCurrentModeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentModeWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSupportedModesWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,121 +48,108 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
 changeToModeWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRRefrigeratorAndTemperatureControlledCabinetModeClusterChangeToModeParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRRefrigeratorAndTemperatureControlledCabinetModeClusterChangeToModeParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeSupportedModesWithParams:@
 readAttributeSupportedModesWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeSupportedModesWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeSupportedModesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedModesWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeSupportedModesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentModeWithParams:@
 readAttributeCurrentModeWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeCurrentModeWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeCurrentModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentModeWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeCurrentModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRReadParams params) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterRefrigeratorAndTemperatureControlledCabinetMode params =
+  sendMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> IO (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
-init_ mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  =
-    sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterRefrigeratorAndTemperatureControlledCabinetMode =
+  sendOwnedMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterRefrigeratorAndTemperatureControlledCabinetMode"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterRefrigeratorAndTemperatureControlledCabinetMode mtrClusterRefrigeratorAndTemperatureControlledCabinetMode, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterRefrigeratorAndTemperatureControlledCabinetMode -> device -> endpointID -> queue -> IO (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
-initWithDevice_endpointID_queue mtrClusterRefrigeratorAndTemperatureControlledCabinetMode  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterRefrigeratorAndTemperatureControlledCabinetMode (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterRefrigeratorAndTemperatureControlledCabinetMode device endpointID queue =
+  sendOwnedMessage mtrClusterRefrigeratorAndTemperatureControlledCabinetMode initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
-changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRRefrigeratorAndTemperatureControlledCabinetModeClusterChangeToModeParams, Id NSArray, Id NSNumber, Ptr ()] ()
 changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeSupportedModesWithParams:@
-readAttributeSupportedModesWithParamsSelector :: Selector
+readAttributeSupportedModesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedModesWithParamsSelector = mkSelector "readAttributeSupportedModesWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentModeWithParams:@
-readAttributeCurrentModeWithParamsSelector :: Selector
+readAttributeCurrentModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentModeWithParamsSelector = mkSelector "readAttributeCurrentModeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterRefrigeratorAndTemperatureControlledCabinetMode)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,15 +31,15 @@ module ObjC.CoreMIDI.MIDIUMPCIProfile
   , enabledChannelCount
   , totalChannelCount
   , isEnabled
+  , enabledChannelCountSelector
+  , firstChannelSelector
+  , groupOffsetSelector
   , initSelector
-  , setProfileState_enabledChannelCount_errorSelector
+  , isEnabledSelector
   , nameSelector
   , profileTypeSelector
-  , groupOffsetSelector
-  , firstChannelSelector
-  , enabledChannelCountSelector
+  , setProfileState_enabledChannelCount_errorSelector
   , totalChannelCountSelector
-  , isEnabledSelector
 
   -- * Enum types
   , MIDICIProfileType(MIDICIProfileType)
@@ -49,15 +50,11 @@ module ObjC.CoreMIDI.MIDIUMPCIProfile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,8 +64,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO (Id MIDIUMPCIProfile)
-init_ midiumpciProfile  =
-    sendMsg midiumpciProfile (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiumpciProfile =
+  sendOwnedMessage midiumpciProfile initSelector
 
 -- | setProfileState:enabledChannelCount:error:
 --
@@ -84,9 +81,8 @@ init_ midiumpciProfile  =
 --
 -- ObjC selector: @- setProfileState:enabledChannelCount:error:@
 setProfileState_enabledChannelCount_error :: (IsMIDIUMPCIProfile midiumpciProfile, IsNSError error_) => midiumpciProfile -> Bool -> CUShort -> error_ -> IO Bool
-setProfileState_enabledChannelCount_error midiumpciProfile  isEnabled enabledChannelCount error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpciProfile (mkSelector "setProfileState:enabledChannelCount:error:") retCULong [argCULong (if isEnabled then 1 else 0), argCUInt (fromIntegral enabledChannelCount), argPtr (castPtr raw_error_ :: Ptr ())]
+setProfileState_enabledChannelCount_error midiumpciProfile isEnabled enabledChannelCount error_ =
+  sendMessage midiumpciProfile setProfileState_enabledChannelCount_errorSelector isEnabled enabledChannelCount (toNSError error_)
 
 -- | name
 --
@@ -94,8 +90,8 @@ setProfileState_enabledChannelCount_error midiumpciProfile  isEnabled enabledCha
 --
 -- ObjC selector: @- name@
 name :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO (Id NSString)
-name midiumpciProfile  =
-    sendMsg midiumpciProfile (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name midiumpciProfile =
+  sendMessage midiumpciProfile nameSelector
 
 -- | profileType
 --
@@ -103,8 +99,8 @@ name midiumpciProfile  =
 --
 -- ObjC selector: @- profileType@
 profileType :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO MIDICIProfileType
-profileType midiumpciProfile  =
-    fmap (coerce :: CUChar -> MIDICIProfileType) $ sendMsg midiumpciProfile (mkSelector "profileType") retCUChar []
+profileType midiumpciProfile =
+  sendMessage midiumpciProfile profileTypeSelector
 
 -- | groupOffset
 --
@@ -112,8 +108,8 @@ profileType midiumpciProfile  =
 --
 -- ObjC selector: @- groupOffset@
 groupOffset :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO CUChar
-groupOffset midiumpciProfile  =
-    sendMsg midiumpciProfile (mkSelector "groupOffset") retCUChar []
+groupOffset midiumpciProfile =
+  sendMessage midiumpciProfile groupOffsetSelector
 
 -- | firstChannel
 --
@@ -121,8 +117,8 @@ groupOffset midiumpciProfile  =
 --
 -- ObjC selector: @- firstChannel@
 firstChannel :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO CUChar
-firstChannel midiumpciProfile  =
-    sendMsg midiumpciProfile (mkSelector "firstChannel") retCUChar []
+firstChannel midiumpciProfile =
+  sendMessage midiumpciProfile firstChannelSelector
 
 -- | enabledChannelCount
 --
@@ -130,8 +126,8 @@ firstChannel midiumpciProfile  =
 --
 -- ObjC selector: @- enabledChannelCount@
 enabledChannelCount :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO CUShort
-enabledChannelCount midiumpciProfile  =
-    fmap fromIntegral $ sendMsg midiumpciProfile (mkSelector "enabledChannelCount") retCUInt []
+enabledChannelCount midiumpciProfile =
+  sendMessage midiumpciProfile enabledChannelCountSelector
 
 -- | totalChannelCount
 --
@@ -139,8 +135,8 @@ enabledChannelCount midiumpciProfile  =
 --
 -- ObjC selector: @- totalChannelCount@
 totalChannelCount :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO CUShort
-totalChannelCount midiumpciProfile  =
-    fmap fromIntegral $ sendMsg midiumpciProfile (mkSelector "totalChannelCount") retCUInt []
+totalChannelCount midiumpciProfile =
+  sendMessage midiumpciProfile totalChannelCountSelector
 
 -- | isEnabled
 --
@@ -148,46 +144,46 @@ totalChannelCount midiumpciProfile  =
 --
 -- ObjC selector: @- isEnabled@
 isEnabled :: IsMIDIUMPCIProfile midiumpciProfile => midiumpciProfile -> IO Bool
-isEnabled midiumpciProfile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpciProfile (mkSelector "isEnabled") retCULong []
+isEnabled midiumpciProfile =
+  sendMessage midiumpciProfile isEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDIUMPCIProfile)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setProfileState:enabledChannelCount:error:@
-setProfileState_enabledChannelCount_errorSelector :: Selector
+setProfileState_enabledChannelCount_errorSelector :: Selector '[Bool, CUShort, Id NSError] Bool
 setProfileState_enabledChannelCount_errorSelector = mkSelector "setProfileState:enabledChannelCount:error:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @profileType@
-profileTypeSelector :: Selector
+profileTypeSelector :: Selector '[] MIDICIProfileType
 profileTypeSelector = mkSelector "profileType"
 
 -- | @Selector@ for @groupOffset@
-groupOffsetSelector :: Selector
+groupOffsetSelector :: Selector '[] CUChar
 groupOffsetSelector = mkSelector "groupOffset"
 
 -- | @Selector@ for @firstChannel@
-firstChannelSelector :: Selector
+firstChannelSelector :: Selector '[] CUChar
 firstChannelSelector = mkSelector "firstChannel"
 
 -- | @Selector@ for @enabledChannelCount@
-enabledChannelCountSelector :: Selector
+enabledChannelCountSelector :: Selector '[] CUShort
 enabledChannelCountSelector = mkSelector "enabledChannelCount"
 
 -- | @Selector@ for @totalChannelCount@
-totalChannelCountSelector :: Selector
+totalChannelCountSelector :: Selector '[] CUShort
 totalChannelCountSelector = mkSelector "totalChannelCount"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 

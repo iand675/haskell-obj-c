@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,51 +39,47 @@ module ObjC.AppKit.NSObjectController
   , setFetchPredicate
   , usesLazyFetching
   , setUsesLazyFetching
-  , initWithContentSelector
-  , initWithCoderSelector
-  , prepareContentSelector
-  , newObjectSelector
   , addObjectSelector
-  , removeObjectSelector
   , addSelector
-  , removeSelector
-  , validateUserInterfaceItemSelector
-  , fetchWithRequest_merge_errorSelector
-  , fetchSelector
-  , defaultFetchRequestSelector
-  , contentSelector
-  , setContentSelector
-  , selectionSelector
-  , selectedObjectsSelector
   , automaticallyPreparesContentSelector
-  , setAutomaticallyPreparesContentSelector
-  , objectClassSelector
-  , setObjectClassSelector
-  , editableSelector
-  , setEditableSelector
   , canAddSelector
   , canRemoveSelector
-  , managedObjectContextSelector
-  , setManagedObjectContextSelector
+  , contentSelector
+  , defaultFetchRequestSelector
+  , editableSelector
   , entityNameSelector
-  , setEntityNameSelector
   , fetchPredicateSelector
+  , fetchSelector
+  , fetchWithRequest_merge_errorSelector
+  , initWithCoderSelector
+  , initWithContentSelector
+  , managedObjectContextSelector
+  , newObjectSelector
+  , objectClassSelector
+  , prepareContentSelector
+  , removeObjectSelector
+  , removeSelector
+  , selectedObjectsSelector
+  , selectionSelector
+  , setAutomaticallyPreparesContentSelector
+  , setContentSelector
+  , setEditableSelector
+  , setEntityNameSelector
   , setFetchPredicateSelector
-  , usesLazyFetchingSelector
+  , setManagedObjectContextSelector
+  , setObjectClassSelector
   , setUsesLazyFetchingSelector
+  , usesLazyFetchingSelector
+  , validateUserInterfaceItemSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,299 +89,293 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithContent:@
 initWithContent :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO (Id NSObjectController)
-initWithContent nsObjectController  content =
-    sendMsg nsObjectController (mkSelector "initWithContent:") (retPtr retVoid) [argPtr (castPtr (unRawId content) :: Ptr ())] >>= ownedObject . castPtr
+initWithContent nsObjectController content =
+  sendOwnedMessage nsObjectController initWithContentSelector content
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSObjectController nsObjectController, IsNSCoder coder) => nsObjectController -> coder -> IO (Id NSObjectController)
-initWithCoder nsObjectController  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsObjectController (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsObjectController coder =
+  sendOwnedMessage nsObjectController initWithCoderSelector (toNSCoder coder)
 
 -- | @- prepareContent@
 prepareContent :: IsNSObjectController nsObjectController => nsObjectController -> IO ()
-prepareContent nsObjectController  =
-    sendMsg nsObjectController (mkSelector "prepareContent") retVoid []
+prepareContent nsObjectController =
+  sendMessage nsObjectController prepareContentSelector
 
 -- | @- newObject@
 newObject :: IsNSObjectController nsObjectController => nsObjectController -> IO RawId
-newObject nsObjectController  =
-    fmap (RawId . castPtr) $ sendMsg nsObjectController (mkSelector "newObject") (retPtr retVoid) []
+newObject nsObjectController =
+  sendOwnedMessage nsObjectController newObjectSelector
 
 -- | @- addObject:@
 addObject :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-addObject nsObjectController  object =
-    sendMsg nsObjectController (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addObject nsObjectController object =
+  sendMessage nsObjectController addObjectSelector object
 
 -- | @- removeObject:@
 removeObject :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-removeObject nsObjectController  object =
-    sendMsg nsObjectController (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeObject nsObjectController object =
+  sendMessage nsObjectController removeObjectSelector object
 
 -- | @- add:@
 add :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-add nsObjectController  sender =
-    sendMsg nsObjectController (mkSelector "add:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+add nsObjectController sender =
+  sendMessage nsObjectController addSelector sender
 
 -- | @- remove:@
 remove :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-remove nsObjectController  sender =
-    sendMsg nsObjectController (mkSelector "remove:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+remove nsObjectController sender =
+  sendMessage nsObjectController removeSelector sender
 
 -- | @- validateUserInterfaceItem:@
 validateUserInterfaceItem :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO Bool
-validateUserInterfaceItem nsObjectController  item =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "validateUserInterfaceItem:") retCULong [argPtr (castPtr (unRawId item) :: Ptr ())]
+validateUserInterfaceItem nsObjectController item =
+  sendMessage nsObjectController validateUserInterfaceItemSelector item
 
 -- | @- fetchWithRequest:merge:error:@
 fetchWithRequest_merge_error :: (IsNSObjectController nsObjectController, IsNSFetchRequest fetchRequest, IsNSError error_) => nsObjectController -> fetchRequest -> Bool -> error_ -> IO Bool
-fetchWithRequest_merge_error nsObjectController  fetchRequest merge error_ =
-  withObjCPtr fetchRequest $ \raw_fetchRequest ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "fetchWithRequest:merge:error:") retCULong [argPtr (castPtr raw_fetchRequest :: Ptr ()), argCULong (if merge then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+fetchWithRequest_merge_error nsObjectController fetchRequest merge error_ =
+  sendMessage nsObjectController fetchWithRequest_merge_errorSelector (toNSFetchRequest fetchRequest) merge (toNSError error_)
 
 -- | @- fetch:@
 fetch :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-fetch nsObjectController  sender =
-    sendMsg nsObjectController (mkSelector "fetch:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+fetch nsObjectController sender =
+  sendMessage nsObjectController fetchSelector sender
 
 -- | @- defaultFetchRequest@
 defaultFetchRequest :: IsNSObjectController nsObjectController => nsObjectController -> IO (Id NSFetchRequest)
-defaultFetchRequest nsObjectController  =
-    sendMsg nsObjectController (mkSelector "defaultFetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultFetchRequest nsObjectController =
+  sendMessage nsObjectController defaultFetchRequestSelector
 
 -- | @- content@
 content :: IsNSObjectController nsObjectController => nsObjectController -> IO RawId
-content nsObjectController  =
-    fmap (RawId . castPtr) $ sendMsg nsObjectController (mkSelector "content") (retPtr retVoid) []
+content nsObjectController =
+  sendMessage nsObjectController contentSelector
 
 -- | @- setContent:@
 setContent :: IsNSObjectController nsObjectController => nsObjectController -> RawId -> IO ()
-setContent nsObjectController  value =
-    sendMsg nsObjectController (mkSelector "setContent:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setContent nsObjectController value =
+  sendMessage nsObjectController setContentSelector value
 
 -- | @- selection@
 selection :: IsNSObjectController nsObjectController => nsObjectController -> IO RawId
-selection nsObjectController  =
-    fmap (RawId . castPtr) $ sendMsg nsObjectController (mkSelector "selection") (retPtr retVoid) []
+selection nsObjectController =
+  sendMessage nsObjectController selectionSelector
 
 -- | @- selectedObjects@
 selectedObjects :: IsNSObjectController nsObjectController => nsObjectController -> IO (Id NSArray)
-selectedObjects nsObjectController  =
-    sendMsg nsObjectController (mkSelector "selectedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedObjects nsObjectController =
+  sendMessage nsObjectController selectedObjectsSelector
 
 -- | @- automaticallyPreparesContent@
 automaticallyPreparesContent :: IsNSObjectController nsObjectController => nsObjectController -> IO Bool
-automaticallyPreparesContent nsObjectController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "automaticallyPreparesContent") retCULong []
+automaticallyPreparesContent nsObjectController =
+  sendMessage nsObjectController automaticallyPreparesContentSelector
 
 -- | @- setAutomaticallyPreparesContent:@
 setAutomaticallyPreparesContent :: IsNSObjectController nsObjectController => nsObjectController -> Bool -> IO ()
-setAutomaticallyPreparesContent nsObjectController  value =
-    sendMsg nsObjectController (mkSelector "setAutomaticallyPreparesContent:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyPreparesContent nsObjectController value =
+  sendMessage nsObjectController setAutomaticallyPreparesContentSelector value
 
 -- | @- objectClass@
 objectClass :: IsNSObjectController nsObjectController => nsObjectController -> IO Class
-objectClass nsObjectController  =
-    fmap (Class . castPtr) $ sendMsg nsObjectController (mkSelector "objectClass") (retPtr retVoid) []
+objectClass nsObjectController =
+  sendMessage nsObjectController objectClassSelector
 
 -- | @- setObjectClass:@
 setObjectClass :: IsNSObjectController nsObjectController => nsObjectController -> Class -> IO ()
-setObjectClass nsObjectController  value =
-    sendMsg nsObjectController (mkSelector "setObjectClass:") retVoid [argPtr (unClass value)]
+setObjectClass nsObjectController value =
+  sendMessage nsObjectController setObjectClassSelector value
 
 -- | @- editable@
 editable :: IsNSObjectController nsObjectController => nsObjectController -> IO Bool
-editable nsObjectController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "editable") retCULong []
+editable nsObjectController =
+  sendMessage nsObjectController editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSObjectController nsObjectController => nsObjectController -> Bool -> IO ()
-setEditable nsObjectController  value =
-    sendMsg nsObjectController (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsObjectController value =
+  sendMessage nsObjectController setEditableSelector value
 
 -- | @- canAdd@
 canAdd :: IsNSObjectController nsObjectController => nsObjectController -> IO Bool
-canAdd nsObjectController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "canAdd") retCULong []
+canAdd nsObjectController =
+  sendMessage nsObjectController canAddSelector
 
 -- | @- canRemove@
 canRemove :: IsNSObjectController nsObjectController => nsObjectController -> IO Bool
-canRemove nsObjectController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "canRemove") retCULong []
+canRemove nsObjectController =
+  sendMessage nsObjectController canRemoveSelector
 
 -- | @- managedObjectContext@
 managedObjectContext :: IsNSObjectController nsObjectController => nsObjectController -> IO (Id NSManagedObjectContext)
-managedObjectContext nsObjectController  =
-    sendMsg nsObjectController (mkSelector "managedObjectContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectContext nsObjectController =
+  sendMessage nsObjectController managedObjectContextSelector
 
 -- | @- setManagedObjectContext:@
 setManagedObjectContext :: (IsNSObjectController nsObjectController, IsNSManagedObjectContext value) => nsObjectController -> value -> IO ()
-setManagedObjectContext nsObjectController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsObjectController (mkSelector "setManagedObjectContext:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManagedObjectContext nsObjectController value =
+  sendMessage nsObjectController setManagedObjectContextSelector (toNSManagedObjectContext value)
 
 -- | @- entityName@
 entityName :: IsNSObjectController nsObjectController => nsObjectController -> IO (Id NSString)
-entityName nsObjectController  =
-    sendMsg nsObjectController (mkSelector "entityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityName nsObjectController =
+  sendMessage nsObjectController entityNameSelector
 
 -- | @- setEntityName:@
 setEntityName :: (IsNSObjectController nsObjectController, IsNSString value) => nsObjectController -> value -> IO ()
-setEntityName nsObjectController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsObjectController (mkSelector "setEntityName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEntityName nsObjectController value =
+  sendMessage nsObjectController setEntityNameSelector (toNSString value)
 
 -- | @- fetchPredicate@
 fetchPredicate :: IsNSObjectController nsObjectController => nsObjectController -> IO (Id NSPredicate)
-fetchPredicate nsObjectController  =
-    sendMsg nsObjectController (mkSelector "fetchPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchPredicate nsObjectController =
+  sendMessage nsObjectController fetchPredicateSelector
 
 -- | @- setFetchPredicate:@
 setFetchPredicate :: (IsNSObjectController nsObjectController, IsNSPredicate value) => nsObjectController -> value -> IO ()
-setFetchPredicate nsObjectController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsObjectController (mkSelector "setFetchPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFetchPredicate nsObjectController value =
+  sendMessage nsObjectController setFetchPredicateSelector (toNSPredicate value)
 
 -- | @- usesLazyFetching@
 usesLazyFetching :: IsNSObjectController nsObjectController => nsObjectController -> IO Bool
-usesLazyFetching nsObjectController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObjectController (mkSelector "usesLazyFetching") retCULong []
+usesLazyFetching nsObjectController =
+  sendMessage nsObjectController usesLazyFetchingSelector
 
 -- | @- setUsesLazyFetching:@
 setUsesLazyFetching :: IsNSObjectController nsObjectController => nsObjectController -> Bool -> IO ()
-setUsesLazyFetching nsObjectController  value =
-    sendMsg nsObjectController (mkSelector "setUsesLazyFetching:") retVoid [argCULong (if value then 1 else 0)]
+setUsesLazyFetching nsObjectController value =
+  sendMessage nsObjectController setUsesLazyFetchingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContent:@
-initWithContentSelector :: Selector
+initWithContentSelector :: Selector '[RawId] (Id NSObjectController)
 initWithContentSelector = mkSelector "initWithContent:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSObjectController)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @prepareContent@
-prepareContentSelector :: Selector
+prepareContentSelector :: Selector '[] ()
 prepareContentSelector = mkSelector "prepareContent"
 
 -- | @Selector@ for @newObject@
-newObjectSelector :: Selector
+newObjectSelector :: Selector '[] RawId
 newObjectSelector = mkSelector "newObject"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @add:@
-addSelector :: Selector
+addSelector :: Selector '[RawId] ()
 addSelector = mkSelector "add:"
 
 -- | @Selector@ for @remove:@
-removeSelector :: Selector
+removeSelector :: Selector '[RawId] ()
 removeSelector = mkSelector "remove:"
 
 -- | @Selector@ for @validateUserInterfaceItem:@
-validateUserInterfaceItemSelector :: Selector
+validateUserInterfaceItemSelector :: Selector '[RawId] Bool
 validateUserInterfaceItemSelector = mkSelector "validateUserInterfaceItem:"
 
 -- | @Selector@ for @fetchWithRequest:merge:error:@
-fetchWithRequest_merge_errorSelector :: Selector
+fetchWithRequest_merge_errorSelector :: Selector '[Id NSFetchRequest, Bool, Id NSError] Bool
 fetchWithRequest_merge_errorSelector = mkSelector "fetchWithRequest:merge:error:"
 
 -- | @Selector@ for @fetch:@
-fetchSelector :: Selector
+fetchSelector :: Selector '[RawId] ()
 fetchSelector = mkSelector "fetch:"
 
 -- | @Selector@ for @defaultFetchRequest@
-defaultFetchRequestSelector :: Selector
+defaultFetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 defaultFetchRequestSelector = mkSelector "defaultFetchRequest"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] RawId
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @setContent:@
-setContentSelector :: Selector
+setContentSelector :: Selector '[RawId] ()
 setContentSelector = mkSelector "setContent:"
 
 -- | @Selector@ for @selection@
-selectionSelector :: Selector
+selectionSelector :: Selector '[] RawId
 selectionSelector = mkSelector "selection"
 
 -- | @Selector@ for @selectedObjects@
-selectedObjectsSelector :: Selector
+selectedObjectsSelector :: Selector '[] (Id NSArray)
 selectedObjectsSelector = mkSelector "selectedObjects"
 
 -- | @Selector@ for @automaticallyPreparesContent@
-automaticallyPreparesContentSelector :: Selector
+automaticallyPreparesContentSelector :: Selector '[] Bool
 automaticallyPreparesContentSelector = mkSelector "automaticallyPreparesContent"
 
 -- | @Selector@ for @setAutomaticallyPreparesContent:@
-setAutomaticallyPreparesContentSelector :: Selector
+setAutomaticallyPreparesContentSelector :: Selector '[Bool] ()
 setAutomaticallyPreparesContentSelector = mkSelector "setAutomaticallyPreparesContent:"
 
 -- | @Selector@ for @objectClass@
-objectClassSelector :: Selector
+objectClassSelector :: Selector '[] Class
 objectClassSelector = mkSelector "objectClass"
 
 -- | @Selector@ for @setObjectClass:@
-setObjectClassSelector :: Selector
+setObjectClassSelector :: Selector '[Class] ()
 setObjectClassSelector = mkSelector "setObjectClass:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @canAdd@
-canAddSelector :: Selector
+canAddSelector :: Selector '[] Bool
 canAddSelector = mkSelector "canAdd"
 
 -- | @Selector@ for @canRemove@
-canRemoveSelector :: Selector
+canRemoveSelector :: Selector '[] Bool
 canRemoveSelector = mkSelector "canRemove"
 
 -- | @Selector@ for @managedObjectContext@
-managedObjectContextSelector :: Selector
+managedObjectContextSelector :: Selector '[] (Id NSManagedObjectContext)
 managedObjectContextSelector = mkSelector "managedObjectContext"
 
 -- | @Selector@ for @setManagedObjectContext:@
-setManagedObjectContextSelector :: Selector
+setManagedObjectContextSelector :: Selector '[Id NSManagedObjectContext] ()
 setManagedObjectContextSelector = mkSelector "setManagedObjectContext:"
 
 -- | @Selector@ for @entityName@
-entityNameSelector :: Selector
+entityNameSelector :: Selector '[] (Id NSString)
 entityNameSelector = mkSelector "entityName"
 
 -- | @Selector@ for @setEntityName:@
-setEntityNameSelector :: Selector
+setEntityNameSelector :: Selector '[Id NSString] ()
 setEntityNameSelector = mkSelector "setEntityName:"
 
 -- | @Selector@ for @fetchPredicate@
-fetchPredicateSelector :: Selector
+fetchPredicateSelector :: Selector '[] (Id NSPredicate)
 fetchPredicateSelector = mkSelector "fetchPredicate"
 
 -- | @Selector@ for @setFetchPredicate:@
-setFetchPredicateSelector :: Selector
+setFetchPredicateSelector :: Selector '[Id NSPredicate] ()
 setFetchPredicateSelector = mkSelector "setFetchPredicate:"
 
 -- | @Selector@ for @usesLazyFetching@
-usesLazyFetchingSelector :: Selector
+usesLazyFetchingSelector :: Selector '[] Bool
 usesLazyFetchingSelector = mkSelector "usesLazyFetching"
 
 -- | @Selector@ for @setUsesLazyFetching:@
-setUsesLazyFetchingSelector :: Selector
+setUsesLazyFetchingSelector :: Selector '[Bool] ()
 setUsesLazyFetchingSelector = mkSelector "setUsesLazyFetching:"
 

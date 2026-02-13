@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Foundation.NSMutableAttributedString
   , beginEditing
   , endEditing
   , mutableString
-  , replaceCharactersInRange_withStringSelector
-  , setAttributes_rangeSelector
-  , appendLocalizedFormatSelector
   , addAttribute_value_rangeSelector
   , addAttributes_rangeSelector
+  , appendAttributedStringSelector
+  , appendLocalizedFormatSelector
+  , beginEditingSelector
+  , deleteCharactersInRangeSelector
+  , endEditingSelector
+  , insertAttributedString_atIndexSelector
+  , mutableStringSelector
   , removeAttribute_rangeSelector
   , replaceCharactersInRange_withAttributedStringSelector
-  , insertAttributedString_atIndexSelector
-  , appendAttributedStringSelector
-  , deleteCharactersInRangeSelector
+  , replaceCharactersInRange_withStringSelector
   , setAttributedStringSelector
-  , beginEditingSelector
-  , endEditingSelector
-  , mutableStringSelector
+  , setAttributes_rangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,143 +52,133 @@ import ObjC.Foundation.Internal.Structs
 
 -- | @- replaceCharactersInRange:withString:@
 replaceCharactersInRange_withString :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSString str) => nsMutableAttributedString -> NSRange -> str -> IO ()
-replaceCharactersInRange_withString nsMutableAttributedString  range str =
-  withObjCPtr str $ \raw_str ->
-      sendMsg nsMutableAttributedString (mkSelector "replaceCharactersInRange:withString:") retVoid [argNSRange range, argPtr (castPtr raw_str :: Ptr ())]
+replaceCharactersInRange_withString nsMutableAttributedString range str =
+  sendMessage nsMutableAttributedString replaceCharactersInRange_withStringSelector range (toNSString str)
 
 -- | @- setAttributes:range:@
 setAttributes_range :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSDictionary attrs) => nsMutableAttributedString -> attrs -> NSRange -> IO ()
-setAttributes_range nsMutableAttributedString  attrs range =
-  withObjCPtr attrs $ \raw_attrs ->
-      sendMsg nsMutableAttributedString (mkSelector "setAttributes:range:") retVoid [argPtr (castPtr raw_attrs :: Ptr ()), argNSRange range]
+setAttributes_range nsMutableAttributedString attrs range =
+  sendMessage nsMutableAttributedString setAttributes_rangeSelector (toNSDictionary attrs) range
 
 -- | Formats the specified string and arguments with the current locale, then appends the result to the receiver.
 --
 -- ObjC selector: @- appendLocalizedFormat:@
 appendLocalizedFormat :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSAttributedString format) => nsMutableAttributedString -> format -> IO ()
-appendLocalizedFormat nsMutableAttributedString  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg nsMutableAttributedString (mkSelector "appendLocalizedFormat:") retVoid [argPtr (castPtr raw_format :: Ptr ())]
+appendLocalizedFormat nsMutableAttributedString format =
+  sendMessage nsMutableAttributedString appendLocalizedFormatSelector (toNSAttributedString format)
 
 -- | @- addAttribute:value:range:@
 addAttribute_value_range :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSString name) => nsMutableAttributedString -> name -> RawId -> NSRange -> IO ()
-addAttribute_value_range nsMutableAttributedString  name value range =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsMutableAttributedString (mkSelector "addAttribute:value:range:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argNSRange range]
+addAttribute_value_range nsMutableAttributedString name value range =
+  sendMessage nsMutableAttributedString addAttribute_value_rangeSelector (toNSString name) value range
 
 -- | @- addAttributes:range:@
 addAttributes_range :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSDictionary attrs) => nsMutableAttributedString -> attrs -> NSRange -> IO ()
-addAttributes_range nsMutableAttributedString  attrs range =
-  withObjCPtr attrs $ \raw_attrs ->
-      sendMsg nsMutableAttributedString (mkSelector "addAttributes:range:") retVoid [argPtr (castPtr raw_attrs :: Ptr ()), argNSRange range]
+addAttributes_range nsMutableAttributedString attrs range =
+  sendMessage nsMutableAttributedString addAttributes_rangeSelector (toNSDictionary attrs) range
 
 -- | @- removeAttribute:range:@
 removeAttribute_range :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSString name) => nsMutableAttributedString -> name -> NSRange -> IO ()
-removeAttribute_range nsMutableAttributedString  name range =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsMutableAttributedString (mkSelector "removeAttribute:range:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argNSRange range]
+removeAttribute_range nsMutableAttributedString name range =
+  sendMessage nsMutableAttributedString removeAttribute_rangeSelector (toNSString name) range
 
 -- | @- replaceCharactersInRange:withAttributedString:@
 replaceCharactersInRange_withAttributedString :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSAttributedString attrString) => nsMutableAttributedString -> NSRange -> attrString -> IO ()
-replaceCharactersInRange_withAttributedString nsMutableAttributedString  range attrString =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsMutableAttributedString (mkSelector "replaceCharactersInRange:withAttributedString:") retVoid [argNSRange range, argPtr (castPtr raw_attrString :: Ptr ())]
+replaceCharactersInRange_withAttributedString nsMutableAttributedString range attrString =
+  sendMessage nsMutableAttributedString replaceCharactersInRange_withAttributedStringSelector range (toNSAttributedString attrString)
 
 -- | @- insertAttributedString:atIndex:@
 insertAttributedString_atIndex :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSAttributedString attrString) => nsMutableAttributedString -> attrString -> CULong -> IO ()
-insertAttributedString_atIndex nsMutableAttributedString  attrString loc =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsMutableAttributedString (mkSelector "insertAttributedString:atIndex:") retVoid [argPtr (castPtr raw_attrString :: Ptr ()), argCULong loc]
+insertAttributedString_atIndex nsMutableAttributedString attrString loc =
+  sendMessage nsMutableAttributedString insertAttributedString_atIndexSelector (toNSAttributedString attrString) loc
 
 -- | @- appendAttributedString:@
 appendAttributedString :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSAttributedString attrString) => nsMutableAttributedString -> attrString -> IO ()
-appendAttributedString nsMutableAttributedString  attrString =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsMutableAttributedString (mkSelector "appendAttributedString:") retVoid [argPtr (castPtr raw_attrString :: Ptr ())]
+appendAttributedString nsMutableAttributedString attrString =
+  sendMessage nsMutableAttributedString appendAttributedStringSelector (toNSAttributedString attrString)
 
 -- | @- deleteCharactersInRange:@
 deleteCharactersInRange :: IsNSMutableAttributedString nsMutableAttributedString => nsMutableAttributedString -> NSRange -> IO ()
-deleteCharactersInRange nsMutableAttributedString  range =
-    sendMsg nsMutableAttributedString (mkSelector "deleteCharactersInRange:") retVoid [argNSRange range]
+deleteCharactersInRange nsMutableAttributedString range =
+  sendMessage nsMutableAttributedString deleteCharactersInRangeSelector range
 
 -- | @- setAttributedString:@
 setAttributedString :: (IsNSMutableAttributedString nsMutableAttributedString, IsNSAttributedString attrString) => nsMutableAttributedString -> attrString -> IO ()
-setAttributedString nsMutableAttributedString  attrString =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsMutableAttributedString (mkSelector "setAttributedString:") retVoid [argPtr (castPtr raw_attrString :: Ptr ())]
+setAttributedString nsMutableAttributedString attrString =
+  sendMessage nsMutableAttributedString setAttributedStringSelector (toNSAttributedString attrString)
 
 -- | @- beginEditing@
 beginEditing :: IsNSMutableAttributedString nsMutableAttributedString => nsMutableAttributedString -> IO ()
-beginEditing nsMutableAttributedString  =
-    sendMsg nsMutableAttributedString (mkSelector "beginEditing") retVoid []
+beginEditing nsMutableAttributedString =
+  sendMessage nsMutableAttributedString beginEditingSelector
 
 -- | @- endEditing@
 endEditing :: IsNSMutableAttributedString nsMutableAttributedString => nsMutableAttributedString -> IO ()
-endEditing nsMutableAttributedString  =
-    sendMsg nsMutableAttributedString (mkSelector "endEditing") retVoid []
+endEditing nsMutableAttributedString =
+  sendMessage nsMutableAttributedString endEditingSelector
 
 -- | @- mutableString@
 mutableString :: IsNSMutableAttributedString nsMutableAttributedString => nsMutableAttributedString -> IO (Id NSMutableString)
-mutableString nsMutableAttributedString  =
-    sendMsg nsMutableAttributedString (mkSelector "mutableString") (retPtr retVoid) [] >>= retainedObject . castPtr
+mutableString nsMutableAttributedString =
+  sendMessage nsMutableAttributedString mutableStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @replaceCharactersInRange:withString:@
-replaceCharactersInRange_withStringSelector :: Selector
+replaceCharactersInRange_withStringSelector :: Selector '[NSRange, Id NSString] ()
 replaceCharactersInRange_withStringSelector = mkSelector "replaceCharactersInRange:withString:"
 
 -- | @Selector@ for @setAttributes:range:@
-setAttributes_rangeSelector :: Selector
+setAttributes_rangeSelector :: Selector '[Id NSDictionary, NSRange] ()
 setAttributes_rangeSelector = mkSelector "setAttributes:range:"
 
 -- | @Selector@ for @appendLocalizedFormat:@
-appendLocalizedFormatSelector :: Selector
+appendLocalizedFormatSelector :: Selector '[Id NSAttributedString] ()
 appendLocalizedFormatSelector = mkSelector "appendLocalizedFormat:"
 
 -- | @Selector@ for @addAttribute:value:range:@
-addAttribute_value_rangeSelector :: Selector
+addAttribute_value_rangeSelector :: Selector '[Id NSString, RawId, NSRange] ()
 addAttribute_value_rangeSelector = mkSelector "addAttribute:value:range:"
 
 -- | @Selector@ for @addAttributes:range:@
-addAttributes_rangeSelector :: Selector
+addAttributes_rangeSelector :: Selector '[Id NSDictionary, NSRange] ()
 addAttributes_rangeSelector = mkSelector "addAttributes:range:"
 
 -- | @Selector@ for @removeAttribute:range:@
-removeAttribute_rangeSelector :: Selector
+removeAttribute_rangeSelector :: Selector '[Id NSString, NSRange] ()
 removeAttribute_rangeSelector = mkSelector "removeAttribute:range:"
 
 -- | @Selector@ for @replaceCharactersInRange:withAttributedString:@
-replaceCharactersInRange_withAttributedStringSelector :: Selector
+replaceCharactersInRange_withAttributedStringSelector :: Selector '[NSRange, Id NSAttributedString] ()
 replaceCharactersInRange_withAttributedStringSelector = mkSelector "replaceCharactersInRange:withAttributedString:"
 
 -- | @Selector@ for @insertAttributedString:atIndex:@
-insertAttributedString_atIndexSelector :: Selector
+insertAttributedString_atIndexSelector :: Selector '[Id NSAttributedString, CULong] ()
 insertAttributedString_atIndexSelector = mkSelector "insertAttributedString:atIndex:"
 
 -- | @Selector@ for @appendAttributedString:@
-appendAttributedStringSelector :: Selector
+appendAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 appendAttributedStringSelector = mkSelector "appendAttributedString:"
 
 -- | @Selector@ for @deleteCharactersInRange:@
-deleteCharactersInRangeSelector :: Selector
+deleteCharactersInRangeSelector :: Selector '[NSRange] ()
 deleteCharactersInRangeSelector = mkSelector "deleteCharactersInRange:"
 
 -- | @Selector@ for @setAttributedString:@
-setAttributedStringSelector :: Selector
+setAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringSelector = mkSelector "setAttributedString:"
 
 -- | @Selector@ for @beginEditing@
-beginEditingSelector :: Selector
+beginEditingSelector :: Selector '[] ()
 beginEditingSelector = mkSelector "beginEditing"
 
 -- | @Selector@ for @endEditing@
-endEditingSelector :: Selector
+endEditingSelector :: Selector '[] ()
 endEditingSelector = mkSelector "endEditing"
 
 -- | @Selector@ for @mutableString@
-mutableStringSelector :: Selector
+mutableStringSelector :: Selector '[] (Id NSMutableString)
 mutableStringSelector = mkSelector "mutableString"
 

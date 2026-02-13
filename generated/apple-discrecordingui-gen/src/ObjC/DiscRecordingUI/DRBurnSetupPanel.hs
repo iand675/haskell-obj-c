@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.DiscRecordingUI.DRBurnSetupPanel
   , completionAction
   , testBurn
   , verifyBurn
-  , setupPanelSelector
-  , setDefaultButtonTitleSelector
-  , setCanSelectTestBurnSelector
-  , setCanSelectAppendableMediaSelector
-  , burnObjectSelector
-  , expandSelector
-  , burnSpeedSelector
   , appendableSelector
+  , burnObjectSelector
+  , burnSpeedSelector
   , completionActionSelector
+  , expandSelector
+  , setCanSelectAppendableMediaSelector
+  , setCanSelectTestBurnSelector
+  , setDefaultButtonTitleSelector
+  , setupPanelSelector
   , testBurnSelector
   , verifyBurnSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ setupPanel :: IO (Id DRBurnSetupPanel)
 setupPanel  =
   do
     cls' <- getRequiredClass "DRBurnSetupPanel"
-    sendClassMsg cls' (mkSelector "setupPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' setupPanelSelector
 
 -- | setDefaultButtonTitle:
 --
@@ -76,9 +73,8 @@ setupPanel  =
 --
 -- ObjC selector: @- setDefaultButtonTitle:@
 setDefaultButtonTitle :: (IsDRBurnSetupPanel drBurnSetupPanel, IsNSString title) => drBurnSetupPanel -> title -> IO ()
-setDefaultButtonTitle drBurnSetupPanel  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg drBurnSetupPanel (mkSelector "setDefaultButtonTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+setDefaultButtonTitle drBurnSetupPanel title =
+  sendMessage drBurnSetupPanel setDefaultButtonTitleSelector (toNSString title)
 
 -- | setCanSelectTestBurn:
 --
@@ -92,8 +88,8 @@ setDefaultButtonTitle drBurnSetupPanel  title =
 --
 -- ObjC selector: @- setCanSelectTestBurn:@
 setCanSelectTestBurn :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> Bool -> IO ()
-setCanSelectTestBurn drBurnSetupPanel  flag =
-    sendMsg drBurnSetupPanel (mkSelector "setCanSelectTestBurn:") retVoid [argCULong (if flag then 1 else 0)]
+setCanSelectTestBurn drBurnSetupPanel flag =
+  sendMessage drBurnSetupPanel setCanSelectTestBurnSelector flag
 
 -- | setCanSelectAppendableMedia:
 --
@@ -109,8 +105,8 @@ setCanSelectTestBurn drBurnSetupPanel  flag =
 --
 -- ObjC selector: @- setCanSelectAppendableMedia:@
 setCanSelectAppendableMedia :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> Bool -> IO ()
-setCanSelectAppendableMedia drBurnSetupPanel  flag =
-    sendMsg drBurnSetupPanel (mkSelector "setCanSelectAppendableMedia:") retVoid [argCULong (if flag then 1 else 0)]
+setCanSelectAppendableMedia drBurnSetupPanel flag =
+  sendMessage drBurnSetupPanel setCanSelectAppendableMediaSelector flag
 
 -- | burnObject
 --
@@ -132,8 +128,8 @@ setCanSelectAppendableMedia drBurnSetupPanel  flag =
 --
 -- ObjC selector: @- burnObject@
 burnObject :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> IO (Id DRBurn)
-burnObject drBurnSetupPanel  =
-    sendMsg drBurnSetupPanel (mkSelector "burnObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+burnObject drBurnSetupPanel =
+  sendMessage drBurnSetupPanel burnObjectSelector
 
 -- | expand:
 --
@@ -141,8 +137,8 @@ burnObject drBurnSetupPanel  =
 --
 -- ObjC selector: @- expand:@
 expand :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-expand drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "expand:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+expand drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel expandSelector sender
 
 -- | burnSpeed:
 --
@@ -150,8 +146,8 @@ expand drBurnSetupPanel  sender =
 --
 -- ObjC selector: @- burnSpeed:@
 burnSpeed :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-burnSpeed drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "burnSpeed:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+burnSpeed drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel burnSpeedSelector sender
 
 -- | appendable:
 --
@@ -159,8 +155,8 @@ burnSpeed drBurnSetupPanel  sender =
 --
 -- ObjC selector: @- appendable:@
 appendable :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-appendable drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "appendable:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+appendable drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel appendableSelector sender
 
 -- | completionAction:
 --
@@ -168,8 +164,8 @@ appendable drBurnSetupPanel  sender =
 --
 -- ObjC selector: @- completionAction:@
 completionAction :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-completionAction drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "completionAction:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+completionAction drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel completionActionSelector sender
 
 -- | testBurn:
 --
@@ -177,8 +173,8 @@ completionAction drBurnSetupPanel  sender =
 --
 -- ObjC selector: @- testBurn:@
 testBurn :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-testBurn drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "testBurn:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+testBurn drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel testBurnSelector sender
 
 -- | verifyBurn:
 --
@@ -186,54 +182,54 @@ testBurn drBurnSetupPanel  sender =
 --
 -- ObjC selector: @- verifyBurn:@
 verifyBurn :: IsDRBurnSetupPanel drBurnSetupPanel => drBurnSetupPanel -> RawId -> IO ()
-verifyBurn drBurnSetupPanel  sender =
-    sendMsg drBurnSetupPanel (mkSelector "verifyBurn:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+verifyBurn drBurnSetupPanel sender =
+  sendMessage drBurnSetupPanel verifyBurnSelector sender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setupPanel@
-setupPanelSelector :: Selector
+setupPanelSelector :: Selector '[] (Id DRBurnSetupPanel)
 setupPanelSelector = mkSelector "setupPanel"
 
 -- | @Selector@ for @setDefaultButtonTitle:@
-setDefaultButtonTitleSelector :: Selector
+setDefaultButtonTitleSelector :: Selector '[Id NSString] ()
 setDefaultButtonTitleSelector = mkSelector "setDefaultButtonTitle:"
 
 -- | @Selector@ for @setCanSelectTestBurn:@
-setCanSelectTestBurnSelector :: Selector
+setCanSelectTestBurnSelector :: Selector '[Bool] ()
 setCanSelectTestBurnSelector = mkSelector "setCanSelectTestBurn:"
 
 -- | @Selector@ for @setCanSelectAppendableMedia:@
-setCanSelectAppendableMediaSelector :: Selector
+setCanSelectAppendableMediaSelector :: Selector '[Bool] ()
 setCanSelectAppendableMediaSelector = mkSelector "setCanSelectAppendableMedia:"
 
 -- | @Selector@ for @burnObject@
-burnObjectSelector :: Selector
+burnObjectSelector :: Selector '[] (Id DRBurn)
 burnObjectSelector = mkSelector "burnObject"
 
 -- | @Selector@ for @expand:@
-expandSelector :: Selector
+expandSelector :: Selector '[RawId] ()
 expandSelector = mkSelector "expand:"
 
 -- | @Selector@ for @burnSpeed:@
-burnSpeedSelector :: Selector
+burnSpeedSelector :: Selector '[RawId] ()
 burnSpeedSelector = mkSelector "burnSpeed:"
 
 -- | @Selector@ for @appendable:@
-appendableSelector :: Selector
+appendableSelector :: Selector '[RawId] ()
 appendableSelector = mkSelector "appendable:"
 
 -- | @Selector@ for @completionAction:@
-completionActionSelector :: Selector
+completionActionSelector :: Selector '[RawId] ()
 completionActionSelector = mkSelector "completionAction:"
 
 -- | @Selector@ for @testBurn:@
-testBurnSelector :: Selector
+testBurnSelector :: Selector '[RawId] ()
 testBurnSelector = mkSelector "testBurn:"
 
 -- | @Selector@ for @verifyBurn:@
-verifyBurnSelector :: Selector
+verifyBurnSelector :: Selector '[RawId] ()
 verifyBurnSelector = mkSelector "verifyBurn:"
 

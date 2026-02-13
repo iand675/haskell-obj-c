@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryKernel
   , encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporary
   , encodeToCommandBuffer_sourceArrays_resultState_destinationArray
   , encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArray
-  , initWithDevice_sourceCountSelector
-  , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceArraysSelector
   , encodeToCommandBuffer_sourceArrays_destinationArraySelector
-  , encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector
   , encodeToCommandBuffer_sourceArrays_resultState_destinationArraySelector
+  , encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector
   , encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArraySelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_sourceCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,14 +38,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel => mpsndArrayMultiaryKernel -> RawId -> CULong -> IO (Id MPSNDArrayMultiaryKernel)
-initWithDevice_sourceCount mpsndArrayMultiaryKernel  device count =
-    sendMsg mpsndArrayMultiaryKernel (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong count] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayMultiaryKernel device count =
+  sendOwnedMessage mpsndArrayMultiaryKernel initWithDevice_sourceCountSelector device count
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSCoder coder) => mpsndArrayMultiaryKernel -> coder -> RawId -> IO (Id MPSNDArrayMultiaryKernel)
-initWithCoder_device mpsndArrayMultiaryKernel  coder device =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsndArrayMultiaryKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsndArrayMultiaryKernel coder device =
+  sendOwnedMessage mpsndArrayMultiaryKernel initWithCoder_deviceSelector (toNSCoder coder) device
 
 -- | Encode a simple inference NDArray kernel and return a NDArray to hold the result
 --
@@ -60,9 +56,8 @@ initWithCoder_device mpsndArrayMultiaryKernel  coder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceArrays:@
 encodeToCommandBuffer_sourceArrays :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSArray sourceArrays) => mpsndArrayMultiaryKernel -> RawId -> sourceArrays -> IO (Id MPSNDArray)
-encodeToCommandBuffer_sourceArrays mpsndArrayMultiaryKernel  cmdBuf sourceArrays =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-      sendMsg mpsndArrayMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceArrays:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sourceArrays :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceArrays mpsndArrayMultiaryKernel cmdBuf sourceArrays =
+  sendMessage mpsndArrayMultiaryKernel encodeToCommandBuffer_sourceArraysSelector cmdBuf (toNSArray sourceArrays)
 
 -- | Encode a simple inference NDArray kernel and return a NDArray to hold the result
 --
@@ -74,10 +69,8 @@ encodeToCommandBuffer_sourceArrays mpsndArrayMultiaryKernel  cmdBuf sourceArrays
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceArrays:destinationArray:@
 encodeToCommandBuffer_sourceArrays_destinationArray :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSArray sourceArrays, IsMPSNDArray destination) => mpsndArrayMultiaryKernel -> RawId -> sourceArrays -> destination -> IO ()
-encodeToCommandBuffer_sourceArrays_destinationArray mpsndArrayMultiaryKernel  cmdBuf sourceArrays destination =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-    withObjCPtr destination $ \raw_destination ->
-        sendMsg mpsndArrayMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceArrays:destinationArray:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sourceArrays :: Ptr ()), argPtr (castPtr raw_destination :: Ptr ())]
+encodeToCommandBuffer_sourceArrays_destinationArray mpsndArrayMultiaryKernel cmdBuf sourceArrays destination =
+  sendMessage mpsndArrayMultiaryKernel encodeToCommandBuffer_sourceArrays_destinationArraySelector cmdBuf (toNSArray sourceArrays) (toMPSNDArray destination)
 
 -- | Encode a simple inference NDArray kernel and return a NDArray to hold the result
 --
@@ -93,10 +86,8 @@ encodeToCommandBuffer_sourceArrays_destinationArray mpsndArrayMultiaryKernel  cm
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceArrays:resultState:outputStateIsTemporary:@
 encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporary :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSArray sourceArrays, IsMPSState outGradientState) => mpsndArrayMultiaryKernel -> RawId -> sourceArrays -> outGradientState -> Bool -> IO (Id MPSNDArray)
-encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporary mpsndArrayMultiaryKernel  cmdBuf sourceArrays outGradientState outputStateIsTemporary =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-    withObjCPtr outGradientState $ \raw_outGradientState ->
-        sendMsg mpsndArrayMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceArrays:resultState:outputStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sourceArrays :: Ptr ()), argPtr (castPtr raw_outGradientState :: Ptr ()), argCULong (if outputStateIsTemporary then 1 else 0)] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporary mpsndArrayMultiaryKernel cmdBuf sourceArrays outGradientState outputStateIsTemporary =
+  sendMessage mpsndArrayMultiaryKernel encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector cmdBuf (toNSArray sourceArrays) (toMPSState outGradientState) outputStateIsTemporary
 
 -- | Encode a simple inference NDArray kernel and return a NDArray to hold the result
 --
@@ -110,11 +101,8 @@ encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporary mpsndArray
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceArrays:resultState:destinationArray:@
 encodeToCommandBuffer_sourceArrays_resultState_destinationArray :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSArray sourceArrays, IsMPSState outGradientState, IsMPSNDArray destination) => mpsndArrayMultiaryKernel -> RawId -> sourceArrays -> outGradientState -> destination -> IO ()
-encodeToCommandBuffer_sourceArrays_resultState_destinationArray mpsndArrayMultiaryKernel  cmdBuf sourceArrays outGradientState destination =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-    withObjCPtr outGradientState $ \raw_outGradientState ->
-      withObjCPtr destination $ \raw_destination ->
-          sendMsg mpsndArrayMultiaryKernel (mkSelector "encodeToCommandBuffer:sourceArrays:resultState:destinationArray:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sourceArrays :: Ptr ()), argPtr (castPtr raw_outGradientState :: Ptr ()), argPtr (castPtr raw_destination :: Ptr ())]
+encodeToCommandBuffer_sourceArrays_resultState_destinationArray mpsndArrayMultiaryKernel cmdBuf sourceArrays outGradientState destination =
+  sendMessage mpsndArrayMultiaryKernel encodeToCommandBuffer_sourceArrays_resultState_destinationArraySelector cmdBuf (toNSArray sourceArrays) (toMPSState outGradientState) (toMPSNDArray destination)
 
 -- | Encode a simple inference NDArray kernel and return a NDArray to hold the result
 --
@@ -128,40 +116,38 @@ encodeToCommandBuffer_sourceArrays_resultState_destinationArray mpsndArrayMultia
 --
 -- ObjC selector: @- encodeToCommandEncoder:commandBuffer:sourceArrays:destinationArray:@
 encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArray :: (IsMPSNDArrayMultiaryKernel mpsndArrayMultiaryKernel, IsNSArray sourceArrays, IsMPSNDArray destination) => mpsndArrayMultiaryKernel -> RawId -> RawId -> sourceArrays -> destination -> IO ()
-encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArray mpsndArrayMultiaryKernel  encoder commandBuffer sourceArrays destination =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-    withObjCPtr destination $ \raw_destination ->
-        sendMsg mpsndArrayMultiaryKernel (mkSelector "encodeToCommandEncoder:commandBuffer:sourceArrays:destinationArray:") retVoid [argPtr (castPtr (unRawId encoder) :: Ptr ()), argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceArrays :: Ptr ()), argPtr (castPtr raw_destination :: Ptr ())]
+encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArray mpsndArrayMultiaryKernel encoder commandBuffer sourceArrays destination =
+  sendMessage mpsndArrayMultiaryKernel encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArraySelector encoder commandBuffer (toNSArray sourceArrays) (toMPSNDArray destination)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayMultiaryKernel)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNDArrayMultiaryKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:@
-encodeToCommandBuffer_sourceArraysSelector :: Selector
+encodeToCommandBuffer_sourceArraysSelector :: Selector '[RawId, Id NSArray] (Id MPSNDArray)
 encodeToCommandBuffer_sourceArraysSelector = mkSelector "encodeToCommandBuffer:sourceArrays:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:destinationArray:@
-encodeToCommandBuffer_sourceArrays_destinationArraySelector :: Selector
+encodeToCommandBuffer_sourceArrays_destinationArraySelector :: Selector '[RawId, Id NSArray, Id MPSNDArray] ()
 encodeToCommandBuffer_sourceArrays_destinationArraySelector = mkSelector "encodeToCommandBuffer:sourceArrays:destinationArray:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:resultState:outputStateIsTemporary:@
-encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector :: Selector
+encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector :: Selector '[RawId, Id NSArray, Id MPSState, Bool] (Id MPSNDArray)
 encodeToCommandBuffer_sourceArrays_resultState_outputStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:sourceArrays:resultState:outputStateIsTemporary:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:resultState:destinationArray:@
-encodeToCommandBuffer_sourceArrays_resultState_destinationArraySelector :: Selector
+encodeToCommandBuffer_sourceArrays_resultState_destinationArraySelector :: Selector '[RawId, Id NSArray, Id MPSState, Id MPSNDArray] ()
 encodeToCommandBuffer_sourceArrays_resultState_destinationArraySelector = mkSelector "encodeToCommandBuffer:sourceArrays:resultState:destinationArray:"
 
 -- | @Selector@ for @encodeToCommandEncoder:commandBuffer:sourceArrays:destinationArray:@
-encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArraySelector :: Selector
+encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArraySelector :: Selector '[RawId, RawId, Id NSArray, Id MPSNDArray] ()
 encodeToCommandEncoder_commandBuffer_sourceArrays_destinationArraySelector = mkSelector "encodeToCommandEncoder:commandBuffer:sourceArrays:destinationArray:"
 

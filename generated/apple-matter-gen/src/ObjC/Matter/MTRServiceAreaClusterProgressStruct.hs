@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRServiceAreaClusterProgressStruct
   , estimatedTime
   , setEstimatedTime
   , areaIDSelector
-  , setAreaIDSelector
-  , statusSelector
-  , setStatusSelector
-  , totalOperationalTimeSelector
-  , setTotalOperationalTimeSelector
   , estimatedTimeSelector
+  , setAreaIDSelector
   , setEstimatedTimeSelector
+  , setStatusSelector
+  , setTotalOperationalTimeSelector
+  , statusSelector
+  , totalOperationalTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- areaID@
 areaID :: IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct => mtrServiceAreaClusterProgressStruct -> IO (Id NSNumber)
-areaID mtrServiceAreaClusterProgressStruct  =
-    sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "areaID") (retPtr retVoid) [] >>= retainedObject . castPtr
+areaID mtrServiceAreaClusterProgressStruct =
+  sendMessage mtrServiceAreaClusterProgressStruct areaIDSelector
 
 -- | @- setAreaID:@
 setAreaID :: (IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct, IsNSNumber value) => mtrServiceAreaClusterProgressStruct -> value -> IO ()
-setAreaID mtrServiceAreaClusterProgressStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "setAreaID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAreaID mtrServiceAreaClusterProgressStruct value =
+  sendMessage mtrServiceAreaClusterProgressStruct setAreaIDSelector (toNSNumber value)
 
 -- | @- status@
 status :: IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct => mtrServiceAreaClusterProgressStruct -> IO (Id NSNumber)
-status mtrServiceAreaClusterProgressStruct  =
-    sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrServiceAreaClusterProgressStruct =
+  sendMessage mtrServiceAreaClusterProgressStruct statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct, IsNSNumber value) => mtrServiceAreaClusterProgressStruct -> value -> IO ()
-setStatus mtrServiceAreaClusterProgressStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrServiceAreaClusterProgressStruct value =
+  sendMessage mtrServiceAreaClusterProgressStruct setStatusSelector (toNSNumber value)
 
 -- | @- totalOperationalTime@
 totalOperationalTime :: IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct => mtrServiceAreaClusterProgressStruct -> IO (Id NSNumber)
-totalOperationalTime mtrServiceAreaClusterProgressStruct  =
-    sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "totalOperationalTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalOperationalTime mtrServiceAreaClusterProgressStruct =
+  sendMessage mtrServiceAreaClusterProgressStruct totalOperationalTimeSelector
 
 -- | @- setTotalOperationalTime:@
 setTotalOperationalTime :: (IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct, IsNSNumber value) => mtrServiceAreaClusterProgressStruct -> value -> IO ()
-setTotalOperationalTime mtrServiceAreaClusterProgressStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "setTotalOperationalTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTotalOperationalTime mtrServiceAreaClusterProgressStruct value =
+  sendMessage mtrServiceAreaClusterProgressStruct setTotalOperationalTimeSelector (toNSNumber value)
 
 -- | @- estimatedTime@
 estimatedTime :: IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct => mtrServiceAreaClusterProgressStruct -> IO (Id NSNumber)
-estimatedTime mtrServiceAreaClusterProgressStruct  =
-    sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "estimatedTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedTime mtrServiceAreaClusterProgressStruct =
+  sendMessage mtrServiceAreaClusterProgressStruct estimatedTimeSelector
 
 -- | @- setEstimatedTime:@
 setEstimatedTime :: (IsMTRServiceAreaClusterProgressStruct mtrServiceAreaClusterProgressStruct, IsNSNumber value) => mtrServiceAreaClusterProgressStruct -> value -> IO ()
-setEstimatedTime mtrServiceAreaClusterProgressStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterProgressStruct (mkSelector "setEstimatedTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedTime mtrServiceAreaClusterProgressStruct value =
+  sendMessage mtrServiceAreaClusterProgressStruct setEstimatedTimeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @areaID@
-areaIDSelector :: Selector
+areaIDSelector :: Selector '[] (Id NSNumber)
 areaIDSelector = mkSelector "areaID"
 
 -- | @Selector@ for @setAreaID:@
-setAreaIDSelector :: Selector
+setAreaIDSelector :: Selector '[Id NSNumber] ()
 setAreaIDSelector = mkSelector "setAreaID:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @totalOperationalTime@
-totalOperationalTimeSelector :: Selector
+totalOperationalTimeSelector :: Selector '[] (Id NSNumber)
 totalOperationalTimeSelector = mkSelector "totalOperationalTime"
 
 -- | @Selector@ for @setTotalOperationalTime:@
-setTotalOperationalTimeSelector :: Selector
+setTotalOperationalTimeSelector :: Selector '[Id NSNumber] ()
 setTotalOperationalTimeSelector = mkSelector "setTotalOperationalTime:"
 
 -- | @Selector@ for @estimatedTime@
-estimatedTimeSelector :: Selector
+estimatedTimeSelector :: Selector '[] (Id NSNumber)
 estimatedTimeSelector = mkSelector "estimatedTime"
 
 -- | @Selector@ for @setEstimatedTime:@
-setEstimatedTimeSelector :: Selector
+setEstimatedTimeSelector :: Selector '[Id NSNumber] ()
 setEstimatedTimeSelector = mkSelector "setEstimatedTime:"
 

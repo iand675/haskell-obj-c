@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.Vision.VNPoint
   , zeroPoint
   , x
   , y
-  , pointByApplyingVector_toPointSelector
   , distanceBetweenPoint_pointSelector
   , distanceToPointSelector
   , initWithX_ySelector
-  , zeroPointSelector
+  , pointByApplyingVector_toPointSelector
   , xSelector
   , ySelector
+  , zeroPointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,9 +55,7 @@ pointByApplyingVector_toPoint :: (IsVNVector vector, IsVNPoint point) => vector 
 pointByApplyingVector_toPoint vector point =
   do
     cls' <- getRequiredClass "VNPoint"
-    withObjCPtr vector $ \raw_vector ->
-      withObjCPtr point $ \raw_point ->
-        sendClassMsg cls' (mkSelector "pointByApplyingVector:toPoint:") (retPtr retVoid) [argPtr (castPtr raw_vector :: Ptr ()), argPtr (castPtr raw_point :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pointByApplyingVector_toPointSelector (toVNVector vector) (toVNPoint point)
 
 -- | Returns the Euclidean distance between two VNPoint objects.
 --
@@ -69,9 +64,7 @@ distanceBetweenPoint_point :: (IsVNPoint point1, IsVNPoint point2) => point1 -> 
 distanceBetweenPoint_point point1 point2 =
   do
     cls' <- getRequiredClass "VNPoint"
-    withObjCPtr point1 $ \raw_point1 ->
-      withObjCPtr point2 $ \raw_point2 ->
-        sendClassMsg cls' (mkSelector "distanceBetweenPoint:point:") retCDouble [argPtr (castPtr raw_point1 :: Ptr ()), argPtr (castPtr raw_point2 :: Ptr ())]
+    sendClassMessage cls' distanceBetweenPoint_pointSelector (toVNPoint point1) (toVNPoint point2)
 
 -- | Returns the Euclidean distance to another point.
 --
@@ -81,16 +74,15 @@ distanceBetweenPoint_point point1 point2 =
 --
 -- ObjC selector: @- distanceToPoint:@
 distanceToPoint :: (IsVNPoint vnPoint, IsVNPoint point) => vnPoint -> point -> IO CDouble
-distanceToPoint vnPoint  point =
-  withObjCPtr point $ \raw_point ->
-      sendMsg vnPoint (mkSelector "distanceToPoint:") retCDouble [argPtr (castPtr raw_point :: Ptr ())]
+distanceToPoint vnPoint point =
+  sendMessage vnPoint distanceToPointSelector (toVNPoint point)
 
 -- | Initializes a VNPoint object from X and Y coordinates.
 --
 -- ObjC selector: @- initWithX:y:@
 initWithX_y :: IsVNPoint vnPoint => vnPoint -> CDouble -> CDouble -> IO (Id VNPoint)
-initWithX_y vnPoint  x y =
-    sendMsg vnPoint (mkSelector "initWithX:y:") (retPtr retVoid) [argCDouble x, argCDouble y] >>= ownedObject . castPtr
+initWithX_y vnPoint x y =
+  sendOwnedMessage vnPoint initWithX_ySelector x y
 
 -- | Returns a VNPoint object that represents the location of (0.0, 0.0).
 --
@@ -99,51 +91,51 @@ zeroPoint :: IO (Id VNPoint)
 zeroPoint  =
   do
     cls' <- getRequiredClass "VNPoint"
-    sendClassMsg cls' (mkSelector "zeroPoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zeroPointSelector
 
 -- | Returns the X coordinate of the point with respect to the origin of the coordinate system the point is defined in.
 --
 -- ObjC selector: @- x@
 x :: IsVNPoint vnPoint => vnPoint -> IO CDouble
-x vnPoint  =
-    sendMsg vnPoint (mkSelector "x") retCDouble []
+x vnPoint =
+  sendMessage vnPoint xSelector
 
 -- | Returns the Y coordinate of the point with respect to the origin of the coordinate system the point is defined in.
 --
 -- ObjC selector: @- y@
 y :: IsVNPoint vnPoint => vnPoint -> IO CDouble
-y vnPoint  =
-    sendMsg vnPoint (mkSelector "y") retCDouble []
+y vnPoint =
+  sendMessage vnPoint ySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pointByApplyingVector:toPoint:@
-pointByApplyingVector_toPointSelector :: Selector
+pointByApplyingVector_toPointSelector :: Selector '[Id VNVector, Id VNPoint] (Id VNPoint)
 pointByApplyingVector_toPointSelector = mkSelector "pointByApplyingVector:toPoint:"
 
 -- | @Selector@ for @distanceBetweenPoint:point:@
-distanceBetweenPoint_pointSelector :: Selector
+distanceBetweenPoint_pointSelector :: Selector '[Id VNPoint, Id VNPoint] CDouble
 distanceBetweenPoint_pointSelector = mkSelector "distanceBetweenPoint:point:"
 
 -- | @Selector@ for @distanceToPoint:@
-distanceToPointSelector :: Selector
+distanceToPointSelector :: Selector '[Id VNPoint] CDouble
 distanceToPointSelector = mkSelector "distanceToPoint:"
 
 -- | @Selector@ for @initWithX:y:@
-initWithX_ySelector :: Selector
+initWithX_ySelector :: Selector '[CDouble, CDouble] (Id VNPoint)
 initWithX_ySelector = mkSelector "initWithX:y:"
 
 -- | @Selector@ for @zeroPoint@
-zeroPointSelector :: Selector
+zeroPointSelector :: Selector '[] (Id VNPoint)
 zeroPointSelector = mkSelector "zeroPoint"
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] CDouble
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] CDouble
 ySelector = mkSelector "y"
 

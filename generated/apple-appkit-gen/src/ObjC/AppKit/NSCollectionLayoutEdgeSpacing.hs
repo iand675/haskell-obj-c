@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSCollectionLayoutEdgeSpacing
   , top
   , trailing
   , bottom
-  , spacingForLeading_top_trailing_bottomSelector
+  , bottomSelector
   , initSelector
-  , newSelector
   , leadingSelector
+  , newSelector
+  , spacingForLeading_top_trailing_bottomSelector
   , topSelector
   , trailingSelector
-  , bottomSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,73 +41,69 @@ spacingForLeading_top_trailing_bottom :: (IsNSCollectionLayoutSpacing leading, I
 spacingForLeading_top_trailing_bottom leading top trailing bottom =
   do
     cls' <- getRequiredClass "NSCollectionLayoutEdgeSpacing"
-    withObjCPtr leading $ \raw_leading ->
-      withObjCPtr top $ \raw_top ->
-        withObjCPtr trailing $ \raw_trailing ->
-          withObjCPtr bottom $ \raw_bottom ->
-            sendClassMsg cls' (mkSelector "spacingForLeading:top:trailing:bottom:") (retPtr retVoid) [argPtr (castPtr raw_leading :: Ptr ()), argPtr (castPtr raw_top :: Ptr ()), argPtr (castPtr raw_trailing :: Ptr ()), argPtr (castPtr raw_bottom :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' spacingForLeading_top_trailing_bottomSelector (toNSCollectionLayoutSpacing leading) (toNSCollectionLayoutSpacing top) (toNSCollectionLayoutSpacing trailing) (toNSCollectionLayoutSpacing bottom)
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutEdgeSpacing nsCollectionLayoutEdgeSpacing => nsCollectionLayoutEdgeSpacing -> IO (Id NSCollectionLayoutEdgeSpacing)
-init_ nsCollectionLayoutEdgeSpacing  =
-    sendMsg nsCollectionLayoutEdgeSpacing (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutEdgeSpacing =
+  sendOwnedMessage nsCollectionLayoutEdgeSpacing initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutEdgeSpacing)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutEdgeSpacing"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- leading@
 leading :: IsNSCollectionLayoutEdgeSpacing nsCollectionLayoutEdgeSpacing => nsCollectionLayoutEdgeSpacing -> IO (Id NSCollectionLayoutSpacing)
-leading nsCollectionLayoutEdgeSpacing  =
-    sendMsg nsCollectionLayoutEdgeSpacing (mkSelector "leading") (retPtr retVoid) [] >>= retainedObject . castPtr
+leading nsCollectionLayoutEdgeSpacing =
+  sendMessage nsCollectionLayoutEdgeSpacing leadingSelector
 
 -- | @- top@
 top :: IsNSCollectionLayoutEdgeSpacing nsCollectionLayoutEdgeSpacing => nsCollectionLayoutEdgeSpacing -> IO (Id NSCollectionLayoutSpacing)
-top nsCollectionLayoutEdgeSpacing  =
-    sendMsg nsCollectionLayoutEdgeSpacing (mkSelector "top") (retPtr retVoid) [] >>= retainedObject . castPtr
+top nsCollectionLayoutEdgeSpacing =
+  sendMessage nsCollectionLayoutEdgeSpacing topSelector
 
 -- | @- trailing@
 trailing :: IsNSCollectionLayoutEdgeSpacing nsCollectionLayoutEdgeSpacing => nsCollectionLayoutEdgeSpacing -> IO (Id NSCollectionLayoutSpacing)
-trailing nsCollectionLayoutEdgeSpacing  =
-    sendMsg nsCollectionLayoutEdgeSpacing (mkSelector "trailing") (retPtr retVoid) [] >>= retainedObject . castPtr
+trailing nsCollectionLayoutEdgeSpacing =
+  sendMessage nsCollectionLayoutEdgeSpacing trailingSelector
 
 -- | @- bottom@
 bottom :: IsNSCollectionLayoutEdgeSpacing nsCollectionLayoutEdgeSpacing => nsCollectionLayoutEdgeSpacing -> IO (Id NSCollectionLayoutSpacing)
-bottom nsCollectionLayoutEdgeSpacing  =
-    sendMsg nsCollectionLayoutEdgeSpacing (mkSelector "bottom") (retPtr retVoid) [] >>= retainedObject . castPtr
+bottom nsCollectionLayoutEdgeSpacing =
+  sendMessage nsCollectionLayoutEdgeSpacing bottomSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @spacingForLeading:top:trailing:bottom:@
-spacingForLeading_top_trailing_bottomSelector :: Selector
+spacingForLeading_top_trailing_bottomSelector :: Selector '[Id NSCollectionLayoutSpacing, Id NSCollectionLayoutSpacing, Id NSCollectionLayoutSpacing, Id NSCollectionLayoutSpacing] (Id NSCollectionLayoutEdgeSpacing)
 spacingForLeading_top_trailing_bottomSelector = mkSelector "spacingForLeading:top:trailing:bottom:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutEdgeSpacing)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutEdgeSpacing)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @leading@
-leadingSelector :: Selector
+leadingSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 leadingSelector = mkSelector "leading"
 
 -- | @Selector@ for @top@
-topSelector :: Selector
+topSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 topSelector = mkSelector "top"
 
 -- | @Selector@ for @trailing@
-trailingSelector :: Selector
+trailingSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 trailingSelector = mkSelector "trailing"
 
 -- | @Selector@ for @bottom@
-bottomSelector :: Selector
+bottomSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 bottomSelector = mkSelector "bottom"
 

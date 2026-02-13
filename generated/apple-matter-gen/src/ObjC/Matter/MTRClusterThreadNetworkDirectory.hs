@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,34 +26,30 @@ module ObjC.Matter.MTRClusterThreadNetworkDirectory
   , new
   , initWithDevice_endpointID_queue
   , addNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
   , getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributePreferredExtendedPanIDWithParamsSelector
-  , writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector
-  , writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector
-  , readAttributeThreadNetworksWithParamsSelector
-  , readAttributeThreadNetworkTableSizeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributePreferredExtendedPanIDWithParamsSelector
+  , readAttributeThreadNetworkTableSizeWithParamsSelector
+  , readAttributeThreadNetworksWithParamsSelector
+  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector
+  , writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,178 +58,153 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 addNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRThreadNetworkDirectoryClusterAddNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDirectory -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadNetworkDirectory (mkSelector "addNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadNetworkDirectory addNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadNetworkDirectoryClusterAddNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 removeNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDirectory -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadNetworkDirectory (mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadNetworkDirectory removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadNetworkDirectoryClusterRemoveNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getOperationalDatasetWithParams:expectedValues:expectedValueInterval:completion:@
 getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDirectory -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadNetworkDirectory (mkSelector "getOperationalDatasetWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadNetworkDirectory params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadNetworkDirectory getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributePreferredExtendedPanIDWithParams:@
 readAttributePreferredExtendedPanIDWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributePreferredExtendedPanIDWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributePreferredExtendedPanIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePreferredExtendedPanIDWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributePreferredExtendedPanIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:@
 writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadNetworkDirectory -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval mtrClusterThreadNetworkDirectory  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThreadNetworkDirectory (mkSelector "writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval mtrClusterThreadNetworkDirectory dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThreadNetworkDirectory writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:params:@
 writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_params :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThreadNetworkDirectory -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_params mtrClusterThreadNetworkDirectory  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThreadNetworkDirectory (mkSelector "writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_params mtrClusterThreadNetworkDirectory dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThreadNetworkDirectory writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeThreadNetworksWithParams:@
 readAttributeThreadNetworksWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeThreadNetworksWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeThreadNetworksWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThreadNetworksWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeThreadNetworksWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeThreadNetworkTableSizeWithParams:@
 readAttributeThreadNetworkTableSizeWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeThreadNetworkTableSizeWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeThreadNetworkTableSizeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThreadNetworkTableSizeWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeThreadNetworkTableSizeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRReadParams params) => mtrClusterThreadNetworkDirectory -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterThreadNetworkDirectory  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadNetworkDirectory (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterThreadNetworkDirectory params =
+  sendMessage mtrClusterThreadNetworkDirectory readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory => mtrClusterThreadNetworkDirectory -> IO (Id MTRClusterThreadNetworkDirectory)
-init_ mtrClusterThreadNetworkDirectory  =
-    sendMsg mtrClusterThreadNetworkDirectory (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterThreadNetworkDirectory =
+  sendOwnedMessage mtrClusterThreadNetworkDirectory initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterThreadNetworkDirectory)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterThreadNetworkDirectory"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterThreadNetworkDirectory mtrClusterThreadNetworkDirectory, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterThreadNetworkDirectory -> device -> endpointID -> queue -> IO (Id MTRClusterThreadNetworkDirectory)
-initWithDevice_endpointID_queue mtrClusterThreadNetworkDirectory  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterThreadNetworkDirectory (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterThreadNetworkDirectory device endpointID queue =
+  sendOwnedMessage mtrClusterThreadNetworkDirectory initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-addNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadNetworkDirectoryClusterAddNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadNetworkDirectoryClusterRemoveNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getOperationalDatasetWithParams:expectedValues:expectedValueInterval:completion:@
-getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadNetworkDirectoryClusterGetOperationalDatasetParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getOperationalDatasetWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getOperationalDatasetWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributePreferredExtendedPanIDWithParams:@
-readAttributePreferredExtendedPanIDWithParamsSelector :: Selector
+readAttributePreferredExtendedPanIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePreferredExtendedPanIDWithParamsSelector = mkSelector "readAttributePreferredExtendedPanIDWithParams:"
 
 -- | @Selector@ for @writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:@
-writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector :: Selector
+writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributePreferredExtendedPanIDWithValue_expectedValueIntervalSelector = mkSelector "writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:params:@
-writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributePreferredExtendedPanIDWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributePreferredExtendedPanIDWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeThreadNetworksWithParams:@
-readAttributeThreadNetworksWithParamsSelector :: Selector
+readAttributeThreadNetworksWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThreadNetworksWithParamsSelector = mkSelector "readAttributeThreadNetworksWithParams:"
 
 -- | @Selector@ for @readAttributeThreadNetworkTableSizeWithParams:@
-readAttributeThreadNetworkTableSizeWithParamsSelector :: Selector
+readAttributeThreadNetworkTableSizeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThreadNetworkTableSizeWithParamsSelector = mkSelector "readAttributeThreadNetworkTableSizeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterThreadNetworkDirectory)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterThreadNetworkDirectory)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterThreadNetworkDirectory)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

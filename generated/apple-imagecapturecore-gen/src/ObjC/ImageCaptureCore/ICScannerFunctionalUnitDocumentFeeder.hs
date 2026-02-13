@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,19 +27,19 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitDocumentFeeder
   , evenPageOrientation
   , setEvenPageOrientation
   , reverseFeederPageOrder
-  , supportedDocumentTypesSelector
-  , documentTypeSelector
-  , setDocumentTypeSelector
-  , documentSizeSelector
-  , supportsDuplexScanningSelector
-  , duplexScanningEnabledSelector
-  , setDuplexScanningEnabledSelector
   , documentLoadedSelector
-  , oddPageOrientationSelector
-  , setOddPageOrientationSelector
+  , documentSizeSelector
+  , documentTypeSelector
+  , duplexScanningEnabledSelector
   , evenPageOrientationSelector
-  , setEvenPageOrientationSelector
+  , oddPageOrientationSelector
   , reverseFeederPageOrderSelector
+  , setDocumentTypeSelector
+  , setDuplexScanningEnabledSelector
+  , setEvenPageOrientationSelector
+  , setOddPageOrientationSelector
+  , supportedDocumentTypesSelector
+  , supportsDuplexScanningSelector
 
   -- * Enum types
   , ICEXIFOrientationType(ICEXIFOrientationType)
@@ -126,15 +127,11 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitDocumentFeeder
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -149,8 +146,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedDocumentTypes@
 supportedDocumentTypes :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO (Id NSIndexSet)
-supportedDocumentTypes icScannerFunctionalUnitDocumentFeeder  =
-    sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "supportedDocumentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDocumentTypes icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder supportedDocumentTypesSelector
 
 -- | documentType
 --
@@ -158,8 +155,8 @@ supportedDocumentTypes icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- documentType@
 documentType :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO ICScannerDocumentType
-documentType icScannerFunctionalUnitDocumentFeeder  =
-    fmap (coerce :: CULong -> ICScannerDocumentType) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "documentType") retCULong []
+documentType icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder documentTypeSelector
 
 -- | documentType
 --
@@ -167,8 +164,8 @@ documentType icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- setDocumentType:@
 setDocumentType :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> ICScannerDocumentType -> IO ()
-setDocumentType icScannerFunctionalUnitDocumentFeeder  value =
-    sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "setDocumentType:") retVoid [argCULong (coerce value)]
+setDocumentType icScannerFunctionalUnitDocumentFeeder value =
+  sendMessage icScannerFunctionalUnitDocumentFeeder setDocumentTypeSelector value
 
 -- | documentSize
 --
@@ -176,8 +173,8 @@ setDocumentType icScannerFunctionalUnitDocumentFeeder  value =
 --
 -- ObjC selector: @- documentSize@
 documentSize :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO NSSize
-documentSize icScannerFunctionalUnitDocumentFeeder  =
-    sendMsgStret icScannerFunctionalUnitDocumentFeeder (mkSelector "documentSize") retNSSize []
+documentSize icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder documentSizeSelector
 
 -- | supportsDuplexScanning
 --
@@ -185,8 +182,8 @@ documentSize icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- supportsDuplexScanning@
 supportsDuplexScanning :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO Bool
-supportsDuplexScanning icScannerFunctionalUnitDocumentFeeder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "supportsDuplexScanning") retCULong []
+supportsDuplexScanning icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder supportsDuplexScanningSelector
 
 -- | duplexScanningEnabled
 --
@@ -194,8 +191,8 @@ supportsDuplexScanning icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- duplexScanningEnabled@
 duplexScanningEnabled :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO Bool
-duplexScanningEnabled icScannerFunctionalUnitDocumentFeeder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "duplexScanningEnabled") retCULong []
+duplexScanningEnabled icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder duplexScanningEnabledSelector
 
 -- | duplexScanningEnabled
 --
@@ -203,8 +200,8 @@ duplexScanningEnabled icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- setDuplexScanningEnabled:@
 setDuplexScanningEnabled :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> Bool -> IO ()
-setDuplexScanningEnabled icScannerFunctionalUnitDocumentFeeder  value =
-    sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "setDuplexScanningEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDuplexScanningEnabled icScannerFunctionalUnitDocumentFeeder value =
+  sendMessage icScannerFunctionalUnitDocumentFeeder setDuplexScanningEnabledSelector value
 
 -- | documentLoaded
 --
@@ -214,8 +211,8 @@ setDuplexScanningEnabled icScannerFunctionalUnitDocumentFeeder  value =
 --
 -- ObjC selector: @- documentLoaded@
 documentLoaded :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO Bool
-documentLoaded icScannerFunctionalUnitDocumentFeeder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "documentLoaded") retCULong []
+documentLoaded icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder documentLoadedSelector
 
 -- | oddPageOrientation
 --
@@ -225,8 +222,8 @@ documentLoaded icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- oddPageOrientation@
 oddPageOrientation :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO ICEXIFOrientationType
-oddPageOrientation icScannerFunctionalUnitDocumentFeeder  =
-    fmap (coerce :: CULong -> ICEXIFOrientationType) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "oddPageOrientation") retCULong []
+oddPageOrientation icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder oddPageOrientationSelector
 
 -- | oddPageOrientation
 --
@@ -236,8 +233,8 @@ oddPageOrientation icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- setOddPageOrientation:@
 setOddPageOrientation :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> ICEXIFOrientationType -> IO ()
-setOddPageOrientation icScannerFunctionalUnitDocumentFeeder  value =
-    sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "setOddPageOrientation:") retVoid [argCULong (coerce value)]
+setOddPageOrientation icScannerFunctionalUnitDocumentFeeder value =
+  sendMessage icScannerFunctionalUnitDocumentFeeder setOddPageOrientationSelector value
 
 -- | evenPageOrientation
 --
@@ -247,8 +244,8 @@ setOddPageOrientation icScannerFunctionalUnitDocumentFeeder  value =
 --
 -- ObjC selector: @- evenPageOrientation@
 evenPageOrientation :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO ICEXIFOrientationType
-evenPageOrientation icScannerFunctionalUnitDocumentFeeder  =
-    fmap (coerce :: CULong -> ICEXIFOrientationType) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "evenPageOrientation") retCULong []
+evenPageOrientation icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder evenPageOrientationSelector
 
 -- | evenPageOrientation
 --
@@ -258,8 +255,8 @@ evenPageOrientation icScannerFunctionalUnitDocumentFeeder  =
 --
 -- ObjC selector: @- setEvenPageOrientation:@
 setEvenPageOrientation :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> ICEXIFOrientationType -> IO ()
-setEvenPageOrientation icScannerFunctionalUnitDocumentFeeder  value =
-    sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "setEvenPageOrientation:") retVoid [argCULong (coerce value)]
+setEvenPageOrientation icScannerFunctionalUnitDocumentFeeder value =
+  sendMessage icScannerFunctionalUnitDocumentFeeder setEvenPageOrientationSelector value
 
 -- | reverseFeederPageOrder
 --
@@ -267,62 +264,62 @@ setEvenPageOrientation icScannerFunctionalUnitDocumentFeeder  value =
 --
 -- ObjC selector: @- reverseFeederPageOrder@
 reverseFeederPageOrder :: IsICScannerFunctionalUnitDocumentFeeder icScannerFunctionalUnitDocumentFeeder => icScannerFunctionalUnitDocumentFeeder -> IO Bool
-reverseFeederPageOrder icScannerFunctionalUnitDocumentFeeder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnitDocumentFeeder (mkSelector "reverseFeederPageOrder") retCULong []
+reverseFeederPageOrder icScannerFunctionalUnitDocumentFeeder =
+  sendMessage icScannerFunctionalUnitDocumentFeeder reverseFeederPageOrderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedDocumentTypes@
-supportedDocumentTypesSelector :: Selector
+supportedDocumentTypesSelector :: Selector '[] (Id NSIndexSet)
 supportedDocumentTypesSelector = mkSelector "supportedDocumentTypes"
 
 -- | @Selector@ for @documentType@
-documentTypeSelector :: Selector
+documentTypeSelector :: Selector '[] ICScannerDocumentType
 documentTypeSelector = mkSelector "documentType"
 
 -- | @Selector@ for @setDocumentType:@
-setDocumentTypeSelector :: Selector
+setDocumentTypeSelector :: Selector '[ICScannerDocumentType] ()
 setDocumentTypeSelector = mkSelector "setDocumentType:"
 
 -- | @Selector@ for @documentSize@
-documentSizeSelector :: Selector
+documentSizeSelector :: Selector '[] NSSize
 documentSizeSelector = mkSelector "documentSize"
 
 -- | @Selector@ for @supportsDuplexScanning@
-supportsDuplexScanningSelector :: Selector
+supportsDuplexScanningSelector :: Selector '[] Bool
 supportsDuplexScanningSelector = mkSelector "supportsDuplexScanning"
 
 -- | @Selector@ for @duplexScanningEnabled@
-duplexScanningEnabledSelector :: Selector
+duplexScanningEnabledSelector :: Selector '[] Bool
 duplexScanningEnabledSelector = mkSelector "duplexScanningEnabled"
 
 -- | @Selector@ for @setDuplexScanningEnabled:@
-setDuplexScanningEnabledSelector :: Selector
+setDuplexScanningEnabledSelector :: Selector '[Bool] ()
 setDuplexScanningEnabledSelector = mkSelector "setDuplexScanningEnabled:"
 
 -- | @Selector@ for @documentLoaded@
-documentLoadedSelector :: Selector
+documentLoadedSelector :: Selector '[] Bool
 documentLoadedSelector = mkSelector "documentLoaded"
 
 -- | @Selector@ for @oddPageOrientation@
-oddPageOrientationSelector :: Selector
+oddPageOrientationSelector :: Selector '[] ICEXIFOrientationType
 oddPageOrientationSelector = mkSelector "oddPageOrientation"
 
 -- | @Selector@ for @setOddPageOrientation:@
-setOddPageOrientationSelector :: Selector
+setOddPageOrientationSelector :: Selector '[ICEXIFOrientationType] ()
 setOddPageOrientationSelector = mkSelector "setOddPageOrientation:"
 
 -- | @Selector@ for @evenPageOrientation@
-evenPageOrientationSelector :: Selector
+evenPageOrientationSelector :: Selector '[] ICEXIFOrientationType
 evenPageOrientationSelector = mkSelector "evenPageOrientation"
 
 -- | @Selector@ for @setEvenPageOrientation:@
-setEvenPageOrientationSelector :: Selector
+setEvenPageOrientationSelector :: Selector '[ICEXIFOrientationType] ()
 setEvenPageOrientationSelector = mkSelector "setEvenPageOrientation:"
 
 -- | @Selector@ for @reverseFeederPageOrder@
-reverseFeederPageOrderSelector :: Selector
+reverseFeederPageOrderSelector :: Selector '[] Bool
 reverseFeederPageOrderSelector = mkSelector "reverseFeederPageOrder"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,24 +32,24 @@ module ObjC.AVFAudio.AVSpeechSynthesizer
   , mixToTelephonyUplink
   , setMixToTelephonyUplink
   , personalVoiceAuthorizationStatus
+  , continueSpeakingSelector
+  , delegateSelector
+  , mixToTelephonyUplinkSelector
+  , outputChannelsSelector
+  , pauseSpeakingAtBoundarySelector
+  , pausedSelector
+  , personalVoiceAuthorizationStatusSelector
+  , requestPersonalVoiceAuthorizationWithCompletionHandlerSelector
+  , setDelegateSelector
+  , setMixToTelephonyUplinkSelector
+  , setOutputChannelsSelector
+  , setUsesApplicationAudioSessionSelector
   , speakUtteranceSelector
+  , speakingSelector
+  , stopSpeakingAtBoundarySelector
+  , usesApplicationAudioSessionSelector
   , writeUtterance_toBufferCallbackSelector
   , writeUtterance_toBufferCallback_toMarkerCallbackSelector
-  , stopSpeakingAtBoundarySelector
-  , pauseSpeakingAtBoundarySelector
-  , continueSpeakingSelector
-  , requestPersonalVoiceAuthorizationWithCompletionHandlerSelector
-  , delegateSelector
-  , setDelegateSelector
-  , speakingSelector
-  , pausedSelector
-  , outputChannelsSelector
-  , setOutputChannelsSelector
-  , usesApplicationAudioSessionSelector
-  , setUsesApplicationAudioSessionSelector
-  , mixToTelephonyUplinkSelector
-  , setMixToTelephonyUplinkSelector
-  , personalVoiceAuthorizationStatusSelector
 
   -- * Enum types
   , AVSpeechBoundary(AVSpeechBoundary)
@@ -62,15 +63,11 @@ module ObjC.AVFAudio.AVSpeechSynthesizer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,38 +77,35 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- speakUtterance:@
 speakUtterance :: (IsAVSpeechSynthesizer avSpeechSynthesizer, IsAVSpeechUtterance utterance) => avSpeechSynthesizer -> utterance -> IO ()
-speakUtterance avSpeechSynthesizer  utterance =
-  withObjCPtr utterance $ \raw_utterance ->
-      sendMsg avSpeechSynthesizer (mkSelector "speakUtterance:") retVoid [argPtr (castPtr raw_utterance :: Ptr ())]
+speakUtterance avSpeechSynthesizer utterance =
+  sendMessage avSpeechSynthesizer speakUtteranceSelector (toAVSpeechUtterance utterance)
 
 -- | @- writeUtterance:toBufferCallback:@
 writeUtterance_toBufferCallback :: (IsAVSpeechSynthesizer avSpeechSynthesizer, IsAVSpeechUtterance utterance) => avSpeechSynthesizer -> utterance -> Ptr () -> IO ()
-writeUtterance_toBufferCallback avSpeechSynthesizer  utterance bufferCallback =
-  withObjCPtr utterance $ \raw_utterance ->
-      sendMsg avSpeechSynthesizer (mkSelector "writeUtterance:toBufferCallback:") retVoid [argPtr (castPtr raw_utterance :: Ptr ()), argPtr (castPtr bufferCallback :: Ptr ())]
+writeUtterance_toBufferCallback avSpeechSynthesizer utterance bufferCallback =
+  sendMessage avSpeechSynthesizer writeUtterance_toBufferCallbackSelector (toAVSpeechUtterance utterance) bufferCallback
 
 -- | Use this method to receive audio buffers and associated metadata that can be used to store or further process synthesized speech. The dictionary provided by -[AVSpeechSynthesisVoice audioFileSettings] can be used to create an AVAudioFile.
 --
 -- ObjC selector: @- writeUtterance:toBufferCallback:toMarkerCallback:@
 writeUtterance_toBufferCallback_toMarkerCallback :: (IsAVSpeechSynthesizer avSpeechSynthesizer, IsAVSpeechUtterance utterance) => avSpeechSynthesizer -> utterance -> Ptr () -> Ptr () -> IO ()
-writeUtterance_toBufferCallback_toMarkerCallback avSpeechSynthesizer  utterance bufferCallback markerCallback =
-  withObjCPtr utterance $ \raw_utterance ->
-      sendMsg avSpeechSynthesizer (mkSelector "writeUtterance:toBufferCallback:toMarkerCallback:") retVoid [argPtr (castPtr raw_utterance :: Ptr ()), argPtr (castPtr bufferCallback :: Ptr ()), argPtr (castPtr markerCallback :: Ptr ())]
+writeUtterance_toBufferCallback_toMarkerCallback avSpeechSynthesizer utterance bufferCallback markerCallback =
+  sendMessage avSpeechSynthesizer writeUtterance_toBufferCallback_toMarkerCallbackSelector (toAVSpeechUtterance utterance) bufferCallback markerCallback
 
 -- | @- stopSpeakingAtBoundary:@
 stopSpeakingAtBoundary :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> AVSpeechBoundary -> IO Bool
-stopSpeakingAtBoundary avSpeechSynthesizer  boundary =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "stopSpeakingAtBoundary:") retCULong [argCLong (coerce boundary)]
+stopSpeakingAtBoundary avSpeechSynthesizer boundary =
+  sendMessage avSpeechSynthesizer stopSpeakingAtBoundarySelector boundary
 
 -- | @- pauseSpeakingAtBoundary:@
 pauseSpeakingAtBoundary :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> AVSpeechBoundary -> IO Bool
-pauseSpeakingAtBoundary avSpeechSynthesizer  boundary =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "pauseSpeakingAtBoundary:") retCULong [argCLong (coerce boundary)]
+pauseSpeakingAtBoundary avSpeechSynthesizer boundary =
+  sendMessage avSpeechSynthesizer pauseSpeakingAtBoundarySelector boundary
 
 -- | @- continueSpeaking@
 continueSpeaking :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
-continueSpeaking avSpeechSynthesizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "continueSpeaking") retCULong []
+continueSpeaking avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer continueSpeakingSelector
 
 -- | Asks the user to allow your app to use personal voices for speech synthesis
 --
@@ -124,58 +118,57 @@ requestPersonalVoiceAuthorizationWithCompletionHandler :: Ptr () -> IO ()
 requestPersonalVoiceAuthorizationWithCompletionHandler handler =
   do
     cls' <- getRequiredClass "AVSpeechSynthesizer"
-    sendClassMsg cls' (mkSelector "requestPersonalVoiceAuthorizationWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' requestPersonalVoiceAuthorizationWithCompletionHandlerSelector handler
 
 -- | @- delegate@
 delegate :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO RawId
-delegate avSpeechSynthesizer  =
-    fmap (RawId . castPtr) $ sendMsg avSpeechSynthesizer (mkSelector "delegate") (retPtr retVoid) []
+delegate avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> RawId -> IO ()
-setDelegate avSpeechSynthesizer  value =
-    sendMsg avSpeechSynthesizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avSpeechSynthesizer value =
+  sendMessage avSpeechSynthesizer setDelegateSelector value
 
 -- | @- speaking@
 speaking :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
-speaking avSpeechSynthesizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "speaking") retCULong []
+speaking avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer speakingSelector
 
 -- | @- paused@
 paused :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
-paused avSpeechSynthesizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "paused") retCULong []
+paused avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer pausedSelector
 
 -- | @- outputChannels@
 outputChannels :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO (Id NSArray)
-outputChannels avSpeechSynthesizer  =
-    sendMsg avSpeechSynthesizer (mkSelector "outputChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputChannels avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer outputChannelsSelector
 
 -- | @- setOutputChannels:@
 setOutputChannels :: (IsAVSpeechSynthesizer avSpeechSynthesizer, IsNSArray value) => avSpeechSynthesizer -> value -> IO ()
-setOutputChannels avSpeechSynthesizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpeechSynthesizer (mkSelector "setOutputChannels:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputChannels avSpeechSynthesizer value =
+  sendMessage avSpeechSynthesizer setOutputChannelsSelector (toNSArray value)
 
 -- | @- usesApplicationAudioSession@
 usesApplicationAudioSession :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
-usesApplicationAudioSession avSpeechSynthesizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "usesApplicationAudioSession") retCULong []
+usesApplicationAudioSession avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer usesApplicationAudioSessionSelector
 
 -- | @- setUsesApplicationAudioSession:@
 setUsesApplicationAudioSession :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> Bool -> IO ()
-setUsesApplicationAudioSession avSpeechSynthesizer  value =
-    sendMsg avSpeechSynthesizer (mkSelector "setUsesApplicationAudioSession:") retVoid [argCULong (if value then 1 else 0)]
+setUsesApplicationAudioSession avSpeechSynthesizer value =
+  sendMessage avSpeechSynthesizer setUsesApplicationAudioSessionSelector value
 
 -- | @- mixToTelephonyUplink@
 mixToTelephonyUplink :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> IO Bool
-mixToTelephonyUplink avSpeechSynthesizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSpeechSynthesizer (mkSelector "mixToTelephonyUplink") retCULong []
+mixToTelephonyUplink avSpeechSynthesizer =
+  sendMessage avSpeechSynthesizer mixToTelephonyUplinkSelector
 
 -- | @- setMixToTelephonyUplink:@
 setMixToTelephonyUplink :: IsAVSpeechSynthesizer avSpeechSynthesizer => avSpeechSynthesizer -> Bool -> IO ()
-setMixToTelephonyUplink avSpeechSynthesizer  value =
-    sendMsg avSpeechSynthesizer (mkSelector "setMixToTelephonyUplink:") retVoid [argCULong (if value then 1 else 0)]
+setMixToTelephonyUplink avSpeechSynthesizer value =
+  sendMessage avSpeechSynthesizer setMixToTelephonyUplinkSelector value
 
 -- | Returns your app's current authorization to use personal voices.
 --
@@ -188,81 +181,81 @@ personalVoiceAuthorizationStatus :: IO AVSpeechSynthesisPersonalVoiceAuthorizati
 personalVoiceAuthorizationStatus  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesizer"
-    fmap (coerce :: CULong -> AVSpeechSynthesisPersonalVoiceAuthorizationStatus) $ sendClassMsg cls' (mkSelector "personalVoiceAuthorizationStatus") retCULong []
+    sendClassMessage cls' personalVoiceAuthorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @speakUtterance:@
-speakUtteranceSelector :: Selector
+speakUtteranceSelector :: Selector '[Id AVSpeechUtterance] ()
 speakUtteranceSelector = mkSelector "speakUtterance:"
 
 -- | @Selector@ for @writeUtterance:toBufferCallback:@
-writeUtterance_toBufferCallbackSelector :: Selector
+writeUtterance_toBufferCallbackSelector :: Selector '[Id AVSpeechUtterance, Ptr ()] ()
 writeUtterance_toBufferCallbackSelector = mkSelector "writeUtterance:toBufferCallback:"
 
 -- | @Selector@ for @writeUtterance:toBufferCallback:toMarkerCallback:@
-writeUtterance_toBufferCallback_toMarkerCallbackSelector :: Selector
+writeUtterance_toBufferCallback_toMarkerCallbackSelector :: Selector '[Id AVSpeechUtterance, Ptr (), Ptr ()] ()
 writeUtterance_toBufferCallback_toMarkerCallbackSelector = mkSelector "writeUtterance:toBufferCallback:toMarkerCallback:"
 
 -- | @Selector@ for @stopSpeakingAtBoundary:@
-stopSpeakingAtBoundarySelector :: Selector
+stopSpeakingAtBoundarySelector :: Selector '[AVSpeechBoundary] Bool
 stopSpeakingAtBoundarySelector = mkSelector "stopSpeakingAtBoundary:"
 
 -- | @Selector@ for @pauseSpeakingAtBoundary:@
-pauseSpeakingAtBoundarySelector :: Selector
+pauseSpeakingAtBoundarySelector :: Selector '[AVSpeechBoundary] Bool
 pauseSpeakingAtBoundarySelector = mkSelector "pauseSpeakingAtBoundary:"
 
 -- | @Selector@ for @continueSpeaking@
-continueSpeakingSelector :: Selector
+continueSpeakingSelector :: Selector '[] Bool
 continueSpeakingSelector = mkSelector "continueSpeaking"
 
 -- | @Selector@ for @requestPersonalVoiceAuthorizationWithCompletionHandler:@
-requestPersonalVoiceAuthorizationWithCompletionHandlerSelector :: Selector
+requestPersonalVoiceAuthorizationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestPersonalVoiceAuthorizationWithCompletionHandlerSelector = mkSelector "requestPersonalVoiceAuthorizationWithCompletionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @speaking@
-speakingSelector :: Selector
+speakingSelector :: Selector '[] Bool
 speakingSelector = mkSelector "speaking"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @outputChannels@
-outputChannelsSelector :: Selector
+outputChannelsSelector :: Selector '[] (Id NSArray)
 outputChannelsSelector = mkSelector "outputChannels"
 
 -- | @Selector@ for @setOutputChannels:@
-setOutputChannelsSelector :: Selector
+setOutputChannelsSelector :: Selector '[Id NSArray] ()
 setOutputChannelsSelector = mkSelector "setOutputChannels:"
 
 -- | @Selector@ for @usesApplicationAudioSession@
-usesApplicationAudioSessionSelector :: Selector
+usesApplicationAudioSessionSelector :: Selector '[] Bool
 usesApplicationAudioSessionSelector = mkSelector "usesApplicationAudioSession"
 
 -- | @Selector@ for @setUsesApplicationAudioSession:@
-setUsesApplicationAudioSessionSelector :: Selector
+setUsesApplicationAudioSessionSelector :: Selector '[Bool] ()
 setUsesApplicationAudioSessionSelector = mkSelector "setUsesApplicationAudioSession:"
 
 -- | @Selector@ for @mixToTelephonyUplink@
-mixToTelephonyUplinkSelector :: Selector
+mixToTelephonyUplinkSelector :: Selector '[] Bool
 mixToTelephonyUplinkSelector = mkSelector "mixToTelephonyUplink"
 
 -- | @Selector@ for @setMixToTelephonyUplink:@
-setMixToTelephonyUplinkSelector :: Selector
+setMixToTelephonyUplinkSelector :: Selector '[Bool] ()
 setMixToTelephonyUplinkSelector = mkSelector "setMixToTelephonyUplink:"
 
 -- | @Selector@ for @personalVoiceAuthorizationStatus@
-personalVoiceAuthorizationStatusSelector :: Selector
+personalVoiceAuthorizationStatusSelector :: Selector '[] AVSpeechSynthesisPersonalVoiceAuthorizationStatus
 personalVoiceAuthorizationStatusSelector = mkSelector "personalVoiceAuthorizationStatus"
 

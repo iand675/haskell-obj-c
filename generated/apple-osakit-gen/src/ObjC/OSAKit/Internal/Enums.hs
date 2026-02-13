@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.OSAKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @OSALanguageFeatures@ (bitmask)
 newtype OSALanguageFeatures = OSALanguageFeatures CULong
@@ -46,6 +49,16 @@ pattern OSASupportsDialects = OSALanguageFeatures 128
 pattern OSASupportsEventHandling :: OSALanguageFeatures
 pattern OSASupportsEventHandling = OSALanguageFeatures 256
 
+instance ObjCArgument OSALanguageFeatures where
+  withObjCArg (OSALanguageFeatures x) k = k (argCULong x)
+
+instance ObjCReturn OSALanguageFeatures where
+  type RawReturn OSALanguageFeatures = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSALanguageFeatures x)
+  fromOwned x = pure (OSALanguageFeatures x)
+
 -- | @OSAScriptState@
 newtype OSAScriptState = OSAScriptState CLong
   deriving stock (Eq, Ord, Show)
@@ -59,6 +72,16 @@ pattern OSAScriptRunning = OSAScriptState 1
 
 pattern OSAScriptRecording :: OSAScriptState
 pattern OSAScriptRecording = OSAScriptState 2
+
+instance ObjCArgument OSAScriptState where
+  withObjCArg (OSAScriptState x) k = k (argCLong x)
+
+instance ObjCReturn OSAScriptState where
+  type RawReturn OSAScriptState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSAScriptState x)
+  fromOwned x = pure (OSAScriptState x)
 
 -- | @OSAStorageOptions@ (bitmask)
 newtype OSAStorageOptions = OSAStorageOptions CULong
@@ -88,3 +111,13 @@ pattern OSAStayOpenApplet = OSAStorageOptions 268435456
 
 pattern OSAShowStartupScreen :: OSAStorageOptions
 pattern OSAShowStartupScreen = OSAStorageOptions 536870912
+
+instance ObjCArgument OSAStorageOptions where
+  withObjCArg (OSAStorageOptions x) k = k (argCULong x)
+
+instance ObjCReturn OSAStorageOptions where
+  type RawReturn OSAStorageOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSAStorageOptions x)
+  fromOwned x = pure (OSAStorageOptions x)

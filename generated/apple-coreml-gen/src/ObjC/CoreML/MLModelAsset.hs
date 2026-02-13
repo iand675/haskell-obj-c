@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,26 +32,22 @@ module ObjC.CoreML.MLModelAsset
   , modelDescriptionOfFunctionNamed_completionHandler
   , init_
   , new
-  , modelAssetWithSpecificationData_errorSelector
-  , modelAssetWithSpecificationData_blobMapping_errorSelector
-  , modelAssetWithURL_errorSelector
-  , modelDescriptionWithCompletionHandlerSelector
-  , modelDescriptionOfFunctionNamed_completionHandlerSelector
   , initSelector
+  , modelAssetWithSpecificationData_blobMapping_errorSelector
+  , modelAssetWithSpecificationData_errorSelector
+  , modelAssetWithURL_errorSelector
+  , modelDescriptionOfFunctionNamed_completionHandlerSelector
+  , modelDescriptionWithCompletionHandlerSelector
   , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,9 +63,7 @@ modelAssetWithSpecificationData_error :: (IsNSData specificationData, IsNSError 
 modelAssetWithSpecificationData_error specificationData error_ =
   do
     cls' <- getRequiredClass "MLModelAsset"
-    withObjCPtr specificationData $ \raw_specificationData ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "modelAssetWithSpecificationData:error:") (retPtr retVoid) [argPtr (castPtr raw_specificationData :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelAssetWithSpecificationData_errorSelector (toNSData specificationData) (toNSError error_)
 
 -- | Construct a model asset from an ML Program specification by replacing blob file references with corresponding in-memory blobs.
 --
@@ -83,10 +78,7 @@ modelAssetWithSpecificationData_blobMapping_error :: (IsNSData specificationData
 modelAssetWithSpecificationData_blobMapping_error specificationData blobMapping error_ =
   do
     cls' <- getRequiredClass "MLModelAsset"
-    withObjCPtr specificationData $ \raw_specificationData ->
-      withObjCPtr blobMapping $ \raw_blobMapping ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "modelAssetWithSpecificationData:blobMapping:error:") (retPtr retVoid) [argPtr (castPtr raw_specificationData :: Ptr ()), argPtr (castPtr raw_blobMapping :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelAssetWithSpecificationData_blobMapping_errorSelector (toNSData specificationData) (toNSDictionary blobMapping) (toNSError error_)
 
 -- | Constructs a ModelAsset from a compiled model URL.
 --
@@ -99,9 +91,7 @@ modelAssetWithURL_error :: (IsNSURL compiledModelURL, IsNSError error_) => compi
 modelAssetWithURL_error compiledModelURL error_ =
   do
     cls' <- getRequiredClass "MLModelAsset"
-    withObjCPtr compiledModelURL $ \raw_compiledModelURL ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "modelAssetWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_compiledModelURL :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelAssetWithURL_errorSelector (toNSURL compiledModelURL) (toNSError error_)
 
 -- | The default model descripton.
 --
@@ -113,8 +103,8 @@ modelAssetWithURL_error compiledModelURL error_ =
 --
 -- ObjC selector: @- modelDescriptionWithCompletionHandler:@
 modelDescriptionWithCompletionHandler :: IsMLModelAsset mlModelAsset => mlModelAsset -> Ptr () -> IO ()
-modelDescriptionWithCompletionHandler mlModelAsset  handler =
-    sendMsg mlModelAsset (mkSelector "modelDescriptionWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+modelDescriptionWithCompletionHandler mlModelAsset handler =
+  sendMessage mlModelAsset modelDescriptionWithCompletionHandlerSelector handler
 
 -- | The model descripton for a specified function.
 --
@@ -124,51 +114,50 @@ modelDescriptionWithCompletionHandler mlModelAsset  handler =
 --
 -- ObjC selector: @- modelDescriptionOfFunctionNamed:completionHandler:@
 modelDescriptionOfFunctionNamed_completionHandler :: (IsMLModelAsset mlModelAsset, IsNSString functionName) => mlModelAsset -> functionName -> Ptr () -> IO ()
-modelDescriptionOfFunctionNamed_completionHandler mlModelAsset  functionName handler =
-  withObjCPtr functionName $ \raw_functionName ->
-      sendMsg mlModelAsset (mkSelector "modelDescriptionOfFunctionNamed:completionHandler:") retVoid [argPtr (castPtr raw_functionName :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+modelDescriptionOfFunctionNamed_completionHandler mlModelAsset functionName handler =
+  sendMessage mlModelAsset modelDescriptionOfFunctionNamed_completionHandlerSelector (toNSString functionName) handler
 
 -- | @- init@
 init_ :: IsMLModelAsset mlModelAsset => mlModelAsset -> IO (Id MLModelAsset)
-init_ mlModelAsset  =
-    sendMsg mlModelAsset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelAsset =
+  sendOwnedMessage mlModelAsset initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelAsset)
 new  =
   do
     cls' <- getRequiredClass "MLModelAsset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @modelAssetWithSpecificationData:error:@
-modelAssetWithSpecificationData_errorSelector :: Selector
+modelAssetWithSpecificationData_errorSelector :: Selector '[Id NSData, Id NSError] (Id MLModelAsset)
 modelAssetWithSpecificationData_errorSelector = mkSelector "modelAssetWithSpecificationData:error:"
 
 -- | @Selector@ for @modelAssetWithSpecificationData:blobMapping:error:@
-modelAssetWithSpecificationData_blobMapping_errorSelector :: Selector
+modelAssetWithSpecificationData_blobMapping_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] (Id MLModelAsset)
 modelAssetWithSpecificationData_blobMapping_errorSelector = mkSelector "modelAssetWithSpecificationData:blobMapping:error:"
 
 -- | @Selector@ for @modelAssetWithURL:error:@
-modelAssetWithURL_errorSelector :: Selector
+modelAssetWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id MLModelAsset)
 modelAssetWithURL_errorSelector = mkSelector "modelAssetWithURL:error:"
 
 -- | @Selector@ for @modelDescriptionWithCompletionHandler:@
-modelDescriptionWithCompletionHandlerSelector :: Selector
+modelDescriptionWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 modelDescriptionWithCompletionHandlerSelector = mkSelector "modelDescriptionWithCompletionHandler:"
 
 -- | @Selector@ for @modelDescriptionOfFunctionNamed:completionHandler:@
-modelDescriptionOfFunctionNamed_completionHandlerSelector :: Selector
+modelDescriptionOfFunctionNamed_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 modelDescriptionOfFunctionNamed_completionHandlerSelector = mkSelector "modelDescriptionOfFunctionNamed:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelAsset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelAsset)
 newSelector = mkSelector "new"
 

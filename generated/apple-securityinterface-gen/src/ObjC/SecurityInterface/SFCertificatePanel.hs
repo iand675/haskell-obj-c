@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.SecurityInterface.SFCertificatePanel
   , setHelpAnchor
   , helpAnchor
   , certificateView
-  , sharedCertificatePanelSelector
-  , runModalForTrust_showGroupSelector
-  , runModalForCertificates_showGroupSelector
-  , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroupSelector
-  , setPoliciesSelector
-  , policiesSelector
-  , setDefaultButtonTitleSelector
-  , setAlternateButtonTitleSelector
-  , setShowsHelpSelector
-  , showsHelpSelector
-  , setHelpAnchorSelector
-  , helpAnchorSelector
+  , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector
   , certificateViewSelector
+  , helpAnchorSelector
+  , policiesSelector
+  , runModalForCertificates_showGroupSelector
+  , runModalForTrust_showGroupSelector
+  , setAlternateButtonTitleSelector
+  , setDefaultButtonTitleSelector
+  , setHelpAnchorSelector
+  , setPoliciesSelector
+  , setShowsHelpSelector
+  , sharedCertificatePanelSelector
+  , showsHelpSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,7 +66,7 @@ sharedCertificatePanel :: IO (Id SFCertificatePanel)
 sharedCertificatePanel  =
   do
     cls' <- getRequiredClass "SFCertificatePanel"
-    sendClassMsg cls' (mkSelector "sharedCertificatePanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCertificatePanelSelector
 
 -- | runModalForTrust:showGroup:
 --
@@ -81,8 +78,8 @@ sharedCertificatePanel  =
 --
 -- ObjC selector: @- runModalForTrust:showGroup:@
 runModalForTrust_showGroup :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> Ptr () -> Bool -> IO CLong
-runModalForTrust_showGroup sfCertificatePanel  trust showGroup =
-    sendMsg sfCertificatePanel (mkSelector "runModalForTrust:showGroup:") retCLong [argPtr trust, argCULong (if showGroup then 1 else 0)]
+runModalForTrust_showGroup sfCertificatePanel trust showGroup =
+  sendMessage sfCertificatePanel runModalForTrust_showGroupSelector trust showGroup
 
 -- | runModalForCertificates:showGroup:
 --
@@ -94,9 +91,8 @@ runModalForTrust_showGroup sfCertificatePanel  trust showGroup =
 --
 -- ObjC selector: @- runModalForCertificates:showGroup:@
 runModalForCertificates_showGroup :: (IsSFCertificatePanel sfCertificatePanel, IsNSArray certificates) => sfCertificatePanel -> certificates -> Bool -> IO CLong
-runModalForCertificates_showGroup sfCertificatePanel  certificates showGroup =
-  withObjCPtr certificates $ \raw_certificates ->
-      sendMsg sfCertificatePanel (mkSelector "runModalForCertificates:showGroup:") retCLong [argPtr (castPtr raw_certificates :: Ptr ()), argCULong (if showGroup then 1 else 0)]
+runModalForCertificates_showGroup sfCertificatePanel certificates showGroup =
+  sendMessage sfCertificatePanel runModalForCertificates_showGroupSelector (toNSArray certificates) showGroup
 
 -- | beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:showGroup:
 --
@@ -117,10 +113,9 @@ runModalForCertificates_showGroup sfCertificatePanel  certificates showGroup =
 -- The didEndSelector method should have the following signature:        - (void)certificateSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 --
 -- ObjC selector: @- beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:showGroup:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroup :: (IsSFCertificatePanel sfCertificatePanel, IsNSWindow docWindow) => sfCertificatePanel -> docWindow -> RawId -> Selector -> Ptr () -> Ptr () -> Bool -> IO ()
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroup sfCertificatePanel  docWindow delegate didEndSelector contextInfo trust showGroup =
-  withObjCPtr docWindow $ \raw_docWindow ->
-      sendMsg sfCertificatePanel (mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:showGroup:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo, argPtr trust, argCULong (if showGroup then 1 else 0)]
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroup :: (IsSFCertificatePanel sfCertificatePanel, IsNSWindow docWindow) => sfCertificatePanel -> docWindow -> RawId -> Sel -> Ptr () -> Ptr () -> Bool -> IO ()
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroup sfCertificatePanel docWindow delegate didEndSelector contextInfo trust showGroup =
+  sendMessage sfCertificatePanel beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector (toNSWindow docWindow) delegate didEndSelector contextInfo trust showGroup
 
 -- | beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:certificates:showGroup:
 --
@@ -141,11 +136,9 @@ beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroup sfC
 -- The didEndSelector method should have the following signature:        - (void)certificateSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 --
 -- ObjC selector: @- beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:certificates:showGroup:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroup :: (IsSFCertificatePanel sfCertificatePanel, IsNSWindow docWindow, IsNSArray certificates) => sfCertificatePanel -> docWindow -> RawId -> Selector -> Ptr () -> certificates -> Bool -> IO ()
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroup sfCertificatePanel  docWindow delegate didEndSelector contextInfo certificates showGroup =
-  withObjCPtr docWindow $ \raw_docWindow ->
-    withObjCPtr certificates $ \raw_certificates ->
-        sendMsg sfCertificatePanel (mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:certificates:showGroup:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo, argPtr (castPtr raw_certificates :: Ptr ()), argCULong (if showGroup then 1 else 0)]
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroup :: (IsSFCertificatePanel sfCertificatePanel, IsNSWindow docWindow, IsNSArray certificates) => sfCertificatePanel -> docWindow -> RawId -> Sel -> Ptr () -> certificates -> Bool -> IO ()
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroup sfCertificatePanel docWindow delegate didEndSelector contextInfo certificates showGroup =
+  sendMessage sfCertificatePanel beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroupSelector (toNSWindow docWindow) delegate didEndSelector contextInfo (toNSArray certificates) showGroup
 
 -- | setPolicies:
 --
@@ -157,8 +150,8 @@ beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGr
 --
 -- ObjC selector: @- setPolicies:@
 setPolicies :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> RawId -> IO ()
-setPolicies sfCertificatePanel  policies =
-    sendMsg sfCertificatePanel (mkSelector "setPolicies:") retVoid [argPtr (castPtr (unRawId policies) :: Ptr ())]
+setPolicies sfCertificatePanel policies =
+  sendMessage sfCertificatePanel setPoliciesSelector policies
 
 -- | policies
 --
@@ -168,8 +161,8 @@ setPolicies sfCertificatePanel  policies =
 --
 -- ObjC selector: @- policies@
 policies :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> IO (Id NSArray)
-policies sfCertificatePanel  =
-    sendMsg sfCertificatePanel (mkSelector "policies") (retPtr retVoid) [] >>= retainedObject . castPtr
+policies sfCertificatePanel =
+  sendMessage sfCertificatePanel policiesSelector
 
 -- | setDefaultButtonTitle:
 --
@@ -179,9 +172,8 @@ policies sfCertificatePanel  =
 --
 -- ObjC selector: @- setDefaultButtonTitle:@
 setDefaultButtonTitle :: (IsSFCertificatePanel sfCertificatePanel, IsNSString title) => sfCertificatePanel -> title -> IO ()
-setDefaultButtonTitle sfCertificatePanel  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg sfCertificatePanel (mkSelector "setDefaultButtonTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+setDefaultButtonTitle sfCertificatePanel title =
+  sendMessage sfCertificatePanel setDefaultButtonTitleSelector (toNSString title)
 
 -- | setAlternateButtonTitle:
 --
@@ -191,93 +183,91 @@ setDefaultButtonTitle sfCertificatePanel  title =
 --
 -- ObjC selector: @- setAlternateButtonTitle:@
 setAlternateButtonTitle :: (IsSFCertificatePanel sfCertificatePanel, IsNSString title) => sfCertificatePanel -> title -> IO ()
-setAlternateButtonTitle sfCertificatePanel  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg sfCertificatePanel (mkSelector "setAlternateButtonTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+setAlternateButtonTitle sfCertificatePanel title =
+  sendMessage sfCertificatePanel setAlternateButtonTitleSelector (toNSString title)
 
 -- | @- setShowsHelp:@
 setShowsHelp :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> Bool -> IO ()
-setShowsHelp sfCertificatePanel  showsHelp =
-    sendMsg sfCertificatePanel (mkSelector "setShowsHelp:") retVoid [argCULong (if showsHelp then 1 else 0)]
+setShowsHelp sfCertificatePanel showsHelp =
+  sendMessage sfCertificatePanel setShowsHelpSelector showsHelp
 
 -- | @- showsHelp@
 showsHelp :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> IO Bool
-showsHelp sfCertificatePanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificatePanel (mkSelector "showsHelp") retCULong []
+showsHelp sfCertificatePanel =
+  sendMessage sfCertificatePanel showsHelpSelector
 
 -- | @- setHelpAnchor:@
 setHelpAnchor :: (IsSFCertificatePanel sfCertificatePanel, IsNSString anchor) => sfCertificatePanel -> anchor -> IO ()
-setHelpAnchor sfCertificatePanel  anchor =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg sfCertificatePanel (mkSelector "setHelpAnchor:") retVoid [argPtr (castPtr raw_anchor :: Ptr ())]
+setHelpAnchor sfCertificatePanel anchor =
+  sendMessage sfCertificatePanel setHelpAnchorSelector (toNSString anchor)
 
 -- | @- helpAnchor@
 helpAnchor :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> IO (Id NSString)
-helpAnchor sfCertificatePanel  =
-    sendMsg sfCertificatePanel (mkSelector "helpAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+helpAnchor sfCertificatePanel =
+  sendMessage sfCertificatePanel helpAnchorSelector
 
 -- | @- certificateView@
 certificateView :: IsSFCertificatePanel sfCertificatePanel => sfCertificatePanel -> IO (Id SFCertificateView)
-certificateView sfCertificatePanel  =
-    sendMsg sfCertificatePanel (mkSelector "certificateView") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificateView sfCertificatePanel =
+  sendMessage sfCertificatePanel certificateViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCertificatePanel@
-sharedCertificatePanelSelector :: Selector
+sharedCertificatePanelSelector :: Selector '[] (Id SFCertificatePanel)
 sharedCertificatePanelSelector = mkSelector "sharedCertificatePanel"
 
 -- | @Selector@ for @runModalForTrust:showGroup:@
-runModalForTrust_showGroupSelector :: Selector
+runModalForTrust_showGroupSelector :: Selector '[Ptr (), Bool] CLong
 runModalForTrust_showGroupSelector = mkSelector "runModalForTrust:showGroup:"
 
 -- | @Selector@ for @runModalForCertificates:showGroup:@
-runModalForCertificates_showGroupSelector :: Selector
+runModalForCertificates_showGroupSelector :: Selector '[Id NSArray, Bool] CLong
 runModalForCertificates_showGroupSelector = mkSelector "runModalForCertificates:showGroup:"
 
 -- | @Selector@ for @beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:showGroup:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector :: Selector
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr (), Ptr (), Bool] ()
 beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_showGroupSelector = mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:showGroup:"
 
 -- | @Selector@ for @beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:certificates:showGroup:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroupSelector :: Selector
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroupSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr (), Id NSArray, Bool] ()
 beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_certificates_showGroupSelector = mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:certificates:showGroup:"
 
 -- | @Selector@ for @setPolicies:@
-setPoliciesSelector :: Selector
+setPoliciesSelector :: Selector '[RawId] ()
 setPoliciesSelector = mkSelector "setPolicies:"
 
 -- | @Selector@ for @policies@
-policiesSelector :: Selector
+policiesSelector :: Selector '[] (Id NSArray)
 policiesSelector = mkSelector "policies"
 
 -- | @Selector@ for @setDefaultButtonTitle:@
-setDefaultButtonTitleSelector :: Selector
+setDefaultButtonTitleSelector :: Selector '[Id NSString] ()
 setDefaultButtonTitleSelector = mkSelector "setDefaultButtonTitle:"
 
 -- | @Selector@ for @setAlternateButtonTitle:@
-setAlternateButtonTitleSelector :: Selector
+setAlternateButtonTitleSelector :: Selector '[Id NSString] ()
 setAlternateButtonTitleSelector = mkSelector "setAlternateButtonTitle:"
 
 -- | @Selector@ for @setShowsHelp:@
-setShowsHelpSelector :: Selector
+setShowsHelpSelector :: Selector '[Bool] ()
 setShowsHelpSelector = mkSelector "setShowsHelp:"
 
 -- | @Selector@ for @showsHelp@
-showsHelpSelector :: Selector
+showsHelpSelector :: Selector '[] Bool
 showsHelpSelector = mkSelector "showsHelp"
 
 -- | @Selector@ for @setHelpAnchor:@
-setHelpAnchorSelector :: Selector
+setHelpAnchorSelector :: Selector '[Id NSString] ()
 setHelpAnchorSelector = mkSelector "setHelpAnchor:"
 
 -- | @Selector@ for @helpAnchor@
-helpAnchorSelector :: Selector
+helpAnchorSelector :: Selector '[] (Id NSString)
 helpAnchorSelector = mkSelector "helpAnchor"
 
 -- | @Selector@ for @certificateView@
-certificateViewSelector :: Selector
+certificateViewSelector :: Selector '[] (Id SFCertificateView)
 certificateViewSelector = mkSelector "certificateView"
 

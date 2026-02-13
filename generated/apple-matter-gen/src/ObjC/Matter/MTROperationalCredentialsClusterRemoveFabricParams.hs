@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTROperationalCredentialsClusterRemoveFabricParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , fabricIndexSelector
-  , setFabricIndexSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setFabricIndexSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams => mtrOperationalCredentialsClusterRemoveFabricParams -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterRemoveFabricParams  =
-    sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterRemoveFabricParams =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams, IsNSNumber value) => mtrOperationalCredentialsClusterRemoveFabricParams -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterRemoveFabricParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterRemoveFabricParams value =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams setFabricIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setFabricIndex mtrOperationalCredentialsClusterRemoveFabricParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams => mtrOperationalCredentialsClusterRemoveFabricParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams  =
-    sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams, IsNSNumber value) => mtrOperationalCredentialsClusterRemoveFabricParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams value =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterRemoveFabricParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams => mtrOperationalCredentialsClusterRemoveFabricParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterRemoveFabricParams  =
-    sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterRemoveFabricParams =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterRemoveFabricParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterRemoveFabricParams mtrOperationalCredentialsClusterRemoveFabricParams, IsNSNumber value) => mtrOperationalCredentialsClusterRemoveFabricParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterRemoveFabricParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterRemoveFabricParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterRemoveFabricParams value =
+  sendMessage mtrOperationalCredentialsClusterRemoveFabricParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

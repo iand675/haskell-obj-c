@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.SceneKit.SCNLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,8 +37,8 @@ import ObjC.QuartzCore.Internal.Classes
 --
 -- ObjC selector: @- scene@
 scene :: IsSCNLayer scnLayer => scnLayer -> IO (Id SCNScene)
-scene scnLayer  =
-    sendMsg scnLayer (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+scene scnLayer =
+  sendMessage scnLayer sceneSelector
 
 -- | scene
 --
@@ -49,19 +46,18 @@ scene scnLayer  =
 --
 -- ObjC selector: @- setScene:@
 setScene :: (IsSCNLayer scnLayer, IsSCNScene value) => scnLayer -> value -> IO ()
-setScene scnLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnLayer (mkSelector "setScene:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScene scnLayer value =
+  sendMessage scnLayer setSceneSelector (toSCNScene value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SCNScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @setScene:@
-setSceneSelector :: Selector
+setSceneSelector :: Selector '[Id SCNScene] ()
 setSceneSelector = mkSelector "setScene:"
 

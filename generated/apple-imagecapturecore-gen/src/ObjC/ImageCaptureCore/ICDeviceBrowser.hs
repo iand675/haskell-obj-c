@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,23 +29,23 @@ module ObjC.ImageCaptureCore.ICDeviceBrowser
   , preferredDevice
   , contentsAuthorizationStatus
   , controlAuthorizationStatus
+  , browsedDeviceTypeMaskSelector
+  , browsingSelector
+  , contentsAuthorizationStatusSelector
+  , controlAuthorizationStatusSelector
+  , delegateSelector
+  , devicesSelector
   , initSelector
-  , startSelector
-  , stopSelector
+  , preferredDeviceSelector
   , requestContentsAuthorizationWithCompletionSelector
   , requestControlAuthorizationWithCompletionSelector
   , resetContentsAuthorizationWithCompletionSelector
   , resetControlAuthorizationWithCompletionSelector
-  , delegateSelector
-  , setDelegateSelector
-  , browsingSelector
-  , suspendedSelector
-  , browsedDeviceTypeMaskSelector
   , setBrowsedDeviceTypeMaskSelector
-  , devicesSelector
-  , preferredDeviceSelector
-  , contentsAuthorizationStatusSelector
-  , controlAuthorizationStatusSelector
+  , setDelegateSelector
+  , startSelector
+  , stopSelector
+  , suspendedSelector
 
   -- * Enum types
   , ICDeviceTypeMask(ICDeviceTypeMask)
@@ -53,15 +54,11 @@ module ObjC.ImageCaptureCore.ICDeviceBrowser
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO (Id ICDeviceBrowser)
-init_ icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ icDeviceBrowser =
+  sendOwnedMessage icDeviceBrowser initSelector
 
 -- | start:
 --
@@ -86,8 +83,8 @@ init_ icDeviceBrowser  =
 --
 -- ObjC selector: @- start@
 start :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO ()
-start icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "start") retVoid []
+start icDeviceBrowser =
+  sendMessage icDeviceBrowser startSelector
 
 -- | stop:
 --
@@ -97,8 +94,8 @@ start icDeviceBrowser  =
 --
 -- ObjC selector: @- stop@
 stop :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO ()
-stop icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "stop") retVoid []
+stop icDeviceBrowser =
+  sendMessage icDeviceBrowser stopSelector
 
 -- | requestContentsAuthorizationWithCompletion:
 --
@@ -106,8 +103,8 @@ stop icDeviceBrowser  =
 --
 -- ObjC selector: @- requestContentsAuthorizationWithCompletion:@
 requestContentsAuthorizationWithCompletion :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> Ptr () -> IO ()
-requestContentsAuthorizationWithCompletion icDeviceBrowser  completion =
-    sendMsg icDeviceBrowser (mkSelector "requestContentsAuthorizationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestContentsAuthorizationWithCompletion icDeviceBrowser completion =
+  sendMessage icDeviceBrowser requestContentsAuthorizationWithCompletionSelector completion
 
 -- | requestControlAuthorizationWithCompletion:
 --
@@ -115,8 +112,8 @@ requestContentsAuthorizationWithCompletion icDeviceBrowser  completion =
 --
 -- ObjC selector: @- requestControlAuthorizationWithCompletion:@
 requestControlAuthorizationWithCompletion :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> Ptr () -> IO ()
-requestControlAuthorizationWithCompletion icDeviceBrowser  completion =
-    sendMsg icDeviceBrowser (mkSelector "requestControlAuthorizationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestControlAuthorizationWithCompletion icDeviceBrowser completion =
+  sendMessage icDeviceBrowser requestControlAuthorizationWithCompletionSelector completion
 
 -- | resetContentsAuthorizationWithCompletion:
 --
@@ -124,8 +121,8 @@ requestControlAuthorizationWithCompletion icDeviceBrowser  completion =
 --
 -- ObjC selector: @- resetContentsAuthorizationWithCompletion:@
 resetContentsAuthorizationWithCompletion :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> Ptr () -> IO ()
-resetContentsAuthorizationWithCompletion icDeviceBrowser  completion =
-    sendMsg icDeviceBrowser (mkSelector "resetContentsAuthorizationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+resetContentsAuthorizationWithCompletion icDeviceBrowser completion =
+  sendMessage icDeviceBrowser resetContentsAuthorizationWithCompletionSelector completion
 
 -- | resetControlAuthorizationWithCompletion:
 --
@@ -135,8 +132,8 @@ resetContentsAuthorizationWithCompletion icDeviceBrowser  completion =
 --
 -- ObjC selector: @- resetControlAuthorizationWithCompletion:@
 resetControlAuthorizationWithCompletion :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> Ptr () -> IO ()
-resetControlAuthorizationWithCompletion icDeviceBrowser  completion =
-    sendMsg icDeviceBrowser (mkSelector "resetControlAuthorizationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+resetControlAuthorizationWithCompletion icDeviceBrowser completion =
+  sendMessage icDeviceBrowser resetControlAuthorizationWithCompletionSelector completion
 
 -- | delegate
 --
@@ -144,8 +141,8 @@ resetControlAuthorizationWithCompletion icDeviceBrowser  completion =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO RawId
-delegate icDeviceBrowser  =
-    fmap (RawId . castPtr) $ sendMsg icDeviceBrowser (mkSelector "delegate") (retPtr retVoid) []
+delegate icDeviceBrowser =
+  sendMessage icDeviceBrowser delegateSelector
 
 -- | delegate
 --
@@ -153,8 +150,8 @@ delegate icDeviceBrowser  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> RawId -> IO ()
-setDelegate icDeviceBrowser  value =
-    sendMsg icDeviceBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate icDeviceBrowser value =
+  sendMessage icDeviceBrowser setDelegateSelector value
 
 -- | browsing
 --
@@ -162,8 +159,8 @@ setDelegate icDeviceBrowser  value =
 --
 -- ObjC selector: @- browsing@
 browsing :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO Bool
-browsing icDeviceBrowser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icDeviceBrowser (mkSelector "browsing") retCULong []
+browsing icDeviceBrowser =
+  sendMessage icDeviceBrowser browsingSelector
 
 -- | suspended
 --
@@ -171,8 +168,8 @@ browsing icDeviceBrowser  =
 --
 -- ObjC selector: @- suspended@
 suspended :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO Bool
-suspended icDeviceBrowser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icDeviceBrowser (mkSelector "suspended") retCULong []
+suspended icDeviceBrowser =
+  sendMessage icDeviceBrowser suspendedSelector
 
 -- | browsedDeviceTypeMask
 --
@@ -180,8 +177,8 @@ suspended icDeviceBrowser  =
 --
 -- ObjC selector: @- browsedDeviceTypeMask@
 browsedDeviceTypeMask :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO ICDeviceTypeMask
-browsedDeviceTypeMask icDeviceBrowser  =
-    fmap (coerce :: CULong -> ICDeviceTypeMask) $ sendMsg icDeviceBrowser (mkSelector "browsedDeviceTypeMask") retCULong []
+browsedDeviceTypeMask icDeviceBrowser =
+  sendMessage icDeviceBrowser browsedDeviceTypeMaskSelector
 
 -- | browsedDeviceTypeMask
 --
@@ -189,8 +186,8 @@ browsedDeviceTypeMask icDeviceBrowser  =
 --
 -- ObjC selector: @- setBrowsedDeviceTypeMask:@
 setBrowsedDeviceTypeMask :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> ICDeviceTypeMask -> IO ()
-setBrowsedDeviceTypeMask icDeviceBrowser  value =
-    sendMsg icDeviceBrowser (mkSelector "setBrowsedDeviceTypeMask:") retVoid [argCULong (coerce value)]
+setBrowsedDeviceTypeMask icDeviceBrowser value =
+  sendMessage icDeviceBrowser setBrowsedDeviceTypeMaskSelector value
 
 -- | devices
 --
@@ -198,8 +195,8 @@ setBrowsedDeviceTypeMask icDeviceBrowser  value =
 --
 -- ObjC selector: @- devices@
 devices :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO (Id NSArray)
-devices icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+devices icDeviceBrowser =
+  sendMessage icDeviceBrowser devicesSelector
 
 -- | preferredDevice
 --
@@ -209,8 +206,8 @@ devices icDeviceBrowser  =
 --
 -- ObjC selector: @- preferredDevice@
 preferredDevice :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO RawId
-preferredDevice icDeviceBrowser  =
-    fmap (RawId . castPtr) $ sendMsg icDeviceBrowser (mkSelector "preferredDevice") (retPtr retVoid) []
+preferredDevice icDeviceBrowser =
+  sendMessage icDeviceBrowser preferredDeviceSelector
 
 -- | contentsAuthorizationStatus
 --
@@ -220,8 +217,8 @@ preferredDevice icDeviceBrowser  =
 --
 -- ObjC selector: @- contentsAuthorizationStatus@
 contentsAuthorizationStatus :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO (Id NSString)
-contentsAuthorizationStatus icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "contentsAuthorizationStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentsAuthorizationStatus icDeviceBrowser =
+  sendMessage icDeviceBrowser contentsAuthorizationStatusSelector
 
 -- | controlAuthorizationStatus
 --
@@ -229,78 +226,78 @@ contentsAuthorizationStatus icDeviceBrowser  =
 --
 -- ObjC selector: @- controlAuthorizationStatus@
 controlAuthorizationStatus :: IsICDeviceBrowser icDeviceBrowser => icDeviceBrowser -> IO (Id NSString)
-controlAuthorizationStatus icDeviceBrowser  =
-    sendMsg icDeviceBrowser (mkSelector "controlAuthorizationStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+controlAuthorizationStatus icDeviceBrowser =
+  sendMessage icDeviceBrowser controlAuthorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ICDeviceBrowser)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @requestContentsAuthorizationWithCompletion:@
-requestContentsAuthorizationWithCompletionSelector :: Selector
+requestContentsAuthorizationWithCompletionSelector :: Selector '[Ptr ()] ()
 requestContentsAuthorizationWithCompletionSelector = mkSelector "requestContentsAuthorizationWithCompletion:"
 
 -- | @Selector@ for @requestControlAuthorizationWithCompletion:@
-requestControlAuthorizationWithCompletionSelector :: Selector
+requestControlAuthorizationWithCompletionSelector :: Selector '[Ptr ()] ()
 requestControlAuthorizationWithCompletionSelector = mkSelector "requestControlAuthorizationWithCompletion:"
 
 -- | @Selector@ for @resetContentsAuthorizationWithCompletion:@
-resetContentsAuthorizationWithCompletionSelector :: Selector
+resetContentsAuthorizationWithCompletionSelector :: Selector '[Ptr ()] ()
 resetContentsAuthorizationWithCompletionSelector = mkSelector "resetContentsAuthorizationWithCompletion:"
 
 -- | @Selector@ for @resetControlAuthorizationWithCompletion:@
-resetControlAuthorizationWithCompletionSelector :: Selector
+resetControlAuthorizationWithCompletionSelector :: Selector '[Ptr ()] ()
 resetControlAuthorizationWithCompletionSelector = mkSelector "resetControlAuthorizationWithCompletion:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @browsing@
-browsingSelector :: Selector
+browsingSelector :: Selector '[] Bool
 browsingSelector = mkSelector "browsing"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] Bool
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @browsedDeviceTypeMask@
-browsedDeviceTypeMaskSelector :: Selector
+browsedDeviceTypeMaskSelector :: Selector '[] ICDeviceTypeMask
 browsedDeviceTypeMaskSelector = mkSelector "browsedDeviceTypeMask"
 
 -- | @Selector@ for @setBrowsedDeviceTypeMask:@
-setBrowsedDeviceTypeMaskSelector :: Selector
+setBrowsedDeviceTypeMaskSelector :: Selector '[ICDeviceTypeMask] ()
 setBrowsedDeviceTypeMaskSelector = mkSelector "setBrowsedDeviceTypeMask:"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 
 -- | @Selector@ for @preferredDevice@
-preferredDeviceSelector :: Selector
+preferredDeviceSelector :: Selector '[] RawId
 preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @contentsAuthorizationStatus@
-contentsAuthorizationStatusSelector :: Selector
+contentsAuthorizationStatusSelector :: Selector '[] (Id NSString)
 contentsAuthorizationStatusSelector = mkSelector "contentsAuthorizationStatus"
 
 -- | @Selector@ for @controlAuthorizationStatus@
-controlAuthorizationStatusSelector :: Selector
+controlAuthorizationStatusSelector :: Selector '[] (Id NSString)
 controlAuthorizationStatusSelector = mkSelector "controlAuthorizationStatus"
 

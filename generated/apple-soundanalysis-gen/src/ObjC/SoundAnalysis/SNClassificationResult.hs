@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.SoundAnalysis.SNClassificationResult
   , new
   , classificationForIdentifier
   , classifications
-  , initSelector
-  , newSelector
   , classificationForIdentifierSelector
   , classificationsSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSNClassificationResult snClassificationResult => snClassificationResult -> IO (Id SNClassificationResult)
-init_ snClassificationResult  =
-    sendMsg snClassificationResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snClassificationResult =
+  sendOwnedMessage snClassificationResult initSelector
 
 -- | @+ new@
 new :: IO (Id SNClassificationResult)
 new  =
   do
     cls' <- getRequiredClass "SNClassificationResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Retrieves the classification candidate with the specified identifier.
 --
@@ -55,34 +52,33 @@ new  =
 --
 -- ObjC selector: @- classificationForIdentifier:@
 classificationForIdentifier :: (IsSNClassificationResult snClassificationResult, IsNSString identifier) => snClassificationResult -> identifier -> IO (Id SNClassification)
-classificationForIdentifier snClassificationResult  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg snClassificationResult (mkSelector "classificationForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+classificationForIdentifier snClassificationResult identifier =
+  sendMessage snClassificationResult classificationForIdentifierSelector (toNSString identifier)
 
 -- | All classification candidates, sorted with highest confidence first.
 --
 -- ObjC selector: @- classifications@
 classifications :: IsSNClassificationResult snClassificationResult => snClassificationResult -> IO (Id NSArray)
-classifications snClassificationResult  =
-    sendMsg snClassificationResult (mkSelector "classifications") (retPtr retVoid) [] >>= retainedObject . castPtr
+classifications snClassificationResult =
+  sendMessage snClassificationResult classificationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNClassificationResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SNClassificationResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @classificationForIdentifier:@
-classificationForIdentifierSelector :: Selector
+classificationForIdentifierSelector :: Selector '[Id NSString] (Id SNClassification)
 classificationForIdentifierSelector = mkSelector "classificationForIdentifier:"
 
 -- | @Selector@ for @classifications@
-classificationsSelector :: Selector
+classificationsSelector :: Selector '[] (Id NSArray)
 classificationsSelector = mkSelector "classifications"
 

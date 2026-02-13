@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AppKit.NSIndexPath
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ indexPathForItem_inSection :: CLong -> CLong -> IO (Id NSIndexPath)
 indexPathForItem_inSection item section =
   do
     cls' <- getRequiredClass "NSIndexPath"
-    sendClassMsg cls' (mkSelector "indexPathForItem:inSection:") (retPtr retVoid) [argCLong item, argCLong section] >>= retainedObject . castPtr
+    sendClassMessage cls' indexPathForItem_inSectionSelector item section
 
 -- | @- item@
 item :: IsNSIndexPath nsIndexPath => nsIndexPath -> IO CLong
-item nsIndexPath  =
-    sendMsg nsIndexPath (mkSelector "item") retCLong []
+item nsIndexPath =
+  sendMessage nsIndexPath itemSelector
 
 -- | @- section@
 section :: IsNSIndexPath nsIndexPath => nsIndexPath -> IO CLong
-section nsIndexPath  =
-    sendMsg nsIndexPath (mkSelector "section") retCLong []
+section nsIndexPath =
+  sendMessage nsIndexPath sectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indexPathForItem:inSection:@
-indexPathForItem_inSectionSelector :: Selector
+indexPathForItem_inSectionSelector :: Selector '[CLong, CLong] (Id NSIndexPath)
 indexPathForItem_inSectionSelector = mkSelector "indexPathForItem:inSection:"
 
 -- | @Selector@ for @item@
-itemSelector :: Selector
+itemSelector :: Selector '[] CLong
 itemSelector = mkSelector "item"
 
 -- | @Selector@ for @section@
-sectionSelector :: Selector
+sectionSelector :: Selector '[] CLong
 sectionSelector = mkSelector "section"
 

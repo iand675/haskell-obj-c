@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.CoreSpotlight.CSImportExtension
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -29,17 +26,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updateAttributes:forFileAtURL:error:@
 updateAttributes_forFileAtURL_error :: (IsCSImportExtension csImportExtension, IsCSSearchableItemAttributeSet attributes, IsNSURL contentURL, IsNSError error_) => csImportExtension -> attributes -> contentURL -> error_ -> IO Bool
-updateAttributes_forFileAtURL_error csImportExtension  attributes contentURL error_ =
-  withObjCPtr attributes $ \raw_attributes ->
-    withObjCPtr contentURL $ \raw_contentURL ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg csImportExtension (mkSelector "updateAttributes:forFileAtURL:error:") retCULong [argPtr (castPtr raw_attributes :: Ptr ()), argPtr (castPtr raw_contentURL :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+updateAttributes_forFileAtURL_error csImportExtension attributes contentURL error_ =
+  sendMessage csImportExtension updateAttributes_forFileAtURL_errorSelector (toCSSearchableItemAttributeSet attributes) (toNSURL contentURL) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateAttributes:forFileAtURL:error:@
-updateAttributes_forFileAtURL_errorSelector :: Selector
+updateAttributes_forFileAtURL_errorSelector :: Selector '[Id CSSearchableItemAttributeSet, Id NSURL, Id NSError] Bool
 updateAttributes_forFileAtURL_errorSelector = mkSelector "updateAttributes:forFileAtURL:error:"
 

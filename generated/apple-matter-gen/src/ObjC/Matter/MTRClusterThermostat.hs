@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -154,165 +155,161 @@ module ObjC.Matter.MTRClusterThermostat
   , clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler
   , clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector
-  , setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
   , addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector
   , atomicRequestWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeLocalTemperatureWithParamsSelector
-  , readAttributeOutdoorTemperatureWithParamsSelector
-  , readAttributeOccupancyWithParamsSelector
-  , readAttributeAbsMinHeatSetpointLimitWithParamsSelector
+  , clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector
+  , clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector
+  , clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
+  , readAttributeACCapacityWithParamsSelector
+  , readAttributeACCapacityformatWithParamsSelector
+  , readAttributeACCoilTemperatureWithParamsSelector
+  , readAttributeACCompressorTypeWithParamsSelector
+  , readAttributeACErrorCodeWithParamsSelector
+  , readAttributeACLouverPositionWithParamsSelector
+  , readAttributeACRefrigerantTypeWithParamsSelector
+  , readAttributeACTypeWithParamsSelector
+  , readAttributeAbsMaxCoolSetpointLimitWithParamsSelector
   , readAttributeAbsMaxHeatSetpointLimitWithParamsSelector
   , readAttributeAbsMinCoolSetpointLimitWithParamsSelector
-  , readAttributeAbsMaxCoolSetpointLimitWithParamsSelector
-  , readAttributePICoolingDemandWithParamsSelector
-  , readAttributePIHeatingDemandWithParamsSelector
-  , readAttributeHVACSystemTypeConfigurationWithParamsSelector
-  , writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector
-  , writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLocalTemperatureCalibrationWithParamsSelector
-  , writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector
-  , writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeOccupiedCoolingSetpointWithParamsSelector
-  , writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector
-  , writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector
-  , readAttributeOccupiedHeatingSetpointWithParamsSelector
-  , writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector
-  , writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector
-  , readAttributeUnoccupiedCoolingSetpointWithParamsSelector
-  , writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector
-  , writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector
-  , readAttributeUnoccupiedHeatingSetpointWithParamsSelector
-  , writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector
-  , writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMinHeatSetpointLimitWithParamsSelector
-  , writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector
-  , writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMaxHeatSetpointLimitWithParamsSelector
-  , writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector
-  , writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMinCoolSetpointLimitWithParamsSelector
-  , writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector
-  , writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMaxCoolSetpointLimitWithParamsSelector
-  , writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector
-  , writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector
-  , readAttributeMinSetpointDeadBandWithParamsSelector
-  , writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector
-  , writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector
-  , readAttributeRemoteSensingWithParamsSelector
-  , writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector
-  , writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector
-  , readAttributeControlSequenceOfOperationWithParamsSelector
-  , writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector
-  , writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSystemModeWithParamsSelector
-  , writeAttributeSystemModeWithValue_expectedValueIntervalSelector
-  , writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeThermostatRunningModeWithParamsSelector
-  , readAttributeStartOfWeekWithParamsSelector
-  , readAttributeNumberOfWeeklyTransitionsWithParamsSelector
-  , readAttributeNumberOfDailyTransitionsWithParamsSelector
-  , readAttributeTemperatureSetpointHoldWithParamsSelector
-  , writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector
-  , writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector
-  , readAttributeTemperatureSetpointHoldDurationWithParamsSelector
-  , writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector
-  , writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeThermostatProgrammingOperationModeWithParamsSelector
-  , writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector
-  , writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeThermostatRunningStateWithParamsSelector
-  , readAttributeSetpointChangeSourceWithParamsSelector
-  , readAttributeSetpointChangeAmountWithParamsSelector
-  , readAttributeSetpointChangeSourceTimestampWithParamsSelector
-  , readAttributeOccupiedSetbackWithParamsSelector
-  , writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector
-  , writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector
-  , readAttributeOccupiedSetbackMinWithParamsSelector
-  , readAttributeOccupiedSetbackMaxWithParamsSelector
-  , readAttributeUnoccupiedSetbackWithParamsSelector
-  , writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector
-  , writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector
-  , readAttributeUnoccupiedSetbackMinWithParamsSelector
-  , readAttributeUnoccupiedSetbackMaxWithParamsSelector
-  , readAttributeEmergencyHeatDeltaWithParamsSelector
-  , writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector
-  , writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACTypeWithParamsSelector
-  , writeAttributeACTypeWithValue_expectedValueIntervalSelector
-  , writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACCapacityWithParamsSelector
-  , writeAttributeACCapacityWithValue_expectedValueIntervalSelector
-  , writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACRefrigerantTypeWithParamsSelector
-  , writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector
-  , writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACCompressorTypeWithParamsSelector
-  , writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector
-  , writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACErrorCodeWithParamsSelector
-  , writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector
-  , writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACLouverPositionWithParamsSelector
-  , writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector
-  , writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector
-  , readAttributeACCoilTemperatureWithParamsSelector
-  , readAttributeACCapacityformatWithParamsSelector
-  , writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector
-  , writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector
-  , readAttributePresetTypesWithParamsSelector
-  , readAttributeScheduleTypesWithParamsSelector
-  , readAttributeNumberOfPresetsWithParamsSelector
-  , readAttributeNumberOfSchedulesWithParamsSelector
-  , readAttributeNumberOfScheduleTransitionsWithParamsSelector
-  , readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector
+  , readAttributeAbsMinHeatSetpointLimitWithParamsSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeActivePresetHandleWithParamsSelector
   , readAttributeActiveScheduleHandleWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeControlSequenceOfOperationWithParamsSelector
+  , readAttributeCurrentThermostatSuggestionWithParamsSelector
+  , readAttributeEmergencyHeatDeltaWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeHVACSystemTypeConfigurationWithParamsSelector
+  , readAttributeLocalTemperatureCalibrationWithParamsSelector
+  , readAttributeLocalTemperatureWithParamsSelector
+  , readAttributeMaxCoolSetpointLimitWithParamsSelector
+  , readAttributeMaxHeatSetpointLimitWithParamsSelector
+  , readAttributeMaxThermostatSuggestionsWithParamsSelector
+  , readAttributeMinCoolSetpointLimitWithParamsSelector
+  , readAttributeMinHeatSetpointLimitWithParamsSelector
+  , readAttributeMinSetpointDeadBandWithParamsSelector
+  , readAttributeNumberOfDailyTransitionsWithParamsSelector
+  , readAttributeNumberOfPresetsWithParamsSelector
+  , readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector
+  , readAttributeNumberOfScheduleTransitionsWithParamsSelector
+  , readAttributeNumberOfSchedulesWithParamsSelector
+  , readAttributeNumberOfWeeklyTransitionsWithParamsSelector
+  , readAttributeOccupancyWithParamsSelector
+  , readAttributeOccupiedCoolingSetpointWithParamsSelector
+  , readAttributeOccupiedHeatingSetpointWithParamsSelector
+  , readAttributeOccupiedSetbackMaxWithParamsSelector
+  , readAttributeOccupiedSetbackMinWithParamsSelector
+  , readAttributeOccupiedSetbackWithParamsSelector
+  , readAttributeOutdoorTemperatureWithParamsSelector
+  , readAttributePICoolingDemandWithParamsSelector
+  , readAttributePIHeatingDemandWithParamsSelector
+  , readAttributePresetTypesWithParamsSelector
   , readAttributePresetsWithParamsSelector
+  , readAttributeRemoteSensingWithParamsSelector
+  , readAttributeScheduleTypesWithParamsSelector
+  , readAttributeSchedulesWithParamsSelector
+  , readAttributeSetpointChangeAmountWithParamsSelector
+  , readAttributeSetpointChangeSourceTimestampWithParamsSelector
+  , readAttributeSetpointChangeSourceWithParamsSelector
+  , readAttributeSetpointHoldExpiryTimestampWithParamsSelector
+  , readAttributeStartOfWeekWithParamsSelector
+  , readAttributeSystemModeWithParamsSelector
+  , readAttributeTemperatureSetpointHoldDurationWithParamsSelector
+  , readAttributeTemperatureSetpointHoldWithParamsSelector
+  , readAttributeThermostatProgrammingOperationModeWithParamsSelector
+  , readAttributeThermostatRunningModeWithParamsSelector
+  , readAttributeThermostatRunningStateWithParamsSelector
+  , readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector
+  , readAttributeThermostatSuggestionsWithParamsSelector
+  , readAttributeUnoccupiedCoolingSetpointWithParamsSelector
+  , readAttributeUnoccupiedHeatingSetpointWithParamsSelector
+  , readAttributeUnoccupiedSetbackMaxWithParamsSelector
+  , readAttributeUnoccupiedSetbackMinWithParamsSelector
+  , readAttributeUnoccupiedSetbackWithParamsSelector
+  , removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeACCapacityWithValue_expectedValueIntervalSelector
+  , writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector
+  , writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector
+  , writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector
+  , writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector
+  , writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector
+  , writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeACTypeWithValue_expectedValueIntervalSelector
+  , writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector
+  , writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector
+  , writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector
+  , writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector
+  , writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector
+  , writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector
+  , writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector
+  , writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector
+  , writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector
+  , writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector
+  , writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector
+  , writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector
+  , writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector
   , writeAttributePresetsWithValue_expectedValueIntervalSelector
   , writeAttributePresetsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSchedulesWithParamsSelector
+  , writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector
+  , writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector
   , writeAttributeSchedulesWithValue_expectedValueIntervalSelector
   , writeAttributeSchedulesWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSetpointHoldExpiryTimestampWithParamsSelector
-  , readAttributeMaxThermostatSuggestionsWithParamsSelector
-  , readAttributeThermostatSuggestionsWithParamsSelector
-  , readAttributeCurrentThermostatSuggestionWithParamsSelector
-  , readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , writeAttributeSystemModeWithValue_expectedValueIntervalSelector
+  , writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector
+  , writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector
+  , writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector
+  , writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector
+  , writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector
+  , writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector
+  , writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -321,1585 +318,1323 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completion:@
 setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetpointRaiseLowerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterSetpointRaiseLowerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterSetWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterGetWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterGetWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterClearWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterClearWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completion:@
 clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completion mtrClusterThermostat  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completion mtrClusterThermostat expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setActiveScheduleRequestWithParams:expectedValues:expectedValueInterval:completion:@
 setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetActiveScheduleRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setActiveScheduleRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterSetActiveScheduleRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setActivePresetRequestWithParams:expectedValues:expectedValueInterval:completion:@
 setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetActivePresetRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setActivePresetRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterSetActivePresetRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- addThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:@
 addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterAddThermostatSuggestionParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "addThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterAddThermostatSuggestionParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:@
 removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterRemoveThermostatSuggestionParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "removeThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterRemoveThermostatSuggestionParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- atomicRequestWithParams:expectedValues:expectedValueInterval:completion:@
 atomicRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterAtomicRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-atomicRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "atomicRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+atomicRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThermostat atomicRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThermostatClusterAtomicRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeLocalTemperatureWithParams:@
 readAttributeLocalTemperatureWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeLocalTemperatureWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeLocalTemperatureWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLocalTemperatureWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeLocalTemperatureWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOutdoorTemperatureWithParams:@
 readAttributeOutdoorTemperatureWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOutdoorTemperatureWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOutdoorTemperatureWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOutdoorTemperatureWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOutdoorTemperatureWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOccupancyWithParams:@
 readAttributeOccupancyWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupancyWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupancyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupancyWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupancyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAbsMinHeatSetpointLimitWithParams:@
 readAttributeAbsMinHeatSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAbsMinHeatSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAbsMinHeatSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAbsMinHeatSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAbsMinHeatSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAbsMaxHeatSetpointLimitWithParams:@
 readAttributeAbsMaxHeatSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAbsMaxHeatSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAbsMaxHeatSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAbsMaxHeatSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAbsMaxHeatSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAbsMinCoolSetpointLimitWithParams:@
 readAttributeAbsMinCoolSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAbsMinCoolSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAbsMinCoolSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAbsMinCoolSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAbsMinCoolSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAbsMaxCoolSetpointLimitWithParams:@
 readAttributeAbsMaxCoolSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAbsMaxCoolSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAbsMaxCoolSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAbsMaxCoolSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAbsMaxCoolSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePICoolingDemandWithParams:@
 readAttributePICoolingDemandWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributePICoolingDemandWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributePICoolingDemandWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePICoolingDemandWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributePICoolingDemandWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePIHeatingDemandWithParams:@
 readAttributePIHeatingDemandWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributePIHeatingDemandWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributePIHeatingDemandWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePIHeatingDemandWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributePIHeatingDemandWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeHVACSystemTypeConfigurationWithParams:@
 readAttributeHVACSystemTypeConfigurationWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeHVACSystemTypeConfigurationWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeHVACSystemTypeConfigurationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHVACSystemTypeConfigurationWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeHVACSystemTypeConfigurationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:@
 writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:params:@
 writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLocalTemperatureCalibrationWithParams:@
 readAttributeLocalTemperatureCalibrationWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeLocalTemperatureCalibrationWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeLocalTemperatureCalibrationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLocalTemperatureCalibrationWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeLocalTemperatureCalibrationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:@
 writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:params:@
 writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOccupiedCoolingSetpointWithParams:@
 readAttributeOccupiedCoolingSetpointWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupiedCoolingSetpointWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupiedCoolingSetpointWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupiedCoolingSetpointWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupiedCoolingSetpointWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:@
 writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:params:@
 writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOccupiedHeatingSetpointWithParams:@
 readAttributeOccupiedHeatingSetpointWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupiedHeatingSetpointWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupiedHeatingSetpointWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupiedHeatingSetpointWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupiedHeatingSetpointWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:@
 writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:params:@
 writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeUnoccupiedCoolingSetpointWithParams:@
 readAttributeUnoccupiedCoolingSetpointWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeUnoccupiedCoolingSetpointWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeUnoccupiedCoolingSetpointWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnoccupiedCoolingSetpointWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeUnoccupiedCoolingSetpointWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:@
 writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:params:@
 writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeUnoccupiedHeatingSetpointWithParams:@
 readAttributeUnoccupiedHeatingSetpointWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeUnoccupiedHeatingSetpointWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeUnoccupiedHeatingSetpointWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnoccupiedHeatingSetpointWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeUnoccupiedHeatingSetpointWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:@
 writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:params:@
 writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMinHeatSetpointLimitWithParams:@
 readAttributeMinHeatSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMinHeatSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMinHeatSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinHeatSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMinHeatSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:@
 writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:params:@
 writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMaxHeatSetpointLimitWithParams:@
 readAttributeMaxHeatSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMaxHeatSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMaxHeatSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxHeatSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMaxHeatSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:@
 writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:params:@
 writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMinCoolSetpointLimitWithParams:@
 readAttributeMinCoolSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMinCoolSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMinCoolSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinCoolSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMinCoolSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:@
 writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:params:@
 writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMaxCoolSetpointLimitWithParams:@
 readAttributeMaxCoolSetpointLimitWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMaxCoolSetpointLimitWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMaxCoolSetpointLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxCoolSetpointLimitWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMaxCoolSetpointLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:@
 writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:params:@
 writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeMinSetpointDeadBandWithParams:@
 readAttributeMinSetpointDeadBandWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMinSetpointDeadBandWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMinSetpointDeadBandWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinSetpointDeadBandWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMinSetpointDeadBandWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:@
 writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:params:@
 writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeRemoteSensingWithParams:@
 readAttributeRemoteSensingWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeRemoteSensingWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeRemoteSensingWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRemoteSensingWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeRemoteSensingWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeRemoteSensingWithValue:expectedValueInterval:@
 writeAttributeRemoteSensingWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeRemoteSensingWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeRemoteSensingWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeRemoteSensingWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeRemoteSensingWithValue:expectedValueInterval:params:@
 writeAttributeRemoteSensingWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeRemoteSensingWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeRemoteSensingWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeRemoteSensingWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeControlSequenceOfOperationWithParams:@
 readAttributeControlSequenceOfOperationWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeControlSequenceOfOperationWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeControlSequenceOfOperationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeControlSequenceOfOperationWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeControlSequenceOfOperationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:@
 writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:params:@
 writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSystemModeWithParams:@
 readAttributeSystemModeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSystemModeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSystemModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSystemModeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSystemModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSystemModeWithValue:expectedValueInterval:@
 writeAttributeSystemModeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSystemModeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeSystemModeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSystemModeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeSystemModeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSystemModeWithValue:expectedValueInterval:params:@
 writeAttributeSystemModeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSystemModeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeSystemModeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSystemModeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeThermostatRunningModeWithParams:@
 readAttributeThermostatRunningModeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeThermostatRunningModeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeThermostatRunningModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThermostatRunningModeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeThermostatRunningModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeStartOfWeekWithParams:@
 readAttributeStartOfWeekWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeStartOfWeekWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeStartOfWeekWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStartOfWeekWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeStartOfWeekWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfWeeklyTransitionsWithParams:@
 readAttributeNumberOfWeeklyTransitionsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfWeeklyTransitionsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfWeeklyTransitionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfWeeklyTransitionsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfWeeklyTransitionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfDailyTransitionsWithParams:@
 readAttributeNumberOfDailyTransitionsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfDailyTransitionsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfDailyTransitionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfDailyTransitionsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfDailyTransitionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTemperatureSetpointHoldWithParams:@
 readAttributeTemperatureSetpointHoldWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeTemperatureSetpointHoldWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeTemperatureSetpointHoldWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTemperatureSetpointHoldWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeTemperatureSetpointHoldWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:@
 writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:params:@
 writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeTemperatureSetpointHoldDurationWithParams:@
 readAttributeTemperatureSetpointHoldDurationWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeTemperatureSetpointHoldDurationWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeTemperatureSetpointHoldDurationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTemperatureSetpointHoldDurationWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeTemperatureSetpointHoldDurationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:@
 writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:params:@
 writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeThermostatProgrammingOperationModeWithParams:@
 readAttributeThermostatProgrammingOperationModeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeThermostatProgrammingOperationModeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeThermostatProgrammingOperationModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThermostatProgrammingOperationModeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeThermostatProgrammingOperationModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:@
 writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:params:@
 writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeThermostatRunningStateWithParams:@
 readAttributeThermostatRunningStateWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeThermostatRunningStateWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeThermostatRunningStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThermostatRunningStateWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeThermostatRunningStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSetpointChangeSourceWithParams:@
 readAttributeSetpointChangeSourceWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSetpointChangeSourceWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSetpointChangeSourceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSetpointChangeSourceWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSetpointChangeSourceWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSetpointChangeAmountWithParams:@
 readAttributeSetpointChangeAmountWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSetpointChangeAmountWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSetpointChangeAmountWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSetpointChangeAmountWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSetpointChangeAmountWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSetpointChangeSourceTimestampWithParams:@
 readAttributeSetpointChangeSourceTimestampWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSetpointChangeSourceTimestampWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSetpointChangeSourceTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSetpointChangeSourceTimestampWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSetpointChangeSourceTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOccupiedSetbackWithParams:@
 readAttributeOccupiedSetbackWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupiedSetbackWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupiedSetbackWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupiedSetbackWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupiedSetbackWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOccupiedSetbackWithValue:expectedValueInterval:@
 writeAttributeOccupiedSetbackWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOccupiedSetbackWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedSetbackWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOccupiedSetbackWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOccupiedSetbackWithValue:expectedValueInterval:params:@
 writeAttributeOccupiedSetbackWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOccupiedSetbackWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeOccupiedSetbackWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOccupiedSetbackWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOccupiedSetbackMinWithParams:@
 readAttributeOccupiedSetbackMinWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupiedSetbackMinWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupiedSetbackMinWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupiedSetbackMinWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupiedSetbackMinWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOccupiedSetbackMaxWithParams:@
 readAttributeOccupiedSetbackMaxWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeOccupiedSetbackMaxWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeOccupiedSetbackMaxWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOccupiedSetbackMaxWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeOccupiedSetbackMaxWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUnoccupiedSetbackWithParams:@
 readAttributeUnoccupiedSetbackWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeUnoccupiedSetbackWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeUnoccupiedSetbackWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnoccupiedSetbackWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeUnoccupiedSetbackWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:@
 writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:params:@
 writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeUnoccupiedSetbackMinWithParams:@
 readAttributeUnoccupiedSetbackMinWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeUnoccupiedSetbackMinWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeUnoccupiedSetbackMinWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnoccupiedSetbackMinWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeUnoccupiedSetbackMinWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUnoccupiedSetbackMaxWithParams:@
 readAttributeUnoccupiedSetbackMaxWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeUnoccupiedSetbackMaxWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeUnoccupiedSetbackMaxWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnoccupiedSetbackMaxWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeUnoccupiedSetbackMaxWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEmergencyHeatDeltaWithParams:@
 readAttributeEmergencyHeatDeltaWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeEmergencyHeatDeltaWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeEmergencyHeatDeltaWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEmergencyHeatDeltaWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeEmergencyHeatDeltaWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:@
 writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:params:@
 writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACTypeWithParams:@
 readAttributeACTypeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACTypeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACTypeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACTypeWithValue:expectedValueInterval:@
 writeAttributeACTypeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACTypeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACTypeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACTypeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACTypeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACTypeWithValue:expectedValueInterval:params:@
 writeAttributeACTypeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACTypeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACTypeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACTypeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACCapacityWithParams:@
 readAttributeACCapacityWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACCapacityWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACCapacityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACCapacityWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACCapacityWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACCapacityWithValue:expectedValueInterval:@
 writeAttributeACCapacityWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACCapacityWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCapacityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACCapacityWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACCapacityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACCapacityWithValue:expectedValueInterval:params:@
 writeAttributeACCapacityWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACCapacityWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCapacityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACCapacityWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACRefrigerantTypeWithParams:@
 readAttributeACRefrigerantTypeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACRefrigerantTypeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACRefrigerantTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACRefrigerantTypeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACRefrigerantTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:@
 writeAttributeACRefrigerantTypeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACRefrigerantTypeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACRefrigerantTypeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:params:@
 writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACCompressorTypeWithParams:@
 readAttributeACCompressorTypeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACCompressorTypeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACCompressorTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACCompressorTypeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACCompressorTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACCompressorTypeWithValue:expectedValueInterval:@
 writeAttributeACCompressorTypeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACCompressorTypeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCompressorTypeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACCompressorTypeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACCompressorTypeWithValue:expectedValueInterval:params:@
 writeAttributeACCompressorTypeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACCompressorTypeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCompressorTypeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACCompressorTypeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACErrorCodeWithParams:@
 readAttributeACErrorCodeWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACErrorCodeWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACErrorCodeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACErrorCodeWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACErrorCodeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACErrorCodeWithValue:expectedValueInterval:@
 writeAttributeACErrorCodeWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACErrorCodeWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACErrorCodeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACErrorCodeWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACErrorCodeWithValue:expectedValueInterval:params:@
 writeAttributeACErrorCodeWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACErrorCodeWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACErrorCodeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACErrorCodeWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACLouverPositionWithParams:@
 readAttributeACLouverPositionWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACLouverPositionWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACLouverPositionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACLouverPositionWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACLouverPositionWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACLouverPositionWithValue:expectedValueInterval:@
 writeAttributeACLouverPositionWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACLouverPositionWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACLouverPositionWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACLouverPositionWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACLouverPositionWithValue:expectedValueInterval:params:@
 writeAttributeACLouverPositionWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACLouverPositionWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACLouverPositionWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACLouverPositionWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeACCoilTemperatureWithParams:@
 readAttributeACCoilTemperatureWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACCoilTemperatureWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACCoilTemperatureWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACCoilTemperatureWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACCoilTemperatureWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeACCapacityformatWithParams:@
 readAttributeACCapacityformatWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeACCapacityformatWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeACCapacityformatWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACCapacityformatWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeACCapacityformatWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACCapacityformatWithValue:expectedValueInterval:@
 writeAttributeACCapacityformatWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACCapacityformatWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCapacityformatWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACCapacityformatWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACCapacityformatWithValue:expectedValueInterval:params:@
 writeAttributeACCapacityformatWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACCapacityformatWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeACCapacityformatWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACCapacityformatWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributePresetTypesWithParams:@
 readAttributePresetTypesWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributePresetTypesWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributePresetTypesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePresetTypesWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributePresetTypesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeScheduleTypesWithParams:@
 readAttributeScheduleTypesWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeScheduleTypesWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeScheduleTypesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeScheduleTypesWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeScheduleTypesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfPresetsWithParams:@
 readAttributeNumberOfPresetsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfPresetsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfPresetsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfPresetsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfPresetsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfSchedulesWithParams:@
 readAttributeNumberOfSchedulesWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfSchedulesWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfSchedulesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfSchedulesWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfSchedulesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfScheduleTransitionsWithParams:@
 readAttributeNumberOfScheduleTransitionsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfScheduleTransitionsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfScheduleTransitionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfScheduleTransitionsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfScheduleTransitionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfScheduleTransitionPerDayWithParams:@
 readAttributeNumberOfScheduleTransitionPerDayWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeNumberOfScheduleTransitionPerDayWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeNumberOfScheduleTransitionPerDayWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfScheduleTransitionPerDayWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActivePresetHandleWithParams:@
 readAttributeActivePresetHandleWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeActivePresetHandleWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeActivePresetHandleWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActivePresetHandleWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeActivePresetHandleWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveScheduleHandleWithParams:@
 readAttributeActiveScheduleHandleWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeActiveScheduleHandleWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeActiveScheduleHandleWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveScheduleHandleWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeActiveScheduleHandleWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePresetsWithParams:@
 readAttributePresetsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributePresetsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributePresetsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePresetsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributePresetsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributePresetsWithValue:expectedValueInterval:@
 writeAttributePresetsWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributePresetsWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributePresetsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributePresetsWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributePresetsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributePresetsWithValue:expectedValueInterval:params:@
 writeAttributePresetsWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributePresetsWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributePresetsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributePresetsWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributePresetsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSchedulesWithParams:@
 readAttributeSchedulesWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSchedulesWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSchedulesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSchedulesWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSchedulesWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSchedulesWithValue:expectedValueInterval:@
 writeAttributeSchedulesWithValue_expectedValueInterval :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSchedulesWithValue_expectedValueInterval mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "writeAttributeSchedulesWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSchedulesWithValue_expectedValueInterval mtrClusterThermostat dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterThermostat writeAttributeSchedulesWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSchedulesWithValue:expectedValueInterval:params:@
 writeAttributeSchedulesWithValue_expectedValueInterval_params :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterThermostat -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSchedulesWithValue_expectedValueInterval_params mtrClusterThermostat  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterThermostat (mkSelector "writeAttributeSchedulesWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSchedulesWithValue_expectedValueInterval_params mtrClusterThermostat dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterThermostat writeAttributeSchedulesWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSetpointHoldExpiryTimestampWithParams:@
 readAttributeSetpointHoldExpiryTimestampWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeSetpointHoldExpiryTimestampWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeSetpointHoldExpiryTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSetpointHoldExpiryTimestampWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeSetpointHoldExpiryTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxThermostatSuggestionsWithParams:@
 readAttributeMaxThermostatSuggestionsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeMaxThermostatSuggestionsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeMaxThermostatSuggestionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxThermostatSuggestionsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeMaxThermostatSuggestionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeThermostatSuggestionsWithParams:@
 readAttributeThermostatSuggestionsWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeThermostatSuggestionsWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeThermostatSuggestionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThermostatSuggestionsWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeThermostatSuggestionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentThermostatSuggestionWithParams:@
 readAttributeCurrentThermostatSuggestionWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeCurrentThermostatSuggestionWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeCurrentThermostatSuggestionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentThermostatSuggestionWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeCurrentThermostatSuggestionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeThermostatSuggestionNotFollowingReasonWithParams:@
 readAttributeThermostatSuggestionNotFollowingReasonWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeThermostatSuggestionNotFollowingReasonWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeThermostatSuggestionNotFollowingReasonWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThermostatSuggestionNotFollowingReasonWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRReadParams params) => mtrClusterThermostat -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterThermostat  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThermostat (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterThermostat params =
+  sendMessage mtrClusterThermostat readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterThermostat mtrClusterThermostat => mtrClusterThermostat -> IO (Id MTRClusterThermostat)
-init_ mtrClusterThermostat  =
-    sendMsg mtrClusterThermostat (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterThermostat =
+  sendOwnedMessage mtrClusterThermostat initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterThermostat)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterThermostat"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRDevice device, IsNSObject queue) => mtrClusterThermostat -> device -> CUShort -> queue -> IO (Id MTRClusterThermostat)
-initWithDevice_endpoint_queue mtrClusterThermostat  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterThermostat (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterThermostat device endpoint queue =
+  sendOwnedMessage mtrClusterThermostat initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetpointRaiseLowerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThermostat setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRThermostatClusterSetpointRaiseLowerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterSetWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThermostat setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRThermostatClusterSetWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterGetWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThermostat getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRThermostatClusterGetWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRThermostatClusterClearWeeklyScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThermostat (mkSelector "clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterThermostat params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThermostat clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRThermostatClusterClearWeeklyScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completionHandler:@
 clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterThermostat mtrClusterThermostat, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThermostat -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandler mtrClusterThermostat  expectedValues expectedValueIntervalMs completionHandler =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThermostat (mkSelector "clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandler mtrClusterThermostat expectedValues expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterThermostat clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterThermostat mtrClusterThermostat, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterThermostat -> device -> endpointID -> queue -> IO (Id MTRClusterThermostat)
-initWithDevice_endpointID_queue mtrClusterThermostat  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterThermostat (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterThermostat device endpointID queue =
+  sendOwnedMessage mtrClusterThermostat initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completion:@
-setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterSetpointRaiseLowerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterSetWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterGetWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterClearWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completion:@
-clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setActiveScheduleRequestWithParams:expectedValues:expectedValueInterval:completion:@
-setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterSetActiveScheduleRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setActiveScheduleRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setActiveScheduleRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setActivePresetRequestWithParams:expectedValues:expectedValueInterval:completion:@
-setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterSetActivePresetRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setActivePresetRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setActivePresetRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @addThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:@
-addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterAddThermostatSuggestionParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:@
-removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterRemoveThermostatSuggestionParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeThermostatSuggestionWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeThermostatSuggestionWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @atomicRequestWithParams:expectedValues:expectedValueInterval:completion:@
-atomicRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+atomicRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThermostatClusterAtomicRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 atomicRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "atomicRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeLocalTemperatureWithParams:@
-readAttributeLocalTemperatureWithParamsSelector :: Selector
+readAttributeLocalTemperatureWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLocalTemperatureWithParamsSelector = mkSelector "readAttributeLocalTemperatureWithParams:"
 
 -- | @Selector@ for @readAttributeOutdoorTemperatureWithParams:@
-readAttributeOutdoorTemperatureWithParamsSelector :: Selector
+readAttributeOutdoorTemperatureWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOutdoorTemperatureWithParamsSelector = mkSelector "readAttributeOutdoorTemperatureWithParams:"
 
 -- | @Selector@ for @readAttributeOccupancyWithParams:@
-readAttributeOccupancyWithParamsSelector :: Selector
+readAttributeOccupancyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupancyWithParamsSelector = mkSelector "readAttributeOccupancyWithParams:"
 
 -- | @Selector@ for @readAttributeAbsMinHeatSetpointLimitWithParams:@
-readAttributeAbsMinHeatSetpointLimitWithParamsSelector :: Selector
+readAttributeAbsMinHeatSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAbsMinHeatSetpointLimitWithParamsSelector = mkSelector "readAttributeAbsMinHeatSetpointLimitWithParams:"
 
 -- | @Selector@ for @readAttributeAbsMaxHeatSetpointLimitWithParams:@
-readAttributeAbsMaxHeatSetpointLimitWithParamsSelector :: Selector
+readAttributeAbsMaxHeatSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAbsMaxHeatSetpointLimitWithParamsSelector = mkSelector "readAttributeAbsMaxHeatSetpointLimitWithParams:"
 
 -- | @Selector@ for @readAttributeAbsMinCoolSetpointLimitWithParams:@
-readAttributeAbsMinCoolSetpointLimitWithParamsSelector :: Selector
+readAttributeAbsMinCoolSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAbsMinCoolSetpointLimitWithParamsSelector = mkSelector "readAttributeAbsMinCoolSetpointLimitWithParams:"
 
 -- | @Selector@ for @readAttributeAbsMaxCoolSetpointLimitWithParams:@
-readAttributeAbsMaxCoolSetpointLimitWithParamsSelector :: Selector
+readAttributeAbsMaxCoolSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAbsMaxCoolSetpointLimitWithParamsSelector = mkSelector "readAttributeAbsMaxCoolSetpointLimitWithParams:"
 
 -- | @Selector@ for @readAttributePICoolingDemandWithParams:@
-readAttributePICoolingDemandWithParamsSelector :: Selector
+readAttributePICoolingDemandWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePICoolingDemandWithParamsSelector = mkSelector "readAttributePICoolingDemandWithParams:"
 
 -- | @Selector@ for @readAttributePIHeatingDemandWithParams:@
-readAttributePIHeatingDemandWithParamsSelector :: Selector
+readAttributePIHeatingDemandWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePIHeatingDemandWithParamsSelector = mkSelector "readAttributePIHeatingDemandWithParams:"
 
 -- | @Selector@ for @readAttributeHVACSystemTypeConfigurationWithParams:@
-readAttributeHVACSystemTypeConfigurationWithParamsSelector :: Selector
+readAttributeHVACSystemTypeConfigurationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHVACSystemTypeConfigurationWithParamsSelector = mkSelector "readAttributeHVACSystemTypeConfigurationWithParams:"
 
 -- | @Selector@ for @writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:@
-writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:params:@
-writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeHVACSystemTypeConfigurationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeHVACSystemTypeConfigurationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLocalTemperatureCalibrationWithParams:@
-readAttributeLocalTemperatureCalibrationWithParamsSelector :: Selector
+readAttributeLocalTemperatureCalibrationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLocalTemperatureCalibrationWithParamsSelector = mkSelector "readAttributeLocalTemperatureCalibrationWithParams:"
 
 -- | @Selector@ for @writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:@
-writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLocalTemperatureCalibrationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:params:@
-writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLocalTemperatureCalibrationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLocalTemperatureCalibrationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOccupiedCoolingSetpointWithParams:@
-readAttributeOccupiedCoolingSetpointWithParamsSelector :: Selector
+readAttributeOccupiedCoolingSetpointWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupiedCoolingSetpointWithParamsSelector = mkSelector "readAttributeOccupiedCoolingSetpointWithParams:"
 
 -- | @Selector@ for @writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:@
-writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOccupiedCoolingSetpointWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:params:@
-writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOccupiedCoolingSetpointWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOccupiedHeatingSetpointWithParams:@
-readAttributeOccupiedHeatingSetpointWithParamsSelector :: Selector
+readAttributeOccupiedHeatingSetpointWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupiedHeatingSetpointWithParamsSelector = mkSelector "readAttributeOccupiedHeatingSetpointWithParams:"
 
 -- | @Selector@ for @writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:@
-writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOccupiedHeatingSetpointWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:params:@
-writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOccupiedHeatingSetpointWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeUnoccupiedCoolingSetpointWithParams:@
-readAttributeUnoccupiedCoolingSetpointWithParamsSelector :: Selector
+readAttributeUnoccupiedCoolingSetpointWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnoccupiedCoolingSetpointWithParamsSelector = mkSelector "readAttributeUnoccupiedCoolingSetpointWithParams:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:@
-writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:params:@
-writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeUnoccupiedCoolingSetpointWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeUnoccupiedCoolingSetpointWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeUnoccupiedHeatingSetpointWithParams:@
-readAttributeUnoccupiedHeatingSetpointWithParamsSelector :: Selector
+readAttributeUnoccupiedHeatingSetpointWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnoccupiedHeatingSetpointWithParamsSelector = mkSelector "readAttributeUnoccupiedHeatingSetpointWithParams:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:@
-writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:params:@
-writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeUnoccupiedHeatingSetpointWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeUnoccupiedHeatingSetpointWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMinHeatSetpointLimitWithParams:@
-readAttributeMinHeatSetpointLimitWithParamsSelector :: Selector
+readAttributeMinHeatSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinHeatSetpointLimitWithParamsSelector = mkSelector "readAttributeMinHeatSetpointLimitWithParams:"
 
 -- | @Selector@ for @writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:@
-writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMinHeatSetpointLimitWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:params:@
-writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMinHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMinHeatSetpointLimitWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMaxHeatSetpointLimitWithParams:@
-readAttributeMaxHeatSetpointLimitWithParamsSelector :: Selector
+readAttributeMaxHeatSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxHeatSetpointLimitWithParamsSelector = mkSelector "readAttributeMaxHeatSetpointLimitWithParams:"
 
 -- | @Selector@ for @writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:@
-writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMaxHeatSetpointLimitWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:params:@
-writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMaxHeatSetpointLimitWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMaxHeatSetpointLimitWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMinCoolSetpointLimitWithParams:@
-readAttributeMinCoolSetpointLimitWithParamsSelector :: Selector
+readAttributeMinCoolSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinCoolSetpointLimitWithParamsSelector = mkSelector "readAttributeMinCoolSetpointLimitWithParams:"
 
 -- | @Selector@ for @writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:@
-writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMinCoolSetpointLimitWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:params:@
-writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMinCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMinCoolSetpointLimitWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMaxCoolSetpointLimitWithParams:@
-readAttributeMaxCoolSetpointLimitWithParamsSelector :: Selector
+readAttributeMaxCoolSetpointLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxCoolSetpointLimitWithParamsSelector = mkSelector "readAttributeMaxCoolSetpointLimitWithParams:"
 
 -- | @Selector@ for @writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:@
-writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMaxCoolSetpointLimitWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:params:@
-writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMaxCoolSetpointLimitWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMaxCoolSetpointLimitWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeMinSetpointDeadBandWithParams:@
-readAttributeMinSetpointDeadBandWithParamsSelector :: Selector
+readAttributeMinSetpointDeadBandWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinSetpointDeadBandWithParamsSelector = mkSelector "readAttributeMinSetpointDeadBandWithParams:"
 
 -- | @Selector@ for @writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:@
-writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeMinSetpointDeadBandWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:params:@
-writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeMinSetpointDeadBandWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeMinSetpointDeadBandWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeRemoteSensingWithParams:@
-readAttributeRemoteSensingWithParamsSelector :: Selector
+readAttributeRemoteSensingWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRemoteSensingWithParamsSelector = mkSelector "readAttributeRemoteSensingWithParams:"
 
 -- | @Selector@ for @writeAttributeRemoteSensingWithValue:expectedValueInterval:@
-writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeRemoteSensingWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeRemoteSensingWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeRemoteSensingWithValue:expectedValueInterval:params:@
-writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeRemoteSensingWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeRemoteSensingWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeControlSequenceOfOperationWithParams:@
-readAttributeControlSequenceOfOperationWithParamsSelector :: Selector
+readAttributeControlSequenceOfOperationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeControlSequenceOfOperationWithParamsSelector = mkSelector "readAttributeControlSequenceOfOperationWithParams:"
 
 -- | @Selector@ for @writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:@
-writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeControlSequenceOfOperationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:params:@
-writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeControlSequenceOfOperationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeControlSequenceOfOperationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSystemModeWithParams:@
-readAttributeSystemModeWithParamsSelector :: Selector
+readAttributeSystemModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSystemModeWithParamsSelector = mkSelector "readAttributeSystemModeWithParams:"
 
 -- | @Selector@ for @writeAttributeSystemModeWithValue:expectedValueInterval:@
-writeAttributeSystemModeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSystemModeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSystemModeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSystemModeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSystemModeWithValue:expectedValueInterval:params:@
-writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSystemModeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSystemModeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeThermostatRunningModeWithParams:@
-readAttributeThermostatRunningModeWithParamsSelector :: Selector
+readAttributeThermostatRunningModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThermostatRunningModeWithParamsSelector = mkSelector "readAttributeThermostatRunningModeWithParams:"
 
 -- | @Selector@ for @readAttributeStartOfWeekWithParams:@
-readAttributeStartOfWeekWithParamsSelector :: Selector
+readAttributeStartOfWeekWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStartOfWeekWithParamsSelector = mkSelector "readAttributeStartOfWeekWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfWeeklyTransitionsWithParams:@
-readAttributeNumberOfWeeklyTransitionsWithParamsSelector :: Selector
+readAttributeNumberOfWeeklyTransitionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfWeeklyTransitionsWithParamsSelector = mkSelector "readAttributeNumberOfWeeklyTransitionsWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfDailyTransitionsWithParams:@
-readAttributeNumberOfDailyTransitionsWithParamsSelector :: Selector
+readAttributeNumberOfDailyTransitionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfDailyTransitionsWithParamsSelector = mkSelector "readAttributeNumberOfDailyTransitionsWithParams:"
 
 -- | @Selector@ for @readAttributeTemperatureSetpointHoldWithParams:@
-readAttributeTemperatureSetpointHoldWithParamsSelector :: Selector
+readAttributeTemperatureSetpointHoldWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTemperatureSetpointHoldWithParamsSelector = mkSelector "readAttributeTemperatureSetpointHoldWithParams:"
 
 -- | @Selector@ for @writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:@
-writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeTemperatureSetpointHoldWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:params:@
-writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeTemperatureSetpointHoldWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeTemperatureSetpointHoldWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeTemperatureSetpointHoldDurationWithParams:@
-readAttributeTemperatureSetpointHoldDurationWithParamsSelector :: Selector
+readAttributeTemperatureSetpointHoldDurationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTemperatureSetpointHoldDurationWithParamsSelector = mkSelector "readAttributeTemperatureSetpointHoldDurationWithParams:"
 
 -- | @Selector@ for @writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:@
-writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:params:@
-writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeTemperatureSetpointHoldDurationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeTemperatureSetpointHoldDurationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeThermostatProgrammingOperationModeWithParams:@
-readAttributeThermostatProgrammingOperationModeWithParamsSelector :: Selector
+readAttributeThermostatProgrammingOperationModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThermostatProgrammingOperationModeWithParamsSelector = mkSelector "readAttributeThermostatProgrammingOperationModeWithParams:"
 
 -- | @Selector@ for @writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:@
-writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:params:@
-writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeThermostatProgrammingOperationModeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeThermostatProgrammingOperationModeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeThermostatRunningStateWithParams:@
-readAttributeThermostatRunningStateWithParamsSelector :: Selector
+readAttributeThermostatRunningStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThermostatRunningStateWithParamsSelector = mkSelector "readAttributeThermostatRunningStateWithParams:"
 
 -- | @Selector@ for @readAttributeSetpointChangeSourceWithParams:@
-readAttributeSetpointChangeSourceWithParamsSelector :: Selector
+readAttributeSetpointChangeSourceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSetpointChangeSourceWithParamsSelector = mkSelector "readAttributeSetpointChangeSourceWithParams:"
 
 -- | @Selector@ for @readAttributeSetpointChangeAmountWithParams:@
-readAttributeSetpointChangeAmountWithParamsSelector :: Selector
+readAttributeSetpointChangeAmountWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSetpointChangeAmountWithParamsSelector = mkSelector "readAttributeSetpointChangeAmountWithParams:"
 
 -- | @Selector@ for @readAttributeSetpointChangeSourceTimestampWithParams:@
-readAttributeSetpointChangeSourceTimestampWithParamsSelector :: Selector
+readAttributeSetpointChangeSourceTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSetpointChangeSourceTimestampWithParamsSelector = mkSelector "readAttributeSetpointChangeSourceTimestampWithParams:"
 
 -- | @Selector@ for @readAttributeOccupiedSetbackWithParams:@
-readAttributeOccupiedSetbackWithParamsSelector :: Selector
+readAttributeOccupiedSetbackWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupiedSetbackWithParamsSelector = mkSelector "readAttributeOccupiedSetbackWithParams:"
 
 -- | @Selector@ for @writeAttributeOccupiedSetbackWithValue:expectedValueInterval:@
-writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOccupiedSetbackWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOccupiedSetbackWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOccupiedSetbackWithValue:expectedValueInterval:params:@
-writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOccupiedSetbackWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOccupiedSetbackWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOccupiedSetbackMinWithParams:@
-readAttributeOccupiedSetbackMinWithParamsSelector :: Selector
+readAttributeOccupiedSetbackMinWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupiedSetbackMinWithParamsSelector = mkSelector "readAttributeOccupiedSetbackMinWithParams:"
 
 -- | @Selector@ for @readAttributeOccupiedSetbackMaxWithParams:@
-readAttributeOccupiedSetbackMaxWithParamsSelector :: Selector
+readAttributeOccupiedSetbackMaxWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOccupiedSetbackMaxWithParamsSelector = mkSelector "readAttributeOccupiedSetbackMaxWithParams:"
 
 -- | @Selector@ for @readAttributeUnoccupiedSetbackWithParams:@
-readAttributeUnoccupiedSetbackWithParamsSelector :: Selector
+readAttributeUnoccupiedSetbackWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnoccupiedSetbackWithParamsSelector = mkSelector "readAttributeUnoccupiedSetbackWithParams:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:@
-writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeUnoccupiedSetbackWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:params:@
-writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeUnoccupiedSetbackWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeUnoccupiedSetbackWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeUnoccupiedSetbackMinWithParams:@
-readAttributeUnoccupiedSetbackMinWithParamsSelector :: Selector
+readAttributeUnoccupiedSetbackMinWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnoccupiedSetbackMinWithParamsSelector = mkSelector "readAttributeUnoccupiedSetbackMinWithParams:"
 
 -- | @Selector@ for @readAttributeUnoccupiedSetbackMaxWithParams:@
-readAttributeUnoccupiedSetbackMaxWithParamsSelector :: Selector
+readAttributeUnoccupiedSetbackMaxWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnoccupiedSetbackMaxWithParamsSelector = mkSelector "readAttributeUnoccupiedSetbackMaxWithParams:"
 
 -- | @Selector@ for @readAttributeEmergencyHeatDeltaWithParams:@
-readAttributeEmergencyHeatDeltaWithParamsSelector :: Selector
+readAttributeEmergencyHeatDeltaWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEmergencyHeatDeltaWithParamsSelector = mkSelector "readAttributeEmergencyHeatDeltaWithParams:"
 
 -- | @Selector@ for @writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:@
-writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEmergencyHeatDeltaWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:params:@
-writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEmergencyHeatDeltaWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEmergencyHeatDeltaWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACTypeWithParams:@
-readAttributeACTypeWithParamsSelector :: Selector
+readAttributeACTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACTypeWithParamsSelector = mkSelector "readAttributeACTypeWithParams:"
 
 -- | @Selector@ for @writeAttributeACTypeWithValue:expectedValueInterval:@
-writeAttributeACTypeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACTypeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACTypeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACTypeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACTypeWithValue:expectedValueInterval:params:@
-writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACTypeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACTypeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACCapacityWithParams:@
-readAttributeACCapacityWithParamsSelector :: Selector
+readAttributeACCapacityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACCapacityWithParamsSelector = mkSelector "readAttributeACCapacityWithParams:"
 
 -- | @Selector@ for @writeAttributeACCapacityWithValue:expectedValueInterval:@
-writeAttributeACCapacityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACCapacityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACCapacityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACCapacityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACCapacityWithValue:expectedValueInterval:params:@
-writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACCapacityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACCapacityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACRefrigerantTypeWithParams:@
-readAttributeACRefrigerantTypeWithParamsSelector :: Selector
+readAttributeACRefrigerantTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACRefrigerantTypeWithParamsSelector = mkSelector "readAttributeACRefrigerantTypeWithParams:"
 
 -- | @Selector@ for @writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:@
-writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACRefrigerantTypeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:params:@
-writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACRefrigerantTypeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACRefrigerantTypeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACCompressorTypeWithParams:@
-readAttributeACCompressorTypeWithParamsSelector :: Selector
+readAttributeACCompressorTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACCompressorTypeWithParamsSelector = mkSelector "readAttributeACCompressorTypeWithParams:"
 
 -- | @Selector@ for @writeAttributeACCompressorTypeWithValue:expectedValueInterval:@
-writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACCompressorTypeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACCompressorTypeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACCompressorTypeWithValue:expectedValueInterval:params:@
-writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACCompressorTypeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACCompressorTypeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACErrorCodeWithParams:@
-readAttributeACErrorCodeWithParamsSelector :: Selector
+readAttributeACErrorCodeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACErrorCodeWithParamsSelector = mkSelector "readAttributeACErrorCodeWithParams:"
 
 -- | @Selector@ for @writeAttributeACErrorCodeWithValue:expectedValueInterval:@
-writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACErrorCodeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACErrorCodeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACErrorCodeWithValue:expectedValueInterval:params:@
-writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACErrorCodeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACErrorCodeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACLouverPositionWithParams:@
-readAttributeACLouverPositionWithParamsSelector :: Selector
+readAttributeACLouverPositionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACLouverPositionWithParamsSelector = mkSelector "readAttributeACLouverPositionWithParams:"
 
 -- | @Selector@ for @writeAttributeACLouverPositionWithValue:expectedValueInterval:@
-writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACLouverPositionWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACLouverPositionWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACLouverPositionWithValue:expectedValueInterval:params:@
-writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACLouverPositionWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACLouverPositionWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeACCoilTemperatureWithParams:@
-readAttributeACCoilTemperatureWithParamsSelector :: Selector
+readAttributeACCoilTemperatureWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACCoilTemperatureWithParamsSelector = mkSelector "readAttributeACCoilTemperatureWithParams:"
 
 -- | @Selector@ for @readAttributeACCapacityformatWithParams:@
-readAttributeACCapacityformatWithParamsSelector :: Selector
+readAttributeACCapacityformatWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACCapacityformatWithParamsSelector = mkSelector "readAttributeACCapacityformatWithParams:"
 
 -- | @Selector@ for @writeAttributeACCapacityformatWithValue:expectedValueInterval:@
-writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACCapacityformatWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACCapacityformatWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACCapacityformatWithValue:expectedValueInterval:params:@
-writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACCapacityformatWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACCapacityformatWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributePresetTypesWithParams:@
-readAttributePresetTypesWithParamsSelector :: Selector
+readAttributePresetTypesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePresetTypesWithParamsSelector = mkSelector "readAttributePresetTypesWithParams:"
 
 -- | @Selector@ for @readAttributeScheduleTypesWithParams:@
-readAttributeScheduleTypesWithParamsSelector :: Selector
+readAttributeScheduleTypesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeScheduleTypesWithParamsSelector = mkSelector "readAttributeScheduleTypesWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfPresetsWithParams:@
-readAttributeNumberOfPresetsWithParamsSelector :: Selector
+readAttributeNumberOfPresetsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfPresetsWithParamsSelector = mkSelector "readAttributeNumberOfPresetsWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfSchedulesWithParams:@
-readAttributeNumberOfSchedulesWithParamsSelector :: Selector
+readAttributeNumberOfSchedulesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfSchedulesWithParamsSelector = mkSelector "readAttributeNumberOfSchedulesWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfScheduleTransitionsWithParams:@
-readAttributeNumberOfScheduleTransitionsWithParamsSelector :: Selector
+readAttributeNumberOfScheduleTransitionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfScheduleTransitionsWithParamsSelector = mkSelector "readAttributeNumberOfScheduleTransitionsWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfScheduleTransitionPerDayWithParams:@
-readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector :: Selector
+readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfScheduleTransitionPerDayWithParamsSelector = mkSelector "readAttributeNumberOfScheduleTransitionPerDayWithParams:"
 
 -- | @Selector@ for @readAttributeActivePresetHandleWithParams:@
-readAttributeActivePresetHandleWithParamsSelector :: Selector
+readAttributeActivePresetHandleWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActivePresetHandleWithParamsSelector = mkSelector "readAttributeActivePresetHandleWithParams:"
 
 -- | @Selector@ for @readAttributeActiveScheduleHandleWithParams:@
-readAttributeActiveScheduleHandleWithParamsSelector :: Selector
+readAttributeActiveScheduleHandleWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveScheduleHandleWithParamsSelector = mkSelector "readAttributeActiveScheduleHandleWithParams:"
 
 -- | @Selector@ for @readAttributePresetsWithParams:@
-readAttributePresetsWithParamsSelector :: Selector
+readAttributePresetsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePresetsWithParamsSelector = mkSelector "readAttributePresetsWithParams:"
 
 -- | @Selector@ for @writeAttributePresetsWithValue:expectedValueInterval:@
-writeAttributePresetsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributePresetsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributePresetsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributePresetsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributePresetsWithValue:expectedValueInterval:params:@
-writeAttributePresetsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributePresetsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributePresetsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributePresetsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSchedulesWithParams:@
-readAttributeSchedulesWithParamsSelector :: Selector
+readAttributeSchedulesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSchedulesWithParamsSelector = mkSelector "readAttributeSchedulesWithParams:"
 
 -- | @Selector@ for @writeAttributeSchedulesWithValue:expectedValueInterval:@
-writeAttributeSchedulesWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSchedulesWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSchedulesWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSchedulesWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSchedulesWithValue:expectedValueInterval:params:@
-writeAttributeSchedulesWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSchedulesWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSchedulesWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSchedulesWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSetpointHoldExpiryTimestampWithParams:@
-readAttributeSetpointHoldExpiryTimestampWithParamsSelector :: Selector
+readAttributeSetpointHoldExpiryTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSetpointHoldExpiryTimestampWithParamsSelector = mkSelector "readAttributeSetpointHoldExpiryTimestampWithParams:"
 
 -- | @Selector@ for @readAttributeMaxThermostatSuggestionsWithParams:@
-readAttributeMaxThermostatSuggestionsWithParamsSelector :: Selector
+readAttributeMaxThermostatSuggestionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxThermostatSuggestionsWithParamsSelector = mkSelector "readAttributeMaxThermostatSuggestionsWithParams:"
 
 -- | @Selector@ for @readAttributeThermostatSuggestionsWithParams:@
-readAttributeThermostatSuggestionsWithParamsSelector :: Selector
+readAttributeThermostatSuggestionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThermostatSuggestionsWithParamsSelector = mkSelector "readAttributeThermostatSuggestionsWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentThermostatSuggestionWithParams:@
-readAttributeCurrentThermostatSuggestionWithParamsSelector :: Selector
+readAttributeCurrentThermostatSuggestionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentThermostatSuggestionWithParamsSelector = mkSelector "readAttributeCurrentThermostatSuggestionWithParams:"
 
 -- | @Selector@ for @readAttributeThermostatSuggestionNotFollowingReasonWithParams:@
-readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector :: Selector
+readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThermostatSuggestionNotFollowingReasonWithParamsSelector = mkSelector "readAttributeThermostatSuggestionNotFollowingReasonWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterThermostat)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterThermostat)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterThermostat)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRThermostatClusterSetpointRaiseLowerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setpointRaiseLowerWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setpointRaiseLowerWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRThermostatClusterSetWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRThermostatClusterGetWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRThermostatClusterClearWeeklyScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeeklyScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearWeeklyScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completionHandler:@
-clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeeklyScheduleWithExpectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearWeeklyScheduleWithExpectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterThermostat)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

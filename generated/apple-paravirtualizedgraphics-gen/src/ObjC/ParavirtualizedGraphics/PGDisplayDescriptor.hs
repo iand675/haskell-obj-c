@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,35 +29,31 @@ module ObjC.ParavirtualizedGraphics.PGDisplayDescriptor
   , setCursorShowHandler
   , cursorMoveHandler
   , setCursorMoveHandler
-  , nameSelector
-  , setNameSelector
-  , sizeInMillimetersSelector
-  , setSizeInMillimetersSelector
-  , queueSelector
-  , setQueueSelector
-  , modeChangeHandlerSelector
-  , setModeChangeHandlerSelector
-  , newFrameEventHandlerSelector
-  , setNewFrameEventHandlerSelector
   , cursorGlyphHandlerSelector
-  , setCursorGlyphHandlerSelector
-  , cursorShowHandlerSelector
-  , setCursorShowHandlerSelector
   , cursorMoveHandlerSelector
+  , cursorShowHandlerSelector
+  , modeChangeHandlerSelector
+  , nameSelector
+  , newFrameEventHandlerSelector
+  , queueSelector
+  , setCursorGlyphHandlerSelector
   , setCursorMoveHandlerSelector
+  , setCursorShowHandlerSelector
+  , setModeChangeHandlerSelector
+  , setNameSelector
+  , setNewFrameEventHandlerSelector
+  , setQueueSelector
+  , setSizeInMillimetersSelector
+  , sizeInMillimetersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Id NSString)
-name pgDisplayDescriptor  =
-    sendMsg pgDisplayDescriptor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor nameSelector
 
 -- | name
 --
@@ -83,9 +80,8 @@ name pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsPGDisplayDescriptor pgDisplayDescriptor, IsNSString value) => pgDisplayDescriptor -> value -> IO ()
-setName pgDisplayDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pgDisplayDescriptor (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setNameSelector (toNSString value)
 
 -- | sizeInMillimeters
 --
@@ -95,8 +91,8 @@ setName pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- sizeInMillimeters@
 sizeInMillimeters :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO NSSize
-sizeInMillimeters pgDisplayDescriptor  =
-    sendMsgStret pgDisplayDescriptor (mkSelector "sizeInMillimeters") retNSSize []
+sizeInMillimeters pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor sizeInMillimetersSelector
 
 -- | sizeInMillimeters
 --
@@ -106,8 +102,8 @@ sizeInMillimeters pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setSizeInMillimeters:@
 setSizeInMillimeters :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> NSSize -> IO ()
-setSizeInMillimeters pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setSizeInMillimeters:") retVoid [argNSSize value]
+setSizeInMillimeters pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setSizeInMillimetersSelector value
 
 -- | queue
 --
@@ -117,8 +113,8 @@ setSizeInMillimeters pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- queue@
 queue :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Id NSObject)
-queue pgDisplayDescriptor  =
-    sendMsg pgDisplayDescriptor (mkSelector "queue") (retPtr retVoid) [] >>= retainedObject . castPtr
+queue pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor queueSelector
 
 -- | queue
 --
@@ -128,9 +124,8 @@ queue pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setQueue:@
 setQueue :: (IsPGDisplayDescriptor pgDisplayDescriptor, IsNSObject value) => pgDisplayDescriptor -> value -> IO ()
-setQueue pgDisplayDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pgDisplayDescriptor (mkSelector "setQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQueue pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setQueueSelector (toNSObject value)
 
 -- | modeChangeHandler
 --
@@ -140,8 +135,8 @@ setQueue pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- modeChangeHandler@
 modeChangeHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Ptr ())
-modeChangeHandler pgDisplayDescriptor  =
-    fmap castPtr $ sendMsg pgDisplayDescriptor (mkSelector "modeChangeHandler") (retPtr retVoid) []
+modeChangeHandler pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor modeChangeHandlerSelector
 
 -- | modeChangeHandler
 --
@@ -151,8 +146,8 @@ modeChangeHandler pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setModeChangeHandler:@
 setModeChangeHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> Ptr () -> IO ()
-setModeChangeHandler pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setModeChangeHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setModeChangeHandler pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setModeChangeHandlerSelector value
 
 -- | newFrameEventHandler
 --
@@ -162,8 +157,8 @@ setModeChangeHandler pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- newFrameEventHandler@
 newFrameEventHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Ptr ())
-newFrameEventHandler pgDisplayDescriptor  =
-    fmap castPtr $ sendMsg pgDisplayDescriptor (mkSelector "newFrameEventHandler") (retPtr retVoid) []
+newFrameEventHandler pgDisplayDescriptor =
+  sendOwnedMessage pgDisplayDescriptor newFrameEventHandlerSelector
 
 -- | newFrameEventHandler
 --
@@ -173,8 +168,8 @@ newFrameEventHandler pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setNewFrameEventHandler:@
 setNewFrameEventHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> Ptr () -> IO ()
-setNewFrameEventHandler pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setNewFrameEventHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setNewFrameEventHandler pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setNewFrameEventHandlerSelector value
 
 -- | cursorGlyphHandler
 --
@@ -184,8 +179,8 @@ setNewFrameEventHandler pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- cursorGlyphHandler@
 cursorGlyphHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Ptr ())
-cursorGlyphHandler pgDisplayDescriptor  =
-    fmap castPtr $ sendMsg pgDisplayDescriptor (mkSelector "cursorGlyphHandler") (retPtr retVoid) []
+cursorGlyphHandler pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor cursorGlyphHandlerSelector
 
 -- | cursorGlyphHandler
 --
@@ -195,8 +190,8 @@ cursorGlyphHandler pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setCursorGlyphHandler:@
 setCursorGlyphHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> Ptr () -> IO ()
-setCursorGlyphHandler pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setCursorGlyphHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCursorGlyphHandler pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setCursorGlyphHandlerSelector value
 
 -- | cursorShowHandler
 --
@@ -206,8 +201,8 @@ setCursorGlyphHandler pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- cursorShowHandler@
 cursorShowHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Ptr ())
-cursorShowHandler pgDisplayDescriptor  =
-    fmap castPtr $ sendMsg pgDisplayDescriptor (mkSelector "cursorShowHandler") (retPtr retVoid) []
+cursorShowHandler pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor cursorShowHandlerSelector
 
 -- | cursorShowHandler
 --
@@ -217,8 +212,8 @@ cursorShowHandler pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setCursorShowHandler:@
 setCursorShowHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> Ptr () -> IO ()
-setCursorShowHandler pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setCursorShowHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCursorShowHandler pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setCursorShowHandlerSelector value
 
 -- | cursorMoveHandler
 --
@@ -228,8 +223,8 @@ setCursorShowHandler pgDisplayDescriptor  value =
 --
 -- ObjC selector: @- cursorMoveHandler@
 cursorMoveHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> IO (Ptr ())
-cursorMoveHandler pgDisplayDescriptor  =
-    fmap castPtr $ sendMsg pgDisplayDescriptor (mkSelector "cursorMoveHandler") (retPtr retVoid) []
+cursorMoveHandler pgDisplayDescriptor =
+  sendMessage pgDisplayDescriptor cursorMoveHandlerSelector
 
 -- | cursorMoveHandler
 --
@@ -239,74 +234,74 @@ cursorMoveHandler pgDisplayDescriptor  =
 --
 -- ObjC selector: @- setCursorMoveHandler:@
 setCursorMoveHandler :: IsPGDisplayDescriptor pgDisplayDescriptor => pgDisplayDescriptor -> Ptr () -> IO ()
-setCursorMoveHandler pgDisplayDescriptor  value =
-    sendMsg pgDisplayDescriptor (mkSelector "setCursorMoveHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCursorMoveHandler pgDisplayDescriptor value =
+  sendMessage pgDisplayDescriptor setCursorMoveHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @sizeInMillimeters@
-sizeInMillimetersSelector :: Selector
+sizeInMillimetersSelector :: Selector '[] NSSize
 sizeInMillimetersSelector = mkSelector "sizeInMillimeters"
 
 -- | @Selector@ for @setSizeInMillimeters:@
-setSizeInMillimetersSelector :: Selector
+setSizeInMillimetersSelector :: Selector '[NSSize] ()
 setSizeInMillimetersSelector = mkSelector "setSizeInMillimeters:"
 
 -- | @Selector@ for @queue@
-queueSelector :: Selector
+queueSelector :: Selector '[] (Id NSObject)
 queueSelector = mkSelector "queue"
 
 -- | @Selector@ for @setQueue:@
-setQueueSelector :: Selector
+setQueueSelector :: Selector '[Id NSObject] ()
 setQueueSelector = mkSelector "setQueue:"
 
 -- | @Selector@ for @modeChangeHandler@
-modeChangeHandlerSelector :: Selector
+modeChangeHandlerSelector :: Selector '[] (Ptr ())
 modeChangeHandlerSelector = mkSelector "modeChangeHandler"
 
 -- | @Selector@ for @setModeChangeHandler:@
-setModeChangeHandlerSelector :: Selector
+setModeChangeHandlerSelector :: Selector '[Ptr ()] ()
 setModeChangeHandlerSelector = mkSelector "setModeChangeHandler:"
 
 -- | @Selector@ for @newFrameEventHandler@
-newFrameEventHandlerSelector :: Selector
+newFrameEventHandlerSelector :: Selector '[] (Ptr ())
 newFrameEventHandlerSelector = mkSelector "newFrameEventHandler"
 
 -- | @Selector@ for @setNewFrameEventHandler:@
-setNewFrameEventHandlerSelector :: Selector
+setNewFrameEventHandlerSelector :: Selector '[Ptr ()] ()
 setNewFrameEventHandlerSelector = mkSelector "setNewFrameEventHandler:"
 
 -- | @Selector@ for @cursorGlyphHandler@
-cursorGlyphHandlerSelector :: Selector
+cursorGlyphHandlerSelector :: Selector '[] (Ptr ())
 cursorGlyphHandlerSelector = mkSelector "cursorGlyphHandler"
 
 -- | @Selector@ for @setCursorGlyphHandler:@
-setCursorGlyphHandlerSelector :: Selector
+setCursorGlyphHandlerSelector :: Selector '[Ptr ()] ()
 setCursorGlyphHandlerSelector = mkSelector "setCursorGlyphHandler:"
 
 -- | @Selector@ for @cursorShowHandler@
-cursorShowHandlerSelector :: Selector
+cursorShowHandlerSelector :: Selector '[] (Ptr ())
 cursorShowHandlerSelector = mkSelector "cursorShowHandler"
 
 -- | @Selector@ for @setCursorShowHandler:@
-setCursorShowHandlerSelector :: Selector
+setCursorShowHandlerSelector :: Selector '[Ptr ()] ()
 setCursorShowHandlerSelector = mkSelector "setCursorShowHandler:"
 
 -- | @Selector@ for @cursorMoveHandler@
-cursorMoveHandlerSelector :: Selector
+cursorMoveHandlerSelector :: Selector '[] (Ptr ())
 cursorMoveHandlerSelector = mkSelector "cursorMoveHandler"
 
 -- | @Selector@ for @setCursorMoveHandler:@
-setCursorMoveHandlerSelector :: Selector
+setCursorMoveHandlerSelector :: Selector '[Ptr ()] ()
 setCursorMoveHandlerSelector = mkSelector "setCursorMoveHandler:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRContentControlClusterRatingNameStruct
   , setRatingName
   , ratingNameDesc
   , setRatingNameDesc
-  , ratingNameSelector
-  , setRatingNameSelector
   , ratingNameDescSelector
+  , ratingNameSelector
   , setRatingNameDescSelector
+  , setRatingNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- ratingName@
 ratingName :: IsMTRContentControlClusterRatingNameStruct mtrContentControlClusterRatingNameStruct => mtrContentControlClusterRatingNameStruct -> IO (Id NSString)
-ratingName mtrContentControlClusterRatingNameStruct  =
-    sendMsg mtrContentControlClusterRatingNameStruct (mkSelector "ratingName") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingName mtrContentControlClusterRatingNameStruct =
+  sendMessage mtrContentControlClusterRatingNameStruct ratingNameSelector
 
 -- | @- setRatingName:@
 setRatingName :: (IsMTRContentControlClusterRatingNameStruct mtrContentControlClusterRatingNameStruct, IsNSString value) => mtrContentControlClusterRatingNameStruct -> value -> IO ()
-setRatingName mtrContentControlClusterRatingNameStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterRatingNameStruct (mkSelector "setRatingName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRatingName mtrContentControlClusterRatingNameStruct value =
+  sendMessage mtrContentControlClusterRatingNameStruct setRatingNameSelector (toNSString value)
 
 -- | @- ratingNameDesc@
 ratingNameDesc :: IsMTRContentControlClusterRatingNameStruct mtrContentControlClusterRatingNameStruct => mtrContentControlClusterRatingNameStruct -> IO (Id NSString)
-ratingNameDesc mtrContentControlClusterRatingNameStruct  =
-    sendMsg mtrContentControlClusterRatingNameStruct (mkSelector "ratingNameDesc") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingNameDesc mtrContentControlClusterRatingNameStruct =
+  sendMessage mtrContentControlClusterRatingNameStruct ratingNameDescSelector
 
 -- | @- setRatingNameDesc:@
 setRatingNameDesc :: (IsMTRContentControlClusterRatingNameStruct mtrContentControlClusterRatingNameStruct, IsNSString value) => mtrContentControlClusterRatingNameStruct -> value -> IO ()
-setRatingNameDesc mtrContentControlClusterRatingNameStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterRatingNameStruct (mkSelector "setRatingNameDesc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRatingNameDesc mtrContentControlClusterRatingNameStruct value =
+  sendMessage mtrContentControlClusterRatingNameStruct setRatingNameDescSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ratingName@
-ratingNameSelector :: Selector
+ratingNameSelector :: Selector '[] (Id NSString)
 ratingNameSelector = mkSelector "ratingName"
 
 -- | @Selector@ for @setRatingName:@
-setRatingNameSelector :: Selector
+setRatingNameSelector :: Selector '[Id NSString] ()
 setRatingNameSelector = mkSelector "setRatingName:"
 
 -- | @Selector@ for @ratingNameDesc@
-ratingNameDescSelector :: Selector
+ratingNameDescSelector :: Selector '[] (Id NSString)
 ratingNameDescSelector = mkSelector "ratingNameDesc"
 
 -- | @Selector@ for @setRatingNameDesc:@
-setRatingNameDescSelector :: Selector
+setRatingNameDescSelector :: Selector '[Id NSString] ()
 setRatingNameDescSelector = mkSelector "setRatingNameDesc:"
 

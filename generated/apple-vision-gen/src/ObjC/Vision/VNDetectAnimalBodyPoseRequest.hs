@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Vision.VNDetectAnimalBodyPoseRequest
   , supportedJointNamesAndReturnError
   , supportedJointsGroupNamesAndReturnError
   , results
+  , resultsSelector
   , supportedJointNamesAndReturnErrorSelector
   , supportedJointsGroupNamesAndReturnErrorSelector
-  , resultsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedJointNamesAndReturnError:@
 supportedJointNamesAndReturnError :: (IsVNDetectAnimalBodyPoseRequest vnDetectAnimalBodyPoseRequest, IsNSError error_) => vnDetectAnimalBodyPoseRequest -> error_ -> IO (Id NSArray)
-supportedJointNamesAndReturnError vnDetectAnimalBodyPoseRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnDetectAnimalBodyPoseRequest (mkSelector "supportedJointNamesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedJointNamesAndReturnError vnDetectAnimalBodyPoseRequest error_ =
+  sendMessage vnDetectAnimalBodyPoseRequest supportedJointNamesAndReturnErrorSelector (toNSError error_)
 
 -- | Obtain the collection of animal body joints group names that are supported by a request object configured with a request revision.
 --
@@ -55,30 +51,29 @@ supportedJointNamesAndReturnError vnDetectAnimalBodyPoseRequest  error_ =
 --
 -- ObjC selector: @- supportedJointsGroupNamesAndReturnError:@
 supportedJointsGroupNamesAndReturnError :: (IsVNDetectAnimalBodyPoseRequest vnDetectAnimalBodyPoseRequest, IsNSError error_) => vnDetectAnimalBodyPoseRequest -> error_ -> IO (Id NSArray)
-supportedJointsGroupNamesAndReturnError vnDetectAnimalBodyPoseRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnDetectAnimalBodyPoseRequest (mkSelector "supportedJointsGroupNamesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedJointsGroupNamesAndReturnError vnDetectAnimalBodyPoseRequest error_ =
+  sendMessage vnDetectAnimalBodyPoseRequest supportedJointsGroupNamesAndReturnErrorSelector (toNSError error_)
 
 -- | VNAnimalBodyPoseObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectAnimalBodyPoseRequest vnDetectAnimalBodyPoseRequest => vnDetectAnimalBodyPoseRequest -> IO (Id NSArray)
-results vnDetectAnimalBodyPoseRequest  =
-    sendMsg vnDetectAnimalBodyPoseRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectAnimalBodyPoseRequest =
+  sendMessage vnDetectAnimalBodyPoseRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedJointNamesAndReturnError:@
-supportedJointNamesAndReturnErrorSelector :: Selector
+supportedJointNamesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedJointNamesAndReturnErrorSelector = mkSelector "supportedJointNamesAndReturnError:"
 
 -- | @Selector@ for @supportedJointsGroupNamesAndReturnError:@
-supportedJointsGroupNamesAndReturnErrorSelector :: Selector
+supportedJointsGroupNamesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedJointsGroupNamesAndReturnErrorSelector = mkSelector "supportedJointsGroupNamesAndReturnError:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

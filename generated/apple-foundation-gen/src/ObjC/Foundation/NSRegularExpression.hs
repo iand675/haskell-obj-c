@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,21 +23,21 @@ module ObjC.Foundation.NSRegularExpression
   , pattern_
   , options
   , numberOfCaptureGroups
-  , regularExpressionWithPattern_options_errorSelector
-  , initWithPattern_options_errorSelector
+  , enumerateMatchesInString_options_range_usingBlockSelector
   , escapedPatternForStringSelector
-  , stringByReplacingMatchesInString_options_range_withTemplateSelector
+  , escapedTemplateForStringSelector
+  , firstMatchInString_options_rangeSelector
+  , initWithPattern_options_errorSelector
+  , matchesInString_options_rangeSelector
+  , numberOfCaptureGroupsSelector
+  , numberOfMatchesInString_options_rangeSelector
+  , optionsSelector
+  , patternSelector
+  , rangeOfFirstMatchInString_options_rangeSelector
+  , regularExpressionWithPattern_options_errorSelector
   , replaceMatchesInString_options_range_withTemplateSelector
   , replacementStringForResult_inString_offset_templateSelector
-  , escapedTemplateForStringSelector
-  , enumerateMatchesInString_options_range_usingBlockSelector
-  , matchesInString_options_rangeSelector
-  , numberOfMatchesInString_options_rangeSelector
-  , firstMatchInString_options_rangeSelector
-  , rangeOfFirstMatchInString_options_rangeSelector
-  , patternSelector
-  , optionsSelector
-  , numberOfCaptureGroupsSelector
+  , stringByReplacingMatchesInString_options_range_withTemplateSelector
 
   -- * Enum types
   , NSMatchingOptions(NSMatchingOptions)
@@ -56,15 +57,11 @@ module ObjC.Foundation.NSRegularExpression
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,161 +74,143 @@ regularExpressionWithPattern_options_error :: (IsNSString pattern_, IsNSError er
 regularExpressionWithPattern_options_error pattern_ options error_ =
   do
     cls' <- getRequiredClass "NSRegularExpression"
-    withObjCPtr pattern_ $ \raw_pattern_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "regularExpressionWithPattern:options:error:") (retPtr retVoid) [argPtr (castPtr raw_pattern_ :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' regularExpressionWithPattern_options_errorSelector (toNSString pattern_) options (toNSError error_)
 
 -- | @- initWithPattern:options:error:@
 initWithPattern_options_error :: (IsNSRegularExpression nsRegularExpression, IsNSString pattern_, IsNSError error_) => nsRegularExpression -> pattern_ -> NSRegularExpressionOptions -> error_ -> IO (Id NSRegularExpression)
-initWithPattern_options_error nsRegularExpression  pattern_ options error_ =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsRegularExpression (mkSelector "initWithPattern:options:error:") (retPtr retVoid) [argPtr (castPtr raw_pattern_ :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithPattern_options_error nsRegularExpression pattern_ options error_ =
+  sendOwnedMessage nsRegularExpression initWithPattern_options_errorSelector (toNSString pattern_) options (toNSError error_)
 
 -- | @+ escapedPatternForString:@
 escapedPatternForString :: IsNSString string => string -> IO (Id NSString)
 escapedPatternForString string =
   do
     cls' <- getRequiredClass "NSRegularExpression"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "escapedPatternForString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' escapedPatternForStringSelector (toNSString string)
 
 -- | @- stringByReplacingMatchesInString:options:range:withTemplate:@
 stringByReplacingMatchesInString_options_range_withTemplate :: (IsNSRegularExpression nsRegularExpression, IsNSString string, IsNSString templ) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> templ -> IO (Id NSString)
-stringByReplacingMatchesInString_options_range_withTemplate nsRegularExpression  string options range templ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr templ $ \raw_templ ->
-        sendMsg nsRegularExpression (mkSelector "stringByReplacingMatchesInString:options:range:withTemplate:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range, argPtr (castPtr raw_templ :: Ptr ())] >>= retainedObject . castPtr
+stringByReplacingMatchesInString_options_range_withTemplate nsRegularExpression string options range templ =
+  sendMessage nsRegularExpression stringByReplacingMatchesInString_options_range_withTemplateSelector (toNSString string) options range (toNSString templ)
 
 -- | @- replaceMatchesInString:options:range:withTemplate:@
 replaceMatchesInString_options_range_withTemplate :: (IsNSRegularExpression nsRegularExpression, IsNSMutableString string, IsNSString templ) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> templ -> IO CULong
-replaceMatchesInString_options_range_withTemplate nsRegularExpression  string options range templ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr templ $ \raw_templ ->
-        sendMsg nsRegularExpression (mkSelector "replaceMatchesInString:options:range:withTemplate:") retCULong [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range, argPtr (castPtr raw_templ :: Ptr ())]
+replaceMatchesInString_options_range_withTemplate nsRegularExpression string options range templ =
+  sendMessage nsRegularExpression replaceMatchesInString_options_range_withTemplateSelector (toNSMutableString string) options range (toNSString templ)
 
 -- | @- replacementStringForResult:inString:offset:template:@
 replacementStringForResult_inString_offset_template :: (IsNSRegularExpression nsRegularExpression, IsNSTextCheckingResult result, IsNSString string, IsNSString templ) => nsRegularExpression -> result -> string -> CLong -> templ -> IO (Id NSString)
-replacementStringForResult_inString_offset_template nsRegularExpression  result string offset templ =
-  withObjCPtr result $ \raw_result ->
-    withObjCPtr string $ \raw_string ->
-      withObjCPtr templ $ \raw_templ ->
-          sendMsg nsRegularExpression (mkSelector "replacementStringForResult:inString:offset:template:") (retPtr retVoid) [argPtr (castPtr raw_result :: Ptr ()), argPtr (castPtr raw_string :: Ptr ()), argCLong offset, argPtr (castPtr raw_templ :: Ptr ())] >>= retainedObject . castPtr
+replacementStringForResult_inString_offset_template nsRegularExpression result string offset templ =
+  sendMessage nsRegularExpression replacementStringForResult_inString_offset_templateSelector (toNSTextCheckingResult result) (toNSString string) offset (toNSString templ)
 
 -- | @+ escapedTemplateForString:@
 escapedTemplateForString :: IsNSString string => string -> IO (Id NSString)
 escapedTemplateForString string =
   do
     cls' <- getRequiredClass "NSRegularExpression"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "escapedTemplateForString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' escapedTemplateForStringSelector (toNSString string)
 
 -- | @- enumerateMatchesInString:options:range:usingBlock:@
 enumerateMatchesInString_options_range_usingBlock :: (IsNSRegularExpression nsRegularExpression, IsNSString string) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> Ptr () -> IO ()
-enumerateMatchesInString_options_range_usingBlock nsRegularExpression  string options range block =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsRegularExpression (mkSelector "enumerateMatchesInString:options:range:usingBlock:") retVoid [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range, argPtr (castPtr block :: Ptr ())]
+enumerateMatchesInString_options_range_usingBlock nsRegularExpression string options range block =
+  sendMessage nsRegularExpression enumerateMatchesInString_options_range_usingBlockSelector (toNSString string) options range block
 
 -- | @- matchesInString:options:range:@
 matchesInString_options_range :: (IsNSRegularExpression nsRegularExpression, IsNSString string) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> IO (Id NSArray)
-matchesInString_options_range nsRegularExpression  string options range =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsRegularExpression (mkSelector "matchesInString:options:range:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range] >>= retainedObject . castPtr
+matchesInString_options_range nsRegularExpression string options range =
+  sendMessage nsRegularExpression matchesInString_options_rangeSelector (toNSString string) options range
 
 -- | @- numberOfMatchesInString:options:range:@
 numberOfMatchesInString_options_range :: (IsNSRegularExpression nsRegularExpression, IsNSString string) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> IO CULong
-numberOfMatchesInString_options_range nsRegularExpression  string options range =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsRegularExpression (mkSelector "numberOfMatchesInString:options:range:") retCULong [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range]
+numberOfMatchesInString_options_range nsRegularExpression string options range =
+  sendMessage nsRegularExpression numberOfMatchesInString_options_rangeSelector (toNSString string) options range
 
 -- | @- firstMatchInString:options:range:@
 firstMatchInString_options_range :: (IsNSRegularExpression nsRegularExpression, IsNSString string) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> IO (Id NSTextCheckingResult)
-firstMatchInString_options_range nsRegularExpression  string options range =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsRegularExpression (mkSelector "firstMatchInString:options:range:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range] >>= retainedObject . castPtr
+firstMatchInString_options_range nsRegularExpression string options range =
+  sendMessage nsRegularExpression firstMatchInString_options_rangeSelector (toNSString string) options range
 
 -- | @- rangeOfFirstMatchInString:options:range:@
 rangeOfFirstMatchInString_options_range :: (IsNSRegularExpression nsRegularExpression, IsNSString string) => nsRegularExpression -> string -> NSMatchingOptions -> NSRange -> IO NSRange
-rangeOfFirstMatchInString_options_range nsRegularExpression  string options range =
-  withObjCPtr string $ \raw_string ->
-      sendMsgStret nsRegularExpression (mkSelector "rangeOfFirstMatchInString:options:range:") retNSRange [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options), argNSRange range]
+rangeOfFirstMatchInString_options_range nsRegularExpression string options range =
+  sendMessage nsRegularExpression rangeOfFirstMatchInString_options_rangeSelector (toNSString string) options range
 
 -- | @- pattern@
 pattern_ :: IsNSRegularExpression nsRegularExpression => nsRegularExpression -> IO (Id NSString)
-pattern_ nsRegularExpression  =
-    sendMsg nsRegularExpression (mkSelector "pattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+pattern_ nsRegularExpression =
+  sendMessage nsRegularExpression patternSelector
 
 -- | @- options@
 options :: IsNSRegularExpression nsRegularExpression => nsRegularExpression -> IO NSRegularExpressionOptions
-options nsRegularExpression  =
-    fmap (coerce :: CULong -> NSRegularExpressionOptions) $ sendMsg nsRegularExpression (mkSelector "options") retCULong []
+options nsRegularExpression =
+  sendMessage nsRegularExpression optionsSelector
 
 -- | @- numberOfCaptureGroups@
 numberOfCaptureGroups :: IsNSRegularExpression nsRegularExpression => nsRegularExpression -> IO CULong
-numberOfCaptureGroups nsRegularExpression  =
-    sendMsg nsRegularExpression (mkSelector "numberOfCaptureGroups") retCULong []
+numberOfCaptureGroups nsRegularExpression =
+  sendMessage nsRegularExpression numberOfCaptureGroupsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @regularExpressionWithPattern:options:error:@
-regularExpressionWithPattern_options_errorSelector :: Selector
+regularExpressionWithPattern_options_errorSelector :: Selector '[Id NSString, NSRegularExpressionOptions, Id NSError] (Id NSRegularExpression)
 regularExpressionWithPattern_options_errorSelector = mkSelector "regularExpressionWithPattern:options:error:"
 
 -- | @Selector@ for @initWithPattern:options:error:@
-initWithPattern_options_errorSelector :: Selector
+initWithPattern_options_errorSelector :: Selector '[Id NSString, NSRegularExpressionOptions, Id NSError] (Id NSRegularExpression)
 initWithPattern_options_errorSelector = mkSelector "initWithPattern:options:error:"
 
 -- | @Selector@ for @escapedPatternForString:@
-escapedPatternForStringSelector :: Selector
+escapedPatternForStringSelector :: Selector '[Id NSString] (Id NSString)
 escapedPatternForStringSelector = mkSelector "escapedPatternForString:"
 
 -- | @Selector@ for @stringByReplacingMatchesInString:options:range:withTemplate:@
-stringByReplacingMatchesInString_options_range_withTemplateSelector :: Selector
+stringByReplacingMatchesInString_options_range_withTemplateSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange, Id NSString] (Id NSString)
 stringByReplacingMatchesInString_options_range_withTemplateSelector = mkSelector "stringByReplacingMatchesInString:options:range:withTemplate:"
 
 -- | @Selector@ for @replaceMatchesInString:options:range:withTemplate:@
-replaceMatchesInString_options_range_withTemplateSelector :: Selector
+replaceMatchesInString_options_range_withTemplateSelector :: Selector '[Id NSMutableString, NSMatchingOptions, NSRange, Id NSString] CULong
 replaceMatchesInString_options_range_withTemplateSelector = mkSelector "replaceMatchesInString:options:range:withTemplate:"
 
 -- | @Selector@ for @replacementStringForResult:inString:offset:template:@
-replacementStringForResult_inString_offset_templateSelector :: Selector
+replacementStringForResult_inString_offset_templateSelector :: Selector '[Id NSTextCheckingResult, Id NSString, CLong, Id NSString] (Id NSString)
 replacementStringForResult_inString_offset_templateSelector = mkSelector "replacementStringForResult:inString:offset:template:"
 
 -- | @Selector@ for @escapedTemplateForString:@
-escapedTemplateForStringSelector :: Selector
+escapedTemplateForStringSelector :: Selector '[Id NSString] (Id NSString)
 escapedTemplateForStringSelector = mkSelector "escapedTemplateForString:"
 
 -- | @Selector@ for @enumerateMatchesInString:options:range:usingBlock:@
-enumerateMatchesInString_options_range_usingBlockSelector :: Selector
+enumerateMatchesInString_options_range_usingBlockSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange, Ptr ()] ()
 enumerateMatchesInString_options_range_usingBlockSelector = mkSelector "enumerateMatchesInString:options:range:usingBlock:"
 
 -- | @Selector@ for @matchesInString:options:range:@
-matchesInString_options_rangeSelector :: Selector
+matchesInString_options_rangeSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange] (Id NSArray)
 matchesInString_options_rangeSelector = mkSelector "matchesInString:options:range:"
 
 -- | @Selector@ for @numberOfMatchesInString:options:range:@
-numberOfMatchesInString_options_rangeSelector :: Selector
+numberOfMatchesInString_options_rangeSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange] CULong
 numberOfMatchesInString_options_rangeSelector = mkSelector "numberOfMatchesInString:options:range:"
 
 -- | @Selector@ for @firstMatchInString:options:range:@
-firstMatchInString_options_rangeSelector :: Selector
+firstMatchInString_options_rangeSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange] (Id NSTextCheckingResult)
 firstMatchInString_options_rangeSelector = mkSelector "firstMatchInString:options:range:"
 
 -- | @Selector@ for @rangeOfFirstMatchInString:options:range:@
-rangeOfFirstMatchInString_options_rangeSelector :: Selector
+rangeOfFirstMatchInString_options_rangeSelector :: Selector '[Id NSString, NSMatchingOptions, NSRange] NSRange
 rangeOfFirstMatchInString_options_rangeSelector = mkSelector "rangeOfFirstMatchInString:options:range:"
 
 -- | @Selector@ for @pattern@
-patternSelector :: Selector
+patternSelector :: Selector '[] (Id NSString)
 patternSelector = mkSelector "pattern"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] NSRegularExpressionOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @numberOfCaptureGroups@
-numberOfCaptureGroupsSelector :: Selector
+numberOfCaptureGroupsSelector :: Selector '[] CULong
 numberOfCaptureGroupsSelector = mkSelector "numberOfCaptureGroups"
 

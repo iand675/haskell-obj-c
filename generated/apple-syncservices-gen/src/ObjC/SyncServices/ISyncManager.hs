@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.SyncServices.ISyncManager
   , addRequestMode
   , removeRequestMode
   , requestModes
-  , sharedManagerSelector
-  , isEnabledSelector
-  , syncDisabledReasonSelector
-  , clientWithIdentifierSelector
-  , registerClientWithIdentifier_descriptionFilePathSelector
-  , unregisterClientSelector
-  , registerSchemaWithBundlePathSelector
-  , unregisterSchemaWithNameSelector
-  , clientWithIdentifier_needsSyncingSelector
-  , snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector
   , addRequestModeSelector
+  , clientWithIdentifierSelector
+  , clientWithIdentifier_needsSyncingSelector
+  , isEnabledSelector
+  , registerClientWithIdentifier_descriptionFilePathSelector
+  , registerSchemaWithBundlePathSelector
   , removeRequestModeSelector
   , requestModesSelector
+  , sharedManagerSelector
+  , snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector
+  , syncDisabledReasonSelector
+  , unregisterClientSelector
+  , unregisterSchemaWithNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,132 +53,121 @@ sharedManager :: IO (Id ISyncManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "ISyncManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | @- isEnabled@
 isEnabled :: IsISyncManager iSyncManager => iSyncManager -> IO Bool
-isEnabled iSyncManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg iSyncManager (mkSelector "isEnabled") retCULong []
+isEnabled iSyncManager =
+  sendMessage iSyncManager isEnabledSelector
 
 -- | @- syncDisabledReason@
 syncDisabledReason :: IsISyncManager iSyncManager => iSyncManager -> IO (Id NSError)
-syncDisabledReason iSyncManager  =
-    sendMsg iSyncManager (mkSelector "syncDisabledReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+syncDisabledReason iSyncManager =
+  sendMessage iSyncManager syncDisabledReasonSelector
 
 -- | @- clientWithIdentifier:@
 clientWithIdentifier :: (IsISyncManager iSyncManager, IsNSString clientId) => iSyncManager -> clientId -> IO (Id ISyncClient)
-clientWithIdentifier iSyncManager  clientId =
-  withObjCPtr clientId $ \raw_clientId ->
-      sendMsg iSyncManager (mkSelector "clientWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_clientId :: Ptr ())] >>= retainedObject . castPtr
+clientWithIdentifier iSyncManager clientId =
+  sendMessage iSyncManager clientWithIdentifierSelector (toNSString clientId)
 
 -- | @- registerClientWithIdentifier:descriptionFilePath:@
 registerClientWithIdentifier_descriptionFilePath :: (IsISyncManager iSyncManager, IsNSString clientId, IsNSString descriptionFilePath) => iSyncManager -> clientId -> descriptionFilePath -> IO (Id ISyncClient)
-registerClientWithIdentifier_descriptionFilePath iSyncManager  clientId descriptionFilePath =
-  withObjCPtr clientId $ \raw_clientId ->
-    withObjCPtr descriptionFilePath $ \raw_descriptionFilePath ->
-        sendMsg iSyncManager (mkSelector "registerClientWithIdentifier:descriptionFilePath:") (retPtr retVoid) [argPtr (castPtr raw_clientId :: Ptr ()), argPtr (castPtr raw_descriptionFilePath :: Ptr ())] >>= retainedObject . castPtr
+registerClientWithIdentifier_descriptionFilePath iSyncManager clientId descriptionFilePath =
+  sendMessage iSyncManager registerClientWithIdentifier_descriptionFilePathSelector (toNSString clientId) (toNSString descriptionFilePath)
 
 -- | @- unregisterClient:@
 unregisterClient :: (IsISyncManager iSyncManager, IsISyncClient client) => iSyncManager -> client -> IO ()
-unregisterClient iSyncManager  client =
-  withObjCPtr client $ \raw_client ->
-      sendMsg iSyncManager (mkSelector "unregisterClient:") retVoid [argPtr (castPtr raw_client :: Ptr ())]
+unregisterClient iSyncManager client =
+  sendMessage iSyncManager unregisterClientSelector (toISyncClient client)
 
 -- | @- registerSchemaWithBundlePath:@
 registerSchemaWithBundlePath :: (IsISyncManager iSyncManager, IsNSString bundlePath) => iSyncManager -> bundlePath -> IO Bool
-registerSchemaWithBundlePath iSyncManager  bundlePath =
-  withObjCPtr bundlePath $ \raw_bundlePath ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iSyncManager (mkSelector "registerSchemaWithBundlePath:") retCULong [argPtr (castPtr raw_bundlePath :: Ptr ())]
+registerSchemaWithBundlePath iSyncManager bundlePath =
+  sendMessage iSyncManager registerSchemaWithBundlePathSelector (toNSString bundlePath)
 
 -- | @- unregisterSchemaWithName:@
 unregisterSchemaWithName :: (IsISyncManager iSyncManager, IsNSString schemaName) => iSyncManager -> schemaName -> IO ()
-unregisterSchemaWithName iSyncManager  schemaName =
-  withObjCPtr schemaName $ \raw_schemaName ->
-      sendMsg iSyncManager (mkSelector "unregisterSchemaWithName:") retVoid [argPtr (castPtr raw_schemaName :: Ptr ())]
+unregisterSchemaWithName iSyncManager schemaName =
+  sendMessage iSyncManager unregisterSchemaWithNameSelector (toNSString schemaName)
 
 -- | @- clientWithIdentifier:needsSyncing:@
 clientWithIdentifier_needsSyncing :: (IsISyncManager iSyncManager, IsNSString clientId) => iSyncManager -> clientId -> Bool -> IO ()
-clientWithIdentifier_needsSyncing iSyncManager  clientId flag =
-  withObjCPtr clientId $ \raw_clientId ->
-      sendMsg iSyncManager (mkSelector "clientWithIdentifier:needsSyncing:") retVoid [argPtr (castPtr raw_clientId :: Ptr ()), argCULong (if flag then 1 else 0)]
+clientWithIdentifier_needsSyncing iSyncManager clientId flag =
+  sendMessage iSyncManager clientWithIdentifier_needsSyncingSelector (toNSString clientId) flag
 
 -- | @- snapshotOfRecordsInTruthWithEntityNames:usingIdentifiersForClient:@
 snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClient :: (IsISyncManager iSyncManager, IsNSArray entityNames, IsISyncClient client) => iSyncManager -> entityNames -> client -> IO (Id ISyncRecordSnapshot)
-snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClient iSyncManager  entityNames client =
-  withObjCPtr entityNames $ \raw_entityNames ->
-    withObjCPtr client $ \raw_client ->
-        sendMsg iSyncManager (mkSelector "snapshotOfRecordsInTruthWithEntityNames:usingIdentifiersForClient:") (retPtr retVoid) [argPtr (castPtr raw_entityNames :: Ptr ()), argPtr (castPtr raw_client :: Ptr ())] >>= retainedObject . castPtr
+snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClient iSyncManager entityNames client =
+  sendMessage iSyncManager snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector (toNSArray entityNames) (toISyncClient client)
 
 -- | @- addRequestMode:@
 addRequestMode :: (IsISyncManager iSyncManager, IsNSString mode) => iSyncManager -> mode -> IO ()
-addRequestMode iSyncManager  mode =
-  withObjCPtr mode $ \raw_mode ->
-      sendMsg iSyncManager (mkSelector "addRequestMode:") retVoid [argPtr (castPtr raw_mode :: Ptr ())]
+addRequestMode iSyncManager mode =
+  sendMessage iSyncManager addRequestModeSelector (toNSString mode)
 
 -- | @- removeRequestMode:@
 removeRequestMode :: (IsISyncManager iSyncManager, IsNSString mode) => iSyncManager -> mode -> IO ()
-removeRequestMode iSyncManager  mode =
-  withObjCPtr mode $ \raw_mode ->
-      sendMsg iSyncManager (mkSelector "removeRequestMode:") retVoid [argPtr (castPtr raw_mode :: Ptr ())]
+removeRequestMode iSyncManager mode =
+  sendMessage iSyncManager removeRequestModeSelector (toNSString mode)
 
 -- | @- requestModes@
 requestModes :: IsISyncManager iSyncManager => iSyncManager -> IO (Id NSArray)
-requestModes iSyncManager  =
-    sendMsg iSyncManager (mkSelector "requestModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestModes iSyncManager =
+  sendMessage iSyncManager requestModesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id ISyncManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 
 -- | @Selector@ for @syncDisabledReason@
-syncDisabledReasonSelector :: Selector
+syncDisabledReasonSelector :: Selector '[] (Id NSError)
 syncDisabledReasonSelector = mkSelector "syncDisabledReason"
 
 -- | @Selector@ for @clientWithIdentifier:@
-clientWithIdentifierSelector :: Selector
+clientWithIdentifierSelector :: Selector '[Id NSString] (Id ISyncClient)
 clientWithIdentifierSelector = mkSelector "clientWithIdentifier:"
 
 -- | @Selector@ for @registerClientWithIdentifier:descriptionFilePath:@
-registerClientWithIdentifier_descriptionFilePathSelector :: Selector
+registerClientWithIdentifier_descriptionFilePathSelector :: Selector '[Id NSString, Id NSString] (Id ISyncClient)
 registerClientWithIdentifier_descriptionFilePathSelector = mkSelector "registerClientWithIdentifier:descriptionFilePath:"
 
 -- | @Selector@ for @unregisterClient:@
-unregisterClientSelector :: Selector
+unregisterClientSelector :: Selector '[Id ISyncClient] ()
 unregisterClientSelector = mkSelector "unregisterClient:"
 
 -- | @Selector@ for @registerSchemaWithBundlePath:@
-registerSchemaWithBundlePathSelector :: Selector
+registerSchemaWithBundlePathSelector :: Selector '[Id NSString] Bool
 registerSchemaWithBundlePathSelector = mkSelector "registerSchemaWithBundlePath:"
 
 -- | @Selector@ for @unregisterSchemaWithName:@
-unregisterSchemaWithNameSelector :: Selector
+unregisterSchemaWithNameSelector :: Selector '[Id NSString] ()
 unregisterSchemaWithNameSelector = mkSelector "unregisterSchemaWithName:"
 
 -- | @Selector@ for @clientWithIdentifier:needsSyncing:@
-clientWithIdentifier_needsSyncingSelector :: Selector
+clientWithIdentifier_needsSyncingSelector :: Selector '[Id NSString, Bool] ()
 clientWithIdentifier_needsSyncingSelector = mkSelector "clientWithIdentifier:needsSyncing:"
 
 -- | @Selector@ for @snapshotOfRecordsInTruthWithEntityNames:usingIdentifiersForClient:@
-snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector :: Selector
+snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector :: Selector '[Id NSArray, Id ISyncClient] (Id ISyncRecordSnapshot)
 snapshotOfRecordsInTruthWithEntityNames_usingIdentifiersForClientSelector = mkSelector "snapshotOfRecordsInTruthWithEntityNames:usingIdentifiersForClient:"
 
 -- | @Selector@ for @addRequestMode:@
-addRequestModeSelector :: Selector
+addRequestModeSelector :: Selector '[Id NSString] ()
 addRequestModeSelector = mkSelector "addRequestMode:"
 
 -- | @Selector@ for @removeRequestMode:@
-removeRequestModeSelector :: Selector
+removeRequestModeSelector :: Selector '[Id NSString] ()
 removeRequestModeSelector = mkSelector "removeRequestMode:"
 
 -- | @Selector@ for @requestModes@
-requestModesSelector :: Selector
+requestModesSelector :: Selector '[] (Id NSArray)
 requestModesSelector = mkSelector "requestModes"
 

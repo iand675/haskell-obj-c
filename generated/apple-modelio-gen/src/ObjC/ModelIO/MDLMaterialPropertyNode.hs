@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.ModelIO.MDLMaterialPropertyNode
   , setEvaluationFunction
   , inputs
   , outputs
+  , evaluationFunctionSelector
   , initSelector
   , initWithInputs_outputs_evaluationFunctionSelector
-  , evaluationFunctionSelector
-  , setEvaluationFunctionSelector
   , inputsSelector
   , outputsSelector
+  , setEvaluationFunctionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,61 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMDLMaterialPropertyNode mdlMaterialPropertyNode => mdlMaterialPropertyNode -> IO (Id MDLMaterialPropertyNode)
-init_ mdlMaterialPropertyNode  =
-    sendMsg mdlMaterialPropertyNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mdlMaterialPropertyNode =
+  sendOwnedMessage mdlMaterialPropertyNode initSelector
 
 -- | @- initWithInputs:outputs:evaluationFunction:@
 initWithInputs_outputs_evaluationFunction :: (IsMDLMaterialPropertyNode mdlMaterialPropertyNode, IsNSArray inputs, IsNSArray outputs) => mdlMaterialPropertyNode -> inputs -> outputs -> Ptr () -> IO (Id MDLMaterialPropertyNode)
-initWithInputs_outputs_evaluationFunction mdlMaterialPropertyNode  inputs outputs function =
-  withObjCPtr inputs $ \raw_inputs ->
-    withObjCPtr outputs $ \raw_outputs ->
-        sendMsg mdlMaterialPropertyNode (mkSelector "initWithInputs:outputs:evaluationFunction:") (retPtr retVoid) [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_outputs :: Ptr ()), argPtr (castPtr function :: Ptr ())] >>= ownedObject . castPtr
+initWithInputs_outputs_evaluationFunction mdlMaterialPropertyNode inputs outputs function =
+  sendOwnedMessage mdlMaterialPropertyNode initWithInputs_outputs_evaluationFunctionSelector (toNSArray inputs) (toNSArray outputs) function
 
 -- | @- evaluationFunction@
 evaluationFunction :: IsMDLMaterialPropertyNode mdlMaterialPropertyNode => mdlMaterialPropertyNode -> IO (Ptr ())
-evaluationFunction mdlMaterialPropertyNode  =
-    fmap castPtr $ sendMsg mdlMaterialPropertyNode (mkSelector "evaluationFunction") (retPtr retVoid) []
+evaluationFunction mdlMaterialPropertyNode =
+  sendMessage mdlMaterialPropertyNode evaluationFunctionSelector
 
 -- | @- setEvaluationFunction:@
 setEvaluationFunction :: IsMDLMaterialPropertyNode mdlMaterialPropertyNode => mdlMaterialPropertyNode -> Ptr () -> IO ()
-setEvaluationFunction mdlMaterialPropertyNode  value =
-    sendMsg mdlMaterialPropertyNode (mkSelector "setEvaluationFunction:") retVoid [argPtr (castPtr value :: Ptr ())]
+setEvaluationFunction mdlMaterialPropertyNode value =
+  sendMessage mdlMaterialPropertyNode setEvaluationFunctionSelector value
 
 -- | @- inputs@
 inputs :: IsMDLMaterialPropertyNode mdlMaterialPropertyNode => mdlMaterialPropertyNode -> IO (Id NSArray)
-inputs mdlMaterialPropertyNode  =
-    sendMsg mdlMaterialPropertyNode (mkSelector "inputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputs mdlMaterialPropertyNode =
+  sendMessage mdlMaterialPropertyNode inputsSelector
 
 -- | @- outputs@
 outputs :: IsMDLMaterialPropertyNode mdlMaterialPropertyNode => mdlMaterialPropertyNode -> IO (Id NSArray)
-outputs mdlMaterialPropertyNode  =
-    sendMsg mdlMaterialPropertyNode (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputs mdlMaterialPropertyNode =
+  sendMessage mdlMaterialPropertyNode outputsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MDLMaterialPropertyNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInputs:outputs:evaluationFunction:@
-initWithInputs_outputs_evaluationFunctionSelector :: Selector
+initWithInputs_outputs_evaluationFunctionSelector :: Selector '[Id NSArray, Id NSArray, Ptr ()] (Id MDLMaterialPropertyNode)
 initWithInputs_outputs_evaluationFunctionSelector = mkSelector "initWithInputs:outputs:evaluationFunction:"
 
 -- | @Selector@ for @evaluationFunction@
-evaluationFunctionSelector :: Selector
+evaluationFunctionSelector :: Selector '[] (Ptr ())
 evaluationFunctionSelector = mkSelector "evaluationFunction"
 
 -- | @Selector@ for @setEvaluationFunction:@
-setEvaluationFunctionSelector :: Selector
+setEvaluationFunctionSelector :: Selector '[Ptr ()] ()
 setEvaluationFunctionSelector = mkSelector "setEvaluationFunction:"
 
 -- | @Selector@ for @inputs@
-inputsSelector :: Selector
+inputsSelector :: Selector '[] (Id NSArray)
 inputsSelector = mkSelector "inputs"
 
 -- | @Selector@ for @outputs@
-outputsSelector :: Selector
+outputsSelector :: Selector '[] (Id NSArray)
 outputsSelector = mkSelector "outputs"
 

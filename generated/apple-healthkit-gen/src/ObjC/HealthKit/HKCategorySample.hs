@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.HealthKit.HKCategorySample
   , categorySampleWithType_value_startDate_endDate_device_metadata
   , categoryType
   , value
-  , initSelector
-  , categorySampleWithType_value_startDate_endDate_metadataSelector
   , categorySampleWithType_value_startDate_endDateSelector
   , categorySampleWithType_value_startDate_endDate_device_metadataSelector
+  , categorySampleWithType_value_startDate_endDate_metadataSelector
   , categoryTypeSelector
+  , initSelector
   , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKCategorySample hkCategorySample => hkCategorySample -> IO (Id HKCategorySample)
-init_ hkCategorySample  =
-    sendMsg hkCategorySample (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkCategorySample =
+  sendOwnedMessage hkCategorySample initSelector
 
 -- | categorySampleWithType:value:startDate:endDate:metadata:
 --
@@ -67,11 +64,7 @@ categorySampleWithType_value_startDate_endDate_metadata :: (IsHKCategoryType typ
 categorySampleWithType_value_startDate_endDate_metadata type_ value startDate endDate metadata =
   do
     cls' <- getRequiredClass "HKCategorySample"
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr metadata $ \raw_metadata ->
-            sendClassMsg cls' (mkSelector "categorySampleWithType:value:startDate:endDate:metadata:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argCLong value, argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' categorySampleWithType_value_startDate_endDate_metadataSelector (toHKCategoryType type_) value (toNSDate startDate) (toNSDate endDate) (toNSDictionary metadata)
 
 -- | categorySampleWithType:value:startDate:endDate:
 --
@@ -90,10 +83,7 @@ categorySampleWithType_value_startDate_endDate :: (IsHKCategoryType type_, IsNSD
 categorySampleWithType_value_startDate_endDate type_ value startDate endDate =
   do
     cls' <- getRequiredClass "HKCategorySample"
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          sendClassMsg cls' (mkSelector "categorySampleWithType:value:startDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argCLong value, argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' categorySampleWithType_value_startDate_endDateSelector (toHKCategoryType type_) value (toNSDate startDate) (toNSDate endDate)
 
 -- | categorySampleWithType:value:startDate:endDate:device:metadata:
 --
@@ -116,17 +106,12 @@ categorySampleWithType_value_startDate_endDate_device_metadata :: (IsHKCategoryT
 categorySampleWithType_value_startDate_endDate_device_metadata type_ value startDate endDate device metadata =
   do
     cls' <- getRequiredClass "HKCategorySample"
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr device $ \raw_device ->
-            withObjCPtr metadata $ \raw_metadata ->
-              sendClassMsg cls' (mkSelector "categorySampleWithType:value:startDate:endDate:device:metadata:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argCLong value, argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' categorySampleWithType_value_startDate_endDate_device_metadataSelector (toHKCategoryType type_) value (toNSDate startDate) (toNSDate endDate) (toHKDevice device) (toNSDictionary metadata)
 
 -- | @- categoryType@
 categoryType :: IsHKCategorySample hkCategorySample => hkCategorySample -> IO (Id HKCategoryType)
-categoryType hkCategorySample  =
-    sendMsg hkCategorySample (mkSelector "categoryType") (retPtr retVoid) [] >>= retainedObject . castPtr
+categoryType hkCategorySample =
+  sendMessage hkCategorySample categoryTypeSelector
 
 -- | value
 --
@@ -134,34 +119,34 @@ categoryType hkCategorySample  =
 --
 -- ObjC selector: @- value@
 value :: IsHKCategorySample hkCategorySample => hkCategorySample -> IO CLong
-value hkCategorySample  =
-    sendMsg hkCategorySample (mkSelector "value") retCLong []
+value hkCategorySample =
+  sendMessage hkCategorySample valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKCategorySample)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @categorySampleWithType:value:startDate:endDate:metadata:@
-categorySampleWithType_value_startDate_endDate_metadataSelector :: Selector
+categorySampleWithType_value_startDate_endDate_metadataSelector :: Selector '[Id HKCategoryType, CLong, Id NSDate, Id NSDate, Id NSDictionary] (Id HKCategorySample)
 categorySampleWithType_value_startDate_endDate_metadataSelector = mkSelector "categorySampleWithType:value:startDate:endDate:metadata:"
 
 -- | @Selector@ for @categorySampleWithType:value:startDate:endDate:@
-categorySampleWithType_value_startDate_endDateSelector :: Selector
+categorySampleWithType_value_startDate_endDateSelector :: Selector '[Id HKCategoryType, CLong, Id NSDate, Id NSDate] (Id HKCategorySample)
 categorySampleWithType_value_startDate_endDateSelector = mkSelector "categorySampleWithType:value:startDate:endDate:"
 
 -- | @Selector@ for @categorySampleWithType:value:startDate:endDate:device:metadata:@
-categorySampleWithType_value_startDate_endDate_device_metadataSelector :: Selector
+categorySampleWithType_value_startDate_endDate_device_metadataSelector :: Selector '[Id HKCategoryType, CLong, Id NSDate, Id NSDate, Id HKDevice, Id NSDictionary] (Id HKCategorySample)
 categorySampleWithType_value_startDate_endDate_device_metadataSelector = mkSelector "categorySampleWithType:value:startDate:endDate:device:metadata:"
 
 -- | @Selector@ for @categoryType@
-categoryTypeSelector :: Selector
+categoryTypeSelector :: Selector '[] (Id HKCategoryType)
 categoryTypeSelector = mkSelector "categoryType"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CLong
 valueSelector = mkSelector "value"
 

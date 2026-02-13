@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,21 +19,17 @@ module ObjC.AudioVideoBridging.AVB17221AECPAddressAccessMessage
   , setTlvs
   , commandMessageSelector
   , responseMessageSelector
-  , tlvsSelector
   , setTlvsSelector
+  , tlvsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ commandMessage :: IO (Id AVB17221AECPAddressAccessMessage)
 commandMessage  =
   do
     cls' <- getRequiredClass "AVB17221AECPAddressAccessMessage"
-    sendClassMsg cls' (mkSelector "commandMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' commandMessageSelector
 
 -- | responseMessage
 --
@@ -63,7 +60,7 @@ responseMessage :: IO (Id AVB17221AECPAddressAccessMessage)
 responseMessage  =
   do
     cls' <- getRequiredClass "AVB17221AECPAddressAccessMessage"
-    sendClassMsg cls' (mkSelector "responseMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' responseMessageSelector
 
 -- | tlvs
 --
@@ -71,8 +68,8 @@ responseMessage  =
 --
 -- ObjC selector: @- tlvs@
 tlvs :: IsAVB17221AECPAddressAccessMessage avB17221AECPAddressAccessMessage => avB17221AECPAddressAccessMessage -> IO (Id NSArray)
-tlvs avB17221AECPAddressAccessMessage  =
-    sendMsg avB17221AECPAddressAccessMessage (mkSelector "tlvs") (retPtr retVoid) [] >>= retainedObject . castPtr
+tlvs avB17221AECPAddressAccessMessage =
+  sendMessage avB17221AECPAddressAccessMessage tlvsSelector
 
 -- | tlvs
 --
@@ -80,27 +77,26 @@ tlvs avB17221AECPAddressAccessMessage  =
 --
 -- ObjC selector: @- setTlvs:@
 setTlvs :: (IsAVB17221AECPAddressAccessMessage avB17221AECPAddressAccessMessage, IsNSArray value) => avB17221AECPAddressAccessMessage -> value -> IO ()
-setTlvs avB17221AECPAddressAccessMessage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221AECPAddressAccessMessage (mkSelector "setTlvs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTlvs avB17221AECPAddressAccessMessage value =
+  sendMessage avB17221AECPAddressAccessMessage setTlvsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commandMessage@
-commandMessageSelector :: Selector
+commandMessageSelector :: Selector '[] (Id AVB17221AECPAddressAccessMessage)
 commandMessageSelector = mkSelector "commandMessage"
 
 -- | @Selector@ for @responseMessage@
-responseMessageSelector :: Selector
+responseMessageSelector :: Selector '[] (Id AVB17221AECPAddressAccessMessage)
 responseMessageSelector = mkSelector "responseMessage"
 
 -- | @Selector@ for @tlvs@
-tlvsSelector :: Selector
+tlvsSelector :: Selector '[] (Id NSArray)
 tlvsSelector = mkSelector "tlvs"
 
 -- | @Selector@ for @setTlvs:@
-setTlvsSelector :: Selector
+setTlvsSelector :: Selector '[Id NSArray] ()
 setTlvsSelector = mkSelector "setTlvs:"
 

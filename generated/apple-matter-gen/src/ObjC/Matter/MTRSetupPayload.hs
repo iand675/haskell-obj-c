@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -53,46 +54,46 @@ module ObjC.Matter.MTRSetupPayload
   , setRendezvousInformation
   , setUpPINCode
   , setSetUpPINCode
-  , initWithPayloadSelector
-  , vendorElementWithTagSelector
-  , removeVendorElementWithTagSelector
   , addOrReplaceVendorElementSelector
+  , commissioningFlowSelector
+  , concatenatedSelector
+  , discoveryCapabilitiesSelector
+  , discriminatorSelector
   , generateRandomPINSelector
   , generateRandomSetupPasscodeSelector
-  , initWithSetupPasscode_discriminatorSelector
-  , manualEntryCodeSelector
-  , qrCodeStringSelector
-  , isValidSetupPasscodeSelector
-  , initSelector
-  , newSelector
-  , setupPayloadWithOnboardingPayload_errorSelector
   , getAllOptionalVendorDataSelector
-  , concatenatedSelector
-  , subPayloadsSelector
-  , setSubPayloadsSelector
-  , versionSelector
-  , setVersionSelector
-  , vendorIDSelector
-  , setVendorIDSelector
-  , productIDSelector
-  , setProductIDSelector
-  , commissioningFlowSelector
-  , setCommissioningFlowSelector
-  , discoveryCapabilitiesSelector
-  , setDiscoveryCapabilitiesSelector
-  , discriminatorSelector
-  , setDiscriminatorSelector
   , hasShortDiscriminatorSelector
-  , setHasShortDiscriminatorSelector
-  , setupPasscodeSelector
-  , setSetupPasscodeSelector
-  , serialNumberSelector
-  , setSerialNumberSelector
-  , vendorElementsSelector
+  , initSelector
+  , initWithPayloadSelector
+  , initWithSetupPasscode_discriminatorSelector
+  , isValidSetupPasscodeSelector
+  , manualEntryCodeSelector
+  , newSelector
+  , productIDSelector
+  , qrCodeStringSelector
+  , removeVendorElementWithTagSelector
   , rendezvousInformationSelector
+  , serialNumberSelector
+  , setCommissioningFlowSelector
+  , setDiscoveryCapabilitiesSelector
+  , setDiscriminatorSelector
+  , setHasShortDiscriminatorSelector
+  , setProductIDSelector
   , setRendezvousInformationSelector
-  , setUpPINCodeSelector
+  , setSerialNumberSelector
   , setSetUpPINCodeSelector
+  , setSetupPasscodeSelector
+  , setSubPayloadsSelector
+  , setUpPINCodeSelector
+  , setVendorIDSelector
+  , setVersionSelector
+  , setupPasscodeSelector
+  , setupPayloadWithOnboardingPayload_errorSelector
+  , subPayloadsSelector
+  , vendorElementWithTagSelector
+  , vendorElementsSelector
+  , vendorIDSelector
+  , versionSelector
 
   -- * Enum types
   , MTRCommissioningFlow(MTRCommissioningFlow)
@@ -111,15 +112,11 @@ module ObjC.Matter.MTRSetupPayload
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -131,33 +128,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPayload:@
 initWithPayload :: (IsMTRSetupPayload mtrSetupPayload, IsNSString payload) => mtrSetupPayload -> payload -> IO (Id MTRSetupPayload)
-initWithPayload mtrSetupPayload  payload =
-  withObjCPtr payload $ \raw_payload ->
-      sendMsg mtrSetupPayload (mkSelector "initWithPayload:") (retPtr retVoid) [argPtr (castPtr raw_payload :: Ptr ())] >>= ownedObject . castPtr
+initWithPayload mtrSetupPayload payload =
+  sendOwnedMessage mtrSetupPayload initWithPayloadSelector (toNSString payload)
 
 -- | Returns the Manufacturer-specific extension element with the specified tag, if any. The tag must be in the range 0x80 - 0xFF.
 --
 -- ObjC selector: @- vendorElementWithTag:@
 vendorElementWithTag :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber tag) => mtrSetupPayload -> tag -> IO (Id MTROptionalQRCodeInfo)
-vendorElementWithTag mtrSetupPayload  tag =
-  withObjCPtr tag $ \raw_tag ->
-      sendMsg mtrSetupPayload (mkSelector "vendorElementWithTag:") (retPtr retVoid) [argPtr (castPtr raw_tag :: Ptr ())] >>= retainedObject . castPtr
+vendorElementWithTag mtrSetupPayload tag =
+  sendMessage mtrSetupPayload vendorElementWithTagSelector (toNSNumber tag)
 
 -- | Removes the extension element with the specified tag, if any. The tag must be in the range 0x80 - 0xFF.
 --
 -- ObjC selector: @- removeVendorElementWithTag:@
 removeVendorElementWithTag :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber tag) => mtrSetupPayload -> tag -> IO ()
-removeVendorElementWithTag mtrSetupPayload  tag =
-  withObjCPtr tag $ \raw_tag ->
-      sendMsg mtrSetupPayload (mkSelector "removeVendorElementWithTag:") retVoid [argPtr (castPtr raw_tag :: Ptr ())]
+removeVendorElementWithTag mtrSetupPayload tag =
+  sendMessage mtrSetupPayload removeVendorElementWithTagSelector (toNSNumber tag)
 
 -- | Adds or replaces a Manufacturer-specific extension element.
 --
 -- ObjC selector: @- addOrReplaceVendorElement:@
 addOrReplaceVendorElement :: (IsMTRSetupPayload mtrSetupPayload, IsMTROptionalQRCodeInfo element) => mtrSetupPayload -> element -> IO ()
-addOrReplaceVendorElement mtrSetupPayload  element =
-  withObjCPtr element $ \raw_element ->
-      sendMsg mtrSetupPayload (mkSelector "addOrReplaceVendorElement:") retVoid [argPtr (castPtr raw_element :: Ptr ())]
+addOrReplaceVendorElement mtrSetupPayload element =
+  sendMessage mtrSetupPayload addOrReplaceVendorElementSelector (toMTROptionalQRCodeInfo element)
 
 -- | Generate a random Matter-valid setup PIN.
 --
@@ -166,7 +159,7 @@ generateRandomPIN :: IO CULong
 generateRandomPIN  =
   do
     cls' <- getRequiredClass "MTRSetupPayload"
-    sendClassMsg cls' (mkSelector "generateRandomPIN") retCULong []
+    sendClassMessage cls' generateRandomPINSelector
 
 -- | Generate a random Matter-valid setup passcode.
 --
@@ -175,16 +168,14 @@ generateRandomSetupPasscode :: IO (Id NSNumber)
 generateRandomSetupPasscode  =
   do
     cls' <- getRequiredClass "MTRSetupPayload"
-    sendClassMsg cls' (mkSelector "generateRandomSetupPasscode") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' generateRandomSetupPasscodeSelector
 
 -- | Initialize an MTRSetupPayload with the given passcode and discriminator. This will pre-set version, product id, and vendor id to 0.
 --
 -- ObjC selector: @- initWithSetupPasscode:discriminator:@
 initWithSetupPasscode_discriminator :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber setupPasscode, IsNSNumber discriminator) => mtrSetupPayload -> setupPasscode -> discriminator -> IO (Id MTRSetupPayload)
-initWithSetupPasscode_discriminator mtrSetupPayload  setupPasscode discriminator =
-  withObjCPtr setupPasscode $ \raw_setupPasscode ->
-    withObjCPtr discriminator $ \raw_discriminator ->
-        sendMsg mtrSetupPayload (mkSelector "initWithSetupPasscode:discriminator:") (retPtr retVoid) [argPtr (castPtr raw_setupPasscode :: Ptr ()), argPtr (castPtr raw_discriminator :: Ptr ())] >>= ownedObject . castPtr
+initWithSetupPasscode_discriminator mtrSetupPayload setupPasscode discriminator =
+  sendOwnedMessage mtrSetupPayload initWithSetupPasscode_discriminatorSelector (toNSNumber setupPasscode) (toNSNumber discriminator)
 
 -- | Creates a Manual Pairing Code from this setup payload. Returns nil if this payload cannot be represented as a valid Manual Pairing Code.
 --
@@ -194,8 +185,8 @@ initWithSetupPasscode_discriminator mtrSetupPayload  setupPasscode discriminator
 --
 -- ObjC selector: @- manualEntryCode@
 manualEntryCode :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSString)
-manualEntryCode mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "manualEntryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+manualEntryCode mtrSetupPayload =
+  sendMessage mtrSetupPayload manualEntryCodeSelector
 
 -- | Creates a QR Code payload from this setup payload. Returns nil if this payload cannot be represented as a valid QR Code.
 --
@@ -205,8 +196,8 @@ manualEntryCode mtrSetupPayload  =
 --
 -- ObjC selector: @- qrCodeString@
 qrCodeString :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSString)
-qrCodeString mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "qrCodeString") (retPtr retVoid) [] >>= retainedObject . castPtr
+qrCodeString mtrSetupPayload =
+  sendMessage mtrSetupPayload qrCodeStringSelector
 
 -- | Check whether the provided setup passcode (represented as an unsigned integer) is a valid setup passcode.
 --
@@ -215,35 +206,31 @@ isValidSetupPasscode :: IsNSNumber setupPasscode => setupPasscode -> IO Bool
 isValidSetupPasscode setupPasscode =
   do
     cls' <- getRequiredClass "MTRSetupPayload"
-    withObjCPtr setupPasscode $ \raw_setupPasscode ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isValidSetupPasscode:") retCULong [argPtr (castPtr raw_setupPasscode :: Ptr ())]
+    sendClassMessage cls' isValidSetupPasscodeSelector (toNSNumber setupPasscode)
 
 -- | @- init@
 init_ :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id MTRSetupPayload)
-init_ mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrSetupPayload =
+  sendOwnedMessage mtrSetupPayload initSelector
 
 -- | @+ new@
 new :: IO (Id MTRSetupPayload)
 new  =
   do
     cls' <- getRequiredClass "MTRSetupPayload"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @+ setupPayloadWithOnboardingPayload:error:@
 setupPayloadWithOnboardingPayload_error :: (IsNSString onboardingPayload, IsNSError error_) => onboardingPayload -> error_ -> IO (Id MTRSetupPayload)
 setupPayloadWithOnboardingPayload_error onboardingPayload error_ =
   do
     cls' <- getRequiredClass "MTRSetupPayload"
-    withObjCPtr onboardingPayload $ \raw_onboardingPayload ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "setupPayloadWithOnboardingPayload:error:") (retPtr retVoid) [argPtr (castPtr raw_onboardingPayload :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setupPayloadWithOnboardingPayload_errorSelector (toNSString onboardingPayload) (toNSError error_)
 
 -- | @- getAllOptionalVendorData:@
 getAllOptionalVendorData :: (IsMTRSetupPayload mtrSetupPayload, IsNSError error_) => mtrSetupPayload -> error_ -> IO (Id NSArray)
-getAllOptionalVendorData mtrSetupPayload  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg mtrSetupPayload (mkSelector "getAllOptionalVendorData:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+getAllOptionalVendorData mtrSetupPayload error_ =
+  sendMessage mtrSetupPayload getAllOptionalVendorDataSelector (toNSError error_)
 
 -- | Whether this object represents a concatenated QR Code payload consisting of two or more underlying payloads. If YES, then:
 --
@@ -253,8 +240,8 @@ getAllOptionalVendorData mtrSetupPayload  error_ =
 --
 -- ObjC selector: @- concatenated@
 concatenated :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO Bool
-concatenated mtrSetupPayload  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrSetupPayload (mkSelector "concatenated") retCULong []
+concatenated mtrSetupPayload =
+  sendMessage mtrSetupPayload concatenatedSelector
 
 -- | The individual constituent payloads, if the receiver represents a concatenated payload.
 --
@@ -262,8 +249,8 @@ concatenated mtrSetupPayload  =
 --
 -- ObjC selector: @- subPayloads@
 subPayloads :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSArray)
-subPayloads mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "subPayloads") (retPtr retVoid) [] >>= retainedObject . castPtr
+subPayloads mtrSetupPayload =
+  sendMessage mtrSetupPayload subPayloadsSelector
 
 -- | The individual constituent payloads, if the receiver represents a concatenated payload.
 --
@@ -271,308 +258,299 @@ subPayloads mtrSetupPayload  =
 --
 -- ObjC selector: @- setSubPayloads:@
 setSubPayloads :: (IsMTRSetupPayload mtrSetupPayload, IsNSArray value) => mtrSetupPayload -> value -> IO ()
-setSubPayloads mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setSubPayloads:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubPayloads mtrSetupPayload value =
+  sendMessage mtrSetupPayload setSubPayloadsSelector (toNSArray value)
 
 -- | @- version@
 version :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-version mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version mtrSetupPayload =
+  sendMessage mtrSetupPayload versionSelector
 
 -- | @- setVersion:@
 setVersion :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setVersion mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVersion mtrSetupPayload value =
+  sendMessage mtrSetupPayload setVersionSelector (toNSNumber value)
 
 -- | @- vendorID@
 vendorID :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-vendorID mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrSetupPayload =
+  sendMessage mtrSetupPayload vendorIDSelector
 
 -- | @- setVendorID:@
 setVendorID :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setVendorID mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrSetupPayload value =
+  sendMessage mtrSetupPayload setVendorIDSelector (toNSNumber value)
 
 -- | @- productID@
 productID :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-productID mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "productID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productID mtrSetupPayload =
+  sendMessage mtrSetupPayload productIDSelector
 
 -- | @- setProductID:@
 setProductID :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setProductID mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setProductID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductID mtrSetupPayload value =
+  sendMessage mtrSetupPayload setProductIDSelector (toNSNumber value)
 
 -- | @- commissioningFlow@
 commissioningFlow :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO MTRCommissioningFlow
-commissioningFlow mtrSetupPayload  =
-    fmap (coerce :: CULong -> MTRCommissioningFlow) $ sendMsg mtrSetupPayload (mkSelector "commissioningFlow") retCULong []
+commissioningFlow mtrSetupPayload =
+  sendMessage mtrSetupPayload commissioningFlowSelector
 
 -- | @- setCommissioningFlow:@
 setCommissioningFlow :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> MTRCommissioningFlow -> IO ()
-setCommissioningFlow mtrSetupPayload  value =
-    sendMsg mtrSetupPayload (mkSelector "setCommissioningFlow:") retVoid [argCULong (coerce value)]
+setCommissioningFlow mtrSetupPayload value =
+  sendMessage mtrSetupPayload setCommissioningFlowSelector value
 
 -- | The value of discoveryCapabilities is made up of the various MTRDiscoveryCapabilities flags.  If the discovery capabilities are not known, this will be set to MTRDiscoveryCapabilitiesUnknown.
 --
 -- ObjC selector: @- discoveryCapabilities@
 discoveryCapabilities :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO MTRDiscoveryCapabilities
-discoveryCapabilities mtrSetupPayload  =
-    fmap (coerce :: CULong -> MTRDiscoveryCapabilities) $ sendMsg mtrSetupPayload (mkSelector "discoveryCapabilities") retCULong []
+discoveryCapabilities mtrSetupPayload =
+  sendMessage mtrSetupPayload discoveryCapabilitiesSelector
 
 -- | The value of discoveryCapabilities is made up of the various MTRDiscoveryCapabilities flags.  If the discovery capabilities are not known, this will be set to MTRDiscoveryCapabilitiesUnknown.
 --
 -- ObjC selector: @- setDiscoveryCapabilities:@
 setDiscoveryCapabilities :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> MTRDiscoveryCapabilities -> IO ()
-setDiscoveryCapabilities mtrSetupPayload  value =
-    sendMsg mtrSetupPayload (mkSelector "setDiscoveryCapabilities:") retVoid [argCULong (coerce value)]
+setDiscoveryCapabilities mtrSetupPayload value =
+  sendMessage mtrSetupPayload setDiscoveryCapabilitiesSelector value
 
 -- | @- discriminator@
 discriminator :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-discriminator mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "discriminator") (retPtr retVoid) [] >>= retainedObject . castPtr
+discriminator mtrSetupPayload =
+  sendMessage mtrSetupPayload discriminatorSelector
 
 -- | @- setDiscriminator:@
 setDiscriminator :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setDiscriminator mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setDiscriminator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDiscriminator mtrSetupPayload value =
+  sendMessage mtrSetupPayload setDiscriminatorSelector (toNSNumber value)
 
 -- | If hasShortDiscriminator is true, the discriminator value contains just the high 4 bits of the full discriminator.  For example, if hasShortDiscriminator is true and discriminator is 0xA, then the full discriminator can be anything in the range 0xA00 to 0xAFF.
 --
 -- ObjC selector: @- hasShortDiscriminator@
 hasShortDiscriminator :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO Bool
-hasShortDiscriminator mtrSetupPayload  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrSetupPayload (mkSelector "hasShortDiscriminator") retCULong []
+hasShortDiscriminator mtrSetupPayload =
+  sendMessage mtrSetupPayload hasShortDiscriminatorSelector
 
 -- | If hasShortDiscriminator is true, the discriminator value contains just the high 4 bits of the full discriminator.  For example, if hasShortDiscriminator is true and discriminator is 0xA, then the full discriminator can be anything in the range 0xA00 to 0xAFF.
 --
 -- ObjC selector: @- setHasShortDiscriminator:@
 setHasShortDiscriminator :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> Bool -> IO ()
-setHasShortDiscriminator mtrSetupPayload  value =
-    sendMsg mtrSetupPayload (mkSelector "setHasShortDiscriminator:") retVoid [argCULong (if value then 1 else 0)]
+setHasShortDiscriminator mtrSetupPayload value =
+  sendMessage mtrSetupPayload setHasShortDiscriminatorSelector value
 
 -- | @- setupPasscode@
 setupPasscode :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-setupPasscode mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "setupPasscode") (retPtr retVoid) [] >>= retainedObject . castPtr
+setupPasscode mtrSetupPayload =
+  sendMessage mtrSetupPayload setupPasscodeSelector
 
 -- | @- setSetupPasscode:@
 setSetupPasscode :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setSetupPasscode mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setSetupPasscode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSetupPasscode mtrSetupPayload value =
+  sendMessage mtrSetupPayload setSetupPasscodeSelector (toNSNumber value)
 
 -- | The value of the Serial Number extension element, if any.
 --
 -- ObjC selector: @- serialNumber@
 serialNumber :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSString)
-serialNumber mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "serialNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+serialNumber mtrSetupPayload =
+  sendMessage mtrSetupPayload serialNumberSelector
 
 -- | The value of the Serial Number extension element, if any.
 --
 -- ObjC selector: @- setSerialNumber:@
 setSerialNumber :: (IsMTRSetupPayload mtrSetupPayload, IsNSString value) => mtrSetupPayload -> value -> IO ()
-setSerialNumber mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setSerialNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSerialNumber mtrSetupPayload value =
+  sendMessage mtrSetupPayload setSerialNumberSelector (toNSString value)
 
 -- | The list of Manufacturer-specific extension elements contained in the setup code. May be empty.
 --
 -- ObjC selector: @- vendorElements@
 vendorElements :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSArray)
-vendorElements mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "vendorElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorElements mtrSetupPayload =
+  sendMessage mtrSetupPayload vendorElementsSelector
 
 -- | @- rendezvousInformation@
 rendezvousInformation :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-rendezvousInformation mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "rendezvousInformation") (retPtr retVoid) [] >>= retainedObject . castPtr
+rendezvousInformation mtrSetupPayload =
+  sendMessage mtrSetupPayload rendezvousInformationSelector
 
 -- | @- setRendezvousInformation:@
 setRendezvousInformation :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setRendezvousInformation mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setRendezvousInformation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRendezvousInformation mtrSetupPayload value =
+  sendMessage mtrSetupPayload setRendezvousInformationSelector (toNSNumber value)
 
 -- | @- setUpPINCode@
 setUpPINCode :: IsMTRSetupPayload mtrSetupPayload => mtrSetupPayload -> IO (Id NSNumber)
-setUpPINCode mtrSetupPayload  =
-    sendMsg mtrSetupPayload (mkSelector "setUpPINCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+setUpPINCode mtrSetupPayload =
+  sendMessage mtrSetupPayload setUpPINCodeSelector
 
 -- | @- setSetUpPINCode:@
 setSetUpPINCode :: (IsMTRSetupPayload mtrSetupPayload, IsNSNumber value) => mtrSetupPayload -> value -> IO ()
-setSetUpPINCode mtrSetupPayload  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSetupPayload (mkSelector "setSetUpPINCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSetUpPINCode mtrSetupPayload value =
+  sendMessage mtrSetupPayload setSetUpPINCodeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayload:@
-initWithPayloadSelector :: Selector
+initWithPayloadSelector :: Selector '[Id NSString] (Id MTRSetupPayload)
 initWithPayloadSelector = mkSelector "initWithPayload:"
 
 -- | @Selector@ for @vendorElementWithTag:@
-vendorElementWithTagSelector :: Selector
+vendorElementWithTagSelector :: Selector '[Id NSNumber] (Id MTROptionalQRCodeInfo)
 vendorElementWithTagSelector = mkSelector "vendorElementWithTag:"
 
 -- | @Selector@ for @removeVendorElementWithTag:@
-removeVendorElementWithTagSelector :: Selector
+removeVendorElementWithTagSelector :: Selector '[Id NSNumber] ()
 removeVendorElementWithTagSelector = mkSelector "removeVendorElementWithTag:"
 
 -- | @Selector@ for @addOrReplaceVendorElement:@
-addOrReplaceVendorElementSelector :: Selector
+addOrReplaceVendorElementSelector :: Selector '[Id MTROptionalQRCodeInfo] ()
 addOrReplaceVendorElementSelector = mkSelector "addOrReplaceVendorElement:"
 
 -- | @Selector@ for @generateRandomPIN@
-generateRandomPINSelector :: Selector
+generateRandomPINSelector :: Selector '[] CULong
 generateRandomPINSelector = mkSelector "generateRandomPIN"
 
 -- | @Selector@ for @generateRandomSetupPasscode@
-generateRandomSetupPasscodeSelector :: Selector
+generateRandomSetupPasscodeSelector :: Selector '[] (Id NSNumber)
 generateRandomSetupPasscodeSelector = mkSelector "generateRandomSetupPasscode"
 
 -- | @Selector@ for @initWithSetupPasscode:discriminator:@
-initWithSetupPasscode_discriminatorSelector :: Selector
+initWithSetupPasscode_discriminatorSelector :: Selector '[Id NSNumber, Id NSNumber] (Id MTRSetupPayload)
 initWithSetupPasscode_discriminatorSelector = mkSelector "initWithSetupPasscode:discriminator:"
 
 -- | @Selector@ for @manualEntryCode@
-manualEntryCodeSelector :: Selector
+manualEntryCodeSelector :: Selector '[] (Id NSString)
 manualEntryCodeSelector = mkSelector "manualEntryCode"
 
 -- | @Selector@ for @qrCodeString@
-qrCodeStringSelector :: Selector
+qrCodeStringSelector :: Selector '[] (Id NSString)
 qrCodeStringSelector = mkSelector "qrCodeString"
 
 -- | @Selector@ for @isValidSetupPasscode:@
-isValidSetupPasscodeSelector :: Selector
+isValidSetupPasscodeSelector :: Selector '[Id NSNumber] Bool
 isValidSetupPasscodeSelector = mkSelector "isValidSetupPasscode:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRSetupPayload)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRSetupPayload)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setupPayloadWithOnboardingPayload:error:@
-setupPayloadWithOnboardingPayload_errorSelector :: Selector
+setupPayloadWithOnboardingPayload_errorSelector :: Selector '[Id NSString, Id NSError] (Id MTRSetupPayload)
 setupPayloadWithOnboardingPayload_errorSelector = mkSelector "setupPayloadWithOnboardingPayload:error:"
 
 -- | @Selector@ for @getAllOptionalVendorData:@
-getAllOptionalVendorDataSelector :: Selector
+getAllOptionalVendorDataSelector :: Selector '[Id NSError] (Id NSArray)
 getAllOptionalVendorDataSelector = mkSelector "getAllOptionalVendorData:"
 
 -- | @Selector@ for @concatenated@
-concatenatedSelector :: Selector
+concatenatedSelector :: Selector '[] Bool
 concatenatedSelector = mkSelector "concatenated"
 
 -- | @Selector@ for @subPayloads@
-subPayloadsSelector :: Selector
+subPayloadsSelector :: Selector '[] (Id NSArray)
 subPayloadsSelector = mkSelector "subPayloads"
 
 -- | @Selector@ for @setSubPayloads:@
-setSubPayloadsSelector :: Selector
+setSubPayloadsSelector :: Selector '[Id NSArray] ()
 setSubPayloadsSelector = mkSelector "setSubPayloads:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSNumber)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[Id NSNumber] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @productID@
-productIDSelector :: Selector
+productIDSelector :: Selector '[] (Id NSNumber)
 productIDSelector = mkSelector "productID"
 
 -- | @Selector@ for @setProductID:@
-setProductIDSelector :: Selector
+setProductIDSelector :: Selector '[Id NSNumber] ()
 setProductIDSelector = mkSelector "setProductID:"
 
 -- | @Selector@ for @commissioningFlow@
-commissioningFlowSelector :: Selector
+commissioningFlowSelector :: Selector '[] MTRCommissioningFlow
 commissioningFlowSelector = mkSelector "commissioningFlow"
 
 -- | @Selector@ for @setCommissioningFlow:@
-setCommissioningFlowSelector :: Selector
+setCommissioningFlowSelector :: Selector '[MTRCommissioningFlow] ()
 setCommissioningFlowSelector = mkSelector "setCommissioningFlow:"
 
 -- | @Selector@ for @discoveryCapabilities@
-discoveryCapabilitiesSelector :: Selector
+discoveryCapabilitiesSelector :: Selector '[] MTRDiscoveryCapabilities
 discoveryCapabilitiesSelector = mkSelector "discoveryCapabilities"
 
 -- | @Selector@ for @setDiscoveryCapabilities:@
-setDiscoveryCapabilitiesSelector :: Selector
+setDiscoveryCapabilitiesSelector :: Selector '[MTRDiscoveryCapabilities] ()
 setDiscoveryCapabilitiesSelector = mkSelector "setDiscoveryCapabilities:"
 
 -- | @Selector@ for @discriminator@
-discriminatorSelector :: Selector
+discriminatorSelector :: Selector '[] (Id NSNumber)
 discriminatorSelector = mkSelector "discriminator"
 
 -- | @Selector@ for @setDiscriminator:@
-setDiscriminatorSelector :: Selector
+setDiscriminatorSelector :: Selector '[Id NSNumber] ()
 setDiscriminatorSelector = mkSelector "setDiscriminator:"
 
 -- | @Selector@ for @hasShortDiscriminator@
-hasShortDiscriminatorSelector :: Selector
+hasShortDiscriminatorSelector :: Selector '[] Bool
 hasShortDiscriminatorSelector = mkSelector "hasShortDiscriminator"
 
 -- | @Selector@ for @setHasShortDiscriminator:@
-setHasShortDiscriminatorSelector :: Selector
+setHasShortDiscriminatorSelector :: Selector '[Bool] ()
 setHasShortDiscriminatorSelector = mkSelector "setHasShortDiscriminator:"
 
 -- | @Selector@ for @setupPasscode@
-setupPasscodeSelector :: Selector
+setupPasscodeSelector :: Selector '[] (Id NSNumber)
 setupPasscodeSelector = mkSelector "setupPasscode"
 
 -- | @Selector@ for @setSetupPasscode:@
-setSetupPasscodeSelector :: Selector
+setSetupPasscodeSelector :: Selector '[Id NSNumber] ()
 setSetupPasscodeSelector = mkSelector "setSetupPasscode:"
 
 -- | @Selector@ for @serialNumber@
-serialNumberSelector :: Selector
+serialNumberSelector :: Selector '[] (Id NSString)
 serialNumberSelector = mkSelector "serialNumber"
 
 -- | @Selector@ for @setSerialNumber:@
-setSerialNumberSelector :: Selector
+setSerialNumberSelector :: Selector '[Id NSString] ()
 setSerialNumberSelector = mkSelector "setSerialNumber:"
 
 -- | @Selector@ for @vendorElements@
-vendorElementsSelector :: Selector
+vendorElementsSelector :: Selector '[] (Id NSArray)
 vendorElementsSelector = mkSelector "vendorElements"
 
 -- | @Selector@ for @rendezvousInformation@
-rendezvousInformationSelector :: Selector
+rendezvousInformationSelector :: Selector '[] (Id NSNumber)
 rendezvousInformationSelector = mkSelector "rendezvousInformation"
 
 -- | @Selector@ for @setRendezvousInformation:@
-setRendezvousInformationSelector :: Selector
+setRendezvousInformationSelector :: Selector '[Id NSNumber] ()
 setRendezvousInformationSelector = mkSelector "setRendezvousInformation:"
 
 -- | @Selector@ for @setUpPINCode@
-setUpPINCodeSelector :: Selector
+setUpPINCodeSelector :: Selector '[] (Id NSNumber)
 setUpPINCodeSelector = mkSelector "setUpPINCode"
 
 -- | @Selector@ for @setSetUpPINCode:@
-setSetUpPINCodeSelector :: Selector
+setSetUpPINCodeSelector :: Selector '[Id NSNumber] ()
 setSetUpPINCodeSelector = mkSelector "setSetUpPINCode:"
 

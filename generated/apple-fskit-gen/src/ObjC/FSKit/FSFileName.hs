@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,31 +27,27 @@ module ObjC.FSKit.FSFileName
   , data_
   , string
   , debugDescription
+  , dataSelector
+  , debugDescriptionSelector
   , initSelector
-  , initWithCStringSelector
   , initWithBytes_lengthSelector
+  , initWithCStringSelector
   , initWithDataSelector
   , initWithStringSelector
-  , nameWithCStringSelector
   , nameWithBytes_lengthSelector
+  , nameWithCStringSelector
   , nameWithDataSelector
   , nameWithStringSelector
-  , dataSelector
   , stringSelector
-  , debugDescriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSFileName fsFileName => fsFileName -> IO (Id FSFileName)
-init_ fsFileName  =
-    sendMsg fsFileName (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsFileName =
+  sendOwnedMessage fsFileName initSelector
 
 -- | Initializes a filename from a null-terminated character sequence.
 --
@@ -70,8 +67,8 @@ init_ fsFileName  =
 --
 -- ObjC selector: @- initWithCString:@
 initWithCString :: IsFSFileName fsFileName => fsFileName -> Const (Ptr CChar) -> IO (Id FSFileName)
-initWithCString fsFileName  name =
-    sendMsg fsFileName (mkSelector "initWithCString:") (retPtr retVoid) [argPtr (unConst name)] >>= ownedObject . castPtr
+initWithCString fsFileName name =
+  sendOwnedMessage fsFileName initWithCStringSelector name
 
 -- | Initializes a file name by copying a character sequence from a byte array.
 --
@@ -81,8 +78,8 @@ initWithCString fsFileName  name =
 --
 -- ObjC selector: @- initWithBytes:length:@
 initWithBytes_length :: IsFSFileName fsFileName => fsFileName -> Const (Ptr CChar) -> CULong -> IO (Id FSFileName)
-initWithBytes_length fsFileName  bytes length_ =
-    sendMsg fsFileName (mkSelector "initWithBytes:length:") (retPtr retVoid) [argPtr (unConst bytes), argCULong length_] >>= ownedObject . castPtr
+initWithBytes_length fsFileName bytes length_ =
+  sendOwnedMessage fsFileName initWithBytes_lengthSelector bytes length_
 
 -- | Creates a filename by copying a character sequence data object.
 --
@@ -92,9 +89,8 @@ initWithBytes_length fsFileName  bytes length_ =
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: (IsFSFileName fsFileName, IsNSData name) => fsFileName -> name -> IO (Id FSFileName)
-initWithData fsFileName  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg fsFileName (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithData fsFileName name =
+  sendOwnedMessage fsFileName initWithDataSelector (toNSData name)
 
 -- | Creates a filename by copying a character sequence from a string instance.
 --
@@ -104,9 +100,8 @@ initWithData fsFileName  name =
 --
 -- ObjC selector: @- initWithString:@
 initWithString :: (IsFSFileName fsFileName, IsNSString name) => fsFileName -> name -> IO (Id FSFileName)
-initWithString fsFileName  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg fsFileName (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithString fsFileName name =
+  sendOwnedMessage fsFileName initWithStringSelector (toNSString name)
 
 -- | Creates a filename from a null-terminated character sequence.
 --
@@ -117,7 +112,7 @@ nameWithCString :: Const (Ptr CChar) -> IO (Id FSFileName)
 nameWithCString name =
   do
     cls' <- getRequiredClass "FSFileName"
-    sendClassMsg cls' (mkSelector "nameWithCString:") (retPtr retVoid) [argPtr (unConst name)] >>= retainedObject . castPtr
+    sendClassMessage cls' nameWithCStringSelector name
 
 -- | Creates a filename by copying a character sequence from a byte array.
 --
@@ -128,7 +123,7 @@ nameWithBytes_length :: Const (Ptr CChar) -> CULong -> IO (Id FSFileName)
 nameWithBytes_length bytes length_ =
   do
     cls' <- getRequiredClass "FSFileName"
-    sendClassMsg cls' (mkSelector "nameWithBytes:length:") (retPtr retVoid) [argPtr (unConst bytes), argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' nameWithBytes_lengthSelector bytes length_
 
 -- | Creates a filename by copying a character sequence data object.
 --
@@ -141,8 +136,7 @@ nameWithData :: IsNSData name => name -> IO (Id FSFileName)
 nameWithData name =
   do
     cls' <- getRequiredClass "FSFileName"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "nameWithData:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nameWithDataSelector (toNSData name)
 
 -- | Creates a filename by copying a character sequence from a string instance.
 --
@@ -155,8 +149,7 @@ nameWithString :: IsNSString name => name -> IO (Id FSFileName)
 nameWithString name =
   do
     cls' <- getRequiredClass "FSFileName"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "nameWithString:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nameWithStringSelector (toNSString name)
 
 -- | The byte sequence of the filename, as a data object.
 --
@@ -164,8 +157,8 @@ nameWithString name =
 --
 -- ObjC selector: @- data@
 data_ :: IsFSFileName fsFileName => fsFileName -> IO (Id NSData)
-data_ fsFileName  =
-    sendMsg fsFileName (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ fsFileName =
+  sendMessage fsFileName dataSelector
 
 -- | The filename, represented as a Unicode string.
 --
@@ -173,8 +166,8 @@ data_ fsFileName  =
 --
 -- ObjC selector: @- string@
 string :: IsFSFileName fsFileName => fsFileName -> IO (Id NSString)
-string fsFileName  =
-    sendMsg fsFileName (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string fsFileName =
+  sendMessage fsFileName stringSelector
 
 -- | The filename, represented as a potentially lossy conversion to a string.
 --
@@ -182,58 +175,58 @@ string fsFileName  =
 --
 -- ObjC selector: @- debugDescription@
 debugDescription :: IsFSFileName fsFileName => fsFileName -> IO (Id NSString)
-debugDescription fsFileName  =
-    sendMsg fsFileName (mkSelector "debugDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+debugDescription fsFileName =
+  sendMessage fsFileName debugDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSFileName)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCString:@
-initWithCStringSelector :: Selector
+initWithCStringSelector :: Selector '[Const (Ptr CChar)] (Id FSFileName)
 initWithCStringSelector = mkSelector "initWithCString:"
 
 -- | @Selector@ for @initWithBytes:length:@
-initWithBytes_lengthSelector :: Selector
+initWithBytes_lengthSelector :: Selector '[Const (Ptr CChar), CULong] (Id FSFileName)
 initWithBytes_lengthSelector = mkSelector "initWithBytes:length:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id FSFileName)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithString:@
-initWithStringSelector :: Selector
+initWithStringSelector :: Selector '[Id NSString] (Id FSFileName)
 initWithStringSelector = mkSelector "initWithString:"
 
 -- | @Selector@ for @nameWithCString:@
-nameWithCStringSelector :: Selector
+nameWithCStringSelector :: Selector '[Const (Ptr CChar)] (Id FSFileName)
 nameWithCStringSelector = mkSelector "nameWithCString:"
 
 -- | @Selector@ for @nameWithBytes:length:@
-nameWithBytes_lengthSelector :: Selector
+nameWithBytes_lengthSelector :: Selector '[Const (Ptr CChar), CULong] (Id FSFileName)
 nameWithBytes_lengthSelector = mkSelector "nameWithBytes:length:"
 
 -- | @Selector@ for @nameWithData:@
-nameWithDataSelector :: Selector
+nameWithDataSelector :: Selector '[Id NSData] (Id FSFileName)
 nameWithDataSelector = mkSelector "nameWithData:"
 
 -- | @Selector@ for @nameWithString:@
-nameWithStringSelector :: Selector
+nameWithStringSelector :: Selector '[Id NSString] (Id FSFileName)
 nameWithStringSelector = mkSelector "nameWithString:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @debugDescription@
-debugDescriptionSelector :: Selector
+debugDescriptionSelector :: Selector '[] (Id NSString)
 debugDescriptionSelector = mkSelector "debugDescription"
 

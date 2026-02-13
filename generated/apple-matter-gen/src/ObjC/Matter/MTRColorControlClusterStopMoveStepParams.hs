@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRColorControlClusterStopMoveStepParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , optionsMaskSelector
-  , setOptionsMaskSelector
   , optionsOverrideSelector
-  , setOptionsOverrideSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setOptionsMaskSelector
+  , setOptionsOverrideSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- optionsMask@
 optionsMask :: IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams => mtrColorControlClusterStopMoveStepParams -> IO (Id NSNumber)
-optionsMask mtrColorControlClusterStopMoveStepParams  =
-    sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "optionsMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsMask mtrColorControlClusterStopMoveStepParams =
+  sendMessage mtrColorControlClusterStopMoveStepParams optionsMaskSelector
 
 -- | @- setOptionsMask:@
 setOptionsMask :: (IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams, IsNSNumber value) => mtrColorControlClusterStopMoveStepParams -> value -> IO ()
-setOptionsMask mtrColorControlClusterStopMoveStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "setOptionsMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsMask mtrColorControlClusterStopMoveStepParams value =
+  sendMessage mtrColorControlClusterStopMoveStepParams setOptionsMaskSelector (toNSNumber value)
 
 -- | @- optionsOverride@
 optionsOverride :: IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams => mtrColorControlClusterStopMoveStepParams -> IO (Id NSNumber)
-optionsOverride mtrColorControlClusterStopMoveStepParams  =
-    sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "optionsOverride") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsOverride mtrColorControlClusterStopMoveStepParams =
+  sendMessage mtrColorControlClusterStopMoveStepParams optionsOverrideSelector
 
 -- | @- setOptionsOverride:@
 setOptionsOverride :: (IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams, IsNSNumber value) => mtrColorControlClusterStopMoveStepParams -> value -> IO ()
-setOptionsOverride mtrColorControlClusterStopMoveStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "setOptionsOverride:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsOverride mtrColorControlClusterStopMoveStepParams value =
+  sendMessage mtrColorControlClusterStopMoveStepParams setOptionsOverrideSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setOptionsOverride mtrColorControlClusterStopMoveStepParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams => mtrColorControlClusterStopMoveStepParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams  =
-    sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams =
+  sendMessage mtrColorControlClusterStopMoveStepParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams, IsNSNumber value) => mtrColorControlClusterStopMoveStepParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams value =
+  sendMessage mtrColorControlClusterStopMoveStepParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrColorControlClusterStopMoveStepParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams => mtrColorControlClusterStopMoveStepParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrColorControlClusterStopMoveStepParams  =
-    sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrColorControlClusterStopMoveStepParams =
+  sendMessage mtrColorControlClusterStopMoveStepParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrColorControlClusterStopMoveStepParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRColorControlClusterStopMoveStepParams mtrColorControlClusterStopMoveStepParams, IsNSNumber value) => mtrColorControlClusterStopMoveStepParams -> value -> IO ()
-setServerSideProcessingTimeout mtrColorControlClusterStopMoveStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterStopMoveStepParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrColorControlClusterStopMoveStepParams value =
+  sendMessage mtrColorControlClusterStopMoveStepParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optionsMask@
-optionsMaskSelector :: Selector
+optionsMaskSelector :: Selector '[] (Id NSNumber)
 optionsMaskSelector = mkSelector "optionsMask"
 
 -- | @Selector@ for @setOptionsMask:@
-setOptionsMaskSelector :: Selector
+setOptionsMaskSelector :: Selector '[Id NSNumber] ()
 setOptionsMaskSelector = mkSelector "setOptionsMask:"
 
 -- | @Selector@ for @optionsOverride@
-optionsOverrideSelector :: Selector
+optionsOverrideSelector :: Selector '[] (Id NSNumber)
 optionsOverrideSelector = mkSelector "optionsOverride"
 
 -- | @Selector@ for @setOptionsOverride:@
-setOptionsOverrideSelector :: Selector
+setOptionsOverrideSelector :: Selector '[Id NSNumber] ()
 setOptionsOverrideSelector = mkSelector "setOptionsOverride:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

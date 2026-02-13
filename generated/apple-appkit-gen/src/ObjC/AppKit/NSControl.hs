@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -89,88 +90,88 @@ module ObjC.AppKit.NSControl
   , setCellClass
   , cell
   , setCell
-  , initWithFrameSelector
-  , initWithCoderSelector
-  , sizeThatFitsSelector
-  , sizeToFitSelector
-  , sendActionOnSelector
-  , sendAction_toSelector
-  , takeIntValueFromSelector
-  , takeFloatValueFromSelector
-  , takeDoubleValueFromSelector
-  , takeStringValueFromSelector
-  , takeObjectValueFromSelector
-  , takeIntegerValueFromSelector
-  , performClickSelector
-  , expansionFrameWithFrameSelector
-  , drawWithExpansionFrame_inViewSelector
-  , invalidateIntrinsicContentSizeForCellSelector
-  , setFloatingPointFormat_left_rightSelector
-  , selectedCellSelector
-  , selectedTagSelector
-  , setNeedsDisplaySelector
+  , abortEditingSelector
+  , actionSelector
+  , alignmentSelector
+  , allowsExpansionToolTipsSelector
+  , attributedStringValueSelector
+  , baseWritingDirectionSelector
   , calcSizeSelector
-  , updateCellSelector
-  , updateCellInsideSelector
+  , cellClassSelector
+  , cellSelector
+  , continuousSelector
+  , controlSizeSelector
+  , currentEditorSelector
+  , doubleValueSelector
   , drawCellInsideSelector
   , drawCellSelector
-  , selectCellSelector
-  , currentEditorSelector
-  , abortEditingSelector
-  , validateEditingSelector
+  , drawWithExpansionFrame_inViewSelector
   , editWithFrame_editor_delegate_eventSelector
-  , selectWithFrame_editor_delegate_start_lengthSelector
-  , endEditingSelector
-  , targetSelector
-  , setTargetSelector
-  , actionSelector
-  , setActionSelector
-  , tagSelector
-  , setTagSelector
-  , ignoresMultiClickSelector
-  , setIgnoresMultiClickSelector
-  , continuousSelector
-  , setContinuousSelector
   , enabledSelector
-  , setEnabledSelector
-  , refusesFirstResponderSelector
-  , setRefusesFirstResponderSelector
-  , highlightedSelector
-  , setHighlightedSelector
-  , controlSizeSelector
-  , setControlSizeSelector
-  , formatterSelector
-  , setFormatterSelector
-  , objectValueSelector
-  , setObjectValueSelector
-  , stringValueSelector
-  , setStringValueSelector
-  , attributedStringValueSelector
-  , setAttributedStringValueSelector
-  , intValueSelector
-  , setIntValueSelector
-  , integerValueSelector
-  , setIntegerValueSelector
+  , endEditingSelector
+  , expansionFrameWithFrameSelector
   , floatValueSelector
-  , setFloatValueSelector
-  , doubleValueSelector
-  , setDoubleValueSelector
   , fontSelector
-  , setFontSelector
-  , usesSingleLineModeSelector
-  , setUsesSingleLineModeSelector
+  , formatterSelector
+  , highlightedSelector
+  , ignoresMultiClickSelector
+  , initWithCoderSelector
+  , initWithFrameSelector
+  , intValueSelector
+  , integerValueSelector
+  , invalidateIntrinsicContentSizeForCellSelector
   , lineBreakModeSelector
-  , setLineBreakModeSelector
-  , alignmentSelector
+  , objectValueSelector
+  , performClickSelector
+  , refusesFirstResponderSelector
+  , selectCellSelector
+  , selectWithFrame_editor_delegate_start_lengthSelector
+  , selectedCellSelector
+  , selectedTagSelector
+  , sendActionOnSelector
+  , sendAction_toSelector
+  , setActionSelector
   , setAlignmentSelector
-  , baseWritingDirectionSelector
-  , setBaseWritingDirectionSelector
-  , allowsExpansionToolTipsSelector
   , setAllowsExpansionToolTipsSelector
-  , cellClassSelector
+  , setAttributedStringValueSelector
+  , setBaseWritingDirectionSelector
   , setCellClassSelector
-  , cellSelector
   , setCellSelector
+  , setContinuousSelector
+  , setControlSizeSelector
+  , setDoubleValueSelector
+  , setEnabledSelector
+  , setFloatValueSelector
+  , setFloatingPointFormat_left_rightSelector
+  , setFontSelector
+  , setFormatterSelector
+  , setHighlightedSelector
+  , setIgnoresMultiClickSelector
+  , setIntValueSelector
+  , setIntegerValueSelector
+  , setLineBreakModeSelector
+  , setNeedsDisplaySelector
+  , setObjectValueSelector
+  , setRefusesFirstResponderSelector
+  , setStringValueSelector
+  , setTagSelector
+  , setTargetSelector
+  , setUsesSingleLineModeSelector
+  , sizeThatFitsSelector
+  , sizeToFitSelector
+  , stringValueSelector
+  , tagSelector
+  , takeDoubleValueFromSelector
+  , takeFloatValueFromSelector
+  , takeIntValueFromSelector
+  , takeIntegerValueFromSelector
+  , takeObjectValueFromSelector
+  , takeStringValueFromSelector
+  , targetSelector
+  , updateCellInsideSelector
+  , updateCellSelector
+  , usesSingleLineModeSelector
+  , validateEditingSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -235,15 +236,11 @@ module ObjC.AppKit.NSControl
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -254,764 +251,747 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFrame:@
 initWithFrame :: IsNSControl nsControl => nsControl -> NSRect -> IO (Id NSControl)
-initWithFrame nsControl  frameRect =
-    sendMsg nsControl (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frameRect] >>= ownedObject . castPtr
+initWithFrame nsControl frameRect =
+  sendOwnedMessage nsControl initWithFrameSelector frameRect
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSControl nsControl, IsNSCoder coder) => nsControl -> coder -> IO (Id NSControl)
-initWithCoder nsControl  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsControl (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsControl coder =
+  sendOwnedMessage nsControl initWithCoderSelector (toNSCoder coder)
 
 -- | @- sizeThatFits:@
 sizeThatFits :: IsNSControl nsControl => nsControl -> NSSize -> IO NSSize
-sizeThatFits nsControl  size =
-    sendMsgStret nsControl (mkSelector "sizeThatFits:") retNSSize [argNSSize size]
+sizeThatFits nsControl size =
+  sendMessage nsControl sizeThatFitsSelector size
 
 -- | @- sizeToFit@
 sizeToFit :: IsNSControl nsControl => nsControl -> IO ()
-sizeToFit nsControl  =
-    sendMsg nsControl (mkSelector "sizeToFit") retVoid []
+sizeToFit nsControl =
+  sendMessage nsControl sizeToFitSelector
 
 -- | @- sendActionOn:@
 sendActionOn :: IsNSControl nsControl => nsControl -> NSEventMask -> IO CLong
-sendActionOn nsControl  mask =
-    sendMsg nsControl (mkSelector "sendActionOn:") retCLong [argCULong (coerce mask)]
+sendActionOn nsControl mask =
+  sendMessage nsControl sendActionOnSelector mask
 
 -- | @- sendAction:to:@
-sendAction_to :: IsNSControl nsControl => nsControl -> Selector -> RawId -> IO Bool
-sendAction_to nsControl  action target =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "sendAction:to:") retCULong [argPtr (unSelector action), argPtr (castPtr (unRawId target) :: Ptr ())]
+sendAction_to :: IsNSControl nsControl => nsControl -> Sel -> RawId -> IO Bool
+sendAction_to nsControl action target =
+  sendMessage nsControl sendAction_toSelector action target
 
 -- | @- takeIntValueFrom:@
 takeIntValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeIntValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeIntValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeIntValueFrom nsControl sender =
+  sendMessage nsControl takeIntValueFromSelector sender
 
 -- | @- takeFloatValueFrom:@
 takeFloatValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeFloatValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeFloatValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeFloatValueFrom nsControl sender =
+  sendMessage nsControl takeFloatValueFromSelector sender
 
 -- | @- takeDoubleValueFrom:@
 takeDoubleValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeDoubleValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeDoubleValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeDoubleValueFrom nsControl sender =
+  sendMessage nsControl takeDoubleValueFromSelector sender
 
 -- | @- takeStringValueFrom:@
 takeStringValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeStringValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeStringValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeStringValueFrom nsControl sender =
+  sendMessage nsControl takeStringValueFromSelector sender
 
 -- | @- takeObjectValueFrom:@
 takeObjectValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeObjectValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeObjectValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeObjectValueFrom nsControl sender =
+  sendMessage nsControl takeObjectValueFromSelector sender
 
 -- | @- takeIntegerValueFrom:@
 takeIntegerValueFrom :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-takeIntegerValueFrom nsControl  sender =
-    sendMsg nsControl (mkSelector "takeIntegerValueFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeIntegerValueFrom nsControl sender =
+  sendMessage nsControl takeIntegerValueFromSelector sender
 
 -- | @- performClick:@
 performClick :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-performClick nsControl  sender =
-    sendMsg nsControl (mkSelector "performClick:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performClick nsControl sender =
+  sendMessage nsControl performClickSelector sender
 
 -- | @- expansionFrameWithFrame:@
 expansionFrameWithFrame :: IsNSControl nsControl => nsControl -> NSRect -> IO NSRect
-expansionFrameWithFrame nsControl  contentFrame =
-    sendMsgStret nsControl (mkSelector "expansionFrameWithFrame:") retNSRect [argNSRect contentFrame]
+expansionFrameWithFrame nsControl contentFrame =
+  sendMessage nsControl expansionFrameWithFrameSelector contentFrame
 
 -- | @- drawWithExpansionFrame:inView:@
 drawWithExpansionFrame_inView :: (IsNSControl nsControl, IsNSView view) => nsControl -> NSRect -> view -> IO ()
-drawWithExpansionFrame_inView nsControl  contentFrame view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsControl (mkSelector "drawWithExpansionFrame:inView:") retVoid [argNSRect contentFrame, argPtr (castPtr raw_view :: Ptr ())]
+drawWithExpansionFrame_inView nsControl contentFrame view =
+  sendMessage nsControl drawWithExpansionFrame_inViewSelector contentFrame (toNSView view)
 
 -- | @- invalidateIntrinsicContentSizeForCell:@
 invalidateIntrinsicContentSizeForCell :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-invalidateIntrinsicContentSizeForCell nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "invalidateIntrinsicContentSizeForCell:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+invalidateIntrinsicContentSizeForCell nsControl cell =
+  sendMessage nsControl invalidateIntrinsicContentSizeForCellSelector (toNSCell cell)
 
 -- | @- setFloatingPointFormat:left:right:@
 setFloatingPointFormat_left_right :: IsNSControl nsControl => nsControl -> Bool -> CULong -> CULong -> IO ()
-setFloatingPointFormat_left_right nsControl  autoRange leftDigits rightDigits =
-    sendMsg nsControl (mkSelector "setFloatingPointFormat:left:right:") retVoid [argCULong (if autoRange then 1 else 0), argCULong leftDigits, argCULong rightDigits]
+setFloatingPointFormat_left_right nsControl autoRange leftDigits rightDigits =
+  sendMessage nsControl setFloatingPointFormat_left_rightSelector autoRange leftDigits rightDigits
 
 -- | @- selectedCell@
 selectedCell :: IsNSControl nsControl => nsControl -> IO (Id NSCell)
-selectedCell nsControl  =
-    sendMsg nsControl (mkSelector "selectedCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedCell nsControl =
+  sendMessage nsControl selectedCellSelector
 
 -- | @- selectedTag@
 selectedTag :: IsNSControl nsControl => nsControl -> IO CLong
-selectedTag nsControl  =
-    sendMsg nsControl (mkSelector "selectedTag") retCLong []
+selectedTag nsControl =
+  sendMessage nsControl selectedTagSelector
 
 -- | @- setNeedsDisplay@
 setNeedsDisplay :: IsNSControl nsControl => nsControl -> IO ()
-setNeedsDisplay nsControl  =
-    sendMsg nsControl (mkSelector "setNeedsDisplay") retVoid []
+setNeedsDisplay nsControl =
+  sendMessage nsControl setNeedsDisplaySelector
 
 -- | @- calcSize@
 calcSize :: IsNSControl nsControl => nsControl -> IO ()
-calcSize nsControl  =
-    sendMsg nsControl (mkSelector "calcSize") retVoid []
+calcSize nsControl =
+  sendMessage nsControl calcSizeSelector
 
 -- | @- updateCell:@
 updateCell :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-updateCell nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "updateCell:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+updateCell nsControl cell =
+  sendMessage nsControl updateCellSelector (toNSCell cell)
 
 -- | @- updateCellInside:@
 updateCellInside :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-updateCellInside nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "updateCellInside:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+updateCellInside nsControl cell =
+  sendMessage nsControl updateCellInsideSelector (toNSCell cell)
 
 -- | @- drawCellInside:@
 drawCellInside :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-drawCellInside nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "drawCellInside:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+drawCellInside nsControl cell =
+  sendMessage nsControl drawCellInsideSelector (toNSCell cell)
 
 -- | @- drawCell:@
 drawCell :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-drawCell nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "drawCell:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+drawCell nsControl cell =
+  sendMessage nsControl drawCellSelector (toNSCell cell)
 
 -- | @- selectCell:@
 selectCell :: (IsNSControl nsControl, IsNSCell cell) => nsControl -> cell -> IO ()
-selectCell nsControl  cell =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsControl (mkSelector "selectCell:") retVoid [argPtr (castPtr raw_cell :: Ptr ())]
+selectCell nsControl cell =
+  sendMessage nsControl selectCellSelector (toNSCell cell)
 
 -- | @- currentEditor@
 currentEditor :: IsNSControl nsControl => nsControl -> IO (Id NSText)
-currentEditor nsControl  =
-    sendMsg nsControl (mkSelector "currentEditor") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentEditor nsControl =
+  sendMessage nsControl currentEditorSelector
 
 -- | @- abortEditing@
 abortEditing :: IsNSControl nsControl => nsControl -> IO Bool
-abortEditing nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "abortEditing") retCULong []
+abortEditing nsControl =
+  sendMessage nsControl abortEditingSelector
 
 -- | @- validateEditing@
 validateEditing :: IsNSControl nsControl => nsControl -> IO ()
-validateEditing nsControl  =
-    sendMsg nsControl (mkSelector "validateEditing") retVoid []
+validateEditing nsControl =
+  sendMessage nsControl validateEditingSelector
 
 -- | @- editWithFrame:editor:delegate:event:@
 editWithFrame_editor_delegate_event :: (IsNSControl nsControl, IsNSText textObj, IsNSEvent event) => nsControl -> NSRect -> textObj -> RawId -> event -> IO ()
-editWithFrame_editor_delegate_event nsControl  rect textObj delegate event =
-  withObjCPtr textObj $ \raw_textObj ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsControl (mkSelector "editWithFrame:editor:delegate:event:") retVoid [argNSRect rect, argPtr (castPtr raw_textObj :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_event :: Ptr ())]
+editWithFrame_editor_delegate_event nsControl rect textObj delegate event =
+  sendMessage nsControl editWithFrame_editor_delegate_eventSelector rect (toNSText textObj) delegate (toNSEvent event)
 
 -- | @- selectWithFrame:editor:delegate:start:length:@
 selectWithFrame_editor_delegate_start_length :: (IsNSControl nsControl, IsNSText textObj) => nsControl -> NSRect -> textObj -> RawId -> CLong -> CLong -> IO ()
-selectWithFrame_editor_delegate_start_length nsControl  rect textObj delegate selStart selLength =
-  withObjCPtr textObj $ \raw_textObj ->
-      sendMsg nsControl (mkSelector "selectWithFrame:editor:delegate:start:length:") retVoid [argNSRect rect, argPtr (castPtr raw_textObj :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argCLong selStart, argCLong selLength]
+selectWithFrame_editor_delegate_start_length nsControl rect textObj delegate selStart selLength =
+  sendMessage nsControl selectWithFrame_editor_delegate_start_lengthSelector rect (toNSText textObj) delegate selStart selLength
 
 -- | @- endEditing:@
 endEditing :: (IsNSControl nsControl, IsNSText textObj) => nsControl -> textObj -> IO ()
-endEditing nsControl  textObj =
-  withObjCPtr textObj $ \raw_textObj ->
-      sendMsg nsControl (mkSelector "endEditing:") retVoid [argPtr (castPtr raw_textObj :: Ptr ())]
+endEditing nsControl textObj =
+  sendMessage nsControl endEditingSelector (toNSText textObj)
 
 -- | @- target@
 target :: IsNSControl nsControl => nsControl -> IO RawId
-target nsControl  =
-    fmap (RawId . castPtr) $ sendMsg nsControl (mkSelector "target") (retPtr retVoid) []
+target nsControl =
+  sendMessage nsControl targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-setTarget nsControl  value =
-    sendMsg nsControl (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsControl value =
+  sendMessage nsControl setTargetSelector value
 
 -- | @- action@
-action :: IsNSControl nsControl => nsControl -> IO Selector
-action nsControl  =
-    fmap (Selector . castPtr) $ sendMsg nsControl (mkSelector "action") (retPtr retVoid) []
+action :: IsNSControl nsControl => nsControl -> IO Sel
+action nsControl =
+  sendMessage nsControl actionSelector
 
 -- | @- setAction:@
-setAction :: IsNSControl nsControl => nsControl -> Selector -> IO ()
-setAction nsControl  value =
-    sendMsg nsControl (mkSelector "setAction:") retVoid [argPtr (unSelector value)]
+setAction :: IsNSControl nsControl => nsControl -> Sel -> IO ()
+setAction nsControl value =
+  sendMessage nsControl setActionSelector value
 
 -- | @- tag@
 tag :: IsNSControl nsControl => nsControl -> IO CLong
-tag nsControl  =
-    sendMsg nsControl (mkSelector "tag") retCLong []
+tag nsControl =
+  sendMessage nsControl tagSelector
 
 -- | @- setTag:@
 setTag :: IsNSControl nsControl => nsControl -> CLong -> IO ()
-setTag nsControl  value =
-    sendMsg nsControl (mkSelector "setTag:") retVoid [argCLong value]
+setTag nsControl value =
+  sendMessage nsControl setTagSelector value
 
 -- | @- ignoresMultiClick@
 ignoresMultiClick :: IsNSControl nsControl => nsControl -> IO Bool
-ignoresMultiClick nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "ignoresMultiClick") retCULong []
+ignoresMultiClick nsControl =
+  sendMessage nsControl ignoresMultiClickSelector
 
 -- | @- setIgnoresMultiClick:@
 setIgnoresMultiClick :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setIgnoresMultiClick nsControl  value =
-    sendMsg nsControl (mkSelector "setIgnoresMultiClick:") retVoid [argCULong (if value then 1 else 0)]
+setIgnoresMultiClick nsControl value =
+  sendMessage nsControl setIgnoresMultiClickSelector value
 
 -- | @- continuous@
 continuous :: IsNSControl nsControl => nsControl -> IO Bool
-continuous nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "continuous") retCULong []
+continuous nsControl =
+  sendMessage nsControl continuousSelector
 
 -- | @- setContinuous:@
 setContinuous :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setContinuous nsControl  value =
-    sendMsg nsControl (mkSelector "setContinuous:") retVoid [argCULong (if value then 1 else 0)]
+setContinuous nsControl value =
+  sendMessage nsControl setContinuousSelector value
 
 -- | @- enabled@
 enabled :: IsNSControl nsControl => nsControl -> IO Bool
-enabled nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "enabled") retCULong []
+enabled nsControl =
+  sendMessage nsControl enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setEnabled nsControl  value =
-    sendMsg nsControl (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsControl value =
+  sendMessage nsControl setEnabledSelector value
 
 -- | @- refusesFirstResponder@
 refusesFirstResponder :: IsNSControl nsControl => nsControl -> IO Bool
-refusesFirstResponder nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "refusesFirstResponder") retCULong []
+refusesFirstResponder nsControl =
+  sendMessage nsControl refusesFirstResponderSelector
 
 -- | @- setRefusesFirstResponder:@
 setRefusesFirstResponder :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setRefusesFirstResponder nsControl  value =
-    sendMsg nsControl (mkSelector "setRefusesFirstResponder:") retVoid [argCULong (if value then 1 else 0)]
+setRefusesFirstResponder nsControl value =
+  sendMessage nsControl setRefusesFirstResponderSelector value
 
 -- | @- highlighted@
 highlighted :: IsNSControl nsControl => nsControl -> IO Bool
-highlighted nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "highlighted") retCULong []
+highlighted nsControl =
+  sendMessage nsControl highlightedSelector
 
 -- | @- setHighlighted:@
 setHighlighted :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setHighlighted nsControl  value =
-    sendMsg nsControl (mkSelector "setHighlighted:") retVoid [argCULong (if value then 1 else 0)]
+setHighlighted nsControl value =
+  sendMessage nsControl setHighlightedSelector value
 
 -- | @- controlSize@
 controlSize :: IsNSControl nsControl => nsControl -> IO NSControlSize
-controlSize nsControl  =
-    fmap (coerce :: CULong -> NSControlSize) $ sendMsg nsControl (mkSelector "controlSize") retCULong []
+controlSize nsControl =
+  sendMessage nsControl controlSizeSelector
 
 -- | @- setControlSize:@
 setControlSize :: IsNSControl nsControl => nsControl -> NSControlSize -> IO ()
-setControlSize nsControl  value =
-    sendMsg nsControl (mkSelector "setControlSize:") retVoid [argCULong (coerce value)]
+setControlSize nsControl value =
+  sendMessage nsControl setControlSizeSelector value
 
 -- | @- formatter@
 formatter :: IsNSControl nsControl => nsControl -> IO (Id NSFormatter)
-formatter nsControl  =
-    sendMsg nsControl (mkSelector "formatter") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatter nsControl =
+  sendMessage nsControl formatterSelector
 
 -- | @- setFormatter:@
 setFormatter :: (IsNSControl nsControl, IsNSFormatter value) => nsControl -> value -> IO ()
-setFormatter nsControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsControl (mkSelector "setFormatter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFormatter nsControl value =
+  sendMessage nsControl setFormatterSelector (toNSFormatter value)
 
 -- | @- objectValue@
 objectValue :: IsNSControl nsControl => nsControl -> IO RawId
-objectValue nsControl  =
-    fmap (RawId . castPtr) $ sendMsg nsControl (mkSelector "objectValue") (retPtr retVoid) []
+objectValue nsControl =
+  sendMessage nsControl objectValueSelector
 
 -- | @- setObjectValue:@
 setObjectValue :: IsNSControl nsControl => nsControl -> RawId -> IO ()
-setObjectValue nsControl  value =
-    sendMsg nsControl (mkSelector "setObjectValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setObjectValue nsControl value =
+  sendMessage nsControl setObjectValueSelector value
 
 -- | @- stringValue@
 stringValue :: IsNSControl nsControl => nsControl -> IO (Id NSString)
-stringValue nsControl  =
-    sendMsg nsControl (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue nsControl =
+  sendMessage nsControl stringValueSelector
 
 -- | @- setStringValue:@
 setStringValue :: (IsNSControl nsControl, IsNSString value) => nsControl -> value -> IO ()
-setStringValue nsControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsControl (mkSelector "setStringValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStringValue nsControl value =
+  sendMessage nsControl setStringValueSelector (toNSString value)
 
 -- | @- attributedStringValue@
 attributedStringValue :: IsNSControl nsControl => nsControl -> IO (Id NSAttributedString)
-attributedStringValue nsControl  =
-    sendMsg nsControl (mkSelector "attributedStringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedStringValue nsControl =
+  sendMessage nsControl attributedStringValueSelector
 
 -- | @- setAttributedStringValue:@
 setAttributedStringValue :: (IsNSControl nsControl, IsNSAttributedString value) => nsControl -> value -> IO ()
-setAttributedStringValue nsControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsControl (mkSelector "setAttributedStringValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedStringValue nsControl value =
+  sendMessage nsControl setAttributedStringValueSelector (toNSAttributedString value)
 
 -- | @- intValue@
 intValue :: IsNSControl nsControl => nsControl -> IO CInt
-intValue nsControl  =
-    sendMsg nsControl (mkSelector "intValue") retCInt []
+intValue nsControl =
+  sendMessage nsControl intValueSelector
 
 -- | @- setIntValue:@
 setIntValue :: IsNSControl nsControl => nsControl -> CInt -> IO ()
-setIntValue nsControl  value =
-    sendMsg nsControl (mkSelector "setIntValue:") retVoid [argCInt value]
+setIntValue nsControl value =
+  sendMessage nsControl setIntValueSelector value
 
 -- | @- integerValue@
 integerValue :: IsNSControl nsControl => nsControl -> IO CLong
-integerValue nsControl  =
-    sendMsg nsControl (mkSelector "integerValue") retCLong []
+integerValue nsControl =
+  sendMessage nsControl integerValueSelector
 
 -- | @- setIntegerValue:@
 setIntegerValue :: IsNSControl nsControl => nsControl -> CLong -> IO ()
-setIntegerValue nsControl  value =
-    sendMsg nsControl (mkSelector "setIntegerValue:") retVoid [argCLong value]
+setIntegerValue nsControl value =
+  sendMessage nsControl setIntegerValueSelector value
 
 -- | @- floatValue@
 floatValue :: IsNSControl nsControl => nsControl -> IO CFloat
-floatValue nsControl  =
-    sendMsg nsControl (mkSelector "floatValue") retCFloat []
+floatValue nsControl =
+  sendMessage nsControl floatValueSelector
 
 -- | @- setFloatValue:@
 setFloatValue :: IsNSControl nsControl => nsControl -> CFloat -> IO ()
-setFloatValue nsControl  value =
-    sendMsg nsControl (mkSelector "setFloatValue:") retVoid [argCFloat value]
+setFloatValue nsControl value =
+  sendMessage nsControl setFloatValueSelector value
 
 -- | @- doubleValue@
 doubleValue :: IsNSControl nsControl => nsControl -> IO CDouble
-doubleValue nsControl  =
-    sendMsg nsControl (mkSelector "doubleValue") retCDouble []
+doubleValue nsControl =
+  sendMessage nsControl doubleValueSelector
 
 -- | @- setDoubleValue:@
 setDoubleValue :: IsNSControl nsControl => nsControl -> CDouble -> IO ()
-setDoubleValue nsControl  value =
-    sendMsg nsControl (mkSelector "setDoubleValue:") retVoid [argCDouble value]
+setDoubleValue nsControl value =
+  sendMessage nsControl setDoubleValueSelector value
 
 -- | @- font@
 font :: IsNSControl nsControl => nsControl -> IO (Id NSFont)
-font nsControl  =
-    sendMsg nsControl (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font nsControl =
+  sendMessage nsControl fontSelector
 
 -- | @- setFont:@
 setFont :: (IsNSControl nsControl, IsNSFont value) => nsControl -> value -> IO ()
-setFont nsControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsControl (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFont nsControl value =
+  sendMessage nsControl setFontSelector (toNSFont value)
 
 -- | @- usesSingleLineMode@
 usesSingleLineMode :: IsNSControl nsControl => nsControl -> IO Bool
-usesSingleLineMode nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "usesSingleLineMode") retCULong []
+usesSingleLineMode nsControl =
+  sendMessage nsControl usesSingleLineModeSelector
 
 -- | @- setUsesSingleLineMode:@
 setUsesSingleLineMode :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setUsesSingleLineMode nsControl  value =
-    sendMsg nsControl (mkSelector "setUsesSingleLineMode:") retVoid [argCULong (if value then 1 else 0)]
+setUsesSingleLineMode nsControl value =
+  sendMessage nsControl setUsesSingleLineModeSelector value
 
 -- | @- lineBreakMode@
 lineBreakMode :: IsNSControl nsControl => nsControl -> IO NSLineBreakMode
-lineBreakMode nsControl  =
-    fmap (coerce :: CULong -> NSLineBreakMode) $ sendMsg nsControl (mkSelector "lineBreakMode") retCULong []
+lineBreakMode nsControl =
+  sendMessage nsControl lineBreakModeSelector
 
 -- | @- setLineBreakMode:@
 setLineBreakMode :: IsNSControl nsControl => nsControl -> NSLineBreakMode -> IO ()
-setLineBreakMode nsControl  value =
-    sendMsg nsControl (mkSelector "setLineBreakMode:") retVoid [argCULong (coerce value)]
+setLineBreakMode nsControl value =
+  sendMessage nsControl setLineBreakModeSelector value
 
 -- | @- alignment@
 alignment :: IsNSControl nsControl => nsControl -> IO NSTextAlignment
-alignment nsControl  =
-    fmap (coerce :: CLong -> NSTextAlignment) $ sendMsg nsControl (mkSelector "alignment") retCLong []
+alignment nsControl =
+  sendMessage nsControl alignmentSelector
 
 -- | @- setAlignment:@
 setAlignment :: IsNSControl nsControl => nsControl -> NSTextAlignment -> IO ()
-setAlignment nsControl  value =
-    sendMsg nsControl (mkSelector "setAlignment:") retVoid [argCLong (coerce value)]
+setAlignment nsControl value =
+  sendMessage nsControl setAlignmentSelector value
 
 -- | @- baseWritingDirection@
 baseWritingDirection :: IsNSControl nsControl => nsControl -> IO NSWritingDirection
-baseWritingDirection nsControl  =
-    fmap (coerce :: CLong -> NSWritingDirection) $ sendMsg nsControl (mkSelector "baseWritingDirection") retCLong []
+baseWritingDirection nsControl =
+  sendMessage nsControl baseWritingDirectionSelector
 
 -- | @- setBaseWritingDirection:@
 setBaseWritingDirection :: IsNSControl nsControl => nsControl -> NSWritingDirection -> IO ()
-setBaseWritingDirection nsControl  value =
-    sendMsg nsControl (mkSelector "setBaseWritingDirection:") retVoid [argCLong (coerce value)]
+setBaseWritingDirection nsControl value =
+  sendMessage nsControl setBaseWritingDirectionSelector value
 
 -- | @- allowsExpansionToolTips@
 allowsExpansionToolTips :: IsNSControl nsControl => nsControl -> IO Bool
-allowsExpansionToolTips nsControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsControl (mkSelector "allowsExpansionToolTips") retCULong []
+allowsExpansionToolTips nsControl =
+  sendMessage nsControl allowsExpansionToolTipsSelector
 
 -- | @- setAllowsExpansionToolTips:@
 setAllowsExpansionToolTips :: IsNSControl nsControl => nsControl -> Bool -> IO ()
-setAllowsExpansionToolTips nsControl  value =
-    sendMsg nsControl (mkSelector "setAllowsExpansionToolTips:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsExpansionToolTips nsControl value =
+  sendMessage nsControl setAllowsExpansionToolTipsSelector value
 
 -- | @+ cellClass@
 cellClass :: IO Class
 cellClass  =
   do
     cls' <- getRequiredClass "NSControl"
-    fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "cellClass") (retPtr retVoid) []
+    sendClassMessage cls' cellClassSelector
 
 -- | @+ setCellClass:@
 setCellClass :: Class -> IO ()
 setCellClass value =
   do
     cls' <- getRequiredClass "NSControl"
-    sendClassMsg cls' (mkSelector "setCellClass:") retVoid [argPtr (unClass value)]
+    sendClassMessage cls' setCellClassSelector value
 
 -- | @- cell@
 cell :: IsNSControl nsControl => nsControl -> IO (Id NSCell)
-cell nsControl  =
-    sendMsg nsControl (mkSelector "cell") (retPtr retVoid) [] >>= retainedObject . castPtr
+cell nsControl =
+  sendMessage nsControl cellSelector
 
 -- | @- setCell:@
 setCell :: (IsNSControl nsControl, IsNSCell value) => nsControl -> value -> IO ()
-setCell nsControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsControl (mkSelector "setCell:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCell nsControl value =
+  sendMessage nsControl setCellSelector (toNSCell value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] (Id NSControl)
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSControl)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @sizeThatFits:@
-sizeThatFitsSelector :: Selector
+sizeThatFitsSelector :: Selector '[NSSize] NSSize
 sizeThatFitsSelector = mkSelector "sizeThatFits:"
 
 -- | @Selector@ for @sizeToFit@
-sizeToFitSelector :: Selector
+sizeToFitSelector :: Selector '[] ()
 sizeToFitSelector = mkSelector "sizeToFit"
 
 -- | @Selector@ for @sendActionOn:@
-sendActionOnSelector :: Selector
+sendActionOnSelector :: Selector '[NSEventMask] CLong
 sendActionOnSelector = mkSelector "sendActionOn:"
 
 -- | @Selector@ for @sendAction:to:@
-sendAction_toSelector :: Selector
+sendAction_toSelector :: Selector '[Sel, RawId] Bool
 sendAction_toSelector = mkSelector "sendAction:to:"
 
 -- | @Selector@ for @takeIntValueFrom:@
-takeIntValueFromSelector :: Selector
+takeIntValueFromSelector :: Selector '[RawId] ()
 takeIntValueFromSelector = mkSelector "takeIntValueFrom:"
 
 -- | @Selector@ for @takeFloatValueFrom:@
-takeFloatValueFromSelector :: Selector
+takeFloatValueFromSelector :: Selector '[RawId] ()
 takeFloatValueFromSelector = mkSelector "takeFloatValueFrom:"
 
 -- | @Selector@ for @takeDoubleValueFrom:@
-takeDoubleValueFromSelector :: Selector
+takeDoubleValueFromSelector :: Selector '[RawId] ()
 takeDoubleValueFromSelector = mkSelector "takeDoubleValueFrom:"
 
 -- | @Selector@ for @takeStringValueFrom:@
-takeStringValueFromSelector :: Selector
+takeStringValueFromSelector :: Selector '[RawId] ()
 takeStringValueFromSelector = mkSelector "takeStringValueFrom:"
 
 -- | @Selector@ for @takeObjectValueFrom:@
-takeObjectValueFromSelector :: Selector
+takeObjectValueFromSelector :: Selector '[RawId] ()
 takeObjectValueFromSelector = mkSelector "takeObjectValueFrom:"
 
 -- | @Selector@ for @takeIntegerValueFrom:@
-takeIntegerValueFromSelector :: Selector
+takeIntegerValueFromSelector :: Selector '[RawId] ()
 takeIntegerValueFromSelector = mkSelector "takeIntegerValueFrom:"
 
 -- | @Selector@ for @performClick:@
-performClickSelector :: Selector
+performClickSelector :: Selector '[RawId] ()
 performClickSelector = mkSelector "performClick:"
 
 -- | @Selector@ for @expansionFrameWithFrame:@
-expansionFrameWithFrameSelector :: Selector
+expansionFrameWithFrameSelector :: Selector '[NSRect] NSRect
 expansionFrameWithFrameSelector = mkSelector "expansionFrameWithFrame:"
 
 -- | @Selector@ for @drawWithExpansionFrame:inView:@
-drawWithExpansionFrame_inViewSelector :: Selector
+drawWithExpansionFrame_inViewSelector :: Selector '[NSRect, Id NSView] ()
 drawWithExpansionFrame_inViewSelector = mkSelector "drawWithExpansionFrame:inView:"
 
 -- | @Selector@ for @invalidateIntrinsicContentSizeForCell:@
-invalidateIntrinsicContentSizeForCellSelector :: Selector
+invalidateIntrinsicContentSizeForCellSelector :: Selector '[Id NSCell] ()
 invalidateIntrinsicContentSizeForCellSelector = mkSelector "invalidateIntrinsicContentSizeForCell:"
 
 -- | @Selector@ for @setFloatingPointFormat:left:right:@
-setFloatingPointFormat_left_rightSelector :: Selector
+setFloatingPointFormat_left_rightSelector :: Selector '[Bool, CULong, CULong] ()
 setFloatingPointFormat_left_rightSelector = mkSelector "setFloatingPointFormat:left:right:"
 
 -- | @Selector@ for @selectedCell@
-selectedCellSelector :: Selector
+selectedCellSelector :: Selector '[] (Id NSCell)
 selectedCellSelector = mkSelector "selectedCell"
 
 -- | @Selector@ for @selectedTag@
-selectedTagSelector :: Selector
+selectedTagSelector :: Selector '[] CLong
 selectedTagSelector = mkSelector "selectedTag"
 
 -- | @Selector@ for @setNeedsDisplay@
-setNeedsDisplaySelector :: Selector
+setNeedsDisplaySelector :: Selector '[] ()
 setNeedsDisplaySelector = mkSelector "setNeedsDisplay"
 
 -- | @Selector@ for @calcSize@
-calcSizeSelector :: Selector
+calcSizeSelector :: Selector '[] ()
 calcSizeSelector = mkSelector "calcSize"
 
 -- | @Selector@ for @updateCell:@
-updateCellSelector :: Selector
+updateCellSelector :: Selector '[Id NSCell] ()
 updateCellSelector = mkSelector "updateCell:"
 
 -- | @Selector@ for @updateCellInside:@
-updateCellInsideSelector :: Selector
+updateCellInsideSelector :: Selector '[Id NSCell] ()
 updateCellInsideSelector = mkSelector "updateCellInside:"
 
 -- | @Selector@ for @drawCellInside:@
-drawCellInsideSelector :: Selector
+drawCellInsideSelector :: Selector '[Id NSCell] ()
 drawCellInsideSelector = mkSelector "drawCellInside:"
 
 -- | @Selector@ for @drawCell:@
-drawCellSelector :: Selector
+drawCellSelector :: Selector '[Id NSCell] ()
 drawCellSelector = mkSelector "drawCell:"
 
 -- | @Selector@ for @selectCell:@
-selectCellSelector :: Selector
+selectCellSelector :: Selector '[Id NSCell] ()
 selectCellSelector = mkSelector "selectCell:"
 
 -- | @Selector@ for @currentEditor@
-currentEditorSelector :: Selector
+currentEditorSelector :: Selector '[] (Id NSText)
 currentEditorSelector = mkSelector "currentEditor"
 
 -- | @Selector@ for @abortEditing@
-abortEditingSelector :: Selector
+abortEditingSelector :: Selector '[] Bool
 abortEditingSelector = mkSelector "abortEditing"
 
 -- | @Selector@ for @validateEditing@
-validateEditingSelector :: Selector
+validateEditingSelector :: Selector '[] ()
 validateEditingSelector = mkSelector "validateEditing"
 
 -- | @Selector@ for @editWithFrame:editor:delegate:event:@
-editWithFrame_editor_delegate_eventSelector :: Selector
+editWithFrame_editor_delegate_eventSelector :: Selector '[NSRect, Id NSText, RawId, Id NSEvent] ()
 editWithFrame_editor_delegate_eventSelector = mkSelector "editWithFrame:editor:delegate:event:"
 
 -- | @Selector@ for @selectWithFrame:editor:delegate:start:length:@
-selectWithFrame_editor_delegate_start_lengthSelector :: Selector
+selectWithFrame_editor_delegate_start_lengthSelector :: Selector '[NSRect, Id NSText, RawId, CLong, CLong] ()
 selectWithFrame_editor_delegate_start_lengthSelector = mkSelector "selectWithFrame:editor:delegate:start:length:"
 
 -- | @Selector@ for @endEditing:@
-endEditingSelector :: Selector
+endEditingSelector :: Selector '[Id NSText] ()
 endEditingSelector = mkSelector "endEditing:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] Sel
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] CLong
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @setTag:@
-setTagSelector :: Selector
+setTagSelector :: Selector '[CLong] ()
 setTagSelector = mkSelector "setTag:"
 
 -- | @Selector@ for @ignoresMultiClick@
-ignoresMultiClickSelector :: Selector
+ignoresMultiClickSelector :: Selector '[] Bool
 ignoresMultiClickSelector = mkSelector "ignoresMultiClick"
 
 -- | @Selector@ for @setIgnoresMultiClick:@
-setIgnoresMultiClickSelector :: Selector
+setIgnoresMultiClickSelector :: Selector '[Bool] ()
 setIgnoresMultiClickSelector = mkSelector "setIgnoresMultiClick:"
 
 -- | @Selector@ for @continuous@
-continuousSelector :: Selector
+continuousSelector :: Selector '[] Bool
 continuousSelector = mkSelector "continuous"
 
 -- | @Selector@ for @setContinuous:@
-setContinuousSelector :: Selector
+setContinuousSelector :: Selector '[Bool] ()
 setContinuousSelector = mkSelector "setContinuous:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @refusesFirstResponder@
-refusesFirstResponderSelector :: Selector
+refusesFirstResponderSelector :: Selector '[] Bool
 refusesFirstResponderSelector = mkSelector "refusesFirstResponder"
 
 -- | @Selector@ for @setRefusesFirstResponder:@
-setRefusesFirstResponderSelector :: Selector
+setRefusesFirstResponderSelector :: Selector '[Bool] ()
 setRefusesFirstResponderSelector = mkSelector "setRefusesFirstResponder:"
 
 -- | @Selector@ for @highlighted@
-highlightedSelector :: Selector
+highlightedSelector :: Selector '[] Bool
 highlightedSelector = mkSelector "highlighted"
 
 -- | @Selector@ for @setHighlighted:@
-setHighlightedSelector :: Selector
+setHighlightedSelector :: Selector '[Bool] ()
 setHighlightedSelector = mkSelector "setHighlighted:"
 
 -- | @Selector@ for @controlSize@
-controlSizeSelector :: Selector
+controlSizeSelector :: Selector '[] NSControlSize
 controlSizeSelector = mkSelector "controlSize"
 
 -- | @Selector@ for @setControlSize:@
-setControlSizeSelector :: Selector
+setControlSizeSelector :: Selector '[NSControlSize] ()
 setControlSizeSelector = mkSelector "setControlSize:"
 
 -- | @Selector@ for @formatter@
-formatterSelector :: Selector
+formatterSelector :: Selector '[] (Id NSFormatter)
 formatterSelector = mkSelector "formatter"
 
 -- | @Selector@ for @setFormatter:@
-setFormatterSelector :: Selector
+setFormatterSelector :: Selector '[Id NSFormatter] ()
 setFormatterSelector = mkSelector "setFormatter:"
 
 -- | @Selector@ for @objectValue@
-objectValueSelector :: Selector
+objectValueSelector :: Selector '[] RawId
 objectValueSelector = mkSelector "objectValue"
 
 -- | @Selector@ for @setObjectValue:@
-setObjectValueSelector :: Selector
+setObjectValueSelector :: Selector '[RawId] ()
 setObjectValueSelector = mkSelector "setObjectValue:"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @setStringValue:@
-setStringValueSelector :: Selector
+setStringValueSelector :: Selector '[Id NSString] ()
 setStringValueSelector = mkSelector "setStringValue:"
 
 -- | @Selector@ for @attributedStringValue@
-attributedStringValueSelector :: Selector
+attributedStringValueSelector :: Selector '[] (Id NSAttributedString)
 attributedStringValueSelector = mkSelector "attributedStringValue"
 
 -- | @Selector@ for @setAttributedStringValue:@
-setAttributedStringValueSelector :: Selector
+setAttributedStringValueSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringValueSelector = mkSelector "setAttributedStringValue:"
 
 -- | @Selector@ for @intValue@
-intValueSelector :: Selector
+intValueSelector :: Selector '[] CInt
 intValueSelector = mkSelector "intValue"
 
 -- | @Selector@ for @setIntValue:@
-setIntValueSelector :: Selector
+setIntValueSelector :: Selector '[CInt] ()
 setIntValueSelector = mkSelector "setIntValue:"
 
 -- | @Selector@ for @integerValue@
-integerValueSelector :: Selector
+integerValueSelector :: Selector '[] CLong
 integerValueSelector = mkSelector "integerValue"
 
 -- | @Selector@ for @setIntegerValue:@
-setIntegerValueSelector :: Selector
+setIntegerValueSelector :: Selector '[CLong] ()
 setIntegerValueSelector = mkSelector "setIntegerValue:"
 
 -- | @Selector@ for @floatValue@
-floatValueSelector :: Selector
+floatValueSelector :: Selector '[] CFloat
 floatValueSelector = mkSelector "floatValue"
 
 -- | @Selector@ for @setFloatValue:@
-setFloatValueSelector :: Selector
+setFloatValueSelector :: Selector '[CFloat] ()
 setFloatValueSelector = mkSelector "setFloatValue:"
 
 -- | @Selector@ for @doubleValue@
-doubleValueSelector :: Selector
+doubleValueSelector :: Selector '[] CDouble
 doubleValueSelector = mkSelector "doubleValue"
 
 -- | @Selector@ for @setDoubleValue:@
-setDoubleValueSelector :: Selector
+setDoubleValueSelector :: Selector '[CDouble] ()
 setDoubleValueSelector = mkSelector "setDoubleValue:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @usesSingleLineMode@
-usesSingleLineModeSelector :: Selector
+usesSingleLineModeSelector :: Selector '[] Bool
 usesSingleLineModeSelector = mkSelector "usesSingleLineMode"
 
 -- | @Selector@ for @setUsesSingleLineMode:@
-setUsesSingleLineModeSelector :: Selector
+setUsesSingleLineModeSelector :: Selector '[Bool] ()
 setUsesSingleLineModeSelector = mkSelector "setUsesSingleLineMode:"
 
 -- | @Selector@ for @lineBreakMode@
-lineBreakModeSelector :: Selector
+lineBreakModeSelector :: Selector '[] NSLineBreakMode
 lineBreakModeSelector = mkSelector "lineBreakMode"
 
 -- | @Selector@ for @setLineBreakMode:@
-setLineBreakModeSelector :: Selector
+setLineBreakModeSelector :: Selector '[NSLineBreakMode] ()
 setLineBreakModeSelector = mkSelector "setLineBreakMode:"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] NSTextAlignment
 alignmentSelector = mkSelector "alignment"
 
 -- | @Selector@ for @setAlignment:@
-setAlignmentSelector :: Selector
+setAlignmentSelector :: Selector '[NSTextAlignment] ()
 setAlignmentSelector = mkSelector "setAlignment:"
 
 -- | @Selector@ for @baseWritingDirection@
-baseWritingDirectionSelector :: Selector
+baseWritingDirectionSelector :: Selector '[] NSWritingDirection
 baseWritingDirectionSelector = mkSelector "baseWritingDirection"
 
 -- | @Selector@ for @setBaseWritingDirection:@
-setBaseWritingDirectionSelector :: Selector
+setBaseWritingDirectionSelector :: Selector '[NSWritingDirection] ()
 setBaseWritingDirectionSelector = mkSelector "setBaseWritingDirection:"
 
 -- | @Selector@ for @allowsExpansionToolTips@
-allowsExpansionToolTipsSelector :: Selector
+allowsExpansionToolTipsSelector :: Selector '[] Bool
 allowsExpansionToolTipsSelector = mkSelector "allowsExpansionToolTips"
 
 -- | @Selector@ for @setAllowsExpansionToolTips:@
-setAllowsExpansionToolTipsSelector :: Selector
+setAllowsExpansionToolTipsSelector :: Selector '[Bool] ()
 setAllowsExpansionToolTipsSelector = mkSelector "setAllowsExpansionToolTips:"
 
 -- | @Selector@ for @cellClass@
-cellClassSelector :: Selector
+cellClassSelector :: Selector '[] Class
 cellClassSelector = mkSelector "cellClass"
 
 -- | @Selector@ for @setCellClass:@
-setCellClassSelector :: Selector
+setCellClassSelector :: Selector '[Class] ()
 setCellClassSelector = mkSelector "setCellClass:"
 
 -- | @Selector@ for @cell@
-cellSelector :: Selector
+cellSelector :: Selector '[] (Id NSCell)
 cellSelector = mkSelector "cell"
 
 -- | @Selector@ for @setCell:@
-setCellSelector :: Selector
+setCellSelector :: Selector '[Id NSCell] ()
 setCellSelector = mkSelector "setCell:"
 

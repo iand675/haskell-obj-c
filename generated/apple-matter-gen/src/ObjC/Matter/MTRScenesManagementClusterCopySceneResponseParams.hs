@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRScenesManagementClusterCopySceneResponseParams
   , setGroupIdentifierFrom
   , sceneIdentifierFrom
   , setSceneIdentifierFrom
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , groupIdentifierFromSelector
-  , setGroupIdentifierFromSelector
+  , initWithResponseValue_errorSelector
   , sceneIdentifierFromSelector
+  , setGroupIdentifierFromSelector
   , setSceneIdentifierFromSelector
+  , setStatusSelector
+  , statusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrScenesManagementClusterCopySceneResponseParams -> responseValue -> error_ -> IO (Id MTRScenesManagementClusterCopySceneResponseParams)
-initWithResponseValue_error mtrScenesManagementClusterCopySceneResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrScenesManagementClusterCopySceneResponseParams responseValue error_ =
+  sendOwnedMessage mtrScenesManagementClusterCopySceneResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams => mtrScenesManagementClusterCopySceneResponseParams -> IO (Id NSNumber)
-status mtrScenesManagementClusterCopySceneResponseParams  =
-    sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrScenesManagementClusterCopySceneResponseParams =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneResponseParams -> value -> IO ()
-setStatus mtrScenesManagementClusterCopySceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrScenesManagementClusterCopySceneResponseParams value =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- groupIdentifierFrom@
 groupIdentifierFrom :: IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams => mtrScenesManagementClusterCopySceneResponseParams -> IO (Id NSNumber)
-groupIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams  =
-    sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "groupIdentifierFrom") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams groupIdentifierFromSelector
 
 -- | @- setGroupIdentifierFrom:@
 setGroupIdentifierFrom :: (IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneResponseParams -> value -> IO ()
-setGroupIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "setGroupIdentifierFrom:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams value =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams setGroupIdentifierFromSelector (toNSNumber value)
 
 -- | @- sceneIdentifierFrom@
 sceneIdentifierFrom :: IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams => mtrScenesManagementClusterCopySceneResponseParams -> IO (Id NSNumber)
-sceneIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams  =
-    sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "sceneIdentifierFrom") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams sceneIdentifierFromSelector
 
 -- | @- setSceneIdentifierFrom:@
 setSceneIdentifierFrom :: (IsMTRScenesManagementClusterCopySceneResponseParams mtrScenesManagementClusterCopySceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneResponseParams -> value -> IO ()
-setSceneIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneResponseParams (mkSelector "setSceneIdentifierFrom:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneIdentifierFrom mtrScenesManagementClusterCopySceneResponseParams value =
+  sendMessage mtrScenesManagementClusterCopySceneResponseParams setSceneIdentifierFromSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRScenesManagementClusterCopySceneResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @groupIdentifierFrom@
-groupIdentifierFromSelector :: Selector
+groupIdentifierFromSelector :: Selector '[] (Id NSNumber)
 groupIdentifierFromSelector = mkSelector "groupIdentifierFrom"
 
 -- | @Selector@ for @setGroupIdentifierFrom:@
-setGroupIdentifierFromSelector :: Selector
+setGroupIdentifierFromSelector :: Selector '[Id NSNumber] ()
 setGroupIdentifierFromSelector = mkSelector "setGroupIdentifierFrom:"
 
 -- | @Selector@ for @sceneIdentifierFrom@
-sceneIdentifierFromSelector :: Selector
+sceneIdentifierFromSelector :: Selector '[] (Id NSNumber)
 sceneIdentifierFromSelector = mkSelector "sceneIdentifierFrom"
 
 -- | @Selector@ for @setSceneIdentifierFrom:@
-setSceneIdentifierFromSelector :: Selector
+setSceneIdentifierFromSelector :: Selector '[Id NSNumber] ()
 setSceneIdentifierFromSelector = mkSelector "setSceneIdentifierFrom:"
 

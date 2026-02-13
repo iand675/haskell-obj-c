@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,15 +32,11 @@ module ObjC.PDFKit.PDFActionNamed
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,32 +46,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:@
 initWithName :: IsPDFActionNamed pdfActionNamed => pdfActionNamed -> PDFActionNamedName -> IO (Id PDFActionNamed)
-initWithName pdfActionNamed  name =
-    sendMsg pdfActionNamed (mkSelector "initWithName:") (retPtr retVoid) [argCLong (coerce name)] >>= ownedObject . castPtr
+initWithName pdfActionNamed name =
+  sendOwnedMessage pdfActionNamed initWithNameSelector name
 
 -- | @- name@
 name :: IsPDFActionNamed pdfActionNamed => pdfActionNamed -> IO PDFActionNamedName
-name pdfActionNamed  =
-    fmap (coerce :: CLong -> PDFActionNamedName) $ sendMsg pdfActionNamed (mkSelector "name") retCLong []
+name pdfActionNamed =
+  sendMessage pdfActionNamed nameSelector
 
 -- | @- setName:@
 setName :: IsPDFActionNamed pdfActionNamed => pdfActionNamed -> PDFActionNamedName -> IO ()
-setName pdfActionNamed  value =
-    sendMsg pdfActionNamed (mkSelector "setName:") retVoid [argCLong (coerce value)]
+setName pdfActionNamed value =
+  sendMessage pdfActionNamed setNameSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[PDFActionNamedName] (Id PDFActionNamed)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] PDFActionNamedName
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[PDFActionNamedName] ()
 setNameSelector = mkSelector "setName:"
 

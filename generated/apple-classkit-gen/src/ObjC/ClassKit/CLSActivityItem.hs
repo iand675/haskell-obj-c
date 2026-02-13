@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.ClassKit.CLSActivityItem
   , title
   , setTitle
   , identifier
-  , newSelector
-  , initSelector
-  , titleSelector
-  , setTitleSelector
   , identifierSelector
+  , initSelector
+  , newSelector
+  , setTitleSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,12 +39,12 @@ new :: IO (Id CLSActivityItem)
 new  =
   do
     cls' <- getRequiredClass "CLSActivityItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCLSActivityItem clsActivityItem => clsActivityItem -> IO (Id CLSActivityItem)
-init_ clsActivityItem  =
-    sendMsg clsActivityItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clsActivityItem =
+  sendOwnedMessage clsActivityItem initSelector
 
 -- | Title of what this ActivityItem represents.
 --
@@ -55,8 +52,8 @@ init_ clsActivityItem  =
 --
 -- ObjC selector: @- title@
 title :: IsCLSActivityItem clsActivityItem => clsActivityItem -> IO (Id NSString)
-title clsActivityItem  =
-    sendMsg clsActivityItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title clsActivityItem =
+  sendMessage clsActivityItem titleSelector
 
 -- | Title of what this ActivityItem represents.
 --
@@ -64,9 +61,8 @@ title clsActivityItem  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsCLSActivityItem clsActivityItem, IsNSString value) => clsActivityItem -> value -> IO ()
-setTitle clsActivityItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsActivityItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle clsActivityItem value =
+  sendMessage clsActivityItem setTitleSelector (toNSString value)
 
 -- | An identifier that is unique within its owning activity
 --
@@ -74,30 +70,30 @@ setTitle clsActivityItem  value =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsCLSActivityItem clsActivityItem => clsActivityItem -> IO (Id NSString)
-identifier clsActivityItem  =
-    sendMsg clsActivityItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier clsActivityItem =
+  sendMessage clsActivityItem identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLSActivityItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLSActivityItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

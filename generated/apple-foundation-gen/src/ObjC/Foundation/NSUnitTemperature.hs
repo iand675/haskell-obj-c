@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Foundation.NSUnitTemperature
   , kelvin
   , celsius
   , fahrenheit
-  , kelvinSelector
   , celsiusSelector
   , fahrenheitSelector
+  , kelvinSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,35 +32,35 @@ kelvin :: IO (Id NSUnitTemperature)
 kelvin  =
   do
     cls' <- getRequiredClass "NSUnitTemperature"
-    sendClassMsg cls' (mkSelector "kelvin") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kelvinSelector
 
 -- | @+ celsius@
 celsius :: IO (Id NSUnitTemperature)
 celsius  =
   do
     cls' <- getRequiredClass "NSUnitTemperature"
-    sendClassMsg cls' (mkSelector "celsius") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' celsiusSelector
 
 -- | @+ fahrenheit@
 fahrenheit :: IO (Id NSUnitTemperature)
 fahrenheit  =
   do
     cls' <- getRequiredClass "NSUnitTemperature"
-    sendClassMsg cls' (mkSelector "fahrenheit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fahrenheitSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kelvin@
-kelvinSelector :: Selector
+kelvinSelector :: Selector '[] (Id NSUnitTemperature)
 kelvinSelector = mkSelector "kelvin"
 
 -- | @Selector@ for @celsius@
-celsiusSelector :: Selector
+celsiusSelector :: Selector '[] (Id NSUnitTemperature)
 celsiusSelector = mkSelector "celsius"
 
 -- | @Selector@ for @fahrenheit@
-fahrenheitSelector :: Selector
+fahrenheitSelector :: Selector '[] (Id NSUnitTemperature)
 fahrenheitSelector = mkSelector "fahrenheit"
 

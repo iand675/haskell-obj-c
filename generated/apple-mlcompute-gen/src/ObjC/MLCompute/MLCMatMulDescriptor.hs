@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.MLCompute.MLCMatMulDescriptor
   , alpha
   , transposesX
   , transposesY
-  , newSelector
-  , initSelector
-  , descriptorWithAlpha_transposesX_transposesYSelector
-  , descriptorSelector
   , alphaSelector
+  , descriptorSelector
+  , descriptorWithAlpha_transposesX_transposesYSelector
+  , initSelector
+  , newSelector
   , transposesXSelector
   , transposesYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id MLCMatMulDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCMatMulDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCMatMulDescriptor mlcMatMulDescriptor => mlcMatMulDescriptor -> IO (Id MLCMatMulDescriptor)
-init_ mlcMatMulDescriptor  =
-    sendMsg mlcMatMulDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcMatMulDescriptor =
+  sendOwnedMessage mlcMatMulDescriptor initSelector
 
 -- | A matrix multiplication layer descriptor
 --
@@ -70,7 +67,7 @@ descriptorWithAlpha_transposesX_transposesY :: CFloat -> Bool -> Bool -> IO (Id 
 descriptorWithAlpha_transposesX_transposesY alpha transposesX transposesY =
   do
     cls' <- getRequiredClass "MLCMatMulDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithAlpha:transposesX:transposesY:") (retPtr retVoid) [argCFloat alpha, argCULong (if transposesX then 1 else 0), argCULong (if transposesY then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithAlpha_transposesX_transposesYSelector alpha transposesX transposesY
 
 -- | descriptor
 --
@@ -81,58 +78,58 @@ descriptor :: IO (Id MLCMatMulDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MLCMatMulDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | a scalar to scale the result in C=alpha x X x Y. Default = 1.0
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMLCMatMulDescriptor mlcMatMulDescriptor => mlcMatMulDescriptor -> IO CFloat
-alpha mlcMatMulDescriptor  =
-    sendMsg mlcMatMulDescriptor (mkSelector "alpha") retCFloat []
+alpha mlcMatMulDescriptor =
+  sendMessage mlcMatMulDescriptor alphaSelector
 
 -- | if true, transposes the last two dimensions of X. Default = False
 --
 -- ObjC selector: @- transposesX@
 transposesX :: IsMLCMatMulDescriptor mlcMatMulDescriptor => mlcMatMulDescriptor -> IO Bool
-transposesX mlcMatMulDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcMatMulDescriptor (mkSelector "transposesX") retCULong []
+transposesX mlcMatMulDescriptor =
+  sendMessage mlcMatMulDescriptor transposesXSelector
 
 -- | if true, transposes the last two dimensions of Y. Default = False
 --
 -- ObjC selector: @- transposesY@
 transposesY :: IsMLCMatMulDescriptor mlcMatMulDescriptor => mlcMatMulDescriptor -> IO Bool
-transposesY mlcMatMulDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcMatMulDescriptor (mkSelector "transposesY") retCULong []
+transposesY mlcMatMulDescriptor =
+  sendMessage mlcMatMulDescriptor transposesYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCMatMulDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCMatMulDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithAlpha:transposesX:transposesY:@
-descriptorWithAlpha_transposesX_transposesYSelector :: Selector
+descriptorWithAlpha_transposesX_transposesYSelector :: Selector '[CFloat, Bool, Bool] (Id MLCMatMulDescriptor)
 descriptorWithAlpha_transposesX_transposesYSelector = mkSelector "descriptorWithAlpha:transposesX:transposesY:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCMatMulDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @transposesX@
-transposesXSelector :: Selector
+transposesXSelector :: Selector '[] Bool
 transposesXSelector = mkSelector "transposesX"
 
 -- | @Selector@ for @transposesY@
-transposesYSelector :: Selector
+transposesYSelector :: Selector '[] Bool
 transposesYSelector = mkSelector "transposesY"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.SensorKit.SRFetchRequest
   , setTo
   , device
   , setDevice
-  , fromSelector
-  , setFromSelector
-  , toSelector
-  , setToSelector
   , deviceSelector
+  , fromSelector
   , setDeviceSelector
+  , setFromSelector
+  , setToSelector
+  , toSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- from@
 from :: IsSRFetchRequest srFetchRequest => srFetchRequest -> IO CDouble
-from srFetchRequest  =
-    sendMsg srFetchRequest (mkSelector "from") retCDouble []
+from srFetchRequest =
+  sendMessage srFetchRequest fromSelector
 
 -- | Fetch data starting after this time.
 --
@@ -56,8 +53,8 @@ from srFetchRequest  =
 --
 -- ObjC selector: @- setFrom:@
 setFrom :: IsSRFetchRequest srFetchRequest => srFetchRequest -> CDouble -> IO ()
-setFrom srFetchRequest  value =
-    sendMsg srFetchRequest (mkSelector "setFrom:") retVoid [argCDouble value]
+setFrom srFetchRequest value =
+  sendMessage srFetchRequest setFromSelector value
 
 -- | Fetch data ending at this time.
 --
@@ -65,8 +62,8 @@ setFrom srFetchRequest  value =
 --
 -- ObjC selector: @- to@
 to :: IsSRFetchRequest srFetchRequest => srFetchRequest -> IO CDouble
-to srFetchRequest  =
-    sendMsg srFetchRequest (mkSelector "to") retCDouble []
+to srFetchRequest =
+  sendMessage srFetchRequest toSelector
 
 -- | Fetch data ending at this time.
 --
@@ -74,8 +71,8 @@ to srFetchRequest  =
 --
 -- ObjC selector: @- setTo:@
 setTo :: IsSRFetchRequest srFetchRequest => srFetchRequest -> CDouble -> IO ()
-setTo srFetchRequest  value =
-    sendMsg srFetchRequest (mkSelector "setTo:") retVoid [argCDouble value]
+setTo srFetchRequest value =
+  sendMessage srFetchRequest setToSelector value
 
 -- | Fetch data generated on this device
 --
@@ -83,8 +80,8 @@ setTo srFetchRequest  value =
 --
 -- ObjC selector: @- device@
 device :: IsSRFetchRequest srFetchRequest => srFetchRequest -> IO (Id SRDevice)
-device srFetchRequest  =
-    sendMsg srFetchRequest (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device srFetchRequest =
+  sendMessage srFetchRequest deviceSelector
 
 -- | Fetch data generated on this device
 --
@@ -92,35 +89,34 @@ device srFetchRequest  =
 --
 -- ObjC selector: @- setDevice:@
 setDevice :: (IsSRFetchRequest srFetchRequest, IsSRDevice value) => srFetchRequest -> value -> IO ()
-setDevice srFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg srFetchRequest (mkSelector "setDevice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDevice srFetchRequest value =
+  sendMessage srFetchRequest setDeviceSelector (toSRDevice value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @from@
-fromSelector :: Selector
+fromSelector :: Selector '[] CDouble
 fromSelector = mkSelector "from"
 
 -- | @Selector@ for @setFrom:@
-setFromSelector :: Selector
+setFromSelector :: Selector '[CDouble] ()
 setFromSelector = mkSelector "setFrom:"
 
 -- | @Selector@ for @to@
-toSelector :: Selector
+toSelector :: Selector '[] CDouble
 toSelector = mkSelector "to"
 
 -- | @Selector@ for @setTo:@
-setToSelector :: Selector
+setToSelector :: Selector '[CDouble] ()
 setToSelector = mkSelector "setTo:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id SRDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @setDevice:@
-setDeviceSelector :: Selector
+setDeviceSelector :: Selector '[Id SRDevice] ()
 setDeviceSelector = mkSelector "setDevice:"
 

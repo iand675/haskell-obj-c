@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.WebKit.DOMUIEvent
   , pageX
   , pageY
   , which
-  , initUIEvent_canBubble_cancelable_view_detailSelector
-  , initUIEventSelector
-  , viewSelector
-  , detailSelector
-  , keyCodeSelector
   , charCodeSelector
+  , detailSelector
+  , initUIEventSelector
+  , initUIEvent_canBubble_cancelable_view_detailSelector
+  , keyCodeSelector
   , layerXSelector
   , layerYSelector
   , pageXSelector
   , pageYSelector
+  , viewSelector
   , whichSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,108 +46,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initUIEvent:canBubble:cancelable:view:detail:@
 initUIEvent_canBubble_cancelable_view_detail :: (IsDOMUIEvent domuiEvent, IsNSString type_, IsDOMAbstractView view) => domuiEvent -> type_ -> Bool -> Bool -> view -> CInt -> IO ()
-initUIEvent_canBubble_cancelable_view_detail domuiEvent  type_ canBubble cancelable view detail =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-        sendMsg domuiEvent (mkSelector "initUIEvent:canBubble:cancelable:view:detail:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argCInt detail]
+initUIEvent_canBubble_cancelable_view_detail domuiEvent type_ canBubble cancelable view detail =
+  sendOwnedMessage domuiEvent initUIEvent_canBubble_cancelable_view_detailSelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) detail
 
 -- | @- initUIEvent:::::@
 initUIEvent :: (IsDOMUIEvent domuiEvent, IsNSString type_, IsDOMAbstractView view) => domuiEvent -> type_ -> Bool -> Bool -> view -> CInt -> IO ()
-initUIEvent domuiEvent  type_ canBubble cancelable view detail =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-        sendMsg domuiEvent (mkSelector "initUIEvent:::::") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argCInt detail]
+initUIEvent domuiEvent type_ canBubble cancelable view detail =
+  sendOwnedMessage domuiEvent initUIEventSelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) detail
 
 -- | @- view@
 view :: IsDOMUIEvent domuiEvent => domuiEvent -> IO (Id DOMAbstractView)
-view domuiEvent  =
-    sendMsg domuiEvent (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view domuiEvent =
+  sendMessage domuiEvent viewSelector
 
 -- | @- detail@
 detail :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-detail domuiEvent  =
-    sendMsg domuiEvent (mkSelector "detail") retCInt []
+detail domuiEvent =
+  sendMessage domuiEvent detailSelector
 
 -- | @- keyCode@
 keyCode :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-keyCode domuiEvent  =
-    sendMsg domuiEvent (mkSelector "keyCode") retCInt []
+keyCode domuiEvent =
+  sendMessage domuiEvent keyCodeSelector
 
 -- | @- charCode@
 charCode :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-charCode domuiEvent  =
-    sendMsg domuiEvent (mkSelector "charCode") retCInt []
+charCode domuiEvent =
+  sendMessage domuiEvent charCodeSelector
 
 -- | @- layerX@
 layerX :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-layerX domuiEvent  =
-    sendMsg domuiEvent (mkSelector "layerX") retCInt []
+layerX domuiEvent =
+  sendMessage domuiEvent layerXSelector
 
 -- | @- layerY@
 layerY :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-layerY domuiEvent  =
-    sendMsg domuiEvent (mkSelector "layerY") retCInt []
+layerY domuiEvent =
+  sendMessage domuiEvent layerYSelector
 
 -- | @- pageX@
 pageX :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-pageX domuiEvent  =
-    sendMsg domuiEvent (mkSelector "pageX") retCInt []
+pageX domuiEvent =
+  sendMessage domuiEvent pageXSelector
 
 -- | @- pageY@
 pageY :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-pageY domuiEvent  =
-    sendMsg domuiEvent (mkSelector "pageY") retCInt []
+pageY domuiEvent =
+  sendMessage domuiEvent pageYSelector
 
 -- | @- which@
 which :: IsDOMUIEvent domuiEvent => domuiEvent -> IO CInt
-which domuiEvent  =
-    sendMsg domuiEvent (mkSelector "which") retCInt []
+which domuiEvent =
+  sendMessage domuiEvent whichSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initUIEvent:canBubble:cancelable:view:detail:@
-initUIEvent_canBubble_cancelable_view_detailSelector :: Selector
+initUIEvent_canBubble_cancelable_view_detailSelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, CInt] ()
 initUIEvent_canBubble_cancelable_view_detailSelector = mkSelector "initUIEvent:canBubble:cancelable:view:detail:"
 
 -- | @Selector@ for @initUIEvent:::::@
-initUIEventSelector :: Selector
+initUIEventSelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, CInt] ()
 initUIEventSelector = mkSelector "initUIEvent:::::"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id DOMAbstractView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @detail@
-detailSelector :: Selector
+detailSelector :: Selector '[] CInt
 detailSelector = mkSelector "detail"
 
 -- | @Selector@ for @keyCode@
-keyCodeSelector :: Selector
+keyCodeSelector :: Selector '[] CInt
 keyCodeSelector = mkSelector "keyCode"
 
 -- | @Selector@ for @charCode@
-charCodeSelector :: Selector
+charCodeSelector :: Selector '[] CInt
 charCodeSelector = mkSelector "charCode"
 
 -- | @Selector@ for @layerX@
-layerXSelector :: Selector
+layerXSelector :: Selector '[] CInt
 layerXSelector = mkSelector "layerX"
 
 -- | @Selector@ for @layerY@
-layerYSelector :: Selector
+layerYSelector :: Selector '[] CInt
 layerYSelector = mkSelector "layerY"
 
 -- | @Selector@ for @pageX@
-pageXSelector :: Selector
+pageXSelector :: Selector '[] CInt
 pageXSelector = mkSelector "pageX"
 
 -- | @Selector@ for @pageY@
-pageYSelector :: Selector
+pageYSelector :: Selector '[] CInt
 pageYSelector = mkSelector "pageY"
 
 -- | @Selector@ for @which@
-whichSelector :: Selector
+whichSelector :: Selector '[] CInt
 whichSelector = mkSelector "which"
 

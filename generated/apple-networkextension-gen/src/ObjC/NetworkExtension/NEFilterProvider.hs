@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.NetworkExtension.NEFilterProvider
   , stopFilterWithReason_completionHandler
   , handleReport
   , filterConfiguration
+  , filterConfigurationSelector
+  , handleReportSelector
   , startFilterWithCompletionHandlerSelector
   , stopFilterWithReason_completionHandlerSelector
-  , handleReportSelector
-  , filterConfigurationSelector
 
   -- * Enum types
   , NEProviderStopReason(NEProviderStopReason)
@@ -45,15 +46,11 @@ module ObjC.NetworkExtension.NEFilterProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startFilterWithCompletionHandler:@
 startFilterWithCompletionHandler :: IsNEFilterProvider neFilterProvider => neFilterProvider -> Ptr () -> IO ()
-startFilterWithCompletionHandler neFilterProvider  completionHandler =
-    sendMsg neFilterProvider (mkSelector "startFilterWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startFilterWithCompletionHandler neFilterProvider completionHandler =
+  sendMessage neFilterProvider startFilterWithCompletionHandlerSelector completionHandler
 
 -- | stopFilterWithReason:completionHandler:
 --
@@ -82,8 +79,8 @@ startFilterWithCompletionHandler neFilterProvider  completionHandler =
 --
 -- ObjC selector: @- stopFilterWithReason:completionHandler:@
 stopFilterWithReason_completionHandler :: IsNEFilterProvider neFilterProvider => neFilterProvider -> NEProviderStopReason -> Ptr () -> IO ()
-stopFilterWithReason_completionHandler neFilterProvider  reason completionHandler =
-    sendMsg neFilterProvider (mkSelector "stopFilterWithReason:completionHandler:") retVoid [argCLong (coerce reason), argPtr (castPtr completionHandler :: Ptr ())]
+stopFilterWithReason_completionHandler neFilterProvider reason completionHandler =
+  sendMessage neFilterProvider stopFilterWithReason_completionHandlerSelector reason completionHandler
 
 -- | handleReport:
 --
@@ -93,9 +90,8 @@ stopFilterWithReason_completionHandler neFilterProvider  reason completionHandle
 --
 -- ObjC selector: @- handleReport:@
 handleReport :: (IsNEFilterProvider neFilterProvider, IsNEFilterReport report) => neFilterProvider -> report -> IO ()
-handleReport neFilterProvider  report =
-  withObjCPtr report $ \raw_report ->
-      sendMsg neFilterProvider (mkSelector "handleReport:") retVoid [argPtr (castPtr raw_report :: Ptr ())]
+handleReport neFilterProvider report =
+  sendMessage neFilterProvider handleReportSelector (toNEFilterReport report)
 
 -- | filterConfiguration
 --
@@ -103,26 +99,26 @@ handleReport neFilterProvider  report =
 --
 -- ObjC selector: @- filterConfiguration@
 filterConfiguration :: IsNEFilterProvider neFilterProvider => neFilterProvider -> IO (Id NEFilterProviderConfiguration)
-filterConfiguration neFilterProvider  =
-    sendMsg neFilterProvider (mkSelector "filterConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterConfiguration neFilterProvider =
+  sendMessage neFilterProvider filterConfigurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startFilterWithCompletionHandler:@
-startFilterWithCompletionHandlerSelector :: Selector
+startFilterWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startFilterWithCompletionHandlerSelector = mkSelector "startFilterWithCompletionHandler:"
 
 -- | @Selector@ for @stopFilterWithReason:completionHandler:@
-stopFilterWithReason_completionHandlerSelector :: Selector
+stopFilterWithReason_completionHandlerSelector :: Selector '[NEProviderStopReason, Ptr ()] ()
 stopFilterWithReason_completionHandlerSelector = mkSelector "stopFilterWithReason:completionHandler:"
 
 -- | @Selector@ for @handleReport:@
-handleReportSelector :: Selector
+handleReportSelector :: Selector '[Id NEFilterReport] ()
 handleReportSelector = mkSelector "handleReport:"
 
 -- | @Selector@ for @filterConfiguration@
-filterConfigurationSelector :: Selector
+filterConfigurationSelector :: Selector '[] (Id NEFilterProviderConfiguration)
 filterConfigurationSelector = mkSelector "filterConfiguration"
 

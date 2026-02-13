@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CryptoTokenKit.TKTokenKeyAlgorithm
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsTKTokenKeyAlgorithm tkTokenKeyAlgorithm => tkTokenKeyAlgorithm -> IO (Id TKTokenKeyAlgorithm)
-init_ tkTokenKeyAlgorithm  =
-    sendMsg tkTokenKeyAlgorithm (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenKeyAlgorithm =
+  sendOwnedMessage tkTokenKeyAlgorithm initSelector
 
 -- | Checks if specified algorithm is base operation algorithm.
 --
 -- ObjC selector: @- isAlgorithm:@
 isAlgorithm :: IsTKTokenKeyAlgorithm tkTokenKeyAlgorithm => tkTokenKeyAlgorithm -> RawId -> IO Bool
-isAlgorithm tkTokenKeyAlgorithm  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeyAlgorithm (mkSelector "isAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+isAlgorithm tkTokenKeyAlgorithm algorithm =
+  sendMessage tkTokenKeyAlgorithm isAlgorithmSelector algorithm
 
 -- | Checks whether specified algorithm is either target algorithm or one of the algorithms through which the operation passed.
 --
 -- ObjC selector: @- supportsAlgorithm:@
 supportsAlgorithm :: IsTKTokenKeyAlgorithm tkTokenKeyAlgorithm => tkTokenKeyAlgorithm -> RawId -> IO Bool
-supportsAlgorithm tkTokenKeyAlgorithm  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeyAlgorithm (mkSelector "supportsAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+supportsAlgorithm tkTokenKeyAlgorithm algorithm =
+  sendMessage tkTokenKeyAlgorithm supportsAlgorithmSelector algorithm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenKeyAlgorithm)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @isAlgorithm:@
-isAlgorithmSelector :: Selector
+isAlgorithmSelector :: Selector '[RawId] Bool
 isAlgorithmSelector = mkSelector "isAlgorithm:"
 
 -- | @Selector@ for @supportsAlgorithm:@
-supportsAlgorithmSelector :: Selector
+supportsAlgorithmSelector :: Selector '[RawId] Bool
 supportsAlgorithmSelector = mkSelector "supportsAlgorithm:"
 

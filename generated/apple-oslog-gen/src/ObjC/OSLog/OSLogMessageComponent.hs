@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,8 +21,6 @@ module ObjC.OSLog.OSLogMessageComponent
   , argumentNumberValue
   , argumentStringValue
   , argumentUInt64Value
-  , formatSubstringSelector
-  , placeholderSelector
   , argumentCategorySelector
   , argumentDataValueSelector
   , argumentDoubleValueSelector
@@ -29,6 +28,8 @@ module ObjC.OSLog.OSLogMessageComponent
   , argumentNumberValueSelector
   , argumentStringValueSelector
   , argumentUInt64ValueSelector
+  , formatSubstringSelector
+  , placeholderSelector
 
   -- * Enum types
   , OSLogMessageComponentArgumentCategory(OSLogMessageComponentArgumentCategory)
@@ -41,15 +42,11 @@ module ObjC.OSLog.OSLogMessageComponent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- formatSubstring@
 formatSubstring :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO (Id NSString)
-formatSubstring osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "formatSubstring") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatSubstring osLogMessageComponent =
+  sendMessage osLogMessageComponent formatSubstringSelector
 
 -- | placeholder
 --
@@ -72,8 +69,8 @@ formatSubstring osLogMessageComponent  =
 --
 -- ObjC selector: @- placeholder@
 placeholder :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO (Id NSString)
-placeholder osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "placeholder") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholder osLogMessageComponent =
+  sendMessage osLogMessageComponent placeholderSelector
 
 -- | argumentCategory
 --
@@ -81,8 +78,8 @@ placeholder osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentCategory@
 argumentCategory :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO OSLogMessageComponentArgumentCategory
-argumentCategory osLogMessageComponent  =
-    fmap (coerce :: CLong -> OSLogMessageComponentArgumentCategory) $ sendMsg osLogMessageComponent (mkSelector "argumentCategory") retCLong []
+argumentCategory osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentCategorySelector
 
 -- | argumentDataValue
 --
@@ -90,8 +87,8 @@ argumentCategory osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentDataValue@
 argumentDataValue :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO (Id NSData)
-argumentDataValue osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentDataValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+argumentDataValue osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentDataValueSelector
 
 -- | argumentDoubleValue
 --
@@ -99,8 +96,8 @@ argumentDataValue osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentDoubleValue@
 argumentDoubleValue :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO CDouble
-argumentDoubleValue osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentDoubleValue") retCDouble []
+argumentDoubleValue osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentDoubleValueSelector
 
 -- | argumentInt64Value
 --
@@ -108,8 +105,8 @@ argumentDoubleValue osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentInt64Value@
 argumentInt64Value :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO CLong
-argumentInt64Value osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentInt64Value") retCLong []
+argumentInt64Value osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentInt64ValueSelector
 
 -- | argumentNumberValue
 --
@@ -117,8 +114,8 @@ argumentInt64Value osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentNumberValue@
 argumentNumberValue :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO (Id NSNumber)
-argumentNumberValue osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentNumberValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+argumentNumberValue osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentNumberValueSelector
 
 -- | argumentStringValue
 --
@@ -126,8 +123,8 @@ argumentNumberValue osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentStringValue@
 argumentStringValue :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO (Id NSString)
-argumentStringValue osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentStringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+argumentStringValue osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentStringValueSelector
 
 -- | argumentUInt64Value
 --
@@ -135,46 +132,46 @@ argumentStringValue osLogMessageComponent  =
 --
 -- ObjC selector: @- argumentUInt64Value@
 argumentUInt64Value :: IsOSLogMessageComponent osLogMessageComponent => osLogMessageComponent -> IO CULong
-argumentUInt64Value osLogMessageComponent  =
-    sendMsg osLogMessageComponent (mkSelector "argumentUInt64Value") retCULong []
+argumentUInt64Value osLogMessageComponent =
+  sendMessage osLogMessageComponent argumentUInt64ValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @formatSubstring@
-formatSubstringSelector :: Selector
+formatSubstringSelector :: Selector '[] (Id NSString)
 formatSubstringSelector = mkSelector "formatSubstring"
 
 -- | @Selector@ for @placeholder@
-placeholderSelector :: Selector
+placeholderSelector :: Selector '[] (Id NSString)
 placeholderSelector = mkSelector "placeholder"
 
 -- | @Selector@ for @argumentCategory@
-argumentCategorySelector :: Selector
+argumentCategorySelector :: Selector '[] OSLogMessageComponentArgumentCategory
 argumentCategorySelector = mkSelector "argumentCategory"
 
 -- | @Selector@ for @argumentDataValue@
-argumentDataValueSelector :: Selector
+argumentDataValueSelector :: Selector '[] (Id NSData)
 argumentDataValueSelector = mkSelector "argumentDataValue"
 
 -- | @Selector@ for @argumentDoubleValue@
-argumentDoubleValueSelector :: Selector
+argumentDoubleValueSelector :: Selector '[] CDouble
 argumentDoubleValueSelector = mkSelector "argumentDoubleValue"
 
 -- | @Selector@ for @argumentInt64Value@
-argumentInt64ValueSelector :: Selector
+argumentInt64ValueSelector :: Selector '[] CLong
 argumentInt64ValueSelector = mkSelector "argumentInt64Value"
 
 -- | @Selector@ for @argumentNumberValue@
-argumentNumberValueSelector :: Selector
+argumentNumberValueSelector :: Selector '[] (Id NSNumber)
 argumentNumberValueSelector = mkSelector "argumentNumberValue"
 
 -- | @Selector@ for @argumentStringValue@
-argumentStringValueSelector :: Selector
+argumentStringValueSelector :: Selector '[] (Id NSString)
 argumentStringValueSelector = mkSelector "argumentStringValue"
 
 -- | @Selector@ for @argumentUInt64Value@
-argumentUInt64ValueSelector :: Selector
+argumentUInt64ValueSelector :: Selector '[] CULong
 argumentUInt64ValueSelector = mkSelector "argumentUInt64Value"
 

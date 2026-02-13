@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,8 +20,8 @@ module ObjC.CloudKit.CKSyncEngineAccountChangeEvent
   , previousUser
   , currentUser
   , changeTypeSelector
-  , previousUserSelector
   , currentUserSelector
+  , previousUserSelector
 
   -- * Enum types
   , CKSyncEngineAccountChangeType(CKSyncEngineAccountChangeType)
@@ -30,15 +31,11 @@ module ObjC.CloudKit.CKSyncEngineAccountChangeEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- changeType@
 changeType :: IsCKSyncEngineAccountChangeEvent ckSyncEngineAccountChangeEvent => ckSyncEngineAccountChangeEvent -> IO CKSyncEngineAccountChangeType
-changeType ckSyncEngineAccountChangeEvent  =
-    fmap (coerce :: CLong -> CKSyncEngineAccountChangeType) $ sendMsg ckSyncEngineAccountChangeEvent (mkSelector "changeType") retCLong []
+changeType ckSyncEngineAccountChangeEvent =
+  sendMessage ckSyncEngineAccountChangeEvent changeTypeSelector
 
 -- | The user record ID for the previous user.
 --
@@ -59,8 +56,8 @@ changeType ckSyncEngineAccountChangeEvent  =
 --
 -- ObjC selector: @- previousUser@
 previousUser :: IsCKSyncEngineAccountChangeEvent ckSyncEngineAccountChangeEvent => ckSyncEngineAccountChangeEvent -> IO (Id CKRecordID)
-previousUser ckSyncEngineAccountChangeEvent  =
-    sendMsg ckSyncEngineAccountChangeEvent (mkSelector "previousUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousUser ckSyncEngineAccountChangeEvent =
+  sendMessage ckSyncEngineAccountChangeEvent previousUserSelector
 
 -- | The user record ID for the current user.
 --
@@ -68,22 +65,22 @@ previousUser ckSyncEngineAccountChangeEvent  =
 --
 -- ObjC selector: @- currentUser@
 currentUser :: IsCKSyncEngineAccountChangeEvent ckSyncEngineAccountChangeEvent => ckSyncEngineAccountChangeEvent -> IO (Id CKRecordID)
-currentUser ckSyncEngineAccountChangeEvent  =
-    sendMsg ckSyncEngineAccountChangeEvent (mkSelector "currentUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentUser ckSyncEngineAccountChangeEvent =
+  sendMessage ckSyncEngineAccountChangeEvent currentUserSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @changeType@
-changeTypeSelector :: Selector
+changeTypeSelector :: Selector '[] CKSyncEngineAccountChangeType
 changeTypeSelector = mkSelector "changeType"
 
 -- | @Selector@ for @previousUser@
-previousUserSelector :: Selector
+previousUserSelector :: Selector '[] (Id CKRecordID)
 previousUserSelector = mkSelector "previousUser"
 
 -- | @Selector@ for @currentUser@
-currentUserSelector :: Selector
+currentUserSelector :: Selector '[] (Id CKRecordID)
 currentUserSelector = mkSelector "currentUser"
 

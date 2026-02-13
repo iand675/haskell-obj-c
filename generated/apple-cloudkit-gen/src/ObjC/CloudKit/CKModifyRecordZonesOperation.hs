@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CloudKit.CKModifyRecordZonesOperation
   , setPerRecordZoneDeleteBlock
   , initSelector
   , initWithRecordZonesToSave_recordZoneIDsToDeleteSelector
-  , recordZonesToSaveSelector
-  , setRecordZonesToSaveSelector
-  , recordZoneIDsToDeleteSelector
-  , setRecordZoneIDsToDeleteSelector
-  , perRecordZoneSaveBlockSelector
-  , setPerRecordZoneSaveBlockSelector
   , perRecordZoneDeleteBlockSelector
+  , perRecordZoneSaveBlockSelector
+  , recordZoneIDsToDeleteSelector
+  , recordZonesToSaveSelector
   , setPerRecordZoneDeleteBlockSelector
+  , setPerRecordZoneSaveBlockSelector
+  , setRecordZoneIDsToDeleteSelector
+  , setRecordZonesToSaveSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,37 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> IO (Id CKModifyRecordZonesOperation)
-init_ ckModifyRecordZonesOperation  =
-    sendMsg ckModifyRecordZonesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckModifyRecordZonesOperation =
+  sendOwnedMessage ckModifyRecordZonesOperation initSelector
 
 -- | @- initWithRecordZonesToSave:recordZoneIDsToDelete:@
 initWithRecordZonesToSave_recordZoneIDsToDelete :: (IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation, IsNSArray recordZonesToSave, IsNSArray recordZoneIDsToDelete) => ckModifyRecordZonesOperation -> recordZonesToSave -> recordZoneIDsToDelete -> IO (Id CKModifyRecordZonesOperation)
-initWithRecordZonesToSave_recordZoneIDsToDelete ckModifyRecordZonesOperation  recordZonesToSave recordZoneIDsToDelete =
-  withObjCPtr recordZonesToSave $ \raw_recordZonesToSave ->
-    withObjCPtr recordZoneIDsToDelete $ \raw_recordZoneIDsToDelete ->
-        sendMsg ckModifyRecordZonesOperation (mkSelector "initWithRecordZonesToSave:recordZoneIDsToDelete:") (retPtr retVoid) [argPtr (castPtr raw_recordZonesToSave :: Ptr ()), argPtr (castPtr raw_recordZoneIDsToDelete :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordZonesToSave_recordZoneIDsToDelete ckModifyRecordZonesOperation recordZonesToSave recordZoneIDsToDelete =
+  sendOwnedMessage ckModifyRecordZonesOperation initWithRecordZonesToSave_recordZoneIDsToDeleteSelector (toNSArray recordZonesToSave) (toNSArray recordZoneIDsToDelete)
 
 -- | @- recordZonesToSave@
 recordZonesToSave :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> IO (Id NSArray)
-recordZonesToSave ckModifyRecordZonesOperation  =
-    sendMsg ckModifyRecordZonesOperation (mkSelector "recordZonesToSave") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordZonesToSave ckModifyRecordZonesOperation =
+  sendMessage ckModifyRecordZonesOperation recordZonesToSaveSelector
 
 -- | @- setRecordZonesToSave:@
 setRecordZonesToSave :: (IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation, IsNSArray value) => ckModifyRecordZonesOperation -> value -> IO ()
-setRecordZonesToSave ckModifyRecordZonesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifyRecordZonesOperation (mkSelector "setRecordZonesToSave:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordZonesToSave ckModifyRecordZonesOperation value =
+  sendMessage ckModifyRecordZonesOperation setRecordZonesToSaveSelector (toNSArray value)
 
 -- | @- recordZoneIDsToDelete@
 recordZoneIDsToDelete :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> IO (Id NSArray)
-recordZoneIDsToDelete ckModifyRecordZonesOperation  =
-    sendMsg ckModifyRecordZonesOperation (mkSelector "recordZoneIDsToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordZoneIDsToDelete ckModifyRecordZonesOperation =
+  sendMessage ckModifyRecordZonesOperation recordZoneIDsToDeleteSelector
 
 -- | @- setRecordZoneIDsToDelete:@
 setRecordZoneIDsToDelete :: (IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation, IsNSArray value) => ckModifyRecordZonesOperation -> value -> IO ()
-setRecordZoneIDsToDelete ckModifyRecordZonesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifyRecordZonesOperation (mkSelector "setRecordZoneIDsToDelete:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordZoneIDsToDelete ckModifyRecordZonesOperation value =
+  sendMessage ckModifyRecordZonesOperation setRecordZoneIDsToDeleteSelector (toNSArray value)
 
 -- | Called on success or failure of a record zone save
 --
@@ -85,8 +78,8 @@ setRecordZoneIDsToDelete ckModifyRecordZonesOperation  value =
 --
 -- ObjC selector: @- perRecordZoneSaveBlock@
 perRecordZoneSaveBlock :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> IO (Ptr ())
-perRecordZoneSaveBlock ckModifyRecordZonesOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordZonesOperation (mkSelector "perRecordZoneSaveBlock") (retPtr retVoid) []
+perRecordZoneSaveBlock ckModifyRecordZonesOperation =
+  sendMessage ckModifyRecordZonesOperation perRecordZoneSaveBlockSelector
 
 -- | Called on success or failure of a record zone save
 --
@@ -94,8 +87,8 @@ perRecordZoneSaveBlock ckModifyRecordZonesOperation  =
 --
 -- ObjC selector: @- setPerRecordZoneSaveBlock:@
 setPerRecordZoneSaveBlock :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> Ptr () -> IO ()
-setPerRecordZoneSaveBlock ckModifyRecordZonesOperation  value =
-    sendMsg ckModifyRecordZonesOperation (mkSelector "setPerRecordZoneSaveBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordZoneSaveBlock ckModifyRecordZonesOperation value =
+  sendMessage ckModifyRecordZonesOperation setPerRecordZoneSaveBlockSelector value
 
 -- | Called on success or failure of a record zone deletion
 --
@@ -103,8 +96,8 @@ setPerRecordZoneSaveBlock ckModifyRecordZonesOperation  value =
 --
 -- ObjC selector: @- perRecordZoneDeleteBlock@
 perRecordZoneDeleteBlock :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> IO (Ptr ())
-perRecordZoneDeleteBlock ckModifyRecordZonesOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordZonesOperation (mkSelector "perRecordZoneDeleteBlock") (retPtr retVoid) []
+perRecordZoneDeleteBlock ckModifyRecordZonesOperation =
+  sendMessage ckModifyRecordZonesOperation perRecordZoneDeleteBlockSelector
 
 -- | Called on success or failure of a record zone deletion
 --
@@ -112,50 +105,50 @@ perRecordZoneDeleteBlock ckModifyRecordZonesOperation  =
 --
 -- ObjC selector: @- setPerRecordZoneDeleteBlock:@
 setPerRecordZoneDeleteBlock :: IsCKModifyRecordZonesOperation ckModifyRecordZonesOperation => ckModifyRecordZonesOperation -> Ptr () -> IO ()
-setPerRecordZoneDeleteBlock ckModifyRecordZonesOperation  value =
-    sendMsg ckModifyRecordZonesOperation (mkSelector "setPerRecordZoneDeleteBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordZoneDeleteBlock ckModifyRecordZonesOperation value =
+  sendMessage ckModifyRecordZonesOperation setPerRecordZoneDeleteBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKModifyRecordZonesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRecordZonesToSave:recordZoneIDsToDelete:@
-initWithRecordZonesToSave_recordZoneIDsToDeleteSelector :: Selector
+initWithRecordZonesToSave_recordZoneIDsToDeleteSelector :: Selector '[Id NSArray, Id NSArray] (Id CKModifyRecordZonesOperation)
 initWithRecordZonesToSave_recordZoneIDsToDeleteSelector = mkSelector "initWithRecordZonesToSave:recordZoneIDsToDelete:"
 
 -- | @Selector@ for @recordZonesToSave@
-recordZonesToSaveSelector :: Selector
+recordZonesToSaveSelector :: Selector '[] (Id NSArray)
 recordZonesToSaveSelector = mkSelector "recordZonesToSave"
 
 -- | @Selector@ for @setRecordZonesToSave:@
-setRecordZonesToSaveSelector :: Selector
+setRecordZonesToSaveSelector :: Selector '[Id NSArray] ()
 setRecordZonesToSaveSelector = mkSelector "setRecordZonesToSave:"
 
 -- | @Selector@ for @recordZoneIDsToDelete@
-recordZoneIDsToDeleteSelector :: Selector
+recordZoneIDsToDeleteSelector :: Selector '[] (Id NSArray)
 recordZoneIDsToDeleteSelector = mkSelector "recordZoneIDsToDelete"
 
 -- | @Selector@ for @setRecordZoneIDsToDelete:@
-setRecordZoneIDsToDeleteSelector :: Selector
+setRecordZoneIDsToDeleteSelector :: Selector '[Id NSArray] ()
 setRecordZoneIDsToDeleteSelector = mkSelector "setRecordZoneIDsToDelete:"
 
 -- | @Selector@ for @perRecordZoneSaveBlock@
-perRecordZoneSaveBlockSelector :: Selector
+perRecordZoneSaveBlockSelector :: Selector '[] (Ptr ())
 perRecordZoneSaveBlockSelector = mkSelector "perRecordZoneSaveBlock"
 
 -- | @Selector@ for @setPerRecordZoneSaveBlock:@
-setPerRecordZoneSaveBlockSelector :: Selector
+setPerRecordZoneSaveBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordZoneSaveBlockSelector = mkSelector "setPerRecordZoneSaveBlock:"
 
 -- | @Selector@ for @perRecordZoneDeleteBlock@
-perRecordZoneDeleteBlockSelector :: Selector
+perRecordZoneDeleteBlockSelector :: Selector '[] (Ptr ())
 perRecordZoneDeleteBlockSelector = mkSelector "perRecordZoneDeleteBlock"
 
 -- | @Selector@ for @setPerRecordZoneDeleteBlock:@
-setPerRecordZoneDeleteBlockSelector :: Selector
+setPerRecordZoneDeleteBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordZoneDeleteBlockSelector = mkSelector "setPerRecordZoneDeleteBlock:"
 

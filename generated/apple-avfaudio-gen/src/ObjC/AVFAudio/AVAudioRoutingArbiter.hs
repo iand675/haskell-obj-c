@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,10 +17,10 @@ module ObjC.AVFAudio.AVAudioRoutingArbiter
   , beginArbitrationWithCategory_completionHandler
   , leaveArbitration
   , sharedRoutingArbiter
-  , initSelector
-  , newSelector
   , beginArbitrationWithCategory_completionHandlerSelector
+  , initSelector
   , leaveArbitrationSelector
+  , newSelector
   , sharedRoutingArbiterSelector
 
   -- * Enum types
@@ -30,15 +31,11 @@ module ObjC.AVFAudio.AVAudioRoutingArbiter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,15 +45,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioRoutingArbiter avAudioRoutingArbiter => avAudioRoutingArbiter -> IO (Id AVAudioRoutingArbiter)
-init_ avAudioRoutingArbiter  =
-    sendMsg avAudioRoutingArbiter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioRoutingArbiter =
+  sendOwnedMessage avAudioRoutingArbiter initSelector
 
 -- | @+ new@
 new :: IO (Id AVAudioRoutingArbiter)
 new  =
   do
     cls' <- getRequiredClass "AVAudioRoutingArbiter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | beginArbitrationWithCategory:completionHandler:
 --
@@ -70,8 +67,8 @@ new  =
 --
 -- ObjC selector: @- beginArbitrationWithCategory:completionHandler:@
 beginArbitrationWithCategory_completionHandler :: IsAVAudioRoutingArbiter avAudioRoutingArbiter => avAudioRoutingArbiter -> AVAudioRoutingArbitrationCategory -> Ptr () -> IO ()
-beginArbitrationWithCategory_completionHandler avAudioRoutingArbiter  category handler =
-    sendMsg avAudioRoutingArbiter (mkSelector "beginArbitrationWithCategory:completionHandler:") retVoid [argCLong (coerce category), argPtr (castPtr handler :: Ptr ())]
+beginArbitrationWithCategory_completionHandler avAudioRoutingArbiter category handler =
+  sendMessage avAudioRoutingArbiter beginArbitrationWithCategory_completionHandlerSelector category handler
 
 -- | leaveArbitration
 --
@@ -81,8 +78,8 @@ beginArbitrationWithCategory_completionHandler avAudioRoutingArbiter  category h
 --
 -- ObjC selector: @- leaveArbitration@
 leaveArbitration :: IsAVAudioRoutingArbiter avAudioRoutingArbiter => avAudioRoutingArbiter -> IO ()
-leaveArbitration avAudioRoutingArbiter  =
-    sendMsg avAudioRoutingArbiter (mkSelector "leaveArbitration") retVoid []
+leaveArbitration avAudioRoutingArbiter =
+  sendMessage avAudioRoutingArbiter leaveArbitrationSelector
 
 -- | sharedRoutingArbiter
 --
@@ -93,29 +90,29 @@ sharedRoutingArbiter :: IO (Id AVAudioRoutingArbiter)
 sharedRoutingArbiter  =
   do
     cls' <- getRequiredClass "AVAudioRoutingArbiter"
-    sendClassMsg cls' (mkSelector "sharedRoutingArbiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedRoutingArbiterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioRoutingArbiter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAudioRoutingArbiter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @beginArbitrationWithCategory:completionHandler:@
-beginArbitrationWithCategory_completionHandlerSelector :: Selector
+beginArbitrationWithCategory_completionHandlerSelector :: Selector '[AVAudioRoutingArbitrationCategory, Ptr ()] ()
 beginArbitrationWithCategory_completionHandlerSelector = mkSelector "beginArbitrationWithCategory:completionHandler:"
 
 -- | @Selector@ for @leaveArbitration@
-leaveArbitrationSelector :: Selector
+leaveArbitrationSelector :: Selector '[] ()
 leaveArbitrationSelector = mkSelector "leaveArbitration"
 
 -- | @Selector@ for @sharedRoutingArbiter@
-sharedRoutingArbiterSelector :: Selector
+sharedRoutingArbiterSelector :: Selector '[] (Id AVAudioRoutingArbiter)
 sharedRoutingArbiterSelector = mkSelector "sharedRoutingArbiter"
 

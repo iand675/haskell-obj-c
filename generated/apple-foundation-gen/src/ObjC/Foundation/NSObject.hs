@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -122,121 +123,121 @@ module ObjC.Foundation.NSObject
   , accessInstanceVariablesDirectly
   , autoContentAccessingProxy
   , classForCoder
-  , scriptingIsEqualToSelector
-  , scriptingIsLessThanOrEqualToSelector
-  , scriptingIsLessThanSelector
-  , scriptingIsGreaterThanOrEqualToSelector
-  , scriptingIsGreaterThanSelector
-  , scriptingBeginsWithSelector
-  , scriptingEndsWithSelector
-  , scriptingContainsSelector
-  , isEqualToSelector
-  , isLessThanOrEqualToSelector
-  , isLessThanSelector
-  , isGreaterThanOrEqualToSelector
-  , isGreaterThanSelector
-  , isNotEqualToSelector
-  , doesContainSelector
-  , isLikeSelector
-  , isCaseInsensitiveLikeSelector
-  , indicesOfObjectsByEvaluatingObjectSpecifierSelector
-  , valueAtIndex_inPropertyWithKeySelector
-  , valueWithName_inPropertyWithKeySelector
-  , valueWithUniqueID_inPropertyWithKeySelector
-  , insertValue_atIndex_inPropertyWithKeySelector
-  , removeValueAtIndex_fromPropertyWithKeySelector
-  , replaceValueAtIndex_inPropertyWithKey_withValueSelector
-  , insertValue_inPropertyWithKeySelector
-  , coerceValue_forKeySelector
-  , scriptingValueForSpecifierSelector
-  , copyScriptingValue_forKey_withPropertiesSelector
-  , newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector
-  , inverseForRelationshipKeySelector
-  , replacementObjectForPortCoderSelector
-  , replacementObjectForArchiverSelector
-  , performSelectorOnMainThread_withObject_waitUntilDone_modesSelector
-  , performSelectorOnMainThread_withObject_waitUntilDoneSelector
-  , performSelector_onThread_withObject_waitUntilDone_modesSelector
-  , performSelector_onThread_withObject_waitUntilDoneSelector
-  , performSelectorInBackground_withObjectSelector
-  , classForKeyedUnarchiverSelector
-  , replacementObjectForKeyedArchiverSelector
-  , classFallbacksForKeyedArchiverSelector
-  , setSharedObserversSelector
-  , setKeys_triggerChangeNotificationsForDependentKeySelector
-  , keyPathsForValuesAffectingValueForKeySelector
-  , automaticallyNotifiesObserversForKeySelector
-  , willChangeValueForKeySelector
-  , didChangeValueForKeySelector
-  , willChange_valuesAtIndexes_forKeySelector
-  , didChange_valuesAtIndexes_forKeySelector
-  , willChangeValueForKey_withSetMutation_usingObjectsSelector
-  , didChangeValueForKey_withSetMutation_usingObjectsSelector
+  , accessInstanceVariablesDirectlySelector
   , addObserver_forKeyPath_options_contextSelector
-  , removeObserver_forKeyPath_contextSelector
-  , removeObserver_forKeyPathSelector
-  , observeValueForKeyPath_ofObject_change_contextSelector
-  , useStoredAccessorSelector
-  , storedValueForKeySelector
-  , takeStoredValue_forKeySelector
-  , takeValue_forKeySelector
-  , takeValue_forKeyPathSelector
-  , handleQueryWithUnboundKeySelector
-  , handleTakeValue_forUnboundKeySelector
-  , unableToSetNilForKeySelector
-  , valuesForKeysSelector
-  , takeValuesFromDictionarySelector
-  , valueForKeySelector
-  , setValue_forKeySelector
-  , validateValue_forKey_errorSelector
-  , mutableArrayValueForKeySelector
-  , mutableOrderedSetValueForKeySelector
-  , mutableSetValueForKeySelector
-  , valueForKeyPathSelector
-  , setValue_forKeyPathSelector
-  , validateValue_forKeyPath_errorSelector
-  , mutableArrayValueForKeyPathSelector
-  , mutableOrderedSetValueForKeyPathSelector
-  , mutableSetValueForKeyPathSelector
-  , valueForUndefinedKeySelector
-  , setValue_forUndefinedKeySelector
-  , setNilValueForKeySelector
+  , attemptRecoveryFromError_optionIndexSelector
+  , attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector
+  , attributeKeysSelector
+  , autoContentAccessingProxySelector
+  , automaticallyNotifiesObserversForKeySelector
+  , awakeAfterUsingCoderSelector
+  , cancelPreviousPerformRequestsWithTargetSelector
+  , cancelPreviousPerformRequestsWithTarget_selector_objectSelector
+  , classCodeSelector
+  , classDescriptionSelector
+  , classFallbacksForKeyedArchiverSelector
+  , classForArchiverSelector
+  , classForCoderSelector
+  , classForKeyedArchiverSelector
+  , classForKeyedUnarchiverSelector
+  , classForPortCoderSelector
+  , classNameSelector
+  , coerceValue_forKeySelector
+  , copyScriptingValue_forKey_withPropertiesSelector
   , dictionaryWithValuesForKeysSelector
-  , setValuesForKeysWithDictionarySelector
+  , didChangeValueForKeySelector
+  , didChangeValueForKey_withSetMutation_usingObjectsSelector
+  , didChange_valuesAtIndexes_forKeySelector
+  , doesContainSelector
   , fileManager_shouldProceedAfterErrorSelector
   , fileManager_willProcessPathSelector
-  , urL_resourceDataDidBecomeAvailableSelector
-  , urlResourceDidFinishLoadingSelector
-  , urlResourceDidCancelLoadingSelector
-  , urL_resourceDidFailLoadingWithReasonSelector
-  , performSelector_withObject_afterDelay_inModesSelector
-  , performSelector_withObject_afterDelaySelector
-  , cancelPreviousPerformRequestsWithTarget_selector_objectSelector
-  , cancelPreviousPerformRequestsWithTargetSelector
-  , attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector
-  , attemptRecoveryFromError_optionIndexSelector
-  , poseAsClassSelector
-  , versionSelector
-  , setVersionSelector
-  , replacementObjectForCoderSelector
-  , awakeAfterUsingCoderSelector
+  , handleQueryWithUnboundKeySelector
+  , handleTakeValue_forUnboundKeySelector
+  , indicesOfObjectsByEvaluatingObjectSpecifierSelector
+  , insertValue_atIndex_inPropertyWithKeySelector
+  , insertValue_inPropertyWithKeySelector
+  , inverseForRelationshipKeySelector
+  , isCaseInsensitiveLikeSelector
+  , isEqualToSelector
+  , isGreaterThanOrEqualToSelector
+  , isGreaterThanSelector
+  , isLessThanOrEqualToSelector
+  , isLessThanSelector
+  , isLikeSelector
+  , isNotEqualToSelector
+  , keyPathsForValuesAffectingValueForKeySelector
+  , mutableArrayValueForKeyPathSelector
+  , mutableArrayValueForKeySelector
+  , mutableOrderedSetValueForKeyPathSelector
+  , mutableOrderedSetValueForKeySelector
+  , mutableSetValueForKeyPathSelector
+  , mutableSetValueForKeySelector
+  , newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector
   , objectSpecifierSelector
-  , classCodeSelector
-  , classNameSelector
-  , scriptingPropertiesSelector
-  , setScriptingPropertiesSelector
-  , classDescriptionSelector
-  , attributeKeysSelector
-  , toOneRelationshipKeysSelector
-  , toManyRelationshipKeysSelector
-  , classForPortCoderSelector
-  , classForArchiverSelector
-  , classForKeyedArchiverSelector
   , observationInfoSelector
+  , observeValueForKeyPath_ofObject_change_contextSelector
+  , performSelectorInBackground_withObjectSelector
+  , performSelectorOnMainThread_withObject_waitUntilDoneSelector
+  , performSelectorOnMainThread_withObject_waitUntilDone_modesSelector
+  , performSelector_onThread_withObject_waitUntilDoneSelector
+  , performSelector_onThread_withObject_waitUntilDone_modesSelector
+  , performSelector_withObject_afterDelaySelector
+  , performSelector_withObject_afterDelay_inModesSelector
+  , poseAsClassSelector
+  , removeObserver_forKeyPathSelector
+  , removeObserver_forKeyPath_contextSelector
+  , removeValueAtIndex_fromPropertyWithKeySelector
+  , replaceValueAtIndex_inPropertyWithKey_withValueSelector
+  , replacementObjectForArchiverSelector
+  , replacementObjectForCoderSelector
+  , replacementObjectForKeyedArchiverSelector
+  , replacementObjectForPortCoderSelector
+  , scriptingBeginsWithSelector
+  , scriptingContainsSelector
+  , scriptingEndsWithSelector
+  , scriptingIsEqualToSelector
+  , scriptingIsGreaterThanOrEqualToSelector
+  , scriptingIsGreaterThanSelector
+  , scriptingIsLessThanOrEqualToSelector
+  , scriptingIsLessThanSelector
+  , scriptingPropertiesSelector
+  , scriptingValueForSpecifierSelector
+  , setKeys_triggerChangeNotificationsForDependentKeySelector
+  , setNilValueForKeySelector
   , setObservationInfoSelector
-  , accessInstanceVariablesDirectlySelector
-  , autoContentAccessingProxySelector
-  , classForCoderSelector
+  , setScriptingPropertiesSelector
+  , setSharedObserversSelector
+  , setValue_forKeyPathSelector
+  , setValue_forKeySelector
+  , setValue_forUndefinedKeySelector
+  , setValuesForKeysWithDictionarySelector
+  , setVersionSelector
+  , storedValueForKeySelector
+  , takeStoredValue_forKeySelector
+  , takeValue_forKeyPathSelector
+  , takeValue_forKeySelector
+  , takeValuesFromDictionarySelector
+  , toManyRelationshipKeysSelector
+  , toOneRelationshipKeysSelector
+  , unableToSetNilForKeySelector
+  , urL_resourceDataDidBecomeAvailableSelector
+  , urL_resourceDidFailLoadingWithReasonSelector
+  , urlResourceDidCancelLoadingSelector
+  , urlResourceDidFinishLoadingSelector
+  , useStoredAccessorSelector
+  , validateValue_forKeyPath_errorSelector
+  , validateValue_forKey_errorSelector
+  , valueAtIndex_inPropertyWithKeySelector
+  , valueForKeyPathSelector
+  , valueForKeySelector
+  , valueForUndefinedKeySelector
+  , valueWithName_inPropertyWithKeySelector
+  , valueWithUniqueID_inPropertyWithKeySelector
+  , valuesForKeysSelector
+  , versionSelector
+  , willChangeValueForKeySelector
+  , willChangeValueForKey_withSetMutation_usingObjectsSelector
+  , willChange_valuesAtIndexes_forKeySelector
 
   -- * Enum types
   , NSKeyValueChange(NSKeyValueChange)
@@ -257,15 +258,11 @@ module ObjC.Foundation.NSObject
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -274,232 +271,207 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- scriptingIsEqualTo:@
 scriptingIsEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingIsEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingIsEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingIsEqualTo nsObject object =
+  sendMessage nsObject scriptingIsEqualToSelector object
 
 -- | @- scriptingIsLessThanOrEqualTo:@
 scriptingIsLessThanOrEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingIsLessThanOrEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingIsLessThanOrEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingIsLessThanOrEqualTo nsObject object =
+  sendMessage nsObject scriptingIsLessThanOrEqualToSelector object
 
 -- | @- scriptingIsLessThan:@
 scriptingIsLessThan :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingIsLessThan nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingIsLessThan:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingIsLessThan nsObject object =
+  sendMessage nsObject scriptingIsLessThanSelector object
 
 -- | @- scriptingIsGreaterThanOrEqualTo:@
 scriptingIsGreaterThanOrEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingIsGreaterThanOrEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingIsGreaterThanOrEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingIsGreaterThanOrEqualTo nsObject object =
+  sendMessage nsObject scriptingIsGreaterThanOrEqualToSelector object
 
 -- | @- scriptingIsGreaterThan:@
 scriptingIsGreaterThan :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingIsGreaterThan nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingIsGreaterThan:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingIsGreaterThan nsObject object =
+  sendMessage nsObject scriptingIsGreaterThanSelector object
 
 -- | @- scriptingBeginsWith:@
 scriptingBeginsWith :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingBeginsWith nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingBeginsWith:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingBeginsWith nsObject object =
+  sendMessage nsObject scriptingBeginsWithSelector object
 
 -- | @- scriptingEndsWith:@
 scriptingEndsWith :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingEndsWith nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingEndsWith:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingEndsWith nsObject object =
+  sendMessage nsObject scriptingEndsWithSelector object
 
 -- | @- scriptingContains:@
 scriptingContains :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-scriptingContains nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "scriptingContains:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+scriptingContains nsObject object =
+  sendMessage nsObject scriptingContainsSelector object
 
 -- | @- isEqualTo:@
 isEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isEqualTo nsObject object =
+  sendMessage nsObject isEqualToSelector object
 
 -- | @- isLessThanOrEqualTo:@
 isLessThanOrEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isLessThanOrEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isLessThanOrEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isLessThanOrEqualTo nsObject object =
+  sendMessage nsObject isLessThanOrEqualToSelector object
 
 -- | @- isLessThan:@
 isLessThan :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isLessThan nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isLessThan:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isLessThan nsObject object =
+  sendMessage nsObject isLessThanSelector object
 
 -- | @- isGreaterThanOrEqualTo:@
 isGreaterThanOrEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isGreaterThanOrEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isGreaterThanOrEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isGreaterThanOrEqualTo nsObject object =
+  sendMessage nsObject isGreaterThanOrEqualToSelector object
 
 -- | @- isGreaterThan:@
 isGreaterThan :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isGreaterThan nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isGreaterThan:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isGreaterThan nsObject object =
+  sendMessage nsObject isGreaterThanSelector object
 
 -- | @- isNotEqualTo:@
 isNotEqualTo :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-isNotEqualTo nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isNotEqualTo:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isNotEqualTo nsObject object =
+  sendMessage nsObject isNotEqualToSelector object
 
 -- | @- doesContain:@
 doesContain :: IsNSObject nsObject => nsObject -> RawId -> IO Bool
-doesContain nsObject  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "doesContain:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+doesContain nsObject object =
+  sendMessage nsObject doesContainSelector object
 
 -- | @- isLike:@
 isLike :: (IsNSObject nsObject, IsNSString object) => nsObject -> object -> IO Bool
-isLike nsObject  object =
-  withObjCPtr object $ \raw_object ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isLike:") retCULong [argPtr (castPtr raw_object :: Ptr ())]
+isLike nsObject object =
+  sendMessage nsObject isLikeSelector (toNSString object)
 
 -- | @- isCaseInsensitiveLike:@
 isCaseInsensitiveLike :: (IsNSObject nsObject, IsNSString object) => nsObject -> object -> IO Bool
-isCaseInsensitiveLike nsObject  object =
-  withObjCPtr object $ \raw_object ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "isCaseInsensitiveLike:") retCULong [argPtr (castPtr raw_object :: Ptr ())]
+isCaseInsensitiveLike nsObject object =
+  sendMessage nsObject isCaseInsensitiveLikeSelector (toNSString object)
 
 -- | @- indicesOfObjectsByEvaluatingObjectSpecifier:@
 indicesOfObjectsByEvaluatingObjectSpecifier :: (IsNSObject nsObject, IsNSScriptObjectSpecifier specifier) => nsObject -> specifier -> IO (Id NSArray)
-indicesOfObjectsByEvaluatingObjectSpecifier nsObject  specifier =
-  withObjCPtr specifier $ \raw_specifier ->
-      sendMsg nsObject (mkSelector "indicesOfObjectsByEvaluatingObjectSpecifier:") (retPtr retVoid) [argPtr (castPtr raw_specifier :: Ptr ())] >>= retainedObject . castPtr
+indicesOfObjectsByEvaluatingObjectSpecifier nsObject specifier =
+  sendMessage nsObject indicesOfObjectsByEvaluatingObjectSpecifierSelector (toNSScriptObjectSpecifier specifier)
 
 -- | @- valueAtIndex:inPropertyWithKey:@
 valueAtIndex_inPropertyWithKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> CULong -> key -> IO RawId
-valueAtIndex_inPropertyWithKey nsObject  index key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueAtIndex:inPropertyWithKey:") (retPtr retVoid) [argCULong index, argPtr (castPtr raw_key :: Ptr ())]
+valueAtIndex_inPropertyWithKey nsObject index key =
+  sendMessage nsObject valueAtIndex_inPropertyWithKeySelector index (toNSString key)
 
 -- | @- valueWithName:inPropertyWithKey:@
 valueWithName_inPropertyWithKey :: (IsNSObject nsObject, IsNSString name, IsNSString key) => nsObject -> name -> key -> IO RawId
-valueWithName_inPropertyWithKey nsObject  name key =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-        fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueWithName:inPropertyWithKey:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+valueWithName_inPropertyWithKey nsObject name key =
+  sendMessage nsObject valueWithName_inPropertyWithKeySelector (toNSString name) (toNSString key)
 
 -- | @- valueWithUniqueID:inPropertyWithKey:@
 valueWithUniqueID_inPropertyWithKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO RawId
-valueWithUniqueID_inPropertyWithKey nsObject  uniqueID key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueWithUniqueID:inPropertyWithKey:") (retPtr retVoid) [argPtr (castPtr (unRawId uniqueID) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+valueWithUniqueID_inPropertyWithKey nsObject uniqueID key =
+  sendMessage nsObject valueWithUniqueID_inPropertyWithKeySelector uniqueID (toNSString key)
 
 -- | @- insertValue:atIndex:inPropertyWithKey:@
 insertValue_atIndex_inPropertyWithKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> CULong -> key -> IO ()
-insertValue_atIndex_inPropertyWithKey nsObject  value index key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "insertValue:atIndex:inPropertyWithKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argCULong index, argPtr (castPtr raw_key :: Ptr ())]
+insertValue_atIndex_inPropertyWithKey nsObject value index key =
+  sendMessage nsObject insertValue_atIndex_inPropertyWithKeySelector value index (toNSString key)
 
 -- | @- removeValueAtIndex:fromPropertyWithKey:@
 removeValueAtIndex_fromPropertyWithKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> CULong -> key -> IO ()
-removeValueAtIndex_fromPropertyWithKey nsObject  index key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "removeValueAtIndex:fromPropertyWithKey:") retVoid [argCULong index, argPtr (castPtr raw_key :: Ptr ())]
+removeValueAtIndex_fromPropertyWithKey nsObject index key =
+  sendMessage nsObject removeValueAtIndex_fromPropertyWithKeySelector index (toNSString key)
 
 -- | @- replaceValueAtIndex:inPropertyWithKey:withValue:@
 replaceValueAtIndex_inPropertyWithKey_withValue :: (IsNSObject nsObject, IsNSString key) => nsObject -> CULong -> key -> RawId -> IO ()
-replaceValueAtIndex_inPropertyWithKey_withValue nsObject  index key value =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "replaceValueAtIndex:inPropertyWithKey:withValue:") retVoid [argCULong index, argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ())]
+replaceValueAtIndex_inPropertyWithKey_withValue nsObject index key value =
+  sendMessage nsObject replaceValueAtIndex_inPropertyWithKey_withValueSelector index (toNSString key) value
 
 -- | @- insertValue:inPropertyWithKey:@
 insertValue_inPropertyWithKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-insertValue_inPropertyWithKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "insertValue:inPropertyWithKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+insertValue_inPropertyWithKey nsObject value key =
+  sendMessage nsObject insertValue_inPropertyWithKeySelector value (toNSString key)
 
 -- | @- coerceValue:forKey:@
 coerceValue_forKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO RawId
-coerceValue_forKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "coerceValue:forKey:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+coerceValue_forKey nsObject value key =
+  sendMessage nsObject coerceValue_forKeySelector value (toNSString key)
 
 -- | @- scriptingValueForSpecifier:@
 scriptingValueForSpecifier :: (IsNSObject nsObject, IsNSScriptObjectSpecifier objectSpecifier) => nsObject -> objectSpecifier -> IO RawId
-scriptingValueForSpecifier nsObject  objectSpecifier =
-  withObjCPtr objectSpecifier $ \raw_objectSpecifier ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "scriptingValueForSpecifier:") (retPtr retVoid) [argPtr (castPtr raw_objectSpecifier :: Ptr ())]
+scriptingValueForSpecifier nsObject objectSpecifier =
+  sendMessage nsObject scriptingValueForSpecifierSelector (toNSScriptObjectSpecifier objectSpecifier)
 
 -- | @- copyScriptingValue:forKey:withProperties:@
 copyScriptingValue_forKey_withProperties :: (IsNSObject nsObject, IsNSString key, IsNSDictionary properties) => nsObject -> RawId -> key -> properties -> IO RawId
-copyScriptingValue_forKey_withProperties nsObject  value key properties =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr properties $ \raw_properties ->
-        fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "copyScriptingValue:forKey:withProperties:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_properties :: Ptr ())]
+copyScriptingValue_forKey_withProperties nsObject value key properties =
+  sendOwnedMessage nsObject copyScriptingValue_forKey_withPropertiesSelector value (toNSString key) (toNSDictionary properties)
 
 -- | @- newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:@
 newScriptingObjectOfClass_forValueForKey_withContentsValue_properties :: (IsNSObject nsObject, IsNSString key, IsNSDictionary properties) => nsObject -> Class -> key -> RawId -> properties -> IO RawId
-newScriptingObjectOfClass_forValueForKey_withContentsValue_properties nsObject  objectClass key contentsValue properties =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr properties $ \raw_properties ->
-        fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:") (retPtr retVoid) [argPtr (unClass objectClass), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId contentsValue) :: Ptr ()), argPtr (castPtr raw_properties :: Ptr ())]
+newScriptingObjectOfClass_forValueForKey_withContentsValue_properties nsObject objectClass key contentsValue properties =
+  sendOwnedMessage nsObject newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector objectClass (toNSString key) contentsValue (toNSDictionary properties)
 
 -- | @- inverseForRelationshipKey:@
 inverseForRelationshipKey :: (IsNSObject nsObject, IsNSString relationshipKey) => nsObject -> relationshipKey -> IO (Id NSString)
-inverseForRelationshipKey nsObject  relationshipKey =
-  withObjCPtr relationshipKey $ \raw_relationshipKey ->
-      sendMsg nsObject (mkSelector "inverseForRelationshipKey:") (retPtr retVoid) [argPtr (castPtr raw_relationshipKey :: Ptr ())] >>= retainedObject . castPtr
+inverseForRelationshipKey nsObject relationshipKey =
+  sendMessage nsObject inverseForRelationshipKeySelector (toNSString relationshipKey)
 
 -- | @- replacementObjectForPortCoder:@
 replacementObjectForPortCoder :: (IsNSObject nsObject, IsNSPortCoder coder) => nsObject -> coder -> IO RawId
-replacementObjectForPortCoder nsObject  coder =
-  withObjCPtr coder $ \raw_coder ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "replacementObjectForPortCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())]
+replacementObjectForPortCoder nsObject coder =
+  sendMessage nsObject replacementObjectForPortCoderSelector (toNSPortCoder coder)
 
 -- | @- replacementObjectForArchiver:@
 replacementObjectForArchiver :: (IsNSObject nsObject, IsNSArchiver archiver) => nsObject -> archiver -> IO RawId
-replacementObjectForArchiver nsObject  archiver =
-  withObjCPtr archiver $ \raw_archiver ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "replacementObjectForArchiver:") (retPtr retVoid) [argPtr (castPtr raw_archiver :: Ptr ())]
+replacementObjectForArchiver nsObject archiver =
+  sendMessage nsObject replacementObjectForArchiverSelector (toNSArchiver archiver)
 
 -- | @- performSelectorOnMainThread:withObject:waitUntilDone:modes:@
-performSelectorOnMainThread_withObject_waitUntilDone_modes :: (IsNSObject nsObject, IsNSArray array) => nsObject -> Selector -> RawId -> Bool -> array -> IO ()
-performSelectorOnMainThread_withObject_waitUntilDone_modes nsObject  aSelector arg wait array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg nsObject (mkSelector "performSelectorOnMainThread:withObject:waitUntilDone:modes:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId arg) :: Ptr ()), argCULong (if wait then 1 else 0), argPtr (castPtr raw_array :: Ptr ())]
+performSelectorOnMainThread_withObject_waitUntilDone_modes :: (IsNSObject nsObject, IsNSArray array) => nsObject -> Sel -> RawId -> Bool -> array -> IO ()
+performSelectorOnMainThread_withObject_waitUntilDone_modes nsObject aSelector arg wait array =
+  sendMessage nsObject performSelectorOnMainThread_withObject_waitUntilDone_modesSelector aSelector arg wait (toNSArray array)
 
 -- | @- performSelectorOnMainThread:withObject:waitUntilDone:@
-performSelectorOnMainThread_withObject_waitUntilDone :: IsNSObject nsObject => nsObject -> Selector -> RawId -> Bool -> IO ()
-performSelectorOnMainThread_withObject_waitUntilDone nsObject  aSelector arg wait =
-    sendMsg nsObject (mkSelector "performSelectorOnMainThread:withObject:waitUntilDone:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId arg) :: Ptr ()), argCULong (if wait then 1 else 0)]
+performSelectorOnMainThread_withObject_waitUntilDone :: IsNSObject nsObject => nsObject -> Sel -> RawId -> Bool -> IO ()
+performSelectorOnMainThread_withObject_waitUntilDone nsObject aSelector arg wait =
+  sendMessage nsObject performSelectorOnMainThread_withObject_waitUntilDoneSelector aSelector arg wait
 
 -- | @- performSelector:onThread:withObject:waitUntilDone:modes:@
-performSelector_onThread_withObject_waitUntilDone_modes :: (IsNSObject nsObject, IsNSThread thr, IsNSArray array) => nsObject -> Selector -> thr -> RawId -> Bool -> array -> IO ()
-performSelector_onThread_withObject_waitUntilDone_modes nsObject  aSelector thr arg wait array =
-  withObjCPtr thr $ \raw_thr ->
-    withObjCPtr array $ \raw_array ->
-        sendMsg nsObject (mkSelector "performSelector:onThread:withObject:waitUntilDone:modes:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr raw_thr :: Ptr ()), argPtr (castPtr (unRawId arg) :: Ptr ()), argCULong (if wait then 1 else 0), argPtr (castPtr raw_array :: Ptr ())]
+performSelector_onThread_withObject_waitUntilDone_modes :: (IsNSObject nsObject, IsNSThread thr, IsNSArray array) => nsObject -> Sel -> thr -> RawId -> Bool -> array -> IO ()
+performSelector_onThread_withObject_waitUntilDone_modes nsObject aSelector thr arg wait array =
+  sendMessage nsObject performSelector_onThread_withObject_waitUntilDone_modesSelector aSelector (toNSThread thr) arg wait (toNSArray array)
 
 -- | @- performSelector:onThread:withObject:waitUntilDone:@
-performSelector_onThread_withObject_waitUntilDone :: (IsNSObject nsObject, IsNSThread thr) => nsObject -> Selector -> thr -> RawId -> Bool -> IO ()
-performSelector_onThread_withObject_waitUntilDone nsObject  aSelector thr arg wait =
-  withObjCPtr thr $ \raw_thr ->
-      sendMsg nsObject (mkSelector "performSelector:onThread:withObject:waitUntilDone:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr raw_thr :: Ptr ()), argPtr (castPtr (unRawId arg) :: Ptr ()), argCULong (if wait then 1 else 0)]
+performSelector_onThread_withObject_waitUntilDone :: (IsNSObject nsObject, IsNSThread thr) => nsObject -> Sel -> thr -> RawId -> Bool -> IO ()
+performSelector_onThread_withObject_waitUntilDone nsObject aSelector thr arg wait =
+  sendMessage nsObject performSelector_onThread_withObject_waitUntilDoneSelector aSelector (toNSThread thr) arg wait
 
 -- | @- performSelectorInBackground:withObject:@
-performSelectorInBackground_withObject :: IsNSObject nsObject => nsObject -> Selector -> RawId -> IO ()
-performSelectorInBackground_withObject nsObject  aSelector arg =
-    sendMsg nsObject (mkSelector "performSelectorInBackground:withObject:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId arg) :: Ptr ())]
+performSelectorInBackground_withObject :: IsNSObject nsObject => nsObject -> Sel -> RawId -> IO ()
+performSelectorInBackground_withObject nsObject aSelector arg =
+  sendMessage nsObject performSelectorInBackground_withObjectSelector aSelector arg
 
 -- | @+ classForKeyedUnarchiver@
 classForKeyedUnarchiver :: IO Class
 classForKeyedUnarchiver  =
   do
     cls' <- getRequiredClass "NSObject"
-    fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "classForKeyedUnarchiver") (retPtr retVoid) []
+    sendClassMessage cls' classForKeyedUnarchiverSelector
 
 -- | @- replacementObjectForKeyedArchiver:@
 replacementObjectForKeyedArchiver :: (IsNSObject nsObject, IsNSKeyedArchiver archiver) => nsObject -> archiver -> IO RawId
-replacementObjectForKeyedArchiver nsObject  archiver =
-  withObjCPtr archiver $ \raw_archiver ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "replacementObjectForKeyedArchiver:") (retPtr retVoid) [argPtr (castPtr raw_archiver :: Ptr ())]
+replacementObjectForKeyedArchiver nsObject archiver =
+  sendMessage nsObject replacementObjectForKeyedArchiverSelector (toNSKeyedArchiver archiver)
 
 -- | @+ classFallbacksForKeyedArchiver@
 classFallbacksForKeyedArchiver :: IO (Id NSArray)
 classFallbacksForKeyedArchiver  =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "classFallbacksForKeyedArchiver") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' classFallbacksForKeyedArchiverSelector
 
 -- | Register shared observations.
 --
@@ -511,927 +483,860 @@ classFallbacksForKeyedArchiver  =
 --
 -- ObjC selector: @- setSharedObservers:@
 setSharedObservers :: (IsNSObject nsObject, IsNSKeyValueSharedObserversSnapshot sharedObservers) => nsObject -> sharedObservers -> IO ()
-setSharedObservers nsObject  sharedObservers =
-  withObjCPtr sharedObservers $ \raw_sharedObservers ->
-      sendMsg nsObject (mkSelector "setSharedObservers:") retVoid [argPtr (castPtr raw_sharedObservers :: Ptr ())]
+setSharedObservers nsObject sharedObservers =
+  sendMessage nsObject setSharedObserversSelector (toNSKeyValueSharedObserversSnapshot sharedObservers)
 
 -- | @+ setKeys:triggerChangeNotificationsForDependentKey:@
 setKeys_triggerChangeNotificationsForDependentKey :: (IsNSArray keys, IsNSString dependentKey) => keys -> dependentKey -> IO ()
 setKeys_triggerChangeNotificationsForDependentKey keys dependentKey =
   do
     cls' <- getRequiredClass "NSObject"
-    withObjCPtr keys $ \raw_keys ->
-      withObjCPtr dependentKey $ \raw_dependentKey ->
-        sendClassMsg cls' (mkSelector "setKeys:triggerChangeNotificationsForDependentKey:") retVoid [argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr raw_dependentKey :: Ptr ())]
+    sendClassMessage cls' setKeys_triggerChangeNotificationsForDependentKeySelector (toNSArray keys) (toNSString dependentKey)
 
 -- | @+ keyPathsForValuesAffectingValueForKey:@
 keyPathsForValuesAffectingValueForKey :: IsNSString key => key -> IO (Id NSSet)
 keyPathsForValuesAffectingValueForKey key =
   do
     cls' <- getRequiredClass "NSObject"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "keyPathsForValuesAffectingValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' keyPathsForValuesAffectingValueForKeySelector (toNSString key)
 
 -- | @+ automaticallyNotifiesObserversForKey:@
 automaticallyNotifiesObserversForKey :: IsNSString key => key -> IO Bool
 automaticallyNotifiesObserversForKey key =
   do
     cls' <- getRequiredClass "NSObject"
-    withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "automaticallyNotifiesObserversForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' automaticallyNotifiesObserversForKeySelector (toNSString key)
 
 -- | @- willChangeValueForKey:@
 willChangeValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO ()
-willChangeValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "willChangeValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+willChangeValueForKey nsObject key =
+  sendMessage nsObject willChangeValueForKeySelector (toNSString key)
 
 -- | @- didChangeValueForKey:@
 didChangeValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO ()
-didChangeValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "didChangeValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+didChangeValueForKey nsObject key =
+  sendMessage nsObject didChangeValueForKeySelector (toNSString key)
 
 -- | @- willChange:valuesAtIndexes:forKey:@
 willChange_valuesAtIndexes_forKey :: (IsNSObject nsObject, IsNSIndexSet indexes, IsNSString key) => nsObject -> NSKeyValueChange -> indexes -> key -> IO ()
-willChange_valuesAtIndexes_forKey nsObject  changeKind indexes key =
-  withObjCPtr indexes $ \raw_indexes ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg nsObject (mkSelector "willChange:valuesAtIndexes:forKey:") retVoid [argCULong (coerce changeKind), argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+willChange_valuesAtIndexes_forKey nsObject changeKind indexes key =
+  sendMessage nsObject willChange_valuesAtIndexes_forKeySelector changeKind (toNSIndexSet indexes) (toNSString key)
 
 -- | @- didChange:valuesAtIndexes:forKey:@
 didChange_valuesAtIndexes_forKey :: (IsNSObject nsObject, IsNSIndexSet indexes, IsNSString key) => nsObject -> NSKeyValueChange -> indexes -> key -> IO ()
-didChange_valuesAtIndexes_forKey nsObject  changeKind indexes key =
-  withObjCPtr indexes $ \raw_indexes ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg nsObject (mkSelector "didChange:valuesAtIndexes:forKey:") retVoid [argCULong (coerce changeKind), argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+didChange_valuesAtIndexes_forKey nsObject changeKind indexes key =
+  sendMessage nsObject didChange_valuesAtIndexes_forKeySelector changeKind (toNSIndexSet indexes) (toNSString key)
 
 -- | @- willChangeValueForKey:withSetMutation:usingObjects:@
 willChangeValueForKey_withSetMutation_usingObjects :: (IsNSObject nsObject, IsNSString key, IsNSSet objects) => nsObject -> key -> NSKeyValueSetMutationKind -> objects -> IO ()
-willChangeValueForKey_withSetMutation_usingObjects nsObject  key mutationKind objects =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr objects $ \raw_objects ->
-        sendMsg nsObject (mkSelector "willChangeValueForKey:withSetMutation:usingObjects:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argCULong (coerce mutationKind), argPtr (castPtr raw_objects :: Ptr ())]
+willChangeValueForKey_withSetMutation_usingObjects nsObject key mutationKind objects =
+  sendMessage nsObject willChangeValueForKey_withSetMutation_usingObjectsSelector (toNSString key) mutationKind (toNSSet objects)
 
 -- | @- didChangeValueForKey:withSetMutation:usingObjects:@
 didChangeValueForKey_withSetMutation_usingObjects :: (IsNSObject nsObject, IsNSString key, IsNSSet objects) => nsObject -> key -> NSKeyValueSetMutationKind -> objects -> IO ()
-didChangeValueForKey_withSetMutation_usingObjects nsObject  key mutationKind objects =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr objects $ \raw_objects ->
-        sendMsg nsObject (mkSelector "didChangeValueForKey:withSetMutation:usingObjects:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argCULong (coerce mutationKind), argPtr (castPtr raw_objects :: Ptr ())]
+didChangeValueForKey_withSetMutation_usingObjects nsObject key mutationKind objects =
+  sendMessage nsObject didChangeValueForKey_withSetMutation_usingObjectsSelector (toNSString key) mutationKind (toNSSet objects)
 
 -- | @- addObserver:forKeyPath:options:context:@
 addObserver_forKeyPath_options_context :: (IsNSObject nsObject, IsNSObject observer, IsNSString keyPath) => nsObject -> observer -> keyPath -> NSKeyValueObservingOptions -> Ptr () -> IO ()
-addObserver_forKeyPath_options_context nsObject  observer keyPath options context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsObject (mkSelector "addObserver:forKeyPath:options:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argCULong (coerce options), argPtr context]
+addObserver_forKeyPath_options_context nsObject observer keyPath options context =
+  sendMessage nsObject addObserver_forKeyPath_options_contextSelector (toNSObject observer) (toNSString keyPath) options context
 
 -- | @- removeObserver:forKeyPath:context:@
 removeObserver_forKeyPath_context :: (IsNSObject nsObject, IsNSObject observer, IsNSString keyPath) => nsObject -> observer -> keyPath -> Ptr () -> IO ()
-removeObserver_forKeyPath_context nsObject  observer keyPath context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsObject (mkSelector "removeObserver:forKeyPath:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argPtr context]
+removeObserver_forKeyPath_context nsObject observer keyPath context =
+  sendMessage nsObject removeObserver_forKeyPath_contextSelector (toNSObject observer) (toNSString keyPath) context
 
 -- | @- removeObserver:forKeyPath:@
 removeObserver_forKeyPath :: (IsNSObject nsObject, IsNSObject observer, IsNSString keyPath) => nsObject -> observer -> keyPath -> IO ()
-removeObserver_forKeyPath nsObject  observer keyPath =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsObject (mkSelector "removeObserver:forKeyPath:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ())]
+removeObserver_forKeyPath nsObject observer keyPath =
+  sendMessage nsObject removeObserver_forKeyPathSelector (toNSObject observer) (toNSString keyPath)
 
 -- | @- observeValueForKeyPath:ofObject:change:context:@
 observeValueForKeyPath_ofObject_change_context :: (IsNSObject nsObject, IsNSString keyPath, IsNSDictionary change) => nsObject -> keyPath -> RawId -> change -> Ptr () -> IO ()
-observeValueForKeyPath_ofObject_change_context nsObject  keyPath object change context =
-  withObjCPtr keyPath $ \raw_keyPath ->
-    withObjCPtr change $ \raw_change ->
-        sendMsg nsObject (mkSelector "observeValueForKeyPath:ofObject:change:context:") retVoid [argPtr (castPtr raw_keyPath :: Ptr ()), argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_change :: Ptr ()), argPtr context]
+observeValueForKeyPath_ofObject_change_context nsObject keyPath object change context =
+  sendMessage nsObject observeValueForKeyPath_ofObject_change_contextSelector (toNSString keyPath) object (toNSDictionary change) context
 
 -- | @+ useStoredAccessor@
 useStoredAccessor :: IO Bool
 useStoredAccessor  =
   do
     cls' <- getRequiredClass "NSObject"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "useStoredAccessor") retCULong []
+    sendClassMessage cls' useStoredAccessorSelector
 
 -- | @- storedValueForKey:@
 storedValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO RawId
-storedValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "storedValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+storedValueForKey nsObject key =
+  sendMessage nsObject storedValueForKeySelector (toNSString key)
 
 -- | @- takeStoredValue:forKey:@
 takeStoredValue_forKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-takeStoredValue_forKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "takeStoredValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+takeStoredValue_forKey nsObject value key =
+  sendMessage nsObject takeStoredValue_forKeySelector value (toNSString key)
 
 -- | @- takeValue:forKey:@
 takeValue_forKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-takeValue_forKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "takeValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+takeValue_forKey nsObject value key =
+  sendMessage nsObject takeValue_forKeySelector value (toNSString key)
 
 -- | @- takeValue:forKeyPath:@
 takeValue_forKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> RawId -> keyPath -> IO ()
-takeValue_forKeyPath nsObject  value keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      sendMsg nsObject (mkSelector "takeValue:forKeyPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ())]
+takeValue_forKeyPath nsObject value keyPath =
+  sendMessage nsObject takeValue_forKeyPathSelector value (toNSString keyPath)
 
 -- | @- handleQueryWithUnboundKey:@
 handleQueryWithUnboundKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO RawId
-handleQueryWithUnboundKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "handleQueryWithUnboundKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+handleQueryWithUnboundKey nsObject key =
+  sendMessage nsObject handleQueryWithUnboundKeySelector (toNSString key)
 
 -- | @- handleTakeValue:forUnboundKey:@
 handleTakeValue_forUnboundKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-handleTakeValue_forUnboundKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "handleTakeValue:forUnboundKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+handleTakeValue_forUnboundKey nsObject value key =
+  sendMessage nsObject handleTakeValue_forUnboundKeySelector value (toNSString key)
 
 -- | @- unableToSetNilForKey:@
 unableToSetNilForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO ()
-unableToSetNilForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "unableToSetNilForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+unableToSetNilForKey nsObject key =
+  sendMessage nsObject unableToSetNilForKeySelector (toNSString key)
 
 -- | @- valuesForKeys:@
 valuesForKeys :: (IsNSObject nsObject, IsNSArray keys) => nsObject -> keys -> IO (Id NSDictionary)
-valuesForKeys nsObject  keys =
-  withObjCPtr keys $ \raw_keys ->
-      sendMsg nsObject (mkSelector "valuesForKeys:") (retPtr retVoid) [argPtr (castPtr raw_keys :: Ptr ())] >>= retainedObject . castPtr
+valuesForKeys nsObject keys =
+  sendMessage nsObject valuesForKeysSelector (toNSArray keys)
 
 -- | @- takeValuesFromDictionary:@
 takeValuesFromDictionary :: (IsNSObject nsObject, IsNSDictionary properties) => nsObject -> properties -> IO ()
-takeValuesFromDictionary nsObject  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg nsObject (mkSelector "takeValuesFromDictionary:") retVoid [argPtr (castPtr raw_properties :: Ptr ())]
+takeValuesFromDictionary nsObject properties =
+  sendMessage nsObject takeValuesFromDictionarySelector (toNSDictionary properties)
 
 -- | @- valueForKey:@
 valueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO RawId
-valueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForKey nsObject key =
+  sendMessage nsObject valueForKeySelector (toNSString key)
 
 -- | @- setValue:forKey:@
 setValue_forKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-setValue_forKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "setValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forKey nsObject value key =
+  sendMessage nsObject setValue_forKeySelector value (toNSString key)
 
 -- | @- validateValue:forKey:error:@
 validateValue_forKey_error :: (IsNSObject nsObject, IsNSString inKey, IsNSError outError) => nsObject -> Ptr RawId -> inKey -> outError -> IO Bool
-validateValue_forKey_error nsObject  ioValue inKey outError =
-  withObjCPtr inKey $ \raw_inKey ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "validateValue:forKey:error:") retCULong [argPtr ioValue, argPtr (castPtr raw_inKey :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+validateValue_forKey_error nsObject ioValue inKey outError =
+  sendMessage nsObject validateValue_forKey_errorSelector ioValue (toNSString inKey) (toNSError outError)
 
 -- | @- mutableArrayValueForKey:@
 mutableArrayValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO (Id NSMutableArray)
-mutableArrayValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "mutableArrayValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+mutableArrayValueForKey nsObject key =
+  sendMessage nsObject mutableArrayValueForKeySelector (toNSString key)
 
 -- | @- mutableOrderedSetValueForKey:@
 mutableOrderedSetValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO (Id NSMutableOrderedSet)
-mutableOrderedSetValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "mutableOrderedSetValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+mutableOrderedSetValueForKey nsObject key =
+  sendMessage nsObject mutableOrderedSetValueForKeySelector (toNSString key)
 
 -- | @- mutableSetValueForKey:@
 mutableSetValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO (Id NSMutableSet)
-mutableSetValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "mutableSetValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+mutableSetValueForKey nsObject key =
+  sendMessage nsObject mutableSetValueForKeySelector (toNSString key)
 
 -- | @- valueForKeyPath:@
 valueForKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> keyPath -> IO RawId
-valueForKeyPath nsObject  keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueForKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())]
+valueForKeyPath nsObject keyPath =
+  sendMessage nsObject valueForKeyPathSelector (toNSString keyPath)
 
 -- | @- setValue:forKeyPath:@
 setValue_forKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> RawId -> keyPath -> IO ()
-setValue_forKeyPath nsObject  value keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      sendMsg nsObject (mkSelector "setValue:forKeyPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ())]
+setValue_forKeyPath nsObject value keyPath =
+  sendMessage nsObject setValue_forKeyPathSelector value (toNSString keyPath)
 
 -- | @- validateValue:forKeyPath:error:@
 validateValue_forKeyPath_error :: (IsNSObject nsObject, IsNSString inKeyPath, IsNSError outError) => nsObject -> Ptr RawId -> inKeyPath -> outError -> IO Bool
-validateValue_forKeyPath_error nsObject  ioValue inKeyPath outError =
-  withObjCPtr inKeyPath $ \raw_inKeyPath ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "validateValue:forKeyPath:error:") retCULong [argPtr ioValue, argPtr (castPtr raw_inKeyPath :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+validateValue_forKeyPath_error nsObject ioValue inKeyPath outError =
+  sendMessage nsObject validateValue_forKeyPath_errorSelector ioValue (toNSString inKeyPath) (toNSError outError)
 
 -- | @- mutableArrayValueForKeyPath:@
 mutableArrayValueForKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> keyPath -> IO (Id NSMutableArray)
-mutableArrayValueForKeyPath nsObject  keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      sendMsg nsObject (mkSelector "mutableArrayValueForKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+mutableArrayValueForKeyPath nsObject keyPath =
+  sendMessage nsObject mutableArrayValueForKeyPathSelector (toNSString keyPath)
 
 -- | @- mutableOrderedSetValueForKeyPath:@
 mutableOrderedSetValueForKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> keyPath -> IO (Id NSMutableOrderedSet)
-mutableOrderedSetValueForKeyPath nsObject  keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      sendMsg nsObject (mkSelector "mutableOrderedSetValueForKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+mutableOrderedSetValueForKeyPath nsObject keyPath =
+  sendMessage nsObject mutableOrderedSetValueForKeyPathSelector (toNSString keyPath)
 
 -- | @- mutableSetValueForKeyPath:@
 mutableSetValueForKeyPath :: (IsNSObject nsObject, IsNSString keyPath) => nsObject -> keyPath -> IO (Id NSMutableSet)
-mutableSetValueForKeyPath nsObject  keyPath =
-  withObjCPtr keyPath $ \raw_keyPath ->
-      sendMsg nsObject (mkSelector "mutableSetValueForKeyPath:") (retPtr retVoid) [argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+mutableSetValueForKeyPath nsObject keyPath =
+  sendMessage nsObject mutableSetValueForKeyPathSelector (toNSString keyPath)
 
 -- | @- valueForUndefinedKey:@
 valueForUndefinedKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO RawId
-valueForUndefinedKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "valueForUndefinedKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForUndefinedKey nsObject key =
+  sendMessage nsObject valueForUndefinedKeySelector (toNSString key)
 
 -- | @- setValue:forUndefinedKey:@
 setValue_forUndefinedKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> RawId -> key -> IO ()
-setValue_forUndefinedKey nsObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "setValue:forUndefinedKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forUndefinedKey nsObject value key =
+  sendMessage nsObject setValue_forUndefinedKeySelector value (toNSString key)
 
 -- | @- setNilValueForKey:@
 setNilValueForKey :: (IsNSObject nsObject, IsNSString key) => nsObject -> key -> IO ()
-setNilValueForKey nsObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsObject (mkSelector "setNilValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+setNilValueForKey nsObject key =
+  sendMessage nsObject setNilValueForKeySelector (toNSString key)
 
 -- | @- dictionaryWithValuesForKeys:@
 dictionaryWithValuesForKeys :: (IsNSObject nsObject, IsNSArray keys) => nsObject -> keys -> IO (Id NSDictionary)
-dictionaryWithValuesForKeys nsObject  keys =
-  withObjCPtr keys $ \raw_keys ->
-      sendMsg nsObject (mkSelector "dictionaryWithValuesForKeys:") (retPtr retVoid) [argPtr (castPtr raw_keys :: Ptr ())] >>= retainedObject . castPtr
+dictionaryWithValuesForKeys nsObject keys =
+  sendMessage nsObject dictionaryWithValuesForKeysSelector (toNSArray keys)
 
 -- | @- setValuesForKeysWithDictionary:@
 setValuesForKeysWithDictionary :: (IsNSObject nsObject, IsNSDictionary keyedValues) => nsObject -> keyedValues -> IO ()
-setValuesForKeysWithDictionary nsObject  keyedValues =
-  withObjCPtr keyedValues $ \raw_keyedValues ->
-      sendMsg nsObject (mkSelector "setValuesForKeysWithDictionary:") retVoid [argPtr (castPtr raw_keyedValues :: Ptr ())]
+setValuesForKeysWithDictionary nsObject keyedValues =
+  sendMessage nsObject setValuesForKeysWithDictionarySelector (toNSDictionary keyedValues)
 
 -- | @- fileManager:shouldProceedAfterError:@
 fileManager_shouldProceedAfterError :: (IsNSObject nsObject, IsNSFileManager fm, IsNSDictionary errorInfo) => nsObject -> fm -> errorInfo -> IO Bool
-fileManager_shouldProceedAfterError nsObject  fm errorInfo =
-  withObjCPtr fm $ \raw_fm ->
-    withObjCPtr errorInfo $ \raw_errorInfo ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "fileManager:shouldProceedAfterError:") retCULong [argPtr (castPtr raw_fm :: Ptr ()), argPtr (castPtr raw_errorInfo :: Ptr ())]
+fileManager_shouldProceedAfterError nsObject fm errorInfo =
+  sendMessage nsObject fileManager_shouldProceedAfterErrorSelector (toNSFileManager fm) (toNSDictionary errorInfo)
 
 -- | @- fileManager:willProcessPath:@
 fileManager_willProcessPath :: (IsNSObject nsObject, IsNSFileManager fm, IsNSString path) => nsObject -> fm -> path -> IO ()
-fileManager_willProcessPath nsObject  fm path =
-  withObjCPtr fm $ \raw_fm ->
-    withObjCPtr path $ \raw_path ->
-        sendMsg nsObject (mkSelector "fileManager:willProcessPath:") retVoid [argPtr (castPtr raw_fm :: Ptr ()), argPtr (castPtr raw_path :: Ptr ())]
+fileManager_willProcessPath nsObject fm path =
+  sendMessage nsObject fileManager_willProcessPathSelector (toNSFileManager fm) (toNSString path)
 
 -- | @- URL:resourceDataDidBecomeAvailable:@
 urL_resourceDataDidBecomeAvailable :: (IsNSObject nsObject, IsNSURL sender, IsNSData newBytes) => nsObject -> sender -> newBytes -> IO ()
-urL_resourceDataDidBecomeAvailable nsObject  sender newBytes =
-  withObjCPtr sender $ \raw_sender ->
-    withObjCPtr newBytes $ \raw_newBytes ->
-        sendMsg nsObject (mkSelector "URL:resourceDataDidBecomeAvailable:") retVoid [argPtr (castPtr raw_sender :: Ptr ()), argPtr (castPtr raw_newBytes :: Ptr ())]
+urL_resourceDataDidBecomeAvailable nsObject sender newBytes =
+  sendMessage nsObject urL_resourceDataDidBecomeAvailableSelector (toNSURL sender) (toNSData newBytes)
 
 -- | @- URLResourceDidFinishLoading:@
 urlResourceDidFinishLoading :: (IsNSObject nsObject, IsNSURL sender) => nsObject -> sender -> IO ()
-urlResourceDidFinishLoading nsObject  sender =
-  withObjCPtr sender $ \raw_sender ->
-      sendMsg nsObject (mkSelector "URLResourceDidFinishLoading:") retVoid [argPtr (castPtr raw_sender :: Ptr ())]
+urlResourceDidFinishLoading nsObject sender =
+  sendMessage nsObject urlResourceDidFinishLoadingSelector (toNSURL sender)
 
 -- | @- URLResourceDidCancelLoading:@
 urlResourceDidCancelLoading :: (IsNSObject nsObject, IsNSURL sender) => nsObject -> sender -> IO ()
-urlResourceDidCancelLoading nsObject  sender =
-  withObjCPtr sender $ \raw_sender ->
-      sendMsg nsObject (mkSelector "URLResourceDidCancelLoading:") retVoid [argPtr (castPtr raw_sender :: Ptr ())]
+urlResourceDidCancelLoading nsObject sender =
+  sendMessage nsObject urlResourceDidCancelLoadingSelector (toNSURL sender)
 
 -- | @- URL:resourceDidFailLoadingWithReason:@
 urL_resourceDidFailLoadingWithReason :: (IsNSObject nsObject, IsNSURL sender, IsNSString reason) => nsObject -> sender -> reason -> IO ()
-urL_resourceDidFailLoadingWithReason nsObject  sender reason =
-  withObjCPtr sender $ \raw_sender ->
-    withObjCPtr reason $ \raw_reason ->
-        sendMsg nsObject (mkSelector "URL:resourceDidFailLoadingWithReason:") retVoid [argPtr (castPtr raw_sender :: Ptr ()), argPtr (castPtr raw_reason :: Ptr ())]
+urL_resourceDidFailLoadingWithReason nsObject sender reason =
+  sendMessage nsObject urL_resourceDidFailLoadingWithReasonSelector (toNSURL sender) (toNSString reason)
 
 -- | @- performSelector:withObject:afterDelay:inModes:@
-performSelector_withObject_afterDelay_inModes :: (IsNSObject nsObject, IsNSArray modes) => nsObject -> Selector -> RawId -> CDouble -> modes -> IO ()
-performSelector_withObject_afterDelay_inModes nsObject  aSelector anArgument delay modes =
-  withObjCPtr modes $ \raw_modes ->
-      sendMsg nsObject (mkSelector "performSelector:withObject:afterDelay:inModes:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId anArgument) :: Ptr ()), argCDouble delay, argPtr (castPtr raw_modes :: Ptr ())]
+performSelector_withObject_afterDelay_inModes :: (IsNSObject nsObject, IsNSArray modes) => nsObject -> Sel -> RawId -> CDouble -> modes -> IO ()
+performSelector_withObject_afterDelay_inModes nsObject aSelector anArgument delay modes =
+  sendMessage nsObject performSelector_withObject_afterDelay_inModesSelector aSelector anArgument delay (toNSArray modes)
 
 -- | @- performSelector:withObject:afterDelay:@
-performSelector_withObject_afterDelay :: IsNSObject nsObject => nsObject -> Selector -> RawId -> CDouble -> IO ()
-performSelector_withObject_afterDelay nsObject  aSelector anArgument delay =
-    sendMsg nsObject (mkSelector "performSelector:withObject:afterDelay:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId anArgument) :: Ptr ()), argCDouble delay]
+performSelector_withObject_afterDelay :: IsNSObject nsObject => nsObject -> Sel -> RawId -> CDouble -> IO ()
+performSelector_withObject_afterDelay nsObject aSelector anArgument delay =
+  sendMessage nsObject performSelector_withObject_afterDelaySelector aSelector anArgument delay
 
 -- | @+ cancelPreviousPerformRequestsWithTarget:selector:object:@
-cancelPreviousPerformRequestsWithTarget_selector_object :: RawId -> Selector -> RawId -> IO ()
+cancelPreviousPerformRequestsWithTarget_selector_object :: RawId -> Sel -> RawId -> IO ()
 cancelPreviousPerformRequestsWithTarget_selector_object aTarget aSelector anArgument =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "cancelPreviousPerformRequestsWithTarget:selector:object:") retVoid [argPtr (castPtr (unRawId aTarget) :: Ptr ()), argPtr (unSelector aSelector), argPtr (castPtr (unRawId anArgument) :: Ptr ())]
+    sendClassMessage cls' cancelPreviousPerformRequestsWithTarget_selector_objectSelector aTarget aSelector anArgument
 
 -- | @+ cancelPreviousPerformRequestsWithTarget:@
 cancelPreviousPerformRequestsWithTarget :: RawId -> IO ()
 cancelPreviousPerformRequestsWithTarget aTarget =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "cancelPreviousPerformRequestsWithTarget:") retVoid [argPtr (castPtr (unRawId aTarget) :: Ptr ())]
+    sendClassMessage cls' cancelPreviousPerformRequestsWithTargetSelector aTarget
 
 -- | @- attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:@
-attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfo :: (IsNSObject nsObject, IsNSError error_) => nsObject -> error_ -> CULong -> RawId -> Selector -> Ptr () -> IO ()
-attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfo nsObject  error_ recoveryOptionIndex delegate didRecoverSelector contextInfo =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsObject (mkSelector "attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:") retVoid [argPtr (castPtr raw_error_ :: Ptr ()), argCULong recoveryOptionIndex, argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didRecoverSelector), argPtr contextInfo]
+attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfo :: (IsNSObject nsObject, IsNSError error_) => nsObject -> error_ -> CULong -> RawId -> Sel -> Ptr () -> IO ()
+attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfo nsObject error_ recoveryOptionIndex delegate didRecoverSelector contextInfo =
+  sendMessage nsObject attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector (toNSError error_) recoveryOptionIndex delegate didRecoverSelector contextInfo
 
 -- | @- attemptRecoveryFromError:optionIndex:@
 attemptRecoveryFromError_optionIndex :: (IsNSObject nsObject, IsNSError error_) => nsObject -> error_ -> CULong -> IO Bool
-attemptRecoveryFromError_optionIndex nsObject  error_ recoveryOptionIndex =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsObject (mkSelector "attemptRecoveryFromError:optionIndex:") retCULong [argPtr (castPtr raw_error_ :: Ptr ()), argCULong recoveryOptionIndex]
+attemptRecoveryFromError_optionIndex nsObject error_ recoveryOptionIndex =
+  sendMessage nsObject attemptRecoveryFromError_optionIndexSelector (toNSError error_) recoveryOptionIndex
 
 -- | @+ poseAsClass:@
 poseAsClass :: Class -> IO ()
 poseAsClass aClass =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "poseAsClass:") retVoid [argPtr (unClass aClass)]
+    sendClassMessage cls' poseAsClassSelector aClass
 
 -- | @+ version@
 version :: IO CLong
 version  =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "version") retCLong []
+    sendClassMessage cls' versionSelector
 
 -- | @+ setVersion:@
 setVersion :: CLong -> IO ()
 setVersion aVersion =
   do
     cls' <- getRequiredClass "NSObject"
-    sendClassMsg cls' (mkSelector "setVersion:") retVoid [argCLong aVersion]
+    sendClassMessage cls' setVersionSelector aVersion
 
 -- | @- replacementObjectForCoder:@
 replacementObjectForCoder :: (IsNSObject nsObject, IsNSCoder coder) => nsObject -> coder -> IO RawId
-replacementObjectForCoder nsObject  coder =
-  withObjCPtr coder $ \raw_coder ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "replacementObjectForCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())]
+replacementObjectForCoder nsObject coder =
+  sendMessage nsObject replacementObjectForCoderSelector (toNSCoder coder)
 
 -- | @- awakeAfterUsingCoder:@
 awakeAfterUsingCoder :: (IsNSObject nsObject, IsNSCoder coder) => nsObject -> coder -> IO RawId
-awakeAfterUsingCoder nsObject  coder =
-  withObjCPtr coder $ \raw_coder ->
-      fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "awakeAfterUsingCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())]
+awakeAfterUsingCoder nsObject coder =
+  sendMessage nsObject awakeAfterUsingCoderSelector (toNSCoder coder)
 
 -- | @- objectSpecifier@
 objectSpecifier :: IsNSObject nsObject => nsObject -> IO (Id NSScriptObjectSpecifier)
-objectSpecifier nsObject  =
-    sendMsg nsObject (mkSelector "objectSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectSpecifier nsObject =
+  sendMessage nsObject objectSpecifierSelector
 
 -- | @- classCode@
 classCode :: IsNSObject nsObject => nsObject -> IO CUInt
-classCode nsObject  =
-    sendMsg nsObject (mkSelector "classCode") retCUInt []
+classCode nsObject =
+  sendMessage nsObject classCodeSelector
 
 -- | @- className@
 className :: IsNSObject nsObject => nsObject -> IO (Id NSString)
-className nsObject  =
-    sendMsg nsObject (mkSelector "className") (retPtr retVoid) [] >>= retainedObject . castPtr
+className nsObject =
+  sendMessage nsObject classNameSelector
 
 -- | @- scriptingProperties@
 scriptingProperties :: IsNSObject nsObject => nsObject -> IO (Id NSDictionary)
-scriptingProperties nsObject  =
-    sendMsg nsObject (mkSelector "scriptingProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptingProperties nsObject =
+  sendMessage nsObject scriptingPropertiesSelector
 
 -- | @- setScriptingProperties:@
 setScriptingProperties :: (IsNSObject nsObject, IsNSDictionary value) => nsObject -> value -> IO ()
-setScriptingProperties nsObject  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsObject (mkSelector "setScriptingProperties:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScriptingProperties nsObject value =
+  sendMessage nsObject setScriptingPropertiesSelector (toNSDictionary value)
 
 -- | @- classDescription@
 classDescription :: IsNSObject nsObject => nsObject -> IO (Id NSClassDescription)
-classDescription nsObject  =
-    sendMsg nsObject (mkSelector "classDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+classDescription nsObject =
+  sendMessage nsObject classDescriptionSelector
 
 -- | @- attributeKeys@
 attributeKeys :: IsNSObject nsObject => nsObject -> IO (Id NSArray)
-attributeKeys nsObject  =
-    sendMsg nsObject (mkSelector "attributeKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeKeys nsObject =
+  sendMessage nsObject attributeKeysSelector
 
 -- | @- toOneRelationshipKeys@
 toOneRelationshipKeys :: IsNSObject nsObject => nsObject -> IO (Id NSArray)
-toOneRelationshipKeys nsObject  =
-    sendMsg nsObject (mkSelector "toOneRelationshipKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+toOneRelationshipKeys nsObject =
+  sendMessage nsObject toOneRelationshipKeysSelector
 
 -- | @- toManyRelationshipKeys@
 toManyRelationshipKeys :: IsNSObject nsObject => nsObject -> IO (Id NSArray)
-toManyRelationshipKeys nsObject  =
-    sendMsg nsObject (mkSelector "toManyRelationshipKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+toManyRelationshipKeys nsObject =
+  sendMessage nsObject toManyRelationshipKeysSelector
 
 -- | @- classForPortCoder@
 classForPortCoder :: IsNSObject nsObject => nsObject -> IO Class
-classForPortCoder nsObject  =
-    fmap (Class . castPtr) $ sendMsg nsObject (mkSelector "classForPortCoder") (retPtr retVoid) []
+classForPortCoder nsObject =
+  sendMessage nsObject classForPortCoderSelector
 
 -- | @- classForArchiver@
 classForArchiver :: IsNSObject nsObject => nsObject -> IO Class
-classForArchiver nsObject  =
-    fmap (Class . castPtr) $ sendMsg nsObject (mkSelector "classForArchiver") (retPtr retVoid) []
+classForArchiver nsObject =
+  sendMessage nsObject classForArchiverSelector
 
 -- | @- classForKeyedArchiver@
 classForKeyedArchiver :: IsNSObject nsObject => nsObject -> IO Class
-classForKeyedArchiver nsObject  =
-    fmap (Class . castPtr) $ sendMsg nsObject (mkSelector "classForKeyedArchiver") (retPtr retVoid) []
+classForKeyedArchiver nsObject =
+  sendMessage nsObject classForKeyedArchiverSelector
 
 -- | @- observationInfo@
 observationInfo :: IsNSObject nsObject => nsObject -> IO (Ptr ())
-observationInfo nsObject  =
-    fmap castPtr $ sendMsg nsObject (mkSelector "observationInfo") (retPtr retVoid) []
+observationInfo nsObject =
+  sendMessage nsObject observationInfoSelector
 
 -- | @- setObservationInfo:@
 setObservationInfo :: IsNSObject nsObject => nsObject -> Ptr () -> IO ()
-setObservationInfo nsObject  value =
-    sendMsg nsObject (mkSelector "setObservationInfo:") retVoid [argPtr value]
+setObservationInfo nsObject value =
+  sendMessage nsObject setObservationInfoSelector value
 
 -- | @+ accessInstanceVariablesDirectly@
 accessInstanceVariablesDirectly :: IO Bool
 accessInstanceVariablesDirectly  =
   do
     cls' <- getRequiredClass "NSObject"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "accessInstanceVariablesDirectly") retCULong []
+    sendClassMessage cls' accessInstanceVariablesDirectlySelector
 
 -- | @- autoContentAccessingProxy@
 autoContentAccessingProxy :: IsNSObject nsObject => nsObject -> IO RawId
-autoContentAccessingProxy nsObject  =
-    fmap (RawId . castPtr) $ sendMsg nsObject (mkSelector "autoContentAccessingProxy") (retPtr retVoid) []
+autoContentAccessingProxy nsObject =
+  sendMessage nsObject autoContentAccessingProxySelector
 
 -- | @- classForCoder@
 classForCoder :: IsNSObject nsObject => nsObject -> IO Class
-classForCoder nsObject  =
-    fmap (Class . castPtr) $ sendMsg nsObject (mkSelector "classForCoder") (retPtr retVoid) []
+classForCoder nsObject =
+  sendMessage nsObject classForCoderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scriptingIsEqualTo:@
-scriptingIsEqualToSelector :: Selector
+scriptingIsEqualToSelector :: Selector '[RawId] Bool
 scriptingIsEqualToSelector = mkSelector "scriptingIsEqualTo:"
 
 -- | @Selector@ for @scriptingIsLessThanOrEqualTo:@
-scriptingIsLessThanOrEqualToSelector :: Selector
+scriptingIsLessThanOrEqualToSelector :: Selector '[RawId] Bool
 scriptingIsLessThanOrEqualToSelector = mkSelector "scriptingIsLessThanOrEqualTo:"
 
 -- | @Selector@ for @scriptingIsLessThan:@
-scriptingIsLessThanSelector :: Selector
+scriptingIsLessThanSelector :: Selector '[RawId] Bool
 scriptingIsLessThanSelector = mkSelector "scriptingIsLessThan:"
 
 -- | @Selector@ for @scriptingIsGreaterThanOrEqualTo:@
-scriptingIsGreaterThanOrEqualToSelector :: Selector
+scriptingIsGreaterThanOrEqualToSelector :: Selector '[RawId] Bool
 scriptingIsGreaterThanOrEqualToSelector = mkSelector "scriptingIsGreaterThanOrEqualTo:"
 
 -- | @Selector@ for @scriptingIsGreaterThan:@
-scriptingIsGreaterThanSelector :: Selector
+scriptingIsGreaterThanSelector :: Selector '[RawId] Bool
 scriptingIsGreaterThanSelector = mkSelector "scriptingIsGreaterThan:"
 
 -- | @Selector@ for @scriptingBeginsWith:@
-scriptingBeginsWithSelector :: Selector
+scriptingBeginsWithSelector :: Selector '[RawId] Bool
 scriptingBeginsWithSelector = mkSelector "scriptingBeginsWith:"
 
 -- | @Selector@ for @scriptingEndsWith:@
-scriptingEndsWithSelector :: Selector
+scriptingEndsWithSelector :: Selector '[RawId] Bool
 scriptingEndsWithSelector = mkSelector "scriptingEndsWith:"
 
 -- | @Selector@ for @scriptingContains:@
-scriptingContainsSelector :: Selector
+scriptingContainsSelector :: Selector '[RawId] Bool
 scriptingContainsSelector = mkSelector "scriptingContains:"
 
 -- | @Selector@ for @isEqualTo:@
-isEqualToSelector :: Selector
+isEqualToSelector :: Selector '[RawId] Bool
 isEqualToSelector = mkSelector "isEqualTo:"
 
 -- | @Selector@ for @isLessThanOrEqualTo:@
-isLessThanOrEqualToSelector :: Selector
+isLessThanOrEqualToSelector :: Selector '[RawId] Bool
 isLessThanOrEqualToSelector = mkSelector "isLessThanOrEqualTo:"
 
 -- | @Selector@ for @isLessThan:@
-isLessThanSelector :: Selector
+isLessThanSelector :: Selector '[RawId] Bool
 isLessThanSelector = mkSelector "isLessThan:"
 
 -- | @Selector@ for @isGreaterThanOrEqualTo:@
-isGreaterThanOrEqualToSelector :: Selector
+isGreaterThanOrEqualToSelector :: Selector '[RawId] Bool
 isGreaterThanOrEqualToSelector = mkSelector "isGreaterThanOrEqualTo:"
 
 -- | @Selector@ for @isGreaterThan:@
-isGreaterThanSelector :: Selector
+isGreaterThanSelector :: Selector '[RawId] Bool
 isGreaterThanSelector = mkSelector "isGreaterThan:"
 
 -- | @Selector@ for @isNotEqualTo:@
-isNotEqualToSelector :: Selector
+isNotEqualToSelector :: Selector '[RawId] Bool
 isNotEqualToSelector = mkSelector "isNotEqualTo:"
 
 -- | @Selector@ for @doesContain:@
-doesContainSelector :: Selector
+doesContainSelector :: Selector '[RawId] Bool
 doesContainSelector = mkSelector "doesContain:"
 
 -- | @Selector@ for @isLike:@
-isLikeSelector :: Selector
+isLikeSelector :: Selector '[Id NSString] Bool
 isLikeSelector = mkSelector "isLike:"
 
 -- | @Selector@ for @isCaseInsensitiveLike:@
-isCaseInsensitiveLikeSelector :: Selector
+isCaseInsensitiveLikeSelector :: Selector '[Id NSString] Bool
 isCaseInsensitiveLikeSelector = mkSelector "isCaseInsensitiveLike:"
 
 -- | @Selector@ for @indicesOfObjectsByEvaluatingObjectSpecifier:@
-indicesOfObjectsByEvaluatingObjectSpecifierSelector :: Selector
+indicesOfObjectsByEvaluatingObjectSpecifierSelector :: Selector '[Id NSScriptObjectSpecifier] (Id NSArray)
 indicesOfObjectsByEvaluatingObjectSpecifierSelector = mkSelector "indicesOfObjectsByEvaluatingObjectSpecifier:"
 
 -- | @Selector@ for @valueAtIndex:inPropertyWithKey:@
-valueAtIndex_inPropertyWithKeySelector :: Selector
+valueAtIndex_inPropertyWithKeySelector :: Selector '[CULong, Id NSString] RawId
 valueAtIndex_inPropertyWithKeySelector = mkSelector "valueAtIndex:inPropertyWithKey:"
 
 -- | @Selector@ for @valueWithName:inPropertyWithKey:@
-valueWithName_inPropertyWithKeySelector :: Selector
+valueWithName_inPropertyWithKeySelector :: Selector '[Id NSString, Id NSString] RawId
 valueWithName_inPropertyWithKeySelector = mkSelector "valueWithName:inPropertyWithKey:"
 
 -- | @Selector@ for @valueWithUniqueID:inPropertyWithKey:@
-valueWithUniqueID_inPropertyWithKeySelector :: Selector
+valueWithUniqueID_inPropertyWithKeySelector :: Selector '[RawId, Id NSString] RawId
 valueWithUniqueID_inPropertyWithKeySelector = mkSelector "valueWithUniqueID:inPropertyWithKey:"
 
 -- | @Selector@ for @insertValue:atIndex:inPropertyWithKey:@
-insertValue_atIndex_inPropertyWithKeySelector :: Selector
+insertValue_atIndex_inPropertyWithKeySelector :: Selector '[RawId, CULong, Id NSString] ()
 insertValue_atIndex_inPropertyWithKeySelector = mkSelector "insertValue:atIndex:inPropertyWithKey:"
 
 -- | @Selector@ for @removeValueAtIndex:fromPropertyWithKey:@
-removeValueAtIndex_fromPropertyWithKeySelector :: Selector
+removeValueAtIndex_fromPropertyWithKeySelector :: Selector '[CULong, Id NSString] ()
 removeValueAtIndex_fromPropertyWithKeySelector = mkSelector "removeValueAtIndex:fromPropertyWithKey:"
 
 -- | @Selector@ for @replaceValueAtIndex:inPropertyWithKey:withValue:@
-replaceValueAtIndex_inPropertyWithKey_withValueSelector :: Selector
+replaceValueAtIndex_inPropertyWithKey_withValueSelector :: Selector '[CULong, Id NSString, RawId] ()
 replaceValueAtIndex_inPropertyWithKey_withValueSelector = mkSelector "replaceValueAtIndex:inPropertyWithKey:withValue:"
 
 -- | @Selector@ for @insertValue:inPropertyWithKey:@
-insertValue_inPropertyWithKeySelector :: Selector
+insertValue_inPropertyWithKeySelector :: Selector '[RawId, Id NSString] ()
 insertValue_inPropertyWithKeySelector = mkSelector "insertValue:inPropertyWithKey:"
 
 -- | @Selector@ for @coerceValue:forKey:@
-coerceValue_forKeySelector :: Selector
+coerceValue_forKeySelector :: Selector '[RawId, Id NSString] RawId
 coerceValue_forKeySelector = mkSelector "coerceValue:forKey:"
 
 -- | @Selector@ for @scriptingValueForSpecifier:@
-scriptingValueForSpecifierSelector :: Selector
+scriptingValueForSpecifierSelector :: Selector '[Id NSScriptObjectSpecifier] RawId
 scriptingValueForSpecifierSelector = mkSelector "scriptingValueForSpecifier:"
 
 -- | @Selector@ for @copyScriptingValue:forKey:withProperties:@
-copyScriptingValue_forKey_withPropertiesSelector :: Selector
+copyScriptingValue_forKey_withPropertiesSelector :: Selector '[RawId, Id NSString, Id NSDictionary] RawId
 copyScriptingValue_forKey_withPropertiesSelector = mkSelector "copyScriptingValue:forKey:withProperties:"
 
 -- | @Selector@ for @newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:@
-newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector :: Selector
+newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector :: Selector '[Class, Id NSString, RawId, Id NSDictionary] RawId
 newScriptingObjectOfClass_forValueForKey_withContentsValue_propertiesSelector = mkSelector "newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:"
 
 -- | @Selector@ for @inverseForRelationshipKey:@
-inverseForRelationshipKeySelector :: Selector
+inverseForRelationshipKeySelector :: Selector '[Id NSString] (Id NSString)
 inverseForRelationshipKeySelector = mkSelector "inverseForRelationshipKey:"
 
 -- | @Selector@ for @replacementObjectForPortCoder:@
-replacementObjectForPortCoderSelector :: Selector
+replacementObjectForPortCoderSelector :: Selector '[Id NSPortCoder] RawId
 replacementObjectForPortCoderSelector = mkSelector "replacementObjectForPortCoder:"
 
 -- | @Selector@ for @replacementObjectForArchiver:@
-replacementObjectForArchiverSelector :: Selector
+replacementObjectForArchiverSelector :: Selector '[Id NSArchiver] RawId
 replacementObjectForArchiverSelector = mkSelector "replacementObjectForArchiver:"
 
 -- | @Selector@ for @performSelectorOnMainThread:withObject:waitUntilDone:modes:@
-performSelectorOnMainThread_withObject_waitUntilDone_modesSelector :: Selector
+performSelectorOnMainThread_withObject_waitUntilDone_modesSelector :: Selector '[Sel, RawId, Bool, Id NSArray] ()
 performSelectorOnMainThread_withObject_waitUntilDone_modesSelector = mkSelector "performSelectorOnMainThread:withObject:waitUntilDone:modes:"
 
 -- | @Selector@ for @performSelectorOnMainThread:withObject:waitUntilDone:@
-performSelectorOnMainThread_withObject_waitUntilDoneSelector :: Selector
+performSelectorOnMainThread_withObject_waitUntilDoneSelector :: Selector '[Sel, RawId, Bool] ()
 performSelectorOnMainThread_withObject_waitUntilDoneSelector = mkSelector "performSelectorOnMainThread:withObject:waitUntilDone:"
 
 -- | @Selector@ for @performSelector:onThread:withObject:waitUntilDone:modes:@
-performSelector_onThread_withObject_waitUntilDone_modesSelector :: Selector
+performSelector_onThread_withObject_waitUntilDone_modesSelector :: Selector '[Sel, Id NSThread, RawId, Bool, Id NSArray] ()
 performSelector_onThread_withObject_waitUntilDone_modesSelector = mkSelector "performSelector:onThread:withObject:waitUntilDone:modes:"
 
 -- | @Selector@ for @performSelector:onThread:withObject:waitUntilDone:@
-performSelector_onThread_withObject_waitUntilDoneSelector :: Selector
+performSelector_onThread_withObject_waitUntilDoneSelector :: Selector '[Sel, Id NSThread, RawId, Bool] ()
 performSelector_onThread_withObject_waitUntilDoneSelector = mkSelector "performSelector:onThread:withObject:waitUntilDone:"
 
 -- | @Selector@ for @performSelectorInBackground:withObject:@
-performSelectorInBackground_withObjectSelector :: Selector
+performSelectorInBackground_withObjectSelector :: Selector '[Sel, RawId] ()
 performSelectorInBackground_withObjectSelector = mkSelector "performSelectorInBackground:withObject:"
 
 -- | @Selector@ for @classForKeyedUnarchiver@
-classForKeyedUnarchiverSelector :: Selector
+classForKeyedUnarchiverSelector :: Selector '[] Class
 classForKeyedUnarchiverSelector = mkSelector "classForKeyedUnarchiver"
 
 -- | @Selector@ for @replacementObjectForKeyedArchiver:@
-replacementObjectForKeyedArchiverSelector :: Selector
+replacementObjectForKeyedArchiverSelector :: Selector '[Id NSKeyedArchiver] RawId
 replacementObjectForKeyedArchiverSelector = mkSelector "replacementObjectForKeyedArchiver:"
 
 -- | @Selector@ for @classFallbacksForKeyedArchiver@
-classFallbacksForKeyedArchiverSelector :: Selector
+classFallbacksForKeyedArchiverSelector :: Selector '[] (Id NSArray)
 classFallbacksForKeyedArchiverSelector = mkSelector "classFallbacksForKeyedArchiver"
 
 -- | @Selector@ for @setSharedObservers:@
-setSharedObserversSelector :: Selector
+setSharedObserversSelector :: Selector '[Id NSKeyValueSharedObserversSnapshot] ()
 setSharedObserversSelector = mkSelector "setSharedObservers:"
 
 -- | @Selector@ for @setKeys:triggerChangeNotificationsForDependentKey:@
-setKeys_triggerChangeNotificationsForDependentKeySelector :: Selector
+setKeys_triggerChangeNotificationsForDependentKeySelector :: Selector '[Id NSArray, Id NSString] ()
 setKeys_triggerChangeNotificationsForDependentKeySelector = mkSelector "setKeys:triggerChangeNotificationsForDependentKey:"
 
 -- | @Selector@ for @keyPathsForValuesAffectingValueForKey:@
-keyPathsForValuesAffectingValueForKeySelector :: Selector
+keyPathsForValuesAffectingValueForKeySelector :: Selector '[Id NSString] (Id NSSet)
 keyPathsForValuesAffectingValueForKeySelector = mkSelector "keyPathsForValuesAffectingValueForKey:"
 
 -- | @Selector@ for @automaticallyNotifiesObserversForKey:@
-automaticallyNotifiesObserversForKeySelector :: Selector
+automaticallyNotifiesObserversForKeySelector :: Selector '[Id NSString] Bool
 automaticallyNotifiesObserversForKeySelector = mkSelector "automaticallyNotifiesObserversForKey:"
 
 -- | @Selector@ for @willChangeValueForKey:@
-willChangeValueForKeySelector :: Selector
+willChangeValueForKeySelector :: Selector '[Id NSString] ()
 willChangeValueForKeySelector = mkSelector "willChangeValueForKey:"
 
 -- | @Selector@ for @didChangeValueForKey:@
-didChangeValueForKeySelector :: Selector
+didChangeValueForKeySelector :: Selector '[Id NSString] ()
 didChangeValueForKeySelector = mkSelector "didChangeValueForKey:"
 
 -- | @Selector@ for @willChange:valuesAtIndexes:forKey:@
-willChange_valuesAtIndexes_forKeySelector :: Selector
+willChange_valuesAtIndexes_forKeySelector :: Selector '[NSKeyValueChange, Id NSIndexSet, Id NSString] ()
 willChange_valuesAtIndexes_forKeySelector = mkSelector "willChange:valuesAtIndexes:forKey:"
 
 -- | @Selector@ for @didChange:valuesAtIndexes:forKey:@
-didChange_valuesAtIndexes_forKeySelector :: Selector
+didChange_valuesAtIndexes_forKeySelector :: Selector '[NSKeyValueChange, Id NSIndexSet, Id NSString] ()
 didChange_valuesAtIndexes_forKeySelector = mkSelector "didChange:valuesAtIndexes:forKey:"
 
 -- | @Selector@ for @willChangeValueForKey:withSetMutation:usingObjects:@
-willChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector
+willChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector '[Id NSString, NSKeyValueSetMutationKind, Id NSSet] ()
 willChangeValueForKey_withSetMutation_usingObjectsSelector = mkSelector "willChangeValueForKey:withSetMutation:usingObjects:"
 
 -- | @Selector@ for @didChangeValueForKey:withSetMutation:usingObjects:@
-didChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector
+didChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector '[Id NSString, NSKeyValueSetMutationKind, Id NSSet] ()
 didChangeValueForKey_withSetMutation_usingObjectsSelector = mkSelector "didChangeValueForKey:withSetMutation:usingObjects:"
 
 -- | @Selector@ for @addObserver:forKeyPath:options:context:@
-addObserver_forKeyPath_options_contextSelector :: Selector
+addObserver_forKeyPath_options_contextSelector :: Selector '[Id NSObject, Id NSString, NSKeyValueObservingOptions, Ptr ()] ()
 addObserver_forKeyPath_options_contextSelector = mkSelector "addObserver:forKeyPath:options:context:"
 
 -- | @Selector@ for @removeObserver:forKeyPath:context:@
-removeObserver_forKeyPath_contextSelector :: Selector
+removeObserver_forKeyPath_contextSelector :: Selector '[Id NSObject, Id NSString, Ptr ()] ()
 removeObserver_forKeyPath_contextSelector = mkSelector "removeObserver:forKeyPath:context:"
 
 -- | @Selector@ for @removeObserver:forKeyPath:@
-removeObserver_forKeyPathSelector :: Selector
+removeObserver_forKeyPathSelector :: Selector '[Id NSObject, Id NSString] ()
 removeObserver_forKeyPathSelector = mkSelector "removeObserver:forKeyPath:"
 
 -- | @Selector@ for @observeValueForKeyPath:ofObject:change:context:@
-observeValueForKeyPath_ofObject_change_contextSelector :: Selector
+observeValueForKeyPath_ofObject_change_contextSelector :: Selector '[Id NSString, RawId, Id NSDictionary, Ptr ()] ()
 observeValueForKeyPath_ofObject_change_contextSelector = mkSelector "observeValueForKeyPath:ofObject:change:context:"
 
 -- | @Selector@ for @useStoredAccessor@
-useStoredAccessorSelector :: Selector
+useStoredAccessorSelector :: Selector '[] Bool
 useStoredAccessorSelector = mkSelector "useStoredAccessor"
 
 -- | @Selector@ for @storedValueForKey:@
-storedValueForKeySelector :: Selector
+storedValueForKeySelector :: Selector '[Id NSString] RawId
 storedValueForKeySelector = mkSelector "storedValueForKey:"
 
 -- | @Selector@ for @takeStoredValue:forKey:@
-takeStoredValue_forKeySelector :: Selector
+takeStoredValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 takeStoredValue_forKeySelector = mkSelector "takeStoredValue:forKey:"
 
 -- | @Selector@ for @takeValue:forKey:@
-takeValue_forKeySelector :: Selector
+takeValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 takeValue_forKeySelector = mkSelector "takeValue:forKey:"
 
 -- | @Selector@ for @takeValue:forKeyPath:@
-takeValue_forKeyPathSelector :: Selector
+takeValue_forKeyPathSelector :: Selector '[RawId, Id NSString] ()
 takeValue_forKeyPathSelector = mkSelector "takeValue:forKeyPath:"
 
 -- | @Selector@ for @handleQueryWithUnboundKey:@
-handleQueryWithUnboundKeySelector :: Selector
+handleQueryWithUnboundKeySelector :: Selector '[Id NSString] RawId
 handleQueryWithUnboundKeySelector = mkSelector "handleQueryWithUnboundKey:"
 
 -- | @Selector@ for @handleTakeValue:forUnboundKey:@
-handleTakeValue_forUnboundKeySelector :: Selector
+handleTakeValue_forUnboundKeySelector :: Selector '[RawId, Id NSString] ()
 handleTakeValue_forUnboundKeySelector = mkSelector "handleTakeValue:forUnboundKey:"
 
 -- | @Selector@ for @unableToSetNilForKey:@
-unableToSetNilForKeySelector :: Selector
+unableToSetNilForKeySelector :: Selector '[Id NSString] ()
 unableToSetNilForKeySelector = mkSelector "unableToSetNilForKey:"
 
 -- | @Selector@ for @valuesForKeys:@
-valuesForKeysSelector :: Selector
+valuesForKeysSelector :: Selector '[Id NSArray] (Id NSDictionary)
 valuesForKeysSelector = mkSelector "valuesForKeys:"
 
 -- | @Selector@ for @takeValuesFromDictionary:@
-takeValuesFromDictionarySelector :: Selector
+takeValuesFromDictionarySelector :: Selector '[Id NSDictionary] ()
 takeValuesFromDictionarySelector = mkSelector "takeValuesFromDictionary:"
 
 -- | @Selector@ for @valueForKey:@
-valueForKeySelector :: Selector
+valueForKeySelector :: Selector '[Id NSString] RawId
 valueForKeySelector = mkSelector "valueForKey:"
 
 -- | @Selector@ for @setValue:forKey:@
-setValue_forKeySelector :: Selector
+setValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeySelector = mkSelector "setValue:forKey:"
 
 -- | @Selector@ for @validateValue:forKey:error:@
-validateValue_forKey_errorSelector :: Selector
+validateValue_forKey_errorSelector :: Selector '[Ptr RawId, Id NSString, Id NSError] Bool
 validateValue_forKey_errorSelector = mkSelector "validateValue:forKey:error:"
 
 -- | @Selector@ for @mutableArrayValueForKey:@
-mutableArrayValueForKeySelector :: Selector
+mutableArrayValueForKeySelector :: Selector '[Id NSString] (Id NSMutableArray)
 mutableArrayValueForKeySelector = mkSelector "mutableArrayValueForKey:"
 
 -- | @Selector@ for @mutableOrderedSetValueForKey:@
-mutableOrderedSetValueForKeySelector :: Selector
+mutableOrderedSetValueForKeySelector :: Selector '[Id NSString] (Id NSMutableOrderedSet)
 mutableOrderedSetValueForKeySelector = mkSelector "mutableOrderedSetValueForKey:"
 
 -- | @Selector@ for @mutableSetValueForKey:@
-mutableSetValueForKeySelector :: Selector
+mutableSetValueForKeySelector :: Selector '[Id NSString] (Id NSMutableSet)
 mutableSetValueForKeySelector = mkSelector "mutableSetValueForKey:"
 
 -- | @Selector@ for @valueForKeyPath:@
-valueForKeyPathSelector :: Selector
+valueForKeyPathSelector :: Selector '[Id NSString] RawId
 valueForKeyPathSelector = mkSelector "valueForKeyPath:"
 
 -- | @Selector@ for @setValue:forKeyPath:@
-setValue_forKeyPathSelector :: Selector
+setValue_forKeyPathSelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeyPathSelector = mkSelector "setValue:forKeyPath:"
 
 -- | @Selector@ for @validateValue:forKeyPath:error:@
-validateValue_forKeyPath_errorSelector :: Selector
+validateValue_forKeyPath_errorSelector :: Selector '[Ptr RawId, Id NSString, Id NSError] Bool
 validateValue_forKeyPath_errorSelector = mkSelector "validateValue:forKeyPath:error:"
 
 -- | @Selector@ for @mutableArrayValueForKeyPath:@
-mutableArrayValueForKeyPathSelector :: Selector
+mutableArrayValueForKeyPathSelector :: Selector '[Id NSString] (Id NSMutableArray)
 mutableArrayValueForKeyPathSelector = mkSelector "mutableArrayValueForKeyPath:"
 
 -- | @Selector@ for @mutableOrderedSetValueForKeyPath:@
-mutableOrderedSetValueForKeyPathSelector :: Selector
+mutableOrderedSetValueForKeyPathSelector :: Selector '[Id NSString] (Id NSMutableOrderedSet)
 mutableOrderedSetValueForKeyPathSelector = mkSelector "mutableOrderedSetValueForKeyPath:"
 
 -- | @Selector@ for @mutableSetValueForKeyPath:@
-mutableSetValueForKeyPathSelector :: Selector
+mutableSetValueForKeyPathSelector :: Selector '[Id NSString] (Id NSMutableSet)
 mutableSetValueForKeyPathSelector = mkSelector "mutableSetValueForKeyPath:"
 
 -- | @Selector@ for @valueForUndefinedKey:@
-valueForUndefinedKeySelector :: Selector
+valueForUndefinedKeySelector :: Selector '[Id NSString] RawId
 valueForUndefinedKeySelector = mkSelector "valueForUndefinedKey:"
 
 -- | @Selector@ for @setValue:forUndefinedKey:@
-setValue_forUndefinedKeySelector :: Selector
+setValue_forUndefinedKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forUndefinedKeySelector = mkSelector "setValue:forUndefinedKey:"
 
 -- | @Selector@ for @setNilValueForKey:@
-setNilValueForKeySelector :: Selector
+setNilValueForKeySelector :: Selector '[Id NSString] ()
 setNilValueForKeySelector = mkSelector "setNilValueForKey:"
 
 -- | @Selector@ for @dictionaryWithValuesForKeys:@
-dictionaryWithValuesForKeysSelector :: Selector
+dictionaryWithValuesForKeysSelector :: Selector '[Id NSArray] (Id NSDictionary)
 dictionaryWithValuesForKeysSelector = mkSelector "dictionaryWithValuesForKeys:"
 
 -- | @Selector@ for @setValuesForKeysWithDictionary:@
-setValuesForKeysWithDictionarySelector :: Selector
+setValuesForKeysWithDictionarySelector :: Selector '[Id NSDictionary] ()
 setValuesForKeysWithDictionarySelector = mkSelector "setValuesForKeysWithDictionary:"
 
 -- | @Selector@ for @fileManager:shouldProceedAfterError:@
-fileManager_shouldProceedAfterErrorSelector :: Selector
+fileManager_shouldProceedAfterErrorSelector :: Selector '[Id NSFileManager, Id NSDictionary] Bool
 fileManager_shouldProceedAfterErrorSelector = mkSelector "fileManager:shouldProceedAfterError:"
 
 -- | @Selector@ for @fileManager:willProcessPath:@
-fileManager_willProcessPathSelector :: Selector
+fileManager_willProcessPathSelector :: Selector '[Id NSFileManager, Id NSString] ()
 fileManager_willProcessPathSelector = mkSelector "fileManager:willProcessPath:"
 
 -- | @Selector@ for @URL:resourceDataDidBecomeAvailable:@
-urL_resourceDataDidBecomeAvailableSelector :: Selector
+urL_resourceDataDidBecomeAvailableSelector :: Selector '[Id NSURL, Id NSData] ()
 urL_resourceDataDidBecomeAvailableSelector = mkSelector "URL:resourceDataDidBecomeAvailable:"
 
 -- | @Selector@ for @URLResourceDidFinishLoading:@
-urlResourceDidFinishLoadingSelector :: Selector
+urlResourceDidFinishLoadingSelector :: Selector '[Id NSURL] ()
 urlResourceDidFinishLoadingSelector = mkSelector "URLResourceDidFinishLoading:"
 
 -- | @Selector@ for @URLResourceDidCancelLoading:@
-urlResourceDidCancelLoadingSelector :: Selector
+urlResourceDidCancelLoadingSelector :: Selector '[Id NSURL] ()
 urlResourceDidCancelLoadingSelector = mkSelector "URLResourceDidCancelLoading:"
 
 -- | @Selector@ for @URL:resourceDidFailLoadingWithReason:@
-urL_resourceDidFailLoadingWithReasonSelector :: Selector
+urL_resourceDidFailLoadingWithReasonSelector :: Selector '[Id NSURL, Id NSString] ()
 urL_resourceDidFailLoadingWithReasonSelector = mkSelector "URL:resourceDidFailLoadingWithReason:"
 
 -- | @Selector@ for @performSelector:withObject:afterDelay:inModes:@
-performSelector_withObject_afterDelay_inModesSelector :: Selector
+performSelector_withObject_afterDelay_inModesSelector :: Selector '[Sel, RawId, CDouble, Id NSArray] ()
 performSelector_withObject_afterDelay_inModesSelector = mkSelector "performSelector:withObject:afterDelay:inModes:"
 
 -- | @Selector@ for @performSelector:withObject:afterDelay:@
-performSelector_withObject_afterDelaySelector :: Selector
+performSelector_withObject_afterDelaySelector :: Selector '[Sel, RawId, CDouble] ()
 performSelector_withObject_afterDelaySelector = mkSelector "performSelector:withObject:afterDelay:"
 
 -- | @Selector@ for @cancelPreviousPerformRequestsWithTarget:selector:object:@
-cancelPreviousPerformRequestsWithTarget_selector_objectSelector :: Selector
+cancelPreviousPerformRequestsWithTarget_selector_objectSelector :: Selector '[RawId, Sel, RawId] ()
 cancelPreviousPerformRequestsWithTarget_selector_objectSelector = mkSelector "cancelPreviousPerformRequestsWithTarget:selector:object:"
 
 -- | @Selector@ for @cancelPreviousPerformRequestsWithTarget:@
-cancelPreviousPerformRequestsWithTargetSelector :: Selector
+cancelPreviousPerformRequestsWithTargetSelector :: Selector '[RawId] ()
 cancelPreviousPerformRequestsWithTargetSelector = mkSelector "cancelPreviousPerformRequestsWithTarget:"
 
 -- | @Selector@ for @attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:@
-attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector :: Selector
+attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector :: Selector '[Id NSError, CULong, RawId, Sel, Ptr ()] ()
 attemptRecoveryFromError_optionIndex_delegate_didRecoverSelector_contextInfoSelector = mkSelector "attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"
 
 -- | @Selector@ for @attemptRecoveryFromError:optionIndex:@
-attemptRecoveryFromError_optionIndexSelector :: Selector
+attemptRecoveryFromError_optionIndexSelector :: Selector '[Id NSError, CULong] Bool
 attemptRecoveryFromError_optionIndexSelector = mkSelector "attemptRecoveryFromError:optionIndex:"
 
 -- | @Selector@ for @poseAsClass:@
-poseAsClassSelector :: Selector
+poseAsClassSelector :: Selector '[Class] ()
 poseAsClassSelector = mkSelector "poseAsClass:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CLong
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[CLong] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @replacementObjectForCoder:@
-replacementObjectForCoderSelector :: Selector
+replacementObjectForCoderSelector :: Selector '[Id NSCoder] RawId
 replacementObjectForCoderSelector = mkSelector "replacementObjectForCoder:"
 
 -- | @Selector@ for @awakeAfterUsingCoder:@
-awakeAfterUsingCoderSelector :: Selector
+awakeAfterUsingCoderSelector :: Selector '[Id NSCoder] RawId
 awakeAfterUsingCoderSelector = mkSelector "awakeAfterUsingCoder:"
 
 -- | @Selector@ for @objectSpecifier@
-objectSpecifierSelector :: Selector
+objectSpecifierSelector :: Selector '[] (Id NSScriptObjectSpecifier)
 objectSpecifierSelector = mkSelector "objectSpecifier"
 
 -- | @Selector@ for @classCode@
-classCodeSelector :: Selector
+classCodeSelector :: Selector '[] CUInt
 classCodeSelector = mkSelector "classCode"
 
 -- | @Selector@ for @className@
-classNameSelector :: Selector
+classNameSelector :: Selector '[] (Id NSString)
 classNameSelector = mkSelector "className"
 
 -- | @Selector@ for @scriptingProperties@
-scriptingPropertiesSelector :: Selector
+scriptingPropertiesSelector :: Selector '[] (Id NSDictionary)
 scriptingPropertiesSelector = mkSelector "scriptingProperties"
 
 -- | @Selector@ for @setScriptingProperties:@
-setScriptingPropertiesSelector :: Selector
+setScriptingPropertiesSelector :: Selector '[Id NSDictionary] ()
 setScriptingPropertiesSelector = mkSelector "setScriptingProperties:"
 
 -- | @Selector@ for @classDescription@
-classDescriptionSelector :: Selector
+classDescriptionSelector :: Selector '[] (Id NSClassDescription)
 classDescriptionSelector = mkSelector "classDescription"
 
 -- | @Selector@ for @attributeKeys@
-attributeKeysSelector :: Selector
+attributeKeysSelector :: Selector '[] (Id NSArray)
 attributeKeysSelector = mkSelector "attributeKeys"
 
 -- | @Selector@ for @toOneRelationshipKeys@
-toOneRelationshipKeysSelector :: Selector
+toOneRelationshipKeysSelector :: Selector '[] (Id NSArray)
 toOneRelationshipKeysSelector = mkSelector "toOneRelationshipKeys"
 
 -- | @Selector@ for @toManyRelationshipKeys@
-toManyRelationshipKeysSelector :: Selector
+toManyRelationshipKeysSelector :: Selector '[] (Id NSArray)
 toManyRelationshipKeysSelector = mkSelector "toManyRelationshipKeys"
 
 -- | @Selector@ for @classForPortCoder@
-classForPortCoderSelector :: Selector
+classForPortCoderSelector :: Selector '[] Class
 classForPortCoderSelector = mkSelector "classForPortCoder"
 
 -- | @Selector@ for @classForArchiver@
-classForArchiverSelector :: Selector
+classForArchiverSelector :: Selector '[] Class
 classForArchiverSelector = mkSelector "classForArchiver"
 
 -- | @Selector@ for @classForKeyedArchiver@
-classForKeyedArchiverSelector :: Selector
+classForKeyedArchiverSelector :: Selector '[] Class
 classForKeyedArchiverSelector = mkSelector "classForKeyedArchiver"
 
 -- | @Selector@ for @observationInfo@
-observationInfoSelector :: Selector
+observationInfoSelector :: Selector '[] (Ptr ())
 observationInfoSelector = mkSelector "observationInfo"
 
 -- | @Selector@ for @setObservationInfo:@
-setObservationInfoSelector :: Selector
+setObservationInfoSelector :: Selector '[Ptr ()] ()
 setObservationInfoSelector = mkSelector "setObservationInfo:"
 
 -- | @Selector@ for @accessInstanceVariablesDirectly@
-accessInstanceVariablesDirectlySelector :: Selector
+accessInstanceVariablesDirectlySelector :: Selector '[] Bool
 accessInstanceVariablesDirectlySelector = mkSelector "accessInstanceVariablesDirectly"
 
 -- | @Selector@ for @autoContentAccessingProxy@
-autoContentAccessingProxySelector :: Selector
+autoContentAccessingProxySelector :: Selector '[] RawId
 autoContentAccessingProxySelector = mkSelector "autoContentAccessingProxy"
 
 -- | @Selector@ for @classForCoder@
-classForCoderSelector :: Selector
+classForCoderSelector :: Selector '[] Class
 classForCoderSelector = mkSelector "classForCoder"
 

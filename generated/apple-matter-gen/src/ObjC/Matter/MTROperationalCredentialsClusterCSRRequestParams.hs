@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTROperationalCredentialsClusterCSRRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , csrNonceSelector
-  , setCsrNonceSelector
   , isForUpdateNOCSelector
-  , setIsForUpdateNOCSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCsrNonceSelector
+  , setIsForUpdateNOCSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- csrNonce@
 csrNonce :: IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams => mtrOperationalCredentialsClusterCSRRequestParams -> IO (Id NSData)
-csrNonce mtrOperationalCredentialsClusterCSRRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "csrNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+csrNonce mtrOperationalCredentialsClusterCSRRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams csrNonceSelector
 
 -- | @- setCsrNonce:@
 setCsrNonce :: (IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams, IsNSData value) => mtrOperationalCredentialsClusterCSRRequestParams -> value -> IO ()
-setCsrNonce mtrOperationalCredentialsClusterCSRRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "setCsrNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCsrNonce mtrOperationalCredentialsClusterCSRRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams setCsrNonceSelector (toNSData value)
 
 -- | @- isForUpdateNOC@
 isForUpdateNOC :: IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams => mtrOperationalCredentialsClusterCSRRequestParams -> IO (Id NSNumber)
-isForUpdateNOC mtrOperationalCredentialsClusterCSRRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "isForUpdateNOC") (retPtr retVoid) [] >>= retainedObject . castPtr
+isForUpdateNOC mtrOperationalCredentialsClusterCSRRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams isForUpdateNOCSelector
 
 -- | @- setIsForUpdateNOC:@
 setIsForUpdateNOC :: (IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCSRRequestParams -> value -> IO ()
-setIsForUpdateNOC mtrOperationalCredentialsClusterCSRRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "setIsForUpdateNOC:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIsForUpdateNOC mtrOperationalCredentialsClusterCSRRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams setIsForUpdateNOCSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setIsForUpdateNOC mtrOperationalCredentialsClusterCSRRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams => mtrOperationalCredentialsClusterCSRRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCSRRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRRequestParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams => mtrOperationalCredentialsClusterCSRRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterCSRRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterCSRRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterCSRRequestParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterCSRRequestParams mtrOperationalCredentialsClusterCSRRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCSRRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterCSRRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterCSRRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @csrNonce@
-csrNonceSelector :: Selector
+csrNonceSelector :: Selector '[] (Id NSData)
 csrNonceSelector = mkSelector "csrNonce"
 
 -- | @Selector@ for @setCsrNonce:@
-setCsrNonceSelector :: Selector
+setCsrNonceSelector :: Selector '[Id NSData] ()
 setCsrNonceSelector = mkSelector "setCsrNonce:"
 
 -- | @Selector@ for @isForUpdateNOC@
-isForUpdateNOCSelector :: Selector
+isForUpdateNOCSelector :: Selector '[] (Id NSNumber)
 isForUpdateNOCSelector = mkSelector "isForUpdateNOC"
 
 -- | @Selector@ for @setIsForUpdateNOC:@
-setIsForUpdateNOCSelector :: Selector
+setIsForUpdateNOCSelector :: Selector '[Id NSNumber] ()
 setIsForUpdateNOCSelector = mkSelector "setIsForUpdateNOC:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

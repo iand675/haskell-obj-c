@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,20 +30,20 @@ module ObjC.EventKit.EKRecurrenceRule
   , weeksOfTheYear
   , monthsOfTheYear
   , setPositions
-  , initRecurrenceWithFrequency_interval_endSelector
-  , initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector
   , calendarIdentifierSelector
-  , recurrenceEndSelector
-  , setRecurrenceEndSelector
-  , frequencySelector
-  , intervalSelector
-  , firstDayOfTheWeekSelector
-  , daysOfTheWeekSelector
   , daysOfTheMonthSelector
+  , daysOfTheWeekSelector
   , daysOfTheYearSelector
-  , weeksOfTheYearSelector
+  , firstDayOfTheWeekSelector
+  , frequencySelector
+  , initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector
+  , initRecurrenceWithFrequency_interval_endSelector
+  , intervalSelector
   , monthsOfTheYearSelector
+  , recurrenceEndSelector
   , setPositionsSelector
+  , setRecurrenceEndSelector
+  , weeksOfTheYearSelector
 
   -- * Enum types
   , EKRecurrenceFrequency(EKRecurrenceFrequency)
@@ -53,15 +54,11 @@ module ObjC.EventKit.EKRecurrenceRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,9 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initRecurrenceWithFrequency:interval:end:@
 initRecurrenceWithFrequency_interval_end :: (IsEKRecurrenceRule ekRecurrenceRule, IsEKRecurrenceEnd end) => ekRecurrenceRule -> EKRecurrenceFrequency -> CLong -> end -> IO (Id EKRecurrenceRule)
-initRecurrenceWithFrequency_interval_end ekRecurrenceRule  type_ interval end =
-  withObjCPtr end $ \raw_end ->
-      sendMsg ekRecurrenceRule (mkSelector "initRecurrenceWithFrequency:interval:end:") (retPtr retVoid) [argCLong (coerce type_), argCLong interval, argPtr (castPtr raw_end :: Ptr ())] >>= ownedObject . castPtr
+initRecurrenceWithFrequency_interval_end ekRecurrenceRule type_ interval end =
+  sendOwnedMessage ekRecurrenceRule initRecurrenceWithFrequency_interval_endSelector type_ interval (toEKRecurrenceEnd end)
 
 -- | initRecurrenceWithFrequency:interval:daysOfTheWeek:daysOfTheMonth:monthsOfTheYear:weeksOfTheYear:daysOfTheYear:setPositions:end:
 --
@@ -107,15 +103,8 @@ initRecurrenceWithFrequency_interval_end ekRecurrenceRule  type_ interval end =
 --
 -- ObjC selector: @- initRecurrenceWithFrequency:interval:daysOfTheWeek:daysOfTheMonth:monthsOfTheYear:weeksOfTheYear:daysOfTheYear:setPositions:end:@
 initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_end :: (IsEKRecurrenceRule ekRecurrenceRule, IsNSArray days, IsNSArray monthDays, IsNSArray months, IsNSArray weeksOfTheYear, IsNSArray daysOfTheYear, IsNSArray setPositions, IsEKRecurrenceEnd end) => ekRecurrenceRule -> EKRecurrenceFrequency -> CLong -> days -> monthDays -> months -> weeksOfTheYear -> daysOfTheYear -> setPositions -> end -> IO (Id EKRecurrenceRule)
-initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_end ekRecurrenceRule  type_ interval days monthDays months weeksOfTheYear daysOfTheYear setPositions end =
-  withObjCPtr days $ \raw_days ->
-    withObjCPtr monthDays $ \raw_monthDays ->
-      withObjCPtr months $ \raw_months ->
-        withObjCPtr weeksOfTheYear $ \raw_weeksOfTheYear ->
-          withObjCPtr daysOfTheYear $ \raw_daysOfTheYear ->
-            withObjCPtr setPositions $ \raw_setPositions ->
-              withObjCPtr end $ \raw_end ->
-                  sendMsg ekRecurrenceRule (mkSelector "initRecurrenceWithFrequency:interval:daysOfTheWeek:daysOfTheMonth:monthsOfTheYear:weeksOfTheYear:daysOfTheYear:setPositions:end:") (retPtr retVoid) [argCLong (coerce type_), argCLong interval, argPtr (castPtr raw_days :: Ptr ()), argPtr (castPtr raw_monthDays :: Ptr ()), argPtr (castPtr raw_months :: Ptr ()), argPtr (castPtr raw_weeksOfTheYear :: Ptr ()), argPtr (castPtr raw_daysOfTheYear :: Ptr ()), argPtr (castPtr raw_setPositions :: Ptr ()), argPtr (castPtr raw_end :: Ptr ())] >>= ownedObject . castPtr
+initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_end ekRecurrenceRule type_ interval days monthDays months weeksOfTheYear daysOfTheYear setPositions end =
+  sendOwnedMessage ekRecurrenceRule initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector type_ interval (toNSArray days) (toNSArray monthDays) (toNSArray months) (toNSArray weeksOfTheYear) (toNSArray daysOfTheYear) (toNSArray setPositions) (toEKRecurrenceEnd end)
 
 -- | calendarIdentifier;
 --
@@ -123,8 +112,8 @@ initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYea
 --
 -- ObjC selector: @- calendarIdentifier@
 calendarIdentifier :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSString)
-calendarIdentifier ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "calendarIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendarIdentifier ekRecurrenceRule =
+  sendMessage ekRecurrenceRule calendarIdentifierSelector
 
 -- | recurrenceEnd
 --
@@ -132,8 +121,8 @@ calendarIdentifier ekRecurrenceRule  =
 --
 -- ObjC selector: @- recurrenceEnd@
 recurrenceEnd :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id EKRecurrenceEnd)
-recurrenceEnd ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "recurrenceEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+recurrenceEnd ekRecurrenceRule =
+  sendMessage ekRecurrenceRule recurrenceEndSelector
 
 -- | recurrenceEnd
 --
@@ -141,9 +130,8 @@ recurrenceEnd ekRecurrenceRule  =
 --
 -- ObjC selector: @- setRecurrenceEnd:@
 setRecurrenceEnd :: (IsEKRecurrenceRule ekRecurrenceRule, IsEKRecurrenceEnd value) => ekRecurrenceRule -> value -> IO ()
-setRecurrenceEnd ekRecurrenceRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekRecurrenceRule (mkSelector "setRecurrenceEnd:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecurrenceEnd ekRecurrenceRule value =
+  sendMessage ekRecurrenceRule setRecurrenceEndSelector (toEKRecurrenceEnd value)
 
 -- | frequency
 --
@@ -151,8 +139,8 @@ setRecurrenceEnd ekRecurrenceRule  value =
 --
 -- ObjC selector: @- frequency@
 frequency :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO EKRecurrenceFrequency
-frequency ekRecurrenceRule  =
-    fmap (coerce :: CLong -> EKRecurrenceFrequency) $ sendMsg ekRecurrenceRule (mkSelector "frequency") retCLong []
+frequency ekRecurrenceRule =
+  sendMessage ekRecurrenceRule frequencySelector
 
 -- | interval
 --
@@ -160,8 +148,8 @@ frequency ekRecurrenceRule  =
 --
 -- ObjC selector: @- interval@
 interval :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO CLong
-interval ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "interval") retCLong []
+interval ekRecurrenceRule =
+  sendMessage ekRecurrenceRule intervalSelector
 
 -- | firstDayOfTheWeek
 --
@@ -169,8 +157,8 @@ interval ekRecurrenceRule  =
 --
 -- ObjC selector: @- firstDayOfTheWeek@
 firstDayOfTheWeek :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO CLong
-firstDayOfTheWeek ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "firstDayOfTheWeek") retCLong []
+firstDayOfTheWeek ekRecurrenceRule =
+  sendMessage ekRecurrenceRule firstDayOfTheWeekSelector
 
 -- | daysOfTheWeek
 --
@@ -178,8 +166,8 @@ firstDayOfTheWeek ekRecurrenceRule  =
 --
 -- ObjC selector: @- daysOfTheWeek@
 daysOfTheWeek :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-daysOfTheWeek ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "daysOfTheWeek") (retPtr retVoid) [] >>= retainedObject . castPtr
+daysOfTheWeek ekRecurrenceRule =
+  sendMessage ekRecurrenceRule daysOfTheWeekSelector
 
 -- | daysOfTheMonth
 --
@@ -187,8 +175,8 @@ daysOfTheWeek ekRecurrenceRule  =
 --
 -- ObjC selector: @- daysOfTheMonth@
 daysOfTheMonth :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-daysOfTheMonth ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "daysOfTheMonth") (retPtr retVoid) [] >>= retainedObject . castPtr
+daysOfTheMonth ekRecurrenceRule =
+  sendMessage ekRecurrenceRule daysOfTheMonthSelector
 
 -- | daysOfTheYear
 --
@@ -196,8 +184,8 @@ daysOfTheMonth ekRecurrenceRule  =
 --
 -- ObjC selector: @- daysOfTheYear@
 daysOfTheYear :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-daysOfTheYear ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "daysOfTheYear") (retPtr retVoid) [] >>= retainedObject . castPtr
+daysOfTheYear ekRecurrenceRule =
+  sendMessage ekRecurrenceRule daysOfTheYearSelector
 
 -- | weeksOfTheYear
 --
@@ -205,8 +193,8 @@ daysOfTheYear ekRecurrenceRule  =
 --
 -- ObjC selector: @- weeksOfTheYear@
 weeksOfTheYear :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-weeksOfTheYear ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "weeksOfTheYear") (retPtr retVoid) [] >>= retainedObject . castPtr
+weeksOfTheYear ekRecurrenceRule =
+  sendMessage ekRecurrenceRule weeksOfTheYearSelector
 
 -- | monthsOfTheYear
 --
@@ -214,8 +202,8 @@ weeksOfTheYear ekRecurrenceRule  =
 --
 -- ObjC selector: @- monthsOfTheYear@
 monthsOfTheYear :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-monthsOfTheYear ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "monthsOfTheYear") (retPtr retVoid) [] >>= retainedObject . castPtr
+monthsOfTheYear ekRecurrenceRule =
+  sendMessage ekRecurrenceRule monthsOfTheYearSelector
 
 -- | setPositions
 --
@@ -223,66 +211,66 @@ monthsOfTheYear ekRecurrenceRule  =
 --
 -- ObjC selector: @- setPositions@
 setPositions :: IsEKRecurrenceRule ekRecurrenceRule => ekRecurrenceRule -> IO (Id NSArray)
-setPositions ekRecurrenceRule  =
-    sendMsg ekRecurrenceRule (mkSelector "setPositions") (retPtr retVoid) [] >>= retainedObject . castPtr
+setPositions ekRecurrenceRule =
+  sendMessage ekRecurrenceRule setPositionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initRecurrenceWithFrequency:interval:end:@
-initRecurrenceWithFrequency_interval_endSelector :: Selector
+initRecurrenceWithFrequency_interval_endSelector :: Selector '[EKRecurrenceFrequency, CLong, Id EKRecurrenceEnd] (Id EKRecurrenceRule)
 initRecurrenceWithFrequency_interval_endSelector = mkSelector "initRecurrenceWithFrequency:interval:end:"
 
 -- | @Selector@ for @initRecurrenceWithFrequency:interval:daysOfTheWeek:daysOfTheMonth:monthsOfTheYear:weeksOfTheYear:daysOfTheYear:setPositions:end:@
-initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector :: Selector
+initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector :: Selector '[EKRecurrenceFrequency, CLong, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id EKRecurrenceEnd] (Id EKRecurrenceRule)
 initRecurrenceWithFrequency_interval_daysOfTheWeek_daysOfTheMonth_monthsOfTheYear_weeksOfTheYear_daysOfTheYear_setPositions_endSelector = mkSelector "initRecurrenceWithFrequency:interval:daysOfTheWeek:daysOfTheMonth:monthsOfTheYear:weeksOfTheYear:daysOfTheYear:setPositions:end:"
 
 -- | @Selector@ for @calendarIdentifier@
-calendarIdentifierSelector :: Selector
+calendarIdentifierSelector :: Selector '[] (Id NSString)
 calendarIdentifierSelector = mkSelector "calendarIdentifier"
 
 -- | @Selector@ for @recurrenceEnd@
-recurrenceEndSelector :: Selector
+recurrenceEndSelector :: Selector '[] (Id EKRecurrenceEnd)
 recurrenceEndSelector = mkSelector "recurrenceEnd"
 
 -- | @Selector@ for @setRecurrenceEnd:@
-setRecurrenceEndSelector :: Selector
+setRecurrenceEndSelector :: Selector '[Id EKRecurrenceEnd] ()
 setRecurrenceEndSelector = mkSelector "setRecurrenceEnd:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] EKRecurrenceFrequency
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @interval@
-intervalSelector :: Selector
+intervalSelector :: Selector '[] CLong
 intervalSelector = mkSelector "interval"
 
 -- | @Selector@ for @firstDayOfTheWeek@
-firstDayOfTheWeekSelector :: Selector
+firstDayOfTheWeekSelector :: Selector '[] CLong
 firstDayOfTheWeekSelector = mkSelector "firstDayOfTheWeek"
 
 -- | @Selector@ for @daysOfTheWeek@
-daysOfTheWeekSelector :: Selector
+daysOfTheWeekSelector :: Selector '[] (Id NSArray)
 daysOfTheWeekSelector = mkSelector "daysOfTheWeek"
 
 -- | @Selector@ for @daysOfTheMonth@
-daysOfTheMonthSelector :: Selector
+daysOfTheMonthSelector :: Selector '[] (Id NSArray)
 daysOfTheMonthSelector = mkSelector "daysOfTheMonth"
 
 -- | @Selector@ for @daysOfTheYear@
-daysOfTheYearSelector :: Selector
+daysOfTheYearSelector :: Selector '[] (Id NSArray)
 daysOfTheYearSelector = mkSelector "daysOfTheYear"
 
 -- | @Selector@ for @weeksOfTheYear@
-weeksOfTheYearSelector :: Selector
+weeksOfTheYearSelector :: Selector '[] (Id NSArray)
 weeksOfTheYearSelector = mkSelector "weeksOfTheYear"
 
 -- | @Selector@ for @monthsOfTheYear@
-monthsOfTheYearSelector :: Selector
+monthsOfTheYearSelector :: Selector '[] (Id NSArray)
 monthsOfTheYearSelector = mkSelector "monthsOfTheYear"
 
 -- | @Selector@ for @setPositions@
-setPositionsSelector :: Selector
+setPositionsSelector :: Selector '[] (Id NSArray)
 setPositionsSelector = mkSelector "setPositions"
 

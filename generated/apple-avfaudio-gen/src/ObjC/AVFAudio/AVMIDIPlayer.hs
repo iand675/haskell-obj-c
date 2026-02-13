@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.AVFAudio.AVMIDIPlayer
   , setRate
   , currentPosition
   , setCurrentPosition
+  , currentPositionSelector
+  , durationSelector
   , initWithContentsOfURL_soundBankURL_errorSelector
   , initWithData_soundBankURL_errorSelector
-  , prepareToPlaySelector
   , playSelector
-  , stopSelector
-  , durationSelector
   , playingSelector
+  , prepareToPlaySelector
   , rateSelector
-  , setRateSelector
-  , currentPositionSelector
   , setCurrentPositionSelector
+  , setRateSelector
+  , stopSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,11 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithContentsOfURL:soundBankURL:error:@
 initWithContentsOfURL_soundBankURL_error :: (IsAVMIDIPlayer avmidiPlayer, IsNSURL inURL, IsNSURL bankURL, IsNSError outError) => avmidiPlayer -> inURL -> bankURL -> outError -> IO (Id AVMIDIPlayer)
-initWithContentsOfURL_soundBankURL_error avmidiPlayer  inURL bankURL outError =
-  withObjCPtr inURL $ \raw_inURL ->
-    withObjCPtr bankURL $ \raw_bankURL ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avmidiPlayer (mkSelector "initWithContentsOfURL:soundBankURL:error:") (retPtr retVoid) [argPtr (castPtr raw_inURL :: Ptr ()), argPtr (castPtr raw_bankURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL_soundBankURL_error avmidiPlayer inURL bankURL outError =
+  sendOwnedMessage avmidiPlayer initWithContentsOfURL_soundBankURL_errorSelector (toNSURL inURL) (toNSURL bankURL) (toNSError outError)
 
 -- | initWithData:soundBankURL:error:
 --
@@ -73,11 +67,8 @@ initWithContentsOfURL_soundBankURL_error avmidiPlayer  inURL bankURL outError =
 --
 -- ObjC selector: @- initWithData:soundBankURL:error:@
 initWithData_soundBankURL_error :: (IsAVMIDIPlayer avmidiPlayer, IsNSData data_, IsNSURL bankURL, IsNSError outError) => avmidiPlayer -> data_ -> bankURL -> outError -> IO (Id AVMIDIPlayer)
-initWithData_soundBankURL_error avmidiPlayer  data_ bankURL outError =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr bankURL $ \raw_bankURL ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avmidiPlayer (mkSelector "initWithData:soundBankURL:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_bankURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithData_soundBankURL_error avmidiPlayer data_ bankURL outError =
+  sendOwnedMessage avmidiPlayer initWithData_soundBankURL_errorSelector (toNSData data_) (toNSURL bankURL) (toNSError outError)
 
 -- | prepareToPlay
 --
@@ -87,8 +78,8 @@ initWithData_soundBankURL_error avmidiPlayer  data_ bankURL outError =
 --
 -- ObjC selector: @- prepareToPlay@
 prepareToPlay :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO ()
-prepareToPlay avmidiPlayer  =
-    sendMsg avmidiPlayer (mkSelector "prepareToPlay") retVoid []
+prepareToPlay avmidiPlayer =
+  sendMessage avmidiPlayer prepareToPlaySelector
 
 -- | play:
 --
@@ -96,8 +87,8 @@ prepareToPlay avmidiPlayer  =
 --
 -- ObjC selector: @- play:@
 play :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> Ptr () -> IO ()
-play avmidiPlayer  completionHandler =
-    sendMsg avmidiPlayer (mkSelector "play:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+play avmidiPlayer completionHandler =
+  sendMessage avmidiPlayer playSelector completionHandler
 
 -- | stop
 --
@@ -105,8 +96,8 @@ play avmidiPlayer  completionHandler =
 --
 -- ObjC selector: @- stop@
 stop :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO ()
-stop avmidiPlayer  =
-    sendMsg avmidiPlayer (mkSelector "stop") retVoid []
+stop avmidiPlayer =
+  sendMessage avmidiPlayer stopSelector
 
 -- | duration
 --
@@ -114,8 +105,8 @@ stop avmidiPlayer  =
 --
 -- ObjC selector: @- duration@
 duration :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO CDouble
-duration avmidiPlayer  =
-    sendMsg avmidiPlayer (mkSelector "duration") retCDouble []
+duration avmidiPlayer =
+  sendMessage avmidiPlayer durationSelector
 
 -- | playing
 --
@@ -123,8 +114,8 @@ duration avmidiPlayer  =
 --
 -- ObjC selector: @- playing@
 playing :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO Bool
-playing avmidiPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avmidiPlayer (mkSelector "playing") retCULong []
+playing avmidiPlayer =
+  sendMessage avmidiPlayer playingSelector
 
 -- | rate
 --
@@ -134,8 +125,8 @@ playing avmidiPlayer  =
 --
 -- ObjC selector: @- rate@
 rate :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO CFloat
-rate avmidiPlayer  =
-    sendMsg avmidiPlayer (mkSelector "rate") retCFloat []
+rate avmidiPlayer =
+  sendMessage avmidiPlayer rateSelector
 
 -- | rate
 --
@@ -145,8 +136,8 @@ rate avmidiPlayer  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> CFloat -> IO ()
-setRate avmidiPlayer  value =
-    sendMsg avmidiPlayer (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avmidiPlayer value =
+  sendMessage avmidiPlayer setRateSelector value
 
 -- | currentPosition
 --
@@ -156,8 +147,8 @@ setRate avmidiPlayer  value =
 --
 -- ObjC selector: @- currentPosition@
 currentPosition :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> IO CDouble
-currentPosition avmidiPlayer  =
-    sendMsg avmidiPlayer (mkSelector "currentPosition") retCDouble []
+currentPosition avmidiPlayer =
+  sendMessage avmidiPlayer currentPositionSelector
 
 -- | currentPosition
 --
@@ -167,54 +158,54 @@ currentPosition avmidiPlayer  =
 --
 -- ObjC selector: @- setCurrentPosition:@
 setCurrentPosition :: IsAVMIDIPlayer avmidiPlayer => avmidiPlayer -> CDouble -> IO ()
-setCurrentPosition avmidiPlayer  value =
-    sendMsg avmidiPlayer (mkSelector "setCurrentPosition:") retVoid [argCDouble value]
+setCurrentPosition avmidiPlayer value =
+  sendMessage avmidiPlayer setCurrentPositionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContentsOfURL:soundBankURL:error:@
-initWithContentsOfURL_soundBankURL_errorSelector :: Selector
+initWithContentsOfURL_soundBankURL_errorSelector :: Selector '[Id NSURL, Id NSURL, Id NSError] (Id AVMIDIPlayer)
 initWithContentsOfURL_soundBankURL_errorSelector = mkSelector "initWithContentsOfURL:soundBankURL:error:"
 
 -- | @Selector@ for @initWithData:soundBankURL:error:@
-initWithData_soundBankURL_errorSelector :: Selector
+initWithData_soundBankURL_errorSelector :: Selector '[Id NSData, Id NSURL, Id NSError] (Id AVMIDIPlayer)
 initWithData_soundBankURL_errorSelector = mkSelector "initWithData:soundBankURL:error:"
 
 -- | @Selector@ for @prepareToPlay@
-prepareToPlaySelector :: Selector
+prepareToPlaySelector :: Selector '[] ()
 prepareToPlaySelector = mkSelector "prepareToPlay"
 
 -- | @Selector@ for @play:@
-playSelector :: Selector
+playSelector :: Selector '[Ptr ()] ()
 playSelector = mkSelector "play:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @playing@
-playingSelector :: Selector
+playingSelector :: Selector '[] Bool
 playingSelector = mkSelector "playing"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @currentPosition@
-currentPositionSelector :: Selector
+currentPositionSelector :: Selector '[] CDouble
 currentPositionSelector = mkSelector "currentPosition"
 
 -- | @Selector@ for @setCurrentPosition:@
-setCurrentPositionSelector :: Selector
+setCurrentPositionSelector :: Selector '[CDouble] ()
 setCurrentPositionSelector = mkSelector "setCurrentPosition:"
 

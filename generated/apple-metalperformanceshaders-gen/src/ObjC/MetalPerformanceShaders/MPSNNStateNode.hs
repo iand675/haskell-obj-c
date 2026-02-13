@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.MetalPerformanceShaders.MPSNNStateNode
   , setExportFromGraph
   , synchronizeResource
   , setSynchronizeResource
-  , initSelector
-  , handleSelector
-  , setHandleSelector
   , exportFromGraphSelector
+  , handleSelector
+  , initSelector
   , setExportFromGraphSelector
-  , synchronizeResourceSelector
+  , setHandleSelector
   , setSynchronizeResourceSelector
+  , synchronizeResourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO (Id MPSNNStateNode)
-init_ mpsnnStateNode  =
-    sendMsg mpsnnStateNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsnnStateNode =
+  sendOwnedMessage mpsnnStateNode initSelector
 
 -- | MPS resource identification
 --
@@ -56,8 +53,8 @@ init_ mpsnnStateNode  =
 --
 -- ObjC selector: @- handle@
 handle :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO RawId
-handle mpsnnStateNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnStateNode (mkSelector "handle") (retPtr retVoid) []
+handle mpsnnStateNode =
+  sendMessage mpsnnStateNode handleSelector
 
 -- | MPS resource identification
 --
@@ -65,8 +62,8 @@ handle mpsnnStateNode  =
 --
 -- ObjC selector: @- setHandle:@
 setHandle :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> RawId -> IO ()
-setHandle mpsnnStateNode  value =
-    sendMsg mpsnnStateNode (mkSelector "setHandle:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setHandle mpsnnStateNode value =
+  sendMessage mpsnnStateNode setHandleSelector value
 
 -- | Tag a state node for view later
 --
@@ -78,8 +75,8 @@ setHandle mpsnnStateNode  value =
 --
 -- ObjC selector: @- exportFromGraph@
 exportFromGraph :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO Bool
-exportFromGraph mpsnnStateNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnStateNode (mkSelector "exportFromGraph") retCULong []
+exportFromGraph mpsnnStateNode =
+  sendMessage mpsnnStateNode exportFromGraphSelector
 
 -- | Tag a state node for view later
 --
@@ -91,8 +88,8 @@ exportFromGraph mpsnnStateNode  =
 --
 -- ObjC selector: @- setExportFromGraph:@
 setExportFromGraph :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> Bool -> IO ()
-setExportFromGraph mpsnnStateNode  value =
-    sendMsg mpsnnStateNode (mkSelector "setExportFromGraph:") retVoid [argCULong (if value then 1 else 0)]
+setExportFromGraph mpsnnStateNode value =
+  sendMessage mpsnnStateNode setExportFromGraphSelector value
 
 -- | Set to true to cause the resource to be synchronized with the CPU
 --
@@ -100,8 +97,8 @@ setExportFromGraph mpsnnStateNode  value =
 --
 -- ObjC selector: @- synchronizeResource@
 synchronizeResource :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> IO Bool
-synchronizeResource mpsnnStateNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnStateNode (mkSelector "synchronizeResource") retCULong []
+synchronizeResource mpsnnStateNode =
+  sendMessage mpsnnStateNode synchronizeResourceSelector
 
 -- | Set to true to cause the resource to be synchronized with the CPU
 --
@@ -109,38 +106,38 @@ synchronizeResource mpsnnStateNode  =
 --
 -- ObjC selector: @- setSynchronizeResource:@
 setSynchronizeResource :: IsMPSNNStateNode mpsnnStateNode => mpsnnStateNode -> Bool -> IO ()
-setSynchronizeResource mpsnnStateNode  value =
-    sendMsg mpsnnStateNode (mkSelector "setSynchronizeResource:") retVoid [argCULong (if value then 1 else 0)]
+setSynchronizeResource mpsnnStateNode value =
+  sendMessage mpsnnStateNode setSynchronizeResourceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNNStateNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @handle@
-handleSelector :: Selector
+handleSelector :: Selector '[] RawId
 handleSelector = mkSelector "handle"
 
 -- | @Selector@ for @setHandle:@
-setHandleSelector :: Selector
+setHandleSelector :: Selector '[RawId] ()
 setHandleSelector = mkSelector "setHandle:"
 
 -- | @Selector@ for @exportFromGraph@
-exportFromGraphSelector :: Selector
+exportFromGraphSelector :: Selector '[] Bool
 exportFromGraphSelector = mkSelector "exportFromGraph"
 
 -- | @Selector@ for @setExportFromGraph:@
-setExportFromGraphSelector :: Selector
+setExportFromGraphSelector :: Selector '[Bool] ()
 setExportFromGraphSelector = mkSelector "setExportFromGraph:"
 
 -- | @Selector@ for @synchronizeResource@
-synchronizeResourceSelector :: Selector
+synchronizeResourceSelector :: Selector '[] Bool
 synchronizeResourceSelector = mkSelector "synchronizeResource"
 
 -- | @Selector@ for @setSynchronizeResource:@
-setSynchronizeResourceSelector :: Selector
+setSynchronizeResourceSelector :: Selector '[Bool] ()
 setSynchronizeResourceSelector = mkSelector "setSynchronizeResource:"
 

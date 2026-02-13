@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.SceneKit.SCNTube
   , setRadialSegmentCount
   , heightSegmentCount
   , setHeightSegmentCount
-  , tubeWithInnerRadius_outerRadius_heightSelector
-  , innerRadiusSelector
-  , setInnerRadiusSelector
-  , outerRadiusSelector
-  , setOuterRadiusSelector
-  , heightSelector
-  , setHeightSelector
-  , radialSegmentCountSelector
-  , setRadialSegmentCountSelector
   , heightSegmentCountSelector
+  , heightSelector
+  , innerRadiusSelector
+  , outerRadiusSelector
+  , radialSegmentCountSelector
   , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setInnerRadiusSelector
+  , setOuterRadiusSelector
+  , setRadialSegmentCountSelector
+  , tubeWithInnerRadius_outerRadius_heightSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ tubeWithInnerRadius_outerRadius_height :: CDouble -> CDouble -> CDouble -> IO (I
 tubeWithInnerRadius_outerRadius_height innerRadius outerRadius height =
   do
     cls' <- getRequiredClass "SCNTube"
-    sendClassMsg cls' (mkSelector "tubeWithInnerRadius:outerRadius:height:") (retPtr retVoid) [argCDouble innerRadius, argCDouble outerRadius, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' tubeWithInnerRadius_outerRadius_heightSelector innerRadius outerRadius height
 
 -- | innerRadius
 --
@@ -76,8 +73,8 @@ tubeWithInnerRadius_outerRadius_height innerRadius outerRadius height =
 --
 -- ObjC selector: @- innerRadius@
 innerRadius :: IsSCNTube scnTube => scnTube -> IO CDouble
-innerRadius scnTube  =
-    sendMsg scnTube (mkSelector "innerRadius") retCDouble []
+innerRadius scnTube =
+  sendMessage scnTube innerRadiusSelector
 
 -- | innerRadius
 --
@@ -87,8 +84,8 @@ innerRadius scnTube  =
 --
 -- ObjC selector: @- setInnerRadius:@
 setInnerRadius :: IsSCNTube scnTube => scnTube -> CDouble -> IO ()
-setInnerRadius scnTube  value =
-    sendMsg scnTube (mkSelector "setInnerRadius:") retVoid [argCDouble value]
+setInnerRadius scnTube value =
+  sendMessage scnTube setInnerRadiusSelector value
 
 -- | outerRadius
 --
@@ -98,8 +95,8 @@ setInnerRadius scnTube  value =
 --
 -- ObjC selector: @- outerRadius@
 outerRadius :: IsSCNTube scnTube => scnTube -> IO CDouble
-outerRadius scnTube  =
-    sendMsg scnTube (mkSelector "outerRadius") retCDouble []
+outerRadius scnTube =
+  sendMessage scnTube outerRadiusSelector
 
 -- | outerRadius
 --
@@ -109,8 +106,8 @@ outerRadius scnTube  =
 --
 -- ObjC selector: @- setOuterRadius:@
 setOuterRadius :: IsSCNTube scnTube => scnTube -> CDouble -> IO ()
-setOuterRadius scnTube  value =
-    sendMsg scnTube (mkSelector "setOuterRadius:") retVoid [argCDouble value]
+setOuterRadius scnTube value =
+  sendMessage scnTube setOuterRadiusSelector value
 
 -- | height
 --
@@ -120,8 +117,8 @@ setOuterRadius scnTube  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNTube scnTube => scnTube -> IO CDouble
-height scnTube  =
-    sendMsg scnTube (mkSelector "height") retCDouble []
+height scnTube =
+  sendMessage scnTube heightSelector
 
 -- | height
 --
@@ -131,8 +128,8 @@ height scnTube  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNTube scnTube => scnTube -> CDouble -> IO ()
-setHeight scnTube  value =
-    sendMsg scnTube (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnTube value =
+  sendMessage scnTube setHeightSelector value
 
 -- | radialSegmentCount
 --
@@ -142,8 +139,8 @@ setHeight scnTube  value =
 --
 -- ObjC selector: @- radialSegmentCount@
 radialSegmentCount :: IsSCNTube scnTube => scnTube -> IO CLong
-radialSegmentCount scnTube  =
-    sendMsg scnTube (mkSelector "radialSegmentCount") retCLong []
+radialSegmentCount scnTube =
+  sendMessage scnTube radialSegmentCountSelector
 
 -- | radialSegmentCount
 --
@@ -153,8 +150,8 @@ radialSegmentCount scnTube  =
 --
 -- ObjC selector: @- setRadialSegmentCount:@
 setRadialSegmentCount :: IsSCNTube scnTube => scnTube -> CLong -> IO ()
-setRadialSegmentCount scnTube  value =
-    sendMsg scnTube (mkSelector "setRadialSegmentCount:") retVoid [argCLong value]
+setRadialSegmentCount scnTube value =
+  sendMessage scnTube setRadialSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -164,8 +161,8 @@ setRadialSegmentCount scnTube  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNTube scnTube => scnTube -> IO CLong
-heightSegmentCount scnTube  =
-    sendMsg scnTube (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnTube =
+  sendMessage scnTube heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -175,54 +172,54 @@ heightSegmentCount scnTube  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNTube scnTube => scnTube -> CLong -> IO ()
-setHeightSegmentCount scnTube  value =
-    sendMsg scnTube (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnTube value =
+  sendMessage scnTube setHeightSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tubeWithInnerRadius:outerRadius:height:@
-tubeWithInnerRadius_outerRadius_heightSelector :: Selector
+tubeWithInnerRadius_outerRadius_heightSelector :: Selector '[CDouble, CDouble, CDouble] (Id SCNTube)
 tubeWithInnerRadius_outerRadius_heightSelector = mkSelector "tubeWithInnerRadius:outerRadius:height:"
 
 -- | @Selector@ for @innerRadius@
-innerRadiusSelector :: Selector
+innerRadiusSelector :: Selector '[] CDouble
 innerRadiusSelector = mkSelector "innerRadius"
 
 -- | @Selector@ for @setInnerRadius:@
-setInnerRadiusSelector :: Selector
+setInnerRadiusSelector :: Selector '[CDouble] ()
 setInnerRadiusSelector = mkSelector "setInnerRadius:"
 
 -- | @Selector@ for @outerRadius@
-outerRadiusSelector :: Selector
+outerRadiusSelector :: Selector '[] CDouble
 outerRadiusSelector = mkSelector "outerRadius"
 
 -- | @Selector@ for @setOuterRadius:@
-setOuterRadiusSelector :: Selector
+setOuterRadiusSelector :: Selector '[CDouble] ()
 setOuterRadiusSelector = mkSelector "setOuterRadius:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @radialSegmentCount@
-radialSegmentCountSelector :: Selector
+radialSegmentCountSelector :: Selector '[] CLong
 radialSegmentCountSelector = mkSelector "radialSegmentCount"
 
 -- | @Selector@ for @setRadialSegmentCount:@
-setRadialSegmentCountSelector :: Selector
+setRadialSegmentCountSelector :: Selector '[CLong] ()
 setRadialSegmentCountSelector = mkSelector "setRadialSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 

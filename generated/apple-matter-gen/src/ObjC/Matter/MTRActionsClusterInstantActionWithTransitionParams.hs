@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRActionsClusterInstantActionWithTransitionParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , actionIDSelector
-  , setActionIDSelector
   , invokeIDSelector
+  , serverSideProcessingTimeoutSelector
+  , setActionIDSelector
   , setInvokeIDSelector
-  , transitionTimeSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
   , setTransitionTimeSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- actionID@
 actionID :: IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams => mtrActionsClusterInstantActionWithTransitionParams -> IO (Id NSNumber)
-actionID mtrActionsClusterInstantActionWithTransitionParams  =
-    sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "actionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionID mtrActionsClusterInstantActionWithTransitionParams =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams actionIDSelector
 
 -- | @- setActionID:@
 setActionID :: (IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams, IsNSNumber value) => mtrActionsClusterInstantActionWithTransitionParams -> value -> IO ()
-setActionID mtrActionsClusterInstantActionWithTransitionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "setActionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionID mtrActionsClusterInstantActionWithTransitionParams value =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams setActionIDSelector (toNSNumber value)
 
 -- | @- invokeID@
 invokeID :: IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams => mtrActionsClusterInstantActionWithTransitionParams -> IO (Id NSNumber)
-invokeID mtrActionsClusterInstantActionWithTransitionParams  =
-    sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "invokeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+invokeID mtrActionsClusterInstantActionWithTransitionParams =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams invokeIDSelector
 
 -- | @- setInvokeID:@
 setInvokeID :: (IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams, IsNSNumber value) => mtrActionsClusterInstantActionWithTransitionParams -> value -> IO ()
-setInvokeID mtrActionsClusterInstantActionWithTransitionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "setInvokeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInvokeID mtrActionsClusterInstantActionWithTransitionParams value =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams setInvokeIDSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams => mtrActionsClusterInstantActionWithTransitionParams -> IO (Id NSNumber)
-transitionTime mtrActionsClusterInstantActionWithTransitionParams  =
-    sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrActionsClusterInstantActionWithTransitionParams =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams, IsNSNumber value) => mtrActionsClusterInstantActionWithTransitionParams -> value -> IO ()
-setTransitionTime mtrActionsClusterInstantActionWithTransitionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrActionsClusterInstantActionWithTransitionParams value =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams setTransitionTimeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setTransitionTime mtrActionsClusterInstantActionWithTransitionParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams => mtrActionsClusterInstantActionWithTransitionParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams  =
-    sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams, IsNSNumber value) => mtrActionsClusterInstantActionWithTransitionParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams value =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrActionsClusterInstantActionWithTransitionParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams => mtrActionsClusterInstantActionWithTransitionParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrActionsClusterInstantActionWithTransitionParams  =
-    sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrActionsClusterInstantActionWithTransitionParams =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrActionsClusterInstantActionWithTransitionParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRActionsClusterInstantActionWithTransitionParams mtrActionsClusterInstantActionWithTransitionParams, IsNSNumber value) => mtrActionsClusterInstantActionWithTransitionParams -> value -> IO ()
-setServerSideProcessingTimeout mtrActionsClusterInstantActionWithTransitionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterInstantActionWithTransitionParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrActionsClusterInstantActionWithTransitionParams value =
+  sendMessage mtrActionsClusterInstantActionWithTransitionParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionID@
-actionIDSelector :: Selector
+actionIDSelector :: Selector '[] (Id NSNumber)
 actionIDSelector = mkSelector "actionID"
 
 -- | @Selector@ for @setActionID:@
-setActionIDSelector :: Selector
+setActionIDSelector :: Selector '[Id NSNumber] ()
 setActionIDSelector = mkSelector "setActionID:"
 
 -- | @Selector@ for @invokeID@
-invokeIDSelector :: Selector
+invokeIDSelector :: Selector '[] (Id NSNumber)
 invokeIDSelector = mkSelector "invokeID"
 
 -- | @Selector@ for @setInvokeID:@
-setInvokeIDSelector :: Selector
+setInvokeIDSelector :: Selector '[Id NSNumber] ()
 setInvokeIDSelector = mkSelector "setInvokeID:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

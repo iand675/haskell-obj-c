@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,28 +28,24 @@ module ObjC.MetricKit.MXDiagnosticPayload
   , crashDiagnostics
   , timeStampBegin
   , timeStampEnd
-  , jsonRepresentationSelector
-  , dictionaryRepresentationSelector
+  , appLaunchDiagnosticsSelector
   , cpuExceptionDiagnosticsSelector
+  , crashDiagnosticsSelector
+  , dictionaryRepresentationSelector
   , diskWriteExceptionDiagnosticsSelector
   , hangDiagnosticsSelector
-  , appLaunchDiagnosticsSelector
-  , crashDiagnosticsSelector
+  , jsonRepresentationSelector
   , timeStampBeginSelector
   , timeStampEndSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- JSONRepresentation@
 jsonRepresentation :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSData)
-jsonRepresentation mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "JSONRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonRepresentation mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload jsonRepresentationSelector
 
 -- | dictionaryRepresentation
 --
@@ -74,8 +71,8 @@ jsonRepresentation mxDiagnosticPayload  =
 --
 -- ObjC selector: @- dictionaryRepresentation@
 dictionaryRepresentation :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSDictionary)
-dictionaryRepresentation mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload dictionaryRepresentationSelector
 
 -- | cpuExceptionDiagnostics
 --
@@ -83,8 +80,8 @@ dictionaryRepresentation mxDiagnosticPayload  =
 --
 -- ObjC selector: @- cpuExceptionDiagnostics@
 cpuExceptionDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
-cpuExceptionDiagnostics mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "cpuExceptionDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+cpuExceptionDiagnostics mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload cpuExceptionDiagnosticsSelector
 
 -- | diskWriteExceptionDiagnostics
 --
@@ -92,8 +89,8 @@ cpuExceptionDiagnostics mxDiagnosticPayload  =
 --
 -- ObjC selector: @- diskWriteExceptionDiagnostics@
 diskWriteExceptionDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
-diskWriteExceptionDiagnostics mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "diskWriteExceptionDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+diskWriteExceptionDiagnostics mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload diskWriteExceptionDiagnosticsSelector
 
 -- | hangDiagnostics
 --
@@ -101,8 +98,8 @@ diskWriteExceptionDiagnostics mxDiagnosticPayload  =
 --
 -- ObjC selector: @- hangDiagnostics@
 hangDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
-hangDiagnostics mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "hangDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+hangDiagnostics mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload hangDiagnosticsSelector
 
 -- | appLaunchDiagnostics
 --
@@ -110,8 +107,8 @@ hangDiagnostics mxDiagnosticPayload  =
 --
 -- ObjC selector: @- appLaunchDiagnostics@
 appLaunchDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
-appLaunchDiagnostics mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "appLaunchDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+appLaunchDiagnostics mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload appLaunchDiagnosticsSelector
 
 -- | crashDiagnostics
 --
@@ -119,8 +116,8 @@ appLaunchDiagnostics mxDiagnosticPayload  =
 --
 -- ObjC selector: @- crashDiagnostics@
 crashDiagnostics :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSArray)
-crashDiagnostics mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "crashDiagnostics") (retPtr retVoid) [] >>= retainedObject . castPtr
+crashDiagnostics mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload crashDiagnosticsSelector
 
 -- | timeStampBegin
 --
@@ -128,8 +125,8 @@ crashDiagnostics mxDiagnosticPayload  =
 --
 -- ObjC selector: @- timeStampBegin@
 timeStampBegin :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSDate)
-timeStampBegin mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "timeStampBegin") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeStampBegin mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload timeStampBeginSelector
 
 -- | timeStampEnd
 --
@@ -137,46 +134,46 @@ timeStampBegin mxDiagnosticPayload  =
 --
 -- ObjC selector: @- timeStampEnd@
 timeStampEnd :: IsMXDiagnosticPayload mxDiagnosticPayload => mxDiagnosticPayload -> IO (Id NSDate)
-timeStampEnd mxDiagnosticPayload  =
-    sendMsg mxDiagnosticPayload (mkSelector "timeStampEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeStampEnd mxDiagnosticPayload =
+  sendMessage mxDiagnosticPayload timeStampEndSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @JSONRepresentation@
-jsonRepresentationSelector :: Selector
+jsonRepresentationSelector :: Selector '[] (Id NSData)
 jsonRepresentationSelector = mkSelector "JSONRepresentation"
 
 -- | @Selector@ for @dictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
 
 -- | @Selector@ for @cpuExceptionDiagnostics@
-cpuExceptionDiagnosticsSelector :: Selector
+cpuExceptionDiagnosticsSelector :: Selector '[] (Id NSArray)
 cpuExceptionDiagnosticsSelector = mkSelector "cpuExceptionDiagnostics"
 
 -- | @Selector@ for @diskWriteExceptionDiagnostics@
-diskWriteExceptionDiagnosticsSelector :: Selector
+diskWriteExceptionDiagnosticsSelector :: Selector '[] (Id NSArray)
 diskWriteExceptionDiagnosticsSelector = mkSelector "diskWriteExceptionDiagnostics"
 
 -- | @Selector@ for @hangDiagnostics@
-hangDiagnosticsSelector :: Selector
+hangDiagnosticsSelector :: Selector '[] (Id NSArray)
 hangDiagnosticsSelector = mkSelector "hangDiagnostics"
 
 -- | @Selector@ for @appLaunchDiagnostics@
-appLaunchDiagnosticsSelector :: Selector
+appLaunchDiagnosticsSelector :: Selector '[] (Id NSArray)
 appLaunchDiagnosticsSelector = mkSelector "appLaunchDiagnostics"
 
 -- | @Selector@ for @crashDiagnostics@
-crashDiagnosticsSelector :: Selector
+crashDiagnosticsSelector :: Selector '[] (Id NSArray)
 crashDiagnosticsSelector = mkSelector "crashDiagnostics"
 
 -- | @Selector@ for @timeStampBegin@
-timeStampBeginSelector :: Selector
+timeStampBeginSelector :: Selector '[] (Id NSDate)
 timeStampBeginSelector = mkSelector "timeStampBegin"
 
 -- | @Selector@ for @timeStampEnd@
-timeStampEndSelector :: Selector
+timeStampEndSelector :: Selector '[] (Id NSDate)
 timeStampEndSelector = mkSelector "timeStampEnd"
 

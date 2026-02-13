@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.SpriteKit.SKWarpGeometryGrid
   , numberOfColumns
   , numberOfRows
   , vertexCount
-  , initWithCoderSelector
   , gridSelector
   , gridWithColumns_rowsSelector
+  , initWithCoderSelector
   , numberOfColumnsSelector
   , numberOfRowsSelector
   , vertexCountSelector
@@ -22,15 +23,11 @@ module ObjC.SpriteKit.SKWarpGeometryGrid
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,64 +36,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsSKWarpGeometryGrid skWarpGeometryGrid, IsNSCoder aDecoder) => skWarpGeometryGrid -> aDecoder -> IO (Id SKWarpGeometryGrid)
-initWithCoder skWarpGeometryGrid  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg skWarpGeometryGrid (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder skWarpGeometryGrid aDecoder =
+  sendOwnedMessage skWarpGeometryGrid initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @+ grid@
 grid :: IO (Id SKWarpGeometryGrid)
 grid  =
   do
     cls' <- getRequiredClass "SKWarpGeometryGrid"
-    sendClassMsg cls' (mkSelector "grid") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gridSelector
 
 -- | @+ gridWithColumns:rows:@
 gridWithColumns_rows :: CLong -> CLong -> IO (Id SKWarpGeometryGrid)
 gridWithColumns_rows cols rows =
   do
     cls' <- getRequiredClass "SKWarpGeometryGrid"
-    sendClassMsg cls' (mkSelector "gridWithColumns:rows:") (retPtr retVoid) [argCLong cols, argCLong rows] >>= retainedObject . castPtr
+    sendClassMessage cls' gridWithColumns_rowsSelector cols rows
 
 -- | @- numberOfColumns@
 numberOfColumns :: IsSKWarpGeometryGrid skWarpGeometryGrid => skWarpGeometryGrid -> IO CLong
-numberOfColumns skWarpGeometryGrid  =
-    sendMsg skWarpGeometryGrid (mkSelector "numberOfColumns") retCLong []
+numberOfColumns skWarpGeometryGrid =
+  sendMessage skWarpGeometryGrid numberOfColumnsSelector
 
 -- | @- numberOfRows@
 numberOfRows :: IsSKWarpGeometryGrid skWarpGeometryGrid => skWarpGeometryGrid -> IO CLong
-numberOfRows skWarpGeometryGrid  =
-    sendMsg skWarpGeometryGrid (mkSelector "numberOfRows") retCLong []
+numberOfRows skWarpGeometryGrid =
+  sendMessage skWarpGeometryGrid numberOfRowsSelector
 
 -- | @- vertexCount@
 vertexCount :: IsSKWarpGeometryGrid skWarpGeometryGrid => skWarpGeometryGrid -> IO CLong
-vertexCount skWarpGeometryGrid  =
-    sendMsg skWarpGeometryGrid (mkSelector "vertexCount") retCLong []
+vertexCount skWarpGeometryGrid =
+  sendMessage skWarpGeometryGrid vertexCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SKWarpGeometryGrid)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @grid@
-gridSelector :: Selector
+gridSelector :: Selector '[] (Id SKWarpGeometryGrid)
 gridSelector = mkSelector "grid"
 
 -- | @Selector@ for @gridWithColumns:rows:@
-gridWithColumns_rowsSelector :: Selector
+gridWithColumns_rowsSelector :: Selector '[CLong, CLong] (Id SKWarpGeometryGrid)
 gridWithColumns_rowsSelector = mkSelector "gridWithColumns:rows:"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CLong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CLong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @vertexCount@
-vertexCountSelector :: Selector
+vertexCountSelector :: Selector '[] CLong
 vertexCountSelector = mkSelector "vertexCount"
 

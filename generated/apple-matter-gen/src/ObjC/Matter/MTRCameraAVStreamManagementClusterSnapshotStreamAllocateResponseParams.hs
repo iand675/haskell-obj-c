@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterSnapshotStreamAllocateRespo
   , snapshotStreamID
   , setSnapshotStreamID
   , initWithResponseValue_errorSelector
-  , snapshotStreamIDSelector
   , setSnapshotStreamIDSelector
+  , snapshotStreamIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams -> responseValue -> error_ -> IO (Id MTRCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams)
-initWithResponseValue_error mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams responseValue error_ =
+  sendOwnedMessage mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- snapshotStreamID@
 snapshotStreamID :: IsMTRCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams => mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams -> IO (Id NSNumber)
-snapshotStreamID mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams  =
-    sendMsg mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams (mkSelector "snapshotStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshotStreamID mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams snapshotStreamIDSelector
 
 -- | @- setSnapshotStreamID:@
 setSnapshotStreamID :: (IsMTRCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams -> value -> IO ()
-setSnapshotStreamID mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams (mkSelector "setSnapshotStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSnapshotStreamID mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams value =
+  sendMessage mtrCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams setSnapshotStreamIDSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRCameraAVStreamManagementClusterSnapshotStreamAllocateResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @snapshotStreamID@
-snapshotStreamIDSelector :: Selector
+snapshotStreamIDSelector :: Selector '[] (Id NSNumber)
 snapshotStreamIDSelector = mkSelector "snapshotStreamID"
 
 -- | @Selector@ for @setSnapshotStreamID:@
-setSnapshotStreamIDSelector :: Selector
+setSnapshotStreamIDSelector :: Selector '[Id NSNumber] ()
 setSnapshotStreamIDSelector = mkSelector "setSnapshotStreamID:"
 

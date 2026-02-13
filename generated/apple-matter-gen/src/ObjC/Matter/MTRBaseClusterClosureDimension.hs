@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,76 +68,72 @@ module ObjC.Matter.MTRBaseClusterClosureDimension
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , setTargetWithParams_completionSelector
-  , setTargetWithCompletionSelector
-  , stepWithParams_completionSelector
-  , readAttributeCurrentStateWithCompletionSelector
-  , subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTargetStateWithCompletionSelector
-  , subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeResolutionWithCompletionSelector
-  , subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeStepValueWithCompletionSelector
-  , subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeUnitWithCompletionSelector
-  , subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeUnitRangeWithCompletionSelector
-  , subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeLimitRangeWithCompletionSelector
-  , subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTranslationDirectionWithCompletionSelector
-  , subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeRotationAxisWithCompletionSelector
-  , subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeOverflowWithCompletionSelector
-  , subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeModulationTypeWithCompletionSelector
-  , subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeLatchControlModesWithCompletionSelector
-  , subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCurrentStateWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeLatchControlModesWithCompletionSelector
+  , readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeLimitRangeWithCompletionSelector
+  , readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeModulationTypeWithCompletionSelector
+  , readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeOverflowWithCompletionSelector
+  , readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeResolutionWithCompletionSelector
+  , readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeRotationAxisWithCompletionSelector
+  , readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeStepValueWithCompletionSelector
+  , readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTargetStateWithCompletionSelector
+  , readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTranslationDirectionWithCompletionSelector
+  , readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeUnitRangeWithCompletionSelector
+  , readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeUnitWithCompletionSelector
+  , setTargetWithCompletionSelector
+  , setTargetWithParams_completionSelector
+  , stepWithParams_completionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -149,14 +146,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setTargetWithParams:completion:@
 setTargetWithParams_completion :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRClosureDimensionClusterSetTargetParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> IO ()
-setTargetWithParams_completion mtrBaseClusterClosureDimension  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "setTargetWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTargetWithParams_completion mtrBaseClusterClosureDimension params completion =
+  sendMessage mtrBaseClusterClosureDimension setTargetWithParams_completionSelector (toMTRClosureDimensionClusterSetTargetParams params) completion
 
 -- | @- setTargetWithCompletion:@
 setTargetWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-setTargetWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "setTargetWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+setTargetWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension setTargetWithCompletionSelector completion
 
 -- | Command Step
 --
@@ -164,618 +160,546 @@ setTargetWithCompletion mtrBaseClusterClosureDimension  completion =
 --
 -- ObjC selector: @- stepWithParams:completion:@
 stepWithParams_completion :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRClosureDimensionClusterStepParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> IO ()
-stepWithParams_completion mtrBaseClusterClosureDimension  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "stepWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepWithParams_completion mtrBaseClusterClosureDimension params completion =
+  sendMessage mtrBaseClusterClosureDimension stepWithParams_completionSelector (toMTRClosureDimensionClusterStepParams params) completion
 
 -- | @- readAttributeCurrentStateWithCompletion:@
 readAttributeCurrentStateWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeCurrentStateWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeCurrentStateWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeCurrentStateWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeCurrentStateWithCompletionSelector completion
 
 -- | @- subscribeAttributeCurrentStateWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeCurrentStateWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCurrentStateWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCurrentStateWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTargetStateWithCompletion:@
 readAttributeTargetStateWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeTargetStateWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeTargetStateWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTargetStateWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeTargetStateWithCompletionSelector completion
 
 -- | @- subscribeAttributeTargetStateWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeTargetStateWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTargetStateWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTargetStateWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTargetStateWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTargetStateWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeResolutionWithCompletion:@
 readAttributeResolutionWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeResolutionWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeResolutionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeResolutionWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeResolutionWithCompletionSelector completion
 
 -- | @- subscribeAttributeResolutionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeResolutionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeResolutionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeResolutionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeResolutionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeResolutionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeStepValueWithCompletion:@
 readAttributeStepValueWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeStepValueWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeStepValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeStepValueWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeStepValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeStepValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeStepValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeStepValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeStepValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeStepValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeStepValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeUnitWithCompletion:@
 readAttributeUnitWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeUnitWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeUnitWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeUnitWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeUnitWithCompletionSelector completion
 
 -- | @- subscribeAttributeUnitWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeUnitWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeUnitWithClusterStateCache:endpoint:queue:completion:@
 readAttributeUnitWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeUnitWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeUnitWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeUnitRangeWithCompletion:@
 readAttributeUnitRangeWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeUnitRangeWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeUnitRangeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeUnitRangeWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeUnitRangeWithCompletionSelector completion
 
 -- | @- subscribeAttributeUnitRangeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeUnitRangeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeUnitRangeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeUnitRangeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeLimitRangeWithCompletion:@
 readAttributeLimitRangeWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeLimitRangeWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeLimitRangeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLimitRangeWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeLimitRangeWithCompletionSelector completion
 
 -- | @- subscribeAttributeLimitRangeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeLimitRangeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLimitRangeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLimitRangeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTranslationDirectionWithCompletion:@
 readAttributeTranslationDirectionWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeTranslationDirectionWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeTranslationDirectionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTranslationDirectionWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeTranslationDirectionWithCompletionSelector completion
 
 -- | @- subscribeAttributeTranslationDirectionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeTranslationDirectionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTranslationDirectionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTranslationDirectionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeRotationAxisWithCompletion:@
 readAttributeRotationAxisWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeRotationAxisWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeRotationAxisWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeRotationAxisWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeRotationAxisWithCompletionSelector completion
 
 -- | @- subscribeAttributeRotationAxisWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeRotationAxisWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeRotationAxisWithClusterStateCache:endpoint:queue:completion:@
 readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeRotationAxisWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeOverflowWithCompletion:@
 readAttributeOverflowWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeOverflowWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeOverflowWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeOverflowWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeOverflowWithCompletionSelector completion
 
 -- | @- subscribeAttributeOverflowWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeOverflowWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeOverflowWithClusterStateCache:endpoint:queue:completion:@
 readAttributeOverflowWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeOverflowWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeOverflowWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeModulationTypeWithCompletion:@
 readAttributeModulationTypeWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeModulationTypeWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeModulationTypeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeModulationTypeWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeModulationTypeWithCompletionSelector completion
 
 -- | @- subscribeAttributeModulationTypeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeModulationTypeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeModulationTypeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeModulationTypeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeLatchControlModesWithCompletion:@
 readAttributeLatchControlModesWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeLatchControlModesWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeLatchControlModesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLatchControlModesWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeLatchControlModesWithCompletionSelector completion
 
 -- | @- subscribeAttributeLatchControlModesWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeLatchControlModesWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLatchControlModesWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLatchControlModesWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterClosureDimension  completion =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterClosureDimension completion =
+  sendMessage mtrBaseClusterClosureDimension readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRSubscribeParams params) => mtrBaseClusterClosureDimension -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterClosureDimension (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterClosureDimension params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterClosureDimension subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension => mtrBaseClusterClosureDimension -> IO (Id MTRBaseClusterClosureDimension)
-init_ mtrBaseClusterClosureDimension  =
-    sendMsg mtrBaseClusterClosureDimension (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterClosureDimension =
+  sendOwnedMessage mtrBaseClusterClosureDimension initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterClosureDimension)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterClosureDimension"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterClosureDimension mtrBaseClusterClosureDimension, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterClosureDimension -> device -> endpointID -> queue -> IO (Id MTRBaseClusterClosureDimension)
-initWithDevice_endpointID_queue mtrBaseClusterClosureDimension  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterClosureDimension (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterClosureDimension device endpointID queue =
+  sendOwnedMessage mtrBaseClusterClosureDimension initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setTargetWithParams:completion:@
-setTargetWithParams_completionSelector :: Selector
+setTargetWithParams_completionSelector :: Selector '[Id MTRClosureDimensionClusterSetTargetParams, Ptr ()] ()
 setTargetWithParams_completionSelector = mkSelector "setTargetWithParams:completion:"
 
 -- | @Selector@ for @setTargetWithCompletion:@
-setTargetWithCompletionSelector :: Selector
+setTargetWithCompletionSelector :: Selector '[Ptr ()] ()
 setTargetWithCompletionSelector = mkSelector "setTargetWithCompletion:"
 
 -- | @Selector@ for @stepWithParams:completion:@
-stepWithParams_completionSelector :: Selector
+stepWithParams_completionSelector :: Selector '[Id MTRClosureDimensionClusterStepParams, Ptr ()] ()
 stepWithParams_completionSelector = mkSelector "stepWithParams:completion:"
 
 -- | @Selector@ for @readAttributeCurrentStateWithCompletion:@
-readAttributeCurrentStateWithCompletionSelector :: Selector
+readAttributeCurrentStateWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeCurrentStateWithCompletionSelector = mkSelector "readAttributeCurrentStateWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeCurrentStateWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCurrentStateWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCurrentStateWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCurrentStateWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCurrentStateWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCurrentStateWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTargetStateWithCompletion:@
-readAttributeTargetStateWithCompletionSelector :: Selector
+readAttributeTargetStateWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTargetStateWithCompletionSelector = mkSelector "readAttributeTargetStateWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTargetStateWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTargetStateWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTargetStateWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTargetStateWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTargetStateWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTargetStateWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeResolutionWithCompletion:@
-readAttributeResolutionWithCompletionSelector :: Selector
+readAttributeResolutionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeResolutionWithCompletionSelector = mkSelector "readAttributeResolutionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeResolutionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeResolutionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeResolutionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeResolutionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeResolutionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeResolutionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeStepValueWithCompletion:@
-readAttributeStepValueWithCompletionSelector :: Selector
+readAttributeStepValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeStepValueWithCompletionSelector = mkSelector "readAttributeStepValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeStepValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeStepValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeStepValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeStepValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeStepValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeStepValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeUnitWithCompletion:@
-readAttributeUnitWithCompletionSelector :: Selector
+readAttributeUnitWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeUnitWithCompletionSelector = mkSelector "readAttributeUnitWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeUnitWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeUnitWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeUnitWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeUnitWithClusterStateCache:endpoint:queue:completion:@
-readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeUnitWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeUnitWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeUnitRangeWithCompletion:@
-readAttributeUnitRangeWithCompletionSelector :: Selector
+readAttributeUnitRangeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeUnitRangeWithCompletionSelector = mkSelector "readAttributeUnitRangeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeUnitRangeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeUnitRangeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeUnitRangeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeUnitRangeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeUnitRangeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeUnitRangeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeLimitRangeWithCompletion:@
-readAttributeLimitRangeWithCompletionSelector :: Selector
+readAttributeLimitRangeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLimitRangeWithCompletionSelector = mkSelector "readAttributeLimitRangeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeLimitRangeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLimitRangeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLimitRangeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLimitRangeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLimitRangeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLimitRangeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTranslationDirectionWithCompletion:@
-readAttributeTranslationDirectionWithCompletionSelector :: Selector
+readAttributeTranslationDirectionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTranslationDirectionWithCompletionSelector = mkSelector "readAttributeTranslationDirectionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTranslationDirectionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTranslationDirectionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTranslationDirectionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTranslationDirectionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTranslationDirectionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTranslationDirectionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeRotationAxisWithCompletion:@
-readAttributeRotationAxisWithCompletionSelector :: Selector
+readAttributeRotationAxisWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeRotationAxisWithCompletionSelector = mkSelector "readAttributeRotationAxisWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeRotationAxisWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeRotationAxisWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeRotationAxisWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeRotationAxisWithClusterStateCache:endpoint:queue:completion:@
-readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeRotationAxisWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeRotationAxisWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeOverflowWithCompletion:@
-readAttributeOverflowWithCompletionSelector :: Selector
+readAttributeOverflowWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeOverflowWithCompletionSelector = mkSelector "readAttributeOverflowWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeOverflowWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeOverflowWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeOverflowWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeOverflowWithClusterStateCache:endpoint:queue:completion:@
-readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeOverflowWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeOverflowWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeModulationTypeWithCompletion:@
-readAttributeModulationTypeWithCompletionSelector :: Selector
+readAttributeModulationTypeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeModulationTypeWithCompletionSelector = mkSelector "readAttributeModulationTypeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeModulationTypeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeModulationTypeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeModulationTypeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeModulationTypeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeModulationTypeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeModulationTypeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeLatchControlModesWithCompletion:@
-readAttributeLatchControlModesWithCompletionSelector :: Selector
+readAttributeLatchControlModesWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLatchControlModesWithCompletionSelector = mkSelector "readAttributeLatchControlModesWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeLatchControlModesWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLatchControlModesWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLatchControlModesWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLatchControlModesWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLatchControlModesWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLatchControlModesWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterClosureDimension)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterClosureDimension)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterClosureDimension)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

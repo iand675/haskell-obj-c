@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -102,101 +103,101 @@ module ObjC.PDFKit.PDFView
   , setGreekingThreshold
   , allowsDragging
   , setAllowsDragging
-  , goToFirstPageSelector
-  , goToLastPageSelector
-  , goToNextPageSelector
-  , goToPreviousPageSelector
-  , goBackSelector
-  , goForwardSelector
-  , goToPageSelector
-  , goToDestinationSelector
-  , goToSelectionSelector
-  , goToRect_onPageSelector
-  , zoomInSelector
-  , zoomOutSelector
+  , acceptsDraggedFilesSelector
+  , allowsDraggingSelector
+  , annotationsChangedOnPageSelector
   , areaOfInterestForMouseSelector
   , areaOfInterestForPointSelector
-  , setCursorForAreaOfInterestSelector
-  , performActionSelector
-  , setCurrentSelection_animateSelector
-  , clearSelectionSelector
-  , selectAllSelector
-  , scrollSelectionToVisibleSelector
-  , drawPage_toContextSelector
-  , drawPagePost_toContextSelector
-  , copySelector
-  , printWithInfo_autoRotateSelector
-  , printWithInfo_autoRotate_pageScalingSelector
-  , pageForPoint_nearestSelector
-  , convertPoint_toPageSelector
-  , convertRect_toPageSelector
-  , convertPoint_fromPageSelector
-  , convertRect_fromPageSelector
-  , layoutDocumentViewSelector
-  , annotationsChangedOnPageSelector
-  , rowSizeForPageSelector
-  , takePasswordFromSelector
-  , drawPageSelector
-  , drawPagePostSelector
-  , takeBackgroundColorFromSelector
-  , documentSelector
-  , setDocumentSelector
+  , autoScalesSelector
+  , backgroundColorSelector
+  , canGoBackSelector
+  , canGoForwardSelector
   , canGoToFirstPageSelector
   , canGoToLastPageSelector
   , canGoToNextPageSelector
   , canGoToPreviousPageSelector
-  , canGoBackSelector
-  , canGoForwardSelector
-  , currentPageSelector
-  , currentDestinationSelector
-  , displayModeSelector
-  , setDisplayModeSelector
-  , displayDirectionSelector
-  , setDisplayDirectionSelector
-  , displaysPageBreaksSelector
-  , setDisplaysPageBreaksSelector
-  , pageBreakMarginsSelector
-  , setPageBreakMarginsSelector
-  , displayBoxSelector
-  , setDisplayBoxSelector
-  , displaysAsBookSelector
-  , setDisplaysAsBookSelector
-  , displaysRTLSelector
-  , setDisplaysRTLSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , interpolationQualitySelector
-  , setInterpolationQualitySelector
-  , pageShadowsEnabledSelector
-  , setPageShadowsEnabledSelector
-  , delegateSelector
-  , setDelegateSelector
-  , scaleFactorSelector
-  , setScaleFactorSelector
-  , minScaleFactorSelector
-  , setMinScaleFactorSelector
-  , maxScaleFactorSelector
-  , setMaxScaleFactorSelector
-  , autoScalesSelector
-  , setAutoScalesSelector
-  , scaleFactorForSizeToFitSelector
   , canZoomInSelector
   , canZoomOutSelector
+  , clearSelectionSelector
+  , convertPoint_fromPageSelector
+  , convertPoint_toPageSelector
+  , convertRect_fromPageSelector
+  , convertRect_toPageSelector
+  , copySelector
+  , currentDestinationSelector
+  , currentPageSelector
   , currentSelectionSelector
-  , setCurrentSelectionSelector
+  , delegateSelector
+  , displayBoxSelector
+  , displayDirectionSelector
+  , displayModeSelector
+  , displaysAsBookSelector
+  , displaysPageBreaksSelector
+  , displaysRTLSelector
+  , documentSelector
   , documentViewSelector
-  , acceptsDraggedFilesSelector
-  , setAcceptsDraggedFilesSelector
+  , drawPagePostSelector
+  , drawPagePost_toContextSelector
+  , drawPageSelector
+  , drawPage_toContextSelector
   , enableDataDetectorsSelector
-  , setEnableDataDetectorsSelector
-  , inMarkupModeSelector
-  , setInMarkupModeSelector
-  , shouldAntiAliasSelector
-  , setShouldAntiAliasSelector
+  , goBackSelector
+  , goForwardSelector
+  , goToDestinationSelector
+  , goToFirstPageSelector
+  , goToLastPageSelector
+  , goToNextPageSelector
+  , goToPageSelector
+  , goToPreviousPageSelector
+  , goToRect_onPageSelector
+  , goToSelectionSelector
   , greekingThresholdSelector
-  , setGreekingThresholdSelector
-  , allowsDraggingSelector
+  , inMarkupModeSelector
+  , interpolationQualitySelector
+  , layoutDocumentViewSelector
+  , maxScaleFactorSelector
+  , minScaleFactorSelector
+  , pageBreakMarginsSelector
+  , pageForPoint_nearestSelector
+  , pageShadowsEnabledSelector
+  , performActionSelector
+  , printWithInfo_autoRotateSelector
+  , printWithInfo_autoRotate_pageScalingSelector
+  , rowSizeForPageSelector
+  , scaleFactorForSizeToFitSelector
+  , scaleFactorSelector
+  , scrollSelectionToVisibleSelector
+  , selectAllSelector
+  , setAcceptsDraggedFilesSelector
   , setAllowsDraggingSelector
+  , setAutoScalesSelector
+  , setBackgroundColorSelector
+  , setCurrentSelectionSelector
+  , setCurrentSelection_animateSelector
+  , setCursorForAreaOfInterestSelector
+  , setDelegateSelector
+  , setDisplayBoxSelector
+  , setDisplayDirectionSelector
+  , setDisplayModeSelector
+  , setDisplaysAsBookSelector
+  , setDisplaysPageBreaksSelector
+  , setDisplaysRTLSelector
+  , setDocumentSelector
+  , setEnableDataDetectorsSelector
+  , setGreekingThresholdSelector
+  , setInMarkupModeSelector
+  , setInterpolationQualitySelector
+  , setMaxScaleFactorSelector
+  , setMinScaleFactorSelector
+  , setPageBreakMarginsSelector
+  , setPageShadowsEnabledSelector
+  , setScaleFactorSelector
+  , setShouldAntiAliasSelector
+  , shouldAntiAliasSelector
+  , takeBackgroundColorFromSelector
+  , takePasswordFromSelector
+  , zoomInSelector
+  , zoomOutSelector
 
   -- * Enum types
   , PDFAreaOfInterest(PDFAreaOfInterest)
@@ -236,15 +237,11 @@ module ObjC.PDFKit.PDFView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -256,882 +253,860 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- goToFirstPage:@
 goToFirstPage :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goToFirstPage pdfView  sender =
-    sendMsg pdfView (mkSelector "goToFirstPage:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goToFirstPage pdfView sender =
+  sendMessage pdfView goToFirstPageSelector sender
 
 -- | @- goToLastPage:@
 goToLastPage :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goToLastPage pdfView  sender =
-    sendMsg pdfView (mkSelector "goToLastPage:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goToLastPage pdfView sender =
+  sendMessage pdfView goToLastPageSelector sender
 
 -- | @- goToNextPage:@
 goToNextPage :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goToNextPage pdfView  sender =
-    sendMsg pdfView (mkSelector "goToNextPage:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goToNextPage pdfView sender =
+  sendMessage pdfView goToNextPageSelector sender
 
 -- | @- goToPreviousPage:@
 goToPreviousPage :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goToPreviousPage pdfView  sender =
-    sendMsg pdfView (mkSelector "goToPreviousPage:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goToPreviousPage pdfView sender =
+  sendMessage pdfView goToPreviousPageSelector sender
 
 -- | @- goBack:@
 goBack :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goBack pdfView  sender =
-    sendMsg pdfView (mkSelector "goBack:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goBack pdfView sender =
+  sendMessage pdfView goBackSelector sender
 
 -- | @- goForward:@
 goForward :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-goForward pdfView  sender =
-    sendMsg pdfView (mkSelector "goForward:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+goForward pdfView sender =
+  sendMessage pdfView goForwardSelector sender
 
 -- | @- goToPage:@
 goToPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> IO ()
-goToPage pdfView  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "goToPage:") retVoid [argPtr (castPtr raw_page :: Ptr ())]
+goToPage pdfView page =
+  sendMessage pdfView goToPageSelector (toPDFPage page)
 
 -- | @- goToDestination:@
 goToDestination :: (IsPDFView pdfView, IsPDFDestination destination) => pdfView -> destination -> IO ()
-goToDestination pdfView  destination =
-  withObjCPtr destination $ \raw_destination ->
-      sendMsg pdfView (mkSelector "goToDestination:") retVoid [argPtr (castPtr raw_destination :: Ptr ())]
+goToDestination pdfView destination =
+  sendMessage pdfView goToDestinationSelector (toPDFDestination destination)
 
 -- | @- goToSelection:@
 goToSelection :: (IsPDFView pdfView, IsPDFSelection selection) => pdfView -> selection -> IO ()
-goToSelection pdfView  selection =
-  withObjCPtr selection $ \raw_selection ->
-      sendMsg pdfView (mkSelector "goToSelection:") retVoid [argPtr (castPtr raw_selection :: Ptr ())]
+goToSelection pdfView selection =
+  sendMessage pdfView goToSelectionSelector (toPDFSelection selection)
 
 -- | @- goToRect:onPage:@
 goToRect_onPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> NSRect -> page -> IO ()
-goToRect_onPage pdfView  rect page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "goToRect:onPage:") retVoid [argNSRect rect, argPtr (castPtr raw_page :: Ptr ())]
+goToRect_onPage pdfView rect page =
+  sendMessage pdfView goToRect_onPageSelector rect (toPDFPage page)
 
 -- | @- zoomIn:@
 zoomIn :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-zoomIn pdfView  sender =
-    sendMsg pdfView (mkSelector "zoomIn:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomIn pdfView sender =
+  sendMessage pdfView zoomInSelector sender
 
 -- | @- zoomOut:@
 zoomOut :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-zoomOut pdfView  sender =
-    sendMsg pdfView (mkSelector "zoomOut:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomOut pdfView sender =
+  sendMessage pdfView zoomOutSelector sender
 
 -- | @- areaOfInterestForMouse:@
 areaOfInterestForMouse :: (IsPDFView pdfView, IsNSEvent event) => pdfView -> event -> IO PDFAreaOfInterest
-areaOfInterestForMouse pdfView  event =
-  withObjCPtr event $ \raw_event ->
-      fmap (coerce :: CLong -> PDFAreaOfInterest) $ sendMsg pdfView (mkSelector "areaOfInterestForMouse:") retCLong [argPtr (castPtr raw_event :: Ptr ())]
+areaOfInterestForMouse pdfView event =
+  sendMessage pdfView areaOfInterestForMouseSelector (toNSEvent event)
 
 -- | @- areaOfInterestForPoint:@
 areaOfInterestForPoint :: IsPDFView pdfView => pdfView -> NSPoint -> IO PDFAreaOfInterest
-areaOfInterestForPoint pdfView  cursorLocation =
-    fmap (coerce :: CLong -> PDFAreaOfInterest) $ sendMsg pdfView (mkSelector "areaOfInterestForPoint:") retCLong [argNSPoint cursorLocation]
+areaOfInterestForPoint pdfView cursorLocation =
+  sendMessage pdfView areaOfInterestForPointSelector cursorLocation
 
 -- | @- setCursorForAreaOfInterest:@
 setCursorForAreaOfInterest :: IsPDFView pdfView => pdfView -> PDFAreaOfInterest -> IO ()
-setCursorForAreaOfInterest pdfView  area =
-    sendMsg pdfView (mkSelector "setCursorForAreaOfInterest:") retVoid [argCLong (coerce area)]
+setCursorForAreaOfInterest pdfView area =
+  sendMessage pdfView setCursorForAreaOfInterestSelector area
 
 -- | @- performAction:@
 performAction :: (IsPDFView pdfView, IsPDFAction action) => pdfView -> action -> IO ()
-performAction pdfView  action =
-  withObjCPtr action $ \raw_action ->
-      sendMsg pdfView (mkSelector "performAction:") retVoid [argPtr (castPtr raw_action :: Ptr ())]
+performAction pdfView action =
+  sendMessage pdfView performActionSelector (toPDFAction action)
 
 -- | @- setCurrentSelection:animate:@
 setCurrentSelection_animate :: (IsPDFView pdfView, IsPDFSelection selection) => pdfView -> selection -> Bool -> IO ()
-setCurrentSelection_animate pdfView  selection animate =
-  withObjCPtr selection $ \raw_selection ->
-      sendMsg pdfView (mkSelector "setCurrentSelection:animate:") retVoid [argPtr (castPtr raw_selection :: Ptr ()), argCULong (if animate then 1 else 0)]
+setCurrentSelection_animate pdfView selection animate =
+  sendMessage pdfView setCurrentSelection_animateSelector (toPDFSelection selection) animate
 
 -- | @- clearSelection@
 clearSelection :: IsPDFView pdfView => pdfView -> IO ()
-clearSelection pdfView  =
-    sendMsg pdfView (mkSelector "clearSelection") retVoid []
+clearSelection pdfView =
+  sendMessage pdfView clearSelectionSelector
 
 -- | @- selectAll:@
 selectAll :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-selectAll pdfView  sender =
-    sendMsg pdfView (mkSelector "selectAll:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectAll pdfView sender =
+  sendMessage pdfView selectAllSelector sender
 
 -- | @- scrollSelectionToVisible:@
 scrollSelectionToVisible :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-scrollSelectionToVisible pdfView  sender =
-    sendMsg pdfView (mkSelector "scrollSelectionToVisible:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+scrollSelectionToVisible pdfView sender =
+  sendMessage pdfView scrollSelectionToVisibleSelector sender
 
 -- | @- drawPage:toContext:@
 drawPage_toContext :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> Ptr () -> IO ()
-drawPage_toContext pdfView  page context =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "drawPage:toContext:") retVoid [argPtr (castPtr raw_page :: Ptr ()), argPtr context]
+drawPage_toContext pdfView page context =
+  sendMessage pdfView drawPage_toContextSelector (toPDFPage page) context
 
 -- | @- drawPagePost:toContext:@
 drawPagePost_toContext :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> Ptr () -> IO ()
-drawPagePost_toContext pdfView  page context =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "drawPagePost:toContext:") retVoid [argPtr (castPtr raw_page :: Ptr ()), argPtr context]
+drawPagePost_toContext pdfView page context =
+  sendMessage pdfView drawPagePost_toContextSelector (toPDFPage page) context
 
 -- | @- copy:@
 copy :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-copy pdfView  sender =
-    sendMsg pdfView (mkSelector "copy:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copy pdfView sender =
+  sendOwnedMessage pdfView copySelector sender
 
 -- | @- printWithInfo:autoRotate:@
 printWithInfo_autoRotate :: (IsPDFView pdfView, IsNSPrintInfo printInfo) => pdfView -> printInfo -> Bool -> IO ()
-printWithInfo_autoRotate pdfView  printInfo doRotate =
-  withObjCPtr printInfo $ \raw_printInfo ->
-      sendMsg pdfView (mkSelector "printWithInfo:autoRotate:") retVoid [argPtr (castPtr raw_printInfo :: Ptr ()), argCULong (if doRotate then 1 else 0)]
+printWithInfo_autoRotate pdfView printInfo doRotate =
+  sendMessage pdfView printWithInfo_autoRotateSelector (toNSPrintInfo printInfo) doRotate
 
 -- | @- printWithInfo:autoRotate:pageScaling:@
 printWithInfo_autoRotate_pageScaling :: (IsPDFView pdfView, IsNSPrintInfo printInfo) => pdfView -> printInfo -> Bool -> PDFPrintScalingMode -> IO ()
-printWithInfo_autoRotate_pageScaling pdfView  printInfo doRotate scale =
-  withObjCPtr printInfo $ \raw_printInfo ->
-      sendMsg pdfView (mkSelector "printWithInfo:autoRotate:pageScaling:") retVoid [argPtr (castPtr raw_printInfo :: Ptr ()), argCULong (if doRotate then 1 else 0), argCLong (coerce scale)]
+printWithInfo_autoRotate_pageScaling pdfView printInfo doRotate scale =
+  sendMessage pdfView printWithInfo_autoRotate_pageScalingSelector (toNSPrintInfo printInfo) doRotate scale
 
 -- | @- pageForPoint:nearest:@
 pageForPoint_nearest :: IsPDFView pdfView => pdfView -> NSPoint -> Bool -> IO (Id PDFPage)
-pageForPoint_nearest pdfView  point nearest =
-    sendMsg pdfView (mkSelector "pageForPoint:nearest:") (retPtr retVoid) [argNSPoint point, argCULong (if nearest then 1 else 0)] >>= retainedObject . castPtr
+pageForPoint_nearest pdfView point nearest =
+  sendMessage pdfView pageForPoint_nearestSelector point nearest
 
 -- | @- convertPoint:toPage:@
 convertPoint_toPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> NSPoint -> page -> IO NSPoint
-convertPoint_toPage pdfView  point page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfView (mkSelector "convertPoint:toPage:") retNSPoint [argNSPoint point, argPtr (castPtr raw_page :: Ptr ())]
+convertPoint_toPage pdfView point page =
+  sendMessage pdfView convertPoint_toPageSelector point (toPDFPage page)
 
 -- | @- convertRect:toPage:@
 convertRect_toPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> NSRect -> page -> IO NSRect
-convertRect_toPage pdfView  rect page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfView (mkSelector "convertRect:toPage:") retNSRect [argNSRect rect, argPtr (castPtr raw_page :: Ptr ())]
+convertRect_toPage pdfView rect page =
+  sendMessage pdfView convertRect_toPageSelector rect (toPDFPage page)
 
 -- | @- convertPoint:fromPage:@
 convertPoint_fromPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> NSPoint -> page -> IO NSPoint
-convertPoint_fromPage pdfView  point page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfView (mkSelector "convertPoint:fromPage:") retNSPoint [argNSPoint point, argPtr (castPtr raw_page :: Ptr ())]
+convertPoint_fromPage pdfView point page =
+  sendMessage pdfView convertPoint_fromPageSelector point (toPDFPage page)
 
 -- | @- convertRect:fromPage:@
 convertRect_fromPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> NSRect -> page -> IO NSRect
-convertRect_fromPage pdfView  rect page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfView (mkSelector "convertRect:fromPage:") retNSRect [argNSRect rect, argPtr (castPtr raw_page :: Ptr ())]
+convertRect_fromPage pdfView rect page =
+  sendMessage pdfView convertRect_fromPageSelector rect (toPDFPage page)
 
 -- | @- layoutDocumentView@
 layoutDocumentView :: IsPDFView pdfView => pdfView -> IO ()
-layoutDocumentView pdfView  =
-    sendMsg pdfView (mkSelector "layoutDocumentView") retVoid []
+layoutDocumentView pdfView =
+  sendMessage pdfView layoutDocumentViewSelector
 
 -- | @- annotationsChangedOnPage:@
 annotationsChangedOnPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> IO ()
-annotationsChangedOnPage pdfView  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "annotationsChangedOnPage:") retVoid [argPtr (castPtr raw_page :: Ptr ())]
+annotationsChangedOnPage pdfView page =
+  sendMessage pdfView annotationsChangedOnPageSelector (toPDFPage page)
 
 -- | @- rowSizeForPage:@
 rowSizeForPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> IO NSSize
-rowSizeForPage pdfView  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfView (mkSelector "rowSizeForPage:") retNSSize [argPtr (castPtr raw_page :: Ptr ())]
+rowSizeForPage pdfView page =
+  sendMessage pdfView rowSizeForPageSelector (toPDFPage page)
 
 -- | @- takePasswordFrom:@
 takePasswordFrom :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-takePasswordFrom pdfView  sender =
-    sendMsg pdfView (mkSelector "takePasswordFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takePasswordFrom pdfView sender =
+  sendMessage pdfView takePasswordFromSelector sender
 
 -- | @- drawPage:@
 drawPage :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> IO ()
-drawPage pdfView  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "drawPage:") retVoid [argPtr (castPtr raw_page :: Ptr ())]
+drawPage pdfView page =
+  sendMessage pdfView drawPageSelector (toPDFPage page)
 
 -- | @- drawPagePost:@
 drawPagePost :: (IsPDFView pdfView, IsPDFPage page) => pdfView -> page -> IO ()
-drawPagePost pdfView  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfView (mkSelector "drawPagePost:") retVoid [argPtr (castPtr raw_page :: Ptr ())]
+drawPagePost pdfView page =
+  sendMessage pdfView drawPagePostSelector (toPDFPage page)
 
 -- | @- takeBackgroundColorFrom:@
 takeBackgroundColorFrom :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-takeBackgroundColorFrom pdfView  sender =
-    sendMsg pdfView (mkSelector "takeBackgroundColorFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeBackgroundColorFrom pdfView sender =
+  sendMessage pdfView takeBackgroundColorFromSelector sender
 
 -- | @- document@
 document :: IsPDFView pdfView => pdfView -> IO (Id PDFDocument)
-document pdfView  =
-    sendMsg pdfView (mkSelector "document") (retPtr retVoid) [] >>= retainedObject . castPtr
+document pdfView =
+  sendMessage pdfView documentSelector
 
 -- | @- setDocument:@
 setDocument :: (IsPDFView pdfView, IsPDFDocument value) => pdfView -> value -> IO ()
-setDocument pdfView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfView (mkSelector "setDocument:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocument pdfView value =
+  sendMessage pdfView setDocumentSelector (toPDFDocument value)
 
 -- | @- canGoToFirstPage@
 canGoToFirstPage :: IsPDFView pdfView => pdfView -> IO Bool
-canGoToFirstPage pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoToFirstPage") retCULong []
+canGoToFirstPage pdfView =
+  sendMessage pdfView canGoToFirstPageSelector
 
 -- | @- canGoToLastPage@
 canGoToLastPage :: IsPDFView pdfView => pdfView -> IO Bool
-canGoToLastPage pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoToLastPage") retCULong []
+canGoToLastPage pdfView =
+  sendMessage pdfView canGoToLastPageSelector
 
 -- | @- canGoToNextPage@
 canGoToNextPage :: IsPDFView pdfView => pdfView -> IO Bool
-canGoToNextPage pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoToNextPage") retCULong []
+canGoToNextPage pdfView =
+  sendMessage pdfView canGoToNextPageSelector
 
 -- | @- canGoToPreviousPage@
 canGoToPreviousPage :: IsPDFView pdfView => pdfView -> IO Bool
-canGoToPreviousPage pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoToPreviousPage") retCULong []
+canGoToPreviousPage pdfView =
+  sendMessage pdfView canGoToPreviousPageSelector
 
 -- | @- canGoBack@
 canGoBack :: IsPDFView pdfView => pdfView -> IO Bool
-canGoBack pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoBack") retCULong []
+canGoBack pdfView =
+  sendMessage pdfView canGoBackSelector
 
 -- | @- canGoForward@
 canGoForward :: IsPDFView pdfView => pdfView -> IO Bool
-canGoForward pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canGoForward") retCULong []
+canGoForward pdfView =
+  sendMessage pdfView canGoForwardSelector
 
 -- | @- currentPage@
 currentPage :: IsPDFView pdfView => pdfView -> IO (Id PDFPage)
-currentPage pdfView  =
-    sendMsg pdfView (mkSelector "currentPage") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPage pdfView =
+  sendMessage pdfView currentPageSelector
 
 -- | @- currentDestination@
 currentDestination :: IsPDFView pdfView => pdfView -> IO (Id PDFDestination)
-currentDestination pdfView  =
-    sendMsg pdfView (mkSelector "currentDestination") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentDestination pdfView =
+  sendMessage pdfView currentDestinationSelector
 
 -- | @- displayMode@
 displayMode :: IsPDFView pdfView => pdfView -> IO PDFDisplayMode
-displayMode pdfView  =
-    fmap (coerce :: CLong -> PDFDisplayMode) $ sendMsg pdfView (mkSelector "displayMode") retCLong []
+displayMode pdfView =
+  sendMessage pdfView displayModeSelector
 
 -- | @- setDisplayMode:@
 setDisplayMode :: IsPDFView pdfView => pdfView -> PDFDisplayMode -> IO ()
-setDisplayMode pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplayMode:") retVoid [argCLong (coerce value)]
+setDisplayMode pdfView value =
+  sendMessage pdfView setDisplayModeSelector value
 
 -- | @- displayDirection@
 displayDirection :: IsPDFView pdfView => pdfView -> IO PDFDisplayDirection
-displayDirection pdfView  =
-    fmap (coerce :: CLong -> PDFDisplayDirection) $ sendMsg pdfView (mkSelector "displayDirection") retCLong []
+displayDirection pdfView =
+  sendMessage pdfView displayDirectionSelector
 
 -- | @- setDisplayDirection:@
 setDisplayDirection :: IsPDFView pdfView => pdfView -> PDFDisplayDirection -> IO ()
-setDisplayDirection pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplayDirection:") retVoid [argCLong (coerce value)]
+setDisplayDirection pdfView value =
+  sendMessage pdfView setDisplayDirectionSelector value
 
 -- | @- displaysPageBreaks@
 displaysPageBreaks :: IsPDFView pdfView => pdfView -> IO Bool
-displaysPageBreaks pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "displaysPageBreaks") retCULong []
+displaysPageBreaks pdfView =
+  sendMessage pdfView displaysPageBreaksSelector
 
 -- | @- setDisplaysPageBreaks:@
 setDisplaysPageBreaks :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setDisplaysPageBreaks pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplaysPageBreaks:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysPageBreaks pdfView value =
+  sendMessage pdfView setDisplaysPageBreaksSelector value
 
 -- | @- pageBreakMargins@
 pageBreakMargins :: IsPDFView pdfView => pdfView -> IO NSEdgeInsets
-pageBreakMargins pdfView  =
-    sendMsgStret pdfView (mkSelector "pageBreakMargins") retNSEdgeInsets []
+pageBreakMargins pdfView =
+  sendMessage pdfView pageBreakMarginsSelector
 
 -- | @- setPageBreakMargins:@
 setPageBreakMargins :: IsPDFView pdfView => pdfView -> NSEdgeInsets -> IO ()
-setPageBreakMargins pdfView  value =
-    sendMsg pdfView (mkSelector "setPageBreakMargins:") retVoid [argNSEdgeInsets value]
+setPageBreakMargins pdfView value =
+  sendMessage pdfView setPageBreakMarginsSelector value
 
 -- | @- displayBox@
 displayBox :: IsPDFView pdfView => pdfView -> IO PDFDisplayBox
-displayBox pdfView  =
-    fmap (coerce :: CLong -> PDFDisplayBox) $ sendMsg pdfView (mkSelector "displayBox") retCLong []
+displayBox pdfView =
+  sendMessage pdfView displayBoxSelector
 
 -- | @- setDisplayBox:@
 setDisplayBox :: IsPDFView pdfView => pdfView -> PDFDisplayBox -> IO ()
-setDisplayBox pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplayBox:") retVoid [argCLong (coerce value)]
+setDisplayBox pdfView value =
+  sendMessage pdfView setDisplayBoxSelector value
 
 -- | @- displaysAsBook@
 displaysAsBook :: IsPDFView pdfView => pdfView -> IO Bool
-displaysAsBook pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "displaysAsBook") retCULong []
+displaysAsBook pdfView =
+  sendMessage pdfView displaysAsBookSelector
 
 -- | @- setDisplaysAsBook:@
 setDisplaysAsBook :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setDisplaysAsBook pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplaysAsBook:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysAsBook pdfView value =
+  sendMessage pdfView setDisplaysAsBookSelector value
 
 -- | @- displaysRTL@
 displaysRTL :: IsPDFView pdfView => pdfView -> IO Bool
-displaysRTL pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "displaysRTL") retCULong []
+displaysRTL pdfView =
+  sendMessage pdfView displaysRTLSelector
 
 -- | @- setDisplaysRTL:@
 setDisplaysRTL :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setDisplaysRTL pdfView  value =
-    sendMsg pdfView (mkSelector "setDisplaysRTL:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysRTL pdfView value =
+  sendMessage pdfView setDisplaysRTLSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsPDFView pdfView => pdfView -> IO (Id NSColor)
-backgroundColor pdfView  =
-    sendMsg pdfView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor pdfView =
+  sendMessage pdfView backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsPDFView pdfView, IsNSColor value) => pdfView -> value -> IO ()
-setBackgroundColor pdfView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor pdfView value =
+  sendMessage pdfView setBackgroundColorSelector (toNSColor value)
 
 -- | @- interpolationQuality@
 interpolationQuality :: IsPDFView pdfView => pdfView -> IO PDFInterpolationQuality
-interpolationQuality pdfView  =
-    fmap (coerce :: CLong -> PDFInterpolationQuality) $ sendMsg pdfView (mkSelector "interpolationQuality") retCLong []
+interpolationQuality pdfView =
+  sendMessage pdfView interpolationQualitySelector
 
 -- | @- setInterpolationQuality:@
 setInterpolationQuality :: IsPDFView pdfView => pdfView -> PDFInterpolationQuality -> IO ()
-setInterpolationQuality pdfView  value =
-    sendMsg pdfView (mkSelector "setInterpolationQuality:") retVoid [argCLong (coerce value)]
+setInterpolationQuality pdfView value =
+  sendMessage pdfView setInterpolationQualitySelector value
 
 -- | @- pageShadowsEnabled@
 pageShadowsEnabled :: IsPDFView pdfView => pdfView -> IO Bool
-pageShadowsEnabled pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "pageShadowsEnabled") retCULong []
+pageShadowsEnabled pdfView =
+  sendMessage pdfView pageShadowsEnabledSelector
 
 -- | @- setPageShadowsEnabled:@
 setPageShadowsEnabled :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setPageShadowsEnabled pdfView  value =
-    sendMsg pdfView (mkSelector "setPageShadowsEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPageShadowsEnabled pdfView value =
+  sendMessage pdfView setPageShadowsEnabledSelector value
 
 -- | @- delegate@
 delegate :: IsPDFView pdfView => pdfView -> IO RawId
-delegate pdfView  =
-    fmap (RawId . castPtr) $ sendMsg pdfView (mkSelector "delegate") (retPtr retVoid) []
+delegate pdfView =
+  sendMessage pdfView delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsPDFView pdfView => pdfView -> RawId -> IO ()
-setDelegate pdfView  value =
-    sendMsg pdfView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate pdfView value =
+  sendMessage pdfView setDelegateSelector value
 
 -- | @- scaleFactor@
 scaleFactor :: IsPDFView pdfView => pdfView -> IO CDouble
-scaleFactor pdfView  =
-    sendMsg pdfView (mkSelector "scaleFactor") retCDouble []
+scaleFactor pdfView =
+  sendMessage pdfView scaleFactorSelector
 
 -- | @- setScaleFactor:@
 setScaleFactor :: IsPDFView pdfView => pdfView -> CDouble -> IO ()
-setScaleFactor pdfView  value =
-    sendMsg pdfView (mkSelector "setScaleFactor:") retVoid [argCDouble value]
+setScaleFactor pdfView value =
+  sendMessage pdfView setScaleFactorSelector value
 
 -- | @- minScaleFactor@
 minScaleFactor :: IsPDFView pdfView => pdfView -> IO CDouble
-minScaleFactor pdfView  =
-    sendMsg pdfView (mkSelector "minScaleFactor") retCDouble []
+minScaleFactor pdfView =
+  sendMessage pdfView minScaleFactorSelector
 
 -- | @- setMinScaleFactor:@
 setMinScaleFactor :: IsPDFView pdfView => pdfView -> CDouble -> IO ()
-setMinScaleFactor pdfView  value =
-    sendMsg pdfView (mkSelector "setMinScaleFactor:") retVoid [argCDouble value]
+setMinScaleFactor pdfView value =
+  sendMessage pdfView setMinScaleFactorSelector value
 
 -- | @- maxScaleFactor@
 maxScaleFactor :: IsPDFView pdfView => pdfView -> IO CDouble
-maxScaleFactor pdfView  =
-    sendMsg pdfView (mkSelector "maxScaleFactor") retCDouble []
+maxScaleFactor pdfView =
+  sendMessage pdfView maxScaleFactorSelector
 
 -- | @- setMaxScaleFactor:@
 setMaxScaleFactor :: IsPDFView pdfView => pdfView -> CDouble -> IO ()
-setMaxScaleFactor pdfView  value =
-    sendMsg pdfView (mkSelector "setMaxScaleFactor:") retVoid [argCDouble value]
+setMaxScaleFactor pdfView value =
+  sendMessage pdfView setMaxScaleFactorSelector value
 
 -- | @- autoScales@
 autoScales :: IsPDFView pdfView => pdfView -> IO Bool
-autoScales pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "autoScales") retCULong []
+autoScales pdfView =
+  sendMessage pdfView autoScalesSelector
 
 -- | @- setAutoScales:@
 setAutoScales :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setAutoScales pdfView  value =
-    sendMsg pdfView (mkSelector "setAutoScales:") retVoid [argCULong (if value then 1 else 0)]
+setAutoScales pdfView value =
+  sendMessage pdfView setAutoScalesSelector value
 
 -- | @- scaleFactorForSizeToFit@
 scaleFactorForSizeToFit :: IsPDFView pdfView => pdfView -> IO CDouble
-scaleFactorForSizeToFit pdfView  =
-    sendMsg pdfView (mkSelector "scaleFactorForSizeToFit") retCDouble []
+scaleFactorForSizeToFit pdfView =
+  sendMessage pdfView scaleFactorForSizeToFitSelector
 
 -- | @- canZoomIn@
 canZoomIn :: IsPDFView pdfView => pdfView -> IO Bool
-canZoomIn pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canZoomIn") retCULong []
+canZoomIn pdfView =
+  sendMessage pdfView canZoomInSelector
 
 -- | @- canZoomOut@
 canZoomOut :: IsPDFView pdfView => pdfView -> IO Bool
-canZoomOut pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "canZoomOut") retCULong []
+canZoomOut pdfView =
+  sendMessage pdfView canZoomOutSelector
 
 -- | @- currentSelection@
 currentSelection :: IsPDFView pdfView => pdfView -> IO (Id PDFSelection)
-currentSelection pdfView  =
-    sendMsg pdfView (mkSelector "currentSelection") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSelection pdfView =
+  sendMessage pdfView currentSelectionSelector
 
 -- | @- setCurrentSelection:@
 setCurrentSelection :: (IsPDFView pdfView, IsPDFSelection value) => pdfView -> value -> IO ()
-setCurrentSelection pdfView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfView (mkSelector "setCurrentSelection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentSelection pdfView value =
+  sendMessage pdfView setCurrentSelectionSelector (toPDFSelection value)
 
 -- | @- documentView@
 documentView :: IsPDFView pdfView => pdfView -> IO (Id NSView)
-documentView pdfView  =
-    sendMsg pdfView (mkSelector "documentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentView pdfView =
+  sendMessage pdfView documentViewSelector
 
 -- | @- acceptsDraggedFiles@
 acceptsDraggedFiles :: IsPDFView pdfView => pdfView -> IO Bool
-acceptsDraggedFiles pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "acceptsDraggedFiles") retCULong []
+acceptsDraggedFiles pdfView =
+  sendMessage pdfView acceptsDraggedFilesSelector
 
 -- | @- setAcceptsDraggedFiles:@
 setAcceptsDraggedFiles :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setAcceptsDraggedFiles pdfView  value =
-    sendMsg pdfView (mkSelector "setAcceptsDraggedFiles:") retVoid [argCULong (if value then 1 else 0)]
+setAcceptsDraggedFiles pdfView value =
+  sendMessage pdfView setAcceptsDraggedFilesSelector value
 
 -- | @- enableDataDetectors@
 enableDataDetectors :: IsPDFView pdfView => pdfView -> IO Bool
-enableDataDetectors pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "enableDataDetectors") retCULong []
+enableDataDetectors pdfView =
+  sendMessage pdfView enableDataDetectorsSelector
 
 -- | @- setEnableDataDetectors:@
 setEnableDataDetectors :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setEnableDataDetectors pdfView  value =
-    sendMsg pdfView (mkSelector "setEnableDataDetectors:") retVoid [argCULong (if value then 1 else 0)]
+setEnableDataDetectors pdfView value =
+  sendMessage pdfView setEnableDataDetectorsSelector value
 
 -- | @- inMarkupMode@
 inMarkupMode :: IsPDFView pdfView => pdfView -> IO Bool
-inMarkupMode pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "inMarkupMode") retCULong []
+inMarkupMode pdfView =
+  sendMessage pdfView inMarkupModeSelector
 
 -- | @- setInMarkupMode:@
 setInMarkupMode :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setInMarkupMode pdfView  value =
-    sendMsg pdfView (mkSelector "setInMarkupMode:") retVoid [argCULong (if value then 1 else 0)]
+setInMarkupMode pdfView value =
+  sendMessage pdfView setInMarkupModeSelector value
 
 -- | @- shouldAntiAlias@
 shouldAntiAlias :: IsPDFView pdfView => pdfView -> IO Bool
-shouldAntiAlias pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "shouldAntiAlias") retCULong []
+shouldAntiAlias pdfView =
+  sendMessage pdfView shouldAntiAliasSelector
 
 -- | @- setShouldAntiAlias:@
 setShouldAntiAlias :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setShouldAntiAlias pdfView  value =
-    sendMsg pdfView (mkSelector "setShouldAntiAlias:") retVoid [argCULong (if value then 1 else 0)]
+setShouldAntiAlias pdfView value =
+  sendMessage pdfView setShouldAntiAliasSelector value
 
 -- | @- greekingThreshold@
 greekingThreshold :: IsPDFView pdfView => pdfView -> IO CDouble
-greekingThreshold pdfView  =
-    sendMsg pdfView (mkSelector "greekingThreshold") retCDouble []
+greekingThreshold pdfView =
+  sendMessage pdfView greekingThresholdSelector
 
 -- | @- setGreekingThreshold:@
 setGreekingThreshold :: IsPDFView pdfView => pdfView -> CDouble -> IO ()
-setGreekingThreshold pdfView  value =
-    sendMsg pdfView (mkSelector "setGreekingThreshold:") retVoid [argCDouble value]
+setGreekingThreshold pdfView value =
+  sendMessage pdfView setGreekingThresholdSelector value
 
 -- | @- allowsDragging@
 allowsDragging :: IsPDFView pdfView => pdfView -> IO Bool
-allowsDragging pdfView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfView (mkSelector "allowsDragging") retCULong []
+allowsDragging pdfView =
+  sendMessage pdfView allowsDraggingSelector
 
 -- | @- setAllowsDragging:@
 setAllowsDragging :: IsPDFView pdfView => pdfView -> Bool -> IO ()
-setAllowsDragging pdfView  value =
-    sendMsg pdfView (mkSelector "setAllowsDragging:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsDragging pdfView value =
+  sendMessage pdfView setAllowsDraggingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @goToFirstPage:@
-goToFirstPageSelector :: Selector
+goToFirstPageSelector :: Selector '[RawId] ()
 goToFirstPageSelector = mkSelector "goToFirstPage:"
 
 -- | @Selector@ for @goToLastPage:@
-goToLastPageSelector :: Selector
+goToLastPageSelector :: Selector '[RawId] ()
 goToLastPageSelector = mkSelector "goToLastPage:"
 
 -- | @Selector@ for @goToNextPage:@
-goToNextPageSelector :: Selector
+goToNextPageSelector :: Selector '[RawId] ()
 goToNextPageSelector = mkSelector "goToNextPage:"
 
 -- | @Selector@ for @goToPreviousPage:@
-goToPreviousPageSelector :: Selector
+goToPreviousPageSelector :: Selector '[RawId] ()
 goToPreviousPageSelector = mkSelector "goToPreviousPage:"
 
 -- | @Selector@ for @goBack:@
-goBackSelector :: Selector
+goBackSelector :: Selector '[RawId] ()
 goBackSelector = mkSelector "goBack:"
 
 -- | @Selector@ for @goForward:@
-goForwardSelector :: Selector
+goForwardSelector :: Selector '[RawId] ()
 goForwardSelector = mkSelector "goForward:"
 
 -- | @Selector@ for @goToPage:@
-goToPageSelector :: Selector
+goToPageSelector :: Selector '[Id PDFPage] ()
 goToPageSelector = mkSelector "goToPage:"
 
 -- | @Selector@ for @goToDestination:@
-goToDestinationSelector :: Selector
+goToDestinationSelector :: Selector '[Id PDFDestination] ()
 goToDestinationSelector = mkSelector "goToDestination:"
 
 -- | @Selector@ for @goToSelection:@
-goToSelectionSelector :: Selector
+goToSelectionSelector :: Selector '[Id PDFSelection] ()
 goToSelectionSelector = mkSelector "goToSelection:"
 
 -- | @Selector@ for @goToRect:onPage:@
-goToRect_onPageSelector :: Selector
+goToRect_onPageSelector :: Selector '[NSRect, Id PDFPage] ()
 goToRect_onPageSelector = mkSelector "goToRect:onPage:"
 
 -- | @Selector@ for @zoomIn:@
-zoomInSelector :: Selector
+zoomInSelector :: Selector '[RawId] ()
 zoomInSelector = mkSelector "zoomIn:"
 
 -- | @Selector@ for @zoomOut:@
-zoomOutSelector :: Selector
+zoomOutSelector :: Selector '[RawId] ()
 zoomOutSelector = mkSelector "zoomOut:"
 
 -- | @Selector@ for @areaOfInterestForMouse:@
-areaOfInterestForMouseSelector :: Selector
+areaOfInterestForMouseSelector :: Selector '[Id NSEvent] PDFAreaOfInterest
 areaOfInterestForMouseSelector = mkSelector "areaOfInterestForMouse:"
 
 -- | @Selector@ for @areaOfInterestForPoint:@
-areaOfInterestForPointSelector :: Selector
+areaOfInterestForPointSelector :: Selector '[NSPoint] PDFAreaOfInterest
 areaOfInterestForPointSelector = mkSelector "areaOfInterestForPoint:"
 
 -- | @Selector@ for @setCursorForAreaOfInterest:@
-setCursorForAreaOfInterestSelector :: Selector
+setCursorForAreaOfInterestSelector :: Selector '[PDFAreaOfInterest] ()
 setCursorForAreaOfInterestSelector = mkSelector "setCursorForAreaOfInterest:"
 
 -- | @Selector@ for @performAction:@
-performActionSelector :: Selector
+performActionSelector :: Selector '[Id PDFAction] ()
 performActionSelector = mkSelector "performAction:"
 
 -- | @Selector@ for @setCurrentSelection:animate:@
-setCurrentSelection_animateSelector :: Selector
+setCurrentSelection_animateSelector :: Selector '[Id PDFSelection, Bool] ()
 setCurrentSelection_animateSelector = mkSelector "setCurrentSelection:animate:"
 
 -- | @Selector@ for @clearSelection@
-clearSelectionSelector :: Selector
+clearSelectionSelector :: Selector '[] ()
 clearSelectionSelector = mkSelector "clearSelection"
 
 -- | @Selector@ for @selectAll:@
-selectAllSelector :: Selector
+selectAllSelector :: Selector '[RawId] ()
 selectAllSelector = mkSelector "selectAll:"
 
 -- | @Selector@ for @scrollSelectionToVisible:@
-scrollSelectionToVisibleSelector :: Selector
+scrollSelectionToVisibleSelector :: Selector '[RawId] ()
 scrollSelectionToVisibleSelector = mkSelector "scrollSelectionToVisible:"
 
 -- | @Selector@ for @drawPage:toContext:@
-drawPage_toContextSelector :: Selector
+drawPage_toContextSelector :: Selector '[Id PDFPage, Ptr ()] ()
 drawPage_toContextSelector = mkSelector "drawPage:toContext:"
 
 -- | @Selector@ for @drawPagePost:toContext:@
-drawPagePost_toContextSelector :: Selector
+drawPagePost_toContextSelector :: Selector '[Id PDFPage, Ptr ()] ()
 drawPagePost_toContextSelector = mkSelector "drawPagePost:toContext:"
 
 -- | @Selector@ for @copy:@
-copySelector :: Selector
+copySelector :: Selector '[RawId] ()
 copySelector = mkSelector "copy:"
 
 -- | @Selector@ for @printWithInfo:autoRotate:@
-printWithInfo_autoRotateSelector :: Selector
+printWithInfo_autoRotateSelector :: Selector '[Id NSPrintInfo, Bool] ()
 printWithInfo_autoRotateSelector = mkSelector "printWithInfo:autoRotate:"
 
 -- | @Selector@ for @printWithInfo:autoRotate:pageScaling:@
-printWithInfo_autoRotate_pageScalingSelector :: Selector
+printWithInfo_autoRotate_pageScalingSelector :: Selector '[Id NSPrintInfo, Bool, PDFPrintScalingMode] ()
 printWithInfo_autoRotate_pageScalingSelector = mkSelector "printWithInfo:autoRotate:pageScaling:"
 
 -- | @Selector@ for @pageForPoint:nearest:@
-pageForPoint_nearestSelector :: Selector
+pageForPoint_nearestSelector :: Selector '[NSPoint, Bool] (Id PDFPage)
 pageForPoint_nearestSelector = mkSelector "pageForPoint:nearest:"
 
 -- | @Selector@ for @convertPoint:toPage:@
-convertPoint_toPageSelector :: Selector
+convertPoint_toPageSelector :: Selector '[NSPoint, Id PDFPage] NSPoint
 convertPoint_toPageSelector = mkSelector "convertPoint:toPage:"
 
 -- | @Selector@ for @convertRect:toPage:@
-convertRect_toPageSelector :: Selector
+convertRect_toPageSelector :: Selector '[NSRect, Id PDFPage] NSRect
 convertRect_toPageSelector = mkSelector "convertRect:toPage:"
 
 -- | @Selector@ for @convertPoint:fromPage:@
-convertPoint_fromPageSelector :: Selector
+convertPoint_fromPageSelector :: Selector '[NSPoint, Id PDFPage] NSPoint
 convertPoint_fromPageSelector = mkSelector "convertPoint:fromPage:"
 
 -- | @Selector@ for @convertRect:fromPage:@
-convertRect_fromPageSelector :: Selector
+convertRect_fromPageSelector :: Selector '[NSRect, Id PDFPage] NSRect
 convertRect_fromPageSelector = mkSelector "convertRect:fromPage:"
 
 -- | @Selector@ for @layoutDocumentView@
-layoutDocumentViewSelector :: Selector
+layoutDocumentViewSelector :: Selector '[] ()
 layoutDocumentViewSelector = mkSelector "layoutDocumentView"
 
 -- | @Selector@ for @annotationsChangedOnPage:@
-annotationsChangedOnPageSelector :: Selector
+annotationsChangedOnPageSelector :: Selector '[Id PDFPage] ()
 annotationsChangedOnPageSelector = mkSelector "annotationsChangedOnPage:"
 
 -- | @Selector@ for @rowSizeForPage:@
-rowSizeForPageSelector :: Selector
+rowSizeForPageSelector :: Selector '[Id PDFPage] NSSize
 rowSizeForPageSelector = mkSelector "rowSizeForPage:"
 
 -- | @Selector@ for @takePasswordFrom:@
-takePasswordFromSelector :: Selector
+takePasswordFromSelector :: Selector '[RawId] ()
 takePasswordFromSelector = mkSelector "takePasswordFrom:"
 
 -- | @Selector@ for @drawPage:@
-drawPageSelector :: Selector
+drawPageSelector :: Selector '[Id PDFPage] ()
 drawPageSelector = mkSelector "drawPage:"
 
 -- | @Selector@ for @drawPagePost:@
-drawPagePostSelector :: Selector
+drawPagePostSelector :: Selector '[Id PDFPage] ()
 drawPagePostSelector = mkSelector "drawPagePost:"
 
 -- | @Selector@ for @takeBackgroundColorFrom:@
-takeBackgroundColorFromSelector :: Selector
+takeBackgroundColorFromSelector :: Selector '[RawId] ()
 takeBackgroundColorFromSelector = mkSelector "takeBackgroundColorFrom:"
 
 -- | @Selector@ for @document@
-documentSelector :: Selector
+documentSelector :: Selector '[] (Id PDFDocument)
 documentSelector = mkSelector "document"
 
 -- | @Selector@ for @setDocument:@
-setDocumentSelector :: Selector
+setDocumentSelector :: Selector '[Id PDFDocument] ()
 setDocumentSelector = mkSelector "setDocument:"
 
 -- | @Selector@ for @canGoToFirstPage@
-canGoToFirstPageSelector :: Selector
+canGoToFirstPageSelector :: Selector '[] Bool
 canGoToFirstPageSelector = mkSelector "canGoToFirstPage"
 
 -- | @Selector@ for @canGoToLastPage@
-canGoToLastPageSelector :: Selector
+canGoToLastPageSelector :: Selector '[] Bool
 canGoToLastPageSelector = mkSelector "canGoToLastPage"
 
 -- | @Selector@ for @canGoToNextPage@
-canGoToNextPageSelector :: Selector
+canGoToNextPageSelector :: Selector '[] Bool
 canGoToNextPageSelector = mkSelector "canGoToNextPage"
 
 -- | @Selector@ for @canGoToPreviousPage@
-canGoToPreviousPageSelector :: Selector
+canGoToPreviousPageSelector :: Selector '[] Bool
 canGoToPreviousPageSelector = mkSelector "canGoToPreviousPage"
 
 -- | @Selector@ for @canGoBack@
-canGoBackSelector :: Selector
+canGoBackSelector :: Selector '[] Bool
 canGoBackSelector = mkSelector "canGoBack"
 
 -- | @Selector@ for @canGoForward@
-canGoForwardSelector :: Selector
+canGoForwardSelector :: Selector '[] Bool
 canGoForwardSelector = mkSelector "canGoForward"
 
 -- | @Selector@ for @currentPage@
-currentPageSelector :: Selector
+currentPageSelector :: Selector '[] (Id PDFPage)
 currentPageSelector = mkSelector "currentPage"
 
 -- | @Selector@ for @currentDestination@
-currentDestinationSelector :: Selector
+currentDestinationSelector :: Selector '[] (Id PDFDestination)
 currentDestinationSelector = mkSelector "currentDestination"
 
 -- | @Selector@ for @displayMode@
-displayModeSelector :: Selector
+displayModeSelector :: Selector '[] PDFDisplayMode
 displayModeSelector = mkSelector "displayMode"
 
 -- | @Selector@ for @setDisplayMode:@
-setDisplayModeSelector :: Selector
+setDisplayModeSelector :: Selector '[PDFDisplayMode] ()
 setDisplayModeSelector = mkSelector "setDisplayMode:"
 
 -- | @Selector@ for @displayDirection@
-displayDirectionSelector :: Selector
+displayDirectionSelector :: Selector '[] PDFDisplayDirection
 displayDirectionSelector = mkSelector "displayDirection"
 
 -- | @Selector@ for @setDisplayDirection:@
-setDisplayDirectionSelector :: Selector
+setDisplayDirectionSelector :: Selector '[PDFDisplayDirection] ()
 setDisplayDirectionSelector = mkSelector "setDisplayDirection:"
 
 -- | @Selector@ for @displaysPageBreaks@
-displaysPageBreaksSelector :: Selector
+displaysPageBreaksSelector :: Selector '[] Bool
 displaysPageBreaksSelector = mkSelector "displaysPageBreaks"
 
 -- | @Selector@ for @setDisplaysPageBreaks:@
-setDisplaysPageBreaksSelector :: Selector
+setDisplaysPageBreaksSelector :: Selector '[Bool] ()
 setDisplaysPageBreaksSelector = mkSelector "setDisplaysPageBreaks:"
 
 -- | @Selector@ for @pageBreakMargins@
-pageBreakMarginsSelector :: Selector
+pageBreakMarginsSelector :: Selector '[] NSEdgeInsets
 pageBreakMarginsSelector = mkSelector "pageBreakMargins"
 
 -- | @Selector@ for @setPageBreakMargins:@
-setPageBreakMarginsSelector :: Selector
+setPageBreakMarginsSelector :: Selector '[NSEdgeInsets] ()
 setPageBreakMarginsSelector = mkSelector "setPageBreakMargins:"
 
 -- | @Selector@ for @displayBox@
-displayBoxSelector :: Selector
+displayBoxSelector :: Selector '[] PDFDisplayBox
 displayBoxSelector = mkSelector "displayBox"
 
 -- | @Selector@ for @setDisplayBox:@
-setDisplayBoxSelector :: Selector
+setDisplayBoxSelector :: Selector '[PDFDisplayBox] ()
 setDisplayBoxSelector = mkSelector "setDisplayBox:"
 
 -- | @Selector@ for @displaysAsBook@
-displaysAsBookSelector :: Selector
+displaysAsBookSelector :: Selector '[] Bool
 displaysAsBookSelector = mkSelector "displaysAsBook"
 
 -- | @Selector@ for @setDisplaysAsBook:@
-setDisplaysAsBookSelector :: Selector
+setDisplaysAsBookSelector :: Selector '[Bool] ()
 setDisplaysAsBookSelector = mkSelector "setDisplaysAsBook:"
 
 -- | @Selector@ for @displaysRTL@
-displaysRTLSelector :: Selector
+displaysRTLSelector :: Selector '[] Bool
 displaysRTLSelector = mkSelector "displaysRTL"
 
 -- | @Selector@ for @setDisplaysRTL:@
-setDisplaysRTLSelector :: Selector
+setDisplaysRTLSelector :: Selector '[Bool] ()
 setDisplaysRTLSelector = mkSelector "setDisplaysRTL:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @interpolationQuality@
-interpolationQualitySelector :: Selector
+interpolationQualitySelector :: Selector '[] PDFInterpolationQuality
 interpolationQualitySelector = mkSelector "interpolationQuality"
 
 -- | @Selector@ for @setInterpolationQuality:@
-setInterpolationQualitySelector :: Selector
+setInterpolationQualitySelector :: Selector '[PDFInterpolationQuality] ()
 setInterpolationQualitySelector = mkSelector "setInterpolationQuality:"
 
 -- | @Selector@ for @pageShadowsEnabled@
-pageShadowsEnabledSelector :: Selector
+pageShadowsEnabledSelector :: Selector '[] Bool
 pageShadowsEnabledSelector = mkSelector "pageShadowsEnabled"
 
 -- | @Selector@ for @setPageShadowsEnabled:@
-setPageShadowsEnabledSelector :: Selector
+setPageShadowsEnabledSelector :: Selector '[Bool] ()
 setPageShadowsEnabledSelector = mkSelector "setPageShadowsEnabled:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CDouble
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @setScaleFactor:@
-setScaleFactorSelector :: Selector
+setScaleFactorSelector :: Selector '[CDouble] ()
 setScaleFactorSelector = mkSelector "setScaleFactor:"
 
 -- | @Selector@ for @minScaleFactor@
-minScaleFactorSelector :: Selector
+minScaleFactorSelector :: Selector '[] CDouble
 minScaleFactorSelector = mkSelector "minScaleFactor"
 
 -- | @Selector@ for @setMinScaleFactor:@
-setMinScaleFactorSelector :: Selector
+setMinScaleFactorSelector :: Selector '[CDouble] ()
 setMinScaleFactorSelector = mkSelector "setMinScaleFactor:"
 
 -- | @Selector@ for @maxScaleFactor@
-maxScaleFactorSelector :: Selector
+maxScaleFactorSelector :: Selector '[] CDouble
 maxScaleFactorSelector = mkSelector "maxScaleFactor"
 
 -- | @Selector@ for @setMaxScaleFactor:@
-setMaxScaleFactorSelector :: Selector
+setMaxScaleFactorSelector :: Selector '[CDouble] ()
 setMaxScaleFactorSelector = mkSelector "setMaxScaleFactor:"
 
 -- | @Selector@ for @autoScales@
-autoScalesSelector :: Selector
+autoScalesSelector :: Selector '[] Bool
 autoScalesSelector = mkSelector "autoScales"
 
 -- | @Selector@ for @setAutoScales:@
-setAutoScalesSelector :: Selector
+setAutoScalesSelector :: Selector '[Bool] ()
 setAutoScalesSelector = mkSelector "setAutoScales:"
 
 -- | @Selector@ for @scaleFactorForSizeToFit@
-scaleFactorForSizeToFitSelector :: Selector
+scaleFactorForSizeToFitSelector :: Selector '[] CDouble
 scaleFactorForSizeToFitSelector = mkSelector "scaleFactorForSizeToFit"
 
 -- | @Selector@ for @canZoomIn@
-canZoomInSelector :: Selector
+canZoomInSelector :: Selector '[] Bool
 canZoomInSelector = mkSelector "canZoomIn"
 
 -- | @Selector@ for @canZoomOut@
-canZoomOutSelector :: Selector
+canZoomOutSelector :: Selector '[] Bool
 canZoomOutSelector = mkSelector "canZoomOut"
 
 -- | @Selector@ for @currentSelection@
-currentSelectionSelector :: Selector
+currentSelectionSelector :: Selector '[] (Id PDFSelection)
 currentSelectionSelector = mkSelector "currentSelection"
 
 -- | @Selector@ for @setCurrentSelection:@
-setCurrentSelectionSelector :: Selector
+setCurrentSelectionSelector :: Selector '[Id PDFSelection] ()
 setCurrentSelectionSelector = mkSelector "setCurrentSelection:"
 
 -- | @Selector@ for @documentView@
-documentViewSelector :: Selector
+documentViewSelector :: Selector '[] (Id NSView)
 documentViewSelector = mkSelector "documentView"
 
 -- | @Selector@ for @acceptsDraggedFiles@
-acceptsDraggedFilesSelector :: Selector
+acceptsDraggedFilesSelector :: Selector '[] Bool
 acceptsDraggedFilesSelector = mkSelector "acceptsDraggedFiles"
 
 -- | @Selector@ for @setAcceptsDraggedFiles:@
-setAcceptsDraggedFilesSelector :: Selector
+setAcceptsDraggedFilesSelector :: Selector '[Bool] ()
 setAcceptsDraggedFilesSelector = mkSelector "setAcceptsDraggedFiles:"
 
 -- | @Selector@ for @enableDataDetectors@
-enableDataDetectorsSelector :: Selector
+enableDataDetectorsSelector :: Selector '[] Bool
 enableDataDetectorsSelector = mkSelector "enableDataDetectors"
 
 -- | @Selector@ for @setEnableDataDetectors:@
-setEnableDataDetectorsSelector :: Selector
+setEnableDataDetectorsSelector :: Selector '[Bool] ()
 setEnableDataDetectorsSelector = mkSelector "setEnableDataDetectors:"
 
 -- | @Selector@ for @inMarkupMode@
-inMarkupModeSelector :: Selector
+inMarkupModeSelector :: Selector '[] Bool
 inMarkupModeSelector = mkSelector "inMarkupMode"
 
 -- | @Selector@ for @setInMarkupMode:@
-setInMarkupModeSelector :: Selector
+setInMarkupModeSelector :: Selector '[Bool] ()
 setInMarkupModeSelector = mkSelector "setInMarkupMode:"
 
 -- | @Selector@ for @shouldAntiAlias@
-shouldAntiAliasSelector :: Selector
+shouldAntiAliasSelector :: Selector '[] Bool
 shouldAntiAliasSelector = mkSelector "shouldAntiAlias"
 
 -- | @Selector@ for @setShouldAntiAlias:@
-setShouldAntiAliasSelector :: Selector
+setShouldAntiAliasSelector :: Selector '[Bool] ()
 setShouldAntiAliasSelector = mkSelector "setShouldAntiAlias:"
 
 -- | @Selector@ for @greekingThreshold@
-greekingThresholdSelector :: Selector
+greekingThresholdSelector :: Selector '[] CDouble
 greekingThresholdSelector = mkSelector "greekingThreshold"
 
 -- | @Selector@ for @setGreekingThreshold:@
-setGreekingThresholdSelector :: Selector
+setGreekingThresholdSelector :: Selector '[CDouble] ()
 setGreekingThresholdSelector = mkSelector "setGreekingThreshold:"
 
 -- | @Selector@ for @allowsDragging@
-allowsDraggingSelector :: Selector
+allowsDraggingSelector :: Selector '[] Bool
 allowsDraggingSelector = mkSelector "allowsDragging"
 
 -- | @Selector@ for @setAllowsDragging:@
-setAllowsDraggingSelector :: Selector
+setAllowsDraggingSelector :: Selector '[Bool] ()
 setAllowsDraggingSelector = mkSelector "setAllowsDragging:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SafariServices.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SFErrorCode@
 newtype SFErrorCode = SFErrorCode CLong
@@ -24,3 +27,13 @@ pattern SFErrorNoAttachmentFound = SFErrorCode 2
 
 pattern SFErrorLoadingInterrupted :: SFErrorCode
 pattern SFErrorLoadingInterrupted = SFErrorCode 3
+
+instance ObjCArgument SFErrorCode where
+  withObjCArg (SFErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SFErrorCode where
+  type RawReturn SFErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SFErrorCode x)
+  fromOwned x = pure (SFErrorCode x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Matter.MTRGroupKeyManagementClusterKeySetReadResponseParams
   , setGroupKeySet
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
   , groupKeySetSelector
+  , initWithResponseValue_errorSelector
   , setGroupKeySetSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRGroupKeyManagementClusterKeySetReadResponseParams mtrGroupKeyManagementClusterKeySetReadResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrGroupKeyManagementClusterKeySetReadResponseParams -> responseValue -> error_ -> IO (Id MTRGroupKeyManagementClusterKeySetReadResponseParams)
-initWithResponseValue_error mtrGroupKeyManagementClusterKeySetReadResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrGroupKeyManagementClusterKeySetReadResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrGroupKeyManagementClusterKeySetReadResponseParams responseValue error_ =
+  sendOwnedMessage mtrGroupKeyManagementClusterKeySetReadResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- groupKeySet@
 groupKeySet :: IsMTRGroupKeyManagementClusterKeySetReadResponseParams mtrGroupKeyManagementClusterKeySetReadResponseParams => mtrGroupKeyManagementClusterKeySetReadResponseParams -> IO (Id MTRGroupKeyManagementClusterGroupKeySetStruct)
-groupKeySet mtrGroupKeyManagementClusterKeySetReadResponseParams  =
-    sendMsg mtrGroupKeyManagementClusterKeySetReadResponseParams (mkSelector "groupKeySet") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySet mtrGroupKeyManagementClusterKeySetReadResponseParams =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadResponseParams groupKeySetSelector
 
 -- | @- setGroupKeySet:@
 setGroupKeySet :: (IsMTRGroupKeyManagementClusterKeySetReadResponseParams mtrGroupKeyManagementClusterKeySetReadResponseParams, IsMTRGroupKeyManagementClusterGroupKeySetStruct value) => mtrGroupKeyManagementClusterKeySetReadResponseParams -> value -> IO ()
-setGroupKeySet mtrGroupKeyManagementClusterKeySetReadResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterKeySetReadResponseParams (mkSelector "setGroupKeySet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySet mtrGroupKeyManagementClusterKeySetReadResponseParams value =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadResponseParams setGroupKeySetSelector (toMTRGroupKeyManagementClusterGroupKeySetStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +61,8 @@ setGroupKeySet mtrGroupKeyManagementClusterKeySetReadResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupKeyManagementClusterKeySetReadResponseParams mtrGroupKeyManagementClusterKeySetReadResponseParams => mtrGroupKeyManagementClusterKeySetReadResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadResponseParams  =
-    sendMsg mtrGroupKeyManagementClusterKeySetReadResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadResponseParams =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,31 +72,30 @@ timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupKeyManagementClusterKeySetReadResponseParams mtrGroupKeyManagementClusterKeySetReadResponseParams, IsNSNumber value) => mtrGroupKeyManagementClusterKeySetReadResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterKeySetReadResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadResponseParams value =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRGroupKeyManagementClusterKeySetReadResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @groupKeySet@
-groupKeySetSelector :: Selector
+groupKeySetSelector :: Selector '[] (Id MTRGroupKeyManagementClusterGroupKeySetStruct)
 groupKeySetSelector = mkSelector "groupKeySet"
 
 -- | @Selector@ for @setGroupKeySet:@
-setGroupKeySetSelector :: Selector
+setGroupKeySetSelector :: Selector '[Id MTRGroupKeyManagementClusterGroupKeySetStruct] ()
 setGroupKeySetSelector = mkSelector "setGroupKeySet:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

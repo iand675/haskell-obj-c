@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INWorkoutGoalUnitTypeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithWorkoutGoalUnitTypeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedWorkoutGoalUnitTypeSelector
-  , successWithResolvedValueSelector
-  , confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector
+  , successWithResolvedValueSelector
+  , successWithResolvedWorkoutGoalUnitTypeSelector
 
   -- * Enum types
   , INWorkoutGoalUnitType(INWorkoutGoalUnitType)
@@ -32,15 +33,11 @@ module ObjC.Intents.INWorkoutGoalUnitTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,46 +50,46 @@ successWithResolvedWorkoutGoalUnitType :: INWorkoutGoalUnitType -> IO (Id INWork
 successWithResolvedWorkoutGoalUnitType resolvedWorkoutGoalUnitType =
   do
     cls' <- getRequiredClass "INWorkoutGoalUnitTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedWorkoutGoalUnitType:") (retPtr retVoid) [argCLong (coerce resolvedWorkoutGoalUnitType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedWorkoutGoalUnitTypeSelector resolvedWorkoutGoalUnitType
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INWorkoutGoalUnitType -> IO (Id INWorkoutGoalUnitTypeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INWorkoutGoalUnitTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithWorkoutGoalUnitTypeToConfirm:@
 confirmationRequiredWithWorkoutGoalUnitTypeToConfirm :: INWorkoutGoalUnitType -> IO (Id INWorkoutGoalUnitTypeResolutionResult)
 confirmationRequiredWithWorkoutGoalUnitTypeToConfirm workoutGoalUnitTypeToConfirm =
   do
     cls' <- getRequiredClass "INWorkoutGoalUnitTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithWorkoutGoalUnitTypeToConfirm:") (retPtr retVoid) [argCLong (coerce workoutGoalUnitTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector workoutGoalUnitTypeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INWorkoutGoalUnitType -> IO (Id INWorkoutGoalUnitTypeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INWorkoutGoalUnitTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedWorkoutGoalUnitType:@
-successWithResolvedWorkoutGoalUnitTypeSelector :: Selector
+successWithResolvedWorkoutGoalUnitTypeSelector :: Selector '[INWorkoutGoalUnitType] (Id INWorkoutGoalUnitTypeResolutionResult)
 successWithResolvedWorkoutGoalUnitTypeSelector = mkSelector "successWithResolvedWorkoutGoalUnitType:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INWorkoutGoalUnitType] (Id INWorkoutGoalUnitTypeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithWorkoutGoalUnitTypeToConfirm:@
-confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector :: Selector
+confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector :: Selector '[INWorkoutGoalUnitType] (Id INWorkoutGoalUnitTypeResolutionResult)
 confirmationRequiredWithWorkoutGoalUnitTypeToConfirmSelector = mkSelector "confirmationRequiredWithWorkoutGoalUnitTypeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INWorkoutGoalUnitType] (Id INWorkoutGoalUnitTypeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

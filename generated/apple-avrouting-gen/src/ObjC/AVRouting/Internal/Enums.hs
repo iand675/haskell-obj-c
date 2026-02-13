@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AVRouting.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Values that indicate the reason for a routing event.
 -- | @AVCustomRoutingEventReason@
@@ -25,3 +28,13 @@ pattern AVCustomRoutingEventReasonDeactivate = AVCustomRoutingEventReason 1
 
 pattern AVCustomRoutingEventReasonReactivate :: AVCustomRoutingEventReason
 pattern AVCustomRoutingEventReasonReactivate = AVCustomRoutingEventReason 2
+
+instance ObjCArgument AVCustomRoutingEventReason where
+  withObjCArg (AVCustomRoutingEventReason x) k = k (argCLong x)
+
+instance ObjCReturn AVCustomRoutingEventReason where
+  type RawReturn AVCustomRoutingEventReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCustomRoutingEventReason x)
+  fromOwned x = pure (AVCustomRoutingEventReason x)

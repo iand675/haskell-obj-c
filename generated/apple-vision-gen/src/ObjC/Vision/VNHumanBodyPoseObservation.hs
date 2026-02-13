@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Vision.VNHumanBodyPoseObservation
   , recognizedPointsForJointsGroupName_error
   , availableJointNames
   , availableJointsGroupNames
-  , recognizedPointForJointName_errorSelector
-  , recognizedPointsForJointsGroupName_errorSelector
   , availableJointNamesSelector
   , availableJointsGroupNamesSelector
+  , recognizedPointForJointName_errorSelector
+  , recognizedPointsForJointsGroupName_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,10 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- recognizedPointForJointName:error:@
 recognizedPointForJointName_error :: (IsVNHumanBodyPoseObservation vnHumanBodyPoseObservation, IsNSString jointName, IsNSError error_) => vnHumanBodyPoseObservation -> jointName -> error_ -> IO (Id VNRecognizedPoint)
-recognizedPointForJointName_error vnHumanBodyPoseObservation  jointName error_ =
-  withObjCPtr jointName $ \raw_jointName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanBodyPoseObservation (mkSelector "recognizedPointForJointName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointForJointName_error vnHumanBodyPoseObservation jointName error_ =
+  sendMessage vnHumanBodyPoseObservation recognizedPointForJointName_errorSelector (toNSString jointName) (toNSError error_)
 
 -- | Obtains the collection of points associated with a named human body joints group.
 --
@@ -60,42 +55,40 @@ recognizedPointForJointName_error vnHumanBodyPoseObservation  jointName error_ =
 --
 -- ObjC selector: @- recognizedPointsForJointsGroupName:error:@
 recognizedPointsForJointsGroupName_error :: (IsVNHumanBodyPoseObservation vnHumanBodyPoseObservation, IsNSString jointsGroupName, IsNSError error_) => vnHumanBodyPoseObservation -> jointsGroupName -> error_ -> IO (Id NSDictionary)
-recognizedPointsForJointsGroupName_error vnHumanBodyPoseObservation  jointsGroupName error_ =
-  withObjCPtr jointsGroupName $ \raw_jointsGroupName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanBodyPoseObservation (mkSelector "recognizedPointsForJointsGroupName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointsGroupName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointsForJointsGroupName_error vnHumanBodyPoseObservation jointsGroupName error_ =
+  sendMessage vnHumanBodyPoseObservation recognizedPointsForJointsGroupName_errorSelector (toNSString jointsGroupName) (toNSError error_)
 
 -- | All of the joint names available in the observation.
 --
 -- ObjC selector: @- availableJointNames@
 availableJointNames :: IsVNHumanBodyPoseObservation vnHumanBodyPoseObservation => vnHumanBodyPoseObservation -> IO (Id NSArray)
-availableJointNames vnHumanBodyPoseObservation  =
-    sendMsg vnHumanBodyPoseObservation (mkSelector "availableJointNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointNames vnHumanBodyPoseObservation =
+  sendMessage vnHumanBodyPoseObservation availableJointNamesSelector
 
 -- | All of the joints group names available in the observation.
 --
 -- ObjC selector: @- availableJointsGroupNames@
 availableJointsGroupNames :: IsVNHumanBodyPoseObservation vnHumanBodyPoseObservation => vnHumanBodyPoseObservation -> IO (Id NSArray)
-availableJointsGroupNames vnHumanBodyPoseObservation  =
-    sendMsg vnHumanBodyPoseObservation (mkSelector "availableJointsGroupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointsGroupNames vnHumanBodyPoseObservation =
+  sendMessage vnHumanBodyPoseObservation availableJointsGroupNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recognizedPointForJointName:error:@
-recognizedPointForJointName_errorSelector :: Selector
+recognizedPointForJointName_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNRecognizedPoint)
 recognizedPointForJointName_errorSelector = mkSelector "recognizedPointForJointName:error:"
 
 -- | @Selector@ for @recognizedPointsForJointsGroupName:error:@
-recognizedPointsForJointsGroupName_errorSelector :: Selector
+recognizedPointsForJointsGroupName_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSDictionary)
 recognizedPointsForJointsGroupName_errorSelector = mkSelector "recognizedPointsForJointsGroupName:error:"
 
 -- | @Selector@ for @availableJointNames@
-availableJointNamesSelector :: Selector
+availableJointNamesSelector :: Selector '[] (Id NSArray)
 availableJointNamesSelector = mkSelector "availableJointNames"
 
 -- | @Selector@ for @availableJointsGroupNames@
-availableJointsGroupNamesSelector :: Selector
+availableJointsGroupNamesSelector :: Selector '[] (Id NSArray)
 availableJointsGroupNamesSelector = mkSelector "availableJointsGroupNames"
 

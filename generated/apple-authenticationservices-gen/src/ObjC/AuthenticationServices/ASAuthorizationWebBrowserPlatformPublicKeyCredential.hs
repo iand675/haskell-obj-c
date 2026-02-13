@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AuthenticationServices.ASAuthorizationWebBrowserPlatformPublicKeyCre
   , credentialID
   , userHandle
   , providerName
-  , newSelector
+  , credentialIDSelector
+  , customTitleSelector
   , initSelector
   , nameSelector
-  , customTitleSelector
-  , relyingPartySelector
-  , credentialIDSelector
-  , userHandleSelector
+  , newSelector
   , providerNameSelector
+  , relyingPartySelector
+  , userHandleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,88 +43,88 @@ new :: IO (Id ASAuthorizationWebBrowserPlatformPublicKeyCredential)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationWebBrowserPlatformPublicKeyCredential"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id ASAuthorizationWebBrowserPlatformPublicKeyCredential)
-init_ asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendOwnedMessage asAuthorizationWebBrowserPlatformPublicKeyCredential initSelector
 
 -- | The user name of the saved credential.
 --
 -- ObjC selector: @- name@
 name :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSString)
-name asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential nameSelector
 
 -- | A user-specified title for the credential.
 --
 -- ObjC selector: @- customTitle@
 customTitle :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSString)
-customTitle asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "customTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+customTitle asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential customTitleSelector
 
 -- | The "relying party" (generally website) the credential was saved for.
 --
 -- ObjC selector: @- relyingParty@
 relyingParty :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSString)
-relyingParty asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "relyingParty") (retPtr retVoid) [] >>= retainedObject . castPtr
+relyingParty asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential relyingPartySelector
 
 -- | A unique identifier for this credential.
 --
 -- ObjC selector: @- credentialID@
 credentialID :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSData)
-credentialID asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "credentialID") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialID asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential credentialIDSelector
 
 -- | A unique identifier for the user account associated with this credential. One account may have multiple associated credentials.
 --
 -- ObjC selector: @- userHandle@
 userHandle :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSData)
-userHandle asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "userHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+userHandle asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential userHandleSelector
 
 -- | The localized name of the credential provider that provided this passkey.
 --
 -- ObjC selector: @- providerName@
 providerName :: IsASAuthorizationWebBrowserPlatformPublicKeyCredential asAuthorizationWebBrowserPlatformPublicKeyCredential => asAuthorizationWebBrowserPlatformPublicKeyCredential -> IO (Id NSString)
-providerName asAuthorizationWebBrowserPlatformPublicKeyCredential  =
-    sendMsg asAuthorizationWebBrowserPlatformPublicKeyCredential (mkSelector "providerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerName asAuthorizationWebBrowserPlatformPublicKeyCredential =
+  sendMessage asAuthorizationWebBrowserPlatformPublicKeyCredential providerNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationWebBrowserPlatformPublicKeyCredential)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationWebBrowserPlatformPublicKeyCredential)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @customTitle@
-customTitleSelector :: Selector
+customTitleSelector :: Selector '[] (Id NSString)
 customTitleSelector = mkSelector "customTitle"
 
 -- | @Selector@ for @relyingParty@
-relyingPartySelector :: Selector
+relyingPartySelector :: Selector '[] (Id NSString)
 relyingPartySelector = mkSelector "relyingParty"
 
 -- | @Selector@ for @credentialID@
-credentialIDSelector :: Selector
+credentialIDSelector :: Selector '[] (Id NSData)
 credentialIDSelector = mkSelector "credentialID"
 
 -- | @Selector@ for @userHandle@
-userHandleSelector :: Selector
+userHandleSelector :: Selector '[] (Id NSData)
 userHandleSelector = mkSelector "userHandle"
 
 -- | @Selector@ for @providerName@
-providerNameSelector :: Selector
+providerNameSelector :: Selector '[] (Id NSString)
 providerNameSelector = mkSelector "providerName"
 

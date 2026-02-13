@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ShazamKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | An error type that you create, or the system creates, to indicate problems with a catalog, match attempt, or signature, or when saving to a user's Shazam library.
 -- | @SHErrorCode@
@@ -46,3 +49,13 @@ pattern SHErrorCodeInternalError = SHErrorCode 500
 
 pattern SHErrorCodeMediaItemFetchFailed :: SHErrorCode
 pattern SHErrorCodeMediaItemFetchFailed = SHErrorCode 600
+
+instance ObjCArgument SHErrorCode where
+  withObjCArg (SHErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SHErrorCode where
+  type RawReturn SHErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SHErrorCode x)
+  fromOwned x = pure (SHErrorCode x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.SharedWithYou.SWHighlightCenter
   , highlights
   , highlightCollectionTitle
   , systemCollaborationSupportAvailable
-  , getHighlightForURL_completionHandlerSelector
-  , collaborationHighlightForIdentifier_errorSelector
-  , getCollaborationHighlightForURL_completionHandlerSelector
-  , postNoticeForHighlightEventSelector
   , clearNoticesForHighlightSelector
-  , getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector
+  , collaborationHighlightForIdentifier_errorSelector
   , delegateSelector
-  , setDelegateSelector
-  , highlightsSelector
+  , getCollaborationHighlightForURL_completionHandlerSelector
+  , getHighlightForURL_completionHandlerSelector
+  , getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector
   , highlightCollectionTitleSelector
+  , highlightsSelector
+  , postNoticeForHighlightEventSelector
+  , setDelegateSelector
   , systemCollaborationSupportAvailableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,16 +58,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getHighlightForURL:completionHandler:@
 getHighlightForURL_completionHandler :: (IsSWHighlightCenter swHighlightCenter, IsNSURL url) => swHighlightCenter -> url -> Ptr () -> IO ()
-getHighlightForURL_completionHandler swHighlightCenter  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg swHighlightCenter (mkSelector "getHighlightForURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getHighlightForURL_completionHandler swHighlightCenter url completionHandler =
+  sendMessage swHighlightCenter getHighlightForURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | @- collaborationHighlightForIdentifier:error:@
 collaborationHighlightForIdentifier_error :: (IsSWHighlightCenter swHighlightCenter, IsNSString collaborationIdentifier, IsNSError error_) => swHighlightCenter -> collaborationIdentifier -> error_ -> IO (Id SWCollaborationHighlight)
-collaborationHighlightForIdentifier_error swHighlightCenter  collaborationIdentifier error_ =
-  withObjCPtr collaborationIdentifier $ \raw_collaborationIdentifier ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg swHighlightCenter (mkSelector "collaborationHighlightForIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_collaborationIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+collaborationHighlightForIdentifier_error swHighlightCenter collaborationIdentifier error_ =
+  sendMessage swHighlightCenter collaborationHighlightForIdentifier_errorSelector (toNSString collaborationIdentifier) (toNSError error_)
 
 -- | A convenience method to get an SWCollaborationHighlight for a given URL
 --
@@ -80,9 +74,8 @@ collaborationHighlightForIdentifier_error swHighlightCenter  collaborationIdenti
 --
 -- ObjC selector: @- getCollaborationHighlightForURL:completionHandler:@
 getCollaborationHighlightForURL_completionHandler :: (IsSWHighlightCenter swHighlightCenter, IsNSURL url) => swHighlightCenter -> url -> Ptr () -> IO ()
-getCollaborationHighlightForURL_completionHandler swHighlightCenter  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg swHighlightCenter (mkSelector "getCollaborationHighlightForURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getCollaborationHighlightForURL_completionHandler swHighlightCenter url completionHandler =
+  sendMessage swHighlightCenter getCollaborationHighlightForURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Post a given event to the highlight center for display in Messages.
 --
@@ -90,8 +83,8 @@ getCollaborationHighlightForURL_completionHandler swHighlightCenter  url complet
 --
 -- ObjC selector: @- postNoticeForHighlightEvent:@
 postNoticeForHighlightEvent :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> RawId -> IO ()
-postNoticeForHighlightEvent swHighlightCenter  event =
-    sendMsg swHighlightCenter (mkSelector "postNoticeForHighlightEvent:") retVoid [argPtr (castPtr (unRawId event) :: Ptr ())]
+postNoticeForHighlightEvent swHighlightCenter event =
+  sendMessage swHighlightCenter postNoticeForHighlightEventSelector event
 
 -- | Clear notices for a given collaboration highlight in Messages.
 --
@@ -99,9 +92,8 @@ postNoticeForHighlightEvent swHighlightCenter  event =
 --
 -- ObjC selector: @- clearNoticesForHighlight:@
 clearNoticesForHighlight :: (IsSWHighlightCenter swHighlightCenter, IsSWCollaborationHighlight highlight) => swHighlightCenter -> highlight -> IO ()
-clearNoticesForHighlight swHighlightCenter  highlight =
-  withObjCPtr highlight $ \raw_highlight ->
-      sendMsg swHighlightCenter (mkSelector "clearNoticesForHighlight:") retVoid [argPtr (castPtr raw_highlight :: Ptr ())]
+clearNoticesForHighlight swHighlightCenter highlight =
+  sendMessage swHighlightCenter clearNoticesForHighlightSelector (toSWCollaborationHighlight highlight)
 
 -- | Method to sign passed in data with local device's private key
 --
@@ -113,29 +105,27 @@ clearNoticesForHighlight swHighlightCenter  highlight =
 --
 -- ObjC selector: @- getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:@
 getSignedIdentityProofForCollaborationHighlight_usingData_completionHandler :: (IsSWHighlightCenter swHighlightCenter, IsSWCollaborationHighlight collaborationHighlight, IsNSData data_) => swHighlightCenter -> collaborationHighlight -> data_ -> Ptr () -> IO ()
-getSignedIdentityProofForCollaborationHighlight_usingData_completionHandler swHighlightCenter  collaborationHighlight data_ completionHandler =
-  withObjCPtr collaborationHighlight $ \raw_collaborationHighlight ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg swHighlightCenter (mkSelector "getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:") retVoid [argPtr (castPtr raw_collaborationHighlight :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getSignedIdentityProofForCollaborationHighlight_usingData_completionHandler swHighlightCenter collaborationHighlight data_ completionHandler =
+  sendMessage swHighlightCenter getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector (toSWCollaborationHighlight collaborationHighlight) (toNSData data_) completionHandler
 
 -- | The highlight center's delegate
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> IO RawId
-delegate swHighlightCenter  =
-    fmap (RawId . castPtr) $ sendMsg swHighlightCenter (mkSelector "delegate") (retPtr retVoid) []
+delegate swHighlightCenter =
+  sendMessage swHighlightCenter delegateSelector
 
 -- | The highlight center's delegate
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> RawId -> IO ()
-setDelegate swHighlightCenter  value =
-    sendMsg swHighlightCenter (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate swHighlightCenter value =
+  sendMessage swHighlightCenter setDelegateSelector value
 
 -- | @- highlights@
 highlights :: IsSWHighlightCenter swHighlightCenter => swHighlightCenter -> IO (Id NSArray)
-highlights swHighlightCenter  =
-    sendMsg swHighlightCenter (mkSelector "highlights") (retPtr retVoid) [] >>= retainedObject . castPtr
+highlights swHighlightCenter =
+  sendMessage swHighlightCenter highlightsSelector
 
 -- | Localized title to display with a collection of highlights
 --
@@ -146,7 +136,7 @@ highlightCollectionTitle :: IO (Id NSString)
 highlightCollectionTitle  =
   do
     cls' <- getRequiredClass "SWHighlightCenter"
-    sendClassMsg cls' (mkSelector "highlightCollectionTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' highlightCollectionTitleSelector
 
 -- | Whether the current software version has full support for Messages collaboration features.
 --
@@ -157,53 +147,53 @@ systemCollaborationSupportAvailable :: IO Bool
 systemCollaborationSupportAvailable  =
   do
     cls' <- getRequiredClass "SWHighlightCenter"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "systemCollaborationSupportAvailable") retCULong []
+    sendClassMessage cls' systemCollaborationSupportAvailableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getHighlightForURL:completionHandler:@
-getHighlightForURL_completionHandlerSelector :: Selector
+getHighlightForURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 getHighlightForURL_completionHandlerSelector = mkSelector "getHighlightForURL:completionHandler:"
 
 -- | @Selector@ for @collaborationHighlightForIdentifier:error:@
-collaborationHighlightForIdentifier_errorSelector :: Selector
+collaborationHighlightForIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] (Id SWCollaborationHighlight)
 collaborationHighlightForIdentifier_errorSelector = mkSelector "collaborationHighlightForIdentifier:error:"
 
 -- | @Selector@ for @getCollaborationHighlightForURL:completionHandler:@
-getCollaborationHighlightForURL_completionHandlerSelector :: Selector
+getCollaborationHighlightForURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 getCollaborationHighlightForURL_completionHandlerSelector = mkSelector "getCollaborationHighlightForURL:completionHandler:"
 
 -- | @Selector@ for @postNoticeForHighlightEvent:@
-postNoticeForHighlightEventSelector :: Selector
+postNoticeForHighlightEventSelector :: Selector '[RawId] ()
 postNoticeForHighlightEventSelector = mkSelector "postNoticeForHighlightEvent:"
 
 -- | @Selector@ for @clearNoticesForHighlight:@
-clearNoticesForHighlightSelector :: Selector
+clearNoticesForHighlightSelector :: Selector '[Id SWCollaborationHighlight] ()
 clearNoticesForHighlightSelector = mkSelector "clearNoticesForHighlight:"
 
 -- | @Selector@ for @getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:@
-getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector :: Selector
+getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector :: Selector '[Id SWCollaborationHighlight, Id NSData, Ptr ()] ()
 getSignedIdentityProofForCollaborationHighlight_usingData_completionHandlerSelector = mkSelector "getSignedIdentityProofForCollaborationHighlight:usingData:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @highlights@
-highlightsSelector :: Selector
+highlightsSelector :: Selector '[] (Id NSArray)
 highlightsSelector = mkSelector "highlights"
 
 -- | @Selector@ for @highlightCollectionTitle@
-highlightCollectionTitleSelector :: Selector
+highlightCollectionTitleSelector :: Selector '[] (Id NSString)
 highlightCollectionTitleSelector = mkSelector "highlightCollectionTitle"
 
 -- | @Selector@ for @systemCollaborationSupportAvailable@
-systemCollaborationSupportAvailableSelector :: Selector
+systemCollaborationSupportAvailableSelector :: Selector '[] Bool
 systemCollaborationSupportAvailableSelector = mkSelector "systemCollaborationSupportAvailable"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.MetalPerformanceShaders.MPSCNNCrossChannelNormalization
   , delta
   , setDelta
   , kernelSize
-  , initWithDevice_kernelSizeSelector
+  , alphaSelector
+  , betaSelector
+  , deltaSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
-  , alphaSelector
-  , setAlphaSelector
-  , betaSelector
-  , setBetaSelector
-  , deltaSelector
-  , setDeltaSelector
+  , initWithDevice_kernelSizeSelector
   , kernelSizeSelector
+  , setAlphaSelector
+  , setBetaSelector
+  , setDeltaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelSize:@
 initWithDevice_kernelSize :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> RawId -> CULong -> IO (Id MPSCNNCrossChannelNormalization)
-initWithDevice_kernelSize mpscnnCrossChannelNormalization  device kernelSize =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "initWithDevice:kernelSize:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelSize] >>= ownedObject . castPtr
+initWithDevice_kernelSize mpscnnCrossChannelNormalization device kernelSize =
+  sendOwnedMessage mpscnnCrossChannelNormalization initWithDevice_kernelSizeSelector device kernelSize
 
 -- | NSSecureCoding compatability
 --
@@ -78,14 +75,13 @@ initWithDevice_kernelSize mpscnnCrossChannelNormalization  device kernelSize =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization, IsNSCoder aDecoder) => mpscnnCrossChannelNormalization -> aDecoder -> RawId -> IO (Id MPSCNNCrossChannelNormalization)
-initWithCoder_device mpscnnCrossChannelNormalization  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnCrossChannelNormalization (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnCrossChannelNormalization aDecoder device =
+  sendOwnedMessage mpscnnCrossChannelNormalization initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> RawId -> IO (Id MPSCNNCrossChannelNormalization)
-initWithDevice mpscnnCrossChannelNormalization  device =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnCrossChannelNormalization device =
+  sendOwnedMessage mpscnnCrossChannelNormalization initWithDeviceSelector device
 
 -- | alpha
 --
@@ -93,8 +89,8 @@ initWithDevice mpscnnCrossChannelNormalization  device =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> IO CFloat
-alpha mpscnnCrossChannelNormalization  =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "alpha") retCFloat []
+alpha mpscnnCrossChannelNormalization =
+  sendMessage mpscnnCrossChannelNormalization alphaSelector
 
 -- | alpha
 --
@@ -102,8 +98,8 @@ alpha mpscnnCrossChannelNormalization  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> CFloat -> IO ()
-setAlpha mpscnnCrossChannelNormalization  value =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpscnnCrossChannelNormalization value =
+  sendMessage mpscnnCrossChannelNormalization setAlphaSelector value
 
 -- | beta
 --
@@ -111,8 +107,8 @@ setAlpha mpscnnCrossChannelNormalization  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> IO CFloat
-beta mpscnnCrossChannelNormalization  =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "beta") retCFloat []
+beta mpscnnCrossChannelNormalization =
+  sendMessage mpscnnCrossChannelNormalization betaSelector
 
 -- | beta
 --
@@ -120,8 +116,8 @@ beta mpscnnCrossChannelNormalization  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> CFloat -> IO ()
-setBeta mpscnnCrossChannelNormalization  value =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "setBeta:") retVoid [argCFloat value]
+setBeta mpscnnCrossChannelNormalization value =
+  sendMessage mpscnnCrossChannelNormalization setBetaSelector value
 
 -- | delta
 --
@@ -129,8 +125,8 @@ setBeta mpscnnCrossChannelNormalization  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> IO CFloat
-delta mpscnnCrossChannelNormalization  =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "delta") retCFloat []
+delta mpscnnCrossChannelNormalization =
+  sendMessage mpscnnCrossChannelNormalization deltaSelector
 
 -- | delta
 --
@@ -138,8 +134,8 @@ delta mpscnnCrossChannelNormalization  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> CFloat -> IO ()
-setDelta mpscnnCrossChannelNormalization  value =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnCrossChannelNormalization value =
+  sendMessage mpscnnCrossChannelNormalization setDeltaSelector value
 
 -- | kernelSize
 --
@@ -147,50 +143,50 @@ setDelta mpscnnCrossChannelNormalization  value =
 --
 -- ObjC selector: @- kernelSize@
 kernelSize :: IsMPSCNNCrossChannelNormalization mpscnnCrossChannelNormalization => mpscnnCrossChannelNormalization -> IO CULong
-kernelSize mpscnnCrossChannelNormalization  =
-    sendMsg mpscnnCrossChannelNormalization (mkSelector "kernelSize") retCULong []
+kernelSize mpscnnCrossChannelNormalization =
+  sendMessage mpscnnCrossChannelNormalization kernelSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelSize:@
-initWithDevice_kernelSizeSelector :: Selector
+initWithDevice_kernelSizeSelector :: Selector '[RawId, CULong] (Id MPSCNNCrossChannelNormalization)
 initWithDevice_kernelSizeSelector = mkSelector "initWithDevice:kernelSize:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNCrossChannelNormalization)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNCrossChannelNormalization)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CFloat
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CFloat] ()
 setBetaSelector = mkSelector "setBeta:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 
 -- | @Selector@ for @kernelSize@
-kernelSizeSelector :: Selector
+kernelSizeSelector :: Selector '[] CULong
 kernelSizeSelector = mkSelector "kernelSize"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,36 +40,36 @@ module ObjC.SpriteKit.SKLabelNode
   , setColor
   , blendMode
   , setBlendMode
-  , labelNodeWithTextSelector
+  , attributedTextSelector
+  , blendModeSelector
+  , colorBlendFactorSelector
+  , colorSelector
+  , fontColorSelector
+  , fontNameSelector
+  , fontSizeSelector
+  , horizontalAlignmentModeSelector
+  , initWithFontNamedSelector
   , labelNodeWithAttributedTextSelector
   , labelNodeWithFontNamedSelector
-  , initWithFontNamedSelector
-  , verticalAlignmentModeSelector
-  , setVerticalAlignmentModeSelector
-  , horizontalAlignmentModeSelector
-  , setHorizontalAlignmentModeSelector
-  , numberOfLinesSelector
-  , setNumberOfLinesSelector
+  , labelNodeWithTextSelector
   , lineBreakModeSelector
-  , setLineBreakModeSelector
+  , numberOfLinesSelector
   , preferredMaxLayoutWidthSelector
-  , setPreferredMaxLayoutWidthSelector
-  , fontNameSelector
-  , setFontNameSelector
-  , textSelector
-  , setTextSelector
-  , attributedTextSelector
   , setAttributedTextSelector
-  , fontSizeSelector
-  , setFontSizeSelector
-  , fontColorSelector
-  , setFontColorSelector
-  , colorBlendFactorSelector
-  , setColorBlendFactorSelector
-  , colorSelector
-  , setColorSelector
-  , blendModeSelector
   , setBlendModeSelector
+  , setColorBlendFactorSelector
+  , setColorSelector
+  , setFontColorSelector
+  , setFontNameSelector
+  , setFontSizeSelector
+  , setHorizontalAlignmentModeSelector
+  , setLineBreakModeSelector
+  , setNumberOfLinesSelector
+  , setPreferredMaxLayoutWidthSelector
+  , setTextSelector
+  , setVerticalAlignmentModeSelector
+  , textSelector
+  , verticalAlignmentModeSelector
 
   -- * Enum types
   , NSLineBreakMode(NSLineBreakMode)
@@ -99,15 +100,11 @@ module ObjC.SpriteKit.SKLabelNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -122,179 +119,170 @@ labelNodeWithText :: IsNSString text => text -> IO (Id SKLabelNode)
 labelNodeWithText text =
   do
     cls' <- getRequiredClass "SKLabelNode"
-    withObjCPtr text $ \raw_text ->
-      sendClassMsg cls' (mkSelector "labelNodeWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' labelNodeWithTextSelector (toNSString text)
 
 -- | @+ labelNodeWithAttributedText:@
 labelNodeWithAttributedText :: IsNSAttributedString attributedText => attributedText -> IO (Id SKLabelNode)
 labelNodeWithAttributedText attributedText =
   do
     cls' <- getRequiredClass "SKLabelNode"
-    withObjCPtr attributedText $ \raw_attributedText ->
-      sendClassMsg cls' (mkSelector "labelNodeWithAttributedText:") (retPtr retVoid) [argPtr (castPtr raw_attributedText :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' labelNodeWithAttributedTextSelector (toNSAttributedString attributedText)
 
 -- | @+ labelNodeWithFontNamed:@
 labelNodeWithFontNamed :: IsNSString fontName => fontName -> IO (Id SKLabelNode)
 labelNodeWithFontNamed fontName =
   do
     cls' <- getRequiredClass "SKLabelNode"
-    withObjCPtr fontName $ \raw_fontName ->
-      sendClassMsg cls' (mkSelector "labelNodeWithFontNamed:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' labelNodeWithFontNamedSelector (toNSString fontName)
 
 -- | @- initWithFontNamed:@
 initWithFontNamed :: (IsSKLabelNode skLabelNode, IsNSString fontName) => skLabelNode -> fontName -> IO (Id SKLabelNode)
-initWithFontNamed skLabelNode  fontName =
-  withObjCPtr fontName $ \raw_fontName ->
-      sendMsg skLabelNode (mkSelector "initWithFontNamed:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ())] >>= ownedObject . castPtr
+initWithFontNamed skLabelNode fontName =
+  sendOwnedMessage skLabelNode initWithFontNamedSelector (toNSString fontName)
 
 -- | @- verticalAlignmentMode@
 verticalAlignmentMode :: IsSKLabelNode skLabelNode => skLabelNode -> IO SKLabelVerticalAlignmentMode
-verticalAlignmentMode skLabelNode  =
-    fmap (coerce :: CLong -> SKLabelVerticalAlignmentMode) $ sendMsg skLabelNode (mkSelector "verticalAlignmentMode") retCLong []
+verticalAlignmentMode skLabelNode =
+  sendMessage skLabelNode verticalAlignmentModeSelector
 
 -- | @- setVerticalAlignmentMode:@
 setVerticalAlignmentMode :: IsSKLabelNode skLabelNode => skLabelNode -> SKLabelVerticalAlignmentMode -> IO ()
-setVerticalAlignmentMode skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setVerticalAlignmentMode:") retVoid [argCLong (coerce value)]
+setVerticalAlignmentMode skLabelNode value =
+  sendMessage skLabelNode setVerticalAlignmentModeSelector value
 
 -- | @- horizontalAlignmentMode@
 horizontalAlignmentMode :: IsSKLabelNode skLabelNode => skLabelNode -> IO SKLabelHorizontalAlignmentMode
-horizontalAlignmentMode skLabelNode  =
-    fmap (coerce :: CLong -> SKLabelHorizontalAlignmentMode) $ sendMsg skLabelNode (mkSelector "horizontalAlignmentMode") retCLong []
+horizontalAlignmentMode skLabelNode =
+  sendMessage skLabelNode horizontalAlignmentModeSelector
 
 -- | @- setHorizontalAlignmentMode:@
 setHorizontalAlignmentMode :: IsSKLabelNode skLabelNode => skLabelNode -> SKLabelHorizontalAlignmentMode -> IO ()
-setHorizontalAlignmentMode skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setHorizontalAlignmentMode:") retVoid [argCLong (coerce value)]
+setHorizontalAlignmentMode skLabelNode value =
+  sendMessage skLabelNode setHorizontalAlignmentModeSelector value
 
 -- | Determines the number of lines to draw. The default value is 1 (single line). A value of 0 means no limit.   If the height of the text reaches the # of lines the text will be truncated using the line break mode.
 --
 -- ObjC selector: @- numberOfLines@
 numberOfLines :: IsSKLabelNode skLabelNode => skLabelNode -> IO CLong
-numberOfLines skLabelNode  =
-    sendMsg skLabelNode (mkSelector "numberOfLines") retCLong []
+numberOfLines skLabelNode =
+  sendMessage skLabelNode numberOfLinesSelector
 
 -- | Determines the number of lines to draw. The default value is 1 (single line). A value of 0 means no limit.   If the height of the text reaches the # of lines the text will be truncated using the line break mode.
 --
 -- ObjC selector: @- setNumberOfLines:@
 setNumberOfLines :: IsSKLabelNode skLabelNode => skLabelNode -> CLong -> IO ()
-setNumberOfLines skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setNumberOfLines:") retVoid [argCLong value]
+setNumberOfLines skLabelNode value =
+  sendMessage skLabelNode setNumberOfLinesSelector value
 
 -- | Determines the line break mode for multiple lines.   Default is NSLineBreakByTruncatingTail
 --
 -- ObjC selector: @- lineBreakMode@
 lineBreakMode :: IsSKLabelNode skLabelNode => skLabelNode -> IO NSLineBreakMode
-lineBreakMode skLabelNode  =
-    fmap (coerce :: CULong -> NSLineBreakMode) $ sendMsg skLabelNode (mkSelector "lineBreakMode") retCULong []
+lineBreakMode skLabelNode =
+  sendMessage skLabelNode lineBreakModeSelector
 
 -- | Determines the line break mode for multiple lines.   Default is NSLineBreakByTruncatingTail
 --
 -- ObjC selector: @- setLineBreakMode:@
 setLineBreakMode :: IsSKLabelNode skLabelNode => skLabelNode -> NSLineBreakMode -> IO ()
-setLineBreakMode skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setLineBreakMode:") retVoid [argCULong (coerce value)]
+setLineBreakMode skLabelNode value =
+  sendMessage skLabelNode setLineBreakModeSelector value
 
 -- | If nonzero, this is used when determining layout width for multiline labels.   Default is zero.
 --
 -- ObjC selector: @- preferredMaxLayoutWidth@
 preferredMaxLayoutWidth :: IsSKLabelNode skLabelNode => skLabelNode -> IO CDouble
-preferredMaxLayoutWidth skLabelNode  =
-    sendMsg skLabelNode (mkSelector "preferredMaxLayoutWidth") retCDouble []
+preferredMaxLayoutWidth skLabelNode =
+  sendMessage skLabelNode preferredMaxLayoutWidthSelector
 
 -- | If nonzero, this is used when determining layout width for multiline labels.   Default is zero.
 --
 -- ObjC selector: @- setPreferredMaxLayoutWidth:@
 setPreferredMaxLayoutWidth :: IsSKLabelNode skLabelNode => skLabelNode -> CDouble -> IO ()
-setPreferredMaxLayoutWidth skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setPreferredMaxLayoutWidth:") retVoid [argCDouble value]
+setPreferredMaxLayoutWidth skLabelNode value =
+  sendMessage skLabelNode setPreferredMaxLayoutWidthSelector value
 
 -- | @- fontName@
 fontName :: IsSKLabelNode skLabelNode => skLabelNode -> IO (Id NSString)
-fontName skLabelNode  =
-    sendMsg skLabelNode (mkSelector "fontName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontName skLabelNode =
+  sendMessage skLabelNode fontNameSelector
 
 -- | @- setFontName:@
 setFontName :: (IsSKLabelNode skLabelNode, IsNSString value) => skLabelNode -> value -> IO ()
-setFontName skLabelNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skLabelNode (mkSelector "setFontName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFontName skLabelNode value =
+  sendMessage skLabelNode setFontNameSelector (toNSString value)
 
 -- | @- text@
 text :: IsSKLabelNode skLabelNode => skLabelNode -> IO (Id NSString)
-text skLabelNode  =
-    sendMsg skLabelNode (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text skLabelNode =
+  sendMessage skLabelNode textSelector
 
 -- | @- setText:@
 setText :: (IsSKLabelNode skLabelNode, IsNSString value) => skLabelNode -> value -> IO ()
-setText skLabelNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skLabelNode (mkSelector "setText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setText skLabelNode value =
+  sendMessage skLabelNode setTextSelector (toNSString value)
 
 -- | @- attributedText@
 attributedText :: IsSKLabelNode skLabelNode => skLabelNode -> IO (Id NSAttributedString)
-attributedText skLabelNode  =
-    sendMsg skLabelNode (mkSelector "attributedText") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedText skLabelNode =
+  sendMessage skLabelNode attributedTextSelector
 
 -- | @- setAttributedText:@
 setAttributedText :: (IsSKLabelNode skLabelNode, IsNSAttributedString value) => skLabelNode -> value -> IO ()
-setAttributedText skLabelNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skLabelNode (mkSelector "setAttributedText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedText skLabelNode value =
+  sendMessage skLabelNode setAttributedTextSelector (toNSAttributedString value)
 
 -- | @- fontSize@
 fontSize :: IsSKLabelNode skLabelNode => skLabelNode -> IO CDouble
-fontSize skLabelNode  =
-    sendMsg skLabelNode (mkSelector "fontSize") retCDouble []
+fontSize skLabelNode =
+  sendMessage skLabelNode fontSizeSelector
 
 -- | @- setFontSize:@
 setFontSize :: IsSKLabelNode skLabelNode => skLabelNode -> CDouble -> IO ()
-setFontSize skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setFontSize:") retVoid [argCDouble value]
+setFontSize skLabelNode value =
+  sendMessage skLabelNode setFontSizeSelector value
 
 -- | Base color that the text is rendered with (if supported by the font)
 --
 -- ObjC selector: @- fontColor@
 fontColor :: IsSKLabelNode skLabelNode => skLabelNode -> IO (Id NSColor)
-fontColor skLabelNode  =
-    sendMsg skLabelNode (mkSelector "fontColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontColor skLabelNode =
+  sendMessage skLabelNode fontColorSelector
 
 -- | Base color that the text is rendered with (if supported by the font)
 --
 -- ObjC selector: @- setFontColor:@
 setFontColor :: (IsSKLabelNode skLabelNode, IsNSColor value) => skLabelNode -> value -> IO ()
-setFontColor skLabelNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skLabelNode (mkSelector "setFontColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFontColor skLabelNode value =
+  sendMessage skLabelNode setFontColorSelector (toNSColor value)
 
 -- | Controls the blending between the rendered text and a color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- colorBlendFactor@
 colorBlendFactor :: IsSKLabelNode skLabelNode => skLabelNode -> IO CDouble
-colorBlendFactor skLabelNode  =
-    sendMsg skLabelNode (mkSelector "colorBlendFactor") retCDouble []
+colorBlendFactor skLabelNode =
+  sendMessage skLabelNode colorBlendFactorSelector
 
 -- | Controls the blending between the rendered text and a color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- setColorBlendFactor:@
 setColorBlendFactor :: IsSKLabelNode skLabelNode => skLabelNode -> CDouble -> IO ()
-setColorBlendFactor skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setColorBlendFactor:") retVoid [argCDouble value]
+setColorBlendFactor skLabelNode value =
+  sendMessage skLabelNode setColorBlendFactorSelector value
 
 -- | Color to be blended with the text based on the colorBlendFactor
 --
 -- ObjC selector: @- color@
 color :: IsSKLabelNode skLabelNode => skLabelNode -> IO (Id NSColor)
-color skLabelNode  =
-    sendMsg skLabelNode (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color skLabelNode =
+  sendMessage skLabelNode colorSelector
 
 -- | Color to be blended with the text based on the colorBlendFactor
 --
 -- ObjC selector: @- setColor:@
 setColor :: (IsSKLabelNode skLabelNode, IsNSColor value) => skLabelNode -> value -> IO ()
-setColor skLabelNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skLabelNode (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor skLabelNode value =
+  sendMessage skLabelNode setColorSelector (toNSColor value)
 
 -- | Sets the blend mode to use when composing the sprite with the final framebuffer.
 --
@@ -302,8 +290,8 @@ setColor skLabelNode  value =
 --
 -- ObjC selector: @- blendMode@
 blendMode :: IsSKLabelNode skLabelNode => skLabelNode -> IO SKBlendMode
-blendMode skLabelNode  =
-    fmap (coerce :: CLong -> SKBlendMode) $ sendMsg skLabelNode (mkSelector "blendMode") retCLong []
+blendMode skLabelNode =
+  sendMessage skLabelNode blendModeSelector
 
 -- | Sets the blend mode to use when composing the sprite with the final framebuffer.
 --
@@ -311,130 +299,130 @@ blendMode skLabelNode  =
 --
 -- ObjC selector: @- setBlendMode:@
 setBlendMode :: IsSKLabelNode skLabelNode => skLabelNode -> SKBlendMode -> IO ()
-setBlendMode skLabelNode  value =
-    sendMsg skLabelNode (mkSelector "setBlendMode:") retVoid [argCLong (coerce value)]
+setBlendMode skLabelNode value =
+  sendMessage skLabelNode setBlendModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @labelNodeWithText:@
-labelNodeWithTextSelector :: Selector
+labelNodeWithTextSelector :: Selector '[Id NSString] (Id SKLabelNode)
 labelNodeWithTextSelector = mkSelector "labelNodeWithText:"
 
 -- | @Selector@ for @labelNodeWithAttributedText:@
-labelNodeWithAttributedTextSelector :: Selector
+labelNodeWithAttributedTextSelector :: Selector '[Id NSAttributedString] (Id SKLabelNode)
 labelNodeWithAttributedTextSelector = mkSelector "labelNodeWithAttributedText:"
 
 -- | @Selector@ for @labelNodeWithFontNamed:@
-labelNodeWithFontNamedSelector :: Selector
+labelNodeWithFontNamedSelector :: Selector '[Id NSString] (Id SKLabelNode)
 labelNodeWithFontNamedSelector = mkSelector "labelNodeWithFontNamed:"
 
 -- | @Selector@ for @initWithFontNamed:@
-initWithFontNamedSelector :: Selector
+initWithFontNamedSelector :: Selector '[Id NSString] (Id SKLabelNode)
 initWithFontNamedSelector = mkSelector "initWithFontNamed:"
 
 -- | @Selector@ for @verticalAlignmentMode@
-verticalAlignmentModeSelector :: Selector
+verticalAlignmentModeSelector :: Selector '[] SKLabelVerticalAlignmentMode
 verticalAlignmentModeSelector = mkSelector "verticalAlignmentMode"
 
 -- | @Selector@ for @setVerticalAlignmentMode:@
-setVerticalAlignmentModeSelector :: Selector
+setVerticalAlignmentModeSelector :: Selector '[SKLabelVerticalAlignmentMode] ()
 setVerticalAlignmentModeSelector = mkSelector "setVerticalAlignmentMode:"
 
 -- | @Selector@ for @horizontalAlignmentMode@
-horizontalAlignmentModeSelector :: Selector
+horizontalAlignmentModeSelector :: Selector '[] SKLabelHorizontalAlignmentMode
 horizontalAlignmentModeSelector = mkSelector "horizontalAlignmentMode"
 
 -- | @Selector@ for @setHorizontalAlignmentMode:@
-setHorizontalAlignmentModeSelector :: Selector
+setHorizontalAlignmentModeSelector :: Selector '[SKLabelHorizontalAlignmentMode] ()
 setHorizontalAlignmentModeSelector = mkSelector "setHorizontalAlignmentMode:"
 
 -- | @Selector@ for @numberOfLines@
-numberOfLinesSelector :: Selector
+numberOfLinesSelector :: Selector '[] CLong
 numberOfLinesSelector = mkSelector "numberOfLines"
 
 -- | @Selector@ for @setNumberOfLines:@
-setNumberOfLinesSelector :: Selector
+setNumberOfLinesSelector :: Selector '[CLong] ()
 setNumberOfLinesSelector = mkSelector "setNumberOfLines:"
 
 -- | @Selector@ for @lineBreakMode@
-lineBreakModeSelector :: Selector
+lineBreakModeSelector :: Selector '[] NSLineBreakMode
 lineBreakModeSelector = mkSelector "lineBreakMode"
 
 -- | @Selector@ for @setLineBreakMode:@
-setLineBreakModeSelector :: Selector
+setLineBreakModeSelector :: Selector '[NSLineBreakMode] ()
 setLineBreakModeSelector = mkSelector "setLineBreakMode:"
 
 -- | @Selector@ for @preferredMaxLayoutWidth@
-preferredMaxLayoutWidthSelector :: Selector
+preferredMaxLayoutWidthSelector :: Selector '[] CDouble
 preferredMaxLayoutWidthSelector = mkSelector "preferredMaxLayoutWidth"
 
 -- | @Selector@ for @setPreferredMaxLayoutWidth:@
-setPreferredMaxLayoutWidthSelector :: Selector
+setPreferredMaxLayoutWidthSelector :: Selector '[CDouble] ()
 setPreferredMaxLayoutWidthSelector = mkSelector "setPreferredMaxLayoutWidth:"
 
 -- | @Selector@ for @fontName@
-fontNameSelector :: Selector
+fontNameSelector :: Selector '[] (Id NSString)
 fontNameSelector = mkSelector "fontName"
 
 -- | @Selector@ for @setFontName:@
-setFontNameSelector :: Selector
+setFontNameSelector :: Selector '[Id NSString] ()
 setFontNameSelector = mkSelector "setFontName:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @setText:@
-setTextSelector :: Selector
+setTextSelector :: Selector '[Id NSString] ()
 setTextSelector = mkSelector "setText:"
 
 -- | @Selector@ for @attributedText@
-attributedTextSelector :: Selector
+attributedTextSelector :: Selector '[] (Id NSAttributedString)
 attributedTextSelector = mkSelector "attributedText"
 
 -- | @Selector@ for @setAttributedText:@
-setAttributedTextSelector :: Selector
+setAttributedTextSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTextSelector = mkSelector "setAttributedText:"
 
 -- | @Selector@ for @fontSize@
-fontSizeSelector :: Selector
+fontSizeSelector :: Selector '[] CDouble
 fontSizeSelector = mkSelector "fontSize"
 
 -- | @Selector@ for @setFontSize:@
-setFontSizeSelector :: Selector
+setFontSizeSelector :: Selector '[CDouble] ()
 setFontSizeSelector = mkSelector "setFontSize:"
 
 -- | @Selector@ for @fontColor@
-fontColorSelector :: Selector
+fontColorSelector :: Selector '[] (Id NSColor)
 fontColorSelector = mkSelector "fontColor"
 
 -- | @Selector@ for @setFontColor:@
-setFontColorSelector :: Selector
+setFontColorSelector :: Selector '[Id NSColor] ()
 setFontColorSelector = mkSelector "setFontColor:"
 
 -- | @Selector@ for @colorBlendFactor@
-colorBlendFactorSelector :: Selector
+colorBlendFactorSelector :: Selector '[] CDouble
 colorBlendFactorSelector = mkSelector "colorBlendFactor"
 
 -- | @Selector@ for @setColorBlendFactor:@
-setColorBlendFactorSelector :: Selector
+setColorBlendFactorSelector :: Selector '[CDouble] ()
 setColorBlendFactorSelector = mkSelector "setColorBlendFactor:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @blendMode@
-blendModeSelector :: Selector
+blendModeSelector :: Selector '[] SKBlendMode
 blendModeSelector = mkSelector "blendMode"
 
 -- | @Selector@ for @setBlendMode:@
-setBlendModeSelector :: Selector
+setBlendModeSelector :: Selector '[SKBlendMode] ()
 setBlendModeSelector = mkSelector "setBlendMode:"
 

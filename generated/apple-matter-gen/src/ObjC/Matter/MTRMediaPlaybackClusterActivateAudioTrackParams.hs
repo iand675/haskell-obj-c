@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRMediaPlaybackClusterActivateAudioTrackParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , trackIDSelector
-  , setTrackIDSelector
   , audioOutputIndexSelector
-  , setAudioOutputIndexSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setAudioOutputIndexSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTrackIDSelector
+  , timedInvokeTimeoutMsSelector
+  , trackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- trackID@
 trackID :: IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams => mtrMediaPlaybackClusterActivateAudioTrackParams -> IO (Id NSString)
-trackID mtrMediaPlaybackClusterActivateAudioTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "trackID") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackID mtrMediaPlaybackClusterActivateAudioTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams trackIDSelector
 
 -- | @- setTrackID:@
 setTrackID :: (IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams, IsNSString value) => mtrMediaPlaybackClusterActivateAudioTrackParams -> value -> IO ()
-setTrackID mtrMediaPlaybackClusterActivateAudioTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "setTrackID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackID mtrMediaPlaybackClusterActivateAudioTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams setTrackIDSelector (toNSString value)
 
 -- | @- audioOutputIndex@
 audioOutputIndex :: IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams => mtrMediaPlaybackClusterActivateAudioTrackParams -> IO (Id NSNumber)
-audioOutputIndex mtrMediaPlaybackClusterActivateAudioTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "audioOutputIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioOutputIndex mtrMediaPlaybackClusterActivateAudioTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams audioOutputIndexSelector
 
 -- | @- setAudioOutputIndex:@
 setAudioOutputIndex :: (IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams, IsNSNumber value) => mtrMediaPlaybackClusterActivateAudioTrackParams -> value -> IO ()
-setAudioOutputIndex mtrMediaPlaybackClusterActivateAudioTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "setAudioOutputIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioOutputIndex mtrMediaPlaybackClusterActivateAudioTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams setAudioOutputIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setAudioOutputIndex mtrMediaPlaybackClusterActivateAudioTrackParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams => mtrMediaPlaybackClusterActivateAudioTrackParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams, IsNSNumber value) => mtrMediaPlaybackClusterActivateAudioTrackParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateAudioTrackParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams => mtrMediaPlaybackClusterActivateAudioTrackParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMediaPlaybackClusterActivateAudioTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMediaPlaybackClusterActivateAudioTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrMediaPlaybackClusterActivateAudioTrackParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMediaPlaybackClusterActivateAudioTrackParams mtrMediaPlaybackClusterActivateAudioTrackParams, IsNSNumber value) => mtrMediaPlaybackClusterActivateAudioTrackParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMediaPlaybackClusterActivateAudioTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateAudioTrackParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMediaPlaybackClusterActivateAudioTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateAudioTrackParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] (Id NSString)
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @setTrackID:@
-setTrackIDSelector :: Selector
+setTrackIDSelector :: Selector '[Id NSString] ()
 setTrackIDSelector = mkSelector "setTrackID:"
 
 -- | @Selector@ for @audioOutputIndex@
-audioOutputIndexSelector :: Selector
+audioOutputIndexSelector :: Selector '[] (Id NSNumber)
 audioOutputIndexSelector = mkSelector "audioOutputIndex"
 
 -- | @Selector@ for @setAudioOutputIndex:@
-setAudioOutputIndexSelector :: Selector
+setAudioOutputIndexSelector :: Selector '[Id NSNumber] ()
 setAudioOutputIndexSelector = mkSelector "setAudioOutputIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

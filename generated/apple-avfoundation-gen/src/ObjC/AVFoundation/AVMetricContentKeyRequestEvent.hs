@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.AVFoundation.AVMetricContentKeyRequestEvent
   , mediaType
   , isClientInitiated
   , mediaResourceRequestEvent
-  , initSelector
-  , newSelector
   , contentKeySpecifierSelector
-  , mediaTypeSelector
+  , initSelector
   , isClientInitiatedSelector
   , mediaResourceRequestEventSelector
+  , mediaTypeSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,69 +40,69 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricContentKeyRequestEvent avMetricContentKeyRequestEvent => avMetricContentKeyRequestEvent -> IO (Id AVMetricContentKeyRequestEvent)
-init_ avMetricContentKeyRequestEvent  =
-    sendMsg avMetricContentKeyRequestEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricContentKeyRequestEvent =
+  sendOwnedMessage avMetricContentKeyRequestEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricContentKeyRequestEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricContentKeyRequestEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the content key specifier for the request.
 --
 -- ObjC selector: @- contentKeySpecifier@
 contentKeySpecifier :: IsAVMetricContentKeyRequestEvent avMetricContentKeyRequestEvent => avMetricContentKeyRequestEvent -> IO (Id AVContentKeySpecifier)
-contentKeySpecifier avMetricContentKeyRequestEvent  =
-    sendMsg avMetricContentKeyRequestEvent (mkSelector "contentKeySpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentKeySpecifier avMetricContentKeyRequestEvent =
+  sendMessage avMetricContentKeyRequestEvent contentKeySpecifierSelector
 
 -- | Returns the media type. If the value cannot be determined, returns AVMediaTypeMuxed.
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVMetricContentKeyRequestEvent avMetricContentKeyRequestEvent => avMetricContentKeyRequestEvent -> IO (Id NSString)
-mediaType avMetricContentKeyRequestEvent  =
-    sendMsg avMetricContentKeyRequestEvent (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avMetricContentKeyRequestEvent =
+  sendMessage avMetricContentKeyRequestEvent mediaTypeSelector
 
 -- | Returns whether the content key resource request was initiated by the client.
 --
 -- ObjC selector: @- isClientInitiated@
 isClientInitiated :: IsAVMetricContentKeyRequestEvent avMetricContentKeyRequestEvent => avMetricContentKeyRequestEvent -> IO Bool
-isClientInitiated avMetricContentKeyRequestEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricContentKeyRequestEvent (mkSelector "isClientInitiated") retCULong []
+isClientInitiated avMetricContentKeyRequestEvent =
+  sendMessage avMetricContentKeyRequestEvent isClientInitiatedSelector
 
 -- | Returns the media resource request event which was used to satisfy the content key.
 --
 -- ObjC selector: @- mediaResourceRequestEvent@
 mediaResourceRequestEvent :: IsAVMetricContentKeyRequestEvent avMetricContentKeyRequestEvent => avMetricContentKeyRequestEvent -> IO (Id AVMetricMediaResourceRequestEvent)
-mediaResourceRequestEvent avMetricContentKeyRequestEvent  =
-    sendMsg avMetricContentKeyRequestEvent (mkSelector "mediaResourceRequestEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaResourceRequestEvent avMetricContentKeyRequestEvent =
+  sendMessage avMetricContentKeyRequestEvent mediaResourceRequestEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricContentKeyRequestEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricContentKeyRequestEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @contentKeySpecifier@
-contentKeySpecifierSelector :: Selector
+contentKeySpecifierSelector :: Selector '[] (Id AVContentKeySpecifier)
 contentKeySpecifierSelector = mkSelector "contentKeySpecifier"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @isClientInitiated@
-isClientInitiatedSelector :: Selector
+isClientInitiatedSelector :: Selector '[] Bool
 isClientInitiatedSelector = mkSelector "isClientInitiated"
 
 -- | @Selector@ for @mediaResourceRequestEvent@
-mediaResourceRequestEventSelector :: Selector
+mediaResourceRequestEventSelector :: Selector '[] (Id AVMetricMediaResourceRequestEvent)
 mediaResourceRequestEventSelector = mkSelector "mediaResourceRequestEvent"
 

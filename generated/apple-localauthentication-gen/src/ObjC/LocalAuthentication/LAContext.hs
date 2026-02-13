@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,27 +35,27 @@ module ObjC.LocalAuthentication.LAContext
   , biometryType
   , evaluatedPolicyDomainState
   , domainState
-  , canEvaluatePolicy_errorSelector
-  , evaluatePolicy_localizedReason_replySelector
-  , invalidateSelector
-  , setCredential_typeSelector
-  , isCredentialSetSelector
-  , evaluateAccessControl_operation_localizedReason_replySelector
-  , localizedFallbackTitleSelector
-  , setLocalizedFallbackTitleSelector
-  , maxBiometryFailuresSelector
-  , setMaxBiometryFailuresSelector
-  , localizedCancelTitleSelector
-  , setLocalizedCancelTitleSelector
-  , touchIDAuthenticationAllowableReuseDurationSelector
-  , setTouchIDAuthenticationAllowableReuseDurationSelector
-  , localizedReasonSelector
-  , setLocalizedReasonSelector
-  , interactionNotAllowedSelector
-  , setInteractionNotAllowedSelector
   , biometryTypeSelector
-  , evaluatedPolicyDomainStateSelector
+  , canEvaluatePolicy_errorSelector
   , domainStateSelector
+  , evaluateAccessControl_operation_localizedReason_replySelector
+  , evaluatePolicy_localizedReason_replySelector
+  , evaluatedPolicyDomainStateSelector
+  , interactionNotAllowedSelector
+  , invalidateSelector
+  , isCredentialSetSelector
+  , localizedCancelTitleSelector
+  , localizedFallbackTitleSelector
+  , localizedReasonSelector
+  , maxBiometryFailuresSelector
+  , setCredential_typeSelector
+  , setInteractionNotAllowedSelector
+  , setLocalizedCancelTitleSelector
+  , setLocalizedFallbackTitleSelector
+  , setLocalizedReasonSelector
+  , setMaxBiometryFailuresSelector
+  , setTouchIDAuthenticationAllowableReuseDurationSelector
+  , touchIDAuthenticationAllowableReuseDurationSelector
 
   -- * Enum types
   , LAAccessControlOperation(LAAccessControlOperation)
@@ -84,15 +85,11 @@ module ObjC.LocalAuthentication.LAContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -116,9 +113,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- canEvaluatePolicy:error:@
 canEvaluatePolicy_error :: (IsLAContext laContext, IsNSError error_) => laContext -> LAPolicy -> error_ -> IO Bool
-canEvaluatePolicy_error laContext  policy error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg laContext (mkSelector "canEvaluatePolicy:error:") retCULong [argCLong (coerce policy), argPtr (castPtr raw_error_ :: Ptr ())]
+canEvaluatePolicy_error laContext policy error_ =
+  sendMessage laContext canEvaluatePolicy_errorSelector policy (toNSError error_)
 
 -- | Evaluates the specified policy.
 --
@@ -152,9 +148,8 @@ canEvaluatePolicy_error laContext  policy error_ =
 --
 -- ObjC selector: @- evaluatePolicy:localizedReason:reply:@
 evaluatePolicy_localizedReason_reply :: (IsLAContext laContext, IsNSString localizedReason) => laContext -> LAPolicy -> localizedReason -> Ptr () -> IO ()
-evaluatePolicy_localizedReason_reply laContext  policy localizedReason reply =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg laContext (mkSelector "evaluatePolicy:localizedReason:reply:") retVoid [argCLong (coerce policy), argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr reply :: Ptr ())]
+evaluatePolicy_localizedReason_reply laContext policy localizedReason reply =
+  sendMessage laContext evaluatePolicy_localizedReason_replySelector policy (toNSString localizedReason) reply
 
 -- | Invalidates the context.
 --
@@ -166,8 +161,8 @@ evaluatePolicy_localizedReason_reply laContext  policy localizedReason reply =
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsLAContext laContext => laContext -> IO ()
-invalidate laContext  =
-    sendMsg laContext (mkSelector "invalidate") retVoid []
+invalidate laContext =
+  sendMessage laContext invalidateSelector
 
 -- | Sets a credential to this context.
 --
@@ -181,9 +176,8 @@ invalidate laContext  =
 --
 -- ObjC selector: @- setCredential:type:@
 setCredential_type :: (IsLAContext laContext, IsNSData credential) => laContext -> credential -> LACredentialType -> IO Bool
-setCredential_type laContext  credential type_ =
-  withObjCPtr credential $ \raw_credential ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg laContext (mkSelector "setCredential:type:") retCULong [argPtr (castPtr raw_credential :: Ptr ()), argCLong (coerce type_)]
+setCredential_type laContext credential type_ =
+  sendMessage laContext setCredential_typeSelector (toNSData credential) type_
 
 -- | Reveals if credential was set with this context.
 --
@@ -193,8 +187,8 @@ setCredential_type laContext  credential type_ =
 --
 -- ObjC selector: @- isCredentialSet:@
 isCredentialSet :: IsLAContext laContext => laContext -> LACredentialType -> IO Bool
-isCredentialSet laContext  type_ =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laContext (mkSelector "isCredentialSet:") retCULong [argCLong (coerce type_)]
+isCredentialSet laContext type_ =
+  sendMessage laContext isCredentialSetSelector type_
 
 -- | Evaluates access control object for the specified operation.
 --
@@ -222,9 +216,8 @@ isCredentialSet laContext  type_ =
 --
 -- ObjC selector: @- evaluateAccessControl:operation:localizedReason:reply:@
 evaluateAccessControl_operation_localizedReason_reply :: (IsLAContext laContext, IsNSString localizedReason) => laContext -> Ptr () -> LAAccessControlOperation -> localizedReason -> Ptr () -> IO ()
-evaluateAccessControl_operation_localizedReason_reply laContext  accessControl operation localizedReason reply =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg laContext (mkSelector "evaluateAccessControl:operation:localizedReason:reply:") retVoid [argPtr accessControl, argCLong (coerce operation), argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr reply :: Ptr ())]
+evaluateAccessControl_operation_localizedReason_reply laContext accessControl operation localizedReason reply =
+  sendMessage laContext evaluateAccessControl_operation_localizedReason_replySelector accessControl operation (toNSString localizedReason) reply
 
 -- | Fallback button title.
 --
@@ -232,8 +225,8 @@ evaluateAccessControl_operation_localizedReason_reply laContext  accessControl o
 --
 -- ObjC selector: @- localizedFallbackTitle@
 localizedFallbackTitle :: IsLAContext laContext => laContext -> IO (Id NSString)
-localizedFallbackTitle laContext  =
-    sendMsg laContext (mkSelector "localizedFallbackTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedFallbackTitle laContext =
+  sendMessage laContext localizedFallbackTitleSelector
 
 -- | Fallback button title.
 --
@@ -241,24 +234,22 @@ localizedFallbackTitle laContext  =
 --
 -- ObjC selector: @- setLocalizedFallbackTitle:@
 setLocalizedFallbackTitle :: (IsLAContext laContext, IsNSString value) => laContext -> value -> IO ()
-setLocalizedFallbackTitle laContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg laContext (mkSelector "setLocalizedFallbackTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedFallbackTitle laContext value =
+  sendMessage laContext setLocalizedFallbackTitleSelector (toNSString value)
 
 -- | This property is deprecated and setting it has no effect.
 --
 -- ObjC selector: @- maxBiometryFailures@
 maxBiometryFailures :: IsLAContext laContext => laContext -> IO (Id NSNumber)
-maxBiometryFailures laContext  =
-    sendMsg laContext (mkSelector "maxBiometryFailures") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxBiometryFailures laContext =
+  sendMessage laContext maxBiometryFailuresSelector
 
 -- | This property is deprecated and setting it has no effect.
 --
 -- ObjC selector: @- setMaxBiometryFailures:@
 setMaxBiometryFailures :: (IsLAContext laContext, IsNSNumber value) => laContext -> value -> IO ()
-setMaxBiometryFailures laContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg laContext (mkSelector "setMaxBiometryFailures:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxBiometryFailures laContext value =
+  sendMessage laContext setMaxBiometryFailuresSelector (toNSNumber value)
 
 -- | Cancel button title.
 --
@@ -266,8 +257,8 @@ setMaxBiometryFailures laContext  value =
 --
 -- ObjC selector: @- localizedCancelTitle@
 localizedCancelTitle :: IsLAContext laContext => laContext -> IO (Id NSString)
-localizedCancelTitle laContext  =
-    sendMsg laContext (mkSelector "localizedCancelTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedCancelTitle laContext =
+  sendMessage laContext localizedCancelTitleSelector
 
 -- | Cancel button title.
 --
@@ -275,9 +266,8 @@ localizedCancelTitle laContext  =
 --
 -- ObjC selector: @- setLocalizedCancelTitle:@
 setLocalizedCancelTitle :: (IsLAContext laContext, IsNSString value) => laContext -> value -> IO ()
-setLocalizedCancelTitle laContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg laContext (mkSelector "setLocalizedCancelTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedCancelTitle laContext value =
+  sendMessage laContext setLocalizedCancelTitleSelector (toNSString value)
 
 -- | Time interval for accepting a successful Touch ID or Face ID device unlock (on the lock screen) from the past.
 --
@@ -293,8 +283,8 @@ setLocalizedCancelTitle laContext  value =
 --
 -- ObjC selector: @- touchIDAuthenticationAllowableReuseDuration@
 touchIDAuthenticationAllowableReuseDuration :: IsLAContext laContext => laContext -> IO CDouble
-touchIDAuthenticationAllowableReuseDuration laContext  =
-    sendMsg laContext (mkSelector "touchIDAuthenticationAllowableReuseDuration") retCDouble []
+touchIDAuthenticationAllowableReuseDuration laContext =
+  sendMessage laContext touchIDAuthenticationAllowableReuseDurationSelector
 
 -- | Time interval for accepting a successful Touch ID or Face ID device unlock (on the lock screen) from the past.
 --
@@ -310,8 +300,8 @@ touchIDAuthenticationAllowableReuseDuration laContext  =
 --
 -- ObjC selector: @- setTouchIDAuthenticationAllowableReuseDuration:@
 setTouchIDAuthenticationAllowableReuseDuration :: IsLAContext laContext => laContext -> CDouble -> IO ()
-setTouchIDAuthenticationAllowableReuseDuration laContext  value =
-    sendMsg laContext (mkSelector "setTouchIDAuthenticationAllowableReuseDuration:") retVoid [argCDouble value]
+setTouchIDAuthenticationAllowableReuseDuration laContext value =
+  sendMessage laContext setTouchIDAuthenticationAllowableReuseDurationSelector value
 
 -- | Allows setting the default localized authentication reason on context.
 --
@@ -319,8 +309,8 @@ setTouchIDAuthenticationAllowableReuseDuration laContext  value =
 --
 -- ObjC selector: @- localizedReason@
 localizedReason :: IsLAContext laContext => laContext -> IO (Id NSString)
-localizedReason laContext  =
-    sendMsg laContext (mkSelector "localizedReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedReason laContext =
+  sendMessage laContext localizedReasonSelector
 
 -- | Allows setting the default localized authentication reason on context.
 --
@@ -328,9 +318,8 @@ localizedReason laContext  =
 --
 -- ObjC selector: @- setLocalizedReason:@
 setLocalizedReason :: (IsLAContext laContext, IsNSString value) => laContext -> value -> IO ()
-setLocalizedReason laContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg laContext (mkSelector "setLocalizedReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedReason laContext value =
+  sendMessage laContext setLocalizedReasonSelector (toNSString value)
 
 -- | Allows running authentication in non-interactive mode.
 --
@@ -340,8 +329,8 @@ setLocalizedReason laContext  value =
 --
 -- ObjC selector: @- interactionNotAllowed@
 interactionNotAllowed :: IsLAContext laContext => laContext -> IO Bool
-interactionNotAllowed laContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laContext (mkSelector "interactionNotAllowed") retCULong []
+interactionNotAllowed laContext =
+  sendMessage laContext interactionNotAllowedSelector
 
 -- | Allows running authentication in non-interactive mode.
 --
@@ -351,15 +340,15 @@ interactionNotAllowed laContext  =
 --
 -- ObjC selector: @- setInteractionNotAllowed:@
 setInteractionNotAllowed :: IsLAContext laContext => laContext -> Bool -> IO ()
-setInteractionNotAllowed laContext  value =
-    sendMsg laContext (mkSelector "setInteractionNotAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setInteractionNotAllowed laContext value =
+  sendMessage laContext setInteractionNotAllowedSelector value
 
 -- | Indicates the type of the biometry supported by the device.
 --
 -- ObjC selector: @- biometryType@
 biometryType :: IsLAContext laContext => laContext -> IO LABiometryType
-biometryType laContext  =
-    fmap (coerce :: CLong -> LABiometryType) $ sendMsg laContext (mkSelector "biometryType") retCLong []
+biometryType laContext =
+  sendMessage laContext biometryTypeSelector
 
 -- | Contains policy domain state.
 --
@@ -369,101 +358,101 @@ biometryType laContext  =
 --
 -- ObjC selector: @- evaluatedPolicyDomainState@
 evaluatedPolicyDomainState :: IsLAContext laContext => laContext -> IO (Id NSData)
-evaluatedPolicyDomainState laContext  =
-    sendMsg laContext (mkSelector "evaluatedPolicyDomainState") (retPtr retVoid) [] >>= retainedObject . castPtr
+evaluatedPolicyDomainState laContext =
+  sendMessage laContext evaluatedPolicyDomainStateSelector
 
 -- | Contains authentication domain state.
 --
 -- ObjC selector: @- domainState@
 domainState :: IsLAContext laContext => laContext -> IO (Id LADomainState)
-domainState laContext  =
-    sendMsg laContext (mkSelector "domainState") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainState laContext =
+  sendMessage laContext domainStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canEvaluatePolicy:error:@
-canEvaluatePolicy_errorSelector :: Selector
+canEvaluatePolicy_errorSelector :: Selector '[LAPolicy, Id NSError] Bool
 canEvaluatePolicy_errorSelector = mkSelector "canEvaluatePolicy:error:"
 
 -- | @Selector@ for @evaluatePolicy:localizedReason:reply:@
-evaluatePolicy_localizedReason_replySelector :: Selector
+evaluatePolicy_localizedReason_replySelector :: Selector '[LAPolicy, Id NSString, Ptr ()] ()
 evaluatePolicy_localizedReason_replySelector = mkSelector "evaluatePolicy:localizedReason:reply:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @setCredential:type:@
-setCredential_typeSelector :: Selector
+setCredential_typeSelector :: Selector '[Id NSData, LACredentialType] Bool
 setCredential_typeSelector = mkSelector "setCredential:type:"
 
 -- | @Selector@ for @isCredentialSet:@
-isCredentialSetSelector :: Selector
+isCredentialSetSelector :: Selector '[LACredentialType] Bool
 isCredentialSetSelector = mkSelector "isCredentialSet:"
 
 -- | @Selector@ for @evaluateAccessControl:operation:localizedReason:reply:@
-evaluateAccessControl_operation_localizedReason_replySelector :: Selector
+evaluateAccessControl_operation_localizedReason_replySelector :: Selector '[Ptr (), LAAccessControlOperation, Id NSString, Ptr ()] ()
 evaluateAccessControl_operation_localizedReason_replySelector = mkSelector "evaluateAccessControl:operation:localizedReason:reply:"
 
 -- | @Selector@ for @localizedFallbackTitle@
-localizedFallbackTitleSelector :: Selector
+localizedFallbackTitleSelector :: Selector '[] (Id NSString)
 localizedFallbackTitleSelector = mkSelector "localizedFallbackTitle"
 
 -- | @Selector@ for @setLocalizedFallbackTitle:@
-setLocalizedFallbackTitleSelector :: Selector
+setLocalizedFallbackTitleSelector :: Selector '[Id NSString] ()
 setLocalizedFallbackTitleSelector = mkSelector "setLocalizedFallbackTitle:"
 
 -- | @Selector@ for @maxBiometryFailures@
-maxBiometryFailuresSelector :: Selector
+maxBiometryFailuresSelector :: Selector '[] (Id NSNumber)
 maxBiometryFailuresSelector = mkSelector "maxBiometryFailures"
 
 -- | @Selector@ for @setMaxBiometryFailures:@
-setMaxBiometryFailuresSelector :: Selector
+setMaxBiometryFailuresSelector :: Selector '[Id NSNumber] ()
 setMaxBiometryFailuresSelector = mkSelector "setMaxBiometryFailures:"
 
 -- | @Selector@ for @localizedCancelTitle@
-localizedCancelTitleSelector :: Selector
+localizedCancelTitleSelector :: Selector '[] (Id NSString)
 localizedCancelTitleSelector = mkSelector "localizedCancelTitle"
 
 -- | @Selector@ for @setLocalizedCancelTitle:@
-setLocalizedCancelTitleSelector :: Selector
+setLocalizedCancelTitleSelector :: Selector '[Id NSString] ()
 setLocalizedCancelTitleSelector = mkSelector "setLocalizedCancelTitle:"
 
 -- | @Selector@ for @touchIDAuthenticationAllowableReuseDuration@
-touchIDAuthenticationAllowableReuseDurationSelector :: Selector
+touchIDAuthenticationAllowableReuseDurationSelector :: Selector '[] CDouble
 touchIDAuthenticationAllowableReuseDurationSelector = mkSelector "touchIDAuthenticationAllowableReuseDuration"
 
 -- | @Selector@ for @setTouchIDAuthenticationAllowableReuseDuration:@
-setTouchIDAuthenticationAllowableReuseDurationSelector :: Selector
+setTouchIDAuthenticationAllowableReuseDurationSelector :: Selector '[CDouble] ()
 setTouchIDAuthenticationAllowableReuseDurationSelector = mkSelector "setTouchIDAuthenticationAllowableReuseDuration:"
 
 -- | @Selector@ for @localizedReason@
-localizedReasonSelector :: Selector
+localizedReasonSelector :: Selector '[] (Id NSString)
 localizedReasonSelector = mkSelector "localizedReason"
 
 -- | @Selector@ for @setLocalizedReason:@
-setLocalizedReasonSelector :: Selector
+setLocalizedReasonSelector :: Selector '[Id NSString] ()
 setLocalizedReasonSelector = mkSelector "setLocalizedReason:"
 
 -- | @Selector@ for @interactionNotAllowed@
-interactionNotAllowedSelector :: Selector
+interactionNotAllowedSelector :: Selector '[] Bool
 interactionNotAllowedSelector = mkSelector "interactionNotAllowed"
 
 -- | @Selector@ for @setInteractionNotAllowed:@
-setInteractionNotAllowedSelector :: Selector
+setInteractionNotAllowedSelector :: Selector '[Bool] ()
 setInteractionNotAllowedSelector = mkSelector "setInteractionNotAllowed:"
 
 -- | @Selector@ for @biometryType@
-biometryTypeSelector :: Selector
+biometryTypeSelector :: Selector '[] LABiometryType
 biometryTypeSelector = mkSelector "biometryType"
 
 -- | @Selector@ for @evaluatedPolicyDomainState@
-evaluatedPolicyDomainStateSelector :: Selector
+evaluatedPolicyDomainStateSelector :: Selector '[] (Id NSData)
 evaluatedPolicyDomainStateSelector = mkSelector "evaluatedPolicyDomainState"
 
 -- | @Selector@ for @domainState@
-domainStateSelector :: Selector
+domainStateSelector :: Selector '[] (Id LADomainState)
 domainStateSelector = mkSelector "domainState"
 

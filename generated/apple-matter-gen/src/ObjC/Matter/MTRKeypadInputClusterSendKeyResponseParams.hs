@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTRKeypadInputClusterSendKeyResponseParams
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
   , initWithResponseValue_errorSelector
-  , statusSelector
   , setStatusSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRKeypadInputClusterSendKeyResponseParams mtrKeypadInputClusterSendKeyResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrKeypadInputClusterSendKeyResponseParams -> responseValue -> error_ -> IO (Id MTRKeypadInputClusterSendKeyResponseParams)
-initWithResponseValue_error mtrKeypadInputClusterSendKeyResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrKeypadInputClusterSendKeyResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrKeypadInputClusterSendKeyResponseParams responseValue error_ =
+  sendOwnedMessage mtrKeypadInputClusterSendKeyResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRKeypadInputClusterSendKeyResponseParams mtrKeypadInputClusterSendKeyResponseParams => mtrKeypadInputClusterSendKeyResponseParams -> IO (Id NSNumber)
-status mtrKeypadInputClusterSendKeyResponseParams  =
-    sendMsg mtrKeypadInputClusterSendKeyResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrKeypadInputClusterSendKeyResponseParams =
+  sendMessage mtrKeypadInputClusterSendKeyResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRKeypadInputClusterSendKeyResponseParams mtrKeypadInputClusterSendKeyResponseParams, IsNSNumber value) => mtrKeypadInputClusterSendKeyResponseParams -> value -> IO ()
-setStatus mtrKeypadInputClusterSendKeyResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrKeypadInputClusterSendKeyResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrKeypadInputClusterSendKeyResponseParams value =
+  sendMessage mtrKeypadInputClusterSendKeyResponseParams setStatusSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +61,8 @@ setStatus mtrKeypadInputClusterSendKeyResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRKeypadInputClusterSendKeyResponseParams mtrKeypadInputClusterSendKeyResponseParams => mtrKeypadInputClusterSendKeyResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyResponseParams  =
-    sendMsg mtrKeypadInputClusterSendKeyResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyResponseParams =
+  sendMessage mtrKeypadInputClusterSendKeyResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,31 +72,30 @@ timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRKeypadInputClusterSendKeyResponseParams mtrKeypadInputClusterSendKeyResponseParams, IsNSNumber value) => mtrKeypadInputClusterSendKeyResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrKeypadInputClusterSendKeyResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrKeypadInputClusterSendKeyResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrKeypadInputClusterSendKeyResponseParams value =
+  sendMessage mtrKeypadInputClusterSendKeyResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRKeypadInputClusterSendKeyResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

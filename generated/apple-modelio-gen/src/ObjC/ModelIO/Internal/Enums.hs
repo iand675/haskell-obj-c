@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ModelIO.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MDLAnimatedValueInterpolation@
 newtype MDLAnimatedValueInterpolation = MDLAnimatedValueInterpolation CULong
@@ -21,6 +24,16 @@ pattern MDLAnimatedValueInterpolationConstant = MDLAnimatedValueInterpolation 0
 
 pattern MDLAnimatedValueInterpolationLinear :: MDLAnimatedValueInterpolation
 pattern MDLAnimatedValueInterpolationLinear = MDLAnimatedValueInterpolation 1
+
+instance ObjCArgument MDLAnimatedValueInterpolation where
+  withObjCArg (MDLAnimatedValueInterpolation x) k = k (argCULong x)
+
+instance ObjCReturn MDLAnimatedValueInterpolation where
+  type RawReturn MDLAnimatedValueInterpolation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLAnimatedValueInterpolation x)
+  fromOwned x = pure (MDLAnimatedValueInterpolation x)
 
 -- | MDLCamera
 --
@@ -164,6 +177,16 @@ pattern MDLCameraProjectionPerspective = MDLCameraProjection 0
 pattern MDLCameraProjectionOrthographic :: MDLCameraProjection
 pattern MDLCameraProjectionOrthographic = MDLCameraProjection 1
 
+instance ObjCArgument MDLCameraProjection where
+  withObjCArg (MDLCameraProjection x) k = k (argCULong x)
+
+instance ObjCReturn MDLCameraProjection where
+  type RawReturn MDLCameraProjection = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLCameraProjection x)
+  fromOwned x = pure (MDLCameraProjection x)
+
 -- | @MDLDataPrecision@
 newtype MDLDataPrecision = MDLDataPrecision CULong
   deriving stock (Eq, Ord, Show)
@@ -177,6 +200,16 @@ pattern MDLDataPrecisionFloat = MDLDataPrecision 1
 
 pattern MDLDataPrecisionDouble :: MDLDataPrecision
 pattern MDLDataPrecisionDouble = MDLDataPrecision 2
+
+instance ObjCArgument MDLDataPrecision where
+  withObjCArg (MDLDataPrecision x) k = k (argCULong x)
+
+instance ObjCReturn MDLDataPrecision where
+  type RawReturn MDLDataPrecision = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLDataPrecision x)
+  fromOwned x = pure (MDLDataPrecision x)
 
 -- | @MDLGeometryType@
 newtype MDLGeometryType = MDLGeometryType CLong
@@ -200,6 +233,16 @@ pattern MDLGeometryTypeQuads = MDLGeometryType 4
 
 pattern MDLGeometryTypeVariableTopology :: MDLGeometryType
 pattern MDLGeometryTypeVariableTopology = MDLGeometryType 5
+
+instance ObjCArgument MDLGeometryType where
+  withObjCArg (MDLGeometryType x) k = k (argCLong x)
+
+instance ObjCReturn MDLGeometryType where
+  type RawReturn MDLGeometryType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLGeometryType x)
+  fromOwned x = pure (MDLGeometryType x)
 
 -- | @MDLIndexBitDepth@
 newtype MDLIndexBitDepth = MDLIndexBitDepth CULong
@@ -226,6 +269,16 @@ pattern MDLIndexBitDepthUInt32 = MDLIndexBitDepth 32
 
 pattern MDLIndexBitDepthUint32 :: MDLIndexBitDepth
 pattern MDLIndexBitDepthUint32 = MDLIndexBitDepth 32
+
+instance ObjCArgument MDLIndexBitDepth where
+  withObjCArg (MDLIndexBitDepth x) k = k (argCULong x)
+
+instance ObjCReturn MDLIndexBitDepth where
+  type RawReturn MDLIndexBitDepth = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLIndexBitDepth x)
+  fromOwned x = pure (MDLIndexBitDepth x)
 
 -- | @MDLLightType@
 newtype MDLLightType = MDLLightType CULong
@@ -268,6 +321,16 @@ pattern MDLLightTypeProbe = MDLLightType 10
 pattern MDLLightTypeEnvironment :: MDLLightType
 pattern MDLLightTypeEnvironment = MDLLightType 11
 
+instance ObjCArgument MDLLightType where
+  withObjCArg (MDLLightType x) k = k (argCULong x)
+
+instance ObjCReturn MDLLightType where
+  type RawReturn MDLLightType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLLightType x)
+  fromOwned x = pure (MDLLightType x)
+
 -- | @MDLMaterialFace@
 newtype MDLMaterialFace = MDLMaterialFace CULong
   deriving stock (Eq, Ord, Show)
@@ -282,6 +345,16 @@ pattern MDLMaterialFaceBack = MDLMaterialFace 1
 pattern MDLMaterialFaceDoubleSided :: MDLMaterialFace
 pattern MDLMaterialFaceDoubleSided = MDLMaterialFace 2
 
+instance ObjCArgument MDLMaterialFace where
+  withObjCArg (MDLMaterialFace x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialFace where
+  type RawReturn MDLMaterialFace = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialFace x)
+  fromOwned x = pure (MDLMaterialFace x)
+
 -- | @MDLMaterialMipMapFilterMode@
 newtype MDLMaterialMipMapFilterMode = MDLMaterialMipMapFilterMode CULong
   deriving stock (Eq, Ord, Show)
@@ -292,6 +365,16 @@ pattern MDLMaterialMipMapFilterModeNearest = MDLMaterialMipMapFilterMode 0
 
 pattern MDLMaterialMipMapFilterModeLinear :: MDLMaterialMipMapFilterMode
 pattern MDLMaterialMipMapFilterModeLinear = MDLMaterialMipMapFilterMode 1
+
+instance ObjCArgument MDLMaterialMipMapFilterMode where
+  withObjCArg (MDLMaterialMipMapFilterMode x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialMipMapFilterMode where
+  type RawReturn MDLMaterialMipMapFilterMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialMipMapFilterMode x)
+  fromOwned x = pure (MDLMaterialMipMapFilterMode x)
 
 -- | @MDLMaterialPropertyType@
 newtype MDLMaterialPropertyType = MDLMaterialPropertyType CULong
@@ -330,6 +413,16 @@ pattern MDLMaterialPropertyTypeMatrix44 = MDLMaterialPropertyType 9
 
 pattern MDLMaterialPropertyTypeBuffer :: MDLMaterialPropertyType
 pattern MDLMaterialPropertyTypeBuffer = MDLMaterialPropertyType 10
+
+instance ObjCArgument MDLMaterialPropertyType where
+  withObjCArg (MDLMaterialPropertyType x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialPropertyType where
+  type RawReturn MDLMaterialPropertyType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialPropertyType x)
+  fromOwned x = pure (MDLMaterialPropertyType x)
 
 -- | MDLMaterialSemantic
 --
@@ -469,6 +562,16 @@ pattern MDLMaterialSemanticNone = MDLMaterialSemantic 32768
 pattern MDLMaterialSemanticUserDefined :: MDLMaterialSemantic
 pattern MDLMaterialSemanticUserDefined = MDLMaterialSemantic 32769
 
+instance ObjCArgument MDLMaterialSemantic where
+  withObjCArg (MDLMaterialSemantic x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialSemantic where
+  type RawReturn MDLMaterialSemantic = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialSemantic x)
+  fromOwned x = pure (MDLMaterialSemantic x)
+
 -- | @MDLMaterialTextureFilterMode@
 newtype MDLMaterialTextureFilterMode = MDLMaterialTextureFilterMode CULong
   deriving stock (Eq, Ord, Show)
@@ -479,6 +582,16 @@ pattern MDLMaterialTextureFilterModeNearest = MDLMaterialTextureFilterMode 0
 
 pattern MDLMaterialTextureFilterModeLinear :: MDLMaterialTextureFilterMode
 pattern MDLMaterialTextureFilterModeLinear = MDLMaterialTextureFilterMode 1
+
+instance ObjCArgument MDLMaterialTextureFilterMode where
+  withObjCArg (MDLMaterialTextureFilterMode x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialTextureFilterMode where
+  type RawReturn MDLMaterialTextureFilterMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialTextureFilterMode x)
+  fromOwned x = pure (MDLMaterialTextureFilterMode x)
 
 -- | Texture filtering
 -- | @MDLMaterialTextureWrapMode@
@@ -494,6 +607,16 @@ pattern MDLMaterialTextureWrapModeRepeat = MDLMaterialTextureWrapMode 1
 
 pattern MDLMaterialTextureWrapModeMirror :: MDLMaterialTextureWrapMode
 pattern MDLMaterialTextureWrapModeMirror = MDLMaterialTextureWrapMode 2
+
+instance ObjCArgument MDLMaterialTextureWrapMode where
+  withObjCArg (MDLMaterialTextureWrapMode x) k = k (argCULong x)
+
+instance ObjCReturn MDLMaterialTextureWrapMode where
+  type RawReturn MDLMaterialTextureWrapMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMaterialTextureWrapMode x)
+  fromOwned x = pure (MDLMaterialTextureWrapMode x)
 
 -- | MDLMeshBufferType
 --
@@ -512,6 +635,16 @@ pattern MDLMeshBufferTypeIndex = MDLMeshBufferType 2
 pattern MDLMeshBufferTypeCustom :: MDLMeshBufferType
 pattern MDLMeshBufferTypeCustom = MDLMeshBufferType 3
 
+instance ObjCArgument MDLMeshBufferType where
+  withObjCArg (MDLMeshBufferType x) k = k (argCULong x)
+
+instance ObjCReturn MDLMeshBufferType where
+  type RawReturn MDLMeshBufferType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLMeshBufferType x)
+  fromOwned x = pure (MDLMeshBufferType x)
+
 -- | @MDLProbePlacement@
 newtype MDLProbePlacement = MDLProbePlacement CLong
   deriving stock (Eq, Ord, Show)
@@ -522,6 +655,16 @@ pattern MDLProbePlacementUniformGrid = MDLProbePlacement 0
 
 pattern MDLProbePlacementIrradianceDistribution :: MDLProbePlacement
 pattern MDLProbePlacementIrradianceDistribution = MDLProbePlacement 1
+
+instance ObjCArgument MDLProbePlacement where
+  withObjCArg (MDLProbePlacement x) k = k (argCLong x)
+
+instance ObjCReturn MDLProbePlacement where
+  type RawReturn MDLProbePlacement = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLProbePlacement x)
+  fromOwned x = pure (MDLProbePlacement x)
 
 -- | The enoding of texel channel elements
 -- | @MDLTextureChannelEncoding@
@@ -562,6 +705,16 @@ pattern MDLTextureChannelEncodingFloat16SR = MDLTextureChannelEncoding 770
 pattern MDLTextureChannelEncodingFloat32 :: MDLTextureChannelEncoding
 pattern MDLTextureChannelEncodingFloat32 = MDLTextureChannelEncoding 260
 
+instance ObjCArgument MDLTextureChannelEncoding where
+  withObjCArg (MDLTextureChannelEncoding x) k = k (argCLong x)
+
+instance ObjCReturn MDLTextureChannelEncoding where
+  type RawReturn MDLTextureChannelEncoding = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLTextureChannelEncoding x)
+  fromOwned x = pure (MDLTextureChannelEncoding x)
+
 -- | @MDLTransformOpRotationOrder@
 newtype MDLTransformOpRotationOrder = MDLTransformOpRotationOrder CULong
   deriving stock (Eq, Ord, Show)
@@ -584,6 +737,16 @@ pattern MDLTransformOpRotationOrderZXY = MDLTransformOpRotationOrder 5
 
 pattern MDLTransformOpRotationOrderZYX :: MDLTransformOpRotationOrder
 pattern MDLTransformOpRotationOrderZYX = MDLTransformOpRotationOrder 6
+
+instance ObjCArgument MDLTransformOpRotationOrder where
+  withObjCArg (MDLTransformOpRotationOrder x) k = k (argCULong x)
+
+instance ObjCReturn MDLTransformOpRotationOrder where
+  type RawReturn MDLTransformOpRotationOrder = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLTransformOpRotationOrder x)
+  fromOwned x = pure (MDLTransformOpRotationOrder x)
 
 -- | MDLVertexFormat
 --
@@ -786,3 +949,13 @@ pattern MDLVertexFormatInt1010102Normalized = MDLVertexFormat 659460
 
 pattern MDLVertexFormatUInt1010102Normalized :: MDLVertexFormat
 pattern MDLVertexFormatUInt1010102Normalized = MDLVertexFormat 593924
+
+instance ObjCArgument MDLVertexFormat where
+  withObjCArg (MDLVertexFormat x) k = k (argCULong x)
+
+instance ObjCReturn MDLVertexFormat where
+  type RawReturn MDLVertexFormat = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MDLVertexFormat x)
+  fromOwned x = pure (MDLVertexFormat x)

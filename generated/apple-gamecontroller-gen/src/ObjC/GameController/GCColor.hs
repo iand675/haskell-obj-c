@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.GameController.GCColor
   , red
   , green
   , blue
+  , blueSelector
+  , greenSelector
   , initSelector
   , initWithRed_green_blueSelector
   , redSelector
-  , greenSelector
-  , blueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,50 +38,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGCColor gcColor => gcColor -> IO (Id GCColor)
-init_ gcColor  =
-    sendMsg gcColor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gcColor =
+  sendOwnedMessage gcColor initSelector
 
 -- | @- initWithRed:green:blue:@
 initWithRed_green_blue :: IsGCColor gcColor => gcColor -> CFloat -> CFloat -> CFloat -> IO (Id GCColor)
-initWithRed_green_blue gcColor  red green blue =
-    sendMsg gcColor (mkSelector "initWithRed:green:blue:") (retPtr retVoid) [argCFloat red, argCFloat green, argCFloat blue] >>= ownedObject . castPtr
+initWithRed_green_blue gcColor red green blue =
+  sendOwnedMessage gcColor initWithRed_green_blueSelector red green blue
 
 -- | @- red@
 red :: IsGCColor gcColor => gcColor -> IO CFloat
-red gcColor  =
-    sendMsg gcColor (mkSelector "red") retCFloat []
+red gcColor =
+  sendMessage gcColor redSelector
 
 -- | @- green@
 green :: IsGCColor gcColor => gcColor -> IO CFloat
-green gcColor  =
-    sendMsg gcColor (mkSelector "green") retCFloat []
+green gcColor =
+  sendMessage gcColor greenSelector
 
 -- | @- blue@
 blue :: IsGCColor gcColor => gcColor -> IO CFloat
-blue gcColor  =
-    sendMsg gcColor (mkSelector "blue") retCFloat []
+blue gcColor =
+  sendMessage gcColor blueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GCColor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRed:green:blue:@
-initWithRed_green_blueSelector :: Selector
+initWithRed_green_blueSelector :: Selector '[CFloat, CFloat, CFloat] (Id GCColor)
 initWithRed_green_blueSelector = mkSelector "initWithRed:green:blue:"
 
 -- | @Selector@ for @red@
-redSelector :: Selector
+redSelector :: Selector '[] CFloat
 redSelector = mkSelector "red"
 
 -- | @Selector@ for @green@
-greenSelector :: Selector
+greenSelector :: Selector '[] CFloat
 greenSelector = mkSelector "green"
 
 -- | @Selector@ for @blue@
-blueSelector :: Selector
+blueSelector :: Selector '[] CFloat
 blueSelector = mkSelector "blue"
 

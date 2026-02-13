@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.Matter.MTRDeviceControllerParameters
   , setConcurrentSubscriptionEstablishmentsAllowedOnThread
   , storageBehaviorConfiguration
   , setStorageBehaviorConfiguration
-  , setOperationalCertificateIssuer_queueSelector
-  , setOTAProviderDelegate_queueSelector
-  , productAttestationAuthorityCertificatesSelector
-  , setProductAttestationAuthorityCertificatesSelector
   , certificationDeclarationCertificatesSelector
-  , setCertificationDeclarationCertificatesSelector
-  , shouldAdvertiseOperationalSelector
-  , setShouldAdvertiseOperationalSelector
   , concurrentSubscriptionEstablishmentsAllowedOnThreadSelector
+  , productAttestationAuthorityCertificatesSelector
+  , setCertificationDeclarationCertificatesSelector
   , setConcurrentSubscriptionEstablishmentsAllowedOnThreadSelector
-  , storageBehaviorConfigurationSelector
+  , setOTAProviderDelegate_queueSelector
+  , setOperationalCertificateIssuer_queueSelector
+  , setProductAttestationAuthorityCertificatesSelector
+  , setShouldAdvertiseOperationalSelector
   , setStorageBehaviorConfigurationSelector
+  , shouldAdvertiseOperationalSelector
+  , storageBehaviorConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,17 +52,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setOperationalCertificateIssuer:queue:@
 setOperationalCertificateIssuer_queue :: (IsMTRDeviceControllerParameters mtrDeviceControllerParameters, IsNSObject queue) => mtrDeviceControllerParameters -> RawId -> queue -> IO ()
-setOperationalCertificateIssuer_queue mtrDeviceControllerParameters  operationalCertificateIssuer queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceControllerParameters (mkSelector "setOperationalCertificateIssuer:queue:") retVoid [argPtr (castPtr (unRawId operationalCertificateIssuer) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setOperationalCertificateIssuer_queue mtrDeviceControllerParameters operationalCertificateIssuer queue =
+  sendMessage mtrDeviceControllerParameters setOperationalCertificateIssuer_queueSelector operationalCertificateIssuer (toNSObject queue)
 
 -- | Set an MTROTAProviderDelegate to call (on the provided queue).  Only needs to be called if this controller should be able to handle OTA for devices.
 --
 -- ObjC selector: @- setOTAProviderDelegate:queue:@
 setOTAProviderDelegate_queue :: (IsMTRDeviceControllerParameters mtrDeviceControllerParameters, IsNSObject queue) => mtrDeviceControllerParameters -> RawId -> queue -> IO ()
-setOTAProviderDelegate_queue mtrDeviceControllerParameters  otaProviderDelegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceControllerParameters (mkSelector "setOTAProviderDelegate:queue:") retVoid [argPtr (castPtr (unRawId otaProviderDelegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setOTAProviderDelegate_queue mtrDeviceControllerParameters otaProviderDelegate queue =
+  sendMessage mtrDeviceControllerParameters setOTAProviderDelegate_queueSelector otaProviderDelegate (toNSObject queue)
 
 -- | The Product Attestation Authority certificates that are trusted to sign device attestation information (and in particular to sign Product Attestation Intermediate certificates, which then sign Device Attestation Certificates).
 --
@@ -73,8 +68,8 @@ setOTAProviderDelegate_queue mtrDeviceControllerParameters  otaProviderDelegate 
 --
 -- ObjC selector: @- productAttestationAuthorityCertificates@
 productAttestationAuthorityCertificates :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> IO (Id NSArray)
-productAttestationAuthorityCertificates mtrDeviceControllerParameters  =
-    sendMsg mtrDeviceControllerParameters (mkSelector "productAttestationAuthorityCertificates") (retPtr retVoid) [] >>= retainedObject . castPtr
+productAttestationAuthorityCertificates mtrDeviceControllerParameters =
+  sendMessage mtrDeviceControllerParameters productAttestationAuthorityCertificatesSelector
 
 -- | The Product Attestation Authority certificates that are trusted to sign device attestation information (and in particular to sign Product Attestation Intermediate certificates, which then sign Device Attestation Certificates).
 --
@@ -82,9 +77,8 @@ productAttestationAuthorityCertificates mtrDeviceControllerParameters  =
 --
 -- ObjC selector: @- setProductAttestationAuthorityCertificates:@
 setProductAttestationAuthorityCertificates :: (IsMTRDeviceControllerParameters mtrDeviceControllerParameters, IsNSArray value) => mtrDeviceControllerParameters -> value -> IO ()
-setProductAttestationAuthorityCertificates mtrDeviceControllerParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerParameters (mkSelector "setProductAttestationAuthorityCertificates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductAttestationAuthorityCertificates mtrDeviceControllerParameters value =
+  sendMessage mtrDeviceControllerParameters setProductAttestationAuthorityCertificatesSelector (toNSArray value)
 
 -- | The Certification Declaration certificates whose public keys correspond to private keys that are trusted to sign certification declarations.  Defaults to nil.
 --
@@ -92,8 +86,8 @@ setProductAttestationAuthorityCertificates mtrDeviceControllerParameters  value 
 --
 -- ObjC selector: @- certificationDeclarationCertificates@
 certificationDeclarationCertificates :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> IO (Id NSArray)
-certificationDeclarationCertificates mtrDeviceControllerParameters  =
-    sendMsg mtrDeviceControllerParameters (mkSelector "certificationDeclarationCertificates") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificationDeclarationCertificates mtrDeviceControllerParameters =
+  sendMessage mtrDeviceControllerParameters certificationDeclarationCertificatesSelector
 
 -- | The Certification Declaration certificates whose public keys correspond to private keys that are trusted to sign certification declarations.  Defaults to nil.
 --
@@ -101,23 +95,22 @@ certificationDeclarationCertificates mtrDeviceControllerParameters  =
 --
 -- ObjC selector: @- setCertificationDeclarationCertificates:@
 setCertificationDeclarationCertificates :: (IsMTRDeviceControllerParameters mtrDeviceControllerParameters, IsNSArray value) => mtrDeviceControllerParameters -> value -> IO ()
-setCertificationDeclarationCertificates mtrDeviceControllerParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerParameters (mkSelector "setCertificationDeclarationCertificates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificationDeclarationCertificates mtrDeviceControllerParameters value =
+  sendMessage mtrDeviceControllerParameters setCertificationDeclarationCertificatesSelector (toNSArray value)
 
 -- | Whether the controller should advertise its operational identity.  Defaults to NO.
 --
 -- ObjC selector: @- shouldAdvertiseOperational@
 shouldAdvertiseOperational :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> IO Bool
-shouldAdvertiseOperational mtrDeviceControllerParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceControllerParameters (mkSelector "shouldAdvertiseOperational") retCULong []
+shouldAdvertiseOperational mtrDeviceControllerParameters =
+  sendMessage mtrDeviceControllerParameters shouldAdvertiseOperationalSelector
 
 -- | Whether the controller should advertise its operational identity.  Defaults to NO.
 --
 -- ObjC selector: @- setShouldAdvertiseOperational:@
 setShouldAdvertiseOperational :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> Bool -> IO ()
-setShouldAdvertiseOperational mtrDeviceControllerParameters  value =
-    sendMsg mtrDeviceControllerParameters (mkSelector "setShouldAdvertiseOperational:") retVoid [argCULong (if value then 1 else 0)]
+setShouldAdvertiseOperational mtrDeviceControllerParameters value =
+  sendMessage mtrDeviceControllerParameters setShouldAdvertiseOperationalSelector value
 
 -- | Sets the maximum simultaneous subscription establishments that can be happening at one time for devices on Thread. This defaults to a large number.
 --
@@ -125,8 +118,8 @@ setShouldAdvertiseOperational mtrDeviceControllerParameters  value =
 --
 -- ObjC selector: @- concurrentSubscriptionEstablishmentsAllowedOnThread@
 concurrentSubscriptionEstablishmentsAllowedOnThread :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> IO CULong
-concurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParameters  =
-    sendMsg mtrDeviceControllerParameters (mkSelector "concurrentSubscriptionEstablishmentsAllowedOnThread") retCULong []
+concurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParameters =
+  sendMessage mtrDeviceControllerParameters concurrentSubscriptionEstablishmentsAllowedOnThreadSelector
 
 -- | Sets the maximum simultaneous subscription establishments that can be happening at one time for devices on Thread. This defaults to a large number.
 --
@@ -134,8 +127,8 @@ concurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParameter
 --
 -- ObjC selector: @- setConcurrentSubscriptionEstablishmentsAllowedOnThread:@
 setConcurrentSubscriptionEstablishmentsAllowedOnThread :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> CULong -> IO ()
-setConcurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParameters  value =
-    sendMsg mtrDeviceControllerParameters (mkSelector "setConcurrentSubscriptionEstablishmentsAllowedOnThread:") retVoid [argCULong value]
+setConcurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParameters value =
+  sendMessage mtrDeviceControllerParameters setConcurrentSubscriptionEstablishmentsAllowedOnThreadSelector value
 
 -- | Sets the storage behavior configuration - see MTRDeviceStorageBehaviorConfiguration.h for details
 --
@@ -143,8 +136,8 @@ setConcurrentSubscriptionEstablishmentsAllowedOnThread mtrDeviceControllerParame
 --
 -- ObjC selector: @- storageBehaviorConfiguration@
 storageBehaviorConfiguration :: IsMTRDeviceControllerParameters mtrDeviceControllerParameters => mtrDeviceControllerParameters -> IO (Id MTRDeviceStorageBehaviorConfiguration)
-storageBehaviorConfiguration mtrDeviceControllerParameters  =
-    sendMsg mtrDeviceControllerParameters (mkSelector "storageBehaviorConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+storageBehaviorConfiguration mtrDeviceControllerParameters =
+  sendMessage mtrDeviceControllerParameters storageBehaviorConfigurationSelector
 
 -- | Sets the storage behavior configuration - see MTRDeviceStorageBehaviorConfiguration.h for details
 --
@@ -152,59 +145,58 @@ storageBehaviorConfiguration mtrDeviceControllerParameters  =
 --
 -- ObjC selector: @- setStorageBehaviorConfiguration:@
 setStorageBehaviorConfiguration :: (IsMTRDeviceControllerParameters mtrDeviceControllerParameters, IsMTRDeviceStorageBehaviorConfiguration value) => mtrDeviceControllerParameters -> value -> IO ()
-setStorageBehaviorConfiguration mtrDeviceControllerParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerParameters (mkSelector "setStorageBehaviorConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStorageBehaviorConfiguration mtrDeviceControllerParameters value =
+  sendMessage mtrDeviceControllerParameters setStorageBehaviorConfigurationSelector (toMTRDeviceStorageBehaviorConfiguration value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setOperationalCertificateIssuer:queue:@
-setOperationalCertificateIssuer_queueSelector :: Selector
+setOperationalCertificateIssuer_queueSelector :: Selector '[RawId, Id NSObject] ()
 setOperationalCertificateIssuer_queueSelector = mkSelector "setOperationalCertificateIssuer:queue:"
 
 -- | @Selector@ for @setOTAProviderDelegate:queue:@
-setOTAProviderDelegate_queueSelector :: Selector
+setOTAProviderDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setOTAProviderDelegate_queueSelector = mkSelector "setOTAProviderDelegate:queue:"
 
 -- | @Selector@ for @productAttestationAuthorityCertificates@
-productAttestationAuthorityCertificatesSelector :: Selector
+productAttestationAuthorityCertificatesSelector :: Selector '[] (Id NSArray)
 productAttestationAuthorityCertificatesSelector = mkSelector "productAttestationAuthorityCertificates"
 
 -- | @Selector@ for @setProductAttestationAuthorityCertificates:@
-setProductAttestationAuthorityCertificatesSelector :: Selector
+setProductAttestationAuthorityCertificatesSelector :: Selector '[Id NSArray] ()
 setProductAttestationAuthorityCertificatesSelector = mkSelector "setProductAttestationAuthorityCertificates:"
 
 -- | @Selector@ for @certificationDeclarationCertificates@
-certificationDeclarationCertificatesSelector :: Selector
+certificationDeclarationCertificatesSelector :: Selector '[] (Id NSArray)
 certificationDeclarationCertificatesSelector = mkSelector "certificationDeclarationCertificates"
 
 -- | @Selector@ for @setCertificationDeclarationCertificates:@
-setCertificationDeclarationCertificatesSelector :: Selector
+setCertificationDeclarationCertificatesSelector :: Selector '[Id NSArray] ()
 setCertificationDeclarationCertificatesSelector = mkSelector "setCertificationDeclarationCertificates:"
 
 -- | @Selector@ for @shouldAdvertiseOperational@
-shouldAdvertiseOperationalSelector :: Selector
+shouldAdvertiseOperationalSelector :: Selector '[] Bool
 shouldAdvertiseOperationalSelector = mkSelector "shouldAdvertiseOperational"
 
 -- | @Selector@ for @setShouldAdvertiseOperational:@
-setShouldAdvertiseOperationalSelector :: Selector
+setShouldAdvertiseOperationalSelector :: Selector '[Bool] ()
 setShouldAdvertiseOperationalSelector = mkSelector "setShouldAdvertiseOperational:"
 
 -- | @Selector@ for @concurrentSubscriptionEstablishmentsAllowedOnThread@
-concurrentSubscriptionEstablishmentsAllowedOnThreadSelector :: Selector
+concurrentSubscriptionEstablishmentsAllowedOnThreadSelector :: Selector '[] CULong
 concurrentSubscriptionEstablishmentsAllowedOnThreadSelector = mkSelector "concurrentSubscriptionEstablishmentsAllowedOnThread"
 
 -- | @Selector@ for @setConcurrentSubscriptionEstablishmentsAllowedOnThread:@
-setConcurrentSubscriptionEstablishmentsAllowedOnThreadSelector :: Selector
+setConcurrentSubscriptionEstablishmentsAllowedOnThreadSelector :: Selector '[CULong] ()
 setConcurrentSubscriptionEstablishmentsAllowedOnThreadSelector = mkSelector "setConcurrentSubscriptionEstablishmentsAllowedOnThread:"
 
 -- | @Selector@ for @storageBehaviorConfiguration@
-storageBehaviorConfigurationSelector :: Selector
+storageBehaviorConfigurationSelector :: Selector '[] (Id MTRDeviceStorageBehaviorConfiguration)
 storageBehaviorConfigurationSelector = mkSelector "storageBehaviorConfiguration"
 
 -- | @Selector@ for @setStorageBehaviorConfiguration:@
-setStorageBehaviorConfigurationSelector :: Selector
+setStorageBehaviorConfigurationSelector :: Selector '[Id MTRDeviceStorageBehaviorConfiguration] ()
 setStorageBehaviorConfigurationSelector = mkSelector "setStorageBehaviorConfiguration:"
 

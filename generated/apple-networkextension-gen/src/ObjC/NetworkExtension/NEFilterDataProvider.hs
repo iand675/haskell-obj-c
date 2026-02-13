@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.NetworkExtension.NEFilterDataProvider
   , applySettings_completionHandler
   , resumeFlow_withVerdict
   , updateFlow_usingVerdict_forDirection
-  , handleNewFlowSelector
-  , handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector
-  , handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector
+  , applySettings_completionHandlerSelector
   , handleInboundDataCompleteForFlowSelector
+  , handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector
+  , handleNewFlowSelector
   , handleOutboundDataCompleteForFlowSelector
+  , handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector
   , handleRemediationForFlowSelector
   , handleRulesChangedSelector
-  , applySettings_completionHandlerSelector
   , resumeFlow_withVerdictSelector
   , updateFlow_usingVerdict_forDirectionSelector
 
@@ -40,15 +41,11 @@ module ObjC.NetworkExtension.NEFilterDataProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,9 +63,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- handleNewFlow:@
 handleNewFlow :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow) => neFilterDataProvider -> flow -> IO (Id NEFilterNewFlowVerdict)
-handleNewFlow neFilterDataProvider  flow =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterDataProvider (mkSelector "handleNewFlow:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ())] >>= retainedObject . castPtr
+handleNewFlow neFilterDataProvider flow =
+  sendMessage neFilterDataProvider handleNewFlowSelector (toNEFilterFlow flow)
 
 -- | handleInboundDataFromFlow:readBytesStartOffset:readBytes:
 --
@@ -84,10 +80,8 @@ handleNewFlow neFilterDataProvider  flow =
 --
 -- ObjC selector: @- handleInboundDataFromFlow:readBytesStartOffset:readBytes:@
 handleInboundDataFromFlow_readBytesStartOffset_readBytes :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow, IsNSData readBytes) => neFilterDataProvider -> flow -> CULong -> readBytes -> IO (Id NEFilterDataVerdict)
-handleInboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider  flow offset readBytes =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr readBytes $ \raw_readBytes ->
-        sendMsg neFilterDataProvider (mkSelector "handleInboundDataFromFlow:readBytesStartOffset:readBytes:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ()), argCULong offset, argPtr (castPtr raw_readBytes :: Ptr ())] >>= retainedObject . castPtr
+handleInboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider flow offset readBytes =
+  sendMessage neFilterDataProvider handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector (toNEFilterFlow flow) offset (toNSData readBytes)
 
 -- | handleOutboundDataFromFlow:readBytesStartOffset:readBytes:
 --
@@ -103,10 +97,8 @@ handleInboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider  f
 --
 -- ObjC selector: @- handleOutboundDataFromFlow:readBytesStartOffset:readBytes:@
 handleOutboundDataFromFlow_readBytesStartOffset_readBytes :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow, IsNSData readBytes) => neFilterDataProvider -> flow -> CULong -> readBytes -> IO (Id NEFilterDataVerdict)
-handleOutboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider  flow offset readBytes =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr readBytes $ \raw_readBytes ->
-        sendMsg neFilterDataProvider (mkSelector "handleOutboundDataFromFlow:readBytesStartOffset:readBytes:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ()), argCULong offset, argPtr (castPtr raw_readBytes :: Ptr ())] >>= retainedObject . castPtr
+handleOutboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider flow offset readBytes =
+  sendMessage neFilterDataProvider handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector (toNEFilterFlow flow) offset (toNSData readBytes)
 
 -- | handleInboundDataCompleteForFlow:
 --
@@ -118,9 +110,8 @@ handleOutboundDataFromFlow_readBytesStartOffset_readBytes neFilterDataProvider  
 --
 -- ObjC selector: @- handleInboundDataCompleteForFlow:@
 handleInboundDataCompleteForFlow :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow) => neFilterDataProvider -> flow -> IO (Id NEFilterDataVerdict)
-handleInboundDataCompleteForFlow neFilterDataProvider  flow =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterDataProvider (mkSelector "handleInboundDataCompleteForFlow:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ())] >>= retainedObject . castPtr
+handleInboundDataCompleteForFlow neFilterDataProvider flow =
+  sendMessage neFilterDataProvider handleInboundDataCompleteForFlowSelector (toNEFilterFlow flow)
 
 -- | handleOutboundDataCompleteForFlow:
 --
@@ -132,9 +123,8 @@ handleInboundDataCompleteForFlow neFilterDataProvider  flow =
 --
 -- ObjC selector: @- handleOutboundDataCompleteForFlow:@
 handleOutboundDataCompleteForFlow :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow) => neFilterDataProvider -> flow -> IO (Id NEFilterDataVerdict)
-handleOutboundDataCompleteForFlow neFilterDataProvider  flow =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterDataProvider (mkSelector "handleOutboundDataCompleteForFlow:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ())] >>= retainedObject . castPtr
+handleOutboundDataCompleteForFlow neFilterDataProvider flow =
+  sendMessage neFilterDataProvider handleOutboundDataCompleteForFlowSelector (toNEFilterFlow flow)
 
 -- | handleRemediationForFlow:
 --
@@ -146,9 +136,8 @@ handleOutboundDataCompleteForFlow neFilterDataProvider  flow =
 --
 -- ObjC selector: @- handleRemediationForFlow:@
 handleRemediationForFlow :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow) => neFilterDataProvider -> flow -> IO (Id NEFilterRemediationVerdict)
-handleRemediationForFlow neFilterDataProvider  flow =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterDataProvider (mkSelector "handleRemediationForFlow:") (retPtr retVoid) [argPtr (castPtr raw_flow :: Ptr ())] >>= retainedObject . castPtr
+handleRemediationForFlow neFilterDataProvider flow =
+  sendMessage neFilterDataProvider handleRemediationForFlowSelector (toNEFilterFlow flow)
 
 -- | handleRulesChanged
 --
@@ -156,8 +145,8 @@ handleRemediationForFlow neFilterDataProvider  flow =
 --
 -- ObjC selector: @- handleRulesChanged@
 handleRulesChanged :: IsNEFilterDataProvider neFilterDataProvider => neFilterDataProvider -> IO ()
-handleRulesChanged neFilterDataProvider  =
-    sendMsg neFilterDataProvider (mkSelector "handleRulesChanged") retVoid []
+handleRulesChanged neFilterDataProvider =
+  sendMessage neFilterDataProvider handleRulesChangedSelector
 
 -- | applyFilterRules:defaultAction:withCompletionHandler:
 --
@@ -169,9 +158,8 @@ handleRulesChanged neFilterDataProvider  =
 --
 -- ObjC selector: @- applySettings:completionHandler:@
 applySettings_completionHandler :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterSettings settings) => neFilterDataProvider -> settings -> Ptr () -> IO ()
-applySettings_completionHandler neFilterDataProvider  settings completionHandler =
-  withObjCPtr settings $ \raw_settings ->
-      sendMsg neFilterDataProvider (mkSelector "applySettings:completionHandler:") retVoid [argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+applySettings_completionHandler neFilterDataProvider settings completionHandler =
+  sendMessage neFilterDataProvider applySettings_completionHandlerSelector (toNEFilterSettings settings) completionHandler
 
 -- | resumeFlow:withVerdict:
 --
@@ -183,10 +171,8 @@ applySettings_completionHandler neFilterDataProvider  settings completionHandler
 --
 -- ObjC selector: @- resumeFlow:withVerdict:@
 resumeFlow_withVerdict :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterFlow flow, IsNEFilterVerdict verdict) => neFilterDataProvider -> flow -> verdict -> IO ()
-resumeFlow_withVerdict neFilterDataProvider  flow verdict =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr verdict $ \raw_verdict ->
-        sendMsg neFilterDataProvider (mkSelector "resumeFlow:withVerdict:") retVoid [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr raw_verdict :: Ptr ())]
+resumeFlow_withVerdict neFilterDataProvider flow verdict =
+  sendMessage neFilterDataProvider resumeFlow_withVerdictSelector (toNEFilterFlow flow) (toNEFilterVerdict verdict)
 
 -- | updateFlow:withVerdict:forDirection:
 --
@@ -200,52 +186,50 @@ resumeFlow_withVerdict neFilterDataProvider  flow verdict =
 --
 -- ObjC selector: @- updateFlow:usingVerdict:forDirection:@
 updateFlow_usingVerdict_forDirection :: (IsNEFilterDataProvider neFilterDataProvider, IsNEFilterSocketFlow flow, IsNEFilterDataVerdict verdict) => neFilterDataProvider -> flow -> verdict -> NETrafficDirection -> IO ()
-updateFlow_usingVerdict_forDirection neFilterDataProvider  flow verdict direction =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr verdict $ \raw_verdict ->
-        sendMsg neFilterDataProvider (mkSelector "updateFlow:usingVerdict:forDirection:") retVoid [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr raw_verdict :: Ptr ()), argCLong (coerce direction)]
+updateFlow_usingVerdict_forDirection neFilterDataProvider flow verdict direction =
+  sendMessage neFilterDataProvider updateFlow_usingVerdict_forDirectionSelector (toNEFilterSocketFlow flow) (toNEFilterDataVerdict verdict) direction
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @handleNewFlow:@
-handleNewFlowSelector :: Selector
+handleNewFlowSelector :: Selector '[Id NEFilterFlow] (Id NEFilterNewFlowVerdict)
 handleNewFlowSelector = mkSelector "handleNewFlow:"
 
 -- | @Selector@ for @handleInboundDataFromFlow:readBytesStartOffset:readBytes:@
-handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector :: Selector
+handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector :: Selector '[Id NEFilterFlow, CULong, Id NSData] (Id NEFilterDataVerdict)
 handleInboundDataFromFlow_readBytesStartOffset_readBytesSelector = mkSelector "handleInboundDataFromFlow:readBytesStartOffset:readBytes:"
 
 -- | @Selector@ for @handleOutboundDataFromFlow:readBytesStartOffset:readBytes:@
-handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector :: Selector
+handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector :: Selector '[Id NEFilterFlow, CULong, Id NSData] (Id NEFilterDataVerdict)
 handleOutboundDataFromFlow_readBytesStartOffset_readBytesSelector = mkSelector "handleOutboundDataFromFlow:readBytesStartOffset:readBytes:"
 
 -- | @Selector@ for @handleInboundDataCompleteForFlow:@
-handleInboundDataCompleteForFlowSelector :: Selector
+handleInboundDataCompleteForFlowSelector :: Selector '[Id NEFilterFlow] (Id NEFilterDataVerdict)
 handleInboundDataCompleteForFlowSelector = mkSelector "handleInboundDataCompleteForFlow:"
 
 -- | @Selector@ for @handleOutboundDataCompleteForFlow:@
-handleOutboundDataCompleteForFlowSelector :: Selector
+handleOutboundDataCompleteForFlowSelector :: Selector '[Id NEFilterFlow] (Id NEFilterDataVerdict)
 handleOutboundDataCompleteForFlowSelector = mkSelector "handleOutboundDataCompleteForFlow:"
 
 -- | @Selector@ for @handleRemediationForFlow:@
-handleRemediationForFlowSelector :: Selector
+handleRemediationForFlowSelector :: Selector '[Id NEFilterFlow] (Id NEFilterRemediationVerdict)
 handleRemediationForFlowSelector = mkSelector "handleRemediationForFlow:"
 
 -- | @Selector@ for @handleRulesChanged@
-handleRulesChangedSelector :: Selector
+handleRulesChangedSelector :: Selector '[] ()
 handleRulesChangedSelector = mkSelector "handleRulesChanged"
 
 -- | @Selector@ for @applySettings:completionHandler:@
-applySettings_completionHandlerSelector :: Selector
+applySettings_completionHandlerSelector :: Selector '[Id NEFilterSettings, Ptr ()] ()
 applySettings_completionHandlerSelector = mkSelector "applySettings:completionHandler:"
 
 -- | @Selector@ for @resumeFlow:withVerdict:@
-resumeFlow_withVerdictSelector :: Selector
+resumeFlow_withVerdictSelector :: Selector '[Id NEFilterFlow, Id NEFilterVerdict] ()
 resumeFlow_withVerdictSelector = mkSelector "resumeFlow:withVerdict:"
 
 -- | @Selector@ for @updateFlow:usingVerdict:forDirection:@
-updateFlow_usingVerdict_forDirectionSelector :: Selector
+updateFlow_usingVerdict_forDirectionSelector :: Selector '[Id NEFilterSocketFlow, Id NEFilterDataVerdict, NETrafficDirection] ()
 updateFlow_usingVerdict_forDirectionSelector = mkSelector "updateFlow:usingVerdict:forDirection:"
 

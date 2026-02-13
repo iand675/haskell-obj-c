@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Matter.MTRClusterOvenMode
   , new
   , initWithDevice_endpointID_queue
   , changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeSupportedModesWithParamsSelector
-  , readAttributeCurrentModeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentModeWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSupportedModesWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,121 +48,108 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
 changeToModeWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTROvenModeClusterChangeToModeParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterOvenMode -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterOvenMode  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterOvenMode (mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterOvenMode params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterOvenMode changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector (toMTROvenModeClusterChangeToModeParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeSupportedModesWithParams:@
 readAttributeSupportedModesWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeSupportedModesWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeSupportedModesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedModesWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeSupportedModesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentModeWithParams:@
 readAttributeCurrentModeWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeCurrentModeWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeCurrentModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentModeWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeCurrentModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRReadParams params) => mtrClusterOvenMode -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterOvenMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterOvenMode (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterOvenMode params =
+  sendMessage mtrClusterOvenMode readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterOvenMode mtrClusterOvenMode => mtrClusterOvenMode -> IO (Id MTRClusterOvenMode)
-init_ mtrClusterOvenMode  =
-    sendMsg mtrClusterOvenMode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterOvenMode =
+  sendOwnedMessage mtrClusterOvenMode initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterOvenMode)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterOvenMode"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterOvenMode mtrClusterOvenMode, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterOvenMode -> device -> endpointID -> queue -> IO (Id MTRClusterOvenMode)
-initWithDevice_endpointID_queue mtrClusterOvenMode  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterOvenMode (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterOvenMode device endpointID queue =
+  sendOwnedMessage mtrClusterOvenMode initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
-changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTROvenModeClusterChangeToModeParams, Id NSArray, Id NSNumber, Ptr ()] ()
 changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeSupportedModesWithParams:@
-readAttributeSupportedModesWithParamsSelector :: Selector
+readAttributeSupportedModesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedModesWithParamsSelector = mkSelector "readAttributeSupportedModesWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentModeWithParams:@
-readAttributeCurrentModeWithParamsSelector :: Selector
+readAttributeCurrentModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentModeWithParamsSelector = mkSelector "readAttributeCurrentModeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterOvenMode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterOvenMode)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterOvenMode)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

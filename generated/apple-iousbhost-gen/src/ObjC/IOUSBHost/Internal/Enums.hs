@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IOUSBHost.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | IOUSBHostAbortOption
 --
@@ -39,6 +42,16 @@ pattern IOUSBHostAbortOptionAsynchronous = IOUSBHostAbortOption 0
 pattern IOUSBHostAbortOptionSynchronous :: IOUSBHostAbortOption
 pattern IOUSBHostAbortOptionSynchronous = IOUSBHostAbortOption 1
 
+instance ObjCArgument IOUSBHostAbortOption where
+  withObjCArg (IOUSBHostAbortOption x) k = k (argCULong x)
+
+instance ObjCReturn IOUSBHostAbortOption where
+  type RawReturn IOUSBHostAbortOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOUSBHostAbortOption x)
+  fromOwned x = pure (IOUSBHostAbortOption x)
+
 -- | IOUSBHostIsochronousTransactionOptions
 --
 -- Options for sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:error              and sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:error:completionHandler
@@ -63,6 +76,16 @@ pattern IOUSBHostIsochronousTransactionOptionsNone = IOUSBHostIsochronousTransac
 pattern IOUSBHostIsochronousTransactionOptionsWrap :: IOUSBHostIsochronousTransactionOptions
 pattern IOUSBHostIsochronousTransactionOptionsWrap = IOUSBHostIsochronousTransactionOptions 1
 
+instance ObjCArgument IOUSBHostIsochronousTransactionOptions where
+  withObjCArg (IOUSBHostIsochronousTransactionOptions x) k = k (argCUInt x)
+
+instance ObjCReturn IOUSBHostIsochronousTransactionOptions where
+  type RawReturn IOUSBHostIsochronousTransactionOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOUSBHostIsochronousTransactionOptions x)
+  fromOwned x = pure (IOUSBHostIsochronousTransactionOptions x)
+
 -- | IOUSBHostIsochronousTransferOptions
 --
 -- Options for sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error              and sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:completionHandler
@@ -81,6 +104,16 @@ instance Monoid IOUSBHostIsochronousTransferOptions where
 
 pattern IOUSBHostIsochronousTransferOptionsNone :: IOUSBHostIsochronousTransferOptions
 pattern IOUSBHostIsochronousTransferOptionsNone = IOUSBHostIsochronousTransferOptions 0
+
+instance ObjCArgument IOUSBHostIsochronousTransferOptions where
+  withObjCArg (IOUSBHostIsochronousTransferOptions x) k = k (argCUInt x)
+
+instance ObjCReturn IOUSBHostIsochronousTransferOptions where
+  type RawReturn IOUSBHostIsochronousTransferOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOUSBHostIsochronousTransferOptions x)
+  fromOwned x = pure (IOUSBHostIsochronousTransferOptions x)
 
 -- | IOUSBHostObjectDestroyOptions
 --
@@ -107,6 +140,16 @@ pattern IOUSBHostObjectDestroyOptionsNone = IOUSBHostObjectDestroyOptions 0
 
 pattern IOUSBHostObjectDestroyOptionsDeviceSurrender :: IOUSBHostObjectDestroyOptions
 pattern IOUSBHostObjectDestroyOptionsDeviceSurrender = IOUSBHostObjectDestroyOptions 1
+
+instance ObjCArgument IOUSBHostObjectDestroyOptions where
+  withObjCArg (IOUSBHostObjectDestroyOptions x) k = k (argCULong x)
+
+instance ObjCReturn IOUSBHostObjectDestroyOptions where
+  type RawReturn IOUSBHostObjectDestroyOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOUSBHostObjectDestroyOptions x)
+  fromOwned x = pure (IOUSBHostObjectDestroyOptions x)
 
 -- | IOUSBHostObjectInitOptions
 --
@@ -138,3 +181,13 @@ pattern IOUSBHostObjectInitOptionsDeviceCapture = IOUSBHostObjectInitOptions 1
 
 pattern IOUSBHostObjectInitOptionsDeviceSeize :: IOUSBHostObjectInitOptions
 pattern IOUSBHostObjectInitOptionsDeviceSeize = IOUSBHostObjectInitOptions 2
+
+instance ObjCArgument IOUSBHostObjectInitOptions where
+  withObjCArg (IOUSBHostObjectInitOptions x) k = k (argCULong x)
+
+instance ObjCReturn IOUSBHostObjectInitOptions where
+  type RawReturn IOUSBHostObjectInitOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOUSBHostObjectInitOptions x)
+  fromOwned x = pure (IOUSBHostObjectInitOptions x)

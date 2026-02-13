@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.AVFoundation.AVCaptureResolvedPhotoSettings
   , expectedPhotoCount
   , contentAwareDistortionCorrectionEnabled
   , fastCapturePrioritizationEnabled
-  , initSelector
-  , newSelector
-  , uniqueIDSelector
-  , flashEnabledSelector
-  , redEyeReductionEnabledSelector
-  , stillImageStabilizationEnabledSelector
-  , virtualDeviceFusionEnabledSelector
+  , contentAwareDistortionCorrectionEnabledSelector
   , dualCameraFusionEnabledSelector
   , expectedPhotoCountSelector
-  , contentAwareDistortionCorrectionEnabledSelector
   , fastCapturePrioritizationEnabledSelector
+  , flashEnabledSelector
+  , initSelector
+  , newSelector
+  , redEyeReductionEnabledSelector
+  , stillImageStabilizationEnabledSelector
+  , uniqueIDSelector
+  , virtualDeviceFusionEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,15 +52,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO (Id AVCaptureResolvedPhotoSettings)
-init_ avCaptureResolvedPhotoSettings  =
-    sendMsg avCaptureResolvedPhotoSettings (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureResolvedPhotoSettings =
+  sendOwnedMessage avCaptureResolvedPhotoSettings initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureResolvedPhotoSettings)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureResolvedPhotoSettings"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | uniqueID
 --
@@ -71,8 +68,8 @@ new  =
 --
 -- ObjC selector: @- uniqueID@
 uniqueID :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO CLong
-uniqueID avCaptureResolvedPhotoSettings  =
-    sendMsg avCaptureResolvedPhotoSettings (mkSelector "uniqueID") retCLong []
+uniqueID avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings uniqueIDSelector
 
 -- | flashEnabled
 --
@@ -82,8 +79,8 @@ uniqueID avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- flashEnabled@
 flashEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-flashEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "flashEnabled") retCULong []
+flashEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings flashEnabledSelector
 
 -- | redEyeReductionEnabled
 --
@@ -91,8 +88,8 @@ flashEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- redEyeReductionEnabled@
 redEyeReductionEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-redEyeReductionEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "redEyeReductionEnabled") retCULong []
+redEyeReductionEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings redEyeReductionEnabledSelector
 
 -- | stillImageStabilizationEnabled
 --
@@ -102,8 +99,8 @@ redEyeReductionEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- stillImageStabilizationEnabled@
 stillImageStabilizationEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-stillImageStabilizationEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "stillImageStabilizationEnabled") retCULong []
+stillImageStabilizationEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings stillImageStabilizationEnabledSelector
 
 -- | virtualDeviceFusionEnabled
 --
@@ -111,8 +108,8 @@ stillImageStabilizationEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- virtualDeviceFusionEnabled@
 virtualDeviceFusionEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-virtualDeviceFusionEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "virtualDeviceFusionEnabled") retCULong []
+virtualDeviceFusionEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings virtualDeviceFusionEnabledSelector
 
 -- | dualCameraFusionEnabled
 --
@@ -120,8 +117,8 @@ virtualDeviceFusionEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- dualCameraFusionEnabled@
 dualCameraFusionEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-dualCameraFusionEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "dualCameraFusionEnabled") retCULong []
+dualCameraFusionEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings dualCameraFusionEnabledSelector
 
 -- | expectedPhotoCount
 --
@@ -129,8 +126,8 @@ dualCameraFusionEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- expectedPhotoCount@
 expectedPhotoCount :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO CULong
-expectedPhotoCount avCaptureResolvedPhotoSettings  =
-    sendMsg avCaptureResolvedPhotoSettings (mkSelector "expectedPhotoCount") retCULong []
+expectedPhotoCount avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings expectedPhotoCountSelector
 
 -- | contentAwareDistortionCorrectionEnabled
 --
@@ -138,8 +135,8 @@ expectedPhotoCount avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- contentAwareDistortionCorrectionEnabled@
 contentAwareDistortionCorrectionEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-contentAwareDistortionCorrectionEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "contentAwareDistortionCorrectionEnabled") retCULong []
+contentAwareDistortionCorrectionEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings contentAwareDistortionCorrectionEnabledSelector
 
 -- | fastCapturePrioritizationEnabled
 --
@@ -147,54 +144,54 @@ contentAwareDistortionCorrectionEnabled avCaptureResolvedPhotoSettings  =
 --
 -- ObjC selector: @- fastCapturePrioritizationEnabled@
 fastCapturePrioritizationEnabled :: IsAVCaptureResolvedPhotoSettings avCaptureResolvedPhotoSettings => avCaptureResolvedPhotoSettings -> IO Bool
-fastCapturePrioritizationEnabled avCaptureResolvedPhotoSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureResolvedPhotoSettings (mkSelector "fastCapturePrioritizationEnabled") retCULong []
+fastCapturePrioritizationEnabled avCaptureResolvedPhotoSettings =
+  sendMessage avCaptureResolvedPhotoSettings fastCapturePrioritizationEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureResolvedPhotoSettings)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureResolvedPhotoSettings)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] CLong
 uniqueIDSelector = mkSelector "uniqueID"
 
 -- | @Selector@ for @flashEnabled@
-flashEnabledSelector :: Selector
+flashEnabledSelector :: Selector '[] Bool
 flashEnabledSelector = mkSelector "flashEnabled"
 
 -- | @Selector@ for @redEyeReductionEnabled@
-redEyeReductionEnabledSelector :: Selector
+redEyeReductionEnabledSelector :: Selector '[] Bool
 redEyeReductionEnabledSelector = mkSelector "redEyeReductionEnabled"
 
 -- | @Selector@ for @stillImageStabilizationEnabled@
-stillImageStabilizationEnabledSelector :: Selector
+stillImageStabilizationEnabledSelector :: Selector '[] Bool
 stillImageStabilizationEnabledSelector = mkSelector "stillImageStabilizationEnabled"
 
 -- | @Selector@ for @virtualDeviceFusionEnabled@
-virtualDeviceFusionEnabledSelector :: Selector
+virtualDeviceFusionEnabledSelector :: Selector '[] Bool
 virtualDeviceFusionEnabledSelector = mkSelector "virtualDeviceFusionEnabled"
 
 -- | @Selector@ for @dualCameraFusionEnabled@
-dualCameraFusionEnabledSelector :: Selector
+dualCameraFusionEnabledSelector :: Selector '[] Bool
 dualCameraFusionEnabledSelector = mkSelector "dualCameraFusionEnabled"
 
 -- | @Selector@ for @expectedPhotoCount@
-expectedPhotoCountSelector :: Selector
+expectedPhotoCountSelector :: Selector '[] CULong
 expectedPhotoCountSelector = mkSelector "expectedPhotoCount"
 
 -- | @Selector@ for @contentAwareDistortionCorrectionEnabled@
-contentAwareDistortionCorrectionEnabledSelector :: Selector
+contentAwareDistortionCorrectionEnabledSelector :: Selector '[] Bool
 contentAwareDistortionCorrectionEnabledSelector = mkSelector "contentAwareDistortionCorrectionEnabled"
 
 -- | @Selector@ for @fastCapturePrioritizationEnabled@
-fastCapturePrioritizationEnabledSelector :: Selector
+fastCapturePrioritizationEnabledSelector :: Selector '[] Bool
 fastCapturePrioritizationEnabledSelector = mkSelector "fastCapturePrioritizationEnabled"
 

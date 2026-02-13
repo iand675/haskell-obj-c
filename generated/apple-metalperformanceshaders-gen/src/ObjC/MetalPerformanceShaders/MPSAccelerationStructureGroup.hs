@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.MetalPerformanceShaders.MPSAccelerationStructureGroup
   , init_
   , initWithDevice
   , device
+  , deviceSelector
   , initSelector
   , initWithDeviceSelector
-  , deviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,34 +34,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSAccelerationStructureGroup mpsAccelerationStructureGroup => mpsAccelerationStructureGroup -> IO (Id MPSAccelerationStructureGroup)
-init_ mpsAccelerationStructureGroup  =
-    sendMsg mpsAccelerationStructureGroup (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsAccelerationStructureGroup =
+  sendOwnedMessage mpsAccelerationStructureGroup initSelector
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSAccelerationStructureGroup mpsAccelerationStructureGroup => mpsAccelerationStructureGroup -> RawId -> IO (Id MPSAccelerationStructureGroup)
-initWithDevice mpsAccelerationStructureGroup  device =
-    sendMsg mpsAccelerationStructureGroup (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsAccelerationStructureGroup device =
+  sendOwnedMessage mpsAccelerationStructureGroup initWithDeviceSelector device
 
 -- | The Metal device this acceleration structure group was created with
 --
 -- ObjC selector: @- device@
 device :: IsMPSAccelerationStructureGroup mpsAccelerationStructureGroup => mpsAccelerationStructureGroup -> IO RawId
-device mpsAccelerationStructureGroup  =
-    fmap (RawId . castPtr) $ sendMsg mpsAccelerationStructureGroup (mkSelector "device") (retPtr retVoid) []
+device mpsAccelerationStructureGroup =
+  sendMessage mpsAccelerationStructureGroup deviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSAccelerationStructureGroup)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSAccelerationStructureGroup)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 

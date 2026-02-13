@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.Intents.INPersonHandle
   , type_
   , label
   , initSelector
-  , initWithValue_type_labelSelector
   , initWithValue_typeSelector
-  , valueSelector
-  , typeSelector
+  , initWithValue_type_labelSelector
   , labelSelector
+  , typeSelector
+  , valueSelector
 
   -- * Enum types
   , INPersonHandleType(INPersonHandleType)
@@ -28,15 +29,11 @@ module ObjC.Intents.INPersonHandle
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,62 +43,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINPersonHandle inPersonHandle => inPersonHandle -> IO (Id INPersonHandle)
-init_ inPersonHandle  =
-    sendMsg inPersonHandle (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inPersonHandle =
+  sendOwnedMessage inPersonHandle initSelector
 
 -- | @- initWithValue:type:label:@
 initWithValue_type_label :: (IsINPersonHandle inPersonHandle, IsNSString value, IsNSString label) => inPersonHandle -> value -> INPersonHandleType -> label -> IO (Id INPersonHandle)
-initWithValue_type_label inPersonHandle  value type_ label =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr label $ \raw_label ->
-        sendMsg inPersonHandle (mkSelector "initWithValue:type:label:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argCLong (coerce type_), argPtr (castPtr raw_label :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_type_label inPersonHandle value type_ label =
+  sendOwnedMessage inPersonHandle initWithValue_type_labelSelector (toNSString value) type_ (toNSString label)
 
 -- | @- initWithValue:type:@
 initWithValue_type :: (IsINPersonHandle inPersonHandle, IsNSString value) => inPersonHandle -> value -> INPersonHandleType -> IO (Id INPersonHandle)
-initWithValue_type inPersonHandle  value type_ =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPersonHandle (mkSelector "initWithValue:type:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argCLong (coerce type_)] >>= ownedObject . castPtr
+initWithValue_type inPersonHandle value type_ =
+  sendOwnedMessage inPersonHandle initWithValue_typeSelector (toNSString value) type_
 
 -- | @- value@
 value :: IsINPersonHandle inPersonHandle => inPersonHandle -> IO (Id NSString)
-value inPersonHandle  =
-    sendMsg inPersonHandle (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value inPersonHandle =
+  sendMessage inPersonHandle valueSelector
 
 -- | @- type@
 type_ :: IsINPersonHandle inPersonHandle => inPersonHandle -> IO INPersonHandleType
-type_ inPersonHandle  =
-    fmap (coerce :: CLong -> INPersonHandleType) $ sendMsg inPersonHandle (mkSelector "type") retCLong []
+type_ inPersonHandle =
+  sendMessage inPersonHandle typeSelector
 
 -- | @- label@
 label :: IsINPersonHandle inPersonHandle => inPersonHandle -> IO (Id NSString)
-label inPersonHandle  =
-    sendMsg inPersonHandle (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label inPersonHandle =
+  sendMessage inPersonHandle labelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INPersonHandle)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithValue:type:label:@
-initWithValue_type_labelSelector :: Selector
+initWithValue_type_labelSelector :: Selector '[Id NSString, INPersonHandleType, Id NSString] (Id INPersonHandle)
 initWithValue_type_labelSelector = mkSelector "initWithValue:type:label:"
 
 -- | @Selector@ for @initWithValue:type:@
-initWithValue_typeSelector :: Selector
+initWithValue_typeSelector :: Selector '[Id NSString, INPersonHandleType] (Id INPersonHandle)
 initWithValue_typeSelector = mkSelector "initWithValue:type:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] INPersonHandleType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.QuartzCore.CATiledLayer
   , levelsOfDetailBias
   , setLevelsOfDetailBias
   , fadeDurationSelector
-  , levelsOfDetailSelector
-  , setLevelsOfDetailSelector
   , levelsOfDetailBiasSelector
+  , levelsOfDetailSelector
   , setLevelsOfDetailBiasSelector
+  , setLevelsOfDetailSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,49 +37,49 @@ fadeDuration :: IO CDouble
 fadeDuration  =
   do
     cls' <- getRequiredClass "CATiledLayer"
-    sendClassMsg cls' (mkSelector "fadeDuration") retCDouble []
+    sendClassMessage cls' fadeDurationSelector
 
 -- | @- levelsOfDetail@
 levelsOfDetail :: IsCATiledLayer caTiledLayer => caTiledLayer -> IO CULong
-levelsOfDetail caTiledLayer  =
-    sendMsg caTiledLayer (mkSelector "levelsOfDetail") retCULong []
+levelsOfDetail caTiledLayer =
+  sendMessage caTiledLayer levelsOfDetailSelector
 
 -- | @- setLevelsOfDetail:@
 setLevelsOfDetail :: IsCATiledLayer caTiledLayer => caTiledLayer -> CULong -> IO ()
-setLevelsOfDetail caTiledLayer  value =
-    sendMsg caTiledLayer (mkSelector "setLevelsOfDetail:") retVoid [argCULong value]
+setLevelsOfDetail caTiledLayer value =
+  sendMessage caTiledLayer setLevelsOfDetailSelector value
 
 -- | @- levelsOfDetailBias@
 levelsOfDetailBias :: IsCATiledLayer caTiledLayer => caTiledLayer -> IO CULong
-levelsOfDetailBias caTiledLayer  =
-    sendMsg caTiledLayer (mkSelector "levelsOfDetailBias") retCULong []
+levelsOfDetailBias caTiledLayer =
+  sendMessage caTiledLayer levelsOfDetailBiasSelector
 
 -- | @- setLevelsOfDetailBias:@
 setLevelsOfDetailBias :: IsCATiledLayer caTiledLayer => caTiledLayer -> CULong -> IO ()
-setLevelsOfDetailBias caTiledLayer  value =
-    sendMsg caTiledLayer (mkSelector "setLevelsOfDetailBias:") retVoid [argCULong value]
+setLevelsOfDetailBias caTiledLayer value =
+  sendMessage caTiledLayer setLevelsOfDetailBiasSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fadeDuration@
-fadeDurationSelector :: Selector
+fadeDurationSelector :: Selector '[] CDouble
 fadeDurationSelector = mkSelector "fadeDuration"
 
 -- | @Selector@ for @levelsOfDetail@
-levelsOfDetailSelector :: Selector
+levelsOfDetailSelector :: Selector '[] CULong
 levelsOfDetailSelector = mkSelector "levelsOfDetail"
 
 -- | @Selector@ for @setLevelsOfDetail:@
-setLevelsOfDetailSelector :: Selector
+setLevelsOfDetailSelector :: Selector '[CULong] ()
 setLevelsOfDetailSelector = mkSelector "setLevelsOfDetail:"
 
 -- | @Selector@ for @levelsOfDetailBias@
-levelsOfDetailBiasSelector :: Selector
+levelsOfDetailBiasSelector :: Selector '[] CULong
 levelsOfDetailBiasSelector = mkSelector "levelsOfDetailBias"
 
 -- | @Selector@ for @setLevelsOfDetailBias:@
-setLevelsOfDetailBiasSelector :: Selector
+setLevelsOfDetailBiasSelector :: Selector '[CULong] ()
 setLevelsOfDetailBiasSelector = mkSelector "setLevelsOfDetailBias:"
 

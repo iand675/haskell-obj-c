@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRCommissionerControlClusterRequestCommissioningApprovalPara
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , requestIDSelector
-  , setRequestIDSelector
-  , vendorIDSelector
-  , setVendorIDSelector
-  , productIDSelector
-  , setProductIDSelector
   , labelSelector
-  , setLabelSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , productIDSelector
+  , requestIDSelector
   , serverSideProcessingTimeoutSelector
+  , setLabelSelector
+  , setProductIDSelector
+  , setRequestIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVendorIDSelector
+  , timedInvokeTimeoutMsSelector
+  , vendorIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,47 +48,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestID@
 requestID :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSNumber)
-requestID mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "requestID") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestID mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams requestIDSelector
 
 -- | @- setRequestID:@
 setRequestID :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSNumber value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setRequestID mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setRequestID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestID mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setRequestIDSelector (toNSNumber value)
 
 -- | @- vendorID@
 vendorID :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSNumber)
-vendorID mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams vendorIDSelector
 
 -- | @- setVendorID:@
 setVendorID :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSNumber value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setVendorID mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setVendorIDSelector (toNSNumber value)
 
 -- | @- productID@
 productID :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSNumber)
-productID mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "productID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productID mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams productIDSelector
 
 -- | @- setProductID:@
 setProductID :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSNumber value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setProductID mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setProductID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductID mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setProductIDSelector (toNSNumber value)
 
 -- | @- label@
 label :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSString)
-label mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSString value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setLabel mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setLabelSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -101,8 +94,8 @@ setLabel mtrCommissionerControlClusterRequestCommissioningApprovalParams  value 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,9 +105,8 @@ timedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprovalPa
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSNumber value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -124,8 +116,8 @@ setTimedInvokeTimeoutMs mtrCommissionerControlClusterRequestCommissioningApprova
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCommissionerControlClusterRequestCommissioningApprovalParams  =
-    sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCommissionerControlClusterRequestCommissioningApprovalParams =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -135,59 +127,58 @@ serverSideProcessingTimeout mtrCommissionerControlClusterRequestCommissioningApp
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCommissionerControlClusterRequestCommissioningApprovalParams mtrCommissionerControlClusterRequestCommissioningApprovalParams, IsNSNumber value) => mtrCommissionerControlClusterRequestCommissioningApprovalParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCommissionerControlClusterRequestCommissioningApprovalParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterRequestCommissioningApprovalParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCommissionerControlClusterRequestCommissioningApprovalParams value =
+  sendMessage mtrCommissionerControlClusterRequestCommissioningApprovalParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestID@
-requestIDSelector :: Selector
+requestIDSelector :: Selector '[] (Id NSNumber)
 requestIDSelector = mkSelector "requestID"
 
 -- | @Selector@ for @setRequestID:@
-setRequestIDSelector :: Selector
+setRequestIDSelector :: Selector '[Id NSNumber] ()
 setRequestIDSelector = mkSelector "setRequestID:"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @productID@
-productIDSelector :: Selector
+productIDSelector :: Selector '[] (Id NSNumber)
 productIDSelector = mkSelector "productID"
 
 -- | @Selector@ for @setProductID:@
-setProductIDSelector :: Selector
+setProductIDSelector :: Selector '[Id NSNumber] ()
 setProductIDSelector = mkSelector "setProductID:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

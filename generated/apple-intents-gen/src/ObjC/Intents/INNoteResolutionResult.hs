@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INNoteResolutionResult
   , successWithResolvedNote
   , disambiguationWithNotesToDisambiguate
   , confirmationRequiredWithNoteToConfirm
-  , successWithResolvedNoteSelector
-  , disambiguationWithNotesToDisambiguateSelector
   , confirmationRequiredWithNoteToConfirmSelector
+  , disambiguationWithNotesToDisambiguateSelector
+  , successWithResolvedNoteSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedNote :: IsINNote resolvedNote => resolvedNote -> IO (Id INNot
 successWithResolvedNote resolvedNote =
   do
     cls' <- getRequiredClass "INNoteResolutionResult"
-    withObjCPtr resolvedNote $ \raw_resolvedNote ->
-      sendClassMsg cls' (mkSelector "successWithResolvedNote:") (retPtr retVoid) [argPtr (castPtr raw_resolvedNote :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedNoteSelector (toINNote resolvedNote)
 
 -- | @+ disambiguationWithNotesToDisambiguate:@
 disambiguationWithNotesToDisambiguate :: IsNSArray notesToDisambiguate => notesToDisambiguate -> IO (Id INNoteResolutionResult)
 disambiguationWithNotesToDisambiguate notesToDisambiguate =
   do
     cls' <- getRequiredClass "INNoteResolutionResult"
-    withObjCPtr notesToDisambiguate $ \raw_notesToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithNotesToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_notesToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithNotesToDisambiguateSelector (toNSArray notesToDisambiguate)
 
 -- | @+ confirmationRequiredWithNoteToConfirm:@
 confirmationRequiredWithNoteToConfirm :: IsINNote noteToConfirm => noteToConfirm -> IO (Id INNoteResolutionResult)
 confirmationRequiredWithNoteToConfirm noteToConfirm =
   do
     cls' <- getRequiredClass "INNoteResolutionResult"
-    withObjCPtr noteToConfirm $ \raw_noteToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithNoteToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_noteToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithNoteToConfirmSelector (toINNote noteToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedNote:@
-successWithResolvedNoteSelector :: Selector
+successWithResolvedNoteSelector :: Selector '[Id INNote] (Id INNoteResolutionResult)
 successWithResolvedNoteSelector = mkSelector "successWithResolvedNote:"
 
 -- | @Selector@ for @disambiguationWithNotesToDisambiguate:@
-disambiguationWithNotesToDisambiguateSelector :: Selector
+disambiguationWithNotesToDisambiguateSelector :: Selector '[Id NSArray] (Id INNoteResolutionResult)
 disambiguationWithNotesToDisambiguateSelector = mkSelector "disambiguationWithNotesToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithNoteToConfirm:@
-confirmationRequiredWithNoteToConfirmSelector :: Selector
+confirmationRequiredWithNoteToConfirmSelector :: Selector '[Id INNote] (Id INNoteResolutionResult)
 confirmationRequiredWithNoteToConfirmSelector = mkSelector "confirmationRequiredWithNoteToConfirm:"
 

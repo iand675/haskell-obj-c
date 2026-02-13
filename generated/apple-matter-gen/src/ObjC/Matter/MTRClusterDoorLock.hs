@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -156,167 +157,163 @@ module ObjC.Matter.MTRClusterDoorLock
   , getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandler
   , clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , lockDoorWithExpectedValues_expectedValueInterval_completionSelector
-  , unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , unlockDoorWithExpectedValues_expectedValueInterval_completionSelector
-  , unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setUserWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getUserWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearUserWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
-  , unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector
-  , unboltDoorWithExpectedValues_expectedValueInterval_completionSelector
-  , setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector
-  , appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
-  , appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector
   , appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
-  , appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
-  , appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
   , appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributeLockStateWithParamsSelector
-  , readAttributeLockTypeWithParamsSelector
+  , appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
+  , appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector
+  , appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
+  , appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector
+  , clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearUserWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getUserWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , lockDoorWithExpectedValues_expectedValueInterval_completionSelector
+  , lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeActuatorEnabledWithParamsSelector
-  , readAttributeDoorStateWithParamsSelector
-  , readAttributeDoorOpenEventsWithParamsSelector
-  , writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector
-  , writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeDoorClosedEventsWithParamsSelector
-  , writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector
-  , writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeOpenPeriodWithParamsSelector
-  , writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector
-  , writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector
-  , readAttributeNumberOfTotalUsersSupportedWithParamsSelector
-  , readAttributeNumberOfPINUsersSupportedWithParamsSelector
-  , readAttributeNumberOfRFIDUsersSupportedWithParamsSelector
-  , readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector
-  , readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector
-  , readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector
-  , readAttributeMaxPINCodeLengthWithParamsSelector
-  , readAttributeMinPINCodeLengthWithParamsSelector
-  , readAttributeMaxRFIDCodeLengthWithParamsSelector
-  , readAttributeMinRFIDCodeLengthWithParamsSelector
-  , readAttributeCredentialRulesSupportWithParamsSelector
-  , readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector
-  , readAttributeLanguageWithParamsSelector
-  , writeAttributeLanguageWithValue_expectedValueIntervalSelector
-  , writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLEDSettingsWithParamsSelector
-  , writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector
-  , writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector
-  , readAttributeAutoRelockTimeWithParamsSelector
-  , writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector
-  , writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSoundVolumeWithParamsSelector
-  , writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector
-  , writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeOperatingModeWithParamsSelector
-  , writeAttributeOperatingModeWithValue_expectedValueIntervalSelector
-  , writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSupportedOperatingModesWithParamsSelector
-  , readAttributeDefaultConfigurationRegisterWithParamsSelector
-  , readAttributeEnableLocalProgrammingWithParamsSelector
-  , writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector
-  , writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector
-  , readAttributeEnableOneTouchLockingWithParamsSelector
-  , writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector
-  , writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector
-  , readAttributeEnableInsideStatusLEDWithParamsSelector
-  , writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector
-  , writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector
-  , readAttributeEnablePrivacyModeButtonWithParamsSelector
-  , writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector
-  , writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLocalProgrammingFeaturesWithParamsSelector
-  , writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector
-  , writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector
-  , readAttributeWrongCodeEntryLimitWithParamsSelector
-  , writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector
-  , writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector
-  , readAttributeUserCodeTemporaryDisableTimeWithParamsSelector
-  , writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector
-  , writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSendPINOverTheAirWithParamsSelector
-  , writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector
-  , writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector
-  , readAttributeRequirePINforRemoteOperationWithParamsSelector
-  , writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector
-  , writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeExpiringUserTimeoutWithParamsSelector
-  , writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector
-  , writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector
-  , readAttributeAliroReaderVerificationKeyWithParamsSelector
-  , readAttributeAliroReaderGroupIdentifierWithParamsSelector
-  , readAttributeAliroReaderGroupSubIdentifierWithParamsSelector
+  , readAttributeAliroBLEAdvertisingVersionWithParamsSelector
   , readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector
   , readAttributeAliroGroupResolvingKeyWithParamsSelector
+  , readAttributeAliroReaderGroupIdentifierWithParamsSelector
+  , readAttributeAliroReaderGroupSubIdentifierWithParamsSelector
+  , readAttributeAliroReaderVerificationKeyWithParamsSelector
   , readAttributeAliroSupportedBLEUWBProtocolVersionsWithParamsSelector
-  , readAttributeAliroBLEAdvertisingVersionWithParamsSelector
-  , readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector
-  , readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , readAttributeAppleAliroReaderVerificationKeyWithParamsSelector
-  , readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector
-  , readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector
+  , readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector
   , readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector
   , readAttributeAppleAliroGroupResolvingKeyWithParamsSelector
+  , readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector
+  , readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector
+  , readAttributeAppleAliroReaderVerificationKeyWithParamsSelector
   , readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParamsSelector
-  , readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector
   , readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector
   , readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeAutoRelockTimeWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeCredentialRulesSupportWithParamsSelector
+  , readAttributeDefaultConfigurationRegisterWithParamsSelector
+  , readAttributeDoorClosedEventsWithParamsSelector
+  , readAttributeDoorOpenEventsWithParamsSelector
+  , readAttributeDoorStateWithParamsSelector
+  , readAttributeEnableInsideStatusLEDWithParamsSelector
+  , readAttributeEnableLocalProgrammingWithParamsSelector
+  , readAttributeEnableOneTouchLockingWithParamsSelector
+  , readAttributeEnablePrivacyModeButtonWithParamsSelector
+  , readAttributeExpiringUserTimeoutWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLEDSettingsWithParamsSelector
+  , readAttributeLanguageWithParamsSelector
+  , readAttributeLocalProgrammingFeaturesWithParamsSelector
+  , readAttributeLockStateWithParamsSelector
+  , readAttributeLockTypeWithParamsSelector
+  , readAttributeMaxPINCodeLengthWithParamsSelector
+  , readAttributeMaxRFIDCodeLengthWithParamsSelector
+  , readAttributeMinPINCodeLengthWithParamsSelector
+  , readAttributeMinRFIDCodeLengthWithParamsSelector
+  , readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector
+  , readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector
+  , readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector
+  , readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector
+  , readAttributeNumberOfPINUsersSupportedWithParamsSelector
+  , readAttributeNumberOfRFIDUsersSupportedWithParamsSelector
+  , readAttributeNumberOfTotalUsersSupportedWithParamsSelector
+  , readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector
+  , readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector
+  , readAttributeOpenPeriodWithParamsSelector
+  , readAttributeOperatingModeWithParamsSelector
+  , readAttributeRequirePINforRemoteOperationWithParamsSelector
+  , readAttributeSendPINOverTheAirWithParamsSelector
+  , readAttributeSoundVolumeWithParamsSelector
+  , readAttributeSupportedOperatingModesWithParamsSelector
+  , readAttributeUserCodeTemporaryDisableTimeWithParamsSelector
+  , readAttributeWrongCodeEntryLimitWithParamsSelector
+  , setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector
   , setCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setUserWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector
+  , unboltDoorWithExpectedValues_expectedValueInterval_completionSelector
+  , unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , unlockDoorWithExpectedValues_expectedValueInterval_completionSelector
+  , unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector
+  , unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector
+  , writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector
+  , writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector
+  , writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector
+  , writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector
+  , writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector
+  , writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector
+  , writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector
+  , writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector
+  , writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLanguageWithValue_expectedValueIntervalSelector
+  , writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector
+  , writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector
+  , writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeOperatingModeWithValue_expectedValueIntervalSelector
+  , writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector
+  , writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector
+  , writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector
+  , writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector
+  , writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector
+  , writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -325,1637 +322,1341 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- lockDoorWithParams:expectedValues:expectedValueInterval:completion:@
 lockDoorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterLockDoorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-lockDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "lockDoorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+lockDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterLockDoorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- lockDoorWithExpectedValues:expectedValueInterval:completion:@
 lockDoorWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-lockDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "lockDoorWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+lockDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock lockDoorWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- unlockDoorWithParams:expectedValues:expectedValueInterval:completion:@
 unlockDoorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterUnlockDoorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-unlockDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "unlockDoorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unlockDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterUnlockDoorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- unlockDoorWithExpectedValues:expectedValueInterval:completion:@
 unlockDoorWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-unlockDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "unlockDoorWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unlockDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock unlockDoorWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completion:@
 unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterUnlockWithTimeoutParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterUnlockWithTimeoutParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterGetWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterGetYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterGetHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
 clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setUserWithParams:expectedValues:expectedValueInterval:completion:@
 setUserWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setUserWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setUserWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getUserWithParams:expectedValues:expectedValueInterval:completion:@
 getUserWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getUserWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock getUserWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterGetUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearUserWithParams:expectedValues:expectedValueInterval:completion:@
 clearUserWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearUserWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearUserWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearUserWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setCredentialWithParams:expectedValues:expectedValueInterval:completion:@
 setCredentialWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setCredentialWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:@
 getCredentialStatusWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetCredentialStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getCredentialStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getCredentialStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterGetCredentialStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearCredentialWithParams:expectedValues:expectedValueInterval:completion:@
 clearCredentialWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearCredentialWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- unboltDoorWithParams:expectedValues:expectedValueInterval:completion:@
 unboltDoorWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterUnboltDoorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-unboltDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "unboltDoorWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unboltDoorWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterUnboltDoorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- unboltDoorWithExpectedValues:expectedValueInterval:completion:@
 unboltDoorWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-unboltDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "unboltDoorWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unboltDoorWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock unboltDoorWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
 setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetAliroReaderConfigParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterSetAliroReaderConfigParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
 clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearAliroReaderConfigParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterClearAliroReaderConfigParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:@
 clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "clearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleSetAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:@
 appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterAppleSetAliroCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "appleSetAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterAppleSetAliroCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleGetAliroCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:@
 appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "appleGetAliroCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterAppleGetAliroCredentialStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleClearAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:@
 appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterAppleClearAliroCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "appleClearAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterAppleClearAliroCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleSetAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
 appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterAppleSetAliroReaderConfigParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "appleSetAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterAppleSetAliroReaderConfigParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleClearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
 appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterAppleClearAliroReaderConfigParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "appleClearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completion mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDoorLockClusterAppleClearAliroReaderConfigParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- appleClearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:@
 appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "appleClearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completion mtrClusterDoorLock expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterDoorLock appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeLockStateWithParams:@
 readAttributeLockStateWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeLockStateWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeLockStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLockStateWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeLockStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLockTypeWithParams:@
 readAttributeLockTypeWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeLockTypeWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeLockTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLockTypeWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeLockTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActuatorEnabledWithParams:@
 readAttributeActuatorEnabledWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeActuatorEnabledWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeActuatorEnabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActuatorEnabledWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeActuatorEnabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDoorStateWithParams:@
 readAttributeDoorStateWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeDoorStateWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeDoorStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDoorStateWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeDoorStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDoorOpenEventsWithParams:@
 readAttributeDoorOpenEventsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeDoorOpenEventsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeDoorOpenEventsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDoorOpenEventsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeDoorOpenEventsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeDoorOpenEventsWithValue:expectedValueInterval:@
 writeAttributeDoorOpenEventsWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeDoorOpenEventsWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeDoorOpenEventsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeDoorOpenEventsWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeDoorOpenEventsWithValue:expectedValueInterval:params:@
 writeAttributeDoorOpenEventsWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeDoorOpenEventsWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeDoorOpenEventsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeDoorOpenEventsWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeDoorClosedEventsWithParams:@
 readAttributeDoorClosedEventsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeDoorClosedEventsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeDoorClosedEventsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDoorClosedEventsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeDoorClosedEventsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeDoorClosedEventsWithValue:expectedValueInterval:@
 writeAttributeDoorClosedEventsWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeDoorClosedEventsWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeDoorClosedEventsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeDoorClosedEventsWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeDoorClosedEventsWithValue:expectedValueInterval:params:@
 writeAttributeDoorClosedEventsWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeDoorClosedEventsWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeDoorClosedEventsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeDoorClosedEventsWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOpenPeriodWithParams:@
 readAttributeOpenPeriodWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeOpenPeriodWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeOpenPeriodWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOpenPeriodWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeOpenPeriodWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOpenPeriodWithValue:expectedValueInterval:@
 writeAttributeOpenPeriodWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOpenPeriodWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeOpenPeriodWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOpenPeriodWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOpenPeriodWithValue:expectedValueInterval:params:@
 writeAttributeOpenPeriodWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOpenPeriodWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeOpenPeriodWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOpenPeriodWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeNumberOfTotalUsersSupportedWithParams:@
 readAttributeNumberOfTotalUsersSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfTotalUsersSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfTotalUsersSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfTotalUsersSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfTotalUsersSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfPINUsersSupportedWithParams:@
 readAttributeNumberOfPINUsersSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfPINUsersSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfPINUsersSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfPINUsersSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfPINUsersSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfRFIDUsersSupportedWithParams:@
 readAttributeNumberOfRFIDUsersSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfRFIDUsersSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfRFIDUsersSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfRFIDUsersSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfRFIDUsersSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams:@
 readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams:@
 readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfHolidaySchedulesSupportedWithParams:@
 readAttributeNumberOfHolidaySchedulesSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfHolidaySchedulesSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfHolidaySchedulesSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfHolidaySchedulesSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxPINCodeLengthWithParams:@
 readAttributeMaxPINCodeLengthWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeMaxPINCodeLengthWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeMaxPINCodeLengthWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxPINCodeLengthWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeMaxPINCodeLengthWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinPINCodeLengthWithParams:@
 readAttributeMinPINCodeLengthWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeMinPINCodeLengthWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeMinPINCodeLengthWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinPINCodeLengthWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeMinPINCodeLengthWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxRFIDCodeLengthWithParams:@
 readAttributeMaxRFIDCodeLengthWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeMaxRFIDCodeLengthWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeMaxRFIDCodeLengthWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxRFIDCodeLengthWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeMaxRFIDCodeLengthWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinRFIDCodeLengthWithParams:@
 readAttributeMinRFIDCodeLengthWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeMinRFIDCodeLengthWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeMinRFIDCodeLengthWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinRFIDCodeLengthWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeMinRFIDCodeLengthWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCredentialRulesSupportWithParams:@
 readAttributeCredentialRulesSupportWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeCredentialRulesSupportWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeCredentialRulesSupportWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCredentialRulesSupportWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeCredentialRulesSupportWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfCredentialsSupportedPerUserWithParams:@
 readAttributeNumberOfCredentialsSupportedPerUserWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfCredentialsSupportedPerUserWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfCredentialsSupportedPerUserWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfCredentialsSupportedPerUserWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLanguageWithParams:@
 readAttributeLanguageWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeLanguageWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeLanguageWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLanguageWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeLanguageWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLanguageWithValue:expectedValueInterval:@
 writeAttributeLanguageWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLanguageWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLanguageWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLanguageWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeLanguageWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLanguageWithValue:expectedValueInterval:params:@
 writeAttributeLanguageWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLanguageWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLanguageWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLanguageWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLEDSettingsWithParams:@
 readAttributeLEDSettingsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeLEDSettingsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeLEDSettingsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLEDSettingsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeLEDSettingsWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLEDSettingsWithValue:expectedValueInterval:@
 writeAttributeLEDSettingsWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLEDSettingsWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLEDSettingsWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLEDSettingsWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLEDSettingsWithValue:expectedValueInterval:params:@
 writeAttributeLEDSettingsWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLEDSettingsWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLEDSettingsWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLEDSettingsWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeAutoRelockTimeWithParams:@
 readAttributeAutoRelockTimeWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAutoRelockTimeWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAutoRelockTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAutoRelockTimeWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAutoRelockTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeAutoRelockTimeWithValue:expectedValueInterval:@
 writeAttributeAutoRelockTimeWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeAutoRelockTimeWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeAutoRelockTimeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeAutoRelockTimeWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeAutoRelockTimeWithValue:expectedValueInterval:params:@
 writeAttributeAutoRelockTimeWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeAutoRelockTimeWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeAutoRelockTimeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeAutoRelockTimeWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSoundVolumeWithParams:@
 readAttributeSoundVolumeWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeSoundVolumeWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeSoundVolumeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSoundVolumeWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeSoundVolumeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSoundVolumeWithValue:expectedValueInterval:@
 writeAttributeSoundVolumeWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSoundVolumeWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeSoundVolumeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSoundVolumeWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSoundVolumeWithValue:expectedValueInterval:params:@
 writeAttributeSoundVolumeWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSoundVolumeWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeSoundVolumeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSoundVolumeWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeOperatingModeWithParams:@
 readAttributeOperatingModeWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeOperatingModeWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeOperatingModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOperatingModeWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeOperatingModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeOperatingModeWithValue:expectedValueInterval:@
 writeAttributeOperatingModeWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeOperatingModeWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeOperatingModeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeOperatingModeWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeOperatingModeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeOperatingModeWithValue:expectedValueInterval:params:@
 writeAttributeOperatingModeWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeOperatingModeWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeOperatingModeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeOperatingModeWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSupportedOperatingModesWithParams:@
 readAttributeSupportedOperatingModesWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeSupportedOperatingModesWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeSupportedOperatingModesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedOperatingModesWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeSupportedOperatingModesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDefaultConfigurationRegisterWithParams:@
 readAttributeDefaultConfigurationRegisterWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeDefaultConfigurationRegisterWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeDefaultConfigurationRegisterWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDefaultConfigurationRegisterWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeDefaultConfigurationRegisterWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEnableLocalProgrammingWithParams:@
 readAttributeEnableLocalProgrammingWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeEnableLocalProgrammingWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeEnableLocalProgrammingWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnableLocalProgrammingWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeEnableLocalProgrammingWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:@
 writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:params:@
 writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeEnableOneTouchLockingWithParams:@
 readAttributeEnableOneTouchLockingWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeEnableOneTouchLockingWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeEnableOneTouchLockingWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnableOneTouchLockingWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeEnableOneTouchLockingWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:@
 writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:params:@
 writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeEnableInsideStatusLEDWithParams:@
 readAttributeEnableInsideStatusLEDWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeEnableInsideStatusLEDWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeEnableInsideStatusLEDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnableInsideStatusLEDWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeEnableInsideStatusLEDWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:@
 writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:params:@
 writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeEnablePrivacyModeButtonWithParams:@
 readAttributeEnablePrivacyModeButtonWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeEnablePrivacyModeButtonWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeEnablePrivacyModeButtonWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnablePrivacyModeButtonWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeEnablePrivacyModeButtonWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:@
 writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:params:@
 writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLocalProgrammingFeaturesWithParams:@
 readAttributeLocalProgrammingFeaturesWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeLocalProgrammingFeaturesWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeLocalProgrammingFeaturesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLocalProgrammingFeaturesWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeLocalProgrammingFeaturesWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:@
 writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:params:@
 writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeWrongCodeEntryLimitWithParams:@
 readAttributeWrongCodeEntryLimitWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeWrongCodeEntryLimitWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeWrongCodeEntryLimitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeWrongCodeEntryLimitWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeWrongCodeEntryLimitWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:@
 writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:params:@
 writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeUserCodeTemporaryDisableTimeWithParams:@
 readAttributeUserCodeTemporaryDisableTimeWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeUserCodeTemporaryDisableTimeWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeUserCodeTemporaryDisableTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUserCodeTemporaryDisableTimeWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeUserCodeTemporaryDisableTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:@
 writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:params:@
 writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSendPINOverTheAirWithParams:@
 readAttributeSendPINOverTheAirWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeSendPINOverTheAirWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeSendPINOverTheAirWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSendPINOverTheAirWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeSendPINOverTheAirWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:@
 writeAttributeSendPINOverTheAirWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSendPINOverTheAirWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSendPINOverTheAirWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:params:@
 writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeRequirePINforRemoteOperationWithParams:@
 readAttributeRequirePINforRemoteOperationWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeRequirePINforRemoteOperationWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeRequirePINforRemoteOperationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRequirePINforRemoteOperationWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeRequirePINforRemoteOperationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:@
 writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:params:@
 writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeExpiringUserTimeoutWithParams:@
 readAttributeExpiringUserTimeoutWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeExpiringUserTimeoutWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeExpiringUserTimeoutWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExpiringUserTimeoutWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeExpiringUserTimeoutWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:@
 writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterDoorLock (mkSelector "writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterDoorLock writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:params:@
 writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_params :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterDoorLock -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_params mtrClusterDoorLock  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterDoorLock (mkSelector "writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_params mtrClusterDoorLock dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterDoorLock writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeAliroReaderVerificationKeyWithParams:@
 readAttributeAliroReaderVerificationKeyWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroReaderVerificationKeyWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroReaderVerificationKeyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroReaderVerificationKeyWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroReaderVerificationKeyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroReaderGroupIdentifierWithParams:@
 readAttributeAliroReaderGroupIdentifierWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroReaderGroupIdentifierWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroReaderGroupIdentifierWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroReaderGroupIdentifierWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroReaderGroupIdentifierWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroReaderGroupSubIdentifierWithParams:@
 readAttributeAliroReaderGroupSubIdentifierWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroReaderGroupSubIdentifierWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroReaderGroupSubIdentifierWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroReaderGroupSubIdentifierWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroReaderGroupSubIdentifierWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams:@
 readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroGroupResolvingKeyWithParams:@
 readAttributeAliroGroupResolvingKeyWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroGroupResolvingKeyWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroGroupResolvingKeyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroGroupResolvingKeyWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroGroupResolvingKeyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams:@
 readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroSupportedBLEUWBProtocolVersionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAliroBLEAdvertisingVersionWithParams:@
 readAttributeAliroBLEAdvertisingVersionWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAliroBLEAdvertisingVersionWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAliroBLEAdvertisingVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAliroBLEAdvertisingVersionWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAliroBLEAdvertisingVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams:@
 readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNumberOfAliroEndpointKeysSupportedWithParams:@
 readAttributeNumberOfAliroEndpointKeysSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeNumberOfAliroEndpointKeysSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeNumberOfAliroEndpointKeysSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfAliroEndpointKeysSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroReaderVerificationKeyWithParams:@
 readAttributeAppleAliroReaderVerificationKeyWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroReaderVerificationKeyWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroReaderVerificationKeyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroReaderVerificationKeyWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroReaderVerificationKeyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroReaderGroupIdentifierWithParams:@
 readAttributeAppleAliroReaderGroupIdentifierWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroReaderGroupIdentifierWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroReaderGroupIdentifierWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroReaderGroupIdentifierWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroReaderGroupSubIdentifierWithParams:@
 readAttributeAppleAliroReaderGroupSubIdentifierWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroReaderGroupSubIdentifierWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroReaderGroupSubIdentifierWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroReaderGroupSubIdentifierWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams:@
 readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroGroupResolvingKeyWithParams:@
 readAttributeAppleAliroGroupResolvingKeyWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroGroupResolvingKeyWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroGroupResolvingKeyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroGroupResolvingKeyWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroGroupResolvingKeyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams:@
 readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleAliroBLEAdvertisingVersionWithParams:@
 readAttributeAppleAliroBLEAdvertisingVersionWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleAliroBLEAdvertisingVersionWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleAliroBLEAdvertisingVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleAliroBLEAdvertisingVersionWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams:@
 readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams:@
 readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRReadParams params) => mtrClusterDoorLock -> params -> IO (Id NSDictionary)
-readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams mtrClusterDoorLock  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDoorLock (mkSelector "readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams mtrClusterDoorLock params =
+  sendMessage mtrClusterDoorLock readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterDoorLock mtrClusterDoorLock => mtrClusterDoorLock -> IO (Id MTRClusterDoorLock)
-init_ mtrClusterDoorLock  =
-    sendMsg mtrClusterDoorLock (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterDoorLock =
+  sendOwnedMessage mtrClusterDoorLock initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterDoorLock)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterDoorLock"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDevice device, IsNSObject queue) => mtrClusterDoorLock -> device -> CUShort -> queue -> IO (Id MTRClusterDoorLock)
-initWithDevice_endpoint_queue mtrClusterDoorLock  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterDoorLock (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterDoorLock device endpoint queue =
+  sendOwnedMessage mtrClusterDoorLock initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- lockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:@
 lockDoorWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterLockDoorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-lockDoorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "lockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+lockDoorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterLockDoorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- unlockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:@
 unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterUnlockDoorParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "unlockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterUnlockDoorParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completionHandler:@
 unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterUnlockWithTimeoutParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterUnlockWithTimeoutParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterSetWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterGetWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearWeekDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterClearWeekDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterSetYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterGetYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearYearDayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterClearYearDayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterSetHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterGetHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearHolidayScheduleParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterClearHolidayScheduleParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setUserWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setUserWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterSetUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getUserWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getUserWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterGetUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearUserWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearUserParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearUserWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearUserWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterClearUserParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- setCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:@
 setCredentialWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterSetCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setCredentialWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "setCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setCredentialWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock setCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterSetCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- getCredentialStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
 getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterGetCredentialStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "getCredentialStatusWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterGetCredentialStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- clearCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:@
 clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDoorLockClusterClearCredentialParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDoorLock -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDoorLock (mkSelector "clearCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterDoorLock params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterDoorLock clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRDoorLockClusterClearCredentialParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterDoorLock mtrClusterDoorLock, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterDoorLock -> device -> endpointID -> queue -> IO (Id MTRClusterDoorLock)
-initWithDevice_endpointID_queue mtrClusterDoorLock  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterDoorLock (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterDoorLock device endpointID queue =
+  sendOwnedMessage mtrClusterDoorLock initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lockDoorWithParams:expectedValues:expectedValueInterval:completion:@
-lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterLockDoorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 lockDoorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "lockDoorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @lockDoorWithExpectedValues:expectedValueInterval:completion:@
-lockDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+lockDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 lockDoorWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "lockDoorWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @unlockDoorWithParams:expectedValues:expectedValueInterval:completion:@
-unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterUnlockDoorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 unlockDoorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "unlockDoorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @unlockDoorWithExpectedValues:expectedValueInterval:completion:@
-unlockDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+unlockDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 unlockDoorWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "unlockDoorWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completion:@
-unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterUnlockWithTimeoutParams, Id NSArray, Id NSNumber, Ptr ()] ()
 unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterGetWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterGetYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterGetHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:@
-clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setUserWithParams:expectedValues:expectedValueInterval:completion:@
-setUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setUserWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setUserWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getUserWithParams:expectedValues:expectedValueInterval:completion:@
-getUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterGetUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getUserWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getUserWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearUserWithParams:expectedValues:expectedValueInterval:completion:@
-clearUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearUserWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearUserWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearUserWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setCredentialWithParams:expectedValues:expectedValueInterval:completion:@
-setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setCredentialWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setCredentialWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:@
-getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterGetCredentialStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearCredentialWithParams:expectedValues:expectedValueInterval:completion:@
-clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearCredentialWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearCredentialWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @unboltDoorWithParams:expectedValues:expectedValueInterval:completion:@
-unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterUnboltDoorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 unboltDoorWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "unboltDoorWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @unboltDoorWithExpectedValues:expectedValueInterval:completion:@
-unboltDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+unboltDoorWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 unboltDoorWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "unboltDoorWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
-setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterSetAliroReaderConfigParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
-clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterClearAliroReaderConfigParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:@
-clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 clearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "clearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleSetAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:@
-appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterAppleSetAliroCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 appleSetAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "appleSetAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleGetAliroCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:@
-appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterAppleGetAliroCredentialStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 appleGetAliroCredentialStatusWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "appleGetAliroCredentialStatusWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleClearAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:@
-appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterAppleClearAliroCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 appleClearAliroCredentialWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "appleClearAliroCredentialWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleSetAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
-appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterAppleSetAliroReaderConfigParams, Id NSArray, Id NSNumber, Ptr ()] ()
 appleSetAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "appleSetAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleClearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:@
-appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDoorLockClusterAppleClearAliroReaderConfigParams, Id NSArray, Id NSNumber, Ptr ()] ()
 appleClearAliroReaderConfigWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "appleClearAliroReaderConfigWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @appleClearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:@
-appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 appleClearAliroReaderConfigWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "appleClearAliroReaderConfigWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeLockStateWithParams:@
-readAttributeLockStateWithParamsSelector :: Selector
+readAttributeLockStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLockStateWithParamsSelector = mkSelector "readAttributeLockStateWithParams:"
 
 -- | @Selector@ for @readAttributeLockTypeWithParams:@
-readAttributeLockTypeWithParamsSelector :: Selector
+readAttributeLockTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLockTypeWithParamsSelector = mkSelector "readAttributeLockTypeWithParams:"
 
 -- | @Selector@ for @readAttributeActuatorEnabledWithParams:@
-readAttributeActuatorEnabledWithParamsSelector :: Selector
+readAttributeActuatorEnabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActuatorEnabledWithParamsSelector = mkSelector "readAttributeActuatorEnabledWithParams:"
 
 -- | @Selector@ for @readAttributeDoorStateWithParams:@
-readAttributeDoorStateWithParamsSelector :: Selector
+readAttributeDoorStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDoorStateWithParamsSelector = mkSelector "readAttributeDoorStateWithParams:"
 
 -- | @Selector@ for @readAttributeDoorOpenEventsWithParams:@
-readAttributeDoorOpenEventsWithParamsSelector :: Selector
+readAttributeDoorOpenEventsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDoorOpenEventsWithParamsSelector = mkSelector "readAttributeDoorOpenEventsWithParams:"
 
 -- | @Selector@ for @writeAttributeDoorOpenEventsWithValue:expectedValueInterval:@
-writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeDoorOpenEventsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeDoorOpenEventsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeDoorOpenEventsWithValue:expectedValueInterval:params:@
-writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeDoorOpenEventsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeDoorOpenEventsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeDoorClosedEventsWithParams:@
-readAttributeDoorClosedEventsWithParamsSelector :: Selector
+readAttributeDoorClosedEventsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDoorClosedEventsWithParamsSelector = mkSelector "readAttributeDoorClosedEventsWithParams:"
 
 -- | @Selector@ for @writeAttributeDoorClosedEventsWithValue:expectedValueInterval:@
-writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeDoorClosedEventsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeDoorClosedEventsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeDoorClosedEventsWithValue:expectedValueInterval:params:@
-writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeDoorClosedEventsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeDoorClosedEventsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOpenPeriodWithParams:@
-readAttributeOpenPeriodWithParamsSelector :: Selector
+readAttributeOpenPeriodWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOpenPeriodWithParamsSelector = mkSelector "readAttributeOpenPeriodWithParams:"
 
 -- | @Selector@ for @writeAttributeOpenPeriodWithValue:expectedValueInterval:@
-writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOpenPeriodWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOpenPeriodWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOpenPeriodWithValue:expectedValueInterval:params:@
-writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOpenPeriodWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOpenPeriodWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeNumberOfTotalUsersSupportedWithParams:@
-readAttributeNumberOfTotalUsersSupportedWithParamsSelector :: Selector
+readAttributeNumberOfTotalUsersSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfTotalUsersSupportedWithParamsSelector = mkSelector "readAttributeNumberOfTotalUsersSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfPINUsersSupportedWithParams:@
-readAttributeNumberOfPINUsersSupportedWithParamsSelector :: Selector
+readAttributeNumberOfPINUsersSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfPINUsersSupportedWithParamsSelector = mkSelector "readAttributeNumberOfPINUsersSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfRFIDUsersSupportedWithParams:@
-readAttributeNumberOfRFIDUsersSupportedWithParamsSelector :: Selector
+readAttributeNumberOfRFIDUsersSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfRFIDUsersSupportedWithParamsSelector = mkSelector "readAttributeNumberOfRFIDUsersSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams:@
-readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector :: Selector
+readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParamsSelector = mkSelector "readAttributeNumberOfWeekDaySchedulesSupportedPerUserWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams:@
-readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector :: Selector
+readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParamsSelector = mkSelector "readAttributeNumberOfYearDaySchedulesSupportedPerUserWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfHolidaySchedulesSupportedWithParams:@
-readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector :: Selector
+readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfHolidaySchedulesSupportedWithParamsSelector = mkSelector "readAttributeNumberOfHolidaySchedulesSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeMaxPINCodeLengthWithParams:@
-readAttributeMaxPINCodeLengthWithParamsSelector :: Selector
+readAttributeMaxPINCodeLengthWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxPINCodeLengthWithParamsSelector = mkSelector "readAttributeMaxPINCodeLengthWithParams:"
 
 -- | @Selector@ for @readAttributeMinPINCodeLengthWithParams:@
-readAttributeMinPINCodeLengthWithParamsSelector :: Selector
+readAttributeMinPINCodeLengthWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinPINCodeLengthWithParamsSelector = mkSelector "readAttributeMinPINCodeLengthWithParams:"
 
 -- | @Selector@ for @readAttributeMaxRFIDCodeLengthWithParams:@
-readAttributeMaxRFIDCodeLengthWithParamsSelector :: Selector
+readAttributeMaxRFIDCodeLengthWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxRFIDCodeLengthWithParamsSelector = mkSelector "readAttributeMaxRFIDCodeLengthWithParams:"
 
 -- | @Selector@ for @readAttributeMinRFIDCodeLengthWithParams:@
-readAttributeMinRFIDCodeLengthWithParamsSelector :: Selector
+readAttributeMinRFIDCodeLengthWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinRFIDCodeLengthWithParamsSelector = mkSelector "readAttributeMinRFIDCodeLengthWithParams:"
 
 -- | @Selector@ for @readAttributeCredentialRulesSupportWithParams:@
-readAttributeCredentialRulesSupportWithParamsSelector :: Selector
+readAttributeCredentialRulesSupportWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCredentialRulesSupportWithParamsSelector = mkSelector "readAttributeCredentialRulesSupportWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfCredentialsSupportedPerUserWithParams:@
-readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector :: Selector
+readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfCredentialsSupportedPerUserWithParamsSelector = mkSelector "readAttributeNumberOfCredentialsSupportedPerUserWithParams:"
 
 -- | @Selector@ for @readAttributeLanguageWithParams:@
-readAttributeLanguageWithParamsSelector :: Selector
+readAttributeLanguageWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLanguageWithParamsSelector = mkSelector "readAttributeLanguageWithParams:"
 
 -- | @Selector@ for @writeAttributeLanguageWithValue:expectedValueInterval:@
-writeAttributeLanguageWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLanguageWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLanguageWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLanguageWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLanguageWithValue:expectedValueInterval:params:@
-writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLanguageWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLanguageWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLEDSettingsWithParams:@
-readAttributeLEDSettingsWithParamsSelector :: Selector
+readAttributeLEDSettingsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLEDSettingsWithParamsSelector = mkSelector "readAttributeLEDSettingsWithParams:"
 
 -- | @Selector@ for @writeAttributeLEDSettingsWithValue:expectedValueInterval:@
-writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLEDSettingsWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLEDSettingsWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLEDSettingsWithValue:expectedValueInterval:params:@
-writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLEDSettingsWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLEDSettingsWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeAutoRelockTimeWithParams:@
-readAttributeAutoRelockTimeWithParamsSelector :: Selector
+readAttributeAutoRelockTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAutoRelockTimeWithParamsSelector = mkSelector "readAttributeAutoRelockTimeWithParams:"
 
 -- | @Selector@ for @writeAttributeAutoRelockTimeWithValue:expectedValueInterval:@
-writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeAutoRelockTimeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeAutoRelockTimeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeAutoRelockTimeWithValue:expectedValueInterval:params:@
-writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeAutoRelockTimeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeAutoRelockTimeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSoundVolumeWithParams:@
-readAttributeSoundVolumeWithParamsSelector :: Selector
+readAttributeSoundVolumeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSoundVolumeWithParamsSelector = mkSelector "readAttributeSoundVolumeWithParams:"
 
 -- | @Selector@ for @writeAttributeSoundVolumeWithValue:expectedValueInterval:@
-writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSoundVolumeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSoundVolumeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSoundVolumeWithValue:expectedValueInterval:params:@
-writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSoundVolumeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSoundVolumeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeOperatingModeWithParams:@
-readAttributeOperatingModeWithParamsSelector :: Selector
+readAttributeOperatingModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOperatingModeWithParamsSelector = mkSelector "readAttributeOperatingModeWithParams:"
 
 -- | @Selector@ for @writeAttributeOperatingModeWithValue:expectedValueInterval:@
-writeAttributeOperatingModeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeOperatingModeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeOperatingModeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeOperatingModeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeOperatingModeWithValue:expectedValueInterval:params:@
-writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeOperatingModeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeOperatingModeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSupportedOperatingModesWithParams:@
-readAttributeSupportedOperatingModesWithParamsSelector :: Selector
+readAttributeSupportedOperatingModesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedOperatingModesWithParamsSelector = mkSelector "readAttributeSupportedOperatingModesWithParams:"
 
 -- | @Selector@ for @readAttributeDefaultConfigurationRegisterWithParams:@
-readAttributeDefaultConfigurationRegisterWithParamsSelector :: Selector
+readAttributeDefaultConfigurationRegisterWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDefaultConfigurationRegisterWithParamsSelector = mkSelector "readAttributeDefaultConfigurationRegisterWithParams:"
 
 -- | @Selector@ for @readAttributeEnableLocalProgrammingWithParams:@
-readAttributeEnableLocalProgrammingWithParamsSelector :: Selector
+readAttributeEnableLocalProgrammingWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnableLocalProgrammingWithParamsSelector = mkSelector "readAttributeEnableLocalProgrammingWithParams:"
 
 -- | @Selector@ for @writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:@
-writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEnableLocalProgrammingWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:params:@
-writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEnableLocalProgrammingWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEnableLocalProgrammingWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeEnableOneTouchLockingWithParams:@
-readAttributeEnableOneTouchLockingWithParamsSelector :: Selector
+readAttributeEnableOneTouchLockingWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnableOneTouchLockingWithParamsSelector = mkSelector "readAttributeEnableOneTouchLockingWithParams:"
 
 -- | @Selector@ for @writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:@
-writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEnableOneTouchLockingWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:params:@
-writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEnableOneTouchLockingWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEnableOneTouchLockingWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeEnableInsideStatusLEDWithParams:@
-readAttributeEnableInsideStatusLEDWithParamsSelector :: Selector
+readAttributeEnableInsideStatusLEDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnableInsideStatusLEDWithParamsSelector = mkSelector "readAttributeEnableInsideStatusLEDWithParams:"
 
 -- | @Selector@ for @writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:@
-writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEnableInsideStatusLEDWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:params:@
-writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEnableInsideStatusLEDWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEnableInsideStatusLEDWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeEnablePrivacyModeButtonWithParams:@
-readAttributeEnablePrivacyModeButtonWithParamsSelector :: Selector
+readAttributeEnablePrivacyModeButtonWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnablePrivacyModeButtonWithParamsSelector = mkSelector "readAttributeEnablePrivacyModeButtonWithParams:"
 
 -- | @Selector@ for @writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:@
-writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEnablePrivacyModeButtonWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:params:@
-writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEnablePrivacyModeButtonWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEnablePrivacyModeButtonWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLocalProgrammingFeaturesWithParams:@
-readAttributeLocalProgrammingFeaturesWithParamsSelector :: Selector
+readAttributeLocalProgrammingFeaturesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLocalProgrammingFeaturesWithParamsSelector = mkSelector "readAttributeLocalProgrammingFeaturesWithParams:"
 
 -- | @Selector@ for @writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:@
-writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLocalProgrammingFeaturesWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:params:@
-writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLocalProgrammingFeaturesWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLocalProgrammingFeaturesWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeWrongCodeEntryLimitWithParams:@
-readAttributeWrongCodeEntryLimitWithParamsSelector :: Selector
+readAttributeWrongCodeEntryLimitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeWrongCodeEntryLimitWithParamsSelector = mkSelector "readAttributeWrongCodeEntryLimitWithParams:"
 
 -- | @Selector@ for @writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:@
-writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeWrongCodeEntryLimitWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:params:@
-writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeWrongCodeEntryLimitWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeWrongCodeEntryLimitWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeUserCodeTemporaryDisableTimeWithParams:@
-readAttributeUserCodeTemporaryDisableTimeWithParamsSelector :: Selector
+readAttributeUserCodeTemporaryDisableTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUserCodeTemporaryDisableTimeWithParamsSelector = mkSelector "readAttributeUserCodeTemporaryDisableTimeWithParams:"
 
 -- | @Selector@ for @writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:@
-writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:params:@
-writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeUserCodeTemporaryDisableTimeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeUserCodeTemporaryDisableTimeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSendPINOverTheAirWithParams:@
-readAttributeSendPINOverTheAirWithParamsSelector :: Selector
+readAttributeSendPINOverTheAirWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSendPINOverTheAirWithParamsSelector = mkSelector "readAttributeSendPINOverTheAirWithParams:"
 
 -- | @Selector@ for @writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:@
-writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSendPINOverTheAirWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:params:@
-writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSendPINOverTheAirWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSendPINOverTheAirWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeRequirePINforRemoteOperationWithParams:@
-readAttributeRequirePINforRemoteOperationWithParamsSelector :: Selector
+readAttributeRequirePINforRemoteOperationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRequirePINforRemoteOperationWithParamsSelector = mkSelector "readAttributeRequirePINforRemoteOperationWithParams:"
 
 -- | @Selector@ for @writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:@
-writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeRequirePINforRemoteOperationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:params:@
-writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeRequirePINforRemoteOperationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeRequirePINforRemoteOperationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeExpiringUserTimeoutWithParams:@
-readAttributeExpiringUserTimeoutWithParamsSelector :: Selector
+readAttributeExpiringUserTimeoutWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExpiringUserTimeoutWithParamsSelector = mkSelector "readAttributeExpiringUserTimeoutWithParams:"
 
 -- | @Selector@ for @writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:@
-writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeExpiringUserTimeoutWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:params:@
-writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeExpiringUserTimeoutWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeExpiringUserTimeoutWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeAliroReaderVerificationKeyWithParams:@
-readAttributeAliroReaderVerificationKeyWithParamsSelector :: Selector
+readAttributeAliroReaderVerificationKeyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroReaderVerificationKeyWithParamsSelector = mkSelector "readAttributeAliroReaderVerificationKeyWithParams:"
 
 -- | @Selector@ for @readAttributeAliroReaderGroupIdentifierWithParams:@
-readAttributeAliroReaderGroupIdentifierWithParamsSelector :: Selector
+readAttributeAliroReaderGroupIdentifierWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroReaderGroupIdentifierWithParamsSelector = mkSelector "readAttributeAliroReaderGroupIdentifierWithParams:"
 
 -- | @Selector@ for @readAttributeAliroReaderGroupSubIdentifierWithParams:@
-readAttributeAliroReaderGroupSubIdentifierWithParamsSelector :: Selector
+readAttributeAliroReaderGroupSubIdentifierWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroReaderGroupSubIdentifierWithParamsSelector = mkSelector "readAttributeAliroReaderGroupSubIdentifierWithParams:"
 
 -- | @Selector@ for @readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams:@
-readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector :: Selector
+readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector = mkSelector "readAttributeAliroExpeditedTransactionSupportedProtocolVersionsWithParams:"
 
 -- | @Selector@ for @readAttributeAliroGroupResolvingKeyWithParams:@
-readAttributeAliroGroupResolvingKeyWithParamsSelector :: Selector
+readAttributeAliroGroupResolvingKeyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroGroupResolvingKeyWithParamsSelector = mkSelector "readAttributeAliroGroupResolvingKeyWithParams:"
 
 -- | @Selector@ for @readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams:@
-readAttributeAliroSupportedBLEUWBProtocolVersionsWithParamsSelector :: Selector
+readAttributeAliroSupportedBLEUWBProtocolVersionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroSupportedBLEUWBProtocolVersionsWithParamsSelector = mkSelector "readAttributeAliroSupportedBLEUWBProtocolVersionsWithParams:"
 
 -- | @Selector@ for @readAttributeAliroBLEAdvertisingVersionWithParams:@
-readAttributeAliroBLEAdvertisingVersionWithParamsSelector :: Selector
+readAttributeAliroBLEAdvertisingVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAliroBLEAdvertisingVersionWithParamsSelector = mkSelector "readAttributeAliroBLEAdvertisingVersionWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams:@
-readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector :: Selector
+readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector = mkSelector "readAttributeNumberOfAliroCredentialIssuerKeysSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeNumberOfAliroEndpointKeysSupportedWithParams:@
-readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector :: Selector
+readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfAliroEndpointKeysSupportedWithParamsSelector = mkSelector "readAttributeNumberOfAliroEndpointKeysSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroReaderVerificationKeyWithParams:@
-readAttributeAppleAliroReaderVerificationKeyWithParamsSelector :: Selector
+readAttributeAppleAliroReaderVerificationKeyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroReaderVerificationKeyWithParamsSelector = mkSelector "readAttributeAppleAliroReaderVerificationKeyWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroReaderGroupIdentifierWithParams:@
-readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector :: Selector
+readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroReaderGroupIdentifierWithParamsSelector = mkSelector "readAttributeAppleAliroReaderGroupIdentifierWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroReaderGroupSubIdentifierWithParams:@
-readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector :: Selector
+readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroReaderGroupSubIdentifierWithParamsSelector = mkSelector "readAttributeAppleAliroReaderGroupSubIdentifierWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams:@
-readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector :: Selector
+readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParamsSelector = mkSelector "readAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroGroupResolvingKeyWithParams:@
-readAttributeAppleAliroGroupResolvingKeyWithParamsSelector :: Selector
+readAttributeAppleAliroGroupResolvingKeyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroGroupResolvingKeyWithParamsSelector = mkSelector "readAttributeAppleAliroGroupResolvingKeyWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams:@
-readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParamsSelector :: Selector
+readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParamsSelector = mkSelector "readAttributeAppleAliroSupportedBLEUWBProtocolVersionsWithParams:"
 
 -- | @Selector@ for @readAttributeAppleAliroBLEAdvertisingVersionWithParams:@
-readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector :: Selector
+readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleAliroBLEAdvertisingVersionWithParamsSelector = mkSelector "readAttributeAppleAliroBLEAdvertisingVersionWithParams:"
 
 -- | @Selector@ for @readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams:@
-readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector :: Selector
+readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParamsSelector = mkSelector "readAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedWithParams:"
 
 -- | @Selector@ for @readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams:@
-readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParamsSelector :: Selector
+readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParamsSelector = mkSelector "readAttributeAppleNumberOfAliroEndpointKeysSupportedWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterDoorLock)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterDoorLock)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterDoorLock)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @lockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:@
-lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterLockDoorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 lockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "lockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @unlockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:@
-unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterUnlockDoorParams, Id NSArray, Id NSNumber, Ptr ()] ()
 unlockDoorWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "unlockDoorWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completionHandler:@
-unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterUnlockWithTimeoutParams, Id NSArray, Id NSNumber, Ptr ()] ()
 unlockWithTimeoutWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "unlockWithTimeoutWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterSetWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterGetWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterClearWeekDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearWeekDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearWeekDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterSetYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterGetYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterClearYearDayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearYearDayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearYearDayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterSetHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterGetHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterClearHolidayScheduleParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearHolidayScheduleWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearHolidayScheduleWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterSetUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setUserWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterGetUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getUserWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearUserWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterClearUserParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearUserWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearUserWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @setCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:@
-setCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+setCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterSetCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "setCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @getCredentialStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
-getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterGetCredentialStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getCredentialStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "getCredentialStatusWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @clearCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:@
-clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRDoorLockClusterClearCredentialParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearCredentialWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "clearCredentialWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterDoorLock)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

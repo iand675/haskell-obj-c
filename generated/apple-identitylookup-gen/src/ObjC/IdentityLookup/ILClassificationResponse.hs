@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.IdentityLookup.ILClassificationResponse
   , setUserString
   , userInfo
   , setUserInfo
-  , initWithClassificationActionSelector
-  , initSelector
   , actionSelector
-  , userStringSelector
+  , initSelector
+  , initWithClassificationActionSelector
+  , setUserInfoSelector
   , setUserStringSelector
   , userInfoSelector
-  , setUserInfoSelector
+  , userStringSelector
 
   -- * Enum types
   , ILClassificationAction(ILClassificationAction)
@@ -33,15 +34,11 @@ module ObjC.IdentityLookup.ILClassificationResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,70 +48,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithClassificationAction:@
 initWithClassificationAction :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> ILClassificationAction -> IO (Id ILClassificationResponse)
-initWithClassificationAction ilClassificationResponse  action =
-    sendMsg ilClassificationResponse (mkSelector "initWithClassificationAction:") (retPtr retVoid) [argCLong (coerce action)] >>= ownedObject . castPtr
+initWithClassificationAction ilClassificationResponse action =
+  sendOwnedMessage ilClassificationResponse initWithClassificationActionSelector action
 
 -- | @- init@
 init_ :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO (Id ILClassificationResponse)
-init_ ilClassificationResponse  =
-    sendMsg ilClassificationResponse (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ilClassificationResponse =
+  sendOwnedMessage ilClassificationResponse initSelector
 
 -- | @- action@
 action :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO ILClassificationAction
-action ilClassificationResponse  =
-    fmap (coerce :: CLong -> ILClassificationAction) $ sendMsg ilClassificationResponse (mkSelector "action") retCLong []
+action ilClassificationResponse =
+  sendMessage ilClassificationResponse actionSelector
 
 -- | @- userString@
 userString :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO (Id NSString)
-userString ilClassificationResponse  =
-    sendMsg ilClassificationResponse (mkSelector "userString") (retPtr retVoid) [] >>= retainedObject . castPtr
+userString ilClassificationResponse =
+  sendMessage ilClassificationResponse userStringSelector
 
 -- | @- setUserString:@
 setUserString :: (IsILClassificationResponse ilClassificationResponse, IsNSString value) => ilClassificationResponse -> value -> IO ()
-setUserString ilClassificationResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ilClassificationResponse (mkSelector "setUserString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserString ilClassificationResponse value =
+  sendMessage ilClassificationResponse setUserStringSelector (toNSString value)
 
 -- | @- userInfo@
 userInfo :: IsILClassificationResponse ilClassificationResponse => ilClassificationResponse -> IO (Id NSDictionary)
-userInfo ilClassificationResponse  =
-    sendMsg ilClassificationResponse (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo ilClassificationResponse =
+  sendMessage ilClassificationResponse userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: (IsILClassificationResponse ilClassificationResponse, IsNSDictionary value) => ilClassificationResponse -> value -> IO ()
-setUserInfo ilClassificationResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ilClassificationResponse (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo ilClassificationResponse value =
+  sendMessage ilClassificationResponse setUserInfoSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithClassificationAction:@
-initWithClassificationActionSelector :: Selector
+initWithClassificationActionSelector :: Selector '[ILClassificationAction] (Id ILClassificationResponse)
 initWithClassificationActionSelector = mkSelector "initWithClassificationAction:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ILClassificationResponse)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] ILClassificationAction
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @userString@
-userStringSelector :: Selector
+userStringSelector :: Selector '[] (Id NSString)
 userStringSelector = mkSelector "userString"
 
 -- | @Selector@ for @setUserString:@
-setUserStringSelector :: Selector
+setUserStringSelector :: Selector '[Id NSString] ()
 setUserStringSelector = mkSelector "setUserString:"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 

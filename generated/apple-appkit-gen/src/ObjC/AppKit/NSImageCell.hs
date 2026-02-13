@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.AppKit.NSImageCell
   , imageFrameStyle
   , setImageFrameStyle
   , imageAlignmentSelector
-  , setImageAlignmentSelector
-  , imageScalingSelector
-  , setImageScalingSelector
   , imageFrameStyleSelector
+  , imageScalingSelector
+  , setImageAlignmentSelector
   , setImageFrameStyleSelector
+  , setImageScalingSelector
 
   -- * Enum types
   , NSImageAlignment(NSImageAlignment)
@@ -48,15 +49,11 @@ module ObjC.AppKit.NSImageCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,59 +63,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- imageAlignment@
 imageAlignment :: IsNSImageCell nsImageCell => nsImageCell -> IO NSImageAlignment
-imageAlignment nsImageCell  =
-    fmap (coerce :: CULong -> NSImageAlignment) $ sendMsg nsImageCell (mkSelector "imageAlignment") retCULong []
+imageAlignment nsImageCell =
+  sendMessage nsImageCell imageAlignmentSelector
 
 -- | @- setImageAlignment:@
 setImageAlignment :: IsNSImageCell nsImageCell => nsImageCell -> NSImageAlignment -> IO ()
-setImageAlignment nsImageCell  value =
-    sendMsg nsImageCell (mkSelector "setImageAlignment:") retVoid [argCULong (coerce value)]
+setImageAlignment nsImageCell value =
+  sendMessage nsImageCell setImageAlignmentSelector value
 
 -- | @- imageScaling@
 imageScaling :: IsNSImageCell nsImageCell => nsImageCell -> IO NSImageScaling
-imageScaling nsImageCell  =
-    fmap (coerce :: CULong -> NSImageScaling) $ sendMsg nsImageCell (mkSelector "imageScaling") retCULong []
+imageScaling nsImageCell =
+  sendMessage nsImageCell imageScalingSelector
 
 -- | @- setImageScaling:@
 setImageScaling :: IsNSImageCell nsImageCell => nsImageCell -> NSImageScaling -> IO ()
-setImageScaling nsImageCell  value =
-    sendMsg nsImageCell (mkSelector "setImageScaling:") retVoid [argCULong (coerce value)]
+setImageScaling nsImageCell value =
+  sendMessage nsImageCell setImageScalingSelector value
 
 -- | @- imageFrameStyle@
 imageFrameStyle :: IsNSImageCell nsImageCell => nsImageCell -> IO NSImageFrameStyle
-imageFrameStyle nsImageCell  =
-    fmap (coerce :: CULong -> NSImageFrameStyle) $ sendMsg nsImageCell (mkSelector "imageFrameStyle") retCULong []
+imageFrameStyle nsImageCell =
+  sendMessage nsImageCell imageFrameStyleSelector
 
 -- | @- setImageFrameStyle:@
 setImageFrameStyle :: IsNSImageCell nsImageCell => nsImageCell -> NSImageFrameStyle -> IO ()
-setImageFrameStyle nsImageCell  value =
-    sendMsg nsImageCell (mkSelector "setImageFrameStyle:") retVoid [argCULong (coerce value)]
+setImageFrameStyle nsImageCell value =
+  sendMessage nsImageCell setImageFrameStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageAlignment@
-imageAlignmentSelector :: Selector
+imageAlignmentSelector :: Selector '[] NSImageAlignment
 imageAlignmentSelector = mkSelector "imageAlignment"
 
 -- | @Selector@ for @setImageAlignment:@
-setImageAlignmentSelector :: Selector
+setImageAlignmentSelector :: Selector '[NSImageAlignment] ()
 setImageAlignmentSelector = mkSelector "setImageAlignment:"
 
 -- | @Selector@ for @imageScaling@
-imageScalingSelector :: Selector
+imageScalingSelector :: Selector '[] NSImageScaling
 imageScalingSelector = mkSelector "imageScaling"
 
 -- | @Selector@ for @setImageScaling:@
-setImageScalingSelector :: Selector
+setImageScalingSelector :: Selector '[NSImageScaling] ()
 setImageScalingSelector = mkSelector "setImageScaling:"
 
 -- | @Selector@ for @imageFrameStyle@
-imageFrameStyleSelector :: Selector
+imageFrameStyleSelector :: Selector '[] NSImageFrameStyle
 imageFrameStyleSelector = mkSelector "imageFrameStyle"
 
 -- | @Selector@ for @setImageFrameStyle:@
-setImageFrameStyleSelector :: Selector
+setImageFrameStyleSelector :: Selector '[NSImageFrameStyle] ()
 setImageFrameStyleSelector = mkSelector "setImageFrameStyle:"
 

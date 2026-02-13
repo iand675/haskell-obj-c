@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRGroupKeyManagementClusterKeySetReadAllIndicesParams
   , setServerSideProcessingTimeout
   , groupKeySetIDs
   , setGroupKeySetIDs
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
   , groupKeySetIDsSelector
+  , serverSideProcessingTimeoutSelector
   , setGroupKeySetIDsSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  =
-    sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,9 +53,8 @@ timedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams, IsNSNumber value) => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams value =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -68,8 +64,8 @@ setTimedInvokeTimeoutMs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  =
-    sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGroupKeyManagementClusterKeySetReadAllIndicesParams =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,50 +75,48 @@ serverSideProcessingTimeout mtrGroupKeyManagementClusterKeySetReadAllIndicesPara
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams, IsNSNumber value) => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGroupKeyManagementClusterKeySetReadAllIndicesParams value =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- | This command used to incorrectly have a groupKeySetIDs field.
 --
 -- ObjC selector: @- groupKeySetIDs@
 groupKeySetIDs :: IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> IO (Id NSArray)
-groupKeySetIDs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  =
-    sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "groupKeySetIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySetIDs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams groupKeySetIDsSelector
 
 -- | This command used to incorrectly have a groupKeySetIDs field.
 --
 -- ObjC selector: @- setGroupKeySetIDs:@
 setGroupKeySetIDs :: (IsMTRGroupKeyManagementClusterKeySetReadAllIndicesParams mtrGroupKeyManagementClusterKeySetReadAllIndicesParams, IsNSArray value) => mtrGroupKeyManagementClusterKeySetReadAllIndicesParams -> value -> IO ()
-setGroupKeySetIDs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterKeySetReadAllIndicesParams (mkSelector "setGroupKeySetIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySetIDs mtrGroupKeyManagementClusterKeySetReadAllIndicesParams value =
+  sendMessage mtrGroupKeyManagementClusterKeySetReadAllIndicesParams setGroupKeySetIDsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 
 -- | @Selector@ for @groupKeySetIDs@
-groupKeySetIDsSelector :: Selector
+groupKeySetIDsSelector :: Selector '[] (Id NSArray)
 groupKeySetIDsSelector = mkSelector "groupKeySetIDs"
 
 -- | @Selector@ for @setGroupKeySetIDs:@
-setGroupKeySetIDsSelector :: Selector
+setGroupKeySetIDsSelector :: Selector '[Id NSArray] ()
 setGroupKeySetIDsSelector = mkSelector "setGroupKeySetIDs:"
 

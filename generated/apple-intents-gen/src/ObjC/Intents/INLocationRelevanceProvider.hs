@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Intents.INLocationRelevanceProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,9 +31,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRegion:@
 initWithRegion :: (IsINLocationRelevanceProvider inLocationRelevanceProvider, IsCLRegion region) => inLocationRelevanceProvider -> region -> IO (Id INLocationRelevanceProvider)
-initWithRegion inLocationRelevanceProvider  region =
-  withObjCPtr region $ \raw_region ->
-      sendMsg inLocationRelevanceProvider (mkSelector "initWithRegion:") (retPtr retVoid) [argPtr (castPtr raw_region :: Ptr ())] >>= ownedObject . castPtr
+initWithRegion inLocationRelevanceProvider region =
+  sendOwnedMessage inLocationRelevanceProvider initWithRegionSelector (toCLRegion region)
 
 -- | The region representing the relevant location.
 --
@@ -44,18 +40,18 @@ initWithRegion inLocationRelevanceProvider  region =
 --
 -- ObjC selector: @- region@
 region :: IsINLocationRelevanceProvider inLocationRelevanceProvider => inLocationRelevanceProvider -> IO (Id CLRegion)
-region inLocationRelevanceProvider  =
-    sendMsg inLocationRelevanceProvider (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+region inLocationRelevanceProvider =
+  sendMessage inLocationRelevanceProvider regionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRegion:@
-initWithRegionSelector :: Selector
+initWithRegionSelector :: Selector '[Id CLRegion] (Id INLocationRelevanceProvider)
 initWithRegionSelector = mkSelector "initWithRegion:"
 
 -- | @Selector@ for @region@
-regionSelector :: Selector
+regionSelector :: Selector '[] (Id CLRegion)
 regionSelector = mkSelector "region"
 

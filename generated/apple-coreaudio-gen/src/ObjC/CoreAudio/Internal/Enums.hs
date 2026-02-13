@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreAudio.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Power Hints
 --
@@ -34,6 +37,16 @@ pattern KAudioHardwarePowerHintNone = AudioHardwarePowerHint 0
 
 pattern KAudioHardwarePowerHintFavorSavingPower :: AudioHardwarePowerHint
 pattern KAudioHardwarePowerHintFavorSavingPower = AudioHardwarePowerHint 1
+
+instance ObjCArgument AudioHardwarePowerHint where
+  withObjCArg (AudioHardwarePowerHint x) k = k (argCUInt x)
+
+instance ObjCReturn AudioHardwarePowerHint where
+  type RawReturn AudioHardwarePowerHint = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioHardwarePowerHint x)
+  fromOwned x = pure (AudioHardwarePowerHint x)
 
 -- | Values for kAudioLevelControlPropertyDecibelsToScalarTransferFunction
 --
@@ -92,3 +105,13 @@ pattern KAudioLevelControlTranferFunction11Over1 = AudioLevelControlTransferFunc
 
 pattern KAudioLevelControlTranferFunction12Over1 :: AudioLevelControlTransferFunction
 pattern KAudioLevelControlTranferFunction12Over1 = AudioLevelControlTransferFunction 15
+
+instance ObjCArgument AudioLevelControlTransferFunction where
+  withObjCArg (AudioLevelControlTransferFunction x) k = k (argCUInt x)
+
+instance ObjCReturn AudioLevelControlTransferFunction where
+  type RawReturn AudioLevelControlTransferFunction = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioLevelControlTransferFunction x)
+  fromOwned x = pure (AudioLevelControlTransferFunction x)

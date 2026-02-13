@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSNetServiceBrowser
   , setDelegate
   , includesPeerToPeer
   , setIncludesPeerToPeer
+  , delegateSelector
+  , includesPeerToPeerSelector
   , initSelector
-  , scheduleInRunLoop_forModeSelector
   , removeFromRunLoop_forModeSelector
+  , scheduleInRunLoop_forModeSelector
   , searchForBrowsableDomainsSelector
   , searchForRegistrationDomainsSelector
   , searchForServicesOfType_inDomainSelector
-  , stopSelector
-  , delegateSelector
   , setDelegateSelector
-  , includesPeerToPeerSelector
   , setIncludesPeerToPeerSelector
+  , stopSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,110 +45,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO (Id NSNetServiceBrowser)
-init_ nsNetServiceBrowser  =
-    sendMsg nsNetServiceBrowser (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsNetServiceBrowser =
+  sendOwnedMessage nsNetServiceBrowser initSelector
 
 -- | @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsNSNetServiceBrowser nsNetServiceBrowser, IsNSRunLoop aRunLoop, IsNSString mode) => nsNetServiceBrowser -> aRunLoop -> mode -> IO ()
-scheduleInRunLoop_forMode nsNetServiceBrowser  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsNetServiceBrowser (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+scheduleInRunLoop_forMode nsNetServiceBrowser aRunLoop mode =
+  sendMessage nsNetServiceBrowser scheduleInRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsNSNetServiceBrowser nsNetServiceBrowser, IsNSRunLoop aRunLoop, IsNSString mode) => nsNetServiceBrowser -> aRunLoop -> mode -> IO ()
-removeFromRunLoop_forMode nsNetServiceBrowser  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsNetServiceBrowser (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeFromRunLoop_forMode nsNetServiceBrowser aRunLoop mode =
+  sendMessage nsNetServiceBrowser removeFromRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- searchForBrowsableDomains@
 searchForBrowsableDomains :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO ()
-searchForBrowsableDomains nsNetServiceBrowser  =
-    sendMsg nsNetServiceBrowser (mkSelector "searchForBrowsableDomains") retVoid []
+searchForBrowsableDomains nsNetServiceBrowser =
+  sendMessage nsNetServiceBrowser searchForBrowsableDomainsSelector
 
 -- | @- searchForRegistrationDomains@
 searchForRegistrationDomains :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO ()
-searchForRegistrationDomains nsNetServiceBrowser  =
-    sendMsg nsNetServiceBrowser (mkSelector "searchForRegistrationDomains") retVoid []
+searchForRegistrationDomains nsNetServiceBrowser =
+  sendMessage nsNetServiceBrowser searchForRegistrationDomainsSelector
 
 -- | @- searchForServicesOfType:inDomain:@
 searchForServicesOfType_inDomain :: (IsNSNetServiceBrowser nsNetServiceBrowser, IsNSString type_, IsNSString domainString) => nsNetServiceBrowser -> type_ -> domainString -> IO ()
-searchForServicesOfType_inDomain nsNetServiceBrowser  type_ domainString =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr domainString $ \raw_domainString ->
-        sendMsg nsNetServiceBrowser (mkSelector "searchForServicesOfType:inDomain:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_domainString :: Ptr ())]
+searchForServicesOfType_inDomain nsNetServiceBrowser type_ domainString =
+  sendMessage nsNetServiceBrowser searchForServicesOfType_inDomainSelector (toNSString type_) (toNSString domainString)
 
 -- | @- stop@
 stop :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO ()
-stop nsNetServiceBrowser  =
-    sendMsg nsNetServiceBrowser (mkSelector "stop") retVoid []
+stop nsNetServiceBrowser =
+  sendMessage nsNetServiceBrowser stopSelector
 
 -- | @- delegate@
 delegate :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO RawId
-delegate nsNetServiceBrowser  =
-    fmap (RawId . castPtr) $ sendMsg nsNetServiceBrowser (mkSelector "delegate") (retPtr retVoid) []
+delegate nsNetServiceBrowser =
+  sendMessage nsNetServiceBrowser delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> RawId -> IO ()
-setDelegate nsNetServiceBrowser  value =
-    sendMsg nsNetServiceBrowser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsNetServiceBrowser value =
+  sendMessage nsNetServiceBrowser setDelegateSelector value
 
 -- | @- includesPeerToPeer@
 includesPeerToPeer :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> IO Bool
-includesPeerToPeer nsNetServiceBrowser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNetServiceBrowser (mkSelector "includesPeerToPeer") retCULong []
+includesPeerToPeer nsNetServiceBrowser =
+  sendMessage nsNetServiceBrowser includesPeerToPeerSelector
 
 -- | @- setIncludesPeerToPeer:@
 setIncludesPeerToPeer :: IsNSNetServiceBrowser nsNetServiceBrowser => nsNetServiceBrowser -> Bool -> IO ()
-setIncludesPeerToPeer nsNetServiceBrowser  value =
-    sendMsg nsNetServiceBrowser (mkSelector "setIncludesPeerToPeer:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesPeerToPeer nsNetServiceBrowser value =
+  sendMessage nsNetServiceBrowser setIncludesPeerToPeerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSNetServiceBrowser)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @searchForBrowsableDomains@
-searchForBrowsableDomainsSelector :: Selector
+searchForBrowsableDomainsSelector :: Selector '[] ()
 searchForBrowsableDomainsSelector = mkSelector "searchForBrowsableDomains"
 
 -- | @Selector@ for @searchForRegistrationDomains@
-searchForRegistrationDomainsSelector :: Selector
+searchForRegistrationDomainsSelector :: Selector '[] ()
 searchForRegistrationDomainsSelector = mkSelector "searchForRegistrationDomains"
 
 -- | @Selector@ for @searchForServicesOfType:inDomain:@
-searchForServicesOfType_inDomainSelector :: Selector
+searchForServicesOfType_inDomainSelector :: Selector '[Id NSString, Id NSString] ()
 searchForServicesOfType_inDomainSelector = mkSelector "searchForServicesOfType:inDomain:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesPeerToPeer@
-includesPeerToPeerSelector :: Selector
+includesPeerToPeerSelector :: Selector '[] Bool
 includesPeerToPeerSelector = mkSelector "includesPeerToPeer"
 
 -- | @Selector@ for @setIncludesPeerToPeer:@
-setIncludesPeerToPeerSelector :: Selector
+setIncludesPeerToPeerSelector :: Selector '[Bool] ()
 setIncludesPeerToPeerSelector = mkSelector "setIncludesPeerToPeer:"
 

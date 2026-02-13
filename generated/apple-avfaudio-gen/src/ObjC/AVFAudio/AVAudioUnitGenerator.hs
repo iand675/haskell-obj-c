@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.AVFAudio.AVAudioUnitGenerator
   , initWithAudioComponentDescription
   , bypass
   , setBypass
-  , initWithAudioComponentDescriptionSelector
   , bypassSelector
+  , initWithAudioComponentDescriptionSelector
   , setBypassSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAudioComponentDescription:@
 initWithAudioComponentDescription :: IsAVAudioUnitGenerator avAudioUnitGenerator => avAudioUnitGenerator -> AudioComponentDescription -> IO (Id AVAudioUnitGenerator)
-initWithAudioComponentDescription avAudioUnitGenerator  audioComponentDescription =
-    sendMsg avAudioUnitGenerator (mkSelector "initWithAudioComponentDescription:") (retPtr retVoid) [argAudioComponentDescription audioComponentDescription] >>= ownedObject . castPtr
+initWithAudioComponentDescription avAudioUnitGenerator audioComponentDescription =
+  sendOwnedMessage avAudioUnitGenerator initWithAudioComponentDescriptionSelector audioComponentDescription
 
 -- | bypass
 --
@@ -57,8 +54,8 @@ initWithAudioComponentDescription avAudioUnitGenerator  audioComponentDescriptio
 --
 -- ObjC selector: @- bypass@
 bypass :: IsAVAudioUnitGenerator avAudioUnitGenerator => avAudioUnitGenerator -> IO Bool
-bypass avAudioUnitGenerator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitGenerator (mkSelector "bypass") retCULong []
+bypass avAudioUnitGenerator =
+  sendMessage avAudioUnitGenerator bypassSelector
 
 -- | bypass
 --
@@ -66,22 +63,22 @@ bypass avAudioUnitGenerator  =
 --
 -- ObjC selector: @- setBypass:@
 setBypass :: IsAVAudioUnitGenerator avAudioUnitGenerator => avAudioUnitGenerator -> Bool -> IO ()
-setBypass avAudioUnitGenerator  value =
-    sendMsg avAudioUnitGenerator (mkSelector "setBypass:") retVoid [argCULong (if value then 1 else 0)]
+setBypass avAudioUnitGenerator value =
+  sendMessage avAudioUnitGenerator setBypassSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAudioComponentDescription:@
-initWithAudioComponentDescriptionSelector :: Selector
+initWithAudioComponentDescriptionSelector :: Selector '[AudioComponentDescription] (Id AVAudioUnitGenerator)
 initWithAudioComponentDescriptionSelector = mkSelector "initWithAudioComponentDescription:"
 
 -- | @Selector@ for @bypass@
-bypassSelector :: Selector
+bypassSelector :: Selector '[] Bool
 bypassSelector = mkSelector "bypass"
 
 -- | @Selector@ for @setBypass:@
-setBypassSelector :: Selector
+setBypassSelector :: Selector '[Bool] ()
 setBypassSelector = mkSelector "setBypass:"
 

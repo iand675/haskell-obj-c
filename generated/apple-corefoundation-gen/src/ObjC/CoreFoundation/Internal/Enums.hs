@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreFoundation.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CFCalendarUnit@ (bitmask)
 newtype CFCalendarUnit = CFCalendarUnit CULong
@@ -67,6 +70,16 @@ pattern KCFCalendarUnitYearForWeekOfYear = CFCalendarUnit 16384
 pattern KCFCalendarUnitDayOfYear :: CFCalendarUnit
 pattern KCFCalendarUnitDayOfYear = CFCalendarUnit 65536
 
+instance ObjCArgument CFCalendarUnit where
+  withObjCArg (CFCalendarUnit x) k = k (argCULong x)
+
+instance ObjCReturn CFCalendarUnit where
+  type RawReturn CFCalendarUnit = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFCalendarUnit x)
+  fromOwned x = pure (CFCalendarUnit x)
+
 -- | CFCharacterSetPredefinedSet
 --
 -- Type of the predefined CFCharacterSet selector values.
@@ -120,6 +133,16 @@ pattern KCFCharacterSetNewline = CFCharacterSetPredefinedSet 15
 pattern KCFCharacterSetIllegal :: CFCharacterSetPredefinedSet
 pattern KCFCharacterSetIllegal = CFCharacterSetPredefinedSet 12
 
+instance ObjCArgument CFCharacterSetPredefinedSet where
+  withObjCArg (CFCharacterSetPredefinedSet x) k = k (argCLong x)
+
+instance ObjCReturn CFCharacterSetPredefinedSet where
+  type RawReturn CFCharacterSetPredefinedSet = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFCharacterSetPredefinedSet x)
+  fromOwned x = pure (CFCharacterSetPredefinedSet x)
+
 -- | @CFComparisonResult@
 newtype CFComparisonResult = CFComparisonResult CLong
   deriving stock (Eq, Ord, Show)
@@ -133,6 +156,16 @@ pattern KCFCompareEqualTo = CFComparisonResult 0
 
 pattern KCFCompareGreaterThan :: CFComparisonResult
 pattern KCFCompareGreaterThan = CFComparisonResult 1
+
+instance ObjCArgument CFComparisonResult where
+  withObjCArg (CFComparisonResult x) k = k (argCLong x)
+
+instance ObjCReturn CFComparisonResult where
+  type RawReturn CFComparisonResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFComparisonResult x)
+  fromOwned x = pure (CFComparisonResult x)
 
 -- | @CFDataSearchFlags@ (bitmask)
 newtype CFDataSearchFlags = CFDataSearchFlags CULong
@@ -150,6 +183,16 @@ pattern KCFDataSearchBackwards = CFDataSearchFlags 1
 
 pattern KCFDataSearchAnchored :: CFDataSearchFlags
 pattern KCFDataSearchAnchored = CFDataSearchFlags 2
+
+instance ObjCArgument CFDataSearchFlags where
+  withObjCArg (CFDataSearchFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFDataSearchFlags where
+  type RawReturn CFDataSearchFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFDataSearchFlags x)
+  fromOwned x = pure (CFDataSearchFlags x)
 
 -- | @CFDateFormatterStyle@
 newtype CFDateFormatterStyle = CFDateFormatterStyle CLong
@@ -170,6 +213,16 @@ pattern KCFDateFormatterLongStyle = CFDateFormatterStyle 3
 
 pattern KCFDateFormatterFullStyle :: CFDateFormatterStyle
 pattern KCFDateFormatterFullStyle = CFDateFormatterStyle 4
+
+instance ObjCArgument CFDateFormatterStyle where
+  withObjCArg (CFDateFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn CFDateFormatterStyle where
+  type RawReturn CFDateFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFDateFormatterStyle x)
+  fromOwned x = pure (CFDateFormatterStyle x)
 
 -- | @CFFileSecurityClearOptions@ (bitmask)
 newtype CFFileSecurityClearOptions = CFFileSecurityClearOptions CULong
@@ -199,6 +252,16 @@ pattern KCFFileSecurityClearGroupUUID = CFFileSecurityClearOptions 16
 
 pattern KCFFileSecurityClearAccessControlList :: CFFileSecurityClearOptions
 pattern KCFFileSecurityClearAccessControlList = CFFileSecurityClearOptions 32
+
+instance ObjCArgument CFFileSecurityClearOptions where
+  withObjCArg (CFFileSecurityClearOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFFileSecurityClearOptions where
+  type RawReturn CFFileSecurityClearOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFFileSecurityClearOptions x)
+  fromOwned x = pure (CFFileSecurityClearOptions x)
 
 -- | @CFGregorianUnitFlags@ (bitmask)
 newtype CFGregorianUnitFlags = CFGregorianUnitFlags CULong
@@ -231,6 +294,16 @@ pattern KCFGregorianUnitsSeconds = CFGregorianUnitFlags 32
 
 pattern KCFGregorianAllUnits :: CFGregorianUnitFlags
 pattern KCFGregorianAllUnits = CFGregorianUnitFlags 16777215
+
+instance ObjCArgument CFGregorianUnitFlags where
+  withObjCArg (CFGregorianUnitFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFGregorianUnitFlags where
+  type RawReturn CFGregorianUnitFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFGregorianUnitFlags x)
+  fromOwned x = pure (CFGregorianUnitFlags x)
 
 -- | @CFISO8601DateFormatOptions@ (bitmask)
 newtype CFISO8601DateFormatOptions = CFISO8601DateFormatOptions CULong
@@ -285,6 +358,16 @@ pattern KCFISO8601DateFormatWithFullTime = CFISO8601DateFormatOptions 1632
 pattern KCFISO8601DateFormatWithInternetDateTime :: CFISO8601DateFormatOptions
 pattern KCFISO8601DateFormatWithInternetDateTime = CFISO8601DateFormatOptions 1907
 
+instance ObjCArgument CFISO8601DateFormatOptions where
+  withObjCArg (CFISO8601DateFormatOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFISO8601DateFormatOptions where
+  type RawReturn CFISO8601DateFormatOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFISO8601DateFormatOptions x)
+  fromOwned x = pure (CFISO8601DateFormatOptions x)
+
 -- | @CFLocaleLanguageDirection@
 newtype CFLocaleLanguageDirection = CFLocaleLanguageDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -305,6 +388,16 @@ pattern KCFLocaleLanguageDirectionTopToBottom = CFLocaleLanguageDirection 3
 pattern KCFLocaleLanguageDirectionBottomToTop :: CFLocaleLanguageDirection
 pattern KCFLocaleLanguageDirectionBottomToTop = CFLocaleLanguageDirection 4
 
+instance ObjCArgument CFLocaleLanguageDirection where
+  withObjCArg (CFLocaleLanguageDirection x) k = k (argCLong x)
+
+instance ObjCReturn CFLocaleLanguageDirection where
+  type RawReturn CFLocaleLanguageDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFLocaleLanguageDirection x)
+  fromOwned x = pure (CFLocaleLanguageDirection x)
+
 -- | @CFNotificationSuspensionBehavior@
 newtype CFNotificationSuspensionBehavior = CFNotificationSuspensionBehavior CLong
   deriving stock (Eq, Ord, Show)
@@ -322,6 +415,16 @@ pattern CFNotificationSuspensionBehaviorHold = CFNotificationSuspensionBehavior 
 pattern CFNotificationSuspensionBehaviorDeliverImmediately :: CFNotificationSuspensionBehavior
 pattern CFNotificationSuspensionBehaviorDeliverImmediately = CFNotificationSuspensionBehavior 4
 
+instance ObjCArgument CFNotificationSuspensionBehavior where
+  withObjCArg (CFNotificationSuspensionBehavior x) k = k (argCLong x)
+
+instance ObjCReturn CFNotificationSuspensionBehavior where
+  type RawReturn CFNotificationSuspensionBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNotificationSuspensionBehavior x)
+  fromOwned x = pure (CFNotificationSuspensionBehavior x)
+
 -- | @CFNumberFormatterOptionFlags@ (bitmask)
 newtype CFNumberFormatterOptionFlags = CFNumberFormatterOptionFlags CULong
   deriving stock (Eq, Ord, Show)
@@ -335,6 +438,16 @@ instance Monoid CFNumberFormatterOptionFlags where
 
 pattern KCFNumberFormatterParseIntegersOnly :: CFNumberFormatterOptionFlags
 pattern KCFNumberFormatterParseIntegersOnly = CFNumberFormatterOptionFlags 1
+
+instance ObjCArgument CFNumberFormatterOptionFlags where
+  withObjCArg (CFNumberFormatterOptionFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFNumberFormatterOptionFlags where
+  type RawReturn CFNumberFormatterOptionFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNumberFormatterOptionFlags x)
+  fromOwned x = pure (CFNumberFormatterOptionFlags x)
 
 -- | @CFNumberFormatterPadPosition@
 newtype CFNumberFormatterPadPosition = CFNumberFormatterPadPosition CLong
@@ -352,6 +465,16 @@ pattern KCFNumberFormatterPadBeforeSuffix = CFNumberFormatterPadPosition 2
 
 pattern KCFNumberFormatterPadAfterSuffix :: CFNumberFormatterPadPosition
 pattern KCFNumberFormatterPadAfterSuffix = CFNumberFormatterPadPosition 3
+
+instance ObjCArgument CFNumberFormatterPadPosition where
+  withObjCArg (CFNumberFormatterPadPosition x) k = k (argCLong x)
+
+instance ObjCReturn CFNumberFormatterPadPosition where
+  type RawReturn CFNumberFormatterPadPosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNumberFormatterPadPosition x)
+  fromOwned x = pure (CFNumberFormatterPadPosition x)
 
 -- | @CFNumberFormatterRoundingMode@
 newtype CFNumberFormatterRoundingMode = CFNumberFormatterRoundingMode CLong
@@ -378,6 +501,16 @@ pattern KCFNumberFormatterRoundHalfDown = CFNumberFormatterRoundingMode 5
 
 pattern KCFNumberFormatterRoundHalfUp :: CFNumberFormatterRoundingMode
 pattern KCFNumberFormatterRoundHalfUp = CFNumberFormatterRoundingMode 6
+
+instance ObjCArgument CFNumberFormatterRoundingMode where
+  withObjCArg (CFNumberFormatterRoundingMode x) k = k (argCLong x)
+
+instance ObjCReturn CFNumberFormatterRoundingMode where
+  type RawReturn CFNumberFormatterRoundingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNumberFormatterRoundingMode x)
+  fromOwned x = pure (CFNumberFormatterRoundingMode x)
 
 -- | @CFNumberFormatterStyle@
 newtype CFNumberFormatterStyle = CFNumberFormatterStyle CLong
@@ -413,6 +546,16 @@ pattern KCFNumberFormatterCurrencyPluralStyle = CFNumberFormatterStyle 9
 
 pattern KCFNumberFormatterCurrencyAccountingStyle :: CFNumberFormatterStyle
 pattern KCFNumberFormatterCurrencyAccountingStyle = CFNumberFormatterStyle 10
+
+instance ObjCArgument CFNumberFormatterStyle where
+  withObjCArg (CFNumberFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn CFNumberFormatterStyle where
+  type RawReturn CFNumberFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNumberFormatterStyle x)
+  fromOwned x = pure (CFNumberFormatterStyle x)
 
 -- | @CFNumberType@
 newtype CFNumberType = CFNumberType CLong
@@ -470,6 +613,16 @@ pattern KCFNumberCGFloatType = CFNumberType 16
 pattern KCFNumberMaxType :: CFNumberType
 pattern KCFNumberMaxType = CFNumberType 16
 
+instance ObjCArgument CFNumberType where
+  withObjCArg (CFNumberType x) k = k (argCLong x)
+
+instance ObjCReturn CFNumberType where
+  type RawReturn CFNumberType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNumberType x)
+  fromOwned x = pure (CFNumberType x)
+
 -- | @CFPropertyListFormat@
 newtype CFPropertyListFormat = CFPropertyListFormat CLong
   deriving stock (Eq, Ord, Show)
@@ -483,6 +636,16 @@ pattern KCFPropertyListXMLFormat_v1_0 = CFPropertyListFormat 100
 
 pattern KCFPropertyListBinaryFormat_v1_0 :: CFPropertyListFormat
 pattern KCFPropertyListBinaryFormat_v1_0 = CFPropertyListFormat 200
+
+instance ObjCArgument CFPropertyListFormat where
+  withObjCArg (CFPropertyListFormat x) k = k (argCLong x)
+
+instance ObjCReturn CFPropertyListFormat where
+  type RawReturn CFPropertyListFormat = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFPropertyListFormat x)
+  fromOwned x = pure (CFPropertyListFormat x)
 
 -- | @CFPropertyListMutabilityOptions@ (bitmask)
 newtype CFPropertyListMutabilityOptions = CFPropertyListMutabilityOptions CULong
@@ -503,6 +666,16 @@ pattern KCFPropertyListMutableContainers = CFPropertyListMutabilityOptions 1
 
 pattern KCFPropertyListMutableContainersAndLeaves :: CFPropertyListMutabilityOptions
 pattern KCFPropertyListMutableContainersAndLeaves = CFPropertyListMutabilityOptions 2
+
+instance ObjCArgument CFPropertyListMutabilityOptions where
+  withObjCArg (CFPropertyListMutabilityOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFPropertyListMutabilityOptions where
+  type RawReturn CFPropertyListMutabilityOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFPropertyListMutabilityOptions x)
+  fromOwned x = pure (CFPropertyListMutabilityOptions x)
 
 -- | @CFRunLoopActivity@ (bitmask)
 newtype CFRunLoopActivity = CFRunLoopActivity CULong
@@ -536,6 +709,16 @@ pattern KCFRunLoopExit = CFRunLoopActivity 128
 pattern KCFRunLoopAllActivities :: CFRunLoopActivity
 pattern KCFRunLoopAllActivities = CFRunLoopActivity 268435455
 
+instance ObjCArgument CFRunLoopActivity where
+  withObjCArg (CFRunLoopActivity x) k = k (argCULong x)
+
+instance ObjCReturn CFRunLoopActivity where
+  type RawReturn CFRunLoopActivity = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFRunLoopActivity x)
+  fromOwned x = pure (CFRunLoopActivity x)
+
 -- | @CFRunLoopRunResult@
 newtype CFRunLoopRunResult = CFRunLoopRunResult CInt
   deriving stock (Eq, Ord, Show)
@@ -552,6 +735,16 @@ pattern KCFRunLoopRunTimedOut = CFRunLoopRunResult 3
 
 pattern KCFRunLoopRunHandledSource :: CFRunLoopRunResult
 pattern KCFRunLoopRunHandledSource = CFRunLoopRunResult 4
+
+instance ObjCArgument CFRunLoopRunResult where
+  withObjCArg (CFRunLoopRunResult x) k = k (argCInt x)
+
+instance ObjCReturn CFRunLoopRunResult where
+  type RawReturn CFRunLoopRunResult = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFRunLoopRunResult x)
+  fromOwned x = pure (CFRunLoopRunResult x)
 
 -- | @CFSocketCallBackType@ (bitmask)
 newtype CFSocketCallBackType = CFSocketCallBackType CULong
@@ -582,6 +775,16 @@ pattern KCFSocketConnectCallBack = CFSocketCallBackType 4
 pattern KCFSocketWriteCallBack :: CFSocketCallBackType
 pattern KCFSocketWriteCallBack = CFSocketCallBackType 8
 
+instance ObjCArgument CFSocketCallBackType where
+  withObjCArg (CFSocketCallBackType x) k = k (argCULong x)
+
+instance ObjCReturn CFSocketCallBackType where
+  type RawReturn CFSocketCallBackType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFSocketCallBackType x)
+  fromOwned x = pure (CFSocketCallBackType x)
+
 -- | @CFSocketError@
 newtype CFSocketError = CFSocketError CLong
   deriving stock (Eq, Ord, Show)
@@ -596,6 +799,16 @@ pattern KCFSocketError = CFSocketError (-1)
 pattern KCFSocketTimeout :: CFSocketError
 pattern KCFSocketTimeout = CFSocketError (-2)
 
+instance ObjCArgument CFSocketError where
+  withObjCArg (CFSocketError x) k = k (argCLong x)
+
+instance ObjCReturn CFSocketError where
+  type RawReturn CFSocketError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFSocketError x)
+  fromOwned x = pure (CFSocketError x)
+
 -- | @CFStreamErrorDomain@
 newtype CFStreamErrorDomain = CFStreamErrorDomain CLong
   deriving stock (Eq, Ord, Show)
@@ -609,6 +822,16 @@ pattern KCFStreamErrorDomainPOSIX = CFStreamErrorDomain 1
 
 pattern KCFStreamErrorDomainMacOSStatus :: CFStreamErrorDomain
 pattern KCFStreamErrorDomainMacOSStatus = CFStreamErrorDomain 2
+
+instance ObjCArgument CFStreamErrorDomain where
+  withObjCArg (CFStreamErrorDomain x) k = k (argCLong x)
+
+instance ObjCReturn CFStreamErrorDomain where
+  type RawReturn CFStreamErrorDomain = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStreamErrorDomain x)
+  fromOwned x = pure (CFStreamErrorDomain x)
 
 -- | @CFStreamEventType@ (bitmask)
 newtype CFStreamEventType = CFStreamEventType CULong
@@ -639,6 +862,16 @@ pattern KCFStreamEventErrorOccurred = CFStreamEventType 8
 pattern KCFStreamEventEndEncountered :: CFStreamEventType
 pattern KCFStreamEventEndEncountered = CFStreamEventType 16
 
+instance ObjCArgument CFStreamEventType where
+  withObjCArg (CFStreamEventType x) k = k (argCULong x)
+
+instance ObjCReturn CFStreamEventType where
+  type RawReturn CFStreamEventType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStreamEventType x)
+  fromOwned x = pure (CFStreamEventType x)
+
 -- | @CFStreamStatus@
 newtype CFStreamStatus = CFStreamStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -667,6 +900,16 @@ pattern KCFStreamStatusClosed = CFStreamStatus 6
 
 pattern KCFStreamStatusError :: CFStreamStatus
 pattern KCFStreamStatusError = CFStreamStatus 7
+
+instance ObjCArgument CFStreamStatus where
+  withObjCArg (CFStreamStatus x) k = k (argCLong x)
+
+instance ObjCReturn CFStreamStatus where
+  type RawReturn CFStreamStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStreamStatus x)
+  fromOwned x = pure (CFStreamStatus x)
 
 -- | @CFStringBuiltInEncodings@
 newtype CFStringBuiltInEncodings = CFStringBuiltInEncodings CUInt
@@ -715,6 +958,16 @@ pattern KCFStringEncodingUTF32BE = CFStringBuiltInEncodings 402653440
 pattern KCFStringEncodingUTF32LE :: CFStringBuiltInEncodings
 pattern KCFStringEncodingUTF32LE = CFStringBuiltInEncodings 469762304
 
+instance ObjCArgument CFStringBuiltInEncodings where
+  withObjCArg (CFStringBuiltInEncodings x) k = k (argCUInt x)
+
+instance ObjCReturn CFStringBuiltInEncodings where
+  type RawReturn CFStringBuiltInEncodings = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStringBuiltInEncodings x)
+  fromOwned x = pure (CFStringBuiltInEncodings x)
+
 -- | @CFStringCompareFlags@ (bitmask)
 newtype CFStringCompareFlags = CFStringCompareFlags CULong
   deriving stock (Eq, Ord, Show)
@@ -752,6 +1005,16 @@ pattern KCFCompareWidthInsensitive = CFStringCompareFlags 256
 
 pattern KCFCompareForcedOrdering :: CFStringCompareFlags
 pattern KCFCompareForcedOrdering = CFStringCompareFlags 512
+
+instance ObjCArgument CFStringCompareFlags where
+  withObjCArg (CFStringCompareFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFStringCompareFlags where
+  type RawReturn CFStringCompareFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStringCompareFlags x)
+  fromOwned x = pure (CFStringCompareFlags x)
 
 -- | @CFStringEncodings@
 newtype CFStringEncodings = CFStringEncodings CLong
@@ -1145,6 +1408,16 @@ pattern KCFStringEncodingUTF7_IMAP = CFStringEncodings 2576
 pattern KCFStringEncodingShiftJIS_X0213_00 :: CFStringEncodings
 pattern KCFStringEncodingShiftJIS_X0213_00 = CFStringEncodings 1576
 
+instance ObjCArgument CFStringEncodings where
+  withObjCArg (CFStringEncodings x) k = k (argCLong x)
+
+instance ObjCReturn CFStringEncodings where
+  type RawReturn CFStringEncodings = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStringEncodings x)
+  fromOwned x = pure (CFStringEncodings x)
+
 -- | CFStringNormalizationForm
 --
 -- This is the type of Unicode normalization forms as described in	Unicode Technical Report #15. To normalize for use with file	system calls, use CFStringGetFileSystemRepresentation().
@@ -1164,6 +1437,16 @@ pattern KCFStringNormalizationFormC = CFStringNormalizationForm 2
 
 pattern KCFStringNormalizationFormKC :: CFStringNormalizationForm
 pattern KCFStringNormalizationFormKC = CFStringNormalizationForm 3
+
+instance ObjCArgument CFStringNormalizationForm where
+  withObjCArg (CFStringNormalizationForm x) k = k (argCLong x)
+
+instance ObjCReturn CFStringNormalizationForm where
+  type RawReturn CFStringNormalizationForm = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStringNormalizationForm x)
+  fromOwned x = pure (CFStringNormalizationForm x)
 
 -- | Token type	CFStringTokenizerGoToTokenAtIndex / CFStringTokenizerAdvanceToNextToken returns	the type of current token.
 -- | @CFStringTokenizerTokenType@ (bitmask)
@@ -1198,6 +1481,16 @@ pattern KCFStringTokenizerTokenHasNonLettersMask = CFStringTokenizerTokenType 16
 pattern KCFStringTokenizerTokenIsCJWordMask :: CFStringTokenizerTokenType
 pattern KCFStringTokenizerTokenIsCJWordMask = CFStringTokenizerTokenType 32
 
+instance ObjCArgument CFStringTokenizerTokenType where
+  withObjCArg (CFStringTokenizerTokenType x) k = k (argCULong x)
+
+instance ObjCReturn CFStringTokenizerTokenType where
+  type RawReturn CFStringTokenizerTokenType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStringTokenizerTokenType x)
+  fromOwned x = pure (CFStringTokenizerTokenType x)
+
 -- | @CFTimeZoneNameStyle@
 newtype CFTimeZoneNameStyle = CFTimeZoneNameStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -1220,6 +1513,16 @@ pattern KCFTimeZoneNameStyleGeneric = CFTimeZoneNameStyle 4
 
 pattern KCFTimeZoneNameStyleShortGeneric :: CFTimeZoneNameStyle
 pattern KCFTimeZoneNameStyleShortGeneric = CFTimeZoneNameStyle 5
+
+instance ObjCArgument CFTimeZoneNameStyle where
+  withObjCArg (CFTimeZoneNameStyle x) k = k (argCLong x)
+
+instance ObjCReturn CFTimeZoneNameStyle where
+  type RawReturn CFTimeZoneNameStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFTimeZoneNameStyle x)
+  fromOwned x = pure (CFTimeZoneNameStyle x)
 
 -- | @CFURLBookmarkCreationOptions@ (bitmask)
 newtype CFURLBookmarkCreationOptions = CFURLBookmarkCreationOptions CULong
@@ -1250,6 +1553,16 @@ pattern KCFURLBookmarkCreationWithoutImplicitSecurityScope = CFURLBookmarkCreati
 pattern KCFURLBookmarkCreationPreferFileIDResolutionMask :: CFURLBookmarkCreationOptions
 pattern KCFURLBookmarkCreationPreferFileIDResolutionMask = CFURLBookmarkCreationOptions 256
 
+instance ObjCArgument CFURLBookmarkCreationOptions where
+  withObjCArg (CFURLBookmarkCreationOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFURLBookmarkCreationOptions where
+  type RawReturn CFURLBookmarkCreationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLBookmarkCreationOptions x)
+  fromOwned x = pure (CFURLBookmarkCreationOptions x)
+
 -- | @CFURLBookmarkResolutionOptions@ (bitmask)
 newtype CFURLBookmarkResolutionOptions = CFURLBookmarkResolutionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1278,6 +1591,16 @@ pattern KCFBookmarkResolutionWithoutUIMask = CFURLBookmarkResolutionOptions 256
 
 pattern KCFBookmarkResolutionWithoutMountingMask :: CFURLBookmarkResolutionOptions
 pattern KCFBookmarkResolutionWithoutMountingMask = CFURLBookmarkResolutionOptions 512
+
+instance ObjCArgument CFURLBookmarkResolutionOptions where
+  withObjCArg (CFURLBookmarkResolutionOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFURLBookmarkResolutionOptions where
+  type RawReturn CFURLBookmarkResolutionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLBookmarkResolutionOptions x)
+  fromOwned x = pure (CFURLBookmarkResolutionOptions x)
 
 -- | @CFURLComponentType@
 newtype CFURLComponentType = CFURLComponentType CLong
@@ -1320,6 +1643,16 @@ pattern KCFURLComponentQuery = CFURLComponentType 11
 pattern KCFURLComponentFragment :: CFURLComponentType
 pattern KCFURLComponentFragment = CFURLComponentType 12
 
+instance ObjCArgument CFURLComponentType where
+  withObjCArg (CFURLComponentType x) k = k (argCLong x)
+
+instance ObjCReturn CFURLComponentType where
+  type RawReturn CFURLComponentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLComponentType x)
+  fromOwned x = pure (CFURLComponentType x)
+
 -- | @CFURLEnumeratorOptions@ (bitmask)
 newtype CFURLEnumeratorOptions = CFURLEnumeratorOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1355,6 +1688,16 @@ pattern KCFURLEnumeratorIncludeDirectoriesPostOrder = CFURLEnumeratorOptions 32
 pattern KCFURLEnumeratorGenerateRelativePathURLs :: CFURLEnumeratorOptions
 pattern KCFURLEnumeratorGenerateRelativePathURLs = CFURLEnumeratorOptions 64
 
+instance ObjCArgument CFURLEnumeratorOptions where
+  withObjCArg (CFURLEnumeratorOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFURLEnumeratorOptions where
+  type RawReturn CFURLEnumeratorOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLEnumeratorOptions x)
+  fromOwned x = pure (CFURLEnumeratorOptions x)
+
 -- | @CFURLEnumeratorResult@
 newtype CFURLEnumeratorResult = CFURLEnumeratorResult CLong
   deriving stock (Eq, Ord, Show)
@@ -1371,6 +1714,16 @@ pattern KCFURLEnumeratorError = CFURLEnumeratorResult 3
 
 pattern KCFURLEnumeratorDirectoryPostOrderSuccess :: CFURLEnumeratorResult
 pattern KCFURLEnumeratorDirectoryPostOrderSuccess = CFURLEnumeratorResult 4
+
+instance ObjCArgument CFURLEnumeratorResult where
+  withObjCArg (CFURLEnumeratorResult x) k = k (argCLong x)
+
+instance ObjCReturn CFURLEnumeratorResult where
+  type RawReturn CFURLEnumeratorResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLEnumeratorResult x)
+  fromOwned x = pure (CFURLEnumeratorResult x)
 
 -- | @CFURLError@
 newtype CFURLError = CFURLError CLong
@@ -1404,6 +1757,16 @@ pattern KCFURLPropertyKeyUnavailableError = CFURLError (-17)
 pattern KCFURLTimeoutError :: CFURLError
 pattern KCFURLTimeoutError = CFURLError (-18)
 
+instance ObjCArgument CFURLError where
+  withObjCArg (CFURLError x) k = k (argCLong x)
+
+instance ObjCReturn CFURLError where
+  type RawReturn CFURLError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLError x)
+  fromOwned x = pure (CFURLError x)
+
 -- | @CFURLPathStyle@
 newtype CFURLPathStyle = CFURLPathStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -1417,6 +1780,16 @@ pattern KCFURLHFSPathStyle = CFURLPathStyle 1
 
 pattern KCFURLWindowsPathStyle :: CFURLPathStyle
 pattern KCFURLWindowsPathStyle = CFURLPathStyle 2
+
+instance ObjCArgument CFURLPathStyle where
+  withObjCArg (CFURLPathStyle x) k = k (argCLong x)
+
+instance ObjCReturn CFURLPathStyle where
+  type RawReturn CFURLPathStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFURLPathStyle x)
+  fromOwned x = pure (CFURLPathStyle x)
 
 -- | @CFXMLEntityTypeCode@
 newtype CFXMLEntityTypeCode = CFXMLEntityTypeCode CLong
@@ -1437,6 +1810,16 @@ pattern KCFXMLEntityTypeUnparsed = CFXMLEntityTypeCode 3
 
 pattern KCFXMLEntityTypeCharacter :: CFXMLEntityTypeCode
 pattern KCFXMLEntityTypeCharacter = CFXMLEntityTypeCode 4
+
+instance ObjCArgument CFXMLEntityTypeCode where
+  withObjCArg (CFXMLEntityTypeCode x) k = k (argCLong x)
+
+instance ObjCReturn CFXMLEntityTypeCode where
+  type RawReturn CFXMLEntityTypeCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFXMLEntityTypeCode x)
+  fromOwned x = pure (CFXMLEntityTypeCode x)
 
 -- | @CFXMLNodeTypeCode@
 newtype CFXMLNodeTypeCode = CFXMLNodeTypeCode CLong
@@ -1488,6 +1871,16 @@ pattern KCFXMLNodeTypeElementTypeDeclaration = CFXMLNodeTypeCode 14
 pattern KCFXMLNodeTypeAttributeListDeclaration :: CFXMLNodeTypeCode
 pattern KCFXMLNodeTypeAttributeListDeclaration = CFXMLNodeTypeCode 15
 
+instance ObjCArgument CFXMLNodeTypeCode where
+  withObjCArg (CFXMLNodeTypeCode x) k = k (argCLong x)
+
+instance ObjCReturn CFXMLNodeTypeCode where
+  type RawReturn CFXMLNodeTypeCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFXMLNodeTypeCode x)
+  fromOwned x = pure (CFXMLNodeTypeCode x)
+
 -- | @CFXMLParserOptions@ (bitmask)
 newtype CFXMLParserOptions = CFXMLParserOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1522,6 +1915,16 @@ pattern KCFXMLParserAllOptions = CFXMLParserOptions 16777215
 
 pattern KCFXMLParserNoOptions :: CFXMLParserOptions
 pattern KCFXMLParserNoOptions = CFXMLParserOptions 0
+
+instance ObjCArgument CFXMLParserOptions where
+  withObjCArg (CFXMLParserOptions x) k = k (argCULong x)
+
+instance ObjCReturn CFXMLParserOptions where
+  type RawReturn CFXMLParserOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFXMLParserOptions x)
+  fromOwned x = pure (CFXMLParserOptions x)
 
 -- | @CFXMLParserStatusCode@ (bitmask)
 newtype CFXMLParserStatusCode = CFXMLParserStatusCode CLong
@@ -1588,6 +1991,16 @@ pattern KCFXMLErrorMalformedParsedCharacterData = CFXMLParserStatusCode 14
 pattern KCFXMLErrorNoData :: CFXMLParserStatusCode
 pattern KCFXMLErrorNoData = CFXMLParserStatusCode 15
 
+instance ObjCArgument CFXMLParserStatusCode where
+  withObjCArg (CFXMLParserStatusCode x) k = k (argCLong x)
+
+instance ObjCReturn CFXMLParserStatusCode where
+  type RawReturn CFXMLParserStatusCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFXMLParserStatusCode x)
+  fromOwned x = pure (CFXMLParserStatusCode x)
+
 -- | @CGRectEdge@
 newtype CGRectEdge = CGRectEdge CUInt
   deriving stock (Eq, Ord, Show)
@@ -1604,3 +2017,13 @@ pattern CGRectMaxXEdge = CGRectEdge 2
 
 pattern CGRectMaxYEdge :: CGRectEdge
 pattern CGRectMaxYEdge = CGRectEdge 3
+
+instance ObjCArgument CGRectEdge where
+  withObjCArg (CGRectEdge x) k = k (argCUInt x)
+
+instance ObjCReturn CGRectEdge where
+  type RawReturn CGRectEdge = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGRectEdge x)
+  fromOwned x = pure (CGRectEdge x)

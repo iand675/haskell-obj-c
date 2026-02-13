@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.BrowserEngineKit.BEWebContentFilter
   , evaluateURL_completionHandler
   , allowURL_completionHandler
   , shouldEvaluateURLs
-  , evaluateURL_completionHandlerSelector
   , allowURL_completionHandlerSelector
+  , evaluateURL_completionHandlerSelector
   , shouldEvaluateURLsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- evaluateURL:completionHandler:@
 evaluateURL_completionHandler :: (IsBEWebContentFilter beWebContentFilter, IsNSURL url) => beWebContentFilter -> url -> Ptr () -> IO ()
-evaluateURL_completionHandler beWebContentFilter  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg beWebContentFilter (mkSelector "evaluateURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+evaluateURL_completionHandler beWebContentFilter url completionHandler =
+  sendMessage beWebContentFilter evaluateURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Adds blocked URL to built-in web content filter's allowlist.
 --
@@ -55,9 +51,8 @@ evaluateURL_completionHandler beWebContentFilter  url completionHandler =
 --
 -- ObjC selector: @- allowURL:completionHandler:@
 allowURL_completionHandler :: (IsBEWebContentFilter beWebContentFilter, IsNSURL url) => beWebContentFilter -> url -> Ptr () -> IO ()
-allowURL_completionHandler beWebContentFilter  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg beWebContentFilter (mkSelector "allowURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+allowURL_completionHandler beWebContentFilter url completionHandler =
+  sendMessage beWebContentFilter allowURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Determines whether the built-in web content filter is active.
 --
@@ -68,21 +63,21 @@ shouldEvaluateURLs :: IO Bool
 shouldEvaluateURLs  =
   do
     cls' <- getRequiredClass "BEWebContentFilter"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "shouldEvaluateURLs") retCULong []
+    sendClassMessage cls' shouldEvaluateURLsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @evaluateURL:completionHandler:@
-evaluateURL_completionHandlerSelector :: Selector
+evaluateURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 evaluateURL_completionHandlerSelector = mkSelector "evaluateURL:completionHandler:"
 
 -- | @Selector@ for @allowURL:completionHandler:@
-allowURL_completionHandlerSelector :: Selector
+allowURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 allowURL_completionHandlerSelector = mkSelector "allowURL:completionHandler:"
 
 -- | @Selector@ for @shouldEvaluateURLs@
-shouldEvaluateURLsSelector :: Selector
+shouldEvaluateURLsSelector :: Selector '[] Bool
 shouldEvaluateURLsSelector = mkSelector "shouldEvaluateURLs"
 

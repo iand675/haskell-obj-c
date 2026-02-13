@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRColorControlClusterMoveToHueAndSaturationParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , hueSelector
-  , setHueSelector
-  , saturationSelector
-  , setSaturationSelector
-  , transitionTimeSelector
-  , setTransitionTimeSelector
   , optionsMaskSelector
-  , setOptionsMaskSelector
   , optionsOverrideSelector
-  , setOptionsOverrideSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , saturationSelector
   , serverSideProcessingTimeoutSelector
+  , setHueSelector
+  , setOptionsMaskSelector
+  , setOptionsOverrideSelector
+  , setSaturationSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTransitionTimeSelector
+  , timedInvokeTimeoutMsSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- hue@
 hue :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-hue mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "hue") (retPtr retVoid) [] >>= retainedObject . castPtr
+hue mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams hueSelector
 
 -- | @- setHue:@
 setHue :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setHue mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setHue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHue mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setHueSelector (toNSNumber value)
 
 -- | @- saturation@
 saturation :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-saturation mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "saturation") (retPtr retVoid) [] >>= retainedObject . castPtr
+saturation mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams saturationSelector
 
 -- | @- setSaturation:@
 setSaturation :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setSaturation mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setSaturation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSaturation mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setSaturationSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-transitionTime mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setTransitionTime mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setTransitionTimeSelector (toNSNumber value)
 
 -- | @- optionsMask@
 optionsMask :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-optionsMask mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "optionsMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsMask mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams optionsMaskSelector
 
 -- | @- setOptionsMask:@
 setOptionsMask :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setOptionsMask mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setOptionsMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsMask mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setOptionsMaskSelector (toNSNumber value)
 
 -- | @- optionsOverride@
 optionsOverride :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-optionsOverride mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "optionsOverride") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsOverride mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams optionsOverrideSelector
 
 -- | @- setOptionsOverride:@
 setOptionsOverride :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setOptionsOverride mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setOptionsOverride:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsOverride mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setOptionsOverrideSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setOptionsOverride mtrColorControlClusterMoveToHueAndSaturationParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrColorControlClusterMoveToHueAndSaturationParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams => mtrColorControlClusterMoveToHueAndSaturationParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrColorControlClusterMoveToHueAndSaturationParams  =
-    sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrColorControlClusterMoveToHueAndSaturationParams =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrColorControlClusterMoveToHueAndSaturationParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRColorControlClusterMoveToHueAndSaturationParams mtrColorControlClusterMoveToHueAndSaturationParams, IsNSNumber value) => mtrColorControlClusterMoveToHueAndSaturationParams -> value -> IO ()
-setServerSideProcessingTimeout mtrColorControlClusterMoveToHueAndSaturationParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrColorControlClusterMoveToHueAndSaturationParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrColorControlClusterMoveToHueAndSaturationParams value =
+  sendMessage mtrColorControlClusterMoveToHueAndSaturationParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hue@
-hueSelector :: Selector
+hueSelector :: Selector '[] (Id NSNumber)
 hueSelector = mkSelector "hue"
 
 -- | @Selector@ for @setHue:@
-setHueSelector :: Selector
+setHueSelector :: Selector '[Id NSNumber] ()
 setHueSelector = mkSelector "setHue:"
 
 -- | @Selector@ for @saturation@
-saturationSelector :: Selector
+saturationSelector :: Selector '[] (Id NSNumber)
 saturationSelector = mkSelector "saturation"
 
 -- | @Selector@ for @setSaturation:@
-setSaturationSelector :: Selector
+setSaturationSelector :: Selector '[Id NSNumber] ()
 setSaturationSelector = mkSelector "setSaturation:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @optionsMask@
-optionsMaskSelector :: Selector
+optionsMaskSelector :: Selector '[] (Id NSNumber)
 optionsMaskSelector = mkSelector "optionsMask"
 
 -- | @Selector@ for @setOptionsMask:@
-setOptionsMaskSelector :: Selector
+setOptionsMaskSelector :: Selector '[Id NSNumber] ()
 setOptionsMaskSelector = mkSelector "setOptionsMask:"
 
 -- | @Selector@ for @optionsOverride@
-optionsOverrideSelector :: Selector
+optionsOverrideSelector :: Selector '[] (Id NSNumber)
 optionsOverrideSelector = mkSelector "optionsOverride"
 
 -- | @Selector@ for @setOptionsOverride:@
-setOptionsOverrideSelector :: Selector
+setOptionsOverrideSelector :: Selector '[Id NSNumber] ()
 setOptionsOverrideSelector = mkSelector "setOptionsOverride:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

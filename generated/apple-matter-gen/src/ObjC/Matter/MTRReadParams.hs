@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Matter.MTRReadParams
   , setAssumeUnknownAttributesReportable
   , fabricFiltered
   , setFabricFiltered
-  , filterByFabricSelector
-  , setFilterByFabricSelector
-  , minEventNumberSelector
-  , setMinEventNumberSelector
   , assumeUnknownAttributesReportableSelector
-  , setAssumeUnknownAttributesReportableSelector
   , fabricFilteredSelector
+  , filterByFabricSelector
+  , minEventNumberSelector
+  , setAssumeUnknownAttributesReportableSelector
   , setFabricFilteredSelector
+  , setFilterByFabricSelector
+  , setMinEventNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- filterByFabric@
 filterByFabric :: IsMTRReadParams mtrReadParams => mtrReadParams -> IO Bool
-filterByFabric mtrReadParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrReadParams (mkSelector "filterByFabric") retCULong []
+filterByFabric mtrReadParams =
+  sendMessage mtrReadParams filterByFabricSelector
 
 -- | Whether the read/subscribe is fabric-filtered. The default is YES.
 --
@@ -62,8 +59,8 @@ filterByFabric mtrReadParams  =
 --
 -- ObjC selector: @- setFilterByFabric:@
 setFilterByFabric :: IsMTRReadParams mtrReadParams => mtrReadParams -> Bool -> IO ()
-setFilterByFabric mtrReadParams  value =
-    sendMsg mtrReadParams (mkSelector "setFilterByFabric:") retVoid [argCULong (if value then 1 else 0)]
+setFilterByFabric mtrReadParams value =
+  sendMessage mtrReadParams setFilterByFabricSelector value
 
 -- | Sets a filter for which events will be reported in the read/subscribe interaction.
 --
@@ -73,8 +70,8 @@ setFilterByFabric mtrReadParams  value =
 --
 -- ObjC selector: @- minEventNumber@
 minEventNumber :: IsMTRReadParams mtrReadParams => mtrReadParams -> IO (Id NSNumber)
-minEventNumber mtrReadParams  =
-    sendMsg mtrReadParams (mkSelector "minEventNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+minEventNumber mtrReadParams =
+  sendMessage mtrReadParams minEventNumberSelector
 
 -- | Sets a filter for which events will be reported in the read/subscribe interaction.
 --
@@ -84,9 +81,8 @@ minEventNumber mtrReadParams  =
 --
 -- ObjC selector: @- setMinEventNumber:@
 setMinEventNumber :: (IsMTRReadParams mtrReadParams, IsNSNumber value) => mtrReadParams -> value -> IO ()
-setMinEventNumber mtrReadParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrReadParams (mkSelector "setMinEventNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinEventNumber mtrReadParams value =
+  sendMessage mtrReadParams setMinEventNumberSelector (toNSNumber value)
 
 -- | Controls whether attributes without known schema (e.g. vendor-specific attributes) should be assumed to be reportable normally via subscriptions. The default is YES.
 --
@@ -94,8 +90,8 @@ setMinEventNumber mtrReadParams  value =
 --
 -- ObjC selector: @- assumeUnknownAttributesReportable@
 assumeUnknownAttributesReportable :: IsMTRReadParams mtrReadParams => mtrReadParams -> IO Bool
-assumeUnknownAttributesReportable mtrReadParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrReadParams (mkSelector "assumeUnknownAttributesReportable") retCULong []
+assumeUnknownAttributesReportable mtrReadParams =
+  sendMessage mtrReadParams assumeUnknownAttributesReportableSelector
 
 -- | Controls whether attributes without known schema (e.g. vendor-specific attributes) should be assumed to be reportable normally via subscriptions. The default is YES.
 --
@@ -103,53 +99,52 @@ assumeUnknownAttributesReportable mtrReadParams  =
 --
 -- ObjC selector: @- setAssumeUnknownAttributesReportable:@
 setAssumeUnknownAttributesReportable :: IsMTRReadParams mtrReadParams => mtrReadParams -> Bool -> IO ()
-setAssumeUnknownAttributesReportable mtrReadParams  value =
-    sendMsg mtrReadParams (mkSelector "setAssumeUnknownAttributesReportable:") retVoid [argCULong (if value then 1 else 0)]
+setAssumeUnknownAttributesReportable mtrReadParams value =
+  sendMessage mtrReadParams setAssumeUnknownAttributesReportableSelector value
 
 -- | @- fabricFiltered@
 fabricFiltered :: IsMTRReadParams mtrReadParams => mtrReadParams -> IO (Id NSNumber)
-fabricFiltered mtrReadParams  =
-    sendMsg mtrReadParams (mkSelector "fabricFiltered") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricFiltered mtrReadParams =
+  sendMessage mtrReadParams fabricFilteredSelector
 
 -- | @- setFabricFiltered:@
 setFabricFiltered :: (IsMTRReadParams mtrReadParams, IsNSNumber value) => mtrReadParams -> value -> IO ()
-setFabricFiltered mtrReadParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrReadParams (mkSelector "setFabricFiltered:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricFiltered mtrReadParams value =
+  sendMessage mtrReadParams setFabricFilteredSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterByFabric@
-filterByFabricSelector :: Selector
+filterByFabricSelector :: Selector '[] Bool
 filterByFabricSelector = mkSelector "filterByFabric"
 
 -- | @Selector@ for @setFilterByFabric:@
-setFilterByFabricSelector :: Selector
+setFilterByFabricSelector :: Selector '[Bool] ()
 setFilterByFabricSelector = mkSelector "setFilterByFabric:"
 
 -- | @Selector@ for @minEventNumber@
-minEventNumberSelector :: Selector
+minEventNumberSelector :: Selector '[] (Id NSNumber)
 minEventNumberSelector = mkSelector "minEventNumber"
 
 -- | @Selector@ for @setMinEventNumber:@
-setMinEventNumberSelector :: Selector
+setMinEventNumberSelector :: Selector '[Id NSNumber] ()
 setMinEventNumberSelector = mkSelector "setMinEventNumber:"
 
 -- | @Selector@ for @assumeUnknownAttributesReportable@
-assumeUnknownAttributesReportableSelector :: Selector
+assumeUnknownAttributesReportableSelector :: Selector '[] Bool
 assumeUnknownAttributesReportableSelector = mkSelector "assumeUnknownAttributesReportable"
 
 -- | @Selector@ for @setAssumeUnknownAttributesReportable:@
-setAssumeUnknownAttributesReportableSelector :: Selector
+setAssumeUnknownAttributesReportableSelector :: Selector '[Bool] ()
 setAssumeUnknownAttributesReportableSelector = mkSelector "setAssumeUnknownAttributesReportable:"
 
 -- | @Selector@ for @fabricFiltered@
-fabricFilteredSelector :: Selector
+fabricFilteredSelector :: Selector '[] (Id NSNumber)
 fabricFilteredSelector = mkSelector "fabricFiltered"
 
 -- | @Selector@ for @setFabricFiltered:@
-setFabricFilteredSelector :: Selector
+setFabricFilteredSelector :: Selector '[Id NSNumber] ()
 setFabricFilteredSelector = mkSelector "setFabricFiltered:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,51 +39,47 @@ module ObjC.DiscRecording.DRDevice
   , writesDVD
   , displayName
   , ioRegistryEntryPath
-  , devicesSelector
+  , acquireExclusiveAccessSelector
+  , acquireMediaReservationSelector
+  , bsdNameSelector
+  , closeTraySelector
   , deviceForBSDNameSelector
   , deviceForIORegistryEntryPathSelector
-  , isValidSelector
-  , infoSelector
-  , statusSelector
-  , openTraySelector
-  , closeTraySelector
+  , devicesSelector
+  , displayNameSelector
   , ejectMediaSelector
-  , acquireExclusiveAccessSelector
-  , releaseExclusiveAccessSelector
-  , acquireMediaReservationSelector
-  , releaseMediaReservationSelector
+  , infoSelector
+  , ioRegistryEntryPathSelector
   , isEqualToDeviceSelector
-  , mediaIsPresentSelector
-  , mediaIsTransitioningSelector
-  , mediaIsBusySelector
-  , mediaTypeSelector
-  , mediaIsBlankSelector
+  , isValidSelector
   , mediaIsAppendableSelector
-  , mediaIsOverwritableSelector
+  , mediaIsBlankSelector
+  , mediaIsBusySelector
   , mediaIsErasableSelector
+  , mediaIsOverwritableSelector
+  , mediaIsPresentSelector
   , mediaIsReservedSelector
+  , mediaIsTransitioningSelector
+  , mediaSpaceFreeSelector
   , mediaSpaceOverwritableSelector
   , mediaSpaceUsedSelector
-  , mediaSpaceFreeSelector
+  , mediaTypeSelector
+  , openTraySelector
+  , releaseExclusiveAccessSelector
+  , releaseMediaReservationSelector
+  , statusSelector
   , trayIsOpenSelector
-  , bsdNameSelector
   , writesCDSelector
   , writesDVDSelector
-  , displayNameSelector
-  , ioRegistryEntryPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,7 +99,7 @@ devices :: IO (Id NSArray)
 devices  =
   do
     cls' <- getRequiredClass "DRDevice"
-    sendClassMsg cls' (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' devicesSelector
 
 -- | deviceForBSDName:
 --
@@ -119,8 +116,7 @@ deviceForBSDName :: IsNSString bsdName => bsdName -> IO (Id DRDevice)
 deviceForBSDName bsdName =
   do
     cls' <- getRequiredClass "DRDevice"
-    withObjCPtr bsdName $ \raw_bsdName ->
-      sendClassMsg cls' (mkSelector "deviceForBSDName:") (retPtr retVoid) [argPtr (castPtr raw_bsdName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceForBSDNameSelector (toNSString bsdName)
 
 -- | deviceForIORegistryEntryPath:
 --
@@ -137,8 +133,7 @@ deviceForIORegistryEntryPath :: IsNSString path => path -> IO (Id DRDevice)
 deviceForIORegistryEntryPath path =
   do
     cls' <- getRequiredClass "DRDevice"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "deviceForIORegistryEntryPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceForIORegistryEntryPathSelector (toNSString path)
 
 -- | isValid
 --
@@ -150,8 +145,8 @@ deviceForIORegistryEntryPath path =
 --
 -- ObjC selector: @- isValid@
 isValid :: IsDRDevice drDevice => drDevice -> IO Bool
-isValid drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "isValid") retCULong []
+isValid drDevice =
+  sendMessage drDevice isValidSelector
 
 -- | info
 --
@@ -163,8 +158,8 @@ isValid drDevice  =
 --
 -- ObjC selector: @- info@
 info :: IsDRDevice drDevice => drDevice -> IO (Id NSDictionary)
-info drDevice  =
-    sendMsg drDevice (mkSelector "info") (retPtr retVoid) [] >>= retainedObject . castPtr
+info drDevice =
+  sendMessage drDevice infoSelector
 
 -- | status
 --
@@ -176,8 +171,8 @@ info drDevice  =
 --
 -- ObjC selector: @- status@
 status :: IsDRDevice drDevice => drDevice -> IO (Id NSDictionary)
-status drDevice  =
-    sendMsg drDevice (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status drDevice =
+  sendMessage drDevice statusSelector
 
 -- | openTray
 --
@@ -193,8 +188,8 @@ status drDevice  =
 --
 -- ObjC selector: @- openTray@
 openTray :: IsDRDevice drDevice => drDevice -> IO Bool
-openTray drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "openTray") retCULong []
+openTray drDevice =
+  sendMessage drDevice openTraySelector
 
 -- | closeTray
 --
@@ -206,8 +201,8 @@ openTray drDevice  =
 --
 -- ObjC selector: @- closeTray@
 closeTray :: IsDRDevice drDevice => drDevice -> IO Bool
-closeTray drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "closeTray") retCULong []
+closeTray drDevice =
+  sendMessage drDevice closeTraySelector
 
 -- | ejectMedia
 --
@@ -219,8 +214,8 @@ closeTray drDevice  =
 --
 -- ObjC selector: @- ejectMedia@
 ejectMedia :: IsDRDevice drDevice => drDevice -> IO Bool
-ejectMedia drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "ejectMedia") retCULong []
+ejectMedia drDevice =
+  sendMessage drDevice ejectMediaSelector
 
 -- | acquireExclusiveAccess
 --
@@ -238,8 +233,8 @@ ejectMedia drDevice  =
 --
 -- ObjC selector: @- acquireExclusiveAccess@
 acquireExclusiveAccess :: IsDRDevice drDevice => drDevice -> IO Bool
-acquireExclusiveAccess drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "acquireExclusiveAccess") retCULong []
+acquireExclusiveAccess drDevice =
+  sendMessage drDevice acquireExclusiveAccessSelector
 
 -- | releaseExclusiveAccess
 --
@@ -253,8 +248,8 @@ acquireExclusiveAccess drDevice  =
 --
 -- ObjC selector: @- releaseExclusiveAccess@
 releaseExclusiveAccess :: IsDRDevice drDevice => drDevice -> IO ()
-releaseExclusiveAccess drDevice  =
-    sendMsg drDevice (mkSelector "releaseExclusiveAccess") retVoid []
+releaseExclusiveAccess drDevice =
+  sendMessage drDevice releaseExclusiveAccessSelector
 
 -- | acquireMediaReservation
 --
@@ -278,8 +273,8 @@ releaseExclusiveAccess drDevice  =
 --
 -- ObjC selector: @- acquireMediaReservation@
 acquireMediaReservation :: IsDRDevice drDevice => drDevice -> IO ()
-acquireMediaReservation drDevice  =
-    sendMsg drDevice (mkSelector "acquireMediaReservation") retVoid []
+acquireMediaReservation drDevice =
+  sendMessage drDevice acquireMediaReservationSelector
 
 -- | releaseMediaReservation
 --
@@ -289,8 +284,8 @@ acquireMediaReservation drDevice  =
 --
 -- ObjC selector: @- releaseMediaReservation@
 releaseMediaReservation :: IsDRDevice drDevice => drDevice -> IO ()
-releaseMediaReservation drDevice  =
-    sendMsg drDevice (mkSelector "releaseMediaReservation") retVoid []
+releaseMediaReservation drDevice =
+  sendMessage drDevice releaseMediaReservationSelector
 
 -- | isEqualToDevice:
 --
@@ -302,9 +297,8 @@ releaseMediaReservation drDevice  =
 --
 -- ObjC selector: @- isEqualToDevice:@
 isEqualToDevice :: (IsDRDevice drDevice, IsDRDevice otherDevice) => drDevice -> otherDevice -> IO Bool
-isEqualToDevice drDevice  otherDevice =
-  withObjCPtr otherDevice $ \raw_otherDevice ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "isEqualToDevice:") retCULong [argPtr (castPtr raw_otherDevice :: Ptr ())]
+isEqualToDevice drDevice otherDevice =
+  sendMessage drDevice isEqualToDeviceSelector (toDRDevice otherDevice)
 
 -- | mediaIsPresent
 --
@@ -312,8 +306,8 @@ isEqualToDevice drDevice  otherDevice =
 --
 -- ObjC selector: @- mediaIsPresent@
 mediaIsPresent :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsPresent drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsPresent") retCULong []
+mediaIsPresent drDevice =
+  sendMessage drDevice mediaIsPresentSelector
 
 -- | mediaIsTransitioning
 --
@@ -321,8 +315,8 @@ mediaIsPresent drDevice  =
 --
 -- ObjC selector: @- mediaIsTransitioning@
 mediaIsTransitioning :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsTransitioning drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsTransitioning") retCULong []
+mediaIsTransitioning drDevice =
+  sendMessage drDevice mediaIsTransitioningSelector
 
 -- | mediaIsBusy
 --
@@ -330,8 +324,8 @@ mediaIsTransitioning drDevice  =
 --
 -- ObjC selector: @- mediaIsBusy@
 mediaIsBusy :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsBusy drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsBusy") retCULong []
+mediaIsBusy drDevice =
+  sendMessage drDevice mediaIsBusySelector
 
 -- | mediaType
 --
@@ -339,8 +333,8 @@ mediaIsBusy drDevice  =
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsDRDevice drDevice => drDevice -> IO (Id NSString)
-mediaType drDevice  =
-    sendMsg drDevice (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType drDevice =
+  sendMessage drDevice mediaTypeSelector
 
 -- | mediaIsBlank
 --
@@ -348,8 +342,8 @@ mediaType drDevice  =
 --
 -- ObjC selector: @- mediaIsBlank@
 mediaIsBlank :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsBlank drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsBlank") retCULong []
+mediaIsBlank drDevice =
+  sendMessage drDevice mediaIsBlankSelector
 
 -- | mediaIsAppendable
 --
@@ -357,8 +351,8 @@ mediaIsBlank drDevice  =
 --
 -- ObjC selector: @- mediaIsAppendable@
 mediaIsAppendable :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsAppendable drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsAppendable") retCULong []
+mediaIsAppendable drDevice =
+  sendMessage drDevice mediaIsAppendableSelector
 
 -- | mediaIsOverwritable
 --
@@ -366,8 +360,8 @@ mediaIsAppendable drDevice  =
 --
 -- ObjC selector: @- mediaIsOverwritable@
 mediaIsOverwritable :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsOverwritable drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsOverwritable") retCULong []
+mediaIsOverwritable drDevice =
+  sendMessage drDevice mediaIsOverwritableSelector
 
 -- | mediaIsErasable
 --
@@ -375,8 +369,8 @@ mediaIsOverwritable drDevice  =
 --
 -- ObjC selector: @- mediaIsErasable@
 mediaIsErasable :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsErasable drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsErasable") retCULong []
+mediaIsErasable drDevice =
+  sendMessage drDevice mediaIsErasableSelector
 
 -- | mediaIsReserved
 --
@@ -384,8 +378,8 @@ mediaIsErasable drDevice  =
 --
 -- ObjC selector: @- mediaIsReserved@
 mediaIsReserved :: IsDRDevice drDevice => drDevice -> IO Bool
-mediaIsReserved drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "mediaIsReserved") retCULong []
+mediaIsReserved drDevice =
+  sendMessage drDevice mediaIsReservedSelector
 
 -- | mediaSpaceOverwritable
 --
@@ -393,8 +387,8 @@ mediaIsReserved drDevice  =
 --
 -- ObjC selector: @- mediaSpaceOverwritable@
 mediaSpaceOverwritable :: IsDRDevice drDevice => drDevice -> IO (Id DRMSF)
-mediaSpaceOverwritable drDevice  =
-    sendMsg drDevice (mkSelector "mediaSpaceOverwritable") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSpaceOverwritable drDevice =
+  sendMessage drDevice mediaSpaceOverwritableSelector
 
 -- | mediaSpaceUsed
 --
@@ -402,8 +396,8 @@ mediaSpaceOverwritable drDevice  =
 --
 -- ObjC selector: @- mediaSpaceUsed@
 mediaSpaceUsed :: IsDRDevice drDevice => drDevice -> IO (Id DRMSF)
-mediaSpaceUsed drDevice  =
-    sendMsg drDevice (mkSelector "mediaSpaceUsed") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSpaceUsed drDevice =
+  sendMessage drDevice mediaSpaceUsedSelector
 
 -- | mediaSpaceFree
 --
@@ -411,8 +405,8 @@ mediaSpaceUsed drDevice  =
 --
 -- ObjC selector: @- mediaSpaceFree@
 mediaSpaceFree :: IsDRDevice drDevice => drDevice -> IO (Id DRMSF)
-mediaSpaceFree drDevice  =
-    sendMsg drDevice (mkSelector "mediaSpaceFree") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSpaceFree drDevice =
+  sendMessage drDevice mediaSpaceFreeSelector
 
 -- | trayIsOpen
 --
@@ -422,8 +416,8 @@ mediaSpaceFree drDevice  =
 --
 -- ObjC selector: @- trayIsOpen@
 trayIsOpen :: IsDRDevice drDevice => drDevice -> IO Bool
-trayIsOpen drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "trayIsOpen") retCULong []
+trayIsOpen drDevice =
+  sendMessage drDevice trayIsOpenSelector
 
 -- | bsdName
 --
@@ -431,8 +425,8 @@ trayIsOpen drDevice  =
 --
 -- ObjC selector: @- bsdName@
 bsdName :: IsDRDevice drDevice => drDevice -> IO (Id NSString)
-bsdName drDevice  =
-    sendMsg drDevice (mkSelector "bsdName") (retPtr retVoid) [] >>= retainedObject . castPtr
+bsdName drDevice =
+  sendMessage drDevice bsdNameSelector
 
 -- | writesCD
 --
@@ -442,8 +436,8 @@ bsdName drDevice  =
 --
 -- ObjC selector: @- writesCD@
 writesCD :: IsDRDevice drDevice => drDevice -> IO Bool
-writesCD drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "writesCD") retCULong []
+writesCD drDevice =
+  sendMessage drDevice writesCDSelector
 
 -- | writesDVD
 --
@@ -453,8 +447,8 @@ writesCD drDevice  =
 --
 -- ObjC selector: @- writesDVD@
 writesDVD :: IsDRDevice drDevice => drDevice -> IO Bool
-writesDVD drDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drDevice (mkSelector "writesDVD") retCULong []
+writesDVD drDevice =
+  sendMessage drDevice writesDVDSelector
 
 -- | displayName
 --
@@ -462,8 +456,8 @@ writesDVD drDevice  =
 --
 -- ObjC selector: @- displayName@
 displayName :: IsDRDevice drDevice => drDevice -> IO (Id NSString)
-displayName drDevice  =
-    sendMsg drDevice (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName drDevice =
+  sendMessage drDevice displayNameSelector
 
 -- | ioRegistryEntryPath
 --
@@ -471,138 +465,138 @@ displayName drDevice  =
 --
 -- ObjC selector: @- ioRegistryEntryPath@
 ioRegistryEntryPath :: IsDRDevice drDevice => drDevice -> IO (Id NSString)
-ioRegistryEntryPath drDevice  =
-    sendMsg drDevice (mkSelector "ioRegistryEntryPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+ioRegistryEntryPath drDevice =
+  sendMessage drDevice ioRegistryEntryPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 
 -- | @Selector@ for @deviceForBSDName:@
-deviceForBSDNameSelector :: Selector
+deviceForBSDNameSelector :: Selector '[Id NSString] (Id DRDevice)
 deviceForBSDNameSelector = mkSelector "deviceForBSDName:"
 
 -- | @Selector@ for @deviceForIORegistryEntryPath:@
-deviceForIORegistryEntryPathSelector :: Selector
+deviceForIORegistryEntryPathSelector :: Selector '[Id NSString] (Id DRDevice)
 deviceForIORegistryEntryPathSelector = mkSelector "deviceForIORegistryEntryPath:"
 
 -- | @Selector@ for @isValid@
-isValidSelector :: Selector
+isValidSelector :: Selector '[] Bool
 isValidSelector = mkSelector "isValid"
 
 -- | @Selector@ for @info@
-infoSelector :: Selector
+infoSelector :: Selector '[] (Id NSDictionary)
 infoSelector = mkSelector "info"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSDictionary)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @openTray@
-openTraySelector :: Selector
+openTraySelector :: Selector '[] Bool
 openTraySelector = mkSelector "openTray"
 
 -- | @Selector@ for @closeTray@
-closeTraySelector :: Selector
+closeTraySelector :: Selector '[] Bool
 closeTraySelector = mkSelector "closeTray"
 
 -- | @Selector@ for @ejectMedia@
-ejectMediaSelector :: Selector
+ejectMediaSelector :: Selector '[] Bool
 ejectMediaSelector = mkSelector "ejectMedia"
 
 -- | @Selector@ for @acquireExclusiveAccess@
-acquireExclusiveAccessSelector :: Selector
+acquireExclusiveAccessSelector :: Selector '[] Bool
 acquireExclusiveAccessSelector = mkSelector "acquireExclusiveAccess"
 
 -- | @Selector@ for @releaseExclusiveAccess@
-releaseExclusiveAccessSelector :: Selector
+releaseExclusiveAccessSelector :: Selector '[] ()
 releaseExclusiveAccessSelector = mkSelector "releaseExclusiveAccess"
 
 -- | @Selector@ for @acquireMediaReservation@
-acquireMediaReservationSelector :: Selector
+acquireMediaReservationSelector :: Selector '[] ()
 acquireMediaReservationSelector = mkSelector "acquireMediaReservation"
 
 -- | @Selector@ for @releaseMediaReservation@
-releaseMediaReservationSelector :: Selector
+releaseMediaReservationSelector :: Selector '[] ()
 releaseMediaReservationSelector = mkSelector "releaseMediaReservation"
 
 -- | @Selector@ for @isEqualToDevice:@
-isEqualToDeviceSelector :: Selector
+isEqualToDeviceSelector :: Selector '[Id DRDevice] Bool
 isEqualToDeviceSelector = mkSelector "isEqualToDevice:"
 
 -- | @Selector@ for @mediaIsPresent@
-mediaIsPresentSelector :: Selector
+mediaIsPresentSelector :: Selector '[] Bool
 mediaIsPresentSelector = mkSelector "mediaIsPresent"
 
 -- | @Selector@ for @mediaIsTransitioning@
-mediaIsTransitioningSelector :: Selector
+mediaIsTransitioningSelector :: Selector '[] Bool
 mediaIsTransitioningSelector = mkSelector "mediaIsTransitioning"
 
 -- | @Selector@ for @mediaIsBusy@
-mediaIsBusySelector :: Selector
+mediaIsBusySelector :: Selector '[] Bool
 mediaIsBusySelector = mkSelector "mediaIsBusy"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @mediaIsBlank@
-mediaIsBlankSelector :: Selector
+mediaIsBlankSelector :: Selector '[] Bool
 mediaIsBlankSelector = mkSelector "mediaIsBlank"
 
 -- | @Selector@ for @mediaIsAppendable@
-mediaIsAppendableSelector :: Selector
+mediaIsAppendableSelector :: Selector '[] Bool
 mediaIsAppendableSelector = mkSelector "mediaIsAppendable"
 
 -- | @Selector@ for @mediaIsOverwritable@
-mediaIsOverwritableSelector :: Selector
+mediaIsOverwritableSelector :: Selector '[] Bool
 mediaIsOverwritableSelector = mkSelector "mediaIsOverwritable"
 
 -- | @Selector@ for @mediaIsErasable@
-mediaIsErasableSelector :: Selector
+mediaIsErasableSelector :: Selector '[] Bool
 mediaIsErasableSelector = mkSelector "mediaIsErasable"
 
 -- | @Selector@ for @mediaIsReserved@
-mediaIsReservedSelector :: Selector
+mediaIsReservedSelector :: Selector '[] Bool
 mediaIsReservedSelector = mkSelector "mediaIsReserved"
 
 -- | @Selector@ for @mediaSpaceOverwritable@
-mediaSpaceOverwritableSelector :: Selector
+mediaSpaceOverwritableSelector :: Selector '[] (Id DRMSF)
 mediaSpaceOverwritableSelector = mkSelector "mediaSpaceOverwritable"
 
 -- | @Selector@ for @mediaSpaceUsed@
-mediaSpaceUsedSelector :: Selector
+mediaSpaceUsedSelector :: Selector '[] (Id DRMSF)
 mediaSpaceUsedSelector = mkSelector "mediaSpaceUsed"
 
 -- | @Selector@ for @mediaSpaceFree@
-mediaSpaceFreeSelector :: Selector
+mediaSpaceFreeSelector :: Selector '[] (Id DRMSF)
 mediaSpaceFreeSelector = mkSelector "mediaSpaceFree"
 
 -- | @Selector@ for @trayIsOpen@
-trayIsOpenSelector :: Selector
+trayIsOpenSelector :: Selector '[] Bool
 trayIsOpenSelector = mkSelector "trayIsOpen"
 
 -- | @Selector@ for @bsdName@
-bsdNameSelector :: Selector
+bsdNameSelector :: Selector '[] (Id NSString)
 bsdNameSelector = mkSelector "bsdName"
 
 -- | @Selector@ for @writesCD@
-writesCDSelector :: Selector
+writesCDSelector :: Selector '[] Bool
 writesCDSelector = mkSelector "writesCD"
 
 -- | @Selector@ for @writesDVD@
-writesDVDSelector :: Selector
+writesDVDSelector :: Selector '[] Bool
 writesDVDSelector = mkSelector "writesDVD"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @ioRegistryEntryPath@
-ioRegistryEntryPathSelector :: Selector
+ioRegistryEntryPathSelector :: Selector '[] (Id NSString)
 ioRegistryEntryPathSelector = mkSelector "ioRegistryEntryPath"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Foundation.NSPort
   , removeConnection_fromRunLoop_forMode
   , valid
   , reservedSpaceLength
-  , portSelector
-  , invalidateSelector
-  , setDelegateSelector
+  , addConnection_toRunLoop_forModeSelector
   , delegateSelector
-  , scheduleInRunLoop_forModeSelector
+  , invalidateSelector
+  , portSelector
+  , removeConnection_fromRunLoop_forModeSelector
   , removeFromRunLoop_forModeSelector
+  , reservedSpaceLengthSelector
+  , scheduleInRunLoop_forModeSelector
   , sendBeforeDate_components_from_reservedSelector
   , sendBeforeDate_msgid_components_from_reservedSelector
-  , addConnection_toRunLoop_forModeSelector
-  , removeConnection_fromRunLoop_forModeSelector
+  , setDelegateSelector
   , validSelector
-  , reservedSpaceLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,128 +50,112 @@ port :: IO (Id NSPort)
 port  =
   do
     cls' <- getRequiredClass "NSPort"
-    sendClassMsg cls' (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' portSelector
 
 -- | @- invalidate@
 invalidate :: IsNSPort nsPort => nsPort -> IO ()
-invalidate nsPort  =
-    sendMsg nsPort (mkSelector "invalidate") retVoid []
+invalidate nsPort =
+  sendMessage nsPort invalidateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSPort nsPort => nsPort -> RawId -> IO ()
-setDelegate nsPort  anObject =
-    sendMsg nsPort (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+setDelegate nsPort anObject =
+  sendMessage nsPort setDelegateSelector anObject
 
 -- | @- delegate@
 delegate :: IsNSPort nsPort => nsPort -> IO RawId
-delegate nsPort  =
-    fmap (RawId . castPtr) $ sendMsg nsPort (mkSelector "delegate") (retPtr retVoid) []
+delegate nsPort =
+  sendMessage nsPort delegateSelector
 
 -- | @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsNSPort nsPort, IsNSRunLoop runLoop, IsNSString mode) => nsPort -> runLoop -> mode -> IO ()
-scheduleInRunLoop_forMode nsPort  runLoop mode =
-  withObjCPtr runLoop $ \raw_runLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsPort (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+scheduleInRunLoop_forMode nsPort runLoop mode =
+  sendMessage nsPort scheduleInRunLoop_forModeSelector (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsNSPort nsPort, IsNSRunLoop runLoop, IsNSString mode) => nsPort -> runLoop -> mode -> IO ()
-removeFromRunLoop_forMode nsPort  runLoop mode =
-  withObjCPtr runLoop $ \raw_runLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsPort (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeFromRunLoop_forMode nsPort runLoop mode =
+  sendMessage nsPort removeFromRunLoop_forModeSelector (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- sendBeforeDate:components:from:reserved:@
 sendBeforeDate_components_from_reserved :: (IsNSPort nsPort, IsNSDate limitDate, IsNSMutableArray components, IsNSPort receivePort) => nsPort -> limitDate -> components -> receivePort -> CULong -> IO Bool
-sendBeforeDate_components_from_reserved nsPort  limitDate components receivePort headerSpaceReserved =
-  withObjCPtr limitDate $ \raw_limitDate ->
-    withObjCPtr components $ \raw_components ->
-      withObjCPtr receivePort $ \raw_receivePort ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPort (mkSelector "sendBeforeDate:components:from:reserved:") retCULong [argPtr (castPtr raw_limitDate :: Ptr ()), argPtr (castPtr raw_components :: Ptr ()), argPtr (castPtr raw_receivePort :: Ptr ()), argCULong headerSpaceReserved]
+sendBeforeDate_components_from_reserved nsPort limitDate components receivePort headerSpaceReserved =
+  sendMessage nsPort sendBeforeDate_components_from_reservedSelector (toNSDate limitDate) (toNSMutableArray components) (toNSPort receivePort) headerSpaceReserved
 
 -- | @- sendBeforeDate:msgid:components:from:reserved:@
 sendBeforeDate_msgid_components_from_reserved :: (IsNSPort nsPort, IsNSDate limitDate, IsNSMutableArray components, IsNSPort receivePort) => nsPort -> limitDate -> CULong -> components -> receivePort -> CULong -> IO Bool
-sendBeforeDate_msgid_components_from_reserved nsPort  limitDate msgID components receivePort headerSpaceReserved =
-  withObjCPtr limitDate $ \raw_limitDate ->
-    withObjCPtr components $ \raw_components ->
-      withObjCPtr receivePort $ \raw_receivePort ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPort (mkSelector "sendBeforeDate:msgid:components:from:reserved:") retCULong [argPtr (castPtr raw_limitDate :: Ptr ()), argCULong msgID, argPtr (castPtr raw_components :: Ptr ()), argPtr (castPtr raw_receivePort :: Ptr ()), argCULong headerSpaceReserved]
+sendBeforeDate_msgid_components_from_reserved nsPort limitDate msgID components receivePort headerSpaceReserved =
+  sendMessage nsPort sendBeforeDate_msgid_components_from_reservedSelector (toNSDate limitDate) msgID (toNSMutableArray components) (toNSPort receivePort) headerSpaceReserved
 
 -- | @- addConnection:toRunLoop:forMode:@
 addConnection_toRunLoop_forMode :: (IsNSPort nsPort, IsNSConnection conn, IsNSRunLoop runLoop, IsNSString mode) => nsPort -> conn -> runLoop -> mode -> IO ()
-addConnection_toRunLoop_forMode nsPort  conn runLoop mode =
-  withObjCPtr conn $ \raw_conn ->
-    withObjCPtr runLoop $ \raw_runLoop ->
-      withObjCPtr mode $ \raw_mode ->
-          sendMsg nsPort (mkSelector "addConnection:toRunLoop:forMode:") retVoid [argPtr (castPtr raw_conn :: Ptr ()), argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+addConnection_toRunLoop_forMode nsPort conn runLoop mode =
+  sendMessage nsPort addConnection_toRunLoop_forModeSelector (toNSConnection conn) (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- removeConnection:fromRunLoop:forMode:@
 removeConnection_fromRunLoop_forMode :: (IsNSPort nsPort, IsNSConnection conn, IsNSRunLoop runLoop, IsNSString mode) => nsPort -> conn -> runLoop -> mode -> IO ()
-removeConnection_fromRunLoop_forMode nsPort  conn runLoop mode =
-  withObjCPtr conn $ \raw_conn ->
-    withObjCPtr runLoop $ \raw_runLoop ->
-      withObjCPtr mode $ \raw_mode ->
-          sendMsg nsPort (mkSelector "removeConnection:fromRunLoop:forMode:") retVoid [argPtr (castPtr raw_conn :: Ptr ()), argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeConnection_fromRunLoop_forMode nsPort conn runLoop mode =
+  sendMessage nsPort removeConnection_fromRunLoop_forModeSelector (toNSConnection conn) (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- valid@
 valid :: IsNSPort nsPort => nsPort -> IO Bool
-valid nsPort  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPort (mkSelector "valid") retCULong []
+valid nsPort =
+  sendMessage nsPort validSelector
 
 -- | @- reservedSpaceLength@
 reservedSpaceLength :: IsNSPort nsPort => nsPort -> IO CULong
-reservedSpaceLength nsPort  =
-    sendMsg nsPort (mkSelector "reservedSpaceLength") retCULong []
+reservedSpaceLength nsPort =
+  sendMessage nsPort reservedSpaceLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSPort)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @sendBeforeDate:components:from:reserved:@
-sendBeforeDate_components_from_reservedSelector :: Selector
+sendBeforeDate_components_from_reservedSelector :: Selector '[Id NSDate, Id NSMutableArray, Id NSPort, CULong] Bool
 sendBeforeDate_components_from_reservedSelector = mkSelector "sendBeforeDate:components:from:reserved:"
 
 -- | @Selector@ for @sendBeforeDate:msgid:components:from:reserved:@
-sendBeforeDate_msgid_components_from_reservedSelector :: Selector
+sendBeforeDate_msgid_components_from_reservedSelector :: Selector '[Id NSDate, CULong, Id NSMutableArray, Id NSPort, CULong] Bool
 sendBeforeDate_msgid_components_from_reservedSelector = mkSelector "sendBeforeDate:msgid:components:from:reserved:"
 
 -- | @Selector@ for @addConnection:toRunLoop:forMode:@
-addConnection_toRunLoop_forModeSelector :: Selector
+addConnection_toRunLoop_forModeSelector :: Selector '[Id NSConnection, Id NSRunLoop, Id NSString] ()
 addConnection_toRunLoop_forModeSelector = mkSelector "addConnection:toRunLoop:forMode:"
 
 -- | @Selector@ for @removeConnection:fromRunLoop:forMode:@
-removeConnection_fromRunLoop_forModeSelector :: Selector
+removeConnection_fromRunLoop_forModeSelector :: Selector '[Id NSConnection, Id NSRunLoop, Id NSString] ()
 removeConnection_fromRunLoop_forModeSelector = mkSelector "removeConnection:fromRunLoop:forMode:"
 
 -- | @Selector@ for @valid@
-validSelector :: Selector
+validSelector :: Selector '[] Bool
 validSelector = mkSelector "valid"
 
 -- | @Selector@ for @reservedSpaceLength@
-reservedSpaceLengthSelector :: Selector
+reservedSpaceLengthSelector :: Selector '[] CULong
 reservedSpaceLengthSelector = mkSelector "reservedSpaceLength"
 

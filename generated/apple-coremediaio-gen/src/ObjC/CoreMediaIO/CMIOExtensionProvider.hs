@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.CoreMediaIO.CMIOExtensionProvider
   , clientQueue
   , connectedClients
   , devices
-  , startServiceWithProviderSelector
-  , stopServiceWithProviderSelector
-  , initSelector
-  , newSelector
-  , providerWithSource_clientQueueSelector
-  , initWithSource_clientQueueSelector
   , addDevice_errorSelector
-  , removeDevice_errorSelector
-  , notifyPropertiesChangedSelector
-  , ignoreSIGTERMSelector
-  , sourceSelector
   , clientQueueSelector
   , connectedClientsSelector
   , devicesSelector
+  , ignoreSIGTERMSelector
+  , initSelector
+  , initWithSource_clientQueueSelector
+  , newSelector
+  , notifyPropertiesChangedSelector
+  , providerWithSource_clientQueueSelector
+  , removeDevice_errorSelector
+  , sourceSelector
+  , startServiceWithProviderSelector
+  , stopServiceWithProviderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ startServiceWithProvider :: IsCMIOExtensionProvider provider => provider -> IO (
 startServiceWithProvider provider =
   do
     cls' <- getRequiredClass "CMIOExtensionProvider"
-    withObjCPtr provider $ \raw_provider ->
-      sendClassMsg cls' (mkSelector "startServiceWithProvider:") retVoid [argPtr (castPtr raw_provider :: Ptr ())]
+    sendClassMessage cls' startServiceWithProviderSelector (toCMIOExtensionProvider provider)
 
 -- | stopServiceWithProvider:
 --
@@ -80,20 +76,19 @@ stopServiceWithProvider :: IsCMIOExtensionProvider provider => provider -> IO ()
 stopServiceWithProvider provider =
   do
     cls' <- getRequiredClass "CMIOExtensionProvider"
-    withObjCPtr provider $ \raw_provider ->
-      sendClassMsg cls' (mkSelector "stopServiceWithProvider:") retVoid [argPtr (castPtr raw_provider :: Ptr ())]
+    sendClassMessage cls' stopServiceWithProviderSelector (toCMIOExtensionProvider provider)
 
 -- | @- init@
 init_ :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO (Id CMIOExtensionProvider)
-init_ cmioExtensionProvider  =
-    sendMsg cmioExtensionProvider (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionProvider =
+  sendOwnedMessage cmioExtensionProvider initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionProvider)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionProvider"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | providerWithSource:clientQueue:
 --
@@ -110,8 +105,7 @@ providerWithSource_clientQueue :: IsNSObject clientQueue => RawId -> clientQueue
 providerWithSource_clientQueue source clientQueue =
   do
     cls' <- getRequiredClass "CMIOExtensionProvider"
-    withObjCPtr clientQueue $ \raw_clientQueue ->
-      sendClassMsg cls' (mkSelector "providerWithSource:clientQueue:") (retPtr retVoid) [argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr raw_clientQueue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' providerWithSource_clientQueueSelector source (toNSObject clientQueue)
 
 -- | initWithSource:clientQueue:
 --
@@ -125,9 +119,8 @@ providerWithSource_clientQueue source clientQueue =
 --
 -- ObjC selector: @- initWithSource:clientQueue:@
 initWithSource_clientQueue :: (IsCMIOExtensionProvider cmioExtensionProvider, IsNSObject clientQueue) => cmioExtensionProvider -> RawId -> clientQueue -> IO (Id CMIOExtensionProvider)
-initWithSource_clientQueue cmioExtensionProvider  source clientQueue =
-  withObjCPtr clientQueue $ \raw_clientQueue ->
-      sendMsg cmioExtensionProvider (mkSelector "initWithSource:clientQueue:") (retPtr retVoid) [argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr raw_clientQueue :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_clientQueue cmioExtensionProvider source clientQueue =
+  sendOwnedMessage cmioExtensionProvider initWithSource_clientQueueSelector source (toNSObject clientQueue)
 
 -- | addDevice:error:
 --
@@ -141,10 +134,8 @@ initWithSource_clientQueue cmioExtensionProvider  source clientQueue =
 --
 -- ObjC selector: @- addDevice:error:@
 addDevice_error :: (IsCMIOExtensionProvider cmioExtensionProvider, IsCMIOExtensionDevice device, IsNSError outError) => cmioExtensionProvider -> device -> outError -> IO Bool
-addDevice_error cmioExtensionProvider  device outError =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmioExtensionProvider (mkSelector "addDevice:error:") retCULong [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+addDevice_error cmioExtensionProvider device outError =
+  sendMessage cmioExtensionProvider addDevice_errorSelector (toCMIOExtensionDevice device) (toNSError outError)
 
 -- | removeDevice:error:
 --
@@ -158,10 +149,8 @@ addDevice_error cmioExtensionProvider  device outError =
 --
 -- ObjC selector: @- removeDevice:error:@
 removeDevice_error :: (IsCMIOExtensionProvider cmioExtensionProvider, IsCMIOExtensionDevice device, IsNSError outError) => cmioExtensionProvider -> device -> outError -> IO Bool
-removeDevice_error cmioExtensionProvider  device outError =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmioExtensionProvider (mkSelector "removeDevice:error:") retCULong [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+removeDevice_error cmioExtensionProvider device outError =
+  sendMessage cmioExtensionProvider removeDevice_errorSelector (toCMIOExtensionDevice device) (toNSError outError)
 
 -- | notifyPropertiesChanged:
 --
@@ -171,9 +160,8 @@ removeDevice_error cmioExtensionProvider  device outError =
 --
 -- ObjC selector: @- notifyPropertiesChanged:@
 notifyPropertiesChanged :: (IsCMIOExtensionProvider cmioExtensionProvider, IsNSDictionary propertyStates) => cmioExtensionProvider -> propertyStates -> IO ()
-notifyPropertiesChanged cmioExtensionProvider  propertyStates =
-  withObjCPtr propertyStates $ \raw_propertyStates ->
-      sendMsg cmioExtensionProvider (mkSelector "notifyPropertiesChanged:") retVoid [argPtr (castPtr raw_propertyStates :: Ptr ())]
+notifyPropertiesChanged cmioExtensionProvider propertyStates =
+  sendMessage cmioExtensionProvider notifyPropertiesChangedSelector (toNSDictionary propertyStates)
 
 -- | ignoreSIGTERM
 --
@@ -186,7 +174,7 @@ ignoreSIGTERM :: IO ()
 ignoreSIGTERM  =
   do
     cls' <- getRequiredClass "CMIOExtensionProvider"
-    sendClassMsg cls' (mkSelector "ignoreSIGTERM") retVoid []
+    sendClassMessage cls' ignoreSIGTERMSelector
 
 -- | source
 --
@@ -194,8 +182,8 @@ ignoreSIGTERM  =
 --
 -- ObjC selector: @- source@
 source :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO RawId
-source cmioExtensionProvider  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionProvider (mkSelector "source") (retPtr retVoid) []
+source cmioExtensionProvider =
+  sendMessage cmioExtensionProvider sourceSelector
 
 -- | clientQueue
 --
@@ -203,8 +191,8 @@ source cmioExtensionProvider  =
 --
 -- ObjC selector: @- clientQueue@
 clientQueue :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO (Id NSObject)
-clientQueue cmioExtensionProvider  =
-    sendMsg cmioExtensionProvider (mkSelector "clientQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientQueue cmioExtensionProvider =
+  sendMessage cmioExtensionProvider clientQueueSelector
 
 -- | connectedClients
 --
@@ -214,8 +202,8 @@ clientQueue cmioExtensionProvider  =
 --
 -- ObjC selector: @- connectedClients@
 connectedClients :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO (Id NSArray)
-connectedClients cmioExtensionProvider  =
-    sendMsg cmioExtensionProvider (mkSelector "connectedClients") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectedClients cmioExtensionProvider =
+  sendMessage cmioExtensionProvider connectedClientsSelector
 
 -- | devices
 --
@@ -225,66 +213,66 @@ connectedClients cmioExtensionProvider  =
 --
 -- ObjC selector: @- devices@
 devices :: IsCMIOExtensionProvider cmioExtensionProvider => cmioExtensionProvider -> IO (Id NSArray)
-devices cmioExtensionProvider  =
-    sendMsg cmioExtensionProvider (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+devices cmioExtensionProvider =
+  sendMessage cmioExtensionProvider devicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startServiceWithProvider:@
-startServiceWithProviderSelector :: Selector
+startServiceWithProviderSelector :: Selector '[Id CMIOExtensionProvider] ()
 startServiceWithProviderSelector = mkSelector "startServiceWithProvider:"
 
 -- | @Selector@ for @stopServiceWithProvider:@
-stopServiceWithProviderSelector :: Selector
+stopServiceWithProviderSelector :: Selector '[Id CMIOExtensionProvider] ()
 stopServiceWithProviderSelector = mkSelector "stopServiceWithProvider:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionProvider)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionProvider)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @providerWithSource:clientQueue:@
-providerWithSource_clientQueueSelector :: Selector
+providerWithSource_clientQueueSelector :: Selector '[RawId, Id NSObject] (Id CMIOExtensionProvider)
 providerWithSource_clientQueueSelector = mkSelector "providerWithSource:clientQueue:"
 
 -- | @Selector@ for @initWithSource:clientQueue:@
-initWithSource_clientQueueSelector :: Selector
+initWithSource_clientQueueSelector :: Selector '[RawId, Id NSObject] (Id CMIOExtensionProvider)
 initWithSource_clientQueueSelector = mkSelector "initWithSource:clientQueue:"
 
 -- | @Selector@ for @addDevice:error:@
-addDevice_errorSelector :: Selector
+addDevice_errorSelector :: Selector '[Id CMIOExtensionDevice, Id NSError] Bool
 addDevice_errorSelector = mkSelector "addDevice:error:"
 
 -- | @Selector@ for @removeDevice:error:@
-removeDevice_errorSelector :: Selector
+removeDevice_errorSelector :: Selector '[Id CMIOExtensionDevice, Id NSError] Bool
 removeDevice_errorSelector = mkSelector "removeDevice:error:"
 
 -- | @Selector@ for @notifyPropertiesChanged:@
-notifyPropertiesChangedSelector :: Selector
+notifyPropertiesChangedSelector :: Selector '[Id NSDictionary] ()
 notifyPropertiesChangedSelector = mkSelector "notifyPropertiesChanged:"
 
 -- | @Selector@ for @ignoreSIGTERM@
-ignoreSIGTERMSelector :: Selector
+ignoreSIGTERMSelector :: Selector '[] ()
 ignoreSIGTERMSelector = mkSelector "ignoreSIGTERM"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] RawId
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @clientQueue@
-clientQueueSelector :: Selector
+clientQueueSelector :: Selector '[] (Id NSObject)
 clientQueueSelector = mkSelector "clientQueue"
 
 -- | @Selector@ for @connectedClients@
-connectedClientsSelector :: Selector
+connectedClientsSelector :: Selector '[] (Id NSArray)
 connectedClientsSelector = mkSelector "connectedClients"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 

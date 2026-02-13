@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,10 +33,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNFullyConnected
   , initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flags
   , initWithCoder_device
   , initWithDevice
-  , initWithDevice_weightsSelector
-  , initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector
+  , initWithDevice_weightsSelector
 
   -- * Enum types
   , MPSCNNConvolutionFlags(MPSCNNConvolutionFlags)
@@ -43,15 +44,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNFullyConnected
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:weights:@
 initWithDevice_weights :: IsMPSCNNFullyConnected mpscnnFullyConnected => mpscnnFullyConnected -> RawId -> RawId -> IO (Id MPSCNNFullyConnected)
-initWithDevice_weights mpscnnFullyConnected  device weights =
-    sendMsg mpscnnFullyConnected (mkSelector "initWithDevice:weights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_weights mpscnnFullyConnected device weights =
+  sendOwnedMessage mpscnnFullyConnected initWithDevice_weightsSelector device weights
 
 -- | Initializes a convolution kernel              WARNING:                        This API is depreated and will be removed in the future. It cannot be used                                              when training. Also serialization/unserialization wont work for MPSCNNConvolution                                              objects created with this init. Please move onto using initWithDevice:weights:.
 --
@@ -88,9 +85,8 @@ initWithDevice_weights mpscnnFullyConnected  device weights =
 --
 -- ObjC selector: @- initWithDevice:convolutionDescriptor:kernelWeights:biasTerms:flags:@
 initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flags :: IsMPSCNNFullyConnected mpscnnFullyConnected => mpscnnFullyConnected -> RawId -> Const (Id MPSCNNConvolutionDescriptor) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> MPSCNNConvolutionFlags -> IO (Id MPSCNNFullyConnected)
-initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flags mpscnnFullyConnected  device convolutionDescriptor kernelWeights biasTerms flags =
-  withObjCPtr convolutionDescriptor $ \raw_convolutionDescriptor ->
-      sendMsg mpscnnFullyConnected (mkSelector "initWithDevice:convolutionDescriptor:kernelWeights:biasTerms:flags:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_convolutionDescriptor :: Ptr ()), argPtr (unConst kernelWeights), argPtr (unConst biasTerms), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flags mpscnnFullyConnected device convolutionDescriptor kernelWeights biasTerms flags =
+  sendOwnedMessage mpscnnFullyConnected initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector device convolutionDescriptor kernelWeights biasTerms flags
 
 -- | NSSecureCoding compatability
 --
@@ -104,32 +100,31 @@ initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flags mpscnnFullyCo
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNFullyConnected mpscnnFullyConnected, IsNSCoder aDecoder) => mpscnnFullyConnected -> aDecoder -> RawId -> IO (Id MPSCNNFullyConnected)
-initWithCoder_device mpscnnFullyConnected  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnFullyConnected (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnFullyConnected aDecoder device =
+  sendOwnedMessage mpscnnFullyConnected initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNFullyConnected mpscnnFullyConnected => mpscnnFullyConnected -> RawId -> IO (Id MPSCNNFullyConnected)
-initWithDevice mpscnnFullyConnected  device =
-    sendMsg mpscnnFullyConnected (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnFullyConnected device =
+  sendOwnedMessage mpscnnFullyConnected initWithDeviceSelector device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:weights:@
-initWithDevice_weightsSelector :: Selector
+initWithDevice_weightsSelector :: Selector '[RawId, RawId] (Id MPSCNNFullyConnected)
 initWithDevice_weightsSelector = mkSelector "initWithDevice:weights:"
 
 -- | @Selector@ for @initWithDevice:convolutionDescriptor:kernelWeights:biasTerms:flags:@
-initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector :: Selector
+initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector :: Selector '[RawId, Const (Id MPSCNNConvolutionDescriptor), Const (Ptr CFloat), Const (Ptr CFloat), MPSCNNConvolutionFlags] (Id MPSCNNFullyConnected)
 initWithDevice_convolutionDescriptor_kernelWeights_biasTerms_flagsSelector = mkSelector "initWithDevice:convolutionDescriptor:kernelWeights:biasTerms:flags:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNFullyConnected)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNFullyConnected)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.SpriteKit.SKPhysicsJointSpring
   , frequency
   , setFrequency
   , dampingSelector
-  , setDampingSelector
   , frequencySelector
+  , setDampingSelector
   , setFrequencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- damping@
 damping :: IsSKPhysicsJointSpring skPhysicsJointSpring => skPhysicsJointSpring -> IO CDouble
-damping skPhysicsJointSpring  =
-    sendMsg skPhysicsJointSpring (mkSelector "damping") retCDouble []
+damping skPhysicsJointSpring =
+  sendMessage skPhysicsJointSpring dampingSelector
 
 -- | @- setDamping:@
 setDamping :: IsSKPhysicsJointSpring skPhysicsJointSpring => skPhysicsJointSpring -> CDouble -> IO ()
-setDamping skPhysicsJointSpring  value =
-    sendMsg skPhysicsJointSpring (mkSelector "setDamping:") retVoid [argCDouble value]
+setDamping skPhysicsJointSpring value =
+  sendMessage skPhysicsJointSpring setDampingSelector value
 
 -- | @- frequency@
 frequency :: IsSKPhysicsJointSpring skPhysicsJointSpring => skPhysicsJointSpring -> IO CDouble
-frequency skPhysicsJointSpring  =
-    sendMsg skPhysicsJointSpring (mkSelector "frequency") retCDouble []
+frequency skPhysicsJointSpring =
+  sendMessage skPhysicsJointSpring frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: IsSKPhysicsJointSpring skPhysicsJointSpring => skPhysicsJointSpring -> CDouble -> IO ()
-setFrequency skPhysicsJointSpring  value =
-    sendMsg skPhysicsJointSpring (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency skPhysicsJointSpring value =
+  sendMessage skPhysicsJointSpring setFrequencySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @damping@
-dampingSelector :: Selector
+dampingSelector :: Selector '[] CDouble
 dampingSelector = mkSelector "damping"
 
 -- | @Selector@ for @setDamping:@
-setDampingSelector :: Selector
+setDampingSelector :: Selector '[CDouble] ()
 setDampingSelector = mkSelector "setDamping:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 

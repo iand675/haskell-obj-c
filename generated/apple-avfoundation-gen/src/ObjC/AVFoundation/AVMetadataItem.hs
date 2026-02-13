@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,31 +33,31 @@ module ObjC.AVFoundation.AVMetadataItem
   , dateValue
   , dataValue
   , startDate
-  , metadataItemsFromArray_withLocaleSelector
-  , metadataItemsFromArray_withKey_keySpaceSelector
-  , metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector
+  , commonKeySelector
+  , dataTypeSelector
+  , dataValueSelector
+  , dateValueSelector
+  , extendedLanguageTagSelector
+  , extraAttributesSelector
   , identifierForKey_keySpaceSelector
-  , keySpaceForIdentifierSelector
+  , identifierSelector
   , keyForIdentifierSelector
+  , keySelector
+  , keySpaceForIdentifierSelector
+  , keySpaceSelector
+  , loadValuesAsynchronouslyForKeys_completionHandlerSelector
+  , localeSelector
+  , metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector
   , metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector
   , metadataItemsFromArray_filteredByIdentifierSelector
   , metadataItemsFromArray_filteredByMetadataItemFilterSelector
-  , statusOfValueForKey_errorSelector
-  , loadValuesAsynchronouslyForKeys_completionHandlerSelector
-  , identifierSelector
-  , extendedLanguageTagSelector
-  , localeSelector
-  , dataTypeSelector
-  , valueSelector
-  , extraAttributesSelector
-  , keySelector
-  , commonKeySelector
-  , keySpaceSelector
-  , stringValueSelector
+  , metadataItemsFromArray_withKey_keySpaceSelector
+  , metadataItemsFromArray_withLocaleSelector
   , numberValueSelector
-  , dateValueSelector
-  , dataValueSelector
   , startDateSelector
+  , statusOfValueForKey_errorSelector
+  , stringValueSelector
+  , valueSelector
 
   -- * Enum types
   , AVKeyValueStatus(AVKeyValueStatus)
@@ -68,15 +69,11 @@ module ObjC.AVFoundation.AVMetadataItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,9 +90,7 @@ metadataItemsFromArray_withLocale :: (IsNSArray metadataItems, IsNSLocale locale
 metadataItemsFromArray_withLocale metadataItems locale =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItems $ \raw_metadataItems ->
-      withObjCPtr locale $ \raw_locale ->
-        sendClassMsg cls' (mkSelector "metadataItemsFromArray:withLocale:") (retPtr retVoid) [argPtr (castPtr raw_metadataItems :: Ptr ()), argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemsFromArray_withLocaleSelector (toNSArray metadataItems) (toNSLocale locale)
 
 -- | metadataItemsFromArray:withKey:keySpace:
 --
@@ -106,9 +101,7 @@ metadataItemsFromArray_withKey_keySpace :: (IsNSArray metadataItems, IsNSString 
 metadataItemsFromArray_withKey_keySpace metadataItems key keySpace =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItems $ \raw_metadataItems ->
-      withObjCPtr keySpace $ \raw_keySpace ->
-        sendClassMsg cls' (mkSelector "metadataItemsFromArray:withKey:keySpace:") (retPtr retVoid) [argPtr (castPtr raw_metadataItems :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ()), argPtr (castPtr raw_keySpace :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemsFromArray_withKey_keySpaceSelector (toNSArray metadataItems) key (toNSString keySpace)
 
 -- | metadataItemWithPropertiesOfMetadataItem:valueLoadingHandler:
 --
@@ -127,8 +120,7 @@ metadataItemWithPropertiesOfMetadataItem_valueLoadingHandler :: IsAVMetadataItem
 metadataItemWithPropertiesOfMetadataItem_valueLoadingHandler metadataItem handler =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItem $ \raw_metadataItem ->
-      sendClassMsg cls' (mkSelector "metadataItemWithPropertiesOfMetadataItem:valueLoadingHandler:") (retPtr retVoid) [argPtr (castPtr raw_metadataItem :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector (toAVMetadataItem metadataItem) handler
 
 -- | identifierForKey:keySpace:
 --
@@ -149,24 +141,21 @@ identifierForKey_keySpace :: IsNSString keySpace => RawId -> keySpace -> IO (Id 
 identifierForKey_keySpace key keySpace =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr keySpace $ \raw_keySpace ->
-      sendClassMsg cls' (mkSelector "identifierForKey:keySpace:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ()), argPtr (castPtr raw_keySpace :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identifierForKey_keySpaceSelector key (toNSString keySpace)
 
 -- | @+ keySpaceForIdentifier:@
 keySpaceForIdentifier :: IsNSString identifier => identifier -> IO (Id NSString)
 keySpaceForIdentifier identifier =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "keySpaceForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' keySpaceForIdentifierSelector (toNSString identifier)
 
 -- | @+ keyForIdentifier:@
 keyForIdentifier :: IsNSString identifier => identifier -> IO RawId
 keyForIdentifier identifier =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "keyForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())]
+    sendClassMessage cls' keyForIdentifierSelector (toNSString identifier)
 
 -- | metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:
 --
@@ -183,9 +172,7 @@ metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguages :: (IsNSAr
 metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguages metadataItems preferredLanguages =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItems $ \raw_metadataItems ->
-      withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-        sendClassMsg cls' (mkSelector "metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:") (retPtr retVoid) [argPtr (castPtr raw_metadataItems :: Ptr ()), argPtr (castPtr raw_preferredLanguages :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector (toNSArray metadataItems) (toNSArray preferredLanguages)
 
 -- | metadataItemsFromArray:filteredByIdentifier:
 --
@@ -202,9 +189,7 @@ metadataItemsFromArray_filteredByIdentifier :: (IsNSArray metadataItems, IsNSStr
 metadataItemsFromArray_filteredByIdentifier metadataItems identifier =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItems $ \raw_metadataItems ->
-      withObjCPtr identifier $ \raw_identifier ->
-        sendClassMsg cls' (mkSelector "metadataItemsFromArray:filteredByIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_metadataItems :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemsFromArray_filteredByIdentifierSelector (toNSArray metadataItems) (toNSString identifier)
 
 -- | metadataItemsFromArray:filteredByMetadataItemFilter:
 --
@@ -221,194 +206,189 @@ metadataItemsFromArray_filteredByMetadataItemFilter :: (IsNSArray metadataItems,
 metadataItemsFromArray_filteredByMetadataItemFilter metadataItems metadataItemFilter =
   do
     cls' <- getRequiredClass "AVMetadataItem"
-    withObjCPtr metadataItems $ \raw_metadataItems ->
-      withObjCPtr metadataItemFilter $ \raw_metadataItemFilter ->
-        sendClassMsg cls' (mkSelector "metadataItemsFromArray:filteredByMetadataItemFilter:") (retPtr retVoid) [argPtr (castPtr raw_metadataItems :: Ptr ()), argPtr (castPtr raw_metadataItemFilter :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemsFromArray_filteredByMetadataItemFilterSelector (toNSArray metadataItems) (toAVMetadataItemFilter metadataItemFilter)
 
 -- | @- statusOfValueForKey:error:@
 statusOfValueForKey_error :: (IsAVMetadataItem avMetadataItem, IsNSString key, IsNSError outError) => avMetadataItem -> key -> outError -> IO AVKeyValueStatus
-statusOfValueForKey_error avMetadataItem  key outError =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap (coerce :: CLong -> AVKeyValueStatus) $ sendMsg avMetadataItem (mkSelector "statusOfValueForKey:error:") retCLong [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+statusOfValueForKey_error avMetadataItem key outError =
+  sendMessage avMetadataItem statusOfValueForKey_errorSelector (toNSString key) (toNSError outError)
 
 -- | @- loadValuesAsynchronouslyForKeys:completionHandler:@
 loadValuesAsynchronouslyForKeys_completionHandler :: (IsAVMetadataItem avMetadataItem, IsNSArray keys) => avMetadataItem -> keys -> Ptr () -> IO ()
-loadValuesAsynchronouslyForKeys_completionHandler avMetadataItem  keys handler =
-  withObjCPtr keys $ \raw_keys ->
-      sendMsg avMetadataItem (mkSelector "loadValuesAsynchronouslyForKeys:completionHandler:") retVoid [argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+loadValuesAsynchronouslyForKeys_completionHandler avMetadataItem keys handler =
+  sendMessage avMetadataItem loadValuesAsynchronouslyForKeys_completionHandlerSelector (toNSArray keys) handler
 
 -- | @- identifier@
 identifier :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-identifier avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avMetadataItem =
+  sendMessage avMetadataItem identifierSelector
 
 -- | @- extendedLanguageTag@
 extendedLanguageTag :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-extendedLanguageTag avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avMetadataItem =
+  sendMessage avMetadataItem extendedLanguageTagSelector
 
 -- | @- locale@
 locale :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSLocale)
-locale avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale avMetadataItem =
+  sendMessage avMetadataItem localeSelector
 
 -- | @- dataType@
 dataType :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-dataType avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "dataType") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataType avMetadataItem =
+  sendMessage avMetadataItem dataTypeSelector
 
 -- | @- value@
 value :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO RawId
-value avMetadataItem  =
-    fmap (RawId . castPtr) $ sendMsg avMetadataItem (mkSelector "value") (retPtr retVoid) []
+value avMetadataItem =
+  sendMessage avMetadataItem valueSelector
 
 -- | @- extraAttributes@
 extraAttributes :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSDictionary)
-extraAttributes avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "extraAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+extraAttributes avMetadataItem =
+  sendMessage avMetadataItem extraAttributesSelector
 
 -- | @- key@
 key :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO RawId
-key avMetadataItem  =
-    fmap (RawId . castPtr) $ sendMsg avMetadataItem (mkSelector "key") (retPtr retVoid) []
+key avMetadataItem =
+  sendMessage avMetadataItem keySelector
 
 -- | @- commonKey@
 commonKey :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-commonKey avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "commonKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonKey avMetadataItem =
+  sendMessage avMetadataItem commonKeySelector
 
 -- | @- keySpace@
 keySpace :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-keySpace avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "keySpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySpace avMetadataItem =
+  sendMessage avMetadataItem keySpaceSelector
 
 -- | @- stringValue@
 stringValue :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSString)
-stringValue avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue avMetadataItem =
+  sendMessage avMetadataItem stringValueSelector
 
 -- | @- numberValue@
 numberValue :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSNumber)
-numberValue avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "numberValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberValue avMetadataItem =
+  sendMessage avMetadataItem numberValueSelector
 
 -- | @- dateValue@
 dateValue :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSDate)
-dateValue avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "dateValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateValue avMetadataItem =
+  sendMessage avMetadataItem dateValueSelector
 
 -- | @- dataValue@
 dataValue :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSData)
-dataValue avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "dataValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataValue avMetadataItem =
+  sendMessage avMetadataItem dataValueSelector
 
 -- | @- startDate@
 startDate :: IsAVMetadataItem avMetadataItem => avMetadataItem -> IO (Id NSDate)
-startDate avMetadataItem  =
-    sendMsg avMetadataItem (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate avMetadataItem =
+  sendMessage avMetadataItem startDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @metadataItemsFromArray:withLocale:@
-metadataItemsFromArray_withLocaleSelector :: Selector
+metadataItemsFromArray_withLocaleSelector :: Selector '[Id NSArray, Id NSLocale] (Id NSArray)
 metadataItemsFromArray_withLocaleSelector = mkSelector "metadataItemsFromArray:withLocale:"
 
 -- | @Selector@ for @metadataItemsFromArray:withKey:keySpace:@
-metadataItemsFromArray_withKey_keySpaceSelector :: Selector
+metadataItemsFromArray_withKey_keySpaceSelector :: Selector '[Id NSArray, RawId, Id NSString] (Id NSArray)
 metadataItemsFromArray_withKey_keySpaceSelector = mkSelector "metadataItemsFromArray:withKey:keySpace:"
 
 -- | @Selector@ for @metadataItemWithPropertiesOfMetadataItem:valueLoadingHandler:@
-metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector :: Selector
+metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector :: Selector '[Id AVMetadataItem, Ptr ()] (Id AVMetadataItem)
 metadataItemWithPropertiesOfMetadataItem_valueLoadingHandlerSelector = mkSelector "metadataItemWithPropertiesOfMetadataItem:valueLoadingHandler:"
 
 -- | @Selector@ for @identifierForKey:keySpace:@
-identifierForKey_keySpaceSelector :: Selector
+identifierForKey_keySpaceSelector :: Selector '[RawId, Id NSString] (Id NSString)
 identifierForKey_keySpaceSelector = mkSelector "identifierForKey:keySpace:"
 
 -- | @Selector@ for @keySpaceForIdentifier:@
-keySpaceForIdentifierSelector :: Selector
+keySpaceForIdentifierSelector :: Selector '[Id NSString] (Id NSString)
 keySpaceForIdentifierSelector = mkSelector "keySpaceForIdentifier:"
 
 -- | @Selector@ for @keyForIdentifier:@
-keyForIdentifierSelector :: Selector
+keyForIdentifierSelector :: Selector '[Id NSString] RawId
 keyForIdentifierSelector = mkSelector "keyForIdentifier:"
 
 -- | @Selector@ for @metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:@
-metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector :: Selector
+metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector :: Selector '[Id NSArray, Id NSArray] (Id NSArray)
 metadataItemsFromArray_filteredAndSortedAccordingToPreferredLanguagesSelector = mkSelector "metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:"
 
 -- | @Selector@ for @metadataItemsFromArray:filteredByIdentifier:@
-metadataItemsFromArray_filteredByIdentifierSelector :: Selector
+metadataItemsFromArray_filteredByIdentifierSelector :: Selector '[Id NSArray, Id NSString] (Id NSArray)
 metadataItemsFromArray_filteredByIdentifierSelector = mkSelector "metadataItemsFromArray:filteredByIdentifier:"
 
 -- | @Selector@ for @metadataItemsFromArray:filteredByMetadataItemFilter:@
-metadataItemsFromArray_filteredByMetadataItemFilterSelector :: Selector
+metadataItemsFromArray_filteredByMetadataItemFilterSelector :: Selector '[Id NSArray, Id AVMetadataItemFilter] (Id NSArray)
 metadataItemsFromArray_filteredByMetadataItemFilterSelector = mkSelector "metadataItemsFromArray:filteredByMetadataItemFilter:"
 
 -- | @Selector@ for @statusOfValueForKey:error:@
-statusOfValueForKey_errorSelector :: Selector
+statusOfValueForKey_errorSelector :: Selector '[Id NSString, Id NSError] AVKeyValueStatus
 statusOfValueForKey_errorSelector = mkSelector "statusOfValueForKey:error:"
 
 -- | @Selector@ for @loadValuesAsynchronouslyForKeys:completionHandler:@
-loadValuesAsynchronouslyForKeys_completionHandlerSelector :: Selector
+loadValuesAsynchronouslyForKeys_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 loadValuesAsynchronouslyForKeys_completionHandlerSelector = mkSelector "loadValuesAsynchronouslyForKeys:completionHandler:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] (Id NSString)
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @extraAttributes@
-extraAttributesSelector :: Selector
+extraAttributesSelector :: Selector '[] (Id NSDictionary)
 extraAttributesSelector = mkSelector "extraAttributes"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] RawId
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @commonKey@
-commonKeySelector :: Selector
+commonKeySelector :: Selector '[] (Id NSString)
 commonKeySelector = mkSelector "commonKey"
 
 -- | @Selector@ for @keySpace@
-keySpaceSelector :: Selector
+keySpaceSelector :: Selector '[] (Id NSString)
 keySpaceSelector = mkSelector "keySpace"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @numberValue@
-numberValueSelector :: Selector
+numberValueSelector :: Selector '[] (Id NSNumber)
 numberValueSelector = mkSelector "numberValue"
 
 -- | @Selector@ for @dateValue@
-dateValueSelector :: Selector
+dateValueSelector :: Selector '[] (Id NSDate)
 dateValueSelector = mkSelector "dateValue"
 
 -- | @Selector@ for @dataValue@
-dataValueSelector :: Selector
+dataValueSelector :: Selector '[] (Id NSData)
 dataValueSelector = mkSelector "dataValue"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 

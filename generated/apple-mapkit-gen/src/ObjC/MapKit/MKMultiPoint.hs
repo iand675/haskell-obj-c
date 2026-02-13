@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.MapKit.MKMultiPoint
   , locationAtPointIndex
   , locationsAtPointIndexes
   , pointCount
-  , pointsSelector
   , getCoordinates_rangeSelector
   , locationAtPointIndexSelector
   , locationsAtPointIndexesSelector
   , pointCountSelector
+  , pointsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,51 +35,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- points@
 points :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> IO RawId
-points mkMultiPoint  =
-    fmap (RawId . castPtr) $ sendMsg mkMultiPoint (mkSelector "points") (retPtr retVoid) []
+points mkMultiPoint =
+  sendMessage mkMultiPoint pointsSelector
 
 -- | @- getCoordinates:range:@
 getCoordinates_range :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> RawId -> NSRange -> IO ()
-getCoordinates_range mkMultiPoint  coords range =
-    sendMsg mkMultiPoint (mkSelector "getCoordinates:range:") retVoid [argPtr (castPtr (unRawId coords) :: Ptr ()), argNSRange range]
+getCoordinates_range mkMultiPoint coords range =
+  sendMessage mkMultiPoint getCoordinates_rangeSelector coords range
 
 -- | @- locationAtPointIndex:@
 locationAtPointIndex :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> CULong -> IO CDouble
-locationAtPointIndex mkMultiPoint  index =
-    sendMsg mkMultiPoint (mkSelector "locationAtPointIndex:") retCDouble [argCULong index]
+locationAtPointIndex mkMultiPoint index =
+  sendMessage mkMultiPoint locationAtPointIndexSelector index
 
 -- | @- locationsAtPointIndexes:@
 locationsAtPointIndexes :: (IsMKMultiPoint mkMultiPoint, IsNSIndexSet indexes) => mkMultiPoint -> indexes -> IO (Id NSArray)
-locationsAtPointIndexes mkMultiPoint  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg mkMultiPoint (mkSelector "locationsAtPointIndexes:") (retPtr retVoid) [argPtr (castPtr raw_indexes :: Ptr ())] >>= retainedObject . castPtr
+locationsAtPointIndexes mkMultiPoint indexes =
+  sendMessage mkMultiPoint locationsAtPointIndexesSelector (toNSIndexSet indexes)
 
 -- | @- pointCount@
 pointCount :: IsMKMultiPoint mkMultiPoint => mkMultiPoint -> IO CULong
-pointCount mkMultiPoint  =
-    sendMsg mkMultiPoint (mkSelector "pointCount") retCULong []
+pointCount mkMultiPoint =
+  sendMessage mkMultiPoint pointCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @points@
-pointsSelector :: Selector
+pointsSelector :: Selector '[] RawId
 pointsSelector = mkSelector "points"
 
 -- | @Selector@ for @getCoordinates:range:@
-getCoordinates_rangeSelector :: Selector
+getCoordinates_rangeSelector :: Selector '[RawId, NSRange] ()
 getCoordinates_rangeSelector = mkSelector "getCoordinates:range:"
 
 -- | @Selector@ for @locationAtPointIndex:@
-locationAtPointIndexSelector :: Selector
+locationAtPointIndexSelector :: Selector '[CULong] CDouble
 locationAtPointIndexSelector = mkSelector "locationAtPointIndex:"
 
 -- | @Selector@ for @locationsAtPointIndexes:@
-locationsAtPointIndexesSelector :: Selector
+locationsAtPointIndexesSelector :: Selector '[Id NSIndexSet] (Id NSArray)
 locationsAtPointIndexesSelector = mkSelector "locationsAtPointIndexes:"
 
 -- | @Selector@ for @pointCount@
-pointCountSelector :: Selector
+pointCountSelector :: Selector '[] CULong
 pointCountSelector = mkSelector "pointCount"
 

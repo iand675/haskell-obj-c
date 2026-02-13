@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Intents.INSendPaymentIntent
   , payee
   , currencyAmount
   , note
-  , initWithPayee_currencyAmount_noteSelector
-  , payeeSelector
   , currencyAmountSelector
+  , initWithPayee_currencyAmount_noteSelector
   , noteSelector
+  , payeeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPayee:currencyAmount:note:@
 initWithPayee_currencyAmount_note :: (IsINSendPaymentIntent inSendPaymentIntent, IsINPerson payee, IsINCurrencyAmount currencyAmount, IsNSString note) => inSendPaymentIntent -> payee -> currencyAmount -> note -> IO (Id INSendPaymentIntent)
-initWithPayee_currencyAmount_note inSendPaymentIntent  payee currencyAmount note =
-  withObjCPtr payee $ \raw_payee ->
-    withObjCPtr currencyAmount $ \raw_currencyAmount ->
-      withObjCPtr note $ \raw_note ->
-          sendMsg inSendPaymentIntent (mkSelector "initWithPayee:currencyAmount:note:") (retPtr retVoid) [argPtr (castPtr raw_payee :: Ptr ()), argPtr (castPtr raw_currencyAmount :: Ptr ()), argPtr (castPtr raw_note :: Ptr ())] >>= ownedObject . castPtr
+initWithPayee_currencyAmount_note inSendPaymentIntent payee currencyAmount note =
+  sendOwnedMessage inSendPaymentIntent initWithPayee_currencyAmount_noteSelector (toINPerson payee) (toINCurrencyAmount currencyAmount) (toNSString note)
 
 -- | @- payee@
 payee :: IsINSendPaymentIntent inSendPaymentIntent => inSendPaymentIntent -> IO (Id INPerson)
-payee inSendPaymentIntent  =
-    sendMsg inSendPaymentIntent (mkSelector "payee") (retPtr retVoid) [] >>= retainedObject . castPtr
+payee inSendPaymentIntent =
+  sendMessage inSendPaymentIntent payeeSelector
 
 -- | @- currencyAmount@
 currencyAmount :: IsINSendPaymentIntent inSendPaymentIntent => inSendPaymentIntent -> IO (Id INCurrencyAmount)
-currencyAmount inSendPaymentIntent  =
-    sendMsg inSendPaymentIntent (mkSelector "currencyAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyAmount inSendPaymentIntent =
+  sendMessage inSendPaymentIntent currencyAmountSelector
 
 -- | @- note@
 note :: IsINSendPaymentIntent inSendPaymentIntent => inSendPaymentIntent -> IO (Id NSString)
-note inSendPaymentIntent  =
-    sendMsg inSendPaymentIntent (mkSelector "note") (retPtr retVoid) [] >>= retainedObject . castPtr
+note inSendPaymentIntent =
+  sendMessage inSendPaymentIntent noteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayee:currencyAmount:note:@
-initWithPayee_currencyAmount_noteSelector :: Selector
+initWithPayee_currencyAmount_noteSelector :: Selector '[Id INPerson, Id INCurrencyAmount, Id NSString] (Id INSendPaymentIntent)
 initWithPayee_currencyAmount_noteSelector = mkSelector "initWithPayee:currencyAmount:note:"
 
 -- | @Selector@ for @payee@
-payeeSelector :: Selector
+payeeSelector :: Selector '[] (Id INPerson)
 payeeSelector = mkSelector "payee"
 
 -- | @Selector@ for @currencyAmount@
-currencyAmountSelector :: Selector
+currencyAmountSelector :: Selector '[] (Id INCurrencyAmount)
 currencyAmountSelector = mkSelector "currencyAmount"
 
 -- | @Selector@ for @note@
-noteSelector :: Selector
+noteSelector :: Selector '[] (Id NSString)
 noteSelector = mkSelector "note"
 

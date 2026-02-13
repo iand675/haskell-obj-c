@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.AppKit.NSPopoverTouchBarItem
   , setPressAndHoldTouchBar
   , showsCloseButton
   , setShowsCloseButton
-  , showPopoverSelector
+  , collapsedRepresentationImageSelector
+  , collapsedRepresentationLabelSelector
+  , collapsedRepresentationSelector
+  , customizationLabelSelector
   , dismissPopoverSelector
   , makeStandardActivatePopoverGestureRecognizerSelector
   , popoverTouchBarSelector
-  , setPopoverTouchBarSelector
-  , customizationLabelSelector
-  , setCustomizationLabelSelector
-  , collapsedRepresentationSelector
-  , setCollapsedRepresentationSelector
-  , collapsedRepresentationImageSelector
-  , setCollapsedRepresentationImageSelector
-  , collapsedRepresentationLabelSelector
-  , setCollapsedRepresentationLabelSelector
   , pressAndHoldTouchBarSelector
+  , setCollapsedRepresentationImageSelector
+  , setCollapsedRepresentationLabelSelector
+  , setCollapsedRepresentationSelector
+  , setCustomizationLabelSelector
+  , setPopoverTouchBarSelector
   , setPressAndHoldTouchBarSelector
-  , showsCloseButtonSelector
   , setShowsCloseButtonSelector
+  , showPopoverSelector
+  , showsCloseButtonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,164 +58,158 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- showPopover:@
 showPopover :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> RawId -> IO ()
-showPopover nsPopoverTouchBarItem  sender =
-    sendMsg nsPopoverTouchBarItem (mkSelector "showPopover:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+showPopover nsPopoverTouchBarItem sender =
+  sendMessage nsPopoverTouchBarItem showPopoverSelector sender
 
 -- | @- dismissPopover:@
 dismissPopover :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> RawId -> IO ()
-dismissPopover nsPopoverTouchBarItem  sender =
-    sendMsg nsPopoverTouchBarItem (mkSelector "dismissPopover:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+dismissPopover nsPopoverTouchBarItem sender =
+  sendMessage nsPopoverTouchBarItem dismissPopoverSelector sender
 
 -- | @- makeStandardActivatePopoverGestureRecognizer@
 makeStandardActivatePopoverGestureRecognizer :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSGestureRecognizer)
-makeStandardActivatePopoverGestureRecognizer nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "makeStandardActivatePopoverGestureRecognizer") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeStandardActivatePopoverGestureRecognizer nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem makeStandardActivatePopoverGestureRecognizerSelector
 
 -- | @- popoverTouchBar@
 popoverTouchBar :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSTouchBar)
-popoverTouchBar nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "popoverTouchBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+popoverTouchBar nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem popoverTouchBarSelector
 
 -- | @- setPopoverTouchBar:@
 setPopoverTouchBar :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSTouchBar value) => nsPopoverTouchBarItem -> value -> IO ()
-setPopoverTouchBar nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setPopoverTouchBar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPopoverTouchBar nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setPopoverTouchBarSelector (toNSTouchBar value)
 
 -- | @- customizationLabel@
 customizationLabel :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSString)
-customizationLabel nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem customizationLabelSelector
 
 -- | @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSString value) => nsPopoverTouchBarItem -> value -> IO ()
-setCustomizationLabel nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- | @- collapsedRepresentation@
 collapsedRepresentation :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSView)
-collapsedRepresentation nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "collapsedRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+collapsedRepresentation nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem collapsedRepresentationSelector
 
 -- | @- setCollapsedRepresentation:@
 setCollapsedRepresentation :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSView value) => nsPopoverTouchBarItem -> value -> IO ()
-setCollapsedRepresentation nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setCollapsedRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCollapsedRepresentation nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setCollapsedRepresentationSelector (toNSView value)
 
 -- | @- collapsedRepresentationImage@
 collapsedRepresentationImage :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSImage)
-collapsedRepresentationImage nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "collapsedRepresentationImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+collapsedRepresentationImage nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem collapsedRepresentationImageSelector
 
 -- | @- setCollapsedRepresentationImage:@
 setCollapsedRepresentationImage :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSImage value) => nsPopoverTouchBarItem -> value -> IO ()
-setCollapsedRepresentationImage nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setCollapsedRepresentationImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCollapsedRepresentationImage nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setCollapsedRepresentationImageSelector (toNSImage value)
 
 -- | @- collapsedRepresentationLabel@
 collapsedRepresentationLabel :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSString)
-collapsedRepresentationLabel nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "collapsedRepresentationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+collapsedRepresentationLabel nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem collapsedRepresentationLabelSelector
 
 -- | @- setCollapsedRepresentationLabel:@
 setCollapsedRepresentationLabel :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSString value) => nsPopoverTouchBarItem -> value -> IO ()
-setCollapsedRepresentationLabel nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setCollapsedRepresentationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCollapsedRepresentationLabel nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setCollapsedRepresentationLabelSelector (toNSString value)
 
 -- | @- pressAndHoldTouchBar@
 pressAndHoldTouchBar :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO (Id NSTouchBar)
-pressAndHoldTouchBar nsPopoverTouchBarItem  =
-    sendMsg nsPopoverTouchBarItem (mkSelector "pressAndHoldTouchBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+pressAndHoldTouchBar nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem pressAndHoldTouchBarSelector
 
 -- | @- setPressAndHoldTouchBar:@
 setPressAndHoldTouchBar :: (IsNSPopoverTouchBarItem nsPopoverTouchBarItem, IsNSTouchBar value) => nsPopoverTouchBarItem -> value -> IO ()
-setPressAndHoldTouchBar nsPopoverTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopoverTouchBarItem (mkSelector "setPressAndHoldTouchBar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPressAndHoldTouchBar nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setPressAndHoldTouchBarSelector (toNSTouchBar value)
 
 -- | @- showsCloseButton@
 showsCloseButton :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> IO Bool
-showsCloseButton nsPopoverTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopoverTouchBarItem (mkSelector "showsCloseButton") retCULong []
+showsCloseButton nsPopoverTouchBarItem =
+  sendMessage nsPopoverTouchBarItem showsCloseButtonSelector
 
 -- | @- setShowsCloseButton:@
 setShowsCloseButton :: IsNSPopoverTouchBarItem nsPopoverTouchBarItem => nsPopoverTouchBarItem -> Bool -> IO ()
-setShowsCloseButton nsPopoverTouchBarItem  value =
-    sendMsg nsPopoverTouchBarItem (mkSelector "setShowsCloseButton:") retVoid [argCULong (if value then 1 else 0)]
+setShowsCloseButton nsPopoverTouchBarItem value =
+  sendMessage nsPopoverTouchBarItem setShowsCloseButtonSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @showPopover:@
-showPopoverSelector :: Selector
+showPopoverSelector :: Selector '[RawId] ()
 showPopoverSelector = mkSelector "showPopover:"
 
 -- | @Selector@ for @dismissPopover:@
-dismissPopoverSelector :: Selector
+dismissPopoverSelector :: Selector '[RawId] ()
 dismissPopoverSelector = mkSelector "dismissPopover:"
 
 -- | @Selector@ for @makeStandardActivatePopoverGestureRecognizer@
-makeStandardActivatePopoverGestureRecognizerSelector :: Selector
+makeStandardActivatePopoverGestureRecognizerSelector :: Selector '[] (Id NSGestureRecognizer)
 makeStandardActivatePopoverGestureRecognizerSelector = mkSelector "makeStandardActivatePopoverGestureRecognizer"
 
 -- | @Selector@ for @popoverTouchBar@
-popoverTouchBarSelector :: Selector
+popoverTouchBarSelector :: Selector '[] (Id NSTouchBar)
 popoverTouchBarSelector = mkSelector "popoverTouchBar"
 
 -- | @Selector@ for @setPopoverTouchBar:@
-setPopoverTouchBarSelector :: Selector
+setPopoverTouchBarSelector :: Selector '[Id NSTouchBar] ()
 setPopoverTouchBarSelector = mkSelector "setPopoverTouchBar:"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 
 -- | @Selector@ for @collapsedRepresentation@
-collapsedRepresentationSelector :: Selector
+collapsedRepresentationSelector :: Selector '[] (Id NSView)
 collapsedRepresentationSelector = mkSelector "collapsedRepresentation"
 
 -- | @Selector@ for @setCollapsedRepresentation:@
-setCollapsedRepresentationSelector :: Selector
+setCollapsedRepresentationSelector :: Selector '[Id NSView] ()
 setCollapsedRepresentationSelector = mkSelector "setCollapsedRepresentation:"
 
 -- | @Selector@ for @collapsedRepresentationImage@
-collapsedRepresentationImageSelector :: Selector
+collapsedRepresentationImageSelector :: Selector '[] (Id NSImage)
 collapsedRepresentationImageSelector = mkSelector "collapsedRepresentationImage"
 
 -- | @Selector@ for @setCollapsedRepresentationImage:@
-setCollapsedRepresentationImageSelector :: Selector
+setCollapsedRepresentationImageSelector :: Selector '[Id NSImage] ()
 setCollapsedRepresentationImageSelector = mkSelector "setCollapsedRepresentationImage:"
 
 -- | @Selector@ for @collapsedRepresentationLabel@
-collapsedRepresentationLabelSelector :: Selector
+collapsedRepresentationLabelSelector :: Selector '[] (Id NSString)
 collapsedRepresentationLabelSelector = mkSelector "collapsedRepresentationLabel"
 
 -- | @Selector@ for @setCollapsedRepresentationLabel:@
-setCollapsedRepresentationLabelSelector :: Selector
+setCollapsedRepresentationLabelSelector :: Selector '[Id NSString] ()
 setCollapsedRepresentationLabelSelector = mkSelector "setCollapsedRepresentationLabel:"
 
 -- | @Selector@ for @pressAndHoldTouchBar@
-pressAndHoldTouchBarSelector :: Selector
+pressAndHoldTouchBarSelector :: Selector '[] (Id NSTouchBar)
 pressAndHoldTouchBarSelector = mkSelector "pressAndHoldTouchBar"
 
 -- | @Selector@ for @setPressAndHoldTouchBar:@
-setPressAndHoldTouchBarSelector :: Selector
+setPressAndHoldTouchBarSelector :: Selector '[Id NSTouchBar] ()
 setPressAndHoldTouchBarSelector = mkSelector "setPressAndHoldTouchBar:"
 
 -- | @Selector@ for @showsCloseButton@
-showsCloseButtonSelector :: Selector
+showsCloseButtonSelector :: Selector '[] Bool
 showsCloseButtonSelector = mkSelector "showsCloseButton"
 
 -- | @Selector@ for @setShowsCloseButton:@
-setShowsCloseButtonSelector :: Selector
+setShowsCloseButtonSelector :: Selector '[Bool] ()
 setShowsCloseButtonSelector = mkSelector "setShowsCloseButton:"
 

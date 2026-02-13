@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,23 +32,23 @@ module ObjC.MetalPerformanceShaders.MPSNNOptimizerDescriptor
   , setRegularizationScale
   , regularizationType
   , setRegularizationType
-  , initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
-  , initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector
-  , optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
-  , optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector
-  , learningRateSelector
-  , setLearningRateSelector
-  , gradientRescaleSelector
-  , setGradientRescaleSelector
   , applyGradientClippingSelector
-  , setApplyGradientClippingSelector
   , gradientClipMaxSelector
-  , setGradientClipMaxSelector
   , gradientClipMinSelector
-  , setGradientClipMinSelector
+  , gradientRescaleSelector
+  , initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector
+  , initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
+  , learningRateSelector
+  , optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector
+  , optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
   , regularizationScaleSelector
-  , setRegularizationScaleSelector
   , regularizationTypeSelector
+  , setApplyGradientClippingSelector
+  , setGradientClipMaxSelector
+  , setGradientClipMinSelector
+  , setGradientRescaleSelector
+  , setLearningRateSelector
+  , setRegularizationScaleSelector
   , setRegularizationTypeSelector
 
   -- * Enum types
@@ -58,15 +59,11 @@ module ObjC.MetalPerformanceShaders.MPSNNOptimizerDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,27 +73,27 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLearningRate:gradientRescale:regularizationType:regularizationScale:@
 initWithLearningRate_gradientRescale_regularizationType_regularizationScale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> CFloat -> MPSNNRegularizationType -> CFloat -> IO (Id MPSNNOptimizerDescriptor)
-initWithLearningRate_gradientRescale_regularizationType_regularizationScale mpsnnOptimizerDescriptor  learningRate gradientRescale regularizationType regularizationScale =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "initWithLearningRate:gradientRescale:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (coerce regularizationType), argCFloat regularizationScale] >>= ownedObject . castPtr
+initWithLearningRate_gradientRescale_regularizationType_regularizationScale mpsnnOptimizerDescriptor learningRate gradientRescale regularizationType regularizationScale =
+  sendOwnedMessage mpsnnOptimizerDescriptor initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector learningRate gradientRescale regularizationType regularizationScale
 
 -- | @- initWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:@
 initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> CFloat -> Bool -> CFloat -> CFloat -> MPSNNRegularizationType -> CFloat -> IO (Id MPSNNOptimizerDescriptor)
-initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale mpsnnOptimizerDescriptor  learningRate gradientRescale applyGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "initWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (if applyGradientClipping then 1 else 0), argCFloat gradientClipMax, argCFloat gradientClipMin, argCULong (coerce regularizationType), argCFloat regularizationScale] >>= ownedObject . castPtr
+initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale mpsnnOptimizerDescriptor learningRate gradientRescale applyGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale =
+  sendOwnedMessage mpsnnOptimizerDescriptor initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector learningRate gradientRescale applyGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale
 
 -- | @+ optimizerDescriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:@
 optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScale :: CFloat -> CFloat -> MPSNNRegularizationType -> CFloat -> IO (Id MPSNNOptimizerDescriptor)
 optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScale learningRate gradientRescale regularizationType regularizationScale =
   do
     cls' <- getRequiredClass "MPSNNOptimizerDescriptor"
-    sendClassMsg cls' (mkSelector "optimizerDescriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (coerce regularizationType), argCFloat regularizationScale] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector learningRate gradientRescale regularizationType regularizationScale
 
 -- | @+ optimizerDescriptorWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:@
 optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale :: CFloat -> CFloat -> Bool -> CFloat -> CFloat -> MPSNNRegularizationType -> CFloat -> IO (Id MPSNNOptimizerDescriptor)
 optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale learningRate gradientRescale applyGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale =
   do
     cls' <- getRequiredClass "MPSNNOptimizerDescriptor"
-    sendClassMsg cls' (mkSelector "optimizerDescriptorWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (if applyGradientClipping then 1 else 0), argCFloat gradientClipMax, argCFloat gradientClipMin, argCULong (coerce regularizationType), argCFloat regularizationScale] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector learningRate gradientRescale applyGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale
 
 -- | learningRate
 --
@@ -106,8 +103,8 @@ optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradie
 --
 -- ObjC selector: @- learningRate@
 learningRate :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO CFloat
-learningRate mpsnnOptimizerDescriptor  =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "learningRate") retCFloat []
+learningRate mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor learningRateSelector
 
 -- | learningRate
 --
@@ -117,8 +114,8 @@ learningRate mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setLearningRate:@
 setLearningRate :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> IO ()
-setLearningRate mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setLearningRate:") retVoid [argCFloat value]
+setLearningRate mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setLearningRateSelector value
 
 -- | gradientRescale
 --
@@ -128,8 +125,8 @@ setLearningRate mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- gradientRescale@
 gradientRescale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO CFloat
-gradientRescale mpsnnOptimizerDescriptor  =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "gradientRescale") retCFloat []
+gradientRescale mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor gradientRescaleSelector
 
 -- | gradientRescale
 --
@@ -139,8 +136,8 @@ gradientRescale mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setGradientRescale:@
 setGradientRescale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> IO ()
-setGradientRescale mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setGradientRescale:") retVoid [argCFloat value]
+setGradientRescale mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setGradientRescaleSelector value
 
 -- | applyGradientClipping
 --
@@ -150,8 +147,8 @@ setGradientRescale mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- applyGradientClipping@
 applyGradientClipping :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO Bool
-applyGradientClipping mpsnnOptimizerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnOptimizerDescriptor (mkSelector "applyGradientClipping") retCULong []
+applyGradientClipping mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor applyGradientClippingSelector
 
 -- | applyGradientClipping
 --
@@ -161,8 +158,8 @@ applyGradientClipping mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setApplyGradientClipping:@
 setApplyGradientClipping :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> Bool -> IO ()
-setApplyGradientClipping mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setApplyGradientClipping:") retVoid [argCULong (if value then 1 else 0)]
+setApplyGradientClipping mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setApplyGradientClippingSelector value
 
 -- | gradientClipMax
 --
@@ -170,8 +167,8 @@ setApplyGradientClipping mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- gradientClipMax@
 gradientClipMax :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO CFloat
-gradientClipMax mpsnnOptimizerDescriptor  =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "gradientClipMax") retCFloat []
+gradientClipMax mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor gradientClipMaxSelector
 
 -- | gradientClipMax
 --
@@ -179,8 +176,8 @@ gradientClipMax mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setGradientClipMax:@
 setGradientClipMax :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> IO ()
-setGradientClipMax mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setGradientClipMax:") retVoid [argCFloat value]
+setGradientClipMax mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setGradientClipMaxSelector value
 
 -- | gradientClipMin
 --
@@ -188,8 +185,8 @@ setGradientClipMax mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- gradientClipMin@
 gradientClipMin :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO CFloat
-gradientClipMin mpsnnOptimizerDescriptor  =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "gradientClipMin") retCFloat []
+gradientClipMin mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor gradientClipMinSelector
 
 -- | gradientClipMin
 --
@@ -197,8 +194,8 @@ gradientClipMin mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setGradientClipMin:@
 setGradientClipMin :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> IO ()
-setGradientClipMin mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setGradientClipMin:") retVoid [argCFloat value]
+setGradientClipMin mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setGradientClipMinSelector value
 
 -- | regularizationScale
 --
@@ -208,8 +205,8 @@ setGradientClipMin mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- regularizationScale@
 regularizationScale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO CFloat
-regularizationScale mpsnnOptimizerDescriptor  =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "regularizationScale") retCFloat []
+regularizationScale mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor regularizationScaleSelector
 
 -- | regularizationScale
 --
@@ -219,8 +216,8 @@ regularizationScale mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setRegularizationScale:@
 setRegularizationScale :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> CFloat -> IO ()
-setRegularizationScale mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setRegularizationScale:") retVoid [argCFloat value]
+setRegularizationScale mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setRegularizationScaleSelector value
 
 -- | regularizationType
 --
@@ -230,8 +227,8 @@ setRegularizationScale mpsnnOptimizerDescriptor  value =
 --
 -- ObjC selector: @- regularizationType@
 regularizationType :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> IO MPSNNRegularizationType
-regularizationType mpsnnOptimizerDescriptor  =
-    fmap (coerce :: CULong -> MPSNNRegularizationType) $ sendMsg mpsnnOptimizerDescriptor (mkSelector "regularizationType") retCULong []
+regularizationType mpsnnOptimizerDescriptor =
+  sendMessage mpsnnOptimizerDescriptor regularizationTypeSelector
 
 -- | regularizationType
 --
@@ -241,82 +238,82 @@ regularizationType mpsnnOptimizerDescriptor  =
 --
 -- ObjC selector: @- setRegularizationType:@
 setRegularizationType :: IsMPSNNOptimizerDescriptor mpsnnOptimizerDescriptor => mpsnnOptimizerDescriptor -> MPSNNRegularizationType -> IO ()
-setRegularizationType mpsnnOptimizerDescriptor  value =
-    sendMsg mpsnnOptimizerDescriptor (mkSelector "setRegularizationType:") retVoid [argCULong (coerce value)]
+setRegularizationType mpsnnOptimizerDescriptor value =
+  sendMessage mpsnnOptimizerDescriptor setRegularizationTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLearningRate:gradientRescale:regularizationType:regularizationScale:@
-initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector
+initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, MPSNNRegularizationType, CFloat] (Id MPSNNOptimizerDescriptor)
 initWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector = mkSelector "initWithLearningRate:gradientRescale:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @initWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:@
-initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector
+initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, Bool, CFloat, CFloat, MPSNNRegularizationType, CFloat] (Id MPSNNOptimizerDescriptor)
 initWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector = mkSelector "initWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @optimizerDescriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:@
-optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector
+optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, MPSNNRegularizationType, CFloat] (Id MPSNNOptimizerDescriptor)
 optimizerDescriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector = mkSelector "optimizerDescriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @optimizerDescriptorWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:@
-optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector
+optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, Bool, CFloat, CFloat, MPSNNRegularizationType, CFloat] (Id MPSNNOptimizerDescriptor)
 optimizerDescriptorWithLearningRate_gradientRescale_applyGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector = mkSelector "optimizerDescriptorWithLearningRate:gradientRescale:applyGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @learningRate@
-learningRateSelector :: Selector
+learningRateSelector :: Selector '[] CFloat
 learningRateSelector = mkSelector "learningRate"
 
 -- | @Selector@ for @setLearningRate:@
-setLearningRateSelector :: Selector
+setLearningRateSelector :: Selector '[CFloat] ()
 setLearningRateSelector = mkSelector "setLearningRate:"
 
 -- | @Selector@ for @gradientRescale@
-gradientRescaleSelector :: Selector
+gradientRescaleSelector :: Selector '[] CFloat
 gradientRescaleSelector = mkSelector "gradientRescale"
 
 -- | @Selector@ for @setGradientRescale:@
-setGradientRescaleSelector :: Selector
+setGradientRescaleSelector :: Selector '[CFloat] ()
 setGradientRescaleSelector = mkSelector "setGradientRescale:"
 
 -- | @Selector@ for @applyGradientClipping@
-applyGradientClippingSelector :: Selector
+applyGradientClippingSelector :: Selector '[] Bool
 applyGradientClippingSelector = mkSelector "applyGradientClipping"
 
 -- | @Selector@ for @setApplyGradientClipping:@
-setApplyGradientClippingSelector :: Selector
+setApplyGradientClippingSelector :: Selector '[Bool] ()
 setApplyGradientClippingSelector = mkSelector "setApplyGradientClipping:"
 
 -- | @Selector@ for @gradientClipMax@
-gradientClipMaxSelector :: Selector
+gradientClipMaxSelector :: Selector '[] CFloat
 gradientClipMaxSelector = mkSelector "gradientClipMax"
 
 -- | @Selector@ for @setGradientClipMax:@
-setGradientClipMaxSelector :: Selector
+setGradientClipMaxSelector :: Selector '[CFloat] ()
 setGradientClipMaxSelector = mkSelector "setGradientClipMax:"
 
 -- | @Selector@ for @gradientClipMin@
-gradientClipMinSelector :: Selector
+gradientClipMinSelector :: Selector '[] CFloat
 gradientClipMinSelector = mkSelector "gradientClipMin"
 
 -- | @Selector@ for @setGradientClipMin:@
-setGradientClipMinSelector :: Selector
+setGradientClipMinSelector :: Selector '[CFloat] ()
 setGradientClipMinSelector = mkSelector "setGradientClipMin:"
 
 -- | @Selector@ for @regularizationScale@
-regularizationScaleSelector :: Selector
+regularizationScaleSelector :: Selector '[] CFloat
 regularizationScaleSelector = mkSelector "regularizationScale"
 
 -- | @Selector@ for @setRegularizationScale:@
-setRegularizationScaleSelector :: Selector
+setRegularizationScaleSelector :: Selector '[CFloat] ()
 setRegularizationScaleSelector = mkSelector "setRegularizationScale:"
 
 -- | @Selector@ for @regularizationType@
-regularizationTypeSelector :: Selector
+regularizationTypeSelector :: Selector '[] MPSNNRegularizationType
 regularizationTypeSelector = mkSelector "regularizationType"
 
 -- | @Selector@ for @setRegularizationType:@
-setRegularizationTypeSelector :: Selector
+setRegularizationTypeSelector :: Selector '[MPSNNRegularizationType] ()
 setRegularizationTypeSelector = mkSelector "setRegularizationType:"
 

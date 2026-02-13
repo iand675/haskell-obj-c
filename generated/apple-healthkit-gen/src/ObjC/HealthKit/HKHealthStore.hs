@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,44 +50,44 @@ module ObjC.HealthKit.HKHealthStore
   , recoverActiveWorkoutSessionWithCompletion
   , workoutSessionMirroringStartHandler
   , setWorkoutSessionMirroringStartHandler
-  , isHealthDataAvailableSelector
-  , supportsHealthRecordsSelector
+  , activityMoveModeWithErrorSelector
+  , addSamples_toWorkout_completionSelector
   , authorizationStatusForTypeSelector
-  , requestAuthorizationToShareTypes_readTypes_completionSelector
-  , requestPerObjectReadAuthorizationForType_predicate_completionSelector
-  , getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector
-  , handleAuthorizationForExtensionWithCompletionSelector
-  , earliestPermittedSampleDateSelector
-  , saveObject_withCompletionSelector
-  , saveObjects_withCompletionSelector
-  , deleteObject_withCompletionSelector
-  , deleteObjects_withCompletionSelector
-  , deleteObjectsOfType_predicate_withCompletionSelector
-  , executeQuerySelector
-  , stopQuerySelector
-  , splitTotalEnergy_startDate_endDate_resultsHandlerSelector
-  , dateOfBirthWithErrorSelector
-  , dateOfBirthComponentsWithErrorSelector
   , biologicalSexWithErrorSelector
   , bloodTypeWithErrorSelector
-  , fitzpatrickSkinTypeWithErrorSelector
-  , wheelchairUseWithErrorSelector
-  , activityMoveModeWithErrorSelector
-  , relateWorkoutEffortSample_withWorkout_activity_completionSelector
-  , unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector
-  , recalibrateEstimatesForSampleType_atDate_completionSelector
-  , enableBackgroundDeliveryForType_frequency_withCompletionSelector
-  , disableBackgroundDeliveryForType_withCompletionSelector
+  , dateOfBirthComponentsWithErrorSelector
+  , dateOfBirthWithErrorSelector
+  , deleteObject_withCompletionSelector
+  , deleteObjectsOfType_predicate_withCompletionSelector
+  , deleteObjects_withCompletionSelector
   , disableAllBackgroundDeliveryWithCompletionSelector
-  , addSamples_toWorkout_completionSelector
-  , startWorkoutSessionSelector
+  , disableBackgroundDeliveryForType_withCompletionSelector
+  , earliestPermittedSampleDateSelector
+  , enableBackgroundDeliveryForType_frequency_withCompletionSelector
   , endWorkoutSessionSelector
+  , executeQuerySelector
+  , fitzpatrickSkinTypeWithErrorSelector
+  , getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector
+  , handleAuthorizationForExtensionWithCompletionSelector
+  , isHealthDataAvailableSelector
   , pauseWorkoutSessionSelector
-  , resumeWorkoutSessionSelector
-  , startWatchAppWithWorkoutConfiguration_completionSelector
+  , recalibrateEstimatesForSampleType_atDate_completionSelector
   , recoverActiveWorkoutSessionWithCompletionSelector
-  , workoutSessionMirroringStartHandlerSelector
+  , relateWorkoutEffortSample_withWorkout_activity_completionSelector
+  , requestAuthorizationToShareTypes_readTypes_completionSelector
+  , requestPerObjectReadAuthorizationForType_predicate_completionSelector
+  , resumeWorkoutSessionSelector
+  , saveObject_withCompletionSelector
+  , saveObjects_withCompletionSelector
   , setWorkoutSessionMirroringStartHandlerSelector
+  , splitTotalEnergy_startDate_endDate_resultsHandlerSelector
+  , startWatchAppWithWorkoutConfiguration_completionSelector
+  , startWorkoutSessionSelector
+  , stopQuerySelector
+  , supportsHealthRecordsSelector
+  , unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector
+  , wheelchairUseWithErrorSelector
+  , workoutSessionMirroringStartHandlerSelector
 
   -- * Enum types
   , HKAuthorizationStatus(HKAuthorizationStatus)
@@ -101,15 +102,11 @@ module ObjC.HealthKit.HKHealthStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -128,7 +125,7 @@ isHealthDataAvailable :: IO Bool
 isHealthDataAvailable  =
   do
     cls' <- getRequiredClass "HKHealthStore"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isHealthDataAvailable") retCULong []
+    sendClassMessage cls' isHealthDataAvailableSelector
 
 -- | supportsHealthRecords
 --
@@ -138,8 +135,8 @@ isHealthDataAvailable  =
 --
 -- ObjC selector: @- supportsHealthRecords@
 supportsHealthRecords :: IsHKHealthStore hkHealthStore => hkHealthStore -> IO Bool
-supportsHealthRecords hkHealthStore  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkHealthStore (mkSelector "supportsHealthRecords") retCULong []
+supportsHealthRecords hkHealthStore =
+  sendMessage hkHealthStore supportsHealthRecordsSelector
 
 -- | authorizationStatusForType:
 --
@@ -147,9 +144,8 @@ supportsHealthRecords hkHealthStore  =
 --
 -- ObjC selector: @- authorizationStatusForType:@
 authorizationStatusForType :: (IsHKHealthStore hkHealthStore, IsHKObjectType type_) => hkHealthStore -> type_ -> IO HKAuthorizationStatus
-authorizationStatusForType hkHealthStore  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap (coerce :: CLong -> HKAuthorizationStatus) $ sendMsg hkHealthStore (mkSelector "authorizationStatusForType:") retCLong [argPtr (castPtr raw_type_ :: Ptr ())]
+authorizationStatusForType hkHealthStore type_ =
+  sendMessage hkHealthStore authorizationStatusForTypeSelector (toHKObjectType type_)
 
 -- | requestAuthorizationToShareTypes:readTypes:completion:
 --
@@ -163,10 +159,8 @@ authorizationStatusForType hkHealthStore  type_ =
 --
 -- ObjC selector: @- requestAuthorizationToShareTypes:readTypes:completion:@
 requestAuthorizationToShareTypes_readTypes_completion :: (IsHKHealthStore hkHealthStore, IsNSSet typesToShare, IsNSSet typesToRead) => hkHealthStore -> typesToShare -> typesToRead -> Ptr () -> IO ()
-requestAuthorizationToShareTypes_readTypes_completion hkHealthStore  typesToShare typesToRead completion =
-  withObjCPtr typesToShare $ \raw_typesToShare ->
-    withObjCPtr typesToRead $ \raw_typesToRead ->
-        sendMsg hkHealthStore (mkSelector "requestAuthorizationToShareTypes:readTypes:completion:") retVoid [argPtr (castPtr raw_typesToShare :: Ptr ()), argPtr (castPtr raw_typesToRead :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestAuthorizationToShareTypes_readTypes_completion hkHealthStore typesToShare typesToRead completion =
+  sendMessage hkHealthStore requestAuthorizationToShareTypes_readTypes_completionSelector (toNSSet typesToShare) (toNSSet typesToRead) completion
 
 -- | requestPerObjectReadAuthorizationForType:predicate:completion:
 --
@@ -178,10 +172,8 @@ requestAuthorizationToShareTypes_readTypes_completion hkHealthStore  typesToShar
 --
 -- ObjC selector: @- requestPerObjectReadAuthorizationForType:predicate:completion:@
 requestPerObjectReadAuthorizationForType_predicate_completion :: (IsHKHealthStore hkHealthStore, IsHKObjectType objectType, IsNSPredicate predicate) => hkHealthStore -> objectType -> predicate -> Ptr () -> IO ()
-requestPerObjectReadAuthorizationForType_predicate_completion hkHealthStore  objectType predicate completion =
-  withObjCPtr objectType $ \raw_objectType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkHealthStore (mkSelector "requestPerObjectReadAuthorizationForType:predicate:completion:") retVoid [argPtr (castPtr raw_objectType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestPerObjectReadAuthorizationForType_predicate_completion hkHealthStore objectType predicate completion =
+  sendMessage hkHealthStore requestPerObjectReadAuthorizationForType_predicate_completionSelector (toHKObjectType objectType) (toNSPredicate predicate) completion
 
 -- | getRequestStatusForAuthorizationToShareTypes:readTypes:completion:
 --
@@ -191,10 +183,8 @@ requestPerObjectReadAuthorizationForType_predicate_completion hkHealthStore  obj
 --
 -- ObjC selector: @- getRequestStatusForAuthorizationToShareTypes:readTypes:completion:@
 getRequestStatusForAuthorizationToShareTypes_readTypes_completion :: (IsHKHealthStore hkHealthStore, IsNSSet typesToShare, IsNSSet typesToRead) => hkHealthStore -> typesToShare -> typesToRead -> Ptr () -> IO ()
-getRequestStatusForAuthorizationToShareTypes_readTypes_completion hkHealthStore  typesToShare typesToRead completion =
-  withObjCPtr typesToShare $ \raw_typesToShare ->
-    withObjCPtr typesToRead $ \raw_typesToRead ->
-        sendMsg hkHealthStore (mkSelector "getRequestStatusForAuthorizationToShareTypes:readTypes:completion:") retVoid [argPtr (castPtr raw_typesToShare :: Ptr ()), argPtr (castPtr raw_typesToRead :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getRequestStatusForAuthorizationToShareTypes_readTypes_completion hkHealthStore typesToShare typesToRead completion =
+  sendMessage hkHealthStore getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector (toNSSet typesToShare) (toNSSet typesToRead) completion
 
 -- | handleAuthorizationForExtensionWithCompletion:
 --
@@ -206,8 +196,8 @@ getRequestStatusForAuthorizationToShareTypes_readTypes_completion hkHealthStore 
 --
 -- ObjC selector: @- handleAuthorizationForExtensionWithCompletion:@
 handleAuthorizationForExtensionWithCompletion :: IsHKHealthStore hkHealthStore => hkHealthStore -> Ptr () -> IO ()
-handleAuthorizationForExtensionWithCompletion hkHealthStore  completion =
-    sendMsg hkHealthStore (mkSelector "handleAuthorizationForExtensionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+handleAuthorizationForExtensionWithCompletion hkHealthStore completion =
+  sendMessage hkHealthStore handleAuthorizationForExtensionWithCompletionSelector completion
 
 -- | earliestPermittedSampleDate
 --
@@ -217,8 +207,8 @@ handleAuthorizationForExtensionWithCompletion hkHealthStore  completion =
 --
 -- ObjC selector: @- earliestPermittedSampleDate@
 earliestPermittedSampleDate :: IsHKHealthStore hkHealthStore => hkHealthStore -> IO (Id NSDate)
-earliestPermittedSampleDate hkHealthStore  =
-    sendMsg hkHealthStore (mkSelector "earliestPermittedSampleDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+earliestPermittedSampleDate hkHealthStore =
+  sendMessage hkHealthStore earliestPermittedSampleDateSelector
 
 -- | saveObject:withCompletion:
 --
@@ -232,9 +222,8 @@ earliestPermittedSampleDate hkHealthStore  =
 --
 -- ObjC selector: @- saveObject:withCompletion:@
 saveObject_withCompletion :: (IsHKHealthStore hkHealthStore, IsHKObject object) => hkHealthStore -> object -> Ptr () -> IO ()
-saveObject_withCompletion hkHealthStore  object completion =
-  withObjCPtr object $ \raw_object ->
-      sendMsg hkHealthStore (mkSelector "saveObject:withCompletion:") retVoid [argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+saveObject_withCompletion hkHealthStore object completion =
+  sendMessage hkHealthStore saveObject_withCompletionSelector (toHKObject object) completion
 
 -- | saveObjects:withCompletion:
 --
@@ -244,9 +233,8 @@ saveObject_withCompletion hkHealthStore  object completion =
 --
 -- ObjC selector: @- saveObjects:withCompletion:@
 saveObjects_withCompletion :: (IsHKHealthStore hkHealthStore, IsNSArray objects) => hkHealthStore -> objects -> Ptr () -> IO ()
-saveObjects_withCompletion hkHealthStore  objects completion =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg hkHealthStore (mkSelector "saveObjects:withCompletion:") retVoid [argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+saveObjects_withCompletion hkHealthStore objects completion =
+  sendMessage hkHealthStore saveObjects_withCompletionSelector (toNSArray objects) completion
 
 -- | deleteObject:withCompletion:
 --
@@ -256,9 +244,8 @@ saveObjects_withCompletion hkHealthStore  objects completion =
 --
 -- ObjC selector: @- deleteObject:withCompletion:@
 deleteObject_withCompletion :: (IsHKHealthStore hkHealthStore, IsHKObject object) => hkHealthStore -> object -> Ptr () -> IO ()
-deleteObject_withCompletion hkHealthStore  object completion =
-  withObjCPtr object $ \raw_object ->
-      sendMsg hkHealthStore (mkSelector "deleteObject:withCompletion:") retVoid [argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+deleteObject_withCompletion hkHealthStore object completion =
+  sendMessage hkHealthStore deleteObject_withCompletionSelector (toHKObject object) completion
 
 -- | deleteObjects:withCompletion:
 --
@@ -268,9 +255,8 @@ deleteObject_withCompletion hkHealthStore  object completion =
 --
 -- ObjC selector: @- deleteObjects:withCompletion:@
 deleteObjects_withCompletion :: (IsHKHealthStore hkHealthStore, IsNSArray objects) => hkHealthStore -> objects -> Ptr () -> IO ()
-deleteObjects_withCompletion hkHealthStore  objects completion =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg hkHealthStore (mkSelector "deleteObjects:withCompletion:") retVoid [argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+deleteObjects_withCompletion hkHealthStore objects completion =
+  sendMessage hkHealthStore deleteObjects_withCompletionSelector (toNSArray objects) completion
 
 -- | deleteObjectsOfType:predicate:withCompletion:
 --
@@ -280,10 +266,8 @@ deleteObjects_withCompletion hkHealthStore  objects completion =
 --
 -- ObjC selector: @- deleteObjectsOfType:predicate:withCompletion:@
 deleteObjectsOfType_predicate_withCompletion :: (IsHKHealthStore hkHealthStore, IsHKObjectType objectType, IsNSPredicate predicate) => hkHealthStore -> objectType -> predicate -> Ptr () -> IO ()
-deleteObjectsOfType_predicate_withCompletion hkHealthStore  objectType predicate completion =
-  withObjCPtr objectType $ \raw_objectType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkHealthStore (mkSelector "deleteObjectsOfType:predicate:withCompletion:") retVoid [argPtr (castPtr raw_objectType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+deleteObjectsOfType_predicate_withCompletion hkHealthStore objectType predicate completion =
+  sendMessage hkHealthStore deleteObjectsOfType_predicate_withCompletionSelector (toHKObjectType objectType) (toNSPredicate predicate) completion
 
 -- | executeQuery:
 --
@@ -297,9 +281,8 @@ deleteObjectsOfType_predicate_withCompletion hkHealthStore  objectType predicate
 --
 -- ObjC selector: @- executeQuery:@
 executeQuery :: (IsHKHealthStore hkHealthStore, IsHKQuery query) => hkHealthStore -> query -> IO ()
-executeQuery hkHealthStore  query =
-  withObjCPtr query $ \raw_query ->
-      sendMsg hkHealthStore (mkSelector "executeQuery:") retVoid [argPtr (castPtr raw_query :: Ptr ())]
+executeQuery hkHealthStore query =
+  sendMessage hkHealthStore executeQuerySelector (toHKQuery query)
 
 -- | stopQuery:
 --
@@ -309,9 +292,8 @@ executeQuery hkHealthStore  query =
 --
 -- ObjC selector: @- stopQuery:@
 stopQuery :: (IsHKHealthStore hkHealthStore, IsHKQuery query) => hkHealthStore -> query -> IO ()
-stopQuery hkHealthStore  query =
-  withObjCPtr query $ \raw_query ->
-      sendMsg hkHealthStore (mkSelector "stopQuery:") retVoid [argPtr (castPtr raw_query :: Ptr ())]
+stopQuery hkHealthStore query =
+  sendMessage hkHealthStore stopQuerySelector (toHKQuery query)
 
 -- | splitTotalEnergy:startDate:endDate:resultsHandler:
 --
@@ -321,17 +303,13 @@ stopQuery hkHealthStore  query =
 --
 -- ObjC selector: @- splitTotalEnergy:startDate:endDate:resultsHandler:@
 splitTotalEnergy_startDate_endDate_resultsHandler :: (IsHKHealthStore hkHealthStore, IsHKQuantity totalEnergy, IsNSDate startDate, IsNSDate endDate) => hkHealthStore -> totalEnergy -> startDate -> endDate -> Ptr () -> IO ()
-splitTotalEnergy_startDate_endDate_resultsHandler hkHealthStore  totalEnergy startDate endDate resultsHandler =
-  withObjCPtr totalEnergy $ \raw_totalEnergy ->
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-          sendMsg hkHealthStore (mkSelector "splitTotalEnergy:startDate:endDate:resultsHandler:") retVoid [argPtr (castPtr raw_totalEnergy :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr resultsHandler :: Ptr ())]
+splitTotalEnergy_startDate_endDate_resultsHandler hkHealthStore totalEnergy startDate endDate resultsHandler =
+  sendMessage hkHealthStore splitTotalEnergy_startDate_endDate_resultsHandlerSelector (toHKQuantity totalEnergy) (toNSDate startDate) (toNSDate endDate) resultsHandler
 
 -- | @- dateOfBirthWithError:@
 dateOfBirthWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id NSDate)
-dateOfBirthWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "dateOfBirthWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+dateOfBirthWithError hkHealthStore error_ =
+  sendMessage hkHealthStore dateOfBirthWithErrorSelector (toNSError error_)
 
 -- | dateOfBirthComponentsWithError:
 --
@@ -341,9 +319,8 @@ dateOfBirthWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- dateOfBirthComponentsWithError:@
 dateOfBirthComponentsWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id NSDateComponents)
-dateOfBirthComponentsWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "dateOfBirthComponentsWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+dateOfBirthComponentsWithError hkHealthStore error_ =
+  sendMessage hkHealthStore dateOfBirthComponentsWithErrorSelector (toNSError error_)
 
 -- | biologicalSexWithError:
 --
@@ -353,9 +330,8 @@ dateOfBirthComponentsWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- biologicalSexWithError:@
 biologicalSexWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id HKBiologicalSexObject)
-biologicalSexWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "biologicalSexWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+biologicalSexWithError hkHealthStore error_ =
+  sendMessage hkHealthStore biologicalSexWithErrorSelector (toNSError error_)
 
 -- | bloodTypeWithError:
 --
@@ -365,9 +341,8 @@ biologicalSexWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- bloodTypeWithError:@
 bloodTypeWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id HKBloodTypeObject)
-bloodTypeWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "bloodTypeWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+bloodTypeWithError hkHealthStore error_ =
+  sendMessage hkHealthStore bloodTypeWithErrorSelector (toNSError error_)
 
 -- | fitzpatrickSkinTypeWithError:
 --
@@ -377,9 +352,8 @@ bloodTypeWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- fitzpatrickSkinTypeWithError:@
 fitzpatrickSkinTypeWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id HKFitzpatrickSkinTypeObject)
-fitzpatrickSkinTypeWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "fitzpatrickSkinTypeWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+fitzpatrickSkinTypeWithError hkHealthStore error_ =
+  sendMessage hkHealthStore fitzpatrickSkinTypeWithErrorSelector (toNSError error_)
 
 -- | wheelchairUseWithError:
 --
@@ -389,9 +363,8 @@ fitzpatrickSkinTypeWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- wheelchairUseWithError:@
 wheelchairUseWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id HKWheelchairUseObject)
-wheelchairUseWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "wheelchairUseWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+wheelchairUseWithError hkHealthStore error_ =
+  sendMessage hkHealthStore wheelchairUseWithErrorSelector (toNSError error_)
 
 -- | activityMoveModeWithError:
 --
@@ -401,9 +374,8 @@ wheelchairUseWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- activityMoveModeWithError:@
 activityMoveModeWithError :: (IsHKHealthStore hkHealthStore, IsNSError error_) => hkHealthStore -> error_ -> IO (Id HKActivityMoveModeObject)
-activityMoveModeWithError hkHealthStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg hkHealthStore (mkSelector "activityMoveModeWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+activityMoveModeWithError hkHealthStore error_ =
+  sendMessage hkHealthStore activityMoveModeWithErrorSelector (toNSError error_)
 
 -- | relateWorkoutEffortSample:withWorkout:activity:completion
 --
@@ -419,11 +391,8 @@ activityMoveModeWithError hkHealthStore  error_ =
 --
 -- ObjC selector: @- relateWorkoutEffortSample:withWorkout:activity:completion:@
 relateWorkoutEffortSample_withWorkout_activity_completion :: (IsHKHealthStore hkHealthStore, IsHKSample sample, IsHKWorkout workout, IsHKWorkoutActivity activity) => hkHealthStore -> sample -> workout -> activity -> Ptr () -> IO ()
-relateWorkoutEffortSample_withWorkout_activity_completion hkHealthStore  sample workout activity completion =
-  withObjCPtr sample $ \raw_sample ->
-    withObjCPtr workout $ \raw_workout ->
-      withObjCPtr activity $ \raw_activity ->
-          sendMsg hkHealthStore (mkSelector "relateWorkoutEffortSample:withWorkout:activity:completion:") retVoid [argPtr (castPtr raw_sample :: Ptr ()), argPtr (castPtr raw_workout :: Ptr ()), argPtr (castPtr raw_activity :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+relateWorkoutEffortSample_withWorkout_activity_completion hkHealthStore sample workout activity completion =
+  sendMessage hkHealthStore relateWorkoutEffortSample_withWorkout_activity_completionSelector (toHKSample sample) (toHKWorkout workout) (toHKWorkoutActivity activity) completion
 
 -- | unrelateWorkoutEffortSample:fromWorkout:activity:completion
 --
@@ -439,11 +408,8 @@ relateWorkoutEffortSample_withWorkout_activity_completion hkHealthStore  sample 
 --
 -- ObjC selector: @- unrelateWorkoutEffortSample:fromWorkout:activity:completion:@
 unrelateWorkoutEffortSample_fromWorkout_activity_completion :: (IsHKHealthStore hkHealthStore, IsHKSample sample, IsHKWorkout workout, IsHKWorkoutActivity activity) => hkHealthStore -> sample -> workout -> activity -> Ptr () -> IO ()
-unrelateWorkoutEffortSample_fromWorkout_activity_completion hkHealthStore  sample workout activity completion =
-  withObjCPtr sample $ \raw_sample ->
-    withObjCPtr workout $ \raw_workout ->
-      withObjCPtr activity $ \raw_activity ->
-          sendMsg hkHealthStore (mkSelector "unrelateWorkoutEffortSample:fromWorkout:activity:completion:") retVoid [argPtr (castPtr raw_sample :: Ptr ()), argPtr (castPtr raw_workout :: Ptr ()), argPtr (castPtr raw_activity :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+unrelateWorkoutEffortSample_fromWorkout_activity_completion hkHealthStore sample workout activity completion =
+  sendMessage hkHealthStore unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector (toHKSample sample) (toHKWorkout workout) (toHKWorkoutActivity activity) completion
 
 -- | recalibrateEstimatesForSampleType:atDate:completion:
 --
@@ -453,10 +419,8 @@ unrelateWorkoutEffortSample_fromWorkout_activity_completion hkHealthStore  sampl
 --
 -- ObjC selector: @- recalibrateEstimatesForSampleType:atDate:completion:@
 recalibrateEstimatesForSampleType_atDate_completion :: (IsHKHealthStore hkHealthStore, IsHKSampleType sampleType, IsNSDate date) => hkHealthStore -> sampleType -> date -> Ptr () -> IO ()
-recalibrateEstimatesForSampleType_atDate_completion hkHealthStore  sampleType date completion =
-  withObjCPtr sampleType $ \raw_sampleType ->
-    withObjCPtr date $ \raw_date ->
-        sendMsg hkHealthStore (mkSelector "recalibrateEstimatesForSampleType:atDate:completion:") retVoid [argPtr (castPtr raw_sampleType :: Ptr ()), argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+recalibrateEstimatesForSampleType_atDate_completion hkHealthStore sampleType date completion =
+  sendMessage hkHealthStore recalibrateEstimatesForSampleType_atDate_completionSelector (toHKSampleType sampleType) (toNSDate date) completion
 
 -- | enableBackgroundDeliveryForType:frequency:withCompletion:
 --
@@ -466,20 +430,18 @@ recalibrateEstimatesForSampleType_atDate_completion hkHealthStore  sampleType da
 --
 -- ObjC selector: @- enableBackgroundDeliveryForType:frequency:withCompletion:@
 enableBackgroundDeliveryForType_frequency_withCompletion :: (IsHKHealthStore hkHealthStore, IsHKObjectType type_) => hkHealthStore -> type_ -> HKUpdateFrequency -> Ptr () -> IO ()
-enableBackgroundDeliveryForType_frequency_withCompletion hkHealthStore  type_ frequency completion =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg hkHealthStore (mkSelector "enableBackgroundDeliveryForType:frequency:withCompletion:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCLong (coerce frequency), argPtr (castPtr completion :: Ptr ())]
+enableBackgroundDeliveryForType_frequency_withCompletion hkHealthStore type_ frequency completion =
+  sendMessage hkHealthStore enableBackgroundDeliveryForType_frequency_withCompletionSelector (toHKObjectType type_) frequency completion
 
 -- | @- disableBackgroundDeliveryForType:withCompletion:@
 disableBackgroundDeliveryForType_withCompletion :: (IsHKHealthStore hkHealthStore, IsHKObjectType type_) => hkHealthStore -> type_ -> Ptr () -> IO ()
-disableBackgroundDeliveryForType_withCompletion hkHealthStore  type_ completion =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg hkHealthStore (mkSelector "disableBackgroundDeliveryForType:withCompletion:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+disableBackgroundDeliveryForType_withCompletion hkHealthStore type_ completion =
+  sendMessage hkHealthStore disableBackgroundDeliveryForType_withCompletionSelector (toHKObjectType type_) completion
 
 -- | @- disableAllBackgroundDeliveryWithCompletion:@
 disableAllBackgroundDeliveryWithCompletion :: IsHKHealthStore hkHealthStore => hkHealthStore -> Ptr () -> IO ()
-disableAllBackgroundDeliveryWithCompletion hkHealthStore  completion =
-    sendMsg hkHealthStore (mkSelector "disableAllBackgroundDeliveryWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+disableAllBackgroundDeliveryWithCompletion hkHealthStore completion =
+  sendMessage hkHealthStore disableAllBackgroundDeliveryWithCompletionSelector completion
 
 -- | addSamples:toWorkout:completion:
 --
@@ -491,10 +453,8 @@ disableAllBackgroundDeliveryWithCompletion hkHealthStore  completion =
 --
 -- ObjC selector: @- addSamples:toWorkout:completion:@
 addSamples_toWorkout_completion :: (IsHKHealthStore hkHealthStore, IsNSArray samples, IsHKWorkout workout) => hkHealthStore -> samples -> workout -> Ptr () -> IO ()
-addSamples_toWorkout_completion hkHealthStore  samples workout completion =
-  withObjCPtr samples $ \raw_samples ->
-    withObjCPtr workout $ \raw_workout ->
-        sendMsg hkHealthStore (mkSelector "addSamples:toWorkout:completion:") retVoid [argPtr (castPtr raw_samples :: Ptr ()), argPtr (castPtr raw_workout :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addSamples_toWorkout_completion hkHealthStore samples workout completion =
+  sendMessage hkHealthStore addSamples_toWorkout_completionSelector (toNSArray samples) (toHKWorkout workout) completion
 
 -- | startWorkoutSession:
 --
@@ -504,9 +464,8 @@ addSamples_toWorkout_completion hkHealthStore  samples workout completion =
 --
 -- ObjC selector: @- startWorkoutSession:@
 startWorkoutSession :: (IsHKHealthStore hkHealthStore, IsHKWorkoutSession workoutSession) => hkHealthStore -> workoutSession -> IO ()
-startWorkoutSession hkHealthStore  workoutSession =
-  withObjCPtr workoutSession $ \raw_workoutSession ->
-      sendMsg hkHealthStore (mkSelector "startWorkoutSession:") retVoid [argPtr (castPtr raw_workoutSession :: Ptr ())]
+startWorkoutSession hkHealthStore workoutSession =
+  sendMessage hkHealthStore startWorkoutSessionSelector (toHKWorkoutSession workoutSession)
 
 -- | endWorkoutSession:
 --
@@ -516,9 +475,8 @@ startWorkoutSession hkHealthStore  workoutSession =
 --
 -- ObjC selector: @- endWorkoutSession:@
 endWorkoutSession :: (IsHKHealthStore hkHealthStore, IsHKWorkoutSession workoutSession) => hkHealthStore -> workoutSession -> IO ()
-endWorkoutSession hkHealthStore  workoutSession =
-  withObjCPtr workoutSession $ \raw_workoutSession ->
-      sendMsg hkHealthStore (mkSelector "endWorkoutSession:") retVoid [argPtr (castPtr raw_workoutSession :: Ptr ())]
+endWorkoutSession hkHealthStore workoutSession =
+  sendMessage hkHealthStore endWorkoutSessionSelector (toHKWorkoutSession workoutSession)
 
 -- | pauseWorkoutSession:
 --
@@ -528,9 +486,8 @@ endWorkoutSession hkHealthStore  workoutSession =
 --
 -- ObjC selector: @- pauseWorkoutSession:@
 pauseWorkoutSession :: (IsHKHealthStore hkHealthStore, IsHKWorkoutSession workoutSession) => hkHealthStore -> workoutSession -> IO ()
-pauseWorkoutSession hkHealthStore  workoutSession =
-  withObjCPtr workoutSession $ \raw_workoutSession ->
-      sendMsg hkHealthStore (mkSelector "pauseWorkoutSession:") retVoid [argPtr (castPtr raw_workoutSession :: Ptr ())]
+pauseWorkoutSession hkHealthStore workoutSession =
+  sendMessage hkHealthStore pauseWorkoutSessionSelector (toHKWorkoutSession workoutSession)
 
 -- | resumeWorkoutSession:
 --
@@ -540,9 +497,8 @@ pauseWorkoutSession hkHealthStore  workoutSession =
 --
 -- ObjC selector: @- resumeWorkoutSession:@
 resumeWorkoutSession :: (IsHKHealthStore hkHealthStore, IsHKWorkoutSession workoutSession) => hkHealthStore -> workoutSession -> IO ()
-resumeWorkoutSession hkHealthStore  workoutSession =
-  withObjCPtr workoutSession $ \raw_workoutSession ->
-      sendMsg hkHealthStore (mkSelector "resumeWorkoutSession:") retVoid [argPtr (castPtr raw_workoutSession :: Ptr ())]
+resumeWorkoutSession hkHealthStore workoutSession =
+  sendMessage hkHealthStore resumeWorkoutSessionSelector (toHKWorkoutSession workoutSession)
 
 -- | startWatchAppWithWorkoutConfiguration:completion:
 --
@@ -552,9 +508,8 @@ resumeWorkoutSession hkHealthStore  workoutSession =
 --
 -- ObjC selector: @- startWatchAppWithWorkoutConfiguration:completion:@
 startWatchAppWithWorkoutConfiguration_completion :: (IsHKHealthStore hkHealthStore, IsHKWorkoutConfiguration workoutConfiguration) => hkHealthStore -> workoutConfiguration -> Ptr () -> IO ()
-startWatchAppWithWorkoutConfiguration_completion hkHealthStore  workoutConfiguration completion =
-  withObjCPtr workoutConfiguration $ \raw_workoutConfiguration ->
-      sendMsg hkHealthStore (mkSelector "startWatchAppWithWorkoutConfiguration:completion:") retVoid [argPtr (castPtr raw_workoutConfiguration :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+startWatchAppWithWorkoutConfiguration_completion hkHealthStore workoutConfiguration completion =
+  sendMessage hkHealthStore startWatchAppWithWorkoutConfiguration_completionSelector (toHKWorkoutConfiguration workoutConfiguration) completion
 
 -- | recoverActiveWorkoutSessionWithCompletion:
 --
@@ -562,8 +517,8 @@ startWatchAppWithWorkoutConfiguration_completion hkHealthStore  workoutConfigura
 --
 -- ObjC selector: @- recoverActiveWorkoutSessionWithCompletion:@
 recoverActiveWorkoutSessionWithCompletion :: IsHKHealthStore hkHealthStore => hkHealthStore -> Ptr () -> IO ()
-recoverActiveWorkoutSessionWithCompletion hkHealthStore  completion =
-    sendMsg hkHealthStore (mkSelector "recoverActiveWorkoutSessionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+recoverActiveWorkoutSessionWithCompletion hkHealthStore completion =
+  sendMessage hkHealthStore recoverActiveWorkoutSessionWithCompletionSelector completion
 
 -- | workoutSessionMirroringStartHandler
 --
@@ -573,8 +528,8 @@ recoverActiveWorkoutSessionWithCompletion hkHealthStore  completion =
 --
 -- ObjC selector: @- workoutSessionMirroringStartHandler@
 workoutSessionMirroringStartHandler :: IsHKHealthStore hkHealthStore => hkHealthStore -> IO (Ptr ())
-workoutSessionMirroringStartHandler hkHealthStore  =
-    fmap castPtr $ sendMsg hkHealthStore (mkSelector "workoutSessionMirroringStartHandler") (retPtr retVoid) []
+workoutSessionMirroringStartHandler hkHealthStore =
+  sendMessage hkHealthStore workoutSessionMirroringStartHandlerSelector
 
 -- | workoutSessionMirroringStartHandler
 --
@@ -584,162 +539,162 @@ workoutSessionMirroringStartHandler hkHealthStore  =
 --
 -- ObjC selector: @- setWorkoutSessionMirroringStartHandler:@
 setWorkoutSessionMirroringStartHandler :: IsHKHealthStore hkHealthStore => hkHealthStore -> Ptr () -> IO ()
-setWorkoutSessionMirroringStartHandler hkHealthStore  value =
-    sendMsg hkHealthStore (mkSelector "setWorkoutSessionMirroringStartHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setWorkoutSessionMirroringStartHandler hkHealthStore value =
+  sendMessage hkHealthStore setWorkoutSessionMirroringStartHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isHealthDataAvailable@
-isHealthDataAvailableSelector :: Selector
+isHealthDataAvailableSelector :: Selector '[] Bool
 isHealthDataAvailableSelector = mkSelector "isHealthDataAvailable"
 
 -- | @Selector@ for @supportsHealthRecords@
-supportsHealthRecordsSelector :: Selector
+supportsHealthRecordsSelector :: Selector '[] Bool
 supportsHealthRecordsSelector = mkSelector "supportsHealthRecords"
 
 -- | @Selector@ for @authorizationStatusForType:@
-authorizationStatusForTypeSelector :: Selector
+authorizationStatusForTypeSelector :: Selector '[Id HKObjectType] HKAuthorizationStatus
 authorizationStatusForTypeSelector = mkSelector "authorizationStatusForType:"
 
 -- | @Selector@ for @requestAuthorizationToShareTypes:readTypes:completion:@
-requestAuthorizationToShareTypes_readTypes_completionSelector :: Selector
+requestAuthorizationToShareTypes_readTypes_completionSelector :: Selector '[Id NSSet, Id NSSet, Ptr ()] ()
 requestAuthorizationToShareTypes_readTypes_completionSelector = mkSelector "requestAuthorizationToShareTypes:readTypes:completion:"
 
 -- | @Selector@ for @requestPerObjectReadAuthorizationForType:predicate:completion:@
-requestPerObjectReadAuthorizationForType_predicate_completionSelector :: Selector
+requestPerObjectReadAuthorizationForType_predicate_completionSelector :: Selector '[Id HKObjectType, Id NSPredicate, Ptr ()] ()
 requestPerObjectReadAuthorizationForType_predicate_completionSelector = mkSelector "requestPerObjectReadAuthorizationForType:predicate:completion:"
 
 -- | @Selector@ for @getRequestStatusForAuthorizationToShareTypes:readTypes:completion:@
-getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector :: Selector
+getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector :: Selector '[Id NSSet, Id NSSet, Ptr ()] ()
 getRequestStatusForAuthorizationToShareTypes_readTypes_completionSelector = mkSelector "getRequestStatusForAuthorizationToShareTypes:readTypes:completion:"
 
 -- | @Selector@ for @handleAuthorizationForExtensionWithCompletion:@
-handleAuthorizationForExtensionWithCompletionSelector :: Selector
+handleAuthorizationForExtensionWithCompletionSelector :: Selector '[Ptr ()] ()
 handleAuthorizationForExtensionWithCompletionSelector = mkSelector "handleAuthorizationForExtensionWithCompletion:"
 
 -- | @Selector@ for @earliestPermittedSampleDate@
-earliestPermittedSampleDateSelector :: Selector
+earliestPermittedSampleDateSelector :: Selector '[] (Id NSDate)
 earliestPermittedSampleDateSelector = mkSelector "earliestPermittedSampleDate"
 
 -- | @Selector@ for @saveObject:withCompletion:@
-saveObject_withCompletionSelector :: Selector
+saveObject_withCompletionSelector :: Selector '[Id HKObject, Ptr ()] ()
 saveObject_withCompletionSelector = mkSelector "saveObject:withCompletion:"
 
 -- | @Selector@ for @saveObjects:withCompletion:@
-saveObjects_withCompletionSelector :: Selector
+saveObjects_withCompletionSelector :: Selector '[Id NSArray, Ptr ()] ()
 saveObjects_withCompletionSelector = mkSelector "saveObjects:withCompletion:"
 
 -- | @Selector@ for @deleteObject:withCompletion:@
-deleteObject_withCompletionSelector :: Selector
+deleteObject_withCompletionSelector :: Selector '[Id HKObject, Ptr ()] ()
 deleteObject_withCompletionSelector = mkSelector "deleteObject:withCompletion:"
 
 -- | @Selector@ for @deleteObjects:withCompletion:@
-deleteObjects_withCompletionSelector :: Selector
+deleteObjects_withCompletionSelector :: Selector '[Id NSArray, Ptr ()] ()
 deleteObjects_withCompletionSelector = mkSelector "deleteObjects:withCompletion:"
 
 -- | @Selector@ for @deleteObjectsOfType:predicate:withCompletion:@
-deleteObjectsOfType_predicate_withCompletionSelector :: Selector
+deleteObjectsOfType_predicate_withCompletionSelector :: Selector '[Id HKObjectType, Id NSPredicate, Ptr ()] ()
 deleteObjectsOfType_predicate_withCompletionSelector = mkSelector "deleteObjectsOfType:predicate:withCompletion:"
 
 -- | @Selector@ for @executeQuery:@
-executeQuerySelector :: Selector
+executeQuerySelector :: Selector '[Id HKQuery] ()
 executeQuerySelector = mkSelector "executeQuery:"
 
 -- | @Selector@ for @stopQuery:@
-stopQuerySelector :: Selector
+stopQuerySelector :: Selector '[Id HKQuery] ()
 stopQuerySelector = mkSelector "stopQuery:"
 
 -- | @Selector@ for @splitTotalEnergy:startDate:endDate:resultsHandler:@
-splitTotalEnergy_startDate_endDate_resultsHandlerSelector :: Selector
+splitTotalEnergy_startDate_endDate_resultsHandlerSelector :: Selector '[Id HKQuantity, Id NSDate, Id NSDate, Ptr ()] ()
 splitTotalEnergy_startDate_endDate_resultsHandlerSelector = mkSelector "splitTotalEnergy:startDate:endDate:resultsHandler:"
 
 -- | @Selector@ for @dateOfBirthWithError:@
-dateOfBirthWithErrorSelector :: Selector
+dateOfBirthWithErrorSelector :: Selector '[Id NSError] (Id NSDate)
 dateOfBirthWithErrorSelector = mkSelector "dateOfBirthWithError:"
 
 -- | @Selector@ for @dateOfBirthComponentsWithError:@
-dateOfBirthComponentsWithErrorSelector :: Selector
+dateOfBirthComponentsWithErrorSelector :: Selector '[Id NSError] (Id NSDateComponents)
 dateOfBirthComponentsWithErrorSelector = mkSelector "dateOfBirthComponentsWithError:"
 
 -- | @Selector@ for @biologicalSexWithError:@
-biologicalSexWithErrorSelector :: Selector
+biologicalSexWithErrorSelector :: Selector '[Id NSError] (Id HKBiologicalSexObject)
 biologicalSexWithErrorSelector = mkSelector "biologicalSexWithError:"
 
 -- | @Selector@ for @bloodTypeWithError:@
-bloodTypeWithErrorSelector :: Selector
+bloodTypeWithErrorSelector :: Selector '[Id NSError] (Id HKBloodTypeObject)
 bloodTypeWithErrorSelector = mkSelector "bloodTypeWithError:"
 
 -- | @Selector@ for @fitzpatrickSkinTypeWithError:@
-fitzpatrickSkinTypeWithErrorSelector :: Selector
+fitzpatrickSkinTypeWithErrorSelector :: Selector '[Id NSError] (Id HKFitzpatrickSkinTypeObject)
 fitzpatrickSkinTypeWithErrorSelector = mkSelector "fitzpatrickSkinTypeWithError:"
 
 -- | @Selector@ for @wheelchairUseWithError:@
-wheelchairUseWithErrorSelector :: Selector
+wheelchairUseWithErrorSelector :: Selector '[Id NSError] (Id HKWheelchairUseObject)
 wheelchairUseWithErrorSelector = mkSelector "wheelchairUseWithError:"
 
 -- | @Selector@ for @activityMoveModeWithError:@
-activityMoveModeWithErrorSelector :: Selector
+activityMoveModeWithErrorSelector :: Selector '[Id NSError] (Id HKActivityMoveModeObject)
 activityMoveModeWithErrorSelector = mkSelector "activityMoveModeWithError:"
 
 -- | @Selector@ for @relateWorkoutEffortSample:withWorkout:activity:completion:@
-relateWorkoutEffortSample_withWorkout_activity_completionSelector :: Selector
+relateWorkoutEffortSample_withWorkout_activity_completionSelector :: Selector '[Id HKSample, Id HKWorkout, Id HKWorkoutActivity, Ptr ()] ()
 relateWorkoutEffortSample_withWorkout_activity_completionSelector = mkSelector "relateWorkoutEffortSample:withWorkout:activity:completion:"
 
 -- | @Selector@ for @unrelateWorkoutEffortSample:fromWorkout:activity:completion:@
-unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector :: Selector
+unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector :: Selector '[Id HKSample, Id HKWorkout, Id HKWorkoutActivity, Ptr ()] ()
 unrelateWorkoutEffortSample_fromWorkout_activity_completionSelector = mkSelector "unrelateWorkoutEffortSample:fromWorkout:activity:completion:"
 
 -- | @Selector@ for @recalibrateEstimatesForSampleType:atDate:completion:@
-recalibrateEstimatesForSampleType_atDate_completionSelector :: Selector
+recalibrateEstimatesForSampleType_atDate_completionSelector :: Selector '[Id HKSampleType, Id NSDate, Ptr ()] ()
 recalibrateEstimatesForSampleType_atDate_completionSelector = mkSelector "recalibrateEstimatesForSampleType:atDate:completion:"
 
 -- | @Selector@ for @enableBackgroundDeliveryForType:frequency:withCompletion:@
-enableBackgroundDeliveryForType_frequency_withCompletionSelector :: Selector
+enableBackgroundDeliveryForType_frequency_withCompletionSelector :: Selector '[Id HKObjectType, HKUpdateFrequency, Ptr ()] ()
 enableBackgroundDeliveryForType_frequency_withCompletionSelector = mkSelector "enableBackgroundDeliveryForType:frequency:withCompletion:"
 
 -- | @Selector@ for @disableBackgroundDeliveryForType:withCompletion:@
-disableBackgroundDeliveryForType_withCompletionSelector :: Selector
+disableBackgroundDeliveryForType_withCompletionSelector :: Selector '[Id HKObjectType, Ptr ()] ()
 disableBackgroundDeliveryForType_withCompletionSelector = mkSelector "disableBackgroundDeliveryForType:withCompletion:"
 
 -- | @Selector@ for @disableAllBackgroundDeliveryWithCompletion:@
-disableAllBackgroundDeliveryWithCompletionSelector :: Selector
+disableAllBackgroundDeliveryWithCompletionSelector :: Selector '[Ptr ()] ()
 disableAllBackgroundDeliveryWithCompletionSelector = mkSelector "disableAllBackgroundDeliveryWithCompletion:"
 
 -- | @Selector@ for @addSamples:toWorkout:completion:@
-addSamples_toWorkout_completionSelector :: Selector
+addSamples_toWorkout_completionSelector :: Selector '[Id NSArray, Id HKWorkout, Ptr ()] ()
 addSamples_toWorkout_completionSelector = mkSelector "addSamples:toWorkout:completion:"
 
 -- | @Selector@ for @startWorkoutSession:@
-startWorkoutSessionSelector :: Selector
+startWorkoutSessionSelector :: Selector '[Id HKWorkoutSession] ()
 startWorkoutSessionSelector = mkSelector "startWorkoutSession:"
 
 -- | @Selector@ for @endWorkoutSession:@
-endWorkoutSessionSelector :: Selector
+endWorkoutSessionSelector :: Selector '[Id HKWorkoutSession] ()
 endWorkoutSessionSelector = mkSelector "endWorkoutSession:"
 
 -- | @Selector@ for @pauseWorkoutSession:@
-pauseWorkoutSessionSelector :: Selector
+pauseWorkoutSessionSelector :: Selector '[Id HKWorkoutSession] ()
 pauseWorkoutSessionSelector = mkSelector "pauseWorkoutSession:"
 
 -- | @Selector@ for @resumeWorkoutSession:@
-resumeWorkoutSessionSelector :: Selector
+resumeWorkoutSessionSelector :: Selector '[Id HKWorkoutSession] ()
 resumeWorkoutSessionSelector = mkSelector "resumeWorkoutSession:"
 
 -- | @Selector@ for @startWatchAppWithWorkoutConfiguration:completion:@
-startWatchAppWithWorkoutConfiguration_completionSelector :: Selector
+startWatchAppWithWorkoutConfiguration_completionSelector :: Selector '[Id HKWorkoutConfiguration, Ptr ()] ()
 startWatchAppWithWorkoutConfiguration_completionSelector = mkSelector "startWatchAppWithWorkoutConfiguration:completion:"
 
 -- | @Selector@ for @recoverActiveWorkoutSessionWithCompletion:@
-recoverActiveWorkoutSessionWithCompletionSelector :: Selector
+recoverActiveWorkoutSessionWithCompletionSelector :: Selector '[Ptr ()] ()
 recoverActiveWorkoutSessionWithCompletionSelector = mkSelector "recoverActiveWorkoutSessionWithCompletion:"
 
 -- | @Selector@ for @workoutSessionMirroringStartHandler@
-workoutSessionMirroringStartHandlerSelector :: Selector
+workoutSessionMirroringStartHandlerSelector :: Selector '[] (Ptr ())
 workoutSessionMirroringStartHandlerSelector = mkSelector "workoutSessionMirroringStartHandler"
 
 -- | @Selector@ for @setWorkoutSessionMirroringStartHandler:@
-setWorkoutSessionMirroringStartHandlerSelector :: Selector
+setWorkoutSessionMirroringStartHandlerSelector :: Selector '[Ptr ()] ()
 setWorkoutSessionMirroringStartHandlerSelector = mkSelector "setWorkoutSessionMirroringStartHandler:"
 

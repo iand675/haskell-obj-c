@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,8 +13,8 @@ module ObjC.ModelIO.MDLMatrix4x4Array
   , elementCount
   , precision
   , clearSelector
-  , initWithElementCountSelector
   , elementCountSelector
+  , initWithElementCountSelector
   , precisionSelector
 
   -- * Enum types
@@ -24,15 +25,11 @@ module ObjC.ModelIO.MDLMatrix4x4Array
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,41 +39,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- clear@
 clear :: IsMDLMatrix4x4Array mdlMatrix4x4Array => mdlMatrix4x4Array -> IO ()
-clear mdlMatrix4x4Array  =
-    sendMsg mdlMatrix4x4Array (mkSelector "clear") retVoid []
+clear mdlMatrix4x4Array =
+  sendMessage mdlMatrix4x4Array clearSelector
 
 -- | @- initWithElementCount:@
 initWithElementCount :: IsMDLMatrix4x4Array mdlMatrix4x4Array => mdlMatrix4x4Array -> CULong -> IO (Id MDLMatrix4x4Array)
-initWithElementCount mdlMatrix4x4Array  arrayElementCount =
-    sendMsg mdlMatrix4x4Array (mkSelector "initWithElementCount:") (retPtr retVoid) [argCULong arrayElementCount] >>= ownedObject . castPtr
+initWithElementCount mdlMatrix4x4Array arrayElementCount =
+  sendOwnedMessage mdlMatrix4x4Array initWithElementCountSelector arrayElementCount
 
 -- | @- elementCount@
 elementCount :: IsMDLMatrix4x4Array mdlMatrix4x4Array => mdlMatrix4x4Array -> IO CULong
-elementCount mdlMatrix4x4Array  =
-    sendMsg mdlMatrix4x4Array (mkSelector "elementCount") retCULong []
+elementCount mdlMatrix4x4Array =
+  sendMessage mdlMatrix4x4Array elementCountSelector
 
 -- | @- precision@
 precision :: IsMDLMatrix4x4Array mdlMatrix4x4Array => mdlMatrix4x4Array -> IO MDLDataPrecision
-precision mdlMatrix4x4Array  =
-    fmap (coerce :: CULong -> MDLDataPrecision) $ sendMsg mdlMatrix4x4Array (mkSelector "precision") retCULong []
+precision mdlMatrix4x4Array =
+  sendMessage mdlMatrix4x4Array precisionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @clear@
-clearSelector :: Selector
+clearSelector :: Selector '[] ()
 clearSelector = mkSelector "clear"
 
 -- | @Selector@ for @initWithElementCount:@
-initWithElementCountSelector :: Selector
+initWithElementCountSelector :: Selector '[CULong] (Id MDLMatrix4x4Array)
 initWithElementCountSelector = mkSelector "initWithElementCount:"
 
 -- | @Selector@ for @elementCount@
-elementCountSelector :: Selector
+elementCountSelector :: Selector '[] CULong
 elementCountSelector = mkSelector "elementCount"
 
 -- | @Selector@ for @precision@
-precisionSelector :: Selector
+precisionSelector :: Selector '[] MDLDataPrecision
 precisionSelector = mkSelector "precision"
 

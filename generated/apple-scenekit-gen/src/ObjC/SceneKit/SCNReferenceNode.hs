@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,16 +22,16 @@ module ObjC.SceneKit.SCNReferenceNode
   , loadingPolicy
   , setLoadingPolicy
   , loaded
-  , initWithURLSelector
   , initWithCoderSelector
-  , referenceNodeWithURLSelector
+  , initWithURLSelector
   , loadSelector
-  , unloadSelector
-  , referenceURLSelector
-  , setReferenceURLSelector
-  , loadingPolicySelector
-  , setLoadingPolicySelector
   , loadedSelector
+  , loadingPolicySelector
+  , referenceNodeWithURLSelector
+  , referenceURLSelector
+  , setLoadingPolicySelector
+  , setReferenceURLSelector
+  , unloadSelector
 
   -- * Enum types
   , SCNReferenceLoadingPolicy(SCNReferenceLoadingPolicy)
@@ -39,15 +40,11 @@ module ObjC.SceneKit.SCNReferenceNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,9 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsSCNReferenceNode scnReferenceNode, IsNSURL referenceURL) => scnReferenceNode -> referenceURL -> IO (Id SCNReferenceNode)
-initWithURL scnReferenceNode  referenceURL =
-  withObjCPtr referenceURL $ \raw_referenceURL ->
-      sendMsg scnReferenceNode (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_referenceURL :: Ptr ())] >>= ownedObject . castPtr
+initWithURL scnReferenceNode referenceURL =
+  sendOwnedMessage scnReferenceNode initWithURLSelector (toNSURL referenceURL)
 
 -- | initWithCoder:
 --
@@ -71,9 +67,8 @@ initWithURL scnReferenceNode  referenceURL =
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsSCNReferenceNode scnReferenceNode, IsNSCoder aDecoder) => scnReferenceNode -> aDecoder -> IO (Id SCNReferenceNode)
-initWithCoder scnReferenceNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg scnReferenceNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder scnReferenceNode aDecoder =
+  sendOwnedMessage scnReferenceNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | referenceNodeWithURL:
 --
@@ -84,8 +79,7 @@ referenceNodeWithURL :: IsNSURL referenceURL => referenceURL -> IO (Id SCNRefere
 referenceNodeWithURL referenceURL =
   do
     cls' <- getRequiredClass "SCNReferenceNode"
-    withObjCPtr referenceURL $ \raw_referenceURL ->
-      sendClassMsg cls' (mkSelector "referenceNodeWithURL:") (retPtr retVoid) [argPtr (castPtr raw_referenceURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' referenceNodeWithURLSelector (toNSURL referenceURL)
 
 -- | load
 --
@@ -93,8 +87,8 @@ referenceNodeWithURL referenceURL =
 --
 -- ObjC selector: @- load@
 load :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> IO ()
-load scnReferenceNode  =
-    sendMsg scnReferenceNode (mkSelector "load") retVoid []
+load scnReferenceNode =
+  sendMessage scnReferenceNode loadSelector
 
 -- | unload
 --
@@ -102,8 +96,8 @@ load scnReferenceNode  =
 --
 -- ObjC selector: @- unload@
 unload :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> IO ()
-unload scnReferenceNode  =
-    sendMsg scnReferenceNode (mkSelector "unload") retVoid []
+unload scnReferenceNode =
+  sendMessage scnReferenceNode unloadSelector
 
 -- | referenceURL
 --
@@ -111,8 +105,8 @@ unload scnReferenceNode  =
 --
 -- ObjC selector: @- referenceURL@
 referenceURL :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> IO (Id NSURL)
-referenceURL scnReferenceNode  =
-    sendMsg scnReferenceNode (mkSelector "referenceURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+referenceURL scnReferenceNode =
+  sendMessage scnReferenceNode referenceURLSelector
 
 -- | referenceURL
 --
@@ -120,9 +114,8 @@ referenceURL scnReferenceNode  =
 --
 -- ObjC selector: @- setReferenceURL:@
 setReferenceURL :: (IsSCNReferenceNode scnReferenceNode, IsNSURL value) => scnReferenceNode -> value -> IO ()
-setReferenceURL scnReferenceNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnReferenceNode (mkSelector "setReferenceURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReferenceURL scnReferenceNode value =
+  sendMessage scnReferenceNode setReferenceURLSelector (toNSURL value)
 
 -- | loadingPolicy
 --
@@ -130,8 +123,8 @@ setReferenceURL scnReferenceNode  value =
 --
 -- ObjC selector: @- loadingPolicy@
 loadingPolicy :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> IO SCNReferenceLoadingPolicy
-loadingPolicy scnReferenceNode  =
-    fmap (coerce :: CLong -> SCNReferenceLoadingPolicy) $ sendMsg scnReferenceNode (mkSelector "loadingPolicy") retCLong []
+loadingPolicy scnReferenceNode =
+  sendMessage scnReferenceNode loadingPolicySelector
 
 -- | loadingPolicy
 --
@@ -139,8 +132,8 @@ loadingPolicy scnReferenceNode  =
 --
 -- ObjC selector: @- setLoadingPolicy:@
 setLoadingPolicy :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> SCNReferenceLoadingPolicy -> IO ()
-setLoadingPolicy scnReferenceNode  value =
-    sendMsg scnReferenceNode (mkSelector "setLoadingPolicy:") retVoid [argCLong (coerce value)]
+setLoadingPolicy scnReferenceNode value =
+  sendMessage scnReferenceNode setLoadingPolicySelector value
 
 -- | loaded
 --
@@ -148,50 +141,50 @@ setLoadingPolicy scnReferenceNode  value =
 --
 -- ObjC selector: @- loaded@
 loaded :: IsSCNReferenceNode scnReferenceNode => scnReferenceNode -> IO Bool
-loaded scnReferenceNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnReferenceNode (mkSelector "loaded") retCULong []
+loaded scnReferenceNode =
+  sendMessage scnReferenceNode loadedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SCNReferenceNode)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SCNReferenceNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @referenceNodeWithURL:@
-referenceNodeWithURLSelector :: Selector
+referenceNodeWithURLSelector :: Selector '[Id NSURL] (Id SCNReferenceNode)
 referenceNodeWithURLSelector = mkSelector "referenceNodeWithURL:"
 
 -- | @Selector@ for @load@
-loadSelector :: Selector
+loadSelector :: Selector '[] ()
 loadSelector = mkSelector "load"
 
 -- | @Selector@ for @unload@
-unloadSelector :: Selector
+unloadSelector :: Selector '[] ()
 unloadSelector = mkSelector "unload"
 
 -- | @Selector@ for @referenceURL@
-referenceURLSelector :: Selector
+referenceURLSelector :: Selector '[] (Id NSURL)
 referenceURLSelector = mkSelector "referenceURL"
 
 -- | @Selector@ for @setReferenceURL:@
-setReferenceURLSelector :: Selector
+setReferenceURLSelector :: Selector '[Id NSURL] ()
 setReferenceURLSelector = mkSelector "setReferenceURL:"
 
 -- | @Selector@ for @loadingPolicy@
-loadingPolicySelector :: Selector
+loadingPolicySelector :: Selector '[] SCNReferenceLoadingPolicy
 loadingPolicySelector = mkSelector "loadingPolicy"
 
 -- | @Selector@ for @setLoadingPolicy:@
-setLoadingPolicySelector :: Selector
+setLoadingPolicySelector :: Selector '[SCNReferenceLoadingPolicy] ()
 setLoadingPolicySelector = mkSelector "setLoadingPolicy:"
 
 -- | @Selector@ for @loaded@
-loadedSelector :: Selector
+loadedSelector :: Selector '[] Bool
 loadedSelector = mkSelector "loaded"
 

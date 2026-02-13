@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.MLCompute.MLCMultiheadAttentionLayer
   , attentionBiases
   , weightsParameters
   , biasesParameters
-  , layerWithDescriptor_weights_biases_attentionBiasesSelector
-  , descriptorSelector
-  , weightsSelector
-  , biasesSelector
   , attentionBiasesSelector
-  , weightsParametersSelector
   , biasesParametersSelector
+  , biasesSelector
+  , descriptorSelector
+  , layerWithDescriptor_weights_biases_attentionBiasesSelector
+  , weightsParametersSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,11 +57,7 @@ layerWithDescriptor_weights_biases_attentionBiases :: (IsMLCMultiheadAttentionDe
 layerWithDescriptor_weights_biases_attentionBiases descriptor weights biases attentionBiases =
   do
     cls' <- getRequiredClass "MLCMultiheadAttentionLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr weights $ \raw_weights ->
-        withObjCPtr biases $ \raw_biases ->
-          withObjCPtr attentionBiases $ \raw_attentionBiases ->
-            sendClassMsg cls' (mkSelector "layerWithDescriptor:weights:biases:attentionBiases:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ()), argPtr (castPtr raw_attentionBiases :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_weights_biases_attentionBiasesSelector (toMLCMultiheadAttentionDescriptor descriptor) (toNSArray weights) (toNSArray biases) (toNSArray attentionBiases)
 
 -- | descriptor
 --
@@ -72,8 +65,8 @@ layerWithDescriptor_weights_biases_attentionBiases descriptor weights biases att
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id MLCMultiheadAttentionDescriptor)
-descriptor mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer descriptorSelector
 
 -- | weights
 --
@@ -81,8 +74,8 @@ descriptor mlcMultiheadAttentionLayer  =
 --
 -- ObjC selector: @- weights@
 weights :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id NSArray)
-weights mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer weightsSelector
 
 -- | biases
 --
@@ -90,8 +83,8 @@ weights mlcMultiheadAttentionLayer  =
 --
 -- ObjC selector: @- biases@
 biases :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id NSArray)
-biases mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "biases") (retPtr retVoid) [] >>= retainedObject . castPtr
+biases mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer biasesSelector
 
 -- | attentionBiases
 --
@@ -99,8 +92,8 @@ biases mlcMultiheadAttentionLayer  =
 --
 -- ObjC selector: @- attentionBiases@
 attentionBiases :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id NSArray)
-attentionBiases mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "attentionBiases") (retPtr retVoid) [] >>= retainedObject . castPtr
+attentionBiases mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer attentionBiasesSelector
 
 -- | weightsParameters
 --
@@ -108,8 +101,8 @@ attentionBiases mlcMultiheadAttentionLayer  =
 --
 -- ObjC selector: @- weightsParameters@
 weightsParameters :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id NSArray)
-weightsParameters mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "weightsParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+weightsParameters mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer weightsParametersSelector
 
 -- | biasesParameters
 --
@@ -117,38 +110,38 @@ weightsParameters mlcMultiheadAttentionLayer  =
 --
 -- ObjC selector: @- biasesParameters@
 biasesParameters :: IsMLCMultiheadAttentionLayer mlcMultiheadAttentionLayer => mlcMultiheadAttentionLayer -> IO (Id NSArray)
-biasesParameters mlcMultiheadAttentionLayer  =
-    sendMsg mlcMultiheadAttentionLayer (mkSelector "biasesParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+biasesParameters mlcMultiheadAttentionLayer =
+  sendMessage mlcMultiheadAttentionLayer biasesParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:weights:biases:attentionBiases:@
-layerWithDescriptor_weights_biases_attentionBiasesSelector :: Selector
+layerWithDescriptor_weights_biases_attentionBiasesSelector :: Selector '[Id MLCMultiheadAttentionDescriptor, Id NSArray, Id NSArray, Id NSArray] (Id MLCMultiheadAttentionLayer)
 layerWithDescriptor_weights_biases_attentionBiasesSelector = mkSelector "layerWithDescriptor:weights:biases:attentionBiases:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCMultiheadAttentionDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id NSArray)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] (Id NSArray)
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @attentionBiases@
-attentionBiasesSelector :: Selector
+attentionBiasesSelector :: Selector '[] (Id NSArray)
 attentionBiasesSelector = mkSelector "attentionBiases"
 
 -- | @Selector@ for @weightsParameters@
-weightsParametersSelector :: Selector
+weightsParametersSelector :: Selector '[] (Id NSArray)
 weightsParametersSelector = mkSelector "weightsParameters"
 
 -- | @Selector@ for @biasesParameters@
-biasesParametersSelector :: Selector
+biasesParametersSelector :: Selector '[] (Id NSArray)
 biasesParametersSelector = mkSelector "biasesParameters"
 

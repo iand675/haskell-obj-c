@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CloudKit.CKDiscoverUserIdentitiesOperation
   , setUserIdentityDiscoveredBlock
   , discoverUserIdentitiesCompletionBlock
   , setDiscoverUserIdentitiesCompletionBlock
+  , discoverUserIdentitiesCompletionBlockSelector
   , initSelector
   , initWithUserIdentityLookupInfosSelector
-  , userIdentityLookupInfosSelector
+  , setDiscoverUserIdentitiesCompletionBlockSelector
+  , setUserIdentityDiscoveredBlockSelector
   , setUserIdentityLookupInfosSelector
   , userIdentityDiscoveredBlockSelector
-  , setUserIdentityDiscoveredBlockSelector
-  , discoverUserIdentitiesCompletionBlockSelector
-  , setDiscoverUserIdentitiesCompletionBlockSelector
+  , userIdentityLookupInfosSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> IO (Id CKDiscoverUserIdentitiesOperation)
-init_ ckDiscoverUserIdentitiesOperation  =
-    sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckDiscoverUserIdentitiesOperation =
+  sendOwnedMessage ckDiscoverUserIdentitiesOperation initSelector
 
 -- | @- initWithUserIdentityLookupInfos:@
 initWithUserIdentityLookupInfos :: (IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation, IsNSArray userIdentityLookupInfos) => ckDiscoverUserIdentitiesOperation -> userIdentityLookupInfos -> IO (Id CKDiscoverUserIdentitiesOperation)
-initWithUserIdentityLookupInfos ckDiscoverUserIdentitiesOperation  userIdentityLookupInfos =
-  withObjCPtr userIdentityLookupInfos $ \raw_userIdentityLookupInfos ->
-      sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "initWithUserIdentityLookupInfos:") (retPtr retVoid) [argPtr (castPtr raw_userIdentityLookupInfos :: Ptr ())] >>= ownedObject . castPtr
+initWithUserIdentityLookupInfos ckDiscoverUserIdentitiesOperation userIdentityLookupInfos =
+  sendOwnedMessage ckDiscoverUserIdentitiesOperation initWithUserIdentityLookupInfosSelector (toNSArray userIdentityLookupInfos)
 
 -- | @- userIdentityLookupInfos@
 userIdentityLookupInfos :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> IO (Id NSArray)
-userIdentityLookupInfos ckDiscoverUserIdentitiesOperation  =
-    sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "userIdentityLookupInfos") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIdentityLookupInfos ckDiscoverUserIdentitiesOperation =
+  sendMessage ckDiscoverUserIdentitiesOperation userIdentityLookupInfosSelector
 
 -- | @- setUserIdentityLookupInfos:@
 setUserIdentityLookupInfos :: (IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation, IsNSArray value) => ckDiscoverUserIdentitiesOperation -> value -> IO ()
-setUserIdentityLookupInfos ckDiscoverUserIdentitiesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "setUserIdentityLookupInfos:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIdentityLookupInfos ckDiscoverUserIdentitiesOperation value =
+  sendMessage ckDiscoverUserIdentitiesOperation setUserIdentityLookupInfosSelector (toNSArray value)
 
 -- | Called once for each user identity lookup info that was successfully discovered on the server
 --
@@ -69,8 +64,8 @@ setUserIdentityLookupInfos ckDiscoverUserIdentitiesOperation  value =
 --
 -- ObjC selector: @- userIdentityDiscoveredBlock@
 userIdentityDiscoveredBlock :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> IO (Ptr ())
-userIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation  =
-    fmap castPtr $ sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "userIdentityDiscoveredBlock") (retPtr retVoid) []
+userIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation =
+  sendMessage ckDiscoverUserIdentitiesOperation userIdentityDiscoveredBlockSelector
 
 -- | Called once for each user identity lookup info that was successfully discovered on the server
 --
@@ -78,8 +73,8 @@ userIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation  =
 --
 -- ObjC selector: @- setUserIdentityDiscoveredBlock:@
 setUserIdentityDiscoveredBlock :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> Ptr () -> IO ()
-setUserIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation  value =
-    sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "setUserIdentityDiscoveredBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setUserIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation value =
+  sendMessage ckDiscoverUserIdentitiesOperation setUserIdentityDiscoveredBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -91,8 +86,8 @@ setUserIdentityDiscoveredBlock ckDiscoverUserIdentitiesOperation  value =
 --
 -- ObjC selector: @- discoverUserIdentitiesCompletionBlock@
 discoverUserIdentitiesCompletionBlock :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> IO (Ptr ())
-discoverUserIdentitiesCompletionBlock ckDiscoverUserIdentitiesOperation  =
-    fmap castPtr $ sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "discoverUserIdentitiesCompletionBlock") (retPtr retVoid) []
+discoverUserIdentitiesCompletionBlock ckDiscoverUserIdentitiesOperation =
+  sendMessage ckDiscoverUserIdentitiesOperation discoverUserIdentitiesCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -104,42 +99,42 @@ discoverUserIdentitiesCompletionBlock ckDiscoverUserIdentitiesOperation  =
 --
 -- ObjC selector: @- setDiscoverUserIdentitiesCompletionBlock:@
 setDiscoverUserIdentitiesCompletionBlock :: IsCKDiscoverUserIdentitiesOperation ckDiscoverUserIdentitiesOperation => ckDiscoverUserIdentitiesOperation -> Ptr () -> IO ()
-setDiscoverUserIdentitiesCompletionBlock ckDiscoverUserIdentitiesOperation  value =
-    sendMsg ckDiscoverUserIdentitiesOperation (mkSelector "setDiscoverUserIdentitiesCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDiscoverUserIdentitiesCompletionBlock ckDiscoverUserIdentitiesOperation value =
+  sendMessage ckDiscoverUserIdentitiesOperation setDiscoverUserIdentitiesCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKDiscoverUserIdentitiesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithUserIdentityLookupInfos:@
-initWithUserIdentityLookupInfosSelector :: Selector
+initWithUserIdentityLookupInfosSelector :: Selector '[Id NSArray] (Id CKDiscoverUserIdentitiesOperation)
 initWithUserIdentityLookupInfosSelector = mkSelector "initWithUserIdentityLookupInfos:"
 
 -- | @Selector@ for @userIdentityLookupInfos@
-userIdentityLookupInfosSelector :: Selector
+userIdentityLookupInfosSelector :: Selector '[] (Id NSArray)
 userIdentityLookupInfosSelector = mkSelector "userIdentityLookupInfos"
 
 -- | @Selector@ for @setUserIdentityLookupInfos:@
-setUserIdentityLookupInfosSelector :: Selector
+setUserIdentityLookupInfosSelector :: Selector '[Id NSArray] ()
 setUserIdentityLookupInfosSelector = mkSelector "setUserIdentityLookupInfos:"
 
 -- | @Selector@ for @userIdentityDiscoveredBlock@
-userIdentityDiscoveredBlockSelector :: Selector
+userIdentityDiscoveredBlockSelector :: Selector '[] (Ptr ())
 userIdentityDiscoveredBlockSelector = mkSelector "userIdentityDiscoveredBlock"
 
 -- | @Selector@ for @setUserIdentityDiscoveredBlock:@
-setUserIdentityDiscoveredBlockSelector :: Selector
+setUserIdentityDiscoveredBlockSelector :: Selector '[Ptr ()] ()
 setUserIdentityDiscoveredBlockSelector = mkSelector "setUserIdentityDiscoveredBlock:"
 
 -- | @Selector@ for @discoverUserIdentitiesCompletionBlock@
-discoverUserIdentitiesCompletionBlockSelector :: Selector
+discoverUserIdentitiesCompletionBlockSelector :: Selector '[] (Ptr ())
 discoverUserIdentitiesCompletionBlockSelector = mkSelector "discoverUserIdentitiesCompletionBlock"
 
 -- | @Selector@ for @setDiscoverUserIdentitiesCompletionBlock:@
-setDiscoverUserIdentitiesCompletionBlockSelector :: Selector
+setDiscoverUserIdentitiesCompletionBlockSelector :: Selector '[Ptr ()] ()
 setDiscoverUserIdentitiesCompletionBlockSelector = mkSelector "setDiscoverUserIdentitiesCompletionBlock:"
 

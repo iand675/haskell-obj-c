@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,26 +32,26 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphPooling4DOpDescriptor
   , setReturnIndicesMode
   , returnIndicesDataType
   , setReturnIndicesDataType
-  , descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector
-  , descriptorWithKernelSizes_paddingStyleSelector
-  , kernelSizesSelector
-  , setKernelSizesSelector
-  , stridesSelector
-  , setStridesSelector
-  , dilationRatesSelector
-  , setDilationRatesSelector
-  , paddingValuesSelector
-  , setPaddingValuesSelector
-  , paddingStyleSelector
-  , setPaddingStyleSelector
   , ceilModeSelector
-  , setCeilModeSelector
+  , descriptorWithKernelSizes_paddingStyleSelector
+  , descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector
+  , dilationRatesSelector
   , includeZeroPadToAverageSelector
-  , setIncludeZeroPadToAverageSelector
-  , returnIndicesModeSelector
-  , setReturnIndicesModeSelector
+  , kernelSizesSelector
+  , paddingStyleSelector
+  , paddingValuesSelector
   , returnIndicesDataTypeSelector
+  , returnIndicesModeSelector
+  , setCeilModeSelector
+  , setDilationRatesSelector
+  , setIncludeZeroPadToAverageSelector
+  , setKernelSizesSelector
+  , setPaddingStyleSelector
+  , setPaddingValuesSelector
   , setReturnIndicesDataTypeSelector
+  , setReturnIndicesModeSelector
+  , setStridesSelector
+  , stridesSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -100,15 +101,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphPooling4DOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -126,11 +123,7 @@ descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyle :: (I
 descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyle kernelSizes strides dilationRates paddingValues paddingStyle =
   do
     cls' <- getRequiredClass "MPSGraphPooling4DOpDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingValues $ \raw_paddingValues ->
-            sendClassMsg cls' (mkSelector "descriptorWithKernelSizes:strides:dilationRates:paddingValues:paddingStyle:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argPtr (castPtr raw_paddingValues :: Ptr ()), argCULong (coerce paddingStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector (toNSArray kernelSizes) (toNSArray strides) (toNSArray dilationRates) (toNSArray paddingValues) paddingStyle
 
 -- | Creates a 4D pooling descriptor with default values.
 --
@@ -141,8 +134,7 @@ descriptorWithKernelSizes_paddingStyle :: IsNSArray kernelSizes => kernelSizes -
 descriptorWithKernelSizes_paddingStyle kernelSizes paddingStyle =
   do
     cls' <- getRequiredClass "MPSGraphPooling4DOpDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      sendClassMsg cls' (mkSelector "descriptorWithKernelSizes:paddingStyle:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argCULong (coerce paddingStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithKernelSizes_paddingStyleSelector (toNSArray kernelSizes) paddingStyle
 
 -- | Defines the pooling window size.
 --
@@ -150,8 +142,8 @@ descriptorWithKernelSizes_paddingStyle kernelSizes paddingStyle =
 --
 -- ObjC selector: @- kernelSizes@
 kernelSizes :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO (Id NSArray)
-kernelSizes mpsGraphPooling4DOpDescriptor  =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "kernelSizes") (retPtr retVoid) [] >>= retainedObject . castPtr
+kernelSizes mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor kernelSizesSelector
 
 -- | Defines the pooling window size.
 --
@@ -159,9 +151,8 @@ kernelSizes mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setKernelSizes:@
 setKernelSizes :: (IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor, IsNSArray value) => mpsGraphPooling4DOpDescriptor -> value -> IO ()
-setKernelSizes mpsGraphPooling4DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setKernelSizes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKernelSizes mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setKernelSizesSelector (toNSArray value)
 
 -- | Defines strides for spatial dimensions. Must be four numbers, one for each spatial dimension, fastest running index last.
 --
@@ -169,8 +160,8 @@ setKernelSizes mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- strides@
 strides :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO (Id NSArray)
-strides mpsGraphPooling4DOpDescriptor  =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "strides") (retPtr retVoid) [] >>= retainedObject . castPtr
+strides mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor stridesSelector
 
 -- | Defines strides for spatial dimensions. Must be four numbers, one for each spatial dimension, fastest running index last.
 --
@@ -178,9 +169,8 @@ strides mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setStrides:@
 setStrides :: (IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor, IsNSArray value) => mpsGraphPooling4DOpDescriptor -> value -> IO ()
-setStrides mpsGraphPooling4DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setStrides:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStrides mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setStridesSelector (toNSArray value)
 
 -- | Defines dilation rates for spatial dimensions. Must be four numbers, one for each spatial dimension, fastest running index last.
 --
@@ -188,8 +178,8 @@ setStrides mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRates@
 dilationRates :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO (Id NSArray)
-dilationRates mpsGraphPooling4DOpDescriptor  =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "dilationRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+dilationRates mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor dilationRatesSelector
 
 -- | Defines dilation rates for spatial dimensions. Must be four numbers, one for each spatial dimension, fastest running index last.
 --
@@ -197,9 +187,8 @@ dilationRates mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRates:@
 setDilationRates :: (IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor, IsNSArray value) => mpsGraphPooling4DOpDescriptor -> value -> IO ()
-setDilationRates mpsGraphPooling4DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setDilationRates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDilationRates mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setDilationRatesSelector (toNSArray value)
 
 -- | Defines padding values for spatial dimensions which must be eight numbers, two for each spatial dimension.
 --
@@ -207,8 +196,8 @@ setDilationRates mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingValues@
 paddingValues :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO (Id NSArray)
-paddingValues mpsGraphPooling4DOpDescriptor  =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "paddingValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddingValues mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor paddingValuesSelector
 
 -- | Defines padding values for spatial dimensions which must be eight numbers, two for each spatial dimension.
 --
@@ -216,9 +205,8 @@ paddingValues mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingValues:@
 setPaddingValues :: (IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor, IsNSArray value) => mpsGraphPooling4DOpDescriptor -> value -> IO ()
-setPaddingValues mpsGraphPooling4DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setPaddingValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaddingValues mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setPaddingValuesSelector (toNSArray value)
 
 -- | Defines what kind of padding graph applies to the operation.
 --
@@ -226,8 +214,8 @@ setPaddingValues mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingStyle@
 paddingStyle :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO MPSGraphPaddingStyle
-paddingStyle mpsGraphPooling4DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPaddingStyle) $ sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "paddingStyle") retCULong []
+paddingStyle mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor paddingStyleSelector
 
 -- | Defines what kind of padding graph applies to the operation.
 --
@@ -235,8 +223,8 @@ paddingStyle mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingStyle:@
 setPaddingStyle :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> MPSGraphPaddingStyle -> IO ()
-setPaddingStyle mpsGraphPooling4DOpDescriptor  value =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setPaddingStyle:") retVoid [argCULong (coerce value)]
+setPaddingStyle mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setPaddingStyleSelector value
 
 -- | Affects how MPSGraph computes the output size: if set to @YES@ then output size is computed by rounding up instead of down when dividing input size by stride.
 --
@@ -244,8 +232,8 @@ setPaddingStyle mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- ceilMode@
 ceilMode :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO Bool
-ceilMode mpsGraphPooling4DOpDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "ceilMode") retCULong []
+ceilMode mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor ceilModeSelector
 
 -- | Affects how MPSGraph computes the output size: if set to @YES@ then output size is computed by rounding up instead of down when dividing input size by stride.
 --
@@ -253,8 +241,8 @@ ceilMode mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setCeilMode:@
 setCeilMode :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> Bool -> IO ()
-setCeilMode mpsGraphPooling4DOpDescriptor  value =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setCeilMode:") retVoid [argCULong (if value then 1 else 0)]
+setCeilMode mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setCeilModeSelector value
 
 -- | Defines a mode for average pooling, where samples outside the input tensor count as zeroes in the average computation.
 --
@@ -262,8 +250,8 @@ setCeilMode mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- includeZeroPadToAverage@
 includeZeroPadToAverage :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO Bool
-includeZeroPadToAverage mpsGraphPooling4DOpDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "includeZeroPadToAverage") retCULong []
+includeZeroPadToAverage mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor includeZeroPadToAverageSelector
 
 -- | Defines a mode for average pooling, where samples outside the input tensor count as zeroes in the average computation.
 --
@@ -271,8 +259,8 @@ includeZeroPadToAverage mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setIncludeZeroPadToAverage:@
 setIncludeZeroPadToAverage :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> Bool -> IO ()
-setIncludeZeroPadToAverage mpsGraphPooling4DOpDescriptor  value =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setIncludeZeroPadToAverage:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeZeroPadToAverage mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setIncludeZeroPadToAverageSelector value
 
 -- | Defines the mode for returned indices of maximum values within each pooling window.
 --
@@ -280,8 +268,8 @@ setIncludeZeroPadToAverage mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- returnIndicesMode@
 returnIndicesMode :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO MPSGraphPoolingReturnIndicesMode
-returnIndicesMode mpsGraphPooling4DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPoolingReturnIndicesMode) $ sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "returnIndicesMode") retCULong []
+returnIndicesMode mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor returnIndicesModeSelector
 
 -- | Defines the mode for returned indices of maximum values within each pooling window.
 --
@@ -289,8 +277,8 @@ returnIndicesMode mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setReturnIndicesMode:@
 setReturnIndicesMode :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> MPSGraphPoolingReturnIndicesMode -> IO ()
-setReturnIndicesMode mpsGraphPooling4DOpDescriptor  value =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setReturnIndicesMode:") retVoid [argCULong (coerce value)]
+setReturnIndicesMode mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setReturnIndicesModeSelector value
 
 -- | Defines the data type for returned indices.
 --
@@ -298,8 +286,8 @@ setReturnIndicesMode mpsGraphPooling4DOpDescriptor  value =
 --
 -- ObjC selector: @- returnIndicesDataType@
 returnIndicesDataType :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> IO MPSDataType
-returnIndicesDataType mpsGraphPooling4DOpDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "returnIndicesDataType") retCUInt []
+returnIndicesDataType mpsGraphPooling4DOpDescriptor =
+  sendMessage mpsGraphPooling4DOpDescriptor returnIndicesDataTypeSelector
 
 -- | Defines the data type for returned indices.
 --
@@ -307,90 +295,90 @@ returnIndicesDataType mpsGraphPooling4DOpDescriptor  =
 --
 -- ObjC selector: @- setReturnIndicesDataType:@
 setReturnIndicesDataType :: IsMPSGraphPooling4DOpDescriptor mpsGraphPooling4DOpDescriptor => mpsGraphPooling4DOpDescriptor -> MPSDataType -> IO ()
-setReturnIndicesDataType mpsGraphPooling4DOpDescriptor  value =
-    sendMsg mpsGraphPooling4DOpDescriptor (mkSelector "setReturnIndicesDataType:") retVoid [argCUInt (coerce value)]
+setReturnIndicesDataType mpsGraphPooling4DOpDescriptor value =
+  sendMessage mpsGraphPooling4DOpDescriptor setReturnIndicesDataTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithKernelSizes:strides:dilationRates:paddingValues:paddingStyle:@
-descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector :: Selector
+descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, Id NSArray, MPSGraphPaddingStyle] (Id MPSGraphPooling4DOpDescriptor)
 descriptorWithKernelSizes_strides_dilationRates_paddingValues_paddingStyleSelector = mkSelector "descriptorWithKernelSizes:strides:dilationRates:paddingValues:paddingStyle:"
 
 -- | @Selector@ for @descriptorWithKernelSizes:paddingStyle:@
-descriptorWithKernelSizes_paddingStyleSelector :: Selector
+descriptorWithKernelSizes_paddingStyleSelector :: Selector '[Id NSArray, MPSGraphPaddingStyle] (Id MPSGraphPooling4DOpDescriptor)
 descriptorWithKernelSizes_paddingStyleSelector = mkSelector "descriptorWithKernelSizes:paddingStyle:"
 
 -- | @Selector@ for @kernelSizes@
-kernelSizesSelector :: Selector
+kernelSizesSelector :: Selector '[] (Id NSArray)
 kernelSizesSelector = mkSelector "kernelSizes"
 
 -- | @Selector@ for @setKernelSizes:@
-setKernelSizesSelector :: Selector
+setKernelSizesSelector :: Selector '[Id NSArray] ()
 setKernelSizesSelector = mkSelector "setKernelSizes:"
 
 -- | @Selector@ for @strides@
-stridesSelector :: Selector
+stridesSelector :: Selector '[] (Id NSArray)
 stridesSelector = mkSelector "strides"
 
 -- | @Selector@ for @setStrides:@
-setStridesSelector :: Selector
+setStridesSelector :: Selector '[Id NSArray] ()
 setStridesSelector = mkSelector "setStrides:"
 
 -- | @Selector@ for @dilationRates@
-dilationRatesSelector :: Selector
+dilationRatesSelector :: Selector '[] (Id NSArray)
 dilationRatesSelector = mkSelector "dilationRates"
 
 -- | @Selector@ for @setDilationRates:@
-setDilationRatesSelector :: Selector
+setDilationRatesSelector :: Selector '[Id NSArray] ()
 setDilationRatesSelector = mkSelector "setDilationRates:"
 
 -- | @Selector@ for @paddingValues@
-paddingValuesSelector :: Selector
+paddingValuesSelector :: Selector '[] (Id NSArray)
 paddingValuesSelector = mkSelector "paddingValues"
 
 -- | @Selector@ for @setPaddingValues:@
-setPaddingValuesSelector :: Selector
+setPaddingValuesSelector :: Selector '[Id NSArray] ()
 setPaddingValuesSelector = mkSelector "setPaddingValues:"
 
 -- | @Selector@ for @paddingStyle@
-paddingStyleSelector :: Selector
+paddingStyleSelector :: Selector '[] MPSGraphPaddingStyle
 paddingStyleSelector = mkSelector "paddingStyle"
 
 -- | @Selector@ for @setPaddingStyle:@
-setPaddingStyleSelector :: Selector
+setPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] ()
 setPaddingStyleSelector = mkSelector "setPaddingStyle:"
 
 -- | @Selector@ for @ceilMode@
-ceilModeSelector :: Selector
+ceilModeSelector :: Selector '[] Bool
 ceilModeSelector = mkSelector "ceilMode"
 
 -- | @Selector@ for @setCeilMode:@
-setCeilModeSelector :: Selector
+setCeilModeSelector :: Selector '[Bool] ()
 setCeilModeSelector = mkSelector "setCeilMode:"
 
 -- | @Selector@ for @includeZeroPadToAverage@
-includeZeroPadToAverageSelector :: Selector
+includeZeroPadToAverageSelector :: Selector '[] Bool
 includeZeroPadToAverageSelector = mkSelector "includeZeroPadToAverage"
 
 -- | @Selector@ for @setIncludeZeroPadToAverage:@
-setIncludeZeroPadToAverageSelector :: Selector
+setIncludeZeroPadToAverageSelector :: Selector '[Bool] ()
 setIncludeZeroPadToAverageSelector = mkSelector "setIncludeZeroPadToAverage:"
 
 -- | @Selector@ for @returnIndicesMode@
-returnIndicesModeSelector :: Selector
+returnIndicesModeSelector :: Selector '[] MPSGraphPoolingReturnIndicesMode
 returnIndicesModeSelector = mkSelector "returnIndicesMode"
 
 -- | @Selector@ for @setReturnIndicesMode:@
-setReturnIndicesModeSelector :: Selector
+setReturnIndicesModeSelector :: Selector '[MPSGraphPoolingReturnIndicesMode] ()
 setReturnIndicesModeSelector = mkSelector "setReturnIndicesMode:"
 
 -- | @Selector@ for @returnIndicesDataType@
-returnIndicesDataTypeSelector :: Selector
+returnIndicesDataTypeSelector :: Selector '[] MPSDataType
 returnIndicesDataTypeSelector = mkSelector "returnIndicesDataType"
 
 -- | @Selector@ for @setReturnIndicesDataType:@
-setReturnIndicesDataTypeSelector :: Selector
+setReturnIndicesDataTypeSelector :: Selector '[MPSDataType] ()
 setReturnIndicesDataTypeSelector = mkSelector "setReturnIndicesDataType:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CoreBluetooth.CBATTRequest
   , offset
   , value
   , setValue
-  , initSelector
   , centralSelector
   , characteristicSelector
+  , initSelector
   , offsetSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCBATTRequest cbattRequest => cbattRequest -> IO (Id CBATTRequest)
-init_ cbattRequest  =
-    sendMsg cbattRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cbattRequest =
+  sendOwnedMessage cbattRequest initSelector
 
 -- | central
 --
@@ -52,8 +49,8 @@ init_ cbattRequest  =
 --
 -- ObjC selector: @- central@
 central :: IsCBATTRequest cbattRequest => cbattRequest -> IO (Id CBCentral)
-central cbattRequest  =
-    sendMsg cbattRequest (mkSelector "central") (retPtr retVoid) [] >>= retainedObject . castPtr
+central cbattRequest =
+  sendMessage cbattRequest centralSelector
 
 -- | characteristic
 --
@@ -61,8 +58,8 @@ central cbattRequest  =
 --
 -- ObjC selector: @- characteristic@
 characteristic :: IsCBATTRequest cbattRequest => cbattRequest -> IO (Id CBCharacteristic)
-characteristic cbattRequest  =
-    sendMsg cbattRequest (mkSelector "characteristic") (retPtr retVoid) [] >>= retainedObject . castPtr
+characteristic cbattRequest =
+  sendMessage cbattRequest characteristicSelector
 
 -- | offset
 --
@@ -70,8 +67,8 @@ characteristic cbattRequest  =
 --
 -- ObjC selector: @- offset@
 offset :: IsCBATTRequest cbattRequest => cbattRequest -> IO CULong
-offset cbattRequest  =
-    sendMsg cbattRequest (mkSelector "offset") retCULong []
+offset cbattRequest =
+  sendMessage cbattRequest offsetSelector
 
 -- | value
 --
@@ -83,8 +80,8 @@ offset cbattRequest  =
 --
 -- ObjC selector: @- value@
 value :: IsCBATTRequest cbattRequest => cbattRequest -> IO (Id NSData)
-value cbattRequest  =
-    sendMsg cbattRequest (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value cbattRequest =
+  sendMessage cbattRequest valueSelector
 
 -- | value
 --
@@ -96,35 +93,34 @@ value cbattRequest  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: (IsCBATTRequest cbattRequest, IsNSData value) => cbattRequest -> value -> IO ()
-setValue cbattRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbattRequest (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue cbattRequest value =
+  sendMessage cbattRequest setValueSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CBATTRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @central@
-centralSelector :: Selector
+centralSelector :: Selector '[] (Id CBCentral)
 centralSelector = mkSelector "central"
 
 -- | @Selector@ for @characteristic@
-characteristicSelector :: Selector
+characteristicSelector :: Selector '[] (Id CBCharacteristic)
 characteristicSelector = mkSelector "characteristic"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSData)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSData] ()
 setValueSelector = mkSelector "setValue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.CloudKit.CKSyncEngineRecordZoneChangeBatch
   , recordIDsToDelete
   , atomicByZone
   , setAtomicByZone
+  , atomicByZoneSelector
+  , initSelector
   , initWithPendingChanges_recordProviderSelector
   , initWithRecordsToSave_recordIDsToDelete_atomicByZoneSelector
-  , initSelector
   , newSelector
-  , recordsToSaveSelector
   , recordIDsToDeleteSelector
-  , atomicByZoneSelector
+  , recordsToSaveSelector
   , setAtomicByZoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPendingChanges:recordProvider:@
 initWithPendingChanges_recordProvider :: (IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch, IsNSArray pendingChanges) => ckSyncEngineRecordZoneChangeBatch -> pendingChanges -> Ptr () -> IO (Id CKSyncEngineRecordZoneChangeBatch)
-initWithPendingChanges_recordProvider ckSyncEngineRecordZoneChangeBatch  pendingChanges recordProvider =
-  withObjCPtr pendingChanges $ \raw_pendingChanges ->
-      sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "initWithPendingChanges:recordProvider:") (retPtr retVoid) [argPtr (castPtr raw_pendingChanges :: Ptr ()), argPtr (castPtr recordProvider :: Ptr ())] >>= ownedObject . castPtr
+initWithPendingChanges_recordProvider ckSyncEngineRecordZoneChangeBatch pendingChanges recordProvider =
+  sendOwnedMessage ckSyncEngineRecordZoneChangeBatch initWithPendingChanges_recordProviderSelector (toNSArray pendingChanges) recordProvider
 
 -- | Creates a batch of record zone changes to send to the server with a specific set of changes.
 --
@@ -69,36 +65,34 @@ initWithPendingChanges_recordProvider ckSyncEngineRecordZoneChangeBatch  pending
 --
 -- ObjC selector: @- initWithRecordsToSave:recordIDsToDelete:atomicByZone:@
 initWithRecordsToSave_recordIDsToDelete_atomicByZone :: (IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch, IsNSArray recordsToSave, IsNSArray recordIDsToDelete) => ckSyncEngineRecordZoneChangeBatch -> recordsToSave -> recordIDsToDelete -> Bool -> IO (Id CKSyncEngineRecordZoneChangeBatch)
-initWithRecordsToSave_recordIDsToDelete_atomicByZone ckSyncEngineRecordZoneChangeBatch  recordsToSave recordIDsToDelete atomicByZone =
-  withObjCPtr recordsToSave $ \raw_recordsToSave ->
-    withObjCPtr recordIDsToDelete $ \raw_recordIDsToDelete ->
-        sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "initWithRecordsToSave:recordIDsToDelete:atomicByZone:") (retPtr retVoid) [argPtr (castPtr raw_recordsToSave :: Ptr ()), argPtr (castPtr raw_recordIDsToDelete :: Ptr ()), argCULong (if atomicByZone then 1 else 0)] >>= ownedObject . castPtr
+initWithRecordsToSave_recordIDsToDelete_atomicByZone ckSyncEngineRecordZoneChangeBatch recordsToSave recordIDsToDelete atomicByZone =
+  sendOwnedMessage ckSyncEngineRecordZoneChangeBatch initWithRecordsToSave_recordIDsToDelete_atomicByZoneSelector (toNSArray recordsToSave) (toNSArray recordIDsToDelete) atomicByZone
 
 -- | @- init@
 init_ :: IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch => ckSyncEngineRecordZoneChangeBatch -> IO (Id CKSyncEngineRecordZoneChangeBatch)
-init_ ckSyncEngineRecordZoneChangeBatch  =
-    sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineRecordZoneChangeBatch =
+  sendOwnedMessage ckSyncEngineRecordZoneChangeBatch initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineRecordZoneChangeBatch)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineRecordZoneChangeBatch"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The records to save to the server.
 --
 -- ObjC selector: @- recordsToSave@
 recordsToSave :: IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch => ckSyncEngineRecordZoneChangeBatch -> IO (Id NSArray)
-recordsToSave ckSyncEngineRecordZoneChangeBatch  =
-    sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "recordsToSave") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordsToSave ckSyncEngineRecordZoneChangeBatch =
+  sendMessage ckSyncEngineRecordZoneChangeBatch recordsToSaveSelector
 
 -- | The IDs of the records to delete from the server.
 --
 -- ObjC selector: @- recordIDsToDelete@
 recordIDsToDelete :: IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch => ckSyncEngineRecordZoneChangeBatch -> IO (Id NSArray)
-recordIDsToDelete ckSyncEngineRecordZoneChangeBatch  =
-    sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "recordIDsToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordIDsToDelete ckSyncEngineRecordZoneChangeBatch =
+  sendMessage ckSyncEngineRecordZoneChangeBatch recordIDsToDeleteSelector
 
 -- | If set to true, the sync engine will modify these records atomically by zone.
 --
@@ -108,8 +102,8 @@ recordIDsToDelete ckSyncEngineRecordZoneChangeBatch  =
 --
 -- ObjC selector: @- atomicByZone@
 atomicByZone :: IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch => ckSyncEngineRecordZoneChangeBatch -> IO Bool
-atomicByZone ckSyncEngineRecordZoneChangeBatch  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "atomicByZone") retCULong []
+atomicByZone ckSyncEngineRecordZoneChangeBatch =
+  sendMessage ckSyncEngineRecordZoneChangeBatch atomicByZoneSelector
 
 -- | If set to true, the sync engine will modify these records atomically by zone.
 --
@@ -119,42 +113,42 @@ atomicByZone ckSyncEngineRecordZoneChangeBatch  =
 --
 -- ObjC selector: @- setAtomicByZone:@
 setAtomicByZone :: IsCKSyncEngineRecordZoneChangeBatch ckSyncEngineRecordZoneChangeBatch => ckSyncEngineRecordZoneChangeBatch -> Bool -> IO ()
-setAtomicByZone ckSyncEngineRecordZoneChangeBatch  value =
-    sendMsg ckSyncEngineRecordZoneChangeBatch (mkSelector "setAtomicByZone:") retVoid [argCULong (if value then 1 else 0)]
+setAtomicByZone ckSyncEngineRecordZoneChangeBatch value =
+  sendMessage ckSyncEngineRecordZoneChangeBatch setAtomicByZoneSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPendingChanges:recordProvider:@
-initWithPendingChanges_recordProviderSelector :: Selector
+initWithPendingChanges_recordProviderSelector :: Selector '[Id NSArray, Ptr ()] (Id CKSyncEngineRecordZoneChangeBatch)
 initWithPendingChanges_recordProviderSelector = mkSelector "initWithPendingChanges:recordProvider:"
 
 -- | @Selector@ for @initWithRecordsToSave:recordIDsToDelete:atomicByZone:@
-initWithRecordsToSave_recordIDsToDelete_atomicByZoneSelector :: Selector
+initWithRecordsToSave_recordIDsToDelete_atomicByZoneSelector :: Selector '[Id NSArray, Id NSArray, Bool] (Id CKSyncEngineRecordZoneChangeBatch)
 initWithRecordsToSave_recordIDsToDelete_atomicByZoneSelector = mkSelector "initWithRecordsToSave:recordIDsToDelete:atomicByZone:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineRecordZoneChangeBatch)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineRecordZoneChangeBatch)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @recordsToSave@
-recordsToSaveSelector :: Selector
+recordsToSaveSelector :: Selector '[] (Id NSArray)
 recordsToSaveSelector = mkSelector "recordsToSave"
 
 -- | @Selector@ for @recordIDsToDelete@
-recordIDsToDeleteSelector :: Selector
+recordIDsToDeleteSelector :: Selector '[] (Id NSArray)
 recordIDsToDeleteSelector = mkSelector "recordIDsToDelete"
 
 -- | @Selector@ for @atomicByZone@
-atomicByZoneSelector :: Selector
+atomicByZoneSelector :: Selector '[] Bool
 atomicByZoneSelector = mkSelector "atomicByZone"
 
 -- | @Selector@ for @setAtomicByZone:@
-setAtomicByZoneSelector :: Selector
+setAtomicByZoneSelector :: Selector '[Bool] ()
 setAtomicByZoneSelector = mkSelector "setAtomicByZone:"
 

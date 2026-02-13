@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRSwitchClusterSwitchLatchedEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newPosition@
 newPosition :: IsMTRSwitchClusterSwitchLatchedEvent mtrSwitchClusterSwitchLatchedEvent => mtrSwitchClusterSwitchLatchedEvent -> IO (Id NSNumber)
-newPosition mtrSwitchClusterSwitchLatchedEvent  =
-    sendMsg mtrSwitchClusterSwitchLatchedEvent (mkSelector "newPosition") (retPtr retVoid) [] >>= ownedObject . castPtr
+newPosition mtrSwitchClusterSwitchLatchedEvent =
+  sendOwnedMessage mtrSwitchClusterSwitchLatchedEvent newPositionSelector
 
 -- | @- setNewPosition:@
 setNewPosition :: (IsMTRSwitchClusterSwitchLatchedEvent mtrSwitchClusterSwitchLatchedEvent, IsNSNumber value) => mtrSwitchClusterSwitchLatchedEvent -> value -> IO ()
-setNewPosition mtrSwitchClusterSwitchLatchedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSwitchClusterSwitchLatchedEvent (mkSelector "setNewPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewPosition mtrSwitchClusterSwitchLatchedEvent value =
+  sendMessage mtrSwitchClusterSwitchLatchedEvent setNewPositionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newPosition@
-newPositionSelector :: Selector
+newPositionSelector :: Selector '[] (Id NSNumber)
 newPositionSelector = mkSelector "newPosition"
 
 -- | @Selector@ for @setNewPosition:@
-setNewPositionSelector :: Selector
+setNewPositionSelector :: Selector '[Id NSNumber] ()
 setNewPositionSelector = mkSelector "setNewPosition:"
 

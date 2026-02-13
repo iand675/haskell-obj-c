@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterCaptureSnapshotResponsePara
   , setImageCodec
   , resolution
   , setResolution
-  , initWithResponseValue_errorSelector
   , dataSelector
-  , setDataSelector
   , imageCodecSelector
-  , setImageCodecSelector
+  , initWithResponseValue_errorSelector
   , resolutionSelector
+  , setDataSelector
+  , setImageCodecSelector
   , setResolutionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> responseValue -> error_ -> IO (Id MTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams)
-initWithResponseValue_error mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams responseValue error_ =
+  sendOwnedMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- data@
 data_ :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> IO (Id NSData)
-data_ mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams, IsNSData value) => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> value -> IO ()
-setData mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams setDataSelector (toNSData value)
 
 -- | @- imageCodec@
 imageCodec :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> IO (Id NSNumber)
-imageCodec mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "imageCodec") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageCodec mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams imageCodecSelector
 
 -- | @- setImageCodec:@
 setImageCodec :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> value -> IO ()
-setImageCodec mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "setImageCodec:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageCodec mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams setImageCodecSelector (toNSNumber value)
 
 -- | @- resolution@
 resolution :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> IO (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
-resolution mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "resolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolution mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams resolutionSelector
 
 -- | @- setResolution:@
 setResolution :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams, IsMTRCameraAVStreamManagementClusterVideoResolutionStruct value) => mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams -> value -> IO ()
-setResolution mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams (mkSelector "setResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResolution mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotResponseParams setResolutionSelector (toMTRCameraAVStreamManagementClusterVideoResolutionStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRCameraAVStreamManagementClusterCaptureSnapshotResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @imageCodec@
-imageCodecSelector :: Selector
+imageCodecSelector :: Selector '[] (Id NSNumber)
 imageCodecSelector = mkSelector "imageCodec"
 
 -- | @Selector@ for @setImageCodec:@
-setImageCodecSelector :: Selector
+setImageCodecSelector :: Selector '[Id NSNumber] ()
 setImageCodecSelector = mkSelector "setImageCodec:"
 
 -- | @Selector@ for @resolution@
-resolutionSelector :: Selector
+resolutionSelector :: Selector '[] (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
 resolutionSelector = mkSelector "resolution"
 
 -- | @Selector@ for @setResolution:@
-setResolutionSelector :: Selector
+setResolutionSelector :: Selector '[Id MTRCameraAVStreamManagementClusterVideoResolutionStruct] ()
 setResolutionSelector = mkSelector "setResolution:"
 

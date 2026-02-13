@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSCollectionViewCompositionalLayout
   , new
   , configuration
   , setConfiguration
-  , initWithSectionSelector
-  , initWithSection_configurationSelector
+  , configurationSelector
+  , initSelector
   , initWithSectionProviderSelector
   , initWithSectionProvider_configurationSelector
-  , initSelector
+  , initWithSectionSelector
+  , initWithSection_configurationSelector
   , newSelector
-  , configurationSelector
   , setConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,84 +40,79 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSection:@
 initWithSection :: (IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout, IsNSCollectionLayoutSection section) => nsCollectionViewCompositionalLayout -> section -> IO (Id NSCollectionViewCompositionalLayout)
-initWithSection nsCollectionViewCompositionalLayout  section =
-  withObjCPtr section $ \raw_section ->
-      sendMsg nsCollectionViewCompositionalLayout (mkSelector "initWithSection:") (retPtr retVoid) [argPtr (castPtr raw_section :: Ptr ())] >>= ownedObject . castPtr
+initWithSection nsCollectionViewCompositionalLayout section =
+  sendOwnedMessage nsCollectionViewCompositionalLayout initWithSectionSelector (toNSCollectionLayoutSection section)
 
 -- | @- initWithSection:configuration:@
 initWithSection_configuration :: (IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout, IsNSCollectionLayoutSection section, IsNSCollectionViewCompositionalLayoutConfiguration configuration) => nsCollectionViewCompositionalLayout -> section -> configuration -> IO (Id NSCollectionViewCompositionalLayout)
-initWithSection_configuration nsCollectionViewCompositionalLayout  section configuration =
-  withObjCPtr section $ \raw_section ->
-    withObjCPtr configuration $ \raw_configuration ->
-        sendMsg nsCollectionViewCompositionalLayout (mkSelector "initWithSection:configuration:") (retPtr retVoid) [argPtr (castPtr raw_section :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithSection_configuration nsCollectionViewCompositionalLayout section configuration =
+  sendOwnedMessage nsCollectionViewCompositionalLayout initWithSection_configurationSelector (toNSCollectionLayoutSection section) (toNSCollectionViewCompositionalLayoutConfiguration configuration)
 
 -- | @- initWithSectionProvider:@
 initWithSectionProvider :: IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout => nsCollectionViewCompositionalLayout -> Ptr () -> IO (Id NSCollectionViewCompositionalLayout)
-initWithSectionProvider nsCollectionViewCompositionalLayout  sectionProvider =
-    sendMsg nsCollectionViewCompositionalLayout (mkSelector "initWithSectionProvider:") (retPtr retVoid) [argPtr (castPtr sectionProvider :: Ptr ())] >>= ownedObject . castPtr
+initWithSectionProvider nsCollectionViewCompositionalLayout sectionProvider =
+  sendOwnedMessage nsCollectionViewCompositionalLayout initWithSectionProviderSelector sectionProvider
 
 -- | @- initWithSectionProvider:configuration:@
 initWithSectionProvider_configuration :: (IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout, IsNSCollectionViewCompositionalLayoutConfiguration configuration) => nsCollectionViewCompositionalLayout -> Ptr () -> configuration -> IO (Id NSCollectionViewCompositionalLayout)
-initWithSectionProvider_configuration nsCollectionViewCompositionalLayout  sectionProvider configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg nsCollectionViewCompositionalLayout (mkSelector "initWithSectionProvider:configuration:") (retPtr retVoid) [argPtr (castPtr sectionProvider :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithSectionProvider_configuration nsCollectionViewCompositionalLayout sectionProvider configuration =
+  sendOwnedMessage nsCollectionViewCompositionalLayout initWithSectionProvider_configurationSelector sectionProvider (toNSCollectionViewCompositionalLayoutConfiguration configuration)
 
 -- | @- init@
 init_ :: IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout => nsCollectionViewCompositionalLayout -> IO (Id NSCollectionViewCompositionalLayout)
-init_ nsCollectionViewCompositionalLayout  =
-    sendMsg nsCollectionViewCompositionalLayout (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionViewCompositionalLayout =
+  sendOwnedMessage nsCollectionViewCompositionalLayout initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionViewCompositionalLayout)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionViewCompositionalLayout"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- configuration@
 configuration :: IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout => nsCollectionViewCompositionalLayout -> IO (Id NSCollectionViewCompositionalLayoutConfiguration)
-configuration nsCollectionViewCompositionalLayout  =
-    sendMsg nsCollectionViewCompositionalLayout (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration nsCollectionViewCompositionalLayout =
+  sendMessage nsCollectionViewCompositionalLayout configurationSelector
 
 -- | @- setConfiguration:@
 setConfiguration :: (IsNSCollectionViewCompositionalLayout nsCollectionViewCompositionalLayout, IsNSCollectionViewCompositionalLayoutConfiguration value) => nsCollectionViewCompositionalLayout -> value -> IO ()
-setConfiguration nsCollectionViewCompositionalLayout  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCollectionViewCompositionalLayout (mkSelector "setConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConfiguration nsCollectionViewCompositionalLayout value =
+  sendMessage nsCollectionViewCompositionalLayout setConfigurationSelector (toNSCollectionViewCompositionalLayoutConfiguration value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSection:@
-initWithSectionSelector :: Selector
+initWithSectionSelector :: Selector '[Id NSCollectionLayoutSection] (Id NSCollectionViewCompositionalLayout)
 initWithSectionSelector = mkSelector "initWithSection:"
 
 -- | @Selector@ for @initWithSection:configuration:@
-initWithSection_configurationSelector :: Selector
+initWithSection_configurationSelector :: Selector '[Id NSCollectionLayoutSection, Id NSCollectionViewCompositionalLayoutConfiguration] (Id NSCollectionViewCompositionalLayout)
 initWithSection_configurationSelector = mkSelector "initWithSection:configuration:"
 
 -- | @Selector@ for @initWithSectionProvider:@
-initWithSectionProviderSelector :: Selector
+initWithSectionProviderSelector :: Selector '[Ptr ()] (Id NSCollectionViewCompositionalLayout)
 initWithSectionProviderSelector = mkSelector "initWithSectionProvider:"
 
 -- | @Selector@ for @initWithSectionProvider:configuration:@
-initWithSectionProvider_configurationSelector :: Selector
+initWithSectionProvider_configurationSelector :: Selector '[Ptr (), Id NSCollectionViewCompositionalLayoutConfiguration] (Id NSCollectionViewCompositionalLayout)
 initWithSectionProvider_configurationSelector = mkSelector "initWithSectionProvider:configuration:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionViewCompositionalLayout)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionViewCompositionalLayout)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NSCollectionViewCompositionalLayoutConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @setConfiguration:@
-setConfigurationSelector :: Selector
+setConfigurationSelector :: Selector '[Id NSCollectionViewCompositionalLayoutConfiguration] ()
 setConfigurationSelector = mkSelector "setConfiguration:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.ImageCaptureCore.ICScannerBandData
   , dataNumRows
   , dataSize
   , dataBuffer
-  , fullImageWidthSelector
-  , fullImageHeightSelector
-  , bitsPerPixelSelector
-  , bitsPerComponentSelector
-  , numComponentsSelector
   , bigEndianSelector
-  , pixelDataTypeSelector
-  , colorSyncProfilePathSelector
+  , bitsPerComponentSelector
+  , bitsPerPixelSelector
   , bytesPerRowSelector
-  , dataStartRowSelector
+  , colorSyncProfilePathSelector
+  , dataBufferSelector
   , dataNumRowsSelector
   , dataSizeSelector
-  , dataBufferSelector
+  , dataStartRowSelector
+  , fullImageHeightSelector
+  , fullImageWidthSelector
+  , numComponentsSelector
+  , pixelDataTypeSelector
 
   -- * Enum types
   , ICScannerPixelDataType(ICScannerPixelDataType)
@@ -48,15 +49,11 @@ module ObjC.ImageCaptureCore.ICScannerBandData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,8 +67,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- fullImageWidth@
 fullImageWidth :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-fullImageWidth icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "fullImageWidth") retCULong []
+fullImageWidth icScannerBandData =
+  sendMessage icScannerBandData fullImageWidthSelector
 
 -- | fullImageHeight
 --
@@ -79,8 +76,8 @@ fullImageWidth icScannerBandData  =
 --
 -- ObjC selector: @- fullImageHeight@
 fullImageHeight :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-fullImageHeight icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "fullImageHeight") retCULong []
+fullImageHeight icScannerBandData =
+  sendMessage icScannerBandData fullImageHeightSelector
 
 -- | bitsPerPixel
 --
@@ -88,8 +85,8 @@ fullImageHeight icScannerBandData  =
 --
 -- ObjC selector: @- bitsPerPixel@
 bitsPerPixel :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-bitsPerPixel icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "bitsPerPixel") retCULong []
+bitsPerPixel icScannerBandData =
+  sendMessage icScannerBandData bitsPerPixelSelector
 
 -- | bitsPerComponent
 --
@@ -97,8 +94,8 @@ bitsPerPixel icScannerBandData  =
 --
 -- ObjC selector: @- bitsPerComponent@
 bitsPerComponent :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-bitsPerComponent icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "bitsPerComponent") retCULong []
+bitsPerComponent icScannerBandData =
+  sendMessage icScannerBandData bitsPerComponentSelector
 
 -- | numComponents
 --
@@ -106,8 +103,8 @@ bitsPerComponent icScannerBandData  =
 --
 -- ObjC selector: @- numComponents@
 numComponents :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-numComponents icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "numComponents") retCULong []
+numComponents icScannerBandData =
+  sendMessage icScannerBandData numComponentsSelector
 
 -- | bigEndian
 --
@@ -115,8 +112,8 @@ numComponents icScannerBandData  =
 --
 -- ObjC selector: @- bigEndian@
 bigEndian :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO Bool
-bigEndian icScannerBandData  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerBandData (mkSelector "bigEndian") retCULong []
+bigEndian icScannerBandData =
+  sendMessage icScannerBandData bigEndianSelector
 
 -- | pixelDataType
 --
@@ -124,8 +121,8 @@ bigEndian icScannerBandData  =
 --
 -- ObjC selector: @- pixelDataType@
 pixelDataType :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO ICScannerPixelDataType
-pixelDataType icScannerBandData  =
-    fmap (coerce :: CULong -> ICScannerPixelDataType) $ sendMsg icScannerBandData (mkSelector "pixelDataType") retCULong []
+pixelDataType icScannerBandData =
+  sendMessage icScannerBandData pixelDataTypeSelector
 
 -- | colorSyncProfilePath
 --
@@ -133,8 +130,8 @@ pixelDataType icScannerBandData  =
 --
 -- ObjC selector: @- colorSyncProfilePath@
 colorSyncProfilePath :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO RawId
-colorSyncProfilePath icScannerBandData  =
-    fmap (RawId . castPtr) $ sendMsg icScannerBandData (mkSelector "colorSyncProfilePath") (retPtr retVoid) []
+colorSyncProfilePath icScannerBandData =
+  sendMessage icScannerBandData colorSyncProfilePathSelector
 
 -- | bytesPerRow
 --
@@ -142,8 +139,8 @@ colorSyncProfilePath icScannerBandData  =
 --
 -- ObjC selector: @- bytesPerRow@
 bytesPerRow :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-bytesPerRow icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "bytesPerRow") retCULong []
+bytesPerRow icScannerBandData =
+  sendMessage icScannerBandData bytesPerRowSelector
 
 -- | dataStartRow
 --
@@ -151,8 +148,8 @@ bytesPerRow icScannerBandData  =
 --
 -- ObjC selector: @- dataStartRow@
 dataStartRow :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-dataStartRow icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "dataStartRow") retCULong []
+dataStartRow icScannerBandData =
+  sendMessage icScannerBandData dataStartRowSelector
 
 -- | dataNumRows
 --
@@ -160,8 +157,8 @@ dataStartRow icScannerBandData  =
 --
 -- ObjC selector: @- dataNumRows@
 dataNumRows :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-dataNumRows icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "dataNumRows") retCULong []
+dataNumRows icScannerBandData =
+  sendMessage icScannerBandData dataNumRowsSelector
 
 -- | dataSize
 --
@@ -169,8 +166,8 @@ dataNumRows icScannerBandData  =
 --
 -- ObjC selector: @- dataSize@
 dataSize :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO CULong
-dataSize icScannerBandData  =
-    sendMsg icScannerBandData (mkSelector "dataSize") retCULong []
+dataSize icScannerBandData =
+  sendMessage icScannerBandData dataSizeSelector
 
 -- | dataBuffer
 --
@@ -178,62 +175,62 @@ dataSize icScannerBandData  =
 --
 -- ObjC selector: @- dataBuffer@
 dataBuffer :: IsICScannerBandData icScannerBandData => icScannerBandData -> IO RawId
-dataBuffer icScannerBandData  =
-    fmap (RawId . castPtr) $ sendMsg icScannerBandData (mkSelector "dataBuffer") (retPtr retVoid) []
+dataBuffer icScannerBandData =
+  sendMessage icScannerBandData dataBufferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fullImageWidth@
-fullImageWidthSelector :: Selector
+fullImageWidthSelector :: Selector '[] CULong
 fullImageWidthSelector = mkSelector "fullImageWidth"
 
 -- | @Selector@ for @fullImageHeight@
-fullImageHeightSelector :: Selector
+fullImageHeightSelector :: Selector '[] CULong
 fullImageHeightSelector = mkSelector "fullImageHeight"
 
 -- | @Selector@ for @bitsPerPixel@
-bitsPerPixelSelector :: Selector
+bitsPerPixelSelector :: Selector '[] CULong
 bitsPerPixelSelector = mkSelector "bitsPerPixel"
 
 -- | @Selector@ for @bitsPerComponent@
-bitsPerComponentSelector :: Selector
+bitsPerComponentSelector :: Selector '[] CULong
 bitsPerComponentSelector = mkSelector "bitsPerComponent"
 
 -- | @Selector@ for @numComponents@
-numComponentsSelector :: Selector
+numComponentsSelector :: Selector '[] CULong
 numComponentsSelector = mkSelector "numComponents"
 
 -- | @Selector@ for @bigEndian@
-bigEndianSelector :: Selector
+bigEndianSelector :: Selector '[] Bool
 bigEndianSelector = mkSelector "bigEndian"
 
 -- | @Selector@ for @pixelDataType@
-pixelDataTypeSelector :: Selector
+pixelDataTypeSelector :: Selector '[] ICScannerPixelDataType
 pixelDataTypeSelector = mkSelector "pixelDataType"
 
 -- | @Selector@ for @colorSyncProfilePath@
-colorSyncProfilePathSelector :: Selector
+colorSyncProfilePathSelector :: Selector '[] RawId
 colorSyncProfilePathSelector = mkSelector "colorSyncProfilePath"
 
 -- | @Selector@ for @bytesPerRow@
-bytesPerRowSelector :: Selector
+bytesPerRowSelector :: Selector '[] CULong
 bytesPerRowSelector = mkSelector "bytesPerRow"
 
 -- | @Selector@ for @dataStartRow@
-dataStartRowSelector :: Selector
+dataStartRowSelector :: Selector '[] CULong
 dataStartRowSelector = mkSelector "dataStartRow"
 
 -- | @Selector@ for @dataNumRows@
-dataNumRowsSelector :: Selector
+dataNumRowsSelector :: Selector '[] CULong
 dataNumRowsSelector = mkSelector "dataNumRows"
 
 -- | @Selector@ for @dataSize@
-dataSizeSelector :: Selector
+dataSizeSelector :: Selector '[] CULong
 dataSizeSelector = mkSelector "dataSize"
 
 -- | @Selector@ for @dataBuffer@
-dataBufferSelector :: Selector
+dataBufferSelector :: Selector '[] RawId
 dataBufferSelector = mkSelector "dataBuffer"
 

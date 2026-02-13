@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRAccountLoginClusterLogoutParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , nodeSelector
-  , setNodeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setNodeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- node@
 node :: IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams => mtrAccountLoginClusterLogoutParams -> IO (Id NSNumber)
-node mtrAccountLoginClusterLogoutParams  =
-    sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node mtrAccountLoginClusterLogoutParams =
+  sendMessage mtrAccountLoginClusterLogoutParams nodeSelector
 
 -- | @- setNode:@
 setNode :: (IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams, IsNSNumber value) => mtrAccountLoginClusterLogoutParams -> value -> IO ()
-setNode mtrAccountLoginClusterLogoutParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "setNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNode mtrAccountLoginClusterLogoutParams value =
+  sendMessage mtrAccountLoginClusterLogoutParams setNodeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setNode mtrAccountLoginClusterLogoutParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams => mtrAccountLoginClusterLogoutParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams  =
-    sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams =
+  sendMessage mtrAccountLoginClusterLogoutParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams, IsNSNumber value) => mtrAccountLoginClusterLogoutParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams value =
+  sendMessage mtrAccountLoginClusterLogoutParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrAccountLoginClusterLogoutParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams => mtrAccountLoginClusterLogoutParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrAccountLoginClusterLogoutParams  =
-    sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrAccountLoginClusterLogoutParams =
+  sendMessage mtrAccountLoginClusterLogoutParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrAccountLoginClusterLogoutParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRAccountLoginClusterLogoutParams mtrAccountLoginClusterLogoutParams, IsNSNumber value) => mtrAccountLoginClusterLogoutParams -> value -> IO ()
-setServerSideProcessingTimeout mtrAccountLoginClusterLogoutParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterLogoutParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrAccountLoginClusterLogoutParams value =
+  sendMessage mtrAccountLoginClusterLogoutParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id NSNumber)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @setNode:@
-setNodeSelector :: Selector
+setNodeSelector :: Selector '[Id NSNumber] ()
 setNodeSelector = mkSelector "setNode:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

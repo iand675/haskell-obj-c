@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Foundation.NSMeasurement
   , measurementBySubtractingMeasurement
   , unit
   , doubleValue
+  , canBeConvertedToUnitSelector
+  , doubleValueSelector
   , initSelector
   , initWithDoubleValue_unitSelector
-  , canBeConvertedToUnitSelector
-  , measurementByConvertingToUnitSelector
   , measurementByAddingMeasurementSelector
+  , measurementByConvertingToUnitSelector
   , measurementBySubtractingMeasurementSelector
   , unitSelector
-  , doubleValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,82 +39,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSMeasurement nsMeasurement => nsMeasurement -> IO (Id NSMeasurement)
-init_ nsMeasurement  =
-    sendMsg nsMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMeasurement =
+  sendOwnedMessage nsMeasurement initSelector
 
 -- | @- initWithDoubleValue:unit:@
 initWithDoubleValue_unit :: (IsNSMeasurement nsMeasurement, IsNSUnit unit) => nsMeasurement -> CDouble -> unit -> IO (Id NSMeasurement)
-initWithDoubleValue_unit nsMeasurement  doubleValue unit =
-  withObjCPtr unit $ \raw_unit ->
-      sendMsg nsMeasurement (mkSelector "initWithDoubleValue:unit:") (retPtr retVoid) [argCDouble doubleValue, argPtr (castPtr raw_unit :: Ptr ())] >>= ownedObject . castPtr
+initWithDoubleValue_unit nsMeasurement doubleValue unit =
+  sendOwnedMessage nsMeasurement initWithDoubleValue_unitSelector doubleValue (toNSUnit unit)
 
 -- | @- canBeConvertedToUnit:@
 canBeConvertedToUnit :: (IsNSMeasurement nsMeasurement, IsNSUnit unit) => nsMeasurement -> unit -> IO Bool
-canBeConvertedToUnit nsMeasurement  unit =
-  withObjCPtr unit $ \raw_unit ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMeasurement (mkSelector "canBeConvertedToUnit:") retCULong [argPtr (castPtr raw_unit :: Ptr ())]
+canBeConvertedToUnit nsMeasurement unit =
+  sendMessage nsMeasurement canBeConvertedToUnitSelector (toNSUnit unit)
 
 -- | @- measurementByConvertingToUnit:@
 measurementByConvertingToUnit :: (IsNSMeasurement nsMeasurement, IsNSUnit unit) => nsMeasurement -> unit -> IO (Id NSMeasurement)
-measurementByConvertingToUnit nsMeasurement  unit =
-  withObjCPtr unit $ \raw_unit ->
-      sendMsg nsMeasurement (mkSelector "measurementByConvertingToUnit:") (retPtr retVoid) [argPtr (castPtr raw_unit :: Ptr ())] >>= retainedObject . castPtr
+measurementByConvertingToUnit nsMeasurement unit =
+  sendMessage nsMeasurement measurementByConvertingToUnitSelector (toNSUnit unit)
 
 -- | @- measurementByAddingMeasurement:@
 measurementByAddingMeasurement :: (IsNSMeasurement nsMeasurement, IsNSMeasurement measurement) => nsMeasurement -> measurement -> IO (Id NSMeasurement)
-measurementByAddingMeasurement nsMeasurement  measurement =
-  withObjCPtr measurement $ \raw_measurement ->
-      sendMsg nsMeasurement (mkSelector "measurementByAddingMeasurement:") (retPtr retVoid) [argPtr (castPtr raw_measurement :: Ptr ())] >>= retainedObject . castPtr
+measurementByAddingMeasurement nsMeasurement measurement =
+  sendMessage nsMeasurement measurementByAddingMeasurementSelector (toNSMeasurement measurement)
 
 -- | @- measurementBySubtractingMeasurement:@
 measurementBySubtractingMeasurement :: (IsNSMeasurement nsMeasurement, IsNSMeasurement measurement) => nsMeasurement -> measurement -> IO (Id NSMeasurement)
-measurementBySubtractingMeasurement nsMeasurement  measurement =
-  withObjCPtr measurement $ \raw_measurement ->
-      sendMsg nsMeasurement (mkSelector "measurementBySubtractingMeasurement:") (retPtr retVoid) [argPtr (castPtr raw_measurement :: Ptr ())] >>= retainedObject . castPtr
+measurementBySubtractingMeasurement nsMeasurement measurement =
+  sendMessage nsMeasurement measurementBySubtractingMeasurementSelector (toNSMeasurement measurement)
 
 -- | @- unit@
 unit :: IsNSMeasurement nsMeasurement => nsMeasurement -> IO (Id NSUnit)
-unit nsMeasurement  =
-    sendMsg nsMeasurement (mkSelector "unit") (retPtr retVoid) [] >>= retainedObject . castPtr
+unit nsMeasurement =
+  sendMessage nsMeasurement unitSelector
 
 -- | @- doubleValue@
 doubleValue :: IsNSMeasurement nsMeasurement => nsMeasurement -> IO CDouble
-doubleValue nsMeasurement  =
-    sendMsg nsMeasurement (mkSelector "doubleValue") retCDouble []
+doubleValue nsMeasurement =
+  sendMessage nsMeasurement doubleValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDoubleValue:unit:@
-initWithDoubleValue_unitSelector :: Selector
+initWithDoubleValue_unitSelector :: Selector '[CDouble, Id NSUnit] (Id NSMeasurement)
 initWithDoubleValue_unitSelector = mkSelector "initWithDoubleValue:unit:"
 
 -- | @Selector@ for @canBeConvertedToUnit:@
-canBeConvertedToUnitSelector :: Selector
+canBeConvertedToUnitSelector :: Selector '[Id NSUnit] Bool
 canBeConvertedToUnitSelector = mkSelector "canBeConvertedToUnit:"
 
 -- | @Selector@ for @measurementByConvertingToUnit:@
-measurementByConvertingToUnitSelector :: Selector
+measurementByConvertingToUnitSelector :: Selector '[Id NSUnit] (Id NSMeasurement)
 measurementByConvertingToUnitSelector = mkSelector "measurementByConvertingToUnit:"
 
 -- | @Selector@ for @measurementByAddingMeasurement:@
-measurementByAddingMeasurementSelector :: Selector
+measurementByAddingMeasurementSelector :: Selector '[Id NSMeasurement] (Id NSMeasurement)
 measurementByAddingMeasurementSelector = mkSelector "measurementByAddingMeasurement:"
 
 -- | @Selector@ for @measurementBySubtractingMeasurement:@
-measurementBySubtractingMeasurementSelector :: Selector
+measurementBySubtractingMeasurementSelector :: Selector '[Id NSMeasurement] (Id NSMeasurement)
 measurementBySubtractingMeasurementSelector = mkSelector "measurementBySubtractingMeasurement:"
 
 -- | @Selector@ for @unit@
-unitSelector :: Selector
+unitSelector :: Selector '[] (Id NSUnit)
 unitSelector = mkSelector "unit"
 
 -- | @Selector@ for @doubleValue@
-doubleValueSelector :: Selector
+doubleValueSelector :: Selector '[] CDouble
 doubleValueSelector = mkSelector "doubleValue"
 

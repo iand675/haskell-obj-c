@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.SensorKit.SRMessagesUsageReport
   , totalIncomingMessages
   , totalUniqueContacts
   , durationSelector
-  , totalOutgoingMessagesSelector
   , totalIncomingMessagesSelector
+  , totalOutgoingMessagesSelector
   , totalUniqueContactsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- duration@
 duration :: IsSRMessagesUsageReport srMessagesUsageReport => srMessagesUsageReport -> IO CDouble
-duration srMessagesUsageReport  =
-    sendMsg srMessagesUsageReport (mkSelector "duration") retCDouble []
+duration srMessagesUsageReport =
+  sendMessage srMessagesUsageReport durationSelector
 
 -- | @- totalOutgoingMessages@
 totalOutgoingMessages :: IsSRMessagesUsageReport srMessagesUsageReport => srMessagesUsageReport -> IO CLong
-totalOutgoingMessages srMessagesUsageReport  =
-    sendMsg srMessagesUsageReport (mkSelector "totalOutgoingMessages") retCLong []
+totalOutgoingMessages srMessagesUsageReport =
+  sendMessage srMessagesUsageReport totalOutgoingMessagesSelector
 
 -- | @- totalIncomingMessages@
 totalIncomingMessages :: IsSRMessagesUsageReport srMessagesUsageReport => srMessagesUsageReport -> IO CLong
-totalIncomingMessages srMessagesUsageReport  =
-    sendMsg srMessagesUsageReport (mkSelector "totalIncomingMessages") retCLong []
+totalIncomingMessages srMessagesUsageReport =
+  sendMessage srMessagesUsageReport totalIncomingMessagesSelector
 
 -- | @- totalUniqueContacts@
 totalUniqueContacts :: IsSRMessagesUsageReport srMessagesUsageReport => srMessagesUsageReport -> IO CLong
-totalUniqueContacts srMessagesUsageReport  =
-    sendMsg srMessagesUsageReport (mkSelector "totalUniqueContacts") retCLong []
+totalUniqueContacts srMessagesUsageReport =
+  sendMessage srMessagesUsageReport totalUniqueContactsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @totalOutgoingMessages@
-totalOutgoingMessagesSelector :: Selector
+totalOutgoingMessagesSelector :: Selector '[] CLong
 totalOutgoingMessagesSelector = mkSelector "totalOutgoingMessages"
 
 -- | @Selector@ for @totalIncomingMessages@
-totalIncomingMessagesSelector :: Selector
+totalIncomingMessagesSelector :: Selector '[] CLong
 totalIncomingMessagesSelector = mkSelector "totalIncomingMessages"
 
 -- | @Selector@ for @totalUniqueContacts@
-totalUniqueContactsSelector :: Selector
+totalUniqueContactsSelector :: Selector '[] CLong
 totalUniqueContactsSelector = mkSelector "totalUniqueContacts"
 

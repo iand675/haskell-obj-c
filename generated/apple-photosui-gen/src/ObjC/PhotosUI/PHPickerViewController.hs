@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.PhotosUI.PHPickerViewController
   , configuration
   , delegate
   , setDelegate
-  , initWithConfigurationSelector
-  , updatePickerUsingConfigurationSelector
-  , deselectAssetsWithIdentifiersSelector
-  , moveAssetWithIdentifier_afterAssetWithIdentifierSelector
-  , scrollToInitialPositionSelector
-  , zoomInSelector
-  , zoomOutSelector
-  , newSelector
-  , initSelector
-  , initWithNibName_bundleSelector
-  , initWithCoderSelector
   , configurationSelector
   , delegateSelector
+  , deselectAssetsWithIdentifiersSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithConfigurationSelector
+  , initWithNibName_bundleSelector
+  , moveAssetWithIdentifier_afterAssetWithIdentifierSelector
+  , newSelector
+  , scrollToInitialPositionSelector
   , setDelegateSelector
+  , updatePickerUsingConfigurationSelector
+  , zoomInSelector
+  , zoomOutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,17 +55,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsPHPickerViewController phPickerViewController, IsPHPickerConfiguration configuration) => phPickerViewController -> configuration -> IO (Id PHPickerViewController)
-initWithConfiguration phPickerViewController  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg phPickerViewController (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration phPickerViewController configuration =
+  sendOwnedMessage phPickerViewController initWithConfigurationSelector (toPHPickerConfiguration configuration)
 
 -- | Updates the picker using the configuration.
 --
 -- ObjC selector: @- updatePickerUsingConfiguration:@
 updatePickerUsingConfiguration :: (IsPHPickerViewController phPickerViewController, IsPHPickerUpdateConfiguration configuration) => phPickerViewController -> configuration -> IO ()
-updatePickerUsingConfiguration phPickerViewController  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg phPickerViewController (mkSelector "updatePickerUsingConfiguration:") retVoid [argPtr (castPtr raw_configuration :: Ptr ())]
+updatePickerUsingConfiguration phPickerViewController configuration =
+  sendMessage phPickerViewController updatePickerUsingConfigurationSelector (toPHPickerUpdateConfiguration configuration)
 
 -- | Deselects selected assets in the picker.
 --
@@ -76,9 +71,8 @@ updatePickerUsingConfiguration phPickerViewController  configuration =
 --
 -- ObjC selector: @- deselectAssetsWithIdentifiers:@
 deselectAssetsWithIdentifiers :: (IsPHPickerViewController phPickerViewController, IsNSArray identifiers) => phPickerViewController -> identifiers -> IO ()
-deselectAssetsWithIdentifiers phPickerViewController  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg phPickerViewController (mkSelector "deselectAssetsWithIdentifiers:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ())]
+deselectAssetsWithIdentifiers phPickerViewController identifiers =
+  sendMessage phPickerViewController deselectAssetsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | Reorders selected assets in the picker. A @nil@ @afterIdentifier@ means moving to the front.
 --
@@ -86,135 +80,130 @@ deselectAssetsWithIdentifiers phPickerViewController  identifiers =
 --
 -- ObjC selector: @- moveAssetWithIdentifier:afterAssetWithIdentifier:@
 moveAssetWithIdentifier_afterAssetWithIdentifier :: (IsPHPickerViewController phPickerViewController, IsNSString identifier, IsNSString afterIdentifier) => phPickerViewController -> identifier -> afterIdentifier -> IO ()
-moveAssetWithIdentifier_afterAssetWithIdentifier phPickerViewController  identifier afterIdentifier =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr afterIdentifier $ \raw_afterIdentifier ->
-        sendMsg phPickerViewController (mkSelector "moveAssetWithIdentifier:afterAssetWithIdentifier:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_afterIdentifier :: Ptr ())]
+moveAssetWithIdentifier_afterAssetWithIdentifier phPickerViewController identifier afterIdentifier =
+  sendMessage phPickerViewController moveAssetWithIdentifier_afterAssetWithIdentifierSelector (toNSString identifier) (toNSString afterIdentifier)
 
 -- | Scrolls content to the initial position if possible.
 --
 -- ObjC selector: @- scrollToInitialPosition@
 scrollToInitialPosition :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO ()
-scrollToInitialPosition phPickerViewController  =
-    sendMsg phPickerViewController (mkSelector "scrollToInitialPosition") retVoid []
+scrollToInitialPosition phPickerViewController =
+  sendMessage phPickerViewController scrollToInitialPositionSelector
 
 -- | Zooms in content if possible.
 --
 -- ObjC selector: @- zoomIn@
 zoomIn :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO ()
-zoomIn phPickerViewController  =
-    sendMsg phPickerViewController (mkSelector "zoomIn") retVoid []
+zoomIn phPickerViewController =
+  sendMessage phPickerViewController zoomInSelector
 
 -- | Zooms out content if possible.
 --
 -- ObjC selector: @- zoomOut@
 zoomOut :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO ()
-zoomOut phPickerViewController  =
-    sendMsg phPickerViewController (mkSelector "zoomOut") retVoid []
+zoomOut phPickerViewController =
+  sendMessage phPickerViewController zoomOutSelector
 
 -- | @+ new@
 new :: IO (Id PHPickerViewController)
 new  =
   do
     cls' <- getRequiredClass "PHPickerViewController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO (Id PHPickerViewController)
-init_ phPickerViewController  =
-    sendMsg phPickerViewController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPickerViewController =
+  sendOwnedMessage phPickerViewController initSelector
 
 -- | @- initWithNibName:bundle:@
 initWithNibName_bundle :: (IsPHPickerViewController phPickerViewController, IsNSString nibNameOrNil, IsNSBundle nibBundleOrNil) => phPickerViewController -> nibNameOrNil -> nibBundleOrNil -> IO (Id PHPickerViewController)
-initWithNibName_bundle phPickerViewController  nibNameOrNil nibBundleOrNil =
-  withObjCPtr nibNameOrNil $ \raw_nibNameOrNil ->
-    withObjCPtr nibBundleOrNil $ \raw_nibBundleOrNil ->
-        sendMsg phPickerViewController (mkSelector "initWithNibName:bundle:") (retPtr retVoid) [argPtr (castPtr raw_nibNameOrNil :: Ptr ()), argPtr (castPtr raw_nibBundleOrNil :: Ptr ())] >>= ownedObject . castPtr
+initWithNibName_bundle phPickerViewController nibNameOrNil nibBundleOrNil =
+  sendOwnedMessage phPickerViewController initWithNibName_bundleSelector (toNSString nibNameOrNil) (toNSBundle nibBundleOrNil)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsPHPickerViewController phPickerViewController, IsNSCoder coder) => phPickerViewController -> coder -> IO (Id PHPickerViewController)
-initWithCoder phPickerViewController  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg phPickerViewController (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder phPickerViewController coder =
+  sendOwnedMessage phPickerViewController initWithCoderSelector (toNSCoder coder)
 
 -- | The configuration passed in during initialization.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO (Id PHPickerConfiguration)
-configuration phPickerViewController  =
-    sendMsg phPickerViewController (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration phPickerViewController =
+  sendMessage phPickerViewController configurationSelector
 
 -- | The delegate to be notified.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsPHPickerViewController phPickerViewController => phPickerViewController -> IO RawId
-delegate phPickerViewController  =
-    fmap (RawId . castPtr) $ sendMsg phPickerViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate phPickerViewController =
+  sendMessage phPickerViewController delegateSelector
 
 -- | The delegate to be notified.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsPHPickerViewController phPickerViewController => phPickerViewController -> RawId -> IO ()
-setDelegate phPickerViewController  value =
-    sendMsg phPickerViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate phPickerViewController value =
+  sendMessage phPickerViewController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id PHPickerConfiguration] (Id PHPickerViewController)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @updatePickerUsingConfiguration:@
-updatePickerUsingConfigurationSelector :: Selector
+updatePickerUsingConfigurationSelector :: Selector '[Id PHPickerUpdateConfiguration] ()
 updatePickerUsingConfigurationSelector = mkSelector "updatePickerUsingConfiguration:"
 
 -- | @Selector@ for @deselectAssetsWithIdentifiers:@
-deselectAssetsWithIdentifiersSelector :: Selector
+deselectAssetsWithIdentifiersSelector :: Selector '[Id NSArray] ()
 deselectAssetsWithIdentifiersSelector = mkSelector "deselectAssetsWithIdentifiers:"
 
 -- | @Selector@ for @moveAssetWithIdentifier:afterAssetWithIdentifier:@
-moveAssetWithIdentifier_afterAssetWithIdentifierSelector :: Selector
+moveAssetWithIdentifier_afterAssetWithIdentifierSelector :: Selector '[Id NSString, Id NSString] ()
 moveAssetWithIdentifier_afterAssetWithIdentifierSelector = mkSelector "moveAssetWithIdentifier:afterAssetWithIdentifier:"
 
 -- | @Selector@ for @scrollToInitialPosition@
-scrollToInitialPositionSelector :: Selector
+scrollToInitialPositionSelector :: Selector '[] ()
 scrollToInitialPositionSelector = mkSelector "scrollToInitialPosition"
 
 -- | @Selector@ for @zoomIn@
-zoomInSelector :: Selector
+zoomInSelector :: Selector '[] ()
 zoomInSelector = mkSelector "zoomIn"
 
 -- | @Selector@ for @zoomOut@
-zoomOutSelector :: Selector
+zoomOutSelector :: Selector '[] ()
 zoomOutSelector = mkSelector "zoomOut"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPickerViewController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPickerViewController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNibName:bundle:@
-initWithNibName_bundleSelector :: Selector
+initWithNibName_bundleSelector :: Selector '[Id NSString, Id NSBundle] (Id PHPickerViewController)
 initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id PHPickerViewController)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id PHPickerConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

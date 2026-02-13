@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.AppKit.NSTabViewItem
   , setInitialFirstResponder
   , toolTip
   , setToolTip
-  , tabViewItemWithViewControllerSelector
-  , initWithIdentifierSelector
-  , drawLabel_inRectSelector
-  , sizeOfLabelSelector
-  , identifierSelector
-  , setIdentifierSelector
   , colorSelector
-  , setColorSelector
-  , labelSelector
-  , setLabelSelector
+  , drawLabel_inRectSelector
+  , identifierSelector
   , imageSelector
-  , setImageSelector
-  , viewSelector
-  , setViewSelector
-  , viewControllerSelector
-  , setViewControllerSelector
-  , tabStateSelector
-  , tabViewSelector
+  , initWithIdentifierSelector
   , initialFirstResponderSelector
+  , labelSelector
+  , setColorSelector
+  , setIdentifierSelector
+  , setImageSelector
   , setInitialFirstResponderSelector
-  , toolTipSelector
+  , setLabelSelector
   , setToolTipSelector
+  , setViewControllerSelector
+  , setViewSelector
+  , sizeOfLabelSelector
+  , tabStateSelector
+  , tabViewItemWithViewControllerSelector
+  , tabViewSelector
+  , toolTipSelector
+  , viewControllerSelector
+  , viewSelector
 
   -- * Enum types
   , NSTabState(NSTabState)
@@ -60,15 +61,11 @@ module ObjC.AppKit.NSTabViewItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,218 +83,210 @@ tabViewItemWithViewController :: IsNSViewController viewController => viewContro
 tabViewItemWithViewController viewController =
   do
     cls' <- getRequiredClass "NSTabViewItem"
-    withObjCPtr viewController $ \raw_viewController ->
-      sendClassMsg cls' (mkSelector "tabViewItemWithViewController:") (retPtr retVoid) [argPtr (castPtr raw_viewController :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' tabViewItemWithViewControllerSelector (toNSViewController viewController)
 
 -- | @- initWithIdentifier:@
 initWithIdentifier :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> RawId -> IO (Id NSTabViewItem)
-initWithIdentifier nsTabViewItem  identifier =
-    sendMsg nsTabViewItem (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr (unRawId identifier) :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier nsTabViewItem identifier =
+  sendOwnedMessage nsTabViewItem initWithIdentifierSelector identifier
 
 -- | @- drawLabel:inRect:@
 drawLabel_inRect :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> Bool -> NSRect -> IO ()
-drawLabel_inRect nsTabViewItem  shouldTruncateLabel labelRect =
-    sendMsg nsTabViewItem (mkSelector "drawLabel:inRect:") retVoid [argCULong (if shouldTruncateLabel then 1 else 0), argNSRect labelRect]
+drawLabel_inRect nsTabViewItem shouldTruncateLabel labelRect =
+  sendMessage nsTabViewItem drawLabel_inRectSelector shouldTruncateLabel labelRect
 
 -- | @- sizeOfLabel:@
 sizeOfLabel :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> Bool -> IO NSSize
-sizeOfLabel nsTabViewItem  computeMin =
-    sendMsgStret nsTabViewItem (mkSelector "sizeOfLabel:") retNSSize [argCULong (if computeMin then 1 else 0)]
+sizeOfLabel nsTabViewItem computeMin =
+  sendMessage nsTabViewItem sizeOfLabelSelector computeMin
 
 -- | @- identifier@
 identifier :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO RawId
-identifier nsTabViewItem  =
-    fmap (RawId . castPtr) $ sendMsg nsTabViewItem (mkSelector "identifier") (retPtr retVoid) []
+identifier nsTabViewItem =
+  sendMessage nsTabViewItem identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> RawId -> IO ()
-setIdentifier nsTabViewItem  value =
-    sendMsg nsTabViewItem (mkSelector "setIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIdentifier nsTabViewItem value =
+  sendMessage nsTabViewItem setIdentifierSelector value
 
 -- | @- color@
 color :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSColor)
-color nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color nsTabViewItem =
+  sendMessage nsTabViewItem colorSelector
 
 -- | @- setColor:@
 setColor :: (IsNSTabViewItem nsTabViewItem, IsNSColor value) => nsTabViewItem -> value -> IO ()
-setColor nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor nsTabViewItem value =
+  sendMessage nsTabViewItem setColorSelector (toNSColor value)
 
 -- | @- label@
 label :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSString)
-label nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label nsTabViewItem =
+  sendMessage nsTabViewItem labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsNSTabViewItem nsTabViewItem, IsNSString value) => nsTabViewItem -> value -> IO ()
-setLabel nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel nsTabViewItem value =
+  sendMessage nsTabViewItem setLabelSelector (toNSString value)
 
 -- | Get and set the image for this tab view item. The image may only be used in certain tab view styles and options.  The default value is nil.
 --
 -- ObjC selector: @- image@
 image :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSImage)
-image nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsTabViewItem =
+  sendMessage nsTabViewItem imageSelector
 
 -- | Get and set the image for this tab view item. The image may only be used in certain tab view styles and options.  The default value is nil.
 --
 -- ObjC selector: @- setImage:@
 setImage :: (IsNSTabViewItem nsTabViewItem, IsNSImage value) => nsTabViewItem -> value -> IO ()
-setImage nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsTabViewItem value =
+  sendMessage nsTabViewItem setImageSelector (toNSImage value)
 
 -- | @- view@
 view :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSView)
-view nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsTabViewItem =
+  sendMessage nsTabViewItem viewSelector
 
 -- | @- setView:@
 setView :: (IsNSTabViewItem nsTabViewItem, IsNSView value) => nsTabViewItem -> value -> IO ()
-setView nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setView nsTabViewItem value =
+  sendMessage nsTabViewItem setViewSelector (toNSView value)
 
 -- | The view controller wrapped by the tab view item. This property must be set if the tab view item will be added to an NSTabViewController, but can also be used if the tab view item is added to an NSTabView.  If this is set, the tab view item will forward @-view@ calls onto the viewController. Setting a viewController will also set the following properties on the tab view item: @-identifier@ from the address of the viewController, @-label@ from the viewController's title, and @-image@ based on the classname as the view controller. An image named "ViewControllerClassName-TabViewItem" will be searched for first, followed by "ViewControllerClassName". It will search first using +[NSImage imageNamed:], then in @viewController.nibBundle,@ and lastly in the bundle containing the view controller's class. As defined by: -[NSImage imageNamed:imageName], -[viewController.nibBundle imageForResource:imageName], -[[NSBundle bundleForClass:[viewController class]] imageForResource:imageName]. One pass with imageName as [NSStringFromClass([viewController class]) stringByAppendingString:"-TabViewItem"], followed by imageName as NSStringFromClass([viewController class]).
 --
 -- ObjC selector: @- viewController@
 viewController :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSViewController)
-viewController nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "viewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewController nsTabViewItem =
+  sendMessage nsTabViewItem viewControllerSelector
 
 -- | The view controller wrapped by the tab view item. This property must be set if the tab view item will be added to an NSTabViewController, but can also be used if the tab view item is added to an NSTabView.  If this is set, the tab view item will forward @-view@ calls onto the viewController. Setting a viewController will also set the following properties on the tab view item: @-identifier@ from the address of the viewController, @-label@ from the viewController's title, and @-image@ based on the classname as the view controller. An image named "ViewControllerClassName-TabViewItem" will be searched for first, followed by "ViewControllerClassName". It will search first using +[NSImage imageNamed:], then in @viewController.nibBundle,@ and lastly in the bundle containing the view controller's class. As defined by: -[NSImage imageNamed:imageName], -[viewController.nibBundle imageForResource:imageName], -[[NSBundle bundleForClass:[viewController class]] imageForResource:imageName]. One pass with imageName as [NSStringFromClass([viewController class]) stringByAppendingString:"-TabViewItem"], followed by imageName as NSStringFromClass([viewController class]).
 --
 -- ObjC selector: @- setViewController:@
 setViewController :: (IsNSTabViewItem nsTabViewItem, IsNSViewController value) => nsTabViewItem -> value -> IO ()
-setViewController nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setViewController nsTabViewItem value =
+  sendMessage nsTabViewItem setViewControllerSelector (toNSViewController value)
 
 -- | @- tabState@
 tabState :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO NSTabState
-tabState nsTabViewItem  =
-    fmap (coerce :: CULong -> NSTabState) $ sendMsg nsTabViewItem (mkSelector "tabState") retCULong []
+tabState nsTabViewItem =
+  sendMessage nsTabViewItem tabStateSelector
 
 -- | @- tabView@
 tabView :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSTabView)
-tabView nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "tabView") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabView nsTabViewItem =
+  sendMessage nsTabViewItem tabViewSelector
 
 -- | @- initialFirstResponder@
 initialFirstResponder :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSView)
-initialFirstResponder nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "initialFirstResponder") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialFirstResponder nsTabViewItem =
+  sendOwnedMessage nsTabViewItem initialFirstResponderSelector
 
 -- | @- setInitialFirstResponder:@
 setInitialFirstResponder :: (IsNSTabViewItem nsTabViewItem, IsNSView value) => nsTabViewItem -> value -> IO ()
-setInitialFirstResponder nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setInitialFirstResponder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialFirstResponder nsTabViewItem value =
+  sendMessage nsTabViewItem setInitialFirstResponderSelector (toNSView value)
 
 -- | @- toolTip@
 toolTip :: IsNSTabViewItem nsTabViewItem => nsTabViewItem -> IO (Id NSString)
-toolTip nsTabViewItem  =
-    sendMsg nsTabViewItem (mkSelector "toolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolTip nsTabViewItem =
+  sendMessage nsTabViewItem toolTipSelector
 
 -- | @- setToolTip:@
 setToolTip :: (IsNSTabViewItem nsTabViewItem, IsNSString value) => nsTabViewItem -> value -> IO ()
-setToolTip nsTabViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabViewItem (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToolTip nsTabViewItem value =
+  sendMessage nsTabViewItem setToolTipSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tabViewItemWithViewController:@
-tabViewItemWithViewControllerSelector :: Selector
+tabViewItemWithViewControllerSelector :: Selector '[Id NSViewController] (Id NSTabViewItem)
 tabViewItemWithViewControllerSelector = mkSelector "tabViewItemWithViewController:"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[RawId] (Id NSTabViewItem)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @drawLabel:inRect:@
-drawLabel_inRectSelector :: Selector
+drawLabel_inRectSelector :: Selector '[Bool, NSRect] ()
 drawLabel_inRectSelector = mkSelector "drawLabel:inRect:"
 
 -- | @Selector@ for @sizeOfLabel:@
-sizeOfLabelSelector :: Selector
+sizeOfLabelSelector :: Selector '[Bool] NSSize
 sizeOfLabelSelector = mkSelector "sizeOfLabel:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[RawId] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @setView:@
-setViewSelector :: Selector
+setViewSelector :: Selector '[Id NSView] ()
 setViewSelector = mkSelector "setView:"
 
 -- | @Selector@ for @viewController@
-viewControllerSelector :: Selector
+viewControllerSelector :: Selector '[] (Id NSViewController)
 viewControllerSelector = mkSelector "viewController"
 
 -- | @Selector@ for @setViewController:@
-setViewControllerSelector :: Selector
+setViewControllerSelector :: Selector '[Id NSViewController] ()
 setViewControllerSelector = mkSelector "setViewController:"
 
 -- | @Selector@ for @tabState@
-tabStateSelector :: Selector
+tabStateSelector :: Selector '[] NSTabState
 tabStateSelector = mkSelector "tabState"
 
 -- | @Selector@ for @tabView@
-tabViewSelector :: Selector
+tabViewSelector :: Selector '[] (Id NSTabView)
 tabViewSelector = mkSelector "tabView"
 
 -- | @Selector@ for @initialFirstResponder@
-initialFirstResponderSelector :: Selector
+initialFirstResponderSelector :: Selector '[] (Id NSView)
 initialFirstResponderSelector = mkSelector "initialFirstResponder"
 
 -- | @Selector@ for @setInitialFirstResponder:@
-setInitialFirstResponderSelector :: Selector
+setInitialFirstResponderSelector :: Selector '[Id NSView] ()
 setInitialFirstResponderSelector = mkSelector "setInitialFirstResponder:"
 
 -- | @Selector@ for @toolTip@
-toolTipSelector :: Selector
+toolTipSelector :: Selector '[] (Id NSString)
 toolTipSelector = mkSelector "toolTip"
 
 -- | @Selector@ for @setToolTip:@
-setToolTipSelector :: Selector
+setToolTipSelector :: Selector '[Id NSString] ()
 setToolTipSelector = mkSelector "setToolTip:"
 

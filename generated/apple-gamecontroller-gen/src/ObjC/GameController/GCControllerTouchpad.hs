@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,18 +22,18 @@ module ObjC.GameController.GCControllerTouchpad
   , touchState
   , reportsAbsoluteTouchSurfaceValues
   , setReportsAbsoluteTouchSurfaceValues
-  , setValueForXAxis_yAxis_touchDown_buttonValueSelector
   , buttonSelector
-  , touchDownSelector
-  , setTouchDownSelector
-  , touchMovedSelector
-  , setTouchMovedSelector
-  , touchUpSelector
-  , setTouchUpSelector
-  , touchSurfaceSelector
-  , touchStateSelector
   , reportsAbsoluteTouchSurfaceValuesSelector
   , setReportsAbsoluteTouchSurfaceValuesSelector
+  , setTouchDownSelector
+  , setTouchMovedSelector
+  , setTouchUpSelector
+  , setValueForXAxis_yAxis_touchDown_buttonValueSelector
+  , touchDownSelector
+  , touchMovedSelector
+  , touchStateSelector
+  , touchSurfaceSelector
+  , touchUpSelector
 
   -- * Enum types
   , GCTouchState(GCTouchState)
@@ -42,15 +43,11 @@ module ObjC.GameController.GCControllerTouchpad
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,57 +65,57 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setValueForXAxis:yAxis:touchDown:buttonValue:@
 setValueForXAxis_yAxis_touchDown_buttonValue :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> CFloat -> CFloat -> Bool -> CFloat -> IO ()
-setValueForXAxis_yAxis_touchDown_buttonValue gcControllerTouchpad  xAxis yAxis touchDown buttonValue =
-    sendMsg gcControllerTouchpad (mkSelector "setValueForXAxis:yAxis:touchDown:buttonValue:") retVoid [argCFloat xAxis, argCFloat yAxis, argCULong (if touchDown then 1 else 0), argCFloat buttonValue]
+setValueForXAxis_yAxis_touchDown_buttonValue gcControllerTouchpad xAxis yAxis touchDown buttonValue =
+  sendMessage gcControllerTouchpad setValueForXAxis_yAxis_touchDown_buttonValueSelector xAxis yAxis touchDown buttonValue
 
 -- | Button is the button built into the touch surface.
 --
 -- ObjC selector: @- button@
 button :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO (Id GCControllerButtonInput)
-button gcControllerTouchpad  =
-    sendMsg gcControllerTouchpad (mkSelector "button") (retPtr retVoid) [] >>= retainedObject . castPtr
+button gcControllerTouchpad =
+  sendMessage gcControllerTouchpad buttonSelector
 
 -- | Called when a touch event begins on the touchpad.
 --
 -- ObjC selector: @- touchDown@
 touchDown :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO (Ptr ())
-touchDown gcControllerTouchpad  =
-    fmap castPtr $ sendMsg gcControllerTouchpad (mkSelector "touchDown") (retPtr retVoid) []
+touchDown gcControllerTouchpad =
+  sendMessage gcControllerTouchpad touchDownSelector
 
 -- | Called when a touch event begins on the touchpad.
 --
 -- ObjC selector: @- setTouchDown:@
 setTouchDown :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> Ptr () -> IO ()
-setTouchDown gcControllerTouchpad  value =
-    sendMsg gcControllerTouchpad (mkSelector "setTouchDown:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTouchDown gcControllerTouchpad value =
+  sendMessage gcControllerTouchpad setTouchDownSelector value
 
 -- | Called when a touch event continues on the touchpad, but not when it begins or ends.
 --
 -- ObjC selector: @- touchMoved@
 touchMoved :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO (Ptr ())
-touchMoved gcControllerTouchpad  =
-    fmap castPtr $ sendMsg gcControllerTouchpad (mkSelector "touchMoved") (retPtr retVoid) []
+touchMoved gcControllerTouchpad =
+  sendMessage gcControllerTouchpad touchMovedSelector
 
 -- | Called when a touch event continues on the touchpad, but not when it begins or ends.
 --
 -- ObjC selector: @- setTouchMoved:@
 setTouchMoved :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> Ptr () -> IO ()
-setTouchMoved gcControllerTouchpad  value =
-    sendMsg gcControllerTouchpad (mkSelector "setTouchMoved:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTouchMoved gcControllerTouchpad value =
+  sendMessage gcControllerTouchpad setTouchMovedSelector value
 
 -- | Called when a touch event ends on the touchpad.
 --
 -- ObjC selector: @- touchUp@
 touchUp :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO (Ptr ())
-touchUp gcControllerTouchpad  =
-    fmap castPtr $ sendMsg gcControllerTouchpad (mkSelector "touchUp") (retPtr retVoid) []
+touchUp gcControllerTouchpad =
+  sendMessage gcControllerTouchpad touchUpSelector
 
 -- | Called when a touch event ends on the touchpad.
 --
 -- ObjC selector: @- setTouchUp:@
 setTouchUp :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> Ptr () -> IO ()
-setTouchUp gcControllerTouchpad  value =
-    sendMsg gcControllerTouchpad (mkSelector "setTouchUp:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTouchUp gcControllerTouchpad value =
+  sendMessage gcControllerTouchpad setTouchUpSelector value
 
 -- | The touch surface is a 2-axis control that represents the position of a touch event on the touchpad.
 --
@@ -128,15 +125,15 @@ setTouchUp gcControllerTouchpad  value =
 --
 -- ObjC selector: @- touchSurface@
 touchSurface :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO (Id GCControllerDirectionPad)
-touchSurface gcControllerTouchpad  =
-    sendMsg gcControllerTouchpad (mkSelector "touchSurface") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchSurface gcControllerTouchpad =
+  sendMessage gcControllerTouchpad touchSurfaceSelector
 
 -- | Indicates the current state of the touch event on the touchpad.
 --
 -- ObjC selector: @- touchState@
 touchState :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO GCTouchState
-touchState gcControllerTouchpad  =
-    fmap (coerce :: CLong -> GCTouchState) $ sendMsg gcControllerTouchpad (mkSelector "touchState") retCLong []
+touchState gcControllerTouchpad =
+  sendMessage gcControllerTouchpad touchStateSelector
 
 -- | The touchpad can use the raw position values of its surface as D-pad values, or it can create a virtual dpad centered around the first contact point with the surface.
 --
@@ -148,8 +145,8 @@ touchState gcControllerTouchpad  =
 --
 -- ObjC selector: @- reportsAbsoluteTouchSurfaceValues@
 reportsAbsoluteTouchSurfaceValues :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> IO Bool
-reportsAbsoluteTouchSurfaceValues gcControllerTouchpad  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcControllerTouchpad (mkSelector "reportsAbsoluteTouchSurfaceValues") retCULong []
+reportsAbsoluteTouchSurfaceValues gcControllerTouchpad =
+  sendMessage gcControllerTouchpad reportsAbsoluteTouchSurfaceValuesSelector
 
 -- | The touchpad can use the raw position values of its surface as D-pad values, or it can create a virtual dpad centered around the first contact point with the surface.
 --
@@ -161,58 +158,58 @@ reportsAbsoluteTouchSurfaceValues gcControllerTouchpad  =
 --
 -- ObjC selector: @- setReportsAbsoluteTouchSurfaceValues:@
 setReportsAbsoluteTouchSurfaceValues :: IsGCControllerTouchpad gcControllerTouchpad => gcControllerTouchpad -> Bool -> IO ()
-setReportsAbsoluteTouchSurfaceValues gcControllerTouchpad  value =
-    sendMsg gcControllerTouchpad (mkSelector "setReportsAbsoluteTouchSurfaceValues:") retVoid [argCULong (if value then 1 else 0)]
+setReportsAbsoluteTouchSurfaceValues gcControllerTouchpad value =
+  sendMessage gcControllerTouchpad setReportsAbsoluteTouchSurfaceValuesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setValueForXAxis:yAxis:touchDown:buttonValue:@
-setValueForXAxis_yAxis_touchDown_buttonValueSelector :: Selector
+setValueForXAxis_yAxis_touchDown_buttonValueSelector :: Selector '[CFloat, CFloat, Bool, CFloat] ()
 setValueForXAxis_yAxis_touchDown_buttonValueSelector = mkSelector "setValueForXAxis:yAxis:touchDown:buttonValue:"
 
 -- | @Selector@ for @button@
-buttonSelector :: Selector
+buttonSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonSelector = mkSelector "button"
 
 -- | @Selector@ for @touchDown@
-touchDownSelector :: Selector
+touchDownSelector :: Selector '[] (Ptr ())
 touchDownSelector = mkSelector "touchDown"
 
 -- | @Selector@ for @setTouchDown:@
-setTouchDownSelector :: Selector
+setTouchDownSelector :: Selector '[Ptr ()] ()
 setTouchDownSelector = mkSelector "setTouchDown:"
 
 -- | @Selector@ for @touchMoved@
-touchMovedSelector :: Selector
+touchMovedSelector :: Selector '[] (Ptr ())
 touchMovedSelector = mkSelector "touchMoved"
 
 -- | @Selector@ for @setTouchMoved:@
-setTouchMovedSelector :: Selector
+setTouchMovedSelector :: Selector '[Ptr ()] ()
 setTouchMovedSelector = mkSelector "setTouchMoved:"
 
 -- | @Selector@ for @touchUp@
-touchUpSelector :: Selector
+touchUpSelector :: Selector '[] (Ptr ())
 touchUpSelector = mkSelector "touchUp"
 
 -- | @Selector@ for @setTouchUp:@
-setTouchUpSelector :: Selector
+setTouchUpSelector :: Selector '[Ptr ()] ()
 setTouchUpSelector = mkSelector "setTouchUp:"
 
 -- | @Selector@ for @touchSurface@
-touchSurfaceSelector :: Selector
+touchSurfaceSelector :: Selector '[] (Id GCControllerDirectionPad)
 touchSurfaceSelector = mkSelector "touchSurface"
 
 -- | @Selector@ for @touchState@
-touchStateSelector :: Selector
+touchStateSelector :: Selector '[] GCTouchState
 touchStateSelector = mkSelector "touchState"
 
 -- | @Selector@ for @reportsAbsoluteTouchSurfaceValues@
-reportsAbsoluteTouchSurfaceValuesSelector :: Selector
+reportsAbsoluteTouchSurfaceValuesSelector :: Selector '[] Bool
 reportsAbsoluteTouchSurfaceValuesSelector = mkSelector "reportsAbsoluteTouchSurfaceValues"
 
 -- | @Selector@ for @setReportsAbsoluteTouchSurfaceValues:@
-setReportsAbsoluteTouchSurfaceValuesSelector :: Selector
+setReportsAbsoluteTouchSurfaceValuesSelector :: Selector '[Bool] ()
 setReportsAbsoluteTouchSurfaceValuesSelector = mkSelector "setReportsAbsoluteTouchSurfaceValues:"
 

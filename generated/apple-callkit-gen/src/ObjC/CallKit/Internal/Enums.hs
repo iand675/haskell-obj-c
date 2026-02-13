@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CallKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CXCallDirectoryEnabledStatus@
 newtype CXCallDirectoryEnabledStatus = CXCallDirectoryEnabledStatus CLong
@@ -24,6 +27,16 @@ pattern CXCallDirectoryEnabledStatusDisabled = CXCallDirectoryEnabledStatus 1
 
 pattern CXCallDirectoryEnabledStatusEnabled :: CXCallDirectoryEnabledStatus
 pattern CXCallDirectoryEnabledStatusEnabled = CXCallDirectoryEnabledStatus 2
+
+instance ObjCArgument CXCallDirectoryEnabledStatus where
+  withObjCArg (CXCallDirectoryEnabledStatus x) k = k (argCLong x)
+
+instance ObjCReturn CXCallDirectoryEnabledStatus where
+  type RawReturn CXCallDirectoryEnabledStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXCallDirectoryEnabledStatus x)
+  fromOwned x = pure (CXCallDirectoryEnabledStatus x)
 
 -- | @CXCallEndedReason@
 newtype CXCallEndedReason = CXCallEndedReason CLong
@@ -45,6 +58,16 @@ pattern CXCallEndedReasonAnsweredElsewhere = CXCallEndedReason 4
 pattern CXCallEndedReasonDeclinedElsewhere :: CXCallEndedReason
 pattern CXCallEndedReasonDeclinedElsewhere = CXCallEndedReason 5
 
+instance ObjCArgument CXCallEndedReason where
+  withObjCArg (CXCallEndedReason x) k = k (argCLong x)
+
+instance ObjCReturn CXCallEndedReason where
+  type RawReturn CXCallEndedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXCallEndedReason x)
+  fromOwned x = pure (CXCallEndedReason x)
+
 -- | @CXErrorCode@
 newtype CXErrorCode = CXErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -61,6 +84,16 @@ pattern CXErrorCodeInvalidArgument = CXErrorCode 2
 
 pattern CXErrorCodeMissingVoIPBackgroundMode :: CXErrorCode
 pattern CXErrorCodeMissingVoIPBackgroundMode = CXErrorCode 3
+
+instance ObjCArgument CXErrorCode where
+  withObjCArg (CXErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CXErrorCode where
+  type RawReturn CXErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXErrorCode x)
+  fromOwned x = pure (CXErrorCode x)
 
 -- | @CXErrorCodeCallDirectoryManagerError@
 newtype CXErrorCodeCallDirectoryManagerError = CXErrorCodeCallDirectoryManagerError CLong
@@ -94,6 +127,16 @@ pattern CXErrorCodeCallDirectoryManagerErrorCurrentlyLoading = CXErrorCodeCallDi
 pattern CXErrorCodeCallDirectoryManagerErrorUnexpectedIncrementalRemoval :: CXErrorCodeCallDirectoryManagerError
 pattern CXErrorCodeCallDirectoryManagerErrorUnexpectedIncrementalRemoval = CXErrorCodeCallDirectoryManagerError 8
 
+instance ObjCArgument CXErrorCodeCallDirectoryManagerError where
+  withObjCArg (CXErrorCodeCallDirectoryManagerError x) k = k (argCLong x)
+
+instance ObjCReturn CXErrorCodeCallDirectoryManagerError where
+  type RawReturn CXErrorCodeCallDirectoryManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXErrorCodeCallDirectoryManagerError x)
+  fromOwned x = pure (CXErrorCodeCallDirectoryManagerError x)
+
 -- | @CXErrorCodeIncomingCallError@
 newtype CXErrorCodeIncomingCallError = CXErrorCodeIncomingCallError CLong
   deriving stock (Eq, Ord, Show)
@@ -123,6 +166,16 @@ pattern CXErrorCodeIncomingCallErrorCallIsProtected = CXErrorCodeIncomingCallErr
 pattern CXErrorCodeIncomingCallErrorFilteredBySensitiveParticipants :: CXErrorCodeIncomingCallError
 pattern CXErrorCodeIncomingCallErrorFilteredBySensitiveParticipants = CXErrorCodeIncomingCallError 7
 
+instance ObjCArgument CXErrorCodeIncomingCallError where
+  withObjCArg (CXErrorCodeIncomingCallError x) k = k (argCLong x)
+
+instance ObjCReturn CXErrorCodeIncomingCallError where
+  type RawReturn CXErrorCodeIncomingCallError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXErrorCodeIncomingCallError x)
+  fromOwned x = pure (CXErrorCodeIncomingCallError x)
+
 -- | @CXErrorCodeNotificationServiceExtensionError@
 newtype CXErrorCodeNotificationServiceExtensionError = CXErrorCodeNotificationServiceExtensionError CLong
   deriving stock (Eq, Ord, Show)
@@ -136,6 +189,16 @@ pattern CXErrorCodeNotificationServiceExtensionErrorInvalidClientProcess = CXErr
 
 pattern CXErrorCodeNotificationServiceExtensionErrorMissingNotificationFilteringEntitlement :: CXErrorCodeNotificationServiceExtensionError
 pattern CXErrorCodeNotificationServiceExtensionErrorMissingNotificationFilteringEntitlement = CXErrorCodeNotificationServiceExtensionError 2
+
+instance ObjCArgument CXErrorCodeNotificationServiceExtensionError where
+  withObjCArg (CXErrorCodeNotificationServiceExtensionError x) k = k (argCLong x)
+
+instance ObjCReturn CXErrorCodeNotificationServiceExtensionError where
+  type RawReturn CXErrorCodeNotificationServiceExtensionError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXErrorCodeNotificationServiceExtensionError x)
+  fromOwned x = pure (CXErrorCodeNotificationServiceExtensionError x)
 
 -- | @CXErrorCodeRequestTransactionError@
 newtype CXErrorCodeRequestTransactionError = CXErrorCodeRequestTransactionError CLong
@@ -169,6 +232,16 @@ pattern CXErrorCodeRequestTransactionErrorMaximumCallGroupsReached = CXErrorCode
 pattern CXErrorCodeRequestTransactionErrorCallIsProtected :: CXErrorCodeRequestTransactionError
 pattern CXErrorCodeRequestTransactionErrorCallIsProtected = CXErrorCodeRequestTransactionError 8
 
+instance ObjCArgument CXErrorCodeRequestTransactionError where
+  withObjCArg (CXErrorCodeRequestTransactionError x) k = k (argCLong x)
+
+instance ObjCReturn CXErrorCodeRequestTransactionError where
+  type RawReturn CXErrorCodeRequestTransactionError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXErrorCodeRequestTransactionError x)
+  fromOwned x = pure (CXErrorCodeRequestTransactionError x)
+
 -- | @CXHandleType@
 newtype CXHandleType = CXHandleType CLong
   deriving stock (Eq, Ord, Show)
@@ -183,6 +256,16 @@ pattern CXHandleTypePhoneNumber = CXHandleType 2
 pattern CXHandleTypeEmailAddress :: CXHandleType
 pattern CXHandleTypeEmailAddress = CXHandleType 3
 
+instance ObjCArgument CXHandleType where
+  withObjCArg (CXHandleType x) k = k (argCLong x)
+
+instance ObjCReturn CXHandleType where
+  type RawReturn CXHandleType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXHandleType x)
+  fromOwned x = pure (CXHandleType x)
+
 -- | @CXPlayDTMFCallActionType@
 newtype CXPlayDTMFCallActionType = CXPlayDTMFCallActionType CLong
   deriving stock (Eq, Ord, Show)
@@ -196,3 +279,13 @@ pattern CXPlayDTMFCallActionTypeSoftPause = CXPlayDTMFCallActionType 2
 
 pattern CXPlayDTMFCallActionTypeHardPause :: CXPlayDTMFCallActionType
 pattern CXPlayDTMFCallActionTypeHardPause = CXPlayDTMFCallActionType 3
+
+instance ObjCArgument CXPlayDTMFCallActionType where
+  withObjCArg (CXPlayDTMFCallActionType x) k = k (argCLong x)
+
+instance ObjCReturn CXPlayDTMFCallActionType where
+  type RawReturn CXPlayDTMFCallActionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CXPlayDTMFCallActionType x)
+  fromOwned x = pure (CXPlayDTMFCallActionType x)

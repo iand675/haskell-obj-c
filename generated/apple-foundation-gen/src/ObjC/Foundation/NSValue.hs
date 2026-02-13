@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.Foundation.NSValue
   , rangeValue
   , nonretainedObjectValue
   , pointerValue
+  , edgeInsetsValueSelector
+  , getValueSelector
   , getValue_sizeSelector
   , initWithBytes_objCTypeSelector
   , initWithCoderSelector
-  , valueWithPointSelector
-  , valueWithSizeSelector
-  , valueWithRectSelector
-  , valueWithEdgeInsetsSelector
-  , valueWithRangeSelector
-  , getValueSelector
-  , valueWithNonretainedObjectSelector
-  , valueWithPointerSelector
   , isEqualToValueSelector
-  , valueWithBytes_objCTypeSelector
-  , value_withObjCTypeSelector
+  , nonretainedObjectValueSelector
   , objCTypeSelector
   , pointValueSelector
-  , sizeValueSelector
-  , rectValueSelector
-  , edgeInsetsValueSelector
-  , rangeValueSelector
-  , nonretainedObjectValueSelector
   , pointerValueSelector
+  , rangeValueSelector
+  , rectValueSelector
+  , sizeValueSelector
+  , valueWithBytes_objCTypeSelector
+  , valueWithEdgeInsetsSelector
+  , valueWithNonretainedObjectSelector
+  , valueWithPointSelector
+  , valueWithPointerSelector
+  , valueWithRangeSelector
+  , valueWithRectSelector
+  , valueWithSizeSelector
+  , value_withObjCTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,223 +68,221 @@ import ObjC.Foundation.Internal.Structs
 
 -- | @- getValue:size:@
 getValue_size :: IsNSValue nsValue => nsValue -> Ptr () -> CULong -> IO ()
-getValue_size nsValue  value size =
-    sendMsg nsValue (mkSelector "getValue:size:") retVoid [argPtr value, argCULong size]
+getValue_size nsValue value size =
+  sendMessage nsValue getValue_sizeSelector value size
 
 -- | @- initWithBytes:objCType:@
 initWithBytes_objCType :: IsNSValue nsValue => nsValue -> Const (Ptr ()) -> Const (Ptr CChar) -> IO (Id NSValue)
-initWithBytes_objCType nsValue  value type_ =
-    sendMsg nsValue (mkSelector "initWithBytes:objCType:") (retPtr retVoid) [argPtr (unConst value), argPtr (unConst type_)] >>= ownedObject . castPtr
+initWithBytes_objCType nsValue value type_ =
+  sendOwnedMessage nsValue initWithBytes_objCTypeSelector value type_
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSValue nsValue, IsNSCoder coder) => nsValue -> coder -> IO (Id NSValue)
-initWithCoder nsValue  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsValue (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsValue coder =
+  sendOwnedMessage nsValue initWithCoderSelector (toNSCoder coder)
 
 -- | @+ valueWithPoint:@
 valueWithPoint :: NSPoint -> IO (Id NSValue)
 valueWithPoint point =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithPoint:") (retPtr retVoid) [argNSPoint point] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithPointSelector point
 
 -- | @+ valueWithSize:@
 valueWithSize :: NSSize -> IO (Id NSValue)
 valueWithSize size =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithSize:") (retPtr retVoid) [argNSSize size] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithSizeSelector size
 
 -- | @+ valueWithRect:@
 valueWithRect :: NSRect -> IO (Id NSValue)
 valueWithRect rect =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithRectSelector rect
 
 -- | @+ valueWithEdgeInsets:@
 valueWithEdgeInsets :: NSEdgeInsets -> IO (Id NSValue)
 valueWithEdgeInsets insets =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithEdgeInsets:") (retPtr retVoid) [argNSEdgeInsets insets] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithEdgeInsetsSelector insets
 
 -- | @+ valueWithRange:@
 valueWithRange :: NSRange -> IO (Id NSValue)
 valueWithRange range =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithRangeSelector range
 
 -- | @- getValue:@
 getValue :: IsNSValue nsValue => nsValue -> Ptr () -> IO ()
-getValue nsValue  value =
-    sendMsg nsValue (mkSelector "getValue:") retVoid [argPtr value]
+getValue nsValue value =
+  sendMessage nsValue getValueSelector value
 
 -- | @+ valueWithNonretainedObject:@
 valueWithNonretainedObject :: RawId -> IO (Id NSValue)
 valueWithNonretainedObject anObject =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithNonretainedObject:") (retPtr retVoid) [argPtr (castPtr (unRawId anObject) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNonretainedObjectSelector anObject
 
 -- | @+ valueWithPointer:@
 valueWithPointer :: Const (Ptr ()) -> IO (Id NSValue)
 valueWithPointer pointer =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithPointer:") (retPtr retVoid) [argPtr (unConst pointer)] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithPointerSelector pointer
 
 -- | @- isEqualToValue:@
 isEqualToValue :: (IsNSValue nsValue, IsNSValue value) => nsValue -> value -> IO Bool
-isEqualToValue nsValue  value =
-  withObjCPtr value $ \raw_value ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsValue (mkSelector "isEqualToValue:") retCULong [argPtr (castPtr raw_value :: Ptr ())]
+isEqualToValue nsValue value =
+  sendMessage nsValue isEqualToValueSelector (toNSValue value)
 
 -- | @+ valueWithBytes:objCType:@
 valueWithBytes_objCType :: Const (Ptr ()) -> Const (Ptr CChar) -> IO (Id NSValue)
 valueWithBytes_objCType value type_ =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "valueWithBytes:objCType:") (retPtr retVoid) [argPtr (unConst value), argPtr (unConst type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithBytes_objCTypeSelector value type_
 
 -- | @+ value:withObjCType:@
 value_withObjCType :: Const (Ptr ()) -> Const (Ptr CChar) -> IO (Id NSValue)
 value_withObjCType value type_ =
   do
     cls' <- getRequiredClass "NSValue"
-    sendClassMsg cls' (mkSelector "value:withObjCType:") (retPtr retVoid) [argPtr (unConst value), argPtr (unConst type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' value_withObjCTypeSelector value type_
 
 -- | @- objCType@
 objCType :: IsNSValue nsValue => nsValue -> IO (Ptr CChar)
-objCType nsValue  =
-    fmap castPtr $ sendMsg nsValue (mkSelector "objCType") (retPtr retVoid) []
+objCType nsValue =
+  sendMessage nsValue objCTypeSelector
 
 -- | @- pointValue@
 pointValue :: IsNSValue nsValue => nsValue -> IO NSPoint
-pointValue nsValue  =
-    sendMsgStret nsValue (mkSelector "pointValue") retNSPoint []
+pointValue nsValue =
+  sendMessage nsValue pointValueSelector
 
 -- | @- sizeValue@
 sizeValue :: IsNSValue nsValue => nsValue -> IO NSSize
-sizeValue nsValue  =
-    sendMsgStret nsValue (mkSelector "sizeValue") retNSSize []
+sizeValue nsValue =
+  sendMessage nsValue sizeValueSelector
 
 -- | @- rectValue@
 rectValue :: IsNSValue nsValue => nsValue -> IO NSRect
-rectValue nsValue  =
-    sendMsgStret nsValue (mkSelector "rectValue") retNSRect []
+rectValue nsValue =
+  sendMessage nsValue rectValueSelector
 
 -- | @- edgeInsetsValue@
 edgeInsetsValue :: IsNSValue nsValue => nsValue -> IO NSEdgeInsets
-edgeInsetsValue nsValue  =
-    sendMsgStret nsValue (mkSelector "edgeInsetsValue") retNSEdgeInsets []
+edgeInsetsValue nsValue =
+  sendMessage nsValue edgeInsetsValueSelector
 
 -- | @- rangeValue@
 rangeValue :: IsNSValue nsValue => nsValue -> IO NSRange
-rangeValue nsValue  =
-    sendMsgStret nsValue (mkSelector "rangeValue") retNSRange []
+rangeValue nsValue =
+  sendMessage nsValue rangeValueSelector
 
 -- | @- nonretainedObjectValue@
 nonretainedObjectValue :: IsNSValue nsValue => nsValue -> IO RawId
-nonretainedObjectValue nsValue  =
-    fmap (RawId . castPtr) $ sendMsg nsValue (mkSelector "nonretainedObjectValue") (retPtr retVoid) []
+nonretainedObjectValue nsValue =
+  sendMessage nsValue nonretainedObjectValueSelector
 
 -- | @- pointerValue@
 pointerValue :: IsNSValue nsValue => nsValue -> IO (Ptr ())
-pointerValue nsValue  =
-    fmap castPtr $ sendMsg nsValue (mkSelector "pointerValue") (retPtr retVoid) []
+pointerValue nsValue =
+  sendMessage nsValue pointerValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getValue:size:@
-getValue_sizeSelector :: Selector
+getValue_sizeSelector :: Selector '[Ptr (), CULong] ()
 getValue_sizeSelector = mkSelector "getValue:size:"
 
 -- | @Selector@ for @initWithBytes:objCType:@
-initWithBytes_objCTypeSelector :: Selector
+initWithBytes_objCTypeSelector :: Selector '[Const (Ptr ()), Const (Ptr CChar)] (Id NSValue)
 initWithBytes_objCTypeSelector = mkSelector "initWithBytes:objCType:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSValue)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @valueWithPoint:@
-valueWithPointSelector :: Selector
+valueWithPointSelector :: Selector '[NSPoint] (Id NSValue)
 valueWithPointSelector = mkSelector "valueWithPoint:"
 
 -- | @Selector@ for @valueWithSize:@
-valueWithSizeSelector :: Selector
+valueWithSizeSelector :: Selector '[NSSize] (Id NSValue)
 valueWithSizeSelector = mkSelector "valueWithSize:"
 
 -- | @Selector@ for @valueWithRect:@
-valueWithRectSelector :: Selector
+valueWithRectSelector :: Selector '[NSRect] (Id NSValue)
 valueWithRectSelector = mkSelector "valueWithRect:"
 
 -- | @Selector@ for @valueWithEdgeInsets:@
-valueWithEdgeInsetsSelector :: Selector
+valueWithEdgeInsetsSelector :: Selector '[NSEdgeInsets] (Id NSValue)
 valueWithEdgeInsetsSelector = mkSelector "valueWithEdgeInsets:"
 
 -- | @Selector@ for @valueWithRange:@
-valueWithRangeSelector :: Selector
+valueWithRangeSelector :: Selector '[NSRange] (Id NSValue)
 valueWithRangeSelector = mkSelector "valueWithRange:"
 
 -- | @Selector@ for @getValue:@
-getValueSelector :: Selector
+getValueSelector :: Selector '[Ptr ()] ()
 getValueSelector = mkSelector "getValue:"
 
 -- | @Selector@ for @valueWithNonretainedObject:@
-valueWithNonretainedObjectSelector :: Selector
+valueWithNonretainedObjectSelector :: Selector '[RawId] (Id NSValue)
 valueWithNonretainedObjectSelector = mkSelector "valueWithNonretainedObject:"
 
 -- | @Selector@ for @valueWithPointer:@
-valueWithPointerSelector :: Selector
+valueWithPointerSelector :: Selector '[Const (Ptr ())] (Id NSValue)
 valueWithPointerSelector = mkSelector "valueWithPointer:"
 
 -- | @Selector@ for @isEqualToValue:@
-isEqualToValueSelector :: Selector
+isEqualToValueSelector :: Selector '[Id NSValue] Bool
 isEqualToValueSelector = mkSelector "isEqualToValue:"
 
 -- | @Selector@ for @valueWithBytes:objCType:@
-valueWithBytes_objCTypeSelector :: Selector
+valueWithBytes_objCTypeSelector :: Selector '[Const (Ptr ()), Const (Ptr CChar)] (Id NSValue)
 valueWithBytes_objCTypeSelector = mkSelector "valueWithBytes:objCType:"
 
 -- | @Selector@ for @value:withObjCType:@
-value_withObjCTypeSelector :: Selector
+value_withObjCTypeSelector :: Selector '[Const (Ptr ()), Const (Ptr CChar)] (Id NSValue)
 value_withObjCTypeSelector = mkSelector "value:withObjCType:"
 
 -- | @Selector@ for @objCType@
-objCTypeSelector :: Selector
+objCTypeSelector :: Selector '[] (Ptr CChar)
 objCTypeSelector = mkSelector "objCType"
 
 -- | @Selector@ for @pointValue@
-pointValueSelector :: Selector
+pointValueSelector :: Selector '[] NSPoint
 pointValueSelector = mkSelector "pointValue"
 
 -- | @Selector@ for @sizeValue@
-sizeValueSelector :: Selector
+sizeValueSelector :: Selector '[] NSSize
 sizeValueSelector = mkSelector "sizeValue"
 
 -- | @Selector@ for @rectValue@
-rectValueSelector :: Selector
+rectValueSelector :: Selector '[] NSRect
 rectValueSelector = mkSelector "rectValue"
 
 -- | @Selector@ for @edgeInsetsValue@
-edgeInsetsValueSelector :: Selector
+edgeInsetsValueSelector :: Selector '[] NSEdgeInsets
 edgeInsetsValueSelector = mkSelector "edgeInsetsValue"
 
 -- | @Selector@ for @rangeValue@
-rangeValueSelector :: Selector
+rangeValueSelector :: Selector '[] NSRange
 rangeValueSelector = mkSelector "rangeValue"
 
 -- | @Selector@ for @nonretainedObjectValue@
-nonretainedObjectValueSelector :: Selector
+nonretainedObjectValueSelector :: Selector '[] RawId
 nonretainedObjectValueSelector = mkSelector "nonretainedObjectValue"
 
 -- | @Selector@ for @pointerValue@
-pointerValueSelector :: Selector
+pointerValueSelector :: Selector '[] (Ptr ())
 pointerValueSelector = mkSelector "pointerValue"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Virtualization.VZSingleDirectoryShare
   , IsVZSingleDirectoryShare(..)
   , initWithDirectory
   , directory
-  , initWithDirectorySelector
   , directorySelector
+  , initWithDirectorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,26 +40,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDirectory:@
 initWithDirectory :: (IsVZSingleDirectoryShare vzSingleDirectoryShare, IsVZSharedDirectory directory) => vzSingleDirectoryShare -> directory -> IO (Id VZSingleDirectoryShare)
-initWithDirectory vzSingleDirectoryShare  directory =
-  withObjCPtr directory $ \raw_directory ->
-      sendMsg vzSingleDirectoryShare (mkSelector "initWithDirectory:") (retPtr retVoid) [argPtr (castPtr raw_directory :: Ptr ())] >>= ownedObject . castPtr
+initWithDirectory vzSingleDirectoryShare directory =
+  sendOwnedMessage vzSingleDirectoryShare initWithDirectorySelector (toVZSharedDirectory directory)
 
 -- | Directory on the host to share.
 --
 -- ObjC selector: @- directory@
 directory :: IsVZSingleDirectoryShare vzSingleDirectoryShare => vzSingleDirectoryShare -> IO (Id VZSharedDirectory)
-directory vzSingleDirectoryShare  =
-    sendMsg vzSingleDirectoryShare (mkSelector "directory") (retPtr retVoid) [] >>= retainedObject . castPtr
+directory vzSingleDirectoryShare =
+  sendMessage vzSingleDirectoryShare directorySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDirectory:@
-initWithDirectorySelector :: Selector
+initWithDirectorySelector :: Selector '[Id VZSharedDirectory] (Id VZSingleDirectoryShare)
 initWithDirectorySelector = mkSelector "initWithDirectory:"
 
 -- | @Selector@ for @directory@
-directorySelector :: Selector
+directorySelector :: Selector '[] (Id VZSharedDirectory)
 directorySelector = mkSelector "directory"
 

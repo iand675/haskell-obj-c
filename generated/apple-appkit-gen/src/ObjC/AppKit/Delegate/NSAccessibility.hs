@@ -49,7 +49,7 @@ data NSAccessibilityOverrides = NSAccessibilityOverrides
   , _accessibilityPerformShowAlternateUI :: !(Maybe (IO Bool))
   , _accessibilityPerformShowDefaultUI :: !(Maybe (IO Bool))
   , _accessibilityPerformShowMenu :: !(Maybe (IO Bool))
-  , _isAccessibilitySelectorAllowed :: !(Maybe (Selector -> IO Bool))
+  , _isAccessibilitySelectorAllowed :: !(Maybe (Sel -> IO Bool))
   , _accessibilityElement :: !(Maybe (IO Bool))
   , _setAccessibilityElement :: !(Maybe (Bool -> IO ()))
   , _accessibilityFocused :: !(Maybe (IO Bool))

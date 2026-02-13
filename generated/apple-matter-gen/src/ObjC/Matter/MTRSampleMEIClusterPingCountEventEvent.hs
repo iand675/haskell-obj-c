@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRSampleMEIClusterPingCountEventEvent
   , fabricIndex
   , setFabricIndex
   , countSelector
-  , setCountSelector
   , fabricIndexSelector
+  , setCountSelector
   , setFabricIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- count@
 count :: IsMTRSampleMEIClusterPingCountEventEvent mtrSampleMEIClusterPingCountEventEvent => mtrSampleMEIClusterPingCountEventEvent -> IO (Id NSNumber)
-count mtrSampleMEIClusterPingCountEventEvent  =
-    sendMsg mtrSampleMEIClusterPingCountEventEvent (mkSelector "count") (retPtr retVoid) [] >>= retainedObject . castPtr
+count mtrSampleMEIClusterPingCountEventEvent =
+  sendMessage mtrSampleMEIClusterPingCountEventEvent countSelector
 
 -- | @- setCount:@
 setCount :: (IsMTRSampleMEIClusterPingCountEventEvent mtrSampleMEIClusterPingCountEventEvent, IsNSNumber value) => mtrSampleMEIClusterPingCountEventEvent -> value -> IO ()
-setCount mtrSampleMEIClusterPingCountEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSampleMEIClusterPingCountEventEvent (mkSelector "setCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCount mtrSampleMEIClusterPingCountEventEvent value =
+  sendMessage mtrSampleMEIClusterPingCountEventEvent setCountSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRSampleMEIClusterPingCountEventEvent mtrSampleMEIClusterPingCountEventEvent => mtrSampleMEIClusterPingCountEventEvent -> IO (Id NSNumber)
-fabricIndex mtrSampleMEIClusterPingCountEventEvent  =
-    sendMsg mtrSampleMEIClusterPingCountEventEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrSampleMEIClusterPingCountEventEvent =
+  sendMessage mtrSampleMEIClusterPingCountEventEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRSampleMEIClusterPingCountEventEvent mtrSampleMEIClusterPingCountEventEvent, IsNSNumber value) => mtrSampleMEIClusterPingCountEventEvent -> value -> IO ()
-setFabricIndex mtrSampleMEIClusterPingCountEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSampleMEIClusterPingCountEventEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrSampleMEIClusterPingCountEventEvent value =
+  sendMessage mtrSampleMEIClusterPingCountEventEvent setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] (Id NSNumber)
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @setCount:@
-setCountSelector :: Selector
+setCountSelector :: Selector '[Id NSNumber] ()
 setCountSelector = mkSelector "setCount:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

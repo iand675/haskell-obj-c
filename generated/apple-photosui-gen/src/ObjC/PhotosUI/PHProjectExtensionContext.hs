@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.PhotosUI.PHProjectExtensionContext
   , updatedProjectInfoFromProjectInfo_completion
   , photoLibrary
   , project
-  , showEditorForAssetSelector
-  , updatedProjectInfoFromProjectInfo_completionSelector
   , photoLibrarySelector
   , projectSelector
+  , showEditorForAssetSelector
+  , updatedProjectInfoFromProjectInfo_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,9 +43,8 @@ import ObjC.Photos.Internal.Classes
 --
 -- ObjC selector: @- showEditorForAsset:@
 showEditorForAsset :: (IsPHProjectExtensionContext phProjectExtensionContext, IsPHAsset asset) => phProjectExtensionContext -> asset -> IO ()
-showEditorForAsset phProjectExtensionContext  asset =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg phProjectExtensionContext (mkSelector "showEditorForAsset:") retVoid [argPtr (castPtr raw_asset :: Ptr ())]
+showEditorForAsset phProjectExtensionContext asset =
+  sendMessage phProjectExtensionContext showEditorForAssetSelector (toPHAsset asset)
 
 -- | Creates an updated PHProjectInfo from the given projectInfo and the current assets in the PHProject. If the existingProjectInfo is not nil the extension sections will be update to reflect any deletions from the photo library and a new section is appended for any assets in the project which weren't referenced in existingProjectInfo.
 --
@@ -60,37 +56,36 @@ showEditorForAsset phProjectExtensionContext  asset =
 --
 -- ObjC selector: @- updatedProjectInfoFromProjectInfo:completion:@
 updatedProjectInfoFromProjectInfo_completion :: (IsPHProjectExtensionContext phProjectExtensionContext, IsPHProjectInfo existingProjectInfo) => phProjectExtensionContext -> existingProjectInfo -> Ptr () -> IO (Id NSProgress)
-updatedProjectInfoFromProjectInfo_completion phProjectExtensionContext  existingProjectInfo completion =
-  withObjCPtr existingProjectInfo $ \raw_existingProjectInfo ->
-      sendMsg phProjectExtensionContext (mkSelector "updatedProjectInfoFromProjectInfo:completion:") (retPtr retVoid) [argPtr (castPtr raw_existingProjectInfo :: Ptr ()), argPtr (castPtr completion :: Ptr ())] >>= retainedObject . castPtr
+updatedProjectInfoFromProjectInfo_completion phProjectExtensionContext existingProjectInfo completion =
+  sendMessage phProjectExtensionContext updatedProjectInfoFromProjectInfo_completionSelector (toPHProjectInfo existingProjectInfo) completion
 
 -- | @- photoLibrary@
 photoLibrary :: IsPHProjectExtensionContext phProjectExtensionContext => phProjectExtensionContext -> IO (Id PHPhotoLibrary)
-photoLibrary phProjectExtensionContext  =
-    sendMsg phProjectExtensionContext (mkSelector "photoLibrary") (retPtr retVoid) [] >>= retainedObject . castPtr
+photoLibrary phProjectExtensionContext =
+  sendMessage phProjectExtensionContext photoLibrarySelector
 
 -- | @- project@
 project :: IsPHProjectExtensionContext phProjectExtensionContext => phProjectExtensionContext -> IO (Id PHProject)
-project phProjectExtensionContext  =
-    sendMsg phProjectExtensionContext (mkSelector "project") (retPtr retVoid) [] >>= retainedObject . castPtr
+project phProjectExtensionContext =
+  sendMessage phProjectExtensionContext projectSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @showEditorForAsset:@
-showEditorForAssetSelector :: Selector
+showEditorForAssetSelector :: Selector '[Id PHAsset] ()
 showEditorForAssetSelector = mkSelector "showEditorForAsset:"
 
 -- | @Selector@ for @updatedProjectInfoFromProjectInfo:completion:@
-updatedProjectInfoFromProjectInfo_completionSelector :: Selector
+updatedProjectInfoFromProjectInfo_completionSelector :: Selector '[Id PHProjectInfo, Ptr ()] (Id NSProgress)
 updatedProjectInfoFromProjectInfo_completionSelector = mkSelector "updatedProjectInfoFromProjectInfo:completion:"
 
 -- | @Selector@ for @photoLibrary@
-photoLibrarySelector :: Selector
+photoLibrarySelector :: Selector '[] (Id PHPhotoLibrary)
 photoLibrarySelector = mkSelector "photoLibrary"
 
 -- | @Selector@ for @project@
-projectSelector :: Selector
+projectSelector :: Selector '[] (Id PHProject)
 projectSelector = mkSelector "project"
 

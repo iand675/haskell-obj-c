@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -92,87 +93,87 @@ module ObjC.WebKit.WKWebExtensionContext
   , openWindows
   , focusedWindow
   , openTabs
-  , newSelector
-  , initSelector
+  , actionForTabSelector
+  , baseURLSelector
+  , clearUserGestureInTabSelector
+  , commandForEventSelector
+  , commandsSelector
   , contextForExtensionSelector
-  , initForExtensionSelector
-  , hasPermissionSelector
-  , hasPermission_inTabSelector
+  , currentPermissionMatchPatternsSelector
+  , currentPermissionsSelector
+  , deniedPermissionMatchPatternsSelector
+  , deniedPermissionsSelector
+  , didActivateTab_previousActiveTabSelector
+  , didChangeTabProperties_forTabSelector
+  , didCloseTab_windowIsClosingSelector
+  , didCloseWindowSelector
+  , didDeselectTabsSelector
+  , didFocusWindowSelector
+  , didMoveTab_fromIndex_inWindowSelector
+  , didOpenTabSelector
+  , didOpenWindowSelector
+  , didReplaceTab_withTabSelector
+  , didSelectTabsSelector
+  , errorsSelector
+  , focusedWindowSelector
+  , grantedPermissionMatchPatternsSelector
+  , grantedPermissionsSelector
+  , hasAccessToAllHostsSelector
+  , hasAccessToAllURLsSelector
+  , hasAccessToPrivateDataSelector
   , hasAccessToURLSelector
   , hasAccessToURL_inTabSelector
-  , hasInjectedContentForURLSelector
-  , permissionStatusForPermissionSelector
-  , permissionStatusForPermission_inTabSelector
-  , setPermissionStatus_forPermissionSelector
-  , setPermissionStatus_forPermission_expirationDateSelector
-  , permissionStatusForURLSelector
-  , permissionStatusForURL_inTabSelector
-  , setPermissionStatus_forURLSelector
-  , setPermissionStatus_forURL_expirationDateSelector
-  , permissionStatusForMatchPatternSelector
-  , permissionStatusForMatchPattern_inTabSelector
-  , setPermissionStatus_forMatchPatternSelector
-  , setPermissionStatus_forMatchPattern_expirationDateSelector
-  , loadBackgroundContentWithCompletionHandlerSelector
-  , actionForTabSelector
-  , performActionForTabSelector
-  , performCommandSelector
-  , performCommandForEventSelector
-  , commandForEventSelector
-  , menuItemsForTabSelector
-  , userGesturePerformedInTabSelector
   , hasActiveUserGestureInTabSelector
-  , clearUserGestureInTabSelector
-  , didOpenWindowSelector
-  , didCloseWindowSelector
-  , didFocusWindowSelector
-  , didOpenTabSelector
-  , didCloseTab_windowIsClosingSelector
-  , didActivateTab_previousActiveTabSelector
-  , didSelectTabsSelector
-  , didDeselectTabsSelector
-  , didMoveTab_fromIndex_inWindowSelector
-  , didReplaceTab_withTabSelector
-  , didChangeTabProperties_forTabSelector
-  , webExtensionSelector
-  , webExtensionControllerSelector
-  , loadedSelector
-  , errorsSelector
-  , baseURLSelector
-  , setBaseURLSelector
-  , uniqueIdentifierSelector
-  , setUniqueIdentifierSelector
+  , hasContentModificationRulesSelector
+  , hasInjectedContentForURLSelector
+  , hasInjectedContentSelector
+  , hasPermissionSelector
+  , hasPermission_inTabSelector
+  , hasRequestedOptionalAccessToAllHostsSelector
+  , initForExtensionSelector
+  , initSelector
   , inspectableSelector
-  , setInspectableSelector
   , inspectionNameSelector
-  , setInspectionNameSelector
-  , unsupportedAPIsSelector
-  , setUnsupportedAPIsSelector
-  , webViewConfigurationSelector
+  , loadBackgroundContentWithCompletionHandlerSelector
+  , loadedSelector
+  , menuItemsForTabSelector
+  , newSelector
+  , openTabsSelector
+  , openWindowsSelector
   , optionsPageURLSelector
   , overrideNewTabPageURLSelector
-  , grantedPermissionsSelector
-  , setGrantedPermissionsSelector
-  , grantedPermissionMatchPatternsSelector
-  , setGrantedPermissionMatchPatternsSelector
-  , deniedPermissionsSelector
-  , setDeniedPermissionsSelector
-  , deniedPermissionMatchPatternsSelector
+  , performActionForTabSelector
+  , performCommandForEventSelector
+  , performCommandSelector
+  , permissionStatusForMatchPatternSelector
+  , permissionStatusForMatchPattern_inTabSelector
+  , permissionStatusForPermissionSelector
+  , permissionStatusForPermission_inTabSelector
+  , permissionStatusForURLSelector
+  , permissionStatusForURL_inTabSelector
+  , setBaseURLSelector
   , setDeniedPermissionMatchPatternsSelector
-  , hasRequestedOptionalAccessToAllHostsSelector
-  , setHasRequestedOptionalAccessToAllHostsSelector
-  , hasAccessToPrivateDataSelector
+  , setDeniedPermissionsSelector
+  , setGrantedPermissionMatchPatternsSelector
+  , setGrantedPermissionsSelector
   , setHasAccessToPrivateDataSelector
-  , currentPermissionsSelector
-  , currentPermissionMatchPatternsSelector
-  , hasAccessToAllURLsSelector
-  , hasAccessToAllHostsSelector
-  , hasInjectedContentSelector
-  , hasContentModificationRulesSelector
-  , commandsSelector
-  , openWindowsSelector
-  , focusedWindowSelector
-  , openTabsSelector
+  , setHasRequestedOptionalAccessToAllHostsSelector
+  , setInspectableSelector
+  , setInspectionNameSelector
+  , setPermissionStatus_forMatchPatternSelector
+  , setPermissionStatus_forMatchPattern_expirationDateSelector
+  , setPermissionStatus_forPermissionSelector
+  , setPermissionStatus_forPermission_expirationDateSelector
+  , setPermissionStatus_forURLSelector
+  , setPermissionStatus_forURL_expirationDateSelector
+  , setUniqueIdentifierSelector
+  , setUnsupportedAPIsSelector
+  , uniqueIdentifierSelector
+  , unsupportedAPIsSelector
+  , userGesturePerformedInTabSelector
+  , webExtensionControllerSelector
+  , webExtensionSelector
+  , webViewConfigurationSelector
 
   -- * Enum types
   , WKWebExtensionContextPermissionStatus(WKWebExtensionContextPermissionStatus)
@@ -197,15 +198,11 @@ module ObjC.WebKit.WKWebExtensionContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -219,12 +216,12 @@ new :: IO (Id WKWebExtensionContext)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionContext"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id WKWebExtensionContext)
-init_ wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionContext =
+  sendOwnedMessage wkWebExtensionContext initSelector
 
 -- | Returns a web extension context initialized with the specified extension.
 --
@@ -237,8 +234,7 @@ contextForExtension :: IsWKWebExtension extension => extension -> IO (Id WKWebEx
 contextForExtension extension =
   do
     cls' <- getRequiredClass "WKWebExtensionContext"
-    withObjCPtr extension $ \raw_extension ->
-      sendClassMsg cls' (mkSelector "contextForExtension:") (retPtr retVoid) [argPtr (castPtr raw_extension :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contextForExtensionSelector (toWKWebExtension extension)
 
 -- | Returns a web extension context initialized with a specified extension.
 --
@@ -250,9 +246,8 @@ contextForExtension extension =
 --
 -- ObjC selector: @- initForExtension:@
 initForExtension :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtension extension) => wkWebExtensionContext -> extension -> IO (Id WKWebExtensionContext)
-initForExtension wkWebExtensionContext  extension =
-  withObjCPtr extension $ \raw_extension ->
-      sendMsg wkWebExtensionContext (mkSelector "initForExtension:") (retPtr retVoid) [argPtr (castPtr raw_extension :: Ptr ())] >>= ownedObject . castPtr
+initForExtension wkWebExtensionContext extension =
+  sendOwnedMessage wkWebExtensionContext initForExtensionSelector (toWKWebExtension extension)
 
 -- | Checks the specified permission against the currently granted permissions.
 --
@@ -268,9 +263,8 @@ initForExtension wkWebExtensionContext  extension =
 --
 -- ObjC selector: @- hasPermission:@
 hasPermission :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission) => wkWebExtensionContext -> permission -> IO Bool
-hasPermission wkWebExtensionContext  permission =
-  withObjCPtr permission $ \raw_permission ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasPermission:") retCULong [argPtr (castPtr raw_permission :: Ptr ())]
+hasPermission wkWebExtensionContext permission =
+  sendMessage wkWebExtensionContext hasPermissionSelector (toNSString permission)
 
 -- | Checks the specified permission against the currently granted permissions in a specific tab.
 --
@@ -290,9 +284,8 @@ hasPermission wkWebExtensionContext  permission =
 --
 -- ObjC selector: @- hasPermission:inTab:@
 hasPermission_inTab :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission) => wkWebExtensionContext -> permission -> RawId -> IO Bool
-hasPermission_inTab wkWebExtensionContext  permission tab =
-  withObjCPtr permission $ \raw_permission ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasPermission:inTab:") retCULong [argPtr (castPtr raw_permission :: Ptr ()), argPtr (castPtr (unRawId tab) :: Ptr ())]
+hasPermission_inTab wkWebExtensionContext permission tab =
+  sendMessage wkWebExtensionContext hasPermission_inTabSelector (toNSString permission) tab
 
 -- | Checks the specified URL against the currently granted permission match patterns.
 --
@@ -312,9 +305,8 @@ hasPermission_inTab wkWebExtensionContext  permission tab =
 --
 -- ObjC selector: @- hasAccessToURL:@
 hasAccessToURL :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> url -> IO Bool
-hasAccessToURL wkWebExtensionContext  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasAccessToURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+hasAccessToURL wkWebExtensionContext url =
+  sendMessage wkWebExtensionContext hasAccessToURLSelector (toNSURL url)
 
 -- | Checks the specified URL against the currently granted permission match patterns in a specific tab.
 --
@@ -338,9 +330,8 @@ hasAccessToURL wkWebExtensionContext  url =
 --
 -- ObjC selector: @- hasAccessToURL:inTab:@
 hasAccessToURL_inTab :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> url -> RawId -> IO Bool
-hasAccessToURL_inTab wkWebExtensionContext  url tab =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasAccessToURL:inTab:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr (unRawId tab) :: Ptr ())]
+hasAccessToURL_inTab wkWebExtensionContext url tab =
+  sendMessage wkWebExtensionContext hasAccessToURL_inTabSelector (toNSURL url) tab
 
 -- | Checks if the extension has script or stylesheet content that can be injected into the specified URL.
 --
@@ -352,9 +343,8 @@ hasAccessToURL_inTab wkWebExtensionContext  url tab =
 --
 -- ObjC selector: @- hasInjectedContentForURL:@
 hasInjectedContentForURL :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> url -> IO Bool
-hasInjectedContentForURL wkWebExtensionContext  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasInjectedContentForURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+hasInjectedContentForURL wkWebExtensionContext url =
+  sendMessage wkWebExtensionContext hasInjectedContentForURLSelector (toNSURL url)
 
 -- | Checks the specified permission against the currently denied, granted, and requested permissions.
 --
@@ -368,9 +358,8 @@ hasInjectedContentForURL wkWebExtensionContext  url =
 --
 -- ObjC selector: @- permissionStatusForPermission:@
 permissionStatusForPermission :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission) => wkWebExtensionContext -> permission -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForPermission wkWebExtensionContext  permission =
-  withObjCPtr permission $ \raw_permission ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForPermission:") retCLong [argPtr (castPtr raw_permission :: Ptr ())]
+permissionStatusForPermission wkWebExtensionContext permission =
+  sendMessage wkWebExtensionContext permissionStatusForPermissionSelector (toNSString permission)
 
 -- | Checks the specified permission against the currently denied, granted, and requested permissions.
 --
@@ -386,9 +375,8 @@ permissionStatusForPermission wkWebExtensionContext  permission =
 --
 -- ObjC selector: @- permissionStatusForPermission:inTab:@
 permissionStatusForPermission_inTab :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission) => wkWebExtensionContext -> permission -> RawId -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForPermission_inTab wkWebExtensionContext  permission tab =
-  withObjCPtr permission $ \raw_permission ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForPermission:inTab:") retCLong [argPtr (castPtr raw_permission :: Ptr ()), argPtr (castPtr (unRawId tab) :: Ptr ())]
+permissionStatusForPermission_inTab wkWebExtensionContext permission tab =
+  sendMessage wkWebExtensionContext permissionStatusForPermission_inTabSelector (toNSString permission) tab
 
 -- | Sets the status of a permission with a distant future expiration date.
 --
@@ -404,9 +392,8 @@ permissionStatusForPermission_inTab wkWebExtensionContext  permission tab =
 --
 -- ObjC selector: @- setPermissionStatus:forPermission:@
 setPermissionStatus_forPermission :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> permission -> IO ()
-setPermissionStatus_forPermission wkWebExtensionContext  status permission =
-  withObjCPtr permission $ \raw_permission ->
-      sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forPermission:") retVoid [argCLong (coerce status), argPtr (castPtr raw_permission :: Ptr ())]
+setPermissionStatus_forPermission wkWebExtensionContext status permission =
+  sendMessage wkWebExtensionContext setPermissionStatus_forPermissionSelector status (toNSString permission)
 
 -- | Sets the status of a permission with a specific expiration date.
 --
@@ -424,10 +411,8 @@ setPermissionStatus_forPermission wkWebExtensionContext  status permission =
 --
 -- ObjC selector: @- setPermissionStatus:forPermission:expirationDate:@
 setPermissionStatus_forPermission_expirationDate :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString permission, IsNSDate expirationDate) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> permission -> expirationDate -> IO ()
-setPermissionStatus_forPermission_expirationDate wkWebExtensionContext  status permission expirationDate =
-  withObjCPtr permission $ \raw_permission ->
-    withObjCPtr expirationDate $ \raw_expirationDate ->
-        sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forPermission:expirationDate:") retVoid [argCLong (coerce status), argPtr (castPtr raw_permission :: Ptr ()), argPtr (castPtr raw_expirationDate :: Ptr ())]
+setPermissionStatus_forPermission_expirationDate wkWebExtensionContext status permission expirationDate =
+  sendMessage wkWebExtensionContext setPermissionStatus_forPermission_expirationDateSelector status (toNSString permission) (toNSDate expirationDate)
 
 -- | Checks the specified URL against the currently denied, granted, and requested permission match patterns.
 --
@@ -441,9 +426,8 @@ setPermissionStatus_forPermission_expirationDate wkWebExtensionContext  status p
 --
 -- ObjC selector: @- permissionStatusForURL:@
 permissionStatusForURL :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> url -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForURL wkWebExtensionContext  url =
-  withObjCPtr url $ \raw_url ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForURL:") retCLong [argPtr (castPtr raw_url :: Ptr ())]
+permissionStatusForURL wkWebExtensionContext url =
+  sendMessage wkWebExtensionContext permissionStatusForURLSelector (toNSURL url)
 
 -- | Checks the specified URL against the currently denied, granted, and requested permission match patterns.
 --
@@ -459,9 +443,8 @@ permissionStatusForURL wkWebExtensionContext  url =
 --
 -- ObjC selector: @- permissionStatusForURL:inTab:@
 permissionStatusForURL_inTab :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> url -> RawId -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForURL_inTab wkWebExtensionContext  url tab =
-  withObjCPtr url $ \raw_url ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForURL:inTab:") retCLong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr (unRawId tab) :: Ptr ())]
+permissionStatusForURL_inTab wkWebExtensionContext url tab =
+  sendMessage wkWebExtensionContext permissionStatusForURL_inTabSelector (toNSURL url) tab
 
 -- | Sets the permission status of a URL with a distant future expiration date.
 --
@@ -477,9 +460,8 @@ permissionStatusForURL_inTab wkWebExtensionContext  url tab =
 --
 -- ObjC selector: @- setPermissionStatus:forURL:@
 setPermissionStatus_forURL :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> url -> IO ()
-setPermissionStatus_forURL wkWebExtensionContext  status url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forURL:") retVoid [argCLong (coerce status), argPtr (castPtr raw_url :: Ptr ())]
+setPermissionStatus_forURL wkWebExtensionContext status url =
+  sendMessage wkWebExtensionContext setPermissionStatus_forURLSelector status (toNSURL url)
 
 -- | Sets the permission status of a URL with a distant future expiration date.
 --
@@ -497,10 +479,8 @@ setPermissionStatus_forURL wkWebExtensionContext  status url =
 --
 -- ObjC selector: @- setPermissionStatus:forURL:expirationDate:@
 setPermissionStatus_forURL_expirationDate :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL url, IsNSDate expirationDate) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> url -> expirationDate -> IO ()
-setPermissionStatus_forURL_expirationDate wkWebExtensionContext  status url expirationDate =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr expirationDate $ \raw_expirationDate ->
-        sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forURL:expirationDate:") retVoid [argCLong (coerce status), argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_expirationDate :: Ptr ())]
+setPermissionStatus_forURL_expirationDate wkWebExtensionContext status url expirationDate =
+  sendMessage wkWebExtensionContext setPermissionStatus_forURL_expirationDateSelector status (toNSURL url) (toNSDate expirationDate)
 
 -- | Checks the specified match pattern against the currently denied, granted, and requested permission match patterns.
 --
@@ -514,9 +494,8 @@ setPermissionStatus_forURL_expirationDate wkWebExtensionContext  status url expi
 --
 -- ObjC selector: @- permissionStatusForMatchPattern:@
 permissionStatusForMatchPattern :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtensionMatchPattern pattern_) => wkWebExtensionContext -> pattern_ -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForMatchPattern wkWebExtensionContext  pattern_ =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForMatchPattern:") retCLong [argPtr (castPtr raw_pattern_ :: Ptr ())]
+permissionStatusForMatchPattern wkWebExtensionContext pattern_ =
+  sendMessage wkWebExtensionContext permissionStatusForMatchPatternSelector (toWKWebExtensionMatchPattern pattern_)
 
 -- | Checks the specified match pattern against the currently denied, granted, and requested permission match patterns.
 --
@@ -532,9 +511,8 @@ permissionStatusForMatchPattern wkWebExtensionContext  pattern_ =
 --
 -- ObjC selector: @- permissionStatusForMatchPattern:inTab:@
 permissionStatusForMatchPattern_inTab :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtensionMatchPattern pattern_) => wkWebExtensionContext -> pattern_ -> RawId -> IO WKWebExtensionContextPermissionStatus
-permissionStatusForMatchPattern_inTab wkWebExtensionContext  pattern_ tab =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-      fmap (coerce :: CLong -> WKWebExtensionContextPermissionStatus) $ sendMsg wkWebExtensionContext (mkSelector "permissionStatusForMatchPattern:inTab:") retCLong [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr (unRawId tab) :: Ptr ())]
+permissionStatusForMatchPattern_inTab wkWebExtensionContext pattern_ tab =
+  sendMessage wkWebExtensionContext permissionStatusForMatchPattern_inTabSelector (toWKWebExtensionMatchPattern pattern_) tab
 
 -- | Sets the status of a match pattern with a distant future expiration date.
 --
@@ -550,9 +528,8 @@ permissionStatusForMatchPattern_inTab wkWebExtensionContext  pattern_ tab =
 --
 -- ObjC selector: @- setPermissionStatus:forMatchPattern:@
 setPermissionStatus_forMatchPattern :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtensionMatchPattern pattern_) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> pattern_ -> IO ()
-setPermissionStatus_forMatchPattern wkWebExtensionContext  status pattern_ =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-      sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forMatchPattern:") retVoid [argCLong (coerce status), argPtr (castPtr raw_pattern_ :: Ptr ())]
+setPermissionStatus_forMatchPattern wkWebExtensionContext status pattern_ =
+  sendMessage wkWebExtensionContext setPermissionStatus_forMatchPatternSelector status (toWKWebExtensionMatchPattern pattern_)
 
 -- | Sets the status of a match pattern with a specific expiration date.
 --
@@ -570,10 +547,8 @@ setPermissionStatus_forMatchPattern wkWebExtensionContext  status pattern_ =
 --
 -- ObjC selector: @- setPermissionStatus:forMatchPattern:expirationDate:@
 setPermissionStatus_forMatchPattern_expirationDate :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtensionMatchPattern pattern_, IsNSDate expirationDate) => wkWebExtensionContext -> WKWebExtensionContextPermissionStatus -> pattern_ -> expirationDate -> IO ()
-setPermissionStatus_forMatchPattern_expirationDate wkWebExtensionContext  status pattern_ expirationDate =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-    withObjCPtr expirationDate $ \raw_expirationDate ->
-        sendMsg wkWebExtensionContext (mkSelector "setPermissionStatus:forMatchPattern:expirationDate:") retVoid [argCLong (coerce status), argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_expirationDate :: Ptr ())]
+setPermissionStatus_forMatchPattern_expirationDate wkWebExtensionContext status pattern_ expirationDate =
+  sendMessage wkWebExtensionContext setPermissionStatus_forMatchPattern_expirationDateSelector status (toWKWebExtensionMatchPattern pattern_) (toNSDate expirationDate)
 
 -- | Loads the background content if needed for the extension.
 --
@@ -583,8 +558,8 @@ setPermissionStatus_forMatchPattern_expirationDate wkWebExtensionContext  status
 --
 -- ObjC selector: @- loadBackgroundContentWithCompletionHandler:@
 loadBackgroundContentWithCompletionHandler :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> Ptr () -> IO ()
-loadBackgroundContentWithCompletionHandler wkWebExtensionContext  completionHandler =
-    sendMsg wkWebExtensionContext (mkSelector "loadBackgroundContentWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadBackgroundContentWithCompletionHandler wkWebExtensionContext completionHandler =
+  sendMessage wkWebExtensionContext loadBackgroundContentWithCompletionHandlerSelector completionHandler
 
 -- | Retrieves the extension action for a given tab, or the default action if @nil@ is passed.
 --
@@ -596,8 +571,8 @@ loadBackgroundContentWithCompletionHandler wkWebExtensionContext  completionHand
 --
 -- ObjC selector: @- actionForTab:@
 actionForTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO (Id WKWebExtensionAction)
-actionForTab wkWebExtensionContext  tab =
-    sendMsg wkWebExtensionContext (mkSelector "actionForTab:") (retPtr retVoid) [argPtr (castPtr (unRawId tab) :: Ptr ())] >>= retainedObject . castPtr
+actionForTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext actionForTabSelector tab
 
 -- | Performs the extension action associated with the specified tab or performs the default action if @nil@ is passed.
 --
@@ -607,8 +582,8 @@ actionForTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- performActionForTab:@
 performActionForTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-performActionForTab wkWebExtensionContext  tab =
-    sendMsg wkWebExtensionContext (mkSelector "performActionForTab:") retVoid [argPtr (castPtr (unRawId tab) :: Ptr ())]
+performActionForTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext performActionForTabSelector tab
 
 -- | Performs the specified command, triggering events specific to this extension.
 --
@@ -618,9 +593,8 @@ performActionForTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- performCommand:@
 performCommand :: (IsWKWebExtensionContext wkWebExtensionContext, IsWKWebExtensionCommand command) => wkWebExtensionContext -> command -> IO ()
-performCommand wkWebExtensionContext  command =
-  withObjCPtr command $ \raw_command ->
-      sendMsg wkWebExtensionContext (mkSelector "performCommand:") retVoid [argPtr (castPtr raw_command :: Ptr ())]
+performCommand wkWebExtensionContext command =
+  sendMessage wkWebExtensionContext performCommandSelector (toWKWebExtensionCommand command)
 
 -- | Performs the command associated with the given event.
 --
@@ -632,9 +606,8 @@ performCommand wkWebExtensionContext  command =
 --
 -- ObjC selector: @- performCommandForEvent:@
 performCommandForEvent :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSEvent event) => wkWebExtensionContext -> event -> IO Bool
-performCommandForEvent wkWebExtensionContext  event =
-  withObjCPtr event $ \raw_event ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "performCommandForEvent:") retCULong [argPtr (castPtr raw_event :: Ptr ())]
+performCommandForEvent wkWebExtensionContext event =
+  sendMessage wkWebExtensionContext performCommandForEventSelector (toNSEvent event)
 
 -- | Retrieves the command associated with the given event without performing it.
 --
@@ -646,14 +619,13 @@ performCommandForEvent wkWebExtensionContext  event =
 --
 -- ObjC selector: @- commandForEvent:@
 commandForEvent :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSEvent event) => wkWebExtensionContext -> event -> IO (Id WKWebExtensionCommand)
-commandForEvent wkWebExtensionContext  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg wkWebExtensionContext (mkSelector "commandForEvent:") (retPtr retVoid) [argPtr (castPtr raw_event :: Ptr ())] >>= retainedObject . castPtr
+commandForEvent wkWebExtensionContext event =
+  sendMessage wkWebExtensionContext commandForEventSelector (toNSEvent event)
 
 -- | @- menuItemsForTab:@
 menuItemsForTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO (Id NSArray)
-menuItemsForTab wkWebExtensionContext  tab =
-    sendMsg wkWebExtensionContext (mkSelector "menuItemsForTab:") (retPtr retVoid) [argPtr (castPtr (unRawId tab) :: Ptr ())] >>= retainedObject . castPtr
+menuItemsForTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext menuItemsForTabSelector tab
 
 -- | Should be called by the app when a user gesture is performed in a specific tab.
 --
@@ -665,8 +637,8 @@ menuItemsForTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- userGesturePerformedInTab:@
 userGesturePerformedInTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-userGesturePerformedInTab wkWebExtensionContext  tab =
-    sendMsg wkWebExtensionContext (mkSelector "userGesturePerformedInTab:") retVoid [argPtr (castPtr (unRawId tab) :: Ptr ())]
+userGesturePerformedInTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext userGesturePerformedInTabSelector tab
 
 -- | Indicates if a user gesture is currently active in the specified tab.
 --
@@ -678,8 +650,8 @@ userGesturePerformedInTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- hasActiveUserGestureInTab:@
 hasActiveUserGestureInTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO Bool
-hasActiveUserGestureInTab wkWebExtensionContext  tab =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasActiveUserGestureInTab:") retCULong [argPtr (castPtr (unRawId tab) :: Ptr ())]
+hasActiveUserGestureInTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext hasActiveUserGestureInTabSelector tab
 
 -- | Should be called by the app to clear a user gesture in a specific tab.
 --
@@ -691,8 +663,8 @@ hasActiveUserGestureInTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- clearUserGestureInTab:@
 clearUserGestureInTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-clearUserGestureInTab wkWebExtensionContext  tab =
-    sendMsg wkWebExtensionContext (mkSelector "clearUserGestureInTab:") retVoid [argPtr (castPtr (unRawId tab) :: Ptr ())]
+clearUserGestureInTab wkWebExtensionContext tab =
+  sendMessage wkWebExtensionContext clearUserGestureInTabSelector tab
 
 -- | Should be called by the app when a new window is opened to fire appropriate events with only this extension.
 --
@@ -706,8 +678,8 @@ clearUserGestureInTab wkWebExtensionContext  tab =
 --
 -- ObjC selector: @- didOpenWindow:@
 didOpenWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-didOpenWindow wkWebExtensionContext  newWindow =
-    sendMsg wkWebExtensionContext (mkSelector "didOpenWindow:") retVoid [argPtr (castPtr (unRawId newWindow) :: Ptr ())]
+didOpenWindow wkWebExtensionContext newWindow =
+  sendMessage wkWebExtensionContext didOpenWindowSelector newWindow
 
 -- | Should be called by the app when a window is closed to fire appropriate events with only this extension.
 --
@@ -721,8 +693,8 @@ didOpenWindow wkWebExtensionContext  newWindow =
 --
 -- ObjC selector: @- didCloseWindow:@
 didCloseWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-didCloseWindow wkWebExtensionContext  closedWindow =
-    sendMsg wkWebExtensionContext (mkSelector "didCloseWindow:") retVoid [argPtr (castPtr (unRawId closedWindow) :: Ptr ())]
+didCloseWindow wkWebExtensionContext closedWindow =
+  sendMessage wkWebExtensionContext didCloseWindowSelector closedWindow
 
 -- | Should be called by the app when a window gains focus to fire appropriate events with only this extension.
 --
@@ -732,8 +704,8 @@ didCloseWindow wkWebExtensionContext  closedWindow =
 --
 -- ObjC selector: @- didFocusWindow:@
 didFocusWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-didFocusWindow wkWebExtensionContext  focusedWindow =
-    sendMsg wkWebExtensionContext (mkSelector "didFocusWindow:") retVoid [argPtr (castPtr (unRawId focusedWindow) :: Ptr ())]
+didFocusWindow wkWebExtensionContext focusedWindow =
+  sendMessage wkWebExtensionContext didFocusWindowSelector focusedWindow
 
 -- | Should be called by the app when a new tab is opened to fire appropriate events with only this extension.
 --
@@ -747,8 +719,8 @@ didFocusWindow wkWebExtensionContext  focusedWindow =
 --
 -- ObjC selector: @- didOpenTab:@
 didOpenTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> IO ()
-didOpenTab wkWebExtensionContext  newTab =
-    sendMsg wkWebExtensionContext (mkSelector "didOpenTab:") retVoid [argPtr (castPtr (unRawId newTab) :: Ptr ())]
+didOpenTab wkWebExtensionContext newTab =
+  sendMessage wkWebExtensionContext didOpenTabSelector newTab
 
 -- | Should be called by the app when a tab is closed to fire appropriate events with only this extension.
 --
@@ -764,8 +736,8 @@ didOpenTab wkWebExtensionContext  newTab =
 --
 -- ObjC selector: @- didCloseTab:windowIsClosing:@
 didCloseTab_windowIsClosing :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> Bool -> IO ()
-didCloseTab_windowIsClosing wkWebExtensionContext  closedTab windowIsClosing =
-    sendMsg wkWebExtensionContext (mkSelector "didCloseTab:windowIsClosing:") retVoid [argPtr (castPtr (unRawId closedTab) :: Ptr ()), argCULong (if windowIsClosing then 1 else 0)]
+didCloseTab_windowIsClosing wkWebExtensionContext closedTab windowIsClosing =
+  sendMessage wkWebExtensionContext didCloseTab_windowIsClosingSelector closedTab windowIsClosing
 
 -- | Should be called by the app when a tab is activated to notify only this specific extension.
 --
@@ -777,8 +749,8 @@ didCloseTab_windowIsClosing wkWebExtensionContext  closedTab windowIsClosing =
 --
 -- ObjC selector: @- didActivateTab:previousActiveTab:@
 didActivateTab_previousActiveTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> RawId -> IO ()
-didActivateTab_previousActiveTab wkWebExtensionContext  activatedTab previousTab =
-    sendMsg wkWebExtensionContext (mkSelector "didActivateTab:previousActiveTab:") retVoid [argPtr (castPtr (unRawId activatedTab) :: Ptr ()), argPtr (castPtr (unRawId previousTab) :: Ptr ())]
+didActivateTab_previousActiveTab wkWebExtensionContext activatedTab previousTab =
+  sendMessage wkWebExtensionContext didActivateTab_previousActiveTabSelector activatedTab previousTab
 
 -- | Should be called by the app when tabs are selected to fire appropriate events with only this extension.
 --
@@ -788,9 +760,8 @@ didActivateTab_previousActiveTab wkWebExtensionContext  activatedTab previousTab
 --
 -- ObjC selector: @- didSelectTabs:@
 didSelectTabs :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSArray selectedTabs) => wkWebExtensionContext -> selectedTabs -> IO ()
-didSelectTabs wkWebExtensionContext  selectedTabs =
-  withObjCPtr selectedTabs $ \raw_selectedTabs ->
-      sendMsg wkWebExtensionContext (mkSelector "didSelectTabs:") retVoid [argPtr (castPtr raw_selectedTabs :: Ptr ())]
+didSelectTabs wkWebExtensionContext selectedTabs =
+  sendMessage wkWebExtensionContext didSelectTabsSelector (toNSArray selectedTabs)
 
 -- | Should be called by the app when tabs are deselected to fire appropriate events with only this extension.
 --
@@ -800,9 +771,8 @@ didSelectTabs wkWebExtensionContext  selectedTabs =
 --
 -- ObjC selector: @- didDeselectTabs:@
 didDeselectTabs :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSArray deselectedTabs) => wkWebExtensionContext -> deselectedTabs -> IO ()
-didDeselectTabs wkWebExtensionContext  deselectedTabs =
-  withObjCPtr deselectedTabs $ \raw_deselectedTabs ->
-      sendMsg wkWebExtensionContext (mkSelector "didDeselectTabs:") retVoid [argPtr (castPtr raw_deselectedTabs :: Ptr ())]
+didDeselectTabs wkWebExtensionContext deselectedTabs =
+  sendMessage wkWebExtensionContext didDeselectTabsSelector (toNSArray deselectedTabs)
 
 -- | Should be called by the app when a tab is moved to fire appropriate events with only this extension.
 --
@@ -816,8 +786,8 @@ didDeselectTabs wkWebExtensionContext  deselectedTabs =
 --
 -- ObjC selector: @- didMoveTab:fromIndex:inWindow:@
 didMoveTab_fromIndex_inWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> CULong -> RawId -> IO ()
-didMoveTab_fromIndex_inWindow wkWebExtensionContext  movedTab index oldWindow =
-    sendMsg wkWebExtensionContext (mkSelector "didMoveTab:fromIndex:inWindow:") retVoid [argPtr (castPtr (unRawId movedTab) :: Ptr ()), argCULong index, argPtr (castPtr (unRawId oldWindow) :: Ptr ())]
+didMoveTab_fromIndex_inWindow wkWebExtensionContext movedTab index oldWindow =
+  sendMessage wkWebExtensionContext didMoveTab_fromIndex_inWindowSelector movedTab index oldWindow
 
 -- | Should be called by the app when a tab is replaced by another tab to fire appropriate events with only this extension.
 --
@@ -829,8 +799,8 @@ didMoveTab_fromIndex_inWindow wkWebExtensionContext  movedTab index oldWindow =
 --
 -- ObjC selector: @- didReplaceTab:withTab:@
 didReplaceTab_withTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> RawId -> RawId -> IO ()
-didReplaceTab_withTab wkWebExtensionContext  oldTab newTab =
-    sendMsg wkWebExtensionContext (mkSelector "didReplaceTab:withTab:") retVoid [argPtr (castPtr (unRawId oldTab) :: Ptr ()), argPtr (castPtr (unRawId newTab) :: Ptr ())]
+didReplaceTab_withTab wkWebExtensionContext oldTab newTab =
+  sendMessage wkWebExtensionContext didReplaceTab_withTabSelector oldTab newTab
 
 -- | Should be called by the app when the properties of a tab are changed to fire appropriate events with only this extension.
 --
@@ -842,29 +812,29 @@ didReplaceTab_withTab wkWebExtensionContext  oldTab newTab =
 --
 -- ObjC selector: @- didChangeTabProperties:forTab:@
 didChangeTabProperties_forTab :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> WKWebExtensionTabChangedProperties -> RawId -> IO ()
-didChangeTabProperties_forTab wkWebExtensionContext  properties changedTab =
-    sendMsg wkWebExtensionContext (mkSelector "didChangeTabProperties:forTab:") retVoid [argCULong (coerce properties), argPtr (castPtr (unRawId changedTab) :: Ptr ())]
+didChangeTabProperties_forTab wkWebExtensionContext properties changedTab =
+  sendMessage wkWebExtensionContext didChangeTabProperties_forTabSelector properties changedTab
 
 -- | The extension this context represents.
 --
 -- ObjC selector: @- webExtension@
 webExtension :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id WKWebExtension)
-webExtension wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "webExtension") (retPtr retVoid) [] >>= retainedObject . castPtr
+webExtension wkWebExtensionContext =
+  sendMessage wkWebExtensionContext webExtensionSelector
 
 -- | The extension controller this context is loaded in, otherwise @nil@ if it isn't loaded.
 --
 -- ObjC selector: @- webExtensionController@
 webExtensionController :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id WKWebExtensionController)
-webExtensionController wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "webExtensionController") (retPtr retVoid) [] >>= retainedObject . castPtr
+webExtensionController wkWebExtensionContext =
+  sendMessage wkWebExtensionContext webExtensionControllerSelector
 
 -- | A Boolean value indicating if this context is loaded in an extension controller.
 --
 -- ObjC selector: @- loaded@
 loaded :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-loaded wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "loaded") retCULong []
+loaded wkWebExtensionContext =
+  sendMessage wkWebExtensionContext loadedSelector
 
 -- | All errors that occurred in the extension context.
 --
@@ -872,8 +842,8 @@ loaded wkWebExtensionContext  =
 --
 -- ObjC selector: @- errors@
 errors :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSArray)
-errors wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "errors") (retPtr retVoid) [] >>= retainedObject . castPtr
+errors wkWebExtensionContext =
+  sendMessage wkWebExtensionContext errorsSelector
 
 -- | The base URL the context uses for loading extension resources or injecting content into webpages.
 --
@@ -881,8 +851,8 @@ errors wkWebExtensionContext  =
 --
 -- ObjC selector: @- baseURL@
 baseURL :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSURL)
-baseURL wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "baseURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseURL wkWebExtensionContext =
+  sendMessage wkWebExtensionContext baseURLSelector
 
 -- | The base URL the context uses for loading extension resources or injecting content into webpages.
 --
@@ -890,9 +860,8 @@ baseURL wkWebExtensionContext  =
 --
 -- ObjC selector: @- setBaseURL:@
 setBaseURL :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSURL value) => wkWebExtensionContext -> value -> IO ()
-setBaseURL wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setBaseURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBaseURL wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setBaseURLSelector (toNSURL value)
 
 -- | A unique identifier used to distinguish the extension from other extensions and target it for messages.
 --
@@ -900,8 +869,8 @@ setBaseURL wkWebExtensionContext  value =
 --
 -- ObjC selector: @- uniqueIdentifier@
 uniqueIdentifier :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSString)
-uniqueIdentifier wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier wkWebExtensionContext =
+  sendMessage wkWebExtensionContext uniqueIdentifierSelector
 
 -- | A unique identifier used to distinguish the extension from other extensions and target it for messages.
 --
@@ -909,9 +878,8 @@ uniqueIdentifier wkWebExtensionContext  =
 --
 -- ObjC selector: @- setUniqueIdentifier:@
 setUniqueIdentifier :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString value) => wkWebExtensionContext -> value -> IO ()
-setUniqueIdentifier wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setUniqueIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueIdentifier wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setUniqueIdentifierSelector (toNSString value)
 
 -- | Determines whether Web Inspector can inspect the ``WKWebView`` instances for this context.
 --
@@ -919,8 +887,8 @@ setUniqueIdentifier wkWebExtensionContext  value =
 --
 -- ObjC selector: @- inspectable@
 inspectable :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-inspectable wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "inspectable") retCULong []
+inspectable wkWebExtensionContext =
+  sendMessage wkWebExtensionContext inspectableSelector
 
 -- | Determines whether Web Inspector can inspect the ``WKWebView`` instances for this context.
 --
@@ -928,8 +896,8 @@ inspectable wkWebExtensionContext  =
 --
 -- ObjC selector: @- setInspectable:@
 setInspectable :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> Bool -> IO ()
-setInspectable wkWebExtensionContext  value =
-    sendMsg wkWebExtensionContext (mkSelector "setInspectable:") retVoid [argCULong (if value then 1 else 0)]
+setInspectable wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setInspectableSelector value
 
 -- | The name shown when inspecting the background web view.
 --
@@ -937,8 +905,8 @@ setInspectable wkWebExtensionContext  value =
 --
 -- ObjC selector: @- inspectionName@
 inspectionName :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSString)
-inspectionName wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "inspectionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+inspectionName wkWebExtensionContext =
+  sendMessage wkWebExtensionContext inspectionNameSelector
 
 -- | The name shown when inspecting the background web view.
 --
@@ -946,9 +914,8 @@ inspectionName wkWebExtensionContext  =
 --
 -- ObjC selector: @- setInspectionName:@
 setInspectionName :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSString value) => wkWebExtensionContext -> value -> IO ()
-setInspectionName wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setInspectionName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInspectionName wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setInspectionNameSelector (toNSString value)
 
 -- | Specifies unsupported APIs for this extension, making them @undefined@ in JavaScript.
 --
@@ -958,8 +925,8 @@ setInspectionName wkWebExtensionContext  value =
 --
 -- ObjC selector: @- unsupportedAPIs@
 unsupportedAPIs :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSSet)
-unsupportedAPIs wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "unsupportedAPIs") (retPtr retVoid) [] >>= retainedObject . castPtr
+unsupportedAPIs wkWebExtensionContext =
+  sendMessage wkWebExtensionContext unsupportedAPIsSelector
 
 -- | Specifies unsupported APIs for this extension, making them @undefined@ in JavaScript.
 --
@@ -969,9 +936,8 @@ unsupportedAPIs wkWebExtensionContext  =
 --
 -- ObjC selector: @- setUnsupportedAPIs:@
 setUnsupportedAPIs :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSSet value) => wkWebExtensionContext -> value -> IO ()
-setUnsupportedAPIs wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setUnsupportedAPIs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUnsupportedAPIs wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setUnsupportedAPIsSelector (toNSSet value)
 
 -- | The web view configuration to use for web views that load pages from this extension.
 --
@@ -981,8 +947,8 @@ setUnsupportedAPIs wkWebExtensionContext  value =
 --
 -- ObjC selector: @- webViewConfiguration@
 webViewConfiguration :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id WKWebViewConfiguration)
-webViewConfiguration wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "webViewConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+webViewConfiguration wkWebExtensionContext =
+  sendMessage wkWebExtensionContext webViewConfigurationSelector
 
 -- | The URL of the extension's options page, if the extension has one.
 --
@@ -994,8 +960,8 @@ webViewConfiguration wkWebExtensionContext  =
 --
 -- ObjC selector: @- optionsPageURL@
 optionsPageURL :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSURL)
-optionsPageURL wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "optionsPageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsPageURL wkWebExtensionContext =
+  sendMessage wkWebExtensionContext optionsPageURLSelector
 
 -- | The URL to use as an alternative to the default new tab page, if the extension has one.
 --
@@ -1007,8 +973,8 @@ optionsPageURL wkWebExtensionContext  =
 --
 -- ObjC selector: @- overrideNewTabPageURL@
 overrideNewTabPageURL :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSURL)
-overrideNewTabPageURL wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "overrideNewTabPageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+overrideNewTabPageURL wkWebExtensionContext =
+  sendMessage wkWebExtensionContext overrideNewTabPageURLSelector
 
 -- | The currently granted permissions and their expiration dates.
 --
@@ -1020,8 +986,8 @@ overrideNewTabPageURL wkWebExtensionContext  =
 --
 -- ObjC selector: @- grantedPermissions@
 grantedPermissions :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSDictionary)
-grantedPermissions wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "grantedPermissions") (retPtr retVoid) [] >>= retainedObject . castPtr
+grantedPermissions wkWebExtensionContext =
+  sendMessage wkWebExtensionContext grantedPermissionsSelector
 
 -- | The currently granted permissions and their expiration dates.
 --
@@ -1033,9 +999,8 @@ grantedPermissions wkWebExtensionContext  =
 --
 -- ObjC selector: @- setGrantedPermissions:@
 setGrantedPermissions :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSDictionary value) => wkWebExtensionContext -> value -> IO ()
-setGrantedPermissions wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setGrantedPermissions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGrantedPermissions wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setGrantedPermissionsSelector (toNSDictionary value)
 
 -- | The currently granted permission match patterns and their expiration dates.
 --
@@ -1047,8 +1012,8 @@ setGrantedPermissions wkWebExtensionContext  value =
 --
 -- ObjC selector: @- grantedPermissionMatchPatterns@
 grantedPermissionMatchPatterns :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSDictionary)
-grantedPermissionMatchPatterns wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "grantedPermissionMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+grantedPermissionMatchPatterns wkWebExtensionContext =
+  sendMessage wkWebExtensionContext grantedPermissionMatchPatternsSelector
 
 -- | The currently granted permission match patterns and their expiration dates.
 --
@@ -1060,9 +1025,8 @@ grantedPermissionMatchPatterns wkWebExtensionContext  =
 --
 -- ObjC selector: @- setGrantedPermissionMatchPatterns:@
 setGrantedPermissionMatchPatterns :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSDictionary value) => wkWebExtensionContext -> value -> IO ()
-setGrantedPermissionMatchPatterns wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setGrantedPermissionMatchPatterns:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGrantedPermissionMatchPatterns wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setGrantedPermissionMatchPatternsSelector (toNSDictionary value)
 
 -- | The currently denied permissions and their expiration dates.
 --
@@ -1074,8 +1038,8 @@ setGrantedPermissionMatchPatterns wkWebExtensionContext  value =
 --
 -- ObjC selector: @- deniedPermissions@
 deniedPermissions :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSDictionary)
-deniedPermissions wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "deniedPermissions") (retPtr retVoid) [] >>= retainedObject . castPtr
+deniedPermissions wkWebExtensionContext =
+  sendMessage wkWebExtensionContext deniedPermissionsSelector
 
 -- | The currently denied permissions and their expiration dates.
 --
@@ -1087,9 +1051,8 @@ deniedPermissions wkWebExtensionContext  =
 --
 -- ObjC selector: @- setDeniedPermissions:@
 setDeniedPermissions :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSDictionary value) => wkWebExtensionContext -> value -> IO ()
-setDeniedPermissions wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setDeniedPermissions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeniedPermissions wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setDeniedPermissionsSelector (toNSDictionary value)
 
 -- | The currently denied permission match patterns and their expiration dates.
 --
@@ -1101,8 +1064,8 @@ setDeniedPermissions wkWebExtensionContext  value =
 --
 -- ObjC selector: @- deniedPermissionMatchPatterns@
 deniedPermissionMatchPatterns :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSDictionary)
-deniedPermissionMatchPatterns wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "deniedPermissionMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+deniedPermissionMatchPatterns wkWebExtensionContext =
+  sendMessage wkWebExtensionContext deniedPermissionMatchPatternsSelector
 
 -- | The currently denied permission match patterns and their expiration dates.
 --
@@ -1114,9 +1077,8 @@ deniedPermissionMatchPatterns wkWebExtensionContext  =
 --
 -- ObjC selector: @- setDeniedPermissionMatchPatterns:@
 setDeniedPermissionMatchPatterns :: (IsWKWebExtensionContext wkWebExtensionContext, IsNSDictionary value) => wkWebExtensionContext -> value -> IO ()
-setDeniedPermissionMatchPatterns wkWebExtensionContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionContext (mkSelector "setDeniedPermissionMatchPatterns:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeniedPermissionMatchPatterns wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setDeniedPermissionMatchPatternsSelector (toNSDictionary value)
 
 -- | A Boolean value indicating if the extension has requested optional access to all hosts.
 --
@@ -1124,8 +1086,8 @@ setDeniedPermissionMatchPatterns wkWebExtensionContext  value =
 --
 -- ObjC selector: @- hasRequestedOptionalAccessToAllHosts@
 hasRequestedOptionalAccessToAllHosts :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasRequestedOptionalAccessToAllHosts wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasRequestedOptionalAccessToAllHosts") retCULong []
+hasRequestedOptionalAccessToAllHosts wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasRequestedOptionalAccessToAllHostsSelector
 
 -- | A Boolean value indicating if the extension has requested optional access to all hosts.
 --
@@ -1133,8 +1095,8 @@ hasRequestedOptionalAccessToAllHosts wkWebExtensionContext  =
 --
 -- ObjC selector: @- setHasRequestedOptionalAccessToAllHosts:@
 setHasRequestedOptionalAccessToAllHosts :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> Bool -> IO ()
-setHasRequestedOptionalAccessToAllHosts wkWebExtensionContext  value =
-    sendMsg wkWebExtensionContext (mkSelector "setHasRequestedOptionalAccessToAllHosts:") retVoid [argCULong (if value then 1 else 0)]
+setHasRequestedOptionalAccessToAllHosts wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setHasRequestedOptionalAccessToAllHostsSelector value
 
 -- | A Boolean value indicating if the extension has access to private data.
 --
@@ -1144,8 +1106,8 @@ setHasRequestedOptionalAccessToAllHosts wkWebExtensionContext  value =
 --
 -- ObjC selector: @- hasAccessToPrivateData@
 hasAccessToPrivateData :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasAccessToPrivateData wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasAccessToPrivateData") retCULong []
+hasAccessToPrivateData wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasAccessToPrivateDataSelector
 
 -- | A Boolean value indicating if the extension has access to private data.
 --
@@ -1155,8 +1117,8 @@ hasAccessToPrivateData wkWebExtensionContext  =
 --
 -- ObjC selector: @- setHasAccessToPrivateData:@
 setHasAccessToPrivateData :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> Bool -> IO ()
-setHasAccessToPrivateData wkWebExtensionContext  value =
-    sendMsg wkWebExtensionContext (mkSelector "setHasAccessToPrivateData:") retVoid [argCULong (if value then 1 else 0)]
+setHasAccessToPrivateData wkWebExtensionContext value =
+  sendMessage wkWebExtensionContext setHasAccessToPrivateDataSelector value
 
 -- | The currently granted permissions that have not expired.
 --
@@ -1164,8 +1126,8 @@ setHasAccessToPrivateData wkWebExtensionContext  value =
 --
 -- ObjC selector: @- currentPermissions@
 currentPermissions :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSSet)
-currentPermissions wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "currentPermissions") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPermissions wkWebExtensionContext =
+  sendMessage wkWebExtensionContext currentPermissionsSelector
 
 -- | The currently granted permission match patterns that have not expired.
 --
@@ -1173,8 +1135,8 @@ currentPermissions wkWebExtensionContext  =
 --
 -- ObjC selector: @- currentPermissionMatchPatterns@
 currentPermissionMatchPatterns :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSSet)
-currentPermissionMatchPatterns wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "currentPermissionMatchPatterns") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPermissionMatchPatterns wkWebExtensionContext =
+  sendMessage wkWebExtensionContext currentPermissionMatchPatternsSelector
 
 -- | A Boolean value indicating if the currently granted permission match patterns set contains the `<all_urls>` pattern.
 --
@@ -1186,8 +1148,8 @@ currentPermissionMatchPatterns wkWebExtensionContext  =
 --
 -- ObjC selector: @- hasAccessToAllURLs@
 hasAccessToAllURLs :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasAccessToAllURLs wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasAccessToAllURLs") retCULong []
+hasAccessToAllURLs wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasAccessToAllURLsSelector
 
 -- | A Boolean value indicating if the currently granted permission match patterns set contains the `<all_urls>@ pattern or any @*` host patterns.
 --
@@ -1197,8 +1159,8 @@ hasAccessToAllURLs wkWebExtensionContext  =
 --
 -- ObjC selector: @- hasAccessToAllHosts@
 hasAccessToAllHosts :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasAccessToAllHosts wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasAccessToAllHosts") retCULong []
+hasAccessToAllHosts wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasAccessToAllHostsSelector
 
 -- | A Boolean value indicating whether the extension has script or stylesheet content that can be injected into webpages.
 --
@@ -1208,8 +1170,8 @@ hasAccessToAllHosts wkWebExtensionContext  =
 --
 -- ObjC selector: @- hasInjectedContent@
 hasInjectedContent :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasInjectedContent wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasInjectedContent") retCULong []
+hasInjectedContent wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasInjectedContentSelector
 
 -- | A boolean value indicating whether the extension includes rules used for content modification or blocking.
 --
@@ -1217,8 +1179,8 @@ hasInjectedContent wkWebExtensionContext  =
 --
 -- ObjC selector: @- hasContentModificationRules@
 hasContentModificationRules :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO Bool
-hasContentModificationRules wkWebExtensionContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionContext (mkSelector "hasContentModificationRules") retCULong []
+hasContentModificationRules wkWebExtensionContext =
+  sendMessage wkWebExtensionContext hasContentModificationRulesSelector
 
 -- | The commands associated with the extension.
 --
@@ -1228,8 +1190,8 @@ hasContentModificationRules wkWebExtensionContext  =
 --
 -- ObjC selector: @- commands@
 commands :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSArray)
-commands wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "commands") (retPtr retVoid) [] >>= retainedObject . castPtr
+commands wkWebExtensionContext =
+  sendMessage wkWebExtensionContext commandsSelector
 
 -- | The open windows that are exposed to this extension.
 --
@@ -1241,8 +1203,8 @@ commands wkWebExtensionContext  =
 --
 -- ObjC selector: @- openWindows@
 openWindows :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSArray)
-openWindows wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "openWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+openWindows wkWebExtensionContext =
+  sendMessage wkWebExtensionContext openWindowsSelector
 
 -- | The window that currently has focus for this extension.
 --
@@ -1252,8 +1214,8 @@ openWindows wkWebExtensionContext  =
 --
 -- ObjC selector: @- focusedWindow@
 focusedWindow :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO RawId
-focusedWindow wkWebExtensionContext  =
-    fmap (RawId . castPtr) $ sendMsg wkWebExtensionContext (mkSelector "focusedWindow") (retPtr retVoid) []
+focusedWindow wkWebExtensionContext =
+  sendMessage wkWebExtensionContext focusedWindowSelector
 
 -- | A set of open tabs in all open windows that are exposed to this extension.
 --
@@ -1265,334 +1227,334 @@ focusedWindow wkWebExtensionContext  =
 --
 -- ObjC selector: @- openTabs@
 openTabs :: IsWKWebExtensionContext wkWebExtensionContext => wkWebExtensionContext -> IO (Id NSSet)
-openTabs wkWebExtensionContext  =
-    sendMsg wkWebExtensionContext (mkSelector "openTabs") (retPtr retVoid) [] >>= retainedObject . castPtr
+openTabs wkWebExtensionContext =
+  sendMessage wkWebExtensionContext openTabsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionContext)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @contextForExtension:@
-contextForExtensionSelector :: Selector
+contextForExtensionSelector :: Selector '[Id WKWebExtension] (Id WKWebExtensionContext)
 contextForExtensionSelector = mkSelector "contextForExtension:"
 
 -- | @Selector@ for @initForExtension:@
-initForExtensionSelector :: Selector
+initForExtensionSelector :: Selector '[Id WKWebExtension] (Id WKWebExtensionContext)
 initForExtensionSelector = mkSelector "initForExtension:"
 
 -- | @Selector@ for @hasPermission:@
-hasPermissionSelector :: Selector
+hasPermissionSelector :: Selector '[Id NSString] Bool
 hasPermissionSelector = mkSelector "hasPermission:"
 
 -- | @Selector@ for @hasPermission:inTab:@
-hasPermission_inTabSelector :: Selector
+hasPermission_inTabSelector :: Selector '[Id NSString, RawId] Bool
 hasPermission_inTabSelector = mkSelector "hasPermission:inTab:"
 
 -- | @Selector@ for @hasAccessToURL:@
-hasAccessToURLSelector :: Selector
+hasAccessToURLSelector :: Selector '[Id NSURL] Bool
 hasAccessToURLSelector = mkSelector "hasAccessToURL:"
 
 -- | @Selector@ for @hasAccessToURL:inTab:@
-hasAccessToURL_inTabSelector :: Selector
+hasAccessToURL_inTabSelector :: Selector '[Id NSURL, RawId] Bool
 hasAccessToURL_inTabSelector = mkSelector "hasAccessToURL:inTab:"
 
 -- | @Selector@ for @hasInjectedContentForURL:@
-hasInjectedContentForURLSelector :: Selector
+hasInjectedContentForURLSelector :: Selector '[Id NSURL] Bool
 hasInjectedContentForURLSelector = mkSelector "hasInjectedContentForURL:"
 
 -- | @Selector@ for @permissionStatusForPermission:@
-permissionStatusForPermissionSelector :: Selector
+permissionStatusForPermissionSelector :: Selector '[Id NSString] WKWebExtensionContextPermissionStatus
 permissionStatusForPermissionSelector = mkSelector "permissionStatusForPermission:"
 
 -- | @Selector@ for @permissionStatusForPermission:inTab:@
-permissionStatusForPermission_inTabSelector :: Selector
+permissionStatusForPermission_inTabSelector :: Selector '[Id NSString, RawId] WKWebExtensionContextPermissionStatus
 permissionStatusForPermission_inTabSelector = mkSelector "permissionStatusForPermission:inTab:"
 
 -- | @Selector@ for @setPermissionStatus:forPermission:@
-setPermissionStatus_forPermissionSelector :: Selector
+setPermissionStatus_forPermissionSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id NSString] ()
 setPermissionStatus_forPermissionSelector = mkSelector "setPermissionStatus:forPermission:"
 
 -- | @Selector@ for @setPermissionStatus:forPermission:expirationDate:@
-setPermissionStatus_forPermission_expirationDateSelector :: Selector
+setPermissionStatus_forPermission_expirationDateSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id NSString, Id NSDate] ()
 setPermissionStatus_forPermission_expirationDateSelector = mkSelector "setPermissionStatus:forPermission:expirationDate:"
 
 -- | @Selector@ for @permissionStatusForURL:@
-permissionStatusForURLSelector :: Selector
+permissionStatusForURLSelector :: Selector '[Id NSURL] WKWebExtensionContextPermissionStatus
 permissionStatusForURLSelector = mkSelector "permissionStatusForURL:"
 
 -- | @Selector@ for @permissionStatusForURL:inTab:@
-permissionStatusForURL_inTabSelector :: Selector
+permissionStatusForURL_inTabSelector :: Selector '[Id NSURL, RawId] WKWebExtensionContextPermissionStatus
 permissionStatusForURL_inTabSelector = mkSelector "permissionStatusForURL:inTab:"
 
 -- | @Selector@ for @setPermissionStatus:forURL:@
-setPermissionStatus_forURLSelector :: Selector
+setPermissionStatus_forURLSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id NSURL] ()
 setPermissionStatus_forURLSelector = mkSelector "setPermissionStatus:forURL:"
 
 -- | @Selector@ for @setPermissionStatus:forURL:expirationDate:@
-setPermissionStatus_forURL_expirationDateSelector :: Selector
+setPermissionStatus_forURL_expirationDateSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id NSURL, Id NSDate] ()
 setPermissionStatus_forURL_expirationDateSelector = mkSelector "setPermissionStatus:forURL:expirationDate:"
 
 -- | @Selector@ for @permissionStatusForMatchPattern:@
-permissionStatusForMatchPatternSelector :: Selector
+permissionStatusForMatchPatternSelector :: Selector '[Id WKWebExtensionMatchPattern] WKWebExtensionContextPermissionStatus
 permissionStatusForMatchPatternSelector = mkSelector "permissionStatusForMatchPattern:"
 
 -- | @Selector@ for @permissionStatusForMatchPattern:inTab:@
-permissionStatusForMatchPattern_inTabSelector :: Selector
+permissionStatusForMatchPattern_inTabSelector :: Selector '[Id WKWebExtensionMatchPattern, RawId] WKWebExtensionContextPermissionStatus
 permissionStatusForMatchPattern_inTabSelector = mkSelector "permissionStatusForMatchPattern:inTab:"
 
 -- | @Selector@ for @setPermissionStatus:forMatchPattern:@
-setPermissionStatus_forMatchPatternSelector :: Selector
+setPermissionStatus_forMatchPatternSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id WKWebExtensionMatchPattern] ()
 setPermissionStatus_forMatchPatternSelector = mkSelector "setPermissionStatus:forMatchPattern:"
 
 -- | @Selector@ for @setPermissionStatus:forMatchPattern:expirationDate:@
-setPermissionStatus_forMatchPattern_expirationDateSelector :: Selector
+setPermissionStatus_forMatchPattern_expirationDateSelector :: Selector '[WKWebExtensionContextPermissionStatus, Id WKWebExtensionMatchPattern, Id NSDate] ()
 setPermissionStatus_forMatchPattern_expirationDateSelector = mkSelector "setPermissionStatus:forMatchPattern:expirationDate:"
 
 -- | @Selector@ for @loadBackgroundContentWithCompletionHandler:@
-loadBackgroundContentWithCompletionHandlerSelector :: Selector
+loadBackgroundContentWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadBackgroundContentWithCompletionHandlerSelector = mkSelector "loadBackgroundContentWithCompletionHandler:"
 
 -- | @Selector@ for @actionForTab:@
-actionForTabSelector :: Selector
+actionForTabSelector :: Selector '[RawId] (Id WKWebExtensionAction)
 actionForTabSelector = mkSelector "actionForTab:"
 
 -- | @Selector@ for @performActionForTab:@
-performActionForTabSelector :: Selector
+performActionForTabSelector :: Selector '[RawId] ()
 performActionForTabSelector = mkSelector "performActionForTab:"
 
 -- | @Selector@ for @performCommand:@
-performCommandSelector :: Selector
+performCommandSelector :: Selector '[Id WKWebExtensionCommand] ()
 performCommandSelector = mkSelector "performCommand:"
 
 -- | @Selector@ for @performCommandForEvent:@
-performCommandForEventSelector :: Selector
+performCommandForEventSelector :: Selector '[Id NSEvent] Bool
 performCommandForEventSelector = mkSelector "performCommandForEvent:"
 
 -- | @Selector@ for @commandForEvent:@
-commandForEventSelector :: Selector
+commandForEventSelector :: Selector '[Id NSEvent] (Id WKWebExtensionCommand)
 commandForEventSelector = mkSelector "commandForEvent:"
 
 -- | @Selector@ for @menuItemsForTab:@
-menuItemsForTabSelector :: Selector
+menuItemsForTabSelector :: Selector '[RawId] (Id NSArray)
 menuItemsForTabSelector = mkSelector "menuItemsForTab:"
 
 -- | @Selector@ for @userGesturePerformedInTab:@
-userGesturePerformedInTabSelector :: Selector
+userGesturePerformedInTabSelector :: Selector '[RawId] ()
 userGesturePerformedInTabSelector = mkSelector "userGesturePerformedInTab:"
 
 -- | @Selector@ for @hasActiveUserGestureInTab:@
-hasActiveUserGestureInTabSelector :: Selector
+hasActiveUserGestureInTabSelector :: Selector '[RawId] Bool
 hasActiveUserGestureInTabSelector = mkSelector "hasActiveUserGestureInTab:"
 
 -- | @Selector@ for @clearUserGestureInTab:@
-clearUserGestureInTabSelector :: Selector
+clearUserGestureInTabSelector :: Selector '[RawId] ()
 clearUserGestureInTabSelector = mkSelector "clearUserGestureInTab:"
 
 -- | @Selector@ for @didOpenWindow:@
-didOpenWindowSelector :: Selector
+didOpenWindowSelector :: Selector '[RawId] ()
 didOpenWindowSelector = mkSelector "didOpenWindow:"
 
 -- | @Selector@ for @didCloseWindow:@
-didCloseWindowSelector :: Selector
+didCloseWindowSelector :: Selector '[RawId] ()
 didCloseWindowSelector = mkSelector "didCloseWindow:"
 
 -- | @Selector@ for @didFocusWindow:@
-didFocusWindowSelector :: Selector
+didFocusWindowSelector :: Selector '[RawId] ()
 didFocusWindowSelector = mkSelector "didFocusWindow:"
 
 -- | @Selector@ for @didOpenTab:@
-didOpenTabSelector :: Selector
+didOpenTabSelector :: Selector '[RawId] ()
 didOpenTabSelector = mkSelector "didOpenTab:"
 
 -- | @Selector@ for @didCloseTab:windowIsClosing:@
-didCloseTab_windowIsClosingSelector :: Selector
+didCloseTab_windowIsClosingSelector :: Selector '[RawId, Bool] ()
 didCloseTab_windowIsClosingSelector = mkSelector "didCloseTab:windowIsClosing:"
 
 -- | @Selector@ for @didActivateTab:previousActiveTab:@
-didActivateTab_previousActiveTabSelector :: Selector
+didActivateTab_previousActiveTabSelector :: Selector '[RawId, RawId] ()
 didActivateTab_previousActiveTabSelector = mkSelector "didActivateTab:previousActiveTab:"
 
 -- | @Selector@ for @didSelectTabs:@
-didSelectTabsSelector :: Selector
+didSelectTabsSelector :: Selector '[Id NSArray] ()
 didSelectTabsSelector = mkSelector "didSelectTabs:"
 
 -- | @Selector@ for @didDeselectTabs:@
-didDeselectTabsSelector :: Selector
+didDeselectTabsSelector :: Selector '[Id NSArray] ()
 didDeselectTabsSelector = mkSelector "didDeselectTabs:"
 
 -- | @Selector@ for @didMoveTab:fromIndex:inWindow:@
-didMoveTab_fromIndex_inWindowSelector :: Selector
+didMoveTab_fromIndex_inWindowSelector :: Selector '[RawId, CULong, RawId] ()
 didMoveTab_fromIndex_inWindowSelector = mkSelector "didMoveTab:fromIndex:inWindow:"
 
 -- | @Selector@ for @didReplaceTab:withTab:@
-didReplaceTab_withTabSelector :: Selector
+didReplaceTab_withTabSelector :: Selector '[RawId, RawId] ()
 didReplaceTab_withTabSelector = mkSelector "didReplaceTab:withTab:"
 
 -- | @Selector@ for @didChangeTabProperties:forTab:@
-didChangeTabProperties_forTabSelector :: Selector
+didChangeTabProperties_forTabSelector :: Selector '[WKWebExtensionTabChangedProperties, RawId] ()
 didChangeTabProperties_forTabSelector = mkSelector "didChangeTabProperties:forTab:"
 
 -- | @Selector@ for @webExtension@
-webExtensionSelector :: Selector
+webExtensionSelector :: Selector '[] (Id WKWebExtension)
 webExtensionSelector = mkSelector "webExtension"
 
 -- | @Selector@ for @webExtensionController@
-webExtensionControllerSelector :: Selector
+webExtensionControllerSelector :: Selector '[] (Id WKWebExtensionController)
 webExtensionControllerSelector = mkSelector "webExtensionController"
 
 -- | @Selector@ for @loaded@
-loadedSelector :: Selector
+loadedSelector :: Selector '[] Bool
 loadedSelector = mkSelector "loaded"
 
 -- | @Selector@ for @errors@
-errorsSelector :: Selector
+errorsSelector :: Selector '[] (Id NSArray)
 errorsSelector = mkSelector "errors"
 
 -- | @Selector@ for @baseURL@
-baseURLSelector :: Selector
+baseURLSelector :: Selector '[] (Id NSURL)
 baseURLSelector = mkSelector "baseURL"
 
 -- | @Selector@ for @setBaseURL:@
-setBaseURLSelector :: Selector
+setBaseURLSelector :: Selector '[Id NSURL] ()
 setBaseURLSelector = mkSelector "setBaseURL:"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSString)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @setUniqueIdentifier:@
-setUniqueIdentifierSelector :: Selector
+setUniqueIdentifierSelector :: Selector '[Id NSString] ()
 setUniqueIdentifierSelector = mkSelector "setUniqueIdentifier:"
 
 -- | @Selector@ for @inspectable@
-inspectableSelector :: Selector
+inspectableSelector :: Selector '[] Bool
 inspectableSelector = mkSelector "inspectable"
 
 -- | @Selector@ for @setInspectable:@
-setInspectableSelector :: Selector
+setInspectableSelector :: Selector '[Bool] ()
 setInspectableSelector = mkSelector "setInspectable:"
 
 -- | @Selector@ for @inspectionName@
-inspectionNameSelector :: Selector
+inspectionNameSelector :: Selector '[] (Id NSString)
 inspectionNameSelector = mkSelector "inspectionName"
 
 -- | @Selector@ for @setInspectionName:@
-setInspectionNameSelector :: Selector
+setInspectionNameSelector :: Selector '[Id NSString] ()
 setInspectionNameSelector = mkSelector "setInspectionName:"
 
 -- | @Selector@ for @unsupportedAPIs@
-unsupportedAPIsSelector :: Selector
+unsupportedAPIsSelector :: Selector '[] (Id NSSet)
 unsupportedAPIsSelector = mkSelector "unsupportedAPIs"
 
 -- | @Selector@ for @setUnsupportedAPIs:@
-setUnsupportedAPIsSelector :: Selector
+setUnsupportedAPIsSelector :: Selector '[Id NSSet] ()
 setUnsupportedAPIsSelector = mkSelector "setUnsupportedAPIs:"
 
 -- | @Selector@ for @webViewConfiguration@
-webViewConfigurationSelector :: Selector
+webViewConfigurationSelector :: Selector '[] (Id WKWebViewConfiguration)
 webViewConfigurationSelector = mkSelector "webViewConfiguration"
 
 -- | @Selector@ for @optionsPageURL@
-optionsPageURLSelector :: Selector
+optionsPageURLSelector :: Selector '[] (Id NSURL)
 optionsPageURLSelector = mkSelector "optionsPageURL"
 
 -- | @Selector@ for @overrideNewTabPageURL@
-overrideNewTabPageURLSelector :: Selector
+overrideNewTabPageURLSelector :: Selector '[] (Id NSURL)
 overrideNewTabPageURLSelector = mkSelector "overrideNewTabPageURL"
 
 -- | @Selector@ for @grantedPermissions@
-grantedPermissionsSelector :: Selector
+grantedPermissionsSelector :: Selector '[] (Id NSDictionary)
 grantedPermissionsSelector = mkSelector "grantedPermissions"
 
 -- | @Selector@ for @setGrantedPermissions:@
-setGrantedPermissionsSelector :: Selector
+setGrantedPermissionsSelector :: Selector '[Id NSDictionary] ()
 setGrantedPermissionsSelector = mkSelector "setGrantedPermissions:"
 
 -- | @Selector@ for @grantedPermissionMatchPatterns@
-grantedPermissionMatchPatternsSelector :: Selector
+grantedPermissionMatchPatternsSelector :: Selector '[] (Id NSDictionary)
 grantedPermissionMatchPatternsSelector = mkSelector "grantedPermissionMatchPatterns"
 
 -- | @Selector@ for @setGrantedPermissionMatchPatterns:@
-setGrantedPermissionMatchPatternsSelector :: Selector
+setGrantedPermissionMatchPatternsSelector :: Selector '[Id NSDictionary] ()
 setGrantedPermissionMatchPatternsSelector = mkSelector "setGrantedPermissionMatchPatterns:"
 
 -- | @Selector@ for @deniedPermissions@
-deniedPermissionsSelector :: Selector
+deniedPermissionsSelector :: Selector '[] (Id NSDictionary)
 deniedPermissionsSelector = mkSelector "deniedPermissions"
 
 -- | @Selector@ for @setDeniedPermissions:@
-setDeniedPermissionsSelector :: Selector
+setDeniedPermissionsSelector :: Selector '[Id NSDictionary] ()
 setDeniedPermissionsSelector = mkSelector "setDeniedPermissions:"
 
 -- | @Selector@ for @deniedPermissionMatchPatterns@
-deniedPermissionMatchPatternsSelector :: Selector
+deniedPermissionMatchPatternsSelector :: Selector '[] (Id NSDictionary)
 deniedPermissionMatchPatternsSelector = mkSelector "deniedPermissionMatchPatterns"
 
 -- | @Selector@ for @setDeniedPermissionMatchPatterns:@
-setDeniedPermissionMatchPatternsSelector :: Selector
+setDeniedPermissionMatchPatternsSelector :: Selector '[Id NSDictionary] ()
 setDeniedPermissionMatchPatternsSelector = mkSelector "setDeniedPermissionMatchPatterns:"
 
 -- | @Selector@ for @hasRequestedOptionalAccessToAllHosts@
-hasRequestedOptionalAccessToAllHostsSelector :: Selector
+hasRequestedOptionalAccessToAllHostsSelector :: Selector '[] Bool
 hasRequestedOptionalAccessToAllHostsSelector = mkSelector "hasRequestedOptionalAccessToAllHosts"
 
 -- | @Selector@ for @setHasRequestedOptionalAccessToAllHosts:@
-setHasRequestedOptionalAccessToAllHostsSelector :: Selector
+setHasRequestedOptionalAccessToAllHostsSelector :: Selector '[Bool] ()
 setHasRequestedOptionalAccessToAllHostsSelector = mkSelector "setHasRequestedOptionalAccessToAllHosts:"
 
 -- | @Selector@ for @hasAccessToPrivateData@
-hasAccessToPrivateDataSelector :: Selector
+hasAccessToPrivateDataSelector :: Selector '[] Bool
 hasAccessToPrivateDataSelector = mkSelector "hasAccessToPrivateData"
 
 -- | @Selector@ for @setHasAccessToPrivateData:@
-setHasAccessToPrivateDataSelector :: Selector
+setHasAccessToPrivateDataSelector :: Selector '[Bool] ()
 setHasAccessToPrivateDataSelector = mkSelector "setHasAccessToPrivateData:"
 
 -- | @Selector@ for @currentPermissions@
-currentPermissionsSelector :: Selector
+currentPermissionsSelector :: Selector '[] (Id NSSet)
 currentPermissionsSelector = mkSelector "currentPermissions"
 
 -- | @Selector@ for @currentPermissionMatchPatterns@
-currentPermissionMatchPatternsSelector :: Selector
+currentPermissionMatchPatternsSelector :: Selector '[] (Id NSSet)
 currentPermissionMatchPatternsSelector = mkSelector "currentPermissionMatchPatterns"
 
 -- | @Selector@ for @hasAccessToAllURLs@
-hasAccessToAllURLsSelector :: Selector
+hasAccessToAllURLsSelector :: Selector '[] Bool
 hasAccessToAllURLsSelector = mkSelector "hasAccessToAllURLs"
 
 -- | @Selector@ for @hasAccessToAllHosts@
-hasAccessToAllHostsSelector :: Selector
+hasAccessToAllHostsSelector :: Selector '[] Bool
 hasAccessToAllHostsSelector = mkSelector "hasAccessToAllHosts"
 
 -- | @Selector@ for @hasInjectedContent@
-hasInjectedContentSelector :: Selector
+hasInjectedContentSelector :: Selector '[] Bool
 hasInjectedContentSelector = mkSelector "hasInjectedContent"
 
 -- | @Selector@ for @hasContentModificationRules@
-hasContentModificationRulesSelector :: Selector
+hasContentModificationRulesSelector :: Selector '[] Bool
 hasContentModificationRulesSelector = mkSelector "hasContentModificationRules"
 
 -- | @Selector@ for @commands@
-commandsSelector :: Selector
+commandsSelector :: Selector '[] (Id NSArray)
 commandsSelector = mkSelector "commands"
 
 -- | @Selector@ for @openWindows@
-openWindowsSelector :: Selector
+openWindowsSelector :: Selector '[] (Id NSArray)
 openWindowsSelector = mkSelector "openWindows"
 
 -- | @Selector@ for @focusedWindow@
-focusedWindowSelector :: Selector
+focusedWindowSelector :: Selector '[] RawId
 focusedWindowSelector = mkSelector "focusedWindow"
 
 -- | @Selector@ for @openTabs@
-openTabsSelector :: Selector
+openTabsSelector :: Selector '[] (Id NSSet)
 openTabsSelector = mkSelector "openTabs"
 

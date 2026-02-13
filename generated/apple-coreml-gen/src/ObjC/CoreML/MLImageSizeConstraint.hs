@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.CoreML.MLImageSizeConstraint
   , pixelsWideRange
   , pixelsHighRange
   , enumeratedImageSizes
-  , typeSelector
-  , pixelsWideRangeSelector
-  , pixelsHighRangeSelector
   , enumeratedImageSizesSelector
+  , pixelsHighRangeSelector
+  , pixelsWideRangeSelector
+  , typeSelector
 
   -- * Enum types
   , MLImageSizeConstraintType(MLImageSizeConstraintType)
@@ -24,15 +25,11 @@ module ObjC.CoreML.MLImageSizeConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,41 +40,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- type@
 type_ :: IsMLImageSizeConstraint mlImageSizeConstraint => mlImageSizeConstraint -> IO MLImageSizeConstraintType
-type_ mlImageSizeConstraint  =
-    fmap (coerce :: CLong -> MLImageSizeConstraintType) $ sendMsg mlImageSizeConstraint (mkSelector "type") retCLong []
+type_ mlImageSizeConstraint =
+  sendMessage mlImageSizeConstraint typeSelector
 
 -- | @- pixelsWideRange@
 pixelsWideRange :: IsMLImageSizeConstraint mlImageSizeConstraint => mlImageSizeConstraint -> IO NSRange
-pixelsWideRange mlImageSizeConstraint  =
-    sendMsgStret mlImageSizeConstraint (mkSelector "pixelsWideRange") retNSRange []
+pixelsWideRange mlImageSizeConstraint =
+  sendMessage mlImageSizeConstraint pixelsWideRangeSelector
 
 -- | @- pixelsHighRange@
 pixelsHighRange :: IsMLImageSizeConstraint mlImageSizeConstraint => mlImageSizeConstraint -> IO NSRange
-pixelsHighRange mlImageSizeConstraint  =
-    sendMsgStret mlImageSizeConstraint (mkSelector "pixelsHighRange") retNSRange []
+pixelsHighRange mlImageSizeConstraint =
+  sendMessage mlImageSizeConstraint pixelsHighRangeSelector
 
 -- | @- enumeratedImageSizes@
 enumeratedImageSizes :: IsMLImageSizeConstraint mlImageSizeConstraint => mlImageSizeConstraint -> IO (Id NSArray)
-enumeratedImageSizes mlImageSizeConstraint  =
-    sendMsg mlImageSizeConstraint (mkSelector "enumeratedImageSizes") (retPtr retVoid) [] >>= retainedObject . castPtr
+enumeratedImageSizes mlImageSizeConstraint =
+  sendMessage mlImageSizeConstraint enumeratedImageSizesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MLImageSizeConstraintType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @pixelsWideRange@
-pixelsWideRangeSelector :: Selector
+pixelsWideRangeSelector :: Selector '[] NSRange
 pixelsWideRangeSelector = mkSelector "pixelsWideRange"
 
 -- | @Selector@ for @pixelsHighRange@
-pixelsHighRangeSelector :: Selector
+pixelsHighRangeSelector :: Selector '[] NSRange
 pixelsHighRangeSelector = mkSelector "pixelsHighRange"
 
 -- | @Selector@ for @enumeratedImageSizes@
-enumeratedImageSizesSelector :: Selector
+enumeratedImageSizesSelector :: Selector '[] (Id NSArray)
 enumeratedImageSizesSelector = mkSelector "enumeratedImageSizes"
 

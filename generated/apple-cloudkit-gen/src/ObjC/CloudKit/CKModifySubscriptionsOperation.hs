@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CloudKit.CKModifySubscriptionsOperation
   , setPerSubscriptionDeleteBlock
   , initSelector
   , initWithSubscriptionsToSave_subscriptionIDsToDeleteSelector
-  , subscriptionsToSaveSelector
+  , perSubscriptionDeleteBlockSelector
+  , perSubscriptionSaveBlockSelector
+  , setPerSubscriptionDeleteBlockSelector
+  , setPerSubscriptionSaveBlockSelector
+  , setSubscriptionIDsToDeleteSelector
   , setSubscriptionsToSaveSelector
   , subscriptionIDsToDeleteSelector
-  , setSubscriptionIDsToDeleteSelector
-  , perSubscriptionSaveBlockSelector
-  , setPerSubscriptionSaveBlockSelector
-  , perSubscriptionDeleteBlockSelector
-  , setPerSubscriptionDeleteBlockSelector
+  , subscriptionsToSaveSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,37 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> IO (Id CKModifySubscriptionsOperation)
-init_ ckModifySubscriptionsOperation  =
-    sendMsg ckModifySubscriptionsOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckModifySubscriptionsOperation =
+  sendOwnedMessage ckModifySubscriptionsOperation initSelector
 
 -- | @- initWithSubscriptionsToSave:subscriptionIDsToDelete:@
 initWithSubscriptionsToSave_subscriptionIDsToDelete :: (IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation, IsNSArray subscriptionsToSave, IsNSArray subscriptionIDsToDelete) => ckModifySubscriptionsOperation -> subscriptionsToSave -> subscriptionIDsToDelete -> IO (Id CKModifySubscriptionsOperation)
-initWithSubscriptionsToSave_subscriptionIDsToDelete ckModifySubscriptionsOperation  subscriptionsToSave subscriptionIDsToDelete =
-  withObjCPtr subscriptionsToSave $ \raw_subscriptionsToSave ->
-    withObjCPtr subscriptionIDsToDelete $ \raw_subscriptionIDsToDelete ->
-        sendMsg ckModifySubscriptionsOperation (mkSelector "initWithSubscriptionsToSave:subscriptionIDsToDelete:") (retPtr retVoid) [argPtr (castPtr raw_subscriptionsToSave :: Ptr ()), argPtr (castPtr raw_subscriptionIDsToDelete :: Ptr ())] >>= ownedObject . castPtr
+initWithSubscriptionsToSave_subscriptionIDsToDelete ckModifySubscriptionsOperation subscriptionsToSave subscriptionIDsToDelete =
+  sendOwnedMessage ckModifySubscriptionsOperation initWithSubscriptionsToSave_subscriptionIDsToDeleteSelector (toNSArray subscriptionsToSave) (toNSArray subscriptionIDsToDelete)
 
 -- | @- subscriptionsToSave@
 subscriptionsToSave :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> IO (Id NSArray)
-subscriptionsToSave ckModifySubscriptionsOperation  =
-    sendMsg ckModifySubscriptionsOperation (mkSelector "subscriptionsToSave") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionsToSave ckModifySubscriptionsOperation =
+  sendMessage ckModifySubscriptionsOperation subscriptionsToSaveSelector
 
 -- | @- setSubscriptionsToSave:@
 setSubscriptionsToSave :: (IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation, IsNSArray value) => ckModifySubscriptionsOperation -> value -> IO ()
-setSubscriptionsToSave ckModifySubscriptionsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifySubscriptionsOperation (mkSelector "setSubscriptionsToSave:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionsToSave ckModifySubscriptionsOperation value =
+  sendMessage ckModifySubscriptionsOperation setSubscriptionsToSaveSelector (toNSArray value)
 
 -- | @- subscriptionIDsToDelete@
 subscriptionIDsToDelete :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> IO (Id NSArray)
-subscriptionIDsToDelete ckModifySubscriptionsOperation  =
-    sendMsg ckModifySubscriptionsOperation (mkSelector "subscriptionIDsToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionIDsToDelete ckModifySubscriptionsOperation =
+  sendMessage ckModifySubscriptionsOperation subscriptionIDsToDeleteSelector
 
 -- | @- setSubscriptionIDsToDelete:@
 setSubscriptionIDsToDelete :: (IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation, IsNSArray value) => ckModifySubscriptionsOperation -> value -> IO ()
-setSubscriptionIDsToDelete ckModifySubscriptionsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifySubscriptionsOperation (mkSelector "setSubscriptionIDsToDelete:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionIDsToDelete ckModifySubscriptionsOperation value =
+  sendMessage ckModifySubscriptionsOperation setSubscriptionIDsToDeleteSelector (toNSArray value)
 
 -- | Called on success or failure of a subscription save
 --
@@ -85,8 +78,8 @@ setSubscriptionIDsToDelete ckModifySubscriptionsOperation  value =
 --
 -- ObjC selector: @- perSubscriptionSaveBlock@
 perSubscriptionSaveBlock :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> IO (Ptr ())
-perSubscriptionSaveBlock ckModifySubscriptionsOperation  =
-    fmap castPtr $ sendMsg ckModifySubscriptionsOperation (mkSelector "perSubscriptionSaveBlock") (retPtr retVoid) []
+perSubscriptionSaveBlock ckModifySubscriptionsOperation =
+  sendMessage ckModifySubscriptionsOperation perSubscriptionSaveBlockSelector
 
 -- | Called on success or failure of a subscription save
 --
@@ -94,8 +87,8 @@ perSubscriptionSaveBlock ckModifySubscriptionsOperation  =
 --
 -- ObjC selector: @- setPerSubscriptionSaveBlock:@
 setPerSubscriptionSaveBlock :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> Ptr () -> IO ()
-setPerSubscriptionSaveBlock ckModifySubscriptionsOperation  value =
-    sendMsg ckModifySubscriptionsOperation (mkSelector "setPerSubscriptionSaveBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerSubscriptionSaveBlock ckModifySubscriptionsOperation value =
+  sendMessage ckModifySubscriptionsOperation setPerSubscriptionSaveBlockSelector value
 
 -- | Called on success or failure of a subscription deletion
 --
@@ -103,8 +96,8 @@ setPerSubscriptionSaveBlock ckModifySubscriptionsOperation  value =
 --
 -- ObjC selector: @- perSubscriptionDeleteBlock@
 perSubscriptionDeleteBlock :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> IO (Ptr ())
-perSubscriptionDeleteBlock ckModifySubscriptionsOperation  =
-    fmap castPtr $ sendMsg ckModifySubscriptionsOperation (mkSelector "perSubscriptionDeleteBlock") (retPtr retVoid) []
+perSubscriptionDeleteBlock ckModifySubscriptionsOperation =
+  sendMessage ckModifySubscriptionsOperation perSubscriptionDeleteBlockSelector
 
 -- | Called on success or failure of a subscription deletion
 --
@@ -112,50 +105,50 @@ perSubscriptionDeleteBlock ckModifySubscriptionsOperation  =
 --
 -- ObjC selector: @- setPerSubscriptionDeleteBlock:@
 setPerSubscriptionDeleteBlock :: IsCKModifySubscriptionsOperation ckModifySubscriptionsOperation => ckModifySubscriptionsOperation -> Ptr () -> IO ()
-setPerSubscriptionDeleteBlock ckModifySubscriptionsOperation  value =
-    sendMsg ckModifySubscriptionsOperation (mkSelector "setPerSubscriptionDeleteBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerSubscriptionDeleteBlock ckModifySubscriptionsOperation value =
+  sendMessage ckModifySubscriptionsOperation setPerSubscriptionDeleteBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKModifySubscriptionsOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSubscriptionsToSave:subscriptionIDsToDelete:@
-initWithSubscriptionsToSave_subscriptionIDsToDeleteSelector :: Selector
+initWithSubscriptionsToSave_subscriptionIDsToDeleteSelector :: Selector '[Id NSArray, Id NSArray] (Id CKModifySubscriptionsOperation)
 initWithSubscriptionsToSave_subscriptionIDsToDeleteSelector = mkSelector "initWithSubscriptionsToSave:subscriptionIDsToDelete:"
 
 -- | @Selector@ for @subscriptionsToSave@
-subscriptionsToSaveSelector :: Selector
+subscriptionsToSaveSelector :: Selector '[] (Id NSArray)
 subscriptionsToSaveSelector = mkSelector "subscriptionsToSave"
 
 -- | @Selector@ for @setSubscriptionsToSave:@
-setSubscriptionsToSaveSelector :: Selector
+setSubscriptionsToSaveSelector :: Selector '[Id NSArray] ()
 setSubscriptionsToSaveSelector = mkSelector "setSubscriptionsToSave:"
 
 -- | @Selector@ for @subscriptionIDsToDelete@
-subscriptionIDsToDeleteSelector :: Selector
+subscriptionIDsToDeleteSelector :: Selector '[] (Id NSArray)
 subscriptionIDsToDeleteSelector = mkSelector "subscriptionIDsToDelete"
 
 -- | @Selector@ for @setSubscriptionIDsToDelete:@
-setSubscriptionIDsToDeleteSelector :: Selector
+setSubscriptionIDsToDeleteSelector :: Selector '[Id NSArray] ()
 setSubscriptionIDsToDeleteSelector = mkSelector "setSubscriptionIDsToDelete:"
 
 -- | @Selector@ for @perSubscriptionSaveBlock@
-perSubscriptionSaveBlockSelector :: Selector
+perSubscriptionSaveBlockSelector :: Selector '[] (Ptr ())
 perSubscriptionSaveBlockSelector = mkSelector "perSubscriptionSaveBlock"
 
 -- | @Selector@ for @setPerSubscriptionSaveBlock:@
-setPerSubscriptionSaveBlockSelector :: Selector
+setPerSubscriptionSaveBlockSelector :: Selector '[Ptr ()] ()
 setPerSubscriptionSaveBlockSelector = mkSelector "setPerSubscriptionSaveBlock:"
 
 -- | @Selector@ for @perSubscriptionDeleteBlock@
-perSubscriptionDeleteBlockSelector :: Selector
+perSubscriptionDeleteBlockSelector :: Selector '[] (Ptr ())
 perSubscriptionDeleteBlockSelector = mkSelector "perSubscriptionDeleteBlock"
 
 -- | @Selector@ for @setPerSubscriptionDeleteBlock:@
-setPerSubscriptionDeleteBlockSelector :: Selector
+setPerSubscriptionDeleteBlockSelector :: Selector '[Ptr ()] ()
 setPerSubscriptionDeleteBlockSelector = mkSelector "setPerSubscriptionDeleteBlock:"
 

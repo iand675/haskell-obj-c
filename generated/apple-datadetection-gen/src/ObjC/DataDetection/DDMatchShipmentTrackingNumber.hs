@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.DataDetection.DDMatchShipmentTrackingNumber
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- carrier@
 carrier :: IsDDMatchShipmentTrackingNumber ddMatchShipmentTrackingNumber => ddMatchShipmentTrackingNumber -> IO (Id NSString)
-carrier ddMatchShipmentTrackingNumber  =
-    sendMsg ddMatchShipmentTrackingNumber (mkSelector "carrier") (retPtr retVoid) [] >>= retainedObject . castPtr
+carrier ddMatchShipmentTrackingNumber =
+  sendMessage ddMatchShipmentTrackingNumber carrierSelector
 
 -- | A string that represents a carrier’s tracking identifier for a parcel.
 --
 -- ObjC selector: @- trackingNumber@
 trackingNumber :: IsDDMatchShipmentTrackingNumber ddMatchShipmentTrackingNumber => ddMatchShipmentTrackingNumber -> IO (Id NSString)
-trackingNumber ddMatchShipmentTrackingNumber  =
-    sendMsg ddMatchShipmentTrackingNumber (mkSelector "trackingNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackingNumber ddMatchShipmentTrackingNumber =
+  sendMessage ddMatchShipmentTrackingNumber trackingNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @carrier@
-carrierSelector :: Selector
+carrierSelector :: Selector '[] (Id NSString)
 carrierSelector = mkSelector "carrier"
 
 -- | @Selector@ for @trackingNumber@
-trackingNumberSelector :: Selector
+trackingNumberSelector :: Selector '[] (Id NSString)
 trackingNumberSelector = mkSelector "trackingNumber"
 

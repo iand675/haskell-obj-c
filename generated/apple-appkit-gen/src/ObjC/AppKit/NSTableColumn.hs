@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,38 +40,38 @@ module ObjC.AppKit.NSTableColumn
   , setHidden
   , dataCell
   , setDataCell
-  , initWithIdentifierSelector
-  , initWithCoderSelector
-  , sizeToFitSelector
-  , setResizableSelector
-  , isResizableSelector
   , dataCellForRowSelector
-  , identifierSelector
-  , setIdentifierSelector
-  , tableViewSelector
-  , setTableViewSelector
-  , widthSelector
-  , setWidthSelector
-  , minWidthSelector
-  , setMinWidthSelector
-  , maxWidthSelector
-  , setMaxWidthSelector
-  , titleSelector
-  , setTitleSelector
-  , headerCellSelector
-  , setHeaderCellSelector
-  , editableSelector
-  , setEditableSelector
-  , sortDescriptorPrototypeSelector
-  , setSortDescriptorPrototypeSelector
-  , resizingMaskSelector
-  , setResizingMaskSelector
-  , headerToolTipSelector
-  , setHeaderToolTipSelector
-  , hiddenSelector
-  , setHiddenSelector
   , dataCellSelector
+  , editableSelector
+  , headerCellSelector
+  , headerToolTipSelector
+  , hiddenSelector
+  , identifierSelector
+  , initWithCoderSelector
+  , initWithIdentifierSelector
+  , isResizableSelector
+  , maxWidthSelector
+  , minWidthSelector
+  , resizingMaskSelector
   , setDataCellSelector
+  , setEditableSelector
+  , setHeaderCellSelector
+  , setHeaderToolTipSelector
+  , setHiddenSelector
+  , setIdentifierSelector
+  , setMaxWidthSelector
+  , setMinWidthSelector
+  , setResizableSelector
+  , setResizingMaskSelector
+  , setSortDescriptorPrototypeSelector
+  , setTableViewSelector
+  , setTitleSelector
+  , setWidthSelector
+  , sizeToFitSelector
+  , sortDescriptorPrototypeSelector
+  , tableViewSelector
+  , titleSelector
+  , widthSelector
 
   -- * Enum types
   , NSTableColumnResizingOptions(NSTableColumnResizingOptions)
@@ -80,15 +81,11 @@ module ObjC.AppKit.NSTableColumn
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -98,301 +95,293 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithIdentifier:@
 initWithIdentifier :: (IsNSTableColumn nsTableColumn, IsNSString identifier) => nsTableColumn -> identifier -> IO (Id NSTableColumn)
-initWithIdentifier nsTableColumn  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg nsTableColumn (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier nsTableColumn identifier =
+  sendOwnedMessage nsTableColumn initWithIdentifierSelector (toNSString identifier)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTableColumn nsTableColumn, IsNSCoder coder) => nsTableColumn -> coder -> IO (Id NSTableColumn)
-initWithCoder nsTableColumn  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTableColumn (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTableColumn coder =
+  sendOwnedMessage nsTableColumn initWithCoderSelector (toNSCoder coder)
 
 -- | @- sizeToFit@
 sizeToFit :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO ()
-sizeToFit nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "sizeToFit") retVoid []
+sizeToFit nsTableColumn =
+  sendMessage nsTableColumn sizeToFitSelector
 
 -- | @- setResizable:@
 setResizable :: IsNSTableColumn nsTableColumn => nsTableColumn -> Bool -> IO ()
-setResizable nsTableColumn  flag =
-    sendMsg nsTableColumn (mkSelector "setResizable:") retVoid [argCULong (if flag then 1 else 0)]
+setResizable nsTableColumn flag =
+  sendMessage nsTableColumn setResizableSelector flag
 
 -- | @- isResizable@
 isResizable :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO Bool
-isResizable nsTableColumn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableColumn (mkSelector "isResizable") retCULong []
+isResizable nsTableColumn =
+  sendMessage nsTableColumn isResizableSelector
 
 -- | @- dataCellForRow:@
 dataCellForRow :: IsNSTableColumn nsTableColumn => nsTableColumn -> CLong -> IO RawId
-dataCellForRow nsTableColumn  row =
-    fmap (RawId . castPtr) $ sendMsg nsTableColumn (mkSelector "dataCellForRow:") (retPtr retVoid) [argCLong row]
+dataCellForRow nsTableColumn row =
+  sendMessage nsTableColumn dataCellForRowSelector row
 
 -- | @- identifier@
 identifier :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSString)
-identifier nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsTableColumn =
+  sendMessage nsTableColumn identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsNSTableColumn nsTableColumn, IsNSString value) => nsTableColumn -> value -> IO ()
-setIdentifier nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier nsTableColumn value =
+  sendMessage nsTableColumn setIdentifierSelector (toNSString value)
 
 -- | @- tableView@
 tableView :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSTableView)
-tableView nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "tableView") (retPtr retVoid) [] >>= retainedObject . castPtr
+tableView nsTableColumn =
+  sendMessage nsTableColumn tableViewSelector
 
 -- | @- setTableView:@
 setTableView :: (IsNSTableColumn nsTableColumn, IsNSTableView value) => nsTableColumn -> value -> IO ()
-setTableView nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setTableView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTableView nsTableColumn value =
+  sendMessage nsTableColumn setTableViewSelector (toNSTableView value)
 
 -- | @- width@
 width :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO CDouble
-width nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "width") retCDouble []
+width nsTableColumn =
+  sendMessage nsTableColumn widthSelector
 
 -- | @- setWidth:@
 setWidth :: IsNSTableColumn nsTableColumn => nsTableColumn -> CDouble -> IO ()
-setWidth nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth nsTableColumn value =
+  sendMessage nsTableColumn setWidthSelector value
 
 -- | @- minWidth@
 minWidth :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO CDouble
-minWidth nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "minWidth") retCDouble []
+minWidth nsTableColumn =
+  sendMessage nsTableColumn minWidthSelector
 
 -- | @- setMinWidth:@
 setMinWidth :: IsNSTableColumn nsTableColumn => nsTableColumn -> CDouble -> IO ()
-setMinWidth nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setMinWidth:") retVoid [argCDouble value]
+setMinWidth nsTableColumn value =
+  sendMessage nsTableColumn setMinWidthSelector value
 
 -- | @- maxWidth@
 maxWidth :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO CDouble
-maxWidth nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "maxWidth") retCDouble []
+maxWidth nsTableColumn =
+  sendMessage nsTableColumn maxWidthSelector
 
 -- | @- setMaxWidth:@
 setMaxWidth :: IsNSTableColumn nsTableColumn => nsTableColumn -> CDouble -> IO ()
-setMaxWidth nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setMaxWidth:") retVoid [argCDouble value]
+setMaxWidth nsTableColumn value =
+  sendMessage nsTableColumn setMaxWidthSelector value
 
 -- | @- title@
 title :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSString)
-title nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsTableColumn =
+  sendMessage nsTableColumn titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSTableColumn nsTableColumn, IsNSString value) => nsTableColumn -> value -> IO ()
-setTitle nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsTableColumn value =
+  sendMessage nsTableColumn setTitleSelector (toNSString value)
 
 -- | @- headerCell@
 headerCell :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSTableHeaderCell)
-headerCell nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "headerCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+headerCell nsTableColumn =
+  sendMessage nsTableColumn headerCellSelector
 
 -- | @- setHeaderCell:@
 setHeaderCell :: (IsNSTableColumn nsTableColumn, IsNSTableHeaderCell value) => nsTableColumn -> value -> IO ()
-setHeaderCell nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setHeaderCell:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeaderCell nsTableColumn value =
+  sendMessage nsTableColumn setHeaderCellSelector (toNSTableHeaderCell value)
 
 -- | @- editable@
 editable :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO Bool
-editable nsTableColumn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableColumn (mkSelector "editable") retCULong []
+editable nsTableColumn =
+  sendMessage nsTableColumn editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSTableColumn nsTableColumn => nsTableColumn -> Bool -> IO ()
-setEditable nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsTableColumn value =
+  sendMessage nsTableColumn setEditableSelector value
 
 -- | @- sortDescriptorPrototype@
 sortDescriptorPrototype :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSSortDescriptor)
-sortDescriptorPrototype nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "sortDescriptorPrototype") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptorPrototype nsTableColumn =
+  sendMessage nsTableColumn sortDescriptorPrototypeSelector
 
 -- | @- setSortDescriptorPrototype:@
 setSortDescriptorPrototype :: (IsNSTableColumn nsTableColumn, IsNSSortDescriptor value) => nsTableColumn -> value -> IO ()
-setSortDescriptorPrototype nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setSortDescriptorPrototype:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSortDescriptorPrototype nsTableColumn value =
+  sendMessage nsTableColumn setSortDescriptorPrototypeSelector (toNSSortDescriptor value)
 
 -- | @- resizingMask@
 resizingMask :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO NSTableColumnResizingOptions
-resizingMask nsTableColumn  =
-    fmap (coerce :: CULong -> NSTableColumnResizingOptions) $ sendMsg nsTableColumn (mkSelector "resizingMask") retCULong []
+resizingMask nsTableColumn =
+  sendMessage nsTableColumn resizingMaskSelector
 
 -- | @- setResizingMask:@
 setResizingMask :: IsNSTableColumn nsTableColumn => nsTableColumn -> NSTableColumnResizingOptions -> IO ()
-setResizingMask nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setResizingMask:") retVoid [argCULong (coerce value)]
+setResizingMask nsTableColumn value =
+  sendMessage nsTableColumn setResizingMaskSelector value
 
 -- | @- headerToolTip@
 headerToolTip :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO (Id NSString)
-headerToolTip nsTableColumn  =
-    sendMsg nsTableColumn (mkSelector "headerToolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+headerToolTip nsTableColumn =
+  sendMessage nsTableColumn headerToolTipSelector
 
 -- | @- setHeaderToolTip:@
 setHeaderToolTip :: (IsNSTableColumn nsTableColumn, IsNSString value) => nsTableColumn -> value -> IO ()
-setHeaderToolTip nsTableColumn  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableColumn (mkSelector "setHeaderToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeaderToolTip nsTableColumn value =
+  sendMessage nsTableColumn setHeaderToolTipSelector (toNSString value)
 
 -- | @- hidden@
 hidden :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO Bool
-hidden nsTableColumn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableColumn (mkSelector "hidden") retCULong []
+hidden nsTableColumn =
+  sendMessage nsTableColumn hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsNSTableColumn nsTableColumn => nsTableColumn -> Bool -> IO ()
-setHidden nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsTableColumn value =
+  sendMessage nsTableColumn setHiddenSelector value
 
 -- | @- dataCell@
 dataCell :: IsNSTableColumn nsTableColumn => nsTableColumn -> IO RawId
-dataCell nsTableColumn  =
-    fmap (RawId . castPtr) $ sendMsg nsTableColumn (mkSelector "dataCell") (retPtr retVoid) []
+dataCell nsTableColumn =
+  sendMessage nsTableColumn dataCellSelector
 
 -- | @- setDataCell:@
 setDataCell :: IsNSTableColumn nsTableColumn => nsTableColumn -> RawId -> IO ()
-setDataCell nsTableColumn  value =
-    sendMsg nsTableColumn (mkSelector "setDataCell:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataCell nsTableColumn value =
+  sendMessage nsTableColumn setDataCellSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id NSTableColumn)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTableColumn)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @sizeToFit@
-sizeToFitSelector :: Selector
+sizeToFitSelector :: Selector '[] ()
 sizeToFitSelector = mkSelector "sizeToFit"
 
 -- | @Selector@ for @setResizable:@
-setResizableSelector :: Selector
+setResizableSelector :: Selector '[Bool] ()
 setResizableSelector = mkSelector "setResizable:"
 
 -- | @Selector@ for @isResizable@
-isResizableSelector :: Selector
+isResizableSelector :: Selector '[] Bool
 isResizableSelector = mkSelector "isResizable"
 
 -- | @Selector@ for @dataCellForRow:@
-dataCellForRowSelector :: Selector
+dataCellForRowSelector :: Selector '[CLong] RawId
 dataCellForRowSelector = mkSelector "dataCellForRow:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @tableView@
-tableViewSelector :: Selector
+tableViewSelector :: Selector '[] (Id NSTableView)
 tableViewSelector = mkSelector "tableView"
 
 -- | @Selector@ for @setTableView:@
-setTableViewSelector :: Selector
+setTableViewSelector :: Selector '[Id NSTableView] ()
 setTableViewSelector = mkSelector "setTableView:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @minWidth@
-minWidthSelector :: Selector
+minWidthSelector :: Selector '[] CDouble
 minWidthSelector = mkSelector "minWidth"
 
 -- | @Selector@ for @setMinWidth:@
-setMinWidthSelector :: Selector
+setMinWidthSelector :: Selector '[CDouble] ()
 setMinWidthSelector = mkSelector "setMinWidth:"
 
 -- | @Selector@ for @maxWidth@
-maxWidthSelector :: Selector
+maxWidthSelector :: Selector '[] CDouble
 maxWidthSelector = mkSelector "maxWidth"
 
 -- | @Selector@ for @setMaxWidth:@
-setMaxWidthSelector :: Selector
+setMaxWidthSelector :: Selector '[CDouble] ()
 setMaxWidthSelector = mkSelector "setMaxWidth:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @headerCell@
-headerCellSelector :: Selector
+headerCellSelector :: Selector '[] (Id NSTableHeaderCell)
 headerCellSelector = mkSelector "headerCell"
 
 -- | @Selector@ for @setHeaderCell:@
-setHeaderCellSelector :: Selector
+setHeaderCellSelector :: Selector '[Id NSTableHeaderCell] ()
 setHeaderCellSelector = mkSelector "setHeaderCell:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @sortDescriptorPrototype@
-sortDescriptorPrototypeSelector :: Selector
+sortDescriptorPrototypeSelector :: Selector '[] (Id NSSortDescriptor)
 sortDescriptorPrototypeSelector = mkSelector "sortDescriptorPrototype"
 
 -- | @Selector@ for @setSortDescriptorPrototype:@
-setSortDescriptorPrototypeSelector :: Selector
+setSortDescriptorPrototypeSelector :: Selector '[Id NSSortDescriptor] ()
 setSortDescriptorPrototypeSelector = mkSelector "setSortDescriptorPrototype:"
 
 -- | @Selector@ for @resizingMask@
-resizingMaskSelector :: Selector
+resizingMaskSelector :: Selector '[] NSTableColumnResizingOptions
 resizingMaskSelector = mkSelector "resizingMask"
 
 -- | @Selector@ for @setResizingMask:@
-setResizingMaskSelector :: Selector
+setResizingMaskSelector :: Selector '[NSTableColumnResizingOptions] ()
 setResizingMaskSelector = mkSelector "setResizingMask:"
 
 -- | @Selector@ for @headerToolTip@
-headerToolTipSelector :: Selector
+headerToolTipSelector :: Selector '[] (Id NSString)
 headerToolTipSelector = mkSelector "headerToolTip"
 
 -- | @Selector@ for @setHeaderToolTip:@
-setHeaderToolTipSelector :: Selector
+setHeaderToolTipSelector :: Selector '[Id NSString] ()
 setHeaderToolTipSelector = mkSelector "setHeaderToolTip:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @dataCell@
-dataCellSelector :: Selector
+dataCellSelector :: Selector '[] RawId
 dataCellSelector = mkSelector "dataCell"
 
 -- | @Selector@ for @setDataCell:@
-setDataCellSelector :: Selector
+setDataCellSelector :: Selector '[RawId] ()
 setDataCellSelector = mkSelector "setDataCell:"
 

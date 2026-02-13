@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Matter.MTRContentLauncherClusterAdditionalInfo
   , setValue
   , nameSelector
   , setNameSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTRContentLauncherClusterAdditionalInfo mtrContentLauncherClusterAdditionalInfo => mtrContentLauncherClusterAdditionalInfo -> IO (Id NSString)
-name mtrContentLauncherClusterAdditionalInfo  =
-    sendMsg mtrContentLauncherClusterAdditionalInfo (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrContentLauncherClusterAdditionalInfo =
+  sendMessage mtrContentLauncherClusterAdditionalInfo nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRContentLauncherClusterAdditionalInfo mtrContentLauncherClusterAdditionalInfo, IsNSString value) => mtrContentLauncherClusterAdditionalInfo -> value -> IO ()
-setName mtrContentLauncherClusterAdditionalInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterAdditionalInfo (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrContentLauncherClusterAdditionalInfo value =
+  sendMessage mtrContentLauncherClusterAdditionalInfo setNameSelector (toNSString value)
 
 -- | @- value@
 value :: IsMTRContentLauncherClusterAdditionalInfo mtrContentLauncherClusterAdditionalInfo => mtrContentLauncherClusterAdditionalInfo -> IO (Id NSString)
-value mtrContentLauncherClusterAdditionalInfo  =
-    sendMsg mtrContentLauncherClusterAdditionalInfo (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrContentLauncherClusterAdditionalInfo =
+  sendMessage mtrContentLauncherClusterAdditionalInfo valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRContentLauncherClusterAdditionalInfo mtrContentLauncherClusterAdditionalInfo, IsNSString value) => mtrContentLauncherClusterAdditionalInfo -> value -> IO ()
-setValue mtrContentLauncherClusterAdditionalInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterAdditionalInfo (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrContentLauncherClusterAdditionalInfo value =
+  sendMessage mtrContentLauncherClusterAdditionalInfo setValueSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 

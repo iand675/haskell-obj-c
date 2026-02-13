@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,57 +59,57 @@ module ObjC.PDFKit.PDFDocument
   , pageClass
   , isFinding
   , selectionForEntireDocument
-  , initSelector
-  , initWithURLSelector
-  , initWithDataSelector
-  , unlockWithPasswordSelector
+  , accessPermissionsSelector
+  , allowsCommentingSelector
+  , allowsContentAccessibilitySelector
+  , allowsCopyingSelector
+  , allowsDocumentAssemblySelector
+  , allowsDocumentChangesSelector
+  , allowsFormFieldEntrySelector
+  , allowsPrintingSelector
+  , beginFindString_withOptionsSelector
+  , beginFindStrings_withOptionsSelector
+  , cancelFindStringSelector
   , dataRepresentationSelector
   , dataRepresentationWithOptionsSelector
+  , delegateSelector
+  , documentAttributesSelector
+  , documentRefSelector
+  , documentURLSelector
+  , exchangePageAtIndex_withPageAtIndexSelector
+  , findString_fromSelection_withOptionsSelector
+  , findString_withOptionsSelector
+  , indexForPageSelector
+  , initSelector
+  , initWithDataSelector
+  , initWithURLSelector
+  , insertPage_atIndexSelector
+  , isEncryptedSelector
+  , isFindingSelector
+  , isLockedSelector
+  , majorVersionSelector
+  , minorVersionSelector
+  , outlineItemForSelectionSelector
+  , outlineRootSelector
+  , pageAtIndexSelector
+  , pageClassSelector
+  , pageCountSelector
+  , permissionsStatusSelector
+  , printOperationForPrintInfo_scalingMode_autoRotateSelector
+  , removePageAtIndexSelector
+  , selectionForEntireDocumentSelector
+  , selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector
+  , selectionFromPage_atPoint_toPage_atPointSelector
+  , selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector
+  , setDelegateSelector
+  , setDocumentAttributesSelector
+  , setOutlineRootSelector
+  , stringSelector
+  , unlockWithPasswordSelector
   , writeToFileSelector
   , writeToFile_withOptionsSelector
   , writeToURLSelector
   , writeToURL_withOptionsSelector
-  , outlineItemForSelectionSelector
-  , pageAtIndexSelector
-  , indexForPageSelector
-  , insertPage_atIndexSelector
-  , removePageAtIndexSelector
-  , exchangePageAtIndex_withPageAtIndexSelector
-  , findString_withOptionsSelector
-  , beginFindString_withOptionsSelector
-  , beginFindStrings_withOptionsSelector
-  , findString_fromSelection_withOptionsSelector
-  , cancelFindStringSelector
-  , printOperationForPrintInfo_scalingMode_autoRotateSelector
-  , selectionFromPage_atPoint_toPage_atPointSelector
-  , selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector
-  , selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector
-  , documentURLSelector
-  , documentRefSelector
-  , documentAttributesSelector
-  , setDocumentAttributesSelector
-  , majorVersionSelector
-  , minorVersionSelector
-  , isEncryptedSelector
-  , isLockedSelector
-  , allowsPrintingSelector
-  , allowsCopyingSelector
-  , allowsDocumentChangesSelector
-  , allowsDocumentAssemblySelector
-  , allowsContentAccessibilitySelector
-  , allowsCommentingSelector
-  , allowsFormFieldEntrySelector
-  , accessPermissionsSelector
-  , permissionsStatusSelector
-  , stringSelector
-  , delegateSelector
-  , setDelegateSelector
-  , outlineRootSelector
-  , setOutlineRootSelector
-  , pageCountSelector
-  , pageClassSelector
-  , isFindingSelector
-  , selectionForEntireDocumentSelector
 
   -- * Enum types
   , NSStringCompareOptions(NSStringCompareOptions)
@@ -145,15 +146,11 @@ module ObjC.PDFKit.PDFDocument
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -166,490 +163,464 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id PDFDocument)
-init_ pdfDocument  =
-    sendMsg pdfDocument (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pdfDocument =
+  sendOwnedMessage pdfDocument initSelector
 
 -- | @- initWithURL:@
 initWithURL :: (IsPDFDocument pdfDocument, IsNSURL url) => pdfDocument -> url -> IO (Id PDFDocument)
-initWithURL pdfDocument  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg pdfDocument (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL pdfDocument url =
+  sendOwnedMessage pdfDocument initWithURLSelector (toNSURL url)
 
 -- | @- initWithData:@
 initWithData :: (IsPDFDocument pdfDocument, IsNSData data_) => pdfDocument -> data_ -> IO (Id PDFDocument)
-initWithData pdfDocument  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg pdfDocument (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData pdfDocument data_ =
+  sendOwnedMessage pdfDocument initWithDataSelector (toNSData data_)
 
 -- | @- unlockWithPassword:@
 unlockWithPassword :: (IsPDFDocument pdfDocument, IsNSString password) => pdfDocument -> password -> IO Bool
-unlockWithPassword pdfDocument  password =
-  withObjCPtr password $ \raw_password ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "unlockWithPassword:") retCULong [argPtr (castPtr raw_password :: Ptr ())]
+unlockWithPassword pdfDocument password =
+  sendMessage pdfDocument unlockWithPasswordSelector (toNSString password)
 
 -- | @- dataRepresentation@
 dataRepresentation :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id NSData)
-dataRepresentation pdfDocument  =
-    sendMsg pdfDocument (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation pdfDocument =
+  sendMessage pdfDocument dataRepresentationSelector
 
 -- | @- dataRepresentationWithOptions:@
 dataRepresentationWithOptions :: (IsPDFDocument pdfDocument, IsNSDictionary options) => pdfDocument -> options -> IO (Id NSData)
-dataRepresentationWithOptions pdfDocument  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg pdfDocument (mkSelector "dataRepresentationWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+dataRepresentationWithOptions pdfDocument options =
+  sendMessage pdfDocument dataRepresentationWithOptionsSelector (toNSDictionary options)
 
 -- | @- writeToFile:@
 writeToFile :: (IsPDFDocument pdfDocument, IsNSString path) => pdfDocument -> path -> IO Bool
-writeToFile pdfDocument  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "writeToFile:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+writeToFile pdfDocument path =
+  sendMessage pdfDocument writeToFileSelector (toNSString path)
 
 -- | @- writeToFile:withOptions:@
 writeToFile_withOptions :: (IsPDFDocument pdfDocument, IsNSString path, IsNSDictionary options) => pdfDocument -> path -> options -> IO Bool
-writeToFile_withOptions pdfDocument  path options =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "writeToFile:withOptions:") retCULong [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+writeToFile_withOptions pdfDocument path options =
+  sendMessage pdfDocument writeToFile_withOptionsSelector (toNSString path) (toNSDictionary options)
 
 -- | @- writeToURL:@
 writeToURL :: (IsPDFDocument pdfDocument, IsNSURL url) => pdfDocument -> url -> IO Bool
-writeToURL pdfDocument  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "writeToURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+writeToURL pdfDocument url =
+  sendMessage pdfDocument writeToURLSelector (toNSURL url)
 
 -- | @- writeToURL:withOptions:@
 writeToURL_withOptions :: (IsPDFDocument pdfDocument, IsNSURL url, IsNSDictionary options) => pdfDocument -> url -> options -> IO Bool
-writeToURL_withOptions pdfDocument  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "writeToURL:withOptions:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+writeToURL_withOptions pdfDocument url options =
+  sendMessage pdfDocument writeToURL_withOptionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | @- outlineItemForSelection:@
 outlineItemForSelection :: (IsPDFDocument pdfDocument, IsPDFSelection selection) => pdfDocument -> selection -> IO (Id PDFOutline)
-outlineItemForSelection pdfDocument  selection =
-  withObjCPtr selection $ \raw_selection ->
-      sendMsg pdfDocument (mkSelector "outlineItemForSelection:") (retPtr retVoid) [argPtr (castPtr raw_selection :: Ptr ())] >>= retainedObject . castPtr
+outlineItemForSelection pdfDocument selection =
+  sendMessage pdfDocument outlineItemForSelectionSelector (toPDFSelection selection)
 
 -- | @- pageAtIndex:@
 pageAtIndex :: IsPDFDocument pdfDocument => pdfDocument -> CULong -> IO (Id PDFPage)
-pageAtIndex pdfDocument  index =
-    sendMsg pdfDocument (mkSelector "pageAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+pageAtIndex pdfDocument index =
+  sendMessage pdfDocument pageAtIndexSelector index
 
 -- | @- indexForPage:@
 indexForPage :: (IsPDFDocument pdfDocument, IsPDFPage page) => pdfDocument -> page -> IO CULong
-indexForPage pdfDocument  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfDocument (mkSelector "indexForPage:") retCULong [argPtr (castPtr raw_page :: Ptr ())]
+indexForPage pdfDocument page =
+  sendMessage pdfDocument indexForPageSelector (toPDFPage page)
 
 -- | @- insertPage:atIndex:@
 insertPage_atIndex :: (IsPDFDocument pdfDocument, IsPDFPage page) => pdfDocument -> page -> CULong -> IO ()
-insertPage_atIndex pdfDocument  page index =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfDocument (mkSelector "insertPage:atIndex:") retVoid [argPtr (castPtr raw_page :: Ptr ()), argCULong index]
+insertPage_atIndex pdfDocument page index =
+  sendMessage pdfDocument insertPage_atIndexSelector (toPDFPage page) index
 
 -- | @- removePageAtIndex:@
 removePageAtIndex :: IsPDFDocument pdfDocument => pdfDocument -> CULong -> IO ()
-removePageAtIndex pdfDocument  index =
-    sendMsg pdfDocument (mkSelector "removePageAtIndex:") retVoid [argCULong index]
+removePageAtIndex pdfDocument index =
+  sendMessage pdfDocument removePageAtIndexSelector index
 
 -- | @- exchangePageAtIndex:withPageAtIndex:@
 exchangePageAtIndex_withPageAtIndex :: IsPDFDocument pdfDocument => pdfDocument -> CULong -> CULong -> IO ()
-exchangePageAtIndex_withPageAtIndex pdfDocument  indexA indexB =
-    sendMsg pdfDocument (mkSelector "exchangePageAtIndex:withPageAtIndex:") retVoid [argCULong indexA, argCULong indexB]
+exchangePageAtIndex_withPageAtIndex pdfDocument indexA indexB =
+  sendMessage pdfDocument exchangePageAtIndex_withPageAtIndexSelector indexA indexB
 
 -- | @- findString:withOptions:@
 findString_withOptions :: (IsPDFDocument pdfDocument, IsNSString string) => pdfDocument -> string -> NSStringCompareOptions -> IO (Id NSArray)
-findString_withOptions pdfDocument  string options =
-  withObjCPtr string $ \raw_string ->
-      sendMsg pdfDocument (mkSelector "findString:withOptions:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+findString_withOptions pdfDocument string options =
+  sendMessage pdfDocument findString_withOptionsSelector (toNSString string) options
 
 -- | @- beginFindString:withOptions:@
 beginFindString_withOptions :: (IsPDFDocument pdfDocument, IsNSString string) => pdfDocument -> string -> NSStringCompareOptions -> IO ()
-beginFindString_withOptions pdfDocument  string options =
-  withObjCPtr string $ \raw_string ->
-      sendMsg pdfDocument (mkSelector "beginFindString:withOptions:") retVoid [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce options)]
+beginFindString_withOptions pdfDocument string options =
+  sendMessage pdfDocument beginFindString_withOptionsSelector (toNSString string) options
 
 -- | @- beginFindStrings:withOptions:@
 beginFindStrings_withOptions :: (IsPDFDocument pdfDocument, IsNSArray strings) => pdfDocument -> strings -> NSStringCompareOptions -> IO ()
-beginFindStrings_withOptions pdfDocument  strings options =
-  withObjCPtr strings $ \raw_strings ->
-      sendMsg pdfDocument (mkSelector "beginFindStrings:withOptions:") retVoid [argPtr (castPtr raw_strings :: Ptr ()), argCULong (coerce options)]
+beginFindStrings_withOptions pdfDocument strings options =
+  sendMessage pdfDocument beginFindStrings_withOptionsSelector (toNSArray strings) options
 
 -- | @- findString:fromSelection:withOptions:@
 findString_fromSelection_withOptions :: (IsPDFDocument pdfDocument, IsNSString string, IsPDFSelection selection) => pdfDocument -> string -> selection -> NSStringCompareOptions -> IO (Id PDFSelection)
-findString_fromSelection_withOptions pdfDocument  string selection options =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr selection $ \raw_selection ->
-        sendMsg pdfDocument (mkSelector "findString:fromSelection:withOptions:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_selection :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+findString_fromSelection_withOptions pdfDocument string selection options =
+  sendMessage pdfDocument findString_fromSelection_withOptionsSelector (toNSString string) (toPDFSelection selection) options
 
 -- | @- cancelFindString@
 cancelFindString :: IsPDFDocument pdfDocument => pdfDocument -> IO ()
-cancelFindString pdfDocument  =
-    sendMsg pdfDocument (mkSelector "cancelFindString") retVoid []
+cancelFindString pdfDocument =
+  sendMessage pdfDocument cancelFindStringSelector
 
 -- | @- printOperationForPrintInfo:scalingMode:autoRotate:@
 printOperationForPrintInfo_scalingMode_autoRotate :: (IsPDFDocument pdfDocument, IsNSPrintInfo printInfo) => pdfDocument -> printInfo -> PDFPrintScalingMode -> Bool -> IO (Id NSPrintOperation)
-printOperationForPrintInfo_scalingMode_autoRotate pdfDocument  printInfo scaleMode doRotate =
-  withObjCPtr printInfo $ \raw_printInfo ->
-      sendMsg pdfDocument (mkSelector "printOperationForPrintInfo:scalingMode:autoRotate:") (retPtr retVoid) [argPtr (castPtr raw_printInfo :: Ptr ()), argCLong (coerce scaleMode), argCULong (if doRotate then 1 else 0)] >>= retainedObject . castPtr
+printOperationForPrintInfo_scalingMode_autoRotate pdfDocument printInfo scaleMode doRotate =
+  sendMessage pdfDocument printOperationForPrintInfo_scalingMode_autoRotateSelector (toNSPrintInfo printInfo) scaleMode doRotate
 
 -- | @- selectionFromPage:atPoint:toPage:atPoint:@
 selectionFromPage_atPoint_toPage_atPoint :: (IsPDFDocument pdfDocument, IsPDFPage startPage, IsPDFPage endPage) => pdfDocument -> startPage -> NSPoint -> endPage -> NSPoint -> IO (Id PDFSelection)
-selectionFromPage_atPoint_toPage_atPoint pdfDocument  startPage startPoint endPage endPoint =
-  withObjCPtr startPage $ \raw_startPage ->
-    withObjCPtr endPage $ \raw_endPage ->
-        sendMsg pdfDocument (mkSelector "selectionFromPage:atPoint:toPage:atPoint:") (retPtr retVoid) [argPtr (castPtr raw_startPage :: Ptr ()), argNSPoint startPoint, argPtr (castPtr raw_endPage :: Ptr ()), argNSPoint endPoint] >>= retainedObject . castPtr
+selectionFromPage_atPoint_toPage_atPoint pdfDocument startPage startPoint endPage endPoint =
+  sendMessage pdfDocument selectionFromPage_atPoint_toPage_atPointSelector (toPDFPage startPage) startPoint (toPDFPage endPage) endPoint
 
 -- | @- selectionFromPage:atPoint:toPage:atPoint:withGranularity:@
 selectionFromPage_atPoint_toPage_atPoint_withGranularity :: (IsPDFDocument pdfDocument, IsPDFPage startPage, IsPDFPage endPage) => pdfDocument -> startPage -> NSPoint -> endPage -> NSPoint -> PDFSelectionGranularity -> IO (Id PDFSelection)
-selectionFromPage_atPoint_toPage_atPoint_withGranularity pdfDocument  startPage startPoint endPage endPoint granularity =
-  withObjCPtr startPage $ \raw_startPage ->
-    withObjCPtr endPage $ \raw_endPage ->
-        sendMsg pdfDocument (mkSelector "selectionFromPage:atPoint:toPage:atPoint:withGranularity:") (retPtr retVoid) [argPtr (castPtr raw_startPage :: Ptr ()), argNSPoint startPoint, argPtr (castPtr raw_endPage :: Ptr ()), argNSPoint endPoint, argCULong (coerce granularity)] >>= retainedObject . castPtr
+selectionFromPage_atPoint_toPage_atPoint_withGranularity pdfDocument startPage startPoint endPage endPoint granularity =
+  sendMessage pdfDocument selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector (toPDFPage startPage) startPoint (toPDFPage endPage) endPoint granularity
 
 -- | @- selectionFromPage:atCharacterIndex:toPage:atCharacterIndex:@
 selectionFromPage_atCharacterIndex_toPage_atCharacterIndex :: (IsPDFDocument pdfDocument, IsPDFPage startPage, IsPDFPage endPage) => pdfDocument -> startPage -> CULong -> endPage -> CULong -> IO (Id PDFSelection)
-selectionFromPage_atCharacterIndex_toPage_atCharacterIndex pdfDocument  startPage startCharacter endPage endCharacter =
-  withObjCPtr startPage $ \raw_startPage ->
-    withObjCPtr endPage $ \raw_endPage ->
-        sendMsg pdfDocument (mkSelector "selectionFromPage:atCharacterIndex:toPage:atCharacterIndex:") (retPtr retVoid) [argPtr (castPtr raw_startPage :: Ptr ()), argCULong startCharacter, argPtr (castPtr raw_endPage :: Ptr ()), argCULong endCharacter] >>= retainedObject . castPtr
+selectionFromPage_atCharacterIndex_toPage_atCharacterIndex pdfDocument startPage startCharacter endPage endCharacter =
+  sendMessage pdfDocument selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector (toPDFPage startPage) startCharacter (toPDFPage endPage) endCharacter
 
 -- | @- documentURL@
 documentURL :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id NSURL)
-documentURL pdfDocument  =
-    sendMsg pdfDocument (mkSelector "documentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentURL pdfDocument =
+  sendMessage pdfDocument documentURLSelector
 
 -- | @- documentRef@
 documentRef :: IsPDFDocument pdfDocument => pdfDocument -> IO (Ptr ())
-documentRef pdfDocument  =
-    fmap castPtr $ sendMsg pdfDocument (mkSelector "documentRef") (retPtr retVoid) []
+documentRef pdfDocument =
+  sendMessage pdfDocument documentRefSelector
 
 -- | @- documentAttributes@
 documentAttributes :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id NSDictionary)
-documentAttributes pdfDocument  =
-    sendMsg pdfDocument (mkSelector "documentAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentAttributes pdfDocument =
+  sendMessage pdfDocument documentAttributesSelector
 
 -- | @- setDocumentAttributes:@
 setDocumentAttributes :: (IsPDFDocument pdfDocument, IsNSDictionary value) => pdfDocument -> value -> IO ()
-setDocumentAttributes pdfDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfDocument (mkSelector "setDocumentAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentAttributes pdfDocument value =
+  sendMessage pdfDocument setDocumentAttributesSelector (toNSDictionary value)
 
 -- | @- majorVersion@
 majorVersion :: IsPDFDocument pdfDocument => pdfDocument -> IO CLong
-majorVersion pdfDocument  =
-    sendMsg pdfDocument (mkSelector "majorVersion") retCLong []
+majorVersion pdfDocument =
+  sendMessage pdfDocument majorVersionSelector
 
 -- | @- minorVersion@
 minorVersion :: IsPDFDocument pdfDocument => pdfDocument -> IO CLong
-minorVersion pdfDocument  =
-    sendMsg pdfDocument (mkSelector "minorVersion") retCLong []
+minorVersion pdfDocument =
+  sendMessage pdfDocument minorVersionSelector
 
 -- | @- isEncrypted@
 isEncrypted :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-isEncrypted pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "isEncrypted") retCULong []
+isEncrypted pdfDocument =
+  sendMessage pdfDocument isEncryptedSelector
 
 -- | @- isLocked@
 isLocked :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-isLocked pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "isLocked") retCULong []
+isLocked pdfDocument =
+  sendMessage pdfDocument isLockedSelector
 
 -- | @- allowsPrinting@
 allowsPrinting :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsPrinting pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsPrinting") retCULong []
+allowsPrinting pdfDocument =
+  sendMessage pdfDocument allowsPrintingSelector
 
 -- | @- allowsCopying@
 allowsCopying :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsCopying pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsCopying") retCULong []
+allowsCopying pdfDocument =
+  sendMessage pdfDocument allowsCopyingSelector
 
 -- | @- allowsDocumentChanges@
 allowsDocumentChanges :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsDocumentChanges pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsDocumentChanges") retCULong []
+allowsDocumentChanges pdfDocument =
+  sendMessage pdfDocument allowsDocumentChangesSelector
 
 -- | @- allowsDocumentAssembly@
 allowsDocumentAssembly :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsDocumentAssembly pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsDocumentAssembly") retCULong []
+allowsDocumentAssembly pdfDocument =
+  sendMessage pdfDocument allowsDocumentAssemblySelector
 
 -- | @- allowsContentAccessibility@
 allowsContentAccessibility :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsContentAccessibility pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsContentAccessibility") retCULong []
+allowsContentAccessibility pdfDocument =
+  sendMessage pdfDocument allowsContentAccessibilitySelector
 
 -- | @- allowsCommenting@
 allowsCommenting :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsCommenting pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsCommenting") retCULong []
+allowsCommenting pdfDocument =
+  sendMessage pdfDocument allowsCommentingSelector
 
 -- | @- allowsFormFieldEntry@
 allowsFormFieldEntry :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-allowsFormFieldEntry pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "allowsFormFieldEntry") retCULong []
+allowsFormFieldEntry pdfDocument =
+  sendMessage pdfDocument allowsFormFieldEntrySelector
 
 -- | @- accessPermissions@
 accessPermissions :: IsPDFDocument pdfDocument => pdfDocument -> IO PDFAccessPermissions
-accessPermissions pdfDocument  =
-    fmap (coerce :: CULong -> PDFAccessPermissions) $ sendMsg pdfDocument (mkSelector "accessPermissions") retCULong []
+accessPermissions pdfDocument =
+  sendMessage pdfDocument accessPermissionsSelector
 
 -- | @- permissionsStatus@
 permissionsStatus :: IsPDFDocument pdfDocument => pdfDocument -> IO PDFDocumentPermissions
-permissionsStatus pdfDocument  =
-    fmap (coerce :: CLong -> PDFDocumentPermissions) $ sendMsg pdfDocument (mkSelector "permissionsStatus") retCLong []
+permissionsStatus pdfDocument =
+  sendMessage pdfDocument permissionsStatusSelector
 
 -- | @- string@
 string :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id NSString)
-string pdfDocument  =
-    sendMsg pdfDocument (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string pdfDocument =
+  sendMessage pdfDocument stringSelector
 
 -- | @- delegate@
 delegate :: IsPDFDocument pdfDocument => pdfDocument -> IO RawId
-delegate pdfDocument  =
-    fmap (RawId . castPtr) $ sendMsg pdfDocument (mkSelector "delegate") (retPtr retVoid) []
+delegate pdfDocument =
+  sendMessage pdfDocument delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsPDFDocument pdfDocument => pdfDocument -> RawId -> IO ()
-setDelegate pdfDocument  value =
-    sendMsg pdfDocument (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate pdfDocument value =
+  sendMessage pdfDocument setDelegateSelector value
 
 -- | @- outlineRoot@
 outlineRoot :: IsPDFDocument pdfDocument => pdfDocument -> IO RawId
-outlineRoot pdfDocument  =
-    fmap (RawId . castPtr) $ sendMsg pdfDocument (mkSelector "outlineRoot") (retPtr retVoid) []
+outlineRoot pdfDocument =
+  sendMessage pdfDocument outlineRootSelector
 
 -- | @- setOutlineRoot:@
 setOutlineRoot :: IsPDFDocument pdfDocument => pdfDocument -> RawId -> IO ()
-setOutlineRoot pdfDocument  value =
-    sendMsg pdfDocument (mkSelector "setOutlineRoot:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutlineRoot pdfDocument value =
+  sendMessage pdfDocument setOutlineRootSelector value
 
 -- | @- pageCount@
 pageCount :: IsPDFDocument pdfDocument => pdfDocument -> IO CULong
-pageCount pdfDocument  =
-    sendMsg pdfDocument (mkSelector "pageCount") retCULong []
+pageCount pdfDocument =
+  sendMessage pdfDocument pageCountSelector
 
 -- | @- pageClass@
 pageClass :: IsPDFDocument pdfDocument => pdfDocument -> IO Class
-pageClass pdfDocument  =
-    fmap (Class . castPtr) $ sendMsg pdfDocument (mkSelector "pageClass") (retPtr retVoid) []
+pageClass pdfDocument =
+  sendMessage pdfDocument pageClassSelector
 
 -- | @- isFinding@
 isFinding :: IsPDFDocument pdfDocument => pdfDocument -> IO Bool
-isFinding pdfDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfDocument (mkSelector "isFinding") retCULong []
+isFinding pdfDocument =
+  sendMessage pdfDocument isFindingSelector
 
 -- | @- selectionForEntireDocument@
 selectionForEntireDocument :: IsPDFDocument pdfDocument => pdfDocument -> IO (Id PDFSelection)
-selectionForEntireDocument pdfDocument  =
-    sendMsg pdfDocument (mkSelector "selectionForEntireDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectionForEntireDocument pdfDocument =
+  sendMessage pdfDocument selectionForEntireDocumentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PDFDocument)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id PDFDocument)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id PDFDocument)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @unlockWithPassword:@
-unlockWithPasswordSelector :: Selector
+unlockWithPasswordSelector :: Selector '[Id NSString] Bool
 unlockWithPasswordSelector = mkSelector "unlockWithPassword:"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @dataRepresentationWithOptions:@
-dataRepresentationWithOptionsSelector :: Selector
+dataRepresentationWithOptionsSelector :: Selector '[Id NSDictionary] (Id NSData)
 dataRepresentationWithOptionsSelector = mkSelector "dataRepresentationWithOptions:"
 
 -- | @Selector@ for @writeToFile:@
-writeToFileSelector :: Selector
+writeToFileSelector :: Selector '[Id NSString] Bool
 writeToFileSelector = mkSelector "writeToFile:"
 
 -- | @Selector@ for @writeToFile:withOptions:@
-writeToFile_withOptionsSelector :: Selector
+writeToFile_withOptionsSelector :: Selector '[Id NSString, Id NSDictionary] Bool
 writeToFile_withOptionsSelector = mkSelector "writeToFile:withOptions:"
 
 -- | @Selector@ for @writeToURL:@
-writeToURLSelector :: Selector
+writeToURLSelector :: Selector '[Id NSURL] Bool
 writeToURLSelector = mkSelector "writeToURL:"
 
 -- | @Selector@ for @writeToURL:withOptions:@
-writeToURL_withOptionsSelector :: Selector
+writeToURL_withOptionsSelector :: Selector '[Id NSURL, Id NSDictionary] Bool
 writeToURL_withOptionsSelector = mkSelector "writeToURL:withOptions:"
 
 -- | @Selector@ for @outlineItemForSelection:@
-outlineItemForSelectionSelector :: Selector
+outlineItemForSelectionSelector :: Selector '[Id PDFSelection] (Id PDFOutline)
 outlineItemForSelectionSelector = mkSelector "outlineItemForSelection:"
 
 -- | @Selector@ for @pageAtIndex:@
-pageAtIndexSelector :: Selector
+pageAtIndexSelector :: Selector '[CULong] (Id PDFPage)
 pageAtIndexSelector = mkSelector "pageAtIndex:"
 
 -- | @Selector@ for @indexForPage:@
-indexForPageSelector :: Selector
+indexForPageSelector :: Selector '[Id PDFPage] CULong
 indexForPageSelector = mkSelector "indexForPage:"
 
 -- | @Selector@ for @insertPage:atIndex:@
-insertPage_atIndexSelector :: Selector
+insertPage_atIndexSelector :: Selector '[Id PDFPage, CULong] ()
 insertPage_atIndexSelector = mkSelector "insertPage:atIndex:"
 
 -- | @Selector@ for @removePageAtIndex:@
-removePageAtIndexSelector :: Selector
+removePageAtIndexSelector :: Selector '[CULong] ()
 removePageAtIndexSelector = mkSelector "removePageAtIndex:"
 
 -- | @Selector@ for @exchangePageAtIndex:withPageAtIndex:@
-exchangePageAtIndex_withPageAtIndexSelector :: Selector
+exchangePageAtIndex_withPageAtIndexSelector :: Selector '[CULong, CULong] ()
 exchangePageAtIndex_withPageAtIndexSelector = mkSelector "exchangePageAtIndex:withPageAtIndex:"
 
 -- | @Selector@ for @findString:withOptions:@
-findString_withOptionsSelector :: Selector
+findString_withOptionsSelector :: Selector '[Id NSString, NSStringCompareOptions] (Id NSArray)
 findString_withOptionsSelector = mkSelector "findString:withOptions:"
 
 -- | @Selector@ for @beginFindString:withOptions:@
-beginFindString_withOptionsSelector :: Selector
+beginFindString_withOptionsSelector :: Selector '[Id NSString, NSStringCompareOptions] ()
 beginFindString_withOptionsSelector = mkSelector "beginFindString:withOptions:"
 
 -- | @Selector@ for @beginFindStrings:withOptions:@
-beginFindStrings_withOptionsSelector :: Selector
+beginFindStrings_withOptionsSelector :: Selector '[Id NSArray, NSStringCompareOptions] ()
 beginFindStrings_withOptionsSelector = mkSelector "beginFindStrings:withOptions:"
 
 -- | @Selector@ for @findString:fromSelection:withOptions:@
-findString_fromSelection_withOptionsSelector :: Selector
+findString_fromSelection_withOptionsSelector :: Selector '[Id NSString, Id PDFSelection, NSStringCompareOptions] (Id PDFSelection)
 findString_fromSelection_withOptionsSelector = mkSelector "findString:fromSelection:withOptions:"
 
 -- | @Selector@ for @cancelFindString@
-cancelFindStringSelector :: Selector
+cancelFindStringSelector :: Selector '[] ()
 cancelFindStringSelector = mkSelector "cancelFindString"
 
 -- | @Selector@ for @printOperationForPrintInfo:scalingMode:autoRotate:@
-printOperationForPrintInfo_scalingMode_autoRotateSelector :: Selector
+printOperationForPrintInfo_scalingMode_autoRotateSelector :: Selector '[Id NSPrintInfo, PDFPrintScalingMode, Bool] (Id NSPrintOperation)
 printOperationForPrintInfo_scalingMode_autoRotateSelector = mkSelector "printOperationForPrintInfo:scalingMode:autoRotate:"
 
 -- | @Selector@ for @selectionFromPage:atPoint:toPage:atPoint:@
-selectionFromPage_atPoint_toPage_atPointSelector :: Selector
+selectionFromPage_atPoint_toPage_atPointSelector :: Selector '[Id PDFPage, NSPoint, Id PDFPage, NSPoint] (Id PDFSelection)
 selectionFromPage_atPoint_toPage_atPointSelector = mkSelector "selectionFromPage:atPoint:toPage:atPoint:"
 
 -- | @Selector@ for @selectionFromPage:atPoint:toPage:atPoint:withGranularity:@
-selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector :: Selector
+selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector :: Selector '[Id PDFPage, NSPoint, Id PDFPage, NSPoint, PDFSelectionGranularity] (Id PDFSelection)
 selectionFromPage_atPoint_toPage_atPoint_withGranularitySelector = mkSelector "selectionFromPage:atPoint:toPage:atPoint:withGranularity:"
 
 -- | @Selector@ for @selectionFromPage:atCharacterIndex:toPage:atCharacterIndex:@
-selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector :: Selector
+selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector :: Selector '[Id PDFPage, CULong, Id PDFPage, CULong] (Id PDFSelection)
 selectionFromPage_atCharacterIndex_toPage_atCharacterIndexSelector = mkSelector "selectionFromPage:atCharacterIndex:toPage:atCharacterIndex:"
 
 -- | @Selector@ for @documentURL@
-documentURLSelector :: Selector
+documentURLSelector :: Selector '[] (Id NSURL)
 documentURLSelector = mkSelector "documentURL"
 
 -- | @Selector@ for @documentRef@
-documentRefSelector :: Selector
+documentRefSelector :: Selector '[] (Ptr ())
 documentRefSelector = mkSelector "documentRef"
 
 -- | @Selector@ for @documentAttributes@
-documentAttributesSelector :: Selector
+documentAttributesSelector :: Selector '[] (Id NSDictionary)
 documentAttributesSelector = mkSelector "documentAttributes"
 
 -- | @Selector@ for @setDocumentAttributes:@
-setDocumentAttributesSelector :: Selector
+setDocumentAttributesSelector :: Selector '[Id NSDictionary] ()
 setDocumentAttributesSelector = mkSelector "setDocumentAttributes:"
 
 -- | @Selector@ for @majorVersion@
-majorVersionSelector :: Selector
+majorVersionSelector :: Selector '[] CLong
 majorVersionSelector = mkSelector "majorVersion"
 
 -- | @Selector@ for @minorVersion@
-minorVersionSelector :: Selector
+minorVersionSelector :: Selector '[] CLong
 minorVersionSelector = mkSelector "minorVersion"
 
 -- | @Selector@ for @isEncrypted@
-isEncryptedSelector :: Selector
+isEncryptedSelector :: Selector '[] Bool
 isEncryptedSelector = mkSelector "isEncrypted"
 
 -- | @Selector@ for @isLocked@
-isLockedSelector :: Selector
+isLockedSelector :: Selector '[] Bool
 isLockedSelector = mkSelector "isLocked"
 
 -- | @Selector@ for @allowsPrinting@
-allowsPrintingSelector :: Selector
+allowsPrintingSelector :: Selector '[] Bool
 allowsPrintingSelector = mkSelector "allowsPrinting"
 
 -- | @Selector@ for @allowsCopying@
-allowsCopyingSelector :: Selector
+allowsCopyingSelector :: Selector '[] Bool
 allowsCopyingSelector = mkSelector "allowsCopying"
 
 -- | @Selector@ for @allowsDocumentChanges@
-allowsDocumentChangesSelector :: Selector
+allowsDocumentChangesSelector :: Selector '[] Bool
 allowsDocumentChangesSelector = mkSelector "allowsDocumentChanges"
 
 -- | @Selector@ for @allowsDocumentAssembly@
-allowsDocumentAssemblySelector :: Selector
+allowsDocumentAssemblySelector :: Selector '[] Bool
 allowsDocumentAssemblySelector = mkSelector "allowsDocumentAssembly"
 
 -- | @Selector@ for @allowsContentAccessibility@
-allowsContentAccessibilitySelector :: Selector
+allowsContentAccessibilitySelector :: Selector '[] Bool
 allowsContentAccessibilitySelector = mkSelector "allowsContentAccessibility"
 
 -- | @Selector@ for @allowsCommenting@
-allowsCommentingSelector :: Selector
+allowsCommentingSelector :: Selector '[] Bool
 allowsCommentingSelector = mkSelector "allowsCommenting"
 
 -- | @Selector@ for @allowsFormFieldEntry@
-allowsFormFieldEntrySelector :: Selector
+allowsFormFieldEntrySelector :: Selector '[] Bool
 allowsFormFieldEntrySelector = mkSelector "allowsFormFieldEntry"
 
 -- | @Selector@ for @accessPermissions@
-accessPermissionsSelector :: Selector
+accessPermissionsSelector :: Selector '[] PDFAccessPermissions
 accessPermissionsSelector = mkSelector "accessPermissions"
 
 -- | @Selector@ for @permissionsStatus@
-permissionsStatusSelector :: Selector
+permissionsStatusSelector :: Selector '[] PDFDocumentPermissions
 permissionsStatusSelector = mkSelector "permissionsStatus"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @outlineRoot@
-outlineRootSelector :: Selector
+outlineRootSelector :: Selector '[] RawId
 outlineRootSelector = mkSelector "outlineRoot"
 
 -- | @Selector@ for @setOutlineRoot:@
-setOutlineRootSelector :: Selector
+setOutlineRootSelector :: Selector '[RawId] ()
 setOutlineRootSelector = mkSelector "setOutlineRoot:"
 
 -- | @Selector@ for @pageCount@
-pageCountSelector :: Selector
+pageCountSelector :: Selector '[] CULong
 pageCountSelector = mkSelector "pageCount"
 
 -- | @Selector@ for @pageClass@
-pageClassSelector :: Selector
+pageClassSelector :: Selector '[] Class
 pageClassSelector = mkSelector "pageClass"
 
 -- | @Selector@ for @isFinding@
-isFindingSelector :: Selector
+isFindingSelector :: Selector '[] Bool
 isFindingSelector = mkSelector "isFinding"
 
 -- | @Selector@ for @selectionForEntireDocument@
-selectionForEntireDocumentSelector :: Selector
+selectionForEntireDocumentSelector :: Selector '[] (Id PDFSelection)
 selectionForEntireDocumentSelector = mkSelector "selectionForEntireDocument"
 

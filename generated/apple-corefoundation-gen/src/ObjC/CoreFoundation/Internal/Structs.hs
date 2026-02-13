@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data AbsoluteTime = AbsoluteTime
   { absoluteTimeLo :: !CUInt
@@ -36,6 +38,16 @@ argAbsoluteTime = mkStorableArg absoluteTimeStructType
 
 retAbsoluteTime :: RetType AbsoluteTime
 retAbsoluteTime = mkStorableRetType absoluteTimeStructType
+
+instance ObjCArgument AbsoluteTime where
+  withObjCArg x k = k (argAbsoluteTime x)
+
+instance ObjCReturn AbsoluteTime where
+  type RawReturn AbsoluteTime = AbsoluteTime
+  objcRetType = retAbsoluteTime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CGAffineTransform = CGAffineTransform
   { cgAffineTransformA :: !CDouble
@@ -73,6 +85,16 @@ argCGAffineTransform = mkStorableArg cgAffineTransformStructType
 retCGAffineTransform :: RetType CGAffineTransform
 retCGAffineTransform = mkStorableRetType cgAffineTransformStructType
 
+instance ObjCArgument CGAffineTransform where
+  withObjCArg x k = k (argCGAffineTransform x)
+
+instance ObjCReturn CGAffineTransform where
+  type RawReturn CGAffineTransform = CGAffineTransform
+  objcRetType = retCGAffineTransform
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGPoint = CGPoint
   { cgPointX :: !CDouble
   , cgPointY :: !CDouble
@@ -96,6 +118,16 @@ argCGPoint = mkStorableArg cgPointStructType
 
 retCGPoint :: RetType CGPoint
 retCGPoint = mkStorableRetType cgPointStructType
+
+instance ObjCArgument CGPoint where
+  withObjCArg x k = k (argCGPoint x)
+
+instance ObjCReturn CGPoint where
+  type RawReturn CGPoint = CGPoint
+  objcRetType = retCGPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CGSize = CGSize
   { cgSizeWidth :: !CDouble
@@ -121,6 +153,16 @@ argCGSize = mkStorableArg cgSizeStructType
 retCGSize :: RetType CGSize
 retCGSize = mkStorableRetType cgSizeStructType
 
+instance ObjCArgument CGSize where
+  withObjCArg x k = k (argCGSize x)
+
+instance ObjCReturn CGSize where
+  type RawReturn CGSize = CGSize
+  objcRetType = retCGSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGVector = CGVector
   { cgVectorDx :: !CDouble
   , cgVectorDy :: !CDouble
@@ -144,6 +186,16 @@ argCGVector = mkStorableArg cgVectorStructType
 
 retCGVector :: RetType CGVector
 retCGVector = mkStorableRetType cgVectorStructType
+
+instance ObjCArgument CGVector where
+  withObjCArg x k = k (argCGVector x)
+
+instance ObjCReturn CGVector where
+  type RawReturn CGVector = CGVector
+  objcRetType = retCGVector
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CompTimeValue = CompTimeValue
   { compTimeValueLo :: !CUInt
@@ -169,6 +221,16 @@ argCompTimeValue = mkStorableArg compTimeValueStructType
 retCompTimeValue :: RetType CompTimeValue
 retCompTimeValue = mkStorableRetType compTimeValueStructType
 
+instance ObjCArgument CompTimeValue where
+  withObjCArg x k = k (argCompTimeValue x)
+
+instance ObjCReturn CompTimeValue where
+  type RawReturn CompTimeValue = CompTimeValue
+  objcRetType = retCompTimeValue
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FixedPoint = FixedPoint
   { fixedPointX :: !CInt
   , fixedPointY :: !CInt
@@ -192,6 +254,16 @@ argFixedPoint = mkStorableArg fixedPointStructType
 
 retFixedPoint :: RetType FixedPoint
 retFixedPoint = mkStorableRetType fixedPointStructType
+
+instance ObjCArgument FixedPoint where
+  withObjCArg x k = k (argFixedPoint x)
+
+instance ObjCReturn FixedPoint where
+  type RawReturn FixedPoint = FixedPoint
+  objcRetType = retFixedPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FixedRect = FixedRect
   { fixedRectLeft :: !CInt
@@ -223,6 +295,16 @@ argFixedRect = mkStorableArg fixedRectStructType
 retFixedRect :: RetType FixedRect
 retFixedRect = mkStorableRetType fixedRectStructType
 
+instance ObjCArgument FixedRect where
+  withObjCArg x k = k (argFixedRect x)
+
+instance ObjCReturn FixedRect where
+  type RawReturn FixedRect = FixedRect
+  objcRetType = retFixedRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Float32Point = Float32Point
   { float32PointX :: !CFloat
   , float32PointY :: !CFloat
@@ -246,6 +328,16 @@ argFloat32Point = mkStorableArg float32PointStructType
 
 retFloat32Point :: RetType Float32Point
 retFloat32Point = mkStorableRetType float32PointStructType
+
+instance ObjCArgument Float32Point where
+  withObjCArg x k = k (argFloat32Point x)
+
+instance ObjCReturn Float32Point where
+  type RawReturn Float32Point = Float32Point
+  objcRetType = retFloat32Point
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data IUnknownVTbl = IUnknownVTbl
   { iUnknownVTbl_reserved :: !(Ptr ())
@@ -277,6 +369,16 @@ argIUnknownVTbl = mkStorableArg iUnknownVTblStructType
 retIUnknownVTbl :: RetType IUnknownVTbl
 retIUnknownVTbl = mkStorableRetType iUnknownVTblStructType
 
+instance ObjCArgument IUnknownVTbl where
+  withObjCArg x k = k (argIUnknownVTbl x)
+
+instance ObjCReturn IUnknownVTbl where
+  type RawReturn IUnknownVTbl = IUnknownVTbl
+  objcRetType = retIUnknownVTbl
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NumVersion = NumVersion
   { numVersionNonRelRev :: !CUChar
   , numVersionStage :: !CUChar
@@ -306,6 +408,16 @@ argNumVersion = mkStorableArg numVersionStructType
 
 retNumVersion :: RetType NumVersion
 retNumVersion = mkStorableRetType numVersionStructType
+
+instance ObjCArgument NumVersion where
+  withObjCArg x k = k (argNumVersion x)
+
+instance ObjCReturn NumVersion where
+  type RawReturn NumVersion = NumVersion
+  objcRetType = retNumVersion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ******************************************************************************
 --
@@ -340,6 +452,16 @@ argPoint = mkStorableArg pointStructType
 retPoint :: RetType Point
 retPoint = mkStorableRetType pointStructType
 
+instance ObjCArgument Point where
+  withObjCArg x k = k (argPoint x)
+
+instance ObjCReturn Point where
+  type RawReturn Point = Point
+  objcRetType = retPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ******************************************************************************
 --
 -- Process Manager type ProcessSerialNumber (previously in Processes.h)
@@ -368,6 +490,16 @@ argProcessSerialNumber = mkStorableArg processSerialNumberStructType
 
 retProcessSerialNumber :: RetType ProcessSerialNumber
 retProcessSerialNumber = mkStorableRetType processSerialNumberStructType
+
+instance ObjCArgument ProcessSerialNumber where
+  withObjCArg x k = k (argProcessSerialNumber x)
+
+instance ObjCReturn ProcessSerialNumber where
+  type RawReturn ProcessSerialNumber = ProcessSerialNumber
+  objcRetType = retProcessSerialNumber
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data Rect = Rect
   { rectTop :: !CShort
@@ -399,6 +531,16 @@ argRect = mkStorableArg rectStructType
 retRect :: RetType Rect
 retRect = mkStorableRetType rectStructType
 
+instance ObjCArgument Rect where
+  withObjCArg x k = k (argRect x)
+
+instance ObjCReturn Rect where
+  type RawReturn Rect = Rect
+  objcRetType = retRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data UnsignedWide = UnsignedWide
   { unsignedWideLo :: !CUInt
   , unsignedWideHi :: !CUInt
@@ -422,6 +564,16 @@ argUnsignedWide = mkStorableArg unsignedWideStructType
 
 retUnsignedWide :: RetType UnsignedWide
 retUnsignedWide = mkStorableRetType unsignedWideStructType
+
+instance ObjCArgument UnsignedWide where
+  withObjCArg x k = k (argUnsignedWide x)
+
+instance ObjCReturn UnsignedWide where
+  type RawReturn UnsignedWide = UnsignedWide
+  objcRetType = retUnsignedWide
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CGAffineTransformComponents = CGAffineTransformComponents
   { cgAffineTransformComponentsScale :: !CGSize
@@ -453,6 +605,16 @@ argCGAffineTransformComponents = mkStorableArg cgAffineTransformComponentsStruct
 retCGAffineTransformComponents :: RetType CGAffineTransformComponents
 retCGAffineTransformComponents = mkStorableRetType cgAffineTransformComponentsStructType
 
+instance ObjCArgument CGAffineTransformComponents where
+  withObjCArg x k = k (argCGAffineTransformComponents x)
+
+instance ObjCReturn CGAffineTransformComponents where
+  type RawReturn CGAffineTransformComponents = CGAffineTransformComponents
+  objcRetType = retCGAffineTransformComponents
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGRect = CGRect
   { cgRectOrigin :: !CGPoint
   , cgRectSize :: !CGSize
@@ -476,6 +638,16 @@ argCGRect = mkStorableArg cgRectStructType
 
 retCGRect :: RetType CGRect
 retCGRect = mkStorableRetType cgRectStructType
+
+instance ObjCArgument CGRect where
+  withObjCArg x k = k (argCGRect x)
+
+instance ObjCReturn CGRect where
+  type RawReturn CGRect = CGRect
+  objcRetType = retCGRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TimeRecord = TimeRecord
   { timeRecordValue :: !CompTimeValue
@@ -503,3 +675,13 @@ argTimeRecord = mkStorableArg timeRecordStructType
 
 retTimeRecord :: RetType TimeRecord
 retTimeRecord = mkStorableRetType timeRecordStructType
+
+instance ObjCArgument TimeRecord where
+  withObjCArg x k = k (argTimeRecord x)
+
+instance ObjCReturn TimeRecord where
+  type RawReturn TimeRecord = TimeRecord
+  objcRetType = retTimeRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRContentLauncherClusterStyleInformationStruct
   , setColor
   , size
   , setSize
-  , imageURLSelector
-  , setImageURLSelector
-  , imageUrlSelector
-  , setImageUrlSelector
   , colorSelector
+  , imageURLSelector
+  , imageUrlSelector
   , setColorSelector
-  , sizeSelector
+  , setImageURLSelector
+  , setImageUrlSelector
   , setSizeSelector
+  , sizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- imageURL@
 imageURL :: IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct => mtrContentLauncherClusterStyleInformationStruct -> IO (Id NSString)
-imageURL mtrContentLauncherClusterStyleInformationStruct  =
-    sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "imageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageURL mtrContentLauncherClusterStyleInformationStruct =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct imageURLSelector
 
 -- | @- setImageURL:@
 setImageURL :: (IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct, IsNSString value) => mtrContentLauncherClusterStyleInformationStruct -> value -> IO ()
-setImageURL mtrContentLauncherClusterStyleInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "setImageURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageURL mtrContentLauncherClusterStyleInformationStruct value =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct setImageURLSelector (toNSString value)
 
 -- | @- imageUrl@
 imageUrl :: IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct => mtrContentLauncherClusterStyleInformationStruct -> IO (Id NSString)
-imageUrl mtrContentLauncherClusterStyleInformationStruct  =
-    sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "imageUrl") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageUrl mtrContentLauncherClusterStyleInformationStruct =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct imageUrlSelector
 
 -- | @- setImageUrl:@
 setImageUrl :: (IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct, IsNSString value) => mtrContentLauncherClusterStyleInformationStruct -> value -> IO ()
-setImageUrl mtrContentLauncherClusterStyleInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "setImageUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageUrl mtrContentLauncherClusterStyleInformationStruct value =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct setImageUrlSelector (toNSString value)
 
 -- | @- color@
 color :: IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct => mtrContentLauncherClusterStyleInformationStruct -> IO (Id NSString)
-color mtrContentLauncherClusterStyleInformationStruct  =
-    sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color mtrContentLauncherClusterStyleInformationStruct =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct colorSelector
 
 -- | @- setColor:@
 setColor :: (IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct, IsNSString value) => mtrContentLauncherClusterStyleInformationStruct -> value -> IO ()
-setColor mtrContentLauncherClusterStyleInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor mtrContentLauncherClusterStyleInformationStruct value =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct setColorSelector (toNSString value)
 
 -- | @- size@
 size :: IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct => mtrContentLauncherClusterStyleInformationStruct -> IO (Id MTRContentLauncherClusterDimensionStruct)
-size mtrContentLauncherClusterStyleInformationStruct  =
-    sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "size") (retPtr retVoid) [] >>= retainedObject . castPtr
+size mtrContentLauncherClusterStyleInformationStruct =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct sizeSelector
 
 -- | @- setSize:@
 setSize :: (IsMTRContentLauncherClusterStyleInformationStruct mtrContentLauncherClusterStyleInformationStruct, IsMTRContentLauncherClusterDimensionStruct value) => mtrContentLauncherClusterStyleInformationStruct -> value -> IO ()
-setSize mtrContentLauncherClusterStyleInformationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterStyleInformationStruct (mkSelector "setSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSize mtrContentLauncherClusterStyleInformationStruct value =
+  sendMessage mtrContentLauncherClusterStyleInformationStruct setSizeSelector (toMTRContentLauncherClusterDimensionStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageURL@
-imageURLSelector :: Selector
+imageURLSelector :: Selector '[] (Id NSString)
 imageURLSelector = mkSelector "imageURL"
 
 -- | @Selector@ for @setImageURL:@
-setImageURLSelector :: Selector
+setImageURLSelector :: Selector '[Id NSString] ()
 setImageURLSelector = mkSelector "setImageURL:"
 
 -- | @Selector@ for @imageUrl@
-imageUrlSelector :: Selector
+imageUrlSelector :: Selector '[] (Id NSString)
 imageUrlSelector = mkSelector "imageUrl"
 
 -- | @Selector@ for @setImageUrl:@
-setImageUrlSelector :: Selector
+setImageUrlSelector :: Selector '[Id NSString] ()
 setImageUrlSelector = mkSelector "setImageUrl:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSString)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSString] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] (Id MTRContentLauncherClusterDimensionStruct)
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[Id MTRContentLauncherClusterDimensionStruct] ()
 setSizeSelector = mkSelector "setSize:"
 

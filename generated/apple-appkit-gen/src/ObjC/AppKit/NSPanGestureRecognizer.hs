@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSPanGestureRecognizer
   , setButtonMask
   , numberOfTouchesRequired
   , setNumberOfTouchesRequired
-  , translationInViewSelector
-  , setTranslation_inViewSelector
-  , velocityInViewSelector
   , buttonMaskSelector
-  , setButtonMaskSelector
   , numberOfTouchesRequiredSelector
+  , setButtonMaskSelector
   , setNumberOfTouchesRequiredSelector
+  , setTranslation_inViewSelector
+  , translationInViewSelector
+  , velocityInViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,71 +39,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- translationInView:@
 translationInView :: (IsNSPanGestureRecognizer nsPanGestureRecognizer, IsNSView view) => nsPanGestureRecognizer -> view -> IO NSPoint
-translationInView nsPanGestureRecognizer  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsPanGestureRecognizer (mkSelector "translationInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
+translationInView nsPanGestureRecognizer view =
+  sendMessage nsPanGestureRecognizer translationInViewSelector (toNSView view)
 
 -- | @- setTranslation:inView:@
 setTranslation_inView :: (IsNSPanGestureRecognizer nsPanGestureRecognizer, IsNSView view) => nsPanGestureRecognizer -> NSPoint -> view -> IO ()
-setTranslation_inView nsPanGestureRecognizer  translation view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsPanGestureRecognizer (mkSelector "setTranslation:inView:") retVoid [argNSPoint translation, argPtr (castPtr raw_view :: Ptr ())]
+setTranslation_inView nsPanGestureRecognizer translation view =
+  sendMessage nsPanGestureRecognizer setTranslation_inViewSelector translation (toNSView view)
 
 -- | @- velocityInView:@
 velocityInView :: (IsNSPanGestureRecognizer nsPanGestureRecognizer, IsNSView view) => nsPanGestureRecognizer -> view -> IO NSPoint
-velocityInView nsPanGestureRecognizer  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsPanGestureRecognizer (mkSelector "velocityInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
+velocityInView nsPanGestureRecognizer view =
+  sendMessage nsPanGestureRecognizer velocityInViewSelector (toNSView view)
 
 -- | @- buttonMask@
 buttonMask :: IsNSPanGestureRecognizer nsPanGestureRecognizer => nsPanGestureRecognizer -> IO CULong
-buttonMask nsPanGestureRecognizer  =
-    sendMsg nsPanGestureRecognizer (mkSelector "buttonMask") retCULong []
+buttonMask nsPanGestureRecognizer =
+  sendMessage nsPanGestureRecognizer buttonMaskSelector
 
 -- | @- setButtonMask:@
 setButtonMask :: IsNSPanGestureRecognizer nsPanGestureRecognizer => nsPanGestureRecognizer -> CULong -> IO ()
-setButtonMask nsPanGestureRecognizer  value =
-    sendMsg nsPanGestureRecognizer (mkSelector "setButtonMask:") retVoid [argCULong value]
+setButtonMask nsPanGestureRecognizer value =
+  sendMessage nsPanGestureRecognizer setButtonMaskSelector value
 
 -- | @- numberOfTouchesRequired@
 numberOfTouchesRequired :: IsNSPanGestureRecognizer nsPanGestureRecognizer => nsPanGestureRecognizer -> IO CLong
-numberOfTouchesRequired nsPanGestureRecognizer  =
-    sendMsg nsPanGestureRecognizer (mkSelector "numberOfTouchesRequired") retCLong []
+numberOfTouchesRequired nsPanGestureRecognizer =
+  sendMessage nsPanGestureRecognizer numberOfTouchesRequiredSelector
 
 -- | @- setNumberOfTouchesRequired:@
 setNumberOfTouchesRequired :: IsNSPanGestureRecognizer nsPanGestureRecognizer => nsPanGestureRecognizer -> CLong -> IO ()
-setNumberOfTouchesRequired nsPanGestureRecognizer  value =
-    sendMsg nsPanGestureRecognizer (mkSelector "setNumberOfTouchesRequired:") retVoid [argCLong value]
+setNumberOfTouchesRequired nsPanGestureRecognizer value =
+  sendMessage nsPanGestureRecognizer setNumberOfTouchesRequiredSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @translationInView:@
-translationInViewSelector :: Selector
+translationInViewSelector :: Selector '[Id NSView] NSPoint
 translationInViewSelector = mkSelector "translationInView:"
 
 -- | @Selector@ for @setTranslation:inView:@
-setTranslation_inViewSelector :: Selector
+setTranslation_inViewSelector :: Selector '[NSPoint, Id NSView] ()
 setTranslation_inViewSelector = mkSelector "setTranslation:inView:"
 
 -- | @Selector@ for @velocityInView:@
-velocityInViewSelector :: Selector
+velocityInViewSelector :: Selector '[Id NSView] NSPoint
 velocityInViewSelector = mkSelector "velocityInView:"
 
 -- | @Selector@ for @buttonMask@
-buttonMaskSelector :: Selector
+buttonMaskSelector :: Selector '[] CULong
 buttonMaskSelector = mkSelector "buttonMask"
 
 -- | @Selector@ for @setButtonMask:@
-setButtonMaskSelector :: Selector
+setButtonMaskSelector :: Selector '[CULong] ()
 setButtonMaskSelector = mkSelector "setButtonMask:"
 
 -- | @Selector@ for @numberOfTouchesRequired@
-numberOfTouchesRequiredSelector :: Selector
+numberOfTouchesRequiredSelector :: Selector '[] CLong
 numberOfTouchesRequiredSelector = mkSelector "numberOfTouchesRequired"
 
 -- | @Selector@ for @setNumberOfTouchesRequired:@
-setNumberOfTouchesRequiredSelector :: Selector
+setNumberOfTouchesRequiredSelector :: Selector '[CLong] ()
 setNumberOfTouchesRequiredSelector = mkSelector "setNumberOfTouchesRequired:"
 

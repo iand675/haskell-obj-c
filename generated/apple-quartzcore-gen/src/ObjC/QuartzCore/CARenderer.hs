@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.QuartzCore.CARenderer
   , setDestination
   , layer
   , setLayer
+  , beginFrameAtTime_timeStampSelector
+  , endFrameSelector
+  , layerSelector
+  , nextFrameTimeSelector
+  , renderSelector
   , rendererWithCGLContext_optionsSelector
   , rendererWithMTLTexture_optionsSelector
-  , beginFrameAtTime_timeStampSelector
-  , renderSelector
-  , nextFrameTimeSelector
-  , endFrameSelector
   , setDestinationSelector
-  , layerSelector
   , setLayerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,90 +45,87 @@ rendererWithCGLContext_options :: IsNSDictionary dict => Ptr () -> dict -> IO (I
 rendererWithCGLContext_options ctx dict =
   do
     cls' <- getRequiredClass "CARenderer"
-    withObjCPtr dict $ \raw_dict ->
-      sendClassMsg cls' (mkSelector "rendererWithCGLContext:options:") (retPtr retVoid) [argPtr ctx, argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rendererWithCGLContext_optionsSelector ctx (toNSDictionary dict)
 
 -- | @+ rendererWithMTLTexture:options:@
 rendererWithMTLTexture_options :: IsNSDictionary dict => RawId -> dict -> IO (Id CARenderer)
 rendererWithMTLTexture_options tex dict =
   do
     cls' <- getRequiredClass "CARenderer"
-    withObjCPtr dict $ \raw_dict ->
-      sendClassMsg cls' (mkSelector "rendererWithMTLTexture:options:") (retPtr retVoid) [argPtr (castPtr (unRawId tex) :: Ptr ()), argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rendererWithMTLTexture_optionsSelector tex (toNSDictionary dict)
 
 -- | @- beginFrameAtTime:timeStamp:@
 beginFrameAtTime_timeStamp :: IsCARenderer caRenderer => caRenderer -> CDouble -> RawId -> IO ()
-beginFrameAtTime_timeStamp caRenderer  t ts =
-    sendMsg caRenderer (mkSelector "beginFrameAtTime:timeStamp:") retVoid [argCDouble t, argPtr (castPtr (unRawId ts) :: Ptr ())]
+beginFrameAtTime_timeStamp caRenderer t ts =
+  sendMessage caRenderer beginFrameAtTime_timeStampSelector t ts
 
 -- | @- render@
 render :: IsCARenderer caRenderer => caRenderer -> IO ()
-render caRenderer  =
-    sendMsg caRenderer (mkSelector "render") retVoid []
+render caRenderer =
+  sendMessage caRenderer renderSelector
 
 -- | @- nextFrameTime@
 nextFrameTime :: IsCARenderer caRenderer => caRenderer -> IO CDouble
-nextFrameTime caRenderer  =
-    sendMsg caRenderer (mkSelector "nextFrameTime") retCDouble []
+nextFrameTime caRenderer =
+  sendMessage caRenderer nextFrameTimeSelector
 
 -- | @- endFrame@
 endFrame :: IsCARenderer caRenderer => caRenderer -> IO ()
-endFrame caRenderer  =
-    sendMsg caRenderer (mkSelector "endFrame") retVoid []
+endFrame caRenderer =
+  sendMessage caRenderer endFrameSelector
 
 -- | @- setDestination:@
 setDestination :: IsCARenderer caRenderer => caRenderer -> RawId -> IO ()
-setDestination caRenderer  tex =
-    sendMsg caRenderer (mkSelector "setDestination:") retVoid [argPtr (castPtr (unRawId tex) :: Ptr ())]
+setDestination caRenderer tex =
+  sendMessage caRenderer setDestinationSelector tex
 
 -- | @- layer@
 layer :: IsCARenderer caRenderer => caRenderer -> IO (Id CALayer)
-layer caRenderer  =
-    sendMsg caRenderer (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+layer caRenderer =
+  sendMessage caRenderer layerSelector
 
 -- | @- setLayer:@
 setLayer :: (IsCARenderer caRenderer, IsCALayer value) => caRenderer -> value -> IO ()
-setLayer caRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caRenderer (mkSelector "setLayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayer caRenderer value =
+  sendMessage caRenderer setLayerSelector (toCALayer value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rendererWithCGLContext:options:@
-rendererWithCGLContext_optionsSelector :: Selector
+rendererWithCGLContext_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CARenderer)
 rendererWithCGLContext_optionsSelector = mkSelector "rendererWithCGLContext:options:"
 
 -- | @Selector@ for @rendererWithMTLTexture:options:@
-rendererWithMTLTexture_optionsSelector :: Selector
+rendererWithMTLTexture_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CARenderer)
 rendererWithMTLTexture_optionsSelector = mkSelector "rendererWithMTLTexture:options:"
 
 -- | @Selector@ for @beginFrameAtTime:timeStamp:@
-beginFrameAtTime_timeStampSelector :: Selector
+beginFrameAtTime_timeStampSelector :: Selector '[CDouble, RawId] ()
 beginFrameAtTime_timeStampSelector = mkSelector "beginFrameAtTime:timeStamp:"
 
 -- | @Selector@ for @render@
-renderSelector :: Selector
+renderSelector :: Selector '[] ()
 renderSelector = mkSelector "render"
 
 -- | @Selector@ for @nextFrameTime@
-nextFrameTimeSelector :: Selector
+nextFrameTimeSelector :: Selector '[] CDouble
 nextFrameTimeSelector = mkSelector "nextFrameTime"
 
 -- | @Selector@ for @endFrame@
-endFrameSelector :: Selector
+endFrameSelector :: Selector '[] ()
 endFrameSelector = mkSelector "endFrame"
 
 -- | @Selector@ for @setDestination:@
-setDestinationSelector :: Selector
+setDestinationSelector :: Selector '[RawId] ()
 setDestinationSelector = mkSelector "setDestination:"
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] (Id CALayer)
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @setLayer:@
-setLayerSelector :: Selector
+setLayerSelector :: Selector '[Id CALayer] ()
 setLayerSelector = mkSelector "setLayer:"
 

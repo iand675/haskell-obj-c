@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,35 +37,35 @@ module ObjC.Matter.MTRDevice
   , vendorID
   , productID
   , networkCommissioningFeatures
-  , initSelector
-  , newSelector
-  , deviceWithNodeID_controllerSelector
-  , setDelegate_queueSelector
   , addDelegate_queueSelector
   , addDelegate_queue_interestedPathsForAttributes_interestedPathsForEventsSelector
-  , removeDelegateSelector
-  , readAttributeWithEndpointID_clusterID_attributeID_paramsSelector
-  , writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector
-  , readAttributePathsSelector
   , descriptorClustersSelector
+  , deviceCachePrimedSelector
+  , deviceControllerSelector
+  , deviceWithNodeID_controllerSelector
+  , deviceWithNodeID_deviceControllerSelector
+  , downloadLogOfType_timeout_queue_completionSelector
+  , estimatedStartTimeSelector
+  , estimatedSubscriptionLatencySelector
+  , initSelector
   , invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completionSelector
+  , invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector
   , invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completionSelector
   , invokeCommands_queue_completionSelector
-  , openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector
-  , openCommissioningWindowWithDiscriminator_duration_queue_completionSelector
-  , downloadLogOfType_timeout_queue_completionSelector
-  , waitForAttributeValues_timeout_queue_completionSelector
-  , deviceWithNodeID_deviceControllerSelector
-  , invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector
-  , stateSelector
-  , deviceCachePrimedSelector
-  , estimatedStartTimeSelector
-  , deviceControllerSelector
-  , nodeIDSelector
-  , estimatedSubscriptionLatencySelector
-  , vendorIDSelector
-  , productIDSelector
   , networkCommissioningFeaturesSelector
+  , newSelector
+  , nodeIDSelector
+  , openCommissioningWindowWithDiscriminator_duration_queue_completionSelector
+  , openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector
+  , productIDSelector
+  , readAttributePathsSelector
+  , readAttributeWithEndpointID_clusterID_attributeID_paramsSelector
+  , removeDelegateSelector
+  , setDelegate_queueSelector
+  , stateSelector
+  , vendorIDSelector
+  , waitForAttributeValues_timeout_queue_completionSelector
+  , writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector
 
   -- * Enum types
   , MTRDeviceState(MTRDeviceState)
@@ -83,15 +84,11 @@ module ObjC.Matter.MTRDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,15 +98,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id MTRDevice)
-init_ mtrDevice  =
-    sendMsg mtrDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDevice =
+  sendOwnedMessage mtrDevice initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDevice)
 new  =
   do
     cls' <- getRequiredClass "MTRDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Get an MTRDevice object representing a device with a specific node ID associated with a specific controller.
 --
@@ -120,9 +117,7 @@ deviceWithNodeID_controller :: (IsNSNumber nodeID, IsMTRDeviceController control
 deviceWithNodeID_controller nodeID controller =
   do
     cls' <- getRequiredClass "MTRDevice"
-    withObjCPtr nodeID $ \raw_nodeID ->
-      withObjCPtr controller $ \raw_controller ->
-        sendClassMsg cls' (mkSelector "deviceWithNodeID:controller:") (retPtr retVoid) [argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_controller :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithNodeID_controllerSelector (toNSNumber nodeID) (toMTRDeviceController controller)
 
 -- | Set the delegate to receive asynchronous callbacks about the device.
 --
@@ -130,9 +125,8 @@ deviceWithNodeID_controller nodeID controller =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsMTRDevice mtrDevice, IsNSObject queue) => mtrDevice -> RawId -> queue -> IO ()
-setDelegate_queue mtrDevice  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDevice (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setDelegate_queue mtrDevice delegate queue =
+  sendMessage mtrDevice setDelegate_queueSelector delegate (toNSObject queue)
 
 -- | Adds a delegate to receive asynchronous callbacks about the device.
 --
@@ -142,9 +136,8 @@ setDelegate_queue mtrDevice  delegate queue =
 --
 -- ObjC selector: @- addDelegate:queue:@
 addDelegate_queue :: (IsMTRDevice mtrDevice, IsNSObject queue) => mtrDevice -> RawId -> queue -> IO ()
-addDelegate_queue mtrDevice  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDevice (mkSelector "addDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+addDelegate_queue mtrDevice delegate queue =
+  sendMessage mtrDevice addDelegate_queueSelector delegate (toNSObject queue)
 
 -- | Adds a delegate to receive asynchronous callbacks about the device, and limit attribute and/or event reports to a specific set of paths.
 --
@@ -160,18 +153,15 @@ addDelegate_queue mtrDevice  delegate queue =
 --
 -- ObjC selector: @- addDelegate:queue:interestedPathsForAttributes:interestedPathsForEvents:@
 addDelegate_queue_interestedPathsForAttributes_interestedPathsForEvents :: (IsMTRDevice mtrDevice, IsNSObject queue, IsNSArray interestedPathsForAttributes, IsNSArray interestedPathsForEvents) => mtrDevice -> RawId -> queue -> interestedPathsForAttributes -> interestedPathsForEvents -> IO ()
-addDelegate_queue_interestedPathsForAttributes_interestedPathsForEvents mtrDevice  delegate queue interestedPathsForAttributes interestedPathsForEvents =
-  withObjCPtr queue $ \raw_queue ->
-    withObjCPtr interestedPathsForAttributes $ \raw_interestedPathsForAttributes ->
-      withObjCPtr interestedPathsForEvents $ \raw_interestedPathsForEvents ->
-          sendMsg mtrDevice (mkSelector "addDelegate:queue:interestedPathsForAttributes:interestedPathsForEvents:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr raw_interestedPathsForAttributes :: Ptr ()), argPtr (castPtr raw_interestedPathsForEvents :: Ptr ())]
+addDelegate_queue_interestedPathsForAttributes_interestedPathsForEvents mtrDevice delegate queue interestedPathsForAttributes interestedPathsForEvents =
+  sendMessage mtrDevice addDelegate_queue_interestedPathsForAttributes_interestedPathsForEventsSelector delegate (toNSObject queue) (toNSArray interestedPathsForAttributes) (toNSArray interestedPathsForEvents)
 
 -- | Removes the delegate from receiving callbacks about the device.
 --
 -- ObjC selector: @- removeDelegate:@
 removeDelegate :: IsMTRDevice mtrDevice => mtrDevice -> RawId -> IO ()
-removeDelegate mtrDevice  delegate =
-    sendMsg mtrDevice (mkSelector "removeDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+removeDelegate mtrDevice delegate =
+  sendMessage mtrDevice removeDelegateSelector delegate
 
 -- | Read attribute in a designated attribute path.  If there is no value available for the attribute, whether because the device does not implement it or because the subscription priming read has not yet gotten to this attribute, nil will be returned.
 --
@@ -181,12 +171,8 @@ removeDelegate mtrDevice  delegate =
 --
 -- ObjC selector: @- readAttributeWithEndpointID:clusterID:attributeID:params:@
 readAttributeWithEndpointID_clusterID_attributeID_params :: (IsMTRDevice mtrDevice, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber attributeID, IsMTRReadParams params) => mtrDevice -> endpointID -> clusterID -> attributeID -> params -> IO (Id NSDictionary)
-readAttributeWithEndpointID_clusterID_attributeID_params mtrDevice  endpointID clusterID attributeID params =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr attributeID $ \raw_attributeID ->
-        withObjCPtr params $ \raw_params ->
-            sendMsg mtrDevice (mkSelector "readAttributeWithEndpointID:clusterID:attributeID:params:") (retPtr retVoid) [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_attributeID :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeWithEndpointID_clusterID_attributeID_params mtrDevice endpointID clusterID attributeID params =
+  sendMessage mtrDevice readAttributeWithEndpointID_clusterID_attributeID_paramsSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber attributeID) (toMTRReadParams params)
 
 -- | Write to attribute in a designated attribute path
 --
@@ -200,13 +186,8 @@ readAttributeWithEndpointID_clusterID_attributeID_params mtrDevice  endpointID c
 --
 -- ObjC selector: @- writeAttributeWithEndpointID:clusterID:attributeID:value:expectedValueInterval:timedWriteTimeout:@
 writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeout :: (IsMTRDevice mtrDevice, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber attributeID, IsNSNumber expectedValueInterval, IsNSNumber timeout) => mtrDevice -> endpointID -> clusterID -> attributeID -> RawId -> expectedValueInterval -> timeout -> IO ()
-writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeout mtrDevice  endpointID clusterID attributeID value expectedValueInterval timeout =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr attributeID $ \raw_attributeID ->
-        withObjCPtr expectedValueInterval $ \raw_expectedValueInterval ->
-          withObjCPtr timeout $ \raw_timeout ->
-              sendMsg mtrDevice (mkSelector "writeAttributeWithEndpointID:clusterID:attributeID:value:expectedValueInterval:timedWriteTimeout:") retVoid [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_attributeID :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_expectedValueInterval :: Ptr ()), argPtr (castPtr raw_timeout :: Ptr ())]
+writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeout mtrDevice endpointID clusterID attributeID value expectedValueInterval timeout =
+  sendMessage mtrDevice writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber attributeID) value (toNSNumber expectedValueInterval) (toNSNumber timeout)
 
 -- | Read the attributes identified by the provided attribute paths.  The paths can include wildcards.
 --
@@ -216,9 +197,8 @@ writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_t
 --
 -- ObjC selector: @- readAttributePaths:@
 readAttributePaths :: (IsMTRDevice mtrDevice, IsNSArray attributePaths) => mtrDevice -> attributePaths -> IO (Id NSArray)
-readAttributePaths mtrDevice  attributePaths =
-  withObjCPtr attributePaths $ \raw_attributePaths ->
-      sendMsg mtrDevice (mkSelector "readAttributePaths:") (retPtr retVoid) [argPtr (castPtr raw_attributePaths :: Ptr ())] >>= retainedObject . castPtr
+readAttributePaths mtrDevice attributePaths =
+  sendMessage mtrDevice readAttributePathsSelector (toNSArray attributePaths)
 
 -- | Read all known attributes from descriptor clusters on all known endpoints.
 --
@@ -226,8 +206,8 @@ readAttributePaths mtrDevice  attributePaths =
 --
 -- ObjC selector: @- descriptorClusters@
 descriptorClusters :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSDictionary)
-descriptorClusters mtrDevice  =
-    sendMsg mtrDevice (mkSelector "descriptorClusters") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptorClusters mtrDevice =
+  sendMessage mtrDevice descriptorClustersSelector
 
 -- | Invoke a command with a designated command path
 --
@@ -251,27 +231,13 @@ descriptorClusters mtrDevice  =
 --
 -- ObjC selector: @- invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:queue:completion:@
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completion :: (IsMTRDevice mtrDevice, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber commandID, IsNSDictionary commandFields, IsNSArray expectedValues, IsNSNumber expectedValueInterval, IsNSObject queue) => mtrDevice -> endpointID -> clusterID -> commandID -> commandFields -> expectedValues -> expectedValueInterval -> queue -> Ptr () -> IO ()
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completion mtrDevice  endpointID clusterID commandID commandFields expectedValues expectedValueInterval queue completion =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr commandID $ \raw_commandID ->
-        withObjCPtr commandFields $ \raw_commandFields ->
-          withObjCPtr expectedValues $ \raw_expectedValues ->
-            withObjCPtr expectedValueInterval $ \raw_expectedValueInterval ->
-              withObjCPtr queue $ \raw_queue ->
-                  sendMsg mtrDevice (mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:queue:completion:") retVoid [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_commandID :: Ptr ()), argPtr (castPtr raw_commandFields :: Ptr ()), argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueInterval :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completion mtrDevice endpointID clusterID commandID commandFields expectedValues expectedValueInterval queue completion =
+  sendMessage mtrDevice invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completionSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber commandID) (toNSDictionary commandFields) (toNSArray expectedValues) (toNSNumber expectedValueInterval) (toNSObject queue) completion
 
 -- | @- invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:queue:completion:@
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completion :: (IsMTRDevice mtrDevice, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber commandID, IsNSArray expectedValues, IsNSNumber expectedValueInterval, IsNSNumber timeout, IsNSObject queue) => mtrDevice -> endpointID -> clusterID -> commandID -> RawId -> expectedValues -> expectedValueInterval -> timeout -> queue -> Ptr () -> IO ()
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completion mtrDevice  endpointID clusterID commandID commandFields expectedValues expectedValueInterval timeout queue completion =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr commandID $ \raw_commandID ->
-        withObjCPtr expectedValues $ \raw_expectedValues ->
-          withObjCPtr expectedValueInterval $ \raw_expectedValueInterval ->
-            withObjCPtr timeout $ \raw_timeout ->
-              withObjCPtr queue $ \raw_queue ->
-                  sendMsg mtrDevice (mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:queue:completion:") retVoid [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_commandID :: Ptr ()), argPtr (castPtr (unRawId commandFields) :: Ptr ()), argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueInterval :: Ptr ()), argPtr (castPtr raw_timeout :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completion mtrDevice endpointID clusterID commandID commandFields expectedValues expectedValueInterval timeout queue completion =
+  sendMessage mtrDevice invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completionSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber commandID) commandFields (toNSArray expectedValues) (toNSNumber expectedValueInterval) (toNSNumber timeout) (toNSObject queue) completion
 
 -- | Invoke one or more groups of commands.
 --
@@ -283,10 +249,8 @@ invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_exp
 --
 -- ObjC selector: @- invokeCommands:queue:completion:@
 invokeCommands_queue_completion :: (IsMTRDevice mtrDevice, IsNSArray commands, IsNSObject queue) => mtrDevice -> commands -> queue -> Ptr () -> IO ()
-invokeCommands_queue_completion mtrDevice  commands queue completion =
-  withObjCPtr commands $ \raw_commands ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrDevice (mkSelector "invokeCommands:queue:completion:") retVoid [argPtr (castPtr raw_commands :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+invokeCommands_queue_completion mtrDevice commands queue completion =
+  sendMessage mtrDevice invokeCommands_queue_completionSelector (toNSArray commands) (toNSObject queue) completion
 
 -- | Open a commissioning window on the device.
 --
@@ -300,12 +264,8 @@ invokeCommands_queue_completion mtrDevice  commands queue completion =
 --
 -- ObjC selector: @- openCommissioningWindowWithSetupPasscode:discriminator:duration:queue:completion:@
 openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completion :: (IsMTRDevice mtrDevice, IsNSNumber setupPasscode, IsNSNumber discriminator, IsNSNumber duration, IsNSObject queue) => mtrDevice -> setupPasscode -> discriminator -> duration -> queue -> Ptr () -> IO ()
-openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completion mtrDevice  setupPasscode discriminator duration queue completion =
-  withObjCPtr setupPasscode $ \raw_setupPasscode ->
-    withObjCPtr discriminator $ \raw_discriminator ->
-      withObjCPtr duration $ \raw_duration ->
-        withObjCPtr queue $ \raw_queue ->
-            sendMsg mtrDevice (mkSelector "openCommissioningWindowWithSetupPasscode:discriminator:duration:queue:completion:") retVoid [argPtr (castPtr raw_setupPasscode :: Ptr ()), argPtr (castPtr raw_discriminator :: Ptr ()), argPtr (castPtr raw_duration :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completion mtrDevice setupPasscode discriminator duration queue completion =
+  sendMessage mtrDevice openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector (toNSNumber setupPasscode) (toNSNumber discriminator) (toNSNumber duration) (toNSObject queue) completion
 
 -- | Open a commissioning window on the device, using a random setup passcode.
 --
@@ -317,11 +277,8 @@ openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completion
 --
 -- ObjC selector: @- openCommissioningWindowWithDiscriminator:duration:queue:completion:@
 openCommissioningWindowWithDiscriminator_duration_queue_completion :: (IsMTRDevice mtrDevice, IsNSNumber discriminator, IsNSNumber duration, IsNSObject queue) => mtrDevice -> discriminator -> duration -> queue -> Ptr () -> IO ()
-openCommissioningWindowWithDiscriminator_duration_queue_completion mtrDevice  discriminator duration queue completion =
-  withObjCPtr discriminator $ \raw_discriminator ->
-    withObjCPtr duration $ \raw_duration ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrDevice (mkSelector "openCommissioningWindowWithDiscriminator:duration:queue:completion:") retVoid [argPtr (castPtr raw_discriminator :: Ptr ()), argPtr (castPtr raw_duration :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+openCommissioningWindowWithDiscriminator_duration_queue_completion mtrDevice discriminator duration queue completion =
+  sendMessage mtrDevice openCommissioningWindowWithDiscriminator_duration_queue_completionSelector (toNSNumber discriminator) (toNSNumber duration) (toNSObject queue) completion
 
 -- | Download log of the desired type from the device.
 --
@@ -337,9 +294,8 @@ openCommissioningWindowWithDiscriminator_duration_queue_completion mtrDevice  di
 --
 -- ObjC selector: @- downloadLogOfType:timeout:queue:completion:@
 downloadLogOfType_timeout_queue_completion :: (IsMTRDevice mtrDevice, IsNSObject queue) => mtrDevice -> MTRDiagnosticLogType -> CDouble -> queue -> Ptr () -> IO ()
-downloadLogOfType_timeout_queue_completion mtrDevice  type_ timeout queue completion =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDevice (mkSelector "downloadLogOfType:timeout:queue:completion:") retVoid [argCLong (coerce type_), argCDouble timeout, argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+downloadLogOfType_timeout_queue_completion mtrDevice type_ timeout queue completion =
+  sendMessage mtrDevice downloadLogOfType_timeout_queue_completionSelector type_ timeout (toNSObject queue) completion
 
 -- | Sets up the provided completion to be called when any of the following happens:
 --
@@ -351,10 +307,8 @@ downloadLogOfType_timeout_queue_completion mtrDevice  type_ timeout queue comple
 --
 -- ObjC selector: @- waitForAttributeValues:timeout:queue:completion:@
 waitForAttributeValues_timeout_queue_completion :: (IsMTRDevice mtrDevice, IsNSDictionary values, IsNSObject queue) => mtrDevice -> values -> CDouble -> queue -> Ptr () -> IO (Id MTRAttributeValueWaiter)
-waitForAttributeValues_timeout_queue_completion mtrDevice  values timeout queue completion =
-  withObjCPtr values $ \raw_values ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrDevice (mkSelector "waitForAttributeValues:timeout:queue:completion:") (retPtr retVoid) [argPtr (castPtr raw_values :: Ptr ()), argCDouble timeout, argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())] >>= retainedObject . castPtr
+waitForAttributeValues_timeout_queue_completion mtrDevice values timeout queue completion =
+  sendMessage mtrDevice waitForAttributeValues_timeout_queue_completionSelector (toNSDictionary values) timeout (toNSObject queue) completion
 
 -- | Deprecated MTRDevice APIs.
 --
@@ -363,20 +317,12 @@ deviceWithNodeID_deviceController :: IsMTRDeviceController deviceController => C
 deviceWithNodeID_deviceController nodeID deviceController =
   do
     cls' <- getRequiredClass "MTRDevice"
-    withObjCPtr deviceController $ \raw_deviceController ->
-      sendClassMsg cls' (mkSelector "deviceWithNodeID:deviceController:") (retPtr retVoid) [argCULong nodeID, argPtr (castPtr raw_deviceController :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithNodeID_deviceControllerSelector nodeID (toMTRDeviceController deviceController)
 
 -- | @- invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:clientQueue:completion:@
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completion :: (IsMTRDevice mtrDevice, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber commandID, IsNSArray expectedValues, IsNSNumber expectedValueInterval, IsNSNumber timeout, IsNSObject queue) => mtrDevice -> endpointID -> clusterID -> commandID -> RawId -> expectedValues -> expectedValueInterval -> timeout -> queue -> Ptr () -> IO ()
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completion mtrDevice  endpointID clusterID commandID commandFields expectedValues expectedValueInterval timeout queue completion =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr commandID $ \raw_commandID ->
-        withObjCPtr expectedValues $ \raw_expectedValues ->
-          withObjCPtr expectedValueInterval $ \raw_expectedValueInterval ->
-            withObjCPtr timeout $ \raw_timeout ->
-              withObjCPtr queue $ \raw_queue ->
-                  sendMsg mtrDevice (mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:clientQueue:completion:") retVoid [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_commandID :: Ptr ()), argPtr (castPtr (unRawId commandFields) :: Ptr ()), argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueInterval :: Ptr ()), argPtr (castPtr raw_timeout :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completion mtrDevice endpointID clusterID commandID commandFields expectedValues expectedValueInterval timeout queue completion =
+  sendMessage mtrDevice invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber commandID) commandFields (toNSArray expectedValues) (toNSNumber expectedValueInterval) (toNSNumber timeout) (toNSObject queue) completion
 
 -- | The current state of the device.
 --
@@ -388,8 +334,8 @@ invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_exp
 --
 -- ObjC selector: @- state@
 state :: IsMTRDevice mtrDevice => mtrDevice -> IO MTRDeviceState
-state mtrDevice  =
-    fmap (coerce :: CULong -> MTRDeviceState) $ sendMsg mtrDevice (mkSelector "state") retCULong []
+state mtrDevice =
+  sendMessage mtrDevice stateSelector
 
 -- | Is the device cache primed for this device?
 --
@@ -399,8 +345,8 @@ state mtrDevice  =
 --
 -- ObjC selector: @- deviceCachePrimed@
 deviceCachePrimed :: IsMTRDevice mtrDevice => mtrDevice -> IO Bool
-deviceCachePrimed mtrDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDevice (mkSelector "deviceCachePrimed") retCULong []
+deviceCachePrimed mtrDevice =
+  sendMessage mtrDevice deviceCachePrimedSelector
 
 -- | The estimated device system start time.
 --
@@ -412,22 +358,22 @@ deviceCachePrimed mtrDevice  =
 --
 -- ObjC selector: @- estimatedStartTime@
 estimatedStartTime :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSDate)
-estimatedStartTime mtrDevice  =
-    sendMsg mtrDevice (mkSelector "estimatedStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedStartTime mtrDevice =
+  sendMessage mtrDevice estimatedStartTimeSelector
 
 -- | The controller this device was created for.  May return nil if that controller has been shut down.
 --
 -- ObjC selector: @- deviceController@
 deviceController :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id MTRDeviceController)
-deviceController mtrDevice  =
-    sendMsg mtrDevice (mkSelector "deviceController") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceController mtrDevice =
+  sendMessage mtrDevice deviceControllerSelector
 
 -- | The node ID of the node this device corresponds to.
 --
 -- ObjC selector: @- nodeID@
 nodeID :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSNumber)
-nodeID mtrDevice  =
-    sendMsg mtrDevice (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrDevice =
+  sendMessage mtrDevice nodeIDSelector
 
 -- | An estimate of how much time is likely to elapse between setDelegate being called and the current device state (attributes, stored events) being known.
 --
@@ -435,8 +381,8 @@ nodeID mtrDevice  =
 --
 -- ObjC selector: @- estimatedSubscriptionLatency@
 estimatedSubscriptionLatency :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSNumber)
-estimatedSubscriptionLatency mtrDevice  =
-    sendMsg mtrDevice (mkSelector "estimatedSubscriptionLatency") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedSubscriptionLatency mtrDevice =
+  sendMessage mtrDevice estimatedSubscriptionLatencySelector
 
 -- | The Vendor Identifier associated with the device.
 --
@@ -444,8 +390,8 @@ estimatedSubscriptionLatency mtrDevice  =
 --
 -- ObjC selector: @- vendorID@
 vendorID :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSNumber)
-vendorID mtrDevice  =
-    sendMsg mtrDevice (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrDevice =
+  sendMessage mtrDevice vendorIDSelector
 
 -- | The Product Identifier associated with the device.
 --
@@ -453,133 +399,133 @@ vendorID mtrDevice  =
 --
 -- ObjC selector: @- productID@
 productID :: IsMTRDevice mtrDevice => mtrDevice -> IO (Id NSNumber)
-productID mtrDevice  =
-    sendMsg mtrDevice (mkSelector "productID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productID mtrDevice =
+  sendMessage mtrDevice productIDSelector
 
 -- | Network commissioning features supported by the device.
 --
 -- ObjC selector: @- networkCommissioningFeatures@
 networkCommissioningFeatures :: IsMTRDevice mtrDevice => mtrDevice -> IO MTRNetworkCommissioningFeature
-networkCommissioningFeatures mtrDevice  =
-    fmap (coerce :: CUInt -> MTRNetworkCommissioningFeature) $ sendMsg mtrDevice (mkSelector "networkCommissioningFeatures") retCUInt []
+networkCommissioningFeatures mtrDevice =
+  sendMessage mtrDevice networkCommissioningFeaturesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @deviceWithNodeID:controller:@
-deviceWithNodeID_controllerSelector :: Selector
+deviceWithNodeID_controllerSelector :: Selector '[Id NSNumber, Id MTRDeviceController] (Id MTRDevice)
 deviceWithNodeID_controllerSelector = mkSelector "deviceWithNodeID:controller:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @addDelegate:queue:@
-addDelegate_queueSelector :: Selector
+addDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 addDelegate_queueSelector = mkSelector "addDelegate:queue:"
 
 -- | @Selector@ for @addDelegate:queue:interestedPathsForAttributes:interestedPathsForEvents:@
-addDelegate_queue_interestedPathsForAttributes_interestedPathsForEventsSelector :: Selector
+addDelegate_queue_interestedPathsForAttributes_interestedPathsForEventsSelector :: Selector '[RawId, Id NSObject, Id NSArray, Id NSArray] ()
 addDelegate_queue_interestedPathsForAttributes_interestedPathsForEventsSelector = mkSelector "addDelegate:queue:interestedPathsForAttributes:interestedPathsForEvents:"
 
 -- | @Selector@ for @removeDelegate:@
-removeDelegateSelector :: Selector
+removeDelegateSelector :: Selector '[RawId] ()
 removeDelegateSelector = mkSelector "removeDelegate:"
 
 -- | @Selector@ for @readAttributeWithEndpointID:clusterID:attributeID:params:@
-readAttributeWithEndpointID_clusterID_attributeID_paramsSelector :: Selector
+readAttributeWithEndpointID_clusterID_attributeID_paramsSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id MTRReadParams] (Id NSDictionary)
 readAttributeWithEndpointID_clusterID_attributeID_paramsSelector = mkSelector "readAttributeWithEndpointID:clusterID:attributeID:params:"
 
 -- | @Selector@ for @writeAttributeWithEndpointID:clusterID:attributeID:value:expectedValueInterval:timedWriteTimeout:@
-writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector :: Selector
+writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, RawId, Id NSNumber, Id NSNumber] ()
 writeAttributeWithEndpointID_clusterID_attributeID_value_expectedValueInterval_timedWriteTimeoutSelector = mkSelector "writeAttributeWithEndpointID:clusterID:attributeID:value:expectedValueInterval:timedWriteTimeout:"
 
 -- | @Selector@ for @readAttributePaths:@
-readAttributePathsSelector :: Selector
+readAttributePathsSelector :: Selector '[Id NSArray] (Id NSArray)
 readAttributePathsSelector = mkSelector "readAttributePaths:"
 
 -- | @Selector@ for @descriptorClusters@
-descriptorClustersSelector :: Selector
+descriptorClustersSelector :: Selector '[] (Id NSDictionary)
 descriptorClustersSelector = mkSelector "descriptorClusters"
 
 -- | @Selector@ for @invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:queue:completion:@
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completionSelector :: Selector
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id NSDictionary, Id NSArray, Id NSNumber, Id NSObject, Ptr ()] ()
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_queue_completionSelector = mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:queue:completion:"
 
 -- | @Selector@ for @invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:queue:completion:@
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completionSelector :: Selector
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, RawId, Id NSArray, Id NSNumber, Id NSNumber, Id NSObject, Ptr ()] ()
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_queue_completionSelector = mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:queue:completion:"
 
 -- | @Selector@ for @invokeCommands:queue:completion:@
-invokeCommands_queue_completionSelector :: Selector
+invokeCommands_queue_completionSelector :: Selector '[Id NSArray, Id NSObject, Ptr ()] ()
 invokeCommands_queue_completionSelector = mkSelector "invokeCommands:queue:completion:"
 
 -- | @Selector@ for @openCommissioningWindowWithSetupPasscode:discriminator:duration:queue:completion:@
-openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector :: Selector
+openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id NSObject, Ptr ()] ()
 openCommissioningWindowWithSetupPasscode_discriminator_duration_queue_completionSelector = mkSelector "openCommissioningWindowWithSetupPasscode:discriminator:duration:queue:completion:"
 
 -- | @Selector@ for @openCommissioningWindowWithDiscriminator:duration:queue:completion:@
-openCommissioningWindowWithDiscriminator_duration_queue_completionSelector :: Selector
+openCommissioningWindowWithDiscriminator_duration_queue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSObject, Ptr ()] ()
 openCommissioningWindowWithDiscriminator_duration_queue_completionSelector = mkSelector "openCommissioningWindowWithDiscriminator:duration:queue:completion:"
 
 -- | @Selector@ for @downloadLogOfType:timeout:queue:completion:@
-downloadLogOfType_timeout_queue_completionSelector :: Selector
+downloadLogOfType_timeout_queue_completionSelector :: Selector '[MTRDiagnosticLogType, CDouble, Id NSObject, Ptr ()] ()
 downloadLogOfType_timeout_queue_completionSelector = mkSelector "downloadLogOfType:timeout:queue:completion:"
 
 -- | @Selector@ for @waitForAttributeValues:timeout:queue:completion:@
-waitForAttributeValues_timeout_queue_completionSelector :: Selector
+waitForAttributeValues_timeout_queue_completionSelector :: Selector '[Id NSDictionary, CDouble, Id NSObject, Ptr ()] (Id MTRAttributeValueWaiter)
 waitForAttributeValues_timeout_queue_completionSelector = mkSelector "waitForAttributeValues:timeout:queue:completion:"
 
 -- | @Selector@ for @deviceWithNodeID:deviceController:@
-deviceWithNodeID_deviceControllerSelector :: Selector
+deviceWithNodeID_deviceControllerSelector :: Selector '[CULong, Id MTRDeviceController] (Id MTRDevice)
 deviceWithNodeID_deviceControllerSelector = mkSelector "deviceWithNodeID:deviceController:"
 
 -- | @Selector@ for @invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:clientQueue:completion:@
-invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector :: Selector
+invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, RawId, Id NSArray, Id NSNumber, Id NSNumber, Id NSObject, Ptr ()] ()
 invokeCommandWithEndpointID_clusterID_commandID_commandFields_expectedValues_expectedValueInterval_timedInvokeTimeout_clientQueue_completionSelector = mkSelector "invokeCommandWithEndpointID:clusterID:commandID:commandFields:expectedValues:expectedValueInterval:timedInvokeTimeout:clientQueue:completion:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] MTRDeviceState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @deviceCachePrimed@
-deviceCachePrimedSelector :: Selector
+deviceCachePrimedSelector :: Selector '[] Bool
 deviceCachePrimedSelector = mkSelector "deviceCachePrimed"
 
 -- | @Selector@ for @estimatedStartTime@
-estimatedStartTimeSelector :: Selector
+estimatedStartTimeSelector :: Selector '[] (Id NSDate)
 estimatedStartTimeSelector = mkSelector "estimatedStartTime"
 
 -- | @Selector@ for @deviceController@
-deviceControllerSelector :: Selector
+deviceControllerSelector :: Selector '[] (Id MTRDeviceController)
 deviceControllerSelector = mkSelector "deviceController"
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @estimatedSubscriptionLatency@
-estimatedSubscriptionLatencySelector :: Selector
+estimatedSubscriptionLatencySelector :: Selector '[] (Id NSNumber)
 estimatedSubscriptionLatencySelector = mkSelector "estimatedSubscriptionLatency"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @productID@
-productIDSelector :: Selector
+productIDSelector :: Selector '[] (Id NSNumber)
 productIDSelector = mkSelector "productID"
 
 -- | @Selector@ for @networkCommissioningFeatures@
-networkCommissioningFeaturesSelector :: Selector
+networkCommissioningFeaturesSelector :: Selector '[] MTRNetworkCommissioningFeature
 networkCommissioningFeaturesSelector = mkSelector "networkCommissioningFeatures"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.SoundAnalysis.SNTimeDurationConstraint
   , new
   , type_
   , enumeratedDurations
-  , initWithEnumeratedDurationsSelector
+  , enumeratedDurationsSelector
   , initSelector
+  , initWithEnumeratedDurationsSelector
   , newSelector
   , typeSelector
-  , enumeratedDurationsSelector
 
   -- * Enum types
   , SNTimeDurationConstraintType(SNTimeDurationConstraintType)
@@ -29,15 +30,11 @@ module ObjC.SoundAnalysis.SNTimeDurationConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,21 +50,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithEnumeratedDurations:@
 initWithEnumeratedDurations :: (IsSNTimeDurationConstraint snTimeDurationConstraint, IsNSArray enumeratedDurations) => snTimeDurationConstraint -> enumeratedDurations -> IO (Id SNTimeDurationConstraint)
-initWithEnumeratedDurations snTimeDurationConstraint  enumeratedDurations =
-  withObjCPtr enumeratedDurations $ \raw_enumeratedDurations ->
-      sendMsg snTimeDurationConstraint (mkSelector "initWithEnumeratedDurations:") (retPtr retVoid) [argPtr (castPtr raw_enumeratedDurations :: Ptr ())] >>= ownedObject . castPtr
+initWithEnumeratedDurations snTimeDurationConstraint enumeratedDurations =
+  sendOwnedMessage snTimeDurationConstraint initWithEnumeratedDurationsSelector (toNSArray enumeratedDurations)
 
 -- | @- init@
 init_ :: IsSNTimeDurationConstraint snTimeDurationConstraint => snTimeDurationConstraint -> IO (Id SNTimeDurationConstraint)
-init_ snTimeDurationConstraint  =
-    sendMsg snTimeDurationConstraint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snTimeDurationConstraint =
+  sendOwnedMessage snTimeDurationConstraint initSelector
 
 -- | @+ new@
 new :: IO (Id SNTimeDurationConstraint)
 new  =
   do
     cls' <- getRequiredClass "SNTimeDurationConstraint"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The time constraint type.
 --
@@ -75,8 +71,8 @@ new  =
 --
 -- ObjC selector: @- type@
 type_ :: IsSNTimeDurationConstraint snTimeDurationConstraint => snTimeDurationConstraint -> IO SNTimeDurationConstraintType
-type_ snTimeDurationConstraint  =
-    fmap (coerce :: CLong -> SNTimeDurationConstraintType) $ sendMsg snTimeDurationConstraint (mkSelector "type") retCLong []
+type_ snTimeDurationConstraint =
+  sendMessage snTimeDurationConstraint typeSelector
 
 -- | If the constraint type is enumerated, then the set of discrete allowable time durations.
 --
@@ -86,30 +82,30 @@ type_ snTimeDurationConstraint  =
 --
 -- ObjC selector: @- enumeratedDurations@
 enumeratedDurations :: IsSNTimeDurationConstraint snTimeDurationConstraint => snTimeDurationConstraint -> IO (Id NSArray)
-enumeratedDurations snTimeDurationConstraint  =
-    sendMsg snTimeDurationConstraint (mkSelector "enumeratedDurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+enumeratedDurations snTimeDurationConstraint =
+  sendMessage snTimeDurationConstraint enumeratedDurationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithEnumeratedDurations:@
-initWithEnumeratedDurationsSelector :: Selector
+initWithEnumeratedDurationsSelector :: Selector '[Id NSArray] (Id SNTimeDurationConstraint)
 initWithEnumeratedDurationsSelector = mkSelector "initWithEnumeratedDurations:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNTimeDurationConstraint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SNTimeDurationConstraint)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] SNTimeDurationConstraintType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @enumeratedDurations@
-enumeratedDurationsSelector :: Selector
+enumeratedDurationsSelector :: Selector '[] (Id NSArray)
 enumeratedDurationsSelector = mkSelector "enumeratedDurations"
 

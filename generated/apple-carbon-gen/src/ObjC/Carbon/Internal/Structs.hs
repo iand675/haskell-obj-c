@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.ApplicationServices.Internal.Structs
 
 data AlertStdAlertParamRec = AlertStdAlertParamRec
@@ -58,6 +60,16 @@ argAlertStdAlertParamRec = mkStorableArg alertStdAlertParamRecStructType
 
 retAlertStdAlertParamRec :: RetType AlertStdAlertParamRec
 retAlertStdAlertParamRec = mkStorableRetType alertStdAlertParamRecStructType
+
+instance ObjCArgument AlertStdAlertParamRec where
+  withObjCArg x k = k (argAlertStdAlertParamRec x)
+
+instance ObjCReturn AlertStdAlertParamRec where
+  type RawReturn AlertStdAlertParamRec = AlertStdAlertParamRec
+  objcRetType = retAlertStdAlertParamRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AlertStdCFStringAlertParamRec = AlertStdCFStringAlertParamRec
   { alertStdCFStringAlertParamRecVersion :: !CUInt
@@ -110,6 +122,16 @@ argAlertStdCFStringAlertParamRec = mkStorableArg alertStdCFStringAlertParamRecSt
 retAlertStdCFStringAlertParamRec :: RetType AlertStdCFStringAlertParamRec
 retAlertStdCFStringAlertParamRec = mkStorableRetType alertStdCFStringAlertParamRecStructType
 
+instance ObjCArgument AlertStdCFStringAlertParamRec where
+  withObjCArg x k = k (argAlertStdCFStringAlertParamRec x)
+
+instance ObjCReturn AlertStdCFStringAlertParamRec where
+  type RawReturn AlertStdCFStringAlertParamRec = AlertStdCFStringAlertParamRec
+  objcRetType = retAlertStdCFStringAlertParamRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ******************************************************************************
 --
 -- Quickdraw Types
@@ -142,6 +164,16 @@ argCell = mkStorableArg cellStructType
 
 retCell :: RetType Cell
 retCell = mkStorableRetType cellStructType
+
+instance ObjCArgument Cell where
+  withObjCArg x k = k (argCell x)
+
+instance ObjCReturn Cell where
+  type RawReturn Cell = Cell
+  objcRetType = retCell
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ContextualMenuInterfaceStruct = ContextualMenuInterfaceStruct
   { contextualMenuInterfaceStruct_reserved :: !(Ptr ())
@@ -182,6 +214,16 @@ argContextualMenuInterfaceStruct = mkStorableArg contextualMenuInterfaceStructSt
 retContextualMenuInterfaceStruct :: RetType ContextualMenuInterfaceStruct
 retContextualMenuInterfaceStruct = mkStorableRetType contextualMenuInterfaceStructStructType
 
+instance ObjCArgument ContextualMenuInterfaceStruct where
+  withObjCArg x k = k (argContextualMenuInterfaceStruct x)
+
+instance ObjCReturn ContextualMenuInterfaceStruct where
+  type RawReturn ContextualMenuInterfaceStruct = ContextualMenuInterfaceStruct
+  objcRetType = retContextualMenuInterfaceStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ControlEditTextSelectionRec = ControlEditTextSelectionRec
   { controlEditTextSelectionRecSelStart :: !CShort
   , controlEditTextSelectionRecSelEnd :: !CShort
@@ -205,6 +247,16 @@ argControlEditTextSelectionRec = mkStorableArg controlEditTextSelectionRecStruct
 
 retControlEditTextSelectionRec :: RetType ControlEditTextSelectionRec
 retControlEditTextSelectionRec = mkStorableRetType controlEditTextSelectionRecStructType
+
+instance ObjCArgument ControlEditTextSelectionRec where
+  withObjCArg x k = k (argControlEditTextSelectionRec x)
+
+instance ObjCReturn ControlEditTextSelectionRec where
+  type RawReturn ControlEditTextSelectionRec = ControlEditTextSelectionRec
+  objcRetType = retControlEditTextSelectionRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ControlID = ControlID
   { controlIDSignature :: !CUInt
@@ -230,6 +282,16 @@ argControlID = mkStorableArg controlIDStructType
 retControlID :: RetType ControlID
 retControlID = mkStorableRetType controlIDStructType
 
+instance ObjCArgument ControlID where
+  withObjCArg x k = k (argControlID x)
+
+instance ObjCReturn ControlID where
+  type RawReturn ControlID = ControlID
+  objcRetType = retControlID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ControlKind = ControlKind
   { controlKindSignature :: !CUInt
   , controlKindKind :: !CUInt
@@ -253,6 +315,16 @@ argControlKind = mkStorableArg controlKindStructType
 
 retControlKind :: RetType ControlKind
 retControlKind = mkStorableRetType controlKindStructType
+
+instance ObjCArgument ControlKind where
+  withObjCArg x k = k (argControlKind x)
+
+instance ObjCReturn ControlKind where
+  type RawReturn ControlKind = ControlKind
+  objcRetType = retControlKind
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ControlTabInfoRecV1 = ControlTabInfoRecV1
   { controlTabInfoRecV1Version :: !CShort
@@ -280,6 +352,16 @@ argControlTabInfoRecV1 = mkStorableArg controlTabInfoRecV1StructType
 
 retControlTabInfoRecV1 :: RetType ControlTabInfoRecV1
 retControlTabInfoRecV1 = mkStorableRetType controlTabInfoRecV1StructType
+
+instance ObjCArgument ControlTabInfoRecV1 where
+  withObjCArg x k = k (argControlTabInfoRecV1 x)
+
+instance ObjCReturn ControlTabInfoRecV1 where
+  type RawReturn ControlTabInfoRecV1 = ControlTabInfoRecV1
+  objcRetType = retControlTabInfoRecV1
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DataBrowserAccessibilityItemInfoV0 = DataBrowserAccessibilityItemInfoV0
   { dataBrowserAccessibilityItemInfoV0Container :: !CULong
@@ -310,6 +392,16 @@ argDataBrowserAccessibilityItemInfoV0 = mkStorableArg dataBrowserAccessibilityIt
 
 retDataBrowserAccessibilityItemInfoV0 :: RetType DataBrowserAccessibilityItemInfoV0
 retDataBrowserAccessibilityItemInfoV0 = mkStorableRetType dataBrowserAccessibilityItemInfoV0StructType
+
+instance ObjCArgument DataBrowserAccessibilityItemInfoV0 where
+  withObjCArg x k = k (argDataBrowserAccessibilityItemInfoV0 x)
+
+instance ObjCReturn DataBrowserAccessibilityItemInfoV0 where
+  type RawReturn DataBrowserAccessibilityItemInfoV0 = DataBrowserAccessibilityItemInfoV0
+  objcRetType = retDataBrowserAccessibilityItemInfoV0
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DataBrowserAccessibilityItemInfoV1 = DataBrowserAccessibilityItemInfoV1
   { dataBrowserAccessibilityItemInfoV1Container :: !CULong
@@ -347,6 +439,16 @@ argDataBrowserAccessibilityItemInfoV1 = mkStorableArg dataBrowserAccessibilityIt
 retDataBrowserAccessibilityItemInfoV1 :: RetType DataBrowserAccessibilityItemInfoV1
 retDataBrowserAccessibilityItemInfoV1 = mkStorableRetType dataBrowserAccessibilityItemInfoV1StructType
 
+instance ObjCArgument DataBrowserAccessibilityItemInfoV1 where
+  withObjCArg x k = k (argDataBrowserAccessibilityItemInfoV1 x)
+
+instance ObjCReturn DataBrowserAccessibilityItemInfoV1 where
+  type RawReturn DataBrowserAccessibilityItemInfoV1 = DataBrowserAccessibilityItemInfoV1
+  objcRetType = retDataBrowserAccessibilityItemInfoV1
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DataBrowserPropertyDesc = DataBrowserPropertyDesc
   { dataBrowserPropertyDescPropertyID :: !CULong
   , dataBrowserPropertyDescPropertyType :: !CUInt
@@ -373,6 +475,16 @@ argDataBrowserPropertyDesc = mkStorableArg dataBrowserPropertyDescStructType
 
 retDataBrowserPropertyDesc :: RetType DataBrowserPropertyDesc
 retDataBrowserPropertyDesc = mkStorableRetType dataBrowserPropertyDescStructType
+
+instance ObjCArgument DataBrowserPropertyDesc where
+  withObjCArg x k = k (argDataBrowserPropertyDesc x)
+
+instance ObjCReturn DataBrowserPropertyDesc where
+  type RawReturn DataBrowserPropertyDesc = DataBrowserPropertyDesc
+  objcRetType = retDataBrowserPropertyDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DataBrowserTableViewColumnDesc = DataBrowserTableViewColumnDesc
   { dataBrowserTableViewColumnDescPropertyID :: !CULong
@@ -401,6 +513,16 @@ argDataBrowserTableViewColumnDesc = mkStorableArg dataBrowserTableViewColumnDesc
 retDataBrowserTableViewColumnDesc :: RetType DataBrowserTableViewColumnDesc
 retDataBrowserTableViewColumnDesc = mkStorableRetType dataBrowserTableViewColumnDescStructType
 
+instance ObjCArgument DataBrowserTableViewColumnDesc where
+  withObjCArg x k = k (argDataBrowserTableViewColumnDesc x)
+
+instance ObjCReturn DataBrowserTableViewColumnDesc where
+  type RawReturn DataBrowserTableViewColumnDesc = DataBrowserTableViewColumnDesc
+  objcRetType = retDataBrowserTableViewColumnDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data EventHotKeyID = EventHotKeyID
   { eventHotKeyIDSignature :: !CUInt
   , eventHotKeyIDId :: !CUInt
@@ -424,6 +546,16 @@ argEventHotKeyID = mkStorableArg eventHotKeyIDStructType
 
 retEventHotKeyID :: RetType EventHotKeyID
 retEventHotKeyID = mkStorableRetType eventHotKeyIDStructType
+
+instance ObjCArgument EventHotKeyID where
+  withObjCArg x k = k (argEventHotKeyID x)
+
+instance ObjCReturn EventHotKeyID where
+  type RawReturn EventHotKeyID = EventHotKeyID
+  objcRetType = retEventHotKeyID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data EventTypeSpec = EventTypeSpec
   { eventTypeSpecEventClass :: !CUInt
@@ -449,6 +581,16 @@ argEventTypeSpec = mkStorableArg eventTypeSpecStructType
 retEventTypeSpec :: RetType EventTypeSpec
 retEventTypeSpec = mkStorableRetType eventTypeSpecStructType
 
+instance ObjCArgument EventTypeSpec where
+  withObjCArg x k = k (argEventTypeSpec x)
+
+instance ObjCReturn EventTypeSpec where
+  type RawReturn EventTypeSpec = EventTypeSpec
+  objcRetType = retEventTypeSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FileTranslationList = FileTranslationList
   { fileTranslationListModDate :: !CULong
   , fileTranslationListGroupCount :: !CULong
@@ -472,6 +614,16 @@ argFileTranslationList = mkStorableArg fileTranslationListStructType
 
 retFileTranslationList :: RetType FileTranslationList
 retFileTranslationList = mkStorableRetType fileTranslationListStructType
+
+instance ObjCArgument FileTranslationList where
+  withObjCArg x k = k (argFileTranslationList x)
+
+instance ObjCReturn FileTranslationList where
+  type RawReturn FileTranslationList = FileTranslationList
+  objcRetType = retFileTranslationList
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ***************************************************************************************
 data FileTypeSpec = FileTypeSpec
@@ -507,6 +659,16 @@ argFileTypeSpec = mkStorableArg fileTypeSpecStructType
 retFileTypeSpec :: RetType FileTypeSpec
 retFileTypeSpec = mkStorableRetType fileTypeSpecStructType
 
+instance ObjCArgument FileTypeSpec where
+  withObjCArg x k = k (argFileTypeSpec x)
+
+instance ObjCReturn FileTypeSpec where
+  type RawReturn FileTypeSpec = FileTypeSpec
+  objcRetType = retFileTypeSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data GetWindowRegionRec = GetWindowRegionRec
   { getWindowRegionRecWinRgn :: !(Ptr ())
   , getWindowRegionRecRegionCode :: !CUShort
@@ -530,6 +692,16 @@ argGetWindowRegionRec = mkStorableArg getWindowRegionRecStructType
 
 retGetWindowRegionRec :: RetType GetWindowRegionRec
 retGetWindowRegionRec = mkStorableRetType getWindowRegionRecStructType
+
+instance ObjCArgument GetWindowRegionRec where
+  withObjCArg x k = k (argGetWindowRegionRec x)
+
+instance ObjCReturn GetWindowRegionRec where
+  type RawReturn GetWindowRegionRec = GetWindowRegionRec
+  objcRetType = retGetWindowRegionRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HFSFlavor = HFSFlavor
   { hfsFlavorFileType :: !CUInt
@@ -561,6 +733,16 @@ argHFSFlavor = mkStorableArg hfsFlavorStructType
 retHFSFlavor :: RetType HFSFlavor
 retHFSFlavor = mkStorableRetType hfsFlavorStructType
 
+instance ObjCArgument HFSFlavor where
+  withObjCArg x k = k (argHFSFlavor x)
+
+instance ObjCReturn HFSFlavor where
+  type RawReturn HFSFlavor = HFSFlavor
+  objcRetType = retHFSFlavor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIAxisPosition = HIAxisPosition
   { hiAxisPositionToView :: !(Ptr ())
   , hiAxisPositionKind :: !CUShort
@@ -587,6 +769,16 @@ argHIAxisPosition = mkStorableArg hiAxisPositionStructType
 
 retHIAxisPosition :: RetType HIAxisPosition
 retHIAxisPosition = mkStorableRetType hiAxisPositionStructType
+
+instance ObjCArgument HIAxisPosition where
+  withObjCArg x k = k (argHIAxisPosition x)
+
+instance ObjCReturn HIAxisPosition where
+  type RawReturn HIAxisPosition = HIAxisPosition
+  objcRetType = retHIAxisPosition
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIAxisScale = HIAxisScale
   { hiAxisScaleToView :: !(Ptr ())
@@ -615,6 +807,16 @@ argHIAxisScale = mkStorableArg hiAxisScaleStructType
 retHIAxisScale :: RetType HIAxisScale
 retHIAxisScale = mkStorableRetType hiAxisScaleStructType
 
+instance ObjCArgument HIAxisScale where
+  withObjCArg x k = k (argHIAxisScale x)
+
+instance ObjCReturn HIAxisScale where
+  type RawReturn HIAxisScale = HIAxisScale
+  objcRetType = retHIAxisScale
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HICommand = HICommand
   { hiCommandAttributes :: !CUInt
   , hiCommandCommandID :: !CUInt
@@ -641,6 +843,16 @@ argHICommand = mkStorableArg hiCommandStructType
 
 retHICommand :: RetType HICommand
 retHICommand = mkStorableRetType hiCommandStructType
+
+instance ObjCArgument HICommand where
+  withObjCArg x k = k (argHICommand x)
+
+instance ObjCReturn HICommand where
+  type RawReturn HICommand = HICommand
+  objcRetType = retHICommand
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIContentBorderMetrics = HIContentBorderMetrics
   { hiContentBorderMetricsTop :: !CDouble
@@ -672,6 +884,16 @@ argHIContentBorderMetrics = mkStorableArg hiContentBorderMetricsStructType
 retHIContentBorderMetrics :: RetType HIContentBorderMetrics
 retHIContentBorderMetrics = mkStorableRetType hiContentBorderMetricsStructType
 
+instance ObjCArgument HIContentBorderMetrics where
+  withObjCArg x k = k (argHIContentBorderMetrics x)
+
+instance ObjCReturn HIContentBorderMetrics where
+  type RawReturn HIContentBorderMetrics = HIContentBorderMetrics
+  objcRetType = retHIContentBorderMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIPoint = HIPoint
   { hiPointX :: !CDouble
   , hiPointY :: !CDouble
@@ -695,6 +917,16 @@ argHIPoint = mkStorableArg hiPointStructType
 
 retHIPoint :: RetType HIPoint
 retHIPoint = mkStorableRetType hiPointStructType
+
+instance ObjCArgument HIPoint where
+  withObjCArg x k = k (argHIPoint x)
+
+instance ObjCReturn HIPoint where
+  type RawReturn HIPoint = HIPoint
+  objcRetType = retHIPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIScrollBarTrackInfo = HIScrollBarTrackInfo
   { hiScrollBarTrackInfoVersion :: !CUInt
@@ -726,6 +958,16 @@ argHIScrollBarTrackInfo = mkStorableArg hiScrollBarTrackInfoStructType
 retHIScrollBarTrackInfo :: RetType HIScrollBarTrackInfo
 retHIScrollBarTrackInfo = mkStorableRetType hiScrollBarTrackInfoStructType
 
+instance ObjCArgument HIScrollBarTrackInfo where
+  withObjCArg x k = k (argHIScrollBarTrackInfo x)
+
+instance ObjCReturn HIScrollBarTrackInfo where
+  type RawReturn HIScrollBarTrackInfo = HIScrollBarTrackInfo
+  objcRetType = retHIScrollBarTrackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HISideBinding = HISideBinding
   { hiSideBindingToView :: !(Ptr ())
   , hiSideBindingKind :: !CUShort
@@ -753,6 +995,16 @@ argHISideBinding = mkStorableArg hiSideBindingStructType
 retHISideBinding :: RetType HISideBinding
 retHISideBinding = mkStorableRetType hiSideBindingStructType
 
+instance ObjCArgument HISideBinding where
+  withObjCArg x k = k (argHISideBinding x)
+
+instance ObjCReturn HISideBinding where
+  type RawReturn HISideBinding = HISideBinding
+  objcRetType = retHISideBinding
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HISize = HISize
   { hiSizeWidth :: !CDouble
   , hiSizeHeight :: !CDouble
@@ -777,6 +1029,16 @@ argHISize = mkStorableArg hiSizeStructType
 retHISize :: RetType HISize
 retHISize = mkStorableRetType hiSizeStructType
 
+instance ObjCArgument HISize where
+  withObjCArg x k = k (argHISize x)
+
+instance ObjCReturn HISize where
+  type RawReturn HISize = HISize
+  objcRetType = retHISize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeAnimationFrameInfo = HIThemeAnimationFrameInfo
   { hiThemeAnimationFrameInfoIndex :: !CUInt
   } deriving (Eq, Show)
@@ -797,6 +1059,16 @@ argHIThemeAnimationFrameInfo = mkStorableArg hiThemeAnimationFrameInfoStructType
 
 retHIThemeAnimationFrameInfo :: RetType HIThemeAnimationFrameInfo
 retHIThemeAnimationFrameInfo = mkStorableRetType hiThemeAnimationFrameInfoStructType
+
+instance ObjCArgument HIThemeAnimationFrameInfo where
+  withObjCArg x k = k (argHIThemeAnimationFrameInfo x)
+
+instance ObjCReturn HIThemeAnimationFrameInfo where
+  type RawReturn HIThemeAnimationFrameInfo = HIThemeAnimationFrameInfo
+  objcRetType = retHIThemeAnimationFrameInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeAnimationTimeInfo = HIThemeAnimationTimeInfo
   { hiThemeAnimationTimeInfoStart :: !CDouble
@@ -821,6 +1093,16 @@ argHIThemeAnimationTimeInfo = mkStorableArg hiThemeAnimationTimeInfoStructType
 
 retHIThemeAnimationTimeInfo :: RetType HIThemeAnimationTimeInfo
 retHIThemeAnimationTimeInfo = mkStorableRetType hiThemeAnimationTimeInfoStructType
+
+instance ObjCArgument HIThemeAnimationTimeInfo where
+  withObjCArg x k = k (argHIThemeAnimationTimeInfo x)
+
+instance ObjCReturn HIThemeAnimationTimeInfo where
+  type RawReturn HIThemeAnimationTimeInfo = HIThemeAnimationTimeInfo
+  objcRetType = retHIThemeAnimationTimeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeBackgroundDrawInfo = HIThemeBackgroundDrawInfo
   { hiThemeBackgroundDrawInfoVersion :: !CUInt
@@ -849,6 +1131,16 @@ argHIThemeBackgroundDrawInfo = mkStorableArg hiThemeBackgroundDrawInfoStructType
 retHIThemeBackgroundDrawInfo :: RetType HIThemeBackgroundDrawInfo
 retHIThemeBackgroundDrawInfo = mkStorableRetType hiThemeBackgroundDrawInfoStructType
 
+instance ObjCArgument HIThemeBackgroundDrawInfo where
+  withObjCArg x k = k (argHIThemeBackgroundDrawInfo x)
+
+instance ObjCReturn HIThemeBackgroundDrawInfo where
+  type RawReturn HIThemeBackgroundDrawInfo = HIThemeBackgroundDrawInfo
+  objcRetType = retHIThemeBackgroundDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeChasingArrowsDrawInfo = HIThemeChasingArrowsDrawInfo
   { hiThemeChasingArrowsDrawInfoVersion :: !CUInt
   , hiThemeChasingArrowsDrawInfoState :: !CUInt
@@ -875,6 +1167,16 @@ argHIThemeChasingArrowsDrawInfo = mkStorableArg hiThemeChasingArrowsDrawInfoStru
 
 retHIThemeChasingArrowsDrawInfo :: RetType HIThemeChasingArrowsDrawInfo
 retHIThemeChasingArrowsDrawInfo = mkStorableRetType hiThemeChasingArrowsDrawInfoStructType
+
+instance ObjCArgument HIThemeChasingArrowsDrawInfo where
+  withObjCArg x k = k (argHIThemeChasingArrowsDrawInfo x)
+
+instance ObjCReturn HIThemeChasingArrowsDrawInfo where
+  type RawReturn HIThemeChasingArrowsDrawInfo = HIThemeChasingArrowsDrawInfo
+  objcRetType = retHIThemeChasingArrowsDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeFrameDrawInfo = HIThemeFrameDrawInfo
   { hiThemeFrameDrawInfoVersion :: !CUInt
@@ -906,6 +1208,16 @@ argHIThemeFrameDrawInfo = mkStorableArg hiThemeFrameDrawInfoStructType
 retHIThemeFrameDrawInfo :: RetType HIThemeFrameDrawInfo
 retHIThemeFrameDrawInfo = mkStorableRetType hiThemeFrameDrawInfoStructType
 
+instance ObjCArgument HIThemeFrameDrawInfo where
+  withObjCArg x k = k (argHIThemeFrameDrawInfo x)
+
+instance ObjCReturn HIThemeFrameDrawInfo where
+  type RawReturn HIThemeFrameDrawInfo = HIThemeFrameDrawInfo
+  objcRetType = retHIThemeFrameDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeGrabberDrawInfo = HIThemeGrabberDrawInfo
   { hiThemeGrabberDrawInfoVersion :: !CUInt
   , hiThemeGrabberDrawInfoState :: !CUInt
@@ -929,6 +1241,16 @@ argHIThemeGrabberDrawInfo = mkStorableArg hiThemeGrabberDrawInfoStructType
 
 retHIThemeGrabberDrawInfo :: RetType HIThemeGrabberDrawInfo
 retHIThemeGrabberDrawInfo = mkStorableRetType hiThemeGrabberDrawInfoStructType
+
+instance ObjCArgument HIThemeGrabberDrawInfo where
+  withObjCArg x k = k (argHIThemeGrabberDrawInfo x)
+
+instance ObjCReturn HIThemeGrabberDrawInfo where
+  type RawReturn HIThemeGrabberDrawInfo = HIThemeGrabberDrawInfo
+  objcRetType = retHIThemeGrabberDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeGroupBoxDrawInfo = HIThemeGroupBoxDrawInfo
   { hiThemeGroupBoxDrawInfoVersion :: !CUInt
@@ -956,6 +1278,16 @@ argHIThemeGroupBoxDrawInfo = mkStorableArg hiThemeGroupBoxDrawInfoStructType
 
 retHIThemeGroupBoxDrawInfo :: RetType HIThemeGroupBoxDrawInfo
 retHIThemeGroupBoxDrawInfo = mkStorableRetType hiThemeGroupBoxDrawInfoStructType
+
+instance ObjCArgument HIThemeGroupBoxDrawInfo where
+  withObjCArg x k = k (argHIThemeGroupBoxDrawInfo x)
+
+instance ObjCReturn HIThemeGroupBoxDrawInfo where
+  type RawReturn HIThemeGroupBoxDrawInfo = HIThemeGroupBoxDrawInfo
+  objcRetType = retHIThemeGroupBoxDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeGrowBoxDrawInfo = HIThemeGrowBoxDrawInfo
   { hiThemeGrowBoxDrawInfoVersion :: !CUInt
@@ -990,6 +1322,16 @@ argHIThemeGrowBoxDrawInfo = mkStorableArg hiThemeGrowBoxDrawInfoStructType
 retHIThemeGrowBoxDrawInfo :: RetType HIThemeGrowBoxDrawInfo
 retHIThemeGrowBoxDrawInfo = mkStorableRetType hiThemeGrowBoxDrawInfoStructType
 
+instance ObjCArgument HIThemeGrowBoxDrawInfo where
+  withObjCArg x k = k (argHIThemeGrowBoxDrawInfo x)
+
+instance ObjCReturn HIThemeGrowBoxDrawInfo where
+  type RawReturn HIThemeGrowBoxDrawInfo = HIThemeGrowBoxDrawInfo
+  objcRetType = retHIThemeGrowBoxDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeHeaderDrawInfo = HIThemeHeaderDrawInfo
   { hiThemeHeaderDrawInfoVersion :: !CUInt
   , hiThemeHeaderDrawInfoState :: !CUInt
@@ -1017,6 +1359,16 @@ argHIThemeHeaderDrawInfo = mkStorableArg hiThemeHeaderDrawInfoStructType
 retHIThemeHeaderDrawInfo :: RetType HIThemeHeaderDrawInfo
 retHIThemeHeaderDrawInfo = mkStorableRetType hiThemeHeaderDrawInfoStructType
 
+instance ObjCArgument HIThemeHeaderDrawInfo where
+  withObjCArg x k = k (argHIThemeHeaderDrawInfo x)
+
+instance ObjCReturn HIThemeHeaderDrawInfo where
+  type RawReturn HIThemeHeaderDrawInfo = HIThemeHeaderDrawInfo
+  objcRetType = retHIThemeHeaderDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeMenuBarDrawInfo = HIThemeMenuBarDrawInfo
   { hiThemeMenuBarDrawInfoVersion :: !CUInt
   , hiThemeMenuBarDrawInfoState :: !CUShort
@@ -1043,6 +1395,16 @@ argHIThemeMenuBarDrawInfo = mkStorableArg hiThemeMenuBarDrawInfoStructType
 
 retHIThemeMenuBarDrawInfo :: RetType HIThemeMenuBarDrawInfo
 retHIThemeMenuBarDrawInfo = mkStorableRetType hiThemeMenuBarDrawInfoStructType
+
+instance ObjCArgument HIThemeMenuBarDrawInfo where
+  withObjCArg x k = k (argHIThemeMenuBarDrawInfo x)
+
+instance ObjCReturn HIThemeMenuBarDrawInfo where
+  type RawReturn HIThemeMenuBarDrawInfo = HIThemeMenuBarDrawInfo
+  objcRetType = retHIThemeMenuBarDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeMenuDrawInfo = HIThemeMenuDrawInfo
   { hiThemeMenuDrawInfoVersion :: !CUInt
@@ -1083,6 +1445,16 @@ argHIThemeMenuDrawInfo = mkStorableArg hiThemeMenuDrawInfoStructType
 retHIThemeMenuDrawInfo :: RetType HIThemeMenuDrawInfo
 retHIThemeMenuDrawInfo = mkStorableRetType hiThemeMenuDrawInfoStructType
 
+instance ObjCArgument HIThemeMenuDrawInfo where
+  withObjCArg x k = k (argHIThemeMenuDrawInfo x)
+
+instance ObjCReturn HIThemeMenuDrawInfo where
+  type RawReturn HIThemeMenuDrawInfo = HIThemeMenuDrawInfo
+  objcRetType = retHIThemeMenuDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeMenuDrawInfoVersionZero = HIThemeMenuDrawInfoVersionZero
   { hiThemeMenuDrawInfoVersionZeroVersion :: !CUInt
   , hiThemeMenuDrawInfoVersionZeroMenuType :: !CUShort
@@ -1106,6 +1478,16 @@ argHIThemeMenuDrawInfoVersionZero = mkStorableArg hiThemeMenuDrawInfoVersionZero
 
 retHIThemeMenuDrawInfoVersionZero :: RetType HIThemeMenuDrawInfoVersionZero
 retHIThemeMenuDrawInfoVersionZero = mkStorableRetType hiThemeMenuDrawInfoVersionZeroStructType
+
+instance ObjCArgument HIThemeMenuDrawInfoVersionZero where
+  withObjCArg x k = k (argHIThemeMenuDrawInfoVersionZero x)
+
+instance ObjCReturn HIThemeMenuDrawInfoVersionZero where
+  type RawReturn HIThemeMenuDrawInfoVersionZero = HIThemeMenuDrawInfoVersionZero
+  objcRetType = retHIThemeMenuDrawInfoVersionZero
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeMenuItemDrawInfo = HIThemeMenuItemDrawInfo
   { hiThemeMenuItemDrawInfoVersion :: !CUInt
@@ -1133,6 +1515,16 @@ argHIThemeMenuItemDrawInfo = mkStorableArg hiThemeMenuItemDrawInfoStructType
 
 retHIThemeMenuItemDrawInfo :: RetType HIThemeMenuItemDrawInfo
 retHIThemeMenuItemDrawInfo = mkStorableRetType hiThemeMenuItemDrawInfoStructType
+
+instance ObjCArgument HIThemeMenuItemDrawInfo where
+  withObjCArg x k = k (argHIThemeMenuItemDrawInfo x)
+
+instance ObjCReturn HIThemeMenuItemDrawInfo where
+  type RawReturn HIThemeMenuItemDrawInfo = HIThemeMenuItemDrawInfo
+  objcRetType = retHIThemeMenuItemDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeMenuTitleDrawInfo = HIThemeMenuTitleDrawInfo
   { hiThemeMenuTitleDrawInfoVersion :: !CUInt
@@ -1164,6 +1556,16 @@ argHIThemeMenuTitleDrawInfo = mkStorableArg hiThemeMenuTitleDrawInfoStructType
 retHIThemeMenuTitleDrawInfo :: RetType HIThemeMenuTitleDrawInfo
 retHIThemeMenuTitleDrawInfo = mkStorableRetType hiThemeMenuTitleDrawInfoStructType
 
+instance ObjCArgument HIThemeMenuTitleDrawInfo where
+  withObjCArg x k = k (argHIThemeMenuTitleDrawInfo x)
+
+instance ObjCReturn HIThemeMenuTitleDrawInfo where
+  type RawReturn HIThemeMenuTitleDrawInfo = HIThemeMenuTitleDrawInfo
+  objcRetType = retHIThemeMenuTitleDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemePlacardDrawInfo = HIThemePlacardDrawInfo
   { hiThemePlacardDrawInfoVersion :: !CUInt
   , hiThemePlacardDrawInfoState :: !CUInt
@@ -1187,6 +1589,16 @@ argHIThemePlacardDrawInfo = mkStorableArg hiThemePlacardDrawInfoStructType
 
 retHIThemePlacardDrawInfo :: RetType HIThemePlacardDrawInfo
 retHIThemePlacardDrawInfo = mkStorableRetType hiThemePlacardDrawInfoStructType
+
+instance ObjCArgument HIThemePlacardDrawInfo where
+  withObjCArg x k = k (argHIThemePlacardDrawInfo x)
+
+instance ObjCReturn HIThemePlacardDrawInfo where
+  type RawReturn HIThemePlacardDrawInfo = HIThemePlacardDrawInfo
+  objcRetType = retHIThemePlacardDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemePopupArrowDrawInfo = HIThemePopupArrowDrawInfo
   { hiThemePopupArrowDrawInfoVersion :: !CUInt
@@ -1218,6 +1630,16 @@ argHIThemePopupArrowDrawInfo = mkStorableArg hiThemePopupArrowDrawInfoStructType
 retHIThemePopupArrowDrawInfo :: RetType HIThemePopupArrowDrawInfo
 retHIThemePopupArrowDrawInfo = mkStorableRetType hiThemePopupArrowDrawInfoStructType
 
+instance ObjCArgument HIThemePopupArrowDrawInfo where
+  withObjCArg x k = k (argHIThemePopupArrowDrawInfo x)
+
+instance ObjCReturn HIThemePopupArrowDrawInfo where
+  type RawReturn HIThemePopupArrowDrawInfo = HIThemePopupArrowDrawInfo
+  objcRetType = retHIThemePopupArrowDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeScrollBarDelimitersDrawInfo = HIThemeScrollBarDelimitersDrawInfo
   { hiThemeScrollBarDelimitersDrawInfoVersion :: !CUInt
   , hiThemeScrollBarDelimitersDrawInfoState :: !CUInt
@@ -1247,6 +1669,16 @@ argHIThemeScrollBarDelimitersDrawInfo = mkStorableArg hiThemeScrollBarDelimiters
 
 retHIThemeScrollBarDelimitersDrawInfo :: RetType HIThemeScrollBarDelimitersDrawInfo
 retHIThemeScrollBarDelimitersDrawInfo = mkStorableRetType hiThemeScrollBarDelimitersDrawInfoStructType
+
+instance ObjCArgument HIThemeScrollBarDelimitersDrawInfo where
+  withObjCArg x k = k (argHIThemeScrollBarDelimitersDrawInfo x)
+
+instance ObjCReturn HIThemeScrollBarDelimitersDrawInfo where
+  type RawReturn HIThemeScrollBarDelimitersDrawInfo = HIThemeScrollBarDelimitersDrawInfo
+  objcRetType = retHIThemeScrollBarDelimitersDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeSegmentDrawInfo = HIThemeSegmentDrawInfo
   { hiThemeSegmentDrawInfoVersion :: !CUInt
@@ -1287,6 +1719,16 @@ argHIThemeSegmentDrawInfo = mkStorableArg hiThemeSegmentDrawInfoStructType
 retHIThemeSegmentDrawInfo :: RetType HIThemeSegmentDrawInfo
 retHIThemeSegmentDrawInfo = mkStorableRetType hiThemeSegmentDrawInfoStructType
 
+instance ObjCArgument HIThemeSegmentDrawInfo where
+  withObjCArg x k = k (argHIThemeSegmentDrawInfo x)
+
+instance ObjCReturn HIThemeSegmentDrawInfo where
+  type RawReturn HIThemeSegmentDrawInfo = HIThemeSegmentDrawInfo
+  objcRetType = retHIThemeSegmentDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeSeparatorDrawInfo = HIThemeSeparatorDrawInfo
   { hiThemeSeparatorDrawInfoVersion :: !CUInt
   , hiThemeSeparatorDrawInfoState :: !CUInt
@@ -1310,6 +1752,16 @@ argHIThemeSeparatorDrawInfo = mkStorableArg hiThemeSeparatorDrawInfoStructType
 
 retHIThemeSeparatorDrawInfo :: RetType HIThemeSeparatorDrawInfo
 retHIThemeSeparatorDrawInfo = mkStorableRetType hiThemeSeparatorDrawInfoStructType
+
+instance ObjCArgument HIThemeSeparatorDrawInfo where
+  withObjCArg x k = k (argHIThemeSeparatorDrawInfo x)
+
+instance ObjCReturn HIThemeSeparatorDrawInfo where
+  type RawReturn HIThemeSeparatorDrawInfo = HIThemeSeparatorDrawInfo
+  objcRetType = retHIThemeSeparatorDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeSplitterDrawInfo = HIThemeSplitterDrawInfo
   { hiThemeSplitterDrawInfoVersion :: !CUInt
@@ -1337,6 +1789,16 @@ argHIThemeSplitterDrawInfo = mkStorableArg hiThemeSplitterDrawInfoStructType
 
 retHIThemeSplitterDrawInfo :: RetType HIThemeSplitterDrawInfo
 retHIThemeSplitterDrawInfo = mkStorableRetType hiThemeSplitterDrawInfoStructType
+
+instance ObjCArgument HIThemeSplitterDrawInfo where
+  withObjCArg x k = k (argHIThemeSplitterDrawInfo x)
+
+instance ObjCReturn HIThemeSplitterDrawInfo where
+  type RawReturn HIThemeSplitterDrawInfo = HIThemeSplitterDrawInfo
+  objcRetType = retHIThemeSplitterDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeTabDrawInfo = HIThemeTabDrawInfo
   { hiThemeTabDrawInfoVersion :: !CUInt
@@ -1377,6 +1839,16 @@ argHIThemeTabDrawInfo = mkStorableArg hiThemeTabDrawInfoStructType
 retHIThemeTabDrawInfo :: RetType HIThemeTabDrawInfo
 retHIThemeTabDrawInfo = mkStorableRetType hiThemeTabDrawInfoStructType
 
+instance ObjCArgument HIThemeTabDrawInfo where
+  withObjCArg x k = k (argHIThemeTabDrawInfo x)
+
+instance ObjCReturn HIThemeTabDrawInfo where
+  type RawReturn HIThemeTabDrawInfo = HIThemeTabDrawInfo
+  objcRetType = retHIThemeTabDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeTabDrawInfoVersionZero = HIThemeTabDrawInfoVersionZero
   { hiThemeTabDrawInfoVersionZeroVersion :: !CUInt
   , hiThemeTabDrawInfoVersionZeroStyle :: !CUShort
@@ -1409,6 +1881,16 @@ argHIThemeTabDrawInfoVersionZero = mkStorableArg hiThemeTabDrawInfoVersionZeroSt
 
 retHIThemeTabDrawInfoVersionZero :: RetType HIThemeTabDrawInfoVersionZero
 retHIThemeTabDrawInfoVersionZero = mkStorableRetType hiThemeTabDrawInfoVersionZeroStructType
+
+instance ObjCArgument HIThemeTabDrawInfoVersionZero where
+  withObjCArg x k = k (argHIThemeTabDrawInfoVersionZero x)
+
+instance ObjCReturn HIThemeTabDrawInfoVersionZero where
+  type RawReturn HIThemeTabDrawInfoVersionZero = HIThemeTabDrawInfoVersionZero
+  objcRetType = retHIThemeTabDrawInfoVersionZero
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeTabPaneDrawInfo = HIThemeTabPaneDrawInfo
   { hiThemeTabPaneDrawInfoVersion :: !CUInt
@@ -1446,6 +1928,16 @@ argHIThemeTabPaneDrawInfo = mkStorableArg hiThemeTabPaneDrawInfoStructType
 retHIThemeTabPaneDrawInfo :: RetType HIThemeTabPaneDrawInfo
 retHIThemeTabPaneDrawInfo = mkStorableRetType hiThemeTabPaneDrawInfoStructType
 
+instance ObjCArgument HIThemeTabPaneDrawInfo where
+  withObjCArg x k = k (argHIThemeTabPaneDrawInfo x)
+
+instance ObjCReturn HIThemeTabPaneDrawInfo where
+  type RawReturn HIThemeTabPaneDrawInfo = HIThemeTabPaneDrawInfo
+  objcRetType = retHIThemeTabPaneDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeTabPaneDrawInfoVersionZero = HIThemeTabPaneDrawInfoVersionZero
   { hiThemeTabPaneDrawInfoVersionZeroVersion :: !CUInt
   , hiThemeTabPaneDrawInfoVersionZeroState :: !CUInt
@@ -1475,6 +1967,16 @@ argHIThemeTabPaneDrawInfoVersionZero = mkStorableArg hiThemeTabPaneDrawInfoVersi
 
 retHIThemeTabPaneDrawInfoVersionZero :: RetType HIThemeTabPaneDrawInfoVersionZero
 retHIThemeTabPaneDrawInfoVersionZero = mkStorableRetType hiThemeTabPaneDrawInfoVersionZeroStructType
+
+instance ObjCArgument HIThemeTabPaneDrawInfoVersionZero where
+  withObjCArg x k = k (argHIThemeTabPaneDrawInfoVersionZero x)
+
+instance ObjCReturn HIThemeTabPaneDrawInfoVersionZero where
+  type RawReturn HIThemeTabPaneDrawInfoVersionZero = HIThemeTabPaneDrawInfoVersionZero
+  objcRetType = retHIThemeTabPaneDrawInfoVersionZero
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeTextInfo = HIThemeTextInfo
   { hiThemeTextInfoVersion :: !CUInt
@@ -1527,6 +2029,16 @@ argHIThemeTextInfo = mkStorableArg hiThemeTextInfoStructType
 retHIThemeTextInfo :: RetType HIThemeTextInfo
 retHIThemeTextInfo = mkStorableRetType hiThemeTextInfoStructType
 
+instance ObjCArgument HIThemeTextInfo where
+  withObjCArg x k = k (argHIThemeTextInfo x)
+
+instance ObjCReturn HIThemeTextInfo where
+  type RawReturn HIThemeTextInfo = HIThemeTextInfo
+  objcRetType = retHIThemeTextInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIThemeTickMarkDrawInfo = HIThemeTickMarkDrawInfo
   { hiThemeTickMarkDrawInfoVersion :: !CUInt
   , hiThemeTickMarkDrawInfoState :: !CUInt
@@ -1550,6 +2062,16 @@ argHIThemeTickMarkDrawInfo = mkStorableArg hiThemeTickMarkDrawInfoStructType
 
 retHIThemeTickMarkDrawInfo :: RetType HIThemeTickMarkDrawInfo
 retHIThemeTickMarkDrawInfo = mkStorableRetType hiThemeTickMarkDrawInfoStructType
+
+instance ObjCArgument HIThemeTickMarkDrawInfo where
+  withObjCArg x k = k (argHIThemeTickMarkDrawInfo x)
+
+instance ObjCReturn HIThemeTickMarkDrawInfo where
+  type RawReturn HIThemeTickMarkDrawInfo = HIThemeTickMarkDrawInfo
+  objcRetType = retHIThemeTickMarkDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeWindowDrawInfo = HIThemeWindowDrawInfo
   { hiThemeWindowDrawInfoVersion :: !CUInt
@@ -1586,6 +2108,16 @@ argHIThemeWindowDrawInfo = mkStorableArg hiThemeWindowDrawInfoStructType
 
 retHIThemeWindowDrawInfo :: RetType HIThemeWindowDrawInfo
 retHIThemeWindowDrawInfo = mkStorableRetType hiThemeWindowDrawInfoStructType
+
+instance ObjCArgument HIThemeWindowDrawInfo where
+  withObjCArg x k = k (argHIThemeWindowDrawInfo x)
+
+instance ObjCReturn HIThemeWindowDrawInfo where
+  type RawReturn HIThemeWindowDrawInfo = HIThemeWindowDrawInfo
+  objcRetType = retHIThemeWindowDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIThemeWindowWidgetDrawInfo = HIThemeWindowWidgetDrawInfo
   { hiThemeWindowWidgetDrawInfoVersion :: !CUInt
@@ -1629,6 +2161,16 @@ argHIThemeWindowWidgetDrawInfo = mkStorableArg hiThemeWindowWidgetDrawInfoStruct
 retHIThemeWindowWidgetDrawInfo :: RetType HIThemeWindowWidgetDrawInfo
 retHIThemeWindowWidgetDrawInfo = mkStorableRetType hiThemeWindowWidgetDrawInfoStructType
 
+instance ObjCArgument HIThemeWindowWidgetDrawInfo where
+  withObjCArg x k = k (argHIThemeWindowWidgetDrawInfo x)
+
+instance ObjCReturn HIThemeWindowWidgetDrawInfo where
+  type RawReturn HIThemeWindowWidgetDrawInfo = HIThemeWindowWidgetDrawInfo
+  objcRetType = retHIThemeWindowWidgetDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HITypeAndCreator = HITypeAndCreator
   { hiTypeAndCreatorType :: !CUInt
   , hiTypeAndCreatorCreator :: !CUInt
@@ -1652,6 +2194,16 @@ argHITypeAndCreator = mkStorableArg hiTypeAndCreatorStructType
 
 retHITypeAndCreator :: RetType HITypeAndCreator
 retHITypeAndCreator = mkStorableRetType hiTypeAndCreatorStructType
+
+instance ObjCArgument HITypeAndCreator where
+  withObjCArg x k = k (argHITypeAndCreator x)
+
+instance ObjCReturn HITypeAndCreator where
+  type RawReturn HITypeAndCreator = HITypeAndCreator
+  objcRetType = retHITypeAndCreator
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIViewFrameMetrics = HIViewFrameMetrics
   { hiViewFrameMetricsTop :: !CDouble
@@ -1683,6 +2235,16 @@ argHIViewFrameMetrics = mkStorableArg hiViewFrameMetricsStructType
 retHIViewFrameMetrics :: RetType HIViewFrameMetrics
 retHIViewFrameMetrics = mkStorableRetType hiViewFrameMetricsStructType
 
+instance ObjCArgument HIViewFrameMetrics where
+  withObjCArg x k = k (argHIViewFrameMetrics x)
+
+instance ObjCReturn HIViewFrameMetrics where
+  type RawReturn HIViewFrameMetrics = HIViewFrameMetrics
+  objcRetType = retHIViewFrameMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIViewID = HIViewID
   { hiViewIDSignature :: !CUInt
   , hiViewIDId :: !CInt
@@ -1706,6 +2268,16 @@ argHIViewID = mkStorableArg hiViewIDStructType
 
 retHIViewID :: RetType HIViewID
 retHIViewID = mkStorableRetType hiViewIDStructType
+
+instance ObjCArgument HIViewID where
+  withObjCArg x k = k (argHIViewID x)
+
+instance ObjCReturn HIViewID where
+  type RawReturn HIViewID = HIViewID
+  objcRetType = retHIViewID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIViewKind = HIViewKind
   { hiViewKindSignature :: !CUInt
@@ -1731,6 +2303,16 @@ argHIViewKind = mkStorableArg hiViewKindStructType
 retHIViewKind :: RetType HIViewKind
 retHIViewKind = mkStorableRetType hiViewKindStructType
 
+instance ObjCArgument HIViewKind where
+  withObjCArg x k = k (argHIViewKind x)
+
+instance ObjCReturn HIViewKind where
+  type RawReturn HIViewKind = HIViewKind
+  objcRetType = retHIViewKind
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HMStringResType = HMStringResType
   { hmStringResTypeHmmResID :: !CShort
   , hmStringResTypeHmmIndex :: !CShort
@@ -1754,6 +2336,16 @@ argHMStringResType = mkStorableArg hmStringResTypeStructType
 
 retHMStringResType :: RetType HMStringResType
 retHMStringResType = mkStorableRetType hmStringResTypeStructType
+
+instance ObjCArgument HMStringResType where
+  withObjCArg x k = k (argHMStringResType x)
+
+instance ObjCReturn HMStringResType where
+  type RawReturn HMStringResType = HMStringResType
+  objcRetType = retHMStringResType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HMenuBarHeader = HMenuBarHeader
   { hMenuBarHeaderLastHMenu :: !CUShort
@@ -1779,6 +2371,16 @@ argHMenuBarHeader = mkStorableArg hMenuBarHeaderStructType
 retHMenuBarHeader :: RetType HMenuBarHeader
 retHMenuBarHeader = mkStorableRetType hMenuBarHeaderStructType
 
+instance ObjCArgument HMenuBarHeader where
+  withObjCArg x k = k (argHMenuBarHeader x)
+
+instance ObjCReturn HMenuBarHeader where
+  type RawReturn HMenuBarHeader = HMenuBarHeader
+  objcRetType = retHMenuBarHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HMenuBarMenu = HMenuBarMenu
   { hMenuBarMenuMenu :: !(Ptr ())
   , hMenuBarMenuReserved :: !CShort
@@ -1802,6 +2404,16 @@ argHMenuBarMenu = mkStorableArg hMenuBarMenuStructType
 
 retHMenuBarMenu :: RetType HMenuBarMenu
 retHMenuBarMenu = mkStorableRetType hMenuBarMenuStructType
+
+instance ObjCArgument HMenuBarMenu where
+  withObjCArg x k = k (argHMenuBarMenu x)
+
+instance ObjCReturn HMenuBarMenu where
+  type RawReturn HMenuBarMenu = HMenuBarMenu
+  objcRetType = retHMenuBarMenu
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HiliteMenuItemData = HiliteMenuItemData
   { hiliteMenuItemDataPreviousItem :: !CUShort
@@ -1830,6 +2442,16 @@ argHiliteMenuItemData = mkStorableArg hiliteMenuItemDataStructType
 retHiliteMenuItemData :: RetType HiliteMenuItemData
 retHiliteMenuItemData = mkStorableRetType hiliteMenuItemDataStructType
 
+instance ObjCArgument HiliteMenuItemData where
+  withObjCArg x k = k (argHiliteMenuItemData x)
+
+instance ObjCReturn HiliteMenuItemData where
+  type RawReturn HiliteMenuItemData = HiliteMenuItemData
+  objcRetType = retHiliteMenuItemData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LHElement = LHElement
   { lhElementLhHeight :: !CShort
   , lhElementLhAscent :: !CShort
@@ -1853,6 +2475,16 @@ argLHElement = mkStorableArg lhElementStructType
 
 retLHElement :: RetType LHElement
 retLHElement = mkStorableRetType lhElementStructType
+
+instance ObjCArgument LHElement where
+  withObjCArg x k = k (argLHElement x)
+
+instance ObjCReturn LHElement where
+  type RawReturn LHElement = LHElement
+  objcRetType = retLHElement
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ListBounds = ListBounds
   { listBoundsTop :: !CShort
@@ -1884,6 +2516,16 @@ argListBounds = mkStorableArg listBoundsStructType
 retListBounds :: RetType ListBounds
 retListBounds = mkStorableRetType listBoundsStructType
 
+instance ObjCArgument ListBounds where
+  withObjCArg x k = k (argListBounds x)
+
+instance ObjCReturn ListBounds where
+  type RawReturn ListBounds = ListBounds
+  objcRetType = retListBounds
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MDEFHiliteItemData = MDEFHiliteItemData
   { mdefHiliteItemDataPreviousItem :: !CUShort
   , mdefHiliteItemDataNewItem :: !CUShort
@@ -1910,6 +2552,16 @@ argMDEFHiliteItemData = mkStorableArg mdefHiliteItemDataStructType
 
 retMDEFHiliteItemData :: RetType MDEFHiliteItemData
 retMDEFHiliteItemData = mkStorableRetType mdefHiliteItemDataStructType
+
+instance ObjCArgument MDEFHiliteItemData where
+  withObjCArg x k = k (argMDEFHiliteItemData x)
+
+instance ObjCReturn MDEFHiliteItemData where
+  type RawReturn MDEFHiliteItemData = MDEFHiliteItemData
+  objcRetType = retMDEFHiliteItemData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MeasureWindowTitleRec = MeasureWindowTitleRec
   { measureWindowTitleRecFullTitleWidth :: !CShort
@@ -1941,6 +2593,16 @@ argMeasureWindowTitleRec = mkStorableArg measureWindowTitleRecStructType
 retMeasureWindowTitleRec :: RetType MeasureWindowTitleRec
 retMeasureWindowTitleRec = mkStorableRetType measureWindowTitleRecStructType
 
+instance ObjCArgument MeasureWindowTitleRec where
+  withObjCArg x k = k (argMeasureWindowTitleRec x)
+
+instance ObjCReturn MeasureWindowTitleRec where
+  type RawReturn MeasureWindowTitleRec = MeasureWindowTitleRec
+  objcRetType = retMeasureWindowTitleRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MenuBarHeader = MenuBarHeader
   { menuBarHeaderLastMenu :: !CUShort
   , menuBarHeaderLastRight :: !CShort
@@ -1968,6 +2630,16 @@ argMenuBarHeader = mkStorableArg menuBarHeaderStructType
 retMenuBarHeader :: RetType MenuBarHeader
 retMenuBarHeader = mkStorableRetType menuBarHeaderStructType
 
+instance ObjCArgument MenuBarHeader where
+  withObjCArg x k = k (argMenuBarHeader x)
+
+instance ObjCReturn MenuBarHeader where
+  type RawReturn MenuBarHeader = MenuBarHeader
+  objcRetType = retMenuBarHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MenuBarMenu = MenuBarMenu
   { menuBarMenuMenu :: !(Ptr ())
   , menuBarMenuMenuLeft :: !CShort
@@ -1991,6 +2663,16 @@ argMenuBarMenu = mkStorableArg menuBarMenuStructType
 
 retMenuBarMenu :: RetType MenuBarMenu
 retMenuBarMenu = mkStorableRetType menuBarMenuStructType
+
+instance ObjCArgument MenuBarMenu where
+  withObjCArg x k = k (argMenuBarMenu x)
+
+instance ObjCReturn MenuBarMenu where
+  type RawReturn MenuBarMenu = MenuBarMenu
+  objcRetType = retMenuBarMenu
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MenuItemDataRec = MenuItemDataRec
   { menuItemDataRecWhichData :: !CULong
@@ -2088,6 +2770,16 @@ argMenuItemDataRec = mkStorableArg menuItemDataRecStructType
 retMenuItemDataRec :: RetType MenuItemDataRec
 retMenuItemDataRec = mkStorableRetType menuItemDataRecStructType
 
+instance ObjCArgument MenuItemDataRec where
+  withObjCArg x k = k (argMenuItemDataRec x)
+
+instance ObjCReturn MenuItemDataRec where
+  type RawReturn MenuItemDataRec = MenuItemDataRec
+  objcRetType = retMenuItemDataRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NMRec = NMRec
   { nmRecQLink :: !(Ptr ())
   , nmRecQType :: !CShort
@@ -2139,6 +2831,16 @@ argNMRec = mkStorableArg nmRecStructType
 retNMRec :: RetType NMRec
 retNMRec = mkStorableRetType nmRecStructType
 
+instance ObjCArgument NMRec where
+  withObjCArg x k = k (argNMRec x)
+
+instance ObjCReturn NMRec where
+  type RawReturn NMRec = NMRec
+  objcRetType = retNMRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NullStRec = NullStRec
   { nullStRecTeReserved :: !CLong
   , nullStRecNullScrap :: !(Ptr ())
@@ -2162,6 +2864,16 @@ argNullStRec = mkStorableArg nullStRecStructType
 
 retNullStRec :: RetType NullStRec
 retNullStRec = mkStorableRetType nullStRecStructType
+
+instance ObjCArgument NullStRec where
+  withObjCArg x k = k (argNullStRec x)
+
+instance ObjCReturn NullStRec where
+  type RawReturn NullStRec = NullStRec
+  objcRetType = retNullStRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PickerMenuItemInfo = PickerMenuItemInfo
   { pickerMenuItemInfoEditMenuID :: !CShort
@@ -2199,6 +2911,16 @@ argPickerMenuItemInfo = mkStorableArg pickerMenuItemInfoStructType
 retPickerMenuItemInfo :: RetType PickerMenuItemInfo
 retPickerMenuItemInfo = mkStorableRetType pickerMenuItemInfoStructType
 
+instance ObjCArgument PickerMenuItemInfo where
+  withObjCArg x k = k (argPickerMenuItemInfo x)
+
+instance ObjCReturn PickerMenuItemInfo where
+  type RawReturn PickerMenuItemInfo = PickerMenuItemInfo
+  objcRetType = retPickerMenuItemInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ProgressTrackInfo = ProgressTrackInfo
   { progressTrackInfoPhase :: !CUChar
   } deriving (Eq, Show)
@@ -2219,6 +2941,16 @@ argProgressTrackInfo = mkStorableArg progressTrackInfoStructType
 
 retProgressTrackInfo :: RetType ProgressTrackInfo
 retProgressTrackInfo = mkStorableRetType progressTrackInfoStructType
+
+instance ObjCArgument ProgressTrackInfo where
+  withObjCArg x k = k (argProgressTrackInfo x)
+
+instance ObjCReturn ProgressTrackInfo where
+  type RawReturn ProgressTrackInfo = ProgressTrackInfo
+  objcRetType = retProgressTrackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PromiseHFSFlavor = PromiseHFSFlavor
   { promiseHFSFlavorFileType :: !CUInt
@@ -2250,6 +2982,16 @@ argPromiseHFSFlavor = mkStorableArg promiseHFSFlavorStructType
 retPromiseHFSFlavor :: RetType PromiseHFSFlavor
 retPromiseHFSFlavor = mkStorableRetType promiseHFSFlavorStructType
 
+instance ObjCArgument PromiseHFSFlavor where
+  withObjCArg x k = k (argPromiseHFSFlavor x)
+
+instance ObjCReturn PromiseHFSFlavor where
+  type RawReturn PromiseHFSFlavor = PromiseHFSFlavor
+  objcRetType = retPromiseHFSFlavor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SRCallBackParam = SRCallBackParam
   { srCallBackParamCallBack :: !(Ptr ())
   , srCallBackParamRefCon :: !(Ptr ())
@@ -2273,6 +3015,16 @@ argSRCallBackParam = mkStorableArg srCallBackParamStructType
 
 retSRCallBackParam :: RetType SRCallBackParam
 retSRCallBackParam = mkStorableRetType srCallBackParamStructType
+
+instance ObjCArgument SRCallBackParam where
+  withObjCArg x k = k (argSRCallBackParam x)
+
+instance ObjCReturn SRCallBackParam where
+  type RawReturn SRCallBackParam = SRCallBackParam
+  objcRetType = retSRCallBackParam
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SRCallBackStruct = SRCallBackStruct
   { srCallBackStructWhat :: !CUInt
@@ -2310,6 +3062,16 @@ argSRCallBackStruct = mkStorableArg srCallBackStructStructType
 retSRCallBackStruct :: RetType SRCallBackStruct
 retSRCallBackStruct = mkStorableRetType srCallBackStructStructType
 
+instance ObjCArgument SRCallBackStruct where
+  withObjCArg x k = k (argSRCallBackStruct x)
+
+instance ObjCReturn SRCallBackStruct where
+  type RawReturn SRCallBackStruct = SRCallBackStruct
+  objcRetType = retSRCallBackStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScrapFlavorInfo = ScrapFlavorInfo
   { scrapFlavorInfoFlavorType :: !CUInt
   , scrapFlavorInfoFlavorFlags :: !CUInt
@@ -2334,6 +3096,16 @@ argScrapFlavorInfo = mkStorableArg scrapFlavorInfoStructType
 retScrapFlavorInfo :: RetType ScrapFlavorInfo
 retScrapFlavorInfo = mkStorableRetType scrapFlavorInfoStructType
 
+instance ObjCArgument ScrapFlavorInfo where
+  withObjCArg x k = k (argScrapFlavorInfo x)
+
+instance ObjCReturn ScrapFlavorInfo where
+  type RawReturn ScrapFlavorInfo = ScrapFlavorInfo
+  objcRetType = retScrapFlavorInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScrapTranslationList = ScrapTranslationList
   { scrapTranslationListModDate :: !CULong
   , scrapTranslationListGroupCount :: !CULong
@@ -2357,6 +3129,16 @@ argScrapTranslationList = mkStorableArg scrapTranslationListStructType
 
 retScrapTranslationList :: RetType ScrapTranslationList
 retScrapTranslationList = mkStorableRetType scrapTranslationListStructType
+
+instance ObjCArgument ScrapTranslationList where
+  withObjCArg x k = k (argScrapTranslationList x)
+
+instance ObjCReturn ScrapTranslationList where
+  type RawReturn ScrapTranslationList = ScrapTranslationList
+  objcRetType = retScrapTranslationList
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ***************************************************************************************
 data ScrapTypeSpec = ScrapTypeSpec
@@ -2383,6 +3165,16 @@ argScrapTypeSpec = mkStorableArg scrapTypeSpecStructType
 retScrapTypeSpec :: RetType ScrapTypeSpec
 retScrapTypeSpec = mkStorableRetType scrapTypeSpecStructType
 
+instance ObjCArgument ScrapTypeSpec where
+  withObjCArg x k = k (argScrapTypeSpec x)
+
+instance ObjCReturn ScrapTypeSpec where
+  type RawReturn ScrapTypeSpec = ScrapTypeSpec
+  objcRetType = retScrapTypeSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScriptLanguageRecord = ScriptLanguageRecord
   { scriptLanguageRecordFScript :: !CShort
   , scriptLanguageRecordFLanguage :: !CShort
@@ -2407,6 +3199,16 @@ argScriptLanguageRecord = mkStorableArg scriptLanguageRecordStructType
 retScriptLanguageRecord :: RetType ScriptLanguageRecord
 retScriptLanguageRecord = mkStorableRetType scriptLanguageRecordStructType
 
+instance ObjCArgument ScriptLanguageRecord where
+  withObjCArg x k = k (argScriptLanguageRecord x)
+
+instance ObjCReturn ScriptLanguageRecord where
+  type RawReturn ScriptLanguageRecord = ScriptLanguageRecord
+  objcRetType = retScriptLanguageRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScrollBarTrackInfo = ScrollBarTrackInfo
   { scrollBarTrackInfoViewsize :: !CInt
   , scrollBarTrackInfoPressState :: !CUChar
@@ -2430,6 +3232,16 @@ argScrollBarTrackInfo = mkStorableArg scrollBarTrackInfoStructType
 
 retScrollBarTrackInfo :: RetType ScrollBarTrackInfo
 retScrollBarTrackInfo = mkStorableRetType scrollBarTrackInfoStructType
+
+instance ObjCArgument ScrollBarTrackInfo where
+  withObjCArg x k = k (argScrollBarTrackInfo x)
+
+instance ObjCReturn ScrollBarTrackInfo where
+  type RawReturn ScrollBarTrackInfo = ScrollBarTrackInfo
+  objcRetType = retScrollBarTrackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SetupWindowProxyDragImageRec = SetupWindowProxyDragImageRec
   { setupWindowProxyDragImageRecImageGWorld :: !(Ptr ())
@@ -2458,6 +3270,16 @@ argSetupWindowProxyDragImageRec = mkStorableArg setupWindowProxyDragImageRecStru
 retSetupWindowProxyDragImageRec :: RetType SetupWindowProxyDragImageRec
 retSetupWindowProxyDragImageRec = mkStorableRetType setupWindowProxyDragImageRecStructType
 
+instance ObjCArgument SetupWindowProxyDragImageRec where
+  withObjCArg x k = k (argSetupWindowProxyDragImageRec x)
+
+instance ObjCReturn SetupWindowProxyDragImageRec where
+  type RawReturn SetupWindowProxyDragImageRec = SetupWindowProxyDragImageRec
+  objcRetType = retSetupWindowProxyDragImageRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SliderTrackInfo = SliderTrackInfo
   { sliderTrackInfoThumbDir :: !CUChar
   , sliderTrackInfoPressState :: !CUChar
@@ -2482,6 +3304,16 @@ argSliderTrackInfo = mkStorableArg sliderTrackInfoStructType
 retSliderTrackInfo :: RetType SliderTrackInfo
 retSliderTrackInfo = mkStorableRetType sliderTrackInfoStructType
 
+instance ObjCArgument SliderTrackInfo where
+  withObjCArg x k = k (argSliderTrackInfo x)
+
+instance ObjCReturn SliderTrackInfo where
+  type RawReturn SliderTrackInfo = SliderTrackInfo
+  objcRetType = retSliderTrackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data StyleRun = StyleRun
   { styleRunStartChar :: !CShort
   , styleRunStyleIndex :: !CShort
@@ -2505,6 +3337,16 @@ argStyleRun = mkStorableArg styleRunStructType
 
 retStyleRun :: RetType StyleRun
 retStyleRun = mkStorableRetType styleRunStructType
+
+instance ObjCArgument StyleRun where
+  withObjCArg x k = k (argStyleRun x)
+
+instance ObjCReturn StyleRun where
+  type RawReturn StyleRun = StyleRun
+  objcRetType = retStyleRun
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TSMGlyphInfo = TSMGlyphInfo
   { tsmGlyphInfoRange :: !CInt
@@ -2535,6 +3377,16 @@ argTSMGlyphInfo = mkStorableArg tsmGlyphInfoStructType
 
 retTSMGlyphInfo :: RetType TSMGlyphInfo
 retTSMGlyphInfo = mkStorableRetType tsmGlyphInfoStructType
+
+instance ObjCArgument TSMGlyphInfo where
+  withObjCArg x k = k (argTSMGlyphInfo x)
+
+instance ObjCReturn TSMGlyphInfo where
+  type RawReturn TSMGlyphInfo = TSMGlyphInfo
+  objcRetType = retTSMGlyphInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TSMTERec = TSMTERec
   { tsmteRecTextH :: !(Ptr ())
@@ -2569,6 +3421,16 @@ argTSMTERec = mkStorableArg tsmteRecStructType
 retTSMTERec :: RetType TSMTERec
 retTSMTERec = mkStorableRetType tsmteRecStructType
 
+instance ObjCArgument TSMTERec where
+  withObjCArg x k = k (argTSMTERec x)
+
+instance ObjCReturn TSMTERec where
+  type RawReturn TSMTERec = TSMTERec
+  objcRetType = retTSMTERec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNCarbonEventInfo = TXNCarbonEventInfo
   { txnCarbonEventInfoUseCarbonEvents :: !CUChar
   , txnCarbonEventInfoFiller :: !CUChar
@@ -2598,6 +3460,16 @@ argTXNCarbonEventInfo = mkStorableArg txnCarbonEventInfoStructType
 
 retTXNCarbonEventInfo :: RetType TXNCarbonEventInfo
 retTXNCarbonEventInfo = mkStorableRetType txnCarbonEventInfoStructType
+
+instance ObjCArgument TXNCarbonEventInfo where
+  withObjCArg x k = k (argTXNCarbonEventInfo x)
+
+instance ObjCReturn TXNCarbonEventInfo where
+  type RawReturn TXNCarbonEventInfo = TXNCarbonEventInfo
+  objcRetType = retTXNCarbonEventInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TXNLongRect = TXNLongRect
   { txnLongRectTop :: !CInt
@@ -2629,6 +3501,16 @@ argTXNLongRect = mkStorableArg txnLongRectStructType
 retTXNLongRect :: RetType TXNLongRect
 retTXNLongRect = mkStorableRetType txnLongRectStructType
 
+instance ObjCArgument TXNLongRect where
+  withObjCArg x k = k (argTXNLongRect x)
+
+instance ObjCReturn TXNLongRect where
+  type RawReturn TXNLongRect = TXNLongRect
+  objcRetType = retTXNLongRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNMargins = TXNMargins
   { txnMarginsTopMargin :: !CShort
   , txnMarginsLeftMargin :: !CShort
@@ -2659,6 +3541,16 @@ argTXNMargins = mkStorableArg txnMarginsStructType
 retTXNMargins :: RetType TXNMargins
 retTXNMargins = mkStorableRetType txnMarginsStructType
 
+instance ObjCArgument TXNMargins where
+  withObjCArg x k = k (argTXNMargins x)
+
+instance ObjCReturn TXNMargins where
+  type RawReturn TXNMargins = TXNMargins
+  objcRetType = retTXNMargins
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNMatchTextRecord = TXNMatchTextRecord
   { txnMatchTextRecordITextPtr :: !(Ptr ())
   , txnMatchTextRecordITextToMatchLength :: !CLong
@@ -2686,6 +3578,16 @@ argTXNMatchTextRecord = mkStorableArg txnMatchTextRecordStructType
 retTXNMatchTextRecord :: RetType TXNMatchTextRecord
 retTXNMatchTextRecord = mkStorableRetType txnMatchTextRecordStructType
 
+instance ObjCArgument TXNMatchTextRecord where
+  withObjCArg x k = k (argTXNMatchTextRecord x)
+
+instance ObjCReturn TXNMatchTextRecord where
+  type RawReturn TXNMatchTextRecord = TXNMatchTextRecord
+  objcRetType = retTXNMatchTextRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNTab = TXNTab
   { txnTabValue :: !CShort
   , txnTabTabType :: !CSChar
@@ -2712,6 +3614,16 @@ argTXNTab = mkStorableArg txnTabStructType
 
 retTXNTab :: RetType TXNTab
 retTXNTab = mkStorableRetType txnTabStructType
+
+instance ObjCArgument TXNTab where
+  withObjCArg x k = k (argTXNTab x)
+
+instance ObjCReturn TXNTab where
+  type RawReturn TXNTab = TXNTab
+  objcRetType = retTXNTab
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TabletPointRec = TabletPointRec
   { tabletPointRecAbsX :: !CInt
@@ -2770,6 +3682,16 @@ argTabletPointRec = mkStorableArg tabletPointRecStructType
 retTabletPointRec :: RetType TabletPointRec
 retTabletPointRec = mkStorableRetType tabletPointRecStructType
 
+instance ObjCArgument TabletPointRec where
+  withObjCArg x k = k (argTabletPointRec x)
+
+instance ObjCReturn TabletPointRec where
+  type RawReturn TabletPointRec = TabletPointRec
+  objcRetType = retTabletPointRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TabletPointerRec = TabletPointerRec
   { tabletPointerRecAbsX :: !CInt
   , tabletPointerRecAbsY :: !CInt
@@ -2827,6 +3749,16 @@ argTabletPointerRec = mkStorableArg tabletPointerRecStructType
 retTabletPointerRec :: RetType TabletPointerRec
 retTabletPointerRec = mkStorableRetType tabletPointerRecStructType
 
+instance ObjCArgument TabletPointerRec where
+  withObjCArg x k = k (argTabletPointerRec x)
+
+instance ObjCReturn TabletPointerRec where
+  type RawReturn TabletPointerRec = TabletPointerRec
+  objcRetType = retTabletPointerRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TabletProximityRec = TabletProximityRec
   { tabletProximityRecVendorID :: !CUShort
   , tabletProximityRecTabletID :: !CUShort
@@ -2878,6 +3810,16 @@ argTabletProximityRec = mkStorableArg tabletProximityRecStructType
 retTabletProximityRec :: RetType TabletProximityRec
 retTabletProximityRec = mkStorableRetType tabletProximityRecStructType
 
+instance ObjCArgument TabletProximityRec where
+  withObjCArg x k = k (argTabletProximityRec x)
+
+instance ObjCReturn TabletProximityRec where
+  type RawReturn TabletProximityRec = TabletProximityRec
+  objcRetType = retTabletProximityRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ThemeButtonDrawInfo = ThemeButtonDrawInfo
   { themeButtonDrawInfoState :: !CUInt
   , themeButtonDrawInfoValue :: !CUShort
@@ -2904,6 +3846,16 @@ argThemeButtonDrawInfo = mkStorableArg themeButtonDrawInfoStructType
 
 retThemeButtonDrawInfo :: RetType ThemeButtonDrawInfo
 retThemeButtonDrawInfo = mkStorableRetType themeButtonDrawInfoStructType
+
+instance ObjCArgument ThemeButtonDrawInfo where
+  withObjCArg x k = k (argThemeButtonDrawInfo x)
+
+instance ObjCReturn ThemeButtonDrawInfo where
+  type RawReturn ThemeButtonDrawInfo = ThemeButtonDrawInfo
+  objcRetType = retThemeButtonDrawInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ThemeWindowMetrics = ThemeWindowMetrics
   { themeWindowMetricsMetricSize :: !CUShort
@@ -2941,6 +3893,16 @@ argThemeWindowMetrics = mkStorableArg themeWindowMetricsStructType
 retThemeWindowMetrics :: RetType ThemeWindowMetrics
 retThemeWindowMetrics = mkStorableRetType themeWindowMetricsStructType
 
+instance ObjCArgument ThemeWindowMetrics where
+  withObjCArg x k = k (argThemeWindowMetrics x)
+
+instance ObjCReturn ThemeWindowMetrics where
+  type RawReturn ThemeWindowMetrics = ThemeWindowMetrics
+  objcRetType = retThemeWindowMetrics
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TransitionWindowOptions = TransitionWindowOptions
   { transitionWindowOptionsVersion :: !CUInt
   , transitionWindowOptionsDuration :: !CDouble
@@ -2971,6 +3933,16 @@ argTransitionWindowOptions = mkStorableArg transitionWindowOptionsStructType
 retTransitionWindowOptions :: RetType TransitionWindowOptions
 retTransitionWindowOptions = mkStorableRetType transitionWindowOptionsStructType
 
+instance ObjCArgument TransitionWindowOptions where
+  withObjCArg x k = k (argTransitionWindowOptions x)
+
+instance ObjCReturn TransitionWindowOptions where
+  type RawReturn TransitionWindowOptions = TransitionWindowOptions
+  objcRetType = retTransitionWindowOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AlertTemplate = AlertTemplate
   { alertTemplateBoundsRect :: !ListBounds
   , alertTemplateItemsID :: !CShort
@@ -2997,6 +3969,16 @@ argAlertTemplate = mkStorableArg alertTemplateStructType
 
 retAlertTemplate :: RetType AlertTemplate
 retAlertTemplate = mkStorableRetType alertTemplateStructType
+
+instance ObjCArgument AlertTemplate where
+  withObjCArg x k = k (argAlertTemplate x)
+
+instance ObjCReturn AlertTemplate where
+  type RawReturn AlertTemplate = AlertTemplate
+  objcRetType = retAlertTemplate
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ControlFontStyleRec = ControlFontStyleRec
   { controlFontStyleRecFlags :: !CShort
@@ -3040,6 +4022,16 @@ argControlFontStyleRec = mkStorableArg controlFontStyleRecStructType
 retControlFontStyleRec :: RetType ControlFontStyleRec
 retControlFontStyleRec = mkStorableRetType controlFontStyleRecStructType
 
+instance ObjCArgument ControlFontStyleRec where
+  withObjCArg x k = k (argControlFontStyleRec x)
+
+instance ObjCReturn ControlFontStyleRec where
+  type RawReturn ControlFontStyleRec = ControlFontStyleRec
+  objcRetType = retControlFontStyleRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DataBrowserListViewColumnDesc = DataBrowserListViewColumnDesc
   { dataBrowserListViewColumnDescPropertyDesc :: !DataBrowserTableViewColumnDesc
   , dataBrowserListViewColumnDescHeaderBtnDesc :: !(Ptr ())
@@ -3063,6 +4055,16 @@ argDataBrowserListViewColumnDesc = mkStorableArg dataBrowserListViewColumnDescSt
 
 retDataBrowserListViewColumnDesc :: RetType DataBrowserListViewColumnDesc
 retDataBrowserListViewColumnDesc = mkStorableRetType dataBrowserListViewColumnDescStructType
+
+instance ObjCArgument DataBrowserListViewColumnDesc where
+  withObjCArg x k = k (argDataBrowserListViewColumnDesc x)
+
+instance ObjCReturn DataBrowserListViewColumnDesc where
+  type RawReturn DataBrowserListViewColumnDesc = DataBrowserListViewColumnDesc
+  objcRetType = retDataBrowserListViewColumnDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data EvQEl = EvQEl
   { evQElQLink :: !(Ptr ())
@@ -3103,6 +4105,16 @@ argEvQEl = mkStorableArg evQElStructType
 retEvQEl :: RetType EvQEl
 retEvQEl = mkStorableRetType evQElStructType
 
+instance ObjCArgument EvQEl where
+  withObjCArg x k = k (argEvQEl x)
+
+instance ObjCReturn EvQEl where
+  type RawReturn EvQEl = EvQEl
+  objcRetType = retEvQEl
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data EventRecord = EventRecord
   { eventRecordWhat :: !CUShort
   , eventRecordMessage :: !CULong
@@ -3136,6 +4148,16 @@ argEventRecord = mkStorableArg eventRecordStructType
 retEventRecord :: RetType EventRecord
 retEventRecord = mkStorableRetType eventRecordStructType
 
+instance ObjCArgument EventRecord where
+  withObjCArg x k = k (argEventRecord x)
+
+instance ObjCReturn EventRecord where
+  type RawReturn EventRecord = EventRecord
+  objcRetType = retEventRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FileTranslationSpec = FileTranslationSpec
   { fileTranslationSpecComponentSignature :: !CUInt
   , fileTranslationSpecTranslationSystemInfo :: !(Ptr ())
@@ -3165,6 +4187,16 @@ argFileTranslationSpec = mkStorableArg fileTranslationSpecStructType
 
 retFileTranslationSpec :: RetType FileTranslationSpec
 retFileTranslationSpec = mkStorableRetType fileTranslationSpecStructType
+
+instance ObjCArgument FileTranslationSpec where
+  withObjCArg x k = k (argFileTranslationSpec x)
+
+instance ObjCReturn FileTranslationSpec where
+  type RawReturn FileTranslationSpec = FileTranslationSpec
+  objcRetType = retFileTranslationSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FontSelectionQDStyle = FontSelectionQDStyle
   { fontSelectionQDStyleVersion :: !CUInt
@@ -3202,6 +4234,16 @@ argFontSelectionQDStyle = mkStorableArg fontSelectionQDStyleStructType
 retFontSelectionQDStyle :: RetType FontSelectionQDStyle
 retFontSelectionQDStyle = mkStorableRetType fontSelectionQDStyleStructType
 
+instance ObjCArgument FontSelectionQDStyle where
+  withObjCArg x k = k (argFontSelectionQDStyle x)
+
+instance ObjCReturn FontSelectionQDStyle where
+  type RawReturn FontSelectionQDStyle = FontSelectionQDStyle
+  objcRetType = retFontSelectionQDStyle
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data GetGrowImageRegionRec = GetGrowImageRegionRec
   { getGrowImageRegionRecGrowRect :: !ListBounds
   , getGrowImageRegionRecGrowImageRegion :: !(Ptr ())
@@ -3225,6 +4267,16 @@ argGetGrowImageRegionRec = mkStorableArg getGrowImageRegionRecStructType
 
 retGetGrowImageRegionRec :: RetType GetGrowImageRegionRec
 retGetGrowImageRegionRec = mkStorableRetType getGrowImageRegionRecStructType
+
+instance ObjCArgument GetGrowImageRegionRec where
+  withObjCArg x k = k (argGetGrowImageRegionRec x)
+
+instance ObjCReturn GetGrowImageRegionRec where
+  type RawReturn GetGrowImageRegionRec = GetGrowImageRegionRec
+  objcRetType = retGetGrowImageRegionRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIBinding = HIBinding
   { hiBindingTop :: !HISideBinding
@@ -3256,6 +4308,16 @@ argHIBinding = mkStorableArg hiBindingStructType
 retHIBinding :: RetType HIBinding
 retHIBinding = mkStorableRetType hiBindingStructType
 
+instance ObjCArgument HIBinding where
+  withObjCArg x k = k (argHIBinding x)
+
+instance ObjCReturn HIBinding where
+  type RawReturn HIBinding = HIBinding
+  objcRetType = retHIBinding
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIPositioning = HIPositioning
   { hiPositioningX :: !HIAxisPosition
   , hiPositioningY :: !HIAxisPosition
@@ -3279,6 +4341,16 @@ argHIPositioning = mkStorableArg hiPositioningStructType
 
 retHIPositioning :: RetType HIPositioning
 retHIPositioning = mkStorableRetType hiPositioningStructType
+
+instance ObjCArgument HIPositioning where
+  withObjCArg x k = k (argHIPositioning x)
+
+instance ObjCReturn HIPositioning where
+  type RawReturn HIPositioning = HIPositioning
+  objcRetType = retHIPositioning
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HIRect = HIRect
   { hiRectOrigin :: !HIPoint
@@ -3304,6 +4376,16 @@ argHIRect = mkStorableArg hiRectStructType
 retHIRect :: RetType HIRect
 retHIRect = mkStorableRetType hiRectStructType
 
+instance ObjCArgument HIRect where
+  withObjCArg x k = k (argHIRect x)
+
+instance ObjCReturn HIRect where
+  type RawReturn HIRect = HIRect
+  objcRetType = retHIRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HIScaling = HIScaling
   { hiScalingX :: !HIAxisScale
   , hiScalingY :: !HIAxisScale
@@ -3327,6 +4409,16 @@ argHIScaling = mkStorableArg hiScalingStructType
 
 retHIScaling :: RetType HIScaling
 retHIScaling = mkStorableRetType hiScalingStructType
+
+instance ObjCArgument HIScaling where
+  withObjCArg x k = k (argHIScaling x)
+
+instance ObjCReturn HIScaling where
+  type RawReturn HIScaling = HIScaling
+  objcRetType = retHIScaling
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data IndicatorDragConstraint = IndicatorDragConstraint
   { indicatorDragConstraintLimitRect :: !ListBounds
@@ -3354,6 +4446,16 @@ argIndicatorDragConstraint = mkStorableArg indicatorDragConstraintStructType
 
 retIndicatorDragConstraint :: RetType IndicatorDragConstraint
 retIndicatorDragConstraint = mkStorableRetType indicatorDragConstraintStructType
+
+instance ObjCArgument IndicatorDragConstraint where
+  withObjCArg x k = k (argIndicatorDragConstraint x)
+
+instance ObjCReturn IndicatorDragConstraint where
+  type RawReturn IndicatorDragConstraint = IndicatorDragConstraint
+  objcRetType = retIndicatorDragConstraint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MCEntry = MCEntry
   { mcEntryMctID :: !CShort
@@ -3394,6 +4496,16 @@ argMCEntry = mkStorableArg mcEntryStructType
 retMCEntry :: RetType MCEntry
 retMCEntry = mkStorableRetType mcEntryStructType
 
+instance ObjCArgument MCEntry where
+  withObjCArg x k = k (argMCEntry x)
+
+instance ObjCReturn MCEntry where
+  type RawReturn MCEntry = MCEntry
+  objcRetType = retMCEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MenuTrackingData = MenuTrackingData
   { menuTrackingDataMenu :: !(Ptr ())
   , menuTrackingDataItemSelected :: !CUShort
@@ -3429,6 +4541,16 @@ argMenuTrackingData = mkStorableArg menuTrackingDataStructType
 
 retMenuTrackingData :: RetType MenuTrackingData
 retMenuTrackingData = mkStorableRetType menuTrackingDataStructType
+
+instance ObjCArgument MenuTrackingData where
+  withObjCArg x k = k (argMenuTrackingData x)
+
+instance ObjCReturn MenuTrackingData where
+  type RawReturn MenuTrackingData = MenuTrackingData
+  objcRetType = retMenuTrackingData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data STElement = STElement
   { stElementStCount :: !CShort
@@ -3469,6 +4591,16 @@ argSTElement = mkStorableArg stElementStructType
 retSTElement :: RetType STElement
 retSTElement = mkStorableRetType stElementStructType
 
+instance ObjCArgument STElement where
+  withObjCArg x k = k (argSTElement x)
+
+instance ObjCReturn STElement where
+  type RawReturn STElement = STElement
+  objcRetType = retSTElement
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScrpSTElement = ScrpSTElement
   { scrpSTElementScrpStartChar :: !CInt
   , scrpSTElementScrpHeight :: !CShort
@@ -3508,6 +4640,16 @@ argScrpSTElement = mkStorableArg scrpSTElementStructType
 retScrpSTElement :: RetType ScrpSTElement
 retScrpSTElement = mkStorableRetType scrpSTElementStructType
 
+instance ObjCArgument ScrpSTElement where
+  withObjCArg x k = k (argScrpSTElement x)
+
+instance ObjCReturn ScrpSTElement where
+  type RawReturn ScrpSTElement = ScrpSTElement
+  objcRetType = retScrpSTElement
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNBackgroundData = TXNBackgroundData
   { txnBackgroundDataColor :: !RGBColor
   } deriving (Eq, Show)
@@ -3528,6 +4670,16 @@ argTXNBackgroundData = mkStorableArg txnBackgroundDataStructType
 
 retTXNBackgroundData :: RetType TXNBackgroundData
 retTXNBackgroundData = mkStorableRetType txnBackgroundDataStructType
+
+instance ObjCArgument TXNBackgroundData where
+  withObjCArg x k = k (argTXNBackgroundData x)
+
+instance ObjCReturn TXNBackgroundData where
+  type RawReturn TXNBackgroundData = TXNBackgroundData
+  objcRetType = retTXNBackgroundData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TextStyle = TextStyle
   { textStyleTsFont :: !CShort
@@ -3559,6 +4711,16 @@ argTextStyle = mkStorableArg textStyleStructType
 retTextStyle :: RetType TextStyle
 retTextStyle = mkStorableRetType textStyleStructType
 
+instance ObjCArgument TextStyle where
+  withObjCArg x k = k (argTextStyle x)
+
+instance ObjCReturn TextStyle where
+  type RawReturn TextStyle = TextStyle
+  objcRetType = retTextStyle
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data WStateData = WStateData
   { wStateDataUserState :: !ListBounds
   , wStateDataStdState :: !ListBounds
@@ -3582,6 +4744,16 @@ argWStateData = mkStorableArg wStateDataStructType
 
 retWStateData :: RetType WStateData
 retWStateData = mkStorableRetType wStateDataStructType
+
+instance ObjCArgument WStateData where
+  withObjCArg x k = k (argWStateData x)
+
+instance ObjCReturn WStateData where
+  type RawReturn WStateData = WStateData
+  objcRetType = retWStateData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DataBrowserListViewHeaderDesc = DataBrowserListViewHeaderDesc
   { dataBrowserListViewHeaderDescVersion :: !CUInt
@@ -3625,6 +4797,16 @@ argDataBrowserListViewHeaderDesc = mkStorableArg dataBrowserListViewHeaderDescSt
 retDataBrowserListViewHeaderDesc :: RetType DataBrowserListViewHeaderDesc
 retDataBrowserListViewHeaderDesc = mkStorableRetType dataBrowserListViewHeaderDescStructType
 
+instance ObjCArgument DataBrowserListViewHeaderDesc where
+  withObjCArg x k = k (argDataBrowserListViewHeaderDesc x)
+
+instance ObjCReturn DataBrowserListViewHeaderDesc where
+  type RawReturn DataBrowserListViewHeaderDesc = DataBrowserListViewHeaderDesc
+  objcRetType = retDataBrowserListViewHeaderDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HILayoutInfo = HILayoutInfo
   { hiLayoutInfoVersion :: !CUInt
   , hiLayoutInfoBinding :: !HIBinding
@@ -3655,6 +4837,16 @@ argHILayoutInfo = mkStorableArg hiLayoutInfoStructType
 retHILayoutInfo :: RetType HILayoutInfo
 retHILayoutInfo = mkStorableRetType hiLayoutInfoStructType
 
+instance ObjCArgument HILayoutInfo where
+  withObjCArg x k = k (argHILayoutInfo x)
+
+instance ObjCReturn HILayoutInfo where
+  type RawReturn HILayoutInfo = HILayoutInfo
+  objcRetType = retHILayoutInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MDEFDrawData = MDEFDrawData
   { mdefDrawDataTrackingData :: !MenuTrackingData
   , mdefDrawDataContext :: !(Ptr ())
@@ -3678,6 +4870,16 @@ argMDEFDrawData = mkStorableArg mdefDrawDataStructType
 
 retMDEFDrawData :: RetType MDEFDrawData
 retMDEFDrawData = mkStorableRetType mdefDrawDataStructType
+
+instance ObjCArgument MDEFDrawData where
+  withObjCArg x k = k (argMDEFDrawData x)
+
+instance ObjCReturn MDEFDrawData where
+  type RawReturn MDEFDrawData = MDEFDrawData
+  objcRetType = retMDEFDrawData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MDEFFindItemData = MDEFFindItemData
   { mdefFindItemDataTrackingData :: !MenuTrackingData
@@ -3703,6 +4905,16 @@ argMDEFFindItemData = mkStorableArg mdefFindItemDataStructType
 retMDEFFindItemData :: RetType MDEFFindItemData
 retMDEFFindItemData = mkStorableRetType mdefFindItemDataStructType
 
+instance ObjCArgument MDEFFindItemData where
+  withObjCArg x k = k (argMDEFFindItemData x)
+
+instance ObjCReturn MDEFFindItemData where
+  type RawReturn MDEFFindItemData = MDEFFindItemData
+  objcRetType = retMDEFFindItemData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TXNBackground = TXNBackground
   { txnBackgroundBgType :: !CUInt
   , txnBackgroundBg :: !TXNBackgroundData
@@ -3726,3 +4938,13 @@ argTXNBackground = mkStorableArg txnBackgroundStructType
 
 retTXNBackground :: RetType TXNBackground
 retTXNBackground = mkStorableRetType txnBackgroundStructType
+
+instance ObjCArgument TXNBackground where
+  withObjCArg x k = k (argTXNBackground x)
+
+instance ObjCReturn TXNBackground where
+  type RawReturn TXNBackground = TXNBackground
+  objcRetType = retTXNBackground
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

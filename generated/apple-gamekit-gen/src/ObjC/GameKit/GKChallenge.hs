@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.GameKit.GKChallenge
   , message
   , issuingPlayerID
   , receivingPlayerID
+  , completionDateSelector
   , declineSelector
+  , issueDateSelector
+  , issuingPlayerIDSelector
   , issuingPlayerSelector
+  , messageSelector
+  , receivingPlayerIDSelector
   , receivingPlayerSelector
   , stateSelector
-  , issueDateSelector
-  , completionDateSelector
-  , messageSelector
-  , issuingPlayerIDSelector
-  , receivingPlayerIDSelector
 
   -- * Enum types
   , GKChallengeState(GKChallengeState)
@@ -35,15 +36,11 @@ module ObjC.GameKit.GKChallenge
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,102 +52,102 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- decline@
 decline :: IsGKChallenge gkChallenge => gkChallenge -> IO ()
-decline gkChallenge  =
-    sendMsg gkChallenge (mkSelector "decline") retVoid []
+decline gkChallenge =
+  sendMessage gkChallenge declineSelector
 
 -- | The GKPlayer who issued the challenge
 --
 -- ObjC selector: @- issuingPlayer@
 issuingPlayer :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id GKPlayer)
-issuingPlayer gkChallenge  =
-    sendMsg gkChallenge (mkSelector "issuingPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuingPlayer gkChallenge =
+  sendMessage gkChallenge issuingPlayerSelector
 
 -- | The GKPlayer who has received the challenge
 --
 -- ObjC selector: @- receivingPlayer@
 receivingPlayer :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id GKPlayer)
-receivingPlayer gkChallenge  =
-    sendMsg gkChallenge (mkSelector "receivingPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+receivingPlayer gkChallenge =
+  sendMessage gkChallenge receivingPlayerSelector
 
 -- | Current state of the challenge
 --
 -- ObjC selector: @- state@
 state :: IsGKChallenge gkChallenge => gkChallenge -> IO GKChallengeState
-state gkChallenge  =
-    fmap (coerce :: CLong -> GKChallengeState) $ sendMsg gkChallenge (mkSelector "state") retCLong []
+state gkChallenge =
+  sendMessage gkChallenge stateSelector
 
 -- | Date the challenge was issued
 --
 -- ObjC selector: @- issueDate@
 issueDate :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id NSDate)
-issueDate gkChallenge  =
-    sendMsg gkChallenge (mkSelector "issueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+issueDate gkChallenge =
+  sendMessage gkChallenge issueDateSelector
 
 -- | Date the challenge was completed or aborted
 --
 -- ObjC selector: @- completionDate@
 completionDate :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id NSDate)
-completionDate gkChallenge  =
-    sendMsg gkChallenge (mkSelector "completionDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionDate gkChallenge =
+  sendMessage gkChallenge completionDateSelector
 
 -- | The message sent to receivers of this challenge
 --
 -- ObjC selector: @- message@
 message :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id NSString)
-message gkChallenge  =
-    sendMsg gkChallenge (mkSelector "message") (retPtr retVoid) [] >>= retainedObject . castPtr
+message gkChallenge =
+  sendMessage gkChallenge messageSelector
 
 -- | * This property is obsolete. **
 --
 -- ObjC selector: @- issuingPlayerID@
 issuingPlayerID :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id NSString)
-issuingPlayerID gkChallenge  =
-    sendMsg gkChallenge (mkSelector "issuingPlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuingPlayerID gkChallenge =
+  sendMessage gkChallenge issuingPlayerIDSelector
 
 -- | * This property is obsolete. **
 --
 -- ObjC selector: @- receivingPlayerID@
 receivingPlayerID :: IsGKChallenge gkChallenge => gkChallenge -> IO (Id NSString)
-receivingPlayerID gkChallenge  =
-    sendMsg gkChallenge (mkSelector "receivingPlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+receivingPlayerID gkChallenge =
+  sendMessage gkChallenge receivingPlayerIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @decline@
-declineSelector :: Selector
+declineSelector :: Selector '[] ()
 declineSelector = mkSelector "decline"
 
 -- | @Selector@ for @issuingPlayer@
-issuingPlayerSelector :: Selector
+issuingPlayerSelector :: Selector '[] (Id GKPlayer)
 issuingPlayerSelector = mkSelector "issuingPlayer"
 
 -- | @Selector@ for @receivingPlayer@
-receivingPlayerSelector :: Selector
+receivingPlayerSelector :: Selector '[] (Id GKPlayer)
 receivingPlayerSelector = mkSelector "receivingPlayer"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] GKChallengeState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @issueDate@
-issueDateSelector :: Selector
+issueDateSelector :: Selector '[] (Id NSDate)
 issueDateSelector = mkSelector "issueDate"
 
 -- | @Selector@ for @completionDate@
-completionDateSelector :: Selector
+completionDateSelector :: Selector '[] (Id NSDate)
 completionDateSelector = mkSelector "completionDate"
 
 -- | @Selector@ for @message@
-messageSelector :: Selector
+messageSelector :: Selector '[] (Id NSString)
 messageSelector = mkSelector "message"
 
 -- | @Selector@ for @issuingPlayerID@
-issuingPlayerIDSelector :: Selector
+issuingPlayerIDSelector :: Selector '[] (Id NSString)
 issuingPlayerIDSelector = mkSelector "issuingPlayerID"
 
 -- | @Selector@ for @receivingPlayerID@
-receivingPlayerIDSelector :: Selector
+receivingPlayerIDSelector :: Selector '[] (Id NSString)
 receivingPlayerIDSelector = mkSelector "receivingPlayerID"
 

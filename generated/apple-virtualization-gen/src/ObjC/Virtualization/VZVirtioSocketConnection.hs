@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.Virtualization.VZVirtioSocketConnection
   , destinationPort
   , sourcePort
   , fileDescriptor
-  , newSelector
-  , initSelector
   , closeSelector
   , destinationPortSelector
-  , sourcePortSelector
   , fileDescriptorSelector
+  , initSelector
+  , newSelector
+  , sourcePortSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,33 +45,33 @@ new :: IO (Id VZVirtioSocketConnection)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioSocketConnection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioSocketConnection vzVirtioSocketConnection => vzVirtioSocketConnection -> IO (Id VZVirtioSocketConnection)
-init_ vzVirtioSocketConnection  =
-    sendMsg vzVirtioSocketConnection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioSocketConnection =
+  sendOwnedMessage vzVirtioSocketConnection initSelector
 
 -- | Close the file descriptor that's associated with the socket.
 --
 -- ObjC selector: @- close@
 close :: IsVZVirtioSocketConnection vzVirtioSocketConnection => vzVirtioSocketConnection -> IO ()
-close vzVirtioSocketConnection  =
-    sendMsg vzVirtioSocketConnection (mkSelector "close") retVoid []
+close vzVirtioSocketConnection =
+  sendMessage vzVirtioSocketConnection closeSelector
 
 -- | The destination port number of the connection.
 --
 -- ObjC selector: @- destinationPort@
 destinationPort :: IsVZVirtioSocketConnection vzVirtioSocketConnection => vzVirtioSocketConnection -> IO CUInt
-destinationPort vzVirtioSocketConnection  =
-    sendMsg vzVirtioSocketConnection (mkSelector "destinationPort") retCUInt []
+destinationPort vzVirtioSocketConnection =
+  sendMessage vzVirtioSocketConnection destinationPortSelector
 
 -- | The source port number of the connection.
 --
 -- ObjC selector: @- sourcePort@
 sourcePort :: IsVZVirtioSocketConnection vzVirtioSocketConnection => vzVirtioSocketConnection -> IO CUInt
-sourcePort vzVirtioSocketConnection  =
-    sendMsg vzVirtioSocketConnection (mkSelector "sourcePort") retCUInt []
+sourcePort vzVirtioSocketConnection =
+  sendMessage vzVirtioSocketConnection sourcePortSelector
 
 -- | The file descriptor associated with the socket.
 --
@@ -84,34 +81,34 @@ sourcePort vzVirtioSocketConnection  =
 --
 -- ObjC selector: @- fileDescriptor@
 fileDescriptor :: IsVZVirtioSocketConnection vzVirtioSocketConnection => vzVirtioSocketConnection -> IO CInt
-fileDescriptor vzVirtioSocketConnection  =
-    sendMsg vzVirtioSocketConnection (mkSelector "fileDescriptor") retCInt []
+fileDescriptor vzVirtioSocketConnection =
+  sendMessage vzVirtioSocketConnection fileDescriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioSocketConnection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioSocketConnection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @destinationPort@
-destinationPortSelector :: Selector
+destinationPortSelector :: Selector '[] CUInt
 destinationPortSelector = mkSelector "destinationPort"
 
 -- | @Selector@ for @sourcePort@
-sourcePortSelector :: Selector
+sourcePortSelector :: Selector '[] CUInt
 sourcePortSelector = mkSelector "sourcePort"
 
 -- | @Selector@ for @fileDescriptor@
-fileDescriptorSelector :: Selector
+fileDescriptorSelector :: Selector '[] CInt
 fileDescriptorSelector = mkSelector "fileDescriptor"
 

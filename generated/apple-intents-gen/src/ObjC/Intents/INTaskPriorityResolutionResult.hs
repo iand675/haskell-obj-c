@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INTaskPriorityResolutionResult
   , IsINTaskPriorityResolutionResult(..)
   , successWithResolvedTaskPriority
   , confirmationRequiredWithTaskPriorityToConfirm
-  , successWithResolvedTaskPrioritySelector
   , confirmationRequiredWithTaskPriorityToConfirmSelector
+  , successWithResolvedTaskPrioritySelector
 
   -- * Enum types
   , INTaskPriority(INTaskPriority)
@@ -20,15 +21,11 @@ module ObjC.Intents.INTaskPriorityResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,24 +38,24 @@ successWithResolvedTaskPriority :: INTaskPriority -> IO (Id INTaskPriorityResolu
 successWithResolvedTaskPriority resolvedTaskPriority =
   do
     cls' <- getRequiredClass "INTaskPriorityResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedTaskPriority:") (retPtr retVoid) [argCLong (coerce resolvedTaskPriority)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedTaskPrioritySelector resolvedTaskPriority
 
 -- | @+ confirmationRequiredWithTaskPriorityToConfirm:@
 confirmationRequiredWithTaskPriorityToConfirm :: INTaskPriority -> IO (Id INTaskPriorityResolutionResult)
 confirmationRequiredWithTaskPriorityToConfirm taskPriorityToConfirm =
   do
     cls' <- getRequiredClass "INTaskPriorityResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithTaskPriorityToConfirm:") (retPtr retVoid) [argCLong (coerce taskPriorityToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithTaskPriorityToConfirmSelector taskPriorityToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedTaskPriority:@
-successWithResolvedTaskPrioritySelector :: Selector
+successWithResolvedTaskPrioritySelector :: Selector '[INTaskPriority] (Id INTaskPriorityResolutionResult)
 successWithResolvedTaskPrioritySelector = mkSelector "successWithResolvedTaskPriority:"
 
 -- | @Selector@ for @confirmationRequiredWithTaskPriorityToConfirm:@
-confirmationRequiredWithTaskPriorityToConfirmSelector :: Selector
+confirmationRequiredWithTaskPriorityToConfirmSelector :: Selector '[INTaskPriority] (Id INTaskPriorityResolutionResult)
 confirmationRequiredWithTaskPriorityToConfirmSelector = mkSelector "confirmationRequiredWithTaskPriorityToConfirm:"
 

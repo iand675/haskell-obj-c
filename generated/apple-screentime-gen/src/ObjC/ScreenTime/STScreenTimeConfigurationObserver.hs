@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.ScreenTime.STScreenTimeConfigurationObserver
   , init_
   , new
   , configuration
+  , configurationSelector
+  , initSelector
   , initWithUpdateQueueSelector
+  , newSelector
   , startObservingSelector
   , stopObservingSelector
-  , initSelector
-  , newSelector
-  , configurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,68 +44,67 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUpdateQueue:@
 initWithUpdateQueue :: (IsSTScreenTimeConfigurationObserver stScreenTimeConfigurationObserver, IsNSObject updateQueue) => stScreenTimeConfigurationObserver -> updateQueue -> IO (Id STScreenTimeConfigurationObserver)
-initWithUpdateQueue stScreenTimeConfigurationObserver  updateQueue =
-  withObjCPtr updateQueue $ \raw_updateQueue ->
-      sendMsg stScreenTimeConfigurationObserver (mkSelector "initWithUpdateQueue:") (retPtr retVoid) [argPtr (castPtr raw_updateQueue :: Ptr ())] >>= ownedObject . castPtr
+initWithUpdateQueue stScreenTimeConfigurationObserver updateQueue =
+  sendOwnedMessage stScreenTimeConfigurationObserver initWithUpdateQueueSelector (toNSObject updateQueue)
 
 -- | Starts observing changes to the current configuration.
 --
 -- ObjC selector: @- startObserving@
 startObserving :: IsSTScreenTimeConfigurationObserver stScreenTimeConfigurationObserver => stScreenTimeConfigurationObserver -> IO ()
-startObserving stScreenTimeConfigurationObserver  =
-    sendMsg stScreenTimeConfigurationObserver (mkSelector "startObserving") retVoid []
+startObserving stScreenTimeConfigurationObserver =
+  sendMessage stScreenTimeConfigurationObserver startObservingSelector
 
 -- | Stops observing changes to the current configuration.
 --
 -- ObjC selector: @- stopObserving@
 stopObserving :: IsSTScreenTimeConfigurationObserver stScreenTimeConfigurationObserver => stScreenTimeConfigurationObserver -> IO ()
-stopObserving stScreenTimeConfigurationObserver  =
-    sendMsg stScreenTimeConfigurationObserver (mkSelector "stopObserving") retVoid []
+stopObserving stScreenTimeConfigurationObserver =
+  sendMessage stScreenTimeConfigurationObserver stopObservingSelector
 
 -- | @- init@
 init_ :: IsSTScreenTimeConfigurationObserver stScreenTimeConfigurationObserver => stScreenTimeConfigurationObserver -> IO (Id STScreenTimeConfigurationObserver)
-init_ stScreenTimeConfigurationObserver  =
-    sendMsg stScreenTimeConfigurationObserver (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ stScreenTimeConfigurationObserver =
+  sendOwnedMessage stScreenTimeConfigurationObserver initSelector
 
 -- | @+ new@
 new :: IO (Id STScreenTimeConfigurationObserver)
 new  =
   do
     cls' <- getRequiredClass "STScreenTimeConfigurationObserver"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The configuration being observed.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsSTScreenTimeConfigurationObserver stScreenTimeConfigurationObserver => stScreenTimeConfigurationObserver -> IO (Id STScreenTimeConfiguration)
-configuration stScreenTimeConfigurationObserver  =
-    sendMsg stScreenTimeConfigurationObserver (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration stScreenTimeConfigurationObserver =
+  sendMessage stScreenTimeConfigurationObserver configurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUpdateQueue:@
-initWithUpdateQueueSelector :: Selector
+initWithUpdateQueueSelector :: Selector '[Id NSObject] (Id STScreenTimeConfigurationObserver)
 initWithUpdateQueueSelector = mkSelector "initWithUpdateQueue:"
 
 -- | @Selector@ for @startObserving@
-startObservingSelector :: Selector
+startObservingSelector :: Selector '[] ()
 startObservingSelector = mkSelector "startObserving"
 
 -- | @Selector@ for @stopObserving@
-stopObservingSelector :: Selector
+stopObservingSelector :: Selector '[] ()
 stopObservingSelector = mkSelector "stopObserving"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id STScreenTimeConfigurationObserver)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id STScreenTimeConfigurationObserver)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id STScreenTimeConfiguration)
 configurationSelector = mkSelector "configuration"
 

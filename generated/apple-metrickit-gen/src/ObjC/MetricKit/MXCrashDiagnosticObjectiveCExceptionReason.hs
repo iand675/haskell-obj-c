@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.MetricKit.MXCrashDiagnosticObjectiveCExceptionReason
   , exceptionType
   , className
   , exceptionName
-  , jsonRepresentationSelector
-  , dictionaryRepresentationSelector
-  , composedMessageSelector
-  , formatStringSelector
   , argumentsSelector
-  , exceptionTypeSelector
   , classNameSelector
+  , composedMessageSelector
+  , dictionaryRepresentationSelector
   , exceptionNameSelector
+  , exceptionTypeSelector
+  , formatStringSelector
+  , jsonRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- JSONRepresentation@
 jsonRepresentation :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSData)
-jsonRepresentation mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "JSONRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonRepresentation mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason jsonRepresentationSelector
 
 -- | dictionaryRepresentation
 --
@@ -66,8 +63,8 @@ jsonRepresentation mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- dictionaryRepresentation@
 dictionaryRepresentation :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSDictionary)
-dictionaryRepresentation mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason dictionaryRepresentationSelector
 
 -- | composedMessage
 --
@@ -75,8 +72,8 @@ dictionaryRepresentation mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- composedMessage@
 composedMessage :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSString)
-composedMessage mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "composedMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+composedMessage mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason composedMessageSelector
 
 -- | formatString
 --
@@ -84,8 +81,8 @@ composedMessage mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- formatString@
 formatString :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSString)
-formatString mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "formatString") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatString mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason formatStringSelector
 
 -- | arguments
 --
@@ -93,8 +90,8 @@ formatString mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- arguments@
 arguments :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSArray)
-arguments mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+arguments mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason argumentsSelector
 
 -- | exceptionType
 --
@@ -102,8 +99,8 @@ arguments mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- exceptionType@
 exceptionType :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSString)
-exceptionType mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "exceptionType") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionType mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason exceptionTypeSelector
 
 -- | className
 --
@@ -111,8 +108,8 @@ exceptionType mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- className@
 className :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSString)
-className mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "className") (retPtr retVoid) [] >>= retainedObject . castPtr
+className mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason classNameSelector
 
 -- | exceptionName
 --
@@ -122,42 +119,42 @@ className mxCrashDiagnosticObjectiveCExceptionReason  =
 --
 -- ObjC selector: @- exceptionName@
 exceptionName :: IsMXCrashDiagnosticObjectiveCExceptionReason mxCrashDiagnosticObjectiveCExceptionReason => mxCrashDiagnosticObjectiveCExceptionReason -> IO (Id NSString)
-exceptionName mxCrashDiagnosticObjectiveCExceptionReason  =
-    sendMsg mxCrashDiagnosticObjectiveCExceptionReason (mkSelector "exceptionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionName mxCrashDiagnosticObjectiveCExceptionReason =
+  sendMessage mxCrashDiagnosticObjectiveCExceptionReason exceptionNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @JSONRepresentation@
-jsonRepresentationSelector :: Selector
+jsonRepresentationSelector :: Selector '[] (Id NSData)
 jsonRepresentationSelector = mkSelector "JSONRepresentation"
 
 -- | @Selector@ for @dictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
 
 -- | @Selector@ for @composedMessage@
-composedMessageSelector :: Selector
+composedMessageSelector :: Selector '[] (Id NSString)
 composedMessageSelector = mkSelector "composedMessage"
 
 -- | @Selector@ for @formatString@
-formatStringSelector :: Selector
+formatStringSelector :: Selector '[] (Id NSString)
 formatStringSelector = mkSelector "formatString"
 
 -- | @Selector@ for @arguments@
-argumentsSelector :: Selector
+argumentsSelector :: Selector '[] (Id NSArray)
 argumentsSelector = mkSelector "arguments"
 
 -- | @Selector@ for @exceptionType@
-exceptionTypeSelector :: Selector
+exceptionTypeSelector :: Selector '[] (Id NSString)
 exceptionTypeSelector = mkSelector "exceptionType"
 
 -- | @Selector@ for @className@
-classNameSelector :: Selector
+classNameSelector :: Selector '[] (Id NSString)
 classNameSelector = mkSelector "className"
 
 -- | @Selector@ for @exceptionName@
-exceptionNameSelector :: Selector
+exceptionNameSelector :: Selector '[] (Id NSString)
 exceptionNameSelector = mkSelector "exceptionName"
 

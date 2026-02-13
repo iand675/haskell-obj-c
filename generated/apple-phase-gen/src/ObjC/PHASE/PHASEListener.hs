@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.PHASE.PHASEListener
   , setGain
   , automaticHeadTrackingFlags
   , setAutomaticHeadTrackingFlags
-  , initSelector
-  , newSelector
-  , initWithEngineSelector
-  , gainSelector
-  , setGainSelector
   , automaticHeadTrackingFlagsSelector
+  , gainSelector
+  , initSelector
+  , initWithEngineSelector
+  , newSelector
   , setAutomaticHeadTrackingFlagsSelector
+  , setGainSelector
 
   -- * Enum types
   , PHASEAutomaticHeadTrackingFlags(PHASEAutomaticHeadTrackingFlags)
@@ -35,15 +36,11 @@ module ObjC.PHASE.PHASEListener
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEListener phaseListener => phaseListener -> IO (Id PHASEListener)
-init_ phaseListener  =
-    sendMsg phaseListener (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseListener =
+  sendOwnedMessage phaseListener initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEListener)
 new  =
   do
     cls' <- getRequiredClass "PHASEListener"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine:
 --
@@ -69,9 +66,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:@
 initWithEngine :: (IsPHASEListener phaseListener, IsPHASEEngine engine) => phaseListener -> engine -> IO (Id PHASEListener)
-initWithEngine phaseListener  engine =
-  withObjCPtr engine $ \raw_engine ->
-      sendMsg phaseListener (mkSelector "initWithEngine:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ())] >>= ownedObject . castPtr
+initWithEngine phaseListener engine =
+  sendOwnedMessage phaseListener initWithEngineSelector (toPHASEEngine engine)
 
 -- | gain
 --
@@ -81,8 +77,8 @@ initWithEngine phaseListener  engine =
 --
 -- ObjC selector: @- gain@
 gain :: IsPHASEListener phaseListener => phaseListener -> IO CDouble
-gain phaseListener  =
-    sendMsg phaseListener (mkSelector "gain") retCDouble []
+gain phaseListener =
+  sendMessage phaseListener gainSelector
 
 -- | gain
 --
@@ -92,8 +88,8 @@ gain phaseListener  =
 --
 -- ObjC selector: @- setGain:@
 setGain :: IsPHASEListener phaseListener => phaseListener -> CDouble -> IO ()
-setGain phaseListener  value =
-    sendMsg phaseListener (mkSelector "setGain:") retVoid [argCDouble value]
+setGain phaseListener value =
+  sendMessage phaseListener setGainSelector value
 
 -- | automaticHeadTrackingFlags
 --
@@ -101,8 +97,8 @@ setGain phaseListener  value =
 --
 -- ObjC selector: @- automaticHeadTrackingFlags@
 automaticHeadTrackingFlags :: IsPHASEListener phaseListener => phaseListener -> IO PHASEAutomaticHeadTrackingFlags
-automaticHeadTrackingFlags phaseListener  =
-    fmap (coerce :: CULong -> PHASEAutomaticHeadTrackingFlags) $ sendMsg phaseListener (mkSelector "automaticHeadTrackingFlags") retCULong []
+automaticHeadTrackingFlags phaseListener =
+  sendMessage phaseListener automaticHeadTrackingFlagsSelector
 
 -- | automaticHeadTrackingFlags
 --
@@ -110,38 +106,38 @@ automaticHeadTrackingFlags phaseListener  =
 --
 -- ObjC selector: @- setAutomaticHeadTrackingFlags:@
 setAutomaticHeadTrackingFlags :: IsPHASEListener phaseListener => phaseListener -> PHASEAutomaticHeadTrackingFlags -> IO ()
-setAutomaticHeadTrackingFlags phaseListener  value =
-    sendMsg phaseListener (mkSelector "setAutomaticHeadTrackingFlags:") retVoid [argCULong (coerce value)]
+setAutomaticHeadTrackingFlags phaseListener value =
+  sendMessage phaseListener setAutomaticHeadTrackingFlagsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEListener)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEListener)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:@
-initWithEngineSelector :: Selector
+initWithEngineSelector :: Selector '[Id PHASEEngine] (Id PHASEListener)
 initWithEngineSelector = mkSelector "initWithEngine:"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CDouble
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @setGain:@
-setGainSelector :: Selector
+setGainSelector :: Selector '[CDouble] ()
 setGainSelector = mkSelector "setGain:"
 
 -- | @Selector@ for @automaticHeadTrackingFlags@
-automaticHeadTrackingFlagsSelector :: Selector
+automaticHeadTrackingFlagsSelector :: Selector '[] PHASEAutomaticHeadTrackingFlags
 automaticHeadTrackingFlagsSelector = mkSelector "automaticHeadTrackingFlags"
 
 -- | @Selector@ for @setAutomaticHeadTrackingFlags:@
-setAutomaticHeadTrackingFlagsSelector :: Selector
+setAutomaticHeadTrackingFlagsSelector :: Selector '[PHASEAutomaticHeadTrackingFlags] ()
 setAutomaticHeadTrackingFlagsSelector = mkSelector "setAutomaticHeadTrackingFlags:"
 

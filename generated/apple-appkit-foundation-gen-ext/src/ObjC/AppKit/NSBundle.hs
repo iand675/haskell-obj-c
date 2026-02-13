@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,27 +16,24 @@ module ObjC.AppKit.NSBundle
   , pathForImageResource
   , urlForImageResource
   , contextHelpForKey
-  , pathForSoundResourceSelector
+  , contextHelpForKeySelector
+  , imageForResourceSelector
   , loadNibFile_externalNameTable_withZoneSelector
   , loadNibNamed_ownerSelector
   , loadNibNamed_owner_topLevelObjectsSelector
-  , imageForResourceSelector
+  , nsBundleLoadNibFile_externalNameTable_withZoneSelector
   , pathForImageResourceSelector
+  , pathForSoundResourceSelector
   , urlForImageResourceSelector
-  , contextHelpForKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,98 +42,90 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pathForSoundResource:@
 pathForSoundResource :: (IsNSBundle nsBundle, IsNSString name) => nsBundle -> name -> IO (Id NSString)
-pathForSoundResource nsBundle  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsBundle (mkSelector "pathForSoundResource:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+pathForSoundResource nsBundle name =
+  sendMessage nsBundle pathForSoundResourceSelector (toNSString name)
 
 -- | @+ loadNibFile:externalNameTable:withZone:@
 nsBundleLoadNibFile_externalNameTable_withZone :: (IsNSString fileName, IsNSDictionary context) => fileName -> context -> Ptr () -> IO Bool
 nsBundleLoadNibFile_externalNameTable_withZone fileName context zone =
   do
     cls' <- getRequiredClass "NSBundle"
-    withObjCPtr fileName $ \raw_fileName ->
-      withObjCPtr context $ \raw_context ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "loadNibFile:externalNameTable:withZone:") retCULong [argPtr (castPtr raw_fileName :: Ptr ()), argPtr (castPtr raw_context :: Ptr ()), argPtr zone]
+    sendClassMessage cls' nsBundleLoadNibFile_externalNameTable_withZoneSelector (toNSString fileName) (toNSDictionary context) zone
 
 -- | @+ loadNibNamed:owner:@
 loadNibNamed_owner :: IsNSString nibName => nibName -> RawId -> IO Bool
 loadNibNamed_owner nibName owner =
   do
     cls' <- getRequiredClass "NSBundle"
-    withObjCPtr nibName $ \raw_nibName ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "loadNibNamed:owner:") retCULong [argPtr (castPtr raw_nibName :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ())]
+    sendClassMessage cls' loadNibNamed_ownerSelector (toNSString nibName) owner
 
 -- | @- loadNibFile:externalNameTable:withZone:@
 loadNibFile_externalNameTable_withZone :: (IsNSBundle nsBundle, IsNSString fileName, IsNSDictionary context) => nsBundle -> fileName -> context -> Ptr () -> IO Bool
-loadNibFile_externalNameTable_withZone nsBundle  fileName context zone =
-  withObjCPtr fileName $ \raw_fileName ->
-    withObjCPtr context $ \raw_context ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBundle (mkSelector "loadNibFile:externalNameTable:withZone:") retCULong [argPtr (castPtr raw_fileName :: Ptr ()), argPtr (castPtr raw_context :: Ptr ()), argPtr zone]
+loadNibFile_externalNameTable_withZone nsBundle fileName context zone =
+  sendMessage nsBundle loadNibFile_externalNameTable_withZoneSelector (toNSString fileName) (toNSDictionary context) zone
 
 -- | @- loadNibNamed:owner:topLevelObjects:@
 loadNibNamed_owner_topLevelObjects :: (IsNSBundle nsBundle, IsNSString nibName, IsNSArray topLevelObjects) => nsBundle -> nibName -> RawId -> topLevelObjects -> IO Bool
-loadNibNamed_owner_topLevelObjects nsBundle  nibName owner topLevelObjects =
-  withObjCPtr nibName $ \raw_nibName ->
-    withObjCPtr topLevelObjects $ \raw_topLevelObjects ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBundle (mkSelector "loadNibNamed:owner:topLevelObjects:") retCULong [argPtr (castPtr raw_nibName :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ()), argPtr (castPtr raw_topLevelObjects :: Ptr ())]
+loadNibNamed_owner_topLevelObjects nsBundle nibName owner topLevelObjects =
+  sendMessage nsBundle loadNibNamed_owner_topLevelObjectsSelector (toNSString nibName) owner (toNSArray topLevelObjects)
 
 -- | @- imageForResource:@
 imageForResource :: (IsNSBundle nsBundle, IsNSString name) => nsBundle -> name -> IO (Id NSImage)
-imageForResource nsBundle  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsBundle (mkSelector "imageForResource:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+imageForResource nsBundle name =
+  sendMessage nsBundle imageForResourceSelector (toNSString name)
 
 -- | @- pathForImageResource:@
 pathForImageResource :: (IsNSBundle nsBundle, IsNSString name) => nsBundle -> name -> IO (Id NSString)
-pathForImageResource nsBundle  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsBundle (mkSelector "pathForImageResource:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+pathForImageResource nsBundle name =
+  sendMessage nsBundle pathForImageResourceSelector (toNSString name)
 
 -- | @- URLForImageResource:@
 urlForImageResource :: (IsNSBundle nsBundle, IsNSString name) => nsBundle -> name -> IO (Id NSURL)
-urlForImageResource nsBundle  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsBundle (mkSelector "URLForImageResource:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+urlForImageResource nsBundle name =
+  sendMessage nsBundle urlForImageResourceSelector (toNSString name)
 
 -- | @- contextHelpForKey:@
 contextHelpForKey :: (IsNSBundle nsBundle, IsNSString key) => nsBundle -> key -> IO (Id NSAttributedString)
-contextHelpForKey nsBundle  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsBundle (mkSelector "contextHelpForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+contextHelpForKey nsBundle key =
+  sendMessage nsBundle contextHelpForKeySelector (toNSString key)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pathForSoundResource:@
-pathForSoundResourceSelector :: Selector
+pathForSoundResourceSelector :: Selector '[Id NSString] (Id NSString)
 pathForSoundResourceSelector = mkSelector "pathForSoundResource:"
 
 -- | @Selector@ for @loadNibFile:externalNameTable:withZone:@
-loadNibFile_externalNameTable_withZoneSelector :: Selector
-loadNibFile_externalNameTable_withZoneSelector = mkSelector "loadNibFile:externalNameTable:withZone:"
+nsBundleLoadNibFile_externalNameTable_withZoneSelector :: Selector '[Id NSString, Id NSDictionary, Ptr ()] Bool
+nsBundleLoadNibFile_externalNameTable_withZoneSelector = mkSelector "loadNibFile:externalNameTable:withZone:"
 
 -- | @Selector@ for @loadNibNamed:owner:@
-loadNibNamed_ownerSelector :: Selector
+loadNibNamed_ownerSelector :: Selector '[Id NSString, RawId] Bool
 loadNibNamed_ownerSelector = mkSelector "loadNibNamed:owner:"
 
+-- | @Selector@ for @loadNibFile:externalNameTable:withZone:@
+loadNibFile_externalNameTable_withZoneSelector :: Selector '[Id NSString, Id NSDictionary, Ptr ()] Bool
+loadNibFile_externalNameTable_withZoneSelector = mkSelector "loadNibFile:externalNameTable:withZone:"
+
 -- | @Selector@ for @loadNibNamed:owner:topLevelObjects:@
-loadNibNamed_owner_topLevelObjectsSelector :: Selector
+loadNibNamed_owner_topLevelObjectsSelector :: Selector '[Id NSString, RawId, Id NSArray] Bool
 loadNibNamed_owner_topLevelObjectsSelector = mkSelector "loadNibNamed:owner:topLevelObjects:"
 
 -- | @Selector@ for @imageForResource:@
-imageForResourceSelector :: Selector
+imageForResourceSelector :: Selector '[Id NSString] (Id NSImage)
 imageForResourceSelector = mkSelector "imageForResource:"
 
 -- | @Selector@ for @pathForImageResource:@
-pathForImageResourceSelector :: Selector
+pathForImageResourceSelector :: Selector '[Id NSString] (Id NSString)
 pathForImageResourceSelector = mkSelector "pathForImageResource:"
 
 -- | @Selector@ for @URLForImageResource:@
-urlForImageResourceSelector :: Selector
+urlForImageResourceSelector :: Selector '[Id NSString] (Id NSURL)
 urlForImageResourceSelector = mkSelector "URLForImageResource:"
 
 -- | @Selector@ for @contextHelpForKey:@
-contextHelpForKeySelector :: Selector
+contextHelpForKeySelector :: Selector '[Id NSString] (Id NSAttributedString)
 contextHelpForKeySelector = mkSelector "contextHelpForKey:"
 

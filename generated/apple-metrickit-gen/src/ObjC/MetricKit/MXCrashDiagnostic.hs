@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.MetricKit.MXCrashDiagnostic
   , signal
   , exceptionReason
   , callStackTreeSelector
+  , exceptionCodeSelector
+  , exceptionReasonSelector
+  , exceptionTypeSelector
+  , signalSelector
   , terminationReasonSelector
   , virtualMemoryRegionInfoSelector
-  , exceptionTypeSelector
-  , exceptionCodeSelector
-  , signalSelector
-  , exceptionReasonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- callStackTree@
 callStackTree :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id MXCallStackTree)
-callStackTree mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "callStackTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+callStackTree mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic callStackTreeSelector
 
 -- | terminationReason
 --
@@ -64,8 +61,8 @@ callStackTree mxCrashDiagnostic  =
 --
 -- ObjC selector: @- terminationReason@
 terminationReason :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id NSString)
-terminationReason mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "terminationReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+terminationReason mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic terminationReasonSelector
 
 -- | virtualMemoryRegionInfo
 --
@@ -75,8 +72,8 @@ terminationReason mxCrashDiagnostic  =
 --
 -- ObjC selector: @- virtualMemoryRegionInfo@
 virtualMemoryRegionInfo :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id NSString)
-virtualMemoryRegionInfo mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "virtualMemoryRegionInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualMemoryRegionInfo mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic virtualMemoryRegionInfoSelector
 
 -- | exceptionType
 --
@@ -86,8 +83,8 @@ virtualMemoryRegionInfo mxCrashDiagnostic  =
 --
 -- ObjC selector: @- exceptionType@
 exceptionType :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id NSNumber)
-exceptionType mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "exceptionType") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionType mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic exceptionTypeSelector
 
 -- | exceptionCode
 --
@@ -97,8 +94,8 @@ exceptionType mxCrashDiagnostic  =
 --
 -- ObjC selector: @- exceptionCode@
 exceptionCode :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id NSNumber)
-exceptionCode mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "exceptionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionCode mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic exceptionCodeSelector
 
 -- | signal
 --
@@ -108,8 +105,8 @@ exceptionCode mxCrashDiagnostic  =
 --
 -- ObjC selector: @- signal@
 signal :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id NSNumber)
-signal mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "signal") (retPtr retVoid) [] >>= retainedObject . castPtr
+signal mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic signalSelector
 
 -- | exceptionReason
 --
@@ -119,38 +116,38 @@ signal mxCrashDiagnostic  =
 --
 -- ObjC selector: @- exceptionReason@
 exceptionReason :: IsMXCrashDiagnostic mxCrashDiagnostic => mxCrashDiagnostic -> IO (Id MXCrashDiagnosticObjectiveCExceptionReason)
-exceptionReason mxCrashDiagnostic  =
-    sendMsg mxCrashDiagnostic (mkSelector "exceptionReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionReason mxCrashDiagnostic =
+  sendMessage mxCrashDiagnostic exceptionReasonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @callStackTree@
-callStackTreeSelector :: Selector
+callStackTreeSelector :: Selector '[] (Id MXCallStackTree)
 callStackTreeSelector = mkSelector "callStackTree"
 
 -- | @Selector@ for @terminationReason@
-terminationReasonSelector :: Selector
+terminationReasonSelector :: Selector '[] (Id NSString)
 terminationReasonSelector = mkSelector "terminationReason"
 
 -- | @Selector@ for @virtualMemoryRegionInfo@
-virtualMemoryRegionInfoSelector :: Selector
+virtualMemoryRegionInfoSelector :: Selector '[] (Id NSString)
 virtualMemoryRegionInfoSelector = mkSelector "virtualMemoryRegionInfo"
 
 -- | @Selector@ for @exceptionType@
-exceptionTypeSelector :: Selector
+exceptionTypeSelector :: Selector '[] (Id NSNumber)
 exceptionTypeSelector = mkSelector "exceptionType"
 
 -- | @Selector@ for @exceptionCode@
-exceptionCodeSelector :: Selector
+exceptionCodeSelector :: Selector '[] (Id NSNumber)
 exceptionCodeSelector = mkSelector "exceptionCode"
 
 -- | @Selector@ for @signal@
-signalSelector :: Selector
+signalSelector :: Selector '[] (Id NSNumber)
 signalSelector = mkSelector "signal"
 
 -- | @Selector@ for @exceptionReason@
-exceptionReasonSelector :: Selector
+exceptionReasonSelector :: Selector '[] (Id MXCrashDiagnosticObjectiveCExceptionReason)
 exceptionReasonSelector = mkSelector "exceptionReason"
 

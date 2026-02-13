@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.WebKit.WebFrameView
   , setAllowsScrolling
   , canPrintHeadersAndFooters
   , documentViewShouldHandlePrint
-  , printOperationWithPrintInfoSelector
-  , printDocumentViewSelector
-  , webFrameSelector
-  , documentViewSelector
   , allowsScrollingSelector
-  , setAllowsScrollingSelector
   , canPrintHeadersAndFootersSelector
+  , documentViewSelector
   , documentViewShouldHandlePrintSelector
+  , printDocumentViewSelector
+  , printOperationWithPrintInfoSelector
+  , setAllowsScrollingSelector
+  , webFrameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,9 +49,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- printOperationWithPrintInfo:@
 printOperationWithPrintInfo :: (IsWebFrameView webFrameView, IsNSPrintInfo printInfo) => webFrameView -> printInfo -> IO (Id NSPrintOperation)
-printOperationWithPrintInfo webFrameView  printInfo =
-  withObjCPtr printInfo $ \raw_printInfo ->
-      sendMsg webFrameView (mkSelector "printOperationWithPrintInfo:") (retPtr retVoid) [argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+printOperationWithPrintInfo webFrameView printInfo =
+  sendMessage webFrameView printOperationWithPrintInfoSelector (toNSPrintInfo printInfo)
 
 -- | printDocumentView
 --
@@ -62,8 +58,8 @@ printOperationWithPrintInfo webFrameView  printInfo =
 --
 -- ObjC selector: @- printDocumentView@
 printDocumentView :: IsWebFrameView webFrameView => webFrameView -> IO ()
-printDocumentView webFrameView  =
-    sendMsg webFrameView (mkSelector "printDocumentView") retVoid []
+printDocumentView webFrameView =
+  sendMessage webFrameView printDocumentViewSelector
 
 -- | webFrame
 --
@@ -71,8 +67,8 @@ printDocumentView webFrameView  =
 --
 -- ObjC selector: @- webFrame@
 webFrame :: IsWebFrameView webFrameView => webFrameView -> IO (Id WebFrame)
-webFrame webFrameView  =
-    sendMsg webFrameView (mkSelector "webFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+webFrame webFrameView =
+  sendMessage webFrameView webFrameSelector
 
 -- | documentView
 --
@@ -82,8 +78,8 @@ webFrame webFrameView  =
 --
 -- ObjC selector: @- documentView@
 documentView :: IsWebFrameView webFrameView => webFrameView -> IO (Id NSView)
-documentView webFrameView  =
-    sendMsg webFrameView (mkSelector "documentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentView webFrameView =
+  sendMessage webFrameView documentViewSelector
 
 -- | allowsScrolling
 --
@@ -91,8 +87,8 @@ documentView webFrameView  =
 --
 -- ObjC selector: @- allowsScrolling@
 allowsScrolling :: IsWebFrameView webFrameView => webFrameView -> IO Bool
-allowsScrolling webFrameView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webFrameView (mkSelector "allowsScrolling") retCULong []
+allowsScrolling webFrameView =
+  sendMessage webFrameView allowsScrollingSelector
 
 -- | allowsScrolling
 --
@@ -100,8 +96,8 @@ allowsScrolling webFrameView  =
 --
 -- ObjC selector: @- setAllowsScrolling:@
 setAllowsScrolling :: IsWebFrameView webFrameView => webFrameView -> Bool -> IO ()
-setAllowsScrolling webFrameView  value =
-    sendMsg webFrameView (mkSelector "setAllowsScrolling:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsScrolling webFrameView value =
+  sendMessage webFrameView setAllowsScrollingSelector value
 
 -- | canPrintHeadersAndFooters
 --
@@ -109,8 +105,8 @@ setAllowsScrolling webFrameView  value =
 --
 -- ObjC selector: @- canPrintHeadersAndFooters@
 canPrintHeadersAndFooters :: IsWebFrameView webFrameView => webFrameView -> IO Bool
-canPrintHeadersAndFooters webFrameView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webFrameView (mkSelector "canPrintHeadersAndFooters") retCULong []
+canPrintHeadersAndFooters webFrameView =
+  sendMessage webFrameView canPrintHeadersAndFootersSelector
 
 -- | documentViewShouldHandlePrint
 --
@@ -120,42 +116,42 @@ canPrintHeadersAndFooters webFrameView  =
 --
 -- ObjC selector: @- documentViewShouldHandlePrint@
 documentViewShouldHandlePrint :: IsWebFrameView webFrameView => webFrameView -> IO Bool
-documentViewShouldHandlePrint webFrameView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webFrameView (mkSelector "documentViewShouldHandlePrint") retCULong []
+documentViewShouldHandlePrint webFrameView =
+  sendMessage webFrameView documentViewShouldHandlePrintSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @printOperationWithPrintInfo:@
-printOperationWithPrintInfoSelector :: Selector
+printOperationWithPrintInfoSelector :: Selector '[Id NSPrintInfo] (Id NSPrintOperation)
 printOperationWithPrintInfoSelector = mkSelector "printOperationWithPrintInfo:"
 
 -- | @Selector@ for @printDocumentView@
-printDocumentViewSelector :: Selector
+printDocumentViewSelector :: Selector '[] ()
 printDocumentViewSelector = mkSelector "printDocumentView"
 
 -- | @Selector@ for @webFrame@
-webFrameSelector :: Selector
+webFrameSelector :: Selector '[] (Id WebFrame)
 webFrameSelector = mkSelector "webFrame"
 
 -- | @Selector@ for @documentView@
-documentViewSelector :: Selector
+documentViewSelector :: Selector '[] (Id NSView)
 documentViewSelector = mkSelector "documentView"
 
 -- | @Selector@ for @allowsScrolling@
-allowsScrollingSelector :: Selector
+allowsScrollingSelector :: Selector '[] Bool
 allowsScrollingSelector = mkSelector "allowsScrolling"
 
 -- | @Selector@ for @setAllowsScrolling:@
-setAllowsScrollingSelector :: Selector
+setAllowsScrollingSelector :: Selector '[Bool] ()
 setAllowsScrollingSelector = mkSelector "setAllowsScrolling:"
 
 -- | @Selector@ for @canPrintHeadersAndFooters@
-canPrintHeadersAndFootersSelector :: Selector
+canPrintHeadersAndFootersSelector :: Selector '[] Bool
 canPrintHeadersAndFootersSelector = mkSelector "canPrintHeadersAndFooters"
 
 -- | @Selector@ for @documentViewShouldHandlePrint@
-documentViewShouldHandlePrintSelector :: Selector
+documentViewShouldHandlePrintSelector :: Selector '[] Bool
 documentViewShouldHandlePrintSelector = mkSelector "documentViewShouldHandlePrint"
 

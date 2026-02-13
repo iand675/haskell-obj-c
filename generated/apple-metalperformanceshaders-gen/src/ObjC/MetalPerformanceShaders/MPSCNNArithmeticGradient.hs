@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,34 +50,30 @@ module ObjC.MetalPerformanceShaders.MPSCNNArithmeticGradient
   , maximumValue
   , setMaximumValue
   , isSecondarySourceFilter
+  , biasSelector
   , initWithDeviceSelector
   , initWithDevice_isSecondarySourceFilterSelector
-  , primaryScaleSelector
-  , setPrimaryScaleSelector
-  , secondaryScaleSelector
-  , setSecondaryScaleSelector
-  , biasSelector
-  , setBiasSelector
-  , secondaryStrideInFeatureChannelsSelector
-  , setSecondaryStrideInFeatureChannelsSelector
-  , minimumValueSelector
-  , setMinimumValueSelector
-  , maximumValueSelector
-  , setMaximumValueSelector
   , isSecondarySourceFilterSelector
+  , maximumValueSelector
+  , minimumValueSelector
+  , primaryScaleSelector
+  , secondaryScaleSelector
+  , secondaryStrideInFeatureChannelsSelector
+  , setBiasSelector
+  , setMaximumValueSelector
+  , setMinimumValueSelector
+  , setPrimaryScaleSelector
+  , setSecondaryScaleSelector
+  , setSecondaryStrideInFeatureChannelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,43 +82,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> RawId -> IO (Id MPSCNNArithmeticGradient)
-initWithDevice mpscnnArithmeticGradient  device =
-    sendMsg mpscnnArithmeticGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnArithmeticGradient device =
+  sendOwnedMessage mpscnnArithmeticGradient initWithDeviceSelector device
 
 -- | @- initWithDevice:isSecondarySourceFilter:@
 initWithDevice_isSecondarySourceFilter :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> RawId -> Bool -> IO (Id MPSCNNArithmeticGradient)
-initWithDevice_isSecondarySourceFilter mpscnnArithmeticGradient  device isSecondarySourceFilter =
-    sendMsg mpscnnArithmeticGradient (mkSelector "initWithDevice:isSecondarySourceFilter:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if isSecondarySourceFilter then 1 else 0)] >>= ownedObject . castPtr
+initWithDevice_isSecondarySourceFilter mpscnnArithmeticGradient device isSecondarySourceFilter =
+  sendOwnedMessage mpscnnArithmeticGradient initWithDevice_isSecondarySourceFilterSelector device isSecondarySourceFilter
 
 -- | @- primaryScale@
 primaryScale :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CFloat
-primaryScale mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "primaryScale") retCFloat []
+primaryScale mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient primaryScaleSelector
 
 -- | @- setPrimaryScale:@
 setPrimaryScale :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CFloat -> IO ()
-setPrimaryScale mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setPrimaryScale:") retVoid [argCFloat value]
+setPrimaryScale mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setPrimaryScaleSelector value
 
 -- | @- secondaryScale@
 secondaryScale :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CFloat
-secondaryScale mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "secondaryScale") retCFloat []
+secondaryScale mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient secondaryScaleSelector
 
 -- | @- setSecondaryScale:@
 setSecondaryScale :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CFloat -> IO ()
-setSecondaryScale mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setSecondaryScale:") retVoid [argCFloat value]
+setSecondaryScale mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setSecondaryScaleSelector value
 
 -- | @- bias@
 bias :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CFloat
-bias mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "bias") retCFloat []
+bias mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient biasSelector
 
 -- | @- setBias:@
 setBias :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CFloat -> IO ()
-setBias mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setBiasSelector value
 
 -- | secondaryStrideInPixels
 --
@@ -129,8 +126,8 @@ setBias mpscnnArithmeticGradient  value =
 --
 -- ObjC selector: @- secondaryStrideInFeatureChannels@
 secondaryStrideInFeatureChannels :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CULong
-secondaryStrideInFeatureChannels mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "secondaryStrideInFeatureChannels") retCULong []
+secondaryStrideInFeatureChannels mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient secondaryStrideInFeatureChannelsSelector
 
 -- | secondaryStrideInPixels
 --
@@ -138,8 +135,8 @@ secondaryStrideInFeatureChannels mpscnnArithmeticGradient  =
 --
 -- ObjC selector: @- setSecondaryStrideInFeatureChannels:@
 setSecondaryStrideInFeatureChannels :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CULong -> IO ()
-setSecondaryStrideInFeatureChannels mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setSecondaryStrideInFeatureChannels:") retVoid [argCULong value]
+setSecondaryStrideInFeatureChannels mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setSecondaryStrideInFeatureChannelsSelector value
 
 -- | minimumValue
 --
@@ -147,8 +144,8 @@ setSecondaryStrideInFeatureChannels mpscnnArithmeticGradient  value =
 --
 -- ObjC selector: @- minimumValue@
 minimumValue :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CFloat
-minimumValue mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "minimumValue") retCFloat []
+minimumValue mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient minimumValueSelector
 
 -- | minimumValue
 --
@@ -156,8 +153,8 @@ minimumValue mpscnnArithmeticGradient  =
 --
 -- ObjC selector: @- setMinimumValue:@
 setMinimumValue :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CFloat -> IO ()
-setMinimumValue mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setMinimumValue:") retVoid [argCFloat value]
+setMinimumValue mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setMinimumValueSelector value
 
 -- | maximumValue
 --
@@ -165,8 +162,8 @@ setMinimumValue mpscnnArithmeticGradient  value =
 --
 -- ObjC selector: @- maximumValue@
 maximumValue :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO CFloat
-maximumValue mpscnnArithmeticGradient  =
-    sendMsg mpscnnArithmeticGradient (mkSelector "maximumValue") retCFloat []
+maximumValue mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient maximumValueSelector
 
 -- | maximumValue
 --
@@ -174,8 +171,8 @@ maximumValue mpscnnArithmeticGradient  =
 --
 -- ObjC selector: @- setMaximumValue:@
 setMaximumValue :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> CFloat -> IO ()
-setMaximumValue mpscnnArithmeticGradient  value =
-    sendMsg mpscnnArithmeticGradient (mkSelector "setMaximumValue:") retVoid [argCFloat value]
+setMaximumValue mpscnnArithmeticGradient value =
+  sendMessage mpscnnArithmeticGradient setMaximumValueSelector value
 
 -- | isSecondarySourceFilter
 --
@@ -183,70 +180,70 @@ setMaximumValue mpscnnArithmeticGradient  value =
 --
 -- ObjC selector: @- isSecondarySourceFilter@
 isSecondarySourceFilter :: IsMPSCNNArithmeticGradient mpscnnArithmeticGradient => mpscnnArithmeticGradient -> IO Bool
-isSecondarySourceFilter mpscnnArithmeticGradient  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnArithmeticGradient (mkSelector "isSecondarySourceFilter") retCULong []
+isSecondarySourceFilter mpscnnArithmeticGradient =
+  sendMessage mpscnnArithmeticGradient isSecondarySourceFilterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNArithmeticGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:isSecondarySourceFilter:@
-initWithDevice_isSecondarySourceFilterSelector :: Selector
+initWithDevice_isSecondarySourceFilterSelector :: Selector '[RawId, Bool] (Id MPSCNNArithmeticGradient)
 initWithDevice_isSecondarySourceFilterSelector = mkSelector "initWithDevice:isSecondarySourceFilter:"
 
 -- | @Selector@ for @primaryScale@
-primaryScaleSelector :: Selector
+primaryScaleSelector :: Selector '[] CFloat
 primaryScaleSelector = mkSelector "primaryScale"
 
 -- | @Selector@ for @setPrimaryScale:@
-setPrimaryScaleSelector :: Selector
+setPrimaryScaleSelector :: Selector '[CFloat] ()
 setPrimaryScaleSelector = mkSelector "setPrimaryScale:"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CFloat
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @setSecondaryScale:@
-setSecondaryScaleSelector :: Selector
+setSecondaryScaleSelector :: Selector '[CFloat] ()
 setSecondaryScaleSelector = mkSelector "setSecondaryScale:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 
 -- | @Selector@ for @secondaryStrideInFeatureChannels@
-secondaryStrideInFeatureChannelsSelector :: Selector
+secondaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 secondaryStrideInFeatureChannelsSelector = mkSelector "secondaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setSecondaryStrideInFeatureChannels:@
-setSecondaryStrideInFeatureChannelsSelector :: Selector
+setSecondaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setSecondaryStrideInFeatureChannelsSelector = mkSelector "setSecondaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CFloat
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @setMinimumValue:@
-setMinimumValueSelector :: Selector
+setMinimumValueSelector :: Selector '[CFloat] ()
 setMinimumValueSelector = mkSelector "setMinimumValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @setMaximumValue:@
-setMaximumValueSelector :: Selector
+setMaximumValueSelector :: Selector '[CFloat] ()
 setMaximumValueSelector = mkSelector "setMaximumValue:"
 
 -- | @Selector@ for @isSecondarySourceFilter@
-isSecondarySourceFilterSelector :: Selector
+isSecondarySourceFilterSelector :: Selector '[] Bool
 isSecondarySourceFilterSelector = mkSelector "isSecondarySourceFilter"
 

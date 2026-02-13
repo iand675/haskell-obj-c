@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.AVFoundation.AVAssetResourceLoadingContentInformationRequest
   , setRenewalDate
   , entireLengthAvailableOnDemand
   , setEntireLengthAvailableOnDemand
+  , allowedContentTypesSelector
+  , byteRangeAccessSupportedSelector
+  , contentLengthSelector
+  , contentTypeSelector
+  , entireLengthAvailableOnDemandSelector
   , initSelector
   , newSelector
-  , contentTypeSelector
-  , setContentTypeSelector
-  , allowedContentTypesSelector
-  , contentLengthSelector
-  , setContentLengthSelector
-  , byteRangeAccessSupportedSelector
-  , setByteRangeAccessSupportedSelector
   , renewalDateSelector
-  , setRenewalDateSelector
-  , entireLengthAvailableOnDemandSelector
+  , setByteRangeAccessSupportedSelector
+  , setContentLengthSelector
+  , setContentTypeSelector
   , setEntireLengthAvailableOnDemandSelector
+  , setRenewalDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id AVAssetResourceLoadingContentInformationRequest)
-init_ avAssetResourceLoadingContentInformationRequest  =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetResourceLoadingContentInformationRequest =
+  sendOwnedMessage avAssetResourceLoadingContentInformationRequest initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetResourceLoadingContentInformationRequest)
 new  =
   do
     cls' <- getRequiredClass "AVAssetResourceLoadingContentInformationRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | contentType
 --
@@ -71,8 +68,8 @@ new  =
 --
 -- ObjC selector: @- contentType@
 contentType :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id NSString)
-contentType avAssetResourceLoadingContentInformationRequest  =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest contentTypeSelector
 
 -- | contentType
 --
@@ -82,9 +79,8 @@ contentType avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- setContentType:@
 setContentType :: (IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest, IsNSString value) => avAssetResourceLoadingContentInformationRequest -> value -> IO ()
-setContentType avAssetResourceLoadingContentInformationRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentType avAssetResourceLoadingContentInformationRequest value =
+  sendMessage avAssetResourceLoadingContentInformationRequest setContentTypeSelector (toNSString value)
 
 -- | allowedContentTypes
 --
@@ -94,8 +90,8 @@ setContentType avAssetResourceLoadingContentInformationRequest  value =
 --
 -- ObjC selector: @- allowedContentTypes@
 allowedContentTypes :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id NSArray)
-allowedContentTypes avAssetResourceLoadingContentInformationRequest  =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "allowedContentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowedContentTypes avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest allowedContentTypesSelector
 
 -- | contentLength
 --
@@ -105,8 +101,8 @@ allowedContentTypes avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- contentLength@
 contentLength :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO CLong
-contentLength avAssetResourceLoadingContentInformationRequest  =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "contentLength") retCLong []
+contentLength avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest contentLengthSelector
 
 -- | contentLength
 --
@@ -116,8 +112,8 @@ contentLength avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- setContentLength:@
 setContentLength :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> CLong -> IO ()
-setContentLength avAssetResourceLoadingContentInformationRequest  value =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setContentLength:") retVoid [argCLong value]
+setContentLength avAssetResourceLoadingContentInformationRequest value =
+  sendMessage avAssetResourceLoadingContentInformationRequest setContentLengthSelector value
 
 -- | byteRangeAccessSupported
 --
@@ -127,8 +123,8 @@ setContentLength avAssetResourceLoadingContentInformationRequest  value =
 --
 -- ObjC selector: @- byteRangeAccessSupported@
 byteRangeAccessSupported :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO Bool
-byteRangeAccessSupported avAssetResourceLoadingContentInformationRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "byteRangeAccessSupported") retCULong []
+byteRangeAccessSupported avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest byteRangeAccessSupportedSelector
 
 -- | byteRangeAccessSupported
 --
@@ -138,8 +134,8 @@ byteRangeAccessSupported avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- setByteRangeAccessSupported:@
 setByteRangeAccessSupported :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> Bool -> IO ()
-setByteRangeAccessSupported avAssetResourceLoadingContentInformationRequest  value =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setByteRangeAccessSupported:") retVoid [argCULong (if value then 1 else 0)]
+setByteRangeAccessSupported avAssetResourceLoadingContentInformationRequest value =
+  sendMessage avAssetResourceLoadingContentInformationRequest setByteRangeAccessSupportedSelector value
 
 -- | renewalDate
 --
@@ -149,8 +145,8 @@ setByteRangeAccessSupported avAssetResourceLoadingContentInformationRequest  val
 --
 -- ObjC selector: @- renewalDate@
 renewalDate :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO (Id NSDate)
-renewalDate avAssetResourceLoadingContentInformationRequest  =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "renewalDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+renewalDate avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest renewalDateSelector
 
 -- | renewalDate
 --
@@ -160,9 +156,8 @@ renewalDate avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- setRenewalDate:@
 setRenewalDate :: (IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest, IsNSDate value) => avAssetResourceLoadingContentInformationRequest -> value -> IO ()
-setRenewalDate avAssetResourceLoadingContentInformationRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setRenewalDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRenewalDate avAssetResourceLoadingContentInformationRequest value =
+  sendMessage avAssetResourceLoadingContentInformationRequest setRenewalDateSelector (toNSDate value)
 
 -- | entireLengthAvailableOnDemand
 --
@@ -172,8 +167,8 @@ setRenewalDate avAssetResourceLoadingContentInformationRequest  value =
 --
 -- ObjC selector: @- entireLengthAvailableOnDemand@
 entireLengthAvailableOnDemand :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> IO Bool
-entireLengthAvailableOnDemand avAssetResourceLoadingContentInformationRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "entireLengthAvailableOnDemand") retCULong []
+entireLengthAvailableOnDemand avAssetResourceLoadingContentInformationRequest =
+  sendMessage avAssetResourceLoadingContentInformationRequest entireLengthAvailableOnDemandSelector
 
 -- | entireLengthAvailableOnDemand
 --
@@ -183,62 +178,62 @@ entireLengthAvailableOnDemand avAssetResourceLoadingContentInformationRequest  =
 --
 -- ObjC selector: @- setEntireLengthAvailableOnDemand:@
 setEntireLengthAvailableOnDemand :: IsAVAssetResourceLoadingContentInformationRequest avAssetResourceLoadingContentInformationRequest => avAssetResourceLoadingContentInformationRequest -> Bool -> IO ()
-setEntireLengthAvailableOnDemand avAssetResourceLoadingContentInformationRequest  value =
-    sendMsg avAssetResourceLoadingContentInformationRequest (mkSelector "setEntireLengthAvailableOnDemand:") retVoid [argCULong (if value then 1 else 0)]
+setEntireLengthAvailableOnDemand avAssetResourceLoadingContentInformationRequest value =
+  sendMessage avAssetResourceLoadingContentInformationRequest setEntireLengthAvailableOnDemandSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetResourceLoadingContentInformationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetResourceLoadingContentInformationRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id NSString)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @setContentType:@
-setContentTypeSelector :: Selector
+setContentTypeSelector :: Selector '[Id NSString] ()
 setContentTypeSelector = mkSelector "setContentType:"
 
 -- | @Selector@ for @allowedContentTypes@
-allowedContentTypesSelector :: Selector
+allowedContentTypesSelector :: Selector '[] (Id NSArray)
 allowedContentTypesSelector = mkSelector "allowedContentTypes"
 
 -- | @Selector@ for @contentLength@
-contentLengthSelector :: Selector
+contentLengthSelector :: Selector '[] CLong
 contentLengthSelector = mkSelector "contentLength"
 
 -- | @Selector@ for @setContentLength:@
-setContentLengthSelector :: Selector
+setContentLengthSelector :: Selector '[CLong] ()
 setContentLengthSelector = mkSelector "setContentLength:"
 
 -- | @Selector@ for @byteRangeAccessSupported@
-byteRangeAccessSupportedSelector :: Selector
+byteRangeAccessSupportedSelector :: Selector '[] Bool
 byteRangeAccessSupportedSelector = mkSelector "byteRangeAccessSupported"
 
 -- | @Selector@ for @setByteRangeAccessSupported:@
-setByteRangeAccessSupportedSelector :: Selector
+setByteRangeAccessSupportedSelector :: Selector '[Bool] ()
 setByteRangeAccessSupportedSelector = mkSelector "setByteRangeAccessSupported:"
 
 -- | @Selector@ for @renewalDate@
-renewalDateSelector :: Selector
+renewalDateSelector :: Selector '[] (Id NSDate)
 renewalDateSelector = mkSelector "renewalDate"
 
 -- | @Selector@ for @setRenewalDate:@
-setRenewalDateSelector :: Selector
+setRenewalDateSelector :: Selector '[Id NSDate] ()
 setRenewalDateSelector = mkSelector "setRenewalDate:"
 
 -- | @Selector@ for @entireLengthAvailableOnDemand@
-entireLengthAvailableOnDemandSelector :: Selector
+entireLengthAvailableOnDemandSelector :: Selector '[] Bool
 entireLengthAvailableOnDemandSelector = mkSelector "entireLengthAvailableOnDemand"
 
 -- | @Selector@ for @setEntireLengthAvailableOnDemand:@
-setEntireLengthAvailableOnDemandSelector :: Selector
+setEntireLengthAvailableOnDemandSelector :: Selector '[Bool] ()
 setEntireLengthAvailableOnDemandSelector = mkSelector "setEntireLengthAvailableOnDemand:"
 

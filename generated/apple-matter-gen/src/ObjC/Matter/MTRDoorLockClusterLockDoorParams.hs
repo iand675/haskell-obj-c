@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDoorLockClusterLockDoorParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , pinCodeSelector
-  , setPinCodeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setPinCodeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pinCode@
 pinCode :: IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams => mtrDoorLockClusterLockDoorParams -> IO (Id NSData)
-pinCode mtrDoorLockClusterLockDoorParams  =
-    sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "pinCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+pinCode mtrDoorLockClusterLockDoorParams =
+  sendMessage mtrDoorLockClusterLockDoorParams pinCodeSelector
 
 -- | @- setPinCode:@
 setPinCode :: (IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams, IsNSData value) => mtrDoorLockClusterLockDoorParams -> value -> IO ()
-setPinCode mtrDoorLockClusterLockDoorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "setPinCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPinCode mtrDoorLockClusterLockDoorParams value =
+  sendMessage mtrDoorLockClusterLockDoorParams setPinCodeSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setPinCode mtrDoorLockClusterLockDoorParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams => mtrDoorLockClusterLockDoorParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams  =
-    sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams =
+  sendMessage mtrDoorLockClusterLockDoorParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams, IsNSNumber value) => mtrDoorLockClusterLockDoorParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams value =
+  sendMessage mtrDoorLockClusterLockDoorParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterLockDoorParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams => mtrDoorLockClusterLockDoorParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterLockDoorParams  =
-    sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterLockDoorParams =
+  sendMessage mtrDoorLockClusterLockDoorParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrDoorLockClusterLockDoorParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterLockDoorParams mtrDoorLockClusterLockDoorParams, IsNSNumber value) => mtrDoorLockClusterLockDoorParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterLockDoorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockDoorParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterLockDoorParams value =
+  sendMessage mtrDoorLockClusterLockDoorParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pinCode@
-pinCodeSelector :: Selector
+pinCodeSelector :: Selector '[] (Id NSData)
 pinCodeSelector = mkSelector "pinCode"
 
 -- | @Selector@ for @setPinCode:@
-setPinCodeSelector :: Selector
+setPinCodeSelector :: Selector '[Id NSData] ()
 setPinCodeSelector = mkSelector "setPinCode:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

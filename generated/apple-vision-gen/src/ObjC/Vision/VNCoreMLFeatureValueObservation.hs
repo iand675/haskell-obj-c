@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Vision.VNCoreMLFeatureValueObservation
   , IsVNCoreMLFeatureValueObservation(..)
   , featureValue
   , featureName
-  , featureValueSelector
   , featureNameSelector
+  , featureValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,25 +39,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- featureValue@
 featureValue :: IsVNCoreMLFeatureValueObservation vnCoreMLFeatureValueObservation => vnCoreMLFeatureValueObservation -> IO (Id MLFeatureValue)
-featureValue vnCoreMLFeatureValueObservation  =
-    sendMsg vnCoreMLFeatureValueObservation (mkSelector "featureValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+featureValue vnCoreMLFeatureValueObservation =
+  sendMessage vnCoreMLFeatureValueObservation featureValueSelector
 
 -- | The name used in the model description of the CoreML model that produced this observation allowing to correlate the observation back to the output of the model.
 --
 -- ObjC selector: @- featureName@
 featureName :: IsVNCoreMLFeatureValueObservation vnCoreMLFeatureValueObservation => vnCoreMLFeatureValueObservation -> IO (Id NSString)
-featureName vnCoreMLFeatureValueObservation  =
-    sendMsg vnCoreMLFeatureValueObservation (mkSelector "featureName") (retPtr retVoid) [] >>= retainedObject . castPtr
+featureName vnCoreMLFeatureValueObservation =
+  sendMessage vnCoreMLFeatureValueObservation featureNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @featureValue@
-featureValueSelector :: Selector
+featureValueSelector :: Selector '[] (Id MLFeatureValue)
 featureValueSelector = mkSelector "featureValue"
 
 -- | @Selector@ for @featureName@
-featureNameSelector :: Selector
+featureNameSelector :: Selector '[] (Id NSString)
 featureNameSelector = mkSelector "featureName"
 

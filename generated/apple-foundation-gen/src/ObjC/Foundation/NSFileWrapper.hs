@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,40 +42,40 @@ module ObjC.Foundation.NSFileWrapper
   , fileWrappers
   , regularFileContents
   , symbolicLinkDestinationURL
-  , initWithURL_options_errorSelector
-  , initDirectoryWithFileWrappersSelector
-  , initRegularFileWithContentsSelector
-  , initSymbolicLinkWithDestinationURLSelector
-  , initWithSerializedRepresentationSelector
-  , initWithCoderSelector
-  , matchesContentsOfURLSelector
-  , readFromURL_options_errorSelector
-  , writeToURL_options_originalContentsURL_errorSelector
+  , addFileWithPathSelector
   , addFileWrapperSelector
   , addRegularFileWithContents_preferredFilenameSelector
-  , removeFileWrapperSelector
-  , keyForFileWrapperSelector
-  , initWithPathSelector
+  , addSymbolicLinkWithDestination_preferredFilenameSelector
+  , directorySelector
+  , fileAttributesSelector
+  , fileWrappersSelector
+  , filenameSelector
+  , initDirectoryWithFileWrappersSelector
+  , initRegularFileWithContentsSelector
   , initSymbolicLinkWithDestinationSelector
+  , initSymbolicLinkWithDestinationURLSelector
+  , initWithCoderSelector
+  , initWithPathSelector
+  , initWithSerializedRepresentationSelector
+  , initWithURL_options_errorSelector
+  , keyForFileWrapperSelector
+  , matchesContentsOfURLSelector
   , needsToBeUpdatedFromPathSelector
+  , preferredFilenameSelector
+  , readFromURL_options_errorSelector
+  , regularFileContentsSelector
+  , regularFileSelector
+  , removeFileWrapperSelector
+  , serializedRepresentationSelector
+  , setFileAttributesSelector
+  , setFilenameSelector
+  , setPreferredFilenameSelector
+  , symbolicLinkDestinationSelector
+  , symbolicLinkDestinationURLSelector
+  , symbolicLinkSelector
   , updateFromPathSelector
   , writeToFile_atomically_updateFilenamesSelector
-  , addFileWithPathSelector
-  , addSymbolicLinkWithDestination_preferredFilenameSelector
-  , symbolicLinkDestinationSelector
-  , directorySelector
-  , regularFileSelector
-  , symbolicLinkSelector
-  , preferredFilenameSelector
-  , setPreferredFilenameSelector
-  , filenameSelector
-  , setFilenameSelector
-  , fileAttributesSelector
-  , setFileAttributesSelector
-  , serializedRepresentationSelector
-  , fileWrappersSelector
-  , regularFileContentsSelector
-  , symbolicLinkDestinationURLSelector
+  , writeToURL_options_originalContentsURL_errorSelector
 
   -- * Enum types
   , NSFileWrapperReadingOptions(NSFileWrapperReadingOptions)
@@ -86,15 +87,11 @@ module ObjC.Foundation.NSFileWrapper
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,340 +100,311 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithURL:options:error:@
 initWithURL_options_error :: (IsNSFileWrapper nsFileWrapper, IsNSURL url, IsNSError outError) => nsFileWrapper -> url -> NSFileWrapperReadingOptions -> outError -> IO (Id NSFileWrapper)
-initWithURL_options_error nsFileWrapper  url options outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg nsFileWrapper (mkSelector "initWithURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options_error nsFileWrapper url options outError =
+  sendOwnedMessage nsFileWrapper initWithURL_options_errorSelector (toNSURL url) options (toNSError outError)
 
 -- | @- initDirectoryWithFileWrappers:@
 initDirectoryWithFileWrappers :: (IsNSFileWrapper nsFileWrapper, IsNSDictionary childrenByPreferredName) => nsFileWrapper -> childrenByPreferredName -> IO (Id NSFileWrapper)
-initDirectoryWithFileWrappers nsFileWrapper  childrenByPreferredName =
-  withObjCPtr childrenByPreferredName $ \raw_childrenByPreferredName ->
-      sendMsg nsFileWrapper (mkSelector "initDirectoryWithFileWrappers:") (retPtr retVoid) [argPtr (castPtr raw_childrenByPreferredName :: Ptr ())] >>= ownedObject . castPtr
+initDirectoryWithFileWrappers nsFileWrapper childrenByPreferredName =
+  sendOwnedMessage nsFileWrapper initDirectoryWithFileWrappersSelector (toNSDictionary childrenByPreferredName)
 
 -- | @- initRegularFileWithContents:@
 initRegularFileWithContents :: (IsNSFileWrapper nsFileWrapper, IsNSData contents) => nsFileWrapper -> contents -> IO (Id NSFileWrapper)
-initRegularFileWithContents nsFileWrapper  contents =
-  withObjCPtr contents $ \raw_contents ->
-      sendMsg nsFileWrapper (mkSelector "initRegularFileWithContents:") (retPtr retVoid) [argPtr (castPtr raw_contents :: Ptr ())] >>= ownedObject . castPtr
+initRegularFileWithContents nsFileWrapper contents =
+  sendOwnedMessage nsFileWrapper initRegularFileWithContentsSelector (toNSData contents)
 
 -- | @- initSymbolicLinkWithDestinationURL:@
 initSymbolicLinkWithDestinationURL :: (IsNSFileWrapper nsFileWrapper, IsNSURL url) => nsFileWrapper -> url -> IO (Id NSFileWrapper)
-initSymbolicLinkWithDestinationURL nsFileWrapper  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileWrapper (mkSelector "initSymbolicLinkWithDestinationURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initSymbolicLinkWithDestinationURL nsFileWrapper url =
+  sendOwnedMessage nsFileWrapper initSymbolicLinkWithDestinationURLSelector (toNSURL url)
 
 -- | @- initWithSerializedRepresentation:@
 initWithSerializedRepresentation :: (IsNSFileWrapper nsFileWrapper, IsNSData serializeRepresentation) => nsFileWrapper -> serializeRepresentation -> IO (Id NSFileWrapper)
-initWithSerializedRepresentation nsFileWrapper  serializeRepresentation =
-  withObjCPtr serializeRepresentation $ \raw_serializeRepresentation ->
-      sendMsg nsFileWrapper (mkSelector "initWithSerializedRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_serializeRepresentation :: Ptr ())] >>= ownedObject . castPtr
+initWithSerializedRepresentation nsFileWrapper serializeRepresentation =
+  sendOwnedMessage nsFileWrapper initWithSerializedRepresentationSelector (toNSData serializeRepresentation)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSFileWrapper nsFileWrapper, IsNSCoder inCoder) => nsFileWrapper -> inCoder -> IO (Id NSFileWrapper)
-initWithCoder nsFileWrapper  inCoder =
-  withObjCPtr inCoder $ \raw_inCoder ->
-      sendMsg nsFileWrapper (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_inCoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsFileWrapper inCoder =
+  sendOwnedMessage nsFileWrapper initWithCoderSelector (toNSCoder inCoder)
 
 -- | @- matchesContentsOfURL:@
 matchesContentsOfURL :: (IsNSFileWrapper nsFileWrapper, IsNSURL url) => nsFileWrapper -> url -> IO Bool
-matchesContentsOfURL nsFileWrapper  url =
-  withObjCPtr url $ \raw_url ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "matchesContentsOfURL:") retCULong [argPtr (castPtr raw_url :: Ptr ())]
+matchesContentsOfURL nsFileWrapper url =
+  sendMessage nsFileWrapper matchesContentsOfURLSelector (toNSURL url)
 
 -- | @- readFromURL:options:error:@
 readFromURL_options_error :: (IsNSFileWrapper nsFileWrapper, IsNSURL url, IsNSError outError) => nsFileWrapper -> url -> NSFileWrapperReadingOptions -> outError -> IO Bool
-readFromURL_options_error nsFileWrapper  url options outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "readFromURL:options:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+readFromURL_options_error nsFileWrapper url options outError =
+  sendMessage nsFileWrapper readFromURL_options_errorSelector (toNSURL url) options (toNSError outError)
 
 -- | @- writeToURL:options:originalContentsURL:error:@
 writeToURL_options_originalContentsURL_error :: (IsNSFileWrapper nsFileWrapper, IsNSURL url, IsNSURL originalContentsURL, IsNSError outError) => nsFileWrapper -> url -> NSFileWrapperWritingOptions -> originalContentsURL -> outError -> IO Bool
-writeToURL_options_originalContentsURL_error nsFileWrapper  url options originalContentsURL outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr originalContentsURL $ \raw_originalContentsURL ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "writeToURL:options:originalContentsURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_originalContentsURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+writeToURL_options_originalContentsURL_error nsFileWrapper url options originalContentsURL outError =
+  sendMessage nsFileWrapper writeToURL_options_originalContentsURL_errorSelector (toNSURL url) options (toNSURL originalContentsURL) (toNSError outError)
 
 -- | @- addFileWrapper:@
 addFileWrapper :: (IsNSFileWrapper nsFileWrapper, IsNSFileWrapper child) => nsFileWrapper -> child -> IO (Id NSString)
-addFileWrapper nsFileWrapper  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsFileWrapper (mkSelector "addFileWrapper:") (retPtr retVoid) [argPtr (castPtr raw_child :: Ptr ())] >>= retainedObject . castPtr
+addFileWrapper nsFileWrapper child =
+  sendMessage nsFileWrapper addFileWrapperSelector (toNSFileWrapper child)
 
 -- | @- addRegularFileWithContents:preferredFilename:@
 addRegularFileWithContents_preferredFilename :: (IsNSFileWrapper nsFileWrapper, IsNSData data_, IsNSString fileName) => nsFileWrapper -> data_ -> fileName -> IO (Id NSString)
-addRegularFileWithContents_preferredFilename nsFileWrapper  data_ fileName =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr fileName $ \raw_fileName ->
-        sendMsg nsFileWrapper (mkSelector "addRegularFileWithContents:preferredFilename:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_fileName :: Ptr ())] >>= retainedObject . castPtr
+addRegularFileWithContents_preferredFilename nsFileWrapper data_ fileName =
+  sendMessage nsFileWrapper addRegularFileWithContents_preferredFilenameSelector (toNSData data_) (toNSString fileName)
 
 -- | @- removeFileWrapper:@
 removeFileWrapper :: (IsNSFileWrapper nsFileWrapper, IsNSFileWrapper child) => nsFileWrapper -> child -> IO ()
-removeFileWrapper nsFileWrapper  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsFileWrapper (mkSelector "removeFileWrapper:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+removeFileWrapper nsFileWrapper child =
+  sendMessage nsFileWrapper removeFileWrapperSelector (toNSFileWrapper child)
 
 -- | @- keyForFileWrapper:@
 keyForFileWrapper :: (IsNSFileWrapper nsFileWrapper, IsNSFileWrapper child) => nsFileWrapper -> child -> IO (Id NSString)
-keyForFileWrapper nsFileWrapper  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsFileWrapper (mkSelector "keyForFileWrapper:") (retPtr retVoid) [argPtr (castPtr raw_child :: Ptr ())] >>= retainedObject . castPtr
+keyForFileWrapper nsFileWrapper child =
+  sendMessage nsFileWrapper keyForFileWrapperSelector (toNSFileWrapper child)
 
 -- | @- initWithPath:@
 initWithPath :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> IO RawId
-initWithPath nsFileWrapper  path =
-  withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendMsg nsFileWrapper (mkSelector "initWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+initWithPath nsFileWrapper path =
+  sendOwnedMessage nsFileWrapper initWithPathSelector (toNSString path)
 
 -- | @- initSymbolicLinkWithDestination:@
 initSymbolicLinkWithDestination :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> IO RawId
-initSymbolicLinkWithDestination nsFileWrapper  path =
-  withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendMsg nsFileWrapper (mkSelector "initSymbolicLinkWithDestination:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+initSymbolicLinkWithDestination nsFileWrapper path =
+  sendOwnedMessage nsFileWrapper initSymbolicLinkWithDestinationSelector (toNSString path)
 
 -- | @- needsToBeUpdatedFromPath:@
 needsToBeUpdatedFromPath :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> IO Bool
-needsToBeUpdatedFromPath nsFileWrapper  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "needsToBeUpdatedFromPath:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+needsToBeUpdatedFromPath nsFileWrapper path =
+  sendMessage nsFileWrapper needsToBeUpdatedFromPathSelector (toNSString path)
 
 -- | @- updateFromPath:@
 updateFromPath :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> IO Bool
-updateFromPath nsFileWrapper  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "updateFromPath:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+updateFromPath nsFileWrapper path =
+  sendMessage nsFileWrapper updateFromPathSelector (toNSString path)
 
 -- | @- writeToFile:atomically:updateFilenames:@
 writeToFile_atomically_updateFilenames :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> Bool -> Bool -> IO Bool
-writeToFile_atomically_updateFilenames nsFileWrapper  path atomicFlag updateFilenamesFlag =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "writeToFile:atomically:updateFilenames:") retCULong [argPtr (castPtr raw_path :: Ptr ()), argCULong (if atomicFlag then 1 else 0), argCULong (if updateFilenamesFlag then 1 else 0)]
+writeToFile_atomically_updateFilenames nsFileWrapper path atomicFlag updateFilenamesFlag =
+  sendMessage nsFileWrapper writeToFile_atomically_updateFilenamesSelector (toNSString path) atomicFlag updateFilenamesFlag
 
 -- | @- addFileWithPath:@
 addFileWithPath :: (IsNSFileWrapper nsFileWrapper, IsNSString path) => nsFileWrapper -> path -> IO (Id NSString)
-addFileWithPath nsFileWrapper  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsFileWrapper (mkSelector "addFileWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+addFileWithPath nsFileWrapper path =
+  sendMessage nsFileWrapper addFileWithPathSelector (toNSString path)
 
 -- | @- addSymbolicLinkWithDestination:preferredFilename:@
 addSymbolicLinkWithDestination_preferredFilename :: (IsNSFileWrapper nsFileWrapper, IsNSString path, IsNSString filename) => nsFileWrapper -> path -> filename -> IO (Id NSString)
-addSymbolicLinkWithDestination_preferredFilename nsFileWrapper  path filename =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr filename $ \raw_filename ->
-        sendMsg nsFileWrapper (mkSelector "addSymbolicLinkWithDestination:preferredFilename:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_filename :: Ptr ())] >>= retainedObject . castPtr
+addSymbolicLinkWithDestination_preferredFilename nsFileWrapper path filename =
+  sendMessage nsFileWrapper addSymbolicLinkWithDestination_preferredFilenameSelector (toNSString path) (toNSString filename)
 
 -- | @- symbolicLinkDestination@
 symbolicLinkDestination :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSString)
-symbolicLinkDestination nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "symbolicLinkDestination") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbolicLinkDestination nsFileWrapper =
+  sendMessage nsFileWrapper symbolicLinkDestinationSelector
 
 -- | @- directory@
 directory :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO Bool
-directory nsFileWrapper  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "directory") retCULong []
+directory nsFileWrapper =
+  sendMessage nsFileWrapper directorySelector
 
 -- | @- regularFile@
 regularFile :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO Bool
-regularFile nsFileWrapper  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "regularFile") retCULong []
+regularFile nsFileWrapper =
+  sendMessage nsFileWrapper regularFileSelector
 
 -- | @- symbolicLink@
 symbolicLink :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO Bool
-symbolicLink nsFileWrapper  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileWrapper (mkSelector "symbolicLink") retCULong []
+symbolicLink nsFileWrapper =
+  sendMessage nsFileWrapper symbolicLinkSelector
 
 -- | @- preferredFilename@
 preferredFilename :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSString)
-preferredFilename nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "preferredFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredFilename nsFileWrapper =
+  sendMessage nsFileWrapper preferredFilenameSelector
 
 -- | @- setPreferredFilename:@
 setPreferredFilename :: (IsNSFileWrapper nsFileWrapper, IsNSString value) => nsFileWrapper -> value -> IO ()
-setPreferredFilename nsFileWrapper  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileWrapper (mkSelector "setPreferredFilename:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredFilename nsFileWrapper value =
+  sendMessage nsFileWrapper setPreferredFilenameSelector (toNSString value)
 
 -- | @- filename@
 filename :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSString)
-filename nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "filename") (retPtr retVoid) [] >>= retainedObject . castPtr
+filename nsFileWrapper =
+  sendMessage nsFileWrapper filenameSelector
 
 -- | @- setFilename:@
 setFilename :: (IsNSFileWrapper nsFileWrapper, IsNSString value) => nsFileWrapper -> value -> IO ()
-setFilename nsFileWrapper  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileWrapper (mkSelector "setFilename:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilename nsFileWrapper value =
+  sendMessage nsFileWrapper setFilenameSelector (toNSString value)
 
 -- | @- fileAttributes@
 fileAttributes :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSDictionary)
-fileAttributes nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "fileAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileAttributes nsFileWrapper =
+  sendMessage nsFileWrapper fileAttributesSelector
 
 -- | @- setFileAttributes:@
 setFileAttributes :: (IsNSFileWrapper nsFileWrapper, IsNSDictionary value) => nsFileWrapper -> value -> IO ()
-setFileAttributes nsFileWrapper  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileWrapper (mkSelector "setFileAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileAttributes nsFileWrapper value =
+  sendMessage nsFileWrapper setFileAttributesSelector (toNSDictionary value)
 
 -- | @- serializedRepresentation@
 serializedRepresentation :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSData)
-serializedRepresentation nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "serializedRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+serializedRepresentation nsFileWrapper =
+  sendMessage nsFileWrapper serializedRepresentationSelector
 
 -- | @- fileWrappers@
 fileWrappers :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSDictionary)
-fileWrappers nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "fileWrappers") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileWrappers nsFileWrapper =
+  sendMessage nsFileWrapper fileWrappersSelector
 
 -- | @- regularFileContents@
 regularFileContents :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSData)
-regularFileContents nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "regularFileContents") (retPtr retVoid) [] >>= retainedObject . castPtr
+regularFileContents nsFileWrapper =
+  sendMessage nsFileWrapper regularFileContentsSelector
 
 -- | @- symbolicLinkDestinationURL@
 symbolicLinkDestinationURL :: IsNSFileWrapper nsFileWrapper => nsFileWrapper -> IO (Id NSURL)
-symbolicLinkDestinationURL nsFileWrapper  =
-    sendMsg nsFileWrapper (mkSelector "symbolicLinkDestinationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbolicLinkDestinationURL nsFileWrapper =
+  sendMessage nsFileWrapper symbolicLinkDestinationURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:options:error:@
-initWithURL_options_errorSelector :: Selector
+initWithURL_options_errorSelector :: Selector '[Id NSURL, NSFileWrapperReadingOptions, Id NSError] (Id NSFileWrapper)
 initWithURL_options_errorSelector = mkSelector "initWithURL:options:error:"
 
 -- | @Selector@ for @initDirectoryWithFileWrappers:@
-initDirectoryWithFileWrappersSelector :: Selector
+initDirectoryWithFileWrappersSelector :: Selector '[Id NSDictionary] (Id NSFileWrapper)
 initDirectoryWithFileWrappersSelector = mkSelector "initDirectoryWithFileWrappers:"
 
 -- | @Selector@ for @initRegularFileWithContents:@
-initRegularFileWithContentsSelector :: Selector
+initRegularFileWithContentsSelector :: Selector '[Id NSData] (Id NSFileWrapper)
 initRegularFileWithContentsSelector = mkSelector "initRegularFileWithContents:"
 
 -- | @Selector@ for @initSymbolicLinkWithDestinationURL:@
-initSymbolicLinkWithDestinationURLSelector :: Selector
+initSymbolicLinkWithDestinationURLSelector :: Selector '[Id NSURL] (Id NSFileWrapper)
 initSymbolicLinkWithDestinationURLSelector = mkSelector "initSymbolicLinkWithDestinationURL:"
 
 -- | @Selector@ for @initWithSerializedRepresentation:@
-initWithSerializedRepresentationSelector :: Selector
+initWithSerializedRepresentationSelector :: Selector '[Id NSData] (Id NSFileWrapper)
 initWithSerializedRepresentationSelector = mkSelector "initWithSerializedRepresentation:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSFileWrapper)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @matchesContentsOfURL:@
-matchesContentsOfURLSelector :: Selector
+matchesContentsOfURLSelector :: Selector '[Id NSURL] Bool
 matchesContentsOfURLSelector = mkSelector "matchesContentsOfURL:"
 
 -- | @Selector@ for @readFromURL:options:error:@
-readFromURL_options_errorSelector :: Selector
+readFromURL_options_errorSelector :: Selector '[Id NSURL, NSFileWrapperReadingOptions, Id NSError] Bool
 readFromURL_options_errorSelector = mkSelector "readFromURL:options:error:"
 
 -- | @Selector@ for @writeToURL:options:originalContentsURL:error:@
-writeToURL_options_originalContentsURL_errorSelector :: Selector
+writeToURL_options_originalContentsURL_errorSelector :: Selector '[Id NSURL, NSFileWrapperWritingOptions, Id NSURL, Id NSError] Bool
 writeToURL_options_originalContentsURL_errorSelector = mkSelector "writeToURL:options:originalContentsURL:error:"
 
 -- | @Selector@ for @addFileWrapper:@
-addFileWrapperSelector :: Selector
+addFileWrapperSelector :: Selector '[Id NSFileWrapper] (Id NSString)
 addFileWrapperSelector = mkSelector "addFileWrapper:"
 
 -- | @Selector@ for @addRegularFileWithContents:preferredFilename:@
-addRegularFileWithContents_preferredFilenameSelector :: Selector
+addRegularFileWithContents_preferredFilenameSelector :: Selector '[Id NSData, Id NSString] (Id NSString)
 addRegularFileWithContents_preferredFilenameSelector = mkSelector "addRegularFileWithContents:preferredFilename:"
 
 -- | @Selector@ for @removeFileWrapper:@
-removeFileWrapperSelector :: Selector
+removeFileWrapperSelector :: Selector '[Id NSFileWrapper] ()
 removeFileWrapperSelector = mkSelector "removeFileWrapper:"
 
 -- | @Selector@ for @keyForFileWrapper:@
-keyForFileWrapperSelector :: Selector
+keyForFileWrapperSelector :: Selector '[Id NSFileWrapper] (Id NSString)
 keyForFileWrapperSelector = mkSelector "keyForFileWrapper:"
 
 -- | @Selector@ for @initWithPath:@
-initWithPathSelector :: Selector
+initWithPathSelector :: Selector '[Id NSString] RawId
 initWithPathSelector = mkSelector "initWithPath:"
 
 -- | @Selector@ for @initSymbolicLinkWithDestination:@
-initSymbolicLinkWithDestinationSelector :: Selector
+initSymbolicLinkWithDestinationSelector :: Selector '[Id NSString] RawId
 initSymbolicLinkWithDestinationSelector = mkSelector "initSymbolicLinkWithDestination:"
 
 -- | @Selector@ for @needsToBeUpdatedFromPath:@
-needsToBeUpdatedFromPathSelector :: Selector
+needsToBeUpdatedFromPathSelector :: Selector '[Id NSString] Bool
 needsToBeUpdatedFromPathSelector = mkSelector "needsToBeUpdatedFromPath:"
 
 -- | @Selector@ for @updateFromPath:@
-updateFromPathSelector :: Selector
+updateFromPathSelector :: Selector '[Id NSString] Bool
 updateFromPathSelector = mkSelector "updateFromPath:"
 
 -- | @Selector@ for @writeToFile:atomically:updateFilenames:@
-writeToFile_atomically_updateFilenamesSelector :: Selector
+writeToFile_atomically_updateFilenamesSelector :: Selector '[Id NSString, Bool, Bool] Bool
 writeToFile_atomically_updateFilenamesSelector = mkSelector "writeToFile:atomically:updateFilenames:"
 
 -- | @Selector@ for @addFileWithPath:@
-addFileWithPathSelector :: Selector
+addFileWithPathSelector :: Selector '[Id NSString] (Id NSString)
 addFileWithPathSelector = mkSelector "addFileWithPath:"
 
 -- | @Selector@ for @addSymbolicLinkWithDestination:preferredFilename:@
-addSymbolicLinkWithDestination_preferredFilenameSelector :: Selector
+addSymbolicLinkWithDestination_preferredFilenameSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 addSymbolicLinkWithDestination_preferredFilenameSelector = mkSelector "addSymbolicLinkWithDestination:preferredFilename:"
 
 -- | @Selector@ for @symbolicLinkDestination@
-symbolicLinkDestinationSelector :: Selector
+symbolicLinkDestinationSelector :: Selector '[] (Id NSString)
 symbolicLinkDestinationSelector = mkSelector "symbolicLinkDestination"
 
 -- | @Selector@ for @directory@
-directorySelector :: Selector
+directorySelector :: Selector '[] Bool
 directorySelector = mkSelector "directory"
 
 -- | @Selector@ for @regularFile@
-regularFileSelector :: Selector
+regularFileSelector :: Selector '[] Bool
 regularFileSelector = mkSelector "regularFile"
 
 -- | @Selector@ for @symbolicLink@
-symbolicLinkSelector :: Selector
+symbolicLinkSelector :: Selector '[] Bool
 symbolicLinkSelector = mkSelector "symbolicLink"
 
 -- | @Selector@ for @preferredFilename@
-preferredFilenameSelector :: Selector
+preferredFilenameSelector :: Selector '[] (Id NSString)
 preferredFilenameSelector = mkSelector "preferredFilename"
 
 -- | @Selector@ for @setPreferredFilename:@
-setPreferredFilenameSelector :: Selector
+setPreferredFilenameSelector :: Selector '[Id NSString] ()
 setPreferredFilenameSelector = mkSelector "setPreferredFilename:"
 
 -- | @Selector@ for @filename@
-filenameSelector :: Selector
+filenameSelector :: Selector '[] (Id NSString)
 filenameSelector = mkSelector "filename"
 
 -- | @Selector@ for @setFilename:@
-setFilenameSelector :: Selector
+setFilenameSelector :: Selector '[Id NSString] ()
 setFilenameSelector = mkSelector "setFilename:"
 
 -- | @Selector@ for @fileAttributes@
-fileAttributesSelector :: Selector
+fileAttributesSelector :: Selector '[] (Id NSDictionary)
 fileAttributesSelector = mkSelector "fileAttributes"
 
 -- | @Selector@ for @setFileAttributes:@
-setFileAttributesSelector :: Selector
+setFileAttributesSelector :: Selector '[Id NSDictionary] ()
 setFileAttributesSelector = mkSelector "setFileAttributes:"
 
 -- | @Selector@ for @serializedRepresentation@
-serializedRepresentationSelector :: Selector
+serializedRepresentationSelector :: Selector '[] (Id NSData)
 serializedRepresentationSelector = mkSelector "serializedRepresentation"
 
 -- | @Selector@ for @fileWrappers@
-fileWrappersSelector :: Selector
+fileWrappersSelector :: Selector '[] (Id NSDictionary)
 fileWrappersSelector = mkSelector "fileWrappers"
 
 -- | @Selector@ for @regularFileContents@
-regularFileContentsSelector :: Selector
+regularFileContentsSelector :: Selector '[] (Id NSData)
 regularFileContentsSelector = mkSelector "regularFileContents"
 
 -- | @Selector@ for @symbolicLinkDestinationURL@
-symbolicLinkDestinationURLSelector :: Selector
+symbolicLinkDestinationURLSelector :: Selector '[] (Id NSURL)
 symbolicLinkDestinationURLSelector = mkSelector "symbolicLinkDestinationURL"
 

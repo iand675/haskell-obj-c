@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.MetalPerformanceShaders.MPSCNNDilatedPoolingMaxNode
   , initWithSource_filterSize
   , dilationRateX
   , dilationRateY
-  , nodeWithSource_filterSizeSelector
-  , nodeWithSource_filterSize_stride_dilationRateSelector
-  , initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector
-  , initWithSource_filterSize_stride_dilationRateSelector
-  , initWithSource_filterSizeSelector
   , dilationRateXSelector
   , dilationRateYSelector
+  , initWithSource_filterSizeSelector
+  , initWithSource_filterSize_stride_dilationRateSelector
+  , initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector
+  , nodeWithSource_filterSizeSelector
+  , nodeWithSource_filterSize_stride_dilationRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,8 +53,7 @@ nodeWithSource_filterSize :: IsMPSNNImageNode sourceNode => sourceNode -> CULong
 nodeWithSource_filterSize sourceNode size =
   do
     cls' <- getRequiredClass "MPSCNNDilatedPoolingMaxNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:filterSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_filterSizeSelector (toMPSNNImageNode sourceNode) size
 
 -- | Convenience initializer for MPSCNNDilatedPooling nodes with square kernels and equal dilation factors
 --
@@ -76,8 +72,7 @@ nodeWithSource_filterSize_stride_dilationRate :: IsMPSNNImageNode sourceNode => 
 nodeWithSource_filterSize_stride_dilationRate sourceNode size stride dilationRate =
   do
     cls' <- getRequiredClass "MPSCNNDilatedPoolingMaxNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:filterSize:stride:dilationRate:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size, argCULong stride, argCULong dilationRate] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_filterSize_stride_dilationRateSelector (toMPSNNImageNode sourceNode) size stride dilationRate
 
 -- | Init a node representing a MPSCNNPooling kernel
 --
@@ -99,9 +94,8 @@ nodeWithSource_filterSize_stride_dilationRate sourceNode size stride dilationRat
 --
 -- ObjC selector: @- initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:dilationRateX:dilationRateY:@
 initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateY :: (IsMPSCNNDilatedPoolingMaxNode mpscnnDilatedPoolingMaxNode, IsMPSNNImageNode sourceNode) => mpscnnDilatedPoolingMaxNode -> sourceNode -> CULong -> CULong -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSCNNDilatedPoolingMaxNode)
-initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateY mpscnnDilatedPoolingMaxNode  sourceNode kernelWidth kernelHeight strideInPixelsX strideInPixelsY dilationRateX dilationRateY =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnDilatedPoolingMaxNode (mkSelector "initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:dilationRateX:dilationRateY:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argCULong strideInPixelsX, argCULong strideInPixelsY, argCULong dilationRateX, argCULong dilationRateY] >>= ownedObject . castPtr
+initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateY mpscnnDilatedPoolingMaxNode sourceNode kernelWidth kernelHeight strideInPixelsX strideInPixelsY dilationRateX dilationRateY =
+  sendOwnedMessage mpscnnDilatedPoolingMaxNode initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector (toMPSNNImageNode sourceNode) kernelWidth kernelHeight strideInPixelsX strideInPixelsY dilationRateX dilationRateY
 
 -- | Convenience initializer for MPSCNNDilatedPooling nodes with square kernels and equal dilation factors
 --
@@ -117,9 +111,8 @@ initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilation
 --
 -- ObjC selector: @- initWithSource:filterSize:stride:dilationRate:@
 initWithSource_filterSize_stride_dilationRate :: (IsMPSCNNDilatedPoolingMaxNode mpscnnDilatedPoolingMaxNode, IsMPSNNImageNode sourceNode) => mpscnnDilatedPoolingMaxNode -> sourceNode -> CULong -> CULong -> CULong -> IO (Id MPSCNNDilatedPoolingMaxNode)
-initWithSource_filterSize_stride_dilationRate mpscnnDilatedPoolingMaxNode  sourceNode size stride dilationRate =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnDilatedPoolingMaxNode (mkSelector "initWithSource:filterSize:stride:dilationRate:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size, argCULong stride, argCULong dilationRate] >>= ownedObject . castPtr
+initWithSource_filterSize_stride_dilationRate mpscnnDilatedPoolingMaxNode sourceNode size stride dilationRate =
+  sendOwnedMessage mpscnnDilatedPoolingMaxNode initWithSource_filterSize_stride_dilationRateSelector (toMPSNNImageNode sourceNode) size stride dilationRate
 
 -- | Convenience initializer for MPSCNNDilatedPooling nodes with square non-overlapping kernels
 --
@@ -131,49 +124,48 @@ initWithSource_filterSize_stride_dilationRate mpscnnDilatedPoolingMaxNode  sourc
 --
 -- ObjC selector: @- initWithSource:filterSize:@
 initWithSource_filterSize :: (IsMPSCNNDilatedPoolingMaxNode mpscnnDilatedPoolingMaxNode, IsMPSNNImageNode sourceNode) => mpscnnDilatedPoolingMaxNode -> sourceNode -> CULong -> IO (Id MPSCNNDilatedPoolingMaxNode)
-initWithSource_filterSize mpscnnDilatedPoolingMaxNode  sourceNode size =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnDilatedPoolingMaxNode (mkSelector "initWithSource:filterSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size] >>= ownedObject . castPtr
+initWithSource_filterSize mpscnnDilatedPoolingMaxNode sourceNode size =
+  sendOwnedMessage mpscnnDilatedPoolingMaxNode initWithSource_filterSizeSelector (toMPSNNImageNode sourceNode) size
 
 -- | @- dilationRateX@
 dilationRateX :: IsMPSCNNDilatedPoolingMaxNode mpscnnDilatedPoolingMaxNode => mpscnnDilatedPoolingMaxNode -> IO CULong
-dilationRateX mpscnnDilatedPoolingMaxNode  =
-    sendMsg mpscnnDilatedPoolingMaxNode (mkSelector "dilationRateX") retCULong []
+dilationRateX mpscnnDilatedPoolingMaxNode =
+  sendMessage mpscnnDilatedPoolingMaxNode dilationRateXSelector
 
 -- | @- dilationRateY@
 dilationRateY :: IsMPSCNNDilatedPoolingMaxNode mpscnnDilatedPoolingMaxNode => mpscnnDilatedPoolingMaxNode -> IO CULong
-dilationRateY mpscnnDilatedPoolingMaxNode  =
-    sendMsg mpscnnDilatedPoolingMaxNode (mkSelector "dilationRateY") retCULong []
+dilationRateY mpscnnDilatedPoolingMaxNode =
+  sendMessage mpscnnDilatedPoolingMaxNode dilationRateYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:filterSize:@
-nodeWithSource_filterSizeSelector :: Selector
+nodeWithSource_filterSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNDilatedPoolingMaxNode)
 nodeWithSource_filterSizeSelector = mkSelector "nodeWithSource:filterSize:"
 
 -- | @Selector@ for @nodeWithSource:filterSize:stride:dilationRate:@
-nodeWithSource_filterSize_stride_dilationRateSelector :: Selector
+nodeWithSource_filterSize_stride_dilationRateSelector :: Selector '[Id MPSNNImageNode, CULong, CULong, CULong] (Id MPSCNNDilatedPoolingMaxNode)
 nodeWithSource_filterSize_stride_dilationRateSelector = mkSelector "nodeWithSource:filterSize:stride:dilationRate:"
 
 -- | @Selector@ for @initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:dilationRateX:dilationRateY:@
-initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector :: Selector
+initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector :: Selector '[Id MPSNNImageNode, CULong, CULong, CULong, CULong, CULong, CULong] (Id MPSCNNDilatedPoolingMaxNode)
 initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY_dilationRateX_dilationRateYSelector = mkSelector "initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:dilationRateX:dilationRateY:"
 
 -- | @Selector@ for @initWithSource:filterSize:stride:dilationRate:@
-initWithSource_filterSize_stride_dilationRateSelector :: Selector
+initWithSource_filterSize_stride_dilationRateSelector :: Selector '[Id MPSNNImageNode, CULong, CULong, CULong] (Id MPSCNNDilatedPoolingMaxNode)
 initWithSource_filterSize_stride_dilationRateSelector = mkSelector "initWithSource:filterSize:stride:dilationRate:"
 
 -- | @Selector@ for @initWithSource:filterSize:@
-initWithSource_filterSizeSelector :: Selector
+initWithSource_filterSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNDilatedPoolingMaxNode)
 initWithSource_filterSizeSelector = mkSelector "initWithSource:filterSize:"
 
 -- | @Selector@ for @dilationRateX@
-dilationRateXSelector :: Selector
+dilationRateXSelector :: Selector '[] CULong
 dilationRateXSelector = mkSelector "dilationRateX"
 
 -- | @Selector@ for @dilationRateY@
-dilationRateYSelector :: Selector
+dilationRateYSelector :: Selector '[] CULong
 dilationRateYSelector = mkSelector "dilationRateY"
 

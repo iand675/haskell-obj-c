@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.EventKit.EKObject
   , refresh
   , hasChanges
   , new
-  , resetSelector
-  , rollbackSelector
-  , refreshSelector
   , hasChangesSelector
   , newSelector
+  , refreshSelector
+  , resetSelector
+  , rollbackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,50 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- reset@
 reset :: IsEKObject ekObject => ekObject -> IO ()
-reset ekObject  =
-    sendMsg ekObject (mkSelector "reset") retVoid []
+reset ekObject =
+  sendMessage ekObject resetSelector
 
 -- | @- rollback@
 rollback :: IsEKObject ekObject => ekObject -> IO ()
-rollback ekObject  =
-    sendMsg ekObject (mkSelector "rollback") retVoid []
+rollback ekObject =
+  sendMessage ekObject rollbackSelector
 
 -- | @- refresh@
 refresh :: IsEKObject ekObject => ekObject -> IO Bool
-refresh ekObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekObject (mkSelector "refresh") retCULong []
+refresh ekObject =
+  sendMessage ekObject refreshSelector
 
 -- | @- hasChanges@
 hasChanges :: IsEKObject ekObject => ekObject -> IO Bool
-hasChanges ekObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekObject (mkSelector "hasChanges") retCULong []
+hasChanges ekObject =
+  sendMessage ekObject hasChangesSelector
 
 -- | @- new@
 new :: IsEKObject ekObject => ekObject -> IO Bool
-new ekObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekObject (mkSelector "new") retCULong []
+new ekObject =
+  sendOwnedMessage ekObject newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @rollback@
-rollbackSelector :: Selector
+rollbackSelector :: Selector '[] ()
 rollbackSelector = mkSelector "rollback"
 
 -- | @Selector@ for @refresh@
-refreshSelector :: Selector
+refreshSelector :: Selector '[] Bool
 refreshSelector = mkSelector "refresh"
 
 -- | @Selector@ for @hasChanges@
-hasChangesSelector :: Selector
+hasChangesSelector :: Selector '[] Bool
 hasChangesSelector = mkSelector "hasChanges"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] Bool
 newSelector = mkSelector "new"
 

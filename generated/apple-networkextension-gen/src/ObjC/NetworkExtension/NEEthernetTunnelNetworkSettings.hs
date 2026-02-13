@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.NetworkExtension.NEEthernetTunnelNetworkSettings
   , IsNEEthernetTunnelNetworkSettings(..)
   , initWithTunnelRemoteAddress_ethernetAddress_mtu
   , ethernetAddress
-  , initWithTunnelRemoteAddress_ethernetAddress_mtuSelector
   , ethernetAddressSelector
+  , initWithTunnelRemoteAddress_ethernetAddress_mtuSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTunnelRemoteAddress:ethernetAddress:mtu:@
 initWithTunnelRemoteAddress_ethernetAddress_mtu :: (IsNEEthernetTunnelNetworkSettings neEthernetTunnelNetworkSettings, IsNSString address, IsNSString ethernetAddress) => neEthernetTunnelNetworkSettings -> address -> ethernetAddress -> CLong -> IO (Id NEEthernetTunnelNetworkSettings)
-initWithTunnelRemoteAddress_ethernetAddress_mtu neEthernetTunnelNetworkSettings  address ethernetAddress mtu =
-  withObjCPtr address $ \raw_address ->
-    withObjCPtr ethernetAddress $ \raw_ethernetAddress ->
-        sendMsg neEthernetTunnelNetworkSettings (mkSelector "initWithTunnelRemoteAddress:ethernetAddress:mtu:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_ethernetAddress :: Ptr ()), argCLong mtu] >>= ownedObject . castPtr
+initWithTunnelRemoteAddress_ethernetAddress_mtu neEthernetTunnelNetworkSettings address ethernetAddress mtu =
+  sendOwnedMessage neEthernetTunnelNetworkSettings initWithTunnelRemoteAddress_ethernetAddress_mtuSelector (toNSString address) (toNSString ethernetAddress) mtu
 
 -- | ethernetAddress
 --
@@ -60,18 +55,18 @@ initWithTunnelRemoteAddress_ethernetAddress_mtu neEthernetTunnelNetworkSettings 
 --
 -- ObjC selector: @- ethernetAddress@
 ethernetAddress :: IsNEEthernetTunnelNetworkSettings neEthernetTunnelNetworkSettings => neEthernetTunnelNetworkSettings -> IO (Id NSString)
-ethernetAddress neEthernetTunnelNetworkSettings  =
-    sendMsg neEthernetTunnelNetworkSettings (mkSelector "ethernetAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+ethernetAddress neEthernetTunnelNetworkSettings =
+  sendMessage neEthernetTunnelNetworkSettings ethernetAddressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTunnelRemoteAddress:ethernetAddress:mtu:@
-initWithTunnelRemoteAddress_ethernetAddress_mtuSelector :: Selector
+initWithTunnelRemoteAddress_ethernetAddress_mtuSelector :: Selector '[Id NSString, Id NSString, CLong] (Id NEEthernetTunnelNetworkSettings)
 initWithTunnelRemoteAddress_ethernetAddress_mtuSelector = mkSelector "initWithTunnelRemoteAddress:ethernetAddress:mtu:"
 
 -- | @Selector@ for @ethernetAddress@
-ethernetAddressSelector :: Selector
+ethernetAddressSelector :: Selector '[] (Id NSString)
 ethernetAddressSelector = mkSelector "ethernetAddress"
 

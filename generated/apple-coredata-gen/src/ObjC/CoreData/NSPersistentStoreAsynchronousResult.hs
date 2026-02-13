@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.CoreData.NSPersistentStoreAsynchronousResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cancel@
 cancel :: IsNSPersistentStoreAsynchronousResult nsPersistentStoreAsynchronousResult => nsPersistentStoreAsynchronousResult -> IO ()
-cancel nsPersistentStoreAsynchronousResult  =
-    sendMsg nsPersistentStoreAsynchronousResult (mkSelector "cancel") retVoid []
+cancel nsPersistentStoreAsynchronousResult =
+  sendMessage nsPersistentStoreAsynchronousResult cancelSelector
 
 -- | @- managedObjectContext@
 managedObjectContext :: IsNSPersistentStoreAsynchronousResult nsPersistentStoreAsynchronousResult => nsPersistentStoreAsynchronousResult -> IO (Id NSManagedObjectContext)
-managedObjectContext nsPersistentStoreAsynchronousResult  =
-    sendMsg nsPersistentStoreAsynchronousResult (mkSelector "managedObjectContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectContext nsPersistentStoreAsynchronousResult =
+  sendMessage nsPersistentStoreAsynchronousResult managedObjectContextSelector
 
 -- | @- operationError@
 operationError :: IsNSPersistentStoreAsynchronousResult nsPersistentStoreAsynchronousResult => nsPersistentStoreAsynchronousResult -> IO (Id NSError)
-operationError nsPersistentStoreAsynchronousResult  =
-    sendMsg nsPersistentStoreAsynchronousResult (mkSelector "operationError") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationError nsPersistentStoreAsynchronousResult =
+  sendMessage nsPersistentStoreAsynchronousResult operationErrorSelector
 
 -- | @- progress@
 progress :: IsNSPersistentStoreAsynchronousResult nsPersistentStoreAsynchronousResult => nsPersistentStoreAsynchronousResult -> IO (Id NSProgress)
-progress nsPersistentStoreAsynchronousResult  =
-    sendMsg nsPersistentStoreAsynchronousResult (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress nsPersistentStoreAsynchronousResult =
+  sendMessage nsPersistentStoreAsynchronousResult progressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @managedObjectContext@
-managedObjectContextSelector :: Selector
+managedObjectContextSelector :: Selector '[] (Id NSManagedObjectContext)
 managedObjectContextSelector = mkSelector "managedObjectContext"
 
 -- | @Selector@ for @operationError@
-operationErrorSelector :: Selector
+operationErrorSelector :: Selector '[] (Id NSError)
 operationErrorSelector = mkSelector "operationError"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 

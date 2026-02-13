@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.WebKit.DOMCSSStyleRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selectorText@
 selectorText :: IsDOMCSSStyleRule domcssStyleRule => domcssStyleRule -> IO (Id NSString)
-selectorText domcssStyleRule  =
-    sendMsg domcssStyleRule (mkSelector "selectorText") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectorText domcssStyleRule =
+  sendMessage domcssStyleRule selectorTextSelector
 
 -- | @- setSelectorText:@
 setSelectorText :: (IsDOMCSSStyleRule domcssStyleRule, IsNSString value) => domcssStyleRule -> value -> IO ()
-setSelectorText domcssStyleRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domcssStyleRule (mkSelector "setSelectorText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectorText domcssStyleRule value =
+  sendMessage domcssStyleRule setSelectorTextSelector (toNSString value)
 
 -- | @- style@
 style :: IsDOMCSSStyleRule domcssStyleRule => domcssStyleRule -> IO (Id DOMCSSStyleDeclaration)
-style domcssStyleRule  =
-    sendMsg domcssStyleRule (mkSelector "style") (retPtr retVoid) [] >>= retainedObject . castPtr
+style domcssStyleRule =
+  sendMessage domcssStyleRule styleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectorText@
-selectorTextSelector :: Selector
+selectorTextSelector :: Selector '[] (Id NSString)
 selectorTextSelector = mkSelector "selectorText"
 
 -- | @Selector@ for @setSelectorText:@
-setSelectorTextSelector :: Selector
+setSelectorTextSelector :: Selector '[Id NSString] ()
 setSelectorTextSelector = mkSelector "setSelectorText:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] (Id DOMCSSStyleDeclaration)
 styleSelector = mkSelector "style"
 

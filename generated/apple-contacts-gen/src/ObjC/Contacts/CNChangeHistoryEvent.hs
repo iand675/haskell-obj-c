@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.Contacts.CNChangeHistoryEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -29,14 +26,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- acceptEventVisitor:@
 acceptEventVisitor :: IsCNChangeHistoryEvent cnChangeHistoryEvent => cnChangeHistoryEvent -> RawId -> IO ()
-acceptEventVisitor cnChangeHistoryEvent  visitor =
-    sendMsg cnChangeHistoryEvent (mkSelector "acceptEventVisitor:") retVoid [argPtr (castPtr (unRawId visitor) :: Ptr ())]
+acceptEventVisitor cnChangeHistoryEvent visitor =
+  sendMessage cnChangeHistoryEvent acceptEventVisitorSelector visitor
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @acceptEventVisitor:@
-acceptEventVisitorSelector :: Selector
+acceptEventVisitorSelector :: Selector '[RawId] ()
 acceptEventVisitorSelector = mkSelector "acceptEventVisitor:"
 

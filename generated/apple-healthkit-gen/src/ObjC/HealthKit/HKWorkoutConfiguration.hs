@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.HealthKit.HKWorkoutConfiguration
   , lapLength
   , setLapLength
   , activityTypeSelector
-  , setActivityTypeSelector
-  , locationTypeSelector
-  , setLocationTypeSelector
-  , swimmingLocationTypeSelector
-  , setSwimmingLocationTypeSelector
   , lapLengthSelector
+  , locationTypeSelector
+  , setActivityTypeSelector
   , setLapLengthSelector
+  , setLocationTypeSelector
+  , setSwimmingLocationTypeSelector
+  , swimmingLocationTypeSelector
 
   -- * Enum types
   , HKWorkoutActivityType(HKWorkoutActivityType)
@@ -125,15 +126,11 @@ module ObjC.HealthKit.HKWorkoutConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -147,8 +144,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- activityType@
 activityType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> IO HKWorkoutActivityType
-activityType hkWorkoutConfiguration  =
-    fmap (coerce :: CULong -> HKWorkoutActivityType) $ sendMsg hkWorkoutConfiguration (mkSelector "activityType") retCULong []
+activityType hkWorkoutConfiguration =
+  sendMessage hkWorkoutConfiguration activityTypeSelector
 
 -- | activityType
 --
@@ -156,8 +153,8 @@ activityType hkWorkoutConfiguration  =
 --
 -- ObjC selector: @- setActivityType:@
 setActivityType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> HKWorkoutActivityType -> IO ()
-setActivityType hkWorkoutConfiguration  value =
-    sendMsg hkWorkoutConfiguration (mkSelector "setActivityType:") retVoid [argCULong (coerce value)]
+setActivityType hkWorkoutConfiguration value =
+  sendMessage hkWorkoutConfiguration setActivityTypeSelector value
 
 -- | locationType
 --
@@ -165,8 +162,8 @@ setActivityType hkWorkoutConfiguration  value =
 --
 -- ObjC selector: @- locationType@
 locationType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> IO HKWorkoutSessionLocationType
-locationType hkWorkoutConfiguration  =
-    fmap (coerce :: CLong -> HKWorkoutSessionLocationType) $ sendMsg hkWorkoutConfiguration (mkSelector "locationType") retCLong []
+locationType hkWorkoutConfiguration =
+  sendMessage hkWorkoutConfiguration locationTypeSelector
 
 -- | locationType
 --
@@ -174,8 +171,8 @@ locationType hkWorkoutConfiguration  =
 --
 -- ObjC selector: @- setLocationType:@
 setLocationType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> HKWorkoutSessionLocationType -> IO ()
-setLocationType hkWorkoutConfiguration  value =
-    sendMsg hkWorkoutConfiguration (mkSelector "setLocationType:") retVoid [argCLong (coerce value)]
+setLocationType hkWorkoutConfiguration value =
+  sendMessage hkWorkoutConfiguration setLocationTypeSelector value
 
 -- | swimmingLocationType
 --
@@ -183,8 +180,8 @@ setLocationType hkWorkoutConfiguration  value =
 --
 -- ObjC selector: @- swimmingLocationType@
 swimmingLocationType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> IO HKWorkoutSwimmingLocationType
-swimmingLocationType hkWorkoutConfiguration  =
-    fmap (coerce :: CLong -> HKWorkoutSwimmingLocationType) $ sendMsg hkWorkoutConfiguration (mkSelector "swimmingLocationType") retCLong []
+swimmingLocationType hkWorkoutConfiguration =
+  sendMessage hkWorkoutConfiguration swimmingLocationTypeSelector
 
 -- | swimmingLocationType
 --
@@ -192,8 +189,8 @@ swimmingLocationType hkWorkoutConfiguration  =
 --
 -- ObjC selector: @- setSwimmingLocationType:@
 setSwimmingLocationType :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> HKWorkoutSwimmingLocationType -> IO ()
-setSwimmingLocationType hkWorkoutConfiguration  value =
-    sendMsg hkWorkoutConfiguration (mkSelector "setSwimmingLocationType:") retVoid [argCLong (coerce value)]
+setSwimmingLocationType hkWorkoutConfiguration value =
+  sendMessage hkWorkoutConfiguration setSwimmingLocationTypeSelector value
 
 -- | lapLength
 --
@@ -203,8 +200,8 @@ setSwimmingLocationType hkWorkoutConfiguration  value =
 --
 -- ObjC selector: @- lapLength@
 lapLength :: IsHKWorkoutConfiguration hkWorkoutConfiguration => hkWorkoutConfiguration -> IO (Id HKQuantity)
-lapLength hkWorkoutConfiguration  =
-    sendMsg hkWorkoutConfiguration (mkSelector "lapLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+lapLength hkWorkoutConfiguration =
+  sendMessage hkWorkoutConfiguration lapLengthSelector
 
 -- | lapLength
 --
@@ -214,43 +211,42 @@ lapLength hkWorkoutConfiguration  =
 --
 -- ObjC selector: @- setLapLength:@
 setLapLength :: (IsHKWorkoutConfiguration hkWorkoutConfiguration, IsHKQuantity value) => hkWorkoutConfiguration -> value -> IO ()
-setLapLength hkWorkoutConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkWorkoutConfiguration (mkSelector "setLapLength:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLapLength hkWorkoutConfiguration value =
+  sendMessage hkWorkoutConfiguration setLapLengthSelector (toHKQuantity value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @activityType@
-activityTypeSelector :: Selector
+activityTypeSelector :: Selector '[] HKWorkoutActivityType
 activityTypeSelector = mkSelector "activityType"
 
 -- | @Selector@ for @setActivityType:@
-setActivityTypeSelector :: Selector
+setActivityTypeSelector :: Selector '[HKWorkoutActivityType] ()
 setActivityTypeSelector = mkSelector "setActivityType:"
 
 -- | @Selector@ for @locationType@
-locationTypeSelector :: Selector
+locationTypeSelector :: Selector '[] HKWorkoutSessionLocationType
 locationTypeSelector = mkSelector "locationType"
 
 -- | @Selector@ for @setLocationType:@
-setLocationTypeSelector :: Selector
+setLocationTypeSelector :: Selector '[HKWorkoutSessionLocationType] ()
 setLocationTypeSelector = mkSelector "setLocationType:"
 
 -- | @Selector@ for @swimmingLocationType@
-swimmingLocationTypeSelector :: Selector
+swimmingLocationTypeSelector :: Selector '[] HKWorkoutSwimmingLocationType
 swimmingLocationTypeSelector = mkSelector "swimmingLocationType"
 
 -- | @Selector@ for @setSwimmingLocationType:@
-setSwimmingLocationTypeSelector :: Selector
+setSwimmingLocationTypeSelector :: Selector '[HKWorkoutSwimmingLocationType] ()
 setSwimmingLocationTypeSelector = mkSelector "setSwimmingLocationType:"
 
 -- | @Selector@ for @lapLength@
-lapLengthSelector :: Selector
+lapLengthSelector :: Selector '[] (Id HKQuantity)
 lapLengthSelector = mkSelector "lapLength"
 
 -- | @Selector@ for @setLapLength:@
-setLapLengthSelector :: Selector
+setLapLengthSelector :: Selector '[Id HKQuantity] ()
 setLapLengthSelector = mkSelector "setLapLength:"
 

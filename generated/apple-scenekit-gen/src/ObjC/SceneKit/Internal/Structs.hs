@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data SCNMatrix4 = SCNMatrix4
   { scnMatrix4M11 :: !CDouble
@@ -79,6 +81,16 @@ argSCNMatrix4 = mkStorableArg scnMatrix4StructType
 retSCNMatrix4 :: RetType SCNMatrix4
 retSCNMatrix4 = mkStorableRetType scnMatrix4StructType
 
+instance ObjCArgument SCNMatrix4 where
+  withObjCArg x k = k (argSCNMatrix4 x)
+
+instance ObjCReturn SCNMatrix4 where
+  type RawReturn SCNMatrix4 = SCNMatrix4
+  objcRetType = retSCNMatrix4
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SCNQuaternion = SCNQuaternion
   { scnQuaternionX :: !CDouble
   , scnQuaternionY :: !CDouble
@@ -109,6 +121,16 @@ argSCNQuaternion = mkStorableArg scnQuaternionStructType
 retSCNQuaternion :: RetType SCNQuaternion
 retSCNQuaternion = mkStorableRetType scnQuaternionStructType
 
+instance ObjCArgument SCNQuaternion where
+  withObjCArg x k = k (argSCNQuaternion x)
+
+instance ObjCReturn SCNQuaternion where
+  type RawReturn SCNQuaternion = SCNQuaternion
+  objcRetType = retSCNQuaternion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SCNVector3 = SCNVector3
   { scnVector3X :: !CDouble
   , scnVector3Y :: !CDouble
@@ -135,6 +157,16 @@ argSCNVector3 = mkStorableArg scnVector3StructType
 
 retSCNVector3 :: RetType SCNVector3
 retSCNVector3 = mkStorableRetType scnVector3StructType
+
+instance ObjCArgument SCNVector3 where
+  withObjCArg x k = k (argSCNVector3 x)
+
+instance ObjCReturn SCNVector3 where
+  type RawReturn SCNVector3 = SCNVector3
+  objcRetType = retSCNVector3
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SCNVector4 = SCNVector4
   { scnVector4X :: !CDouble
@@ -165,3 +197,13 @@ argSCNVector4 = mkStorableArg scnVector4StructType
 
 retSCNVector4 :: RetType SCNVector4
 retSCNVector4 = mkStorableRetType scnVector4StructType
+
+instance ObjCArgument SCNVector4 where
+  withObjCArg x k = k (argSCNVector4 x)
+
+instance ObjCReturn SCNVector4 where
+  type RawReturn SCNVector4 = SCNVector4
+  objcRetType = retSCNVector4
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

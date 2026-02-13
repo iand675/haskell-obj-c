@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,24 @@ module ObjC.AVFAudio.AVMIDINoteEvent
   , setVelocity
   , duration
   , setDuration
-  , initWithChannel_key_velocity_durationSelector
   , channelSelector
-  , setChannelSelector
-  , keySelector
-  , setKeySelector
-  , velocitySelector
-  , setVelocitySelector
   , durationSelector
+  , initWithChannel_key_velocity_durationSelector
+  , keySelector
+  , setChannelSelector
   , setDurationSelector
+  , setKeySelector
+  , setVelocitySelector
+  , velocitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:key:velocity:duration:@
 initWithChannel_key_velocity_duration :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> CUInt -> CUInt -> CUInt -> CDouble -> IO (Id AVMIDINoteEvent)
-initWithChannel_key_velocity_duration avmidiNoteEvent  channel keyNum velocity duration =
-    sendMsg avmidiNoteEvent (mkSelector "initWithChannel:key:velocity:duration:") (retPtr retVoid) [argCUInt channel, argCUInt keyNum, argCUInt velocity, argCDouble duration] >>= ownedObject . castPtr
+initWithChannel_key_velocity_duration avmidiNoteEvent channel keyNum velocity duration =
+  sendOwnedMessage avmidiNoteEvent initWithChannel_key_velocity_durationSelector channel keyNum velocity duration
 
 -- | channel
 --
@@ -80,8 +77,8 @@ initWithChannel_key_velocity_duration avmidiNoteEvent  channel keyNum velocity d
 --
 -- ObjC selector: @- channel@
 channel :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> IO CUInt
-channel avmidiNoteEvent  =
-    sendMsg avmidiNoteEvent (mkSelector "channel") retCUInt []
+channel avmidiNoteEvent =
+  sendMessage avmidiNoteEvent channelSelector
 
 -- | channel
 --
@@ -89,8 +86,8 @@ channel avmidiNoteEvent  =
 --
 -- ObjC selector: @- setChannel:@
 setChannel :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> CUInt -> IO ()
-setChannel avmidiNoteEvent  value =
-    sendMsg avmidiNoteEvent (mkSelector "setChannel:") retVoid [argCUInt value]
+setChannel avmidiNoteEvent value =
+  sendMessage avmidiNoteEvent setChannelSelector value
 
 -- | key
 --
@@ -98,8 +95,8 @@ setChannel avmidiNoteEvent  value =
 --
 -- ObjC selector: @- key@
 key :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> IO CUInt
-key avmidiNoteEvent  =
-    sendMsg avmidiNoteEvent (mkSelector "key") retCUInt []
+key avmidiNoteEvent =
+  sendMessage avmidiNoteEvent keySelector
 
 -- | key
 --
@@ -107,8 +104,8 @@ key avmidiNoteEvent  =
 --
 -- ObjC selector: @- setKey:@
 setKey :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> CUInt -> IO ()
-setKey avmidiNoteEvent  value =
-    sendMsg avmidiNoteEvent (mkSelector "setKey:") retVoid [argCUInt value]
+setKey avmidiNoteEvent value =
+  sendMessage avmidiNoteEvent setKeySelector value
 
 -- | velocity
 --
@@ -116,8 +113,8 @@ setKey avmidiNoteEvent  value =
 --
 -- ObjC selector: @- velocity@
 velocity :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> IO CUInt
-velocity avmidiNoteEvent  =
-    sendMsg avmidiNoteEvent (mkSelector "velocity") retCUInt []
+velocity avmidiNoteEvent =
+  sendMessage avmidiNoteEvent velocitySelector
 
 -- | velocity
 --
@@ -125,8 +122,8 @@ velocity avmidiNoteEvent  =
 --
 -- ObjC selector: @- setVelocity:@
 setVelocity :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> CUInt -> IO ()
-setVelocity avmidiNoteEvent  value =
-    sendMsg avmidiNoteEvent (mkSelector "setVelocity:") retVoid [argCUInt value]
+setVelocity avmidiNoteEvent value =
+  sendMessage avmidiNoteEvent setVelocitySelector value
 
 -- | duration
 --
@@ -134,8 +131,8 @@ setVelocity avmidiNoteEvent  value =
 --
 -- ObjC selector: @- duration@
 duration :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> IO CDouble
-duration avmidiNoteEvent  =
-    sendMsg avmidiNoteEvent (mkSelector "duration") retCDouble []
+duration avmidiNoteEvent =
+  sendMessage avmidiNoteEvent durationSelector
 
 -- | duration
 --
@@ -143,46 +140,46 @@ duration avmidiNoteEvent  =
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsAVMIDINoteEvent avmidiNoteEvent => avmidiNoteEvent -> CDouble -> IO ()
-setDuration avmidiNoteEvent  value =
-    sendMsg avmidiNoteEvent (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration avmidiNoteEvent value =
+  sendMessage avmidiNoteEvent setDurationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:key:velocity:duration:@
-initWithChannel_key_velocity_durationSelector :: Selector
+initWithChannel_key_velocity_durationSelector :: Selector '[CUInt, CUInt, CUInt, CDouble] (Id AVMIDINoteEvent)
 initWithChannel_key_velocity_durationSelector = mkSelector "initWithChannel:key:velocity:duration:"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] CUInt
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[CUInt] ()
 setChannelSelector = mkSelector "setChannel:"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] CUInt
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @setKey:@
-setKeySelector :: Selector
+setKeySelector :: Selector '[CUInt] ()
 setKeySelector = mkSelector "setKey:"
 
 -- | @Selector@ for @velocity@
-velocitySelector :: Selector
+velocitySelector :: Selector '[] CUInt
 velocitySelector = mkSelector "velocity"
 
 -- | @Selector@ for @setVelocity:@
-setVelocitySelector :: Selector
+setVelocitySelector :: Selector '[CUInt] ()
 setVelocitySelector = mkSelector "setVelocity:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Foundation.NSUnitPressure
   , millibars
   , millimetersOfMercury
   , poundsForcePerSquareInch
-  , newtonsPerMetersSquaredSelector
+  , barsSelector
   , gigapascalsSelector
-  , megapascalsSelector
-  , kilopascalsSelector
   , hectopascalsSelector
   , inchesOfMercurySelector
-  , barsSelector
+  , kilopascalsSelector
+  , megapascalsSelector
   , millibarsSelector
   , millimetersOfMercurySelector
+  , newtonsPerMetersSquaredSelector
   , poundsForcePerSquareInchSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,112 +46,112 @@ newtonsPerMetersSquared :: IO (Id NSUnitPressure)
 newtonsPerMetersSquared  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "newtonsPerMetersSquared") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newtonsPerMetersSquaredSelector
 
 -- | @+ gigapascals@
 gigapascals :: IO (Id NSUnitPressure)
 gigapascals  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "gigapascals") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gigapascalsSelector
 
 -- | @+ megapascals@
 megapascals :: IO (Id NSUnitPressure)
 megapascals  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "megapascals") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megapascalsSelector
 
 -- | @+ kilopascals@
 kilopascals :: IO (Id NSUnitPressure)
 kilopascals  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "kilopascals") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilopascalsSelector
 
 -- | @+ hectopascals@
 hectopascals :: IO (Id NSUnitPressure)
 hectopascals  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "hectopascals") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hectopascalsSelector
 
 -- | @+ inchesOfMercury@
 inchesOfMercury :: IO (Id NSUnitPressure)
 inchesOfMercury  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "inchesOfMercury") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' inchesOfMercurySelector
 
 -- | @+ bars@
 bars :: IO (Id NSUnitPressure)
 bars  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "bars") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' barsSelector
 
 -- | @+ millibars@
 millibars :: IO (Id NSUnitPressure)
 millibars  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "millibars") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millibarsSelector
 
 -- | @+ millimetersOfMercury@
 millimetersOfMercury :: IO (Id NSUnitPressure)
 millimetersOfMercury  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "millimetersOfMercury") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millimetersOfMercurySelector
 
 -- | @+ poundsForcePerSquareInch@
 poundsForcePerSquareInch :: IO (Id NSUnitPressure)
 poundsForcePerSquareInch  =
   do
     cls' <- getRequiredClass "NSUnitPressure"
-    sendClassMsg cls' (mkSelector "poundsForcePerSquareInch") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' poundsForcePerSquareInchSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newtonsPerMetersSquared@
-newtonsPerMetersSquaredSelector :: Selector
+newtonsPerMetersSquaredSelector :: Selector '[] (Id NSUnitPressure)
 newtonsPerMetersSquaredSelector = mkSelector "newtonsPerMetersSquared"
 
 -- | @Selector@ for @gigapascals@
-gigapascalsSelector :: Selector
+gigapascalsSelector :: Selector '[] (Id NSUnitPressure)
 gigapascalsSelector = mkSelector "gigapascals"
 
 -- | @Selector@ for @megapascals@
-megapascalsSelector :: Selector
+megapascalsSelector :: Selector '[] (Id NSUnitPressure)
 megapascalsSelector = mkSelector "megapascals"
 
 -- | @Selector@ for @kilopascals@
-kilopascalsSelector :: Selector
+kilopascalsSelector :: Selector '[] (Id NSUnitPressure)
 kilopascalsSelector = mkSelector "kilopascals"
 
 -- | @Selector@ for @hectopascals@
-hectopascalsSelector :: Selector
+hectopascalsSelector :: Selector '[] (Id NSUnitPressure)
 hectopascalsSelector = mkSelector "hectopascals"
 
 -- | @Selector@ for @inchesOfMercury@
-inchesOfMercurySelector :: Selector
+inchesOfMercurySelector :: Selector '[] (Id NSUnitPressure)
 inchesOfMercurySelector = mkSelector "inchesOfMercury"
 
 -- | @Selector@ for @bars@
-barsSelector :: Selector
+barsSelector :: Selector '[] (Id NSUnitPressure)
 barsSelector = mkSelector "bars"
 
 -- | @Selector@ for @millibars@
-millibarsSelector :: Selector
+millibarsSelector :: Selector '[] (Id NSUnitPressure)
 millibarsSelector = mkSelector "millibars"
 
 -- | @Selector@ for @millimetersOfMercury@
-millimetersOfMercurySelector :: Selector
+millimetersOfMercurySelector :: Selector '[] (Id NSUnitPressure)
 millimetersOfMercurySelector = mkSelector "millimetersOfMercury"
 
 -- | @Selector@ for @poundsForcePerSquareInch@
-poundsForcePerSquareInchSelector :: Selector
+poundsForcePerSquareInchSelector :: Selector '[] (Id NSUnitPressure)
 poundsForcePerSquareInchSelector = mkSelector "poundsForcePerSquareInch"
 

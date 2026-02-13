@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.ClassKit.CLSProgressReportingCapability
   , initWithKind_details
   , kind
   , details
+  , detailsSelector
   , initWithKind_detailsSelector
   , kindSelector
-  , detailsSelector
 
   -- * Enum types
   , CLSProgressReportingCapabilityKind(CLSProgressReportingCapabilityKind)
@@ -26,15 +27,11 @@ module ObjC.ClassKit.CLSProgressReportingCapability
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,37 +47,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithKind:details:@
 initWithKind_details :: (IsCLSProgressReportingCapability clsProgressReportingCapability, IsNSString details) => clsProgressReportingCapability -> CLSProgressReportingCapabilityKind -> details -> IO (Id CLSProgressReportingCapability)
-initWithKind_details clsProgressReportingCapability  kind details =
-  withObjCPtr details $ \raw_details ->
-      sendMsg clsProgressReportingCapability (mkSelector "initWithKind:details:") (retPtr retVoid) [argCLong (coerce kind), argPtr (castPtr raw_details :: Ptr ())] >>= ownedObject . castPtr
+initWithKind_details clsProgressReportingCapability kind details =
+  sendOwnedMessage clsProgressReportingCapability initWithKind_detailsSelector kind (toNSString details)
 
 -- | Returns the kind of progress reporting capability
 --
 -- ObjC selector: @- kind@
 kind :: IsCLSProgressReportingCapability clsProgressReportingCapability => clsProgressReportingCapability -> IO CLSProgressReportingCapabilityKind
-kind clsProgressReportingCapability  =
-    fmap (coerce :: CLong -> CLSProgressReportingCapabilityKind) $ sendMsg clsProgressReportingCapability (mkSelector "kind") retCLong []
+kind clsProgressReportingCapability =
+  sendMessage clsProgressReportingCapability kindSelector
 
 -- | Returns progress reporting details
 --
 -- ObjC selector: @- details@
 details :: IsCLSProgressReportingCapability clsProgressReportingCapability => clsProgressReportingCapability -> IO (Id NSString)
-details clsProgressReportingCapability  =
-    sendMsg clsProgressReportingCapability (mkSelector "details") (retPtr retVoid) [] >>= retainedObject . castPtr
+details clsProgressReportingCapability =
+  sendMessage clsProgressReportingCapability detailsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithKind:details:@
-initWithKind_detailsSelector :: Selector
+initWithKind_detailsSelector :: Selector '[CLSProgressReportingCapabilityKind, Id NSString] (Id CLSProgressReportingCapability)
 initWithKind_detailsSelector = mkSelector "initWithKind:details:"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] CLSProgressReportingCapabilityKind
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @details@
-detailsSelector :: Selector
+detailsSelector :: Selector '[] (Id NSString)
 detailsSelector = mkSelector "details"
 

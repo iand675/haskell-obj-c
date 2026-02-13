@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.CloudKit.CKSystemSharingUIObserver
   , systemSharingUIDidStopSharingBlock
   , setSystemSharingUIDidStopSharingBlock
   , initSelector
-  , newSelector
   , initWithContainerSelector
-  , systemSharingUIDidSaveShareBlockSelector
+  , newSelector
   , setSystemSharingUIDidSaveShareBlockSelector
-  , systemSharingUIDidStopSharingBlockSelector
   , setSystemSharingUIDidStopSharingBlockSelector
+  , systemSharingUIDidSaveShareBlockSelector
+  , systemSharingUIDidStopSharingBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,21 +38,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSystemSharingUIObserver ckSystemSharingUIObserver => ckSystemSharingUIObserver -> IO (Id CKSystemSharingUIObserver)
-init_ ckSystemSharingUIObserver  =
-    sendMsg ckSystemSharingUIObserver (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSystemSharingUIObserver =
+  sendOwnedMessage ckSystemSharingUIObserver initSelector
 
 -- | @+ new@
 new :: IO (Id CKSystemSharingUIObserver)
 new  =
   do
     cls' <- getRequiredClass "CKSystemSharingUIObserver"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithContainer:@
 initWithContainer :: (IsCKSystemSharingUIObserver ckSystemSharingUIObserver, IsCKContainer container) => ckSystemSharingUIObserver -> container -> IO (Id CKSystemSharingUIObserver)
-initWithContainer ckSystemSharingUIObserver  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg ckSystemSharingUIObserver (mkSelector "initWithContainer:") (retPtr retVoid) [argPtr (castPtr raw_container :: Ptr ())] >>= ownedObject . castPtr
+initWithContainer ckSystemSharingUIObserver container =
+  sendOwnedMessage ckSystemSharingUIObserver initWithContainerSelector (toCKContainer container)
 
 -- | Called on success or failure of a @CKShare@ save after user modifications via the system sharing UI
 --
@@ -63,8 +59,8 @@ initWithContainer ckSystemSharingUIObserver  container =
 --
 -- ObjC selector: @- systemSharingUIDidSaveShareBlock@
 systemSharingUIDidSaveShareBlock :: IsCKSystemSharingUIObserver ckSystemSharingUIObserver => ckSystemSharingUIObserver -> IO (Ptr ())
-systemSharingUIDidSaveShareBlock ckSystemSharingUIObserver  =
-    fmap castPtr $ sendMsg ckSystemSharingUIObserver (mkSelector "systemSharingUIDidSaveShareBlock") (retPtr retVoid) []
+systemSharingUIDidSaveShareBlock ckSystemSharingUIObserver =
+  sendMessage ckSystemSharingUIObserver systemSharingUIDidSaveShareBlockSelector
 
 -- | Called on success or failure of a @CKShare@ save after user modifications via the system sharing UI
 --
@@ -72,8 +68,8 @@ systemSharingUIDidSaveShareBlock ckSystemSharingUIObserver  =
 --
 -- ObjC selector: @- setSystemSharingUIDidSaveShareBlock:@
 setSystemSharingUIDidSaveShareBlock :: IsCKSystemSharingUIObserver ckSystemSharingUIObserver => ckSystemSharingUIObserver -> Ptr () -> IO ()
-setSystemSharingUIDidSaveShareBlock ckSystemSharingUIObserver  value =
-    sendMsg ckSystemSharingUIObserver (mkSelector "setSystemSharingUIDidSaveShareBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setSystemSharingUIDidSaveShareBlock ckSystemSharingUIObserver value =
+  sendMessage ckSystemSharingUIObserver setSystemSharingUIDidSaveShareBlockSelector value
 
 -- | Called on success or failure of a @CKShare@ delete when the user decides to stop sharing via the system sharing UI
 --
@@ -81,8 +77,8 @@ setSystemSharingUIDidSaveShareBlock ckSystemSharingUIObserver  value =
 --
 -- ObjC selector: @- systemSharingUIDidStopSharingBlock@
 systemSharingUIDidStopSharingBlock :: IsCKSystemSharingUIObserver ckSystemSharingUIObserver => ckSystemSharingUIObserver -> IO (Ptr ())
-systemSharingUIDidStopSharingBlock ckSystemSharingUIObserver  =
-    fmap castPtr $ sendMsg ckSystemSharingUIObserver (mkSelector "systemSharingUIDidStopSharingBlock") (retPtr retVoid) []
+systemSharingUIDidStopSharingBlock ckSystemSharingUIObserver =
+  sendMessage ckSystemSharingUIObserver systemSharingUIDidStopSharingBlockSelector
 
 -- | Called on success or failure of a @CKShare@ delete when the user decides to stop sharing via the system sharing UI
 --
@@ -90,38 +86,38 @@ systemSharingUIDidStopSharingBlock ckSystemSharingUIObserver  =
 --
 -- ObjC selector: @- setSystemSharingUIDidStopSharingBlock:@
 setSystemSharingUIDidStopSharingBlock :: IsCKSystemSharingUIObserver ckSystemSharingUIObserver => ckSystemSharingUIObserver -> Ptr () -> IO ()
-setSystemSharingUIDidStopSharingBlock ckSystemSharingUIObserver  value =
-    sendMsg ckSystemSharingUIObserver (mkSelector "setSystemSharingUIDidStopSharingBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setSystemSharingUIDidStopSharingBlock ckSystemSharingUIObserver value =
+  sendMessage ckSystemSharingUIObserver setSystemSharingUIDidStopSharingBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSystemSharingUIObserver)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSystemSharingUIObserver)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithContainer:@
-initWithContainerSelector :: Selector
+initWithContainerSelector :: Selector '[Id CKContainer] (Id CKSystemSharingUIObserver)
 initWithContainerSelector = mkSelector "initWithContainer:"
 
 -- | @Selector@ for @systemSharingUIDidSaveShareBlock@
-systemSharingUIDidSaveShareBlockSelector :: Selector
+systemSharingUIDidSaveShareBlockSelector :: Selector '[] (Ptr ())
 systemSharingUIDidSaveShareBlockSelector = mkSelector "systemSharingUIDidSaveShareBlock"
 
 -- | @Selector@ for @setSystemSharingUIDidSaveShareBlock:@
-setSystemSharingUIDidSaveShareBlockSelector :: Selector
+setSystemSharingUIDidSaveShareBlockSelector :: Selector '[Ptr ()] ()
 setSystemSharingUIDidSaveShareBlockSelector = mkSelector "setSystemSharingUIDidSaveShareBlock:"
 
 -- | @Selector@ for @systemSharingUIDidStopSharingBlock@
-systemSharingUIDidStopSharingBlockSelector :: Selector
+systemSharingUIDidStopSharingBlockSelector :: Selector '[] (Ptr ())
 systemSharingUIDidStopSharingBlockSelector = mkSelector "systemSharingUIDidStopSharingBlock"
 
 -- | @Selector@ for @setSystemSharingUIDidStopSharingBlock:@
-setSystemSharingUIDidStopSharingBlockSelector :: Selector
+setSystemSharingUIDidStopSharingBlockSelector :: Selector '[Ptr ()] ()
 setSystemSharingUIDidStopSharingBlockSelector = mkSelector "setSystemSharingUIDidStopSharingBlock:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -68,65 +69,65 @@ module ObjC.HealthKit.HKQuery
   , sampleType
   , predicate
   , initSelector
-  , predicateForUserAnnotatedMedicationsWithIsArchivedSelector
-  , predicateForUserAnnotatedMedicationsWithHasScheduleSelector
-  , predicateForMedicationDoseEventWithStatusSelector
-  , predicateForMedicationDoseEventWithStatusesSelector
+  , objectTypeSelector
+  , predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector
+  , predicateForActivitySummaryWithDateComponentsSelector
+  , predicateForCategorySamplesEqualToValuesSelector
+  , predicateForCategorySamplesWithOperatorType_valueSelector
+  , predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector
+  , predicateForClinicalRecordsWithFHIRResourceTypeSelector
+  , predicateForElectrocardiogramsWithClassificationSelector
+  , predicateForElectrocardiogramsWithSymptomsStatusSelector
+  , predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector
+  , predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector
   , predicateForMedicationDoseEventWithScheduledDateSelector
   , predicateForMedicationDoseEventWithScheduledDatesSelector
   , predicateForMedicationDoseEventWithScheduledStartDate_endDateSelector
-  , predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector
-  , predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector
-  , predicateForStatesOfMindWithValence_operatorTypeSelector
-  , predicateForStatesOfMindWithKindSelector
-  , predicateForStatesOfMindWithLabelSelector
-  , predicateForStatesOfMindWithAssociationSelector
-  , predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector
-  , predicateForElectrocardiogramsWithClassificationSelector
-  , predicateForElectrocardiogramsWithSymptomsStatusSelector
-  , predicateForClinicalRecordsWithFHIRResourceTypeSelector
-  , predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector
-  , predicateForActivitySummaryWithDateComponentsSelector
-  , predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector
-  , predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector
-  , predicateForWorkoutActivitiesWithOperatorType_durationSelector
-  , predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector
-  , predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector
-  , predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector
-  , predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector
-  , predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector
-  , predicateForWorkoutsWithActivityPredicateSelector
-  , predicateForWorkoutsWithWorkoutActivityTypeSelector
-  , predicateForWorkoutsWithOperatorType_durationSelector
-  , predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector
-  , predicateForWorkoutsWithOperatorType_totalDistanceSelector
-  , predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector
-  , predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector
-  , predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector
-  , predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector
-  , predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector
-  , predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector
-  , predicateForCategorySamplesWithOperatorType_valueSelector
-  , predicateForCategorySamplesEqualToValuesSelector
-  , predicateForQuantitySamplesWithOperatorType_quantitySelector
-  , predicateForSamplesWithStartDate_endDate_optionsSelector
+  , predicateForMedicationDoseEventWithStatusSelector
+  , predicateForMedicationDoseEventWithStatusesSelector
+  , predicateForObjectWithUUIDSelector
+  , predicateForObjectsAssociatedWithElectrocardiogramSelector
+  , predicateForObjectsFromDevicesSelector
+  , predicateForObjectsFromSourceRevisionsSelector
+  , predicateForObjectsFromSourceSelector
+  , predicateForObjectsFromSourcesSelector
+  , predicateForObjectsFromWorkoutSelector
+  , predicateForObjectsWithDeviceProperty_allowedValuesSelector
   , predicateForObjectsWithMetadataKeySelector
   , predicateForObjectsWithMetadataKey_allowedValuesSelector
   , predicateForObjectsWithMetadataKey_operatorType_valueSelector
-  , predicateForObjectsFromSourceSelector
-  , predicateForObjectsFromSourcesSelector
-  , predicateForObjectsFromSourceRevisionsSelector
-  , predicateForObjectsFromDevicesSelector
-  , predicateForObjectsWithDeviceProperty_allowedValuesSelector
-  , predicateForObjectWithUUIDSelector
-  , predicateForObjectsWithUUIDsSelector
   , predicateForObjectsWithNoCorrelationSelector
-  , predicateForObjectsFromWorkoutSelector
-  , predicateForObjectsAssociatedWithElectrocardiogramSelector
+  , predicateForObjectsWithUUIDsSelector
+  , predicateForQuantitySamplesWithOperatorType_quantitySelector
+  , predicateForSamplesWithStartDate_endDate_optionsSelector
+  , predicateForStatesOfMindWithAssociationSelector
+  , predicateForStatesOfMindWithKindSelector
+  , predicateForStatesOfMindWithLabelSelector
+  , predicateForStatesOfMindWithValence_operatorTypeSelector
+  , predicateForUserAnnotatedMedicationsWithHasScheduleSelector
+  , predicateForUserAnnotatedMedicationsWithIsArchivedSelector
+  , predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector
+  , predicateForWorkoutActivitiesWithOperatorType_durationSelector
+  , predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector
+  , predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector
+  , predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector
+  , predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector
+  , predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector
+  , predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector
   , predicateForWorkoutEffortSamplesRelatedToWorkout_activitySelector
-  , objectTypeSelector
-  , sampleTypeSelector
+  , predicateForWorkoutsWithActivityPredicateSelector
+  , predicateForWorkoutsWithOperatorType_durationSelector
+  , predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector
+  , predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector
+  , predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector
+  , predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector
+  , predicateForWorkoutsWithOperatorType_totalDistanceSelector
+  , predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector
+  , predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector
+  , predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector
+  , predicateForWorkoutsWithWorkoutActivityTypeSelector
   , predicateSelector
+  , sampleTypeSelector
 
   -- * Enum types
   , HKElectrocardiogramClassification(HKElectrocardiogramClassification)
@@ -317,15 +318,11 @@ module ObjC.HealthKit.HKQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -336,8 +333,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKQuery hkQuery => hkQuery -> IO (Id HKQuery)
-init_ hkQuery  =
-    sendMsg hkQuery (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkQuery =
+  sendOwnedMessage hkQuery initSelector
 
 -- | predicateForUserAnnotatedMedicationsWithIsArchived:
 --
@@ -352,7 +349,7 @@ predicateForUserAnnotatedMedicationsWithIsArchived :: Bool -> IO (Id NSPredicate
 predicateForUserAnnotatedMedicationsWithIsArchived isArchived =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForUserAnnotatedMedicationsWithIsArchived:") (retPtr retVoid) [argCULong (if isArchived then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForUserAnnotatedMedicationsWithIsArchivedSelector isArchived
 
 -- | predicateForUserAnnotatedMedicationsWithHasSchedule:
 --
@@ -367,7 +364,7 @@ predicateForUserAnnotatedMedicationsWithHasSchedule :: Bool -> IO (Id NSPredicat
 predicateForUserAnnotatedMedicationsWithHasSchedule hasSchedule =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForUserAnnotatedMedicationsWithHasSchedule:") (retPtr retVoid) [argCULong (if hasSchedule then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForUserAnnotatedMedicationsWithHasScheduleSelector hasSchedule
 
 -- | predicateForMedicationDoseEventWithStatus:
 --
@@ -382,7 +379,7 @@ predicateForMedicationDoseEventWithStatus :: HKMedicationDoseEventLogStatus -> I
 predicateForMedicationDoseEventWithStatus status =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithStatus:") (retPtr retVoid) [argCLong (coerce status)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithStatusSelector status
 
 -- | predicateForMedicationDoseEventWithStatuses:
 --
@@ -397,8 +394,7 @@ predicateForMedicationDoseEventWithStatuses :: IsNSSet statuses => statuses -> I
 predicateForMedicationDoseEventWithStatuses statuses =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr statuses $ \raw_statuses ->
-      sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithStatuses:") (retPtr retVoid) [argPtr (castPtr raw_statuses :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithStatusesSelector (toNSSet statuses)
 
 -- | predicateForMedicationDoseEventWithScheduledDate:
 --
@@ -413,8 +409,7 @@ predicateForMedicationDoseEventWithScheduledDate :: IsNSDate scheduledDate => sc
 predicateForMedicationDoseEventWithScheduledDate scheduledDate =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr scheduledDate $ \raw_scheduledDate ->
-      sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithScheduledDate:") (retPtr retVoid) [argPtr (castPtr raw_scheduledDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithScheduledDateSelector (toNSDate scheduledDate)
 
 -- | predicateForMedicationDoseEventWithScheduledDates:
 --
@@ -429,8 +424,7 @@ predicateForMedicationDoseEventWithScheduledDates :: IsNSSet scheduledDates => s
 predicateForMedicationDoseEventWithScheduledDates scheduledDates =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr scheduledDates $ \raw_scheduledDates ->
-      sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithScheduledDates:") (retPtr retVoid) [argPtr (castPtr raw_scheduledDates :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithScheduledDatesSelector (toNSSet scheduledDates)
 
 -- | predicateForMedicationDoseEventWithScheduledStartDate:endDate:
 --
@@ -447,9 +441,7 @@ predicateForMedicationDoseEventWithScheduledStartDate_endDate :: (IsNSDate start
 predicateForMedicationDoseEventWithScheduledStartDate_endDate startDate endDate =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithScheduledStartDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithScheduledStartDate_endDateSelector (toNSDate startDate) (toNSDate endDate)
 
 -- | predicateForMedicationDoseEventWithMedicationConceptIdentifier:
 --
@@ -464,8 +456,7 @@ predicateForMedicationDoseEventWithMedicationConceptIdentifier :: IsHKHealthConc
 predicateForMedicationDoseEventWithMedicationConceptIdentifier medicationConceptIdentifier =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr medicationConceptIdentifier $ \raw_medicationConceptIdentifier ->
-      sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithMedicationConceptIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_medicationConceptIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector (toHKHealthConceptIdentifier medicationConceptIdentifier)
 
 -- | predicateForMedicationDoseEventWithMedicationConceptIdentifiers:
 --
@@ -480,8 +471,7 @@ predicateForMedicationDoseEventWithMedicationConceptIdentifiers :: IsNSSet medic
 predicateForMedicationDoseEventWithMedicationConceptIdentifiers medicationConceptIdentifiers =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr medicationConceptIdentifiers $ \raw_medicationConceptIdentifiers ->
-      sendClassMsg cls' (mkSelector "predicateForMedicationDoseEventWithMedicationConceptIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_medicationConceptIdentifiers :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector (toNSSet medicationConceptIdentifiers)
 
 -- | predicateForStatesOfMindWithValence:operatorType:
 --
@@ -498,7 +488,7 @@ predicateForStatesOfMindWithValence_operatorType :: CDouble -> NSPredicateOperat
 predicateForStatesOfMindWithValence_operatorType valence operatorType =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForStatesOfMindWithValence:operatorType:") (retPtr retVoid) [argCDouble valence, argCULong (coerce operatorType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForStatesOfMindWithValence_operatorTypeSelector valence operatorType
 
 -- | predicateForStatesOfMindWithKind:
 --
@@ -513,7 +503,7 @@ predicateForStatesOfMindWithKind :: HKStateOfMindKind -> IO (Id NSPredicate)
 predicateForStatesOfMindWithKind kind =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForStatesOfMindWithKind:") (retPtr retVoid) [argCLong (coerce kind)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForStatesOfMindWithKindSelector kind
 
 -- | predicateForStatesOfMindWithLabel:
 --
@@ -528,7 +518,7 @@ predicateForStatesOfMindWithLabel :: HKStateOfMindLabel -> IO (Id NSPredicate)
 predicateForStatesOfMindWithLabel label =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForStatesOfMindWithLabel:") (retPtr retVoid) [argCLong (coerce label)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForStatesOfMindWithLabelSelector label
 
 -- | predicateForStatesOfMindWithAssociation:
 --
@@ -543,7 +533,7 @@ predicateForStatesOfMindWithAssociation :: HKStateOfMindAssociation -> IO (Id NS
 predicateForStatesOfMindWithAssociation association =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForStatesOfMindWithAssociation:") (retPtr retVoid) [argCLong (coerce association)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForStatesOfMindWithAssociationSelector association
 
 -- | predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval:
 --
@@ -558,8 +548,7 @@ predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval :: IsNSD
 predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval dateInterval =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr dateInterval $ \raw_dateInterval ->
-      sendClassMsg cls' (mkSelector "predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval:") (retPtr retVoid) [argPtr (castPtr raw_dateInterval :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector (toNSDateInterval dateInterval)
 
 -- | predicateForElectrocardiogramsWithClassification:
 --
@@ -574,7 +563,7 @@ predicateForElectrocardiogramsWithClassification :: HKElectrocardiogramClassific
 predicateForElectrocardiogramsWithClassification classification =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForElectrocardiogramsWithClassification:") (retPtr retVoid) [argCLong (coerce classification)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForElectrocardiogramsWithClassificationSelector classification
 
 -- | predicateForElectrocardiogramsWithSymptomsStatus:
 --
@@ -589,7 +578,7 @@ predicateForElectrocardiogramsWithSymptomsStatus :: HKElectrocardiogramSymptomsS
 predicateForElectrocardiogramsWithSymptomsStatus symptomsStatus =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForElectrocardiogramsWithSymptomsStatus:") (retPtr retVoid) [argCLong (coerce symptomsStatus)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForElectrocardiogramsWithSymptomsStatusSelector symptomsStatus
 
 -- | predicateForClinicalRecordsWithFHIRResourceType:
 --
@@ -604,8 +593,7 @@ predicateForClinicalRecordsWithFHIRResourceType :: IsNSString resourceType => re
 predicateForClinicalRecordsWithFHIRResourceType resourceType =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr resourceType $ \raw_resourceType ->
-      sendClassMsg cls' (mkSelector "predicateForClinicalRecordsWithFHIRResourceType:") (retPtr retVoid) [argPtr (castPtr raw_resourceType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForClinicalRecordsWithFHIRResourceTypeSelector (toNSString resourceType)
 
 -- | predicateForClinicalRecordsFromSource:withFHIRResourceType:identifier:
 --
@@ -624,10 +612,7 @@ predicateForClinicalRecordsFromSource_FHIRResourceType_identifier :: (IsHKSource
 predicateForClinicalRecordsFromSource_FHIRResourceType_identifier source resourceType identifier =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr resourceType $ \raw_resourceType ->
-        withObjCPtr identifier $ \raw_identifier ->
-          sendClassMsg cls' (mkSelector "predicateForClinicalRecordsFromSource:FHIRResourceType:identifier:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_resourceType :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector (toHKSource source) (toNSString resourceType) (toNSString identifier)
 
 -- | predicateForActivitySummaryWithDateComponents:
 --
@@ -642,8 +627,7 @@ predicateForActivitySummaryWithDateComponents :: IsNSDateComponents dateComponen
 predicateForActivitySummaryWithDateComponents dateComponents =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr dateComponents $ \raw_dateComponents ->
-      sendClassMsg cls' (mkSelector "predicateForActivitySummaryWithDateComponents:") (retPtr retVoid) [argPtr (castPtr raw_dateComponents :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForActivitySummaryWithDateComponentsSelector (toNSDateComponents dateComponents)
 
 -- | predicateForActivitySummariesBetweenStartDateComponents:endDateComponents:
 --
@@ -660,9 +644,7 @@ predicateForActivitySummariesBetweenStartDateComponents_endDateComponents :: (Is
 predicateForActivitySummariesBetweenStartDateComponents_endDateComponents startDateComponents endDateComponents =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr startDateComponents $ \raw_startDateComponents ->
-      withObjCPtr endDateComponents $ \raw_endDateComponents ->
-        sendClassMsg cls' (mkSelector "predicateForActivitySummariesBetweenStartDateComponents:endDateComponents:") (retPtr retVoid) [argPtr (castPtr raw_startDateComponents :: Ptr ()), argPtr (castPtr raw_endDateComponents :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector (toNSDateComponents startDateComponents) (toNSDateComponents endDateComponents)
 
 -- | predicateForWorkoutActivitiesWithWorkoutActivityType:
 --
@@ -677,7 +659,7 @@ predicateForWorkoutActivitiesWithWorkoutActivityType :: HKWorkoutActivityType ->
 predicateForWorkoutActivitiesWithWorkoutActivityType workoutActivityType =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithWorkoutActivityType:") (retPtr retVoid) [argCULong (coerce workoutActivityType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector workoutActivityType
 
 -- | predicateForWorkoutActivitiesWithOperatorType:duration:
 --
@@ -694,7 +676,7 @@ predicateForWorkoutActivitiesWithOperatorType_duration :: NSPredicateOperatorTyp
 predicateForWorkoutActivitiesWithOperatorType_duration operatorType duration =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithOperatorType:duration:") (retPtr retVoid) [argCULong (coerce operatorType), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithOperatorType_durationSelector operatorType duration
 
 -- | predicateForWorkoutActivitiesWithStartDate:endDate:options:
 --
@@ -713,9 +695,7 @@ predicateForWorkoutActivitiesWithStartDate_endDate_options :: (IsNSDate startDat
 predicateForWorkoutActivitiesWithStartDate_endDate_options startDate endDate options =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithStartDate:endDate:options:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector (toNSDate startDate) (toNSDate endDate) options
 
 -- | predicateForWorkoutActivitiesWithOperatorType:quantityType:sumQuantity:
 --
@@ -734,9 +714,7 @@ predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantity :: (IsHKQ
 predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantity operatorType quantityType sumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr sumQuantity $ \raw_sumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:sumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_sumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity sumQuantity)
 
 -- | predicateForWorkoutActivitiesWithOperatorType:quantityType:minimumQuantity:
 --
@@ -755,9 +733,7 @@ predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantity :: (I
 predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantity operatorType quantityType minimumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr minimumQuantity $ \raw_minimumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:minimumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_minimumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity minimumQuantity)
 
 -- | predicateForWorkoutActivitiesWithOperatorType:quantityType:maximumQuantity:
 --
@@ -776,9 +752,7 @@ predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantity :: (I
 predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantity operatorType quantityType maximumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr maximumQuantity $ \raw_maximumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:maximumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_maximumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity maximumQuantity)
 
 -- | predicateForWorkoutActivitiesWithOperatorType:quantityType:averageQuantity:
 --
@@ -797,9 +771,7 @@ predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantity :: (I
 predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantity operatorType quantityType averageQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr averageQuantity $ \raw_averageQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:averageQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_averageQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity averageQuantity)
 
 -- | predicateForWorkoutsWithActivityPredicate:
 --
@@ -814,8 +786,7 @@ predicateForWorkoutsWithActivityPredicate :: IsNSPredicate activityPredicate => 
 predicateForWorkoutsWithActivityPredicate activityPredicate =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr activityPredicate $ \raw_activityPredicate ->
-      sendClassMsg cls' (mkSelector "predicateForWorkoutsWithActivityPredicate:") (retPtr retVoid) [argPtr (castPtr raw_activityPredicate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithActivityPredicateSelector (toNSPredicate activityPredicate)
 
 -- | predicateForWorkoutsWithWorkoutActivityType:
 --
@@ -830,7 +801,7 @@ predicateForWorkoutsWithWorkoutActivityType :: HKWorkoutActivityType -> IO (Id N
 predicateForWorkoutsWithWorkoutActivityType workoutActivityType =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForWorkoutsWithWorkoutActivityType:") (retPtr retVoid) [argCULong (coerce workoutActivityType)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithWorkoutActivityTypeSelector workoutActivityType
 
 -- | predicateForWorkoutsWithOperatorType:duration:
 --
@@ -847,7 +818,7 @@ predicateForWorkoutsWithOperatorType_duration :: NSPredicateOperatorType -> CDou
 predicateForWorkoutsWithOperatorType_duration operatorType duration =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:duration:") (retPtr retVoid) [argCULong (coerce operatorType), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_durationSelector operatorType duration
 
 -- | predicateForWorkoutsWithOperatorType:totalEnergyBurned:
 --
@@ -864,8 +835,7 @@ predicateForWorkoutsWithOperatorType_totalEnergyBurned :: IsHKQuantity totalEner
 predicateForWorkoutsWithOperatorType_totalEnergyBurned operatorType totalEnergyBurned =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-      sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:totalEnergyBurned:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_totalEnergyBurned :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector operatorType (toHKQuantity totalEnergyBurned)
 
 -- | predicateForWorkoutsWithOperatorType:totalDistance:
 --
@@ -882,8 +852,7 @@ predicateForWorkoutsWithOperatorType_totalDistance :: IsHKQuantity totalDistance
 predicateForWorkoutsWithOperatorType_totalDistance operatorType totalDistance =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr totalDistance $ \raw_totalDistance ->
-      sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:totalDistance:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_totalDistance :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_totalDistanceSelector operatorType (toHKQuantity totalDistance)
 
 -- | predicateForWorkoutsWithOperatorType:totalSwimmingStrokeCount:
 --
@@ -900,8 +869,7 @@ predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCount :: IsHKQuantity to
 predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCount operatorType totalSwimmingStrokeCount =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr totalSwimmingStrokeCount $ \raw_totalSwimmingStrokeCount ->
-      sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:totalSwimmingStrokeCount:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_totalSwimmingStrokeCount :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector operatorType (toHKQuantity totalSwimmingStrokeCount)
 
 -- | predicateForWorkoutsWithOperatorType:totalFlightsClimbed:
 --
@@ -918,8 +886,7 @@ predicateForWorkoutsWithOperatorType_totalFlightsClimbed :: IsHKQuantity totalFl
 predicateForWorkoutsWithOperatorType_totalFlightsClimbed operatorType totalFlightsClimbed =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr totalFlightsClimbed $ \raw_totalFlightsClimbed ->
-      sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:totalFlightsClimbed:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_totalFlightsClimbed :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector operatorType (toHKQuantity totalFlightsClimbed)
 
 -- | predicateForWorkoutsWithOperatorType:quantityType:sumQuantity:
 --
@@ -938,9 +905,7 @@ predicateForWorkoutsWithOperatorType_quantityType_sumQuantity :: (IsHKQuantityTy
 predicateForWorkoutsWithOperatorType_quantityType_sumQuantity operatorType quantityType sumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr sumQuantity $ \raw_sumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:quantityType:sumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_sumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity sumQuantity)
 
 -- | predicateForWorkoutsWithOperatorType:quantityType:minimumQuantity:
 --
@@ -959,9 +924,7 @@ predicateForWorkoutsWithOperatorType_quantityType_minimumQuantity :: (IsHKQuanti
 predicateForWorkoutsWithOperatorType_quantityType_minimumQuantity operatorType quantityType minimumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr minimumQuantity $ \raw_minimumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:quantityType:minimumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_minimumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity minimumQuantity)
 
 -- | predicateForWorkoutsWithOperatorType:quantityType:maximumQuantity:
 --
@@ -980,9 +943,7 @@ predicateForWorkoutsWithOperatorType_quantityType_maximumQuantity :: (IsHKQuanti
 predicateForWorkoutsWithOperatorType_quantityType_maximumQuantity operatorType quantityType maximumQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr maximumQuantity $ \raw_maximumQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:quantityType:maximumQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_maximumQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity maximumQuantity)
 
 -- | predicateForWorkoutsWithOperatorType:quantityType:averageQuantity:
 --
@@ -1001,16 +962,14 @@ predicateForWorkoutsWithOperatorType_quantityType_averageQuantity :: (IsHKQuanti
 predicateForWorkoutsWithOperatorType_quantityType_averageQuantity operatorType quantityType averageQuantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr averageQuantity $ \raw_averageQuantity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutsWithOperatorType:quantityType:averageQuantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_averageQuantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector operatorType (toHKQuantityType quantityType) (toHKQuantity averageQuantity)
 
 -- | @+ predicateForCategorySamplesWithOperatorType:value:@
 predicateForCategorySamplesWithOperatorType_value :: NSPredicateOperatorType -> CLong -> IO (Id NSPredicate)
 predicateForCategorySamplesWithOperatorType_value operatorType value =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForCategorySamplesWithOperatorType:value:") (retPtr retVoid) [argCULong (coerce operatorType), argCLong value] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForCategorySamplesWithOperatorType_valueSelector operatorType value
 
 -- | predicateForCategorySamplesEqualToValues:
 --
@@ -1023,8 +982,7 @@ predicateForCategorySamplesEqualToValues :: IsNSSet values => values -> IO (Id N
 predicateForCategorySamplesEqualToValues values =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr values $ \raw_values ->
-      sendClassMsg cls' (mkSelector "predicateForCategorySamplesEqualToValues:") (retPtr retVoid) [argPtr (castPtr raw_values :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForCategorySamplesEqualToValuesSelector (toNSSet values)
 
 -- | predicateForQuantitySamplesWithOperatorType:quantity:
 --
@@ -1041,8 +999,7 @@ predicateForQuantitySamplesWithOperatorType_quantity :: IsHKQuantity quantity =>
 predicateForQuantitySamplesWithOperatorType_quantity operatorType quantity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr quantity $ \raw_quantity ->
-      sendClassMsg cls' (mkSelector "predicateForQuantitySamplesWithOperatorType:quantity:") (retPtr retVoid) [argCULong (coerce operatorType), argPtr (castPtr raw_quantity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForQuantitySamplesWithOperatorType_quantitySelector operatorType (toHKQuantity quantity)
 
 -- | predicateForSamplesWithStartDate:endDate:options:
 --
@@ -1061,9 +1018,7 @@ predicateForSamplesWithStartDate_endDate_options :: (IsNSDate startDate, IsNSDat
 predicateForSamplesWithStartDate_endDate_options startDate endDate options =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        sendClassMsg cls' (mkSelector "predicateForSamplesWithStartDate:endDate:options:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForSamplesWithStartDate_endDate_optionsSelector (toNSDate startDate) (toNSDate endDate) options
 
 -- | predicateForObjectsWithMetadataKey:
 --
@@ -1078,8 +1033,7 @@ predicateForObjectsWithMetadataKey :: IsNSString key => key -> IO (Id NSPredicat
 predicateForObjectsWithMetadataKey key =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsWithMetadataKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithMetadataKeySelector (toNSString key)
 
 -- | predicateForObjectsWithMetadataKey:allowedValues:
 --
@@ -1096,9 +1050,7 @@ predicateForObjectsWithMetadataKey_allowedValues :: (IsNSString key, IsNSArray a
 predicateForObjectsWithMetadataKey_allowedValues key allowedValues =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr allowedValues $ \raw_allowedValues ->
-        sendClassMsg cls' (mkSelector "predicateForObjectsWithMetadataKey:allowedValues:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_allowedValues :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithMetadataKey_allowedValuesSelector (toNSString key) (toNSArray allowedValues)
 
 -- | predicateForObjectsWithMetadataKey:operatorType:value:
 --
@@ -1117,8 +1069,7 @@ predicateForObjectsWithMetadataKey_operatorType_value :: IsNSString key => key -
 predicateForObjectsWithMetadataKey_operatorType_value key operatorType value =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsWithMetadataKey:operatorType:value:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argCULong (coerce operatorType), argPtr (castPtr (unRawId value) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithMetadataKey_operatorType_valueSelector (toNSString key) operatorType value
 
 -- | predicateForObjectsFromSource:
 --
@@ -1133,8 +1084,7 @@ predicateForObjectsFromSource :: IsHKSource source => source -> IO (Id NSPredica
 predicateForObjectsFromSource source =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsFromSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsFromSourceSelector (toHKSource source)
 
 -- | predicateForObjectsFromSources:
 --
@@ -1149,8 +1099,7 @@ predicateForObjectsFromSources :: IsNSSet sources => sources -> IO (Id NSPredica
 predicateForObjectsFromSources sources =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr sources $ \raw_sources ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsFromSources:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsFromSourcesSelector (toNSSet sources)
 
 -- | predicateForObjectsFromSourceRevisions:
 --
@@ -1165,8 +1114,7 @@ predicateForObjectsFromSourceRevisions :: IsNSSet sourceRevisions => sourceRevis
 predicateForObjectsFromSourceRevisions sourceRevisions =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr sourceRevisions $ \raw_sourceRevisions ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsFromSourceRevisions:") (retPtr retVoid) [argPtr (castPtr raw_sourceRevisions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsFromSourceRevisionsSelector (toNSSet sourceRevisions)
 
 -- | predicateForObjectsFromDevices:
 --
@@ -1181,8 +1129,7 @@ predicateForObjectsFromDevices :: IsNSSet devices => devices -> IO (Id NSPredica
 predicateForObjectsFromDevices devices =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr devices $ \raw_devices ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsFromDevices:") (retPtr retVoid) [argPtr (castPtr raw_devices :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsFromDevicesSelector (toNSSet devices)
 
 -- | predicateForObjectsWithDeviceProperty:allowedValues:
 --
@@ -1199,9 +1146,7 @@ predicateForObjectsWithDeviceProperty_allowedValues :: (IsNSString key, IsNSSet 
 predicateForObjectsWithDeviceProperty_allowedValues key allowedValues =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr allowedValues $ \raw_allowedValues ->
-        sendClassMsg cls' (mkSelector "predicateForObjectsWithDeviceProperty:allowedValues:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_allowedValues :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithDeviceProperty_allowedValuesSelector (toNSString key) (toNSSet allowedValues)
 
 -- | predicateForObjectWithUUID:
 --
@@ -1216,8 +1161,7 @@ predicateForObjectWithUUID :: IsNSUUID uuid => uuid -> IO (Id NSPredicate)
 predicateForObjectWithUUID uuid =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr uuid $ \raw_uuid ->
-      sendClassMsg cls' (mkSelector "predicateForObjectWithUUID:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectWithUUIDSelector (toNSUUID uuid)
 
 -- | predicateForObjectsWithUUIDs:
 --
@@ -1232,8 +1176,7 @@ predicateForObjectsWithUUIDs :: IsNSSet uuiDs => uuiDs -> IO (Id NSPredicate)
 predicateForObjectsWithUUIDs uuiDs =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr uuiDs $ \raw_uuiDs ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsWithUUIDs:") (retPtr retVoid) [argPtr (castPtr raw_uuiDs :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithUUIDsSelector (toNSSet uuiDs)
 
 -- | predicateForObjectsNoCorrelation
 --
@@ -1246,7 +1189,7 @@ predicateForObjectsWithNoCorrelation :: IO (Id NSPredicate)
 predicateForObjectsWithNoCorrelation  =
   do
     cls' <- getRequiredClass "HKQuery"
-    sendClassMsg cls' (mkSelector "predicateForObjectsWithNoCorrelation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsWithNoCorrelationSelector
 
 -- | predicateForObjectsFromWorkout:
 --
@@ -1261,8 +1204,7 @@ predicateForObjectsFromWorkout :: IsHKWorkout workout => workout -> IO (Id NSPre
 predicateForObjectsFromWorkout workout =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr workout $ \raw_workout ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsFromWorkout:") (retPtr retVoid) [argPtr (castPtr raw_workout :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsFromWorkoutSelector (toHKWorkout workout)
 
 -- | predicateForObjectsAssociatedWithElectrocardiogram:
 --
@@ -1277,8 +1219,7 @@ predicateForObjectsAssociatedWithElectrocardiogram :: IsHKElectrocardiogram elec
 predicateForObjectsAssociatedWithElectrocardiogram electrocardiogram =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr electrocardiogram $ \raw_electrocardiogram ->
-      sendClassMsg cls' (mkSelector "predicateForObjectsAssociatedWithElectrocardiogram:") (retPtr retVoid) [argPtr (castPtr raw_electrocardiogram :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForObjectsAssociatedWithElectrocardiogramSelector (toHKElectrocardiogram electrocardiogram)
 
 -- | predicateForWorkoutEffortSamplesRelatedToWorkout:
 --
@@ -1295,266 +1236,264 @@ predicateForWorkoutEffortSamplesRelatedToWorkout_activity :: (IsHKWorkout workou
 predicateForWorkoutEffortSamplesRelatedToWorkout_activity workout activity =
   do
     cls' <- getRequiredClass "HKQuery"
-    withObjCPtr workout $ \raw_workout ->
-      withObjCPtr activity $ \raw_activity ->
-        sendClassMsg cls' (mkSelector "predicateForWorkoutEffortSamplesRelatedToWorkout:activity:") (retPtr retVoid) [argPtr (castPtr raw_workout :: Ptr ()), argPtr (castPtr raw_activity :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateForWorkoutEffortSamplesRelatedToWorkout_activitySelector (toHKWorkout workout) (toHKWorkoutActivity activity)
 
 -- | @- objectType@
 objectType :: IsHKQuery hkQuery => hkQuery -> IO (Id HKObjectType)
-objectType hkQuery  =
-    sendMsg hkQuery (mkSelector "objectType") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectType hkQuery =
+  sendMessage hkQuery objectTypeSelector
 
 -- | @- sampleType@
 sampleType :: IsHKQuery hkQuery => hkQuery -> IO (Id HKSampleType)
-sampleType hkQuery  =
-    sendMsg hkQuery (mkSelector "sampleType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleType hkQuery =
+  sendMessage hkQuery sampleTypeSelector
 
 -- | @- predicate@
 predicate :: IsHKQuery hkQuery => hkQuery -> IO (Id NSPredicate)
-predicate hkQuery  =
-    sendMsg hkQuery (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate hkQuery =
+  sendMessage hkQuery predicateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKQuery)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @predicateForUserAnnotatedMedicationsWithIsArchived:@
-predicateForUserAnnotatedMedicationsWithIsArchivedSelector :: Selector
+predicateForUserAnnotatedMedicationsWithIsArchivedSelector :: Selector '[Bool] (Id NSPredicate)
 predicateForUserAnnotatedMedicationsWithIsArchivedSelector = mkSelector "predicateForUserAnnotatedMedicationsWithIsArchived:"
 
 -- | @Selector@ for @predicateForUserAnnotatedMedicationsWithHasSchedule:@
-predicateForUserAnnotatedMedicationsWithHasScheduleSelector :: Selector
+predicateForUserAnnotatedMedicationsWithHasScheduleSelector :: Selector '[Bool] (Id NSPredicate)
 predicateForUserAnnotatedMedicationsWithHasScheduleSelector = mkSelector "predicateForUserAnnotatedMedicationsWithHasSchedule:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithStatus:@
-predicateForMedicationDoseEventWithStatusSelector :: Selector
+predicateForMedicationDoseEventWithStatusSelector :: Selector '[HKMedicationDoseEventLogStatus] (Id NSPredicate)
 predicateForMedicationDoseEventWithStatusSelector = mkSelector "predicateForMedicationDoseEventWithStatus:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithStatuses:@
-predicateForMedicationDoseEventWithStatusesSelector :: Selector
+predicateForMedicationDoseEventWithStatusesSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForMedicationDoseEventWithStatusesSelector = mkSelector "predicateForMedicationDoseEventWithStatuses:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithScheduledDate:@
-predicateForMedicationDoseEventWithScheduledDateSelector :: Selector
+predicateForMedicationDoseEventWithScheduledDateSelector :: Selector '[Id NSDate] (Id NSPredicate)
 predicateForMedicationDoseEventWithScheduledDateSelector = mkSelector "predicateForMedicationDoseEventWithScheduledDate:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithScheduledDates:@
-predicateForMedicationDoseEventWithScheduledDatesSelector :: Selector
+predicateForMedicationDoseEventWithScheduledDatesSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForMedicationDoseEventWithScheduledDatesSelector = mkSelector "predicateForMedicationDoseEventWithScheduledDates:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithScheduledStartDate:endDate:@
-predicateForMedicationDoseEventWithScheduledStartDate_endDateSelector :: Selector
+predicateForMedicationDoseEventWithScheduledStartDate_endDateSelector :: Selector '[Id NSDate, Id NSDate] (Id NSPredicate)
 predicateForMedicationDoseEventWithScheduledStartDate_endDateSelector = mkSelector "predicateForMedicationDoseEventWithScheduledStartDate:endDate:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithMedicationConceptIdentifier:@
-predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector :: Selector
+predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector :: Selector '[Id HKHealthConceptIdentifier] (Id NSPredicate)
 predicateForMedicationDoseEventWithMedicationConceptIdentifierSelector = mkSelector "predicateForMedicationDoseEventWithMedicationConceptIdentifier:"
 
 -- | @Selector@ for @predicateForMedicationDoseEventWithMedicationConceptIdentifiers:@
-predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector :: Selector
+predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForMedicationDoseEventWithMedicationConceptIdentifiersSelector = mkSelector "predicateForMedicationDoseEventWithMedicationConceptIdentifiers:"
 
 -- | @Selector@ for @predicateForStatesOfMindWithValence:operatorType:@
-predicateForStatesOfMindWithValence_operatorTypeSelector :: Selector
+predicateForStatesOfMindWithValence_operatorTypeSelector :: Selector '[CDouble, NSPredicateOperatorType] (Id NSPredicate)
 predicateForStatesOfMindWithValence_operatorTypeSelector = mkSelector "predicateForStatesOfMindWithValence:operatorType:"
 
 -- | @Selector@ for @predicateForStatesOfMindWithKind:@
-predicateForStatesOfMindWithKindSelector :: Selector
+predicateForStatesOfMindWithKindSelector :: Selector '[HKStateOfMindKind] (Id NSPredicate)
 predicateForStatesOfMindWithKindSelector = mkSelector "predicateForStatesOfMindWithKind:"
 
 -- | @Selector@ for @predicateForStatesOfMindWithLabel:@
-predicateForStatesOfMindWithLabelSelector :: Selector
+predicateForStatesOfMindWithLabelSelector :: Selector '[HKStateOfMindLabel] (Id NSPredicate)
 predicateForStatesOfMindWithLabelSelector = mkSelector "predicateForStatesOfMindWithLabel:"
 
 -- | @Selector@ for @predicateForStatesOfMindWithAssociation:@
-predicateForStatesOfMindWithAssociationSelector :: Selector
+predicateForStatesOfMindWithAssociationSelector :: Selector '[HKStateOfMindAssociation] (Id NSPredicate)
 predicateForStatesOfMindWithAssociationSelector = mkSelector "predicateForStatesOfMindWithAssociation:"
 
 -- | @Selector@ for @predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval:@
-predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector :: Selector
+predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector :: Selector '[Id NSDateInterval] (Id NSPredicate)
 predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateIntervalSelector = mkSelector "predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval:"
 
 -- | @Selector@ for @predicateForElectrocardiogramsWithClassification:@
-predicateForElectrocardiogramsWithClassificationSelector :: Selector
+predicateForElectrocardiogramsWithClassificationSelector :: Selector '[HKElectrocardiogramClassification] (Id NSPredicate)
 predicateForElectrocardiogramsWithClassificationSelector = mkSelector "predicateForElectrocardiogramsWithClassification:"
 
 -- | @Selector@ for @predicateForElectrocardiogramsWithSymptomsStatus:@
-predicateForElectrocardiogramsWithSymptomsStatusSelector :: Selector
+predicateForElectrocardiogramsWithSymptomsStatusSelector :: Selector '[HKElectrocardiogramSymptomsStatus] (Id NSPredicate)
 predicateForElectrocardiogramsWithSymptomsStatusSelector = mkSelector "predicateForElectrocardiogramsWithSymptomsStatus:"
 
 -- | @Selector@ for @predicateForClinicalRecordsWithFHIRResourceType:@
-predicateForClinicalRecordsWithFHIRResourceTypeSelector :: Selector
+predicateForClinicalRecordsWithFHIRResourceTypeSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForClinicalRecordsWithFHIRResourceTypeSelector = mkSelector "predicateForClinicalRecordsWithFHIRResourceType:"
 
 -- | @Selector@ for @predicateForClinicalRecordsFromSource:FHIRResourceType:identifier:@
-predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector :: Selector
+predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector :: Selector '[Id HKSource, Id NSString, Id NSString] (Id NSPredicate)
 predicateForClinicalRecordsFromSource_FHIRResourceType_identifierSelector = mkSelector "predicateForClinicalRecordsFromSource:FHIRResourceType:identifier:"
 
 -- | @Selector@ for @predicateForActivitySummaryWithDateComponents:@
-predicateForActivitySummaryWithDateComponentsSelector :: Selector
+predicateForActivitySummaryWithDateComponentsSelector :: Selector '[Id NSDateComponents] (Id NSPredicate)
 predicateForActivitySummaryWithDateComponentsSelector = mkSelector "predicateForActivitySummaryWithDateComponents:"
 
 -- | @Selector@ for @predicateForActivitySummariesBetweenStartDateComponents:endDateComponents:@
-predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector :: Selector
+predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector :: Selector '[Id NSDateComponents, Id NSDateComponents] (Id NSPredicate)
 predicateForActivitySummariesBetweenStartDateComponents_endDateComponentsSelector = mkSelector "predicateForActivitySummariesBetweenStartDateComponents:endDateComponents:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithWorkoutActivityType:@
-predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector :: Selector
+predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector :: Selector '[HKWorkoutActivityType] (Id NSPredicate)
 predicateForWorkoutActivitiesWithWorkoutActivityTypeSelector = mkSelector "predicateForWorkoutActivitiesWithWorkoutActivityType:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithOperatorType:duration:@
-predicateForWorkoutActivitiesWithOperatorType_durationSelector :: Selector
+predicateForWorkoutActivitiesWithOperatorType_durationSelector :: Selector '[NSPredicateOperatorType, CDouble] (Id NSPredicate)
 predicateForWorkoutActivitiesWithOperatorType_durationSelector = mkSelector "predicateForWorkoutActivitiesWithOperatorType:duration:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithStartDate:endDate:options:@
-predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector :: Selector
+predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector :: Selector '[Id NSDate, Id NSDate, HKQueryOptions] (Id NSPredicate)
 predicateForWorkoutActivitiesWithStartDate_endDate_optionsSelector = mkSelector "predicateForWorkoutActivitiesWithStartDate:endDate:options:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithOperatorType:quantityType:sumQuantity:@
-predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector :: Selector
+predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutActivitiesWithOperatorType_quantityType_sumQuantitySelector = mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:sumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithOperatorType:quantityType:minimumQuantity:@
-predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector :: Selector
+predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutActivitiesWithOperatorType_quantityType_minimumQuantitySelector = mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:minimumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithOperatorType:quantityType:maximumQuantity:@
-predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector :: Selector
+predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutActivitiesWithOperatorType_quantityType_maximumQuantitySelector = mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:maximumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutActivitiesWithOperatorType:quantityType:averageQuantity:@
-predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector :: Selector
+predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutActivitiesWithOperatorType_quantityType_averageQuantitySelector = mkSelector "predicateForWorkoutActivitiesWithOperatorType:quantityType:averageQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutsWithActivityPredicate:@
-predicateForWorkoutsWithActivityPredicateSelector :: Selector
+predicateForWorkoutsWithActivityPredicateSelector :: Selector '[Id NSPredicate] (Id NSPredicate)
 predicateForWorkoutsWithActivityPredicateSelector = mkSelector "predicateForWorkoutsWithActivityPredicate:"
 
 -- | @Selector@ for @predicateForWorkoutsWithWorkoutActivityType:@
-predicateForWorkoutsWithWorkoutActivityTypeSelector :: Selector
+predicateForWorkoutsWithWorkoutActivityTypeSelector :: Selector '[HKWorkoutActivityType] (Id NSPredicate)
 predicateForWorkoutsWithWorkoutActivityTypeSelector = mkSelector "predicateForWorkoutsWithWorkoutActivityType:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:duration:@
-predicateForWorkoutsWithOperatorType_durationSelector :: Selector
+predicateForWorkoutsWithOperatorType_durationSelector :: Selector '[NSPredicateOperatorType, CDouble] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_durationSelector = mkSelector "predicateForWorkoutsWithOperatorType:duration:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:totalEnergyBurned:@
-predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector :: Selector
+predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector :: Selector '[NSPredicateOperatorType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_totalEnergyBurnedSelector = mkSelector "predicateForWorkoutsWithOperatorType:totalEnergyBurned:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:totalDistance:@
-predicateForWorkoutsWithOperatorType_totalDistanceSelector :: Selector
+predicateForWorkoutsWithOperatorType_totalDistanceSelector :: Selector '[NSPredicateOperatorType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_totalDistanceSelector = mkSelector "predicateForWorkoutsWithOperatorType:totalDistance:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:totalSwimmingStrokeCount:@
-predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector :: Selector
+predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector :: Selector '[NSPredicateOperatorType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_totalSwimmingStrokeCountSelector = mkSelector "predicateForWorkoutsWithOperatorType:totalSwimmingStrokeCount:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:totalFlightsClimbed:@
-predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector :: Selector
+predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector :: Selector '[NSPredicateOperatorType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_totalFlightsClimbedSelector = mkSelector "predicateForWorkoutsWithOperatorType:totalFlightsClimbed:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:quantityType:sumQuantity:@
-predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector :: Selector
+predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_quantityType_sumQuantitySelector = mkSelector "predicateForWorkoutsWithOperatorType:quantityType:sumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:quantityType:minimumQuantity:@
-predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector :: Selector
+predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_quantityType_minimumQuantitySelector = mkSelector "predicateForWorkoutsWithOperatorType:quantityType:minimumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:quantityType:maximumQuantity:@
-predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector :: Selector
+predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_quantityType_maximumQuantitySelector = mkSelector "predicateForWorkoutsWithOperatorType:quantityType:maximumQuantity:"
 
 -- | @Selector@ for @predicateForWorkoutsWithOperatorType:quantityType:averageQuantity:@
-predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector :: Selector
+predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantityType, Id HKQuantity] (Id NSPredicate)
 predicateForWorkoutsWithOperatorType_quantityType_averageQuantitySelector = mkSelector "predicateForWorkoutsWithOperatorType:quantityType:averageQuantity:"
 
 -- | @Selector@ for @predicateForCategorySamplesWithOperatorType:value:@
-predicateForCategorySamplesWithOperatorType_valueSelector :: Selector
+predicateForCategorySamplesWithOperatorType_valueSelector :: Selector '[NSPredicateOperatorType, CLong] (Id NSPredicate)
 predicateForCategorySamplesWithOperatorType_valueSelector = mkSelector "predicateForCategorySamplesWithOperatorType:value:"
 
 -- | @Selector@ for @predicateForCategorySamplesEqualToValues:@
-predicateForCategorySamplesEqualToValuesSelector :: Selector
+predicateForCategorySamplesEqualToValuesSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForCategorySamplesEqualToValuesSelector = mkSelector "predicateForCategorySamplesEqualToValues:"
 
 -- | @Selector@ for @predicateForQuantitySamplesWithOperatorType:quantity:@
-predicateForQuantitySamplesWithOperatorType_quantitySelector :: Selector
+predicateForQuantitySamplesWithOperatorType_quantitySelector :: Selector '[NSPredicateOperatorType, Id HKQuantity] (Id NSPredicate)
 predicateForQuantitySamplesWithOperatorType_quantitySelector = mkSelector "predicateForQuantitySamplesWithOperatorType:quantity:"
 
 -- | @Selector@ for @predicateForSamplesWithStartDate:endDate:options:@
-predicateForSamplesWithStartDate_endDate_optionsSelector :: Selector
+predicateForSamplesWithStartDate_endDate_optionsSelector :: Selector '[Id NSDate, Id NSDate, HKQueryOptions] (Id NSPredicate)
 predicateForSamplesWithStartDate_endDate_optionsSelector = mkSelector "predicateForSamplesWithStartDate:endDate:options:"
 
 -- | @Selector@ for @predicateForObjectsWithMetadataKey:@
-predicateForObjectsWithMetadataKeySelector :: Selector
+predicateForObjectsWithMetadataKeySelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateForObjectsWithMetadataKeySelector = mkSelector "predicateForObjectsWithMetadataKey:"
 
 -- | @Selector@ for @predicateForObjectsWithMetadataKey:allowedValues:@
-predicateForObjectsWithMetadataKey_allowedValuesSelector :: Selector
+predicateForObjectsWithMetadataKey_allowedValuesSelector :: Selector '[Id NSString, Id NSArray] (Id NSPredicate)
 predicateForObjectsWithMetadataKey_allowedValuesSelector = mkSelector "predicateForObjectsWithMetadataKey:allowedValues:"
 
 -- | @Selector@ for @predicateForObjectsWithMetadataKey:operatorType:value:@
-predicateForObjectsWithMetadataKey_operatorType_valueSelector :: Selector
+predicateForObjectsWithMetadataKey_operatorType_valueSelector :: Selector '[Id NSString, NSPredicateOperatorType, RawId] (Id NSPredicate)
 predicateForObjectsWithMetadataKey_operatorType_valueSelector = mkSelector "predicateForObjectsWithMetadataKey:operatorType:value:"
 
 -- | @Selector@ for @predicateForObjectsFromSource:@
-predicateForObjectsFromSourceSelector :: Selector
+predicateForObjectsFromSourceSelector :: Selector '[Id HKSource] (Id NSPredicate)
 predicateForObjectsFromSourceSelector = mkSelector "predicateForObjectsFromSource:"
 
 -- | @Selector@ for @predicateForObjectsFromSources:@
-predicateForObjectsFromSourcesSelector :: Selector
+predicateForObjectsFromSourcesSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForObjectsFromSourcesSelector = mkSelector "predicateForObjectsFromSources:"
 
 -- | @Selector@ for @predicateForObjectsFromSourceRevisions:@
-predicateForObjectsFromSourceRevisionsSelector :: Selector
+predicateForObjectsFromSourceRevisionsSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForObjectsFromSourceRevisionsSelector = mkSelector "predicateForObjectsFromSourceRevisions:"
 
 -- | @Selector@ for @predicateForObjectsFromDevices:@
-predicateForObjectsFromDevicesSelector :: Selector
+predicateForObjectsFromDevicesSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForObjectsFromDevicesSelector = mkSelector "predicateForObjectsFromDevices:"
 
 -- | @Selector@ for @predicateForObjectsWithDeviceProperty:allowedValues:@
-predicateForObjectsWithDeviceProperty_allowedValuesSelector :: Selector
+predicateForObjectsWithDeviceProperty_allowedValuesSelector :: Selector '[Id NSString, Id NSSet] (Id NSPredicate)
 predicateForObjectsWithDeviceProperty_allowedValuesSelector = mkSelector "predicateForObjectsWithDeviceProperty:allowedValues:"
 
 -- | @Selector@ for @predicateForObjectWithUUID:@
-predicateForObjectWithUUIDSelector :: Selector
+predicateForObjectWithUUIDSelector :: Selector '[Id NSUUID] (Id NSPredicate)
 predicateForObjectWithUUIDSelector = mkSelector "predicateForObjectWithUUID:"
 
 -- | @Selector@ for @predicateForObjectsWithUUIDs:@
-predicateForObjectsWithUUIDsSelector :: Selector
+predicateForObjectsWithUUIDsSelector :: Selector '[Id NSSet] (Id NSPredicate)
 predicateForObjectsWithUUIDsSelector = mkSelector "predicateForObjectsWithUUIDs:"
 
 -- | @Selector@ for @predicateForObjectsWithNoCorrelation@
-predicateForObjectsWithNoCorrelationSelector :: Selector
+predicateForObjectsWithNoCorrelationSelector :: Selector '[] (Id NSPredicate)
 predicateForObjectsWithNoCorrelationSelector = mkSelector "predicateForObjectsWithNoCorrelation"
 
 -- | @Selector@ for @predicateForObjectsFromWorkout:@
-predicateForObjectsFromWorkoutSelector :: Selector
+predicateForObjectsFromWorkoutSelector :: Selector '[Id HKWorkout] (Id NSPredicate)
 predicateForObjectsFromWorkoutSelector = mkSelector "predicateForObjectsFromWorkout:"
 
 -- | @Selector@ for @predicateForObjectsAssociatedWithElectrocardiogram:@
-predicateForObjectsAssociatedWithElectrocardiogramSelector :: Selector
+predicateForObjectsAssociatedWithElectrocardiogramSelector :: Selector '[Id HKElectrocardiogram] (Id NSPredicate)
 predicateForObjectsAssociatedWithElectrocardiogramSelector = mkSelector "predicateForObjectsAssociatedWithElectrocardiogram:"
 
 -- | @Selector@ for @predicateForWorkoutEffortSamplesRelatedToWorkout:activity:@
-predicateForWorkoutEffortSamplesRelatedToWorkout_activitySelector :: Selector
+predicateForWorkoutEffortSamplesRelatedToWorkout_activitySelector :: Selector '[Id HKWorkout, Id HKWorkoutActivity] (Id NSPredicate)
 predicateForWorkoutEffortSamplesRelatedToWorkout_activitySelector = mkSelector "predicateForWorkoutEffortSamplesRelatedToWorkout:activity:"
 
 -- | @Selector@ for @objectType@
-objectTypeSelector :: Selector
+objectTypeSelector :: Selector '[] (Id HKObjectType)
 objectTypeSelector = mkSelector "objectType"
 
 -- | @Selector@ for @sampleType@
-sampleTypeSelector :: Selector
+sampleTypeSelector :: Selector '[] (Id HKSampleType)
 sampleTypeSelector = mkSelector "sampleType"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 

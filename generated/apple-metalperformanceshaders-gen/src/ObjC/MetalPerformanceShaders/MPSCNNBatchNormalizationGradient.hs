@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.MetalPerformanceShaders.MPSCNNBatchNormalizationGradient
   , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages
   , encodeToCommandBuffer_primaryImage_secondaryImage
   , encodeBatchToCommandBuffer_primaryImages_secondaryImages
-  , initWithDevice_fusedNeuronDescriptorSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector
-  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector
-  , encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector
-  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
-  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImageSelector
   , encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector
+  , encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector
+  , encodeToCommandBuffer_primaryImage_secondaryImageSelector
+  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector
+  , encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector
+  , encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_fusedNeuronDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,9 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:fusedNeuronDescriptor:@
 initWithDevice_fusedNeuronDescriptor :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSNNNeuronDescriptor fusedNeuronDescriptor) => mpscnnBatchNormalizationGradient -> RawId -> fusedNeuronDescriptor -> IO (Id MPSCNNBatchNormalizationGradient)
-initWithDevice_fusedNeuronDescriptor mpscnnBatchNormalizationGradient  device fusedNeuronDescriptor =
-  withObjCPtr fusedNeuronDescriptor $ \raw_fusedNeuronDescriptor ->
-      sendMsg mpscnnBatchNormalizationGradient (mkSelector "initWithDevice:fusedNeuronDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_fusedNeuronDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_fusedNeuronDescriptor mpscnnBatchNormalizationGradient device fusedNeuronDescriptor =
+  sendOwnedMessage mpscnnBatchNormalizationGradient initWithDevice_fusedNeuronDescriptorSelector device (toMPSNNNeuronDescriptor fusedNeuronDescriptor)
 
 -- | NSSecureCoding compatability
 --
@@ -79,9 +75,8 @@ initWithDevice_fusedNeuronDescriptor mpscnnBatchNormalizationGradient  device fu
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsNSCoder aDecoder) => mpscnnBatchNormalizationGradient -> aDecoder -> RawId -> IO (Id MPSCNNBatchNormalizationGradient)
-initWithCoder_device mpscnnBatchNormalizationGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnBatchNormalizationGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnBatchNormalizationGradient aDecoder device =
+  sendOwnedMessage mpscnnBatchNormalizationGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode this operation to a command buffer for a single image.
 --
@@ -97,12 +92,8 @@ initWithCoder_device mpscnnBatchNormalizationGradient  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:destinationGradient:@
 encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradient :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSImage sourceGradient, IsMPSImage sourceImage, IsMPSCNNBatchNormalizationState batchNormalizationState, IsMPSImage destinationGradient) => mpscnnBatchNormalizationGradient -> RawId -> sourceGradient -> sourceImage -> batchNormalizationState -> destinationGradient -> IO ()
-encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradient mpscnnBatchNormalizationGradient  commandBuffer sourceGradient sourceImage batchNormalizationState destinationGradient =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-        withObjCPtr destinationGradient $ \raw_destinationGradient ->
-            sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:destinationGradient:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr raw_destinationGradient :: Ptr ())]
+encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradient mpscnnBatchNormalizationGradient commandBuffer sourceGradient sourceImage batchNormalizationState destinationGradient =
+  sendMessage mpscnnBatchNormalizationGradient encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector commandBuffer (toMPSImage sourceGradient) (toMPSImage sourceImage) (toMPSCNNBatchNormalizationState batchNormalizationState) (toMPSImage destinationGradient)
 
 -- | Encode this operation to a command buffer.
 --
@@ -118,94 +109,84 @@ encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destina
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradients :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSCNNBatchNormalizationState batchNormalizationState) => mpscnnBatchNormalizationGradient -> RawId -> RawId -> RawId -> batchNormalizationState -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradients mpscnnBatchNormalizationGradient  commandBuffer sourceGradients sourceImages batchNormalizationState destinationGradients =
-  withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-      sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr (unRawId destinationGradients) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradients mpscnnBatchNormalizationGradient commandBuffer sourceGradients sourceImages batchNormalizationState destinationGradients =
+  sendMessage mpscnnBatchNormalizationGradient encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector commandBuffer sourceGradients sourceImages (toMPSCNNBatchNormalizationState batchNormalizationState) destinationGradients
 
 -- | Encode this operation to a command buffer.  Create an MPSImage to contain                  the result and return it.                  See encodeToCommandBuffer:sourceImage:sourceGradient:sourceImage:batchNormalizationState:destinationGradient                  for further details.
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:@
 encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSImage sourceGradient, IsMPSImage sourceImage, IsMPSCNNBatchNormalizationState batchNormalizationState) => mpscnnBatchNormalizationGradient -> RawId -> sourceGradient -> sourceImage -> batchNormalizationState -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState mpscnnBatchNormalizationGradient  commandBuffer sourceGradient sourceImage batchNormalizationState =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-          sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState mpscnnBatchNormalizationGradient commandBuffer sourceGradient sourceImage batchNormalizationState =
+  sendMessage mpscnnBatchNormalizationGradient encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector commandBuffer (toMPSImage sourceGradient) (toMPSImage sourceImage) (toMPSCNNBatchNormalizationState batchNormalizationState)
 
 -- | Encode this operation to a command buffer.  Create an MPSImageBatch to contain                  the result and return it.                  See encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients                  for further details.
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSCNNBatchNormalizationState batchNormalizationState) => mpscnnBatchNormalizationGradient -> RawId -> RawId -> RawId -> batchNormalizationState -> IO RawId
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState mpscnnBatchNormalizationGradient  commandBuffer sourceGradients sourceImages batchNormalizationState =
-  withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-      fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState mpscnnBatchNormalizationGradient commandBuffer sourceGradients sourceImages batchNormalizationState =
+  sendMessage mpscnnBatchNormalizationGradient encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector commandBuffer sourceGradients sourceImages (toMPSCNNBatchNormalizationState batchNormalizationState)
 
 -- | @- encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsMPSImage destinationImage) => mpscnnBatchNormalizationGradient -> RawId -> primaryImage -> secondaryImage -> destinationImage -> IO ()
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBatchNormalizationGradient  commandBuffer primaryImage secondaryImage destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImage mpscnnBatchNormalizationGradient commandBuffer primaryImage secondaryImage destinationImage =
+  sendMessage mpscnnBatchNormalizationGradient encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toMPSImage destinationImage)
 
 -- | @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages :: IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient => mpscnnBatchNormalizationGradient -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscnnBatchNormalizationGradient  commandBuffer primaryImages secondaryImages destinationImages =
-    sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImages mpscnnBatchNormalizationGradient commandBuffer primaryImages secondaryImages destinationImages =
+  sendMessage mpscnnBatchNormalizationGradient encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector commandBuffer primaryImages secondaryImages destinationImages
 
 -- | @- encodeToCommandBuffer:primaryImage:secondaryImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage :: (IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient, IsMPSImage primaryImage, IsMPSImage secondaryImage) => mpscnnBatchNormalizationGradient -> RawId -> primaryImage -> secondaryImage -> IO (Id MPSImage)
-encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBatchNormalizationGradient  commandBuffer primaryImage secondaryImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-        sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_primaryImage_secondaryImage mpscnnBatchNormalizationGradient commandBuffer primaryImage secondaryImage =
+  sendMessage mpscnnBatchNormalizationGradient encodeToCommandBuffer_primaryImage_secondaryImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage)
 
 -- | @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages :: IsMPSCNNBatchNormalizationGradient mpscnnBatchNormalizationGradient => mpscnnBatchNormalizationGradient -> RawId -> RawId -> RawId -> IO RawId
-encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBatchNormalizationGradient  commandBuffer primaryImage secondaryImage =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationGradient (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImage) :: Ptr ()), argPtr (castPtr (unRawId secondaryImage) :: Ptr ())]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages mpscnnBatchNormalizationGradient commandBuffer primaryImage secondaryImage =
+  sendMessage mpscnnBatchNormalizationGradient encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector commandBuffer primaryImage secondaryImage
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:fusedNeuronDescriptor:@
-initWithDevice_fusedNeuronDescriptorSelector :: Selector
+initWithDevice_fusedNeuronDescriptorSelector :: Selector '[RawId, Id MPSNNNeuronDescriptor] (Id MPSCNNBatchNormalizationGradient)
 initWithDevice_fusedNeuronDescriptorSelector = mkSelector "initWithDevice:fusedNeuronDescriptor:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNBatchNormalizationGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:destinationGradient:@
-encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector :: Selector
+encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSCNNBatchNormalizationState, Id MPSImage] ()
 encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationState_destinationGradientSelector = mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:destinationGradient:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector :: Selector '[RawId, RawId, RawId, Id MPSCNNBatchNormalizationState, RawId] ()
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationState_destinationGradientsSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:destinationGradients:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:@
-encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector :: Selector
+encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSCNNBatchNormalizationState] (Id MPSImage)
 encodeToCommandBuffer_sourceGradient_sourceImage_batchNormalizationStateSelector = mkSelector "encodeToCommandBuffer:sourceGradient:sourceImage:batchNormalizationState:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector :: Selector '[RawId, RawId, RawId, Id MPSCNNBatchNormalizationState] RawId
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_batchNormalizationStateSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:batchNormalizationState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:@
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSImage] ()
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationImages:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:@
-encodeToCommandBuffer_primaryImage_secondaryImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage] (Id MPSImage)
 encodeToCommandBuffer_primaryImage_secondaryImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector :: Selector '[RawId, RawId, RawId] RawId
 encodeBatchToCommandBuffer_primaryImages_secondaryImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:"
 

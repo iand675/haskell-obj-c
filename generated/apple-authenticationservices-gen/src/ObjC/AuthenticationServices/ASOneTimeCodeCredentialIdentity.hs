@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AuthenticationServices.ASOneTimeCodeCredentialIdentity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASOneTimeCodeCredentialIdentity asOneTimeCodeCredentialIdentity => asOneTimeCodeCredentialIdentity -> IO (Id ASOneTimeCodeCredentialIdentity)
-init_ asOneTimeCodeCredentialIdentity  =
-    sendMsg asOneTimeCodeCredentialIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asOneTimeCodeCredentialIdentity =
+  sendOwnedMessage asOneTimeCodeCredentialIdentity initSelector
 
 -- | Initializes an instance of ASOneTimeCodeCredentialIdentity.
 --
@@ -50,32 +47,29 @@ init_ asOneTimeCodeCredentialIdentity  =
 --
 -- ObjC selector: @- initWithServiceIdentifier:label:recordIdentifier:@
 initWithServiceIdentifier_label_recordIdentifier :: (IsASOneTimeCodeCredentialIdentity asOneTimeCodeCredentialIdentity, IsASCredentialServiceIdentifier serviceIdentifier, IsNSString label, IsNSString recordIdentifier) => asOneTimeCodeCredentialIdentity -> serviceIdentifier -> label -> recordIdentifier -> IO (Id ASOneTimeCodeCredentialIdentity)
-initWithServiceIdentifier_label_recordIdentifier asOneTimeCodeCredentialIdentity  serviceIdentifier label recordIdentifier =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr recordIdentifier $ \raw_recordIdentifier ->
-          sendMsg asOneTimeCodeCredentialIdentity (mkSelector "initWithServiceIdentifier:label:recordIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_recordIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceIdentifier_label_recordIdentifier asOneTimeCodeCredentialIdentity serviceIdentifier label recordIdentifier =
+  sendOwnedMessage asOneTimeCodeCredentialIdentity initWithServiceIdentifier_label_recordIdentifierSelector (toASCredentialServiceIdentifier serviceIdentifier) (toNSString label) (toNSString recordIdentifier)
 
 -- | A label to identify the one time code, typically supplied by the user. This string will be shown in the AutoFill suggestion for this one time code credential.
 --
 -- ObjC selector: @- label@
 label :: IsASOneTimeCodeCredentialIdentity asOneTimeCodeCredentialIdentity => asOneTimeCodeCredentialIdentity -> IO (Id NSString)
-label asOneTimeCodeCredentialIdentity  =
-    sendMsg asOneTimeCodeCredentialIdentity (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label asOneTimeCodeCredentialIdentity =
+  sendMessage asOneTimeCodeCredentialIdentity labelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASOneTimeCodeCredentialIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithServiceIdentifier:label:recordIdentifier:@
-initWithServiceIdentifier_label_recordIdentifierSelector :: Selector
+initWithServiceIdentifier_label_recordIdentifierSelector :: Selector '[Id ASCredentialServiceIdentifier, Id NSString, Id NSString] (Id ASOneTimeCodeCredentialIdentity)
 initWithServiceIdentifier_label_recordIdentifierSelector = mkSelector "initWithServiceIdentifier:label:recordIdentifier:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 

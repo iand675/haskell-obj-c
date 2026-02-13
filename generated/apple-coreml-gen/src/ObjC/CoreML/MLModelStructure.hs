@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.CoreML.MLModelStructure
   , program
   , pipeline
   , initSelector
-  , newSelector
   , loadContentsOfURL_completionHandlerSelector
   , loadModelAsset_completionHandlerSelector
   , neuralNetworkSelector
-  , programSelector
+  , newSelector
   , pipelineSelector
+  , programSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructure mlModelStructure => mlModelStructure -> IO (Id MLModelStructure)
-init_ mlModelStructure  =
-    sendMsg mlModelStructure (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructure =
+  sendOwnedMessage mlModelStructure initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructure)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructure"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Construct the model structure asynchronously given the location of its on-disk representation.
 --
@@ -66,8 +63,7 @@ loadContentsOfURL_completionHandler :: IsNSURL url => url -> Ptr () -> IO ()
 loadContentsOfURL_completionHandler url handler =
   do
     cls' <- getRequiredClass "MLModelStructure"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "loadContentsOfURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadContentsOfURL_completionHandlerSelector (toNSURL url) handler
 
 -- | Construct the model structure asynchronously  given the model asset.
 --
@@ -80,59 +76,58 @@ loadModelAsset_completionHandler :: IsMLModelAsset asset => asset -> Ptr () -> I
 loadModelAsset_completionHandler asset handler =
   do
     cls' <- getRequiredClass "MLModelStructure"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "loadModelAsset:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadModelAsset_completionHandlerSelector (toMLModelAsset asset) handler
 
 -- | If the model is of NeuralNetwork type then it is the structure of the NeuralNetwork otherwise @nil@.
 --
 -- ObjC selector: @- neuralNetwork@
 neuralNetwork :: IsMLModelStructure mlModelStructure => mlModelStructure -> IO (Id MLModelStructureNeuralNetwork)
-neuralNetwork mlModelStructure  =
-    sendMsg mlModelStructure (mkSelector "neuralNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+neuralNetwork mlModelStructure =
+  sendMessage mlModelStructure neuralNetworkSelector
 
 -- | If the model is of ML Program type then it is the structure of the ML Program otherwise @nil@.
 --
 -- ObjC selector: @- program@
 program :: IsMLModelStructure mlModelStructure => mlModelStructure -> IO (Id MLModelStructureProgram)
-program mlModelStructure  =
-    sendMsg mlModelStructure (mkSelector "program") (retPtr retVoid) [] >>= retainedObject . castPtr
+program mlModelStructure =
+  sendMessage mlModelStructure programSelector
 
 -- | If the model is of Pipeline type then it is the structure of the Pipeline otherwise @nil@.
 --
 -- ObjC selector: @- pipeline@
 pipeline :: IsMLModelStructure mlModelStructure => mlModelStructure -> IO (Id MLModelStructurePipeline)
-pipeline mlModelStructure  =
-    sendMsg mlModelStructure (mkSelector "pipeline") (retPtr retVoid) [] >>= retainedObject . castPtr
+pipeline mlModelStructure =
+  sendMessage mlModelStructure pipelineSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructure)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructure)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @loadContentsOfURL:completionHandler:@
-loadContentsOfURL_completionHandlerSelector :: Selector
+loadContentsOfURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 loadContentsOfURL_completionHandlerSelector = mkSelector "loadContentsOfURL:completionHandler:"
 
 -- | @Selector@ for @loadModelAsset:completionHandler:@
-loadModelAsset_completionHandlerSelector :: Selector
+loadModelAsset_completionHandlerSelector :: Selector '[Id MLModelAsset, Ptr ()] ()
 loadModelAsset_completionHandlerSelector = mkSelector "loadModelAsset:completionHandler:"
 
 -- | @Selector@ for @neuralNetwork@
-neuralNetworkSelector :: Selector
+neuralNetworkSelector :: Selector '[] (Id MLModelStructureNeuralNetwork)
 neuralNetworkSelector = mkSelector "neuralNetwork"
 
 -- | @Selector@ for @program@
-programSelector :: Selector
+programSelector :: Selector '[] (Id MLModelStructureProgram)
 programSelector = mkSelector "program"
 
 -- | @Selector@ for @pipeline@
-pipelineSelector :: Selector
+pipelineSelector :: Selector '[] (Id MLModelStructurePipeline)
 pipelineSelector = mkSelector "pipeline"
 

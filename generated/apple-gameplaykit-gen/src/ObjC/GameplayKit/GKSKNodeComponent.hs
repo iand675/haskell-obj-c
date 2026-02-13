@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.GameplayKit.GKSKNodeComponent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,7 @@ componentWithNode :: IsSKNode node => node -> IO (Id GKSKNodeComponent)
 componentWithNode node =
   do
     cls' <- getRequiredClass "GKSKNodeComponent"
-    withObjCPtr node $ \raw_node ->
-      sendClassMsg cls' (mkSelector "componentWithNode:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' componentWithNodeSelector (toSKNode node)
 
 -- | Initializes component to encapsulate the given SpriteKit node. When the component is added to an entity, the SKNode's entity property will be set.
 --
@@ -58,42 +54,40 @@ componentWithNode node =
 --
 -- ObjC selector: @- initWithNode:@
 initWithNode :: (IsGKSKNodeComponent gkskNodeComponent, IsSKNode node) => gkskNodeComponent -> node -> IO (Id GKSKNodeComponent)
-initWithNode gkskNodeComponent  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg gkskNodeComponent (mkSelector "initWithNode:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ())] >>= ownedObject . castPtr
+initWithNode gkskNodeComponent node =
+  sendOwnedMessage gkskNodeComponent initWithNodeSelector (toSKNode node)
 
 -- | The SpriteKit node this component encapsulates.
 --
 -- ObjC selector: @- node@
 node :: IsGKSKNodeComponent gkskNodeComponent => gkskNodeComponent -> IO (Id SKNode)
-node gkskNodeComponent  =
-    sendMsg gkskNodeComponent (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node gkskNodeComponent =
+  sendMessage gkskNodeComponent nodeSelector
 
 -- | The SpriteKit node this component encapsulates.
 --
 -- ObjC selector: @- setNode:@
 setNode :: (IsGKSKNodeComponent gkskNodeComponent, IsSKNode value) => gkskNodeComponent -> value -> IO ()
-setNode gkskNodeComponent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkskNodeComponent (mkSelector "setNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNode gkskNodeComponent value =
+  sendMessage gkskNodeComponent setNodeSelector (toSKNode value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @componentWithNode:@
-componentWithNodeSelector :: Selector
+componentWithNodeSelector :: Selector '[Id SKNode] (Id GKSKNodeComponent)
 componentWithNodeSelector = mkSelector "componentWithNode:"
 
 -- | @Selector@ for @initWithNode:@
-initWithNodeSelector :: Selector
+initWithNodeSelector :: Selector '[Id SKNode] (Id GKSKNodeComponent)
 initWithNodeSelector = mkSelector "initWithNode:"
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SKNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @setNode:@
-setNodeSelector :: Selector
+setNodeSelector :: Selector '[Id SKNode] ()
 setNodeSelector = mkSelector "setNode:"
 

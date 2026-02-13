@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterRequestConstraintBasedForecas
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , constraintsSelector
-  , setConstraintsSelector
   , causeSelector
-  , setCauseSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , constraintsSelector
   , serverSideProcessingTimeoutSelector
+  , setCauseSelector
+  , setConstraintsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- constraints@
 constraints :: IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> IO (Id NSArray)
-constraints mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  =
-    sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams constraintsSelector
 
 -- | @- setConstraints:@
 setConstraints :: (IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams, IsNSArray value) => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> value -> IO ()
-setConstraints mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraints mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams value =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams setConstraintsSelector (toNSArray value)
 
 -- | @- cause@
 cause :: IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> IO (Id NSNumber)
-cause mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  =
-    sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "cause") (retPtr retVoid) [] >>= retainedObject . castPtr
+cause mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams causeSelector
 
 -- | @- setCause:@
 setCause :: (IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> value -> IO ()
-setCause mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "setCause:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCause mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams value =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams setCauseSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setCause mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  v
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  =
-    sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedForec
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams value =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterRequestConstraintBasedFo
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  =
-    sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrDeviceEnergyManagementClusterRequestConstraintBas
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDeviceEnergyManagementClusterRequestConstraintBasedForecastParams mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams value =
+  sendMessage mtrDeviceEnergyManagementClusterRequestConstraintBasedForecastParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSArray)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @setConstraints:@
-setConstraintsSelector :: Selector
+setConstraintsSelector :: Selector '[Id NSArray] ()
 setConstraintsSelector = mkSelector "setConstraints:"
 
 -- | @Selector@ for @cause@
-causeSelector :: Selector
+causeSelector :: Selector '[] (Id NSNumber)
 causeSelector = mkSelector "cause"
 
 -- | @Selector@ for @setCause:@
-setCauseSelector :: Selector
+setCauseSelector :: Selector '[Id NSNumber] ()
 setCauseSelector = mkSelector "setCause:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

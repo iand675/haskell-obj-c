@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.MetalPerformanceShaders.MPSNNPad
   , setPaddingSizeAfter
   , fillValue
   , setFillValue
+  , fillValueSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_paddingSizeBefore_paddingSizeAfterSelector
   , initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArraySelector
-  , initWithCoder_deviceSelector
-  , paddingSizeBeforeSelector
-  , setPaddingSizeBeforeSelector
   , paddingSizeAfterSelector
-  , setPaddingSizeAfterSelector
-  , fillValueSelector
+  , paddingSizeBeforeSelector
   , setFillValueSelector
+  , setPaddingSizeAfterSelector
+  , setPaddingSizeBeforeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNPad mpsnnPad => mpsnnPad -> RawId -> IO (Id MPSNNPad)
-initWithDevice mpsnnPad  device =
-    sendMsg mpsnnPad (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnPad device =
+  sendOwnedMessage mpsnnPad initWithDeviceSelector device
 
 -- | Initialize a MPSNNPad kernel
 --
@@ -69,8 +66,8 @@ initWithDevice mpsnnPad  device =
 --
 -- ObjC selector: @- initWithDevice:paddingSizeBefore:paddingSizeAfter:@
 initWithDevice_paddingSizeBefore_paddingSizeAfter :: IsMPSNNPad mpsnnPad => mpsnnPad -> RawId -> MPSImageCoordinate -> MPSImageCoordinate -> IO (Id MPSNNPad)
-initWithDevice_paddingSizeBefore_paddingSizeAfter mpsnnPad  device paddingSizeBefore paddingSizeAfter =
-    sendMsg mpsnnPad (mkSelector "initWithDevice:paddingSizeBefore:paddingSizeAfter:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argMPSImageCoordinate paddingSizeBefore, argMPSImageCoordinate paddingSizeAfter] >>= ownedObject . castPtr
+initWithDevice_paddingSizeBefore_paddingSizeAfter mpsnnPad device paddingSizeBefore paddingSizeAfter =
+  sendOwnedMessage mpsnnPad initWithDevice_paddingSizeBefore_paddingSizeAfterSelector device paddingSizeBefore paddingSizeAfter
 
 -- | Initialize a MPSNNPad kernel
 --
@@ -86,9 +83,8 @@ initWithDevice_paddingSizeBefore_paddingSizeAfter mpsnnPad  device paddingSizeBe
 --
 -- ObjC selector: @- initWithDevice:paddingSizeBefore:paddingSizeAfter:fillValueArray:@
 initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArray :: (IsMPSNNPad mpsnnPad, IsNSData fillValueArray) => mpsnnPad -> RawId -> MPSImageCoordinate -> MPSImageCoordinate -> fillValueArray -> IO (Id MPSNNPad)
-initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArray mpsnnPad  device paddingSizeBefore paddingSizeAfter fillValueArray =
-  withObjCPtr fillValueArray $ \raw_fillValueArray ->
-      sendMsg mpsnnPad (mkSelector "initWithDevice:paddingSizeBefore:paddingSizeAfter:fillValueArray:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argMPSImageCoordinate paddingSizeBefore, argMPSImageCoordinate paddingSizeAfter, argPtr (castPtr raw_fillValueArray :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArray mpsnnPad device paddingSizeBefore paddingSizeAfter fillValueArray =
+  sendOwnedMessage mpsnnPad initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArraySelector device paddingSizeBefore paddingSizeAfter (toNSData fillValueArray)
 
 -- | NSSecureCoding compatability
 --
@@ -102,9 +98,8 @@ initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArray mpsnnPad  devic
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNPad mpsnnPad, IsNSCoder aDecoder) => mpsnnPad -> aDecoder -> RawId -> IO (Id MPSNNPad)
-initWithCoder_device mpsnnPad  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnPad (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnPad aDecoder device =
+  sendOwnedMessage mpsnnPad initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | paddingSizeBefore
 --
@@ -112,8 +107,8 @@ initWithCoder_device mpsnnPad  aDecoder device =
 --
 -- ObjC selector: @- paddingSizeBefore@
 paddingSizeBefore :: IsMPSNNPad mpsnnPad => mpsnnPad -> IO MPSImageCoordinate
-paddingSizeBefore mpsnnPad  =
-    sendMsgStret mpsnnPad (mkSelector "paddingSizeBefore") retMPSImageCoordinate []
+paddingSizeBefore mpsnnPad =
+  sendMessage mpsnnPad paddingSizeBeforeSelector
 
 -- | paddingSizeBefore
 --
@@ -121,8 +116,8 @@ paddingSizeBefore mpsnnPad  =
 --
 -- ObjC selector: @- setPaddingSizeBefore:@
 setPaddingSizeBefore :: IsMPSNNPad mpsnnPad => mpsnnPad -> MPSImageCoordinate -> IO ()
-setPaddingSizeBefore mpsnnPad  value =
-    sendMsg mpsnnPad (mkSelector "setPaddingSizeBefore:") retVoid [argMPSImageCoordinate value]
+setPaddingSizeBefore mpsnnPad value =
+  sendMessage mpsnnPad setPaddingSizeBeforeSelector value
 
 -- | paddingSizeAfter
 --
@@ -130,8 +125,8 @@ setPaddingSizeBefore mpsnnPad  value =
 --
 -- ObjC selector: @- paddingSizeAfter@
 paddingSizeAfter :: IsMPSNNPad mpsnnPad => mpsnnPad -> IO MPSImageCoordinate
-paddingSizeAfter mpsnnPad  =
-    sendMsgStret mpsnnPad (mkSelector "paddingSizeAfter") retMPSImageCoordinate []
+paddingSizeAfter mpsnnPad =
+  sendMessage mpsnnPad paddingSizeAfterSelector
 
 -- | paddingSizeAfter
 --
@@ -139,8 +134,8 @@ paddingSizeAfter mpsnnPad  =
 --
 -- ObjC selector: @- setPaddingSizeAfter:@
 setPaddingSizeAfter :: IsMPSNNPad mpsnnPad => mpsnnPad -> MPSImageCoordinate -> IO ()
-setPaddingSizeAfter mpsnnPad  value =
-    sendMsg mpsnnPad (mkSelector "setPaddingSizeAfter:") retVoid [argMPSImageCoordinate value]
+setPaddingSizeAfter mpsnnPad value =
+  sendMessage mpsnnPad setPaddingSizeAfterSelector value
 
 -- | fillValue
 --
@@ -148,8 +143,8 @@ setPaddingSizeAfter mpsnnPad  value =
 --
 -- ObjC selector: @- fillValue@
 fillValue :: IsMPSNNPad mpsnnPad => mpsnnPad -> IO CFloat
-fillValue mpsnnPad  =
-    sendMsg mpsnnPad (mkSelector "fillValue") retCFloat []
+fillValue mpsnnPad =
+  sendMessage mpsnnPad fillValueSelector
 
 -- | fillValue
 --
@@ -157,50 +152,50 @@ fillValue mpsnnPad  =
 --
 -- ObjC selector: @- setFillValue:@
 setFillValue :: IsMPSNNPad mpsnnPad => mpsnnPad -> CFloat -> IO ()
-setFillValue mpsnnPad  value =
-    sendMsg mpsnnPad (mkSelector "setFillValue:") retVoid [argCFloat value]
+setFillValue mpsnnPad value =
+  sendMessage mpsnnPad setFillValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNPad)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:paddingSizeBefore:paddingSizeAfter:@
-initWithDevice_paddingSizeBefore_paddingSizeAfterSelector :: Selector
+initWithDevice_paddingSizeBefore_paddingSizeAfterSelector :: Selector '[RawId, MPSImageCoordinate, MPSImageCoordinate] (Id MPSNNPad)
 initWithDevice_paddingSizeBefore_paddingSizeAfterSelector = mkSelector "initWithDevice:paddingSizeBefore:paddingSizeAfter:"
 
 -- | @Selector@ for @initWithDevice:paddingSizeBefore:paddingSizeAfter:fillValueArray:@
-initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArraySelector :: Selector
+initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArraySelector :: Selector '[RawId, MPSImageCoordinate, MPSImageCoordinate, Id NSData] (Id MPSNNPad)
 initWithDevice_paddingSizeBefore_paddingSizeAfter_fillValueArraySelector = mkSelector "initWithDevice:paddingSizeBefore:paddingSizeAfter:fillValueArray:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNPad)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @paddingSizeBefore@
-paddingSizeBeforeSelector :: Selector
+paddingSizeBeforeSelector :: Selector '[] MPSImageCoordinate
 paddingSizeBeforeSelector = mkSelector "paddingSizeBefore"
 
 -- | @Selector@ for @setPaddingSizeBefore:@
-setPaddingSizeBeforeSelector :: Selector
+setPaddingSizeBeforeSelector :: Selector '[MPSImageCoordinate] ()
 setPaddingSizeBeforeSelector = mkSelector "setPaddingSizeBefore:"
 
 -- | @Selector@ for @paddingSizeAfter@
-paddingSizeAfterSelector :: Selector
+paddingSizeAfterSelector :: Selector '[] MPSImageCoordinate
 paddingSizeAfterSelector = mkSelector "paddingSizeAfter"
 
 -- | @Selector@ for @setPaddingSizeAfter:@
-setPaddingSizeAfterSelector :: Selector
+setPaddingSizeAfterSelector :: Selector '[MPSImageCoordinate] ()
 setPaddingSizeAfterSelector = mkSelector "setPaddingSizeAfter:"
 
 -- | @Selector@ for @fillValue@
-fillValueSelector :: Selector
+fillValueSelector :: Selector '[] CFloat
 fillValueSelector = mkSelector "fillValue"
 
 -- | @Selector@ for @setFillValue:@
-setFillValueSelector :: Selector
+setFillValueSelector :: Selector '[CFloat] ()
 setFillValueSelector = mkSelector "setFillValue:"
 

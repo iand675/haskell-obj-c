@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.CoreWLAN.CWMutableNetworkProfile
   , setSsidData
   , security
   , setSecurity
-  , ssidDataSelector
-  , setSsidDataSelector
   , securitySelector
   , setSecuritySelector
+  , setSsidDataSelector
+  , ssidDataSelector
 
   -- * Enum types
   , CWSecurity(CWSecurity)
@@ -42,15 +43,11 @@ module ObjC.CoreWLAN.CWMutableNetworkProfile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,47 +59,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- ssidData@
 ssidData :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> IO RawId
-ssidData cwMutableNetworkProfile  =
-    fmap (RawId . castPtr) $ sendMsg cwMutableNetworkProfile (mkSelector "ssidData") (retPtr retVoid) []
+ssidData cwMutableNetworkProfile =
+  sendMessage cwMutableNetworkProfile ssidDataSelector
 
 -- | Set the service set identifier (SSID).
 --
 -- ObjC selector: @- setSsidData:@
 setSsidData :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> RawId -> IO ()
-setSsidData cwMutableNetworkProfile  value =
-    sendMsg cwMutableNetworkProfile (mkSelector "setSsidData:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSsidData cwMutableNetworkProfile value =
+  sendMessage cwMutableNetworkProfile setSsidDataSelector value
 
 -- | Set the security type.
 --
 -- ObjC selector: @- security@
 security :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> IO CWSecurity
-security cwMutableNetworkProfile  =
-    fmap (coerce :: CLong -> CWSecurity) $ sendMsg cwMutableNetworkProfile (mkSelector "security") retCLong []
+security cwMutableNetworkProfile =
+  sendMessage cwMutableNetworkProfile securitySelector
 
 -- | Set the security type.
 --
 -- ObjC selector: @- setSecurity:@
 setSecurity :: IsCWMutableNetworkProfile cwMutableNetworkProfile => cwMutableNetworkProfile -> CWSecurity -> IO ()
-setSecurity cwMutableNetworkProfile  value =
-    sendMsg cwMutableNetworkProfile (mkSelector "setSecurity:") retVoid [argCLong (coerce value)]
+setSecurity cwMutableNetworkProfile value =
+  sendMessage cwMutableNetworkProfile setSecuritySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ssidData@
-ssidDataSelector :: Selector
+ssidDataSelector :: Selector '[] RawId
 ssidDataSelector = mkSelector "ssidData"
 
 -- | @Selector@ for @setSsidData:@
-setSsidDataSelector :: Selector
+setSsidDataSelector :: Selector '[RawId] ()
 setSsidDataSelector = mkSelector "setSsidData:"
 
 -- | @Selector@ for @security@
-securitySelector :: Selector
+securitySelector :: Selector '[] CWSecurity
 securitySelector = mkSelector "security"
 
 -- | @Selector@ for @setSecurity:@
-setSecuritySelector :: Selector
+setSecuritySelector :: Selector '[CWSecurity] ()
 setSecuritySelector = mkSelector "setSecurity:"
 

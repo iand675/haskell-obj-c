@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.GLKit.GLKSubmesh
   , elementBuffer
   , mesh
   , name
-  , initSelector
-  , typeSelector
-  , modeSelector
-  , elementCountSelector
   , elementBufferSelector
+  , elementCountSelector
+  , initSelector
   , meshSelector
+  , modeSelector
   , nameSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO (Id GLKSubmesh)
-init_ glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ glkSubmesh =
+  sendOwnedMessage glkSubmesh initSelector
 
 -- | type
 --
@@ -56,8 +53,8 @@ init_ glkSubmesh  =
 --
 -- ObjC selector: @- type@
 type_ :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO CUInt
-type_ glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "type") retCUInt []
+type_ glkSubmesh =
+  sendMessage glkSubmesh typeSelector
 
 -- | mode
 --
@@ -67,8 +64,8 @@ type_ glkSubmesh  =
 --
 -- ObjC selector: @- mode@
 mode :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO CUInt
-mode glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "mode") retCUInt []
+mode glkSubmesh =
+  sendMessage glkSubmesh modeSelector
 
 -- | elementCount
 --
@@ -78,8 +75,8 @@ mode glkSubmesh  =
 --
 -- ObjC selector: @- elementCount@
 elementCount :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO CInt
-elementCount glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "elementCount") retCInt []
+elementCount glkSubmesh =
+  sendMessage glkSubmesh elementCountSelector
 
 -- | elementBuffer
 --
@@ -89,8 +86,8 @@ elementCount glkSubmesh  =
 --
 -- ObjC selector: @- elementBuffer@
 elementBuffer :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO (Id GLKMeshBuffer)
-elementBuffer glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "elementBuffer") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementBuffer glkSubmesh =
+  sendMessage glkSubmesh elementBufferSelector
 
 -- | mesh
 --
@@ -100,8 +97,8 @@ elementBuffer glkSubmesh  =
 --
 -- ObjC selector: @- mesh@
 mesh :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO (Id GLKMesh)
-mesh glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "mesh") (retPtr retVoid) [] >>= retainedObject . castPtr
+mesh glkSubmesh =
+  sendMessage glkSubmesh meshSelector
 
 -- | name
 --
@@ -111,38 +108,38 @@ mesh glkSubmesh  =
 --
 -- ObjC selector: @- name@
 name :: IsGLKSubmesh glkSubmesh => glkSubmesh -> IO (Id NSString)
-name glkSubmesh  =
-    sendMsg glkSubmesh (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name glkSubmesh =
+  sendMessage glkSubmesh nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GLKSubmesh)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CUInt
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] CUInt
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @elementCount@
-elementCountSelector :: Selector
+elementCountSelector :: Selector '[] CInt
 elementCountSelector = mkSelector "elementCount"
 
 -- | @Selector@ for @elementBuffer@
-elementBufferSelector :: Selector
+elementBufferSelector :: Selector '[] (Id GLKMeshBuffer)
 elementBufferSelector = mkSelector "elementBuffer"
 
 -- | @Selector@ for @mesh@
-meshSelector :: Selector
+meshSelector :: Selector '[] (Id GLKMesh)
 meshSelector = mkSelector "mesh"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

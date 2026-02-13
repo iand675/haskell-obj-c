@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.SpriteKit.SKPhysicsJointLimit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- maxLength@
 maxLength :: IsSKPhysicsJointLimit skPhysicsJointLimit => skPhysicsJointLimit -> IO CDouble
-maxLength skPhysicsJointLimit  =
-    sendMsg skPhysicsJointLimit (mkSelector "maxLength") retCDouble []
+maxLength skPhysicsJointLimit =
+  sendMessage skPhysicsJointLimit maxLengthSelector
 
 -- | @- setMaxLength:@
 setMaxLength :: IsSKPhysicsJointLimit skPhysicsJointLimit => skPhysicsJointLimit -> CDouble -> IO ()
-setMaxLength skPhysicsJointLimit  value =
-    sendMsg skPhysicsJointLimit (mkSelector "setMaxLength:") retVoid [argCDouble value]
+setMaxLength skPhysicsJointLimit value =
+  sendMessage skPhysicsJointLimit setMaxLengthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxLength@
-maxLengthSelector :: Selector
+maxLengthSelector :: Selector '[] CDouble
 maxLengthSelector = mkSelector "maxLength"
 
 -- | @Selector@ for @setMaxLength:@
-setMaxLengthSelector :: Selector
+setMaxLengthSelector :: Selector '[CDouble] ()
 setMaxLengthSelector = mkSelector "setMaxLength:"
 

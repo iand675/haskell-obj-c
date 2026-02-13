@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -87,78 +88,78 @@ module ObjC.AVFoundation.AVPlayer
   , setDefaultRate
   , timeControlStatus
   , reasonForWaitingToPlay
-  , initSelector
-  , playerWithURLSelector
-  , playerWithPlayerItemSelector
-  , initWithURLSelector
-  , initWithPlayerItemSelector
-  , setMediaSelectionCriteria_forMediaCharacteristicSelector
-  , mediaSelectionCriteriaForMediaCharacteristicSelector
+  , actionAtItemEndSelector
   , addBoundaryTimeObserverForTimes_queue_usingBlockSelector
-  , removeTimeObserverSelector
-  , prerollAtRate_completionHandlerSelector
+  , allowsExternalPlaybackSelector
+  , appliesMediaSelectionCriteriaAutomaticallySelector
+  , audioOutputDeviceUniqueIDSelector
+  , audioOutputSuppressedDueToNonMixableAudioRouteSelector
+  , audiovisualBackgroundPlaybackPolicySelector
+  , automaticallyWaitsToMinimizeStallingSelector
+  , availableHDRModesSelector
   , cancelPendingPrerollsSelector
-  , seekToDateSelector
-  , seekToDate_completionHandlerSelector
-  , replaceCurrentItemWithPlayerItemSelector
-  , playSelector
+  , closedCaptionDisplayEnabledSelector
+  , currentItemSelector
+  , defaultRateSelector
+  , eligibleForHDRPlaybackSelector
+  , errorSelector
+  , externalPlaybackActiveSelector
+  , externalPlaybackVideoGravitySelector
+  , initSelector
+  , initWithPlayerItemSelector
+  , initWithURLSelector
+  , intendedSpatialAudioExperienceSelector
+  , masterClockSelector
+  , mediaSelectionCriteriaForMediaCharacteristicSelector
+  , mutedSelector
+  , networkResourcePrioritySelector
+  , observationEnabledSelector
+  , outputObscuredDueToInsufficientExternalProtectionSelector
   , pauseSelector
   , playImmediatelyAtRateSelector
-  , statusSelector
-  , errorSelector
-  , closedCaptionDisplayEnabledSelector
-  , setClosedCaptionDisplayEnabledSelector
-  , masterClockSelector
-  , setMasterClockSelector
-  , observationEnabledSelector
-  , setObservationEnabledSelector
-  , audioOutputSuppressedDueToNonMixableAudioRouteSelector
-  , intendedSpatialAudioExperienceSelector
-  , setIntendedSpatialAudioExperienceSelector
-  , networkResourcePrioritySelector
-  , setNetworkResourcePrioritySelector
-  , videoOutputSelector
-  , setVideoOutputSelector
+  , playSelector
   , playbackCoordinatorSelector
-  , audiovisualBackgroundPlaybackPolicySelector
-  , setAudiovisualBackgroundPlaybackPolicySelector
-  , preventsAutomaticBackgroundingDuringVideoPlaybackSelector
-  , setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector
-  , preventsDisplaySleepDuringVideoPlaybackSelector
-  , setPreventsDisplaySleepDuringVideoPlaybackSelector
+  , playerWithPlayerItemSelector
+  , playerWithURLSelector
   , preferredVideoDecoderGPURegistryIDSelector
-  , setPreferredVideoDecoderGPURegistryIDSelector
-  , availableHDRModesSelector
-  , eligibleForHDRPlaybackSelector
-  , outputObscuredDueToInsufficientExternalProtectionSelector
-  , allowsExternalPlaybackSelector
-  , setAllowsExternalPlaybackSelector
-  , externalPlaybackActiveSelector
-  , usesExternalPlaybackWhileExternalScreenIsActiveSelector
-  , setUsesExternalPlaybackWhileExternalScreenIsActiveSelector
-  , externalPlaybackVideoGravitySelector
-  , setExternalPlaybackVideoGravitySelector
-  , audioOutputDeviceUniqueIDSelector
-  , setAudioOutputDeviceUniqueIDSelector
-  , appliesMediaSelectionCriteriaAutomaticallySelector
-  , setAppliesMediaSelectionCriteriaAutomaticallySelector
-  , volumeSelector
-  , setVolumeSelector
-  , mutedSelector
-  , setMutedSelector
-  , automaticallyWaitsToMinimizeStallingSelector
-  , setAutomaticallyWaitsToMinimizeStallingSelector
-  , sourceClockSelector
-  , setSourceClockSelector
-  , currentItemSelector
-  , actionAtItemEndSelector
-  , setActionAtItemEndSelector
+  , prerollAtRate_completionHandlerSelector
+  , preventsAutomaticBackgroundingDuringVideoPlaybackSelector
+  , preventsDisplaySleepDuringVideoPlaybackSelector
   , rateSelector
-  , setRateSelector
-  , defaultRateSelector
-  , setDefaultRateSelector
-  , timeControlStatusSelector
   , reasonForWaitingToPlaySelector
+  , removeTimeObserverSelector
+  , replaceCurrentItemWithPlayerItemSelector
+  , seekToDateSelector
+  , seekToDate_completionHandlerSelector
+  , setActionAtItemEndSelector
+  , setAllowsExternalPlaybackSelector
+  , setAppliesMediaSelectionCriteriaAutomaticallySelector
+  , setAudioOutputDeviceUniqueIDSelector
+  , setAudiovisualBackgroundPlaybackPolicySelector
+  , setAutomaticallyWaitsToMinimizeStallingSelector
+  , setClosedCaptionDisplayEnabledSelector
+  , setDefaultRateSelector
+  , setExternalPlaybackVideoGravitySelector
+  , setIntendedSpatialAudioExperienceSelector
+  , setMasterClockSelector
+  , setMediaSelectionCriteria_forMediaCharacteristicSelector
+  , setMutedSelector
+  , setNetworkResourcePrioritySelector
+  , setObservationEnabledSelector
+  , setPreferredVideoDecoderGPURegistryIDSelector
+  , setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector
+  , setPreventsDisplaySleepDuringVideoPlaybackSelector
+  , setRateSelector
+  , setSourceClockSelector
+  , setUsesExternalPlaybackWhileExternalScreenIsActiveSelector
+  , setVideoOutputSelector
+  , setVolumeSelector
+  , sourceClockSelector
+  , statusSelector
+  , timeControlStatusSelector
+  , usesExternalPlaybackWhileExternalScreenIsActiveSelector
+  , videoOutputSelector
+  , volumeSelector
 
   -- * Enum types
   , AVPlayerActionAtItemEnd(AVPlayerActionAtItemEnd)
@@ -188,15 +189,11 @@ module ObjC.AVFoundation.AVPlayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -208,8 +205,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVPlayer avPlayer => avPlayer -> IO (Id AVPlayer)
-init_ avPlayer  =
-    sendMsg avPlayer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayer =
+  sendOwnedMessage avPlayer initSelector
 
 -- | Returns an instance of AVPlayer that plays a single audiovisual resource referenced by URL.
 --
@@ -224,8 +221,7 @@ playerWithURL :: IsNSURL url => url -> IO (Id AVPlayer)
 playerWithURL url =
   do
     cls' <- getRequiredClass "AVPlayer"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "playerWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playerWithURLSelector (toNSURL url)
 
 -- | Create an AVPlayer that plays a single audiovisual item.
 --
@@ -240,8 +236,7 @@ playerWithPlayerItem :: IsAVPlayerItem item => item -> IO (Id AVPlayer)
 playerWithPlayerItem item =
   do
     cls' <- getRequiredClass "AVPlayer"
-    withObjCPtr item $ \raw_item ->
-      sendClassMsg cls' (mkSelector "playerWithPlayerItem:") (retPtr retVoid) [argPtr (castPtr raw_item :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playerWithPlayerItemSelector (toAVPlayerItem item)
 
 -- | Initializes an AVPlayer that plays a single audiovisual resource referenced by URL.
 --
@@ -253,9 +248,8 @@ playerWithPlayerItem item =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsAVPlayer avPlayer, IsNSURL url) => avPlayer -> url -> IO (Id AVPlayer)
-initWithURL avPlayer  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg avPlayer (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL avPlayer url =
+  sendOwnedMessage avPlayer initWithURLSelector (toNSURL url)
 
 -- | Create an AVPlayer that plays a single audiovisual item.
 --
@@ -267,9 +261,8 @@ initWithURL avPlayer  url =
 --
 -- ObjC selector: @- initWithPlayerItem:@
 initWithPlayerItem :: (IsAVPlayer avPlayer, IsAVPlayerItem item) => avPlayer -> item -> IO (Id AVPlayer)
-initWithPlayerItem avPlayer  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg avPlayer (mkSelector "initWithPlayerItem:") (retPtr retVoid) [argPtr (castPtr raw_item :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayerItem avPlayer item =
+  sendOwnedMessage avPlayer initWithPlayerItemSelector (toAVPlayerItem item)
 
 -- | Applies automatic selection criteria for media that has the specified media characteristic.
 --
@@ -283,10 +276,8 @@ initWithPlayerItem avPlayer  item =
 --
 -- ObjC selector: @- setMediaSelectionCriteria:forMediaCharacteristic:@
 setMediaSelectionCriteria_forMediaCharacteristic :: (IsAVPlayer avPlayer, IsAVPlayerMediaSelectionCriteria criteria, IsNSString mediaCharacteristic) => avPlayer -> criteria -> mediaCharacteristic -> IO ()
-setMediaSelectionCriteria_forMediaCharacteristic avPlayer  criteria mediaCharacteristic =
-  withObjCPtr criteria $ \raw_criteria ->
-    withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-        sendMsg avPlayer (mkSelector "setMediaSelectionCriteria:forMediaCharacteristic:") retVoid [argPtr (castPtr raw_criteria :: Ptr ()), argPtr (castPtr raw_mediaCharacteristic :: Ptr ())]
+setMediaSelectionCriteria_forMediaCharacteristic avPlayer criteria mediaCharacteristic =
+  sendMessage avPlayer setMediaSelectionCriteria_forMediaCharacteristicSelector (toAVPlayerMediaSelectionCriteria criteria) (toNSString mediaCharacteristic)
 
 -- | Returns the automatic selection criteria for media that has the specified media characteristic.
 --
@@ -294,9 +285,8 @@ setMediaSelectionCriteria_forMediaCharacteristic avPlayer  criteria mediaCharact
 --
 -- ObjC selector: @- mediaSelectionCriteriaForMediaCharacteristic:@
 mediaSelectionCriteriaForMediaCharacteristic :: (IsAVPlayer avPlayer, IsNSString mediaCharacteristic) => avPlayer -> mediaCharacteristic -> IO (Id AVPlayerMediaSelectionCriteria)
-mediaSelectionCriteriaForMediaCharacteristic avPlayer  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avPlayer (mkSelector "mediaSelectionCriteriaForMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+mediaSelectionCriteriaForMediaCharacteristic avPlayer mediaCharacteristic =
+  sendMessage avPlayer mediaSelectionCriteriaForMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | Requests invocation of a block when specified times are traversed during normal playback.
 --
@@ -308,10 +298,8 @@ mediaSelectionCriteriaForMediaCharacteristic avPlayer  mediaCharacteristic =
 --
 -- ObjC selector: @- addBoundaryTimeObserverForTimes:queue:usingBlock:@
 addBoundaryTimeObserverForTimes_queue_usingBlock :: (IsAVPlayer avPlayer, IsNSArray times, IsNSObject queue) => avPlayer -> times -> queue -> Ptr () -> IO RawId
-addBoundaryTimeObserverForTimes_queue_usingBlock avPlayer  times queue block =
-  withObjCPtr times $ \raw_times ->
-    withObjCPtr queue $ \raw_queue ->
-        fmap (RawId . castPtr) $ sendMsg avPlayer (mkSelector "addBoundaryTimeObserverForTimes:queue:usingBlock:") (retPtr retVoid) [argPtr (castPtr raw_times :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+addBoundaryTimeObserverForTimes_queue_usingBlock avPlayer times queue block =
+  sendMessage avPlayer addBoundaryTimeObserverForTimes_queue_usingBlockSelector (toNSArray times) (toNSObject queue) block
 
 -- | Cancels a previously registered time observer.
 --
@@ -323,8 +311,8 @@ addBoundaryTimeObserverForTimes_queue_usingBlock avPlayer  times queue block =
 --
 -- ObjC selector: @- removeTimeObserver:@
 removeTimeObserver :: IsAVPlayer avPlayer => avPlayer -> RawId -> IO ()
-removeTimeObserver avPlayer  observer =
-    sendMsg avPlayer (mkSelector "removeTimeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeTimeObserver avPlayer observer =
+  sendMessage avPlayer removeTimeObserverSelector observer
 
 -- | Begins loading media data to prime the render pipelines for playback from the current time with the given rate.
 --
@@ -334,8 +322,8 @@ removeTimeObserver avPlayer  observer =
 --
 -- ObjC selector: @- prerollAtRate:completionHandler:@
 prerollAtRate_completionHandler :: IsAVPlayer avPlayer => avPlayer -> CFloat -> Ptr () -> IO ()
-prerollAtRate_completionHandler avPlayer  rate completionHandler =
-    sendMsg avPlayer (mkSelector "prerollAtRate:completionHandler:") retVoid [argCFloat rate, argPtr (castPtr completionHandler :: Ptr ())]
+prerollAtRate_completionHandler avPlayer rate completionHandler =
+  sendMessage avPlayer prerollAtRate_completionHandlerSelector rate completionHandler
 
 -- | Cancel any pending preroll requests and invoke the corresponding completion handlers if present.
 --
@@ -343,8 +331,8 @@ prerollAtRate_completionHandler avPlayer  rate completionHandler =
 --
 -- ObjC selector: @- cancelPendingPrerolls@
 cancelPendingPrerolls :: IsAVPlayer avPlayer => avPlayer -> IO ()
-cancelPendingPrerolls avPlayer  =
-    sendMsg avPlayer (mkSelector "cancelPendingPrerolls") retVoid []
+cancelPendingPrerolls avPlayer =
+  sendMessage avPlayer cancelPendingPrerollsSelector
 
 -- | Moves the playback cursor.
 --
@@ -354,9 +342,8 @@ cancelPendingPrerolls avPlayer  =
 --
 -- ObjC selector: @- seekToDate:@
 seekToDate :: (IsAVPlayer avPlayer, IsNSDate date) => avPlayer -> date -> IO ()
-seekToDate avPlayer  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg avPlayer (mkSelector "seekToDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+seekToDate avPlayer date =
+  sendMessage avPlayer seekToDateSelector (toNSDate date)
 
 -- | Moves the playback cursor and invokes the specified block when the seek operation has either been completed or been interrupted.
 --
@@ -366,9 +353,8 @@ seekToDate avPlayer  date =
 --
 -- ObjC selector: @- seekToDate:completionHandler:@
 seekToDate_completionHandler :: (IsAVPlayer avPlayer, IsNSDate date) => avPlayer -> date -> Ptr () -> IO ()
-seekToDate_completionHandler avPlayer  date completionHandler =
-  withObjCPtr date $ \raw_date ->
-      sendMsg avPlayer (mkSelector "seekToDate:completionHandler:") retVoid [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+seekToDate_completionHandler avPlayer date completionHandler =
+  sendMessage avPlayer seekToDate_completionHandlerSelector (toNSDate date) completionHandler
 
 -- | Replaces the player's current item with the specified player item.
 --
@@ -378,9 +364,8 @@ seekToDate_completionHandler avPlayer  date completionHandler =
 --
 -- ObjC selector: @- replaceCurrentItemWithPlayerItem:@
 replaceCurrentItemWithPlayerItem :: (IsAVPlayer avPlayer, IsAVPlayerItem item) => avPlayer -> item -> IO ()
-replaceCurrentItemWithPlayerItem avPlayer  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg avPlayer (mkSelector "replaceCurrentItemWithPlayerItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+replaceCurrentItemWithPlayerItem avPlayer item =
+  sendMessage avPlayer replaceCurrentItemWithPlayerItemSelector (toAVPlayerItem item)
 
 -- | Signals the desire to begin playback at the rate set in the defaultRate.
 --
@@ -390,8 +375,8 @@ replaceCurrentItemWithPlayerItem avPlayer  item =
 --
 -- ObjC selector: @- play@
 play :: IsAVPlayer avPlayer => avPlayer -> IO ()
-play avPlayer  =
-    sendMsg avPlayer (mkSelector "play") retVoid []
+play avPlayer =
+  sendMessage avPlayer playSelector
 
 -- | Pauses playback.
 --
@@ -401,8 +386,8 @@ play avPlayer  =
 --
 -- ObjC selector: @- pause@
 pause :: IsAVPlayer avPlayer => avPlayer -> IO ()
-pause avPlayer  =
-    sendMsg avPlayer (mkSelector "pause") retVoid []
+pause avPlayer =
+  sendMessage avPlayer pauseSelector
 
 -- | Immediately plays the available media data at the specified rate.
 --
@@ -412,8 +397,8 @@ pause avPlayer  =
 --
 -- ObjC selector: @- playImmediatelyAtRate:@
 playImmediatelyAtRate :: IsAVPlayer avPlayer => avPlayer -> CFloat -> IO ()
-playImmediatelyAtRate avPlayer  rate =
-    sendMsg avPlayer (mkSelector "playImmediatelyAtRate:") retVoid [argCFloat rate]
+playImmediatelyAtRate avPlayer rate =
+  sendMessage avPlayer playImmediatelyAtRateSelector rate
 
 -- | The ability of the receiver to be used for playback.
 --
@@ -421,8 +406,8 @@ playImmediatelyAtRate avPlayer  rate =
 --
 -- ObjC selector: @- status@
 status :: IsAVPlayer avPlayer => avPlayer -> IO AVPlayerStatus
-status avPlayer  =
-    fmap (coerce :: CLong -> AVPlayerStatus) $ sendMsg avPlayer (mkSelector "status") retCLong []
+status avPlayer =
+  sendMessage avPlayer statusSelector
 
 -- | If the receiver's status is AVPlayerStatusFailed, this describes the error that caused the failure.
 --
@@ -430,8 +415,8 @@ status avPlayer  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVPlayer avPlayer => avPlayer -> IO (Id NSError)
-error_ avPlayer  =
-    sendMsg avPlayer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avPlayer =
+  sendMessage avPlayer errorSelector
 
 -- | Indicates whether display of closed captions is enabled.
 --
@@ -447,8 +432,8 @@ error_ avPlayer  =
 --
 -- ObjC selector: @- closedCaptionDisplayEnabled@
 closedCaptionDisplayEnabled :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-closedCaptionDisplayEnabled avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "closedCaptionDisplayEnabled") retCULong []
+closedCaptionDisplayEnabled avPlayer =
+  sendMessage avPlayer closedCaptionDisplayEnabledSelector
 
 -- | Indicates whether display of closed captions is enabled.
 --
@@ -464,22 +449,22 @@ closedCaptionDisplayEnabled avPlayer  =
 --
 -- ObjC selector: @- setClosedCaptionDisplayEnabled:@
 setClosedCaptionDisplayEnabled :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setClosedCaptionDisplayEnabled avPlayer  value =
-    sendMsg avPlayer (mkSelector "setClosedCaptionDisplayEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setClosedCaptionDisplayEnabled avPlayer value =
+  sendMessage avPlayer setClosedCaptionDisplayEnabledSelector value
 
 -- | Use sourceClock instead.
 --
 -- ObjC selector: @- masterClock@
 masterClock :: IsAVPlayer avPlayer => avPlayer -> IO (Ptr ())
-masterClock avPlayer  =
-    fmap castPtr $ sendMsg avPlayer (mkSelector "masterClock") (retPtr retVoid) []
+masterClock avPlayer =
+  sendMessage avPlayer masterClockSelector
 
 -- | Use sourceClock instead.
 --
 -- ObjC selector: @- setMasterClock:@
 setMasterClock :: IsAVPlayer avPlayer => avPlayer -> Ptr () -> IO ()
-setMasterClock avPlayer  value =
-    sendMsg avPlayer (mkSelector "setMasterClock:") retVoid [argPtr value]
+setMasterClock avPlayer value =
+  sendMessage avPlayer setMasterClockSelector value
 
 -- | AVPlayer and other AVFoundation types can optionally be observed using Swift Observation.
 --
@@ -492,7 +477,7 @@ observationEnabled :: IO Bool
 observationEnabled  =
   do
     cls' <- getRequiredClass "AVPlayer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "observationEnabled") retCULong []
+    sendClassMessage cls' observationEnabledSelector
 
 -- | AVPlayer and other AVFoundation types can optionally be observed using Swift Observation.
 --
@@ -505,7 +490,7 @@ setObservationEnabled :: Bool -> IO ()
 setObservationEnabled value =
   do
     cls' <- getRequiredClass "AVPlayer"
-    sendClassMsg cls' (mkSelector "setObservationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setObservationEnabledSelector value
 
 -- | Whether the player's audio output is suppressed due to being on a non-mixable audio route.
 --
@@ -513,8 +498,8 @@ setObservationEnabled value =
 --
 -- ObjC selector: @- audioOutputSuppressedDueToNonMixableAudioRoute@
 audioOutputSuppressedDueToNonMixableAudioRoute :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-audioOutputSuppressedDueToNonMixableAudioRoute avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "audioOutputSuppressedDueToNonMixableAudioRoute") retCULong []
+audioOutputSuppressedDueToNonMixableAudioRoute avPlayer =
+  sendMessage avPlayer audioOutputSuppressedDueToNonMixableAudioRouteSelector
 
 -- | The AVPlayer's intended spatial audio experience.
 --
@@ -522,8 +507,8 @@ audioOutputSuppressedDueToNonMixableAudioRoute avPlayer  =
 --
 -- ObjC selector: @- intendedSpatialAudioExperience@
 intendedSpatialAudioExperience :: IsAVPlayer avPlayer => avPlayer -> IO RawId
-intendedSpatialAudioExperience avPlayer  =
-    fmap (RawId . castPtr) $ sendMsg avPlayer (mkSelector "intendedSpatialAudioExperience") (retPtr retVoid) []
+intendedSpatialAudioExperience avPlayer =
+  sendMessage avPlayer intendedSpatialAudioExperienceSelector
 
 -- | The AVPlayer's intended spatial audio experience.
 --
@@ -531,8 +516,8 @@ intendedSpatialAudioExperience avPlayer  =
 --
 -- ObjC selector: @- setIntendedSpatialAudioExperience:@
 setIntendedSpatialAudioExperience :: IsAVPlayer avPlayer => avPlayer -> RawId -> IO ()
-setIntendedSpatialAudioExperience avPlayer  value =
-    sendMsg avPlayer (mkSelector "setIntendedSpatialAudioExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIntendedSpatialAudioExperience avPlayer value =
+  sendMessage avPlayer setIntendedSpatialAudioExperienceSelector value
 
 -- | Indicates the priority of this player for network bandwidth resource distribution.
 --
@@ -540,8 +525,8 @@ setIntendedSpatialAudioExperience avPlayer  value =
 --
 -- ObjC selector: @- networkResourcePriority@
 networkResourcePriority :: IsAVPlayer avPlayer => avPlayer -> IO AVPlayerNetworkResourcePriority
-networkResourcePriority avPlayer  =
-    fmap (coerce :: CLong -> AVPlayerNetworkResourcePriority) $ sendMsg avPlayer (mkSelector "networkResourcePriority") retCLong []
+networkResourcePriority avPlayer =
+  sendMessage avPlayer networkResourcePrioritySelector
 
 -- | Indicates the priority of this player for network bandwidth resource distribution.
 --
@@ -549,8 +534,8 @@ networkResourcePriority avPlayer  =
 --
 -- ObjC selector: @- setNetworkResourcePriority:@
 setNetworkResourcePriority :: IsAVPlayer avPlayer => avPlayer -> AVPlayerNetworkResourcePriority -> IO ()
-setNetworkResourcePriority avPlayer  value =
-    sendMsg avPlayer (mkSelector "setNetworkResourcePriority:") retVoid [argCLong (coerce value)]
+setNetworkResourcePriority avPlayer value =
+  sendMessage avPlayer setNetworkResourcePrioritySelector value
 
 -- | The video output for this player, if one was set.
 --
@@ -560,8 +545,8 @@ setNetworkResourcePriority avPlayer  value =
 --
 -- ObjC selector: @- videoOutput@
 videoOutput :: IsAVPlayer avPlayer => avPlayer -> IO (Id AVPlayerVideoOutput)
-videoOutput avPlayer  =
-    sendMsg avPlayer (mkSelector "videoOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoOutput avPlayer =
+  sendMessage avPlayer videoOutputSelector
 
 -- | The video output for this player, if one was set.
 --
@@ -571,9 +556,8 @@ videoOutput avPlayer  =
 --
 -- ObjC selector: @- setVideoOutput:@
 setVideoOutput :: (IsAVPlayer avPlayer, IsAVPlayerVideoOutput value) => avPlayer -> value -> IO ()
-setVideoOutput avPlayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayer (mkSelector "setVideoOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoOutput avPlayer value =
+  sendMessage avPlayer setVideoOutputSelector (toAVPlayerVideoOutput value)
 
 -- | The playback coordinator for this player.
 --
@@ -581,8 +565,8 @@ setVideoOutput avPlayer  value =
 --
 -- ObjC selector: @- playbackCoordinator@
 playbackCoordinator :: IsAVPlayer avPlayer => avPlayer -> IO (Id AVPlayerPlaybackCoordinator)
-playbackCoordinator avPlayer  =
-    sendMsg avPlayer (mkSelector "playbackCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackCoordinator avPlayer =
+  sendMessage avPlayer playbackCoordinatorSelector
 
 -- | Controls the policy to be used in deciding how playback of audiovisual content should continue while the application transitions to background.
 --
@@ -590,8 +574,8 @@ playbackCoordinator avPlayer  =
 --
 -- ObjC selector: @- audiovisualBackgroundPlaybackPolicy@
 audiovisualBackgroundPlaybackPolicy :: IsAVPlayer avPlayer => avPlayer -> IO AVPlayerAudiovisualBackgroundPlaybackPolicy
-audiovisualBackgroundPlaybackPolicy avPlayer  =
-    fmap (coerce :: CLong -> AVPlayerAudiovisualBackgroundPlaybackPolicy) $ sendMsg avPlayer (mkSelector "audiovisualBackgroundPlaybackPolicy") retCLong []
+audiovisualBackgroundPlaybackPolicy avPlayer =
+  sendMessage avPlayer audiovisualBackgroundPlaybackPolicySelector
 
 -- | Controls the policy to be used in deciding how playback of audiovisual content should continue while the application transitions to background.
 --
@@ -599,8 +583,8 @@ audiovisualBackgroundPlaybackPolicy avPlayer  =
 --
 -- ObjC selector: @- setAudiovisualBackgroundPlaybackPolicy:@
 setAudiovisualBackgroundPlaybackPolicy :: IsAVPlayer avPlayer => avPlayer -> AVPlayerAudiovisualBackgroundPlaybackPolicy -> IO ()
-setAudiovisualBackgroundPlaybackPolicy avPlayer  value =
-    sendMsg avPlayer (mkSelector "setAudiovisualBackgroundPlaybackPolicy:") retVoid [argCLong (coerce value)]
+setAudiovisualBackgroundPlaybackPolicy avPlayer value =
+  sendMessage avPlayer setAudiovisualBackgroundPlaybackPolicySelector value
 
 -- | Indicates whether video playback prevents the app from automatically getting backgrounded.
 --
@@ -608,8 +592,8 @@ setAudiovisualBackgroundPlaybackPolicy avPlayer  value =
 --
 -- ObjC selector: @- preventsAutomaticBackgroundingDuringVideoPlayback@
 preventsAutomaticBackgroundingDuringVideoPlayback :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-preventsAutomaticBackgroundingDuringVideoPlayback avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "preventsAutomaticBackgroundingDuringVideoPlayback") retCULong []
+preventsAutomaticBackgroundingDuringVideoPlayback avPlayer =
+  sendMessage avPlayer preventsAutomaticBackgroundingDuringVideoPlaybackSelector
 
 -- | Indicates whether video playback prevents the app from automatically getting backgrounded.
 --
@@ -617,8 +601,8 @@ preventsAutomaticBackgroundingDuringVideoPlayback avPlayer  =
 --
 -- ObjC selector: @- setPreventsAutomaticBackgroundingDuringVideoPlayback:@
 setPreventsAutomaticBackgroundingDuringVideoPlayback :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setPreventsAutomaticBackgroundingDuringVideoPlayback avPlayer  value =
-    sendMsg avPlayer (mkSelector "setPreventsAutomaticBackgroundingDuringVideoPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsAutomaticBackgroundingDuringVideoPlayback avPlayer value =
+  sendMessage avPlayer setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector value
 
 -- | Indicates whether video playback prevents display and device sleep.
 --
@@ -628,8 +612,8 @@ setPreventsAutomaticBackgroundingDuringVideoPlayback avPlayer  value =
 --
 -- ObjC selector: @- preventsDisplaySleepDuringVideoPlayback@
 preventsDisplaySleepDuringVideoPlayback :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-preventsDisplaySleepDuringVideoPlayback avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "preventsDisplaySleepDuringVideoPlayback") retCULong []
+preventsDisplaySleepDuringVideoPlayback avPlayer =
+  sendMessage avPlayer preventsDisplaySleepDuringVideoPlaybackSelector
 
 -- | Indicates whether video playback prevents display and device sleep.
 --
@@ -639,8 +623,8 @@ preventsDisplaySleepDuringVideoPlayback avPlayer  =
 --
 -- ObjC selector: @- setPreventsDisplaySleepDuringVideoPlayback:@
 setPreventsDisplaySleepDuringVideoPlayback :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setPreventsDisplaySleepDuringVideoPlayback avPlayer  value =
-    sendMsg avPlayer (mkSelector "setPreventsDisplaySleepDuringVideoPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsDisplaySleepDuringVideoPlayback avPlayer value =
+  sendMessage avPlayer setPreventsDisplaySleepDuringVideoPlaybackSelector value
 
 -- | Specifies a registryID associated with a GPU that should be used for video decode.
 --
@@ -650,8 +634,8 @@ setPreventsDisplaySleepDuringVideoPlayback avPlayer  value =
 --
 -- ObjC selector: @- preferredVideoDecoderGPURegistryID@
 preferredVideoDecoderGPURegistryID :: IsAVPlayer avPlayer => avPlayer -> IO CULong
-preferredVideoDecoderGPURegistryID avPlayer  =
-    sendMsg avPlayer (mkSelector "preferredVideoDecoderGPURegistryID") retCULong []
+preferredVideoDecoderGPURegistryID avPlayer =
+  sendMessage avPlayer preferredVideoDecoderGPURegistryIDSelector
 
 -- | Specifies a registryID associated with a GPU that should be used for video decode.
 --
@@ -661,8 +645,8 @@ preferredVideoDecoderGPURegistryID avPlayer  =
 --
 -- ObjC selector: @- setPreferredVideoDecoderGPURegistryID:@
 setPreferredVideoDecoderGPURegistryID :: IsAVPlayer avPlayer => avPlayer -> CULong -> IO ()
-setPreferredVideoDecoderGPURegistryID avPlayer  value =
-    sendMsg avPlayer (mkSelector "setPreferredVideoDecoderGPURegistryID:") retVoid [argCULong value]
+setPreferredVideoDecoderGPURegistryID avPlayer value =
+  sendMessage avPlayer setPreferredVideoDecoderGPURegistryIDSelector value
 
 -- | An AVPlayerHDRMode value that indicates the HDR modes the device can play to an appropriate display. A value of 0 indicates that no HDR modes are supported.
 --
@@ -673,7 +657,7 @@ availableHDRModes :: IO AVPlayerHDRMode
 availableHDRModes  =
   do
     cls' <- getRequiredClass "AVPlayer"
-    fmap (coerce :: CLong -> AVPlayerHDRMode) $ sendClassMsg cls' (mkSelector "availableHDRModes") retCLong []
+    sendClassMessage cls' availableHDRModesSelector
 
 -- | Indicates whether HDR content can be played to an appropriate display.
 --
@@ -684,7 +668,7 @@ eligibleForHDRPlayback :: IO Bool
 eligibleForHDRPlayback  =
   do
     cls' <- getRequiredClass "AVPlayer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "eligibleForHDRPlayback") retCULong []
+    sendClassMessage cls' eligibleForHDRPlaybackSelector
 
 -- | Whether or not decoded output is being obscured due to insufficient external protection.
 --
@@ -694,58 +678,57 @@ eligibleForHDRPlayback  =
 --
 -- ObjC selector: @- outputObscuredDueToInsufficientExternalProtection@
 outputObscuredDueToInsufficientExternalProtection :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-outputObscuredDueToInsufficientExternalProtection avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "outputObscuredDueToInsufficientExternalProtection") retCULong []
+outputObscuredDueToInsufficientExternalProtection avPlayer =
+  sendMessage avPlayer outputObscuredDueToInsufficientExternalProtectionSelector
 
 -- | Indicates whether the player allows switching to "external playback" mode. The default value is YES.
 --
 -- ObjC selector: @- allowsExternalPlayback@
 allowsExternalPlayback :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-allowsExternalPlayback avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "allowsExternalPlayback") retCULong []
+allowsExternalPlayback avPlayer =
+  sendMessage avPlayer allowsExternalPlaybackSelector
 
 -- | Indicates whether the player allows switching to "external playback" mode. The default value is YES.
 --
 -- ObjC selector: @- setAllowsExternalPlayback:@
 setAllowsExternalPlayback :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setAllowsExternalPlayback avPlayer  value =
-    sendMsg avPlayer (mkSelector "setAllowsExternalPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsExternalPlayback avPlayer value =
+  sendMessage avPlayer setAllowsExternalPlaybackSelector value
 
 -- | Indicates whether the player is currently playing video in "external playback" mode.
 --
 -- ObjC selector: @- externalPlaybackActive@
 externalPlaybackActive :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-externalPlaybackActive avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "externalPlaybackActive") retCULong []
+externalPlaybackActive avPlayer =
+  sendMessage avPlayer externalPlaybackActiveSelector
 
 -- | Indicates whether the player should automatically switch to "external playback" mode while the "external screen" mode is active in order to play video content and switching back to "external screen" mode as soon as playback is done. Brief transition may be visible on the external display when automatically switching between the two modes. The default value is NO. Has no effect if allowsExternalPlayback is NO.
 --
 -- ObjC selector: @- usesExternalPlaybackWhileExternalScreenIsActive@
 usesExternalPlaybackWhileExternalScreenIsActive :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-usesExternalPlaybackWhileExternalScreenIsActive avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "usesExternalPlaybackWhileExternalScreenIsActive") retCULong []
+usesExternalPlaybackWhileExternalScreenIsActive avPlayer =
+  sendMessage avPlayer usesExternalPlaybackWhileExternalScreenIsActiveSelector
 
 -- | Indicates whether the player should automatically switch to "external playback" mode while the "external screen" mode is active in order to play video content and switching back to "external screen" mode as soon as playback is done. Brief transition may be visible on the external display when automatically switching between the two modes. The default value is NO. Has no effect if allowsExternalPlayback is NO.
 --
 -- ObjC selector: @- setUsesExternalPlaybackWhileExternalScreenIsActive:@
 setUsesExternalPlaybackWhileExternalScreenIsActive :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setUsesExternalPlaybackWhileExternalScreenIsActive avPlayer  value =
-    sendMsg avPlayer (mkSelector "setUsesExternalPlaybackWhileExternalScreenIsActive:") retVoid [argCULong (if value then 1 else 0)]
+setUsesExternalPlaybackWhileExternalScreenIsActive avPlayer value =
+  sendMessage avPlayer setUsesExternalPlaybackWhileExternalScreenIsActiveSelector value
 
 -- | Video gravity strictly for "external playback" mode, one of AVLayerVideoGravity* defined in AVAnimation.h
 --
 -- ObjC selector: @- externalPlaybackVideoGravity@
 externalPlaybackVideoGravity :: IsAVPlayer avPlayer => avPlayer -> IO (Id NSString)
-externalPlaybackVideoGravity avPlayer  =
-    sendMsg avPlayer (mkSelector "externalPlaybackVideoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+externalPlaybackVideoGravity avPlayer =
+  sendMessage avPlayer externalPlaybackVideoGravitySelector
 
 -- | Video gravity strictly for "external playback" mode, one of AVLayerVideoGravity* defined in AVAnimation.h
 --
 -- ObjC selector: @- setExternalPlaybackVideoGravity:@
 setExternalPlaybackVideoGravity :: (IsAVPlayer avPlayer, IsNSString value) => avPlayer -> value -> IO ()
-setExternalPlaybackVideoGravity avPlayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayer (mkSelector "setExternalPlaybackVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExternalPlaybackVideoGravity avPlayer value =
+  sendMessage avPlayer setExternalPlaybackVideoGravitySelector (toNSString value)
 
 -- | Specifies the unique ID of the Core Audio output device used to play audio.
 --
@@ -755,8 +738,8 @@ setExternalPlaybackVideoGravity avPlayer  value =
 --
 -- ObjC selector: @- audioOutputDeviceUniqueID@
 audioOutputDeviceUniqueID :: IsAVPlayer avPlayer => avPlayer -> IO (Id NSString)
-audioOutputDeviceUniqueID avPlayer  =
-    sendMsg avPlayer (mkSelector "audioOutputDeviceUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioOutputDeviceUniqueID avPlayer =
+  sendMessage avPlayer audioOutputDeviceUniqueIDSelector
 
 -- | Specifies the unique ID of the Core Audio output device used to play audio.
 --
@@ -766,9 +749,8 @@ audioOutputDeviceUniqueID avPlayer  =
 --
 -- ObjC selector: @- setAudioOutputDeviceUniqueID:@
 setAudioOutputDeviceUniqueID :: (IsAVPlayer avPlayer, IsNSString value) => avPlayer -> value -> IO ()
-setAudioOutputDeviceUniqueID avPlayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayer (mkSelector "setAudioOutputDeviceUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioOutputDeviceUniqueID avPlayer value =
+  sendMessage avPlayer setAudioOutputDeviceUniqueIDSelector (toNSString value)
 
 -- | Indicates whether the receiver should apply the current selection criteria automatically to AVPlayerItems.
 --
@@ -778,8 +760,8 @@ setAudioOutputDeviceUniqueID avPlayer  value =
 --
 -- ObjC selector: @- appliesMediaSelectionCriteriaAutomatically@
 appliesMediaSelectionCriteriaAutomatically :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-appliesMediaSelectionCriteriaAutomatically avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "appliesMediaSelectionCriteriaAutomatically") retCULong []
+appliesMediaSelectionCriteriaAutomatically avPlayer =
+  sendMessage avPlayer appliesMediaSelectionCriteriaAutomaticallySelector
 
 -- | Indicates whether the receiver should apply the current selection criteria automatically to AVPlayerItems.
 --
@@ -789,8 +771,8 @@ appliesMediaSelectionCriteriaAutomatically avPlayer  =
 --
 -- ObjC selector: @- setAppliesMediaSelectionCriteriaAutomatically:@
 setAppliesMediaSelectionCriteriaAutomatically :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setAppliesMediaSelectionCriteriaAutomatically avPlayer  value =
-    sendMsg avPlayer (mkSelector "setAppliesMediaSelectionCriteriaAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setAppliesMediaSelectionCriteriaAutomatically avPlayer value =
+  sendMessage avPlayer setAppliesMediaSelectionCriteriaAutomaticallySelector value
 
 -- | Indicates the current audio volume of the player; 0.0 means "silence all audio", 1.0 means "play at the full volume of the current item".
 --
@@ -798,8 +780,8 @@ setAppliesMediaSelectionCriteriaAutomatically avPlayer  value =
 --
 -- ObjC selector: @- volume@
 volume :: IsAVPlayer avPlayer => avPlayer -> IO CFloat
-volume avPlayer  =
-    sendMsg avPlayer (mkSelector "volume") retCFloat []
+volume avPlayer =
+  sendMessage avPlayer volumeSelector
 
 -- | Indicates the current audio volume of the player; 0.0 means "silence all audio", 1.0 means "play at the full volume of the current item".
 --
@@ -807,22 +789,22 @@ volume avPlayer  =
 --
 -- ObjC selector: @- setVolume:@
 setVolume :: IsAVPlayer avPlayer => avPlayer -> CFloat -> IO ()
-setVolume avPlayer  value =
-    sendMsg avPlayer (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume avPlayer value =
+  sendMessage avPlayer setVolumeSelector value
 
 -- | Indicates whether or not audio output of the player is muted. Only affects audio muting for the player instance and not for the device.
 --
 -- ObjC selector: @- muted@
 muted :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-muted avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "muted") retCULong []
+muted avPlayer =
+  sendMessage avPlayer mutedSelector
 
 -- | Indicates whether or not audio output of the player is muted. Only affects audio muting for the player instance and not for the device.
 --
 -- ObjC selector: @- setMuted:@
 setMuted :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setMuted avPlayer  value =
-    sendMsg avPlayer (mkSelector "setMuted:") retVoid [argCULong (if value then 1 else 0)]
+setMuted avPlayer value =
+  sendMessage avPlayer setMutedSelector value
 
 -- | Indicates that the player is allowed to delay playback at the specified rate in order to minimize stalling
 --
@@ -842,8 +824,8 @@ setMuted avPlayer  value =
 --
 -- ObjC selector: @- automaticallyWaitsToMinimizeStalling@
 automaticallyWaitsToMinimizeStalling :: IsAVPlayer avPlayer => avPlayer -> IO Bool
-automaticallyWaitsToMinimizeStalling avPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayer (mkSelector "automaticallyWaitsToMinimizeStalling") retCULong []
+automaticallyWaitsToMinimizeStalling avPlayer =
+  sendMessage avPlayer automaticallyWaitsToMinimizeStallingSelector
 
 -- | Indicates that the player is allowed to delay playback at the specified rate in order to minimize stalling
 --
@@ -863,8 +845,8 @@ automaticallyWaitsToMinimizeStalling avPlayer  =
 --
 -- ObjC selector: @- setAutomaticallyWaitsToMinimizeStalling:@
 setAutomaticallyWaitsToMinimizeStalling :: IsAVPlayer avPlayer => avPlayer -> Bool -> IO ()
-setAutomaticallyWaitsToMinimizeStalling avPlayer  value =
-    sendMsg avPlayer (mkSelector "setAutomaticallyWaitsToMinimizeStalling:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyWaitsToMinimizeStalling avPlayer value =
+  sendMessage avPlayer setAutomaticallyWaitsToMinimizeStallingSelector value
 
 -- | Set to override the automatic choice of source clock for item timebases.
 --
@@ -872,8 +854,8 @@ setAutomaticallyWaitsToMinimizeStalling avPlayer  value =
 --
 -- ObjC selector: @- sourceClock@
 sourceClock :: IsAVPlayer avPlayer => avPlayer -> IO (Ptr ())
-sourceClock avPlayer  =
-    fmap castPtr $ sendMsg avPlayer (mkSelector "sourceClock") (retPtr retVoid) []
+sourceClock avPlayer =
+  sendMessage avPlayer sourceClockSelector
 
 -- | Set to override the automatic choice of source clock for item timebases.
 --
@@ -881,15 +863,15 @@ sourceClock avPlayer  =
 --
 -- ObjC selector: @- setSourceClock:@
 setSourceClock :: IsAVPlayer avPlayer => avPlayer -> Ptr () -> IO ()
-setSourceClock avPlayer  value =
-    sendMsg avPlayer (mkSelector "setSourceClock:") retVoid [argPtr value]
+setSourceClock avPlayer value =
+  sendMessage avPlayer setSourceClockSelector value
 
 -- | Indicates the current item of the player
 --
 -- ObjC selector: @- currentItem@
 currentItem :: IsAVPlayer avPlayer => avPlayer -> IO (Id AVPlayerItem)
-currentItem avPlayer  =
-    sendMsg avPlayer (mkSelector "currentItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentItem avPlayer =
+  sendMessage avPlayer currentItemSelector
 
 -- | Indicates the action that the player should perform when playback of an item reaches its end time.
 --
@@ -897,8 +879,8 @@ currentItem avPlayer  =
 --
 -- ObjC selector: @- actionAtItemEnd@
 actionAtItemEnd :: IsAVPlayer avPlayer => avPlayer -> IO AVPlayerActionAtItemEnd
-actionAtItemEnd avPlayer  =
-    fmap (coerce :: CLong -> AVPlayerActionAtItemEnd) $ sendMsg avPlayer (mkSelector "actionAtItemEnd") retCLong []
+actionAtItemEnd avPlayer =
+  sendMessage avPlayer actionAtItemEndSelector
 
 -- | Indicates the action that the player should perform when playback of an item reaches its end time.
 --
@@ -906,8 +888,8 @@ actionAtItemEnd avPlayer  =
 --
 -- ObjC selector: @- setActionAtItemEnd:@
 setActionAtItemEnd :: IsAVPlayer avPlayer => avPlayer -> AVPlayerActionAtItemEnd -> IO ()
-setActionAtItemEnd avPlayer  value =
-    sendMsg avPlayer (mkSelector "setActionAtItemEnd:") retVoid [argCLong (coerce value)]
+setActionAtItemEnd avPlayer value =
+  sendMessage avPlayer setActionAtItemEndSelector value
 
 -- | Indicates the desired rate of playback; 0.0 means "paused", 1.0 indicates a desire to play at the natural rate of the current item.
 --
@@ -921,8 +903,8 @@ setActionAtItemEnd avPlayer  value =
 --
 -- ObjC selector: @- rate@
 rate :: IsAVPlayer avPlayer => avPlayer -> IO CFloat
-rate avPlayer  =
-    sendMsg avPlayer (mkSelector "rate") retCFloat []
+rate avPlayer =
+  sendMessage avPlayer rateSelector
 
 -- | Indicates the desired rate of playback; 0.0 means "paused", 1.0 indicates a desire to play at the natural rate of the current item.
 --
@@ -936,8 +918,8 @@ rate avPlayer  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVPlayer avPlayer => avPlayer -> CFloat -> IO ()
-setRate avPlayer  value =
-    sendMsg avPlayer (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avPlayer value =
+  sendMessage avPlayer setRateSelector value
 
 -- | Indicates the rate at which to start playback when play is called; defaults to 1.0.
 --
@@ -947,8 +929,8 @@ setRate avPlayer  value =
 --
 -- ObjC selector: @- defaultRate@
 defaultRate :: IsAVPlayer avPlayer => avPlayer -> IO CFloat
-defaultRate avPlayer  =
-    sendMsg avPlayer (mkSelector "defaultRate") retCFloat []
+defaultRate avPlayer =
+  sendMessage avPlayer defaultRateSelector
 
 -- | Indicates the rate at which to start playback when play is called; defaults to 1.0.
 --
@@ -958,8 +940,8 @@ defaultRate avPlayer  =
 --
 -- ObjC selector: @- setDefaultRate:@
 setDefaultRate :: IsAVPlayer avPlayer => avPlayer -> CFloat -> IO ()
-setDefaultRate avPlayer  value =
-    sendMsg avPlayer (mkSelector "setDefaultRate:") retVoid [argCFloat value]
+setDefaultRate avPlayer value =
+  sendMessage avPlayer setDefaultRateSelector value
 
 -- | Indicates whether playback is currently paused indefinitely, suspended while waiting for appropriate conditions, or in progress.
 --
@@ -969,8 +951,8 @@ setDefaultRate avPlayer  value =
 --
 -- ObjC selector: @- timeControlStatus@
 timeControlStatus :: IsAVPlayer avPlayer => avPlayer -> IO AVPlayerTimeControlStatus
-timeControlStatus avPlayer  =
-    fmap (coerce :: CLong -> AVPlayerTimeControlStatus) $ sendMsg avPlayer (mkSelector "timeControlStatus") retCLong []
+timeControlStatus avPlayer =
+  sendMessage avPlayer timeControlStatusSelector
 
 -- | Indicates the reason for waiting when the value of timeControlStatus is AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
 --
@@ -978,298 +960,298 @@ timeControlStatus avPlayer  =
 --
 -- ObjC selector: @- reasonForWaitingToPlay@
 reasonForWaitingToPlay :: IsAVPlayer avPlayer => avPlayer -> IO (Id NSString)
-reasonForWaitingToPlay avPlayer  =
-    sendMsg avPlayer (mkSelector "reasonForWaitingToPlay") (retPtr retVoid) [] >>= retainedObject . castPtr
+reasonForWaitingToPlay avPlayer =
+  sendMessage avPlayer reasonForWaitingToPlaySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @playerWithURL:@
-playerWithURLSelector :: Selector
+playerWithURLSelector :: Selector '[Id NSURL] (Id AVPlayer)
 playerWithURLSelector = mkSelector "playerWithURL:"
 
 -- | @Selector@ for @playerWithPlayerItem:@
-playerWithPlayerItemSelector :: Selector
+playerWithPlayerItemSelector :: Selector '[Id AVPlayerItem] (Id AVPlayer)
 playerWithPlayerItemSelector = mkSelector "playerWithPlayerItem:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id AVPlayer)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithPlayerItem:@
-initWithPlayerItemSelector :: Selector
+initWithPlayerItemSelector :: Selector '[Id AVPlayerItem] (Id AVPlayer)
 initWithPlayerItemSelector = mkSelector "initWithPlayerItem:"
 
 -- | @Selector@ for @setMediaSelectionCriteria:forMediaCharacteristic:@
-setMediaSelectionCriteria_forMediaCharacteristicSelector :: Selector
+setMediaSelectionCriteria_forMediaCharacteristicSelector :: Selector '[Id AVPlayerMediaSelectionCriteria, Id NSString] ()
 setMediaSelectionCriteria_forMediaCharacteristicSelector = mkSelector "setMediaSelectionCriteria:forMediaCharacteristic:"
 
 -- | @Selector@ for @mediaSelectionCriteriaForMediaCharacteristic:@
-mediaSelectionCriteriaForMediaCharacteristicSelector :: Selector
+mediaSelectionCriteriaForMediaCharacteristicSelector :: Selector '[Id NSString] (Id AVPlayerMediaSelectionCriteria)
 mediaSelectionCriteriaForMediaCharacteristicSelector = mkSelector "mediaSelectionCriteriaForMediaCharacteristic:"
 
 -- | @Selector@ for @addBoundaryTimeObserverForTimes:queue:usingBlock:@
-addBoundaryTimeObserverForTimes_queue_usingBlockSelector :: Selector
+addBoundaryTimeObserverForTimes_queue_usingBlockSelector :: Selector '[Id NSArray, Id NSObject, Ptr ()] RawId
 addBoundaryTimeObserverForTimes_queue_usingBlockSelector = mkSelector "addBoundaryTimeObserverForTimes:queue:usingBlock:"
 
 -- | @Selector@ for @removeTimeObserver:@
-removeTimeObserverSelector :: Selector
+removeTimeObserverSelector :: Selector '[RawId] ()
 removeTimeObserverSelector = mkSelector "removeTimeObserver:"
 
 -- | @Selector@ for @prerollAtRate:completionHandler:@
-prerollAtRate_completionHandlerSelector :: Selector
+prerollAtRate_completionHandlerSelector :: Selector '[CFloat, Ptr ()] ()
 prerollAtRate_completionHandlerSelector = mkSelector "prerollAtRate:completionHandler:"
 
 -- | @Selector@ for @cancelPendingPrerolls@
-cancelPendingPrerollsSelector :: Selector
+cancelPendingPrerollsSelector :: Selector '[] ()
 cancelPendingPrerollsSelector = mkSelector "cancelPendingPrerolls"
 
 -- | @Selector@ for @seekToDate:@
-seekToDateSelector :: Selector
+seekToDateSelector :: Selector '[Id NSDate] ()
 seekToDateSelector = mkSelector "seekToDate:"
 
 -- | @Selector@ for @seekToDate:completionHandler:@
-seekToDate_completionHandlerSelector :: Selector
+seekToDate_completionHandlerSelector :: Selector '[Id NSDate, Ptr ()] ()
 seekToDate_completionHandlerSelector = mkSelector "seekToDate:completionHandler:"
 
 -- | @Selector@ for @replaceCurrentItemWithPlayerItem:@
-replaceCurrentItemWithPlayerItemSelector :: Selector
+replaceCurrentItemWithPlayerItemSelector :: Selector '[Id AVPlayerItem] ()
 replaceCurrentItemWithPlayerItemSelector = mkSelector "replaceCurrentItemWithPlayerItem:"
 
 -- | @Selector@ for @play@
-playSelector :: Selector
+playSelector :: Selector '[] ()
 playSelector = mkSelector "play"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @playImmediatelyAtRate:@
-playImmediatelyAtRateSelector :: Selector
+playImmediatelyAtRateSelector :: Selector '[CFloat] ()
 playImmediatelyAtRateSelector = mkSelector "playImmediatelyAtRate:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVPlayerStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @closedCaptionDisplayEnabled@
-closedCaptionDisplayEnabledSelector :: Selector
+closedCaptionDisplayEnabledSelector :: Selector '[] Bool
 closedCaptionDisplayEnabledSelector = mkSelector "closedCaptionDisplayEnabled"
 
 -- | @Selector@ for @setClosedCaptionDisplayEnabled:@
-setClosedCaptionDisplayEnabledSelector :: Selector
+setClosedCaptionDisplayEnabledSelector :: Selector '[Bool] ()
 setClosedCaptionDisplayEnabledSelector = mkSelector "setClosedCaptionDisplayEnabled:"
 
 -- | @Selector@ for @masterClock@
-masterClockSelector :: Selector
+masterClockSelector :: Selector '[] (Ptr ())
 masterClockSelector = mkSelector "masterClock"
 
 -- | @Selector@ for @setMasterClock:@
-setMasterClockSelector :: Selector
+setMasterClockSelector :: Selector '[Ptr ()] ()
 setMasterClockSelector = mkSelector "setMasterClock:"
 
 -- | @Selector@ for @observationEnabled@
-observationEnabledSelector :: Selector
+observationEnabledSelector :: Selector '[] Bool
 observationEnabledSelector = mkSelector "observationEnabled"
 
 -- | @Selector@ for @setObservationEnabled:@
-setObservationEnabledSelector :: Selector
+setObservationEnabledSelector :: Selector '[Bool] ()
 setObservationEnabledSelector = mkSelector "setObservationEnabled:"
 
 -- | @Selector@ for @audioOutputSuppressedDueToNonMixableAudioRoute@
-audioOutputSuppressedDueToNonMixableAudioRouteSelector :: Selector
+audioOutputSuppressedDueToNonMixableAudioRouteSelector :: Selector '[] Bool
 audioOutputSuppressedDueToNonMixableAudioRouteSelector = mkSelector "audioOutputSuppressedDueToNonMixableAudioRoute"
 
 -- | @Selector@ for @intendedSpatialAudioExperience@
-intendedSpatialAudioExperienceSelector :: Selector
+intendedSpatialAudioExperienceSelector :: Selector '[] RawId
 intendedSpatialAudioExperienceSelector = mkSelector "intendedSpatialAudioExperience"
 
 -- | @Selector@ for @setIntendedSpatialAudioExperience:@
-setIntendedSpatialAudioExperienceSelector :: Selector
+setIntendedSpatialAudioExperienceSelector :: Selector '[RawId] ()
 setIntendedSpatialAudioExperienceSelector = mkSelector "setIntendedSpatialAudioExperience:"
 
 -- | @Selector@ for @networkResourcePriority@
-networkResourcePrioritySelector :: Selector
+networkResourcePrioritySelector :: Selector '[] AVPlayerNetworkResourcePriority
 networkResourcePrioritySelector = mkSelector "networkResourcePriority"
 
 -- | @Selector@ for @setNetworkResourcePriority:@
-setNetworkResourcePrioritySelector :: Selector
+setNetworkResourcePrioritySelector :: Selector '[AVPlayerNetworkResourcePriority] ()
 setNetworkResourcePrioritySelector = mkSelector "setNetworkResourcePriority:"
 
 -- | @Selector@ for @videoOutput@
-videoOutputSelector :: Selector
+videoOutputSelector :: Selector '[] (Id AVPlayerVideoOutput)
 videoOutputSelector = mkSelector "videoOutput"
 
 -- | @Selector@ for @setVideoOutput:@
-setVideoOutputSelector :: Selector
+setVideoOutputSelector :: Selector '[Id AVPlayerVideoOutput] ()
 setVideoOutputSelector = mkSelector "setVideoOutput:"
 
 -- | @Selector@ for @playbackCoordinator@
-playbackCoordinatorSelector :: Selector
+playbackCoordinatorSelector :: Selector '[] (Id AVPlayerPlaybackCoordinator)
 playbackCoordinatorSelector = mkSelector "playbackCoordinator"
 
 -- | @Selector@ for @audiovisualBackgroundPlaybackPolicy@
-audiovisualBackgroundPlaybackPolicySelector :: Selector
+audiovisualBackgroundPlaybackPolicySelector :: Selector '[] AVPlayerAudiovisualBackgroundPlaybackPolicy
 audiovisualBackgroundPlaybackPolicySelector = mkSelector "audiovisualBackgroundPlaybackPolicy"
 
 -- | @Selector@ for @setAudiovisualBackgroundPlaybackPolicy:@
-setAudiovisualBackgroundPlaybackPolicySelector :: Selector
+setAudiovisualBackgroundPlaybackPolicySelector :: Selector '[AVPlayerAudiovisualBackgroundPlaybackPolicy] ()
 setAudiovisualBackgroundPlaybackPolicySelector = mkSelector "setAudiovisualBackgroundPlaybackPolicy:"
 
 -- | @Selector@ for @preventsAutomaticBackgroundingDuringVideoPlayback@
-preventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector
+preventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector '[] Bool
 preventsAutomaticBackgroundingDuringVideoPlaybackSelector = mkSelector "preventsAutomaticBackgroundingDuringVideoPlayback"
 
 -- | @Selector@ for @setPreventsAutomaticBackgroundingDuringVideoPlayback:@
-setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector
+setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector :: Selector '[Bool] ()
 setPreventsAutomaticBackgroundingDuringVideoPlaybackSelector = mkSelector "setPreventsAutomaticBackgroundingDuringVideoPlayback:"
 
 -- | @Selector@ for @preventsDisplaySleepDuringVideoPlayback@
-preventsDisplaySleepDuringVideoPlaybackSelector :: Selector
+preventsDisplaySleepDuringVideoPlaybackSelector :: Selector '[] Bool
 preventsDisplaySleepDuringVideoPlaybackSelector = mkSelector "preventsDisplaySleepDuringVideoPlayback"
 
 -- | @Selector@ for @setPreventsDisplaySleepDuringVideoPlayback:@
-setPreventsDisplaySleepDuringVideoPlaybackSelector :: Selector
+setPreventsDisplaySleepDuringVideoPlaybackSelector :: Selector '[Bool] ()
 setPreventsDisplaySleepDuringVideoPlaybackSelector = mkSelector "setPreventsDisplaySleepDuringVideoPlayback:"
 
 -- | @Selector@ for @preferredVideoDecoderGPURegistryID@
-preferredVideoDecoderGPURegistryIDSelector :: Selector
+preferredVideoDecoderGPURegistryIDSelector :: Selector '[] CULong
 preferredVideoDecoderGPURegistryIDSelector = mkSelector "preferredVideoDecoderGPURegistryID"
 
 -- | @Selector@ for @setPreferredVideoDecoderGPURegistryID:@
-setPreferredVideoDecoderGPURegistryIDSelector :: Selector
+setPreferredVideoDecoderGPURegistryIDSelector :: Selector '[CULong] ()
 setPreferredVideoDecoderGPURegistryIDSelector = mkSelector "setPreferredVideoDecoderGPURegistryID:"
 
 -- | @Selector@ for @availableHDRModes@
-availableHDRModesSelector :: Selector
+availableHDRModesSelector :: Selector '[] AVPlayerHDRMode
 availableHDRModesSelector = mkSelector "availableHDRModes"
 
 -- | @Selector@ for @eligibleForHDRPlayback@
-eligibleForHDRPlaybackSelector :: Selector
+eligibleForHDRPlaybackSelector :: Selector '[] Bool
 eligibleForHDRPlaybackSelector = mkSelector "eligibleForHDRPlayback"
 
 -- | @Selector@ for @outputObscuredDueToInsufficientExternalProtection@
-outputObscuredDueToInsufficientExternalProtectionSelector :: Selector
+outputObscuredDueToInsufficientExternalProtectionSelector :: Selector '[] Bool
 outputObscuredDueToInsufficientExternalProtectionSelector = mkSelector "outputObscuredDueToInsufficientExternalProtection"
 
 -- | @Selector@ for @allowsExternalPlayback@
-allowsExternalPlaybackSelector :: Selector
+allowsExternalPlaybackSelector :: Selector '[] Bool
 allowsExternalPlaybackSelector = mkSelector "allowsExternalPlayback"
 
 -- | @Selector@ for @setAllowsExternalPlayback:@
-setAllowsExternalPlaybackSelector :: Selector
+setAllowsExternalPlaybackSelector :: Selector '[Bool] ()
 setAllowsExternalPlaybackSelector = mkSelector "setAllowsExternalPlayback:"
 
 -- | @Selector@ for @externalPlaybackActive@
-externalPlaybackActiveSelector :: Selector
+externalPlaybackActiveSelector :: Selector '[] Bool
 externalPlaybackActiveSelector = mkSelector "externalPlaybackActive"
 
 -- | @Selector@ for @usesExternalPlaybackWhileExternalScreenIsActive@
-usesExternalPlaybackWhileExternalScreenIsActiveSelector :: Selector
+usesExternalPlaybackWhileExternalScreenIsActiveSelector :: Selector '[] Bool
 usesExternalPlaybackWhileExternalScreenIsActiveSelector = mkSelector "usesExternalPlaybackWhileExternalScreenIsActive"
 
 -- | @Selector@ for @setUsesExternalPlaybackWhileExternalScreenIsActive:@
-setUsesExternalPlaybackWhileExternalScreenIsActiveSelector :: Selector
+setUsesExternalPlaybackWhileExternalScreenIsActiveSelector :: Selector '[Bool] ()
 setUsesExternalPlaybackWhileExternalScreenIsActiveSelector = mkSelector "setUsesExternalPlaybackWhileExternalScreenIsActive:"
 
 -- | @Selector@ for @externalPlaybackVideoGravity@
-externalPlaybackVideoGravitySelector :: Selector
+externalPlaybackVideoGravitySelector :: Selector '[] (Id NSString)
 externalPlaybackVideoGravitySelector = mkSelector "externalPlaybackVideoGravity"
 
 -- | @Selector@ for @setExternalPlaybackVideoGravity:@
-setExternalPlaybackVideoGravitySelector :: Selector
+setExternalPlaybackVideoGravitySelector :: Selector '[Id NSString] ()
 setExternalPlaybackVideoGravitySelector = mkSelector "setExternalPlaybackVideoGravity:"
 
 -- | @Selector@ for @audioOutputDeviceUniqueID@
-audioOutputDeviceUniqueIDSelector :: Selector
+audioOutputDeviceUniqueIDSelector :: Selector '[] (Id NSString)
 audioOutputDeviceUniqueIDSelector = mkSelector "audioOutputDeviceUniqueID"
 
 -- | @Selector@ for @setAudioOutputDeviceUniqueID:@
-setAudioOutputDeviceUniqueIDSelector :: Selector
+setAudioOutputDeviceUniqueIDSelector :: Selector '[Id NSString] ()
 setAudioOutputDeviceUniqueIDSelector = mkSelector "setAudioOutputDeviceUniqueID:"
 
 -- | @Selector@ for @appliesMediaSelectionCriteriaAutomatically@
-appliesMediaSelectionCriteriaAutomaticallySelector :: Selector
+appliesMediaSelectionCriteriaAutomaticallySelector :: Selector '[] Bool
 appliesMediaSelectionCriteriaAutomaticallySelector = mkSelector "appliesMediaSelectionCriteriaAutomatically"
 
 -- | @Selector@ for @setAppliesMediaSelectionCriteriaAutomatically:@
-setAppliesMediaSelectionCriteriaAutomaticallySelector :: Selector
+setAppliesMediaSelectionCriteriaAutomaticallySelector :: Selector '[Bool] ()
 setAppliesMediaSelectionCriteriaAutomaticallySelector = mkSelector "setAppliesMediaSelectionCriteriaAutomatically:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @muted@
-mutedSelector :: Selector
+mutedSelector :: Selector '[] Bool
 mutedSelector = mkSelector "muted"
 
 -- | @Selector@ for @setMuted:@
-setMutedSelector :: Selector
+setMutedSelector :: Selector '[Bool] ()
 setMutedSelector = mkSelector "setMuted:"
 
 -- | @Selector@ for @automaticallyWaitsToMinimizeStalling@
-automaticallyWaitsToMinimizeStallingSelector :: Selector
+automaticallyWaitsToMinimizeStallingSelector :: Selector '[] Bool
 automaticallyWaitsToMinimizeStallingSelector = mkSelector "automaticallyWaitsToMinimizeStalling"
 
 -- | @Selector@ for @setAutomaticallyWaitsToMinimizeStalling:@
-setAutomaticallyWaitsToMinimizeStallingSelector :: Selector
+setAutomaticallyWaitsToMinimizeStallingSelector :: Selector '[Bool] ()
 setAutomaticallyWaitsToMinimizeStallingSelector = mkSelector "setAutomaticallyWaitsToMinimizeStalling:"
 
 -- | @Selector@ for @sourceClock@
-sourceClockSelector :: Selector
+sourceClockSelector :: Selector '[] (Ptr ())
 sourceClockSelector = mkSelector "sourceClock"
 
 -- | @Selector@ for @setSourceClock:@
-setSourceClockSelector :: Selector
+setSourceClockSelector :: Selector '[Ptr ()] ()
 setSourceClockSelector = mkSelector "setSourceClock:"
 
 -- | @Selector@ for @currentItem@
-currentItemSelector :: Selector
+currentItemSelector :: Selector '[] (Id AVPlayerItem)
 currentItemSelector = mkSelector "currentItem"
 
 -- | @Selector@ for @actionAtItemEnd@
-actionAtItemEndSelector :: Selector
+actionAtItemEndSelector :: Selector '[] AVPlayerActionAtItemEnd
 actionAtItemEndSelector = mkSelector "actionAtItemEnd"
 
 -- | @Selector@ for @setActionAtItemEnd:@
-setActionAtItemEndSelector :: Selector
+setActionAtItemEndSelector :: Selector '[AVPlayerActionAtItemEnd] ()
 setActionAtItemEndSelector = mkSelector "setActionAtItemEnd:"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @defaultRate@
-defaultRateSelector :: Selector
+defaultRateSelector :: Selector '[] CFloat
 defaultRateSelector = mkSelector "defaultRate"
 
 -- | @Selector@ for @setDefaultRate:@
-setDefaultRateSelector :: Selector
+setDefaultRateSelector :: Selector '[CFloat] ()
 setDefaultRateSelector = mkSelector "setDefaultRate:"
 
 -- | @Selector@ for @timeControlStatus@
-timeControlStatusSelector :: Selector
+timeControlStatusSelector :: Selector '[] AVPlayerTimeControlStatus
 timeControlStatusSelector = mkSelector "timeControlStatus"
 
 -- | @Selector@ for @reasonForWaitingToPlay@
-reasonForWaitingToPlaySelector :: Selector
+reasonForWaitingToPlaySelector :: Selector '[] (Id NSString)
 reasonForWaitingToPlaySelector = mkSelector "reasonForWaitingToPlay"
 

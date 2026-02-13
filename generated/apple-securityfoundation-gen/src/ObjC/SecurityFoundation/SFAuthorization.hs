@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.SecurityFoundation.SFAuthorization
   , obtainWithRights_flags_environment_authorizedRights_error
   , permitWithRights_flags_environment_authorizedRights
   , permitWithRight_flags
-  , authorizationSelector
   , authorizationRefSelector
+  , authorizationSelector
   , authorizationWithFlags_rights_environmentSelector
-  , initWithFlags_rights_environmentSelector
   , initSelector
+  , initWithFlags_rights_environmentSelector
   , invalidateCredentialsSelector
   , obtainWithRight_flags_errorSelector
   , obtainWithRights_flags_environment_authorizedRights_errorSelector
-  , permitWithRights_flags_environment_authorizedRightsSelector
   , permitWithRight_flagsSelector
+  , permitWithRights_flags_environment_authorizedRightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,7 +55,7 @@ authorization :: IO RawId
 authorization  =
   do
     cls' <- getRequiredClass "SFAuthorization"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "authorization") (retPtr retVoid) []
+    sendClassMessage cls' authorizationSelector
 
 -- | authorizationRef
 --
@@ -66,8 +63,8 @@ authorization  =
 --
 -- ObjC selector: @- authorizationRef@
 authorizationRef :: IsSFAuthorization sfAuthorization => sfAuthorization -> IO RawId
-authorizationRef sfAuthorization  =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorization (mkSelector "authorizationRef") (retPtr retVoid) []
+authorizationRef sfAuthorization =
+  sendMessage sfAuthorization authorizationRefSelector
 
 -- | authorizationWithFlags:rights:environment:
 --
@@ -84,7 +81,7 @@ authorizationWithFlags_rights_environment :: CInt -> Const RawId -> Const RawId 
 authorizationWithFlags_rights_environment flags rights environment =
   do
     cls' <- getRequiredClass "SFAuthorization"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "authorizationWithFlags:rights:environment:") (retPtr retVoid) [argCInt (fromIntegral flags), argPtr (castPtr (unRawId (unConst rights)) :: Ptr ()), argPtr (castPtr (unRawId (unConst environment)) :: Ptr ())]
+    sendClassMessage cls' authorizationWithFlags_rights_environmentSelector flags rights environment
 
 -- | initWithFlags:rights:environment:
 --
@@ -98,8 +95,8 @@ authorizationWithFlags_rights_environment flags rights environment =
 --
 -- ObjC selector: @- initWithFlags:rights:environment:@
 initWithFlags_rights_environment :: IsSFAuthorization sfAuthorization => sfAuthorization -> CInt -> Const RawId -> Const RawId -> IO RawId
-initWithFlags_rights_environment sfAuthorization  flags rights environment =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorization (mkSelector "initWithFlags:rights:environment:") (retPtr retVoid) [argCInt (fromIntegral flags), argPtr (castPtr (unRawId (unConst rights)) :: Ptr ()), argPtr (castPtr (unRawId (unConst environment)) :: Ptr ())]
+initWithFlags_rights_environment sfAuthorization flags rights environment =
+  sendOwnedMessage sfAuthorization initWithFlags_rights_environmentSelector flags rights environment
 
 -- | init
 --
@@ -107,8 +104,8 @@ initWithFlags_rights_environment sfAuthorization  flags rights environment =
 --
 -- ObjC selector: @- init@
 init_ :: IsSFAuthorization sfAuthorization => sfAuthorization -> IO RawId
-init_ sfAuthorization  =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorization (mkSelector "init") (retPtr retVoid) []
+init_ sfAuthorization =
+  sendOwnedMessage sfAuthorization initSelector
 
 -- | invalidateCredentials
 --
@@ -116,8 +113,8 @@ init_ sfAuthorization  =
 --
 -- ObjC selector: @- invalidateCredentials@
 invalidateCredentials :: IsSFAuthorization sfAuthorization => sfAuthorization -> IO ()
-invalidateCredentials sfAuthorization  =
-    sendMsg sfAuthorization (mkSelector "invalidateCredentials") retVoid []
+invalidateCredentials sfAuthorization =
+  sendMessage sfAuthorization invalidateCredentialsSelector
 
 -- | obtainWithRight:flags:
 --
@@ -131,9 +128,8 @@ invalidateCredentials sfAuthorization  =
 --
 -- ObjC selector: @- obtainWithRight:flags:error:@
 obtainWithRight_flags_error :: (IsSFAuthorization sfAuthorization, IsNSError error_) => sfAuthorization -> RawId -> CInt -> error_ -> IO Bool
-obtainWithRight_flags_error sfAuthorization  rightName flags error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorization (mkSelector "obtainWithRight:flags:error:") retCULong [argPtr (castPtr (unRawId rightName) :: Ptr ()), argCInt (fromIntegral flags), argPtr (castPtr raw_error_ :: Ptr ())]
+obtainWithRight_flags_error sfAuthorization rightName flags error_ =
+  sendMessage sfAuthorization obtainWithRight_flags_errorSelector rightName flags (toNSError error_)
 
 -- | obtainWithRights:flags:environment:authorizedRights:error:
 --
@@ -151,9 +147,8 @@ obtainWithRight_flags_error sfAuthorization  rightName flags error_ =
 --
 -- ObjC selector: @- obtainWithRights:flags:environment:authorizedRights:error:@
 obtainWithRights_flags_environment_authorizedRights_error :: (IsSFAuthorization sfAuthorization, IsNSError error_) => sfAuthorization -> Const RawId -> CInt -> Const RawId -> RawId -> error_ -> IO Bool
-obtainWithRights_flags_environment_authorizedRights_error sfAuthorization  rights flags environment authorizedRights error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorization (mkSelector "obtainWithRights:flags:environment:authorizedRights:error:") retCULong [argPtr (castPtr (unRawId (unConst rights)) :: Ptr ()), argCInt (fromIntegral flags), argPtr (castPtr (unRawId (unConst environment)) :: Ptr ()), argPtr (castPtr (unRawId authorizedRights) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+obtainWithRights_flags_environment_authorizedRights_error sfAuthorization rights flags environment authorizedRights error_ =
+  sendMessage sfAuthorization obtainWithRights_flags_environment_authorizedRights_errorSelector rights flags environment authorizedRights (toNSError error_)
 
 -- | DEPRECATED: Use obtainWithRights:flags:environment:authorizedRights:error:
 --
@@ -171,8 +166,8 @@ obtainWithRights_flags_environment_authorizedRights_error sfAuthorization  right
 --
 -- ObjC selector: @- permitWithRights:flags:environment:authorizedRights:@
 permitWithRights_flags_environment_authorizedRights :: IsSFAuthorization sfAuthorization => sfAuthorization -> Const RawId -> CInt -> Const RawId -> RawId -> IO CInt
-permitWithRights_flags_environment_authorizedRights sfAuthorization  rights flags environment authorizedRights =
-    sendMsg sfAuthorization (mkSelector "permitWithRights:flags:environment:authorizedRights:") retCInt [argPtr (castPtr (unRawId (unConst rights)) :: Ptr ()), argCInt (fromIntegral flags), argPtr (castPtr (unRawId (unConst environment)) :: Ptr ()), argPtr (castPtr (unRawId authorizedRights) :: Ptr ())]
+permitWithRights_flags_environment_authorizedRights sfAuthorization rights flags environment authorizedRights =
+  sendMessage sfAuthorization permitWithRights_flags_environment_authorizedRightsSelector rights flags environment authorizedRights
 
 -- | DEPRECATED: Use obtainWithRight:flags:error:
 --
@@ -186,50 +181,50 @@ permitWithRights_flags_environment_authorizedRights sfAuthorization  rights flag
 --
 -- ObjC selector: @- permitWithRight:flags:@
 permitWithRight_flags :: IsSFAuthorization sfAuthorization => sfAuthorization -> RawId -> CInt -> IO CInt
-permitWithRight_flags sfAuthorization  rightName flags =
-    sendMsg sfAuthorization (mkSelector "permitWithRight:flags:") retCInt [argPtr (castPtr (unRawId rightName) :: Ptr ()), argCInt (fromIntegral flags)]
+permitWithRight_flags sfAuthorization rightName flags =
+  sendMessage sfAuthorization permitWithRight_flagsSelector rightName flags
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorization@
-authorizationSelector :: Selector
+authorizationSelector :: Selector '[] RawId
 authorizationSelector = mkSelector "authorization"
 
 -- | @Selector@ for @authorizationRef@
-authorizationRefSelector :: Selector
+authorizationRefSelector :: Selector '[] RawId
 authorizationRefSelector = mkSelector "authorizationRef"
 
 -- | @Selector@ for @authorizationWithFlags:rights:environment:@
-authorizationWithFlags_rights_environmentSelector :: Selector
+authorizationWithFlags_rights_environmentSelector :: Selector '[CInt, Const RawId, Const RawId] RawId
 authorizationWithFlags_rights_environmentSelector = mkSelector "authorizationWithFlags:rights:environment:"
 
 -- | @Selector@ for @initWithFlags:rights:environment:@
-initWithFlags_rights_environmentSelector :: Selector
+initWithFlags_rights_environmentSelector :: Selector '[CInt, Const RawId, Const RawId] RawId
 initWithFlags_rights_environmentSelector = mkSelector "initWithFlags:rights:environment:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @invalidateCredentials@
-invalidateCredentialsSelector :: Selector
+invalidateCredentialsSelector :: Selector '[] ()
 invalidateCredentialsSelector = mkSelector "invalidateCredentials"
 
 -- | @Selector@ for @obtainWithRight:flags:error:@
-obtainWithRight_flags_errorSelector :: Selector
+obtainWithRight_flags_errorSelector :: Selector '[RawId, CInt, Id NSError] Bool
 obtainWithRight_flags_errorSelector = mkSelector "obtainWithRight:flags:error:"
 
 -- | @Selector@ for @obtainWithRights:flags:environment:authorizedRights:error:@
-obtainWithRights_flags_environment_authorizedRights_errorSelector :: Selector
+obtainWithRights_flags_environment_authorizedRights_errorSelector :: Selector '[Const RawId, CInt, Const RawId, RawId, Id NSError] Bool
 obtainWithRights_flags_environment_authorizedRights_errorSelector = mkSelector "obtainWithRights:flags:environment:authorizedRights:error:"
 
 -- | @Selector@ for @permitWithRights:flags:environment:authorizedRights:@
-permitWithRights_flags_environment_authorizedRightsSelector :: Selector
+permitWithRights_flags_environment_authorizedRightsSelector :: Selector '[Const RawId, CInt, Const RawId, RawId] CInt
 permitWithRights_flags_environment_authorizedRightsSelector = mkSelector "permitWithRights:flags:environment:authorizedRights:"
 
 -- | @Selector@ for @permitWithRight:flags:@
-permitWithRight_flagsSelector :: Selector
+permitWithRight_flagsSelector :: Selector '[RawId, CInt] CInt
 permitWithRight_flagsSelector = mkSelector "permitWithRight:flags:"
 

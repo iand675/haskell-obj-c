@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,34 +36,34 @@ module ObjC.Metal.MTLComputePipelineDescriptor
   , setMaxCallStackDepth
   , shaderValidation
   , setShaderValidation
-  , resetSelector
-  , labelSelector
-  , setLabelSelector
-  , computeFunctionSelector
-  , setComputeFunctionSelector
-  , threadGroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , maxTotalThreadsPerThreadgroupSelector
-  , setMaxTotalThreadsPerThreadgroupSelector
-  , stageInputDescriptorSelector
-  , setStageInputDescriptorSelector
-  , buffersSelector
-  , supportIndirectCommandBuffersSelector
-  , setSupportIndirectCommandBuffersSelector
-  , insertLibrariesSelector
-  , setInsertLibrariesSelector
-  , preloadedLibrariesSelector
-  , setPreloadedLibrariesSelector
   , binaryArchivesSelector
-  , setBinaryArchivesSelector
+  , buffersSelector
+  , computeFunctionSelector
+  , insertLibrariesSelector
+  , labelSelector
   , linkedFunctionsSelector
-  , setLinkedFunctionsSelector
-  , supportAddingBinaryFunctionsSelector
-  , setSupportAddingBinaryFunctionsSelector
   , maxCallStackDepthSelector
+  , maxTotalThreadsPerThreadgroupSelector
+  , preloadedLibrariesSelector
+  , resetSelector
+  , setBinaryArchivesSelector
+  , setComputeFunctionSelector
+  , setInsertLibrariesSelector
+  , setLabelSelector
+  , setLinkedFunctionsSelector
   , setMaxCallStackDepthSelector
-  , shaderValidationSelector
+  , setMaxTotalThreadsPerThreadgroupSelector
+  , setPreloadedLibrariesSelector
   , setShaderValidationSelector
+  , setStageInputDescriptorSelector
+  , setSupportAddingBinaryFunctionsSelector
+  , setSupportIndirectCommandBuffersSelector
+  , setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , shaderValidationSelector
+  , stageInputDescriptorSelector
+  , supportAddingBinaryFunctionsSelector
+  , supportIndirectCommandBuffersSelector
+  , threadGroupSizeIsMultipleOfThreadExecutionWidthSelector
 
   -- * Enum types
   , MTLShaderValidation(MTLShaderValidation)
@@ -72,15 +73,11 @@ module ObjC.Metal.MTLComputePipelineDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,8 +91,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reset@
 reset :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO ()
-reset mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "reset") retVoid []
+reset mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor resetSelector
 
 -- | label
 --
@@ -103,8 +100,8 @@ reset mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- label@
 label :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSString)
-label mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor labelSelector
 
 -- | label
 --
@@ -112,9 +109,8 @@ label mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSString value) => mtlComputePipelineDescriptor -> value -> IO ()
-setLabel mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setLabelSelector (toNSString value)
 
 -- | computeFunction
 --
@@ -122,8 +118,8 @@ setLabel mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- computeFunction@
 computeFunction :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO RawId
-computeFunction mtlComputePipelineDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlComputePipelineDescriptor (mkSelector "computeFunction") (retPtr retVoid) []
+computeFunction mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor computeFunctionSelector
 
 -- | computeFunction
 --
@@ -131,8 +127,8 @@ computeFunction mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setComputeFunction:@
 setComputeFunction :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> RawId -> IO ()
-setComputeFunction mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setComputeFunction:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setComputeFunction mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setComputeFunctionSelector value
 
 -- | threadGroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -140,8 +136,8 @@ setComputeFunction mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- threadGroupSizeIsMultipleOfThreadExecutionWidth@
 threadGroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO Bool
-threadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlComputePipelineDescriptor (mkSelector "threadGroupSizeIsMultipleOfThreadExecutionWidth") retCULong []
+threadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor threadGroupSizeIsMultipleOfThreadExecutionWidthSelector
 
 -- | threadGroupSizeIsMultipleOfThreadExecutionWidth
 --
@@ -149,8 +145,8 @@ threadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setThreadGroupSizeIsMultipleOfThreadExecutionWidth:@
 setThreadGroupSizeIsMultipleOfThreadExecutionWidth :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> Bool -> IO ()
-setThreadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setThreadGroupSizeIsMultipleOfThreadExecutionWidth:") retVoid [argCULong (if value then 1 else 0)]
+setThreadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector value
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -158,8 +154,8 @@ setThreadGroupSizeIsMultipleOfThreadExecutionWidth mtlComputePipelineDescriptor 
 --
 -- ObjC selector: @- maxTotalThreadsPerThreadgroup@
 maxTotalThreadsPerThreadgroup :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO CULong
-maxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "maxTotalThreadsPerThreadgroup") retCULong []
+maxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor maxTotalThreadsPerThreadgroupSelector
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -167,8 +163,8 @@ maxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerThreadgroup:@
 setMaxTotalThreadsPerThreadgroup :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setMaxTotalThreadsPerThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setMaxTotalThreadsPerThreadgroupSelector value
 
 -- | computeDataDescriptor
 --
@@ -176,8 +172,8 @@ setMaxTotalThreadsPerThreadgroup mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- stageInputDescriptor@
 stageInputDescriptor :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id MTLStageInputOutputDescriptor)
-stageInputDescriptor mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "stageInputDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+stageInputDescriptor mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor stageInputDescriptorSelector
 
 -- | computeDataDescriptor
 --
@@ -185,9 +181,8 @@ stageInputDescriptor mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setStageInputDescriptor:@
 setStageInputDescriptor :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsMTLStageInputOutputDescriptor value) => mtlComputePipelineDescriptor -> value -> IO ()
-setStageInputDescriptor mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setStageInputDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStageInputDescriptor mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setStageInputDescriptorSelector (toMTLStageInputOutputDescriptor value)
 
 -- | buffers
 --
@@ -195,8 +190,8 @@ setStageInputDescriptor mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- buffers@
 buffers :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id MTLPipelineBufferDescriptorArray)
-buffers mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "buffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+buffers mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor buffersSelector
 
 -- | supportIndirectCommandBuffers
 --
@@ -204,8 +199,8 @@ buffers mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- supportIndirectCommandBuffers@
 supportIndirectCommandBuffers :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO Bool
-supportIndirectCommandBuffers mtlComputePipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlComputePipelineDescriptor (mkSelector "supportIndirectCommandBuffers") retCULong []
+supportIndirectCommandBuffers mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor supportIndirectCommandBuffersSelector
 
 -- | supportIndirectCommandBuffers
 --
@@ -213,8 +208,8 @@ supportIndirectCommandBuffers mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffers :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> Bool -> IO ()
-setSupportIndirectCommandBuffers mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCULong (if value then 1 else 0)]
+setSupportIndirectCommandBuffers mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setSupportIndirectCommandBuffersSelector value
 
 -- | insertLibraries
 --
@@ -226,8 +221,8 @@ setSupportIndirectCommandBuffers mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- insertLibraries@
 insertLibraries :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
-insertLibraries mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "insertLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+insertLibraries mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor insertLibrariesSelector
 
 -- | insertLibraries
 --
@@ -239,9 +234,8 @@ insertLibraries mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setInsertLibraries:@
 setInsertLibraries :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
-setInsertLibraries mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setInsertLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInsertLibraries mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setInsertLibrariesSelector (toNSArray value)
 
 -- | preloadedLibraries
 --
@@ -253,8 +247,8 @@ setInsertLibraries mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- preloadedLibraries@
 preloadedLibraries :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
-preloadedLibraries mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "preloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+preloadedLibraries mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor preloadedLibrariesSelector
 
 -- | preloadedLibraries
 --
@@ -266,9 +260,8 @@ preloadedLibraries mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setPreloadedLibraries:@
 setPreloadedLibraries :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
-setPreloadedLibraries mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreloadedLibraries mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setPreloadedLibrariesSelector (toNSArray value)
 
 -- | binaryArchives
 --
@@ -280,8 +273,8 @@ setPreloadedLibraries mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- binaryArchives@
 binaryArchives :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id NSArray)
-binaryArchives mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryArchives mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor binaryArchivesSelector
 
 -- | binaryArchives
 --
@@ -293,9 +286,8 @@ binaryArchives mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setBinaryArchives:@
 setBinaryArchives :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsNSArray value) => mtlComputePipelineDescriptor -> value -> IO ()
-setBinaryArchives mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryArchives mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setBinaryArchivesSelector (toNSArray value)
 
 -- | linkedFunctions
 --
@@ -305,8 +297,8 @@ setBinaryArchives mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- linkedFunctions@
 linkedFunctions :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO (Id MTLLinkedFunctions)
-linkedFunctions mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "linkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkedFunctions mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor linkedFunctionsSelector
 
 -- | linkedFunctions
 --
@@ -316,9 +308,8 @@ linkedFunctions mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setLinkedFunctions:@
 setLinkedFunctions :: (IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor, IsMTLLinkedFunctions value) => mtlComputePipelineDescriptor -> value -> IO ()
-setLinkedFunctions mtlComputePipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlComputePipelineDescriptor (mkSelector "setLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkedFunctions mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setLinkedFunctionsSelector (toMTLLinkedFunctions value)
 
 -- | supportAddingBinaryFunctions
 --
@@ -326,8 +317,8 @@ setLinkedFunctions mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- supportAddingBinaryFunctions@
 supportAddingBinaryFunctions :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO Bool
-supportAddingBinaryFunctions mtlComputePipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlComputePipelineDescriptor (mkSelector "supportAddingBinaryFunctions") retCULong []
+supportAddingBinaryFunctions mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor supportAddingBinaryFunctionsSelector
 
 -- | supportAddingBinaryFunctions
 --
@@ -335,8 +326,8 @@ supportAddingBinaryFunctions mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setSupportAddingBinaryFunctions:@
 setSupportAddingBinaryFunctions :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> Bool -> IO ()
-setSupportAddingBinaryFunctions mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setSupportAddingBinaryFunctions:") retVoid [argCULong (if value then 1 else 0)]
+setSupportAddingBinaryFunctions mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setSupportAddingBinaryFunctionsSelector value
 
 -- | maxCallStackDepth
 --
@@ -344,8 +335,8 @@ setSupportAddingBinaryFunctions mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- maxCallStackDepth@
 maxCallStackDepth :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO CULong
-maxCallStackDepth mtlComputePipelineDescriptor  =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "maxCallStackDepth") retCULong []
+maxCallStackDepth mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor maxCallStackDepthSelector
 
 -- | maxCallStackDepth
 --
@@ -353,8 +344,8 @@ maxCallStackDepth mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxCallStackDepth:@
 setMaxCallStackDepth :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> CULong -> IO ()
-setMaxCallStackDepth mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setMaxCallStackDepth:") retVoid [argCULong value]
+setMaxCallStackDepth mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setMaxCallStackDepthSelector value
 
 -- | shaderValidation
 --
@@ -364,8 +355,8 @@ setMaxCallStackDepth mtlComputePipelineDescriptor  value =
 --
 -- ObjC selector: @- shaderValidation@
 shaderValidation :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> IO MTLShaderValidation
-shaderValidation mtlComputePipelineDescriptor  =
-    fmap (coerce :: CLong -> MTLShaderValidation) $ sendMsg mtlComputePipelineDescriptor (mkSelector "shaderValidation") retCLong []
+shaderValidation mtlComputePipelineDescriptor =
+  sendMessage mtlComputePipelineDescriptor shaderValidationSelector
 
 -- | shaderValidation
 --
@@ -375,122 +366,122 @@ shaderValidation mtlComputePipelineDescriptor  =
 --
 -- ObjC selector: @- setShaderValidation:@
 setShaderValidation :: IsMTLComputePipelineDescriptor mtlComputePipelineDescriptor => mtlComputePipelineDescriptor -> MTLShaderValidation -> IO ()
-setShaderValidation mtlComputePipelineDescriptor  value =
-    sendMsg mtlComputePipelineDescriptor (mkSelector "setShaderValidation:") retVoid [argCLong (coerce value)]
+setShaderValidation mtlComputePipelineDescriptor value =
+  sendMessage mtlComputePipelineDescriptor setShaderValidationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @computeFunction@
-computeFunctionSelector :: Selector
+computeFunctionSelector :: Selector '[] RawId
 computeFunctionSelector = mkSelector "computeFunction"
 
 -- | @Selector@ for @setComputeFunction:@
-setComputeFunctionSelector :: Selector
+setComputeFunctionSelector :: Selector '[RawId] ()
 setComputeFunctionSelector = mkSelector "setComputeFunction:"
 
 -- | @Selector@ for @threadGroupSizeIsMultipleOfThreadExecutionWidth@
-threadGroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+threadGroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[] Bool
 threadGroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "threadGroupSizeIsMultipleOfThreadExecutionWidth"
 
 -- | @Selector@ for @setThreadGroupSizeIsMultipleOfThreadExecutionWidth:@
-setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[Bool] ()
 setThreadGroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "setThreadGroupSizeIsMultipleOfThreadExecutionWidth:"
 
 -- | @Selector@ for @maxTotalThreadsPerThreadgroup@
-maxTotalThreadsPerThreadgroupSelector :: Selector
+maxTotalThreadsPerThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerThreadgroupSelector = mkSelector "maxTotalThreadsPerThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerThreadgroup:@
-setMaxTotalThreadsPerThreadgroupSelector :: Selector
+setMaxTotalThreadsPerThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerThreadgroupSelector = mkSelector "setMaxTotalThreadsPerThreadgroup:"
 
 -- | @Selector@ for @stageInputDescriptor@
-stageInputDescriptorSelector :: Selector
+stageInputDescriptorSelector :: Selector '[] (Id MTLStageInputOutputDescriptor)
 stageInputDescriptorSelector = mkSelector "stageInputDescriptor"
 
 -- | @Selector@ for @setStageInputDescriptor:@
-setStageInputDescriptorSelector :: Selector
+setStageInputDescriptorSelector :: Selector '[Id MTLStageInputOutputDescriptor] ()
 setStageInputDescriptorSelector = mkSelector "setStageInputDescriptor:"
 
 -- | @Selector@ for @buffers@
-buffersSelector :: Selector
+buffersSelector :: Selector '[] (Id MTLPipelineBufferDescriptorArray)
 buffersSelector = mkSelector "buffers"
 
 -- | @Selector@ for @supportIndirectCommandBuffers@
-supportIndirectCommandBuffersSelector :: Selector
+supportIndirectCommandBuffersSelector :: Selector '[] Bool
 supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffers"
 
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
-setSupportIndirectCommandBuffersSelector :: Selector
+setSupportIndirectCommandBuffersSelector :: Selector '[Bool] ()
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
 
 -- | @Selector@ for @insertLibraries@
-insertLibrariesSelector :: Selector
+insertLibrariesSelector :: Selector '[] (Id NSArray)
 insertLibrariesSelector = mkSelector "insertLibraries"
 
 -- | @Selector@ for @setInsertLibraries:@
-setInsertLibrariesSelector :: Selector
+setInsertLibrariesSelector :: Selector '[Id NSArray] ()
 setInsertLibrariesSelector = mkSelector "setInsertLibraries:"
 
 -- | @Selector@ for @preloadedLibraries@
-preloadedLibrariesSelector :: Selector
+preloadedLibrariesSelector :: Selector '[] (Id NSArray)
 preloadedLibrariesSelector = mkSelector "preloadedLibraries"
 
 -- | @Selector@ for @setPreloadedLibraries:@
-setPreloadedLibrariesSelector :: Selector
+setPreloadedLibrariesSelector :: Selector '[Id NSArray] ()
 setPreloadedLibrariesSelector = mkSelector "setPreloadedLibraries:"
 
 -- | @Selector@ for @binaryArchives@
-binaryArchivesSelector :: Selector
+binaryArchivesSelector :: Selector '[] (Id NSArray)
 binaryArchivesSelector = mkSelector "binaryArchives"
 
 -- | @Selector@ for @setBinaryArchives:@
-setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector :: Selector '[Id NSArray] ()
 setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 
 -- | @Selector@ for @linkedFunctions@
-linkedFunctionsSelector :: Selector
+linkedFunctionsSelector :: Selector '[] (Id MTLLinkedFunctions)
 linkedFunctionsSelector = mkSelector "linkedFunctions"
 
 -- | @Selector@ for @setLinkedFunctions:@
-setLinkedFunctionsSelector :: Selector
+setLinkedFunctionsSelector :: Selector '[Id MTLLinkedFunctions] ()
 setLinkedFunctionsSelector = mkSelector "setLinkedFunctions:"
 
 -- | @Selector@ for @supportAddingBinaryFunctions@
-supportAddingBinaryFunctionsSelector :: Selector
+supportAddingBinaryFunctionsSelector :: Selector '[] Bool
 supportAddingBinaryFunctionsSelector = mkSelector "supportAddingBinaryFunctions"
 
 -- | @Selector@ for @setSupportAddingBinaryFunctions:@
-setSupportAddingBinaryFunctionsSelector :: Selector
+setSupportAddingBinaryFunctionsSelector :: Selector '[Bool] ()
 setSupportAddingBinaryFunctionsSelector = mkSelector "setSupportAddingBinaryFunctions:"
 
 -- | @Selector@ for @maxCallStackDepth@
-maxCallStackDepthSelector :: Selector
+maxCallStackDepthSelector :: Selector '[] CULong
 maxCallStackDepthSelector = mkSelector "maxCallStackDepth"
 
 -- | @Selector@ for @setMaxCallStackDepth:@
-setMaxCallStackDepthSelector :: Selector
+setMaxCallStackDepthSelector :: Selector '[CULong] ()
 setMaxCallStackDepthSelector = mkSelector "setMaxCallStackDepth:"
 
 -- | @Selector@ for @shaderValidation@
-shaderValidationSelector :: Selector
+shaderValidationSelector :: Selector '[] MTLShaderValidation
 shaderValidationSelector = mkSelector "shaderValidation"
 
 -- | @Selector@ for @setShaderValidation:@
-setShaderValidationSelector :: Selector
+setShaderValidationSelector :: Selector '[MTLShaderValidation] ()
 setShaderValidationSelector = mkSelector "setShaderValidation:"
 

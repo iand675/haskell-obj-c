@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -79,74 +80,74 @@ module ObjC.JavaScriptCore.JSValue
   , isSymbol
   , isBigInt
   , jsValueRef
-  , valueWithObject_inContextSelector
+  , callWithArgumentsSelector
+  , compareDoubleSelector
+  , compareInt64Selector
+  , compareJSValueSelector
+  , compareUInt64Selector
+  , constructWithArgumentsSelector
+  , contextSelector
+  , defineProperty_descriptorSelector
+  , deletePropertySelector
+  , hasPropertySelector
+  , invokeMethod_withArgumentsSelector
+  , isArraySelector
+  , isBigIntSelector
+  , isBooleanSelector
+  , isDateSelector
+  , isEqualToObjectSelector
+  , isEqualWithTypeCoercionToObjectSelector
+  , isInstanceOfSelector
+  , isNullSelector
+  , isNumberSelector
+  , isObjectSelector
+  , isStringSelector
+  , isSymbolSelector
+  , isUndefinedSelector
+  , jsValueRefSelector
+  , objectAtIndexedSubscriptSelector
+  , objectForKeyedSubscriptSelector
+  , setObject_atIndexedSubscriptSelector
+  , setObject_forKeyedSubscriptSelector
+  , setValue_atIndexSelector
+  , setValue_forPropertySelector
+  , toArraySelector
+  , toBoolSelector
+  , toDateSelector
+  , toDictionarySelector
+  , toDoubleSelector
+  , toInt32Selector
+  , toInt64Selector
+  , toNumberSelector
+  , toObjectOfClassSelector
+  , toObjectSelector
+  , toRangeSelector
+  , toStringSelector
+  , toUInt32Selector
+  , toUInt64Selector
+  , valueAtIndexSelector
+  , valueForPropertySelector
   , valueWithBool_inContextSelector
   , valueWithDouble_inContextSelector
   , valueWithInt32_inContextSelector
-  , valueWithUInt32_inContextSelector
-  , valueWithNewObjectInContextSelector
-  , valueWithNewArrayInContextSelector
-  , valueWithNewRegularExpressionFromPattern_flags_inContextSelector
-  , valueWithNewErrorFromMessage_inContextSelector
-  , valueWithNewPromiseInContext_fromExecutorSelector
-  , valueWithNewPromiseResolvedWithResult_inContextSelector
-  , valueWithNewPromiseRejectedWithReason_inContextSelector
-  , valueWithNewSymbolFromDescription_inContextSelector
-  , valueWithNewBigIntFromString_inContextSelector
-  , valueWithNewBigIntFromInt64_inContextSelector
-  , valueWithNewBigIntFromUInt64_inContextSelector
-  , valueWithNewBigIntFromDouble_inContextSelector
-  , valueWithNullInContextSelector
-  , valueWithUndefinedInContextSelector
-  , toObjectSelector
-  , toObjectOfClassSelector
-  , toBoolSelector
-  , toDoubleSelector
-  , toInt32Selector
-  , toUInt32Selector
-  , toInt64Selector
-  , toUInt64Selector
-  , toNumberSelector
-  , toStringSelector
-  , toDateSelector
-  , toArraySelector
-  , toDictionarySelector
-  , isInstanceOfSelector
-  , isEqualToObjectSelector
-  , isEqualWithTypeCoercionToObjectSelector
-  , compareJSValueSelector
-  , compareInt64Selector
-  , compareUInt64Selector
-  , compareDoubleSelector
-  , callWithArgumentsSelector
-  , constructWithArgumentsSelector
-  , invokeMethod_withArgumentsSelector
   , valueWithJSValueRef_inContextSelector
-  , objectForKeyedSubscriptSelector
-  , objectAtIndexedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
-  , setObject_atIndexedSubscriptSelector
-  , valueForPropertySelector
-  , setValue_forPropertySelector
-  , deletePropertySelector
-  , hasPropertySelector
-  , defineProperty_descriptorSelector
-  , valueAtIndexSelector
-  , setValue_atIndexSelector
+  , valueWithNewArrayInContextSelector
+  , valueWithNewBigIntFromDouble_inContextSelector
+  , valueWithNewBigIntFromInt64_inContextSelector
+  , valueWithNewBigIntFromString_inContextSelector
+  , valueWithNewBigIntFromUInt64_inContextSelector
+  , valueWithNewErrorFromMessage_inContextSelector
+  , valueWithNewObjectInContextSelector
+  , valueWithNewPromiseInContext_fromExecutorSelector
+  , valueWithNewPromiseRejectedWithReason_inContextSelector
+  , valueWithNewPromiseResolvedWithResult_inContextSelector
+  , valueWithNewRegularExpressionFromPattern_flags_inContextSelector
+  , valueWithNewSymbolFromDescription_inContextSelector
+  , valueWithNullInContextSelector
+  , valueWithObject_inContextSelector
   , valueWithRange_inContextSelector
-  , toRangeSelector
-  , contextSelector
-  , isUndefinedSelector
-  , isNullSelector
-  , isBooleanSelector
-  , isNumberSelector
-  , isStringSelector
-  , isObjectSelector
-  , isArraySelector
-  , isDateSelector
-  , isSymbolSelector
-  , isBigIntSelector
-  , jsValueRefSelector
+  , valueWithUInt32_inContextSelector
+  , valueWithUndefinedInContextSelector
 
   -- * Enum types
   , JSRelationCondition(JSRelationCondition)
@@ -157,15 +158,11 @@ module ObjC.JavaScriptCore.JSValue
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -189,8 +186,7 @@ valueWithObject_inContext :: IsJSContext context => RawId -> context -> IO (Id J
 valueWithObject_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithObject:inContext:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithObject_inContextSelector value (toJSContext context)
 
 -- | Create a JavaScript value from a BOOL primitive.
 --
@@ -203,8 +199,7 @@ valueWithBool_inContext :: IsJSContext context => Bool -> context -> IO (Id JSVa
 valueWithBool_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithBool:inContext:") (retPtr retVoid) [argCULong (if value then 1 else 0), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithBool_inContextSelector value (toJSContext context)
 
 -- | Create a JavaScript value from a double primitive.
 --
@@ -217,8 +212,7 @@ valueWithDouble_inContext :: IsJSContext context => CDouble -> context -> IO (Id
 valueWithDouble_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithDouble:inContext:") (retPtr retVoid) [argCDouble value, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithDouble_inContextSelector value (toJSContext context)
 
 -- | Create a JavaScript value from an int32_t primitive.
 --
@@ -231,8 +225,7 @@ valueWithInt32_inContext :: IsJSContext context => CInt -> context -> IO (Id JSV
 valueWithInt32_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithInt32:inContext:") (retPtr retVoid) [argCInt value, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithInt32_inContextSelector value (toJSContext context)
 
 -- | Create a JavaScript value from a uint32_t primitive.
 --
@@ -245,8 +238,7 @@ valueWithUInt32_inContext :: IsJSContext context => CUInt -> context -> IO (Id J
 valueWithUInt32_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithUInt32:inContext:") (retPtr retVoid) [argCUInt value, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithUInt32_inContextSelector value (toJSContext context)
 
 -- | Create a new, empty JavaScript object.
 --
@@ -259,8 +251,7 @@ valueWithNewObjectInContext :: IsJSContext context => context -> IO (Id JSValue)
 valueWithNewObjectInContext context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewObjectInContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewObjectInContextSelector (toJSContext context)
 
 -- | Create a new, empty JavaScript array.
 --
@@ -273,8 +264,7 @@ valueWithNewArrayInContext :: IsJSContext context => context -> IO (Id JSValue)
 valueWithNewArrayInContext context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewArrayInContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewArrayInContextSelector (toJSContext context)
 
 -- | Create a new JavaScript regular expression object.
 --
@@ -291,10 +281,7 @@ valueWithNewRegularExpressionFromPattern_flags_inContext :: (IsNSString pattern_
 valueWithNewRegularExpressionFromPattern_flags_inContext pattern_ flags context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr pattern_ $ \raw_pattern_ ->
-      withObjCPtr flags $ \raw_flags ->
-        withObjCPtr context $ \raw_context ->
-          sendClassMsg cls' (mkSelector "valueWithNewRegularExpressionFromPattern:flags:inContext:") (retPtr retVoid) [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_flags :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewRegularExpressionFromPattern_flags_inContextSelector (toNSString pattern_) (toNSString flags) (toJSContext context)
 
 -- | Create a new JavaScript error object.
 --
@@ -309,9 +296,7 @@ valueWithNewErrorFromMessage_inContext :: (IsNSString message, IsJSContext conte
 valueWithNewErrorFromMessage_inContext message context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr message $ \raw_message ->
-      withObjCPtr context $ \raw_context ->
-        sendClassMsg cls' (mkSelector "valueWithNewErrorFromMessage:inContext:") (retPtr retVoid) [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewErrorFromMessage_inContextSelector (toNSString message) (toJSContext context)
 
 -- | Create a new promise object using the provided executor callback.
 --
@@ -328,8 +313,7 @@ valueWithNewPromiseInContext_fromExecutor :: IsJSContext context => context -> P
 valueWithNewPromiseInContext_fromExecutor context callback =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewPromiseInContext:fromExecutor:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr callback :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewPromiseInContext_fromExecutorSelector (toJSContext context) callback
 
 -- | Create a new resolved promise object with the provided value.
 --
@@ -346,8 +330,7 @@ valueWithNewPromiseResolvedWithResult_inContext :: IsJSContext context => RawId 
 valueWithNewPromiseResolvedWithResult_inContext result context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewPromiseResolvedWithResult:inContext:") (retPtr retVoid) [argPtr (castPtr (unRawId result) :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewPromiseResolvedWithResult_inContextSelector result (toJSContext context)
 
 -- | Create a new rejected promise object with the provided value.
 --
@@ -364,8 +347,7 @@ valueWithNewPromiseRejectedWithReason_inContext :: IsJSContext context => RawId 
 valueWithNewPromiseRejectedWithReason_inContext reason context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewPromiseRejectedWithReason:inContext:") (retPtr retVoid) [argPtr (castPtr (unRawId reason) :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewPromiseRejectedWithReason_inContextSelector reason (toJSContext context)
 
 -- | Create a new, unique, symbol object.
 --
@@ -380,9 +362,7 @@ valueWithNewSymbolFromDescription_inContext :: (IsNSString description, IsJSCont
 valueWithNewSymbolFromDescription_inContext description context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr description $ \raw_description ->
-      withObjCPtr context $ \raw_context ->
-        sendClassMsg cls' (mkSelector "valueWithNewSymbolFromDescription:inContext:") (retPtr retVoid) [argPtr (castPtr raw_description :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewSymbolFromDescription_inContextSelector (toNSString description) (toJSContext context)
 
 -- | Create a new BigInt value from a numeric string.
 --
@@ -399,9 +379,7 @@ valueWithNewBigIntFromString_inContext :: (IsNSString string, IsJSContext contex
 valueWithNewBigIntFromString_inContext string context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr string $ \raw_string ->
-      withObjCPtr context $ \raw_context ->
-        sendClassMsg cls' (mkSelector "valueWithNewBigIntFromString:inContext:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewBigIntFromString_inContextSelector (toNSString string) (toJSContext context)
 
 -- | Create a new BigInt value from a int64_t.
 --
@@ -416,8 +394,7 @@ valueWithNewBigIntFromInt64_inContext :: IsJSContext context => CLong -> context
 valueWithNewBigIntFromInt64_inContext int64 context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewBigIntFromInt64:inContext:") (retPtr retVoid) [argCLong int64, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewBigIntFromInt64_inContextSelector int64 (toJSContext context)
 
 -- | Create a new BigInt value from a uint64_t.
 --
@@ -432,8 +409,7 @@ valueWithNewBigIntFromUInt64_inContext :: IsJSContext context => CULong -> conte
 valueWithNewBigIntFromUInt64_inContext uint64 context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewBigIntFromUInt64:inContext:") (retPtr retVoid) [argCULong uint64, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewBigIntFromUInt64_inContextSelector uint64 (toJSContext context)
 
 -- | Create a new BigInt value from a double.
 --
@@ -450,8 +426,7 @@ valueWithNewBigIntFromDouble_inContext :: IsJSContext context => CDouble -> cont
 valueWithNewBigIntFromDouble_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNewBigIntFromDouble:inContext:") (retPtr retVoid) [argCDouble value, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNewBigIntFromDouble_inContextSelector value (toJSContext context)
 
 -- | Create the JavaScript value null.
 --
@@ -464,8 +439,7 @@ valueWithNullInContext :: IsJSContext context => context -> IO (Id JSValue)
 valueWithNullInContext context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithNullInContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithNullInContextSelector (toJSContext context)
 
 -- | Create the JavaScript value undefined.
 --
@@ -478,8 +452,7 @@ valueWithUndefinedInContext :: IsJSContext context => context -> IO (Id JSValue)
 valueWithUndefinedInContext context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithUndefinedInContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithUndefinedInContextSelector (toJSContext context)
 
 -- | Converting to Objective-C Types
 --
@@ -514,8 +487,8 @@ valueWithUndefinedInContext context =
 --
 -- ObjC selector: @- toObject@
 toObject :: IsJSValue jsValue => jsValue -> IO RawId
-toObject jsValue  =
-    fmap (RawId . castPtr) $ sendMsg jsValue (mkSelector "toObject") (retPtr retVoid) []
+toObject jsValue =
+  sendMessage jsValue toObjectSelector
 
 -- | Convert a JSValue to an Objective-C object of a specific class.
 --
@@ -525,8 +498,8 @@ toObject jsValue  =
 --
 -- ObjC selector: @- toObjectOfClass:@
 toObjectOfClass :: IsJSValue jsValue => jsValue -> Class -> IO RawId
-toObjectOfClass jsValue  expectedClass =
-    fmap (RawId . castPtr) $ sendMsg jsValue (mkSelector "toObjectOfClass:") (retPtr retVoid) [argPtr (unClass expectedClass)]
+toObjectOfClass jsValue expectedClass =
+  sendMessage jsValue toObjectOfClassSelector expectedClass
 
 -- | Convert a JSValue to a boolean.
 --
@@ -536,8 +509,8 @@ toObjectOfClass jsValue  expectedClass =
 --
 -- ObjC selector: @- toBool@
 toBool :: IsJSValue jsValue => jsValue -> IO Bool
-toBool jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "toBool") retCULong []
+toBool jsValue =
+  sendMessage jsValue toBoolSelector
 
 -- | Convert a JSValue to a double.
 --
@@ -547,8 +520,8 @@ toBool jsValue  =
 --
 -- ObjC selector: @- toDouble@
 toDouble :: IsJSValue jsValue => jsValue -> IO CDouble
-toDouble jsValue  =
-    sendMsg jsValue (mkSelector "toDouble") retCDouble []
+toDouble jsValue =
+  sendMessage jsValue toDoubleSelector
 
 -- | Convert a JSValue to an int32_t.
 --
@@ -558,8 +531,8 @@ toDouble jsValue  =
 --
 -- ObjC selector: @- toInt32@
 toInt32 :: IsJSValue jsValue => jsValue -> IO CInt
-toInt32 jsValue  =
-    sendMsg jsValue (mkSelector "toInt32") retCInt []
+toInt32 jsValue =
+  sendMessage jsValue toInt32Selector
 
 -- | Convert a JSValue to a uint32_t.
 --
@@ -569,8 +542,8 @@ toInt32 jsValue  =
 --
 -- ObjC selector: @- toUInt32@
 toUInt32 :: IsJSValue jsValue => jsValue -> IO CUInt
-toUInt32 jsValue  =
-    sendMsg jsValue (mkSelector "toUInt32") retCUInt []
+toUInt32 jsValue =
+  sendMessage jsValue toUInt32Selector
 
 -- | Convert a JSValue to a int64_t.
 --
@@ -578,8 +551,8 @@ toUInt32 jsValue  =
 --
 -- ObjC selector: @- toInt64@
 toInt64 :: IsJSValue jsValue => jsValue -> IO CLong
-toInt64 jsValue  =
-    sendMsg jsValue (mkSelector "toInt64") retCLong []
+toInt64 jsValue =
+  sendMessage jsValue toInt64Selector
 
 -- | Convert a JSValue to a uint64_t.
 --
@@ -587,8 +560,8 @@ toInt64 jsValue  =
 --
 -- ObjC selector: @- toUInt64@
 toUInt64 :: IsJSValue jsValue => jsValue -> IO CULong
-toUInt64 jsValue  =
-    sendMsg jsValue (mkSelector "toUInt64") retCULong []
+toUInt64 jsValue =
+  sendMessage jsValue toUInt64Selector
 
 -- | Convert a JSValue to a NSNumber.
 --
@@ -598,8 +571,8 @@ toUInt64 jsValue  =
 --
 -- ObjC selector: @- toNumber@
 toNumber :: IsJSValue jsValue => jsValue -> IO (Id NSNumber)
-toNumber jsValue  =
-    sendMsg jsValue (mkSelector "toNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+toNumber jsValue =
+  sendMessage jsValue toNumberSelector
 
 -- | Convert a JSValue to a NSString.
 --
@@ -609,8 +582,8 @@ toNumber jsValue  =
 --
 -- ObjC selector: @- toString@
 toString :: IsJSValue jsValue => jsValue -> IO (Id NSString)
-toString jsValue  =
-    sendMsg jsValue (mkSelector "toString") (retPtr retVoid) [] >>= retainedObject . castPtr
+toString jsValue =
+  sendMessage jsValue toStringSelector
 
 -- | Convert a JSValue to a NSDate.
 --
@@ -620,8 +593,8 @@ toString jsValue  =
 --
 -- ObjC selector: @- toDate@
 toDate :: IsJSValue jsValue => jsValue -> IO (Id NSDate)
-toDate jsValue  =
-    sendMsg jsValue (mkSelector "toDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+toDate jsValue =
+  sendMessage jsValue toDateSelector
 
 -- | Convert a JSValue to a NSArray.
 --
@@ -631,8 +604,8 @@ toDate jsValue  =
 --
 -- ObjC selector: @- toArray@
 toArray :: IsJSValue jsValue => jsValue -> IO (Id NSArray)
-toArray jsValue  =
-    sendMsg jsValue (mkSelector "toArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+toArray jsValue =
+  sendMessage jsValue toArraySelector
 
 -- | Convert a JSValue to a NSDictionary.
 --
@@ -642,8 +615,8 @@ toArray jsValue  =
 --
 -- ObjC selector: @- toDictionary@
 toDictionary :: IsJSValue jsValue => jsValue -> IO (Id NSDictionary)
-toDictionary jsValue  =
-    sendMsg jsValue (mkSelector "toDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+toDictionary jsValue =
+  sendMessage jsValue toDictionarySelector
 
 -- | Check if a JSValue is an instance of another object.
 --
@@ -651,22 +624,22 @@ toDictionary jsValue  =
 --
 -- ObjC selector: @- isInstanceOf:@
 isInstanceOf :: IsJSValue jsValue => jsValue -> RawId -> IO Bool
-isInstanceOf jsValue  value =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isInstanceOf:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ())]
+isInstanceOf jsValue value =
+  sendMessage jsValue isInstanceOfSelector value
 
 -- | Compare two JSValues using JavaScript's === operator.
 --
 -- ObjC selector: @- isEqualToObject:@
 isEqualToObject :: IsJSValue jsValue => jsValue -> RawId -> IO Bool
-isEqualToObject jsValue  value =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isEqualToObject:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ())]
+isEqualToObject jsValue value =
+  sendMessage jsValue isEqualToObjectSelector value
 
 -- | Compare two JSValues using JavaScript's == operator.
 --
 -- ObjC selector: @- isEqualWithTypeCoercionToObject:@
 isEqualWithTypeCoercionToObject :: IsJSValue jsValue => jsValue -> RawId -> IO Bool
-isEqualWithTypeCoercionToObject jsValue  value =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isEqualWithTypeCoercionToObject:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ())]
+isEqualWithTypeCoercionToObject jsValue value =
+  sendMessage jsValue isEqualWithTypeCoercionToObjectSelector value
 
 -- | Compare two JSValues. The JSValue to compare with.
 --
@@ -676,9 +649,8 @@ isEqualWithTypeCoercionToObject jsValue  value =
 --
 -- ObjC selector: @- compareJSValue:@
 compareJSValue :: (IsJSValue jsValue, IsJSValue other) => jsValue -> other -> IO JSRelationCondition
-compareJSValue jsValue  other =
-  withObjCPtr other $ \raw_other ->
-      fmap (coerce :: CUInt -> JSRelationCondition) $ sendMsg jsValue (mkSelector "compareJSValue:") retCUInt [argPtr (castPtr raw_other :: Ptr ())]
+compareJSValue jsValue other =
+  sendMessage jsValue compareJSValueSelector (toJSValue other)
 
 -- | Compare a JSValue with a int64_t. The int64_t to compare with.
 --
@@ -688,8 +660,8 @@ compareJSValue jsValue  other =
 --
 -- ObjC selector: @- compareInt64:@
 compareInt64 :: IsJSValue jsValue => jsValue -> CLong -> IO JSRelationCondition
-compareInt64 jsValue  other =
-    fmap (coerce :: CUInt -> JSRelationCondition) $ sendMsg jsValue (mkSelector "compareInt64:") retCUInt [argCLong other]
+compareInt64 jsValue other =
+  sendMessage jsValue compareInt64Selector other
 
 -- | Compare a JSValue with a uint64_t. The uint64_t to compare with.
 --
@@ -699,8 +671,8 @@ compareInt64 jsValue  other =
 --
 -- ObjC selector: @- compareUInt64:@
 compareUInt64 :: IsJSValue jsValue => jsValue -> CULong -> IO JSRelationCondition
-compareUInt64 jsValue  other =
-    fmap (coerce :: CUInt -> JSRelationCondition) $ sendMsg jsValue (mkSelector "compareUInt64:") retCUInt [argCULong other]
+compareUInt64 jsValue other =
+  sendMessage jsValue compareUInt64Selector other
 
 -- | Compare a JSValue with a double. The double to compare with.
 --
@@ -710,8 +682,8 @@ compareUInt64 jsValue  other =
 --
 -- ObjC selector: @- compareDouble:@
 compareDouble :: IsJSValue jsValue => jsValue -> CDouble -> IO JSRelationCondition
-compareDouble jsValue  other =
-    fmap (coerce :: CUInt -> JSRelationCondition) $ sendMsg jsValue (mkSelector "compareDouble:") retCUInt [argCDouble other]
+compareDouble jsValue other =
+  sendMessage jsValue compareDoubleSelector other
 
 -- | Calling Functions and Constructors
 --
@@ -725,9 +697,8 @@ compareDouble jsValue  other =
 --
 -- ObjC selector: @- callWithArguments:@
 callWithArguments :: (IsJSValue jsValue, IsNSArray arguments) => jsValue -> arguments -> IO (Id JSValue)
-callWithArguments jsValue  arguments =
-  withObjCPtr arguments $ \raw_arguments ->
-      sendMsg jsValue (mkSelector "callWithArguments:") (retPtr retVoid) [argPtr (castPtr raw_arguments :: Ptr ())] >>= retainedObject . castPtr
+callWithArguments jsValue arguments =
+  sendMessage jsValue callWithArgumentsSelector (toNSArray arguments)
 
 -- | Invoke a JSValue as a constructor.
 --
@@ -739,9 +710,8 @@ callWithArguments jsValue  arguments =
 --
 -- ObjC selector: @- constructWithArguments:@
 constructWithArguments :: (IsJSValue jsValue, IsNSArray arguments) => jsValue -> arguments -> IO (Id JSValue)
-constructWithArguments jsValue  arguments =
-  withObjCPtr arguments $ \raw_arguments ->
-      sendMsg jsValue (mkSelector "constructWithArguments:") (retPtr retVoid) [argPtr (castPtr raw_arguments :: Ptr ())] >>= retainedObject . castPtr
+constructWithArguments jsValue arguments =
+  sendMessage jsValue constructWithArgumentsSelector (toNSArray arguments)
 
 -- | Invoke a method on a JSValue.
 --
@@ -755,10 +725,8 @@ constructWithArguments jsValue  arguments =
 --
 -- ObjC selector: @- invokeMethod:withArguments:@
 invokeMethod_withArguments :: (IsJSValue jsValue, IsNSString method, IsNSArray arguments) => jsValue -> method -> arguments -> IO (Id JSValue)
-invokeMethod_withArguments jsValue  method arguments =
-  withObjCPtr method $ \raw_method ->
-    withObjCPtr arguments $ \raw_arguments ->
-        sendMsg jsValue (mkSelector "invokeMethod:withArguments:") (retPtr retVoid) [argPtr (castPtr raw_method :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ())] >>= retainedObject . castPtr
+invokeMethod_withArguments jsValue method arguments =
+  sendMessage jsValue invokeMethod_withArgumentsSelector (toNSString method) (toNSArray arguments)
 
 -- | Creates a JSValue, wrapping its C API counterpart.
 --
@@ -769,28 +737,27 @@ valueWithJSValueRef_inContext :: IsJSContext context => RawId -> context -> IO (
 valueWithJSValueRef_inContext value context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithJSValueRef:inContext:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithJSValueRef_inContextSelector value (toJSContext context)
 
 -- | @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: IsJSValue jsValue => jsValue -> RawId -> IO (Id JSValue)
-objectForKeyedSubscript jsValue  key =
-    sendMsg jsValue (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript jsValue key =
+  sendMessage jsValue objectForKeyedSubscriptSelector key
 
 -- | @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsJSValue jsValue => jsValue -> CULong -> IO (Id JSValue)
-objectAtIndexedSubscript jsValue  index =
-    sendMsg jsValue (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+objectAtIndexedSubscript jsValue index =
+  sendMessage jsValue objectAtIndexedSubscriptSelector index
 
 -- | @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: IsJSValue jsValue => jsValue -> RawId -> RawId -> IO ()
-setObject_forKeyedSubscript jsValue  object key =
-    sendMsg jsValue (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+setObject_forKeyedSubscript jsValue object key =
+  sendMessage jsValue setObject_forKeyedSubscriptSelector object key
 
 -- | @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: IsJSValue jsValue => jsValue -> RawId -> CULong -> IO ()
-setObject_atIndexedSubscript jsValue  object index =
-    sendMsg jsValue (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argCULong index]
+setObject_atIndexedSubscript jsValue object index =
+  sendMessage jsValue setObject_atIndexedSubscriptSelector object index
 
 -- | Access a property of a JSValue.
 --
@@ -800,8 +767,8 @@ setObject_atIndexedSubscript jsValue  object index =
 --
 -- ObjC selector: @- valueForProperty:@
 valueForProperty :: IsJSValue jsValue => jsValue -> RawId -> IO (Id JSValue)
-valueForProperty jsValue  property =
-    sendMsg jsValue (mkSelector "valueForProperty:") (retPtr retVoid) [argPtr (castPtr (unRawId property) :: Ptr ())] >>= retainedObject . castPtr
+valueForProperty jsValue property =
+  sendMessage jsValue valueForPropertySelector property
 
 -- | Set a property on a JSValue.
 --
@@ -809,8 +776,8 @@ valueForProperty jsValue  property =
 --
 -- ObjC selector: @- setValue:forProperty:@
 setValue_forProperty :: IsJSValue jsValue => jsValue -> RawId -> RawId -> IO ()
-setValue_forProperty jsValue  value property =
-    sendMsg jsValue (mkSelector "setValue:forProperty:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr (unRawId property) :: Ptr ())]
+setValue_forProperty jsValue value property =
+  sendMessage jsValue setValue_forPropertySelector value property
 
 -- | Delete a property from a JSValue.
 --
@@ -820,8 +787,8 @@ setValue_forProperty jsValue  value property =
 --
 -- ObjC selector: @- deleteProperty:@
 deleteProperty :: IsJSValue jsValue => jsValue -> RawId -> IO Bool
-deleteProperty jsValue  property =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "deleteProperty:") retCULong [argPtr (castPtr (unRawId property) :: Ptr ())]
+deleteProperty jsValue property =
+  sendMessage jsValue deletePropertySelector property
 
 -- | Check if a JSValue has a property.
 --
@@ -833,8 +800,8 @@ deleteProperty jsValue  property =
 --
 -- ObjC selector: @- hasProperty:@
 hasProperty :: IsJSValue jsValue => jsValue -> RawId -> IO Bool
-hasProperty jsValue  property =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "hasProperty:") retCULong [argPtr (castPtr (unRawId property) :: Ptr ())]
+hasProperty jsValue property =
+  sendMessage jsValue hasPropertySelector property
 
 -- | Define properties with custom descriptors on JSValues.
 --
@@ -842,8 +809,8 @@ hasProperty jsValue  property =
 --
 -- ObjC selector: @- defineProperty:descriptor:@
 defineProperty_descriptor :: IsJSValue jsValue => jsValue -> RawId -> RawId -> IO ()
-defineProperty_descriptor jsValue  property descriptor =
-    sendMsg jsValue (mkSelector "defineProperty:descriptor:") retVoid [argPtr (castPtr (unRawId property) :: Ptr ()), argPtr (castPtr (unRawId descriptor) :: Ptr ())]
+defineProperty_descriptor jsValue property descriptor =
+  sendMessage jsValue defineProperty_descriptorSelector property descriptor
 
 -- | Access an indexed (numerical) property on a JSValue.
 --
@@ -851,8 +818,8 @@ defineProperty_descriptor jsValue  property descriptor =
 --
 -- ObjC selector: @- valueAtIndex:@
 valueAtIndex :: IsJSValue jsValue => jsValue -> CULong -> IO (Id JSValue)
-valueAtIndex jsValue  index =
-    sendMsg jsValue (mkSelector "valueAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+valueAtIndex jsValue index =
+  sendMessage jsValue valueAtIndexSelector index
 
 -- | Set an indexed (numerical) property on a JSValue.
 --
@@ -860,8 +827,8 @@ valueAtIndex jsValue  index =
 --
 -- ObjC selector: @- setValue:atIndex:@
 setValue_atIndex :: IsJSValue jsValue => jsValue -> RawId -> CULong -> IO ()
-setValue_atIndex jsValue  value index =
-    sendMsg jsValue (mkSelector "setValue:atIndex:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argCULong index]
+setValue_atIndex jsValue value index =
+  sendMessage jsValue setValue_atIndexSelector value index
 
 -- | Create a JSValue from a NSRange.
 --
@@ -872,8 +839,7 @@ valueWithRange_inContext :: IsJSContext context => NSRange -> context -> IO (Id 
 valueWithRange_inContext range context =
   do
     cls' <- getRequiredClass "JSValue"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "valueWithRange:inContext:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithRange_inContextSelector range (toJSContext context)
 
 -- | Convert a JSValue to an NSRange.
 --
@@ -883,36 +849,36 @@ valueWithRange_inContext range context =
 --
 -- ObjC selector: @- toRange@
 toRange :: IsJSValue jsValue => jsValue -> IO NSRange
-toRange jsValue  =
-    sendMsgStret jsValue (mkSelector "toRange") retNSRange []
+toRange jsValue =
+  sendMessage jsValue toRangeSelector
 
 -- | The JSContext that this value originates from.
 --
 -- ObjC selector: @- context@
 context :: IsJSValue jsValue => jsValue -> IO (Id JSContext)
-context jsValue  =
-    sendMsg jsValue (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context jsValue =
+  sendMessage jsValue contextSelector
 
 -- | Check if a JSValue corresponds to the JavaScript value undefined.
 --
 -- ObjC selector: @- isUndefined@
 isUndefined :: IsJSValue jsValue => jsValue -> IO Bool
-isUndefined jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isUndefined") retCULong []
+isUndefined jsValue =
+  sendMessage jsValue isUndefinedSelector
 
 -- | Check if a JSValue corresponds to the JavaScript value null.
 --
 -- ObjC selector: @- isNull@
 isNull :: IsJSValue jsValue => jsValue -> IO Bool
-isNull jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isNull") retCULong []
+isNull jsValue =
+  sendMessage jsValue isNullSelector
 
 -- | Check if a JSValue is a boolean.
 --
 -- ObjC selector: @- isBoolean@
 isBoolean :: IsJSValue jsValue => jsValue -> IO Bool
-isBoolean jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isBoolean") retCULong []
+isBoolean jsValue =
+  sendMessage jsValue isBooleanSelector
 
 -- | Check if a JSValue is a number.
 --
@@ -920,50 +886,50 @@ isBoolean jsValue  =
 --
 -- ObjC selector: @- isNumber@
 isNumber :: IsJSValue jsValue => jsValue -> IO Bool
-isNumber jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isNumber") retCULong []
+isNumber jsValue =
+  sendMessage jsValue isNumberSelector
 
 -- | Check if a JSValue is a string.
 --
 -- ObjC selector: @- isString@
 isString :: IsJSValue jsValue => jsValue -> IO Bool
-isString jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isString") retCULong []
+isString jsValue =
+  sendMessage jsValue isStringSelector
 
 -- | Check if a JSValue is an object.
 --
 -- ObjC selector: @- isObject@
 isObject :: IsJSValue jsValue => jsValue -> IO Bool
-isObject jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isObject") retCULong []
+isObject jsValue =
+  sendMessage jsValue isObjectSelector
 
 -- | Check if a JSValue is an array.
 --
 -- ObjC selector: @- isArray@
 isArray :: IsJSValue jsValue => jsValue -> IO Bool
-isArray jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isArray") retCULong []
+isArray jsValue =
+  sendMessage jsValue isArraySelector
 
 -- | Check if a JSValue is a date.
 --
 -- ObjC selector: @- isDate@
 isDate :: IsJSValue jsValue => jsValue -> IO Bool
-isDate jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isDate") retCULong []
+isDate jsValue =
+  sendMessage jsValue isDateSelector
 
 -- | Check if a JSValue is a symbol.
 --
 -- ObjC selector: @- isSymbol@
 isSymbol :: IsJSValue jsValue => jsValue -> IO Bool
-isSymbol jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isSymbol") retCULong []
+isSymbol jsValue =
+  sendMessage jsValue isSymbolSelector
 
 -- | Check if a JSValue is a BigInt.
 --
 -- ObjC selector: @- isBigInt@
 isBigInt :: IsJSValue jsValue => jsValue -> IO Bool
-isBigInt jsValue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg jsValue (mkSelector "isBigInt") retCULong []
+isBigInt jsValue =
+  sendMessage jsValue isBigIntSelector
 
 -- | Returns the C API counterpart wrapped by a JSContext.
 --
@@ -971,282 +937,282 @@ isBigInt jsValue  =
 --
 -- ObjC selector: @- JSValueRef@
 jsValueRef :: IsJSValue jsValue => jsValue -> IO RawId
-jsValueRef jsValue  =
-    fmap (RawId . castPtr) $ sendMsg jsValue (mkSelector "JSValueRef") (retPtr retVoid) []
+jsValueRef jsValue =
+  sendMessage jsValue jsValueRefSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @valueWithObject:inContext:@
-valueWithObject_inContextSelector :: Selector
+valueWithObject_inContextSelector :: Selector '[RawId, Id JSContext] (Id JSValue)
 valueWithObject_inContextSelector = mkSelector "valueWithObject:inContext:"
 
 -- | @Selector@ for @valueWithBool:inContext:@
-valueWithBool_inContextSelector :: Selector
+valueWithBool_inContextSelector :: Selector '[Bool, Id JSContext] (Id JSValue)
 valueWithBool_inContextSelector = mkSelector "valueWithBool:inContext:"
 
 -- | @Selector@ for @valueWithDouble:inContext:@
-valueWithDouble_inContextSelector :: Selector
+valueWithDouble_inContextSelector :: Selector '[CDouble, Id JSContext] (Id JSValue)
 valueWithDouble_inContextSelector = mkSelector "valueWithDouble:inContext:"
 
 -- | @Selector@ for @valueWithInt32:inContext:@
-valueWithInt32_inContextSelector :: Selector
+valueWithInt32_inContextSelector :: Selector '[CInt, Id JSContext] (Id JSValue)
 valueWithInt32_inContextSelector = mkSelector "valueWithInt32:inContext:"
 
 -- | @Selector@ for @valueWithUInt32:inContext:@
-valueWithUInt32_inContextSelector :: Selector
+valueWithUInt32_inContextSelector :: Selector '[CUInt, Id JSContext] (Id JSValue)
 valueWithUInt32_inContextSelector = mkSelector "valueWithUInt32:inContext:"
 
 -- | @Selector@ for @valueWithNewObjectInContext:@
-valueWithNewObjectInContextSelector :: Selector
+valueWithNewObjectInContextSelector :: Selector '[Id JSContext] (Id JSValue)
 valueWithNewObjectInContextSelector = mkSelector "valueWithNewObjectInContext:"
 
 -- | @Selector@ for @valueWithNewArrayInContext:@
-valueWithNewArrayInContextSelector :: Selector
+valueWithNewArrayInContextSelector :: Selector '[Id JSContext] (Id JSValue)
 valueWithNewArrayInContextSelector = mkSelector "valueWithNewArrayInContext:"
 
 -- | @Selector@ for @valueWithNewRegularExpressionFromPattern:flags:inContext:@
-valueWithNewRegularExpressionFromPattern_flags_inContextSelector :: Selector
+valueWithNewRegularExpressionFromPattern_flags_inContextSelector :: Selector '[Id NSString, Id NSString, Id JSContext] (Id JSValue)
 valueWithNewRegularExpressionFromPattern_flags_inContextSelector = mkSelector "valueWithNewRegularExpressionFromPattern:flags:inContext:"
 
 -- | @Selector@ for @valueWithNewErrorFromMessage:inContext:@
-valueWithNewErrorFromMessage_inContextSelector :: Selector
+valueWithNewErrorFromMessage_inContextSelector :: Selector '[Id NSString, Id JSContext] (Id JSValue)
 valueWithNewErrorFromMessage_inContextSelector = mkSelector "valueWithNewErrorFromMessage:inContext:"
 
 -- | @Selector@ for @valueWithNewPromiseInContext:fromExecutor:@
-valueWithNewPromiseInContext_fromExecutorSelector :: Selector
+valueWithNewPromiseInContext_fromExecutorSelector :: Selector '[Id JSContext, Ptr ()] (Id JSValue)
 valueWithNewPromiseInContext_fromExecutorSelector = mkSelector "valueWithNewPromiseInContext:fromExecutor:"
 
 -- | @Selector@ for @valueWithNewPromiseResolvedWithResult:inContext:@
-valueWithNewPromiseResolvedWithResult_inContextSelector :: Selector
+valueWithNewPromiseResolvedWithResult_inContextSelector :: Selector '[RawId, Id JSContext] (Id JSValue)
 valueWithNewPromiseResolvedWithResult_inContextSelector = mkSelector "valueWithNewPromiseResolvedWithResult:inContext:"
 
 -- | @Selector@ for @valueWithNewPromiseRejectedWithReason:inContext:@
-valueWithNewPromiseRejectedWithReason_inContextSelector :: Selector
+valueWithNewPromiseRejectedWithReason_inContextSelector :: Selector '[RawId, Id JSContext] (Id JSValue)
 valueWithNewPromiseRejectedWithReason_inContextSelector = mkSelector "valueWithNewPromiseRejectedWithReason:inContext:"
 
 -- | @Selector@ for @valueWithNewSymbolFromDescription:inContext:@
-valueWithNewSymbolFromDescription_inContextSelector :: Selector
+valueWithNewSymbolFromDescription_inContextSelector :: Selector '[Id NSString, Id JSContext] (Id JSValue)
 valueWithNewSymbolFromDescription_inContextSelector = mkSelector "valueWithNewSymbolFromDescription:inContext:"
 
 -- | @Selector@ for @valueWithNewBigIntFromString:inContext:@
-valueWithNewBigIntFromString_inContextSelector :: Selector
+valueWithNewBigIntFromString_inContextSelector :: Selector '[Id NSString, Id JSContext] (Id JSValue)
 valueWithNewBigIntFromString_inContextSelector = mkSelector "valueWithNewBigIntFromString:inContext:"
 
 -- | @Selector@ for @valueWithNewBigIntFromInt64:inContext:@
-valueWithNewBigIntFromInt64_inContextSelector :: Selector
+valueWithNewBigIntFromInt64_inContextSelector :: Selector '[CLong, Id JSContext] (Id JSValue)
 valueWithNewBigIntFromInt64_inContextSelector = mkSelector "valueWithNewBigIntFromInt64:inContext:"
 
 -- | @Selector@ for @valueWithNewBigIntFromUInt64:inContext:@
-valueWithNewBigIntFromUInt64_inContextSelector :: Selector
+valueWithNewBigIntFromUInt64_inContextSelector :: Selector '[CULong, Id JSContext] (Id JSValue)
 valueWithNewBigIntFromUInt64_inContextSelector = mkSelector "valueWithNewBigIntFromUInt64:inContext:"
 
 -- | @Selector@ for @valueWithNewBigIntFromDouble:inContext:@
-valueWithNewBigIntFromDouble_inContextSelector :: Selector
+valueWithNewBigIntFromDouble_inContextSelector :: Selector '[CDouble, Id JSContext] (Id JSValue)
 valueWithNewBigIntFromDouble_inContextSelector = mkSelector "valueWithNewBigIntFromDouble:inContext:"
 
 -- | @Selector@ for @valueWithNullInContext:@
-valueWithNullInContextSelector :: Selector
+valueWithNullInContextSelector :: Selector '[Id JSContext] (Id JSValue)
 valueWithNullInContextSelector = mkSelector "valueWithNullInContext:"
 
 -- | @Selector@ for @valueWithUndefinedInContext:@
-valueWithUndefinedInContextSelector :: Selector
+valueWithUndefinedInContextSelector :: Selector '[Id JSContext] (Id JSValue)
 valueWithUndefinedInContextSelector = mkSelector "valueWithUndefinedInContext:"
 
 -- | @Selector@ for @toObject@
-toObjectSelector :: Selector
+toObjectSelector :: Selector '[] RawId
 toObjectSelector = mkSelector "toObject"
 
 -- | @Selector@ for @toObjectOfClass:@
-toObjectOfClassSelector :: Selector
+toObjectOfClassSelector :: Selector '[Class] RawId
 toObjectOfClassSelector = mkSelector "toObjectOfClass:"
 
 -- | @Selector@ for @toBool@
-toBoolSelector :: Selector
+toBoolSelector :: Selector '[] Bool
 toBoolSelector = mkSelector "toBool"
 
 -- | @Selector@ for @toDouble@
-toDoubleSelector :: Selector
+toDoubleSelector :: Selector '[] CDouble
 toDoubleSelector = mkSelector "toDouble"
 
 -- | @Selector@ for @toInt32@
-toInt32Selector :: Selector
+toInt32Selector :: Selector '[] CInt
 toInt32Selector = mkSelector "toInt32"
 
 -- | @Selector@ for @toUInt32@
-toUInt32Selector :: Selector
+toUInt32Selector :: Selector '[] CUInt
 toUInt32Selector = mkSelector "toUInt32"
 
 -- | @Selector@ for @toInt64@
-toInt64Selector :: Selector
+toInt64Selector :: Selector '[] CLong
 toInt64Selector = mkSelector "toInt64"
 
 -- | @Selector@ for @toUInt64@
-toUInt64Selector :: Selector
+toUInt64Selector :: Selector '[] CULong
 toUInt64Selector = mkSelector "toUInt64"
 
 -- | @Selector@ for @toNumber@
-toNumberSelector :: Selector
+toNumberSelector :: Selector '[] (Id NSNumber)
 toNumberSelector = mkSelector "toNumber"
 
 -- | @Selector@ for @toString@
-toStringSelector :: Selector
+toStringSelector :: Selector '[] (Id NSString)
 toStringSelector = mkSelector "toString"
 
 -- | @Selector@ for @toDate@
-toDateSelector :: Selector
+toDateSelector :: Selector '[] (Id NSDate)
 toDateSelector = mkSelector "toDate"
 
 -- | @Selector@ for @toArray@
-toArraySelector :: Selector
+toArraySelector :: Selector '[] (Id NSArray)
 toArraySelector = mkSelector "toArray"
 
 -- | @Selector@ for @toDictionary@
-toDictionarySelector :: Selector
+toDictionarySelector :: Selector '[] (Id NSDictionary)
 toDictionarySelector = mkSelector "toDictionary"
 
 -- | @Selector@ for @isInstanceOf:@
-isInstanceOfSelector :: Selector
+isInstanceOfSelector :: Selector '[RawId] Bool
 isInstanceOfSelector = mkSelector "isInstanceOf:"
 
 -- | @Selector@ for @isEqualToObject:@
-isEqualToObjectSelector :: Selector
+isEqualToObjectSelector :: Selector '[RawId] Bool
 isEqualToObjectSelector = mkSelector "isEqualToObject:"
 
 -- | @Selector@ for @isEqualWithTypeCoercionToObject:@
-isEqualWithTypeCoercionToObjectSelector :: Selector
+isEqualWithTypeCoercionToObjectSelector :: Selector '[RawId] Bool
 isEqualWithTypeCoercionToObjectSelector = mkSelector "isEqualWithTypeCoercionToObject:"
 
 -- | @Selector@ for @compareJSValue:@
-compareJSValueSelector :: Selector
+compareJSValueSelector :: Selector '[Id JSValue] JSRelationCondition
 compareJSValueSelector = mkSelector "compareJSValue:"
 
 -- | @Selector@ for @compareInt64:@
-compareInt64Selector :: Selector
+compareInt64Selector :: Selector '[CLong] JSRelationCondition
 compareInt64Selector = mkSelector "compareInt64:"
 
 -- | @Selector@ for @compareUInt64:@
-compareUInt64Selector :: Selector
+compareUInt64Selector :: Selector '[CULong] JSRelationCondition
 compareUInt64Selector = mkSelector "compareUInt64:"
 
 -- | @Selector@ for @compareDouble:@
-compareDoubleSelector :: Selector
+compareDoubleSelector :: Selector '[CDouble] JSRelationCondition
 compareDoubleSelector = mkSelector "compareDouble:"
 
 -- | @Selector@ for @callWithArguments:@
-callWithArgumentsSelector :: Selector
+callWithArgumentsSelector :: Selector '[Id NSArray] (Id JSValue)
 callWithArgumentsSelector = mkSelector "callWithArguments:"
 
 -- | @Selector@ for @constructWithArguments:@
-constructWithArgumentsSelector :: Selector
+constructWithArgumentsSelector :: Selector '[Id NSArray] (Id JSValue)
 constructWithArgumentsSelector = mkSelector "constructWithArguments:"
 
 -- | @Selector@ for @invokeMethod:withArguments:@
-invokeMethod_withArgumentsSelector :: Selector
+invokeMethod_withArgumentsSelector :: Selector '[Id NSString, Id NSArray] (Id JSValue)
 invokeMethod_withArgumentsSelector = mkSelector "invokeMethod:withArguments:"
 
 -- | @Selector@ for @valueWithJSValueRef:inContext:@
-valueWithJSValueRef_inContextSelector :: Selector
+valueWithJSValueRef_inContextSelector :: Selector '[RawId, Id JSContext] (Id JSValue)
 valueWithJSValueRef_inContextSelector = mkSelector "valueWithJSValueRef:inContext:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[RawId] (Id JSValue)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id JSValue)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, RawId] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[RawId, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @valueForProperty:@
-valueForPropertySelector :: Selector
+valueForPropertySelector :: Selector '[RawId] (Id JSValue)
 valueForPropertySelector = mkSelector "valueForProperty:"
 
 -- | @Selector@ for @setValue:forProperty:@
-setValue_forPropertySelector :: Selector
+setValue_forPropertySelector :: Selector '[RawId, RawId] ()
 setValue_forPropertySelector = mkSelector "setValue:forProperty:"
 
 -- | @Selector@ for @deleteProperty:@
-deletePropertySelector :: Selector
+deletePropertySelector :: Selector '[RawId] Bool
 deletePropertySelector = mkSelector "deleteProperty:"
 
 -- | @Selector@ for @hasProperty:@
-hasPropertySelector :: Selector
+hasPropertySelector :: Selector '[RawId] Bool
 hasPropertySelector = mkSelector "hasProperty:"
 
 -- | @Selector@ for @defineProperty:descriptor:@
-defineProperty_descriptorSelector :: Selector
+defineProperty_descriptorSelector :: Selector '[RawId, RawId] ()
 defineProperty_descriptorSelector = mkSelector "defineProperty:descriptor:"
 
 -- | @Selector@ for @valueAtIndex:@
-valueAtIndexSelector :: Selector
+valueAtIndexSelector :: Selector '[CULong] (Id JSValue)
 valueAtIndexSelector = mkSelector "valueAtIndex:"
 
 -- | @Selector@ for @setValue:atIndex:@
-setValue_atIndexSelector :: Selector
+setValue_atIndexSelector :: Selector '[RawId, CULong] ()
 setValue_atIndexSelector = mkSelector "setValue:atIndex:"
 
 -- | @Selector@ for @valueWithRange:inContext:@
-valueWithRange_inContextSelector :: Selector
+valueWithRange_inContextSelector :: Selector '[NSRange, Id JSContext] (Id JSValue)
 valueWithRange_inContextSelector = mkSelector "valueWithRange:inContext:"
 
 -- | @Selector@ for @toRange@
-toRangeSelector :: Selector
+toRangeSelector :: Selector '[] NSRange
 toRangeSelector = mkSelector "toRange"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id JSContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @isUndefined@
-isUndefinedSelector :: Selector
+isUndefinedSelector :: Selector '[] Bool
 isUndefinedSelector = mkSelector "isUndefined"
 
 -- | @Selector@ for @isNull@
-isNullSelector :: Selector
+isNullSelector :: Selector '[] Bool
 isNullSelector = mkSelector "isNull"
 
 -- | @Selector@ for @isBoolean@
-isBooleanSelector :: Selector
+isBooleanSelector :: Selector '[] Bool
 isBooleanSelector = mkSelector "isBoolean"
 
 -- | @Selector@ for @isNumber@
-isNumberSelector :: Selector
+isNumberSelector :: Selector '[] Bool
 isNumberSelector = mkSelector "isNumber"
 
 -- | @Selector@ for @isString@
-isStringSelector :: Selector
+isStringSelector :: Selector '[] Bool
 isStringSelector = mkSelector "isString"
 
 -- | @Selector@ for @isObject@
-isObjectSelector :: Selector
+isObjectSelector :: Selector '[] Bool
 isObjectSelector = mkSelector "isObject"
 
 -- | @Selector@ for @isArray@
-isArraySelector :: Selector
+isArraySelector :: Selector '[] Bool
 isArraySelector = mkSelector "isArray"
 
 -- | @Selector@ for @isDate@
-isDateSelector :: Selector
+isDateSelector :: Selector '[] Bool
 isDateSelector = mkSelector "isDate"
 
 -- | @Selector@ for @isSymbol@
-isSymbolSelector :: Selector
+isSymbolSelector :: Selector '[] Bool
 isSymbolSelector = mkSelector "isSymbol"
 
 -- | @Selector@ for @isBigInt@
-isBigIntSelector :: Selector
+isBigIntSelector :: Selector '[] Bool
 isBigIntSelector = mkSelector "isBigInt"
 
 -- | @Selector@ for @JSValueRef@
-jsValueRefSelector :: Selector
+jsValueRefSelector :: Selector '[] RawId
 jsValueRefSelector = mkSelector "JSValueRef"
 

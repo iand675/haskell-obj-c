@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Accessibility.AXMathExpressionMultiscript
   , baseExpression
   , prescriptExpressions
   , postscriptExpressions
-  , initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector
   , baseExpressionSelector
-  , prescriptExpressionsSelector
+  , initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector
   , postscriptExpressionsSelector
+  , prescriptExpressionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBaseExpression:prescriptExpressions:postscriptExpressions:@
 initWithBaseExpression_prescriptExpressions_postscriptExpressions :: (IsAXMathExpressionMultiscript axMathExpressionMultiscript, IsAXMathExpression baseExpression, IsNSArray prescriptExpressions, IsNSArray postscriptExpressions) => axMathExpressionMultiscript -> baseExpression -> prescriptExpressions -> postscriptExpressions -> IO (Id AXMathExpressionMultiscript)
-initWithBaseExpression_prescriptExpressions_postscriptExpressions axMathExpressionMultiscript  baseExpression prescriptExpressions postscriptExpressions =
-  withObjCPtr baseExpression $ \raw_baseExpression ->
-    withObjCPtr prescriptExpressions $ \raw_prescriptExpressions ->
-      withObjCPtr postscriptExpressions $ \raw_postscriptExpressions ->
-          sendMsg axMathExpressionMultiscript (mkSelector "initWithBaseExpression:prescriptExpressions:postscriptExpressions:") (retPtr retVoid) [argPtr (castPtr raw_baseExpression :: Ptr ()), argPtr (castPtr raw_prescriptExpressions :: Ptr ()), argPtr (castPtr raw_postscriptExpressions :: Ptr ())] >>= ownedObject . castPtr
+initWithBaseExpression_prescriptExpressions_postscriptExpressions axMathExpressionMultiscript baseExpression prescriptExpressions postscriptExpressions =
+  sendOwnedMessage axMathExpressionMultiscript initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector (toAXMathExpression baseExpression) (toNSArray prescriptExpressions) (toNSArray postscriptExpressions)
 
 -- | @- baseExpression@
 baseExpression :: IsAXMathExpressionMultiscript axMathExpressionMultiscript => axMathExpressionMultiscript -> IO (Id AXMathExpression)
-baseExpression axMathExpressionMultiscript  =
-    sendMsg axMathExpressionMultiscript (mkSelector "baseExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseExpression axMathExpressionMultiscript =
+  sendMessage axMathExpressionMultiscript baseExpressionSelector
 
 -- | @- prescriptExpressions@
 prescriptExpressions :: IsAXMathExpressionMultiscript axMathExpressionMultiscript => axMathExpressionMultiscript -> IO (Id NSArray)
-prescriptExpressions axMathExpressionMultiscript  =
-    sendMsg axMathExpressionMultiscript (mkSelector "prescriptExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+prescriptExpressions axMathExpressionMultiscript =
+  sendMessage axMathExpressionMultiscript prescriptExpressionsSelector
 
 -- | @- postscriptExpressions@
 postscriptExpressions :: IsAXMathExpressionMultiscript axMathExpressionMultiscript => axMathExpressionMultiscript -> IO (Id NSArray)
-postscriptExpressions axMathExpressionMultiscript  =
-    sendMsg axMathExpressionMultiscript (mkSelector "postscriptExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+postscriptExpressions axMathExpressionMultiscript =
+  sendMessage axMathExpressionMultiscript postscriptExpressionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBaseExpression:prescriptExpressions:postscriptExpressions:@
-initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector :: Selector
+initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector :: Selector '[Id AXMathExpression, Id NSArray, Id NSArray] (Id AXMathExpressionMultiscript)
 initWithBaseExpression_prescriptExpressions_postscriptExpressionsSelector = mkSelector "initWithBaseExpression:prescriptExpressions:postscriptExpressions:"
 
 -- | @Selector@ for @baseExpression@
-baseExpressionSelector :: Selector
+baseExpressionSelector :: Selector '[] (Id AXMathExpression)
 baseExpressionSelector = mkSelector "baseExpression"
 
 -- | @Selector@ for @prescriptExpressions@
-prescriptExpressionsSelector :: Selector
+prescriptExpressionsSelector :: Selector '[] (Id NSArray)
 prescriptExpressionsSelector = mkSelector "prescriptExpressions"
 
 -- | @Selector@ for @postscriptExpressions@
-postscriptExpressionsSelector :: Selector
+postscriptExpressionsSelector :: Selector '[] (Id NSArray)
 postscriptExpressionsSelector = mkSelector "postscriptExpressions"
 

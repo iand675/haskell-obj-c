@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,12 +17,12 @@ module ObjC.MailKit.MEComposeContext
   , shouldEncrypt
   , isSigned
   , shouldSign
-  , contextIDSelector
-  , originalMessageSelector
   , actionSelector
+  , contextIDSelector
   , isEncryptedSelector
-  , shouldEncryptSelector
   , isSignedSelector
+  , originalMessageSelector
+  , shouldEncryptSelector
   , shouldSignSelector
 
   -- * Enum types
@@ -33,15 +34,11 @@ module ObjC.MailKit.MEComposeContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,80 +50,80 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contextID@
 contextID :: IsMEComposeContext meComposeContext => meComposeContext -> IO (Id NSUUID)
-contextID meComposeContext  =
-    sendMsg meComposeContext (mkSelector "contextID") (retPtr retVoid) [] >>= retainedObject . castPtr
+contextID meComposeContext =
+  sendMessage meComposeContext contextIDSelector
 
 -- | The original email message on which user performed an action It is @nil@ for @MEComposeUserActionNewMessage@ actions.
 --
 -- ObjC selector: @- originalMessage@
 originalMessage :: IsMEComposeContext meComposeContext => meComposeContext -> IO (Id MEMessage)
-originalMessage meComposeContext  =
-    sendMsg meComposeContext (mkSelector "originalMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalMessage meComposeContext =
+  sendMessage meComposeContext originalMessageSelector
 
 -- | Indicates the action performed by the user that created this compose context.
 --
 -- ObjC selector: @- action@
 action :: IsMEComposeContext meComposeContext => meComposeContext -> IO MEComposeUserAction
-action meComposeContext  =
-    fmap (coerce :: CLong -> MEComposeUserAction) $ sendMsg meComposeContext (mkSelector "action") retCLong []
+action meComposeContext =
+  sendMessage meComposeContext actionSelector
 
 -- | Boolean that indicates the message is encrypted by a Message Security extension.
 --
 -- ObjC selector: @- isEncrypted@
 isEncrypted :: IsMEComposeContext meComposeContext => meComposeContext -> IO Bool
-isEncrypted meComposeContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meComposeContext (mkSelector "isEncrypted") retCULong []
+isEncrypted meComposeContext =
+  sendMessage meComposeContext isEncryptedSelector
 
 -- | Boolean that indicates if the user wants to encrypt the message.
 --
 -- ObjC selector: @- shouldEncrypt@
 shouldEncrypt :: IsMEComposeContext meComposeContext => meComposeContext -> IO Bool
-shouldEncrypt meComposeContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meComposeContext (mkSelector "shouldEncrypt") retCULong []
+shouldEncrypt meComposeContext =
+  sendMessage meComposeContext shouldEncryptSelector
 
 -- | Boolean that indicates the message is signed by a Message Security extension.
 --
 -- ObjC selector: @- isSigned@
 isSigned :: IsMEComposeContext meComposeContext => meComposeContext -> IO Bool
-isSigned meComposeContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meComposeContext (mkSelector "isSigned") retCULong []
+isSigned meComposeContext =
+  sendMessage meComposeContext isSignedSelector
 
 -- | A Boolean that indicates if the user wants to sign the message.
 --
 -- ObjC selector: @- shouldSign@
 shouldSign :: IsMEComposeContext meComposeContext => meComposeContext -> IO Bool
-shouldSign meComposeContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meComposeContext (mkSelector "shouldSign") retCULong []
+shouldSign meComposeContext =
+  sendMessage meComposeContext shouldSignSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contextID@
-contextIDSelector :: Selector
+contextIDSelector :: Selector '[] (Id NSUUID)
 contextIDSelector = mkSelector "contextID"
 
 -- | @Selector@ for @originalMessage@
-originalMessageSelector :: Selector
+originalMessageSelector :: Selector '[] (Id MEMessage)
 originalMessageSelector = mkSelector "originalMessage"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] MEComposeUserAction
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @isEncrypted@
-isEncryptedSelector :: Selector
+isEncryptedSelector :: Selector '[] Bool
 isEncryptedSelector = mkSelector "isEncrypted"
 
 -- | @Selector@ for @shouldEncrypt@
-shouldEncryptSelector :: Selector
+shouldEncryptSelector :: Selector '[] Bool
 shouldEncryptSelector = mkSelector "shouldEncrypt"
 
 -- | @Selector@ for @isSigned@
-isSignedSelector :: Selector
+isSignedSelector :: Selector '[] Bool
 isSignedSelector = mkSelector "isSigned"
 
 -- | @Selector@ for @shouldSign@
-shouldSignSelector :: Selector
+shouldSignSelector :: Selector '[] Bool
 shouldSignSelector = mkSelector "shouldSign"
 

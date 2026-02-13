@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.PDFKit.PDFAnnotationInk
   , paths
   , addBezierPath
   , removeBezierPath
-  , pathsSelector
   , addBezierPathSelector
+  , pathsSelector
   , removeBezierPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,34 +31,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- paths@
 paths :: IsPDFAnnotationInk pdfAnnotationInk => pdfAnnotationInk -> IO (Id NSArray)
-paths pdfAnnotationInk  =
-    sendMsg pdfAnnotationInk (mkSelector "paths") (retPtr retVoid) [] >>= retainedObject . castPtr
+paths pdfAnnotationInk =
+  sendMessage pdfAnnotationInk pathsSelector
 
 -- | @- addBezierPath:@
 addBezierPath :: (IsPDFAnnotationInk pdfAnnotationInk, IsNSBezierPath path) => pdfAnnotationInk -> path -> IO ()
-addBezierPath pdfAnnotationInk  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg pdfAnnotationInk (mkSelector "addBezierPath:") retVoid [argPtr (castPtr raw_path :: Ptr ())]
+addBezierPath pdfAnnotationInk path =
+  sendMessage pdfAnnotationInk addBezierPathSelector (toNSBezierPath path)
 
 -- | @- removeBezierPath:@
 removeBezierPath :: (IsPDFAnnotationInk pdfAnnotationInk, IsNSBezierPath path) => pdfAnnotationInk -> path -> IO ()
-removeBezierPath pdfAnnotationInk  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg pdfAnnotationInk (mkSelector "removeBezierPath:") retVoid [argPtr (castPtr raw_path :: Ptr ())]
+removeBezierPath pdfAnnotationInk path =
+  sendMessage pdfAnnotationInk removeBezierPathSelector (toNSBezierPath path)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @paths@
-pathsSelector :: Selector
+pathsSelector :: Selector '[] (Id NSArray)
 pathsSelector = mkSelector "paths"
 
 -- | @Selector@ for @addBezierPath:@
-addBezierPathSelector :: Selector
+addBezierPathSelector :: Selector '[Id NSBezierPath] ()
 addBezierPathSelector = mkSelector "addBezierPath:"
 
 -- | @Selector@ for @removeBezierPath:@
-removeBezierPathSelector :: Selector
+removeBezierPathSelector :: Selector '[Id NSBezierPath] ()
 removeBezierPathSelector = mkSelector "removeBezierPath:"
 

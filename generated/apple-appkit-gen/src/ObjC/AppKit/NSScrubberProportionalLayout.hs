@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AppKit.NSScrubberProportionalLayout
   , initWithCoder
   , numberOfVisibleItems
   , setNumberOfVisibleItems
-  , initWithNumberOfVisibleItemsSelector
   , initWithCoderSelector
+  , initWithNumberOfVisibleItemsSelector
   , numberOfVisibleItemsSelector
   , setNumberOfVisibleItemsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,46 +36,45 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithNumberOfVisibleItems:@
 initWithNumberOfVisibleItems :: IsNSScrubberProportionalLayout nsScrubberProportionalLayout => nsScrubberProportionalLayout -> CLong -> IO (Id NSScrubberProportionalLayout)
-initWithNumberOfVisibleItems nsScrubberProportionalLayout  numberOfVisibleItems =
-    sendMsg nsScrubberProportionalLayout (mkSelector "initWithNumberOfVisibleItems:") (retPtr retVoid) [argCLong numberOfVisibleItems] >>= ownedObject . castPtr
+initWithNumberOfVisibleItems nsScrubberProportionalLayout numberOfVisibleItems =
+  sendOwnedMessage nsScrubberProportionalLayout initWithNumberOfVisibleItemsSelector numberOfVisibleItems
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSScrubberProportionalLayout nsScrubberProportionalLayout, IsNSCoder coder) => nsScrubberProportionalLayout -> coder -> IO (Id NSScrubberProportionalLayout)
-initWithCoder nsScrubberProportionalLayout  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsScrubberProportionalLayout (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsScrubberProportionalLayout coder =
+  sendOwnedMessage nsScrubberProportionalLayout initWithCoderSelector (toNSCoder coder)
 
 -- | The number of items that should fit within the scrubber's viewport at once.
 --
 -- ObjC selector: @- numberOfVisibleItems@
 numberOfVisibleItems :: IsNSScrubberProportionalLayout nsScrubberProportionalLayout => nsScrubberProportionalLayout -> IO CLong
-numberOfVisibleItems nsScrubberProportionalLayout  =
-    sendMsg nsScrubberProportionalLayout (mkSelector "numberOfVisibleItems") retCLong []
+numberOfVisibleItems nsScrubberProportionalLayout =
+  sendMessage nsScrubberProportionalLayout numberOfVisibleItemsSelector
 
 -- | The number of items that should fit within the scrubber's viewport at once.
 --
 -- ObjC selector: @- setNumberOfVisibleItems:@
 setNumberOfVisibleItems :: IsNSScrubberProportionalLayout nsScrubberProportionalLayout => nsScrubberProportionalLayout -> CLong -> IO ()
-setNumberOfVisibleItems nsScrubberProportionalLayout  value =
-    sendMsg nsScrubberProportionalLayout (mkSelector "setNumberOfVisibleItems:") retVoid [argCLong value]
+setNumberOfVisibleItems nsScrubberProportionalLayout value =
+  sendMessage nsScrubberProportionalLayout setNumberOfVisibleItemsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNumberOfVisibleItems:@
-initWithNumberOfVisibleItemsSelector :: Selector
+initWithNumberOfVisibleItemsSelector :: Selector '[CLong] (Id NSScrubberProportionalLayout)
 initWithNumberOfVisibleItemsSelector = mkSelector "initWithNumberOfVisibleItems:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSScrubberProportionalLayout)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @numberOfVisibleItems@
-numberOfVisibleItemsSelector :: Selector
+numberOfVisibleItemsSelector :: Selector '[] CLong
 numberOfVisibleItemsSelector = mkSelector "numberOfVisibleItems"
 
 -- | @Selector@ for @setNumberOfVisibleItems:@
-setNumberOfVisibleItemsSelector :: Selector
+setNumberOfVisibleItemsSelector :: Selector '[CLong] ()
 setNumberOfVisibleItemsSelector = mkSelector "setNumberOfVisibleItems:"
 

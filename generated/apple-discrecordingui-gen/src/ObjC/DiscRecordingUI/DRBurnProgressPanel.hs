@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,27 +37,23 @@ module ObjC.DiscRecordingUI.DRBurnProgressPanel
   , setVerboseProgressStatus
   , verboseProgressStatus
   , stopBurn
-  , progressPanelSelector
-  , beginProgressSheetForBurn_layout_modalForWindowSelector
   , beginProgressPanelForBurn_layoutSelector
-  , setDescriptionSelector
+  , beginProgressSheetForBurn_layout_modalForWindowSelector
   , descriptionSelector
+  , progressPanelSelector
+  , setDescriptionSelector
   , setVerboseProgressStatusSelector
-  , verboseProgressStatusSelector
   , stopBurnSelector
+  , verboseProgressStatusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,7 +73,7 @@ progressPanel :: IO (Id DRBurnProgressPanel)
 progressPanel  =
   do
     cls' <- getRequiredClass "DRBurnProgressPanel"
-    sendClassMsg cls' (mkSelector "progressPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' progressPanelSelector
 
 -- | beginProgressSheetForBurn:layout:modalForWindow:
 --
@@ -96,10 +93,8 @@ progressPanel  =
 --
 -- ObjC selector: @- beginProgressSheetForBurn:layout:modalForWindow:@
 beginProgressSheetForBurn_layout_modalForWindow :: (IsDRBurnProgressPanel drBurnProgressPanel, IsDRBurn burn, IsNSWindow docWindow) => drBurnProgressPanel -> burn -> RawId -> docWindow -> IO ()
-beginProgressSheetForBurn_layout_modalForWindow drBurnProgressPanel  burn layout docWindow =
-  withObjCPtr burn $ \raw_burn ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg drBurnProgressPanel (mkSelector "beginProgressSheetForBurn:layout:modalForWindow:") retVoid [argPtr (castPtr raw_burn :: Ptr ()), argPtr (castPtr (unRawId layout) :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ())]
+beginProgressSheetForBurn_layout_modalForWindow drBurnProgressPanel burn layout docWindow =
+  sendMessage drBurnProgressPanel beginProgressSheetForBurn_layout_modalForWindowSelector (toDRBurn burn) layout (toNSWindow docWindow)
 
 -- | beginProgressPanelForBurn:layout:
 --
@@ -117,9 +112,8 @@ beginProgressSheetForBurn_layout_modalForWindow drBurnProgressPanel  burn layout
 --
 -- ObjC selector: @- beginProgressPanelForBurn:layout:@
 beginProgressPanelForBurn_layout :: (IsDRBurnProgressPanel drBurnProgressPanel, IsDRBurn burn) => drBurnProgressPanel -> burn -> RawId -> IO ()
-beginProgressPanelForBurn_layout drBurnProgressPanel  burn layout =
-  withObjCPtr burn $ \raw_burn ->
-      sendMsg drBurnProgressPanel (mkSelector "beginProgressPanelForBurn:layout:") retVoid [argPtr (castPtr raw_burn :: Ptr ()), argPtr (castPtr (unRawId layout) :: Ptr ())]
+beginProgressPanelForBurn_layout drBurnProgressPanel burn layout =
+  sendMessage drBurnProgressPanel beginProgressPanelForBurn_layoutSelector (toDRBurn burn) layout
 
 -- | setDescription:
 --
@@ -131,9 +125,8 @@ beginProgressPanelForBurn_layout drBurnProgressPanel  burn layout =
 --
 -- ObjC selector: @- setDescription:@
 setDescription :: (IsDRBurnProgressPanel drBurnProgressPanel, IsNSString description) => drBurnProgressPanel -> description -> IO ()
-setDescription drBurnProgressPanel  description =
-  withObjCPtr description $ \raw_description ->
-      sendMsg drBurnProgressPanel (mkSelector "setDescription:") retVoid [argPtr (castPtr raw_description :: Ptr ())]
+setDescription drBurnProgressPanel description =
+  sendMessage drBurnProgressPanel setDescriptionSelector (toNSString description)
 
 -- | description
 --
@@ -145,8 +138,8 @@ setDescription drBurnProgressPanel  description =
 --
 -- ObjC selector: @- description@
 description :: IsDRBurnProgressPanel drBurnProgressPanel => drBurnProgressPanel -> IO (Id NSString)
-description drBurnProgressPanel  =
-    sendMsg drBurnProgressPanel (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description drBurnProgressPanel =
+  sendMessage drBurnProgressPanel descriptionSelector
 
 -- | setVerboseProgressStatus:
 --
@@ -158,8 +151,8 @@ description drBurnProgressPanel  =
 --
 -- ObjC selector: @- setVerboseProgressStatus:@
 setVerboseProgressStatus :: IsDRBurnProgressPanel drBurnProgressPanel => drBurnProgressPanel -> Bool -> IO ()
-setVerboseProgressStatus drBurnProgressPanel  verbose =
-    sendMsg drBurnProgressPanel (mkSelector "setVerboseProgressStatus:") retVoid [argCULong (if verbose then 1 else 0)]
+setVerboseProgressStatus drBurnProgressPanel verbose =
+  sendMessage drBurnProgressPanel setVerboseProgressStatusSelector verbose
 
 -- | verboseProgressStatus
 --
@@ -171,8 +164,8 @@ setVerboseProgressStatus drBurnProgressPanel  verbose =
 --
 -- ObjC selector: @- verboseProgressStatus@
 verboseProgressStatus :: IsDRBurnProgressPanel drBurnProgressPanel => drBurnProgressPanel -> IO Bool
-verboseProgressStatus drBurnProgressPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drBurnProgressPanel (mkSelector "verboseProgressStatus") retCULong []
+verboseProgressStatus drBurnProgressPanel =
+  sendMessage drBurnProgressPanel verboseProgressStatusSelector
 
 -- | stopBurn:
 --
@@ -180,42 +173,42 @@ verboseProgressStatus drBurnProgressPanel  =
 --
 -- ObjC selector: @- stopBurn:@
 stopBurn :: IsDRBurnProgressPanel drBurnProgressPanel => drBurnProgressPanel -> RawId -> IO ()
-stopBurn drBurnProgressPanel  sender =
-    sendMsg drBurnProgressPanel (mkSelector "stopBurn:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopBurn drBurnProgressPanel sender =
+  sendMessage drBurnProgressPanel stopBurnSelector sender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @progressPanel@
-progressPanelSelector :: Selector
+progressPanelSelector :: Selector '[] (Id DRBurnProgressPanel)
 progressPanelSelector = mkSelector "progressPanel"
 
 -- | @Selector@ for @beginProgressSheetForBurn:layout:modalForWindow:@
-beginProgressSheetForBurn_layout_modalForWindowSelector :: Selector
+beginProgressSheetForBurn_layout_modalForWindowSelector :: Selector '[Id DRBurn, RawId, Id NSWindow] ()
 beginProgressSheetForBurn_layout_modalForWindowSelector = mkSelector "beginProgressSheetForBurn:layout:modalForWindow:"
 
 -- | @Selector@ for @beginProgressPanelForBurn:layout:@
-beginProgressPanelForBurn_layoutSelector :: Selector
+beginProgressPanelForBurn_layoutSelector :: Selector '[Id DRBurn, RawId] ()
 beginProgressPanelForBurn_layoutSelector = mkSelector "beginProgressPanelForBurn:layout:"
 
 -- | @Selector@ for @setDescription:@
-setDescriptionSelector :: Selector
+setDescriptionSelector :: Selector '[Id NSString] ()
 setDescriptionSelector = mkSelector "setDescription:"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 
 -- | @Selector@ for @setVerboseProgressStatus:@
-setVerboseProgressStatusSelector :: Selector
+setVerboseProgressStatusSelector :: Selector '[Bool] ()
 setVerboseProgressStatusSelector = mkSelector "setVerboseProgressStatus:"
 
 -- | @Selector@ for @verboseProgressStatus@
-verboseProgressStatusSelector :: Selector
+verboseProgressStatusSelector :: Selector '[] Bool
 verboseProgressStatusSelector = mkSelector "verboseProgressStatus"
 
 -- | @Selector@ for @stopBurn:@
-stopBurnSelector :: Selector
+stopBurnSelector :: Selector '[RawId] ()
 stopBurnSelector = mkSelector "stopBurn:"
 

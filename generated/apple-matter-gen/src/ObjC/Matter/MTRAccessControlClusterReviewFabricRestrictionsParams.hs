@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRAccessControlClusterReviewFabricRestrictionsParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , arlSelector
-  , setArlSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setArlSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arl@
 arl :: IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams => mtrAccessControlClusterReviewFabricRestrictionsParams -> IO (Id NSArray)
-arl mtrAccessControlClusterReviewFabricRestrictionsParams  =
-    sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "arl") (retPtr retVoid) [] >>= retainedObject . castPtr
+arl mtrAccessControlClusterReviewFabricRestrictionsParams =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams arlSelector
 
 -- | @- setArl:@
 setArl :: (IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams, IsNSArray value) => mtrAccessControlClusterReviewFabricRestrictionsParams -> value -> IO ()
-setArl mtrAccessControlClusterReviewFabricRestrictionsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "setArl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArl mtrAccessControlClusterReviewFabricRestrictionsParams value =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams setArlSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setArl mtrAccessControlClusterReviewFabricRestrictionsParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams => mtrAccessControlClusterReviewFabricRestrictionsParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams  =
-    sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams, IsNSNumber value) => mtrAccessControlClusterReviewFabricRestrictionsParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams value =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrAccessControlClusterReviewFabricRestrictionsParams  v
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams => mtrAccessControlClusterReviewFabricRestrictionsParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrAccessControlClusterReviewFabricRestrictionsParams  =
-    sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrAccessControlClusterReviewFabricRestrictionsParams =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrAccessControlClusterReviewFabricRestrictionsParam
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRAccessControlClusterReviewFabricRestrictionsParams mtrAccessControlClusterReviewFabricRestrictionsParams, IsNSNumber value) => mtrAccessControlClusterReviewFabricRestrictionsParams -> value -> IO ()
-setServerSideProcessingTimeout mtrAccessControlClusterReviewFabricRestrictionsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterReviewFabricRestrictionsParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrAccessControlClusterReviewFabricRestrictionsParams value =
+  sendMessage mtrAccessControlClusterReviewFabricRestrictionsParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arl@
-arlSelector :: Selector
+arlSelector :: Selector '[] (Id NSArray)
 arlSelector = mkSelector "arl"
 
 -- | @Selector@ for @setArl:@
-setArlSelector :: Selector
+setArlSelector :: Selector '[Id NSArray] ()
 setArlSelector = mkSelector "setArl:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

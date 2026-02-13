@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.Matter.AttestationInfo
   , setCertificationDeclaration
   , firmwareInfo
   , setFirmwareInfo
-  , initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector
-  , challengeSelector
-  , setChallengeSelector
-  , nonceSelector
-  , setNonceSelector
-  , elementsSelector
-  , setElementsSelector
-  , elementsSignatureSelector
-  , setElementsSignatureSelector
-  , dacSelector
-  , setDacSelector
-  , paiSelector
-  , setPaiSelector
   , certificationDeclarationSelector
-  , setCertificationDeclarationSelector
+  , challengeSelector
+  , dacSelector
+  , elementsSelector
+  , elementsSignatureSelector
   , firmwareInfoSelector
+  , initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector
+  , nonceSelector
+  , paiSelector
+  , setCertificationDeclarationSelector
+  , setChallengeSelector
+  , setDacSelector
+  , setElementsSelector
+  , setElementsSignatureSelector
   , setFirmwareInfoSelector
+  , setNonceSelector
+  , setPaiSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,174 +58,158 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithChallenge:nonce:elements:elementsSignature:dac:pai:certificationDeclaration:firmwareInfo:@
 initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfo :: (IsAttestationInfo attestationInfo, IsNSData challenge, IsNSData nonce, IsNSData elements, IsNSData elementsSignature, IsNSData dac, IsNSData pai, IsNSData certificationDeclaration, IsNSData firmwareInfo) => attestationInfo -> challenge -> nonce -> elements -> elementsSignature -> dac -> pai -> certificationDeclaration -> firmwareInfo -> IO (Id AttestationInfo)
-initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfo attestationInfo  challenge nonce elements elementsSignature dac pai certificationDeclaration firmwareInfo =
-  withObjCPtr challenge $ \raw_challenge ->
-    withObjCPtr nonce $ \raw_nonce ->
-      withObjCPtr elements $ \raw_elements ->
-        withObjCPtr elementsSignature $ \raw_elementsSignature ->
-          withObjCPtr dac $ \raw_dac ->
-            withObjCPtr pai $ \raw_pai ->
-              withObjCPtr certificationDeclaration $ \raw_certificationDeclaration ->
-                withObjCPtr firmwareInfo $ \raw_firmwareInfo ->
-                    sendMsg attestationInfo (mkSelector "initWithChallenge:nonce:elements:elementsSignature:dac:pai:certificationDeclaration:firmwareInfo:") (retPtr retVoid) [argPtr (castPtr raw_challenge :: Ptr ()), argPtr (castPtr raw_nonce :: Ptr ()), argPtr (castPtr raw_elements :: Ptr ()), argPtr (castPtr raw_elementsSignature :: Ptr ()), argPtr (castPtr raw_dac :: Ptr ()), argPtr (castPtr raw_pai :: Ptr ()), argPtr (castPtr raw_certificationDeclaration :: Ptr ()), argPtr (castPtr raw_firmwareInfo :: Ptr ())] >>= ownedObject . castPtr
+initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfo attestationInfo challenge nonce elements elementsSignature dac pai certificationDeclaration firmwareInfo =
+  sendOwnedMessage attestationInfo initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector (toNSData challenge) (toNSData nonce) (toNSData elements) (toNSData elementsSignature) (toNSData dac) (toNSData pai) (toNSData certificationDeclaration) (toNSData firmwareInfo)
 
 -- | @- challenge@
 challenge :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-challenge attestationInfo  =
-    sendMsg attestationInfo (mkSelector "challenge") (retPtr retVoid) [] >>= retainedObject . castPtr
+challenge attestationInfo =
+  sendMessage attestationInfo challengeSelector
 
 -- | @- setChallenge:@
 setChallenge :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setChallenge attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setChallenge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChallenge attestationInfo value =
+  sendMessage attestationInfo setChallengeSelector (toNSData value)
 
 -- | @- nonce@
 nonce :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-nonce attestationInfo  =
-    sendMsg attestationInfo (mkSelector "nonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+nonce attestationInfo =
+  sendMessage attestationInfo nonceSelector
 
 -- | @- setNonce:@
 setNonce :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setNonce attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNonce attestationInfo value =
+  sendMessage attestationInfo setNonceSelector (toNSData value)
 
 -- | @- elements@
 elements :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-elements attestationInfo  =
-    sendMsg attestationInfo (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements attestationInfo =
+  sendMessage attestationInfo elementsSelector
 
 -- | @- setElements:@
 setElements :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setElements attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setElements:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElements attestationInfo value =
+  sendMessage attestationInfo setElementsSelector (toNSData value)
 
 -- | @- elementsSignature@
 elementsSignature :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-elementsSignature attestationInfo  =
-    sendMsg attestationInfo (mkSelector "elementsSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementsSignature attestationInfo =
+  sendMessage attestationInfo elementsSignatureSelector
 
 -- | @- setElementsSignature:@
 setElementsSignature :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setElementsSignature attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setElementsSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElementsSignature attestationInfo value =
+  sendMessage attestationInfo setElementsSignatureSelector (toNSData value)
 
 -- | @- dac@
 dac :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-dac attestationInfo  =
-    sendMsg attestationInfo (mkSelector "dac") (retPtr retVoid) [] >>= retainedObject . castPtr
+dac attestationInfo =
+  sendMessage attestationInfo dacSelector
 
 -- | @- setDac:@
 setDac :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setDac attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setDac:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDac attestationInfo value =
+  sendMessage attestationInfo setDacSelector (toNSData value)
 
 -- | @- pai@
 pai :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-pai attestationInfo  =
-    sendMsg attestationInfo (mkSelector "pai") (retPtr retVoid) [] >>= retainedObject . castPtr
+pai attestationInfo =
+  sendMessage attestationInfo paiSelector
 
 -- | @- setPai:@
 setPai :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setPai attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setPai:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPai attestationInfo value =
+  sendMessage attestationInfo setPaiSelector (toNSData value)
 
 -- | @- certificationDeclaration@
 certificationDeclaration :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-certificationDeclaration attestationInfo  =
-    sendMsg attestationInfo (mkSelector "certificationDeclaration") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificationDeclaration attestationInfo =
+  sendMessage attestationInfo certificationDeclarationSelector
 
 -- | @- setCertificationDeclaration:@
 setCertificationDeclaration :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setCertificationDeclaration attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setCertificationDeclaration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificationDeclaration attestationInfo value =
+  sendMessage attestationInfo setCertificationDeclarationSelector (toNSData value)
 
 -- | @- firmwareInfo@
 firmwareInfo :: IsAttestationInfo attestationInfo => attestationInfo -> IO (Id NSData)
-firmwareInfo attestationInfo  =
-    sendMsg attestationInfo (mkSelector "firmwareInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+firmwareInfo attestationInfo =
+  sendMessage attestationInfo firmwareInfoSelector
 
 -- | @- setFirmwareInfo:@
 setFirmwareInfo :: (IsAttestationInfo attestationInfo, IsNSData value) => attestationInfo -> value -> IO ()
-setFirmwareInfo attestationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg attestationInfo (mkSelector "setFirmwareInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFirmwareInfo attestationInfo value =
+  sendMessage attestationInfo setFirmwareInfoSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChallenge:nonce:elements:elementsSignature:dac:pai:certificationDeclaration:firmwareInfo:@
-initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector :: Selector
+initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector :: Selector '[Id NSData, Id NSData, Id NSData, Id NSData, Id NSData, Id NSData, Id NSData, Id NSData] (Id AttestationInfo)
 initWithChallenge_nonce_elements_elementsSignature_dac_pai_certificationDeclaration_firmwareInfoSelector = mkSelector "initWithChallenge:nonce:elements:elementsSignature:dac:pai:certificationDeclaration:firmwareInfo:"
 
 -- | @Selector@ for @challenge@
-challengeSelector :: Selector
+challengeSelector :: Selector '[] (Id NSData)
 challengeSelector = mkSelector "challenge"
 
 -- | @Selector@ for @setChallenge:@
-setChallengeSelector :: Selector
+setChallengeSelector :: Selector '[Id NSData] ()
 setChallengeSelector = mkSelector "setChallenge:"
 
 -- | @Selector@ for @nonce@
-nonceSelector :: Selector
+nonceSelector :: Selector '[] (Id NSData)
 nonceSelector = mkSelector "nonce"
 
 -- | @Selector@ for @setNonce:@
-setNonceSelector :: Selector
+setNonceSelector :: Selector '[Id NSData] ()
 setNonceSelector = mkSelector "setNonce:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id NSData)
 elementsSelector = mkSelector "elements"
 
 -- | @Selector@ for @setElements:@
-setElementsSelector :: Selector
+setElementsSelector :: Selector '[Id NSData] ()
 setElementsSelector = mkSelector "setElements:"
 
 -- | @Selector@ for @elementsSignature@
-elementsSignatureSelector :: Selector
+elementsSignatureSelector :: Selector '[] (Id NSData)
 elementsSignatureSelector = mkSelector "elementsSignature"
 
 -- | @Selector@ for @setElementsSignature:@
-setElementsSignatureSelector :: Selector
+setElementsSignatureSelector :: Selector '[Id NSData] ()
 setElementsSignatureSelector = mkSelector "setElementsSignature:"
 
 -- | @Selector@ for @dac@
-dacSelector :: Selector
+dacSelector :: Selector '[] (Id NSData)
 dacSelector = mkSelector "dac"
 
 -- | @Selector@ for @setDac:@
-setDacSelector :: Selector
+setDacSelector :: Selector '[Id NSData] ()
 setDacSelector = mkSelector "setDac:"
 
 -- | @Selector@ for @pai@
-paiSelector :: Selector
+paiSelector :: Selector '[] (Id NSData)
 paiSelector = mkSelector "pai"
 
 -- | @Selector@ for @setPai:@
-setPaiSelector :: Selector
+setPaiSelector :: Selector '[Id NSData] ()
 setPaiSelector = mkSelector "setPai:"
 
 -- | @Selector@ for @certificationDeclaration@
-certificationDeclarationSelector :: Selector
+certificationDeclarationSelector :: Selector '[] (Id NSData)
 certificationDeclarationSelector = mkSelector "certificationDeclaration"
 
 -- | @Selector@ for @setCertificationDeclaration:@
-setCertificationDeclarationSelector :: Selector
+setCertificationDeclarationSelector :: Selector '[Id NSData] ()
 setCertificationDeclarationSelector = mkSelector "setCertificationDeclaration:"
 
 -- | @Selector@ for @firmwareInfo@
-firmwareInfoSelector :: Selector
+firmwareInfoSelector :: Selector '[] (Id NSData)
 firmwareInfoSelector = mkSelector "firmwareInfo"
 
 -- | @Selector@ for @setFirmwareInfo:@
-setFirmwareInfoSelector :: Selector
+setFirmwareInfoSelector :: Selector '[Id NSData] ()
 setFirmwareInfoSelector = mkSelector "setFirmwareInfo:"
 

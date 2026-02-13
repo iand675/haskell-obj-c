@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AppKit.NSPanel
   , setBecomesKeyOnlyIfNeeded
   , worksWhenModal
   , setWorksWhenModal
-  , floatingPanelSelector
-  , setFloatingPanelSelector
   , becomesKeyOnlyIfNeededSelector
+  , floatingPanelSelector
   , setBecomesKeyOnlyIfNeededSelector
-  , worksWhenModalSelector
+  , setFloatingPanelSelector
   , setWorksWhenModalSelector
+  , worksWhenModalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- floatingPanel@
 floatingPanel :: IsNSPanel nsPanel => nsPanel -> IO Bool
-floatingPanel nsPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPanel (mkSelector "floatingPanel") retCULong []
+floatingPanel nsPanel =
+  sendMessage nsPanel floatingPanelSelector
 
 -- | @- setFloatingPanel:@
 setFloatingPanel :: IsNSPanel nsPanel => nsPanel -> Bool -> IO ()
-setFloatingPanel nsPanel  value =
-    sendMsg nsPanel (mkSelector "setFloatingPanel:") retVoid [argCULong (if value then 1 else 0)]
+setFloatingPanel nsPanel value =
+  sendMessage nsPanel setFloatingPanelSelector value
 
 -- | @- becomesKeyOnlyIfNeeded@
 becomesKeyOnlyIfNeeded :: IsNSPanel nsPanel => nsPanel -> IO Bool
-becomesKeyOnlyIfNeeded nsPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPanel (mkSelector "becomesKeyOnlyIfNeeded") retCULong []
+becomesKeyOnlyIfNeeded nsPanel =
+  sendMessage nsPanel becomesKeyOnlyIfNeededSelector
 
 -- | @- setBecomesKeyOnlyIfNeeded:@
 setBecomesKeyOnlyIfNeeded :: IsNSPanel nsPanel => nsPanel -> Bool -> IO ()
-setBecomesKeyOnlyIfNeeded nsPanel  value =
-    sendMsg nsPanel (mkSelector "setBecomesKeyOnlyIfNeeded:") retVoid [argCULong (if value then 1 else 0)]
+setBecomesKeyOnlyIfNeeded nsPanel value =
+  sendMessage nsPanel setBecomesKeyOnlyIfNeededSelector value
 
 -- | @- worksWhenModal@
 worksWhenModal :: IsNSPanel nsPanel => nsPanel -> IO Bool
-worksWhenModal nsPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPanel (mkSelector "worksWhenModal") retCULong []
+worksWhenModal nsPanel =
+  sendMessage nsPanel worksWhenModalSelector
 
 -- | @- setWorksWhenModal:@
 setWorksWhenModal :: IsNSPanel nsPanel => nsPanel -> Bool -> IO ()
-setWorksWhenModal nsPanel  value =
-    sendMsg nsPanel (mkSelector "setWorksWhenModal:") retVoid [argCULong (if value then 1 else 0)]
+setWorksWhenModal nsPanel value =
+  sendMessage nsPanel setWorksWhenModalSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @floatingPanel@
-floatingPanelSelector :: Selector
+floatingPanelSelector :: Selector '[] Bool
 floatingPanelSelector = mkSelector "floatingPanel"
 
 -- | @Selector@ for @setFloatingPanel:@
-setFloatingPanelSelector :: Selector
+setFloatingPanelSelector :: Selector '[Bool] ()
 setFloatingPanelSelector = mkSelector "setFloatingPanel:"
 
 -- | @Selector@ for @becomesKeyOnlyIfNeeded@
-becomesKeyOnlyIfNeededSelector :: Selector
+becomesKeyOnlyIfNeededSelector :: Selector '[] Bool
 becomesKeyOnlyIfNeededSelector = mkSelector "becomesKeyOnlyIfNeeded"
 
 -- | @Selector@ for @setBecomesKeyOnlyIfNeeded:@
-setBecomesKeyOnlyIfNeededSelector :: Selector
+setBecomesKeyOnlyIfNeededSelector :: Selector '[Bool] ()
 setBecomesKeyOnlyIfNeededSelector = mkSelector "setBecomesKeyOnlyIfNeeded:"
 
 -- | @Selector@ for @worksWhenModal@
-worksWhenModalSelector :: Selector
+worksWhenModalSelector :: Selector '[] Bool
 worksWhenModalSelector = mkSelector "worksWhenModal"
 
 -- | @Selector@ for @setWorksWhenModal:@
-setWorksWhenModalSelector :: Selector
+setWorksWhenModalSelector :: Selector '[Bool] ()
 setWorksWhenModalSelector = mkSelector "setWorksWhenModal:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.HealthKit.HKCDADocumentSample
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,7 @@ cdaDocumentSampleWithData_startDate_endDate_metadata_validationError :: (IsNSDat
 cdaDocumentSampleWithData_startDate_endDate_metadata_validationError documentData startDate endDate metadata validationError =
   do
     cls' <- getRequiredClass "HKCDADocumentSample"
-    withObjCPtr documentData $ \raw_documentData ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr metadata $ \raw_metadata ->
-            withObjCPtr validationError $ \raw_validationError ->
-              sendClassMsg cls' (mkSelector "CDADocumentSampleWithData:startDate:endDate:metadata:validationError:") (retPtr retVoid) [argPtr (castPtr raw_documentData :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr raw_validationError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cdaDocumentSampleWithData_startDate_endDate_metadata_validationErrorSelector (toNSData documentData) (toNSDate startDate) (toNSDate endDate) (toNSDictionary metadata) (toNSError validationError)
 
 -- | document
 --
@@ -71,18 +63,18 @@ cdaDocumentSampleWithData_startDate_endDate_metadata_validationError documentDat
 --
 -- ObjC selector: @- document@
 document :: IsHKCDADocumentSample hkcdaDocumentSample => hkcdaDocumentSample -> IO (Id HKCDADocument)
-document hkcdaDocumentSample  =
-    sendMsg hkcdaDocumentSample (mkSelector "document") (retPtr retVoid) [] >>= retainedObject . castPtr
+document hkcdaDocumentSample =
+  sendMessage hkcdaDocumentSample documentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @CDADocumentSampleWithData:startDate:endDate:metadata:validationError:@
-cdaDocumentSampleWithData_startDate_endDate_metadata_validationErrorSelector :: Selector
+cdaDocumentSampleWithData_startDate_endDate_metadata_validationErrorSelector :: Selector '[Id NSData, Id NSDate, Id NSDate, Id NSDictionary, Id NSError] (Id HKCDADocumentSample)
 cdaDocumentSampleWithData_startDate_endDate_metadata_validationErrorSelector = mkSelector "CDADocumentSampleWithData:startDate:endDate:metadata:validationError:"
 
 -- | @Selector@ for @document@
-documentSelector :: Selector
+documentSelector :: Selector '[] (Id HKCDADocument)
 documentSelector = mkSelector "document"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AVFoundation.AVAggregateAssetDownloadTask
   , originalRequest
   , currentRequest
   , response
+  , currentRequestSelector
   , initSelector
   , newSelector
-  , urlAssetSelector
   , originalRequestSelector
-  , currentRequestSelector
   , responseSelector
+  , urlAssetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,63 +42,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO (Id AVAggregateAssetDownloadTask)
-init_ avAggregateAssetDownloadTask  =
-    sendMsg avAggregateAssetDownloadTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAggregateAssetDownloadTask =
+  sendOwnedMessage avAggregateAssetDownloadTask initSelector
 
 -- | @+ new@
 new :: IO (Id AVAggregateAssetDownloadTask)
 new  =
   do
     cls' <- getRequiredClass "AVAggregateAssetDownloadTask"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The asset supplied to the download task upon initialization.
 --
 -- ObjC selector: @- URLAsset@
 urlAsset :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO (Id AVURLAsset)
-urlAsset avAggregateAssetDownloadTask  =
-    sendMsg avAggregateAssetDownloadTask (mkSelector "URLAsset") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlAsset avAggregateAssetDownloadTask =
+  sendMessage avAggregateAssetDownloadTask urlAssetSelector
 
 -- | @- originalRequest@
 originalRequest :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
-originalRequest avAggregateAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "originalRequest") (retPtr retVoid) []
+originalRequest avAggregateAssetDownloadTask =
+  sendMessage avAggregateAssetDownloadTask originalRequestSelector
 
 -- | @- currentRequest@
 currentRequest :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
-currentRequest avAggregateAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "currentRequest") (retPtr retVoid) []
+currentRequest avAggregateAssetDownloadTask =
+  sendMessage avAggregateAssetDownloadTask currentRequestSelector
 
 -- | @- response@
 response :: IsAVAggregateAssetDownloadTask avAggregateAssetDownloadTask => avAggregateAssetDownloadTask -> IO RawId
-response avAggregateAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAggregateAssetDownloadTask (mkSelector "response") (retPtr retVoid) []
+response avAggregateAssetDownloadTask =
+  sendMessage avAggregateAssetDownloadTask responseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAggregateAssetDownloadTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAggregateAssetDownloadTask)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @URLAsset@
-urlAssetSelector :: Selector
+urlAssetSelector :: Selector '[] (Id AVURLAsset)
 urlAssetSelector = mkSelector "URLAsset"
 
 -- | @Selector@ for @originalRequest@
-originalRequestSelector :: Selector
+originalRequestSelector :: Selector '[] RawId
 originalRequestSelector = mkSelector "originalRequest"
 
 -- | @Selector@ for @currentRequest@
-currentRequestSelector :: Selector
+currentRequestSelector :: Selector '[] RawId
 currentRequestSelector = mkSelector "currentRequest"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] RawId
 responseSelector = mkSelector "response"
 

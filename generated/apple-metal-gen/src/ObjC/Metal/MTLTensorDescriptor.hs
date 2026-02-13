@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,22 @@ module ObjC.Metal.MTLTensorDescriptor
   , setStorageMode
   , hazardTrackingMode
   , setHazardTrackingMode
-  , dimensionsSelector
-  , setDimensionsSelector
-  , stridesSelector
-  , setStridesSelector
-  , dataTypeSelector
-  , setDataTypeSelector
-  , usageSelector
-  , setUsageSelector
-  , resourceOptionsSelector
-  , setResourceOptionsSelector
   , cpuCacheModeSelector
-  , setCpuCacheModeSelector
-  , storageModeSelector
-  , setStorageModeSelector
+  , dataTypeSelector
+  , dimensionsSelector
   , hazardTrackingModeSelector
+  , resourceOptionsSelector
+  , setCpuCacheModeSelector
+  , setDataTypeSelector
+  , setDimensionsSelector
   , setHazardTrackingModeSelector
+  , setResourceOptionsSelector
+  , setStorageModeSelector
+  , setStridesSelector
+  , setUsageSelector
+  , storageModeSelector
+  , stridesSelector
+  , usageSelector
 
   -- * Enum types
   , MTLCPUCacheMode(MTLCPUCacheMode)
@@ -85,15 +86,11 @@ module ObjC.Metal.MTLTensorDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,8 +104,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- dimensions@
 dimensions :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO (Id MTLTensorExtents)
-dimensions mtlTensorDescriptor  =
-    sendMsg mtlTensorDescriptor (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+dimensions mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor dimensionsSelector
 
 -- | An array of sizes, in elements, one for each dimension of the tensors you create with this descriptor.
 --
@@ -116,9 +113,8 @@ dimensions mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setDimensions:@
 setDimensions :: (IsMTLTensorDescriptor mtlTensorDescriptor, IsMTLTensorExtents value) => mtlTensorDescriptor -> value -> IO ()
-setDimensions mtlTensorDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTensorDescriptor (mkSelector "setDimensions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDimensions mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setDimensionsSelector (toMTLTensorExtents value)
 
 -- | An array of strides, in elements, one for each dimension in the tensors you create with this descriptor, if applicable.
 --
@@ -126,8 +122,8 @@ setDimensions mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- strides@
 strides :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO (Id MTLTensorExtents)
-strides mtlTensorDescriptor  =
-    sendMsg mtlTensorDescriptor (mkSelector "strides") (retPtr retVoid) [] >>= retainedObject . castPtr
+strides mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor stridesSelector
 
 -- | An array of strides, in elements, one for each dimension in the tensors you create with this descriptor, if applicable.
 --
@@ -135,9 +131,8 @@ strides mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setStrides:@
 setStrides :: (IsMTLTensorDescriptor mtlTensorDescriptor, IsMTLTensorExtents value) => mtlTensorDescriptor -> value -> IO ()
-setStrides mtlTensorDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlTensorDescriptor (mkSelector "setStrides:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStrides mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setStridesSelector (toMTLTensorExtents value)
 
 -- | A data format for the tensors you create with this descriptor.
 --
@@ -145,8 +140,8 @@ setStrides mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLTensorDataType
-dataType mtlTensorDescriptor  =
-    fmap (coerce :: CLong -> MTLTensorDataType) $ sendMsg mtlTensorDescriptor (mkSelector "dataType") retCLong []
+dataType mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor dataTypeSelector
 
 -- | A data format for the tensors you create with this descriptor.
 --
@@ -154,8 +149,8 @@ dataType mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLTensorDataType -> IO ()
-setDataType mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setDataType:") retVoid [argCLong (coerce value)]
+setDataType mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setDataTypeSelector value
 
 -- | A set of contexts in which you can use tensors you create with this descriptor.
 --
@@ -163,8 +158,8 @@ setDataType mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- usage@
 usage :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLTensorUsage
-usage mtlTensorDescriptor  =
-    fmap (coerce :: CULong -> MTLTensorUsage) $ sendMsg mtlTensorDescriptor (mkSelector "usage") retCULong []
+usage mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor usageSelector
 
 -- | A set of contexts in which you can use tensors you create with this descriptor.
 --
@@ -172,22 +167,22 @@ usage mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setUsage:@
 setUsage :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLTensorUsage -> IO ()
-setUsage mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setUsage:") retVoid [argCULong (coerce value)]
+setUsage mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setUsageSelector value
 
 -- | A packed set of the @storageMode@, @cpuCacheMode@ and @hazardTrackingMode@ properties.
 --
 -- ObjC selector: @- resourceOptions@
 resourceOptions :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLResourceOptions
-resourceOptions mtlTensorDescriptor  =
-    fmap (coerce :: CULong -> MTLResourceOptions) $ sendMsg mtlTensorDescriptor (mkSelector "resourceOptions") retCULong []
+resourceOptions mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor resourceOptionsSelector
 
 -- | A packed set of the @storageMode@, @cpuCacheMode@ and @hazardTrackingMode@ properties.
 --
 -- ObjC selector: @- setResourceOptions:@
 setResourceOptions :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLResourceOptions -> IO ()
-setResourceOptions mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setResourceOptions:") retVoid [argCULong (coerce value)]
+setResourceOptions mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setResourceOptionsSelector value
 
 -- | A value that configures the cache mode of CPU mapping of tensors you create with this descriptor.
 --
@@ -195,8 +190,8 @@ setResourceOptions mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- cpuCacheMode@
 cpuCacheMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLCPUCacheMode
-cpuCacheMode mtlTensorDescriptor  =
-    fmap (coerce :: CULong -> MTLCPUCacheMode) $ sendMsg mtlTensorDescriptor (mkSelector "cpuCacheMode") retCULong []
+cpuCacheMode mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor cpuCacheModeSelector
 
 -- | A value that configures the cache mode of CPU mapping of tensors you create with this descriptor.
 --
@@ -204,8 +199,8 @@ cpuCacheMode mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setCpuCacheMode:@
 setCpuCacheMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLCPUCacheMode -> IO ()
-setCpuCacheMode mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setCpuCacheMode:") retVoid [argCULong (coerce value)]
+setCpuCacheMode mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setCpuCacheModeSelector value
 
 -- | A value that configures the memory location and access permissions of tensors you create with this descriptor.
 --
@@ -213,8 +208,8 @@ setCpuCacheMode mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- storageMode@
 storageMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLStorageMode
-storageMode mtlTensorDescriptor  =
-    fmap (coerce :: CULong -> MTLStorageMode) $ sendMsg mtlTensorDescriptor (mkSelector "storageMode") retCULong []
+storageMode mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor storageModeSelector
 
 -- | A value that configures the memory location and access permissions of tensors you create with this descriptor.
 --
@@ -222,8 +217,8 @@ storageMode mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setStorageMode:@
 setStorageMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLStorageMode -> IO ()
-setStorageMode mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setStorageMode:") retVoid [argCULong (coerce value)]
+setStorageMode mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setStorageModeSelector value
 
 -- | A value that configures the hazard tracking of tensors you create with this descriptor.
 --
@@ -231,8 +226,8 @@ setStorageMode mtlTensorDescriptor  value =
 --
 -- ObjC selector: @- hazardTrackingMode@
 hazardTrackingMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> IO MTLHazardTrackingMode
-hazardTrackingMode mtlTensorDescriptor  =
-    fmap (coerce :: CULong -> MTLHazardTrackingMode) $ sendMsg mtlTensorDescriptor (mkSelector "hazardTrackingMode") retCULong []
+hazardTrackingMode mtlTensorDescriptor =
+  sendMessage mtlTensorDescriptor hazardTrackingModeSelector
 
 -- | A value that configures the hazard tracking of tensors you create with this descriptor.
 --
@@ -240,74 +235,74 @@ hazardTrackingMode mtlTensorDescriptor  =
 --
 -- ObjC selector: @- setHazardTrackingMode:@
 setHazardTrackingMode :: IsMTLTensorDescriptor mtlTensorDescriptor => mtlTensorDescriptor -> MTLHazardTrackingMode -> IO ()
-setHazardTrackingMode mtlTensorDescriptor  value =
-    sendMsg mtlTensorDescriptor (mkSelector "setHazardTrackingMode:") retVoid [argCULong (coerce value)]
+setHazardTrackingMode mtlTensorDescriptor value =
+  sendMessage mtlTensorDescriptor setHazardTrackingModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dimensions@
-dimensionsSelector :: Selector
+dimensionsSelector :: Selector '[] (Id MTLTensorExtents)
 dimensionsSelector = mkSelector "dimensions"
 
 -- | @Selector@ for @setDimensions:@
-setDimensionsSelector :: Selector
+setDimensionsSelector :: Selector '[Id MTLTensorExtents] ()
 setDimensionsSelector = mkSelector "setDimensions:"
 
 -- | @Selector@ for @strides@
-stridesSelector :: Selector
+stridesSelector :: Selector '[] (Id MTLTensorExtents)
 stridesSelector = mkSelector "strides"
 
 -- | @Selector@ for @setStrides:@
-setStridesSelector :: Selector
+setStridesSelector :: Selector '[Id MTLTensorExtents] ()
 setStridesSelector = mkSelector "setStrides:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MTLTensorDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MTLTensorDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] MTLTensorUsage
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @setUsage:@
-setUsageSelector :: Selector
+setUsageSelector :: Selector '[MTLTensorUsage] ()
 setUsageSelector = mkSelector "setUsage:"
 
 -- | @Selector@ for @resourceOptions@
-resourceOptionsSelector :: Selector
+resourceOptionsSelector :: Selector '[] MTLResourceOptions
 resourceOptionsSelector = mkSelector "resourceOptions"
 
 -- | @Selector@ for @setResourceOptions:@
-setResourceOptionsSelector :: Selector
+setResourceOptionsSelector :: Selector '[MTLResourceOptions] ()
 setResourceOptionsSelector = mkSelector "setResourceOptions:"
 
 -- | @Selector@ for @cpuCacheMode@
-cpuCacheModeSelector :: Selector
+cpuCacheModeSelector :: Selector '[] MTLCPUCacheMode
 cpuCacheModeSelector = mkSelector "cpuCacheMode"
 
 -- | @Selector@ for @setCpuCacheMode:@
-setCpuCacheModeSelector :: Selector
+setCpuCacheModeSelector :: Selector '[MTLCPUCacheMode] ()
 setCpuCacheModeSelector = mkSelector "setCpuCacheMode:"
 
 -- | @Selector@ for @storageMode@
-storageModeSelector :: Selector
+storageModeSelector :: Selector '[] MTLStorageMode
 storageModeSelector = mkSelector "storageMode"
 
 -- | @Selector@ for @setStorageMode:@
-setStorageModeSelector :: Selector
+setStorageModeSelector :: Selector '[MTLStorageMode] ()
 setStorageModeSelector = mkSelector "setStorageMode:"
 
 -- | @Selector@ for @hazardTrackingMode@
-hazardTrackingModeSelector :: Selector
+hazardTrackingModeSelector :: Selector '[] MTLHazardTrackingMode
 hazardTrackingModeSelector = mkSelector "hazardTrackingMode"
 
 -- | @Selector@ for @setHazardTrackingMode:@
-setHazardTrackingModeSelector :: Selector
+setHazardTrackingModeSelector :: Selector '[MTLHazardTrackingMode] ()
 setHazardTrackingModeSelector = mkSelector "setHazardTrackingMode:"
 

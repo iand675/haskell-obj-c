@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,22 +32,22 @@ module ObjC.MetalPerformanceShaders.MPSMatrixNeuronGradient
   , setSourceInputFeatureChannels
   , alpha
   , setAlpha
-  , setNeuronType_parameterA_parameterB_parameterCSelector
-  , neuronTypeSelector
+  , alphaSelector
+  , copyWithZone_deviceSelector
+  , encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , neuronParameterASelector
   , neuronParameterBSelector
   , neuronParameterCSelector
+  , neuronTypeSelector
+  , setAlphaSelector
   , setNeuronToPReLUWithParametersASelector
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , sourceNumberOfFeatureVectorsSelector
+  , setNeuronType_parameterA_parameterB_parameterCSelector
+  , setSourceInputFeatureChannelsSelector
   , setSourceNumberOfFeatureVectorsSelector
   , sourceInputFeatureChannelsSelector
-  , setSourceInputFeatureChannelsSelector
-  , alphaSelector
-  , setAlphaSelector
+  , sourceNumberOfFeatureVectorsSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -70,15 +71,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixNeuronGradient
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -100,36 +97,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setNeuronType:parameterA:parameterB:parameterC:@
 setNeuronType_parameterA_parameterB_parameterC :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> MPSCNNNeuronType -> CFloat -> CFloat -> CFloat -> IO ()
-setNeuronType_parameterA_parameterB_parameterC mpsMatrixNeuronGradient  neuronType parameterA parameterB parameterC =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "setNeuronType:parameterA:parameterB:parameterC:") retVoid [argCInt (coerce neuronType), argCFloat parameterA, argCFloat parameterB, argCFloat parameterC]
+setNeuronType_parameterA_parameterB_parameterC mpsMatrixNeuronGradient neuronType parameterA parameterB parameterC =
+  sendMessage mpsMatrixNeuronGradient setNeuronType_parameterA_parameterB_parameterCSelector neuronType parameterA parameterB parameterC
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronType@
 neuronType :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO MPSCNNNeuronType
-neuronType mpsMatrixNeuronGradient  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpsMatrixNeuronGradient (mkSelector "neuronType") retCInt []
+neuronType mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient neuronTypeSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterA@
 neuronParameterA :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CFloat
-neuronParameterA mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "neuronParameterA") retCFloat []
+neuronParameterA mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient neuronParameterASelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterB@
 neuronParameterB :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CFloat
-neuronParameterB mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "neuronParameterB") retCFloat []
+neuronParameterB mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient neuronParameterBSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterC@
 neuronParameterC :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CFloat
-neuronParameterC mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "neuronParameterC") retCFloat []
+neuronParameterC mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient neuronParameterCSelector
 
 -- | Add per output value neuron parameters A for PReLu neuron activation functions.
 --
@@ -147,14 +144,13 @@ neuronParameterC mpsMatrixNeuronGradient  =
 --
 -- ObjC selector: @- setNeuronToPReLUWithParametersA:@
 setNeuronToPReLUWithParametersA :: (IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient, IsNSData a) => mpsMatrixNeuronGradient -> a -> IO ()
-setNeuronToPReLUWithParametersA mpsMatrixNeuronGradient  a =
-  withObjCPtr a $ \raw_a ->
-      sendMsg mpsMatrixNeuronGradient (mkSelector "setNeuronToPReLUWithParametersA:") retVoid [argPtr (castPtr raw_a :: Ptr ())]
+setNeuronToPReLUWithParametersA mpsMatrixNeuronGradient a =
+  sendMessage mpsMatrixNeuronGradient setNeuronToPReLUWithParametersASelector (toNSData a)
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> RawId -> IO (Id MPSMatrixNeuronGradient)
-initWithDevice mpsMatrixNeuronGradient  device =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixNeuronGradient device =
+  sendOwnedMessage mpsMatrixNeuronGradient initWithDeviceSelector device
 
 -- | Encode a MPSMatrixNeuronGradient object to a command buffer and compute              its gradient with respect to its input data.
 --
@@ -172,13 +168,8 @@ initWithDevice mpsMatrixNeuronGradient  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:gradientMatrix:inputMatrix:biasVector:resultGradientForDataMatrix:resultGradientForBiasVector:@
 encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVector :: (IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient, IsMPSMatrix gradientMatrix, IsMPSMatrix inputMatrix, IsMPSVector biasVector, IsMPSMatrix resultGradientForDataMatrix, IsMPSVector resultGradientForBiasVector) => mpsMatrixNeuronGradient -> RawId -> gradientMatrix -> inputMatrix -> biasVector -> resultGradientForDataMatrix -> resultGradientForBiasVector -> IO ()
-encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVector mpsMatrixNeuronGradient  commandBuffer gradientMatrix inputMatrix biasVector resultGradientForDataMatrix resultGradientForBiasVector =
-  withObjCPtr gradientMatrix $ \raw_gradientMatrix ->
-    withObjCPtr inputMatrix $ \raw_inputMatrix ->
-      withObjCPtr biasVector $ \raw_biasVector ->
-        withObjCPtr resultGradientForDataMatrix $ \raw_resultGradientForDataMatrix ->
-          withObjCPtr resultGradientForBiasVector $ \raw_resultGradientForBiasVector ->
-              sendMsg mpsMatrixNeuronGradient (mkSelector "encodeToCommandBuffer:gradientMatrix:inputMatrix:biasVector:resultGradientForDataMatrix:resultGradientForBiasVector:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_gradientMatrix :: Ptr ()), argPtr (castPtr raw_inputMatrix :: Ptr ()), argPtr (castPtr raw_biasVector :: Ptr ()), argPtr (castPtr raw_resultGradientForDataMatrix :: Ptr ()), argPtr (castPtr raw_resultGradientForBiasVector :: Ptr ())]
+encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVector mpsMatrixNeuronGradient commandBuffer gradientMatrix inputMatrix biasVector resultGradientForDataMatrix resultGradientForBiasVector =
+  sendMessage mpsMatrixNeuronGradient encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector commandBuffer (toMPSMatrix gradientMatrix) (toMPSMatrix inputMatrix) (toMPSVector biasVector) (toMPSMatrix resultGradientForDataMatrix) (toMPSVector resultGradientForBiasVector)
 
 -- | NSSecureCoding compatability
 --
@@ -192,9 +183,8 @@ encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDat
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient, IsNSCoder aDecoder) => mpsMatrixNeuronGradient -> aDecoder -> RawId -> IO (Id MPSMatrixNeuronGradient)
-initWithCoder_device mpsMatrixNeuronGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixNeuronGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixNeuronGradient aDecoder device =
+  sendOwnedMessage mpsMatrixNeuronGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -208,8 +198,8 @@ initWithCoder_device mpsMatrixNeuronGradient  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> Ptr () -> RawId -> IO (Id MPSMatrixNeuronGradient)
-copyWithZone_device mpsMatrixNeuronGradient  zone device =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixNeuronGradient zone device =
+  sendOwnedMessage mpsMatrixNeuronGradient copyWithZone_deviceSelector zone device
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -217,8 +207,8 @@ copyWithZone_device mpsMatrixNeuronGradient  zone device =
 --
 -- ObjC selector: @- sourceNumberOfFeatureVectors@
 sourceNumberOfFeatureVectors :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CULong
-sourceNumberOfFeatureVectors mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "sourceNumberOfFeatureVectors") retCULong []
+sourceNumberOfFeatureVectors mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient sourceNumberOfFeatureVectorsSelector
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -226,8 +216,8 @@ sourceNumberOfFeatureVectors mpsMatrixNeuronGradient  =
 --
 -- ObjC selector: @- setSourceNumberOfFeatureVectors:@
 setSourceNumberOfFeatureVectors :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> CULong -> IO ()
-setSourceNumberOfFeatureVectors mpsMatrixNeuronGradient  value =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "setSourceNumberOfFeatureVectors:") retVoid [argCULong value]
+setSourceNumberOfFeatureVectors mpsMatrixNeuronGradient value =
+  sendMessage mpsMatrixNeuronGradient setSourceNumberOfFeatureVectorsSelector value
 
 -- | sourceInputFeatureChannels
 --
@@ -235,8 +225,8 @@ setSourceNumberOfFeatureVectors mpsMatrixNeuronGradient  value =
 --
 -- ObjC selector: @- sourceInputFeatureChannels@
 sourceInputFeatureChannels :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CULong
-sourceInputFeatureChannels mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "sourceInputFeatureChannels") retCULong []
+sourceInputFeatureChannels mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient sourceInputFeatureChannelsSelector
 
 -- | sourceInputFeatureChannels
 --
@@ -244,8 +234,8 @@ sourceInputFeatureChannels mpsMatrixNeuronGradient  =
 --
 -- ObjC selector: @- setSourceInputFeatureChannels:@
 setSourceInputFeatureChannels :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> CULong -> IO ()
-setSourceInputFeatureChannels mpsMatrixNeuronGradient  value =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "setSourceInputFeatureChannels:") retVoid [argCULong value]
+setSourceInputFeatureChannels mpsMatrixNeuronGradient value =
+  sendMessage mpsMatrixNeuronGradient setSourceInputFeatureChannelsSelector value
 
 -- | alpha
 --
@@ -253,8 +243,8 @@ setSourceInputFeatureChannels mpsMatrixNeuronGradient  value =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> IO CDouble
-alpha mpsMatrixNeuronGradient  =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "alpha") retCDouble []
+alpha mpsMatrixNeuronGradient =
+  sendMessage mpsMatrixNeuronGradient alphaSelector
 
 -- | alpha
 --
@@ -262,74 +252,74 @@ alpha mpsMatrixNeuronGradient  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSMatrixNeuronGradient mpsMatrixNeuronGradient => mpsMatrixNeuronGradient -> CDouble -> IO ()
-setAlpha mpsMatrixNeuronGradient  value =
-    sendMsg mpsMatrixNeuronGradient (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha mpsMatrixNeuronGradient value =
+  sendMessage mpsMatrixNeuronGradient setAlphaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setNeuronType:parameterA:parameterB:parameterC:@
-setNeuronType_parameterA_parameterB_parameterCSelector :: Selector
+setNeuronType_parameterA_parameterB_parameterCSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat, CFloat] ()
 setNeuronType_parameterA_parameterB_parameterCSelector = mkSelector "setNeuronType:parameterA:parameterB:parameterC:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @neuronParameterA@
-neuronParameterASelector :: Selector
+neuronParameterASelector :: Selector '[] CFloat
 neuronParameterASelector = mkSelector "neuronParameterA"
 
 -- | @Selector@ for @neuronParameterB@
-neuronParameterBSelector :: Selector
+neuronParameterBSelector :: Selector '[] CFloat
 neuronParameterBSelector = mkSelector "neuronParameterB"
 
 -- | @Selector@ for @neuronParameterC@
-neuronParameterCSelector :: Selector
+neuronParameterCSelector :: Selector '[] CFloat
 neuronParameterCSelector = mkSelector "neuronParameterC"
 
 -- | @Selector@ for @setNeuronToPReLUWithParametersA:@
-setNeuronToPReLUWithParametersASelector :: Selector
+setNeuronToPReLUWithParametersASelector :: Selector '[Id NSData] ()
 setNeuronToPReLUWithParametersASelector = mkSelector "setNeuronToPReLUWithParametersA:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixNeuronGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:gradientMatrix:inputMatrix:biasVector:resultGradientForDataMatrix:resultGradientForBiasVector:@
-encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector :: Selector
+encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSVector, Id MPSMatrix, Id MPSVector] ()
 encodeToCommandBuffer_gradientMatrix_inputMatrix_biasVector_resultGradientForDataMatrix_resultGradientForBiasVectorSelector = mkSelector "encodeToCommandBuffer:gradientMatrix:inputMatrix:biasVector:resultGradientForDataMatrix:resultGradientForBiasVector:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixNeuronGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixNeuronGradient)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceNumberOfFeatureVectors@
-sourceNumberOfFeatureVectorsSelector :: Selector
+sourceNumberOfFeatureVectorsSelector :: Selector '[] CULong
 sourceNumberOfFeatureVectorsSelector = mkSelector "sourceNumberOfFeatureVectors"
 
 -- | @Selector@ for @setSourceNumberOfFeatureVectors:@
-setSourceNumberOfFeatureVectorsSelector :: Selector
+setSourceNumberOfFeatureVectorsSelector :: Selector '[CULong] ()
 setSourceNumberOfFeatureVectorsSelector = mkSelector "setSourceNumberOfFeatureVectors:"
 
 -- | @Selector@ for @sourceInputFeatureChannels@
-sourceInputFeatureChannelsSelector :: Selector
+sourceInputFeatureChannelsSelector :: Selector '[] CULong
 sourceInputFeatureChannelsSelector = mkSelector "sourceInputFeatureChannels"
 
 -- | @Selector@ for @setSourceInputFeatureChannels:@
-setSourceInputFeatureChannelsSelector :: Selector
+setSourceInputFeatureChannelsSelector :: Selector '[CULong] ()
 setSourceInputFeatureChannelsSelector = mkSelector "setSourceInputFeatureChannels:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 

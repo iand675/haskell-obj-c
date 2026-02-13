@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.MapKit.MKTileOverlay
   , urlTemplate
   , canReplaceMapContent
   , setCanReplaceMapContent
-  , initWithURLTemplateSelector
-  , geometryFlippedSelector
-  , setGeometryFlippedSelector
-  , minimumZSelector
-  , setMinimumZSelector
-  , maximumZSelector
-  , setMaximumZSelector
-  , urlTemplateSelector
   , canReplaceMapContentSelector
+  , geometryFlippedSelector
+  , initWithURLTemplateSelector
+  , maximumZSelector
+  , minimumZSelector
   , setCanReplaceMapContentSelector
+  , setGeometryFlippedSelector
+  , setMaximumZSelector
+  , setMinimumZSelector
+  , urlTemplateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,96 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithURLTemplate:@
 initWithURLTemplate :: (IsMKTileOverlay mkTileOverlay, IsNSString urlTemplate) => mkTileOverlay -> urlTemplate -> IO (Id MKTileOverlay)
-initWithURLTemplate mkTileOverlay  urlTemplate =
-  withObjCPtr urlTemplate $ \raw_urlTemplate ->
-      sendMsg mkTileOverlay (mkSelector "initWithURLTemplate:") (retPtr retVoid) [argPtr (castPtr raw_urlTemplate :: Ptr ())] >>= ownedObject . castPtr
+initWithURLTemplate mkTileOverlay urlTemplate =
+  sendOwnedMessage mkTileOverlay initWithURLTemplateSelector (toNSString urlTemplate)
 
 -- | @- geometryFlipped@
 geometryFlipped :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> IO Bool
-geometryFlipped mkTileOverlay  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkTileOverlay (mkSelector "geometryFlipped") retCULong []
+geometryFlipped mkTileOverlay =
+  sendMessage mkTileOverlay geometryFlippedSelector
 
 -- | @- setGeometryFlipped:@
 setGeometryFlipped :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> Bool -> IO ()
-setGeometryFlipped mkTileOverlay  value =
-    sendMsg mkTileOverlay (mkSelector "setGeometryFlipped:") retVoid [argCULong (if value then 1 else 0)]
+setGeometryFlipped mkTileOverlay value =
+  sendMessage mkTileOverlay setGeometryFlippedSelector value
 
 -- | @- minimumZ@
 minimumZ :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> IO CLong
-minimumZ mkTileOverlay  =
-    sendMsg mkTileOverlay (mkSelector "minimumZ") retCLong []
+minimumZ mkTileOverlay =
+  sendMessage mkTileOverlay minimumZSelector
 
 -- | @- setMinimumZ:@
 setMinimumZ :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> CLong -> IO ()
-setMinimumZ mkTileOverlay  value =
-    sendMsg mkTileOverlay (mkSelector "setMinimumZ:") retVoid [argCLong value]
+setMinimumZ mkTileOverlay value =
+  sendMessage mkTileOverlay setMinimumZSelector value
 
 -- | @- maximumZ@
 maximumZ :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> IO CLong
-maximumZ mkTileOverlay  =
-    sendMsg mkTileOverlay (mkSelector "maximumZ") retCLong []
+maximumZ mkTileOverlay =
+  sendMessage mkTileOverlay maximumZSelector
 
 -- | @- setMaximumZ:@
 setMaximumZ :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> CLong -> IO ()
-setMaximumZ mkTileOverlay  value =
-    sendMsg mkTileOverlay (mkSelector "setMaximumZ:") retVoid [argCLong value]
+setMaximumZ mkTileOverlay value =
+  sendMessage mkTileOverlay setMaximumZSelector value
 
 -- | @- URLTemplate@
 urlTemplate :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> IO (Id NSString)
-urlTemplate mkTileOverlay  =
-    sendMsg mkTileOverlay (mkSelector "URLTemplate") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlTemplate mkTileOverlay =
+  sendMessage mkTileOverlay urlTemplateSelector
 
 -- | @- canReplaceMapContent@
 canReplaceMapContent :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> IO Bool
-canReplaceMapContent mkTileOverlay  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkTileOverlay (mkSelector "canReplaceMapContent") retCULong []
+canReplaceMapContent mkTileOverlay =
+  sendMessage mkTileOverlay canReplaceMapContentSelector
 
 -- | @- setCanReplaceMapContent:@
 setCanReplaceMapContent :: IsMKTileOverlay mkTileOverlay => mkTileOverlay -> Bool -> IO ()
-setCanReplaceMapContent mkTileOverlay  value =
-    sendMsg mkTileOverlay (mkSelector "setCanReplaceMapContent:") retVoid [argCULong (if value then 1 else 0)]
+setCanReplaceMapContent mkTileOverlay value =
+  sendMessage mkTileOverlay setCanReplaceMapContentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURLTemplate:@
-initWithURLTemplateSelector :: Selector
+initWithURLTemplateSelector :: Selector '[Id NSString] (Id MKTileOverlay)
 initWithURLTemplateSelector = mkSelector "initWithURLTemplate:"
 
 -- | @Selector@ for @geometryFlipped@
-geometryFlippedSelector :: Selector
+geometryFlippedSelector :: Selector '[] Bool
 geometryFlippedSelector = mkSelector "geometryFlipped"
 
 -- | @Selector@ for @setGeometryFlipped:@
-setGeometryFlippedSelector :: Selector
+setGeometryFlippedSelector :: Selector '[Bool] ()
 setGeometryFlippedSelector = mkSelector "setGeometryFlipped:"
 
 -- | @Selector@ for @minimumZ@
-minimumZSelector :: Selector
+minimumZSelector :: Selector '[] CLong
 minimumZSelector = mkSelector "minimumZ"
 
 -- | @Selector@ for @setMinimumZ:@
-setMinimumZSelector :: Selector
+setMinimumZSelector :: Selector '[CLong] ()
 setMinimumZSelector = mkSelector "setMinimumZ:"
 
 -- | @Selector@ for @maximumZ@
-maximumZSelector :: Selector
+maximumZSelector :: Selector '[] CLong
 maximumZSelector = mkSelector "maximumZ"
 
 -- | @Selector@ for @setMaximumZ:@
-setMaximumZSelector :: Selector
+setMaximumZSelector :: Selector '[CLong] ()
 setMaximumZSelector = mkSelector "setMaximumZ:"
 
 -- | @Selector@ for @URLTemplate@
-urlTemplateSelector :: Selector
+urlTemplateSelector :: Selector '[] (Id NSString)
 urlTemplateSelector = mkSelector "URLTemplate"
 
 -- | @Selector@ for @canReplaceMapContent@
-canReplaceMapContentSelector :: Selector
+canReplaceMapContentSelector :: Selector '[] Bool
 canReplaceMapContentSelector = mkSelector "canReplaceMapContent"
 
 -- | @Selector@ for @setCanReplaceMapContent:@
-setCanReplaceMapContentSelector :: Selector
+setCanReplaceMapContentSelector :: Selector '[Bool] ()
 setCanReplaceMapContentSelector = mkSelector "setCanReplaceMapContent:"
 

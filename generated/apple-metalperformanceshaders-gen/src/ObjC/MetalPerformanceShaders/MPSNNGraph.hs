@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,34 +50,34 @@ module ObjC.MetalPerformanceShaders.MPSNNGraph
   , format
   , setFormat
   , resultImageIsNeeded
-  , initWithDevice_resultImage_resultImageIsNeededSelector
-  , graphWithDevice_resultImage_resultImageIsNeededSelector
-  , initWithDevice_resultImages_resultsAreNeededSelector
-  , graphWithDevice_resultImages_resultsAreNeededSelector
-  , initWithDevice_resultImageSelector
-  , graphWithDevice_resultImageSelector
-  , initWithCoder_deviceSelector
-  , initWithDeviceSelector
-  , reloadFromDataSourcesSelector
-  , encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector
+  , destinationImageAllocatorSelector
+  , encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector
   , encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector
   , encodeToCommandBuffer_sourceImagesSelector
-  , encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector
+  , encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector
   , executeAsyncWithSourceImages_completionHandlerSelector
+  , formatSelector
+  , graphWithDevice_resultImageSelector
+  , graphWithDevice_resultImage_resultImageIsNeededSelector
+  , graphWithDevice_resultImages_resultsAreNeededSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_resultImageSelector
+  , initWithDevice_resultImage_resultImageIsNeededSelector
+  , initWithDevice_resultImages_resultsAreNeededSelector
+  , intermediateImageHandlesSelector
+  , outputStateIsTemporarySelector
   , readCountForSourceImageAtIndexSelector
   , readCountForSourceStateAtIndexSelector
+  , reloadFromDataSourcesSelector
+  , resultHandleSelector
+  , resultImageIsNeededSelector
+  , resultStateHandlesSelector
+  , setDestinationImageAllocatorSelector
+  , setFormatSelector
+  , setOutputStateIsTemporarySelector
   , sourceImageHandlesSelector
   , sourceStateHandlesSelector
-  , intermediateImageHandlesSelector
-  , resultStateHandlesSelector
-  , resultHandleSelector
-  , outputStateIsTemporarySelector
-  , setOutputStateIsTemporarySelector
-  , destinationImageAllocatorSelector
-  , setDestinationImageAllocatorSelector
-  , formatSelector
-  , setFormatSelector
-  , resultImageIsNeededSelector
 
   -- * Enum types
   , MPSImageFeatureChannelFormat(MPSImageFeatureChannelFormat)
@@ -90,15 +91,11 @@ module ObjC.MetalPerformanceShaders.MPSNNGraph
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -120,17 +117,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:resultImage:resultImageIsNeeded:@
 initWithDevice_resultImage_resultImageIsNeeded :: (IsMPSNNGraph mpsnnGraph, IsMPSNNImageNode resultImage) => mpsnnGraph -> RawId -> resultImage -> Bool -> IO (Id MPSNNGraph)
-initWithDevice_resultImage_resultImageIsNeeded mpsnnGraph  device resultImage resultIsNeeded =
-  withObjCPtr resultImage $ \raw_resultImage ->
-      sendMsg mpsnnGraph (mkSelector "initWithDevice:resultImage:resultImageIsNeeded:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImage :: Ptr ()), argCULong (if resultIsNeeded then 1 else 0)] >>= ownedObject . castPtr
+initWithDevice_resultImage_resultImageIsNeeded mpsnnGraph device resultImage resultIsNeeded =
+  sendOwnedMessage mpsnnGraph initWithDevice_resultImage_resultImageIsNeededSelector device (toMPSNNImageNode resultImage) resultIsNeeded
 
 -- | @+ graphWithDevice:resultImage:resultImageIsNeeded:@
 graphWithDevice_resultImage_resultImageIsNeeded :: IsMPSNNImageNode resultImage => RawId -> resultImage -> Bool -> IO (Id MPSNNGraph)
 graphWithDevice_resultImage_resultImageIsNeeded device resultImage resultIsNeeded =
   do
     cls' <- getRequiredClass "MPSNNGraph"
-    withObjCPtr resultImage $ \raw_resultImage ->
-      sendClassMsg cls' (mkSelector "graphWithDevice:resultImage:resultImageIsNeeded:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImage :: Ptr ()), argCULong (if resultIsNeeded then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithDevice_resultImage_resultImageIsNeededSelector device (toMPSNNImageNode resultImage) resultIsNeeded
 
 -- | Initialize a MPSNNGraph object on a device starting with resultImage working backward
 --
@@ -146,31 +141,27 @@ graphWithDevice_resultImage_resultImageIsNeeded device resultImage resultIsNeede
 --
 -- ObjC selector: @- initWithDevice:resultImages:resultsAreNeeded:@
 initWithDevice_resultImages_resultsAreNeeded :: (IsMPSNNGraph mpsnnGraph, IsNSArray resultImages) => mpsnnGraph -> RawId -> resultImages -> Ptr Bool -> IO (Id MPSNNGraph)
-initWithDevice_resultImages_resultsAreNeeded mpsnnGraph  device resultImages areResultsNeeded =
-  withObjCPtr resultImages $ \raw_resultImages ->
-      sendMsg mpsnnGraph (mkSelector "initWithDevice:resultImages:resultsAreNeeded:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImages :: Ptr ()), argPtr areResultsNeeded] >>= ownedObject . castPtr
+initWithDevice_resultImages_resultsAreNeeded mpsnnGraph device resultImages areResultsNeeded =
+  sendOwnedMessage mpsnnGraph initWithDevice_resultImages_resultsAreNeededSelector device (toNSArray resultImages) areResultsNeeded
 
 -- | @+ graphWithDevice:resultImages:resultsAreNeeded:@
 graphWithDevice_resultImages_resultsAreNeeded :: IsNSArray resultImages => RawId -> resultImages -> Ptr Bool -> IO (Id MPSNNGraph)
 graphWithDevice_resultImages_resultsAreNeeded device resultImages areResultsNeeded =
   do
     cls' <- getRequiredClass "MPSNNGraph"
-    withObjCPtr resultImages $ \raw_resultImages ->
-      sendClassMsg cls' (mkSelector "graphWithDevice:resultImages:resultsAreNeeded:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImages :: Ptr ()), argPtr areResultsNeeded] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithDevice_resultImages_resultsAreNeededSelector device (toNSArray resultImages) areResultsNeeded
 
 -- | @- initWithDevice:resultImage:@
 initWithDevice_resultImage :: (IsMPSNNGraph mpsnnGraph, IsMPSNNImageNode resultImage) => mpsnnGraph -> RawId -> resultImage -> IO (Id MPSNNGraph)
-initWithDevice_resultImage mpsnnGraph  device resultImage =
-  withObjCPtr resultImage $ \raw_resultImage ->
-      sendMsg mpsnnGraph (mkSelector "initWithDevice:resultImage:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImage :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_resultImage mpsnnGraph device resultImage =
+  sendOwnedMessage mpsnnGraph initWithDevice_resultImageSelector device (toMPSNNImageNode resultImage)
 
 -- | @+ graphWithDevice:resultImage:@
 graphWithDevice_resultImage :: IsMPSNNImageNode resultImage => RawId -> resultImage -> IO (Id MPSNNGraph)
 graphWithDevice_resultImage device resultImage =
   do
     cls' <- getRequiredClass "MPSNNGraph"
-    withObjCPtr resultImage $ \raw_resultImage ->
-      sendClassMsg cls' (mkSelector "graphWithDevice:resultImage:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resultImage :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithDevice_resultImageSelector device (toMPSNNImageNode resultImage)
 
 -- | NSSecureCoding compatability
 --
@@ -184,16 +175,15 @@ graphWithDevice_resultImage device resultImage =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNGraph mpsnnGraph, IsNSCoder aDecoder) => mpsnnGraph -> aDecoder -> RawId -> IO (Id MPSNNGraph)
-initWithCoder_device mpsnnGraph  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnGraph (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnGraph aDecoder device =
+  sendOwnedMessage mpsnnGraph initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Use initWithDevice:resultImage: instead
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> RawId -> IO (Id MPSNNGraph)
-initWithDevice mpsnnGraph  device =
-    sendMsg mpsnnGraph (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnGraph device =
+  sendOwnedMessage mpsnnGraph initWithDeviceSelector device
 
 -- | Reinitialize all graph nodes from data sources
 --
@@ -205,8 +195,8 @@ initWithDevice mpsnnGraph  device =
 --
 -- ObjC selector: @- reloadFromDataSources@
 reloadFromDataSources :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO ()
-reloadFromDataSources mpsnnGraph  =
-    sendMsg mpsnnGraph (mkSelector "reloadFromDataSources") retVoid []
+reloadFromDataSources mpsnnGraph =
+  sendMessage mpsnnGraph reloadFromDataSourcesSelector
 
 -- | Encode the graph to a MTLCommandBuffer
 --
@@ -224,12 +214,8 @@ reloadFromDataSources mpsnnGraph  =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
 encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages, IsNSArray sourceStates, IsNSMutableArray intermediateImages, IsNSMutableArray destinationStates) => mpsnnGraph -> RawId -> sourceImages -> sourceStates -> intermediateImages -> destinationStates -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates mpsnnGraph  commandBuffer sourceImages sourceStates intermediateImages destinationStates =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr intermediateImages $ \raw_intermediateImages ->
-        withObjCPtr destinationStates $ \raw_destinationStates ->
-            sendMsg mpsnnGraph (mkSelector "encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_intermediateImages :: Ptr ()), argPtr (castPtr raw_destinationStates :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates mpsnnGraph commandBuffer sourceImages sourceStates intermediateImages destinationStates =
+  sendMessage mpsnnGraph encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector commandBuffer (toNSArray sourceImages) (toNSArray sourceStates) (toNSMutableArray intermediateImages) (toNSMutableArray destinationStates)
 
 -- | Encode the graph to a MTLCommandBuffer
 --
@@ -249,12 +235,8 @@ encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationSt
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
 encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages, IsNSArray sourceStates, IsNSMutableArray intermediateImages, IsNSMutableArray destinationStates) => mpsnnGraph -> RawId -> sourceImages -> sourceStates -> intermediateImages -> destinationStates -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates mpsnnGraph  commandBuffer sourceImages sourceStates intermediateImages destinationStates =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr intermediateImages $ \raw_intermediateImages ->
-        withObjCPtr destinationStates $ \raw_destinationStates ->
-            fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_intermediateImages :: Ptr ()), argPtr (castPtr raw_destinationStates :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStates mpsnnGraph commandBuffer sourceImages sourceStates intermediateImages destinationStates =
+  sendMessage mpsnnGraph encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector commandBuffer (toNSArray sourceImages) (toNSArray sourceStates) (toNSMutableArray intermediateImages) (toNSMutableArray destinationStates)
 
 -- | Encode the graph to a MTLCommandBuffer
 --
@@ -270,18 +252,15 @@ encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinat
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImages:@
 encodeToCommandBuffer_sourceImages :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages) => mpsnnGraph -> RawId -> sourceImages -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImages mpsnnGraph  commandBuffer sourceImages =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-      sendMsg mpsnnGraph (mkSelector "encodeToCommandBuffer:sourceImages:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImages mpsnnGraph commandBuffer sourceImages =
+  sendMessage mpsnnGraph encodeToCommandBuffer_sourceImagesSelector commandBuffer (toNSArray sourceImages)
 
 -- | Convenience method to encode a batch of images
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:sourceStates:@
 encodeBatchToCommandBuffer_sourceImages_sourceStates :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages, IsNSArray sourceStates) => mpsnnGraph -> RawId -> sourceImages -> sourceStates -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_sourceStates mpsnnGraph  commandBuffer sourceImages sourceStates =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-        fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_sourceStates mpsnnGraph commandBuffer sourceImages sourceStates =
+  sendMessage mpsnnGraph encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector commandBuffer (toNSArray sourceImages) (toNSArray sourceStates)
 
 -- | Convenience method to execute a graph without having to manage many Metal details
 --
@@ -311,9 +290,8 @@ encodeBatchToCommandBuffer_sourceImages_sourceStates mpsnnGraph  commandBuffer s
 --
 -- ObjC selector: @- executeAsyncWithSourceImages:completionHandler:@
 executeAsyncWithSourceImages_completionHandler :: (IsMPSNNGraph mpsnnGraph, IsNSArray sourceImages) => mpsnnGraph -> sourceImages -> Ptr () -> IO (Id MPSImage)
-executeAsyncWithSourceImages_completionHandler mpsnnGraph  sourceImages handler =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-      sendMsg mpsnnGraph (mkSelector "executeAsyncWithSourceImages:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+executeAsyncWithSourceImages_completionHandler mpsnnGraph sourceImages handler =
+  sendMessage mpsnnGraph executeAsyncWithSourceImages_completionHandlerSelector (toNSArray sourceImages) handler
 
 -- | Find the number of times a image will be read by the graph *
 --
@@ -325,8 +303,8 @@ executeAsyncWithSourceImages_completionHandler mpsnnGraph  sourceImages handler 
 --
 -- ObjC selector: @- readCountForSourceImageAtIndex:@
 readCountForSourceImageAtIndex :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> CULong -> IO CULong
-readCountForSourceImageAtIndex mpsnnGraph  index =
-    sendMsg mpsnnGraph (mkSelector "readCountForSourceImageAtIndex:") retCULong [argCULong index]
+readCountForSourceImageAtIndex mpsnnGraph index =
+  sendMessage mpsnnGraph readCountForSourceImageAtIndexSelector index
 
 -- | Find the number of times a state will be read by the graph *
 --
@@ -338,15 +316,15 @@ readCountForSourceImageAtIndex mpsnnGraph  index =
 --
 -- ObjC selector: @- readCountForSourceStateAtIndex:@
 readCountForSourceStateAtIndex :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> CULong -> IO CULong
-readCountForSourceStateAtIndex mpsnnGraph  index =
-    sendMsg mpsnnGraph (mkSelector "readCountForSourceStateAtIndex:") retCULong [argCULong index]
+readCountForSourceStateAtIndex mpsnnGraph index =
+  sendMessage mpsnnGraph readCountForSourceStateAtIndexSelector index
 
 -- | Get a list of identifiers for source images needed to calculate the result image
 --
 -- ObjC selector: @- sourceImageHandles@
 sourceImageHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
-sourceImageHandles mpsnnGraph  =
-    sendMsg mpsnnGraph (mkSelector "sourceImageHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceImageHandles mpsnnGraph =
+  sendMessage mpsnnGraph sourceImageHandlesSelector
 
 -- | Get a list of identifiers for source state objects needed to calculate the result image
 --
@@ -354,15 +332,15 @@ sourceImageHandles mpsnnGraph  =
 --
 -- ObjC selector: @- sourceStateHandles@
 sourceStateHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
-sourceStateHandles mpsnnGraph  =
-    sendMsg mpsnnGraph (mkSelector "sourceStateHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceStateHandles mpsnnGraph =
+  sendMessage mpsnnGraph sourceStateHandlesSelector
 
 -- | Get a list of identifiers for intermediate images objects produced by the graph
 --
 -- ObjC selector: @- intermediateImageHandles@
 intermediateImageHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
-intermediateImageHandles mpsnnGraph  =
-    sendMsg mpsnnGraph (mkSelector "intermediateImageHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+intermediateImageHandles mpsnnGraph =
+  sendMessage mpsnnGraph intermediateImageHandlesSelector
 
 -- | Get a list of identifiers for result state objects produced by the graph
 --
@@ -370,15 +348,15 @@ intermediateImageHandles mpsnnGraph  =
 --
 -- ObjC selector: @- resultStateHandles@
 resultStateHandles :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO (Id NSArray)
-resultStateHandles mpsnnGraph  =
-    sendMsg mpsnnGraph (mkSelector "resultStateHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultStateHandles mpsnnGraph =
+  sendMessage mpsnnGraph resultStateHandlesSelector
 
 -- | Get a handle for the graph result image
 --
 -- ObjC selector: @- resultHandle@
 resultHandle :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO RawId
-resultHandle mpsnnGraph  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "resultHandle") (retPtr retVoid) []
+resultHandle mpsnnGraph =
+  sendMessage mpsnnGraph resultHandleSelector
 
 -- | Should MPSState objects produced by -encodeToCommandBuffer... be temporary objects.
 --
@@ -386,8 +364,8 @@ resultHandle mpsnnGraph  =
 --
 -- ObjC selector: @- outputStateIsTemporary@
 outputStateIsTemporary :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO Bool
-outputStateIsTemporary mpsnnGraph  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnGraph (mkSelector "outputStateIsTemporary") retCULong []
+outputStateIsTemporary mpsnnGraph =
+  sendMessage mpsnnGraph outputStateIsTemporarySelector
 
 -- | Should MPSState objects produced by -encodeToCommandBuffer... be temporary objects.
 --
@@ -395,8 +373,8 @@ outputStateIsTemporary mpsnnGraph  =
 --
 -- ObjC selector: @- setOutputStateIsTemporary:@
 setOutputStateIsTemporary :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> Bool -> IO ()
-setOutputStateIsTemporary mpsnnGraph  value =
-    sendMsg mpsnnGraph (mkSelector "setOutputStateIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+setOutputStateIsTemporary mpsnnGraph value =
+  sendMessage mpsnnGraph setOutputStateIsTemporarySelector value
 
 -- | Method to allocate the result image from -encodeToCommandBuffer...
 --
@@ -404,8 +382,8 @@ setOutputStateIsTemporary mpsnnGraph  value =
 --
 -- ObjC selector: @- destinationImageAllocator@
 destinationImageAllocator :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO RawId
-destinationImageAllocator mpsnnGraph  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnGraph (mkSelector "destinationImageAllocator") (retPtr retVoid) []
+destinationImageAllocator mpsnnGraph =
+  sendMessage mpsnnGraph destinationImageAllocatorSelector
 
 -- | Method to allocate the result image from -encodeToCommandBuffer...
 --
@@ -413,8 +391,8 @@ destinationImageAllocator mpsnnGraph  =
 --
 -- ObjC selector: @- setDestinationImageAllocator:@
 setDestinationImageAllocator :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> RawId -> IO ()
-setDestinationImageAllocator mpsnnGraph  value =
-    sendMsg mpsnnGraph (mkSelector "setDestinationImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDestinationImageAllocator mpsnnGraph value =
+  sendMessage mpsnnGraph setDestinationImageAllocatorSelector value
 
 -- | The default storage format used for graph intermediate images
 --
@@ -422,8 +400,8 @@ setDestinationImageAllocator mpsnnGraph  value =
 --
 -- ObjC selector: @- format@
 format :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO MPSImageFeatureChannelFormat
-format mpsnnGraph  =
-    fmap (coerce :: CULong -> MPSImageFeatureChannelFormat) $ sendMsg mpsnnGraph (mkSelector "format") retCULong []
+format mpsnnGraph =
+  sendMessage mpsnnGraph formatSelector
 
 -- | The default storage format used for graph intermediate images
 --
@@ -431,8 +409,8 @@ format mpsnnGraph  =
 --
 -- ObjC selector: @- setFormat:@
 setFormat :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> MPSImageFeatureChannelFormat -> IO ()
-setFormat mpsnnGraph  value =
-    sendMsg mpsnnGraph (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+setFormat mpsnnGraph value =
+  sendMessage mpsnnGraph setFormatSelector value
 
 -- | Set at -init time.
 --
@@ -440,122 +418,122 @@ setFormat mpsnnGraph  value =
 --
 -- ObjC selector: @- resultImageIsNeeded@
 resultImageIsNeeded :: IsMPSNNGraph mpsnnGraph => mpsnnGraph -> IO Bool
-resultImageIsNeeded mpsnnGraph  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnGraph (mkSelector "resultImageIsNeeded") retCULong []
+resultImageIsNeeded mpsnnGraph =
+  sendMessage mpsnnGraph resultImageIsNeededSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:resultImage:resultImageIsNeeded:@
-initWithDevice_resultImage_resultImageIsNeededSelector :: Selector
+initWithDevice_resultImage_resultImageIsNeededSelector :: Selector '[RawId, Id MPSNNImageNode, Bool] (Id MPSNNGraph)
 initWithDevice_resultImage_resultImageIsNeededSelector = mkSelector "initWithDevice:resultImage:resultImageIsNeeded:"
 
 -- | @Selector@ for @graphWithDevice:resultImage:resultImageIsNeeded:@
-graphWithDevice_resultImage_resultImageIsNeededSelector :: Selector
+graphWithDevice_resultImage_resultImageIsNeededSelector :: Selector '[RawId, Id MPSNNImageNode, Bool] (Id MPSNNGraph)
 graphWithDevice_resultImage_resultImageIsNeededSelector = mkSelector "graphWithDevice:resultImage:resultImageIsNeeded:"
 
 -- | @Selector@ for @initWithDevice:resultImages:resultsAreNeeded:@
-initWithDevice_resultImages_resultsAreNeededSelector :: Selector
+initWithDevice_resultImages_resultsAreNeededSelector :: Selector '[RawId, Id NSArray, Ptr Bool] (Id MPSNNGraph)
 initWithDevice_resultImages_resultsAreNeededSelector = mkSelector "initWithDevice:resultImages:resultsAreNeeded:"
 
 -- | @Selector@ for @graphWithDevice:resultImages:resultsAreNeeded:@
-graphWithDevice_resultImages_resultsAreNeededSelector :: Selector
+graphWithDevice_resultImages_resultsAreNeededSelector :: Selector '[RawId, Id NSArray, Ptr Bool] (Id MPSNNGraph)
 graphWithDevice_resultImages_resultsAreNeededSelector = mkSelector "graphWithDevice:resultImages:resultsAreNeeded:"
 
 -- | @Selector@ for @initWithDevice:resultImage:@
-initWithDevice_resultImageSelector :: Selector
+initWithDevice_resultImageSelector :: Selector '[RawId, Id MPSNNImageNode] (Id MPSNNGraph)
 initWithDevice_resultImageSelector = mkSelector "initWithDevice:resultImage:"
 
 -- | @Selector@ for @graphWithDevice:resultImage:@
-graphWithDevice_resultImageSelector :: Selector
+graphWithDevice_resultImageSelector :: Selector '[RawId, Id MPSNNImageNode] (Id MPSNNGraph)
 graphWithDevice_resultImageSelector = mkSelector "graphWithDevice:resultImage:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNGraph)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNGraph)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @reloadFromDataSources@
-reloadFromDataSourcesSelector :: Selector
+reloadFromDataSourcesSelector :: Selector '[] ()
 reloadFromDataSourcesSelector = mkSelector "reloadFromDataSources"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
-encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector
+encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSMutableArray, Id NSMutableArray] (Id MPSImage)
 encodeToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector = mkSelector "encodeToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:@
-encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSMutableArray, Id NSMutableArray] RawId
 encodeBatchToCommandBuffer_sourceImages_sourceStates_intermediateImages_destinationStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:intermediateImages:destinationStates:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImages:@
-encodeToCommandBuffer_sourceImagesSelector :: Selector
+encodeToCommandBuffer_sourceImagesSelector :: Selector '[RawId, Id NSArray] (Id MPSImage)
 encodeToCommandBuffer_sourceImagesSelector = mkSelector "encodeToCommandBuffer:sourceImages:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:sourceStates:@
-encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector :: Selector '[RawId, Id NSArray, Id NSArray] RawId
 encodeBatchToCommandBuffer_sourceImages_sourceStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:sourceStates:"
 
 -- | @Selector@ for @executeAsyncWithSourceImages:completionHandler:@
-executeAsyncWithSourceImages_completionHandlerSelector :: Selector
+executeAsyncWithSourceImages_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] (Id MPSImage)
 executeAsyncWithSourceImages_completionHandlerSelector = mkSelector "executeAsyncWithSourceImages:completionHandler:"
 
 -- | @Selector@ for @readCountForSourceImageAtIndex:@
-readCountForSourceImageAtIndexSelector :: Selector
+readCountForSourceImageAtIndexSelector :: Selector '[CULong] CULong
 readCountForSourceImageAtIndexSelector = mkSelector "readCountForSourceImageAtIndex:"
 
 -- | @Selector@ for @readCountForSourceStateAtIndex:@
-readCountForSourceStateAtIndexSelector :: Selector
+readCountForSourceStateAtIndexSelector :: Selector '[CULong] CULong
 readCountForSourceStateAtIndexSelector = mkSelector "readCountForSourceStateAtIndex:"
 
 -- | @Selector@ for @sourceImageHandles@
-sourceImageHandlesSelector :: Selector
+sourceImageHandlesSelector :: Selector '[] (Id NSArray)
 sourceImageHandlesSelector = mkSelector "sourceImageHandles"
 
 -- | @Selector@ for @sourceStateHandles@
-sourceStateHandlesSelector :: Selector
+sourceStateHandlesSelector :: Selector '[] (Id NSArray)
 sourceStateHandlesSelector = mkSelector "sourceStateHandles"
 
 -- | @Selector@ for @intermediateImageHandles@
-intermediateImageHandlesSelector :: Selector
+intermediateImageHandlesSelector :: Selector '[] (Id NSArray)
 intermediateImageHandlesSelector = mkSelector "intermediateImageHandles"
 
 -- | @Selector@ for @resultStateHandles@
-resultStateHandlesSelector :: Selector
+resultStateHandlesSelector :: Selector '[] (Id NSArray)
 resultStateHandlesSelector = mkSelector "resultStateHandles"
 
 -- | @Selector@ for @resultHandle@
-resultHandleSelector :: Selector
+resultHandleSelector :: Selector '[] RawId
 resultHandleSelector = mkSelector "resultHandle"
 
 -- | @Selector@ for @outputStateIsTemporary@
-outputStateIsTemporarySelector :: Selector
+outputStateIsTemporarySelector :: Selector '[] Bool
 outputStateIsTemporarySelector = mkSelector "outputStateIsTemporary"
 
 -- | @Selector@ for @setOutputStateIsTemporary:@
-setOutputStateIsTemporarySelector :: Selector
+setOutputStateIsTemporarySelector :: Selector '[Bool] ()
 setOutputStateIsTemporarySelector = mkSelector "setOutputStateIsTemporary:"
 
 -- | @Selector@ for @destinationImageAllocator@
-destinationImageAllocatorSelector :: Selector
+destinationImageAllocatorSelector :: Selector '[] RawId
 destinationImageAllocatorSelector = mkSelector "destinationImageAllocator"
 
 -- | @Selector@ for @setDestinationImageAllocator:@
-setDestinationImageAllocatorSelector :: Selector
+setDestinationImageAllocatorSelector :: Selector '[RawId] ()
 setDestinationImageAllocatorSelector = mkSelector "setDestinationImageAllocator:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] MPSImageFeatureChannelFormat
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[MPSImageFeatureChannelFormat] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @resultImageIsNeeded@
-resultImageIsNeededSelector :: Selector
+resultImageIsNeededSelector :: Selector '[] Bool
 resultImageIsNeededSelector = mkSelector "resultImageIsNeeded"
 

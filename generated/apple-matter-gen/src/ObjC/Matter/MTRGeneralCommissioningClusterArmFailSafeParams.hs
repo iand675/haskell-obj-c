@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRGeneralCommissioningClusterArmFailSafeParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , expiryLengthSecondsSelector
-  , setExpiryLengthSecondsSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , expiryLengthSecondsSelector
   , serverSideProcessingTimeoutSelector
+  , setBreadcrumbSelector
+  , setExpiryLengthSecondsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- expiryLengthSeconds@
 expiryLengthSeconds :: IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams => mtrGeneralCommissioningClusterArmFailSafeParams -> IO (Id NSNumber)
-expiryLengthSeconds mtrGeneralCommissioningClusterArmFailSafeParams  =
-    sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "expiryLengthSeconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+expiryLengthSeconds mtrGeneralCommissioningClusterArmFailSafeParams =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams expiryLengthSecondsSelector
 
 -- | @- setExpiryLengthSeconds:@
 setExpiryLengthSeconds :: (IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams, IsNSNumber value) => mtrGeneralCommissioningClusterArmFailSafeParams -> value -> IO ()
-setExpiryLengthSeconds mtrGeneralCommissioningClusterArmFailSafeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "setExpiryLengthSeconds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpiryLengthSeconds mtrGeneralCommissioningClusterArmFailSafeParams value =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams setExpiryLengthSecondsSelector (toNSNumber value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams => mtrGeneralCommissioningClusterArmFailSafeParams -> IO (Id NSNumber)
-breadcrumb mtrGeneralCommissioningClusterArmFailSafeParams  =
-    sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrGeneralCommissioningClusterArmFailSafeParams =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams, IsNSNumber value) => mtrGeneralCommissioningClusterArmFailSafeParams -> value -> IO ()
-setBreadcrumb mtrGeneralCommissioningClusterArmFailSafeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrGeneralCommissioningClusterArmFailSafeParams value =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams setBreadcrumbSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setBreadcrumb mtrGeneralCommissioningClusterArmFailSafeParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams => mtrGeneralCommissioningClusterArmFailSafeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams  =
-    sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams, IsNSNumber value) => mtrGeneralCommissioningClusterArmFailSafeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams value =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterArmFailSafeParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams => mtrGeneralCommissioningClusterArmFailSafeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGeneralCommissioningClusterArmFailSafeParams  =
-    sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGeneralCommissioningClusterArmFailSafeParams =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrGeneralCommissioningClusterArmFailSafeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGeneralCommissioningClusterArmFailSafeParams mtrGeneralCommissioningClusterArmFailSafeParams, IsNSNumber value) => mtrGeneralCommissioningClusterArmFailSafeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGeneralCommissioningClusterArmFailSafeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterArmFailSafeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGeneralCommissioningClusterArmFailSafeParams value =
+  sendMessage mtrGeneralCommissioningClusterArmFailSafeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @expiryLengthSeconds@
-expiryLengthSecondsSelector :: Selector
+expiryLengthSecondsSelector :: Selector '[] (Id NSNumber)
 expiryLengthSecondsSelector = mkSelector "expiryLengthSeconds"
 
 -- | @Selector@ for @setExpiryLengthSeconds:@
-setExpiryLengthSecondsSelector :: Selector
+setExpiryLengthSecondsSelector :: Selector '[Id NSNumber] ()
 setExpiryLengthSecondsSelector = mkSelector "setExpiryLengthSeconds:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

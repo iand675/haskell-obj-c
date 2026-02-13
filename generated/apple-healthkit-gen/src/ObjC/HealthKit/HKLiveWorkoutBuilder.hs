@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.HealthKit.HKLiveWorkoutBuilder
   , setDataSource
   , elapsedTime
   , currentWorkoutActivity
-  , initWithHealthStore_configuration_deviceSelector
-  , delegateSelector
-  , setDelegateSelector
-  , workoutSessionSelector
-  , shouldCollectWorkoutEventsSelector
-  , setShouldCollectWorkoutEventsSelector
-  , dataSourceSelector
-  , setDataSourceSelector
-  , elapsedTimeSelector
   , currentWorkoutActivitySelector
+  , dataSourceSelector
+  , delegateSelector
+  , elapsedTimeSelector
+  , initWithHealthStore_configuration_deviceSelector
+  , setDataSourceSelector
+  , setDelegateSelector
+  , setShouldCollectWorkoutEventsSelector
+  , shouldCollectWorkoutEventsSelector
+  , workoutSessionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,11 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithHealthStore:configuration:device:@
 initWithHealthStore_configuration_device :: (IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder, IsHKHealthStore healthStore, IsHKWorkoutConfiguration configuration, IsHKDevice device) => hkLiveWorkoutBuilder -> healthStore -> configuration -> device -> IO (Id HKLiveWorkoutBuilder)
-initWithHealthStore_configuration_device hkLiveWorkoutBuilder  healthStore configuration device =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr configuration $ \raw_configuration ->
-      withObjCPtr device $ \raw_device ->
-          sendMsg hkLiveWorkoutBuilder (mkSelector "initWithHealthStore:configuration:device:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_configuration_device hkLiveWorkoutBuilder healthStore configuration device =
+  sendOwnedMessage hkLiveWorkoutBuilder initWithHealthStore_configuration_deviceSelector (toHKHealthStore healthStore) (toHKWorkoutConfiguration configuration) (toHKDevice device)
 
 -- | delegate
 --
@@ -59,8 +53,8 @@ initWithHealthStore_configuration_device hkLiveWorkoutBuilder  healthStore confi
 --
 -- ObjC selector: @- delegate@
 delegate :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO RawId
-delegate hkLiveWorkoutBuilder  =
-    fmap (RawId . castPtr) $ sendMsg hkLiveWorkoutBuilder (mkSelector "delegate") (retPtr retVoid) []
+delegate hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder delegateSelector
 
 -- | delegate
 --
@@ -68,8 +62,8 @@ delegate hkLiveWorkoutBuilder  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> RawId -> IO ()
-setDelegate hkLiveWorkoutBuilder  value =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate hkLiveWorkoutBuilder value =
+  sendMessage hkLiveWorkoutBuilder setDelegateSelector value
 
 -- | workoutSession
 --
@@ -77,8 +71,8 @@ setDelegate hkLiveWorkoutBuilder  value =
 --
 -- ObjC selector: @- workoutSession@
 workoutSession :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO (Id HKWorkoutSession)
-workoutSession hkLiveWorkoutBuilder  =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "workoutSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutSession hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder workoutSessionSelector
 
 -- | shouldCollectWorkoutEvents
 --
@@ -88,8 +82,8 @@ workoutSession hkLiveWorkoutBuilder  =
 --
 -- ObjC selector: @- shouldCollectWorkoutEvents@
 shouldCollectWorkoutEvents :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO Bool
-shouldCollectWorkoutEvents hkLiveWorkoutBuilder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkLiveWorkoutBuilder (mkSelector "shouldCollectWorkoutEvents") retCULong []
+shouldCollectWorkoutEvents hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder shouldCollectWorkoutEventsSelector
 
 -- | shouldCollectWorkoutEvents
 --
@@ -99,8 +93,8 @@ shouldCollectWorkoutEvents hkLiveWorkoutBuilder  =
 --
 -- ObjC selector: @- setShouldCollectWorkoutEvents:@
 setShouldCollectWorkoutEvents :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> Bool -> IO ()
-setShouldCollectWorkoutEvents hkLiveWorkoutBuilder  value =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "setShouldCollectWorkoutEvents:") retVoid [argCULong (if value then 1 else 0)]
+setShouldCollectWorkoutEvents hkLiveWorkoutBuilder value =
+  sendMessage hkLiveWorkoutBuilder setShouldCollectWorkoutEventsSelector value
 
 -- | dataSource
 --
@@ -108,8 +102,8 @@ setShouldCollectWorkoutEvents hkLiveWorkoutBuilder  value =
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO (Id HKLiveWorkoutDataSource)
-dataSource hkLiveWorkoutBuilder  =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "dataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataSource hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder dataSourceSelector
 
 -- | dataSource
 --
@@ -117,9 +111,8 @@ dataSource hkLiveWorkoutBuilder  =
 --
 -- ObjC selector: @- setDataSource:@
 setDataSource :: (IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder, IsHKLiveWorkoutDataSource value) => hkLiveWorkoutBuilder -> value -> IO ()
-setDataSource hkLiveWorkoutBuilder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg hkLiveWorkoutBuilder (mkSelector "setDataSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDataSource hkLiveWorkoutBuilder value =
+  sendMessage hkLiveWorkoutBuilder setDataSourceSelector (toHKLiveWorkoutDataSource value)
 
 -- | elapsedTime
 --
@@ -127,8 +120,8 @@ setDataSource hkLiveWorkoutBuilder  value =
 --
 -- ObjC selector: @- elapsedTime@
 elapsedTime :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO CDouble
-elapsedTime hkLiveWorkoutBuilder  =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "elapsedTime") retCDouble []
+elapsedTime hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder elapsedTimeSelector
 
 -- | currentWorkoutActivity
 --
@@ -138,50 +131,50 @@ elapsedTime hkLiveWorkoutBuilder  =
 --
 -- ObjC selector: @- currentWorkoutActivity@
 currentWorkoutActivity :: IsHKLiveWorkoutBuilder hkLiveWorkoutBuilder => hkLiveWorkoutBuilder -> IO (Id HKWorkoutActivity)
-currentWorkoutActivity hkLiveWorkoutBuilder  =
-    sendMsg hkLiveWorkoutBuilder (mkSelector "currentWorkoutActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentWorkoutActivity hkLiveWorkoutBuilder =
+  sendMessage hkLiveWorkoutBuilder currentWorkoutActivitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHealthStore:configuration:device:@
-initWithHealthStore_configuration_deviceSelector :: Selector
+initWithHealthStore_configuration_deviceSelector :: Selector '[Id HKHealthStore, Id HKWorkoutConfiguration, Id HKDevice] (Id HKLiveWorkoutBuilder)
 initWithHealthStore_configuration_deviceSelector = mkSelector "initWithHealthStore:configuration:device:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @workoutSession@
-workoutSessionSelector :: Selector
+workoutSessionSelector :: Selector '[] (Id HKWorkoutSession)
 workoutSessionSelector = mkSelector "workoutSession"
 
 -- | @Selector@ for @shouldCollectWorkoutEvents@
-shouldCollectWorkoutEventsSelector :: Selector
+shouldCollectWorkoutEventsSelector :: Selector '[] Bool
 shouldCollectWorkoutEventsSelector = mkSelector "shouldCollectWorkoutEvents"
 
 -- | @Selector@ for @setShouldCollectWorkoutEvents:@
-setShouldCollectWorkoutEventsSelector :: Selector
+setShouldCollectWorkoutEventsSelector :: Selector '[Bool] ()
 setShouldCollectWorkoutEventsSelector = mkSelector "setShouldCollectWorkoutEvents:"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] (Id HKLiveWorkoutDataSource)
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[Id HKLiveWorkoutDataSource] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @elapsedTime@
-elapsedTimeSelector :: Selector
+elapsedTimeSelector :: Selector '[] CDouble
 elapsedTimeSelector = mkSelector "elapsedTime"
 
 -- | @Selector@ for @currentWorkoutActivity@
-currentWorkoutActivitySelector :: Selector
+currentWorkoutActivitySelector :: Selector '[] (Id HKWorkoutActivity)
 currentWorkoutActivitySelector = mkSelector "currentWorkoutActivity"
 

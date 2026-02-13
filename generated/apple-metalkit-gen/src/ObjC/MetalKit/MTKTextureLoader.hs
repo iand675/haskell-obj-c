@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,25 +31,25 @@ module ObjC.MetalKit.MTKTextureLoader
   , newTextureWithName_scaleFactor_bundle_options_error
   , newTextureWithName_scaleFactor_displayGamut_bundle_options_error
   , device
+  , deviceSelector
   , initSelector
   , initWithDeviceSelector
+  , newTextureWithCGImage_options_completionHandlerSelector
+  , newTextureWithCGImage_options_errorSelector
   , newTextureWithContentsOfURL_options_completionHandlerSelector
+  , newTextureWithContentsOfURL_options_errorSelector
+  , newTextureWithData_options_completionHandlerSelector
+  , newTextureWithData_options_errorSelector
+  , newTextureWithMDLTexture_options_completionHandlerSelector
+  , newTextureWithMDLTexture_options_errorSelector
   , newTextureWithName_scaleFactor_bundle_options_completionHandlerSelector
+  , newTextureWithName_scaleFactor_bundle_options_errorSelector
   , newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandlerSelector
+  , newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector
   , newTexturesWithContentsOfURLs_options_completionHandlerSelector
+  , newTexturesWithContentsOfURLs_options_errorSelector
   , newTexturesWithNames_scaleFactor_bundle_options_completionHandlerSelector
   , newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandlerSelector
-  , newTextureWithData_options_completionHandlerSelector
-  , newTextureWithCGImage_options_completionHandlerSelector
-  , newTextureWithMDLTexture_options_completionHandlerSelector
-  , newTextureWithContentsOfURL_options_errorSelector
-  , newTexturesWithContentsOfURLs_options_errorSelector
-  , newTextureWithData_options_errorSelector
-  , newTextureWithCGImage_options_errorSelector
-  , newTextureWithMDLTexture_options_errorSelector
-  , newTextureWithName_scaleFactor_bundle_options_errorSelector
-  , newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector
-  , deviceSelector
 
   -- * Enum types
   , NSDisplayGamut(NSDisplayGamut)
@@ -57,15 +58,11 @@ module ObjC.MetalKit.MTKTextureLoader
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,8 @@ import ObjC.ModelIO.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTKTextureLoader mtkTextureLoader => mtkTextureLoader -> IO (Id MTKTextureLoader)
-init_ mtkTextureLoader  =
-    sendMsg mtkTextureLoader (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtkTextureLoader =
+  sendOwnedMessage mtkTextureLoader initSelector
 
 -- | initWithDevice:
 --
@@ -87,8 +84,8 @@ init_ mtkTextureLoader  =
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMTKTextureLoader mtkTextureLoader => mtkTextureLoader -> RawId -> IO (Id MTKTextureLoader)
-initWithDevice mtkTextureLoader  device =
-    sendMsg mtkTextureLoader (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mtkTextureLoader device =
+  sendOwnedMessage mtkTextureLoader initWithDeviceSelector device
 
 -- | newTextureWithContentsOfURL:options:completionHandler:
 --
@@ -102,10 +99,8 @@ initWithDevice mtkTextureLoader  device =
 --
 -- ObjC selector: @- newTextureWithContentsOfURL:options:completionHandler:@
 newTextureWithContentsOfURL_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSURL url, IsNSDictionary options) => mtkTextureLoader -> url -> options -> Ptr () -> IO ()
-newTextureWithContentsOfURL_options_completionHandler mtkTextureLoader  url options completionHandler =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg mtkTextureLoader (mkSelector "newTextureWithContentsOfURL:options:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithContentsOfURL_options_completionHandler mtkTextureLoader url options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithContentsOfURL_options_completionHandlerSelector (toNSURL url) (toNSDictionary options) completionHandler
 
 -- | newTextureWithName:scaleFactor:bundle:options:completionHandler:
 --
@@ -125,11 +120,8 @@ newTextureWithContentsOfURL_options_completionHandler mtkTextureLoader  url opti
 --
 -- ObjC selector: @- newTextureWithName:scaleFactor:bundle:options:completionHandler:@
 newTextureWithName_scaleFactor_bundle_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSString name, IsNSBundle bundle, IsNSDictionary options) => mtkTextureLoader -> name -> CDouble -> bundle -> options -> Ptr () -> IO ()
-newTextureWithName_scaleFactor_bundle_options_completionHandler mtkTextureLoader  name scaleFactor bundle options completionHandler =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg mtkTextureLoader (mkSelector "newTextureWithName:scaleFactor:bundle:options:completionHandler:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argCDouble scaleFactor, argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithName_scaleFactor_bundle_options_completionHandler mtkTextureLoader name scaleFactor bundle options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithName_scaleFactor_bundle_options_completionHandlerSelector (toNSString name) scaleFactor (toNSBundle bundle) (toNSDictionary options) completionHandler
 
 -- | newTextureWithName:scaleFactor:displayGamut:bundle:options:completionHandler:
 --
@@ -151,11 +143,8 @@ newTextureWithName_scaleFactor_bundle_options_completionHandler mtkTextureLoader
 --
 -- ObjC selector: @- newTextureWithName:scaleFactor:displayGamut:bundle:options:completionHandler:@
 newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSString name, IsNSBundle bundle, IsNSDictionary options) => mtkTextureLoader -> name -> CDouble -> NSDisplayGamut -> bundle -> options -> Ptr () -> IO ()
-newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandler mtkTextureLoader  name scaleFactor displayGamut bundle options completionHandler =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg mtkTextureLoader (mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:completionHandler:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argCDouble scaleFactor, argCLong (coerce displayGamut), argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandler mtkTextureLoader name scaleFactor displayGamut bundle options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandlerSelector (toNSString name) scaleFactor displayGamut (toNSBundle bundle) (toNSDictionary options) completionHandler
 
 -- | newTexturesWithContentsOfURLs:options:completionHandler:
 --
@@ -169,10 +158,8 @@ newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandler mtk
 --
 -- ObjC selector: @- newTexturesWithContentsOfURLs:options:completionHandler:@
 newTexturesWithContentsOfURLs_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSArray urLs, IsNSDictionary options) => mtkTextureLoader -> urLs -> options -> Ptr () -> IO ()
-newTexturesWithContentsOfURLs_options_completionHandler mtkTextureLoader  urLs options completionHandler =
-  withObjCPtr urLs $ \raw_urLs ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg mtkTextureLoader (mkSelector "newTexturesWithContentsOfURLs:options:completionHandler:") retVoid [argPtr (castPtr raw_urLs :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTexturesWithContentsOfURLs_options_completionHandler mtkTextureLoader urLs options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTexturesWithContentsOfURLs_options_completionHandlerSelector (toNSArray urLs) (toNSDictionary options) completionHandler
 
 -- | newTexturesWithNames:scaleFactor:bundle:options:completionHandler:
 --
@@ -192,11 +179,8 @@ newTexturesWithContentsOfURLs_options_completionHandler mtkTextureLoader  urLs o
 --
 -- ObjC selector: @- newTexturesWithNames:scaleFactor:bundle:options:completionHandler:@
 newTexturesWithNames_scaleFactor_bundle_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSArray names, IsNSBundle bundle, IsNSDictionary options) => mtkTextureLoader -> names -> CDouble -> bundle -> options -> Ptr () -> IO ()
-newTexturesWithNames_scaleFactor_bundle_options_completionHandler mtkTextureLoader  names scaleFactor bundle options completionHandler =
-  withObjCPtr names $ \raw_names ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg mtkTextureLoader (mkSelector "newTexturesWithNames:scaleFactor:bundle:options:completionHandler:") retVoid [argPtr (castPtr raw_names :: Ptr ()), argCDouble scaleFactor, argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTexturesWithNames_scaleFactor_bundle_options_completionHandler mtkTextureLoader names scaleFactor bundle options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTexturesWithNames_scaleFactor_bundle_options_completionHandlerSelector (toNSArray names) scaleFactor (toNSBundle bundle) (toNSDictionary options) completionHandler
 
 -- | newTexturesWithNames:scaleFactor:displayGamut:bundle:options:completionHandler:
 --
@@ -218,11 +202,8 @@ newTexturesWithNames_scaleFactor_bundle_options_completionHandler mtkTextureLoad
 --
 -- ObjC selector: @- newTexturesWithNames:scaleFactor:displayGamut:bundle:options:completionHandler:@
 newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSArray names, IsNSBundle bundle, IsNSDictionary options) => mtkTextureLoader -> names -> CDouble -> NSDisplayGamut -> bundle -> options -> Ptr () -> IO ()
-newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandler mtkTextureLoader  names scaleFactor displayGamut bundle options completionHandler =
-  withObjCPtr names $ \raw_names ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg mtkTextureLoader (mkSelector "newTexturesWithNames:scaleFactor:displayGamut:bundle:options:completionHandler:") retVoid [argPtr (castPtr raw_names :: Ptr ()), argCDouble scaleFactor, argCLong (coerce displayGamut), argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandler mtkTextureLoader names scaleFactor displayGamut bundle options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandlerSelector (toNSArray names) scaleFactor displayGamut (toNSBundle bundle) (toNSDictionary options) completionHandler
 
 -- | newTextureWithData:options:completionHandler:
 --
@@ -236,10 +217,8 @@ newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandler m
 --
 -- ObjC selector: @- newTextureWithData:options:completionHandler:@
 newTextureWithData_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSData data_, IsNSDictionary options) => mtkTextureLoader -> data_ -> options -> Ptr () -> IO ()
-newTextureWithData_options_completionHandler mtkTextureLoader  data_ options completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg mtkTextureLoader (mkSelector "newTextureWithData:options:completionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithData_options_completionHandler mtkTextureLoader data_ options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithData_options_completionHandlerSelector (toNSData data_) (toNSDictionary options) completionHandler
 
 -- | newTextureWithCGImage:options:completionHandler:
 --
@@ -253,9 +232,8 @@ newTextureWithData_options_completionHandler mtkTextureLoader  data_ options com
 --
 -- ObjC selector: @- newTextureWithCGImage:options:completionHandler:@
 newTextureWithCGImage_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsNSDictionary options) => mtkTextureLoader -> Ptr () -> options -> Ptr () -> IO ()
-newTextureWithCGImage_options_completionHandler mtkTextureLoader  cgImage options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg mtkTextureLoader (mkSelector "newTextureWithCGImage:options:completionHandler:") retVoid [argPtr cgImage, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithCGImage_options_completionHandler mtkTextureLoader cgImage options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithCGImage_options_completionHandlerSelector cgImage (toNSDictionary options) completionHandler
 
 -- | newTextureWithMDLTexture:options:completionHandler:
 --
@@ -269,10 +247,8 @@ newTextureWithCGImage_options_completionHandler mtkTextureLoader  cgImage option
 --
 -- ObjC selector: @- newTextureWithMDLTexture:options:completionHandler:@
 newTextureWithMDLTexture_options_completionHandler :: (IsMTKTextureLoader mtkTextureLoader, IsMDLTexture texture, IsNSDictionary options) => mtkTextureLoader -> texture -> options -> Ptr () -> IO ()
-newTextureWithMDLTexture_options_completionHandler mtkTextureLoader  texture options completionHandler =
-  withObjCPtr texture $ \raw_texture ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg mtkTextureLoader (mkSelector "newTextureWithMDLTexture:options:completionHandler:") retVoid [argPtr (castPtr raw_texture :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+newTextureWithMDLTexture_options_completionHandler mtkTextureLoader texture options completionHandler =
+  sendOwnedMessage mtkTextureLoader newTextureWithMDLTexture_options_completionHandlerSelector (toMDLTexture texture) (toNSDictionary options) completionHandler
 
 -- | newTextureWithContentsOfURL:options:error:
 --
@@ -288,11 +264,8 @@ newTextureWithMDLTexture_options_completionHandler mtkTextureLoader  texture opt
 --
 -- ObjC selector: @- newTextureWithContentsOfURL:options:error:@
 newTextureWithContentsOfURL_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSURL url, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> url -> options -> error_ -> IO RawId
-newTextureWithContentsOfURL_options_error mtkTextureLoader  url options error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithContentsOfURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithContentsOfURL_options_error mtkTextureLoader url options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithContentsOfURL_options_errorSelector (toNSURL url) (toNSDictionary options) (toNSError error_)
 
 -- | newTexturesWithContentsOfURLs:options:completionHandler:
 --
@@ -308,11 +281,8 @@ newTextureWithContentsOfURL_options_error mtkTextureLoader  url options error_ =
 --
 -- ObjC selector: @- newTexturesWithContentsOfURLs:options:error:@
 newTexturesWithContentsOfURLs_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSArray urLs, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> urLs -> options -> error_ -> IO (Id NSArray)
-newTexturesWithContentsOfURLs_options_error mtkTextureLoader  urLs options error_ =
-  withObjCPtr urLs $ \raw_urLs ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg mtkTextureLoader (mkSelector "newTexturesWithContentsOfURLs:options:error:") (retPtr retVoid) [argPtr (castPtr raw_urLs :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+newTexturesWithContentsOfURLs_options_error mtkTextureLoader urLs options error_ =
+  sendOwnedMessage mtkTextureLoader newTexturesWithContentsOfURLs_options_errorSelector (toNSArray urLs) (toNSDictionary options) (toNSError error_)
 
 -- | newTextureWithData:options:error:
 --
@@ -328,11 +298,8 @@ newTexturesWithContentsOfURLs_options_error mtkTextureLoader  urLs options error
 --
 -- ObjC selector: @- newTextureWithData:options:error:@
 newTextureWithData_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSData data_, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> data_ -> options -> error_ -> IO RawId
-newTextureWithData_options_error mtkTextureLoader  data_ options error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithData:options:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithData_options_error mtkTextureLoader data_ options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithData_options_errorSelector (toNSData data_) (toNSDictionary options) (toNSError error_)
 
 -- | newTextureWithCGImage:options:error:
 --
@@ -348,10 +315,8 @@ newTextureWithData_options_error mtkTextureLoader  data_ options error_ =
 --
 -- ObjC selector: @- newTextureWithCGImage:options:error:@
 newTextureWithCGImage_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> Ptr () -> options -> error_ -> IO RawId
-newTextureWithCGImage_options_error mtkTextureLoader  cgImage options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithCGImage:options:error:") (retPtr retVoid) [argPtr cgImage, argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithCGImage_options_error mtkTextureLoader cgImage options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithCGImage_options_errorSelector cgImage (toNSDictionary options) (toNSError error_)
 
 -- | newTextureWithMDLTexture:options:error:
 --
@@ -367,11 +332,8 @@ newTextureWithCGImage_options_error mtkTextureLoader  cgImage options error_ =
 --
 -- ObjC selector: @- newTextureWithMDLTexture:options:error:@
 newTextureWithMDLTexture_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsMDLTexture texture, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> texture -> options -> error_ -> IO RawId
-newTextureWithMDLTexture_options_error mtkTextureLoader  texture options error_ =
-  withObjCPtr texture $ \raw_texture ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithMDLTexture:options:error:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithMDLTexture_options_error mtkTextureLoader texture options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithMDLTexture_options_errorSelector (toMDLTexture texture) (toNSDictionary options) (toNSError error_)
 
 -- | newTextursWithName:scaleFactor:bundle:options:error:
 --
@@ -391,12 +353,8 @@ newTextureWithMDLTexture_options_error mtkTextureLoader  texture options error_ 
 --
 -- ObjC selector: @- newTextureWithName:scaleFactor:bundle:options:error:@
 newTextureWithName_scaleFactor_bundle_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSString name, IsNSBundle bundle, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> name -> CDouble -> bundle -> options -> error_ -> IO RawId
-newTextureWithName_scaleFactor_bundle_options_error mtkTextureLoader  name scaleFactor bundle options error_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-            fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithName:scaleFactor:bundle:options:error:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble scaleFactor, argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithName_scaleFactor_bundle_options_error mtkTextureLoader name scaleFactor bundle options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithName_scaleFactor_bundle_options_errorSelector (toNSString name) scaleFactor (toNSBundle bundle) (toNSDictionary options) (toNSError error_)
 
 -- | newTextursWithName:scaleFactor:displayGamut:bundle:options:error:
 --
@@ -420,12 +378,8 @@ newTextureWithName_scaleFactor_bundle_options_error mtkTextureLoader  name scale
 --
 -- ObjC selector: @- newTextureWithName:scaleFactor:displayGamut:bundle:options:error:@
 newTextureWithName_scaleFactor_displayGamut_bundle_options_error :: (IsMTKTextureLoader mtkTextureLoader, IsNSString name, IsNSBundle bundle, IsNSDictionary options, IsNSError error_) => mtkTextureLoader -> name -> CDouble -> NSDisplayGamut -> bundle -> options -> error_ -> IO RawId
-newTextureWithName_scaleFactor_displayGamut_bundle_options_error mtkTextureLoader  name scaleFactor displayGamut bundle options error_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr bundle $ \raw_bundle ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-            fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:error:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble scaleFactor, argCLong (coerce displayGamut), argPtr (castPtr raw_bundle :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+newTextureWithName_scaleFactor_displayGamut_bundle_options_error mtkTextureLoader name scaleFactor displayGamut bundle options error_ =
+  sendOwnedMessage mtkTextureLoader newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector (toNSString name) scaleFactor displayGamut (toNSBundle bundle) (toNSDictionary options) (toNSError error_)
 
 -- | device
 --
@@ -433,86 +387,86 @@ newTextureWithName_scaleFactor_displayGamut_bundle_options_error mtkTextureLoade
 --
 -- ObjC selector: @- device@
 device :: IsMTKTextureLoader mtkTextureLoader => mtkTextureLoader -> IO RawId
-device mtkTextureLoader  =
-    fmap (RawId . castPtr) $ sendMsg mtkTextureLoader (mkSelector "device") (retPtr retVoid) []
+device mtkTextureLoader =
+  sendMessage mtkTextureLoader deviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTKTextureLoader)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MTKTextureLoader)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @newTextureWithContentsOfURL:options:completionHandler:@
-newTextureWithContentsOfURL_options_completionHandlerSelector :: Selector
+newTextureWithContentsOfURL_options_completionHandlerSelector :: Selector '[Id NSURL, Id NSDictionary, Ptr ()] ()
 newTextureWithContentsOfURL_options_completionHandlerSelector = mkSelector "newTextureWithContentsOfURL:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithName:scaleFactor:bundle:options:completionHandler:@
-newTextureWithName_scaleFactor_bundle_options_completionHandlerSelector :: Selector
+newTextureWithName_scaleFactor_bundle_options_completionHandlerSelector :: Selector '[Id NSString, CDouble, Id NSBundle, Id NSDictionary, Ptr ()] ()
 newTextureWithName_scaleFactor_bundle_options_completionHandlerSelector = mkSelector "newTextureWithName:scaleFactor:bundle:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithName:scaleFactor:displayGamut:bundle:options:completionHandler:@
-newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandlerSelector :: Selector
+newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandlerSelector :: Selector '[Id NSString, CDouble, NSDisplayGamut, Id NSBundle, Id NSDictionary, Ptr ()] ()
 newTextureWithName_scaleFactor_displayGamut_bundle_options_completionHandlerSelector = mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:completionHandler:"
 
 -- | @Selector@ for @newTexturesWithContentsOfURLs:options:completionHandler:@
-newTexturesWithContentsOfURLs_options_completionHandlerSelector :: Selector
+newTexturesWithContentsOfURLs_options_completionHandlerSelector :: Selector '[Id NSArray, Id NSDictionary, Ptr ()] ()
 newTexturesWithContentsOfURLs_options_completionHandlerSelector = mkSelector "newTexturesWithContentsOfURLs:options:completionHandler:"
 
 -- | @Selector@ for @newTexturesWithNames:scaleFactor:bundle:options:completionHandler:@
-newTexturesWithNames_scaleFactor_bundle_options_completionHandlerSelector :: Selector
+newTexturesWithNames_scaleFactor_bundle_options_completionHandlerSelector :: Selector '[Id NSArray, CDouble, Id NSBundle, Id NSDictionary, Ptr ()] ()
 newTexturesWithNames_scaleFactor_bundle_options_completionHandlerSelector = mkSelector "newTexturesWithNames:scaleFactor:bundle:options:completionHandler:"
 
 -- | @Selector@ for @newTexturesWithNames:scaleFactor:displayGamut:bundle:options:completionHandler:@
-newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandlerSelector :: Selector
+newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandlerSelector :: Selector '[Id NSArray, CDouble, NSDisplayGamut, Id NSBundle, Id NSDictionary, Ptr ()] ()
 newTexturesWithNames_scaleFactor_displayGamut_bundle_options_completionHandlerSelector = mkSelector "newTexturesWithNames:scaleFactor:displayGamut:bundle:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithData:options:completionHandler:@
-newTextureWithData_options_completionHandlerSelector :: Selector
+newTextureWithData_options_completionHandlerSelector :: Selector '[Id NSData, Id NSDictionary, Ptr ()] ()
 newTextureWithData_options_completionHandlerSelector = mkSelector "newTextureWithData:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithCGImage:options:completionHandler:@
-newTextureWithCGImage_options_completionHandlerSelector :: Selector
+newTextureWithCGImage_options_completionHandlerSelector :: Selector '[Ptr (), Id NSDictionary, Ptr ()] ()
 newTextureWithCGImage_options_completionHandlerSelector = mkSelector "newTextureWithCGImage:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithMDLTexture:options:completionHandler:@
-newTextureWithMDLTexture_options_completionHandlerSelector :: Selector
+newTextureWithMDLTexture_options_completionHandlerSelector :: Selector '[Id MDLTexture, Id NSDictionary, Ptr ()] ()
 newTextureWithMDLTexture_options_completionHandlerSelector = mkSelector "newTextureWithMDLTexture:options:completionHandler:"
 
 -- | @Selector@ for @newTextureWithContentsOfURL:options:error:@
-newTextureWithContentsOfURL_options_errorSelector :: Selector
+newTextureWithContentsOfURL_options_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] RawId
 newTextureWithContentsOfURL_options_errorSelector = mkSelector "newTextureWithContentsOfURL:options:error:"
 
 -- | @Selector@ for @newTexturesWithContentsOfURLs:options:error:@
-newTexturesWithContentsOfURLs_options_errorSelector :: Selector
+newTexturesWithContentsOfURLs_options_errorSelector :: Selector '[Id NSArray, Id NSDictionary, Id NSError] (Id NSArray)
 newTexturesWithContentsOfURLs_options_errorSelector = mkSelector "newTexturesWithContentsOfURLs:options:error:"
 
 -- | @Selector@ for @newTextureWithData:options:error:@
-newTextureWithData_options_errorSelector :: Selector
+newTextureWithData_options_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] RawId
 newTextureWithData_options_errorSelector = mkSelector "newTextureWithData:options:error:"
 
 -- | @Selector@ for @newTextureWithCGImage:options:error:@
-newTextureWithCGImage_options_errorSelector :: Selector
+newTextureWithCGImage_options_errorSelector :: Selector '[Ptr (), Id NSDictionary, Id NSError] RawId
 newTextureWithCGImage_options_errorSelector = mkSelector "newTextureWithCGImage:options:error:"
 
 -- | @Selector@ for @newTextureWithMDLTexture:options:error:@
-newTextureWithMDLTexture_options_errorSelector :: Selector
+newTextureWithMDLTexture_options_errorSelector :: Selector '[Id MDLTexture, Id NSDictionary, Id NSError] RawId
 newTextureWithMDLTexture_options_errorSelector = mkSelector "newTextureWithMDLTexture:options:error:"
 
 -- | @Selector@ for @newTextureWithName:scaleFactor:bundle:options:error:@
-newTextureWithName_scaleFactor_bundle_options_errorSelector :: Selector
+newTextureWithName_scaleFactor_bundle_options_errorSelector :: Selector '[Id NSString, CDouble, Id NSBundle, Id NSDictionary, Id NSError] RawId
 newTextureWithName_scaleFactor_bundle_options_errorSelector = mkSelector "newTextureWithName:scaleFactor:bundle:options:error:"
 
 -- | @Selector@ for @newTextureWithName:scaleFactor:displayGamut:bundle:options:error:@
-newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector :: Selector
+newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector :: Selector '[Id NSString, CDouble, NSDisplayGamut, Id NSBundle, Id NSDictionary, Id NSError] RawId
 newTextureWithName_scaleFactor_displayGamut_bundle_options_errorSelector = mkSelector "newTextureWithName:scaleFactor:displayGamut:bundle:options:error:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 

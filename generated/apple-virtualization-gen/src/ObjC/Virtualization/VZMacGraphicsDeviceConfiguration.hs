@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Virtualization.VZMacGraphicsDeviceConfiguration
   , init_
   , displays
   , setDisplays
-  , initSelector
   , displaysSelector
+  , initSelector
   , setDisplaysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZMacGraphicsDeviceConfiguration vzMacGraphicsDeviceConfiguration => vzMacGraphicsDeviceConfiguration -> IO (Id VZMacGraphicsDeviceConfiguration)
-init_ vzMacGraphicsDeviceConfiguration  =
-    sendMsg vzMacGraphicsDeviceConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacGraphicsDeviceConfiguration =
+  sendOwnedMessage vzMacGraphicsDeviceConfiguration initSelector
 
 -- | The displays to be attached to this graphics device.
 --
@@ -46,8 +43,8 @@ init_ vzMacGraphicsDeviceConfiguration  =
 --
 -- ObjC selector: @- displays@
 displays :: IsVZMacGraphicsDeviceConfiguration vzMacGraphicsDeviceConfiguration => vzMacGraphicsDeviceConfiguration -> IO (Id NSArray)
-displays vzMacGraphicsDeviceConfiguration  =
-    sendMsg vzMacGraphicsDeviceConfiguration (mkSelector "displays") (retPtr retVoid) [] >>= retainedObject . castPtr
+displays vzMacGraphicsDeviceConfiguration =
+  sendMessage vzMacGraphicsDeviceConfiguration displaysSelector
 
 -- | The displays to be attached to this graphics device.
 --
@@ -55,23 +52,22 @@ displays vzMacGraphicsDeviceConfiguration  =
 --
 -- ObjC selector: @- setDisplays:@
 setDisplays :: (IsVZMacGraphicsDeviceConfiguration vzMacGraphicsDeviceConfiguration, IsNSArray value) => vzMacGraphicsDeviceConfiguration -> value -> IO ()
-setDisplays vzMacGraphicsDeviceConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzMacGraphicsDeviceConfiguration (mkSelector "setDisplays:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplays vzMacGraphicsDeviceConfiguration value =
+  sendMessage vzMacGraphicsDeviceConfiguration setDisplaysSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacGraphicsDeviceConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @displays@
-displaysSelector :: Selector
+displaysSelector :: Selector '[] (Id NSArray)
 displaysSelector = mkSelector "displays"
 
 -- | @Selector@ for @setDisplays:@
-setDisplaysSelector :: Selector
+setDisplaysSelector :: Selector '[Id NSArray] ()
 setDisplaysSelector = mkSelector "setDisplays:"
 

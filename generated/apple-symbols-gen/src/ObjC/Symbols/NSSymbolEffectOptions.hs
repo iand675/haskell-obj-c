@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,27 +22,28 @@ module ObjC.Symbols.NSSymbolEffectOptions
   , optionsWithSpeed
   , nsSymbolEffectOptionsOptionsWithRepeatBehavior
   , optionsWithRepeatBehavior
-  , newSelector
   , initSelector
+  , newSelector
+  , nsSymbolEffectOptionsOptionsWithNonRepeatingSelector
+  , nsSymbolEffectOptionsOptionsWithRepeatBehaviorSelector
+  , nsSymbolEffectOptionsOptionsWithRepeatCountSelector
+  , nsSymbolEffectOptionsOptionsWithRepeatingSelector
+  , nsSymbolEffectOptionsOptionsWithSpeedSelector
   , optionsSelector
-  , optionsWithRepeatingSelector
   , optionsWithNonRepeatingSelector
-  , optionsWithRepeatCountSelector
-  , optionsWithSpeedSelector
   , optionsWithRepeatBehaviorSelector
+  , optionsWithRepeatCountSelector
+  , optionsWithRepeatingSelector
+  , optionsWithSpeedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,12 +55,12 @@ new :: IO (Id NSSymbolEffectOptions)
 new  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSSymbolEffectOptions nsSymbolEffectOptions => nsSymbolEffectOptions -> IO (Id NSSymbolEffectOptions)
-init_ nsSymbolEffectOptions  =
-    sendMsg nsSymbolEffectOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSymbolEffectOptions =
+  sendOwnedMessage nsSymbolEffectOptions initSelector
 
 -- | The default options.
 --
@@ -67,7 +69,7 @@ options :: IO (Id NSSymbolEffectOptions)
 options  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' optionsSelector
 
 -- | Convenience initializer that prefers to repeat indefinitely.
 --
@@ -76,14 +78,14 @@ nsSymbolEffectOptionsOptionsWithRepeating :: IO (Id NSSymbolEffectOptions)
 nsSymbolEffectOptionsOptionsWithRepeating  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "optionsWithRepeating") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nsSymbolEffectOptionsOptionsWithRepeatingSelector
 
 -- | Return a copy of the options that prefers to repeat indefinitely.
 --
 -- ObjC selector: @- optionsWithRepeating@
 optionsWithRepeating :: IsNSSymbolEffectOptions nsSymbolEffectOptions => nsSymbolEffectOptions -> IO (Id NSSymbolEffectOptions)
-optionsWithRepeating nsSymbolEffectOptions  =
-    sendMsg nsSymbolEffectOptions (mkSelector "optionsWithRepeating") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsWithRepeating nsSymbolEffectOptions =
+  sendMessage nsSymbolEffectOptions optionsWithRepeatingSelector
 
 -- | Convenience initializer that prefers not to repeat.
 --
@@ -92,14 +94,14 @@ nsSymbolEffectOptionsOptionsWithNonRepeating :: IO (Id NSSymbolEffectOptions)
 nsSymbolEffectOptionsOptionsWithNonRepeating  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "optionsWithNonRepeating") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nsSymbolEffectOptionsOptionsWithNonRepeatingSelector
 
 -- | Return a copy of the options that prefers not to repeat.
 --
 -- ObjC selector: @- optionsWithNonRepeating@
 optionsWithNonRepeating :: IsNSSymbolEffectOptions nsSymbolEffectOptions => nsSymbolEffectOptions -> IO (Id NSSymbolEffectOptions)
-optionsWithNonRepeating nsSymbolEffectOptions  =
-    sendMsg nsSymbolEffectOptions (mkSelector "optionsWithNonRepeating") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsWithNonRepeating nsSymbolEffectOptions =
+  sendMessage nsSymbolEffectOptions optionsWithNonRepeatingSelector
 
 -- | Convenience initializer setting a preferred repeat count.
 --
@@ -112,7 +114,7 @@ nsSymbolEffectOptionsOptionsWithRepeatCount :: CLong -> IO (Id NSSymbolEffectOpt
 nsSymbolEffectOptionsOptionsWithRepeatCount count =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "optionsWithRepeatCount:") (retPtr retVoid) [argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' nsSymbolEffectOptionsOptionsWithRepeatCountSelector count
 
 -- | Return a copy of the options setting a preferred repeat count.
 --
@@ -122,8 +124,8 @@ nsSymbolEffectOptionsOptionsWithRepeatCount count =
 --
 -- ObjC selector: @- optionsWithRepeatCount:@
 optionsWithRepeatCount :: IsNSSymbolEffectOptions nsSymbolEffectOptions => nsSymbolEffectOptions -> CLong -> IO (Id NSSymbolEffectOptions)
-optionsWithRepeatCount nsSymbolEffectOptions  count =
-    sendMsg nsSymbolEffectOptions (mkSelector "optionsWithRepeatCount:") (retPtr retVoid) [argCLong count] >>= retainedObject . castPtr
+optionsWithRepeatCount nsSymbolEffectOptions count =
+  sendMessage nsSymbolEffectOptions optionsWithRepeatCountSelector count
 
 -- | Convenience initializer setting the preferred speed multiplier.
 --
@@ -136,7 +138,7 @@ nsSymbolEffectOptionsOptionsWithSpeed :: CDouble -> IO (Id NSSymbolEffectOptions
 nsSymbolEffectOptionsOptionsWithSpeed speed =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    sendClassMsg cls' (mkSelector "optionsWithSpeed:") (retPtr retVoid) [argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' nsSymbolEffectOptionsOptionsWithSpeedSelector speed
 
 -- | Return a copy of the options setting the preferred speed multiplier.
 --
@@ -146,8 +148,8 @@ nsSymbolEffectOptionsOptionsWithSpeed speed =
 --
 -- ObjC selector: @- optionsWithSpeed:@
 optionsWithSpeed :: IsNSSymbolEffectOptions nsSymbolEffectOptions => nsSymbolEffectOptions -> CDouble -> IO (Id NSSymbolEffectOptions)
-optionsWithSpeed nsSymbolEffectOptions  speed =
-    sendMsg nsSymbolEffectOptions (mkSelector "optionsWithSpeed:") (retPtr retVoid) [argCDouble speed] >>= retainedObject . castPtr
+optionsWithSpeed nsSymbolEffectOptions speed =
+  sendMessage nsSymbolEffectOptions optionsWithSpeedSelector speed
 
 -- | Convenience initializer setting a preferred repeat behavior.
 --
@@ -160,8 +162,7 @@ nsSymbolEffectOptionsOptionsWithRepeatBehavior :: IsNSSymbolEffectOptionsRepeatB
 nsSymbolEffectOptionsOptionsWithRepeatBehavior behavior =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptions"
-    withObjCPtr behavior $ \raw_behavior ->
-      sendClassMsg cls' (mkSelector "optionsWithRepeatBehavior:") (retPtr retVoid) [argPtr (castPtr raw_behavior :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nsSymbolEffectOptionsOptionsWithRepeatBehaviorSelector (toNSSymbolEffectOptionsRepeatBehavior behavior)
 
 -- | Return a copy of the options setting a preferred repeat behavior.
 --
@@ -171,43 +172,62 @@ nsSymbolEffectOptionsOptionsWithRepeatBehavior behavior =
 --
 -- ObjC selector: @- optionsWithRepeatBehavior:@
 optionsWithRepeatBehavior :: (IsNSSymbolEffectOptions nsSymbolEffectOptions, IsNSSymbolEffectOptionsRepeatBehavior behavior) => nsSymbolEffectOptions -> behavior -> IO (Id NSSymbolEffectOptions)
-optionsWithRepeatBehavior nsSymbolEffectOptions  behavior =
-  withObjCPtr behavior $ \raw_behavior ->
-      sendMsg nsSymbolEffectOptions (mkSelector "optionsWithRepeatBehavior:") (retPtr retVoid) [argPtr (castPtr raw_behavior :: Ptr ())] >>= retainedObject . castPtr
+optionsWithRepeatBehavior nsSymbolEffectOptions behavior =
+  sendMessage nsSymbolEffectOptions optionsWithRepeatBehaviorSelector (toNSSymbolEffectOptionsRepeatBehavior behavior)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSSymbolEffectOptions)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSymbolEffectOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSSymbolEffectOptions)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @optionsWithRepeating@
-optionsWithRepeatingSelector :: Selector
+nsSymbolEffectOptionsOptionsWithRepeatingSelector :: Selector '[] (Id NSSymbolEffectOptions)
+nsSymbolEffectOptionsOptionsWithRepeatingSelector = mkSelector "optionsWithRepeating"
+
+-- | @Selector@ for @optionsWithRepeating@
+optionsWithRepeatingSelector :: Selector '[] (Id NSSymbolEffectOptions)
 optionsWithRepeatingSelector = mkSelector "optionsWithRepeating"
 
 -- | @Selector@ for @optionsWithNonRepeating@
-optionsWithNonRepeatingSelector :: Selector
+nsSymbolEffectOptionsOptionsWithNonRepeatingSelector :: Selector '[] (Id NSSymbolEffectOptions)
+nsSymbolEffectOptionsOptionsWithNonRepeatingSelector = mkSelector "optionsWithNonRepeating"
+
+-- | @Selector@ for @optionsWithNonRepeating@
+optionsWithNonRepeatingSelector :: Selector '[] (Id NSSymbolEffectOptions)
 optionsWithNonRepeatingSelector = mkSelector "optionsWithNonRepeating"
 
 -- | @Selector@ for @optionsWithRepeatCount:@
-optionsWithRepeatCountSelector :: Selector
+nsSymbolEffectOptionsOptionsWithRepeatCountSelector :: Selector '[CLong] (Id NSSymbolEffectOptions)
+nsSymbolEffectOptionsOptionsWithRepeatCountSelector = mkSelector "optionsWithRepeatCount:"
+
+-- | @Selector@ for @optionsWithRepeatCount:@
+optionsWithRepeatCountSelector :: Selector '[CLong] (Id NSSymbolEffectOptions)
 optionsWithRepeatCountSelector = mkSelector "optionsWithRepeatCount:"
 
 -- | @Selector@ for @optionsWithSpeed:@
-optionsWithSpeedSelector :: Selector
+nsSymbolEffectOptionsOptionsWithSpeedSelector :: Selector '[CDouble] (Id NSSymbolEffectOptions)
+nsSymbolEffectOptionsOptionsWithSpeedSelector = mkSelector "optionsWithSpeed:"
+
+-- | @Selector@ for @optionsWithSpeed:@
+optionsWithSpeedSelector :: Selector '[CDouble] (Id NSSymbolEffectOptions)
 optionsWithSpeedSelector = mkSelector "optionsWithSpeed:"
 
 -- | @Selector@ for @optionsWithRepeatBehavior:@
-optionsWithRepeatBehaviorSelector :: Selector
+nsSymbolEffectOptionsOptionsWithRepeatBehaviorSelector :: Selector '[Id NSSymbolEffectOptionsRepeatBehavior] (Id NSSymbolEffectOptions)
+nsSymbolEffectOptionsOptionsWithRepeatBehaviorSelector = mkSelector "optionsWithRepeatBehavior:"
+
+-- | @Selector@ for @optionsWithRepeatBehavior:@
+optionsWithRepeatBehaviorSelector :: Selector '[Id NSSymbolEffectOptionsRepeatBehavior] (Id NSSymbolEffectOptions)
 optionsWithRepeatBehaviorSelector = mkSelector "optionsWithRepeatBehavior:"
 

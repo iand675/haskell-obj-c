@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Foundation.NSURLCache
   , setDiskCapacity
   , currentMemoryUsage
   , currentDiskUsage
-  , initWithMemoryCapacity_diskCapacity_diskPathSelector
-  , initWithMemoryCapacity_diskCapacity_directoryURLSelector
   , cachedResponseForRequestSelector
-  , storeCachedResponse_forRequestSelector
-  , removeCachedResponseForRequestSelector
-  , removeAllCachedResponsesSelector
-  , removeCachedResponsesSinceDateSelector
-  , storeCachedResponse_forDataTaskSelector
-  , getCachedResponseForDataTask_completionHandlerSelector
-  , removeCachedResponseForDataTaskSelector
-  , sharedURLCacheSelector
-  , setSharedURLCacheSelector
-  , memoryCapacitySelector
-  , setMemoryCapacitySelector
-  , diskCapacitySelector
-  , setDiskCapacitySelector
-  , currentMemoryUsageSelector
   , currentDiskUsageSelector
+  , currentMemoryUsageSelector
+  , diskCapacitySelector
+  , getCachedResponseForDataTask_completionHandlerSelector
+  , initWithMemoryCapacity_diskCapacity_directoryURLSelector
+  , initWithMemoryCapacity_diskCapacity_diskPathSelector
+  , memoryCapacitySelector
+  , removeAllCachedResponsesSelector
+  , removeCachedResponseForDataTaskSelector
+  , removeCachedResponseForRequestSelector
+  , removeCachedResponsesSinceDateSelector
+  , setDiskCapacitySelector
+  , setMemoryCapacitySelector
+  , setSharedURLCacheSelector
+  , sharedURLCacheSelector
+  , storeCachedResponse_forDataTaskSelector
+  , storeCachedResponse_forRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,9 +73,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithMemoryCapacity:diskCapacity:diskPath:@
 initWithMemoryCapacity_diskCapacity_diskPath :: (IsNSURLCache nsurlCache, IsNSString path) => nsurlCache -> CULong -> CULong -> path -> IO (Id NSURLCache)
-initWithMemoryCapacity_diskCapacity_diskPath nsurlCache  memoryCapacity diskCapacity path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsurlCache (mkSelector "initWithMemoryCapacity:diskCapacity:diskPath:") (retPtr retVoid) [argCULong memoryCapacity, argCULong diskCapacity, argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithMemoryCapacity_diskCapacity_diskPath nsurlCache memoryCapacity diskCapacity path =
+  sendOwnedMessage nsurlCache initWithMemoryCapacity_diskCapacity_diskPathSelector memoryCapacity diskCapacity (toNSString path)
 
 -- | initWithMemoryCapacity:diskCapacity:directoryURL:
 --
@@ -94,9 +90,8 @@ initWithMemoryCapacity_diskCapacity_diskPath nsurlCache  memoryCapacity diskCapa
 --
 -- ObjC selector: @- initWithMemoryCapacity:diskCapacity:directoryURL:@
 initWithMemoryCapacity_diskCapacity_directoryURL :: (IsNSURLCache nsurlCache, IsNSURL directoryURL) => nsurlCache -> CULong -> CULong -> directoryURL -> IO (Id NSURLCache)
-initWithMemoryCapacity_diskCapacity_directoryURL nsurlCache  memoryCapacity diskCapacity directoryURL =
-  withObjCPtr directoryURL $ \raw_directoryURL ->
-      sendMsg nsurlCache (mkSelector "initWithMemoryCapacity:diskCapacity:directoryURL:") (retPtr retVoid) [argCULong memoryCapacity, argCULong diskCapacity, argPtr (castPtr raw_directoryURL :: Ptr ())] >>= ownedObject . castPtr
+initWithMemoryCapacity_diskCapacity_directoryURL nsurlCache memoryCapacity diskCapacity directoryURL =
+  sendOwnedMessage nsurlCache initWithMemoryCapacity_diskCapacity_directoryURLSelector memoryCapacity diskCapacity (toNSURL directoryURL)
 
 -- | cachedResponseForRequest:
 --
@@ -110,9 +105,8 @@ initWithMemoryCapacity_diskCapacity_directoryURL nsurlCache  memoryCapacity disk
 --
 -- ObjC selector: @- cachedResponseForRequest:@
 cachedResponseForRequest :: (IsNSURLCache nsurlCache, IsNSURLRequest request) => nsurlCache -> request -> IO (Id NSCachedURLResponse)
-cachedResponseForRequest nsurlCache  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlCache (mkSelector "cachedResponseForRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+cachedResponseForRequest nsurlCache request =
+  sendMessage nsurlCache cachedResponseForRequestSelector (toNSURLRequest request)
 
 -- | storeCachedResponse:forRequest:
 --
@@ -124,10 +118,8 @@ cachedResponseForRequest nsurlCache  request =
 --
 -- ObjC selector: @- storeCachedResponse:forRequest:@
 storeCachedResponse_forRequest :: (IsNSURLCache nsurlCache, IsNSCachedURLResponse cachedResponse, IsNSURLRequest request) => nsurlCache -> cachedResponse -> request -> IO ()
-storeCachedResponse_forRequest nsurlCache  cachedResponse request =
-  withObjCPtr cachedResponse $ \raw_cachedResponse ->
-    withObjCPtr request $ \raw_request ->
-        sendMsg nsurlCache (mkSelector "storeCachedResponse:forRequest:") retVoid [argPtr (castPtr raw_cachedResponse :: Ptr ()), argPtr (castPtr raw_request :: Ptr ())]
+storeCachedResponse_forRequest nsurlCache cachedResponse request =
+  sendMessage nsurlCache storeCachedResponse_forRequestSelector (toNSCachedURLResponse cachedResponse) (toNSURLRequest request)
 
 -- | removeCachedResponseForRequest:
 --
@@ -139,9 +131,8 @@ storeCachedResponse_forRequest nsurlCache  cachedResponse request =
 --
 -- ObjC selector: @- removeCachedResponseForRequest:@
 removeCachedResponseForRequest :: (IsNSURLCache nsurlCache, IsNSURLRequest request) => nsurlCache -> request -> IO ()
-removeCachedResponseForRequest nsurlCache  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlCache (mkSelector "removeCachedResponseForRequest:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
+removeCachedResponseForRequest nsurlCache request =
+  sendMessage nsurlCache removeCachedResponseForRequestSelector (toNSURLRequest request)
 
 -- | removeAllCachedResponses
 --
@@ -149,8 +140,8 @@ removeCachedResponseForRequest nsurlCache  request =
 --
 -- ObjC selector: @- removeAllCachedResponses@
 removeAllCachedResponses :: IsNSURLCache nsurlCache => nsurlCache -> IO ()
-removeAllCachedResponses nsurlCache  =
-    sendMsg nsurlCache (mkSelector "removeAllCachedResponses") retVoid []
+removeAllCachedResponses nsurlCache =
+  sendMessage nsurlCache removeAllCachedResponsesSelector
 
 -- | removeCachedResponsesSince:
 --
@@ -158,28 +149,23 @@ removeAllCachedResponses nsurlCache  =
 --
 -- ObjC selector: @- removeCachedResponsesSinceDate:@
 removeCachedResponsesSinceDate :: (IsNSURLCache nsurlCache, IsNSDate date) => nsurlCache -> date -> IO ()
-removeCachedResponsesSinceDate nsurlCache  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsurlCache (mkSelector "removeCachedResponsesSinceDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+removeCachedResponsesSinceDate nsurlCache date =
+  sendMessage nsurlCache removeCachedResponsesSinceDateSelector (toNSDate date)
 
 -- | @- storeCachedResponse:forDataTask:@
 storeCachedResponse_forDataTask :: (IsNSURLCache nsurlCache, IsNSCachedURLResponse cachedResponse, IsNSURLSessionDataTask dataTask) => nsurlCache -> cachedResponse -> dataTask -> IO ()
-storeCachedResponse_forDataTask nsurlCache  cachedResponse dataTask =
-  withObjCPtr cachedResponse $ \raw_cachedResponse ->
-    withObjCPtr dataTask $ \raw_dataTask ->
-        sendMsg nsurlCache (mkSelector "storeCachedResponse:forDataTask:") retVoid [argPtr (castPtr raw_cachedResponse :: Ptr ()), argPtr (castPtr raw_dataTask :: Ptr ())]
+storeCachedResponse_forDataTask nsurlCache cachedResponse dataTask =
+  sendMessage nsurlCache storeCachedResponse_forDataTaskSelector (toNSCachedURLResponse cachedResponse) (toNSURLSessionDataTask dataTask)
 
 -- | @- getCachedResponseForDataTask:completionHandler:@
 getCachedResponseForDataTask_completionHandler :: (IsNSURLCache nsurlCache, IsNSURLSessionDataTask dataTask) => nsurlCache -> dataTask -> Ptr () -> IO ()
-getCachedResponseForDataTask_completionHandler nsurlCache  dataTask completionHandler =
-  withObjCPtr dataTask $ \raw_dataTask ->
-      sendMsg nsurlCache (mkSelector "getCachedResponseForDataTask:completionHandler:") retVoid [argPtr (castPtr raw_dataTask :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getCachedResponseForDataTask_completionHandler nsurlCache dataTask completionHandler =
+  sendMessage nsurlCache getCachedResponseForDataTask_completionHandlerSelector (toNSURLSessionDataTask dataTask) completionHandler
 
 -- | @- removeCachedResponseForDataTask:@
 removeCachedResponseForDataTask :: (IsNSURLCache nsurlCache, IsNSURLSessionDataTask dataTask) => nsurlCache -> dataTask -> IO ()
-removeCachedResponseForDataTask nsurlCache  dataTask =
-  withObjCPtr dataTask $ \raw_dataTask ->
-      sendMsg nsurlCache (mkSelector "removeCachedResponseForDataTask:") retVoid [argPtr (castPtr raw_dataTask :: Ptr ())]
+removeCachedResponseForDataTask nsurlCache dataTask =
+  sendMessage nsurlCache removeCachedResponseForDataTaskSelector (toNSURLSessionDataTask dataTask)
 
 -- | sharedURLCache
 --
@@ -194,7 +180,7 @@ sharedURLCache :: IO (Id NSURLCache)
 sharedURLCache  =
   do
     cls' <- getRequiredClass "NSURLCache"
-    sendClassMsg cls' (mkSelector "sharedURLCache") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedURLCacheSelector
 
 -- | sharedURLCache
 --
@@ -209,8 +195,7 @@ setSharedURLCache :: IsNSURLCache value => value -> IO ()
 setSharedURLCache value =
   do
     cls' <- getRequiredClass "NSURLCache"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setSharedURLCache:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setSharedURLCacheSelector (toNSURLCache value)
 
 -- | In-memory capacity of the receiver.
 --
@@ -220,8 +205,8 @@ setSharedURLCache value =
 --
 -- ObjC selector: @- memoryCapacity@
 memoryCapacity :: IsNSURLCache nsurlCache => nsurlCache -> IO CULong
-memoryCapacity nsurlCache  =
-    sendMsg nsurlCache (mkSelector "memoryCapacity") retCULong []
+memoryCapacity nsurlCache =
+  sendMessage nsurlCache memoryCapacitySelector
 
 -- | In-memory capacity of the receiver.
 --
@@ -231,8 +216,8 @@ memoryCapacity nsurlCache  =
 --
 -- ObjC selector: @- setMemoryCapacity:@
 setMemoryCapacity :: IsNSURLCache nsurlCache => nsurlCache -> CULong -> IO ()
-setMemoryCapacity nsurlCache  value =
-    sendMsg nsurlCache (mkSelector "setMemoryCapacity:") retVoid [argCULong value]
+setMemoryCapacity nsurlCache value =
+  sendMessage nsurlCache setMemoryCapacitySelector value
 
 -- | The on-disk capacity of the receiver.
 --
@@ -240,8 +225,8 @@ setMemoryCapacity nsurlCache  value =
 --
 -- ObjC selector: @- diskCapacity@
 diskCapacity :: IsNSURLCache nsurlCache => nsurlCache -> IO CULong
-diskCapacity nsurlCache  =
-    sendMsg nsurlCache (mkSelector "diskCapacity") retCULong []
+diskCapacity nsurlCache =
+  sendMessage nsurlCache diskCapacitySelector
 
 -- | The on-disk capacity of the receiver.
 --
@@ -249,8 +234,8 @@ diskCapacity nsurlCache  =
 --
 -- ObjC selector: @- setDiskCapacity:@
 setDiskCapacity :: IsNSURLCache nsurlCache => nsurlCache -> CULong -> IO ()
-setDiskCapacity nsurlCache  value =
-    sendMsg nsurlCache (mkSelector "setDiskCapacity:") retVoid [argCULong value]
+setDiskCapacity nsurlCache value =
+  sendMessage nsurlCache setDiskCapacitySelector value
 
 -- | Returns the current amount of space consumed by the    in-memory cache of the receiver.
 --
@@ -260,8 +245,8 @@ setDiskCapacity nsurlCache  value =
 --
 -- ObjC selector: @- currentMemoryUsage@
 currentMemoryUsage :: IsNSURLCache nsurlCache => nsurlCache -> IO CULong
-currentMemoryUsage nsurlCache  =
-    sendMsg nsurlCache (mkSelector "currentMemoryUsage") retCULong []
+currentMemoryUsage nsurlCache =
+  sendMessage nsurlCache currentMemoryUsageSelector
 
 -- | Returns the current amount of space consumed by the    on-disk cache of the receiver.
 --
@@ -271,82 +256,82 @@ currentMemoryUsage nsurlCache  =
 --
 -- ObjC selector: @- currentDiskUsage@
 currentDiskUsage :: IsNSURLCache nsurlCache => nsurlCache -> IO CULong
-currentDiskUsage nsurlCache  =
-    sendMsg nsurlCache (mkSelector "currentDiskUsage") retCULong []
+currentDiskUsage nsurlCache =
+  sendMessage nsurlCache currentDiskUsageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMemoryCapacity:diskCapacity:diskPath:@
-initWithMemoryCapacity_diskCapacity_diskPathSelector :: Selector
+initWithMemoryCapacity_diskCapacity_diskPathSelector :: Selector '[CULong, CULong, Id NSString] (Id NSURLCache)
 initWithMemoryCapacity_diskCapacity_diskPathSelector = mkSelector "initWithMemoryCapacity:diskCapacity:diskPath:"
 
 -- | @Selector@ for @initWithMemoryCapacity:diskCapacity:directoryURL:@
-initWithMemoryCapacity_diskCapacity_directoryURLSelector :: Selector
+initWithMemoryCapacity_diskCapacity_directoryURLSelector :: Selector '[CULong, CULong, Id NSURL] (Id NSURLCache)
 initWithMemoryCapacity_diskCapacity_directoryURLSelector = mkSelector "initWithMemoryCapacity:diskCapacity:directoryURL:"
 
 -- | @Selector@ for @cachedResponseForRequest:@
-cachedResponseForRequestSelector :: Selector
+cachedResponseForRequestSelector :: Selector '[Id NSURLRequest] (Id NSCachedURLResponse)
 cachedResponseForRequestSelector = mkSelector "cachedResponseForRequest:"
 
 -- | @Selector@ for @storeCachedResponse:forRequest:@
-storeCachedResponse_forRequestSelector :: Selector
+storeCachedResponse_forRequestSelector :: Selector '[Id NSCachedURLResponse, Id NSURLRequest] ()
 storeCachedResponse_forRequestSelector = mkSelector "storeCachedResponse:forRequest:"
 
 -- | @Selector@ for @removeCachedResponseForRequest:@
-removeCachedResponseForRequestSelector :: Selector
+removeCachedResponseForRequestSelector :: Selector '[Id NSURLRequest] ()
 removeCachedResponseForRequestSelector = mkSelector "removeCachedResponseForRequest:"
 
 -- | @Selector@ for @removeAllCachedResponses@
-removeAllCachedResponsesSelector :: Selector
+removeAllCachedResponsesSelector :: Selector '[] ()
 removeAllCachedResponsesSelector = mkSelector "removeAllCachedResponses"
 
 -- | @Selector@ for @removeCachedResponsesSinceDate:@
-removeCachedResponsesSinceDateSelector :: Selector
+removeCachedResponsesSinceDateSelector :: Selector '[Id NSDate] ()
 removeCachedResponsesSinceDateSelector = mkSelector "removeCachedResponsesSinceDate:"
 
 -- | @Selector@ for @storeCachedResponse:forDataTask:@
-storeCachedResponse_forDataTaskSelector :: Selector
+storeCachedResponse_forDataTaskSelector :: Selector '[Id NSCachedURLResponse, Id NSURLSessionDataTask] ()
 storeCachedResponse_forDataTaskSelector = mkSelector "storeCachedResponse:forDataTask:"
 
 -- | @Selector@ for @getCachedResponseForDataTask:completionHandler:@
-getCachedResponseForDataTask_completionHandlerSelector :: Selector
+getCachedResponseForDataTask_completionHandlerSelector :: Selector '[Id NSURLSessionDataTask, Ptr ()] ()
 getCachedResponseForDataTask_completionHandlerSelector = mkSelector "getCachedResponseForDataTask:completionHandler:"
 
 -- | @Selector@ for @removeCachedResponseForDataTask:@
-removeCachedResponseForDataTaskSelector :: Selector
+removeCachedResponseForDataTaskSelector :: Selector '[Id NSURLSessionDataTask] ()
 removeCachedResponseForDataTaskSelector = mkSelector "removeCachedResponseForDataTask:"
 
 -- | @Selector@ for @sharedURLCache@
-sharedURLCacheSelector :: Selector
+sharedURLCacheSelector :: Selector '[] (Id NSURLCache)
 sharedURLCacheSelector = mkSelector "sharedURLCache"
 
 -- | @Selector@ for @setSharedURLCache:@
-setSharedURLCacheSelector :: Selector
+setSharedURLCacheSelector :: Selector '[Id NSURLCache] ()
 setSharedURLCacheSelector = mkSelector "setSharedURLCache:"
 
 -- | @Selector@ for @memoryCapacity@
-memoryCapacitySelector :: Selector
+memoryCapacitySelector :: Selector '[] CULong
 memoryCapacitySelector = mkSelector "memoryCapacity"
 
 -- | @Selector@ for @setMemoryCapacity:@
-setMemoryCapacitySelector :: Selector
+setMemoryCapacitySelector :: Selector '[CULong] ()
 setMemoryCapacitySelector = mkSelector "setMemoryCapacity:"
 
 -- | @Selector@ for @diskCapacity@
-diskCapacitySelector :: Selector
+diskCapacitySelector :: Selector '[] CULong
 diskCapacitySelector = mkSelector "diskCapacity"
 
 -- | @Selector@ for @setDiskCapacity:@
-setDiskCapacitySelector :: Selector
+setDiskCapacitySelector :: Selector '[CULong] ()
 setDiskCapacitySelector = mkSelector "setDiskCapacity:"
 
 -- | @Selector@ for @currentMemoryUsage@
-currentMemoryUsageSelector :: Selector
+currentMemoryUsageSelector :: Selector '[] CULong
 currentMemoryUsageSelector = mkSelector "currentMemoryUsage"
 
 -- | @Selector@ for @currentDiskUsage@
-currentDiskUsageSelector :: Selector
+currentDiskUsageSelector :: Selector '[] CULong
 currentDiskUsageSelector = mkSelector "currentDiskUsage"
 

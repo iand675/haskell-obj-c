@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.AppKit.NSTableViewRowAction
   , setBackgroundColor
   , image
   , setImage
+  , backgroundColorSelector
+  , imageSelector
   , rowActionWithStyle_title_handlerSelector
+  , setBackgroundColorSelector
+  , setImageSelector
+  , setTitleSelector
   , styleSelector
   , titleSelector
-  , setTitleSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , imageSelector
-  , setImageSelector
 
   -- * Enum types
   , NSTableViewRowActionStyle(NSTableViewRowActionStyle)
@@ -31,15 +32,11 @@ module ObjC.AppKit.NSTableViewRowAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,80 +49,76 @@ rowActionWithStyle_title_handler :: IsNSString title => NSTableViewRowActionStyl
 rowActionWithStyle_title_handler style title handler =
   do
     cls' <- getRequiredClass "NSTableViewRowAction"
-    withObjCPtr title $ \raw_title ->
-      sendClassMsg cls' (mkSelector "rowActionWithStyle:title:handler:") (retPtr retVoid) [argCLong (coerce style), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rowActionWithStyle_title_handlerSelector style (toNSString title) handler
 
 -- | @- style@
 style :: IsNSTableViewRowAction nsTableViewRowAction => nsTableViewRowAction -> IO NSTableViewRowActionStyle
-style nsTableViewRowAction  =
-    fmap (coerce :: CLong -> NSTableViewRowActionStyle) $ sendMsg nsTableViewRowAction (mkSelector "style") retCLong []
+style nsTableViewRowAction =
+  sendMessage nsTableViewRowAction styleSelector
 
 -- | @- title@
 title :: IsNSTableViewRowAction nsTableViewRowAction => nsTableViewRowAction -> IO (Id NSString)
-title nsTableViewRowAction  =
-    sendMsg nsTableViewRowAction (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsTableViewRowAction =
+  sendMessage nsTableViewRowAction titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSTableViewRowAction nsTableViewRowAction, IsNSString value) => nsTableViewRowAction -> value -> IO ()
-setTitle nsTableViewRowAction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableViewRowAction (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsTableViewRowAction value =
+  sendMessage nsTableViewRowAction setTitleSelector (toNSString value)
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSTableViewRowAction nsTableViewRowAction => nsTableViewRowAction -> IO (Id NSColor)
-backgroundColor nsTableViewRowAction  =
-    sendMsg nsTableViewRowAction (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsTableViewRowAction =
+  sendMessage nsTableViewRowAction backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSTableViewRowAction nsTableViewRowAction, IsNSColor value) => nsTableViewRowAction -> value -> IO ()
-setBackgroundColor nsTableViewRowAction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableViewRowAction (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsTableViewRowAction value =
+  sendMessage nsTableViewRowAction setBackgroundColorSelector (toNSColor value)
 
 -- | @- image@
 image :: IsNSTableViewRowAction nsTableViewRowAction => nsTableViewRowAction -> IO (Id NSImage)
-image nsTableViewRowAction  =
-    sendMsg nsTableViewRowAction (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsTableViewRowAction =
+  sendMessage nsTableViewRowAction imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSTableViewRowAction nsTableViewRowAction, IsNSImage value) => nsTableViewRowAction -> value -> IO ()
-setImage nsTableViewRowAction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableViewRowAction (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsTableViewRowAction value =
+  sendMessage nsTableViewRowAction setImageSelector (toNSImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rowActionWithStyle:title:handler:@
-rowActionWithStyle_title_handlerSelector :: Selector
+rowActionWithStyle_title_handlerSelector :: Selector '[NSTableViewRowActionStyle, Id NSString, Ptr ()] (Id NSTableViewRowAction)
 rowActionWithStyle_title_handlerSelector = mkSelector "rowActionWithStyle:title:handler:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] NSTableViewRowActionStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 

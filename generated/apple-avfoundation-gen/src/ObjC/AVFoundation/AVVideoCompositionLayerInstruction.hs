@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.AVFoundation.AVVideoCompositionLayerInstruction
   , IsAVVideoCompositionLayerInstruction(..)
   , videoCompositionLayerInstructionWithLayerInstruction
   , trackID
-  , videoCompositionLayerInstructionWithLayerInstructionSelector
   , trackIDSelector
+  , videoCompositionLayerInstructionWithLayerInstructionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,25 +35,24 @@ videoCompositionLayerInstructionWithLayerInstruction :: IsAVVideoCompositionLaye
 videoCompositionLayerInstructionWithLayerInstruction instruction =
   do
     cls' <- getRequiredClass "AVVideoCompositionLayerInstruction"
-    withObjCPtr instruction $ \raw_instruction ->
-      sendClassMsg cls' (mkSelector "videoCompositionLayerInstructionWithLayerInstruction:") (retPtr retVoid) [argPtr (castPtr raw_instruction :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionLayerInstructionWithLayerInstructionSelector (toAVVideoCompositionLayerInstruction instruction)
 
 -- | Indicates the trackID of the source track to which the compositor will apply the instruction.
 --
 -- ObjC selector: @- trackID@
 trackID :: IsAVVideoCompositionLayerInstruction avVideoCompositionLayerInstruction => avVideoCompositionLayerInstruction -> IO CInt
-trackID avVideoCompositionLayerInstruction  =
-    sendMsg avVideoCompositionLayerInstruction (mkSelector "trackID") retCInt []
+trackID avVideoCompositionLayerInstruction =
+  sendMessage avVideoCompositionLayerInstruction trackIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoCompositionLayerInstructionWithLayerInstruction:@
-videoCompositionLayerInstructionWithLayerInstructionSelector :: Selector
+videoCompositionLayerInstructionWithLayerInstructionSelector :: Selector '[Id AVVideoCompositionLayerInstruction] (Id AVVideoCompositionLayerInstruction)
 videoCompositionLayerInstructionWithLayerInstructionSelector = mkSelector "videoCompositionLayerInstructionWithLayerInstruction:"
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 

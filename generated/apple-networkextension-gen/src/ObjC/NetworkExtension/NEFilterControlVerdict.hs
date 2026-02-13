@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.NetworkExtension.NEFilterControlVerdict
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ allowVerdictWithUpdateRules :: Bool -> IO (Id NEFilterControlVerdict)
 allowVerdictWithUpdateRules updateRules =
   do
     cls' <- getRequiredClass "NEFilterControlVerdict"
-    sendClassMsg cls' (mkSelector "allowVerdictWithUpdateRules:") (retPtr retVoid) [argCULong (if updateRules then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' allowVerdictWithUpdateRulesSelector updateRules
 
 -- | dropVerdictWithUpdateRules:
 --
@@ -65,7 +62,7 @@ dropVerdictWithUpdateRules :: Bool -> IO (Id NEFilterControlVerdict)
 dropVerdictWithUpdateRules updateRules =
   do
     cls' <- getRequiredClass "NEFilterControlVerdict"
-    sendClassMsg cls' (mkSelector "dropVerdictWithUpdateRules:") (retPtr retVoid) [argCULong (if updateRules then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' dropVerdictWithUpdateRulesSelector updateRules
 
 -- | updateRules
 --
@@ -78,21 +75,21 @@ updateRules :: IO (Id NEFilterControlVerdict)
 updateRules  =
   do
     cls' <- getRequiredClass "NEFilterControlVerdict"
-    sendClassMsg cls' (mkSelector "updateRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' updateRulesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allowVerdictWithUpdateRules:@
-allowVerdictWithUpdateRulesSelector :: Selector
+allowVerdictWithUpdateRulesSelector :: Selector '[Bool] (Id NEFilterControlVerdict)
 allowVerdictWithUpdateRulesSelector = mkSelector "allowVerdictWithUpdateRules:"
 
 -- | @Selector@ for @dropVerdictWithUpdateRules:@
-dropVerdictWithUpdateRulesSelector :: Selector
+dropVerdictWithUpdateRulesSelector :: Selector '[Bool] (Id NEFilterControlVerdict)
 dropVerdictWithUpdateRulesSelector = mkSelector "dropVerdictWithUpdateRules:"
 
 -- | @Selector@ for @updateRules@
-updateRulesSelector :: Selector
+updateRulesSelector :: Selector '[] (Id NEFilterControlVerdict)
 updateRulesSelector = mkSelector "updateRules"
 

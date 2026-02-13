@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.CoreBluetooth.CBMutableCharacteristic
   , setValue
   , descriptors
   , setDescriptors
+  , descriptorsSelector
   , initWithType_properties_value_permissionsSelector
   , permissionsSelector
-  , setPermissionsSelector
   , propertiesSelector
-  , setPropertiesSelector
-  , valueSelector
-  , setValueSelector
-  , descriptorsSelector
   , setDescriptorsSelector
+  , setPermissionsSelector
+  , setPropertiesSelector
+  , setValueSelector
+  , valueSelector
 
   -- * Enum types
   , CBAttributePermissions(CBAttributePermissions)
@@ -50,15 +51,11 @@ module ObjC.CoreBluetooth.CBMutableCharacteristic
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,10 +77,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithType:properties:value:permissions:@
 initWithType_properties_value_permissions :: (IsCBMutableCharacteristic cbMutableCharacteristic, IsCBUUID uuid, IsNSData value) => cbMutableCharacteristic -> uuid -> CBCharacteristicProperties -> value -> CBAttributePermissions -> IO (Id CBMutableCharacteristic)
-initWithType_properties_value_permissions cbMutableCharacteristic  uuid properties value permissions =
-  withObjCPtr uuid $ \raw_uuid ->
-    withObjCPtr value $ \raw_value ->
-        sendMsg cbMutableCharacteristic (mkSelector "initWithType:properties:value:permissions:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argCULong (coerce properties), argPtr (castPtr raw_value :: Ptr ()), argCULong (coerce permissions)] >>= ownedObject . castPtr
+initWithType_properties_value_permissions cbMutableCharacteristic uuid properties value permissions =
+  sendOwnedMessage cbMutableCharacteristic initWithType_properties_value_permissionsSelector (toCBUUID uuid) properties (toNSData value) permissions
 
 -- | permissions
 --
@@ -93,8 +88,8 @@ initWithType_properties_value_permissions cbMutableCharacteristic  uuid properti
 --
 -- ObjC selector: @- permissions@
 permissions :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> IO CBAttributePermissions
-permissions cbMutableCharacteristic  =
-    fmap (coerce :: CULong -> CBAttributePermissions) $ sendMsg cbMutableCharacteristic (mkSelector "permissions") retCULong []
+permissions cbMutableCharacteristic =
+  sendMessage cbMutableCharacteristic permissionsSelector
 
 -- | permissions
 --
@@ -104,78 +99,76 @@ permissions cbMutableCharacteristic  =
 --
 -- ObjC selector: @- setPermissions:@
 setPermissions :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> CBAttributePermissions -> IO ()
-setPermissions cbMutableCharacteristic  value =
-    sendMsg cbMutableCharacteristic (mkSelector "setPermissions:") retVoid [argCULong (coerce value)]
+setPermissions cbMutableCharacteristic value =
+  sendMessage cbMutableCharacteristic setPermissionsSelector value
 
 -- | @- properties@
 properties :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> IO CBCharacteristicProperties
-properties cbMutableCharacteristic  =
-    fmap (coerce :: CULong -> CBCharacteristicProperties) $ sendMsg cbMutableCharacteristic (mkSelector "properties") retCULong []
+properties cbMutableCharacteristic =
+  sendMessage cbMutableCharacteristic propertiesSelector
 
 -- | @- setProperties:@
 setProperties :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> CBCharacteristicProperties -> IO ()
-setProperties cbMutableCharacteristic  value =
-    sendMsg cbMutableCharacteristic (mkSelector "setProperties:") retVoid [argCULong (coerce value)]
+setProperties cbMutableCharacteristic value =
+  sendMessage cbMutableCharacteristic setPropertiesSelector value
 
 -- | @- value@
 value :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> IO (Id NSData)
-value cbMutableCharacteristic  =
-    sendMsg cbMutableCharacteristic (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value cbMutableCharacteristic =
+  sendMessage cbMutableCharacteristic valueSelector
 
 -- | @- setValue:@
 setValue :: (IsCBMutableCharacteristic cbMutableCharacteristic, IsNSData value) => cbMutableCharacteristic -> value -> IO ()
-setValue cbMutableCharacteristic  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbMutableCharacteristic (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue cbMutableCharacteristic value =
+  sendMessage cbMutableCharacteristic setValueSelector (toNSData value)
 
 -- | @- descriptors@
 descriptors :: IsCBMutableCharacteristic cbMutableCharacteristic => cbMutableCharacteristic -> IO (Id NSArray)
-descriptors cbMutableCharacteristic  =
-    sendMsg cbMutableCharacteristic (mkSelector "descriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptors cbMutableCharacteristic =
+  sendMessage cbMutableCharacteristic descriptorsSelector
 
 -- | @- setDescriptors:@
 setDescriptors :: (IsCBMutableCharacteristic cbMutableCharacteristic, IsNSArray value) => cbMutableCharacteristic -> value -> IO ()
-setDescriptors cbMutableCharacteristic  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbMutableCharacteristic (mkSelector "setDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDescriptors cbMutableCharacteristic value =
+  sendMessage cbMutableCharacteristic setDescriptorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:properties:value:permissions:@
-initWithType_properties_value_permissionsSelector :: Selector
+initWithType_properties_value_permissionsSelector :: Selector '[Id CBUUID, CBCharacteristicProperties, Id NSData, CBAttributePermissions] (Id CBMutableCharacteristic)
 initWithType_properties_value_permissionsSelector = mkSelector "initWithType:properties:value:permissions:"
 
 -- | @Selector@ for @permissions@
-permissionsSelector :: Selector
+permissionsSelector :: Selector '[] CBAttributePermissions
 permissionsSelector = mkSelector "permissions"
 
 -- | @Selector@ for @setPermissions:@
-setPermissionsSelector :: Selector
+setPermissionsSelector :: Selector '[CBAttributePermissions] ()
 setPermissionsSelector = mkSelector "setPermissions:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] CBCharacteristicProperties
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[CBCharacteristicProperties] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSData)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSData] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @descriptors@
-descriptorsSelector :: Selector
+descriptorsSelector :: Selector '[] (Id NSArray)
 descriptorsSelector = mkSelector "descriptors"
 
 -- | @Selector@ for @setDescriptors:@
-setDescriptorsSelector :: Selector
+setDescriptorsSelector :: Selector '[Id NSArray] ()
 setDescriptorsSelector = mkSelector "setDescriptors:"
 

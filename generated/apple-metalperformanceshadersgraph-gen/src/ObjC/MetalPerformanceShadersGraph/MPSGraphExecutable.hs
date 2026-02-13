@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,17 +24,17 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutable
   , setOptions
   , feedTensors
   , targetTensors
-  , specializeWithDevice_inputTypes_compilationDescriptorSelector
-  , getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector
-  , runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector
-  , runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector
   , encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptorSelector
-  , serializeToMPSGraphPackageAtURL_descriptorSelector
-  , initWithMPSGraphPackageAtURL_compilationDescriptorSelector
-  , initWithCoreMLPackageAtURL_compilationDescriptorSelector
-  , optionsSelector
-  , setOptionsSelector
   , feedTensorsSelector
+  , getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector
+  , initWithCoreMLPackageAtURL_compilationDescriptorSelector
+  , initWithMPSGraphPackageAtURL_compilationDescriptorSelector
+  , optionsSelector
+  , runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector
+  , runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector
+  , serializeToMPSGraphPackageAtURL_descriptorSelector
+  , setOptionsSelector
+  , specializeWithDevice_inputTypes_compilationDescriptorSelector
   , targetTensorsSelector
 
   -- * Enum types
@@ -45,15 +46,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutable
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,11 +67,8 @@ import ObjC.MetalPerformanceShaders.Internal.Classes
 --
 -- ObjC selector: @- specializeWithDevice:inputTypes:compilationDescriptor:@
 specializeWithDevice_inputTypes_compilationDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsMPSGraphDevice device, IsNSArray inputTypes, IsMPSGraphCompilationDescriptor compilationDescriptor) => mpsGraphExecutable -> device -> inputTypes -> compilationDescriptor -> IO ()
-specializeWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable  device inputTypes compilationDescriptor =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr inputTypes $ \raw_inputTypes ->
-      withObjCPtr compilationDescriptor $ \raw_compilationDescriptor ->
-          sendMsg mpsGraphExecutable (mkSelector "specializeWithDevice:inputTypes:compilationDescriptor:") retVoid [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_inputTypes :: Ptr ()), argPtr (castPtr raw_compilationDescriptor :: Ptr ())]
+specializeWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable device inputTypes compilationDescriptor =
+  sendMessage mpsGraphExecutable specializeWithDevice_inputTypes_compilationDescriptorSelector (toMPSGraphDevice device) (toNSArray inputTypes) (toMPSGraphCompilationDescriptor compilationDescriptor)
 
 -- | Get output shapes for a specialized executable.
 --
@@ -84,11 +78,8 @@ specializeWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable  device
 --
 -- ObjC selector: @- getOutputTypesWithDevice:inputTypes:compilationDescriptor:@
 getOutputTypesWithDevice_inputTypes_compilationDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsMPSGraphDevice device, IsNSArray inputTypes, IsMPSGraphCompilationDescriptor compilationDescriptor) => mpsGraphExecutable -> device -> inputTypes -> compilationDescriptor -> IO (Id NSArray)
-getOutputTypesWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable  device inputTypes compilationDescriptor =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr inputTypes $ \raw_inputTypes ->
-      withObjCPtr compilationDescriptor $ \raw_compilationDescriptor ->
-          sendMsg mpsGraphExecutable (mkSelector "getOutputTypesWithDevice:inputTypes:compilationDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_inputTypes :: Ptr ()), argPtr (castPtr raw_compilationDescriptor :: Ptr ())] >>= retainedObject . castPtr
+getOutputTypesWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable device inputTypes compilationDescriptor =
+  sendMessage mpsGraphExecutable getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector (toMPSGraphDevice device) (toNSArray inputTypes) (toMPSGraphCompilationDescriptor compilationDescriptor)
 
 -- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.
 --
@@ -98,11 +89,8 @@ getOutputTypesWithDevice_inputTypes_compilationDescriptor mpsGraphExecutable  de
 --
 -- ObjC selector: @- runWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:@
 runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsNSArray inputsArray, IsNSArray resultsArray, IsMPSGraphExecutableExecutionDescriptor executionDescriptor) => mpsGraphExecutable -> RawId -> inputsArray -> resultsArray -> executionDescriptor -> IO (Id NSArray)
-runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable  commandQueue inputsArray resultsArray executionDescriptor =
-  withObjCPtr inputsArray $ \raw_inputsArray ->
-    withObjCPtr resultsArray $ \raw_resultsArray ->
-      withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
-          sendMsg mpsGraphExecutable (mkSelector "runWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr raw_inputsArray :: Ptr ()), argPtr (castPtr raw_resultsArray :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())] >>= retainedObject . castPtr
+runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable commandQueue inputsArray resultsArray executionDescriptor =
+  sendMessage mpsGraphExecutable runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector commandQueue (toNSArray inputsArray) (toNSArray resultsArray) (toMPSGraphExecutableExecutionDescriptor executionDescriptor)
 
 -- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.  This call is asynchronous and will return immediately.
 --
@@ -110,11 +98,8 @@ runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGraphExec
 --
 -- ObjC selector: @- runAsyncWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:@
 runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsNSArray inputsArray, IsNSArray resultsArray, IsMPSGraphExecutableExecutionDescriptor executionDescriptor) => mpsGraphExecutable -> RawId -> inputsArray -> resultsArray -> executionDescriptor -> IO (Id NSArray)
-runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable  commandQueue inputsArray resultsArray executionDescriptor =
-  withObjCPtr inputsArray $ \raw_inputsArray ->
-    withObjCPtr resultsArray $ \raw_resultsArray ->
-      withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
-          sendMsg mpsGraphExecutable (mkSelector "runAsyncWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ()), argPtr (castPtr raw_inputsArray :: Ptr ()), argPtr (castPtr raw_resultsArray :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())] >>= retainedObject . castPtr
+runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable commandQueue inputsArray resultsArray executionDescriptor =
+  sendMessage mpsGraphExecutable runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector commandQueue (toNSArray inputsArray) (toNSArray resultsArray) (toMPSGraphExecutableExecutionDescriptor executionDescriptor)
 
 -- | Runs the graph for the given feeds and returns the target tensor values, ensuring all target operations also executed.  This call is asynchronous and will return immediately after finishing encoding.
 --
@@ -122,12 +107,8 @@ runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptor mpsGrap
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputsArray:resultsArray:executionDescriptor:@
 encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsMPSCommandBuffer commandBuffer, IsNSArray inputsArray, IsNSArray resultsArray, IsMPSGraphExecutableExecutionDescriptor executionDescriptor) => mpsGraphExecutable -> commandBuffer -> inputsArray -> resultsArray -> executionDescriptor -> IO (Id NSArray)
-encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable  commandBuffer inputsArray resultsArray executionDescriptor =
-  withObjCPtr commandBuffer $ \raw_commandBuffer ->
-    withObjCPtr inputsArray $ \raw_inputsArray ->
-      withObjCPtr resultsArray $ \raw_resultsArray ->
-        withObjCPtr executionDescriptor $ \raw_executionDescriptor ->
-            sendMsg mpsGraphExecutable (mkSelector "encodeToCommandBuffer:inputsArray:resultsArray:executionDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_commandBuffer :: Ptr ()), argPtr (castPtr raw_inputsArray :: Ptr ()), argPtr (castPtr raw_resultsArray :: Ptr ()), argPtr (castPtr raw_executionDescriptor :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptor mpsGraphExecutable commandBuffer inputsArray resultsArray executionDescriptor =
+  sendMessage mpsGraphExecutable encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptorSelector (toMPSCommandBuffer commandBuffer) (toNSArray inputsArray) (toNSArray resultsArray) (toMPSGraphExecutableExecutionDescriptor executionDescriptor)
 
 -- | Serialize the MPSGraph executable at the provided url.
 --
@@ -135,10 +116,8 @@ encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptor mpsGraphExecu
 --
 -- ObjC selector: @- serializeToMPSGraphPackageAtURL:descriptor:@
 serializeToMPSGraphPackageAtURL_descriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsNSURL url, IsMPSGraphExecutableSerializationDescriptor descriptor) => mpsGraphExecutable -> url -> descriptor -> IO ()
-serializeToMPSGraphPackageAtURL_descriptor mpsGraphExecutable  url descriptor =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg mpsGraphExecutable (mkSelector "serializeToMPSGraphPackageAtURL:descriptor:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())]
+serializeToMPSGraphPackageAtURL_descriptor mpsGraphExecutable url descriptor =
+  sendMessage mpsGraphExecutable serializeToMPSGraphPackageAtURL_descriptorSelector (toNSURL url) (toMPSGraphExecutableSerializationDescriptor descriptor)
 
 -- | Initialize the executable with the Metal Performance Shaders Graph package at the provided URL.
 --
@@ -146,10 +125,8 @@ serializeToMPSGraphPackageAtURL_descriptor mpsGraphExecutable  url descriptor =
 --
 -- ObjC selector: @- initWithMPSGraphPackageAtURL:compilationDescriptor:@
 initWithMPSGraphPackageAtURL_compilationDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsNSURL mpsgraphPackageURL, IsMPSGraphCompilationDescriptor compilationDescriptor) => mpsGraphExecutable -> mpsgraphPackageURL -> compilationDescriptor -> IO (Id MPSGraphExecutable)
-initWithMPSGraphPackageAtURL_compilationDescriptor mpsGraphExecutable  mpsgraphPackageURL compilationDescriptor =
-  withObjCPtr mpsgraphPackageURL $ \raw_mpsgraphPackageURL ->
-    withObjCPtr compilationDescriptor $ \raw_compilationDescriptor ->
-        sendMsg mpsGraphExecutable (mkSelector "initWithMPSGraphPackageAtURL:compilationDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_mpsgraphPackageURL :: Ptr ()), argPtr (castPtr raw_compilationDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithMPSGraphPackageAtURL_compilationDescriptor mpsGraphExecutable mpsgraphPackageURL compilationDescriptor =
+  sendOwnedMessage mpsGraphExecutable initWithMPSGraphPackageAtURL_compilationDescriptorSelector (toNSURL mpsgraphPackageURL) (toMPSGraphCompilationDescriptor compilationDescriptor)
 
 -- | Initialize the executable with the Core ML model package at the provided URL.
 --
@@ -157,10 +134,8 @@ initWithMPSGraphPackageAtURL_compilationDescriptor mpsGraphExecutable  mpsgraphP
 --
 -- ObjC selector: @- initWithCoreMLPackageAtURL:compilationDescriptor:@
 initWithCoreMLPackageAtURL_compilationDescriptor :: (IsMPSGraphExecutable mpsGraphExecutable, IsNSURL coreMLPackageURL, IsMPSGraphCompilationDescriptor compilationDescriptor) => mpsGraphExecutable -> coreMLPackageURL -> compilationDescriptor -> IO (Id MPSGraphExecutable)
-initWithCoreMLPackageAtURL_compilationDescriptor mpsGraphExecutable  coreMLPackageURL compilationDescriptor =
-  withObjCPtr coreMLPackageURL $ \raw_coreMLPackageURL ->
-    withObjCPtr compilationDescriptor $ \raw_compilationDescriptor ->
-        sendMsg mpsGraphExecutable (mkSelector "initWithCoreMLPackageAtURL:compilationDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_coreMLPackageURL :: Ptr ()), argPtr (castPtr raw_compilationDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithCoreMLPackageAtURL_compilationDescriptor mpsGraphExecutable coreMLPackageURL compilationDescriptor =
+  sendOwnedMessage mpsGraphExecutable initWithCoreMLPackageAtURL_compilationDescriptorSelector (toNSURL coreMLPackageURL) (toMPSGraphCompilationDescriptor compilationDescriptor)
 
 -- | Options for the graph executable.
 --
@@ -168,8 +143,8 @@ initWithCoreMLPackageAtURL_compilationDescriptor mpsGraphExecutable  coreMLPacka
 --
 -- ObjC selector: @- options@
 options :: IsMPSGraphExecutable mpsGraphExecutable => mpsGraphExecutable -> IO MPSGraphOptions
-options mpsGraphExecutable  =
-    fmap (coerce :: CULong -> MPSGraphOptions) $ sendMsg mpsGraphExecutable (mkSelector "options") retCULong []
+options mpsGraphExecutable =
+  sendMessage mpsGraphExecutable optionsSelector
 
 -- | Options for the graph executable.
 --
@@ -177,72 +152,72 @@ options mpsGraphExecutable  =
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsMPSGraphExecutable mpsGraphExecutable => mpsGraphExecutable -> MPSGraphOptions -> IO ()
-setOptions mpsGraphExecutable  value =
-    sendMsg mpsGraphExecutable (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions mpsGraphExecutable value =
+  sendMessage mpsGraphExecutable setOptionsSelector value
 
 -- | Tensors fed to the graph, can be used to order the inputs when executable is created with a graph.
 --
 -- ObjC selector: @- feedTensors@
 feedTensors :: IsMPSGraphExecutable mpsGraphExecutable => mpsGraphExecutable -> IO (Id NSArray)
-feedTensors mpsGraphExecutable  =
-    sendMsg mpsGraphExecutable (mkSelector "feedTensors") (retPtr retVoid) [] >>= retainedObject . castPtr
+feedTensors mpsGraphExecutable =
+  sendMessage mpsGraphExecutable feedTensorsSelector
 
 -- | Tensors targeted by the graph, can be used to order the outputs when executable was created with a graph.
 --
 -- ObjC selector: @- targetTensors@
 targetTensors :: IsMPSGraphExecutable mpsGraphExecutable => mpsGraphExecutable -> IO (Id NSArray)
-targetTensors mpsGraphExecutable  =
-    sendMsg mpsGraphExecutable (mkSelector "targetTensors") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTensors mpsGraphExecutable =
+  sendMessage mpsGraphExecutable targetTensorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @specializeWithDevice:inputTypes:compilationDescriptor:@
-specializeWithDevice_inputTypes_compilationDescriptorSelector :: Selector
+specializeWithDevice_inputTypes_compilationDescriptorSelector :: Selector '[Id MPSGraphDevice, Id NSArray, Id MPSGraphCompilationDescriptor] ()
 specializeWithDevice_inputTypes_compilationDescriptorSelector = mkSelector "specializeWithDevice:inputTypes:compilationDescriptor:"
 
 -- | @Selector@ for @getOutputTypesWithDevice:inputTypes:compilationDescriptor:@
-getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector :: Selector
+getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector :: Selector '[Id MPSGraphDevice, Id NSArray, Id MPSGraphCompilationDescriptor] (Id NSArray)
 getOutputTypesWithDevice_inputTypes_compilationDescriptorSelector = mkSelector "getOutputTypesWithDevice:inputTypes:compilationDescriptor:"
 
 -- | @Selector@ for @runWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:@
-runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector :: Selector
+runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id MPSGraphExecutableExecutionDescriptor] (Id NSArray)
 runWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector = mkSelector "runWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:"
 
 -- | @Selector@ for @runAsyncWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:@
-runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector :: Selector
+runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id MPSGraphExecutableExecutionDescriptor] (Id NSArray)
 runAsyncWithMTLCommandQueue_inputsArray_resultsArray_executionDescriptorSelector = mkSelector "runAsyncWithMTLCommandQueue:inputsArray:resultsArray:executionDescriptor:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputsArray:resultsArray:executionDescriptor:@
-encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptorSelector :: Selector
+encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptorSelector :: Selector '[Id MPSCommandBuffer, Id NSArray, Id NSArray, Id MPSGraphExecutableExecutionDescriptor] (Id NSArray)
 encodeToCommandBuffer_inputsArray_resultsArray_executionDescriptorSelector = mkSelector "encodeToCommandBuffer:inputsArray:resultsArray:executionDescriptor:"
 
 -- | @Selector@ for @serializeToMPSGraphPackageAtURL:descriptor:@
-serializeToMPSGraphPackageAtURL_descriptorSelector :: Selector
+serializeToMPSGraphPackageAtURL_descriptorSelector :: Selector '[Id NSURL, Id MPSGraphExecutableSerializationDescriptor] ()
 serializeToMPSGraphPackageAtURL_descriptorSelector = mkSelector "serializeToMPSGraphPackageAtURL:descriptor:"
 
 -- | @Selector@ for @initWithMPSGraphPackageAtURL:compilationDescriptor:@
-initWithMPSGraphPackageAtURL_compilationDescriptorSelector :: Selector
+initWithMPSGraphPackageAtURL_compilationDescriptorSelector :: Selector '[Id NSURL, Id MPSGraphCompilationDescriptor] (Id MPSGraphExecutable)
 initWithMPSGraphPackageAtURL_compilationDescriptorSelector = mkSelector "initWithMPSGraphPackageAtURL:compilationDescriptor:"
 
 -- | @Selector@ for @initWithCoreMLPackageAtURL:compilationDescriptor:@
-initWithCoreMLPackageAtURL_compilationDescriptorSelector :: Selector
+initWithCoreMLPackageAtURL_compilationDescriptorSelector :: Selector '[Id NSURL, Id MPSGraphCompilationDescriptor] (Id MPSGraphExecutable)
 initWithCoreMLPackageAtURL_compilationDescriptorSelector = mkSelector "initWithCoreMLPackageAtURL:compilationDescriptor:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] MPSGraphOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[MPSGraphOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @feedTensors@
-feedTensorsSelector :: Selector
+feedTensorsSelector :: Selector '[] (Id NSArray)
 feedTensorsSelector = mkSelector "feedTensors"
 
 -- | @Selector@ for @targetTensors@
-targetTensorsSelector :: Selector
+targetTensorsSelector :: Selector '[] (Id NSArray)
 targetTensorsSelector = mkSelector "targetTensors"
 

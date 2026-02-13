@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.LocalAuthentication.LAEnvironment
   , removeObserver
   , currentUser
   , state
-  , newSelector
-  , initSelector
   , addObserverSelector
-  , removeObserverSelector
   , currentUserSelector
+  , initSelector
+  , newSelector
+  , removeObserverSelector
   , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,14 +41,14 @@ new :: IO (Id LAEnvironment)
 new  =
   do
     cls' <- getRequiredClass "LAEnvironment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The clients should use  @currentUser@ class property.
 --
 -- ObjC selector: @- init@
 init_ :: IsLAEnvironment laEnvironment => laEnvironment -> IO (Id LAEnvironment)
-init_ laEnvironment  =
-    sendMsg laEnvironment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laEnvironment =
+  sendOwnedMessage laEnvironment initSelector
 
 -- | Adds observer to monitor changes of the environment.
 --
@@ -59,8 +56,8 @@ init_ laEnvironment  =
 --
 -- ObjC selector: @- addObserver:@
 addObserver :: IsLAEnvironment laEnvironment => laEnvironment -> RawId -> IO ()
-addObserver laEnvironment  observer =
-    sendMsg laEnvironment (mkSelector "addObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+addObserver laEnvironment observer =
+  sendMessage laEnvironment addObserverSelector observer
 
 -- | Removes the previously registered observer.
 --
@@ -68,8 +65,8 @@ addObserver laEnvironment  observer =
 --
 -- ObjC selector: @- removeObserver:@
 removeObserver :: IsLAEnvironment laEnvironment => laEnvironment -> RawId -> IO ()
-removeObserver laEnvironment  observer =
-    sendMsg laEnvironment (mkSelector "removeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeObserver laEnvironment observer =
+  sendMessage laEnvironment removeObserverSelector observer
 
 -- | Environment of the current user.
 --
@@ -78,40 +75,40 @@ currentUser :: IO (Id LAEnvironment)
 currentUser  =
   do
     cls' <- getRequiredClass "LAEnvironment"
-    sendClassMsg cls' (mkSelector "currentUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentUserSelector
 
 -- | The environment state information.
 --
 -- ObjC selector: @- state@
 state :: IsLAEnvironment laEnvironment => laEnvironment -> IO (Id LAEnvironmentState)
-state laEnvironment  =
-    sendMsg laEnvironment (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state laEnvironment =
+  sendMessage laEnvironment stateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAEnvironment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAEnvironment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @addObserver:@
-addObserverSelector :: Selector
+addObserverSelector :: Selector '[RawId] ()
 addObserverSelector = mkSelector "addObserver:"
 
 -- | @Selector@ for @removeObserver:@
-removeObserverSelector :: Selector
+removeObserverSelector :: Selector '[RawId] ()
 removeObserverSelector = mkSelector "removeObserver:"
 
 -- | @Selector@ for @currentUser@
-currentUserSelector :: Selector
+currentUserSelector :: Selector '[] (Id LAEnvironment)
 currentUserSelector = mkSelector "currentUser"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id LAEnvironmentState)
 stateSelector = mkSelector "state"
 

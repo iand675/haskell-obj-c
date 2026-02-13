@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.WebKit.WKWebExtensionController
   , extensions
   , extensionContexts
   , allExtensionDataTypes
+  , allExtensionDataTypesSelector
+  , configurationSelector
+  , delegateSelector
+  , didActivateTab_previousActiveTabSelector
+  , didChangeTabProperties_forTabSelector
+  , didCloseTab_windowIsClosingSelector
+  , didCloseWindowSelector
+  , didDeselectTabsSelector
+  , didFocusWindowSelector
+  , didMoveTab_fromIndex_inWindowSelector
+  , didOpenTabSelector
+  , didOpenWindowSelector
+  , didReplaceTab_withTabSelector
+  , didSelectTabsSelector
+  , extensionContextForExtensionSelector
+  , extensionContextForURLSelector
+  , extensionContextsSelector
+  , extensionsSelector
+  , fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector
   , initSelector
   , initWithConfigurationSelector
   , loadExtensionContext_errorSelector
-  , unloadExtensionContext_errorSelector
-  , extensionContextForExtensionSelector
-  , extensionContextForURLSelector
-  , fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector
   , removeDataOfTypes_fromDataRecords_completionHandlerSelector
-  , didOpenWindowSelector
-  , didCloseWindowSelector
-  , didFocusWindowSelector
-  , didOpenTabSelector
-  , didCloseTab_windowIsClosingSelector
-  , didActivateTab_previousActiveTabSelector
-  , didSelectTabsSelector
-  , didDeselectTabsSelector
-  , didMoveTab_fromIndex_inWindowSelector
-  , didReplaceTab_withTabSelector
-  , didChangeTabProperties_forTabSelector
-  , delegateSelector
   , setDelegateSelector
-  , configurationSelector
-  , extensionsSelector
-  , extensionContextsSelector
-  , allExtensionDataTypesSelector
+  , unloadExtensionContext_errorSelector
 
   -- * Enum types
   , WKWebExtensionTabChangedProperties(WKWebExtensionTabChangedProperties)
@@ -77,15 +78,11 @@ module ObjC.WebKit.WKWebExtensionController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,8 +100,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO (Id WKWebExtensionController)
-init_ wkWebExtensionController  =
-    sendMsg wkWebExtensionController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionController =
+  sendOwnedMessage wkWebExtensionController initSelector
 
 -- | Returns a web extension controller initialized with the specified configuration.
 --
@@ -118,9 +115,8 @@ init_ wkWebExtensionController  =
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsWKWebExtensionController wkWebExtensionController, IsWKWebExtensionControllerConfiguration configuration) => wkWebExtensionController -> configuration -> IO (Id WKWebExtensionController)
-initWithConfiguration wkWebExtensionController  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg wkWebExtensionController (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration wkWebExtensionController configuration =
+  sendOwnedMessage wkWebExtensionController initWithConfigurationSelector (toWKWebExtensionControllerConfiguration configuration)
 
 -- | Loads the specified extension context.
 --
@@ -134,10 +130,8 @@ initWithConfiguration wkWebExtensionController  configuration =
 --
 -- ObjC selector: @- loadExtensionContext:error:@
 loadExtensionContext_error :: (IsWKWebExtensionController wkWebExtensionController, IsWKWebExtensionContext extensionContext, IsNSError error_) => wkWebExtensionController -> extensionContext -> error_ -> IO Bool
-loadExtensionContext_error wkWebExtensionController  extensionContext error_ =
-  withObjCPtr extensionContext $ \raw_extensionContext ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionController (mkSelector "loadExtensionContext:error:") retCULong [argPtr (castPtr raw_extensionContext :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+loadExtensionContext_error wkWebExtensionController extensionContext error_ =
+  sendMessage wkWebExtensionController loadExtensionContext_errorSelector (toWKWebExtensionContext extensionContext) (toNSError error_)
 
 -- | Unloads the specified extension context.
 --
@@ -151,10 +145,8 @@ loadExtensionContext_error wkWebExtensionController  extensionContext error_ =
 --
 -- ObjC selector: @- unloadExtensionContext:error:@
 unloadExtensionContext_error :: (IsWKWebExtensionController wkWebExtensionController, IsWKWebExtensionContext extensionContext, IsNSError error_) => wkWebExtensionController -> extensionContext -> error_ -> IO Bool
-unloadExtensionContext_error wkWebExtensionController  extensionContext error_ =
-  withObjCPtr extensionContext $ \raw_extensionContext ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionController (mkSelector "unloadExtensionContext:error:") retCULong [argPtr (castPtr raw_extensionContext :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+unloadExtensionContext_error wkWebExtensionController extensionContext error_ =
+  sendMessage wkWebExtensionController unloadExtensionContext_errorSelector (toWKWebExtensionContext extensionContext) (toNSError error_)
 
 -- | Returns a loaded extension context for the specified extension.
 --
@@ -166,9 +158,8 @@ unloadExtensionContext_error wkWebExtensionController  extensionContext error_ =
 --
 -- ObjC selector: @- extensionContextForExtension:@
 extensionContextForExtension :: (IsWKWebExtensionController wkWebExtensionController, IsWKWebExtension extension) => wkWebExtensionController -> extension -> IO (Id WKWebExtensionContext)
-extensionContextForExtension wkWebExtensionController  extension =
-  withObjCPtr extension $ \raw_extension ->
-      sendMsg wkWebExtensionController (mkSelector "extensionContextForExtension:") (retPtr retVoid) [argPtr (castPtr raw_extension :: Ptr ())] >>= retainedObject . castPtr
+extensionContextForExtension wkWebExtensionController extension =
+  sendMessage wkWebExtensionController extensionContextForExtensionSelector (toWKWebExtension extension)
 
 -- | Returns a loaded extension context matching the specified URL.
 --
@@ -180,9 +171,8 @@ extensionContextForExtension wkWebExtensionController  extension =
 --
 -- ObjC selector: @- extensionContextForURL:@
 extensionContextForURL :: (IsWKWebExtensionController wkWebExtensionController, IsNSURL url) => wkWebExtensionController -> url -> IO (Id WKWebExtensionContext)
-extensionContextForURL wkWebExtensionController  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg wkWebExtensionController (mkSelector "extensionContextForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+extensionContextForURL wkWebExtensionController url =
+  sendMessage wkWebExtensionController extensionContextForURLSelector (toNSURL url)
 
 -- | Fetches a data record containing the given extension data types for a specific known web extension context.
 --
@@ -196,10 +186,8 @@ extensionContextForURL wkWebExtensionController  url =
 --
 -- ObjC selector: @- fetchDataRecordOfTypes:forExtensionContext:completionHandler:@
 fetchDataRecordOfTypes_forExtensionContext_completionHandler :: (IsWKWebExtensionController wkWebExtensionController, IsNSSet dataTypes, IsWKWebExtensionContext extensionContext) => wkWebExtensionController -> dataTypes -> extensionContext -> Ptr () -> IO ()
-fetchDataRecordOfTypes_forExtensionContext_completionHandler wkWebExtensionController  dataTypes extensionContext completionHandler =
-  withObjCPtr dataTypes $ \raw_dataTypes ->
-    withObjCPtr extensionContext $ \raw_extensionContext ->
-        sendMsg wkWebExtensionController (mkSelector "fetchDataRecordOfTypes:forExtensionContext:completionHandler:") retVoid [argPtr (castPtr raw_dataTypes :: Ptr ()), argPtr (castPtr raw_extensionContext :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchDataRecordOfTypes_forExtensionContext_completionHandler wkWebExtensionController dataTypes extensionContext completionHandler =
+  sendMessage wkWebExtensionController fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector (toNSSet dataTypes) (toWKWebExtensionContext extensionContext) completionHandler
 
 -- | Removes extension data of the given types for the given data records.
 --
@@ -211,10 +199,8 @@ fetchDataRecordOfTypes_forExtensionContext_completionHandler wkWebExtensionContr
 --
 -- ObjC selector: @- removeDataOfTypes:fromDataRecords:completionHandler:@
 removeDataOfTypes_fromDataRecords_completionHandler :: (IsWKWebExtensionController wkWebExtensionController, IsNSSet dataTypes, IsNSArray dataRecords) => wkWebExtensionController -> dataTypes -> dataRecords -> Ptr () -> IO ()
-removeDataOfTypes_fromDataRecords_completionHandler wkWebExtensionController  dataTypes dataRecords completionHandler =
-  withObjCPtr dataTypes $ \raw_dataTypes ->
-    withObjCPtr dataRecords $ \raw_dataRecords ->
-        sendMsg wkWebExtensionController (mkSelector "removeDataOfTypes:fromDataRecords:completionHandler:") retVoid [argPtr (castPtr raw_dataTypes :: Ptr ()), argPtr (castPtr raw_dataRecords :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+removeDataOfTypes_fromDataRecords_completionHandler wkWebExtensionController dataTypes dataRecords completionHandler =
+  sendMessage wkWebExtensionController removeDataOfTypes_fromDataRecords_completionHandlerSelector (toNSSet dataTypes) (toNSArray dataRecords) completionHandler
 
 -- | Should be called by the app when a new window is opened to fire appropriate events with all loaded web extensions.
 --
@@ -226,8 +212,8 @@ removeDataOfTypes_fromDataRecords_completionHandler wkWebExtensionController  da
 --
 -- ObjC selector: @- didOpenWindow:@
 didOpenWindow :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
-didOpenWindow wkWebExtensionController  newWindow =
-    sendMsg wkWebExtensionController (mkSelector "didOpenWindow:") retVoid [argPtr (castPtr (unRawId newWindow) :: Ptr ())]
+didOpenWindow wkWebExtensionController newWindow =
+  sendMessage wkWebExtensionController didOpenWindowSelector newWindow
 
 -- | Should be called by the app when a window is closed to fire appropriate events with all loaded web extensions.
 --
@@ -239,8 +225,8 @@ didOpenWindow wkWebExtensionController  newWindow =
 --
 -- ObjC selector: @- didCloseWindow:@
 didCloseWindow :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
-didCloseWindow wkWebExtensionController  closedWindow =
-    sendMsg wkWebExtensionController (mkSelector "didCloseWindow:") retVoid [argPtr (castPtr (unRawId closedWindow) :: Ptr ())]
+didCloseWindow wkWebExtensionController closedWindow =
+  sendMessage wkWebExtensionController didCloseWindowSelector closedWindow
 
 -- | Should be called by the app when a window gains focus to fire appropriate events with all loaded web extensions.
 --
@@ -250,8 +236,8 @@ didCloseWindow wkWebExtensionController  closedWindow =
 --
 -- ObjC selector: @- didFocusWindow:@
 didFocusWindow :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
-didFocusWindow wkWebExtensionController  focusedWindow =
-    sendMsg wkWebExtensionController (mkSelector "didFocusWindow:") retVoid [argPtr (castPtr (unRawId focusedWindow) :: Ptr ())]
+didFocusWindow wkWebExtensionController focusedWindow =
+  sendMessage wkWebExtensionController didFocusWindowSelector focusedWindow
 
 -- | Should be called by the app when a new tab is opened to fire appropriate events with all loaded web extensions.
 --
@@ -263,8 +249,8 @@ didFocusWindow wkWebExtensionController  focusedWindow =
 --
 -- ObjC selector: @- didOpenTab:@
 didOpenTab :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
-didOpenTab wkWebExtensionController  newTab =
-    sendMsg wkWebExtensionController (mkSelector "didOpenTab:") retVoid [argPtr (castPtr (unRawId newTab) :: Ptr ())]
+didOpenTab wkWebExtensionController newTab =
+  sendMessage wkWebExtensionController didOpenTabSelector newTab
 
 -- | Should be called by the app when a tab is closed to fire appropriate events with all loaded web extensions.
 --
@@ -278,8 +264,8 @@ didOpenTab wkWebExtensionController  newTab =
 --
 -- ObjC selector: @- didCloseTab:windowIsClosing:@
 didCloseTab_windowIsClosing :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> Bool -> IO ()
-didCloseTab_windowIsClosing wkWebExtensionController  closedTab windowIsClosing =
-    sendMsg wkWebExtensionController (mkSelector "didCloseTab:windowIsClosing:") retVoid [argPtr (castPtr (unRawId closedTab) :: Ptr ()), argCULong (if windowIsClosing then 1 else 0)]
+didCloseTab_windowIsClosing wkWebExtensionController closedTab windowIsClosing =
+  sendMessage wkWebExtensionController didCloseTab_windowIsClosingSelector closedTab windowIsClosing
 
 -- | Should be called by the app when a tab is activated to notify all loaded web extensions.
 --
@@ -291,8 +277,8 @@ didCloseTab_windowIsClosing wkWebExtensionController  closedTab windowIsClosing 
 --
 -- ObjC selector: @- didActivateTab:previousActiveTab:@
 didActivateTab_previousActiveTab :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> RawId -> IO ()
-didActivateTab_previousActiveTab wkWebExtensionController  activatedTab previousTab =
-    sendMsg wkWebExtensionController (mkSelector "didActivateTab:previousActiveTab:") retVoid [argPtr (castPtr (unRawId activatedTab) :: Ptr ()), argPtr (castPtr (unRawId previousTab) :: Ptr ())]
+didActivateTab_previousActiveTab wkWebExtensionController activatedTab previousTab =
+  sendMessage wkWebExtensionController didActivateTab_previousActiveTabSelector activatedTab previousTab
 
 -- | Should be called by the app when tabs are selected to fire appropriate events with all loaded web extensions.
 --
@@ -302,9 +288,8 @@ didActivateTab_previousActiveTab wkWebExtensionController  activatedTab previous
 --
 -- ObjC selector: @- didSelectTabs:@
 didSelectTabs :: (IsWKWebExtensionController wkWebExtensionController, IsNSArray selectedTabs) => wkWebExtensionController -> selectedTabs -> IO ()
-didSelectTabs wkWebExtensionController  selectedTabs =
-  withObjCPtr selectedTabs $ \raw_selectedTabs ->
-      sendMsg wkWebExtensionController (mkSelector "didSelectTabs:") retVoid [argPtr (castPtr raw_selectedTabs :: Ptr ())]
+didSelectTabs wkWebExtensionController selectedTabs =
+  sendMessage wkWebExtensionController didSelectTabsSelector (toNSArray selectedTabs)
 
 -- | Should be called by the app when tabs are deselected to fire appropriate events with all loaded web extensions.
 --
@@ -314,9 +299,8 @@ didSelectTabs wkWebExtensionController  selectedTabs =
 --
 -- ObjC selector: @- didDeselectTabs:@
 didDeselectTabs :: (IsWKWebExtensionController wkWebExtensionController, IsNSArray deselectedTabs) => wkWebExtensionController -> deselectedTabs -> IO ()
-didDeselectTabs wkWebExtensionController  deselectedTabs =
-  withObjCPtr deselectedTabs $ \raw_deselectedTabs ->
-      sendMsg wkWebExtensionController (mkSelector "didDeselectTabs:") retVoid [argPtr (castPtr raw_deselectedTabs :: Ptr ())]
+didDeselectTabs wkWebExtensionController deselectedTabs =
+  sendMessage wkWebExtensionController didDeselectTabsSelector (toNSArray deselectedTabs)
 
 -- | Should be called by the app when a tab is moved to fire appropriate events with all loaded web extensions.
 --
@@ -330,8 +314,8 @@ didDeselectTabs wkWebExtensionController  deselectedTabs =
 --
 -- ObjC selector: @- didMoveTab:fromIndex:inWindow:@
 didMoveTab_fromIndex_inWindow :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> CULong -> RawId -> IO ()
-didMoveTab_fromIndex_inWindow wkWebExtensionController  movedTab index oldWindow =
-    sendMsg wkWebExtensionController (mkSelector "didMoveTab:fromIndex:inWindow:") retVoid [argPtr (castPtr (unRawId movedTab) :: Ptr ()), argCULong index, argPtr (castPtr (unRawId oldWindow) :: Ptr ())]
+didMoveTab_fromIndex_inWindow wkWebExtensionController movedTab index oldWindow =
+  sendMessage wkWebExtensionController didMoveTab_fromIndex_inWindowSelector movedTab index oldWindow
 
 -- | Should be called by the app when a tab is replaced by another tab to fire appropriate events with all loaded web extensions.
 --
@@ -343,8 +327,8 @@ didMoveTab_fromIndex_inWindow wkWebExtensionController  movedTab index oldWindow
 --
 -- ObjC selector: @- didReplaceTab:withTab:@
 didReplaceTab_withTab :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> RawId -> IO ()
-didReplaceTab_withTab wkWebExtensionController  oldTab newTab =
-    sendMsg wkWebExtensionController (mkSelector "didReplaceTab:withTab:") retVoid [argPtr (castPtr (unRawId oldTab) :: Ptr ()), argPtr (castPtr (unRawId newTab) :: Ptr ())]
+didReplaceTab_withTab wkWebExtensionController oldTab newTab =
+  sendMessage wkWebExtensionController didReplaceTab_withTabSelector oldTab newTab
 
 -- | Should be called by the app when the properties of a tab are changed to fire appropriate events with all loaded web extensions.
 --
@@ -356,22 +340,22 @@ didReplaceTab_withTab wkWebExtensionController  oldTab newTab =
 --
 -- ObjC selector: @- didChangeTabProperties:forTab:@
 didChangeTabProperties_forTab :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> WKWebExtensionTabChangedProperties -> RawId -> IO ()
-didChangeTabProperties_forTab wkWebExtensionController  properties changedTab =
-    sendMsg wkWebExtensionController (mkSelector "didChangeTabProperties:forTab:") retVoid [argCULong (coerce properties), argPtr (castPtr (unRawId changedTab) :: Ptr ())]
+didChangeTabProperties_forTab wkWebExtensionController properties changedTab =
+  sendMessage wkWebExtensionController didChangeTabProperties_forTabSelector properties changedTab
 
 -- | The extension controller delegate.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO RawId
-delegate wkWebExtensionController  =
-    fmap (RawId . castPtr) $ sendMsg wkWebExtensionController (mkSelector "delegate") (retPtr retVoid) []
+delegate wkWebExtensionController =
+  sendMessage wkWebExtensionController delegateSelector
 
 -- | The extension controller delegate.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> RawId -> IO ()
-setDelegate wkWebExtensionController  value =
-    sendMsg wkWebExtensionController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate wkWebExtensionController value =
+  sendMessage wkWebExtensionController setDelegateSelector value
 
 -- | A copy of the configuration with which the web extension controller was initialized.
 --
@@ -379,8 +363,8 @@ setDelegate wkWebExtensionController  value =
 --
 -- ObjC selector: @- configuration@
 configuration :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO (Id WKWebExtensionControllerConfiguration)
-configuration wkWebExtensionController  =
-    sendMsg wkWebExtensionController (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration wkWebExtensionController =
+  sendMessage wkWebExtensionController configurationSelector
 
 -- | A set of all the currently loaded extensions.
 --
@@ -388,8 +372,8 @@ configuration wkWebExtensionController  =
 --
 -- ObjC selector: @- extensions@
 extensions :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO (Id NSSet)
-extensions wkWebExtensionController  =
-    sendMsg wkWebExtensionController (mkSelector "extensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensions wkWebExtensionController =
+  sendMessage wkWebExtensionController extensionsSelector
 
 -- | A set of all the currently loaded extension contexts.
 --
@@ -397,8 +381,8 @@ extensions wkWebExtensionController  =
 --
 -- ObjC selector: @- extensionContexts@
 extensionContexts :: IsWKWebExtensionController wkWebExtensionController => wkWebExtensionController -> IO (Id NSSet)
-extensionContexts wkWebExtensionController  =
-    sendMsg wkWebExtensionController (mkSelector "extensionContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionContexts wkWebExtensionController =
+  sendMessage wkWebExtensionController extensionContextsSelector
 
 -- | Returns a set of all available extension data types.
 --
@@ -407,109 +391,109 @@ allExtensionDataTypes :: IO (Id NSSet)
 allExtensionDataTypes  =
   do
     cls' <- getRequiredClass "WKWebExtensionController"
-    sendClassMsg cls' (mkSelector "allExtensionDataTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' allExtensionDataTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id WKWebExtensionControllerConfiguration] (Id WKWebExtensionController)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @loadExtensionContext:error:@
-loadExtensionContext_errorSelector :: Selector
+loadExtensionContext_errorSelector :: Selector '[Id WKWebExtensionContext, Id NSError] Bool
 loadExtensionContext_errorSelector = mkSelector "loadExtensionContext:error:"
 
 -- | @Selector@ for @unloadExtensionContext:error:@
-unloadExtensionContext_errorSelector :: Selector
+unloadExtensionContext_errorSelector :: Selector '[Id WKWebExtensionContext, Id NSError] Bool
 unloadExtensionContext_errorSelector = mkSelector "unloadExtensionContext:error:"
 
 -- | @Selector@ for @extensionContextForExtension:@
-extensionContextForExtensionSelector :: Selector
+extensionContextForExtensionSelector :: Selector '[Id WKWebExtension] (Id WKWebExtensionContext)
 extensionContextForExtensionSelector = mkSelector "extensionContextForExtension:"
 
 -- | @Selector@ for @extensionContextForURL:@
-extensionContextForURLSelector :: Selector
+extensionContextForURLSelector :: Selector '[Id NSURL] (Id WKWebExtensionContext)
 extensionContextForURLSelector = mkSelector "extensionContextForURL:"
 
 -- | @Selector@ for @fetchDataRecordOfTypes:forExtensionContext:completionHandler:@
-fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector :: Selector
+fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector :: Selector '[Id NSSet, Id WKWebExtensionContext, Ptr ()] ()
 fetchDataRecordOfTypes_forExtensionContext_completionHandlerSelector = mkSelector "fetchDataRecordOfTypes:forExtensionContext:completionHandler:"
 
 -- | @Selector@ for @removeDataOfTypes:fromDataRecords:completionHandler:@
-removeDataOfTypes_fromDataRecords_completionHandlerSelector :: Selector
+removeDataOfTypes_fromDataRecords_completionHandlerSelector :: Selector '[Id NSSet, Id NSArray, Ptr ()] ()
 removeDataOfTypes_fromDataRecords_completionHandlerSelector = mkSelector "removeDataOfTypes:fromDataRecords:completionHandler:"
 
 -- | @Selector@ for @didOpenWindow:@
-didOpenWindowSelector :: Selector
+didOpenWindowSelector :: Selector '[RawId] ()
 didOpenWindowSelector = mkSelector "didOpenWindow:"
 
 -- | @Selector@ for @didCloseWindow:@
-didCloseWindowSelector :: Selector
+didCloseWindowSelector :: Selector '[RawId] ()
 didCloseWindowSelector = mkSelector "didCloseWindow:"
 
 -- | @Selector@ for @didFocusWindow:@
-didFocusWindowSelector :: Selector
+didFocusWindowSelector :: Selector '[RawId] ()
 didFocusWindowSelector = mkSelector "didFocusWindow:"
 
 -- | @Selector@ for @didOpenTab:@
-didOpenTabSelector :: Selector
+didOpenTabSelector :: Selector '[RawId] ()
 didOpenTabSelector = mkSelector "didOpenTab:"
 
 -- | @Selector@ for @didCloseTab:windowIsClosing:@
-didCloseTab_windowIsClosingSelector :: Selector
+didCloseTab_windowIsClosingSelector :: Selector '[RawId, Bool] ()
 didCloseTab_windowIsClosingSelector = mkSelector "didCloseTab:windowIsClosing:"
 
 -- | @Selector@ for @didActivateTab:previousActiveTab:@
-didActivateTab_previousActiveTabSelector :: Selector
+didActivateTab_previousActiveTabSelector :: Selector '[RawId, RawId] ()
 didActivateTab_previousActiveTabSelector = mkSelector "didActivateTab:previousActiveTab:"
 
 -- | @Selector@ for @didSelectTabs:@
-didSelectTabsSelector :: Selector
+didSelectTabsSelector :: Selector '[Id NSArray] ()
 didSelectTabsSelector = mkSelector "didSelectTabs:"
 
 -- | @Selector@ for @didDeselectTabs:@
-didDeselectTabsSelector :: Selector
+didDeselectTabsSelector :: Selector '[Id NSArray] ()
 didDeselectTabsSelector = mkSelector "didDeselectTabs:"
 
 -- | @Selector@ for @didMoveTab:fromIndex:inWindow:@
-didMoveTab_fromIndex_inWindowSelector :: Selector
+didMoveTab_fromIndex_inWindowSelector :: Selector '[RawId, CULong, RawId] ()
 didMoveTab_fromIndex_inWindowSelector = mkSelector "didMoveTab:fromIndex:inWindow:"
 
 -- | @Selector@ for @didReplaceTab:withTab:@
-didReplaceTab_withTabSelector :: Selector
+didReplaceTab_withTabSelector :: Selector '[RawId, RawId] ()
 didReplaceTab_withTabSelector = mkSelector "didReplaceTab:withTab:"
 
 -- | @Selector@ for @didChangeTabProperties:forTab:@
-didChangeTabProperties_forTabSelector :: Selector
+didChangeTabProperties_forTabSelector :: Selector '[WKWebExtensionTabChangedProperties, RawId] ()
 didChangeTabProperties_forTabSelector = mkSelector "didChangeTabProperties:forTab:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id WKWebExtensionControllerConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @extensions@
-extensionsSelector :: Selector
+extensionsSelector :: Selector '[] (Id NSSet)
 extensionsSelector = mkSelector "extensions"
 
 -- | @Selector@ for @extensionContexts@
-extensionContextsSelector :: Selector
+extensionContextsSelector :: Selector '[] (Id NSSet)
 extensionContextsSelector = mkSelector "extensionContexts"
 
 -- | @Selector@ for @allExtensionDataTypes@
-allExtensionDataTypesSelector :: Selector
+allExtensionDataTypesSelector :: Selector '[] (Id NSSet)
 allExtensionDataTypesSelector = mkSelector "allExtensionDataTypes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRContentLauncherClusterParameterStruct
   , setValue
   , externalIDList
   , setExternalIDList
-  , typeSelector
-  , setTypeSelector
-  , valueSelector
-  , setValueSelector
   , externalIDListSelector
   , setExternalIDListSelector
+  , setTypeSelector
+  , setValueSelector
+  , typeSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- type@
 type_ :: IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct => mtrContentLauncherClusterParameterStruct -> IO (Id NSNumber)
-type_ mtrContentLauncherClusterParameterStruct  =
-    sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mtrContentLauncherClusterParameterStruct =
+  sendMessage mtrContentLauncherClusterParameterStruct typeSelector
 
 -- | @- setType:@
 setType :: (IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct, IsNSNumber value) => mtrContentLauncherClusterParameterStruct -> value -> IO ()
-setType mtrContentLauncherClusterParameterStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType mtrContentLauncherClusterParameterStruct value =
+  sendMessage mtrContentLauncherClusterParameterStruct setTypeSelector (toNSNumber value)
 
 -- | @- value@
 value :: IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct => mtrContentLauncherClusterParameterStruct -> IO (Id NSString)
-value mtrContentLauncherClusterParameterStruct  =
-    sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrContentLauncherClusterParameterStruct =
+  sendMessage mtrContentLauncherClusterParameterStruct valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct, IsNSString value) => mtrContentLauncherClusterParameterStruct -> value -> IO ()
-setValue mtrContentLauncherClusterParameterStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrContentLauncherClusterParameterStruct value =
+  sendMessage mtrContentLauncherClusterParameterStruct setValueSelector (toNSString value)
 
 -- | @- externalIDList@
 externalIDList :: IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct => mtrContentLauncherClusterParameterStruct -> IO (Id NSArray)
-externalIDList mtrContentLauncherClusterParameterStruct  =
-    sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "externalIDList") (retPtr retVoid) [] >>= retainedObject . castPtr
+externalIDList mtrContentLauncherClusterParameterStruct =
+  sendMessage mtrContentLauncherClusterParameterStruct externalIDListSelector
 
 -- | @- setExternalIDList:@
 setExternalIDList :: (IsMTRContentLauncherClusterParameterStruct mtrContentLauncherClusterParameterStruct, IsNSArray value) => mtrContentLauncherClusterParameterStruct -> value -> IO ()
-setExternalIDList mtrContentLauncherClusterParameterStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterParameterStruct (mkSelector "setExternalIDList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExternalIDList mtrContentLauncherClusterParameterStruct value =
+  sendMessage mtrContentLauncherClusterParameterStruct setExternalIDListSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSNumber)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSNumber] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @externalIDList@
-externalIDListSelector :: Selector
+externalIDListSelector :: Selector '[] (Id NSArray)
 externalIDListSelector = mkSelector "externalIDList"
 
 -- | @Selector@ for @setExternalIDList:@
-setExternalIDListSelector :: Selector
+setExternalIDListSelector :: Selector '[Id NSArray] ()
 setExternalIDListSelector = mkSelector "setExternalIDList:"
 

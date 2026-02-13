@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,47 +49,47 @@ module ObjC.MediaPlayer.MPMediaItem
   , dateAdded
   , playbackStoreID
   , preorder
-  , persistentIDPropertyForGroupingTypeSelector
-  , titlePropertyForGroupingTypeSelector
-  , persistentIDSelector
-  , mediaTypeSelector
-  , titleSelector
-  , albumTitleSelector
-  , albumPersistentIDSelector
-  , artistSelector
-  , artistPersistentIDSelector
-  , albumArtistSelector
   , albumArtistPersistentIDSelector
-  , genreSelector
-  , genrePersistentIDSelector
-  , composerSelector
-  , composerPersistentIDSelector
-  , playbackDurationSelector
-  , albumTrackNumberSelector
+  , albumArtistSelector
+  , albumPersistentIDSelector
+  , albumTitleSelector
   , albumTrackCountSelector
-  , discNumberSelector
-  , discCountSelector
+  , albumTrackNumberSelector
+  , artistPersistentIDSelector
+  , artistSelector
   , artworkSelector
-  , explicitItemSelector
-  , lyricsSelector
-  , compilationSelector
-  , releaseDateSelector
-  , beatsPerMinuteSelector
-  , commentsSelector
   , assetURLSelector
-  , cloudItemSelector
-  , protectedAssetSelector
-  , podcastTitleSelector
-  , podcastPersistentIDSelector
-  , playCountSelector
-  , skipCountSelector
-  , ratingSelector
-  , lastPlayedDateSelector
-  , userGroupingSelector
+  , beatsPerMinuteSelector
   , bookmarkTimeSelector
+  , cloudItemSelector
+  , commentsSelector
+  , compilationSelector
+  , composerPersistentIDSelector
+  , composerSelector
   , dateAddedSelector
+  , discCountSelector
+  , discNumberSelector
+  , explicitItemSelector
+  , genrePersistentIDSelector
+  , genreSelector
+  , lastPlayedDateSelector
+  , lyricsSelector
+  , mediaTypeSelector
+  , persistentIDPropertyForGroupingTypeSelector
+  , persistentIDSelector
+  , playCountSelector
+  , playbackDurationSelector
   , playbackStoreIDSelector
+  , podcastPersistentIDSelector
+  , podcastTitleSelector
   , preorderSelector
+  , protectedAssetSelector
+  , ratingSelector
+  , releaseDateSelector
+  , skipCountSelector
+  , titlePropertyForGroupingTypeSelector
+  , titleSelector
+  , userGroupingSelector
 
   -- * Enum types
   , MPMediaGrouping(MPMediaGrouping)
@@ -117,15 +118,11 @@ module ObjC.MediaPlayer.MPMediaItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -138,375 +135,375 @@ persistentIDPropertyForGroupingType :: MPMediaGrouping -> IO (Id NSString)
 persistentIDPropertyForGroupingType groupingType =
   do
     cls' <- getRequiredClass "MPMediaItem"
-    sendClassMsg cls' (mkSelector "persistentIDPropertyForGroupingType:") (retPtr retVoid) [argCLong (coerce groupingType)] >>= retainedObject . castPtr
+    sendClassMessage cls' persistentIDPropertyForGroupingTypeSelector groupingType
 
 -- | @+ titlePropertyForGroupingType:@
 titlePropertyForGroupingType :: MPMediaGrouping -> IO (Id NSString)
 titlePropertyForGroupingType groupingType =
   do
     cls' <- getRequiredClass "MPMediaItem"
-    sendClassMsg cls' (mkSelector "titlePropertyForGroupingType:") (retPtr retVoid) [argCLong (coerce groupingType)] >>= retainedObject . castPtr
+    sendClassMessage cls' titlePropertyForGroupingTypeSelector groupingType
 
 -- | @- persistentID@
 persistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-persistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "persistentID") retCULong []
+persistentID mpMediaItem =
+  sendMessage mpMediaItem persistentIDSelector
 
 -- | @- mediaType@
 mediaType :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO MPMediaType
-mediaType mpMediaItem  =
-    fmap (coerce :: CULong -> MPMediaType) $ sendMsg mpMediaItem (mkSelector "mediaType") retCULong []
+mediaType mpMediaItem =
+  sendMessage mpMediaItem mediaTypeSelector
 
 -- | @- title@
 title :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-title mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title mpMediaItem =
+  sendMessage mpMediaItem titleSelector
 
 -- | @- albumTitle@
 albumTitle :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-albumTitle mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+albumTitle mpMediaItem =
+  sendMessage mpMediaItem albumTitleSelector
 
 -- | @- albumPersistentID@
 albumPersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-albumPersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumPersistentID") retCULong []
+albumPersistentID mpMediaItem =
+  sendMessage mpMediaItem albumPersistentIDSelector
 
 -- | @- artist@
 artist :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-artist mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "artist") (retPtr retVoid) [] >>= retainedObject . castPtr
+artist mpMediaItem =
+  sendMessage mpMediaItem artistSelector
 
 -- | @- artistPersistentID@
 artistPersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-artistPersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "artistPersistentID") retCULong []
+artistPersistentID mpMediaItem =
+  sendMessage mpMediaItem artistPersistentIDSelector
 
 -- | @- albumArtist@
 albumArtist :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-albumArtist mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumArtist") (retPtr retVoid) [] >>= retainedObject . castPtr
+albumArtist mpMediaItem =
+  sendMessage mpMediaItem albumArtistSelector
 
 -- | @- albumArtistPersistentID@
 albumArtistPersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-albumArtistPersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumArtistPersistentID") retCULong []
+albumArtistPersistentID mpMediaItem =
+  sendMessage mpMediaItem albumArtistPersistentIDSelector
 
 -- | @- genre@
 genre :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-genre mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "genre") (retPtr retVoid) [] >>= retainedObject . castPtr
+genre mpMediaItem =
+  sendMessage mpMediaItem genreSelector
 
 -- | @- genrePersistentID@
 genrePersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-genrePersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "genrePersistentID") retCULong []
+genrePersistentID mpMediaItem =
+  sendMessage mpMediaItem genrePersistentIDSelector
 
 -- | @- composer@
 composer :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-composer mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "composer") (retPtr retVoid) [] >>= retainedObject . castPtr
+composer mpMediaItem =
+  sendMessage mpMediaItem composerSelector
 
 -- | @- composerPersistentID@
 composerPersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-composerPersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "composerPersistentID") retCULong []
+composerPersistentID mpMediaItem =
+  sendMessage mpMediaItem composerPersistentIDSelector
 
 -- | @- playbackDuration@
 playbackDuration :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CDouble
-playbackDuration mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "playbackDuration") retCDouble []
+playbackDuration mpMediaItem =
+  sendMessage mpMediaItem playbackDurationSelector
 
 -- | @- albumTrackNumber@
 albumTrackNumber :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-albumTrackNumber mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumTrackNumber") retCULong []
+albumTrackNumber mpMediaItem =
+  sendMessage mpMediaItem albumTrackNumberSelector
 
 -- | @- albumTrackCount@
 albumTrackCount :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-albumTrackCount mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "albumTrackCount") retCULong []
+albumTrackCount mpMediaItem =
+  sendMessage mpMediaItem albumTrackCountSelector
 
 -- | @- discNumber@
 discNumber :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-discNumber mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "discNumber") retCULong []
+discNumber mpMediaItem =
+  sendMessage mpMediaItem discNumberSelector
 
 -- | @- discCount@
 discCount :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-discCount mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "discCount") retCULong []
+discCount mpMediaItem =
+  sendMessage mpMediaItem discCountSelector
 
 -- | @- artwork@
 artwork :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id MPMediaItemArtwork)
-artwork mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "artwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+artwork mpMediaItem =
+  sendMessage mpMediaItem artworkSelector
 
 -- | @- explicitItem@
 explicitItem :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO Bool
-explicitItem mpMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpMediaItem (mkSelector "explicitItem") retCULong []
+explicitItem mpMediaItem =
+  sendMessage mpMediaItem explicitItemSelector
 
 -- | @- lyrics@
 lyrics :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-lyrics mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "lyrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+lyrics mpMediaItem =
+  sendMessage mpMediaItem lyricsSelector
 
 -- | @- compilation@
 compilation :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO Bool
-compilation mpMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpMediaItem (mkSelector "compilation") retCULong []
+compilation mpMediaItem =
+  sendMessage mpMediaItem compilationSelector
 
 -- | @- releaseDate@
 releaseDate :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSDate)
-releaseDate mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "releaseDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+releaseDate mpMediaItem =
+  sendMessage mpMediaItem releaseDateSelector
 
 -- | @- beatsPerMinute@
 beatsPerMinute :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-beatsPerMinute mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "beatsPerMinute") retCULong []
+beatsPerMinute mpMediaItem =
+  sendMessage mpMediaItem beatsPerMinuteSelector
 
 -- | @- comments@
 comments :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-comments mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "comments") (retPtr retVoid) [] >>= retainedObject . castPtr
+comments mpMediaItem =
+  sendMessage mpMediaItem commentsSelector
 
 -- | @- assetURL@
 assetURL :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSURL)
-assetURL mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "assetURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetURL mpMediaItem =
+  sendMessage mpMediaItem assetURLSelector
 
 -- | @- cloudItem@
 cloudItem :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO Bool
-cloudItem mpMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpMediaItem (mkSelector "cloudItem") retCULong []
+cloudItem mpMediaItem =
+  sendMessage mpMediaItem cloudItemSelector
 
 -- | @- protectedAsset@
 protectedAsset :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO Bool
-protectedAsset mpMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpMediaItem (mkSelector "protectedAsset") retCULong []
+protectedAsset mpMediaItem =
+  sendMessage mpMediaItem protectedAssetSelector
 
 -- | @- podcastTitle@
 podcastTitle :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-podcastTitle mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "podcastTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+podcastTitle mpMediaItem =
+  sendMessage mpMediaItem podcastTitleSelector
 
 -- | @- podcastPersistentID@
 podcastPersistentID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-podcastPersistentID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "podcastPersistentID") retCULong []
+podcastPersistentID mpMediaItem =
+  sendMessage mpMediaItem podcastPersistentIDSelector
 
 -- | @- playCount@
 playCount :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-playCount mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "playCount") retCULong []
+playCount mpMediaItem =
+  sendMessage mpMediaItem playCountSelector
 
 -- | @- skipCount@
 skipCount :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-skipCount mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "skipCount") retCULong []
+skipCount mpMediaItem =
+  sendMessage mpMediaItem skipCountSelector
 
 -- | @- rating@
 rating :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CULong
-rating mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "rating") retCULong []
+rating mpMediaItem =
+  sendMessage mpMediaItem ratingSelector
 
 -- | @- lastPlayedDate@
 lastPlayedDate :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSDate)
-lastPlayedDate mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "lastPlayedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastPlayedDate mpMediaItem =
+  sendMessage mpMediaItem lastPlayedDateSelector
 
 -- | @- userGrouping@
 userGrouping :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-userGrouping mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "userGrouping") (retPtr retVoid) [] >>= retainedObject . castPtr
+userGrouping mpMediaItem =
+  sendMessage mpMediaItem userGroupingSelector
 
 -- | @- bookmarkTime@
 bookmarkTime :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO CDouble
-bookmarkTime mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "bookmarkTime") retCDouble []
+bookmarkTime mpMediaItem =
+  sendMessage mpMediaItem bookmarkTimeSelector
 
 -- | @- dateAdded@
 dateAdded :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSDate)
-dateAdded mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "dateAdded") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateAdded mpMediaItem =
+  sendMessage mpMediaItem dateAddedSelector
 
 -- | @- playbackStoreID@
 playbackStoreID :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO (Id NSString)
-playbackStoreID mpMediaItem  =
-    sendMsg mpMediaItem (mkSelector "playbackStoreID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackStoreID mpMediaItem =
+  sendMessage mpMediaItem playbackStoreIDSelector
 
 -- | @- preorder@
 preorder :: IsMPMediaItem mpMediaItem => mpMediaItem -> IO Bool
-preorder mpMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpMediaItem (mkSelector "preorder") retCULong []
+preorder mpMediaItem =
+  sendMessage mpMediaItem preorderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @persistentIDPropertyForGroupingType:@
-persistentIDPropertyForGroupingTypeSelector :: Selector
+persistentIDPropertyForGroupingTypeSelector :: Selector '[MPMediaGrouping] (Id NSString)
 persistentIDPropertyForGroupingTypeSelector = mkSelector "persistentIDPropertyForGroupingType:"
 
 -- | @Selector@ for @titlePropertyForGroupingType:@
-titlePropertyForGroupingTypeSelector :: Selector
+titlePropertyForGroupingTypeSelector :: Selector '[MPMediaGrouping] (Id NSString)
 titlePropertyForGroupingTypeSelector = mkSelector "titlePropertyForGroupingType:"
 
 -- | @Selector@ for @persistentID@
-persistentIDSelector :: Selector
+persistentIDSelector :: Selector '[] CULong
 persistentIDSelector = mkSelector "persistentID"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] MPMediaType
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @albumTitle@
-albumTitleSelector :: Selector
+albumTitleSelector :: Selector '[] (Id NSString)
 albumTitleSelector = mkSelector "albumTitle"
 
 -- | @Selector@ for @albumPersistentID@
-albumPersistentIDSelector :: Selector
+albumPersistentIDSelector :: Selector '[] CULong
 albumPersistentIDSelector = mkSelector "albumPersistentID"
 
 -- | @Selector@ for @artist@
-artistSelector :: Selector
+artistSelector :: Selector '[] (Id NSString)
 artistSelector = mkSelector "artist"
 
 -- | @Selector@ for @artistPersistentID@
-artistPersistentIDSelector :: Selector
+artistPersistentIDSelector :: Selector '[] CULong
 artistPersistentIDSelector = mkSelector "artistPersistentID"
 
 -- | @Selector@ for @albumArtist@
-albumArtistSelector :: Selector
+albumArtistSelector :: Selector '[] (Id NSString)
 albumArtistSelector = mkSelector "albumArtist"
 
 -- | @Selector@ for @albumArtistPersistentID@
-albumArtistPersistentIDSelector :: Selector
+albumArtistPersistentIDSelector :: Selector '[] CULong
 albumArtistPersistentIDSelector = mkSelector "albumArtistPersistentID"
 
 -- | @Selector@ for @genre@
-genreSelector :: Selector
+genreSelector :: Selector '[] (Id NSString)
 genreSelector = mkSelector "genre"
 
 -- | @Selector@ for @genrePersistentID@
-genrePersistentIDSelector :: Selector
+genrePersistentIDSelector :: Selector '[] CULong
 genrePersistentIDSelector = mkSelector "genrePersistentID"
 
 -- | @Selector@ for @composer@
-composerSelector :: Selector
+composerSelector :: Selector '[] (Id NSString)
 composerSelector = mkSelector "composer"
 
 -- | @Selector@ for @composerPersistentID@
-composerPersistentIDSelector :: Selector
+composerPersistentIDSelector :: Selector '[] CULong
 composerPersistentIDSelector = mkSelector "composerPersistentID"
 
 -- | @Selector@ for @playbackDuration@
-playbackDurationSelector :: Selector
+playbackDurationSelector :: Selector '[] CDouble
 playbackDurationSelector = mkSelector "playbackDuration"
 
 -- | @Selector@ for @albumTrackNumber@
-albumTrackNumberSelector :: Selector
+albumTrackNumberSelector :: Selector '[] CULong
 albumTrackNumberSelector = mkSelector "albumTrackNumber"
 
 -- | @Selector@ for @albumTrackCount@
-albumTrackCountSelector :: Selector
+albumTrackCountSelector :: Selector '[] CULong
 albumTrackCountSelector = mkSelector "albumTrackCount"
 
 -- | @Selector@ for @discNumber@
-discNumberSelector :: Selector
+discNumberSelector :: Selector '[] CULong
 discNumberSelector = mkSelector "discNumber"
 
 -- | @Selector@ for @discCount@
-discCountSelector :: Selector
+discCountSelector :: Selector '[] CULong
 discCountSelector = mkSelector "discCount"
 
 -- | @Selector@ for @artwork@
-artworkSelector :: Selector
+artworkSelector :: Selector '[] (Id MPMediaItemArtwork)
 artworkSelector = mkSelector "artwork"
 
 -- | @Selector@ for @explicitItem@
-explicitItemSelector :: Selector
+explicitItemSelector :: Selector '[] Bool
 explicitItemSelector = mkSelector "explicitItem"
 
 -- | @Selector@ for @lyrics@
-lyricsSelector :: Selector
+lyricsSelector :: Selector '[] (Id NSString)
 lyricsSelector = mkSelector "lyrics"
 
 -- | @Selector@ for @compilation@
-compilationSelector :: Selector
+compilationSelector :: Selector '[] Bool
 compilationSelector = mkSelector "compilation"
 
 -- | @Selector@ for @releaseDate@
-releaseDateSelector :: Selector
+releaseDateSelector :: Selector '[] (Id NSDate)
 releaseDateSelector = mkSelector "releaseDate"
 
 -- | @Selector@ for @beatsPerMinute@
-beatsPerMinuteSelector :: Selector
+beatsPerMinuteSelector :: Selector '[] CULong
 beatsPerMinuteSelector = mkSelector "beatsPerMinute"
 
 -- | @Selector@ for @comments@
-commentsSelector :: Selector
+commentsSelector :: Selector '[] (Id NSString)
 commentsSelector = mkSelector "comments"
 
 -- | @Selector@ for @assetURL@
-assetURLSelector :: Selector
+assetURLSelector :: Selector '[] (Id NSURL)
 assetURLSelector = mkSelector "assetURL"
 
 -- | @Selector@ for @cloudItem@
-cloudItemSelector :: Selector
+cloudItemSelector :: Selector '[] Bool
 cloudItemSelector = mkSelector "cloudItem"
 
 -- | @Selector@ for @protectedAsset@
-protectedAssetSelector :: Selector
+protectedAssetSelector :: Selector '[] Bool
 protectedAssetSelector = mkSelector "protectedAsset"
 
 -- | @Selector@ for @podcastTitle@
-podcastTitleSelector :: Selector
+podcastTitleSelector :: Selector '[] (Id NSString)
 podcastTitleSelector = mkSelector "podcastTitle"
 
 -- | @Selector@ for @podcastPersistentID@
-podcastPersistentIDSelector :: Selector
+podcastPersistentIDSelector :: Selector '[] CULong
 podcastPersistentIDSelector = mkSelector "podcastPersistentID"
 
 -- | @Selector@ for @playCount@
-playCountSelector :: Selector
+playCountSelector :: Selector '[] CULong
 playCountSelector = mkSelector "playCount"
 
 -- | @Selector@ for @skipCount@
-skipCountSelector :: Selector
+skipCountSelector :: Selector '[] CULong
 skipCountSelector = mkSelector "skipCount"
 
 -- | @Selector@ for @rating@
-ratingSelector :: Selector
+ratingSelector :: Selector '[] CULong
 ratingSelector = mkSelector "rating"
 
 -- | @Selector@ for @lastPlayedDate@
-lastPlayedDateSelector :: Selector
+lastPlayedDateSelector :: Selector '[] (Id NSDate)
 lastPlayedDateSelector = mkSelector "lastPlayedDate"
 
 -- | @Selector@ for @userGrouping@
-userGroupingSelector :: Selector
+userGroupingSelector :: Selector '[] (Id NSString)
 userGroupingSelector = mkSelector "userGrouping"
 
 -- | @Selector@ for @bookmarkTime@
-bookmarkTimeSelector :: Selector
+bookmarkTimeSelector :: Selector '[] CDouble
 bookmarkTimeSelector = mkSelector "bookmarkTime"
 
 -- | @Selector@ for @dateAdded@
-dateAddedSelector :: Selector
+dateAddedSelector :: Selector '[] (Id NSDate)
 dateAddedSelector = mkSelector "dateAdded"
 
 -- | @Selector@ for @playbackStoreID@
-playbackStoreIDSelector :: Selector
+playbackStoreIDSelector :: Selector '[] (Id NSString)
 playbackStoreIDSelector = mkSelector "playbackStoreID"
 
 -- | @Selector@ for @preorder@
-preorderSelector :: Selector
+preorderSelector :: Selector '[] Bool
 preorderSelector = mkSelector "preorder"
 

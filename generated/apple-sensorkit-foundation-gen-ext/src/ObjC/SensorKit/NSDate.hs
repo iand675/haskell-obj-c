@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.SensorKit.NSDate
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ dateWithSRAbsoluteTime :: CDouble -> IO (Id NSDate)
 dateWithSRAbsoluteTime time =
   do
     cls' <- getRequiredClass "NSDate"
-    sendClassMsg cls' (mkSelector "dateWithSRAbsoluteTime:") (retPtr retVoid) [argCDouble time] >>= retainedObject . castPtr
+    sendClassMessage cls' dateWithSRAbsoluteTimeSelector time
 
 -- | @- initWithSRAbsoluteTime:@
 initWithSRAbsoluteTime :: IsNSDate nsDate => nsDate -> CDouble -> IO (Id NSDate)
-initWithSRAbsoluteTime nsDate  time =
-    sendMsg nsDate (mkSelector "initWithSRAbsoluteTime:") (retPtr retVoid) [argCDouble time] >>= ownedObject . castPtr
+initWithSRAbsoluteTime nsDate time =
+  sendOwnedMessage nsDate initWithSRAbsoluteTimeSelector time
 
 -- | @- srAbsoluteTime@
 srAbsoluteTime :: IsNSDate nsDate => nsDate -> IO CDouble
-srAbsoluteTime nsDate  =
-    sendMsg nsDate (mkSelector "srAbsoluteTime") retCDouble []
+srAbsoluteTime nsDate =
+  sendMessage nsDate srAbsoluteTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dateWithSRAbsoluteTime:@
-dateWithSRAbsoluteTimeSelector :: Selector
+dateWithSRAbsoluteTimeSelector :: Selector '[CDouble] (Id NSDate)
 dateWithSRAbsoluteTimeSelector = mkSelector "dateWithSRAbsoluteTime:"
 
 -- | @Selector@ for @initWithSRAbsoluteTime:@
-initWithSRAbsoluteTimeSelector :: Selector
+initWithSRAbsoluteTimeSelector :: Selector '[CDouble] (Id NSDate)
 initWithSRAbsoluteTimeSelector = mkSelector "initWithSRAbsoluteTime:"
 
 -- | @Selector@ for @srAbsoluteTime@
-srAbsoluteTimeSelector :: Selector
+srAbsoluteTimeSelector :: Selector '[] CDouble
 srAbsoluteTimeSelector = mkSelector "srAbsoluteTime"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,35 +37,35 @@ module ObjC.Photos.PHAsset
   , sourceType
   , hasAdjustments
   , adjustmentFormatIdentifier
-  , canPerformEditOperationSelector
-  , fetchAssetsInAssetCollection_optionsSelector
-  , fetchAssetsWithLocalIdentifiers_optionsSelector
-  , fetchKeyAssetsInAssetCollection_optionsSelector
-  , fetchAssetsWithBurstIdentifier_optionsSelector
-  , fetchAssetsWithOptionsSelector
-  , fetchAssetsWithMediaType_optionsSelector
-  , fetchAssetsWithALAssetURLs_optionsSelector
-  , requestContentEditingInputWithOptions_completionHandlerSelector
-  , cancelContentEditingInputRequestSelector
-  , playbackStyleSelector
-  , mediaTypeSelector
-  , mediaSubtypesSelector
-  , contentTypeSelector
-  , pixelWidthSelector
-  , pixelHeightSelector
-  , creationDateSelector
-  , modificationDateSelector
   , addedDateSelector
-  , durationSelector
-  , hiddenSelector
-  , favoriteSelector
-  , syncFailureHiddenSelector
+  , adjustmentFormatIdentifierSelector
   , burstIdentifierSelector
   , burstSelectionTypesSelector
-  , representsBurstSelector
-  , sourceTypeSelector
+  , canPerformEditOperationSelector
+  , cancelContentEditingInputRequestSelector
+  , contentTypeSelector
+  , creationDateSelector
+  , durationSelector
+  , favoriteSelector
+  , fetchAssetsInAssetCollection_optionsSelector
+  , fetchAssetsWithALAssetURLs_optionsSelector
+  , fetchAssetsWithBurstIdentifier_optionsSelector
+  , fetchAssetsWithLocalIdentifiers_optionsSelector
+  , fetchAssetsWithMediaType_optionsSelector
+  , fetchAssetsWithOptionsSelector
+  , fetchKeyAssetsInAssetCollection_optionsSelector
   , hasAdjustmentsSelector
-  , adjustmentFormatIdentifierSelector
+  , hiddenSelector
+  , mediaSubtypesSelector
+  , mediaTypeSelector
+  , modificationDateSelector
+  , pixelHeightSelector
+  , pixelWidthSelector
+  , playbackStyleSelector
+  , representsBurstSelector
+  , requestContentEditingInputWithOptions_completionHandlerSelector
+  , sourceTypeSelector
+  , syncFailureHiddenSelector
 
   -- * Enum types
   , PHAssetBurstSelectionType(PHAssetBurstSelectionType)
@@ -108,15 +109,11 @@ module ObjC.Photos.PHAsset
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -127,301 +124,288 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- canPerformEditOperation:@
 canPerformEditOperation :: IsPHAsset phAsset => phAsset -> PHAssetEditOperation -> IO Bool
-canPerformEditOperation phAsset  editOperation =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "canPerformEditOperation:") retCULong [argCLong (coerce editOperation)]
+canPerformEditOperation phAsset editOperation =
+  sendMessage phAsset canPerformEditOperationSelector editOperation
 
 -- | @+ fetchAssetsInAssetCollection:options:@
 fetchAssetsInAssetCollection_options :: (IsPHAssetCollection assetCollection, IsPHFetchOptions options) => assetCollection -> options -> IO (Id PHFetchResult)
 fetchAssetsInAssetCollection_options assetCollection options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr assetCollection $ \raw_assetCollection ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchAssetsInAssetCollection:options:") (retPtr retVoid) [argPtr (castPtr raw_assetCollection :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsInAssetCollection_optionsSelector (toPHAssetCollection assetCollection) (toPHFetchOptions options)
 
 -- | @+ fetchAssetsWithLocalIdentifiers:options:@
 fetchAssetsWithLocalIdentifiers_options :: (IsNSArray identifiers, IsPHFetchOptions options) => identifiers -> options -> IO (Id PHFetchResult)
 fetchAssetsWithLocalIdentifiers_options identifiers options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr identifiers $ \raw_identifiers ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchAssetsWithLocalIdentifiers:options:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsWithLocalIdentifiers_optionsSelector (toNSArray identifiers) (toPHFetchOptions options)
 
 -- | @+ fetchKeyAssetsInAssetCollection:options:@
 fetchKeyAssetsInAssetCollection_options :: (IsPHAssetCollection assetCollection, IsPHFetchOptions options) => assetCollection -> options -> IO (Id PHFetchResult)
 fetchKeyAssetsInAssetCollection_options assetCollection options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr assetCollection $ \raw_assetCollection ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchKeyAssetsInAssetCollection:options:") (retPtr retVoid) [argPtr (castPtr raw_assetCollection :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchKeyAssetsInAssetCollection_optionsSelector (toPHAssetCollection assetCollection) (toPHFetchOptions options)
 
 -- | @+ fetchAssetsWithBurstIdentifier:options:@
 fetchAssetsWithBurstIdentifier_options :: (IsNSString burstIdentifier, IsPHFetchOptions options) => burstIdentifier -> options -> IO (Id PHFetchResult)
 fetchAssetsWithBurstIdentifier_options burstIdentifier options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr burstIdentifier $ \raw_burstIdentifier ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchAssetsWithBurstIdentifier:options:") (retPtr retVoid) [argPtr (castPtr raw_burstIdentifier :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsWithBurstIdentifier_optionsSelector (toNSString burstIdentifier) (toPHFetchOptions options)
 
 -- | @+ fetchAssetsWithOptions:@
 fetchAssetsWithOptions :: IsPHFetchOptions options => options -> IO (Id PHFetchResult)
 fetchAssetsWithOptions options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "fetchAssetsWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsWithOptionsSelector (toPHFetchOptions options)
 
 -- | @+ fetchAssetsWithMediaType:options:@
 fetchAssetsWithMediaType_options :: IsPHFetchOptions options => PHAssetMediaType -> options -> IO (Id PHFetchResult)
 fetchAssetsWithMediaType_options mediaType options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "fetchAssetsWithMediaType:options:") (retPtr retVoid) [argCLong (coerce mediaType), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsWithMediaType_optionsSelector mediaType (toPHFetchOptions options)
 
 -- | @+ fetchAssetsWithALAssetURLs:options:@
 fetchAssetsWithALAssetURLs_options :: (IsNSArray assetURLs, IsPHFetchOptions options) => assetURLs -> options -> IO (Id PHFetchResult)
 fetchAssetsWithALAssetURLs_options assetURLs options =
   do
     cls' <- getRequiredClass "PHAsset"
-    withObjCPtr assetURLs $ \raw_assetURLs ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchAssetsWithALAssetURLs:options:") (retPtr retVoid) [argPtr (castPtr raw_assetURLs :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAssetsWithALAssetURLs_optionsSelector (toNSArray assetURLs) (toPHFetchOptions options)
 
 -- | @- requestContentEditingInputWithOptions:completionHandler:@
 requestContentEditingInputWithOptions_completionHandler :: (IsPHAsset phAsset, IsPHContentEditingInputRequestOptions options) => phAsset -> options -> Ptr () -> IO CULong
-requestContentEditingInputWithOptions_completionHandler phAsset  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg phAsset (mkSelector "requestContentEditingInputWithOptions:completionHandler:") retCULong [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestContentEditingInputWithOptions_completionHandler phAsset options completionHandler =
+  sendMessage phAsset requestContentEditingInputWithOptions_completionHandlerSelector (toPHContentEditingInputRequestOptions options) completionHandler
 
 -- | @- cancelContentEditingInputRequest:@
 cancelContentEditingInputRequest :: IsPHAsset phAsset => phAsset -> CULong -> IO ()
-cancelContentEditingInputRequest phAsset  requestID =
-    sendMsg phAsset (mkSelector "cancelContentEditingInputRequest:") retVoid [argCULong requestID]
+cancelContentEditingInputRequest phAsset requestID =
+  sendMessage phAsset cancelContentEditingInputRequestSelector requestID
 
 -- | @- playbackStyle@
 playbackStyle :: IsPHAsset phAsset => phAsset -> IO PHAssetPlaybackStyle
-playbackStyle phAsset  =
-    fmap (coerce :: CLong -> PHAssetPlaybackStyle) $ sendMsg phAsset (mkSelector "playbackStyle") retCLong []
+playbackStyle phAsset =
+  sendMessage phAsset playbackStyleSelector
 
 -- | @- mediaType@
 mediaType :: IsPHAsset phAsset => phAsset -> IO PHAssetMediaType
-mediaType phAsset  =
-    fmap (coerce :: CLong -> PHAssetMediaType) $ sendMsg phAsset (mkSelector "mediaType") retCLong []
+mediaType phAsset =
+  sendMessage phAsset mediaTypeSelector
 
 -- | @- mediaSubtypes@
 mediaSubtypes :: IsPHAsset phAsset => phAsset -> IO PHAssetMediaSubtype
-mediaSubtypes phAsset  =
-    fmap (coerce :: CULong -> PHAssetMediaSubtype) $ sendMsg phAsset (mkSelector "mediaSubtypes") retCULong []
+mediaSubtypes phAsset =
+  sendMessage phAsset mediaSubtypesSelector
 
 -- | The type of image or video data that is presented for the asset
 --
 -- ObjC selector: @- contentType@
 contentType :: IsPHAsset phAsset => phAsset -> IO (Id UTType)
-contentType phAsset  =
-    sendMsg phAsset (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType phAsset =
+  sendMessage phAsset contentTypeSelector
 
 -- | @- pixelWidth@
 pixelWidth :: IsPHAsset phAsset => phAsset -> IO CULong
-pixelWidth phAsset  =
-    sendMsg phAsset (mkSelector "pixelWidth") retCULong []
+pixelWidth phAsset =
+  sendMessage phAsset pixelWidthSelector
 
 -- | @- pixelHeight@
 pixelHeight :: IsPHAsset phAsset => phAsset -> IO CULong
-pixelHeight phAsset  =
-    sendMsg phAsset (mkSelector "pixelHeight") retCULong []
+pixelHeight phAsset =
+  sendMessage phAsset pixelHeightSelector
 
 -- | The date and time of this asset's creation (can be updated by the user)
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsPHAsset phAsset => phAsset -> IO (Id NSDate)
-creationDate phAsset  =
-    sendMsg phAsset (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate phAsset =
+  sendMessage phAsset creationDateSelector
 
 -- | The date and time of the last modification to this asset or one of its properties
 --
 -- ObjC selector: @- modificationDate@
 modificationDate :: IsPHAsset phAsset => phAsset -> IO (Id NSDate)
-modificationDate phAsset  =
-    sendMsg phAsset (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate phAsset =
+  sendMessage phAsset modificationDateSelector
 
 -- | The date and time this asset was added to the photo library (from the device that was used to add this asset)
 --
 -- ObjC selector: @- addedDate@
 addedDate :: IsPHAsset phAsset => phAsset -> IO (Id NSDate)
-addedDate phAsset  =
-    sendMsg phAsset (mkSelector "addedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedDate phAsset =
+  sendMessage phAsset addedDateSelector
 
 -- | @- duration@
 duration :: IsPHAsset phAsset => phAsset -> IO CDouble
-duration phAsset  =
-    sendMsg phAsset (mkSelector "duration") retCDouble []
+duration phAsset =
+  sendMessage phAsset durationSelector
 
 -- | @- hidden@
 hidden :: IsPHAsset phAsset => phAsset -> IO Bool
-hidden phAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "hidden") retCULong []
+hidden phAsset =
+  sendMessage phAsset hiddenSelector
 
 -- | @- favorite@
 favorite :: IsPHAsset phAsset => phAsset -> IO Bool
-favorite phAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "favorite") retCULong []
+favorite phAsset =
+  sendMessage phAsset favoriteSelector
 
 -- | @- syncFailureHidden@
 syncFailureHidden :: IsPHAsset phAsset => phAsset -> IO Bool
-syncFailureHidden phAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "syncFailureHidden") retCULong []
+syncFailureHidden phAsset =
+  sendMessage phAsset syncFailureHiddenSelector
 
 -- | @- burstIdentifier@
 burstIdentifier :: IsPHAsset phAsset => phAsset -> IO (Id NSString)
-burstIdentifier phAsset  =
-    sendMsg phAsset (mkSelector "burstIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+burstIdentifier phAsset =
+  sendMessage phAsset burstIdentifierSelector
 
 -- | @- burstSelectionTypes@
 burstSelectionTypes :: IsPHAsset phAsset => phAsset -> IO PHAssetBurstSelectionType
-burstSelectionTypes phAsset  =
-    fmap (coerce :: CULong -> PHAssetBurstSelectionType) $ sendMsg phAsset (mkSelector "burstSelectionTypes") retCULong []
+burstSelectionTypes phAsset =
+  sendMessage phAsset burstSelectionTypesSelector
 
 -- | @- representsBurst@
 representsBurst :: IsPHAsset phAsset => phAsset -> IO Bool
-representsBurst phAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "representsBurst") retCULong []
+representsBurst phAsset =
+  sendMessage phAsset representsBurstSelector
 
 -- | @- sourceType@
 sourceType :: IsPHAsset phAsset => phAsset -> IO PHAssetSourceType
-sourceType phAsset  =
-    fmap (coerce :: CULong -> PHAssetSourceType) $ sendMsg phAsset (mkSelector "sourceType") retCULong []
+sourceType phAsset =
+  sendMessage phAsset sourceTypeSelector
 
 -- | @- hasAdjustments@
 hasAdjustments :: IsPHAsset phAsset => phAsset -> IO Bool
-hasAdjustments phAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAsset (mkSelector "hasAdjustments") retCULong []
+hasAdjustments phAsset =
+  sendMessage phAsset hasAdjustmentsSelector
 
 -- | @- adjustmentFormatIdentifier@
 adjustmentFormatIdentifier :: IsPHAsset phAsset => phAsset -> IO (Id NSString)
-adjustmentFormatIdentifier phAsset  =
-    sendMsg phAsset (mkSelector "adjustmentFormatIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+adjustmentFormatIdentifier phAsset =
+  sendMessage phAsset adjustmentFormatIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canPerformEditOperation:@
-canPerformEditOperationSelector :: Selector
+canPerformEditOperationSelector :: Selector '[PHAssetEditOperation] Bool
 canPerformEditOperationSelector = mkSelector "canPerformEditOperation:"
 
 -- | @Selector@ for @fetchAssetsInAssetCollection:options:@
-fetchAssetsInAssetCollection_optionsSelector :: Selector
+fetchAssetsInAssetCollection_optionsSelector :: Selector '[Id PHAssetCollection, Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsInAssetCollection_optionsSelector = mkSelector "fetchAssetsInAssetCollection:options:"
 
 -- | @Selector@ for @fetchAssetsWithLocalIdentifiers:options:@
-fetchAssetsWithLocalIdentifiers_optionsSelector :: Selector
+fetchAssetsWithLocalIdentifiers_optionsSelector :: Selector '[Id NSArray, Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsWithLocalIdentifiers_optionsSelector = mkSelector "fetchAssetsWithLocalIdentifiers:options:"
 
 -- | @Selector@ for @fetchKeyAssetsInAssetCollection:options:@
-fetchKeyAssetsInAssetCollection_optionsSelector :: Selector
+fetchKeyAssetsInAssetCollection_optionsSelector :: Selector '[Id PHAssetCollection, Id PHFetchOptions] (Id PHFetchResult)
 fetchKeyAssetsInAssetCollection_optionsSelector = mkSelector "fetchKeyAssetsInAssetCollection:options:"
 
 -- | @Selector@ for @fetchAssetsWithBurstIdentifier:options:@
-fetchAssetsWithBurstIdentifier_optionsSelector :: Selector
+fetchAssetsWithBurstIdentifier_optionsSelector :: Selector '[Id NSString, Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsWithBurstIdentifier_optionsSelector = mkSelector "fetchAssetsWithBurstIdentifier:options:"
 
 -- | @Selector@ for @fetchAssetsWithOptions:@
-fetchAssetsWithOptionsSelector :: Selector
+fetchAssetsWithOptionsSelector :: Selector '[Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsWithOptionsSelector = mkSelector "fetchAssetsWithOptions:"
 
 -- | @Selector@ for @fetchAssetsWithMediaType:options:@
-fetchAssetsWithMediaType_optionsSelector :: Selector
+fetchAssetsWithMediaType_optionsSelector :: Selector '[PHAssetMediaType, Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsWithMediaType_optionsSelector = mkSelector "fetchAssetsWithMediaType:options:"
 
 -- | @Selector@ for @fetchAssetsWithALAssetURLs:options:@
-fetchAssetsWithALAssetURLs_optionsSelector :: Selector
+fetchAssetsWithALAssetURLs_optionsSelector :: Selector '[Id NSArray, Id PHFetchOptions] (Id PHFetchResult)
 fetchAssetsWithALAssetURLs_optionsSelector = mkSelector "fetchAssetsWithALAssetURLs:options:"
 
 -- | @Selector@ for @requestContentEditingInputWithOptions:completionHandler:@
-requestContentEditingInputWithOptions_completionHandlerSelector :: Selector
+requestContentEditingInputWithOptions_completionHandlerSelector :: Selector '[Id PHContentEditingInputRequestOptions, Ptr ()] CULong
 requestContentEditingInputWithOptions_completionHandlerSelector = mkSelector "requestContentEditingInputWithOptions:completionHandler:"
 
 -- | @Selector@ for @cancelContentEditingInputRequest:@
-cancelContentEditingInputRequestSelector :: Selector
+cancelContentEditingInputRequestSelector :: Selector '[CULong] ()
 cancelContentEditingInputRequestSelector = mkSelector "cancelContentEditingInputRequest:"
 
 -- | @Selector@ for @playbackStyle@
-playbackStyleSelector :: Selector
+playbackStyleSelector :: Selector '[] PHAssetPlaybackStyle
 playbackStyleSelector = mkSelector "playbackStyle"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] PHAssetMediaType
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @mediaSubtypes@
-mediaSubtypesSelector :: Selector
+mediaSubtypesSelector :: Selector '[] PHAssetMediaSubtype
 mediaSubtypesSelector = mkSelector "mediaSubtypes"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @pixelWidth@
-pixelWidthSelector :: Selector
+pixelWidthSelector :: Selector '[] CULong
 pixelWidthSelector = mkSelector "pixelWidth"
 
 -- | @Selector@ for @pixelHeight@
-pixelHeightSelector :: Selector
+pixelHeightSelector :: Selector '[] CULong
 pixelHeightSelector = mkSelector "pixelHeight"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @addedDate@
-addedDateSelector :: Selector
+addedDateSelector :: Selector '[] (Id NSDate)
 addedDateSelector = mkSelector "addedDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @favorite@
-favoriteSelector :: Selector
+favoriteSelector :: Selector '[] Bool
 favoriteSelector = mkSelector "favorite"
 
 -- | @Selector@ for @syncFailureHidden@
-syncFailureHiddenSelector :: Selector
+syncFailureHiddenSelector :: Selector '[] Bool
 syncFailureHiddenSelector = mkSelector "syncFailureHidden"
 
 -- | @Selector@ for @burstIdentifier@
-burstIdentifierSelector :: Selector
+burstIdentifierSelector :: Selector '[] (Id NSString)
 burstIdentifierSelector = mkSelector "burstIdentifier"
 
 -- | @Selector@ for @burstSelectionTypes@
-burstSelectionTypesSelector :: Selector
+burstSelectionTypesSelector :: Selector '[] PHAssetBurstSelectionType
 burstSelectionTypesSelector = mkSelector "burstSelectionTypes"
 
 -- | @Selector@ for @representsBurst@
-representsBurstSelector :: Selector
+representsBurstSelector :: Selector '[] Bool
 representsBurstSelector = mkSelector "representsBurst"
 
 -- | @Selector@ for @sourceType@
-sourceTypeSelector :: Selector
+sourceTypeSelector :: Selector '[] PHAssetSourceType
 sourceTypeSelector = mkSelector "sourceType"
 
 -- | @Selector@ for @hasAdjustments@
-hasAdjustmentsSelector :: Selector
+hasAdjustmentsSelector :: Selector '[] Bool
 hasAdjustmentsSelector = mkSelector "hasAdjustments"
 
 -- | @Selector@ for @adjustmentFormatIdentifier@
-adjustmentFormatIdentifierSelector :: Selector
+adjustmentFormatIdentifierSelector :: Selector '[] (Id NSString)
 adjustmentFormatIdentifierSelector = mkSelector "adjustmentFormatIdentifier"
 

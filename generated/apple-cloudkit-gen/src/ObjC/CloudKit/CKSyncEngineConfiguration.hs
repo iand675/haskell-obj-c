@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.CloudKit.CKSyncEngineConfiguration
   , setAutomaticallySync
   , subscriptionID
   , setSubscriptionID
-  , initWithDatabase_stateSerialization_delegateSelector
-  , initSelector
-  , newSelector
-  , databaseSelector
-  , setDatabaseSelector
-  , stateSerializationSelector
-  , setStateSerializationSelector
-  , delegateSelector
-  , setDelegateSelector
   , automaticallySyncSelector
+  , databaseSelector
+  , delegateSelector
+  , initSelector
+  , initWithDatabase_stateSerialization_delegateSelector
+  , newSelector
   , setAutomaticallySyncSelector
-  , subscriptionIDSelector
+  , setDatabaseSelector
+  , setDelegateSelector
+  , setStateSerializationSelector
   , setSubscriptionIDSelector
+  , stateSerializationSelector
+  , subscriptionIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,22 +50,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDatabase:stateSerialization:delegate:@
 initWithDatabase_stateSerialization_delegate :: (IsCKSyncEngineConfiguration ckSyncEngineConfiguration, IsCKDatabase database, IsCKSyncEngineStateSerialization stateSerialization) => ckSyncEngineConfiguration -> database -> stateSerialization -> RawId -> IO (Id CKSyncEngineConfiguration)
-initWithDatabase_stateSerialization_delegate ckSyncEngineConfiguration  database stateSerialization delegate =
-  withObjCPtr database $ \raw_database ->
-    withObjCPtr stateSerialization $ \raw_stateSerialization ->
-        sendMsg ckSyncEngineConfiguration (mkSelector "initWithDatabase:stateSerialization:delegate:") (retPtr retVoid) [argPtr (castPtr raw_database :: Ptr ()), argPtr (castPtr raw_stateSerialization :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDatabase_stateSerialization_delegate ckSyncEngineConfiguration database stateSerialization delegate =
+  sendOwnedMessage ckSyncEngineConfiguration initWithDatabase_stateSerialization_delegateSelector (toCKDatabase database) (toCKSyncEngineStateSerialization stateSerialization) delegate
 
 -- | @- init@
 init_ :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO (Id CKSyncEngineConfiguration)
-init_ ckSyncEngineConfiguration  =
-    sendMsg ckSyncEngineConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineConfiguration =
+  sendOwnedMessage ckSyncEngineConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineConfiguration)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The database for this sync engine to sync with.
 --
@@ -78,8 +73,8 @@ new  =
 --
 -- ObjC selector: @- database@
 database :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO (Id CKDatabase)
-database ckSyncEngineConfiguration  =
-    sendMsg ckSyncEngineConfiguration (mkSelector "database") (retPtr retVoid) [] >>= retainedObject . castPtr
+database ckSyncEngineConfiguration =
+  sendMessage ckSyncEngineConfiguration databaseSelector
 
 -- | The database for this sync engine to sync with.
 --
@@ -89,9 +84,8 @@ database ckSyncEngineConfiguration  =
 --
 -- ObjC selector: @- setDatabase:@
 setDatabase :: (IsCKSyncEngineConfiguration ckSyncEngineConfiguration, IsCKDatabase value) => ckSyncEngineConfiguration -> value -> IO ()
-setDatabase ckSyncEngineConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSyncEngineConfiguration (mkSelector "setDatabase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDatabase ckSyncEngineConfiguration value =
+  sendMessage ckSyncEngineConfiguration setDatabaseSelector (toCKDatabase value)
 
 -- | The state serialization you last received in a ``CKSyncEngine/Event/StateUpdate``.
 --
@@ -99,8 +93,8 @@ setDatabase ckSyncEngineConfiguration  value =
 --
 -- ObjC selector: @- stateSerialization@
 stateSerialization :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO (Id CKSyncEngineStateSerialization)
-stateSerialization ckSyncEngineConfiguration  =
-    sendMsg ckSyncEngineConfiguration (mkSelector "stateSerialization") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateSerialization ckSyncEngineConfiguration =
+  sendMessage ckSyncEngineConfiguration stateSerializationSelector
 
 -- | The state serialization you last received in a ``CKSyncEngine/Event/StateUpdate``.
 --
@@ -108,23 +102,22 @@ stateSerialization ckSyncEngineConfiguration  =
 --
 -- ObjC selector: @- setStateSerialization:@
 setStateSerialization :: (IsCKSyncEngineConfiguration ckSyncEngineConfiguration, IsCKSyncEngineStateSerialization value) => ckSyncEngineConfiguration -> value -> IO ()
-setStateSerialization ckSyncEngineConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSyncEngineConfiguration (mkSelector "setStateSerialization:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStateSerialization ckSyncEngineConfiguration value =
+  sendMessage ckSyncEngineConfiguration setStateSerializationSelector (toCKSyncEngineStateSerialization value)
 
 -- | Your implementation of @CKSyncEngineDelegate@.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO RawId
-delegate ckSyncEngineConfiguration  =
-    fmap (RawId . castPtr) $ sendMsg ckSyncEngineConfiguration (mkSelector "delegate") (retPtr retVoid) []
+delegate ckSyncEngineConfiguration =
+  sendMessage ckSyncEngineConfiguration delegateSelector
 
 -- | Your implementation of @CKSyncEngineDelegate@.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> RawId -> IO ()
-setDelegate ckSyncEngineConfiguration  value =
-    sendMsg ckSyncEngineConfiguration (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ckSyncEngineConfiguration value =
+  sendMessage ckSyncEngineConfiguration setDelegateSelector value
 
 -- | Whether or not the sync engine should automatically sync on your behalf.
 --
@@ -138,8 +131,8 @@ setDelegate ckSyncEngineConfiguration  value =
 --
 -- ObjC selector: @- automaticallySync@
 automaticallySync :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO Bool
-automaticallySync ckSyncEngineConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckSyncEngineConfiguration (mkSelector "automaticallySync") retCULong []
+automaticallySync ckSyncEngineConfiguration =
+  sendMessage ckSyncEngineConfiguration automaticallySyncSelector
 
 -- | Whether or not the sync engine should automatically sync on your behalf.
 --
@@ -153,8 +146,8 @@ automaticallySync ckSyncEngineConfiguration  =
 --
 -- ObjC selector: @- setAutomaticallySync:@
 setAutomaticallySync :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> Bool -> IO ()
-setAutomaticallySync ckSyncEngineConfiguration  value =
-    sendMsg ckSyncEngineConfiguration (mkSelector "setAutomaticallySync:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallySync ckSyncEngineConfiguration value =
+  sendMessage ckSyncEngineConfiguration setAutomaticallySyncSelector value
 
 -- | An optional override for the sync engine's default database subscription ID. Use this for backward compatibility with a previous CloudKit sync implementation.
 --
@@ -164,8 +157,8 @@ setAutomaticallySync ckSyncEngineConfiguration  value =
 --
 -- ObjC selector: @- subscriptionID@
 subscriptionID :: IsCKSyncEngineConfiguration ckSyncEngineConfiguration => ckSyncEngineConfiguration -> IO (Id NSString)
-subscriptionID ckSyncEngineConfiguration  =
-    sendMsg ckSyncEngineConfiguration (mkSelector "subscriptionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionID ckSyncEngineConfiguration =
+  sendMessage ckSyncEngineConfiguration subscriptionIDSelector
 
 -- | An optional override for the sync engine's default database subscription ID. Use this for backward compatibility with a previous CloudKit sync implementation.
 --
@@ -175,63 +168,62 @@ subscriptionID ckSyncEngineConfiguration  =
 --
 -- ObjC selector: @- setSubscriptionID:@
 setSubscriptionID :: (IsCKSyncEngineConfiguration ckSyncEngineConfiguration, IsNSString value) => ckSyncEngineConfiguration -> value -> IO ()
-setSubscriptionID ckSyncEngineConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSyncEngineConfiguration (mkSelector "setSubscriptionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionID ckSyncEngineConfiguration value =
+  sendMessage ckSyncEngineConfiguration setSubscriptionIDSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDatabase:stateSerialization:delegate:@
-initWithDatabase_stateSerialization_delegateSelector :: Selector
+initWithDatabase_stateSerialization_delegateSelector :: Selector '[Id CKDatabase, Id CKSyncEngineStateSerialization, RawId] (Id CKSyncEngineConfiguration)
 initWithDatabase_stateSerialization_delegateSelector = mkSelector "initWithDatabase:stateSerialization:delegate:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @database@
-databaseSelector :: Selector
+databaseSelector :: Selector '[] (Id CKDatabase)
 databaseSelector = mkSelector "database"
 
 -- | @Selector@ for @setDatabase:@
-setDatabaseSelector :: Selector
+setDatabaseSelector :: Selector '[Id CKDatabase] ()
 setDatabaseSelector = mkSelector "setDatabase:"
 
 -- | @Selector@ for @stateSerialization@
-stateSerializationSelector :: Selector
+stateSerializationSelector :: Selector '[] (Id CKSyncEngineStateSerialization)
 stateSerializationSelector = mkSelector "stateSerialization"
 
 -- | @Selector@ for @setStateSerialization:@
-setStateSerializationSelector :: Selector
+setStateSerializationSelector :: Selector '[Id CKSyncEngineStateSerialization] ()
 setStateSerializationSelector = mkSelector "setStateSerialization:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @automaticallySync@
-automaticallySyncSelector :: Selector
+automaticallySyncSelector :: Selector '[] Bool
 automaticallySyncSelector = mkSelector "automaticallySync"
 
 -- | @Selector@ for @setAutomaticallySync:@
-setAutomaticallySyncSelector :: Selector
+setAutomaticallySyncSelector :: Selector '[Bool] ()
 setAutomaticallySyncSelector = mkSelector "setAutomaticallySync:"
 
 -- | @Selector@ for @subscriptionID@
-subscriptionIDSelector :: Selector
+subscriptionIDSelector :: Selector '[] (Id NSString)
 subscriptionIDSelector = mkSelector "subscriptionID"
 
 -- | @Selector@ for @setSubscriptionID:@
-setSubscriptionIDSelector :: Selector
+setSubscriptionIDSelector :: Selector '[Id NSString] ()
 setSubscriptionIDSelector = mkSelector "setSubscriptionID:"
 

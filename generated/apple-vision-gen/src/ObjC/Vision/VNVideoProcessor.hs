@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.Vision.VNVideoProcessor
   , addRequest_withProcessingOptions_error
   , removeRequest_error
   , cancel
-  , initSelector
-  , initWithURLSelector
   , addRequest_processingOptions_errorSelector
   , addRequest_withProcessingOptions_errorSelector
-  , removeRequest_errorSelector
   , cancelSelector
+  , initSelector
+  , initWithURLSelector
+  , removeRequest_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVNVideoProcessor vnVideoProcessor => vnVideoProcessor -> IO (Id VNVideoProcessor)
-init_ vnVideoProcessor  =
-    sendMsg vnVideoProcessor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnVideoProcessor =
+  sendOwnedMessage vnVideoProcessor initSelector
 
 -- | Creates a VNVideoProcessor to be used for performing requests against a video asset specified by it's URL.
 --
@@ -52,9 +49,8 @@ init_ vnVideoProcessor  =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsVNVideoProcessor vnVideoProcessor, IsNSURL videoURL) => vnVideoProcessor -> videoURL -> IO (Id VNVideoProcessor)
-initWithURL vnVideoProcessor  videoURL =
-  withObjCPtr videoURL $ \raw_videoURL ->
-      sendMsg vnVideoProcessor (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_videoURL :: Ptr ())] >>= ownedObject . castPtr
+initWithURL vnVideoProcessor videoURL =
+  sendOwnedMessage vnVideoProcessor initWithURLSelector (toNSURL videoURL)
 
 -- | Add a VNRequest with the specified processing options to be performed on the video.
 --
@@ -72,19 +68,13 @@ initWithURL vnVideoProcessor  videoURL =
 --
 -- ObjC selector: @- addRequest:processingOptions:error:@
 addRequest_processingOptions_error :: (IsVNVideoProcessor vnVideoProcessor, IsVNRequest request, IsVNVideoProcessorRequestProcessingOptions processingOptions, IsNSError error_) => vnVideoProcessor -> request -> processingOptions -> error_ -> IO Bool
-addRequest_processingOptions_error vnVideoProcessor  request processingOptions error_ =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr processingOptions $ \raw_processingOptions ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnVideoProcessor (mkSelector "addRequest:processingOptions:error:") retCULong [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_processingOptions :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRequest_processingOptions_error vnVideoProcessor request processingOptions error_ =
+  sendMessage vnVideoProcessor addRequest_processingOptions_errorSelector (toVNRequest request) (toVNVideoProcessorRequestProcessingOptions processingOptions) (toNSError error_)
 
 -- | @- addRequest:withProcessingOptions:error:@
 addRequest_withProcessingOptions_error :: (IsVNVideoProcessor vnVideoProcessor, IsVNRequest request, IsNSDictionary processingOptions, IsNSError error_) => vnVideoProcessor -> request -> processingOptions -> error_ -> IO Bool
-addRequest_withProcessingOptions_error vnVideoProcessor  request processingOptions error_ =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr processingOptions $ \raw_processingOptions ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnVideoProcessor (mkSelector "addRequest:withProcessingOptions:error:") retCULong [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_processingOptions :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRequest_withProcessingOptions_error vnVideoProcessor request processingOptions error_ =
+  sendMessage vnVideoProcessor addRequest_withProcessingOptions_errorSelector (toVNRequest request) (toNSDictionary processingOptions) (toNSError error_)
 
 -- | Remove a VNRequest from the video processor, which means it won't be performed anymore.
 --
@@ -98,43 +88,41 @@ addRequest_withProcessingOptions_error vnVideoProcessor  request processingOptio
 --
 -- ObjC selector: @- removeRequest:error:@
 removeRequest_error :: (IsVNVideoProcessor vnVideoProcessor, IsVNRequest request, IsNSError error_) => vnVideoProcessor -> request -> error_ -> IO Bool
-removeRequest_error vnVideoProcessor  request error_ =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnVideoProcessor (mkSelector "removeRequest:error:") retCULong [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeRequest_error vnVideoProcessor request error_ =
+  sendMessage vnVideoProcessor removeRequest_errorSelector (toVNRequest request) (toNSError error_)
 
 -- | Cancel the processing of the video. This can return before the last request has completed.
 --
 -- ObjC selector: @- cancel@
 cancel :: IsVNVideoProcessor vnVideoProcessor => vnVideoProcessor -> IO ()
-cancel vnVideoProcessor  =
-    sendMsg vnVideoProcessor (mkSelector "cancel") retVoid []
+cancel vnVideoProcessor =
+  sendMessage vnVideoProcessor cancelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNVideoProcessor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id VNVideoProcessor)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @addRequest:processingOptions:error:@
-addRequest_processingOptions_errorSelector :: Selector
+addRequest_processingOptions_errorSelector :: Selector '[Id VNRequest, Id VNVideoProcessorRequestProcessingOptions, Id NSError] Bool
 addRequest_processingOptions_errorSelector = mkSelector "addRequest:processingOptions:error:"
 
 -- | @Selector@ for @addRequest:withProcessingOptions:error:@
-addRequest_withProcessingOptions_errorSelector :: Selector
+addRequest_withProcessingOptions_errorSelector :: Selector '[Id VNRequest, Id NSDictionary, Id NSError] Bool
 addRequest_withProcessingOptions_errorSelector = mkSelector "addRequest:withProcessingOptions:error:"
 
 -- | @Selector@ for @removeRequest:error:@
-removeRequest_errorSelector :: Selector
+removeRequest_errorSelector :: Selector '[Id VNRequest, Id NSError] Bool
 removeRequest_errorSelector = mkSelector "removeRequest:error:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 

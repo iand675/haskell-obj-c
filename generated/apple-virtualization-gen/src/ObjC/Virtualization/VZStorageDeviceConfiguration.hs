@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.Virtualization.VZStorageDeviceConfiguration
   , new
   , init_
   , attachment
-  , newSelector
-  , initSelector
   , attachmentSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,12 +43,12 @@ new :: IO (Id VZStorageDeviceConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VZStorageDeviceConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZStorageDeviceConfiguration vzStorageDeviceConfiguration => vzStorageDeviceConfiguration -> IO (Id VZStorageDeviceConfiguration)
-init_ vzStorageDeviceConfiguration  =
-    sendMsg vzStorageDeviceConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzStorageDeviceConfiguration =
+  sendOwnedMessage vzStorageDeviceConfiguration initSelector
 
 -- | Storage device attachment. Defines what local resource is exposed to the virtual machine as a disk.
 --
@@ -59,22 +56,22 @@ init_ vzStorageDeviceConfiguration  =
 --
 -- ObjC selector: @- attachment@
 attachment :: IsVZStorageDeviceConfiguration vzStorageDeviceConfiguration => vzStorageDeviceConfiguration -> IO (Id VZStorageDeviceAttachment)
-attachment vzStorageDeviceConfiguration  =
-    sendMsg vzStorageDeviceConfiguration (mkSelector "attachment") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachment vzStorageDeviceConfiguration =
+  sendMessage vzStorageDeviceConfiguration attachmentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZStorageDeviceConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZStorageDeviceConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @attachment@
-attachmentSelector :: Selector
+attachmentSelector :: Selector '[] (Id VZStorageDeviceAttachment)
 attachmentSelector = mkSelector "attachment"
 

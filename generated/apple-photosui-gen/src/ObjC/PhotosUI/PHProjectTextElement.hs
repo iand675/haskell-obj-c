@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.PhotosUI.PHProjectTextElement
   , text
   , attributedText
   , textElementType
-  , textSelector
   , attributedTextSelector
   , textElementTypeSelector
+  , textSelector
 
   -- * Enum types
   , PHProjectTextElementType(PHProjectTextElementType)
@@ -24,15 +25,11 @@ module ObjC.PhotosUI.PHProjectTextElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,34 +41,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- text@
 text :: IsPHProjectTextElement phProjectTextElement => phProjectTextElement -> IO (Id NSString)
-text phProjectTextElement  =
-    sendMsg phProjectTextElement (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text phProjectTextElement =
+  sendMessage phProjectTextElement textSelector
 
 -- | If the text was presented to the user in a stylized manner in Photos, attributedText will provide access to those same attributes.
 --
 -- ObjC selector: @- attributedText@
 attributedText :: IsPHProjectTextElement phProjectTextElement => phProjectTextElement -> IO (Id NSAttributedString)
-attributedText phProjectTextElement  =
-    sendMsg phProjectTextElement (mkSelector "attributedText") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedText phProjectTextElement =
+  sendMessage phProjectTextElement attributedTextSelector
 
 -- | @- textElementType@
 textElementType :: IsPHProjectTextElement phProjectTextElement => phProjectTextElement -> IO PHProjectTextElementType
-textElementType phProjectTextElement  =
-    fmap (coerce :: CLong -> PHProjectTextElementType) $ sendMsg phProjectTextElement (mkSelector "textElementType") retCLong []
+textElementType phProjectTextElement =
+  sendMessage phProjectTextElement textElementTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @attributedText@
-attributedTextSelector :: Selector
+attributedTextSelector :: Selector '[] (Id NSAttributedString)
 attributedTextSelector = mkSelector "attributedText"
 
 -- | @Selector@ for @textElementType@
-textElementTypeSelector :: Selector
+textElementTypeSelector :: Selector '[] PHProjectTextElementType
 textElementTypeSelector = mkSelector "textElementType"
 

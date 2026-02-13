@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVAssetVariantAudioRenditionSpecificAttributes
   , binaural
   , immersive
   , downmix
-  , channelCountSelector
   , binauralSelector
-  , immersiveSelector
+  , channelCountSelector
   , downmixSelector
+  , immersiveSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- channelCount@
 channelCount :: IsAVAssetVariantAudioRenditionSpecificAttributes avAssetVariantAudioRenditionSpecificAttributes => avAssetVariantAudioRenditionSpecificAttributes -> IO CLong
-channelCount avAssetVariantAudioRenditionSpecificAttributes  =
-    sendMsg avAssetVariantAudioRenditionSpecificAttributes (mkSelector "channelCount") retCLong []
+channelCount avAssetVariantAudioRenditionSpecificAttributes =
+  sendMessage avAssetVariantAudioRenditionSpecificAttributes channelCountSelector
 
 -- | Indicates that the variant is best suited for delivery to headphones.
 --
@@ -52,8 +49,8 @@ channelCount avAssetVariantAudioRenditionSpecificAttributes  =
 --
 -- ObjC selector: @- binaural@
 binaural :: IsAVAssetVariantAudioRenditionSpecificAttributes avAssetVariantAudioRenditionSpecificAttributes => avAssetVariantAudioRenditionSpecificAttributes -> IO Bool
-binaural avAssetVariantAudioRenditionSpecificAttributes  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetVariantAudioRenditionSpecificAttributes (mkSelector "binaural") retCULong []
+binaural avAssetVariantAudioRenditionSpecificAttributes =
+  sendMessage avAssetVariantAudioRenditionSpecificAttributes binauralSelector
 
 -- | Indicates that this variant contains virtualized or otherwise pre-processed audio content that is suitable for a variety of purposes.
 --
@@ -61,8 +58,8 @@ binaural avAssetVariantAudioRenditionSpecificAttributes  =
 --
 -- ObjC selector: @- immersive@
 immersive :: IsAVAssetVariantAudioRenditionSpecificAttributes avAssetVariantAudioRenditionSpecificAttributes => avAssetVariantAudioRenditionSpecificAttributes -> IO Bool
-immersive avAssetVariantAudioRenditionSpecificAttributes  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetVariantAudioRenditionSpecificAttributes (mkSelector "immersive") retCULong []
+immersive avAssetVariantAudioRenditionSpecificAttributes =
+  sendMessage avAssetVariantAudioRenditionSpecificAttributes immersiveSelector
 
 -- | Indicates that this variant is declared as a downmix derivative of other media of greater channel count.
 --
@@ -70,26 +67,26 @@ immersive avAssetVariantAudioRenditionSpecificAttributes  =
 --
 -- ObjC selector: @- downmix@
 downmix :: IsAVAssetVariantAudioRenditionSpecificAttributes avAssetVariantAudioRenditionSpecificAttributes => avAssetVariantAudioRenditionSpecificAttributes -> IO Bool
-downmix avAssetVariantAudioRenditionSpecificAttributes  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetVariantAudioRenditionSpecificAttributes (mkSelector "downmix") retCULong []
+downmix avAssetVariantAudioRenditionSpecificAttributes =
+  sendMessage avAssetVariantAudioRenditionSpecificAttributes downmixSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] CLong
 channelCountSelector = mkSelector "channelCount"
 
 -- | @Selector@ for @binaural@
-binauralSelector :: Selector
+binauralSelector :: Selector '[] Bool
 binauralSelector = mkSelector "binaural"
 
 -- | @Selector@ for @immersive@
-immersiveSelector :: Selector
+immersiveSelector :: Selector '[] Bool
 immersiveSelector = mkSelector "immersive"
 
 -- | @Selector@ for @downmix@
-downmixSelector :: Selector
+downmixSelector :: Selector '[] Bool
 downmixSelector = mkSelector "downmix"
 

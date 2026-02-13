@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRMediaPlaybackClusterPlaybackResponseParams
   , setData
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , dataSelector
+  , initWithResponseValue_errorSelector
   , setDataSelector
-  , timedInvokeTimeoutMsSelector
+  , setStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrMediaPlaybackClusterPlaybackResponseParams -> responseValue -> error_ -> IO (Id MTRMediaPlaybackClusterPlaybackResponseParams)
-initWithResponseValue_error mtrMediaPlaybackClusterPlaybackResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrMediaPlaybackClusterPlaybackResponseParams responseValue error_ =
+  sendOwnedMessage mtrMediaPlaybackClusterPlaybackResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams => mtrMediaPlaybackClusterPlaybackResponseParams -> IO (Id NSNumber)
-status mtrMediaPlaybackClusterPlaybackResponseParams  =
-    sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrMediaPlaybackClusterPlaybackResponseParams =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackResponseParams -> value -> IO ()
-setStatus mtrMediaPlaybackClusterPlaybackResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrMediaPlaybackClusterPlaybackResponseParams value =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams => mtrMediaPlaybackClusterPlaybackResponseParams -> IO (Id NSString)
-data_ mtrMediaPlaybackClusterPlaybackResponseParams  =
-    sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrMediaPlaybackClusterPlaybackResponseParams =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams, IsNSString value) => mtrMediaPlaybackClusterPlaybackResponseParams -> value -> IO ()
-setData mtrMediaPlaybackClusterPlaybackResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrMediaPlaybackClusterPlaybackResponseParams value =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams setDataSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setData mtrMediaPlaybackClusterPlaybackResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams => mtrMediaPlaybackClusterPlaybackResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaPlaybackClusterPlaybackResponseParams  =
-    sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaPlaybackClusterPlaybackResponseParams =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrMediaPlaybackClusterPlaybackResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaPlaybackClusterPlaybackResponseParams mtrMediaPlaybackClusterPlaybackResponseParams, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaPlaybackClusterPlaybackResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaPlaybackClusterPlaybackResponseParams value =
+  sendMessage mtrMediaPlaybackClusterPlaybackResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRMediaPlaybackClusterPlaybackResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

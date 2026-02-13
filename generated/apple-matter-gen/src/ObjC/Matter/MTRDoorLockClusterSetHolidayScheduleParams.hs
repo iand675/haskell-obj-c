@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Matter.MTRDoorLockClusterSetHolidayScheduleParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , holidayIndexSelector
-  , setHolidayIndexSelector
-  , localStartTimeSelector
-  , setLocalStartTimeSelector
   , localEndTimeSelector
-  , setLocalEndTimeSelector
+  , localStartTimeSelector
   , operatingModeSelector
-  , setOperatingModeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setHolidayIndexSelector
+  , setLocalEndTimeSelector
+  , setLocalStartTimeSelector
+  , setOperatingModeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,47 +48,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- holidayIndex@
 holidayIndex :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-holidayIndex mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "holidayIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+holidayIndex mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams holidayIndexSelector
 
 -- | @- setHolidayIndex:@
 setHolidayIndex :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setHolidayIndex mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setHolidayIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHolidayIndex mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setHolidayIndexSelector (toNSNumber value)
 
 -- | @- localStartTime@
 localStartTime :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-localStartTime mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "localStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+localStartTime mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams localStartTimeSelector
 
 -- | @- setLocalStartTime:@
 setLocalStartTime :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setLocalStartTime mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setLocalStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalStartTime mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setLocalStartTimeSelector (toNSNumber value)
 
 -- | @- localEndTime@
 localEndTime :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-localEndTime mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "localEndTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+localEndTime mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams localEndTimeSelector
 
 -- | @- setLocalEndTime:@
 setLocalEndTime :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setLocalEndTime mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setLocalEndTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalEndTime mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setLocalEndTimeSelector (toNSNumber value)
 
 -- | @- operatingMode@
 operatingMode :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-operatingMode mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "operatingMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+operatingMode mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams operatingModeSelector
 
 -- | @- setOperatingMode:@
 setOperatingMode :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setOperatingMode mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setOperatingMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperatingMode mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setOperatingModeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -101,8 +94,8 @@ setOperatingMode mtrDoorLockClusterSetHolidayScheduleParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,9 +105,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -124,8 +116,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterSetHolidayScheduleParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams => mtrDoorLockClusterSetHolidayScheduleParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterSetHolidayScheduleParams  =
-    sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterSetHolidayScheduleParams =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -135,59 +127,58 @@ serverSideProcessingTimeout mtrDoorLockClusterSetHolidayScheduleParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterSetHolidayScheduleParams mtrDoorLockClusterSetHolidayScheduleParams, IsNSNumber value) => mtrDoorLockClusterSetHolidayScheduleParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterSetHolidayScheduleParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterSetHolidayScheduleParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterSetHolidayScheduleParams value =
+  sendMessage mtrDoorLockClusterSetHolidayScheduleParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @holidayIndex@
-holidayIndexSelector :: Selector
+holidayIndexSelector :: Selector '[] (Id NSNumber)
 holidayIndexSelector = mkSelector "holidayIndex"
 
 -- | @Selector@ for @setHolidayIndex:@
-setHolidayIndexSelector :: Selector
+setHolidayIndexSelector :: Selector '[Id NSNumber] ()
 setHolidayIndexSelector = mkSelector "setHolidayIndex:"
 
 -- | @Selector@ for @localStartTime@
-localStartTimeSelector :: Selector
+localStartTimeSelector :: Selector '[] (Id NSNumber)
 localStartTimeSelector = mkSelector "localStartTime"
 
 -- | @Selector@ for @setLocalStartTime:@
-setLocalStartTimeSelector :: Selector
+setLocalStartTimeSelector :: Selector '[Id NSNumber] ()
 setLocalStartTimeSelector = mkSelector "setLocalStartTime:"
 
 -- | @Selector@ for @localEndTime@
-localEndTimeSelector :: Selector
+localEndTimeSelector :: Selector '[] (Id NSNumber)
 localEndTimeSelector = mkSelector "localEndTime"
 
 -- | @Selector@ for @setLocalEndTime:@
-setLocalEndTimeSelector :: Selector
+setLocalEndTimeSelector :: Selector '[Id NSNumber] ()
 setLocalEndTimeSelector = mkSelector "setLocalEndTime:"
 
 -- | @Selector@ for @operatingMode@
-operatingModeSelector :: Selector
+operatingModeSelector :: Selector '[] (Id NSNumber)
 operatingModeSelector = mkSelector "operatingMode"
 
 -- | @Selector@ for @setOperatingMode:@
-setOperatingModeSelector :: Selector
+setOperatingModeSelector :: Selector '[Id NSNumber] ()
 setOperatingModeSelector = mkSelector "setOperatingMode:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

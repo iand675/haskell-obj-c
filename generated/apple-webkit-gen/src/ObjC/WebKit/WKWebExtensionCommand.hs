@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,16 +22,16 @@ module ObjC.WebKit.WKWebExtensionCommand
   , modifierFlags
   , setModifierFlags
   , menuItem
-  , newSelector
-  , initSelector
-  , webExtensionContextSelector
-  , identifierSelector
-  , titleSelector
   , activationKeySelector
-  , setActivationKeySelector
-  , modifierFlagsSelector
-  , setModifierFlagsSelector
+  , identifierSelector
+  , initSelector
   , menuItemSelector
+  , modifierFlagsSelector
+  , newSelector
+  , setActivationKeySelector
+  , setModifierFlagsSelector
+  , titleSelector
+  , webExtensionContextSelector
 
   -- * Enum types
   , NSEventModifierFlags(NSEventModifierFlags)
@@ -46,15 +47,11 @@ module ObjC.WebKit.WKWebExtensionCommand
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,26 +65,26 @@ new :: IO (Id WKWebExtensionCommand)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionCommand"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id WKWebExtensionCommand)
-init_ wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionCommand =
+  sendOwnedMessage wkWebExtensionCommand initSelector
 
 -- | The web extension context associated with the command.
 --
 -- ObjC selector: @- webExtensionContext@
 webExtensionContext :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id WKWebExtensionContext)
-webExtensionContext wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "webExtensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+webExtensionContext wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand webExtensionContextSelector
 
 -- | A unique identifier for the command.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id NSString)
-identifier wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand identifierSelector
 
 -- | Descriptive title for the command aiding discoverability.
 --
@@ -95,8 +92,8 @@ identifier wkWebExtensionCommand  =
 --
 -- ObjC selector: @- title@
 title :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id NSString)
-title wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand titleSelector
 
 -- | The primary key used to trigger the command, distinct from any modifier flags.
 --
@@ -104,8 +101,8 @@ title wkWebExtensionCommand  =
 --
 -- ObjC selector: @- activationKey@
 activationKey :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id NSString)
-activationKey wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "activationKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+activationKey wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand activationKeySelector
 
 -- | The primary key used to trigger the command, distinct from any modifier flags.
 --
@@ -113,66 +110,65 @@ activationKey wkWebExtensionCommand  =
 --
 -- ObjC selector: @- setActivationKey:@
 setActivationKey :: (IsWKWebExtensionCommand wkWebExtensionCommand, IsNSString value) => wkWebExtensionCommand -> value -> IO ()
-setActivationKey wkWebExtensionCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebExtensionCommand (mkSelector "setActivationKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActivationKey wkWebExtensionCommand value =
+  sendMessage wkWebExtensionCommand setActivationKeySelector (toNSString value)
 
 -- | @- modifierFlags@
 modifierFlags :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO NSEventModifierFlags
-modifierFlags wkWebExtensionCommand  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg wkWebExtensionCommand (mkSelector "modifierFlags") retCULong []
+modifierFlags wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand modifierFlagsSelector
 
 -- | @- setModifierFlags:@
 setModifierFlags :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> NSEventModifierFlags -> IO ()
-setModifierFlags wkWebExtensionCommand  value =
-    sendMsg wkWebExtensionCommand (mkSelector "setModifierFlags:") retVoid [argCULong (coerce value)]
+setModifierFlags wkWebExtensionCommand value =
+  sendMessage wkWebExtensionCommand setModifierFlagsSelector value
 
 -- | @- menuItem@
 menuItem :: IsWKWebExtensionCommand wkWebExtensionCommand => wkWebExtensionCommand -> IO (Id NSMenuItem)
-menuItem wkWebExtensionCommand  =
-    sendMsg wkWebExtensionCommand (mkSelector "menuItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuItem wkWebExtensionCommand =
+  sendMessage wkWebExtensionCommand menuItemSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionCommand)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionCommand)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @webExtensionContext@
-webExtensionContextSelector :: Selector
+webExtensionContextSelector :: Selector '[] (Id WKWebExtensionContext)
 webExtensionContextSelector = mkSelector "webExtensionContext"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @activationKey@
-activationKeySelector :: Selector
+activationKeySelector :: Selector '[] (Id NSString)
 activationKeySelector = mkSelector "activationKey"
 
 -- | @Selector@ for @setActivationKey:@
-setActivationKeySelector :: Selector
+setActivationKeySelector :: Selector '[Id NSString] ()
 setActivationKeySelector = mkSelector "setActivationKey:"
 
 -- | @Selector@ for @modifierFlags@
-modifierFlagsSelector :: Selector
+modifierFlagsSelector :: Selector '[] NSEventModifierFlags
 modifierFlagsSelector = mkSelector "modifierFlags"
 
 -- | @Selector@ for @setModifierFlags:@
-setModifierFlagsSelector :: Selector
+setModifierFlagsSelector :: Selector '[NSEventModifierFlags] ()
 setModifierFlagsSelector = mkSelector "setModifierFlags:"
 
 -- | @Selector@ for @menuItem@
-menuItemSelector :: Selector
+menuItemSelector :: Selector '[] (Id NSMenuItem)
 menuItemSelector = mkSelector "menuItem"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.Intents.INReservationAction
   , initSelector
   , initWithType_validDuration_userActivitySelector
   , typeSelector
-  , validDurationSelector
   , userActivitySelector
+  , validDurationSelector
 
   -- * Enum types
   , INReservationActionType(INReservationActionType)
@@ -25,15 +26,11 @@ module ObjC.Intents.INReservationAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,52 +40,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINReservationAction inReservationAction => inReservationAction -> IO (Id INReservationAction)
-init_ inReservationAction  =
-    sendMsg inReservationAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inReservationAction =
+  sendOwnedMessage inReservationAction initSelector
 
 -- | @- initWithType:validDuration:userActivity:@
 initWithType_validDuration_userActivity :: (IsINReservationAction inReservationAction, IsINDateComponentsRange validDuration, IsNSUserActivity userActivity) => inReservationAction -> INReservationActionType -> validDuration -> userActivity -> IO (Id INReservationAction)
-initWithType_validDuration_userActivity inReservationAction  type_ validDuration userActivity =
-  withObjCPtr validDuration $ \raw_validDuration ->
-    withObjCPtr userActivity $ \raw_userActivity ->
-        sendMsg inReservationAction (mkSelector "initWithType:validDuration:userActivity:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_validDuration :: Ptr ()), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithType_validDuration_userActivity inReservationAction type_ validDuration userActivity =
+  sendOwnedMessage inReservationAction initWithType_validDuration_userActivitySelector type_ (toINDateComponentsRange validDuration) (toNSUserActivity userActivity)
 
 -- | @- type@
 type_ :: IsINReservationAction inReservationAction => inReservationAction -> IO INReservationActionType
-type_ inReservationAction  =
-    fmap (coerce :: CLong -> INReservationActionType) $ sendMsg inReservationAction (mkSelector "type") retCLong []
+type_ inReservationAction =
+  sendMessage inReservationAction typeSelector
 
 -- | @- validDuration@
 validDuration :: IsINReservationAction inReservationAction => inReservationAction -> IO (Id INDateComponentsRange)
-validDuration inReservationAction  =
-    sendMsg inReservationAction (mkSelector "validDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+validDuration inReservationAction =
+  sendMessage inReservationAction validDurationSelector
 
 -- | @- userActivity@
 userActivity :: IsINReservationAction inReservationAction => inReservationAction -> IO (Id NSUserActivity)
-userActivity inReservationAction  =
-    sendMsg inReservationAction (mkSelector "userActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userActivity inReservationAction =
+  sendMessage inReservationAction userActivitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INReservationAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithType:validDuration:userActivity:@
-initWithType_validDuration_userActivitySelector :: Selector
+initWithType_validDuration_userActivitySelector :: Selector '[INReservationActionType, Id INDateComponentsRange, Id NSUserActivity] (Id INReservationAction)
 initWithType_validDuration_userActivitySelector = mkSelector "initWithType:validDuration:userActivity:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] INReservationActionType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @validDuration@
-validDurationSelector :: Selector
+validDurationSelector :: Selector '[] (Id INDateComponentsRange)
 validDurationSelector = mkSelector "validDuration"
 
 -- | @Selector@ for @userActivity@
-userActivitySelector :: Selector
+userActivitySelector :: Selector '[] (Id NSUserActivity)
 userActivitySelector = mkSelector "userActivity"
 

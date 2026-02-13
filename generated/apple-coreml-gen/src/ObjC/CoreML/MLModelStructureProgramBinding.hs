@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.CoreML.MLModelStructureProgramBinding
   , name
   , value
   , initSelector
-  , newSelector
   , nameSelector
+  , newSelector
   , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,47 +36,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructureProgramBinding mlModelStructureProgramBinding => mlModelStructureProgramBinding -> IO (Id MLModelStructureProgramBinding)
-init_ mlModelStructureProgramBinding  =
-    sendMsg mlModelStructureProgramBinding (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructureProgramBinding =
+  sendOwnedMessage mlModelStructureProgramBinding initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructureProgramBinding)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructureProgramBinding"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The name of the variable in the Program.
 --
 -- ObjC selector: @- name@
 name :: IsMLModelStructureProgramBinding mlModelStructureProgramBinding => mlModelStructureProgramBinding -> IO (Id NSString)
-name mlModelStructureProgramBinding  =
-    sendMsg mlModelStructureProgramBinding (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlModelStructureProgramBinding =
+  sendMessage mlModelStructureProgramBinding nameSelector
 
 -- | The compile time constant value in the Program.
 --
 -- ObjC selector: @- value@
 value :: IsMLModelStructureProgramBinding mlModelStructureProgramBinding => mlModelStructureProgramBinding -> IO (Id MLModelStructureProgramValue)
-value mlModelStructureProgramBinding  =
-    sendMsg mlModelStructureProgramBinding (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mlModelStructureProgramBinding =
+  sendMessage mlModelStructureProgramBinding valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructureProgramBinding)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructureProgramBinding)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id MLModelStructureProgramValue)
 valueSelector = mkSelector "value"
 

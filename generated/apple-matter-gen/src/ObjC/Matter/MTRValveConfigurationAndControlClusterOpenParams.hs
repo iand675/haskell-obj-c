@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRValveConfigurationAndControlClusterOpenParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , openDurationSelector
-  , setOpenDurationSelector
-  , targetLevelSelector
-  , setTargetLevelSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setOpenDurationSelector
   , setServerSideProcessingTimeoutSelector
+  , setTargetLevelSelector
+  , setTimedInvokeTimeoutMsSelector
+  , targetLevelSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- openDuration@
 openDuration :: IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams => mtrValveConfigurationAndControlClusterOpenParams -> IO (Id NSNumber)
-openDuration mtrValveConfigurationAndControlClusterOpenParams  =
-    sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "openDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+openDuration mtrValveConfigurationAndControlClusterOpenParams =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams openDurationSelector
 
 -- | @- setOpenDuration:@
 setOpenDuration :: (IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams, IsNSNumber value) => mtrValveConfigurationAndControlClusterOpenParams -> value -> IO ()
-setOpenDuration mtrValveConfigurationAndControlClusterOpenParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "setOpenDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOpenDuration mtrValveConfigurationAndControlClusterOpenParams value =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams setOpenDurationSelector (toNSNumber value)
 
 -- | @- targetLevel@
 targetLevel :: IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams => mtrValveConfigurationAndControlClusterOpenParams -> IO (Id NSNumber)
-targetLevel mtrValveConfigurationAndControlClusterOpenParams  =
-    sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "targetLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetLevel mtrValveConfigurationAndControlClusterOpenParams =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams targetLevelSelector
 
 -- | @- setTargetLevel:@
 setTargetLevel :: (IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams, IsNSNumber value) => mtrValveConfigurationAndControlClusterOpenParams -> value -> IO ()
-setTargetLevel mtrValveConfigurationAndControlClusterOpenParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "setTargetLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetLevel mtrValveConfigurationAndControlClusterOpenParams value =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams setTargetLevelSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setTargetLevel mtrValveConfigurationAndControlClusterOpenParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams => mtrValveConfigurationAndControlClusterOpenParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams  =
-    sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams, IsNSNumber value) => mtrValveConfigurationAndControlClusterOpenParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams value =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrValveConfigurationAndControlClusterOpenParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams => mtrValveConfigurationAndControlClusterOpenParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrValveConfigurationAndControlClusterOpenParams  =
-    sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrValveConfigurationAndControlClusterOpenParams =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrValveConfigurationAndControlClusterOpenParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRValveConfigurationAndControlClusterOpenParams mtrValveConfigurationAndControlClusterOpenParams, IsNSNumber value) => mtrValveConfigurationAndControlClusterOpenParams -> value -> IO ()
-setServerSideProcessingTimeout mtrValveConfigurationAndControlClusterOpenParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrValveConfigurationAndControlClusterOpenParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrValveConfigurationAndControlClusterOpenParams value =
+  sendMessage mtrValveConfigurationAndControlClusterOpenParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @openDuration@
-openDurationSelector :: Selector
+openDurationSelector :: Selector '[] (Id NSNumber)
 openDurationSelector = mkSelector "openDuration"
 
 -- | @Selector@ for @setOpenDuration:@
-setOpenDurationSelector :: Selector
+setOpenDurationSelector :: Selector '[Id NSNumber] ()
 setOpenDurationSelector = mkSelector "setOpenDuration:"
 
 -- | @Selector@ for @targetLevel@
-targetLevelSelector :: Selector
+targetLevelSelector :: Selector '[] (Id NSNumber)
 targetLevelSelector = mkSelector "targetLevel"
 
 -- | @Selector@ for @setTargetLevel:@
-setTargetLevelSelector :: Selector
+setTargetLevelSelector :: Selector '[Id NSNumber] ()
 setTargetLevelSelector = mkSelector "setTargetLevel:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

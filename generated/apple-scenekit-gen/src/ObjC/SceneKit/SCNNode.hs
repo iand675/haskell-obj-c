@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -110,103 +111,103 @@ module ObjC.SceneKit.SCNNode
   , worldUp
   , worldRight
   , worldFront
-  , nodeSelector
-  , nodeWithGeometrySelector
-  , cloneSelector
-  , flattenedCloneSelector
-  , setWorldTransformSelector
+  , addAudioPlayerSelector
   , addChildNodeSelector
-  , insertChildNode_atIndexSelector
-  , removeFromParentNodeSelector
-  , replaceChildNode_withSelector
+  , addParticleSystemSelector
+  , audioPlayersSelector
+  , cameraSelector
+  , castsShadowSelector
+  , categoryBitMaskSelector
   , childNodeWithName_recursivelySelector
   , childNodesPassingTestSelector
+  , childNodesSelector
+  , cloneSelector
+  , constraintsSelector
+  , convertPosition_fromNodeSelector
+  , convertPosition_toNodeSelector
+  , convertTransform_fromNodeSelector
+  , convertTransform_toNodeSelector
+  , convertVector_fromNodeSelector
+  , convertVector_toNodeSelector
   , enumerateChildNodesUsingBlockSelector
   , enumerateHierarchyUsingBlockSelector
-  , convertPosition_toNodeSelector
-  , convertPosition_fromNodeSelector
-  , convertVector_toNodeSelector
-  , convertVector_fromNodeSelector
-  , convertTransform_toNodeSelector
-  , convertTransform_fromNodeSelector
+  , eulerAnglesSelector
+  , flattenedCloneSelector
+  , focusBehaviorSelector
+  , geometrySelector
+  , hiddenSelector
   , hitTestWithSegmentFromPoint_toPoint_optionsSelector
-  , addAudioPlayerSelector
-  , removeAllAudioPlayersSelector
-  , removeAudioPlayerSelector
-  , addParticleSystemSelector
-  , removeAllParticleSystemsSelector
-  , removeParticleSystemSelector
+  , insertChildNode_atIndexSelector
+  , lightSelector
+  , localFrontSelector
+  , localRightSelector
+  , localRotateBySelector
+  , localTranslateBySelector
+  , localUpSelector
   , lookAtSelector
   , lookAt_up_localFrontSelector
-  , localTranslateBySelector
-  , localRotateBySelector
-  , rotateBy_aroundTargetSelector
-  , nameSelector
-  , setNameSelector
-  , lightSelector
-  , setLightSelector
-  , cameraSelector
-  , setCameraSelector
-  , geometrySelector
-  , setGeometrySelector
-  , skinnerSelector
-  , setSkinnerSelector
   , morpherSelector
-  , setMorpherSelector
-  , transformSelector
-  , setTransformSelector
-  , worldTransformSelector
-  , positionSelector
-  , setPositionSelector
-  , worldPositionSelector
-  , setWorldPositionSelector
-  , rotationSelector
-  , setRotationSelector
-  , orientationSelector
-  , setOrientationSelector
-  , worldOrientationSelector
-  , setWorldOrientationSelector
-  , eulerAnglesSelector
-  , setEulerAnglesSelector
-  , scaleSelector
-  , setScaleSelector
-  , pivotSelector
-  , setPivotSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , opacitySelector
-  , setOpacitySelector
-  , renderingOrderSelector
-  , setRenderingOrderSelector
-  , castsShadowSelector
-  , setCastsShadowSelector
   , movabilityHintSelector
-  , setMovabilityHintSelector
+  , nameSelector
+  , nodeSelector
+  , nodeWithGeometrySelector
+  , opacitySelector
+  , orientationSelector
   , parentNodeSelector
-  , childNodesSelector
-  , physicsBodySelector
-  , setPhysicsBodySelector
-  , physicsFieldSelector
-  , setPhysicsFieldSelector
-  , constraintsSelector
-  , setConstraintsSelector
-  , presentationNodeSelector
-  , pausedSelector
-  , setPausedSelector
-  , rendererDelegateSelector
-  , setRendererDelegateSelector
-  , categoryBitMaskSelector
-  , setCategoryBitMaskSelector
-  , audioPlayersSelector
   , particleSystemsSelector
-  , focusBehaviorSelector
+  , pausedSelector
+  , physicsBodySelector
+  , physicsFieldSelector
+  , pivotSelector
+  , positionSelector
+  , presentationNodeSelector
+  , removeAllAudioPlayersSelector
+  , removeAllParticleSystemsSelector
+  , removeAudioPlayerSelector
+  , removeFromParentNodeSelector
+  , removeParticleSystemSelector
+  , rendererDelegateSelector
+  , renderingOrderSelector
+  , replaceChildNode_withSelector
+  , rotateBy_aroundTargetSelector
+  , rotationSelector
+  , scaleSelector
+  , setCameraSelector
+  , setCastsShadowSelector
+  , setCategoryBitMaskSelector
+  , setConstraintsSelector
+  , setEulerAnglesSelector
   , setFocusBehaviorSelector
-  , localUpSelector
-  , localRightSelector
-  , localFrontSelector
-  , worldUpSelector
-  , worldRightSelector
+  , setGeometrySelector
+  , setHiddenSelector
+  , setLightSelector
+  , setMorpherSelector
+  , setMovabilityHintSelector
+  , setNameSelector
+  , setOpacitySelector
+  , setOrientationSelector
+  , setPausedSelector
+  , setPhysicsBodySelector
+  , setPhysicsFieldSelector
+  , setPivotSelector
+  , setPositionSelector
+  , setRendererDelegateSelector
+  , setRenderingOrderSelector
+  , setRotationSelector
+  , setScaleSelector
+  , setSkinnerSelector
+  , setTransformSelector
+  , setWorldOrientationSelector
+  , setWorldPositionSelector
+  , setWorldTransformSelector
+  , skinnerSelector
+  , transformSelector
   , worldFrontSelector
+  , worldOrientationSelector
+  , worldPositionSelector
+  , worldRightSelector
+  , worldTransformSelector
+  , worldUpSelector
 
   -- * Enum types
   , SCNMovabilityHint(SCNMovabilityHint)
@@ -219,15 +220,11 @@ module ObjC.SceneKit.SCNNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -245,7 +242,7 @@ node :: IO (Id SCNNode)
 node  =
   do
     cls' <- getRequiredClass "SCNNode"
-    sendClassMsg cls' (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeSelector
 
 -- | nodeWithGeometry:
 --
@@ -258,8 +255,7 @@ nodeWithGeometry :: IsSCNGeometry geometry => geometry -> IO (Id SCNNode)
 nodeWithGeometry geometry =
   do
     cls' <- getRequiredClass "SCNNode"
-    withObjCPtr geometry $ \raw_geometry ->
-      sendClassMsg cls' (mkSelector "nodeWithGeometry:") (retPtr retVoid) [argPtr (castPtr raw_geometry :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithGeometrySelector (toSCNGeometry geometry)
 
 -- | clone
 --
@@ -269,18 +265,18 @@ nodeWithGeometry geometry =
 --
 -- ObjC selector: @- clone@
 clone :: IsSCNNode scnNode => scnNode -> IO (Id SCNNode)
-clone scnNode  =
-    sendMsg scnNode (mkSelector "clone") (retPtr retVoid) [] >>= retainedObject . castPtr
+clone scnNode =
+  sendMessage scnNode cloneSelector
 
 -- | @- flattenedClone@
 flattenedClone :: IsSCNNode scnNode => scnNode -> IO (Id SCNNode)
-flattenedClone scnNode  =
-    sendMsg scnNode (mkSelector "flattenedClone") (retPtr retVoid) [] >>= retainedObject . castPtr
+flattenedClone scnNode =
+  sendMessage scnNode flattenedCloneSelector
 
 -- | @- setWorldTransform:@
 setWorldTransform :: IsSCNNode scnNode => scnNode -> SCNMatrix4 -> IO ()
-setWorldTransform scnNode  worldTransform =
-    sendMsg scnNode (mkSelector "setWorldTransform:") retVoid [argSCNMatrix4 worldTransform]
+setWorldTransform scnNode worldTransform =
+  sendMessage scnNode setWorldTransformSelector worldTransform
 
 -- | addChildNode:
 --
@@ -290,9 +286,8 @@ setWorldTransform scnNode  worldTransform =
 --
 -- ObjC selector: @- addChildNode:@
 addChildNode :: (IsSCNNode scnNode, IsSCNNode child) => scnNode -> child -> IO ()
-addChildNode scnNode  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg scnNode (mkSelector "addChildNode:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChildNode scnNode child =
+  sendMessage scnNode addChildNodeSelector (toSCNNode child)
 
 -- | insertChildNode:atIndex:
 --
@@ -304,9 +299,8 @@ addChildNode scnNode  child =
 --
 -- ObjC selector: @- insertChildNode:atIndex:@
 insertChildNode_atIndex :: (IsSCNNode scnNode, IsSCNNode child) => scnNode -> child -> CULong -> IO ()
-insertChildNode_atIndex scnNode  child index =
-  withObjCPtr child $ \raw_child ->
-      sendMsg scnNode (mkSelector "insertChildNode:atIndex:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCULong index]
+insertChildNode_atIndex scnNode child index =
+  sendMessage scnNode insertChildNode_atIndexSelector (toSCNNode child) index
 
 -- | removeFromParentNode
 --
@@ -314,8 +308,8 @@ insertChildNode_atIndex scnNode  child index =
 --
 -- ObjC selector: @- removeFromParentNode@
 removeFromParentNode :: IsSCNNode scnNode => scnNode -> IO ()
-removeFromParentNode scnNode  =
-    sendMsg scnNode (mkSelector "removeFromParentNode") retVoid []
+removeFromParentNode scnNode =
+  sendMessage scnNode removeFromParentNodeSelector
 
 -- | replaceChildNode:with:
 --
@@ -329,10 +323,8 @@ removeFromParentNode scnNode  =
 --
 -- ObjC selector: @- replaceChildNode:with:@
 replaceChildNode_with :: (IsSCNNode scnNode, IsSCNNode oldChild, IsSCNNode newChild) => scnNode -> oldChild -> newChild -> IO ()
-replaceChildNode_with scnNode  oldChild newChild =
-  withObjCPtr oldChild $ \raw_oldChild ->
-    withObjCPtr newChild $ \raw_newChild ->
-        sendMsg scnNode (mkSelector "replaceChildNode:with:") retVoid [argPtr (castPtr raw_oldChild :: Ptr ()), argPtr (castPtr raw_newChild :: Ptr ())]
+replaceChildNode_with scnNode oldChild newChild =
+  sendMessage scnNode replaceChildNode_withSelector (toSCNNode oldChild) (toSCNNode newChild)
 
 -- | childNodeWithName:recursively:
 --
@@ -346,9 +338,8 @@ replaceChildNode_with scnNode  oldChild newChild =
 --
 -- ObjC selector: @- childNodeWithName:recursively:@
 childNodeWithName_recursively :: (IsSCNNode scnNode, IsNSString name) => scnNode -> name -> Bool -> IO (Id SCNNode)
-childNodeWithName_recursively scnNode  name recursively =
-  withObjCPtr name $ \raw_name ->
-      sendMsg scnNode (mkSelector "childNodeWithName:recursively:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (if recursively then 1 else 0)] >>= retainedObject . castPtr
+childNodeWithName_recursively scnNode name recursively =
+  sendMessage scnNode childNodeWithName_recursivelySelector (toNSString name) recursively
 
 -- | childNodesPassingTest:
 --
@@ -360,8 +351,8 @@ childNodeWithName_recursively scnNode  name recursively =
 --
 -- ObjC selector: @- childNodesPassingTest:@
 childNodesPassingTest :: IsSCNNode scnNode => scnNode -> Ptr () -> IO (Id NSArray)
-childNodesPassingTest scnNode  predicate =
-    sendMsg scnNode (mkSelector "childNodesPassingTest:") (retPtr retVoid) [argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+childNodesPassingTest scnNode predicate =
+  sendMessage scnNode childNodesPassingTestSelector predicate
 
 -- | enumerateChildNodesUsingBlock:
 --
@@ -373,8 +364,8 @@ childNodesPassingTest scnNode  predicate =
 --
 -- ObjC selector: @- enumerateChildNodesUsingBlock:@
 enumerateChildNodesUsingBlock :: IsSCNNode scnNode => scnNode -> Ptr () -> IO ()
-enumerateChildNodesUsingBlock scnNode  block =
-    sendMsg scnNode (mkSelector "enumerateChildNodesUsingBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateChildNodesUsingBlock scnNode block =
+  sendMessage scnNode enumerateChildNodesUsingBlockSelector block
 
 -- | enumerateHierarchyUsingBlock:
 --
@@ -386,8 +377,8 @@ enumerateChildNodesUsingBlock scnNode  block =
 --
 -- ObjC selector: @- enumerateHierarchyUsingBlock:@
 enumerateHierarchyUsingBlock :: IsSCNNode scnNode => scnNode -> Ptr () -> IO ()
-enumerateHierarchyUsingBlock scnNode  block =
-    sendMsg scnNode (mkSelector "enumerateHierarchyUsingBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateHierarchyUsingBlock scnNode block =
+  sendMessage scnNode enumerateHierarchyUsingBlockSelector block
 
 -- | convertPosition:toNode:
 --
@@ -399,9 +390,8 @@ enumerateHierarchyUsingBlock scnNode  block =
 --
 -- ObjC selector: @- convertPosition:toNode:@
 convertPosition_toNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNVector3 -> node -> IO SCNVector3
-convertPosition_toNode scnNode  position node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertPosition:toNode:") retSCNVector3 [argSCNVector3 position, argPtr (castPtr raw_node :: Ptr ())]
+convertPosition_toNode scnNode position node =
+  sendMessage scnNode convertPosition_toNodeSelector position (toSCNNode node)
 
 -- | convertPosition:fromNode:
 --
@@ -413,9 +403,8 @@ convertPosition_toNode scnNode  position node =
 --
 -- ObjC selector: @- convertPosition:fromNode:@
 convertPosition_fromNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNVector3 -> node -> IO SCNVector3
-convertPosition_fromNode scnNode  position node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertPosition:fromNode:") retSCNVector3 [argSCNVector3 position, argPtr (castPtr raw_node :: Ptr ())]
+convertPosition_fromNode scnNode position node =
+  sendMessage scnNode convertPosition_fromNodeSelector position (toSCNNode node)
 
 -- | Converts a vector from the coordinate system of a given node to that of the receiver.
 --
@@ -427,9 +416,8 @@ convertPosition_fromNode scnNode  position node =
 --
 -- ObjC selector: @- convertVector:toNode:@
 convertVector_toNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNVector3 -> node -> IO SCNVector3
-convertVector_toNode scnNode  vector node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertVector:toNode:") retSCNVector3 [argSCNVector3 vector, argPtr (castPtr raw_node :: Ptr ())]
+convertVector_toNode scnNode vector node =
+  sendMessage scnNode convertVector_toNodeSelector vector (toSCNNode node)
 
 -- | Converts a vector from the coordinate system of a given node to that of the receiver.
 --
@@ -441,9 +429,8 @@ convertVector_toNode scnNode  vector node =
 --
 -- ObjC selector: @- convertVector:fromNode:@
 convertVector_fromNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNVector3 -> node -> IO SCNVector3
-convertVector_fromNode scnNode  vector node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertVector:fromNode:") retSCNVector3 [argSCNVector3 vector, argPtr (castPtr raw_node :: Ptr ())]
+convertVector_fromNode scnNode vector node =
+  sendMessage scnNode convertVector_fromNodeSelector vector (toSCNNode node)
 
 -- | convertTransform:toNode:
 --
@@ -455,9 +442,8 @@ convertVector_fromNode scnNode  vector node =
 --
 -- ObjC selector: @- convertTransform:toNode:@
 convertTransform_toNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNMatrix4 -> node -> IO SCNMatrix4
-convertTransform_toNode scnNode  transform node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertTransform:toNode:") retSCNMatrix4 [argSCNMatrix4 transform, argPtr (castPtr raw_node :: Ptr ())]
+convertTransform_toNode scnNode transform node =
+  sendMessage scnNode convertTransform_toNodeSelector transform (toSCNNode node)
 
 -- | convertTransform:fromNode:
 --
@@ -469,9 +455,8 @@ convertTransform_toNode scnNode  transform node =
 --
 -- ObjC selector: @- convertTransform:fromNode:@
 convertTransform_fromNode :: (IsSCNNode scnNode, IsSCNNode node) => scnNode -> SCNMatrix4 -> node -> IO SCNMatrix4
-convertTransform_fromNode scnNode  transform node =
-  withObjCPtr node $ \raw_node ->
-      sendMsgStret scnNode (mkSelector "convertTransform:fromNode:") retSCNMatrix4 [argSCNMatrix4 transform, argPtr (castPtr raw_node :: Ptr ())]
+convertTransform_fromNode scnNode transform node =
+  sendMessage scnNode convertTransform_fromNodeSelector transform (toSCNNode node)
 
 -- | hitTestWithSegmentFromPoint:toPoint:options:
 --
@@ -487,9 +472,8 @@ convertTransform_fromNode scnNode  transform node =
 --
 -- ObjC selector: @- hitTestWithSegmentFromPoint:toPoint:options:@
 hitTestWithSegmentFromPoint_toPoint_options :: (IsSCNNode scnNode, IsNSDictionary options) => scnNode -> SCNVector3 -> SCNVector3 -> options -> IO (Id NSArray)
-hitTestWithSegmentFromPoint_toPoint_options scnNode  pointA pointB options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg scnNode (mkSelector "hitTestWithSegmentFromPoint:toPoint:options:") (retPtr retVoid) [argSCNVector3 pointA, argSCNVector3 pointB, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+hitTestWithSegmentFromPoint_toPoint_options scnNode pointA pointB options =
+  sendMessage scnNode hitTestWithSegmentFromPoint_toPoint_optionsSelector pointA pointB (toNSDictionary options)
 
 -- | addAudioPlayer:
 --
@@ -497,9 +481,8 @@ hitTestWithSegmentFromPoint_toPoint_options scnNode  pointA pointB options =
 --
 -- ObjC selector: @- addAudioPlayer:@
 addAudioPlayer :: (IsSCNNode scnNode, IsSCNAudioPlayer player) => scnNode -> player -> IO ()
-addAudioPlayer scnNode  player =
-  withObjCPtr player $ \raw_player ->
-      sendMsg scnNode (mkSelector "addAudioPlayer:") retVoid [argPtr (castPtr raw_player :: Ptr ())]
+addAudioPlayer scnNode player =
+  sendMessage scnNode addAudioPlayerSelector (toSCNAudioPlayer player)
 
 -- | removeAllAudioPlayers
 --
@@ -507,8 +490,8 @@ addAudioPlayer scnNode  player =
 --
 -- ObjC selector: @- removeAllAudioPlayers@
 removeAllAudioPlayers :: IsSCNNode scnNode => scnNode -> IO ()
-removeAllAudioPlayers scnNode  =
-    sendMsg scnNode (mkSelector "removeAllAudioPlayers") retVoid []
+removeAllAudioPlayers scnNode =
+  sendMessage scnNode removeAllAudioPlayersSelector
 
 -- | removeAudioPlayer:
 --
@@ -516,26 +499,23 @@ removeAllAudioPlayers scnNode  =
 --
 -- ObjC selector: @- removeAudioPlayer:@
 removeAudioPlayer :: (IsSCNNode scnNode, IsSCNAudioPlayer player) => scnNode -> player -> IO ()
-removeAudioPlayer scnNode  player =
-  withObjCPtr player $ \raw_player ->
-      sendMsg scnNode (mkSelector "removeAudioPlayer:") retVoid [argPtr (castPtr raw_player :: Ptr ())]
+removeAudioPlayer scnNode player =
+  sendMessage scnNode removeAudioPlayerSelector (toSCNAudioPlayer player)
 
 -- | @- addParticleSystem:@
 addParticleSystem :: (IsSCNNode scnNode, IsSCNParticleSystem system) => scnNode -> system -> IO ()
-addParticleSystem scnNode  system =
-  withObjCPtr system $ \raw_system ->
-      sendMsg scnNode (mkSelector "addParticleSystem:") retVoid [argPtr (castPtr raw_system :: Ptr ())]
+addParticleSystem scnNode system =
+  sendMessage scnNode addParticleSystemSelector (toSCNParticleSystem system)
 
 -- | @- removeAllParticleSystems@
 removeAllParticleSystems :: IsSCNNode scnNode => scnNode -> IO ()
-removeAllParticleSystems scnNode  =
-    sendMsg scnNode (mkSelector "removeAllParticleSystems") retVoid []
+removeAllParticleSystems scnNode =
+  sendMessage scnNode removeAllParticleSystemsSelector
 
 -- | @- removeParticleSystem:@
 removeParticleSystem :: (IsSCNNode scnNode, IsSCNParticleSystem system) => scnNode -> system -> IO ()
-removeParticleSystem scnNode  system =
-  withObjCPtr system $ \raw_system ->
-      sendMsg scnNode (mkSelector "removeParticleSystem:") retVoid [argPtr (castPtr raw_system :: Ptr ())]
+removeParticleSystem scnNode system =
+  sendMessage scnNode removeParticleSystemSelector (toSCNParticleSystem system)
 
 -- | Convenience for calling lookAt:up:localFront: with worldUp set to @self.worldUp@ and localFront [SCNNode localFront].
 --
@@ -543,8 +523,8 @@ removeParticleSystem scnNode  system =
 --
 -- ObjC selector: @- lookAt:@
 lookAt :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-lookAt scnNode  worldTarget =
-    sendMsg scnNode (mkSelector "lookAt:") retVoid [argSCNVector3 worldTarget]
+lookAt scnNode worldTarget =
+  sendMessage scnNode lookAtSelector worldTarget
 
 -- | Set the orientation of the node so its front vector is pointing toward a given target. Using a reference up vector in world space and a front vector in local space.
 --
@@ -556,8 +536,8 @@ lookAt scnNode  worldTarget =
 --
 -- ObjC selector: @- lookAt:up:localFront:@
 lookAt_up_localFront :: IsSCNNode scnNode => scnNode -> SCNVector3 -> SCNVector3 -> SCNVector3 -> IO ()
-lookAt_up_localFront scnNode  worldTarget worldUp localFront =
-    sendMsg scnNode (mkSelector "lookAt:up:localFront:") retVoid [argSCNVector3 worldTarget, argSCNVector3 worldUp, argSCNVector3 localFront]
+lookAt_up_localFront scnNode worldTarget worldUp localFront =
+  sendMessage scnNode lookAt_up_localFrontSelector worldTarget worldUp localFront
 
 -- | Translate the current node position along the given vector in local space.
 --
@@ -565,8 +545,8 @@ lookAt_up_localFront scnNode  worldTarget worldUp localFront =
 --
 -- ObjC selector: @- localTranslateBy:@
 localTranslateBy :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-localTranslateBy scnNode  translation =
-    sendMsg scnNode (mkSelector "localTranslateBy:") retVoid [argSCNVector3 translation]
+localTranslateBy scnNode translation =
+  sendMessage scnNode localTranslateBySelector translation
 
 -- | Apply a the given rotation to the current one.
 --
@@ -574,8 +554,8 @@ localTranslateBy scnNode  translation =
 --
 -- ObjC selector: @- localRotateBy:@
 localRotateBy :: IsSCNNode scnNode => scnNode -> SCNQuaternion -> IO ()
-localRotateBy scnNode  rotation =
-    sendMsg scnNode (mkSelector "localRotateBy:") retVoid [argSCNQuaternion rotation]
+localRotateBy scnNode rotation =
+  sendMessage scnNode localRotateBySelector rotation
 
 -- | Apply a rotation relative to a target point in parent space.
 --
@@ -585,8 +565,8 @@ localRotateBy scnNode  rotation =
 --
 -- ObjC selector: @- rotateBy:aroundTarget:@
 rotateBy_aroundTarget :: IsSCNNode scnNode => scnNode -> SCNQuaternion -> SCNVector3 -> IO ()
-rotateBy_aroundTarget scnNode  worldRotation worldTarget =
-    sendMsg scnNode (mkSelector "rotateBy:aroundTarget:") retVoid [argSCNQuaternion worldRotation, argSCNVector3 worldTarget]
+rotateBy_aroundTarget scnNode worldRotation worldTarget =
+  sendMessage scnNode rotateBy_aroundTargetSelector worldRotation worldTarget
 
 -- | name
 --
@@ -594,8 +574,8 @@ rotateBy_aroundTarget scnNode  worldRotation worldTarget =
 --
 -- ObjC selector: @- name@
 name :: IsSCNNode scnNode => scnNode -> IO (Id NSString)
-name scnNode  =
-    sendMsg scnNode (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name scnNode =
+  sendMessage scnNode nameSelector
 
 -- | name
 --
@@ -603,9 +583,8 @@ name scnNode  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSCNNode scnNode, IsNSString value) => scnNode -> value -> IO ()
-setName scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName scnNode value =
+  sendMessage scnNode setNameSelector (toNSString value)
 
 -- | light
 --
@@ -613,8 +592,8 @@ setName scnNode  value =
 --
 -- ObjC selector: @- light@
 light :: IsSCNNode scnNode => scnNode -> IO (Id SCNLight)
-light scnNode  =
-    sendMsg scnNode (mkSelector "light") (retPtr retVoid) [] >>= retainedObject . castPtr
+light scnNode =
+  sendMessage scnNode lightSelector
 
 -- | light
 --
@@ -622,9 +601,8 @@ light scnNode  =
 --
 -- ObjC selector: @- setLight:@
 setLight :: (IsSCNNode scnNode, IsSCNLight value) => scnNode -> value -> IO ()
-setLight scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setLight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLight scnNode value =
+  sendMessage scnNode setLightSelector (toSCNLight value)
 
 -- | camera
 --
@@ -632,8 +610,8 @@ setLight scnNode  value =
 --
 -- ObjC selector: @- camera@
 camera :: IsSCNNode scnNode => scnNode -> IO (Id SCNCamera)
-camera scnNode  =
-    sendMsg scnNode (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+camera scnNode =
+  sendMessage scnNode cameraSelector
 
 -- | camera
 --
@@ -641,9 +619,8 @@ camera scnNode  =
 --
 -- ObjC selector: @- setCamera:@
 setCamera :: (IsSCNNode scnNode, IsSCNCamera value) => scnNode -> value -> IO ()
-setCamera scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCamera scnNode value =
+  sendMessage scnNode setCameraSelector (toSCNCamera value)
 
 -- | geometry
 --
@@ -651,8 +628,8 @@ setCamera scnNode  value =
 --
 -- ObjC selector: @- geometry@
 geometry :: IsSCNNode scnNode => scnNode -> IO (Id SCNGeometry)
-geometry scnNode  =
-    sendMsg scnNode (mkSelector "geometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometry scnNode =
+  sendMessage scnNode geometrySelector
 
 -- | geometry
 --
@@ -660,9 +637,8 @@ geometry scnNode  =
 --
 -- ObjC selector: @- setGeometry:@
 setGeometry :: (IsSCNNode scnNode, IsSCNGeometry value) => scnNode -> value -> IO ()
-setGeometry scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setGeometry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGeometry scnNode value =
+  sendMessage scnNode setGeometrySelector (toSCNGeometry value)
 
 -- | skinner
 --
@@ -670,8 +646,8 @@ setGeometry scnNode  value =
 --
 -- ObjC selector: @- skinner@
 skinner :: IsSCNNode scnNode => scnNode -> IO (Id SCNSkinner)
-skinner scnNode  =
-    sendMsg scnNode (mkSelector "skinner") (retPtr retVoid) [] >>= retainedObject . castPtr
+skinner scnNode =
+  sendMessage scnNode skinnerSelector
 
 -- | skinner
 --
@@ -679,9 +655,8 @@ skinner scnNode  =
 --
 -- ObjC selector: @- setSkinner:@
 setSkinner :: (IsSCNNode scnNode, IsSCNSkinner value) => scnNode -> value -> IO ()
-setSkinner scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setSkinner:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSkinner scnNode value =
+  sendMessage scnNode setSkinnerSelector (toSCNSkinner value)
 
 -- | morpher
 --
@@ -689,8 +664,8 @@ setSkinner scnNode  value =
 --
 -- ObjC selector: @- morpher@
 morpher :: IsSCNNode scnNode => scnNode -> IO (Id SCNMorpher)
-morpher scnNode  =
-    sendMsg scnNode (mkSelector "morpher") (retPtr retVoid) [] >>= retainedObject . castPtr
+morpher scnNode =
+  sendMessage scnNode morpherSelector
 
 -- | morpher
 --
@@ -698,9 +673,8 @@ morpher scnNode  =
 --
 -- ObjC selector: @- setMorpher:@
 setMorpher :: (IsSCNNode scnNode, IsSCNMorpher value) => scnNode -> value -> IO ()
-setMorpher scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setMorpher:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMorpher scnNode value =
+  sendMessage scnNode setMorpherSelector (toSCNMorpher value)
 
 -- | transform
 --
@@ -710,8 +684,8 @@ setMorpher scnNode  value =
 --
 -- ObjC selector: @- transform@
 transform :: IsSCNNode scnNode => scnNode -> IO SCNMatrix4
-transform scnNode  =
-    sendMsgStret scnNode (mkSelector "transform") retSCNMatrix4 []
+transform scnNode =
+  sendMessage scnNode transformSelector
 
 -- | transform
 --
@@ -721,8 +695,8 @@ transform scnNode  =
 --
 -- ObjC selector: @- setTransform:@
 setTransform :: IsSCNNode scnNode => scnNode -> SCNMatrix4 -> IO ()
-setTransform scnNode  value =
-    sendMsg scnNode (mkSelector "setTransform:") retVoid [argSCNMatrix4 value]
+setTransform scnNode value =
+  sendMessage scnNode setTransformSelector value
 
 -- | worldTransform
 --
@@ -730,8 +704,8 @@ setTransform scnNode  value =
 --
 -- ObjC selector: @- worldTransform@
 worldTransform :: IsSCNNode scnNode => scnNode -> IO SCNMatrix4
-worldTransform scnNode  =
-    sendMsgStret scnNode (mkSelector "worldTransform") retSCNMatrix4 []
+worldTransform scnNode =
+  sendMessage scnNode worldTransformSelector
 
 -- | position
 --
@@ -739,8 +713,8 @@ worldTransform scnNode  =
 --
 -- ObjC selector: @- position@
 position :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-position scnNode  =
-    sendMsgStret scnNode (mkSelector "position") retSCNVector3 []
+position scnNode =
+  sendMessage scnNode positionSelector
 
 -- | position
 --
@@ -748,8 +722,8 @@ position scnNode  =
 --
 -- ObjC selector: @- setPosition:@
 setPosition :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-setPosition scnNode  value =
-    sendMsg scnNode (mkSelector "setPosition:") retVoid [argSCNVector3 value]
+setPosition scnNode value =
+  sendMessage scnNode setPositionSelector value
 
 -- | worldPosition
 --
@@ -757,8 +731,8 @@ setPosition scnNode  value =
 --
 -- ObjC selector: @- worldPosition@
 worldPosition :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-worldPosition scnNode  =
-    sendMsgStret scnNode (mkSelector "worldPosition") retSCNVector3 []
+worldPosition scnNode =
+  sendMessage scnNode worldPositionSelector
 
 -- | worldPosition
 --
@@ -766,8 +740,8 @@ worldPosition scnNode  =
 --
 -- ObjC selector: @- setWorldPosition:@
 setWorldPosition :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-setWorldPosition scnNode  value =
-    sendMsg scnNode (mkSelector "setWorldPosition:") retVoid [argSCNVector3 value]
+setWorldPosition scnNode value =
+  sendMessage scnNode setWorldPositionSelector value
 
 -- | rotation
 --
@@ -777,8 +751,8 @@ setWorldPosition scnNode  value =
 --
 -- ObjC selector: @- rotation@
 rotation :: IsSCNNode scnNode => scnNode -> IO SCNVector4
-rotation scnNode  =
-    sendMsgStret scnNode (mkSelector "rotation") retSCNVector4 []
+rotation scnNode =
+  sendMessage scnNode rotationSelector
 
 -- | rotation
 --
@@ -788,8 +762,8 @@ rotation scnNode  =
 --
 -- ObjC selector: @- setRotation:@
 setRotation :: IsSCNNode scnNode => scnNode -> SCNVector4 -> IO ()
-setRotation scnNode  value =
-    sendMsg scnNode (mkSelector "setRotation:") retVoid [argSCNVector4 value]
+setRotation scnNode value =
+  sendMessage scnNode setRotationSelector value
 
 -- | orientation
 --
@@ -797,8 +771,8 @@ setRotation scnNode  value =
 --
 -- ObjC selector: @- orientation@
 orientation :: IsSCNNode scnNode => scnNode -> IO SCNQuaternion
-orientation scnNode  =
-    sendMsgStret scnNode (mkSelector "orientation") retSCNQuaternion []
+orientation scnNode =
+  sendMessage scnNode orientationSelector
 
 -- | orientation
 --
@@ -806,8 +780,8 @@ orientation scnNode  =
 --
 -- ObjC selector: @- setOrientation:@
 setOrientation :: IsSCNNode scnNode => scnNode -> SCNQuaternion -> IO ()
-setOrientation scnNode  value =
-    sendMsg scnNode (mkSelector "setOrientation:") retVoid [argSCNQuaternion value]
+setOrientation scnNode value =
+  sendMessage scnNode setOrientationSelector value
 
 -- | worldOrientation
 --
@@ -815,8 +789,8 @@ setOrientation scnNode  value =
 --
 -- ObjC selector: @- worldOrientation@
 worldOrientation :: IsSCNNode scnNode => scnNode -> IO SCNQuaternion
-worldOrientation scnNode  =
-    sendMsgStret scnNode (mkSelector "worldOrientation") retSCNQuaternion []
+worldOrientation scnNode =
+  sendMessage scnNode worldOrientationSelector
 
 -- | worldOrientation
 --
@@ -824,8 +798,8 @@ worldOrientation scnNode  =
 --
 -- ObjC selector: @- setWorldOrientation:@
 setWorldOrientation :: IsSCNNode scnNode => scnNode -> SCNQuaternion -> IO ()
-setWorldOrientation scnNode  value =
-    sendMsg scnNode (mkSelector "setWorldOrientation:") retVoid [argSCNQuaternion value]
+setWorldOrientation scnNode value =
+  sendMessage scnNode setWorldOrientationSelector value
 
 -- | eulerAngles
 --
@@ -835,8 +809,8 @@ setWorldOrientation scnNode  value =
 --
 -- ObjC selector: @- eulerAngles@
 eulerAngles :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-eulerAngles scnNode  =
-    sendMsgStret scnNode (mkSelector "eulerAngles") retSCNVector3 []
+eulerAngles scnNode =
+  sendMessage scnNode eulerAnglesSelector
 
 -- | eulerAngles
 --
@@ -846,8 +820,8 @@ eulerAngles scnNode  =
 --
 -- ObjC selector: @- setEulerAngles:@
 setEulerAngles :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-setEulerAngles scnNode  value =
-    sendMsg scnNode (mkSelector "setEulerAngles:") retVoid [argSCNVector3 value]
+setEulerAngles scnNode value =
+  sendMessage scnNode setEulerAnglesSelector value
 
 -- | scale
 --
@@ -855,8 +829,8 @@ setEulerAngles scnNode  value =
 --
 -- ObjC selector: @- scale@
 scale :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-scale scnNode  =
-    sendMsgStret scnNode (mkSelector "scale") retSCNVector3 []
+scale scnNode =
+  sendMessage scnNode scaleSelector
 
 -- | scale
 --
@@ -864,8 +838,8 @@ scale scnNode  =
 --
 -- ObjC selector: @- setScale:@
 setScale :: IsSCNNode scnNode => scnNode -> SCNVector3 -> IO ()
-setScale scnNode  value =
-    sendMsg scnNode (mkSelector "setScale:") retVoid [argSCNVector3 value]
+setScale scnNode value =
+  sendMessage scnNode setScaleSelector value
 
 -- | pivot
 --
@@ -873,8 +847,8 @@ setScale scnNode  value =
 --
 -- ObjC selector: @- pivot@
 pivot :: IsSCNNode scnNode => scnNode -> IO SCNMatrix4
-pivot scnNode  =
-    sendMsgStret scnNode (mkSelector "pivot") retSCNMatrix4 []
+pivot scnNode =
+  sendMessage scnNode pivotSelector
 
 -- | pivot
 --
@@ -882,8 +856,8 @@ pivot scnNode  =
 --
 -- ObjC selector: @- setPivot:@
 setPivot :: IsSCNNode scnNode => scnNode -> SCNMatrix4 -> IO ()
-setPivot scnNode  value =
-    sendMsg scnNode (mkSelector "setPivot:") retVoid [argSCNMatrix4 value]
+setPivot scnNode value =
+  sendMessage scnNode setPivotSelector value
 
 -- | hidden
 --
@@ -891,8 +865,8 @@ setPivot scnNode  value =
 --
 -- ObjC selector: @- hidden@
 hidden :: IsSCNNode scnNode => scnNode -> IO Bool
-hidden scnNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnNode (mkSelector "hidden") retCULong []
+hidden scnNode =
+  sendMessage scnNode hiddenSelector
 
 -- | hidden
 --
@@ -900,8 +874,8 @@ hidden scnNode  =
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsSCNNode scnNode => scnNode -> Bool -> IO ()
-setHidden scnNode  value =
-    sendMsg scnNode (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden scnNode value =
+  sendMessage scnNode setHiddenSelector value
 
 -- | opacity
 --
@@ -909,8 +883,8 @@ setHidden scnNode  value =
 --
 -- ObjC selector: @- opacity@
 opacity :: IsSCNNode scnNode => scnNode -> IO CDouble
-opacity scnNode  =
-    sendMsg scnNode (mkSelector "opacity") retCDouble []
+opacity scnNode =
+  sendMessage scnNode opacitySelector
 
 -- | opacity
 --
@@ -918,8 +892,8 @@ opacity scnNode  =
 --
 -- ObjC selector: @- setOpacity:@
 setOpacity :: IsSCNNode scnNode => scnNode -> CDouble -> IO ()
-setOpacity scnNode  value =
-    sendMsg scnNode (mkSelector "setOpacity:") retVoid [argCDouble value]
+setOpacity scnNode value =
+  sendMessage scnNode setOpacitySelector value
 
 -- | renderingOrder
 --
@@ -929,8 +903,8 @@ setOpacity scnNode  value =
 --
 -- ObjC selector: @- renderingOrder@
 renderingOrder :: IsSCNNode scnNode => scnNode -> IO CLong
-renderingOrder scnNode  =
-    sendMsg scnNode (mkSelector "renderingOrder") retCLong []
+renderingOrder scnNode =
+  sendMessage scnNode renderingOrderSelector
 
 -- | renderingOrder
 --
@@ -940,8 +914,8 @@ renderingOrder scnNode  =
 --
 -- ObjC selector: @- setRenderingOrder:@
 setRenderingOrder :: IsSCNNode scnNode => scnNode -> CLong -> IO ()
-setRenderingOrder scnNode  value =
-    sendMsg scnNode (mkSelector "setRenderingOrder:") retVoid [argCLong value]
+setRenderingOrder scnNode value =
+  sendMessage scnNode setRenderingOrderSelector value
 
 -- | castsShadow
 --
@@ -949,8 +923,8 @@ setRenderingOrder scnNode  value =
 --
 -- ObjC selector: @- castsShadow@
 castsShadow :: IsSCNNode scnNode => scnNode -> IO Bool
-castsShadow scnNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnNode (mkSelector "castsShadow") retCULong []
+castsShadow scnNode =
+  sendMessage scnNode castsShadowSelector
 
 -- | castsShadow
 --
@@ -958,8 +932,8 @@ castsShadow scnNode  =
 --
 -- ObjC selector: @- setCastsShadow:@
 setCastsShadow :: IsSCNNode scnNode => scnNode -> Bool -> IO ()
-setCastsShadow scnNode  value =
-    sendMsg scnNode (mkSelector "setCastsShadow:") retVoid [argCULong (if value then 1 else 0)]
+setCastsShadow scnNode value =
+  sendMessage scnNode setCastsShadowSelector value
 
 -- | movabilityHint
 --
@@ -967,8 +941,8 @@ setCastsShadow scnNode  value =
 --
 -- ObjC selector: @- movabilityHint@
 movabilityHint :: IsSCNNode scnNode => scnNode -> IO SCNMovabilityHint
-movabilityHint scnNode  =
-    fmap (coerce :: CLong -> SCNMovabilityHint) $ sendMsg scnNode (mkSelector "movabilityHint") retCLong []
+movabilityHint scnNode =
+  sendMessage scnNode movabilityHintSelector
 
 -- | movabilityHint
 --
@@ -976,8 +950,8 @@ movabilityHint scnNode  =
 --
 -- ObjC selector: @- setMovabilityHint:@
 setMovabilityHint :: IsSCNNode scnNode => scnNode -> SCNMovabilityHint -> IO ()
-setMovabilityHint scnNode  value =
-    sendMsg scnNode (mkSelector "setMovabilityHint:") retVoid [argCLong (coerce value)]
+setMovabilityHint scnNode value =
+  sendMessage scnNode setMovabilityHintSelector value
 
 -- | parentNode
 --
@@ -985,8 +959,8 @@ setMovabilityHint scnNode  value =
 --
 -- ObjC selector: @- parentNode@
 parentNode :: IsSCNNode scnNode => scnNode -> IO (Id SCNNode)
-parentNode scnNode  =
-    sendMsg scnNode (mkSelector "parentNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentNode scnNode =
+  sendMessage scnNode parentNodeSelector
 
 -- | childNodes
 --
@@ -994,8 +968,8 @@ parentNode scnNode  =
 --
 -- ObjC selector: @- childNodes@
 childNodes :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
-childNodes scnNode  =
-    sendMsg scnNode (mkSelector "childNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+childNodes scnNode =
+  sendMessage scnNode childNodesSelector
 
 -- | physicsBody
 --
@@ -1005,8 +979,8 @@ childNodes scnNode  =
 --
 -- ObjC selector: @- physicsBody@
 physicsBody :: IsSCNNode scnNode => scnNode -> IO (Id SCNPhysicsBody)
-physicsBody scnNode  =
-    sendMsg scnNode (mkSelector "physicsBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+physicsBody scnNode =
+  sendMessage scnNode physicsBodySelector
 
 -- | physicsBody
 --
@@ -1016,9 +990,8 @@ physicsBody scnNode  =
 --
 -- ObjC selector: @- setPhysicsBody:@
 setPhysicsBody :: (IsSCNNode scnNode, IsSCNPhysicsBody value) => scnNode -> value -> IO ()
-setPhysicsBody scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setPhysicsBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhysicsBody scnNode value =
+  sendMessage scnNode setPhysicsBodySelector (toSCNPhysicsBody value)
 
 -- | physicsField
 --
@@ -1028,8 +1001,8 @@ setPhysicsBody scnNode  value =
 --
 -- ObjC selector: @- physicsField@
 physicsField :: IsSCNNode scnNode => scnNode -> IO (Id SCNPhysicsField)
-physicsField scnNode  =
-    sendMsg scnNode (mkSelector "physicsField") (retPtr retVoid) [] >>= retainedObject . castPtr
+physicsField scnNode =
+  sendMessage scnNode physicsFieldSelector
 
 -- | physicsField
 --
@@ -1039,9 +1012,8 @@ physicsField scnNode  =
 --
 -- ObjC selector: @- setPhysicsField:@
 setPhysicsField :: (IsSCNNode scnNode, IsSCNPhysicsField value) => scnNode -> value -> IO ()
-setPhysicsField scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setPhysicsField:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhysicsField scnNode value =
+  sendMessage scnNode setPhysicsFieldSelector (toSCNPhysicsField value)
 
 -- | constraints
 --
@@ -1051,8 +1023,8 @@ setPhysicsField scnNode  value =
 --
 -- ObjC selector: @- constraints@
 constraints :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
-constraints scnNode  =
-    sendMsg scnNode (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints scnNode =
+  sendMessage scnNode constraintsSelector
 
 -- | constraints
 --
@@ -1062,9 +1034,8 @@ constraints scnNode  =
 --
 -- ObjC selector: @- setConstraints:@
 setConstraints :: (IsSCNNode scnNode, IsNSArray value) => scnNode -> value -> IO ()
-setConstraints scnNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnNode (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraints scnNode value =
+  sendMessage scnNode setConstraintsSelector (toNSArray value)
 
 -- | presentationNode
 --
@@ -1074,8 +1045,8 @@ setConstraints scnNode  value =
 --
 -- ObjC selector: @- presentationNode@
 presentationNode :: IsSCNNode scnNode => scnNode -> IO (Id SCNNode)
-presentationNode scnNode  =
-    sendMsg scnNode (mkSelector "presentationNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+presentationNode scnNode =
+  sendMessage scnNode presentationNodeSelector
 
 -- | paused
 --
@@ -1083,8 +1054,8 @@ presentationNode scnNode  =
 --
 -- ObjC selector: @- paused@
 paused :: IsSCNNode scnNode => scnNode -> IO Bool
-paused scnNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnNode (mkSelector "paused") retCULong []
+paused scnNode =
+  sendMessage scnNode pausedSelector
 
 -- | paused
 --
@@ -1092,8 +1063,8 @@ paused scnNode  =
 --
 -- ObjC selector: @- setPaused:@
 setPaused :: IsSCNNode scnNode => scnNode -> Bool -> IO ()
-setPaused scnNode  value =
-    sendMsg scnNode (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused scnNode value =
+  sendMessage scnNode setPausedSelector value
 
 -- | rendererDelegate
 --
@@ -1103,8 +1074,8 @@ setPaused scnNode  value =
 --
 -- ObjC selector: @- rendererDelegate@
 rendererDelegate :: IsSCNNode scnNode => scnNode -> IO RawId
-rendererDelegate scnNode  =
-    fmap (RawId . castPtr) $ sendMsg scnNode (mkSelector "rendererDelegate") (retPtr retVoid) []
+rendererDelegate scnNode =
+  sendMessage scnNode rendererDelegateSelector
 
 -- | rendererDelegate
 --
@@ -1114,8 +1085,8 @@ rendererDelegate scnNode  =
 --
 -- ObjC selector: @- setRendererDelegate:@
 setRendererDelegate :: IsSCNNode scnNode => scnNode -> RawId -> IO ()
-setRendererDelegate scnNode  value =
-    sendMsg scnNode (mkSelector "setRendererDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRendererDelegate scnNode value =
+  sendMessage scnNode setRendererDelegateSelector value
 
 -- | categoryBitMask
 --
@@ -1125,8 +1096,8 @@ setRendererDelegate scnNode  value =
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSCNNode scnNode => scnNode -> IO CULong
-categoryBitMask scnNode  =
-    sendMsg scnNode (mkSelector "categoryBitMask") retCULong []
+categoryBitMask scnNode =
+  sendMessage scnNode categoryBitMaskSelector
 
 -- | categoryBitMask
 --
@@ -1136,8 +1107,8 @@ categoryBitMask scnNode  =
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSCNNode scnNode => scnNode -> CULong -> IO ()
-setCategoryBitMask scnNode  value =
-    sendMsg scnNode (mkSelector "setCategoryBitMask:") retVoid [argCULong value]
+setCategoryBitMask scnNode value =
+  sendMessage scnNode setCategoryBitMaskSelector value
 
 -- | audioPlayers
 --
@@ -1145,13 +1116,13 @@ setCategoryBitMask scnNode  value =
 --
 -- ObjC selector: @- audioPlayers@
 audioPlayers :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
-audioPlayers scnNode  =
-    sendMsg scnNode (mkSelector "audioPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioPlayers scnNode =
+  sendMessage scnNode audioPlayersSelector
 
 -- | @- particleSystems@
 particleSystems :: IsSCNNode scnNode => scnNode -> IO (Id NSArray)
-particleSystems scnNode  =
-    sendMsg scnNode (mkSelector "particleSystems") (retPtr retVoid) [] >>= retainedObject . castPtr
+particleSystems scnNode =
+  sendMessage scnNode particleSystemsSelector
 
 -- | focusBehavior
 --
@@ -1159,8 +1130,8 @@ particleSystems scnNode  =
 --
 -- ObjC selector: @- focusBehavior@
 focusBehavior :: IsSCNNode scnNode => scnNode -> IO SCNNodeFocusBehavior
-focusBehavior scnNode  =
-    fmap (coerce :: CLong -> SCNNodeFocusBehavior) $ sendMsg scnNode (mkSelector "focusBehavior") retCLong []
+focusBehavior scnNode =
+  sendMessage scnNode focusBehaviorSelector
 
 -- | focusBehavior
 --
@@ -1168,8 +1139,8 @@ focusBehavior scnNode  =
 --
 -- ObjC selector: @- setFocusBehavior:@
 setFocusBehavior :: IsSCNNode scnNode => scnNode -> SCNNodeFocusBehavior -> IO ()
-setFocusBehavior scnNode  value =
-    sendMsg scnNode (mkSelector "setFocusBehavior:") retVoid [argCLong (coerce value)]
+setFocusBehavior scnNode value =
+  sendMessage scnNode setFocusBehaviorSelector value
 
 -- | localUp
 --
@@ -1180,7 +1151,7 @@ localUp :: IO SCNVector3
 localUp  =
   do
     cls' <- getRequiredClass "SCNNode"
-    sendClassMsgStret cls' (mkSelector "localUp") retSCNVector3 []
+    sendClassMessage cls' localUpSelector
 
 -- | localRight
 --
@@ -1191,7 +1162,7 @@ localRight :: IO SCNVector3
 localRight  =
   do
     cls' <- getRequiredClass "SCNNode"
-    sendClassMsgStret cls' (mkSelector "localRight") retSCNVector3 []
+    sendClassMessage cls' localRightSelector
 
 -- | localFront
 --
@@ -1202,7 +1173,7 @@ localFront :: IO SCNVector3
 localFront  =
   do
     cls' <- getRequiredClass "SCNNode"
-    sendClassMsgStret cls' (mkSelector "localFront") retSCNVector3 []
+    sendClassMessage cls' localFrontSelector
 
 -- | worldUp
 --
@@ -1210,8 +1181,8 @@ localFront  =
 --
 -- ObjC selector: @- worldUp@
 worldUp :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-worldUp scnNode  =
-    sendMsgStret scnNode (mkSelector "worldUp") retSCNVector3 []
+worldUp scnNode =
+  sendMessage scnNode worldUpSelector
 
 -- | worldRight
 --
@@ -1219,8 +1190,8 @@ worldUp scnNode  =
 --
 -- ObjC selector: @- worldRight@
 worldRight :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-worldRight scnNode  =
-    sendMsgStret scnNode (mkSelector "worldRight") retSCNVector3 []
+worldRight scnNode =
+  sendMessage scnNode worldRightSelector
 
 -- | worldFront
 --
@@ -1228,398 +1199,398 @@ worldRight scnNode  =
 --
 -- ObjC selector: @- worldFront@
 worldFront :: IsSCNNode scnNode => scnNode -> IO SCNVector3
-worldFront scnNode  =
-    sendMsgStret scnNode (mkSelector "worldFront") retSCNVector3 []
+worldFront scnNode =
+  sendMessage scnNode worldFrontSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SCNNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @nodeWithGeometry:@
-nodeWithGeometrySelector :: Selector
+nodeWithGeometrySelector :: Selector '[Id SCNGeometry] (Id SCNNode)
 nodeWithGeometrySelector = mkSelector "nodeWithGeometry:"
 
 -- | @Selector@ for @clone@
-cloneSelector :: Selector
+cloneSelector :: Selector '[] (Id SCNNode)
 cloneSelector = mkSelector "clone"
 
 -- | @Selector@ for @flattenedClone@
-flattenedCloneSelector :: Selector
+flattenedCloneSelector :: Selector '[] (Id SCNNode)
 flattenedCloneSelector = mkSelector "flattenedClone"
 
 -- | @Selector@ for @setWorldTransform:@
-setWorldTransformSelector :: Selector
+setWorldTransformSelector :: Selector '[SCNMatrix4] ()
 setWorldTransformSelector = mkSelector "setWorldTransform:"
 
 -- | @Selector@ for @addChildNode:@
-addChildNodeSelector :: Selector
+addChildNodeSelector :: Selector '[Id SCNNode] ()
 addChildNodeSelector = mkSelector "addChildNode:"
 
 -- | @Selector@ for @insertChildNode:atIndex:@
-insertChildNode_atIndexSelector :: Selector
+insertChildNode_atIndexSelector :: Selector '[Id SCNNode, CULong] ()
 insertChildNode_atIndexSelector = mkSelector "insertChildNode:atIndex:"
 
 -- | @Selector@ for @removeFromParentNode@
-removeFromParentNodeSelector :: Selector
+removeFromParentNodeSelector :: Selector '[] ()
 removeFromParentNodeSelector = mkSelector "removeFromParentNode"
 
 -- | @Selector@ for @replaceChildNode:with:@
-replaceChildNode_withSelector :: Selector
+replaceChildNode_withSelector :: Selector '[Id SCNNode, Id SCNNode] ()
 replaceChildNode_withSelector = mkSelector "replaceChildNode:with:"
 
 -- | @Selector@ for @childNodeWithName:recursively:@
-childNodeWithName_recursivelySelector :: Selector
+childNodeWithName_recursivelySelector :: Selector '[Id NSString, Bool] (Id SCNNode)
 childNodeWithName_recursivelySelector = mkSelector "childNodeWithName:recursively:"
 
 -- | @Selector@ for @childNodesPassingTest:@
-childNodesPassingTestSelector :: Selector
+childNodesPassingTestSelector :: Selector '[Ptr ()] (Id NSArray)
 childNodesPassingTestSelector = mkSelector "childNodesPassingTest:"
 
 -- | @Selector@ for @enumerateChildNodesUsingBlock:@
-enumerateChildNodesUsingBlockSelector :: Selector
+enumerateChildNodesUsingBlockSelector :: Selector '[Ptr ()] ()
 enumerateChildNodesUsingBlockSelector = mkSelector "enumerateChildNodesUsingBlock:"
 
 -- | @Selector@ for @enumerateHierarchyUsingBlock:@
-enumerateHierarchyUsingBlockSelector :: Selector
+enumerateHierarchyUsingBlockSelector :: Selector '[Ptr ()] ()
 enumerateHierarchyUsingBlockSelector = mkSelector "enumerateHierarchyUsingBlock:"
 
 -- | @Selector@ for @convertPosition:toNode:@
-convertPosition_toNodeSelector :: Selector
+convertPosition_toNodeSelector :: Selector '[SCNVector3, Id SCNNode] SCNVector3
 convertPosition_toNodeSelector = mkSelector "convertPosition:toNode:"
 
 -- | @Selector@ for @convertPosition:fromNode:@
-convertPosition_fromNodeSelector :: Selector
+convertPosition_fromNodeSelector :: Selector '[SCNVector3, Id SCNNode] SCNVector3
 convertPosition_fromNodeSelector = mkSelector "convertPosition:fromNode:"
 
 -- | @Selector@ for @convertVector:toNode:@
-convertVector_toNodeSelector :: Selector
+convertVector_toNodeSelector :: Selector '[SCNVector3, Id SCNNode] SCNVector3
 convertVector_toNodeSelector = mkSelector "convertVector:toNode:"
 
 -- | @Selector@ for @convertVector:fromNode:@
-convertVector_fromNodeSelector :: Selector
+convertVector_fromNodeSelector :: Selector '[SCNVector3, Id SCNNode] SCNVector3
 convertVector_fromNodeSelector = mkSelector "convertVector:fromNode:"
 
 -- | @Selector@ for @convertTransform:toNode:@
-convertTransform_toNodeSelector :: Selector
+convertTransform_toNodeSelector :: Selector '[SCNMatrix4, Id SCNNode] SCNMatrix4
 convertTransform_toNodeSelector = mkSelector "convertTransform:toNode:"
 
 -- | @Selector@ for @convertTransform:fromNode:@
-convertTransform_fromNodeSelector :: Selector
+convertTransform_fromNodeSelector :: Selector '[SCNMatrix4, Id SCNNode] SCNMatrix4
 convertTransform_fromNodeSelector = mkSelector "convertTransform:fromNode:"
 
 -- | @Selector@ for @hitTestWithSegmentFromPoint:toPoint:options:@
-hitTestWithSegmentFromPoint_toPoint_optionsSelector :: Selector
+hitTestWithSegmentFromPoint_toPoint_optionsSelector :: Selector '[SCNVector3, SCNVector3, Id NSDictionary] (Id NSArray)
 hitTestWithSegmentFromPoint_toPoint_optionsSelector = mkSelector "hitTestWithSegmentFromPoint:toPoint:options:"
 
 -- | @Selector@ for @addAudioPlayer:@
-addAudioPlayerSelector :: Selector
+addAudioPlayerSelector :: Selector '[Id SCNAudioPlayer] ()
 addAudioPlayerSelector = mkSelector "addAudioPlayer:"
 
 -- | @Selector@ for @removeAllAudioPlayers@
-removeAllAudioPlayersSelector :: Selector
+removeAllAudioPlayersSelector :: Selector '[] ()
 removeAllAudioPlayersSelector = mkSelector "removeAllAudioPlayers"
 
 -- | @Selector@ for @removeAudioPlayer:@
-removeAudioPlayerSelector :: Selector
+removeAudioPlayerSelector :: Selector '[Id SCNAudioPlayer] ()
 removeAudioPlayerSelector = mkSelector "removeAudioPlayer:"
 
 -- | @Selector@ for @addParticleSystem:@
-addParticleSystemSelector :: Selector
+addParticleSystemSelector :: Selector '[Id SCNParticleSystem] ()
 addParticleSystemSelector = mkSelector "addParticleSystem:"
 
 -- | @Selector@ for @removeAllParticleSystems@
-removeAllParticleSystemsSelector :: Selector
+removeAllParticleSystemsSelector :: Selector '[] ()
 removeAllParticleSystemsSelector = mkSelector "removeAllParticleSystems"
 
 -- | @Selector@ for @removeParticleSystem:@
-removeParticleSystemSelector :: Selector
+removeParticleSystemSelector :: Selector '[Id SCNParticleSystem] ()
 removeParticleSystemSelector = mkSelector "removeParticleSystem:"
 
 -- | @Selector@ for @lookAt:@
-lookAtSelector :: Selector
+lookAtSelector :: Selector '[SCNVector3] ()
 lookAtSelector = mkSelector "lookAt:"
 
 -- | @Selector@ for @lookAt:up:localFront:@
-lookAt_up_localFrontSelector :: Selector
+lookAt_up_localFrontSelector :: Selector '[SCNVector3, SCNVector3, SCNVector3] ()
 lookAt_up_localFrontSelector = mkSelector "lookAt:up:localFront:"
 
 -- | @Selector@ for @localTranslateBy:@
-localTranslateBySelector :: Selector
+localTranslateBySelector :: Selector '[SCNVector3] ()
 localTranslateBySelector = mkSelector "localTranslateBy:"
 
 -- | @Selector@ for @localRotateBy:@
-localRotateBySelector :: Selector
+localRotateBySelector :: Selector '[SCNQuaternion] ()
 localRotateBySelector = mkSelector "localRotateBy:"
 
 -- | @Selector@ for @rotateBy:aroundTarget:@
-rotateBy_aroundTargetSelector :: Selector
+rotateBy_aroundTargetSelector :: Selector '[SCNQuaternion, SCNVector3] ()
 rotateBy_aroundTargetSelector = mkSelector "rotateBy:aroundTarget:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @light@
-lightSelector :: Selector
+lightSelector :: Selector '[] (Id SCNLight)
 lightSelector = mkSelector "light"
 
 -- | @Selector@ for @setLight:@
-setLightSelector :: Selector
+setLightSelector :: Selector '[Id SCNLight] ()
 setLightSelector = mkSelector "setLight:"
 
 -- | @Selector@ for @camera@
-cameraSelector :: Selector
+cameraSelector :: Selector '[] (Id SCNCamera)
 cameraSelector = mkSelector "camera"
 
 -- | @Selector@ for @setCamera:@
-setCameraSelector :: Selector
+setCameraSelector :: Selector '[Id SCNCamera] ()
 setCameraSelector = mkSelector "setCamera:"
 
 -- | @Selector@ for @geometry@
-geometrySelector :: Selector
+geometrySelector :: Selector '[] (Id SCNGeometry)
 geometrySelector = mkSelector "geometry"
 
 -- | @Selector@ for @setGeometry:@
-setGeometrySelector :: Selector
+setGeometrySelector :: Selector '[Id SCNGeometry] ()
 setGeometrySelector = mkSelector "setGeometry:"
 
 -- | @Selector@ for @skinner@
-skinnerSelector :: Selector
+skinnerSelector :: Selector '[] (Id SCNSkinner)
 skinnerSelector = mkSelector "skinner"
 
 -- | @Selector@ for @setSkinner:@
-setSkinnerSelector :: Selector
+setSkinnerSelector :: Selector '[Id SCNSkinner] ()
 setSkinnerSelector = mkSelector "setSkinner:"
 
 -- | @Selector@ for @morpher@
-morpherSelector :: Selector
+morpherSelector :: Selector '[] (Id SCNMorpher)
 morpherSelector = mkSelector "morpher"
 
 -- | @Selector@ for @setMorpher:@
-setMorpherSelector :: Selector
+setMorpherSelector :: Selector '[Id SCNMorpher] ()
 setMorpherSelector = mkSelector "setMorpher:"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] SCNMatrix4
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @setTransform:@
-setTransformSelector :: Selector
+setTransformSelector :: Selector '[SCNMatrix4] ()
 setTransformSelector = mkSelector "setTransform:"
 
 -- | @Selector@ for @worldTransform@
-worldTransformSelector :: Selector
+worldTransformSelector :: Selector '[] SCNMatrix4
 worldTransformSelector = mkSelector "worldTransform"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] SCNVector3
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @setPosition:@
-setPositionSelector :: Selector
+setPositionSelector :: Selector '[SCNVector3] ()
 setPositionSelector = mkSelector "setPosition:"
 
 -- | @Selector@ for @worldPosition@
-worldPositionSelector :: Selector
+worldPositionSelector :: Selector '[] SCNVector3
 worldPositionSelector = mkSelector "worldPosition"
 
 -- | @Selector@ for @setWorldPosition:@
-setWorldPositionSelector :: Selector
+setWorldPositionSelector :: Selector '[SCNVector3] ()
 setWorldPositionSelector = mkSelector "setWorldPosition:"
 
 -- | @Selector@ for @rotation@
-rotationSelector :: Selector
+rotationSelector :: Selector '[] SCNVector4
 rotationSelector = mkSelector "rotation"
 
 -- | @Selector@ for @setRotation:@
-setRotationSelector :: Selector
+setRotationSelector :: Selector '[SCNVector4] ()
 setRotationSelector = mkSelector "setRotation:"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] SCNQuaternion
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[SCNQuaternion] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @worldOrientation@
-worldOrientationSelector :: Selector
+worldOrientationSelector :: Selector '[] SCNQuaternion
 worldOrientationSelector = mkSelector "worldOrientation"
 
 -- | @Selector@ for @setWorldOrientation:@
-setWorldOrientationSelector :: Selector
+setWorldOrientationSelector :: Selector '[SCNQuaternion] ()
 setWorldOrientationSelector = mkSelector "setWorldOrientation:"
 
 -- | @Selector@ for @eulerAngles@
-eulerAnglesSelector :: Selector
+eulerAnglesSelector :: Selector '[] SCNVector3
 eulerAnglesSelector = mkSelector "eulerAngles"
 
 -- | @Selector@ for @setEulerAngles:@
-setEulerAnglesSelector :: Selector
+setEulerAnglesSelector :: Selector '[SCNVector3] ()
 setEulerAnglesSelector = mkSelector "setEulerAngles:"
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] SCNVector3
 scaleSelector = mkSelector "scale"
 
 -- | @Selector@ for @setScale:@
-setScaleSelector :: Selector
+setScaleSelector :: Selector '[SCNVector3] ()
 setScaleSelector = mkSelector "setScale:"
 
 -- | @Selector@ for @pivot@
-pivotSelector :: Selector
+pivotSelector :: Selector '[] SCNMatrix4
 pivotSelector = mkSelector "pivot"
 
 -- | @Selector@ for @setPivot:@
-setPivotSelector :: Selector
+setPivotSelector :: Selector '[SCNMatrix4] ()
 setPivotSelector = mkSelector "setPivot:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @opacity@
-opacitySelector :: Selector
+opacitySelector :: Selector '[] CDouble
 opacitySelector = mkSelector "opacity"
 
 -- | @Selector@ for @setOpacity:@
-setOpacitySelector :: Selector
+setOpacitySelector :: Selector '[CDouble] ()
 setOpacitySelector = mkSelector "setOpacity:"
 
 -- | @Selector@ for @renderingOrder@
-renderingOrderSelector :: Selector
+renderingOrderSelector :: Selector '[] CLong
 renderingOrderSelector = mkSelector "renderingOrder"
 
 -- | @Selector@ for @setRenderingOrder:@
-setRenderingOrderSelector :: Selector
+setRenderingOrderSelector :: Selector '[CLong] ()
 setRenderingOrderSelector = mkSelector "setRenderingOrder:"
 
 -- | @Selector@ for @castsShadow@
-castsShadowSelector :: Selector
+castsShadowSelector :: Selector '[] Bool
 castsShadowSelector = mkSelector "castsShadow"
 
 -- | @Selector@ for @setCastsShadow:@
-setCastsShadowSelector :: Selector
+setCastsShadowSelector :: Selector '[Bool] ()
 setCastsShadowSelector = mkSelector "setCastsShadow:"
 
 -- | @Selector@ for @movabilityHint@
-movabilityHintSelector :: Selector
+movabilityHintSelector :: Selector '[] SCNMovabilityHint
 movabilityHintSelector = mkSelector "movabilityHint"
 
 -- | @Selector@ for @setMovabilityHint:@
-setMovabilityHintSelector :: Selector
+setMovabilityHintSelector :: Selector '[SCNMovabilityHint] ()
 setMovabilityHintSelector = mkSelector "setMovabilityHint:"
 
 -- | @Selector@ for @parentNode@
-parentNodeSelector :: Selector
+parentNodeSelector :: Selector '[] (Id SCNNode)
 parentNodeSelector = mkSelector "parentNode"
 
 -- | @Selector@ for @childNodes@
-childNodesSelector :: Selector
+childNodesSelector :: Selector '[] (Id NSArray)
 childNodesSelector = mkSelector "childNodes"
 
 -- | @Selector@ for @physicsBody@
-physicsBodySelector :: Selector
+physicsBodySelector :: Selector '[] (Id SCNPhysicsBody)
 physicsBodySelector = mkSelector "physicsBody"
 
 -- | @Selector@ for @setPhysicsBody:@
-setPhysicsBodySelector :: Selector
+setPhysicsBodySelector :: Selector '[Id SCNPhysicsBody] ()
 setPhysicsBodySelector = mkSelector "setPhysicsBody:"
 
 -- | @Selector@ for @physicsField@
-physicsFieldSelector :: Selector
+physicsFieldSelector :: Selector '[] (Id SCNPhysicsField)
 physicsFieldSelector = mkSelector "physicsField"
 
 -- | @Selector@ for @setPhysicsField:@
-setPhysicsFieldSelector :: Selector
+setPhysicsFieldSelector :: Selector '[Id SCNPhysicsField] ()
 setPhysicsFieldSelector = mkSelector "setPhysicsField:"
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSArray)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @setConstraints:@
-setConstraintsSelector :: Selector
+setConstraintsSelector :: Selector '[Id NSArray] ()
 setConstraintsSelector = mkSelector "setConstraints:"
 
 -- | @Selector@ for @presentationNode@
-presentationNodeSelector :: Selector
+presentationNodeSelector :: Selector '[] (Id SCNNode)
 presentationNodeSelector = mkSelector "presentationNode"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 
 -- | @Selector@ for @rendererDelegate@
-rendererDelegateSelector :: Selector
+rendererDelegateSelector :: Selector '[] RawId
 rendererDelegateSelector = mkSelector "rendererDelegate"
 
 -- | @Selector@ for @setRendererDelegate:@
-setRendererDelegateSelector :: Selector
+setRendererDelegateSelector :: Selector '[RawId] ()
 setRendererDelegateSelector = mkSelector "setRendererDelegate:"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CULong
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CULong] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 
 -- | @Selector@ for @audioPlayers@
-audioPlayersSelector :: Selector
+audioPlayersSelector :: Selector '[] (Id NSArray)
 audioPlayersSelector = mkSelector "audioPlayers"
 
 -- | @Selector@ for @particleSystems@
-particleSystemsSelector :: Selector
+particleSystemsSelector :: Selector '[] (Id NSArray)
 particleSystemsSelector = mkSelector "particleSystems"
 
 -- | @Selector@ for @focusBehavior@
-focusBehaviorSelector :: Selector
+focusBehaviorSelector :: Selector '[] SCNNodeFocusBehavior
 focusBehaviorSelector = mkSelector "focusBehavior"
 
 -- | @Selector@ for @setFocusBehavior:@
-setFocusBehaviorSelector :: Selector
+setFocusBehaviorSelector :: Selector '[SCNNodeFocusBehavior] ()
 setFocusBehaviorSelector = mkSelector "setFocusBehavior:"
 
 -- | @Selector@ for @localUp@
-localUpSelector :: Selector
+localUpSelector :: Selector '[] SCNVector3
 localUpSelector = mkSelector "localUp"
 
 -- | @Selector@ for @localRight@
-localRightSelector :: Selector
+localRightSelector :: Selector '[] SCNVector3
 localRightSelector = mkSelector "localRight"
 
 -- | @Selector@ for @localFront@
-localFrontSelector :: Selector
+localFrontSelector :: Selector '[] SCNVector3
 localFrontSelector = mkSelector "localFront"
 
 -- | @Selector@ for @worldUp@
-worldUpSelector :: Selector
+worldUpSelector :: Selector '[] SCNVector3
 worldUpSelector = mkSelector "worldUp"
 
 -- | @Selector@ for @worldRight@
-worldRightSelector :: Selector
+worldRightSelector :: Selector '[] SCNVector3
 worldRightSelector = mkSelector "worldRight"
 
 -- | @Selector@ for @worldFront@
-worldFrontSelector :: Selector
+worldFrontSelector :: Selector '[] SCNVector3
 worldFrontSelector = mkSelector "worldFront"
 

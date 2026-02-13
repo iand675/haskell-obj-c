@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNDilatedPoolingMax
   , initWithCoder_device
   , dilationRateX
   , dilationRateY
-  , initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector
-  , initWithCoder_deviceSelector
   , dilationRateXSelector
   , dilationRateYSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:dilationRateX:dilationRateY:strideInPixelsX:strideInPixelsY:@
 initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsY :: IsMPSCNNDilatedPoolingMax mpscnnDilatedPoolingMax => mpscnnDilatedPoolingMax -> RawId -> CULong -> CULong -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSCNNDilatedPoolingMax)
-initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsY mpscnnDilatedPoolingMax  device kernelWidth kernelHeight dilationRateX dilationRateY strideInPixelsX strideInPixelsY =
-    sendMsg mpscnnDilatedPoolingMax (mkSelector "initWithDevice:kernelWidth:kernelHeight:dilationRateX:dilationRateY:strideInPixelsX:strideInPixelsY:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argCULong dilationRateX, argCULong dilationRateY, argCULong strideInPixelsX, argCULong strideInPixelsY] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsY mpscnnDilatedPoolingMax device kernelWidth kernelHeight dilationRateX dilationRateY strideInPixelsX strideInPixelsY =
+  sendOwnedMessage mpscnnDilatedPoolingMax initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector device kernelWidth kernelHeight dilationRateX dilationRateY strideInPixelsX strideInPixelsY
 
 -- | NSSecureCoding compatability
 --
@@ -74,9 +71,8 @@ initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixe
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNDilatedPoolingMax mpscnnDilatedPoolingMax, IsNSCoder aDecoder) => mpscnnDilatedPoolingMax -> aDecoder -> RawId -> IO (Id MPSCNNDilatedPoolingMax)
-initWithCoder_device mpscnnDilatedPoolingMax  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnDilatedPoolingMax (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnDilatedPoolingMax aDecoder device =
+  sendOwnedMessage mpscnnDilatedPoolingMax initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | dilationRateX
 --
@@ -84,8 +80,8 @@ initWithCoder_device mpscnnDilatedPoolingMax  aDecoder device =
 --
 -- ObjC selector: @- dilationRateX@
 dilationRateX :: IsMPSCNNDilatedPoolingMax mpscnnDilatedPoolingMax => mpscnnDilatedPoolingMax -> IO CULong
-dilationRateX mpscnnDilatedPoolingMax  =
-    sendMsg mpscnnDilatedPoolingMax (mkSelector "dilationRateX") retCULong []
+dilationRateX mpscnnDilatedPoolingMax =
+  sendMessage mpscnnDilatedPoolingMax dilationRateXSelector
 
 -- | dilationRateY
 --
@@ -93,26 +89,26 @@ dilationRateX mpscnnDilatedPoolingMax  =
 --
 -- ObjC selector: @- dilationRateY@
 dilationRateY :: IsMPSCNNDilatedPoolingMax mpscnnDilatedPoolingMax => mpscnnDilatedPoolingMax -> IO CULong
-dilationRateY mpscnnDilatedPoolingMax  =
-    sendMsg mpscnnDilatedPoolingMax (mkSelector "dilationRateY") retCULong []
+dilationRateY mpscnnDilatedPoolingMax =
+  sendMessage mpscnnDilatedPoolingMax dilationRateYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:dilationRateX:dilationRateY:strideInPixelsX:strideInPixelsY:@
-initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector :: Selector '[RawId, CULong, CULong, CULong, CULong, CULong, CULong] (Id MPSCNNDilatedPoolingMax)
 initWithDevice_kernelWidth_kernelHeight_dilationRateX_dilationRateY_strideInPixelsX_strideInPixelsYSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:dilationRateX:dilationRateY:strideInPixelsX:strideInPixelsY:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNDilatedPoolingMax)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @dilationRateX@
-dilationRateXSelector :: Selector
+dilationRateXSelector :: Selector '[] CULong
 dilationRateXSelector = mkSelector "dilationRateX"
 
 -- | @Selector@ for @dilationRateY@
-dilationRateYSelector :: Selector
+dilationRateYSelector :: Selector '[] CULong
 dilationRateYSelector = mkSelector "dilationRateY"
 

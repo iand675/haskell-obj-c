@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.MapKit.MKCompassButton
   , compassVisibility
   , setCompassVisibility
   , compassButtonWithMapViewSelector
-  , mapViewSelector
-  , setMapViewSelector
   , compassVisibilitySelector
+  , mapViewSelector
   , setCompassVisibilitySelector
+  , setMapViewSelector
 
   -- * Enum types
   , MKFeatureVisibility(MKFeatureVisibility)
@@ -26,15 +27,11 @@ module ObjC.MapKit.MKCompassButton
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,51 +45,49 @@ compassButtonWithMapView :: IsMKMapView mapView => mapView -> IO (Id MKCompassBu
 compassButtonWithMapView mapView =
   do
     cls' <- getRequiredClass "MKCompassButton"
-    withObjCPtr mapView $ \raw_mapView ->
-      sendClassMsg cls' (mkSelector "compassButtonWithMapView:") (retPtr retVoid) [argPtr (castPtr raw_mapView :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' compassButtonWithMapViewSelector (toMKMapView mapView)
 
 -- | @- mapView@
 mapView :: IsMKCompassButton mkCompassButton => mkCompassButton -> IO (Id MKMapView)
-mapView mkCompassButton  =
-    sendMsg mkCompassButton (mkSelector "mapView") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapView mkCompassButton =
+  sendMessage mkCompassButton mapViewSelector
 
 -- | @- setMapView:@
 setMapView :: (IsMKCompassButton mkCompassButton, IsMKMapView value) => mkCompassButton -> value -> IO ()
-setMapView mkCompassButton  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkCompassButton (mkSelector "setMapView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMapView mkCompassButton value =
+  sendMessage mkCompassButton setMapViewSelector (toMKMapView value)
 
 -- | @- compassVisibility@
 compassVisibility :: IsMKCompassButton mkCompassButton => mkCompassButton -> IO MKFeatureVisibility
-compassVisibility mkCompassButton  =
-    fmap (coerce :: CLong -> MKFeatureVisibility) $ sendMsg mkCompassButton (mkSelector "compassVisibility") retCLong []
+compassVisibility mkCompassButton =
+  sendMessage mkCompassButton compassVisibilitySelector
 
 -- | @- setCompassVisibility:@
 setCompassVisibility :: IsMKCompassButton mkCompassButton => mkCompassButton -> MKFeatureVisibility -> IO ()
-setCompassVisibility mkCompassButton  value =
-    sendMsg mkCompassButton (mkSelector "setCompassVisibility:") retVoid [argCLong (coerce value)]
+setCompassVisibility mkCompassButton value =
+  sendMessage mkCompassButton setCompassVisibilitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compassButtonWithMapView:@
-compassButtonWithMapViewSelector :: Selector
+compassButtonWithMapViewSelector :: Selector '[Id MKMapView] (Id MKCompassButton)
 compassButtonWithMapViewSelector = mkSelector "compassButtonWithMapView:"
 
 -- | @Selector@ for @mapView@
-mapViewSelector :: Selector
+mapViewSelector :: Selector '[] (Id MKMapView)
 mapViewSelector = mkSelector "mapView"
 
 -- | @Selector@ for @setMapView:@
-setMapViewSelector :: Selector
+setMapViewSelector :: Selector '[Id MKMapView] ()
 setMapViewSelector = mkSelector "setMapView:"
 
 -- | @Selector@ for @compassVisibility@
-compassVisibilitySelector :: Selector
+compassVisibilitySelector :: Selector '[] MKFeatureVisibility
 compassVisibilitySelector = mkSelector "compassVisibility"
 
 -- | @Selector@ for @setCompassVisibility:@
-setCompassVisibilitySelector :: Selector
+setCompassVisibilitySelector :: Selector '[MKFeatureVisibility] ()
 setCompassVisibilitySelector = mkSelector "setCompassVisibility:"
 

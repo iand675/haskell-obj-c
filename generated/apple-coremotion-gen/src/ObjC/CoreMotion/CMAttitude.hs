@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.CoreMotion.CMAttitude
   , pitch
   , yaw
   , multiplyByInverseOfAttitudeSelector
-  , rollSelector
   , pitchSelector
+  , rollSelector
   , yawSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- multiplyByInverseOfAttitude:@
 multiplyByInverseOfAttitude :: (IsCMAttitude cmAttitude, IsCMAttitude attitude) => cmAttitude -> attitude -> IO ()
-multiplyByInverseOfAttitude cmAttitude  attitude =
-  withObjCPtr attitude $ \raw_attitude ->
-      sendMsg cmAttitude (mkSelector "multiplyByInverseOfAttitude:") retVoid [argPtr (castPtr raw_attitude :: Ptr ())]
+multiplyByInverseOfAttitude cmAttitude attitude =
+  sendMessage cmAttitude multiplyByInverseOfAttitudeSelector (toCMAttitude attitude)
 
 -- | @- roll@
 roll :: IsCMAttitude cmAttitude => cmAttitude -> IO CDouble
-roll cmAttitude  =
-    sendMsg cmAttitude (mkSelector "roll") retCDouble []
+roll cmAttitude =
+  sendMessage cmAttitude rollSelector
 
 -- | @- pitch@
 pitch :: IsCMAttitude cmAttitude => cmAttitude -> IO CDouble
-pitch cmAttitude  =
-    sendMsg cmAttitude (mkSelector "pitch") retCDouble []
+pitch cmAttitude =
+  sendMessage cmAttitude pitchSelector
 
 -- | @- yaw@
 yaw :: IsCMAttitude cmAttitude => cmAttitude -> IO CDouble
-yaw cmAttitude  =
-    sendMsg cmAttitude (mkSelector "yaw") retCDouble []
+yaw cmAttitude =
+  sendMessage cmAttitude yawSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @multiplyByInverseOfAttitude:@
-multiplyByInverseOfAttitudeSelector :: Selector
+multiplyByInverseOfAttitudeSelector :: Selector '[Id CMAttitude] ()
 multiplyByInverseOfAttitudeSelector = mkSelector "multiplyByInverseOfAttitude:"
 
 -- | @Selector@ for @roll@
-rollSelector :: Selector
+rollSelector :: Selector '[] CDouble
 rollSelector = mkSelector "roll"
 
 -- | @Selector@ for @pitch@
-pitchSelector :: Selector
+pitchSelector :: Selector '[] CDouble
 pitchSelector = mkSelector "pitch"
 
 -- | @Selector@ for @yaw@
-yawSelector :: Selector
+yawSelector :: Selector '[] CDouble
 yawSelector = mkSelector "yaw"
 

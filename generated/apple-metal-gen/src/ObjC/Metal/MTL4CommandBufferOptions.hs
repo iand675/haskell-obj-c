@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Metal.MTL4CommandBufferOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- logState@
 logState :: IsMTL4CommandBufferOptions mtL4CommandBufferOptions => mtL4CommandBufferOptions -> IO RawId
-logState mtL4CommandBufferOptions  =
-    fmap (RawId . castPtr) $ sendMsg mtL4CommandBufferOptions (mkSelector "logState") (retPtr retVoid) []
+logState mtL4CommandBufferOptions =
+  sendMessage mtL4CommandBufferOptions logStateSelector
 
 -- | Contains information related to shader logging.
 --
@@ -50,18 +47,18 @@ logState mtL4CommandBufferOptions  =
 --
 -- ObjC selector: @- setLogState:@
 setLogState :: IsMTL4CommandBufferOptions mtL4CommandBufferOptions => mtL4CommandBufferOptions -> RawId -> IO ()
-setLogState mtL4CommandBufferOptions  value =
-    sendMsg mtL4CommandBufferOptions (mkSelector "setLogState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLogState mtL4CommandBufferOptions value =
+  sendMessage mtL4CommandBufferOptions setLogStateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @logState@
-logStateSelector :: Selector
+logStateSelector :: Selector '[] RawId
 logStateSelector = mkSelector "logState"
 
 -- | @Selector@ for @setLogState:@
-setLogStateSelector :: Selector
+setLogStateSelector :: Selector '[RawId] ()
 setLogStateSelector = mkSelector "setLogState:"
 

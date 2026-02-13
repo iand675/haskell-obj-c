@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,46 +34,42 @@ module ObjC.AppKit.NSWorkspaceOpenConfiguration
   , setArchitecture
   , requiresUniversalLinks
   , setRequiresUniversalLinks
-  , configurationSelector
-  , promptsUserIfNeededSelector
-  , setPromptsUserIfNeededSelector
-  , addsToRecentItemsSelector
-  , setAddsToRecentItemsSelector
   , activatesSelector
-  , setActivatesSelector
-  , hidesSelector
-  , setHidesSelector
-  , hidesOthersSelector
-  , setHidesOthersSelector
-  , forPrintingSelector
-  , setForPrintingSelector
-  , createsNewApplicationInstanceSelector
-  , setCreatesNewApplicationInstanceSelector
+  , addsToRecentItemsSelector
   , allowsRunningApplicationSubstitutionSelector
-  , setAllowsRunningApplicationSubstitutionSelector
-  , argumentsSelector
-  , setArgumentsSelector
-  , environmentSelector
-  , setEnvironmentSelector
   , appleEventSelector
-  , setAppleEventSelector
   , architectureSelector
-  , setArchitectureSelector
+  , argumentsSelector
+  , configurationSelector
+  , createsNewApplicationInstanceSelector
+  , environmentSelector
+  , forPrintingSelector
+  , hidesOthersSelector
+  , hidesSelector
+  , promptsUserIfNeededSelector
   , requiresUniversalLinksSelector
+  , setActivatesSelector
+  , setAddsToRecentItemsSelector
+  , setAllowsRunningApplicationSubstitutionSelector
+  , setAppleEventSelector
+  , setArchitectureSelector
+  , setArgumentsSelector
+  , setCreatesNewApplicationInstanceSelector
+  , setEnvironmentSelector
+  , setForPrintingSelector
+  , setHidesOthersSelector
+  , setHidesSelector
+  , setPromptsUserIfNeededSelector
   , setRequiresUniversalLinksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,250 +81,247 @@ configuration :: IO (Id NSWorkspaceOpenConfiguration)
 configuration  =
   do
     cls' <- getRequiredClass "NSWorkspaceOpenConfiguration"
-    sendClassMsg cls' (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationSelector
 
 -- | @- promptsUserIfNeeded@
 promptsUserIfNeeded :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-promptsUserIfNeeded nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "promptsUserIfNeeded") retCULong []
+promptsUserIfNeeded nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration promptsUserIfNeededSelector
 
 -- | @- setPromptsUserIfNeeded:@
 setPromptsUserIfNeeded :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setPromptsUserIfNeeded nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setPromptsUserIfNeeded:") retVoid [argCULong (if value then 1 else 0)]
+setPromptsUserIfNeeded nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setPromptsUserIfNeededSelector value
 
 -- | @- addsToRecentItems@
 addsToRecentItems :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-addsToRecentItems nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "addsToRecentItems") retCULong []
+addsToRecentItems nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration addsToRecentItemsSelector
 
 -- | @- setAddsToRecentItems:@
 setAddsToRecentItems :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setAddsToRecentItems nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setAddsToRecentItems:") retVoid [argCULong (if value then 1 else 0)]
+setAddsToRecentItems nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setAddsToRecentItemsSelector value
 
 -- | @- activates@
 activates :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-activates nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "activates") retCULong []
+activates nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration activatesSelector
 
 -- | @- setActivates:@
 setActivates :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setActivates nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setActivates:") retVoid [argCULong (if value then 1 else 0)]
+setActivates nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setActivatesSelector value
 
 -- | @- hides@
 hides :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-hides nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "hides") retCULong []
+hides nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration hidesSelector
 
 -- | @- setHides:@
 setHides :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setHides nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setHides:") retVoid [argCULong (if value then 1 else 0)]
+setHides nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setHidesSelector value
 
 -- | @- hidesOthers@
 hidesOthers :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-hidesOthers nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "hidesOthers") retCULong []
+hidesOthers nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration hidesOthersSelector
 
 -- | @- setHidesOthers:@
 setHidesOthers :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setHidesOthers nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setHidesOthers:") retVoid [argCULong (if value then 1 else 0)]
+setHidesOthers nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setHidesOthersSelector value
 
 -- | @- forPrinting@
 forPrinting :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-forPrinting nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "forPrinting") retCULong []
+forPrinting nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration forPrintingSelector
 
 -- | @- setForPrinting:@
 setForPrinting :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setForPrinting nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setForPrinting:") retVoid [argCULong (if value then 1 else 0)]
+setForPrinting nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setForPrintingSelector value
 
 -- | @- createsNewApplicationInstance@
 createsNewApplicationInstance :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-createsNewApplicationInstance nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "createsNewApplicationInstance") retCULong []
+createsNewApplicationInstance nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration createsNewApplicationInstanceSelector
 
 -- | @- setCreatesNewApplicationInstance:@
 setCreatesNewApplicationInstance :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setCreatesNewApplicationInstance nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setCreatesNewApplicationInstance:") retVoid [argCULong (if value then 1 else 0)]
+setCreatesNewApplicationInstance nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setCreatesNewApplicationInstanceSelector value
 
 -- | @- allowsRunningApplicationSubstitution@
 allowsRunningApplicationSubstitution :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-allowsRunningApplicationSubstitution nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "allowsRunningApplicationSubstitution") retCULong []
+allowsRunningApplicationSubstitution nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration allowsRunningApplicationSubstitutionSelector
 
 -- | @- setAllowsRunningApplicationSubstitution:@
 setAllowsRunningApplicationSubstitution :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setAllowsRunningApplicationSubstitution nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setAllowsRunningApplicationSubstitution:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsRunningApplicationSubstitution nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setAllowsRunningApplicationSubstitutionSelector value
 
 -- | @- arguments@
 arguments :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO (Id NSArray)
-arguments nsWorkspaceOpenConfiguration  =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+arguments nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration argumentsSelector
 
 -- | @- setArguments:@
 setArguments :: (IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration, IsNSArray value) => nsWorkspaceOpenConfiguration -> value -> IO ()
-setArguments nsWorkspaceOpenConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWorkspaceOpenConfiguration (mkSelector "setArguments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArguments nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setArgumentsSelector (toNSArray value)
 
 -- | @- environment@
 environment :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO (Id NSDictionary)
-environment nsWorkspaceOpenConfiguration  =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "environment") (retPtr retVoid) [] >>= retainedObject . castPtr
+environment nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration environmentSelector
 
 -- | @- setEnvironment:@
 setEnvironment :: (IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration, IsNSDictionary value) => nsWorkspaceOpenConfiguration -> value -> IO ()
-setEnvironment nsWorkspaceOpenConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWorkspaceOpenConfiguration (mkSelector "setEnvironment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnvironment nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setEnvironmentSelector (toNSDictionary value)
 
 -- | @- appleEvent@
 appleEvent :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO (Id NSAppleEventDescriptor)
-appleEvent nsWorkspaceOpenConfiguration  =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "appleEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleEvent nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration appleEventSelector
 
 -- | @- setAppleEvent:@
 setAppleEvent :: (IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration, IsNSAppleEventDescriptor value) => nsWorkspaceOpenConfiguration -> value -> IO ()
-setAppleEvent nsWorkspaceOpenConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWorkspaceOpenConfiguration (mkSelector "setAppleEvent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppleEvent nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setAppleEventSelector (toNSAppleEventDescriptor value)
 
 -- | @- architecture@
 architecture :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO CInt
-architecture nsWorkspaceOpenConfiguration  =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "architecture") retCInt []
+architecture nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration architectureSelector
 
 -- | @- setArchitecture:@
 setArchitecture :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> CInt -> IO ()
-setArchitecture nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setArchitecture:") retVoid [argCInt value]
+setArchitecture nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setArchitectureSelector value
 
 -- | @- requiresUniversalLinks@
 requiresUniversalLinks :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> IO Bool
-requiresUniversalLinks nsWorkspaceOpenConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWorkspaceOpenConfiguration (mkSelector "requiresUniversalLinks") retCULong []
+requiresUniversalLinks nsWorkspaceOpenConfiguration =
+  sendMessage nsWorkspaceOpenConfiguration requiresUniversalLinksSelector
 
 -- | @- setRequiresUniversalLinks:@
 setRequiresUniversalLinks :: IsNSWorkspaceOpenConfiguration nsWorkspaceOpenConfiguration => nsWorkspaceOpenConfiguration -> Bool -> IO ()
-setRequiresUniversalLinks nsWorkspaceOpenConfiguration  value =
-    sendMsg nsWorkspaceOpenConfiguration (mkSelector "setRequiresUniversalLinks:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresUniversalLinks nsWorkspaceOpenConfiguration value =
+  sendMessage nsWorkspaceOpenConfiguration setRequiresUniversalLinksSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NSWorkspaceOpenConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @promptsUserIfNeeded@
-promptsUserIfNeededSelector :: Selector
+promptsUserIfNeededSelector :: Selector '[] Bool
 promptsUserIfNeededSelector = mkSelector "promptsUserIfNeeded"
 
 -- | @Selector@ for @setPromptsUserIfNeeded:@
-setPromptsUserIfNeededSelector :: Selector
+setPromptsUserIfNeededSelector :: Selector '[Bool] ()
 setPromptsUserIfNeededSelector = mkSelector "setPromptsUserIfNeeded:"
 
 -- | @Selector@ for @addsToRecentItems@
-addsToRecentItemsSelector :: Selector
+addsToRecentItemsSelector :: Selector '[] Bool
 addsToRecentItemsSelector = mkSelector "addsToRecentItems"
 
 -- | @Selector@ for @setAddsToRecentItems:@
-setAddsToRecentItemsSelector :: Selector
+setAddsToRecentItemsSelector :: Selector '[Bool] ()
 setAddsToRecentItemsSelector = mkSelector "setAddsToRecentItems:"
 
 -- | @Selector@ for @activates@
-activatesSelector :: Selector
+activatesSelector :: Selector '[] Bool
 activatesSelector = mkSelector "activates"
 
 -- | @Selector@ for @setActivates:@
-setActivatesSelector :: Selector
+setActivatesSelector :: Selector '[Bool] ()
 setActivatesSelector = mkSelector "setActivates:"
 
 -- | @Selector@ for @hides@
-hidesSelector :: Selector
+hidesSelector :: Selector '[] Bool
 hidesSelector = mkSelector "hides"
 
 -- | @Selector@ for @setHides:@
-setHidesSelector :: Selector
+setHidesSelector :: Selector '[Bool] ()
 setHidesSelector = mkSelector "setHides:"
 
 -- | @Selector@ for @hidesOthers@
-hidesOthersSelector :: Selector
+hidesOthersSelector :: Selector '[] Bool
 hidesOthersSelector = mkSelector "hidesOthers"
 
 -- | @Selector@ for @setHidesOthers:@
-setHidesOthersSelector :: Selector
+setHidesOthersSelector :: Selector '[Bool] ()
 setHidesOthersSelector = mkSelector "setHidesOthers:"
 
 -- | @Selector@ for @forPrinting@
-forPrintingSelector :: Selector
+forPrintingSelector :: Selector '[] Bool
 forPrintingSelector = mkSelector "forPrinting"
 
 -- | @Selector@ for @setForPrinting:@
-setForPrintingSelector :: Selector
+setForPrintingSelector :: Selector '[Bool] ()
 setForPrintingSelector = mkSelector "setForPrinting:"
 
 -- | @Selector@ for @createsNewApplicationInstance@
-createsNewApplicationInstanceSelector :: Selector
+createsNewApplicationInstanceSelector :: Selector '[] Bool
 createsNewApplicationInstanceSelector = mkSelector "createsNewApplicationInstance"
 
 -- | @Selector@ for @setCreatesNewApplicationInstance:@
-setCreatesNewApplicationInstanceSelector :: Selector
+setCreatesNewApplicationInstanceSelector :: Selector '[Bool] ()
 setCreatesNewApplicationInstanceSelector = mkSelector "setCreatesNewApplicationInstance:"
 
 -- | @Selector@ for @allowsRunningApplicationSubstitution@
-allowsRunningApplicationSubstitutionSelector :: Selector
+allowsRunningApplicationSubstitutionSelector :: Selector '[] Bool
 allowsRunningApplicationSubstitutionSelector = mkSelector "allowsRunningApplicationSubstitution"
 
 -- | @Selector@ for @setAllowsRunningApplicationSubstitution:@
-setAllowsRunningApplicationSubstitutionSelector :: Selector
+setAllowsRunningApplicationSubstitutionSelector :: Selector '[Bool] ()
 setAllowsRunningApplicationSubstitutionSelector = mkSelector "setAllowsRunningApplicationSubstitution:"
 
 -- | @Selector@ for @arguments@
-argumentsSelector :: Selector
+argumentsSelector :: Selector '[] (Id NSArray)
 argumentsSelector = mkSelector "arguments"
 
 -- | @Selector@ for @setArguments:@
-setArgumentsSelector :: Selector
+setArgumentsSelector :: Selector '[Id NSArray] ()
 setArgumentsSelector = mkSelector "setArguments:"
 
 -- | @Selector@ for @environment@
-environmentSelector :: Selector
+environmentSelector :: Selector '[] (Id NSDictionary)
 environmentSelector = mkSelector "environment"
 
 -- | @Selector@ for @setEnvironment:@
-setEnvironmentSelector :: Selector
+setEnvironmentSelector :: Selector '[Id NSDictionary] ()
 setEnvironmentSelector = mkSelector "setEnvironment:"
 
 -- | @Selector@ for @appleEvent@
-appleEventSelector :: Selector
+appleEventSelector :: Selector '[] (Id NSAppleEventDescriptor)
 appleEventSelector = mkSelector "appleEvent"
 
 -- | @Selector@ for @setAppleEvent:@
-setAppleEventSelector :: Selector
+setAppleEventSelector :: Selector '[Id NSAppleEventDescriptor] ()
 setAppleEventSelector = mkSelector "setAppleEvent:"
 
 -- | @Selector@ for @architecture@
-architectureSelector :: Selector
+architectureSelector :: Selector '[] CInt
 architectureSelector = mkSelector "architecture"
 
 -- | @Selector@ for @setArchitecture:@
-setArchitectureSelector :: Selector
+setArchitectureSelector :: Selector '[CInt] ()
 setArchitectureSelector = mkSelector "setArchitecture:"
 
 -- | @Selector@ for @requiresUniversalLinks@
-requiresUniversalLinksSelector :: Selector
+requiresUniversalLinksSelector :: Selector '[] Bool
 requiresUniversalLinksSelector = mkSelector "requiresUniversalLinks"
 
 -- | @Selector@ for @setRequiresUniversalLinks:@
-setRequiresUniversalLinksSelector :: Selector
+setRequiresUniversalLinksSelector :: Selector '[Bool] ()
 setRequiresUniversalLinksSelector = mkSelector "setRequiresUniversalLinks:"
 

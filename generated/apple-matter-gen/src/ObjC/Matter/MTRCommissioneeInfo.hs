@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRCommissioneeInfo
   , rootEndpoint
   , attributes
   , networkInterfaces
-  , productIdentitySelector
-  , endpointsByIdSelector
-  , rootEndpointSelector
   , attributesSelector
+  , endpointsByIdSelector
   , networkInterfacesSelector
+  , productIdentitySelector
+  , rootEndpointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- productIdentity@
 productIdentity :: IsMTRCommissioneeInfo mtrCommissioneeInfo => mtrCommissioneeInfo -> IO (Id MTRProductIdentity)
-productIdentity mtrCommissioneeInfo  =
-    sendMsg mtrCommissioneeInfo (mkSelector "productIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+productIdentity mtrCommissioneeInfo =
+  sendMessage mtrCommissioneeInfo productIdentitySelector
 
 -- | Endpoint information for all endpoints of the commissionee. Will be present only if readEndpointInformation is set to YES on MTRCommissioningParameters.
 --
@@ -50,15 +47,15 @@ productIdentity mtrCommissioneeInfo  =
 --
 -- ObjC selector: @- endpointsById@
 endpointsById :: IsMTRCommissioneeInfo mtrCommissioneeInfo => mtrCommissioneeInfo -> IO (Id NSDictionary)
-endpointsById mtrCommissioneeInfo  =
-    sendMsg mtrCommissioneeInfo (mkSelector "endpointsById") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointsById mtrCommissioneeInfo =
+  sendMessage mtrCommissioneeInfo endpointsByIdSelector
 
 -- | Endpoint information for the root endpoint of the commissionee. Will be present only if readEndpointInformation is set to YES on MTRCommissioningParameters.
 --
 -- ObjC selector: @- rootEndpoint@
 rootEndpoint :: IsMTRCommissioneeInfo mtrCommissioneeInfo => mtrCommissioneeInfo -> IO (Id MTREndpointInfo)
-rootEndpoint mtrCommissioneeInfo  =
-    sendMsg mtrCommissioneeInfo (mkSelector "rootEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootEndpoint mtrCommissioneeInfo =
+  sendMessage mtrCommissioneeInfo rootEndpointSelector
 
 -- | Attributes that were read from the commissionee.  This will contain the following, if they are available:
 --
@@ -66,37 +63,37 @@ rootEndpoint mtrCommissioneeInfo  =
 --
 -- ObjC selector: @- attributes@
 attributes :: IsMTRCommissioneeInfo mtrCommissioneeInfo => mtrCommissioneeInfo -> IO (Id NSDictionary)
-attributes mtrCommissioneeInfo  =
-    sendMsg mtrCommissioneeInfo (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mtrCommissioneeInfo =
+  sendMessage mtrCommissioneeInfo attributesSelector
 
 -- | Network interfaces the commissionee has.  The array will be empty if there are no network interfaces exposed on the commissionee.
 --
 -- ObjC selector: @- networkInterfaces@
 networkInterfaces :: IsMTRCommissioneeInfo mtrCommissioneeInfo => mtrCommissioneeInfo -> IO (Id NSArray)
-networkInterfaces mtrCommissioneeInfo  =
-    sendMsg mtrCommissioneeInfo (mkSelector "networkInterfaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkInterfaces mtrCommissioneeInfo =
+  sendMessage mtrCommissioneeInfo networkInterfacesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @productIdentity@
-productIdentitySelector :: Selector
+productIdentitySelector :: Selector '[] (Id MTRProductIdentity)
 productIdentitySelector = mkSelector "productIdentity"
 
 -- | @Selector@ for @endpointsById@
-endpointsByIdSelector :: Selector
+endpointsByIdSelector :: Selector '[] (Id NSDictionary)
 endpointsByIdSelector = mkSelector "endpointsById"
 
 -- | @Selector@ for @rootEndpoint@
-rootEndpointSelector :: Selector
+rootEndpointSelector :: Selector '[] (Id MTREndpointInfo)
 rootEndpointSelector = mkSelector "rootEndpoint"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @networkInterfaces@
-networkInterfacesSelector :: Selector
+networkInterfacesSelector :: Selector '[] (Id NSArray)
 networkInterfacesSelector = mkSelector "networkInterfaces"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRThermostatClusterOccupancyChangeEvent
   , setPreviousOccupancy
   , currentOccupancy
   , setCurrentOccupancy
-  , previousOccupancySelector
-  , setPreviousOccupancySelector
   , currentOccupancySelector
+  , previousOccupancySelector
   , setCurrentOccupancySelector
+  , setPreviousOccupancySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previousOccupancy@
 previousOccupancy :: IsMTRThermostatClusterOccupancyChangeEvent mtrThermostatClusterOccupancyChangeEvent => mtrThermostatClusterOccupancyChangeEvent -> IO (Id NSNumber)
-previousOccupancy mtrThermostatClusterOccupancyChangeEvent  =
-    sendMsg mtrThermostatClusterOccupancyChangeEvent (mkSelector "previousOccupancy") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousOccupancy mtrThermostatClusterOccupancyChangeEvent =
+  sendMessage mtrThermostatClusterOccupancyChangeEvent previousOccupancySelector
 
 -- | @- setPreviousOccupancy:@
 setPreviousOccupancy :: (IsMTRThermostatClusterOccupancyChangeEvent mtrThermostatClusterOccupancyChangeEvent, IsNSNumber value) => mtrThermostatClusterOccupancyChangeEvent -> value -> IO ()
-setPreviousOccupancy mtrThermostatClusterOccupancyChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterOccupancyChangeEvent (mkSelector "setPreviousOccupancy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousOccupancy mtrThermostatClusterOccupancyChangeEvent value =
+  sendMessage mtrThermostatClusterOccupancyChangeEvent setPreviousOccupancySelector (toNSNumber value)
 
 -- | @- currentOccupancy@
 currentOccupancy :: IsMTRThermostatClusterOccupancyChangeEvent mtrThermostatClusterOccupancyChangeEvent => mtrThermostatClusterOccupancyChangeEvent -> IO (Id NSNumber)
-currentOccupancy mtrThermostatClusterOccupancyChangeEvent  =
-    sendMsg mtrThermostatClusterOccupancyChangeEvent (mkSelector "currentOccupancy") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentOccupancy mtrThermostatClusterOccupancyChangeEvent =
+  sendMessage mtrThermostatClusterOccupancyChangeEvent currentOccupancySelector
 
 -- | @- setCurrentOccupancy:@
 setCurrentOccupancy :: (IsMTRThermostatClusterOccupancyChangeEvent mtrThermostatClusterOccupancyChangeEvent, IsNSNumber value) => mtrThermostatClusterOccupancyChangeEvent -> value -> IO ()
-setCurrentOccupancy mtrThermostatClusterOccupancyChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterOccupancyChangeEvent (mkSelector "setCurrentOccupancy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentOccupancy mtrThermostatClusterOccupancyChangeEvent value =
+  sendMessage mtrThermostatClusterOccupancyChangeEvent setCurrentOccupancySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousOccupancy@
-previousOccupancySelector :: Selector
+previousOccupancySelector :: Selector '[] (Id NSNumber)
 previousOccupancySelector = mkSelector "previousOccupancy"
 
 -- | @Selector@ for @setPreviousOccupancy:@
-setPreviousOccupancySelector :: Selector
+setPreviousOccupancySelector :: Selector '[Id NSNumber] ()
 setPreviousOccupancySelector = mkSelector "setPreviousOccupancy:"
 
 -- | @Selector@ for @currentOccupancy@
-currentOccupancySelector :: Selector
+currentOccupancySelector :: Selector '[] (Id NSNumber)
 currentOccupancySelector = mkSelector "currentOccupancy"
 
 -- | @Selector@ for @setCurrentOccupancy:@
-setCurrentOccupancySelector :: Selector
+setCurrentOccupancySelector :: Selector '[Id NSNumber] ()
 setCurrentOccupancySelector = mkSelector "setCurrentOccupancy:"
 

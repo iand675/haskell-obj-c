@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AuthenticationServices.ASAuthorizationSingleSignOnProvider
   , url
   , canPerformAuthorization
   , authorizationProviderWithIdentityProviderURLSelector
-  , createRequestSelector
-  , newSelector
-  , initSelector
-  , urlSelector
   , canPerformAuthorizationSelector
+  , createRequestSelector
+  , initSelector
+  , newSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,63 +41,62 @@ authorizationProviderWithIdentityProviderURL :: IsNSURL url => url -> IO (Id ASA
 authorizationProviderWithIdentityProviderURL url =
   do
     cls' <- getRequiredClass "ASAuthorizationSingleSignOnProvider"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "authorizationProviderWithIdentityProviderURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' authorizationProviderWithIdentityProviderURLSelector (toNSURL url)
 
 -- | @- createRequest@
 createRequest :: IsASAuthorizationSingleSignOnProvider asAuthorizationSingleSignOnProvider => asAuthorizationSingleSignOnProvider -> IO (Id ASAuthorizationSingleSignOnRequest)
-createRequest asAuthorizationSingleSignOnProvider  =
-    sendMsg asAuthorizationSingleSignOnProvider (mkSelector "createRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+createRequest asAuthorizationSingleSignOnProvider =
+  sendMessage asAuthorizationSingleSignOnProvider createRequestSelector
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationSingleSignOnProvider)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationSingleSignOnProvider"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationSingleSignOnProvider asAuthorizationSingleSignOnProvider => asAuthorizationSingleSignOnProvider -> IO (Id ASAuthorizationSingleSignOnProvider)
-init_ asAuthorizationSingleSignOnProvider  =
-    sendMsg asAuthorizationSingleSignOnProvider (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationSingleSignOnProvider =
+  sendOwnedMessage asAuthorizationSingleSignOnProvider initSelector
 
 -- | @- url@
 url :: IsASAuthorizationSingleSignOnProvider asAuthorizationSingleSignOnProvider => asAuthorizationSingleSignOnProvider -> IO (Id NSURL)
-url asAuthorizationSingleSignOnProvider  =
-    sendMsg asAuthorizationSingleSignOnProvider (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url asAuthorizationSingleSignOnProvider =
+  sendMessage asAuthorizationSingleSignOnProvider urlSelector
 
 -- | Returns YES if the configured provider is capable of performing authorization within a given configuration.
 --
 -- ObjC selector: @- canPerformAuthorization@
 canPerformAuthorization :: IsASAuthorizationSingleSignOnProvider asAuthorizationSingleSignOnProvider => asAuthorizationSingleSignOnProvider -> IO Bool
-canPerformAuthorization asAuthorizationSingleSignOnProvider  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationSingleSignOnProvider (mkSelector "canPerformAuthorization") retCULong []
+canPerformAuthorization asAuthorizationSingleSignOnProvider =
+  sendMessage asAuthorizationSingleSignOnProvider canPerformAuthorizationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationProviderWithIdentityProviderURL:@
-authorizationProviderWithIdentityProviderURLSelector :: Selector
+authorizationProviderWithIdentityProviderURLSelector :: Selector '[Id NSURL] (Id ASAuthorizationSingleSignOnProvider)
 authorizationProviderWithIdentityProviderURLSelector = mkSelector "authorizationProviderWithIdentityProviderURL:"
 
 -- | @Selector@ for @createRequest@
-createRequestSelector :: Selector
+createRequestSelector :: Selector '[] (Id ASAuthorizationSingleSignOnRequest)
 createRequestSelector = mkSelector "createRequest"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationSingleSignOnProvider)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationSingleSignOnProvider)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @canPerformAuthorization@
-canPerformAuthorizationSelector :: Selector
+canPerformAuthorizationSelector :: Selector '[] Bool
 canPerformAuthorizationSelector = mkSelector "canPerformAuthorization"
 

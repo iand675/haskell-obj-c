@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,23 +29,23 @@ module ObjC.EventKit.EKCalendar
   , setColor
   , supportedEventAvailabilities
   , allowedEntityTypes
-  , calendarWithEventStoreSelector
-  , calendarForEntityType_eventStoreSelector
-  , sourceSelector
-  , setSourceSelector
-  , calendarIdentifierSelector
-  , titleSelector
-  , setTitleSelector
-  , typeSelector
-  , allowsContentModificationsSelector
-  , subscribedSelector
-  , immutableSelector
-  , cgColorSelector
-  , setCGColorSelector
-  , colorSelector
-  , setColorSelector
-  , supportedEventAvailabilitiesSelector
   , allowedEntityTypesSelector
+  , allowsContentModificationsSelector
+  , calendarForEntityType_eventStoreSelector
+  , calendarIdentifierSelector
+  , calendarWithEventStoreSelector
+  , cgColorSelector
+  , colorSelector
+  , immutableSelector
+  , setCGColorSelector
+  , setColorSelector
+  , setSourceSelector
+  , setTitleSelector
+  , sourceSelector
+  , subscribedSelector
+  , supportedEventAvailabilitiesSelector
+  , titleSelector
+  , typeSelector
 
   -- * Enum types
   , EKCalendarEventAvailabilityMask(EKCalendarEventAvailabilityMask)
@@ -68,15 +69,11 @@ module ObjC.EventKit.EKCalendar
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,8 +86,7 @@ calendarWithEventStore :: IsEKEventStore eventStore => eventStore -> IO (Id EKCa
 calendarWithEventStore eventStore =
   do
     cls' <- getRequiredClass "EKCalendar"
-    withObjCPtr eventStore $ \raw_eventStore ->
-      sendClassMsg cls' (mkSelector "calendarWithEventStore:") (retPtr retVoid) [argPtr (castPtr raw_eventStore :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' calendarWithEventStoreSelector (toEKEventStore eventStore)
 
 -- | calendarForEntityType:
 --
@@ -107,8 +103,7 @@ calendarForEntityType_eventStore :: IsEKEventStore eventStore => EKEntityType ->
 calendarForEntityType_eventStore entityType eventStore =
   do
     cls' <- getRequiredClass "EKCalendar"
-    withObjCPtr eventStore $ \raw_eventStore ->
-      sendClassMsg cls' (mkSelector "calendarForEntityType:eventStore:") (retPtr retVoid) [argCULong (coerce entityType), argPtr (castPtr raw_eventStore :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' calendarForEntityType_eventStoreSelector entityType (toEKEventStore eventStore)
 
 -- | source
 --
@@ -118,8 +113,8 @@ calendarForEntityType_eventStore entityType eventStore =
 --
 -- ObjC selector: @- source@
 source :: IsEKCalendar ekCalendar => ekCalendar -> IO (Id EKSource)
-source ekCalendar  =
-    sendMsg ekCalendar (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source ekCalendar =
+  sendMessage ekCalendar sourceSelector
 
 -- | source
 --
@@ -129,9 +124,8 @@ source ekCalendar  =
 --
 -- ObjC selector: @- setSource:@
 setSource :: (IsEKCalendar ekCalendar, IsEKSource value) => ekCalendar -> value -> IO ()
-setSource ekCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendar (mkSelector "setSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSource ekCalendar value =
+  sendMessage ekCalendar setSourceSelector (toEKSource value)
 
 -- | calendarIdentifier
 --
@@ -139,8 +133,8 @@ setSource ekCalendar  value =
 --
 -- ObjC selector: @- calendarIdentifier@
 calendarIdentifier :: IsEKCalendar ekCalendar => ekCalendar -> IO RawId
-calendarIdentifier ekCalendar  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendar (mkSelector "calendarIdentifier") (retPtr retVoid) []
+calendarIdentifier ekCalendar =
+  sendMessage ekCalendar calendarIdentifierSelector
 
 -- | title
 --
@@ -148,8 +142,8 @@ calendarIdentifier ekCalendar  =
 --
 -- ObjC selector: @- title@
 title :: IsEKCalendar ekCalendar => ekCalendar -> IO (Id NSString)
-title ekCalendar  =
-    sendMsg ekCalendar (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekCalendar =
+  sendMessage ekCalendar titleSelector
 
 -- | title
 --
@@ -157,9 +151,8 @@ title ekCalendar  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsEKCalendar ekCalendar, IsNSString value) => ekCalendar -> value -> IO ()
-setTitle ekCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendar (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle ekCalendar value =
+  sendMessage ekCalendar setTitleSelector (toNSString value)
 
 -- | type
 --
@@ -169,8 +162,8 @@ setTitle ekCalendar  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsEKCalendar ekCalendar => ekCalendar -> IO EKCalendarType
-type_ ekCalendar  =
-    fmap (coerce :: CLong -> EKCalendarType) $ sendMsg ekCalendar (mkSelector "type") retCLong []
+type_ ekCalendar =
+  sendMessage ekCalendar typeSelector
 
 -- | allowsContentModifications
 --
@@ -178,8 +171,8 @@ type_ ekCalendar  =
 --
 -- ObjC selector: @- allowsContentModifications@
 allowsContentModifications :: IsEKCalendar ekCalendar => ekCalendar -> IO Bool
-allowsContentModifications ekCalendar  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendar (mkSelector "allowsContentModifications") retCULong []
+allowsContentModifications ekCalendar =
+  sendMessage ekCalendar allowsContentModificationsSelector
 
 -- | subscribed
 --
@@ -187,8 +180,8 @@ allowsContentModifications ekCalendar  =
 --
 -- ObjC selector: @- subscribed@
 subscribed :: IsEKCalendar ekCalendar => ekCalendar -> IO Bool
-subscribed ekCalendar  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendar (mkSelector "subscribed") retCULong []
+subscribed ekCalendar =
+  sendMessage ekCalendar subscribedSelector
 
 -- | immutable
 --
@@ -196,8 +189,8 @@ subscribed ekCalendar  =
 --
 -- ObjC selector: @- immutable@
 immutable :: IsEKCalendar ekCalendar => ekCalendar -> IO Bool
-immutable ekCalendar  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendar (mkSelector "immutable") retCULong []
+immutable ekCalendar =
+  sendMessage ekCalendar immutableSelector
 
 -- | color
 --
@@ -207,8 +200,8 @@ immutable ekCalendar  =
 --
 -- ObjC selector: @- CGColor@
 cgColor :: IsEKCalendar ekCalendar => ekCalendar -> IO (Ptr ())
-cgColor ekCalendar  =
-    fmap castPtr $ sendMsg ekCalendar (mkSelector "CGColor") (retPtr retVoid) []
+cgColor ekCalendar =
+  sendMessage ekCalendar cgColorSelector
 
 -- | color
 --
@@ -218,8 +211,8 @@ cgColor ekCalendar  =
 --
 -- ObjC selector: @- setCGColor:@
 setCGColor :: IsEKCalendar ekCalendar => ekCalendar -> Ptr () -> IO ()
-setCGColor ekCalendar  value =
-    sendMsg ekCalendar (mkSelector "setCGColor:") retVoid [argPtr value]
+setCGColor ekCalendar value =
+  sendMessage ekCalendar setCGColorSelector value
 
 -- | color
 --
@@ -229,8 +222,8 @@ setCGColor ekCalendar  value =
 --
 -- ObjC selector: @- color@
 color :: IsEKCalendar ekCalendar => ekCalendar -> IO RawId
-color ekCalendar  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendar (mkSelector "color") (retPtr retVoid) []
+color ekCalendar =
+  sendMessage ekCalendar colorSelector
 
 -- | color
 --
@@ -240,8 +233,8 @@ color ekCalendar  =
 --
 -- ObjC selector: @- setColor:@
 setColor :: IsEKCalendar ekCalendar => ekCalendar -> RawId -> IO ()
-setColor ekCalendar  value =
-    sendMsg ekCalendar (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setColor ekCalendar value =
+  sendMessage ekCalendar setColorSelector value
 
 -- | supportedEventAvailabilities
 --
@@ -249,83 +242,83 @@ setColor ekCalendar  value =
 --
 -- ObjC selector: @- supportedEventAvailabilities@
 supportedEventAvailabilities :: IsEKCalendar ekCalendar => ekCalendar -> IO EKCalendarEventAvailabilityMask
-supportedEventAvailabilities ekCalendar  =
-    fmap (coerce :: CULong -> EKCalendarEventAvailabilityMask) $ sendMsg ekCalendar (mkSelector "supportedEventAvailabilities") retCULong []
+supportedEventAvailabilities ekCalendar =
+  sendMessage ekCalendar supportedEventAvailabilitiesSelector
 
 -- | @- allowedEntityTypes@
 allowedEntityTypes :: IsEKCalendar ekCalendar => ekCalendar -> IO EKEntityMask
-allowedEntityTypes ekCalendar  =
-    fmap (coerce :: CULong -> EKEntityMask) $ sendMsg ekCalendar (mkSelector "allowedEntityTypes") retCULong []
+allowedEntityTypes ekCalendar =
+  sendMessage ekCalendar allowedEntityTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @calendarWithEventStore:@
-calendarWithEventStoreSelector :: Selector
+calendarWithEventStoreSelector :: Selector '[Id EKEventStore] (Id EKCalendar)
 calendarWithEventStoreSelector = mkSelector "calendarWithEventStore:"
 
 -- | @Selector@ for @calendarForEntityType:eventStore:@
-calendarForEntityType_eventStoreSelector :: Selector
+calendarForEntityType_eventStoreSelector :: Selector '[EKEntityType, Id EKEventStore] (Id EKCalendar)
 calendarForEntityType_eventStoreSelector = mkSelector "calendarForEntityType:eventStore:"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id EKSource)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @setSource:@
-setSourceSelector :: Selector
+setSourceSelector :: Selector '[Id EKSource] ()
 setSourceSelector = mkSelector "setSource:"
 
 -- | @Selector@ for @calendarIdentifier@
-calendarIdentifierSelector :: Selector
+calendarIdentifierSelector :: Selector '[] RawId
 calendarIdentifierSelector = mkSelector "calendarIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] EKCalendarType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @allowsContentModifications@
-allowsContentModificationsSelector :: Selector
+allowsContentModificationsSelector :: Selector '[] Bool
 allowsContentModificationsSelector = mkSelector "allowsContentModifications"
 
 -- | @Selector@ for @subscribed@
-subscribedSelector :: Selector
+subscribedSelector :: Selector '[] Bool
 subscribedSelector = mkSelector "subscribed"
 
 -- | @Selector@ for @immutable@
-immutableSelector :: Selector
+immutableSelector :: Selector '[] Bool
 immutableSelector = mkSelector "immutable"
 
 -- | @Selector@ for @CGColor@
-cgColorSelector :: Selector
+cgColorSelector :: Selector '[] (Ptr ())
 cgColorSelector = mkSelector "CGColor"
 
 -- | @Selector@ for @setCGColor:@
-setCGColorSelector :: Selector
+setCGColorSelector :: Selector '[Ptr ()] ()
 setCGColorSelector = mkSelector "setCGColor:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] RawId
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[RawId] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @supportedEventAvailabilities@
-supportedEventAvailabilitiesSelector :: Selector
+supportedEventAvailabilitiesSelector :: Selector '[] EKCalendarEventAvailabilityMask
 supportedEventAvailabilitiesSelector = mkSelector "supportedEventAvailabilities"
 
 -- | @Selector@ for @allowedEntityTypes@
-allowedEntityTypesSelector :: Selector
+allowedEntityTypesSelector :: Selector '[] EKEntityMask
 allowedEntityTypesSelector = mkSelector "allowedEntityTypes"
 

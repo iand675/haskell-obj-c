@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -66,73 +67,69 @@ module ObjC.Quartz.IKImageBrowserView
   , setDataSource
   , delegate
   , setDelegate
-  , setDraggingDestinationDelegateSelector
-  , draggingDestinationDelegateSelector
-  , indexAtLocationOfDroppedItemSelector
-  , setAllowsDroppingOnItemsSelector
   , allowsDroppingOnItemsSelector
-  , selectionIndexesSelector
-  , setSelectionIndexes_byExtendingSelectionSelector
-  , setAllowsMultipleSelectionSelector
-  , allowsMultipleSelectionSelector
-  , setAllowsEmptySelectionSelector
   , allowsEmptySelectionSelector
-  , setAllowsReorderingSelector
+  , allowsMultipleSelectionSelector
   , allowsReorderingSelector
-  , setAnimatesSelector
   , animatesSelector
-  , expandGroupAtIndexSelector
-  , collapseGroupAtIndexSelector
-  , isGroupExpandedAtIndexSelector
-  , setZoomValueSelector
-  , zoomValueSelector
-  , setContentResizingMaskSelector
-  , contentResizingMaskSelector
-  , scrollIndexToVisibleSelector
-  , setCellSizeSelector
+  , backgroundLayerSelector
+  , canControlQuickLookPanelSelector
+  , cellForItemAtIndexSelector
   , cellSizeSelector
-  , intercellSpacingSelector
-  , setIntercellSpacingSelector
-  , indexOfItemAtPointSelector
-  , itemFrameAtIndexSelector
-  , visibleItemIndexesSelector
-  , rowIndexesInRectSelector
+  , cellsStyleMaskSelector
+  , collapseGroupAtIndexSelector
   , columnIndexesInRectSelector
+  , constrainsToOriginalSizeSelector
+  , contentResizingMaskSelector
+  , dataSourceSelector
+  , delegateSelector
+  , draggingDestinationDelegateSelector
+  , expandGroupAtIndexSelector
+  , foregroundLayerSelector
+  , indexAtLocationOfDroppedItemSelector
+  , indexOfItemAtPointSelector
+  , initWithFrameSelector
+  , intercellSpacingSelector
+  , isGroupExpandedAtIndexSelector
+  , itemFrameAtIndexSelector
+  , newCellForRepresentedItemSelector
+  , numberOfColumnsSelector
+  , numberOfRowsSelector
   , rectOfColumnSelector
   , rectOfRowSelector
-  , numberOfRowsSelector
-  , numberOfColumnsSelector
-  , setCanControlQuickLookPanelSelector
-  , canControlQuickLookPanelSelector
-  , setCellsStyleMaskSelector
-  , cellsStyleMaskSelector
-  , setConstrainsToOriginalSizeSelector
-  , constrainsToOriginalSizeSelector
-  , setBackgroundLayerSelector
-  , backgroundLayerSelector
-  , setForegroundLayerSelector
-  , foregroundLayerSelector
-  , newCellForRepresentedItemSelector
-  , cellForItemAtIndexSelector
-  , initWithFrameSelector
   , reloadDataSelector
-  , dataSourceSelector
+  , rowIndexesInRectSelector
+  , scrollIndexToVisibleSelector
+  , selectionIndexesSelector
+  , setAllowsDroppingOnItemsSelector
+  , setAllowsEmptySelectionSelector
+  , setAllowsMultipleSelectionSelector
+  , setAllowsReorderingSelector
+  , setAnimatesSelector
+  , setBackgroundLayerSelector
+  , setCanControlQuickLookPanelSelector
+  , setCellSizeSelector
+  , setCellsStyleMaskSelector
+  , setConstrainsToOriginalSizeSelector
+  , setContentResizingMaskSelector
   , setDataSourceSelector
-  , delegateSelector
   , setDelegateSelector
+  , setDraggingDestinationDelegateSelector
+  , setForegroundLayerSelector
+  , setIntercellSpacingSelector
+  , setSelectionIndexes_byExtendingSelectionSelector
+  , setZoomValueSelector
+  , visibleItemIndexesSelector
+  , zoomValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -148,8 +145,8 @@ import ObjC.QuartzCore.Internal.Classes
 --
 -- ObjC selector: @- setDraggingDestinationDelegate:@
 setDraggingDestinationDelegate :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> RawId -> IO ()
-setDraggingDestinationDelegate ikImageBrowserView  delegate =
-    sendMsg ikImageBrowserView (mkSelector "setDraggingDestinationDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setDraggingDestinationDelegate ikImageBrowserView delegate =
+  sendMessage ikImageBrowserView setDraggingDestinationDelegateSelector delegate
 
 -- | draggingDestinationDelegate
 --
@@ -157,8 +154,8 @@ setDraggingDestinationDelegate ikImageBrowserView  delegate =
 --
 -- ObjC selector: @- draggingDestinationDelegate@
 draggingDestinationDelegate :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO RawId
-draggingDestinationDelegate ikImageBrowserView  =
-    fmap (RawId . castPtr) $ sendMsg ikImageBrowserView (mkSelector "draggingDestinationDelegate") (retPtr retVoid) []
+draggingDestinationDelegate ikImageBrowserView =
+  sendMessage ikImageBrowserView draggingDestinationDelegateSelector
 
 -- | indexAtLocationOfDroppedItem
 --
@@ -166,8 +163,8 @@ draggingDestinationDelegate ikImageBrowserView  =
 --
 -- ObjC selector: @- indexAtLocationOfDroppedItem@
 indexAtLocationOfDroppedItem :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CULong
-indexAtLocationOfDroppedItem ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "indexAtLocationOfDroppedItem") retCULong []
+indexAtLocationOfDroppedItem ikImageBrowserView =
+  sendMessage ikImageBrowserView indexAtLocationOfDroppedItemSelector
 
 -- | setAllowsDroppingOnItems:
 --
@@ -175,8 +172,8 @@ indexAtLocationOfDroppedItem ikImageBrowserView  =
 --
 -- ObjC selector: @- setAllowsDroppingOnItems:@
 setAllowsDroppingOnItems :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setAllowsDroppingOnItems ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setAllowsDroppingOnItems:") retVoid [argCULong (if flag then 1 else 0)]
+setAllowsDroppingOnItems ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setAllowsDroppingOnItemsSelector flag
 
 -- | allowsDroppingOnItems
 --
@@ -184,8 +181,8 @@ setAllowsDroppingOnItems ikImageBrowserView  flag =
 --
 -- ObjC selector: @- allowsDroppingOnItems@
 allowsDroppingOnItems :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-allowsDroppingOnItems ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "allowsDroppingOnItems") retCULong []
+allowsDroppingOnItems ikImageBrowserView =
+  sendMessage ikImageBrowserView allowsDroppingOnItemsSelector
 
 -- | selectionIndexes
 --
@@ -193,8 +190,8 @@ allowsDroppingOnItems ikImageBrowserView  =
 --
 -- ObjC selector: @- selectionIndexes@
 selectionIndexes :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO (Id NSIndexSet)
-selectionIndexes ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "selectionIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectionIndexes ikImageBrowserView =
+  sendMessage ikImageBrowserView selectionIndexesSelector
 
 -- | setSelectionIndexes:byExtendingSelection:
 --
@@ -202,9 +199,8 @@ selectionIndexes ikImageBrowserView  =
 --
 -- ObjC selector: @- setSelectionIndexes:byExtendingSelection:@
 setSelectionIndexes_byExtendingSelection :: (IsIKImageBrowserView ikImageBrowserView, IsNSIndexSet indexes) => ikImageBrowserView -> indexes -> Bool -> IO ()
-setSelectionIndexes_byExtendingSelection ikImageBrowserView  indexes extendSelection =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg ikImageBrowserView (mkSelector "setSelectionIndexes:byExtendingSelection:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (if extendSelection then 1 else 0)]
+setSelectionIndexes_byExtendingSelection ikImageBrowserView indexes extendSelection =
+  sendMessage ikImageBrowserView setSelectionIndexes_byExtendingSelectionSelector (toNSIndexSet indexes) extendSelection
 
 -- | setAllowsMultipleSelection:
 --
@@ -212,8 +208,8 @@ setSelectionIndexes_byExtendingSelection ikImageBrowserView  indexes extendSelec
 --
 -- ObjC selector: @- setAllowsMultipleSelection:@
 setAllowsMultipleSelection :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setAllowsMultipleSelection ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setAllowsMultipleSelection:") retVoid [argCULong (if flag then 1 else 0)]
+setAllowsMultipleSelection ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setAllowsMultipleSelectionSelector flag
 
 -- | allowsMultipleSelection
 --
@@ -221,8 +217,8 @@ setAllowsMultipleSelection ikImageBrowserView  flag =
 --
 -- ObjC selector: @- allowsMultipleSelection@
 allowsMultipleSelection :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-allowsMultipleSelection ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "allowsMultipleSelection") retCULong []
+allowsMultipleSelection ikImageBrowserView =
+  sendMessage ikImageBrowserView allowsMultipleSelectionSelector
 
 -- | setAllowsMultipleSelection:
 --
@@ -230,8 +226,8 @@ allowsMultipleSelection ikImageBrowserView  =
 --
 -- ObjC selector: @- setAllowsEmptySelection:@
 setAllowsEmptySelection :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setAllowsEmptySelection ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setAllowsEmptySelection:") retVoid [argCULong (if flag then 1 else 0)]
+setAllowsEmptySelection ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setAllowsEmptySelectionSelector flag
 
 -- | setAllowsEmptySelection
 --
@@ -239,8 +235,8 @@ setAllowsEmptySelection ikImageBrowserView  flag =
 --
 -- ObjC selector: @- allowsEmptySelection@
 allowsEmptySelection :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-allowsEmptySelection ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "allowsEmptySelection") retCULong []
+allowsEmptySelection ikImageBrowserView =
+  sendMessage ikImageBrowserView allowsEmptySelectionSelector
 
 -- | setAllowsReordering:
 --
@@ -248,8 +244,8 @@ allowsEmptySelection ikImageBrowserView  =
 --
 -- ObjC selector: @- setAllowsReordering:@
 setAllowsReordering :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setAllowsReordering ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setAllowsReordering:") retVoid [argCULong (if flag then 1 else 0)]
+setAllowsReordering ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setAllowsReorderingSelector flag
 
 -- | allowsReordering
 --
@@ -257,8 +253,8 @@ setAllowsReordering ikImageBrowserView  flag =
 --
 -- ObjC selector: @- allowsReordering@
 allowsReordering :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-allowsReordering ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "allowsReordering") retCULong []
+allowsReordering ikImageBrowserView =
+  sendMessage ikImageBrowserView allowsReorderingSelector
 
 -- | setAnimates:
 --
@@ -266,8 +262,8 @@ allowsReordering ikImageBrowserView  =
 --
 -- ObjC selector: @- setAnimates:@
 setAnimates :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setAnimates ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setAnimates:") retVoid [argCULong (if flag then 1 else 0)]
+setAnimates ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setAnimatesSelector flag
 
 -- | animates
 --
@@ -275,8 +271,8 @@ setAnimates ikImageBrowserView  flag =
 --
 -- ObjC selector: @- animates@
 animates :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-animates ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "animates") retCULong []
+animates ikImageBrowserView =
+  sendMessage ikImageBrowserView animatesSelector
 
 -- | expandGroupAtIndex:
 --
@@ -284,8 +280,8 @@ animates ikImageBrowserView  =
 --
 -- ObjC selector: @- expandGroupAtIndex:@
 expandGroupAtIndex :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO ()
-expandGroupAtIndex ikImageBrowserView  index =
-    sendMsg ikImageBrowserView (mkSelector "expandGroupAtIndex:") retVoid [argCULong index]
+expandGroupAtIndex ikImageBrowserView index =
+  sendMessage ikImageBrowserView expandGroupAtIndexSelector index
 
 -- | collapseGroupAtIndex:
 --
@@ -293,8 +289,8 @@ expandGroupAtIndex ikImageBrowserView  index =
 --
 -- ObjC selector: @- collapseGroupAtIndex:@
 collapseGroupAtIndex :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO ()
-collapseGroupAtIndex ikImageBrowserView  index =
-    sendMsg ikImageBrowserView (mkSelector "collapseGroupAtIndex:") retVoid [argCULong index]
+collapseGroupAtIndex ikImageBrowserView index =
+  sendMessage ikImageBrowserView collapseGroupAtIndexSelector index
 
 -- | isGroupExpandedAtIndex:
 --
@@ -302,8 +298,8 @@ collapseGroupAtIndex ikImageBrowserView  index =
 --
 -- ObjC selector: @- isGroupExpandedAtIndex:@
 isGroupExpandedAtIndex :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO Bool
-isGroupExpandedAtIndex ikImageBrowserView  index =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "isGroupExpandedAtIndex:") retCULong [argCULong index]
+isGroupExpandedAtIndex ikImageBrowserView index =
+  sendMessage ikImageBrowserView isGroupExpandedAtIndexSelector index
 
 -- | setZoomValue:
 --
@@ -313,8 +309,8 @@ isGroupExpandedAtIndex ikImageBrowserView  index =
 --
 -- ObjC selector: @- setZoomValue:@
 setZoomValue :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CFloat -> IO ()
-setZoomValue ikImageBrowserView  aValue =
-    sendMsg ikImageBrowserView (mkSelector "setZoomValue:") retVoid [argCFloat aValue]
+setZoomValue ikImageBrowserView aValue =
+  sendMessage ikImageBrowserView setZoomValueSelector aValue
 
 -- | zoomValue
 --
@@ -322,8 +318,8 @@ setZoomValue ikImageBrowserView  aValue =
 --
 -- ObjC selector: @- zoomValue@
 zoomValue :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CFloat
-zoomValue ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "zoomValue") retCFloat []
+zoomValue ikImageBrowserView =
+  sendMessage ikImageBrowserView zoomValueSelector
 
 -- | setContentResizingMask
 --
@@ -333,8 +329,8 @@ zoomValue ikImageBrowserView  =
 --
 -- ObjC selector: @- setContentResizingMask:@
 setContentResizingMask :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO ()
-setContentResizingMask ikImageBrowserView  mask =
-    sendMsg ikImageBrowserView (mkSelector "setContentResizingMask:") retVoid [argCULong mask]
+setContentResizingMask ikImageBrowserView mask =
+  sendMessage ikImageBrowserView setContentResizingMaskSelector mask
 
 -- | setContentResizingMask
 --
@@ -342,8 +338,8 @@ setContentResizingMask ikImageBrowserView  mask =
 --
 -- ObjC selector: @- contentResizingMask@
 contentResizingMask :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CULong
-contentResizingMask ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "contentResizingMask") retCULong []
+contentResizingMask ikImageBrowserView =
+  sendMessage ikImageBrowserView contentResizingMaskSelector
 
 -- | scrollIndexToVisible:
 --
@@ -351,8 +347,8 @@ contentResizingMask ikImageBrowserView  =
 --
 -- ObjC selector: @- scrollIndexToVisible:@
 scrollIndexToVisible :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CLong -> IO ()
-scrollIndexToVisible ikImageBrowserView  index =
-    sendMsg ikImageBrowserView (mkSelector "scrollIndexToVisible:") retVoid [argCLong index]
+scrollIndexToVisible ikImageBrowserView index =
+  sendMessage ikImageBrowserView scrollIndexToVisibleSelector index
 
 -- | setCellSize:
 --
@@ -360,8 +356,8 @@ scrollIndexToVisible ikImageBrowserView  index =
 --
 -- ObjC selector: @- setCellSize:@
 setCellSize :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSSize -> IO ()
-setCellSize ikImageBrowserView  size =
-    sendMsg ikImageBrowserView (mkSelector "setCellSize:") retVoid [argNSSize size]
+setCellSize ikImageBrowserView size =
+  sendMessage ikImageBrowserView setCellSizeSelector size
 
 -- | setCellSize:
 --
@@ -369,8 +365,8 @@ setCellSize ikImageBrowserView  size =
 --
 -- ObjC selector: @- cellSize@
 cellSize :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO NSSize
-cellSize ikImageBrowserView  =
-    sendMsgStret ikImageBrowserView (mkSelector "cellSize") retNSSize []
+cellSize ikImageBrowserView =
+  sendMessage ikImageBrowserView cellSizeSelector
 
 -- | intercellSpacing
 --
@@ -378,8 +374,8 @@ cellSize ikImageBrowserView  =
 --
 -- ObjC selector: @- intercellSpacing@
 intercellSpacing :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO NSSize
-intercellSpacing ikImageBrowserView  =
-    sendMsgStret ikImageBrowserView (mkSelector "intercellSpacing") retNSSize []
+intercellSpacing ikImageBrowserView =
+  sendMessage ikImageBrowserView intercellSpacingSelector
 
 -- | setIntercellSpacing:
 --
@@ -389,8 +385,8 @@ intercellSpacing ikImageBrowserView  =
 --
 -- ObjC selector: @- setIntercellSpacing:@
 setIntercellSpacing :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSSize -> IO ()
-setIntercellSpacing ikImageBrowserView  aSize =
-    sendMsg ikImageBrowserView (mkSelector "setIntercellSpacing:") retVoid [argNSSize aSize]
+setIntercellSpacing ikImageBrowserView aSize =
+  sendMessage ikImageBrowserView setIntercellSpacingSelector aSize
 
 -- | indexOfItemAtPoint:
 --
@@ -398,8 +394,8 @@ setIntercellSpacing ikImageBrowserView  aSize =
 --
 -- ObjC selector: @- indexOfItemAtPoint:@
 indexOfItemAtPoint :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSPoint -> IO CLong
-indexOfItemAtPoint ikImageBrowserView  point =
-    sendMsg ikImageBrowserView (mkSelector "indexOfItemAtPoint:") retCLong [argNSPoint point]
+indexOfItemAtPoint ikImageBrowserView point =
+  sendMessage ikImageBrowserView indexOfItemAtPointSelector point
 
 -- | itemFrameAtIndex:
 --
@@ -407,8 +403,8 @@ indexOfItemAtPoint ikImageBrowserView  point =
 --
 -- ObjC selector: @- itemFrameAtIndex:@
 itemFrameAtIndex :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CLong -> IO NSRect
-itemFrameAtIndex ikImageBrowserView  index =
-    sendMsgStret ikImageBrowserView (mkSelector "itemFrameAtIndex:") retNSRect [argCLong index]
+itemFrameAtIndex ikImageBrowserView index =
+  sendMessage ikImageBrowserView itemFrameAtIndexSelector index
 
 -- | visibleItemIndexes
 --
@@ -416,8 +412,8 @@ itemFrameAtIndex ikImageBrowserView  index =
 --
 -- ObjC selector: @- visibleItemIndexes@
 visibleItemIndexes :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO (Id NSIndexSet)
-visibleItemIndexes ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "visibleItemIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+visibleItemIndexes ikImageBrowserView =
+  sendMessage ikImageBrowserView visibleItemIndexesSelector
 
 -- | rowIndexesInRect:
 --
@@ -425,8 +421,8 @@ visibleItemIndexes ikImageBrowserView  =
 --
 -- ObjC selector: @- rowIndexesInRect:@
 rowIndexesInRect :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSRect -> IO (Id NSIndexSet)
-rowIndexesInRect ikImageBrowserView  rect =
-    sendMsg ikImageBrowserView (mkSelector "rowIndexesInRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+rowIndexesInRect ikImageBrowserView rect =
+  sendMessage ikImageBrowserView rowIndexesInRectSelector rect
 
 -- | columnIndexesInRect:
 --
@@ -434,8 +430,8 @@ rowIndexesInRect ikImageBrowserView  rect =
 --
 -- ObjC selector: @- columnIndexesInRect:@
 columnIndexesInRect :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSRect -> IO (Id NSIndexSet)
-columnIndexesInRect ikImageBrowserView  rect =
-    sendMsg ikImageBrowserView (mkSelector "columnIndexesInRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+columnIndexesInRect ikImageBrowserView rect =
+  sendMessage ikImageBrowserView columnIndexesInRectSelector rect
 
 -- | rectOfColumn:
 --
@@ -445,8 +441,8 @@ columnIndexesInRect ikImageBrowserView  rect =
 --
 -- ObjC selector: @- rectOfColumn:@
 rectOfColumn :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO NSRect
-rectOfColumn ikImageBrowserView  columnIndex =
-    sendMsgStret ikImageBrowserView (mkSelector "rectOfColumn:") retNSRect [argCULong columnIndex]
+rectOfColumn ikImageBrowserView columnIndex =
+  sendMessage ikImageBrowserView rectOfColumnSelector columnIndex
 
 -- | rectOfRow:
 --
@@ -456,8 +452,8 @@ rectOfColumn ikImageBrowserView  columnIndex =
 --
 -- ObjC selector: @- rectOfRow:@
 rectOfRow :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO NSRect
-rectOfRow ikImageBrowserView  rowIndex =
-    sendMsgStret ikImageBrowserView (mkSelector "rectOfRow:") retNSRect [argCULong rowIndex]
+rectOfRow ikImageBrowserView rowIndex =
+  sendMessage ikImageBrowserView rectOfRowSelector rowIndex
 
 -- | numberOfRows
 --
@@ -465,8 +461,8 @@ rectOfRow ikImageBrowserView  rowIndex =
 --
 -- ObjC selector: @- numberOfRows@
 numberOfRows :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CULong
-numberOfRows ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "numberOfRows") retCULong []
+numberOfRows ikImageBrowserView =
+  sendMessage ikImageBrowserView numberOfRowsSelector
 
 -- | numberOfColumns
 --
@@ -474,8 +470,8 @@ numberOfRows ikImageBrowserView  =
 --
 -- ObjC selector: @- numberOfColumns@
 numberOfColumns :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CULong
-numberOfColumns ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "numberOfColumns") retCULong []
+numberOfColumns ikImageBrowserView =
+  sendMessage ikImageBrowserView numberOfColumnsSelector
 
 -- | setCanControlQuickLookPanel:
 --
@@ -487,8 +483,8 @@ numberOfColumns ikImageBrowserView  =
 --
 -- ObjC selector: @- setCanControlQuickLookPanel:@
 setCanControlQuickLookPanel :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setCanControlQuickLookPanel ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setCanControlQuickLookPanel:") retVoid [argCULong (if flag then 1 else 0)]
+setCanControlQuickLookPanel ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setCanControlQuickLookPanelSelector flag
 
 -- | canControlQuickLookPanel
 --
@@ -496,8 +492,8 @@ setCanControlQuickLookPanel ikImageBrowserView  flag =
 --
 -- ObjC selector: @- canControlQuickLookPanel@
 canControlQuickLookPanel :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-canControlQuickLookPanel ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "canControlQuickLookPanel") retCULong []
+canControlQuickLookPanel ikImageBrowserView =
+  sendMessage ikImageBrowserView canControlQuickLookPanelSelector
 
 -- | setCellsStyleMask:
 --
@@ -509,8 +505,8 @@ canControlQuickLookPanel ikImageBrowserView  =
 --
 -- ObjC selector: @- setCellsStyleMask:@
 setCellsStyleMask :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO ()
-setCellsStyleMask ikImageBrowserView  mask =
-    sendMsg ikImageBrowserView (mkSelector "setCellsStyleMask:") retVoid [argCULong mask]
+setCellsStyleMask ikImageBrowserView mask =
+  sendMessage ikImageBrowserView setCellsStyleMaskSelector mask
 
 -- | cellsStyleMask
 --
@@ -518,8 +514,8 @@ setCellsStyleMask ikImageBrowserView  mask =
 --
 -- ObjC selector: @- cellsStyleMask@
 cellsStyleMask :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO CULong
-cellsStyleMask ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "cellsStyleMask") retCULong []
+cellsStyleMask ikImageBrowserView =
+  sendMessage ikImageBrowserView cellsStyleMaskSelector
 
 -- | setConstrainsToOriginalSize:
 --
@@ -527,8 +523,8 @@ cellsStyleMask ikImageBrowserView  =
 --
 -- ObjC selector: @- setConstrainsToOriginalSize:@
 setConstrainsToOriginalSize :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> Bool -> IO ()
-setConstrainsToOriginalSize ikImageBrowserView  flag =
-    sendMsg ikImageBrowserView (mkSelector "setConstrainsToOriginalSize:") retVoid [argCULong (if flag then 1 else 0)]
+setConstrainsToOriginalSize ikImageBrowserView flag =
+  sendMessage ikImageBrowserView setConstrainsToOriginalSizeSelector flag
 
 -- | constrainsToOriginalSize
 --
@@ -536,8 +532,8 @@ setConstrainsToOriginalSize ikImageBrowserView  flag =
 --
 -- ObjC selector: @- constrainsToOriginalSize@
 constrainsToOriginalSize :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO Bool
-constrainsToOriginalSize ikImageBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserView (mkSelector "constrainsToOriginalSize") retCULong []
+constrainsToOriginalSize ikImageBrowserView =
+  sendMessage ikImageBrowserView constrainsToOriginalSizeSelector
 
 -- | setBackgroundLayer:
 --
@@ -545,9 +541,8 @@ constrainsToOriginalSize ikImageBrowserView  =
 --
 -- ObjC selector: @- setBackgroundLayer:@
 setBackgroundLayer :: (IsIKImageBrowserView ikImageBrowserView, IsCALayer aLayer) => ikImageBrowserView -> aLayer -> IO ()
-setBackgroundLayer ikImageBrowserView  aLayer =
-  withObjCPtr aLayer $ \raw_aLayer ->
-      sendMsg ikImageBrowserView (mkSelector "setBackgroundLayer:") retVoid [argPtr (castPtr raw_aLayer :: Ptr ())]
+setBackgroundLayer ikImageBrowserView aLayer =
+  sendMessage ikImageBrowserView setBackgroundLayerSelector (toCALayer aLayer)
 
 -- | backgroundLayer
 --
@@ -555,8 +550,8 @@ setBackgroundLayer ikImageBrowserView  aLayer =
 --
 -- ObjC selector: @- backgroundLayer@
 backgroundLayer :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO (Id CALayer)
-backgroundLayer ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "backgroundLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundLayer ikImageBrowserView =
+  sendMessage ikImageBrowserView backgroundLayerSelector
 
 -- | setForegroundLayer:
 --
@@ -564,9 +559,8 @@ backgroundLayer ikImageBrowserView  =
 --
 -- ObjC selector: @- setForegroundLayer:@
 setForegroundLayer :: (IsIKImageBrowserView ikImageBrowserView, IsCALayer aLayer) => ikImageBrowserView -> aLayer -> IO ()
-setForegroundLayer ikImageBrowserView  aLayer =
-  withObjCPtr aLayer $ \raw_aLayer ->
-      sendMsg ikImageBrowserView (mkSelector "setForegroundLayer:") retVoid [argPtr (castPtr raw_aLayer :: Ptr ())]
+setForegroundLayer ikImageBrowserView aLayer =
+  sendMessage ikImageBrowserView setForegroundLayerSelector (toCALayer aLayer)
 
 -- | foregroundLayer
 --
@@ -574,8 +568,8 @@ setForegroundLayer ikImageBrowserView  aLayer =
 --
 -- ObjC selector: @- foregroundLayer@
 foregroundLayer :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO (Id CALayer)
-foregroundLayer ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "foregroundLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+foregroundLayer ikImageBrowserView =
+  sendMessage ikImageBrowserView foregroundLayerSelector
 
 -- | newCellForRepresentedItem:
 --
@@ -587,8 +581,8 @@ foregroundLayer ikImageBrowserView  =
 --
 -- ObjC selector: @- newCellForRepresentedItem:@
 newCellForRepresentedItem :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> RawId -> IO (Id IKImageBrowserCell)
-newCellForRepresentedItem ikImageBrowserView  anItem =
-    sendMsg ikImageBrowserView (mkSelector "newCellForRepresentedItem:") (retPtr retVoid) [argPtr (castPtr (unRawId anItem) :: Ptr ())] >>= ownedObject . castPtr
+newCellForRepresentedItem ikImageBrowserView anItem =
+  sendOwnedMessage ikImageBrowserView newCellForRepresentedItemSelector anItem
 
 -- | cellForItemAtIndex:
 --
@@ -598,8 +592,8 @@ newCellForRepresentedItem ikImageBrowserView  anItem =
 --
 -- ObjC selector: @- cellForItemAtIndex:@
 cellForItemAtIndex :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> CULong -> IO (Id IKImageBrowserCell)
-cellForItemAtIndex ikImageBrowserView  index =
-    sendMsg ikImageBrowserView (mkSelector "cellForItemAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+cellForItemAtIndex ikImageBrowserView index =
+  sendMessage ikImageBrowserView cellForItemAtIndexSelector index
 
 -- | initWithFrame:
 --
@@ -609,8 +603,8 @@ cellForItemAtIndex ikImageBrowserView  index =
 --
 -- ObjC selector: @- initWithFrame:@
 initWithFrame :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> NSRect -> IO RawId
-initWithFrame ikImageBrowserView  frame =
-    fmap (RawId . castPtr) $ sendMsg ikImageBrowserView (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frame]
+initWithFrame ikImageBrowserView frame =
+  sendOwnedMessage ikImageBrowserView initWithFrameSelector frame
 
 -- | reloadData
 --
@@ -618,8 +612,8 @@ initWithFrame ikImageBrowserView  frame =
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO ()
-reloadData ikImageBrowserView  =
-    sendMsg ikImageBrowserView (mkSelector "reloadData") retVoid []
+reloadData ikImageBrowserView =
+  sendMessage ikImageBrowserView reloadDataSelector
 
 -- | datasource
 --
@@ -627,8 +621,8 @@ reloadData ikImageBrowserView  =
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO RawId
-dataSource ikImageBrowserView  =
-    fmap (RawId . castPtr) $ sendMsg ikImageBrowserView (mkSelector "dataSource") (retPtr retVoid) []
+dataSource ikImageBrowserView =
+  sendMessage ikImageBrowserView dataSourceSelector
 
 -- | datasource
 --
@@ -636,8 +630,8 @@ dataSource ikImageBrowserView  =
 --
 -- ObjC selector: @- setDataSource:@
 setDataSource :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> RawId -> IO ()
-setDataSource ikImageBrowserView  value =
-    sendMsg ikImageBrowserView (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource ikImageBrowserView value =
+  sendMessage ikImageBrowserView setDataSourceSelector value
 
 -- | delegate
 --
@@ -645,8 +639,8 @@ setDataSource ikImageBrowserView  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> IO RawId
-delegate ikImageBrowserView  =
-    fmap (RawId . castPtr) $ sendMsg ikImageBrowserView (mkSelector "delegate") (retPtr retVoid) []
+delegate ikImageBrowserView =
+  sendMessage ikImageBrowserView delegateSelector
 
 -- | delegate
 --
@@ -654,226 +648,226 @@ delegate ikImageBrowserView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKImageBrowserView ikImageBrowserView => ikImageBrowserView -> RawId -> IO ()
-setDelegate ikImageBrowserView  value =
-    sendMsg ikImageBrowserView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikImageBrowserView value =
+  sendMessage ikImageBrowserView setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setDraggingDestinationDelegate:@
-setDraggingDestinationDelegateSelector :: Selector
+setDraggingDestinationDelegateSelector :: Selector '[RawId] ()
 setDraggingDestinationDelegateSelector = mkSelector "setDraggingDestinationDelegate:"
 
 -- | @Selector@ for @draggingDestinationDelegate@
-draggingDestinationDelegateSelector :: Selector
+draggingDestinationDelegateSelector :: Selector '[] RawId
 draggingDestinationDelegateSelector = mkSelector "draggingDestinationDelegate"
 
 -- | @Selector@ for @indexAtLocationOfDroppedItem@
-indexAtLocationOfDroppedItemSelector :: Selector
+indexAtLocationOfDroppedItemSelector :: Selector '[] CULong
 indexAtLocationOfDroppedItemSelector = mkSelector "indexAtLocationOfDroppedItem"
 
 -- | @Selector@ for @setAllowsDroppingOnItems:@
-setAllowsDroppingOnItemsSelector :: Selector
+setAllowsDroppingOnItemsSelector :: Selector '[Bool] ()
 setAllowsDroppingOnItemsSelector = mkSelector "setAllowsDroppingOnItems:"
 
 -- | @Selector@ for @allowsDroppingOnItems@
-allowsDroppingOnItemsSelector :: Selector
+allowsDroppingOnItemsSelector :: Selector '[] Bool
 allowsDroppingOnItemsSelector = mkSelector "allowsDroppingOnItems"
 
 -- | @Selector@ for @selectionIndexes@
-selectionIndexesSelector :: Selector
+selectionIndexesSelector :: Selector '[] (Id NSIndexSet)
 selectionIndexesSelector = mkSelector "selectionIndexes"
 
 -- | @Selector@ for @setSelectionIndexes:byExtendingSelection:@
-setSelectionIndexes_byExtendingSelectionSelector :: Selector
+setSelectionIndexes_byExtendingSelectionSelector :: Selector '[Id NSIndexSet, Bool] ()
 setSelectionIndexes_byExtendingSelectionSelector = mkSelector "setSelectionIndexes:byExtendingSelection:"
 
 -- | @Selector@ for @setAllowsMultipleSelection:@
-setAllowsMultipleSelectionSelector :: Selector
+setAllowsMultipleSelectionSelector :: Selector '[Bool] ()
 setAllowsMultipleSelectionSelector = mkSelector "setAllowsMultipleSelection:"
 
 -- | @Selector@ for @allowsMultipleSelection@
-allowsMultipleSelectionSelector :: Selector
+allowsMultipleSelectionSelector :: Selector '[] Bool
 allowsMultipleSelectionSelector = mkSelector "allowsMultipleSelection"
 
 -- | @Selector@ for @setAllowsEmptySelection:@
-setAllowsEmptySelectionSelector :: Selector
+setAllowsEmptySelectionSelector :: Selector '[Bool] ()
 setAllowsEmptySelectionSelector = mkSelector "setAllowsEmptySelection:"
 
 -- | @Selector@ for @allowsEmptySelection@
-allowsEmptySelectionSelector :: Selector
+allowsEmptySelectionSelector :: Selector '[] Bool
 allowsEmptySelectionSelector = mkSelector "allowsEmptySelection"
 
 -- | @Selector@ for @setAllowsReordering:@
-setAllowsReorderingSelector :: Selector
+setAllowsReorderingSelector :: Selector '[Bool] ()
 setAllowsReorderingSelector = mkSelector "setAllowsReordering:"
 
 -- | @Selector@ for @allowsReordering@
-allowsReorderingSelector :: Selector
+allowsReorderingSelector :: Selector '[] Bool
 allowsReorderingSelector = mkSelector "allowsReordering"
 
 -- | @Selector@ for @setAnimates:@
-setAnimatesSelector :: Selector
+setAnimatesSelector :: Selector '[Bool] ()
 setAnimatesSelector = mkSelector "setAnimates:"
 
 -- | @Selector@ for @animates@
-animatesSelector :: Selector
+animatesSelector :: Selector '[] Bool
 animatesSelector = mkSelector "animates"
 
 -- | @Selector@ for @expandGroupAtIndex:@
-expandGroupAtIndexSelector :: Selector
+expandGroupAtIndexSelector :: Selector '[CULong] ()
 expandGroupAtIndexSelector = mkSelector "expandGroupAtIndex:"
 
 -- | @Selector@ for @collapseGroupAtIndex:@
-collapseGroupAtIndexSelector :: Selector
+collapseGroupAtIndexSelector :: Selector '[CULong] ()
 collapseGroupAtIndexSelector = mkSelector "collapseGroupAtIndex:"
 
 -- | @Selector@ for @isGroupExpandedAtIndex:@
-isGroupExpandedAtIndexSelector :: Selector
+isGroupExpandedAtIndexSelector :: Selector '[CULong] Bool
 isGroupExpandedAtIndexSelector = mkSelector "isGroupExpandedAtIndex:"
 
 -- | @Selector@ for @setZoomValue:@
-setZoomValueSelector :: Selector
+setZoomValueSelector :: Selector '[CFloat] ()
 setZoomValueSelector = mkSelector "setZoomValue:"
 
 -- | @Selector@ for @zoomValue@
-zoomValueSelector :: Selector
+zoomValueSelector :: Selector '[] CFloat
 zoomValueSelector = mkSelector "zoomValue"
 
 -- | @Selector@ for @setContentResizingMask:@
-setContentResizingMaskSelector :: Selector
+setContentResizingMaskSelector :: Selector '[CULong] ()
 setContentResizingMaskSelector = mkSelector "setContentResizingMask:"
 
 -- | @Selector@ for @contentResizingMask@
-contentResizingMaskSelector :: Selector
+contentResizingMaskSelector :: Selector '[] CULong
 contentResizingMaskSelector = mkSelector "contentResizingMask"
 
 -- | @Selector@ for @scrollIndexToVisible:@
-scrollIndexToVisibleSelector :: Selector
+scrollIndexToVisibleSelector :: Selector '[CLong] ()
 scrollIndexToVisibleSelector = mkSelector "scrollIndexToVisible:"
 
 -- | @Selector@ for @setCellSize:@
-setCellSizeSelector :: Selector
+setCellSizeSelector :: Selector '[NSSize] ()
 setCellSizeSelector = mkSelector "setCellSize:"
 
 -- | @Selector@ for @cellSize@
-cellSizeSelector :: Selector
+cellSizeSelector :: Selector '[] NSSize
 cellSizeSelector = mkSelector "cellSize"
 
 -- | @Selector@ for @intercellSpacing@
-intercellSpacingSelector :: Selector
+intercellSpacingSelector :: Selector '[] NSSize
 intercellSpacingSelector = mkSelector "intercellSpacing"
 
 -- | @Selector@ for @setIntercellSpacing:@
-setIntercellSpacingSelector :: Selector
+setIntercellSpacingSelector :: Selector '[NSSize] ()
 setIntercellSpacingSelector = mkSelector "setIntercellSpacing:"
 
 -- | @Selector@ for @indexOfItemAtPoint:@
-indexOfItemAtPointSelector :: Selector
+indexOfItemAtPointSelector :: Selector '[NSPoint] CLong
 indexOfItemAtPointSelector = mkSelector "indexOfItemAtPoint:"
 
 -- | @Selector@ for @itemFrameAtIndex:@
-itemFrameAtIndexSelector :: Selector
+itemFrameAtIndexSelector :: Selector '[CLong] NSRect
 itemFrameAtIndexSelector = mkSelector "itemFrameAtIndex:"
 
 -- | @Selector@ for @visibleItemIndexes@
-visibleItemIndexesSelector :: Selector
+visibleItemIndexesSelector :: Selector '[] (Id NSIndexSet)
 visibleItemIndexesSelector = mkSelector "visibleItemIndexes"
 
 -- | @Selector@ for @rowIndexesInRect:@
-rowIndexesInRectSelector :: Selector
+rowIndexesInRectSelector :: Selector '[NSRect] (Id NSIndexSet)
 rowIndexesInRectSelector = mkSelector "rowIndexesInRect:"
 
 -- | @Selector@ for @columnIndexesInRect:@
-columnIndexesInRectSelector :: Selector
+columnIndexesInRectSelector :: Selector '[NSRect] (Id NSIndexSet)
 columnIndexesInRectSelector = mkSelector "columnIndexesInRect:"
 
 -- | @Selector@ for @rectOfColumn:@
-rectOfColumnSelector :: Selector
+rectOfColumnSelector :: Selector '[CULong] NSRect
 rectOfColumnSelector = mkSelector "rectOfColumn:"
 
 -- | @Selector@ for @rectOfRow:@
-rectOfRowSelector :: Selector
+rectOfRowSelector :: Selector '[CULong] NSRect
 rectOfRowSelector = mkSelector "rectOfRow:"
 
 -- | @Selector@ for @numberOfRows@
-numberOfRowsSelector :: Selector
+numberOfRowsSelector :: Selector '[] CULong
 numberOfRowsSelector = mkSelector "numberOfRows"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CULong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 
 -- | @Selector@ for @setCanControlQuickLookPanel:@
-setCanControlQuickLookPanelSelector :: Selector
+setCanControlQuickLookPanelSelector :: Selector '[Bool] ()
 setCanControlQuickLookPanelSelector = mkSelector "setCanControlQuickLookPanel:"
 
 -- | @Selector@ for @canControlQuickLookPanel@
-canControlQuickLookPanelSelector :: Selector
+canControlQuickLookPanelSelector :: Selector '[] Bool
 canControlQuickLookPanelSelector = mkSelector "canControlQuickLookPanel"
 
 -- | @Selector@ for @setCellsStyleMask:@
-setCellsStyleMaskSelector :: Selector
+setCellsStyleMaskSelector :: Selector '[CULong] ()
 setCellsStyleMaskSelector = mkSelector "setCellsStyleMask:"
 
 -- | @Selector@ for @cellsStyleMask@
-cellsStyleMaskSelector :: Selector
+cellsStyleMaskSelector :: Selector '[] CULong
 cellsStyleMaskSelector = mkSelector "cellsStyleMask"
 
 -- | @Selector@ for @setConstrainsToOriginalSize:@
-setConstrainsToOriginalSizeSelector :: Selector
+setConstrainsToOriginalSizeSelector :: Selector '[Bool] ()
 setConstrainsToOriginalSizeSelector = mkSelector "setConstrainsToOriginalSize:"
 
 -- | @Selector@ for @constrainsToOriginalSize@
-constrainsToOriginalSizeSelector :: Selector
+constrainsToOriginalSizeSelector :: Selector '[] Bool
 constrainsToOriginalSizeSelector = mkSelector "constrainsToOriginalSize"
 
 -- | @Selector@ for @setBackgroundLayer:@
-setBackgroundLayerSelector :: Selector
+setBackgroundLayerSelector :: Selector '[Id CALayer] ()
 setBackgroundLayerSelector = mkSelector "setBackgroundLayer:"
 
 -- | @Selector@ for @backgroundLayer@
-backgroundLayerSelector :: Selector
+backgroundLayerSelector :: Selector '[] (Id CALayer)
 backgroundLayerSelector = mkSelector "backgroundLayer"
 
 -- | @Selector@ for @setForegroundLayer:@
-setForegroundLayerSelector :: Selector
+setForegroundLayerSelector :: Selector '[Id CALayer] ()
 setForegroundLayerSelector = mkSelector "setForegroundLayer:"
 
 -- | @Selector@ for @foregroundLayer@
-foregroundLayerSelector :: Selector
+foregroundLayerSelector :: Selector '[] (Id CALayer)
 foregroundLayerSelector = mkSelector "foregroundLayer"
 
 -- | @Selector@ for @newCellForRepresentedItem:@
-newCellForRepresentedItemSelector :: Selector
+newCellForRepresentedItemSelector :: Selector '[RawId] (Id IKImageBrowserCell)
 newCellForRepresentedItemSelector = mkSelector "newCellForRepresentedItem:"
 
 -- | @Selector@ for @cellForItemAtIndex:@
-cellForItemAtIndexSelector :: Selector
+cellForItemAtIndexSelector :: Selector '[CULong] (Id IKImageBrowserCell)
 cellForItemAtIndexSelector = mkSelector "cellForItemAtIndex:"
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] RawId
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

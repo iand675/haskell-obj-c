@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AuthenticationServices.ASAuthorizationOpenIDRequest
   , setNonce
   , requestedOperation
   , setRequestedOperation
-  , requestedScopesSelector
-  , setRequestedScopesSelector
-  , stateSelector
-  , setStateSelector
   , nonceSelector
-  , setNonceSelector
   , requestedOperationSelector
+  , requestedScopesSelector
+  , setNonceSelector
   , setRequestedOperationSelector
+  , setRequestedScopesSelector
+  , setStateSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,16 +42,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestedScopes@
 requestedScopes :: IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest => asAuthorizationOpenIDRequest -> IO (Id NSArray)
-requestedScopes asAuthorizationOpenIDRequest  =
-    sendMsg asAuthorizationOpenIDRequest (mkSelector "requestedScopes") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedScopes asAuthorizationOpenIDRequest =
+  sendMessage asAuthorizationOpenIDRequest requestedScopesSelector
 
 -- | The contact information to be requested from the user.  Only scopes for which this app was authorized for will be returned.
 --
 -- ObjC selector: @- setRequestedScopes:@
 setRequestedScopes :: (IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest, IsNSArray value) => asAuthorizationOpenIDRequest -> value -> IO ()
-setRequestedScopes asAuthorizationOpenIDRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationOpenIDRequest (mkSelector "setRequestedScopes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestedScopes asAuthorizationOpenIDRequest value =
+  sendMessage asAuthorizationOpenIDRequest setRequestedScopesSelector (toNSArray value)
 
 -- | State to be passed to the identity provider.  This value will be returned as a part of successful ASAuthorization response.
 --
@@ -62,8 +58,8 @@ setRequestedScopes asAuthorizationOpenIDRequest  value =
 --
 -- ObjC selector: @- state@
 state :: IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest => asAuthorizationOpenIDRequest -> IO (Id NSString)
-state asAuthorizationOpenIDRequest  =
-    sendMsg asAuthorizationOpenIDRequest (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state asAuthorizationOpenIDRequest =
+  sendMessage asAuthorizationOpenIDRequest stateSelector
 
 -- | State to be passed to the identity provider.  This value will be returned as a part of successful ASAuthorization response.
 --
@@ -71,9 +67,8 @@ state asAuthorizationOpenIDRequest  =
 --
 -- ObjC selector: @- setState:@
 setState :: (IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest, IsNSString value) => asAuthorizationOpenIDRequest -> value -> IO ()
-setState asAuthorizationOpenIDRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationOpenIDRequest (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState asAuthorizationOpenIDRequest value =
+  sendMessage asAuthorizationOpenIDRequest setStateSelector (toNSString value)
 
 -- | Nonce to be passed to the identity provider.  This value can be verified with the identity token provided as a part of successful ASAuthorization response.
 --
@@ -81,8 +76,8 @@ setState asAuthorizationOpenIDRequest  value =
 --
 -- ObjC selector: @- nonce@
 nonce :: IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest => asAuthorizationOpenIDRequest -> IO (Id NSString)
-nonce asAuthorizationOpenIDRequest  =
-    sendMsg asAuthorizationOpenIDRequest (mkSelector "nonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+nonce asAuthorizationOpenIDRequest =
+  sendMessage asAuthorizationOpenIDRequest nonceSelector
 
 -- | Nonce to be passed to the identity provider.  This value can be verified with the identity token provided as a part of successful ASAuthorization response.
 --
@@ -90,58 +85,56 @@ nonce asAuthorizationOpenIDRequest  =
 --
 -- ObjC selector: @- setNonce:@
 setNonce :: (IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest, IsNSString value) => asAuthorizationOpenIDRequest -> value -> IO ()
-setNonce asAuthorizationOpenIDRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationOpenIDRequest (mkSelector "setNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNonce asAuthorizationOpenIDRequest value =
+  sendMessage asAuthorizationOpenIDRequest setNonceSelector (toNSString value)
 
 -- | Operation to be executed by the request. The ASAuthorizationOperationImplicit operation interpretation depends on the credential provider implementation.
 --
 -- ObjC selector: @- requestedOperation@
 requestedOperation :: IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest => asAuthorizationOpenIDRequest -> IO (Id NSString)
-requestedOperation asAuthorizationOpenIDRequest  =
-    sendMsg asAuthorizationOpenIDRequest (mkSelector "requestedOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedOperation asAuthorizationOpenIDRequest =
+  sendMessage asAuthorizationOpenIDRequest requestedOperationSelector
 
 -- | Operation to be executed by the request. The ASAuthorizationOperationImplicit operation interpretation depends on the credential provider implementation.
 --
 -- ObjC selector: @- setRequestedOperation:@
 setRequestedOperation :: (IsASAuthorizationOpenIDRequest asAuthorizationOpenIDRequest, IsNSString value) => asAuthorizationOpenIDRequest -> value -> IO ()
-setRequestedOperation asAuthorizationOpenIDRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationOpenIDRequest (mkSelector "setRequestedOperation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestedOperation asAuthorizationOpenIDRequest value =
+  sendMessage asAuthorizationOpenIDRequest setRequestedOperationSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestedScopes@
-requestedScopesSelector :: Selector
+requestedScopesSelector :: Selector '[] (Id NSArray)
 requestedScopesSelector = mkSelector "requestedScopes"
 
 -- | @Selector@ for @setRequestedScopes:@
-setRequestedScopesSelector :: Selector
+setRequestedScopesSelector :: Selector '[Id NSArray] ()
 setRequestedScopesSelector = mkSelector "setRequestedScopes:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSString)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSString] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @nonce@
-nonceSelector :: Selector
+nonceSelector :: Selector '[] (Id NSString)
 nonceSelector = mkSelector "nonce"
 
 -- | @Selector@ for @setNonce:@
-setNonceSelector :: Selector
+setNonceSelector :: Selector '[Id NSString] ()
 setNonceSelector = mkSelector "setNonce:"
 
 -- | @Selector@ for @requestedOperation@
-requestedOperationSelector :: Selector
+requestedOperationSelector :: Selector '[] (Id NSString)
 requestedOperationSelector = mkSelector "requestedOperation"
 
 -- | @Selector@ for @setRequestedOperation:@
-setRequestedOperationSelector :: Selector
+setRequestedOperationSelector :: Selector '[Id NSString] ()
 setRequestedOperationSelector = mkSelector "setRequestedOperation:"
 

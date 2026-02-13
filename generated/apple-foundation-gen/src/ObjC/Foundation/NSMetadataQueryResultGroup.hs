@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSMetadataQueryResultGroup
   , subgroups
   , resultCount
   , results
-  , resultAtIndexSelector
   , attributeSelector
-  , valueSelector
-  , subgroupsSelector
+  , resultAtIndexSelector
   , resultCountSelector
   , resultsSelector
+  , subgroupsSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,59 +35,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- resultAtIndex:@
 resultAtIndex :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> CULong -> IO RawId
-resultAtIndex nsMetadataQueryResultGroup  idx =
-    fmap (RawId . castPtr) $ sendMsg nsMetadataQueryResultGroup (mkSelector "resultAtIndex:") (retPtr retVoid) [argCULong idx]
+resultAtIndex nsMetadataQueryResultGroup idx =
+  sendMessage nsMetadataQueryResultGroup resultAtIndexSelector idx
 
 -- | @- attribute@
 attribute :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> IO (Id NSString)
-attribute nsMetadataQueryResultGroup  =
-    sendMsg nsMetadataQueryResultGroup (mkSelector "attribute") (retPtr retVoid) [] >>= retainedObject . castPtr
+attribute nsMetadataQueryResultGroup =
+  sendMessage nsMetadataQueryResultGroup attributeSelector
 
 -- | @- value@
 value :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> IO RawId
-value nsMetadataQueryResultGroup  =
-    fmap (RawId . castPtr) $ sendMsg nsMetadataQueryResultGroup (mkSelector "value") (retPtr retVoid) []
+value nsMetadataQueryResultGroup =
+  sendMessage nsMetadataQueryResultGroup valueSelector
 
 -- | @- subgroups@
 subgroups :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> IO (Id NSArray)
-subgroups nsMetadataQueryResultGroup  =
-    sendMsg nsMetadataQueryResultGroup (mkSelector "subgroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+subgroups nsMetadataQueryResultGroup =
+  sendMessage nsMetadataQueryResultGroup subgroupsSelector
 
 -- | @- resultCount@
 resultCount :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> IO CULong
-resultCount nsMetadataQueryResultGroup  =
-    sendMsg nsMetadataQueryResultGroup (mkSelector "resultCount") retCULong []
+resultCount nsMetadataQueryResultGroup =
+  sendMessage nsMetadataQueryResultGroup resultCountSelector
 
 -- | @- results@
 results :: IsNSMetadataQueryResultGroup nsMetadataQueryResultGroup => nsMetadataQueryResultGroup -> IO (Id NSArray)
-results nsMetadataQueryResultGroup  =
-    sendMsg nsMetadataQueryResultGroup (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results nsMetadataQueryResultGroup =
+  sendMessage nsMetadataQueryResultGroup resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resultAtIndex:@
-resultAtIndexSelector :: Selector
+resultAtIndexSelector :: Selector '[CULong] RawId
 resultAtIndexSelector = mkSelector "resultAtIndex:"
 
 -- | @Selector@ for @attribute@
-attributeSelector :: Selector
+attributeSelector :: Selector '[] (Id NSString)
 attributeSelector = mkSelector "attribute"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @subgroups@
-subgroupsSelector :: Selector
+subgroupsSelector :: Selector '[] (Id NSArray)
 subgroupsSelector = mkSelector "subgroups"
 
 -- | @Selector@ for @resultCount@
-resultCountSelector :: Selector
+resultCountSelector :: Selector '[] CULong
 resultCountSelector = mkSelector "resultCount"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

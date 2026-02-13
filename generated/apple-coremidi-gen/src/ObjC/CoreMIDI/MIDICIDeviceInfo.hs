@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.CoreMIDI.MIDICIDeviceInfo
   , modelNumber
   , revisionLevel
   , midiDestination
+  , familySelector
   , initSelector
   , initWithDestination_manufacturer_family_model_revisionSelector
   , manufacturerIDSelector
-  , familySelector
+  , midiDestinationSelector
   , modelNumberSelector
   , revisionLevelSelector
-  , midiDestinationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,72 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO (Id MIDICIDeviceInfo)
-init_ midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiciDeviceInfo =
+  sendOwnedMessage midiciDeviceInfo initSelector
 
 -- | @- initWithDestination:manufacturer:family:model:revision:@
 initWithDestination_manufacturer_family_model_revision :: (IsMIDICIDeviceInfo midiciDeviceInfo, IsNSData manufacturer, IsNSData family_, IsNSData modelNumber, IsNSData revisionLevel) => midiciDeviceInfo -> CUInt -> manufacturer -> family_ -> modelNumber -> revisionLevel -> IO (Id MIDICIDeviceInfo)
-initWithDestination_manufacturer_family_model_revision midiciDeviceInfo  midiDestination manufacturer family_ modelNumber revisionLevel =
-  withObjCPtr manufacturer $ \raw_manufacturer ->
-    withObjCPtr family_ $ \raw_family_ ->
-      withObjCPtr modelNumber $ \raw_modelNumber ->
-        withObjCPtr revisionLevel $ \raw_revisionLevel ->
-            sendMsg midiciDeviceInfo (mkSelector "initWithDestination:manufacturer:family:model:revision:") (retPtr retVoid) [argCUInt midiDestination, argPtr (castPtr raw_manufacturer :: Ptr ()), argPtr (castPtr raw_family_ :: Ptr ()), argPtr (castPtr raw_modelNumber :: Ptr ()), argPtr (castPtr raw_revisionLevel :: Ptr ())] >>= ownedObject . castPtr
+initWithDestination_manufacturer_family_model_revision midiciDeviceInfo midiDestination manufacturer family_ modelNumber revisionLevel =
+  sendOwnedMessage midiciDeviceInfo initWithDestination_manufacturer_family_model_revisionSelector midiDestination (toNSData manufacturer) (toNSData family_) (toNSData modelNumber) (toNSData revisionLevel)
 
 -- | @- manufacturerID@
 manufacturerID :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO (Id NSData)
-manufacturerID midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "manufacturerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturerID midiciDeviceInfo =
+  sendMessage midiciDeviceInfo manufacturerIDSelector
 
 -- | @- family@
 family_ :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO (Id NSData)
-family_ midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "family") (retPtr retVoid) [] >>= retainedObject . castPtr
+family_ midiciDeviceInfo =
+  sendMessage midiciDeviceInfo familySelector
 
 -- | @- modelNumber@
 modelNumber :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO (Id NSData)
-modelNumber midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "modelNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelNumber midiciDeviceInfo =
+  sendMessage midiciDeviceInfo modelNumberSelector
 
 -- | @- revisionLevel@
 revisionLevel :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO (Id NSData)
-revisionLevel midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "revisionLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+revisionLevel midiciDeviceInfo =
+  sendMessage midiciDeviceInfo revisionLevelSelector
 
 -- | @- midiDestination@
 midiDestination :: IsMIDICIDeviceInfo midiciDeviceInfo => midiciDeviceInfo -> IO CUInt
-midiDestination midiciDeviceInfo  =
-    sendMsg midiciDeviceInfo (mkSelector "midiDestination") retCUInt []
+midiDestination midiciDeviceInfo =
+  sendMessage midiciDeviceInfo midiDestinationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDICIDeviceInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDestination:manufacturer:family:model:revision:@
-initWithDestination_manufacturer_family_model_revisionSelector :: Selector
+initWithDestination_manufacturer_family_model_revisionSelector :: Selector '[CUInt, Id NSData, Id NSData, Id NSData, Id NSData] (Id MIDICIDeviceInfo)
 initWithDestination_manufacturer_family_model_revisionSelector = mkSelector "initWithDestination:manufacturer:family:model:revision:"
 
 -- | @Selector@ for @manufacturerID@
-manufacturerIDSelector :: Selector
+manufacturerIDSelector :: Selector '[] (Id NSData)
 manufacturerIDSelector = mkSelector "manufacturerID"
 
 -- | @Selector@ for @family@
-familySelector :: Selector
+familySelector :: Selector '[] (Id NSData)
 familySelector = mkSelector "family"
 
 -- | @Selector@ for @modelNumber@
-modelNumberSelector :: Selector
+modelNumberSelector :: Selector '[] (Id NSData)
 modelNumberSelector = mkSelector "modelNumber"
 
 -- | @Selector@ for @revisionLevel@
-revisionLevelSelector :: Selector
+revisionLevelSelector :: Selector '[] (Id NSData)
 revisionLevelSelector = mkSelector "revisionLevel"
 
 -- | @Selector@ for @midiDestination@
-midiDestinationSelector :: Selector
+midiDestinationSelector :: Selector '[] CUInt
 midiDestinationSelector = mkSelector "midiDestination"
 

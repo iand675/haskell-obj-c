@@ -18,7 +18,6 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-  - ObjC.JavaRuntimeSupport.CALayer
   - ObjC.JavaRuntimeSupport.NSCursor
   - ObjC.JavaRuntimeSupport.NSEvent
   - ObjC.JavaRuntimeSupport.NSMenu

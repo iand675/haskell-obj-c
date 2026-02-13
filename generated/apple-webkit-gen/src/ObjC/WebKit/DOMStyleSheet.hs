@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.WebKit.DOMStyleSheet
   , href
   , title
   , media
-  , typeSelector
   , disabledSelector
-  , setDisabledSelector
+  , hrefSelector
+  , mediaSelector
   , ownerNodeSelector
   , parentStyleSheetSelector
-  , hrefSelector
+  , setDisabledSelector
   , titleSelector
-  , mediaSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,77 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- type@
 type_ :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id NSString)
-type_ domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domStyleSheet =
+  sendMessage domStyleSheet typeSelector
 
 -- | @- disabled@
 disabled :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO Bool
-disabled domStyleSheet  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domStyleSheet (mkSelector "disabled") retCULong []
+disabled domStyleSheet =
+  sendMessage domStyleSheet disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> Bool -> IO ()
-setDisabled domStyleSheet  value =
-    sendMsg domStyleSheet (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domStyleSheet value =
+  sendMessage domStyleSheet setDisabledSelector value
 
 -- | @- ownerNode@
 ownerNode :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id DOMNode)
-ownerNode domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "ownerNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+ownerNode domStyleSheet =
+  sendMessage domStyleSheet ownerNodeSelector
 
 -- | @- parentStyleSheet@
 parentStyleSheet :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id DOMStyleSheet)
-parentStyleSheet domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "parentStyleSheet") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentStyleSheet domStyleSheet =
+  sendMessage domStyleSheet parentStyleSheetSelector
 
 -- | @- href@
 href :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id NSString)
-href domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "href") (retPtr retVoid) [] >>= retainedObject . castPtr
+href domStyleSheet =
+  sendMessage domStyleSheet hrefSelector
 
 -- | @- title@
 title :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id NSString)
-title domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title domStyleSheet =
+  sendMessage domStyleSheet titleSelector
 
 -- | @- media@
 media :: IsDOMStyleSheet domStyleSheet => domStyleSheet -> IO (Id DOMMediaList)
-media domStyleSheet  =
-    sendMsg domStyleSheet (mkSelector "media") (retPtr retVoid) [] >>= retainedObject . castPtr
+media domStyleSheet =
+  sendMessage domStyleSheet mediaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @ownerNode@
-ownerNodeSelector :: Selector
+ownerNodeSelector :: Selector '[] (Id DOMNode)
 ownerNodeSelector = mkSelector "ownerNode"
 
 -- | @Selector@ for @parentStyleSheet@
-parentStyleSheetSelector :: Selector
+parentStyleSheetSelector :: Selector '[] (Id DOMStyleSheet)
 parentStyleSheetSelector = mkSelector "parentStyleSheet"
 
 -- | @Selector@ for @href@
-hrefSelector :: Selector
+hrefSelector :: Selector '[] (Id NSString)
 hrefSelector = mkSelector "href"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @media@
-mediaSelector :: Selector
+mediaSelector :: Selector '[] (Id DOMMediaList)
 mediaSelector = mkSelector "media"
 

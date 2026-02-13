@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.AppKit.NSMenuToolbarItem
   , setShowsIndicator
   , menuSelector
   , setMenuSelector
-  , showsIndicatorSelector
   , setShowsIndicatorSelector
+  , showsIndicatorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- menu@
 menu :: IsNSMenuToolbarItem nsMenuToolbarItem => nsMenuToolbarItem -> IO (Id NSMenu)
-menu nsMenuToolbarItem  =
-    sendMsg nsMenuToolbarItem (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+menu nsMenuToolbarItem =
+  sendMessage nsMenuToolbarItem menuSelector
 
 -- | @- setMenu:@
 setMenu :: (IsNSMenuToolbarItem nsMenuToolbarItem, IsNSMenu value) => nsMenuToolbarItem -> value -> IO ()
-setMenu nsMenuToolbarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMenuToolbarItem (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMenu nsMenuToolbarItem value =
+  sendMessage nsMenuToolbarItem setMenuSelector (toNSMenu value)
 
 -- | @- showsIndicator@
 showsIndicator :: IsNSMenuToolbarItem nsMenuToolbarItem => nsMenuToolbarItem -> IO Bool
-showsIndicator nsMenuToolbarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMenuToolbarItem (mkSelector "showsIndicator") retCULong []
+showsIndicator nsMenuToolbarItem =
+  sendMessage nsMenuToolbarItem showsIndicatorSelector
 
 -- | @- setShowsIndicator:@
 setShowsIndicator :: IsNSMenuToolbarItem nsMenuToolbarItem => nsMenuToolbarItem -> Bool -> IO ()
-setShowsIndicator nsMenuToolbarItem  value =
-    sendMsg nsMenuToolbarItem (mkSelector "setShowsIndicator:") retVoid [argCULong (if value then 1 else 0)]
+setShowsIndicator nsMenuToolbarItem value =
+  sendMessage nsMenuToolbarItem setShowsIndicatorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @menu@
-menuSelector :: Selector
+menuSelector :: Selector '[] (Id NSMenu)
 menuSelector = mkSelector "menu"
 
 -- | @Selector@ for @setMenu:@
-setMenuSelector :: Selector
+setMenuSelector :: Selector '[Id NSMenu] ()
 setMenuSelector = mkSelector "setMenu:"
 
 -- | @Selector@ for @showsIndicator@
-showsIndicatorSelector :: Selector
+showsIndicatorSelector :: Selector '[] Bool
 showsIndicatorSelector = mkSelector "showsIndicator"
 
 -- | @Selector@ for @setShowsIndicator:@
-setShowsIndicatorSelector :: Selector
+setShowsIndicatorSelector :: Selector '[Bool] ()
 setShowsIndicatorSelector = mkSelector "setShowsIndicator:"
 

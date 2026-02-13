@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.AccessorySetupKit.ASAccessorySettings
   , setSSID
   , bluetoothTransportBridgingIdentifier
   , setBluetoothTransportBridgingIdentifier
-  , defaultSettingsSelector
-  , ssidSelector
-  , setSSIDSelector
   , bluetoothTransportBridgingIdentifierSelector
+  , defaultSettingsSelector
   , setBluetoothTransportBridgingIdentifierSelector
+  , setSSIDSelector
+  , ssidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,22 +39,21 @@ defaultSettings :: IO (Id ASAccessorySettings)
 defaultSettings  =
   do
     cls' <- getRequiredClass "ASAccessorySettings"
-    sendClassMsg cls' (mkSelector "defaultSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSettingsSelector
 
 -- | A hotspot identifier that clients can use to connect to an accessory's hotspot.
 --
 -- ObjC selector: @- SSID@
 ssid :: IsASAccessorySettings asAccessorySettings => asAccessorySettings -> IO (Id NSString)
-ssid asAccessorySettings  =
-    sendMsg asAccessorySettings (mkSelector "SSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid asAccessorySettings =
+  sendMessage asAccessorySettings ssidSelector
 
 -- | A hotspot identifier that clients can use to connect to an accessory's hotspot.
 --
 -- ObjC selector: @- setSSID:@
 setSSID :: (IsASAccessorySettings asAccessorySettings, IsNSString value) => asAccessorySettings -> value -> IO ()
-setSSID asAccessorySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAccessorySettings (mkSelector "setSSID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSSID asAccessorySettings value =
+  sendMessage asAccessorySettings setSSIDSelector (toNSString value)
 
 -- | A 6-byte identifier for bridging classic transport profiles.
 --
@@ -65,8 +61,8 @@ setSSID asAccessorySettings  value =
 --
 -- ObjC selector: @- bluetoothTransportBridgingIdentifier@
 bluetoothTransportBridgingIdentifier :: IsASAccessorySettings asAccessorySettings => asAccessorySettings -> IO (Id NSData)
-bluetoothTransportBridgingIdentifier asAccessorySettings  =
-    sendMsg asAccessorySettings (mkSelector "bluetoothTransportBridgingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothTransportBridgingIdentifier asAccessorySettings =
+  sendMessage asAccessorySettings bluetoothTransportBridgingIdentifierSelector
 
 -- | A 6-byte identifier for bridging classic transport profiles.
 --
@@ -74,31 +70,30 @@ bluetoothTransportBridgingIdentifier asAccessorySettings  =
 --
 -- ObjC selector: @- setBluetoothTransportBridgingIdentifier:@
 setBluetoothTransportBridgingIdentifier :: (IsASAccessorySettings asAccessorySettings, IsNSData value) => asAccessorySettings -> value -> IO ()
-setBluetoothTransportBridgingIdentifier asAccessorySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAccessorySettings (mkSelector "setBluetoothTransportBridgingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBluetoothTransportBridgingIdentifier asAccessorySettings value =
+  sendMessage asAccessorySettings setBluetoothTransportBridgingIdentifierSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSettings@
-defaultSettingsSelector :: Selector
+defaultSettingsSelector :: Selector '[] (Id ASAccessorySettings)
 defaultSettingsSelector = mkSelector "defaultSettings"
 
 -- | @Selector@ for @SSID@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSString)
 ssidSelector = mkSelector "SSID"
 
 -- | @Selector@ for @setSSID:@
-setSSIDSelector :: Selector
+setSSIDSelector :: Selector '[Id NSString] ()
 setSSIDSelector = mkSelector "setSSID:"
 
 -- | @Selector@ for @bluetoothTransportBridgingIdentifier@
-bluetoothTransportBridgingIdentifierSelector :: Selector
+bluetoothTransportBridgingIdentifierSelector :: Selector '[] (Id NSData)
 bluetoothTransportBridgingIdentifierSelector = mkSelector "bluetoothTransportBridgingIdentifier"
 
 -- | @Selector@ for @setBluetoothTransportBridgingIdentifier:@
-setBluetoothTransportBridgingIdentifierSelector :: Selector
+setBluetoothTransportBridgingIdentifierSelector :: Selector '[Id NSData] ()
 setBluetoothTransportBridgingIdentifierSelector = mkSelector "setBluetoothTransportBridgingIdentifier:"
 

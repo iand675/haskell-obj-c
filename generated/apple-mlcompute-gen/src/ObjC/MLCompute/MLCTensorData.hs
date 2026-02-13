@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.MLCompute.MLCTensorData
   , dataWithBytesNoCopy_length_deallocator
   , bytes
   , length_
-  , newSelector
-  , initSelector
-  , dataWithBytesNoCopy_lengthSelector
-  , dataWithImmutableBytesNoCopy_lengthSelector
-  , dataWithBytesNoCopy_length_deallocatorSelector
   , bytesSelector
+  , dataWithBytesNoCopy_lengthSelector
+  , dataWithBytesNoCopy_length_deallocatorSelector
+  , dataWithImmutableBytesNoCopy_lengthSelector
+  , initSelector
   , lengthSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id MLCTensorData)
 new  =
   do
     cls' <- getRequiredClass "MLCTensorData"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCTensorData mlcTensorData => mlcTensorData -> IO (Id MLCTensorData)
-init_ mlcTensorData  =
-    sendMsg mlcTensorData (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcTensorData =
+  sendOwnedMessage mlcTensorData initSelector
 
 -- | Creates a data object that holds a given number of bytes from a given buffer.
 --
@@ -70,7 +67,7 @@ dataWithBytesNoCopy_length :: Ptr () -> CULong -> IO (Id MLCTensorData)
 dataWithBytesNoCopy_length bytes length_ =
   do
     cls' <- getRequiredClass "MLCTensorData"
-    sendClassMsg cls' (mkSelector "dataWithBytesNoCopy:length:") (retPtr retVoid) [argPtr bytes, argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithBytesNoCopy_lengthSelector bytes length_
 
 -- | Creates a data object that holds a given number of bytes from a given buffer.
 --
@@ -87,7 +84,7 @@ dataWithImmutableBytesNoCopy_length :: Const (Ptr ()) -> CULong -> IO (Id MLCTen
 dataWithImmutableBytesNoCopy_length bytes length_ =
   do
     cls' <- getRequiredClass "MLCTensorData"
-    sendClassMsg cls' (mkSelector "dataWithImmutableBytesNoCopy:length:") (retPtr retVoid) [argPtr (unConst bytes), argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithImmutableBytesNoCopy_lengthSelector bytes length_
 
 -- | Creates a data object that holds a given number of bytes from a given buffer. with a custom deallocator block.
 --
@@ -104,7 +101,7 @@ dataWithBytesNoCopy_length_deallocator :: Ptr () -> CULong -> Ptr () -> IO (Id M
 dataWithBytesNoCopy_length_deallocator bytes length_ deallocator =
   do
     cls' <- getRequiredClass "MLCTensorData"
-    sendClassMsg cls' (mkSelector "dataWithBytesNoCopy:length:deallocator:") (retPtr retVoid) [argPtr bytes, argCULong length_, argPtr (castPtr deallocator :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithBytesNoCopy_length_deallocatorSelector bytes length_ deallocator
 
 -- | bytes
 --
@@ -112,8 +109,8 @@ dataWithBytesNoCopy_length_deallocator bytes length_ deallocator =
 --
 -- ObjC selector: @- bytes@
 bytes :: IsMLCTensorData mlcTensorData => mlcTensorData -> IO (Ptr ())
-bytes mlcTensorData  =
-    fmap castPtr $ sendMsg mlcTensorData (mkSelector "bytes") (retPtr retVoid) []
+bytes mlcTensorData =
+  sendMessage mlcTensorData bytesSelector
 
 -- | length
 --
@@ -121,38 +118,38 @@ bytes mlcTensorData  =
 --
 -- ObjC selector: @- length@
 length_ :: IsMLCTensorData mlcTensorData => mlcTensorData -> IO CULong
-length_ mlcTensorData  =
-    sendMsg mlcTensorData (mkSelector "length") retCULong []
+length_ mlcTensorData =
+  sendMessage mlcTensorData lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCTensorData)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCTensorData)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @dataWithBytesNoCopy:length:@
-dataWithBytesNoCopy_lengthSelector :: Selector
+dataWithBytesNoCopy_lengthSelector :: Selector '[Ptr (), CULong] (Id MLCTensorData)
 dataWithBytesNoCopy_lengthSelector = mkSelector "dataWithBytesNoCopy:length:"
 
 -- | @Selector@ for @dataWithImmutableBytesNoCopy:length:@
-dataWithImmutableBytesNoCopy_lengthSelector :: Selector
+dataWithImmutableBytesNoCopy_lengthSelector :: Selector '[Const (Ptr ()), CULong] (Id MLCTensorData)
 dataWithImmutableBytesNoCopy_lengthSelector = mkSelector "dataWithImmutableBytesNoCopy:length:"
 
 -- | @Selector@ for @dataWithBytesNoCopy:length:deallocator:@
-dataWithBytesNoCopy_length_deallocatorSelector :: Selector
+dataWithBytesNoCopy_length_deallocatorSelector :: Selector '[Ptr (), CULong, Ptr ()] (Id MLCTensorData)
 dataWithBytesNoCopy_length_deallocatorSelector = mkSelector "dataWithBytesNoCopy:length:deallocator:"
 
 -- | @Selector@ for @bytes@
-bytesSelector :: Selector
+bytesSelector :: Selector '[] (Ptr ())
 bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 

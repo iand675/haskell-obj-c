@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.SceneKit.CAAnimation
   , fadeOutDuration
   , setFadeOutDuration
   , animationWithSCNAnimationSelector
-  , usesSceneTimeBaseSelector
-  , setUsesSceneTimeBaseSelector
   , fadeInDurationSelector
-  , setFadeInDurationSelector
   , fadeOutDurationSelector
+  , setFadeInDurationSelector
   , setFadeOutDurationSelector
+  , setUsesSceneTimeBaseSelector
+  , usesSceneTimeBaseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ animationWithSCNAnimation :: IsSCNAnimation animation => animation -> IO (Id CAA
 animationWithSCNAnimation animation =
   do
     cls' <- getRequiredClass "CAAnimation"
-    withObjCPtr animation $ \raw_animation ->
-      sendClassMsg cls' (mkSelector "animationWithSCNAnimation:") (retPtr retVoid) [argPtr (castPtr raw_animation :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animationWithSCNAnimationSelector (toSCNAnimation animation)
 
 -- | usesSceneTimeBase
 --
@@ -61,8 +57,8 @@ animationWithSCNAnimation animation =
 --
 -- ObjC selector: @- usesSceneTimeBase@
 usesSceneTimeBase :: IsCAAnimation caAnimation => caAnimation -> IO Bool
-usesSceneTimeBase caAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caAnimation (mkSelector "usesSceneTimeBase") retCULong []
+usesSceneTimeBase caAnimation =
+  sendMessage caAnimation usesSceneTimeBaseSelector
 
 -- | usesSceneTimeBase
 --
@@ -72,8 +68,8 @@ usesSceneTimeBase caAnimation  =
 --
 -- ObjC selector: @- setUsesSceneTimeBase:@
 setUsesSceneTimeBase :: IsCAAnimation caAnimation => caAnimation -> Bool -> IO ()
-setUsesSceneTimeBase caAnimation  value =
-    sendMsg caAnimation (mkSelector "setUsesSceneTimeBase:") retVoid [argCULong (if value then 1 else 0)]
+setUsesSceneTimeBase caAnimation value =
+  sendMessage caAnimation setUsesSceneTimeBaseSelector value
 
 -- | fadeInDuration
 --
@@ -83,8 +79,8 @@ setUsesSceneTimeBase caAnimation  value =
 --
 -- ObjC selector: @- fadeInDuration@
 fadeInDuration :: IsCAAnimation caAnimation => caAnimation -> IO CDouble
-fadeInDuration caAnimation  =
-    sendMsg caAnimation (mkSelector "fadeInDuration") retCDouble []
+fadeInDuration caAnimation =
+  sendMessage caAnimation fadeInDurationSelector
 
 -- | fadeInDuration
 --
@@ -94,8 +90,8 @@ fadeInDuration caAnimation  =
 --
 -- ObjC selector: @- setFadeInDuration:@
 setFadeInDuration :: IsCAAnimation caAnimation => caAnimation -> CDouble -> IO ()
-setFadeInDuration caAnimation  value =
-    sendMsg caAnimation (mkSelector "setFadeInDuration:") retVoid [argCDouble value]
+setFadeInDuration caAnimation value =
+  sendMessage caAnimation setFadeInDurationSelector value
 
 -- | fadeOutDuration
 --
@@ -105,8 +101,8 @@ setFadeInDuration caAnimation  value =
 --
 -- ObjC selector: @- fadeOutDuration@
 fadeOutDuration :: IsCAAnimation caAnimation => caAnimation -> IO CDouble
-fadeOutDuration caAnimation  =
-    sendMsg caAnimation (mkSelector "fadeOutDuration") retCDouble []
+fadeOutDuration caAnimation =
+  sendMessage caAnimation fadeOutDurationSelector
 
 -- | fadeOutDuration
 --
@@ -116,38 +112,38 @@ fadeOutDuration caAnimation  =
 --
 -- ObjC selector: @- setFadeOutDuration:@
 setFadeOutDuration :: IsCAAnimation caAnimation => caAnimation -> CDouble -> IO ()
-setFadeOutDuration caAnimation  value =
-    sendMsg caAnimation (mkSelector "setFadeOutDuration:") retVoid [argCDouble value]
+setFadeOutDuration caAnimation value =
+  sendMessage caAnimation setFadeOutDurationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @animationWithSCNAnimation:@
-animationWithSCNAnimationSelector :: Selector
+animationWithSCNAnimationSelector :: Selector '[Id SCNAnimation] (Id CAAnimation)
 animationWithSCNAnimationSelector = mkSelector "animationWithSCNAnimation:"
 
 -- | @Selector@ for @usesSceneTimeBase@
-usesSceneTimeBaseSelector :: Selector
+usesSceneTimeBaseSelector :: Selector '[] Bool
 usesSceneTimeBaseSelector = mkSelector "usesSceneTimeBase"
 
 -- | @Selector@ for @setUsesSceneTimeBase:@
-setUsesSceneTimeBaseSelector :: Selector
+setUsesSceneTimeBaseSelector :: Selector '[Bool] ()
 setUsesSceneTimeBaseSelector = mkSelector "setUsesSceneTimeBase:"
 
 -- | @Selector@ for @fadeInDuration@
-fadeInDurationSelector :: Selector
+fadeInDurationSelector :: Selector '[] CDouble
 fadeInDurationSelector = mkSelector "fadeInDuration"
 
 -- | @Selector@ for @setFadeInDuration:@
-setFadeInDurationSelector :: Selector
+setFadeInDurationSelector :: Selector '[CDouble] ()
 setFadeInDurationSelector = mkSelector "setFadeInDuration:"
 
 -- | @Selector@ for @fadeOutDuration@
-fadeOutDurationSelector :: Selector
+fadeOutDurationSelector :: Selector '[] CDouble
 fadeOutDurationSelector = mkSelector "fadeOutDuration"
 
 -- | @Selector@ for @setFadeOutDuration:@
-setFadeOutDurationSelector :: Selector
+setFadeOutDurationSelector :: Selector '[CDouble] ()
 setFadeOutDurationSelector = mkSelector "setFadeOutDuration:"
 

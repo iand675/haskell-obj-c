@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,14 +21,14 @@ module ObjC.Matter.MTRServerAttribute
   , value
   , requiredReadPrivilege
   , writable
-  , initSelector
-  , newSelector
-  , initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector
-  , setValueSelector
-  , newFeatureMapAttributeWithInitialValueSelector
   , attributeIDSelector
-  , valueSelector
+  , initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector
+  , initSelector
+  , newFeatureMapAttributeWithInitialValueSelector
+  , newSelector
   , requiredReadPrivilegeSelector
+  , setValueSelector
+  , valueSelector
   , writableSelector
 
   -- * Enum types
@@ -40,15 +41,11 @@ module ObjC.Matter.MTRServerAttribute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,15 +55,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRServerAttribute mtrServerAttribute => mtrServerAttribute -> IO (Id MTRServerAttribute)
-init_ mtrServerAttribute  =
-    sendMsg mtrServerAttribute (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrServerAttribute =
+  sendOwnedMessage mtrServerAttribute initSelector
 
 -- | @+ new@
 new :: IO (Id MTRServerAttribute)
 new  =
   do
     cls' <- getRequiredClass "MTRServerAttribute"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Initialize as a readonly attribute.  The value is a data-value as documented in MTRBaseDevice.h.
 --
@@ -76,10 +73,8 @@ new  =
 --
 -- ObjC selector: @- initReadonlyAttributeWithID:initialValue:requiredPrivilege:@
 initReadonlyAttributeWithID_initialValue_requiredPrivilege :: (IsMTRServerAttribute mtrServerAttribute, IsNSNumber attributeID, IsNSDictionary value) => mtrServerAttribute -> attributeID -> value -> MTRAccessControlEntryPrivilege -> IO (Id MTRServerAttribute)
-initReadonlyAttributeWithID_initialValue_requiredPrivilege mtrServerAttribute  attributeID value requiredPrivilege =
-  withObjCPtr attributeID $ \raw_attributeID ->
-    withObjCPtr value $ \raw_value ->
-        sendMsg mtrServerAttribute (mkSelector "initReadonlyAttributeWithID:initialValue:requiredPrivilege:") (retPtr retVoid) [argPtr (castPtr raw_attributeID :: Ptr ()), argPtr (castPtr raw_value :: Ptr ()), argCUChar (coerce requiredPrivilege)] >>= ownedObject . castPtr
+initReadonlyAttributeWithID_initialValue_requiredPrivilege mtrServerAttribute attributeID value requiredPrivilege =
+  sendOwnedMessage mtrServerAttribute initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector (toNSNumber attributeID) (toNSDictionary value) requiredPrivilege
 
 -- | Change the value of the attribute to a new value.  The value is a data-value as documented in MTRBaseDevice.h.
 --
@@ -87,9 +82,8 @@ initReadonlyAttributeWithID_initialValue_requiredPrivilege mtrServerAttribute  a
 --
 -- ObjC selector: @- setValue:@
 setValue :: (IsMTRServerAttribute mtrServerAttribute, IsNSDictionary value) => mtrServerAttribute -> value -> IO Bool
-setValue mtrServerAttribute  value =
-  withObjCPtr value $ \raw_value ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrServerAttribute (mkSelector "setValue:") retCULong [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrServerAttribute value =
+  sendMessage mtrServerAttribute setValueSelector (toNSDictionary value)
 
 -- | Create an attribute description for a FeatureMap attribute with the provided value (expected to be an unsigned integer representing the value of the bitmap). This will automatically set requiredPrivilege to the right value for FeatureMap.
 --
@@ -98,68 +92,67 @@ newFeatureMapAttributeWithInitialValue :: IsNSNumber value => value -> IO (Id MT
 newFeatureMapAttributeWithInitialValue value =
   do
     cls' <- getRequiredClass "MTRServerAttribute"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "newFeatureMapAttributeWithInitialValue:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newFeatureMapAttributeWithInitialValueSelector (toNSNumber value)
 
 -- | @- attributeID@
 attributeID :: IsMTRServerAttribute mtrServerAttribute => mtrServerAttribute -> IO (Id NSNumber)
-attributeID mtrServerAttribute  =
-    sendMsg mtrServerAttribute (mkSelector "attributeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeID mtrServerAttribute =
+  sendMessage mtrServerAttribute attributeIDSelector
 
 -- | @- value@
 value :: IsMTRServerAttribute mtrServerAttribute => mtrServerAttribute -> IO (Id NSDictionary)
-value mtrServerAttribute  =
-    sendMsg mtrServerAttribute (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrServerAttribute =
+  sendMessage mtrServerAttribute valueSelector
 
 -- | The privilege level necessary to read this attribute.
 --
 -- ObjC selector: @- requiredReadPrivilege@
 requiredReadPrivilege :: IsMTRServerAttribute mtrServerAttribute => mtrServerAttribute -> IO MTRAccessControlEntryPrivilege
-requiredReadPrivilege mtrServerAttribute  =
-    fmap (coerce :: CUChar -> MTRAccessControlEntryPrivilege) $ sendMsg mtrServerAttribute (mkSelector "requiredReadPrivilege") retCUChar []
+requiredReadPrivilege mtrServerAttribute =
+  sendMessage mtrServerAttribute requiredReadPrivilegeSelector
 
 -- | @- writable@
 writable :: IsMTRServerAttribute mtrServerAttribute => mtrServerAttribute -> IO Bool
-writable mtrServerAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrServerAttribute (mkSelector "writable") retCULong []
+writable mtrServerAttribute =
+  sendMessage mtrServerAttribute writableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRServerAttribute)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRServerAttribute)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initReadonlyAttributeWithID:initialValue:requiredPrivilege:@
-initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector :: Selector
+initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector :: Selector '[Id NSNumber, Id NSDictionary, MTRAccessControlEntryPrivilege] (Id MTRServerAttribute)
 initReadonlyAttributeWithID_initialValue_requiredPrivilegeSelector = mkSelector "initReadonlyAttributeWithID:initialValue:requiredPrivilege:"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSDictionary] Bool
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @newFeatureMapAttributeWithInitialValue:@
-newFeatureMapAttributeWithInitialValueSelector :: Selector
+newFeatureMapAttributeWithInitialValueSelector :: Selector '[Id NSNumber] (Id MTRServerAttribute)
 newFeatureMapAttributeWithInitialValueSelector = mkSelector "newFeatureMapAttributeWithInitialValue:"
 
 -- | @Selector@ for @attributeID@
-attributeIDSelector :: Selector
+attributeIDSelector :: Selector '[] (Id NSNumber)
 attributeIDSelector = mkSelector "attributeID"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSDictionary)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @requiredReadPrivilege@
-requiredReadPrivilegeSelector :: Selector
+requiredReadPrivilegeSelector :: Selector '[] MTRAccessControlEntryPrivilege
 requiredReadPrivilegeSelector = mkSelector "requiredReadPrivilege"
 
 -- | @Selector@ for @writable@
-writableSelector :: Selector
+writableSelector :: Selector '[] Bool
 writableSelector = mkSelector "writable"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.BackgroundTasks.BGContinuedProcessingTask
   , updateTitle_subtitle
   , title
   , subtitle
-  , updateTitle_subtitleSelector
-  , titleSelector
   , subtitleSelector
+  , titleSelector
+  , updateTitle_subtitleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,38 +38,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateTitle:subtitle:@
 updateTitle_subtitle :: (IsBGContinuedProcessingTask bgContinuedProcessingTask, IsNSString title, IsNSString subtitle) => bgContinuedProcessingTask -> title -> subtitle -> IO ()
-updateTitle_subtitle bgContinuedProcessingTask  title subtitle =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr subtitle $ \raw_subtitle ->
-        sendMsg bgContinuedProcessingTask (mkSelector "updateTitle:subtitle:") retVoid [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_subtitle :: Ptr ())]
+updateTitle_subtitle bgContinuedProcessingTask title subtitle =
+  sendMessage bgContinuedProcessingTask updateTitle_subtitleSelector (toNSString title) (toNSString subtitle)
 
 -- | The localized title displayed to the user.
 --
 -- ObjC selector: @- title@
 title :: IsBGContinuedProcessingTask bgContinuedProcessingTask => bgContinuedProcessingTask -> IO (Id NSString)
-title bgContinuedProcessingTask  =
-    sendMsg bgContinuedProcessingTask (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title bgContinuedProcessingTask =
+  sendMessage bgContinuedProcessingTask titleSelector
 
 -- | The localized subtitle displayed to the user.
 --
 -- ObjC selector: @- subtitle@
 subtitle :: IsBGContinuedProcessingTask bgContinuedProcessingTask => bgContinuedProcessingTask -> IO (Id NSString)
-subtitle bgContinuedProcessingTask  =
-    sendMsg bgContinuedProcessingTask (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle bgContinuedProcessingTask =
+  sendMessage bgContinuedProcessingTask subtitleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateTitle:subtitle:@
-updateTitle_subtitleSelector :: Selector
+updateTitle_subtitleSelector :: Selector '[Id NSString, Id NSString] ()
 updateTitle_subtitleSelector = mkSelector "updateTitle:subtitle:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 

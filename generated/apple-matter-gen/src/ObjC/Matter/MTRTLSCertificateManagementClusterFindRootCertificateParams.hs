@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTLSCertificateManagementClusterFindRootCertificateParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , caidSelector
-  , setCaidSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCaidSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- caid@
 caid :: IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams => mtrtlsCertificateManagementClusterFindRootCertificateParams -> IO (Id NSNumber)
-caid mtrtlsCertificateManagementClusterFindRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "caid") (retPtr retVoid) [] >>= retainedObject . castPtr
+caid mtrtlsCertificateManagementClusterFindRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams caidSelector
 
 -- | @- setCaid:@
 setCaid :: (IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams, IsNSNumber value) => mtrtlsCertificateManagementClusterFindRootCertificateParams -> value -> IO ()
-setCaid mtrtlsCertificateManagementClusterFindRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "setCaid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaid mtrtlsCertificateManagementClusterFindRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams setCaidSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setCaid mtrtlsCertificateManagementClusterFindRootCertificateParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams => mtrtlsCertificateManagementClusterFindRootCertificateParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificateParams
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams, IsNSNumber value) => mtrtlsCertificateManagementClusterFindRootCertificateParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrtlsCertificateManagementClusterFindRootCertificatePar
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams => mtrtlsCertificateManagementClusterFindRootCertificateParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrtlsCertificateManagementClusterFindRootCertificateParams  =
-    sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrtlsCertificateManagementClusterFindRootCertificateParams =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrtlsCertificateManagementClusterFindRootCertificat
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTLSCertificateManagementClusterFindRootCertificateParams mtrtlsCertificateManagementClusterFindRootCertificateParams, IsNSNumber value) => mtrtlsCertificateManagementClusterFindRootCertificateParams -> value -> IO ()
-setServerSideProcessingTimeout mtrtlsCertificateManagementClusterFindRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterFindRootCertificateParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrtlsCertificateManagementClusterFindRootCertificateParams value =
+  sendMessage mtrtlsCertificateManagementClusterFindRootCertificateParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @caid@
-caidSelector :: Selector
+caidSelector :: Selector '[] (Id NSNumber)
 caidSelector = mkSelector "caid"
 
 -- | @Selector@ for @setCaid:@
-setCaidSelector :: Selector
+setCaidSelector :: Selector '[Id NSNumber] ()
 setCaidSelector = mkSelector "setCaid:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

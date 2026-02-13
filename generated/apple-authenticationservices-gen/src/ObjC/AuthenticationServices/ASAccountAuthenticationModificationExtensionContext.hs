@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASAccountAuthenticationModificationExtensionC
   , completeUpgradeToSignInWithAppleWithUserInfo
   , completeChangePasswordRequestWithUpdatedCredential_userInfo
   , cancelRequestWithError
-  , getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector
-  , completeUpgradeToSignInWithAppleWithUserInfoSelector
-  , completeChangePasswordRequestWithUpdatedCredential_userInfoSelector
   , cancelRequestWithErrorSelector
+  , completeChangePasswordRequestWithUpdatedCredential_userInfoSelector
+  , completeUpgradeToSignInWithAppleWithUserInfoSelector
+  , getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,10 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getSignInWithAppleUpgradeAuthorizationWithState:nonce:completionHandler:@
 getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandler :: (IsASAccountAuthenticationModificationExtensionContext asAccountAuthenticationModificationExtensionContext, IsNSString state, IsNSString nonce) => asAccountAuthenticationModificationExtensionContext -> state -> nonce -> Ptr () -> IO ()
-getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandler asAccountAuthenticationModificationExtensionContext  state nonce completionHandler =
-  withObjCPtr state $ \raw_state ->
-    withObjCPtr nonce $ \raw_nonce ->
-        sendMsg asAccountAuthenticationModificationExtensionContext (mkSelector "getSignInWithAppleUpgradeAuthorizationWithState:nonce:completionHandler:") retVoid [argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_nonce :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandler asAccountAuthenticationModificationExtensionContext state nonce completionHandler =
+  sendMessage asAccountAuthenticationModificationExtensionContext getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector (toNSString state) (toNSString nonce) completionHandler
 
 -- | Confirms successful completion of a Sign in with Apple upgrade.
 --
@@ -56,9 +51,8 @@ getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandler asAccoun
 --
 -- ObjC selector: @- completeUpgradeToSignInWithAppleWithUserInfo:@
 completeUpgradeToSignInWithAppleWithUserInfo :: (IsASAccountAuthenticationModificationExtensionContext asAccountAuthenticationModificationExtensionContext, IsNSDictionary userInfo) => asAccountAuthenticationModificationExtensionContext -> userInfo -> IO ()
-completeUpgradeToSignInWithAppleWithUserInfo asAccountAuthenticationModificationExtensionContext  userInfo =
-  withObjCPtr userInfo $ \raw_userInfo ->
-      sendMsg asAccountAuthenticationModificationExtensionContext (mkSelector "completeUpgradeToSignInWithAppleWithUserInfo:") retVoid [argPtr (castPtr raw_userInfo :: Ptr ())]
+completeUpgradeToSignInWithAppleWithUserInfo asAccountAuthenticationModificationExtensionContext userInfo =
+  sendMessage asAccountAuthenticationModificationExtensionContext completeUpgradeToSignInWithAppleWithUserInfoSelector (toNSDictionary userInfo)
 
 -- | Confirms successful completion of a strong password upgrade.
 --
@@ -68,36 +62,33 @@ completeUpgradeToSignInWithAppleWithUserInfo asAccountAuthenticationModification
 --
 -- ObjC selector: @- completeChangePasswordRequestWithUpdatedCredential:userInfo:@
 completeChangePasswordRequestWithUpdatedCredential_userInfo :: (IsASAccountAuthenticationModificationExtensionContext asAccountAuthenticationModificationExtensionContext, IsASPasswordCredential updatedCredential, IsNSDictionary userInfo) => asAccountAuthenticationModificationExtensionContext -> updatedCredential -> userInfo -> IO ()
-completeChangePasswordRequestWithUpdatedCredential_userInfo asAccountAuthenticationModificationExtensionContext  updatedCredential userInfo =
-  withObjCPtr updatedCredential $ \raw_updatedCredential ->
-    withObjCPtr userInfo $ \raw_userInfo ->
-        sendMsg asAccountAuthenticationModificationExtensionContext (mkSelector "completeChangePasswordRequestWithUpdatedCredential:userInfo:") retVoid [argPtr (castPtr raw_updatedCredential :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+completeChangePasswordRequestWithUpdatedCredential_userInfo asAccountAuthenticationModificationExtensionContext updatedCredential userInfo =
+  sendMessage asAccountAuthenticationModificationExtensionContext completeChangePasswordRequestWithUpdatedCredential_userInfoSelector (toASPasswordCredential updatedCredential) (toNSDictionary userInfo)
 
 -- | Used to either ask for user interaction in a request or to fail a request.
 --
 -- ObjC selector: @- cancelRequestWithError:@
 cancelRequestWithError :: (IsASAccountAuthenticationModificationExtensionContext asAccountAuthenticationModificationExtensionContext, IsNSError error_) => asAccountAuthenticationModificationExtensionContext -> error_ -> IO ()
-cancelRequestWithError asAccountAuthenticationModificationExtensionContext  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg asAccountAuthenticationModificationExtensionContext (mkSelector "cancelRequestWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelRequestWithError asAccountAuthenticationModificationExtensionContext error_ =
+  sendMessage asAccountAuthenticationModificationExtensionContext cancelRequestWithErrorSelector (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getSignInWithAppleUpgradeAuthorizationWithState:nonce:completionHandler:@
-getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector :: Selector
+getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 getSignInWithAppleUpgradeAuthorizationWithState_nonce_completionHandlerSelector = mkSelector "getSignInWithAppleUpgradeAuthorizationWithState:nonce:completionHandler:"
 
 -- | @Selector@ for @completeUpgradeToSignInWithAppleWithUserInfo:@
-completeUpgradeToSignInWithAppleWithUserInfoSelector :: Selector
+completeUpgradeToSignInWithAppleWithUserInfoSelector :: Selector '[Id NSDictionary] ()
 completeUpgradeToSignInWithAppleWithUserInfoSelector = mkSelector "completeUpgradeToSignInWithAppleWithUserInfo:"
 
 -- | @Selector@ for @completeChangePasswordRequestWithUpdatedCredential:userInfo:@
-completeChangePasswordRequestWithUpdatedCredential_userInfoSelector :: Selector
+completeChangePasswordRequestWithUpdatedCredential_userInfoSelector :: Selector '[Id ASPasswordCredential, Id NSDictionary] ()
 completeChangePasswordRequestWithUpdatedCredential_userInfoSelector = mkSelector "completeChangePasswordRequestWithUpdatedCredential:userInfo:"
 
 -- | @Selector@ for @cancelRequestWithError:@
-cancelRequestWithErrorSelector :: Selector
+cancelRequestWithErrorSelector :: Selector '[Id NSError] ()
 cancelRequestWithErrorSelector = mkSelector "cancelRequestWithError:"
 

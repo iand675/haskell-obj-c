@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.CoreML.MLDictionaryFeatureProvider
   , initWithDictionary_error
   , objectForKeyedSubscript
   , dictionary
+  , dictionarySelector
   , initWithDictionary_errorSelector
   , objectForKeyedSubscriptSelector
-  , dictionarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,39 +36,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDictionary:error:@
 initWithDictionary_error :: (IsMLDictionaryFeatureProvider mlDictionaryFeatureProvider, IsNSDictionary dictionary, IsNSError error_) => mlDictionaryFeatureProvider -> dictionary -> error_ -> IO (Id MLDictionaryFeatureProvider)
-initWithDictionary_error mlDictionaryFeatureProvider  dictionary error_ =
-  withObjCPtr dictionary $ \raw_dictionary ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mlDictionaryFeatureProvider (mkSelector "initWithDictionary:error:") (retPtr retVoid) [argPtr (castPtr raw_dictionary :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary_error mlDictionaryFeatureProvider dictionary error_ =
+  sendOwnedMessage mlDictionaryFeatureProvider initWithDictionary_errorSelector (toNSDictionary dictionary) (toNSError error_)
 
 -- | Get the value for specified feature
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsMLDictionaryFeatureProvider mlDictionaryFeatureProvider, IsNSString featureName) => mlDictionaryFeatureProvider -> featureName -> IO (Id MLFeatureValue)
-objectForKeyedSubscript mlDictionaryFeatureProvider  featureName =
-  withObjCPtr featureName $ \raw_featureName ->
-      sendMsg mlDictionaryFeatureProvider (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_featureName :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript mlDictionaryFeatureProvider featureName =
+  sendMessage mlDictionaryFeatureProvider objectForKeyedSubscriptSelector (toNSString featureName)
 
 -- | Dictionary holding the feature values
 --
 -- ObjC selector: @- dictionary@
 dictionary :: IsMLDictionaryFeatureProvider mlDictionaryFeatureProvider => mlDictionaryFeatureProvider -> IO (Id NSDictionary)
-dictionary mlDictionaryFeatureProvider  =
-    sendMsg mlDictionaryFeatureProvider (mkSelector "dictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionary mlDictionaryFeatureProvider =
+  sendMessage mlDictionaryFeatureProvider dictionarySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDictionary:error:@
-initWithDictionary_errorSelector :: Selector
+initWithDictionary_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MLDictionaryFeatureProvider)
 initWithDictionary_errorSelector = mkSelector "initWithDictionary:error:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] (Id MLFeatureValue)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @dictionary@
-dictionarySelector :: Selector
+dictionarySelector :: Selector '[] (Id NSDictionary)
 dictionarySelector = mkSelector "dictionary"
 

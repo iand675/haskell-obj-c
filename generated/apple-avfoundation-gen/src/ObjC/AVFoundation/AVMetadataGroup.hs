@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AVFoundation.AVMetadataGroup
   , items
   , classifyingLabel
   , uniqueID
-  , itemsSelector
   , classifyingLabelSelector
+  , itemsSelector
   , uniqueIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,32 +34,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- items@
 items :: IsAVMetadataGroup avMetadataGroup => avMetadataGroup -> IO (Id NSArray)
-items avMetadataGroup  =
-    sendMsg avMetadataGroup (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items avMetadataGroup =
+  sendMessage avMetadataGroup itemsSelector
 
 -- | @- classifyingLabel@
 classifyingLabel :: IsAVMetadataGroup avMetadataGroup => avMetadataGroup -> IO (Id NSString)
-classifyingLabel avMetadataGroup  =
-    sendMsg avMetadataGroup (mkSelector "classifyingLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+classifyingLabel avMetadataGroup =
+  sendMessage avMetadataGroup classifyingLabelSelector
 
 -- | @- uniqueID@
 uniqueID :: IsAVMetadataGroup avMetadataGroup => avMetadataGroup -> IO (Id NSString)
-uniqueID avMetadataGroup  =
-    sendMsg avMetadataGroup (mkSelector "uniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueID avMetadataGroup =
+  sendMessage avMetadataGroup uniqueIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 
 -- | @Selector@ for @classifyingLabel@
-classifyingLabelSelector :: Selector
+classifyingLabelSelector :: Selector '[] (Id NSString)
 classifyingLabelSelector = mkSelector "classifyingLabel"
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] (Id NSString)
 uniqueIDSelector = mkSelector "uniqueID"
 

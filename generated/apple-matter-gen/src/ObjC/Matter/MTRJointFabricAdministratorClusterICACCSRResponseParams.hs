@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Matter.MTRJointFabricAdministratorClusterICACCSRResponseParams
   , initWithResponseValue_error
   , icaccsr
   , setIcaccsr
-  , initWithResponseValue_errorSelector
   , icaccsrSelector
+  , initWithResponseValue_errorSelector
   , setIcaccsrSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRJointFabricAdministratorClusterICACCSRResponseParams mtrJointFabricAdministratorClusterICACCSRResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrJointFabricAdministratorClusterICACCSRResponseParams -> responseValue -> error_ -> IO (Id MTRJointFabricAdministratorClusterICACCSRResponseParams)
-initWithResponseValue_error mtrJointFabricAdministratorClusterICACCSRResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrJointFabricAdministratorClusterICACCSRResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrJointFabricAdministratorClusterICACCSRResponseParams responseValue error_ =
+  sendOwnedMessage mtrJointFabricAdministratorClusterICACCSRResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- icaccsr@
 icaccsr :: IsMTRJointFabricAdministratorClusterICACCSRResponseParams mtrJointFabricAdministratorClusterICACCSRResponseParams => mtrJointFabricAdministratorClusterICACCSRResponseParams -> IO (Id NSData)
-icaccsr mtrJointFabricAdministratorClusterICACCSRResponseParams  =
-    sendMsg mtrJointFabricAdministratorClusterICACCSRResponseParams (mkSelector "icaccsr") (retPtr retVoid) [] >>= retainedObject . castPtr
+icaccsr mtrJointFabricAdministratorClusterICACCSRResponseParams =
+  sendMessage mtrJointFabricAdministratorClusterICACCSRResponseParams icaccsrSelector
 
 -- | @- setIcaccsr:@
 setIcaccsr :: (IsMTRJointFabricAdministratorClusterICACCSRResponseParams mtrJointFabricAdministratorClusterICACCSRResponseParams, IsNSData value) => mtrJointFabricAdministratorClusterICACCSRResponseParams -> value -> IO ()
-setIcaccsr mtrJointFabricAdministratorClusterICACCSRResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterICACCSRResponseParams (mkSelector "setIcaccsr:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcaccsr mtrJointFabricAdministratorClusterICACCSRResponseParams value =
+  sendMessage mtrJointFabricAdministratorClusterICACCSRResponseParams setIcaccsrSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRJointFabricAdministratorClusterICACCSRResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @icaccsr@
-icaccsrSelector :: Selector
+icaccsrSelector :: Selector '[] (Id NSData)
 icaccsrSelector = mkSelector "icaccsr"
 
 -- | @Selector@ for @setIcaccsr:@
-setIcaccsrSelector :: Selector
+setIcaccsrSelector :: Selector '[Id NSData] ()
 setIcaccsrSelector = mkSelector "setIcaccsr:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreData.NSStagedMigrationManager
   , initWithMigrationStages
   , stages
   , container
+  , containerSelector
   , initSelector
   , initWithMigrationStagesSelector
   , stagesSelector
-  , containerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSStagedMigrationManager nsStagedMigrationManager => nsStagedMigrationManager -> IO (Id NSStagedMigrationManager)
-init_ nsStagedMigrationManager  =
-    sendMsg nsStagedMigrationManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsStagedMigrationManager =
+  sendOwnedMessage nsStagedMigrationManager initSelector
 
 -- | @- initWithMigrationStages:@
 initWithMigrationStages :: (IsNSStagedMigrationManager nsStagedMigrationManager, IsNSArray stages) => nsStagedMigrationManager -> stages -> IO (Id NSStagedMigrationManager)
-initWithMigrationStages nsStagedMigrationManager  stages =
-  withObjCPtr stages $ \raw_stages ->
-      sendMsg nsStagedMigrationManager (mkSelector "initWithMigrationStages:") (retPtr retVoid) [argPtr (castPtr raw_stages :: Ptr ())] >>= ownedObject . castPtr
+initWithMigrationStages nsStagedMigrationManager stages =
+  sendOwnedMessage nsStagedMigrationManager initWithMigrationStagesSelector (toNSArray stages)
 
 -- | @- stages@
 stages :: IsNSStagedMigrationManager nsStagedMigrationManager => nsStagedMigrationManager -> IO (Id NSArray)
-stages nsStagedMigrationManager  =
-    sendMsg nsStagedMigrationManager (mkSelector "stages") (retPtr retVoid) [] >>= retainedObject . castPtr
+stages nsStagedMigrationManager =
+  sendMessage nsStagedMigrationManager stagesSelector
 
 -- | @- container@
 container :: IsNSStagedMigrationManager nsStagedMigrationManager => nsStagedMigrationManager -> IO (Id NSPersistentContainer)
-container nsStagedMigrationManager  =
-    sendMsg nsStagedMigrationManager (mkSelector "container") (retPtr retVoid) [] >>= retainedObject . castPtr
+container nsStagedMigrationManager =
+  sendMessage nsStagedMigrationManager containerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSStagedMigrationManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMigrationStages:@
-initWithMigrationStagesSelector :: Selector
+initWithMigrationStagesSelector :: Selector '[Id NSArray] (Id NSStagedMigrationManager)
 initWithMigrationStagesSelector = mkSelector "initWithMigrationStages:"
 
 -- | @Selector@ for @stages@
-stagesSelector :: Selector
+stagesSelector :: Selector '[] (Id NSArray)
 stagesSelector = mkSelector "stages"
 
 -- | @Selector@ for @container@
-containerSelector :: Selector
+containerSelector :: Selector '[] (Id NSPersistentContainer)
 containerSelector = mkSelector "container"
 

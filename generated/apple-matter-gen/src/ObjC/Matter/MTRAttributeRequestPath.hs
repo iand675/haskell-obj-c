@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Matter.MTRAttributeRequestPath
   , endpoint
   , cluster
   , attribute
-  , requestPathWithEndpointID_clusterID_attributeIDSelector
-  , endpointSelector
-  , clusterSelector
   , attributeSelector
+  , clusterSelector
+  , endpointSelector
+  , requestPathWithEndpointID_clusterID_attributeIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,43 +39,40 @@ requestPathWithEndpointID_clusterID_attributeID :: (IsNSNumber endpointID, IsNSN
 requestPathWithEndpointID_clusterID_attributeID endpointID clusterID attributeID =
   do
     cls' <- getRequiredClass "MTRAttributeRequestPath"
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr clusterID $ \raw_clusterID ->
-        withObjCPtr attributeID $ \raw_attributeID ->
-          sendClassMsg cls' (mkSelector "requestPathWithEndpointID:clusterID:attributeID:") (retPtr retVoid) [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_attributeID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requestPathWithEndpointID_clusterID_attributeIDSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber attributeID)
 
 -- | @- endpoint@
 endpoint :: IsMTRAttributeRequestPath mtrAttributeRequestPath => mtrAttributeRequestPath -> IO (Id NSNumber)
-endpoint mtrAttributeRequestPath  =
-    sendMsg mtrAttributeRequestPath (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint mtrAttributeRequestPath =
+  sendMessage mtrAttributeRequestPath endpointSelector
 
 -- | @- cluster@
 cluster :: IsMTRAttributeRequestPath mtrAttributeRequestPath => mtrAttributeRequestPath -> IO (Id NSNumber)
-cluster mtrAttributeRequestPath  =
-    sendMsg mtrAttributeRequestPath (mkSelector "cluster") (retPtr retVoid) [] >>= retainedObject . castPtr
+cluster mtrAttributeRequestPath =
+  sendMessage mtrAttributeRequestPath clusterSelector
 
 -- | @- attribute@
 attribute :: IsMTRAttributeRequestPath mtrAttributeRequestPath => mtrAttributeRequestPath -> IO (Id NSNumber)
-attribute mtrAttributeRequestPath  =
-    sendMsg mtrAttributeRequestPath (mkSelector "attribute") (retPtr retVoid) [] >>= retainedObject . castPtr
+attribute mtrAttributeRequestPath =
+  sendMessage mtrAttributeRequestPath attributeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestPathWithEndpointID:clusterID:attributeID:@
-requestPathWithEndpointID_clusterID_attributeIDSelector :: Selector
+requestPathWithEndpointID_clusterID_attributeIDSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber] (Id MTRAttributeRequestPath)
 requestPathWithEndpointID_clusterID_attributeIDSelector = mkSelector "requestPathWithEndpointID:clusterID:attributeID:"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSNumber)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @cluster@
-clusterSelector :: Selector
+clusterSelector :: Selector '[] (Id NSNumber)
 clusterSelector = mkSelector "cluster"
 
 -- | @Selector@ for @attribute@
-attributeSelector :: Selector
+attributeSelector :: Selector '[] (Id NSNumber)
 attributeSelector = mkSelector "attribute"
 

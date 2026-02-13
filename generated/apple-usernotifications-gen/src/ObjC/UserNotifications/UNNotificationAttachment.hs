@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.UserNotifications.UNNotificationAttachment
   , url
   , type_
   , attachmentWithIdentifier_URL_options_errorSelector
-  , initSelector
   , identifierSelector
-  , urlSelector
+  , initSelector
   , typeSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,53 +37,49 @@ attachmentWithIdentifier_URL_options_error :: (IsNSString identifier, IsNSURL ur
 attachmentWithIdentifier_URL_options_error identifier url options error_ =
   do
     cls' <- getRequiredClass "UNNotificationAttachment"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr url $ \raw_url ->
-        withObjCPtr options $ \raw_options ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "attachmentWithIdentifier:URL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attachmentWithIdentifier_URL_options_errorSelector (toNSString identifier) (toNSURL url) (toNSDictionary options) (toNSError error_)
 
 -- | @- init@
 init_ :: IsUNNotificationAttachment unNotificationAttachment => unNotificationAttachment -> IO (Id UNNotificationAttachment)
-init_ unNotificationAttachment  =
-    sendMsg unNotificationAttachment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationAttachment =
+  sendOwnedMessage unNotificationAttachment initSelector
 
 -- | @- identifier@
 identifier :: IsUNNotificationAttachment unNotificationAttachment => unNotificationAttachment -> IO (Id NSString)
-identifier unNotificationAttachment  =
-    sendMsg unNotificationAttachment (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier unNotificationAttachment =
+  sendMessage unNotificationAttachment identifierSelector
 
 -- | @- URL@
 url :: IsUNNotificationAttachment unNotificationAttachment => unNotificationAttachment -> IO (Id NSURL)
-url unNotificationAttachment  =
-    sendMsg unNotificationAttachment (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url unNotificationAttachment =
+  sendMessage unNotificationAttachment urlSelector
 
 -- | @- type@
 type_ :: IsUNNotificationAttachment unNotificationAttachment => unNotificationAttachment -> IO (Id NSString)
-type_ unNotificationAttachment  =
-    sendMsg unNotificationAttachment (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ unNotificationAttachment =
+  sendMessage unNotificationAttachment typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attachmentWithIdentifier:URL:options:error:@
-attachmentWithIdentifier_URL_options_errorSelector :: Selector
+attachmentWithIdentifier_URL_options_errorSelector :: Selector '[Id NSString, Id NSURL, Id NSDictionary, Id NSError] (Id UNNotificationAttachment)
 attachmentWithIdentifier_URL_options_errorSelector = mkSelector "attachmentWithIdentifier:URL:options:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationAttachment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 

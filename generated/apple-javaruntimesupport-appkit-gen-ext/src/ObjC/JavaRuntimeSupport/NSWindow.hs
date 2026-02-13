@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.JavaRuntimeSupport.NSWindow
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,25 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- javaAddToOrderingGroup:@
 javaAddToOrderingGroup :: (IsNSWindow nsWindow, IsNSWindow ownedWindow) => nsWindow -> ownedWindow -> IO ()
-javaAddToOrderingGroup nsWindow  ownedWindow =
-  withObjCPtr ownedWindow $ \raw_ownedWindow ->
-      sendMsg nsWindow (mkSelector "javaAddToOrderingGroup:") retVoid [argPtr (castPtr raw_ownedWindow :: Ptr ())]
+javaAddToOrderingGroup nsWindow ownedWindow =
+  sendMessage nsWindow javaAddToOrderingGroupSelector (toNSWindow ownedWindow)
 
 -- | @- javaRemoveFromOrderingGroup:@
 javaRemoveFromOrderingGroup :: (IsNSWindow nsWindow, IsNSWindow ownedWindow) => nsWindow -> ownedWindow -> IO ()
-javaRemoveFromOrderingGroup nsWindow  ownedWindow =
-  withObjCPtr ownedWindow $ \raw_ownedWindow ->
-      sendMsg nsWindow (mkSelector "javaRemoveFromOrderingGroup:") retVoid [argPtr (castPtr raw_ownedWindow :: Ptr ())]
+javaRemoveFromOrderingGroup nsWindow ownedWindow =
+  sendMessage nsWindow javaRemoveFromOrderingGroupSelector (toNSWindow ownedWindow)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @javaAddToOrderingGroup:@
-javaAddToOrderingGroupSelector :: Selector
+javaAddToOrderingGroupSelector :: Selector '[Id NSWindow] ()
 javaAddToOrderingGroupSelector = mkSelector "javaAddToOrderingGroup:"
 
 -- | @Selector@ for @javaRemoveFromOrderingGroup:@
-javaRemoveFromOrderingGroupSelector :: Selector
+javaRemoveFromOrderingGroupSelector :: Selector '[Id NSWindow] ()
 javaRemoveFromOrderingGroupSelector = mkSelector "javaRemoveFromOrderingGroup:"
 

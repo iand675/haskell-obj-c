@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.AVRouting.AVCustomRoutingPartialIP
   , new
   , address
   , mask
-  , initWithAddress_maskSelector
-  , initSelector
-  , newSelector
   , addressSelector
+  , initSelector
+  , initWithAddress_maskSelector
   , maskSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,22 +40,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAddress:mask:@
 initWithAddress_mask :: (IsAVCustomRoutingPartialIP avCustomRoutingPartialIP, IsNSData address, IsNSData mask) => avCustomRoutingPartialIP -> address -> mask -> IO (Id AVCustomRoutingPartialIP)
-initWithAddress_mask avCustomRoutingPartialIP  address mask =
-  withObjCPtr address $ \raw_address ->
-    withObjCPtr mask $ \raw_mask ->
-        sendMsg avCustomRoutingPartialIP (mkSelector "initWithAddress:mask:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_mask :: Ptr ())] >>= ownedObject . castPtr
+initWithAddress_mask avCustomRoutingPartialIP address mask =
+  sendOwnedMessage avCustomRoutingPartialIP initWithAddress_maskSelector (toNSData address) (toNSData mask)
 
 -- | @- init@
 init_ :: IsAVCustomRoutingPartialIP avCustomRoutingPartialIP => avCustomRoutingPartialIP -> IO (Id AVCustomRoutingPartialIP)
-init_ avCustomRoutingPartialIP  =
-    sendMsg avCustomRoutingPartialIP (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCustomRoutingPartialIP =
+  sendOwnedMessage avCustomRoutingPartialIP initSelector
 
 -- | @+ new@
 new :: IO (Id AVCustomRoutingPartialIP)
 new  =
   do
     cls' <- getRequiredClass "AVCustomRoutingPartialIP"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A full or partial IP address for a device known to be on the network.
 --
@@ -68,8 +63,8 @@ new  =
 --
 -- ObjC selector: @- address@
 address :: IsAVCustomRoutingPartialIP avCustomRoutingPartialIP => avCustomRoutingPartialIP -> IO (Id NSData)
-address avCustomRoutingPartialIP  =
-    sendMsg avCustomRoutingPartialIP (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+address avCustomRoutingPartialIP =
+  sendMessage avCustomRoutingPartialIP addressSelector
 
 -- | A mask representing how many octets of the IP  address to respect.
 --
@@ -79,30 +74,30 @@ address avCustomRoutingPartialIP  =
 --
 -- ObjC selector: @- mask@
 mask :: IsAVCustomRoutingPartialIP avCustomRoutingPartialIP => avCustomRoutingPartialIP -> IO (Id NSData)
-mask avCustomRoutingPartialIP  =
-    sendMsg avCustomRoutingPartialIP (mkSelector "mask") (retPtr retVoid) [] >>= retainedObject . castPtr
+mask avCustomRoutingPartialIP =
+  sendMessage avCustomRoutingPartialIP maskSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAddress:mask:@
-initWithAddress_maskSelector :: Selector
+initWithAddress_maskSelector :: Selector '[Id NSData, Id NSData] (Id AVCustomRoutingPartialIP)
 initWithAddress_maskSelector = mkSelector "initWithAddress:mask:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCustomRoutingPartialIP)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCustomRoutingPartialIP)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] (Id NSData)
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @mask@
-maskSelector :: Selector
+maskSelector :: Selector '[] (Id NSData)
 maskSelector = mkSelector "mask"
 

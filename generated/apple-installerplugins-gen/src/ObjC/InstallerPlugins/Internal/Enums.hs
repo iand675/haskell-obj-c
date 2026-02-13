@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.InstallerPlugins.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | InstallerSectionDirection
 --
@@ -35,3 +38,13 @@ pattern InstallerDirectionBackward = InstallerSectionDirection 1
 
 pattern InstallerDirectionUndefined :: InstallerSectionDirection
 pattern InstallerDirectionUndefined = InstallerSectionDirection 2
+
+instance ObjCArgument InstallerSectionDirection where
+  withObjCArg (InstallerSectionDirection x) k = k (argCLong x)
+
+instance ObjCReturn InstallerSectionDirection where
+  type RawReturn InstallerSectionDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (InstallerSectionDirection x)
+  fromOwned x = pure (InstallerSectionDirection x)

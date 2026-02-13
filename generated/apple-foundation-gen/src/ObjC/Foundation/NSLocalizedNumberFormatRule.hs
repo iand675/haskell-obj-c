@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Foundation.NSLocalizedNumberFormatRule
   , new
   , init_
   , automatic
-  , newSelector
-  , initSelector
   , automaticSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,33 +32,33 @@ new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "NSLocalizedNumberFormatRule"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSLocalizedNumberFormatRule nsLocalizedNumberFormatRule => nsLocalizedNumberFormatRule -> IO RawId
-init_ nsLocalizedNumberFormatRule  =
-    fmap (RawId . castPtr) $ sendMsg nsLocalizedNumberFormatRule (mkSelector "init") (retPtr retVoid) []
+init_ nsLocalizedNumberFormatRule =
+  sendOwnedMessage nsLocalizedNumberFormatRule initSelector
 
 -- | @+ automatic@
 automatic :: IO (Id NSLocalizedNumberFormatRule)
 automatic  =
   do
     cls' <- getRequiredClass "NSLocalizedNumberFormatRule"
-    sendClassMsg cls' (mkSelector "automatic") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' automaticSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @automatic@
-automaticSelector :: Selector
+automaticSelector :: Selector '[] (Id NSLocalizedNumberFormatRule)
 automaticSelector = mkSelector "automatic"
 

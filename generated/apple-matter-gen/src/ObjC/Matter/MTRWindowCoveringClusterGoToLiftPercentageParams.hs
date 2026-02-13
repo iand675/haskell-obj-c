@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRWindowCoveringClusterGoToLiftPercentageParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , liftPercent100thsValueSelector
-  , setLiftPercent100thsValueSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setLiftPercent100thsValueSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- liftPercent100thsValue@
 liftPercent100thsValue :: IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams => mtrWindowCoveringClusterGoToLiftPercentageParams -> IO (Id NSNumber)
-liftPercent100thsValue mtrWindowCoveringClusterGoToLiftPercentageParams  =
-    sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "liftPercent100thsValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+liftPercent100thsValue mtrWindowCoveringClusterGoToLiftPercentageParams =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams liftPercent100thsValueSelector
 
 -- | @- setLiftPercent100thsValue:@
 setLiftPercent100thsValue :: (IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams, IsNSNumber value) => mtrWindowCoveringClusterGoToLiftPercentageParams -> value -> IO ()
-setLiftPercent100thsValue mtrWindowCoveringClusterGoToLiftPercentageParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "setLiftPercent100thsValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLiftPercent100thsValue mtrWindowCoveringClusterGoToLiftPercentageParams value =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams setLiftPercent100thsValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setLiftPercent100thsValue mtrWindowCoveringClusterGoToLiftPercentageParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams => mtrWindowCoveringClusterGoToLiftPercentageParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams  =
-    sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams, IsNSNumber value) => mtrWindowCoveringClusterGoToLiftPercentageParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams value =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToLiftPercentageParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams => mtrWindowCoveringClusterGoToLiftPercentageParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrWindowCoveringClusterGoToLiftPercentageParams  =
-    sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrWindowCoveringClusterGoToLiftPercentageParams =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrWindowCoveringClusterGoToLiftPercentageParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRWindowCoveringClusterGoToLiftPercentageParams mtrWindowCoveringClusterGoToLiftPercentageParams, IsNSNumber value) => mtrWindowCoveringClusterGoToLiftPercentageParams -> value -> IO ()
-setServerSideProcessingTimeout mtrWindowCoveringClusterGoToLiftPercentageParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToLiftPercentageParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrWindowCoveringClusterGoToLiftPercentageParams value =
+  sendMessage mtrWindowCoveringClusterGoToLiftPercentageParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @liftPercent100thsValue@
-liftPercent100thsValueSelector :: Selector
+liftPercent100thsValueSelector :: Selector '[] (Id NSNumber)
 liftPercent100thsValueSelector = mkSelector "liftPercent100thsValue"
 
 -- | @Selector@ for @setLiftPercent100thsValue:@
-setLiftPercent100thsValueSelector :: Selector
+setLiftPercent100thsValueSelector :: Selector '[Id NSNumber] ()
 setLiftPercent100thsValueSelector = mkSelector "setLiftPercent100thsValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

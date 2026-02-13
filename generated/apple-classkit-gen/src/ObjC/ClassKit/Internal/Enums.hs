@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ClassKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CLSBinaryValueType@
 newtype CLSBinaryValueType = CLSBinaryValueType CLong
@@ -27,6 +30,16 @@ pattern CLSBinaryValueTypeYesNo = CLSBinaryValueType 2
 
 pattern CLSBinaryValueTypeCorrectIncorrect :: CLSBinaryValueType
 pattern CLSBinaryValueTypeCorrectIncorrect = CLSBinaryValueType 3
+
+instance ObjCArgument CLSBinaryValueType where
+  withObjCArg (CLSBinaryValueType x) k = k (argCLong x)
+
+instance ObjCReturn CLSBinaryValueType where
+  type RawReturn CLSBinaryValueType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLSBinaryValueType x)
+  fromOwned x = pure (CLSBinaryValueType x)
 
 -- | @CLSContextType@
 newtype CLSContextType = CLSContextType CLong
@@ -86,6 +99,16 @@ pattern CLSContextTypeCourse = CLSContextType 16
 
 pattern CLSContextTypeCustom :: CLSContextType
 pattern CLSContextTypeCustom = CLSContextType 17
+
+instance ObjCArgument CLSContextType where
+  withObjCArg (CLSContextType x) k = k (argCLong x)
+
+instance ObjCReturn CLSContextType where
+  type RawReturn CLSContextType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLSContextType x)
+  fromOwned x = pure (CLSContextType x)
 
 -- | CLSErrorCode
 --
@@ -148,6 +171,16 @@ pattern CLSErrorCodePartialFailure = CLSErrorCode 9
 pattern CLSErrorCodeInvalidAccountCredentials :: CLSErrorCode
 pattern CLSErrorCodeInvalidAccountCredentials = CLSErrorCode 10
 
+instance ObjCArgument CLSErrorCode where
+  withObjCArg (CLSErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CLSErrorCode where
+  type RawReturn CLSErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLSErrorCode x)
+  fromOwned x = pure (CLSErrorCode x)
+
 -- | CLSProgressReportingCapabilityKind
 --
 -- CLSProgressReportingCapabilityKindDuration     Reports time spent. By default all CLSContexts have this capability. See CLSActivity for more information.
@@ -178,3 +211,13 @@ pattern CLSProgressReportingCapabilityKindQuantity = CLSProgressReportingCapabil
 
 pattern CLSProgressReportingCapabilityKindScore :: CLSProgressReportingCapabilityKind
 pattern CLSProgressReportingCapabilityKindScore = CLSProgressReportingCapabilityKind 4
+
+instance ObjCArgument CLSProgressReportingCapabilityKind where
+  withObjCArg (CLSProgressReportingCapabilityKind x) k = k (argCLong x)
+
+instance ObjCReturn CLSProgressReportingCapabilityKind where
+  type RawReturn CLSProgressReportingCapabilityKind = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLSProgressReportingCapabilityKind x)
+  fromOwned x = pure (CLSProgressReportingCapabilityKind x)

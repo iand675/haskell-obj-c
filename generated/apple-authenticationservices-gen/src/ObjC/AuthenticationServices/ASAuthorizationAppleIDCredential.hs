@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.AuthenticationServices.ASAuthorizationAppleIDCredential
   , fullName
   , realUserStatus
   , userAgeRange
-  , newSelector
-  , initSelector
-  , userSelector
-  , stateSelector
-  , authorizedScopesSelector
   , authorizationCodeSelector
-  , identityTokenSelector
+  , authorizedScopesSelector
   , emailSelector
   , fullNameSelector
+  , identityTokenSelector
+  , initSelector
+  , newSelector
   , realUserStatusSelector
+  , stateSelector
   , userAgeRangeSelector
+  , userSelector
 
   -- * Enum types
   , ASUserAgeRange(ASUserAgeRange)
@@ -42,15 +43,11 @@ module ObjC.AuthenticationServices.ASAuthorizationAppleIDCredential
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,12 +60,12 @@ new :: IO (Id ASAuthorizationAppleIDCredential)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationAppleIDCredential"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id ASAuthorizationAppleIDCredential)
-init_ asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationAppleIDCredential =
+  sendOwnedMessage asAuthorizationAppleIDCredential initSelector
 
 -- | An opaque user ID associated with the AppleID used for the sign in. This identifier will be stable across the 'developer team', it can later be used as an input to
 --
@@ -78,15 +75,15 @@ init_ asAuthorizationAppleIDCredential  =
 --
 -- ObjC selector: @- user@
 user :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSString)
-user asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "user") (retPtr retVoid) [] >>= retainedObject . castPtr
+user asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential userSelector
 
 -- | A copy of the state value that was passed to ASAuthorizationRequest.
 --
 -- ObjC selector: @- state@
 state :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSString)
-state asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential stateSelector
 
 -- | This value will contain a list of scopes for which the user provided authorization.  These may contain a subset of the requested scopes on
 --
@@ -94,36 +91,36 @@ state asAuthorizationAppleIDCredential  =
 --
 -- ObjC selector: @- authorizedScopes@
 authorizedScopes :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSArray)
-authorizedScopes asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "authorizedScopes") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizedScopes asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential authorizedScopesSelector
 
 -- | A short-lived, one-time valid token that provides proof of authorization to the server component of the app. The authorization code is bound to the specific transaction using the state attribute passed in the authorization request. The server component of the app can validate the code using Apple’s identity service endpoint provided for this purpose.
 --
 -- ObjC selector: @- authorizationCode@
 authorizationCode :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSData)
-authorizationCode asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "authorizationCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizationCode asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential authorizationCodeSelector
 
 -- | A JSON Web Token (JWT) used to communicate information about the identity of the user in a secure way to the app. The ID token will contain the following information: Issuer Identifier, Subject Identifier, Audience, Expiry Time and Issuance Time signed by Apple's identity service.
 --
 -- ObjC selector: @- identityToken@
 identityToken :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSData)
-identityToken asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "identityToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityToken asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential identityTokenSelector
 
 -- | An optional email shared by the user.  This field is populated with a value that the user authorized.
 --
 -- ObjC selector: @- email@
 email :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSString)
-email asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "email") (retPtr retVoid) [] >>= retainedObject . castPtr
+email asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential emailSelector
 
 -- | An optional full name shared by the user.  This field is populated with a value that the user authorized.
 --
 -- ObjC selector: @- fullName@
 fullName :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO (Id NSPersonNameComponents)
-fullName asAuthorizationAppleIDCredential  =
-    sendMsg asAuthorizationAppleIDCredential (mkSelector "fullName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullName asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential fullNameSelector
 
 -- | Check this property for a hint as to whether the current user is a "real user".
 --
@@ -131,8 +128,8 @@ fullName asAuthorizationAppleIDCredential  =
 --
 -- ObjC selector: @- realUserStatus@
 realUserStatus :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO ASUserDetectionStatus
-realUserStatus asAuthorizationAppleIDCredential  =
-    fmap (coerce :: CLong -> ASUserDetectionStatus) $ sendMsg asAuthorizationAppleIDCredential (mkSelector "realUserStatus") retCLong []
+realUserStatus asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential realUserStatusSelector
 
 -- | Check this property to determine whether the current user is a child.
 --
@@ -140,54 +137,54 @@ realUserStatus asAuthorizationAppleIDCredential  =
 --
 -- ObjC selector: @- userAgeRange@
 userAgeRange :: IsASAuthorizationAppleIDCredential asAuthorizationAppleIDCredential => asAuthorizationAppleIDCredential -> IO ASUserAgeRange
-userAgeRange asAuthorizationAppleIDCredential  =
-    fmap (coerce :: CLong -> ASUserAgeRange) $ sendMsg asAuthorizationAppleIDCredential (mkSelector "userAgeRange") retCLong []
+userAgeRange asAuthorizationAppleIDCredential =
+  sendMessage asAuthorizationAppleIDCredential userAgeRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationAppleIDCredential)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationAppleIDCredential)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @user@
-userSelector :: Selector
+userSelector :: Selector '[] (Id NSString)
 userSelector = mkSelector "user"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSString)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @authorizedScopes@
-authorizedScopesSelector :: Selector
+authorizedScopesSelector :: Selector '[] (Id NSArray)
 authorizedScopesSelector = mkSelector "authorizedScopes"
 
 -- | @Selector@ for @authorizationCode@
-authorizationCodeSelector :: Selector
+authorizationCodeSelector :: Selector '[] (Id NSData)
 authorizationCodeSelector = mkSelector "authorizationCode"
 
 -- | @Selector@ for @identityToken@
-identityTokenSelector :: Selector
+identityTokenSelector :: Selector '[] (Id NSData)
 identityTokenSelector = mkSelector "identityToken"
 
 -- | @Selector@ for @email@
-emailSelector :: Selector
+emailSelector :: Selector '[] (Id NSString)
 emailSelector = mkSelector "email"
 
 -- | @Selector@ for @fullName@
-fullNameSelector :: Selector
+fullNameSelector :: Selector '[] (Id NSPersonNameComponents)
 fullNameSelector = mkSelector "fullName"
 
 -- | @Selector@ for @realUserStatus@
-realUserStatusSelector :: Selector
+realUserStatusSelector :: Selector '[] ASUserDetectionStatus
 realUserStatusSelector = mkSelector "realUserStatus"
 
 -- | @Selector@ for @userAgeRange@
-userAgeRangeSelector :: Selector
+userAgeRangeSelector :: Selector '[] ASUserAgeRange
 userAgeRangeSelector = mkSelector "userAgeRange"
 

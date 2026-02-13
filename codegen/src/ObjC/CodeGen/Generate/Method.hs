@@ -1,15 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | Method body generation and FFI expression builders.
+-- | Method body generation using type-safe message sending.
 --
 -- This module provides:
 --
--- * Unified method body generation ('generateMethodBody') that
---   replaces the four near-identical generators in the old code.
--- * 'mkRetExprs' and 'mkArgExpr' for building libffi return\/argument
---   expressions.
--- * Top-level 'generateMethod' and 'generateSelectors' for per-class
---   module output.
+-- * 'generateMethod' — per-method wrapper function generation
+-- * 'generateMethodBody' — body generation using
+--   @sendMessage@\/@sendOwnedMessage@\/@sendClassMessage@\/@sendOwnedClassMessage@
+-- * 'generateSelectors' — top-level @Selector@ binding generation
 module ObjC.CodeGen.Generate.Method
   ( -- * Per-method generation
     generateMethod
@@ -19,13 +17,10 @@ module ObjC.CodeGen.Generate.Method
   , ReceiverKind(..)
   , MethodBodyConfig(..)
   , generateMethodBody
-    -- * FFI expression builders
-  , mkRetExprs
-  , mkArgExpr
+    -- * Selector type text (for protocol modules)
+  , selectorTypeText
   ) where
 
-import qualified Data.Map.Strict as Map
-import Data.Maybe (mapMaybe)
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
@@ -33,10 +28,8 @@ import qualified Data.Text as T
 
 import ObjC.CodeGen.IR
 import ObjC.CodeGen.TypeMap
-import ObjC.CodeGen.PrimitiveTypes (lookupPrimitive, PrimitiveTypeInfo(..))
 import ObjC.CodeGen.Generate.Naming
 import ObjC.CodeGen.Generate.Shared
-import ObjC.CodeGen.Generate.Enums (enumRetFunction, enumRetFunctionType, enumArgFunction)
 
 -- ---------------------------------------------------------------------------
 -- Method list generation
@@ -52,39 +45,88 @@ generateMethods allKnown _hierarchy cls importable allKnownClasses originFilter 
       instNames = instanceMethodNameSet cls dedupedByName
   in concatMap (generateMethod allKnown cls instNames) dedupedByName
 
--- | Generate top-level @Selector@ bindings.
+-- | Generate top-level @Selector@ bindings with typed signatures.
+--
+-- Each method gets its own binding, named via 'methodSelectorName'.
+-- When a class method and instance method share the same ObjC selector
+-- with different types, they receive separate bindings (the class
+-- method's binding is prefixed with the lowercased class name).
+--
+-- @
+-- initWithString_Selector :: Selector '[Id NSString] (Id NSFoo)
+-- initWithString_Selector = mkSelector "initWithString:"
+-- @
 generateSelectors :: KnownTypes -> ObjCClass -> Set Text -> Set Text -> (ObjCMethod -> Bool) -> [Text]
 generateSelectors allKnown cls importable allKnownClasses originFilter =
   let methods = filter (\m -> not (methodIsImplicit m) && originFilter m
                               && isMethodSupported allKnown m)
                        (allClassMethods importable allKnownClasses cls)
       dedupedByName = dedupByHsName cls methods
-      -- Dedup by both the raw ObjC selector AND the generated Haskell name,
-      -- since different selectors (e.g. "foo:" and "foo") can map to the
-      -- same Haskell name ("fooSelector").
-      uniqueSels = dedup Set.empty Set.empty (fmap methodSelector dedupedByName)
-      dedup _ _ [] = []
-      dedup seenSel seenHs (s:ss)
-        | Set.member s seenSel = dedup seenSel seenHs ss
-        | Set.member hs seenHs = dedup seenSel seenHs ss
-        | otherwise            = s : dedup (Set.insert s seenSel) (Set.insert hs seenHs) ss
-        where hs = selectorHaskellName s
-  in concatMap genSel uniqueSels
-  where
-    genSel sel =
-      let hsName = selectorHaskellName sel
-          selStr = T.pack (show (T.unpack sel))
-      in [ "-- | @Selector@ for @" <> sel <> "@"
-         , hsName <> " :: Selector"
-         , hsName <> " = mkSelector " <> selStr
-         , ""
-         ]
+      instNames = instanceMethodNameSet cls dedupedByName
+      -- Dedup by the generated Haskell selector binding name
+      uniqueSels = dedup Set.empty dedupedByName
+      dedup _ [] = []
+      dedup seenHs (m:ms)
+        | Set.member hs seenHs = dedup seenHs ms
+        | otherwise            = m : dedup (Set.insert hs seenHs) ms
+        where hs = methodSelectorName cls instNames m
+  in concatMap (genSel allKnown cls instNames) uniqueSels
+
+-- | Render a single typed selector binding.
+genSel :: KnownTypes -> ObjCClass -> Set Text -> ObjCMethod -> [Text]
+genSel known cls instNames method =
+  let sel    = methodSelector method
+      hsName = methodSelectorName cls instNames method
+      selStr = T.pack (show (T.unpack sel))
+      selTy  = selectorTypeText known (className cls) method
+  in [ "-- | @Selector@ for @" <> sel <> "@"
+     , hsName <> " :: " <> selTy
+     , hsName <> " = mkSelector " <> selStr
+     , ""
+     ]
+
+-- | Compute the Haskell type text for a typed @Selector@ binding.
+--
+-- Produces e.g. @Selector \'[Id NSString, Bool] (Id NSFoo)@.
+-- The @IO@ is implied by the @Selector@ type and omitted.
+selectorTypeText :: KnownTypes -> Text -> ObjCMethod -> Text
+selectorTypeText known clsName method =
+  let argTypes = fmap (mapArgType known . snd) (methodParams method)
+      retType  = mapRetType known clsName (methodReturnType method)
+      argList  = "'[" <> T.intercalate ", " argTypes <> "]"
+  in "Selector " <> argList <> " " <> parensIfNeeded retType
+
+-- | Map an ObjC parameter type to its Haskell representation for the
+-- type-level selector signature.
+mapArgType :: KnownTypes -> ObjCType -> Text
+mapArgType known ty = hsTypeToText (mapType known (stripNullab ty))
+
+-- | Map an ObjC return type to its Haskell representation for the
+-- type-level selector signature.  @IO@ is omitted because it is
+-- implied by the @Selector@ type.
+mapRetType :: KnownTypes -> Text -> ObjCType -> Text
+mapRetType known clsName ty = case ty of
+  ObjCInstancetype -> "Id " <> clsName
+  ObjCVoid         -> "()"
+  _                -> hsTypeToText (mapType known (stripNullab ty))
+
+-- | Wrap in parens if the text contains spaces.
+parensIfNeeded :: Text -> Text
+parensIfNeeded t
+  | T.any (== ' ') t = "(" <> t <> ")"
+  | otherwise         = t
 
 -- ---------------------------------------------------------------------------
 -- Per-method generation
 -- ---------------------------------------------------------------------------
 
 -- | Generate a single method binding (type sig + body).
+--
+-- Object parameters (@Id ClassName@) use polymorphic type variables
+-- with @IsClassName@ constraints, and are converted via @toClassName@
+-- in the body before being passed to @sendMessage@.  The receiver
+-- also uses a type class constraint for subclass polymorphism.
+-- Non-object parameters (primitives, pointers, etc.) remain concrete.
 generateMethod :: KnownTypes -> ObjCClass -> Set Text -> ObjCMethod -> [Text]
 generateMethod known cls instNames method =
   docLines
@@ -108,6 +150,7 @@ generateMethod known cls instNames method =
       Nothing ->
         ["-- | @" <> selectorComment <> "@"]
 
+    -- Return type (always wrapped in IO)
     retHsType = HsTyIO (mapType known (stripNullab (methodReturnType method)))
     concreteInstancetypeRet = HsTyIO (HsTyApp (HsTyCon "Id") (HsTyCon name))
 
@@ -118,26 +161,28 @@ generateMethod known cls instNames method =
     isInstancetype ObjCInstancetype = True
     isInstancetype _ = False
 
-    paramInfoTyped :: [(Text, ObjCType, HsType, Maybe Text)]
-    paramInfoTyped = fmap classifyParamType (methodParams method)
+    -- Parameters with polymorphism classification
+    params = dedupParamNames (methodParams method)
 
-    classifyParamType (pName, pType) =
-      let sanitized = sanitizeParamName pName
-          hsType = mapType known (stripNullab pType)
-          polyClass = case hsType of
-            HsTyApp (HsTyCon "Id") (HsTyCon cn) -> Just cn
-            _ -> Nothing
-      in (sanitized, pType, hsType, polyClass)
+    -- (paramName, hsType, Just className) for Id ClassName params
+    -- (paramName, hsType, Nothing) for everything else
+    classifiedParams = fmap classifyParam params
 
+    classifyParam (pName, pType) =
+      let hsType = mapType known (stripNullab pType)
+      in case hsType of
+        HsTyApp (HsTyCon "Id") (HsTyCon cn) -> (pName, hsType, Just cn)
+        _ -> (pName, hsType, Nothing)
+
+    -- Constraints: self + polymorphic object args
     selfConstraint
       | methodIsClass method = []
       | otherwise = ["Is" <> name <> " " <> selfVar]
 
-    paramConstraints = mapMaybe (\(pn, _, _, mCls) ->
-      case mCls of
-        Just cn -> Just ("Is" <> cn <> " " <> pn)
-        Nothing -> Nothing
-      ) paramInfoTyped
+    paramConstraints =
+      [ "Is" <> cn <> " " <> pn
+      | (pn, _, Just cn) <- classifiedParams
+      ]
 
     allConstraints = selfConstraint ++ paramConstraints
 
@@ -146,15 +191,16 @@ generateMethod known cls instNames method =
       | [c] <- allConstraints = c <> " => "
       | otherwise = "(" <> T.intercalate ", " allConstraints <> ") => "
 
+    -- Type signature parts
     selfTypePart
       | methodIsClass method = []
       | otherwise = [selfVar]
 
-    paramTypeParts = fmap (\(pn, _, hsType, mCls) ->
-      case mCls of
-        Just _  -> pn
-        Nothing -> hsTypeToText hsType
-      ) paramInfoTyped
+    paramTypeParts = fmap paramTypeText classifiedParams
+
+    paramTypeText (pn, hsType, mc) = case mc of
+      Just _  -> pn               -- type variable
+      Nothing -> hsTypeToText hsType  -- concrete type
 
     typeSig =
       let allParts = selfTypePart ++ paramTypeParts ++ [hsTypeToText finalRetHsType]
@@ -163,25 +209,29 @@ generateMethod known cls instNames method =
     argPatterns =
       let selfPat
             | methodIsClass method = ""
-            | otherwise = selfVar <> " "
-          paramPats = fmap (\(n, _, _, _) -> n) paramInfoTyped
+            | otherwise = selfVar
+          paramPats = fmap (\(pn, _, _) -> pn) classifiedParams
       in T.unwords (filter (not . T.null) (selfPat : paramPats))
 
-    body
-      | methodIsClass method =
-          generateMethodBody known cls
-            MethodBodyConfig
-              { mbcReceiverKind   = ClassReceiver (className cls)
-              , mbcBaseIndent     = 2
-              }
-            method
-      | otherwise =
-          generateMethodBody known cls
-            MethodBodyConfig
-              { mbcReceiverKind   = InstanceReceiver (lowerFirst (className cls))
-              , mbcBaseIndent     = 0
-              }
-            method
+    -- Arg expressions: polymorphic params get toClassName conversion
+    argExprs = fmap mkArgExpr classifiedParams
+
+    mkArgExpr (pn, _, Just cn)  = "(to" <> cn <> " " <> pn <> ")"
+    mkArgExpr (pn, _, Nothing) = pn
+
+    -- Reference the top-level selector binding
+    selName = methodSelectorName cls instNames method
+
+    body = generateMethodBody
+      MethodBodyConfig
+        { mbcReceiverKind = if methodIsClass method
+                            then ClassReceiver name
+                            else InstanceReceiver selfVar
+        , mbcBaseIndent   = if methodIsClass method then 2 else 0
+        , mbcSelectorExpr = selName
+        , mbcArgExprs     = argExprs
+        , mbcIsOwned      = ownershipWrapper sel == "ownedObject"
+        }
 
 -- ---------------------------------------------------------------------------
 -- Unified method body generation
@@ -196,296 +246,40 @@ data ReceiverKind
 
 -- | Configuration for 'generateMethodBody'.
 data MethodBodyConfig = MethodBodyConfig
-  { mbcReceiverKind :: ReceiverKind
-  , mbcBaseIndent   :: Int
+  { mbcReceiverKind   :: ReceiverKind
+  , mbcBaseIndent     :: Int
+  , mbcSelectorExpr   :: Text
+    -- ^ Expression to use for the selector in the @sendMessage@ call.
+    -- Typically a top-level selector name (e.g., @\"fooSelector\"@)
+    -- or an inline @\"(mkSelector \\\"foo:\\\" :: Selector ... ...)\"@.
+  , mbcArgExprs       :: [Text]
+    -- ^ Argument expressions to pass after the selector.
+    -- These should already include any conversions (e.g., @toNSString x@).
+  , mbcIsOwned        :: Bool
+    -- ^ Whether to use the @sendOwned*@ variant (for +1 ownership).
   }
 
 -- | Generate the body lines for a method call.
 --
--- This unifies the previously duplicated logic from
--- @generateInstanceMethodBody@, @generateClassMethodBody@,
--- @protoMethodImpl@, and @generateOptionalMethod@.
-generateMethodBody :: KnownTypes -> ObjCClass -> MethodBodyConfig -> ObjCMethod -> [Text]
-generateMethodBody known _cls cfg method =
-  let selector = methodSelector method
-      selStr = T.pack (show (T.unpack selector))
-      (retPrefix, retArg, retSuffix) = mkRetExprs known selector (methodReturnType method)
-
-      -- Classify each parameter
-      paramInfos = fmap classifyParam (methodParams method)
-      classifyParam (pName, pType) =
-        let sanitized = sanitizeParamName pName
-            managed = isManagedObjCParam known pType
-            rawVar = "raw_" <> sanitized
-        in (sanitized, pType, managed, rawVar)
-
-      managedParams = [(s, r) | (s, _, True, r) <- paramInfos]
-      managedCount = length managedParams
-      nestIndent = T.replicate managedCount "  "
-
-      -- withObjCPtr nesting
-      withObjCPtrLines =
-        [T.replicate (i * 2) " " <> baseIndent <> "withObjCPtr " <> sName <> " $ \\" <> rawVar <> " ->"
-        | (i, (sName, rawVar)) <- zip [0..] managedParams]
-
-      -- Arg expressions
-      mkArg (sName, pType, False, _) = mkArgExpr known pType sName
-      mkArg (_, _, True, rawVar) = "argPtr (castPtr " <> rawVar <> " :: Ptr ())"
-      argsExpr = "[" <> T.intercalate ", " (fmap mkArg paramInfos) <> "]"
-
-      -- Send function (stret for struct returns)
-      sendFn = case methodReturnType method of
-        ObjCStruct _ -> case mbcReceiverKind cfg of
-          ClassReceiver _ -> "sendClassMsgStret"
-          _               -> "sendMsgStret"
-        _ -> case mbcReceiverKind cfg of
-          ClassReceiver _ -> "sendClassMsg"
-          _               -> "sendMsg"
-
-      prefixPart = if T.null retPrefix then "" else retPrefix <> " "
-      suffixPart = if T.null retSuffix then "" else " " <> retSuffix
-
+-- Uses the type-safe @sendMessage@ family from @ObjC.Runtime.Message@.
+generateMethodBody :: MethodBodyConfig -> [Text]
+generateMethodBody cfg =
+  let selExpr    = mbcSelectorExpr cfg
+      argsPart   = if null (mbcArgExprs cfg) then "" else " " <> T.unwords (mbcArgExprs cfg)
       baseIndent = T.replicate (mbcBaseIndent cfg) " "
-
+      isOwned    = mbcIsOwned cfg
   in case mbcReceiverKind cfg of
     ClassReceiver clsName ->
-      [ baseIndent <> "do" ]
-      ++ [baseIndent <> "  cls' <- getRequiredClass " <> T.pack (show (T.unpack clsName))]
-      ++ fmap ("  " <>) withObjCPtrLines
-      ++ [baseIndent <> "  " <> nestIndent <> prefixPart
-           <> sendFn <> " cls' (mkSelector " <> selStr <> ") "
-           <> retArg <> " " <> argsExpr <> suffixPart]
+      let sendFn = if isOwned then "sendOwnedClassMessage" else "sendClassMessage"
+      in [ baseIndent <> "do"
+         , baseIndent <> "  cls' <- getRequiredClass " <> T.pack (show (T.unpack clsName))
+         , baseIndent <> "  " <> sendFn <> " cls' " <> selExpr <> argsPart
+         ]
 
     InstanceReceiver selfVar ->
-      fmap ("  " <>) withObjCPtrLines
-      ++ [baseIndent <> "  " <> nestIndent <> "  " <> prefixPart
-           <> sendFn <> " " <> selfVar <> " (mkSelector " <> selStr <> ") "
-           <> retArg <> " " <> argsExpr <> suffixPart]
+      let sendFn = if isOwned then "sendOwnedMessage" else "sendMessage"
+      in [ baseIndent <> "  " <> sendFn <> " " <> selfVar <> " " <> selExpr <> argsPart ]
 
     DirectReceiver recvExpr ->
-      fmap ("  " <>) withObjCPtrLines
-      ++ [baseIndent <> "  " <> nestIndent <> "  " <> prefixPart
-           <> sendFn <> " " <> recvExpr <> " (mkSelector " <> selStr <> ") "
-           <> retArg <> " " <> argsExpr <> suffixPart]
-
--- ---------------------------------------------------------------------------
--- Return expression builder
--- ---------------------------------------------------------------------------
-
--- | Generate the return wrapper.
---
--- Returns @(retPrefix, retArg, retSuffix)@ where:
---
--- * @retPrefix@ is prepended to the sendMsg call
--- * @retArg@ is the libffi RetType
--- * @retSuffix@ is appended after the sendMsg call
-mkRetExprs :: KnownTypes -> Text -> ObjCType -> (Text, Text, Text)
-mkRetExprs kt selector retTy = case retTy of
-  ObjCQualified qual inner ->
-    let (pre, ra, suf) = mkRetExprs kt selector inner
-        wrapper = case qual of QConst -> "Const"; QVolatile -> "Volatile"
-    in if T.null suf
-       then (if T.null pre then "fmap " <> wrapper <> " $" else "fmap " <> wrapper <> " $ " <> pre, ra, "")
-       else ("", ra, suf <> " >>= \\x -> pure (" <> wrapper <> " x)")
-  ObjCVoid        -> ("", "retVoid", "")
-  ObjCInstancetype -> ("", "(retPtr retVoid)", managed)
-  ObjCId (Just n) _
-    | let bn = extractClassName n
-    , isKnownTypedef n || isKnownTypedef bn
-      || Set.member n structs || Set.member bn structs ->
-        ("fmap castPtr $", "(retPtr retVoid)", "")
-  ObjCId (Just n) _
-    | let bn = extractClassName n
-    , Set.member n classes || Set.member bn classes ->
-        ("", "(retPtr retVoid)", managed)
-  -- "const char", "char", "void" appearing in ObjCId context map to Ptr types,
-  -- not RawId — see mapType in TypeMap.hs.
-  ObjCId (Just n) _
-    | let bn = extractClassName n
-    , bn == "const char" || bn == "char" || bn == "void" ->
-        ("fmap castPtr $", "(retPtr retVoid)", "")
-  ObjCId _ _        -> ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  ObjCGeneric n _ _
-    | n == "Class" || extractClassName n == "Class"
-                      -> ("fmap (Class . castPtr) $", "(retPtr retVoid)", "")
-    | Set.member n classes || Set.member (extractClassName n) classes
-                      -> ("", "(retPtr retVoid)", managed)
-    | otherwise       -> ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  ObjCSEL          -> ("fmap (Selector . castPtr) $", "(retPtr retVoid)", "")
-  ObjCClassType _  -> ("fmap (Class . castPtr) $", "(retPtr retVoid)", "")
-  ObjCStruct name  -> ("", "ret" <> name, "")
-  ObjCBool         -> ("fmap ((/= 0) :: CULong -> Bool) $", "retCULong", "")
-  ObjCBlock _ _    -> ("fmap castPtr $", "(retPtr retVoid)", "")
-  ObjCPointer (ObjCPrimitive _ d)
-    | "__kindof " `T.isPrefixOf` d
-    , let clsName = extractClassName (T.drop 9 d)
-    , Set.member clsName classes
-                     -> ("", "(retPtr retVoid)", managed)
-    | "__kindof " `T.isPrefixOf` d
-                     -> ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  ObjCPointer _    -> ("fmap castPtr $", "(retPtr retVoid)", "")
-  ObjCPrimitive q d -> mkPrimitiveRetExprs kt q d selector
-  where
-    structs = ktStructs kt
-    classes = ktClasses kt
-    managed = ">>= " <> ownershipWrapper selector <> " . castPtr"
-
--- | Handle primitive return types, using 'PrimitiveTypes' table where possible.
-mkPrimitiveRetExprs :: KnownTypes -> Text -> Text -> Text -> (Text, Text, Text)
-mkPrimitiveRetExprs kt q d selector
-  -- Known enum types
-  | Just ed <- lookupEnumByQualType kt q d
-    = let retFn = enumRetFunction ed
-          retTy = enumRetFunctionType ed
-          hsTy  = enumUnderlyingHsType ed
-          eName = enumName ed
-          -- If the FFI return type matches the newtype wrapper, coerce directly.
-          -- Otherwise go through fromIntegral first.
-          wrapper
-            | retTy == hsTy = "fmap (coerce :: " <> retTy <> " -> " <> eName <> ") $"
-            | otherwise     = "fmap (" <> eName <> " . fromIntegral :: " <> retTy <> " -> " <> eName <> ") $"
-      in (wrapper, retFn, "")
-  -- __kindof annotation
-  | "__kindof " `T.isPrefixOf` d
-  , let clsName = extractClassName (T.drop 9 d)
-  , Set.member clsName (ktClasses kt)
-    = ("", "(retPtr retVoid)", ">>= " <> ownershipWrapper selector <> " . castPtr")
-  | "__kindof " `T.isPrefixOf` d
-    = ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  -- Struct types mis-parsed as primitives
-  | q == d && isStructLikePrimitive d
-    = ("", "ret" <> d, "")
-  -- Function pointers
-  | isFuncPtrDesugared d  = ("fmap castPtr $", "(retPtr retVoid)", "")
-  -- Mis-parsed id
-  | isIdDesugared d       = ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  -- Struct pointer
-  | isObjPtrDesugared d
-  , let pointee = T.strip (T.dropEnd 1 d)
-  , Set.member pointee (ktStructs kt)
-    = ("fmap castPtr $", "(retPtr retVoid)", "")
-  -- Object pointer → managed or raw
-  | isObjPtrDesugared d
-  , let pointee = extractClassName (T.strip (T.dropEnd 1 d))
-  , Set.member pointee (ktClasses kt)
-    = ("", "(retPtr retVoid)", ">>= " <> ownershipWrapper selector <> " . castPtr")
-  | isObjPtrDesugared d
-    = ("fmap (RawId . castPtr) $", "(retPtr retVoid)", "")
-  -- Mis-parsed SEL
-  | isSELDesugared d      = ("fmap (Selector . castPtr) $", "(retPtr retVoid)", "")
-  -- Mis-parsed Class
-  | d == "Class"          = ("fmap (Class . castPtr) $", "(retPtr retVoid)", "")
-  -- Unknown enum
-  | "enum " `T.isPrefixOf` d = ("", "retCInt", "")
-  -- Block types
-  | isBlockDesugared d    = ("fmap castPtr $", "(retPtr retVoid)", "")
-  -- Delegate to PrimitiveTypes table
-  | Just info <- lookupPrimitive q d
-    = let retFn = ptRetFunction info
-          retTy = ptRetFuncType info
-          hsType = ptHsType info
-      in if retTy == hsType
-         then ("", retFn, "")
-         else ("fmap fromIntegral $", retFn, "")
-  -- Conservative fallback
-  | otherwise = ("", "retCInt", "")
-
--- ---------------------------------------------------------------------------
--- Argument expression builder
--- ---------------------------------------------------------------------------
-
--- | Generate an argument expression for a parameter.
-mkArgExpr :: KnownTypes -> ObjCType -> Text -> Text
-mkArgExpr kt ty paramName =
-  let structs = ktStructs kt
-      classes = ktClasses kt
-  in case ty of
-  ObjCQualified qual inner ->
-    let unwrap = case qual of QConst -> "unConst"; QVolatile -> "unVolatile"
-    in mkArgExpr kt inner ("(" <> unwrap <> " " <> paramName <> ")")
-  ObjCId (Just n) _
-    | let bn = extractClassName n
-    , isKnownTypedef n || isKnownTypedef bn
-      || Set.member n structs || Set.member bn structs
-      || Map.member n (ktEnums kt) || Map.member bn (ktEnums kt) ->
-        "argPtr " <> paramName
-  ObjCId (Just n2) _
-    | Set.member n2 classes || Set.member (extractClassName n2) classes
-      -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-    -- "const char", "char", "void" in ObjCId context map to Ptr types.
-    | let bn2 = extractClassName n2
-    , bn2 == "const char" || bn2 == "char" || bn2 == "void"
-      -> "argPtr " <> paramName
-    | otherwise
-      -> "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
-  ObjCId Nothing _    -> "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
-  ObjCGeneric n _ _
-    | n == "Class" || extractClassName n == "Class"
-                      -> "argPtr (unClass " <> paramName <> ")"
-    | Set.member n classes || Set.member (extractClassName n) classes
-                      -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-    | otherwise       -> "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
-  ObjCInstancetype  -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  ObjCSEL           -> "argPtr (unSelector " <> paramName <> ")"
-  ObjCClassType _   -> "argPtr (unClass " <> paramName <> ")"
-  ObjCBool          -> "argCULong (if " <> paramName <> " then 1 else 0)"
-  ObjCStruct name   -> "arg" <> name <> " " <> paramName
-  ObjCPointer (ObjCPrimitive _ d)
-    | "__kindof " `T.isPrefixOf` d
-                      -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  ObjCPointer _     -> "argPtr " <> paramName
-  ObjCPrimitive q d -> mkPrimitiveArgExpr kt q d paramName
-  ObjCBlock _ _ -> "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  ObjCVoid      -> "argPtr " <> paramName  -- shouldn't happen but don't crash
-
--- | Handle primitive argument types.
-mkPrimitiveArgExpr :: KnownTypes -> Text -> Text -> Text -> Text
-mkPrimitiveArgExpr kt q d paramName
-  -- Known enum types
-  | Just ed <- lookupEnumByQualType kt q d
-    = let argFn = enumArgFunction ed
-          retTy = enumRetFunctionType ed
-          hsTy  = enumUnderlyingHsType ed
-      in if retTy == hsTy
-         then argFn <> " (coerce " <> paramName <> ")"
-         else argFn <> " (fromIntegral (coerce " <> paramName <> " :: " <> hsTy <> "))"
-  -- __kindof
-  | "__kindof " `T.isPrefixOf` d
-    = "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  -- Struct types mis-parsed as primitives
-  | q == d && isStructLikePrimitive d
-    = "arg" <> d <> " " <> paramName
-  -- Function pointers
-  | isFuncPtrDesugared d  = "argPtr " <> paramName
-  -- Mis-parsed id
-  | isIdDesugared d       = "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
-  -- Struct pointer
-  | isObjPtrDesugared d
-  , let pointee = T.strip (T.dropEnd 1 d)
-  , Set.member pointee (ktStructs kt)
-    = "argPtr " <> paramName
-  -- Object pointer → managed or raw
-  | isObjPtrDesugared d
-  , let clsName = extractClassName (T.strip (T.dropEnd 1 d))
-  , Set.member clsName (ktClasses kt)
-    = "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  | isObjPtrDesugared d
-    = "argPtr (castPtr (unRawId " <> paramName <> ") :: Ptr ())"
-  -- Mis-parsed SEL
-  | isSELDesugared d      = "argPtr (unSelector " <> paramName <> ")"
-  -- Mis-parsed Class
-  | d == "Class"          = "argPtr (unClass " <> paramName <> ")"
-  -- Unknown enum
-  | "enum " `T.isPrefixOf` d = "argCInt (fromIntegral " <> paramName <> ")"
-  -- Block types
-  | isBlockDesugared d    = "argPtr (castPtr " <> paramName <> " :: Ptr ())"
-  -- Delegate to PrimitiveTypes table
-  | Just info <- lookupPrimitive q d
-    = let argFn = ptArgFunction info
-          argTy = ptRetFuncType info
-          hsTy  = ptHsType info
-      in if argTy == hsTy
-         then argFn <> " " <> paramName
-         else argFn <> " (fromIntegral " <> paramName <> ")"
-  -- Conservative fallback
-  | otherwise = "argCInt (fromIntegral " <> paramName <> ")"
+      let sendFn = if isOwned then "sendOwnedMessage" else "sendMessage"
+      in [ baseIndent <> "  " <> sendFn <> " " <> recvExpr <> " " <> selExpr <> argsPart ]

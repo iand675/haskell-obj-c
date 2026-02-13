@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Cinematic.CNFixedDetectionTrack
   , initWithOriginalDetection
   , focusDisparity
   , originalDetection
+  , focusDisparitySelector
   , initWithFocusDisparitySelector
   , initWithOriginalDetectionSelector
-  , focusDisparitySelector
   , originalDetectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,21 +36,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFocusDisparity:@
 initWithFocusDisparity :: IsCNFixedDetectionTrack cnFixedDetectionTrack => cnFixedDetectionTrack -> CFloat -> IO (Id CNFixedDetectionTrack)
-initWithFocusDisparity cnFixedDetectionTrack  focusDisparity =
-    sendMsg cnFixedDetectionTrack (mkSelector "initWithFocusDisparity:") (retPtr retVoid) [argCFloat focusDisparity] >>= ownedObject . castPtr
+initWithFocusDisparity cnFixedDetectionTrack focusDisparity =
+  sendOwnedMessage cnFixedDetectionTrack initWithFocusDisparitySelector focusDisparity
 
 -- | Create a detection track with fixed focus at the disparity of an existing detection.
 --
 -- ObjC selector: @- initWithOriginalDetection:@
 initWithOriginalDetection :: (IsCNFixedDetectionTrack cnFixedDetectionTrack, IsCNDetection originalDetection) => cnFixedDetectionTrack -> originalDetection -> IO (Id CNFixedDetectionTrack)
-initWithOriginalDetection cnFixedDetectionTrack  originalDetection =
-  withObjCPtr originalDetection $ \raw_originalDetection ->
-      sendMsg cnFixedDetectionTrack (mkSelector "initWithOriginalDetection:") (retPtr retVoid) [argPtr (castPtr raw_originalDetection :: Ptr ())] >>= ownedObject . castPtr
+initWithOriginalDetection cnFixedDetectionTrack originalDetection =
+  sendOwnedMessage cnFixedDetectionTrack initWithOriginalDetectionSelector (toCNDetection originalDetection)
 
 -- | @- focusDisparity@
 focusDisparity :: IsCNFixedDetectionTrack cnFixedDetectionTrack => cnFixedDetectionTrack -> IO CFloat
-focusDisparity cnFixedDetectionTrack  =
-    sendMsg cnFixedDetectionTrack (mkSelector "focusDisparity") retCFloat []
+focusDisparity cnFixedDetectionTrack =
+  sendMessage cnFixedDetectionTrack focusDisparitySelector
 
 -- | The original detection upon which this fixed detection track was based, if any.
 --
@@ -63,26 +59,26 @@ focusDisparity cnFixedDetectionTrack  =
 --
 -- ObjC selector: @- originalDetection@
 originalDetection :: IsCNFixedDetectionTrack cnFixedDetectionTrack => cnFixedDetectionTrack -> IO (Id CNDetection)
-originalDetection cnFixedDetectionTrack  =
-    sendMsg cnFixedDetectionTrack (mkSelector "originalDetection") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalDetection cnFixedDetectionTrack =
+  sendMessage cnFixedDetectionTrack originalDetectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFocusDisparity:@
-initWithFocusDisparitySelector :: Selector
+initWithFocusDisparitySelector :: Selector '[CFloat] (Id CNFixedDetectionTrack)
 initWithFocusDisparitySelector = mkSelector "initWithFocusDisparity:"
 
 -- | @Selector@ for @initWithOriginalDetection:@
-initWithOriginalDetectionSelector :: Selector
+initWithOriginalDetectionSelector :: Selector '[Id CNDetection] (Id CNFixedDetectionTrack)
 initWithOriginalDetectionSelector = mkSelector "initWithOriginalDetection:"
 
 -- | @Selector@ for @focusDisparity@
-focusDisparitySelector :: Selector
+focusDisparitySelector :: Selector '[] CFloat
 focusDisparitySelector = mkSelector "focusDisparity"
 
 -- | @Selector@ for @originalDetection@
-originalDetectionSelector :: Selector
+originalDetectionSelector :: Selector '[] (Id CNDetection)
 originalDetectionSelector = mkSelector "originalDetection"
 

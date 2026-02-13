@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,17 +23,17 @@ module ObjC.Metal.MTL4PrimitiveAccelerationStructureDescriptor
   , motionKeyframeCount
   , setMotionKeyframeCount
   , geometryDescriptorsSelector
-  , setGeometryDescriptorsSelector
-  , motionStartBorderModeSelector
-  , setMotionStartBorderModeSelector
   , motionEndBorderModeSelector
-  , setMotionEndBorderModeSelector
-  , motionStartTimeSelector
-  , setMotionStartTimeSelector
   , motionEndTimeSelector
-  , setMotionEndTimeSelector
   , motionKeyframeCountSelector
+  , motionStartBorderModeSelector
+  , motionStartTimeSelector
+  , setGeometryDescriptorsSelector
+  , setMotionEndBorderModeSelector
+  , setMotionEndTimeSelector
   , setMotionKeyframeCountSelector
+  , setMotionStartBorderModeSelector
+  , setMotionStartTimeSelector
 
   -- * Enum types
   , MTLMotionBorderMode(MTLMotionBorderMode)
@@ -41,15 +42,11 @@ module ObjC.Metal.MTL4PrimitiveAccelerationStructureDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- geometryDescriptors@
 geometryDescriptors :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO (Id NSArray)
-geometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor  =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "geometryDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor geometryDescriptorsSelector
 
 -- | Associates the array of geometry descriptors that comprise this primitive acceleration structure.
 --
@@ -76,9 +73,8 @@ geometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setGeometryDescriptors:@
 setGeometryDescriptors :: (IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor, IsNSArray value) => mtL4PrimitiveAccelerationStructureDescriptor -> value -> IO ()
-setGeometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setGeometryDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGeometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setGeometryDescriptorsSelector (toNSArray value)
 
 -- | Configures the behavior when the ray-tracing system samples the acceleration structure before the motion start time.
 --
@@ -88,8 +84,8 @@ setGeometryDescriptors mtL4PrimitiveAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- motionStartBorderMode@
 motionStartBorderMode :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO MTLMotionBorderMode
-motionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor  =
-    fmap (coerce :: CUInt -> MTLMotionBorderMode) $ sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "motionStartBorderMode") retCUInt []
+motionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor motionStartBorderModeSelector
 
 -- | Configures the behavior when the ray-tracing system samples the acceleration structure before the motion start time.
 --
@@ -99,8 +95,8 @@ motionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionStartBorderMode:@
 setMotionStartBorderMode :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> MTLMotionBorderMode -> IO ()
-setMotionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor  value =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setMotionStartBorderMode:") retVoid [argCUInt (coerce value)]
+setMotionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setMotionStartBorderModeSelector value
 
 -- | Configures the motion border mode.
 --
@@ -110,8 +106,8 @@ setMotionStartBorderMode mtL4PrimitiveAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- motionEndBorderMode@
 motionEndBorderMode :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO MTLMotionBorderMode
-motionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor  =
-    fmap (coerce :: CUInt -> MTLMotionBorderMode) $ sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "motionEndBorderMode") retCUInt []
+motionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor motionEndBorderModeSelector
 
 -- | Configures the motion border mode.
 --
@@ -121,8 +117,8 @@ motionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionEndBorderMode:@
 setMotionEndBorderMode :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> MTLMotionBorderMode -> IO ()
-setMotionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor  value =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setMotionEndBorderMode:") retVoid [argCUInt (coerce value)]
+setMotionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setMotionEndBorderModeSelector value
 
 -- | Configures the motion start time for this geometry.
 --
@@ -130,8 +126,8 @@ setMotionEndBorderMode mtL4PrimitiveAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- motionStartTime@
 motionStartTime :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO CFloat
-motionStartTime mtL4PrimitiveAccelerationStructureDescriptor  =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "motionStartTime") retCFloat []
+motionStartTime mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor motionStartTimeSelector
 
 -- | Configures the motion start time for this geometry.
 --
@@ -139,8 +135,8 @@ motionStartTime mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionStartTime:@
 setMotionStartTime :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> CFloat -> IO ()
-setMotionStartTime mtL4PrimitiveAccelerationStructureDescriptor  value =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setMotionStartTime:") retVoid [argCFloat value]
+setMotionStartTime mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setMotionStartTimeSelector value
 
 -- | Configures the motion end time for this geometry.
 --
@@ -148,8 +144,8 @@ setMotionStartTime mtL4PrimitiveAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- motionEndTime@
 motionEndTime :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO CFloat
-motionEndTime mtL4PrimitiveAccelerationStructureDescriptor  =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "motionEndTime") retCFloat []
+motionEndTime mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor motionEndTimeSelector
 
 -- | Configures the motion end time for this geometry.
 --
@@ -157,8 +153,8 @@ motionEndTime mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionEndTime:@
 setMotionEndTime :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> CFloat -> IO ()
-setMotionEndTime mtL4PrimitiveAccelerationStructureDescriptor  value =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setMotionEndTime:") retVoid [argCFloat value]
+setMotionEndTime mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setMotionEndTimeSelector value
 
 -- | Sets the motion keyframe count.
 --
@@ -166,8 +162,8 @@ setMotionEndTime mtL4PrimitiveAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- motionKeyframeCount@
 motionKeyframeCount :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> IO CULong
-motionKeyframeCount mtL4PrimitiveAccelerationStructureDescriptor  =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "motionKeyframeCount") retCULong []
+motionKeyframeCount mtL4PrimitiveAccelerationStructureDescriptor =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor motionKeyframeCountSelector
 
 -- | Sets the motion keyframe count.
 --
@@ -175,58 +171,58 @@ motionKeyframeCount mtL4PrimitiveAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionKeyframeCount:@
 setMotionKeyframeCount :: IsMTL4PrimitiveAccelerationStructureDescriptor mtL4PrimitiveAccelerationStructureDescriptor => mtL4PrimitiveAccelerationStructureDescriptor -> CULong -> IO ()
-setMotionKeyframeCount mtL4PrimitiveAccelerationStructureDescriptor  value =
-    sendMsg mtL4PrimitiveAccelerationStructureDescriptor (mkSelector "setMotionKeyframeCount:") retVoid [argCULong value]
+setMotionKeyframeCount mtL4PrimitiveAccelerationStructureDescriptor value =
+  sendMessage mtL4PrimitiveAccelerationStructureDescriptor setMotionKeyframeCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @geometryDescriptors@
-geometryDescriptorsSelector :: Selector
+geometryDescriptorsSelector :: Selector '[] (Id NSArray)
 geometryDescriptorsSelector = mkSelector "geometryDescriptors"
 
 -- | @Selector@ for @setGeometryDescriptors:@
-setGeometryDescriptorsSelector :: Selector
+setGeometryDescriptorsSelector :: Selector '[Id NSArray] ()
 setGeometryDescriptorsSelector = mkSelector "setGeometryDescriptors:"
 
 -- | @Selector@ for @motionStartBorderMode@
-motionStartBorderModeSelector :: Selector
+motionStartBorderModeSelector :: Selector '[] MTLMotionBorderMode
 motionStartBorderModeSelector = mkSelector "motionStartBorderMode"
 
 -- | @Selector@ for @setMotionStartBorderMode:@
-setMotionStartBorderModeSelector :: Selector
+setMotionStartBorderModeSelector :: Selector '[MTLMotionBorderMode] ()
 setMotionStartBorderModeSelector = mkSelector "setMotionStartBorderMode:"
 
 -- | @Selector@ for @motionEndBorderMode@
-motionEndBorderModeSelector :: Selector
+motionEndBorderModeSelector :: Selector '[] MTLMotionBorderMode
 motionEndBorderModeSelector = mkSelector "motionEndBorderMode"
 
 -- | @Selector@ for @setMotionEndBorderMode:@
-setMotionEndBorderModeSelector :: Selector
+setMotionEndBorderModeSelector :: Selector '[MTLMotionBorderMode] ()
 setMotionEndBorderModeSelector = mkSelector "setMotionEndBorderMode:"
 
 -- | @Selector@ for @motionStartTime@
-motionStartTimeSelector :: Selector
+motionStartTimeSelector :: Selector '[] CFloat
 motionStartTimeSelector = mkSelector "motionStartTime"
 
 -- | @Selector@ for @setMotionStartTime:@
-setMotionStartTimeSelector :: Selector
+setMotionStartTimeSelector :: Selector '[CFloat] ()
 setMotionStartTimeSelector = mkSelector "setMotionStartTime:"
 
 -- | @Selector@ for @motionEndTime@
-motionEndTimeSelector :: Selector
+motionEndTimeSelector :: Selector '[] CFloat
 motionEndTimeSelector = mkSelector "motionEndTime"
 
 -- | @Selector@ for @setMotionEndTime:@
-setMotionEndTimeSelector :: Selector
+setMotionEndTimeSelector :: Selector '[CFloat] ()
 setMotionEndTimeSelector = mkSelector "setMotionEndTime:"
 
 -- | @Selector@ for @motionKeyframeCount@
-motionKeyframeCountSelector :: Selector
+motionKeyframeCountSelector :: Selector '[] CULong
 motionKeyframeCountSelector = mkSelector "motionKeyframeCount"
 
 -- | @Selector@ for @setMotionKeyframeCount:@
-setMotionKeyframeCountSelector :: Selector
+setMotionKeyframeCountSelector :: Selector '[CULong] ()
 setMotionKeyframeCountSelector = mkSelector "setMotionKeyframeCount:"
 

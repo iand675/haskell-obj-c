@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,64 +52,60 @@ module ObjC.Foundation.NSFileHandle
   , fileHandleWithStandardOutput
   , fileHandleWithStandardError
   , fileHandleWithNullDevice
-  , initWithFileDescriptor_closeOnDeallocSelector
-  , initWithCoderSelector
-  , readDataToEndOfFileAndReturnErrorSelector
-  , readDataUpToLength_errorSelector
-  , writeData_errorSelector
-  , getOffset_errorSelector
-  , seekToEndReturningOffset_errorSelector
-  , seekToOffset_errorSelector
-  , truncateAtOffset_errorSelector
-  , synchronizeAndReturnErrorSelector
+  , acceptConnectionInBackgroundAndNotifyForModesSelector
+  , acceptConnectionInBackgroundAndNotifySelector
+  , availableDataSelector
   , closeAndReturnErrorSelector
-  , readDataToEndOfFileSelector
-  , readDataOfLengthSelector
-  , writeDataSelector
-  , seekToEndOfFileSelector
-  , seekToFileOffsetSelector
-  , truncateFileAtOffsetSelector
-  , synchronizeFileSelector
   , closeFileSelector
+  , fileDescriptorSelector
+  , fileHandleForReadingAtPathSelector
+  , fileHandleForReadingFromURL_errorSelector
+  , fileHandleForUpdatingAtPathSelector
+  , fileHandleForUpdatingURL_errorSelector
+  , fileHandleForWritingAtPathSelector
+  , fileHandleForWritingToURL_errorSelector
+  , fileHandleWithNullDeviceSelector
+  , fileHandleWithStandardErrorSelector
+  , fileHandleWithStandardInputSelector
+  , fileHandleWithStandardOutputSelector
+  , getOffset_errorSelector
+  , initWithCoderSelector
   , initWithFileDescriptorSelector
+  , initWithFileDescriptor_closeOnDeallocSelector
+  , offsetInFileSelector
+  , readDataOfLengthSelector
+  , readDataToEndOfFileAndReturnErrorSelector
+  , readDataToEndOfFileSelector
+  , readDataUpToLength_errorSelector
   , readInBackgroundAndNotifyForModesSelector
   , readInBackgroundAndNotifySelector
   , readToEndOfFileInBackgroundAndNotifyForModesSelector
   , readToEndOfFileInBackgroundAndNotifySelector
-  , acceptConnectionInBackgroundAndNotifyForModesSelector
-  , acceptConnectionInBackgroundAndNotifySelector
+  , readabilityHandlerSelector
+  , seekToEndOfFileSelector
+  , seekToEndReturningOffset_errorSelector
+  , seekToFileOffsetSelector
+  , seekToOffset_errorSelector
+  , setReadabilityHandlerSelector
+  , setWriteabilityHandlerSelector
+  , synchronizeAndReturnErrorSelector
+  , synchronizeFileSelector
+  , truncateAtOffset_errorSelector
+  , truncateFileAtOffsetSelector
   , waitForDataInBackgroundAndNotifyForModesSelector
   , waitForDataInBackgroundAndNotifySelector
-  , fileHandleForReadingAtPathSelector
-  , fileHandleForWritingAtPathSelector
-  , fileHandleForUpdatingAtPathSelector
-  , fileHandleForReadingFromURL_errorSelector
-  , fileHandleForWritingToURL_errorSelector
-  , fileHandleForUpdatingURL_errorSelector
-  , availableDataSelector
-  , offsetInFileSelector
-  , fileDescriptorSelector
-  , readabilityHandlerSelector
-  , setReadabilityHandlerSelector
+  , writeDataSelector
+  , writeData_errorSelector
   , writeabilityHandlerSelector
-  , setWriteabilityHandlerSelector
-  , fileHandleWithStandardInputSelector
-  , fileHandleWithStandardOutputSelector
-  , fileHandleWithStandardErrorSelector
-  , fileHandleWithNullDeviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -116,455 +113,430 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFileDescriptor:closeOnDealloc:@
 initWithFileDescriptor_closeOnDealloc :: IsNSFileHandle nsFileHandle => nsFileHandle -> CInt -> Bool -> IO (Id NSFileHandle)
-initWithFileDescriptor_closeOnDealloc nsFileHandle  fd closeopt =
-    sendMsg nsFileHandle (mkSelector "initWithFileDescriptor:closeOnDealloc:") (retPtr retVoid) [argCInt fd, argCULong (if closeopt then 1 else 0)] >>= ownedObject . castPtr
+initWithFileDescriptor_closeOnDealloc nsFileHandle fd closeopt =
+  sendOwnedMessage nsFileHandle initWithFileDescriptor_closeOnDeallocSelector fd closeopt
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSFileHandle nsFileHandle, IsNSCoder coder) => nsFileHandle -> coder -> IO (Id NSFileHandle)
-initWithCoder nsFileHandle  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsFileHandle (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsFileHandle coder =
+  sendOwnedMessage nsFileHandle initWithCoderSelector (toNSCoder coder)
 
 -- | @- readDataToEndOfFileAndReturnError:@
 readDataToEndOfFileAndReturnError :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> error_ -> IO (Id NSData)
-readDataToEndOfFileAndReturnError nsFileHandle  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileHandle (mkSelector "readDataToEndOfFileAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+readDataToEndOfFileAndReturnError nsFileHandle error_ =
+  sendMessage nsFileHandle readDataToEndOfFileAndReturnErrorSelector (toNSError error_)
 
 -- | @- readDataUpToLength:error:@
 readDataUpToLength_error :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> CULong -> error_ -> IO (Id NSData)
-readDataUpToLength_error nsFileHandle  length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFileHandle (mkSelector "readDataUpToLength:error:") (retPtr retVoid) [argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+readDataUpToLength_error nsFileHandle length_ error_ =
+  sendMessage nsFileHandle readDataUpToLength_errorSelector length_ (toNSError error_)
 
 -- | @- writeData:error:@
 writeData_error :: (IsNSFileHandle nsFileHandle, IsNSData data_, IsNSError error_) => nsFileHandle -> data_ -> error_ -> IO Bool
-writeData_error nsFileHandle  data_ error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "writeData:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+writeData_error nsFileHandle data_ error_ =
+  sendMessage nsFileHandle writeData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | @- getOffset:error:@
 getOffset_error :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> Ptr CULong -> error_ -> IO Bool
-getOffset_error nsFileHandle  offsetInFile error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "getOffset:error:") retCULong [argPtr offsetInFile, argPtr (castPtr raw_error_ :: Ptr ())]
+getOffset_error nsFileHandle offsetInFile error_ =
+  sendMessage nsFileHandle getOffset_errorSelector offsetInFile (toNSError error_)
 
 -- | @- seekToEndReturningOffset:error:@
 seekToEndReturningOffset_error :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> Ptr CULong -> error_ -> IO Bool
-seekToEndReturningOffset_error nsFileHandle  offsetInFile error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "seekToEndReturningOffset:error:") retCULong [argPtr offsetInFile, argPtr (castPtr raw_error_ :: Ptr ())]
+seekToEndReturningOffset_error nsFileHandle offsetInFile error_ =
+  sendMessage nsFileHandle seekToEndReturningOffset_errorSelector offsetInFile (toNSError error_)
 
 -- | @- seekToOffset:error:@
 seekToOffset_error :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> CULong -> error_ -> IO Bool
-seekToOffset_error nsFileHandle  offset error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "seekToOffset:error:") retCULong [argCULong offset, argPtr (castPtr raw_error_ :: Ptr ())]
+seekToOffset_error nsFileHandle offset error_ =
+  sendMessage nsFileHandle seekToOffset_errorSelector offset (toNSError error_)
 
 -- | @- truncateAtOffset:error:@
 truncateAtOffset_error :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> CULong -> error_ -> IO Bool
-truncateAtOffset_error nsFileHandle  offset error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "truncateAtOffset:error:") retCULong [argCULong offset, argPtr (castPtr raw_error_ :: Ptr ())]
+truncateAtOffset_error nsFileHandle offset error_ =
+  sendMessage nsFileHandle truncateAtOffset_errorSelector offset (toNSError error_)
 
 -- | @- synchronizeAndReturnError:@
 synchronizeAndReturnError :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> error_ -> IO Bool
-synchronizeAndReturnError nsFileHandle  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "synchronizeAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+synchronizeAndReturnError nsFileHandle error_ =
+  sendMessage nsFileHandle synchronizeAndReturnErrorSelector (toNSError error_)
 
 -- | @- closeAndReturnError:@
 closeAndReturnError :: (IsNSFileHandle nsFileHandle, IsNSError error_) => nsFileHandle -> error_ -> IO Bool
-closeAndReturnError nsFileHandle  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileHandle (mkSelector "closeAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+closeAndReturnError nsFileHandle error_ =
+  sendMessage nsFileHandle closeAndReturnErrorSelector (toNSError error_)
 
 -- | @- readDataToEndOfFile@
 readDataToEndOfFile :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO (Id NSData)
-readDataToEndOfFile nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "readDataToEndOfFile") (retPtr retVoid) [] >>= retainedObject . castPtr
+readDataToEndOfFile nsFileHandle =
+  sendMessage nsFileHandle readDataToEndOfFileSelector
 
 -- | @- readDataOfLength:@
 readDataOfLength :: IsNSFileHandle nsFileHandle => nsFileHandle -> CULong -> IO (Id NSData)
-readDataOfLength nsFileHandle  length_ =
-    sendMsg nsFileHandle (mkSelector "readDataOfLength:") (retPtr retVoid) [argCULong length_] >>= retainedObject . castPtr
+readDataOfLength nsFileHandle length_ =
+  sendMessage nsFileHandle readDataOfLengthSelector length_
 
 -- | @- writeData:@
 writeData :: (IsNSFileHandle nsFileHandle, IsNSData data_) => nsFileHandle -> data_ -> IO ()
-writeData nsFileHandle  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsFileHandle (mkSelector "writeData:") retVoid [argPtr (castPtr raw_data_ :: Ptr ())]
+writeData nsFileHandle data_ =
+  sendMessage nsFileHandle writeDataSelector (toNSData data_)
 
 -- | @- seekToEndOfFile@
 seekToEndOfFile :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO CULong
-seekToEndOfFile nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "seekToEndOfFile") retCULong []
+seekToEndOfFile nsFileHandle =
+  sendMessage nsFileHandle seekToEndOfFileSelector
 
 -- | @- seekToFileOffset:@
 seekToFileOffset :: IsNSFileHandle nsFileHandle => nsFileHandle -> CULong -> IO ()
-seekToFileOffset nsFileHandle  offset =
-    sendMsg nsFileHandle (mkSelector "seekToFileOffset:") retVoid [argCULong offset]
+seekToFileOffset nsFileHandle offset =
+  sendMessage nsFileHandle seekToFileOffsetSelector offset
 
 -- | @- truncateFileAtOffset:@
 truncateFileAtOffset :: IsNSFileHandle nsFileHandle => nsFileHandle -> CULong -> IO ()
-truncateFileAtOffset nsFileHandle  offset =
-    sendMsg nsFileHandle (mkSelector "truncateFileAtOffset:") retVoid [argCULong offset]
+truncateFileAtOffset nsFileHandle offset =
+  sendMessage nsFileHandle truncateFileAtOffsetSelector offset
 
 -- | @- synchronizeFile@
 synchronizeFile :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-synchronizeFile nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "synchronizeFile") retVoid []
+synchronizeFile nsFileHandle =
+  sendMessage nsFileHandle synchronizeFileSelector
 
 -- | @- closeFile@
 closeFile :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-closeFile nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "closeFile") retVoid []
+closeFile nsFileHandle =
+  sendMessage nsFileHandle closeFileSelector
 
 -- | @- initWithFileDescriptor:@
 initWithFileDescriptor :: IsNSFileHandle nsFileHandle => nsFileHandle -> CInt -> IO (Id NSFileHandle)
-initWithFileDescriptor nsFileHandle  fd =
-    sendMsg nsFileHandle (mkSelector "initWithFileDescriptor:") (retPtr retVoid) [argCInt fd] >>= ownedObject . castPtr
+initWithFileDescriptor nsFileHandle fd =
+  sendOwnedMessage nsFileHandle initWithFileDescriptorSelector fd
 
 -- | @- readInBackgroundAndNotifyForModes:@
 readInBackgroundAndNotifyForModes :: (IsNSFileHandle nsFileHandle, IsNSArray modes) => nsFileHandle -> modes -> IO ()
-readInBackgroundAndNotifyForModes nsFileHandle  modes =
-  withObjCPtr modes $ \raw_modes ->
-      sendMsg nsFileHandle (mkSelector "readInBackgroundAndNotifyForModes:") retVoid [argPtr (castPtr raw_modes :: Ptr ())]
+readInBackgroundAndNotifyForModes nsFileHandle modes =
+  sendMessage nsFileHandle readInBackgroundAndNotifyForModesSelector (toNSArray modes)
 
 -- | @- readInBackgroundAndNotify@
 readInBackgroundAndNotify :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-readInBackgroundAndNotify nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "readInBackgroundAndNotify") retVoid []
+readInBackgroundAndNotify nsFileHandle =
+  sendMessage nsFileHandle readInBackgroundAndNotifySelector
 
 -- | @- readToEndOfFileInBackgroundAndNotifyForModes:@
 readToEndOfFileInBackgroundAndNotifyForModes :: (IsNSFileHandle nsFileHandle, IsNSArray modes) => nsFileHandle -> modes -> IO ()
-readToEndOfFileInBackgroundAndNotifyForModes nsFileHandle  modes =
-  withObjCPtr modes $ \raw_modes ->
-      sendMsg nsFileHandle (mkSelector "readToEndOfFileInBackgroundAndNotifyForModes:") retVoid [argPtr (castPtr raw_modes :: Ptr ())]
+readToEndOfFileInBackgroundAndNotifyForModes nsFileHandle modes =
+  sendMessage nsFileHandle readToEndOfFileInBackgroundAndNotifyForModesSelector (toNSArray modes)
 
 -- | @- readToEndOfFileInBackgroundAndNotify@
 readToEndOfFileInBackgroundAndNotify :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-readToEndOfFileInBackgroundAndNotify nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "readToEndOfFileInBackgroundAndNotify") retVoid []
+readToEndOfFileInBackgroundAndNotify nsFileHandle =
+  sendMessage nsFileHandle readToEndOfFileInBackgroundAndNotifySelector
 
 -- | @- acceptConnectionInBackgroundAndNotifyForModes:@
 acceptConnectionInBackgroundAndNotifyForModes :: (IsNSFileHandle nsFileHandle, IsNSArray modes) => nsFileHandle -> modes -> IO ()
-acceptConnectionInBackgroundAndNotifyForModes nsFileHandle  modes =
-  withObjCPtr modes $ \raw_modes ->
-      sendMsg nsFileHandle (mkSelector "acceptConnectionInBackgroundAndNotifyForModes:") retVoid [argPtr (castPtr raw_modes :: Ptr ())]
+acceptConnectionInBackgroundAndNotifyForModes nsFileHandle modes =
+  sendMessage nsFileHandle acceptConnectionInBackgroundAndNotifyForModesSelector (toNSArray modes)
 
 -- | @- acceptConnectionInBackgroundAndNotify@
 acceptConnectionInBackgroundAndNotify :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-acceptConnectionInBackgroundAndNotify nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "acceptConnectionInBackgroundAndNotify") retVoid []
+acceptConnectionInBackgroundAndNotify nsFileHandle =
+  sendMessage nsFileHandle acceptConnectionInBackgroundAndNotifySelector
 
 -- | @- waitForDataInBackgroundAndNotifyForModes:@
 waitForDataInBackgroundAndNotifyForModes :: (IsNSFileHandle nsFileHandle, IsNSArray modes) => nsFileHandle -> modes -> IO ()
-waitForDataInBackgroundAndNotifyForModes nsFileHandle  modes =
-  withObjCPtr modes $ \raw_modes ->
-      sendMsg nsFileHandle (mkSelector "waitForDataInBackgroundAndNotifyForModes:") retVoid [argPtr (castPtr raw_modes :: Ptr ())]
+waitForDataInBackgroundAndNotifyForModes nsFileHandle modes =
+  sendMessage nsFileHandle waitForDataInBackgroundAndNotifyForModesSelector (toNSArray modes)
 
 -- | @- waitForDataInBackgroundAndNotify@
 waitForDataInBackgroundAndNotify :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO ()
-waitForDataInBackgroundAndNotify nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "waitForDataInBackgroundAndNotify") retVoid []
+waitForDataInBackgroundAndNotify nsFileHandle =
+  sendMessage nsFileHandle waitForDataInBackgroundAndNotifySelector
 
 -- | @+ fileHandleForReadingAtPath:@
 fileHandleForReadingAtPath :: IsNSString path => path -> IO (Id NSFileHandle)
 fileHandleForReadingAtPath path =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "fileHandleForReadingAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForReadingAtPathSelector (toNSString path)
 
 -- | @+ fileHandleForWritingAtPath:@
 fileHandleForWritingAtPath :: IsNSString path => path -> IO (Id NSFileHandle)
 fileHandleForWritingAtPath path =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "fileHandleForWritingAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForWritingAtPathSelector (toNSString path)
 
 -- | @+ fileHandleForUpdatingAtPath:@
 fileHandleForUpdatingAtPath :: IsNSString path => path -> IO (Id NSFileHandle)
 fileHandleForUpdatingAtPath path =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "fileHandleForUpdatingAtPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForUpdatingAtPathSelector (toNSString path)
 
 -- | @+ fileHandleForReadingFromURL:error:@
 fileHandleForReadingFromURL_error :: (IsNSURL url, IsNSError error_) => url -> error_ -> IO (Id NSFileHandle)
 fileHandleForReadingFromURL_error url error_ =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "fileHandleForReadingFromURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForReadingFromURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @+ fileHandleForWritingToURL:error:@
 fileHandleForWritingToURL_error :: (IsNSURL url, IsNSError error_) => url -> error_ -> IO (Id NSFileHandle)
 fileHandleForWritingToURL_error url error_ =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "fileHandleForWritingToURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForWritingToURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @+ fileHandleForUpdatingURL:error:@
 fileHandleForUpdatingURL_error :: (IsNSURL url, IsNSError error_) => url -> error_ -> IO (Id NSFileHandle)
 fileHandleForUpdatingURL_error url error_ =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "fileHandleForUpdatingURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleForUpdatingURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @- availableData@
 availableData :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO (Id NSData)
-availableData nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "availableData") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableData nsFileHandle =
+  sendMessage nsFileHandle availableDataSelector
 
 -- | @- offsetInFile@
 offsetInFile :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO CULong
-offsetInFile nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "offsetInFile") retCULong []
+offsetInFile nsFileHandle =
+  sendMessage nsFileHandle offsetInFileSelector
 
 -- | @- fileDescriptor@
 fileDescriptor :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO CInt
-fileDescriptor nsFileHandle  =
-    sendMsg nsFileHandle (mkSelector "fileDescriptor") retCInt []
+fileDescriptor nsFileHandle =
+  sendMessage nsFileHandle fileDescriptorSelector
 
 -- | @- readabilityHandler@
 readabilityHandler :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO (Ptr ())
-readabilityHandler nsFileHandle  =
-    fmap castPtr $ sendMsg nsFileHandle (mkSelector "readabilityHandler") (retPtr retVoid) []
+readabilityHandler nsFileHandle =
+  sendMessage nsFileHandle readabilityHandlerSelector
 
 -- | @- setReadabilityHandler:@
 setReadabilityHandler :: IsNSFileHandle nsFileHandle => nsFileHandle -> Ptr () -> IO ()
-setReadabilityHandler nsFileHandle  value =
-    sendMsg nsFileHandle (mkSelector "setReadabilityHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setReadabilityHandler nsFileHandle value =
+  sendMessage nsFileHandle setReadabilityHandlerSelector value
 
 -- | @- writeabilityHandler@
 writeabilityHandler :: IsNSFileHandle nsFileHandle => nsFileHandle -> IO (Ptr ())
-writeabilityHandler nsFileHandle  =
-    fmap castPtr $ sendMsg nsFileHandle (mkSelector "writeabilityHandler") (retPtr retVoid) []
+writeabilityHandler nsFileHandle =
+  sendMessage nsFileHandle writeabilityHandlerSelector
 
 -- | @- setWriteabilityHandler:@
 setWriteabilityHandler :: IsNSFileHandle nsFileHandle => nsFileHandle -> Ptr () -> IO ()
-setWriteabilityHandler nsFileHandle  value =
-    sendMsg nsFileHandle (mkSelector "setWriteabilityHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setWriteabilityHandler nsFileHandle value =
+  sendMessage nsFileHandle setWriteabilityHandlerSelector value
 
 -- | @+ fileHandleWithStandardInput@
 fileHandleWithStandardInput :: IO (Id NSFileHandle)
 fileHandleWithStandardInput  =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    sendClassMsg cls' (mkSelector "fileHandleWithStandardInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleWithStandardInputSelector
 
 -- | @+ fileHandleWithStandardOutput@
 fileHandleWithStandardOutput :: IO (Id NSFileHandle)
 fileHandleWithStandardOutput  =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    sendClassMsg cls' (mkSelector "fileHandleWithStandardOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleWithStandardOutputSelector
 
 -- | @+ fileHandleWithStandardError@
 fileHandleWithStandardError :: IO (Id NSFileHandle)
 fileHandleWithStandardError  =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    sendClassMsg cls' (mkSelector "fileHandleWithStandardError") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleWithStandardErrorSelector
 
 -- | @+ fileHandleWithNullDevice@
 fileHandleWithNullDevice :: IO (Id NSFileHandle)
 fileHandleWithNullDevice  =
   do
     cls' <- getRequiredClass "NSFileHandle"
-    sendClassMsg cls' (mkSelector "fileHandleWithNullDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fileHandleWithNullDeviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileDescriptor:closeOnDealloc:@
-initWithFileDescriptor_closeOnDeallocSelector :: Selector
+initWithFileDescriptor_closeOnDeallocSelector :: Selector '[CInt, Bool] (Id NSFileHandle)
 initWithFileDescriptor_closeOnDeallocSelector = mkSelector "initWithFileDescriptor:closeOnDealloc:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSFileHandle)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @readDataToEndOfFileAndReturnError:@
-readDataToEndOfFileAndReturnErrorSelector :: Selector
+readDataToEndOfFileAndReturnErrorSelector :: Selector '[Id NSError] (Id NSData)
 readDataToEndOfFileAndReturnErrorSelector = mkSelector "readDataToEndOfFileAndReturnError:"
 
 -- | @Selector@ for @readDataUpToLength:error:@
-readDataUpToLength_errorSelector :: Selector
+readDataUpToLength_errorSelector :: Selector '[CULong, Id NSError] (Id NSData)
 readDataUpToLength_errorSelector = mkSelector "readDataUpToLength:error:"
 
 -- | @Selector@ for @writeData:error:@
-writeData_errorSelector :: Selector
+writeData_errorSelector :: Selector '[Id NSData, Id NSError] Bool
 writeData_errorSelector = mkSelector "writeData:error:"
 
 -- | @Selector@ for @getOffset:error:@
-getOffset_errorSelector :: Selector
+getOffset_errorSelector :: Selector '[Ptr CULong, Id NSError] Bool
 getOffset_errorSelector = mkSelector "getOffset:error:"
 
 -- | @Selector@ for @seekToEndReturningOffset:error:@
-seekToEndReturningOffset_errorSelector :: Selector
+seekToEndReturningOffset_errorSelector :: Selector '[Ptr CULong, Id NSError] Bool
 seekToEndReturningOffset_errorSelector = mkSelector "seekToEndReturningOffset:error:"
 
 -- | @Selector@ for @seekToOffset:error:@
-seekToOffset_errorSelector :: Selector
+seekToOffset_errorSelector :: Selector '[CULong, Id NSError] Bool
 seekToOffset_errorSelector = mkSelector "seekToOffset:error:"
 
 -- | @Selector@ for @truncateAtOffset:error:@
-truncateAtOffset_errorSelector :: Selector
+truncateAtOffset_errorSelector :: Selector '[CULong, Id NSError] Bool
 truncateAtOffset_errorSelector = mkSelector "truncateAtOffset:error:"
 
 -- | @Selector@ for @synchronizeAndReturnError:@
-synchronizeAndReturnErrorSelector :: Selector
+synchronizeAndReturnErrorSelector :: Selector '[Id NSError] Bool
 synchronizeAndReturnErrorSelector = mkSelector "synchronizeAndReturnError:"
 
 -- | @Selector@ for @closeAndReturnError:@
-closeAndReturnErrorSelector :: Selector
+closeAndReturnErrorSelector :: Selector '[Id NSError] Bool
 closeAndReturnErrorSelector = mkSelector "closeAndReturnError:"
 
 -- | @Selector@ for @readDataToEndOfFile@
-readDataToEndOfFileSelector :: Selector
+readDataToEndOfFileSelector :: Selector '[] (Id NSData)
 readDataToEndOfFileSelector = mkSelector "readDataToEndOfFile"
 
 -- | @Selector@ for @readDataOfLength:@
-readDataOfLengthSelector :: Selector
+readDataOfLengthSelector :: Selector '[CULong] (Id NSData)
 readDataOfLengthSelector = mkSelector "readDataOfLength:"
 
 -- | @Selector@ for @writeData:@
-writeDataSelector :: Selector
+writeDataSelector :: Selector '[Id NSData] ()
 writeDataSelector = mkSelector "writeData:"
 
 -- | @Selector@ for @seekToEndOfFile@
-seekToEndOfFileSelector :: Selector
+seekToEndOfFileSelector :: Selector '[] CULong
 seekToEndOfFileSelector = mkSelector "seekToEndOfFile"
 
 -- | @Selector@ for @seekToFileOffset:@
-seekToFileOffsetSelector :: Selector
+seekToFileOffsetSelector :: Selector '[CULong] ()
 seekToFileOffsetSelector = mkSelector "seekToFileOffset:"
 
 -- | @Selector@ for @truncateFileAtOffset:@
-truncateFileAtOffsetSelector :: Selector
+truncateFileAtOffsetSelector :: Selector '[CULong] ()
 truncateFileAtOffsetSelector = mkSelector "truncateFileAtOffset:"
 
 -- | @Selector@ for @synchronizeFile@
-synchronizeFileSelector :: Selector
+synchronizeFileSelector :: Selector '[] ()
 synchronizeFileSelector = mkSelector "synchronizeFile"
 
 -- | @Selector@ for @closeFile@
-closeFileSelector :: Selector
+closeFileSelector :: Selector '[] ()
 closeFileSelector = mkSelector "closeFile"
 
 -- | @Selector@ for @initWithFileDescriptor:@
-initWithFileDescriptorSelector :: Selector
+initWithFileDescriptorSelector :: Selector '[CInt] (Id NSFileHandle)
 initWithFileDescriptorSelector = mkSelector "initWithFileDescriptor:"
 
 -- | @Selector@ for @readInBackgroundAndNotifyForModes:@
-readInBackgroundAndNotifyForModesSelector :: Selector
+readInBackgroundAndNotifyForModesSelector :: Selector '[Id NSArray] ()
 readInBackgroundAndNotifyForModesSelector = mkSelector "readInBackgroundAndNotifyForModes:"
 
 -- | @Selector@ for @readInBackgroundAndNotify@
-readInBackgroundAndNotifySelector :: Selector
+readInBackgroundAndNotifySelector :: Selector '[] ()
 readInBackgroundAndNotifySelector = mkSelector "readInBackgroundAndNotify"
 
 -- | @Selector@ for @readToEndOfFileInBackgroundAndNotifyForModes:@
-readToEndOfFileInBackgroundAndNotifyForModesSelector :: Selector
+readToEndOfFileInBackgroundAndNotifyForModesSelector :: Selector '[Id NSArray] ()
 readToEndOfFileInBackgroundAndNotifyForModesSelector = mkSelector "readToEndOfFileInBackgroundAndNotifyForModes:"
 
 -- | @Selector@ for @readToEndOfFileInBackgroundAndNotify@
-readToEndOfFileInBackgroundAndNotifySelector :: Selector
+readToEndOfFileInBackgroundAndNotifySelector :: Selector '[] ()
 readToEndOfFileInBackgroundAndNotifySelector = mkSelector "readToEndOfFileInBackgroundAndNotify"
 
 -- | @Selector@ for @acceptConnectionInBackgroundAndNotifyForModes:@
-acceptConnectionInBackgroundAndNotifyForModesSelector :: Selector
+acceptConnectionInBackgroundAndNotifyForModesSelector :: Selector '[Id NSArray] ()
 acceptConnectionInBackgroundAndNotifyForModesSelector = mkSelector "acceptConnectionInBackgroundAndNotifyForModes:"
 
 -- | @Selector@ for @acceptConnectionInBackgroundAndNotify@
-acceptConnectionInBackgroundAndNotifySelector :: Selector
+acceptConnectionInBackgroundAndNotifySelector :: Selector '[] ()
 acceptConnectionInBackgroundAndNotifySelector = mkSelector "acceptConnectionInBackgroundAndNotify"
 
 -- | @Selector@ for @waitForDataInBackgroundAndNotifyForModes:@
-waitForDataInBackgroundAndNotifyForModesSelector :: Selector
+waitForDataInBackgroundAndNotifyForModesSelector :: Selector '[Id NSArray] ()
 waitForDataInBackgroundAndNotifyForModesSelector = mkSelector "waitForDataInBackgroundAndNotifyForModes:"
 
 -- | @Selector@ for @waitForDataInBackgroundAndNotify@
-waitForDataInBackgroundAndNotifySelector :: Selector
+waitForDataInBackgroundAndNotifySelector :: Selector '[] ()
 waitForDataInBackgroundAndNotifySelector = mkSelector "waitForDataInBackgroundAndNotify"
 
 -- | @Selector@ for @fileHandleForReadingAtPath:@
-fileHandleForReadingAtPathSelector :: Selector
+fileHandleForReadingAtPathSelector :: Selector '[Id NSString] (Id NSFileHandle)
 fileHandleForReadingAtPathSelector = mkSelector "fileHandleForReadingAtPath:"
 
 -- | @Selector@ for @fileHandleForWritingAtPath:@
-fileHandleForWritingAtPathSelector :: Selector
+fileHandleForWritingAtPathSelector :: Selector '[Id NSString] (Id NSFileHandle)
 fileHandleForWritingAtPathSelector = mkSelector "fileHandleForWritingAtPath:"
 
 -- | @Selector@ for @fileHandleForUpdatingAtPath:@
-fileHandleForUpdatingAtPathSelector :: Selector
+fileHandleForUpdatingAtPathSelector :: Selector '[Id NSString] (Id NSFileHandle)
 fileHandleForUpdatingAtPathSelector = mkSelector "fileHandleForUpdatingAtPath:"
 
 -- | @Selector@ for @fileHandleForReadingFromURL:error:@
-fileHandleForReadingFromURL_errorSelector :: Selector
+fileHandleForReadingFromURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id NSFileHandle)
 fileHandleForReadingFromURL_errorSelector = mkSelector "fileHandleForReadingFromURL:error:"
 
 -- | @Selector@ for @fileHandleForWritingToURL:error:@
-fileHandleForWritingToURL_errorSelector :: Selector
+fileHandleForWritingToURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id NSFileHandle)
 fileHandleForWritingToURL_errorSelector = mkSelector "fileHandleForWritingToURL:error:"
 
 -- | @Selector@ for @fileHandleForUpdatingURL:error:@
-fileHandleForUpdatingURL_errorSelector :: Selector
+fileHandleForUpdatingURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id NSFileHandle)
 fileHandleForUpdatingURL_errorSelector = mkSelector "fileHandleForUpdatingURL:error:"
 
 -- | @Selector@ for @availableData@
-availableDataSelector :: Selector
+availableDataSelector :: Selector '[] (Id NSData)
 availableDataSelector = mkSelector "availableData"
 
 -- | @Selector@ for @offsetInFile@
-offsetInFileSelector :: Selector
+offsetInFileSelector :: Selector '[] CULong
 offsetInFileSelector = mkSelector "offsetInFile"
 
 -- | @Selector@ for @fileDescriptor@
-fileDescriptorSelector :: Selector
+fileDescriptorSelector :: Selector '[] CInt
 fileDescriptorSelector = mkSelector "fileDescriptor"
 
 -- | @Selector@ for @readabilityHandler@
-readabilityHandlerSelector :: Selector
+readabilityHandlerSelector :: Selector '[] (Ptr ())
 readabilityHandlerSelector = mkSelector "readabilityHandler"
 
 -- | @Selector@ for @setReadabilityHandler:@
-setReadabilityHandlerSelector :: Selector
+setReadabilityHandlerSelector :: Selector '[Ptr ()] ()
 setReadabilityHandlerSelector = mkSelector "setReadabilityHandler:"
 
 -- | @Selector@ for @writeabilityHandler@
-writeabilityHandlerSelector :: Selector
+writeabilityHandlerSelector :: Selector '[] (Ptr ())
 writeabilityHandlerSelector = mkSelector "writeabilityHandler"
 
 -- | @Selector@ for @setWriteabilityHandler:@
-setWriteabilityHandlerSelector :: Selector
+setWriteabilityHandlerSelector :: Selector '[Ptr ()] ()
 setWriteabilityHandlerSelector = mkSelector "setWriteabilityHandler:"
 
 -- | @Selector@ for @fileHandleWithStandardInput@
-fileHandleWithStandardInputSelector :: Selector
+fileHandleWithStandardInputSelector :: Selector '[] (Id NSFileHandle)
 fileHandleWithStandardInputSelector = mkSelector "fileHandleWithStandardInput"
 
 -- | @Selector@ for @fileHandleWithStandardOutput@
-fileHandleWithStandardOutputSelector :: Selector
+fileHandleWithStandardOutputSelector :: Selector '[] (Id NSFileHandle)
 fileHandleWithStandardOutputSelector = mkSelector "fileHandleWithStandardOutput"
 
 -- | @Selector@ for @fileHandleWithStandardError@
-fileHandleWithStandardErrorSelector :: Selector
+fileHandleWithStandardErrorSelector :: Selector '[] (Id NSFileHandle)
 fileHandleWithStandardErrorSelector = mkSelector "fileHandleWithStandardError"
 
 -- | @Selector@ for @fileHandleWithNullDevice@
-fileHandleWithNullDeviceSelector :: Selector
+fileHandleWithNullDeviceSelector :: Selector '[] (Id NSFileHandle)
 fileHandleWithNullDeviceSelector = mkSelector "fileHandleWithNullDevice"
 

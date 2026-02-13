@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,9 +15,9 @@ module ObjC.MetalPerformanceShaders.MPSImageConversion
   , initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfo
   , sourceAlpha
   , destinationAlpha
+  , destinationAlphaSelector
   , initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfoSelector
   , sourceAlphaSelector
-  , destinationAlphaSelector
 
   -- * Enum types
   , MPSAlphaType(MPSAlphaType)
@@ -26,15 +27,11 @@ module ObjC.MetalPerformanceShaders.MPSImageConversion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:srcAlpha:destAlpha:backgroundColor:conversionInfo:@
 initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfo :: IsMPSImageConversion mpsImageConversion => mpsImageConversion -> RawId -> MPSAlphaType -> MPSAlphaType -> Ptr CDouble -> RawId -> IO (Id MPSImageConversion)
-initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfo mpsImageConversion  device srcAlpha destAlpha backgroundColor conversionInfo =
-    sendMsg mpsImageConversion (mkSelector "initWithDevice:srcAlpha:destAlpha:backgroundColor:conversionInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (coerce srcAlpha), argCULong (coerce destAlpha), argPtr backgroundColor, argPtr (castPtr (unRawId conversionInfo) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfo mpsImageConversion device srcAlpha destAlpha backgroundColor conversionInfo =
+  sendOwnedMessage mpsImageConversion initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfoSelector device srcAlpha destAlpha backgroundColor conversionInfo
 
 -- | sourceAlpha
 --
@@ -71,8 +68,8 @@ initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfo mpsImageConvers
 --
 -- ObjC selector: @- sourceAlpha@
 sourceAlpha :: IsMPSImageConversion mpsImageConversion => mpsImageConversion -> IO MPSAlphaType
-sourceAlpha mpsImageConversion  =
-    fmap (coerce :: CULong -> MPSAlphaType) $ sendMsg mpsImageConversion (mkSelector "sourceAlpha") retCULong []
+sourceAlpha mpsImageConversion =
+  sendMessage mpsImageConversion sourceAlphaSelector
 
 -- | destinationAlpha
 --
@@ -82,22 +79,22 @@ sourceAlpha mpsImageConversion  =
 --
 -- ObjC selector: @- destinationAlpha@
 destinationAlpha :: IsMPSImageConversion mpsImageConversion => mpsImageConversion -> IO MPSAlphaType
-destinationAlpha mpsImageConversion  =
-    fmap (coerce :: CULong -> MPSAlphaType) $ sendMsg mpsImageConversion (mkSelector "destinationAlpha") retCULong []
+destinationAlpha mpsImageConversion =
+  sendMessage mpsImageConversion destinationAlphaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:srcAlpha:destAlpha:backgroundColor:conversionInfo:@
-initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfoSelector :: Selector
+initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfoSelector :: Selector '[RawId, MPSAlphaType, MPSAlphaType, Ptr CDouble, RawId] (Id MPSImageConversion)
 initWithDevice_srcAlpha_destAlpha_backgroundColor_conversionInfoSelector = mkSelector "initWithDevice:srcAlpha:destAlpha:backgroundColor:conversionInfo:"
 
 -- | @Selector@ for @sourceAlpha@
-sourceAlphaSelector :: Selector
+sourceAlphaSelector :: Selector '[] MPSAlphaType
 sourceAlphaSelector = mkSelector "sourceAlpha"
 
 -- | @Selector@ for @destinationAlpha@
-destinationAlphaSelector :: Selector
+destinationAlphaSelector :: Selector '[] MPSAlphaType
 destinationAlphaSelector = mkSelector "destinationAlpha"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Matter.MTROperationalCertificateChain
   , setRootCertificate
   , adminSubject
   , setAdminSubject
-  , initSelector
-  , newSelector
-  , initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector
-  , operationalCertificateSelector
-  , setOperationalCertificateSelector
-  , intermediateCertificateSelector
-  , setIntermediateCertificateSelector
-  , rootCertificateSelector
-  , setRootCertificateSelector
   , adminSubjectSelector
+  , initSelector
+  , initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector
+  , intermediateCertificateSelector
+  , newSelector
+  , operationalCertificateSelector
+  , rootCertificateSelector
   , setAdminSubjectSelector
+  , setIntermediateCertificateSelector
+  , setOperationalCertificateSelector
+  , setRootCertificateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,122 +48,114 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTROperationalCertificateChain mtrOperationalCertificateChain => mtrOperationalCertificateChain -> IO (Id MTROperationalCertificateChain)
-init_ mtrOperationalCertificateChain  =
-    sendMsg mtrOperationalCertificateChain (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrOperationalCertificateChain =
+  sendOwnedMessage mtrOperationalCertificateChain initSelector
 
 -- | @+ new@
 new :: IO (Id MTROperationalCertificateChain)
 new  =
   do
     cls' <- getRequiredClass "MTROperationalCertificateChain"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithOperationalCertificate:intermediateCertificate:rootCertificate:adminSubject:@
 initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubject :: (IsMTROperationalCertificateChain mtrOperationalCertificateChain, IsNSData operationalCertificate, IsNSData intermediateCertificate, IsNSData rootCertificate, IsNSNumber adminSubject) => mtrOperationalCertificateChain -> operationalCertificate -> intermediateCertificate -> rootCertificate -> adminSubject -> IO (Id MTROperationalCertificateChain)
-initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubject mtrOperationalCertificateChain  operationalCertificate intermediateCertificate rootCertificate adminSubject =
-  withObjCPtr operationalCertificate $ \raw_operationalCertificate ->
-    withObjCPtr intermediateCertificate $ \raw_intermediateCertificate ->
-      withObjCPtr rootCertificate $ \raw_rootCertificate ->
-        withObjCPtr adminSubject $ \raw_adminSubject ->
-            sendMsg mtrOperationalCertificateChain (mkSelector "initWithOperationalCertificate:intermediateCertificate:rootCertificate:adminSubject:") (retPtr retVoid) [argPtr (castPtr raw_operationalCertificate :: Ptr ()), argPtr (castPtr raw_intermediateCertificate :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr (castPtr raw_adminSubject :: Ptr ())] >>= ownedObject . castPtr
+initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubject mtrOperationalCertificateChain operationalCertificate intermediateCertificate rootCertificate adminSubject =
+  sendOwnedMessage mtrOperationalCertificateChain initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector (toNSData operationalCertificate) (toNSData intermediateCertificate) (toNSData rootCertificate) (toNSNumber adminSubject)
 
 -- | @- operationalCertificate@
 operationalCertificate :: IsMTROperationalCertificateChain mtrOperationalCertificateChain => mtrOperationalCertificateChain -> IO (Id NSData)
-operationalCertificate mtrOperationalCertificateChain  =
-    sendMsg mtrOperationalCertificateChain (mkSelector "operationalCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalCertificate mtrOperationalCertificateChain =
+  sendMessage mtrOperationalCertificateChain operationalCertificateSelector
 
 -- | @- setOperationalCertificate:@
 setOperationalCertificate :: (IsMTROperationalCertificateChain mtrOperationalCertificateChain, IsNSData value) => mtrOperationalCertificateChain -> value -> IO ()
-setOperationalCertificate mtrOperationalCertificateChain  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCertificateChain (mkSelector "setOperationalCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationalCertificate mtrOperationalCertificateChain value =
+  sendMessage mtrOperationalCertificateChain setOperationalCertificateSelector (toNSData value)
 
 -- | A nil intermediateCertificate means there is no intermediate.
 --
 -- ObjC selector: @- intermediateCertificate@
 intermediateCertificate :: IsMTROperationalCertificateChain mtrOperationalCertificateChain => mtrOperationalCertificateChain -> IO (Id NSData)
-intermediateCertificate mtrOperationalCertificateChain  =
-    sendMsg mtrOperationalCertificateChain (mkSelector "intermediateCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+intermediateCertificate mtrOperationalCertificateChain =
+  sendMessage mtrOperationalCertificateChain intermediateCertificateSelector
 
 -- | A nil intermediateCertificate means there is no intermediate.
 --
 -- ObjC selector: @- setIntermediateCertificate:@
 setIntermediateCertificate :: (IsMTROperationalCertificateChain mtrOperationalCertificateChain, IsNSData value) => mtrOperationalCertificateChain -> value -> IO ()
-setIntermediateCertificate mtrOperationalCertificateChain  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCertificateChain (mkSelector "setIntermediateCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIntermediateCertificate mtrOperationalCertificateChain value =
+  sendMessage mtrOperationalCertificateChain setIntermediateCertificateSelector (toNSData value)
 
 -- | @- rootCertificate@
 rootCertificate :: IsMTROperationalCertificateChain mtrOperationalCertificateChain => mtrOperationalCertificateChain -> IO (Id NSData)
-rootCertificate mtrOperationalCertificateChain  =
-    sendMsg mtrOperationalCertificateChain (mkSelector "rootCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootCertificate mtrOperationalCertificateChain =
+  sendMessage mtrOperationalCertificateChain rootCertificateSelector
 
 -- | @- setRootCertificate:@
 setRootCertificate :: (IsMTROperationalCertificateChain mtrOperationalCertificateChain, IsNSData value) => mtrOperationalCertificateChain -> value -> IO ()
-setRootCertificate mtrOperationalCertificateChain  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCertificateChain (mkSelector "setRootCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootCertificate mtrOperationalCertificateChain value =
+  sendMessage mtrOperationalCertificateChain setRootCertificateSelector (toNSData value)
 
 -- | adminSubject is passed to the device as part of the AddNOC command.  A nil adminSubject means the node id of the relevant MTRDeviceController will be used.
 --
 -- ObjC selector: @- adminSubject@
 adminSubject :: IsMTROperationalCertificateChain mtrOperationalCertificateChain => mtrOperationalCertificateChain -> IO (Id NSNumber)
-adminSubject mtrOperationalCertificateChain  =
-    sendMsg mtrOperationalCertificateChain (mkSelector "adminSubject") (retPtr retVoid) [] >>= retainedObject . castPtr
+adminSubject mtrOperationalCertificateChain =
+  sendMessage mtrOperationalCertificateChain adminSubjectSelector
 
 -- | adminSubject is passed to the device as part of the AddNOC command.  A nil adminSubject means the node id of the relevant MTRDeviceController will be used.
 --
 -- ObjC selector: @- setAdminSubject:@
 setAdminSubject :: (IsMTROperationalCertificateChain mtrOperationalCertificateChain, IsNSNumber value) => mtrOperationalCertificateChain -> value -> IO ()
-setAdminSubject mtrOperationalCertificateChain  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCertificateChain (mkSelector "setAdminSubject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdminSubject mtrOperationalCertificateChain value =
+  sendMessage mtrOperationalCertificateChain setAdminSubjectSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTROperationalCertificateChain)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTROperationalCertificateChain)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithOperationalCertificate:intermediateCertificate:rootCertificate:adminSubject:@
-initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector :: Selector
+initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector :: Selector '[Id NSData, Id NSData, Id NSData, Id NSNumber] (Id MTROperationalCertificateChain)
 initWithOperationalCertificate_intermediateCertificate_rootCertificate_adminSubjectSelector = mkSelector "initWithOperationalCertificate:intermediateCertificate:rootCertificate:adminSubject:"
 
 -- | @Selector@ for @operationalCertificate@
-operationalCertificateSelector :: Selector
+operationalCertificateSelector :: Selector '[] (Id NSData)
 operationalCertificateSelector = mkSelector "operationalCertificate"
 
 -- | @Selector@ for @setOperationalCertificate:@
-setOperationalCertificateSelector :: Selector
+setOperationalCertificateSelector :: Selector '[Id NSData] ()
 setOperationalCertificateSelector = mkSelector "setOperationalCertificate:"
 
 -- | @Selector@ for @intermediateCertificate@
-intermediateCertificateSelector :: Selector
+intermediateCertificateSelector :: Selector '[] (Id NSData)
 intermediateCertificateSelector = mkSelector "intermediateCertificate"
 
 -- | @Selector@ for @setIntermediateCertificate:@
-setIntermediateCertificateSelector :: Selector
+setIntermediateCertificateSelector :: Selector '[Id NSData] ()
 setIntermediateCertificateSelector = mkSelector "setIntermediateCertificate:"
 
 -- | @Selector@ for @rootCertificate@
-rootCertificateSelector :: Selector
+rootCertificateSelector :: Selector '[] (Id NSData)
 rootCertificateSelector = mkSelector "rootCertificate"
 
 -- | @Selector@ for @setRootCertificate:@
-setRootCertificateSelector :: Selector
+setRootCertificateSelector :: Selector '[Id NSData] ()
 setRootCertificateSelector = mkSelector "setRootCertificate:"
 
 -- | @Selector@ for @adminSubject@
-adminSubjectSelector :: Selector
+adminSubjectSelector :: Selector '[] (Id NSNumber)
 adminSubjectSelector = mkSelector "adminSubject"
 
 -- | @Selector@ for @setAdminSubject:@
-setAdminSubjectSelector :: Selector
+setAdminSubjectSelector :: Selector '[Id NSNumber] ()
 setAdminSubjectSelector = mkSelector "setAdminSubject:"
 

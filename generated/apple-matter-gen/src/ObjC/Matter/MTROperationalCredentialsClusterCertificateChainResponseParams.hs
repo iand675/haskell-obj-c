@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Matter.MTROperationalCredentialsClusterCertificateChainResponseParam
   , setCertificate
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
   , certificateSelector
+  , initWithResponseValue_errorSelector
   , setCertificateSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTROperationalCredentialsClusterCertificateChainResponseParams mtrOperationalCredentialsClusterCertificateChainResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrOperationalCredentialsClusterCertificateChainResponseParams -> responseValue -> error_ -> IO (Id MTROperationalCredentialsClusterCertificateChainResponseParams)
-initWithResponseValue_error mtrOperationalCredentialsClusterCertificateChainResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrOperationalCredentialsClusterCertificateChainResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrOperationalCredentialsClusterCertificateChainResponseParams responseValue error_ =
+  sendOwnedMessage mtrOperationalCredentialsClusterCertificateChainResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- certificate@
 certificate :: IsMTROperationalCredentialsClusterCertificateChainResponseParams mtrOperationalCredentialsClusterCertificateChainResponseParams => mtrOperationalCredentialsClusterCertificateChainResponseParams -> IO (Id NSData)
-certificate mtrOperationalCredentialsClusterCertificateChainResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterCertificateChainResponseParams (mkSelector "certificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificate mtrOperationalCredentialsClusterCertificateChainResponseParams =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainResponseParams certificateSelector
 
 -- | @- setCertificate:@
 setCertificate :: (IsMTROperationalCredentialsClusterCertificateChainResponseParams mtrOperationalCredentialsClusterCertificateChainResponseParams, IsNSData value) => mtrOperationalCredentialsClusterCertificateChainResponseParams -> value -> IO ()
-setCertificate mtrOperationalCredentialsClusterCertificateChainResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCertificateChainResponseParams (mkSelector "setCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificate mtrOperationalCredentialsClusterCertificateChainResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainResponseParams setCertificateSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +61,8 @@ setCertificate mtrOperationalCredentialsClusterCertificateChainResponseParams  v
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterCertificateChainResponseParams mtrOperationalCredentialsClusterCertificateChainResponseParams => mtrOperationalCredentialsClusterCertificateChainResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterCertificateChainResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainResponseParams =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,31 +72,30 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainResponsePar
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterCertificateChainResponseParams mtrOperationalCredentialsClusterCertificateChainResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterCertificateChainResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCertificateChainResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROperationalCredentialsClusterCertificateChainResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @certificate@
-certificateSelector :: Selector
+certificateSelector :: Selector '[] (Id NSData)
 certificateSelector = mkSelector "certificate"
 
 -- | @Selector@ for @setCertificate:@
-setCertificateSelector :: Selector
+setCertificateSelector :: Selector '[Id NSData] ()
 setCertificateSelector = mkSelector "setCertificate:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

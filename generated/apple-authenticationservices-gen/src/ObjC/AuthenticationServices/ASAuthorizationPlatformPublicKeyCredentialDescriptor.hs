@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialDes
   , initWithCredentialID
   , new
   , init_
+  , initSelector
   , initWithCredentialIDSelector
   , newSelector
-  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,35 +30,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCredentialID:@
 initWithCredentialID :: (IsASAuthorizationPlatformPublicKeyCredentialDescriptor asAuthorizationPlatformPublicKeyCredentialDescriptor, IsNSData credentialID) => asAuthorizationPlatformPublicKeyCredentialDescriptor -> credentialID -> IO (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
-initWithCredentialID asAuthorizationPlatformPublicKeyCredentialDescriptor  credentialID =
-  withObjCPtr credentialID $ \raw_credentialID ->
-      sendMsg asAuthorizationPlatformPublicKeyCredentialDescriptor (mkSelector "initWithCredentialID:") (retPtr retVoid) [argPtr (castPtr raw_credentialID :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialID asAuthorizationPlatformPublicKeyCredentialDescriptor credentialID =
+  sendOwnedMessage asAuthorizationPlatformPublicKeyCredentialDescriptor initWithCredentialIDSelector (toNSData credentialID)
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationPlatformPublicKeyCredentialDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationPlatformPublicKeyCredentialDescriptor asAuthorizationPlatformPublicKeyCredentialDescriptor => asAuthorizationPlatformPublicKeyCredentialDescriptor -> IO (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
-init_ asAuthorizationPlatformPublicKeyCredentialDescriptor  =
-    sendMsg asAuthorizationPlatformPublicKeyCredentialDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationPlatformPublicKeyCredentialDescriptor =
+  sendOwnedMessage asAuthorizationPlatformPublicKeyCredentialDescriptor initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCredentialID:@
-initWithCredentialIDSelector :: Selector
+initWithCredentialIDSelector :: Selector '[Id NSData] (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
 initWithCredentialIDSelector = mkSelector "initWithCredentialID:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationPlatformPublicKeyCredentialDescriptor)
 initSelector = mkSelector "init"
 

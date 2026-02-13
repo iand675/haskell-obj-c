@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Matter.MTREventPath
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,39 +35,33 @@ eventPathWithEndpointID_clusterID_eventID :: (IsNSNumber endpointID, IsNSNumber 
 eventPathWithEndpointID_clusterID_eventID endpointID clusterID eventID =
   do
     cls' <- getRequiredClass "MTREventPath"
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr clusterID $ \raw_clusterID ->
-        withObjCPtr eventID $ \raw_eventID ->
-          sendClassMsg cls' (mkSelector "eventPathWithEndpointID:clusterID:eventID:") (retPtr retVoid) [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_eventID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eventPathWithEndpointID_clusterID_eventIDSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber eventID)
 
 -- | @+ eventPathWithEndpointId:clusterId:eventId:@
 eventPathWithEndpointId_clusterId_eventId :: (IsNSNumber endpointId, IsNSNumber clusterId, IsNSNumber eventId) => endpointId -> clusterId -> eventId -> IO (Id MTREventPath)
 eventPathWithEndpointId_clusterId_eventId endpointId clusterId eventId =
   do
     cls' <- getRequiredClass "MTREventPath"
-    withObjCPtr endpointId $ \raw_endpointId ->
-      withObjCPtr clusterId $ \raw_clusterId ->
-        withObjCPtr eventId $ \raw_eventId ->
-          sendClassMsg cls' (mkSelector "eventPathWithEndpointId:clusterId:eventId:") (retPtr retVoid) [argPtr (castPtr raw_endpointId :: Ptr ()), argPtr (castPtr raw_clusterId :: Ptr ()), argPtr (castPtr raw_eventId :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eventPathWithEndpointId_clusterId_eventIdSelector (toNSNumber endpointId) (toNSNumber clusterId) (toNSNumber eventId)
 
 -- | @- event@
 event :: IsMTREventPath mtrEventPath => mtrEventPath -> IO (Id NSNumber)
-event mtrEventPath  =
-    sendMsg mtrEventPath (mkSelector "event") (retPtr retVoid) [] >>= retainedObject . castPtr
+event mtrEventPath =
+  sendMessage mtrEventPath eventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @eventPathWithEndpointID:clusterID:eventID:@
-eventPathWithEndpointID_clusterID_eventIDSelector :: Selector
+eventPathWithEndpointID_clusterID_eventIDSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber] (Id MTREventPath)
 eventPathWithEndpointID_clusterID_eventIDSelector = mkSelector "eventPathWithEndpointID:clusterID:eventID:"
 
 -- | @Selector@ for @eventPathWithEndpointId:clusterId:eventId:@
-eventPathWithEndpointId_clusterId_eventIdSelector :: Selector
+eventPathWithEndpointId_clusterId_eventIdSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber] (Id MTREventPath)
 eventPathWithEndpointId_clusterId_eventIdSelector = mkSelector "eventPathWithEndpointId:clusterId:eventId:"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] (Id NSNumber)
 eventSelector = mkSelector "event"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,26 +34,26 @@ module ObjC.MetalPerformanceShaders.MPSImageDescriptor
   , setStorageMode
   , usage
   , setUsage
+  , channelFormatSelector
+  , copyWithZoneSelector
+  , cpuCacheModeSelector
+  , featureChannelsSelector
+  , heightSelector
   , imageDescriptorWithChannelFormat_width_height_featureChannelsSelector
   , imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usageSelector
-  , copyWithZoneSelector
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , featureChannelsSelector
-  , setFeatureChannelsSelector
   , numberOfImagesSelector
-  , setNumberOfImagesSelector
   , pixelFormatSelector
-  , channelFormatSelector
   , setChannelFormatSelector
-  , cpuCacheModeSelector
   , setCpuCacheModeSelector
-  , storageModeSelector
+  , setFeatureChannelsSelector
+  , setHeightSelector
+  , setNumberOfImagesSelector
   , setStorageModeSelector
-  , usageSelector
   , setUsageSelector
+  , setWidthSelector
+  , storageModeSelector
+  , usageSelector
+  , widthSelector
 
   -- * Enum types
   , MPSImageFeatureChannelFormat(MPSImageFeatureChannelFormat)
@@ -222,15 +223,11 @@ module ObjC.MetalPerformanceShaders.MPSImageDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -246,7 +243,7 @@ imageDescriptorWithChannelFormat_width_height_featureChannels :: MPSImageFeature
 imageDescriptorWithChannelFormat_width_height_featureChannels channelFormat width height featureChannels =
   do
     cls' <- getRequiredClass "MPSImageDescriptor"
-    sendClassMsg cls' (mkSelector "imageDescriptorWithChannelFormat:width:height:featureChannels:") (retPtr retVoid) [argCULong (coerce channelFormat), argCULong width, argCULong height, argCULong featureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' imageDescriptorWithChannelFormat_width_height_featureChannelsSelector channelFormat width height featureChannels
 
 -- | Create a MPSImageDescriptor for a read/write cnn image with option to set usage and batch size (numberOfImages).
 --
@@ -255,12 +252,12 @@ imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usa
 imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usage channelFormat width height featureChannels numberOfImages usage =
   do
     cls' <- getRequiredClass "MPSImageDescriptor"
-    sendClassMsg cls' (mkSelector "imageDescriptorWithChannelFormat:width:height:featureChannels:numberOfImages:usage:") (retPtr retVoid) [argCULong (coerce channelFormat), argCULong width, argCULong height, argCULong featureChannels, argCULong numberOfImages, argCULong (coerce usage)] >>= retainedObject . castPtr
+    sendClassMessage cls' imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usageSelector channelFormat width height featureChannels numberOfImages usage
 
 -- | @- copyWithZone:@
 copyWithZone :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> Ptr () -> IO (Id MPSImageDescriptor)
-copyWithZone mpsImageDescriptor  zone =
-    sendMsg mpsImageDescriptor (mkSelector "copyWithZone:") (retPtr retVoid) [argPtr zone] >>= ownedObject . castPtr
+copyWithZone mpsImageDescriptor zone =
+  sendOwnedMessage mpsImageDescriptor copyWithZoneSelector zone
 
 -- | width
 --
@@ -270,8 +267,8 @@ copyWithZone mpsImageDescriptor  zone =
 --
 -- ObjC selector: @- width@
 width :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO CULong
-width mpsImageDescriptor  =
-    sendMsg mpsImageDescriptor (mkSelector "width") retCULong []
+width mpsImageDescriptor =
+  sendMessage mpsImageDescriptor widthSelector
 
 -- | width
 --
@@ -281,8 +278,8 @@ width mpsImageDescriptor  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> CULong -> IO ()
-setWidth mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setWidth:") retVoid [argCULong value]
+setWidth mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setWidthSelector value
 
 -- | height
 --
@@ -292,8 +289,8 @@ setWidth mpsImageDescriptor  value =
 --
 -- ObjC selector: @- height@
 height :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO CULong
-height mpsImageDescriptor  =
-    sendMsg mpsImageDescriptor (mkSelector "height") retCULong []
+height mpsImageDescriptor =
+  sendMessage mpsImageDescriptor heightSelector
 
 -- | height
 --
@@ -303,8 +300,8 @@ height mpsImageDescriptor  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> CULong -> IO ()
-setHeight mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setHeight:") retVoid [argCULong value]
+setHeight mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setHeightSelector value
 
 -- | featureChannels
 --
@@ -312,8 +309,8 @@ setHeight mpsImageDescriptor  value =
 --
 -- ObjC selector: @- featureChannels@
 featureChannels :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO CULong
-featureChannels mpsImageDescriptor  =
-    sendMsg mpsImageDescriptor (mkSelector "featureChannels") retCULong []
+featureChannels mpsImageDescriptor =
+  sendMessage mpsImageDescriptor featureChannelsSelector
 
 -- | featureChannels
 --
@@ -321,8 +318,8 @@ featureChannels mpsImageDescriptor  =
 --
 -- ObjC selector: @- setFeatureChannels:@
 setFeatureChannels :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> CULong -> IO ()
-setFeatureChannels mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setFeatureChannels:") retVoid [argCULong value]
+setFeatureChannels mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setFeatureChannelsSelector value
 
 -- | numberOfImages
 --
@@ -330,8 +327,8 @@ setFeatureChannels mpsImageDescriptor  value =
 --
 -- ObjC selector: @- numberOfImages@
 numberOfImages :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO CULong
-numberOfImages mpsImageDescriptor  =
-    sendMsg mpsImageDescriptor (mkSelector "numberOfImages") retCULong []
+numberOfImages mpsImageDescriptor =
+  sendMessage mpsImageDescriptor numberOfImagesSelector
 
 -- | numberOfImages
 --
@@ -339,8 +336,8 @@ numberOfImages mpsImageDescriptor  =
 --
 -- ObjC selector: @- setNumberOfImages:@
 setNumberOfImages :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> CULong -> IO ()
-setNumberOfImages mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setNumberOfImages:") retVoid [argCULong value]
+setNumberOfImages mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setNumberOfImagesSelector value
 
 -- | pixelFormat
 --
@@ -348,8 +345,8 @@ setNumberOfImages mpsImageDescriptor  value =
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO MTLPixelFormat
-pixelFormat mpsImageDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mpsImageDescriptor (mkSelector "pixelFormat") retCULong []
+pixelFormat mpsImageDescriptor =
+  sendMessage mpsImageDescriptor pixelFormatSelector
 
 -- | channelFormat
 --
@@ -357,8 +354,8 @@ pixelFormat mpsImageDescriptor  =
 --
 -- ObjC selector: @- channelFormat@
 channelFormat :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO MPSImageFeatureChannelFormat
-channelFormat mpsImageDescriptor  =
-    fmap (coerce :: CULong -> MPSImageFeatureChannelFormat) $ sendMsg mpsImageDescriptor (mkSelector "channelFormat") retCULong []
+channelFormat mpsImageDescriptor =
+  sendMessage mpsImageDescriptor channelFormatSelector
 
 -- | channelFormat
 --
@@ -366,8 +363,8 @@ channelFormat mpsImageDescriptor  =
 --
 -- ObjC selector: @- setChannelFormat:@
 setChannelFormat :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> MPSImageFeatureChannelFormat -> IO ()
-setChannelFormat mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setChannelFormat:") retVoid [argCULong (coerce value)]
+setChannelFormat mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setChannelFormatSelector value
 
 -- | cpuCacheMode
 --
@@ -375,8 +372,8 @@ setChannelFormat mpsImageDescriptor  value =
 --
 -- ObjC selector: @- cpuCacheMode@
 cpuCacheMode :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO MTLCPUCacheMode
-cpuCacheMode mpsImageDescriptor  =
-    fmap (coerce :: CULong -> MTLCPUCacheMode) $ sendMsg mpsImageDescriptor (mkSelector "cpuCacheMode") retCULong []
+cpuCacheMode mpsImageDescriptor =
+  sendMessage mpsImageDescriptor cpuCacheModeSelector
 
 -- | cpuCacheMode
 --
@@ -384,8 +381,8 @@ cpuCacheMode mpsImageDescriptor  =
 --
 -- ObjC selector: @- setCpuCacheMode:@
 setCpuCacheMode :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> MTLCPUCacheMode -> IO ()
-setCpuCacheMode mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setCpuCacheMode:") retVoid [argCULong (coerce value)]
+setCpuCacheMode mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setCpuCacheModeSelector value
 
 -- | storageMode
 --
@@ -400,8 +397,8 @@ setCpuCacheMode mpsImageDescriptor  value =
 --
 -- ObjC selector: @- storageMode@
 storageMode :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO MTLStorageMode
-storageMode mpsImageDescriptor  =
-    fmap (coerce :: CULong -> MTLStorageMode) $ sendMsg mpsImageDescriptor (mkSelector "storageMode") retCULong []
+storageMode mpsImageDescriptor =
+  sendMessage mpsImageDescriptor storageModeSelector
 
 -- | storageMode
 --
@@ -416,8 +413,8 @@ storageMode mpsImageDescriptor  =
 --
 -- ObjC selector: @- setStorageMode:@
 setStorageMode :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> MTLStorageMode -> IO ()
-setStorageMode mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setStorageMode:") retVoid [argCULong (coerce value)]
+setStorageMode mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setStorageModeSelector value
 
 -- | usage
 --
@@ -425,8 +422,8 @@ setStorageMode mpsImageDescriptor  value =
 --
 -- ObjC selector: @- usage@
 usage :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> IO MTLTextureUsage
-usage mpsImageDescriptor  =
-    fmap (coerce :: CULong -> MTLTextureUsage) $ sendMsg mpsImageDescriptor (mkSelector "usage") retCULong []
+usage mpsImageDescriptor =
+  sendMessage mpsImageDescriptor usageSelector
 
 -- | usage
 --
@@ -434,90 +431,90 @@ usage mpsImageDescriptor  =
 --
 -- ObjC selector: @- setUsage:@
 setUsage :: IsMPSImageDescriptor mpsImageDescriptor => mpsImageDescriptor -> MTLTextureUsage -> IO ()
-setUsage mpsImageDescriptor  value =
-    sendMsg mpsImageDescriptor (mkSelector "setUsage:") retVoid [argCULong (coerce value)]
+setUsage mpsImageDescriptor value =
+  sendMessage mpsImageDescriptor setUsageSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageDescriptorWithChannelFormat:width:height:featureChannels:@
-imageDescriptorWithChannelFormat_width_height_featureChannelsSelector :: Selector
+imageDescriptorWithChannelFormat_width_height_featureChannelsSelector :: Selector '[MPSImageFeatureChannelFormat, CULong, CULong, CULong] (Id MPSImageDescriptor)
 imageDescriptorWithChannelFormat_width_height_featureChannelsSelector = mkSelector "imageDescriptorWithChannelFormat:width:height:featureChannels:"
 
 -- | @Selector@ for @imageDescriptorWithChannelFormat:width:height:featureChannels:numberOfImages:usage:@
-imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usageSelector :: Selector
+imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usageSelector :: Selector '[MPSImageFeatureChannelFormat, CULong, CULong, CULong, CULong, MTLTextureUsage] (Id MPSImageDescriptor)
 imageDescriptorWithChannelFormat_width_height_featureChannels_numberOfImages_usageSelector = mkSelector "imageDescriptorWithChannelFormat:width:height:featureChannels:numberOfImages:usage:"
 
 -- | @Selector@ for @copyWithZone:@
-copyWithZoneSelector :: Selector
+copyWithZoneSelector :: Selector '[Ptr ()] (Id MPSImageDescriptor)
 copyWithZoneSelector = mkSelector "copyWithZone:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CULong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CULong] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CULong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CULong] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @featureChannels@
-featureChannelsSelector :: Selector
+featureChannelsSelector :: Selector '[] CULong
 featureChannelsSelector = mkSelector "featureChannels"
 
 -- | @Selector@ for @setFeatureChannels:@
-setFeatureChannelsSelector :: Selector
+setFeatureChannelsSelector :: Selector '[CULong] ()
 setFeatureChannelsSelector = mkSelector "setFeatureChannels:"
 
 -- | @Selector@ for @numberOfImages@
-numberOfImagesSelector :: Selector
+numberOfImagesSelector :: Selector '[] CULong
 numberOfImagesSelector = mkSelector "numberOfImages"
 
 -- | @Selector@ for @setNumberOfImages:@
-setNumberOfImagesSelector :: Selector
+setNumberOfImagesSelector :: Selector '[CULong] ()
 setNumberOfImagesSelector = mkSelector "setNumberOfImages:"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @channelFormat@
-channelFormatSelector :: Selector
+channelFormatSelector :: Selector '[] MPSImageFeatureChannelFormat
 channelFormatSelector = mkSelector "channelFormat"
 
 -- | @Selector@ for @setChannelFormat:@
-setChannelFormatSelector :: Selector
+setChannelFormatSelector :: Selector '[MPSImageFeatureChannelFormat] ()
 setChannelFormatSelector = mkSelector "setChannelFormat:"
 
 -- | @Selector@ for @cpuCacheMode@
-cpuCacheModeSelector :: Selector
+cpuCacheModeSelector :: Selector '[] MTLCPUCacheMode
 cpuCacheModeSelector = mkSelector "cpuCacheMode"
 
 -- | @Selector@ for @setCpuCacheMode:@
-setCpuCacheModeSelector :: Selector
+setCpuCacheModeSelector :: Selector '[MTLCPUCacheMode] ()
 setCpuCacheModeSelector = mkSelector "setCpuCacheMode:"
 
 -- | @Selector@ for @storageMode@
-storageModeSelector :: Selector
+storageModeSelector :: Selector '[] MTLStorageMode
 storageModeSelector = mkSelector "storageMode"
 
 -- | @Selector@ for @setStorageMode:@
-setStorageModeSelector :: Selector
+setStorageModeSelector :: Selector '[MTLStorageMode] ()
 setStorageModeSelector = mkSelector "setStorageMode:"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] MTLTextureUsage
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @setUsage:@
-setUsageSelector :: Selector
+setUsageSelector :: Selector '[MTLTextureUsage] ()
 setUsageSelector = mkSelector "setUsage:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MediaAccessibility.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | MACaptionAppearanceBehavior
 --
@@ -32,6 +35,16 @@ pattern KMACaptionAppearanceBehaviorUseValue = MACaptionAppearanceBehavior 0
 
 pattern KMACaptionAppearanceBehaviorUseContentIfAvailable :: MACaptionAppearanceBehavior
 pattern KMACaptionAppearanceBehaviorUseContentIfAvailable = MACaptionAppearanceBehavior 1
+
+instance ObjCArgument MACaptionAppearanceBehavior where
+  withObjCArg (MACaptionAppearanceBehavior x) k = k (argCLong x)
+
+instance ObjCReturn MACaptionAppearanceBehavior where
+  type RawReturn MACaptionAppearanceBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MACaptionAppearanceBehavior x)
+  fromOwned x = pure (MACaptionAppearanceBehavior x)
 
 -- | MACaptionAppearanceDisplayType
 --
@@ -62,6 +75,16 @@ pattern KMACaptionAppearanceDisplayTypeAutomatic = MACaptionAppearanceDisplayTyp
 pattern KMACaptionAppearanceDisplayTypeAlwaysOn :: MACaptionAppearanceDisplayType
 pattern KMACaptionAppearanceDisplayTypeAlwaysOn = MACaptionAppearanceDisplayType 2
 
+instance ObjCArgument MACaptionAppearanceDisplayType where
+  withObjCArg (MACaptionAppearanceDisplayType x) k = k (argCLong x)
+
+instance ObjCReturn MACaptionAppearanceDisplayType where
+  type RawReturn MACaptionAppearanceDisplayType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MACaptionAppearanceDisplayType x)
+  fromOwned x = pure (MACaptionAppearanceDisplayType x)
+
 -- | MACaptionAppearanceDomain
 --
 -- MACaptionAppearanceDomain is used to specify which domain of preferences to access.
@@ -83,6 +106,16 @@ pattern KMACaptionAppearanceDomainDefault = MACaptionAppearanceDomain 0
 
 pattern KMACaptionAppearanceDomainUser :: MACaptionAppearanceDomain
 pattern KMACaptionAppearanceDomainUser = MACaptionAppearanceDomain 1
+
+instance ObjCArgument MACaptionAppearanceDomain where
+  withObjCArg (MACaptionAppearanceDomain x) k = k (argCLong x)
+
+instance ObjCReturn MACaptionAppearanceDomain where
+  type RawReturn MACaptionAppearanceDomain = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MACaptionAppearanceDomain x)
+  fromOwned x = pure (MACaptionAppearanceDomain x)
 
 -- | MACaptionAppearanceFontStyle
 --
@@ -148,6 +181,16 @@ pattern KMACaptionAppearanceFontStyleCursive = MACaptionAppearanceFontStyle 6
 pattern KMACaptionAppearanceFontStyleSmallCapital :: MACaptionAppearanceFontStyle
 pattern KMACaptionAppearanceFontStyleSmallCapital = MACaptionAppearanceFontStyle 7
 
+instance ObjCArgument MACaptionAppearanceFontStyle where
+  withObjCArg (MACaptionAppearanceFontStyle x) k = k (argCLong x)
+
+instance ObjCReturn MACaptionAppearanceFontStyle where
+  type RawReturn MACaptionAppearanceFontStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MACaptionAppearanceFontStyle x)
+  fromOwned x = pure (MACaptionAppearanceFontStyle x)
+
 -- | MACaptionAppearanceTextEdgeStyle
 --
 -- MACaptionAppearanceTextEdgeStyle is used to specify a text-edge style.
@@ -197,3 +240,13 @@ pattern KMACaptionAppearanceTextEdgeStyleUniform = MACaptionAppearanceTextEdgeSt
 
 pattern KMACaptionAppearanceTextEdgeStyleDropShadow :: MACaptionAppearanceTextEdgeStyle
 pattern KMACaptionAppearanceTextEdgeStyleDropShadow = MACaptionAppearanceTextEdgeStyle 5
+
+instance ObjCArgument MACaptionAppearanceTextEdgeStyle where
+  withObjCArg (MACaptionAppearanceTextEdgeStyle x) k = k (argCLong x)
+
+instance ObjCReturn MACaptionAppearanceTextEdgeStyle where
+  type RawReturn MACaptionAppearanceTextEdgeStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MACaptionAppearanceTextEdgeStyle x)
+  fromOwned x = pure (MACaptionAppearanceTextEdgeStyle x)

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.CoreML.MLMultiArrayConstraint
   , shape
   , dataType
   , shapeConstraint
-  , shapeSelector
   , dataTypeSelector
   , shapeConstraintSelector
+  , shapeSelector
 
   -- * Enum types
   , MLMultiArrayDataType(MLMultiArrayDataType)
@@ -28,15 +29,11 @@ module ObjC.CoreML.MLMultiArrayConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,32 +43,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- shape@
 shape :: IsMLMultiArrayConstraint mlMultiArrayConstraint => mlMultiArrayConstraint -> IO (Id NSArray)
-shape mlMultiArrayConstraint  =
-    sendMsg mlMultiArrayConstraint (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape mlMultiArrayConstraint =
+  sendMessage mlMultiArrayConstraint shapeSelector
 
 -- | @- dataType@
 dataType :: IsMLMultiArrayConstraint mlMultiArrayConstraint => mlMultiArrayConstraint -> IO MLMultiArrayDataType
-dataType mlMultiArrayConstraint  =
-    fmap (coerce :: CLong -> MLMultiArrayDataType) $ sendMsg mlMultiArrayConstraint (mkSelector "dataType") retCLong []
+dataType mlMultiArrayConstraint =
+  sendMessage mlMultiArrayConstraint dataTypeSelector
 
 -- | @- shapeConstraint@
 shapeConstraint :: IsMLMultiArrayConstraint mlMultiArrayConstraint => mlMultiArrayConstraint -> IO (Id MLMultiArrayShapeConstraint)
-shapeConstraint mlMultiArrayConstraint  =
-    sendMsg mlMultiArrayConstraint (mkSelector "shapeConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+shapeConstraint mlMultiArrayConstraint =
+  sendMessage mlMultiArrayConstraint shapeConstraintSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSArray)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MLMultiArrayDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @shapeConstraint@
-shapeConstraintSelector :: Selector
+shapeConstraintSelector :: Selector '[] (Id MLMultiArrayShapeConstraint)
 shapeConstraintSelector = mkSelector "shapeConstraint"
 

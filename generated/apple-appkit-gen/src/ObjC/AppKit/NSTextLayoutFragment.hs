@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.AppKit.NSTextLayoutFragment
   , topMargin
   , bottomMargin
   , textAttachmentViewProviders
-  , initWithTextElement_rangeSelector
-  , initWithCoderSelector
+  , bottomMarginSelector
   , initSelector
-  , textLineFragmentForVerticalOffset_requiresExactMatchSelector
-  , textLineFragmentForTextLocation_isUpstreamAffinitySelector
+  , initWithCoderSelector
+  , initWithTextElement_rangeSelector
   , invalidateLayoutSelector
-  , textLayoutManagerSelector
-  , textElementSelector
-  , rangeInElementSelector
-  , textLineFragmentsSelector
   , layoutQueueSelector
+  , leadingPaddingSelector
+  , rangeInElementSelector
   , setLayoutQueueSelector
   , stateSelector
-  , leadingPaddingSelector
-  , trailingPaddingSelector
-  , topMarginSelector
-  , bottomMarginSelector
   , textAttachmentViewProvidersSelector
+  , textElementSelector
+  , textLayoutManagerSelector
+  , textLineFragmentForTextLocation_isUpstreamAffinitySelector
+  , textLineFragmentForVerticalOffset_requiresExactMatchSelector
+  , textLineFragmentsSelector
+  , topMarginSelector
+  , trailingPaddingSelector
 
   -- * Enum types
   , NSTextLayoutFragmentState(NSTextLayoutFragmentState)
@@ -53,15 +54,11 @@ module ObjC.AppKit.NSTextLayoutFragment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,171 +68,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTextElement:range:@
 initWithTextElement_range :: (IsNSTextLayoutFragment nsTextLayoutFragment, IsNSTextElement textElement, IsNSTextRange rangeInElement) => nsTextLayoutFragment -> textElement -> rangeInElement -> IO (Id NSTextLayoutFragment)
-initWithTextElement_range nsTextLayoutFragment  textElement rangeInElement =
-  withObjCPtr textElement $ \raw_textElement ->
-    withObjCPtr rangeInElement $ \raw_rangeInElement ->
-        sendMsg nsTextLayoutFragment (mkSelector "initWithTextElement:range:") (retPtr retVoid) [argPtr (castPtr raw_textElement :: Ptr ()), argPtr (castPtr raw_rangeInElement :: Ptr ())] >>= ownedObject . castPtr
+initWithTextElement_range nsTextLayoutFragment textElement rangeInElement =
+  sendOwnedMessage nsTextLayoutFragment initWithTextElement_rangeSelector (toNSTextElement textElement) (toNSTextRange rangeInElement)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextLayoutFragment nsTextLayoutFragment, IsNSCoder coder) => nsTextLayoutFragment -> coder -> IO (Id NSTextLayoutFragment)
-initWithCoder nsTextLayoutFragment  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextLayoutFragment (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextLayoutFragment coder =
+  sendOwnedMessage nsTextLayoutFragment initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSTextLayoutFragment)
-init_ nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextLayoutFragment =
+  sendOwnedMessage nsTextLayoutFragment initSelector
 
 -- | @- textLineFragmentForVerticalOffset:requiresExactMatch:@
 textLineFragmentForVerticalOffset_requiresExactMatch :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> CDouble -> Bool -> IO (Id NSTextLineFragment)
-textLineFragmentForVerticalOffset_requiresExactMatch nsTextLayoutFragment  verticalOffset requiresExactMatch =
-    sendMsg nsTextLayoutFragment (mkSelector "textLineFragmentForVerticalOffset:requiresExactMatch:") (retPtr retVoid) [argCDouble verticalOffset, argCULong (if requiresExactMatch then 1 else 0)] >>= retainedObject . castPtr
+textLineFragmentForVerticalOffset_requiresExactMatch nsTextLayoutFragment verticalOffset requiresExactMatch =
+  sendMessage nsTextLayoutFragment textLineFragmentForVerticalOffset_requiresExactMatchSelector verticalOffset requiresExactMatch
 
 -- | @- textLineFragmentForTextLocation:isUpstreamAffinity:@
 textLineFragmentForTextLocation_isUpstreamAffinity :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> RawId -> Bool -> IO (Id NSTextLineFragment)
-textLineFragmentForTextLocation_isUpstreamAffinity nsTextLayoutFragment  textLocation isUpstreamAffinity =
-    sendMsg nsTextLayoutFragment (mkSelector "textLineFragmentForTextLocation:isUpstreamAffinity:") (retPtr retVoid) [argPtr (castPtr (unRawId textLocation) :: Ptr ()), argCULong (if isUpstreamAffinity then 1 else 0)] >>= retainedObject . castPtr
+textLineFragmentForTextLocation_isUpstreamAffinity nsTextLayoutFragment textLocation isUpstreamAffinity =
+  sendMessage nsTextLayoutFragment textLineFragmentForTextLocation_isUpstreamAffinitySelector textLocation isUpstreamAffinity
 
 -- | @- invalidateLayout@
 invalidateLayout :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO ()
-invalidateLayout nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "invalidateLayout") retVoid []
+invalidateLayout nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment invalidateLayoutSelector
 
 -- | @- textLayoutManager@
 textLayoutManager :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSTextLayoutManager)
-textLayoutManager nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+textLayoutManager nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment textLayoutManagerSelector
 
 -- | @- textElement@
 textElement :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSTextElement)
-textElement nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "textElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+textElement nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment textElementSelector
 
 -- | @- rangeInElement@
 rangeInElement :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSTextRange)
-rangeInElement nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "rangeInElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+rangeInElement nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment rangeInElementSelector
 
 -- | @- textLineFragments@
 textLineFragments :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSArray)
-textLineFragments nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "textLineFragments") (retPtr retVoid) [] >>= retainedObject . castPtr
+textLineFragments nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment textLineFragmentsSelector
 
 -- | @- layoutQueue@
 layoutQueue :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSOperationQueue)
-layoutQueue nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "layoutQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutQueue nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment layoutQueueSelector
 
 -- | @- setLayoutQueue:@
 setLayoutQueue :: (IsNSTextLayoutFragment nsTextLayoutFragment, IsNSOperationQueue value) => nsTextLayoutFragment -> value -> IO ()
-setLayoutQueue nsTextLayoutFragment  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextLayoutFragment (mkSelector "setLayoutQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayoutQueue nsTextLayoutFragment value =
+  sendMessage nsTextLayoutFragment setLayoutQueueSelector (toNSOperationQueue value)
 
 -- | @- state@
 state :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO NSTextLayoutFragmentState
-state nsTextLayoutFragment  =
-    fmap (coerce :: CULong -> NSTextLayoutFragmentState) $ sendMsg nsTextLayoutFragment (mkSelector "state") retCULong []
+state nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment stateSelector
 
 -- | @- leadingPadding@
 leadingPadding :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO CDouble
-leadingPadding nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "leadingPadding") retCDouble []
+leadingPadding nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment leadingPaddingSelector
 
 -- | @- trailingPadding@
 trailingPadding :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO CDouble
-trailingPadding nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "trailingPadding") retCDouble []
+trailingPadding nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment trailingPaddingSelector
 
 -- | @- topMargin@
 topMargin :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO CDouble
-topMargin nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "topMargin") retCDouble []
+topMargin nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment topMarginSelector
 
 -- | @- bottomMargin@
 bottomMargin :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO CDouble
-bottomMargin nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "bottomMargin") retCDouble []
+bottomMargin nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment bottomMarginSelector
 
 -- | @- textAttachmentViewProviders@
 textAttachmentViewProviders :: IsNSTextLayoutFragment nsTextLayoutFragment => nsTextLayoutFragment -> IO (Id NSArray)
-textAttachmentViewProviders nsTextLayoutFragment  =
-    sendMsg nsTextLayoutFragment (mkSelector "textAttachmentViewProviders") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttachmentViewProviders nsTextLayoutFragment =
+  sendMessage nsTextLayoutFragment textAttachmentViewProvidersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTextElement:range:@
-initWithTextElement_rangeSelector :: Selector
+initWithTextElement_rangeSelector :: Selector '[Id NSTextElement, Id NSTextRange] (Id NSTextLayoutFragment)
 initWithTextElement_rangeSelector = mkSelector "initWithTextElement:range:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextLayoutFragment)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextLayoutFragment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @textLineFragmentForVerticalOffset:requiresExactMatch:@
-textLineFragmentForVerticalOffset_requiresExactMatchSelector :: Selector
+textLineFragmentForVerticalOffset_requiresExactMatchSelector :: Selector '[CDouble, Bool] (Id NSTextLineFragment)
 textLineFragmentForVerticalOffset_requiresExactMatchSelector = mkSelector "textLineFragmentForVerticalOffset:requiresExactMatch:"
 
 -- | @Selector@ for @textLineFragmentForTextLocation:isUpstreamAffinity:@
-textLineFragmentForTextLocation_isUpstreamAffinitySelector :: Selector
+textLineFragmentForTextLocation_isUpstreamAffinitySelector :: Selector '[RawId, Bool] (Id NSTextLineFragment)
 textLineFragmentForTextLocation_isUpstreamAffinitySelector = mkSelector "textLineFragmentForTextLocation:isUpstreamAffinity:"
 
 -- | @Selector@ for @invalidateLayout@
-invalidateLayoutSelector :: Selector
+invalidateLayoutSelector :: Selector '[] ()
 invalidateLayoutSelector = mkSelector "invalidateLayout"
 
 -- | @Selector@ for @textLayoutManager@
-textLayoutManagerSelector :: Selector
+textLayoutManagerSelector :: Selector '[] (Id NSTextLayoutManager)
 textLayoutManagerSelector = mkSelector "textLayoutManager"
 
 -- | @Selector@ for @textElement@
-textElementSelector :: Selector
+textElementSelector :: Selector '[] (Id NSTextElement)
 textElementSelector = mkSelector "textElement"
 
 -- | @Selector@ for @rangeInElement@
-rangeInElementSelector :: Selector
+rangeInElementSelector :: Selector '[] (Id NSTextRange)
 rangeInElementSelector = mkSelector "rangeInElement"
 
 -- | @Selector@ for @textLineFragments@
-textLineFragmentsSelector :: Selector
+textLineFragmentsSelector :: Selector '[] (Id NSArray)
 textLineFragmentsSelector = mkSelector "textLineFragments"
 
 -- | @Selector@ for @layoutQueue@
-layoutQueueSelector :: Selector
+layoutQueueSelector :: Selector '[] (Id NSOperationQueue)
 layoutQueueSelector = mkSelector "layoutQueue"
 
 -- | @Selector@ for @setLayoutQueue:@
-setLayoutQueueSelector :: Selector
+setLayoutQueueSelector :: Selector '[Id NSOperationQueue] ()
 setLayoutQueueSelector = mkSelector "setLayoutQueue:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NSTextLayoutFragmentState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @leadingPadding@
-leadingPaddingSelector :: Selector
+leadingPaddingSelector :: Selector '[] CDouble
 leadingPaddingSelector = mkSelector "leadingPadding"
 
 -- | @Selector@ for @trailingPadding@
-trailingPaddingSelector :: Selector
+trailingPaddingSelector :: Selector '[] CDouble
 trailingPaddingSelector = mkSelector "trailingPadding"
 
 -- | @Selector@ for @topMargin@
-topMarginSelector :: Selector
+topMarginSelector :: Selector '[] CDouble
 topMarginSelector = mkSelector "topMargin"
 
 -- | @Selector@ for @bottomMargin@
-bottomMarginSelector :: Selector
+bottomMarginSelector :: Selector '[] CDouble
 bottomMarginSelector = mkSelector "bottomMargin"
 
 -- | @Selector@ for @textAttachmentViewProviders@
-textAttachmentViewProvidersSelector :: Selector
+textAttachmentViewProvidersSelector :: Selector '[] (Id NSArray)
 textAttachmentViewProvidersSelector = mkSelector "textAttachmentViewProviders"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRClusterTLSClientManagement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector
   , findEndpointWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeMaxProvisionedWithParamsSelector
-  , readAttributeProvisionedEndpointsWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeMaxProvisionedWithParamsSelector
+  , readAttributeProvisionedEndpointsWithParamsSelector
+  , removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,145 +52,126 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- provisionEndpointWithParams:expectedValues:expectedValueInterval:completion:@
 provisionEndpointWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRTLSClientManagementClusterProvisionEndpointParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterTLSClientManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-provisionEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterTLSClientManagement (mkSelector "provisionEndpointWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+provisionEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterTLSClientManagement provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRTLSClientManagementClusterProvisionEndpointParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- findEndpointWithParams:expectedValues:expectedValueInterval:completion:@
 findEndpointWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRTLSClientManagementClusterFindEndpointParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterTLSClientManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-findEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterTLSClientManagement (mkSelector "findEndpointWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+findEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterTLSClientManagement findEndpointWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRTLSClientManagementClusterFindEndpointParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeEndpointWithParams:expectedValues:expectedValueInterval:completion:@
 removeEndpointWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRTLSClientManagementClusterRemoveEndpointParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterTLSClientManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterTLSClientManagement (mkSelector "removeEndpointWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeEndpointWithParams_expectedValues_expectedValueInterval_completion mtrClusterTLSClientManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterTLSClientManagement removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRTLSClientManagementClusterRemoveEndpointParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeMaxProvisionedWithParams:@
 readAttributeMaxProvisionedWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeMaxProvisionedWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeMaxProvisionedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxProvisionedWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeMaxProvisionedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProvisionedEndpointsWithParams:@
 readAttributeProvisionedEndpointsWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeProvisionedEndpointsWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeProvisionedEndpointsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProvisionedEndpointsWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeProvisionedEndpointsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRReadParams params) => mtrClusterTLSClientManagement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterTLSClientManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterTLSClientManagement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterTLSClientManagement params =
+  sendMessage mtrClusterTLSClientManagement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement => mtrClusterTLSClientManagement -> IO (Id MTRClusterTLSClientManagement)
-init_ mtrClusterTLSClientManagement  =
-    sendMsg mtrClusterTLSClientManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterTLSClientManagement =
+  sendOwnedMessage mtrClusterTLSClientManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterTLSClientManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterTLSClientManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterTLSClientManagement mtrClusterTLSClientManagement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterTLSClientManagement -> device -> endpointID -> queue -> IO (Id MTRClusterTLSClientManagement)
-initWithDevice_endpointID_queue mtrClusterTLSClientManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterTLSClientManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterTLSClientManagement device endpointID queue =
+  sendOwnedMessage mtrClusterTLSClientManagement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @provisionEndpointWithParams:expectedValues:expectedValueInterval:completion:@
-provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRTLSClientManagementClusterProvisionEndpointParams, Id NSArray, Id NSNumber, Ptr ()] ()
 provisionEndpointWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "provisionEndpointWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @findEndpointWithParams:expectedValues:expectedValueInterval:completion:@
-findEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+findEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRTLSClientManagementClusterFindEndpointParams, Id NSArray, Id NSNumber, Ptr ()] ()
 findEndpointWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "findEndpointWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeEndpointWithParams:expectedValues:expectedValueInterval:completion:@
-removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRTLSClientManagementClusterRemoveEndpointParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeEndpointWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeEndpointWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeMaxProvisionedWithParams:@
-readAttributeMaxProvisionedWithParamsSelector :: Selector
+readAttributeMaxProvisionedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxProvisionedWithParamsSelector = mkSelector "readAttributeMaxProvisionedWithParams:"
 
 -- | @Selector@ for @readAttributeProvisionedEndpointsWithParams:@
-readAttributeProvisionedEndpointsWithParamsSelector :: Selector
+readAttributeProvisionedEndpointsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProvisionedEndpointsWithParamsSelector = mkSelector "readAttributeProvisionedEndpointsWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterTLSClientManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterTLSClientManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterTLSClientManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

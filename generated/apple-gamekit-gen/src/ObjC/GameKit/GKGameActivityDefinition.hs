@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.GameKit.GKGameActivityDefinition
   , supportsUnlimitedPlayers
   , playStyle
   , releaseState
+  , defaultPropertiesSelector
+  , detailsSelector
+  , fallbackURLSelector
+  , groupIdentifierSelector
+  , identifierSelector
   , initSelector
   , loadImageWithCompletionHandlerSelector
-  , identifierSelector
-  , groupIdentifierSelector
-  , titleSelector
-  , detailsSelector
-  , defaultPropertiesSelector
-  , fallbackURLSelector
-  , supportsPartyCodeSelector
   , maxPlayersSelector
   , minPlayersSelector
-  , supportsUnlimitedPlayersSelector
   , playStyleSelector
   , releaseStateSelector
+  , supportsPartyCodeSelector
+  , supportsUnlimitedPlayersSelector
+  , titleSelector
 
   -- * Enum types
   , GKGameActivityPlayStyle(GKGameActivityPlayStyle)
@@ -48,15 +49,11 @@ module ObjC.GameKit.GKGameActivityDefinition
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,157 +63,157 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id GKGameActivityDefinition)
-init_ gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkGameActivityDefinition =
+  sendOwnedMessage gkGameActivityDefinition initSelector
 
 -- | Asynchronously load the image. Error will be nil on success.
 --
 -- ObjC selector: @- loadImageWithCompletionHandler:@
 loadImageWithCompletionHandler :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> Ptr () -> IO ()
-loadImageWithCompletionHandler gkGameActivityDefinition  completionHandler =
-    sendMsg gkGameActivityDefinition (mkSelector "loadImageWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadImageWithCompletionHandler gkGameActivityDefinition completionHandler =
+  sendMessage gkGameActivityDefinition loadImageWithCompletionHandlerSelector completionHandler
 
 -- | The developer defined identifier for a given game activity.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSString)
-identifier gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition identifierSelector
 
 -- | The group identifier for the activity, if one exists.
 --
 -- ObjC selector: @- groupIdentifier@
 groupIdentifier :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSString)
-groupIdentifier gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "groupIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifier gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition groupIdentifierSelector
 
 -- | A short title for the game activity.
 --
 -- ObjC selector: @- title@
 title :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSString)
-title gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition titleSelector
 
 -- | A more detailed description of the game activity.
 --
 -- ObjC selector: @- details@
 details :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSString)
-details gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "details") (retPtr retVoid) [] >>= retainedObject . castPtr
+details gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition detailsSelector
 
 -- | Default properties defined by the developer for this type of game activity.
 --
 -- ObjC selector: @- defaultProperties@
 defaultProperties :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSDictionary)
-defaultProperties gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "defaultProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultProperties gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition defaultPropertiesSelector
 
 -- | A fallback URL that can be used to construct a game-specific URL for players to share or join, if the joining device does not support the default URL.
 --
 -- ObjC selector: @- fallbackURL@
 fallbackURL :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSURL)
-fallbackURL gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "fallbackURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fallbackURL gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition fallbackURLSelector
 
 -- | Whether the activity can be joined by others via a party code. - SeeAlso: ``-[GKGameActivityListener player:wantsToPlayGameActivity:completionHandler:]`` where you can receive and handle game activities that players want to play in a party with friends.
 --
 -- ObjC selector: @- supportsPartyCode@
 supportsPartyCode :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO Bool
-supportsPartyCode gkGameActivityDefinition  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkGameActivityDefinition (mkSelector "supportsPartyCode") retCULong []
+supportsPartyCode gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition supportsPartyCodeSelector
 
 -- | The maximum number of participants that can join the activity. Returns nil when no maximum is set (unlimited players) or when player range is undefined. When not nil, the value is always greater than or equal to @minPlayers@.
 --
 -- ObjC selector: @- maxPlayers@
 maxPlayers :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSNumber)
-maxPlayers gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "maxPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxPlayers gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition maxPlayersSelector
 
 -- | The minimum number of participants that can join the activity.
 --
 -- ObjC selector: @- minPlayers@
 minPlayers :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO (Id NSNumber)
-minPlayers gkGameActivityDefinition  =
-    sendMsg gkGameActivityDefinition (mkSelector "minPlayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+minPlayers gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition minPlayersSelector
 
 -- | True if the activity supports an unlimited number of players. False if maxPlayers is set to a defined limit or if no player range is provided.
 --
 -- ObjC selector: @- supportsUnlimitedPlayers@
 supportsUnlimitedPlayers :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO Bool
-supportsUnlimitedPlayers gkGameActivityDefinition  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkGameActivityDefinition (mkSelector "supportsUnlimitedPlayers") retCULong []
+supportsUnlimitedPlayers gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition supportsUnlimitedPlayersSelector
 
 -- | The play style of the game activity.
 --
 -- ObjC selector: @- playStyle@
 playStyle :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO GKGameActivityPlayStyle
-playStyle gkGameActivityDefinition  =
-    fmap (coerce :: CLong -> GKGameActivityPlayStyle) $ sendMsg gkGameActivityDefinition (mkSelector "playStyle") retCLong []
+playStyle gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition playStyleSelector
 
 -- | The release state of the game activity definition in App Store Connect.
 --
 -- ObjC selector: @- releaseState@
 releaseState :: IsGKGameActivityDefinition gkGameActivityDefinition => gkGameActivityDefinition -> IO GKReleaseState
-releaseState gkGameActivityDefinition  =
-    fmap (coerce :: CULong -> GKReleaseState) $ sendMsg gkGameActivityDefinition (mkSelector "releaseState") retCULong []
+releaseState gkGameActivityDefinition =
+  sendMessage gkGameActivityDefinition releaseStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKGameActivityDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @loadImageWithCompletionHandler:@
-loadImageWithCompletionHandlerSelector :: Selector
+loadImageWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadImageWithCompletionHandlerSelector = mkSelector "loadImageWithCompletionHandler:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @groupIdentifier@
-groupIdentifierSelector :: Selector
+groupIdentifierSelector :: Selector '[] (Id NSString)
 groupIdentifierSelector = mkSelector "groupIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @details@
-detailsSelector :: Selector
+detailsSelector :: Selector '[] (Id NSString)
 detailsSelector = mkSelector "details"
 
 -- | @Selector@ for @defaultProperties@
-defaultPropertiesSelector :: Selector
+defaultPropertiesSelector :: Selector '[] (Id NSDictionary)
 defaultPropertiesSelector = mkSelector "defaultProperties"
 
 -- | @Selector@ for @fallbackURL@
-fallbackURLSelector :: Selector
+fallbackURLSelector :: Selector '[] (Id NSURL)
 fallbackURLSelector = mkSelector "fallbackURL"
 
 -- | @Selector@ for @supportsPartyCode@
-supportsPartyCodeSelector :: Selector
+supportsPartyCodeSelector :: Selector '[] Bool
 supportsPartyCodeSelector = mkSelector "supportsPartyCode"
 
 -- | @Selector@ for @maxPlayers@
-maxPlayersSelector :: Selector
+maxPlayersSelector :: Selector '[] (Id NSNumber)
 maxPlayersSelector = mkSelector "maxPlayers"
 
 -- | @Selector@ for @minPlayers@
-minPlayersSelector :: Selector
+minPlayersSelector :: Selector '[] (Id NSNumber)
 minPlayersSelector = mkSelector "minPlayers"
 
 -- | @Selector@ for @supportsUnlimitedPlayers@
-supportsUnlimitedPlayersSelector :: Selector
+supportsUnlimitedPlayersSelector :: Selector '[] Bool
 supportsUnlimitedPlayersSelector = mkSelector "supportsUnlimitedPlayers"
 
 -- | @Selector@ for @playStyle@
-playStyleSelector :: Selector
+playStyleSelector :: Selector '[] GKGameActivityPlayStyle
 playStyleSelector = mkSelector "playStyle"
 
 -- | @Selector@ for @releaseState@
-releaseStateSelector :: Selector
+releaseStateSelector :: Selector '[] GKReleaseState
 releaseStateSelector = mkSelector "releaseState"
 

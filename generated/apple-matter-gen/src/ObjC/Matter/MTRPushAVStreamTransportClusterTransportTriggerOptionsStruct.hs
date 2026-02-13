@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterTransportTriggerOptionsStruct
   , setMotionTimeControl
   , maxPreRollLen
   , setMaxPreRollLen
-  , triggerTypeSelector
-  , setTriggerTypeSelector
-  , motionZonesSelector
-  , setMotionZonesSelector
-  , motionSensitivitySelector
-  , setMotionSensitivitySelector
-  , motionTimeControlSelector
-  , setMotionTimeControlSelector
   , maxPreRollLenSelector
+  , motionSensitivitySelector
+  , motionTimeControlSelector
+  , motionZonesSelector
   , setMaxPreRollLenSelector
+  , setMotionSensitivitySelector
+  , setMotionTimeControlSelector
+  , setMotionZonesSelector
+  , setTriggerTypeSelector
+  , triggerTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- triggerType@
 triggerType :: IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> IO (Id NSNumber)
-triggerType mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "triggerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+triggerType mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct triggerTypeSelector
 
 -- | @- setTriggerType:@
 setTriggerType :: (IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> value -> IO ()
-setTriggerType mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "setTriggerType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTriggerType mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct setTriggerTypeSelector (toNSNumber value)
 
 -- | @- motionZones@
 motionZones :: IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> IO (Id NSArray)
-motionZones mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "motionZones") (retPtr retVoid) [] >>= retainedObject . castPtr
+motionZones mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct motionZonesSelector
 
 -- | @- setMotionZones:@
 setMotionZones :: (IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct, IsNSArray value) => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> value -> IO ()
-setMotionZones mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "setMotionZones:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMotionZones mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct setMotionZonesSelector (toNSArray value)
 
 -- | @- motionSensitivity@
 motionSensitivity :: IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> IO (Id NSNumber)
-motionSensitivity mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "motionSensitivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+motionSensitivity mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct motionSensitivitySelector
 
 -- | @- setMotionSensitivity:@
 setMotionSensitivity :: (IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> value -> IO ()
-setMotionSensitivity mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "setMotionSensitivity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMotionSensitivity mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct setMotionSensitivitySelector (toNSNumber value)
 
 -- | @- motionTimeControl@
 motionTimeControl :: IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> IO (Id MTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct)
-motionTimeControl mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "motionTimeControl") (retPtr retVoid) [] >>= retainedObject . castPtr
+motionTimeControl mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct motionTimeControlSelector
 
 -- | @- setMotionTimeControl:@
 setMotionTimeControl :: (IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct, IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value) => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> value -> IO ()
-setMotionTimeControl mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "setMotionTimeControl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMotionTimeControl mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct setMotionTimeControlSelector (toMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value)
 
 -- | @- maxPreRollLen@
 maxPreRollLen :: IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> IO (Id NSNumber)
-maxPreRollLen mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "maxPreRollLen") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxPreRollLen mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct maxPreRollLenSelector
 
 -- | @- setMaxPreRollLen:@
 setMaxPreRollLen :: (IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct -> value -> IO ()
-setMaxPreRollLen mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct (mkSelector "setMaxPreRollLen:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxPreRollLen mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportTriggerOptionsStruct setMaxPreRollLenSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @triggerType@
-triggerTypeSelector :: Selector
+triggerTypeSelector :: Selector '[] (Id NSNumber)
 triggerTypeSelector = mkSelector "triggerType"
 
 -- | @Selector@ for @setTriggerType:@
-setTriggerTypeSelector :: Selector
+setTriggerTypeSelector :: Selector '[Id NSNumber] ()
 setTriggerTypeSelector = mkSelector "setTriggerType:"
 
 -- | @Selector@ for @motionZones@
-motionZonesSelector :: Selector
+motionZonesSelector :: Selector '[] (Id NSArray)
 motionZonesSelector = mkSelector "motionZones"
 
 -- | @Selector@ for @setMotionZones:@
-setMotionZonesSelector :: Selector
+setMotionZonesSelector :: Selector '[Id NSArray] ()
 setMotionZonesSelector = mkSelector "setMotionZones:"
 
 -- | @Selector@ for @motionSensitivity@
-motionSensitivitySelector :: Selector
+motionSensitivitySelector :: Selector '[] (Id NSNumber)
 motionSensitivitySelector = mkSelector "motionSensitivity"
 
 -- | @Selector@ for @setMotionSensitivity:@
-setMotionSensitivitySelector :: Selector
+setMotionSensitivitySelector :: Selector '[Id NSNumber] ()
 setMotionSensitivitySelector = mkSelector "setMotionSensitivity:"
 
 -- | @Selector@ for @motionTimeControl@
-motionTimeControlSelector :: Selector
+motionTimeControlSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct)
 motionTimeControlSelector = mkSelector "motionTimeControl"
 
 -- | @Selector@ for @setMotionTimeControl:@
-setMotionTimeControlSelector :: Selector
+setMotionTimeControlSelector :: Selector '[Id MTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct] ()
 setMotionTimeControlSelector = mkSelector "setMotionTimeControl:"
 
 -- | @Selector@ for @maxPreRollLen@
-maxPreRollLenSelector :: Selector
+maxPreRollLenSelector :: Selector '[] (Id NSNumber)
 maxPreRollLenSelector = mkSelector "maxPreRollLen"
 
 -- | @Selector@ for @setMaxPreRollLen:@
-setMaxPreRollLenSelector :: Selector
+setMaxPreRollLenSelector :: Selector '[Id NSNumber] ()
 setMaxPreRollLenSelector = mkSelector "setMaxPreRollLen:"
 

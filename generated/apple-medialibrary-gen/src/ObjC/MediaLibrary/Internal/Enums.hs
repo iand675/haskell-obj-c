@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MediaLibrary.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MLMediaSourceType@ (bitmask)
 newtype MLMediaSourceType = MLMediaSourceType CULong
@@ -31,6 +34,16 @@ pattern MLMediaSourceTypeImage = MLMediaSourceType 2
 pattern MLMediaSourceTypeMovie :: MLMediaSourceType
 pattern MLMediaSourceTypeMovie = MLMediaSourceType 4
 
+instance ObjCArgument MLMediaSourceType where
+  withObjCArg (MLMediaSourceType x) k = k (argCULong x)
+
+instance ObjCReturn MLMediaSourceType where
+  type RawReturn MLMediaSourceType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLMediaSourceType x)
+  fromOwned x = pure (MLMediaSourceType x)
+
 -- | @MLMediaType@
 newtype MLMediaType = MLMediaType CULong
   deriving stock (Eq, Ord, Show)
@@ -44,3 +57,13 @@ pattern MLMediaTypeImage = MLMediaType 2
 
 pattern MLMediaTypeMovie :: MLMediaType
 pattern MLMediaTypeMovie = MLMediaType 4
+
+instance ObjCArgument MLMediaType where
+  withObjCArg (MLMediaType x) k = k (argCULong x)
+
+instance ObjCReturn MLMediaType where
+  type RawReturn MLMediaType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLMediaType x)
+  fromOwned x = pure (MLMediaType x)

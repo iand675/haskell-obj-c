@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,23 +23,19 @@ module ObjC.GameplayKit.GKRandomSource
   , initWithCoder
   , sharedRandom
   , arrayByShufflingObjectsInArray
+  , arrayByShufflingObjectsInArraySelector
   , initSelector
   , initWithCoderSelector
   , sharedRandomSelector
-  , arrayByShufflingObjectsInArraySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGKRandomSource gkRandomSource => gkRandomSource -> IO (Id GKRandomSource)
-init_ gkRandomSource  =
-    sendMsg gkRandomSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkRandomSource =
+  sendOwnedMessage gkRandomSource initSelector
 
 -- | Deserializes a random source from an NSCoder. All random sources support coding for serializing and deserializing the state of the random source. Each subclass has its own contract for what parts of the state is preserved when serialized but the general contract is that a serialized source must generate the same sequence of values as the original source would from the instant it was serialized.
 --
@@ -64,9 +61,8 @@ init_ gkRandomSource  =
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsGKRandomSource gkRandomSource, IsNSCoder aDecoder) => gkRandomSource -> aDecoder -> IO (Id GKRandomSource)
-initWithCoder gkRandomSource  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg gkRandomSource (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder gkRandomSource aDecoder =
+  sendOwnedMessage gkRandomSource initWithCoderSelector (toNSCoder aDecoder)
 
 -- | Returns a shared instance of a random source that uses the system's underlying random source. Using this instance modifies the outcome of future calls to the arc4random family of C calls. It is also affected by calls to the C apis and should not be used for sources that are intended to be deterministic.
 --
@@ -77,7 +73,7 @@ sharedRandom :: IO (Id GKRandomSource)
 sharedRandom  =
   do
     cls' <- getRequiredClass "GKRandomSource"
-    sendClassMsg cls' (mkSelector "sharedRandom") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedRandomSelector
 
 -- | Returns a shuffled instance of the given array. The objects in the array are shuffled based on a Fisher-Yates shuffle.
 --
@@ -85,27 +81,26 @@ sharedRandom  =
 --
 -- ObjC selector: @- arrayByShufflingObjectsInArray:@
 arrayByShufflingObjectsInArray :: (IsGKRandomSource gkRandomSource, IsNSArray array) => gkRandomSource -> array -> IO (Id NSArray)
-arrayByShufflingObjectsInArray gkRandomSource  array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg gkRandomSource (mkSelector "arrayByShufflingObjectsInArray:") (retPtr retVoid) [argPtr (castPtr raw_array :: Ptr ())] >>= retainedObject . castPtr
+arrayByShufflingObjectsInArray gkRandomSource array =
+  sendMessage gkRandomSource arrayByShufflingObjectsInArraySelector (toNSArray array)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKRandomSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id GKRandomSource)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @sharedRandom@
-sharedRandomSelector :: Selector
+sharedRandomSelector :: Selector '[] (Id GKRandomSource)
 sharedRandomSelector = mkSelector "sharedRandom"
 
 -- | @Selector@ for @arrayByShufflingObjectsInArray:@
-arrayByShufflingObjectsInArraySelector :: Selector
+arrayByShufflingObjectsInArraySelector :: Selector '[Id NSArray] (Id NSArray)
 arrayByShufflingObjectsInArraySelector = mkSelector "arrayByShufflingObjectsInArray:"
 

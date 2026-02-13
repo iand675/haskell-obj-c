@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Metal.MTLRenderPassSampleBufferAttachmentDescriptor
   , setStartOfFragmentSampleIndex
   , endOfFragmentSampleIndex
   , setEndOfFragmentSampleIndex
-  , sampleBufferSelector
-  , setSampleBufferSelector
-  , startOfVertexSampleIndexSelector
-  , setStartOfVertexSampleIndexSelector
-  , endOfVertexSampleIndexSelector
-  , setEndOfVertexSampleIndexSelector
-  , startOfFragmentSampleIndexSelector
-  , setStartOfFragmentSampleIndexSelector
   , endOfFragmentSampleIndexSelector
+  , endOfVertexSampleIndexSelector
+  , sampleBufferSelector
   , setEndOfFragmentSampleIndexSelector
+  , setEndOfVertexSampleIndexSelector
+  , setSampleBufferSelector
+  , setStartOfFragmentSampleIndexSelector
+  , setStartOfVertexSampleIndexSelector
+  , startOfFragmentSampleIndexSelector
+  , startOfVertexSampleIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sampleBuffer@
 sampleBuffer :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO RawId
-sampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "sampleBuffer") (retPtr retVoid) []
+sampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor sampleBufferSelector
 
 -- | sampleBuffer
 --
@@ -60,8 +57,8 @@ sampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setSampleBuffer:@
 setSampleBuffer :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> RawId -> IO ()
-setSampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setSampleBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor setSampleBufferSelector value
 
 -- | startOfVertexSampleIndex
 --
@@ -71,8 +68,8 @@ setSampleBuffer mtlRenderPassSampleBufferAttachmentDescriptor  value =
 --
 -- ObjC selector: @- startOfVertexSampleIndex@
 startOfVertexSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO CULong
-startOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "startOfVertexSampleIndex") retCULong []
+startOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor startOfVertexSampleIndexSelector
 
 -- | startOfVertexSampleIndex
 --
@@ -82,8 +79,8 @@ startOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setStartOfVertexSampleIndex:@
 setStartOfVertexSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setStartOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setStartOfVertexSampleIndex:") retVoid [argCULong value]
+setStartOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor setStartOfVertexSampleIndexSelector value
 
 -- | endOfVertexSampleIndex
 --
@@ -93,8 +90,8 @@ setStartOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value
 --
 -- ObjC selector: @- endOfVertexSampleIndex@
 endOfVertexSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO CULong
-endOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "endOfVertexSampleIndex") retCULong []
+endOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor endOfVertexSampleIndexSelector
 
 -- | endOfVertexSampleIndex
 --
@@ -104,8 +101,8 @@ endOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setEndOfVertexSampleIndex:@
 setEndOfVertexSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setEndOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setEndOfVertexSampleIndex:") retVoid [argCULong value]
+setEndOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor setEndOfVertexSampleIndexSelector value
 
 -- | startOfFragmentSampleIndex
 --
@@ -115,8 +112,8 @@ setEndOfVertexSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value =
 --
 -- ObjC selector: @- startOfFragmentSampleIndex@
 startOfFragmentSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO CULong
-startOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "startOfFragmentSampleIndex") retCULong []
+startOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor startOfFragmentSampleIndexSelector
 
 -- | startOfFragmentSampleIndex
 --
@@ -126,8 +123,8 @@ startOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setStartOfFragmentSampleIndex:@
 setStartOfFragmentSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setStartOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setStartOfFragmentSampleIndex:") retVoid [argCULong value]
+setStartOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor setStartOfFragmentSampleIndexSelector value
 
 -- | endOfFragmentSampleIndex
 --
@@ -137,8 +134,8 @@ setStartOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  val
 --
 -- ObjC selector: @- endOfFragmentSampleIndex@
 endOfFragmentSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> IO CULong
-endOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "endOfFragmentSampleIndex") retCULong []
+endOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor endOfFragmentSampleIndexSelector
 
 -- | endOfFragmentSampleIndex
 --
@@ -148,50 +145,50 @@ endOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setEndOfFragmentSampleIndex:@
 setEndOfFragmentSampleIndex :: IsMTLRenderPassSampleBufferAttachmentDescriptor mtlRenderPassSampleBufferAttachmentDescriptor => mtlRenderPassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setEndOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlRenderPassSampleBufferAttachmentDescriptor (mkSelector "setEndOfFragmentSampleIndex:") retVoid [argCULong value]
+setEndOfFragmentSampleIndex mtlRenderPassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlRenderPassSampleBufferAttachmentDescriptor setEndOfFragmentSampleIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sampleBuffer@
-sampleBufferSelector :: Selector
+sampleBufferSelector :: Selector '[] RawId
 sampleBufferSelector = mkSelector "sampleBuffer"
 
 -- | @Selector@ for @setSampleBuffer:@
-setSampleBufferSelector :: Selector
+setSampleBufferSelector :: Selector '[RawId] ()
 setSampleBufferSelector = mkSelector "setSampleBuffer:"
 
 -- | @Selector@ for @startOfVertexSampleIndex@
-startOfVertexSampleIndexSelector :: Selector
+startOfVertexSampleIndexSelector :: Selector '[] CULong
 startOfVertexSampleIndexSelector = mkSelector "startOfVertexSampleIndex"
 
 -- | @Selector@ for @setStartOfVertexSampleIndex:@
-setStartOfVertexSampleIndexSelector :: Selector
+setStartOfVertexSampleIndexSelector :: Selector '[CULong] ()
 setStartOfVertexSampleIndexSelector = mkSelector "setStartOfVertexSampleIndex:"
 
 -- | @Selector@ for @endOfVertexSampleIndex@
-endOfVertexSampleIndexSelector :: Selector
+endOfVertexSampleIndexSelector :: Selector '[] CULong
 endOfVertexSampleIndexSelector = mkSelector "endOfVertexSampleIndex"
 
 -- | @Selector@ for @setEndOfVertexSampleIndex:@
-setEndOfVertexSampleIndexSelector :: Selector
+setEndOfVertexSampleIndexSelector :: Selector '[CULong] ()
 setEndOfVertexSampleIndexSelector = mkSelector "setEndOfVertexSampleIndex:"
 
 -- | @Selector@ for @startOfFragmentSampleIndex@
-startOfFragmentSampleIndexSelector :: Selector
+startOfFragmentSampleIndexSelector :: Selector '[] CULong
 startOfFragmentSampleIndexSelector = mkSelector "startOfFragmentSampleIndex"
 
 -- | @Selector@ for @setStartOfFragmentSampleIndex:@
-setStartOfFragmentSampleIndexSelector :: Selector
+setStartOfFragmentSampleIndexSelector :: Selector '[CULong] ()
 setStartOfFragmentSampleIndexSelector = mkSelector "setStartOfFragmentSampleIndex:"
 
 -- | @Selector@ for @endOfFragmentSampleIndex@
-endOfFragmentSampleIndexSelector :: Selector
+endOfFragmentSampleIndexSelector :: Selector '[] CULong
 endOfFragmentSampleIndexSelector = mkSelector "endOfFragmentSampleIndex"
 
 -- | @Selector@ for @setEndOfFragmentSampleIndex:@
-setEndOfFragmentSampleIndexSelector :: Selector
+setEndOfFragmentSampleIndexSelector :: Selector '[CULong] ()
 setEndOfFragmentSampleIndexSelector = mkSelector "setEndOfFragmentSampleIndex:"
 

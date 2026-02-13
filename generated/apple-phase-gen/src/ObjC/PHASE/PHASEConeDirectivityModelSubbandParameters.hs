@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.PHASE.PHASEConeDirectivityModelSubbandParameters
   , outerAngle
   , outerGain
   , setOuterGain
-  , initSelector
-  , setInnerAngle_outerAngleSelector
   , frequencySelector
-  , setFrequencySelector
+  , initSelector
   , innerAngleSelector
   , outerAngleSelector
   , outerGainSelector
+  , setFrequencySelector
+  , setInnerAngle_outerAngleSelector
   , setOuterGainSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> IO (Id PHASEConeDirectivityModelSubbandParameters)
-init_ phaseConeDirectivityModelSubbandParameters  =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseConeDirectivityModelSubbandParameters =
+  sendOwnedMessage phaseConeDirectivityModelSubbandParameters initSelector
 
 -- | setInnerAngle:outerAngle
 --
@@ -64,8 +61,8 @@ init_ phaseConeDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setInnerAngle:outerAngle:@
 setInnerAngle_outerAngle :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> CDouble -> CDouble -> IO ()
-setInnerAngle_outerAngle phaseConeDirectivityModelSubbandParameters  innerAngle outerAngle =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "setInnerAngle:outerAngle:") retVoid [argCDouble innerAngle, argCDouble outerAngle]
+setInnerAngle_outerAngle phaseConeDirectivityModelSubbandParameters innerAngle outerAngle =
+  sendMessage phaseConeDirectivityModelSubbandParameters setInnerAngle_outerAngleSelector innerAngle outerAngle
 
 -- | frequency
 --
@@ -75,8 +72,8 @@ setInnerAngle_outerAngle phaseConeDirectivityModelSubbandParameters  innerAngle 
 --
 -- ObjC selector: @- frequency@
 frequency :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> IO CDouble
-frequency phaseConeDirectivityModelSubbandParameters  =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "frequency") retCDouble []
+frequency phaseConeDirectivityModelSubbandParameters =
+  sendMessage phaseConeDirectivityModelSubbandParameters frequencySelector
 
 -- | frequency
 --
@@ -86,8 +83,8 @@ frequency phaseConeDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setFrequency:@
 setFrequency :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> CDouble -> IO ()
-setFrequency phaseConeDirectivityModelSubbandParameters  value =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency phaseConeDirectivityModelSubbandParameters value =
+  sendMessage phaseConeDirectivityModelSubbandParameters setFrequencySelector value
 
 -- | innerAngle
 --
@@ -97,8 +94,8 @@ setFrequency phaseConeDirectivityModelSubbandParameters  value =
 --
 -- ObjC selector: @- innerAngle@
 innerAngle :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> IO CDouble
-innerAngle phaseConeDirectivityModelSubbandParameters  =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "innerAngle") retCDouble []
+innerAngle phaseConeDirectivityModelSubbandParameters =
+  sendMessage phaseConeDirectivityModelSubbandParameters innerAngleSelector
 
 -- | outerAngle
 --
@@ -108,8 +105,8 @@ innerAngle phaseConeDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- outerAngle@
 outerAngle :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> IO CDouble
-outerAngle phaseConeDirectivityModelSubbandParameters  =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "outerAngle") retCDouble []
+outerAngle phaseConeDirectivityModelSubbandParameters =
+  sendMessage phaseConeDirectivityModelSubbandParameters outerAngleSelector
 
 -- | outerGain
 --
@@ -119,8 +116,8 @@ outerAngle phaseConeDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- outerGain@
 outerGain :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> IO CDouble
-outerGain phaseConeDirectivityModelSubbandParameters  =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "outerGain") retCDouble []
+outerGain phaseConeDirectivityModelSubbandParameters =
+  sendMessage phaseConeDirectivityModelSubbandParameters outerGainSelector
 
 -- | outerGain
 --
@@ -130,42 +127,42 @@ outerGain phaseConeDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setOuterGain:@
 setOuterGain :: IsPHASEConeDirectivityModelSubbandParameters phaseConeDirectivityModelSubbandParameters => phaseConeDirectivityModelSubbandParameters -> CDouble -> IO ()
-setOuterGain phaseConeDirectivityModelSubbandParameters  value =
-    sendMsg phaseConeDirectivityModelSubbandParameters (mkSelector "setOuterGain:") retVoid [argCDouble value]
+setOuterGain phaseConeDirectivityModelSubbandParameters value =
+  sendMessage phaseConeDirectivityModelSubbandParameters setOuterGainSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEConeDirectivityModelSubbandParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setInnerAngle:outerAngle:@
-setInnerAngle_outerAngleSelector :: Selector
+setInnerAngle_outerAngleSelector :: Selector '[CDouble, CDouble] ()
 setInnerAngle_outerAngleSelector = mkSelector "setInnerAngle:outerAngle:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @innerAngle@
-innerAngleSelector :: Selector
+innerAngleSelector :: Selector '[] CDouble
 innerAngleSelector = mkSelector "innerAngle"
 
 -- | @Selector@ for @outerAngle@
-outerAngleSelector :: Selector
+outerAngleSelector :: Selector '[] CDouble
 outerAngleSelector = mkSelector "outerAngle"
 
 -- | @Selector@ for @outerGain@
-outerGainSelector :: Selector
+outerGainSelector :: Selector '[] CDouble
 outerGainSelector = mkSelector "outerGain"
 
 -- | @Selector@ for @setOuterGain:@
-setOuterGainSelector :: Selector
+setOuterGainSelector :: Selector '[CDouble] ()
 setOuterGainSelector = mkSelector "setOuterGain:"
 

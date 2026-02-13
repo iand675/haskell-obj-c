@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTROccupancySensingClusterOccupancyChangedEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- occupancy@
 occupancy :: IsMTROccupancySensingClusterOccupancyChangedEvent mtrOccupancySensingClusterOccupancyChangedEvent => mtrOccupancySensingClusterOccupancyChangedEvent -> IO (Id NSNumber)
-occupancy mtrOccupancySensingClusterOccupancyChangedEvent  =
-    sendMsg mtrOccupancySensingClusterOccupancyChangedEvent (mkSelector "occupancy") (retPtr retVoid) [] >>= retainedObject . castPtr
+occupancy mtrOccupancySensingClusterOccupancyChangedEvent =
+  sendMessage mtrOccupancySensingClusterOccupancyChangedEvent occupancySelector
 
 -- | @- setOccupancy:@
 setOccupancy :: (IsMTROccupancySensingClusterOccupancyChangedEvent mtrOccupancySensingClusterOccupancyChangedEvent, IsNSNumber value) => mtrOccupancySensingClusterOccupancyChangedEvent -> value -> IO ()
-setOccupancy mtrOccupancySensingClusterOccupancyChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOccupancySensingClusterOccupancyChangedEvent (mkSelector "setOccupancy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOccupancy mtrOccupancySensingClusterOccupancyChangedEvent value =
+  sendMessage mtrOccupancySensingClusterOccupancyChangedEvent setOccupancySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @occupancy@
-occupancySelector :: Selector
+occupancySelector :: Selector '[] (Id NSNumber)
 occupancySelector = mkSelector "occupancy"
 
 -- | @Selector@ for @setOccupancy:@
-setOccupancySelector :: Selector
+setOccupancySelector :: Selector '[Id NSNumber] ()
 setOccupancySelector = mkSelector "setOccupancy:"
 

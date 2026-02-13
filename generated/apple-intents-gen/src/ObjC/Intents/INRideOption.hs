@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,46 +34,42 @@ module ObjC.Intents.INRideOption
   , setUserActivityForBookingInApplication
   , identifier
   , setIdentifier
-  , initSelector
-  , initWithName_estimatedPickupDateSelector
-  , initWithCoderSelector
-  , nameSelector
-  , setNameSelector
-  , estimatedPickupDateSelector
-  , setEstimatedPickupDateSelector
-  , priceRangeSelector
-  , setPriceRangeSelector
-  , usesMeteredFareSelector
-  , setUsesMeteredFareSelector
-  , disclaimerMessageSelector
-  , setDisclaimerMessageSelector
-  , availablePartySizeOptionsSelector
-  , setAvailablePartySizeOptionsSelector
   , availablePartySizeOptionsSelectionPromptSelector
-  , setAvailablePartySizeOptionsSelectionPromptSelector
-  , specialPricingSelector
-  , setSpecialPricingSelector
-  , specialPricingBadgeImageSelector
-  , setSpecialPricingBadgeImageSelector
+  , availablePartySizeOptionsSelector
+  , disclaimerMessageSelector
+  , estimatedPickupDateSelector
   , fareLineItemsSelector
-  , setFareLineItemsSelector
-  , userActivityForBookingInApplicationSelector
-  , setUserActivityForBookingInApplicationSelector
   , identifierSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithName_estimatedPickupDateSelector
+  , nameSelector
+  , priceRangeSelector
+  , setAvailablePartySizeOptionsSelectionPromptSelector
+  , setAvailablePartySizeOptionsSelector
+  , setDisclaimerMessageSelector
+  , setEstimatedPickupDateSelector
+  , setFareLineItemsSelector
   , setIdentifierSelector
+  , setNameSelector
+  , setPriceRangeSelector
+  , setSpecialPricingBadgeImageSelector
+  , setSpecialPricingSelector
+  , setUserActivityForBookingInApplicationSelector
+  , setUsesMeteredFareSelector
+  , specialPricingBadgeImageSelector
+  , specialPricingSelector
+  , userActivityForBookingInApplicationSelector
+  , usesMeteredFareSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,263 +78,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINRideOption inRideOption => inRideOption -> IO (Id INRideOption)
-init_ inRideOption  =
-    sendMsg inRideOption (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRideOption =
+  sendOwnedMessage inRideOption initSelector
 
 -- | @- initWithName:estimatedPickupDate:@
 initWithName_estimatedPickupDate :: (IsINRideOption inRideOption, IsNSString name, IsNSDate estimatedPickupDate) => inRideOption -> name -> estimatedPickupDate -> IO (Id INRideOption)
-initWithName_estimatedPickupDate inRideOption  name estimatedPickupDate =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr estimatedPickupDate $ \raw_estimatedPickupDate ->
-        sendMsg inRideOption (mkSelector "initWithName:estimatedPickupDate:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_estimatedPickupDate :: Ptr ())] >>= ownedObject . castPtr
+initWithName_estimatedPickupDate inRideOption name estimatedPickupDate =
+  sendOwnedMessage inRideOption initWithName_estimatedPickupDateSelector (toNSString name) (toNSDate estimatedPickupDate)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsINRideOption inRideOption, IsNSCoder decoder) => inRideOption -> decoder -> IO (Id INRideOption)
-initWithCoder inRideOption  decoder =
-  withObjCPtr decoder $ \raw_decoder ->
-      sendMsg inRideOption (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_decoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder inRideOption decoder =
+  sendOwnedMessage inRideOption initWithCoderSelector (toNSCoder decoder)
 
 -- | @- name@
 name :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
-name inRideOption  =
-    sendMsg inRideOption (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name inRideOption =
+  sendMessage inRideOption nameSelector
 
 -- | @- setName:@
 setName :: (IsINRideOption inRideOption, IsNSString value) => inRideOption -> value -> IO ()
-setName inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName inRideOption value =
+  sendMessage inRideOption setNameSelector (toNSString value)
 
 -- | @- estimatedPickupDate@
 estimatedPickupDate :: IsINRideOption inRideOption => inRideOption -> IO (Id NSDate)
-estimatedPickupDate inRideOption  =
-    sendMsg inRideOption (mkSelector "estimatedPickupDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedPickupDate inRideOption =
+  sendMessage inRideOption estimatedPickupDateSelector
 
 -- | @- setEstimatedPickupDate:@
 setEstimatedPickupDate :: (IsINRideOption inRideOption, IsNSDate value) => inRideOption -> value -> IO ()
-setEstimatedPickupDate inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setEstimatedPickupDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedPickupDate inRideOption value =
+  sendMessage inRideOption setEstimatedPickupDateSelector (toNSDate value)
 
 -- | @- priceRange@
 priceRange :: IsINRideOption inRideOption => inRideOption -> IO (Id INPriceRange)
-priceRange inRideOption  =
-    sendMsg inRideOption (mkSelector "priceRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceRange inRideOption =
+  sendMessage inRideOption priceRangeSelector
 
 -- | @- setPriceRange:@
 setPriceRange :: (IsINRideOption inRideOption, IsINPriceRange value) => inRideOption -> value -> IO ()
-setPriceRange inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setPriceRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriceRange inRideOption value =
+  sendMessage inRideOption setPriceRangeSelector (toINPriceRange value)
 
 -- | @- usesMeteredFare@
 usesMeteredFare :: IsINRideOption inRideOption => inRideOption -> IO (Id NSNumber)
-usesMeteredFare inRideOption  =
-    sendMsg inRideOption (mkSelector "usesMeteredFare") (retPtr retVoid) [] >>= retainedObject . castPtr
+usesMeteredFare inRideOption =
+  sendMessage inRideOption usesMeteredFareSelector
 
 -- | @- setUsesMeteredFare:@
 setUsesMeteredFare :: (IsINRideOption inRideOption, IsNSNumber value) => inRideOption -> value -> IO ()
-setUsesMeteredFare inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setUsesMeteredFare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsesMeteredFare inRideOption value =
+  sendMessage inRideOption setUsesMeteredFareSelector (toNSNumber value)
 
 -- | @- disclaimerMessage@
 disclaimerMessage :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
-disclaimerMessage inRideOption  =
-    sendMsg inRideOption (mkSelector "disclaimerMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+disclaimerMessage inRideOption =
+  sendMessage inRideOption disclaimerMessageSelector
 
 -- | @- setDisclaimerMessage:@
 setDisclaimerMessage :: (IsINRideOption inRideOption, IsNSString value) => inRideOption -> value -> IO ()
-setDisclaimerMessage inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setDisclaimerMessage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisclaimerMessage inRideOption value =
+  sendMessage inRideOption setDisclaimerMessageSelector (toNSString value)
 
 -- | @- availablePartySizeOptions@
 availablePartySizeOptions :: IsINRideOption inRideOption => inRideOption -> IO (Id NSArray)
-availablePartySizeOptions inRideOption  =
-    sendMsg inRideOption (mkSelector "availablePartySizeOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+availablePartySizeOptions inRideOption =
+  sendMessage inRideOption availablePartySizeOptionsSelector
 
 -- | @- setAvailablePartySizeOptions:@
 setAvailablePartySizeOptions :: (IsINRideOption inRideOption, IsNSArray value) => inRideOption -> value -> IO ()
-setAvailablePartySizeOptions inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setAvailablePartySizeOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAvailablePartySizeOptions inRideOption value =
+  sendMessage inRideOption setAvailablePartySizeOptionsSelector (toNSArray value)
 
 -- | @- availablePartySizeOptionsSelectionPrompt@
 availablePartySizeOptionsSelectionPrompt :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
-availablePartySizeOptionsSelectionPrompt inRideOption  =
-    sendMsg inRideOption (mkSelector "availablePartySizeOptionsSelectionPrompt") (retPtr retVoid) [] >>= retainedObject . castPtr
+availablePartySizeOptionsSelectionPrompt inRideOption =
+  sendMessage inRideOption availablePartySizeOptionsSelectionPromptSelector
 
 -- | @- setAvailablePartySizeOptionsSelectionPrompt:@
 setAvailablePartySizeOptionsSelectionPrompt :: (IsINRideOption inRideOption, IsNSString value) => inRideOption -> value -> IO ()
-setAvailablePartySizeOptionsSelectionPrompt inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setAvailablePartySizeOptionsSelectionPrompt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAvailablePartySizeOptionsSelectionPrompt inRideOption value =
+  sendMessage inRideOption setAvailablePartySizeOptionsSelectionPromptSelector (toNSString value)
 
 -- | @- specialPricing@
 specialPricing :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
-specialPricing inRideOption  =
-    sendMsg inRideOption (mkSelector "specialPricing") (retPtr retVoid) [] >>= retainedObject . castPtr
+specialPricing inRideOption =
+  sendMessage inRideOption specialPricingSelector
 
 -- | @- setSpecialPricing:@
 setSpecialPricing :: (IsINRideOption inRideOption, IsNSString value) => inRideOption -> value -> IO ()
-setSpecialPricing inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setSpecialPricing:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpecialPricing inRideOption value =
+  sendMessage inRideOption setSpecialPricingSelector (toNSString value)
 
 -- | @- specialPricingBadgeImage@
 specialPricingBadgeImage :: IsINRideOption inRideOption => inRideOption -> IO (Id INImage)
-specialPricingBadgeImage inRideOption  =
-    sendMsg inRideOption (mkSelector "specialPricingBadgeImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+specialPricingBadgeImage inRideOption =
+  sendMessage inRideOption specialPricingBadgeImageSelector
 
 -- | @- setSpecialPricingBadgeImage:@
 setSpecialPricingBadgeImage :: (IsINRideOption inRideOption, IsINImage value) => inRideOption -> value -> IO ()
-setSpecialPricingBadgeImage inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setSpecialPricingBadgeImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpecialPricingBadgeImage inRideOption value =
+  sendMessage inRideOption setSpecialPricingBadgeImageSelector (toINImage value)
 
 -- | @- fareLineItems@
 fareLineItems :: IsINRideOption inRideOption => inRideOption -> IO (Id NSArray)
-fareLineItems inRideOption  =
-    sendMsg inRideOption (mkSelector "fareLineItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+fareLineItems inRideOption =
+  sendMessage inRideOption fareLineItemsSelector
 
 -- | @- setFareLineItems:@
 setFareLineItems :: (IsINRideOption inRideOption, IsNSArray value) => inRideOption -> value -> IO ()
-setFareLineItems inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setFareLineItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFareLineItems inRideOption value =
+  sendMessage inRideOption setFareLineItemsSelector (toNSArray value)
 
 -- | @- userActivityForBookingInApplication@
 userActivityForBookingInApplication :: IsINRideOption inRideOption => inRideOption -> IO (Id NSUserActivity)
-userActivityForBookingInApplication inRideOption  =
-    sendMsg inRideOption (mkSelector "userActivityForBookingInApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+userActivityForBookingInApplication inRideOption =
+  sendMessage inRideOption userActivityForBookingInApplicationSelector
 
 -- | @- setUserActivityForBookingInApplication:@
 setUserActivityForBookingInApplication :: (IsINRideOption inRideOption, IsNSUserActivity value) => inRideOption -> value -> IO ()
-setUserActivityForBookingInApplication inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setUserActivityForBookingInApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserActivityForBookingInApplication inRideOption value =
+  sendMessage inRideOption setUserActivityForBookingInApplicationSelector (toNSUserActivity value)
 
 -- | @- identifier@
 identifier :: IsINRideOption inRideOption => inRideOption -> IO (Id NSString)
-identifier inRideOption  =
-    sendMsg inRideOption (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier inRideOption =
+  sendMessage inRideOption identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsINRideOption inRideOption, IsNSString value) => inRideOption -> value -> IO ()
-setIdentifier inRideOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideOption (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier inRideOption value =
+  sendMessage inRideOption setIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRideOption)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithName:estimatedPickupDate:@
-initWithName_estimatedPickupDateSelector :: Selector
+initWithName_estimatedPickupDateSelector :: Selector '[Id NSString, Id NSDate] (Id INRideOption)
 initWithName_estimatedPickupDateSelector = mkSelector "initWithName:estimatedPickupDate:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id INRideOption)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @estimatedPickupDate@
-estimatedPickupDateSelector :: Selector
+estimatedPickupDateSelector :: Selector '[] (Id NSDate)
 estimatedPickupDateSelector = mkSelector "estimatedPickupDate"
 
 -- | @Selector@ for @setEstimatedPickupDate:@
-setEstimatedPickupDateSelector :: Selector
+setEstimatedPickupDateSelector :: Selector '[Id NSDate] ()
 setEstimatedPickupDateSelector = mkSelector "setEstimatedPickupDate:"
 
 -- | @Selector@ for @priceRange@
-priceRangeSelector :: Selector
+priceRangeSelector :: Selector '[] (Id INPriceRange)
 priceRangeSelector = mkSelector "priceRange"
 
 -- | @Selector@ for @setPriceRange:@
-setPriceRangeSelector :: Selector
+setPriceRangeSelector :: Selector '[Id INPriceRange] ()
 setPriceRangeSelector = mkSelector "setPriceRange:"
 
 -- | @Selector@ for @usesMeteredFare@
-usesMeteredFareSelector :: Selector
+usesMeteredFareSelector :: Selector '[] (Id NSNumber)
 usesMeteredFareSelector = mkSelector "usesMeteredFare"
 
 -- | @Selector@ for @setUsesMeteredFare:@
-setUsesMeteredFareSelector :: Selector
+setUsesMeteredFareSelector :: Selector '[Id NSNumber] ()
 setUsesMeteredFareSelector = mkSelector "setUsesMeteredFare:"
 
 -- | @Selector@ for @disclaimerMessage@
-disclaimerMessageSelector :: Selector
+disclaimerMessageSelector :: Selector '[] (Id NSString)
 disclaimerMessageSelector = mkSelector "disclaimerMessage"
 
 -- | @Selector@ for @setDisclaimerMessage:@
-setDisclaimerMessageSelector :: Selector
+setDisclaimerMessageSelector :: Selector '[Id NSString] ()
 setDisclaimerMessageSelector = mkSelector "setDisclaimerMessage:"
 
 -- | @Selector@ for @availablePartySizeOptions@
-availablePartySizeOptionsSelector :: Selector
+availablePartySizeOptionsSelector :: Selector '[] (Id NSArray)
 availablePartySizeOptionsSelector = mkSelector "availablePartySizeOptions"
 
 -- | @Selector@ for @setAvailablePartySizeOptions:@
-setAvailablePartySizeOptionsSelector :: Selector
+setAvailablePartySizeOptionsSelector :: Selector '[Id NSArray] ()
 setAvailablePartySizeOptionsSelector = mkSelector "setAvailablePartySizeOptions:"
 
 -- | @Selector@ for @availablePartySizeOptionsSelectionPrompt@
-availablePartySizeOptionsSelectionPromptSelector :: Selector
+availablePartySizeOptionsSelectionPromptSelector :: Selector '[] (Id NSString)
 availablePartySizeOptionsSelectionPromptSelector = mkSelector "availablePartySizeOptionsSelectionPrompt"
 
 -- | @Selector@ for @setAvailablePartySizeOptionsSelectionPrompt:@
-setAvailablePartySizeOptionsSelectionPromptSelector :: Selector
+setAvailablePartySizeOptionsSelectionPromptSelector :: Selector '[Id NSString] ()
 setAvailablePartySizeOptionsSelectionPromptSelector = mkSelector "setAvailablePartySizeOptionsSelectionPrompt:"
 
 -- | @Selector@ for @specialPricing@
-specialPricingSelector :: Selector
+specialPricingSelector :: Selector '[] (Id NSString)
 specialPricingSelector = mkSelector "specialPricing"
 
 -- | @Selector@ for @setSpecialPricing:@
-setSpecialPricingSelector :: Selector
+setSpecialPricingSelector :: Selector '[Id NSString] ()
 setSpecialPricingSelector = mkSelector "setSpecialPricing:"
 
 -- | @Selector@ for @specialPricingBadgeImage@
-specialPricingBadgeImageSelector :: Selector
+specialPricingBadgeImageSelector :: Selector '[] (Id INImage)
 specialPricingBadgeImageSelector = mkSelector "specialPricingBadgeImage"
 
 -- | @Selector@ for @setSpecialPricingBadgeImage:@
-setSpecialPricingBadgeImageSelector :: Selector
+setSpecialPricingBadgeImageSelector :: Selector '[Id INImage] ()
 setSpecialPricingBadgeImageSelector = mkSelector "setSpecialPricingBadgeImage:"
 
 -- | @Selector@ for @fareLineItems@
-fareLineItemsSelector :: Selector
+fareLineItemsSelector :: Selector '[] (Id NSArray)
 fareLineItemsSelector = mkSelector "fareLineItems"
 
 -- | @Selector@ for @setFareLineItems:@
-setFareLineItemsSelector :: Selector
+setFareLineItemsSelector :: Selector '[Id NSArray] ()
 setFareLineItemsSelector = mkSelector "setFareLineItems:"
 
 -- | @Selector@ for @userActivityForBookingInApplication@
-userActivityForBookingInApplicationSelector :: Selector
+userActivityForBookingInApplicationSelector :: Selector '[] (Id NSUserActivity)
 userActivityForBookingInApplicationSelector = mkSelector "userActivityForBookingInApplication"
 
 -- | @Selector@ for @setUserActivityForBookingInApplication:@
-setUserActivityForBookingInApplicationSelector :: Selector
+setUserActivityForBookingInApplicationSelector :: Selector '[Id NSUserActivity] ()
 setUserActivityForBookingInApplicationSelector = mkSelector "setUserActivityForBookingInApplication:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 

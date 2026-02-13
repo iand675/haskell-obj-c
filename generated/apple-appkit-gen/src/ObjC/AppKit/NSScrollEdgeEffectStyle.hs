@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AppKit.NSScrollEdgeEffectStyle
   , automaticStyle
   , softStyle
   , hardStyle
+  , automaticStyleSelector
+  , hardStyleSelector
   , initSelector
   , newSelector
-  , automaticStyleSelector
   , softStyleSelector
-  , hardStyleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSScrollEdgeEffectStyle nsScrollEdgeEffectStyle => nsScrollEdgeEffectStyle -> IO (Id NSScrollEdgeEffectStyle)
-init_ nsScrollEdgeEffectStyle  =
-    sendMsg nsScrollEdgeEffectStyle (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsScrollEdgeEffectStyle =
+  sendOwnedMessage nsScrollEdgeEffectStyle initSelector
 
 -- | @+ new@
 new :: IO (Id NSScrollEdgeEffectStyle)
 new  =
   do
     cls' <- getRequiredClass "NSScrollEdgeEffectStyle"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The automatic scroll edge effect style.
 --
@@ -56,7 +53,7 @@ automaticStyle :: IO (Id NSScrollEdgeEffectStyle)
 automaticStyle  =
   do
     cls' <- getRequiredClass "NSScrollEdgeEffectStyle"
-    sendClassMsg cls' (mkSelector "automaticStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' automaticStyleSelector
 
 -- | A scroll edge effect with a soft edge.
 --
@@ -65,7 +62,7 @@ softStyle :: IO (Id NSScrollEdgeEffectStyle)
 softStyle  =
   do
     cls' <- getRequiredClass "NSScrollEdgeEffectStyle"
-    sendClassMsg cls' (mkSelector "softStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' softStyleSelector
 
 -- | A scroll edge effect with a hard cutoff.
 --
@@ -74,29 +71,29 @@ hardStyle :: IO (Id NSScrollEdgeEffectStyle)
 hardStyle  =
   do
     cls' <- getRequiredClass "NSScrollEdgeEffectStyle"
-    sendClassMsg cls' (mkSelector "hardStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardStyleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @automaticStyle@
-automaticStyleSelector :: Selector
+automaticStyleSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 automaticStyleSelector = mkSelector "automaticStyle"
 
 -- | @Selector@ for @softStyle@
-softStyleSelector :: Selector
+softStyleSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 softStyleSelector = mkSelector "softStyle"
 
 -- | @Selector@ for @hardStyle@
-hardStyleSelector :: Selector
+hardStyleSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 hardStyleSelector = mkSelector "hardStyle"
 

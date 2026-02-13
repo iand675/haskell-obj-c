@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AppKit.NSLayoutDimension
   , constraintEqualToAnchor_multiplier_constant
   , constraintGreaterThanOrEqualToAnchor_multiplier_constant
   , constraintLessThanOrEqualToAnchor_multiplier_constant
-  , constraintEqualToConstantSelector
-  , constraintGreaterThanOrEqualToConstantSelector
-  , constraintLessThanOrEqualToConstantSelector
   , constraintEqualToAnchor_multiplierSelector
-  , constraintGreaterThanOrEqualToAnchor_multiplierSelector
-  , constraintLessThanOrEqualToAnchor_multiplierSelector
   , constraintEqualToAnchor_multiplier_constantSelector
+  , constraintEqualToConstantSelector
+  , constraintGreaterThanOrEqualToAnchor_multiplierSelector
   , constraintGreaterThanOrEqualToAnchor_multiplier_constantSelector
+  , constraintGreaterThanOrEqualToConstantSelector
+  , constraintLessThanOrEqualToAnchor_multiplierSelector
   , constraintLessThanOrEqualToAnchor_multiplier_constantSelector
+  , constraintLessThanOrEqualToConstantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,92 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- constraintEqualToConstant:@
 constraintEqualToConstant :: IsNSLayoutDimension nsLayoutDimension => nsLayoutDimension -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToConstant nsLayoutDimension  c =
-    sendMsg nsLayoutDimension (mkSelector "constraintEqualToConstant:") (retPtr retVoid) [argCDouble c] >>= retainedObject . castPtr
+constraintEqualToConstant nsLayoutDimension c =
+  sendMessage nsLayoutDimension constraintEqualToConstantSelector c
 
 -- | @- constraintGreaterThanOrEqualToConstant:@
 constraintGreaterThanOrEqualToConstant :: IsNSLayoutDimension nsLayoutDimension => nsLayoutDimension -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToConstant nsLayoutDimension  c =
-    sendMsg nsLayoutDimension (mkSelector "constraintGreaterThanOrEqualToConstant:") (retPtr retVoid) [argCDouble c] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToConstant nsLayoutDimension c =
+  sendMessage nsLayoutDimension constraintGreaterThanOrEqualToConstantSelector c
 
 -- | @- constraintLessThanOrEqualToConstant:@
 constraintLessThanOrEqualToConstant :: IsNSLayoutDimension nsLayoutDimension => nsLayoutDimension -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToConstant nsLayoutDimension  c =
-    sendMsg nsLayoutDimension (mkSelector "constraintLessThanOrEqualToConstant:") (retPtr retVoid) [argCDouble c] >>= retainedObject . castPtr
+constraintLessThanOrEqualToConstant nsLayoutDimension c =
+  sendMessage nsLayoutDimension constraintLessThanOrEqualToConstantSelector c
 
 -- | @- constraintEqualToAnchor:multiplier:@
 constraintEqualToAnchor_multiplier :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToAnchor_multiplier nsLayoutDimension  anchor m =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintEqualToAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m] >>= retainedObject . castPtr
+constraintEqualToAnchor_multiplier nsLayoutDimension anchor m =
+  sendMessage nsLayoutDimension constraintEqualToAnchor_multiplierSelector (toNSLayoutDimension anchor) m
 
 -- | @- constraintGreaterThanOrEqualToAnchor:multiplier:@
 constraintGreaterThanOrEqualToAnchor_multiplier :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToAnchor_multiplier nsLayoutDimension  anchor m =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintGreaterThanOrEqualToAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToAnchor_multiplier nsLayoutDimension anchor m =
+  sendMessage nsLayoutDimension constraintGreaterThanOrEqualToAnchor_multiplierSelector (toNSLayoutDimension anchor) m
 
 -- | @- constraintLessThanOrEqualToAnchor:multiplier:@
 constraintLessThanOrEqualToAnchor_multiplier :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToAnchor_multiplier nsLayoutDimension  anchor m =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintLessThanOrEqualToAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m] >>= retainedObject . castPtr
+constraintLessThanOrEqualToAnchor_multiplier nsLayoutDimension anchor m =
+  sendMessage nsLayoutDimension constraintLessThanOrEqualToAnchor_multiplierSelector (toNSLayoutDimension anchor) m
 
 -- | @- constraintEqualToAnchor:multiplier:constant:@
 constraintEqualToAnchor_multiplier_constant :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToAnchor_multiplier_constant nsLayoutDimension  anchor m c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintEqualToAnchor:multiplier:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m, argCDouble c] >>= retainedObject . castPtr
+constraintEqualToAnchor_multiplier_constant nsLayoutDimension anchor m c =
+  sendMessage nsLayoutDimension constraintEqualToAnchor_multiplier_constantSelector (toNSLayoutDimension anchor) m c
 
 -- | @- constraintGreaterThanOrEqualToAnchor:multiplier:constant:@
 constraintGreaterThanOrEqualToAnchor_multiplier_constant :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToAnchor_multiplier_constant nsLayoutDimension  anchor m c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintGreaterThanOrEqualToAnchor:multiplier:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m, argCDouble c] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToAnchor_multiplier_constant nsLayoutDimension anchor m c =
+  sendMessage nsLayoutDimension constraintGreaterThanOrEqualToAnchor_multiplier_constantSelector (toNSLayoutDimension anchor) m c
 
 -- | @- constraintLessThanOrEqualToAnchor:multiplier:constant:@
 constraintLessThanOrEqualToAnchor_multiplier_constant :: (IsNSLayoutDimension nsLayoutDimension, IsNSLayoutDimension anchor) => nsLayoutDimension -> anchor -> CDouble -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToAnchor_multiplier_constant nsLayoutDimension  anchor m c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutDimension (mkSelector "constraintLessThanOrEqualToAnchor:multiplier:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble m, argCDouble c] >>= retainedObject . castPtr
+constraintLessThanOrEqualToAnchor_multiplier_constant nsLayoutDimension anchor m c =
+  sendMessage nsLayoutDimension constraintLessThanOrEqualToAnchor_multiplier_constantSelector (toNSLayoutDimension anchor) m c
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constraintEqualToConstant:@
-constraintEqualToConstantSelector :: Selector
+constraintEqualToConstantSelector :: Selector '[CDouble] (Id NSLayoutConstraint)
 constraintEqualToConstantSelector = mkSelector "constraintEqualToConstant:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToConstant:@
-constraintGreaterThanOrEqualToConstantSelector :: Selector
+constraintGreaterThanOrEqualToConstantSelector :: Selector '[CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToConstantSelector = mkSelector "constraintGreaterThanOrEqualToConstant:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToConstant:@
-constraintLessThanOrEqualToConstantSelector :: Selector
+constraintLessThanOrEqualToConstantSelector :: Selector '[CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToConstantSelector = mkSelector "constraintLessThanOrEqualToConstant:"
 
 -- | @Selector@ for @constraintEqualToAnchor:multiplier:@
-constraintEqualToAnchor_multiplierSelector :: Selector
+constraintEqualToAnchor_multiplierSelector :: Selector '[Id NSLayoutDimension, CDouble] (Id NSLayoutConstraint)
 constraintEqualToAnchor_multiplierSelector = mkSelector "constraintEqualToAnchor:multiplier:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToAnchor:multiplier:@
-constraintGreaterThanOrEqualToAnchor_multiplierSelector :: Selector
+constraintGreaterThanOrEqualToAnchor_multiplierSelector :: Selector '[Id NSLayoutDimension, CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToAnchor_multiplierSelector = mkSelector "constraintGreaterThanOrEqualToAnchor:multiplier:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToAnchor:multiplier:@
-constraintLessThanOrEqualToAnchor_multiplierSelector :: Selector
+constraintLessThanOrEqualToAnchor_multiplierSelector :: Selector '[Id NSLayoutDimension, CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToAnchor_multiplierSelector = mkSelector "constraintLessThanOrEqualToAnchor:multiplier:"
 
 -- | @Selector@ for @constraintEqualToAnchor:multiplier:constant:@
-constraintEqualToAnchor_multiplier_constantSelector :: Selector
+constraintEqualToAnchor_multiplier_constantSelector :: Selector '[Id NSLayoutDimension, CDouble, CDouble] (Id NSLayoutConstraint)
 constraintEqualToAnchor_multiplier_constantSelector = mkSelector "constraintEqualToAnchor:multiplier:constant:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToAnchor:multiplier:constant:@
-constraintGreaterThanOrEqualToAnchor_multiplier_constantSelector :: Selector
+constraintGreaterThanOrEqualToAnchor_multiplier_constantSelector :: Selector '[Id NSLayoutDimension, CDouble, CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToAnchor_multiplier_constantSelector = mkSelector "constraintGreaterThanOrEqualToAnchor:multiplier:constant:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToAnchor:multiplier:constant:@
-constraintLessThanOrEqualToAnchor_multiplier_constantSelector :: Selector
+constraintLessThanOrEqualToAnchor_multiplier_constantSelector :: Selector '[Id NSLayoutDimension, CDouble, CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToAnchor_multiplier_constantSelector = mkSelector "constraintLessThanOrEqualToAnchor:multiplier:constant:"
 

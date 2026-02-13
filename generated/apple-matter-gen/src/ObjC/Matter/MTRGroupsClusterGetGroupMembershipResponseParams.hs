@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRGroupsClusterGetGroupMembershipResponseParams
   , setGroupList
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
   , capacitySelector
-  , setCapacitySelector
   , groupListSelector
+  , initWithResponseValue_errorSelector
+  , setCapacitySelector
   , setGroupListSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrGroupsClusterGetGroupMembershipResponseParams -> responseValue -> error_ -> IO (Id MTRGroupsClusterGetGroupMembershipResponseParams)
-initWithResponseValue_error mtrGroupsClusterGetGroupMembershipResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrGroupsClusterGetGroupMembershipResponseParams responseValue error_ =
+  sendOwnedMessage mtrGroupsClusterGetGroupMembershipResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- capacity@
 capacity :: IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams => mtrGroupsClusterGetGroupMembershipResponseParams -> IO (Id NSNumber)
-capacity mtrGroupsClusterGetGroupMembershipResponseParams  =
-    sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "capacity") (retPtr retVoid) [] >>= retainedObject . castPtr
+capacity mtrGroupsClusterGetGroupMembershipResponseParams =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams capacitySelector
 
 -- | @- setCapacity:@
 setCapacity :: (IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams, IsNSNumber value) => mtrGroupsClusterGetGroupMembershipResponseParams -> value -> IO ()
-setCapacity mtrGroupsClusterGetGroupMembershipResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "setCapacity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCapacity mtrGroupsClusterGetGroupMembershipResponseParams value =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams setCapacitySelector (toNSNumber value)
 
 -- | @- groupList@
 groupList :: IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams => mtrGroupsClusterGetGroupMembershipResponseParams -> IO (Id NSArray)
-groupList mtrGroupsClusterGetGroupMembershipResponseParams  =
-    sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "groupList") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupList mtrGroupsClusterGetGroupMembershipResponseParams =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams groupListSelector
 
 -- | @- setGroupList:@
 setGroupList :: (IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams, IsNSArray value) => mtrGroupsClusterGetGroupMembershipResponseParams -> value -> IO ()
-setGroupList mtrGroupsClusterGetGroupMembershipResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "setGroupList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupList mtrGroupsClusterGetGroupMembershipResponseParams value =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams setGroupListSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setGroupList mtrGroupsClusterGetGroupMembershipResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams => mtrGroupsClusterGetGroupMembershipResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupsClusterGetGroupMembershipResponseParams  =
-    sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupsClusterGetGroupMembershipResponseParams =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrGroupsClusterGetGroupMembershipResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupsClusterGetGroupMembershipResponseParams mtrGroupsClusterGetGroupMembershipResponseParams, IsNSNumber value) => mtrGroupsClusterGetGroupMembershipResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupsClusterGetGroupMembershipResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupsClusterGetGroupMembershipResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupsClusterGetGroupMembershipResponseParams value =
+  sendMessage mtrGroupsClusterGetGroupMembershipResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRGroupsClusterGetGroupMembershipResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @capacity@
-capacitySelector :: Selector
+capacitySelector :: Selector '[] (Id NSNumber)
 capacitySelector = mkSelector "capacity"
 
 -- | @Selector@ for @setCapacity:@
-setCapacitySelector :: Selector
+setCapacitySelector :: Selector '[Id NSNumber] ()
 setCapacitySelector = mkSelector "setCapacity:"
 
 -- | @Selector@ for @groupList@
-groupListSelector :: Selector
+groupListSelector :: Selector '[] (Id NSArray)
 groupListSelector = mkSelector "groupList"
 
 -- | @Selector@ for @setGroupList:@
-setGroupListSelector :: Selector
+setGroupListSelector :: Selector '[Id NSArray] ()
 setGroupListSelector = mkSelector "setGroupList:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

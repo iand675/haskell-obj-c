@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.BackgroundTasks.BGContinuedProcessingTaskRequest
   , requiredResources
   , setRequiredResources
   , initWithIdentifier_title_subtitleSelector
-  , titleSelector
-  , setTitleSelector
-  , subtitleSelector
-  , setSubtitleSelector
-  , strategySelector
-  , setStrategySelector
   , requiredResourcesSelector
   , setRequiredResourcesSelector
+  , setStrategySelector
+  , setSubtitleSelector
+  , setTitleSelector
+  , strategySelector
+  , subtitleSelector
+  , titleSelector
 
   -- * Enum types
   , BGContinuedProcessingTaskRequestResources(BGContinuedProcessingTaskRequestResources)
@@ -38,15 +39,11 @@ module ObjC.BackgroundTasks.BGContinuedProcessingTaskRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,41 +61,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:title:subtitle:@
 initWithIdentifier_title_subtitle :: (IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest, IsNSString identifier, IsNSString title, IsNSString subtitle) => bgContinuedProcessingTaskRequest -> identifier -> title -> subtitle -> IO (Id BGContinuedProcessingTaskRequest)
-initWithIdentifier_title_subtitle bgContinuedProcessingTaskRequest  identifier title subtitle =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr title $ \raw_title ->
-      withObjCPtr subtitle $ \raw_subtitle ->
-          sendMsg bgContinuedProcessingTaskRequest (mkSelector "initWithIdentifier:title:subtitle:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_subtitle :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_title_subtitle bgContinuedProcessingTaskRequest identifier title subtitle =
+  sendOwnedMessage bgContinuedProcessingTaskRequest initWithIdentifier_title_subtitleSelector (toNSString identifier) (toNSString title) (toNSString subtitle)
 
 -- | The localized title displayed to the user.
 --
 -- ObjC selector: @- title@
 title :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> IO (Id NSString)
-title bgContinuedProcessingTaskRequest  =
-    sendMsg bgContinuedProcessingTaskRequest (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title bgContinuedProcessingTaskRequest =
+  sendMessage bgContinuedProcessingTaskRequest titleSelector
 
 -- | The localized title displayed to the user.
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest, IsNSString value) => bgContinuedProcessingTaskRequest -> value -> IO ()
-setTitle bgContinuedProcessingTaskRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg bgContinuedProcessingTaskRequest (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle bgContinuedProcessingTaskRequest value =
+  sendMessage bgContinuedProcessingTaskRequest setTitleSelector (toNSString value)
 
 -- | The localized subtitle displayed to the user.
 --
 -- ObjC selector: @- subtitle@
 subtitle :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> IO (Id NSString)
-subtitle bgContinuedProcessingTaskRequest  =
-    sendMsg bgContinuedProcessingTaskRequest (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle bgContinuedProcessingTaskRequest =
+  sendMessage bgContinuedProcessingTaskRequest subtitleSelector
 
 -- | The localized subtitle displayed to the user.
 --
 -- ObjC selector: @- setSubtitle:@
 setSubtitle :: (IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest, IsNSString value) => bgContinuedProcessingTaskRequest -> value -> IO ()
-setSubtitle bgContinuedProcessingTaskRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg bgContinuedProcessingTaskRequest (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubtitle bgContinuedProcessingTaskRequest value =
+  sendMessage bgContinuedProcessingTaskRequest setSubtitleSelector (toNSString value)
 
 -- | The submission strategy for the scheduler to abide by.
 --
@@ -106,8 +98,8 @@ setSubtitle bgContinuedProcessingTaskRequest  value =
 --
 -- ObjC selector: @- strategy@
 strategy :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> IO BGContinuedProcessingTaskRequestSubmissionStrategy
-strategy bgContinuedProcessingTaskRequest  =
-    fmap (coerce :: CLong -> BGContinuedProcessingTaskRequestSubmissionStrategy) $ sendMsg bgContinuedProcessingTaskRequest (mkSelector "strategy") retCLong []
+strategy bgContinuedProcessingTaskRequest =
+  sendMessage bgContinuedProcessingTaskRequest strategySelector
 
 -- | The submission strategy for the scheduler to abide by.
 --
@@ -115,8 +107,8 @@ strategy bgContinuedProcessingTaskRequest  =
 --
 -- ObjC selector: @- setStrategy:@
 setStrategy :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> BGContinuedProcessingTaskRequestSubmissionStrategy -> IO ()
-setStrategy bgContinuedProcessingTaskRequest  value =
-    sendMsg bgContinuedProcessingTaskRequest (mkSelector "setStrategy:") retVoid [argCLong (coerce value)]
+setStrategy bgContinuedProcessingTaskRequest value =
+  sendMessage bgContinuedProcessingTaskRequest setStrategySelector value
 
 -- | Inform the scheduler that the task will be requesting additional system resources.
 --
@@ -124,8 +116,8 @@ setStrategy bgContinuedProcessingTaskRequest  value =
 --
 -- ObjC selector: @- requiredResources@
 requiredResources :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> IO BGContinuedProcessingTaskRequestResources
-requiredResources bgContinuedProcessingTaskRequest  =
-    fmap (coerce :: CLong -> BGContinuedProcessingTaskRequestResources) $ sendMsg bgContinuedProcessingTaskRequest (mkSelector "requiredResources") retCLong []
+requiredResources bgContinuedProcessingTaskRequest =
+  sendMessage bgContinuedProcessingTaskRequest requiredResourcesSelector
 
 -- | Inform the scheduler that the task will be requesting additional system resources.
 --
@@ -133,46 +125,46 @@ requiredResources bgContinuedProcessingTaskRequest  =
 --
 -- ObjC selector: @- setRequiredResources:@
 setRequiredResources :: IsBGContinuedProcessingTaskRequest bgContinuedProcessingTaskRequest => bgContinuedProcessingTaskRequest -> BGContinuedProcessingTaskRequestResources -> IO ()
-setRequiredResources bgContinuedProcessingTaskRequest  value =
-    sendMsg bgContinuedProcessingTaskRequest (mkSelector "setRequiredResources:") retVoid [argCLong (coerce value)]
+setRequiredResources bgContinuedProcessingTaskRequest value =
+  sendMessage bgContinuedProcessingTaskRequest setRequiredResourcesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:title:subtitle:@
-initWithIdentifier_title_subtitleSelector :: Selector
+initWithIdentifier_title_subtitleSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id BGContinuedProcessingTaskRequest)
 initWithIdentifier_title_subtitleSelector = mkSelector "initWithIdentifier:title:subtitle:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @setSubtitle:@
-setSubtitleSelector :: Selector
+setSubtitleSelector :: Selector '[Id NSString] ()
 setSubtitleSelector = mkSelector "setSubtitle:"
 
 -- | @Selector@ for @strategy@
-strategySelector :: Selector
+strategySelector :: Selector '[] BGContinuedProcessingTaskRequestSubmissionStrategy
 strategySelector = mkSelector "strategy"
 
 -- | @Selector@ for @setStrategy:@
-setStrategySelector :: Selector
+setStrategySelector :: Selector '[BGContinuedProcessingTaskRequestSubmissionStrategy] ()
 setStrategySelector = mkSelector "setStrategy:"
 
 -- | @Selector@ for @requiredResources@
-requiredResourcesSelector :: Selector
+requiredResourcesSelector :: Selector '[] BGContinuedProcessingTaskRequestResources
 requiredResourcesSelector = mkSelector "requiredResources"
 
 -- | @Selector@ for @setRequiredResources:@
-setRequiredResourcesSelector :: Selector
+setRequiredResourcesSelector :: Selector '[BGContinuedProcessingTaskRequestResources] ()
 setRequiredResourcesSelector = mkSelector "setRequiredResources:"
 

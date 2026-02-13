@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.NetworkExtension.NEOnDemandRuleEvaluateConnection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- connectionRules@
 connectionRules :: IsNEOnDemandRuleEvaluateConnection neOnDemandRuleEvaluateConnection => neOnDemandRuleEvaluateConnection -> IO (Id NSArray)
-connectionRules neOnDemandRuleEvaluateConnection  =
-    sendMsg neOnDemandRuleEvaluateConnection (mkSelector "connectionRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionRules neOnDemandRuleEvaluateConnection =
+  sendMessage neOnDemandRuleEvaluateConnection connectionRulesSelector
 
 -- | connectionRules
 --
@@ -52,19 +49,18 @@ connectionRules neOnDemandRuleEvaluateConnection  =
 --
 -- ObjC selector: @- setConnectionRules:@
 setConnectionRules :: (IsNEOnDemandRuleEvaluateConnection neOnDemandRuleEvaluateConnection, IsNSArray value) => neOnDemandRuleEvaluateConnection -> value -> IO ()
-setConnectionRules neOnDemandRuleEvaluateConnection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neOnDemandRuleEvaluateConnection (mkSelector "setConnectionRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConnectionRules neOnDemandRuleEvaluateConnection value =
+  sendMessage neOnDemandRuleEvaluateConnection setConnectionRulesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @connectionRules@
-connectionRulesSelector :: Selector
+connectionRulesSelector :: Selector '[] (Id NSArray)
 connectionRulesSelector = mkSelector "connectionRules"
 
 -- | @Selector@ for @setConnectionRules:@
-setConnectionRulesSelector :: Selector
+setConnectionRulesSelector :: Selector '[Id NSArray] ()
 setConnectionRulesSelector = mkSelector "setConnectionRules:"
 

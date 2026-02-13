@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.AppKit.NSTextViewportLayoutController
   , setDelegate
   , textLayoutManager
   , viewportRange
-  , initWithTextLayoutManagerSelector
-  , newSelector
-  , initSelector
-  , layoutViewportSelector
-  , relocateViewportToTextLocationSelector
   , adjustViewportByVerticalOffsetSelector
   , delegateSelector
+  , initSelector
+  , initWithTextLayoutManagerSelector
+  , layoutViewportSelector
+  , newSelector
+  , relocateViewportToTextLocationSelector
   , setDelegateSelector
   , textLayoutManagerSelector
   , viewportRangeSelector
@@ -30,15 +31,11 @@ module ObjC.AppKit.NSTextViewportLayoutController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,98 +44,97 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTextLayoutManager:@
 initWithTextLayoutManager :: (IsNSTextViewportLayoutController nsTextViewportLayoutController, IsNSTextLayoutManager textLayoutManager) => nsTextViewportLayoutController -> textLayoutManager -> IO (Id NSTextViewportLayoutController)
-initWithTextLayoutManager nsTextViewportLayoutController  textLayoutManager =
-  withObjCPtr textLayoutManager $ \raw_textLayoutManager ->
-      sendMsg nsTextViewportLayoutController (mkSelector "initWithTextLayoutManager:") (retPtr retVoid) [argPtr (castPtr raw_textLayoutManager :: Ptr ())] >>= ownedObject . castPtr
+initWithTextLayoutManager nsTextViewportLayoutController textLayoutManager =
+  sendOwnedMessage nsTextViewportLayoutController initWithTextLayoutManagerSelector (toNSTextLayoutManager textLayoutManager)
 
 -- | @+ new@
 new :: IO (Id NSTextViewportLayoutController)
 new  =
   do
     cls' <- getRequiredClass "NSTextViewportLayoutController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO (Id NSTextViewportLayoutController)
-init_ nsTextViewportLayoutController  =
-    sendMsg nsTextViewportLayoutController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextViewportLayoutController =
+  sendOwnedMessage nsTextViewportLayoutController initSelector
 
 -- | @- layoutViewport@
 layoutViewport :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO ()
-layoutViewport nsTextViewportLayoutController  =
-    sendMsg nsTextViewportLayoutController (mkSelector "layoutViewport") retVoid []
+layoutViewport nsTextViewportLayoutController =
+  sendMessage nsTextViewportLayoutController layoutViewportSelector
 
 -- | @- relocateViewportToTextLocation:@
 relocateViewportToTextLocation :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> RawId -> IO CDouble
-relocateViewportToTextLocation nsTextViewportLayoutController  textLocation =
-    sendMsg nsTextViewportLayoutController (mkSelector "relocateViewportToTextLocation:") retCDouble [argPtr (castPtr (unRawId textLocation) :: Ptr ())]
+relocateViewportToTextLocation nsTextViewportLayoutController textLocation =
+  sendMessage nsTextViewportLayoutController relocateViewportToTextLocationSelector textLocation
 
 -- | @- adjustViewportByVerticalOffset:@
 adjustViewportByVerticalOffset :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> CDouble -> IO ()
-adjustViewportByVerticalOffset nsTextViewportLayoutController  verticalOffset =
-    sendMsg nsTextViewportLayoutController (mkSelector "adjustViewportByVerticalOffset:") retVoid [argCDouble verticalOffset]
+adjustViewportByVerticalOffset nsTextViewportLayoutController verticalOffset =
+  sendMessage nsTextViewportLayoutController adjustViewportByVerticalOffsetSelector verticalOffset
 
 -- | @- delegate@
 delegate :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO RawId
-delegate nsTextViewportLayoutController  =
-    fmap (RawId . castPtr) $ sendMsg nsTextViewportLayoutController (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextViewportLayoutController =
+  sendMessage nsTextViewportLayoutController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> RawId -> IO ()
-setDelegate nsTextViewportLayoutController  value =
-    sendMsg nsTextViewportLayoutController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextViewportLayoutController value =
+  sendMessage nsTextViewportLayoutController setDelegateSelector value
 
 -- | @- textLayoutManager@
 textLayoutManager :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO (Id NSTextLayoutManager)
-textLayoutManager nsTextViewportLayoutController  =
-    sendMsg nsTextViewportLayoutController (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+textLayoutManager nsTextViewportLayoutController =
+  sendMessage nsTextViewportLayoutController textLayoutManagerSelector
 
 -- | @- viewportRange@
 viewportRange :: IsNSTextViewportLayoutController nsTextViewportLayoutController => nsTextViewportLayoutController -> IO (Id NSTextRange)
-viewportRange nsTextViewportLayoutController  =
-    sendMsg nsTextViewportLayoutController (mkSelector "viewportRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewportRange nsTextViewportLayoutController =
+  sendMessage nsTextViewportLayoutController viewportRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTextLayoutManager:@
-initWithTextLayoutManagerSelector :: Selector
+initWithTextLayoutManagerSelector :: Selector '[Id NSTextLayoutManager] (Id NSTextViewportLayoutController)
 initWithTextLayoutManagerSelector = mkSelector "initWithTextLayoutManager:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSTextViewportLayoutController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextViewportLayoutController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @layoutViewport@
-layoutViewportSelector :: Selector
+layoutViewportSelector :: Selector '[] ()
 layoutViewportSelector = mkSelector "layoutViewport"
 
 -- | @Selector@ for @relocateViewportToTextLocation:@
-relocateViewportToTextLocationSelector :: Selector
+relocateViewportToTextLocationSelector :: Selector '[RawId] CDouble
 relocateViewportToTextLocationSelector = mkSelector "relocateViewportToTextLocation:"
 
 -- | @Selector@ for @adjustViewportByVerticalOffset:@
-adjustViewportByVerticalOffsetSelector :: Selector
+adjustViewportByVerticalOffsetSelector :: Selector '[CDouble] ()
 adjustViewportByVerticalOffsetSelector = mkSelector "adjustViewportByVerticalOffset:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @textLayoutManager@
-textLayoutManagerSelector :: Selector
+textLayoutManagerSelector :: Selector '[] (Id NSTextLayoutManager)
 textLayoutManagerSelector = mkSelector "textLayoutManager"
 
 -- | @Selector@ for @viewportRange@
-viewportRangeSelector :: Selector
+viewportRangeSelector :: Selector '[] (Id NSTextRange)
 viewportRangeSelector = mkSelector "viewportRange"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.HealthKit.HKCorrelation
   , objectsForType
   , correlationType
   , objects
-  , correlationWithType_startDate_endDate_objectsSelector
-  , correlationWithType_startDate_endDate_objects_metadataSelector
-  , correlationWithType_startDate_endDate_objects_device_metadataSelector
-  , objectsForTypeSelector
   , correlationTypeSelector
+  , correlationWithType_startDate_endDate_objectsSelector
+  , correlationWithType_startDate_endDate_objects_device_metadataSelector
+  , correlationWithType_startDate_endDate_objects_metadataSelector
+  , objectsForTypeSelector
   , objectsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,11 +53,7 @@ correlationWithType_startDate_endDate_objects :: (IsHKCorrelationType correlatio
 correlationWithType_startDate_endDate_objects correlationType startDate endDate objects =
   do
     cls' <- getRequiredClass "HKCorrelation"
-    withObjCPtr correlationType $ \raw_correlationType ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr objects $ \raw_objects ->
-            sendClassMsg cls' (mkSelector "correlationWithType:startDate:endDate:objects:") (retPtr retVoid) [argPtr (castPtr raw_correlationType :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_objects :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correlationWithType_startDate_endDate_objectsSelector (toHKCorrelationType correlationType) (toNSDate startDate) (toNSDate endDate) (toNSSet objects)
 
 -- | correlationWithType:startDate:endDate:objects:metadata:
 --
@@ -73,12 +66,7 @@ correlationWithType_startDate_endDate_objects_metadata :: (IsHKCorrelationType c
 correlationWithType_startDate_endDate_objects_metadata correlationType startDate endDate objects metadata =
   do
     cls' <- getRequiredClass "HKCorrelation"
-    withObjCPtr correlationType $ \raw_correlationType ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr objects $ \raw_objects ->
-            withObjCPtr metadata $ \raw_metadata ->
-              sendClassMsg cls' (mkSelector "correlationWithType:startDate:endDate:objects:metadata:") (retPtr retVoid) [argPtr (castPtr raw_correlationType :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correlationWithType_startDate_endDate_objects_metadataSelector (toHKCorrelationType correlationType) (toNSDate startDate) (toNSDate endDate) (toNSSet objects) (toNSDictionary metadata)
 
 -- | correlationWithType:startDate:endDate:objects:device:metadata:
 --
@@ -101,13 +89,7 @@ correlationWithType_startDate_endDate_objects_device_metadata :: (IsHKCorrelatio
 correlationWithType_startDate_endDate_objects_device_metadata correlationType startDate endDate objects device metadata =
   do
     cls' <- getRequiredClass "HKCorrelation"
-    withObjCPtr correlationType $ \raw_correlationType ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr endDate $ \raw_endDate ->
-          withObjCPtr objects $ \raw_objects ->
-            withObjCPtr device $ \raw_device ->
-              withObjCPtr metadata $ \raw_metadata ->
-                sendClassMsg cls' (mkSelector "correlationWithType:startDate:endDate:objects:device:metadata:") (retPtr retVoid) [argPtr (castPtr raw_correlationType :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correlationWithType_startDate_endDate_objects_device_metadataSelector (toHKCorrelationType correlationType) (toNSDate startDate) (toNSDate endDate) (toNSSet objects) (toHKDevice device) (toNSDictionary metadata)
 
 -- | objectsForType:
 --
@@ -115,14 +97,13 @@ correlationWithType_startDate_endDate_objects_device_metadata correlationType st
 --
 -- ObjC selector: @- objectsForType:@
 objectsForType :: (IsHKCorrelation hkCorrelation, IsHKObjectType objectType) => hkCorrelation -> objectType -> IO (Id NSSet)
-objectsForType hkCorrelation  objectType =
-  withObjCPtr objectType $ \raw_objectType ->
-      sendMsg hkCorrelation (mkSelector "objectsForType:") (retPtr retVoid) [argPtr (castPtr raw_objectType :: Ptr ())] >>= retainedObject . castPtr
+objectsForType hkCorrelation objectType =
+  sendMessage hkCorrelation objectsForTypeSelector (toHKObjectType objectType)
 
 -- | @- correlationType@
 correlationType :: IsHKCorrelation hkCorrelation => hkCorrelation -> IO (Id HKCorrelationType)
-correlationType hkCorrelation  =
-    sendMsg hkCorrelation (mkSelector "correlationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+correlationType hkCorrelation =
+  sendMessage hkCorrelation correlationTypeSelector
 
 -- | objects
 --
@@ -130,34 +111,34 @@ correlationType hkCorrelation  =
 --
 -- ObjC selector: @- objects@
 objects :: IsHKCorrelation hkCorrelation => hkCorrelation -> IO (Id NSSet)
-objects hkCorrelation  =
-    sendMsg hkCorrelation (mkSelector "objects") (retPtr retVoid) [] >>= retainedObject . castPtr
+objects hkCorrelation =
+  sendMessage hkCorrelation objectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @correlationWithType:startDate:endDate:objects:@
-correlationWithType_startDate_endDate_objectsSelector :: Selector
+correlationWithType_startDate_endDate_objectsSelector :: Selector '[Id HKCorrelationType, Id NSDate, Id NSDate, Id NSSet] (Id HKCorrelation)
 correlationWithType_startDate_endDate_objectsSelector = mkSelector "correlationWithType:startDate:endDate:objects:"
 
 -- | @Selector@ for @correlationWithType:startDate:endDate:objects:metadata:@
-correlationWithType_startDate_endDate_objects_metadataSelector :: Selector
+correlationWithType_startDate_endDate_objects_metadataSelector :: Selector '[Id HKCorrelationType, Id NSDate, Id NSDate, Id NSSet, Id NSDictionary] (Id HKCorrelation)
 correlationWithType_startDate_endDate_objects_metadataSelector = mkSelector "correlationWithType:startDate:endDate:objects:metadata:"
 
 -- | @Selector@ for @correlationWithType:startDate:endDate:objects:device:metadata:@
-correlationWithType_startDate_endDate_objects_device_metadataSelector :: Selector
+correlationWithType_startDate_endDate_objects_device_metadataSelector :: Selector '[Id HKCorrelationType, Id NSDate, Id NSDate, Id NSSet, Id HKDevice, Id NSDictionary] (Id HKCorrelation)
 correlationWithType_startDate_endDate_objects_device_metadataSelector = mkSelector "correlationWithType:startDate:endDate:objects:device:metadata:"
 
 -- | @Selector@ for @objectsForType:@
-objectsForTypeSelector :: Selector
+objectsForTypeSelector :: Selector '[Id HKObjectType] (Id NSSet)
 objectsForTypeSelector = mkSelector "objectsForType:"
 
 -- | @Selector@ for @correlationType@
-correlationTypeSelector :: Selector
+correlationTypeSelector :: Selector '[] (Id HKCorrelationType)
 correlationTypeSelector = mkSelector "correlationType"
 
 -- | @Selector@ for @objects@
-objectsSelector :: Selector
+objectsSelector :: Selector '[] (Id NSSet)
 objectsSelector = mkSelector "objects"
 

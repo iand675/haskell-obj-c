@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.MetalPerformanceShaders.MPSPredicate
   , initWithDevice
   , predicateBuffer
   , predicateOffset
-  , predicateWithBuffer_offsetSelector
   , initWithBuffer_offsetSelector
   , initWithDeviceSelector
   , predicateBufferSelector
   , predicateOffsetSelector
+  , predicateWithBuffer_offsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,7 +55,7 @@ predicateWithBuffer_offset :: RawId -> CULong -> IO (Id MPSPredicate)
 predicateWithBuffer_offset buffer offset =
   do
     cls' <- getRequiredClass "MPSPredicate"
-    sendClassMsg cls' (mkSelector "predicateWithBuffer:offset:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong offset] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithBuffer_offsetSelector buffer offset
 
 -- | Initializes a MPSPredicate object with a buffer and given offset.
 --
@@ -70,8 +67,8 @@ predicateWithBuffer_offset buffer offset =
 --
 -- ObjC selector: @- initWithBuffer:offset:@
 initWithBuffer_offset :: IsMPSPredicate mpsPredicate => mpsPredicate -> RawId -> CULong -> IO (Id MPSPredicate)
-initWithBuffer_offset mpsPredicate  buffer offset =
-    sendMsg mpsPredicate (mkSelector "initWithBuffer:offset:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong offset] >>= ownedObject . castPtr
+initWithBuffer_offset mpsPredicate buffer offset =
+  sendOwnedMessage mpsPredicate initWithBuffer_offsetSelector buffer offset
 
 -- | Initializes a MPSPredicate object for a given device.
 --
@@ -83,8 +80,8 @@ initWithBuffer_offset mpsPredicate  buffer offset =
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSPredicate mpsPredicate => mpsPredicate -> RawId -> IO (Id MPSPredicate)
-initWithDevice mpsPredicate  device =
-    sendMsg mpsPredicate (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsPredicate device =
+  sendOwnedMessage mpsPredicate initWithDeviceSelector device
 
 -- | predicateBuffer
 --
@@ -92,8 +89,8 @@ initWithDevice mpsPredicate  device =
 --
 -- ObjC selector: @- predicateBuffer@
 predicateBuffer :: IsMPSPredicate mpsPredicate => mpsPredicate -> IO RawId
-predicateBuffer mpsPredicate  =
-    fmap (RawId . castPtr) $ sendMsg mpsPredicate (mkSelector "predicateBuffer") (retPtr retVoid) []
+predicateBuffer mpsPredicate =
+  sendMessage mpsPredicate predicateBufferSelector
 
 -- | predicateOffset
 --
@@ -103,30 +100,30 @@ predicateBuffer mpsPredicate  =
 --
 -- ObjC selector: @- predicateOffset@
 predicateOffset :: IsMPSPredicate mpsPredicate => mpsPredicate -> IO CULong
-predicateOffset mpsPredicate  =
-    sendMsg mpsPredicate (mkSelector "predicateOffset") retCULong []
+predicateOffset mpsPredicate =
+  sendMessage mpsPredicate predicateOffsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @predicateWithBuffer:offset:@
-predicateWithBuffer_offsetSelector :: Selector
+predicateWithBuffer_offsetSelector :: Selector '[RawId, CULong] (Id MPSPredicate)
 predicateWithBuffer_offsetSelector = mkSelector "predicateWithBuffer:offset:"
 
 -- | @Selector@ for @initWithBuffer:offset:@
-initWithBuffer_offsetSelector :: Selector
+initWithBuffer_offsetSelector :: Selector '[RawId, CULong] (Id MPSPredicate)
 initWithBuffer_offsetSelector = mkSelector "initWithBuffer:offset:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSPredicate)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @predicateBuffer@
-predicateBufferSelector :: Selector
+predicateBufferSelector :: Selector '[] RawId
 predicateBufferSelector = mkSelector "predicateBuffer"
 
 -- | @Selector@ for @predicateOffset@
-predicateOffsetSelector :: Selector
+predicateOffsetSelector :: Selector '[] CULong
 predicateOffsetSelector = mkSelector "predicateOffset"
 

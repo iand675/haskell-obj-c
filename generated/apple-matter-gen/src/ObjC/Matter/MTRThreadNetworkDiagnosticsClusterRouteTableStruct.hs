@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,39 +27,35 @@ module ObjC.Matter.MTRThreadNetworkDiagnosticsClusterRouteTableStruct
   , setAllocated
   , linkEstablished
   , setLinkEstablished
-  , extAddressSelector
-  , setExtAddressSelector
-  , rloc16Selector
-  , setRloc16Selector
-  , routerIdSelector
-  , setRouterIdSelector
-  , nextHopSelector
-  , setNextHopSelector
-  , pathCostSelector
-  , setPathCostSelector
-  , lqiInSelector
-  , setLqiInSelector
-  , lqiOutSelector
-  , setLqiOutSelector
   , ageSelector
-  , setAgeSelector
   , allocatedSelector
-  , setAllocatedSelector
+  , extAddressSelector
   , linkEstablishedSelector
+  , lqiInSelector
+  , lqiOutSelector
+  , nextHopSelector
+  , pathCostSelector
+  , rloc16Selector
+  , routerIdSelector
+  , setAgeSelector
+  , setAllocatedSelector
+  , setExtAddressSelector
   , setLinkEstablishedSelector
+  , setLqiInSelector
+  , setLqiOutSelector
+  , setNextHopSelector
+  , setPathCostSelector
+  , setRloc16Selector
+  , setRouterIdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,195 +64,185 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- extAddress@
 extAddress :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-extAddress mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "extAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+extAddress mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct extAddressSelector
 
 -- | @- setExtAddress:@
 setExtAddress :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setExtAddress mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setExtAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtAddress mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setExtAddressSelector (toNSNumber value)
 
 -- | @- rloc16@
 rloc16 :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-rloc16 mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "rloc16") (retPtr retVoid) [] >>= retainedObject . castPtr
+rloc16 mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct rloc16Selector
 
 -- | @- setRloc16:@
 setRloc16 :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setRloc16 mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setRloc16:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRloc16 mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setRloc16Selector (toNSNumber value)
 
 -- | @- routerId@
 routerId :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-routerId mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "routerId") (retPtr retVoid) [] >>= retainedObject . castPtr
+routerId mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct routerIdSelector
 
 -- | @- setRouterId:@
 setRouterId :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setRouterId mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setRouterId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRouterId mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setRouterIdSelector (toNSNumber value)
 
 -- | @- nextHop@
 nextHop :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-nextHop mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "nextHop") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextHop mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct nextHopSelector
 
 -- | @- setNextHop:@
 setNextHop :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setNextHop mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setNextHop:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNextHop mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setNextHopSelector (toNSNumber value)
 
 -- | @- pathCost@
 pathCost :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-pathCost mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "pathCost") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathCost mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct pathCostSelector
 
 -- | @- setPathCost:@
 setPathCost :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setPathCost mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setPathCost:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPathCost mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setPathCostSelector (toNSNumber value)
 
 -- | @- lqiIn@
 lqiIn :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-lqiIn mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "lqiIn") (retPtr retVoid) [] >>= retainedObject . castPtr
+lqiIn mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct lqiInSelector
 
 -- | @- setLqiIn:@
 setLqiIn :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setLqiIn mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setLqiIn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLqiIn mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setLqiInSelector (toNSNumber value)
 
 -- | @- lqiOut@
 lqiOut :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-lqiOut mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "lqiOut") (retPtr retVoid) [] >>= retainedObject . castPtr
+lqiOut mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct lqiOutSelector
 
 -- | @- setLqiOut:@
 setLqiOut :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setLqiOut mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setLqiOut:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLqiOut mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setLqiOutSelector (toNSNumber value)
 
 -- | @- age@
 age :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-age mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "age") (retPtr retVoid) [] >>= retainedObject . castPtr
+age mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct ageSelector
 
 -- | @- setAge:@
 setAge :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setAge mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setAge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAge mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setAgeSelector (toNSNumber value)
 
 -- | @- allocated@
 allocated :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-allocated mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "allocated") (retPtr retVoid) [] >>= ownedObject . castPtr
+allocated mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendOwnedMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct allocatedSelector
 
 -- | @- setAllocated:@
 setAllocated :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setAllocated mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setAllocated:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllocated mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setAllocatedSelector (toNSNumber value)
 
 -- | @- linkEstablished@
 linkEstablished :: IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> IO (Id NSNumber)
-linkEstablished mtrThreadNetworkDiagnosticsClusterRouteTableStruct  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "linkEstablished") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkEstablished mtrThreadNetworkDiagnosticsClusterRouteTableStruct =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct linkEstablishedSelector
 
 -- | @- setLinkEstablished:@
 setLinkEstablished :: (IsMTRThreadNetworkDiagnosticsClusterRouteTableStruct mtrThreadNetworkDiagnosticsClusterRouteTableStruct, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterRouteTableStruct -> value -> IO ()
-setLinkEstablished mtrThreadNetworkDiagnosticsClusterRouteTableStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterRouteTableStruct (mkSelector "setLinkEstablished:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkEstablished mtrThreadNetworkDiagnosticsClusterRouteTableStruct value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterRouteTableStruct setLinkEstablishedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @extAddress@
-extAddressSelector :: Selector
+extAddressSelector :: Selector '[] (Id NSNumber)
 extAddressSelector = mkSelector "extAddress"
 
 -- | @Selector@ for @setExtAddress:@
-setExtAddressSelector :: Selector
+setExtAddressSelector :: Selector '[Id NSNumber] ()
 setExtAddressSelector = mkSelector "setExtAddress:"
 
 -- | @Selector@ for @rloc16@
-rloc16Selector :: Selector
+rloc16Selector :: Selector '[] (Id NSNumber)
 rloc16Selector = mkSelector "rloc16"
 
 -- | @Selector@ for @setRloc16:@
-setRloc16Selector :: Selector
+setRloc16Selector :: Selector '[Id NSNumber] ()
 setRloc16Selector = mkSelector "setRloc16:"
 
 -- | @Selector@ for @routerId@
-routerIdSelector :: Selector
+routerIdSelector :: Selector '[] (Id NSNumber)
 routerIdSelector = mkSelector "routerId"
 
 -- | @Selector@ for @setRouterId:@
-setRouterIdSelector :: Selector
+setRouterIdSelector :: Selector '[Id NSNumber] ()
 setRouterIdSelector = mkSelector "setRouterId:"
 
 -- | @Selector@ for @nextHop@
-nextHopSelector :: Selector
+nextHopSelector :: Selector '[] (Id NSNumber)
 nextHopSelector = mkSelector "nextHop"
 
 -- | @Selector@ for @setNextHop:@
-setNextHopSelector :: Selector
+setNextHopSelector :: Selector '[Id NSNumber] ()
 setNextHopSelector = mkSelector "setNextHop:"
 
 -- | @Selector@ for @pathCost@
-pathCostSelector :: Selector
+pathCostSelector :: Selector '[] (Id NSNumber)
 pathCostSelector = mkSelector "pathCost"
 
 -- | @Selector@ for @setPathCost:@
-setPathCostSelector :: Selector
+setPathCostSelector :: Selector '[Id NSNumber] ()
 setPathCostSelector = mkSelector "setPathCost:"
 
 -- | @Selector@ for @lqiIn@
-lqiInSelector :: Selector
+lqiInSelector :: Selector '[] (Id NSNumber)
 lqiInSelector = mkSelector "lqiIn"
 
 -- | @Selector@ for @setLqiIn:@
-setLqiInSelector :: Selector
+setLqiInSelector :: Selector '[Id NSNumber] ()
 setLqiInSelector = mkSelector "setLqiIn:"
 
 -- | @Selector@ for @lqiOut@
-lqiOutSelector :: Selector
+lqiOutSelector :: Selector '[] (Id NSNumber)
 lqiOutSelector = mkSelector "lqiOut"
 
 -- | @Selector@ for @setLqiOut:@
-setLqiOutSelector :: Selector
+setLqiOutSelector :: Selector '[Id NSNumber] ()
 setLqiOutSelector = mkSelector "setLqiOut:"
 
 -- | @Selector@ for @age@
-ageSelector :: Selector
+ageSelector :: Selector '[] (Id NSNumber)
 ageSelector = mkSelector "age"
 
 -- | @Selector@ for @setAge:@
-setAgeSelector :: Selector
+setAgeSelector :: Selector '[Id NSNumber] ()
 setAgeSelector = mkSelector "setAge:"
 
 -- | @Selector@ for @allocated@
-allocatedSelector :: Selector
+allocatedSelector :: Selector '[] (Id NSNumber)
 allocatedSelector = mkSelector "allocated"
 
 -- | @Selector@ for @setAllocated:@
-setAllocatedSelector :: Selector
+setAllocatedSelector :: Selector '[Id NSNumber] ()
 setAllocatedSelector = mkSelector "setAllocated:"
 
 -- | @Selector@ for @linkEstablished@
-linkEstablishedSelector :: Selector
+linkEstablishedSelector :: Selector '[] (Id NSNumber)
 linkEstablishedSelector = mkSelector "linkEstablished"
 
 -- | @Selector@ for @setLinkEstablished:@
-setLinkEstablishedSelector :: Selector
+setLinkEstablishedSelector :: Selector '[Id NSNumber] ()
 setLinkEstablishedSelector = mkSelector "setLinkEstablished:"
 

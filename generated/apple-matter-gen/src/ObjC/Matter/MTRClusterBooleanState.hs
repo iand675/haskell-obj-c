@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.Matter.MTRClusterBooleanState
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeStateValueWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeStateValueWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,110 +46,99 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeStateValueWithParams:@
 readAttributeStateValueWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeStateValueWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeStateValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStateValueWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeStateValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRReadParams params) => mtrClusterBooleanState -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterBooleanState  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBooleanState (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterBooleanState params =
+  sendMessage mtrClusterBooleanState readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterBooleanState mtrClusterBooleanState => mtrClusterBooleanState -> IO (Id MTRClusterBooleanState)
-init_ mtrClusterBooleanState  =
-    sendMsg mtrClusterBooleanState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterBooleanState =
+  sendOwnedMessage mtrClusterBooleanState initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterBooleanState)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterBooleanState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRDevice device, IsNSObject queue) => mtrClusterBooleanState -> device -> CUShort -> queue -> IO (Id MTRClusterBooleanState)
-initWithDevice_endpoint_queue mtrClusterBooleanState  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterBooleanState (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterBooleanState device endpoint queue =
+  sendOwnedMessage mtrClusterBooleanState initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterBooleanState mtrClusterBooleanState, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterBooleanState -> device -> endpointID -> queue -> IO (Id MTRClusterBooleanState)
-initWithDevice_endpointID_queue mtrClusterBooleanState  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterBooleanState (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterBooleanState device endpointID queue =
+  sendOwnedMessage mtrClusterBooleanState initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeStateValueWithParams:@
-readAttributeStateValueWithParamsSelector :: Selector
+readAttributeStateValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStateValueWithParamsSelector = mkSelector "readAttributeStateValueWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterBooleanState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterBooleanState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterBooleanState)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterBooleanState)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

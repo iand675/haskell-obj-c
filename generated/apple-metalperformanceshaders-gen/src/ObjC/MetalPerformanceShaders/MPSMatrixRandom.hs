@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandom
   , setBatchStart
   , batchSize
   , setBatchSize
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_destinationVectorSelector
-  , encodeToCommandBuffer_destinationMatrixSelector
+  , batchSizeSelector
+  , batchStartSelector
   , destinationDataTypeSelector
   , distributionTypeSelector
-  , batchStartSelector
-  , setBatchStartSelector
-  , batchSizeSelector
+  , encodeToCommandBuffer_destinationMatrixSelector
+  , encodeToCommandBuffer_destinationVectorSelector
+  , initWithDeviceSelector
   , setBatchSizeSelector
+  , setBatchStartSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -66,15 +67,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandom
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,8 +81,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> RawId -> IO (Id MPSMatrixRandom)
-initWithDevice mpsMatrixRandom  device =
-    sendMsg mpsMatrixRandom (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixRandom device =
+  sendOwnedMessage mpsMatrixRandom initWithDeviceSelector device
 
 -- | Encode a MPSMatrixRandom kernel into a command Buffer.
 --
@@ -95,9 +92,8 @@ initWithDevice mpsMatrixRandom  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:destinationVector:@
 encodeToCommandBuffer_destinationVector :: (IsMPSMatrixRandom mpsMatrixRandom, IsMPSVector destinationVector) => mpsMatrixRandom -> RawId -> destinationVector -> IO ()
-encodeToCommandBuffer_destinationVector mpsMatrixRandom  commandBuffer destinationVector =
-  withObjCPtr destinationVector $ \raw_destinationVector ->
-      sendMsg mpsMatrixRandom (mkSelector "encodeToCommandBuffer:destinationVector:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_destinationVector :: Ptr ())]
+encodeToCommandBuffer_destinationVector mpsMatrixRandom commandBuffer destinationVector =
+  sendMessage mpsMatrixRandom encodeToCommandBuffer_destinationVectorSelector commandBuffer (toMPSVector destinationVector)
 
 -- | Encode a MPSMatrixRandom kernel into a command Buffer.
 --
@@ -107,9 +103,8 @@ encodeToCommandBuffer_destinationVector mpsMatrixRandom  commandBuffer destinati
 --
 -- ObjC selector: @- encodeToCommandBuffer:destinationMatrix:@
 encodeToCommandBuffer_destinationMatrix :: (IsMPSMatrixRandom mpsMatrixRandom, IsMPSMatrix destinationMatrix) => mpsMatrixRandom -> RawId -> destinationMatrix -> IO ()
-encodeToCommandBuffer_destinationMatrix mpsMatrixRandom  commandBuffer destinationMatrix =
-  withObjCPtr destinationMatrix $ \raw_destinationMatrix ->
-      sendMsg mpsMatrixRandom (mkSelector "encodeToCommandBuffer:destinationMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_destinationMatrix :: Ptr ())]
+encodeToCommandBuffer_destinationMatrix mpsMatrixRandom commandBuffer destinationMatrix =
+  sendMessage mpsMatrixRandom encodeToCommandBuffer_destinationMatrixSelector commandBuffer (toMPSMatrix destinationMatrix)
 
 -- | destinationDataType
 --
@@ -119,8 +114,8 @@ encodeToCommandBuffer_destinationMatrix mpsMatrixRandom  commandBuffer destinati
 --
 -- ObjC selector: @- destinationDataType@
 destinationDataType :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> IO MPSDataType
-destinationDataType mpsMatrixRandom  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsMatrixRandom (mkSelector "destinationDataType") retCUInt []
+destinationDataType mpsMatrixRandom =
+  sendMessage mpsMatrixRandom destinationDataTypeSelector
 
 -- | distributionType
 --
@@ -130,8 +125,8 @@ destinationDataType mpsMatrixRandom  =
 --
 -- ObjC selector: @- distributionType@
 distributionType :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> IO MPSMatrixRandomDistribution
-distributionType mpsMatrixRandom  =
-    fmap (coerce :: CULong -> MPSMatrixRandomDistribution) $ sendMsg mpsMatrixRandom (mkSelector "distributionType") retCULong []
+distributionType mpsMatrixRandom =
+  sendMessage mpsMatrixRandom distributionTypeSelector
 
 -- | batchStart
 --
@@ -139,8 +134,8 @@ distributionType mpsMatrixRandom  =
 --
 -- ObjC selector: @- batchStart@
 batchStart :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> IO CULong
-batchStart mpsMatrixRandom  =
-    sendMsg mpsMatrixRandom (mkSelector "batchStart") retCULong []
+batchStart mpsMatrixRandom =
+  sendMessage mpsMatrixRandom batchStartSelector
 
 -- | batchStart
 --
@@ -148,8 +143,8 @@ batchStart mpsMatrixRandom  =
 --
 -- ObjC selector: @- setBatchStart:@
 setBatchStart :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> CULong -> IO ()
-setBatchStart mpsMatrixRandom  value =
-    sendMsg mpsMatrixRandom (mkSelector "setBatchStart:") retVoid [argCULong value]
+setBatchStart mpsMatrixRandom value =
+  sendMessage mpsMatrixRandom setBatchStartSelector value
 
 -- | batchSize
 --
@@ -157,8 +152,8 @@ setBatchStart mpsMatrixRandom  value =
 --
 -- ObjC selector: @- batchSize@
 batchSize :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> IO CULong
-batchSize mpsMatrixRandom  =
-    sendMsg mpsMatrixRandom (mkSelector "batchSize") retCULong []
+batchSize mpsMatrixRandom =
+  sendMessage mpsMatrixRandom batchSizeSelector
 
 -- | batchSize
 --
@@ -166,46 +161,46 @@ batchSize mpsMatrixRandom  =
 --
 -- ObjC selector: @- setBatchSize:@
 setBatchSize :: IsMPSMatrixRandom mpsMatrixRandom => mpsMatrixRandom -> CULong -> IO ()
-setBatchSize mpsMatrixRandom  value =
-    sendMsg mpsMatrixRandom (mkSelector "setBatchSize:") retVoid [argCULong value]
+setBatchSize mpsMatrixRandom value =
+  sendMessage mpsMatrixRandom setBatchSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixRandom)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:destinationVector:@
-encodeToCommandBuffer_destinationVectorSelector :: Selector
+encodeToCommandBuffer_destinationVectorSelector :: Selector '[RawId, Id MPSVector] ()
 encodeToCommandBuffer_destinationVectorSelector = mkSelector "encodeToCommandBuffer:destinationVector:"
 
 -- | @Selector@ for @encodeToCommandBuffer:destinationMatrix:@
-encodeToCommandBuffer_destinationMatrixSelector :: Selector
+encodeToCommandBuffer_destinationMatrixSelector :: Selector '[RawId, Id MPSMatrix] ()
 encodeToCommandBuffer_destinationMatrixSelector = mkSelector "encodeToCommandBuffer:destinationMatrix:"
 
 -- | @Selector@ for @destinationDataType@
-destinationDataTypeSelector :: Selector
+destinationDataTypeSelector :: Selector '[] MPSDataType
 destinationDataTypeSelector = mkSelector "destinationDataType"
 
 -- | @Selector@ for @distributionType@
-distributionTypeSelector :: Selector
+distributionTypeSelector :: Selector '[] MPSMatrixRandomDistribution
 distributionTypeSelector = mkSelector "distributionType"
 
 -- | @Selector@ for @batchStart@
-batchStartSelector :: Selector
+batchStartSelector :: Selector '[] CULong
 batchStartSelector = mkSelector "batchStart"
 
 -- | @Selector@ for @setBatchStart:@
-setBatchStartSelector :: Selector
+setBatchStartSelector :: Selector '[CULong] ()
 setBatchStartSelector = mkSelector "setBatchStart:"
 
 -- | @Selector@ for @batchSize@
-batchSizeSelector :: Selector
+batchSizeSelector :: Selector '[] CULong
 batchSizeSelector = mkSelector "batchSize"
 
 -- | @Selector@ for @setBatchSize:@
-setBatchSizeSelector :: Selector
+setBatchSizeSelector :: Selector '[CULong] ()
 setBatchSizeSelector = mkSelector "setBatchSize:"
 

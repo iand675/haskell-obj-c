@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AVFoundation.AVAssetWriterInputCaptionAdaptor
   , appendCaption
   , appendCaptionGroup
   , assetWriterInput
-  , initSelector
-  , newSelector
-  , assetWriterInputCaptionAdaptorWithAssetWriterInputSelector
-  , initWithAssetWriterInputSelector
-  , appendCaptionSelector
   , appendCaptionGroupSelector
+  , appendCaptionSelector
+  , assetWriterInputCaptionAdaptorWithAssetWriterInputSelector
   , assetWriterInputSelector
+  , initSelector
+  , initWithAssetWriterInputSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetWriterInputCaptionAdaptor avAssetWriterInputCaptionAdaptor => avAssetWriterInputCaptionAdaptor -> IO (Id AVAssetWriterInputCaptionAdaptor)
-init_ avAssetWriterInputCaptionAdaptor  =
-    sendMsg avAssetWriterInputCaptionAdaptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetWriterInputCaptionAdaptor =
+  sendOwnedMessage avAssetWriterInputCaptionAdaptor initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetWriterInputCaptionAdaptor)
 new  =
   do
     cls' <- getRequiredClass "AVAssetWriterInputCaptionAdaptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new caption adaptor for writing to the specified asset writer input.
 --
@@ -58,8 +55,7 @@ assetWriterInputCaptionAdaptorWithAssetWriterInput :: IsAVAssetWriterInput input
 assetWriterInputCaptionAdaptorWithAssetWriterInput input =
   do
     cls' <- getRequiredClass "AVAssetWriterInputCaptionAdaptor"
-    withObjCPtr input $ \raw_input ->
-      sendClassMsg cls' (mkSelector "assetWriterInputCaptionAdaptorWithAssetWriterInput:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterInputCaptionAdaptorWithAssetWriterInputSelector (toAVAssetWriterInput input)
 
 -- | Creates a new caption adaptor for writing to the specified asset writer input.
 --
@@ -67,9 +63,8 @@ assetWriterInputCaptionAdaptorWithAssetWriterInput input =
 --
 -- ObjC selector: @- initWithAssetWriterInput:@
 initWithAssetWriterInput :: (IsAVAssetWriterInputCaptionAdaptor avAssetWriterInputCaptionAdaptor, IsAVAssetWriterInput input) => avAssetWriterInputCaptionAdaptor -> input -> IO (Id AVAssetWriterInputCaptionAdaptor)
-initWithAssetWriterInput avAssetWriterInputCaptionAdaptor  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avAssetWriterInputCaptionAdaptor (mkSelector "initWithAssetWriterInput:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ())] >>= ownedObject . castPtr
+initWithAssetWriterInput avAssetWriterInputCaptionAdaptor input =
+  sendOwnedMessage avAssetWriterInputCaptionAdaptor initWithAssetWriterInputSelector (toAVAssetWriterInput input)
 
 -- | Append a single caption to be written.
 --
@@ -85,9 +80,8 @@ initWithAssetWriterInput avAssetWriterInputCaptionAdaptor  input =
 --
 -- ObjC selector: @- appendCaption:@
 appendCaption :: (IsAVAssetWriterInputCaptionAdaptor avAssetWriterInputCaptionAdaptor, IsAVCaption caption) => avAssetWriterInputCaptionAdaptor -> caption -> IO Bool
-appendCaption avAssetWriterInputCaptionAdaptor  caption =
-  withObjCPtr caption $ \raw_caption ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInputCaptionAdaptor (mkSelector "appendCaption:") retCULong [argPtr (castPtr raw_caption :: Ptr ())]
+appendCaption avAssetWriterInputCaptionAdaptor caption =
+  sendMessage avAssetWriterInputCaptionAdaptor appendCaptionSelector (toAVCaption caption)
 
 -- | Append a group of captions to be written.
 --
@@ -99,46 +93,45 @@ appendCaption avAssetWriterInputCaptionAdaptor  caption =
 --
 -- ObjC selector: @- appendCaptionGroup:@
 appendCaptionGroup :: (IsAVAssetWriterInputCaptionAdaptor avAssetWriterInputCaptionAdaptor, IsAVCaptionGroup captionGroup) => avAssetWriterInputCaptionAdaptor -> captionGroup -> IO Bool
-appendCaptionGroup avAssetWriterInputCaptionAdaptor  captionGroup =
-  withObjCPtr captionGroup $ \raw_captionGroup ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInputCaptionAdaptor (mkSelector "appendCaptionGroup:") retCULong [argPtr (castPtr raw_captionGroup :: Ptr ())]
+appendCaptionGroup avAssetWriterInputCaptionAdaptor captionGroup =
+  sendMessage avAssetWriterInputCaptionAdaptor appendCaptionGroupSelector (toAVCaptionGroup captionGroup)
 
 -- | The asset writer input that was used to initialize the receiver.
 --
 -- ObjC selector: @- assetWriterInput@
 assetWriterInput :: IsAVAssetWriterInputCaptionAdaptor avAssetWriterInputCaptionAdaptor => avAssetWriterInputCaptionAdaptor -> IO (Id AVAssetWriterInput)
-assetWriterInput avAssetWriterInputCaptionAdaptor  =
-    sendMsg avAssetWriterInputCaptionAdaptor (mkSelector "assetWriterInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetWriterInput avAssetWriterInputCaptionAdaptor =
+  sendMessage avAssetWriterInputCaptionAdaptor assetWriterInputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetWriterInputCaptionAdaptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetWriterInputCaptionAdaptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetWriterInputCaptionAdaptorWithAssetWriterInput:@
-assetWriterInputCaptionAdaptorWithAssetWriterInputSelector :: Selector
+assetWriterInputCaptionAdaptorWithAssetWriterInputSelector :: Selector '[Id AVAssetWriterInput] (Id AVAssetWriterInputCaptionAdaptor)
 assetWriterInputCaptionAdaptorWithAssetWriterInputSelector = mkSelector "assetWriterInputCaptionAdaptorWithAssetWriterInput:"
 
 -- | @Selector@ for @initWithAssetWriterInput:@
-initWithAssetWriterInputSelector :: Selector
+initWithAssetWriterInputSelector :: Selector '[Id AVAssetWriterInput] (Id AVAssetWriterInputCaptionAdaptor)
 initWithAssetWriterInputSelector = mkSelector "initWithAssetWriterInput:"
 
 -- | @Selector@ for @appendCaption:@
-appendCaptionSelector :: Selector
+appendCaptionSelector :: Selector '[Id AVCaption] Bool
 appendCaptionSelector = mkSelector "appendCaption:"
 
 -- | @Selector@ for @appendCaptionGroup:@
-appendCaptionGroupSelector :: Selector
+appendCaptionGroupSelector :: Selector '[Id AVCaptionGroup] Bool
 appendCaptionGroupSelector = mkSelector "appendCaptionGroup:"
 
 -- | @Selector@ for @assetWriterInput@
-assetWriterInputSelector :: Selector
+assetWriterInputSelector :: Selector '[] (Id AVAssetWriterInput)
 assetWriterInputSelector = mkSelector "assetWriterInput"
 

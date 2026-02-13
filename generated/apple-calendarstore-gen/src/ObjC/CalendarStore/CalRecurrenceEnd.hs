@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.CalendarStore.CalRecurrenceEnd
   , usesEndDate
   , endDate
   , occurrenceCount
+  , endDateSelector
+  , occurrenceCountSelector
   , recurrenceEndWithEndDateSelector
   , recurrenceEndWithOccurrenceCountSelector
   , usesEndDateSelector
-  , endDateSelector
-  , occurrenceCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,52 +37,51 @@ recurrenceEndWithEndDate :: IsNSDate endDate => endDate -> IO RawId
 recurrenceEndWithEndDate endDate =
   do
     cls' <- getRequiredClass "CalRecurrenceEnd"
-    withObjCPtr endDate $ \raw_endDate ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "recurrenceEndWithEndDate:") (retPtr retVoid) [argPtr (castPtr raw_endDate :: Ptr ())]
+    sendClassMessage cls' recurrenceEndWithEndDateSelector (toNSDate endDate)
 
 -- | @+ recurrenceEndWithOccurrenceCount:@
 recurrenceEndWithOccurrenceCount :: CULong -> IO RawId
 recurrenceEndWithOccurrenceCount occurrenceCount =
   do
     cls' <- getRequiredClass "CalRecurrenceEnd"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "recurrenceEndWithOccurrenceCount:") (retPtr retVoid) [argCULong occurrenceCount]
+    sendClassMessage cls' recurrenceEndWithOccurrenceCountSelector occurrenceCount
 
 -- | @- usesEndDate@
 usesEndDate :: IsCalRecurrenceEnd calRecurrenceEnd => calRecurrenceEnd -> IO Bool
-usesEndDate calRecurrenceEnd  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg calRecurrenceEnd (mkSelector "usesEndDate") retCULong []
+usesEndDate calRecurrenceEnd =
+  sendMessage calRecurrenceEnd usesEndDateSelector
 
 -- | @- endDate@
 endDate :: IsCalRecurrenceEnd calRecurrenceEnd => calRecurrenceEnd -> IO (Id NSDate)
-endDate calRecurrenceEnd  =
-    sendMsg calRecurrenceEnd (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate calRecurrenceEnd =
+  sendMessage calRecurrenceEnd endDateSelector
 
 -- | @- occurrenceCount@
 occurrenceCount :: IsCalRecurrenceEnd calRecurrenceEnd => calRecurrenceEnd -> IO CULong
-occurrenceCount calRecurrenceEnd  =
-    sendMsg calRecurrenceEnd (mkSelector "occurrenceCount") retCULong []
+occurrenceCount calRecurrenceEnd =
+  sendMessage calRecurrenceEnd occurrenceCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recurrenceEndWithEndDate:@
-recurrenceEndWithEndDateSelector :: Selector
+recurrenceEndWithEndDateSelector :: Selector '[Id NSDate] RawId
 recurrenceEndWithEndDateSelector = mkSelector "recurrenceEndWithEndDate:"
 
 -- | @Selector@ for @recurrenceEndWithOccurrenceCount:@
-recurrenceEndWithOccurrenceCountSelector :: Selector
+recurrenceEndWithOccurrenceCountSelector :: Selector '[CULong] RawId
 recurrenceEndWithOccurrenceCountSelector = mkSelector "recurrenceEndWithOccurrenceCount:"
 
 -- | @Selector@ for @usesEndDate@
-usesEndDateSelector :: Selector
+usesEndDateSelector :: Selector '[] Bool
 usesEndDateSelector = mkSelector "usesEndDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @occurrenceCount@
-occurrenceCountSelector :: Selector
+occurrenceCountSelector :: Selector '[] CULong
 occurrenceCountSelector = mkSelector "occurrenceCount"
 

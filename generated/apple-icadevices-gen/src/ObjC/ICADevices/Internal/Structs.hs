@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | ICAHeader
 --
@@ -39,6 +41,16 @@ argICAHeader = mkStorableArg icaHeaderStructType
 
 retICAHeader :: RetType ICAHeader
 retICAHeader = mkStorableRetType icaHeaderStructType
+
+instance ObjCArgument ICAHeader where
+  withObjCArg x k = k (argICAHeader x)
+
+instance ObjCReturn ICAHeader where
+  type RawReturn ICAHeader = ICAHeader
+  objcRetType = retICAHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAMessage
 --
@@ -76,6 +88,16 @@ argICAMessage = mkStorableArg icaMessageStructType
 retICAMessage :: RetType ICAMessage
 retICAMessage = mkStorableRetType icaMessageStructType
 
+instance ObjCArgument ICAMessage where
+  withObjCArg x k = k (argICAMessage x)
+
+instance ObjCReturn ICAMessage where
+  type RawReturn ICAMessage = ICAMessage
+  objcRetType = retICAMessage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAObjectInfo
 --
 -- objectType        An object type, e.g., kICAFile.     objectSubtype        An object subtype, e.g., kICAFileImage.
@@ -103,6 +125,16 @@ argICAObjectInfo = mkStorableArg icaObjectInfoStructType
 retICAObjectInfo :: RetType ICAObjectInfo
 retICAObjectInfo = mkStorableRetType icaObjectInfoStructType
 
+instance ObjCArgument ICAObjectInfo where
+  withObjCArg x k = k (argICAObjectInfo x)
+
+instance ObjCReturn ICAObjectInfo where
+  type RawReturn ICAObjectInfo = ICAObjectInfo
+  objcRetType = retICAObjectInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICDHeader
 --
 -- This is the first field in all parameter blocks used by APIs defined in ICADevices.h.        Type of parameter passed to a callback function used by APIs defined in ICADevices.h.        The parameter for the completion proc should to be casted to an appropriate type such as ICD_NewObjectPB* for it to be useful.     err        Error returned by an API. -->     refcon        An arbitrary refcon value passed to the callback. <--
@@ -129,6 +161,16 @@ argICDHeader = mkStorableArg icdHeaderStructType
 
 retICDHeader :: RetType ICDHeader
 retICDHeader = mkStorableRetType icdHeaderStructType
+
+instance ObjCArgument ICDHeader where
+  withObjCArg x k = k (argICDHeader x)
+
+instance ObjCReturn ICDHeader where
+  type RawReturn ICDHeader = ICDHeader
+  objcRetType = retICDHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_callback_functions = ICD_callback_functions
   { icD_callback_functionsF_ICD_OpenUSBDevice :: !(Ptr ())
@@ -210,6 +252,16 @@ argICD_callback_functions = mkStorableArg icD_callback_functionsStructType
 
 retICD_callback_functions :: RetType ICD_callback_functions
 retICD_callback_functions = mkStorableRetType icD_callback_functionsStructType
+
+instance ObjCArgument ICD_callback_functions where
+  withObjCArg x k = k (argICD_callback_functions x)
+
+instance ObjCReturn ICD_callback_functions where
+  type RawReturn ICD_callback_functions = ICD_callback_functions
+  objcRetType = retICD_callback_functions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_scanner_callback_functions = ICD_scanner_callback_functions
   { icD_scanner_callback_functionsF_ICD_ScannerOpenUSBDevice :: !(Ptr ())
@@ -310,6 +362,16 @@ argICD_scanner_callback_functions = mkStorableArg icD_scanner_callback_functions
 retICD_scanner_callback_functions :: RetType ICD_scanner_callback_functions
 retICD_scanner_callback_functions = mkStorableRetType icD_scanner_callback_functionsStructType
 
+instance ObjCArgument ICD_scanner_callback_functions where
+  withObjCArg x k = k (argICD_scanner_callback_functions x)
+
+instance ObjCReturn ICD_scanner_callback_functions where
+  type RawReturn ICD_scanner_callback_functions = ICD_scanner_callback_functions
+  objcRetType = retICD_scanner_callback_functions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICACloseSessionPB
 --
 -- header        See description for ICAHeader. <->     sessionID        A session ID of the session to be closed. <--
@@ -336,6 +398,16 @@ argICACloseSessionPB = mkStorableArg icaCloseSessionPBStructType
 
 retICACloseSessionPB :: RetType ICACloseSessionPB
 retICACloseSessionPB = mkStorableRetType icaCloseSessionPBStructType
+
+instance ObjCArgument ICACloseSessionPB where
+  withObjCArg x k = k (argICACloseSessionPB x)
+
+instance ObjCReturn ICACloseSessionPB where
+  type RawReturn ICACloseSessionPB = ICACloseSessionPB
+  objcRetType = retICACloseSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAGetDeviceListPB
 --
@@ -364,6 +436,16 @@ argICAGetDeviceListPB = mkStorableArg icaGetDeviceListPBStructType
 retICAGetDeviceListPB :: RetType ICAGetDeviceListPB
 retICAGetDeviceListPB = mkStorableRetType icaGetDeviceListPBStructType
 
+instance ObjCArgument ICAGetDeviceListPB where
+  withObjCArg x k = k (argICAGetDeviceListPB x)
+
+instance ObjCReturn ICAGetDeviceListPB where
+  type RawReturn ICAGetDeviceListPB = ICAGetDeviceListPB
+  objcRetType = retICAGetDeviceListPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICALoadDeviceModulePB = ICALoadDeviceModulePB
   { icaLoadDeviceModulePBHeader :: !ICAHeader
   , icaLoadDeviceModulePBParamDictionary :: !(Ptr ())
@@ -387,6 +469,16 @@ argICALoadDeviceModulePB = mkStorableArg icaLoadDeviceModulePBStructType
 
 retICALoadDeviceModulePB :: RetType ICALoadDeviceModulePB
 retICALoadDeviceModulePB = mkStorableRetType icaLoadDeviceModulePBStructType
+
+instance ObjCArgument ICALoadDeviceModulePB where
+  withObjCArg x k = k (argICALoadDeviceModulePB x)
+
+instance ObjCReturn ICALoadDeviceModulePB where
+  type RawReturn ICALoadDeviceModulePB = ICALoadDeviceModulePB
+  objcRetType = retICALoadDeviceModulePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAObjectSendMessagePB
 --
@@ -421,6 +513,16 @@ argICAObjectSendMessagePB = mkStorableArg icaObjectSendMessagePBStructType
 retICAObjectSendMessagePB :: RetType ICAObjectSendMessagePB
 retICAObjectSendMessagePB = mkStorableRetType icaObjectSendMessagePBStructType
 
+instance ObjCArgument ICAObjectSendMessagePB where
+  withObjCArg x k = k (argICAObjectSendMessagePB x)
+
+instance ObjCReturn ICAObjectSendMessagePB where
+  type RawReturn ICAObjectSendMessagePB = ICAObjectSendMessagePB
+  objcRetType = retICAObjectSendMessagePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAOpenSessionPB
 --
 -- header        See description for ICAHeader. <->     deviceObject        A camera object. <--     sessionID        A session ID of the opened session. -->
@@ -450,6 +552,16 @@ argICAOpenSessionPB = mkStorableArg icaOpenSessionPBStructType
 
 retICAOpenSessionPB :: RetType ICAOpenSessionPB
 retICAOpenSessionPB = mkStorableRetType icaOpenSessionPBStructType
+
+instance ObjCArgument ICAOpenSessionPB where
+  withObjCArg x k = k (argICAOpenSessionPB x)
+
+instance ObjCReturn ICAOpenSessionPB where
+  type RawReturn ICAOpenSessionPB = ICAOpenSessionPB
+  objcRetType = retICAOpenSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICARegisterForEventNotificationPB
 --
@@ -487,6 +599,16 @@ argICARegisterForEventNotificationPB = mkStorableArg icaRegisterForEventNotifica
 retICARegisterForEventNotificationPB :: RetType ICARegisterForEventNotificationPB
 retICARegisterForEventNotificationPB = mkStorableRetType icaRegisterForEventNotificationPBStructType
 
+instance ObjCArgument ICARegisterForEventNotificationPB where
+  withObjCArg x k = k (argICARegisterForEventNotificationPB x)
+
+instance ObjCReturn ICARegisterForEventNotificationPB where
+  type RawReturn ICARegisterForEventNotificationPB = ICARegisterForEventNotificationPB
+  objcRetType = retICARegisterForEventNotificationPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAScannerCloseSessionPB
 --
 -- header        See description for ICAHeader. <->     sessionID        A session ID of the session to be closed. <--
@@ -513,6 +635,16 @@ argICAScannerCloseSessionPB = mkStorableArg icaScannerCloseSessionPBStructType
 
 retICAScannerCloseSessionPB :: RetType ICAScannerCloseSessionPB
 retICAScannerCloseSessionPB = mkStorableRetType icaScannerCloseSessionPBStructType
+
+instance ObjCArgument ICAScannerCloseSessionPB where
+  withObjCArg x k = k (argICAScannerCloseSessionPB x)
+
+instance ObjCReturn ICAScannerCloseSessionPB where
+  type RawReturn ICAScannerCloseSessionPB = ICAScannerCloseSessionPB
+  objcRetType = retICAScannerCloseSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAScannerGetParametersPB
 --
@@ -544,6 +676,16 @@ argICAScannerGetParametersPB = mkStorableArg icaScannerGetParametersPBStructType
 retICAScannerGetParametersPB :: RetType ICAScannerGetParametersPB
 retICAScannerGetParametersPB = mkStorableRetType icaScannerGetParametersPBStructType
 
+instance ObjCArgument ICAScannerGetParametersPB where
+  withObjCArg x k = k (argICAScannerGetParametersPB x)
+
+instance ObjCReturn ICAScannerGetParametersPB where
+  type RawReturn ICAScannerGetParametersPB = ICAScannerGetParametersPB
+  objcRetType = retICAScannerGetParametersPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAScannerInitializePB
 --
 -- header        See description for ICAHeader. <->     sessionID        A session ID of the scanner to be initialized. <--
@@ -570,6 +712,16 @@ argICAScannerInitializePB = mkStorableArg icaScannerInitializePBStructType
 
 retICAScannerInitializePB :: RetType ICAScannerInitializePB
 retICAScannerInitializePB = mkStorableRetType icaScannerInitializePBStructType
+
+instance ObjCArgument ICAScannerInitializePB where
+  withObjCArg x k = k (argICAScannerInitializePB x)
+
+instance ObjCReturn ICAScannerInitializePB where
+  type RawReturn ICAScannerInitializePB = ICAScannerInitializePB
+  objcRetType = retICAScannerInitializePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAScannerOpenSessionPB
 --
@@ -601,6 +753,16 @@ argICAScannerOpenSessionPB = mkStorableArg icaScannerOpenSessionPBStructType
 retICAScannerOpenSessionPB :: RetType ICAScannerOpenSessionPB
 retICAScannerOpenSessionPB = mkStorableRetType icaScannerOpenSessionPBStructType
 
+instance ObjCArgument ICAScannerOpenSessionPB where
+  withObjCArg x k = k (argICAScannerOpenSessionPB x)
+
+instance ObjCReturn ICAScannerOpenSessionPB where
+  type RawReturn ICAScannerOpenSessionPB = ICAScannerOpenSessionPB
+  objcRetType = retICAScannerOpenSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAScannerSetParametersPB
 --
 -- header        See description for ICAHeader. <->     sessionID        A session ID of the scanner whose parameters are being set. <--     theDict        A dictionary containing the parameters. <--
@@ -631,6 +793,16 @@ argICAScannerSetParametersPB = mkStorableArg icaScannerSetParametersPBStructType
 retICAScannerSetParametersPB :: RetType ICAScannerSetParametersPB
 retICAScannerSetParametersPB = mkStorableRetType icaScannerSetParametersPBStructType
 
+instance ObjCArgument ICAScannerSetParametersPB where
+  withObjCArg x k = k (argICAScannerSetParametersPB x)
+
+instance ObjCReturn ICAScannerSetParametersPB where
+  type RawReturn ICAScannerSetParametersPB = ICAScannerSetParametersPB
+  objcRetType = retICAScannerSetParametersPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICAScannerStartPB
 --
 -- header        See description for ICAHeader. <->     sessionID        A session ID of the scanner that should start scanning. <--
@@ -657,6 +829,16 @@ argICAScannerStartPB = mkStorableArg icaScannerStartPBStructType
 
 retICAScannerStartPB :: RetType ICAScannerStartPB
 retICAScannerStartPB = mkStorableRetType icaScannerStartPBStructType
+
+instance ObjCArgument ICAScannerStartPB where
+  withObjCArg x k = k (argICAScannerStartPB x)
+
+instance ObjCReturn ICAScannerStartPB where
+  type RawReturn ICAScannerStartPB = ICAScannerStartPB
+  objcRetType = retICAScannerStartPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAScannerStatusPB
 --
@@ -688,6 +870,16 @@ argICAScannerStatusPB = mkStorableArg icaScannerStatusPBStructType
 retICAScannerStatusPB :: RetType ICAScannerStatusPB
 retICAScannerStatusPB = mkStorableRetType icaScannerStatusPBStructType
 
+instance ObjCArgument ICAScannerStatusPB where
+  withObjCArg x k = k (argICAScannerStatusPB x)
+
+instance ObjCReturn ICAScannerStatusPB where
+  type RawReturn ICAScannerStatusPB = ICAScannerStatusPB
+  objcRetType = retICAScannerStatusPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICASendNotificationPB = ICASendNotificationPB
   { icaSendNotificationPBHeader :: !ICAHeader
   , icaSendNotificationPBNotificationDictionary :: !(Ptr ())
@@ -714,6 +906,16 @@ argICASendNotificationPB = mkStorableArg icaSendNotificationPBStructType
 
 retICASendNotificationPB :: RetType ICASendNotificationPB
 retICASendNotificationPB = mkStorableRetType icaSendNotificationPBStructType
+
+instance ObjCArgument ICASendNotificationPB where
+  withObjCArg x k = k (argICASendNotificationPB x)
+
+instance ObjCReturn ICASendNotificationPB where
+  type RawReturn ICASendNotificationPB = ICASendNotificationPB
+  objcRetType = retICASendNotificationPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICAUnloadDeviceModulePB
 --
@@ -742,6 +944,16 @@ argICAUnloadDeviceModulePB = mkStorableArg icaUnloadDeviceModulePBStructType
 retICAUnloadDeviceModulePB :: RetType ICAUnloadDeviceModulePB
 retICAUnloadDeviceModulePB = mkStorableRetType icaUnloadDeviceModulePBStructType
 
+instance ObjCArgument ICAUnloadDeviceModulePB where
+  withObjCArg x k = k (argICAUnloadDeviceModulePB x)
+
+instance ObjCReturn ICAUnloadDeviceModulePB where
+  type RawReturn ICAUnloadDeviceModulePB = ICAUnloadDeviceModulePB
+  objcRetType = retICAUnloadDeviceModulePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | ICD_DisposeObjectPB
 --
 -- Parameter block passed to function ICDDisposeObject.     header        The function returns error code in the err field of this structure.         The refcon field of this structure is used to pass a pointer to the callback function if ICDDisposeObject is called asynchronously.     object        Object to be disposed.
@@ -768,6 +980,16 @@ argICD_DisposeObjectPB = mkStorableArg icD_DisposeObjectPBStructType
 
 retICD_DisposeObjectPB :: RetType ICD_DisposeObjectPB
 retICD_DisposeObjectPB = mkStorableRetType icD_DisposeObjectPBStructType
+
+instance ObjCArgument ICD_DisposeObjectPB where
+  withObjCArg x k = k (argICD_DisposeObjectPB x)
+
+instance ObjCReturn ICD_DisposeObjectPB where
+  type RawReturn ICD_DisposeObjectPB = ICD_DisposeObjectPB
+  objcRetType = retICD_DisposeObjectPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ICD_NewObjectPB
 --
@@ -801,6 +1023,16 @@ argICD_NewObjectPB = mkStorableArg icD_NewObjectPBStructType
 
 retICD_NewObjectPB :: RetType ICD_NewObjectPB
 retICD_NewObjectPB = mkStorableRetType icD_NewObjectPBStructType
+
+instance ObjCArgument ICD_NewObjectPB where
+  withObjCArg x k = k (argICD_NewObjectPB x)
+
+instance ObjCReturn ICD_NewObjectPB where
+  type RawReturn ICD_NewObjectPB = ICD_NewObjectPB
+  objcRetType = retICD_NewObjectPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_ObjectSendMessagePB = ICD_ObjectSendMessagePB
   { icD_ObjectSendMessagePBHeader :: !ICDHeader
@@ -841,6 +1073,16 @@ argICD_ObjectSendMessagePB = mkStorableArg icD_ObjectSendMessagePBStructType
 retICD_ObjectSendMessagePB :: RetType ICD_ObjectSendMessagePB
 retICD_ObjectSendMessagePB = mkStorableRetType icD_ObjectSendMessagePBStructType
 
+instance ObjCArgument ICD_ObjectSendMessagePB where
+  withObjCArg x k = k (argICD_ObjectSendMessagePB x)
+
+instance ObjCReturn ICD_ObjectSendMessagePB where
+  type RawReturn ICD_ObjectSendMessagePB = ICD_ObjectSendMessagePB
+  objcRetType = retICD_ObjectSendMessagePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICD_ScannerCloseSessionPB = ICD_ScannerCloseSessionPB
   { icD_ScannerCloseSessionPBHeader :: !ICDHeader
   , icD_ScannerCloseSessionPBObject :: !CUInt
@@ -873,6 +1115,16 @@ argICD_ScannerCloseSessionPB = mkStorableArg icD_ScannerCloseSessionPBStructType
 
 retICD_ScannerCloseSessionPB :: RetType ICD_ScannerCloseSessionPB
 retICD_ScannerCloseSessionPB = mkStorableRetType icD_ScannerCloseSessionPBStructType
+
+instance ObjCArgument ICD_ScannerCloseSessionPB where
+  withObjCArg x k = k (argICD_ScannerCloseSessionPB x)
+
+instance ObjCReturn ICD_ScannerCloseSessionPB where
+  type RawReturn ICD_ScannerCloseSessionPB = ICD_ScannerCloseSessionPB
+  objcRetType = retICD_ScannerCloseSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_ScannerGetParametersPB = ICD_ScannerGetParametersPB
   { icD_ScannerGetParametersPBHeader :: !ICDHeader
@@ -910,6 +1162,16 @@ argICD_ScannerGetParametersPB = mkStorableArg icD_ScannerGetParametersPBStructTy
 retICD_ScannerGetParametersPB :: RetType ICD_ScannerGetParametersPB
 retICD_ScannerGetParametersPB = mkStorableRetType icD_ScannerGetParametersPBStructType
 
+instance ObjCArgument ICD_ScannerGetParametersPB where
+  withObjCArg x k = k (argICD_ScannerGetParametersPB x)
+
+instance ObjCReturn ICD_ScannerGetParametersPB where
+  type RawReturn ICD_ScannerGetParametersPB = ICD_ScannerGetParametersPB
+  objcRetType = retICD_ScannerGetParametersPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICD_ScannerInitializePB = ICD_ScannerInitializePB
   { icD_ScannerInitializePBHeader :: !ICDHeader
   , icD_ScannerInitializePBObject :: !CUInt
@@ -942,6 +1204,16 @@ argICD_ScannerInitializePB = mkStorableArg icD_ScannerInitializePBStructType
 
 retICD_ScannerInitializePB :: RetType ICD_ScannerInitializePB
 retICD_ScannerInitializePB = mkStorableRetType icD_ScannerInitializePBStructType
+
+instance ObjCArgument ICD_ScannerInitializePB where
+  withObjCArg x k = k (argICD_ScannerInitializePB x)
+
+instance ObjCReturn ICD_ScannerInitializePB where
+  type RawReturn ICD_ScannerInitializePB = ICD_ScannerInitializePB
+  objcRetType = retICD_ScannerInitializePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_ScannerObjectSendMessagePB = ICD_ScannerObjectSendMessagePB
   { icD_ScannerObjectSendMessagePBHeader :: !ICDHeader
@@ -982,6 +1254,16 @@ argICD_ScannerObjectSendMessagePB = mkStorableArg icD_ScannerObjectSendMessagePB
 retICD_ScannerObjectSendMessagePB :: RetType ICD_ScannerObjectSendMessagePB
 retICD_ScannerObjectSendMessagePB = mkStorableRetType icD_ScannerObjectSendMessagePBStructType
 
+instance ObjCArgument ICD_ScannerObjectSendMessagePB where
+  withObjCArg x k = k (argICD_ScannerObjectSendMessagePB x)
+
+instance ObjCReturn ICD_ScannerObjectSendMessagePB where
+  type RawReturn ICD_ScannerObjectSendMessagePB = ICD_ScannerObjectSendMessagePB
+  objcRetType = retICD_ScannerObjectSendMessagePB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICD_ScannerOpenSessionPB = ICD_ScannerOpenSessionPB
   { icD_ScannerOpenSessionPBHeader :: !ICDHeader
   , icD_ScannerOpenSessionPBObject :: !CUInt
@@ -1014,6 +1296,16 @@ argICD_ScannerOpenSessionPB = mkStorableArg icD_ScannerOpenSessionPBStructType
 
 retICD_ScannerOpenSessionPB :: RetType ICD_ScannerOpenSessionPB
 retICD_ScannerOpenSessionPB = mkStorableRetType icD_ScannerOpenSessionPBStructType
+
+instance ObjCArgument ICD_ScannerOpenSessionPB where
+  withObjCArg x k = k (argICD_ScannerOpenSessionPB x)
+
+instance ObjCReturn ICD_ScannerOpenSessionPB where
+  type RawReturn ICD_ScannerOpenSessionPB = ICD_ScannerOpenSessionPB
+  objcRetType = retICD_ScannerOpenSessionPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_ScannerSetParametersPB = ICD_ScannerSetParametersPB
   { icD_ScannerSetParametersPBHeader :: !ICDHeader
@@ -1051,6 +1343,16 @@ argICD_ScannerSetParametersPB = mkStorableArg icD_ScannerSetParametersPBStructTy
 retICD_ScannerSetParametersPB :: RetType ICD_ScannerSetParametersPB
 retICD_ScannerSetParametersPB = mkStorableRetType icD_ScannerSetParametersPBStructType
 
+instance ObjCArgument ICD_ScannerSetParametersPB where
+  withObjCArg x k = k (argICD_ScannerSetParametersPB x)
+
+instance ObjCReturn ICD_ScannerSetParametersPB where
+  type RawReturn ICD_ScannerSetParametersPB = ICD_ScannerSetParametersPB
+  objcRetType = retICD_ScannerSetParametersPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ICD_ScannerStartPB = ICD_ScannerStartPB
   { icD_ScannerStartPBHeader :: !ICDHeader
   , icD_ScannerStartPBObject :: !CUInt
@@ -1083,6 +1385,16 @@ argICD_ScannerStartPB = mkStorableArg icD_ScannerStartPBStructType
 
 retICD_ScannerStartPB :: RetType ICD_ScannerStartPB
 retICD_ScannerStartPB = mkStorableRetType icD_ScannerStartPBStructType
+
+instance ObjCArgument ICD_ScannerStartPB where
+  withObjCArg x k = k (argICD_ScannerStartPB x)
+
+instance ObjCReturn ICD_ScannerStartPB where
+  type RawReturn ICD_ScannerStartPB = ICD_ScannerStartPB
+  objcRetType = retICD_ScannerStartPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ICD_ScannerStatusPB = ICD_ScannerStatusPB
   { icD_ScannerStatusPBHeader :: !ICDHeader
@@ -1119,3 +1431,13 @@ argICD_ScannerStatusPB = mkStorableArg icD_ScannerStatusPBStructType
 
 retICD_ScannerStatusPB :: RetType ICD_ScannerStatusPB
 retICD_ScannerStatusPB = mkStorableRetType icD_ScannerStatusPBStructType
+
+instance ObjCArgument ICD_ScannerStatusPB where
+  withObjCArg x k = k (argICD_ScannerStatusPB x)
+
+instance ObjCReturn ICD_ScannerStatusPB where
+  type RawReturn ICD_ScannerStatusPB = ICD_ScannerStatusPB
+  objcRetType = retICD_ScannerStatusPB
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

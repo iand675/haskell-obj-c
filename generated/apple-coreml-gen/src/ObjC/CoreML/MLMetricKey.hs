@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.CoreML.MLMetricKey
   , lossValue
   , epochIndex
   , miniBatchIndex
-  , initSelector
-  , newSelector
-  , lossValueSelector
   , epochIndexSelector
+  , initSelector
+  , lossValueSelector
   , miniBatchIndexSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,58 +36,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLMetricKey mlMetricKey => mlMetricKey -> IO (Id MLMetricKey)
-init_ mlMetricKey  =
-    sendMsg mlMetricKey (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlMetricKey =
+  sendOwnedMessage mlMetricKey initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLMetricKey"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @+ lossValue@
 lossValue :: IO (Id MLMetricKey)
 lossValue  =
   do
     cls' <- getRequiredClass "MLMetricKey"
-    sendClassMsg cls' (mkSelector "lossValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' lossValueSelector
 
 -- | @+ epochIndex@
 epochIndex :: IO (Id MLMetricKey)
 epochIndex  =
   do
     cls' <- getRequiredClass "MLMetricKey"
-    sendClassMsg cls' (mkSelector "epochIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' epochIndexSelector
 
 -- | @+ miniBatchIndex@
 miniBatchIndex :: IO (Id MLMetricKey)
 miniBatchIndex  =
   do
     cls' <- getRequiredClass "MLMetricKey"
-    sendClassMsg cls' (mkSelector "miniBatchIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' miniBatchIndexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLMetricKey)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @lossValue@
-lossValueSelector :: Selector
+lossValueSelector :: Selector '[] (Id MLMetricKey)
 lossValueSelector = mkSelector "lossValue"
 
 -- | @Selector@ for @epochIndex@
-epochIndexSelector :: Selector
+epochIndexSelector :: Selector '[] (Id MLMetricKey)
 epochIndexSelector = mkSelector "epochIndex"
 
 -- | @Selector@ for @miniBatchIndex@
-miniBatchIndexSelector :: Selector
+miniBatchIndexSelector :: Selector '[] (Id MLMetricKey)
 miniBatchIndexSelector = mkSelector "miniBatchIndex"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.MTROperationalCredentialsClusterNOCResponseParams
   , setDebugText
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , statusCodeSelector
-  , setStatusCodeSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
   , debugTextSelector
+  , fabricIndexSelector
+  , initWithResponseValue_errorSelector
   , setDebugTextSelector
-  , timedInvokeTimeoutMsSelector
+  , setFabricIndexSelector
+  , setStatusCodeSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusCodeSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,43 +48,38 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrOperationalCredentialsClusterNOCResponseParams -> responseValue -> error_ -> IO (Id MTROperationalCredentialsClusterNOCResponseParams)
-initWithResponseValue_error mtrOperationalCredentialsClusterNOCResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrOperationalCredentialsClusterNOCResponseParams responseValue error_ =
+  sendOwnedMessage mtrOperationalCredentialsClusterNOCResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- statusCode@
 statusCode :: IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams => mtrOperationalCredentialsClusterNOCResponseParams -> IO (Id NSNumber)
-statusCode mtrOperationalCredentialsClusterNOCResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "statusCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusCode mtrOperationalCredentialsClusterNOCResponseParams =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams statusCodeSelector
 
 -- | @- setStatusCode:@
 setStatusCode :: (IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterNOCResponseParams -> value -> IO ()
-setStatusCode mtrOperationalCredentialsClusterNOCResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "setStatusCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusCode mtrOperationalCredentialsClusterNOCResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams setStatusCodeSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams => mtrOperationalCredentialsClusterNOCResponseParams -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterNOCResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterNOCResponseParams =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterNOCResponseParams -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterNOCResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterNOCResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams setFabricIndexSelector (toNSNumber value)
 
 -- | @- debugText@
 debugText :: IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams => mtrOperationalCredentialsClusterNOCResponseParams -> IO (Id NSString)
-debugText mtrOperationalCredentialsClusterNOCResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "debugText") (retPtr retVoid) [] >>= retainedObject . castPtr
+debugText mtrOperationalCredentialsClusterNOCResponseParams =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams debugTextSelector
 
 -- | @- setDebugText:@
 setDebugText :: (IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams, IsNSString value) => mtrOperationalCredentialsClusterNOCResponseParams -> value -> IO ()
-setDebugText mtrOperationalCredentialsClusterNOCResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "setDebugText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDebugText mtrOperationalCredentialsClusterNOCResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams setDebugTextSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,8 +89,8 @@ setDebugText mtrOperationalCredentialsClusterNOCResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams => mtrOperationalCredentialsClusterNOCResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterNOCResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterNOCResponseParams =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -108,47 +100,46 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterNOCResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterNOCResponseParams mtrOperationalCredentialsClusterNOCResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterNOCResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterNOCResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterNOCResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterNOCResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROperationalCredentialsClusterNOCResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @statusCode@
-statusCodeSelector :: Selector
+statusCodeSelector :: Selector '[] (Id NSNumber)
 statusCodeSelector = mkSelector "statusCode"
 
 -- | @Selector@ for @setStatusCode:@
-setStatusCodeSelector :: Selector
+setStatusCodeSelector :: Selector '[Id NSNumber] ()
 setStatusCodeSelector = mkSelector "setStatusCode:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @debugText@
-debugTextSelector :: Selector
+debugTextSelector :: Selector '[] (Id NSString)
 debugTextSelector = mkSelector "debugText"
 
 -- | @Selector@ for @setDebugText:@
-setDebugTextSelector :: Selector
+setDebugTextSelector :: Selector '[Id NSString] ()
 setDebugTextSelector = mkSelector "setDebugText:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

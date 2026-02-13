@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Metal.MTL4CommandQueueDescriptor
   , setLabel
   , feedbackQueue
   , setFeedbackQueue
-  , labelSelector
-  , setLabelSelector
   , feedbackQueueSelector
+  , labelSelector
   , setFeedbackQueueSelector
+  , setLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,16 +36,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- label@
 label :: IsMTL4CommandQueueDescriptor mtL4CommandQueueDescriptor => mtL4CommandQueueDescriptor -> IO (Id NSString)
-label mtL4CommandQueueDescriptor  =
-    sendMsg mtL4CommandQueueDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtL4CommandQueueDescriptor =
+  sendMessage mtL4CommandQueueDescriptor labelSelector
 
 -- | Assigns an optional label to the command queue instance for debugging purposes.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTL4CommandQueueDescriptor mtL4CommandQueueDescriptor, IsNSString value) => mtL4CommandQueueDescriptor -> value -> IO ()
-setLabel mtL4CommandQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4CommandQueueDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtL4CommandQueueDescriptor value =
+  sendMessage mtL4CommandQueueDescriptor setLabelSelector (toNSString value)
 
 -- | Assigns a dispatch queue to which Metal submits feedback notification blocks.
 --
@@ -58,8 +54,8 @@ setLabel mtL4CommandQueueDescriptor  value =
 --
 -- ObjC selector: @- feedbackQueue@
 feedbackQueue :: IsMTL4CommandQueueDescriptor mtL4CommandQueueDescriptor => mtL4CommandQueueDescriptor -> IO (Id NSObject)
-feedbackQueue mtL4CommandQueueDescriptor  =
-    sendMsg mtL4CommandQueueDescriptor (mkSelector "feedbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+feedbackQueue mtL4CommandQueueDescriptor =
+  sendMessage mtL4CommandQueueDescriptor feedbackQueueSelector
 
 -- | Assigns a dispatch queue to which Metal submits feedback notification blocks.
 --
@@ -69,27 +65,26 @@ feedbackQueue mtL4CommandQueueDescriptor  =
 --
 -- ObjC selector: @- setFeedbackQueue:@
 setFeedbackQueue :: (IsMTL4CommandQueueDescriptor mtL4CommandQueueDescriptor, IsNSObject value) => mtL4CommandQueueDescriptor -> value -> IO ()
-setFeedbackQueue mtL4CommandQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4CommandQueueDescriptor (mkSelector "setFeedbackQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFeedbackQueue mtL4CommandQueueDescriptor value =
+  sendMessage mtL4CommandQueueDescriptor setFeedbackQueueSelector (toNSObject value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @feedbackQueue@
-feedbackQueueSelector :: Selector
+feedbackQueueSelector :: Selector '[] (Id NSObject)
 feedbackQueueSelector = mkSelector "feedbackQueue"
 
 -- | @Selector@ for @setFeedbackQueue:@
-setFeedbackQueueSelector :: Selector
+setFeedbackQueueSelector :: Selector '[Id NSObject] ()
 setFeedbackQueueSelector = mkSelector "setFeedbackQueue:"
 

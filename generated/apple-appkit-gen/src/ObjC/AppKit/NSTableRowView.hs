@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,35 +37,35 @@ module ObjC.AppKit.NSTableRowView
   , backgroundColor
   , setBackgroundColor
   , numberOfColumns
+  , backgroundColorSelector
+  , draggingDestinationFeedbackStyleSelector
   , drawBackgroundInRectSelector
+  , drawDraggingDestinationFeedbackInRectSelector
   , drawSelectionInRectSelector
   , drawSeparatorInRectSelector
-  , drawDraggingDestinationFeedbackInRectSelector
-  , viewAtColumnSelector
-  , selectionHighlightStyleSelector
-  , setSelectionHighlightStyleSelector
   , emphasizedSelector
-  , setEmphasizedSelector
-  , groupRowStyleSelector
-  , setGroupRowStyleSelector
-  , selectedSelector
-  , setSelectedSelector
-  , previousRowSelectedSelector
-  , setPreviousRowSelectedSelector
-  , nextRowSelectedSelector
-  , setNextRowSelectedSelector
   , floatingSelector
-  , setFloatingSelector
-  , targetForDropOperationSelector
-  , setTargetForDropOperationSelector
-  , draggingDestinationFeedbackStyleSelector
-  , setDraggingDestinationFeedbackStyleSelector
+  , groupRowStyleSelector
   , indentationForDropOperationSelector
-  , setIndentationForDropOperationSelector
   , interiorBackgroundStyleSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
+  , nextRowSelectedSelector
   , numberOfColumnsSelector
+  , previousRowSelectedSelector
+  , selectedSelector
+  , selectionHighlightStyleSelector
+  , setBackgroundColorSelector
+  , setDraggingDestinationFeedbackStyleSelector
+  , setEmphasizedSelector
+  , setFloatingSelector
+  , setGroupRowStyleSelector
+  , setIndentationForDropOperationSelector
+  , setNextRowSelectedSelector
+  , setPreviousRowSelectedSelector
+  , setSelectedSelector
+  , setSelectionHighlightStyleSelector
+  , setTargetForDropOperationSelector
+  , targetForDropOperationSelector
+  , viewAtColumnSelector
 
   -- * Enum types
   , NSBackgroundStyle(NSBackgroundStyle)
@@ -84,15 +85,11 @@ module ObjC.AppKit.NSTableRowView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,267 +100,266 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- drawBackgroundInRect:@
 drawBackgroundInRect :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSRect -> IO ()
-drawBackgroundInRect nsTableRowView  dirtyRect =
-    sendMsg nsTableRowView (mkSelector "drawBackgroundInRect:") retVoid [argNSRect dirtyRect]
+drawBackgroundInRect nsTableRowView dirtyRect =
+  sendMessage nsTableRowView drawBackgroundInRectSelector dirtyRect
 
 -- | @- drawSelectionInRect:@
 drawSelectionInRect :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSRect -> IO ()
-drawSelectionInRect nsTableRowView  dirtyRect =
-    sendMsg nsTableRowView (mkSelector "drawSelectionInRect:") retVoid [argNSRect dirtyRect]
+drawSelectionInRect nsTableRowView dirtyRect =
+  sendMessage nsTableRowView drawSelectionInRectSelector dirtyRect
 
 -- | @- drawSeparatorInRect:@
 drawSeparatorInRect :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSRect -> IO ()
-drawSeparatorInRect nsTableRowView  dirtyRect =
-    sendMsg nsTableRowView (mkSelector "drawSeparatorInRect:") retVoid [argNSRect dirtyRect]
+drawSeparatorInRect nsTableRowView dirtyRect =
+  sendMessage nsTableRowView drawSeparatorInRectSelector dirtyRect
 
 -- | @- drawDraggingDestinationFeedbackInRect:@
 drawDraggingDestinationFeedbackInRect :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSRect -> IO ()
-drawDraggingDestinationFeedbackInRect nsTableRowView  dirtyRect =
-    sendMsg nsTableRowView (mkSelector "drawDraggingDestinationFeedbackInRect:") retVoid [argNSRect dirtyRect]
+drawDraggingDestinationFeedbackInRect nsTableRowView dirtyRect =
+  sendMessage nsTableRowView drawDraggingDestinationFeedbackInRectSelector dirtyRect
 
 -- | @- viewAtColumn:@
 viewAtColumn :: IsNSTableRowView nsTableRowView => nsTableRowView -> CLong -> IO RawId
-viewAtColumn nsTableRowView  column =
-    fmap (RawId . castPtr) $ sendMsg nsTableRowView (mkSelector "viewAtColumn:") (retPtr retVoid) [argCLong column]
+viewAtColumn nsTableRowView column =
+  sendMessage nsTableRowView viewAtColumnSelector column
 
 -- | @- selectionHighlightStyle@
 selectionHighlightStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO NSTableViewSelectionHighlightStyle
-selectionHighlightStyle nsTableRowView  =
-    fmap (coerce :: CLong -> NSTableViewSelectionHighlightStyle) $ sendMsg nsTableRowView (mkSelector "selectionHighlightStyle") retCLong []
+selectionHighlightStyle nsTableRowView =
+  sendMessage nsTableRowView selectionHighlightStyleSelector
 
 -- | @- setSelectionHighlightStyle:@
 setSelectionHighlightStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSTableViewSelectionHighlightStyle -> IO ()
-setSelectionHighlightStyle nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setSelectionHighlightStyle:") retVoid [argCLong (coerce value)]
+setSelectionHighlightStyle nsTableRowView value =
+  sendMessage nsTableRowView setSelectionHighlightStyleSelector value
 
 -- | @- emphasized@
 emphasized :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-emphasized nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "emphasized") retCULong []
+emphasized nsTableRowView =
+  sendMessage nsTableRowView emphasizedSelector
 
 -- | @- setEmphasized:@
 setEmphasized :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setEmphasized nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setEmphasized:") retVoid [argCULong (if value then 1 else 0)]
+setEmphasized nsTableRowView value =
+  sendMessage nsTableRowView setEmphasizedSelector value
 
 -- | @- groupRowStyle@
 groupRowStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-groupRowStyle nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "groupRowStyle") retCULong []
+groupRowStyle nsTableRowView =
+  sendMessage nsTableRowView groupRowStyleSelector
 
 -- | @- setGroupRowStyle:@
 setGroupRowStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setGroupRowStyle nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setGroupRowStyle:") retVoid [argCULong (if value then 1 else 0)]
+setGroupRowStyle nsTableRowView value =
+  sendMessage nsTableRowView setGroupRowStyleSelector value
 
 -- | @- selected@
 selected :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-selected nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "selected") retCULong []
+selected nsTableRowView =
+  sendMessage nsTableRowView selectedSelector
 
 -- | @- setSelected:@
 setSelected :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setSelected nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setSelected:") retVoid [argCULong (if value then 1 else 0)]
+setSelected nsTableRowView value =
+  sendMessage nsTableRowView setSelectedSelector value
 
 -- | @- previousRowSelected@
 previousRowSelected :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-previousRowSelected nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "previousRowSelected") retCULong []
+previousRowSelected nsTableRowView =
+  sendMessage nsTableRowView previousRowSelectedSelector
 
 -- | @- setPreviousRowSelected:@
 setPreviousRowSelected :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setPreviousRowSelected nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setPreviousRowSelected:") retVoid [argCULong (if value then 1 else 0)]
+setPreviousRowSelected nsTableRowView value =
+  sendMessage nsTableRowView setPreviousRowSelectedSelector value
 
 -- | @- nextRowSelected@
 nextRowSelected :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-nextRowSelected nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "nextRowSelected") retCULong []
+nextRowSelected nsTableRowView =
+  sendMessage nsTableRowView nextRowSelectedSelector
 
 -- | @- setNextRowSelected:@
 setNextRowSelected :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setNextRowSelected nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setNextRowSelected:") retVoid [argCULong (if value then 1 else 0)]
+setNextRowSelected nsTableRowView value =
+  sendMessage nsTableRowView setNextRowSelectedSelector value
 
 -- | @- floating@
 floating :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-floating nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "floating") retCULong []
+floating nsTableRowView =
+  sendMessage nsTableRowView floatingSelector
 
 -- | @- setFloating:@
 setFloating :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setFloating nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setFloating:") retVoid [argCULong (if value then 1 else 0)]
+setFloating nsTableRowView value =
+  sendMessage nsTableRowView setFloatingSelector value
 
 -- | @- targetForDropOperation@
 targetForDropOperation :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO Bool
-targetForDropOperation nsTableRowView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTableRowView (mkSelector "targetForDropOperation") retCULong []
+targetForDropOperation nsTableRowView =
+  sendMessage nsTableRowView targetForDropOperationSelector
 
 -- | @- setTargetForDropOperation:@
 setTargetForDropOperation :: IsNSTableRowView nsTableRowView => nsTableRowView -> Bool -> IO ()
-setTargetForDropOperation nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setTargetForDropOperation:") retVoid [argCULong (if value then 1 else 0)]
+setTargetForDropOperation nsTableRowView value =
+  sendMessage nsTableRowView setTargetForDropOperationSelector value
 
 -- | @- draggingDestinationFeedbackStyle@
 draggingDestinationFeedbackStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO NSTableViewDraggingDestinationFeedbackStyle
-draggingDestinationFeedbackStyle nsTableRowView  =
-    fmap (coerce :: CLong -> NSTableViewDraggingDestinationFeedbackStyle) $ sendMsg nsTableRowView (mkSelector "draggingDestinationFeedbackStyle") retCLong []
+draggingDestinationFeedbackStyle nsTableRowView =
+  sendMessage nsTableRowView draggingDestinationFeedbackStyleSelector
 
 -- | @- setDraggingDestinationFeedbackStyle:@
 setDraggingDestinationFeedbackStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> NSTableViewDraggingDestinationFeedbackStyle -> IO ()
-setDraggingDestinationFeedbackStyle nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setDraggingDestinationFeedbackStyle:") retVoid [argCLong (coerce value)]
+setDraggingDestinationFeedbackStyle nsTableRowView value =
+  sendMessage nsTableRowView setDraggingDestinationFeedbackStyleSelector value
 
 -- | @- indentationForDropOperation@
 indentationForDropOperation :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO CDouble
-indentationForDropOperation nsTableRowView  =
-    sendMsg nsTableRowView (mkSelector "indentationForDropOperation") retCDouble []
+indentationForDropOperation nsTableRowView =
+  sendMessage nsTableRowView indentationForDropOperationSelector
 
 -- | @- setIndentationForDropOperation:@
 setIndentationForDropOperation :: IsNSTableRowView nsTableRowView => nsTableRowView -> CDouble -> IO ()
-setIndentationForDropOperation nsTableRowView  value =
-    sendMsg nsTableRowView (mkSelector "setIndentationForDropOperation:") retVoid [argCDouble value]
+setIndentationForDropOperation nsTableRowView value =
+  sendMessage nsTableRowView setIndentationForDropOperationSelector value
 
 -- | @- interiorBackgroundStyle@
 interiorBackgroundStyle :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO NSBackgroundStyle
-interiorBackgroundStyle nsTableRowView  =
-    fmap (coerce :: CLong -> NSBackgroundStyle) $ sendMsg nsTableRowView (mkSelector "interiorBackgroundStyle") retCLong []
+interiorBackgroundStyle nsTableRowView =
+  sendMessage nsTableRowView interiorBackgroundStyleSelector
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO (Id NSColor)
-backgroundColor nsTableRowView  =
-    sendMsg nsTableRowView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsTableRowView =
+  sendMessage nsTableRowView backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSTableRowView nsTableRowView, IsNSColor value) => nsTableRowView -> value -> IO ()
-setBackgroundColor nsTableRowView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableRowView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsTableRowView value =
+  sendMessage nsTableRowView setBackgroundColorSelector (toNSColor value)
 
 -- | @- numberOfColumns@
 numberOfColumns :: IsNSTableRowView nsTableRowView => nsTableRowView -> IO CLong
-numberOfColumns nsTableRowView  =
-    sendMsg nsTableRowView (mkSelector "numberOfColumns") retCLong []
+numberOfColumns nsTableRowView =
+  sendMessage nsTableRowView numberOfColumnsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @drawBackgroundInRect:@
-drawBackgroundInRectSelector :: Selector
+drawBackgroundInRectSelector :: Selector '[NSRect] ()
 drawBackgroundInRectSelector = mkSelector "drawBackgroundInRect:"
 
 -- | @Selector@ for @drawSelectionInRect:@
-drawSelectionInRectSelector :: Selector
+drawSelectionInRectSelector :: Selector '[NSRect] ()
 drawSelectionInRectSelector = mkSelector "drawSelectionInRect:"
 
 -- | @Selector@ for @drawSeparatorInRect:@
-drawSeparatorInRectSelector :: Selector
+drawSeparatorInRectSelector :: Selector '[NSRect] ()
 drawSeparatorInRectSelector = mkSelector "drawSeparatorInRect:"
 
 -- | @Selector@ for @drawDraggingDestinationFeedbackInRect:@
-drawDraggingDestinationFeedbackInRectSelector :: Selector
+drawDraggingDestinationFeedbackInRectSelector :: Selector '[NSRect] ()
 drawDraggingDestinationFeedbackInRectSelector = mkSelector "drawDraggingDestinationFeedbackInRect:"
 
 -- | @Selector@ for @viewAtColumn:@
-viewAtColumnSelector :: Selector
+viewAtColumnSelector :: Selector '[CLong] RawId
 viewAtColumnSelector = mkSelector "viewAtColumn:"
 
 -- | @Selector@ for @selectionHighlightStyle@
-selectionHighlightStyleSelector :: Selector
+selectionHighlightStyleSelector :: Selector '[] NSTableViewSelectionHighlightStyle
 selectionHighlightStyleSelector = mkSelector "selectionHighlightStyle"
 
 -- | @Selector@ for @setSelectionHighlightStyle:@
-setSelectionHighlightStyleSelector :: Selector
+setSelectionHighlightStyleSelector :: Selector '[NSTableViewSelectionHighlightStyle] ()
 setSelectionHighlightStyleSelector = mkSelector "setSelectionHighlightStyle:"
 
 -- | @Selector@ for @emphasized@
-emphasizedSelector :: Selector
+emphasizedSelector :: Selector '[] Bool
 emphasizedSelector = mkSelector "emphasized"
 
 -- | @Selector@ for @setEmphasized:@
-setEmphasizedSelector :: Selector
+setEmphasizedSelector :: Selector '[Bool] ()
 setEmphasizedSelector = mkSelector "setEmphasized:"
 
 -- | @Selector@ for @groupRowStyle@
-groupRowStyleSelector :: Selector
+groupRowStyleSelector :: Selector '[] Bool
 groupRowStyleSelector = mkSelector "groupRowStyle"
 
 -- | @Selector@ for @setGroupRowStyle:@
-setGroupRowStyleSelector :: Selector
+setGroupRowStyleSelector :: Selector '[Bool] ()
 setGroupRowStyleSelector = mkSelector "setGroupRowStyle:"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 
 -- | @Selector@ for @setSelected:@
-setSelectedSelector :: Selector
+setSelectedSelector :: Selector '[Bool] ()
 setSelectedSelector = mkSelector "setSelected:"
 
 -- | @Selector@ for @previousRowSelected@
-previousRowSelectedSelector :: Selector
+previousRowSelectedSelector :: Selector '[] Bool
 previousRowSelectedSelector = mkSelector "previousRowSelected"
 
 -- | @Selector@ for @setPreviousRowSelected:@
-setPreviousRowSelectedSelector :: Selector
+setPreviousRowSelectedSelector :: Selector '[Bool] ()
 setPreviousRowSelectedSelector = mkSelector "setPreviousRowSelected:"
 
 -- | @Selector@ for @nextRowSelected@
-nextRowSelectedSelector :: Selector
+nextRowSelectedSelector :: Selector '[] Bool
 nextRowSelectedSelector = mkSelector "nextRowSelected"
 
 -- | @Selector@ for @setNextRowSelected:@
-setNextRowSelectedSelector :: Selector
+setNextRowSelectedSelector :: Selector '[Bool] ()
 setNextRowSelectedSelector = mkSelector "setNextRowSelected:"
 
 -- | @Selector@ for @floating@
-floatingSelector :: Selector
+floatingSelector :: Selector '[] Bool
 floatingSelector = mkSelector "floating"
 
 -- | @Selector@ for @setFloating:@
-setFloatingSelector :: Selector
+setFloatingSelector :: Selector '[Bool] ()
 setFloatingSelector = mkSelector "setFloating:"
 
 -- | @Selector@ for @targetForDropOperation@
-targetForDropOperationSelector :: Selector
+targetForDropOperationSelector :: Selector '[] Bool
 targetForDropOperationSelector = mkSelector "targetForDropOperation"
 
 -- | @Selector@ for @setTargetForDropOperation:@
-setTargetForDropOperationSelector :: Selector
+setTargetForDropOperationSelector :: Selector '[Bool] ()
 setTargetForDropOperationSelector = mkSelector "setTargetForDropOperation:"
 
 -- | @Selector@ for @draggingDestinationFeedbackStyle@
-draggingDestinationFeedbackStyleSelector :: Selector
+draggingDestinationFeedbackStyleSelector :: Selector '[] NSTableViewDraggingDestinationFeedbackStyle
 draggingDestinationFeedbackStyleSelector = mkSelector "draggingDestinationFeedbackStyle"
 
 -- | @Selector@ for @setDraggingDestinationFeedbackStyle:@
-setDraggingDestinationFeedbackStyleSelector :: Selector
+setDraggingDestinationFeedbackStyleSelector :: Selector '[NSTableViewDraggingDestinationFeedbackStyle] ()
 setDraggingDestinationFeedbackStyleSelector = mkSelector "setDraggingDestinationFeedbackStyle:"
 
 -- | @Selector@ for @indentationForDropOperation@
-indentationForDropOperationSelector :: Selector
+indentationForDropOperationSelector :: Selector '[] CDouble
 indentationForDropOperationSelector = mkSelector "indentationForDropOperation"
 
 -- | @Selector@ for @setIndentationForDropOperation:@
-setIndentationForDropOperationSelector :: Selector
+setIndentationForDropOperationSelector :: Selector '[CDouble] ()
 setIndentationForDropOperationSelector = mkSelector "setIndentationForDropOperation:"
 
 -- | @Selector@ for @interiorBackgroundStyle@
-interiorBackgroundStyleSelector :: Selector
+interiorBackgroundStyleSelector :: Selector '[] NSBackgroundStyle
 interiorBackgroundStyleSelector = mkSelector "interiorBackgroundStyle"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @numberOfColumns@
-numberOfColumnsSelector :: Selector
+numberOfColumnsSelector :: Selector '[] CLong
 numberOfColumnsSelector = mkSelector "numberOfColumns"
 

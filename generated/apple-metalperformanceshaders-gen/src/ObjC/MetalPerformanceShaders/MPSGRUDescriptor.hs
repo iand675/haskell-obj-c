@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -52,37 +53,33 @@ module ObjC.MetalPerformanceShaders.MPSGRUDescriptor
   , flipOutputGates
   , setFlipOutputGates
   , createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
-  , inputGateInputWeightsSelector
-  , setInputGateInputWeightsSelector
-  , inputGateRecurrentWeightsSelector
-  , setInputGateRecurrentWeightsSelector
-  , recurrentGateInputWeightsSelector
-  , setRecurrentGateInputWeightsSelector
-  , recurrentGateRecurrentWeightsSelector
-  , setRecurrentGateRecurrentWeightsSelector
-  , outputGateInputWeightsSelector
-  , setOutputGateInputWeightsSelector
-  , outputGateRecurrentWeightsSelector
-  , setOutputGateRecurrentWeightsSelector
-  , outputGateInputGateWeightsSelector
-  , setOutputGateInputGateWeightsSelector
-  , gatePnormValueSelector
-  , setGatePnormValueSelector
   , flipOutputGatesSelector
+  , gatePnormValueSelector
+  , inputGateInputWeightsSelector
+  , inputGateRecurrentWeightsSelector
+  , outputGateInputGateWeightsSelector
+  , outputGateInputWeightsSelector
+  , outputGateRecurrentWeightsSelector
+  , recurrentGateInputWeightsSelector
+  , recurrentGateRecurrentWeightsSelector
   , setFlipOutputGatesSelector
+  , setGatePnormValueSelector
+  , setInputGateInputWeightsSelector
+  , setInputGateRecurrentWeightsSelector
+  , setOutputGateInputGateWeightsSelector
+  , setOutputGateInputWeightsSelector
+  , setOutputGateRecurrentWeightsSelector
+  , setRecurrentGateInputWeightsSelector
+  , setRecurrentGateRecurrentWeightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,7 +99,7 @@ createGRUDescriptorWithInputFeatureChannels_outputFeatureChannels :: CULong -> C
 createGRUDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureChannels outputFeatureChannels =
   do
     cls' <- getRequiredClass "MPSGRUDescriptor"
-    sendClassMsg cls' (mkSelector "createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector inputFeatureChannels outputFeatureChannels
 
 -- | inputGateInputWeights
 --
@@ -110,8 +107,8 @@ createGRUDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureCh
 --
 -- ObjC selector: @- inputGateInputWeights@
 inputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-inputGateInputWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "inputGateInputWeights") (retPtr retVoid) []
+inputGateInputWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor inputGateInputWeightsSelector
 
 -- | inputGateInputWeights
 --
@@ -119,8 +116,8 @@ inputGateInputWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setInputGateInputWeights:@
 setInputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setInputGateInputWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setInputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputGateInputWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setInputGateInputWeightsSelector value
 
 -- | inputGateRecurrentWeights
 --
@@ -128,8 +125,8 @@ setInputGateInputWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- inputGateRecurrentWeights@
 inputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-inputGateRecurrentWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "inputGateRecurrentWeights") (retPtr retVoid) []
+inputGateRecurrentWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor inputGateRecurrentWeightsSelector
 
 -- | inputGateRecurrentWeights
 --
@@ -137,8 +134,8 @@ inputGateRecurrentWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setInputGateRecurrentWeights:@
 setInputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setInputGateRecurrentWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setInputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputGateRecurrentWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setInputGateRecurrentWeightsSelector value
 
 -- | recurrentGateInputWeights
 --
@@ -146,8 +143,8 @@ setInputGateRecurrentWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- recurrentGateInputWeights@
 recurrentGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-recurrentGateInputWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "recurrentGateInputWeights") (retPtr retVoid) []
+recurrentGateInputWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor recurrentGateInputWeightsSelector
 
 -- | recurrentGateInputWeights
 --
@@ -155,8 +152,8 @@ recurrentGateInputWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setRecurrentGateInputWeights:@
 setRecurrentGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setRecurrentGateInputWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setRecurrentGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRecurrentGateInputWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setRecurrentGateInputWeightsSelector value
 
 -- | recurrentGateRecurrentWeights
 --
@@ -164,8 +161,8 @@ setRecurrentGateInputWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- recurrentGateRecurrentWeights@
 recurrentGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-recurrentGateRecurrentWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "recurrentGateRecurrentWeights") (retPtr retVoid) []
+recurrentGateRecurrentWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor recurrentGateRecurrentWeightsSelector
 
 -- | recurrentGateRecurrentWeights
 --
@@ -173,8 +170,8 @@ recurrentGateRecurrentWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setRecurrentGateRecurrentWeights:@
 setRecurrentGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setRecurrentGateRecurrentWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setRecurrentGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRecurrentGateRecurrentWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setRecurrentGateRecurrentWeightsSelector value
 
 -- | outputGateInputWeights
 --
@@ -182,8 +179,8 @@ setRecurrentGateRecurrentWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- outputGateInputWeights@
 outputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-outputGateInputWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateInputWeights") (retPtr retVoid) []
+outputGateInputWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor outputGateInputWeightsSelector
 
 -- | outputGateInputWeights
 --
@@ -191,8 +188,8 @@ outputGateInputWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setOutputGateInputWeights:@
 setOutputGateInputWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setOutputGateInputWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setOutputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateInputWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setOutputGateInputWeightsSelector value
 
 -- | outputGateRecurrentWeights
 --
@@ -200,8 +197,8 @@ setOutputGateInputWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- outputGateRecurrentWeights@
 outputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-outputGateRecurrentWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateRecurrentWeights") (retPtr retVoid) []
+outputGateRecurrentWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor outputGateRecurrentWeightsSelector
 
 -- | outputGateRecurrentWeights
 --
@@ -209,8 +206,8 @@ outputGateRecurrentWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setOutputGateRecurrentWeights:@
 setOutputGateRecurrentWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setOutputGateRecurrentWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setOutputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateRecurrentWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setOutputGateRecurrentWeightsSelector value
 
 -- | outputGateInputGateWeights
 --
@@ -218,8 +215,8 @@ setOutputGateRecurrentWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- outputGateInputGateWeights@
 outputGateInputGateWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO RawId
-outputGateInputGateWeights mpsgruDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsgruDescriptor (mkSelector "outputGateInputGateWeights") (retPtr retVoid) []
+outputGateInputGateWeights mpsgruDescriptor =
+  sendMessage mpsgruDescriptor outputGateInputGateWeightsSelector
 
 -- | outputGateInputGateWeights
 --
@@ -227,8 +224,8 @@ outputGateInputGateWeights mpsgruDescriptor  =
 --
 -- ObjC selector: @- setOutputGateInputGateWeights:@
 setOutputGateInputGateWeights :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> RawId -> IO ()
-setOutputGateInputGateWeights mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setOutputGateInputGateWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateInputGateWeights mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setOutputGateInputGateWeightsSelector value
 
 -- | gatePnormValue
 --
@@ -236,8 +233,8 @@ setOutputGateInputGateWeights mpsgruDescriptor  value =
 --
 -- ObjC selector: @- gatePnormValue@
 gatePnormValue :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO CFloat
-gatePnormValue mpsgruDescriptor  =
-    sendMsg mpsgruDescriptor (mkSelector "gatePnormValue") retCFloat []
+gatePnormValue mpsgruDescriptor =
+  sendMessage mpsgruDescriptor gatePnormValueSelector
 
 -- | gatePnormValue
 --
@@ -245,8 +242,8 @@ gatePnormValue mpsgruDescriptor  =
 --
 -- ObjC selector: @- setGatePnormValue:@
 setGatePnormValue :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> CFloat -> IO ()
-setGatePnormValue mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setGatePnormValue:") retVoid [argCFloat value]
+setGatePnormValue mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setGatePnormValueSelector value
 
 -- | flipOutputGates
 --
@@ -254,8 +251,8 @@ setGatePnormValue mpsgruDescriptor  value =
 --
 -- ObjC selector: @- flipOutputGates@
 flipOutputGates :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> IO Bool
-flipOutputGates mpsgruDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsgruDescriptor (mkSelector "flipOutputGates") retCULong []
+flipOutputGates mpsgruDescriptor =
+  sendMessage mpsgruDescriptor flipOutputGatesSelector
 
 -- | flipOutputGates
 --
@@ -263,86 +260,86 @@ flipOutputGates mpsgruDescriptor  =
 --
 -- ObjC selector: @- setFlipOutputGates:@
 setFlipOutputGates :: IsMPSGRUDescriptor mpsgruDescriptor => mpsgruDescriptor -> Bool -> IO ()
-setFlipOutputGates mpsgruDescriptor  value =
-    sendMsg mpsgruDescriptor (mkSelector "setFlipOutputGates:") retVoid [argCULong (if value then 1 else 0)]
+setFlipOutputGates mpsgruDescriptor value =
+  sendMessage mpsgruDescriptor setFlipOutputGatesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:@
-createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector
+createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector '[CULong, CULong] (Id MPSGRUDescriptor)
 createGRUDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector = mkSelector "createGRUDescriptorWithInputFeatureChannels:outputFeatureChannels:"
 
 -- | @Selector@ for @inputGateInputWeights@
-inputGateInputWeightsSelector :: Selector
+inputGateInputWeightsSelector :: Selector '[] RawId
 inputGateInputWeightsSelector = mkSelector "inputGateInputWeights"
 
 -- | @Selector@ for @setInputGateInputWeights:@
-setInputGateInputWeightsSelector :: Selector
+setInputGateInputWeightsSelector :: Selector '[RawId] ()
 setInputGateInputWeightsSelector = mkSelector "setInputGateInputWeights:"
 
 -- | @Selector@ for @inputGateRecurrentWeights@
-inputGateRecurrentWeightsSelector :: Selector
+inputGateRecurrentWeightsSelector :: Selector '[] RawId
 inputGateRecurrentWeightsSelector = mkSelector "inputGateRecurrentWeights"
 
 -- | @Selector@ for @setInputGateRecurrentWeights:@
-setInputGateRecurrentWeightsSelector :: Selector
+setInputGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setInputGateRecurrentWeightsSelector = mkSelector "setInputGateRecurrentWeights:"
 
 -- | @Selector@ for @recurrentGateInputWeights@
-recurrentGateInputWeightsSelector :: Selector
+recurrentGateInputWeightsSelector :: Selector '[] RawId
 recurrentGateInputWeightsSelector = mkSelector "recurrentGateInputWeights"
 
 -- | @Selector@ for @setRecurrentGateInputWeights:@
-setRecurrentGateInputWeightsSelector :: Selector
+setRecurrentGateInputWeightsSelector :: Selector '[RawId] ()
 setRecurrentGateInputWeightsSelector = mkSelector "setRecurrentGateInputWeights:"
 
 -- | @Selector@ for @recurrentGateRecurrentWeights@
-recurrentGateRecurrentWeightsSelector :: Selector
+recurrentGateRecurrentWeightsSelector :: Selector '[] RawId
 recurrentGateRecurrentWeightsSelector = mkSelector "recurrentGateRecurrentWeights"
 
 -- | @Selector@ for @setRecurrentGateRecurrentWeights:@
-setRecurrentGateRecurrentWeightsSelector :: Selector
+setRecurrentGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setRecurrentGateRecurrentWeightsSelector = mkSelector "setRecurrentGateRecurrentWeights:"
 
 -- | @Selector@ for @outputGateInputWeights@
-outputGateInputWeightsSelector :: Selector
+outputGateInputWeightsSelector :: Selector '[] RawId
 outputGateInputWeightsSelector = mkSelector "outputGateInputWeights"
 
 -- | @Selector@ for @setOutputGateInputWeights:@
-setOutputGateInputWeightsSelector :: Selector
+setOutputGateInputWeightsSelector :: Selector '[RawId] ()
 setOutputGateInputWeightsSelector = mkSelector "setOutputGateInputWeights:"
 
 -- | @Selector@ for @outputGateRecurrentWeights@
-outputGateRecurrentWeightsSelector :: Selector
+outputGateRecurrentWeightsSelector :: Selector '[] RawId
 outputGateRecurrentWeightsSelector = mkSelector "outputGateRecurrentWeights"
 
 -- | @Selector@ for @setOutputGateRecurrentWeights:@
-setOutputGateRecurrentWeightsSelector :: Selector
+setOutputGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setOutputGateRecurrentWeightsSelector = mkSelector "setOutputGateRecurrentWeights:"
 
 -- | @Selector@ for @outputGateInputGateWeights@
-outputGateInputGateWeightsSelector :: Selector
+outputGateInputGateWeightsSelector :: Selector '[] RawId
 outputGateInputGateWeightsSelector = mkSelector "outputGateInputGateWeights"
 
 -- | @Selector@ for @setOutputGateInputGateWeights:@
-setOutputGateInputGateWeightsSelector :: Selector
+setOutputGateInputGateWeightsSelector :: Selector '[RawId] ()
 setOutputGateInputGateWeightsSelector = mkSelector "setOutputGateInputGateWeights:"
 
 -- | @Selector@ for @gatePnormValue@
-gatePnormValueSelector :: Selector
+gatePnormValueSelector :: Selector '[] CFloat
 gatePnormValueSelector = mkSelector "gatePnormValue"
 
 -- | @Selector@ for @setGatePnormValue:@
-setGatePnormValueSelector :: Selector
+setGatePnormValueSelector :: Selector '[CFloat] ()
 setGatePnormValueSelector = mkSelector "setGatePnormValue:"
 
 -- | @Selector@ for @flipOutputGates@
-flipOutputGatesSelector :: Selector
+flipOutputGatesSelector :: Selector '[] Bool
 flipOutputGatesSelector = mkSelector "flipOutputGates"
 
 -- | @Selector@ for @setFlipOutputGates:@
-setFlipOutputGatesSelector :: Selector
+setFlipOutputGatesSelector :: Selector '[Bool] ()
 setFlipOutputGatesSelector = mkSelector "setFlipOutputGates:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.AVFoundation.AVAssetReaderSampleReferenceOutput
   , assetReaderSampleReferenceOutputWithTrack
   , initWithTrack
   , track
-  , initSelector
-  , newSelector
   , assetReaderSampleReferenceOutputWithTrackSelector
+  , initSelector
   , initWithTrackSelector
+  , newSelector
   , trackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderSampleReferenceOutput avAssetReaderSampleReferenceOutput => avAssetReaderSampleReferenceOutput -> IO (Id AVAssetReaderSampleReferenceOutput)
-init_ avAssetReaderSampleReferenceOutput  =
-    sendMsg avAssetReaderSampleReferenceOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderSampleReferenceOutput =
+  sendOwnedMessage avAssetReaderSampleReferenceOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderSampleReferenceOutput)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderSampleReferenceOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderSampleReferenceOutputWithTrack:
 --
@@ -72,8 +69,7 @@ assetReaderSampleReferenceOutputWithTrack :: IsAVAssetTrack track => track -> IO
 assetReaderSampleReferenceOutputWithTrack track =
   do
     cls' <- getRequiredClass "AVAssetReaderSampleReferenceOutput"
-    withObjCPtr track $ \raw_track ->
-      sendClassMsg cls' (mkSelector "assetReaderSampleReferenceOutputWithTrack:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderSampleReferenceOutputWithTrackSelector (toAVAssetTrack track)
 
 -- | initWithTrack:
 --
@@ -87,9 +83,8 @@ assetReaderSampleReferenceOutputWithTrack track =
 --
 -- ObjC selector: @- initWithTrack:@
 initWithTrack :: (IsAVAssetReaderSampleReferenceOutput avAssetReaderSampleReferenceOutput, IsAVAssetTrack track) => avAssetReaderSampleReferenceOutput -> track -> IO (Id AVAssetReaderSampleReferenceOutput)
-initWithTrack avAssetReaderSampleReferenceOutput  track =
-  withObjCPtr track $ \raw_track ->
-      sendMsg avAssetReaderSampleReferenceOutput (mkSelector "initWithTrack:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ())] >>= ownedObject . castPtr
+initWithTrack avAssetReaderSampleReferenceOutput track =
+  sendOwnedMessage avAssetReaderSampleReferenceOutput initWithTrackSelector (toAVAssetTrack track)
 
 -- | track
 --
@@ -99,30 +94,30 @@ initWithTrack avAssetReaderSampleReferenceOutput  track =
 --
 -- ObjC selector: @- track@
 track :: IsAVAssetReaderSampleReferenceOutput avAssetReaderSampleReferenceOutput => avAssetReaderSampleReferenceOutput -> IO (Id AVAssetTrack)
-track avAssetReaderSampleReferenceOutput  =
-    sendMsg avAssetReaderSampleReferenceOutput (mkSelector "track") (retPtr retVoid) [] >>= retainedObject . castPtr
+track avAssetReaderSampleReferenceOutput =
+  sendMessage avAssetReaderSampleReferenceOutput trackSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderSampleReferenceOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderSampleReferenceOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderSampleReferenceOutputWithTrack:@
-assetReaderSampleReferenceOutputWithTrackSelector :: Selector
+assetReaderSampleReferenceOutputWithTrackSelector :: Selector '[Id AVAssetTrack] (Id AVAssetReaderSampleReferenceOutput)
 assetReaderSampleReferenceOutputWithTrackSelector = mkSelector "assetReaderSampleReferenceOutputWithTrack:"
 
 -- | @Selector@ for @initWithTrack:@
-initWithTrackSelector :: Selector
+initWithTrackSelector :: Selector '[Id AVAssetTrack] (Id AVAssetReaderSampleReferenceOutput)
 initWithTrackSelector = mkSelector "initWithTrack:"
 
 -- | @Selector@ for @track@
-trackSelector :: Selector
+trackSelector :: Selector '[] (Id AVAssetTrack)
 trackSelector = mkSelector "track"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,37 +27,33 @@ module ObjC.QuartzCore.CAKeyframeAnimation
   , setBiasValues
   , rotationMode
   , setRotationMode
-  , valuesSelector
-  , setValuesSelector
-  , pathSelector
-  , setPathSelector
-  , keyTimesSelector
-  , setKeyTimesSelector
-  , timingFunctionsSelector
-  , setTimingFunctionsSelector
-  , calculationModeSelector
-  , setCalculationModeSelector
-  , tensionValuesSelector
-  , setTensionValuesSelector
-  , continuityValuesSelector
-  , setContinuityValuesSelector
   , biasValuesSelector
-  , setBiasValuesSelector
+  , calculationModeSelector
+  , continuityValuesSelector
+  , keyTimesSelector
+  , pathSelector
   , rotationModeSelector
+  , setBiasValuesSelector
+  , setCalculationModeSelector
+  , setContinuityValuesSelector
+  , setKeyTimesSelector
+  , setPathSelector
   , setRotationModeSelector
+  , setTensionValuesSelector
+  , setTimingFunctionsSelector
+  , setValuesSelector
+  , tensionValuesSelector
+  , timingFunctionsSelector
+  , valuesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,175 +62,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- values@
 values :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-values caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "values") (retPtr retVoid) [] >>= retainedObject . castPtr
+values caKeyframeAnimation =
+  sendMessage caKeyframeAnimation valuesSelector
 
 -- | @- setValues:@
 setValues :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setValues caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValues caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setValuesSelector (toNSArray value)
 
 -- | @- path@
 path :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO RawId
-path caKeyframeAnimation  =
-    fmap (RawId . castPtr) $ sendMsg caKeyframeAnimation (mkSelector "path") (retPtr retVoid) []
+path caKeyframeAnimation =
+  sendMessage caKeyframeAnimation pathSelector
 
 -- | @- setPath:@
 setPath :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> RawId -> IO ()
-setPath caKeyframeAnimation  value =
-    sendMsg caKeyframeAnimation (mkSelector "setPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPath caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setPathSelector value
 
 -- | @- keyTimes@
 keyTimes :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-keyTimes caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "keyTimes") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyTimes caKeyframeAnimation =
+  sendMessage caKeyframeAnimation keyTimesSelector
 
 -- | @- setKeyTimes:@
 setKeyTimes :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setKeyTimes caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setKeyTimes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyTimes caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setKeyTimesSelector (toNSArray value)
 
 -- | @- timingFunctions@
 timingFunctions :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-timingFunctions caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "timingFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+timingFunctions caKeyframeAnimation =
+  sendMessage caKeyframeAnimation timingFunctionsSelector
 
 -- | @- setTimingFunctions:@
 setTimingFunctions :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setTimingFunctions caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setTimingFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimingFunctions caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setTimingFunctionsSelector (toNSArray value)
 
 -- | @- calculationMode@
 calculationMode :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSString)
-calculationMode caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "calculationMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+calculationMode caKeyframeAnimation =
+  sendMessage caKeyframeAnimation calculationModeSelector
 
 -- | @- setCalculationMode:@
 setCalculationMode :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSString value) => caKeyframeAnimation -> value -> IO ()
-setCalculationMode caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setCalculationMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalculationMode caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setCalculationModeSelector (toNSString value)
 
 -- | @- tensionValues@
 tensionValues :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-tensionValues caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "tensionValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+tensionValues caKeyframeAnimation =
+  sendMessage caKeyframeAnimation tensionValuesSelector
 
 -- | @- setTensionValues:@
 setTensionValues :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setTensionValues caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setTensionValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTensionValues caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setTensionValuesSelector (toNSArray value)
 
 -- | @- continuityValues@
 continuityValues :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-continuityValues caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "continuityValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+continuityValues caKeyframeAnimation =
+  sendMessage caKeyframeAnimation continuityValuesSelector
 
 -- | @- setContinuityValues:@
 setContinuityValues :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setContinuityValues caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setContinuityValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContinuityValues caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setContinuityValuesSelector (toNSArray value)
 
 -- | @- biasValues@
 biasValues :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSArray)
-biasValues caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "biasValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+biasValues caKeyframeAnimation =
+  sendMessage caKeyframeAnimation biasValuesSelector
 
 -- | @- setBiasValues:@
 setBiasValues :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSArray value) => caKeyframeAnimation -> value -> IO ()
-setBiasValues caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setBiasValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBiasValues caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setBiasValuesSelector (toNSArray value)
 
 -- | @- rotationMode@
 rotationMode :: IsCAKeyframeAnimation caKeyframeAnimation => caKeyframeAnimation -> IO (Id NSString)
-rotationMode caKeyframeAnimation  =
-    sendMsg caKeyframeAnimation (mkSelector "rotationMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+rotationMode caKeyframeAnimation =
+  sendMessage caKeyframeAnimation rotationModeSelector
 
 -- | @- setRotationMode:@
 setRotationMode :: (IsCAKeyframeAnimation caKeyframeAnimation, IsNSString value) => caKeyframeAnimation -> value -> IO ()
-setRotationMode caKeyframeAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caKeyframeAnimation (mkSelector "setRotationMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRotationMode caKeyframeAnimation value =
+  sendMessage caKeyframeAnimation setRotationModeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @values@
-valuesSelector :: Selector
+valuesSelector :: Selector '[] (Id NSArray)
 valuesSelector = mkSelector "values"
 
 -- | @Selector@ for @setValues:@
-setValuesSelector :: Selector
+setValuesSelector :: Selector '[Id NSArray] ()
 setValuesSelector = mkSelector "setValues:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] RawId
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[RawId] ()
 setPathSelector = mkSelector "setPath:"
 
 -- | @Selector@ for @keyTimes@
-keyTimesSelector :: Selector
+keyTimesSelector :: Selector '[] (Id NSArray)
 keyTimesSelector = mkSelector "keyTimes"
 
 -- | @Selector@ for @setKeyTimes:@
-setKeyTimesSelector :: Selector
+setKeyTimesSelector :: Selector '[Id NSArray] ()
 setKeyTimesSelector = mkSelector "setKeyTimes:"
 
 -- | @Selector@ for @timingFunctions@
-timingFunctionsSelector :: Selector
+timingFunctionsSelector :: Selector '[] (Id NSArray)
 timingFunctionsSelector = mkSelector "timingFunctions"
 
 -- | @Selector@ for @setTimingFunctions:@
-setTimingFunctionsSelector :: Selector
+setTimingFunctionsSelector :: Selector '[Id NSArray] ()
 setTimingFunctionsSelector = mkSelector "setTimingFunctions:"
 
 -- | @Selector@ for @calculationMode@
-calculationModeSelector :: Selector
+calculationModeSelector :: Selector '[] (Id NSString)
 calculationModeSelector = mkSelector "calculationMode"
 
 -- | @Selector@ for @setCalculationMode:@
-setCalculationModeSelector :: Selector
+setCalculationModeSelector :: Selector '[Id NSString] ()
 setCalculationModeSelector = mkSelector "setCalculationMode:"
 
 -- | @Selector@ for @tensionValues@
-tensionValuesSelector :: Selector
+tensionValuesSelector :: Selector '[] (Id NSArray)
 tensionValuesSelector = mkSelector "tensionValues"
 
 -- | @Selector@ for @setTensionValues:@
-setTensionValuesSelector :: Selector
+setTensionValuesSelector :: Selector '[Id NSArray] ()
 setTensionValuesSelector = mkSelector "setTensionValues:"
 
 -- | @Selector@ for @continuityValues@
-continuityValuesSelector :: Selector
+continuityValuesSelector :: Selector '[] (Id NSArray)
 continuityValuesSelector = mkSelector "continuityValues"
 
 -- | @Selector@ for @setContinuityValues:@
-setContinuityValuesSelector :: Selector
+setContinuityValuesSelector :: Selector '[Id NSArray] ()
 setContinuityValuesSelector = mkSelector "setContinuityValues:"
 
 -- | @Selector@ for @biasValues@
-biasValuesSelector :: Selector
+biasValuesSelector :: Selector '[] (Id NSArray)
 biasValuesSelector = mkSelector "biasValues"
 
 -- | @Selector@ for @setBiasValues:@
-setBiasValuesSelector :: Selector
+setBiasValuesSelector :: Selector '[Id NSArray] ()
 setBiasValuesSelector = mkSelector "setBiasValues:"
 
 -- | @Selector@ for @rotationMode@
-rotationModeSelector :: Selector
+rotationModeSelector :: Selector '[] (Id NSString)
 rotationModeSelector = mkSelector "rotationMode"
 
 -- | @Selector@ for @setRotationMode:@
-setRotationModeSelector :: Selector
+setRotationModeSelector :: Selector '[Id NSString] ()
 setRotationModeSelector = mkSelector "setRotationMode:"
 

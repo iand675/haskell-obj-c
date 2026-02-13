@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.CoreData.NSEntityMapping
   , setUserInfo
   , entityMigrationPolicyClassName
   , setEntityMigrationPolicyClassName
-  , nameSelector
-  , setNameSelector
-  , mappingTypeSelector
-  , setMappingTypeSelector
-  , sourceEntityNameSelector
-  , setSourceEntityNameSelector
-  , sourceEntityVersionHashSelector
-  , setSourceEntityVersionHashSelector
-  , destinationEntityNameSelector
-  , setDestinationEntityNameSelector
-  , destinationEntityVersionHashSelector
-  , setDestinationEntityVersionHashSelector
   , attributeMappingsSelector
-  , setAttributeMappingsSelector
-  , relationshipMappingsSelector
-  , setRelationshipMappingsSelector
-  , sourceExpressionSelector
-  , setSourceExpressionSelector
-  , userInfoSelector
-  , setUserInfoSelector
+  , destinationEntityNameSelector
+  , destinationEntityVersionHashSelector
   , entityMigrationPolicyClassNameSelector
+  , mappingTypeSelector
+  , nameSelector
+  , relationshipMappingsSelector
+  , setAttributeMappingsSelector
+  , setDestinationEntityNameSelector
+  , setDestinationEntityVersionHashSelector
   , setEntityMigrationPolicyClassNameSelector
+  , setMappingTypeSelector
+  , setNameSelector
+  , setRelationshipMappingsSelector
+  , setSourceEntityNameSelector
+  , setSourceEntityVersionHashSelector
+  , setSourceExpressionSelector
+  , setUserInfoSelector
+  , sourceEntityNameSelector
+  , sourceEntityVersionHashSelector
+  , sourceExpressionSelector
+  , userInfoSelector
 
   -- * Enum types
   , NSEntityMappingType(NSEntityMappingType)
@@ -63,15 +64,11 @@ module ObjC.CoreData.NSEntityMapping
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,213 +78,203 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSString)
-name nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsEntityMapping =
+  sendMessage nsEntityMapping nameSelector
 
 -- | @- setName:@
 setName :: (IsNSEntityMapping nsEntityMapping, IsNSString value) => nsEntityMapping -> value -> IO ()
-setName nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsEntityMapping value =
+  sendMessage nsEntityMapping setNameSelector (toNSString value)
 
 -- | @- mappingType@
 mappingType :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO NSEntityMappingType
-mappingType nsEntityMapping  =
-    fmap (coerce :: CULong -> NSEntityMappingType) $ sendMsg nsEntityMapping (mkSelector "mappingType") retCULong []
+mappingType nsEntityMapping =
+  sendMessage nsEntityMapping mappingTypeSelector
 
 -- | @- setMappingType:@
 setMappingType :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> NSEntityMappingType -> IO ()
-setMappingType nsEntityMapping  value =
-    sendMsg nsEntityMapping (mkSelector "setMappingType:") retVoid [argCULong (coerce value)]
+setMappingType nsEntityMapping value =
+  sendMessage nsEntityMapping setMappingTypeSelector value
 
 -- | @- sourceEntityName@
 sourceEntityName :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSString)
-sourceEntityName nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "sourceEntityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceEntityName nsEntityMapping =
+  sendMessage nsEntityMapping sourceEntityNameSelector
 
 -- | @- setSourceEntityName:@
 setSourceEntityName :: (IsNSEntityMapping nsEntityMapping, IsNSString value) => nsEntityMapping -> value -> IO ()
-setSourceEntityName nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setSourceEntityName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceEntityName nsEntityMapping value =
+  sendMessage nsEntityMapping setSourceEntityNameSelector (toNSString value)
 
 -- | @- sourceEntityVersionHash@
 sourceEntityVersionHash :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSData)
-sourceEntityVersionHash nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "sourceEntityVersionHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceEntityVersionHash nsEntityMapping =
+  sendMessage nsEntityMapping sourceEntityVersionHashSelector
 
 -- | @- setSourceEntityVersionHash:@
 setSourceEntityVersionHash :: (IsNSEntityMapping nsEntityMapping, IsNSData value) => nsEntityMapping -> value -> IO ()
-setSourceEntityVersionHash nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setSourceEntityVersionHash:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceEntityVersionHash nsEntityMapping value =
+  sendMessage nsEntityMapping setSourceEntityVersionHashSelector (toNSData value)
 
 -- | @- destinationEntityName@
 destinationEntityName :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSString)
-destinationEntityName nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "destinationEntityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationEntityName nsEntityMapping =
+  sendMessage nsEntityMapping destinationEntityNameSelector
 
 -- | @- setDestinationEntityName:@
 setDestinationEntityName :: (IsNSEntityMapping nsEntityMapping, IsNSString value) => nsEntityMapping -> value -> IO ()
-setDestinationEntityName nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setDestinationEntityName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDestinationEntityName nsEntityMapping value =
+  sendMessage nsEntityMapping setDestinationEntityNameSelector (toNSString value)
 
 -- | @- destinationEntityVersionHash@
 destinationEntityVersionHash :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSData)
-destinationEntityVersionHash nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "destinationEntityVersionHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationEntityVersionHash nsEntityMapping =
+  sendMessage nsEntityMapping destinationEntityVersionHashSelector
 
 -- | @- setDestinationEntityVersionHash:@
 setDestinationEntityVersionHash :: (IsNSEntityMapping nsEntityMapping, IsNSData value) => nsEntityMapping -> value -> IO ()
-setDestinationEntityVersionHash nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setDestinationEntityVersionHash:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDestinationEntityVersionHash nsEntityMapping value =
+  sendMessage nsEntityMapping setDestinationEntityVersionHashSelector (toNSData value)
 
 -- | @- attributeMappings@
 attributeMappings :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSArray)
-attributeMappings nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "attributeMappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeMappings nsEntityMapping =
+  sendMessage nsEntityMapping attributeMappingsSelector
 
 -- | @- setAttributeMappings:@
 setAttributeMappings :: (IsNSEntityMapping nsEntityMapping, IsNSArray value) => nsEntityMapping -> value -> IO ()
-setAttributeMappings nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setAttributeMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeMappings nsEntityMapping value =
+  sendMessage nsEntityMapping setAttributeMappingsSelector (toNSArray value)
 
 -- | @- relationshipMappings@
 relationshipMappings :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSArray)
-relationshipMappings nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "relationshipMappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+relationshipMappings nsEntityMapping =
+  sendMessage nsEntityMapping relationshipMappingsSelector
 
 -- | @- setRelationshipMappings:@
 setRelationshipMappings :: (IsNSEntityMapping nsEntityMapping, IsNSArray value) => nsEntityMapping -> value -> IO ()
-setRelationshipMappings nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setRelationshipMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRelationshipMappings nsEntityMapping value =
+  sendMessage nsEntityMapping setRelationshipMappingsSelector (toNSArray value)
 
 -- | @- sourceExpression@
 sourceExpression :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSExpression)
-sourceExpression nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "sourceExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceExpression nsEntityMapping =
+  sendMessage nsEntityMapping sourceExpressionSelector
 
 -- | @- setSourceExpression:@
 setSourceExpression :: (IsNSEntityMapping nsEntityMapping, IsNSExpression value) => nsEntityMapping -> value -> IO ()
-setSourceExpression nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setSourceExpression:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceExpression nsEntityMapping value =
+  sendMessage nsEntityMapping setSourceExpressionSelector (toNSExpression value)
 
 -- | @- userInfo@
 userInfo :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSDictionary)
-userInfo nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsEntityMapping =
+  sendMessage nsEntityMapping userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: (IsNSEntityMapping nsEntityMapping, IsNSDictionary value) => nsEntityMapping -> value -> IO ()
-setUserInfo nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo nsEntityMapping value =
+  sendMessage nsEntityMapping setUserInfoSelector (toNSDictionary value)
 
 -- | @- entityMigrationPolicyClassName@
 entityMigrationPolicyClassName :: IsNSEntityMapping nsEntityMapping => nsEntityMapping -> IO (Id NSString)
-entityMigrationPolicyClassName nsEntityMapping  =
-    sendMsg nsEntityMapping (mkSelector "entityMigrationPolicyClassName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityMigrationPolicyClassName nsEntityMapping =
+  sendMessage nsEntityMapping entityMigrationPolicyClassNameSelector
 
 -- | @- setEntityMigrationPolicyClassName:@
 setEntityMigrationPolicyClassName :: (IsNSEntityMapping nsEntityMapping, IsNSString value) => nsEntityMapping -> value -> IO ()
-setEntityMigrationPolicyClassName nsEntityMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsEntityMapping (mkSelector "setEntityMigrationPolicyClassName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEntityMigrationPolicyClassName nsEntityMapping value =
+  sendMessage nsEntityMapping setEntityMigrationPolicyClassNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @mappingType@
-mappingTypeSelector :: Selector
+mappingTypeSelector :: Selector '[] NSEntityMappingType
 mappingTypeSelector = mkSelector "mappingType"
 
 -- | @Selector@ for @setMappingType:@
-setMappingTypeSelector :: Selector
+setMappingTypeSelector :: Selector '[NSEntityMappingType] ()
 setMappingTypeSelector = mkSelector "setMappingType:"
 
 -- | @Selector@ for @sourceEntityName@
-sourceEntityNameSelector :: Selector
+sourceEntityNameSelector :: Selector '[] (Id NSString)
 sourceEntityNameSelector = mkSelector "sourceEntityName"
 
 -- | @Selector@ for @setSourceEntityName:@
-setSourceEntityNameSelector :: Selector
+setSourceEntityNameSelector :: Selector '[Id NSString] ()
 setSourceEntityNameSelector = mkSelector "setSourceEntityName:"
 
 -- | @Selector@ for @sourceEntityVersionHash@
-sourceEntityVersionHashSelector :: Selector
+sourceEntityVersionHashSelector :: Selector '[] (Id NSData)
 sourceEntityVersionHashSelector = mkSelector "sourceEntityVersionHash"
 
 -- | @Selector@ for @setSourceEntityVersionHash:@
-setSourceEntityVersionHashSelector :: Selector
+setSourceEntityVersionHashSelector :: Selector '[Id NSData] ()
 setSourceEntityVersionHashSelector = mkSelector "setSourceEntityVersionHash:"
 
 -- | @Selector@ for @destinationEntityName@
-destinationEntityNameSelector :: Selector
+destinationEntityNameSelector :: Selector '[] (Id NSString)
 destinationEntityNameSelector = mkSelector "destinationEntityName"
 
 -- | @Selector@ for @setDestinationEntityName:@
-setDestinationEntityNameSelector :: Selector
+setDestinationEntityNameSelector :: Selector '[Id NSString] ()
 setDestinationEntityNameSelector = mkSelector "setDestinationEntityName:"
 
 -- | @Selector@ for @destinationEntityVersionHash@
-destinationEntityVersionHashSelector :: Selector
+destinationEntityVersionHashSelector :: Selector '[] (Id NSData)
 destinationEntityVersionHashSelector = mkSelector "destinationEntityVersionHash"
 
 -- | @Selector@ for @setDestinationEntityVersionHash:@
-setDestinationEntityVersionHashSelector :: Selector
+setDestinationEntityVersionHashSelector :: Selector '[Id NSData] ()
 setDestinationEntityVersionHashSelector = mkSelector "setDestinationEntityVersionHash:"
 
 -- | @Selector@ for @attributeMappings@
-attributeMappingsSelector :: Selector
+attributeMappingsSelector :: Selector '[] (Id NSArray)
 attributeMappingsSelector = mkSelector "attributeMappings"
 
 -- | @Selector@ for @setAttributeMappings:@
-setAttributeMappingsSelector :: Selector
+setAttributeMappingsSelector :: Selector '[Id NSArray] ()
 setAttributeMappingsSelector = mkSelector "setAttributeMappings:"
 
 -- | @Selector@ for @relationshipMappings@
-relationshipMappingsSelector :: Selector
+relationshipMappingsSelector :: Selector '[] (Id NSArray)
 relationshipMappingsSelector = mkSelector "relationshipMappings"
 
 -- | @Selector@ for @setRelationshipMappings:@
-setRelationshipMappingsSelector :: Selector
+setRelationshipMappingsSelector :: Selector '[Id NSArray] ()
 setRelationshipMappingsSelector = mkSelector "setRelationshipMappings:"
 
 -- | @Selector@ for @sourceExpression@
-sourceExpressionSelector :: Selector
+sourceExpressionSelector :: Selector '[] (Id NSExpression)
 sourceExpressionSelector = mkSelector "sourceExpression"
 
 -- | @Selector@ for @setSourceExpression:@
-setSourceExpressionSelector :: Selector
+setSourceExpressionSelector :: Selector '[Id NSExpression] ()
 setSourceExpressionSelector = mkSelector "setSourceExpression:"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 
 -- | @Selector@ for @entityMigrationPolicyClassName@
-entityMigrationPolicyClassNameSelector :: Selector
+entityMigrationPolicyClassNameSelector :: Selector '[] (Id NSString)
 entityMigrationPolicyClassNameSelector = mkSelector "entityMigrationPolicyClassName"
 
 -- | @Selector@ for @setEntityMigrationPolicyClassName:@
-setEntityMigrationPolicyClassNameSelector :: Selector
+setEntityMigrationPolicyClassNameSelector :: Selector '[Id NSString] ()
 setEntityMigrationPolicyClassNameSelector = mkSelector "setEntityMigrationPolicyClassName:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.Matter.MTRClusterSwitch
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeNumberOfPositionsWithParamsSelector
-  , readAttributeCurrentPositionWithParamsSelector
-  , readAttributeMultiPressMaxWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentPositionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeMultiPressMaxWithParamsSelector
+  , readAttributeNumberOfPositionsWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,130 +50,117 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeNumberOfPositionsWithParams:@
 readAttributeNumberOfPositionsWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeNumberOfPositionsWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeNumberOfPositionsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNumberOfPositionsWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeNumberOfPositionsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentPositionWithParams:@
 readAttributeCurrentPositionWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeCurrentPositionWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeCurrentPositionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentPositionWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeCurrentPositionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMultiPressMaxWithParams:@
 readAttributeMultiPressMaxWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeMultiPressMaxWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeMultiPressMaxWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMultiPressMaxWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeMultiPressMaxWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRReadParams params) => mtrClusterSwitch -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterSwitch  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSwitch (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterSwitch params =
+  sendMessage mtrClusterSwitch readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterSwitch mtrClusterSwitch => mtrClusterSwitch -> IO (Id MTRClusterSwitch)
-init_ mtrClusterSwitch  =
-    sendMsg mtrClusterSwitch (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterSwitch =
+  sendOwnedMessage mtrClusterSwitch initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterSwitch)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterSwitch"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRDevice device, IsNSObject queue) => mtrClusterSwitch -> device -> CUShort -> queue -> IO (Id MTRClusterSwitch)
-initWithDevice_endpoint_queue mtrClusterSwitch  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterSwitch (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterSwitch device endpoint queue =
+  sendOwnedMessage mtrClusterSwitch initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterSwitch mtrClusterSwitch, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterSwitch -> device -> endpointID -> queue -> IO (Id MTRClusterSwitch)
-initWithDevice_endpointID_queue mtrClusterSwitch  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterSwitch (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterSwitch device endpointID queue =
+  sendOwnedMessage mtrClusterSwitch initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeNumberOfPositionsWithParams:@
-readAttributeNumberOfPositionsWithParamsSelector :: Selector
+readAttributeNumberOfPositionsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNumberOfPositionsWithParamsSelector = mkSelector "readAttributeNumberOfPositionsWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentPositionWithParams:@
-readAttributeCurrentPositionWithParamsSelector :: Selector
+readAttributeCurrentPositionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentPositionWithParamsSelector = mkSelector "readAttributeCurrentPositionWithParams:"
 
 -- | @Selector@ for @readAttributeMultiPressMaxWithParams:@
-readAttributeMultiPressMaxWithParamsSelector :: Selector
+readAttributeMultiPressMaxWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMultiPressMaxWithParamsSelector = mkSelector "readAttributeMultiPressMaxWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterSwitch)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterSwitch)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterSwitch)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterSwitch)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

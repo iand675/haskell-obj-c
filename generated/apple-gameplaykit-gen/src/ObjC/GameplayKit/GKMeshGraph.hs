@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.GameplayKit.GKMeshGraph
   , setTriangulationMode
   , triangleCount
   , addObstaclesSelector
-  , removeObstaclesSelector
-  , connectNodeUsingObstaclesSelector
-  , triangulateSelector
-  , classForGenericArgumentAtIndexSelector
-  , obstaclesSelector
   , bufferRadiusSelector
-  , triangulationModeSelector
+  , classForGenericArgumentAtIndexSelector
+  , connectNodeUsingObstaclesSelector
+  , obstaclesSelector
+  , removeObstaclesSelector
   , setTriangulationModeSelector
   , triangleCountSelector
+  , triangulateSelector
+  , triangulationModeSelector
 
   -- * Enum types
   , GKMeshGraphTriangulationMode(GKMeshGraphTriangulationMode)
@@ -38,15 +39,11 @@ module ObjC.GameplayKit.GKMeshGraph
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,17 +56,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addObstacles:@
 addObstacles :: (IsGKMeshGraph gkMeshGraph, IsNSArray obstacles) => gkMeshGraph -> obstacles -> IO ()
-addObstacles gkMeshGraph  obstacles =
-  withObjCPtr obstacles $ \raw_obstacles ->
-      sendMsg gkMeshGraph (mkSelector "addObstacles:") retVoid [argPtr (castPtr raw_obstacles :: Ptr ())]
+addObstacles gkMeshGraph obstacles =
+  sendMessage gkMeshGraph addObstaclesSelector (toNSArray obstacles)
 
 -- | Removes obstacles from this graph.  Only reflected after the next triangulate call.
 --
 -- ObjC selector: @- removeObstacles:@
 removeObstacles :: (IsGKMeshGraph gkMeshGraph, IsNSArray obstacles) => gkMeshGraph -> obstacles -> IO ()
-removeObstacles gkMeshGraph  obstacles =
-  withObjCPtr obstacles $ \raw_obstacles ->
-      sendMsg gkMeshGraph (mkSelector "removeObstacles:") retVoid [argPtr (castPtr raw_obstacles :: Ptr ())]
+removeObstacles gkMeshGraph obstacles =
+  sendMessage gkMeshGraph removeObstaclesSelector (toNSArray obstacles)
 
 -- | Connects the node to this graph by inserting it into an existing triangle and making the appropriate connections Node must be in the space defined by the min and max coordinates of this graph.
 --
@@ -77,37 +72,36 @@ removeObstacles gkMeshGraph  obstacles =
 --
 -- ObjC selector: @- connectNodeUsingObstacles:@
 connectNodeUsingObstacles :: (IsGKMeshGraph gkMeshGraph, IsGKGraphNode2D node) => gkMeshGraph -> node -> IO ()
-connectNodeUsingObstacles gkMeshGraph  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg gkMeshGraph (mkSelector "connectNodeUsingObstacles:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+connectNodeUsingObstacles gkMeshGraph node =
+  sendMessage gkMeshGraph connectNodeUsingObstaclesSelector (toGKGraphNode2D node)
 
 -- | Generates a new triangle mesh for the given obstacles.   This should be called after some number of calls to addObstacle The negative space between all input obstacles are triangulated to create a mesh This mesh is turned into a set of connected graph nodes based on
 --
 -- ObjC selector: @- triangulate@
 triangulate :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> IO ()
-triangulate gkMeshGraph  =
-    sendMsg gkMeshGraph (mkSelector "triangulate") retVoid []
+triangulate gkMeshGraph =
+  sendMessage gkMeshGraph triangulateSelector
 
 -- | Returns the class of the specified generic index
 --
 -- ObjC selector: @- classForGenericArgumentAtIndex:@
 classForGenericArgumentAtIndex :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> CULong -> IO Class
-classForGenericArgumentAtIndex gkMeshGraph  index =
-    fmap (Class . castPtr) $ sendMsg gkMeshGraph (mkSelector "classForGenericArgumentAtIndex:") (retPtr retVoid) [argCULong index]
+classForGenericArgumentAtIndex gkMeshGraph index =
+  sendMessage gkMeshGraph classForGenericArgumentAtIndexSelector index
 
 -- | Array of the extruded obstacles currently represented by this graph
 --
 -- ObjC selector: @- obstacles@
 obstacles :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> IO (Id NSArray)
-obstacles gkMeshGraph  =
-    sendMsg gkMeshGraph (mkSelector "obstacles") (retPtr retVoid) [] >>= retainedObject . castPtr
+obstacles gkMeshGraph =
+  sendMessage gkMeshGraph obstaclesSelector
 
 -- | The distance by which all obstacles are extruded. This is most commonly the spatial bounding radius of a potential traveler on this path
 --
 -- ObjC selector: @- bufferRadius@
 bufferRadius :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> IO CFloat
-bufferRadius gkMeshGraph  =
-    sendMsg gkMeshGraph (mkSelector "bufferRadius") retCFloat []
+bufferRadius gkMeshGraph =
+  sendMessage gkMeshGraph bufferRadiusSelector
 
 -- | Specifies how graph nodes are generated when you triangulate this graph. You can combine triangulation modes using the | (OR) operator
 --
@@ -115,8 +109,8 @@ bufferRadius gkMeshGraph  =
 --
 -- ObjC selector: @- triangulationMode@
 triangulationMode :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> IO GKMeshGraphTriangulationMode
-triangulationMode gkMeshGraph  =
-    fmap (coerce :: CULong -> GKMeshGraphTriangulationMode) $ sendMsg gkMeshGraph (mkSelector "triangulationMode") retCULong []
+triangulationMode gkMeshGraph =
+  sendMessage gkMeshGraph triangulationModeSelector
 
 -- | Specifies how graph nodes are generated when you triangulate this graph. You can combine triangulation modes using the | (OR) operator
 --
@@ -124,57 +118,57 @@ triangulationMode gkMeshGraph  =
 --
 -- ObjC selector: @- setTriangulationMode:@
 setTriangulationMode :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> GKMeshGraphTriangulationMode -> IO ()
-setTriangulationMode gkMeshGraph  value =
-    sendMsg gkMeshGraph (mkSelector "setTriangulationMode:") retVoid [argCULong (coerce value)]
+setTriangulationMode gkMeshGraph value =
+  sendMessage gkMeshGraph setTriangulationModeSelector value
 
 -- | The number of triangles currently in this mesh graph
 --
 -- ObjC selector: @- triangleCount@
 triangleCount :: IsGKMeshGraph gkMeshGraph => gkMeshGraph -> IO CULong
-triangleCount gkMeshGraph  =
-    sendMsg gkMeshGraph (mkSelector "triangleCount") retCULong []
+triangleCount gkMeshGraph =
+  sendMessage gkMeshGraph triangleCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addObstacles:@
-addObstaclesSelector :: Selector
+addObstaclesSelector :: Selector '[Id NSArray] ()
 addObstaclesSelector = mkSelector "addObstacles:"
 
 -- | @Selector@ for @removeObstacles:@
-removeObstaclesSelector :: Selector
+removeObstaclesSelector :: Selector '[Id NSArray] ()
 removeObstaclesSelector = mkSelector "removeObstacles:"
 
 -- | @Selector@ for @connectNodeUsingObstacles:@
-connectNodeUsingObstaclesSelector :: Selector
+connectNodeUsingObstaclesSelector :: Selector '[Id GKGraphNode2D] ()
 connectNodeUsingObstaclesSelector = mkSelector "connectNodeUsingObstacles:"
 
 -- | @Selector@ for @triangulate@
-triangulateSelector :: Selector
+triangulateSelector :: Selector '[] ()
 triangulateSelector = mkSelector "triangulate"
 
 -- | @Selector@ for @classForGenericArgumentAtIndex:@
-classForGenericArgumentAtIndexSelector :: Selector
+classForGenericArgumentAtIndexSelector :: Selector '[CULong] Class
 classForGenericArgumentAtIndexSelector = mkSelector "classForGenericArgumentAtIndex:"
 
 -- | @Selector@ for @obstacles@
-obstaclesSelector :: Selector
+obstaclesSelector :: Selector '[] (Id NSArray)
 obstaclesSelector = mkSelector "obstacles"
 
 -- | @Selector@ for @bufferRadius@
-bufferRadiusSelector :: Selector
+bufferRadiusSelector :: Selector '[] CFloat
 bufferRadiusSelector = mkSelector "bufferRadius"
 
 -- | @Selector@ for @triangulationMode@
-triangulationModeSelector :: Selector
+triangulationModeSelector :: Selector '[] GKMeshGraphTriangulationMode
 triangulationModeSelector = mkSelector "triangulationMode"
 
 -- | @Selector@ for @setTriangulationMode:@
-setTriangulationModeSelector :: Selector
+setTriangulationModeSelector :: Selector '[GKMeshGraphTriangulationMode] ()
 setTriangulationModeSelector = mkSelector "setTriangulationMode:"
 
 -- | @Selector@ for @triangleCount@
-triangleCountSelector :: Selector
+triangleCountSelector :: Selector '[] CULong
 triangleCountSelector = mkSelector "triangleCount"
 

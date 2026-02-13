@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,40 +28,36 @@ module ObjC.AppKit.NSRulerMarker
   , setRepresentedObject
   , imageRectInRuler
   , thicknessRequiredInRuler
-  , initWithRulerView_markerLocation_image_imageOriginSelector
-  , initWithCoderSelector
-  , initSelector
-  , drawRectSelector
-  , trackMouse_addingSelector
-  , rulerSelector
-  , markerLocationSelector
-  , setMarkerLocationSelector
-  , imageSelector
-  , setImageSelector
-  , imageOriginSelector
-  , setImageOriginSelector
-  , movableSelector
-  , setMovableSelector
-  , removableSelector
-  , setRemovableSelector
   , draggingSelector
-  , representedObjectSelector
-  , setRepresentedObjectSelector
+  , drawRectSelector
+  , imageOriginSelector
   , imageRectInRulerSelector
+  , imageSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithRulerView_markerLocation_image_imageOriginSelector
+  , markerLocationSelector
+  , movableSelector
+  , removableSelector
+  , representedObjectSelector
+  , rulerSelector
+  , setImageOriginSelector
+  , setImageSelector
+  , setMarkerLocationSelector
+  , setMovableSelector
+  , setRemovableSelector
+  , setRepresentedObjectSelector
   , thicknessRequiredInRulerSelector
+  , trackMouse_addingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,203 +69,198 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRulerView:markerLocation:image:imageOrigin:@
 initWithRulerView_markerLocation_image_imageOrigin :: (IsNSRulerMarker nsRulerMarker, IsNSRulerView ruler, IsNSImage image) => nsRulerMarker -> ruler -> CDouble -> image -> NSPoint -> IO (Id NSRulerMarker)
-initWithRulerView_markerLocation_image_imageOrigin nsRulerMarker  ruler location image imageOrigin =
-  withObjCPtr ruler $ \raw_ruler ->
-    withObjCPtr image $ \raw_image ->
-        sendMsg nsRulerMarker (mkSelector "initWithRulerView:markerLocation:image:imageOrigin:") (retPtr retVoid) [argPtr (castPtr raw_ruler :: Ptr ()), argCDouble location, argPtr (castPtr raw_image :: Ptr ()), argNSPoint imageOrigin] >>= ownedObject . castPtr
+initWithRulerView_markerLocation_image_imageOrigin nsRulerMarker ruler location image imageOrigin =
+  sendOwnedMessage nsRulerMarker initWithRulerView_markerLocation_image_imageOriginSelector (toNSRulerView ruler) location (toNSImage image) imageOrigin
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSRulerMarker nsRulerMarker, IsNSCoder coder) => nsRulerMarker -> coder -> IO (Id NSRulerMarker)
-initWithCoder nsRulerMarker  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsRulerMarker (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsRulerMarker coder =
+  sendOwnedMessage nsRulerMarker initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO (Id NSRulerMarker)
-init_ nsRulerMarker  =
-    sendMsg nsRulerMarker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsRulerMarker =
+  sendOwnedMessage nsRulerMarker initSelector
 
 -- | @- drawRect:@
 drawRect :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> NSRect -> IO ()
-drawRect nsRulerMarker  rect =
-    sendMsg nsRulerMarker (mkSelector "drawRect:") retVoid [argNSRect rect]
+drawRect nsRulerMarker rect =
+  sendMessage nsRulerMarker drawRectSelector rect
 
 -- | @- trackMouse:adding:@
 trackMouse_adding :: (IsNSRulerMarker nsRulerMarker, IsNSEvent mouseDownEvent) => nsRulerMarker -> mouseDownEvent -> Bool -> IO Bool
-trackMouse_adding nsRulerMarker  mouseDownEvent isAdding =
-  withObjCPtr mouseDownEvent $ \raw_mouseDownEvent ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRulerMarker (mkSelector "trackMouse:adding:") retCULong [argPtr (castPtr raw_mouseDownEvent :: Ptr ()), argCULong (if isAdding then 1 else 0)]
+trackMouse_adding nsRulerMarker mouseDownEvent isAdding =
+  sendMessage nsRulerMarker trackMouse_addingSelector (toNSEvent mouseDownEvent) isAdding
 
 -- | ********************* Query/Set basic attributes **********************
 --
 -- ObjC selector: @- ruler@
 ruler :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO (Id NSRulerView)
-ruler nsRulerMarker  =
-    sendMsg nsRulerMarker (mkSelector "ruler") (retPtr retVoid) [] >>= retainedObject . castPtr
+ruler nsRulerMarker =
+  sendMessage nsRulerMarker rulerSelector
 
 -- | @- markerLocation@
 markerLocation :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO CDouble
-markerLocation nsRulerMarker  =
-    sendMsg nsRulerMarker (mkSelector "markerLocation") retCDouble []
+markerLocation nsRulerMarker =
+  sendMessage nsRulerMarker markerLocationSelector
 
 -- | @- setMarkerLocation:@
 setMarkerLocation :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> CDouble -> IO ()
-setMarkerLocation nsRulerMarker  value =
-    sendMsg nsRulerMarker (mkSelector "setMarkerLocation:") retVoid [argCDouble value]
+setMarkerLocation nsRulerMarker value =
+  sendMessage nsRulerMarker setMarkerLocationSelector value
 
 -- | @- image@
 image :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO (Id NSImage)
-image nsRulerMarker  =
-    sendMsg nsRulerMarker (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsRulerMarker =
+  sendMessage nsRulerMarker imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSRulerMarker nsRulerMarker, IsNSImage value) => nsRulerMarker -> value -> IO ()
-setImage nsRulerMarker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRulerMarker (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsRulerMarker value =
+  sendMessage nsRulerMarker setImageSelector (toNSImage value)
 
 -- | @- imageOrigin@
 imageOrigin :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO NSPoint
-imageOrigin nsRulerMarker  =
-    sendMsgStret nsRulerMarker (mkSelector "imageOrigin") retNSPoint []
+imageOrigin nsRulerMarker =
+  sendMessage nsRulerMarker imageOriginSelector
 
 -- | @- setImageOrigin:@
 setImageOrigin :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> NSPoint -> IO ()
-setImageOrigin nsRulerMarker  value =
-    sendMsg nsRulerMarker (mkSelector "setImageOrigin:") retVoid [argNSPoint value]
+setImageOrigin nsRulerMarker value =
+  sendMessage nsRulerMarker setImageOriginSelector value
 
 -- | @- movable@
 movable :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO Bool
-movable nsRulerMarker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRulerMarker (mkSelector "movable") retCULong []
+movable nsRulerMarker =
+  sendMessage nsRulerMarker movableSelector
 
 -- | @- setMovable:@
 setMovable :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> Bool -> IO ()
-setMovable nsRulerMarker  value =
-    sendMsg nsRulerMarker (mkSelector "setMovable:") retVoid [argCULong (if value then 1 else 0)]
+setMovable nsRulerMarker value =
+  sendMessage nsRulerMarker setMovableSelector value
 
 -- | @- removable@
 removable :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO Bool
-removable nsRulerMarker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRulerMarker (mkSelector "removable") retCULong []
+removable nsRulerMarker =
+  sendMessage nsRulerMarker removableSelector
 
 -- | @- setRemovable:@
 setRemovable :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> Bool -> IO ()
-setRemovable nsRulerMarker  value =
-    sendMsg nsRulerMarker (mkSelector "setRemovable:") retVoid [argCULong (if value then 1 else 0)]
+setRemovable nsRulerMarker value =
+  sendMessage nsRulerMarker setRemovableSelector value
 
 -- | @- dragging@
 dragging :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO Bool
-dragging nsRulerMarker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsRulerMarker (mkSelector "dragging") retCULong []
+dragging nsRulerMarker =
+  sendMessage nsRulerMarker draggingSelector
 
 -- | @- representedObject@
 representedObject :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO RawId
-representedObject nsRulerMarker  =
-    fmap (RawId . castPtr) $ sendMsg nsRulerMarker (mkSelector "representedObject") (retPtr retVoid) []
+representedObject nsRulerMarker =
+  sendMessage nsRulerMarker representedObjectSelector
 
 -- | @- setRepresentedObject:@
 setRepresentedObject :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> RawId -> IO ()
-setRepresentedObject nsRulerMarker  value =
-    sendMsg nsRulerMarker (mkSelector "setRepresentedObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRepresentedObject nsRulerMarker value =
+  sendMessage nsRulerMarker setRepresentedObjectSelector value
 
 -- | ************************ Ruler facilities *************************
 --
 -- ObjC selector: @- imageRectInRuler@
 imageRectInRuler :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO NSRect
-imageRectInRuler nsRulerMarker  =
-    sendMsgStret nsRulerMarker (mkSelector "imageRectInRuler") retNSRect []
+imageRectInRuler nsRulerMarker =
+  sendMessage nsRulerMarker imageRectInRulerSelector
 
 -- | @- thicknessRequiredInRuler@
 thicknessRequiredInRuler :: IsNSRulerMarker nsRulerMarker => nsRulerMarker -> IO CDouble
-thicknessRequiredInRuler nsRulerMarker  =
-    sendMsg nsRulerMarker (mkSelector "thicknessRequiredInRuler") retCDouble []
+thicknessRequiredInRuler nsRulerMarker =
+  sendMessage nsRulerMarker thicknessRequiredInRulerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRulerView:markerLocation:image:imageOrigin:@
-initWithRulerView_markerLocation_image_imageOriginSelector :: Selector
+initWithRulerView_markerLocation_image_imageOriginSelector :: Selector '[Id NSRulerView, CDouble, Id NSImage, NSPoint] (Id NSRulerMarker)
 initWithRulerView_markerLocation_image_imageOriginSelector = mkSelector "initWithRulerView:markerLocation:image:imageOrigin:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSRulerMarker)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSRulerMarker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @drawRect:@
-drawRectSelector :: Selector
+drawRectSelector :: Selector '[NSRect] ()
 drawRectSelector = mkSelector "drawRect:"
 
 -- | @Selector@ for @trackMouse:adding:@
-trackMouse_addingSelector :: Selector
+trackMouse_addingSelector :: Selector '[Id NSEvent, Bool] Bool
 trackMouse_addingSelector = mkSelector "trackMouse:adding:"
 
 -- | @Selector@ for @ruler@
-rulerSelector :: Selector
+rulerSelector :: Selector '[] (Id NSRulerView)
 rulerSelector = mkSelector "ruler"
 
 -- | @Selector@ for @markerLocation@
-markerLocationSelector :: Selector
+markerLocationSelector :: Selector '[] CDouble
 markerLocationSelector = mkSelector "markerLocation"
 
 -- | @Selector@ for @setMarkerLocation:@
-setMarkerLocationSelector :: Selector
+setMarkerLocationSelector :: Selector '[CDouble] ()
 setMarkerLocationSelector = mkSelector "setMarkerLocation:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @imageOrigin@
-imageOriginSelector :: Selector
+imageOriginSelector :: Selector '[] NSPoint
 imageOriginSelector = mkSelector "imageOrigin"
 
 -- | @Selector@ for @setImageOrigin:@
-setImageOriginSelector :: Selector
+setImageOriginSelector :: Selector '[NSPoint] ()
 setImageOriginSelector = mkSelector "setImageOrigin:"
 
 -- | @Selector@ for @movable@
-movableSelector :: Selector
+movableSelector :: Selector '[] Bool
 movableSelector = mkSelector "movable"
 
 -- | @Selector@ for @setMovable:@
-setMovableSelector :: Selector
+setMovableSelector :: Selector '[Bool] ()
 setMovableSelector = mkSelector "setMovable:"
 
 -- | @Selector@ for @removable@
-removableSelector :: Selector
+removableSelector :: Selector '[] Bool
 removableSelector = mkSelector "removable"
 
 -- | @Selector@ for @setRemovable:@
-setRemovableSelector :: Selector
+setRemovableSelector :: Selector '[Bool] ()
 setRemovableSelector = mkSelector "setRemovable:"
 
 -- | @Selector@ for @dragging@
-draggingSelector :: Selector
+draggingSelector :: Selector '[] Bool
 draggingSelector = mkSelector "dragging"
 
 -- | @Selector@ for @representedObject@
-representedObjectSelector :: Selector
+representedObjectSelector :: Selector '[] RawId
 representedObjectSelector = mkSelector "representedObject"
 
 -- | @Selector@ for @setRepresentedObject:@
-setRepresentedObjectSelector :: Selector
+setRepresentedObjectSelector :: Selector '[RawId] ()
 setRepresentedObjectSelector = mkSelector "setRepresentedObject:"
 
 -- | @Selector@ for @imageRectInRuler@
-imageRectInRulerSelector :: Selector
+imageRectInRulerSelector :: Selector '[] NSRect
 imageRectInRulerSelector = mkSelector "imageRectInRuler"
 
 -- | @Selector@ for @thicknessRequiredInRuler@
-thicknessRequiredInRulerSelector :: Selector
+thicknessRequiredInRulerSelector :: Selector '[] CDouble
 thicknessRequiredInRulerSelector = mkSelector "thicknessRequiredInRuler"
 

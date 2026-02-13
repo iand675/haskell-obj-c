@@ -37,7 +37,7 @@ import ObjC.Runtime.StableIvar
 -- selector).  'Just' provides the Haskell implementation.
 data NSStandardKeyBindingRespondingOverrides = NSStandardKeyBindingRespondingOverrides
   { _insertText :: !(Maybe (RawId -> IO ()))
-  , _doCommandBySelector :: !(Maybe (Selector -> IO ()))
+  , _doCommandBySelector :: !(Maybe (Sel -> IO ()))
   , _moveForward :: !(Maybe (RawId -> IO ()))
   , _moveRight :: !(Maybe (RawId -> IO ()))
   , _moveBackward :: !(Maybe (RawId -> IO ()))

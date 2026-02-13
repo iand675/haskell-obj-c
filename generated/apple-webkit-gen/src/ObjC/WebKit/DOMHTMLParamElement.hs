@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.WebKit.DOMHTMLParamElement
   , setValueType
   , nameSelector
   , setNameSelector
-  , typeSelector
   , setTypeSelector
-  , valueSelector
   , setValueSelector
-  , valueTypeSelector
   , setValueTypeSelector
+  , typeSelector
+  , valueSelector
+  , valueTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsDOMHTMLParamElement domhtmlParamElement => domhtmlParamElement -> IO (Id NSString)
-name domhtmlParamElement  =
-    sendMsg domhtmlParamElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlParamElement =
+  sendMessage domhtmlParamElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLParamElement domhtmlParamElement, IsNSString value) => domhtmlParamElement -> value -> IO ()
-setName domhtmlParamElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlParamElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlParamElement value =
+  sendMessage domhtmlParamElement setNameSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLParamElement domhtmlParamElement => domhtmlParamElement -> IO (Id NSString)
-type_ domhtmlParamElement  =
-    sendMsg domhtmlParamElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlParamElement =
+  sendMessage domhtmlParamElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLParamElement domhtmlParamElement, IsNSString value) => domhtmlParamElement -> value -> IO ()
-setType domhtmlParamElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlParamElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlParamElement value =
+  sendMessage domhtmlParamElement setTypeSelector (toNSString value)
 
 -- | @- value@
 value :: IsDOMHTMLParamElement domhtmlParamElement => domhtmlParamElement -> IO (Id NSString)
-value domhtmlParamElement  =
-    sendMsg domhtmlParamElement (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value domhtmlParamElement =
+  sendMessage domhtmlParamElement valueSelector
 
 -- | @- setValue:@
 setValue :: (IsDOMHTMLParamElement domhtmlParamElement, IsNSString value) => domhtmlParamElement -> value -> IO ()
-setValue domhtmlParamElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlParamElement (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue domhtmlParamElement value =
+  sendMessage domhtmlParamElement setValueSelector (toNSString value)
 
 -- | @- valueType@
 valueType :: IsDOMHTMLParamElement domhtmlParamElement => domhtmlParamElement -> IO (Id NSString)
-valueType domhtmlParamElement  =
-    sendMsg domhtmlParamElement (mkSelector "valueType") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueType domhtmlParamElement =
+  sendMessage domhtmlParamElement valueTypeSelector
 
 -- | @- setValueType:@
 setValueType :: (IsDOMHTMLParamElement domhtmlParamElement, IsNSString value) => domhtmlParamElement -> value -> IO ()
-setValueType domhtmlParamElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlParamElement (mkSelector "setValueType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueType domhtmlParamElement value =
+  sendMessage domhtmlParamElement setValueTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @valueType@
-valueTypeSelector :: Selector
+valueTypeSelector :: Selector '[] (Id NSString)
 valueTypeSelector = mkSelector "valueType"
 
 -- | @Selector@ for @setValueType:@
-setValueTypeSelector :: Selector
+setValueTypeSelector :: Selector '[Id NSString] ()
 setValueTypeSelector = mkSelector "setValueType:"
 

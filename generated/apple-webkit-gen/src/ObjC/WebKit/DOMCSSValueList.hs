@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.WebKit.DOMCSSValueList
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- item:@
 item :: IsDOMCSSValueList domcssValueList => domcssValueList -> CUInt -> IO (Id DOMCSSValue)
-item domcssValueList  index =
-    sendMsg domcssValueList (mkSelector "item:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+item domcssValueList index =
+  sendMessage domcssValueList itemSelector index
 
 -- | @- length@
 length_ :: IsDOMCSSValueList domcssValueList => domcssValueList -> IO CUInt
-length_ domcssValueList  =
-    sendMsg domcssValueList (mkSelector "length") retCUInt []
+length_ domcssValueList =
+  sendMessage domcssValueList lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @item:@
-itemSelector :: Selector
+itemSelector :: Selector '[CUInt] (Id DOMCSSValue)
 itemSelector = mkSelector "item:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 

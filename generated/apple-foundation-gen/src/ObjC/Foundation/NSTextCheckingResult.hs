@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,39 +41,39 @@ module ObjC.Foundation.NSTextCheckingResult
   , phoneNumber
   , numberOfRanges
   , addressComponents
-  , orthographyCheckingResultWithRange_orthographySelector
-  , spellCheckingResultWithRangeSelector
-  , grammarCheckingResultWithRange_detailsSelector
-  , dateCheckingResultWithRange_dateSelector
-  , dateCheckingResultWithRange_date_timeZone_durationSelector
   , addressCheckingResultWithRange_componentsSelector
-  , linkCheckingResultWithRange_URLSelector
-  , quoteCheckingResultWithRange_replacementStringSelector
-  , dashCheckingResultWithRange_replacementStringSelector
-  , replacementCheckingResultWithRange_replacementStringSelector
+  , addressComponentsSelector
+  , alternativeStringsSelector
+  , componentsSelector
   , correctionCheckingResultWithRange_replacementStringSelector
   , correctionCheckingResultWithRange_replacementString_alternativeStringsSelector
-  , regularExpressionCheckingResultWithRanges_count_regularExpressionSelector
+  , dashCheckingResultWithRange_replacementStringSelector
+  , dateCheckingResultWithRange_dateSelector
+  , dateCheckingResultWithRange_date_timeZone_durationSelector
+  , dateSelector
+  , durationSelector
+  , grammarCheckingResultWithRange_detailsSelector
+  , grammarDetailsSelector
+  , linkCheckingResultWithRange_URLSelector
+  , numberOfRangesSelector
+  , orthographyCheckingResultWithRange_orthographySelector
+  , orthographySelector
   , phoneNumberCheckingResultWithRange_phoneNumberSelector
-  , transitInformationCheckingResultWithRange_componentsSelector
+  , phoneNumberSelector
+  , quoteCheckingResultWithRange_replacementStringSelector
   , rangeAtIndexSelector
+  , rangeSelector
   , rangeWithNameSelector
+  , regularExpressionCheckingResultWithRanges_count_regularExpressionSelector
+  , regularExpressionSelector
+  , replacementCheckingResultWithRange_replacementStringSelector
+  , replacementStringSelector
   , resultByAdjustingRangesWithOffsetSelector
   , resultTypeSelector
-  , rangeSelector
-  , orthographySelector
-  , grammarDetailsSelector
-  , dateSelector
+  , spellCheckingResultWithRangeSelector
   , timeZoneSelector
-  , durationSelector
-  , componentsSelector
+  , transitInformationCheckingResultWithRange_componentsSelector
   , urlSelector
-  , replacementStringSelector
-  , alternativeStringsSelector
-  , regularExpressionSelector
-  , phoneNumberSelector
-  , numberOfRangesSelector
-  , addressComponentsSelector
 
   -- * Enum types
   , NSTextCheckingType(NSTextCheckingType)
@@ -92,15 +93,11 @@ module ObjC.Foundation.NSTextCheckingResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -113,346 +110,329 @@ orthographyCheckingResultWithRange_orthography :: IsNSOrthography orthography =>
 orthographyCheckingResultWithRange_orthography range orthography =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr orthography $ \raw_orthography ->
-      sendClassMsg cls' (mkSelector "orthographyCheckingResultWithRange:orthography:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_orthography :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' orthographyCheckingResultWithRange_orthographySelector range (toNSOrthography orthography)
 
 -- | @+ spellCheckingResultWithRange:@
 spellCheckingResultWithRange :: NSRange -> IO (Id NSTextCheckingResult)
 spellCheckingResultWithRange range =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    sendClassMsg cls' (mkSelector "spellCheckingResultWithRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+    sendClassMessage cls' spellCheckingResultWithRangeSelector range
 
 -- | @+ grammarCheckingResultWithRange:details:@
 grammarCheckingResultWithRange_details :: IsNSArray details => NSRange -> details -> IO (Id NSTextCheckingResult)
 grammarCheckingResultWithRange_details range details =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr details $ \raw_details ->
-      sendClassMsg cls' (mkSelector "grammarCheckingResultWithRange:details:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_details :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' grammarCheckingResultWithRange_detailsSelector range (toNSArray details)
 
 -- | @+ dateCheckingResultWithRange:date:@
 dateCheckingResultWithRange_date :: IsNSDate date => NSRange -> date -> IO (Id NSTextCheckingResult)
 dateCheckingResultWithRange_date range date =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "dateCheckingResultWithRange:date:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dateCheckingResultWithRange_dateSelector range (toNSDate date)
 
 -- | @+ dateCheckingResultWithRange:date:timeZone:duration:@
 dateCheckingResultWithRange_date_timeZone_duration :: (IsNSDate date, IsNSTimeZone timeZone) => NSRange -> date -> timeZone -> CDouble -> IO (Id NSTextCheckingResult)
 dateCheckingResultWithRange_date_timeZone_duration range date timeZone duration =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr timeZone $ \raw_timeZone ->
-        sendClassMsg cls' (mkSelector "dateCheckingResultWithRange:date:timeZone:duration:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_timeZone :: Ptr ()), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' dateCheckingResultWithRange_date_timeZone_durationSelector range (toNSDate date) (toNSTimeZone timeZone) duration
 
 -- | @+ addressCheckingResultWithRange:components:@
 addressCheckingResultWithRange_components :: IsNSDictionary components => NSRange -> components -> IO (Id NSTextCheckingResult)
 addressCheckingResultWithRange_components range components =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr components $ \raw_components ->
-      sendClassMsg cls' (mkSelector "addressCheckingResultWithRange:components:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_components :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' addressCheckingResultWithRange_componentsSelector range (toNSDictionary components)
 
 -- | @+ linkCheckingResultWithRange:URL:@
 linkCheckingResultWithRange_URL :: IsNSURL url => NSRange -> url -> IO (Id NSTextCheckingResult)
 linkCheckingResultWithRange_URL range url =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "linkCheckingResultWithRange:URL:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' linkCheckingResultWithRange_URLSelector range (toNSURL url)
 
 -- | @+ quoteCheckingResultWithRange:replacementString:@
 quoteCheckingResultWithRange_replacementString :: IsNSString replacementString => NSRange -> replacementString -> IO (Id NSTextCheckingResult)
 quoteCheckingResultWithRange_replacementString range replacementString =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr replacementString $ \raw_replacementString ->
-      sendClassMsg cls' (mkSelector "quoteCheckingResultWithRange:replacementString:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_replacementString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quoteCheckingResultWithRange_replacementStringSelector range (toNSString replacementString)
 
 -- | @+ dashCheckingResultWithRange:replacementString:@
 dashCheckingResultWithRange_replacementString :: IsNSString replacementString => NSRange -> replacementString -> IO (Id NSTextCheckingResult)
 dashCheckingResultWithRange_replacementString range replacementString =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr replacementString $ \raw_replacementString ->
-      sendClassMsg cls' (mkSelector "dashCheckingResultWithRange:replacementString:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_replacementString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dashCheckingResultWithRange_replacementStringSelector range (toNSString replacementString)
 
 -- | @+ replacementCheckingResultWithRange:replacementString:@
 replacementCheckingResultWithRange_replacementString :: IsNSString replacementString => NSRange -> replacementString -> IO (Id NSTextCheckingResult)
 replacementCheckingResultWithRange_replacementString range replacementString =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr replacementString $ \raw_replacementString ->
-      sendClassMsg cls' (mkSelector "replacementCheckingResultWithRange:replacementString:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_replacementString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' replacementCheckingResultWithRange_replacementStringSelector range (toNSString replacementString)
 
 -- | @+ correctionCheckingResultWithRange:replacementString:@
 correctionCheckingResultWithRange_replacementString :: IsNSString replacementString => NSRange -> replacementString -> IO (Id NSTextCheckingResult)
 correctionCheckingResultWithRange_replacementString range replacementString =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr replacementString $ \raw_replacementString ->
-      sendClassMsg cls' (mkSelector "correctionCheckingResultWithRange:replacementString:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_replacementString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correctionCheckingResultWithRange_replacementStringSelector range (toNSString replacementString)
 
 -- | @+ correctionCheckingResultWithRange:replacementString:alternativeStrings:@
 correctionCheckingResultWithRange_replacementString_alternativeStrings :: (IsNSString replacementString, IsNSArray alternativeStrings) => NSRange -> replacementString -> alternativeStrings -> IO (Id NSTextCheckingResult)
 correctionCheckingResultWithRange_replacementString_alternativeStrings range replacementString alternativeStrings =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr replacementString $ \raw_replacementString ->
-      withObjCPtr alternativeStrings $ \raw_alternativeStrings ->
-        sendClassMsg cls' (mkSelector "correctionCheckingResultWithRange:replacementString:alternativeStrings:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_replacementString :: Ptr ()), argPtr (castPtr raw_alternativeStrings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correctionCheckingResultWithRange_replacementString_alternativeStringsSelector range (toNSString replacementString) (toNSArray alternativeStrings)
 
 -- | @+ regularExpressionCheckingResultWithRanges:count:regularExpression:@
 regularExpressionCheckingResultWithRanges_count_regularExpression :: IsNSRegularExpression regularExpression => Ptr NSRange -> CULong -> regularExpression -> IO (Id NSTextCheckingResult)
 regularExpressionCheckingResultWithRanges_count_regularExpression ranges count regularExpression =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr regularExpression $ \raw_regularExpression ->
-      sendClassMsg cls' (mkSelector "regularExpressionCheckingResultWithRanges:count:regularExpression:") (retPtr retVoid) [argPtr ranges, argCULong count, argPtr (castPtr raw_regularExpression :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' regularExpressionCheckingResultWithRanges_count_regularExpressionSelector ranges count (toNSRegularExpression regularExpression)
 
 -- | @+ phoneNumberCheckingResultWithRange:phoneNumber:@
 phoneNumberCheckingResultWithRange_phoneNumber :: IsNSString phoneNumber => NSRange -> phoneNumber -> IO (Id NSTextCheckingResult)
 phoneNumberCheckingResultWithRange_phoneNumber range phoneNumber =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendClassMsg cls' (mkSelector "phoneNumberCheckingResultWithRange:phoneNumber:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_phoneNumber :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' phoneNumberCheckingResultWithRange_phoneNumberSelector range (toNSString phoneNumber)
 
 -- | @+ transitInformationCheckingResultWithRange:components:@
 transitInformationCheckingResultWithRange_components :: IsNSDictionary components => NSRange -> components -> IO (Id NSTextCheckingResult)
 transitInformationCheckingResultWithRange_components range components =
   do
     cls' <- getRequiredClass "NSTextCheckingResult"
-    withObjCPtr components $ \raw_components ->
-      sendClassMsg cls' (mkSelector "transitInformationCheckingResultWithRange:components:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_components :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' transitInformationCheckingResultWithRange_componentsSelector range (toNSDictionary components)
 
 -- | @- rangeAtIndex:@
 rangeAtIndex :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> CULong -> IO NSRange
-rangeAtIndex nsTextCheckingResult  idx =
-    sendMsgStret nsTextCheckingResult (mkSelector "rangeAtIndex:") retNSRange [argCULong idx]
+rangeAtIndex nsTextCheckingResult idx =
+  sendMessage nsTextCheckingResult rangeAtIndexSelector idx
 
 -- | @- rangeWithName:@
 rangeWithName :: (IsNSTextCheckingResult nsTextCheckingResult, IsNSString name) => nsTextCheckingResult -> name -> IO NSRange
-rangeWithName nsTextCheckingResult  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsgStret nsTextCheckingResult (mkSelector "rangeWithName:") retNSRange [argPtr (castPtr raw_name :: Ptr ())]
+rangeWithName nsTextCheckingResult name =
+  sendMessage nsTextCheckingResult rangeWithNameSelector (toNSString name)
 
 -- | @- resultByAdjustingRangesWithOffset:@
 resultByAdjustingRangesWithOffset :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> CLong -> IO (Id NSTextCheckingResult)
-resultByAdjustingRangesWithOffset nsTextCheckingResult  offset =
-    sendMsg nsTextCheckingResult (mkSelector "resultByAdjustingRangesWithOffset:") (retPtr retVoid) [argCLong offset] >>= retainedObject . castPtr
+resultByAdjustingRangesWithOffset nsTextCheckingResult offset =
+  sendMessage nsTextCheckingResult resultByAdjustingRangesWithOffsetSelector offset
 
 -- | @- resultType@
 resultType :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO NSTextCheckingType
-resultType nsTextCheckingResult  =
-    fmap (coerce :: CULong -> NSTextCheckingType) $ sendMsg nsTextCheckingResult (mkSelector "resultType") retCULong []
+resultType nsTextCheckingResult =
+  sendMessage nsTextCheckingResult resultTypeSelector
 
 -- | @- range@
 range :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO NSRange
-range nsTextCheckingResult  =
-    sendMsgStret nsTextCheckingResult (mkSelector "range") retNSRange []
+range nsTextCheckingResult =
+  sendMessage nsTextCheckingResult rangeSelector
 
 -- | @- orthography@
 orthography :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSOrthography)
-orthography nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "orthography") (retPtr retVoid) [] >>= retainedObject . castPtr
+orthography nsTextCheckingResult =
+  sendMessage nsTextCheckingResult orthographySelector
 
 -- | @- grammarDetails@
 grammarDetails :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSArray)
-grammarDetails nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "grammarDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+grammarDetails nsTextCheckingResult =
+  sendMessage nsTextCheckingResult grammarDetailsSelector
 
 -- | @- date@
 date :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSDate)
-date nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date nsTextCheckingResult =
+  sendMessage nsTextCheckingResult dateSelector
 
 -- | @- timeZone@
 timeZone :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSTimeZone)
-timeZone nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone nsTextCheckingResult =
+  sendMessage nsTextCheckingResult timeZoneSelector
 
 -- | @- duration@
 duration :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO CDouble
-duration nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "duration") retCDouble []
+duration nsTextCheckingResult =
+  sendMessage nsTextCheckingResult durationSelector
 
 -- | @- components@
 components :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSDictionary)
-components nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+components nsTextCheckingResult =
+  sendMessage nsTextCheckingResult componentsSelector
 
 -- | @- URL@
 url :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSURL)
-url nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsTextCheckingResult =
+  sendMessage nsTextCheckingResult urlSelector
 
 -- | @- replacementString@
 replacementString :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSString)
-replacementString nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "replacementString") (retPtr retVoid) [] >>= retainedObject . castPtr
+replacementString nsTextCheckingResult =
+  sendMessage nsTextCheckingResult replacementStringSelector
 
 -- | @- alternativeStrings@
 alternativeStrings :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSArray)
-alternativeStrings nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "alternativeStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternativeStrings nsTextCheckingResult =
+  sendMessage nsTextCheckingResult alternativeStringsSelector
 
 -- | @- regularExpression@
 regularExpression :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSRegularExpression)
-regularExpression nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "regularExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+regularExpression nsTextCheckingResult =
+  sendMessage nsTextCheckingResult regularExpressionSelector
 
 -- | @- phoneNumber@
 phoneNumber :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSString)
-phoneNumber nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "phoneNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumber nsTextCheckingResult =
+  sendMessage nsTextCheckingResult phoneNumberSelector
 
 -- | @- numberOfRanges@
 numberOfRanges :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO CULong
-numberOfRanges nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "numberOfRanges") retCULong []
+numberOfRanges nsTextCheckingResult =
+  sendMessage nsTextCheckingResult numberOfRangesSelector
 
 -- | @- addressComponents@
 addressComponents :: IsNSTextCheckingResult nsTextCheckingResult => nsTextCheckingResult -> IO (Id NSDictionary)
-addressComponents nsTextCheckingResult  =
-    sendMsg nsTextCheckingResult (mkSelector "addressComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressComponents nsTextCheckingResult =
+  sendMessage nsTextCheckingResult addressComponentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @orthographyCheckingResultWithRange:orthography:@
-orthographyCheckingResultWithRange_orthographySelector :: Selector
+orthographyCheckingResultWithRange_orthographySelector :: Selector '[NSRange, Id NSOrthography] (Id NSTextCheckingResult)
 orthographyCheckingResultWithRange_orthographySelector = mkSelector "orthographyCheckingResultWithRange:orthography:"
 
 -- | @Selector@ for @spellCheckingResultWithRange:@
-spellCheckingResultWithRangeSelector :: Selector
+spellCheckingResultWithRangeSelector :: Selector '[NSRange] (Id NSTextCheckingResult)
 spellCheckingResultWithRangeSelector = mkSelector "spellCheckingResultWithRange:"
 
 -- | @Selector@ for @grammarCheckingResultWithRange:details:@
-grammarCheckingResultWithRange_detailsSelector :: Selector
+grammarCheckingResultWithRange_detailsSelector :: Selector '[NSRange, Id NSArray] (Id NSTextCheckingResult)
 grammarCheckingResultWithRange_detailsSelector = mkSelector "grammarCheckingResultWithRange:details:"
 
 -- | @Selector@ for @dateCheckingResultWithRange:date:@
-dateCheckingResultWithRange_dateSelector :: Selector
+dateCheckingResultWithRange_dateSelector :: Selector '[NSRange, Id NSDate] (Id NSTextCheckingResult)
 dateCheckingResultWithRange_dateSelector = mkSelector "dateCheckingResultWithRange:date:"
 
 -- | @Selector@ for @dateCheckingResultWithRange:date:timeZone:duration:@
-dateCheckingResultWithRange_date_timeZone_durationSelector :: Selector
+dateCheckingResultWithRange_date_timeZone_durationSelector :: Selector '[NSRange, Id NSDate, Id NSTimeZone, CDouble] (Id NSTextCheckingResult)
 dateCheckingResultWithRange_date_timeZone_durationSelector = mkSelector "dateCheckingResultWithRange:date:timeZone:duration:"
 
 -- | @Selector@ for @addressCheckingResultWithRange:components:@
-addressCheckingResultWithRange_componentsSelector :: Selector
+addressCheckingResultWithRange_componentsSelector :: Selector '[NSRange, Id NSDictionary] (Id NSTextCheckingResult)
 addressCheckingResultWithRange_componentsSelector = mkSelector "addressCheckingResultWithRange:components:"
 
 -- | @Selector@ for @linkCheckingResultWithRange:URL:@
-linkCheckingResultWithRange_URLSelector :: Selector
+linkCheckingResultWithRange_URLSelector :: Selector '[NSRange, Id NSURL] (Id NSTextCheckingResult)
 linkCheckingResultWithRange_URLSelector = mkSelector "linkCheckingResultWithRange:URL:"
 
 -- | @Selector@ for @quoteCheckingResultWithRange:replacementString:@
-quoteCheckingResultWithRange_replacementStringSelector :: Selector
+quoteCheckingResultWithRange_replacementStringSelector :: Selector '[NSRange, Id NSString] (Id NSTextCheckingResult)
 quoteCheckingResultWithRange_replacementStringSelector = mkSelector "quoteCheckingResultWithRange:replacementString:"
 
 -- | @Selector@ for @dashCheckingResultWithRange:replacementString:@
-dashCheckingResultWithRange_replacementStringSelector :: Selector
+dashCheckingResultWithRange_replacementStringSelector :: Selector '[NSRange, Id NSString] (Id NSTextCheckingResult)
 dashCheckingResultWithRange_replacementStringSelector = mkSelector "dashCheckingResultWithRange:replacementString:"
 
 -- | @Selector@ for @replacementCheckingResultWithRange:replacementString:@
-replacementCheckingResultWithRange_replacementStringSelector :: Selector
+replacementCheckingResultWithRange_replacementStringSelector :: Selector '[NSRange, Id NSString] (Id NSTextCheckingResult)
 replacementCheckingResultWithRange_replacementStringSelector = mkSelector "replacementCheckingResultWithRange:replacementString:"
 
 -- | @Selector@ for @correctionCheckingResultWithRange:replacementString:@
-correctionCheckingResultWithRange_replacementStringSelector :: Selector
+correctionCheckingResultWithRange_replacementStringSelector :: Selector '[NSRange, Id NSString] (Id NSTextCheckingResult)
 correctionCheckingResultWithRange_replacementStringSelector = mkSelector "correctionCheckingResultWithRange:replacementString:"
 
 -- | @Selector@ for @correctionCheckingResultWithRange:replacementString:alternativeStrings:@
-correctionCheckingResultWithRange_replacementString_alternativeStringsSelector :: Selector
+correctionCheckingResultWithRange_replacementString_alternativeStringsSelector :: Selector '[NSRange, Id NSString, Id NSArray] (Id NSTextCheckingResult)
 correctionCheckingResultWithRange_replacementString_alternativeStringsSelector = mkSelector "correctionCheckingResultWithRange:replacementString:alternativeStrings:"
 
 -- | @Selector@ for @regularExpressionCheckingResultWithRanges:count:regularExpression:@
-regularExpressionCheckingResultWithRanges_count_regularExpressionSelector :: Selector
+regularExpressionCheckingResultWithRanges_count_regularExpressionSelector :: Selector '[Ptr NSRange, CULong, Id NSRegularExpression] (Id NSTextCheckingResult)
 regularExpressionCheckingResultWithRanges_count_regularExpressionSelector = mkSelector "regularExpressionCheckingResultWithRanges:count:regularExpression:"
 
 -- | @Selector@ for @phoneNumberCheckingResultWithRange:phoneNumber:@
-phoneNumberCheckingResultWithRange_phoneNumberSelector :: Selector
+phoneNumberCheckingResultWithRange_phoneNumberSelector :: Selector '[NSRange, Id NSString] (Id NSTextCheckingResult)
 phoneNumberCheckingResultWithRange_phoneNumberSelector = mkSelector "phoneNumberCheckingResultWithRange:phoneNumber:"
 
 -- | @Selector@ for @transitInformationCheckingResultWithRange:components:@
-transitInformationCheckingResultWithRange_componentsSelector :: Selector
+transitInformationCheckingResultWithRange_componentsSelector :: Selector '[NSRange, Id NSDictionary] (Id NSTextCheckingResult)
 transitInformationCheckingResultWithRange_componentsSelector = mkSelector "transitInformationCheckingResultWithRange:components:"
 
 -- | @Selector@ for @rangeAtIndex:@
-rangeAtIndexSelector :: Selector
+rangeAtIndexSelector :: Selector '[CULong] NSRange
 rangeAtIndexSelector = mkSelector "rangeAtIndex:"
 
 -- | @Selector@ for @rangeWithName:@
-rangeWithNameSelector :: Selector
+rangeWithNameSelector :: Selector '[Id NSString] NSRange
 rangeWithNameSelector = mkSelector "rangeWithName:"
 
 -- | @Selector@ for @resultByAdjustingRangesWithOffset:@
-resultByAdjustingRangesWithOffsetSelector :: Selector
+resultByAdjustingRangesWithOffsetSelector :: Selector '[CLong] (Id NSTextCheckingResult)
 resultByAdjustingRangesWithOffsetSelector = mkSelector "resultByAdjustingRangesWithOffset:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSTextCheckingType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @range@
-rangeSelector :: Selector
+rangeSelector :: Selector '[] NSRange
 rangeSelector = mkSelector "range"
 
 -- | @Selector@ for @orthography@
-orthographySelector :: Selector
+orthographySelector :: Selector '[] (Id NSOrthography)
 orthographySelector = mkSelector "orthography"
 
 -- | @Selector@ for @grammarDetails@
-grammarDetailsSelector :: Selector
+grammarDetailsSelector :: Selector '[] (Id NSArray)
 grammarDetailsSelector = mkSelector "grammarDetails"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSTimeZone)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] (Id NSDictionary)
 componentsSelector = mkSelector "components"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @replacementString@
-replacementStringSelector :: Selector
+replacementStringSelector :: Selector '[] (Id NSString)
 replacementStringSelector = mkSelector "replacementString"
 
 -- | @Selector@ for @alternativeStrings@
-alternativeStringsSelector :: Selector
+alternativeStringsSelector :: Selector '[] (Id NSArray)
 alternativeStringsSelector = mkSelector "alternativeStrings"
 
 -- | @Selector@ for @regularExpression@
-regularExpressionSelector :: Selector
+regularExpressionSelector :: Selector '[] (Id NSRegularExpression)
 regularExpressionSelector = mkSelector "regularExpression"
 
 -- | @Selector@ for @phoneNumber@
-phoneNumberSelector :: Selector
+phoneNumberSelector :: Selector '[] (Id NSString)
 phoneNumberSelector = mkSelector "phoneNumber"
 
 -- | @Selector@ for @numberOfRanges@
-numberOfRangesSelector :: Selector
+numberOfRangesSelector :: Selector '[] CULong
 numberOfRangesSelector = mkSelector "numberOfRanges"
 
 -- | @Selector@ for @addressComponents@
-addressComponentsSelector :: Selector
+addressComponentsSelector :: Selector '[] (Id NSDictionary)
 addressComponentsSelector = mkSelector "addressComponents"
 

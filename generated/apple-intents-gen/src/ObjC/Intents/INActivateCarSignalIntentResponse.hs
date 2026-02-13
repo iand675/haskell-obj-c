@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.Intents.INActivateCarSignalIntentResponse
   , code
   , signals
   , setSignals
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , signalsSelector
   , setSignalsSelector
+  , signalsSelector
 
   -- * Enum types
   , INActivateCarSignalIntentResponseCode(INActivateCarSignalIntentResponseCode)
@@ -32,15 +33,11 @@ module ObjC.Intents.INActivateCarSignalIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,51 +47,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINActivateCarSignalIntentResponse inActivateCarSignalIntentResponse => inActivateCarSignalIntentResponse -> IO RawId
-init_ inActivateCarSignalIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inActivateCarSignalIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inActivateCarSignalIntentResponse =
+  sendOwnedMessage inActivateCarSignalIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINActivateCarSignalIntentResponse inActivateCarSignalIntentResponse, IsNSUserActivity userActivity) => inActivateCarSignalIntentResponse -> INActivateCarSignalIntentResponseCode -> userActivity -> IO (Id INActivateCarSignalIntentResponse)
-initWithCode_userActivity inActivateCarSignalIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inActivateCarSignalIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inActivateCarSignalIntentResponse code userActivity =
+  sendOwnedMessage inActivateCarSignalIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINActivateCarSignalIntentResponse inActivateCarSignalIntentResponse => inActivateCarSignalIntentResponse -> IO INActivateCarSignalIntentResponseCode
-code inActivateCarSignalIntentResponse  =
-    fmap (coerce :: CLong -> INActivateCarSignalIntentResponseCode) $ sendMsg inActivateCarSignalIntentResponse (mkSelector "code") retCLong []
+code inActivateCarSignalIntentResponse =
+  sendMessage inActivateCarSignalIntentResponse codeSelector
 
 -- | @- signals@
 signals :: IsINActivateCarSignalIntentResponse inActivateCarSignalIntentResponse => inActivateCarSignalIntentResponse -> IO INCarSignalOptions
-signals inActivateCarSignalIntentResponse  =
-    fmap (coerce :: CULong -> INCarSignalOptions) $ sendMsg inActivateCarSignalIntentResponse (mkSelector "signals") retCULong []
+signals inActivateCarSignalIntentResponse =
+  sendMessage inActivateCarSignalIntentResponse signalsSelector
 
 -- | @- setSignals:@
 setSignals :: IsINActivateCarSignalIntentResponse inActivateCarSignalIntentResponse => inActivateCarSignalIntentResponse -> INCarSignalOptions -> IO ()
-setSignals inActivateCarSignalIntentResponse  value =
-    sendMsg inActivateCarSignalIntentResponse (mkSelector "setSignals:") retVoid [argCULong (coerce value)]
+setSignals inActivateCarSignalIntentResponse value =
+  sendMessage inActivateCarSignalIntentResponse setSignalsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INActivateCarSignalIntentResponseCode, Id NSUserActivity] (Id INActivateCarSignalIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INActivateCarSignalIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @signals@
-signalsSelector :: Selector
+signalsSelector :: Selector '[] INCarSignalOptions
 signalsSelector = mkSelector "signals"
 
 -- | @Selector@ for @setSignals:@
-setSignalsSelector :: Selector
+setSignalsSelector :: Selector '[INCarSignalOptions] ()
 setSignalsSelector = mkSelector "setSignals:"
 

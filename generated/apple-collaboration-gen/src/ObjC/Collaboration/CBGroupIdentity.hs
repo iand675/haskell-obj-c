@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Collaboration.CBGroupIdentity
   , posixGID
   , members
   , groupIdentityWithPosixGID_authoritySelector
-  , posixGIDSelector
   , membersSelector
+  , posixGIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,7 @@ groupIdentityWithPosixGID_authority :: IsCBIdentityAuthority authority => CUInt 
 groupIdentityWithPosixGID_authority gid authority =
   do
     cls' <- getRequiredClass "CBGroupIdentity"
-    withObjCPtr authority $ \raw_authority ->
-      sendClassMsg cls' (mkSelector "groupIdentityWithPosixGID:authority:") (retPtr retVoid) [argCUInt gid, argPtr (castPtr raw_authority :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' groupIdentityWithPosixGID_authoritySelector gid (toCBIdentityAuthority authority)
 
 -- | Returns the POSIX GID of the identity.
 --
@@ -57,8 +53,8 @@ groupIdentityWithPosixGID_authority gid authority =
 --
 -- ObjC selector: @- posixGID@
 posixGID :: IsCBGroupIdentity cbGroupIdentity => cbGroupIdentity -> IO CUInt
-posixGID cbGroupIdentity  =
-    sendMsg cbGroupIdentity (mkSelector "posixGID") retCUInt []
+posixGID cbGroupIdentity =
+  sendMessage cbGroupIdentity posixGIDSelector
 
 -- | Returns the members of the group.
 --
@@ -68,22 +64,22 @@ posixGID cbGroupIdentity  =
 --
 -- ObjC selector: @- members@
 members :: IsCBGroupIdentity cbGroupIdentity => cbGroupIdentity -> IO RawId
-members cbGroupIdentity  =
-    fmap (RawId . castPtr) $ sendMsg cbGroupIdentity (mkSelector "members") (retPtr retVoid) []
+members cbGroupIdentity =
+  sendMessage cbGroupIdentity membersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupIdentityWithPosixGID:authority:@
-groupIdentityWithPosixGID_authoritySelector :: Selector
+groupIdentityWithPosixGID_authoritySelector :: Selector '[CUInt, Id CBIdentityAuthority] (Id CBGroupIdentity)
 groupIdentityWithPosixGID_authoritySelector = mkSelector "groupIdentityWithPosixGID:authority:"
 
 -- | @Selector@ for @posixGID@
-posixGIDSelector :: Selector
+posixGIDSelector :: Selector '[] CUInt
 posixGIDSelector = mkSelector "posixGID"
 
 -- | @Selector@ for @members@
-membersSelector :: Selector
+membersSelector :: Selector '[] RawId
 membersSelector = mkSelector "members"
 

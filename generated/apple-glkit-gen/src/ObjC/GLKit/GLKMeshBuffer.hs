@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,12 +20,12 @@ module ObjC.GLKit.GLKMeshBuffer
   , offset
   , zone
   , type_
-  , lengthSelector
   , allocatorSelector
   , glBufferNameSelector
+  , lengthSelector
   , offsetSelector
-  , zoneSelector
   , typeSelector
+  , zoneSelector
 
   -- * Enum types
   , MDLMeshBufferType(MDLMeshBufferType)
@@ -34,15 +35,11 @@ module ObjC.GLKit.GLKMeshBuffer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,8 +53,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- length@
 length_ :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO CULong
-length_ glkMeshBuffer  =
-    sendMsg glkMeshBuffer (mkSelector "length") retCULong []
+length_ glkMeshBuffer =
+  sendMessage glkMeshBuffer lengthSelector
 
 -- | allocator
 --
@@ -67,8 +64,8 @@ length_ glkMeshBuffer  =
 --
 -- ObjC selector: @- allocator@
 allocator :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO (Id GLKMeshBufferAllocator)
-allocator glkMeshBuffer  =
-    sendMsg glkMeshBuffer (mkSelector "allocator") (retPtr retVoid) [] >>= ownedObject . castPtr
+allocator glkMeshBuffer =
+  sendOwnedMessage glkMeshBuffer allocatorSelector
 
 -- | glBufferName
 --
@@ -78,8 +75,8 @@ allocator glkMeshBuffer  =
 --
 -- ObjC selector: @- glBufferName@
 glBufferName :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO CUInt
-glBufferName glkMeshBuffer  =
-    sendMsg glkMeshBuffer (mkSelector "glBufferName") retCUInt []
+glBufferName glkMeshBuffer =
+  sendMessage glkMeshBuffer glBufferNameSelector
 
 -- | offset
 --
@@ -87,8 +84,8 @@ glBufferName glkMeshBuffer  =
 --
 -- ObjC selector: @- offset@
 offset :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO CULong
-offset glkMeshBuffer  =
-    sendMsg glkMeshBuffer (mkSelector "offset") retCULong []
+offset glkMeshBuffer =
+  sendMessage glkMeshBuffer offsetSelector
 
 -- | zone
 --
@@ -98,8 +95,8 @@ offset glkMeshBuffer  =
 --
 -- ObjC selector: @- zone@
 zone :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO RawId
-zone glkMeshBuffer  =
-    fmap (RawId . castPtr) $ sendMsg glkMeshBuffer (mkSelector "zone") (retPtr retVoid) []
+zone glkMeshBuffer =
+  sendMessage glkMeshBuffer zoneSelector
 
 -- | type
 --
@@ -107,34 +104,34 @@ zone glkMeshBuffer  =
 --
 -- ObjC selector: @- type@
 type_ :: IsGLKMeshBuffer glkMeshBuffer => glkMeshBuffer -> IO MDLMeshBufferType
-type_ glkMeshBuffer  =
-    fmap (coerce :: CULong -> MDLMeshBufferType) $ sendMsg glkMeshBuffer (mkSelector "type") retCULong []
+type_ glkMeshBuffer =
+  sendMessage glkMeshBuffer typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @allocator@
-allocatorSelector :: Selector
+allocatorSelector :: Selector '[] (Id GLKMeshBufferAllocator)
 allocatorSelector = mkSelector "allocator"
 
 -- | @Selector@ for @glBufferName@
-glBufferNameSelector :: Selector
+glBufferNameSelector :: Selector '[] CUInt
 glBufferNameSelector = mkSelector "glBufferName"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @zone@
-zoneSelector :: Selector
+zoneSelector :: Selector '[] RawId
 zoneSelector = mkSelector "zone"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MDLMeshBufferType
 typeSelector = mkSelector "type"
 

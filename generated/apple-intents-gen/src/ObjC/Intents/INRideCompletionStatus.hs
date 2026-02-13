@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,23 @@ module ObjC.Intents.INRideCompletionStatus
   , outstanding
   , defaultTippingOptions
   , setDefaultTippingOptions
-  , initSelector
-  , completedSelector
-  , completedWithSettledPaymentAmountSelector
-  , completedWithOutstandingPaymentAmountSelector
-  , completedWithOutstandingFeedbackTypeSelector
   , canceledByServiceSelector
   , canceledByUserSelector
   , canceledMissedPickupSelector
-  , completionUserActivitySelector
-  , setCompletionUserActivitySelector
   , canceledSelector
-  , missedPickupSelector
-  , paymentAmountSelector
-  , feedbackTypeSelector
-  , outstandingSelector
+  , completedSelector
+  , completedWithOutstandingFeedbackTypeSelector
+  , completedWithOutstandingPaymentAmountSelector
+  , completedWithSettledPaymentAmountSelector
+  , completionUserActivitySelector
   , defaultTippingOptionsSelector
+  , feedbackTypeSelector
+  , inRideCompletionStatusCompletedSelector
+  , initSelector
+  , missedPickupSelector
+  , outstandingSelector
+  , paymentAmountSelector
+  , setCompletionUserActivitySelector
   , setDefaultTippingOptionsSelector
 
   -- * Enum types
@@ -50,15 +52,11 @@ module ObjC.Intents.INRideCompletionStatus
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,181 +66,181 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO (Id INRideCompletionStatus)
-init_ inRideCompletionStatus  =
-    sendMsg inRideCompletionStatus (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRideCompletionStatus =
+  sendOwnedMessage inRideCompletionStatus initSelector
 
 -- | @+ completed@
 inRideCompletionStatusCompleted :: IO (Id INRideCompletionStatus)
 inRideCompletionStatusCompleted  =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    sendClassMsg cls' (mkSelector "completed") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' inRideCompletionStatusCompletedSelector
 
 -- | @+ completedWithSettledPaymentAmount:@
 completedWithSettledPaymentAmount :: IsINCurrencyAmount settledPaymentAmount => settledPaymentAmount -> IO (Id INRideCompletionStatus)
 completedWithSettledPaymentAmount settledPaymentAmount =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    withObjCPtr settledPaymentAmount $ \raw_settledPaymentAmount ->
-      sendClassMsg cls' (mkSelector "completedWithSettledPaymentAmount:") (retPtr retVoid) [argPtr (castPtr raw_settledPaymentAmount :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' completedWithSettledPaymentAmountSelector (toINCurrencyAmount settledPaymentAmount)
 
 -- | @+ completedWithOutstandingPaymentAmount:@
 completedWithOutstandingPaymentAmount :: IsINCurrencyAmount outstandingPaymentAmount => outstandingPaymentAmount -> IO (Id INRideCompletionStatus)
 completedWithOutstandingPaymentAmount outstandingPaymentAmount =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    withObjCPtr outstandingPaymentAmount $ \raw_outstandingPaymentAmount ->
-      sendClassMsg cls' (mkSelector "completedWithOutstandingPaymentAmount:") (retPtr retVoid) [argPtr (castPtr raw_outstandingPaymentAmount :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' completedWithOutstandingPaymentAmountSelector (toINCurrencyAmount outstandingPaymentAmount)
 
 -- | @+ completedWithOutstandingFeedbackType:@
 completedWithOutstandingFeedbackType :: INRideFeedbackTypeOptions -> IO (Id INRideCompletionStatus)
 completedWithOutstandingFeedbackType feedbackType =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    sendClassMsg cls' (mkSelector "completedWithOutstandingFeedbackType:") (retPtr retVoid) [argCULong (coerce feedbackType)] >>= retainedObject . castPtr
+    sendClassMessage cls' completedWithOutstandingFeedbackTypeSelector feedbackType
 
 -- | @+ canceledByService@
 canceledByService :: IO (Id INRideCompletionStatus)
 canceledByService  =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    sendClassMsg cls' (mkSelector "canceledByService") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' canceledByServiceSelector
 
 -- | @+ canceledByUser@
 canceledByUser :: IO (Id INRideCompletionStatus)
 canceledByUser  =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    sendClassMsg cls' (mkSelector "canceledByUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' canceledByUserSelector
 
 -- | @+ canceledMissedPickup@
 canceledMissedPickup :: IO (Id INRideCompletionStatus)
 canceledMissedPickup  =
   do
     cls' <- getRequiredClass "INRideCompletionStatus"
-    sendClassMsg cls' (mkSelector "canceledMissedPickup") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' canceledMissedPickupSelector
 
 -- | @- completionUserActivity@
 completionUserActivity :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO (Id NSUserActivity)
-completionUserActivity inRideCompletionStatus  =
-    sendMsg inRideCompletionStatus (mkSelector "completionUserActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionUserActivity inRideCompletionStatus =
+  sendMessage inRideCompletionStatus completionUserActivitySelector
 
 -- | @- setCompletionUserActivity:@
 setCompletionUserActivity :: (IsINRideCompletionStatus inRideCompletionStatus, IsNSUserActivity value) => inRideCompletionStatus -> value -> IO ()
-setCompletionUserActivity inRideCompletionStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideCompletionStatus (mkSelector "setCompletionUserActivity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletionUserActivity inRideCompletionStatus value =
+  sendMessage inRideCompletionStatus setCompletionUserActivitySelector (toNSUserActivity value)
 
 -- | @- completed@
 completed :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO Bool
-completed inRideCompletionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRideCompletionStatus (mkSelector "completed") retCULong []
+completed inRideCompletionStatus =
+  sendMessage inRideCompletionStatus completedSelector
 
 -- | @- canceled@
 canceled :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO Bool
-canceled inRideCompletionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRideCompletionStatus (mkSelector "canceled") retCULong []
+canceled inRideCompletionStatus =
+  sendMessage inRideCompletionStatus canceledSelector
 
 -- | @- missedPickup@
 missedPickup :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO Bool
-missedPickup inRideCompletionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRideCompletionStatus (mkSelector "missedPickup") retCULong []
+missedPickup inRideCompletionStatus =
+  sendMessage inRideCompletionStatus missedPickupSelector
 
 -- | @- paymentAmount@
 paymentAmount :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO (Id INCurrencyAmount)
-paymentAmount inRideCompletionStatus  =
-    sendMsg inRideCompletionStatus (mkSelector "paymentAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentAmount inRideCompletionStatus =
+  sendMessage inRideCompletionStatus paymentAmountSelector
 
 -- | @- feedbackType@
 feedbackType :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO INRideFeedbackTypeOptions
-feedbackType inRideCompletionStatus  =
-    fmap (coerce :: CULong -> INRideFeedbackTypeOptions) $ sendMsg inRideCompletionStatus (mkSelector "feedbackType") retCULong []
+feedbackType inRideCompletionStatus =
+  sendMessage inRideCompletionStatus feedbackTypeSelector
 
 -- | @- outstanding@
 outstanding :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO Bool
-outstanding inRideCompletionStatus  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRideCompletionStatus (mkSelector "outstanding") retCULong []
+outstanding inRideCompletionStatus =
+  sendMessage inRideCompletionStatus outstandingSelector
 
 -- | @- defaultTippingOptions@
 defaultTippingOptions :: IsINRideCompletionStatus inRideCompletionStatus => inRideCompletionStatus -> IO (Id NSSet)
-defaultTippingOptions inRideCompletionStatus  =
-    sendMsg inRideCompletionStatus (mkSelector "defaultTippingOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultTippingOptions inRideCompletionStatus =
+  sendMessage inRideCompletionStatus defaultTippingOptionsSelector
 
 -- | @- setDefaultTippingOptions:@
 setDefaultTippingOptions :: (IsINRideCompletionStatus inRideCompletionStatus, IsNSSet value) => inRideCompletionStatus -> value -> IO ()
-setDefaultTippingOptions inRideCompletionStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideCompletionStatus (mkSelector "setDefaultTippingOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultTippingOptions inRideCompletionStatus value =
+  sendMessage inRideCompletionStatus setDefaultTippingOptionsSelector (toNSSet value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRideCompletionStatus)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @completed@
-completedSelector :: Selector
-completedSelector = mkSelector "completed"
+inRideCompletionStatusCompletedSelector :: Selector '[] (Id INRideCompletionStatus)
+inRideCompletionStatusCompletedSelector = mkSelector "completed"
 
 -- | @Selector@ for @completedWithSettledPaymentAmount:@
-completedWithSettledPaymentAmountSelector :: Selector
+completedWithSettledPaymentAmountSelector :: Selector '[Id INCurrencyAmount] (Id INRideCompletionStatus)
 completedWithSettledPaymentAmountSelector = mkSelector "completedWithSettledPaymentAmount:"
 
 -- | @Selector@ for @completedWithOutstandingPaymentAmount:@
-completedWithOutstandingPaymentAmountSelector :: Selector
+completedWithOutstandingPaymentAmountSelector :: Selector '[Id INCurrencyAmount] (Id INRideCompletionStatus)
 completedWithOutstandingPaymentAmountSelector = mkSelector "completedWithOutstandingPaymentAmount:"
 
 -- | @Selector@ for @completedWithOutstandingFeedbackType:@
-completedWithOutstandingFeedbackTypeSelector :: Selector
+completedWithOutstandingFeedbackTypeSelector :: Selector '[INRideFeedbackTypeOptions] (Id INRideCompletionStatus)
 completedWithOutstandingFeedbackTypeSelector = mkSelector "completedWithOutstandingFeedbackType:"
 
 -- | @Selector@ for @canceledByService@
-canceledByServiceSelector :: Selector
+canceledByServiceSelector :: Selector '[] (Id INRideCompletionStatus)
 canceledByServiceSelector = mkSelector "canceledByService"
 
 -- | @Selector@ for @canceledByUser@
-canceledByUserSelector :: Selector
+canceledByUserSelector :: Selector '[] (Id INRideCompletionStatus)
 canceledByUserSelector = mkSelector "canceledByUser"
 
 -- | @Selector@ for @canceledMissedPickup@
-canceledMissedPickupSelector :: Selector
+canceledMissedPickupSelector :: Selector '[] (Id INRideCompletionStatus)
 canceledMissedPickupSelector = mkSelector "canceledMissedPickup"
 
 -- | @Selector@ for @completionUserActivity@
-completionUserActivitySelector :: Selector
+completionUserActivitySelector :: Selector '[] (Id NSUserActivity)
 completionUserActivitySelector = mkSelector "completionUserActivity"
 
 -- | @Selector@ for @setCompletionUserActivity:@
-setCompletionUserActivitySelector :: Selector
+setCompletionUserActivitySelector :: Selector '[Id NSUserActivity] ()
 setCompletionUserActivitySelector = mkSelector "setCompletionUserActivity:"
 
+-- | @Selector@ for @completed@
+completedSelector :: Selector '[] Bool
+completedSelector = mkSelector "completed"
+
 -- | @Selector@ for @canceled@
-canceledSelector :: Selector
+canceledSelector :: Selector '[] Bool
 canceledSelector = mkSelector "canceled"
 
 -- | @Selector@ for @missedPickup@
-missedPickupSelector :: Selector
+missedPickupSelector :: Selector '[] Bool
 missedPickupSelector = mkSelector "missedPickup"
 
 -- | @Selector@ for @paymentAmount@
-paymentAmountSelector :: Selector
+paymentAmountSelector :: Selector '[] (Id INCurrencyAmount)
 paymentAmountSelector = mkSelector "paymentAmount"
 
 -- | @Selector@ for @feedbackType@
-feedbackTypeSelector :: Selector
+feedbackTypeSelector :: Selector '[] INRideFeedbackTypeOptions
 feedbackTypeSelector = mkSelector "feedbackType"
 
 -- | @Selector@ for @outstanding@
-outstandingSelector :: Selector
+outstandingSelector :: Selector '[] Bool
 outstandingSelector = mkSelector "outstanding"
 
 -- | @Selector@ for @defaultTippingOptions@
-defaultTippingOptionsSelector :: Selector
+defaultTippingOptionsSelector :: Selector '[] (Id NSSet)
 defaultTippingOptionsSelector = mkSelector "defaultTippingOptions"
 
 -- | @Selector@ for @setDefaultTippingOptions:@
-setDefaultTippingOptionsSelector :: Selector
+setDefaultTippingOptionsSelector :: Selector '[Id NSSet] ()
 setDefaultTippingOptionsSelector = mkSelector "setDefaultTippingOptions:"
 

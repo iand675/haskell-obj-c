@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.SceneKit.SCNTechnique
   , dictionaryRepresentation
   , library
   , setLibrary
-  , techniqueWithDictionarySelector
-  , techniqueBySequencingTechniquesSelector
-  , handleBindingOfSymbol_usingBlockSelector
-  , objectForKeyedSubscriptSelector
-  , setObject_forKeyedSubscriptSelector
   , dictionaryRepresentationSelector
+  , handleBindingOfSymbol_usingBlockSelector
   , librarySelector
+  , objectForKeyedSubscriptSelector
   , setLibrarySelector
+  , setObject_forKeyedSubscriptSelector
+  , techniqueBySequencingTechniquesSelector
+  , techniqueWithDictionarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -136,8 +133,7 @@ techniqueWithDictionary :: IsNSDictionary dictionary => dictionary -> IO (Id SCN
 techniqueWithDictionary dictionary =
   do
     cls' <- getRequiredClass "SCNTechnique"
-    withObjCPtr dictionary $ \raw_dictionary ->
-      sendClassMsg cls' (mkSelector "techniqueWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_dictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' techniqueWithDictionarySelector (toNSDictionary dictionary)
 
 -- | techniqueBySequencingTechniques:
 --
@@ -152,8 +148,7 @@ techniqueBySequencingTechniques :: IsNSArray techniques => techniques -> IO (Id 
 techniqueBySequencingTechniques techniques =
   do
     cls' <- getRequiredClass "SCNTechnique"
-    withObjCPtr techniques $ \raw_techniques ->
-      sendClassMsg cls' (mkSelector "techniqueBySequencingTechniques:") (retPtr retVoid) [argPtr (castPtr raw_techniques :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' techniqueBySequencingTechniquesSelector (toNSArray techniques)
 
 -- | handleBindingOfSymbol:usingBlock:
 --
@@ -167,19 +162,18 @@ techniqueBySequencingTechniques techniques =
 --
 -- ObjC selector: @- handleBindingOfSymbol:usingBlock:@
 handleBindingOfSymbol_usingBlock :: (IsSCNTechnique scnTechnique, IsNSString symbol) => scnTechnique -> symbol -> Ptr () -> IO ()
-handleBindingOfSymbol_usingBlock scnTechnique  symbol block =
-  withObjCPtr symbol $ \raw_symbol ->
-      sendMsg scnTechnique (mkSelector "handleBindingOfSymbol:usingBlock:") retVoid [argPtr (castPtr raw_symbol :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+handleBindingOfSymbol_usingBlock scnTechnique symbol block =
+  sendMessage scnTechnique handleBindingOfSymbol_usingBlockSelector (toNSString symbol) block
 
 -- | @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: IsSCNTechnique scnTechnique => scnTechnique -> RawId -> IO RawId
-objectForKeyedSubscript scnTechnique  key =
-    fmap (RawId . castPtr) $ sendMsg scnTechnique (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr (unRawId key) :: Ptr ())]
+objectForKeyedSubscript scnTechnique key =
+  sendMessage scnTechnique objectForKeyedSubscriptSelector key
 
 -- | @- setObject:forKeyedSubscript:@
 setObject_forKeyedSubscript :: IsSCNTechnique scnTechnique => scnTechnique -> RawId -> RawId -> IO ()
-setObject_forKeyedSubscript scnTechnique  obj_ key =
-    sendMsg scnTechnique (mkSelector "setObject:forKeyedSubscript:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argPtr (castPtr (unRawId key) :: Ptr ())]
+setObject_forKeyedSubscript scnTechnique obj_ key =
+  sendMessage scnTechnique setObject_forKeyedSubscriptSelector obj_ key
 
 -- | dictionaryRepresentation
 --
@@ -187,8 +181,8 @@ setObject_forKeyedSubscript scnTechnique  obj_ key =
 --
 -- ObjC selector: @- dictionaryRepresentation@
 dictionaryRepresentation :: IsSCNTechnique scnTechnique => scnTechnique -> IO (Id NSDictionary)
-dictionaryRepresentation scnTechnique  =
-    sendMsg scnTechnique (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation scnTechnique =
+  sendMessage scnTechnique dictionaryRepresentationSelector
 
 -- | library
 --
@@ -196,8 +190,8 @@ dictionaryRepresentation scnTechnique  =
 --
 -- ObjC selector: @- library@
 library :: IsSCNTechnique scnTechnique => scnTechnique -> IO RawId
-library scnTechnique  =
-    fmap (RawId . castPtr) $ sendMsg scnTechnique (mkSelector "library") (retPtr retVoid) []
+library scnTechnique =
+  sendMessage scnTechnique librarySelector
 
 -- | library
 --
@@ -205,42 +199,42 @@ library scnTechnique  =
 --
 -- ObjC selector: @- setLibrary:@
 setLibrary :: IsSCNTechnique scnTechnique => scnTechnique -> RawId -> IO ()
-setLibrary scnTechnique  value =
-    sendMsg scnTechnique (mkSelector "setLibrary:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLibrary scnTechnique value =
+  sendMessage scnTechnique setLibrarySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @techniqueWithDictionary:@
-techniqueWithDictionarySelector :: Selector
+techniqueWithDictionarySelector :: Selector '[Id NSDictionary] (Id SCNTechnique)
 techniqueWithDictionarySelector = mkSelector "techniqueWithDictionary:"
 
 -- | @Selector@ for @techniqueBySequencingTechniques:@
-techniqueBySequencingTechniquesSelector :: Selector
+techniqueBySequencingTechniquesSelector :: Selector '[Id NSArray] (Id SCNTechnique)
 techniqueBySequencingTechniquesSelector = mkSelector "techniqueBySequencingTechniques:"
 
 -- | @Selector@ for @handleBindingOfSymbol:usingBlock:@
-handleBindingOfSymbol_usingBlockSelector :: Selector
+handleBindingOfSymbol_usingBlockSelector :: Selector '[Id NSString, Ptr ()] ()
 handleBindingOfSymbol_usingBlockSelector = mkSelector "handleBindingOfSymbol:usingBlock:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[RawId] RawId
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @setObject:forKeyedSubscript:@
-setObject_forKeyedSubscriptSelector :: Selector
+setObject_forKeyedSubscriptSelector :: Selector '[RawId, RawId] ()
 setObject_forKeyedSubscriptSelector = mkSelector "setObject:forKeyedSubscript:"
 
 -- | @Selector@ for @dictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
 
 -- | @Selector@ for @library@
-librarySelector :: Selector
+librarySelector :: Selector '[] RawId
 librarySelector = mkSelector "library"
 
 -- | @Selector@ for @setLibrary:@
-setLibrarySelector :: Selector
+setLibrarySelector :: Selector '[RawId] ()
 setLibrarySelector = mkSelector "setLibrary:"
 

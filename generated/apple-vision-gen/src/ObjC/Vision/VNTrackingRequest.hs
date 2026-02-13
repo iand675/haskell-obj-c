@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.Vision.VNTrackingRequest
   , setTrackingLevel
   , lastFrame
   , setLastFrame
-  , supportedNumberOfTrackersAndReturnErrorSelector
   , initSelector
   , initWithCompletionHandlerSelector
   , inputObservationSelector
-  , setInputObservationSelector
-  , trackingLevelSelector
-  , setTrackingLevelSelector
   , lastFrameSelector
+  , setInputObservationSelector
   , setLastFrameSelector
+  , setTrackingLevelSelector
+  , supportedNumberOfTrackersAndReturnErrorSelector
+  , trackingLevelSelector
 
   -- * Enum types
   , VNRequestTrackingLevel(VNRequestTrackingLevel)
@@ -37,15 +38,11 @@ module ObjC.Vision.VNTrackingRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,19 +64,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedNumberOfTrackersAndReturnError:@
 supportedNumberOfTrackersAndReturnError :: (IsVNTrackingRequest vnTrackingRequest, IsNSError error_) => vnTrackingRequest -> error_ -> IO CULong
-supportedNumberOfTrackersAndReturnError vnTrackingRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnTrackingRequest (mkSelector "supportedNumberOfTrackersAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+supportedNumberOfTrackersAndReturnError vnTrackingRequest error_ =
+  sendMessage vnTrackingRequest supportedNumberOfTrackersAndReturnErrorSelector (toNSError error_)
 
 -- | @- init@
 init_ :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> IO (Id VNTrackingRequest)
-init_ vnTrackingRequest  =
-    sendMsg vnTrackingRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackingRequest =
+  sendOwnedMessage vnTrackingRequest initSelector
 
 -- | @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> Ptr () -> IO (Id VNTrackingRequest)
-initWithCompletionHandler vnTrackingRequest  completionHandler =
-    sendMsg vnTrackingRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackingRequest completionHandler =
+  sendOwnedMessage vnTrackingRequest initWithCompletionHandlerSelector completionHandler
 
 -- | property inputObservation
 --
@@ -87,8 +83,8 @@ initWithCompletionHandler vnTrackingRequest  completionHandler =
 --
 -- ObjC selector: @- inputObservation@
 inputObservation :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> IO (Id VNDetectedObjectObservation)
-inputObservation vnTrackingRequest  =
-    sendMsg vnTrackingRequest (mkSelector "inputObservation") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputObservation vnTrackingRequest =
+  sendMessage vnTrackingRequest inputObservationSelector
 
 -- | property inputObservation
 --
@@ -96,9 +92,8 @@ inputObservation vnTrackingRequest  =
 --
 -- ObjC selector: @- setInputObservation:@
 setInputObservation :: (IsVNTrackingRequest vnTrackingRequest, IsVNDetectedObjectObservation value) => vnTrackingRequest -> value -> IO ()
-setInputObservation vnTrackingRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vnTrackingRequest (mkSelector "setInputObservation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInputObservation vnTrackingRequest value =
+  sendMessage vnTrackingRequest setInputObservationSelector (toVNDetectedObjectObservation value)
 
 -- | property trackingLevel
 --
@@ -106,8 +101,8 @@ setInputObservation vnTrackingRequest  value =
 --
 -- ObjC selector: @- trackingLevel@
 trackingLevel :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> IO VNRequestTrackingLevel
-trackingLevel vnTrackingRequest  =
-    fmap (coerce :: CULong -> VNRequestTrackingLevel) $ sendMsg vnTrackingRequest (mkSelector "trackingLevel") retCULong []
+trackingLevel vnTrackingRequest =
+  sendMessage vnTrackingRequest trackingLevelSelector
 
 -- | property trackingLevel
 --
@@ -115,8 +110,8 @@ trackingLevel vnTrackingRequest  =
 --
 -- ObjC selector: @- setTrackingLevel:@
 setTrackingLevel :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> VNRequestTrackingLevel -> IO ()
-setTrackingLevel vnTrackingRequest  value =
-    sendMsg vnTrackingRequest (mkSelector "setTrackingLevel:") retVoid [argCULong (coerce value)]
+setTrackingLevel vnTrackingRequest value =
+  sendMessage vnTrackingRequest setTrackingLevelSelector value
 
 -- | property lastFrame
 --
@@ -124,8 +119,8 @@ setTrackingLevel vnTrackingRequest  value =
 --
 -- ObjC selector: @- lastFrame@
 lastFrame :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> IO Bool
-lastFrame vnTrackingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnTrackingRequest (mkSelector "lastFrame") retCULong []
+lastFrame vnTrackingRequest =
+  sendMessage vnTrackingRequest lastFrameSelector
 
 -- | property lastFrame
 --
@@ -133,46 +128,46 @@ lastFrame vnTrackingRequest  =
 --
 -- ObjC selector: @- setLastFrame:@
 setLastFrame :: IsVNTrackingRequest vnTrackingRequest => vnTrackingRequest -> Bool -> IO ()
-setLastFrame vnTrackingRequest  value =
-    sendMsg vnTrackingRequest (mkSelector "setLastFrame:") retVoid [argCULong (if value then 1 else 0)]
+setLastFrame vnTrackingRequest value =
+  sendMessage vnTrackingRequest setLastFrameSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedNumberOfTrackersAndReturnError:@
-supportedNumberOfTrackersAndReturnErrorSelector :: Selector
+supportedNumberOfTrackersAndReturnErrorSelector :: Selector '[Id NSError] CULong
 supportedNumberOfTrackersAndReturnErrorSelector = mkSelector "supportedNumberOfTrackersAndReturnError:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackingRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackingRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @inputObservation@
-inputObservationSelector :: Selector
+inputObservationSelector :: Selector '[] (Id VNDetectedObjectObservation)
 inputObservationSelector = mkSelector "inputObservation"
 
 -- | @Selector@ for @setInputObservation:@
-setInputObservationSelector :: Selector
+setInputObservationSelector :: Selector '[Id VNDetectedObjectObservation] ()
 setInputObservationSelector = mkSelector "setInputObservation:"
 
 -- | @Selector@ for @trackingLevel@
-trackingLevelSelector :: Selector
+trackingLevelSelector :: Selector '[] VNRequestTrackingLevel
 trackingLevelSelector = mkSelector "trackingLevel"
 
 -- | @Selector@ for @setTrackingLevel:@
-setTrackingLevelSelector :: Selector
+setTrackingLevelSelector :: Selector '[VNRequestTrackingLevel] ()
 setTrackingLevelSelector = mkSelector "setTrackingLevel:"
 
 -- | @Selector@ for @lastFrame@
-lastFrameSelector :: Selector
+lastFrameSelector :: Selector '[] Bool
 lastFrameSelector = mkSelector "lastFrame"
 
 -- | @Selector@ for @setLastFrame:@
-setLastFrameSelector :: Selector
+setLastFrameSelector :: Selector '[Bool] ()
 setLastFrameSelector = mkSelector "setLastFrame:"
 

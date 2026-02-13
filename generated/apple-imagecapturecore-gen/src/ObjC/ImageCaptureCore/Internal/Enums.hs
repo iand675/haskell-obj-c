@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ImageCaptureCore.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | ICDeviceLocationType
 --
@@ -38,6 +41,16 @@ pattern ICDeviceLocationTypeBonjour = ICDeviceLocationType 1024
 
 pattern ICDeviceLocationTypeBluetooth :: ICDeviceLocationType
 pattern ICDeviceLocationTypeBluetooth = ICDeviceLocationType 2048
+
+instance ObjCArgument ICDeviceLocationType where
+  withObjCArg (ICDeviceLocationType x) k = k (argCULong x)
+
+instance ObjCReturn ICDeviceLocationType where
+  type RawReturn ICDeviceLocationType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICDeviceLocationType x)
+  fromOwned x = pure (ICDeviceLocationType x)
 
 -- | ICDeviceLocationTypeMask
 --
@@ -72,6 +85,16 @@ pattern ICDeviceLocationTypeMaskBluetooth = ICDeviceLocationTypeMask 2048
 pattern ICDeviceLocationTypeMaskRemote :: ICDeviceLocationTypeMask
 pattern ICDeviceLocationTypeMaskRemote = ICDeviceLocationTypeMask 65024
 
+instance ObjCArgument ICDeviceLocationTypeMask where
+  withObjCArg (ICDeviceLocationTypeMask x) k = k (argCULong x)
+
+instance ObjCReturn ICDeviceLocationTypeMask where
+  type RawReturn ICDeviceLocationTypeMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICDeviceLocationTypeMask x)
+  fromOwned x = pure (ICDeviceLocationTypeMask x)
+
 -- | ICDeviceType
 --
 -- Image Capture Device Types
@@ -90,6 +113,16 @@ pattern ICDeviceTypeCamera = ICDeviceType 1
 pattern ICDeviceTypeScanner :: ICDeviceType
 pattern ICDeviceTypeScanner = ICDeviceType 2
 
+instance ObjCArgument ICDeviceType where
+  withObjCArg (ICDeviceType x) k = k (argCULong x)
+
+instance ObjCReturn ICDeviceType where
+  type RawReturn ICDeviceType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICDeviceType x)
+  fromOwned x = pure (ICDeviceType x)
+
 -- | ICDeviceTypeMask
 --
 -- Image Capture Device Type Mask
@@ -107,6 +140,16 @@ pattern ICDeviceTypeMaskCamera = ICDeviceTypeMask 1
 
 pattern ICDeviceTypeMaskScanner :: ICDeviceTypeMask
 pattern ICDeviceTypeMaskScanner = ICDeviceTypeMask 2
+
+instance ObjCArgument ICDeviceTypeMask where
+  withObjCArg (ICDeviceTypeMask x) k = k (argCULong x)
+
+instance ObjCReturn ICDeviceTypeMask where
+  type RawReturn ICDeviceTypeMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICDeviceTypeMask x)
+  fromOwned x = pure (ICDeviceTypeMask x)
 
 -- | @ICEXIFOrientationType@
 newtype ICEXIFOrientationType = ICEXIFOrientationType CULong
@@ -136,6 +179,16 @@ pattern ICEXIFOrientation7 = ICEXIFOrientationType 7
 
 pattern ICEXIFOrientation8 :: ICEXIFOrientationType
 pattern ICEXIFOrientation8 = ICEXIFOrientationType 8
+
+instance ObjCArgument ICEXIFOrientationType where
+  withObjCArg (ICEXIFOrientationType x) k = k (argCULong x)
+
+instance ObjCReturn ICEXIFOrientationType where
+  type RawReturn ICEXIFOrientationType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICEXIFOrientationType x)
+  fromOwned x = pure (ICEXIFOrientationType x)
 
 -- | @ICLegacyReturnCode@
 newtype ICLegacyReturnCode = ICLegacyReturnCode CLong
@@ -208,6 +261,16 @@ pattern ICLegacyReturnCodeExtensionInternalErr = ICLegacyReturnCode (-9920)
 pattern ICLegacyReturnCodeInvalidSessionErr :: ICLegacyReturnCode
 pattern ICLegacyReturnCodeInvalidSessionErr = ICLegacyReturnCode (-9921)
 
+instance ObjCArgument ICLegacyReturnCode where
+  withObjCArg (ICLegacyReturnCode x) k = k (argCLong x)
+
+instance ObjCReturn ICLegacyReturnCode where
+  type RawReturn ICLegacyReturnCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICLegacyReturnCode x)
+  fromOwned x = pure (ICLegacyReturnCode x)
+
 -- | ICMediaPresentation controls the display of either transcoded or original assets, if the device supports transcoding.
 --
 -- ICMediaPresentationConvertedAssets sets the device presentation view to display transcoded assets only.
@@ -223,6 +286,16 @@ pattern ICMediaPresentationConvertedAssets = ICMediaPresentation 1
 
 pattern ICMediaPresentationOriginalAssets :: ICMediaPresentation
 pattern ICMediaPresentationOriginalAssets = ICMediaPresentation 2
+
+instance ObjCArgument ICMediaPresentation where
+  withObjCArg (ICMediaPresentation x) k = k (argCULong x)
+
+instance ObjCReturn ICMediaPresentation where
+  type RawReturn ICMediaPresentation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICMediaPresentation x)
+  fromOwned x = pure (ICMediaPresentation x)
 
 -- | @ICReturnCode@
 newtype ICReturnCode = ICReturnCode CLong
@@ -349,6 +422,16 @@ pattern ICReturnExFATVolumeInvalid = ICReturnCode 21200
 pattern ICReturnMultiErrorDictionary :: ICReturnCode
 pattern ICReturnMultiErrorDictionary = ICReturnCode (-30000)
 
+instance ObjCArgument ICReturnCode where
+  withObjCArg (ICReturnCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnCode where
+  type RawReturn ICReturnCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnCode x)
+  fromOwned x = pure (ICReturnCode x)
+
 -- | @ICReturnConnectionErrorCode@
 newtype ICReturnConnectionErrorCode = ICReturnConnectionErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -378,6 +461,16 @@ pattern ICReturnConnectionFailedToOpenDevice = ICReturnConnectionErrorCode (-213
 pattern ICReturnConnectionNotAuthorizedToOpenDevice :: ICReturnConnectionErrorCode
 pattern ICReturnConnectionNotAuthorizedToOpenDevice = ICReturnConnectionErrorCode (-21343)
 
+instance ObjCArgument ICReturnConnectionErrorCode where
+  withObjCArg (ICReturnConnectionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnConnectionErrorCode where
+  type RawReturn ICReturnConnectionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnConnectionErrorCode x)
+  fromOwned x = pure (ICReturnConnectionErrorCode x)
+
 -- | @ICReturnDownloadErrorCode@
 newtype ICReturnDownloadErrorCode = ICReturnDownloadErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -388,6 +481,16 @@ pattern ICReturnDownloadPathInvalid = ICReturnDownloadErrorCode (-21100)
 
 pattern ICReturnDownloadFileWritable :: ICReturnDownloadErrorCode
 pattern ICReturnDownloadFileWritable = ICReturnDownloadErrorCode (-21099)
+
+instance ObjCArgument ICReturnDownloadErrorCode where
+  withObjCArg (ICReturnDownloadErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnDownloadErrorCode where
+  type RawReturn ICReturnDownloadErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnDownloadErrorCode x)
+  fromOwned x = pure (ICReturnDownloadErrorCode x)
 
 -- | @ICReturnMetadataErrorCode@
 newtype ICReturnMetadataErrorCode = ICReturnMetadataErrorCode CLong
@@ -405,6 +508,16 @@ pattern ICReturnMetadataCanceled = ICReturnMetadataErrorCode (-20148)
 
 pattern ICReturnMetadataInvalid :: ICReturnMetadataErrorCode
 pattern ICReturnMetadataInvalid = ICReturnMetadataErrorCode (-20147)
+
+instance ObjCArgument ICReturnMetadataErrorCode where
+  withObjCArg (ICReturnMetadataErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnMetadataErrorCode where
+  type RawReturn ICReturnMetadataErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnMetadataErrorCode x)
+  fromOwned x = pure (ICReturnMetadataErrorCode x)
 
 -- | @ICReturnObjectErrorCode@
 newtype ICReturnObjectErrorCode = ICReturnObjectErrorCode CLong
@@ -426,6 +539,16 @@ pattern ICReturnCodeObjectDataEmpty = ICReturnObjectErrorCode (-21447)
 pattern ICReturnCodeObjectDataRequestTooLarge :: ICReturnObjectErrorCode
 pattern ICReturnCodeObjectDataRequestTooLarge = ICReturnObjectErrorCode (-21446)
 
+instance ObjCArgument ICReturnObjectErrorCode where
+  withObjCArg (ICReturnObjectErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnObjectErrorCode where
+  type RawReturn ICReturnObjectErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnObjectErrorCode x)
+  fromOwned x = pure (ICReturnObjectErrorCode x)
+
 -- | @ICReturnPTPDeviceErrorCode@
 newtype ICReturnPTPDeviceErrorCode = ICReturnPTPDeviceErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -436,6 +559,16 @@ pattern ICReturnPTPFailedToSendCommand = ICReturnPTPDeviceErrorCode (-21250)
 
 pattern ICReturnPTPNotAuthorizedToSendCommand :: ICReturnPTPDeviceErrorCode
 pattern ICReturnPTPNotAuthorizedToSendCommand = ICReturnPTPDeviceErrorCode (-21249)
+
+instance ObjCArgument ICReturnPTPDeviceErrorCode where
+  withObjCArg (ICReturnPTPDeviceErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnPTPDeviceErrorCode where
+  type RawReturn ICReturnPTPDeviceErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnPTPDeviceErrorCode x)
+  fromOwned x = pure (ICReturnPTPDeviceErrorCode x)
 
 -- | @ICReturnThumbnailErrorCode@
 newtype ICReturnThumbnailErrorCode = ICReturnThumbnailErrorCode CLong
@@ -453,6 +586,16 @@ pattern ICReturnThumbnailCanceled = ICReturnThumbnailErrorCode (-20098)
 
 pattern ICReturnThumbnailInvalid :: ICReturnThumbnailErrorCode
 pattern ICReturnThumbnailInvalid = ICReturnThumbnailErrorCode (-20097)
+
+instance ObjCArgument ICReturnThumbnailErrorCode where
+  withObjCArg (ICReturnThumbnailErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ICReturnThumbnailErrorCode where
+  type RawReturn ICReturnThumbnailErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICReturnThumbnailErrorCode x)
+  fromOwned x = pure (ICReturnThumbnailErrorCode x)
 
 -- | Bits per channel in the scanned image.
 --
@@ -475,6 +618,16 @@ pattern ICScannerBitDepth8Bits = ICScannerBitDepth 8
 pattern ICScannerBitDepth16Bits :: ICScannerBitDepth
 pattern ICScannerBitDepth16Bits = ICScannerBitDepth 16
 
+instance ObjCArgument ICScannerBitDepth where
+  withObjCArg (ICScannerBitDepth x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerBitDepth where
+  type RawReturn ICScannerBitDepth = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerBitDepth x)
+  fromOwned x = pure (ICScannerBitDepth x)
+
 -- | Identifies color data formats. Only relevant for multi-channel data. Corresponds to "ICAP_PLANARCHUNKY" of the TWAIN Specification.
 --
 -- ICScannerColorDataFormatTypeChunky For multi-channel data (e.g., RGB) data from all channels are interleaved.
@@ -490,6 +643,16 @@ pattern ICScannerColorDataFormatTypeChunky = ICScannerColorDataFormatType 0
 
 pattern ICScannerColorDataFormatTypePlanar :: ICScannerColorDataFormatType
 pattern ICScannerColorDataFormatTypePlanar = ICScannerColorDataFormatType 1
+
+instance ObjCArgument ICScannerColorDataFormatType where
+  withObjCArg (ICScannerColorDataFormatType x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerColorDataFormatType where
+  type RawReturn ICScannerColorDataFormatType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerColorDataFormatType x)
+  fromOwned x = pure (ICScannerColorDataFormatType x)
 
 -- | Document size types. Corresponds to "ICAP_SUPPORTEDSIZES" used by the Image Catpure scanner modules. Also refer to TWAIN 1.9 Specification, page 9-483.
 --
@@ -859,6 +1022,16 @@ pattern ICScannerDocumentTypeMF = ICScannerDocumentType 77
 pattern ICScannerDocumentTypeLF :: ICScannerDocumentType
 pattern ICScannerDocumentTypeLF = ICScannerDocumentType 78
 
+instance ObjCArgument ICScannerDocumentType where
+  withObjCArg (ICScannerDocumentType x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerDocumentType where
+  type RawReturn ICScannerDocumentType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerDocumentType x)
+  fromOwned x = pure (ICScannerDocumentType x)
+
 -- | Scanner Feature Types
 --
 -- ICScannerFeatureTypeEnumeration This feature can have one of several discrete values, strings or numbers.
@@ -883,6 +1056,16 @@ pattern ICScannerFeatureTypeBoolean = ICScannerFeatureType 2
 pattern ICScannerFeatureTypeTemplate :: ICScannerFeatureType
 pattern ICScannerFeatureTypeTemplate = ICScannerFeatureType 3
 
+instance ObjCArgument ICScannerFeatureType where
+  withObjCArg (ICScannerFeatureType x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerFeatureType where
+  type RawReturn ICScannerFeatureType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerFeatureType x)
+  fromOwned x = pure (ICScannerFeatureType x)
+
 -- | A flag to indicate the scanner functional unit's state
 --
 -- ICScannerStateReady The scanner functional unit is ready for operation.
@@ -903,6 +1086,16 @@ pattern ICScannerFunctionalUnitStateScanInProgress = ICScannerFunctionalUnitStat
 
 pattern ICScannerFunctionalUnitStateOverviewScanInProgress :: ICScannerFunctionalUnitState
 pattern ICScannerFunctionalUnitStateOverviewScanInProgress = ICScannerFunctionalUnitState 4
+
+instance ObjCArgument ICScannerFunctionalUnitState where
+  withObjCArg (ICScannerFunctionalUnitState x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerFunctionalUnitState where
+  type RawReturn ICScannerFunctionalUnitState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerFunctionalUnitState x)
+  fromOwned x = pure (ICScannerFunctionalUnitState x)
 
 -- | Scanner Functional Unit Types
 --
@@ -929,6 +1122,16 @@ pattern ICScannerFunctionalUnitTypeNegativeTransparency = ICScannerFunctionalUni
 
 pattern ICScannerFunctionalUnitTypeDocumentFeeder :: ICScannerFunctionalUnitType
 pattern ICScannerFunctionalUnitTypeDocumentFeeder = ICScannerFunctionalUnitType 3
+
+instance ObjCArgument ICScannerFunctionalUnitType where
+  withObjCArg (ICScannerFunctionalUnitType x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerFunctionalUnitType where
+  type RawReturn ICScannerFunctionalUnitType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerFunctionalUnitType x)
+  fromOwned x = pure (ICScannerFunctionalUnitType x)
 
 -- | Unit of measurement used by the scanner. This corresponds to values used for ICAP_UNITS as defined in the TWAIN Specification.
 --
@@ -965,6 +1168,16 @@ pattern ICScannerMeasurementUnitTwips = ICScannerMeasurementUnit 4
 
 pattern ICScannerMeasurementUnitPixels :: ICScannerMeasurementUnit
 pattern ICScannerMeasurementUnitPixels = ICScannerMeasurementUnit 5
+
+instance ObjCArgument ICScannerMeasurementUnit where
+  withObjCArg (ICScannerMeasurementUnit x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerMeasurementUnit where
+  type RawReturn ICScannerMeasurementUnit = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerMeasurementUnit x)
+  fromOwned x = pure (ICScannerMeasurementUnit x)
 
 -- | Pixel data types. Corresponds to "ICAP_PIXELTYPE" of the TWAIN Specification.
 --
@@ -1017,6 +1230,16 @@ pattern ICScannerPixelDataTypeYUVK = ICScannerPixelDataType 7
 pattern ICScannerPixelDataTypeCIEXYZ :: ICScannerPixelDataType
 pattern ICScannerPixelDataTypeCIEXYZ = ICScannerPixelDataType 8
 
+instance ObjCArgument ICScannerPixelDataType where
+  withObjCArg (ICScannerPixelDataType x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerPixelDataType where
+  type RawReturn ICScannerPixelDataType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerPixelDataType x)
+  fromOwned x = pure (ICScannerPixelDataType x)
+
 -- | Transfer mode to be used when transferring scan data from the scanner functional unit.
 --
 -- ICScannerTransferModeFileBased Save the scan as a file.
@@ -1032,3 +1255,13 @@ pattern ICScannerTransferModeFileBased = ICScannerTransferMode 0
 
 pattern ICScannerTransferModeMemoryBased :: ICScannerTransferMode
 pattern ICScannerTransferModeMemoryBased = ICScannerTransferMode 1
+
+instance ObjCArgument ICScannerTransferMode where
+  withObjCArg (ICScannerTransferMode x) k = k (argCULong x)
+
+instance ObjCReturn ICScannerTransferMode where
+  type RawReturn ICScannerTransferMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ICScannerTransferMode x)
+  fromOwned x = pure (ICScannerTransferMode x)

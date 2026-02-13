@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.EventKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | EKAlarmProximity
 --
@@ -33,6 +36,16 @@ pattern EKAlarmProximityEnter = EKAlarmProximity 1
 
 pattern EKAlarmProximityLeave :: EKAlarmProximity
 pattern EKAlarmProximityLeave = EKAlarmProximity 2
+
+instance ObjCArgument EKAlarmProximity where
+  withObjCArg (EKAlarmProximity x) k = k (argCLong x)
+
+instance ObjCReturn EKAlarmProximity where
+  type RawReturn EKAlarmProximity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKAlarmProximity x)
+  fromOwned x = pure (EKAlarmProximity x)
 
 -- | EKAlarmType
 --
@@ -61,6 +74,16 @@ pattern EKAlarmTypeProcedure = EKAlarmType 2
 
 pattern EKAlarmTypeEmail :: EKAlarmType
 pattern EKAlarmTypeEmail = EKAlarmType 3
+
+instance ObjCArgument EKAlarmType where
+  withObjCArg (EKAlarmType x) k = k (argCLong x)
+
+instance ObjCReturn EKAlarmType where
+  type RawReturn EKAlarmType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKAlarmType x)
+  fromOwned x = pure (EKAlarmType x)
 
 -- | EKAuthorizationStatus
 --
@@ -104,6 +127,16 @@ pattern EKAuthorizationStatusWriteOnly = EKAuthorizationStatus 4
 pattern EKAuthorizationStatusAuthorized :: EKAuthorizationStatus
 pattern EKAuthorizationStatusAuthorized = EKAuthorizationStatus 3
 
+instance ObjCArgument EKAuthorizationStatus where
+  withObjCArg (EKAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn EKAuthorizationStatus where
+  type RawReturn EKAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKAuthorizationStatus x)
+  fromOwned x = pure (EKAuthorizationStatus x)
+
 -- | @EKCalendarEventAvailabilityMask@ (bitmask)
 newtype EKCalendarEventAvailabilityMask = EKCalendarEventAvailabilityMask CULong
   deriving stock (Eq, Ord, Show)
@@ -129,6 +162,16 @@ pattern EKCalendarEventAvailabilityTentative = EKCalendarEventAvailabilityMask 4
 
 pattern EKCalendarEventAvailabilityUnavailable :: EKCalendarEventAvailabilityMask
 pattern EKCalendarEventAvailabilityUnavailable = EKCalendarEventAvailabilityMask 8
+
+instance ObjCArgument EKCalendarEventAvailabilityMask where
+  withObjCArg (EKCalendarEventAvailabilityMask x) k = k (argCULong x)
+
+instance ObjCReturn EKCalendarEventAvailabilityMask where
+  type RawReturn EKCalendarEventAvailabilityMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKCalendarEventAvailabilityMask x)
+  fromOwned x = pure (EKCalendarEventAvailabilityMask x)
 
 -- | EKCalendarType
 --
@@ -163,6 +206,16 @@ pattern EKCalendarTypeSubscription = EKCalendarType 3
 pattern EKCalendarTypeBirthday :: EKCalendarType
 pattern EKCalendarTypeBirthday = EKCalendarType 4
 
+instance ObjCArgument EKCalendarType where
+  withObjCArg (EKCalendarType x) k = k (argCLong x)
+
+instance ObjCReturn EKCalendarType where
+  type RawReturn EKCalendarType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKCalendarType x)
+  fromOwned x = pure (EKCalendarType x)
+
 -- | EKEntityMask
 --
 -- A bitmask based on EKEntityType that can be used to specify multiple entities at once.
@@ -183,6 +236,16 @@ pattern EKEntityMaskEvent = EKEntityMask 1
 pattern EKEntityMaskReminder :: EKEntityMask
 pattern EKEntityMaskReminder = EKEntityMask 2
 
+instance ObjCArgument EKEntityMask where
+  withObjCArg (EKEntityMask x) k = k (argCULong x)
+
+instance ObjCReturn EKEntityMask where
+  type RawReturn EKEntityMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKEntityMask x)
+  fromOwned x = pure (EKEntityMask x)
+
 -- | EKEntityType
 --
 -- A value which specifies an entity type of event or reminder.
@@ -196,6 +259,16 @@ pattern EKEntityTypeEvent = EKEntityType 0
 
 pattern EKEntityTypeReminder :: EKEntityType
 pattern EKEntityTypeReminder = EKEntityType 1
+
+instance ObjCArgument EKEntityType where
+  withObjCArg (EKEntityType x) k = k (argCULong x)
+
+instance ObjCReturn EKEntityType where
+  type RawReturn EKEntityType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKEntityType x)
+  fromOwned x = pure (EKEntityType x)
 
 -- | @EKErrorCode@
 newtype EKErrorCode = EKErrorCode CLong
@@ -316,6 +389,16 @@ pattern EKErrorReminderAlarmContainsEmailOrUrl = EKErrorCode 36
 pattern EKErrorLast :: EKErrorCode
 pattern EKErrorLast = EKErrorCode 37
 
+instance ObjCArgument EKErrorCode where
+  withObjCArg (EKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn EKErrorCode where
+  type RawReturn EKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKErrorCode x)
+  fromOwned x = pure (EKErrorCode x)
+
 -- | @EKEventAvailability@
 newtype EKEventAvailability = EKEventAvailability CLong
   deriving stock (Eq, Ord, Show)
@@ -336,6 +419,16 @@ pattern EKEventAvailabilityTentative = EKEventAvailability 2
 pattern EKEventAvailabilityUnavailable :: EKEventAvailability
 pattern EKEventAvailabilityUnavailable = EKEventAvailability 3
 
+instance ObjCArgument EKEventAvailability where
+  withObjCArg (EKEventAvailability x) k = k (argCLong x)
+
+instance ObjCReturn EKEventAvailability where
+  type RawReturn EKEventAvailability = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKEventAvailability x)
+  fromOwned x = pure (EKEventAvailability x)
+
 -- | @EKEventStatus@
 newtype EKEventStatus = EKEventStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -352,6 +445,16 @@ pattern EKEventStatusTentative = EKEventStatus 2
 
 pattern EKEventStatusCanceled :: EKEventStatus
 pattern EKEventStatusCanceled = EKEventStatus 3
+
+instance ObjCArgument EKEventStatus where
+  withObjCArg (EKEventStatus x) k = k (argCLong x)
+
+instance ObjCReturn EKEventStatus where
+  type RawReturn EKEventStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKEventStatus x)
+  fromOwned x = pure (EKEventStatus x)
 
 -- | EKParticipantRole
 --
@@ -375,6 +478,16 @@ pattern EKParticipantRoleChair = EKParticipantRole 3
 
 pattern EKParticipantRoleNonParticipant :: EKParticipantRole
 pattern EKParticipantRoleNonParticipant = EKParticipantRole 4
+
+instance ObjCArgument EKParticipantRole where
+  withObjCArg (EKParticipantRole x) k = k (argCLong x)
+
+instance ObjCReturn EKParticipantRole where
+  type RawReturn EKParticipantRole = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKParticipantRole x)
+  fromOwned x = pure (EKParticipantRole x)
 
 -- | EKParticipantScheduleStatus
 --
@@ -447,6 +560,16 @@ pattern EKParticipantScheduleStatusCannotDeliver = EKParticipantScheduleStatus 7
 pattern EKParticipantScheduleStatusRecipientNotAllowed :: EKParticipantScheduleStatus
 pattern EKParticipantScheduleStatusRecipientNotAllowed = EKParticipantScheduleStatus 8
 
+instance ObjCArgument EKParticipantScheduleStatus where
+  withObjCArg (EKParticipantScheduleStatus x) k = k (argCLong x)
+
+instance ObjCReturn EKParticipantScheduleStatus where
+  type RawReturn EKParticipantScheduleStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKParticipantScheduleStatus x)
+  fromOwned x = pure (EKParticipantScheduleStatus x)
+
 -- | EKParticipantStatus
 --
 -- Value representing the status of a meeting participant.
@@ -479,6 +602,16 @@ pattern EKParticipantStatusCompleted = EKParticipantStatus 6
 pattern EKParticipantStatusInProcess :: EKParticipantStatus
 pattern EKParticipantStatusInProcess = EKParticipantStatus 7
 
+instance ObjCArgument EKParticipantStatus where
+  withObjCArg (EKParticipantStatus x) k = k (argCLong x)
+
+instance ObjCReturn EKParticipantStatus where
+  type RawReturn EKParticipantStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKParticipantStatus x)
+  fromOwned x = pure (EKParticipantStatus x)
+
 -- | EKParticipantType
 --
 -- Value representing the type of attendee.
@@ -502,6 +635,16 @@ pattern EKParticipantTypeResource = EKParticipantType 3
 pattern EKParticipantTypeGroup :: EKParticipantType
 pattern EKParticipantTypeGroup = EKParticipantType 4
 
+instance ObjCArgument EKParticipantType where
+  withObjCArg (EKParticipantType x) k = k (argCLong x)
+
+instance ObjCReturn EKParticipantType where
+  type RawReturn EKParticipantType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKParticipantType x)
+  fromOwned x = pure (EKParticipantType x)
+
 -- | EKRecurrenceFrequency
 --
 -- The frequency of a recurrence
@@ -523,6 +666,16 @@ pattern EKRecurrenceFrequencyMonthly = EKRecurrenceFrequency 2
 
 pattern EKRecurrenceFrequencyYearly :: EKRecurrenceFrequency
 pattern EKRecurrenceFrequencyYearly = EKRecurrenceFrequency 3
+
+instance ObjCArgument EKRecurrenceFrequency where
+  withObjCArg (EKRecurrenceFrequency x) k = k (argCLong x)
+
+instance ObjCReturn EKRecurrenceFrequency where
+  type RawReturn EKRecurrenceFrequency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKRecurrenceFrequency x)
+  fromOwned x = pure (EKRecurrenceFrequency x)
 
 -- | EKReminderPriority
 --
@@ -554,6 +707,16 @@ pattern EKReminderPriorityMedium = EKReminderPriority 5
 pattern EKReminderPriorityLow :: EKReminderPriority
 pattern EKReminderPriorityLow = EKReminderPriority 9
 
+instance ObjCArgument EKReminderPriority where
+  withObjCArg (EKReminderPriority x) k = k (argCULong x)
+
+instance ObjCReturn EKReminderPriority where
+  type RawReturn EKReminderPriority = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKReminderPriority x)
+  fromOwned x = pure (EKReminderPriority x)
+
 -- | @EKSourceType@
 newtype EKSourceType = EKSourceType CLong
   deriving stock (Eq, Ord, Show)
@@ -577,6 +740,16 @@ pattern EKSourceTypeSubscribed = EKSourceType 4
 pattern EKSourceTypeBirthdays :: EKSourceType
 pattern EKSourceTypeBirthdays = EKSourceType 5
 
+instance ObjCArgument EKSourceType where
+  withObjCArg (EKSourceType x) k = k (argCLong x)
+
+instance ObjCReturn EKSourceType where
+  type RawReturn EKSourceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKSourceType x)
+  fromOwned x = pure (EKSourceType x)
+
 -- | EKSpan
 --
 -- Values for controlling what occurrences to affect in a recurring event.
@@ -596,6 +769,16 @@ pattern EKSpanThisEvent = EKSpan 0
 
 pattern EKSpanFutureEvents :: EKSpan
 pattern EKSpanFutureEvents = EKSpan 1
+
+instance ObjCArgument EKSpan where
+  withObjCArg (EKSpan x) k = k (argCLong x)
+
+instance ObjCReturn EKSpan where
+  type RawReturn EKSpan = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKSpan x)
+  fromOwned x = pure (EKSpan x)
 
 -- | @EKWeekday@
 newtype EKWeekday = EKWeekday CLong
@@ -643,3 +826,13 @@ pattern EKFriday = EKWeekday 6
 
 pattern EKSaturday :: EKWeekday
 pattern EKSaturday = EKWeekday 7
+
+instance ObjCArgument EKWeekday where
+  withObjCArg (EKWeekday x) k = k (argCLong x)
+
+instance ObjCReturn EKWeekday where
+  type RawReturn EKWeekday = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EKWeekday x)
+  fromOwned x = pure (EKWeekday x)

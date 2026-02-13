@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRContentLauncherClusterTrackPreferenceStruct
   , setCharacteristics
   , audioOutputIndex
   , setAudioOutputIndex
-  , languageCodeSelector
-  , setLanguageCodeSelector
-  , characteristicsSelector
-  , setCharacteristicsSelector
   , audioOutputIndexSelector
+  , characteristicsSelector
+  , languageCodeSelector
   , setAudioOutputIndexSelector
+  , setCharacteristicsSelector
+  , setLanguageCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- languageCode@
 languageCode :: IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct => mtrContentLauncherClusterTrackPreferenceStruct -> IO (Id NSString)
-languageCode mtrContentLauncherClusterTrackPreferenceStruct  =
-    sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode mtrContentLauncherClusterTrackPreferenceStruct =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct languageCodeSelector
 
 -- | @- setLanguageCode:@
 setLanguageCode :: (IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct, IsNSString value) => mtrContentLauncherClusterTrackPreferenceStruct -> value -> IO ()
-setLanguageCode mtrContentLauncherClusterTrackPreferenceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode mtrContentLauncherClusterTrackPreferenceStruct value =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct setLanguageCodeSelector (toNSString value)
 
 -- | @- characteristics@
 characteristics :: IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct => mtrContentLauncherClusterTrackPreferenceStruct -> IO (Id NSArray)
-characteristics mtrContentLauncherClusterTrackPreferenceStruct  =
-    sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "characteristics") (retPtr retVoid) [] >>= retainedObject . castPtr
+characteristics mtrContentLauncherClusterTrackPreferenceStruct =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct characteristicsSelector
 
 -- | @- setCharacteristics:@
 setCharacteristics :: (IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct, IsNSArray value) => mtrContentLauncherClusterTrackPreferenceStruct -> value -> IO ()
-setCharacteristics mtrContentLauncherClusterTrackPreferenceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "setCharacteristics:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharacteristics mtrContentLauncherClusterTrackPreferenceStruct value =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct setCharacteristicsSelector (toNSArray value)
 
 -- | @- audioOutputIndex@
 audioOutputIndex :: IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct => mtrContentLauncherClusterTrackPreferenceStruct -> IO (Id NSNumber)
-audioOutputIndex mtrContentLauncherClusterTrackPreferenceStruct  =
-    sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "audioOutputIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioOutputIndex mtrContentLauncherClusterTrackPreferenceStruct =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct audioOutputIndexSelector
 
 -- | @- setAudioOutputIndex:@
 setAudioOutputIndex :: (IsMTRContentLauncherClusterTrackPreferenceStruct mtrContentLauncherClusterTrackPreferenceStruct, IsNSNumber value) => mtrContentLauncherClusterTrackPreferenceStruct -> value -> IO ()
-setAudioOutputIndex mtrContentLauncherClusterTrackPreferenceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterTrackPreferenceStruct (mkSelector "setAudioOutputIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioOutputIndex mtrContentLauncherClusterTrackPreferenceStruct value =
+  sendMessage mtrContentLauncherClusterTrackPreferenceStruct setAudioOutputIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @characteristics@
-characteristicsSelector :: Selector
+characteristicsSelector :: Selector '[] (Id NSArray)
 characteristicsSelector = mkSelector "characteristics"
 
 -- | @Selector@ for @setCharacteristics:@
-setCharacteristicsSelector :: Selector
+setCharacteristicsSelector :: Selector '[Id NSArray] ()
 setCharacteristicsSelector = mkSelector "setCharacteristics:"
 
 -- | @Selector@ for @audioOutputIndex@
-audioOutputIndexSelector :: Selector
+audioOutputIndexSelector :: Selector '[] (Id NSNumber)
 audioOutputIndexSelector = mkSelector "audioOutputIndex"
 
 -- | @Selector@ for @setAudioOutputIndex:@
-setAudioOutputIndexSelector :: Selector
+setAudioOutputIndexSelector :: Selector '[Id NSNumber] ()
 setAudioOutputIndexSelector = mkSelector "setAudioOutputIndex:"
 

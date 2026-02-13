@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,35 +27,31 @@ module ObjC.SceneKit.SCNAudioSource
   , setLoops
   , shouldStream
   , setShouldStream
+  , audioSourceNamedSelector
   , initWithFileNamedSelector
   , initWithURLSelector
-  , audioSourceNamedSelector
   , loadSelector
-  , positionalSelector
-  , setPositionalSelector
-  , volumeSelector
-  , setVolumeSelector
-  , rateSelector
-  , setRateSelector
-  , reverbBlendSelector
-  , setReverbBlendSelector
   , loopsSelector
+  , positionalSelector
+  , rateSelector
+  , reverbBlendSelector
   , setLoopsSelector
-  , shouldStreamSelector
+  , setPositionalSelector
+  , setRateSelector
+  , setReverbBlendSelector
   , setShouldStreamSelector
+  , setVolumeSelector
+  , shouldStreamSelector
+  , volumeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,9 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFileNamed:@
 initWithFileNamed :: (IsSCNAudioSource scnAudioSource, IsNSString name) => scnAudioSource -> name -> IO (Id SCNAudioSource)
-initWithFileNamed scnAudioSource  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg scnAudioSource (mkSelector "initWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithFileNamed scnAudioSource name =
+  sendOwnedMessage scnAudioSource initWithFileNamedSelector (toNSString name)
 
 -- | initWithURL:
 --
@@ -77,9 +73,8 @@ initWithFileNamed scnAudioSource  name =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsSCNAudioSource scnAudioSource, IsNSURL url) => scnAudioSource -> url -> IO (Id SCNAudioSource)
-initWithURL scnAudioSource  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg scnAudioSource (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL scnAudioSource url =
+  sendOwnedMessage scnAudioSource initWithURLSelector (toNSURL url)
 
 -- | audioSourceNamed:
 --
@@ -90,8 +85,7 @@ audioSourceNamed :: IsNSString fileName => fileName -> IO (Id SCNAudioSource)
 audioSourceNamed fileName =
   do
     cls' <- getRequiredClass "SCNAudioSource"
-    withObjCPtr fileName $ \raw_fileName ->
-      sendClassMsg cls' (mkSelector "audioSourceNamed:") (retPtr retVoid) [argPtr (castPtr raw_fileName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' audioSourceNamedSelector (toNSString fileName)
 
 -- | load
 --
@@ -101,8 +95,8 @@ audioSourceNamed fileName =
 --
 -- ObjC selector: @- load@
 load :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO ()
-load scnAudioSource  =
-    sendMsg scnAudioSource (mkSelector "load") retVoid []
+load scnAudioSource =
+  sendMessage scnAudioSource loadSelector
 
 -- | positional
 --
@@ -114,8 +108,8 @@ load scnAudioSource  =
 --
 -- ObjC selector: @- positional@
 positional :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO Bool
-positional scnAudioSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAudioSource (mkSelector "positional") retCULong []
+positional scnAudioSource =
+  sendMessage scnAudioSource positionalSelector
 
 -- | positional
 --
@@ -127,8 +121,8 @@ positional scnAudioSource  =
 --
 -- ObjC selector: @- setPositional:@
 setPositional :: IsSCNAudioSource scnAudioSource => scnAudioSource -> Bool -> IO ()
-setPositional scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setPositional:") retVoid [argCULong (if value then 1 else 0)]
+setPositional scnAudioSource value =
+  sendMessage scnAudioSource setPositionalSelector value
 
 -- | volume
 --
@@ -136,8 +130,8 @@ setPositional scnAudioSource  value =
 --
 -- ObjC selector: @- volume@
 volume :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO CFloat
-volume scnAudioSource  =
-    sendMsg scnAudioSource (mkSelector "volume") retCFloat []
+volume scnAudioSource =
+  sendMessage scnAudioSource volumeSelector
 
 -- | volume
 --
@@ -145,8 +139,8 @@ volume scnAudioSource  =
 --
 -- ObjC selector: @- setVolume:@
 setVolume :: IsSCNAudioSource scnAudioSource => scnAudioSource -> CFloat -> IO ()
-setVolume scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume scnAudioSource value =
+  sendMessage scnAudioSource setVolumeSelector value
 
 -- | rate
 --
@@ -154,8 +148,8 @@ setVolume scnAudioSource  value =
 --
 -- ObjC selector: @- rate@
 rate :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO CFloat
-rate scnAudioSource  =
-    sendMsg scnAudioSource (mkSelector "rate") retCFloat []
+rate scnAudioSource =
+  sendMessage scnAudioSource rateSelector
 
 -- | rate
 --
@@ -163,8 +157,8 @@ rate scnAudioSource  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsSCNAudioSource scnAudioSource => scnAudioSource -> CFloat -> IO ()
-setRate scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setRate:") retVoid [argCFloat value]
+setRate scnAudioSource value =
+  sendMessage scnAudioSource setRateSelector value
 
 -- | reverbBlend
 --
@@ -172,8 +166,8 @@ setRate scnAudioSource  value =
 --
 -- ObjC selector: @- reverbBlend@
 reverbBlend :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO CFloat
-reverbBlend scnAudioSource  =
-    sendMsg scnAudioSource (mkSelector "reverbBlend") retCFloat []
+reverbBlend scnAudioSource =
+  sendMessage scnAudioSource reverbBlendSelector
 
 -- | reverbBlend
 --
@@ -181,8 +175,8 @@ reverbBlend scnAudioSource  =
 --
 -- ObjC selector: @- setReverbBlend:@
 setReverbBlend :: IsSCNAudioSource scnAudioSource => scnAudioSource -> CFloat -> IO ()
-setReverbBlend scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setReverbBlend:") retVoid [argCFloat value]
+setReverbBlend scnAudioSource value =
+  sendMessage scnAudioSource setReverbBlendSelector value
 
 -- | loops
 --
@@ -190,8 +184,8 @@ setReverbBlend scnAudioSource  value =
 --
 -- ObjC selector: @- loops@
 loops :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO Bool
-loops scnAudioSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAudioSource (mkSelector "loops") retCULong []
+loops scnAudioSource =
+  sendMessage scnAudioSource loopsSelector
 
 -- | loops
 --
@@ -199,8 +193,8 @@ loops scnAudioSource  =
 --
 -- ObjC selector: @- setLoops:@
 setLoops :: IsSCNAudioSource scnAudioSource => scnAudioSource -> Bool -> IO ()
-setLoops scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setLoops:") retVoid [argCULong (if value then 1 else 0)]
+setLoops scnAudioSource value =
+  sendMessage scnAudioSource setLoopsSelector value
 
 -- | shouldStream
 --
@@ -208,8 +202,8 @@ setLoops scnAudioSource  value =
 --
 -- ObjC selector: @- shouldStream@
 shouldStream :: IsSCNAudioSource scnAudioSource => scnAudioSource -> IO Bool
-shouldStream scnAudioSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAudioSource (mkSelector "shouldStream") retCULong []
+shouldStream scnAudioSource =
+  sendMessage scnAudioSource shouldStreamSelector
 
 -- | shouldStream
 --
@@ -217,74 +211,74 @@ shouldStream scnAudioSource  =
 --
 -- ObjC selector: @- setShouldStream:@
 setShouldStream :: IsSCNAudioSource scnAudioSource => scnAudioSource -> Bool -> IO ()
-setShouldStream scnAudioSource  value =
-    sendMsg scnAudioSource (mkSelector "setShouldStream:") retVoid [argCULong (if value then 1 else 0)]
+setShouldStream scnAudioSource value =
+  sendMessage scnAudioSource setShouldStreamSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileNamed:@
-initWithFileNamedSelector :: Selector
+initWithFileNamedSelector :: Selector '[Id NSString] (Id SCNAudioSource)
 initWithFileNamedSelector = mkSelector "initWithFileNamed:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SCNAudioSource)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @audioSourceNamed:@
-audioSourceNamedSelector :: Selector
+audioSourceNamedSelector :: Selector '[Id NSString] (Id SCNAudioSource)
 audioSourceNamedSelector = mkSelector "audioSourceNamed:"
 
 -- | @Selector@ for @load@
-loadSelector :: Selector
+loadSelector :: Selector '[] ()
 loadSelector = mkSelector "load"
 
 -- | @Selector@ for @positional@
-positionalSelector :: Selector
+positionalSelector :: Selector '[] Bool
 positionalSelector = mkSelector "positional"
 
 -- | @Selector@ for @setPositional:@
-setPositionalSelector :: Selector
+setPositionalSelector :: Selector '[Bool] ()
 setPositionalSelector = mkSelector "setPositional:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @reverbBlend@
-reverbBlendSelector :: Selector
+reverbBlendSelector :: Selector '[] CFloat
 reverbBlendSelector = mkSelector "reverbBlend"
 
 -- | @Selector@ for @setReverbBlend:@
-setReverbBlendSelector :: Selector
+setReverbBlendSelector :: Selector '[CFloat] ()
 setReverbBlendSelector = mkSelector "setReverbBlend:"
 
 -- | @Selector@ for @loops@
-loopsSelector :: Selector
+loopsSelector :: Selector '[] Bool
 loopsSelector = mkSelector "loops"
 
 -- | @Selector@ for @setLoops:@
-setLoopsSelector :: Selector
+setLoopsSelector :: Selector '[Bool] ()
 setLoopsSelector = mkSelector "setLoops:"
 
 -- | @Selector@ for @shouldStream@
-shouldStreamSelector :: Selector
+shouldStreamSelector :: Selector '[] Bool
 shouldStreamSelector = mkSelector "shouldStream"
 
 -- | @Selector@ for @setShouldStream:@
-setShouldStreamSelector :: Selector
+setShouldStreamSelector :: Selector '[Bool] ()
 setShouldStreamSelector = mkSelector "setShouldStream:"
 

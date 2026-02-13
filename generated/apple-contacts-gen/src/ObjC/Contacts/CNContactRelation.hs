@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.Contacts.CNContactRelation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,33 +37,31 @@ contactRelationWithName :: IsNSString name => name -> IO (Id CNContactRelation)
 contactRelationWithName name =
   do
     cls' <- getRequiredClass "CNContactRelation"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "contactRelationWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contactRelationWithNameSelector (toNSString name)
 
 -- | @- initWithName:@
 initWithName :: (IsCNContactRelation cnContactRelation, IsNSString name) => cnContactRelation -> name -> IO (Id CNContactRelation)
-initWithName cnContactRelation  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg cnContactRelation (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName cnContactRelation name =
+  sendOwnedMessage cnContactRelation initWithNameSelector (toNSString name)
 
 -- | @- name@
 name :: IsCNContactRelation cnContactRelation => cnContactRelation -> IO (Id NSString)
-name cnContactRelation  =
-    sendMsg cnContactRelation (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name cnContactRelation =
+  sendMessage cnContactRelation nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contactRelationWithName:@
-contactRelationWithNameSelector :: Selector
+contactRelationWithNameSelector :: Selector '[Id NSString] (Id CNContactRelation)
 contactRelationWithNameSelector = mkSelector "contactRelationWithName:"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id CNContactRelation)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

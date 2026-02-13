@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.AccessorySetupKit.ASAccessory
   , ssid
   , wifiAwarePairedDeviceID
   , descriptor
-  , stateSelector
   , bluetoothIdentifierSelector
   , bluetoothTransportBridgingIdentifierSelector
+  , descriptorSelector
   , displayNameSelector
   , ssidSelector
+  , stateSelector
   , wifiAwarePairedDeviceIDSelector
-  , descriptorSelector
 
   -- * Enum types
   , ASAccessoryState(ASAccessoryState)
@@ -30,15 +31,11 @@ module ObjC.AccessorySetupKit.ASAccessory
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- state@
 state :: IsASAccessory asAccessory => asAccessory -> IO ASAccessoryState
-state asAccessory  =
-    fmap (coerce :: CLong -> ASAccessoryState) $ sendMsg asAccessory (mkSelector "state") retCLong []
+state asAccessory =
+  sendMessage asAccessory stateSelector
 
 -- | The accessory's unique Bluetooth identifier, if any.
 --
@@ -59,22 +56,22 @@ state asAccessory  =
 --
 -- ObjC selector: @- bluetoothIdentifier@
 bluetoothIdentifier :: IsASAccessory asAccessory => asAccessory -> IO (Id NSUUID)
-bluetoothIdentifier asAccessory  =
-    sendMsg asAccessory (mkSelector "bluetoothIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothIdentifier asAccessory =
+  sendMessage asAccessory bluetoothIdentifierSelector
 
 -- | The accessory's Bluetooth identifier, if any, for use when bridging classic transport profiles.
 --
 -- ObjC selector: @- bluetoothTransportBridgingIdentifier@
 bluetoothTransportBridgingIdentifier :: IsASAccessory asAccessory => asAccessory -> IO (Id NSData)
-bluetoothTransportBridgingIdentifier asAccessory  =
-    sendMsg asAccessory (mkSelector "bluetoothTransportBridgingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothTransportBridgingIdentifier asAccessory =
+  sendMessage asAccessory bluetoothTransportBridgingIdentifierSelector
 
 -- | The accessory's name, suitable for displaying to someone using your app.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsASAccessory asAccessory => asAccessory -> IO (Id NSString)
-displayName asAccessory  =
-    sendMsg asAccessory (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName asAccessory =
+  sendMessage asAccessory displayNameSelector
 
 -- | The accessory's Wi-Fi SSID, if any.
 --
@@ -82,8 +79,8 @@ displayName asAccessory  =
 --
 -- ObjC selector: @- SSID@
 ssid :: IsASAccessory asAccessory => asAccessory -> IO (Id NSString)
-ssid asAccessory  =
-    sendMsg asAccessory (mkSelector "SSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid asAccessory =
+  sendMessage asAccessory ssidSelector
 
 -- | The accessory's Wi-Fi Aware Pairing Identifier.
 --
@@ -91,45 +88,45 @@ ssid asAccessory  =
 --
 -- ObjC selector: @- wifiAwarePairedDeviceID@
 wifiAwarePairedDeviceID :: IsASAccessory asAccessory => asAccessory -> IO CULong
-wifiAwarePairedDeviceID asAccessory  =
-    sendMsg asAccessory (mkSelector "wifiAwarePairedDeviceID") retCULong []
+wifiAwarePairedDeviceID asAccessory =
+  sendMessage asAccessory wifiAwarePairedDeviceIDSelector
 
 -- | The descriptor used to discover the accessory.
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsASAccessory asAccessory => asAccessory -> IO (Id ASDiscoveryDescriptor)
-descriptor asAccessory  =
-    sendMsg asAccessory (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor asAccessory =
+  sendMessage asAccessory descriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] ASAccessoryState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @bluetoothIdentifier@
-bluetoothIdentifierSelector :: Selector
+bluetoothIdentifierSelector :: Selector '[] (Id NSUUID)
 bluetoothIdentifierSelector = mkSelector "bluetoothIdentifier"
 
 -- | @Selector@ for @bluetoothTransportBridgingIdentifier@
-bluetoothTransportBridgingIdentifierSelector :: Selector
+bluetoothTransportBridgingIdentifierSelector :: Selector '[] (Id NSData)
 bluetoothTransportBridgingIdentifierSelector = mkSelector "bluetoothTransportBridgingIdentifier"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @SSID@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSString)
 ssidSelector = mkSelector "SSID"
 
 -- | @Selector@ for @wifiAwarePairedDeviceID@
-wifiAwarePairedDeviceIDSelector :: Selector
+wifiAwarePairedDeviceIDSelector :: Selector '[] CULong
 wifiAwarePairedDeviceIDSelector = mkSelector "wifiAwarePairedDeviceID"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id ASDiscoveryDescriptor)
 descriptorSelector = mkSelector "descriptor"
 

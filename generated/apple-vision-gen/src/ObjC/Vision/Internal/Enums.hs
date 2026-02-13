@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Vision.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @VNBarcodeCompositeType@
 newtype VNBarcodeCompositeType = VNBarcodeCompositeType CLong
@@ -31,6 +34,16 @@ pattern VNBarcodeCompositeTypeGS1TypeB = VNBarcodeCompositeType 3
 pattern VNBarcodeCompositeTypeGS1TypeC :: VNBarcodeCompositeType
 pattern VNBarcodeCompositeTypeGS1TypeC = VNBarcodeCompositeType 4
 
+instance ObjCArgument VNBarcodeCompositeType where
+  withObjCArg (VNBarcodeCompositeType x) k = k (argCLong x)
+
+instance ObjCReturn VNBarcodeCompositeType where
+  type RawReturn VNBarcodeCompositeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNBarcodeCompositeType x)
+  fromOwned x = pure (VNBarcodeCompositeType x)
+
 -- | @VNChirality@
 newtype VNChirality = VNChirality CLong
   deriving stock (Eq, Ord, Show)
@@ -45,6 +58,16 @@ pattern VNChiralityLeft = VNChirality (-1)
 pattern VNChiralityRight :: VNChirality
 pattern VNChiralityRight = VNChirality 1
 
+instance ObjCArgument VNChirality where
+  withObjCArg (VNChirality x) k = k (argCLong x)
+
+instance ObjCReturn VNChirality where
+  type RawReturn VNChirality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNChirality x)
+  fromOwned x = pure (VNChirality x)
+
 -- | @VNElementType@
 newtype VNElementType = VNElementType CULong
   deriving stock (Eq, Ord, Show)
@@ -58,6 +81,16 @@ pattern VNElementTypeFloat = VNElementType 1
 
 pattern VNElementTypeDouble :: VNElementType
 pattern VNElementTypeDouble = VNElementType 2
+
+instance ObjCArgument VNElementType where
+  withObjCArg (VNElementType x) k = k (argCULong x)
+
+instance ObjCReturn VNElementType where
+  type RawReturn VNElementType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNElementType x)
+  fromOwned x = pure (VNElementType x)
 
 -- | @VNErrorCode@
 newtype VNErrorCode = VNErrorCode CLong
@@ -136,6 +169,16 @@ pattern VNErrorUnsupportedComputeStage = VNErrorCode 21
 pattern VNErrorUnsupportedComputeDevice :: VNErrorCode
 pattern VNErrorUnsupportedComputeDevice = VNErrorCode 22
 
+instance ObjCArgument VNErrorCode where
+  withObjCArg (VNErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn VNErrorCode where
+  type RawReturn VNErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNErrorCode x)
+  fromOwned x = pure (VNErrorCode x)
+
 -- | The level of optical flow computational accuracy.
 -- | @VNGenerateOpticalFlowRequestComputationAccuracy@
 newtype VNGenerateOpticalFlowRequestComputationAccuracy = VNGenerateOpticalFlowRequestComputationAccuracy CULong
@@ -154,6 +197,16 @@ pattern VNGenerateOpticalFlowRequestComputationAccuracyHigh = VNGenerateOpticalF
 pattern VNGenerateOpticalFlowRequestComputationAccuracyVeryHigh :: VNGenerateOpticalFlowRequestComputationAccuracy
 pattern VNGenerateOpticalFlowRequestComputationAccuracyVeryHigh = VNGenerateOpticalFlowRequestComputationAccuracy 3
 
+instance ObjCArgument VNGenerateOpticalFlowRequestComputationAccuracy where
+  withObjCArg (VNGenerateOpticalFlowRequestComputationAccuracy x) k = k (argCULong x)
+
+instance ObjCReturn VNGenerateOpticalFlowRequestComputationAccuracy where
+  type RawReturn VNGenerateOpticalFlowRequestComputationAccuracy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNGenerateOpticalFlowRequestComputationAccuracy x)
+  fromOwned x = pure (VNGenerateOpticalFlowRequestComputationAccuracy x)
+
 -- | Person segmentation level options to favor speed over recognition accuracy.            VNGeneratePersonSegmentationRequestQualityLevelAccurate is the default option.
 --
 -- fast - generates a low accuracy segmentation mask that can be used in streaming scenarios on devices that have a neural engine            balanced - generates a high accuracy segmentation mask            accurate - generates a mask based on the balanced output that includes matting refinement            The request may hold on to previous masks to improve temporal stability.
@@ -171,6 +224,16 @@ pattern VNGeneratePersonSegmentationRequestQualityLevelBalanced = VNGeneratePers
 pattern VNGeneratePersonSegmentationRequestQualityLevelFast :: VNGeneratePersonSegmentationRequestQualityLevel
 pattern VNGeneratePersonSegmentationRequestQualityLevelFast = VNGeneratePersonSegmentationRequestQualityLevel 2
 
+instance ObjCArgument VNGeneratePersonSegmentationRequestQualityLevel where
+  withObjCArg (VNGeneratePersonSegmentationRequestQualityLevel x) k = k (argCULong x)
+
+instance ObjCReturn VNGeneratePersonSegmentationRequestQualityLevel where
+  type RawReturn VNGeneratePersonSegmentationRequestQualityLevel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNGeneratePersonSegmentationRequestQualityLevel x)
+  fromOwned x = pure (VNGeneratePersonSegmentationRequestQualityLevel x)
+
 -- | Height estimation technique used in observation based on available metadata            VNHumanBodyPose3DObservationHeightEstimationReference is the default if no LiDAR depth is present
 --
 -- reference -   Since no depth was present, a reference height of 1.8 meters is used            measured -   LiDAR depth was used to measure a more accurate @bodyHeight@ in meters
@@ -184,6 +247,16 @@ pattern VNHumanBodyPose3DObservationHeightEstimationReference = VNHumanBodyPose3
 
 pattern VNHumanBodyPose3DObservationHeightEstimationMeasured :: VNHumanBodyPose3DObservationHeightEstimation
 pattern VNHumanBodyPose3DObservationHeightEstimationMeasured = VNHumanBodyPose3DObservationHeightEstimation 1
+
+instance ObjCArgument VNHumanBodyPose3DObservationHeightEstimation where
+  withObjCArg (VNHumanBodyPose3DObservationHeightEstimation x) k = k (argCLong x)
+
+instance ObjCReturn VNHumanBodyPose3DObservationHeightEstimation where
+  type RawReturn VNHumanBodyPose3DObservationHeightEstimation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNHumanBodyPose3DObservationHeightEstimation x)
+  fromOwned x = pure (VNHumanBodyPose3DObservationHeightEstimation x)
 
 -- | @VNImageCropAndScaleOption@
 newtype VNImageCropAndScaleOption = VNImageCropAndScaleOption CULong
@@ -205,6 +278,16 @@ pattern VNImageCropAndScaleOptionScaleFitRotate90CCW = VNImageCropAndScaleOption
 pattern VNImageCropAndScaleOptionScaleFillRotate90CCW :: VNImageCropAndScaleOption
 pattern VNImageCropAndScaleOptionScaleFillRotate90CCW = VNImageCropAndScaleOption 258
 
+instance ObjCArgument VNImageCropAndScaleOption where
+  withObjCArg (VNImageCropAndScaleOption x) k = k (argCULong x)
+
+instance ObjCReturn VNImageCropAndScaleOption where
+  type RawReturn VNImageCropAndScaleOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNImageCropAndScaleOption x)
+  fromOwned x = pure (VNImageCropAndScaleOption x)
+
 -- | @VNPointsClassification@
 newtype VNPointsClassification = VNPointsClassification CLong
   deriving stock (Eq, Ord, Show)
@@ -218,6 +301,16 @@ pattern VNPointsClassificationOpenPath = VNPointsClassification 1
 
 pattern VNPointsClassificationClosedPath :: VNPointsClassification
 pattern VNPointsClassificationClosedPath = VNPointsClassification 2
+
+instance ObjCArgument VNPointsClassification where
+  withObjCArg (VNPointsClassification x) k = k (argCLong x)
+
+instance ObjCReturn VNPointsClassification where
+  type RawReturn VNPointsClassification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNPointsClassification x)
+  fromOwned x = pure (VNPointsClassification x)
 
 -- | Constellation type defines how many landmark points are used to map a face. Revisions 1, 2, and 3 support 65 points, where Rev3 also supports 76 points.
 -- | @VNRequestFaceLandmarksConstellation@
@@ -234,6 +327,16 @@ pattern VNRequestFaceLandmarksConstellation65Points = VNRequestFaceLandmarksCons
 pattern VNRequestFaceLandmarksConstellation76Points :: VNRequestFaceLandmarksConstellation
 pattern VNRequestFaceLandmarksConstellation76Points = VNRequestFaceLandmarksConstellation 2
 
+instance ObjCArgument VNRequestFaceLandmarksConstellation where
+  withObjCArg (VNRequestFaceLandmarksConstellation x) k = k (argCULong x)
+
+instance ObjCReturn VNRequestFaceLandmarksConstellation where
+  type RawReturn VNRequestFaceLandmarksConstellation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNRequestFaceLandmarksConstellation x)
+  fromOwned x = pure (VNRequestFaceLandmarksConstellation x)
+
 -- | Text recognition level options to favor speed over recognition accuracy. The VNRequestTextRecognitionLevelAccurate is the default option used by VNRecognizeTextRequest.
 -- | @VNRequestTextRecognitionLevel@
 newtype VNRequestTextRecognitionLevel = VNRequestTextRecognitionLevel CLong
@@ -246,6 +349,16 @@ pattern VNRequestTextRecognitionLevelAccurate = VNRequestTextRecognitionLevel 0
 pattern VNRequestTextRecognitionLevelFast :: VNRequestTextRecognitionLevel
 pattern VNRequestTextRecognitionLevelFast = VNRequestTextRecognitionLevel 1
 
+instance ObjCArgument VNRequestTextRecognitionLevel where
+  withObjCArg (VNRequestTextRecognitionLevel x) k = k (argCLong x)
+
+instance ObjCReturn VNRequestTextRecognitionLevel where
+  type RawReturn VNRequestTextRecognitionLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNRequestTextRecognitionLevel x)
+  fromOwned x = pure (VNRequestTextRecognitionLevel x)
+
 -- | Tracking level options to favor speed or location accuracy. The VNRequestTrackingLevelFast is the default option used by trackers.
 -- | @VNRequestTrackingLevel@
 newtype VNRequestTrackingLevel = VNRequestTrackingLevel CULong
@@ -257,6 +370,16 @@ pattern VNRequestTrackingLevelAccurate = VNRequestTrackingLevel 0
 
 pattern VNRequestTrackingLevelFast :: VNRequestTrackingLevel
 pattern VNRequestTrackingLevelFast = VNRequestTrackingLevel 1
+
+instance ObjCArgument VNRequestTrackingLevel where
+  withObjCArg (VNRequestTrackingLevel x) k = k (argCULong x)
+
+instance ObjCReturn VNRequestTrackingLevel where
+  type RawReturn VNRequestTrackingLevel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNRequestTrackingLevel x)
+  fromOwned x = pure (VNRequestTrackingLevel x)
 
 -- | The level of optical flow computational accuracy.
 -- | @VNTrackOpticalFlowRequestComputationAccuracy@
@@ -275,3 +398,13 @@ pattern VNTrackOpticalFlowRequestComputationAccuracyHigh = VNTrackOpticalFlowReq
 
 pattern VNTrackOpticalFlowRequestComputationAccuracyVeryHigh :: VNTrackOpticalFlowRequestComputationAccuracy
 pattern VNTrackOpticalFlowRequestComputationAccuracyVeryHigh = VNTrackOpticalFlowRequestComputationAccuracy 3
+
+instance ObjCArgument VNTrackOpticalFlowRequestComputationAccuracy where
+  withObjCArg (VNTrackOpticalFlowRequestComputationAccuracy x) k = k (argCULong x)
+
+instance ObjCReturn VNTrackOpticalFlowRequestComputationAccuracy where
+  type RawReturn VNTrackOpticalFlowRequestComputationAccuracy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VNTrackOpticalFlowRequestComputationAccuracy x)
+  fromOwned x = pure (VNTrackOpticalFlowRequestComputationAccuracy x)

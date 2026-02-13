@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.AppKit.NSUserInterfaceCompressionOptions
   , reduceMetricsOption
   , breakEqualWidthsOption
   , standardOptions
-  , initSelector
-  , initWithCoderSelector
-  , initWithIdentifierSelector
-  , initWithCompressionOptionsSelector
+  , breakEqualWidthsOptionSelector
   , containsOptionsSelector
-  , intersectsOptionsSelector
-  , optionsByAddingOptionsSelector
-  , optionsByRemovingOptionsSelector
   , emptySelector
   , hideImagesOptionSelector
   , hideTextOptionSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithCompressionOptionsSelector
+  , initWithIdentifierSelector
+  , intersectsOptionsSelector
+  , optionsByAddingOptionsSelector
+  , optionsByRemovingOptionsSelector
   , reduceMetricsOptionSelector
-  , breakEqualWidthsOptionSelector
   , standardOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,148 +52,141 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions => nsUserInterfaceCompressionOptions -> IO (Id NSUserInterfaceCompressionOptions)
-init_ nsUserInterfaceCompressionOptions  =
-    sendMsg nsUserInterfaceCompressionOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsUserInterfaceCompressionOptions =
+  sendOwnedMessage nsUserInterfaceCompressionOptions initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSCoder coder) => nsUserInterfaceCompressionOptions -> coder -> IO (Id NSUserInterfaceCompressionOptions)
-initWithCoder nsUserInterfaceCompressionOptions  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsUserInterfaceCompressionOptions (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsUserInterfaceCompressionOptions coder =
+  sendOwnedMessage nsUserInterfaceCompressionOptions initWithCoderSelector (toNSCoder coder)
 
 -- | @- initWithIdentifier:@
 initWithIdentifier :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSString identifier) => nsUserInterfaceCompressionOptions -> identifier -> IO (Id NSUserInterfaceCompressionOptions)
-initWithIdentifier nsUserInterfaceCompressionOptions  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg nsUserInterfaceCompressionOptions (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier nsUserInterfaceCompressionOptions identifier =
+  sendOwnedMessage nsUserInterfaceCompressionOptions initWithIdentifierSelector (toNSString identifier)
 
 -- | @- initWithCompressionOptions:@
 initWithCompressionOptions :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSSet options) => nsUserInterfaceCompressionOptions -> options -> IO (Id NSUserInterfaceCompressionOptions)
-initWithCompressionOptions nsUserInterfaceCompressionOptions  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nsUserInterfaceCompressionOptions (mkSelector "initWithCompressionOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCompressionOptions nsUserInterfaceCompressionOptions options =
+  sendOwnedMessage nsUserInterfaceCompressionOptions initWithCompressionOptionsSelector (toNSSet options)
 
 -- | @- containsOptions:@
 containsOptions :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSUserInterfaceCompressionOptions options) => nsUserInterfaceCompressionOptions -> options -> IO Bool
-containsOptions nsUserInterfaceCompressionOptions  options =
-  withObjCPtr options $ \raw_options ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUserInterfaceCompressionOptions (mkSelector "containsOptions:") retCULong [argPtr (castPtr raw_options :: Ptr ())]
+containsOptions nsUserInterfaceCompressionOptions options =
+  sendMessage nsUserInterfaceCompressionOptions containsOptionsSelector (toNSUserInterfaceCompressionOptions options)
 
 -- | @- intersectsOptions:@
 intersectsOptions :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSUserInterfaceCompressionOptions options) => nsUserInterfaceCompressionOptions -> options -> IO Bool
-intersectsOptions nsUserInterfaceCompressionOptions  options =
-  withObjCPtr options $ \raw_options ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUserInterfaceCompressionOptions (mkSelector "intersectsOptions:") retCULong [argPtr (castPtr raw_options :: Ptr ())]
+intersectsOptions nsUserInterfaceCompressionOptions options =
+  sendMessage nsUserInterfaceCompressionOptions intersectsOptionsSelector (toNSUserInterfaceCompressionOptions options)
 
 -- | @- optionsByAddingOptions:@
 optionsByAddingOptions :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSUserInterfaceCompressionOptions options) => nsUserInterfaceCompressionOptions -> options -> IO (Id NSUserInterfaceCompressionOptions)
-optionsByAddingOptions nsUserInterfaceCompressionOptions  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nsUserInterfaceCompressionOptions (mkSelector "optionsByAddingOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+optionsByAddingOptions nsUserInterfaceCompressionOptions options =
+  sendMessage nsUserInterfaceCompressionOptions optionsByAddingOptionsSelector (toNSUserInterfaceCompressionOptions options)
 
 -- | @- optionsByRemovingOptions:@
 optionsByRemovingOptions :: (IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions, IsNSUserInterfaceCompressionOptions options) => nsUserInterfaceCompressionOptions -> options -> IO (Id NSUserInterfaceCompressionOptions)
-optionsByRemovingOptions nsUserInterfaceCompressionOptions  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nsUserInterfaceCompressionOptions (mkSelector "optionsByRemovingOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+optionsByRemovingOptions nsUserInterfaceCompressionOptions options =
+  sendMessage nsUserInterfaceCompressionOptions optionsByRemovingOptionsSelector (toNSUserInterfaceCompressionOptions options)
 
 -- | @- empty@
 empty :: IsNSUserInterfaceCompressionOptions nsUserInterfaceCompressionOptions => nsUserInterfaceCompressionOptions -> IO Bool
-empty nsUserInterfaceCompressionOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUserInterfaceCompressionOptions (mkSelector "empty") retCULong []
+empty nsUserInterfaceCompressionOptions =
+  sendMessage nsUserInterfaceCompressionOptions emptySelector
 
 -- | @+ hideImagesOption@
 hideImagesOption :: IO (Id NSUserInterfaceCompressionOptions)
 hideImagesOption  =
   do
     cls' <- getRequiredClass "NSUserInterfaceCompressionOptions"
-    sendClassMsg cls' (mkSelector "hideImagesOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hideImagesOptionSelector
 
 -- | @+ hideTextOption@
 hideTextOption :: IO (Id NSUserInterfaceCompressionOptions)
 hideTextOption  =
   do
     cls' <- getRequiredClass "NSUserInterfaceCompressionOptions"
-    sendClassMsg cls' (mkSelector "hideTextOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hideTextOptionSelector
 
 -- | @+ reduceMetricsOption@
 reduceMetricsOption :: IO (Id NSUserInterfaceCompressionOptions)
 reduceMetricsOption  =
   do
     cls' <- getRequiredClass "NSUserInterfaceCompressionOptions"
-    sendClassMsg cls' (mkSelector "reduceMetricsOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' reduceMetricsOptionSelector
 
 -- | @+ breakEqualWidthsOption@
 breakEqualWidthsOption :: IO (Id NSUserInterfaceCompressionOptions)
 breakEqualWidthsOption  =
   do
     cls' <- getRequiredClass "NSUserInterfaceCompressionOptions"
-    sendClassMsg cls' (mkSelector "breakEqualWidthsOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' breakEqualWidthsOptionSelector
 
 -- | @+ standardOptions@
 standardOptions :: IO (Id NSUserInterfaceCompressionOptions)
 standardOptions  =
   do
     cls' <- getRequiredClass "NSUserInterfaceCompressionOptions"
-    sendClassMsg cls' (mkSelector "standardOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' standardOptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSUserInterfaceCompressionOptions)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id NSUserInterfaceCompressionOptions)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @initWithCompressionOptions:@
-initWithCompressionOptionsSelector :: Selector
+initWithCompressionOptionsSelector :: Selector '[Id NSSet] (Id NSUserInterfaceCompressionOptions)
 initWithCompressionOptionsSelector = mkSelector "initWithCompressionOptions:"
 
 -- | @Selector@ for @containsOptions:@
-containsOptionsSelector :: Selector
+containsOptionsSelector :: Selector '[Id NSUserInterfaceCompressionOptions] Bool
 containsOptionsSelector = mkSelector "containsOptions:"
 
 -- | @Selector@ for @intersectsOptions:@
-intersectsOptionsSelector :: Selector
+intersectsOptionsSelector :: Selector '[Id NSUserInterfaceCompressionOptions] Bool
 intersectsOptionsSelector = mkSelector "intersectsOptions:"
 
 -- | @Selector@ for @optionsByAddingOptions:@
-optionsByAddingOptionsSelector :: Selector
+optionsByAddingOptionsSelector :: Selector '[Id NSUserInterfaceCompressionOptions] (Id NSUserInterfaceCompressionOptions)
 optionsByAddingOptionsSelector = mkSelector "optionsByAddingOptions:"
 
 -- | @Selector@ for @optionsByRemovingOptions:@
-optionsByRemovingOptionsSelector :: Selector
+optionsByRemovingOptionsSelector :: Selector '[Id NSUserInterfaceCompressionOptions] (Id NSUserInterfaceCompressionOptions)
 optionsByRemovingOptionsSelector = mkSelector "optionsByRemovingOptions:"
 
 -- | @Selector@ for @empty@
-emptySelector :: Selector
+emptySelector :: Selector '[] Bool
 emptySelector = mkSelector "empty"
 
 -- | @Selector@ for @hideImagesOption@
-hideImagesOptionSelector :: Selector
+hideImagesOptionSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 hideImagesOptionSelector = mkSelector "hideImagesOption"
 
 -- | @Selector@ for @hideTextOption@
-hideTextOptionSelector :: Selector
+hideTextOptionSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 hideTextOptionSelector = mkSelector "hideTextOption"
 
 -- | @Selector@ for @reduceMetricsOption@
-reduceMetricsOptionSelector :: Selector
+reduceMetricsOptionSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 reduceMetricsOptionSelector = mkSelector "reduceMetricsOption"
 
 -- | @Selector@ for @breakEqualWidthsOption@
-breakEqualWidthsOptionSelector :: Selector
+breakEqualWidthsOptionSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 breakEqualWidthsOptionSelector = mkSelector "breakEqualWidthsOption"
 
 -- | @Selector@ for @standardOptions@
-standardOptionsSelector :: Selector
+standardOptionsSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 standardOptionsSelector = mkSelector "standardOptions"
 

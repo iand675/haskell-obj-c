@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,10 +38,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryConvolution
   , initWithDevice
   , inputFeatureChannels
   , outputFeatureChannels
-  , initWithDevice_convolutionData_scaleValue_type_flagsSelector
-  , initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector
+  , initWithDevice_convolutionData_scaleValue_type_flagsSelector
   , inputFeatureChannelsSelector
   , outputFeatureChannelsSelector
 
@@ -55,15 +56,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNBinaryConvolution
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,8 +84,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:convolutionData:scaleValue:type:flags:@
 initWithDevice_convolutionData_scaleValue_type_flags :: IsMPSCNNBinaryConvolution mpscnnBinaryConvolution => mpscnnBinaryConvolution -> RawId -> RawId -> CFloat -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryConvolution)
-initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryConvolution  device convolutionData scaleValue type_ flags =
-    sendMsg mpscnnBinaryConvolution (mkSelector "initWithDevice:convolutionData:scaleValue:type:flags:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId convolutionData) :: Ptr ()), argCFloat scaleValue, argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryConvolution device convolutionData scaleValue type_ flags =
+  sendOwnedMessage mpscnnBinaryConvolution initWithDevice_convolutionData_scaleValue_type_flagsSelector device convolutionData scaleValue type_ flags
 
 -- | Initializes a binary convolution kernel with binary weights as well as both pre and post scaling terms.
 --
@@ -112,8 +109,8 @@ initWithDevice_convolutionData_scaleValue_type_flags mpscnnBinaryConvolution  de
 --
 -- ObjC selector: @- initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
 initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags :: IsMPSCNNBinaryConvolution mpscnnBinaryConvolution => mpscnnBinaryConvolution -> RawId -> RawId -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> MPSCNNBinaryConvolutionType -> MPSCNNBinaryConvolutionFlags -> IO (Id MPSCNNBinaryConvolution)
-initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryConvolution  device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
-    sendMsg mpscnnBinaryConvolution (mkSelector "initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId convolutionData) :: Ptr ()), argPtr (unConst outputBiasTerms), argPtr (unConst outputScaleTerms), argPtr (unConst inputBiasTerms), argPtr (unConst inputScaleTerms), argCULong (coerce type_), argCULong (coerce flags)] >>= ownedObject . castPtr
+initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flags mpscnnBinaryConvolution device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags =
+  sendOwnedMessage mpscnnBinaryConvolution initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector device convolutionData outputBiasTerms outputScaleTerms inputBiasTerms inputScaleTerms type_ flags
 
 -- | NSSecureCoding compatability
 --
@@ -127,19 +124,18 @@ initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_i
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNBinaryConvolution mpscnnBinaryConvolution, IsNSCoder aDecoder) => mpscnnBinaryConvolution -> aDecoder -> RawId -> IO (Id MPSCNNBinaryConvolution)
-initWithCoder_device mpscnnBinaryConvolution  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnBinaryConvolution (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnBinaryConvolution aDecoder device =
+  sendOwnedMessage mpscnnBinaryConvolution initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNBinaryConvolution mpscnnBinaryConvolution => mpscnnBinaryConvolution -> RawId -> IO (Id MPSCNNBinaryConvolution)
-initWithDevice mpscnnBinaryConvolution  device =
-    sendMsg mpscnnBinaryConvolution (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnBinaryConvolution device =
+  sendOwnedMessage mpscnnBinaryConvolution initWithDeviceSelector device
 
 -- | @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSCNNBinaryConvolution mpscnnBinaryConvolution => mpscnnBinaryConvolution -> IO CULong
-inputFeatureChannels mpscnnBinaryConvolution  =
-    sendMsg mpscnnBinaryConvolution (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpscnnBinaryConvolution =
+  sendMessage mpscnnBinaryConvolution inputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -147,34 +143,34 @@ inputFeatureChannels mpscnnBinaryConvolution  =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSCNNBinaryConvolution mpscnnBinaryConvolution => mpscnnBinaryConvolution -> IO CULong
-outputFeatureChannels mpscnnBinaryConvolution  =
-    sendMsg mpscnnBinaryConvolution (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpscnnBinaryConvolution =
+  sendMessage mpscnnBinaryConvolution outputFeatureChannelsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:convolutionData:scaleValue:type:flags:@
-initWithDevice_convolutionData_scaleValue_type_flagsSelector :: Selector
+initWithDevice_convolutionData_scaleValue_type_flagsSelector :: Selector '[RawId, RawId, CFloat, MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolution)
 initWithDevice_convolutionData_scaleValue_type_flagsSelector = mkSelector "initWithDevice:convolutionData:scaleValue:type:flags:"
 
 -- | @Selector@ for @initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:@
-initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector
+initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector :: Selector '[RawId, RawId, Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), MPSCNNBinaryConvolutionType, MPSCNNBinaryConvolutionFlags] (Id MPSCNNBinaryConvolution)
 initWithDevice_convolutionData_outputBiasTerms_outputScaleTerms_inputBiasTerms_inputScaleTerms_type_flagsSelector = mkSelector "initWithDevice:convolutionData:outputBiasTerms:outputScaleTerms:inputBiasTerms:inputScaleTerms:type:flags:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNBinaryConvolution)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNBinaryConvolution)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 

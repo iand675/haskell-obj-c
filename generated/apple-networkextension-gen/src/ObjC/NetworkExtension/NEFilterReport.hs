@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.NetworkExtension.NEFilterReport
   , event
   , bytesInboundCount
   , bytesOutboundCount
-  , flowSelector
   , actionSelector
-  , eventSelector
   , bytesInboundCountSelector
   , bytesOutboundCountSelector
+  , eventSelector
+  , flowSelector
 
   -- * Enum types
   , NEFilterAction(NEFilterAction)
@@ -39,15 +40,11 @@ module ObjC.NetworkExtension.NEFilterReport
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- flow@
 flow :: IsNEFilterReport neFilterReport => neFilterReport -> IO (Id NEFilterFlow)
-flow neFilterReport  =
-    sendMsg neFilterReport (mkSelector "flow") (retPtr retVoid) [] >>= retainedObject . castPtr
+flow neFilterReport =
+  sendMessage neFilterReport flowSelector
 
 -- | action
 --
@@ -70,8 +67,8 @@ flow neFilterReport  =
 --
 -- ObjC selector: @- action@
 action :: IsNEFilterReport neFilterReport => neFilterReport -> IO NEFilterAction
-action neFilterReport  =
-    fmap (coerce :: CLong -> NEFilterAction) $ sendMsg neFilterReport (mkSelector "action") retCLong []
+action neFilterReport =
+  sendMessage neFilterReport actionSelector
 
 -- | event
 --
@@ -79,8 +76,8 @@ action neFilterReport  =
 --
 -- ObjC selector: @- event@
 event :: IsNEFilterReport neFilterReport => neFilterReport -> IO NEFilterReportEvent
-event neFilterReport  =
-    fmap (coerce :: CLong -> NEFilterReportEvent) $ sendMsg neFilterReport (mkSelector "event") retCLong []
+event neFilterReport =
+  sendMessage neFilterReport eventSelector
 
 -- | bytesInboundCount
 --
@@ -88,8 +85,8 @@ event neFilterReport  =
 --
 -- ObjC selector: @- bytesInboundCount@
 bytesInboundCount :: IsNEFilterReport neFilterReport => neFilterReport -> IO CULong
-bytesInboundCount neFilterReport  =
-    sendMsg neFilterReport (mkSelector "bytesInboundCount") retCULong []
+bytesInboundCount neFilterReport =
+  sendMessage neFilterReport bytesInboundCountSelector
 
 -- | bytesOutboundCount
 --
@@ -97,30 +94,30 @@ bytesInboundCount neFilterReport  =
 --
 -- ObjC selector: @- bytesOutboundCount@
 bytesOutboundCount :: IsNEFilterReport neFilterReport => neFilterReport -> IO CULong
-bytesOutboundCount neFilterReport  =
-    sendMsg neFilterReport (mkSelector "bytesOutboundCount") retCULong []
+bytesOutboundCount neFilterReport =
+  sendMessage neFilterReport bytesOutboundCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @flow@
-flowSelector :: Selector
+flowSelector :: Selector '[] (Id NEFilterFlow)
 flowSelector = mkSelector "flow"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] NEFilterAction
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] NEFilterReportEvent
 eventSelector = mkSelector "event"
 
 -- | @Selector@ for @bytesInboundCount@
-bytesInboundCountSelector :: Selector
+bytesInboundCountSelector :: Selector '[] CULong
 bytesInboundCountSelector = mkSelector "bytesInboundCount"
 
 -- | @Selector@ for @bytesOutboundCount@
-bytesOutboundCountSelector :: Selector
+bytesOutboundCountSelector :: Selector '[] CULong
 bytesOutboundCountSelector = mkSelector "bytesOutboundCount"
 

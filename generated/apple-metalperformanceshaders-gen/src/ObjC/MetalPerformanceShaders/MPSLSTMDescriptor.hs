@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -74,41 +75,41 @@ module ObjC.MetalPerformanceShaders.MPSLSTMDescriptor
   , setCellToOutputNeuronParamB
   , cellToOutputNeuronParamC
   , setCellToOutputNeuronParamC
-  , createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
-  , memoryWeightsAreDiagonalSelector
-  , setMemoryWeightsAreDiagonalSelector
-  , inputGateInputWeightsSelector
-  , setInputGateInputWeightsSelector
-  , inputGateRecurrentWeightsSelector
-  , setInputGateRecurrentWeightsSelector
-  , inputGateMemoryWeightsSelector
-  , setInputGateMemoryWeightsSelector
-  , forgetGateInputWeightsSelector
-  , setForgetGateInputWeightsSelector
-  , forgetGateRecurrentWeightsSelector
-  , setForgetGateRecurrentWeightsSelector
-  , forgetGateMemoryWeightsSelector
-  , setForgetGateMemoryWeightsSelector
-  , outputGateInputWeightsSelector
-  , setOutputGateInputWeightsSelector
-  , outputGateRecurrentWeightsSelector
-  , setOutputGateRecurrentWeightsSelector
-  , outputGateMemoryWeightsSelector
-  , setOutputGateMemoryWeightsSelector
   , cellGateInputWeightsSelector
-  , setCellGateInputWeightsSelector
-  , cellGateRecurrentWeightsSelector
-  , setCellGateRecurrentWeightsSelector
   , cellGateMemoryWeightsSelector
-  , setCellGateMemoryWeightsSelector
-  , cellToOutputNeuronTypeSelector
-  , setCellToOutputNeuronTypeSelector
+  , cellGateRecurrentWeightsSelector
   , cellToOutputNeuronParamASelector
-  , setCellToOutputNeuronParamASelector
   , cellToOutputNeuronParamBSelector
-  , setCellToOutputNeuronParamBSelector
   , cellToOutputNeuronParamCSelector
+  , cellToOutputNeuronTypeSelector
+  , createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
+  , forgetGateInputWeightsSelector
+  , forgetGateMemoryWeightsSelector
+  , forgetGateRecurrentWeightsSelector
+  , inputGateInputWeightsSelector
+  , inputGateMemoryWeightsSelector
+  , inputGateRecurrentWeightsSelector
+  , memoryWeightsAreDiagonalSelector
+  , outputGateInputWeightsSelector
+  , outputGateMemoryWeightsSelector
+  , outputGateRecurrentWeightsSelector
+  , setCellGateInputWeightsSelector
+  , setCellGateMemoryWeightsSelector
+  , setCellGateRecurrentWeightsSelector
+  , setCellToOutputNeuronParamASelector
+  , setCellToOutputNeuronParamBSelector
   , setCellToOutputNeuronParamCSelector
+  , setCellToOutputNeuronTypeSelector
+  , setForgetGateInputWeightsSelector
+  , setForgetGateMemoryWeightsSelector
+  , setForgetGateRecurrentWeightsSelector
+  , setInputGateInputWeightsSelector
+  , setInputGateMemoryWeightsSelector
+  , setInputGateRecurrentWeightsSelector
+  , setMemoryWeightsAreDiagonalSelector
+  , setOutputGateInputWeightsSelector
+  , setOutputGateMemoryWeightsSelector
+  , setOutputGateRecurrentWeightsSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -132,15 +133,11 @@ module ObjC.MetalPerformanceShaders.MPSLSTMDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -161,7 +158,7 @@ createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannels :: CULong -> 
 createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureChannels outputFeatureChannels =
   do
     cls' <- getRequiredClass "MPSLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "createLSTMDescriptorWithInputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector inputFeatureChannels outputFeatureChannels
 
 -- | memoryWeightsAreDiagonal
 --
@@ -169,8 +166,8 @@ createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureC
 --
 -- ObjC selector: @- memoryWeightsAreDiagonal@
 memoryWeightsAreDiagonal :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO Bool
-memoryWeightsAreDiagonal mpslstmDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpslstmDescriptor (mkSelector "memoryWeightsAreDiagonal") retCULong []
+memoryWeightsAreDiagonal mpslstmDescriptor =
+  sendMessage mpslstmDescriptor memoryWeightsAreDiagonalSelector
 
 -- | memoryWeightsAreDiagonal
 --
@@ -178,8 +175,8 @@ memoryWeightsAreDiagonal mpslstmDescriptor  =
 --
 -- ObjC selector: @- setMemoryWeightsAreDiagonal:@
 setMemoryWeightsAreDiagonal :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> Bool -> IO ()
-setMemoryWeightsAreDiagonal mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setMemoryWeightsAreDiagonal:") retVoid [argCULong (if value then 1 else 0)]
+setMemoryWeightsAreDiagonal mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setMemoryWeightsAreDiagonalSelector value
 
 -- | inputGateInputWeights
 --
@@ -187,8 +184,8 @@ setMemoryWeightsAreDiagonal mpslstmDescriptor  value =
 --
 -- ObjC selector: @- inputGateInputWeights@
 inputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-inputGateInputWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateInputWeights") (retPtr retVoid) []
+inputGateInputWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor inputGateInputWeightsSelector
 
 -- | inputGateInputWeights
 --
@@ -196,8 +193,8 @@ inputGateInputWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setInputGateInputWeights:@
 setInputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setInputGateInputWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setInputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputGateInputWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setInputGateInputWeightsSelector value
 
 -- | inputGateRecurrentWeights
 --
@@ -205,8 +202,8 @@ setInputGateInputWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- inputGateRecurrentWeights@
 inputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-inputGateRecurrentWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateRecurrentWeights") (retPtr retVoid) []
+inputGateRecurrentWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor inputGateRecurrentWeightsSelector
 
 -- | inputGateRecurrentWeights
 --
@@ -214,8 +211,8 @@ inputGateRecurrentWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setInputGateRecurrentWeights:@
 setInputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setInputGateRecurrentWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setInputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputGateRecurrentWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setInputGateRecurrentWeightsSelector value
 
 -- | inputGateMemoryWeights
 --
@@ -223,8 +220,8 @@ setInputGateRecurrentWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- inputGateMemoryWeights@
 inputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-inputGateMemoryWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "inputGateMemoryWeights") (retPtr retVoid) []
+inputGateMemoryWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor inputGateMemoryWeightsSelector
 
 -- | inputGateMemoryWeights
 --
@@ -232,8 +229,8 @@ inputGateMemoryWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setInputGateMemoryWeights:@
 setInputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setInputGateMemoryWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setInputGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputGateMemoryWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setInputGateMemoryWeightsSelector value
 
 -- | forgetGateInputWeights
 --
@@ -241,8 +238,8 @@ setInputGateMemoryWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- forgetGateInputWeights@
 forgetGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-forgetGateInputWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateInputWeights") (retPtr retVoid) []
+forgetGateInputWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor forgetGateInputWeightsSelector
 
 -- | forgetGateInputWeights
 --
@@ -250,8 +247,8 @@ forgetGateInputWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setForgetGateInputWeights:@
 setForgetGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setForgetGateInputWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setForgetGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setForgetGateInputWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setForgetGateInputWeightsSelector value
 
 -- | forgetGateRecurrentWeights
 --
@@ -259,8 +256,8 @@ setForgetGateInputWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- forgetGateRecurrentWeights@
 forgetGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-forgetGateRecurrentWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateRecurrentWeights") (retPtr retVoid) []
+forgetGateRecurrentWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor forgetGateRecurrentWeightsSelector
 
 -- | forgetGateRecurrentWeights
 --
@@ -268,8 +265,8 @@ forgetGateRecurrentWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setForgetGateRecurrentWeights:@
 setForgetGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setForgetGateRecurrentWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setForgetGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setForgetGateRecurrentWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setForgetGateRecurrentWeightsSelector value
 
 -- | forgetGateMemoryWeights
 --
@@ -277,8 +274,8 @@ setForgetGateRecurrentWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- forgetGateMemoryWeights@
 forgetGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-forgetGateMemoryWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "forgetGateMemoryWeights") (retPtr retVoid) []
+forgetGateMemoryWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor forgetGateMemoryWeightsSelector
 
 -- | forgetGateMemoryWeights
 --
@@ -286,8 +283,8 @@ forgetGateMemoryWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setForgetGateMemoryWeights:@
 setForgetGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setForgetGateMemoryWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setForgetGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setForgetGateMemoryWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setForgetGateMemoryWeightsSelector value
 
 -- | outputGateInputWeights
 --
@@ -295,8 +292,8 @@ setForgetGateMemoryWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- outputGateInputWeights@
 outputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-outputGateInputWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateInputWeights") (retPtr retVoid) []
+outputGateInputWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor outputGateInputWeightsSelector
 
 -- | outputGateInputWeights
 --
@@ -304,8 +301,8 @@ outputGateInputWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setOutputGateInputWeights:@
 setOutputGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setOutputGateInputWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setOutputGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateInputWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setOutputGateInputWeightsSelector value
 
 -- | outputGateRecurrentWeights
 --
@@ -313,8 +310,8 @@ setOutputGateInputWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- outputGateRecurrentWeights@
 outputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-outputGateRecurrentWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateRecurrentWeights") (retPtr retVoid) []
+outputGateRecurrentWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor outputGateRecurrentWeightsSelector
 
 -- | outputGateRecurrentWeights
 --
@@ -322,8 +319,8 @@ outputGateRecurrentWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setOutputGateRecurrentWeights:@
 setOutputGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setOutputGateRecurrentWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setOutputGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateRecurrentWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setOutputGateRecurrentWeightsSelector value
 
 -- | outputGateMemoryWeights
 --
@@ -331,8 +328,8 @@ setOutputGateRecurrentWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- outputGateMemoryWeights@
 outputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-outputGateMemoryWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "outputGateMemoryWeights") (retPtr retVoid) []
+outputGateMemoryWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor outputGateMemoryWeightsSelector
 
 -- | outputGateMemoryWeights
 --
@@ -340,8 +337,8 @@ outputGateMemoryWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setOutputGateMemoryWeights:@
 setOutputGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setOutputGateMemoryWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setOutputGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutputGateMemoryWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setOutputGateMemoryWeightsSelector value
 
 -- | cellGateInputWeights
 --
@@ -349,8 +346,8 @@ setOutputGateMemoryWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellGateInputWeights@
 cellGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-cellGateInputWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateInputWeights") (retPtr retVoid) []
+cellGateInputWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellGateInputWeightsSelector
 
 -- | cellGateInputWeights
 --
@@ -358,8 +355,8 @@ cellGateInputWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellGateInputWeights:@
 setCellGateInputWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setCellGateInputWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellGateInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCellGateInputWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellGateInputWeightsSelector value
 
 -- | cellGateRecurrentWeights
 --
@@ -367,8 +364,8 @@ setCellGateInputWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellGateRecurrentWeights@
 cellGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-cellGateRecurrentWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateRecurrentWeights") (retPtr retVoid) []
+cellGateRecurrentWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellGateRecurrentWeightsSelector
 
 -- | cellGateRecurrentWeights
 --
@@ -376,8 +373,8 @@ cellGateRecurrentWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellGateRecurrentWeights:@
 setCellGateRecurrentWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setCellGateRecurrentWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellGateRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCellGateRecurrentWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellGateRecurrentWeightsSelector value
 
 -- | cellGateMemoryWeights
 --
@@ -385,8 +382,8 @@ setCellGateRecurrentWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellGateMemoryWeights@
 cellGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO RawId
-cellGateMemoryWeights mpslstmDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpslstmDescriptor (mkSelector "cellGateMemoryWeights") (retPtr retVoid) []
+cellGateMemoryWeights mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellGateMemoryWeightsSelector
 
 -- | cellGateMemoryWeights
 --
@@ -394,8 +391,8 @@ cellGateMemoryWeights mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellGateMemoryWeights:@
 setCellGateMemoryWeights :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> RawId -> IO ()
-setCellGateMemoryWeights mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellGateMemoryWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCellGateMemoryWeights mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellGateMemoryWeightsSelector value
 
 -- | cellToOutputNeuronType
 --
@@ -403,8 +400,8 @@ setCellGateMemoryWeights mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellToOutputNeuronType@
 cellToOutputNeuronType :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO MPSCNNNeuronType
-cellToOutputNeuronType mpslstmDescriptor  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpslstmDescriptor (mkSelector "cellToOutputNeuronType") retCInt []
+cellToOutputNeuronType mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellToOutputNeuronTypeSelector
 
 -- | cellToOutputNeuronType
 --
@@ -412,8 +409,8 @@ cellToOutputNeuronType mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellToOutputNeuronType:@
 setCellToOutputNeuronType :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> MPSCNNNeuronType -> IO ()
-setCellToOutputNeuronType mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellToOutputNeuronType:") retVoid [argCInt (coerce value)]
+setCellToOutputNeuronType mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellToOutputNeuronTypeSelector value
 
 -- | cellToOutputNeuronParamA
 --
@@ -421,8 +418,8 @@ setCellToOutputNeuronType mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellToOutputNeuronParamA@
 cellToOutputNeuronParamA :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO CFloat
-cellToOutputNeuronParamA mpslstmDescriptor  =
-    sendMsg mpslstmDescriptor (mkSelector "cellToOutputNeuronParamA") retCFloat []
+cellToOutputNeuronParamA mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellToOutputNeuronParamASelector
 
 -- | cellToOutputNeuronParamA
 --
@@ -430,8 +427,8 @@ cellToOutputNeuronParamA mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellToOutputNeuronParamA:@
 setCellToOutputNeuronParamA :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> CFloat -> IO ()
-setCellToOutputNeuronParamA mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellToOutputNeuronParamA:") retVoid [argCFloat value]
+setCellToOutputNeuronParamA mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellToOutputNeuronParamASelector value
 
 -- | cellToOutputNeuronParamB
 --
@@ -439,8 +436,8 @@ setCellToOutputNeuronParamA mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellToOutputNeuronParamB@
 cellToOutputNeuronParamB :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO CFloat
-cellToOutputNeuronParamB mpslstmDescriptor  =
-    sendMsg mpslstmDescriptor (mkSelector "cellToOutputNeuronParamB") retCFloat []
+cellToOutputNeuronParamB mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellToOutputNeuronParamBSelector
 
 -- | cellToOutputNeuronParamB
 --
@@ -448,8 +445,8 @@ cellToOutputNeuronParamB mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellToOutputNeuronParamB:@
 setCellToOutputNeuronParamB :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> CFloat -> IO ()
-setCellToOutputNeuronParamB mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellToOutputNeuronParamB:") retVoid [argCFloat value]
+setCellToOutputNeuronParamB mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellToOutputNeuronParamBSelector value
 
 -- | cellToOutputNeuronParamC
 --
@@ -457,8 +454,8 @@ setCellToOutputNeuronParamB mpslstmDescriptor  value =
 --
 -- ObjC selector: @- cellToOutputNeuronParamC@
 cellToOutputNeuronParamC :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> IO CFloat
-cellToOutputNeuronParamC mpslstmDescriptor  =
-    sendMsg mpslstmDescriptor (mkSelector "cellToOutputNeuronParamC") retCFloat []
+cellToOutputNeuronParamC mpslstmDescriptor =
+  sendMessage mpslstmDescriptor cellToOutputNeuronParamCSelector
 
 -- | cellToOutputNeuronParamC
 --
@@ -466,150 +463,150 @@ cellToOutputNeuronParamC mpslstmDescriptor  =
 --
 -- ObjC selector: @- setCellToOutputNeuronParamC:@
 setCellToOutputNeuronParamC :: IsMPSLSTMDescriptor mpslstmDescriptor => mpslstmDescriptor -> CFloat -> IO ()
-setCellToOutputNeuronParamC mpslstmDescriptor  value =
-    sendMsg mpslstmDescriptor (mkSelector "setCellToOutputNeuronParamC:") retVoid [argCFloat value]
+setCellToOutputNeuronParamC mpslstmDescriptor value =
+  sendMessage mpslstmDescriptor setCellToOutputNeuronParamCSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createLSTMDescriptorWithInputFeatureChannels:outputFeatureChannels:@
-createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector
+createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector '[CULong, CULong] (Id MPSLSTMDescriptor)
 createLSTMDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector = mkSelector "createLSTMDescriptorWithInputFeatureChannels:outputFeatureChannels:"
 
 -- | @Selector@ for @memoryWeightsAreDiagonal@
-memoryWeightsAreDiagonalSelector :: Selector
+memoryWeightsAreDiagonalSelector :: Selector '[] Bool
 memoryWeightsAreDiagonalSelector = mkSelector "memoryWeightsAreDiagonal"
 
 -- | @Selector@ for @setMemoryWeightsAreDiagonal:@
-setMemoryWeightsAreDiagonalSelector :: Selector
+setMemoryWeightsAreDiagonalSelector :: Selector '[Bool] ()
 setMemoryWeightsAreDiagonalSelector = mkSelector "setMemoryWeightsAreDiagonal:"
 
 -- | @Selector@ for @inputGateInputWeights@
-inputGateInputWeightsSelector :: Selector
+inputGateInputWeightsSelector :: Selector '[] RawId
 inputGateInputWeightsSelector = mkSelector "inputGateInputWeights"
 
 -- | @Selector@ for @setInputGateInputWeights:@
-setInputGateInputWeightsSelector :: Selector
+setInputGateInputWeightsSelector :: Selector '[RawId] ()
 setInputGateInputWeightsSelector = mkSelector "setInputGateInputWeights:"
 
 -- | @Selector@ for @inputGateRecurrentWeights@
-inputGateRecurrentWeightsSelector :: Selector
+inputGateRecurrentWeightsSelector :: Selector '[] RawId
 inputGateRecurrentWeightsSelector = mkSelector "inputGateRecurrentWeights"
 
 -- | @Selector@ for @setInputGateRecurrentWeights:@
-setInputGateRecurrentWeightsSelector :: Selector
+setInputGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setInputGateRecurrentWeightsSelector = mkSelector "setInputGateRecurrentWeights:"
 
 -- | @Selector@ for @inputGateMemoryWeights@
-inputGateMemoryWeightsSelector :: Selector
+inputGateMemoryWeightsSelector :: Selector '[] RawId
 inputGateMemoryWeightsSelector = mkSelector "inputGateMemoryWeights"
 
 -- | @Selector@ for @setInputGateMemoryWeights:@
-setInputGateMemoryWeightsSelector :: Selector
+setInputGateMemoryWeightsSelector :: Selector '[RawId] ()
 setInputGateMemoryWeightsSelector = mkSelector "setInputGateMemoryWeights:"
 
 -- | @Selector@ for @forgetGateInputWeights@
-forgetGateInputWeightsSelector :: Selector
+forgetGateInputWeightsSelector :: Selector '[] RawId
 forgetGateInputWeightsSelector = mkSelector "forgetGateInputWeights"
 
 -- | @Selector@ for @setForgetGateInputWeights:@
-setForgetGateInputWeightsSelector :: Selector
+setForgetGateInputWeightsSelector :: Selector '[RawId] ()
 setForgetGateInputWeightsSelector = mkSelector "setForgetGateInputWeights:"
 
 -- | @Selector@ for @forgetGateRecurrentWeights@
-forgetGateRecurrentWeightsSelector :: Selector
+forgetGateRecurrentWeightsSelector :: Selector '[] RawId
 forgetGateRecurrentWeightsSelector = mkSelector "forgetGateRecurrentWeights"
 
 -- | @Selector@ for @setForgetGateRecurrentWeights:@
-setForgetGateRecurrentWeightsSelector :: Selector
+setForgetGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setForgetGateRecurrentWeightsSelector = mkSelector "setForgetGateRecurrentWeights:"
 
 -- | @Selector@ for @forgetGateMemoryWeights@
-forgetGateMemoryWeightsSelector :: Selector
+forgetGateMemoryWeightsSelector :: Selector '[] RawId
 forgetGateMemoryWeightsSelector = mkSelector "forgetGateMemoryWeights"
 
 -- | @Selector@ for @setForgetGateMemoryWeights:@
-setForgetGateMemoryWeightsSelector :: Selector
+setForgetGateMemoryWeightsSelector :: Selector '[RawId] ()
 setForgetGateMemoryWeightsSelector = mkSelector "setForgetGateMemoryWeights:"
 
 -- | @Selector@ for @outputGateInputWeights@
-outputGateInputWeightsSelector :: Selector
+outputGateInputWeightsSelector :: Selector '[] RawId
 outputGateInputWeightsSelector = mkSelector "outputGateInputWeights"
 
 -- | @Selector@ for @setOutputGateInputWeights:@
-setOutputGateInputWeightsSelector :: Selector
+setOutputGateInputWeightsSelector :: Selector '[RawId] ()
 setOutputGateInputWeightsSelector = mkSelector "setOutputGateInputWeights:"
 
 -- | @Selector@ for @outputGateRecurrentWeights@
-outputGateRecurrentWeightsSelector :: Selector
+outputGateRecurrentWeightsSelector :: Selector '[] RawId
 outputGateRecurrentWeightsSelector = mkSelector "outputGateRecurrentWeights"
 
 -- | @Selector@ for @setOutputGateRecurrentWeights:@
-setOutputGateRecurrentWeightsSelector :: Selector
+setOutputGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setOutputGateRecurrentWeightsSelector = mkSelector "setOutputGateRecurrentWeights:"
 
 -- | @Selector@ for @outputGateMemoryWeights@
-outputGateMemoryWeightsSelector :: Selector
+outputGateMemoryWeightsSelector :: Selector '[] RawId
 outputGateMemoryWeightsSelector = mkSelector "outputGateMemoryWeights"
 
 -- | @Selector@ for @setOutputGateMemoryWeights:@
-setOutputGateMemoryWeightsSelector :: Selector
+setOutputGateMemoryWeightsSelector :: Selector '[RawId] ()
 setOutputGateMemoryWeightsSelector = mkSelector "setOutputGateMemoryWeights:"
 
 -- | @Selector@ for @cellGateInputWeights@
-cellGateInputWeightsSelector :: Selector
+cellGateInputWeightsSelector :: Selector '[] RawId
 cellGateInputWeightsSelector = mkSelector "cellGateInputWeights"
 
 -- | @Selector@ for @setCellGateInputWeights:@
-setCellGateInputWeightsSelector :: Selector
+setCellGateInputWeightsSelector :: Selector '[RawId] ()
 setCellGateInputWeightsSelector = mkSelector "setCellGateInputWeights:"
 
 -- | @Selector@ for @cellGateRecurrentWeights@
-cellGateRecurrentWeightsSelector :: Selector
+cellGateRecurrentWeightsSelector :: Selector '[] RawId
 cellGateRecurrentWeightsSelector = mkSelector "cellGateRecurrentWeights"
 
 -- | @Selector@ for @setCellGateRecurrentWeights:@
-setCellGateRecurrentWeightsSelector :: Selector
+setCellGateRecurrentWeightsSelector :: Selector '[RawId] ()
 setCellGateRecurrentWeightsSelector = mkSelector "setCellGateRecurrentWeights:"
 
 -- | @Selector@ for @cellGateMemoryWeights@
-cellGateMemoryWeightsSelector :: Selector
+cellGateMemoryWeightsSelector :: Selector '[] RawId
 cellGateMemoryWeightsSelector = mkSelector "cellGateMemoryWeights"
 
 -- | @Selector@ for @setCellGateMemoryWeights:@
-setCellGateMemoryWeightsSelector :: Selector
+setCellGateMemoryWeightsSelector :: Selector '[RawId] ()
 setCellGateMemoryWeightsSelector = mkSelector "setCellGateMemoryWeights:"
 
 -- | @Selector@ for @cellToOutputNeuronType@
-cellToOutputNeuronTypeSelector :: Selector
+cellToOutputNeuronTypeSelector :: Selector '[] MPSCNNNeuronType
 cellToOutputNeuronTypeSelector = mkSelector "cellToOutputNeuronType"
 
 -- | @Selector@ for @setCellToOutputNeuronType:@
-setCellToOutputNeuronTypeSelector :: Selector
+setCellToOutputNeuronTypeSelector :: Selector '[MPSCNNNeuronType] ()
 setCellToOutputNeuronTypeSelector = mkSelector "setCellToOutputNeuronType:"
 
 -- | @Selector@ for @cellToOutputNeuronParamA@
-cellToOutputNeuronParamASelector :: Selector
+cellToOutputNeuronParamASelector :: Selector '[] CFloat
 cellToOutputNeuronParamASelector = mkSelector "cellToOutputNeuronParamA"
 
 -- | @Selector@ for @setCellToOutputNeuronParamA:@
-setCellToOutputNeuronParamASelector :: Selector
+setCellToOutputNeuronParamASelector :: Selector '[CFloat] ()
 setCellToOutputNeuronParamASelector = mkSelector "setCellToOutputNeuronParamA:"
 
 -- | @Selector@ for @cellToOutputNeuronParamB@
-cellToOutputNeuronParamBSelector :: Selector
+cellToOutputNeuronParamBSelector :: Selector '[] CFloat
 cellToOutputNeuronParamBSelector = mkSelector "cellToOutputNeuronParamB"
 
 -- | @Selector@ for @setCellToOutputNeuronParamB:@
-setCellToOutputNeuronParamBSelector :: Selector
+setCellToOutputNeuronParamBSelector :: Selector '[CFloat] ()
 setCellToOutputNeuronParamBSelector = mkSelector "setCellToOutputNeuronParamB:"
 
 -- | @Selector@ for @cellToOutputNeuronParamC@
-cellToOutputNeuronParamCSelector :: Selector
+cellToOutputNeuronParamCSelector :: Selector '[] CFloat
 cellToOutputNeuronParamCSelector = mkSelector "cellToOutputNeuronParamC"
 
 -- | @Selector@ for @setCellToOutputNeuronParamC:@
-setCellToOutputNeuronParamCSelector :: Selector
+setCellToOutputNeuronParamCSelector :: Selector '[CFloat] ()
 setCellToOutputNeuronParamCSelector = mkSelector "setCellToOutputNeuronParamC:"
 

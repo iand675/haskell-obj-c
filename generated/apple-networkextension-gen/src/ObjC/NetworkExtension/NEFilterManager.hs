@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,20 +30,20 @@ module ObjC.NetworkExtension.NEFilterManager
   , setGrade
   , disableEncryptedDNSSettings
   , setDisableEncryptedDNSSettings
-  , sharedManagerSelector
+  , disableEncryptedDNSSettingsSelector
+  , enabledSelector
+  , gradeSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , providerConfigurationSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , providerConfigurationSelector
-  , setProviderConfigurationSelector
-  , enabledSelector
-  , setEnabledSelector
-  , gradeSelector
-  , setGradeSelector
-  , disableEncryptedDNSSettingsSelector
   , setDisableEncryptedDNSSettingsSelector
+  , setEnabledSelector
+  , setGradeSelector
+  , setLocalizedDescriptionSelector
+  , setProviderConfigurationSelector
+  , sharedManagerSelector
 
   -- * Enum types
   , NEFilterManagerGrade(NEFilterManagerGrade)
@@ -51,15 +52,11 @@ module ObjC.NetworkExtension.NEFilterManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,7 +73,7 @@ sharedManager :: IO (Id NEFilterManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NEFilterManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | loadFromPreferencesWithCompletionHandler:
 --
@@ -86,8 +83,8 @@ sharedManager  =
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNEFilterManager neFilterManager => neFilterManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler neFilterManager  completionHandler =
-    sendMsg neFilterManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler neFilterManager completionHandler =
+  sendMessage neFilterManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -97,8 +94,8 @@ loadFromPreferencesWithCompletionHandler neFilterManager  completionHandler =
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNEFilterManager neFilterManager => neFilterManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler neFilterManager  completionHandler =
-    sendMsg neFilterManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler neFilterManager completionHandler =
+  sendMessage neFilterManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -108,8 +105,8 @@ removeFromPreferencesWithCompletionHandler neFilterManager  completionHandler =
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNEFilterManager neFilterManager => neFilterManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler neFilterManager  completionHandler =
-    sendMsg neFilterManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler neFilterManager completionHandler =
+  sendMessage neFilterManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | localizedDescription
 --
@@ -117,8 +114,8 @@ saveToPreferencesWithCompletionHandler neFilterManager  completionHandler =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNEFilterManager neFilterManager => neFilterManager -> IO (Id NSString)
-localizedDescription neFilterManager  =
-    sendMsg neFilterManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription neFilterManager =
+  sendMessage neFilterManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -126,9 +123,8 @@ localizedDescription neFilterManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNEFilterManager neFilterManager, IsNSString value) => neFilterManager -> value -> IO ()
-setLocalizedDescription neFilterManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription neFilterManager value =
+  sendMessage neFilterManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | providerConfiguration
 --
@@ -136,8 +132,8 @@ setLocalizedDescription neFilterManager  value =
 --
 -- ObjC selector: @- providerConfiguration@
 providerConfiguration :: IsNEFilterManager neFilterManager => neFilterManager -> IO (Id NEFilterProviderConfiguration)
-providerConfiguration neFilterManager  =
-    sendMsg neFilterManager (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerConfiguration neFilterManager =
+  sendMessage neFilterManager providerConfigurationSelector
 
 -- | providerConfiguration
 --
@@ -145,9 +141,8 @@ providerConfiguration neFilterManager  =
 --
 -- ObjC selector: @- setProviderConfiguration:@
 setProviderConfiguration :: (IsNEFilterManager neFilterManager, IsNEFilterProviderConfiguration value) => neFilterManager -> value -> IO ()
-setProviderConfiguration neFilterManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterManager (mkSelector "setProviderConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderConfiguration neFilterManager value =
+  sendMessage neFilterManager setProviderConfigurationSelector (toNEFilterProviderConfiguration value)
 
 -- | enabled
 --
@@ -155,8 +150,8 @@ setProviderConfiguration neFilterManager  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNEFilterManager neFilterManager => neFilterManager -> IO Bool
-enabled neFilterManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neFilterManager (mkSelector "enabled") retCULong []
+enabled neFilterManager =
+  sendMessage neFilterManager enabledSelector
 
 -- | enabled
 --
@@ -164,8 +159,8 @@ enabled neFilterManager  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNEFilterManager neFilterManager => neFilterManager -> Bool -> IO ()
-setEnabled neFilterManager  value =
-    sendMsg neFilterManager (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled neFilterManager value =
+  sendMessage neFilterManager setEnabledSelector value
 
 -- | grade
 --
@@ -173,8 +168,8 @@ setEnabled neFilterManager  value =
 --
 -- ObjC selector: @- grade@
 grade :: IsNEFilterManager neFilterManager => neFilterManager -> IO NEFilterManagerGrade
-grade neFilterManager  =
-    fmap (coerce :: CLong -> NEFilterManagerGrade) $ sendMsg neFilterManager (mkSelector "grade") retCLong []
+grade neFilterManager =
+  sendMessage neFilterManager gradeSelector
 
 -- | grade
 --
@@ -182,8 +177,8 @@ grade neFilterManager  =
 --
 -- ObjC selector: @- setGrade:@
 setGrade :: IsNEFilterManager neFilterManager => neFilterManager -> NEFilterManagerGrade -> IO ()
-setGrade neFilterManager  value =
-    sendMsg neFilterManager (mkSelector "setGrade:") retVoid [argCLong (coerce value)]
+setGrade neFilterManager value =
+  sendMessage neFilterManager setGradeSelector value
 
 -- | disableEncryptedDNSSettings
 --
@@ -191,8 +186,8 @@ setGrade neFilterManager  value =
 --
 -- ObjC selector: @- disableEncryptedDNSSettings@
 disableEncryptedDNSSettings :: IsNEFilterManager neFilterManager => neFilterManager -> IO Bool
-disableEncryptedDNSSettings neFilterManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neFilterManager (mkSelector "disableEncryptedDNSSettings") retCULong []
+disableEncryptedDNSSettings neFilterManager =
+  sendMessage neFilterManager disableEncryptedDNSSettingsSelector
 
 -- | disableEncryptedDNSSettings
 --
@@ -200,66 +195,66 @@ disableEncryptedDNSSettings neFilterManager  =
 --
 -- ObjC selector: @- setDisableEncryptedDNSSettings:@
 setDisableEncryptedDNSSettings :: IsNEFilterManager neFilterManager => neFilterManager -> Bool -> IO ()
-setDisableEncryptedDNSSettings neFilterManager  value =
-    sendMsg neFilterManager (mkSelector "setDisableEncryptedDNSSettings:") retVoid [argCULong (if value then 1 else 0)]
+setDisableEncryptedDNSSettings neFilterManager value =
+  sendMessage neFilterManager setDisableEncryptedDNSSettingsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NEFilterManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @providerConfiguration@
-providerConfigurationSelector :: Selector
+providerConfigurationSelector :: Selector '[] (Id NEFilterProviderConfiguration)
 providerConfigurationSelector = mkSelector "providerConfiguration"
 
 -- | @Selector@ for @setProviderConfiguration:@
-setProviderConfigurationSelector :: Selector
+setProviderConfigurationSelector :: Selector '[Id NEFilterProviderConfiguration] ()
 setProviderConfigurationSelector = mkSelector "setProviderConfiguration:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @grade@
-gradeSelector :: Selector
+gradeSelector :: Selector '[] NEFilterManagerGrade
 gradeSelector = mkSelector "grade"
 
 -- | @Selector@ for @setGrade:@
-setGradeSelector :: Selector
+setGradeSelector :: Selector '[NEFilterManagerGrade] ()
 setGradeSelector = mkSelector "setGrade:"
 
 -- | @Selector@ for @disableEncryptedDNSSettings@
-disableEncryptedDNSSettingsSelector :: Selector
+disableEncryptedDNSSettingsSelector :: Selector '[] Bool
 disableEncryptedDNSSettingsSelector = mkSelector "disableEncryptedDNSSettings"
 
 -- | @Selector@ for @setDisableEncryptedDNSSettings:@
-setDisableEncryptedDNSSettingsSelector :: Selector
+setDisableEncryptedDNSSettingsSelector :: Selector '[Bool] ()
 setDisableEncryptedDNSSettingsSelector = mkSelector "setDisableEncryptedDNSSettings:"
 

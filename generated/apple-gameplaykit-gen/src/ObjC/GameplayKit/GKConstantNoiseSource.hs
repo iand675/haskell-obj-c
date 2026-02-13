@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.GameplayKit.GKConstantNoiseSource
   , setValue
   , constantNoiseWithValueSelector
   , initWithValueSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,40 +37,40 @@ constantNoiseWithValue :: CDouble -> IO (Id GKConstantNoiseSource)
 constantNoiseWithValue value =
   do
     cls' <- getRequiredClass "GKConstantNoiseSource"
-    sendClassMsg cls' (mkSelector "constantNoiseWithValue:") (retPtr retVoid) [argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' constantNoiseWithValueSelector value
 
 -- | @- initWithValue:@
 initWithValue :: IsGKConstantNoiseSource gkConstantNoiseSource => gkConstantNoiseSource -> CDouble -> IO (Id GKConstantNoiseSource)
-initWithValue gkConstantNoiseSource  value =
-    sendMsg gkConstantNoiseSource (mkSelector "initWithValue:") (retPtr retVoid) [argCDouble value] >>= ownedObject . castPtr
+initWithValue gkConstantNoiseSource value =
+  sendOwnedMessage gkConstantNoiseSource initWithValueSelector value
 
 -- | @- value@
 value :: IsGKConstantNoiseSource gkConstantNoiseSource => gkConstantNoiseSource -> IO CDouble
-value gkConstantNoiseSource  =
-    sendMsg gkConstantNoiseSource (mkSelector "value") retCDouble []
+value gkConstantNoiseSource =
+  sendMessage gkConstantNoiseSource valueSelector
 
 -- | @- setValue:@
 setValue :: IsGKConstantNoiseSource gkConstantNoiseSource => gkConstantNoiseSource -> CDouble -> IO ()
-setValue gkConstantNoiseSource  value =
-    sendMsg gkConstantNoiseSource (mkSelector "setValue:") retVoid [argCDouble value]
+setValue gkConstantNoiseSource value =
+  sendMessage gkConstantNoiseSource setValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constantNoiseWithValue:@
-constantNoiseWithValueSelector :: Selector
+constantNoiseWithValueSelector :: Selector '[CDouble] (Id GKConstantNoiseSource)
 constantNoiseWithValueSelector = mkSelector "constantNoiseWithValue:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[CDouble] (Id GKConstantNoiseSource)
 initWithValueSelector = mkSelector "initWithValue:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CDouble
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CDouble] ()
 setValueSelector = mkSelector "setValue:"
 

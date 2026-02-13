@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTROvenCavityOperationalStateClusterOperationalStateStruct
   , operationalStateLabel
   , setOperationalStateLabel
   , operationalStateIDSelector
-  , setOperationalStateIDSelector
   , operationalStateLabelSelector
+  , setOperationalStateIDSelector
   , setOperationalStateLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- operationalStateID@
 operationalStateID :: IsMTROvenCavityOperationalStateClusterOperationalStateStruct mtrOvenCavityOperationalStateClusterOperationalStateStruct => mtrOvenCavityOperationalStateClusterOperationalStateStruct -> IO (Id NSNumber)
-operationalStateID mtrOvenCavityOperationalStateClusterOperationalStateStruct  =
-    sendMsg mtrOvenCavityOperationalStateClusterOperationalStateStruct (mkSelector "operationalStateID") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalStateID mtrOvenCavityOperationalStateClusterOperationalStateStruct =
+  sendMessage mtrOvenCavityOperationalStateClusterOperationalStateStruct operationalStateIDSelector
 
 -- | @- setOperationalStateID:@
 setOperationalStateID :: (IsMTROvenCavityOperationalStateClusterOperationalStateStruct mtrOvenCavityOperationalStateClusterOperationalStateStruct, IsNSNumber value) => mtrOvenCavityOperationalStateClusterOperationalStateStruct -> value -> IO ()
-setOperationalStateID mtrOvenCavityOperationalStateClusterOperationalStateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenCavityOperationalStateClusterOperationalStateStruct (mkSelector "setOperationalStateID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationalStateID mtrOvenCavityOperationalStateClusterOperationalStateStruct value =
+  sendMessage mtrOvenCavityOperationalStateClusterOperationalStateStruct setOperationalStateIDSelector (toNSNumber value)
 
 -- | @- operationalStateLabel@
 operationalStateLabel :: IsMTROvenCavityOperationalStateClusterOperationalStateStruct mtrOvenCavityOperationalStateClusterOperationalStateStruct => mtrOvenCavityOperationalStateClusterOperationalStateStruct -> IO (Id NSString)
-operationalStateLabel mtrOvenCavityOperationalStateClusterOperationalStateStruct  =
-    sendMsg mtrOvenCavityOperationalStateClusterOperationalStateStruct (mkSelector "operationalStateLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalStateLabel mtrOvenCavityOperationalStateClusterOperationalStateStruct =
+  sendMessage mtrOvenCavityOperationalStateClusterOperationalStateStruct operationalStateLabelSelector
 
 -- | @- setOperationalStateLabel:@
 setOperationalStateLabel :: (IsMTROvenCavityOperationalStateClusterOperationalStateStruct mtrOvenCavityOperationalStateClusterOperationalStateStruct, IsNSString value) => mtrOvenCavityOperationalStateClusterOperationalStateStruct -> value -> IO ()
-setOperationalStateLabel mtrOvenCavityOperationalStateClusterOperationalStateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenCavityOperationalStateClusterOperationalStateStruct (mkSelector "setOperationalStateLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationalStateLabel mtrOvenCavityOperationalStateClusterOperationalStateStruct value =
+  sendMessage mtrOvenCavityOperationalStateClusterOperationalStateStruct setOperationalStateLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @operationalStateID@
-operationalStateIDSelector :: Selector
+operationalStateIDSelector :: Selector '[] (Id NSNumber)
 operationalStateIDSelector = mkSelector "operationalStateID"
 
 -- | @Selector@ for @setOperationalStateID:@
-setOperationalStateIDSelector :: Selector
+setOperationalStateIDSelector :: Selector '[Id NSNumber] ()
 setOperationalStateIDSelector = mkSelector "setOperationalStateID:"
 
 -- | @Selector@ for @operationalStateLabel@
-operationalStateLabelSelector :: Selector
+operationalStateLabelSelector :: Selector '[] (Id NSString)
 operationalStateLabelSelector = mkSelector "operationalStateLabel"
 
 -- | @Selector@ for @setOperationalStateLabel:@
-setOperationalStateLabelSelector :: Selector
+setOperationalStateLabelSelector :: Selector '[Id NSString] ()
 setOperationalStateLabelSelector = mkSelector "setOperationalStateLabel:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.CoreML.MLOptimizationHints
   , setSpecializationStrategy
   , reshapeFrequencySelector
   , setReshapeFrequencySelector
-  , specializationStrategySelector
   , setSpecializationStrategySelector
+  , specializationStrategySelector
 
   -- * Enum types
   , MLReshapeFrequencyHint(MLReshapeFrequencyHint)
@@ -30,15 +31,11 @@ module ObjC.CoreML.MLOptimizationHints
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reshapeFrequency@
 reshapeFrequency :: IsMLOptimizationHints mlOptimizationHints => mlOptimizationHints -> IO MLReshapeFrequencyHint
-reshapeFrequency mlOptimizationHints  =
-    fmap (coerce :: CLong -> MLReshapeFrequencyHint) $ sendMsg mlOptimizationHints (mkSelector "reshapeFrequency") retCLong []
+reshapeFrequency mlOptimizationHints =
+  sendMessage mlOptimizationHints reshapeFrequencySelector
 
 -- | The anticipated reshape frequency
 --
@@ -65,8 +62,8 @@ reshapeFrequency mlOptimizationHints  =
 --
 -- ObjC selector: @- setReshapeFrequency:@
 setReshapeFrequency :: IsMLOptimizationHints mlOptimizationHints => mlOptimizationHints -> MLReshapeFrequencyHint -> IO ()
-setReshapeFrequency mlOptimizationHints  value =
-    sendMsg mlOptimizationHints (mkSelector "setReshapeFrequency:") retVoid [argCLong (coerce value)]
+setReshapeFrequency mlOptimizationHints value =
+  sendMessage mlOptimizationHints setReshapeFrequencySelector value
 
 -- | Optimization strategy for the model specialization.
 --
@@ -76,8 +73,8 @@ setReshapeFrequency mlOptimizationHints  value =
 --
 -- ObjC selector: @- specializationStrategy@
 specializationStrategy :: IsMLOptimizationHints mlOptimizationHints => mlOptimizationHints -> IO MLSpecializationStrategy
-specializationStrategy mlOptimizationHints  =
-    fmap (coerce :: CLong -> MLSpecializationStrategy) $ sendMsg mlOptimizationHints (mkSelector "specializationStrategy") retCLong []
+specializationStrategy mlOptimizationHints =
+  sendMessage mlOptimizationHints specializationStrategySelector
 
 -- | Optimization strategy for the model specialization.
 --
@@ -87,26 +84,26 @@ specializationStrategy mlOptimizationHints  =
 --
 -- ObjC selector: @- setSpecializationStrategy:@
 setSpecializationStrategy :: IsMLOptimizationHints mlOptimizationHints => mlOptimizationHints -> MLSpecializationStrategy -> IO ()
-setSpecializationStrategy mlOptimizationHints  value =
-    sendMsg mlOptimizationHints (mkSelector "setSpecializationStrategy:") retVoid [argCLong (coerce value)]
+setSpecializationStrategy mlOptimizationHints value =
+  sendMessage mlOptimizationHints setSpecializationStrategySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reshapeFrequency@
-reshapeFrequencySelector :: Selector
+reshapeFrequencySelector :: Selector '[] MLReshapeFrequencyHint
 reshapeFrequencySelector = mkSelector "reshapeFrequency"
 
 -- | @Selector@ for @setReshapeFrequency:@
-setReshapeFrequencySelector :: Selector
+setReshapeFrequencySelector :: Selector '[MLReshapeFrequencyHint] ()
 setReshapeFrequencySelector = mkSelector "setReshapeFrequency:"
 
 -- | @Selector@ for @specializationStrategy@
-specializationStrategySelector :: Selector
+specializationStrategySelector :: Selector '[] MLSpecializationStrategy
 specializationStrategySelector = mkSelector "specializationStrategy"
 
 -- | @Selector@ for @setSpecializationStrategy:@
-setSpecializationStrategySelector :: Selector
+setSpecializationStrategySelector :: Selector '[MLSpecializationStrategy] ()
 setSpecializationStrategySelector = mkSelector "setSpecializationStrategy:"
 

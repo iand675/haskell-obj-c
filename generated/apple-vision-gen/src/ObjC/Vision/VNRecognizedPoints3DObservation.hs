@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.Vision.VNRecognizedPoints3DObservation
   , recognizedPointsForGroupKey_error
   , availableKeys
   , availableGroupKeys
-  , newSelector
+  , availableGroupKeysSelector
+  , availableKeysSelector
   , initSelector
+  , newSelector
   , recognizedPointForKey_errorSelector
   , recognizedPointsForGroupKey_errorSelector
-  , availableKeysSelector
-  , availableGroupKeysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,12 +47,12 @@ new :: IO (Id VNRecognizedPoints3DObservation)
 new  =
   do
     cls' <- getRequiredClass "VNRecognizedPoints3DObservation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNRecognizedPoints3DObservation vnRecognizedPoints3DObservation => vnRecognizedPoints3DObservation -> IO (Id VNRecognizedPoints3DObservation)
-init_ vnRecognizedPoints3DObservation  =
-    sendMsg vnRecognizedPoints3DObservation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnRecognizedPoints3DObservation =
+  sendOwnedMessage vnRecognizedPoints3DObservation initSelector
 
 -- | Obtains a specific normalized recognized point.
 --
@@ -67,10 +64,8 @@ init_ vnRecognizedPoints3DObservation  =
 --
 -- ObjC selector: @- recognizedPointForKey:error:@
 recognizedPointForKey_error :: (IsVNRecognizedPoints3DObservation vnRecognizedPoints3DObservation, IsNSString pointKey, IsNSError error_) => vnRecognizedPoints3DObservation -> pointKey -> error_ -> IO (Id VNRecognizedPoint3D)
-recognizedPointForKey_error vnRecognizedPoints3DObservation  pointKey error_ =
-  withObjCPtr pointKey $ \raw_pointKey ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnRecognizedPoints3DObservation (mkSelector "recognizedPointForKey:error:") (retPtr retVoid) [argPtr (castPtr raw_pointKey :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointForKey_error vnRecognizedPoints3DObservation pointKey error_ =
+  sendMessage vnRecognizedPoints3DObservation recognizedPointForKey_errorSelector (toNSString pointKey) (toNSError error_)
 
 -- | Obtains the collection of points associated with an identified grouping.
 --
@@ -84,50 +79,48 @@ recognizedPointForKey_error vnRecognizedPoints3DObservation  pointKey error_ =
 --
 -- ObjC selector: @- recognizedPointsForGroupKey:error:@
 recognizedPointsForGroupKey_error :: (IsVNRecognizedPoints3DObservation vnRecognizedPoints3DObservation, IsNSString groupKey, IsNSError error_) => vnRecognizedPoints3DObservation -> groupKey -> error_ -> IO (Id NSDictionary)
-recognizedPointsForGroupKey_error vnRecognizedPoints3DObservation  groupKey error_ =
-  withObjCPtr groupKey $ \raw_groupKey ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnRecognizedPoints3DObservation (mkSelector "recognizedPointsForGroupKey:error:") (retPtr retVoid) [argPtr (castPtr raw_groupKey :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointsForGroupKey_error vnRecognizedPoints3DObservation groupKey error_ =
+  sendMessage vnRecognizedPoints3DObservation recognizedPointsForGroupKey_errorSelector (toNSString groupKey) (toNSError error_)
 
 -- | Returns all of the point group keys available in the observation.
 --
 -- ObjC selector: @- availableKeys@
 availableKeys :: IsVNRecognizedPoints3DObservation vnRecognizedPoints3DObservation => vnRecognizedPoints3DObservation -> IO (Id NSArray)
-availableKeys vnRecognizedPoints3DObservation  =
-    sendMsg vnRecognizedPoints3DObservation (mkSelector "availableKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableKeys vnRecognizedPoints3DObservation =
+  sendMessage vnRecognizedPoints3DObservation availableKeysSelector
 
 -- | The availableGroupKeys property returns all of the point group labels usable with the observation.
 --
 -- ObjC selector: @- availableGroupKeys@
 availableGroupKeys :: IsVNRecognizedPoints3DObservation vnRecognizedPoints3DObservation => vnRecognizedPoints3DObservation -> IO (Id NSArray)
-availableGroupKeys vnRecognizedPoints3DObservation  =
-    sendMsg vnRecognizedPoints3DObservation (mkSelector "availableGroupKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableGroupKeys vnRecognizedPoints3DObservation =
+  sendMessage vnRecognizedPoints3DObservation availableGroupKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNRecognizedPoints3DObservation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNRecognizedPoints3DObservation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @recognizedPointForKey:error:@
-recognizedPointForKey_errorSelector :: Selector
+recognizedPointForKey_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNRecognizedPoint3D)
 recognizedPointForKey_errorSelector = mkSelector "recognizedPointForKey:error:"
 
 -- | @Selector@ for @recognizedPointsForGroupKey:error:@
-recognizedPointsForGroupKey_errorSelector :: Selector
+recognizedPointsForGroupKey_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSDictionary)
 recognizedPointsForGroupKey_errorSelector = mkSelector "recognizedPointsForGroupKey:error:"
 
 -- | @Selector@ for @availableKeys@
-availableKeysSelector :: Selector
+availableKeysSelector :: Selector '[] (Id NSArray)
 availableKeysSelector = mkSelector "availableKeys"
 
 -- | @Selector@ for @availableGroupKeys@
-availableGroupKeysSelector :: Selector
+availableGroupKeysSelector :: Selector '[] (Id NSArray)
 availableGroupKeysSelector = mkSelector "availableGroupKeys"
 

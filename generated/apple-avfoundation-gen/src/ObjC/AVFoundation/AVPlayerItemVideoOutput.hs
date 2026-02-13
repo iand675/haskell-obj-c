@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AVFoundation.AVPlayerItemVideoOutput
   , requestNotificationOfMediaDataChangeWithAdvanceInterval
   , delegate
   , delegateQueue
-  , initWithPixelBufferAttributesSelector
-  , initWithOutputSettingsSelector
-  , setDelegate_queueSelector
-  , requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector
-  , delegateSelector
   , delegateQueueSelector
+  , delegateSelector
+  , initWithOutputSettingsSelector
+  , initWithPixelBufferAttributesSelector
+  , requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector
+  , setDelegate_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPixelBufferAttributes:@
 initWithPixelBufferAttributes :: (IsAVPlayerItemVideoOutput avPlayerItemVideoOutput, IsNSDictionary pixelBufferAttributes) => avPlayerItemVideoOutput -> pixelBufferAttributes -> IO (Id AVPlayerItemVideoOutput)
-initWithPixelBufferAttributes avPlayerItemVideoOutput  pixelBufferAttributes =
-  withObjCPtr pixelBufferAttributes $ \raw_pixelBufferAttributes ->
-      sendMsg avPlayerItemVideoOutput (mkSelector "initWithPixelBufferAttributes:") (retPtr retVoid) [argPtr (castPtr raw_pixelBufferAttributes :: Ptr ())] >>= ownedObject . castPtr
+initWithPixelBufferAttributes avPlayerItemVideoOutput pixelBufferAttributes =
+  sendOwnedMessage avPlayerItemVideoOutput initWithPixelBufferAttributesSelector (toNSDictionary pixelBufferAttributes)
 
 -- | initWithOutputSettings:
 --
@@ -69,9 +65,8 @@ initWithPixelBufferAttributes avPlayerItemVideoOutput  pixelBufferAttributes =
 --
 -- ObjC selector: @- initWithOutputSettings:@
 initWithOutputSettings :: (IsAVPlayerItemVideoOutput avPlayerItemVideoOutput, IsNSDictionary outputSettings) => avPlayerItemVideoOutput -> outputSettings -> IO (Id AVPlayerItemVideoOutput)
-initWithOutputSettings avPlayerItemVideoOutput  outputSettings =
-  withObjCPtr outputSettings $ \raw_outputSettings ->
-      sendMsg avPlayerItemVideoOutput (mkSelector "initWithOutputSettings:") (retPtr retVoid) [argPtr (castPtr raw_outputSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithOutputSettings avPlayerItemVideoOutput outputSettings =
+  sendOwnedMessage avPlayerItemVideoOutput initWithOutputSettingsSelector (toNSDictionary outputSettings)
 
 -- | setDelegate:queue:
 --
@@ -83,9 +78,8 @@ initWithOutputSettings avPlayerItemVideoOutput  outputSettings =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVPlayerItemVideoOutput avPlayerItemVideoOutput, IsNSObject delegateQueue) => avPlayerItemVideoOutput -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avPlayerItemVideoOutput  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avPlayerItemVideoOutput (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avPlayerItemVideoOutput delegate delegateQueue =
+  sendMessage avPlayerItemVideoOutput setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | requestNotificationOfMediaDataChangeWithAdvanceInterval:
 --
@@ -97,8 +91,8 @@ setDelegate_queue avPlayerItemVideoOutput  delegate delegateQueue =
 --
 -- ObjC selector: @- requestNotificationOfMediaDataChangeWithAdvanceInterval:@
 requestNotificationOfMediaDataChangeWithAdvanceInterval :: IsAVPlayerItemVideoOutput avPlayerItemVideoOutput => avPlayerItemVideoOutput -> CDouble -> IO ()
-requestNotificationOfMediaDataChangeWithAdvanceInterval avPlayerItemVideoOutput  interval =
-    sendMsg avPlayerItemVideoOutput (mkSelector "requestNotificationOfMediaDataChangeWithAdvanceInterval:") retVoid [argCDouble interval]
+requestNotificationOfMediaDataChangeWithAdvanceInterval avPlayerItemVideoOutput interval =
+  sendMessage avPlayerItemVideoOutput requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector interval
 
 -- | delegate
 --
@@ -106,8 +100,8 @@ requestNotificationOfMediaDataChangeWithAdvanceInterval avPlayerItemVideoOutput 
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerItemVideoOutput avPlayerItemVideoOutput => avPlayerItemVideoOutput -> IO RawId
-delegate avPlayerItemVideoOutput  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerItemVideoOutput (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerItemVideoOutput =
+  sendMessage avPlayerItemVideoOutput delegateSelector
 
 -- | delegateQueue
 --
@@ -115,34 +109,34 @@ delegate avPlayerItemVideoOutput  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVPlayerItemVideoOutput avPlayerItemVideoOutput => avPlayerItemVideoOutput -> IO (Id NSObject)
-delegateQueue avPlayerItemVideoOutput  =
-    sendMsg avPlayerItemVideoOutput (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avPlayerItemVideoOutput =
+  sendMessage avPlayerItemVideoOutput delegateQueueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPixelBufferAttributes:@
-initWithPixelBufferAttributesSelector :: Selector
+initWithPixelBufferAttributesSelector :: Selector '[Id NSDictionary] (Id AVPlayerItemVideoOutput)
 initWithPixelBufferAttributesSelector = mkSelector "initWithPixelBufferAttributes:"
 
 -- | @Selector@ for @initWithOutputSettings:@
-initWithOutputSettingsSelector :: Selector
+initWithOutputSettingsSelector :: Selector '[Id NSDictionary] (Id AVPlayerItemVideoOutput)
 initWithOutputSettingsSelector = mkSelector "initWithOutputSettings:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @requestNotificationOfMediaDataChangeWithAdvanceInterval:@
-requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector :: Selector
+requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector :: Selector '[CDouble] ()
 requestNotificationOfMediaDataChangeWithAdvanceIntervalSelector = mkSelector "requestNotificationOfMediaDataChangeWithAdvanceInterval:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 

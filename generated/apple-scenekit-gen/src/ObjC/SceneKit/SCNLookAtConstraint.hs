@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.SceneKit.SCNLookAtConstraint
   , setWorldUp
   , gimbalLockEnabled
   , setGimbalLockEnabled
-  , lookAtConstraintWithTargetSelector
-  , targetSelector
-  , setTargetSelector
-  , targetOffsetSelector
-  , setTargetOffsetSelector
-  , localFrontSelector
-  , setLocalFrontSelector
-  , worldUpSelector
-  , setWorldUpSelector
   , gimbalLockEnabledSelector
+  , localFrontSelector
+  , lookAtConstraintWithTargetSelector
   , setGimbalLockEnabledSelector
+  , setLocalFrontSelector
+  , setTargetOffsetSelector
+  , setTargetSelector
+  , setWorldUpSelector
+  , targetOffsetSelector
+  , targetSelector
+  , worldUpSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,19 +60,17 @@ lookAtConstraintWithTarget :: IsSCNNode target => target -> IO (Id SCNLookAtCons
 lookAtConstraintWithTarget target =
   do
     cls' <- getRequiredClass "SCNLookAtConstraint"
-    withObjCPtr target $ \raw_target ->
-      sendClassMsg cls' (mkSelector "lookAtConstraintWithTarget:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lookAtConstraintWithTargetSelector (toSCNNode target)
 
 -- | @- target@
 target :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> IO (Id SCNNode)
-target scnLookAtConstraint  =
-    sendMsg scnLookAtConstraint (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target scnLookAtConstraint =
+  sendMessage scnLookAtConstraint targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsSCNLookAtConstraint scnLookAtConstraint, IsSCNNode target) => scnLookAtConstraint -> target -> IO ()
-setTarget scnLookAtConstraint  target =
-  withObjCPtr target $ \raw_target ->
-      sendMsg scnLookAtConstraint (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_target :: Ptr ())]
+setTarget scnLookAtConstraint target =
+  sendMessage scnLookAtConstraint setTargetSelector (toSCNNode target)
 
 -- | targetOffset
 --
@@ -83,8 +78,8 @@ setTarget scnLookAtConstraint  target =
 --
 -- ObjC selector: @- targetOffset@
 targetOffset :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> IO SCNVector3
-targetOffset scnLookAtConstraint  =
-    sendMsgStret scnLookAtConstraint (mkSelector "targetOffset") retSCNVector3 []
+targetOffset scnLookAtConstraint =
+  sendMessage scnLookAtConstraint targetOffsetSelector
 
 -- | targetOffset
 --
@@ -92,8 +87,8 @@ targetOffset scnLookAtConstraint  =
 --
 -- ObjC selector: @- setTargetOffset:@
 setTargetOffset :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> SCNVector3 -> IO ()
-setTargetOffset scnLookAtConstraint  value =
-    sendMsg scnLookAtConstraint (mkSelector "setTargetOffset:") retVoid [argSCNVector3 value]
+setTargetOffset scnLookAtConstraint value =
+  sendMessage scnLookAtConstraint setTargetOffsetSelector value
 
 -- | targetOffset
 --
@@ -101,8 +96,8 @@ setTargetOffset scnLookAtConstraint  value =
 --
 -- ObjC selector: @- localFront@
 localFront :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> IO SCNVector3
-localFront scnLookAtConstraint  =
-    sendMsgStret scnLookAtConstraint (mkSelector "localFront") retSCNVector3 []
+localFront scnLookAtConstraint =
+  sendMessage scnLookAtConstraint localFrontSelector
 
 -- | targetOffset
 --
@@ -110,8 +105,8 @@ localFront scnLookAtConstraint  =
 --
 -- ObjC selector: @- setLocalFront:@
 setLocalFront :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> SCNVector3 -> IO ()
-setLocalFront scnLookAtConstraint  value =
-    sendMsg scnLookAtConstraint (mkSelector "setLocalFront:") retVoid [argSCNVector3 value]
+setLocalFront scnLookAtConstraint value =
+  sendMessage scnLookAtConstraint setLocalFrontSelector value
 
 -- | worldUp
 --
@@ -119,8 +114,8 @@ setLocalFront scnLookAtConstraint  value =
 --
 -- ObjC selector: @- worldUp@
 worldUp :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> IO SCNVector3
-worldUp scnLookAtConstraint  =
-    sendMsgStret scnLookAtConstraint (mkSelector "worldUp") retSCNVector3 []
+worldUp scnLookAtConstraint =
+  sendMessage scnLookAtConstraint worldUpSelector
 
 -- | worldUp
 --
@@ -128,8 +123,8 @@ worldUp scnLookAtConstraint  =
 --
 -- ObjC selector: @- setWorldUp:@
 setWorldUp :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> SCNVector3 -> IO ()
-setWorldUp scnLookAtConstraint  value =
-    sendMsg scnLookAtConstraint (mkSelector "setWorldUp:") retVoid [argSCNVector3 value]
+setWorldUp scnLookAtConstraint value =
+  sendMessage scnLookAtConstraint setWorldUpSelector value
 
 -- | gimbalLockEnabled
 --
@@ -139,8 +134,8 @@ setWorldUp scnLookAtConstraint  value =
 --
 -- ObjC selector: @- gimbalLockEnabled@
 gimbalLockEnabled :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> IO Bool
-gimbalLockEnabled scnLookAtConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLookAtConstraint (mkSelector "gimbalLockEnabled") retCULong []
+gimbalLockEnabled scnLookAtConstraint =
+  sendMessage scnLookAtConstraint gimbalLockEnabledSelector
 
 -- | gimbalLockEnabled
 --
@@ -150,54 +145,54 @@ gimbalLockEnabled scnLookAtConstraint  =
 --
 -- ObjC selector: @- setGimbalLockEnabled:@
 setGimbalLockEnabled :: IsSCNLookAtConstraint scnLookAtConstraint => scnLookAtConstraint -> Bool -> IO ()
-setGimbalLockEnabled scnLookAtConstraint  value =
-    sendMsg scnLookAtConstraint (mkSelector "setGimbalLockEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setGimbalLockEnabled scnLookAtConstraint value =
+  sendMessage scnLookAtConstraint setGimbalLockEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lookAtConstraintWithTarget:@
-lookAtConstraintWithTargetSelector :: Selector
+lookAtConstraintWithTargetSelector :: Selector '[Id SCNNode] (Id SCNLookAtConstraint)
 lookAtConstraintWithTargetSelector = mkSelector "lookAtConstraintWithTarget:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id SCNNode)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id SCNNode] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @targetOffset@
-targetOffsetSelector :: Selector
+targetOffsetSelector :: Selector '[] SCNVector3
 targetOffsetSelector = mkSelector "targetOffset"
 
 -- | @Selector@ for @setTargetOffset:@
-setTargetOffsetSelector :: Selector
+setTargetOffsetSelector :: Selector '[SCNVector3] ()
 setTargetOffsetSelector = mkSelector "setTargetOffset:"
 
 -- | @Selector@ for @localFront@
-localFrontSelector :: Selector
+localFrontSelector :: Selector '[] SCNVector3
 localFrontSelector = mkSelector "localFront"
 
 -- | @Selector@ for @setLocalFront:@
-setLocalFrontSelector :: Selector
+setLocalFrontSelector :: Selector '[SCNVector3] ()
 setLocalFrontSelector = mkSelector "setLocalFront:"
 
 -- | @Selector@ for @worldUp@
-worldUpSelector :: Selector
+worldUpSelector :: Selector '[] SCNVector3
 worldUpSelector = mkSelector "worldUp"
 
 -- | @Selector@ for @setWorldUp:@
-setWorldUpSelector :: Selector
+setWorldUpSelector :: Selector '[SCNVector3] ()
 setWorldUpSelector = mkSelector "setWorldUp:"
 
 -- | @Selector@ for @gimbalLockEnabled@
-gimbalLockEnabledSelector :: Selector
+gimbalLockEnabledSelector :: Selector '[] Bool
 gimbalLockEnabledSelector = mkSelector "gimbalLockEnabled"
 
 -- | @Selector@ for @setGimbalLockEnabled:@
-setGimbalLockEnabledSelector :: Selector
+setGimbalLockEnabledSelector :: Selector '[Bool] ()
 setGimbalLockEnabledSelector = mkSelector "setGimbalLockEnabled:"
 

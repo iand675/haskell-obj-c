@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.BusinessChat.BCChatButton
   , IsBCChatButton(..)
   , initWithStyle
   , initWithCoder
-  , initWithStyleSelector
   , initWithCoderSelector
+  , initWithStyleSelector
 
   -- * Enum types
   , BCChatButtonStyle(BCChatButtonStyle)
@@ -19,15 +20,11 @@ module ObjC.BusinessChat.BCChatButton
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,24 +41,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithStyle:@
 initWithStyle :: IsBCChatButton bcChatButton => bcChatButton -> BCChatButtonStyle -> IO (Id BCChatButton)
-initWithStyle bcChatButton  style =
-    sendMsg bcChatButton (mkSelector "initWithStyle:") (retPtr retVoid) [argCLong (coerce style)] >>= ownedObject . castPtr
+initWithStyle bcChatButton style =
+  sendOwnedMessage bcChatButton initWithStyleSelector style
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsBCChatButton bcChatButton, IsNSCoder coder) => bcChatButton -> coder -> IO (Id BCChatButton)
-initWithCoder bcChatButton  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg bcChatButton (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder bcChatButton coder =
+  sendOwnedMessage bcChatButton initWithCoderSelector (toNSCoder coder)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStyle:@
-initWithStyleSelector :: Selector
+initWithStyleSelector :: Selector '[BCChatButtonStyle] (Id BCChatButton)
 initWithStyleSelector = mkSelector "initWithStyle:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id BCChatButton)
 initWithCoderSelector = mkSelector "initWithCoder:"
 

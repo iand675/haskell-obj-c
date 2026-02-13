@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.Quartz.IKImageBrowserCell
   , isSelected
   , opacity
   , layerForType
-  , imageBrowserViewSelector
-  , representedItemSelector
-  , indexOfRepresentedItemSelector
   , frameSelector
+  , imageAlignmentSelector
+  , imageBrowserViewSelector
   , imageContainerFrameSelector
   , imageFrameSelector
-  , selectionFrameSelector
-  , titleFrameSelector
-  , subtitleFrameSelector
-  , imageAlignmentSelector
+  , indexOfRepresentedItemSelector
   , isSelectedSelector
-  , opacitySelector
   , layerForTypeSelector
+  , opacitySelector
+  , representedItemSelector
+  , selectionFrameSelector
+  , subtitleFrameSelector
+  , titleFrameSelector
 
   -- * Enum types
   , NSImageAlignment(NSImageAlignment)
@@ -48,15 +49,11 @@ module ObjC.Quartz.IKImageBrowserCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,8 @@ import ObjC.QuartzCore.Internal.Classes
 --
 -- ObjC selector: @- imageBrowserView@
 imageBrowserView :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO (Id IKImageBrowserView)
-imageBrowserView ikImageBrowserCell  =
-    sendMsg ikImageBrowserCell (mkSelector "imageBrowserView") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageBrowserView ikImageBrowserCell =
+  sendMessage ikImageBrowserCell imageBrowserViewSelector
 
 -- | representedItem
 --
@@ -85,8 +82,8 @@ imageBrowserView ikImageBrowserCell  =
 --
 -- ObjC selector: @- representedItem@
 representedItem :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO RawId
-representedItem ikImageBrowserCell  =
-    fmap (RawId . castPtr) $ sendMsg ikImageBrowserCell (mkSelector "representedItem") (retPtr retVoid) []
+representedItem ikImageBrowserCell =
+  sendMessage ikImageBrowserCell representedItemSelector
 
 -- | indexOfRepresentedItem
 --
@@ -96,8 +93,8 @@ representedItem ikImageBrowserCell  =
 --
 -- ObjC selector: @- indexOfRepresentedItem@
 indexOfRepresentedItem :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO CULong
-indexOfRepresentedItem ikImageBrowserCell  =
-    sendMsg ikImageBrowserCell (mkSelector "indexOfRepresentedItem") retCULong []
+indexOfRepresentedItem ikImageBrowserCell =
+  sendMessage ikImageBrowserCell indexOfRepresentedItemSelector
 
 -- | frame
 --
@@ -107,8 +104,8 @@ indexOfRepresentedItem ikImageBrowserCell  =
 --
 -- ObjC selector: @- frame@
 frame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-frame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "frame") retNSRect []
+frame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell frameSelector
 
 -- | imageContainerFrame
 --
@@ -118,8 +115,8 @@ frame ikImageBrowserCell  =
 --
 -- ObjC selector: @- imageContainerFrame@
 imageContainerFrame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-imageContainerFrame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "imageContainerFrame") retNSRect []
+imageContainerFrame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell imageContainerFrameSelector
 
 -- | imageFrame
 --
@@ -129,8 +126,8 @@ imageContainerFrame ikImageBrowserCell  =
 --
 -- ObjC selector: @- imageFrame@
 imageFrame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-imageFrame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "imageFrame") retNSRect []
+imageFrame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell imageFrameSelector
 
 -- | selectionFrame
 --
@@ -140,8 +137,8 @@ imageFrame ikImageBrowserCell  =
 --
 -- ObjC selector: @- selectionFrame@
 selectionFrame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-selectionFrame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "selectionFrame") retNSRect []
+selectionFrame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell selectionFrameSelector
 
 -- | titleFrame
 --
@@ -151,8 +148,8 @@ selectionFrame ikImageBrowserCell  =
 --
 -- ObjC selector: @- titleFrame@
 titleFrame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-titleFrame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "titleFrame") retNSRect []
+titleFrame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell titleFrameSelector
 
 -- | subtitleFrame
 --
@@ -162,8 +159,8 @@ titleFrame ikImageBrowserCell  =
 --
 -- ObjC selector: @- subtitleFrame@
 subtitleFrame :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSRect
-subtitleFrame ikImageBrowserCell  =
-    sendMsgStret ikImageBrowserCell (mkSelector "subtitleFrame") retNSRect []
+subtitleFrame ikImageBrowserCell =
+  sendMessage ikImageBrowserCell subtitleFrameSelector
 
 -- | imageAlignment
 --
@@ -173,8 +170,8 @@ subtitleFrame ikImageBrowserCell  =
 --
 -- ObjC selector: @- imageAlignment@
 imageAlignment :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO NSImageAlignment
-imageAlignment ikImageBrowserCell  =
-    fmap (coerce :: CULong -> NSImageAlignment) $ sendMsg ikImageBrowserCell (mkSelector "imageAlignment") retCULong []
+imageAlignment ikImageBrowserCell =
+  sendMessage ikImageBrowserCell imageAlignmentSelector
 
 -- | isSelected
 --
@@ -184,8 +181,8 @@ imageAlignment ikImageBrowserCell  =
 --
 -- ObjC selector: @- isSelected@
 isSelected :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO Bool
-isSelected ikImageBrowserCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageBrowserCell (mkSelector "isSelected") retCULong []
+isSelected ikImageBrowserCell =
+  sendMessage ikImageBrowserCell isSelectedSelector
 
 -- | opacity
 --
@@ -195,8 +192,8 @@ isSelected ikImageBrowserCell  =
 --
 -- ObjC selector: @- opacity@
 opacity :: IsIKImageBrowserCell ikImageBrowserCell => ikImageBrowserCell -> IO CDouble
-opacity ikImageBrowserCell  =
-    sendMsg ikImageBrowserCell (mkSelector "opacity") retCDouble []
+opacity ikImageBrowserCell =
+  sendMessage ikImageBrowserCell opacitySelector
 
 -- | layerForType:
 --
@@ -206,63 +203,62 @@ opacity ikImageBrowserCell  =
 --
 -- ObjC selector: @- layerForType:@
 layerForType :: (IsIKImageBrowserCell ikImageBrowserCell, IsNSString type_) => ikImageBrowserCell -> type_ -> IO (Id CALayer)
-layerForType ikImageBrowserCell  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg ikImageBrowserCell (mkSelector "layerForType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+layerForType ikImageBrowserCell type_ =
+  sendMessage ikImageBrowserCell layerForTypeSelector (toNSString type_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageBrowserView@
-imageBrowserViewSelector :: Selector
+imageBrowserViewSelector :: Selector '[] (Id IKImageBrowserView)
 imageBrowserViewSelector = mkSelector "imageBrowserView"
 
 -- | @Selector@ for @representedItem@
-representedItemSelector :: Selector
+representedItemSelector :: Selector '[] RawId
 representedItemSelector = mkSelector "representedItem"
 
 -- | @Selector@ for @indexOfRepresentedItem@
-indexOfRepresentedItemSelector :: Selector
+indexOfRepresentedItemSelector :: Selector '[] CULong
 indexOfRepresentedItemSelector = mkSelector "indexOfRepresentedItem"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @imageContainerFrame@
-imageContainerFrameSelector :: Selector
+imageContainerFrameSelector :: Selector '[] NSRect
 imageContainerFrameSelector = mkSelector "imageContainerFrame"
 
 -- | @Selector@ for @imageFrame@
-imageFrameSelector :: Selector
+imageFrameSelector :: Selector '[] NSRect
 imageFrameSelector = mkSelector "imageFrame"
 
 -- | @Selector@ for @selectionFrame@
-selectionFrameSelector :: Selector
+selectionFrameSelector :: Selector '[] NSRect
 selectionFrameSelector = mkSelector "selectionFrame"
 
 -- | @Selector@ for @titleFrame@
-titleFrameSelector :: Selector
+titleFrameSelector :: Selector '[] NSRect
 titleFrameSelector = mkSelector "titleFrame"
 
 -- | @Selector@ for @subtitleFrame@
-subtitleFrameSelector :: Selector
+subtitleFrameSelector :: Selector '[] NSRect
 subtitleFrameSelector = mkSelector "subtitleFrame"
 
 -- | @Selector@ for @imageAlignment@
-imageAlignmentSelector :: Selector
+imageAlignmentSelector :: Selector '[] NSImageAlignment
 imageAlignmentSelector = mkSelector "imageAlignment"
 
 -- | @Selector@ for @isSelected@
-isSelectedSelector :: Selector
+isSelectedSelector :: Selector '[] Bool
 isSelectedSelector = mkSelector "isSelected"
 
 -- | @Selector@ for @opacity@
-opacitySelector :: Selector
+opacitySelector :: Selector '[] CDouble
 opacitySelector = mkSelector "opacity"
 
 -- | @Selector@ for @layerForType:@
-layerForTypeSelector :: Selector
+layerForTypeSelector :: Selector '[Id NSString] (Id CALayer)
 layerForTypeSelector = mkSelector "layerForType:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.SpriteKit.SKShader
   , setUniforms
   , attributes
   , setAttributes
+  , addUniformSelector
+  , attributesSelector
   , initWithSourceSelector
   , initWithSource_uniformsSelector
+  , removeUniformNamedSelector
+  , setAttributesSelector
+  , setSourceSelector
+  , setUniformsSelector
   , shaderSelector
+  , shaderWithFileNamedSelector
   , shaderWithSourceSelector
   , shaderWithSource_uniformsSelector
-  , shaderWithFileNamedSelector
-  , addUniformSelector
-  , uniformNamedSelector
-  , removeUniformNamedSelector
   , sourceSelector
-  , setSourceSelector
+  , uniformNamedSelector
   , uniformsSelector
-  , setUniformsSelector
-  , attributesSelector
-  , setAttributesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,9 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsSKShader skShader, IsNSString source) => skShader -> source -> IO (Id SKShader)
-initWithSource skShader  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg skShader (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= ownedObject . castPtr
+initWithSource skShader source =
+  sendOwnedMessage skShader initWithSourceSelector (toNSString source)
 
 -- | Create a custom shader with source code and uniforms.
 --
@@ -73,34 +69,29 @@ initWithSource skShader  source =
 --
 -- ObjC selector: @- initWithSource:uniforms:@
 initWithSource_uniforms :: (IsSKShader skShader, IsNSString source, IsNSArray uniforms) => skShader -> source -> uniforms -> IO (Id SKShader)
-initWithSource_uniforms skShader  source uniforms =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr uniforms $ \raw_uniforms ->
-        sendMsg skShader (mkSelector "initWithSource:uniforms:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_uniforms :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_uniforms skShader source uniforms =
+  sendOwnedMessage skShader initWithSource_uniformsSelector (toNSString source) (toNSArray uniforms)
 
 -- | @+ shader@
 shader :: IO (Id SKShader)
 shader  =
   do
     cls' <- getRequiredClass "SKShader"
-    sendClassMsg cls' (mkSelector "shader") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' shaderSelector
 
 -- | @+ shaderWithSource:@
 shaderWithSource :: IsNSString source => source -> IO (Id SKShader)
 shaderWithSource source =
   do
     cls' <- getRequiredClass "SKShader"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "shaderWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' shaderWithSourceSelector (toNSString source)
 
 -- | @+ shaderWithSource:uniforms:@
 shaderWithSource_uniforms :: (IsNSString source, IsNSArray uniforms) => source -> uniforms -> IO (Id SKShader)
 shaderWithSource_uniforms source uniforms =
   do
     cls' <- getRequiredClass "SKShader"
-    withObjCPtr source $ \raw_source ->
-      withObjCPtr uniforms $ \raw_uniforms ->
-        sendClassMsg cls' (mkSelector "shaderWithSource:uniforms:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr raw_uniforms :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' shaderWithSource_uniformsSelector (toNSString source) (toNSArray uniforms)
 
 -- | Loads a shader source file named 'name' from the main bundle. This is simpler yet functionally equivalent to the following code
 --
@@ -113,26 +104,22 @@ shaderWithFileNamed :: IsNSString name => name -> IO (Id SKShader)
 shaderWithFileNamed name =
   do
     cls' <- getRequiredClass "SKShader"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "shaderWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' shaderWithFileNamedSelector (toNSString name)
 
 -- | @- addUniform:@
 addUniform :: (IsSKShader skShader, IsSKUniform uniform) => skShader -> uniform -> IO ()
-addUniform skShader  uniform =
-  withObjCPtr uniform $ \raw_uniform ->
-      sendMsg skShader (mkSelector "addUniform:") retVoid [argPtr (castPtr raw_uniform :: Ptr ())]
+addUniform skShader uniform =
+  sendMessage skShader addUniformSelector (toSKUniform uniform)
 
 -- | @- uniformNamed:@
 uniformNamed :: (IsSKShader skShader, IsNSString name) => skShader -> name -> IO (Id SKUniform)
-uniformNamed skShader  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skShader (mkSelector "uniformNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+uniformNamed skShader name =
+  sendMessage skShader uniformNamedSelector (toNSString name)
 
 -- | @- removeUniformNamed:@
 removeUniformNamed :: (IsSKShader skShader, IsNSString name) => skShader -> name -> IO ()
-removeUniformNamed skShader  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skShader (mkSelector "removeUniformNamed:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeUniformNamed skShader name =
+  sendMessage skShader removeUniformNamedSelector (toNSString name)
 
 -- | Shader source must define the 'main' method of the fragment shader
 --
@@ -156,8 +143,8 @@ removeUniformNamed skShader  name =
 --
 -- ObjC selector: @- source@
 source :: IsSKShader skShader => skShader -> IO (Id NSString)
-source skShader  =
-    sendMsg skShader (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source skShader =
+  sendMessage skShader sourceSelector
 
 -- | Shader source must define the 'main' method of the fragment shader
 --
@@ -181,9 +168,8 @@ source skShader  =
 --
 -- ObjC selector: @- setSource:@
 setSource :: (IsSKShader skShader, IsNSString value) => skShader -> value -> IO ()
-setSource skShader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skShader (mkSelector "setSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSource skShader value =
+  sendMessage skShader setSourceSelector (toNSString value)
 
 -- | You may define additional uniforms to be used in your shader here. There is no need to declare them in you source, just use them by name.
 --
@@ -191,8 +177,8 @@ setSource skShader  value =
 --
 -- ObjC selector: @- uniforms@
 uniforms :: IsSKShader skShader => skShader -> IO (Id NSArray)
-uniforms skShader  =
-    sendMsg skShader (mkSelector "uniforms") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniforms skShader =
+  sendMessage skShader uniformsSelector
 
 -- | You may define additional uniforms to be used in your shader here. There is no need to declare them in you source, just use them by name.
 --
@@ -200,82 +186,80 @@ uniforms skShader  =
 --
 -- ObjC selector: @- setUniforms:@
 setUniforms :: (IsSKShader skShader, IsNSArray value) => skShader -> value -> IO ()
-setUniforms skShader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skShader (mkSelector "setUniforms:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniforms skShader value =
+  sendMessage skShader setUniformsSelector (toNSArray value)
 
 -- | @- attributes@
 attributes :: IsSKShader skShader => skShader -> IO (Id NSArray)
-attributes skShader  =
-    sendMsg skShader (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes skShader =
+  sendMessage skShader attributesSelector
 
 -- | @- setAttributes:@
 setAttributes :: (IsSKShader skShader, IsNSArray value) => skShader -> value -> IO ()
-setAttributes skShader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skShader (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributes skShader value =
+  sendMessage skShader setAttributesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id NSString] (Id SKShader)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @initWithSource:uniforms:@
-initWithSource_uniformsSelector :: Selector
+initWithSource_uniformsSelector :: Selector '[Id NSString, Id NSArray] (Id SKShader)
 initWithSource_uniformsSelector = mkSelector "initWithSource:uniforms:"
 
 -- | @Selector@ for @shader@
-shaderSelector :: Selector
+shaderSelector :: Selector '[] (Id SKShader)
 shaderSelector = mkSelector "shader"
 
 -- | @Selector@ for @shaderWithSource:@
-shaderWithSourceSelector :: Selector
+shaderWithSourceSelector :: Selector '[Id NSString] (Id SKShader)
 shaderWithSourceSelector = mkSelector "shaderWithSource:"
 
 -- | @Selector@ for @shaderWithSource:uniforms:@
-shaderWithSource_uniformsSelector :: Selector
+shaderWithSource_uniformsSelector :: Selector '[Id NSString, Id NSArray] (Id SKShader)
 shaderWithSource_uniformsSelector = mkSelector "shaderWithSource:uniforms:"
 
 -- | @Selector@ for @shaderWithFileNamed:@
-shaderWithFileNamedSelector :: Selector
+shaderWithFileNamedSelector :: Selector '[Id NSString] (Id SKShader)
 shaderWithFileNamedSelector = mkSelector "shaderWithFileNamed:"
 
 -- | @Selector@ for @addUniform:@
-addUniformSelector :: Selector
+addUniformSelector :: Selector '[Id SKUniform] ()
 addUniformSelector = mkSelector "addUniform:"
 
 -- | @Selector@ for @uniformNamed:@
-uniformNamedSelector :: Selector
+uniformNamedSelector :: Selector '[Id NSString] (Id SKUniform)
 uniformNamedSelector = mkSelector "uniformNamed:"
 
 -- | @Selector@ for @removeUniformNamed:@
-removeUniformNamedSelector :: Selector
+removeUniformNamedSelector :: Selector '[Id NSString] ()
 removeUniformNamedSelector = mkSelector "removeUniformNamed:"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id NSString)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @setSource:@
-setSourceSelector :: Selector
+setSourceSelector :: Selector '[Id NSString] ()
 setSourceSelector = mkSelector "setSource:"
 
 -- | @Selector@ for @uniforms@
-uniformsSelector :: Selector
+uniformsSelector :: Selector '[] (Id NSArray)
 uniformsSelector = mkSelector "uniforms"
 
 -- | @Selector@ for @setUniforms:@
-setUniformsSelector :: Selector
+setUniformsSelector :: Selector '[Id NSArray] ()
 setUniformsSelector = mkSelector "setUniforms:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSArray)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @setAttributes:@
-setAttributesSelector :: Selector
+setAttributesSelector :: Selector '[Id NSArray] ()
 setAttributesSelector = mkSelector "setAttributes:"
 

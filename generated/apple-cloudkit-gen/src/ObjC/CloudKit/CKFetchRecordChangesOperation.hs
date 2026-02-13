@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,36 +34,32 @@ module ObjC.CloudKit.CKFetchRecordChangesOperation
   , moreComing
   , fetchRecordChangesCompletionBlock
   , setFetchRecordChangesCompletionBlock
+  , desiredKeysSelector
+  , fetchRecordChangesCompletionBlockSelector
   , initSelector
   , initWithRecordZoneID_previousServerChangeTokenSelector
-  , recordZoneIDSelector
-  , setRecordZoneIDSelector
-  , previousServerChangeTokenSelector
-  , setPreviousServerChangeTokenSelector
-  , resultsLimitSelector
-  , setResultsLimitSelector
-  , desiredKeysSelector
-  , setDesiredKeysSelector
-  , recordChangedBlockSelector
-  , setRecordChangedBlockSelector
-  , recordWithIDWasDeletedBlockSelector
-  , setRecordWithIDWasDeletedBlockSelector
   , moreComingSelector
-  , fetchRecordChangesCompletionBlockSelector
+  , previousServerChangeTokenSelector
+  , recordChangedBlockSelector
+  , recordWithIDWasDeletedBlockSelector
+  , recordZoneIDSelector
+  , resultsLimitSelector
+  , setDesiredKeysSelector
   , setFetchRecordChangesCompletionBlockSelector
+  , setPreviousServerChangeTokenSelector
+  , setRecordChangedBlockSelector
+  , setRecordWithIDWasDeletedBlockSelector
+  , setRecordZoneIDSelector
+  , setResultsLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,47 +68,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Id CKFetchRecordChangesOperation)
-init_ ckFetchRecordChangesOperation  =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchRecordChangesOperation =
+  sendOwnedMessage ckFetchRecordChangesOperation initSelector
 
 -- | @- initWithRecordZoneID:previousServerChangeToken:@
 initWithRecordZoneID_previousServerChangeToken :: (IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation, IsCKRecordZoneID recordZoneID, IsCKServerChangeToken previousServerChangeToken) => ckFetchRecordChangesOperation -> recordZoneID -> previousServerChangeToken -> IO (Id CKFetchRecordChangesOperation)
-initWithRecordZoneID_previousServerChangeToken ckFetchRecordChangesOperation  recordZoneID previousServerChangeToken =
-  withObjCPtr recordZoneID $ \raw_recordZoneID ->
-    withObjCPtr previousServerChangeToken $ \raw_previousServerChangeToken ->
-        sendMsg ckFetchRecordChangesOperation (mkSelector "initWithRecordZoneID:previousServerChangeToken:") (retPtr retVoid) [argPtr (castPtr raw_recordZoneID :: Ptr ()), argPtr (castPtr raw_previousServerChangeToken :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordZoneID_previousServerChangeToken ckFetchRecordChangesOperation recordZoneID previousServerChangeToken =
+  sendOwnedMessage ckFetchRecordChangesOperation initWithRecordZoneID_previousServerChangeTokenSelector (toCKRecordZoneID recordZoneID) (toCKServerChangeToken previousServerChangeToken)
 
 -- | @- recordZoneID@
 recordZoneID :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Id CKRecordZoneID)
-recordZoneID ckFetchRecordChangesOperation  =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "recordZoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordZoneID ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation recordZoneIDSelector
 
 -- | @- setRecordZoneID:@
 setRecordZoneID :: (IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation, IsCKRecordZoneID value) => ckFetchRecordChangesOperation -> value -> IO ()
-setRecordZoneID ckFetchRecordChangesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordChangesOperation (mkSelector "setRecordZoneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordZoneID ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setRecordZoneIDSelector (toCKRecordZoneID value)
 
 -- | @- previousServerChangeToken@
 previousServerChangeToken :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Id CKServerChangeToken)
-previousServerChangeToken ckFetchRecordChangesOperation  =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "previousServerChangeToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousServerChangeToken ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation previousServerChangeTokenSelector
 
 -- | @- setPreviousServerChangeToken:@
 setPreviousServerChangeToken :: (IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation, IsCKServerChangeToken value) => ckFetchRecordChangesOperation -> value -> IO ()
-setPreviousServerChangeToken ckFetchRecordChangesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordChangesOperation (mkSelector "setPreviousServerChangeToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousServerChangeToken ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setPreviousServerChangeTokenSelector (toCKServerChangeToken value)
 
 -- | @- resultsLimit@
 resultsLimit :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO CULong
-resultsLimit ckFetchRecordChangesOperation  =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "resultsLimit") retCULong []
+resultsLimit ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation resultsLimitSelector
 
 -- | @- setResultsLimit:@
 setResultsLimit :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> CULong -> IO ()
-setResultsLimit ckFetchRecordChangesOperation  value =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "setResultsLimit:") retVoid [argCULong value]
+setResultsLimit ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setResultsLimitSelector value
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -119,8 +112,8 @@ setResultsLimit ckFetchRecordChangesOperation  value =
 --
 -- ObjC selector: @- desiredKeys@
 desiredKeys :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Id NSArray)
-desiredKeys ckFetchRecordChangesOperation  =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "desiredKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+desiredKeys ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation desiredKeysSelector
 
 -- | Declares which user-defined keys should be fetched and added to the resulting CKRecords.
 --
@@ -128,37 +121,36 @@ desiredKeys ckFetchRecordChangesOperation  =
 --
 -- ObjC selector: @- setDesiredKeys:@
 setDesiredKeys :: (IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation, IsNSArray value) => ckFetchRecordChangesOperation -> value -> IO ()
-setDesiredKeys ckFetchRecordChangesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchRecordChangesOperation (mkSelector "setDesiredKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesiredKeys ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setDesiredKeysSelector (toNSArray value)
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- recordChangedBlock@
 recordChangedBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Ptr ())
-recordChangedBlock ckFetchRecordChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordChangesOperation (mkSelector "recordChangedBlock") (retPtr retVoid) []
+recordChangedBlock ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation recordChangedBlockSelector
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- setRecordChangedBlock:@
 setRecordChangedBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> Ptr () -> IO ()
-setRecordChangedBlock ckFetchRecordChangesOperation  value =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "setRecordChangedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordChangedBlock ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setRecordChangedBlockSelector value
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- recordWithIDWasDeletedBlock@
 recordWithIDWasDeletedBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Ptr ())
-recordWithIDWasDeletedBlock ckFetchRecordChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordChangesOperation (mkSelector "recordWithIDWasDeletedBlock") (retPtr retVoid) []
+recordWithIDWasDeletedBlock ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation recordWithIDWasDeletedBlockSelector
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- setRecordWithIDWasDeletedBlock:@
 setRecordWithIDWasDeletedBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> Ptr () -> IO ()
-setRecordWithIDWasDeletedBlock ckFetchRecordChangesOperation  value =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "setRecordWithIDWasDeletedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordWithIDWasDeletedBlock ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setRecordWithIDWasDeletedBlockSelector value
 
 -- | If true, then the server wasn't able to return all the changes in this response.
 --
@@ -166,8 +158,8 @@ setRecordWithIDWasDeletedBlock ckFetchRecordChangesOperation  value =
 --
 -- ObjC selector: @- moreComing@
 moreComing :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO Bool
-moreComing ckFetchRecordChangesOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckFetchRecordChangesOperation (mkSelector "moreComing") retCULong []
+moreComing ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation moreComingSelector
 
 -- | This block is called when the operation completes.
 --
@@ -175,8 +167,8 @@ moreComing ckFetchRecordChangesOperation  =
 --
 -- ObjC selector: @- fetchRecordChangesCompletionBlock@
 fetchRecordChangesCompletionBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> IO (Ptr ())
-fetchRecordChangesCompletionBlock ckFetchRecordChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchRecordChangesOperation (mkSelector "fetchRecordChangesCompletionBlock") (retPtr retVoid) []
+fetchRecordChangesCompletionBlock ckFetchRecordChangesOperation =
+  sendMessage ckFetchRecordChangesOperation fetchRecordChangesCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -184,78 +176,78 @@ fetchRecordChangesCompletionBlock ckFetchRecordChangesOperation  =
 --
 -- ObjC selector: @- setFetchRecordChangesCompletionBlock:@
 setFetchRecordChangesCompletionBlock :: IsCKFetchRecordChangesOperation ckFetchRecordChangesOperation => ckFetchRecordChangesOperation -> Ptr () -> IO ()
-setFetchRecordChangesCompletionBlock ckFetchRecordChangesOperation  value =
-    sendMsg ckFetchRecordChangesOperation (mkSelector "setFetchRecordChangesCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setFetchRecordChangesCompletionBlock ckFetchRecordChangesOperation value =
+  sendMessage ckFetchRecordChangesOperation setFetchRecordChangesCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchRecordChangesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRecordZoneID:previousServerChangeToken:@
-initWithRecordZoneID_previousServerChangeTokenSelector :: Selector
+initWithRecordZoneID_previousServerChangeTokenSelector :: Selector '[Id CKRecordZoneID, Id CKServerChangeToken] (Id CKFetchRecordChangesOperation)
 initWithRecordZoneID_previousServerChangeTokenSelector = mkSelector "initWithRecordZoneID:previousServerChangeToken:"
 
 -- | @Selector@ for @recordZoneID@
-recordZoneIDSelector :: Selector
+recordZoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 recordZoneIDSelector = mkSelector "recordZoneID"
 
 -- | @Selector@ for @setRecordZoneID:@
-setRecordZoneIDSelector :: Selector
+setRecordZoneIDSelector :: Selector '[Id CKRecordZoneID] ()
 setRecordZoneIDSelector = mkSelector "setRecordZoneID:"
 
 -- | @Selector@ for @previousServerChangeToken@
-previousServerChangeTokenSelector :: Selector
+previousServerChangeTokenSelector :: Selector '[] (Id CKServerChangeToken)
 previousServerChangeTokenSelector = mkSelector "previousServerChangeToken"
 
 -- | @Selector@ for @setPreviousServerChangeToken:@
-setPreviousServerChangeTokenSelector :: Selector
+setPreviousServerChangeTokenSelector :: Selector '[Id CKServerChangeToken] ()
 setPreviousServerChangeTokenSelector = mkSelector "setPreviousServerChangeToken:"
 
 -- | @Selector@ for @resultsLimit@
-resultsLimitSelector :: Selector
+resultsLimitSelector :: Selector '[] CULong
 resultsLimitSelector = mkSelector "resultsLimit"
 
 -- | @Selector@ for @setResultsLimit:@
-setResultsLimitSelector :: Selector
+setResultsLimitSelector :: Selector '[CULong] ()
 setResultsLimitSelector = mkSelector "setResultsLimit:"
 
 -- | @Selector@ for @desiredKeys@
-desiredKeysSelector :: Selector
+desiredKeysSelector :: Selector '[] (Id NSArray)
 desiredKeysSelector = mkSelector "desiredKeys"
 
 -- | @Selector@ for @setDesiredKeys:@
-setDesiredKeysSelector :: Selector
+setDesiredKeysSelector :: Selector '[Id NSArray] ()
 setDesiredKeysSelector = mkSelector "setDesiredKeys:"
 
 -- | @Selector@ for @recordChangedBlock@
-recordChangedBlockSelector :: Selector
+recordChangedBlockSelector :: Selector '[] (Ptr ())
 recordChangedBlockSelector = mkSelector "recordChangedBlock"
 
 -- | @Selector@ for @setRecordChangedBlock:@
-setRecordChangedBlockSelector :: Selector
+setRecordChangedBlockSelector :: Selector '[Ptr ()] ()
 setRecordChangedBlockSelector = mkSelector "setRecordChangedBlock:"
 
 -- | @Selector@ for @recordWithIDWasDeletedBlock@
-recordWithIDWasDeletedBlockSelector :: Selector
+recordWithIDWasDeletedBlockSelector :: Selector '[] (Ptr ())
 recordWithIDWasDeletedBlockSelector = mkSelector "recordWithIDWasDeletedBlock"
 
 -- | @Selector@ for @setRecordWithIDWasDeletedBlock:@
-setRecordWithIDWasDeletedBlockSelector :: Selector
+setRecordWithIDWasDeletedBlockSelector :: Selector '[Ptr ()] ()
 setRecordWithIDWasDeletedBlockSelector = mkSelector "setRecordWithIDWasDeletedBlock:"
 
 -- | @Selector@ for @moreComing@
-moreComingSelector :: Selector
+moreComingSelector :: Selector '[] Bool
 moreComingSelector = mkSelector "moreComing"
 
 -- | @Selector@ for @fetchRecordChangesCompletionBlock@
-fetchRecordChangesCompletionBlockSelector :: Selector
+fetchRecordChangesCompletionBlockSelector :: Selector '[] (Ptr ())
 fetchRecordChangesCompletionBlockSelector = mkSelector "fetchRecordChangesCompletionBlock"
 
 -- | @Selector@ for @setFetchRecordChangesCompletionBlock:@
-setFetchRecordChangesCompletionBlockSelector :: Selector
+setFetchRecordChangesCompletionBlockSelector :: Selector '[Ptr ()] ()
 setFetchRecordChangesCompletionBlockSelector = mkSelector "setFetchRecordChangesCompletionBlock:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTROperationalCredentialsClusterSignVIDVerificationRequestPar
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , fabricIndexSelector
-  , setFabricIndexSelector
   , clientChallengeSelector
-  , setClientChallengeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , fabricIndexSelector
   , serverSideProcessingTimeoutSelector
+  , setClientChallengeSelector
+  , setFabricIndexSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterSignVIDVerificationRequestParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterSignVIDVerificationRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams setFabricIndexSelector (toNSNumber value)
 
 -- | @- clientChallenge@
 clientChallenge :: IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> IO (Id NSData)
-clientChallenge mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "clientChallenge") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientChallenge mtrOperationalCredentialsClusterSignVIDVerificationRequestParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams clientChallengeSelector
 
 -- | @- setClientChallenge:@
 setClientChallenge :: (IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams, IsNSData value) => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> value -> IO ()
-setClientChallenge mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "setClientChallenge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientChallenge mtrOperationalCredentialsClusterSignVIDVerificationRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams setClientChallengeSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setClientChallenge mtrOperationalCredentialsClusterSignVIDVerificationRequestPar
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationRequestParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationRequestP
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSignVIDVerificationReque
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterSignVIDVerificationRequestParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterSignVIDVerificationR
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterSignVIDVerificationRequestParams mtrOperationalCredentialsClusterSignVIDVerificationRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterSignVIDVerificationRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterSignVIDVerificationRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterSignVIDVerificationRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @clientChallenge@
-clientChallengeSelector :: Selector
+clientChallengeSelector :: Selector '[] (Id NSData)
 clientChallengeSelector = mkSelector "clientChallenge"
 
 -- | @Selector@ for @setClientChallenge:@
-setClientChallengeSelector :: Selector
+setClientChallengeSelector :: Selector '[Id NSData] ()
 setClientChallengeSelector = mkSelector "setClientChallenge:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

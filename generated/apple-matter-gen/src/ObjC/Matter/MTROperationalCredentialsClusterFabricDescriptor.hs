@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTROperationalCredentialsClusterFabricDescriptor
   , setLabel
   , fabricIndex
   , setFabricIndex
-  , rootPublicKeySelector
-  , setRootPublicKeySelector
-  , labelSelector
-  , setLabelSelector
   , fabricIndexSelector
+  , labelSelector
+  , rootPublicKeySelector
   , setFabricIndexSelector
+  , setLabelSelector
+  , setRootPublicKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rootPublicKey@
 rootPublicKey :: IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor => mtrOperationalCredentialsClusterFabricDescriptor -> IO (Id NSData)
-rootPublicKey mtrOperationalCredentialsClusterFabricDescriptor  =
-    sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "rootPublicKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootPublicKey mtrOperationalCredentialsClusterFabricDescriptor =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor rootPublicKeySelector
 
 -- | @- setRootPublicKey:@
 setRootPublicKey :: (IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor, IsNSData value) => mtrOperationalCredentialsClusterFabricDescriptor -> value -> IO ()
-setRootPublicKey mtrOperationalCredentialsClusterFabricDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "setRootPublicKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootPublicKey mtrOperationalCredentialsClusterFabricDescriptor value =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor setRootPublicKeySelector (toNSData value)
 
 -- | @- label@
 label :: IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor => mtrOperationalCredentialsClusterFabricDescriptor -> IO (Id NSString)
-label mtrOperationalCredentialsClusterFabricDescriptor  =
-    sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrOperationalCredentialsClusterFabricDescriptor =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor, IsNSString value) => mtrOperationalCredentialsClusterFabricDescriptor -> value -> IO ()
-setLabel mtrOperationalCredentialsClusterFabricDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrOperationalCredentialsClusterFabricDescriptor value =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor setLabelSelector (toNSString value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor => mtrOperationalCredentialsClusterFabricDescriptor -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterFabricDescriptor  =
-    sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterFabricDescriptor =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterFabricDescriptor mtrOperationalCredentialsClusterFabricDescriptor, IsNSNumber value) => mtrOperationalCredentialsClusterFabricDescriptor -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterFabricDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterFabricDescriptor (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterFabricDescriptor value =
+  sendMessage mtrOperationalCredentialsClusterFabricDescriptor setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rootPublicKey@
-rootPublicKeySelector :: Selector
+rootPublicKeySelector :: Selector '[] (Id NSData)
 rootPublicKeySelector = mkSelector "rootPublicKey"
 
 -- | @Selector@ for @setRootPublicKey:@
-setRootPublicKeySelector :: Selector
+setRootPublicKeySelector :: Selector '[Id NSData] ()
 setRootPublicKeySelector = mkSelector "setRootPublicKey:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

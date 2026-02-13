@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -57,66 +58,62 @@ module ObjC.SpriteKit.SKPhysicsBody
   , node
   , angularVelocity
   , setAngularVelocity
+  , affectedByGravitySelector
+  , allContactedBodiesSelector
+  , allowsRotationSelector
+  , angularDampingSelector
+  , angularVelocitySelector
+  , applyAngularImpulseSelector
+  , applyTorqueSelector
+  , areaSelector
+  , bodyWithBodiesSelector
   , bodyWithCircleOfRadiusSelector
-  , bodyWithPolygonFromPathSelector
   , bodyWithEdgeChainFromPathSelector
   , bodyWithEdgeLoopFromPathSelector
-  , bodyWithBodiesSelector
-  , applyTorqueSelector
-  , applyAngularImpulseSelector
-  , allContactedBodiesSelector
-  , dynamicSelector
-  , setDynamicSelector
-  , usesPreciseCollisionDetectionSelector
-  , setUsesPreciseCollisionDetectionSelector
-  , allowsRotationSelector
-  , setAllowsRotationSelector
-  , pinnedSelector
-  , setPinnedSelector
-  , restingSelector
-  , setRestingSelector
-  , frictionSelector
-  , setFrictionSelector
-  , chargeSelector
-  , setChargeSelector
-  , restitutionSelector
-  , setRestitutionSelector
-  , linearDampingSelector
-  , setLinearDampingSelector
-  , angularDampingSelector
-  , setAngularDampingSelector
-  , densitySelector
-  , setDensitySelector
-  , massSelector
-  , setMassSelector
-  , areaSelector
-  , affectedByGravitySelector
-  , setAffectedByGravitySelector
-  , fieldBitMaskSelector
-  , setFieldBitMaskSelector
+  , bodyWithPolygonFromPathSelector
   , categoryBitMaskSelector
-  , setCategoryBitMaskSelector
+  , chargeSelector
   , collisionBitMaskSelector
-  , setCollisionBitMaskSelector
   , contactTestBitMaskSelector
-  , setContactTestBitMaskSelector
+  , densitySelector
+  , dynamicSelector
+  , fieldBitMaskSelector
+  , frictionSelector
   , jointsSelector
+  , linearDampingSelector
+  , massSelector
   , nodeSelector
-  , angularVelocitySelector
+  , pinnedSelector
+  , restingSelector
+  , restitutionSelector
+  , setAffectedByGravitySelector
+  , setAllowsRotationSelector
+  , setAngularDampingSelector
   , setAngularVelocitySelector
+  , setCategoryBitMaskSelector
+  , setChargeSelector
+  , setCollisionBitMaskSelector
+  , setContactTestBitMaskSelector
+  , setDensitySelector
+  , setDynamicSelector
+  , setFieldBitMaskSelector
+  , setFrictionSelector
+  , setLinearDampingSelector
+  , setMassSelector
+  , setPinnedSelector
+  , setRestingSelector
+  , setRestitutionSelector
+  , setUsesPreciseCollisionDetectionSelector
+  , usesPreciseCollisionDetectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -132,7 +129,7 @@ bodyWithCircleOfRadius :: CDouble -> IO (Id SKPhysicsBody)
 bodyWithCircleOfRadius r =
   do
     cls' <- getRequiredClass "SKPhysicsBody"
-    sendClassMsg cls' (mkSelector "bodyWithCircleOfRadius:") (retPtr retVoid) [argCDouble r] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithCircleOfRadiusSelector r
 
 -- | The path must represent a convex or concave polygon with counter clockwise winding and no self intersection. Positions are relative to the node's origin.
 --
@@ -143,7 +140,7 @@ bodyWithPolygonFromPath :: RawId -> IO (Id SKPhysicsBody)
 bodyWithPolygonFromPath path =
   do
     cls' <- getRequiredClass "SKPhysicsBody"
-    sendClassMsg cls' (mkSelector "bodyWithPolygonFromPath:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithPolygonFromPathSelector path
 
 -- | Creates an edge chain from a path. The path must have no self intersection. Edges have no volume and are intended to be used to create static environments. Edges can collide with bodies of volume, but not with each other.
 --
@@ -154,7 +151,7 @@ bodyWithEdgeChainFromPath :: RawId -> IO (Id SKPhysicsBody)
 bodyWithEdgeChainFromPath path =
   do
     cls' <- getRequiredClass "SKPhysicsBody"
-    sendClassMsg cls' (mkSelector "bodyWithEdgeChainFromPath:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithEdgeChainFromPathSelector path
 
 -- | Creates an edge loop from a path. A loop is automatically created by joining the last point to the first. The path must have no self intersection. Edges have no volume and are intended to be used to create static environments. Edges can collide with body's of volume, but not with each other.
 --
@@ -165,7 +162,7 @@ bodyWithEdgeLoopFromPath :: RawId -> IO (Id SKPhysicsBody)
 bodyWithEdgeLoopFromPath path =
   do
     cls' <- getRequiredClass "SKPhysicsBody"
-    sendClassMsg cls' (mkSelector "bodyWithEdgeLoopFromPath:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithEdgeLoopFromPathSelector path
 
 -- | Creates an compound body that is the union of the bodies used to create it.
 --
@@ -174,147 +171,146 @@ bodyWithBodies :: IsNSArray bodies => bodies -> IO (Id SKPhysicsBody)
 bodyWithBodies bodies =
   do
     cls' <- getRequiredClass "SKPhysicsBody"
-    withObjCPtr bodies $ \raw_bodies ->
-      sendClassMsg cls' (mkSelector "bodyWithBodies:") (retPtr retVoid) [argPtr (castPtr raw_bodies :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithBodiesSelector (toNSArray bodies)
 
 -- | @- applyTorque:@
 applyTorque :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-applyTorque skPhysicsBody  torque =
-    sendMsg skPhysicsBody (mkSelector "applyTorque:") retVoid [argCDouble torque]
+applyTorque skPhysicsBody torque =
+  sendMessage skPhysicsBody applyTorqueSelector torque
 
 -- | @- applyAngularImpulse:@
 applyAngularImpulse :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-applyAngularImpulse skPhysicsBody  impulse =
-    sendMsg skPhysicsBody (mkSelector "applyAngularImpulse:") retVoid [argCDouble impulse]
+applyAngularImpulse skPhysicsBody impulse =
+  sendMessage skPhysicsBody applyAngularImpulseSelector impulse
 
 -- | @- allContactedBodies@
 allContactedBodies :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO (Id NSArray)
-allContactedBodies skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "allContactedBodies") (retPtr retVoid) [] >>= retainedObject . castPtr
+allContactedBodies skPhysicsBody =
+  sendMessage skPhysicsBody allContactedBodiesSelector
 
 -- | @- dynamic@
 dynamic :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-dynamic skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "dynamic") retCULong []
+dynamic skPhysicsBody =
+  sendMessage skPhysicsBody dynamicSelector
 
 -- | @- setDynamic:@
 setDynamic :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setDynamic skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setDynamic:") retVoid [argCULong (if value then 1 else 0)]
+setDynamic skPhysicsBody value =
+  sendMessage skPhysicsBody setDynamicSelector value
 
 -- | @- usesPreciseCollisionDetection@
 usesPreciseCollisionDetection :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-usesPreciseCollisionDetection skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "usesPreciseCollisionDetection") retCULong []
+usesPreciseCollisionDetection skPhysicsBody =
+  sendMessage skPhysicsBody usesPreciseCollisionDetectionSelector
 
 -- | @- setUsesPreciseCollisionDetection:@
 setUsesPreciseCollisionDetection :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setUsesPreciseCollisionDetection skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setUsesPreciseCollisionDetection:") retVoid [argCULong (if value then 1 else 0)]
+setUsesPreciseCollisionDetection skPhysicsBody value =
+  sendMessage skPhysicsBody setUsesPreciseCollisionDetectionSelector value
 
 -- | @- allowsRotation@
 allowsRotation :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-allowsRotation skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "allowsRotation") retCULong []
+allowsRotation skPhysicsBody =
+  sendMessage skPhysicsBody allowsRotationSelector
 
 -- | @- setAllowsRotation:@
 setAllowsRotation :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setAllowsRotation skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setAllowsRotation:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsRotation skPhysicsBody value =
+  sendMessage skPhysicsBody setAllowsRotationSelector value
 
 -- | @- pinned@
 pinned :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-pinned skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "pinned") retCULong []
+pinned skPhysicsBody =
+  sendMessage skPhysicsBody pinnedSelector
 
 -- | @- setPinned:@
 setPinned :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setPinned skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setPinned:") retVoid [argCULong (if value then 1 else 0)]
+setPinned skPhysicsBody value =
+  sendMessage skPhysicsBody setPinnedSelector value
 
 -- | If the physics simulation has determined that this body is at rest it may set the resting property to YES. Resting bodies do not participate in the simulation until some collision with a non-resting  object, or an impulse is applied, that unrests it. If all bodies in the world are resting then the simulation as a whole is "at rest".
 --
 -- ObjC selector: @- resting@
 resting :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-resting skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "resting") retCULong []
+resting skPhysicsBody =
+  sendMessage skPhysicsBody restingSelector
 
 -- | If the physics simulation has determined that this body is at rest it may set the resting property to YES. Resting bodies do not participate in the simulation until some collision with a non-resting  object, or an impulse is applied, that unrests it. If all bodies in the world are resting then the simulation as a whole is "at rest".
 --
 -- ObjC selector: @- setResting:@
 setResting :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setResting skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setResting:") retVoid [argCULong (if value then 1 else 0)]
+setResting skPhysicsBody value =
+  sendMessage skPhysicsBody setRestingSelector value
 
 -- | Determines the 'roughness' for the surface of the physics body (0.0 - 1.0). Defaults to 0.2
 --
 -- ObjC selector: @- friction@
 friction :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-friction skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "friction") retCDouble []
+friction skPhysicsBody =
+  sendMessage skPhysicsBody frictionSelector
 
 -- | Determines the 'roughness' for the surface of the physics body (0.0 - 1.0). Defaults to 0.2
 --
 -- ObjC selector: @- setFriction:@
 setFriction :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setFriction skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setFriction:") retVoid [argCDouble value]
+setFriction skPhysicsBody value =
+  sendMessage skPhysicsBody setFrictionSelector value
 
 -- | Specifies the charge on the body. Charge determines the degree to which a body is affected by electric and magnetic fields. Note that this is a unitless quantity, it is up to the developer to set charge and field strength appropriately. Defaults to 0.0
 --
 -- ObjC selector: @- charge@
 charge :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-charge skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "charge") retCDouble []
+charge skPhysicsBody =
+  sendMessage skPhysicsBody chargeSelector
 
 -- | Specifies the charge on the body. Charge determines the degree to which a body is affected by electric and magnetic fields. Note that this is a unitless quantity, it is up to the developer to set charge and field strength appropriately. Defaults to 0.0
 --
 -- ObjC selector: @- setCharge:@
 setCharge :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setCharge skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setCharge:") retVoid [argCDouble value]
+setCharge skPhysicsBody value =
+  sendMessage skPhysicsBody setChargeSelector value
 
 -- | Determines the 'bounciness' of the physics body (0.0 - 1.0). Defaults to 0.2
 --
 -- ObjC selector: @- restitution@
 restitution :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-restitution skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "restitution") retCDouble []
+restitution skPhysicsBody =
+  sendMessage skPhysicsBody restitutionSelector
 
 -- | Determines the 'bounciness' of the physics body (0.0 - 1.0). Defaults to 0.2
 --
 -- ObjC selector: @- setRestitution:@
 setRestitution :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setRestitution skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setRestitution:") retVoid [argCDouble value]
+setRestitution skPhysicsBody value =
+  sendMessage skPhysicsBody setRestitutionSelector value
 
 -- | Optionally reduce the body's linear velocity each frame to simulate fluid/air friction. Value should be zero or greater. Defaults to 0.1. Used in conjunction with per frame impulses, an object can be made to move at a constant speed. For example, if an object 64 points in size and default density and a linearDamping of 25 will slide across the screen in a few seconds if an impulse of magnitude 10 is applied every update.
 --
 -- ObjC selector: @- linearDamping@
 linearDamping :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-linearDamping skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "linearDamping") retCDouble []
+linearDamping skPhysicsBody =
+  sendMessage skPhysicsBody linearDampingSelector
 
 -- | Optionally reduce the body's linear velocity each frame to simulate fluid/air friction. Value should be zero or greater. Defaults to 0.1. Used in conjunction with per frame impulses, an object can be made to move at a constant speed. For example, if an object 64 points in size and default density and a linearDamping of 25 will slide across the screen in a few seconds if an impulse of magnitude 10 is applied every update.
 --
 -- ObjC selector: @- setLinearDamping:@
 setLinearDamping :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setLinearDamping skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setLinearDamping:") retVoid [argCDouble value]
+setLinearDamping skPhysicsBody value =
+  sendMessage skPhysicsBody setLinearDampingSelector value
 
 -- | Optionally reduce the body's angular velocity each frame to simulate rotational friction. (0.0 - 1.0). Defaults to 0.1
 --
 -- ObjC selector: @- angularDamping@
 angularDamping :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-angularDamping skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "angularDamping") retCDouble []
+angularDamping skPhysicsBody =
+  sendMessage skPhysicsBody angularDampingSelector
 
 -- | Optionally reduce the body's angular velocity each frame to simulate rotational friction. (0.0 - 1.0). Defaults to 0.1
 --
 -- ObjC selector: @- setAngularDamping:@
 setAngularDamping :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setAngularDamping skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setAngularDamping:") retVoid [argCDouble value]
+setAngularDamping skPhysicsBody value =
+  sendMessage skPhysicsBody setAngularDampingSelector value
 
 -- | The density of the body.
 --
@@ -322,8 +318,8 @@ setAngularDamping skPhysicsBody  value =
 --
 -- ObjC selector: @- density@
 density :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-density skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "density") retCDouble []
+density skPhysicsBody =
+  sendMessage skPhysicsBody densitySelector
 
 -- | The density of the body.
 --
@@ -331,8 +327,8 @@ density skPhysicsBody  =
 --
 -- ObjC selector: @- setDensity:@
 setDensity :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setDensity skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setDensity:") retVoid [argCDouble value]
+setDensity skPhysicsBody value =
+  sendMessage skPhysicsBody setDensitySelector value
 
 -- | The mass of the body.
 --
@@ -340,8 +336,8 @@ setDensity skPhysicsBody  value =
 --
 -- ObjC selector: @- mass@
 mass :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-mass skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "mass") retCDouble []
+mass skPhysicsBody =
+  sendMessage skPhysicsBody massSelector
 
 -- | The mass of the body.
 --
@@ -349,8 +345,8 @@ mass skPhysicsBody  =
 --
 -- ObjC selector: @- setMass:@
 setMass :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setMass skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setMass:") retVoid [argCDouble value]
+setMass skPhysicsBody value =
+  sendMessage skPhysicsBody setMassSelector value
 
 -- | The area of the body.
 --
@@ -358,8 +354,8 @@ setMass skPhysicsBody  value =
 --
 -- ObjC selector: @- area@
 area :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-area skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "area") retCDouble []
+area skPhysicsBody =
+  sendMessage skPhysicsBody areaSelector
 
 -- | Bodies are affected by field forces such as gravity if this property is set and the field's category mask is set appropriately. The default value is YES.
 --
@@ -367,8 +363,8 @@ area skPhysicsBody  =
 --
 -- ObjC selector: @- affectedByGravity@
 affectedByGravity :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO Bool
-affectedByGravity skPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsBody (mkSelector "affectedByGravity") retCULong []
+affectedByGravity skPhysicsBody =
+  sendMessage skPhysicsBody affectedByGravitySelector
 
 -- | Bodies are affected by field forces such as gravity if this property is set and the field's category mask is set appropriately. The default value is YES.
 --
@@ -376,276 +372,276 @@ affectedByGravity skPhysicsBody  =
 --
 -- ObjC selector: @- setAffectedByGravity:@
 setAffectedByGravity :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> Bool -> IO ()
-setAffectedByGravity skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setAffectedByGravity:") retVoid [argCULong (if value then 1 else 0)]
+setAffectedByGravity skPhysicsBody value =
+  sendMessage skPhysicsBody setAffectedByGravitySelector value
 
 -- | Defines what logical 'categories' of fields this body responds to. Defaults to all bits set (all categories). Can be forced off via affectedByGravity.
 --
 -- ObjC selector: @- fieldBitMask@
 fieldBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CUInt
-fieldBitMask skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "fieldBitMask") retCUInt []
+fieldBitMask skPhysicsBody =
+  sendMessage skPhysicsBody fieldBitMaskSelector
 
 -- | Defines what logical 'categories' of fields this body responds to. Defaults to all bits set (all categories). Can be forced off via affectedByGravity.
 --
 -- ObjC selector: @- setFieldBitMask:@
 setFieldBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CUInt -> IO ()
-setFieldBitMask skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setFieldBitMask:") retVoid [argCUInt value]
+setFieldBitMask skPhysicsBody value =
+  sendMessage skPhysicsBody setFieldBitMaskSelector value
 
 -- | Defines what logical 'categories' this body belongs to. Defaults to all bits set (all categories).
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CUInt
-categoryBitMask skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "categoryBitMask") retCUInt []
+categoryBitMask skPhysicsBody =
+  sendMessage skPhysicsBody categoryBitMaskSelector
 
 -- | Defines what logical 'categories' this body belongs to. Defaults to all bits set (all categories).
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CUInt -> IO ()
-setCategoryBitMask skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setCategoryBitMask:") retVoid [argCUInt value]
+setCategoryBitMask skPhysicsBody value =
+  sendMessage skPhysicsBody setCategoryBitMaskSelector value
 
 -- | Defines what logical 'categories' of bodies this body responds to collisions with. Defaults to all bits set (all categories).
 --
 -- ObjC selector: @- collisionBitMask@
 collisionBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CUInt
-collisionBitMask skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "collisionBitMask") retCUInt []
+collisionBitMask skPhysicsBody =
+  sendMessage skPhysicsBody collisionBitMaskSelector
 
 -- | Defines what logical 'categories' of bodies this body responds to collisions with. Defaults to all bits set (all categories).
 --
 -- ObjC selector: @- setCollisionBitMask:@
 setCollisionBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CUInt -> IO ()
-setCollisionBitMask skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setCollisionBitMask:") retVoid [argCUInt value]
+setCollisionBitMask skPhysicsBody value =
+  sendMessage skPhysicsBody setCollisionBitMaskSelector value
 
 -- | Defines what logical 'categories' of bodies this body generates intersection notifications with. Defaults to all bits cleared (no categories).
 --
 -- ObjC selector: @- contactTestBitMask@
 contactTestBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CUInt
-contactTestBitMask skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "contactTestBitMask") retCUInt []
+contactTestBitMask skPhysicsBody =
+  sendMessage skPhysicsBody contactTestBitMaskSelector
 
 -- | Defines what logical 'categories' of bodies this body generates intersection notifications with. Defaults to all bits cleared (no categories).
 --
 -- ObjC selector: @- setContactTestBitMask:@
 setContactTestBitMask :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CUInt -> IO ()
-setContactTestBitMask skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setContactTestBitMask:") retVoid [argCUInt value]
+setContactTestBitMask skPhysicsBody value =
+  sendMessage skPhysicsBody setContactTestBitMaskSelector value
 
 -- | @- joints@
 joints :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO (Id NSArray)
-joints skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "joints") (retPtr retVoid) [] >>= retainedObject . castPtr
+joints skPhysicsBody =
+  sendMessage skPhysicsBody jointsSelector
 
 -- | The representedObject this physicsBody is currently bound to, or nil if it is not.
 --
 -- ObjC selector: @- node@
 node :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO (Id SKNode)
-node skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node skPhysicsBody =
+  sendMessage skPhysicsBody nodeSelector
 
 -- | @- angularVelocity@
 angularVelocity :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> IO CDouble
-angularVelocity skPhysicsBody  =
-    sendMsg skPhysicsBody (mkSelector "angularVelocity") retCDouble []
+angularVelocity skPhysicsBody =
+  sendMessage skPhysicsBody angularVelocitySelector
 
 -- | @- setAngularVelocity:@
 setAngularVelocity :: IsSKPhysicsBody skPhysicsBody => skPhysicsBody -> CDouble -> IO ()
-setAngularVelocity skPhysicsBody  value =
-    sendMsg skPhysicsBody (mkSelector "setAngularVelocity:") retVoid [argCDouble value]
+setAngularVelocity skPhysicsBody value =
+  sendMessage skPhysicsBody setAngularVelocitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bodyWithCircleOfRadius:@
-bodyWithCircleOfRadiusSelector :: Selector
+bodyWithCircleOfRadiusSelector :: Selector '[CDouble] (Id SKPhysicsBody)
 bodyWithCircleOfRadiusSelector = mkSelector "bodyWithCircleOfRadius:"
 
 -- | @Selector@ for @bodyWithPolygonFromPath:@
-bodyWithPolygonFromPathSelector :: Selector
+bodyWithPolygonFromPathSelector :: Selector '[RawId] (Id SKPhysicsBody)
 bodyWithPolygonFromPathSelector = mkSelector "bodyWithPolygonFromPath:"
 
 -- | @Selector@ for @bodyWithEdgeChainFromPath:@
-bodyWithEdgeChainFromPathSelector :: Selector
+bodyWithEdgeChainFromPathSelector :: Selector '[RawId] (Id SKPhysicsBody)
 bodyWithEdgeChainFromPathSelector = mkSelector "bodyWithEdgeChainFromPath:"
 
 -- | @Selector@ for @bodyWithEdgeLoopFromPath:@
-bodyWithEdgeLoopFromPathSelector :: Selector
+bodyWithEdgeLoopFromPathSelector :: Selector '[RawId] (Id SKPhysicsBody)
 bodyWithEdgeLoopFromPathSelector = mkSelector "bodyWithEdgeLoopFromPath:"
 
 -- | @Selector@ for @bodyWithBodies:@
-bodyWithBodiesSelector :: Selector
+bodyWithBodiesSelector :: Selector '[Id NSArray] (Id SKPhysicsBody)
 bodyWithBodiesSelector = mkSelector "bodyWithBodies:"
 
 -- | @Selector@ for @applyTorque:@
-applyTorqueSelector :: Selector
+applyTorqueSelector :: Selector '[CDouble] ()
 applyTorqueSelector = mkSelector "applyTorque:"
 
 -- | @Selector@ for @applyAngularImpulse:@
-applyAngularImpulseSelector :: Selector
+applyAngularImpulseSelector :: Selector '[CDouble] ()
 applyAngularImpulseSelector = mkSelector "applyAngularImpulse:"
 
 -- | @Selector@ for @allContactedBodies@
-allContactedBodiesSelector :: Selector
+allContactedBodiesSelector :: Selector '[] (Id NSArray)
 allContactedBodiesSelector = mkSelector "allContactedBodies"
 
 -- | @Selector@ for @dynamic@
-dynamicSelector :: Selector
+dynamicSelector :: Selector '[] Bool
 dynamicSelector = mkSelector "dynamic"
 
 -- | @Selector@ for @setDynamic:@
-setDynamicSelector :: Selector
+setDynamicSelector :: Selector '[Bool] ()
 setDynamicSelector = mkSelector "setDynamic:"
 
 -- | @Selector@ for @usesPreciseCollisionDetection@
-usesPreciseCollisionDetectionSelector :: Selector
+usesPreciseCollisionDetectionSelector :: Selector '[] Bool
 usesPreciseCollisionDetectionSelector = mkSelector "usesPreciseCollisionDetection"
 
 -- | @Selector@ for @setUsesPreciseCollisionDetection:@
-setUsesPreciseCollisionDetectionSelector :: Selector
+setUsesPreciseCollisionDetectionSelector :: Selector '[Bool] ()
 setUsesPreciseCollisionDetectionSelector = mkSelector "setUsesPreciseCollisionDetection:"
 
 -- | @Selector@ for @allowsRotation@
-allowsRotationSelector :: Selector
+allowsRotationSelector :: Selector '[] Bool
 allowsRotationSelector = mkSelector "allowsRotation"
 
 -- | @Selector@ for @setAllowsRotation:@
-setAllowsRotationSelector :: Selector
+setAllowsRotationSelector :: Selector '[Bool] ()
 setAllowsRotationSelector = mkSelector "setAllowsRotation:"
 
 -- | @Selector@ for @pinned@
-pinnedSelector :: Selector
+pinnedSelector :: Selector '[] Bool
 pinnedSelector = mkSelector "pinned"
 
 -- | @Selector@ for @setPinned:@
-setPinnedSelector :: Selector
+setPinnedSelector :: Selector '[Bool] ()
 setPinnedSelector = mkSelector "setPinned:"
 
 -- | @Selector@ for @resting@
-restingSelector :: Selector
+restingSelector :: Selector '[] Bool
 restingSelector = mkSelector "resting"
 
 -- | @Selector@ for @setResting:@
-setRestingSelector :: Selector
+setRestingSelector :: Selector '[Bool] ()
 setRestingSelector = mkSelector "setResting:"
 
 -- | @Selector@ for @friction@
-frictionSelector :: Selector
+frictionSelector :: Selector '[] CDouble
 frictionSelector = mkSelector "friction"
 
 -- | @Selector@ for @setFriction:@
-setFrictionSelector :: Selector
+setFrictionSelector :: Selector '[CDouble] ()
 setFrictionSelector = mkSelector "setFriction:"
 
 -- | @Selector@ for @charge@
-chargeSelector :: Selector
+chargeSelector :: Selector '[] CDouble
 chargeSelector = mkSelector "charge"
 
 -- | @Selector@ for @setCharge:@
-setChargeSelector :: Selector
+setChargeSelector :: Selector '[CDouble] ()
 setChargeSelector = mkSelector "setCharge:"
 
 -- | @Selector@ for @restitution@
-restitutionSelector :: Selector
+restitutionSelector :: Selector '[] CDouble
 restitutionSelector = mkSelector "restitution"
 
 -- | @Selector@ for @setRestitution:@
-setRestitutionSelector :: Selector
+setRestitutionSelector :: Selector '[CDouble] ()
 setRestitutionSelector = mkSelector "setRestitution:"
 
 -- | @Selector@ for @linearDamping@
-linearDampingSelector :: Selector
+linearDampingSelector :: Selector '[] CDouble
 linearDampingSelector = mkSelector "linearDamping"
 
 -- | @Selector@ for @setLinearDamping:@
-setLinearDampingSelector :: Selector
+setLinearDampingSelector :: Selector '[CDouble] ()
 setLinearDampingSelector = mkSelector "setLinearDamping:"
 
 -- | @Selector@ for @angularDamping@
-angularDampingSelector :: Selector
+angularDampingSelector :: Selector '[] CDouble
 angularDampingSelector = mkSelector "angularDamping"
 
 -- | @Selector@ for @setAngularDamping:@
-setAngularDampingSelector :: Selector
+setAngularDampingSelector :: Selector '[CDouble] ()
 setAngularDampingSelector = mkSelector "setAngularDamping:"
 
 -- | @Selector@ for @density@
-densitySelector :: Selector
+densitySelector :: Selector '[] CDouble
 densitySelector = mkSelector "density"
 
 -- | @Selector@ for @setDensity:@
-setDensitySelector :: Selector
+setDensitySelector :: Selector '[CDouble] ()
 setDensitySelector = mkSelector "setDensity:"
 
 -- | @Selector@ for @mass@
-massSelector :: Selector
+massSelector :: Selector '[] CDouble
 massSelector = mkSelector "mass"
 
 -- | @Selector@ for @setMass:@
-setMassSelector :: Selector
+setMassSelector :: Selector '[CDouble] ()
 setMassSelector = mkSelector "setMass:"
 
 -- | @Selector@ for @area@
-areaSelector :: Selector
+areaSelector :: Selector '[] CDouble
 areaSelector = mkSelector "area"
 
 -- | @Selector@ for @affectedByGravity@
-affectedByGravitySelector :: Selector
+affectedByGravitySelector :: Selector '[] Bool
 affectedByGravitySelector = mkSelector "affectedByGravity"
 
 -- | @Selector@ for @setAffectedByGravity:@
-setAffectedByGravitySelector :: Selector
+setAffectedByGravitySelector :: Selector '[Bool] ()
 setAffectedByGravitySelector = mkSelector "setAffectedByGravity:"
 
 -- | @Selector@ for @fieldBitMask@
-fieldBitMaskSelector :: Selector
+fieldBitMaskSelector :: Selector '[] CUInt
 fieldBitMaskSelector = mkSelector "fieldBitMask"
 
 -- | @Selector@ for @setFieldBitMask:@
-setFieldBitMaskSelector :: Selector
+setFieldBitMaskSelector :: Selector '[CUInt] ()
 setFieldBitMaskSelector = mkSelector "setFieldBitMask:"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CUInt
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CUInt] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 
 -- | @Selector@ for @collisionBitMask@
-collisionBitMaskSelector :: Selector
+collisionBitMaskSelector :: Selector '[] CUInt
 collisionBitMaskSelector = mkSelector "collisionBitMask"
 
 -- | @Selector@ for @setCollisionBitMask:@
-setCollisionBitMaskSelector :: Selector
+setCollisionBitMaskSelector :: Selector '[CUInt] ()
 setCollisionBitMaskSelector = mkSelector "setCollisionBitMask:"
 
 -- | @Selector@ for @contactTestBitMask@
-contactTestBitMaskSelector :: Selector
+contactTestBitMaskSelector :: Selector '[] CUInt
 contactTestBitMaskSelector = mkSelector "contactTestBitMask"
 
 -- | @Selector@ for @setContactTestBitMask:@
-setContactTestBitMaskSelector :: Selector
+setContactTestBitMaskSelector :: Selector '[CUInt] ()
 setContactTestBitMaskSelector = mkSelector "setContactTestBitMask:"
 
 -- | @Selector@ for @joints@
-jointsSelector :: Selector
+jointsSelector :: Selector '[] (Id NSArray)
 jointsSelector = mkSelector "joints"
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SKNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @angularVelocity@
-angularVelocitySelector :: Selector
+angularVelocitySelector :: Selector '[] CDouble
 angularVelocitySelector = mkSelector "angularVelocity"
 
 -- | @Selector@ for @setAngularVelocity:@
-setAngularVelocitySelector :: Selector
+setAngularVelocitySelector :: Selector '[CDouble] ()
 setAngularVelocitySelector = mkSelector "setAngularVelocity:"
 

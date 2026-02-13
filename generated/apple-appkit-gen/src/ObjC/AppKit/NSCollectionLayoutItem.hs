@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AppKit.NSCollectionLayoutItem
   , setEdgeSpacing
   , layoutSize
   , supplementaryItems
+  , contentInsetsSelector
+  , edgeSpacingSelector
+  , initSelector
   , itemWithLayoutSizeSelector
   , itemWithLayoutSize_supplementaryItemsSelector
-  , initSelector
-  , newSelector
-  , contentInsetsSelector
-  , setContentInsetsSelector
-  , edgeSpacingSelector
-  , setEdgeSpacingSelector
   , layoutSizeSelector
+  , newSelector
+  , setContentInsetsSelector
+  , setEdgeSpacingSelector
   , supplementaryItemsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,102 +48,98 @@ itemWithLayoutSize :: IsNSCollectionLayoutSize layoutSize => layoutSize -> IO (I
 itemWithLayoutSize layoutSize =
   do
     cls' <- getRequiredClass "NSCollectionLayoutItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      sendClassMsg cls' (mkSelector "itemWithLayoutSize:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' itemWithLayoutSizeSelector (toNSCollectionLayoutSize layoutSize)
 
 -- | @+ itemWithLayoutSize:supplementaryItems:@
 itemWithLayoutSize_supplementaryItems :: (IsNSCollectionLayoutSize layoutSize, IsNSArray supplementaryItems) => layoutSize -> supplementaryItems -> IO (Id NSCollectionLayoutItem)
 itemWithLayoutSize_supplementaryItems layoutSize supplementaryItems =
   do
     cls' <- getRequiredClass "NSCollectionLayoutItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      withObjCPtr supplementaryItems $ \raw_supplementaryItems ->
-        sendClassMsg cls' (mkSelector "itemWithLayoutSize:supplementaryItems:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ()), argPtr (castPtr raw_supplementaryItems :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' itemWithLayoutSize_supplementaryItemsSelector (toNSCollectionLayoutSize layoutSize) (toNSArray supplementaryItems)
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> IO (Id NSCollectionLayoutItem)
-init_ nsCollectionLayoutItem  =
-    sendMsg nsCollectionLayoutItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutItem =
+  sendOwnedMessage nsCollectionLayoutItem initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutItem)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- contentInsets@
 contentInsets :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> IO NSDirectionalEdgeInsets
-contentInsets nsCollectionLayoutItem  =
-    sendMsgStret nsCollectionLayoutItem (mkSelector "contentInsets") retNSDirectionalEdgeInsets []
+contentInsets nsCollectionLayoutItem =
+  sendMessage nsCollectionLayoutItem contentInsetsSelector
 
 -- | @- setContentInsets:@
 setContentInsets :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> NSDirectionalEdgeInsets -> IO ()
-setContentInsets nsCollectionLayoutItem  value =
-    sendMsg nsCollectionLayoutItem (mkSelector "setContentInsets:") retVoid [argNSDirectionalEdgeInsets value]
+setContentInsets nsCollectionLayoutItem value =
+  sendMessage nsCollectionLayoutItem setContentInsetsSelector value
 
 -- | @- edgeSpacing@
 edgeSpacing :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> IO (Id NSCollectionLayoutEdgeSpacing)
-edgeSpacing nsCollectionLayoutItem  =
-    sendMsg nsCollectionLayoutItem (mkSelector "edgeSpacing") (retPtr retVoid) [] >>= retainedObject . castPtr
+edgeSpacing nsCollectionLayoutItem =
+  sendMessage nsCollectionLayoutItem edgeSpacingSelector
 
 -- | @- setEdgeSpacing:@
 setEdgeSpacing :: (IsNSCollectionLayoutItem nsCollectionLayoutItem, IsNSCollectionLayoutEdgeSpacing value) => nsCollectionLayoutItem -> value -> IO ()
-setEdgeSpacing nsCollectionLayoutItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCollectionLayoutItem (mkSelector "setEdgeSpacing:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEdgeSpacing nsCollectionLayoutItem value =
+  sendMessage nsCollectionLayoutItem setEdgeSpacingSelector (toNSCollectionLayoutEdgeSpacing value)
 
 -- | @- layoutSize@
 layoutSize :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> IO (Id NSCollectionLayoutSize)
-layoutSize nsCollectionLayoutItem  =
-    sendMsg nsCollectionLayoutItem (mkSelector "layoutSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutSize nsCollectionLayoutItem =
+  sendMessage nsCollectionLayoutItem layoutSizeSelector
 
 -- | @- supplementaryItems@
 supplementaryItems :: IsNSCollectionLayoutItem nsCollectionLayoutItem => nsCollectionLayoutItem -> IO (Id NSArray)
-supplementaryItems nsCollectionLayoutItem  =
-    sendMsg nsCollectionLayoutItem (mkSelector "supplementaryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+supplementaryItems nsCollectionLayoutItem =
+  sendMessage nsCollectionLayoutItem supplementaryItemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @itemWithLayoutSize:@
-itemWithLayoutSizeSelector :: Selector
+itemWithLayoutSizeSelector :: Selector '[Id NSCollectionLayoutSize] (Id NSCollectionLayoutItem)
 itemWithLayoutSizeSelector = mkSelector "itemWithLayoutSize:"
 
 -- | @Selector@ for @itemWithLayoutSize:supplementaryItems:@
-itemWithLayoutSize_supplementaryItemsSelector :: Selector
+itemWithLayoutSize_supplementaryItemsSelector :: Selector '[Id NSCollectionLayoutSize, Id NSArray] (Id NSCollectionLayoutItem)
 itemWithLayoutSize_supplementaryItemsSelector = mkSelector "itemWithLayoutSize:supplementaryItems:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @contentInsets@
-contentInsetsSelector :: Selector
+contentInsetsSelector :: Selector '[] NSDirectionalEdgeInsets
 contentInsetsSelector = mkSelector "contentInsets"
 
 -- | @Selector@ for @setContentInsets:@
-setContentInsetsSelector :: Selector
+setContentInsetsSelector :: Selector '[NSDirectionalEdgeInsets] ()
 setContentInsetsSelector = mkSelector "setContentInsets:"
 
 -- | @Selector@ for @edgeSpacing@
-edgeSpacingSelector :: Selector
+edgeSpacingSelector :: Selector '[] (Id NSCollectionLayoutEdgeSpacing)
 edgeSpacingSelector = mkSelector "edgeSpacing"
 
 -- | @Selector@ for @setEdgeSpacing:@
-setEdgeSpacingSelector :: Selector
+setEdgeSpacingSelector :: Selector '[Id NSCollectionLayoutEdgeSpacing] ()
 setEdgeSpacingSelector = mkSelector "setEdgeSpacing:"
 
 -- | @Selector@ for @layoutSize@
-layoutSizeSelector :: Selector
+layoutSizeSelector :: Selector '[] (Id NSCollectionLayoutSize)
 layoutSizeSelector = mkSelector "layoutSize"
 
 -- | @Selector@ for @supplementaryItems@
-supplementaryItemsSelector :: Selector
+supplementaryItemsSelector :: Selector '[] (Id NSArray)
 supplementaryItemsSelector = mkSelector "supplementaryItems"
 

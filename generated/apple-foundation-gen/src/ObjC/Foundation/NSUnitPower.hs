@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSUnitPower
   , picowatts
   , femtowatts
   , horsepower
-  , terawattsSelector
+  , femtowattsSelector
   , gigawattsSelector
-  , megawattsSelector
+  , horsepowerSelector
   , kilowattsSelector
-  , wattsSelector
-  , milliwattsSelector
+  , megawattsSelector
   , microwattsSelector
+  , milliwattsSelector
   , nanowattsSelector
   , picowattsSelector
-  , femtowattsSelector
-  , horsepowerSelector
+  , terawattsSelector
+  , wattsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,123 +48,123 @@ terawatts :: IO (Id NSUnitPower)
 terawatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "terawatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' terawattsSelector
 
 -- | @+ gigawatts@
 gigawatts :: IO (Id NSUnitPower)
 gigawatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "gigawatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gigawattsSelector
 
 -- | @+ megawatts@
 megawatts :: IO (Id NSUnitPower)
 megawatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "megawatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megawattsSelector
 
 -- | @+ kilowatts@
 kilowatts :: IO (Id NSUnitPower)
 kilowatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "kilowatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilowattsSelector
 
 -- | @+ watts@
 watts :: IO (Id NSUnitPower)
 watts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "watts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wattsSelector
 
 -- | @+ milliwatts@
 milliwatts :: IO (Id NSUnitPower)
 milliwatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "milliwatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milliwattsSelector
 
 -- | @+ microwatts@
 microwatts :: IO (Id NSUnitPower)
 microwatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "microwatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microwattsSelector
 
 -- | @+ nanowatts@
 nanowatts :: IO (Id NSUnitPower)
 nanowatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "nanowatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nanowattsSelector
 
 -- | @+ picowatts@
 picowatts :: IO (Id NSUnitPower)
 picowatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "picowatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' picowattsSelector
 
 -- | @+ femtowatts@
 femtowatts :: IO (Id NSUnitPower)
 femtowatts  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "femtowatts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' femtowattsSelector
 
 -- | @+ horsepower@
 horsepower :: IO (Id NSUnitPower)
 horsepower  =
   do
     cls' <- getRequiredClass "NSUnitPower"
-    sendClassMsg cls' (mkSelector "horsepower") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' horsepowerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @terawatts@
-terawattsSelector :: Selector
+terawattsSelector :: Selector '[] (Id NSUnitPower)
 terawattsSelector = mkSelector "terawatts"
 
 -- | @Selector@ for @gigawatts@
-gigawattsSelector :: Selector
+gigawattsSelector :: Selector '[] (Id NSUnitPower)
 gigawattsSelector = mkSelector "gigawatts"
 
 -- | @Selector@ for @megawatts@
-megawattsSelector :: Selector
+megawattsSelector :: Selector '[] (Id NSUnitPower)
 megawattsSelector = mkSelector "megawatts"
 
 -- | @Selector@ for @kilowatts@
-kilowattsSelector :: Selector
+kilowattsSelector :: Selector '[] (Id NSUnitPower)
 kilowattsSelector = mkSelector "kilowatts"
 
 -- | @Selector@ for @watts@
-wattsSelector :: Selector
+wattsSelector :: Selector '[] (Id NSUnitPower)
 wattsSelector = mkSelector "watts"
 
 -- | @Selector@ for @milliwatts@
-milliwattsSelector :: Selector
+milliwattsSelector :: Selector '[] (Id NSUnitPower)
 milliwattsSelector = mkSelector "milliwatts"
 
 -- | @Selector@ for @microwatts@
-microwattsSelector :: Selector
+microwattsSelector :: Selector '[] (Id NSUnitPower)
 microwattsSelector = mkSelector "microwatts"
 
 -- | @Selector@ for @nanowatts@
-nanowattsSelector :: Selector
+nanowattsSelector :: Selector '[] (Id NSUnitPower)
 nanowattsSelector = mkSelector "nanowatts"
 
 -- | @Selector@ for @picowatts@
-picowattsSelector :: Selector
+picowattsSelector :: Selector '[] (Id NSUnitPower)
 picowattsSelector = mkSelector "picowatts"
 
 -- | @Selector@ for @femtowatts@
-femtowattsSelector :: Selector
+femtowattsSelector :: Selector '[] (Id NSUnitPower)
 femtowattsSelector = mkSelector "femtowatts"
 
 -- | @Selector@ for @horsepower@
-horsepowerSelector :: Selector
+horsepowerSelector :: Selector '[] (Id NSUnitPower)
 horsepowerSelector = mkSelector "horsepower"
 

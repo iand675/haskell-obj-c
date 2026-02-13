@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Quartz.IKSaveOptions
   , userSelection
   , rememberLastSetting
   , setRememberLastSetting
-  , initWithImageProperties_imageUTTypeSelector
   , addSaveOptionsAccessoryViewToSavePanelSelector
   , addSaveOptionsToViewSelector
   , delegateSelector
-  , setDelegateSelector
   , imagePropertiesSelector
   , imageUTTypeSelector
-  , userSelectionSelector
+  , initWithImageProperties_imageUTTypeSelector
   , rememberLastSettingSelector
+  , setDelegateSelector
   , setRememberLastSettingSelector
+  , userSelectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,10 +53,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithImageProperties:imageUTType:@
 initWithImageProperties_imageUTType :: (IsIKSaveOptions ikSaveOptions, IsNSDictionary imageProperties, IsNSString imageUTType) => ikSaveOptions -> imageProperties -> imageUTType -> IO (Id IKSaveOptions)
-initWithImageProperties_imageUTType ikSaveOptions  imageProperties imageUTType =
-  withObjCPtr imageProperties $ \raw_imageProperties ->
-    withObjCPtr imageUTType $ \raw_imageUTType ->
-        sendMsg ikSaveOptions (mkSelector "initWithImageProperties:imageUTType:") (retPtr retVoid) [argPtr (castPtr raw_imageProperties :: Ptr ()), argPtr (castPtr raw_imageUTType :: Ptr ())] >>= ownedObject . castPtr
+initWithImageProperties_imageUTType ikSaveOptions imageProperties imageUTType =
+  sendOwnedMessage ikSaveOptions initWithImageProperties_imageUTTypeSelector (toNSDictionary imageProperties) (toNSString imageUTType)
 
 -- | addSaveOptionsAccessoryViewToSavePanel:
 --
@@ -67,9 +62,8 @@ initWithImageProperties_imageUTType ikSaveOptions  imageProperties imageUTType =
 --
 -- ObjC selector: @- addSaveOptionsAccessoryViewToSavePanel:@
 addSaveOptionsAccessoryViewToSavePanel :: (IsIKSaveOptions ikSaveOptions, IsNSSavePanel savePanel) => ikSaveOptions -> savePanel -> IO ()
-addSaveOptionsAccessoryViewToSavePanel ikSaveOptions  savePanel =
-  withObjCPtr savePanel $ \raw_savePanel ->
-      sendMsg ikSaveOptions (mkSelector "addSaveOptionsAccessoryViewToSavePanel:") retVoid [argPtr (castPtr raw_savePanel :: Ptr ())]
+addSaveOptionsAccessoryViewToSavePanel ikSaveOptions savePanel =
+  sendMessage ikSaveOptions addSaveOptionsAccessoryViewToSavePanelSelector (toNSSavePanel savePanel)
 
 -- | addSaveOptionsToView:
 --
@@ -77,9 +71,8 @@ addSaveOptionsAccessoryViewToSavePanel ikSaveOptions  savePanel =
 --
 -- ObjC selector: @- addSaveOptionsToView:@
 addSaveOptionsToView :: (IsIKSaveOptions ikSaveOptions, IsNSView view) => ikSaveOptions -> view -> IO ()
-addSaveOptionsToView ikSaveOptions  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg ikSaveOptions (mkSelector "addSaveOptionsToView:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+addSaveOptionsToView ikSaveOptions view =
+  sendMessage ikSaveOptions addSaveOptionsToViewSelector (toNSView view)
 
 -- | delegate
 --
@@ -87,8 +80,8 @@ addSaveOptionsToView ikSaveOptions  view =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> IO RawId
-delegate ikSaveOptions  =
-    fmap (RawId . castPtr) $ sendMsg ikSaveOptions (mkSelector "delegate") (retPtr retVoid) []
+delegate ikSaveOptions =
+  sendMessage ikSaveOptions delegateSelector
 
 -- | delegate
 --
@@ -96,8 +89,8 @@ delegate ikSaveOptions  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> RawId -> IO ()
-setDelegate ikSaveOptions  value =
-    sendMsg ikSaveOptions (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikSaveOptions value =
+  sendMessage ikSaveOptions setDelegateSelector value
 
 -- | imageProperties
 --
@@ -105,8 +98,8 @@ setDelegate ikSaveOptions  value =
 --
 -- ObjC selector: @- imageProperties@
 imageProperties :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> IO (Id NSDictionary)
-imageProperties ikSaveOptions  =
-    sendMsg ikSaveOptions (mkSelector "imageProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageProperties ikSaveOptions =
+  sendMessage ikSaveOptions imagePropertiesSelector
 
 -- | imageUTType
 --
@@ -114,8 +107,8 @@ imageProperties ikSaveOptions  =
 --
 -- ObjC selector: @- imageUTType@
 imageUTType :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> IO (Id NSString)
-imageUTType ikSaveOptions  =
-    sendMsg ikSaveOptions (mkSelector "imageUTType") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageUTType ikSaveOptions =
+  sendMessage ikSaveOptions imageUTTypeSelector
 
 -- | userSelection
 --
@@ -123,8 +116,8 @@ imageUTType ikSaveOptions  =
 --
 -- ObjC selector: @- userSelection@
 userSelection :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> IO (Id NSDictionary)
-userSelection ikSaveOptions  =
-    sendMsg ikSaveOptions (mkSelector "userSelection") (retPtr retVoid) [] >>= retainedObject . castPtr
+userSelection ikSaveOptions =
+  sendMessage ikSaveOptions userSelectionSelector
 
 -- | rememberLastSetting
 --
@@ -132,8 +125,8 @@ userSelection ikSaveOptions  =
 --
 -- ObjC selector: @- rememberLastSetting@
 rememberLastSetting :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> IO Bool
-rememberLastSetting ikSaveOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikSaveOptions (mkSelector "rememberLastSetting") retCULong []
+rememberLastSetting ikSaveOptions =
+  sendMessage ikSaveOptions rememberLastSettingSelector
 
 -- | rememberLastSetting
 --
@@ -141,50 +134,50 @@ rememberLastSetting ikSaveOptions  =
 --
 -- ObjC selector: @- setRememberLastSetting:@
 setRememberLastSetting :: IsIKSaveOptions ikSaveOptions => ikSaveOptions -> Bool -> IO ()
-setRememberLastSetting ikSaveOptions  value =
-    sendMsg ikSaveOptions (mkSelector "setRememberLastSetting:") retVoid [argCULong (if value then 1 else 0)]
+setRememberLastSetting ikSaveOptions value =
+  sendMessage ikSaveOptions setRememberLastSettingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithImageProperties:imageUTType:@
-initWithImageProperties_imageUTTypeSelector :: Selector
+initWithImageProperties_imageUTTypeSelector :: Selector '[Id NSDictionary, Id NSString] (Id IKSaveOptions)
 initWithImageProperties_imageUTTypeSelector = mkSelector "initWithImageProperties:imageUTType:"
 
 -- | @Selector@ for @addSaveOptionsAccessoryViewToSavePanel:@
-addSaveOptionsAccessoryViewToSavePanelSelector :: Selector
+addSaveOptionsAccessoryViewToSavePanelSelector :: Selector '[Id NSSavePanel] ()
 addSaveOptionsAccessoryViewToSavePanelSelector = mkSelector "addSaveOptionsAccessoryViewToSavePanel:"
 
 -- | @Selector@ for @addSaveOptionsToView:@
-addSaveOptionsToViewSelector :: Selector
+addSaveOptionsToViewSelector :: Selector '[Id NSView] ()
 addSaveOptionsToViewSelector = mkSelector "addSaveOptionsToView:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @imageProperties@
-imagePropertiesSelector :: Selector
+imagePropertiesSelector :: Selector '[] (Id NSDictionary)
 imagePropertiesSelector = mkSelector "imageProperties"
 
 -- | @Selector@ for @imageUTType@
-imageUTTypeSelector :: Selector
+imageUTTypeSelector :: Selector '[] (Id NSString)
 imageUTTypeSelector = mkSelector "imageUTType"
 
 -- | @Selector@ for @userSelection@
-userSelectionSelector :: Selector
+userSelectionSelector :: Selector '[] (Id NSDictionary)
 userSelectionSelector = mkSelector "userSelection"
 
 -- | @Selector@ for @rememberLastSetting@
-rememberLastSettingSelector :: Selector
+rememberLastSettingSelector :: Selector '[] Bool
 rememberLastSettingSelector = mkSelector "rememberLastSetting"
 
 -- | @Selector@ for @setRememberLastSetting:@
-setRememberLastSettingSelector :: Selector
+setRememberLastSettingSelector :: Selector '[Bool] ()
 setRememberLastSettingSelector = mkSelector "setRememberLastSetting:"
 

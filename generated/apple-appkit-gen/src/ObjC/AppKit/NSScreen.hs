@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,36 +38,36 @@ module ObjC.AppKit.NSScreen
   , maximumExtendedDynamicRangeColorComponentValue
   , maximumPotentialExtendedDynamicRangeColorComponentValue
   , maximumReferenceExtendedDynamicRangeColorComponentValue
-  , canRepresentDisplayGamutSelector
-  , convertRectToBackingSelector
-  , convertRectFromBackingSelector
-  , backingAlignedRect_optionsSelector
-  , userSpaceScaleFactorSelector
-  , displayLinkWithTarget_selectorSelector
-  , screensSelector
-  , mainScreenSelector
-  , deepestScreenSelector
-  , screensHaveSeparateSpacesSelector
-  , depthSelector
-  , frameSelector
-  , visibleFrameSelector
-  , deviceDescriptionSelector
-  , colorSpaceSelector
-  , supportedWindowDepthsSelector
-  , backingScaleFactorSelector
-  , localizedNameSelector
-  , safeAreaInsetsSelector
   , auxiliaryTopLeftAreaSelector
   , auxiliaryTopRightAreaSelector
+  , backingAlignedRect_optionsSelector
+  , backingScaleFactorSelector
+  , canRepresentDisplayGamutSelector
   , cgDirectDisplayIDSelector
-  , maximumFramesPerSecondSelector
-  , minimumRefreshIntervalSelector
-  , maximumRefreshIntervalSelector
+  , colorSpaceSelector
+  , convertRectFromBackingSelector
+  , convertRectToBackingSelector
+  , deepestScreenSelector
+  , depthSelector
+  , deviceDescriptionSelector
+  , displayLinkWithTarget_selectorSelector
   , displayUpdateGranularitySelector
+  , frameSelector
   , lastDisplayUpdateTimestampSelector
+  , localizedNameSelector
+  , mainScreenSelector
   , maximumExtendedDynamicRangeColorComponentValueSelector
+  , maximumFramesPerSecondSelector
   , maximumPotentialExtendedDynamicRangeColorComponentValueSelector
   , maximumReferenceExtendedDynamicRangeColorComponentValueSelector
+  , maximumRefreshIntervalSelector
+  , minimumRefreshIntervalSelector
+  , safeAreaInsetsSelector
+  , screensHaveSeparateSpacesSelector
+  , screensSelector
+  , supportedWindowDepthsSelector
+  , userSpaceScaleFactorSelector
+  , visibleFrameSelector
 
   -- * Enum types
   , NSAlignmentOptions(NSAlignmentOptions)
@@ -102,15 +103,11 @@ module ObjC.AppKit.NSScreen
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -123,130 +120,130 @@ import ObjC.QuartzCore.Internal.Classes
 
 -- | @- canRepresentDisplayGamut:@
 canRepresentDisplayGamut :: IsNSScreen nsScreen => nsScreen -> NSDisplayGamut -> IO Bool
-canRepresentDisplayGamut nsScreen  displayGamut =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScreen (mkSelector "canRepresentDisplayGamut:") retCULong [argCLong (coerce displayGamut)]
+canRepresentDisplayGamut nsScreen displayGamut =
+  sendMessage nsScreen canRepresentDisplayGamutSelector displayGamut
 
 -- | @- convertRectToBacking:@
 convertRectToBacking :: IsNSScreen nsScreen => nsScreen -> NSRect -> IO NSRect
-convertRectToBacking nsScreen  rect =
-    sendMsgStret nsScreen (mkSelector "convertRectToBacking:") retNSRect [argNSRect rect]
+convertRectToBacking nsScreen rect =
+  sendMessage nsScreen convertRectToBackingSelector rect
 
 -- | @- convertRectFromBacking:@
 convertRectFromBacking :: IsNSScreen nsScreen => nsScreen -> NSRect -> IO NSRect
-convertRectFromBacking nsScreen  rect =
-    sendMsgStret nsScreen (mkSelector "convertRectFromBacking:") retNSRect [argNSRect rect]
+convertRectFromBacking nsScreen rect =
+  sendMessage nsScreen convertRectFromBackingSelector rect
 
 -- | @- backingAlignedRect:options:@
 backingAlignedRect_options :: IsNSScreen nsScreen => nsScreen -> NSRect -> NSAlignmentOptions -> IO NSRect
-backingAlignedRect_options nsScreen  rect options =
-    sendMsgStret nsScreen (mkSelector "backingAlignedRect:options:") retNSRect [argNSRect rect, argCULong (coerce options)]
+backingAlignedRect_options nsScreen rect options =
+  sendMessage nsScreen backingAlignedRect_optionsSelector rect options
 
 -- | @- userSpaceScaleFactor@
 userSpaceScaleFactor :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-userSpaceScaleFactor nsScreen  =
-    sendMsg nsScreen (mkSelector "userSpaceScaleFactor") retCDouble []
+userSpaceScaleFactor nsScreen =
+  sendMessage nsScreen userSpaceScaleFactorSelector
 
 -- | @- displayLinkWithTarget:selector:@
-displayLinkWithTarget_selector :: IsNSScreen nsScreen => nsScreen -> RawId -> Selector -> IO (Id CADisplayLink)
-displayLinkWithTarget_selector nsScreen  target selector =
-    sendMsg nsScreen (mkSelector "displayLinkWithTarget:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+displayLinkWithTarget_selector :: IsNSScreen nsScreen => nsScreen -> RawId -> Sel -> IO (Id CADisplayLink)
+displayLinkWithTarget_selector nsScreen target selector =
+  sendMessage nsScreen displayLinkWithTarget_selectorSelector target selector
 
 -- | @+ screens@
 screens :: IO (Id NSArray)
 screens  =
   do
     cls' <- getRequiredClass "NSScreen"
-    sendClassMsg cls' (mkSelector "screens") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' screensSelector
 
 -- | @+ mainScreen@
 mainScreen :: IO (Id NSScreen)
 mainScreen  =
   do
     cls' <- getRequiredClass "NSScreen"
-    sendClassMsg cls' (mkSelector "mainScreen") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mainScreenSelector
 
 -- | @+ deepestScreen@
 deepestScreen :: IO (Id NSScreen)
 deepestScreen  =
   do
     cls' <- getRequiredClass "NSScreen"
-    sendClassMsg cls' (mkSelector "deepestScreen") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' deepestScreenSelector
 
 -- | @+ screensHaveSeparateSpaces@
 screensHaveSeparateSpaces :: IO Bool
 screensHaveSeparateSpaces  =
   do
     cls' <- getRequiredClass "NSScreen"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "screensHaveSeparateSpaces") retCULong []
+    sendClassMessage cls' screensHaveSeparateSpacesSelector
 
 -- | @- depth@
 depth :: IsNSScreen nsScreen => nsScreen -> IO NSWindowDepth
-depth nsScreen  =
-    fmap (coerce :: CInt -> NSWindowDepth) $ sendMsg nsScreen (mkSelector "depth") retCInt []
+depth nsScreen =
+  sendMessage nsScreen depthSelector
 
 -- | @- frame@
 frame :: IsNSScreen nsScreen => nsScreen -> IO NSRect
-frame nsScreen  =
-    sendMsgStret nsScreen (mkSelector "frame") retNSRect []
+frame nsScreen =
+  sendMessage nsScreen frameSelector
 
 -- | @- visibleFrame@
 visibleFrame :: IsNSScreen nsScreen => nsScreen -> IO NSRect
-visibleFrame nsScreen  =
-    sendMsgStret nsScreen (mkSelector "visibleFrame") retNSRect []
+visibleFrame nsScreen =
+  sendMessage nsScreen visibleFrameSelector
 
 -- | @- deviceDescription@
 deviceDescription :: IsNSScreen nsScreen => nsScreen -> IO (Id NSDictionary)
-deviceDescription nsScreen  =
-    sendMsg nsScreen (mkSelector "deviceDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceDescription nsScreen =
+  sendMessage nsScreen deviceDescriptionSelector
 
 -- | @- colorSpace@
 colorSpace :: IsNSScreen nsScreen => nsScreen -> IO (Id NSColorSpace)
-colorSpace nsScreen  =
-    sendMsg nsScreen (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorSpace nsScreen =
+  sendMessage nsScreen colorSpaceSelector
 
 -- | @- supportedWindowDepths@
 supportedWindowDepths :: IsNSScreen nsScreen => nsScreen -> IO RawId
-supportedWindowDepths nsScreen  =
-    fmap (RawId . castPtr) $ sendMsg nsScreen (mkSelector "supportedWindowDepths") (retPtr retVoid) []
+supportedWindowDepths nsScreen =
+  sendMessage nsScreen supportedWindowDepthsSelector
 
 -- | @- backingScaleFactor@
 backingScaleFactor :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-backingScaleFactor nsScreen  =
-    sendMsg nsScreen (mkSelector "backingScaleFactor") retCDouble []
+backingScaleFactor nsScreen =
+  sendMessage nsScreen backingScaleFactorSelector
 
 -- | @- localizedName@
 localizedName :: IsNSScreen nsScreen => nsScreen -> IO (Id NSString)
-localizedName nsScreen  =
-    sendMsg nsScreen (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName nsScreen =
+  sendMessage nsScreen localizedNameSelector
 
 -- | @- safeAreaInsets@
 safeAreaInsets :: IsNSScreen nsScreen => nsScreen -> IO NSEdgeInsets
-safeAreaInsets nsScreen  =
-    sendMsgStret nsScreen (mkSelector "safeAreaInsets") retNSEdgeInsets []
+safeAreaInsets nsScreen =
+  sendMessage nsScreen safeAreaInsetsSelector
 
 -- | @- auxiliaryTopLeftArea@
 auxiliaryTopLeftArea :: IsNSScreen nsScreen => nsScreen -> IO NSRect
-auxiliaryTopLeftArea nsScreen  =
-    sendMsgStret nsScreen (mkSelector "auxiliaryTopLeftArea") retNSRect []
+auxiliaryTopLeftArea nsScreen =
+  sendMessage nsScreen auxiliaryTopLeftAreaSelector
 
 -- | @- auxiliaryTopRightArea@
 auxiliaryTopRightArea :: IsNSScreen nsScreen => nsScreen -> IO NSRect
-auxiliaryTopRightArea nsScreen  =
-    sendMsgStret nsScreen (mkSelector "auxiliaryTopRightArea") retNSRect []
+auxiliaryTopRightArea nsScreen =
+  sendMessage nsScreen auxiliaryTopRightAreaSelector
 
 -- | The CGDirectDisplayID for this screen. This will return kCGNullDirectDisplay if there isn't one.
 --
 -- ObjC selector: @- CGDirectDisplayID@
 cgDirectDisplayID :: IsNSScreen nsScreen => nsScreen -> IO CUInt
-cgDirectDisplayID nsScreen  =
-    sendMsg nsScreen (mkSelector "CGDirectDisplayID") retCUInt []
+cgDirectDisplayID nsScreen =
+  sendMessage nsScreen cgDirectDisplayIDSelector
 
 -- | The maximum frames per second this screen supports.
 --
 -- ObjC selector: @- maximumFramesPerSecond@
 maximumFramesPerSecond :: IsNSScreen nsScreen => nsScreen -> IO CLong
-maximumFramesPerSecond nsScreen  =
-    sendMsg nsScreen (mkSelector "maximumFramesPerSecond") retCLong []
+maximumFramesPerSecond nsScreen =
+  sendMessage nsScreen maximumFramesPerSecondSelector
 
 -- | The minimum refresh interval this screen supports, in seconds.
 --
@@ -254,8 +251,8 @@ maximumFramesPerSecond nsScreen  =
 --
 -- ObjC selector: @- minimumRefreshInterval@
 minimumRefreshInterval :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-minimumRefreshInterval nsScreen  =
-    sendMsg nsScreen (mkSelector "minimumRefreshInterval") retCDouble []
+minimumRefreshInterval nsScreen =
+  sendMessage nsScreen minimumRefreshIntervalSelector
 
 -- | The maximum refresh interval this screen supports, in seconds.
 --
@@ -263,8 +260,8 @@ minimumRefreshInterval nsScreen  =
 --
 -- ObjC selector: @- maximumRefreshInterval@
 maximumRefreshInterval :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-maximumRefreshInterval nsScreen  =
-    sendMsg nsScreen (mkSelector "maximumRefreshInterval") retCDouble []
+maximumRefreshInterval nsScreen =
+  sendMessage nsScreen maximumRefreshIntervalSelector
 
 -- | The update granularity of the screen's current mode, in seconds.
 --
@@ -272,152 +269,152 @@ maximumRefreshInterval nsScreen  =
 --
 -- ObjC selector: @- displayUpdateGranularity@
 displayUpdateGranularity :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-displayUpdateGranularity nsScreen  =
-    sendMsg nsScreen (mkSelector "displayUpdateGranularity") retCDouble []
+displayUpdateGranularity nsScreen =
+  sendMessage nsScreen displayUpdateGranularitySelector
 
 -- | The time at which the last framebuffer update occurred on the display, in seconds since startup that the system has been awake.
 --
 -- ObjC selector: @- lastDisplayUpdateTimestamp@
 lastDisplayUpdateTimestamp :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-lastDisplayUpdateTimestamp nsScreen  =
-    sendMsg nsScreen (mkSelector "lastDisplayUpdateTimestamp") retCDouble []
+lastDisplayUpdateTimestamp nsScreen =
+  sendMessage nsScreen lastDisplayUpdateTimestampSelector
 
 -- | @- maximumExtendedDynamicRangeColorComponentValue@
 maximumExtendedDynamicRangeColorComponentValue :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-maximumExtendedDynamicRangeColorComponentValue nsScreen  =
-    sendMsg nsScreen (mkSelector "maximumExtendedDynamicRangeColorComponentValue") retCDouble []
+maximumExtendedDynamicRangeColorComponentValue nsScreen =
+  sendMessage nsScreen maximumExtendedDynamicRangeColorComponentValueSelector
 
 -- | @- maximumPotentialExtendedDynamicRangeColorComponentValue@
 maximumPotentialExtendedDynamicRangeColorComponentValue :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-maximumPotentialExtendedDynamicRangeColorComponentValue nsScreen  =
-    sendMsg nsScreen (mkSelector "maximumPotentialExtendedDynamicRangeColorComponentValue") retCDouble []
+maximumPotentialExtendedDynamicRangeColorComponentValue nsScreen =
+  sendMessage nsScreen maximumPotentialExtendedDynamicRangeColorComponentValueSelector
 
 -- | @- maximumReferenceExtendedDynamicRangeColorComponentValue@
 maximumReferenceExtendedDynamicRangeColorComponentValue :: IsNSScreen nsScreen => nsScreen -> IO CDouble
-maximumReferenceExtendedDynamicRangeColorComponentValue nsScreen  =
-    sendMsg nsScreen (mkSelector "maximumReferenceExtendedDynamicRangeColorComponentValue") retCDouble []
+maximumReferenceExtendedDynamicRangeColorComponentValue nsScreen =
+  sendMessage nsScreen maximumReferenceExtendedDynamicRangeColorComponentValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canRepresentDisplayGamut:@
-canRepresentDisplayGamutSelector :: Selector
+canRepresentDisplayGamutSelector :: Selector '[NSDisplayGamut] Bool
 canRepresentDisplayGamutSelector = mkSelector "canRepresentDisplayGamut:"
 
 -- | @Selector@ for @convertRectToBacking:@
-convertRectToBackingSelector :: Selector
+convertRectToBackingSelector :: Selector '[NSRect] NSRect
 convertRectToBackingSelector = mkSelector "convertRectToBacking:"
 
 -- | @Selector@ for @convertRectFromBacking:@
-convertRectFromBackingSelector :: Selector
+convertRectFromBackingSelector :: Selector '[NSRect] NSRect
 convertRectFromBackingSelector = mkSelector "convertRectFromBacking:"
 
 -- | @Selector@ for @backingAlignedRect:options:@
-backingAlignedRect_optionsSelector :: Selector
+backingAlignedRect_optionsSelector :: Selector '[NSRect, NSAlignmentOptions] NSRect
 backingAlignedRect_optionsSelector = mkSelector "backingAlignedRect:options:"
 
 -- | @Selector@ for @userSpaceScaleFactor@
-userSpaceScaleFactorSelector :: Selector
+userSpaceScaleFactorSelector :: Selector '[] CDouble
 userSpaceScaleFactorSelector = mkSelector "userSpaceScaleFactor"
 
 -- | @Selector@ for @displayLinkWithTarget:selector:@
-displayLinkWithTarget_selectorSelector :: Selector
+displayLinkWithTarget_selectorSelector :: Selector '[RawId, Sel] (Id CADisplayLink)
 displayLinkWithTarget_selectorSelector = mkSelector "displayLinkWithTarget:selector:"
 
 -- | @Selector@ for @screens@
-screensSelector :: Selector
+screensSelector :: Selector '[] (Id NSArray)
 screensSelector = mkSelector "screens"
 
 -- | @Selector@ for @mainScreen@
-mainScreenSelector :: Selector
+mainScreenSelector :: Selector '[] (Id NSScreen)
 mainScreenSelector = mkSelector "mainScreen"
 
 -- | @Selector@ for @deepestScreen@
-deepestScreenSelector :: Selector
+deepestScreenSelector :: Selector '[] (Id NSScreen)
 deepestScreenSelector = mkSelector "deepestScreen"
 
 -- | @Selector@ for @screensHaveSeparateSpaces@
-screensHaveSeparateSpacesSelector :: Selector
+screensHaveSeparateSpacesSelector :: Selector '[] Bool
 screensHaveSeparateSpacesSelector = mkSelector "screensHaveSeparateSpaces"
 
 -- | @Selector@ for @depth@
-depthSelector :: Selector
+depthSelector :: Selector '[] NSWindowDepth
 depthSelector = mkSelector "depth"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @visibleFrame@
-visibleFrameSelector :: Selector
+visibleFrameSelector :: Selector '[] NSRect
 visibleFrameSelector = mkSelector "visibleFrame"
 
 -- | @Selector@ for @deviceDescription@
-deviceDescriptionSelector :: Selector
+deviceDescriptionSelector :: Selector '[] (Id NSDictionary)
 deviceDescriptionSelector = mkSelector "deviceDescription"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Id NSColorSpace)
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @supportedWindowDepths@
-supportedWindowDepthsSelector :: Selector
+supportedWindowDepthsSelector :: Selector '[] RawId
 supportedWindowDepthsSelector = mkSelector "supportedWindowDepths"
 
 -- | @Selector@ for @backingScaleFactor@
-backingScaleFactorSelector :: Selector
+backingScaleFactorSelector :: Selector '[] CDouble
 backingScaleFactorSelector = mkSelector "backingScaleFactor"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @safeAreaInsets@
-safeAreaInsetsSelector :: Selector
+safeAreaInsetsSelector :: Selector '[] NSEdgeInsets
 safeAreaInsetsSelector = mkSelector "safeAreaInsets"
 
 -- | @Selector@ for @auxiliaryTopLeftArea@
-auxiliaryTopLeftAreaSelector :: Selector
+auxiliaryTopLeftAreaSelector :: Selector '[] NSRect
 auxiliaryTopLeftAreaSelector = mkSelector "auxiliaryTopLeftArea"
 
 -- | @Selector@ for @auxiliaryTopRightArea@
-auxiliaryTopRightAreaSelector :: Selector
+auxiliaryTopRightAreaSelector :: Selector '[] NSRect
 auxiliaryTopRightAreaSelector = mkSelector "auxiliaryTopRightArea"
 
 -- | @Selector@ for @CGDirectDisplayID@
-cgDirectDisplayIDSelector :: Selector
+cgDirectDisplayIDSelector :: Selector '[] CUInt
 cgDirectDisplayIDSelector = mkSelector "CGDirectDisplayID"
 
 -- | @Selector@ for @maximumFramesPerSecond@
-maximumFramesPerSecondSelector :: Selector
+maximumFramesPerSecondSelector :: Selector '[] CLong
 maximumFramesPerSecondSelector = mkSelector "maximumFramesPerSecond"
 
 -- | @Selector@ for @minimumRefreshInterval@
-minimumRefreshIntervalSelector :: Selector
+minimumRefreshIntervalSelector :: Selector '[] CDouble
 minimumRefreshIntervalSelector = mkSelector "minimumRefreshInterval"
 
 -- | @Selector@ for @maximumRefreshInterval@
-maximumRefreshIntervalSelector :: Selector
+maximumRefreshIntervalSelector :: Selector '[] CDouble
 maximumRefreshIntervalSelector = mkSelector "maximumRefreshInterval"
 
 -- | @Selector@ for @displayUpdateGranularity@
-displayUpdateGranularitySelector :: Selector
+displayUpdateGranularitySelector :: Selector '[] CDouble
 displayUpdateGranularitySelector = mkSelector "displayUpdateGranularity"
 
 -- | @Selector@ for @lastDisplayUpdateTimestamp@
-lastDisplayUpdateTimestampSelector :: Selector
+lastDisplayUpdateTimestampSelector :: Selector '[] CDouble
 lastDisplayUpdateTimestampSelector = mkSelector "lastDisplayUpdateTimestamp"
 
 -- | @Selector@ for @maximumExtendedDynamicRangeColorComponentValue@
-maximumExtendedDynamicRangeColorComponentValueSelector :: Selector
+maximumExtendedDynamicRangeColorComponentValueSelector :: Selector '[] CDouble
 maximumExtendedDynamicRangeColorComponentValueSelector = mkSelector "maximumExtendedDynamicRangeColorComponentValue"
 
 -- | @Selector@ for @maximumPotentialExtendedDynamicRangeColorComponentValue@
-maximumPotentialExtendedDynamicRangeColorComponentValueSelector :: Selector
+maximumPotentialExtendedDynamicRangeColorComponentValueSelector :: Selector '[] CDouble
 maximumPotentialExtendedDynamicRangeColorComponentValueSelector = mkSelector "maximumPotentialExtendedDynamicRangeColorComponentValue"
 
 -- | @Selector@ for @maximumReferenceExtendedDynamicRangeColorComponentValue@
-maximumReferenceExtendedDynamicRangeColorComponentValueSelector :: Selector
+maximumReferenceExtendedDynamicRangeColorComponentValueSelector :: Selector '[] CDouble
 maximumReferenceExtendedDynamicRangeColorComponentValueSelector = mkSelector "maximumReferenceExtendedDynamicRangeColorComponentValue"
 

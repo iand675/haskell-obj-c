@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,21 +35,21 @@ module ObjC.MetalPerformanceShaders.MPSMatrix
   , matrixBytes
   , offset
   , data_
+  , columnsSelector
+  , dataSelector
+  , dataTypeSelector
+  , deviceSelector
+  , initSelector
   , initWithBuffer_descriptorSelector
   , initWithBuffer_offset_descriptorSelector
   , initWithDevice_descriptorSelector
-  , initSelector
-  , synchronizeOnCommandBufferSelector
-  , resourceSizeSelector
-  , deviceSelector
-  , rowsSelector
-  , columnsSelector
   , matricesSelector
-  , dataTypeSelector
-  , rowBytesSelector
   , matrixBytesSelector
   , offsetSelector
-  , dataSelector
+  , resourceSizeSelector
+  , rowBytesSelector
+  , rowsSelector
+  , synchronizeOnCommandBufferSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -82,15 +83,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrix
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,9 +111,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBuffer:descriptor:@
 initWithBuffer_descriptor :: (IsMPSMatrix mpsMatrix, IsMPSMatrixDescriptor descriptor) => mpsMatrix -> RawId -> descriptor -> IO (Id MPSMatrix)
-initWithBuffer_descriptor mpsMatrix  buffer descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsMatrix (mkSelector "initWithBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_descriptor mpsMatrix buffer descriptor =
+  sendOwnedMessage mpsMatrix initWithBuffer_descriptorSelector buffer (toMPSMatrixDescriptor descriptor)
 
 -- | Initialize a MPSMatrix object with a MTLBuffer at a given offset.
 --
@@ -128,9 +124,8 @@ initWithBuffer_descriptor mpsMatrix  buffer descriptor =
 --
 -- ObjC selector: @- initWithBuffer:offset:descriptor:@
 initWithBuffer_offset_descriptor :: (IsMPSMatrix mpsMatrix, IsMPSMatrixDescriptor descriptor) => mpsMatrix -> RawId -> CULong -> descriptor -> IO (Id MPSMatrix)
-initWithBuffer_offset_descriptor mpsMatrix  buffer offset descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsMatrix (mkSelector "initWithBuffer:offset:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong offset, argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_offset_descriptor mpsMatrix buffer offset descriptor =
+  sendOwnedMessage mpsMatrix initWithBuffer_offset_descriptorSelector buffer offset (toMPSMatrixDescriptor descriptor)
 
 -- | Initialize a MPSMatrix object with a descriptor. Allocate the buffer.
 --
@@ -144,14 +139,13 @@ initWithBuffer_offset_descriptor mpsMatrix  buffer offset descriptor =
 --
 -- ObjC selector: @- initWithDevice:descriptor:@
 initWithDevice_descriptor :: (IsMPSMatrix mpsMatrix, IsMPSMatrixDescriptor descriptor) => mpsMatrix -> RawId -> descriptor -> IO (Id MPSMatrix)
-initWithDevice_descriptor mpsMatrix  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsMatrix (mkSelector "initWithDevice:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_descriptor mpsMatrix device descriptor =
+  sendOwnedMessage mpsMatrix initWithDevice_descriptorSelector device (toMPSMatrixDescriptor descriptor)
 
 -- | @- init@
 init_ :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO (Id MPSMatrix)
-init_ mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsMatrix =
+  sendOwnedMessage mpsMatrix initSelector
 
 -- | Flush the underlying MTLBuffer from the device's caches, and invalidate any CPU caches if needed.
 --
@@ -161,8 +155,8 @@ init_ mpsMatrix  =
 --
 -- ObjC selector: @- synchronizeOnCommandBuffer:@
 synchronizeOnCommandBuffer :: IsMPSMatrix mpsMatrix => mpsMatrix -> RawId -> IO ()
-synchronizeOnCommandBuffer mpsMatrix  commandBuffer =
-    sendMsg mpsMatrix (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeOnCommandBuffer mpsMatrix commandBuffer =
+  sendMessage mpsMatrix synchronizeOnCommandBufferSelector commandBuffer
 
 -- | Get the number of bytes used to allocate underyling MTLResources
 --
@@ -174,8 +168,8 @@ synchronizeOnCommandBuffer mpsMatrix  commandBuffer =
 --
 -- ObjC selector: @- resourceSize@
 resourceSize :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-resourceSize mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "resourceSize") retCULong []
+resourceSize mpsMatrix =
+  sendMessage mpsMatrix resourceSizeSelector
 
 -- | device
 --
@@ -183,8 +177,8 @@ resourceSize mpsMatrix  =
 --
 -- ObjC selector: @- device@
 device :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO RawId
-device mpsMatrix  =
-    fmap (RawId . castPtr) $ sendMsg mpsMatrix (mkSelector "device") (retPtr retVoid) []
+device mpsMatrix =
+  sendMessage mpsMatrix deviceSelector
 
 -- | rows
 --
@@ -192,8 +186,8 @@ device mpsMatrix  =
 --
 -- ObjC selector: @- rows@
 rows :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-rows mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "rows") retCULong []
+rows mpsMatrix =
+  sendMessage mpsMatrix rowsSelector
 
 -- | columns
 --
@@ -201,8 +195,8 @@ rows mpsMatrix  =
 --
 -- ObjC selector: @- columns@
 columns :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-columns mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "columns") retCULong []
+columns mpsMatrix =
+  sendMessage mpsMatrix columnsSelector
 
 -- | matrices
 --
@@ -210,8 +204,8 @@ columns mpsMatrix  =
 --
 -- ObjC selector: @- matrices@
 matrices :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-matrices mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "matrices") retCULong []
+matrices mpsMatrix =
+  sendMessage mpsMatrix matricesSelector
 
 -- | dataType
 --
@@ -219,8 +213,8 @@ matrices mpsMatrix  =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO MPSDataType
-dataType mpsMatrix  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsMatrix (mkSelector "dataType") retCUInt []
+dataType mpsMatrix =
+  sendMessage mpsMatrix dataTypeSelector
 
 -- | rowBytes
 --
@@ -228,8 +222,8 @@ dataType mpsMatrix  =
 --
 -- ObjC selector: @- rowBytes@
 rowBytes :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-rowBytes mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "rowBytes") retCULong []
+rowBytes mpsMatrix =
+  sendMessage mpsMatrix rowBytesSelector
 
 -- | matrixBytes
 --
@@ -237,8 +231,8 @@ rowBytes mpsMatrix  =
 --
 -- ObjC selector: @- matrixBytes@
 matrixBytes :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-matrixBytes mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "matrixBytes") retCULong []
+matrixBytes mpsMatrix =
+  sendMessage mpsMatrix matrixBytesSelector
 
 -- | offset
 --
@@ -246,8 +240,8 @@ matrixBytes mpsMatrix  =
 --
 -- ObjC selector: @- offset@
 offset :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO CULong
-offset mpsMatrix  =
-    sendMsg mpsMatrix (mkSelector "offset") retCULong []
+offset mpsMatrix =
+  sendMessage mpsMatrix offsetSelector
 
 -- | data
 --
@@ -255,70 +249,70 @@ offset mpsMatrix  =
 --
 -- ObjC selector: @- data@
 data_ :: IsMPSMatrix mpsMatrix => mpsMatrix -> IO RawId
-data_ mpsMatrix  =
-    fmap (RawId . castPtr) $ sendMsg mpsMatrix (mkSelector "data") (retPtr retVoid) []
+data_ mpsMatrix =
+  sendMessage mpsMatrix dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBuffer:descriptor:@
-initWithBuffer_descriptorSelector :: Selector
+initWithBuffer_descriptorSelector :: Selector '[RawId, Id MPSMatrixDescriptor] (Id MPSMatrix)
 initWithBuffer_descriptorSelector = mkSelector "initWithBuffer:descriptor:"
 
 -- | @Selector@ for @initWithBuffer:offset:descriptor:@
-initWithBuffer_offset_descriptorSelector :: Selector
+initWithBuffer_offset_descriptorSelector :: Selector '[RawId, CULong, Id MPSMatrixDescriptor] (Id MPSMatrix)
 initWithBuffer_offset_descriptorSelector = mkSelector "initWithBuffer:offset:descriptor:"
 
 -- | @Selector@ for @initWithDevice:descriptor:@
-initWithDevice_descriptorSelector :: Selector
+initWithDevice_descriptorSelector :: Selector '[RawId, Id MPSMatrixDescriptor] (Id MPSMatrix)
 initWithDevice_descriptorSelector = mkSelector "initWithDevice:descriptor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSMatrix)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
-synchronizeOnCommandBufferSelector :: Selector
+synchronizeOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 
 -- | @Selector@ for @resourceSize@
-resourceSizeSelector :: Selector
+resourceSizeSelector :: Selector '[] CULong
 resourceSizeSelector = mkSelector "resourceSize"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] CULong
 rowsSelector = mkSelector "rows"
 
 -- | @Selector@ for @columns@
-columnsSelector :: Selector
+columnsSelector :: Selector '[] CULong
 columnsSelector = mkSelector "columns"
 
 -- | @Selector@ for @matrices@
-matricesSelector :: Selector
+matricesSelector :: Selector '[] CULong
 matricesSelector = mkSelector "matrices"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @rowBytes@
-rowBytesSelector :: Selector
+rowBytesSelector :: Selector '[] CULong
 rowBytesSelector = mkSelector "rowBytes"
 
 -- | @Selector@ for @matrixBytes@
-matrixBytesSelector :: Selector
+matrixBytesSelector :: Selector '[] CULong
 matrixBytesSelector = mkSelector "matrixBytes"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] RawId
 dataSelector = mkSelector "data"
 

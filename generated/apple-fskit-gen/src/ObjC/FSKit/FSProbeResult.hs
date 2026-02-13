@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,15 @@ module ObjC.FSKit.FSProbeResult
   , containerID
   , notRecognizedProbeResult
   , usableButLimitedProbeResult
+  , containerIDSelector
   , initSelector
+  , nameSelector
+  , notRecognizedProbeResultSelector
   , recognizedProbeResultWithName_containerIDSelector
+  , resultSelector
+  , usableButLimitedProbeResultSelector
   , usableButLimitedProbeResultWithName_containerIDSelector
   , usableProbeResultWithName_containerIDSelector
-  , resultSelector
-  , nameSelector
-  , containerIDSelector
-  , notRecognizedProbeResultSelector
-  , usableButLimitedProbeResultSelector
 
   -- * Enum types
   , FSMatchResult(FSMatchResult)
@@ -43,15 +44,11 @@ module ObjC.FSKit.FSProbeResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSProbeResult fsProbeResult => fsProbeResult -> IO (Id FSProbeResult)
-init_ fsProbeResult  =
-    sendMsg fsProbeResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsProbeResult =
+  sendOwnedMessage fsProbeResult initSelector
 
 -- | Creates a probe result for a recognized file system.
 --
@@ -73,9 +70,7 @@ recognizedProbeResultWithName_containerID :: (IsNSString name, IsFSContainerIden
 recognizedProbeResultWithName_containerID name containerID =
   do
     cls' <- getRequiredClass "FSProbeResult"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr containerID $ \raw_containerID ->
-        sendClassMsg cls' (mkSelector "recognizedProbeResultWithName:containerID:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_containerID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' recognizedProbeResultWithName_containerIDSelector (toNSString name) (toFSContainerIdentifier containerID)
 
 -- | Creates a probe result for a recognized file system that is usable, but with limited capabilities.
 --
@@ -86,9 +81,7 @@ usableButLimitedProbeResultWithName_containerID :: (IsNSString name, IsFSContain
 usableButLimitedProbeResultWithName_containerID name containerID =
   do
     cls' <- getRequiredClass "FSProbeResult"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr containerID $ \raw_containerID ->
-        sendClassMsg cls' (mkSelector "usableButLimitedProbeResultWithName:containerID:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_containerID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' usableButLimitedProbeResultWithName_containerIDSelector (toNSString name) (toFSContainerIdentifier containerID)
 
 -- | Creates a probe result for a recognized and usable file system.
 --
@@ -99,16 +92,14 @@ usableProbeResultWithName_containerID :: (IsNSString name, IsFSContainerIdentifi
 usableProbeResultWithName_containerID name containerID =
   do
     cls' <- getRequiredClass "FSProbeResult"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr containerID $ \raw_containerID ->
-        sendClassMsg cls' (mkSelector "usableProbeResultWithName:containerID:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_containerID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' usableProbeResultWithName_containerIDSelector (toNSString name) (toFSContainerIdentifier containerID)
 
 -- | The match result, representing the recognition and usability of a probed resource.
 --
 -- ObjC selector: @- result@
 result :: IsFSProbeResult fsProbeResult => fsProbeResult -> IO FSMatchResult
-result fsProbeResult  =
-    fmap (coerce :: CLong -> FSMatchResult) $ sendMsg fsProbeResult (mkSelector "result") retCLong []
+result fsProbeResult =
+  sendMessage fsProbeResult resultSelector
 
 -- | The resource name, as found during the probe operation.
 --
@@ -116,8 +107,8 @@ result fsProbeResult  =
 --
 -- ObjC selector: @- name@
 name :: IsFSProbeResult fsProbeResult => fsProbeResult -> IO (Id NSString)
-name fsProbeResult  =
-    sendMsg fsProbeResult (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name fsProbeResult =
+  sendMessage fsProbeResult nameSelector
 
 -- | The container identifier, as found during the probe operation.
 --
@@ -125,8 +116,8 @@ name fsProbeResult  =
 --
 -- ObjC selector: @- containerID@
 containerID :: IsFSProbeResult fsProbeResult => fsProbeResult -> IO (Id FSContainerIdentifier)
-containerID fsProbeResult  =
-    sendMsg fsProbeResult (mkSelector "containerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerID fsProbeResult =
+  sendMessage fsProbeResult containerIDSelector
 
 -- | A probe result for an unrecognized file system.
 --
@@ -137,7 +128,7 @@ notRecognizedProbeResult :: IO (Id FSProbeResult)
 notRecognizedProbeResult  =
   do
     cls' <- getRequiredClass "FSProbeResult"
-    sendClassMsg cls' (mkSelector "notRecognizedProbeResult") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' notRecognizedProbeResultSelector
 
 -- | A probe result for a recognized file system that is usable, but with limited capabilities.
 --
@@ -148,45 +139,45 @@ usableButLimitedProbeResult :: IO (Id FSProbeResult)
 usableButLimitedProbeResult  =
   do
     cls' <- getRequiredClass "FSProbeResult"
-    sendClassMsg cls' (mkSelector "usableButLimitedProbeResult") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' usableButLimitedProbeResultSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSProbeResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @recognizedProbeResultWithName:containerID:@
-recognizedProbeResultWithName_containerIDSelector :: Selector
+recognizedProbeResultWithName_containerIDSelector :: Selector '[Id NSString, Id FSContainerIdentifier] (Id FSProbeResult)
 recognizedProbeResultWithName_containerIDSelector = mkSelector "recognizedProbeResultWithName:containerID:"
 
 -- | @Selector@ for @usableButLimitedProbeResultWithName:containerID:@
-usableButLimitedProbeResultWithName_containerIDSelector :: Selector
+usableButLimitedProbeResultWithName_containerIDSelector :: Selector '[Id NSString, Id FSContainerIdentifier] (Id FSProbeResult)
 usableButLimitedProbeResultWithName_containerIDSelector = mkSelector "usableButLimitedProbeResultWithName:containerID:"
 
 -- | @Selector@ for @usableProbeResultWithName:containerID:@
-usableProbeResultWithName_containerIDSelector :: Selector
+usableProbeResultWithName_containerIDSelector :: Selector '[Id NSString, Id FSContainerIdentifier] (Id FSProbeResult)
 usableProbeResultWithName_containerIDSelector = mkSelector "usableProbeResultWithName:containerID:"
 
 -- | @Selector@ for @result@
-resultSelector :: Selector
+resultSelector :: Selector '[] FSMatchResult
 resultSelector = mkSelector "result"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @containerID@
-containerIDSelector :: Selector
+containerIDSelector :: Selector '[] (Id FSContainerIdentifier)
 containerIDSelector = mkSelector "containerID"
 
 -- | @Selector@ for @notRecognizedProbeResult@
-notRecognizedProbeResultSelector :: Selector
+notRecognizedProbeResultSelector :: Selector '[] (Id FSProbeResult)
 notRecognizedProbeResultSelector = mkSelector "notRecognizedProbeResult"
 
 -- | @Selector@ for @usableButLimitedProbeResult@
-usableButLimitedProbeResultSelector :: Selector
+usableButLimitedProbeResultSelector :: Selector '[] (Id FSProbeResult)
 usableButLimitedProbeResultSelector = mkSelector "usableButLimitedProbeResult"
 

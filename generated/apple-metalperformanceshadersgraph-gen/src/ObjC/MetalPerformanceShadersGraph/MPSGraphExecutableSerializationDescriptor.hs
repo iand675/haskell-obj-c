@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,10 +17,10 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutableSerializationDescript
   , minimumDeploymentTarget
   , setMinimumDeploymentTarget
   , appendSelector
-  , setAppendSelector
   , deploymentPlatformSelector
-  , setDeploymentPlatformSelector
   , minimumDeploymentTargetSelector
+  , setAppendSelector
+  , setDeploymentPlatformSelector
   , setMinimumDeploymentTargetSelector
 
   -- * Enum types
@@ -31,15 +32,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutableSerializationDescript
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- append@
 append :: IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor => mpsGraphExecutableSerializationDescriptor -> IO Bool
-append mpsGraphExecutableSerializationDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "append") retCULong []
+append mpsGraphExecutableSerializationDescriptor =
+  sendMessage mpsGraphExecutableSerializationDescriptor appendSelector
 
 -- | Flag to append to an existing .mpsgraphpackage if found at provided url.
 --
@@ -62,8 +59,8 @@ append mpsGraphExecutableSerializationDescriptor  =
 --
 -- ObjC selector: @- setAppend:@
 setAppend :: IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor => mpsGraphExecutableSerializationDescriptor -> Bool -> IO ()
-setAppend mpsGraphExecutableSerializationDescriptor  value =
-    sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "setAppend:") retVoid [argCULong (if value then 1 else 0)]
+setAppend mpsGraphExecutableSerializationDescriptor value =
+  sendMessage mpsGraphExecutableSerializationDescriptor setAppendSelector value
 
 -- | The deployment platform used to serialize the executable.
 --
@@ -71,8 +68,8 @@ setAppend mpsGraphExecutableSerializationDescriptor  value =
 --
 -- ObjC selector: @- deploymentPlatform@
 deploymentPlatform :: IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor => mpsGraphExecutableSerializationDescriptor -> IO MPSGraphDeploymentPlatform
-deploymentPlatform mpsGraphExecutableSerializationDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphDeploymentPlatform) $ sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "deploymentPlatform") retCULong []
+deploymentPlatform mpsGraphExecutableSerializationDescriptor =
+  sendMessage mpsGraphExecutableSerializationDescriptor deploymentPlatformSelector
 
 -- | The deployment platform used to serialize the executable.
 --
@@ -80,8 +77,8 @@ deploymentPlatform mpsGraphExecutableSerializationDescriptor  =
 --
 -- ObjC selector: @- setDeploymentPlatform:@
 setDeploymentPlatform :: IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor => mpsGraphExecutableSerializationDescriptor -> MPSGraphDeploymentPlatform -> IO ()
-setDeploymentPlatform mpsGraphExecutableSerializationDescriptor  value =
-    sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "setDeploymentPlatform:") retVoid [argCULong (coerce value)]
+setDeploymentPlatform mpsGraphExecutableSerializationDescriptor value =
+  sendMessage mpsGraphExecutableSerializationDescriptor setDeploymentPlatformSelector value
 
 -- | The minimum deployment target to serialize the executable.
 --
@@ -89,8 +86,8 @@ setDeploymentPlatform mpsGraphExecutableSerializationDescriptor  value =
 --
 -- ObjC selector: @- minimumDeploymentTarget@
 minimumDeploymentTarget :: IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor => mpsGraphExecutableSerializationDescriptor -> IO (Id NSString)
-minimumDeploymentTarget mpsGraphExecutableSerializationDescriptor  =
-    sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "minimumDeploymentTarget") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimumDeploymentTarget mpsGraphExecutableSerializationDescriptor =
+  sendMessage mpsGraphExecutableSerializationDescriptor minimumDeploymentTargetSelector
 
 -- | The minimum deployment target to serialize the executable.
 --
@@ -98,35 +95,34 @@ minimumDeploymentTarget mpsGraphExecutableSerializationDescriptor  =
 --
 -- ObjC selector: @- setMinimumDeploymentTarget:@
 setMinimumDeploymentTarget :: (IsMPSGraphExecutableSerializationDescriptor mpsGraphExecutableSerializationDescriptor, IsNSString value) => mpsGraphExecutableSerializationDescriptor -> value -> IO ()
-setMinimumDeploymentTarget mpsGraphExecutableSerializationDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphExecutableSerializationDescriptor (mkSelector "setMinimumDeploymentTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinimumDeploymentTarget mpsGraphExecutableSerializationDescriptor value =
+  sendMessage mpsGraphExecutableSerializationDescriptor setMinimumDeploymentTargetSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @append@
-appendSelector :: Selector
+appendSelector :: Selector '[] Bool
 appendSelector = mkSelector "append"
 
 -- | @Selector@ for @setAppend:@
-setAppendSelector :: Selector
+setAppendSelector :: Selector '[Bool] ()
 setAppendSelector = mkSelector "setAppend:"
 
 -- | @Selector@ for @deploymentPlatform@
-deploymentPlatformSelector :: Selector
+deploymentPlatformSelector :: Selector '[] MPSGraphDeploymentPlatform
 deploymentPlatformSelector = mkSelector "deploymentPlatform"
 
 -- | @Selector@ for @setDeploymentPlatform:@
-setDeploymentPlatformSelector :: Selector
+setDeploymentPlatformSelector :: Selector '[MPSGraphDeploymentPlatform] ()
 setDeploymentPlatformSelector = mkSelector "setDeploymentPlatform:"
 
 -- | @Selector@ for @minimumDeploymentTarget@
-minimumDeploymentTargetSelector :: Selector
+minimumDeploymentTargetSelector :: Selector '[] (Id NSString)
 minimumDeploymentTargetSelector = mkSelector "minimumDeploymentTarget"
 
 -- | @Selector@ for @setMinimumDeploymentTarget:@
-setMinimumDeploymentTargetSelector :: Selector
+setMinimumDeploymentTargetSelector :: Selector '[Id NSString] ()
 setMinimumDeploymentTargetSelector = mkSelector "setMinimumDeploymentTarget:"
 

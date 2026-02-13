@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRGeneralDiagnosticsClusterHardwareFaultChangeEvent
   , previous
   , setPrevious
   , currentSelector
-  , setCurrentSelector
   , previousSelector
+  , setCurrentSelector
   , setPreviousSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- current@
 current :: IsMTRGeneralDiagnosticsClusterHardwareFaultChangeEvent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent => mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent -> IO (Id NSArray)
-current mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent  =
-    sendMsg mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent (mkSelector "current") (retPtr retVoid) [] >>= retainedObject . castPtr
+current mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent =
+  sendMessage mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent currentSelector
 
 -- | @- setCurrent:@
 setCurrent :: (IsMTRGeneralDiagnosticsClusterHardwareFaultChangeEvent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent, IsNSArray value) => mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent -> value -> IO ()
-setCurrent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent (mkSelector "setCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent value =
+  sendMessage mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent setCurrentSelector (toNSArray value)
 
 -- | @- previous@
 previous :: IsMTRGeneralDiagnosticsClusterHardwareFaultChangeEvent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent => mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent -> IO (Id NSArray)
-previous mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent  =
-    sendMsg mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent (mkSelector "previous") (retPtr retVoid) [] >>= retainedObject . castPtr
+previous mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent =
+  sendMessage mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent previousSelector
 
 -- | @- setPrevious:@
 setPrevious :: (IsMTRGeneralDiagnosticsClusterHardwareFaultChangeEvent mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent, IsNSArray value) => mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent -> value -> IO ()
-setPrevious mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent (mkSelector "setPrevious:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrevious mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent value =
+  sendMessage mtrGeneralDiagnosticsClusterHardwareFaultChangeEvent setPreviousSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @current@
-currentSelector :: Selector
+currentSelector :: Selector '[] (Id NSArray)
 currentSelector = mkSelector "current"
 
 -- | @Selector@ for @setCurrent:@
-setCurrentSelector :: Selector
+setCurrentSelector :: Selector '[Id NSArray] ()
 setCurrentSelector = mkSelector "setCurrent:"
 
 -- | @Selector@ for @previous@
-previousSelector :: Selector
+previousSelector :: Selector '[] (Id NSArray)
 previousSelector = mkSelector "previous"
 
 -- | @Selector@ for @setPrevious:@
-setPreviousSelector :: Selector
+setPreviousSelector :: Selector '[Id NSArray] ()
 setPreviousSelector = mkSelector "setPrevious:"
 

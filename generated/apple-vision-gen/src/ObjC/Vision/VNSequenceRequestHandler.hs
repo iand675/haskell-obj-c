@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.Vision.VNSequenceRequestHandler
   , performRequests_onCMSampleBuffer_error
   , performRequests_onCMSampleBuffer_orientation_error
   , initSelector
-  , performRequests_onCVPixelBuffer_errorSelector
-  , performRequests_onCVPixelBuffer_orientation_errorSelector
   , performRequests_onCGImage_errorSelector
   , performRequests_onCGImage_orientation_errorSelector
   , performRequests_onCIImage_errorSelector
   , performRequests_onCIImage_orientation_errorSelector
-  , performRequests_onImageURL_errorSelector
-  , performRequests_onImageURL_orientation_errorSelector
-  , performRequests_onImageData_errorSelector
-  , performRequests_onImageData_orientation_errorSelector
   , performRequests_onCMSampleBuffer_errorSelector
   , performRequests_onCMSampleBuffer_orientation_errorSelector
+  , performRequests_onCVPixelBuffer_errorSelector
+  , performRequests_onCVPixelBuffer_orientation_errorSelector
+  , performRequests_onImageData_errorSelector
+  , performRequests_onImageData_orientation_errorSelector
+  , performRequests_onImageURL_errorSelector
+  , performRequests_onImageURL_orientation_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVNSequenceRequestHandler vnSequenceRequestHandler => vnSequenceRequestHandler -> IO (Id VNSequenceRequestHandler)
-init_ vnSequenceRequestHandler  =
-    sendMsg vnSequenceRequestHandler (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnSequenceRequestHandler =
+  sendOwnedMessage vnSequenceRequestHandler initSelector
 
 -- | Perform requests on an image in a CVPixelBuffer.
 --
@@ -73,10 +70,8 @@ init_ vnSequenceRequestHandler  =
 --
 -- ObjC selector: @- performRequests:onCVPixelBuffer:error:@
 performRequests_onCVPixelBuffer_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> error_ -> IO Bool
-performRequests_onCVPixelBuffer_error vnSequenceRequestHandler  requests pixelBuffer error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCVPixelBuffer:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr pixelBuffer, argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCVPixelBuffer_error vnSequenceRequestHandler requests pixelBuffer error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCVPixelBuffer_errorSelector (toNSArray requests) pixelBuffer (toNSError error_)
 
 -- | Perform requests on an image in a CVPixelBuffer.
 --
@@ -90,10 +85,8 @@ performRequests_onCVPixelBuffer_error vnSequenceRequestHandler  requests pixelBu
 --
 -- ObjC selector: @- performRequests:onCVPixelBuffer:orientation:error:@
 performRequests_onCVPixelBuffer_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> CInt -> error_ -> IO Bool
-performRequests_onCVPixelBuffer_orientation_error vnSequenceRequestHandler  requests pixelBuffer orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCVPixelBuffer:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr pixelBuffer, argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCVPixelBuffer_orientation_error vnSequenceRequestHandler requests pixelBuffer orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCVPixelBuffer_orientation_errorSelector (toNSArray requests) pixelBuffer orientation (toNSError error_)
 
 -- | Perform requests on an image in a CGImageRef.
 --
@@ -105,10 +98,8 @@ performRequests_onCVPixelBuffer_orientation_error vnSequenceRequestHandler  requ
 --
 -- ObjC selector: @- performRequests:onCGImage:error:@
 performRequests_onCGImage_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> error_ -> IO Bool
-performRequests_onCGImage_error vnSequenceRequestHandler  requests image error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCGImage:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr image, argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCGImage_error vnSequenceRequestHandler requests image error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCGImage_errorSelector (toNSArray requests) image (toNSError error_)
 
 -- | Perform requests on an image in a CGImageRef.
 --
@@ -122,10 +113,8 @@ performRequests_onCGImage_error vnSequenceRequestHandler  requests image error_ 
 --
 -- ObjC selector: @- performRequests:onCGImage:orientation:error:@
 performRequests_onCGImage_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> CInt -> error_ -> IO Bool
-performRequests_onCGImage_orientation_error vnSequenceRequestHandler  requests image orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCGImage:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr image, argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCGImage_orientation_error vnSequenceRequestHandler requests image orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCGImage_orientation_errorSelector (toNSArray requests) image orientation (toNSError error_)
 
 -- | Perform requests on an image in a CIImage.
 --
@@ -137,11 +126,8 @@ performRequests_onCGImage_orientation_error vnSequenceRequestHandler  requests i
 --
 -- ObjC selector: @- performRequests:onCIImage:error:@
 performRequests_onCIImage_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsCIImage image, IsNSError error_) => vnSequenceRequestHandler -> requests -> image -> error_ -> IO Bool
-performRequests_onCIImage_error vnSequenceRequestHandler  requests image error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr image $ \raw_image ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCIImage:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCIImage_error vnSequenceRequestHandler requests image error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCIImage_errorSelector (toNSArray requests) (toCIImage image) (toNSError error_)
 
 -- | Perform requests on an image in a CIImage.
 --
@@ -155,11 +141,8 @@ performRequests_onCIImage_error vnSequenceRequestHandler  requests image error_ 
 --
 -- ObjC selector: @- performRequests:onCIImage:orientation:error:@
 performRequests_onCIImage_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsCIImage image, IsNSError error_) => vnSequenceRequestHandler -> requests -> image -> CInt -> error_ -> IO Bool
-performRequests_onCIImage_orientation_error vnSequenceRequestHandler  requests image orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr image $ \raw_image ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCIImage:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCIImage_orientation_error vnSequenceRequestHandler requests image orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCIImage_orientation_errorSelector (toNSArray requests) (toCIImage image) orientation (toNSError error_)
 
 -- | Perform requests on an image referenced by an URL.
 --
@@ -171,11 +154,8 @@ performRequests_onCIImage_orientation_error vnSequenceRequestHandler  requests i
 --
 -- ObjC selector: @- performRequests:onImageURL:error:@
 performRequests_onImageURL_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSURL imageURL, IsNSError error_) => vnSequenceRequestHandler -> requests -> imageURL -> error_ -> IO Bool
-performRequests_onImageURL_error vnSequenceRequestHandler  requests imageURL error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr imageURL $ \raw_imageURL ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onImageURL:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_imageURL :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onImageURL_error vnSequenceRequestHandler requests imageURL error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onImageURL_errorSelector (toNSArray requests) (toNSURL imageURL) (toNSError error_)
 
 -- | Perform requests on an image referenced by an URL.
 --
@@ -189,11 +169,8 @@ performRequests_onImageURL_error vnSequenceRequestHandler  requests imageURL err
 --
 -- ObjC selector: @- performRequests:onImageURL:orientation:error:@
 performRequests_onImageURL_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSURL imageURL, IsNSError error_) => vnSequenceRequestHandler -> requests -> imageURL -> CInt -> error_ -> IO Bool
-performRequests_onImageURL_orientation_error vnSequenceRequestHandler  requests imageURL orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr imageURL $ \raw_imageURL ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onImageURL:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_imageURL :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onImageURL_orientation_error vnSequenceRequestHandler requests imageURL orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onImageURL_orientation_errorSelector (toNSArray requests) (toNSURL imageURL) orientation (toNSError error_)
 
 -- | Perform requests on an image with its source format in memory.
 --
@@ -205,11 +182,8 @@ performRequests_onImageURL_orientation_error vnSequenceRequestHandler  requests 
 --
 -- ObjC selector: @- performRequests:onImageData:error:@
 performRequests_onImageData_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSData imageData, IsNSError error_) => vnSequenceRequestHandler -> requests -> imageData -> error_ -> IO Bool
-performRequests_onImageData_error vnSequenceRequestHandler  requests imageData error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr imageData $ \raw_imageData ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onImageData:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_imageData :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onImageData_error vnSequenceRequestHandler requests imageData error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onImageData_errorSelector (toNSArray requests) (toNSData imageData) (toNSError error_)
 
 -- | Perform requests on an image with its source format in memory.
 --
@@ -223,11 +197,8 @@ performRequests_onImageData_error vnSequenceRequestHandler  requests imageData e
 --
 -- ObjC selector: @- performRequests:onImageData:orientation:error:@
 performRequests_onImageData_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSData imageData, IsNSError error_) => vnSequenceRequestHandler -> requests -> imageData -> CInt -> error_ -> IO Bool
-performRequests_onImageData_orientation_error vnSequenceRequestHandler  requests imageData orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr imageData $ \raw_imageData ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onImageData:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_imageData :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onImageData_orientation_error vnSequenceRequestHandler requests imageData orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onImageData_orientation_errorSelector (toNSArray requests) (toNSData imageData) orientation (toNSError error_)
 
 -- | Perform requests on the image buffer contained in the CMSampleBufferRef.
 --
@@ -239,10 +210,8 @@ performRequests_onImageData_orientation_error vnSequenceRequestHandler  requests
 --
 -- ObjC selector: @- performRequests:onCMSampleBuffer:error:@
 performRequests_onCMSampleBuffer_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> error_ -> IO Bool
-performRequests_onCMSampleBuffer_error vnSequenceRequestHandler  requests sampleBuffer error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCMSampleBuffer:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr sampleBuffer, argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCMSampleBuffer_error vnSequenceRequestHandler requests sampleBuffer error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCMSampleBuffer_errorSelector (toNSArray requests) sampleBuffer (toNSError error_)
 
 -- | Perform requests on the image buffer contained in the CMSampleBufferRef.
 --
@@ -256,64 +225,62 @@ performRequests_onCMSampleBuffer_error vnSequenceRequestHandler  requests sample
 --
 -- ObjC selector: @- performRequests:onCMSampleBuffer:orientation:error:@
 performRequests_onCMSampleBuffer_orientation_error :: (IsVNSequenceRequestHandler vnSequenceRequestHandler, IsNSArray requests, IsNSError error_) => vnSequenceRequestHandler -> requests -> Ptr () -> CInt -> error_ -> IO Bool
-performRequests_onCMSampleBuffer_orientation_error vnSequenceRequestHandler  requests sampleBuffer orientation error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnSequenceRequestHandler (mkSelector "performRequests:onCMSampleBuffer:orientation:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr sampleBuffer, argCInt (fromIntegral orientation), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_onCMSampleBuffer_orientation_error vnSequenceRequestHandler requests sampleBuffer orientation error_ =
+  sendMessage vnSequenceRequestHandler performRequests_onCMSampleBuffer_orientation_errorSelector (toNSArray requests) sampleBuffer orientation (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNSequenceRequestHandler)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @performRequests:onCVPixelBuffer:error:@
-performRequests_onCVPixelBuffer_errorSelector :: Selector
+performRequests_onCVPixelBuffer_errorSelector :: Selector '[Id NSArray, Ptr (), Id NSError] Bool
 performRequests_onCVPixelBuffer_errorSelector = mkSelector "performRequests:onCVPixelBuffer:error:"
 
 -- | @Selector@ for @performRequests:onCVPixelBuffer:orientation:error:@
-performRequests_onCVPixelBuffer_orientation_errorSelector :: Selector
+performRequests_onCVPixelBuffer_orientation_errorSelector :: Selector '[Id NSArray, Ptr (), CInt, Id NSError] Bool
 performRequests_onCVPixelBuffer_orientation_errorSelector = mkSelector "performRequests:onCVPixelBuffer:orientation:error:"
 
 -- | @Selector@ for @performRequests:onCGImage:error:@
-performRequests_onCGImage_errorSelector :: Selector
+performRequests_onCGImage_errorSelector :: Selector '[Id NSArray, Ptr (), Id NSError] Bool
 performRequests_onCGImage_errorSelector = mkSelector "performRequests:onCGImage:error:"
 
 -- | @Selector@ for @performRequests:onCGImage:orientation:error:@
-performRequests_onCGImage_orientation_errorSelector :: Selector
+performRequests_onCGImage_orientation_errorSelector :: Selector '[Id NSArray, Ptr (), CInt, Id NSError] Bool
 performRequests_onCGImage_orientation_errorSelector = mkSelector "performRequests:onCGImage:orientation:error:"
 
 -- | @Selector@ for @performRequests:onCIImage:error:@
-performRequests_onCIImage_errorSelector :: Selector
+performRequests_onCIImage_errorSelector :: Selector '[Id NSArray, Id CIImage, Id NSError] Bool
 performRequests_onCIImage_errorSelector = mkSelector "performRequests:onCIImage:error:"
 
 -- | @Selector@ for @performRequests:onCIImage:orientation:error:@
-performRequests_onCIImage_orientation_errorSelector :: Selector
+performRequests_onCIImage_orientation_errorSelector :: Selector '[Id NSArray, Id CIImage, CInt, Id NSError] Bool
 performRequests_onCIImage_orientation_errorSelector = mkSelector "performRequests:onCIImage:orientation:error:"
 
 -- | @Selector@ for @performRequests:onImageURL:error:@
-performRequests_onImageURL_errorSelector :: Selector
+performRequests_onImageURL_errorSelector :: Selector '[Id NSArray, Id NSURL, Id NSError] Bool
 performRequests_onImageURL_errorSelector = mkSelector "performRequests:onImageURL:error:"
 
 -- | @Selector@ for @performRequests:onImageURL:orientation:error:@
-performRequests_onImageURL_orientation_errorSelector :: Selector
+performRequests_onImageURL_orientation_errorSelector :: Selector '[Id NSArray, Id NSURL, CInt, Id NSError] Bool
 performRequests_onImageURL_orientation_errorSelector = mkSelector "performRequests:onImageURL:orientation:error:"
 
 -- | @Selector@ for @performRequests:onImageData:error:@
-performRequests_onImageData_errorSelector :: Selector
+performRequests_onImageData_errorSelector :: Selector '[Id NSArray, Id NSData, Id NSError] Bool
 performRequests_onImageData_errorSelector = mkSelector "performRequests:onImageData:error:"
 
 -- | @Selector@ for @performRequests:onImageData:orientation:error:@
-performRequests_onImageData_orientation_errorSelector :: Selector
+performRequests_onImageData_orientation_errorSelector :: Selector '[Id NSArray, Id NSData, CInt, Id NSError] Bool
 performRequests_onImageData_orientation_errorSelector = mkSelector "performRequests:onImageData:orientation:error:"
 
 -- | @Selector@ for @performRequests:onCMSampleBuffer:error:@
-performRequests_onCMSampleBuffer_errorSelector :: Selector
+performRequests_onCMSampleBuffer_errorSelector :: Selector '[Id NSArray, Ptr (), Id NSError] Bool
 performRequests_onCMSampleBuffer_errorSelector = mkSelector "performRequests:onCMSampleBuffer:error:"
 
 -- | @Selector@ for @performRequests:onCMSampleBuffer:orientation:error:@
-performRequests_onCMSampleBuffer_orientation_errorSelector :: Selector
+performRequests_onCMSampleBuffer_orientation_errorSelector :: Selector '[Id NSArray, Ptr (), CInt, Id NSError] Bool
 performRequests_onCMSampleBuffer_orientation_errorSelector = mkSelector "performRequests:onCMSampleBuffer:orientation:error:"
 

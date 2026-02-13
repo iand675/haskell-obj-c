@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Intents.INRideFareLineItem
   , title
   , price
   , currencyCode
-  , initWithTitle_price_currencyCodeSelector
-  , initSelector
-  , titleSelector
-  , priceSelector
   , currencyCodeSelector
+  , initSelector
+  , initWithTitle_price_currencyCodeSelector
+  , priceSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,53 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTitle:price:currencyCode:@
 initWithTitle_price_currencyCode :: (IsINRideFareLineItem inRideFareLineItem, IsNSString title, IsNSDecimalNumber price, IsNSString currencyCode) => inRideFareLineItem -> title -> price -> currencyCode -> IO (Id INRideFareLineItem)
-initWithTitle_price_currencyCode inRideFareLineItem  title price currencyCode =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr price $ \raw_price ->
-      withObjCPtr currencyCode $ \raw_currencyCode ->
-          sendMsg inRideFareLineItem (mkSelector "initWithTitle:price:currencyCode:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_price :: Ptr ()), argPtr (castPtr raw_currencyCode :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_price_currencyCode inRideFareLineItem title price currencyCode =
+  sendOwnedMessage inRideFareLineItem initWithTitle_price_currencyCodeSelector (toNSString title) (toNSDecimalNumber price) (toNSString currencyCode)
 
 -- | @- init@
 init_ :: IsINRideFareLineItem inRideFareLineItem => inRideFareLineItem -> IO (Id INRideFareLineItem)
-init_ inRideFareLineItem  =
-    sendMsg inRideFareLineItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRideFareLineItem =
+  sendOwnedMessage inRideFareLineItem initSelector
 
 -- | @- title@
 title :: IsINRideFareLineItem inRideFareLineItem => inRideFareLineItem -> IO (Id NSString)
-title inRideFareLineItem  =
-    sendMsg inRideFareLineItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title inRideFareLineItem =
+  sendMessage inRideFareLineItem titleSelector
 
 -- | @- price@
 price :: IsINRideFareLineItem inRideFareLineItem => inRideFareLineItem -> IO (Id NSDecimalNumber)
-price inRideFareLineItem  =
-    sendMsg inRideFareLineItem (mkSelector "price") (retPtr retVoid) [] >>= retainedObject . castPtr
+price inRideFareLineItem =
+  sendMessage inRideFareLineItem priceSelector
 
 -- | @- currencyCode@
 currencyCode :: IsINRideFareLineItem inRideFareLineItem => inRideFareLineItem -> IO (Id NSString)
-currencyCode inRideFareLineItem  =
-    sendMsg inRideFareLineItem (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode inRideFareLineItem =
+  sendMessage inRideFareLineItem currencyCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:price:currencyCode:@
-initWithTitle_price_currencyCodeSelector :: Selector
+initWithTitle_price_currencyCodeSelector :: Selector '[Id NSString, Id NSDecimalNumber, Id NSString] (Id INRideFareLineItem)
 initWithTitle_price_currencyCodeSelector = mkSelector "initWithTitle:price:currencyCode:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRideFareLineItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @price@
-priceSelector :: Selector
+priceSelector :: Selector '[] (Id NSDecimalNumber)
 priceSelector = mkSelector "price"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 

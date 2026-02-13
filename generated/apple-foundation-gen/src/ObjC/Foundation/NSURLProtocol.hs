@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,36 +28,32 @@ module ObjC.Foundation.NSURLProtocol
   , request
   , cachedResponse
   , task
-  , initWithRequest_cachedResponse_clientSelector
+  , cachedResponseSelector
   , canInitWithRequestSelector
+  , canInitWithTaskSelector
   , canonicalRequestForRequestSelector
+  , clientSelector
+  , initWithRequest_cachedResponse_clientSelector
+  , initWithTask_cachedResponse_clientSelector
+  , propertyForKey_inRequestSelector
+  , registerClassSelector
+  , removePropertyForKey_inRequestSelector
   , requestIsCacheEquivalent_toRequestSelector
+  , requestSelector
+  , setProperty_forKey_inRequestSelector
   , startLoadingSelector
   , stopLoadingSelector
-  , propertyForKey_inRequestSelector
-  , setProperty_forKey_inRequestSelector
-  , removePropertyForKey_inRequestSelector
-  , registerClassSelector
-  , unregisterClassSelector
-  , canInitWithTaskSelector
-  , initWithTask_cachedResponse_clientSelector
-  , clientSelector
-  , requestSelector
-  , cachedResponseSelector
   , taskSelector
+  , unregisterClassSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,10 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRequest:cachedResponse:client:@
 initWithRequest_cachedResponse_client :: (IsNSURLProtocol nsurlProtocol, IsNSURLRequest request, IsNSCachedURLResponse cachedResponse) => nsurlProtocol -> request -> cachedResponse -> RawId -> IO (Id NSURLProtocol)
-initWithRequest_cachedResponse_client nsurlProtocol  request cachedResponse client =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr cachedResponse $ \raw_cachedResponse ->
-        sendMsg nsurlProtocol (mkSelector "initWithRequest:cachedResponse:client:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_cachedResponse :: Ptr ()), argPtr (castPtr (unRawId client) :: Ptr ())] >>= ownedObject . castPtr
+initWithRequest_cachedResponse_client nsurlProtocol request cachedResponse client =
+  sendOwnedMessage nsurlProtocol initWithRequest_cachedResponse_clientSelector (toNSURLRequest request) (toNSCachedURLResponse cachedResponse) client
 
 -- | canInitWithRequest:
 --
@@ -94,8 +89,7 @@ canInitWithRequest :: IsNSURLRequest request => request -> IO Bool
 canInitWithRequest request =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr request $ \raw_request ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canInitWithRequest:") retCULong [argPtr (castPtr raw_request :: Ptr ())]
+    sendClassMessage cls' canInitWithRequestSelector (toNSURLRequest request)
 
 -- | canonicalRequestForRequest:
 --
@@ -112,8 +106,7 @@ canonicalRequestForRequest :: IsNSURLRequest request => request -> IO (Id NSURLR
 canonicalRequestForRequest request =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr request $ \raw_request ->
-      sendClassMsg cls' (mkSelector "canonicalRequestForRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' canonicalRequestForRequestSelector (toNSURLRequest request)
 
 -- | requestIsCacheEquivalent:toRequest:
 --
@@ -128,9 +121,7 @@ requestIsCacheEquivalent_toRequest :: (IsNSURLRequest a, IsNSURLRequest b) => a 
 requestIsCacheEquivalent_toRequest a b =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr a $ \raw_a ->
-      withObjCPtr b $ \raw_b ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "requestIsCacheEquivalent:toRequest:") retCULong [argPtr (castPtr raw_a :: Ptr ()), argPtr (castPtr raw_b :: Ptr ())]
+    sendClassMessage cls' requestIsCacheEquivalent_toRequestSelector (toNSURLRequest a) (toNSURLRequest b)
 
 -- | startLoading
 --
@@ -140,8 +131,8 @@ requestIsCacheEquivalent_toRequest a b =
 --
 -- ObjC selector: @- startLoading@
 startLoading :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO ()
-startLoading nsurlProtocol  =
-    sendMsg nsurlProtocol (mkSelector "startLoading") retVoid []
+startLoading nsurlProtocol =
+  sendMessage nsurlProtocol startLoadingSelector
 
 -- | stopLoading
 --
@@ -151,8 +142,8 @@ startLoading nsurlProtocol  =
 --
 -- ObjC selector: @- stopLoading@
 stopLoading :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO ()
-stopLoading nsurlProtocol  =
-    sendMsg nsurlProtocol (mkSelector "stopLoading") retVoid []
+stopLoading nsurlProtocol =
+  sendMessage nsurlProtocol stopLoadingSelector
 
 -- | propertyForKey:inRequest:
 --
@@ -171,9 +162,7 @@ propertyForKey_inRequest :: (IsNSString key, IsNSURLRequest request) => key -> r
 propertyForKey_inRequest key request =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr request $ \raw_request ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "propertyForKey:inRequest:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_request :: Ptr ())]
+    sendClassMessage cls' propertyForKey_inRequestSelector (toNSString key) (toNSURLRequest request)
 
 -- | setProperty:forKey:inRequest:
 --
@@ -192,9 +181,7 @@ setProperty_forKey_inRequest :: (IsNSString key, IsNSMutableURLRequest request) 
 setProperty_forKey_inRequest value key request =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr request $ \raw_request ->
-        sendClassMsg cls' (mkSelector "setProperty:forKey:inRequest:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_request :: Ptr ())]
+    sendClassMessage cls' setProperty_forKey_inRequestSelector value (toNSString key) (toNSMutableURLRequest request)
 
 -- | removePropertyForKey:inRequest:
 --
@@ -211,9 +198,7 @@ removePropertyForKey_inRequest :: (IsNSString key, IsNSMutableURLRequest request
 removePropertyForKey_inRequest key request =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr request $ \raw_request ->
-        sendClassMsg cls' (mkSelector "removePropertyForKey:inRequest:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_request :: Ptr ())]
+    sendClassMessage cls' removePropertyForKey_inRequestSelector (toNSString key) (toNSMutableURLRequest request)
 
 -- | registerClass:
 --
@@ -230,7 +215,7 @@ registerClass :: Class -> IO Bool
 registerClass protocolClass =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "registerClass:") retCULong [argPtr (unClass protocolClass)]
+    sendClassMessage cls' registerClassSelector protocolClass
 
 -- | unregisterClass:
 --
@@ -245,22 +230,19 @@ unregisterClass :: Class -> IO ()
 unregisterClass protocolClass =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    sendClassMsg cls' (mkSelector "unregisterClass:") retVoid [argPtr (unClass protocolClass)]
+    sendClassMessage cls' unregisterClassSelector protocolClass
 
 -- | @+ canInitWithTask:@
 canInitWithTask :: IsNSURLSessionTask task => task -> IO Bool
 canInitWithTask task =
   do
     cls' <- getRequiredClass "NSURLProtocol"
-    withObjCPtr task $ \raw_task ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canInitWithTask:") retCULong [argPtr (castPtr raw_task :: Ptr ())]
+    sendClassMessage cls' canInitWithTaskSelector (toNSURLSessionTask task)
 
 -- | @- initWithTask:cachedResponse:client:@
 initWithTask_cachedResponse_client :: (IsNSURLProtocol nsurlProtocol, IsNSURLSessionTask task, IsNSCachedURLResponse cachedResponse) => nsurlProtocol -> task -> cachedResponse -> RawId -> IO (Id NSURLProtocol)
-initWithTask_cachedResponse_client nsurlProtocol  task cachedResponse client =
-  withObjCPtr task $ \raw_task ->
-    withObjCPtr cachedResponse $ \raw_cachedResponse ->
-        sendMsg nsurlProtocol (mkSelector "initWithTask:cachedResponse:client:") (retPtr retVoid) [argPtr (castPtr raw_task :: Ptr ()), argPtr (castPtr raw_cachedResponse :: Ptr ()), argPtr (castPtr (unRawId client) :: Ptr ())] >>= ownedObject . castPtr
+initWithTask_cachedResponse_client nsurlProtocol task cachedResponse client =
+  sendOwnedMessage nsurlProtocol initWithTask_cachedResponse_clientSelector (toNSURLSessionTask task) (toNSCachedURLResponse cachedResponse) client
 
 -- | Returns the NSURLProtocolClient of the receiver.
 --
@@ -268,8 +250,8 @@ initWithTask_cachedResponse_client nsurlProtocol  task cachedResponse client =
 --
 -- ObjC selector: @- client@
 client :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO RawId
-client nsurlProtocol  =
-    fmap (RawId . castPtr) $ sendMsg nsurlProtocol (mkSelector "client") (retPtr retVoid) []
+client nsurlProtocol =
+  sendMessage nsurlProtocol clientSelector
 
 -- | Returns the NSURLRequest of the receiver.
 --
@@ -277,8 +259,8 @@ client nsurlProtocol  =
 --
 -- ObjC selector: @- request@
 request :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO (Id NSURLRequest)
-request nsurlProtocol  =
-    sendMsg nsurlProtocol (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request nsurlProtocol =
+  sendMessage nsurlProtocol requestSelector
 
 -- | Returns the NSCachedURLResponse of the receiver.
 --
@@ -286,83 +268,83 @@ request nsurlProtocol  =
 --
 -- ObjC selector: @- cachedResponse@
 cachedResponse :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO (Id NSCachedURLResponse)
-cachedResponse nsurlProtocol  =
-    sendMsg nsurlProtocol (mkSelector "cachedResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+cachedResponse nsurlProtocol =
+  sendMessage nsurlProtocol cachedResponseSelector
 
 -- | @- task@
 task :: IsNSURLProtocol nsurlProtocol => nsurlProtocol -> IO (Id NSURLSessionTask)
-task nsurlProtocol  =
-    sendMsg nsurlProtocol (mkSelector "task") (retPtr retVoid) [] >>= retainedObject . castPtr
+task nsurlProtocol =
+  sendMessage nsurlProtocol taskSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRequest:cachedResponse:client:@
-initWithRequest_cachedResponse_clientSelector :: Selector
+initWithRequest_cachedResponse_clientSelector :: Selector '[Id NSURLRequest, Id NSCachedURLResponse, RawId] (Id NSURLProtocol)
 initWithRequest_cachedResponse_clientSelector = mkSelector "initWithRequest:cachedResponse:client:"
 
 -- | @Selector@ for @canInitWithRequest:@
-canInitWithRequestSelector :: Selector
+canInitWithRequestSelector :: Selector '[Id NSURLRequest] Bool
 canInitWithRequestSelector = mkSelector "canInitWithRequest:"
 
 -- | @Selector@ for @canonicalRequestForRequest:@
-canonicalRequestForRequestSelector :: Selector
+canonicalRequestForRequestSelector :: Selector '[Id NSURLRequest] (Id NSURLRequest)
 canonicalRequestForRequestSelector = mkSelector "canonicalRequestForRequest:"
 
 -- | @Selector@ for @requestIsCacheEquivalent:toRequest:@
-requestIsCacheEquivalent_toRequestSelector :: Selector
+requestIsCacheEquivalent_toRequestSelector :: Selector '[Id NSURLRequest, Id NSURLRequest] Bool
 requestIsCacheEquivalent_toRequestSelector = mkSelector "requestIsCacheEquivalent:toRequest:"
 
 -- | @Selector@ for @startLoading@
-startLoadingSelector :: Selector
+startLoadingSelector :: Selector '[] ()
 startLoadingSelector = mkSelector "startLoading"
 
 -- | @Selector@ for @stopLoading@
-stopLoadingSelector :: Selector
+stopLoadingSelector :: Selector '[] ()
 stopLoadingSelector = mkSelector "stopLoading"
 
 -- | @Selector@ for @propertyForKey:inRequest:@
-propertyForKey_inRequestSelector :: Selector
+propertyForKey_inRequestSelector :: Selector '[Id NSString, Id NSURLRequest] RawId
 propertyForKey_inRequestSelector = mkSelector "propertyForKey:inRequest:"
 
 -- | @Selector@ for @setProperty:forKey:inRequest:@
-setProperty_forKey_inRequestSelector :: Selector
+setProperty_forKey_inRequestSelector :: Selector '[RawId, Id NSString, Id NSMutableURLRequest] ()
 setProperty_forKey_inRequestSelector = mkSelector "setProperty:forKey:inRequest:"
 
 -- | @Selector@ for @removePropertyForKey:inRequest:@
-removePropertyForKey_inRequestSelector :: Selector
+removePropertyForKey_inRequestSelector :: Selector '[Id NSString, Id NSMutableURLRequest] ()
 removePropertyForKey_inRequestSelector = mkSelector "removePropertyForKey:inRequest:"
 
 -- | @Selector@ for @registerClass:@
-registerClassSelector :: Selector
+registerClassSelector :: Selector '[Class] Bool
 registerClassSelector = mkSelector "registerClass:"
 
 -- | @Selector@ for @unregisterClass:@
-unregisterClassSelector :: Selector
+unregisterClassSelector :: Selector '[Class] ()
 unregisterClassSelector = mkSelector "unregisterClass:"
 
 -- | @Selector@ for @canInitWithTask:@
-canInitWithTaskSelector :: Selector
+canInitWithTaskSelector :: Selector '[Id NSURLSessionTask] Bool
 canInitWithTaskSelector = mkSelector "canInitWithTask:"
 
 -- | @Selector@ for @initWithTask:cachedResponse:client:@
-initWithTask_cachedResponse_clientSelector :: Selector
+initWithTask_cachedResponse_clientSelector :: Selector '[Id NSURLSessionTask, Id NSCachedURLResponse, RawId] (Id NSURLProtocol)
 initWithTask_cachedResponse_clientSelector = mkSelector "initWithTask:cachedResponse:client:"
 
 -- | @Selector@ for @client@
-clientSelector :: Selector
+clientSelector :: Selector '[] RawId
 clientSelector = mkSelector "client"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @cachedResponse@
-cachedResponseSelector :: Selector
+cachedResponseSelector :: Selector '[] (Id NSCachedURLResponse)
 cachedResponseSelector = mkSelector "cachedResponse"
 
 -- | @Selector@ for @task@
-taskSelector :: Selector
+taskSelector :: Selector '[] (Id NSURLSessionTask)
 taskSelector = mkSelector "task"
 

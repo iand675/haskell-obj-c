@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.ReplayKit.RPPreviewViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,23 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previewControllerDelegate@
 previewControllerDelegate :: IsRPPreviewViewController rpPreviewViewController => rpPreviewViewController -> IO RawId
-previewControllerDelegate rpPreviewViewController  =
-    fmap (RawId . castPtr) $ sendMsg rpPreviewViewController (mkSelector "previewControllerDelegate") (retPtr retVoid) []
+previewControllerDelegate rpPreviewViewController =
+  sendMessage rpPreviewViewController previewControllerDelegateSelector
 
 -- | @- setPreviewControllerDelegate:@
 setPreviewControllerDelegate :: IsRPPreviewViewController rpPreviewViewController => rpPreviewViewController -> RawId -> IO ()
-setPreviewControllerDelegate rpPreviewViewController  value =
-    sendMsg rpPreviewViewController (mkSelector "setPreviewControllerDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPreviewControllerDelegate rpPreviewViewController value =
+  sendMessage rpPreviewViewController setPreviewControllerDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previewControllerDelegate@
-previewControllerDelegateSelector :: Selector
+previewControllerDelegateSelector :: Selector '[] RawId
 previewControllerDelegateSelector = mkSelector "previewControllerDelegate"
 
 -- | @Selector@ for @setPreviewControllerDelegate:@
-setPreviewControllerDelegateSelector :: Selector
+setPreviewControllerDelegateSelector :: Selector '[RawId] ()
 setPreviewControllerDelegateSelector = mkSelector "setPreviewControllerDelegate:"
 

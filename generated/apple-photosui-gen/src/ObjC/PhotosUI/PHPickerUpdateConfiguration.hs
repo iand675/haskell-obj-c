@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.PhotosUI.PHPickerUpdateConfiguration
   , setSelectionLimit
   , edgesWithoutContentMargins
   , setEdgesWithoutContentMargins
-  , selectionLimitSelector
-  , setSelectionLimitSelector
   , edgesWithoutContentMarginsSelector
+  , selectionLimitSelector
   , setEdgesWithoutContentMarginsSelector
+  , setSelectionLimitSelector
 
   -- * Enum types
   , NSDirectionalRectEdge(NSDirectionalRectEdge)
@@ -29,15 +30,11 @@ module ObjC.PhotosUI.PHPickerUpdateConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,47 +46,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- selectionLimit@
 selectionLimit :: IsPHPickerUpdateConfiguration phPickerUpdateConfiguration => phPickerUpdateConfiguration -> IO CLong
-selectionLimit phPickerUpdateConfiguration  =
-    sendMsg phPickerUpdateConfiguration (mkSelector "selectionLimit") retCLong []
+selectionLimit phPickerUpdateConfiguration =
+  sendMessage phPickerUpdateConfiguration selectionLimitSelector
 
 -- | The maximum number of assets that can be selected.
 --
 -- ObjC selector: @- setSelectionLimit:@
 setSelectionLimit :: IsPHPickerUpdateConfiguration phPickerUpdateConfiguration => phPickerUpdateConfiguration -> CLong -> IO ()
-setSelectionLimit phPickerUpdateConfiguration  value =
-    sendMsg phPickerUpdateConfiguration (mkSelector "setSelectionLimit:") retVoid [argCLong value]
+setSelectionLimit phPickerUpdateConfiguration value =
+  sendMessage phPickerUpdateConfiguration setSelectionLimitSelector value
 
 -- | Edges of the picker that have no margin between the content and the edge (e.g. without bars in between).
 --
 -- ObjC selector: @- edgesWithoutContentMargins@
 edgesWithoutContentMargins :: IsPHPickerUpdateConfiguration phPickerUpdateConfiguration => phPickerUpdateConfiguration -> IO NSDirectionalRectEdge
-edgesWithoutContentMargins phPickerUpdateConfiguration  =
-    fmap (coerce :: CULong -> NSDirectionalRectEdge) $ sendMsg phPickerUpdateConfiguration (mkSelector "edgesWithoutContentMargins") retCULong []
+edgesWithoutContentMargins phPickerUpdateConfiguration =
+  sendMessage phPickerUpdateConfiguration edgesWithoutContentMarginsSelector
 
 -- | Edges of the picker that have no margin between the content and the edge (e.g. without bars in between).
 --
 -- ObjC selector: @- setEdgesWithoutContentMargins:@
 setEdgesWithoutContentMargins :: IsPHPickerUpdateConfiguration phPickerUpdateConfiguration => phPickerUpdateConfiguration -> NSDirectionalRectEdge -> IO ()
-setEdgesWithoutContentMargins phPickerUpdateConfiguration  value =
-    sendMsg phPickerUpdateConfiguration (mkSelector "setEdgesWithoutContentMargins:") retVoid [argCULong (coerce value)]
+setEdgesWithoutContentMargins phPickerUpdateConfiguration value =
+  sendMessage phPickerUpdateConfiguration setEdgesWithoutContentMarginsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectionLimit@
-selectionLimitSelector :: Selector
+selectionLimitSelector :: Selector '[] CLong
 selectionLimitSelector = mkSelector "selectionLimit"
 
 -- | @Selector@ for @setSelectionLimit:@
-setSelectionLimitSelector :: Selector
+setSelectionLimitSelector :: Selector '[CLong] ()
 setSelectionLimitSelector = mkSelector "setSelectionLimit:"
 
 -- | @Selector@ for @edgesWithoutContentMargins@
-edgesWithoutContentMarginsSelector :: Selector
+edgesWithoutContentMarginsSelector :: Selector '[] NSDirectionalRectEdge
 edgesWithoutContentMarginsSelector = mkSelector "edgesWithoutContentMargins"
 
 -- | @Selector@ for @setEdgesWithoutContentMargins:@
-setEdgesWithoutContentMarginsSelector :: Selector
+setEdgesWithoutContentMarginsSelector :: Selector '[NSDirectionalRectEdge] ()
 setEdgesWithoutContentMarginsSelector = mkSelector "setEdgesWithoutContentMargins:"
 

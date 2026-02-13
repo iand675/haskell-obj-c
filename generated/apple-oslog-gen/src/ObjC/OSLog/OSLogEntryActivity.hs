@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.OSLog.OSLogEntryActivity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,14 +34,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- parentActivityIdentifier@
 parentActivityIdentifier :: IsOSLogEntryActivity osLogEntryActivity => osLogEntryActivity -> IO CULong
-parentActivityIdentifier osLogEntryActivity  =
-    sendMsg osLogEntryActivity (mkSelector "parentActivityIdentifier") retCULong []
+parentActivityIdentifier osLogEntryActivity =
+  sendMessage osLogEntryActivity parentActivityIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @parentActivityIdentifier@
-parentActivityIdentifierSelector :: Selector
+parentActivityIdentifierSelector :: Selector '[] CULong
 parentActivityIdentifierSelector = mkSelector "parentActivityIdentifier"
 

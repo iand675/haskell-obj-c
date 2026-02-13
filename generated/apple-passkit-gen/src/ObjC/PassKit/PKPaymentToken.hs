@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.PassKit.PKPaymentToken
   , paymentNetwork
   , transactionIdentifier
   , paymentData
-  , paymentMethodSelector
+  , paymentDataSelector
   , paymentInstrumentNameSelector
+  , paymentMethodSelector
   , paymentNetworkSelector
   , transactionIdentifierSelector
-  , paymentDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,50 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- paymentMethod@
 paymentMethod :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id PKPaymentMethod)
-paymentMethod pkPaymentToken  =
-    sendMsg pkPaymentToken (mkSelector "paymentMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentMethod pkPaymentToken =
+  sendMessage pkPaymentToken paymentMethodSelector
 
 -- | @- paymentInstrumentName@
 paymentInstrumentName :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
-paymentInstrumentName pkPaymentToken  =
-    sendMsg pkPaymentToken (mkSelector "paymentInstrumentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentInstrumentName pkPaymentToken =
+  sendMessage pkPaymentToken paymentInstrumentNameSelector
 
 -- | @- paymentNetwork@
 paymentNetwork :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
-paymentNetwork pkPaymentToken  =
-    sendMsg pkPaymentToken (mkSelector "paymentNetwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentNetwork pkPaymentToken =
+  sendMessage pkPaymentToken paymentNetworkSelector
 
 -- | @- transactionIdentifier@
 transactionIdentifier :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSString)
-transactionIdentifier pkPaymentToken  =
-    sendMsg pkPaymentToken (mkSelector "transactionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionIdentifier pkPaymentToken =
+  sendMessage pkPaymentToken transactionIdentifierSelector
 
 -- | @- paymentData@
 paymentData :: IsPKPaymentToken pkPaymentToken => pkPaymentToken -> IO (Id NSData)
-paymentData pkPaymentToken  =
-    sendMsg pkPaymentToken (mkSelector "paymentData") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentData pkPaymentToken =
+  sendMessage pkPaymentToken paymentDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @paymentMethod@
-paymentMethodSelector :: Selector
+paymentMethodSelector :: Selector '[] (Id PKPaymentMethod)
 paymentMethodSelector = mkSelector "paymentMethod"
 
 -- | @Selector@ for @paymentInstrumentName@
-paymentInstrumentNameSelector :: Selector
+paymentInstrumentNameSelector :: Selector '[] (Id NSString)
 paymentInstrumentNameSelector = mkSelector "paymentInstrumentName"
 
 -- | @Selector@ for @paymentNetwork@
-paymentNetworkSelector :: Selector
+paymentNetworkSelector :: Selector '[] (Id NSString)
 paymentNetworkSelector = mkSelector "paymentNetwork"
 
 -- | @Selector@ for @transactionIdentifier@
-transactionIdentifierSelector :: Selector
+transactionIdentifierSelector :: Selector '[] (Id NSString)
 transactionIdentifierSelector = mkSelector "transactionIdentifier"
 
 -- | @Selector@ for @paymentData@
-paymentDataSelector :: Selector
+paymentDataSelector :: Selector '[] (Id NSData)
 paymentDataSelector = mkSelector "paymentData"
 

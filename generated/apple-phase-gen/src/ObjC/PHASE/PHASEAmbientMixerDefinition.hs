@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.PHASE.PHASEAmbientMixerDefinition
   , new
   , inputChannelLayout
   , initSelector
-  , newSelector
   , inputChannelLayoutSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,15 +41,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEAmbientMixerDefinition phaseAmbientMixerDefinition => phaseAmbientMixerDefinition -> IO (Id PHASEAmbientMixerDefinition)
-init_ phaseAmbientMixerDefinition  =
-    sendMsg phaseAmbientMixerDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseAmbientMixerDefinition =
+  sendOwnedMessage phaseAmbientMixerDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEAmbientMixerDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEAmbientMixerDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | inputChannelLayout
 --
@@ -60,22 +57,22 @@ new  =
 --
 -- ObjC selector: @- inputChannelLayout@
 inputChannelLayout :: IsPHASEAmbientMixerDefinition phaseAmbientMixerDefinition => phaseAmbientMixerDefinition -> IO (Id AVAudioChannelLayout)
-inputChannelLayout phaseAmbientMixerDefinition  =
-    sendMsg phaseAmbientMixerDefinition (mkSelector "inputChannelLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputChannelLayout phaseAmbientMixerDefinition =
+  sendMessage phaseAmbientMixerDefinition inputChannelLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEAmbientMixerDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEAmbientMixerDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @inputChannelLayout@
-inputChannelLayoutSelector :: Selector
+inputChannelLayoutSelector :: Selector '[] (Id AVAudioChannelLayout)
 inputChannelLayoutSelector = mkSelector "inputChannelLayout"
 

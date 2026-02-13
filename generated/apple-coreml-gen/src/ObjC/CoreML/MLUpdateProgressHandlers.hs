@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.CoreML.MLUpdateProgressHandlers
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,34 +39,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initForEvents:progressHandler:completionHandler:@
 initForEvents_progressHandler_completionHandler :: IsMLUpdateProgressHandlers mlUpdateProgressHandlers => mlUpdateProgressHandlers -> MLUpdateProgressEvent -> Ptr () -> Ptr () -> IO (Id MLUpdateProgressHandlers)
-initForEvents_progressHandler_completionHandler mlUpdateProgressHandlers  interestedEvents progressHandler completionHandler =
-    sendMsg mlUpdateProgressHandlers (mkSelector "initForEvents:progressHandler:completionHandler:") (retPtr retVoid) [argCLong (coerce interestedEvents), argPtr (castPtr progressHandler :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initForEvents_progressHandler_completionHandler mlUpdateProgressHandlers interestedEvents progressHandler completionHandler =
+  sendOwnedMessage mlUpdateProgressHandlers initForEvents_progressHandler_completionHandlerSelector interestedEvents progressHandler completionHandler
 
 -- | @- init@
 init_ :: IsMLUpdateProgressHandlers mlUpdateProgressHandlers => mlUpdateProgressHandlers -> IO (Id MLUpdateProgressHandlers)
-init_ mlUpdateProgressHandlers  =
-    sendMsg mlUpdateProgressHandlers (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlUpdateProgressHandlers =
+  sendOwnedMessage mlUpdateProgressHandlers initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLUpdateProgressHandlers"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initForEvents:progressHandler:completionHandler:@
-initForEvents_progressHandler_completionHandlerSelector :: Selector
+initForEvents_progressHandler_completionHandlerSelector :: Selector '[MLUpdateProgressEvent, Ptr (), Ptr ()] (Id MLUpdateProgressHandlers)
 initForEvents_progressHandler_completionHandlerSelector = mkSelector "initForEvents:progressHandler:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLUpdateProgressHandlers)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 

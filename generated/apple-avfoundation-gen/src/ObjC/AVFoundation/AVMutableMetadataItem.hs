@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,38 +26,34 @@ module ObjC.AVFoundation.AVMutableMetadataItem
   , setKey
   , startDate
   , setStartDate
-  , metadataItemSelector
-  , identifierSelector
-  , setIdentifierSelector
-  , extendedLanguageTagSelector
-  , setExtendedLanguageTagSelector
-  , localeSelector
-  , setLocaleSelector
   , dataTypeSelector
-  , setDataTypeSelector
-  , valueSelector
-  , setValueSelector
+  , extendedLanguageTagSelector
   , extraAttributesSelector
-  , setExtraAttributesSelector
-  , keySpaceSelector
-  , setKeySpaceSelector
+  , identifierSelector
   , keySelector
+  , keySpaceSelector
+  , localeSelector
+  , metadataItemSelector
+  , setDataTypeSelector
+  , setExtendedLanguageTagSelector
+  , setExtraAttributesSelector
+  , setIdentifierSelector
   , setKeySelector
-  , startDateSelector
+  , setKeySpaceSelector
+  , setLocaleSelector
   , setStartDateSelector
+  , setValueSelector
+  , startDateSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,182 +69,175 @@ metadataItem :: IO (Id AVMutableMetadataItem)
 metadataItem  =
   do
     cls' <- getRequiredClass "AVMutableMetadataItem"
-    sendClassMsg cls' (mkSelector "metadataItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' metadataItemSelector
 
 -- | @- identifier@
 identifier :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSString)
-identifier avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avMutableMetadataItem =
+  sendMessage avMutableMetadataItem identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSString value) => avMutableMetadataItem -> value -> IO ()
-setIdentifier avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setIdentifierSelector (toNSString value)
 
 -- | @- extendedLanguageTag@
 extendedLanguageTag :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSString)
-extendedLanguageTag avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avMutableMetadataItem =
+  sendMessage avMutableMetadataItem extendedLanguageTagSelector
 
 -- | @- setExtendedLanguageTag:@
 setExtendedLanguageTag :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSString value) => avMutableMetadataItem -> value -> IO ()
-setExtendedLanguageTag avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedLanguageTag avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setExtendedLanguageTagSelector (toNSString value)
 
 -- | @- locale@
 locale :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSLocale)
-locale avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale avMutableMetadataItem =
+  sendMessage avMutableMetadataItem localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSLocale value) => avMutableMetadataItem -> value -> IO ()
-setLocale avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setLocaleSelector (toNSLocale value)
 
 -- | @- dataType@
 dataType :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSString)
-dataType avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "dataType") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataType avMutableMetadataItem =
+  sendMessage avMutableMetadataItem dataTypeSelector
 
 -- | @- setDataType:@
 setDataType :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSString value) => avMutableMetadataItem -> value -> IO ()
-setDataType avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setDataType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDataType avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setDataTypeSelector (toNSString value)
 
 -- | @- value@
 value :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO RawId
-value avMutableMetadataItem  =
-    fmap (RawId . castPtr) $ sendMsg avMutableMetadataItem (mkSelector "value") (retPtr retVoid) []
+value avMutableMetadataItem =
+  sendMessage avMutableMetadataItem valueSelector
 
 -- | @- setValue:@
 setValue :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> RawId -> IO ()
-setValue avMutableMetadataItem  value =
-    sendMsg avMutableMetadataItem (mkSelector "setValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setValue avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setValueSelector value
 
 -- | @- extraAttributes@
 extraAttributes :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSDictionary)
-extraAttributes avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "extraAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+extraAttributes avMutableMetadataItem =
+  sendMessage avMutableMetadataItem extraAttributesSelector
 
 -- | @- setExtraAttributes:@
 setExtraAttributes :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSDictionary value) => avMutableMetadataItem -> value -> IO ()
-setExtraAttributes avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setExtraAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtraAttributes avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setExtraAttributesSelector (toNSDictionary value)
 
 -- | @- keySpace@
 keySpace :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSString)
-keySpace avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "keySpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySpace avMutableMetadataItem =
+  sendMessage avMutableMetadataItem keySpaceSelector
 
 -- | @- setKeySpace:@
 setKeySpace :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSString value) => avMutableMetadataItem -> value -> IO ()
-setKeySpace avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setKeySpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeySpace avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setKeySpaceSelector (toNSString value)
 
 -- | @- key@
 key :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO RawId
-key avMutableMetadataItem  =
-    fmap (RawId . castPtr) $ sendMsg avMutableMetadataItem (mkSelector "key") (retPtr retVoid) []
+key avMutableMetadataItem =
+  sendMessage avMutableMetadataItem keySelector
 
 -- | @- setKey:@
 setKey :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> RawId -> IO ()
-setKey avMutableMetadataItem  value =
-    sendMsg avMutableMetadataItem (mkSelector "setKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setKey avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setKeySelector value
 
 -- | @- startDate@
 startDate :: IsAVMutableMetadataItem avMutableMetadataItem => avMutableMetadataItem -> IO (Id NSDate)
-startDate avMutableMetadataItem  =
-    sendMsg avMutableMetadataItem (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate avMutableMetadataItem =
+  sendMessage avMutableMetadataItem startDateSelector
 
 -- | @- setStartDate:@
 setStartDate :: (IsAVMutableMetadataItem avMutableMetadataItem, IsNSDate value) => avMutableMetadataItem -> value -> IO ()
-setStartDate avMutableMetadataItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMetadataItem (mkSelector "setStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartDate avMutableMetadataItem value =
+  sendMessage avMutableMetadataItem setStartDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @metadataItem@
-metadataItemSelector :: Selector
+metadataItemSelector :: Selector '[] (Id AVMutableMetadataItem)
 metadataItemSelector = mkSelector "metadataItem"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @setExtendedLanguageTag:@
-setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector :: Selector '[Id NSString] ()
 setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] (Id NSString)
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[Id NSString] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[RawId] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @extraAttributes@
-extraAttributesSelector :: Selector
+extraAttributesSelector :: Selector '[] (Id NSDictionary)
 extraAttributesSelector = mkSelector "extraAttributes"
 
 -- | @Selector@ for @setExtraAttributes:@
-setExtraAttributesSelector :: Selector
+setExtraAttributesSelector :: Selector '[Id NSDictionary] ()
 setExtraAttributesSelector = mkSelector "setExtraAttributes:"
 
 -- | @Selector@ for @keySpace@
-keySpaceSelector :: Selector
+keySpaceSelector :: Selector '[] (Id NSString)
 keySpaceSelector = mkSelector "keySpace"
 
 -- | @Selector@ for @setKeySpace:@
-setKeySpaceSelector :: Selector
+setKeySpaceSelector :: Selector '[Id NSString] ()
 setKeySpaceSelector = mkSelector "setKeySpace:"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] RawId
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @setKey:@
-setKeySelector :: Selector
+setKeySelector :: Selector '[RawId] ()
 setKeySelector = mkSelector "setKey:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @setStartDate:@
-setStartDateSelector :: Selector
+setStartDateSelector :: Selector '[Id NSDate] ()
 setStartDateSelector = mkSelector "setStartDate:"
 

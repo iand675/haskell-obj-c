@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRGeneralDiagnosticsClusterBootReasonEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- bootReason@
 bootReason :: IsMTRGeneralDiagnosticsClusterBootReasonEvent mtrGeneralDiagnosticsClusterBootReasonEvent => mtrGeneralDiagnosticsClusterBootReasonEvent -> IO (Id NSNumber)
-bootReason mtrGeneralDiagnosticsClusterBootReasonEvent  =
-    sendMsg mtrGeneralDiagnosticsClusterBootReasonEvent (mkSelector "bootReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+bootReason mtrGeneralDiagnosticsClusterBootReasonEvent =
+  sendMessage mtrGeneralDiagnosticsClusterBootReasonEvent bootReasonSelector
 
 -- | @- setBootReason:@
 setBootReason :: (IsMTRGeneralDiagnosticsClusterBootReasonEvent mtrGeneralDiagnosticsClusterBootReasonEvent, IsNSNumber value) => mtrGeneralDiagnosticsClusterBootReasonEvent -> value -> IO ()
-setBootReason mtrGeneralDiagnosticsClusterBootReasonEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterBootReasonEvent (mkSelector "setBootReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBootReason mtrGeneralDiagnosticsClusterBootReasonEvent value =
+  sendMessage mtrGeneralDiagnosticsClusterBootReasonEvent setBootReasonSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bootReason@
-bootReasonSelector :: Selector
+bootReasonSelector :: Selector '[] (Id NSNumber)
 bootReasonSelector = mkSelector "bootReason"
 
 -- | @Selector@ for @setBootReason:@
-setBootReasonSelector :: Selector
+setBootReasonSelector :: Selector '[Id NSNumber] ()
 setBootReasonSelector = mkSelector "setBootReason:"
 

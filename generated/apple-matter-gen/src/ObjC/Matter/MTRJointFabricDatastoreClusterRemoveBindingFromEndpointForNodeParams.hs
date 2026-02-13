@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNod
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , listIDSelector
-  , setListIDSelector
   , endpointIDSelector
-  , setEndpointIDSelector
+  , listIDSelector
   , nodeIDSelector
-  , setNodeIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setEndpointIDSelector
+  , setListIDSelector
+  , setNodeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- listID@
 listID :: IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> IO (Id NSNumber)
-listID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "listID") (retPtr retVoid) [] >>= retainedObject . castPtr
+listID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams listIDSelector
 
 -- | @- setListID:@
 setListID :: (IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> value -> IO ()
-setListID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "setListID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setListID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams setListIDSelector (toNSNumber value)
 
 -- | @- endpointID@
 endpointID :: IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> IO (Id NSNumber)
-endpointID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> value -> IO ()
-setEndpointID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams setEndpointIDSelector (toNSNumber value)
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams setNodeIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setNodeID mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForN
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveBindingFromEndpointF
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveBindingFromEndpo
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveBindingFromEndpointForNodeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @listID@
-listIDSelector :: Selector
+listIDSelector :: Selector '[] (Id NSNumber)
 listIDSelector = mkSelector "listID"
 
 -- | @Selector@ for @setListID:@
-setListIDSelector :: Selector
+setListIDSelector :: Selector '[Id NSNumber] ()
 setListIDSelector = mkSelector "setListID:"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,27 +27,23 @@ module ObjC.MetalPerformanceShaders.MPSCNNSpatialNormalizationGradient
   , setBeta
   , delta
   , setDelta
-  , initWithDevice_kernelWidth_kernelHeightSelector
-  , initWithCoder_deviceSelector
   , alphaSelector
-  , setAlphaSelector
   , betaSelector
-  , setBetaSelector
   , deltaSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_kernelWidth_kernelHeightSelector
+  , setAlphaSelector
+  , setBetaSelector
   , setDeltaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,8 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:@
 initWithDevice_kernelWidth_kernelHeight :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> RawId -> CULong -> CULong -> IO (Id MPSCNNSpatialNormalizationGradient)
-initWithDevice_kernelWidth_kernelHeight mpscnnSpatialNormalizationGradient  device kernelWidth kernelHeight =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "initWithDevice:kernelWidth:kernelHeight:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight mpscnnSpatialNormalizationGradient device kernelWidth kernelHeight =
+  sendOwnedMessage mpscnnSpatialNormalizationGradient initWithDevice_kernelWidth_kernelHeightSelector device kernelWidth kernelHeight
 
 -- | NSSecureCoding compatability
 --
@@ -82,9 +79,8 @@ initWithDevice_kernelWidth_kernelHeight mpscnnSpatialNormalizationGradient  devi
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient, IsNSCoder aDecoder) => mpscnnSpatialNormalizationGradient -> aDecoder -> RawId -> IO (Id MPSCNNSpatialNormalizationGradient)
-initWithCoder_device mpscnnSpatialNormalizationGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnSpatialNormalizationGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnSpatialNormalizationGradient aDecoder device =
+  sendOwnedMessage mpscnnSpatialNormalizationGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | alpha
 --
@@ -92,8 +88,8 @@ initWithCoder_device mpscnnSpatialNormalizationGradient  aDecoder device =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> IO CFloat
-alpha mpscnnSpatialNormalizationGradient  =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "alpha") retCFloat []
+alpha mpscnnSpatialNormalizationGradient =
+  sendMessage mpscnnSpatialNormalizationGradient alphaSelector
 
 -- | alpha
 --
@@ -101,8 +97,8 @@ alpha mpscnnSpatialNormalizationGradient  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> CFloat -> IO ()
-setAlpha mpscnnSpatialNormalizationGradient  value =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpscnnSpatialNormalizationGradient value =
+  sendMessage mpscnnSpatialNormalizationGradient setAlphaSelector value
 
 -- | beta
 --
@@ -110,8 +106,8 @@ setAlpha mpscnnSpatialNormalizationGradient  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> IO CFloat
-beta mpscnnSpatialNormalizationGradient  =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "beta") retCFloat []
+beta mpscnnSpatialNormalizationGradient =
+  sendMessage mpscnnSpatialNormalizationGradient betaSelector
 
 -- | beta
 --
@@ -119,8 +115,8 @@ beta mpscnnSpatialNormalizationGradient  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> CFloat -> IO ()
-setBeta mpscnnSpatialNormalizationGradient  value =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "setBeta:") retVoid [argCFloat value]
+setBeta mpscnnSpatialNormalizationGradient value =
+  sendMessage mpscnnSpatialNormalizationGradient setBetaSelector value
 
 -- | delta
 --
@@ -128,8 +124,8 @@ setBeta mpscnnSpatialNormalizationGradient  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> IO CFloat
-delta mpscnnSpatialNormalizationGradient  =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "delta") retCFloat []
+delta mpscnnSpatialNormalizationGradient =
+  sendMessage mpscnnSpatialNormalizationGradient deltaSelector
 
 -- | delta
 --
@@ -137,42 +133,42 @@ delta mpscnnSpatialNormalizationGradient  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNSpatialNormalizationGradient mpscnnSpatialNormalizationGradient => mpscnnSpatialNormalizationGradient -> CFloat -> IO ()
-setDelta mpscnnSpatialNormalizationGradient  value =
-    sendMsg mpscnnSpatialNormalizationGradient (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnSpatialNormalizationGradient value =
+  sendMessage mpscnnSpatialNormalizationGradient setDeltaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:@
-initWithDevice_kernelWidth_kernelHeightSelector :: Selector
+initWithDevice_kernelWidth_kernelHeightSelector :: Selector '[RawId, CULong, CULong] (Id MPSCNNSpatialNormalizationGradient)
 initWithDevice_kernelWidth_kernelHeightSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNSpatialNormalizationGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CFloat
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CFloat] ()
 setBetaSelector = mkSelector "setBeta:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 

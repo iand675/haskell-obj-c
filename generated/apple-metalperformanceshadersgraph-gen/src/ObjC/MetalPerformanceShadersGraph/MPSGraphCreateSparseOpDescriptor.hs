@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCreateSparseOpDescriptor
   , setSparseStorageType
   , dataType
   , setDataType
-  , descriptorWithStorageType_dataTypeSelector
-  , sparseStorageTypeSelector
-  , setSparseStorageTypeSelector
   , dataTypeSelector
+  , descriptorWithStorageType_dataTypeSelector
   , setDataTypeSelector
+  , setSparseStorageTypeSelector
+  , sparseStorageTypeSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -56,15 +57,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphCreateSparseOpDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,57 +79,57 @@ descriptorWithStorageType_dataType :: MPSGraphSparseStorageType -> MPSDataType -
 descriptorWithStorageType_dataType sparseStorageType dataType =
   do
     cls' <- getRequiredClass "MPSGraphCreateSparseOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithStorageType:dataType:") (retPtr retVoid) [argCULong (coerce sparseStorageType), argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithStorageType_dataTypeSelector sparseStorageType dataType
 
 -- | Defines the storage format of the sparse tensor.
 --
 -- ObjC selector: @- sparseStorageType@
 sparseStorageType :: IsMPSGraphCreateSparseOpDescriptor mpsGraphCreateSparseOpDescriptor => mpsGraphCreateSparseOpDescriptor -> IO MPSGraphSparseStorageType
-sparseStorageType mpsGraphCreateSparseOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphSparseStorageType) $ sendMsg mpsGraphCreateSparseOpDescriptor (mkSelector "sparseStorageType") retCULong []
+sparseStorageType mpsGraphCreateSparseOpDescriptor =
+  sendMessage mpsGraphCreateSparseOpDescriptor sparseStorageTypeSelector
 
 -- | Defines the storage format of the sparse tensor.
 --
 -- ObjC selector: @- setSparseStorageType:@
 setSparseStorageType :: IsMPSGraphCreateSparseOpDescriptor mpsGraphCreateSparseOpDescriptor => mpsGraphCreateSparseOpDescriptor -> MPSGraphSparseStorageType -> IO ()
-setSparseStorageType mpsGraphCreateSparseOpDescriptor  value =
-    sendMsg mpsGraphCreateSparseOpDescriptor (mkSelector "setSparseStorageType:") retVoid [argCULong (coerce value)]
+setSparseStorageType mpsGraphCreateSparseOpDescriptor value =
+  sendMessage mpsGraphCreateSparseOpDescriptor setSparseStorageTypeSelector value
 
 -- | Defines the datatype of the sparse tensor.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSGraphCreateSparseOpDescriptor mpsGraphCreateSparseOpDescriptor => mpsGraphCreateSparseOpDescriptor -> IO MPSDataType
-dataType mpsGraphCreateSparseOpDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphCreateSparseOpDescriptor (mkSelector "dataType") retCUInt []
+dataType mpsGraphCreateSparseOpDescriptor =
+  sendMessage mpsGraphCreateSparseOpDescriptor dataTypeSelector
 
 -- | Defines the datatype of the sparse tensor.
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMPSGraphCreateSparseOpDescriptor mpsGraphCreateSparseOpDescriptor => mpsGraphCreateSparseOpDescriptor -> MPSDataType -> IO ()
-setDataType mpsGraphCreateSparseOpDescriptor  value =
-    sendMsg mpsGraphCreateSparseOpDescriptor (mkSelector "setDataType:") retVoid [argCUInt (coerce value)]
+setDataType mpsGraphCreateSparseOpDescriptor value =
+  sendMessage mpsGraphCreateSparseOpDescriptor setDataTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithStorageType:dataType:@
-descriptorWithStorageType_dataTypeSelector :: Selector
+descriptorWithStorageType_dataTypeSelector :: Selector '[MPSGraphSparseStorageType, MPSDataType] (Id MPSGraphCreateSparseOpDescriptor)
 descriptorWithStorageType_dataTypeSelector = mkSelector "descriptorWithStorageType:dataType:"
 
 -- | @Selector@ for @sparseStorageType@
-sparseStorageTypeSelector :: Selector
+sparseStorageTypeSelector :: Selector '[] MPSGraphSparseStorageType
 sparseStorageTypeSelector = mkSelector "sparseStorageType"
 
 -- | @Selector@ for @setSparseStorageType:@
-setSparseStorageTypeSelector :: Selector
+setSparseStorageTypeSelector :: Selector '[MPSGraphSparseStorageType] ()
 setSparseStorageTypeSelector = mkSelector "setSparseStorageType:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MPSDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 

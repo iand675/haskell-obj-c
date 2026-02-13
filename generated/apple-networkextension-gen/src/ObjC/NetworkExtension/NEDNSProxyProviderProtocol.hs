@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.NetworkExtension.NEDNSProxyProviderProtocol
   , setProviderConfiguration
   , providerBundleIdentifier
   , setProviderBundleIdentifier
-  , providerConfigurationSelector
-  , setProviderConfigurationSelector
   , providerBundleIdentifierSelector
+  , providerConfigurationSelector
   , setProviderBundleIdentifierSelector
+  , setProviderConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- providerConfiguration@
 providerConfiguration :: IsNEDNSProxyProviderProtocol nednsProxyProviderProtocol => nednsProxyProviderProtocol -> IO (Id NSDictionary)
-providerConfiguration nednsProxyProviderProtocol  =
-    sendMsg nednsProxyProviderProtocol (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerConfiguration nednsProxyProviderProtocol =
+  sendMessage nednsProxyProviderProtocol providerConfigurationSelector
 
 -- | providerConfiguration
 --
@@ -54,9 +51,8 @@ providerConfiguration nednsProxyProviderProtocol  =
 --
 -- ObjC selector: @- setProviderConfiguration:@
 setProviderConfiguration :: (IsNEDNSProxyProviderProtocol nednsProxyProviderProtocol, IsNSDictionary value) => nednsProxyProviderProtocol -> value -> IO ()
-setProviderConfiguration nednsProxyProviderProtocol  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsProxyProviderProtocol (mkSelector "setProviderConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderConfiguration nednsProxyProviderProtocol value =
+  sendMessage nednsProxyProviderProtocol setProviderConfigurationSelector (toNSDictionary value)
 
 -- | providerBundleIdentifier
 --
@@ -64,8 +60,8 @@ setProviderConfiguration nednsProxyProviderProtocol  value =
 --
 -- ObjC selector: @- providerBundleIdentifier@
 providerBundleIdentifier :: IsNEDNSProxyProviderProtocol nednsProxyProviderProtocol => nednsProxyProviderProtocol -> IO (Id NSString)
-providerBundleIdentifier nednsProxyProviderProtocol  =
-    sendMsg nednsProxyProviderProtocol (mkSelector "providerBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerBundleIdentifier nednsProxyProviderProtocol =
+  sendMessage nednsProxyProviderProtocol providerBundleIdentifierSelector
 
 -- | providerBundleIdentifier
 --
@@ -73,27 +69,26 @@ providerBundleIdentifier nednsProxyProviderProtocol  =
 --
 -- ObjC selector: @- setProviderBundleIdentifier:@
 setProviderBundleIdentifier :: (IsNEDNSProxyProviderProtocol nednsProxyProviderProtocol, IsNSString value) => nednsProxyProviderProtocol -> value -> IO ()
-setProviderBundleIdentifier nednsProxyProviderProtocol  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsProxyProviderProtocol (mkSelector "setProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderBundleIdentifier nednsProxyProviderProtocol value =
+  sendMessage nednsProxyProviderProtocol setProviderBundleIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @providerConfiguration@
-providerConfigurationSelector :: Selector
+providerConfigurationSelector :: Selector '[] (Id NSDictionary)
 providerConfigurationSelector = mkSelector "providerConfiguration"
 
 -- | @Selector@ for @setProviderConfiguration:@
-setProviderConfigurationSelector :: Selector
+setProviderConfigurationSelector :: Selector '[Id NSDictionary] ()
 setProviderConfigurationSelector = mkSelector "setProviderConfiguration:"
 
 -- | @Selector@ for @providerBundleIdentifier@
-providerBundleIdentifierSelector :: Selector
+providerBundleIdentifierSelector :: Selector '[] (Id NSString)
 providerBundleIdentifierSelector = mkSelector "providerBundleIdentifier"
 
 -- | @Selector@ for @setProviderBundleIdentifier:@
-setProviderBundleIdentifierSelector :: Selector
+setProviderBundleIdentifierSelector :: Selector '[Id NSString] ()
 setProviderBundleIdentifierSelector = mkSelector "setProviderBundleIdentifier:"
 

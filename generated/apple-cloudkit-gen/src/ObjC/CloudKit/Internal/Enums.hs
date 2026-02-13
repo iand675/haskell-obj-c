@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CloudKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CKAccountStatus
 --
@@ -44,6 +47,16 @@ pattern CKAccountStatusNoAccount = CKAccountStatus 3
 pattern CKAccountStatusTemporarilyUnavailable :: CKAccountStatus
 pattern CKAccountStatusTemporarilyUnavailable = CKAccountStatus 4
 
+instance ObjCArgument CKAccountStatus where
+  withObjCArg (CKAccountStatus x) k = k (argCLong x)
+
+instance ObjCReturn CKAccountStatus where
+  type RawReturn CKAccountStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKAccountStatus x)
+  fromOwned x = pure (CKAccountStatus x)
+
 -- | CKApplicationPermissionStatus
 --
 -- CKApplicationPermissionStatusInitialState The user has not made a decision for this application permission.
@@ -70,6 +83,16 @@ pattern CKApplicationPermissionStatusDenied = CKApplicationPermissionStatus 2
 pattern CKApplicationPermissionStatusGranted :: CKApplicationPermissionStatus
 pattern CKApplicationPermissionStatusGranted = CKApplicationPermissionStatus 3
 
+instance ObjCArgument CKApplicationPermissionStatus where
+  withObjCArg (CKApplicationPermissionStatus x) k = k (argCLong x)
+
+instance ObjCReturn CKApplicationPermissionStatus where
+  type RawReturn CKApplicationPermissionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKApplicationPermissionStatus x)
+  fromOwned x = pure (CKApplicationPermissionStatus x)
+
 -- | @CKApplicationPermissions@ (bitmask)
 newtype CKApplicationPermissions = CKApplicationPermissions CULong
   deriving stock (Eq, Ord, Show)
@@ -84,6 +107,16 @@ instance Monoid CKApplicationPermissions where
 pattern CKApplicationPermissionUserDiscoverability :: CKApplicationPermissions
 pattern CKApplicationPermissionUserDiscoverability = CKApplicationPermissions 1
 
+instance ObjCArgument CKApplicationPermissions where
+  withObjCArg (CKApplicationPermissions x) k = k (argCULong x)
+
+instance ObjCReturn CKApplicationPermissions where
+  type RawReturn CKApplicationPermissions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKApplicationPermissions x)
+  fromOwned x = pure (CKApplicationPermissions x)
+
 -- | @CKDatabaseScope@
 newtype CKDatabaseScope = CKDatabaseScope CLong
   deriving stock (Eq, Ord, Show)
@@ -97,6 +130,16 @@ pattern CKDatabaseScopePrivate = CKDatabaseScope 2
 
 pattern CKDatabaseScopeShared :: CKDatabaseScope
 pattern CKDatabaseScopeShared = CKDatabaseScope 3
+
+instance ObjCArgument CKDatabaseScope where
+  withObjCArg (CKDatabaseScope x) k = k (argCLong x)
+
+instance ObjCReturn CKDatabaseScope where
+  type RawReturn CKDatabaseScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKDatabaseScope x)
+  fromOwned x = pure (CKDatabaseScope x)
 
 -- | @CKErrorCode@
 newtype CKErrorCode = CKErrorCode CLong
@@ -214,6 +257,16 @@ pattern CKErrorAccountTemporarilyUnavailable = CKErrorCode 36
 pattern CKErrorParticipantAlreadyInvited :: CKErrorCode
 pattern CKErrorParticipantAlreadyInvited = CKErrorCode 37
 
+instance ObjCArgument CKErrorCode where
+  withObjCArg (CKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CKErrorCode where
+  type RawReturn CKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKErrorCode x)
+  fromOwned x = pure (CKErrorCode x)
+
 -- | @CKNotificationType@
 newtype CKNotificationType = CKNotificationType CLong
   deriving stock (Eq, Ord, Show)
@@ -230,6 +283,16 @@ pattern CKNotificationTypeReadNotification = CKNotificationType 3
 
 pattern CKNotificationTypeDatabase :: CKNotificationType
 pattern CKNotificationTypeDatabase = CKNotificationType 4
+
+instance ObjCArgument CKNotificationType where
+  withObjCArg (CKNotificationType x) k = k (argCLong x)
+
+instance ObjCReturn CKNotificationType where
+  type RawReturn CKNotificationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKNotificationType x)
+  fromOwned x = pure (CKNotificationType x)
 
 -- | CKOperationGroupTransferSize
 --
@@ -279,6 +342,16 @@ pattern CKOperationGroupTransferSizeTensOfGigabytes = CKOperationGroupTransferSi
 pattern CKOperationGroupTransferSizeHundredsOfGigabytes :: CKOperationGroupTransferSize
 pattern CKOperationGroupTransferSizeHundredsOfGigabytes = CKOperationGroupTransferSize 7
 
+instance ObjCArgument CKOperationGroupTransferSize where
+  withObjCArg (CKOperationGroupTransferSize x) k = k (argCLong x)
+
+instance ObjCReturn CKOperationGroupTransferSize where
+  type RawReturn CKOperationGroupTransferSize = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKOperationGroupTransferSize x)
+  fromOwned x = pure (CKOperationGroupTransferSize x)
+
 -- | @CKQueryNotificationReason@
 newtype CKQueryNotificationReason = CKQueryNotificationReason CLong
   deriving stock (Eq, Ord, Show)
@@ -292,6 +365,16 @@ pattern CKQueryNotificationReasonRecordUpdated = CKQueryNotificationReason 2
 
 pattern CKQueryNotificationReasonRecordDeleted :: CKQueryNotificationReason
 pattern CKQueryNotificationReasonRecordDeleted = CKQueryNotificationReason 3
+
+instance ObjCArgument CKQueryNotificationReason where
+  withObjCArg (CKQueryNotificationReason x) k = k (argCLong x)
+
+instance ObjCReturn CKQueryNotificationReason where
+  type RawReturn CKQueryNotificationReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKQueryNotificationReason x)
+  fromOwned x = pure (CKQueryNotificationReason x)
 
 -- | @CKQuerySubscriptionOptions@ (bitmask)
 newtype CKQuerySubscriptionOptions = CKQuerySubscriptionOptions CULong
@@ -315,6 +398,16 @@ pattern CKQuerySubscriptionOptionsFiresOnRecordDeletion = CKQuerySubscriptionOpt
 
 pattern CKQuerySubscriptionOptionsFiresOnce :: CKQuerySubscriptionOptions
 pattern CKQuerySubscriptionOptionsFiresOnce = CKQuerySubscriptionOptions 8
+
+instance ObjCArgument CKQuerySubscriptionOptions where
+  withObjCArg (CKQuerySubscriptionOptions x) k = k (argCULong x)
+
+instance ObjCReturn CKQuerySubscriptionOptions where
+  type RawReturn CKQuerySubscriptionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKQuerySubscriptionOptions x)
+  fromOwned x = pure (CKQuerySubscriptionOptions x)
 
 -- | CKRecordSavePolicy
 --
@@ -343,6 +436,16 @@ pattern CKRecordSaveChangedKeys = CKRecordSavePolicy 1
 pattern CKRecordSaveAllKeys :: CKRecordSavePolicy
 pattern CKRecordSaveAllKeys = CKRecordSavePolicy 2
 
+instance ObjCArgument CKRecordSavePolicy where
+  withObjCArg (CKRecordSavePolicy x) k = k (argCLong x)
+
+instance ObjCReturn CKRecordSavePolicy where
+  type RawReturn CKRecordSavePolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKRecordSavePolicy x)
+  fromOwned x = pure (CKRecordSavePolicy x)
+
 -- | @CKRecordZoneCapabilities@ (bitmask)
 newtype CKRecordZoneCapabilities = CKRecordZoneCapabilities CULong
   deriving stock (Eq, Ord, Show)
@@ -366,6 +469,16 @@ pattern CKRecordZoneCapabilitySharing = CKRecordZoneCapabilities 4
 pattern CKRecordZoneCapabilityZoneWideSharing :: CKRecordZoneCapabilities
 pattern CKRecordZoneCapabilityZoneWideSharing = CKRecordZoneCapabilities 8
 
+instance ObjCArgument CKRecordZoneCapabilities where
+  withObjCArg (CKRecordZoneCapabilities x) k = k (argCULong x)
+
+instance ObjCReturn CKRecordZoneCapabilities where
+  type RawReturn CKRecordZoneCapabilities = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKRecordZoneCapabilities x)
+  fromOwned x = pure (CKRecordZoneCapabilities x)
+
 -- | @CKRecordZoneEncryptionScope@
 newtype CKRecordZoneEncryptionScope = CKRecordZoneEncryptionScope CLong
   deriving stock (Eq, Ord, Show)
@@ -376,6 +489,16 @@ pattern CKRecordZoneEncryptionScopePerRecord = CKRecordZoneEncryptionScope 0
 
 pattern CKRecordZoneEncryptionScopePerZone :: CKRecordZoneEncryptionScope
 pattern CKRecordZoneEncryptionScopePerZone = CKRecordZoneEncryptionScope 1
+
+instance ObjCArgument CKRecordZoneEncryptionScope where
+  withObjCArg (CKRecordZoneEncryptionScope x) k = k (argCLong x)
+
+instance ObjCReturn CKRecordZoneEncryptionScope where
+  type RawReturn CKRecordZoneEncryptionScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKRecordZoneEncryptionScope x)
+  fromOwned x = pure (CKRecordZoneEncryptionScope x)
 
 -- | CKReferenceAction
 --
@@ -392,6 +515,16 @@ pattern CKReferenceActionNone = CKReferenceAction 0
 
 pattern CKReferenceActionDeleteSelf :: CKReferenceAction
 pattern CKReferenceActionDeleteSelf = CKReferenceAction 1
+
+instance ObjCArgument CKReferenceAction where
+  withObjCArg (CKReferenceAction x) k = k (argCULong x)
+
+instance ObjCReturn CKReferenceAction where
+  type RawReturn CKReferenceAction = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKReferenceAction x)
+  fromOwned x = pure (CKReferenceAction x)
 
 -- | @CKShareParticipantAcceptanceStatus@
 newtype CKShareParticipantAcceptanceStatus = CKShareParticipantAcceptanceStatus CLong
@@ -410,6 +543,16 @@ pattern CKShareParticipantAcceptanceStatusAccepted = CKShareParticipantAcceptanc
 pattern CKShareParticipantAcceptanceStatusRemoved :: CKShareParticipantAcceptanceStatus
 pattern CKShareParticipantAcceptanceStatusRemoved = CKShareParticipantAcceptanceStatus 3
 
+instance ObjCArgument CKShareParticipantAcceptanceStatus where
+  withObjCArg (CKShareParticipantAcceptanceStatus x) k = k (argCLong x)
+
+instance ObjCReturn CKShareParticipantAcceptanceStatus where
+  type RawReturn CKShareParticipantAcceptanceStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKShareParticipantAcceptanceStatus x)
+  fromOwned x = pure (CKShareParticipantAcceptanceStatus x)
+
 -- | These permissions determine what share participants can do with records inside that share
 -- | @CKShareParticipantPermission@
 newtype CKShareParticipantPermission = CKShareParticipantPermission CLong
@@ -427,6 +570,16 @@ pattern CKShareParticipantPermissionReadOnly = CKShareParticipantPermission 2
 
 pattern CKShareParticipantPermissionReadWrite :: CKShareParticipantPermission
 pattern CKShareParticipantPermissionReadWrite = CKShareParticipantPermission 3
+
+instance ObjCArgument CKShareParticipantPermission where
+  withObjCArg (CKShareParticipantPermission x) k = k (argCLong x)
+
+instance ObjCReturn CKShareParticipantPermission where
+  type RawReturn CKShareParticipantPermission = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKShareParticipantPermission x)
+  fromOwned x = pure (CKShareParticipantPermission x)
 
 -- | Defines the participant role in a share: - @owner@: Can add private users. - @privateUser@: Can access the share. - @publicUser@: Self-added when accessing the share URL (owners cannot add public users). - @administrator@: Can add and remove participants and change their permissions.
 --
@@ -451,6 +604,16 @@ pattern CKShareParticipantRolePublicUser = CKShareParticipantRole 4
 pattern CKShareParticipantRoleAdministrator :: CKShareParticipantRole
 pattern CKShareParticipantRoleAdministrator = CKShareParticipantRole 2
 
+instance ObjCArgument CKShareParticipantRole where
+  withObjCArg (CKShareParticipantRole x) k = k (argCLong x)
+
+instance ObjCReturn CKShareParticipantRole where
+  type RawReturn CKShareParticipantRole = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKShareParticipantRole x)
+  fromOwned x = pure (CKShareParticipantRole x)
+
 -- | @CKShareParticipantType@
 newtype CKShareParticipantType = CKShareParticipantType CLong
   deriving stock (Eq, Ord, Show)
@@ -467,6 +630,16 @@ pattern CKShareParticipantTypePrivateUser = CKShareParticipantType 3
 
 pattern CKShareParticipantTypePublicUser :: CKShareParticipantType
 pattern CKShareParticipantTypePublicUser = CKShareParticipantType 4
+
+instance ObjCArgument CKShareParticipantType where
+  withObjCArg (CKShareParticipantType x) k = k (argCLong x)
+
+instance ObjCReturn CKShareParticipantType where
+  type RawReturn CKShareParticipantType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKShareParticipantType x)
+  fromOwned x = pure (CKShareParticipantType x)
 
 -- | @CKSharingParticipantAccessOption@ (bitmask)
 newtype CKSharingParticipantAccessOption = CKSharingParticipantAccessOption CULong
@@ -488,6 +661,16 @@ pattern CKSharingParticipantAccessOptionSpecifiedRecipientsOnly = CKSharingParti
 pattern CKSharingParticipantAccessOptionAny :: CKSharingParticipantAccessOption
 pattern CKSharingParticipantAccessOptionAny = CKSharingParticipantAccessOption 3
 
+instance ObjCArgument CKSharingParticipantAccessOption where
+  withObjCArg (CKSharingParticipantAccessOption x) k = k (argCULong x)
+
+instance ObjCReturn CKSharingParticipantAccessOption where
+  type RawReturn CKSharingParticipantAccessOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSharingParticipantAccessOption x)
+  fromOwned x = pure (CKSharingParticipantAccessOption x)
+
 -- | @CKSharingParticipantPermissionOption@ (bitmask)
 newtype CKSharingParticipantPermissionOption = CKSharingParticipantPermissionOption CULong
   deriving stock (Eq, Ord, Show)
@@ -508,6 +691,16 @@ pattern CKSharingParticipantPermissionOptionReadWrite = CKSharingParticipantPerm
 pattern CKSharingParticipantPermissionOptionAny :: CKSharingParticipantPermissionOption
 pattern CKSharingParticipantPermissionOptionAny = CKSharingParticipantPermissionOption 3
 
+instance ObjCArgument CKSharingParticipantPermissionOption where
+  withObjCArg (CKSharingParticipantPermissionOption x) k = k (argCULong x)
+
+instance ObjCReturn CKSharingParticipantPermissionOption where
+  type RawReturn CKSharingParticipantPermissionOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSharingParticipantPermissionOption x)
+  fromOwned x = pure (CKSharingParticipantPermissionOption x)
+
 -- | @CKSubscriptionType@
 newtype CKSubscriptionType = CKSubscriptionType CLong
   deriving stock (Eq, Ord, Show)
@@ -522,6 +715,16 @@ pattern CKSubscriptionTypeRecordZone = CKSubscriptionType 2
 pattern CKSubscriptionTypeDatabase :: CKSubscriptionType
 pattern CKSubscriptionTypeDatabase = CKSubscriptionType 3
 
+instance ObjCArgument CKSubscriptionType where
+  withObjCArg (CKSubscriptionType x) k = k (argCLong x)
+
+instance ObjCReturn CKSubscriptionType where
+  type RawReturn CKSubscriptionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSubscriptionType x)
+  fromOwned x = pure (CKSubscriptionType x)
+
 -- | @CKSyncEngineAccountChangeType@
 newtype CKSyncEngineAccountChangeType = CKSyncEngineAccountChangeType CLong
   deriving stock (Eq, Ord, Show)
@@ -535,6 +738,16 @@ pattern CKSyncEngineAccountChangeTypeSignOut = CKSyncEngineAccountChangeType 1
 
 pattern CKSyncEngineAccountChangeTypeSwitchAccounts :: CKSyncEngineAccountChangeType
 pattern CKSyncEngineAccountChangeTypeSwitchAccounts = CKSyncEngineAccountChangeType 2
+
+instance ObjCArgument CKSyncEngineAccountChangeType where
+  withObjCArg (CKSyncEngineAccountChangeType x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEngineAccountChangeType where
+  type RawReturn CKSyncEngineAccountChangeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEngineAccountChangeType x)
+  fromOwned x = pure (CKSyncEngineAccountChangeType x)
 
 -- | An event that occurs during the operation of a @CKSyncEngine@. See ``CKSyncEngineEvent`` for more details.
 -- | @CKSyncEngineEventType@
@@ -578,6 +791,16 @@ pattern CKSyncEngineEventTypeWillSendChanges = CKSyncEngineEventType 10
 pattern CKSyncEngineEventTypeDidSendChanges :: CKSyncEngineEventType
 pattern CKSyncEngineEventTypeDidSendChanges = CKSyncEngineEventType 11
 
+instance ObjCArgument CKSyncEngineEventType where
+  withObjCArg (CKSyncEngineEventType x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEngineEventType where
+  type RawReturn CKSyncEngineEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEngineEventType x)
+  fromOwned x = pure (CKSyncEngineEventType x)
+
 -- | @CKSyncEnginePendingDatabaseChangeType@
 newtype CKSyncEnginePendingDatabaseChangeType = CKSyncEnginePendingDatabaseChangeType CLong
   deriving stock (Eq, Ord, Show)
@@ -588,6 +811,16 @@ pattern CKSyncEnginePendingDatabaseChangeTypeSaveZone = CKSyncEnginePendingDatab
 
 pattern CKSyncEnginePendingDatabaseChangeTypeDeleteZone :: CKSyncEnginePendingDatabaseChangeType
 pattern CKSyncEnginePendingDatabaseChangeTypeDeleteZone = CKSyncEnginePendingDatabaseChangeType 1
+
+instance ObjCArgument CKSyncEnginePendingDatabaseChangeType where
+  withObjCArg (CKSyncEnginePendingDatabaseChangeType x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEnginePendingDatabaseChangeType where
+  type RawReturn CKSyncEnginePendingDatabaseChangeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEnginePendingDatabaseChangeType x)
+  fromOwned x = pure (CKSyncEnginePendingDatabaseChangeType x)
 
 -- | @CKSyncEnginePendingRecordZoneChangeType@
 newtype CKSyncEnginePendingRecordZoneChangeType = CKSyncEnginePendingRecordZoneChangeType CLong
@@ -600,6 +833,16 @@ pattern CKSyncEnginePendingRecordZoneChangeTypeSaveRecord = CKSyncEnginePendingR
 pattern CKSyncEnginePendingRecordZoneChangeTypeDeleteRecord :: CKSyncEnginePendingRecordZoneChangeType
 pattern CKSyncEnginePendingRecordZoneChangeTypeDeleteRecord = CKSyncEnginePendingRecordZoneChangeType 1
 
+instance ObjCArgument CKSyncEnginePendingRecordZoneChangeType where
+  withObjCArg (CKSyncEnginePendingRecordZoneChangeType x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEnginePendingRecordZoneChangeType where
+  type RawReturn CKSyncEnginePendingRecordZoneChangeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEnginePendingRecordZoneChangeType x)
+  fromOwned x = pure (CKSyncEnginePendingRecordZoneChangeType x)
+
 -- | @CKSyncEngineSyncReason@
 newtype CKSyncEngineSyncReason = CKSyncEngineSyncReason CLong
   deriving stock (Eq, Ord, Show)
@@ -610,6 +853,16 @@ pattern CKSyncEngineSyncReasonScheduled = CKSyncEngineSyncReason 0
 
 pattern CKSyncEngineSyncReasonManual :: CKSyncEngineSyncReason
 pattern CKSyncEngineSyncReasonManual = CKSyncEngineSyncReason 1
+
+instance ObjCArgument CKSyncEngineSyncReason where
+  withObjCArg (CKSyncEngineSyncReason x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEngineSyncReason where
+  type RawReturn CKSyncEngineSyncReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEngineSyncReason x)
+  fromOwned x = pure (CKSyncEngineSyncReason x)
 
 -- | @CKSyncEngineZoneDeletionReason@
 newtype CKSyncEngineZoneDeletionReason = CKSyncEngineZoneDeletionReason CLong
@@ -624,3 +877,13 @@ pattern CKSyncEngineZoneDeletionReasonPurged = CKSyncEngineZoneDeletionReason 1
 
 pattern CKSyncEngineZoneDeletionReasonEncryptedDataReset :: CKSyncEngineZoneDeletionReason
 pattern CKSyncEngineZoneDeletionReasonEncryptedDataReset = CKSyncEngineZoneDeletionReason 2
+
+instance ObjCArgument CKSyncEngineZoneDeletionReason where
+  withObjCArg (CKSyncEngineZoneDeletionReason x) k = k (argCLong x)
+
+instance ObjCReturn CKSyncEngineZoneDeletionReason where
+  type RawReturn CKSyncEngineZoneDeletionReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CKSyncEngineZoneDeletionReason x)
+  fromOwned x = pure (CKSyncEngineZoneDeletionReason x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.JavaRuntimeSupport.NSCursor
   , javaMoveCursor
   , javaSetAllowsCursorSetInBackground
   , javaBusyButClickableCursorSelector
+  , javaMoveCursorSelector
   , javaResizeNECursorSelector
   , javaResizeNWCursorSelector
   , javaResizeSECursorSelector
   , javaResizeSWCursorSelector
-  , javaMoveCursorSelector
   , javaSetAllowsCursorSetInBackgroundSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,79 +42,79 @@ javaBusyButClickableCursor :: IO (Id NSCursor)
 javaBusyButClickableCursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaBusyButClickableCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaBusyButClickableCursorSelector
 
 -- | @+ javaResizeNECursor@
 javaResizeNECursor :: IO (Id NSCursor)
 javaResizeNECursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaResizeNECursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaResizeNECursorSelector
 
 -- | @+ javaResizeNWCursor@
 javaResizeNWCursor :: IO (Id NSCursor)
 javaResizeNWCursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaResizeNWCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaResizeNWCursorSelector
 
 -- | @+ javaResizeSECursor@
 javaResizeSECursor :: IO (Id NSCursor)
 javaResizeSECursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaResizeSECursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaResizeSECursorSelector
 
 -- | @+ javaResizeSWCursor@
 javaResizeSWCursor :: IO (Id NSCursor)
 javaResizeSWCursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaResizeSWCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaResizeSWCursorSelector
 
 -- | @+ javaMoveCursor@
 javaMoveCursor :: IO (Id NSCursor)
 javaMoveCursor  =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaMoveCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' javaMoveCursorSelector
 
 -- | @+ javaSetAllowsCursorSetInBackground:@
 javaSetAllowsCursorSetInBackground :: Bool -> IO ()
 javaSetAllowsCursorSetInBackground allows =
   do
     cls' <- getRequiredClass "NSCursor"
-    sendClassMsg cls' (mkSelector "javaSetAllowsCursorSetInBackground:") retVoid [argCULong (if allows then 1 else 0)]
+    sendClassMessage cls' javaSetAllowsCursorSetInBackgroundSelector allows
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @javaBusyButClickableCursor@
-javaBusyButClickableCursorSelector :: Selector
+javaBusyButClickableCursorSelector :: Selector '[] (Id NSCursor)
 javaBusyButClickableCursorSelector = mkSelector "javaBusyButClickableCursor"
 
 -- | @Selector@ for @javaResizeNECursor@
-javaResizeNECursorSelector :: Selector
+javaResizeNECursorSelector :: Selector '[] (Id NSCursor)
 javaResizeNECursorSelector = mkSelector "javaResizeNECursor"
 
 -- | @Selector@ for @javaResizeNWCursor@
-javaResizeNWCursorSelector :: Selector
+javaResizeNWCursorSelector :: Selector '[] (Id NSCursor)
 javaResizeNWCursorSelector = mkSelector "javaResizeNWCursor"
 
 -- | @Selector@ for @javaResizeSECursor@
-javaResizeSECursorSelector :: Selector
+javaResizeSECursorSelector :: Selector '[] (Id NSCursor)
 javaResizeSECursorSelector = mkSelector "javaResizeSECursor"
 
 -- | @Selector@ for @javaResizeSWCursor@
-javaResizeSWCursorSelector :: Selector
+javaResizeSWCursorSelector :: Selector '[] (Id NSCursor)
 javaResizeSWCursorSelector = mkSelector "javaResizeSWCursor"
 
 -- | @Selector@ for @javaMoveCursor@
-javaMoveCursorSelector :: Selector
+javaMoveCursorSelector :: Selector '[] (Id NSCursor)
 javaMoveCursorSelector = mkSelector "javaMoveCursor"
 
 -- | @Selector@ for @javaSetAllowsCursorSetInBackground:@
-javaSetAllowsCursorSetInBackgroundSelector :: Selector
+javaSetAllowsCursorSetInBackgroundSelector :: Selector '[Bool] ()
 javaSetAllowsCursorSetInBackgroundSelector = mkSelector "javaSetAllowsCursorSetInBackground:"
 

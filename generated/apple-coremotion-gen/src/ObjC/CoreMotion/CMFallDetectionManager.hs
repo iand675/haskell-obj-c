@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,10 +19,10 @@ module ObjC.CoreMotion.CMFallDetectionManager
   , authorizationStatus
   , delegate
   , setDelegate
-  , requestAuthorizationWithHandlerSelector
-  , availableSelector
   , authorizationStatusSelector
+  , availableSelector
   , delegateSelector
+  , requestAuthorizationWithHandlerSelector
   , setDelegateSelector
 
   -- * Enum types
@@ -33,15 +34,11 @@ module ObjC.CoreMotion.CMFallDetectionManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestAuthorizationWithHandler:@
 requestAuthorizationWithHandler :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> Ptr () -> IO ()
-requestAuthorizationWithHandler cmFallDetectionManager  handler =
-    sendMsg cmFallDetectionManager (mkSelector "requestAuthorizationWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+requestAuthorizationWithHandler cmFallDetectionManager handler =
+  sendMessage cmFallDetectionManager requestAuthorizationWithHandlerSelector handler
 
 -- | available
 --
@@ -65,7 +62,7 @@ available :: IO Bool
 available  =
   do
     cls' <- getRequiredClass "CMFallDetectionManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "available") retCULong []
+    sendClassMessage cls' availableSelector
 
 -- | authorizationStatus
 --
@@ -73,8 +70,8 @@ available  =
 --
 -- ObjC selector: @- authorizationStatus@
 authorizationStatus :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> IO CMAuthorizationStatus
-authorizationStatus cmFallDetectionManager  =
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendMsg cmFallDetectionManager (mkSelector "authorizationStatus") retCLong []
+authorizationStatus cmFallDetectionManager =
+  sendMessage cmFallDetectionManager authorizationStatusSelector
 
 -- | delegate
 --
@@ -82,8 +79,8 @@ authorizationStatus cmFallDetectionManager  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> IO RawId
-delegate cmFallDetectionManager  =
-    fmap (RawId . castPtr) $ sendMsg cmFallDetectionManager (mkSelector "delegate") (retPtr retVoid) []
+delegate cmFallDetectionManager =
+  sendMessage cmFallDetectionManager delegateSelector
 
 -- | delegate
 --
@@ -91,30 +88,30 @@ delegate cmFallDetectionManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCMFallDetectionManager cmFallDetectionManager => cmFallDetectionManager -> RawId -> IO ()
-setDelegate cmFallDetectionManager  value =
-    sendMsg cmFallDetectionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cmFallDetectionManager value =
+  sendMessage cmFallDetectionManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestAuthorizationWithHandler:@
-requestAuthorizationWithHandlerSelector :: Selector
+requestAuthorizationWithHandlerSelector :: Selector '[Ptr ()] ()
 requestAuthorizationWithHandlerSelector = mkSelector "requestAuthorizationWithHandler:"
 
 -- | @Selector@ for @available@
-availableSelector :: Selector
+availableSelector :: Selector '[] Bool
 availableSelector = mkSelector "available"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,29 +37,29 @@ module ObjC.AVFoundation.AVCaptureVideoPreviewLayer
   , deferredStartSupported
   , deferredStartEnabled
   , setDeferredStartEnabled
-  , layerWithSessionSelector
-  , initWithSessionSelector
-  , layerWithSessionWithNoConnectionSelector
-  , initWithSessionWithNoConnectionSelector
-  , setSessionWithNoConnectionSelector
-  , transformedMetadataObjectForMetadataObjectSelector
-  , sessionSelector
-  , setSessionSelector
-  , connectionSelector
-  , videoGravitySelector
-  , setVideoGravitySelector
-  , previewingSelector
-  , orientationSupportedSelector
-  , orientationSelector
-  , setOrientationSelector
-  , mirroringSupportedSelector
   , automaticallyAdjustsMirroringSelector
-  , setAutomaticallyAdjustsMirroringSelector
-  , mirroredSelector
-  , setMirroredSelector
-  , deferredStartSupportedSelector
+  , connectionSelector
   , deferredStartEnabledSelector
+  , deferredStartSupportedSelector
+  , initWithSessionSelector
+  , initWithSessionWithNoConnectionSelector
+  , layerWithSessionSelector
+  , layerWithSessionWithNoConnectionSelector
+  , mirroredSelector
+  , mirroringSupportedSelector
+  , orientationSelector
+  , orientationSupportedSelector
+  , previewingSelector
+  , sessionSelector
+  , setAutomaticallyAdjustsMirroringSelector
   , setDeferredStartEnabledSelector
+  , setMirroredSelector
+  , setOrientationSelector
+  , setSessionSelector
+  , setSessionWithNoConnectionSelector
+  , setVideoGravitySelector
+  , transformedMetadataObjectForMetadataObjectSelector
+  , videoGravitySelector
 
   -- * Enum types
   , AVCaptureVideoOrientation(AVCaptureVideoOrientation)
@@ -69,15 +70,11 @@ module ObjC.AVFoundation.AVCaptureVideoPreviewLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,8 +96,7 @@ layerWithSession :: IsAVCaptureSession session => session -> IO (Id AVCaptureVid
 layerWithSession session =
   do
     cls' <- getRequiredClass "AVCaptureVideoPreviewLayer"
-    withObjCPtr session $ \raw_session ->
-      sendClassMsg cls' (mkSelector "layerWithSession:") (retPtr retVoid) [argPtr (castPtr raw_session :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithSessionSelector (toAVCaptureSession session)
 
 -- | initWithSession:
 --
@@ -112,9 +108,8 @@ layerWithSession session =
 --
 -- ObjC selector: @- initWithSession:@
 initWithSession :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVCaptureSession session) => avCaptureVideoPreviewLayer -> session -> IO (Id AVCaptureVideoPreviewLayer)
-initWithSession avCaptureVideoPreviewLayer  session =
-  withObjCPtr session $ \raw_session ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "initWithSession:") (retPtr retVoid) [argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithSession avCaptureVideoPreviewLayer session =
+  sendOwnedMessage avCaptureVideoPreviewLayer initWithSessionSelector (toAVCaptureSession session)
 
 -- | layerWithSessionWithNoConnection:
 --
@@ -129,8 +124,7 @@ layerWithSessionWithNoConnection :: IsAVCaptureSession session => session -> IO 
 layerWithSessionWithNoConnection session =
   do
     cls' <- getRequiredClass "AVCaptureVideoPreviewLayer"
-    withObjCPtr session $ \raw_session ->
-      sendClassMsg cls' (mkSelector "layerWithSessionWithNoConnection:") (retPtr retVoid) [argPtr (castPtr raw_session :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithSessionWithNoConnectionSelector (toAVCaptureSession session)
 
 -- | initWithSessionWithNoConnection:
 --
@@ -142,9 +136,8 @@ layerWithSessionWithNoConnection session =
 --
 -- ObjC selector: @- initWithSessionWithNoConnection:@
 initWithSessionWithNoConnection :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVCaptureSession session) => avCaptureVideoPreviewLayer -> session -> IO (Id AVCaptureVideoPreviewLayer)
-initWithSessionWithNoConnection avCaptureVideoPreviewLayer  session =
-  withObjCPtr session $ \raw_session ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "initWithSessionWithNoConnection:") (retPtr retVoid) [argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithSessionWithNoConnection avCaptureVideoPreviewLayer session =
+  sendOwnedMessage avCaptureVideoPreviewLayer initWithSessionWithNoConnectionSelector (toAVCaptureSession session)
 
 -- | method setSessionWithNoConnection:
 --
@@ -154,9 +147,8 @@ initWithSessionWithNoConnection avCaptureVideoPreviewLayer  session =
 --
 -- ObjC selector: @- setSessionWithNoConnection:@
 setSessionWithNoConnection :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVCaptureSession session) => avCaptureVideoPreviewLayer -> session -> IO ()
-setSessionWithNoConnection avCaptureVideoPreviewLayer  session =
-  withObjCPtr session $ \raw_session ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "setSessionWithNoConnection:") retVoid [argPtr (castPtr raw_session :: Ptr ())]
+setSessionWithNoConnection avCaptureVideoPreviewLayer session =
+  sendMessage avCaptureVideoPreviewLayer setSessionWithNoConnectionSelector (toAVCaptureSession session)
 
 -- | transformedMetadataObjectForMetadataObject:
 --
@@ -170,9 +162,8 @@ setSessionWithNoConnection avCaptureVideoPreviewLayer  session =
 --
 -- ObjC selector: @- transformedMetadataObjectForMetadataObject:@
 transformedMetadataObjectForMetadataObject :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVMetadataObject metadataObject) => avCaptureVideoPreviewLayer -> metadataObject -> IO (Id AVMetadataObject)
-transformedMetadataObjectForMetadataObject avCaptureVideoPreviewLayer  metadataObject =
-  withObjCPtr metadataObject $ \raw_metadataObject ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "transformedMetadataObjectForMetadataObject:") (retPtr retVoid) [argPtr (castPtr raw_metadataObject :: Ptr ())] >>= retainedObject . castPtr
+transformedMetadataObjectForMetadataObject avCaptureVideoPreviewLayer metadataObject =
+  sendMessage avCaptureVideoPreviewLayer transformedMetadataObjectForMetadataObjectSelector (toAVMetadataObject metadataObject)
 
 -- | session
 --
@@ -182,8 +173,8 @@ transformedMetadataObjectForMetadataObject avCaptureVideoPreviewLayer  metadataO
 --
 -- ObjC selector: @- session@
 session :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO (Id AVCaptureSession)
-session avCaptureVideoPreviewLayer  =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer sessionSelector
 
 -- | session
 --
@@ -193,9 +184,8 @@ session avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setSession:@
 setSession :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsAVCaptureSession value) => avCaptureVideoPreviewLayer -> value -> IO ()
-setSession avCaptureVideoPreviewLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "setSession:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSession avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setSessionSelector (toAVCaptureSession value)
 
 -- | connection
 --
@@ -205,8 +195,8 @@ setSession avCaptureVideoPreviewLayer  value =
 --
 -- ObjC selector: @- connection@
 connection :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO (Id AVCaptureConnection)
-connection avCaptureVideoPreviewLayer  =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "connection") (retPtr retVoid) [] >>= retainedObject . castPtr
+connection avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer connectionSelector
 
 -- | videoGravity
 --
@@ -216,8 +206,8 @@ connection avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- videoGravity@
 videoGravity :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO (Id NSString)
-videoGravity avCaptureVideoPreviewLayer  =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "videoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoGravity avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer videoGravitySelector
 
 -- | videoGravity
 --
@@ -227,9 +217,8 @@ videoGravity avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setVideoGravity:@
 setVideoGravity :: (IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer, IsNSString value) => avCaptureVideoPreviewLayer -> value -> IO ()
-setVideoGravity avCaptureVideoPreviewLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureVideoPreviewLayer (mkSelector "setVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoGravity avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setVideoGravitySelector (toNSString value)
 
 -- | previewing
 --
@@ -239,8 +228,8 @@ setVideoGravity avCaptureVideoPreviewLayer  value =
 --
 -- ObjC selector: @- previewing@
 previewing :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-previewing avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "previewing") retCULong []
+previewing avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer previewingSelector
 
 -- | orientationSupported
 --
@@ -250,8 +239,8 @@ previewing avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- orientationSupported@
 orientationSupported :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-orientationSupported avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "orientationSupported") retCULong []
+orientationSupported avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer orientationSupportedSelector
 
 -- | orientation
 --
@@ -261,8 +250,8 @@ orientationSupported avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- orientation@
 orientation :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO AVCaptureVideoOrientation
-orientation avCaptureVideoPreviewLayer  =
-    fmap (coerce :: CLong -> AVCaptureVideoOrientation) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "orientation") retCLong []
+orientation avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer orientationSelector
 
 -- | orientation
 --
@@ -272,8 +261,8 @@ orientation avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setOrientation:@
 setOrientation :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> AVCaptureVideoOrientation -> IO ()
-setOrientation avCaptureVideoPreviewLayer  value =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "setOrientation:") retVoid [argCLong (coerce value)]
+setOrientation avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setOrientationSelector value
 
 -- | mirroringSupported
 --
@@ -283,8 +272,8 @@ setOrientation avCaptureVideoPreviewLayer  value =
 --
 -- ObjC selector: @- mirroringSupported@
 mirroringSupported :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-mirroringSupported avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "mirroringSupported") retCULong []
+mirroringSupported avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer mirroringSupportedSelector
 
 -- | automaticallyAdjustsMirroring
 --
@@ -294,8 +283,8 @@ mirroringSupported avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- automaticallyAdjustsMirroring@
 automaticallyAdjustsMirroring :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-automaticallyAdjustsMirroring avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "automaticallyAdjustsMirroring") retCULong []
+automaticallyAdjustsMirroring avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer automaticallyAdjustsMirroringSelector
 
 -- | automaticallyAdjustsMirroring
 --
@@ -305,8 +294,8 @@ automaticallyAdjustsMirroring avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsMirroring:@
 setAutomaticallyAdjustsMirroring :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> Bool -> IO ()
-setAutomaticallyAdjustsMirroring avCaptureVideoPreviewLayer  value =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "setAutomaticallyAdjustsMirroring:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsMirroring avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setAutomaticallyAdjustsMirroringSelector value
 
 -- | mirrored
 --
@@ -316,8 +305,8 @@ setAutomaticallyAdjustsMirroring avCaptureVideoPreviewLayer  value =
 --
 -- ObjC selector: @- mirrored@
 mirrored :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-mirrored avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "mirrored") retCULong []
+mirrored avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer mirroredSelector
 
 -- | mirrored
 --
@@ -327,8 +316,8 @@ mirrored avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setMirrored:@
 setMirrored :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> Bool -> IO ()
-setMirrored avCaptureVideoPreviewLayer  value =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "setMirrored:") retVoid [argCULong (if value then 1 else 0)]
+setMirrored avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setMirroredSelector value
 
 -- | A @BOOL@ value that indicates whether the preview layer supports deferred start.
 --
@@ -336,8 +325,8 @@ setMirrored avCaptureVideoPreviewLayer  value =
 --
 -- ObjC selector: @- deferredStartSupported@
 deferredStartSupported :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-deferredStartSupported avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "deferredStartSupported") retCULong []
+deferredStartSupported avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer deferredStartSupportedSelector
 
 -- | A @BOOL@ value that indicates whether to defer starting this preview layer.
 --
@@ -353,8 +342,8 @@ deferredStartSupported avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- deferredStartEnabled@
 deferredStartEnabled :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> IO Bool
-deferredStartEnabled avCaptureVideoPreviewLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureVideoPreviewLayer (mkSelector "deferredStartEnabled") retCULong []
+deferredStartEnabled avCaptureVideoPreviewLayer =
+  sendMessage avCaptureVideoPreviewLayer deferredStartEnabledSelector
 
 -- | A @BOOL@ value that indicates whether to defer starting this preview layer.
 --
@@ -370,102 +359,102 @@ deferredStartEnabled avCaptureVideoPreviewLayer  =
 --
 -- ObjC selector: @- setDeferredStartEnabled:@
 setDeferredStartEnabled :: IsAVCaptureVideoPreviewLayer avCaptureVideoPreviewLayer => avCaptureVideoPreviewLayer -> Bool -> IO ()
-setDeferredStartEnabled avCaptureVideoPreviewLayer  value =
-    sendMsg avCaptureVideoPreviewLayer (mkSelector "setDeferredStartEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDeferredStartEnabled avCaptureVideoPreviewLayer value =
+  sendMessage avCaptureVideoPreviewLayer setDeferredStartEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithSession:@
-layerWithSessionSelector :: Selector
+layerWithSessionSelector :: Selector '[Id AVCaptureSession] (Id AVCaptureVideoPreviewLayer)
 layerWithSessionSelector = mkSelector "layerWithSession:"
 
 -- | @Selector@ for @initWithSession:@
-initWithSessionSelector :: Selector
+initWithSessionSelector :: Selector '[Id AVCaptureSession] (Id AVCaptureVideoPreviewLayer)
 initWithSessionSelector = mkSelector "initWithSession:"
 
 -- | @Selector@ for @layerWithSessionWithNoConnection:@
-layerWithSessionWithNoConnectionSelector :: Selector
+layerWithSessionWithNoConnectionSelector :: Selector '[Id AVCaptureSession] (Id AVCaptureVideoPreviewLayer)
 layerWithSessionWithNoConnectionSelector = mkSelector "layerWithSessionWithNoConnection:"
 
 -- | @Selector@ for @initWithSessionWithNoConnection:@
-initWithSessionWithNoConnectionSelector :: Selector
+initWithSessionWithNoConnectionSelector :: Selector '[Id AVCaptureSession] (Id AVCaptureVideoPreviewLayer)
 initWithSessionWithNoConnectionSelector = mkSelector "initWithSessionWithNoConnection:"
 
 -- | @Selector@ for @setSessionWithNoConnection:@
-setSessionWithNoConnectionSelector :: Selector
+setSessionWithNoConnectionSelector :: Selector '[Id AVCaptureSession] ()
 setSessionWithNoConnectionSelector = mkSelector "setSessionWithNoConnection:"
 
 -- | @Selector@ for @transformedMetadataObjectForMetadataObject:@
-transformedMetadataObjectForMetadataObjectSelector :: Selector
+transformedMetadataObjectForMetadataObjectSelector :: Selector '[Id AVMetadataObject] (Id AVMetadataObject)
 transformedMetadataObjectForMetadataObjectSelector = mkSelector "transformedMetadataObjectForMetadataObject:"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id AVCaptureSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @setSession:@
-setSessionSelector :: Selector
+setSessionSelector :: Selector '[Id AVCaptureSession] ()
 setSessionSelector = mkSelector "setSession:"
 
 -- | @Selector@ for @connection@
-connectionSelector :: Selector
+connectionSelector :: Selector '[] (Id AVCaptureConnection)
 connectionSelector = mkSelector "connection"
 
 -- | @Selector@ for @videoGravity@
-videoGravitySelector :: Selector
+videoGravitySelector :: Selector '[] (Id NSString)
 videoGravitySelector = mkSelector "videoGravity"
 
 -- | @Selector@ for @setVideoGravity:@
-setVideoGravitySelector :: Selector
+setVideoGravitySelector :: Selector '[Id NSString] ()
 setVideoGravitySelector = mkSelector "setVideoGravity:"
 
 -- | @Selector@ for @previewing@
-previewingSelector :: Selector
+previewingSelector :: Selector '[] Bool
 previewingSelector = mkSelector "previewing"
 
 -- | @Selector@ for @orientationSupported@
-orientationSupportedSelector :: Selector
+orientationSupportedSelector :: Selector '[] Bool
 orientationSupportedSelector = mkSelector "orientationSupported"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] AVCaptureVideoOrientation
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[AVCaptureVideoOrientation] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @mirroringSupported@
-mirroringSupportedSelector :: Selector
+mirroringSupportedSelector :: Selector '[] Bool
 mirroringSupportedSelector = mkSelector "mirroringSupported"
 
 -- | @Selector@ for @automaticallyAdjustsMirroring@
-automaticallyAdjustsMirroringSelector :: Selector
+automaticallyAdjustsMirroringSelector :: Selector '[] Bool
 automaticallyAdjustsMirroringSelector = mkSelector "automaticallyAdjustsMirroring"
 
 -- | @Selector@ for @setAutomaticallyAdjustsMirroring:@
-setAutomaticallyAdjustsMirroringSelector :: Selector
+setAutomaticallyAdjustsMirroringSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsMirroringSelector = mkSelector "setAutomaticallyAdjustsMirroring:"
 
 -- | @Selector@ for @mirrored@
-mirroredSelector :: Selector
+mirroredSelector :: Selector '[] Bool
 mirroredSelector = mkSelector "mirrored"
 
 -- | @Selector@ for @setMirrored:@
-setMirroredSelector :: Selector
+setMirroredSelector :: Selector '[Bool] ()
 setMirroredSelector = mkSelector "setMirrored:"
 
 -- | @Selector@ for @deferredStartSupported@
-deferredStartSupportedSelector :: Selector
+deferredStartSupportedSelector :: Selector '[] Bool
 deferredStartSupportedSelector = mkSelector "deferredStartSupported"
 
 -- | @Selector@ for @deferredStartEnabled@
-deferredStartEnabledSelector :: Selector
+deferredStartEnabledSelector :: Selector '[] Bool
 deferredStartEnabledSelector = mkSelector "deferredStartEnabled"
 
 -- | @Selector@ for @setDeferredStartEnabled:@
-setDeferredStartEnabledSelector :: Selector
+setDeferredStartEnabledSelector :: Selector '[Bool] ()
 setDeferredStartEnabledSelector = mkSelector "setDeferredStartEnabled:"
 

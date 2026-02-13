@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.GameplayKit.GKVoronoiNoiseSource
   , setDistanceEnabled
   , seed
   , setSeed
-  , voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector
-  , initWithFrequency_displacement_distanceEnabled_seedSelector
-  , frequencySelector
-  , setFrequencySelector
   , displacementSelector
-  , setDisplacementSelector
   , distanceEnabledSelector
-  , setDistanceEnabledSelector
+  , frequencySelector
+  , initWithFrequency_displacement_distanceEnabled_seedSelector
   , seedSelector
+  , setDisplacementSelector
+  , setDistanceEnabledSelector
+  , setFrequencySelector
   , setSeedSelector
+  , voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,94 +49,94 @@ voronoiNoiseWithFrequency_displacement_distanceEnabled_seed :: CDouble -> CDoubl
 voronoiNoiseWithFrequency_displacement_distanceEnabled_seed frequency displacement distanceEnabled seed =
   do
     cls' <- getRequiredClass "GKVoronoiNoiseSource"
-    sendClassMsg cls' (mkSelector "voronoiNoiseWithFrequency:displacement:distanceEnabled:seed:") (retPtr retVoid) [argCDouble frequency, argCDouble displacement, argCULong (if distanceEnabled then 1 else 0), argCInt seed] >>= retainedObject . castPtr
+    sendClassMessage cls' voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector frequency displacement distanceEnabled seed
 
 -- | @- initWithFrequency:displacement:distanceEnabled:seed:@
 initWithFrequency_displacement_distanceEnabled_seed :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> CDouble -> CDouble -> Bool -> CInt -> IO (Id GKVoronoiNoiseSource)
-initWithFrequency_displacement_distanceEnabled_seed gkVoronoiNoiseSource  frequency displacement distanceEnabled seed =
-    sendMsg gkVoronoiNoiseSource (mkSelector "initWithFrequency:displacement:distanceEnabled:seed:") (retPtr retVoid) [argCDouble frequency, argCDouble displacement, argCULong (if distanceEnabled then 1 else 0), argCInt seed] >>= ownedObject . castPtr
+initWithFrequency_displacement_distanceEnabled_seed gkVoronoiNoiseSource frequency displacement distanceEnabled seed =
+  sendOwnedMessage gkVoronoiNoiseSource initWithFrequency_displacement_distanceEnabled_seedSelector frequency displacement distanceEnabled seed
 
 -- | @- frequency@
 frequency :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> IO CDouble
-frequency gkVoronoiNoiseSource  =
-    sendMsg gkVoronoiNoiseSource (mkSelector "frequency") retCDouble []
+frequency gkVoronoiNoiseSource =
+  sendMessage gkVoronoiNoiseSource frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> CDouble -> IO ()
-setFrequency gkVoronoiNoiseSource  value =
-    sendMsg gkVoronoiNoiseSource (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency gkVoronoiNoiseSource value =
+  sendMessage gkVoronoiNoiseSource setFrequencySelector value
 
 -- | @- displacement@
 displacement :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> IO CDouble
-displacement gkVoronoiNoiseSource  =
-    sendMsg gkVoronoiNoiseSource (mkSelector "displacement") retCDouble []
+displacement gkVoronoiNoiseSource =
+  sendMessage gkVoronoiNoiseSource displacementSelector
 
 -- | @- setDisplacement:@
 setDisplacement :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> CDouble -> IO ()
-setDisplacement gkVoronoiNoiseSource  value =
-    sendMsg gkVoronoiNoiseSource (mkSelector "setDisplacement:") retVoid [argCDouble value]
+setDisplacement gkVoronoiNoiseSource value =
+  sendMessage gkVoronoiNoiseSource setDisplacementSelector value
 
 -- | @- distanceEnabled@
 distanceEnabled :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> IO Bool
-distanceEnabled gkVoronoiNoiseSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkVoronoiNoiseSource (mkSelector "distanceEnabled") retCULong []
+distanceEnabled gkVoronoiNoiseSource =
+  sendMessage gkVoronoiNoiseSource distanceEnabledSelector
 
 -- | @- setDistanceEnabled:@
 setDistanceEnabled :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> Bool -> IO ()
-setDistanceEnabled gkVoronoiNoiseSource  value =
-    sendMsg gkVoronoiNoiseSource (mkSelector "setDistanceEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDistanceEnabled gkVoronoiNoiseSource value =
+  sendMessage gkVoronoiNoiseSource setDistanceEnabledSelector value
 
 -- | @- seed@
 seed :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> IO CInt
-seed gkVoronoiNoiseSource  =
-    sendMsg gkVoronoiNoiseSource (mkSelector "seed") retCInt []
+seed gkVoronoiNoiseSource =
+  sendMessage gkVoronoiNoiseSource seedSelector
 
 -- | @- setSeed:@
 setSeed :: IsGKVoronoiNoiseSource gkVoronoiNoiseSource => gkVoronoiNoiseSource -> CInt -> IO ()
-setSeed gkVoronoiNoiseSource  value =
-    sendMsg gkVoronoiNoiseSource (mkSelector "setSeed:") retVoid [argCInt value]
+setSeed gkVoronoiNoiseSource value =
+  sendMessage gkVoronoiNoiseSource setSeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @voronoiNoiseWithFrequency:displacement:distanceEnabled:seed:@
-voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector :: Selector
+voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector :: Selector '[CDouble, CDouble, Bool, CInt] (Id GKVoronoiNoiseSource)
 voronoiNoiseWithFrequency_displacement_distanceEnabled_seedSelector = mkSelector "voronoiNoiseWithFrequency:displacement:distanceEnabled:seed:"
 
 -- | @Selector@ for @initWithFrequency:displacement:distanceEnabled:seed:@
-initWithFrequency_displacement_distanceEnabled_seedSelector :: Selector
+initWithFrequency_displacement_distanceEnabled_seedSelector :: Selector '[CDouble, CDouble, Bool, CInt] (Id GKVoronoiNoiseSource)
 initWithFrequency_displacement_distanceEnabled_seedSelector = mkSelector "initWithFrequency:displacement:distanceEnabled:seed:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @displacement@
-displacementSelector :: Selector
+displacementSelector :: Selector '[] CDouble
 displacementSelector = mkSelector "displacement"
 
 -- | @Selector@ for @setDisplacement:@
-setDisplacementSelector :: Selector
+setDisplacementSelector :: Selector '[CDouble] ()
 setDisplacementSelector = mkSelector "setDisplacement:"
 
 -- | @Selector@ for @distanceEnabled@
-distanceEnabledSelector :: Selector
+distanceEnabledSelector :: Selector '[] Bool
 distanceEnabledSelector = mkSelector "distanceEnabled"
 
 -- | @Selector@ for @setDistanceEnabled:@
-setDistanceEnabledSelector :: Selector
+setDistanceEnabledSelector :: Selector '[Bool] ()
 setDistanceEnabledSelector = mkSelector "setDistanceEnabled:"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CInt
 seedSelector = mkSelector "seed"
 
 -- | @Selector@ for @setSeed:@
-setSeedSelector :: Selector
+setSeedSelector :: Selector '[CInt] ()
 setSeedSelector = mkSelector "setSeed:"
 

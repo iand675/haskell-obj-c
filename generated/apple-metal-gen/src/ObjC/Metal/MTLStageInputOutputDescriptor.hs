@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Metal.MTLStageInputOutputDescriptor
   , setIndexType
   , indexBufferIndex
   , setIndexBufferIndex
-  , stageInputOutputDescriptorSelector
-  , resetSelector
-  , layoutsSelector
   , attributesSelector
-  , indexTypeSelector
-  , setIndexTypeSelector
   , indexBufferIndexSelector
+  , indexTypeSelector
+  , layoutsSelector
+  , resetSelector
   , setIndexBufferIndexSelector
+  , setIndexTypeSelector
+  , stageInputOutputDescriptorSelector
 
   -- * Enum types
   , MTLIndexType(MTLIndexType)
@@ -31,15 +32,11 @@ module ObjC.Metal.MTLStageInputOutputDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,76 +49,76 @@ stageInputOutputDescriptor :: IO (Id MTLStageInputOutputDescriptor)
 stageInputOutputDescriptor  =
   do
     cls' <- getRequiredClass "MTLStageInputOutputDescriptor"
-    sendClassMsg cls' (mkSelector "stageInputOutputDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stageInputOutputDescriptorSelector
 
 -- | @- reset@
 reset :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> IO ()
-reset mtlStageInputOutputDescriptor  =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "reset") retVoid []
+reset mtlStageInputOutputDescriptor =
+  sendMessage mtlStageInputOutputDescriptor resetSelector
 
 -- | @- layouts@
 layouts :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> IO (Id MTLBufferLayoutDescriptorArray)
-layouts mtlStageInputOutputDescriptor  =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "layouts") (retPtr retVoid) [] >>= retainedObject . castPtr
+layouts mtlStageInputOutputDescriptor =
+  sendMessage mtlStageInputOutputDescriptor layoutsSelector
 
 -- | @- attributes@
 attributes :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> IO (Id MTLAttributeDescriptorArray)
-attributes mtlStageInputOutputDescriptor  =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mtlStageInputOutputDescriptor =
+  sendMessage mtlStageInputOutputDescriptor attributesSelector
 
 -- | @- indexType@
 indexType :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> IO MTLIndexType
-indexType mtlStageInputOutputDescriptor  =
-    fmap (coerce :: CULong -> MTLIndexType) $ sendMsg mtlStageInputOutputDescriptor (mkSelector "indexType") retCULong []
+indexType mtlStageInputOutputDescriptor =
+  sendMessage mtlStageInputOutputDescriptor indexTypeSelector
 
 -- | @- setIndexType:@
 setIndexType :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> MTLIndexType -> IO ()
-setIndexType mtlStageInputOutputDescriptor  value =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "setIndexType:") retVoid [argCULong (coerce value)]
+setIndexType mtlStageInputOutputDescriptor value =
+  sendMessage mtlStageInputOutputDescriptor setIndexTypeSelector value
 
 -- | @- indexBufferIndex@
 indexBufferIndex :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> IO CULong
-indexBufferIndex mtlStageInputOutputDescriptor  =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "indexBufferIndex") retCULong []
+indexBufferIndex mtlStageInputOutputDescriptor =
+  sendMessage mtlStageInputOutputDescriptor indexBufferIndexSelector
 
 -- | @- setIndexBufferIndex:@
 setIndexBufferIndex :: IsMTLStageInputOutputDescriptor mtlStageInputOutputDescriptor => mtlStageInputOutputDescriptor -> CULong -> IO ()
-setIndexBufferIndex mtlStageInputOutputDescriptor  value =
-    sendMsg mtlStageInputOutputDescriptor (mkSelector "setIndexBufferIndex:") retVoid [argCULong value]
+setIndexBufferIndex mtlStageInputOutputDescriptor value =
+  sendMessage mtlStageInputOutputDescriptor setIndexBufferIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stageInputOutputDescriptor@
-stageInputOutputDescriptorSelector :: Selector
+stageInputOutputDescriptorSelector :: Selector '[] (Id MTLStageInputOutputDescriptor)
 stageInputOutputDescriptorSelector = mkSelector "stageInputOutputDescriptor"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @layouts@
-layoutsSelector :: Selector
+layoutsSelector :: Selector '[] (Id MTLBufferLayoutDescriptorArray)
 layoutsSelector = mkSelector "layouts"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id MTLAttributeDescriptorArray)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] MTLIndexType
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @setIndexType:@
-setIndexTypeSelector :: Selector
+setIndexTypeSelector :: Selector '[MTLIndexType] ()
 setIndexTypeSelector = mkSelector "setIndexType:"
 
 -- | @Selector@ for @indexBufferIndex@
-indexBufferIndexSelector :: Selector
+indexBufferIndexSelector :: Selector '[] CULong
 indexBufferIndexSelector = mkSelector "indexBufferIndex"
 
 -- | @Selector@ for @setIndexBufferIndex:@
-setIndexBufferIndexSelector :: Selector
+setIndexBufferIndexSelector :: Selector '[CULong] ()
 setIndexBufferIndexSelector = mkSelector "setIndexBufferIndex:"
 

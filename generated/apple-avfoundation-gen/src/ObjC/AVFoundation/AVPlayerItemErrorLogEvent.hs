@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.AVFoundation.AVPlayerItemErrorLogEvent
   , errorDomain
   , errorComment
   , allHTTPResponseHeaderFields
+  , allHTTPResponseHeaderFieldsSelector
+  , dateSelector
+  , errorCommentSelector
+  , errorDomainSelector
+  , errorStatusCodeSelector
   , initSelector
   , newSelector
-  , dateSelector
-  , uriSelector
-  , serverAddressSelector
   , playbackSessionIDSelector
-  , errorStatusCodeSelector
-  , errorDomainSelector
-  , errorCommentSelector
-  , allHTTPResponseHeaderFieldsSelector
+  , serverAddressSelector
+  , uriSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id AVPlayerItemErrorLogEvent)
-init_ avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemErrorLogEvent =
+  sendOwnedMessage avPlayerItemErrorLogEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemErrorLogEvent)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemErrorLogEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The date and time when the error occured. Can be nil.
 --
@@ -69,8 +66,8 @@ new  =
 --
 -- ObjC selector: @- date@
 date :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSDate)
-date avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent dateSelector
 
 -- | The URI of the playback item. Can be nil.
 --
@@ -78,8 +75,8 @@ date avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- URI@
 uri :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSString)
-uri avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "URI") (retPtr retVoid) [] >>= retainedObject . castPtr
+uri avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent uriSelector
 
 -- | The IP address of the server that was the source of the error. Can be nil.
 --
@@ -87,8 +84,8 @@ uri avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- serverAddress@
 serverAddress :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSString)
-serverAddress avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "serverAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverAddress avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent serverAddressSelector
 
 -- | A GUID that identifies the playback session. This value is used in HTTP requests. Can be nil.
 --
@@ -96,8 +93,8 @@ serverAddress avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- playbackSessionID@
 playbackSessionID :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSString)
-playbackSessionID avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "playbackSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackSessionID avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent playbackSessionIDSelector
 
 -- | A unique error code identifier.
 --
@@ -105,8 +102,8 @@ playbackSessionID avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- errorStatusCode@
 errorStatusCode :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO CLong
-errorStatusCode avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "errorStatusCode") retCLong []
+errorStatusCode avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent errorStatusCodeSelector
 
 -- | The domain of the error.
 --
@@ -114,8 +111,8 @@ errorStatusCode avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- errorDomain@
 errorDomain :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSString)
-errorDomain avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "errorDomain") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorDomain avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent errorDomainSelector
 
 -- | A description of the error encountered. Can be nil.
 --
@@ -123,8 +120,8 @@ errorDomain avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- errorComment@
 errorComment :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSString)
-errorComment avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "errorComment") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorComment avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent errorCommentSelector
 
 -- | The HTTP header fields returned by the server, if an HTTP response was received as part of this error.
 --
@@ -132,50 +129,50 @@ errorComment avPlayerItemErrorLogEvent  =
 --
 -- ObjC selector: @- allHTTPResponseHeaderFields@
 allHTTPResponseHeaderFields :: IsAVPlayerItemErrorLogEvent avPlayerItemErrorLogEvent => avPlayerItemErrorLogEvent -> IO (Id NSDictionary)
-allHTTPResponseHeaderFields avPlayerItemErrorLogEvent  =
-    sendMsg avPlayerItemErrorLogEvent (mkSelector "allHTTPResponseHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+allHTTPResponseHeaderFields avPlayerItemErrorLogEvent =
+  sendMessage avPlayerItemErrorLogEvent allHTTPResponseHeaderFieldsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemErrorLogEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemErrorLogEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @URI@
-uriSelector :: Selector
+uriSelector :: Selector '[] (Id NSString)
 uriSelector = mkSelector "URI"
 
 -- | @Selector@ for @serverAddress@
-serverAddressSelector :: Selector
+serverAddressSelector :: Selector '[] (Id NSString)
 serverAddressSelector = mkSelector "serverAddress"
 
 -- | @Selector@ for @playbackSessionID@
-playbackSessionIDSelector :: Selector
+playbackSessionIDSelector :: Selector '[] (Id NSString)
 playbackSessionIDSelector = mkSelector "playbackSessionID"
 
 -- | @Selector@ for @errorStatusCode@
-errorStatusCodeSelector :: Selector
+errorStatusCodeSelector :: Selector '[] CLong
 errorStatusCodeSelector = mkSelector "errorStatusCode"
 
 -- | @Selector@ for @errorDomain@
-errorDomainSelector :: Selector
+errorDomainSelector :: Selector '[] (Id NSString)
 errorDomainSelector = mkSelector "errorDomain"
 
 -- | @Selector@ for @errorComment@
-errorCommentSelector :: Selector
+errorCommentSelector :: Selector '[] (Id NSString)
 errorCommentSelector = mkSelector "errorComment"
 
 -- | @Selector@ for @allHTTPResponseHeaderFields@
-allHTTPResponseHeaderFieldsSelector :: Selector
+allHTTPResponseHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 allHTTPResponseHeaderFieldsSelector = mkSelector "allHTTPResponseHeaderFields"
 

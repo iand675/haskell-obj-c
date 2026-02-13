@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INAccountTypeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithAccountTypeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedAccountTypeSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithAccountTypeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedAccountTypeSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INAccountType(INAccountType)
@@ -29,15 +30,11 @@ module ObjC.Intents.INAccountTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,46 +47,46 @@ successWithResolvedAccountType :: INAccountType -> IO (Id INAccountTypeResolutio
 successWithResolvedAccountType resolvedAccountType =
   do
     cls' <- getRequiredClass "INAccountTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedAccountType:") (retPtr retVoid) [argCLong (coerce resolvedAccountType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedAccountTypeSelector resolvedAccountType
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INAccountType -> IO (Id INAccountTypeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INAccountTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithAccountTypeToConfirm:@
 confirmationRequiredWithAccountTypeToConfirm :: INAccountType -> IO (Id INAccountTypeResolutionResult)
 confirmationRequiredWithAccountTypeToConfirm accountTypeToConfirm =
   do
     cls' <- getRequiredClass "INAccountTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithAccountTypeToConfirm:") (retPtr retVoid) [argCLong (coerce accountTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithAccountTypeToConfirmSelector accountTypeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INAccountType -> IO (Id INAccountTypeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INAccountTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedAccountType:@
-successWithResolvedAccountTypeSelector :: Selector
+successWithResolvedAccountTypeSelector :: Selector '[INAccountType] (Id INAccountTypeResolutionResult)
 successWithResolvedAccountTypeSelector = mkSelector "successWithResolvedAccountType:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INAccountType] (Id INAccountTypeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithAccountTypeToConfirm:@
-confirmationRequiredWithAccountTypeToConfirmSelector :: Selector
+confirmationRequiredWithAccountTypeToConfirmSelector :: Selector '[INAccountType] (Id INAccountTypeResolutionResult)
 confirmationRequiredWithAccountTypeToConfirmSelector = mkSelector "confirmationRequiredWithAccountTypeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INAccountType] (Id INAccountTypeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

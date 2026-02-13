@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.HealthKit.HKVerifiableClinicalRecord
   , sourceType
   , dataRepresentation
   , jwsRepresentation
+  , dataRepresentationSelector
+  , expirationDateSelector
   , initSelector
+  , issuedDateSelector
+  , issuerIdentifierSelector
+  , itemNamesSelector
+  , jwsRepresentationSelector
   , newSelector
   , recordTypesSelector
-  , issuerIdentifierSelector
-  , subjectSelector
-  , issuedDateSelector
   , relevantDateSelector
-  , expirationDateSelector
-  , itemNamesSelector
   , sourceTypeSelector
-  , dataRepresentationSelector
-  , jwsRepresentationSelector
+  , subjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,15 +52,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id HKVerifiableClinicalRecord)
-init_ hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkVerifiableClinicalRecord =
+  sendOwnedMessage hkVerifiableClinicalRecord initSelector
 
 -- | @+ new@
 new :: IO (Id HKVerifiableClinicalRecord)
 new  =
   do
     cls' <- getRequiredClass "HKVerifiableClinicalRecord"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | recordTypes
 --
@@ -71,8 +68,8 @@ new  =
 --
 -- ObjC selector: @- recordTypes@
 recordTypes :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSArray)
-recordTypes hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "recordTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordTypes hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord recordTypesSelector
 
 -- | issuerIdentifier
 --
@@ -80,8 +77,8 @@ recordTypes hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- issuerIdentifier@
 issuerIdentifier :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSString)
-issuerIdentifier hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "issuerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuerIdentifier hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord issuerIdentifierSelector
 
 -- | subject
 --
@@ -89,8 +86,8 @@ issuerIdentifier hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- subject@
 subject :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id HKVerifiableClinicalRecordSubject)
-subject hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "subject") (retPtr retVoid) [] >>= retainedObject . castPtr
+subject hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord subjectSelector
 
 -- | issuedDate
 --
@@ -98,8 +95,8 @@ subject hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- issuedDate@
 issuedDate :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSDate)
-issuedDate hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "issuedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuedDate hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord issuedDateSelector
 
 -- | relevantDate
 --
@@ -107,8 +104,8 @@ issuedDate hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- relevantDate@
 relevantDate :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSDate)
-relevantDate hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "relevantDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+relevantDate hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord relevantDateSelector
 
 -- | expirationDate
 --
@@ -116,8 +113,8 @@ relevantDate hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- expirationDate@
 expirationDate :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSDate)
-expirationDate hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord expirationDateSelector
 
 -- | itemNames
 --
@@ -125,8 +122,8 @@ expirationDate hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- itemNames@
 itemNames :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSArray)
-itemNames hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "itemNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemNames hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord itemNamesSelector
 
 -- | sourceType
 --
@@ -134,8 +131,8 @@ itemNames hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- sourceType@
 sourceType :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSString)
-sourceType hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "sourceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceType hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord sourceTypeSelector
 
 -- | dataRepresentation
 --
@@ -143,8 +140,8 @@ sourceType hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSData)
-dataRepresentation hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord dataRepresentationSelector
 
 -- | JWSRepresentation
 --
@@ -152,58 +149,58 @@ dataRepresentation hkVerifiableClinicalRecord  =
 --
 -- ObjC selector: @- JWSRepresentation@
 jwsRepresentation :: IsHKVerifiableClinicalRecord hkVerifiableClinicalRecord => hkVerifiableClinicalRecord -> IO (Id NSData)
-jwsRepresentation hkVerifiableClinicalRecord  =
-    sendMsg hkVerifiableClinicalRecord (mkSelector "JWSRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jwsRepresentation hkVerifiableClinicalRecord =
+  sendMessage hkVerifiableClinicalRecord jwsRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKVerifiableClinicalRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKVerifiableClinicalRecord)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @recordTypes@
-recordTypesSelector :: Selector
+recordTypesSelector :: Selector '[] (Id NSArray)
 recordTypesSelector = mkSelector "recordTypes"
 
 -- | @Selector@ for @issuerIdentifier@
-issuerIdentifierSelector :: Selector
+issuerIdentifierSelector :: Selector '[] (Id NSString)
 issuerIdentifierSelector = mkSelector "issuerIdentifier"
 
 -- | @Selector@ for @subject@
-subjectSelector :: Selector
+subjectSelector :: Selector '[] (Id HKVerifiableClinicalRecordSubject)
 subjectSelector = mkSelector "subject"
 
 -- | @Selector@ for @issuedDate@
-issuedDateSelector :: Selector
+issuedDateSelector :: Selector '[] (Id NSDate)
 issuedDateSelector = mkSelector "issuedDate"
 
 -- | @Selector@ for @relevantDate@
-relevantDateSelector :: Selector
+relevantDateSelector :: Selector '[] (Id NSDate)
 relevantDateSelector = mkSelector "relevantDate"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @itemNames@
-itemNamesSelector :: Selector
+itemNamesSelector :: Selector '[] (Id NSArray)
 itemNamesSelector = mkSelector "itemNames"
 
 -- | @Selector@ for @sourceType@
-sourceTypeSelector :: Selector
+sourceTypeSelector :: Selector '[] (Id NSString)
 sourceTypeSelector = mkSelector "sourceType"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @JWSRepresentation@
-jwsRepresentationSelector :: Selector
+jwsRepresentationSelector :: Selector '[] (Id NSData)
 jwsRepresentationSelector = mkSelector "JWSRepresentation"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.SceneKit.SCNIKConstraint
   , chainRootNode
   , targetPosition
   , setTargetPosition
+  , chainRootNodeSelector
   , initWithChainRootNodeSelector
   , inverseKinematicsConstraintWithChainRootNodeSelector
-  , setMaxAllowedRotationAngle_forJointSelector
   , maxAllowedRotationAngleForJointSelector
-  , chainRootNodeSelector
-  , targetPositionSelector
+  , setMaxAllowedRotationAngle_forJointSelector
   , setTargetPositionSelector
+  , targetPositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,9 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChainRootNode:@
 initWithChainRootNode :: (IsSCNIKConstraint scnikConstraint, IsSCNNode chainRootNode) => scnikConstraint -> chainRootNode -> IO (Id SCNIKConstraint)
-initWithChainRootNode scnikConstraint  chainRootNode =
-  withObjCPtr chainRootNode $ \raw_chainRootNode ->
-      sendMsg scnikConstraint (mkSelector "initWithChainRootNode:") (retPtr retVoid) [argPtr (castPtr raw_chainRootNode :: Ptr ())] >>= ownedObject . castPtr
+initWithChainRootNode scnikConstraint chainRootNode =
+  sendOwnedMessage scnikConstraint initWithChainRootNodeSelector (toSCNNode chainRootNode)
 
 -- | inverseKinematicsConstraintWithChainRootNode:
 --
@@ -71,8 +67,7 @@ inverseKinematicsConstraintWithChainRootNode :: IsSCNNode chainRootNode => chain
 inverseKinematicsConstraintWithChainRootNode chainRootNode =
   do
     cls' <- getRequiredClass "SCNIKConstraint"
-    withObjCPtr chainRootNode $ \raw_chainRootNode ->
-      sendClassMsg cls' (mkSelector "inverseKinematicsConstraintWithChainRootNode:") (retPtr retVoid) [argPtr (castPtr raw_chainRootNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inverseKinematicsConstraintWithChainRootNodeSelector (toSCNNode chainRootNode)
 
 -- | setMaxAllowedRotationAngle:forJoint:
 --
@@ -80,15 +75,13 @@ inverseKinematicsConstraintWithChainRootNode chainRootNode =
 --
 -- ObjC selector: @- setMaxAllowedRotationAngle:forJoint:@
 setMaxAllowedRotationAngle_forJoint :: (IsSCNIKConstraint scnikConstraint, IsSCNNode node) => scnikConstraint -> CDouble -> node -> IO ()
-setMaxAllowedRotationAngle_forJoint scnikConstraint  angle node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg scnikConstraint (mkSelector "setMaxAllowedRotationAngle:forJoint:") retVoid [argCDouble angle, argPtr (castPtr raw_node :: Ptr ())]
+setMaxAllowedRotationAngle_forJoint scnikConstraint angle node =
+  sendMessage scnikConstraint setMaxAllowedRotationAngle_forJointSelector angle (toSCNNode node)
 
 -- | @- maxAllowedRotationAngleForJoint:@
 maxAllowedRotationAngleForJoint :: (IsSCNIKConstraint scnikConstraint, IsSCNNode node) => scnikConstraint -> node -> IO CDouble
-maxAllowedRotationAngleForJoint scnikConstraint  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg scnikConstraint (mkSelector "maxAllowedRotationAngleForJoint:") retCDouble [argPtr (castPtr raw_node :: Ptr ())]
+maxAllowedRotationAngleForJoint scnikConstraint node =
+  sendMessage scnikConstraint maxAllowedRotationAngleForJointSelector (toSCNNode node)
 
 -- | chainRootNode
 --
@@ -96,8 +89,8 @@ maxAllowedRotationAngleForJoint scnikConstraint  node =
 --
 -- ObjC selector: @- chainRootNode@
 chainRootNode :: IsSCNIKConstraint scnikConstraint => scnikConstraint -> IO (Id SCNNode)
-chainRootNode scnikConstraint  =
-    sendMsg scnikConstraint (mkSelector "chainRootNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+chainRootNode scnikConstraint =
+  sendMessage scnikConstraint chainRootNodeSelector
 
 -- | target
 --
@@ -105,8 +98,8 @@ chainRootNode scnikConstraint  =
 --
 -- ObjC selector: @- targetPosition@
 targetPosition :: IsSCNIKConstraint scnikConstraint => scnikConstraint -> IO SCNVector3
-targetPosition scnikConstraint  =
-    sendMsgStret scnikConstraint (mkSelector "targetPosition") retSCNVector3 []
+targetPosition scnikConstraint =
+  sendMessage scnikConstraint targetPositionSelector
 
 -- | target
 --
@@ -114,38 +107,38 @@ targetPosition scnikConstraint  =
 --
 -- ObjC selector: @- setTargetPosition:@
 setTargetPosition :: IsSCNIKConstraint scnikConstraint => scnikConstraint -> SCNVector3 -> IO ()
-setTargetPosition scnikConstraint  value =
-    sendMsg scnikConstraint (mkSelector "setTargetPosition:") retVoid [argSCNVector3 value]
+setTargetPosition scnikConstraint value =
+  sendMessage scnikConstraint setTargetPositionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChainRootNode:@
-initWithChainRootNodeSelector :: Selector
+initWithChainRootNodeSelector :: Selector '[Id SCNNode] (Id SCNIKConstraint)
 initWithChainRootNodeSelector = mkSelector "initWithChainRootNode:"
 
 -- | @Selector@ for @inverseKinematicsConstraintWithChainRootNode:@
-inverseKinematicsConstraintWithChainRootNodeSelector :: Selector
+inverseKinematicsConstraintWithChainRootNodeSelector :: Selector '[Id SCNNode] (Id SCNIKConstraint)
 inverseKinematicsConstraintWithChainRootNodeSelector = mkSelector "inverseKinematicsConstraintWithChainRootNode:"
 
 -- | @Selector@ for @setMaxAllowedRotationAngle:forJoint:@
-setMaxAllowedRotationAngle_forJointSelector :: Selector
+setMaxAllowedRotationAngle_forJointSelector :: Selector '[CDouble, Id SCNNode] ()
 setMaxAllowedRotationAngle_forJointSelector = mkSelector "setMaxAllowedRotationAngle:forJoint:"
 
 -- | @Selector@ for @maxAllowedRotationAngleForJoint:@
-maxAllowedRotationAngleForJointSelector :: Selector
+maxAllowedRotationAngleForJointSelector :: Selector '[Id SCNNode] CDouble
 maxAllowedRotationAngleForJointSelector = mkSelector "maxAllowedRotationAngleForJoint:"
 
 -- | @Selector@ for @chainRootNode@
-chainRootNodeSelector :: Selector
+chainRootNodeSelector :: Selector '[] (Id SCNNode)
 chainRootNodeSelector = mkSelector "chainRootNode"
 
 -- | @Selector@ for @targetPosition@
-targetPositionSelector :: Selector
+targetPositionSelector :: Selector '[] SCNVector3
 targetPositionSelector = mkSelector "targetPosition"
 
 -- | @Selector@ for @setTargetPosition:@
-setTargetPositionSelector :: Selector
+setTargetPositionSelector :: Selector '[SCNVector3] ()
 setTargetPositionSelector = mkSelector "setTargetPosition:"
 

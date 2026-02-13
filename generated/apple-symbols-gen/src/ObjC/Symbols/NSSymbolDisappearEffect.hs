@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Symbols.NSSymbolDisappearEffect
   , disappearDownEffect
   , effectWithByLayer
   , effectWithWholeSymbol
-  , effectSelector
-  , disappearUpEffectSelector
   , disappearDownEffectSelector
+  , disappearUpEffectSelector
+  , effectSelector
   , effectWithByLayerSelector
   , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ effect :: IO (Id NSSymbolDisappearEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolDisappearEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer for a disappear effect that disappears scaling up.
 --
@@ -55,7 +52,7 @@ disappearUpEffect :: IO (Id NSSymbolDisappearEffect)
 disappearUpEffect  =
   do
     cls' <- getRequiredClass "NSSymbolDisappearEffect"
-    sendClassMsg cls' (mkSelector "disappearUpEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' disappearUpEffectSelector
 
 -- | Convenience initializer for a disappear effect that disappears scaling down.
 --
@@ -64,43 +61,43 @@ disappearDownEffect :: IO (Id NSSymbolDisappearEffect)
 disappearDownEffect  =
   do
     cls' <- getRequiredClass "NSSymbolDisappearEffect"
-    sendClassMsg cls' (mkSelector "disappearDownEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' disappearDownEffectSelector
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolDisappearEffect nsSymbolDisappearEffect => nsSymbolDisappearEffect -> IO (Id NSSymbolDisappearEffect)
-effectWithByLayer nsSymbolDisappearEffect  =
-    sendMsg nsSymbolDisappearEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolDisappearEffect =
+  sendMessage nsSymbolDisappearEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolDisappearEffect nsSymbolDisappearEffect => nsSymbolDisappearEffect -> IO (Id NSSymbolDisappearEffect)
-effectWithWholeSymbol nsSymbolDisappearEffect  =
-    sendMsg nsSymbolDisappearEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolDisappearEffect =
+  sendMessage nsSymbolDisappearEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolDisappearEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @disappearUpEffect@
-disappearUpEffectSelector :: Selector
+disappearUpEffectSelector :: Selector '[] (Id NSSymbolDisappearEffect)
 disappearUpEffectSelector = mkSelector "disappearUpEffect"
 
 -- | @Selector@ for @disappearDownEffect@
-disappearDownEffectSelector :: Selector
+disappearDownEffectSelector :: Selector '[] (Id NSSymbolDisappearEffect)
 disappearDownEffectSelector = mkSelector "disappearDownEffect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolDisappearEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolDisappearEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

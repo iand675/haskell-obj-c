@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRScenesManagementClusterAddSceneParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , groupIDSelector
-  , setGroupIDSelector
-  , sceneIDSelector
-  , setSceneIDSelector
-  , transitionTimeSelector
-  , setTransitionTimeSelector
-  , sceneNameSelector
-  , setSceneNameSelector
   , extensionFieldSetStructsSelector
-  , setExtensionFieldSetStructsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , groupIDSelector
+  , sceneIDSelector
+  , sceneNameSelector
   , serverSideProcessingTimeoutSelector
+  , setExtensionFieldSetStructsSelector
+  , setGroupIDSelector
+  , setSceneIDSelector
+  , setSceneNameSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTransitionTimeSelector
+  , timedInvokeTimeoutMsSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSNumber)
-groupID mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSNumber value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setGroupID mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setGroupIDSelector (toNSNumber value)
 
 -- | @- sceneID@
 sceneID :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSNumber)
-sceneID mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "sceneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneID mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams sceneIDSelector
 
 -- | @- setSceneID:@
 setSceneID :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSNumber value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setSceneID mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setSceneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneID mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setSceneIDSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSNumber)
-transitionTime mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSNumber value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setTransitionTime mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setTransitionTimeSelector (toNSNumber value)
 
 -- | @- sceneName@
 sceneName :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSString)
-sceneName mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "sceneName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneName mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams sceneNameSelector
 
 -- | @- setSceneName:@
 setSceneName :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSString value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setSceneName mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setSceneName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneName mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setSceneNameSelector (toNSString value)
 
 -- | @- extensionFieldSetStructs@
 extensionFieldSetStructs :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSArray)
-extensionFieldSetStructs mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "extensionFieldSetStructs") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionFieldSetStructs mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams extensionFieldSetStructsSelector
 
 -- | @- setExtensionFieldSetStructs:@
 setExtensionFieldSetStructs :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSArray value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setExtensionFieldSetStructs mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setExtensionFieldSetStructs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtensionFieldSetStructs mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setExtensionFieldSetStructsSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setExtensionFieldSetStructs mtrScenesManagementClusterAddSceneParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSNumber value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrScenesManagementClusterAddSceneParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams => mtrScenesManagementClusterAddSceneParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrScenesManagementClusterAddSceneParams  =
-    sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrScenesManagementClusterAddSceneParams =
+  sendMessage mtrScenesManagementClusterAddSceneParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrScenesManagementClusterAddSceneParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRScenesManagementClusterAddSceneParams mtrScenesManagementClusterAddSceneParams, IsNSNumber value) => mtrScenesManagementClusterAddSceneParams -> value -> IO ()
-setServerSideProcessingTimeout mtrScenesManagementClusterAddSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAddSceneParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrScenesManagementClusterAddSceneParams value =
+  sendMessage mtrScenesManagementClusterAddSceneParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @sceneID@
-sceneIDSelector :: Selector
+sceneIDSelector :: Selector '[] (Id NSNumber)
 sceneIDSelector = mkSelector "sceneID"
 
 -- | @Selector@ for @setSceneID:@
-setSceneIDSelector :: Selector
+setSceneIDSelector :: Selector '[Id NSNumber] ()
 setSceneIDSelector = mkSelector "setSceneID:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @sceneName@
-sceneNameSelector :: Selector
+sceneNameSelector :: Selector '[] (Id NSString)
 sceneNameSelector = mkSelector "sceneName"
 
 -- | @Selector@ for @setSceneName:@
-setSceneNameSelector :: Selector
+setSceneNameSelector :: Selector '[Id NSString] ()
 setSceneNameSelector = mkSelector "setSceneName:"
 
 -- | @Selector@ for @extensionFieldSetStructs@
-extensionFieldSetStructsSelector :: Selector
+extensionFieldSetStructsSelector :: Selector '[] (Id NSArray)
 extensionFieldSetStructsSelector = mkSelector "extensionFieldSetStructs"
 
 -- | @Selector@ for @setExtensionFieldSetStructs:@
-setExtensionFieldSetStructsSelector :: Selector
+setExtensionFieldSetStructsSelector :: Selector '[Id NSArray] ()
 setExtensionFieldSetStructsSelector = mkSelector "setExtensionFieldSetStructs:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

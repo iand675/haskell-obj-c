@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -383,396 +384,392 @@ module ObjC.CoreSpotlight.CSSearchableItemAttributeSet
   , setRankingHint
   , domainIdentifier
   , setDomainIdentifier
-  , initWithItemContentTypeSelector
-  , initWithContentTypeSelector
-  , moveFromSelector
-  , setValue_forCustomKeySelector
-  , valueForCustomKeySelector
-  , headlineSelector
-  , setHeadlineSelector
-  , instructionsSelector
-  , setInstructionsSelector
-  , thoroughfareSelector
-  , setThoroughfareSelector
-  , subThoroughfareSelector
-  , setSubThoroughfareSelector
-  , postalCodeSelector
-  , setPostalCodeSelector
-  , citySelector
-  , setCitySelector
-  , stateOrProvinceSelector
-  , setStateOrProvinceSelector
-  , countrySelector
-  , setCountrySelector
-  , fullyFormattedAddressSelector
-  , setFullyFormattedAddressSelector
-  , altitudeSelector
-  , setAltitudeSelector
-  , latitudeSelector
-  , setLatitudeSelector
-  , longitudeSelector
-  , setLongitudeSelector
-  , speedSelector
-  , setSpeedSelector
-  , timestampSelector
-  , setTimestampSelector
-  , imageDirectionSelector
-  , setImageDirectionSelector
-  , namedLocationSelector
-  , setNamedLocationSelector
-  , gpsTrackSelector
-  , setGPSTrackSelector
-  , gpsStatusSelector
-  , setGPSStatusSelector
-  , gpsMeasureModeSelector
-  , setGPSMeasureModeSelector
-  , gpsdopSelector
-  , setGPSDOPSelector
-  , gpsMapDatumSelector
-  , setGPSMapDatumSelector
-  , gpsDestLatitudeSelector
-  , setGPSDestLatitudeSelector
-  , gpsDestLongitudeSelector
-  , setGPSDestLongitudeSelector
-  , gpsDestBearingSelector
-  , setGPSDestBearingSelector
-  , gpsDestDistanceSelector
-  , setGPSDestDistanceSelector
-  , gpsProcessingMethodSelector
-  , setGPSProcessingMethodSelector
-  , gpsAreaInformationSelector
-  , setGPSAreaInformationSelector
-  , gpsDateStampSelector
-  , setGPSDateStampSelector
-  , gpsDifferentalSelector
-  , setGPSDifferentalSelector
-  , pixelHeightSelector
-  , setPixelHeightSelector
-  , pixelWidthSelector
-  , setPixelWidthSelector
-  , pixelCountSelector
-  , setPixelCountSelector
-  , colorSpaceSelector
-  , setColorSpaceSelector
-  , bitsPerSampleSelector
-  , setBitsPerSampleSelector
-  , flashOnSelector
-  , setFlashOnSelector
-  , focalLengthSelector
-  , setFocalLengthSelector
-  , focalLength35mmSelector
-  , setFocalLength35mmSelector
-  , acquisitionMakeSelector
-  , setAcquisitionMakeSelector
-  , acquisitionModelSelector
-  , setAcquisitionModelSelector
-  , cameraOwnerSelector
-  , setCameraOwnerSelector
-  , lensModelSelector
-  , setLensModelSelector
-  , isoSpeedSelector
-  , setISOSpeedSelector
-  , orientationSelector
-  , setOrientationSelector
-  , layerNamesSelector
-  , setLayerNamesSelector
-  , whiteBalanceSelector
-  , setWhiteBalanceSelector
-  , apertureSelector
-  , setApertureSelector
-  , profileNameSelector
-  , setProfileNameSelector
-  , resolutionWidthDPISelector
-  , setResolutionWidthDPISelector
-  , resolutionHeightDPISelector
-  , setResolutionHeightDPISelector
-  , exposureModeSelector
-  , setExposureModeSelector
-  , exposureTimeSelector
-  , setExposureTimeSelector
-  , exifVersionSelector
-  , setEXIFVersionSelector
-  , exifgpsVersionSelector
-  , setEXIFGPSVersionSelector
-  , hasAlphaChannelSelector
-  , setHasAlphaChannelSelector
-  , redEyeOnSelector
-  , setRedEyeOnSelector
-  , meteringModeSelector
-  , setMeteringModeSelector
-  , maxApertureSelector
-  , setMaxApertureSelector
-  , fNumberSelector
-  , setFNumberSelector
-  , exposureProgramSelector
-  , setExposureProgramSelector
-  , exposureTimeStringSelector
-  , setExposureTimeStringSelector
-  , audioSampleRateSelector
-  , setAudioSampleRateSelector
-  , audioChannelCountSelector
-  , setAudioChannelCountSelector
-  , tempoSelector
-  , setTempoSelector
-  , keySignatureSelector
-  , setKeySignatureSelector
-  , timeSignatureSelector
-  , setTimeSignatureSelector
-  , audioEncodingApplicationSelector
-  , setAudioEncodingApplicationSelector
-  , composerSelector
-  , setComposerSelector
-  , lyricistSelector
-  , setLyricistSelector
-  , albumSelector
-  , setAlbumSelector
-  , artistSelector
-  , setArtistSelector
-  , audioTrackNumberSelector
-  , setAudioTrackNumberSelector
-  , recordingDateSelector
-  , setRecordingDateSelector
-  , musicalGenreSelector
-  , setMusicalGenreSelector
-  , generalMIDISequenceSelector
-  , setGeneralMIDISequenceSelector
-  , musicalInstrumentCategorySelector
-  , setMusicalInstrumentCategorySelector
-  , musicalInstrumentNameSelector
-  , setMusicalInstrumentNameSelector
-  , editorsSelector
-  , setEditorsSelector
-  , participantsSelector
-  , setParticipantsSelector
-  , projectsSelector
-  , setProjectsSelector
-  , downloadedDateSelector
-  , setDownloadedDateSelector
-  , contentSourcesSelector
-  , setContentSourcesSelector
-  , commentSelector
-  , setCommentSelector
-  , copyrightSelector
-  , setCopyrightSelector
-  , lastUsedDateSelector
-  , setLastUsedDateSelector
-  , contentCreationDateSelector
-  , setContentCreationDateSelector
-  , contentModificationDateSelector
-  , setContentModificationDateSelector
-  , addedDateSelector
-  , setAddedDateSelector
-  , durationSelector
-  , setDurationSelector
-  , contactKeywordsSelector
-  , setContactKeywordsSelector
-  , codecsSelector
-  , setCodecsSelector
-  , mediaTypesSelector
-  , setMediaTypesSelector
-  , streamableSelector
-  , setStreamableSelector
-  , totalBitRateSelector
-  , setTotalBitRateSelector
-  , videoBitRateSelector
-  , setVideoBitRateSelector
-  , audioBitRateSelector
-  , setAudioBitRateSelector
-  , deliveryTypeSelector
-  , setDeliveryTypeSelector
-  , organizationsSelector
-  , setOrganizationsSelector
-  , roleSelector
-  , setRoleSelector
-  , languagesSelector
-  , setLanguagesSelector
-  , rightsSelector
-  , setRightsSelector
-  , publishersSelector
-  , setPublishersSelector
-  , contributorsSelector
-  , setContributorsSelector
-  , coverageSelector
-  , setCoverageSelector
-  , ratingSelector
-  , setRatingSelector
-  , ratingDescriptionSelector
-  , setRatingDescriptionSelector
-  , playCountSelector
-  , setPlayCountSelector
-  , informationSelector
-  , setInformationSelector
-  , directorSelector
-  , setDirectorSelector
-  , producerSelector
-  , setProducerSelector
-  , genreSelector
-  , setGenreSelector
-  , performersSelector
-  , setPerformersSelector
-  , originalFormatSelector
-  , setOriginalFormatSelector
-  , originalSourceSelector
-  , setOriginalSourceSelector
-  , localSelector
-  , setLocalSelector
-  , contentRatingSelector
-  , setContentRatingSelector
-  , urlSelector
-  , setURLSelector
-  , accountIdentifierSelector
-  , setAccountIdentifierSelector
   , accountHandlesSelector
-  , setAccountHandlesSelector
-  , htmlContentDataSelector
-  , setHTMLContentDataSelector
-  , textContentSelector
-  , setTextContentSelector
-  , authorsSelector
-  , setAuthorsSelector
-  , primaryRecipientsSelector
-  , setPrimaryRecipientsSelector
-  , additionalRecipientsSelector
-  , setAdditionalRecipientsSelector
-  , hiddenAdditionalRecipientsSelector
-  , setHiddenAdditionalRecipientsSelector
-  , emailHeadersSelector
-  , setEmailHeadersSelector
-  , mailboxIdentifiersSelector
-  , setMailboxIdentifiersSelector
-  , authorNamesSelector
-  , setAuthorNamesSelector
-  , recipientNamesSelector
-  , setRecipientNamesSelector
-  , authorEmailAddressesSelector
-  , setAuthorEmailAddressesSelector
-  , recipientEmailAddressesSelector
-  , setRecipientEmailAddressesSelector
-  , authorAddressesSelector
-  , setAuthorAddressesSelector
-  , recipientAddressesSelector
-  , setRecipientAddressesSelector
-  , phoneNumbersSelector
-  , setPhoneNumbersSelector
-  , emailAddressesSelector
-  , setEmailAddressesSelector
-  , instantMessageAddressesSelector
-  , setInstantMessageAddressesSelector
-  , likelyJunkSelector
-  , setLikelyJunkSelector
-  , isPrioritySelector
-  , textContentSummarySelector
-  , transcribedTextContentSelector
-  , setTranscribedTextContentSelector
-  , dueDateSelector
-  , setDueDateSelector
-  , completionDateSelector
-  , setCompletionDateSelector
-  , startDateSelector
-  , setStartDateSelector
-  , endDateSelector
-  , setEndDateSelector
-  , importantDatesSelector
-  , setImportantDatesSelector
-  , allDaySelector
-  , setAllDaySelector
-  , subjectSelector
-  , setSubjectSelector
-  , themeSelector
-  , setThemeSelector
-  , contentDescriptionSelector
-  , setContentDescriptionSelector
-  , identifierSelector
-  , setIdentifierSelector
-  , audiencesSelector
-  , setAudiencesSelector
-  , fileSizeSelector
-  , setFileSizeSelector
-  , pageCountSelector
-  , setPageCountSelector
-  , pageWidthSelector
-  , setPageWidthSelector
-  , pageHeightSelector
-  , setPageHeightSelector
-  , securityMethodSelector
-  , setSecurityMethodSelector
-  , creatorSelector
-  , setCreatorSelector
-  , encodingApplicationsSelector
-  , setEncodingApplicationsSelector
-  , kindSelector
-  , setKindSelector
-  , fontNamesSelector
-  , setFontNamesSelector
-  , containerTitleSelector
-  , setContainerTitleSelector
-  , containerDisplayNameSelector
-  , setContainerDisplayNameSelector
-  , containerIdentifierSelector
-  , setContainerIdentifierSelector
-  , containerOrderSelector
-  , setContainerOrderSelector
-  , supportsPhoneCallSelector
-  , setSupportsPhoneCallSelector
-  , supportsNavigationSelector
-  , setSupportsNavigationSelector
+  , accountIdentifierSelector
+  , acquisitionMakeSelector
+  , acquisitionModelSelector
   , actionIdentifiersSelector
-  , setActionIdentifiersSelector
-  , sharedItemContentTypeSelector
-  , setSharedItemContentTypeSelector
-  , displayNameSelector
-  , setDisplayNameSelector
+  , addedDateSelector
+  , additionalRecipientsSelector
+  , albumSelector
+  , allDaySelector
   , alternateNamesSelector
-  , setAlternateNamesSelector
-  , pathSelector
-  , setPathSelector
-  , contentURLSelector
-  , setContentURLSelector
-  , thumbnailURLSelector
-  , setThumbnailURLSelector
-  , thumbnailDataSelector
-  , setThumbnailDataSelector
-  , darkThumbnailURLSelector
-  , setDarkThumbnailURLSelector
-  , relatedUniqueIdentifierSelector
-  , setRelatedUniqueIdentifierSelector
-  , weakRelatedUniqueIdentifierSelector
-  , setWeakRelatedUniqueIdentifierSelector
-  , metadataModificationDateSelector
-  , setMetadataModificationDateSelector
+  , altitudeSelector
+  , apertureSelector
+  , artistSelector
+  , audiencesSelector
+  , audioBitRateSelector
+  , audioChannelCountSelector
+  , audioEncodingApplicationSelector
+  , audioSampleRateSelector
+  , audioTrackNumberSelector
+  , authorAddressesSelector
+  , authorEmailAddressesSelector
+  , authorNamesSelector
+  , authorsSelector
+  , bitsPerSampleSelector
+  , cameraOwnerSelector
+  , citySelector
+  , codecsSelector
+  , colorSpaceSelector
+  , commentSelector
+  , completionDateSelector
+  , composerSelector
+  , contactKeywordsSelector
+  , containerDisplayNameSelector
+  , containerIdentifierSelector
+  , containerOrderSelector
+  , containerTitleSelector
+  , contentCreationDateSelector
+  , contentDescriptionSelector
+  , contentModificationDateSelector
+  , contentRatingSelector
+  , contentSourcesSelector
   , contentTypeSelector
-  , setContentTypeSelector
   , contentTypeTreeSelector
-  , setContentTypeTreeSelector
-  , keywordsSelector
-  , setKeywordsSelector
-  , titleSelector
-  , setTitleSelector
-  , versionSelector
-  , setVersionSelector
-  , userCreatedSelector
-  , setUserCreatedSelector
-  , userOwnedSelector
-  , setUserOwnedSelector
-  , userCuratedSelector
-  , setUserCuratedSelector
-  , rankingHintSelector
-  , setRankingHintSelector
+  , contentURLSelector
+  , contributorsSelector
+  , copyrightSelector
+  , countrySelector
+  , coverageSelector
+  , creatorSelector
+  , darkThumbnailURLSelector
+  , deliveryTypeSelector
+  , directorSelector
+  , displayNameSelector
   , domainIdentifierSelector
+  , downloadedDateSelector
+  , dueDateSelector
+  , durationSelector
+  , editorsSelector
+  , emailAddressesSelector
+  , emailHeadersSelector
+  , encodingApplicationsSelector
+  , endDateSelector
+  , exifVersionSelector
+  , exifgpsVersionSelector
+  , exposureModeSelector
+  , exposureProgramSelector
+  , exposureTimeSelector
+  , exposureTimeStringSelector
+  , fNumberSelector
+  , fileSizeSelector
+  , flashOnSelector
+  , focalLength35mmSelector
+  , focalLengthSelector
+  , fontNamesSelector
+  , fullyFormattedAddressSelector
+  , generalMIDISequenceSelector
+  , genreSelector
+  , gpsAreaInformationSelector
+  , gpsDateStampSelector
+  , gpsDestBearingSelector
+  , gpsDestDistanceSelector
+  , gpsDestLatitudeSelector
+  , gpsDestLongitudeSelector
+  , gpsDifferentalSelector
+  , gpsMapDatumSelector
+  , gpsMeasureModeSelector
+  , gpsProcessingMethodSelector
+  , gpsStatusSelector
+  , gpsTrackSelector
+  , gpsdopSelector
+  , hasAlphaChannelSelector
+  , headlineSelector
+  , hiddenAdditionalRecipientsSelector
+  , htmlContentDataSelector
+  , identifierSelector
+  , imageDirectionSelector
+  , importantDatesSelector
+  , informationSelector
+  , initWithContentTypeSelector
+  , initWithItemContentTypeSelector
+  , instantMessageAddressesSelector
+  , instructionsSelector
+  , isPrioritySelector
+  , isoSpeedSelector
+  , keySignatureSelector
+  , keywordsSelector
+  , kindSelector
+  , languagesSelector
+  , lastUsedDateSelector
+  , latitudeSelector
+  , layerNamesSelector
+  , lensModelSelector
+  , likelyJunkSelector
+  , localSelector
+  , longitudeSelector
+  , lyricistSelector
+  , mailboxIdentifiersSelector
+  , maxApertureSelector
+  , mediaTypesSelector
+  , metadataModificationDateSelector
+  , meteringModeSelector
+  , moveFromSelector
+  , musicalGenreSelector
+  , musicalInstrumentCategorySelector
+  , musicalInstrumentNameSelector
+  , namedLocationSelector
+  , organizationsSelector
+  , orientationSelector
+  , originalFormatSelector
+  , originalSourceSelector
+  , pageCountSelector
+  , pageHeightSelector
+  , pageWidthSelector
+  , participantsSelector
+  , pathSelector
+  , performersSelector
+  , phoneNumbersSelector
+  , pixelCountSelector
+  , pixelHeightSelector
+  , pixelWidthSelector
+  , playCountSelector
+  , postalCodeSelector
+  , primaryRecipientsSelector
+  , producerSelector
+  , profileNameSelector
+  , projectsSelector
+  , publishersSelector
+  , rankingHintSelector
+  , ratingDescriptionSelector
+  , ratingSelector
+  , recipientAddressesSelector
+  , recipientEmailAddressesSelector
+  , recipientNamesSelector
+  , recordingDateSelector
+  , redEyeOnSelector
+  , relatedUniqueIdentifierSelector
+  , resolutionHeightDPISelector
+  , resolutionWidthDPISelector
+  , rightsSelector
+  , roleSelector
+  , securityMethodSelector
+  , setAccountHandlesSelector
+  , setAccountIdentifierSelector
+  , setAcquisitionMakeSelector
+  , setAcquisitionModelSelector
+  , setActionIdentifiersSelector
+  , setAddedDateSelector
+  , setAdditionalRecipientsSelector
+  , setAlbumSelector
+  , setAllDaySelector
+  , setAlternateNamesSelector
+  , setAltitudeSelector
+  , setApertureSelector
+  , setArtistSelector
+  , setAudiencesSelector
+  , setAudioBitRateSelector
+  , setAudioChannelCountSelector
+  , setAudioEncodingApplicationSelector
+  , setAudioSampleRateSelector
+  , setAudioTrackNumberSelector
+  , setAuthorAddressesSelector
+  , setAuthorEmailAddressesSelector
+  , setAuthorNamesSelector
+  , setAuthorsSelector
+  , setBitsPerSampleSelector
+  , setCameraOwnerSelector
+  , setCitySelector
+  , setCodecsSelector
+  , setColorSpaceSelector
+  , setCommentSelector
+  , setCompletionDateSelector
+  , setComposerSelector
+  , setContactKeywordsSelector
+  , setContainerDisplayNameSelector
+  , setContainerIdentifierSelector
+  , setContainerOrderSelector
+  , setContainerTitleSelector
+  , setContentCreationDateSelector
+  , setContentDescriptionSelector
+  , setContentModificationDateSelector
+  , setContentRatingSelector
+  , setContentSourcesSelector
+  , setContentTypeSelector
+  , setContentTypeTreeSelector
+  , setContentURLSelector
+  , setContributorsSelector
+  , setCopyrightSelector
+  , setCountrySelector
+  , setCoverageSelector
+  , setCreatorSelector
+  , setDarkThumbnailURLSelector
+  , setDeliveryTypeSelector
+  , setDirectorSelector
+  , setDisplayNameSelector
   , setDomainIdentifierSelector
+  , setDownloadedDateSelector
+  , setDueDateSelector
+  , setDurationSelector
+  , setEXIFGPSVersionSelector
+  , setEXIFVersionSelector
+  , setEditorsSelector
+  , setEmailAddressesSelector
+  , setEmailHeadersSelector
+  , setEncodingApplicationsSelector
+  , setEndDateSelector
+  , setExposureModeSelector
+  , setExposureProgramSelector
+  , setExposureTimeSelector
+  , setExposureTimeStringSelector
+  , setFNumberSelector
+  , setFileSizeSelector
+  , setFlashOnSelector
+  , setFocalLength35mmSelector
+  , setFocalLengthSelector
+  , setFontNamesSelector
+  , setFullyFormattedAddressSelector
+  , setGPSAreaInformationSelector
+  , setGPSDOPSelector
+  , setGPSDateStampSelector
+  , setGPSDestBearingSelector
+  , setGPSDestDistanceSelector
+  , setGPSDestLatitudeSelector
+  , setGPSDestLongitudeSelector
+  , setGPSDifferentalSelector
+  , setGPSMapDatumSelector
+  , setGPSMeasureModeSelector
+  , setGPSProcessingMethodSelector
+  , setGPSStatusSelector
+  , setGPSTrackSelector
+  , setGeneralMIDISequenceSelector
+  , setGenreSelector
+  , setHTMLContentDataSelector
+  , setHasAlphaChannelSelector
+  , setHeadlineSelector
+  , setHiddenAdditionalRecipientsSelector
+  , setISOSpeedSelector
+  , setIdentifierSelector
+  , setImageDirectionSelector
+  , setImportantDatesSelector
+  , setInformationSelector
+  , setInstantMessageAddressesSelector
+  , setInstructionsSelector
+  , setKeySignatureSelector
+  , setKeywordsSelector
+  , setKindSelector
+  , setLanguagesSelector
+  , setLastUsedDateSelector
+  , setLatitudeSelector
+  , setLayerNamesSelector
+  , setLensModelSelector
+  , setLikelyJunkSelector
+  , setLocalSelector
+  , setLongitudeSelector
+  , setLyricistSelector
+  , setMailboxIdentifiersSelector
+  , setMaxApertureSelector
+  , setMediaTypesSelector
+  , setMetadataModificationDateSelector
+  , setMeteringModeSelector
+  , setMusicalGenreSelector
+  , setMusicalInstrumentCategorySelector
+  , setMusicalInstrumentNameSelector
+  , setNamedLocationSelector
+  , setOrganizationsSelector
+  , setOrientationSelector
+  , setOriginalFormatSelector
+  , setOriginalSourceSelector
+  , setPageCountSelector
+  , setPageHeightSelector
+  , setPageWidthSelector
+  , setParticipantsSelector
+  , setPathSelector
+  , setPerformersSelector
+  , setPhoneNumbersSelector
+  , setPixelCountSelector
+  , setPixelHeightSelector
+  , setPixelWidthSelector
+  , setPlayCountSelector
+  , setPostalCodeSelector
+  , setPrimaryRecipientsSelector
+  , setProducerSelector
+  , setProfileNameSelector
+  , setProjectsSelector
+  , setPublishersSelector
+  , setRankingHintSelector
+  , setRatingDescriptionSelector
+  , setRatingSelector
+  , setRecipientAddressesSelector
+  , setRecipientEmailAddressesSelector
+  , setRecipientNamesSelector
+  , setRecordingDateSelector
+  , setRedEyeOnSelector
+  , setRelatedUniqueIdentifierSelector
+  , setResolutionHeightDPISelector
+  , setResolutionWidthDPISelector
+  , setRightsSelector
+  , setRoleSelector
+  , setSecurityMethodSelector
+  , setSharedItemContentTypeSelector
+  , setSpeedSelector
+  , setStartDateSelector
+  , setStateOrProvinceSelector
+  , setStreamableSelector
+  , setSubThoroughfareSelector
+  , setSubjectSelector
+  , setSupportsNavigationSelector
+  , setSupportsPhoneCallSelector
+  , setTempoSelector
+  , setTextContentSelector
+  , setThemeSelector
+  , setThoroughfareSelector
+  , setThumbnailDataSelector
+  , setThumbnailURLSelector
+  , setTimeSignatureSelector
+  , setTimestampSelector
+  , setTitleSelector
+  , setTotalBitRateSelector
+  , setTranscribedTextContentSelector
+  , setURLSelector
+  , setUserCreatedSelector
+  , setUserCuratedSelector
+  , setUserOwnedSelector
+  , setValue_forCustomKeySelector
+  , setVersionSelector
+  , setVideoBitRateSelector
+  , setWeakRelatedUniqueIdentifierSelector
+  , setWhiteBalanceSelector
+  , sharedItemContentTypeSelector
+  , speedSelector
+  , startDateSelector
+  , stateOrProvinceSelector
+  , streamableSelector
+  , subThoroughfareSelector
+  , subjectSelector
+  , supportsNavigationSelector
+  , supportsPhoneCallSelector
+  , tempoSelector
+  , textContentSelector
+  , textContentSummarySelector
+  , themeSelector
+  , thoroughfareSelector
+  , thumbnailDataSelector
+  , thumbnailURLSelector
+  , timeSignatureSelector
+  , timestampSelector
+  , titleSelector
+  , totalBitRateSelector
+  , transcribedTextContentSelector
+  , urlSelector
+  , userCreatedSelector
+  , userCuratedSelector
+  , userOwnedSelector
+  , valueForCustomKeySelector
+  , versionSelector
+  , videoBitRateSelector
+  , weakRelatedUniqueIdentifierSelector
+  , whiteBalanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -782,3585 +779,3402 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- initWithItemContentType:@
 initWithItemContentType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString itemContentType) => csSearchableItemAttributeSet -> itemContentType -> IO (Id CSSearchableItemAttributeSet)
-initWithItemContentType csSearchableItemAttributeSet  itemContentType =
-  withObjCPtr itemContentType $ \raw_itemContentType ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "initWithItemContentType:") (retPtr retVoid) [argPtr (castPtr raw_itemContentType :: Ptr ())] >>= ownedObject . castPtr
+initWithItemContentType csSearchableItemAttributeSet itemContentType =
+  sendOwnedMessage csSearchableItemAttributeSet initWithItemContentTypeSelector (toNSString itemContentType)
 
 -- | @- initWithContentType:@
 initWithContentType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsUTType contentType) => csSearchableItemAttributeSet -> contentType -> IO (Id CSSearchableItemAttributeSet)
-initWithContentType csSearchableItemAttributeSet  contentType =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "initWithContentType:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ())] >>= ownedObject . castPtr
+initWithContentType csSearchableItemAttributeSet contentType =
+  sendOwnedMessage csSearchableItemAttributeSet initWithContentTypeSelector (toUTType contentType)
 
 -- | @- moveFrom:@
 moveFrom :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsCSSearchableItemAttributeSet sourceAttributeSet) => csSearchableItemAttributeSet -> sourceAttributeSet -> IO ()
-moveFrom csSearchableItemAttributeSet  sourceAttributeSet =
-  withObjCPtr sourceAttributeSet $ \raw_sourceAttributeSet ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "moveFrom:") retVoid [argPtr (castPtr raw_sourceAttributeSet :: Ptr ())]
+moveFrom csSearchableItemAttributeSet sourceAttributeSet =
+  sendMessage csSearchableItemAttributeSet moveFromSelector (toCSSearchableItemAttributeSet sourceAttributeSet)
 
 -- | @- setValue:forCustomKey:@
 setValue_forCustomKey :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsCSCustomAttributeKey key) => csSearchableItemAttributeSet -> RawId -> key -> IO ()
-setValue_forCustomKey csSearchableItemAttributeSet  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setValue:forCustomKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forCustomKey csSearchableItemAttributeSet value key =
+  sendMessage csSearchableItemAttributeSet setValue_forCustomKeySelector value (toCSCustomAttributeKey key)
 
 -- | @- valueForCustomKey:@
 valueForCustomKey :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsCSCustomAttributeKey key) => csSearchableItemAttributeSet -> key -> IO RawId
-valueForCustomKey csSearchableItemAttributeSet  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "valueForCustomKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForCustomKey csSearchableItemAttributeSet key =
+  sendMessage csSearchableItemAttributeSet valueForCustomKeySelector (toCSCustomAttributeKey key)
 
 -- | @- headline@
 headline :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-headline csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "headline") (retPtr retVoid) [] >>= retainedObject . castPtr
+headline csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet headlineSelector
 
 -- | @- setHeadline:@
 setHeadline :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setHeadline csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setHeadline:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeadline csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setHeadlineSelector (toNSString value)
 
 -- | @- instructions@
 instructions :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-instructions csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "instructions") (retPtr retVoid) [] >>= retainedObject . castPtr
+instructions csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet instructionsSelector
 
 -- | @- setInstructions:@
 setInstructions :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setInstructions csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setInstructions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInstructions csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setInstructionsSelector (toNSString value)
 
 -- | @- thoroughfare@
 thoroughfare :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-thoroughfare csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "thoroughfare") (retPtr retVoid) [] >>= retainedObject . castPtr
+thoroughfare csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet thoroughfareSelector
 
 -- | @- setThoroughfare:@
 setThoroughfare :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setThoroughfare csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setThoroughfare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThoroughfare csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setThoroughfareSelector (toNSString value)
 
 -- | @- subThoroughfare@
 subThoroughfare :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-subThoroughfare csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "subThoroughfare") (retPtr retVoid) [] >>= retainedObject . castPtr
+subThoroughfare csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet subThoroughfareSelector
 
 -- | @- setSubThoroughfare:@
 setSubThoroughfare :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setSubThoroughfare csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSubThoroughfare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubThoroughfare csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSubThoroughfareSelector (toNSString value)
 
 -- | @- postalCode@
 postalCode :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-postalCode csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "postalCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalCode csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet postalCodeSelector
 
 -- | @- setPostalCode:@
 setPostalCode :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setPostalCode csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPostalCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostalCode csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPostalCodeSelector (toNSString value)
 
 -- | @- city@
 city :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-city csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "city") (retPtr retVoid) [] >>= retainedObject . castPtr
+city csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet citySelector
 
 -- | @- setCity:@
 setCity :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setCity csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCity csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCitySelector (toNSString value)
 
 -- | @- stateOrProvince@
 stateOrProvince :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-stateOrProvince csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "stateOrProvince") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateOrProvince csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet stateOrProvinceSelector
 
 -- | @- setStateOrProvince:@
 setStateOrProvince :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setStateOrProvince csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setStateOrProvince:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStateOrProvince csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setStateOrProvinceSelector (toNSString value)
 
 -- | @- country@
 country :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-country csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "country") (retPtr retVoid) [] >>= retainedObject . castPtr
+country csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet countrySelector
 
 -- | @- setCountry:@
 setCountry :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setCountry csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCountry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCountry csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCountrySelector (toNSString value)
 
 -- | @- fullyFormattedAddress@
 fullyFormattedAddress :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-fullyFormattedAddress csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "fullyFormattedAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullyFormattedAddress csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet fullyFormattedAddressSelector
 
 -- | @- setFullyFormattedAddress:@
 setFullyFormattedAddress :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setFullyFormattedAddress csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFullyFormattedAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFullyFormattedAddress csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFullyFormattedAddressSelector (toNSString value)
 
 -- | @- altitude@
 altitude :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-altitude csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "altitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+altitude csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet altitudeSelector
 
 -- | @- setAltitude:@
 setAltitude :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAltitude csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAltitude:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAltitude csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAltitudeSelector (toNSNumber value)
 
 -- | @- latitude@
 latitude :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-latitude csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "latitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+latitude csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet latitudeSelector
 
 -- | @- setLatitude:@
 setLatitude :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setLatitude csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLatitude:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLatitude csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLatitudeSelector (toNSNumber value)
 
 -- | @- longitude@
 longitude :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-longitude csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "longitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+longitude csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet longitudeSelector
 
 -- | @- setLongitude:@
 setLongitude :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setLongitude csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLongitude:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLongitude csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLongitudeSelector (toNSNumber value)
 
 -- | @- speed@
 speed :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-speed csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "speed") (retPtr retVoid) [] >>= retainedObject . castPtr
+speed csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet speedSelector
 
 -- | @- setSpeed:@
 setSpeed :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setSpeed csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSpeed:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpeed csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSpeedSelector (toNSNumber value)
 
 -- | @- timestamp@
 timestamp :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-timestamp csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "timestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+timestamp csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet timestampSelector
 
 -- | @- setTimestamp:@
 setTimestamp :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setTimestamp csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimestamp csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTimestampSelector (toNSDate value)
 
 -- | @- imageDirection@
 imageDirection :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-imageDirection csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "imageDirection") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageDirection csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet imageDirectionSelector
 
 -- | @- setImageDirection:@
 setImageDirection :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setImageDirection csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setImageDirection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageDirection csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setImageDirectionSelector (toNSNumber value)
 
 -- | @- namedLocation@
 namedLocation :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-namedLocation csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "namedLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+namedLocation csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet namedLocationSelector
 
 -- | @- setNamedLocation:@
 setNamedLocation :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setNamedLocation csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setNamedLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNamedLocation csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setNamedLocationSelector (toNSString value)
 
 -- | @- GPSTrack@
 gpsTrack :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsTrack csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsTrack csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsTrackSelector
 
 -- | @- setGPSTrack:@
 setGPSTrack :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSTrack csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSTrack:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSTrack csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSTrackSelector (toNSNumber value)
 
 -- | @- GPSStatus@
 gpsStatus :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-gpsStatus csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsStatus csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsStatusSelector
 
 -- | @- setGPSStatus:@
 setGPSStatus :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSStatus csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSStatus csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSStatusSelector (toNSString value)
 
 -- | @- GPSMeasureMode@
 gpsMeasureMode :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-gpsMeasureMode csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSMeasureMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsMeasureMode csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsMeasureModeSelector
 
 -- | @- setGPSMeasureMode:@
 setGPSMeasureMode :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSMeasureMode csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSMeasureMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSMeasureMode csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSMeasureModeSelector (toNSString value)
 
 -- | @- GPSDOP@
 gpsdop :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsdop csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDOP") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsdop csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsdopSelector
 
 -- | @- setGPSDOP:@
 setGPSDOP :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDOP csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDOP:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDOP csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDOPSelector (toNSNumber value)
 
 -- | @- GPSMapDatum@
 gpsMapDatum :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-gpsMapDatum csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSMapDatum") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsMapDatum csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsMapDatumSelector
 
 -- | @- setGPSMapDatum:@
 setGPSMapDatum :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSMapDatum csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSMapDatum:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSMapDatum csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSMapDatumSelector (toNSString value)
 
 -- | @- GPSDestLatitude@
 gpsDestLatitude :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsDestLatitude csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDestLatitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDestLatitude csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDestLatitudeSelector
 
 -- | @- setGPSDestLatitude:@
 setGPSDestLatitude :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDestLatitude csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDestLatitude:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDestLatitude csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDestLatitudeSelector (toNSNumber value)
 
 -- | @- GPSDestLongitude@
 gpsDestLongitude :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsDestLongitude csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDestLongitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDestLongitude csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDestLongitudeSelector
 
 -- | @- setGPSDestLongitude:@
 setGPSDestLongitude :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDestLongitude csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDestLongitude:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDestLongitude csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDestLongitudeSelector (toNSNumber value)
 
 -- | @- GPSDestBearing@
 gpsDestBearing :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsDestBearing csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDestBearing") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDestBearing csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDestBearingSelector
 
 -- | @- setGPSDestBearing:@
 setGPSDestBearing :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDestBearing csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDestBearing:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDestBearing csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDestBearingSelector (toNSNumber value)
 
 -- | @- GPSDestDistance@
 gpsDestDistance :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsDestDistance csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDestDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDestDistance csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDestDistanceSelector
 
 -- | @- setGPSDestDistance:@
 setGPSDestDistance :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDestDistance csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDestDistance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDestDistance csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDestDistanceSelector (toNSNumber value)
 
 -- | @- GPSProcessingMethod@
 gpsProcessingMethod :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-gpsProcessingMethod csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSProcessingMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsProcessingMethod csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsProcessingMethodSelector
 
 -- | @- setGPSProcessingMethod:@
 setGPSProcessingMethod :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSProcessingMethod csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSProcessingMethod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSProcessingMethod csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSProcessingMethodSelector (toNSString value)
 
 -- | @- GPSAreaInformation@
 gpsAreaInformation :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-gpsAreaInformation csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSAreaInformation") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsAreaInformation csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsAreaInformationSelector
 
 -- | @- setGPSAreaInformation:@
 setGPSAreaInformation :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSAreaInformation csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSAreaInformation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSAreaInformation csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSAreaInformationSelector (toNSString value)
 
 -- | @- GPSDateStamp@
 gpsDateStamp :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-gpsDateStamp csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDateStamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDateStamp csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDateStampSelector
 
 -- | @- setGPSDateStamp:@
 setGPSDateStamp :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDateStamp csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDateStamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDateStamp csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDateStampSelector (toNSDate value)
 
 -- | @- GPSDifferental@
 gpsDifferental :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-gpsDifferental csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "GPSDifferental") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDifferental csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet gpsDifferentalSelector
 
 -- | @- setGPSDifferental:@
 setGPSDifferental :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGPSDifferental csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGPSDifferental:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGPSDifferental csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGPSDifferentalSelector (toNSNumber value)
 
 -- | @- pixelHeight@
 pixelHeight :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pixelHeight csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pixelHeight") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelHeight csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pixelHeightSelector
 
 -- | @- setPixelHeight:@
 setPixelHeight :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPixelHeight csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPixelHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelHeight csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPixelHeightSelector (toNSNumber value)
 
 -- | @- pixelWidth@
 pixelWidth :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pixelWidth csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pixelWidth") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelWidth csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pixelWidthSelector
 
 -- | @- setPixelWidth:@
 setPixelWidth :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPixelWidth csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPixelWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelWidth csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPixelWidthSelector (toNSNumber value)
 
 -- | @- pixelCount@
 pixelCount :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pixelCount csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pixelCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelCount csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pixelCountSelector
 
 -- | @- setPixelCount:@
 setPixelCount :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPixelCount csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPixelCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelCount csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPixelCountSelector (toNSNumber value)
 
 -- | @- colorSpace@
 colorSpace :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-colorSpace csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorSpace csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet colorSpaceSelector
 
 -- | @- setColorSpace:@
 setColorSpace :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setColorSpace csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setColorSpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColorSpace csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setColorSpaceSelector (toNSString value)
 
 -- | @- bitsPerSample@
 bitsPerSample :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-bitsPerSample csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "bitsPerSample") (retPtr retVoid) [] >>= retainedObject . castPtr
+bitsPerSample csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet bitsPerSampleSelector
 
 -- | @- setBitsPerSample:@
 setBitsPerSample :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setBitsPerSample csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setBitsPerSample:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBitsPerSample csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setBitsPerSampleSelector (toNSNumber value)
 
 -- | @- flashOn@
 flashOn :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-flashOn csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "flashOn") (retPtr retVoid) [] >>= retainedObject . castPtr
+flashOn csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet flashOnSelector
 
 -- | @- setFlashOn:@
 setFlashOn :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setFlashOn csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFlashOn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFlashOn csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFlashOnSelector (toNSNumber value)
 
 -- | @- focalLength@
 focalLength :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-focalLength csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "focalLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+focalLength csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet focalLengthSelector
 
 -- | @- setFocalLength:@
 setFocalLength :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setFocalLength csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFocalLength:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFocalLength csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFocalLengthSelector (toNSNumber value)
 
 -- | @- focalLength35mm@
 focalLength35mm :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-focalLength35mm csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "focalLength35mm") (retPtr retVoid) [] >>= retainedObject . castPtr
+focalLength35mm csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet focalLength35mmSelector
 
 -- | @- setFocalLength35mm:@
 setFocalLength35mm :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setFocalLength35mm csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFocalLength35mm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFocalLength35mm csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFocalLength35mmSelector (toNSNumber value)
 
 -- | @- acquisitionMake@
 acquisitionMake :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-acquisitionMake csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "acquisitionMake") (retPtr retVoid) [] >>= retainedObject . castPtr
+acquisitionMake csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet acquisitionMakeSelector
 
 -- | @- setAcquisitionMake:@
 setAcquisitionMake :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setAcquisitionMake csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAcquisitionMake:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAcquisitionMake csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAcquisitionMakeSelector (toNSString value)
 
 -- | @- acquisitionModel@
 acquisitionModel :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-acquisitionModel csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "acquisitionModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+acquisitionModel csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet acquisitionModelSelector
 
 -- | @- setAcquisitionModel:@
 setAcquisitionModel :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setAcquisitionModel csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAcquisitionModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAcquisitionModel csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAcquisitionModelSelector (toNSString value)
 
 -- | @- cameraOwner@
 cameraOwner :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-cameraOwner csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "cameraOwner") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraOwner csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet cameraOwnerSelector
 
 -- | @- setCameraOwner:@
 setCameraOwner :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setCameraOwner csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCameraOwner:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCameraOwner csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCameraOwnerSelector (toNSString value)
 
 -- | @- lensModel@
 lensModel :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-lensModel csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "lensModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+lensModel csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet lensModelSelector
 
 -- | @- setLensModel:@
 setLensModel :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setLensModel csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLensModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLensModel csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLensModelSelector (toNSString value)
 
 -- | @- ISOSpeed@
 isoSpeed :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-isoSpeed csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "ISOSpeed") (retPtr retVoid) [] >>= retainedObject . castPtr
+isoSpeed csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet isoSpeedSelector
 
 -- | @- setISOSpeed:@
 setISOSpeed :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setISOSpeed csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setISOSpeed:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setISOSpeed csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setISOSpeedSelector (toNSNumber value)
 
 -- | @- orientation@
 orientation :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-orientation csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "orientation") (retPtr retVoid) [] >>= retainedObject . castPtr
+orientation csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet orientationSelector
 
 -- | @- setOrientation:@
 setOrientation :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setOrientation csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setOrientation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOrientation csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setOrientationSelector (toNSNumber value)
 
 -- | @- layerNames@
 layerNames :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-layerNames csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "layerNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+layerNames csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet layerNamesSelector
 
 -- | @- setLayerNames:@
 setLayerNames :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setLayerNames csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLayerNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayerNames csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLayerNamesSelector (toNSArray value)
 
 -- | @- whiteBalance@
 whiteBalance :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-whiteBalance csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "whiteBalance") (retPtr retVoid) [] >>= retainedObject . castPtr
+whiteBalance csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet whiteBalanceSelector
 
 -- | @- setWhiteBalance:@
 setWhiteBalance :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setWhiteBalance csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setWhiteBalance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWhiteBalance csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setWhiteBalanceSelector (toNSNumber value)
 
 -- | @- aperture@
 aperture :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-aperture csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "aperture") (retPtr retVoid) [] >>= retainedObject . castPtr
+aperture csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet apertureSelector
 
 -- | @- setAperture:@
 setAperture :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAperture csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAperture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAperture csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setApertureSelector (toNSNumber value)
 
 -- | @- profileName@
 profileName :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-profileName csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "profileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileName csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet profileNameSelector
 
 -- | @- setProfileName:@
 setProfileName :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setProfileName csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setProfileName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProfileName csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setProfileNameSelector (toNSString value)
 
 -- | @- resolutionWidthDPI@
 resolutionWidthDPI :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-resolutionWidthDPI csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "resolutionWidthDPI") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolutionWidthDPI csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet resolutionWidthDPISelector
 
 -- | @- setResolutionWidthDPI:@
 setResolutionWidthDPI :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setResolutionWidthDPI csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setResolutionWidthDPI:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResolutionWidthDPI csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setResolutionWidthDPISelector (toNSNumber value)
 
 -- | @- resolutionHeightDPI@
 resolutionHeightDPI :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-resolutionHeightDPI csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "resolutionHeightDPI") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolutionHeightDPI csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet resolutionHeightDPISelector
 
 -- | @- setResolutionHeightDPI:@
 setResolutionHeightDPI :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setResolutionHeightDPI csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setResolutionHeightDPI:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResolutionHeightDPI csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setResolutionHeightDPISelector (toNSNumber value)
 
 -- | @- exposureMode@
 exposureMode :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-exposureMode csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "exposureMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+exposureMode csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exposureModeSelector
 
 -- | @- setExposureMode:@
 setExposureMode :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setExposureMode csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setExposureMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExposureMode csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setExposureModeSelector (toNSNumber value)
 
 -- | @- exposureTime@
 exposureTime :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-exposureTime csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "exposureTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+exposureTime csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exposureTimeSelector
 
 -- | @- setExposureTime:@
 setExposureTime :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setExposureTime csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setExposureTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExposureTime csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setExposureTimeSelector (toNSNumber value)
 
 -- | @- EXIFVersion@
 exifVersion :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-exifVersion csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "EXIFVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+exifVersion csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exifVersionSelector
 
 -- | @- setEXIFVersion:@
 setEXIFVersion :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setEXIFVersion csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEXIFVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEXIFVersion csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEXIFVersionSelector (toNSString value)
 
 -- | @- EXIFGPSVersion@
 exifgpsVersion :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-exifgpsVersion csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "EXIFGPSVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+exifgpsVersion csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exifgpsVersionSelector
 
 -- | @- setEXIFGPSVersion:@
 setEXIFGPSVersion :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setEXIFGPSVersion csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEXIFGPSVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEXIFGPSVersion csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEXIFGPSVersionSelector (toNSString value)
 
 -- | @- hasAlphaChannel@
 hasAlphaChannel :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-hasAlphaChannel csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "hasAlphaChannel") (retPtr retVoid) [] >>= retainedObject . castPtr
+hasAlphaChannel csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet hasAlphaChannelSelector
 
 -- | @- setHasAlphaChannel:@
 setHasAlphaChannel :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setHasAlphaChannel csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setHasAlphaChannel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHasAlphaChannel csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setHasAlphaChannelSelector (toNSNumber value)
 
 -- | @- redEyeOn@
 redEyeOn :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-redEyeOn csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "redEyeOn") (retPtr retVoid) [] >>= retainedObject . castPtr
+redEyeOn csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet redEyeOnSelector
 
 -- | @- setRedEyeOn:@
 setRedEyeOn :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setRedEyeOn csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRedEyeOn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRedEyeOn csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRedEyeOnSelector (toNSNumber value)
 
 -- | @- meteringMode@
 meteringMode :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-meteringMode csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "meteringMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+meteringMode csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet meteringModeSelector
 
 -- | @- setMeteringMode:@
 setMeteringMode :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setMeteringMode csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMeteringMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeteringMode csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMeteringModeSelector (toNSString value)
 
 -- | @- maxAperture@
 maxAperture :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-maxAperture csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "maxAperture") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxAperture csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet maxApertureSelector
 
 -- | @- setMaxAperture:@
 setMaxAperture :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setMaxAperture csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMaxAperture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxAperture csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMaxApertureSelector (toNSNumber value)
 
 -- | @- fNumber@
 fNumber :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-fNumber csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "fNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+fNumber csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet fNumberSelector
 
 -- | @- setFNumber:@
 setFNumber :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setFNumber csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFNumber csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFNumberSelector (toNSNumber value)
 
 -- | @- exposureProgram@
 exposureProgram :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-exposureProgram csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "exposureProgram") (retPtr retVoid) [] >>= retainedObject . castPtr
+exposureProgram csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exposureProgramSelector
 
 -- | @- setExposureProgram:@
 setExposureProgram :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setExposureProgram csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setExposureProgram:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExposureProgram csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setExposureProgramSelector (toNSString value)
 
 -- | @- exposureTimeString@
 exposureTimeString :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-exposureTimeString csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "exposureTimeString") (retPtr retVoid) [] >>= retainedObject . castPtr
+exposureTimeString csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet exposureTimeStringSelector
 
 -- | @- setExposureTimeString:@
 setExposureTimeString :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setExposureTimeString csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setExposureTimeString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExposureTimeString csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setExposureTimeStringSelector (toNSString value)
 
 -- | @- audioSampleRate@
 audioSampleRate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-audioSampleRate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audioSampleRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSampleRate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audioSampleRateSelector
 
 -- | @- setAudioSampleRate:@
 setAudioSampleRate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudioSampleRate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudioSampleRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioSampleRate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudioSampleRateSelector (toNSNumber value)
 
 -- | @- audioChannelCount@
 audioChannelCount :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-audioChannelCount csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audioChannelCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioChannelCount csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audioChannelCountSelector
 
 -- | @- setAudioChannelCount:@
 setAudioChannelCount :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudioChannelCount csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudioChannelCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioChannelCount csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudioChannelCountSelector (toNSNumber value)
 
 -- | @- tempo@
 tempo :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-tempo csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "tempo") (retPtr retVoid) [] >>= retainedObject . castPtr
+tempo csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet tempoSelector
 
 -- | @- setTempo:@
 setTempo :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setTempo csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTempo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTempo csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTempoSelector (toNSNumber value)
 
 -- | @- keySignature@
 keySignature :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-keySignature csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "keySignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySignature csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet keySignatureSelector
 
 -- | @- setKeySignature:@
 setKeySignature :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setKeySignature csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setKeySignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeySignature csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setKeySignatureSelector (toNSString value)
 
 -- | @- timeSignature@
 timeSignature :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-timeSignature csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "timeSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeSignature csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet timeSignatureSelector
 
 -- | @- setTimeSignature:@
 setTimeSignature :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setTimeSignature csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTimeSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeSignature csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTimeSignatureSelector (toNSString value)
 
 -- | @- audioEncodingApplication@
 audioEncodingApplication :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-audioEncodingApplication csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audioEncodingApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioEncodingApplication csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audioEncodingApplicationSelector
 
 -- | @- setAudioEncodingApplication:@
 setAudioEncodingApplication :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudioEncodingApplication csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudioEncodingApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioEncodingApplication csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudioEncodingApplicationSelector (toNSString value)
 
 -- | @- composer@
 composer :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-composer csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "composer") (retPtr retVoid) [] >>= retainedObject . castPtr
+composer csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet composerSelector
 
 -- | @- setComposer:@
 setComposer :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setComposer csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setComposer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setComposer csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setComposerSelector (toNSString value)
 
 -- | @- lyricist@
 lyricist :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-lyricist csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "lyricist") (retPtr retVoid) [] >>= retainedObject . castPtr
+lyricist csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet lyricistSelector
 
 -- | @- setLyricist:@
 setLyricist :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setLyricist csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLyricist:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLyricist csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLyricistSelector (toNSString value)
 
 -- | @- album@
 album :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-album csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "album") (retPtr retVoid) [] >>= retainedObject . castPtr
+album csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet albumSelector
 
 -- | @- setAlbum:@
 setAlbum :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setAlbum csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAlbum:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlbum csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAlbumSelector (toNSString value)
 
 -- | @- artist@
 artist :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-artist csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "artist") (retPtr retVoid) [] >>= retainedObject . castPtr
+artist csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet artistSelector
 
 -- | @- setArtist:@
 setArtist :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setArtist csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setArtist:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArtist csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setArtistSelector (toNSString value)
 
 -- | @- audioTrackNumber@
 audioTrackNumber :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-audioTrackNumber csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audioTrackNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTrackNumber csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audioTrackNumberSelector
 
 -- | @- setAudioTrackNumber:@
 setAudioTrackNumber :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudioTrackNumber csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudioTrackNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioTrackNumber csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudioTrackNumberSelector (toNSNumber value)
 
 -- | @- recordingDate@
 recordingDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-recordingDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "recordingDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordingDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet recordingDateSelector
 
 -- | @- setRecordingDate:@
 setRecordingDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setRecordingDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRecordingDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordingDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRecordingDateSelector (toNSDate value)
 
 -- | @- musicalGenre@
 musicalGenre :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-musicalGenre csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "musicalGenre") (retPtr retVoid) [] >>= retainedObject . castPtr
+musicalGenre csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet musicalGenreSelector
 
 -- | @- setMusicalGenre:@
 setMusicalGenre :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setMusicalGenre csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMusicalGenre:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMusicalGenre csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMusicalGenreSelector (toNSString value)
 
 -- | @- generalMIDISequence@
 generalMIDISequence :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-generalMIDISequence csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "generalMIDISequence") (retPtr retVoid) [] >>= retainedObject . castPtr
+generalMIDISequence csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet generalMIDISequenceSelector
 
 -- | @- setGeneralMIDISequence:@
 setGeneralMIDISequence :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setGeneralMIDISequence csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGeneralMIDISequence:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGeneralMIDISequence csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGeneralMIDISequenceSelector (toNSNumber value)
 
 -- | @- musicalInstrumentCategory@
 musicalInstrumentCategory :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-musicalInstrumentCategory csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "musicalInstrumentCategory") (retPtr retVoid) [] >>= retainedObject . castPtr
+musicalInstrumentCategory csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet musicalInstrumentCategorySelector
 
 -- | @- setMusicalInstrumentCategory:@
 setMusicalInstrumentCategory :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setMusicalInstrumentCategory csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMusicalInstrumentCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMusicalInstrumentCategory csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMusicalInstrumentCategorySelector (toNSString value)
 
 -- | @- musicalInstrumentName@
 musicalInstrumentName :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-musicalInstrumentName csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "musicalInstrumentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+musicalInstrumentName csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet musicalInstrumentNameSelector
 
 -- | @- setMusicalInstrumentName:@
 setMusicalInstrumentName :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setMusicalInstrumentName csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMusicalInstrumentName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMusicalInstrumentName csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMusicalInstrumentNameSelector (toNSString value)
 
 -- | @- editors@
 editors :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-editors csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "editors") (retPtr retVoid) [] >>= retainedObject . castPtr
+editors csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet editorsSelector
 
 -- | @- setEditors:@
 setEditors :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setEditors csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEditors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEditors csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEditorsSelector (toNSArray value)
 
 -- | @- participants@
 participants :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-participants csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "participants") (retPtr retVoid) [] >>= retainedObject . castPtr
+participants csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet participantsSelector
 
 -- | @- setParticipants:@
 setParticipants :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setParticipants csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setParticipants:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParticipants csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setParticipantsSelector (toNSArray value)
 
 -- | @- projects@
 projects :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-projects csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "projects") (retPtr retVoid) [] >>= retainedObject . castPtr
+projects csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet projectsSelector
 
 -- | @- setProjects:@
 setProjects :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setProjects csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setProjects:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProjects csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setProjectsSelector (toNSArray value)
 
 -- | @- downloadedDate@
 downloadedDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-downloadedDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "downloadedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadedDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet downloadedDateSelector
 
 -- | @- setDownloadedDate:@
 setDownloadedDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setDownloadedDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDownloadedDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownloadedDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDownloadedDateSelector (toNSDate value)
 
 -- | @- contentSources@
 contentSources :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-contentSources csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentSources csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentSourcesSelector
 
 -- | @- setContentSources:@
 setContentSources :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentSources csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentSources:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentSources csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentSourcesSelector (toNSArray value)
 
 -- | @- comment@
 comment :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-comment csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "comment") (retPtr retVoid) [] >>= retainedObject . castPtr
+comment csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet commentSelector
 
 -- | @- setComment:@
 setComment :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setComment csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setComment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setComment csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCommentSelector (toNSString value)
 
 -- | @- copyright@
 copyright :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-copyright csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "copyright") (retPtr retVoid) [] >>= ownedObject . castPtr
+copyright csSearchableItemAttributeSet =
+  sendOwnedMessage csSearchableItemAttributeSet copyrightSelector
 
 -- | @- setCopyright:@
 setCopyright :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setCopyright csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCopyright:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCopyright csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCopyrightSelector (toNSString value)
 
 -- | @- lastUsedDate@
 lastUsedDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-lastUsedDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "lastUsedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastUsedDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet lastUsedDateSelector
 
 -- | @- setLastUsedDate:@
 setLastUsedDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setLastUsedDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLastUsedDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLastUsedDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLastUsedDateSelector (toNSDate value)
 
 -- | @- contentCreationDate@
 contentCreationDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-contentCreationDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentCreationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentCreationDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentCreationDateSelector
 
 -- | @- setContentCreationDate:@
 setContentCreationDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentCreationDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentCreationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentCreationDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentCreationDateSelector (toNSDate value)
 
 -- | @- contentModificationDate@
 contentModificationDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-contentModificationDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentModificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentModificationDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentModificationDateSelector
 
 -- | @- setContentModificationDate:@
 setContentModificationDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentModificationDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentModificationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentModificationDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentModificationDateSelector (toNSDate value)
 
 -- | @- addedDate@
 addedDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-addedDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "addedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet addedDateSelector
 
 -- | @- setAddedDate:@
 setAddedDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setAddedDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAddedDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAddedDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAddedDateSelector (toNSDate value)
 
 -- | @- duration@
 duration :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-duration csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setDuration csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDurationSelector (toNSNumber value)
 
 -- | @- contactKeywords@
 contactKeywords :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-contactKeywords csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contactKeywords") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactKeywords csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contactKeywordsSelector
 
 -- | @- setContactKeywords:@
 setContactKeywords :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setContactKeywords csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContactKeywords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContactKeywords csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContactKeywordsSelector (toNSArray value)
 
 -- | @- codecs@
 codecs :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-codecs csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "codecs") (retPtr retVoid) [] >>= retainedObject . castPtr
+codecs csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet codecsSelector
 
 -- | @- setCodecs:@
 setCodecs :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setCodecs csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCodecs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCodecs csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCodecsSelector (toNSArray value)
 
 -- | @- mediaTypes@
 mediaTypes :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-mediaTypes csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "mediaTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaTypes csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet mediaTypesSelector
 
 -- | @- setMediaTypes:@
 setMediaTypes :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setMediaTypes csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMediaTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaTypes csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMediaTypesSelector (toNSArray value)
 
 -- | @- streamable@
 streamable :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-streamable csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "streamable") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamable csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet streamableSelector
 
 -- | @- setStreamable:@
 setStreamable :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setStreamable csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setStreamable:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamable csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setStreamableSelector (toNSNumber value)
 
 -- | @- totalBitRate@
 totalBitRate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-totalBitRate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "totalBitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalBitRate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet totalBitRateSelector
 
 -- | @- setTotalBitRate:@
 setTotalBitRate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setTotalBitRate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTotalBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTotalBitRate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTotalBitRateSelector (toNSNumber value)
 
 -- | @- videoBitRate@
 videoBitRate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-videoBitRate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "videoBitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoBitRate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet videoBitRateSelector
 
 -- | @- setVideoBitRate:@
 setVideoBitRate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setVideoBitRate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setVideoBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoBitRate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setVideoBitRateSelector (toNSNumber value)
 
 -- | @- audioBitRate@
 audioBitRate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-audioBitRate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audioBitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioBitRate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audioBitRateSelector
 
 -- | @- setAudioBitRate:@
 setAudioBitRate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudioBitRate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudioBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioBitRate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudioBitRateSelector (toNSNumber value)
 
 -- | @- deliveryType@
 deliveryType :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-deliveryType csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "deliveryType") (retPtr retVoid) [] >>= retainedObject . castPtr
+deliveryType csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet deliveryTypeSelector
 
 -- | @- setDeliveryType:@
 setDeliveryType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setDeliveryType csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDeliveryType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeliveryType csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDeliveryTypeSelector (toNSNumber value)
 
 -- | @- organizations@
 organizations :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-organizations csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "organizations") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizations csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet organizationsSelector
 
 -- | @- setOrganizations:@
 setOrganizations :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setOrganizations csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setOrganizations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOrganizations csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setOrganizationsSelector (toNSArray value)
 
 -- | @- role@
 role_ :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-role_ csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "role") (retPtr retVoid) [] >>= retainedObject . castPtr
+role_ csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet roleSelector
 
 -- | @- setRole:@
 setRole :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setRole csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRole:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRole csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRoleSelector (toNSString value)
 
 -- | @- languages@
 languages :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-languages csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "languages") (retPtr retVoid) [] >>= retainedObject . castPtr
+languages csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet languagesSelector
 
 -- | @- setLanguages:@
 setLanguages :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setLanguages csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLanguages:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguages csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLanguagesSelector (toNSArray value)
 
 -- | @- rights@
 rights :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-rights csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "rights") (retPtr retVoid) [] >>= retainedObject . castPtr
+rights csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet rightsSelector
 
 -- | @- setRights:@
 setRights :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setRights csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRights:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRights csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRightsSelector (toNSString value)
 
 -- | @- publishers@
 publishers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-publishers csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "publishers") (retPtr retVoid) [] >>= retainedObject . castPtr
+publishers csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet publishersSelector
 
 -- | @- setPublishers:@
 setPublishers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setPublishers csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPublishers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPublishers csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPublishersSelector (toNSArray value)
 
 -- | @- contributors@
 contributors :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-contributors csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contributors") (retPtr retVoid) [] >>= retainedObject . castPtr
+contributors csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contributorsSelector
 
 -- | @- setContributors:@
 setContributors :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setContributors csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContributors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContributors csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContributorsSelector (toNSArray value)
 
 -- | @- coverage@
 coverage :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-coverage csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "coverage") (retPtr retVoid) [] >>= retainedObject . castPtr
+coverage csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet coverageSelector
 
 -- | @- setCoverage:@
 setCoverage :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setCoverage csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCoverage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoverage csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCoverageSelector (toNSArray value)
 
 -- | @- rating@
 rating :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-rating csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "rating") (retPtr retVoid) [] >>= retainedObject . castPtr
+rating csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet ratingSelector
 
 -- | @- setRating:@
 setRating :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setRating csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRating:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRating csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRatingSelector (toNSNumber value)
 
 -- | @- ratingDescription@
 ratingDescription :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-ratingDescription csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "ratingDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+ratingDescription csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet ratingDescriptionSelector
 
 -- | @- setRatingDescription:@
 setRatingDescription :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setRatingDescription csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRatingDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRatingDescription csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRatingDescriptionSelector (toNSString value)
 
 -- | @- playCount@
 playCount :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-playCount csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "playCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+playCount csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet playCountSelector
 
 -- | @- setPlayCount:@
 setPlayCount :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPlayCount csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPlayCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlayCount csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPlayCountSelector (toNSNumber value)
 
 -- | @- information@
 information :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-information csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "information") (retPtr retVoid) [] >>= retainedObject . castPtr
+information csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet informationSelector
 
 -- | @- setInformation:@
 setInformation :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setInformation csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setInformation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInformation csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setInformationSelector (toNSString value)
 
 -- | @- director@
 director :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-director csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "director") (retPtr retVoid) [] >>= retainedObject . castPtr
+director csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet directorSelector
 
 -- | @- setDirector:@
 setDirector :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setDirector csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDirector:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirector csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDirectorSelector (toNSString value)
 
 -- | @- producer@
 producer :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-producer csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "producer") (retPtr retVoid) [] >>= retainedObject . castPtr
+producer csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet producerSelector
 
 -- | @- setProducer:@
 setProducer :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setProducer csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setProducer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProducer csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setProducerSelector (toNSString value)
 
 -- | @- genre@
 genre :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-genre csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "genre") (retPtr retVoid) [] >>= retainedObject . castPtr
+genre csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet genreSelector
 
 -- | @- setGenre:@
 setGenre :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setGenre csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setGenre:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGenre csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setGenreSelector (toNSString value)
 
 -- | @- performers@
 performers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-performers csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "performers") (retPtr retVoid) [] >>= retainedObject . castPtr
+performers csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet performersSelector
 
 -- | @- setPerformers:@
 setPerformers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setPerformers csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPerformers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPerformers csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPerformersSelector (toNSArray value)
 
 -- | @- originalFormat@
 originalFormat :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-originalFormat csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "originalFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalFormat csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet originalFormatSelector
 
 -- | @- setOriginalFormat:@
 setOriginalFormat :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setOriginalFormat csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setOriginalFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOriginalFormat csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setOriginalFormatSelector (toNSString value)
 
 -- | @- originalSource@
 originalSource :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-originalSource csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "originalSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalSource csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet originalSourceSelector
 
 -- | @- setOriginalSource:@
 setOriginalSource :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setOriginalSource csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setOriginalSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOriginalSource csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setOriginalSourceSelector (toNSString value)
 
 -- | @- local@
 local :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-local csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "local") (retPtr retVoid) [] >>= retainedObject . castPtr
+local csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet localSelector
 
 -- | @- setLocal:@
 setLocal :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setLocal csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLocal:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocal csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLocalSelector (toNSNumber value)
 
 -- | @- contentRating@
 contentRating :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-contentRating csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentRating") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentRating csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentRatingSelector
 
 -- | @- setContentRating:@
 setContentRating :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentRating csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentRating:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentRating csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentRatingSelector (toNSNumber value)
 
 -- | @- URL@
 url :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSURL)
-url csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet urlSelector
 
 -- | @- setURL:@
 setURL :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSURL value) => csSearchableItemAttributeSet -> value -> IO ()
-setURL csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setURLSelector (toNSURL value)
 
 -- | @- accountIdentifier@
 accountIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-accountIdentifier csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "accountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountIdentifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet accountIdentifierSelector
 
 -- | @- setAccountIdentifier:@
 setAccountIdentifier :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setAccountIdentifier csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAccountIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccountIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAccountIdentifierSelector (toNSString value)
 
 -- | @- accountHandles@
 accountHandles :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-accountHandles csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "accountHandles") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountHandles csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet accountHandlesSelector
 
 -- | @- setAccountHandles:@
 setAccountHandles :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAccountHandles csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAccountHandles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccountHandles csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAccountHandlesSelector (toNSArray value)
 
 -- | @- HTMLContentData@
 htmlContentData :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSData)
-htmlContentData csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "HTMLContentData") (retPtr retVoid) [] >>= retainedObject . castPtr
+htmlContentData csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet htmlContentDataSelector
 
 -- | @- setHTMLContentData:@
 setHTMLContentData :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSData value) => csSearchableItemAttributeSet -> value -> IO ()
-setHTMLContentData csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setHTMLContentData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTMLContentData csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setHTMLContentDataSelector (toNSData value)
 
 -- | @- textContent@
 textContent :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-textContent csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "textContent") (retPtr retVoid) [] >>= retainedObject . castPtr
+textContent csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet textContentSelector
 
 -- | @- setTextContent:@
 setTextContent :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setTextContent csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTextContent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextContent csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTextContentSelector (toNSString value)
 
 -- | @- authors@
 authors :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-authors csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "authors") (retPtr retVoid) [] >>= retainedObject . castPtr
+authors csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet authorsSelector
 
 -- | @- setAuthors:@
 setAuthors :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAuthors csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAuthors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthors csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAuthorsSelector (toNSArray value)
 
 -- | @- primaryRecipients@
 primaryRecipients :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-primaryRecipients csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "primaryRecipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryRecipients csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet primaryRecipientsSelector
 
 -- | @- setPrimaryRecipients:@
 setPrimaryRecipients :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setPrimaryRecipients csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPrimaryRecipients:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryRecipients csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPrimaryRecipientsSelector (toNSArray value)
 
 -- | @- additionalRecipients@
 additionalRecipients :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-additionalRecipients csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "additionalRecipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalRecipients csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet additionalRecipientsSelector
 
 -- | @- setAdditionalRecipients:@
 setAdditionalRecipients :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAdditionalRecipients csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAdditionalRecipients:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalRecipients csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAdditionalRecipientsSelector (toNSArray value)
 
 -- | @- hiddenAdditionalRecipients@
 hiddenAdditionalRecipients :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-hiddenAdditionalRecipients csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "hiddenAdditionalRecipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+hiddenAdditionalRecipients csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet hiddenAdditionalRecipientsSelector
 
 -- | @- setHiddenAdditionalRecipients:@
 setHiddenAdditionalRecipients :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setHiddenAdditionalRecipients csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setHiddenAdditionalRecipients:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHiddenAdditionalRecipients csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setHiddenAdditionalRecipientsSelector (toNSArray value)
 
 -- | @- emailHeaders@
 emailHeaders :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDictionary)
-emailHeaders csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "emailHeaders") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailHeaders csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet emailHeadersSelector
 
 -- | @- setEmailHeaders:@
 setEmailHeaders :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDictionary value) => csSearchableItemAttributeSet -> value -> IO ()
-setEmailHeaders csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEmailHeaders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEmailHeaders csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEmailHeadersSelector (toNSDictionary value)
 
 -- | @- mailboxIdentifiers@
 mailboxIdentifiers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-mailboxIdentifiers csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "mailboxIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+mailboxIdentifiers csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet mailboxIdentifiersSelector
 
 -- | @- setMailboxIdentifiers:@
 setMailboxIdentifiers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setMailboxIdentifiers csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMailboxIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMailboxIdentifiers csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMailboxIdentifiersSelector (toNSArray value)
 
 -- | @- authorNames@
 authorNames :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-authorNames csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "authorNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorNames csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet authorNamesSelector
 
 -- | @- setAuthorNames:@
 setAuthorNames :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAuthorNames csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAuthorNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthorNames csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAuthorNamesSelector (toNSArray value)
 
 -- | @- recipientNames@
 recipientNames :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-recipientNames csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "recipientNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipientNames csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet recipientNamesSelector
 
 -- | @- setRecipientNames:@
 setRecipientNames :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setRecipientNames csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRecipientNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecipientNames csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRecipientNamesSelector (toNSArray value)
 
 -- | @- authorEmailAddresses@
 authorEmailAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-authorEmailAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "authorEmailAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorEmailAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet authorEmailAddressesSelector
 
 -- | @- setAuthorEmailAddresses:@
 setAuthorEmailAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAuthorEmailAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAuthorEmailAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthorEmailAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAuthorEmailAddressesSelector (toNSArray value)
 
 -- | @- recipientEmailAddresses@
 recipientEmailAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-recipientEmailAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "recipientEmailAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipientEmailAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet recipientEmailAddressesSelector
 
 -- | @- setRecipientEmailAddresses:@
 setRecipientEmailAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setRecipientEmailAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRecipientEmailAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecipientEmailAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRecipientEmailAddressesSelector (toNSArray value)
 
 -- | @- authorAddresses@
 authorAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-authorAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "authorAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet authorAddressesSelector
 
 -- | @- setAuthorAddresses:@
 setAuthorAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAuthorAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAuthorAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthorAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAuthorAddressesSelector (toNSArray value)
 
 -- | @- recipientAddresses@
 recipientAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-recipientAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "recipientAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipientAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet recipientAddressesSelector
 
 -- | @- setRecipientAddresses:@
 setRecipientAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setRecipientAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRecipientAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecipientAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRecipientAddressesSelector (toNSArray value)
 
 -- | @- phoneNumbers@
 phoneNumbers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-phoneNumbers csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "phoneNumbers") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumbers csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet phoneNumbersSelector
 
 -- | @- setPhoneNumbers:@
 setPhoneNumbers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setPhoneNumbers csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPhoneNumbers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhoneNumbers csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPhoneNumbersSelector (toNSArray value)
 
 -- | @- emailAddresses@
 emailAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-emailAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "emailAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet emailAddressesSelector
 
 -- | @- setEmailAddresses:@
 setEmailAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setEmailAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEmailAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEmailAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEmailAddressesSelector (toNSArray value)
 
 -- | @- instantMessageAddresses@
 instantMessageAddresses :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-instantMessageAddresses csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "instantMessageAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+instantMessageAddresses csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet instantMessageAddressesSelector
 
 -- | @- setInstantMessageAddresses:@
 setInstantMessageAddresses :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setInstantMessageAddresses csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setInstantMessageAddresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInstantMessageAddresses csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setInstantMessageAddressesSelector (toNSArray value)
 
 -- | @- likelyJunk@
 likelyJunk :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-likelyJunk csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "likelyJunk") (retPtr retVoid) [] >>= retainedObject . castPtr
+likelyJunk csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet likelyJunkSelector
 
 -- | @- setLikelyJunk:@
 setLikelyJunk :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setLikelyJunk csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setLikelyJunk:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLikelyJunk csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setLikelyJunkSelector (toNSNumber value)
 
 -- | @- isPriority@
 isPriority :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-isPriority csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "isPriority") (retPtr retVoid) []
+isPriority csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet isPrioritySelector
 
 -- | @- textContentSummary@
 textContentSummary :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-textContentSummary csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "textContentSummary") (retPtr retVoid) []
+textContentSummary csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet textContentSummarySelector
 
 -- | @- transcribedTextContent@
 transcribedTextContent :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-transcribedTextContent csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "transcribedTextContent") (retPtr retVoid) []
+transcribedTextContent csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet transcribedTextContentSelector
 
 -- | @- setTranscribedTextContent:@
 setTranscribedTextContent :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setTranscribedTextContent csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setTranscribedTextContent:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTranscribedTextContent csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTranscribedTextContentSelector value
 
 -- | @- dueDate@
 dueDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-dueDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "dueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+dueDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet dueDateSelector
 
 -- | @- setDueDate:@
 setDueDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setDueDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDueDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDueDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDueDateSelector (toNSDate value)
 
 -- | @- completionDate@
 completionDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-completionDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "completionDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet completionDateSelector
 
 -- | @- setCompletionDate:@
 setCompletionDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setCompletionDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCompletionDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletionDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCompletionDateSelector (toNSDate value)
 
 -- | @- startDate@
 startDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-startDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet startDateSelector
 
 -- | @- setStartDate:@
 setStartDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setStartDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setStartDateSelector (toNSDate value)
 
 -- | @- endDate@
 endDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-endDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet endDateSelector
 
 -- | @- setEndDate:@
 setEndDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setEndDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEndDateSelector (toNSDate value)
 
 -- | @- importantDates@
 importantDates :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-importantDates csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "importantDates") (retPtr retVoid) [] >>= retainedObject . castPtr
+importantDates csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet importantDatesSelector
 
 -- | @- setImportantDates:@
 setImportantDates :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setImportantDates csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setImportantDates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImportantDates csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setImportantDatesSelector (toNSArray value)
 
 -- | @- allDay@
 allDay :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-allDay csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "allDay") (retPtr retVoid) [] >>= retainedObject . castPtr
+allDay csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet allDaySelector
 
 -- | @- setAllDay:@
 setAllDay :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setAllDay csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAllDay:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllDay csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAllDaySelector (toNSNumber value)
 
 -- | Subject of the this item.
 --
 -- ObjC selector: @- subject@
 subject :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-subject csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "subject") (retPtr retVoid) [] >>= retainedObject . castPtr
+subject csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet subjectSelector
 
 -- | Subject of the this item.
 --
 -- ObjC selector: @- setSubject:@
 setSubject :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setSubject csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSubject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubject csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSubjectSelector (toNSString value)
 
 -- | @- theme@
 theme :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-theme csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "theme") (retPtr retVoid) [] >>= retainedObject . castPtr
+theme csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet themeSelector
 
 -- | @- setTheme:@
 setTheme :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setTheme csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTheme:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTheme csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setThemeSelector (toNSString value)
 
 -- | @- contentDescription@
 contentDescription :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-contentDescription csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentDescription csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentDescriptionSelector
 
 -- | @- setContentDescription:@
 setContentDescription :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentDescription csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentDescription csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentDescriptionSelector (toNSString value)
 
 -- | @- identifier@
 identifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-identifier csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setIdentifier csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setIdentifierSelector (toNSString value)
 
 -- | @- audiences@
 audiences :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-audiences csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "audiences") (retPtr retVoid) [] >>= retainedObject . castPtr
+audiences csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet audiencesSelector
 
 -- | @- setAudiences:@
 setAudiences :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAudiences csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAudiences:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudiences csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAudiencesSelector (toNSArray value)
 
 -- | @- fileSize@
 fileSize :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-fileSize csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "fileSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileSize csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet fileSizeSelector
 
 -- | @- setFileSize:@
 setFileSize :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setFileSize csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFileSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileSize csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFileSizeSelector (toNSNumber value)
 
 -- | @- pageCount@
 pageCount :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pageCount csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pageCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageCount csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pageCountSelector
 
 -- | @- setPageCount:@
 setPageCount :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPageCount csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPageCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPageCount csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPageCountSelector (toNSNumber value)
 
 -- | @- pageWidth@
 pageWidth :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pageWidth csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pageWidth") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageWidth csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pageWidthSelector
 
 -- | @- setPageWidth:@
 setPageWidth :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPageWidth csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPageWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPageWidth csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPageWidthSelector (toNSNumber value)
 
 -- | @- pageHeight@
 pageHeight :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-pageHeight csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "pageHeight") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageHeight csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pageHeightSelector
 
 -- | @- setPageHeight:@
 setPageHeight :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setPageHeight csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPageHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPageHeight csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPageHeightSelector (toNSNumber value)
 
 -- | @- securityMethod@
 securityMethod :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-securityMethod csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "securityMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+securityMethod csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet securityMethodSelector
 
 -- | @- setSecurityMethod:@
 setSecurityMethod :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setSecurityMethod csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSecurityMethod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSecurityMethod csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSecurityMethodSelector (toNSString value)
 
 -- | @- creator@
 creator :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-creator csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "creator") (retPtr retVoid) [] >>= retainedObject . castPtr
+creator csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet creatorSelector
 
 -- | @- setCreator:@
 setCreator :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setCreator csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setCreator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCreator csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setCreatorSelector (toNSString value)
 
 -- | @- encodingApplications@
 encodingApplications :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-encodingApplications csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "encodingApplications") (retPtr retVoid) [] >>= retainedObject . castPtr
+encodingApplications csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet encodingApplicationsSelector
 
 -- | @- setEncodingApplications:@
 setEncodingApplications :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setEncodingApplications csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setEncodingApplications:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEncodingApplications csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setEncodingApplicationsSelector (toNSArray value)
 
 -- | @- kind@
 kind :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-kind csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "kind") (retPtr retVoid) [] >>= retainedObject . castPtr
+kind csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet kindSelector
 
 -- | @- setKind:@
 setKind :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setKind csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setKind:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKind csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setKindSelector (toNSString value)
 
 -- | @- fontNames@
 fontNames :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-fontNames csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "fontNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontNames csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet fontNamesSelector
 
 -- | @- setFontNames:@
 setFontNames :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setFontNames csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setFontNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFontNames csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setFontNamesSelector (toNSArray value)
 
 -- | @- containerTitle@
 containerTitle :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-containerTitle csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "containerTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerTitle csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet containerTitleSelector
 
 -- | @- setContainerTitle:@
 setContainerTitle :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setContainerTitle csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContainerTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerTitle csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContainerTitleSelector (toNSString value)
 
 -- | @- containerDisplayName@
 containerDisplayName :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-containerDisplayName csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "containerDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerDisplayName csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet containerDisplayNameSelector
 
 -- | @- setContainerDisplayName:@
 setContainerDisplayName :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setContainerDisplayName csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContainerDisplayName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerDisplayName csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContainerDisplayNameSelector (toNSString value)
 
 -- | @- containerIdentifier@
 containerIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-containerIdentifier csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet containerIdentifierSelector
 
 -- | @- setContainerIdentifier:@
 setContainerIdentifier :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setContainerIdentifier csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContainerIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContainerIdentifierSelector (toNSString value)
 
 -- | @- containerOrder@
 containerOrder :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-containerOrder csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "containerOrder") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerOrder csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet containerOrderSelector
 
 -- | @- setContainerOrder:@
 setContainerOrder :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setContainerOrder csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContainerOrder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerOrder csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContainerOrderSelector (toNSNumber value)
 
 -- | @- supportsPhoneCall@
 supportsPhoneCall :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-supportsPhoneCall csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "supportsPhoneCall") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportsPhoneCall csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet supportsPhoneCallSelector
 
 -- | @- setSupportsPhoneCall:@
 setSupportsPhoneCall :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setSupportsPhoneCall csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSupportsPhoneCall:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportsPhoneCall csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSupportsPhoneCallSelector (toNSNumber value)
 
 -- | @- supportsNavigation@
 supportsNavigation :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSNumber)
-supportsNavigation csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "supportsNavigation") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportsNavigation csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet supportsNavigationSelector
 
 -- | @- setSupportsNavigation:@
 setSupportsNavigation :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSNumber value) => csSearchableItemAttributeSet -> value -> IO ()
-setSupportsNavigation csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSupportsNavigation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportsNavigation csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSupportsNavigationSelector (toNSNumber value)
 
 -- | @- actionIdentifiers@
 actionIdentifiers :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-actionIdentifiers csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "actionIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionIdentifiers csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet actionIdentifiersSelector
 
 -- | @- setActionIdentifiers:@
 setActionIdentifiers :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setActionIdentifiers csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setActionIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionIdentifiers csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setActionIdentifiersSelector (toNSArray value)
 
 -- | @- sharedItemContentType@
 sharedItemContentType :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id UTType)
-sharedItemContentType csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "sharedItemContentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedItemContentType csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet sharedItemContentTypeSelector
 
 -- | @- setSharedItemContentType:@
 setSharedItemContentType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsUTType value) => csSearchableItemAttributeSet -> value -> IO ()
-setSharedItemContentType csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setSharedItemContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSharedItemContentType csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setSharedItemContentTypeSelector (toUTType value)
 
 -- | @- displayName@
 displayName :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-displayName csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet displayNameSelector
 
 -- | @- setDisplayName:@
 setDisplayName :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setDisplayName csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDisplayName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayName csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDisplayNameSelector (toNSString value)
 
 -- | @- alternateNames@
 alternateNames :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-alternateNames csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "alternateNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateNames csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet alternateNamesSelector
 
 -- | @- setAlternateNames:@
 setAlternateNames :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setAlternateNames csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setAlternateNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateNames csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setAlternateNamesSelector (toNSArray value)
 
 -- | @- path@
 path :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-path csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet pathSelector
 
 -- | @- setPath:@
 setPath :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setPath csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPath csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setPathSelector (toNSString value)
 
 -- | @- contentURL@
 contentURL :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSURL)
-contentURL csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentURL csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentURLSelector
 
 -- | @- setContentURL:@
 setContentURL :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSURL value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentURL csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentURL csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentURLSelector (toNSURL value)
 
 -- | @- thumbnailURL@
 thumbnailURL :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSURL)
-thumbnailURL csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "thumbnailURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+thumbnailURL csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet thumbnailURLSelector
 
 -- | @- setThumbnailURL:@
 setThumbnailURL :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSURL value) => csSearchableItemAttributeSet -> value -> IO ()
-setThumbnailURL csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setThumbnailURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThumbnailURL csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setThumbnailURLSelector (toNSURL value)
 
 -- | @- thumbnailData@
 thumbnailData :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSData)
-thumbnailData csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "thumbnailData") (retPtr retVoid) [] >>= retainedObject . castPtr
+thumbnailData csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet thumbnailDataSelector
 
 -- | @- setThumbnailData:@
 setThumbnailData :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSData value) => csSearchableItemAttributeSet -> value -> IO ()
-setThumbnailData csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setThumbnailData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThumbnailData csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setThumbnailDataSelector (toNSData value)
 
 -- | @- darkThumbnailURL@
 darkThumbnailURL :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSURL)
-darkThumbnailURL csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "darkThumbnailURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+darkThumbnailURL csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet darkThumbnailURLSelector
 
 -- | @- setDarkThumbnailURL:@
 setDarkThumbnailURL :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSURL value) => csSearchableItemAttributeSet -> value -> IO ()
-setDarkThumbnailURL csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setDarkThumbnailURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDarkThumbnailURL csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDarkThumbnailURLSelector (toNSURL value)
 
 -- | @- relatedUniqueIdentifier@
 relatedUniqueIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-relatedUniqueIdentifier csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "relatedUniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+relatedUniqueIdentifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet relatedUniqueIdentifierSelector
 
 -- | @- setRelatedUniqueIdentifier:@
 setRelatedUniqueIdentifier :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setRelatedUniqueIdentifier csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setRelatedUniqueIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRelatedUniqueIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRelatedUniqueIdentifierSelector (toNSString value)
 
 -- | @- weakRelatedUniqueIdentifier@
 weakRelatedUniqueIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-weakRelatedUniqueIdentifier csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "weakRelatedUniqueIdentifier") (retPtr retVoid) []
+weakRelatedUniqueIdentifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet weakRelatedUniqueIdentifierSelector
 
 -- | @- setWeakRelatedUniqueIdentifier:@
 setWeakRelatedUniqueIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setWeakRelatedUniqueIdentifier csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setWeakRelatedUniqueIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setWeakRelatedUniqueIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setWeakRelatedUniqueIdentifierSelector value
 
 -- | @- metadataModificationDate@
 metadataModificationDate :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSDate)
-metadataModificationDate csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "metadataModificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataModificationDate csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet metadataModificationDateSelector
 
 -- | @- setMetadataModificationDate:@
 setMetadataModificationDate :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSDate value) => csSearchableItemAttributeSet -> value -> IO ()
-setMetadataModificationDate csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setMetadataModificationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadataModificationDate csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setMetadataModificationDateSelector (toNSDate value)
 
 -- | @- contentType@
 contentType :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-contentType csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentTypeSelector
 
 -- | @- setContentType:@
 setContentType :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentType csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentType csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentTypeSelector (toNSString value)
 
 -- | @- contentTypeTree@
 contentTypeTree :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-contentTypeTree csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "contentTypeTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentTypeTree csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet contentTypeTreeSelector
 
 -- | @- setContentTypeTree:@
 setContentTypeTree :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setContentTypeTree csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setContentTypeTree:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentTypeTree csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setContentTypeTreeSelector (toNSArray value)
 
 -- | @- keywords@
 keywords :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSArray)
-keywords csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "keywords") (retPtr retVoid) [] >>= retainedObject . castPtr
+keywords csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet keywordsSelector
 
 -- | @- setKeywords:@
 setKeywords :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSArray value) => csSearchableItemAttributeSet -> value -> IO ()
-setKeywords csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setKeywords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeywords csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setKeywordsSelector (toNSArray value)
 
 -- | @- title@
 title :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-title csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setTitle csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setTitleSelector (toNSString value)
 
 -- | @- version@
 version :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO (Id NSString)
-version csSearchableItemAttributeSet  =
-    sendMsg csSearchableItemAttributeSet (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet versionSelector
 
 -- | @- setVersion:@
 setVersion :: (IsCSSearchableItemAttributeSet csSearchableItemAttributeSet, IsNSString value) => csSearchableItemAttributeSet -> value -> IO ()
-setVersion csSearchableItemAttributeSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItemAttributeSet (mkSelector "setVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVersion csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setVersionSelector (toNSString value)
 
 -- | @- userCreated@
 userCreated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-userCreated csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userCreated") (retPtr retVoid) []
+userCreated csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet userCreatedSelector
 
 -- | @- setUserCreated:@
 setUserCreated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setUserCreated csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setUserCreated:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUserCreated csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setUserCreatedSelector value
 
 -- | @- userOwned@
 userOwned :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-userOwned csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userOwned") (retPtr retVoid) []
+userOwned csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet userOwnedSelector
 
 -- | @- setUserOwned:@
 setUserOwned :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setUserOwned csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setUserOwned:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUserOwned csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setUserOwnedSelector value
 
 -- | @- userCurated@
 userCurated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-userCurated csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "userCurated") (retPtr retVoid) []
+userCurated csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet userCuratedSelector
 
 -- | @- setUserCurated:@
 setUserCurated :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setUserCurated csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setUserCurated:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUserCurated csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setUserCuratedSelector value
 
 -- | @- rankingHint@
 rankingHint :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-rankingHint csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "rankingHint") (retPtr retVoid) []
+rankingHint csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet rankingHintSelector
 
 -- | @- setRankingHint:@
 setRankingHint :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setRankingHint csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setRankingHint:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRankingHint csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setRankingHintSelector value
 
 -- | @- domainIdentifier@
 domainIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> IO RawId
-domainIdentifier csSearchableItemAttributeSet  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableItemAttributeSet (mkSelector "domainIdentifier") (retPtr retVoid) []
+domainIdentifier csSearchableItemAttributeSet =
+  sendMessage csSearchableItemAttributeSet domainIdentifierSelector
 
 -- | @- setDomainIdentifier:@
 setDomainIdentifier :: IsCSSearchableItemAttributeSet csSearchableItemAttributeSet => csSearchableItemAttributeSet -> RawId -> IO ()
-setDomainIdentifier csSearchableItemAttributeSet  value =
-    sendMsg csSearchableItemAttributeSet (mkSelector "setDomainIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDomainIdentifier csSearchableItemAttributeSet value =
+  sendMessage csSearchableItemAttributeSet setDomainIdentifierSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithItemContentType:@
-initWithItemContentTypeSelector :: Selector
+initWithItemContentTypeSelector :: Selector '[Id NSString] (Id CSSearchableItemAttributeSet)
 initWithItemContentTypeSelector = mkSelector "initWithItemContentType:"
 
 -- | @Selector@ for @initWithContentType:@
-initWithContentTypeSelector :: Selector
+initWithContentTypeSelector :: Selector '[Id UTType] (Id CSSearchableItemAttributeSet)
 initWithContentTypeSelector = mkSelector "initWithContentType:"
 
 -- | @Selector@ for @moveFrom:@
-moveFromSelector :: Selector
+moveFromSelector :: Selector '[Id CSSearchableItemAttributeSet] ()
 moveFromSelector = mkSelector "moveFrom:"
 
 -- | @Selector@ for @setValue:forCustomKey:@
-setValue_forCustomKeySelector :: Selector
+setValue_forCustomKeySelector :: Selector '[RawId, Id CSCustomAttributeKey] ()
 setValue_forCustomKeySelector = mkSelector "setValue:forCustomKey:"
 
 -- | @Selector@ for @valueForCustomKey:@
-valueForCustomKeySelector :: Selector
+valueForCustomKeySelector :: Selector '[Id CSCustomAttributeKey] RawId
 valueForCustomKeySelector = mkSelector "valueForCustomKey:"
 
 -- | @Selector@ for @headline@
-headlineSelector :: Selector
+headlineSelector :: Selector '[] (Id NSString)
 headlineSelector = mkSelector "headline"
 
 -- | @Selector@ for @setHeadline:@
-setHeadlineSelector :: Selector
+setHeadlineSelector :: Selector '[Id NSString] ()
 setHeadlineSelector = mkSelector "setHeadline:"
 
 -- | @Selector@ for @instructions@
-instructionsSelector :: Selector
+instructionsSelector :: Selector '[] (Id NSString)
 instructionsSelector = mkSelector "instructions"
 
 -- | @Selector@ for @setInstructions:@
-setInstructionsSelector :: Selector
+setInstructionsSelector :: Selector '[Id NSString] ()
 setInstructionsSelector = mkSelector "setInstructions:"
 
 -- | @Selector@ for @thoroughfare@
-thoroughfareSelector :: Selector
+thoroughfareSelector :: Selector '[] (Id NSString)
 thoroughfareSelector = mkSelector "thoroughfare"
 
 -- | @Selector@ for @setThoroughfare:@
-setThoroughfareSelector :: Selector
+setThoroughfareSelector :: Selector '[Id NSString] ()
 setThoroughfareSelector = mkSelector "setThoroughfare:"
 
 -- | @Selector@ for @subThoroughfare@
-subThoroughfareSelector :: Selector
+subThoroughfareSelector :: Selector '[] (Id NSString)
 subThoroughfareSelector = mkSelector "subThoroughfare"
 
 -- | @Selector@ for @setSubThoroughfare:@
-setSubThoroughfareSelector :: Selector
+setSubThoroughfareSelector :: Selector '[Id NSString] ()
 setSubThoroughfareSelector = mkSelector "setSubThoroughfare:"
 
 -- | @Selector@ for @postalCode@
-postalCodeSelector :: Selector
+postalCodeSelector :: Selector '[] (Id NSString)
 postalCodeSelector = mkSelector "postalCode"
 
 -- | @Selector@ for @setPostalCode:@
-setPostalCodeSelector :: Selector
+setPostalCodeSelector :: Selector '[Id NSString] ()
 setPostalCodeSelector = mkSelector "setPostalCode:"
 
 -- | @Selector@ for @city@
-citySelector :: Selector
+citySelector :: Selector '[] (Id NSString)
 citySelector = mkSelector "city"
 
 -- | @Selector@ for @setCity:@
-setCitySelector :: Selector
+setCitySelector :: Selector '[Id NSString] ()
 setCitySelector = mkSelector "setCity:"
 
 -- | @Selector@ for @stateOrProvince@
-stateOrProvinceSelector :: Selector
+stateOrProvinceSelector :: Selector '[] (Id NSString)
 stateOrProvinceSelector = mkSelector "stateOrProvince"
 
 -- | @Selector@ for @setStateOrProvince:@
-setStateOrProvinceSelector :: Selector
+setStateOrProvinceSelector :: Selector '[Id NSString] ()
 setStateOrProvinceSelector = mkSelector "setStateOrProvince:"
 
 -- | @Selector@ for @country@
-countrySelector :: Selector
+countrySelector :: Selector '[] (Id NSString)
 countrySelector = mkSelector "country"
 
 -- | @Selector@ for @setCountry:@
-setCountrySelector :: Selector
+setCountrySelector :: Selector '[Id NSString] ()
 setCountrySelector = mkSelector "setCountry:"
 
 -- | @Selector@ for @fullyFormattedAddress@
-fullyFormattedAddressSelector :: Selector
+fullyFormattedAddressSelector :: Selector '[] (Id NSString)
 fullyFormattedAddressSelector = mkSelector "fullyFormattedAddress"
 
 -- | @Selector@ for @setFullyFormattedAddress:@
-setFullyFormattedAddressSelector :: Selector
+setFullyFormattedAddressSelector :: Selector '[Id NSString] ()
 setFullyFormattedAddressSelector = mkSelector "setFullyFormattedAddress:"
 
 -- | @Selector@ for @altitude@
-altitudeSelector :: Selector
+altitudeSelector :: Selector '[] (Id NSNumber)
 altitudeSelector = mkSelector "altitude"
 
 -- | @Selector@ for @setAltitude:@
-setAltitudeSelector :: Selector
+setAltitudeSelector :: Selector '[Id NSNumber] ()
 setAltitudeSelector = mkSelector "setAltitude:"
 
 -- | @Selector@ for @latitude@
-latitudeSelector :: Selector
+latitudeSelector :: Selector '[] (Id NSNumber)
 latitudeSelector = mkSelector "latitude"
 
 -- | @Selector@ for @setLatitude:@
-setLatitudeSelector :: Selector
+setLatitudeSelector :: Selector '[Id NSNumber] ()
 setLatitudeSelector = mkSelector "setLatitude:"
 
 -- | @Selector@ for @longitude@
-longitudeSelector :: Selector
+longitudeSelector :: Selector '[] (Id NSNumber)
 longitudeSelector = mkSelector "longitude"
 
 -- | @Selector@ for @setLongitude:@
-setLongitudeSelector :: Selector
+setLongitudeSelector :: Selector '[Id NSNumber] ()
 setLongitudeSelector = mkSelector "setLongitude:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] (Id NSNumber)
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[Id NSNumber] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] (Id NSDate)
 timestampSelector = mkSelector "timestamp"
 
 -- | @Selector@ for @setTimestamp:@
-setTimestampSelector :: Selector
+setTimestampSelector :: Selector '[Id NSDate] ()
 setTimestampSelector = mkSelector "setTimestamp:"
 
 -- | @Selector@ for @imageDirection@
-imageDirectionSelector :: Selector
+imageDirectionSelector :: Selector '[] (Id NSNumber)
 imageDirectionSelector = mkSelector "imageDirection"
 
 -- | @Selector@ for @setImageDirection:@
-setImageDirectionSelector :: Selector
+setImageDirectionSelector :: Selector '[Id NSNumber] ()
 setImageDirectionSelector = mkSelector "setImageDirection:"
 
 -- | @Selector@ for @namedLocation@
-namedLocationSelector :: Selector
+namedLocationSelector :: Selector '[] (Id NSString)
 namedLocationSelector = mkSelector "namedLocation"
 
 -- | @Selector@ for @setNamedLocation:@
-setNamedLocationSelector :: Selector
+setNamedLocationSelector :: Selector '[Id NSString] ()
 setNamedLocationSelector = mkSelector "setNamedLocation:"
 
 -- | @Selector@ for @GPSTrack@
-gpsTrackSelector :: Selector
+gpsTrackSelector :: Selector '[] (Id NSNumber)
 gpsTrackSelector = mkSelector "GPSTrack"
 
 -- | @Selector@ for @setGPSTrack:@
-setGPSTrackSelector :: Selector
+setGPSTrackSelector :: Selector '[Id NSNumber] ()
 setGPSTrackSelector = mkSelector "setGPSTrack:"
 
 -- | @Selector@ for @GPSStatus@
-gpsStatusSelector :: Selector
+gpsStatusSelector :: Selector '[] (Id NSString)
 gpsStatusSelector = mkSelector "GPSStatus"
 
 -- | @Selector@ for @setGPSStatus:@
-setGPSStatusSelector :: Selector
+setGPSStatusSelector :: Selector '[Id NSString] ()
 setGPSStatusSelector = mkSelector "setGPSStatus:"
 
 -- | @Selector@ for @GPSMeasureMode@
-gpsMeasureModeSelector :: Selector
+gpsMeasureModeSelector :: Selector '[] (Id NSString)
 gpsMeasureModeSelector = mkSelector "GPSMeasureMode"
 
 -- | @Selector@ for @setGPSMeasureMode:@
-setGPSMeasureModeSelector :: Selector
+setGPSMeasureModeSelector :: Selector '[Id NSString] ()
 setGPSMeasureModeSelector = mkSelector "setGPSMeasureMode:"
 
 -- | @Selector@ for @GPSDOP@
-gpsdopSelector :: Selector
+gpsdopSelector :: Selector '[] (Id NSNumber)
 gpsdopSelector = mkSelector "GPSDOP"
 
 -- | @Selector@ for @setGPSDOP:@
-setGPSDOPSelector :: Selector
+setGPSDOPSelector :: Selector '[Id NSNumber] ()
 setGPSDOPSelector = mkSelector "setGPSDOP:"
 
 -- | @Selector@ for @GPSMapDatum@
-gpsMapDatumSelector :: Selector
+gpsMapDatumSelector :: Selector '[] (Id NSString)
 gpsMapDatumSelector = mkSelector "GPSMapDatum"
 
 -- | @Selector@ for @setGPSMapDatum:@
-setGPSMapDatumSelector :: Selector
+setGPSMapDatumSelector :: Selector '[Id NSString] ()
 setGPSMapDatumSelector = mkSelector "setGPSMapDatum:"
 
 -- | @Selector@ for @GPSDestLatitude@
-gpsDestLatitudeSelector :: Selector
+gpsDestLatitudeSelector :: Selector '[] (Id NSNumber)
 gpsDestLatitudeSelector = mkSelector "GPSDestLatitude"
 
 -- | @Selector@ for @setGPSDestLatitude:@
-setGPSDestLatitudeSelector :: Selector
+setGPSDestLatitudeSelector :: Selector '[Id NSNumber] ()
 setGPSDestLatitudeSelector = mkSelector "setGPSDestLatitude:"
 
 -- | @Selector@ for @GPSDestLongitude@
-gpsDestLongitudeSelector :: Selector
+gpsDestLongitudeSelector :: Selector '[] (Id NSNumber)
 gpsDestLongitudeSelector = mkSelector "GPSDestLongitude"
 
 -- | @Selector@ for @setGPSDestLongitude:@
-setGPSDestLongitudeSelector :: Selector
+setGPSDestLongitudeSelector :: Selector '[Id NSNumber] ()
 setGPSDestLongitudeSelector = mkSelector "setGPSDestLongitude:"
 
 -- | @Selector@ for @GPSDestBearing@
-gpsDestBearingSelector :: Selector
+gpsDestBearingSelector :: Selector '[] (Id NSNumber)
 gpsDestBearingSelector = mkSelector "GPSDestBearing"
 
 -- | @Selector@ for @setGPSDestBearing:@
-setGPSDestBearingSelector :: Selector
+setGPSDestBearingSelector :: Selector '[Id NSNumber] ()
 setGPSDestBearingSelector = mkSelector "setGPSDestBearing:"
 
 -- | @Selector@ for @GPSDestDistance@
-gpsDestDistanceSelector :: Selector
+gpsDestDistanceSelector :: Selector '[] (Id NSNumber)
 gpsDestDistanceSelector = mkSelector "GPSDestDistance"
 
 -- | @Selector@ for @setGPSDestDistance:@
-setGPSDestDistanceSelector :: Selector
+setGPSDestDistanceSelector :: Selector '[Id NSNumber] ()
 setGPSDestDistanceSelector = mkSelector "setGPSDestDistance:"
 
 -- | @Selector@ for @GPSProcessingMethod@
-gpsProcessingMethodSelector :: Selector
+gpsProcessingMethodSelector :: Selector '[] (Id NSString)
 gpsProcessingMethodSelector = mkSelector "GPSProcessingMethod"
 
 -- | @Selector@ for @setGPSProcessingMethod:@
-setGPSProcessingMethodSelector :: Selector
+setGPSProcessingMethodSelector :: Selector '[Id NSString] ()
 setGPSProcessingMethodSelector = mkSelector "setGPSProcessingMethod:"
 
 -- | @Selector@ for @GPSAreaInformation@
-gpsAreaInformationSelector :: Selector
+gpsAreaInformationSelector :: Selector '[] (Id NSString)
 gpsAreaInformationSelector = mkSelector "GPSAreaInformation"
 
 -- | @Selector@ for @setGPSAreaInformation:@
-setGPSAreaInformationSelector :: Selector
+setGPSAreaInformationSelector :: Selector '[Id NSString] ()
 setGPSAreaInformationSelector = mkSelector "setGPSAreaInformation:"
 
 -- | @Selector@ for @GPSDateStamp@
-gpsDateStampSelector :: Selector
+gpsDateStampSelector :: Selector '[] (Id NSDate)
 gpsDateStampSelector = mkSelector "GPSDateStamp"
 
 -- | @Selector@ for @setGPSDateStamp:@
-setGPSDateStampSelector :: Selector
+setGPSDateStampSelector :: Selector '[Id NSDate] ()
 setGPSDateStampSelector = mkSelector "setGPSDateStamp:"
 
 -- | @Selector@ for @GPSDifferental@
-gpsDifferentalSelector :: Selector
+gpsDifferentalSelector :: Selector '[] (Id NSNumber)
 gpsDifferentalSelector = mkSelector "GPSDifferental"
 
 -- | @Selector@ for @setGPSDifferental:@
-setGPSDifferentalSelector :: Selector
+setGPSDifferentalSelector :: Selector '[Id NSNumber] ()
 setGPSDifferentalSelector = mkSelector "setGPSDifferental:"
 
 -- | @Selector@ for @pixelHeight@
-pixelHeightSelector :: Selector
+pixelHeightSelector :: Selector '[] (Id NSNumber)
 pixelHeightSelector = mkSelector "pixelHeight"
 
 -- | @Selector@ for @setPixelHeight:@
-setPixelHeightSelector :: Selector
+setPixelHeightSelector :: Selector '[Id NSNumber] ()
 setPixelHeightSelector = mkSelector "setPixelHeight:"
 
 -- | @Selector@ for @pixelWidth@
-pixelWidthSelector :: Selector
+pixelWidthSelector :: Selector '[] (Id NSNumber)
 pixelWidthSelector = mkSelector "pixelWidth"
 
 -- | @Selector@ for @setPixelWidth:@
-setPixelWidthSelector :: Selector
+setPixelWidthSelector :: Selector '[Id NSNumber] ()
 setPixelWidthSelector = mkSelector "setPixelWidth:"
 
 -- | @Selector@ for @pixelCount@
-pixelCountSelector :: Selector
+pixelCountSelector :: Selector '[] (Id NSNumber)
 pixelCountSelector = mkSelector "pixelCount"
 
 -- | @Selector@ for @setPixelCount:@
-setPixelCountSelector :: Selector
+setPixelCountSelector :: Selector '[Id NSNumber] ()
 setPixelCountSelector = mkSelector "setPixelCount:"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Id NSString)
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @setColorSpace:@
-setColorSpaceSelector :: Selector
+setColorSpaceSelector :: Selector '[Id NSString] ()
 setColorSpaceSelector = mkSelector "setColorSpace:"
 
 -- | @Selector@ for @bitsPerSample@
-bitsPerSampleSelector :: Selector
+bitsPerSampleSelector :: Selector '[] (Id NSNumber)
 bitsPerSampleSelector = mkSelector "bitsPerSample"
 
 -- | @Selector@ for @setBitsPerSample:@
-setBitsPerSampleSelector :: Selector
+setBitsPerSampleSelector :: Selector '[Id NSNumber] ()
 setBitsPerSampleSelector = mkSelector "setBitsPerSample:"
 
 -- | @Selector@ for @flashOn@
-flashOnSelector :: Selector
+flashOnSelector :: Selector '[] (Id NSNumber)
 flashOnSelector = mkSelector "flashOn"
 
 -- | @Selector@ for @setFlashOn:@
-setFlashOnSelector :: Selector
+setFlashOnSelector :: Selector '[Id NSNumber] ()
 setFlashOnSelector = mkSelector "setFlashOn:"
 
 -- | @Selector@ for @focalLength@
-focalLengthSelector :: Selector
+focalLengthSelector :: Selector '[] (Id NSNumber)
 focalLengthSelector = mkSelector "focalLength"
 
 -- | @Selector@ for @setFocalLength:@
-setFocalLengthSelector :: Selector
+setFocalLengthSelector :: Selector '[Id NSNumber] ()
 setFocalLengthSelector = mkSelector "setFocalLength:"
 
 -- | @Selector@ for @focalLength35mm@
-focalLength35mmSelector :: Selector
+focalLength35mmSelector :: Selector '[] (Id NSNumber)
 focalLength35mmSelector = mkSelector "focalLength35mm"
 
 -- | @Selector@ for @setFocalLength35mm:@
-setFocalLength35mmSelector :: Selector
+setFocalLength35mmSelector :: Selector '[Id NSNumber] ()
 setFocalLength35mmSelector = mkSelector "setFocalLength35mm:"
 
 -- | @Selector@ for @acquisitionMake@
-acquisitionMakeSelector :: Selector
+acquisitionMakeSelector :: Selector '[] (Id NSString)
 acquisitionMakeSelector = mkSelector "acquisitionMake"
 
 -- | @Selector@ for @setAcquisitionMake:@
-setAcquisitionMakeSelector :: Selector
+setAcquisitionMakeSelector :: Selector '[Id NSString] ()
 setAcquisitionMakeSelector = mkSelector "setAcquisitionMake:"
 
 -- | @Selector@ for @acquisitionModel@
-acquisitionModelSelector :: Selector
+acquisitionModelSelector :: Selector '[] (Id NSString)
 acquisitionModelSelector = mkSelector "acquisitionModel"
 
 -- | @Selector@ for @setAcquisitionModel:@
-setAcquisitionModelSelector :: Selector
+setAcquisitionModelSelector :: Selector '[Id NSString] ()
 setAcquisitionModelSelector = mkSelector "setAcquisitionModel:"
 
 -- | @Selector@ for @cameraOwner@
-cameraOwnerSelector :: Selector
+cameraOwnerSelector :: Selector '[] (Id NSString)
 cameraOwnerSelector = mkSelector "cameraOwner"
 
 -- | @Selector@ for @setCameraOwner:@
-setCameraOwnerSelector :: Selector
+setCameraOwnerSelector :: Selector '[Id NSString] ()
 setCameraOwnerSelector = mkSelector "setCameraOwner:"
 
 -- | @Selector@ for @lensModel@
-lensModelSelector :: Selector
+lensModelSelector :: Selector '[] (Id NSString)
 lensModelSelector = mkSelector "lensModel"
 
 -- | @Selector@ for @setLensModel:@
-setLensModelSelector :: Selector
+setLensModelSelector :: Selector '[Id NSString] ()
 setLensModelSelector = mkSelector "setLensModel:"
 
 -- | @Selector@ for @ISOSpeed@
-isoSpeedSelector :: Selector
+isoSpeedSelector :: Selector '[] (Id NSNumber)
 isoSpeedSelector = mkSelector "ISOSpeed"
 
 -- | @Selector@ for @setISOSpeed:@
-setISOSpeedSelector :: Selector
+setISOSpeedSelector :: Selector '[Id NSNumber] ()
 setISOSpeedSelector = mkSelector "setISOSpeed:"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] (Id NSNumber)
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[Id NSNumber] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @layerNames@
-layerNamesSelector :: Selector
+layerNamesSelector :: Selector '[] (Id NSArray)
 layerNamesSelector = mkSelector "layerNames"
 
 -- | @Selector@ for @setLayerNames:@
-setLayerNamesSelector :: Selector
+setLayerNamesSelector :: Selector '[Id NSArray] ()
 setLayerNamesSelector = mkSelector "setLayerNames:"
 
 -- | @Selector@ for @whiteBalance@
-whiteBalanceSelector :: Selector
+whiteBalanceSelector :: Selector '[] (Id NSNumber)
 whiteBalanceSelector = mkSelector "whiteBalance"
 
 -- | @Selector@ for @setWhiteBalance:@
-setWhiteBalanceSelector :: Selector
+setWhiteBalanceSelector :: Selector '[Id NSNumber] ()
 setWhiteBalanceSelector = mkSelector "setWhiteBalance:"
 
 -- | @Selector@ for @aperture@
-apertureSelector :: Selector
+apertureSelector :: Selector '[] (Id NSNumber)
 apertureSelector = mkSelector "aperture"
 
 -- | @Selector@ for @setAperture:@
-setApertureSelector :: Selector
+setApertureSelector :: Selector '[Id NSNumber] ()
 setApertureSelector = mkSelector "setAperture:"
 
 -- | @Selector@ for @profileName@
-profileNameSelector :: Selector
+profileNameSelector :: Selector '[] (Id NSString)
 profileNameSelector = mkSelector "profileName"
 
 -- | @Selector@ for @setProfileName:@
-setProfileNameSelector :: Selector
+setProfileNameSelector :: Selector '[Id NSString] ()
 setProfileNameSelector = mkSelector "setProfileName:"
 
 -- | @Selector@ for @resolutionWidthDPI@
-resolutionWidthDPISelector :: Selector
+resolutionWidthDPISelector :: Selector '[] (Id NSNumber)
 resolutionWidthDPISelector = mkSelector "resolutionWidthDPI"
 
 -- | @Selector@ for @setResolutionWidthDPI:@
-setResolutionWidthDPISelector :: Selector
+setResolutionWidthDPISelector :: Selector '[Id NSNumber] ()
 setResolutionWidthDPISelector = mkSelector "setResolutionWidthDPI:"
 
 -- | @Selector@ for @resolutionHeightDPI@
-resolutionHeightDPISelector :: Selector
+resolutionHeightDPISelector :: Selector '[] (Id NSNumber)
 resolutionHeightDPISelector = mkSelector "resolutionHeightDPI"
 
 -- | @Selector@ for @setResolutionHeightDPI:@
-setResolutionHeightDPISelector :: Selector
+setResolutionHeightDPISelector :: Selector '[Id NSNumber] ()
 setResolutionHeightDPISelector = mkSelector "setResolutionHeightDPI:"
 
 -- | @Selector@ for @exposureMode@
-exposureModeSelector :: Selector
+exposureModeSelector :: Selector '[] (Id NSNumber)
 exposureModeSelector = mkSelector "exposureMode"
 
 -- | @Selector@ for @setExposureMode:@
-setExposureModeSelector :: Selector
+setExposureModeSelector :: Selector '[Id NSNumber] ()
 setExposureModeSelector = mkSelector "setExposureMode:"
 
 -- | @Selector@ for @exposureTime@
-exposureTimeSelector :: Selector
+exposureTimeSelector :: Selector '[] (Id NSNumber)
 exposureTimeSelector = mkSelector "exposureTime"
 
 -- | @Selector@ for @setExposureTime:@
-setExposureTimeSelector :: Selector
+setExposureTimeSelector :: Selector '[Id NSNumber] ()
 setExposureTimeSelector = mkSelector "setExposureTime:"
 
 -- | @Selector@ for @EXIFVersion@
-exifVersionSelector :: Selector
+exifVersionSelector :: Selector '[] (Id NSString)
 exifVersionSelector = mkSelector "EXIFVersion"
 
 -- | @Selector@ for @setEXIFVersion:@
-setEXIFVersionSelector :: Selector
+setEXIFVersionSelector :: Selector '[Id NSString] ()
 setEXIFVersionSelector = mkSelector "setEXIFVersion:"
 
 -- | @Selector@ for @EXIFGPSVersion@
-exifgpsVersionSelector :: Selector
+exifgpsVersionSelector :: Selector '[] (Id NSString)
 exifgpsVersionSelector = mkSelector "EXIFGPSVersion"
 
 -- | @Selector@ for @setEXIFGPSVersion:@
-setEXIFGPSVersionSelector :: Selector
+setEXIFGPSVersionSelector :: Selector '[Id NSString] ()
 setEXIFGPSVersionSelector = mkSelector "setEXIFGPSVersion:"
 
 -- | @Selector@ for @hasAlphaChannel@
-hasAlphaChannelSelector :: Selector
+hasAlphaChannelSelector :: Selector '[] (Id NSNumber)
 hasAlphaChannelSelector = mkSelector "hasAlphaChannel"
 
 -- | @Selector@ for @setHasAlphaChannel:@
-setHasAlphaChannelSelector :: Selector
+setHasAlphaChannelSelector :: Selector '[Id NSNumber] ()
 setHasAlphaChannelSelector = mkSelector "setHasAlphaChannel:"
 
 -- | @Selector@ for @redEyeOn@
-redEyeOnSelector :: Selector
+redEyeOnSelector :: Selector '[] (Id NSNumber)
 redEyeOnSelector = mkSelector "redEyeOn"
 
 -- | @Selector@ for @setRedEyeOn:@
-setRedEyeOnSelector :: Selector
+setRedEyeOnSelector :: Selector '[Id NSNumber] ()
 setRedEyeOnSelector = mkSelector "setRedEyeOn:"
 
 -- | @Selector@ for @meteringMode@
-meteringModeSelector :: Selector
+meteringModeSelector :: Selector '[] (Id NSString)
 meteringModeSelector = mkSelector "meteringMode"
 
 -- | @Selector@ for @setMeteringMode:@
-setMeteringModeSelector :: Selector
+setMeteringModeSelector :: Selector '[Id NSString] ()
 setMeteringModeSelector = mkSelector "setMeteringMode:"
 
 -- | @Selector@ for @maxAperture@
-maxApertureSelector :: Selector
+maxApertureSelector :: Selector '[] (Id NSNumber)
 maxApertureSelector = mkSelector "maxAperture"
 
 -- | @Selector@ for @setMaxAperture:@
-setMaxApertureSelector :: Selector
+setMaxApertureSelector :: Selector '[Id NSNumber] ()
 setMaxApertureSelector = mkSelector "setMaxAperture:"
 
 -- | @Selector@ for @fNumber@
-fNumberSelector :: Selector
+fNumberSelector :: Selector '[] (Id NSNumber)
 fNumberSelector = mkSelector "fNumber"
 
 -- | @Selector@ for @setFNumber:@
-setFNumberSelector :: Selector
+setFNumberSelector :: Selector '[Id NSNumber] ()
 setFNumberSelector = mkSelector "setFNumber:"
 
 -- | @Selector@ for @exposureProgram@
-exposureProgramSelector :: Selector
+exposureProgramSelector :: Selector '[] (Id NSString)
 exposureProgramSelector = mkSelector "exposureProgram"
 
 -- | @Selector@ for @setExposureProgram:@
-setExposureProgramSelector :: Selector
+setExposureProgramSelector :: Selector '[Id NSString] ()
 setExposureProgramSelector = mkSelector "setExposureProgram:"
 
 -- | @Selector@ for @exposureTimeString@
-exposureTimeStringSelector :: Selector
+exposureTimeStringSelector :: Selector '[] (Id NSString)
 exposureTimeStringSelector = mkSelector "exposureTimeString"
 
 -- | @Selector@ for @setExposureTimeString:@
-setExposureTimeStringSelector :: Selector
+setExposureTimeStringSelector :: Selector '[Id NSString] ()
 setExposureTimeStringSelector = mkSelector "setExposureTimeString:"
 
 -- | @Selector@ for @audioSampleRate@
-audioSampleRateSelector :: Selector
+audioSampleRateSelector :: Selector '[] (Id NSNumber)
 audioSampleRateSelector = mkSelector "audioSampleRate"
 
 -- | @Selector@ for @setAudioSampleRate:@
-setAudioSampleRateSelector :: Selector
+setAudioSampleRateSelector :: Selector '[Id NSNumber] ()
 setAudioSampleRateSelector = mkSelector "setAudioSampleRate:"
 
 -- | @Selector@ for @audioChannelCount@
-audioChannelCountSelector :: Selector
+audioChannelCountSelector :: Selector '[] (Id NSNumber)
 audioChannelCountSelector = mkSelector "audioChannelCount"
 
 -- | @Selector@ for @setAudioChannelCount:@
-setAudioChannelCountSelector :: Selector
+setAudioChannelCountSelector :: Selector '[Id NSNumber] ()
 setAudioChannelCountSelector = mkSelector "setAudioChannelCount:"
 
 -- | @Selector@ for @tempo@
-tempoSelector :: Selector
+tempoSelector :: Selector '[] (Id NSNumber)
 tempoSelector = mkSelector "tempo"
 
 -- | @Selector@ for @setTempo:@
-setTempoSelector :: Selector
+setTempoSelector :: Selector '[Id NSNumber] ()
 setTempoSelector = mkSelector "setTempo:"
 
 -- | @Selector@ for @keySignature@
-keySignatureSelector :: Selector
+keySignatureSelector :: Selector '[] (Id NSString)
 keySignatureSelector = mkSelector "keySignature"
 
 -- | @Selector@ for @setKeySignature:@
-setKeySignatureSelector :: Selector
+setKeySignatureSelector :: Selector '[Id NSString] ()
 setKeySignatureSelector = mkSelector "setKeySignature:"
 
 -- | @Selector@ for @timeSignature@
-timeSignatureSelector :: Selector
+timeSignatureSelector :: Selector '[] (Id NSString)
 timeSignatureSelector = mkSelector "timeSignature"
 
 -- | @Selector@ for @setTimeSignature:@
-setTimeSignatureSelector :: Selector
+setTimeSignatureSelector :: Selector '[Id NSString] ()
 setTimeSignatureSelector = mkSelector "setTimeSignature:"
 
 -- | @Selector@ for @audioEncodingApplication@
-audioEncodingApplicationSelector :: Selector
+audioEncodingApplicationSelector :: Selector '[] (Id NSString)
 audioEncodingApplicationSelector = mkSelector "audioEncodingApplication"
 
 -- | @Selector@ for @setAudioEncodingApplication:@
-setAudioEncodingApplicationSelector :: Selector
+setAudioEncodingApplicationSelector :: Selector '[Id NSString] ()
 setAudioEncodingApplicationSelector = mkSelector "setAudioEncodingApplication:"
 
 -- | @Selector@ for @composer@
-composerSelector :: Selector
+composerSelector :: Selector '[] (Id NSString)
 composerSelector = mkSelector "composer"
 
 -- | @Selector@ for @setComposer:@
-setComposerSelector :: Selector
+setComposerSelector :: Selector '[Id NSString] ()
 setComposerSelector = mkSelector "setComposer:"
 
 -- | @Selector@ for @lyricist@
-lyricistSelector :: Selector
+lyricistSelector :: Selector '[] (Id NSString)
 lyricistSelector = mkSelector "lyricist"
 
 -- | @Selector@ for @setLyricist:@
-setLyricistSelector :: Selector
+setLyricistSelector :: Selector '[Id NSString] ()
 setLyricistSelector = mkSelector "setLyricist:"
 
 -- | @Selector@ for @album@
-albumSelector :: Selector
+albumSelector :: Selector '[] (Id NSString)
 albumSelector = mkSelector "album"
 
 -- | @Selector@ for @setAlbum:@
-setAlbumSelector :: Selector
+setAlbumSelector :: Selector '[Id NSString] ()
 setAlbumSelector = mkSelector "setAlbum:"
 
 -- | @Selector@ for @artist@
-artistSelector :: Selector
+artistSelector :: Selector '[] (Id NSString)
 artistSelector = mkSelector "artist"
 
 -- | @Selector@ for @setArtist:@
-setArtistSelector :: Selector
+setArtistSelector :: Selector '[Id NSString] ()
 setArtistSelector = mkSelector "setArtist:"
 
 -- | @Selector@ for @audioTrackNumber@
-audioTrackNumberSelector :: Selector
+audioTrackNumberSelector :: Selector '[] (Id NSNumber)
 audioTrackNumberSelector = mkSelector "audioTrackNumber"
 
 -- | @Selector@ for @setAudioTrackNumber:@
-setAudioTrackNumberSelector :: Selector
+setAudioTrackNumberSelector :: Selector '[Id NSNumber] ()
 setAudioTrackNumberSelector = mkSelector "setAudioTrackNumber:"
 
 -- | @Selector@ for @recordingDate@
-recordingDateSelector :: Selector
+recordingDateSelector :: Selector '[] (Id NSDate)
 recordingDateSelector = mkSelector "recordingDate"
 
 -- | @Selector@ for @setRecordingDate:@
-setRecordingDateSelector :: Selector
+setRecordingDateSelector :: Selector '[Id NSDate] ()
 setRecordingDateSelector = mkSelector "setRecordingDate:"
 
 -- | @Selector@ for @musicalGenre@
-musicalGenreSelector :: Selector
+musicalGenreSelector :: Selector '[] (Id NSString)
 musicalGenreSelector = mkSelector "musicalGenre"
 
 -- | @Selector@ for @setMusicalGenre:@
-setMusicalGenreSelector :: Selector
+setMusicalGenreSelector :: Selector '[Id NSString] ()
 setMusicalGenreSelector = mkSelector "setMusicalGenre:"
 
 -- | @Selector@ for @generalMIDISequence@
-generalMIDISequenceSelector :: Selector
+generalMIDISequenceSelector :: Selector '[] (Id NSNumber)
 generalMIDISequenceSelector = mkSelector "generalMIDISequence"
 
 -- | @Selector@ for @setGeneralMIDISequence:@
-setGeneralMIDISequenceSelector :: Selector
+setGeneralMIDISequenceSelector :: Selector '[Id NSNumber] ()
 setGeneralMIDISequenceSelector = mkSelector "setGeneralMIDISequence:"
 
 -- | @Selector@ for @musicalInstrumentCategory@
-musicalInstrumentCategorySelector :: Selector
+musicalInstrumentCategorySelector :: Selector '[] (Id NSString)
 musicalInstrumentCategorySelector = mkSelector "musicalInstrumentCategory"
 
 -- | @Selector@ for @setMusicalInstrumentCategory:@
-setMusicalInstrumentCategorySelector :: Selector
+setMusicalInstrumentCategorySelector :: Selector '[Id NSString] ()
 setMusicalInstrumentCategorySelector = mkSelector "setMusicalInstrumentCategory:"
 
 -- | @Selector@ for @musicalInstrumentName@
-musicalInstrumentNameSelector :: Selector
+musicalInstrumentNameSelector :: Selector '[] (Id NSString)
 musicalInstrumentNameSelector = mkSelector "musicalInstrumentName"
 
 -- | @Selector@ for @setMusicalInstrumentName:@
-setMusicalInstrumentNameSelector :: Selector
+setMusicalInstrumentNameSelector :: Selector '[Id NSString] ()
 setMusicalInstrumentNameSelector = mkSelector "setMusicalInstrumentName:"
 
 -- | @Selector@ for @editors@
-editorsSelector :: Selector
+editorsSelector :: Selector '[] (Id NSArray)
 editorsSelector = mkSelector "editors"
 
 -- | @Selector@ for @setEditors:@
-setEditorsSelector :: Selector
+setEditorsSelector :: Selector '[Id NSArray] ()
 setEditorsSelector = mkSelector "setEditors:"
 
 -- | @Selector@ for @participants@
-participantsSelector :: Selector
+participantsSelector :: Selector '[] (Id NSArray)
 participantsSelector = mkSelector "participants"
 
 -- | @Selector@ for @setParticipants:@
-setParticipantsSelector :: Selector
+setParticipantsSelector :: Selector '[Id NSArray] ()
 setParticipantsSelector = mkSelector "setParticipants:"
 
 -- | @Selector@ for @projects@
-projectsSelector :: Selector
+projectsSelector :: Selector '[] (Id NSArray)
 projectsSelector = mkSelector "projects"
 
 -- | @Selector@ for @setProjects:@
-setProjectsSelector :: Selector
+setProjectsSelector :: Selector '[Id NSArray] ()
 setProjectsSelector = mkSelector "setProjects:"
 
 -- | @Selector@ for @downloadedDate@
-downloadedDateSelector :: Selector
+downloadedDateSelector :: Selector '[] (Id NSDate)
 downloadedDateSelector = mkSelector "downloadedDate"
 
 -- | @Selector@ for @setDownloadedDate:@
-setDownloadedDateSelector :: Selector
+setDownloadedDateSelector :: Selector '[Id NSDate] ()
 setDownloadedDateSelector = mkSelector "setDownloadedDate:"
 
 -- | @Selector@ for @contentSources@
-contentSourcesSelector :: Selector
+contentSourcesSelector :: Selector '[] (Id NSArray)
 contentSourcesSelector = mkSelector "contentSources"
 
 -- | @Selector@ for @setContentSources:@
-setContentSourcesSelector :: Selector
+setContentSourcesSelector :: Selector '[Id NSArray] ()
 setContentSourcesSelector = mkSelector "setContentSources:"
 
 -- | @Selector@ for @comment@
-commentSelector :: Selector
+commentSelector :: Selector '[] (Id NSString)
 commentSelector = mkSelector "comment"
 
 -- | @Selector@ for @setComment:@
-setCommentSelector :: Selector
+setCommentSelector :: Selector '[Id NSString] ()
 setCommentSelector = mkSelector "setComment:"
 
 -- | @Selector@ for @copyright@
-copyrightSelector :: Selector
+copyrightSelector :: Selector '[] (Id NSString)
 copyrightSelector = mkSelector "copyright"
 
 -- | @Selector@ for @setCopyright:@
-setCopyrightSelector :: Selector
+setCopyrightSelector :: Selector '[Id NSString] ()
 setCopyrightSelector = mkSelector "setCopyright:"
 
 -- | @Selector@ for @lastUsedDate@
-lastUsedDateSelector :: Selector
+lastUsedDateSelector :: Selector '[] (Id NSDate)
 lastUsedDateSelector = mkSelector "lastUsedDate"
 
 -- | @Selector@ for @setLastUsedDate:@
-setLastUsedDateSelector :: Selector
+setLastUsedDateSelector :: Selector '[Id NSDate] ()
 setLastUsedDateSelector = mkSelector "setLastUsedDate:"
 
 -- | @Selector@ for @contentCreationDate@
-contentCreationDateSelector :: Selector
+contentCreationDateSelector :: Selector '[] (Id NSDate)
 contentCreationDateSelector = mkSelector "contentCreationDate"
 
 -- | @Selector@ for @setContentCreationDate:@
-setContentCreationDateSelector :: Selector
+setContentCreationDateSelector :: Selector '[Id NSDate] ()
 setContentCreationDateSelector = mkSelector "setContentCreationDate:"
 
 -- | @Selector@ for @contentModificationDate@
-contentModificationDateSelector :: Selector
+contentModificationDateSelector :: Selector '[] (Id NSDate)
 contentModificationDateSelector = mkSelector "contentModificationDate"
 
 -- | @Selector@ for @setContentModificationDate:@
-setContentModificationDateSelector :: Selector
+setContentModificationDateSelector :: Selector '[Id NSDate] ()
 setContentModificationDateSelector = mkSelector "setContentModificationDate:"
 
 -- | @Selector@ for @addedDate@
-addedDateSelector :: Selector
+addedDateSelector :: Selector '[] (Id NSDate)
 addedDateSelector = mkSelector "addedDate"
 
 -- | @Selector@ for @setAddedDate:@
-setAddedDateSelector :: Selector
+setAddedDateSelector :: Selector '[Id NSDate] ()
 setAddedDateSelector = mkSelector "setAddedDate:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @contactKeywords@
-contactKeywordsSelector :: Selector
+contactKeywordsSelector :: Selector '[] (Id NSArray)
 contactKeywordsSelector = mkSelector "contactKeywords"
 
 -- | @Selector@ for @setContactKeywords:@
-setContactKeywordsSelector :: Selector
+setContactKeywordsSelector :: Selector '[Id NSArray] ()
 setContactKeywordsSelector = mkSelector "setContactKeywords:"
 
 -- | @Selector@ for @codecs@
-codecsSelector :: Selector
+codecsSelector :: Selector '[] (Id NSArray)
 codecsSelector = mkSelector "codecs"
 
 -- | @Selector@ for @setCodecs:@
-setCodecsSelector :: Selector
+setCodecsSelector :: Selector '[Id NSArray] ()
 setCodecsSelector = mkSelector "setCodecs:"
 
 -- | @Selector@ for @mediaTypes@
-mediaTypesSelector :: Selector
+mediaTypesSelector :: Selector '[] (Id NSArray)
 mediaTypesSelector = mkSelector "mediaTypes"
 
 -- | @Selector@ for @setMediaTypes:@
-setMediaTypesSelector :: Selector
+setMediaTypesSelector :: Selector '[Id NSArray] ()
 setMediaTypesSelector = mkSelector "setMediaTypes:"
 
 -- | @Selector@ for @streamable@
-streamableSelector :: Selector
+streamableSelector :: Selector '[] (Id NSNumber)
 streamableSelector = mkSelector "streamable"
 
 -- | @Selector@ for @setStreamable:@
-setStreamableSelector :: Selector
+setStreamableSelector :: Selector '[Id NSNumber] ()
 setStreamableSelector = mkSelector "setStreamable:"
 
 -- | @Selector@ for @totalBitRate@
-totalBitRateSelector :: Selector
+totalBitRateSelector :: Selector '[] (Id NSNumber)
 totalBitRateSelector = mkSelector "totalBitRate"
 
 -- | @Selector@ for @setTotalBitRate:@
-setTotalBitRateSelector :: Selector
+setTotalBitRateSelector :: Selector '[Id NSNumber] ()
 setTotalBitRateSelector = mkSelector "setTotalBitRate:"
 
 -- | @Selector@ for @videoBitRate@
-videoBitRateSelector :: Selector
+videoBitRateSelector :: Selector '[] (Id NSNumber)
 videoBitRateSelector = mkSelector "videoBitRate"
 
 -- | @Selector@ for @setVideoBitRate:@
-setVideoBitRateSelector :: Selector
+setVideoBitRateSelector :: Selector '[Id NSNumber] ()
 setVideoBitRateSelector = mkSelector "setVideoBitRate:"
 
 -- | @Selector@ for @audioBitRate@
-audioBitRateSelector :: Selector
+audioBitRateSelector :: Selector '[] (Id NSNumber)
 audioBitRateSelector = mkSelector "audioBitRate"
 
 -- | @Selector@ for @setAudioBitRate:@
-setAudioBitRateSelector :: Selector
+setAudioBitRateSelector :: Selector '[Id NSNumber] ()
 setAudioBitRateSelector = mkSelector "setAudioBitRate:"
 
 -- | @Selector@ for @deliveryType@
-deliveryTypeSelector :: Selector
+deliveryTypeSelector :: Selector '[] (Id NSNumber)
 deliveryTypeSelector = mkSelector "deliveryType"
 
 -- | @Selector@ for @setDeliveryType:@
-setDeliveryTypeSelector :: Selector
+setDeliveryTypeSelector :: Selector '[Id NSNumber] ()
 setDeliveryTypeSelector = mkSelector "setDeliveryType:"
 
 -- | @Selector@ for @organizations@
-organizationsSelector :: Selector
+organizationsSelector :: Selector '[] (Id NSArray)
 organizationsSelector = mkSelector "organizations"
 
 -- | @Selector@ for @setOrganizations:@
-setOrganizationsSelector :: Selector
+setOrganizationsSelector :: Selector '[Id NSArray] ()
 setOrganizationsSelector = mkSelector "setOrganizations:"
 
 -- | @Selector@ for @role@
-roleSelector :: Selector
+roleSelector :: Selector '[] (Id NSString)
 roleSelector = mkSelector "role"
 
 -- | @Selector@ for @setRole:@
-setRoleSelector :: Selector
+setRoleSelector :: Selector '[Id NSString] ()
 setRoleSelector = mkSelector "setRole:"
 
 -- | @Selector@ for @languages@
-languagesSelector :: Selector
+languagesSelector :: Selector '[] (Id NSArray)
 languagesSelector = mkSelector "languages"
 
 -- | @Selector@ for @setLanguages:@
-setLanguagesSelector :: Selector
+setLanguagesSelector :: Selector '[Id NSArray] ()
 setLanguagesSelector = mkSelector "setLanguages:"
 
 -- | @Selector@ for @rights@
-rightsSelector :: Selector
+rightsSelector :: Selector '[] (Id NSString)
 rightsSelector = mkSelector "rights"
 
 -- | @Selector@ for @setRights:@
-setRightsSelector :: Selector
+setRightsSelector :: Selector '[Id NSString] ()
 setRightsSelector = mkSelector "setRights:"
 
 -- | @Selector@ for @publishers@
-publishersSelector :: Selector
+publishersSelector :: Selector '[] (Id NSArray)
 publishersSelector = mkSelector "publishers"
 
 -- | @Selector@ for @setPublishers:@
-setPublishersSelector :: Selector
+setPublishersSelector :: Selector '[Id NSArray] ()
 setPublishersSelector = mkSelector "setPublishers:"
 
 -- | @Selector@ for @contributors@
-contributorsSelector :: Selector
+contributorsSelector :: Selector '[] (Id NSArray)
 contributorsSelector = mkSelector "contributors"
 
 -- | @Selector@ for @setContributors:@
-setContributorsSelector :: Selector
+setContributorsSelector :: Selector '[Id NSArray] ()
 setContributorsSelector = mkSelector "setContributors:"
 
 -- | @Selector@ for @coverage@
-coverageSelector :: Selector
+coverageSelector :: Selector '[] (Id NSArray)
 coverageSelector = mkSelector "coverage"
 
 -- | @Selector@ for @setCoverage:@
-setCoverageSelector :: Selector
+setCoverageSelector :: Selector '[Id NSArray] ()
 setCoverageSelector = mkSelector "setCoverage:"
 
 -- | @Selector@ for @rating@
-ratingSelector :: Selector
+ratingSelector :: Selector '[] (Id NSNumber)
 ratingSelector = mkSelector "rating"
 
 -- | @Selector@ for @setRating:@
-setRatingSelector :: Selector
+setRatingSelector :: Selector '[Id NSNumber] ()
 setRatingSelector = mkSelector "setRating:"
 
 -- | @Selector@ for @ratingDescription@
-ratingDescriptionSelector :: Selector
+ratingDescriptionSelector :: Selector '[] (Id NSString)
 ratingDescriptionSelector = mkSelector "ratingDescription"
 
 -- | @Selector@ for @setRatingDescription:@
-setRatingDescriptionSelector :: Selector
+setRatingDescriptionSelector :: Selector '[Id NSString] ()
 setRatingDescriptionSelector = mkSelector "setRatingDescription:"
 
 -- | @Selector@ for @playCount@
-playCountSelector :: Selector
+playCountSelector :: Selector '[] (Id NSNumber)
 playCountSelector = mkSelector "playCount"
 
 -- | @Selector@ for @setPlayCount:@
-setPlayCountSelector :: Selector
+setPlayCountSelector :: Selector '[Id NSNumber] ()
 setPlayCountSelector = mkSelector "setPlayCount:"
 
 -- | @Selector@ for @information@
-informationSelector :: Selector
+informationSelector :: Selector '[] (Id NSString)
 informationSelector = mkSelector "information"
 
 -- | @Selector@ for @setInformation:@
-setInformationSelector :: Selector
+setInformationSelector :: Selector '[Id NSString] ()
 setInformationSelector = mkSelector "setInformation:"
 
 -- | @Selector@ for @director@
-directorSelector :: Selector
+directorSelector :: Selector '[] (Id NSString)
 directorSelector = mkSelector "director"
 
 -- | @Selector@ for @setDirector:@
-setDirectorSelector :: Selector
+setDirectorSelector :: Selector '[Id NSString] ()
 setDirectorSelector = mkSelector "setDirector:"
 
 -- | @Selector@ for @producer@
-producerSelector :: Selector
+producerSelector :: Selector '[] (Id NSString)
 producerSelector = mkSelector "producer"
 
 -- | @Selector@ for @setProducer:@
-setProducerSelector :: Selector
+setProducerSelector :: Selector '[Id NSString] ()
 setProducerSelector = mkSelector "setProducer:"
 
 -- | @Selector@ for @genre@
-genreSelector :: Selector
+genreSelector :: Selector '[] (Id NSString)
 genreSelector = mkSelector "genre"
 
 -- | @Selector@ for @setGenre:@
-setGenreSelector :: Selector
+setGenreSelector :: Selector '[Id NSString] ()
 setGenreSelector = mkSelector "setGenre:"
 
 -- | @Selector@ for @performers@
-performersSelector :: Selector
+performersSelector :: Selector '[] (Id NSArray)
 performersSelector = mkSelector "performers"
 
 -- | @Selector@ for @setPerformers:@
-setPerformersSelector :: Selector
+setPerformersSelector :: Selector '[Id NSArray] ()
 setPerformersSelector = mkSelector "setPerformers:"
 
 -- | @Selector@ for @originalFormat@
-originalFormatSelector :: Selector
+originalFormatSelector :: Selector '[] (Id NSString)
 originalFormatSelector = mkSelector "originalFormat"
 
 -- | @Selector@ for @setOriginalFormat:@
-setOriginalFormatSelector :: Selector
+setOriginalFormatSelector :: Selector '[Id NSString] ()
 setOriginalFormatSelector = mkSelector "setOriginalFormat:"
 
 -- | @Selector@ for @originalSource@
-originalSourceSelector :: Selector
+originalSourceSelector :: Selector '[] (Id NSString)
 originalSourceSelector = mkSelector "originalSource"
 
 -- | @Selector@ for @setOriginalSource:@
-setOriginalSourceSelector :: Selector
+setOriginalSourceSelector :: Selector '[Id NSString] ()
 setOriginalSourceSelector = mkSelector "setOriginalSource:"
 
 -- | @Selector@ for @local@
-localSelector :: Selector
+localSelector :: Selector '[] (Id NSNumber)
 localSelector = mkSelector "local"
 
 -- | @Selector@ for @setLocal:@
-setLocalSelector :: Selector
+setLocalSelector :: Selector '[Id NSNumber] ()
 setLocalSelector = mkSelector "setLocal:"
 
 -- | @Selector@ for @contentRating@
-contentRatingSelector :: Selector
+contentRatingSelector :: Selector '[] (Id NSNumber)
 contentRatingSelector = mkSelector "contentRating"
 
 -- | @Selector@ for @setContentRating:@
-setContentRatingSelector :: Selector
+setContentRatingSelector :: Selector '[Id NSNumber] ()
 setContentRatingSelector = mkSelector "setContentRating:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @accountIdentifier@
-accountIdentifierSelector :: Selector
+accountIdentifierSelector :: Selector '[] (Id NSString)
 accountIdentifierSelector = mkSelector "accountIdentifier"
 
 -- | @Selector@ for @setAccountIdentifier:@
-setAccountIdentifierSelector :: Selector
+setAccountIdentifierSelector :: Selector '[Id NSString] ()
 setAccountIdentifierSelector = mkSelector "setAccountIdentifier:"
 
 -- | @Selector@ for @accountHandles@
-accountHandlesSelector :: Selector
+accountHandlesSelector :: Selector '[] (Id NSArray)
 accountHandlesSelector = mkSelector "accountHandles"
 
 -- | @Selector@ for @setAccountHandles:@
-setAccountHandlesSelector :: Selector
+setAccountHandlesSelector :: Selector '[Id NSArray] ()
 setAccountHandlesSelector = mkSelector "setAccountHandles:"
 
 -- | @Selector@ for @HTMLContentData@
-htmlContentDataSelector :: Selector
+htmlContentDataSelector :: Selector '[] (Id NSData)
 htmlContentDataSelector = mkSelector "HTMLContentData"
 
 -- | @Selector@ for @setHTMLContentData:@
-setHTMLContentDataSelector :: Selector
+setHTMLContentDataSelector :: Selector '[Id NSData] ()
 setHTMLContentDataSelector = mkSelector "setHTMLContentData:"
 
 -- | @Selector@ for @textContent@
-textContentSelector :: Selector
+textContentSelector :: Selector '[] (Id NSString)
 textContentSelector = mkSelector "textContent"
 
 -- | @Selector@ for @setTextContent:@
-setTextContentSelector :: Selector
+setTextContentSelector :: Selector '[Id NSString] ()
 setTextContentSelector = mkSelector "setTextContent:"
 
 -- | @Selector@ for @authors@
-authorsSelector :: Selector
+authorsSelector :: Selector '[] (Id NSArray)
 authorsSelector = mkSelector "authors"
 
 -- | @Selector@ for @setAuthors:@
-setAuthorsSelector :: Selector
+setAuthorsSelector :: Selector '[Id NSArray] ()
 setAuthorsSelector = mkSelector "setAuthors:"
 
 -- | @Selector@ for @primaryRecipients@
-primaryRecipientsSelector :: Selector
+primaryRecipientsSelector :: Selector '[] (Id NSArray)
 primaryRecipientsSelector = mkSelector "primaryRecipients"
 
 -- | @Selector@ for @setPrimaryRecipients:@
-setPrimaryRecipientsSelector :: Selector
+setPrimaryRecipientsSelector :: Selector '[Id NSArray] ()
 setPrimaryRecipientsSelector = mkSelector "setPrimaryRecipients:"
 
 -- | @Selector@ for @additionalRecipients@
-additionalRecipientsSelector :: Selector
+additionalRecipientsSelector :: Selector '[] (Id NSArray)
 additionalRecipientsSelector = mkSelector "additionalRecipients"
 
 -- | @Selector@ for @setAdditionalRecipients:@
-setAdditionalRecipientsSelector :: Selector
+setAdditionalRecipientsSelector :: Selector '[Id NSArray] ()
 setAdditionalRecipientsSelector = mkSelector "setAdditionalRecipients:"
 
 -- | @Selector@ for @hiddenAdditionalRecipients@
-hiddenAdditionalRecipientsSelector :: Selector
+hiddenAdditionalRecipientsSelector :: Selector '[] (Id NSArray)
 hiddenAdditionalRecipientsSelector = mkSelector "hiddenAdditionalRecipients"
 
 -- | @Selector@ for @setHiddenAdditionalRecipients:@
-setHiddenAdditionalRecipientsSelector :: Selector
+setHiddenAdditionalRecipientsSelector :: Selector '[Id NSArray] ()
 setHiddenAdditionalRecipientsSelector = mkSelector "setHiddenAdditionalRecipients:"
 
 -- | @Selector@ for @emailHeaders@
-emailHeadersSelector :: Selector
+emailHeadersSelector :: Selector '[] (Id NSDictionary)
 emailHeadersSelector = mkSelector "emailHeaders"
 
 -- | @Selector@ for @setEmailHeaders:@
-setEmailHeadersSelector :: Selector
+setEmailHeadersSelector :: Selector '[Id NSDictionary] ()
 setEmailHeadersSelector = mkSelector "setEmailHeaders:"
 
 -- | @Selector@ for @mailboxIdentifiers@
-mailboxIdentifiersSelector :: Selector
+mailboxIdentifiersSelector :: Selector '[] (Id NSArray)
 mailboxIdentifiersSelector = mkSelector "mailboxIdentifiers"
 
 -- | @Selector@ for @setMailboxIdentifiers:@
-setMailboxIdentifiersSelector :: Selector
+setMailboxIdentifiersSelector :: Selector '[Id NSArray] ()
 setMailboxIdentifiersSelector = mkSelector "setMailboxIdentifiers:"
 
 -- | @Selector@ for @authorNames@
-authorNamesSelector :: Selector
+authorNamesSelector :: Selector '[] (Id NSArray)
 authorNamesSelector = mkSelector "authorNames"
 
 -- | @Selector@ for @setAuthorNames:@
-setAuthorNamesSelector :: Selector
+setAuthorNamesSelector :: Selector '[Id NSArray] ()
 setAuthorNamesSelector = mkSelector "setAuthorNames:"
 
 -- | @Selector@ for @recipientNames@
-recipientNamesSelector :: Selector
+recipientNamesSelector :: Selector '[] (Id NSArray)
 recipientNamesSelector = mkSelector "recipientNames"
 
 -- | @Selector@ for @setRecipientNames:@
-setRecipientNamesSelector :: Selector
+setRecipientNamesSelector :: Selector '[Id NSArray] ()
 setRecipientNamesSelector = mkSelector "setRecipientNames:"
 
 -- | @Selector@ for @authorEmailAddresses@
-authorEmailAddressesSelector :: Selector
+authorEmailAddressesSelector :: Selector '[] (Id NSArray)
 authorEmailAddressesSelector = mkSelector "authorEmailAddresses"
 
 -- | @Selector@ for @setAuthorEmailAddresses:@
-setAuthorEmailAddressesSelector :: Selector
+setAuthorEmailAddressesSelector :: Selector '[Id NSArray] ()
 setAuthorEmailAddressesSelector = mkSelector "setAuthorEmailAddresses:"
 
 -- | @Selector@ for @recipientEmailAddresses@
-recipientEmailAddressesSelector :: Selector
+recipientEmailAddressesSelector :: Selector '[] (Id NSArray)
 recipientEmailAddressesSelector = mkSelector "recipientEmailAddresses"
 
 -- | @Selector@ for @setRecipientEmailAddresses:@
-setRecipientEmailAddressesSelector :: Selector
+setRecipientEmailAddressesSelector :: Selector '[Id NSArray] ()
 setRecipientEmailAddressesSelector = mkSelector "setRecipientEmailAddresses:"
 
 -- | @Selector@ for @authorAddresses@
-authorAddressesSelector :: Selector
+authorAddressesSelector :: Selector '[] (Id NSArray)
 authorAddressesSelector = mkSelector "authorAddresses"
 
 -- | @Selector@ for @setAuthorAddresses:@
-setAuthorAddressesSelector :: Selector
+setAuthorAddressesSelector :: Selector '[Id NSArray] ()
 setAuthorAddressesSelector = mkSelector "setAuthorAddresses:"
 
 -- | @Selector@ for @recipientAddresses@
-recipientAddressesSelector :: Selector
+recipientAddressesSelector :: Selector '[] (Id NSArray)
 recipientAddressesSelector = mkSelector "recipientAddresses"
 
 -- | @Selector@ for @setRecipientAddresses:@
-setRecipientAddressesSelector :: Selector
+setRecipientAddressesSelector :: Selector '[Id NSArray] ()
 setRecipientAddressesSelector = mkSelector "setRecipientAddresses:"
 
 -- | @Selector@ for @phoneNumbers@
-phoneNumbersSelector :: Selector
+phoneNumbersSelector :: Selector '[] (Id NSArray)
 phoneNumbersSelector = mkSelector "phoneNumbers"
 
 -- | @Selector@ for @setPhoneNumbers:@
-setPhoneNumbersSelector :: Selector
+setPhoneNumbersSelector :: Selector '[Id NSArray] ()
 setPhoneNumbersSelector = mkSelector "setPhoneNumbers:"
 
 -- | @Selector@ for @emailAddresses@
-emailAddressesSelector :: Selector
+emailAddressesSelector :: Selector '[] (Id NSArray)
 emailAddressesSelector = mkSelector "emailAddresses"
 
 -- | @Selector@ for @setEmailAddresses:@
-setEmailAddressesSelector :: Selector
+setEmailAddressesSelector :: Selector '[Id NSArray] ()
 setEmailAddressesSelector = mkSelector "setEmailAddresses:"
 
 -- | @Selector@ for @instantMessageAddresses@
-instantMessageAddressesSelector :: Selector
+instantMessageAddressesSelector :: Selector '[] (Id NSArray)
 instantMessageAddressesSelector = mkSelector "instantMessageAddresses"
 
 -- | @Selector@ for @setInstantMessageAddresses:@
-setInstantMessageAddressesSelector :: Selector
+setInstantMessageAddressesSelector :: Selector '[Id NSArray] ()
 setInstantMessageAddressesSelector = mkSelector "setInstantMessageAddresses:"
 
 -- | @Selector@ for @likelyJunk@
-likelyJunkSelector :: Selector
+likelyJunkSelector :: Selector '[] (Id NSNumber)
 likelyJunkSelector = mkSelector "likelyJunk"
 
 -- | @Selector@ for @setLikelyJunk:@
-setLikelyJunkSelector :: Selector
+setLikelyJunkSelector :: Selector '[Id NSNumber] ()
 setLikelyJunkSelector = mkSelector "setLikelyJunk:"
 
 -- | @Selector@ for @isPriority@
-isPrioritySelector :: Selector
+isPrioritySelector :: Selector '[] RawId
 isPrioritySelector = mkSelector "isPriority"
 
 -- | @Selector@ for @textContentSummary@
-textContentSummarySelector :: Selector
+textContentSummarySelector :: Selector '[] RawId
 textContentSummarySelector = mkSelector "textContentSummary"
 
 -- | @Selector@ for @transcribedTextContent@
-transcribedTextContentSelector :: Selector
+transcribedTextContentSelector :: Selector '[] RawId
 transcribedTextContentSelector = mkSelector "transcribedTextContent"
 
 -- | @Selector@ for @setTranscribedTextContent:@
-setTranscribedTextContentSelector :: Selector
+setTranscribedTextContentSelector :: Selector '[RawId] ()
 setTranscribedTextContentSelector = mkSelector "setTranscribedTextContent:"
 
 -- | @Selector@ for @dueDate@
-dueDateSelector :: Selector
+dueDateSelector :: Selector '[] (Id NSDate)
 dueDateSelector = mkSelector "dueDate"
 
 -- | @Selector@ for @setDueDate:@
-setDueDateSelector :: Selector
+setDueDateSelector :: Selector '[Id NSDate] ()
 setDueDateSelector = mkSelector "setDueDate:"
 
 -- | @Selector@ for @completionDate@
-completionDateSelector :: Selector
+completionDateSelector :: Selector '[] (Id NSDate)
 completionDateSelector = mkSelector "completionDate"
 
 -- | @Selector@ for @setCompletionDate:@
-setCompletionDateSelector :: Selector
+setCompletionDateSelector :: Selector '[Id NSDate] ()
 setCompletionDateSelector = mkSelector "setCompletionDate:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @setStartDate:@
-setStartDateSelector :: Selector
+setStartDateSelector :: Selector '[Id NSDate] ()
 setStartDateSelector = mkSelector "setStartDate:"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @setEndDate:@
-setEndDateSelector :: Selector
+setEndDateSelector :: Selector '[Id NSDate] ()
 setEndDateSelector = mkSelector "setEndDate:"
 
 -- | @Selector@ for @importantDates@
-importantDatesSelector :: Selector
+importantDatesSelector :: Selector '[] (Id NSArray)
 importantDatesSelector = mkSelector "importantDates"
 
 -- | @Selector@ for @setImportantDates:@
-setImportantDatesSelector :: Selector
+setImportantDatesSelector :: Selector '[Id NSArray] ()
 setImportantDatesSelector = mkSelector "setImportantDates:"
 
 -- | @Selector@ for @allDay@
-allDaySelector :: Selector
+allDaySelector :: Selector '[] (Id NSNumber)
 allDaySelector = mkSelector "allDay"
 
 -- | @Selector@ for @setAllDay:@
-setAllDaySelector :: Selector
+setAllDaySelector :: Selector '[Id NSNumber] ()
 setAllDaySelector = mkSelector "setAllDay:"
 
 -- | @Selector@ for @subject@
-subjectSelector :: Selector
+subjectSelector :: Selector '[] (Id NSString)
 subjectSelector = mkSelector "subject"
 
 -- | @Selector@ for @setSubject:@
-setSubjectSelector :: Selector
+setSubjectSelector :: Selector '[Id NSString] ()
 setSubjectSelector = mkSelector "setSubject:"
 
 -- | @Selector@ for @theme@
-themeSelector :: Selector
+themeSelector :: Selector '[] (Id NSString)
 themeSelector = mkSelector "theme"
 
 -- | @Selector@ for @setTheme:@
-setThemeSelector :: Selector
+setThemeSelector :: Selector '[Id NSString] ()
 setThemeSelector = mkSelector "setTheme:"
 
 -- | @Selector@ for @contentDescription@
-contentDescriptionSelector :: Selector
+contentDescriptionSelector :: Selector '[] (Id NSString)
 contentDescriptionSelector = mkSelector "contentDescription"
 
 -- | @Selector@ for @setContentDescription:@
-setContentDescriptionSelector :: Selector
+setContentDescriptionSelector :: Selector '[Id NSString] ()
 setContentDescriptionSelector = mkSelector "setContentDescription:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @audiences@
-audiencesSelector :: Selector
+audiencesSelector :: Selector '[] (Id NSArray)
 audiencesSelector = mkSelector "audiences"
 
 -- | @Selector@ for @setAudiences:@
-setAudiencesSelector :: Selector
+setAudiencesSelector :: Selector '[Id NSArray] ()
 setAudiencesSelector = mkSelector "setAudiences:"
 
 -- | @Selector@ for @fileSize@
-fileSizeSelector :: Selector
+fileSizeSelector :: Selector '[] (Id NSNumber)
 fileSizeSelector = mkSelector "fileSize"
 
 -- | @Selector@ for @setFileSize:@
-setFileSizeSelector :: Selector
+setFileSizeSelector :: Selector '[Id NSNumber] ()
 setFileSizeSelector = mkSelector "setFileSize:"
 
 -- | @Selector@ for @pageCount@
-pageCountSelector :: Selector
+pageCountSelector :: Selector '[] (Id NSNumber)
 pageCountSelector = mkSelector "pageCount"
 
 -- | @Selector@ for @setPageCount:@
-setPageCountSelector :: Selector
+setPageCountSelector :: Selector '[Id NSNumber] ()
 setPageCountSelector = mkSelector "setPageCount:"
 
 -- | @Selector@ for @pageWidth@
-pageWidthSelector :: Selector
+pageWidthSelector :: Selector '[] (Id NSNumber)
 pageWidthSelector = mkSelector "pageWidth"
 
 -- | @Selector@ for @setPageWidth:@
-setPageWidthSelector :: Selector
+setPageWidthSelector :: Selector '[Id NSNumber] ()
 setPageWidthSelector = mkSelector "setPageWidth:"
 
 -- | @Selector@ for @pageHeight@
-pageHeightSelector :: Selector
+pageHeightSelector :: Selector '[] (Id NSNumber)
 pageHeightSelector = mkSelector "pageHeight"
 
 -- | @Selector@ for @setPageHeight:@
-setPageHeightSelector :: Selector
+setPageHeightSelector :: Selector '[Id NSNumber] ()
 setPageHeightSelector = mkSelector "setPageHeight:"
 
 -- | @Selector@ for @securityMethod@
-securityMethodSelector :: Selector
+securityMethodSelector :: Selector '[] (Id NSString)
 securityMethodSelector = mkSelector "securityMethod"
 
 -- | @Selector@ for @setSecurityMethod:@
-setSecurityMethodSelector :: Selector
+setSecurityMethodSelector :: Selector '[Id NSString] ()
 setSecurityMethodSelector = mkSelector "setSecurityMethod:"
 
 -- | @Selector@ for @creator@
-creatorSelector :: Selector
+creatorSelector :: Selector '[] (Id NSString)
 creatorSelector = mkSelector "creator"
 
 -- | @Selector@ for @setCreator:@
-setCreatorSelector :: Selector
+setCreatorSelector :: Selector '[Id NSString] ()
 setCreatorSelector = mkSelector "setCreator:"
 
 -- | @Selector@ for @encodingApplications@
-encodingApplicationsSelector :: Selector
+encodingApplicationsSelector :: Selector '[] (Id NSArray)
 encodingApplicationsSelector = mkSelector "encodingApplications"
 
 -- | @Selector@ for @setEncodingApplications:@
-setEncodingApplicationsSelector :: Selector
+setEncodingApplicationsSelector :: Selector '[Id NSArray] ()
 setEncodingApplicationsSelector = mkSelector "setEncodingApplications:"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] (Id NSString)
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @setKind:@
-setKindSelector :: Selector
+setKindSelector :: Selector '[Id NSString] ()
 setKindSelector = mkSelector "setKind:"
 
 -- | @Selector@ for @fontNames@
-fontNamesSelector :: Selector
+fontNamesSelector :: Selector '[] (Id NSArray)
 fontNamesSelector = mkSelector "fontNames"
 
 -- | @Selector@ for @setFontNames:@
-setFontNamesSelector :: Selector
+setFontNamesSelector :: Selector '[Id NSArray] ()
 setFontNamesSelector = mkSelector "setFontNames:"
 
 -- | @Selector@ for @containerTitle@
-containerTitleSelector :: Selector
+containerTitleSelector :: Selector '[] (Id NSString)
 containerTitleSelector = mkSelector "containerTitle"
 
 -- | @Selector@ for @setContainerTitle:@
-setContainerTitleSelector :: Selector
+setContainerTitleSelector :: Selector '[Id NSString] ()
 setContainerTitleSelector = mkSelector "setContainerTitle:"
 
 -- | @Selector@ for @containerDisplayName@
-containerDisplayNameSelector :: Selector
+containerDisplayNameSelector :: Selector '[] (Id NSString)
 containerDisplayNameSelector = mkSelector "containerDisplayName"
 
 -- | @Selector@ for @setContainerDisplayName:@
-setContainerDisplayNameSelector :: Selector
+setContainerDisplayNameSelector :: Selector '[Id NSString] ()
 setContainerDisplayNameSelector = mkSelector "setContainerDisplayName:"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 
 -- | @Selector@ for @setContainerIdentifier:@
-setContainerIdentifierSelector :: Selector
+setContainerIdentifierSelector :: Selector '[Id NSString] ()
 setContainerIdentifierSelector = mkSelector "setContainerIdentifier:"
 
 -- | @Selector@ for @containerOrder@
-containerOrderSelector :: Selector
+containerOrderSelector :: Selector '[] (Id NSNumber)
 containerOrderSelector = mkSelector "containerOrder"
 
 -- | @Selector@ for @setContainerOrder:@
-setContainerOrderSelector :: Selector
+setContainerOrderSelector :: Selector '[Id NSNumber] ()
 setContainerOrderSelector = mkSelector "setContainerOrder:"
 
 -- | @Selector@ for @supportsPhoneCall@
-supportsPhoneCallSelector :: Selector
+supportsPhoneCallSelector :: Selector '[] (Id NSNumber)
 supportsPhoneCallSelector = mkSelector "supportsPhoneCall"
 
 -- | @Selector@ for @setSupportsPhoneCall:@
-setSupportsPhoneCallSelector :: Selector
+setSupportsPhoneCallSelector :: Selector '[Id NSNumber] ()
 setSupportsPhoneCallSelector = mkSelector "setSupportsPhoneCall:"
 
 -- | @Selector@ for @supportsNavigation@
-supportsNavigationSelector :: Selector
+supportsNavigationSelector :: Selector '[] (Id NSNumber)
 supportsNavigationSelector = mkSelector "supportsNavigation"
 
 -- | @Selector@ for @setSupportsNavigation:@
-setSupportsNavigationSelector :: Selector
+setSupportsNavigationSelector :: Selector '[Id NSNumber] ()
 setSupportsNavigationSelector = mkSelector "setSupportsNavigation:"
 
 -- | @Selector@ for @actionIdentifiers@
-actionIdentifiersSelector :: Selector
+actionIdentifiersSelector :: Selector '[] (Id NSArray)
 actionIdentifiersSelector = mkSelector "actionIdentifiers"
 
 -- | @Selector@ for @setActionIdentifiers:@
-setActionIdentifiersSelector :: Selector
+setActionIdentifiersSelector :: Selector '[Id NSArray] ()
 setActionIdentifiersSelector = mkSelector "setActionIdentifiers:"
 
 -- | @Selector@ for @sharedItemContentType@
-sharedItemContentTypeSelector :: Selector
+sharedItemContentTypeSelector :: Selector '[] (Id UTType)
 sharedItemContentTypeSelector = mkSelector "sharedItemContentType"
 
 -- | @Selector@ for @setSharedItemContentType:@
-setSharedItemContentTypeSelector :: Selector
+setSharedItemContentTypeSelector :: Selector '[Id UTType] ()
 setSharedItemContentTypeSelector = mkSelector "setSharedItemContentType:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @setDisplayName:@
-setDisplayNameSelector :: Selector
+setDisplayNameSelector :: Selector '[Id NSString] ()
 setDisplayNameSelector = mkSelector "setDisplayName:"
 
 -- | @Selector@ for @alternateNames@
-alternateNamesSelector :: Selector
+alternateNamesSelector :: Selector '[] (Id NSArray)
 alternateNamesSelector = mkSelector "alternateNames"
 
 -- | @Selector@ for @setAlternateNames:@
-setAlternateNamesSelector :: Selector
+setAlternateNamesSelector :: Selector '[Id NSArray] ()
 setAlternateNamesSelector = mkSelector "setAlternateNames:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[Id NSString] ()
 setPathSelector = mkSelector "setPath:"
 
 -- | @Selector@ for @contentURL@
-contentURLSelector :: Selector
+contentURLSelector :: Selector '[] (Id NSURL)
 contentURLSelector = mkSelector "contentURL"
 
 -- | @Selector@ for @setContentURL:@
-setContentURLSelector :: Selector
+setContentURLSelector :: Selector '[Id NSURL] ()
 setContentURLSelector = mkSelector "setContentURL:"
 
 -- | @Selector@ for @thumbnailURL@
-thumbnailURLSelector :: Selector
+thumbnailURLSelector :: Selector '[] (Id NSURL)
 thumbnailURLSelector = mkSelector "thumbnailURL"
 
 -- | @Selector@ for @setThumbnailURL:@
-setThumbnailURLSelector :: Selector
+setThumbnailURLSelector :: Selector '[Id NSURL] ()
 setThumbnailURLSelector = mkSelector "setThumbnailURL:"
 
 -- | @Selector@ for @thumbnailData@
-thumbnailDataSelector :: Selector
+thumbnailDataSelector :: Selector '[] (Id NSData)
 thumbnailDataSelector = mkSelector "thumbnailData"
 
 -- | @Selector@ for @setThumbnailData:@
-setThumbnailDataSelector :: Selector
+setThumbnailDataSelector :: Selector '[Id NSData] ()
 setThumbnailDataSelector = mkSelector "setThumbnailData:"
 
 -- | @Selector@ for @darkThumbnailURL@
-darkThumbnailURLSelector :: Selector
+darkThumbnailURLSelector :: Selector '[] (Id NSURL)
 darkThumbnailURLSelector = mkSelector "darkThumbnailURL"
 
 -- | @Selector@ for @setDarkThumbnailURL:@
-setDarkThumbnailURLSelector :: Selector
+setDarkThumbnailURLSelector :: Selector '[Id NSURL] ()
 setDarkThumbnailURLSelector = mkSelector "setDarkThumbnailURL:"
 
 -- | @Selector@ for @relatedUniqueIdentifier@
-relatedUniqueIdentifierSelector :: Selector
+relatedUniqueIdentifierSelector :: Selector '[] (Id NSString)
 relatedUniqueIdentifierSelector = mkSelector "relatedUniqueIdentifier"
 
 -- | @Selector@ for @setRelatedUniqueIdentifier:@
-setRelatedUniqueIdentifierSelector :: Selector
+setRelatedUniqueIdentifierSelector :: Selector '[Id NSString] ()
 setRelatedUniqueIdentifierSelector = mkSelector "setRelatedUniqueIdentifier:"
 
 -- | @Selector@ for @weakRelatedUniqueIdentifier@
-weakRelatedUniqueIdentifierSelector :: Selector
+weakRelatedUniqueIdentifierSelector :: Selector '[] RawId
 weakRelatedUniqueIdentifierSelector = mkSelector "weakRelatedUniqueIdentifier"
 
 -- | @Selector@ for @setWeakRelatedUniqueIdentifier:@
-setWeakRelatedUniqueIdentifierSelector :: Selector
+setWeakRelatedUniqueIdentifierSelector :: Selector '[RawId] ()
 setWeakRelatedUniqueIdentifierSelector = mkSelector "setWeakRelatedUniqueIdentifier:"
 
 -- | @Selector@ for @metadataModificationDate@
-metadataModificationDateSelector :: Selector
+metadataModificationDateSelector :: Selector '[] (Id NSDate)
 metadataModificationDateSelector = mkSelector "metadataModificationDate"
 
 -- | @Selector@ for @setMetadataModificationDate:@
-setMetadataModificationDateSelector :: Selector
+setMetadataModificationDateSelector :: Selector '[Id NSDate] ()
 setMetadataModificationDateSelector = mkSelector "setMetadataModificationDate:"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id NSString)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @setContentType:@
-setContentTypeSelector :: Selector
+setContentTypeSelector :: Selector '[Id NSString] ()
 setContentTypeSelector = mkSelector "setContentType:"
 
 -- | @Selector@ for @contentTypeTree@
-contentTypeTreeSelector :: Selector
+contentTypeTreeSelector :: Selector '[] (Id NSArray)
 contentTypeTreeSelector = mkSelector "contentTypeTree"
 
 -- | @Selector@ for @setContentTypeTree:@
-setContentTypeTreeSelector :: Selector
+setContentTypeTreeSelector :: Selector '[Id NSArray] ()
 setContentTypeTreeSelector = mkSelector "setContentTypeTree:"
 
 -- | @Selector@ for @keywords@
-keywordsSelector :: Selector
+keywordsSelector :: Selector '[] (Id NSArray)
 keywordsSelector = mkSelector "keywords"
 
 -- | @Selector@ for @setKeywords:@
-setKeywordsSelector :: Selector
+setKeywordsSelector :: Selector '[Id NSArray] ()
 setKeywordsSelector = mkSelector "setKeywords:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[Id NSString] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @userCreated@
-userCreatedSelector :: Selector
+userCreatedSelector :: Selector '[] RawId
 userCreatedSelector = mkSelector "userCreated"
 
 -- | @Selector@ for @setUserCreated:@
-setUserCreatedSelector :: Selector
+setUserCreatedSelector :: Selector '[RawId] ()
 setUserCreatedSelector = mkSelector "setUserCreated:"
 
 -- | @Selector@ for @userOwned@
-userOwnedSelector :: Selector
+userOwnedSelector :: Selector '[] RawId
 userOwnedSelector = mkSelector "userOwned"
 
 -- | @Selector@ for @setUserOwned:@
-setUserOwnedSelector :: Selector
+setUserOwnedSelector :: Selector '[RawId] ()
 setUserOwnedSelector = mkSelector "setUserOwned:"
 
 -- | @Selector@ for @userCurated@
-userCuratedSelector :: Selector
+userCuratedSelector :: Selector '[] RawId
 userCuratedSelector = mkSelector "userCurated"
 
 -- | @Selector@ for @setUserCurated:@
-setUserCuratedSelector :: Selector
+setUserCuratedSelector :: Selector '[RawId] ()
 setUserCuratedSelector = mkSelector "setUserCurated:"
 
 -- | @Selector@ for @rankingHint@
-rankingHintSelector :: Selector
+rankingHintSelector :: Selector '[] RawId
 rankingHintSelector = mkSelector "rankingHint"
 
 -- | @Selector@ for @setRankingHint:@
-setRankingHintSelector :: Selector
+setRankingHintSelector :: Selector '[RawId] ()
 setRankingHintSelector = mkSelector "setRankingHint:"
 
 -- | @Selector@ for @domainIdentifier@
-domainIdentifierSelector :: Selector
+domainIdentifierSelector :: Selector '[] RawId
 domainIdentifierSelector = mkSelector "domainIdentifier"
 
 -- | @Selector@ for @setDomainIdentifier:@
-setDomainIdentifierSelector :: Selector
+setDomainIdentifierSelector :: Selector '[RawId] ()
 setDomainIdentifierSelector = mkSelector "setDomainIdentifier:"
 

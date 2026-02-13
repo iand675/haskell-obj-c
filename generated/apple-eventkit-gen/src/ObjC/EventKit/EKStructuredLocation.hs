@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.EventKit.EKStructuredLocation
   , setTitle
   , radius
   , setRadius
-  , locationWithTitleSelector
   , locationWithMapItemSelector
-  , titleSelector
-  , setTitleSelector
+  , locationWithTitleSelector
   , radiusSelector
   , setRadiusSelector
+  , setTitleSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,63 +40,60 @@ locationWithTitle :: IsNSString title => title -> IO (Id EKStructuredLocation)
 locationWithTitle title =
   do
     cls' <- getRequiredClass "EKStructuredLocation"
-    withObjCPtr title $ \raw_title ->
-      sendClassMsg cls' (mkSelector "locationWithTitle:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' locationWithTitleSelector (toNSString title)
 
 -- | @+ locationWithMapItem:@
 locationWithMapItem :: IsMKMapItem mapItem => mapItem -> IO (Id EKStructuredLocation)
 locationWithMapItem mapItem =
   do
     cls' <- getRequiredClass "EKStructuredLocation"
-    withObjCPtr mapItem $ \raw_mapItem ->
-      sendClassMsg cls' (mkSelector "locationWithMapItem:") (retPtr retVoid) [argPtr (castPtr raw_mapItem :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' locationWithMapItemSelector (toMKMapItem mapItem)
 
 -- | @- title@
 title :: IsEKStructuredLocation ekStructuredLocation => ekStructuredLocation -> IO (Id NSString)
-title ekStructuredLocation  =
-    sendMsg ekStructuredLocation (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekStructuredLocation =
+  sendMessage ekStructuredLocation titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsEKStructuredLocation ekStructuredLocation, IsNSString value) => ekStructuredLocation -> value -> IO ()
-setTitle ekStructuredLocation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekStructuredLocation (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle ekStructuredLocation value =
+  sendMessage ekStructuredLocation setTitleSelector (toNSString value)
 
 -- | @- radius@
 radius :: IsEKStructuredLocation ekStructuredLocation => ekStructuredLocation -> IO CDouble
-radius ekStructuredLocation  =
-    sendMsg ekStructuredLocation (mkSelector "radius") retCDouble []
+radius ekStructuredLocation =
+  sendMessage ekStructuredLocation radiusSelector
 
 -- | @- setRadius:@
 setRadius :: IsEKStructuredLocation ekStructuredLocation => ekStructuredLocation -> CDouble -> IO ()
-setRadius ekStructuredLocation  value =
-    sendMsg ekStructuredLocation (mkSelector "setRadius:") retVoid [argCDouble value]
+setRadius ekStructuredLocation value =
+  sendMessage ekStructuredLocation setRadiusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @locationWithTitle:@
-locationWithTitleSelector :: Selector
+locationWithTitleSelector :: Selector '[Id NSString] (Id EKStructuredLocation)
 locationWithTitleSelector = mkSelector "locationWithTitle:"
 
 -- | @Selector@ for @locationWithMapItem:@
-locationWithMapItemSelector :: Selector
+locationWithMapItemSelector :: Selector '[Id MKMapItem] (Id EKStructuredLocation)
 locationWithMapItemSelector = mkSelector "locationWithMapItem:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @radius@
-radiusSelector :: Selector
+radiusSelector :: Selector '[] CDouble
 radiusSelector = mkSelector "radius"
 
 -- | @Selector@ for @setRadius:@
-setRadiusSelector :: Selector
+setRadiusSelector :: Selector '[CDouble] ()
 setRadiusSelector = mkSelector "setRadius:"
 

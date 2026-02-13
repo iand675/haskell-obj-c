@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.AppKit.NSCachedImageRep
   , initWithSize_depth_separate_alpha
   , window
   , rect
-  , initWithWindow_rectSelector
   , initWithSize_depth_separate_alphaSelector
-  , windowSelector
+  , initWithWindow_rectSelector
   , rectSelector
+  , windowSelector
 
   -- * Enum types
   , NSWindowDepth(NSWindowDepth)
@@ -24,15 +25,11 @@ module ObjC.AppKit.NSCachedImageRep
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,42 +40,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithWindow:rect:@
 initWithWindow_rect :: (IsNSCachedImageRep nsCachedImageRep, IsNSWindow win) => nsCachedImageRep -> win -> NSRect -> IO RawId
-initWithWindow_rect nsCachedImageRep  win rect =
-  withObjCPtr win $ \raw_win ->
-      fmap (RawId . castPtr) $ sendMsg nsCachedImageRep (mkSelector "initWithWindow:rect:") (retPtr retVoid) [argPtr (castPtr raw_win :: Ptr ()), argNSRect rect]
+initWithWindow_rect nsCachedImageRep win rect =
+  sendOwnedMessage nsCachedImageRep initWithWindow_rectSelector (toNSWindow win) rect
 
 -- | @- initWithSize:depth:separate:alpha:@
 initWithSize_depth_separate_alpha :: IsNSCachedImageRep nsCachedImageRep => nsCachedImageRep -> NSSize -> NSWindowDepth -> Bool -> Bool -> IO RawId
-initWithSize_depth_separate_alpha nsCachedImageRep  size depth flag alpha =
-    fmap (RawId . castPtr) $ sendMsg nsCachedImageRep (mkSelector "initWithSize:depth:separate:alpha:") (retPtr retVoid) [argNSSize size, argCInt (coerce depth), argCULong (if flag then 1 else 0), argCULong (if alpha then 1 else 0)]
+initWithSize_depth_separate_alpha nsCachedImageRep size depth flag alpha =
+  sendOwnedMessage nsCachedImageRep initWithSize_depth_separate_alphaSelector size depth flag alpha
 
 -- | @- window@
 window :: IsNSCachedImageRep nsCachedImageRep => nsCachedImageRep -> IO (Id NSWindow)
-window nsCachedImageRep  =
-    sendMsg nsCachedImageRep (mkSelector "window") (retPtr retVoid) [] >>= retainedObject . castPtr
+window nsCachedImageRep =
+  sendMessage nsCachedImageRep windowSelector
 
 -- | @- rect@
 rect :: IsNSCachedImageRep nsCachedImageRep => nsCachedImageRep -> IO NSRect
-rect nsCachedImageRep  =
-    sendMsgStret nsCachedImageRep (mkSelector "rect") retNSRect []
+rect nsCachedImageRep =
+  sendMessage nsCachedImageRep rectSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWindow:rect:@
-initWithWindow_rectSelector :: Selector
+initWithWindow_rectSelector :: Selector '[Id NSWindow, NSRect] RawId
 initWithWindow_rectSelector = mkSelector "initWithWindow:rect:"
 
 -- | @Selector@ for @initWithSize:depth:separate:alpha:@
-initWithSize_depth_separate_alphaSelector :: Selector
+initWithSize_depth_separate_alphaSelector :: Selector '[NSSize, NSWindowDepth, Bool, Bool] RawId
 initWithSize_depth_separate_alphaSelector = mkSelector "initWithSize:depth:separate:alpha:"
 
 -- | @Selector@ for @window@
-windowSelector :: Selector
+windowSelector :: Selector '[] (Id NSWindow)
 windowSelector = mkSelector "window"
 
 -- | @Selector@ for @rect@
-rectSelector :: Selector
+rectSelector :: Selector '[] NSRect
 rectSelector = mkSelector "rect"
 

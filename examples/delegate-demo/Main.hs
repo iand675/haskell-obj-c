@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -91,6 +92,16 @@ winW = 560
 winH = 480
 
 -- ---------------------------------------------------------------------------
+-- Action selectors
+-- ---------------------------------------------------------------------------
+
+clearLogSel :: Sel
+clearLogSel = mkSelector "clearLog:"
+
+fireEventSel :: Sel
+fireEventSel = mkSelector "fireEvent:"
+
+-- ---------------------------------------------------------------------------
 -- Main
 -- ---------------------------------------------------------------------------
 
@@ -164,12 +175,12 @@ main = withAutoreleasePool $ do
 
   -- Buttons ----------------------------------------------------------------
   clearBtn <- Btn.buttonWithTitle_target_action
-    ("Clear Log" :: Id NSString) (RawId nullPtr) (mkSelector "clearLog:")
+    ("Clear Log" :: Id NSString) (RawId nullPtr) (asSel clearLogSel)
   View.setFrame clearBtn (NSRect (NSPoint (winW - 170) 36) (NSSize 80 28))
   View.addSubview cv (toNSView clearBtn)
 
   fireBtn <- Btn.buttonWithTitle_target_action
-    ("Fire Event" :: Id NSString) (RawId nullPtr) (mkSelector "fireEvent:")
+    ("Fire Event" :: Id NSString) (RawId nullPtr) (asSel fireEventSel)
   View.setFrame fireBtn (NSRect (NSPoint (winW - 85) 36) (NSSize 80 28))
   View.addSubview cv (toNSView fireBtn)
 
@@ -183,19 +194,19 @@ main = withAutoreleasePool $ do
   -- ActionTarget: button actions
   -- =======================================================================
   buttonTarget <- newActionTarget
-    [ ("clearLog:", \_ -> do
+    [ clearLogSel := do
           writeIORef logRef []
           Text.setString logTextView ("" :: Id NSString)
-          appendLog "[ActionTarget] Log cleared")
+          appendLog "[ActionTarget] Log cleared"
 
-    , ("fireEvent:", \_ ->
-          appendLog "[ActionTarget] Manual event fired via button")
+    , fireEventSel :=
+          appendLog "[ActionTarget] Manual event fired via button"
     ]
 
   Ctrl.setTarget clearBtn buttonTarget
-  Ctrl.setAction clearBtn (mkSelector "clearLog:")
+  Ctrl.setAction clearBtn (asSel clearLogSel)
   Ctrl.setTarget fireBtn  buttonTarget
-  Ctrl.setAction fireBtn  (mkSelector "fireEvent:")
+  Ctrl.setAction fireBtn  (asSel fireEventSel)
 
   -- =======================================================================
   -- NSWindowDelegate: window lifecycle callbacks
@@ -316,7 +327,7 @@ setupMenuBar app = do
   appMenu <- alloc @NSMenu >>= \m -> Menu.initWithTitle m ("App" :: Id NSString)
   quitItem <- alloc @NSMenuItem >>= \mi ->
     MI.initWithTitle_action_keyEquivalent mi
-      ("Quit" :: Id NSString) App.terminateSelector ("q" :: Id NSString)
+      ("Quit" :: Id NSString) (asSel App.terminateSelector) ("q" :: Id NSString)
   Menu.addItem appMenu quitItem
   Menu.setSubmenu_forItem menuBar appMenu appMenuItem
   App.setMainMenu app menuBar

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Intents.INDeleteTasksIntent
   , taskList
   , tasks
   , all_
+  , allSelector
   , initWithTaskList_tasks_allSelector
   , taskListSelector
   , tasksSelector
-  , allSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTaskList:tasks:all:@
 initWithTaskList_tasks_all :: (IsINDeleteTasksIntent inDeleteTasksIntent, IsINTaskList taskList, IsNSArray tasks, IsNSNumber all_) => inDeleteTasksIntent -> taskList -> tasks -> all_ -> IO (Id INDeleteTasksIntent)
-initWithTaskList_tasks_all inDeleteTasksIntent  taskList tasks all_ =
-  withObjCPtr taskList $ \raw_taskList ->
-    withObjCPtr tasks $ \raw_tasks ->
-      withObjCPtr all_ $ \raw_all_ ->
-          sendMsg inDeleteTasksIntent (mkSelector "initWithTaskList:tasks:all:") (retPtr retVoid) [argPtr (castPtr raw_taskList :: Ptr ()), argPtr (castPtr raw_tasks :: Ptr ()), argPtr (castPtr raw_all_ :: Ptr ())] >>= ownedObject . castPtr
+initWithTaskList_tasks_all inDeleteTasksIntent taskList tasks all_ =
+  sendOwnedMessage inDeleteTasksIntent initWithTaskList_tasks_allSelector (toINTaskList taskList) (toNSArray tasks) (toNSNumber all_)
 
 -- | @- taskList@
 taskList :: IsINDeleteTasksIntent inDeleteTasksIntent => inDeleteTasksIntent -> IO (Id INTaskList)
-taskList inDeleteTasksIntent  =
-    sendMsg inDeleteTasksIntent (mkSelector "taskList") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskList inDeleteTasksIntent =
+  sendMessage inDeleteTasksIntent taskListSelector
 
 -- | @- tasks@
 tasks :: IsINDeleteTasksIntent inDeleteTasksIntent => inDeleteTasksIntent -> IO (Id NSArray)
-tasks inDeleteTasksIntent  =
-    sendMsg inDeleteTasksIntent (mkSelector "tasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tasks inDeleteTasksIntent =
+  sendMessage inDeleteTasksIntent tasksSelector
 
 -- | @- all@
 all_ :: IsINDeleteTasksIntent inDeleteTasksIntent => inDeleteTasksIntent -> IO (Id NSNumber)
-all_ inDeleteTasksIntent  =
-    sendMsg inDeleteTasksIntent (mkSelector "all") (retPtr retVoid) [] >>= retainedObject . castPtr
+all_ inDeleteTasksIntent =
+  sendMessage inDeleteTasksIntent allSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTaskList:tasks:all:@
-initWithTaskList_tasks_allSelector :: Selector
+initWithTaskList_tasks_allSelector :: Selector '[Id INTaskList, Id NSArray, Id NSNumber] (Id INDeleteTasksIntent)
 initWithTaskList_tasks_allSelector = mkSelector "initWithTaskList:tasks:all:"
 
 -- | @Selector@ for @taskList@
-taskListSelector :: Selector
+taskListSelector :: Selector '[] (Id INTaskList)
 taskListSelector = mkSelector "taskList"
 
 -- | @Selector@ for @tasks@
-tasksSelector :: Selector
+tasksSelector :: Selector '[] (Id NSArray)
 tasksSelector = mkSelector "tasks"
 
 -- | @Selector@ for @all@
-allSelector :: Selector
+allSelector :: Selector '[] (Id NSNumber)
 allSelector = mkSelector "all"
 

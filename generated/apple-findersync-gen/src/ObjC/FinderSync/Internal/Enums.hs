@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.FinderSync.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The different kinds of custom menus that the Finder Sync extension can provide.
 -- | @FIMenuKind@
@@ -28,3 +31,13 @@ pattern FIMenuKindContextualMenuForSidebar = FIMenuKind 2
 
 pattern FIMenuKindToolbarItemMenu :: FIMenuKind
 pattern FIMenuKindToolbarItemMenu = FIMenuKind 3
+
+instance ObjCArgument FIMenuKind where
+  withObjCArg (FIMenuKind x) k = k (argCULong x)
+
+instance ObjCReturn FIMenuKind where
+  type RawReturn FIMenuKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FIMenuKind x)
+  fromOwned x = pure (FIMenuKind x)

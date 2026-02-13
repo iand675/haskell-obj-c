@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.AVFAudio.AVAudioSessionPortDescription
   , selectedDataSource
   , preferredDataSource
   , bluetoothMicrophoneExtension
-  , setPreferredDataSource_errorSelector
-  , portTypeSelector
-  , portNameSelector
-  , uidSelector
-  , hasHardwareVoiceCallProcessingSelector
-  , spatialAudioEnabledSelector
+  , bluetoothMicrophoneExtensionSelector
   , channelsSelector
   , dataSourcesSelector
-  , selectedDataSourceSelector
+  , hasHardwareVoiceCallProcessingSelector
+  , portNameSelector
+  , portTypeSelector
   , preferredDataSourceSelector
-  , bluetoothMicrophoneExtensionSelector
+  , selectedDataSourceSelector
+  , setPreferredDataSource_errorSelector
+  , spatialAudioEnabledSelector
+  , uidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,29 +50,27 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setPreferredDataSource:error:@
 setPreferredDataSource_error :: (IsAVAudioSessionPortDescription avAudioSessionPortDescription, IsAVAudioSessionDataSourceDescription dataSource, IsNSError outError) => avAudioSessionPortDescription -> dataSource -> outError -> IO Bool
-setPreferredDataSource_error avAudioSessionPortDescription  dataSource outError =
-  withObjCPtr dataSource $ \raw_dataSource ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionPortDescription (mkSelector "setPreferredDataSource:error:") retCULong [argPtr (castPtr raw_dataSource :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredDataSource_error avAudioSessionPortDescription dataSource outError =
+  sendMessage avAudioSessionPortDescription setPreferredDataSource_errorSelector (toAVAudioSessionDataSourceDescription dataSource) (toNSError outError)
 
 -- | @- portType@
 portType :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSString)
-portType avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "portType") (retPtr retVoid) [] >>= retainedObject . castPtr
+portType avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription portTypeSelector
 
 -- | A descriptive name for the associated hardware port
 --
 -- ObjC selector: @- portName@
 portName :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSString)
-portName avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "portName") (retPtr retVoid) [] >>= retainedObject . castPtr
+portName avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription portNameSelector
 
 -- | A system-assigned unique identifier for the associated hardware port
 --
 -- ObjC selector: @- UID@
 uid :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSString)
-uid avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "UID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uid avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription uidSelector
 
 -- | This property's value will be true if the associated hardware port has built-in	processing for two-way voice communication.
 --
@@ -83,8 +78,8 @@ uid avAudioSessionPortDescription  =
 --
 -- ObjC selector: @- hasHardwareVoiceCallProcessing@
 hasHardwareVoiceCallProcessing :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO Bool
-hasHardwareVoiceCallProcessing avAudioSessionPortDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionPortDescription (mkSelector "hasHardwareVoiceCallProcessing") retCULong []
+hasHardwareVoiceCallProcessing avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription hasHardwareVoiceCallProcessingSelector
 
 -- | This property's value will be true if the port supports spatial audio playback and the feature is    enabled.
 --
@@ -94,34 +89,34 @@ hasHardwareVoiceCallProcessing avAudioSessionPortDescription  =
 --
 -- ObjC selector: @- spatialAudioEnabled@
 spatialAudioEnabled :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO Bool
-spatialAudioEnabled avAudioSessionPortDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionPortDescription (mkSelector "spatialAudioEnabled") retCULong []
+spatialAudioEnabled avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription spatialAudioEnabledSelector
 
 -- | @- channels@
 channels :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSArray)
-channels avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "channels") (retPtr retVoid) [] >>= retainedObject . castPtr
+channels avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription channelsSelector
 
 -- | Will be nil if there are no selectable data sources.
 --
 -- ObjC selector: @- dataSources@
 dataSources :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id NSArray)
-dataSources avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "dataSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataSources avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription dataSourcesSelector
 
 -- | Will be nil if there are no selectable data sources. In all other cases, this property reflects the currently selected data source.
 --
 -- ObjC selector: @- selectedDataSource@
 selectedDataSource :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id AVAudioSessionDataSourceDescription)
-selectedDataSource avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "selectedDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedDataSource avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription selectedDataSourceSelector
 
 -- | This property reflects the application's preferred data source for the Port. Will be nil if there are no selectable data sources or if no preference has been set.
 --
 -- ObjC selector: @- preferredDataSource@
 preferredDataSource :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id AVAudioSessionDataSourceDescription)
-preferredDataSource avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "preferredDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredDataSource avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription preferredDataSourceSelector
 
 -- | An optional port extension that describes capabilities relevant to Bluetooth microphone ports.
 --
@@ -129,54 +124,54 @@ preferredDataSource avAudioSessionPortDescription  =
 --
 -- ObjC selector: @- bluetoothMicrophoneExtension@
 bluetoothMicrophoneExtension :: IsAVAudioSessionPortDescription avAudioSessionPortDescription => avAudioSessionPortDescription -> IO (Id AVAudioSessionPortExtensionBluetoothMicrophone)
-bluetoothMicrophoneExtension avAudioSessionPortDescription  =
-    sendMsg avAudioSessionPortDescription (mkSelector "bluetoothMicrophoneExtension") (retPtr retVoid) [] >>= retainedObject . castPtr
+bluetoothMicrophoneExtension avAudioSessionPortDescription =
+  sendMessage avAudioSessionPortDescription bluetoothMicrophoneExtensionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setPreferredDataSource:error:@
-setPreferredDataSource_errorSelector :: Selector
+setPreferredDataSource_errorSelector :: Selector '[Id AVAudioSessionDataSourceDescription, Id NSError] Bool
 setPreferredDataSource_errorSelector = mkSelector "setPreferredDataSource:error:"
 
 -- | @Selector@ for @portType@
-portTypeSelector :: Selector
+portTypeSelector :: Selector '[] (Id NSString)
 portTypeSelector = mkSelector "portType"
 
 -- | @Selector@ for @portName@
-portNameSelector :: Selector
+portNameSelector :: Selector '[] (Id NSString)
 portNameSelector = mkSelector "portName"
 
 -- | @Selector@ for @UID@
-uidSelector :: Selector
+uidSelector :: Selector '[] (Id NSString)
 uidSelector = mkSelector "UID"
 
 -- | @Selector@ for @hasHardwareVoiceCallProcessing@
-hasHardwareVoiceCallProcessingSelector :: Selector
+hasHardwareVoiceCallProcessingSelector :: Selector '[] Bool
 hasHardwareVoiceCallProcessingSelector = mkSelector "hasHardwareVoiceCallProcessing"
 
 -- | @Selector@ for @spatialAudioEnabled@
-spatialAudioEnabledSelector :: Selector
+spatialAudioEnabledSelector :: Selector '[] Bool
 spatialAudioEnabledSelector = mkSelector "spatialAudioEnabled"
 
 -- | @Selector@ for @channels@
-channelsSelector :: Selector
+channelsSelector :: Selector '[] (Id NSArray)
 channelsSelector = mkSelector "channels"
 
 -- | @Selector@ for @dataSources@
-dataSourcesSelector :: Selector
+dataSourcesSelector :: Selector '[] (Id NSArray)
 dataSourcesSelector = mkSelector "dataSources"
 
 -- | @Selector@ for @selectedDataSource@
-selectedDataSourceSelector :: Selector
+selectedDataSourceSelector :: Selector '[] (Id AVAudioSessionDataSourceDescription)
 selectedDataSourceSelector = mkSelector "selectedDataSource"
 
 -- | @Selector@ for @preferredDataSource@
-preferredDataSourceSelector :: Selector
+preferredDataSourceSelector :: Selector '[] (Id AVAudioSessionDataSourceDescription)
 preferredDataSourceSelector = mkSelector "preferredDataSource"
 
 -- | @Selector@ for @bluetoothMicrophoneExtension@
-bluetoothMicrophoneExtensionSelector :: Selector
+bluetoothMicrophoneExtensionSelector :: Selector '[] (Id AVAudioSessionPortExtensionBluetoothMicrophone)
 bluetoothMicrophoneExtensionSelector = mkSelector "bluetoothMicrophoneExtension"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.PHASE.PHASEMedium
   , new
   , initWithEngine_preset
   , initSelector
-  , newSelector
   , initWithEngine_presetSelector
+  , newSelector
 
   -- * Enum types
   , PHASEMediumPreset(PHASEMediumPreset)
@@ -26,15 +27,11 @@ module ObjC.PHASE.PHASEMedium
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,15 +41,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEMedium phaseMedium => phaseMedium -> IO (Id PHASEMedium)
-init_ phaseMedium  =
-    sendMsg phaseMedium (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseMedium =
+  sendOwnedMessage phaseMedium initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEMedium)
 new  =
   do
     cls' <- getRequiredClass "PHASEMedium"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine:preset
 --
@@ -60,23 +57,22 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:preset:@
 initWithEngine_preset :: (IsPHASEMedium phaseMedium, IsPHASEEngine engine) => phaseMedium -> engine -> PHASEMediumPreset -> IO (Id PHASEMedium)
-initWithEngine_preset phaseMedium  engine preset =
-  withObjCPtr engine $ \raw_engine ->
-      sendMsg phaseMedium (mkSelector "initWithEngine:preset:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argCLong (coerce preset)] >>= ownedObject . castPtr
+initWithEngine_preset phaseMedium engine preset =
+  sendOwnedMessage phaseMedium initWithEngine_presetSelector (toPHASEEngine engine) preset
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEMedium)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEMedium)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:preset:@
-initWithEngine_presetSelector :: Selector
+initWithEngine_presetSelector :: Selector '[Id PHASEEngine, PHASEMediumPreset] (Id PHASEMedium)
 initWithEngine_presetSelector = mkSelector "initWithEngine:preset:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRMessagesClusterMessageStruct
   , setMessageText
   , responses
   , setResponses
-  , messageIDSelector
-  , setMessageIDSelector
-  , prioritySelector
-  , setPrioritySelector
-  , messageControlSelector
-  , setMessageControlSelector
-  , startTimeSelector
-  , setStartTimeSelector
   , durationSelector
-  , setDurationSelector
+  , messageControlSelector
+  , messageIDSelector
   , messageTextSelector
-  , setMessageTextSelector
+  , prioritySelector
   , responsesSelector
+  , setDurationSelector
+  , setMessageControlSelector
+  , setMessageIDSelector
+  , setMessageTextSelector
+  , setPrioritySelector
   , setResponsesSelector
+  , setStartTimeSelector
+  , startTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,138 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- messageID@
 messageID :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSData)
-messageID mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "messageID") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageID mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct messageIDSelector
 
 -- | @- setMessageID:@
 setMessageID :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSData value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setMessageID mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setMessageID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageID mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setMessageIDSelector (toNSData value)
 
 -- | @- priority@
 priority :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSNumber)
-priority mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "priority") (retPtr retVoid) [] >>= retainedObject . castPtr
+priority mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct prioritySelector
 
 -- | @- setPriority:@
 setPriority :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSNumber value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setPriority mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setPriority:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriority mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setPrioritySelector (toNSNumber value)
 
 -- | @- messageControl@
 messageControl :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSNumber)
-messageControl mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "messageControl") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageControl mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct messageControlSelector
 
 -- | @- setMessageControl:@
 setMessageControl :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSNumber value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setMessageControl mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setMessageControl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageControl mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setMessageControlSelector (toNSNumber value)
 
 -- | @- startTime@
 startTime :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSNumber)
-startTime mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "startTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTime mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct startTimeSelector
 
 -- | @- setStartTime:@
 setStartTime :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSNumber value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setStartTime mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTime mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setStartTimeSelector (toNSNumber value)
 
 -- | @- duration@
 duration :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSNumber)
-duration mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSNumber value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setDuration mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setDurationSelector (toNSNumber value)
 
 -- | @- messageText@
 messageText :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSString)
-messageText mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "messageText") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageText mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct messageTextSelector
 
 -- | @- setMessageText:@
 setMessageText :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSString value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setMessageText mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setMessageText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageText mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setMessageTextSelector (toNSString value)
 
 -- | @- responses@
 responses :: IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct => mtrMessagesClusterMessageStruct -> IO (Id NSArray)
-responses mtrMessagesClusterMessageStruct  =
-    sendMsg mtrMessagesClusterMessageStruct (mkSelector "responses") (retPtr retVoid) [] >>= retainedObject . castPtr
+responses mtrMessagesClusterMessageStruct =
+  sendMessage mtrMessagesClusterMessageStruct responsesSelector
 
 -- | @- setResponses:@
 setResponses :: (IsMTRMessagesClusterMessageStruct mtrMessagesClusterMessageStruct, IsNSArray value) => mtrMessagesClusterMessageStruct -> value -> IO ()
-setResponses mtrMessagesClusterMessageStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageStruct (mkSelector "setResponses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResponses mtrMessagesClusterMessageStruct value =
+  sendMessage mtrMessagesClusterMessageStruct setResponsesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @messageID@
-messageIDSelector :: Selector
+messageIDSelector :: Selector '[] (Id NSData)
 messageIDSelector = mkSelector "messageID"
 
 -- | @Selector@ for @setMessageID:@
-setMessageIDSelector :: Selector
+setMessageIDSelector :: Selector '[Id NSData] ()
 setMessageIDSelector = mkSelector "setMessageID:"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] (Id NSNumber)
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[Id NSNumber] ()
 setPrioritySelector = mkSelector "setPriority:"
 
 -- | @Selector@ for @messageControl@
-messageControlSelector :: Selector
+messageControlSelector :: Selector '[] (Id NSNumber)
 messageControlSelector = mkSelector "messageControl"
 
 -- | @Selector@ for @setMessageControl:@
-setMessageControlSelector :: Selector
+setMessageControlSelector :: Selector '[Id NSNumber] ()
 setMessageControlSelector = mkSelector "setMessageControl:"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] (Id NSNumber)
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[Id NSNumber] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @messageText@
-messageTextSelector :: Selector
+messageTextSelector :: Selector '[] (Id NSString)
 messageTextSelector = mkSelector "messageText"
 
 -- | @Selector@ for @setMessageText:@
-setMessageTextSelector :: Selector
+setMessageTextSelector :: Selector '[Id NSString] ()
 setMessageTextSelector = mkSelector "setMessageText:"
 
 -- | @Selector@ for @responses@
-responsesSelector :: Selector
+responsesSelector :: Selector '[] (Id NSArray)
 responsesSelector = mkSelector "responses"
 
 -- | @Selector@ for @setResponses:@
-setResponsesSelector :: Selector
+setResponsesSelector :: Selector '[Id NSArray] ()
 setResponsesSelector = mkSelector "setResponses:"
 

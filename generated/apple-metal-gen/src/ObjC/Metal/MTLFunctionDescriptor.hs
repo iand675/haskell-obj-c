@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Metal.MTLFunctionDescriptor
   , setOptions
   , binaryArchives
   , setBinaryArchives
+  , binaryArchivesSelector
+  , constantValuesSelector
   , functionDescriptorSelector
   , nameSelector
-  , setNameSelector
-  , specializedNameSelector
-  , setSpecializedNameSelector
-  , constantValuesSelector
-  , setConstantValuesSelector
   , optionsSelector
-  , setOptionsSelector
-  , binaryArchivesSelector
   , setBinaryArchivesSelector
+  , setConstantValuesSelector
+  , setNameSelector
+  , setOptionsSelector
+  , setSpecializedNameSelector
+  , specializedNameSelector
 
   -- * Enum types
   , MTLFunctionOptions(MTLFunctionOptions)
@@ -41,15 +42,11 @@ module ObjC.Metal.MTLFunctionDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ functionDescriptor :: IO (Id MTLFunctionDescriptor)
 functionDescriptor  =
   do
     cls' <- getRequiredClass "MTLFunctionDescriptor"
-    sendClassMsg cls' (mkSelector "functionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' functionDescriptorSelector
 
 -- | name
 --
@@ -74,8 +71,8 @@ functionDescriptor  =
 --
 -- ObjC selector: @- name@
 name :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO (Id NSString)
-name mtlFunctionDescriptor  =
-    sendMsg mtlFunctionDescriptor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlFunctionDescriptor =
+  sendMessage mtlFunctionDescriptor nameSelector
 
 -- | name
 --
@@ -83,9 +80,8 @@ name mtlFunctionDescriptor  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMTLFunctionDescriptor mtlFunctionDescriptor, IsNSString value) => mtlFunctionDescriptor -> value -> IO ()
-setName mtlFunctionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionDescriptor (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtlFunctionDescriptor value =
+  sendMessage mtlFunctionDescriptor setNameSelector (toNSString value)
 
 -- | specializedName
 --
@@ -93,8 +89,8 @@ setName mtlFunctionDescriptor  value =
 --
 -- ObjC selector: @- specializedName@
 specializedName :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO (Id NSString)
-specializedName mtlFunctionDescriptor  =
-    sendMsg mtlFunctionDescriptor (mkSelector "specializedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+specializedName mtlFunctionDescriptor =
+  sendMessage mtlFunctionDescriptor specializedNameSelector
 
 -- | specializedName
 --
@@ -102,9 +98,8 @@ specializedName mtlFunctionDescriptor  =
 --
 -- ObjC selector: @- setSpecializedName:@
 setSpecializedName :: (IsMTLFunctionDescriptor mtlFunctionDescriptor, IsNSString value) => mtlFunctionDescriptor -> value -> IO ()
-setSpecializedName mtlFunctionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionDescriptor (mkSelector "setSpecializedName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpecializedName mtlFunctionDescriptor value =
+  sendMessage mtlFunctionDescriptor setSpecializedNameSelector (toNSString value)
 
 -- | constantValues
 --
@@ -112,8 +107,8 @@ setSpecializedName mtlFunctionDescriptor  value =
 --
 -- ObjC selector: @- constantValues@
 constantValues :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO (Id MTLFunctionConstantValues)
-constantValues mtlFunctionDescriptor  =
-    sendMsg mtlFunctionDescriptor (mkSelector "constantValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+constantValues mtlFunctionDescriptor =
+  sendMessage mtlFunctionDescriptor constantValuesSelector
 
 -- | constantValues
 --
@@ -121,9 +116,8 @@ constantValues mtlFunctionDescriptor  =
 --
 -- ObjC selector: @- setConstantValues:@
 setConstantValues :: (IsMTLFunctionDescriptor mtlFunctionDescriptor, IsMTLFunctionConstantValues value) => mtlFunctionDescriptor -> value -> IO ()
-setConstantValues mtlFunctionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionDescriptor (mkSelector "setConstantValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstantValues mtlFunctionDescriptor value =
+  sendMessage mtlFunctionDescriptor setConstantValuesSelector (toMTLFunctionConstantValues value)
 
 -- | options
 --
@@ -131,8 +125,8 @@ setConstantValues mtlFunctionDescriptor  value =
 --
 -- ObjC selector: @- options@
 options :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO MTLFunctionOptions
-options mtlFunctionDescriptor  =
-    fmap (coerce :: CULong -> MTLFunctionOptions) $ sendMsg mtlFunctionDescriptor (mkSelector "options") retCULong []
+options mtlFunctionDescriptor =
+  sendMessage mtlFunctionDescriptor optionsSelector
 
 -- | options
 --
@@ -140,8 +134,8 @@ options mtlFunctionDescriptor  =
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> MTLFunctionOptions -> IO ()
-setOptions mtlFunctionDescriptor  value =
-    sendMsg mtlFunctionDescriptor (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions mtlFunctionDescriptor value =
+  sendMessage mtlFunctionDescriptor setOptionsSelector value
 
 -- | binaryArchives
 --
@@ -151,8 +145,8 @@ setOptions mtlFunctionDescriptor  value =
 --
 -- ObjC selector: @- binaryArchives@
 binaryArchives :: IsMTLFunctionDescriptor mtlFunctionDescriptor => mtlFunctionDescriptor -> IO (Id NSArray)
-binaryArchives mtlFunctionDescriptor  =
-    sendMsg mtlFunctionDescriptor (mkSelector "binaryArchives") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryArchives mtlFunctionDescriptor =
+  sendMessage mtlFunctionDescriptor binaryArchivesSelector
 
 -- | binaryArchives
 --
@@ -162,55 +156,54 @@ binaryArchives mtlFunctionDescriptor  =
 --
 -- ObjC selector: @- setBinaryArchives:@
 setBinaryArchives :: (IsMTLFunctionDescriptor mtlFunctionDescriptor, IsNSArray value) => mtlFunctionDescriptor -> value -> IO ()
-setBinaryArchives mtlFunctionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionDescriptor (mkSelector "setBinaryArchives:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryArchives mtlFunctionDescriptor value =
+  sendMessage mtlFunctionDescriptor setBinaryArchivesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @functionDescriptor@
-functionDescriptorSelector :: Selector
+functionDescriptorSelector :: Selector '[] (Id MTLFunctionDescriptor)
 functionDescriptorSelector = mkSelector "functionDescriptor"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @specializedName@
-specializedNameSelector :: Selector
+specializedNameSelector :: Selector '[] (Id NSString)
 specializedNameSelector = mkSelector "specializedName"
 
 -- | @Selector@ for @setSpecializedName:@
-setSpecializedNameSelector :: Selector
+setSpecializedNameSelector :: Selector '[Id NSString] ()
 setSpecializedNameSelector = mkSelector "setSpecializedName:"
 
 -- | @Selector@ for @constantValues@
-constantValuesSelector :: Selector
+constantValuesSelector :: Selector '[] (Id MTLFunctionConstantValues)
 constantValuesSelector = mkSelector "constantValues"
 
 -- | @Selector@ for @setConstantValues:@
-setConstantValuesSelector :: Selector
+setConstantValuesSelector :: Selector '[Id MTLFunctionConstantValues] ()
 setConstantValuesSelector = mkSelector "setConstantValues:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] MTLFunctionOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[MTLFunctionOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @binaryArchives@
-binaryArchivesSelector :: Selector
+binaryArchivesSelector :: Selector '[] (Id NSArray)
 binaryArchivesSelector = mkSelector "binaryArchives"
 
 -- | @Selector@ for @setBinaryArchives:@
-setBinaryArchivesSelector :: Selector
+setBinaryArchivesSelector :: Selector '[Id NSArray] ()
 setBinaryArchivesSelector = mkSelector "setBinaryArchives:"
 

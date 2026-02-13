@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.FSKit.FSVolume
   , setName
   , initSelector
   , initWithVolumeID_volumeNameSelector
-  , volumeIDSelector
   , nameSelector
   , setNameSelector
+  , volumeIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,61 +42,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSVolume fsVolume => fsVolume -> IO (Id FSVolume)
-init_ fsVolume  =
-    sendMsg fsVolume (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsVolume =
+  sendOwnedMessage fsVolume initSelector
 
 -- | Creates a volume with the given identifier and name. - Parameters:   - volumeID: An ``FSVolumeIdentifier`` to uniquely identify the volume. For a network file system that supports multiple authenticated users, disambiguate the users by using qualifying data in the identifier.   - volumeName: A name for the volume.
 --
 -- ObjC selector: @- initWithVolumeID:volumeName:@
 initWithVolumeID_volumeName :: (IsFSVolume fsVolume, IsFSVolumeIdentifier volumeID, IsFSFileName volumeName) => fsVolume -> volumeID -> volumeName -> IO (Id FSVolume)
-initWithVolumeID_volumeName fsVolume  volumeID volumeName =
-  withObjCPtr volumeID $ \raw_volumeID ->
-    withObjCPtr volumeName $ \raw_volumeName ->
-        sendMsg fsVolume (mkSelector "initWithVolumeID:volumeName:") (retPtr retVoid) [argPtr (castPtr raw_volumeID :: Ptr ()), argPtr (castPtr raw_volumeName :: Ptr ())] >>= ownedObject . castPtr
+initWithVolumeID_volumeName fsVolume volumeID volumeName =
+  sendOwnedMessage fsVolume initWithVolumeID_volumeNameSelector (toFSVolumeIdentifier volumeID) (toFSFileName volumeName)
 
 -- | An identifier that uniquely identifies the volume.
 --
 -- ObjC selector: @- volumeID@
 volumeID :: IsFSVolume fsVolume => fsVolume -> IO (Id FSVolumeIdentifier)
-volumeID fsVolume  =
-    sendMsg fsVolume (mkSelector "volumeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+volumeID fsVolume =
+  sendMessage fsVolume volumeIDSelector
 
 -- | The name of the volume.
 --
 -- ObjC selector: @- name@
 name :: IsFSVolume fsVolume => fsVolume -> IO (Id FSFileName)
-name fsVolume  =
-    sendMsg fsVolume (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name fsVolume =
+  sendMessage fsVolume nameSelector
 
 -- | The name of the volume.
 --
 -- ObjC selector: @- setName:@
 setName :: (IsFSVolume fsVolume, IsFSFileName value) => fsVolume -> value -> IO ()
-setName fsVolume  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg fsVolume (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName fsVolume value =
+  sendMessage fsVolume setNameSelector (toFSFileName value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSVolume)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithVolumeID:volumeName:@
-initWithVolumeID_volumeNameSelector :: Selector
+initWithVolumeID_volumeNameSelector :: Selector '[Id FSVolumeIdentifier, Id FSFileName] (Id FSVolume)
 initWithVolumeID_volumeNameSelector = mkSelector "initWithVolumeID:volumeName:"
 
 -- | @Selector@ for @volumeID@
-volumeIDSelector :: Selector
+volumeIDSelector :: Selector '[] (Id FSVolumeIdentifier)
 volumeIDSelector = mkSelector "volumeID"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id FSFileName)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id FSFileName] ()
 setNameSelector = mkSelector "setName:"
 

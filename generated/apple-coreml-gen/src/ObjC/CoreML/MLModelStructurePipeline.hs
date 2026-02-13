@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CoreML.MLModelStructurePipeline
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,47 +34,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructurePipeline mlModelStructurePipeline => mlModelStructurePipeline -> IO (Id MLModelStructurePipeline)
-init_ mlModelStructurePipeline  =
-    sendMsg mlModelStructurePipeline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructurePipeline =
+  sendOwnedMessage mlModelStructurePipeline initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructurePipeline)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructurePipeline"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The names of the sub models in the pipeline.
 --
 -- ObjC selector: @- subModelNames@
 subModelNames :: IsMLModelStructurePipeline mlModelStructurePipeline => mlModelStructurePipeline -> IO (Id NSArray)
-subModelNames mlModelStructurePipeline  =
-    sendMsg mlModelStructurePipeline (mkSelector "subModelNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+subModelNames mlModelStructurePipeline =
+  sendMessage mlModelStructurePipeline subModelNamesSelector
 
 -- | The structure of the sub models in the pipeline.
 --
 -- ObjC selector: @- subModels@
 subModels :: IsMLModelStructurePipeline mlModelStructurePipeline => mlModelStructurePipeline -> IO (Id NSArray)
-subModels mlModelStructurePipeline  =
-    sendMsg mlModelStructurePipeline (mkSelector "subModels") (retPtr retVoid) [] >>= retainedObject . castPtr
+subModels mlModelStructurePipeline =
+  sendMessage mlModelStructurePipeline subModelsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructurePipeline)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructurePipeline)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @subModelNames@
-subModelNamesSelector :: Selector
+subModelNamesSelector :: Selector '[] (Id NSArray)
 subModelNamesSelector = mkSelector "subModelNames"
 
 -- | @Selector@ for @subModels@
-subModelsSelector :: Selector
+subModelsSelector :: Selector '[] (Id NSArray)
 subModelsSelector = mkSelector "subModels"
 

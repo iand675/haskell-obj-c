@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,31 +27,27 @@ module ObjC.MetalPerformanceShaders.MPSCommandBuffer
   , setPredicate
   , heapProvider
   , setHeapProvider
-  , commandBufferWithCommandBufferSelector
   , commandBufferFromCommandQueueSelector
-  , initWithCommandBufferSelector
-  , initSelector
-  , commitAndContinueSelector
-  , prefetchHeapForWorkloadSizeSelector
   , commandBufferSelector
-  , rootCommandBufferSelector
-  , predicateSelector
-  , setPredicateSelector
+  , commandBufferWithCommandBufferSelector
+  , commitAndContinueSelector
   , heapProviderSelector
+  , initSelector
+  , initWithCommandBufferSelector
+  , predicateSelector
+  , prefetchHeapForWorkloadSizeSelector
+  , rootCommandBufferSelector
   , setHeapProviderSelector
+  , setPredicateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ commandBufferWithCommandBuffer :: RawId -> IO (Id MPSCommandBuffer)
 commandBufferWithCommandBuffer commandBuffer =
   do
     cls' <- getRequiredClass "MPSCommandBuffer"
-    sendClassMsg cls' (mkSelector "commandBufferWithCommandBuffer:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' commandBufferWithCommandBufferSelector commandBuffer
 
 -- | Initializes a MPSCommandBuffer object from a given command queue.
 --
@@ -77,7 +74,7 @@ commandBufferFromCommandQueue :: RawId -> IO (Id MPSCommandBuffer)
 commandBufferFromCommandQueue commandQueue =
   do
     cls' <- getRequiredClass "MPSCommandBuffer"
-    sendClassMsg cls' (mkSelector "commandBufferFromCommandQueue:") (retPtr retVoid) [argPtr (castPtr (unRawId commandQueue) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' commandBufferFromCommandQueueSelector commandQueue
 
 -- | Initializes an empty MPSCommandBuffer object with given MTLCommandBuffer.              Once we create this MPSCommandBuffer, any methods utilizing it could call commitAndContinue and so the users original commandBuffer may have been committed.              Please use the rootCommandBuffer method to get the current alive underlying MTLCommandBuffer.
 --
@@ -85,13 +82,13 @@ commandBufferFromCommandQueue commandQueue =
 --
 -- ObjC selector: @- initWithCommandBuffer:@
 initWithCommandBuffer :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> RawId -> IO (Id MPSCommandBuffer)
-initWithCommandBuffer mpsCommandBuffer  commandBuffer =
-    sendMsg mpsCommandBuffer (mkSelector "initWithCommandBuffer:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())] >>= ownedObject . castPtr
+initWithCommandBuffer mpsCommandBuffer commandBuffer =
+  sendOwnedMessage mpsCommandBuffer initWithCommandBufferSelector commandBuffer
 
 -- | @- init@
 init_ :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO (Id MPSCommandBuffer)
-init_ mpsCommandBuffer  =
-    sendMsg mpsCommandBuffer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsCommandBuffer =
+  sendOwnedMessage mpsCommandBuffer initSelector
 
 -- | Commit work encoded so far and continue with a new underlying command buffer
 --
@@ -107,8 +104,8 @@ init_ mpsCommandBuffer  =
 --
 -- ObjC selector: @- commitAndContinue@
 commitAndContinue :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO ()
-commitAndContinue mpsCommandBuffer  =
-    sendMsg mpsCommandBuffer (mkSelector "commitAndContinue") retVoid []
+commitAndContinue mpsCommandBuffer =
+  sendMessage mpsCommandBuffer commitAndContinueSelector
 
 -- | Prefetch heap into the MPS command buffer heap cache.
 --
@@ -118,8 +115,8 @@ commitAndContinue mpsCommandBuffer  =
 --
 -- ObjC selector: @- prefetchHeapForWorkloadSize:@
 prefetchHeapForWorkloadSize :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> CULong -> IO ()
-prefetchHeapForWorkloadSize mpsCommandBuffer  size =
-    sendMsg mpsCommandBuffer (mkSelector "prefetchHeapForWorkloadSize:") retVoid [argCULong size]
+prefetchHeapForWorkloadSize mpsCommandBuffer size =
+  sendMessage mpsCommandBuffer prefetchHeapForWorkloadSizeSelector size
 
 -- | commandBuffer
 --
@@ -127,8 +124,8 @@ prefetchHeapForWorkloadSize mpsCommandBuffer  size =
 --
 -- ObjC selector: @- commandBuffer@
 commandBuffer :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
-commandBuffer mpsCommandBuffer  =
-    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "commandBuffer") (retPtr retVoid) []
+commandBuffer mpsCommandBuffer =
+  sendMessage mpsCommandBuffer commandBufferSelector
 
 -- | rootCommandBuffer
 --
@@ -138,8 +135,8 @@ commandBuffer mpsCommandBuffer  =
 --
 -- ObjC selector: @- rootCommandBuffer@
 rootCommandBuffer :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
-rootCommandBuffer mpsCommandBuffer  =
-    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "rootCommandBuffer") (retPtr retVoid) []
+rootCommandBuffer mpsCommandBuffer =
+  sendMessage mpsCommandBuffer rootCommandBufferSelector
 
 -- | predicate
 --
@@ -147,8 +144,8 @@ rootCommandBuffer mpsCommandBuffer  =
 --
 -- ObjC selector: @- predicate@
 predicate :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO (Id MPSPredicate)
-predicate mpsCommandBuffer  =
-    sendMsg mpsCommandBuffer (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate mpsCommandBuffer =
+  sendMessage mpsCommandBuffer predicateSelector
 
 -- | predicate
 --
@@ -156,9 +153,8 @@ predicate mpsCommandBuffer  =
 --
 -- ObjC selector: @- setPredicate:@
 setPredicate :: (IsMPSCommandBuffer mpsCommandBuffer, IsMPSPredicate value) => mpsCommandBuffer -> value -> IO ()
-setPredicate mpsCommandBuffer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsCommandBuffer (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPredicate mpsCommandBuffer value =
+  sendMessage mpsCommandBuffer setPredicateSelector (toMPSPredicate value)
 
 -- | heapProvider
 --
@@ -170,8 +166,8 @@ setPredicate mpsCommandBuffer  value =
 --
 -- ObjC selector: @- heapProvider@
 heapProvider :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> IO RawId
-heapProvider mpsCommandBuffer  =
-    fmap (RawId . castPtr) $ sendMsg mpsCommandBuffer (mkSelector "heapProvider") (retPtr retVoid) []
+heapProvider mpsCommandBuffer =
+  sendMessage mpsCommandBuffer heapProviderSelector
 
 -- | heapProvider
 --
@@ -183,58 +179,58 @@ heapProvider mpsCommandBuffer  =
 --
 -- ObjC selector: @- setHeapProvider:@
 setHeapProvider :: IsMPSCommandBuffer mpsCommandBuffer => mpsCommandBuffer -> RawId -> IO ()
-setHeapProvider mpsCommandBuffer  value =
-    sendMsg mpsCommandBuffer (mkSelector "setHeapProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setHeapProvider mpsCommandBuffer value =
+  sendMessage mpsCommandBuffer setHeapProviderSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commandBufferWithCommandBuffer:@
-commandBufferWithCommandBufferSelector :: Selector
+commandBufferWithCommandBufferSelector :: Selector '[RawId] (Id MPSCommandBuffer)
 commandBufferWithCommandBufferSelector = mkSelector "commandBufferWithCommandBuffer:"
 
 -- | @Selector@ for @commandBufferFromCommandQueue:@
-commandBufferFromCommandQueueSelector :: Selector
+commandBufferFromCommandQueueSelector :: Selector '[RawId] (Id MPSCommandBuffer)
 commandBufferFromCommandQueueSelector = mkSelector "commandBufferFromCommandQueue:"
 
 -- | @Selector@ for @initWithCommandBuffer:@
-initWithCommandBufferSelector :: Selector
+initWithCommandBufferSelector :: Selector '[RawId] (Id MPSCommandBuffer)
 initWithCommandBufferSelector = mkSelector "initWithCommandBuffer:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCommandBuffer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @commitAndContinue@
-commitAndContinueSelector :: Selector
+commitAndContinueSelector :: Selector '[] ()
 commitAndContinueSelector = mkSelector "commitAndContinue"
 
 -- | @Selector@ for @prefetchHeapForWorkloadSize:@
-prefetchHeapForWorkloadSizeSelector :: Selector
+prefetchHeapForWorkloadSizeSelector :: Selector '[CULong] ()
 prefetchHeapForWorkloadSizeSelector = mkSelector "prefetchHeapForWorkloadSize:"
 
 -- | @Selector@ for @commandBuffer@
-commandBufferSelector :: Selector
+commandBufferSelector :: Selector '[] RawId
 commandBufferSelector = mkSelector "commandBuffer"
 
 -- | @Selector@ for @rootCommandBuffer@
-rootCommandBufferSelector :: Selector
+rootCommandBufferSelector :: Selector '[] RawId
 rootCommandBufferSelector = mkSelector "rootCommandBuffer"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id MPSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @setPredicate:@
-setPredicateSelector :: Selector
+setPredicateSelector :: Selector '[Id MPSPredicate] ()
 setPredicateSelector = mkSelector "setPredicate:"
 
 -- | @Selector@ for @heapProvider@
-heapProviderSelector :: Selector
+heapProviderSelector :: Selector '[] RawId
 heapProviderSelector = mkSelector "heapProvider"
 
 -- | @Selector@ for @setHeapProvider:@
-setHeapProviderSelector :: Selector
+setHeapProviderSelector :: Selector '[RawId] ()
 setHeapProviderSelector = mkSelector "setHeapProvider:"
 

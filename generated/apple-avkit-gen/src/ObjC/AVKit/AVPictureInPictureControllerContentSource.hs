@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,9 +21,9 @@ module ObjC.AVKit.AVPictureInPictureControllerContentSource
   , sampleBufferDisplayLayer
   , sampleBufferPlaybackDelegate
   , initSelector
-  , newSelector
   , initWithPlayerLayerSelector
   , initWithSampleBufferDisplayLayer_playbackDelegateSelector
+  , newSelector
   , playerLayerSelector
   , sampleBufferDisplayLayerSelector
   , sampleBufferPlaybackDelegateSelector
@@ -30,15 +31,11 @@ module ObjC.AVKit.AVPictureInPictureControllerContentSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,15 +45,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource => avPictureInPictureControllerContentSource -> IO (Id AVPictureInPictureControllerContentSource)
-init_ avPictureInPictureControllerContentSource  =
-    sendMsg avPictureInPictureControllerContentSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPictureInPictureControllerContentSource =
+  sendOwnedMessage avPictureInPictureControllerContentSource initSelector
 
 -- | @+ new@
 new :: IO (Id AVPictureInPictureControllerContentSource)
 new  =
   do
     cls' <- getRequiredClass "AVPictureInPictureControllerContentSource"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithPlayerLayer:
 --
@@ -66,9 +63,8 @@ new  =
 --
 -- ObjC selector: @- initWithPlayerLayer:@
 initWithPlayerLayer :: (IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource, IsAVPlayerLayer playerLayer) => avPictureInPictureControllerContentSource -> playerLayer -> IO (Id AVPictureInPictureControllerContentSource)
-initWithPlayerLayer avPictureInPictureControllerContentSource  playerLayer =
-  withObjCPtr playerLayer $ \raw_playerLayer ->
-      sendMsg avPictureInPictureControllerContentSource (mkSelector "initWithPlayerLayer:") (retPtr retVoid) [argPtr (castPtr raw_playerLayer :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayerLayer avPictureInPictureControllerContentSource playerLayer =
+  sendOwnedMessage avPictureInPictureControllerContentSource initWithPlayerLayerSelector (toAVPlayerLayer playerLayer)
 
 -- | initWithSampleBufferDisplayLayer:
 --
@@ -80,9 +76,8 @@ initWithPlayerLayer avPictureInPictureControllerContentSource  playerLayer =
 --
 -- ObjC selector: @- initWithSampleBufferDisplayLayer:playbackDelegate:@
 initWithSampleBufferDisplayLayer_playbackDelegate :: (IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource, IsAVSampleBufferDisplayLayer sampleBufferDisplayLayer) => avPictureInPictureControllerContentSource -> sampleBufferDisplayLayer -> RawId -> IO (Id AVPictureInPictureControllerContentSource)
-initWithSampleBufferDisplayLayer_playbackDelegate avPictureInPictureControllerContentSource  sampleBufferDisplayLayer playbackDelegate =
-  withObjCPtr sampleBufferDisplayLayer $ \raw_sampleBufferDisplayLayer ->
-      sendMsg avPictureInPictureControllerContentSource (mkSelector "initWithSampleBufferDisplayLayer:playbackDelegate:") (retPtr retVoid) [argPtr (castPtr raw_sampleBufferDisplayLayer :: Ptr ()), argPtr (castPtr (unRawId playbackDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithSampleBufferDisplayLayer_playbackDelegate avPictureInPictureControllerContentSource sampleBufferDisplayLayer playbackDelegate =
+  sendOwnedMessage avPictureInPictureControllerContentSource initWithSampleBufferDisplayLayer_playbackDelegateSelector (toAVSampleBufferDisplayLayer sampleBufferDisplayLayer) playbackDelegate
 
 -- | playerLayer
 --
@@ -90,8 +85,8 @@ initWithSampleBufferDisplayLayer_playbackDelegate avPictureInPictureControllerCo
 --
 -- ObjC selector: @- playerLayer@
 playerLayer :: IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource => avPictureInPictureControllerContentSource -> IO (Id AVPlayerLayer)
-playerLayer avPictureInPictureControllerContentSource  =
-    sendMsg avPictureInPictureControllerContentSource (mkSelector "playerLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerLayer avPictureInPictureControllerContentSource =
+  sendMessage avPictureInPictureControllerContentSource playerLayerSelector
 
 -- | sampleBufferDisplayLayer
 --
@@ -99,8 +94,8 @@ playerLayer avPictureInPictureControllerContentSource  =
 --
 -- ObjC selector: @- sampleBufferDisplayLayer@
 sampleBufferDisplayLayer :: IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource => avPictureInPictureControllerContentSource -> IO (Id AVSampleBufferDisplayLayer)
-sampleBufferDisplayLayer avPictureInPictureControllerContentSource  =
-    sendMsg avPictureInPictureControllerContentSource (mkSelector "sampleBufferDisplayLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferDisplayLayer avPictureInPictureControllerContentSource =
+  sendMessage avPictureInPictureControllerContentSource sampleBufferDisplayLayerSelector
 
 -- | sampleBufferPlaybackDelegate
 --
@@ -108,38 +103,38 @@ sampleBufferDisplayLayer avPictureInPictureControllerContentSource  =
 --
 -- ObjC selector: @- sampleBufferPlaybackDelegate@
 sampleBufferPlaybackDelegate :: IsAVPictureInPictureControllerContentSource avPictureInPictureControllerContentSource => avPictureInPictureControllerContentSource -> IO RawId
-sampleBufferPlaybackDelegate avPictureInPictureControllerContentSource  =
-    fmap (RawId . castPtr) $ sendMsg avPictureInPictureControllerContentSource (mkSelector "sampleBufferPlaybackDelegate") (retPtr retVoid) []
+sampleBufferPlaybackDelegate avPictureInPictureControllerContentSource =
+  sendMessage avPictureInPictureControllerContentSource sampleBufferPlaybackDelegateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPictureInPictureControllerContentSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPictureInPictureControllerContentSource)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithPlayerLayer:@
-initWithPlayerLayerSelector :: Selector
+initWithPlayerLayerSelector :: Selector '[Id AVPlayerLayer] (Id AVPictureInPictureControllerContentSource)
 initWithPlayerLayerSelector = mkSelector "initWithPlayerLayer:"
 
 -- | @Selector@ for @initWithSampleBufferDisplayLayer:playbackDelegate:@
-initWithSampleBufferDisplayLayer_playbackDelegateSelector :: Selector
+initWithSampleBufferDisplayLayer_playbackDelegateSelector :: Selector '[Id AVSampleBufferDisplayLayer, RawId] (Id AVPictureInPictureControllerContentSource)
 initWithSampleBufferDisplayLayer_playbackDelegateSelector = mkSelector "initWithSampleBufferDisplayLayer:playbackDelegate:"
 
 -- | @Selector@ for @playerLayer@
-playerLayerSelector :: Selector
+playerLayerSelector :: Selector '[] (Id AVPlayerLayer)
 playerLayerSelector = mkSelector "playerLayer"
 
 -- | @Selector@ for @sampleBufferDisplayLayer@
-sampleBufferDisplayLayerSelector :: Selector
+sampleBufferDisplayLayerSelector :: Selector '[] (Id AVSampleBufferDisplayLayer)
 sampleBufferDisplayLayerSelector = mkSelector "sampleBufferDisplayLayer"
 
 -- | @Selector@ for @sampleBufferPlaybackDelegate@
-sampleBufferPlaybackDelegateSelector :: Selector
+sampleBufferPlaybackDelegateSelector :: Selector '[] RawId
 sampleBufferPlaybackDelegateSelector = mkSelector "sampleBufferPlaybackDelegate"
 

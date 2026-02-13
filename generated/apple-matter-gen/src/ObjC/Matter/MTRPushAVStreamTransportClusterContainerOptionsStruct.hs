@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterContainerOptionsStruct
   , setContainerType
   , cmafContainerOptions
   , setCmafContainerOptions
-  , containerTypeSelector
-  , setContainerTypeSelector
   , cmafContainerOptionsSelector
+  , containerTypeSelector
   , setCmafContainerOptionsSelector
+  , setContainerTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- containerType@
 containerType :: IsMTRPushAVStreamTransportClusterContainerOptionsStruct mtrPushAVStreamTransportClusterContainerOptionsStruct => mtrPushAVStreamTransportClusterContainerOptionsStruct -> IO (Id NSNumber)
-containerType mtrPushAVStreamTransportClusterContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterContainerOptionsStruct (mkSelector "containerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerType mtrPushAVStreamTransportClusterContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterContainerOptionsStruct containerTypeSelector
 
 -- | @- setContainerType:@
 setContainerType :: (IsMTRPushAVStreamTransportClusterContainerOptionsStruct mtrPushAVStreamTransportClusterContainerOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterContainerOptionsStruct -> value -> IO ()
-setContainerType mtrPushAVStreamTransportClusterContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterContainerOptionsStruct (mkSelector "setContainerType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerType mtrPushAVStreamTransportClusterContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterContainerOptionsStruct setContainerTypeSelector (toNSNumber value)
 
 -- | @- cmafContainerOptions@
 cmafContainerOptions :: IsMTRPushAVStreamTransportClusterContainerOptionsStruct mtrPushAVStreamTransportClusterContainerOptionsStruct => mtrPushAVStreamTransportClusterContainerOptionsStruct -> IO (Id MTRPushAVStreamTransportClusterCMAFContainerOptionsStruct)
-cmafContainerOptions mtrPushAVStreamTransportClusterContainerOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterContainerOptionsStruct (mkSelector "cmafContainerOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+cmafContainerOptions mtrPushAVStreamTransportClusterContainerOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterContainerOptionsStruct cmafContainerOptionsSelector
 
 -- | @- setCmafContainerOptions:@
 setCmafContainerOptions :: (IsMTRPushAVStreamTransportClusterContainerOptionsStruct mtrPushAVStreamTransportClusterContainerOptionsStruct, IsMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct value) => mtrPushAVStreamTransportClusterContainerOptionsStruct -> value -> IO ()
-setCmafContainerOptions mtrPushAVStreamTransportClusterContainerOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterContainerOptionsStruct (mkSelector "setCmafContainerOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCmafContainerOptions mtrPushAVStreamTransportClusterContainerOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterContainerOptionsStruct setCmafContainerOptionsSelector (toMTRPushAVStreamTransportClusterCMAFContainerOptionsStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @containerType@
-containerTypeSelector :: Selector
+containerTypeSelector :: Selector '[] (Id NSNumber)
 containerTypeSelector = mkSelector "containerType"
 
 -- | @Selector@ for @setContainerType:@
-setContainerTypeSelector :: Selector
+setContainerTypeSelector :: Selector '[Id NSNumber] ()
 setContainerTypeSelector = mkSelector "setContainerType:"
 
 -- | @Selector@ for @cmafContainerOptions@
-cmafContainerOptionsSelector :: Selector
+cmafContainerOptionsSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterCMAFContainerOptionsStruct)
 cmafContainerOptionsSelector = mkSelector "cmafContainerOptions"
 
 -- | @Selector@ for @setCmafContainerOptions:@
-setCmafContainerOptionsSelector :: Selector
+setCmafContainerOptionsSelector :: Selector '[Id MTRPushAVStreamTransportClusterCMAFContainerOptionsStruct] ()
 setCmafContainerOptionsSelector = mkSelector "setCmafContainerOptions:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,40 +36,36 @@ module ObjC.MetalPerformanceShaders.MPSCNNBatchNormalization
   , epsilon
   , setEpsilon
   , dataSource
-  , initWithDevice_dataSourceSelector
-  , initWithDevice_dataSource_fusedNeuronDescriptorSelector
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector
+  , dataSourceSelector
   , encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImagesSelector
-  , encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector
-  , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector
   , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImagesSelector
   , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector
-  , resultStateForSourceImage_sourceStates_destinationImageSelector
-  , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
+  , encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector
+  , encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector
+  , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector
+  , epsilonSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_dataSourceSelector
+  , initWithDevice_dataSource_fusedNeuronDescriptorSelector
+  , numberOfFeatureChannelsSelector
   , reloadDataSourceSelector
   , reloadGammaAndBetaFromDataSourceSelector
-  , reloadMeanAndVarianceFromDataSourceSelector
   , reloadGammaAndBetaWithCommandBuffer_gammaAndBetaStateSelector
+  , reloadMeanAndVarianceFromDataSourceSelector
   , reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceStateSelector
-  , numberOfFeatureChannelsSelector
-  , epsilonSelector
+  , resultStateForSourceImage_sourceStates_destinationImageSelector
   , setEpsilonSelector
-  , dataSourceSelector
+  , temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,8 +82,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:dataSource:@
 initWithDevice_dataSource :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> RawId -> RawId -> IO (Id MPSCNNBatchNormalization)
-initWithDevice_dataSource mpscnnBatchNormalization  device dataSource =
-    sendMsg mpscnnBatchNormalization (mkSelector "initWithDevice:dataSource:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId dataSource) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_dataSource mpscnnBatchNormalization device dataSource =
+  sendOwnedMessage mpscnnBatchNormalization initWithDevice_dataSourceSelector device dataSource
 
 -- | Initializes a batch normalization kernel using a data source and a neuron descriptor.
 --
@@ -100,16 +97,15 @@ initWithDevice_dataSource mpscnnBatchNormalization  device dataSource =
 --
 -- ObjC selector: @- initWithDevice:dataSource:fusedNeuronDescriptor:@
 initWithDevice_dataSource_fusedNeuronDescriptor :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSNNNeuronDescriptor fusedNeuronDescriptor) => mpscnnBatchNormalization -> RawId -> RawId -> fusedNeuronDescriptor -> IO (Id MPSCNNBatchNormalization)
-initWithDevice_dataSource_fusedNeuronDescriptor mpscnnBatchNormalization  device dataSource fusedNeuronDescriptor =
-  withObjCPtr fusedNeuronDescriptor $ \raw_fusedNeuronDescriptor ->
-      sendMsg mpscnnBatchNormalization (mkSelector "initWithDevice:dataSource:fusedNeuronDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId dataSource) :: Ptr ()), argPtr (castPtr raw_fusedNeuronDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_dataSource_fusedNeuronDescriptor mpscnnBatchNormalization device dataSource fusedNeuronDescriptor =
+  sendOwnedMessage mpscnnBatchNormalization initWithDevice_dataSource_fusedNeuronDescriptorSelector device dataSource (toMPSNNNeuronDescriptor fusedNeuronDescriptor)
 
 -- | Use initWithDevice:dataSource instead
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> RawId -> IO (Id MPSCNNBatchNormalization)
-initWithDevice mpscnnBatchNormalization  device =
-    sendMsg mpscnnBatchNormalization (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnBatchNormalization device =
+  sendOwnedMessage mpscnnBatchNormalization initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -123,9 +119,8 @@ initWithDevice mpscnnBatchNormalization  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsNSCoder aDecoder) => mpscnnBatchNormalization -> aDecoder -> RawId -> IO (Id MPSCNNBatchNormalization)
-initWithCoder_device mpscnnBatchNormalization  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnBatchNormalization (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnBatchNormalization aDecoder device =
+  sendOwnedMessage mpscnnBatchNormalization initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode this kernel to a command buffer for a single image using              a batch normalization state.
 --
@@ -139,11 +134,8 @@ initWithCoder_device mpscnnBatchNormalization  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:batchNormalizationState:destinationImage:@
 encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImage :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSImage sourceImage, IsMPSCNNBatchNormalizationState batchNormalizationState, IsMPSImage destinationImage) => mpscnnBatchNormalization -> RawId -> sourceImage -> batchNormalizationState -> destinationImage -> IO ()
-encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImage mpscnnBatchNormalization  commandBuffer sourceImage batchNormalizationState destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBatchNormalization (mkSelector "encodeToCommandBuffer:sourceImage:batchNormalizationState:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImage mpscnnBatchNormalization commandBuffer sourceImage batchNormalizationState destinationImage =
+  sendMessage mpscnnBatchNormalization encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector commandBuffer (toMPSImage sourceImage) (toMPSCNNBatchNormalizationState batchNormalizationState) (toMPSImage destinationImage)
 
 -- | Encode this kernel to a command buffer for a batch of images using              a batch normalization state.
 --
@@ -157,54 +149,42 @@ encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImage mpscn
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:batchNormalizationState:destinationImages:@
 encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImages :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSCNNBatchNormalizationState batchNormalizationState) => mpscnnBatchNormalization -> RawId -> RawId -> batchNormalizationState -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImages mpscnnBatchNormalization  commandBuffer sourceImages batchNormalizationState destinationImages =
-  withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-      sendMsg mpscnnBatchNormalization (mkSelector "encodeBatchToCommandBuffer:sourceImages:batchNormalizationState:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImages mpscnnBatchNormalization commandBuffer sourceImages batchNormalizationState destinationImages =
+  sendMessage mpscnnBatchNormalization encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImagesSelector commandBuffer sourceImages (toMPSCNNBatchNormalizationState batchNormalizationState) destinationImages
 
 -- | @- encodeToCommandBuffer:sourceImage:destinationState:destinationImage:@
 encodeToCommandBuffer_sourceImage_destinationState_destinationImage :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSImage sourceImage, IsMPSState destinationState, IsMPSImage destinationImage) => mpscnnBatchNormalization -> RawId -> sourceImage -> destinationState -> destinationImage -> IO ()
-encodeToCommandBuffer_sourceImage_destinationState_destinationImage mpscnnBatchNormalization  commandBuffer sourceImage destinationState destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr destinationState $ \raw_destinationState ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBatchNormalization (mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_destinationState :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_sourceImage_destinationState_destinationImage mpscnnBatchNormalization commandBuffer sourceImage destinationState destinationImage =
+  sendMessage mpscnnBatchNormalization encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector commandBuffer (toMPSImage sourceImage) (toMPSState destinationState) (toMPSImage destinationImage)
 
 -- | @- encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:@
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSImage sourceImage, IsMPSState outState) => mpscnnBatchNormalization -> RawId -> sourceImage -> outState -> Bool -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary mpscnnBatchNormalization  commandBuffer sourceImage outState isTemporary =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr outState $ \raw_outState ->
-        sendMsg mpscnnBatchNormalization (mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0)] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary mpscnnBatchNormalization commandBuffer sourceImage outState isTemporary =
+  sendMessage mpscnnBatchNormalization encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector commandBuffer (toMPSImage sourceImage) (toMPSState outState) isTemporary
 
 -- | @- encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationImages:@
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImages :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImages mpscnnBatchNormalization  commandBuffer sourceImages destinationStates destinationImages =
-    sendMsg mpscnnBatchNormalization (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId destinationStates) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImages mpscnnBatchNormalization commandBuffer sourceImages destinationStates destinationImages =
+  sendMessage mpscnnBatchNormalization encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImagesSelector commandBuffer sourceImages destinationStates destinationImages
 
 -- | @- encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:@
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> RawId -> RawId -> RawId -> Bool -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary mpscnnBatchNormalization  commandBuffer sourceImages outStates isTemporary =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalization (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary mpscnnBatchNormalization commandBuffer sourceImages outStates isTemporary =
+  sendMessage mpscnnBatchNormalization encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector commandBuffer sourceImages outStates isTemporary
 
 -- | Return an MPSCNNBatchNormalizationState object which may be used with a MPSCNNBatchNormalization filter.
 --
 -- ObjC selector: @- resultStateForSourceImage:sourceStates:destinationImage:@
 resultStateForSourceImage_sourceStates_destinationImage :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSImage sourceImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnBatchNormalization -> sourceImage -> sourceStates -> destinationImage -> IO (Id MPSCNNBatchNormalizationState)
-resultStateForSourceImage_sourceStates_destinationImage mpscnnBatchNormalization  sourceImage sourceStates destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBatchNormalization (mkSelector "resultStateForSourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+resultStateForSourceImage_sourceStates_destinationImage mpscnnBatchNormalization sourceImage sourceStates destinationImage =
+  sendMessage mpscnnBatchNormalization resultStateForSourceImage_sourceStates_destinationImageSelector (toMPSImage sourceImage) (toNSArray sourceStates) (toMPSImage destinationImage)
 
 -- | Return a temporary MPSCNNBatchNormalizationState object which may be used with                  a MPSCNNBatchNormalization filter.
 --
 -- ObjC selector: @- temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSImage sourceImage, IsNSArray sourceStates, IsMPSImage destinationImage) => mpscnnBatchNormalization -> RawId -> sourceImage -> sourceStates -> destinationImage -> IO (Id MPSCNNBatchNormalizationState)
-temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnBatchNormalization  commandBuffer sourceImage sourceStates destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnBatchNormalization (mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())] >>= retainedObject . castPtr
+temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage mpscnnBatchNormalization commandBuffer sourceImage sourceStates destinationImage =
+  sendMessage mpscnnBatchNormalization temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector commandBuffer (toMPSImage sourceImage) (toNSArray sourceStates) (toMPSImage destinationImage)
 
 -- | Reinitialize the filter using a data source.
 --
@@ -212,22 +192,22 @@ temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImage m
 --
 -- ObjC selector: @- reloadDataSource:@
 reloadDataSource :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> RawId -> IO ()
-reloadDataSource mpscnnBatchNormalization  dataSource =
-    sendMsg mpscnnBatchNormalization (mkSelector "reloadDataSource:") retVoid [argPtr (castPtr (unRawId dataSource) :: Ptr ())]
+reloadDataSource mpscnnBatchNormalization dataSource =
+  sendMessage mpscnnBatchNormalization reloadDataSourceSelector dataSource
 
 -- | Reinitialize the filter's gamma and beta values using the data source provided at kernel initialization.
 --
 -- ObjC selector: @- reloadGammaAndBetaFromDataSource@
 reloadGammaAndBetaFromDataSource :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> IO ()
-reloadGammaAndBetaFromDataSource mpscnnBatchNormalization  =
-    sendMsg mpscnnBatchNormalization (mkSelector "reloadGammaAndBetaFromDataSource") retVoid []
+reloadGammaAndBetaFromDataSource mpscnnBatchNormalization =
+  sendMessage mpscnnBatchNormalization reloadGammaAndBetaFromDataSourceSelector
 
 -- | Reinitialize the filter's mean and variance values using the data source provided at kernel initialization.
 --
 -- ObjC selector: @- reloadMeanAndVarianceFromDataSource@
 reloadMeanAndVarianceFromDataSource :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> IO ()
-reloadMeanAndVarianceFromDataSource mpscnnBatchNormalization  =
-    sendMsg mpscnnBatchNormalization (mkSelector "reloadMeanAndVarianceFromDataSource") retVoid []
+reloadMeanAndVarianceFromDataSource mpscnnBatchNormalization =
+  sendMessage mpscnnBatchNormalization reloadMeanAndVarianceFromDataSourceSelector
 
 -- | Reload data using new gamma and beta terms contained within an              MPSCNNNormalizationGammaAndBetaState object.
 --
@@ -237,9 +217,8 @@ reloadMeanAndVarianceFromDataSource mpscnnBatchNormalization  =
 --
 -- ObjC selector: @- reloadGammaAndBetaWithCommandBuffer:gammaAndBetaState:@
 reloadGammaAndBetaWithCommandBuffer_gammaAndBetaState :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSCNNNormalizationGammaAndBetaState gammaAndBetaState) => mpscnnBatchNormalization -> RawId -> gammaAndBetaState -> IO ()
-reloadGammaAndBetaWithCommandBuffer_gammaAndBetaState mpscnnBatchNormalization  commandBuffer gammaAndBetaState =
-  withObjCPtr gammaAndBetaState $ \raw_gammaAndBetaState ->
-      sendMsg mpscnnBatchNormalization (mkSelector "reloadGammaAndBetaWithCommandBuffer:gammaAndBetaState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_gammaAndBetaState :: Ptr ())]
+reloadGammaAndBetaWithCommandBuffer_gammaAndBetaState mpscnnBatchNormalization commandBuffer gammaAndBetaState =
+  sendMessage mpscnnBatchNormalization reloadGammaAndBetaWithCommandBuffer_gammaAndBetaStateSelector commandBuffer (toMPSCNNNormalizationGammaAndBetaState gammaAndBetaState)
 
 -- | Reload data using new mean and variance terms contained within an              MPSCNNNormalizationMeanAndVarianceState object.
 --
@@ -249,9 +228,8 @@ reloadGammaAndBetaWithCommandBuffer_gammaAndBetaState mpscnnBatchNormalization  
 --
 -- ObjC selector: @- reloadMeanAndVarianceWithCommandBuffer:meanAndVarianceState:@
 reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceState :: (IsMPSCNNBatchNormalization mpscnnBatchNormalization, IsMPSCNNNormalizationMeanAndVarianceState meanAndVarianceState) => mpscnnBatchNormalization -> RawId -> meanAndVarianceState -> IO ()
-reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceState mpscnnBatchNormalization  commandBuffer meanAndVarianceState =
-  withObjCPtr meanAndVarianceState $ \raw_meanAndVarianceState ->
-      sendMsg mpscnnBatchNormalization (mkSelector "reloadMeanAndVarianceWithCommandBuffer:meanAndVarianceState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_meanAndVarianceState :: Ptr ())]
+reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceState mpscnnBatchNormalization commandBuffer meanAndVarianceState =
+  sendMessage mpscnnBatchNormalization reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceStateSelector commandBuffer (toMPSCNNNormalizationMeanAndVarianceState meanAndVarianceState)
 
 -- | numberOfFeatureChannels
 --
@@ -259,8 +237,8 @@ reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceState mpscnnBatchNormaliza
 --
 -- ObjC selector: @- numberOfFeatureChannels@
 numberOfFeatureChannels :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> IO CULong
-numberOfFeatureChannels mpscnnBatchNormalization  =
-    sendMsg mpscnnBatchNormalization (mkSelector "numberOfFeatureChannels") retCULong []
+numberOfFeatureChannels mpscnnBatchNormalization =
+  sendMessage mpscnnBatchNormalization numberOfFeatureChannelsSelector
 
 -- | epsilon
 --
@@ -268,8 +246,8 @@ numberOfFeatureChannels mpscnnBatchNormalization  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> IO CFloat
-epsilon mpscnnBatchNormalization  =
-    sendMsg mpscnnBatchNormalization (mkSelector "epsilon") retCFloat []
+epsilon mpscnnBatchNormalization =
+  sendMessage mpscnnBatchNormalization epsilonSelector
 
 -- | epsilon
 --
@@ -277,101 +255,101 @@ epsilon mpscnnBatchNormalization  =
 --
 -- ObjC selector: @- setEpsilon:@
 setEpsilon :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> CFloat -> IO ()
-setEpsilon mpscnnBatchNormalization  value =
-    sendMsg mpscnnBatchNormalization (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpscnnBatchNormalization value =
+  sendMessage mpscnnBatchNormalization setEpsilonSelector value
 
 -- | The data source the batch normalization was initialized with
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsMPSCNNBatchNormalization mpscnnBatchNormalization => mpscnnBatchNormalization -> IO RawId
-dataSource mpscnnBatchNormalization  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalization (mkSelector "dataSource") (retPtr retVoid) []
+dataSource mpscnnBatchNormalization =
+  sendMessage mpscnnBatchNormalization dataSourceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:dataSource:@
-initWithDevice_dataSourceSelector :: Selector
+initWithDevice_dataSourceSelector :: Selector '[RawId, RawId] (Id MPSCNNBatchNormalization)
 initWithDevice_dataSourceSelector = mkSelector "initWithDevice:dataSource:"
 
 -- | @Selector@ for @initWithDevice:dataSource:fusedNeuronDescriptor:@
-initWithDevice_dataSource_fusedNeuronDescriptorSelector :: Selector
+initWithDevice_dataSource_fusedNeuronDescriptorSelector :: Selector '[RawId, RawId, Id MPSNNNeuronDescriptor] (Id MPSCNNBatchNormalization)
 initWithDevice_dataSource_fusedNeuronDescriptorSelector = mkSelector "initWithDevice:dataSource:fusedNeuronDescriptor:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNBatchNormalization)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNBatchNormalization)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:batchNormalizationState:destinationImage:@
-encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector :: Selector
+encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSCNNBatchNormalizationState, Id MPSImage] ()
 encodeToCommandBuffer_sourceImage_batchNormalizationState_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImage:batchNormalizationState:destinationImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:batchNormalizationState:destinationImages:@
-encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImagesSelector :: Selector '[RawId, RawId, Id MPSCNNBatchNormalizationState, RawId] ()
 encodeBatchToCommandBuffer_sourceImages_batchNormalizationState_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:batchNormalizationState:destinationImages:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationState:destinationImage:@
-encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector :: Selector
+encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSState, Id MPSImage] ()
 encodeToCommandBuffer_sourceImage_destinationState_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationImage:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:@
-encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector :: Selector
+encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector :: Selector '[RawId, Id MPSImage, Id MPSState, Bool] (Id MPSImage)
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporarySelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationImages:@
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationImages:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:@
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector :: Selector '[RawId, RawId, RawId, Bool] RawId
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @resultStateForSourceImage:sourceStates:destinationImage:@
-resultStateForSourceImage_sourceStates_destinationImageSelector :: Selector
+resultStateForSourceImage_sourceStates_destinationImageSelector :: Selector '[Id MPSImage, Id NSArray, Id MPSImage] (Id MPSCNNBatchNormalizationState)
 resultStateForSourceImage_sourceStates_destinationImageSelector = mkSelector "resultStateForSourceImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:@
-temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector
+temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id NSArray, Id MPSImage] (Id MPSCNNBatchNormalizationState)
 temporaryResultStateForCommandBuffer_sourceImage_sourceStates_destinationImageSelector = mkSelector "temporaryResultStateForCommandBuffer:sourceImage:sourceStates:destinationImage:"
 
 -- | @Selector@ for @reloadDataSource:@
-reloadDataSourceSelector :: Selector
+reloadDataSourceSelector :: Selector '[RawId] ()
 reloadDataSourceSelector = mkSelector "reloadDataSource:"
 
 -- | @Selector@ for @reloadGammaAndBetaFromDataSource@
-reloadGammaAndBetaFromDataSourceSelector :: Selector
+reloadGammaAndBetaFromDataSourceSelector :: Selector '[] ()
 reloadGammaAndBetaFromDataSourceSelector = mkSelector "reloadGammaAndBetaFromDataSource"
 
 -- | @Selector@ for @reloadMeanAndVarianceFromDataSource@
-reloadMeanAndVarianceFromDataSourceSelector :: Selector
+reloadMeanAndVarianceFromDataSourceSelector :: Selector '[] ()
 reloadMeanAndVarianceFromDataSourceSelector = mkSelector "reloadMeanAndVarianceFromDataSource"
 
 -- | @Selector@ for @reloadGammaAndBetaWithCommandBuffer:gammaAndBetaState:@
-reloadGammaAndBetaWithCommandBuffer_gammaAndBetaStateSelector :: Selector
+reloadGammaAndBetaWithCommandBuffer_gammaAndBetaStateSelector :: Selector '[RawId, Id MPSCNNNormalizationGammaAndBetaState] ()
 reloadGammaAndBetaWithCommandBuffer_gammaAndBetaStateSelector = mkSelector "reloadGammaAndBetaWithCommandBuffer:gammaAndBetaState:"
 
 -- | @Selector@ for @reloadMeanAndVarianceWithCommandBuffer:meanAndVarianceState:@
-reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceStateSelector :: Selector
+reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceStateSelector :: Selector '[RawId, Id MPSCNNNormalizationMeanAndVarianceState] ()
 reloadMeanAndVarianceWithCommandBuffer_meanAndVarianceStateSelector = mkSelector "reloadMeanAndVarianceWithCommandBuffer:meanAndVarianceState:"
 
 -- | @Selector@ for @numberOfFeatureChannels@
-numberOfFeatureChannelsSelector :: Selector
+numberOfFeatureChannelsSelector :: Selector '[] CULong
 numberOfFeatureChannelsSelector = mkSelector "numberOfFeatureChannels"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 

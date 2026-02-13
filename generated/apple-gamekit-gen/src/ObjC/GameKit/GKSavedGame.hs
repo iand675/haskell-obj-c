@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.GameKit.GKSavedGame
   , name
   , deviceName
   , modificationDate
-  , loadDataWithCompletionHandlerSelector
-  , nameSelector
   , deviceNameSelector
+  , loadDataWithCompletionHandlerSelector
   , modificationDateSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,41 +36,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadDataWithCompletionHandler:@
 loadDataWithCompletionHandler :: IsGKSavedGame gkSavedGame => gkSavedGame -> Ptr () -> IO ()
-loadDataWithCompletionHandler gkSavedGame  handler =
-    sendMsg gkSavedGame (mkSelector "loadDataWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+loadDataWithCompletionHandler gkSavedGame handler =
+  sendMessage gkSavedGame loadDataWithCompletionHandlerSelector handler
 
 -- | @- name@
 name :: IsGKSavedGame gkSavedGame => gkSavedGame -> IO (Id NSString)
-name gkSavedGame  =
-    sendMsg gkSavedGame (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name gkSavedGame =
+  sendMessage gkSavedGame nameSelector
 
 -- | @- deviceName@
 deviceName :: IsGKSavedGame gkSavedGame => gkSavedGame -> IO (Id NSString)
-deviceName gkSavedGame  =
-    sendMsg gkSavedGame (mkSelector "deviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceName gkSavedGame =
+  sendMessage gkSavedGame deviceNameSelector
 
 -- | @- modificationDate@
 modificationDate :: IsGKSavedGame gkSavedGame => gkSavedGame -> IO (Id NSDate)
-modificationDate gkSavedGame  =
-    sendMsg gkSavedGame (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate gkSavedGame =
+  sendMessage gkSavedGame modificationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadDataWithCompletionHandler:@
-loadDataWithCompletionHandlerSelector :: Selector
+loadDataWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadDataWithCompletionHandlerSelector = mkSelector "loadDataWithCompletionHandler:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @deviceName@
-deviceNameSelector :: Selector
+deviceNameSelector :: Selector '[] (Id NSString)
 deviceNameSelector = mkSelector "deviceName"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 

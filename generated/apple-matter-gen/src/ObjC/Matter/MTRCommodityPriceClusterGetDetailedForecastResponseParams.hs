@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Matter.MTRCommodityPriceClusterGetDetailedForecastResponseParams
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRCommodityPriceClusterGetDetailedForecastResponseParams mtrCommodityPriceClusterGetDetailedForecastResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrCommodityPriceClusterGetDetailedForecastResponseParams -> responseValue -> error_ -> IO (Id MTRCommodityPriceClusterGetDetailedForecastResponseParams)
-initWithResponseValue_error mtrCommodityPriceClusterGetDetailedForecastResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrCommodityPriceClusterGetDetailedForecastResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrCommodityPriceClusterGetDetailedForecastResponseParams responseValue error_ =
+  sendOwnedMessage mtrCommodityPriceClusterGetDetailedForecastResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- priceForecast@
 priceForecast :: IsMTRCommodityPriceClusterGetDetailedForecastResponseParams mtrCommodityPriceClusterGetDetailedForecastResponseParams => mtrCommodityPriceClusterGetDetailedForecastResponseParams -> IO (Id NSArray)
-priceForecast mtrCommodityPriceClusterGetDetailedForecastResponseParams  =
-    sendMsg mtrCommodityPriceClusterGetDetailedForecastResponseParams (mkSelector "priceForecast") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceForecast mtrCommodityPriceClusterGetDetailedForecastResponseParams =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastResponseParams priceForecastSelector
 
 -- | @- setPriceForecast:@
 setPriceForecast :: (IsMTRCommodityPriceClusterGetDetailedForecastResponseParams mtrCommodityPriceClusterGetDetailedForecastResponseParams, IsNSArray value) => mtrCommodityPriceClusterGetDetailedForecastResponseParams -> value -> IO ()
-setPriceForecast mtrCommodityPriceClusterGetDetailedForecastResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterGetDetailedForecastResponseParams (mkSelector "setPriceForecast:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriceForecast mtrCommodityPriceClusterGetDetailedForecastResponseParams value =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastResponseParams setPriceForecastSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRCommodityPriceClusterGetDetailedForecastResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @priceForecast@
-priceForecastSelector :: Selector
+priceForecastSelector :: Selector '[] (Id NSArray)
 priceForecastSelector = mkSelector "priceForecast"
 
 -- | @Selector@ for @setPriceForecast:@
-setPriceForecastSelector :: Selector
+setPriceForecastSelector :: Selector '[Id NSArray] ()
 setPriceForecastSelector = mkSelector "setPriceForecast:"
 

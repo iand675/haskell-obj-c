@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.Virtualization.VZVmnetNetworkDeviceAttachment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,25 +54,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithNetwork:@
 initWithNetwork :: IsVZVmnetNetworkDeviceAttachment vzVmnetNetworkDeviceAttachment => vzVmnetNetworkDeviceAttachment -> Ptr () -> IO (Id VZVmnetNetworkDeviceAttachment)
-initWithNetwork vzVmnetNetworkDeviceAttachment  network =
-    sendMsg vzVmnetNetworkDeviceAttachment (mkSelector "initWithNetwork:") (retPtr retVoid) [argPtr network] >>= ownedObject . castPtr
+initWithNetwork vzVmnetNetworkDeviceAttachment network =
+  sendOwnedMessage vzVmnetNetworkDeviceAttachment initWithNetworkSelector network
 
 -- | The network object that the attachment will be initialized with.
 --
 -- ObjC selector: @- network@
 network :: IsVZVmnetNetworkDeviceAttachment vzVmnetNetworkDeviceAttachment => vzVmnetNetworkDeviceAttachment -> IO (Ptr ())
-network vzVmnetNetworkDeviceAttachment  =
-    fmap castPtr $ sendMsg vzVmnetNetworkDeviceAttachment (mkSelector "network") (retPtr retVoid) []
+network vzVmnetNetworkDeviceAttachment =
+  sendMessage vzVmnetNetworkDeviceAttachment networkSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNetwork:@
-initWithNetworkSelector :: Selector
+initWithNetworkSelector :: Selector '[Ptr ()] (Id VZVmnetNetworkDeviceAttachment)
 initWithNetworkSelector = mkSelector "initWithNetwork:"
 
 -- | @Selector@ for @network@
-networkSelector :: Selector
+networkSelector :: Selector '[] (Ptr ())
 networkSelector = mkSelector "network"
 

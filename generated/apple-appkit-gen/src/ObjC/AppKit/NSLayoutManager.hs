@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -156,155 +157,155 @@ module ObjC.AppKit.NSLayoutManager
   , setHyphenationFactor
   , firstTextView
   , textViewForBeginningOfSelection
-  , initSelector
-  , initWithCoderSelector
-  , replaceTextStorageSelector
+  , addTemporaryAttribute_value_forCharacterRangeSelector
+  , addTemporaryAttributes_forCharacterRangeSelector
   , addTextContainerSelector
-  , insertTextContainer_atIndexSelector
-  , removeTextContainerAtIndexSelector
-  , textContainerChangedGeometrySelector
-  , textContainerChangedTextViewSelector
-  , invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector
-  , invalidateLayoutForCharacterRange_actualCharacterRangeSelector
-  , invalidateDisplayForCharacterRangeSelector
-  , invalidateDisplayForGlyphRangeSelector
-  , processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector
+  , allowsNonContiguousLayoutSelector
+  , attachmentSizeForGlyphAtIndexSelector
+  , backgroundLayoutEnabledSelector
+  , boundingRectForGlyphRange_inTextContainerSelector
+  , boundsRectForTextBlock_atIndex_effectiveRangeSelector
+  , boundsRectForTextBlock_glyphRangeSelector
+  , cgGlyphAtIndexSelector
+  , cgGlyphAtIndex_isValidIndexSelector
+  , characterIndexForGlyphAtIndexSelector
+  , characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector
+  , characterRangeForGlyphRange_actualGlyphRangeSelector
+  , defaultAttachmentScalingSelector
+  , defaultBaselineOffsetForFontSelector
+  , defaultLineHeightForFontSelector
+  , delegateSelector
+  , deleteGlyphsInRangeSelector
+  , drawBackgroundForGlyphRange_atPointSelector
+  , drawGlyphsForGlyphRange_atPointSelector
+  , drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
+  , drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
+  , drawsOutsideLineFragmentForGlyphAtIndexSelector
   , ensureGlyphsForCharacterRangeSelector
   , ensureGlyphsForGlyphRangeSelector
+  , ensureLayoutForBoundingRect_inTextContainerSelector
   , ensureLayoutForCharacterRangeSelector
   , ensureLayoutForGlyphRangeSelector
   , ensureLayoutForTextContainerSelector
-  , ensureLayoutForBoundingRect_inTextContainerSelector
-  , setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector
-  , cgGlyphAtIndex_isValidIndexSelector
-  , cgGlyphAtIndexSelector
-  , isValidGlyphIndexSelector
-  , propertyForGlyphAtIndexSelector
-  , characterIndexForGlyphAtIndexSelector
-  , glyphIndexForCharacterAtIndexSelector
-  , getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector
-  , setTextContainer_forGlyphRangeSelector
-  , setLineFragmentRect_forGlyphRange_usedRectSelector
-  , setExtraLineFragmentRect_usedRect_textContainerSelector
-  , setLocation_forStartOfGlyphRangeSelector
-  , setNotShownAttribute_forGlyphAtIndexSelector
-  , setDrawsOutsideLineFragment_forGlyphAtIndexSelector
-  , setAttachmentSize_forGlyphRangeSelector
-  , getFirstUnlaidCharacterIndex_glyphIndexSelector
+  , enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector
+  , enumerateLineFragmentsForGlyphRange_usingBlockSelector
+  , extraLineFragmentRectSelector
+  , extraLineFragmentTextContainerSelector
+  , extraLineFragmentUsedRectSelector
+  , fillBackgroundRectArray_count_forCharacterRange_colorSelector
+  , firstTextViewSelector
   , firstUnlaidCharacterIndexSelector
   , firstUnlaidGlyphIndexSelector
-  , textContainerForGlyphAtIndex_effectiveRangeSelector
-  , textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector
-  , usedRectForTextContainerSelector
+  , fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector
+  , getFirstUnlaidCharacterIndex_glyphIndexSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
+  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector
+  , getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector
+  , getGlyphs_rangeSelector
+  , getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector
+  , glyphAtIndexSelector
+  , glyphAtIndex_isValidIndexSelector
+  , glyphGeneratorSelector
+  , glyphIndexForCharacterAtIndexSelector
+  , glyphIndexForPoint_inTextContainerSelector
+  , glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector
+  , glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector
+  , glyphRangeForBoundingRect_inTextContainerSelector
+  , glyphRangeForCharacterRange_actualCharacterRangeSelector
+  , glyphRangeForTextContainerSelector
+  , hasNonContiguousLayoutSelector
+  , hyphenationFactorSelector
+  , initSelector
+  , initWithCoderSelector
+  , insertGlyph_atGlyphIndex_characterIndexSelector
+  , insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector
+  , insertTextContainer_atIndexSelector
+  , intAttribute_forGlyphAtIndexSelector
+  , invalidateDisplayForCharacterRangeSelector
+  , invalidateDisplayForGlyphRangeSelector
+  , invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector
+  , invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector
+  , invalidateLayoutForCharacterRange_actualCharacterRangeSelector
+  , invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector
+  , isValidGlyphIndexSelector
+  , layoutManagerOwnsFirstResponderInWindowSelector
+  , layoutRectForTextBlock_atIndex_effectiveRangeSelector
+  , layoutRectForTextBlock_glyphRangeSelector
+  , limitsLayoutForSuspiciousContentsSelector
   , lineFragmentRectForGlyphAtIndex_effectiveRangeSelector
   , lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector
   , lineFragmentUsedRectForGlyphAtIndex_effectiveRangeSelector
   , lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector
   , locationForGlyphAtIndexSelector
   , notShownAttributeForGlyphAtIndexSelector
-  , drawsOutsideLineFragmentForGlyphAtIndexSelector
-  , attachmentSizeForGlyphAtIndexSelector
-  , truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector
-  , glyphRangeForCharacterRange_actualCharacterRangeSelector
-  , characterRangeForGlyphRange_actualGlyphRangeSelector
-  , glyphRangeForTextContainerSelector
+  , numberOfGlyphsSelector
+  , processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector
+  , propertyForGlyphAtIndexSelector
   , rangeOfNominallySpacedGlyphsContainingIndexSelector
-  , boundingRectForGlyphRange_inTextContainerSelector
-  , glyphRangeForBoundingRect_inTextContainerSelector
-  , glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector
-  , glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector
-  , glyphIndexForPoint_inTextContainerSelector
-  , fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector
-  , characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector
-  , getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector
-  , enumerateLineFragmentsForGlyphRange_usingBlockSelector
-  , enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector
-  , drawBackgroundForGlyphRange_atPointSelector
-  , drawGlyphsForGlyphRange_atPointSelector
-  , fillBackgroundRectArray_count_forCharacterRange_colorSelector
-  , drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
-  , underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
-  , drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
-  , strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
-  , showAttachmentCell_inRect_characterIndexSelector
-  , setLayoutRect_forTextBlock_glyphRangeSelector
-  , setBoundsRect_forTextBlock_glyphRangeSelector
-  , layoutRectForTextBlock_glyphRangeSelector
-  , boundsRectForTextBlock_glyphRangeSelector
-  , layoutRectForTextBlock_atIndex_effectiveRangeSelector
-  , boundsRectForTextBlock_atIndex_effectiveRangeSelector
-  , temporaryAttributesAtCharacterIndex_effectiveRangeSelector
-  , setTemporaryAttributes_forCharacterRangeSelector
-  , addTemporaryAttributes_forCharacterRangeSelector
-  , removeTemporaryAttribute_forCharacterRangeSelector
-  , temporaryAttribute_atCharacterIndex_effectiveRangeSelector
-  , temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector
-  , temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector
-  , addTemporaryAttribute_value_forCharacterRangeSelector
-  , defaultLineHeightForFontSelector
-  , defaultBaselineOffsetForFontSelector
-  , glyphAtIndex_isValidIndexSelector
-  , glyphAtIndexSelector
   , rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector
   , rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector
-  , substituteFontForFontSelector
-  , insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector
-  , insertGlyph_atGlyphIndex_characterIndexSelector
+  , removeTemporaryAttribute_forCharacterRangeSelector
+  , removeTextContainerAtIndexSelector
   , replaceGlyphAtIndex_withGlyphSelector
-  , deleteGlyphsInRangeSelector
-  , setCharacterIndex_forGlyphAtIndexSelector
-  , setIntAttribute_value_forGlyphAtIndexSelector
-  , invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector
-  , intAttribute_forGlyphAtIndexSelector
-  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector
-  , getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector
-  , getGlyphs_rangeSelector
-  , invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector
-  , textStorage_edited_range_changeInLength_invalidatedRangeSelector
-  , setLocations_startingGlyphIndexes_count_forGlyphRangeSelector
-  , showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector
-  , showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector
-  , rulerMarkersForTextView_paragraphStyle_rulerSelector
+  , replaceTextStorageSelector
   , rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector
-  , layoutManagerOwnsFirstResponderInWindowSelector
-  , textStorageSelector
-  , setTextStorageSelector
-  , textContainersSelector
-  , delegateSelector
-  , setDelegateSelector
-  , showsInvisibleCharactersSelector
-  , setShowsInvisibleCharactersSelector
-  , showsControlCharactersSelector
-  , setShowsControlCharactersSelector
-  , usesDefaultHyphenationSelector
-  , setUsesDefaultHyphenationSelector
-  , usesFontLeadingSelector
-  , setUsesFontLeadingSelector
-  , allowsNonContiguousLayoutSelector
+  , rulerMarkersForTextView_paragraphStyle_rulerSelector
   , setAllowsNonContiguousLayoutSelector
-  , hasNonContiguousLayoutSelector
-  , limitsLayoutForSuspiciousContentsSelector
-  , setLimitsLayoutForSuspiciousContentsSelector
-  , backgroundLayoutEnabledSelector
+  , setAttachmentSize_forGlyphRangeSelector
   , setBackgroundLayoutEnabledSelector
-  , defaultAttachmentScalingSelector
+  , setBoundsRect_forTextBlock_glyphRangeSelector
+  , setCharacterIndex_forGlyphAtIndexSelector
   , setDefaultAttachmentScalingSelector
-  , typesetterSelector
-  , setTypesetterSelector
-  , typesetterBehaviorSelector
-  , setTypesetterBehaviorSelector
-  , numberOfGlyphsSelector
-  , extraLineFragmentRectSelector
-  , extraLineFragmentUsedRectSelector
-  , extraLineFragmentTextContainerSelector
-  , glyphGeneratorSelector
+  , setDelegateSelector
+  , setDrawsOutsideLineFragment_forGlyphAtIndexSelector
+  , setExtraLineFragmentRect_usedRect_textContainerSelector
   , setGlyphGeneratorSelector
-  , usesScreenFontsSelector
-  , setUsesScreenFontsSelector
-  , hyphenationFactorSelector
+  , setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector
   , setHyphenationFactorSelector
-  , firstTextViewSelector
+  , setIntAttribute_value_forGlyphAtIndexSelector
+  , setLayoutRect_forTextBlock_glyphRangeSelector
+  , setLimitsLayoutForSuspiciousContentsSelector
+  , setLineFragmentRect_forGlyphRange_usedRectSelector
+  , setLocation_forStartOfGlyphRangeSelector
+  , setLocations_startingGlyphIndexes_count_forGlyphRangeSelector
+  , setNotShownAttribute_forGlyphAtIndexSelector
+  , setShowsControlCharactersSelector
+  , setShowsInvisibleCharactersSelector
+  , setTemporaryAttributes_forCharacterRangeSelector
+  , setTextContainer_forGlyphRangeSelector
+  , setTextStorageSelector
+  , setTypesetterBehaviorSelector
+  , setTypesetterSelector
+  , setUsesDefaultHyphenationSelector
+  , setUsesFontLeadingSelector
+  , setUsesScreenFontsSelector
+  , showAttachmentCell_inRect_characterIndexSelector
+  , showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector
+  , showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector
+  , showsControlCharactersSelector
+  , showsInvisibleCharactersSelector
+  , strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
+  , substituteFontForFontSelector
+  , temporaryAttribute_atCharacterIndex_effectiveRangeSelector
+  , temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector
+  , temporaryAttributesAtCharacterIndex_effectiveRangeSelector
+  , temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector
+  , textContainerChangedGeometrySelector
+  , textContainerChangedTextViewSelector
+  , textContainerForGlyphAtIndex_effectiveRangeSelector
+  , textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector
+  , textContainersSelector
+  , textStorageSelector
+  , textStorage_edited_range_changeInLength_invalidatedRangeSelector
   , textViewForBeginningOfSelectionSelector
+  , truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector
+  , typesetterBehaviorSelector
+  , typesetterSelector
+  , underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector
+  , usedRectForTextContainerSelector
+  , usesDefaultHyphenationSelector
+  , usesFontLeadingSelector
+  , usesScreenFontsSelector
 
   -- * Enum types
   , NSGlyphProperty(NSGlyphProperty)
@@ -344,15 +345,11 @@ module ObjC.AppKit.NSLayoutManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -365,1446 +362,1388 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSLayoutManager)
-init_ nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsLayoutManager =
+  sendOwnedMessage nsLayoutManager initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSLayoutManager nsLayoutManager, IsNSCoder coder) => nsLayoutManager -> coder -> IO (Id NSLayoutManager)
-initWithCoder nsLayoutManager  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsLayoutManager (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsLayoutManager coder =
+  sendOwnedMessage nsLayoutManager initWithCoderSelector (toNSCoder coder)
 
 -- | @- replaceTextStorage:@
 replaceTextStorage :: (IsNSLayoutManager nsLayoutManager, IsNSTextStorage newTextStorage) => nsLayoutManager -> newTextStorage -> IO ()
-replaceTextStorage nsLayoutManager  newTextStorage =
-  withObjCPtr newTextStorage $ \raw_newTextStorage ->
-      sendMsg nsLayoutManager (mkSelector "replaceTextStorage:") retVoid [argPtr (castPtr raw_newTextStorage :: Ptr ())]
+replaceTextStorage nsLayoutManager newTextStorage =
+  sendMessage nsLayoutManager replaceTextStorageSelector (toNSTextStorage newTextStorage)
 
 -- | @- addTextContainer:@
 addTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO ()
-addTextContainer nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "addTextContainer:") retVoid [argPtr (castPtr raw_container :: Ptr ())]
+addTextContainer nsLayoutManager container =
+  sendMessage nsLayoutManager addTextContainerSelector (toNSTextContainer container)
 
 -- | @- insertTextContainer:atIndex:@
 insertTextContainer_atIndex :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> CULong -> IO ()
-insertTextContainer_atIndex nsLayoutManager  container index =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "insertTextContainer:atIndex:") retVoid [argPtr (castPtr raw_container :: Ptr ()), argCULong index]
+insertTextContainer_atIndex nsLayoutManager container index =
+  sendMessage nsLayoutManager insertTextContainer_atIndexSelector (toNSTextContainer container) index
 
 -- | @- removeTextContainerAtIndex:@
 removeTextContainerAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO ()
-removeTextContainerAtIndex nsLayoutManager  index =
-    sendMsg nsLayoutManager (mkSelector "removeTextContainerAtIndex:") retVoid [argCULong index]
+removeTextContainerAtIndex nsLayoutManager index =
+  sendMessage nsLayoutManager removeTextContainerAtIndexSelector index
 
 -- | @- textContainerChangedGeometry:@
 textContainerChangedGeometry :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO ()
-textContainerChangedGeometry nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "textContainerChangedGeometry:") retVoid [argPtr (castPtr raw_container :: Ptr ())]
+textContainerChangedGeometry nsLayoutManager container =
+  sendMessage nsLayoutManager textContainerChangedGeometrySelector (toNSTextContainer container)
 
 -- | @- textContainerChangedTextView:@
 textContainerChangedTextView :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO ()
-textContainerChangedTextView nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "textContainerChangedTextView:") retVoid [argPtr (castPtr raw_container :: Ptr ())]
+textContainerChangedTextView nsLayoutManager container =
+  sendMessage nsLayoutManager textContainerChangedTextViewSelector (toNSTextContainer container)
 
 -- | ************************ Invalidation *************************
 --
 -- ObjC selector: @- invalidateGlyphsForCharacterRange:changeInLength:actualCharacterRange:@
 invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> CLong -> Ptr NSRange -> IO ()
-invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRange nsLayoutManager  charRange delta actualCharRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateGlyphsForCharacterRange:changeInLength:actualCharacterRange:") retVoid [argNSRange charRange, argCLong delta, argPtr actualCharRange]
+invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRange nsLayoutManager charRange delta actualCharRange =
+  sendMessage nsLayoutManager invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector charRange delta actualCharRange
 
 -- | @- invalidateLayoutForCharacterRange:actualCharacterRange:@
 invalidateLayoutForCharacterRange_actualCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Ptr NSRange -> IO ()
-invalidateLayoutForCharacterRange_actualCharacterRange nsLayoutManager  charRange actualCharRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateLayoutForCharacterRange:actualCharacterRange:") retVoid [argNSRange charRange, argPtr actualCharRange]
+invalidateLayoutForCharacterRange_actualCharacterRange nsLayoutManager charRange actualCharRange =
+  sendMessage nsLayoutManager invalidateLayoutForCharacterRange_actualCharacterRangeSelector charRange actualCharRange
 
 -- | @- invalidateDisplayForCharacterRange:@
 invalidateDisplayForCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-invalidateDisplayForCharacterRange nsLayoutManager  charRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateDisplayForCharacterRange:") retVoid [argNSRange charRange]
+invalidateDisplayForCharacterRange nsLayoutManager charRange =
+  sendMessage nsLayoutManager invalidateDisplayForCharacterRangeSelector charRange
 
 -- | @- invalidateDisplayForGlyphRange:@
 invalidateDisplayForGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-invalidateDisplayForGlyphRange nsLayoutManager  glyphRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateDisplayForGlyphRange:") retVoid [argNSRange glyphRange]
+invalidateDisplayForGlyphRange nsLayoutManager glyphRange =
+  sendMessage nsLayoutManager invalidateDisplayForGlyphRangeSelector glyphRange
 
 -- | @- processEditingForTextStorage:edited:range:changeInLength:invalidatedRange:@
 processEditingForTextStorage_edited_range_changeInLength_invalidatedRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextStorage textStorage) => nsLayoutManager -> textStorage -> NSTextStorageEditActions -> NSRange -> CLong -> NSRange -> IO ()
-processEditingForTextStorage_edited_range_changeInLength_invalidatedRange nsLayoutManager  textStorage editMask newCharRange delta invalidatedCharRange =
-  withObjCPtr textStorage $ \raw_textStorage ->
-      sendMsg nsLayoutManager (mkSelector "processEditingForTextStorage:edited:range:changeInLength:invalidatedRange:") retVoid [argPtr (castPtr raw_textStorage :: Ptr ()), argCULong (coerce editMask), argNSRange newCharRange, argCLong delta, argNSRange invalidatedCharRange]
+processEditingForTextStorage_edited_range_changeInLength_invalidatedRange nsLayoutManager textStorage editMask newCharRange delta invalidatedCharRange =
+  sendMessage nsLayoutManager processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector (toNSTextStorage textStorage) editMask newCharRange delta invalidatedCharRange
 
 -- | ********************** Causing glyph generation and layout ***********************
 --
 -- ObjC selector: @- ensureGlyphsForCharacterRange:@
 ensureGlyphsForCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-ensureGlyphsForCharacterRange nsLayoutManager  charRange =
-    sendMsg nsLayoutManager (mkSelector "ensureGlyphsForCharacterRange:") retVoid [argNSRange charRange]
+ensureGlyphsForCharacterRange nsLayoutManager charRange =
+  sendMessage nsLayoutManager ensureGlyphsForCharacterRangeSelector charRange
 
 -- | @- ensureGlyphsForGlyphRange:@
 ensureGlyphsForGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-ensureGlyphsForGlyphRange nsLayoutManager  glyphRange =
-    sendMsg nsLayoutManager (mkSelector "ensureGlyphsForGlyphRange:") retVoid [argNSRange glyphRange]
+ensureGlyphsForGlyphRange nsLayoutManager glyphRange =
+  sendMessage nsLayoutManager ensureGlyphsForGlyphRangeSelector glyphRange
 
 -- | @- ensureLayoutForCharacterRange:@
 ensureLayoutForCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-ensureLayoutForCharacterRange nsLayoutManager  charRange =
-    sendMsg nsLayoutManager (mkSelector "ensureLayoutForCharacterRange:") retVoid [argNSRange charRange]
+ensureLayoutForCharacterRange nsLayoutManager charRange =
+  sendMessage nsLayoutManager ensureLayoutForCharacterRangeSelector charRange
 
 -- | @- ensureLayoutForGlyphRange:@
 ensureLayoutForGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-ensureLayoutForGlyphRange nsLayoutManager  glyphRange =
-    sendMsg nsLayoutManager (mkSelector "ensureLayoutForGlyphRange:") retVoid [argNSRange glyphRange]
+ensureLayoutForGlyphRange nsLayoutManager glyphRange =
+  sendMessage nsLayoutManager ensureLayoutForGlyphRangeSelector glyphRange
 
 -- | @- ensureLayoutForTextContainer:@
 ensureLayoutForTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO ()
-ensureLayoutForTextContainer nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "ensureLayoutForTextContainer:") retVoid [argPtr (castPtr raw_container :: Ptr ())]
+ensureLayoutForTextContainer nsLayoutManager container =
+  sendMessage nsLayoutManager ensureLayoutForTextContainerSelector (toNSTextContainer container)
 
 -- | @- ensureLayoutForBoundingRect:inTextContainer:@
 ensureLayoutForBoundingRect_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRect -> container -> IO ()
-ensureLayoutForBoundingRect_inTextContainer nsLayoutManager  bounds container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "ensureLayoutForBoundingRect:inTextContainer:") retVoid [argNSRect bounds, argPtr (castPtr raw_container :: Ptr ())]
+ensureLayoutForBoundingRect_inTextContainer nsLayoutManager bounds container =
+  sendMessage nsLayoutManager ensureLayoutForBoundingRect_inTextContainerSelector bounds (toNSTextContainer container)
 
 -- | ********************** Set glyphs and glyph properties ***********************
 --
 -- ObjC selector: @- setGlyphs:properties:characterIndexes:font:forGlyphRange:@
 setGlyphs_properties_characterIndexes_font_forGlyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSFont aFont) => nsLayoutManager -> Const RawId -> Const (Ptr NSGlyphProperty) -> Const (Ptr CULong) -> aFont -> NSRange -> IO ()
-setGlyphs_properties_characterIndexes_font_forGlyphRange nsLayoutManager  glyphs props charIndexes aFont glyphRange =
-  withObjCPtr aFont $ \raw_aFont ->
-      sendMsg nsLayoutManager (mkSelector "setGlyphs:properties:characterIndexes:font:forGlyphRange:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argPtr (unConst props), argPtr (unConst charIndexes), argPtr (castPtr raw_aFont :: Ptr ()), argNSRange glyphRange]
+setGlyphs_properties_characterIndexes_font_forGlyphRange nsLayoutManager glyphs props charIndexes aFont glyphRange =
+  sendMessage nsLayoutManager setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector glyphs props charIndexes (toNSFont aFont) glyphRange
 
 -- | @- CGGlyphAtIndex:isValidIndex:@
 cgGlyphAtIndex_isValidIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr Bool -> IO CUShort
-cgGlyphAtIndex_isValidIndex nsLayoutManager  glyphIndex isValidIndex =
-    fmap fromIntegral $ sendMsg nsLayoutManager (mkSelector "CGGlyphAtIndex:isValidIndex:") retCUInt [argCULong glyphIndex, argPtr isValidIndex]
+cgGlyphAtIndex_isValidIndex nsLayoutManager glyphIndex isValidIndex =
+  sendMessage nsLayoutManager cgGlyphAtIndex_isValidIndexSelector glyphIndex isValidIndex
 
 -- | @- CGGlyphAtIndex:@
 cgGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO CUShort
-cgGlyphAtIndex nsLayoutManager  glyphIndex =
-    fmap fromIntegral $ sendMsg nsLayoutManager (mkSelector "CGGlyphAtIndex:") retCUInt [argCULong glyphIndex]
+cgGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager cgGlyphAtIndexSelector glyphIndex
 
 -- | @- isValidGlyphIndex:@
 isValidGlyphIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO Bool
-isValidGlyphIndex nsLayoutManager  glyphIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "isValidGlyphIndex:") retCULong [argCULong glyphIndex]
+isValidGlyphIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager isValidGlyphIndexSelector glyphIndex
 
 -- | @- propertyForGlyphAtIndex:@
 propertyForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO NSGlyphProperty
-propertyForGlyphAtIndex nsLayoutManager  glyphIndex =
-    fmap (coerce :: CLong -> NSGlyphProperty) $ sendMsg nsLayoutManager (mkSelector "propertyForGlyphAtIndex:") retCLong [argCULong glyphIndex]
+propertyForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager propertyForGlyphAtIndexSelector glyphIndex
 
 -- | @- characterIndexForGlyphAtIndex:@
 characterIndexForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO CULong
-characterIndexForGlyphAtIndex nsLayoutManager  glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "characterIndexForGlyphAtIndex:") retCULong [argCULong glyphIndex]
+characterIndexForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager characterIndexForGlyphAtIndexSelector glyphIndex
 
 -- | @- glyphIndexForCharacterAtIndex:@
 glyphIndexForCharacterAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO CULong
-glyphIndexForCharacterAtIndex nsLayoutManager  charIndex =
-    sendMsg nsLayoutManager (mkSelector "glyphIndexForCharacterAtIndex:") retCULong [argCULong charIndex]
+glyphIndexForCharacterAtIndex nsLayoutManager charIndex =
+  sendMessage nsLayoutManager glyphIndexForCharacterAtIndexSelector charIndex
 
 -- | @- getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:@
 getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr NSGlyphProperty -> Ptr CULong -> Ptr CUChar -> IO CULong
-getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels nsLayoutManager  glyphRange glyphBuffer props charIndexBuffer bidiLevelBuffer =
-    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr props, argPtr charIndexBuffer, argPtr bidiLevelBuffer]
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevels nsLayoutManager glyphRange glyphBuffer props charIndexBuffer bidiLevelBuffer =
+  sendMessage nsLayoutManager getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector glyphRange glyphBuffer props charIndexBuffer bidiLevelBuffer
 
 -- | @- setTextContainer:forGlyphRange:@
 setTextContainer_forGlyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> NSRange -> IO ()
-setTextContainer_forGlyphRange nsLayoutManager  container glyphRange =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "setTextContainer:forGlyphRange:") retVoid [argPtr (castPtr raw_container :: Ptr ()), argNSRange glyphRange]
+setTextContainer_forGlyphRange nsLayoutManager container glyphRange =
+  sendMessage nsLayoutManager setTextContainer_forGlyphRangeSelector (toNSTextContainer container) glyphRange
 
 -- | @- setLineFragmentRect:forGlyphRange:usedRect:@
 setLineFragmentRect_forGlyphRange_usedRect :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRect -> NSRange -> NSRect -> IO ()
-setLineFragmentRect_forGlyphRange_usedRect nsLayoutManager  fragmentRect glyphRange usedRect =
-    sendMsg nsLayoutManager (mkSelector "setLineFragmentRect:forGlyphRange:usedRect:") retVoid [argNSRect fragmentRect, argNSRange glyphRange, argNSRect usedRect]
+setLineFragmentRect_forGlyphRange_usedRect nsLayoutManager fragmentRect glyphRange usedRect =
+  sendMessage nsLayoutManager setLineFragmentRect_forGlyphRange_usedRectSelector fragmentRect glyphRange usedRect
 
 -- | @- setExtraLineFragmentRect:usedRect:textContainer:@
 setExtraLineFragmentRect_usedRect_textContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRect -> NSRect -> container -> IO ()
-setExtraLineFragmentRect_usedRect_textContainer nsLayoutManager  fragmentRect usedRect container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "setExtraLineFragmentRect:usedRect:textContainer:") retVoid [argNSRect fragmentRect, argNSRect usedRect, argPtr (castPtr raw_container :: Ptr ())]
+setExtraLineFragmentRect_usedRect_textContainer nsLayoutManager fragmentRect usedRect container =
+  sendMessage nsLayoutManager setExtraLineFragmentRect_usedRect_textContainerSelector fragmentRect usedRect (toNSTextContainer container)
 
 -- | @- setLocation:forStartOfGlyphRange:@
 setLocation_forStartOfGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSPoint -> NSRange -> IO ()
-setLocation_forStartOfGlyphRange nsLayoutManager  location glyphRange =
-    sendMsg nsLayoutManager (mkSelector "setLocation:forStartOfGlyphRange:") retVoid [argNSPoint location, argNSRange glyphRange]
+setLocation_forStartOfGlyphRange nsLayoutManager location glyphRange =
+  sendMessage nsLayoutManager setLocation_forStartOfGlyphRangeSelector location glyphRange
 
 -- | @- setNotShownAttribute:forGlyphAtIndex:@
 setNotShownAttribute_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> CULong -> IO ()
-setNotShownAttribute_forGlyphAtIndex nsLayoutManager  flag glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "setNotShownAttribute:forGlyphAtIndex:") retVoid [argCULong (if flag then 1 else 0), argCULong glyphIndex]
+setNotShownAttribute_forGlyphAtIndex nsLayoutManager flag glyphIndex =
+  sendMessage nsLayoutManager setNotShownAttribute_forGlyphAtIndexSelector flag glyphIndex
 
 -- | @- setDrawsOutsideLineFragment:forGlyphAtIndex:@
 setDrawsOutsideLineFragment_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> CULong -> IO ()
-setDrawsOutsideLineFragment_forGlyphAtIndex nsLayoutManager  flag glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "setDrawsOutsideLineFragment:forGlyphAtIndex:") retVoid [argCULong (if flag then 1 else 0), argCULong glyphIndex]
+setDrawsOutsideLineFragment_forGlyphAtIndex nsLayoutManager flag glyphIndex =
+  sendMessage nsLayoutManager setDrawsOutsideLineFragment_forGlyphAtIndexSelector flag glyphIndex
 
 -- | @- setAttachmentSize:forGlyphRange:@
 setAttachmentSize_forGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSSize -> NSRange -> IO ()
-setAttachmentSize_forGlyphRange nsLayoutManager  attachmentSize glyphRange =
-    sendMsg nsLayoutManager (mkSelector "setAttachmentSize:forGlyphRange:") retVoid [argNSSize attachmentSize, argNSRange glyphRange]
+setAttachmentSize_forGlyphRange nsLayoutManager attachmentSize glyphRange =
+  sendMessage nsLayoutManager setAttachmentSize_forGlyphRangeSelector attachmentSize glyphRange
 
 -- | ********************** Get layout information ***********************
 --
 -- ObjC selector: @- getFirstUnlaidCharacterIndex:glyphIndex:@
 getFirstUnlaidCharacterIndex_glyphIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Ptr CULong -> Ptr CULong -> IO ()
-getFirstUnlaidCharacterIndex_glyphIndex nsLayoutManager  charIndex glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "getFirstUnlaidCharacterIndex:glyphIndex:") retVoid [argPtr charIndex, argPtr glyphIndex]
+getFirstUnlaidCharacterIndex_glyphIndex nsLayoutManager charIndex glyphIndex =
+  sendMessage nsLayoutManager getFirstUnlaidCharacterIndex_glyphIndexSelector charIndex glyphIndex
 
 -- | @- firstUnlaidCharacterIndex@
 firstUnlaidCharacterIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO CULong
-firstUnlaidCharacterIndex nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "firstUnlaidCharacterIndex") retCULong []
+firstUnlaidCharacterIndex nsLayoutManager =
+  sendMessage nsLayoutManager firstUnlaidCharacterIndexSelector
 
 -- | @- firstUnlaidGlyphIndex@
 firstUnlaidGlyphIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO CULong
-firstUnlaidGlyphIndex nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "firstUnlaidGlyphIndex") retCULong []
+firstUnlaidGlyphIndex nsLayoutManager =
+  sendMessage nsLayoutManager firstUnlaidGlyphIndexSelector
 
 -- | @- textContainerForGlyphAtIndex:effectiveRange:@
 textContainerForGlyphAtIndex_effectiveRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> IO (Id NSTextContainer)
-textContainerForGlyphAtIndex_effectiveRange nsLayoutManager  glyphIndex effectiveGlyphRange =
-    sendMsg nsLayoutManager (mkSelector "textContainerForGlyphAtIndex:effectiveRange:") (retPtr retVoid) [argCULong glyphIndex, argPtr effectiveGlyphRange] >>= retainedObject . castPtr
+textContainerForGlyphAtIndex_effectiveRange nsLayoutManager glyphIndex effectiveGlyphRange =
+  sendMessage nsLayoutManager textContainerForGlyphAtIndex_effectiveRangeSelector glyphIndex effectiveGlyphRange
 
 -- | @- textContainerForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
 textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> Bool -> IO (Id NSTextContainer)
-textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager  glyphIndex effectiveGlyphRange flag =
-    sendMsg nsLayoutManager (mkSelector "textContainerForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:") (retPtr retVoid) [argCULong glyphIndex, argPtr effectiveGlyphRange, argCULong (if flag then 1 else 0)] >>= retainedObject . castPtr
+textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager glyphIndex effectiveGlyphRange flag =
+  sendMessage nsLayoutManager textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector glyphIndex effectiveGlyphRange flag
 
 -- | @- usedRectForTextContainer:@
 usedRectForTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO NSRect
-usedRectForTextContainer nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsgStret nsLayoutManager (mkSelector "usedRectForTextContainer:") retNSRect [argPtr (castPtr raw_container :: Ptr ())]
+usedRectForTextContainer nsLayoutManager container =
+  sendMessage nsLayoutManager usedRectForTextContainerSelector (toNSTextContainer container)
 
 -- | @- lineFragmentRectForGlyphAtIndex:effectiveRange:@
 lineFragmentRectForGlyphAtIndex_effectiveRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> IO NSRect
-lineFragmentRectForGlyphAtIndex_effectiveRange nsLayoutManager  glyphIndex effectiveGlyphRange =
-    sendMsgStret nsLayoutManager (mkSelector "lineFragmentRectForGlyphAtIndex:effectiveRange:") retNSRect [argCULong glyphIndex, argPtr effectiveGlyphRange]
+lineFragmentRectForGlyphAtIndex_effectiveRange nsLayoutManager glyphIndex effectiveGlyphRange =
+  sendMessage nsLayoutManager lineFragmentRectForGlyphAtIndex_effectiveRangeSelector glyphIndex effectiveGlyphRange
 
 -- | @- lineFragmentRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
 lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> Bool -> IO NSRect
-lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager  glyphIndex effectiveGlyphRange flag =
-    sendMsgStret nsLayoutManager (mkSelector "lineFragmentRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:") retNSRect [argCULong glyphIndex, argPtr effectiveGlyphRange, argCULong (if flag then 1 else 0)]
+lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager glyphIndex effectiveGlyphRange flag =
+  sendMessage nsLayoutManager lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector glyphIndex effectiveGlyphRange flag
 
 -- | @- lineFragmentUsedRectForGlyphAtIndex:effectiveRange:@
 lineFragmentUsedRectForGlyphAtIndex_effectiveRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> IO NSRect
-lineFragmentUsedRectForGlyphAtIndex_effectiveRange nsLayoutManager  glyphIndex effectiveGlyphRange =
-    sendMsgStret nsLayoutManager (mkSelector "lineFragmentUsedRectForGlyphAtIndex:effectiveRange:") retNSRect [argCULong glyphIndex, argPtr effectiveGlyphRange]
+lineFragmentUsedRectForGlyphAtIndex_effectiveRange nsLayoutManager glyphIndex effectiveGlyphRange =
+  sendMessage nsLayoutManager lineFragmentUsedRectForGlyphAtIndex_effectiveRangeSelector glyphIndex effectiveGlyphRange
 
 -- | @- lineFragmentUsedRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
 lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> Bool -> IO NSRect
-lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager  glyphIndex effectiveGlyphRange flag =
-    sendMsgStret nsLayoutManager (mkSelector "lineFragmentUsedRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:") retNSRect [argCULong glyphIndex, argPtr effectiveGlyphRange, argCULong (if flag then 1 else 0)]
+lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayout nsLayoutManager glyphIndex effectiveGlyphRange flag =
+  sendMessage nsLayoutManager lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector glyphIndex effectiveGlyphRange flag
 
 -- | @- locationForGlyphAtIndex:@
 locationForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO NSPoint
-locationForGlyphAtIndex nsLayoutManager  glyphIndex =
-    sendMsgStret nsLayoutManager (mkSelector "locationForGlyphAtIndex:") retNSPoint [argCULong glyphIndex]
+locationForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager locationForGlyphAtIndexSelector glyphIndex
 
 -- | @- notShownAttributeForGlyphAtIndex:@
 notShownAttributeForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO Bool
-notShownAttributeForGlyphAtIndex nsLayoutManager  glyphIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "notShownAttributeForGlyphAtIndex:") retCULong [argCULong glyphIndex]
+notShownAttributeForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager notShownAttributeForGlyphAtIndexSelector glyphIndex
 
 -- | @- drawsOutsideLineFragmentForGlyphAtIndex:@
 drawsOutsideLineFragmentForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO Bool
-drawsOutsideLineFragmentForGlyphAtIndex nsLayoutManager  glyphIndex =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "drawsOutsideLineFragmentForGlyphAtIndex:") retCULong [argCULong glyphIndex]
+drawsOutsideLineFragmentForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager drawsOutsideLineFragmentForGlyphAtIndexSelector glyphIndex
 
 -- | @- attachmentSizeForGlyphAtIndex:@
 attachmentSizeForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO NSSize
-attachmentSizeForGlyphAtIndex nsLayoutManager  glyphIndex =
-    sendMsgStret nsLayoutManager (mkSelector "attachmentSizeForGlyphAtIndex:") retNSSize [argCULong glyphIndex]
+attachmentSizeForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager attachmentSizeForGlyphAtIndexSelector glyphIndex
 
 -- | @- truncatedGlyphRangeInLineFragmentForGlyphAtIndex:@
 truncatedGlyphRangeInLineFragmentForGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO NSRange
-truncatedGlyphRangeInLineFragmentForGlyphAtIndex nsLayoutManager  glyphIndex =
-    sendMsgStret nsLayoutManager (mkSelector "truncatedGlyphRangeInLineFragmentForGlyphAtIndex:") retNSRange [argCULong glyphIndex]
+truncatedGlyphRangeInLineFragmentForGlyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector glyphIndex
 
 -- | ********************** More sophisticated queries ***********************
 --
 -- ObjC selector: @- glyphRangeForCharacterRange:actualCharacterRange:@
 glyphRangeForCharacterRange_actualCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Ptr NSRange -> IO NSRange
-glyphRangeForCharacterRange_actualCharacterRange nsLayoutManager  charRange actualCharRange =
-    sendMsgStret nsLayoutManager (mkSelector "glyphRangeForCharacterRange:actualCharacterRange:") retNSRange [argNSRange charRange, argPtr actualCharRange]
+glyphRangeForCharacterRange_actualCharacterRange nsLayoutManager charRange actualCharRange =
+  sendMessage nsLayoutManager glyphRangeForCharacterRange_actualCharacterRangeSelector charRange actualCharRange
 
 -- | @- characterRangeForGlyphRange:actualGlyphRange:@
 characterRangeForGlyphRange_actualGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Ptr NSRange -> IO NSRange
-characterRangeForGlyphRange_actualGlyphRange nsLayoutManager  glyphRange actualGlyphRange =
-    sendMsgStret nsLayoutManager (mkSelector "characterRangeForGlyphRange:actualGlyphRange:") retNSRange [argNSRange glyphRange, argPtr actualGlyphRange]
+characterRangeForGlyphRange_actualGlyphRange nsLayoutManager glyphRange actualGlyphRange =
+  sendMessage nsLayoutManager characterRangeForGlyphRange_actualGlyphRangeSelector glyphRange actualGlyphRange
 
 -- | @- glyphRangeForTextContainer:@
 glyphRangeForTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> container -> IO NSRange
-glyphRangeForTextContainer nsLayoutManager  container =
-  withObjCPtr container $ \raw_container ->
-      sendMsgStret nsLayoutManager (mkSelector "glyphRangeForTextContainer:") retNSRange [argPtr (castPtr raw_container :: Ptr ())]
+glyphRangeForTextContainer nsLayoutManager container =
+  sendMessage nsLayoutManager glyphRangeForTextContainerSelector (toNSTextContainer container)
 
 -- | @- rangeOfNominallySpacedGlyphsContainingIndex:@
 rangeOfNominallySpacedGlyphsContainingIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO NSRange
-rangeOfNominallySpacedGlyphsContainingIndex nsLayoutManager  glyphIndex =
-    sendMsgStret nsLayoutManager (mkSelector "rangeOfNominallySpacedGlyphsContainingIndex:") retNSRange [argCULong glyphIndex]
+rangeOfNominallySpacedGlyphsContainingIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager rangeOfNominallySpacedGlyphsContainingIndexSelector glyphIndex
 
 -- | @- boundingRectForGlyphRange:inTextContainer:@
 boundingRectForGlyphRange_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRange -> container -> IO NSRect
-boundingRectForGlyphRange_inTextContainer nsLayoutManager  glyphRange container =
-  withObjCPtr container $ \raw_container ->
-      sendMsgStret nsLayoutManager (mkSelector "boundingRectForGlyphRange:inTextContainer:") retNSRect [argNSRange glyphRange, argPtr (castPtr raw_container :: Ptr ())]
+boundingRectForGlyphRange_inTextContainer nsLayoutManager glyphRange container =
+  sendMessage nsLayoutManager boundingRectForGlyphRange_inTextContainerSelector glyphRange (toNSTextContainer container)
 
 -- | @- glyphRangeForBoundingRect:inTextContainer:@
 glyphRangeForBoundingRect_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRect -> container -> IO NSRange
-glyphRangeForBoundingRect_inTextContainer nsLayoutManager  bounds container =
-  withObjCPtr container $ \raw_container ->
-      sendMsgStret nsLayoutManager (mkSelector "glyphRangeForBoundingRect:inTextContainer:") retNSRange [argNSRect bounds, argPtr (castPtr raw_container :: Ptr ())]
+glyphRangeForBoundingRect_inTextContainer nsLayoutManager bounds container =
+  sendMessage nsLayoutManager glyphRangeForBoundingRect_inTextContainerSelector bounds (toNSTextContainer container)
 
 -- | @- glyphRangeForBoundingRectWithoutAdditionalLayout:inTextContainer:@
 glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRect -> container -> IO NSRange
-glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainer nsLayoutManager  bounds container =
-  withObjCPtr container $ \raw_container ->
-      sendMsgStret nsLayoutManager (mkSelector "glyphRangeForBoundingRectWithoutAdditionalLayout:inTextContainer:") retNSRange [argNSRect bounds, argPtr (castPtr raw_container :: Ptr ())]
+glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainer nsLayoutManager bounds container =
+  sendMessage nsLayoutManager glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector bounds (toNSTextContainer container)
 
 -- | @- glyphIndexForPoint:inTextContainer:fractionOfDistanceThroughGlyph:@
 glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyph :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSPoint -> container -> Ptr CDouble -> IO CULong
-glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyph nsLayoutManager  point container partialFraction =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "glyphIndexForPoint:inTextContainer:fractionOfDistanceThroughGlyph:") retCULong [argNSPoint point, argPtr (castPtr raw_container :: Ptr ()), argPtr partialFraction]
+glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyph nsLayoutManager point container partialFraction =
+  sendMessage nsLayoutManager glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector point (toNSTextContainer container) partialFraction
 
 -- | @- glyphIndexForPoint:inTextContainer:@
 glyphIndexForPoint_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSPoint -> container -> IO CULong
-glyphIndexForPoint_inTextContainer nsLayoutManager  point container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "glyphIndexForPoint:inTextContainer:") retCULong [argNSPoint point, argPtr (castPtr raw_container :: Ptr ())]
+glyphIndexForPoint_inTextContainer nsLayoutManager point container =
+  sendMessage nsLayoutManager glyphIndexForPoint_inTextContainerSelector point (toNSTextContainer container)
 
 -- | @- fractionOfDistanceThroughGlyphForPoint:inTextContainer:@
 fractionOfDistanceThroughGlyphForPoint_inTextContainer :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSPoint -> container -> IO CDouble
-fractionOfDistanceThroughGlyphForPoint_inTextContainer nsLayoutManager  point container =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "fractionOfDistanceThroughGlyphForPoint:inTextContainer:") retCDouble [argNSPoint point, argPtr (castPtr raw_container :: Ptr ())]
+fractionOfDistanceThroughGlyphForPoint_inTextContainer nsLayoutManager point container =
+  sendMessage nsLayoutManager fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector point (toNSTextContainer container)
 
 -- | @- characterIndexForPoint:inTextContainer:fractionOfDistanceBetweenInsertionPoints:@
 characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPoints :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSPoint -> container -> Ptr CDouble -> IO CULong
-characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPoints nsLayoutManager  point container partialFraction =
-  withObjCPtr container $ \raw_container ->
-      sendMsg nsLayoutManager (mkSelector "characterIndexForPoint:inTextContainer:fractionOfDistanceBetweenInsertionPoints:") retCULong [argNSPoint point, argPtr (castPtr raw_container :: Ptr ()), argPtr partialFraction]
+characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPoints nsLayoutManager point container partialFraction =
+  sendMessage nsLayoutManager characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector point (toNSTextContainer container) partialFraction
 
 -- | @- getLineFragmentInsertionPointsForCharacterAtIndex:alternatePositions:inDisplayOrder:positions:characterIndexes:@
 getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexes :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Bool -> Bool -> Ptr CDouble -> Ptr CULong -> IO CULong
-getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexes nsLayoutManager  charIndex aFlag dFlag positions charIndexes =
-    sendMsg nsLayoutManager (mkSelector "getLineFragmentInsertionPointsForCharacterAtIndex:alternatePositions:inDisplayOrder:positions:characterIndexes:") retCULong [argCULong charIndex, argCULong (if aFlag then 1 else 0), argCULong (if dFlag then 1 else 0), argPtr positions, argPtr charIndexes]
+getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexes nsLayoutManager charIndex aFlag dFlag positions charIndexes =
+  sendMessage nsLayoutManager getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector charIndex aFlag dFlag positions charIndexes
 
 -- | @- enumerateLineFragmentsForGlyphRange:usingBlock:@
 enumerateLineFragmentsForGlyphRange_usingBlock :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Ptr () -> IO ()
-enumerateLineFragmentsForGlyphRange_usingBlock nsLayoutManager  glyphRange block =
-    sendMsg nsLayoutManager (mkSelector "enumerateLineFragmentsForGlyphRange:usingBlock:") retVoid [argNSRange glyphRange, argPtr (castPtr block :: Ptr ())]
+enumerateLineFragmentsForGlyphRange_usingBlock nsLayoutManager glyphRange block =
+  sendMessage nsLayoutManager enumerateLineFragmentsForGlyphRange_usingBlockSelector glyphRange block
 
 -- | @- enumerateEnclosingRectsForGlyphRange:withinSelectedGlyphRange:inTextContainer:usingBlock:@
 enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlock :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer textContainer) => nsLayoutManager -> NSRange -> NSRange -> textContainer -> Ptr () -> IO ()
-enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlock nsLayoutManager  glyphRange selectedRange textContainer block =
-  withObjCPtr textContainer $ \raw_textContainer ->
-      sendMsg nsLayoutManager (mkSelector "enumerateEnclosingRectsForGlyphRange:withinSelectedGlyphRange:inTextContainer:usingBlock:") retVoid [argNSRange glyphRange, argNSRange selectedRange, argPtr (castPtr raw_textContainer :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlock nsLayoutManager glyphRange selectedRange textContainer block =
+  sendMessage nsLayoutManager enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector glyphRange selectedRange (toNSTextContainer textContainer) block
 
 -- | ********************** Drawing support ***********************
 --
 -- ObjC selector: @- drawBackgroundForGlyphRange:atPoint:@
 drawBackgroundForGlyphRange_atPoint :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSPoint -> IO ()
-drawBackgroundForGlyphRange_atPoint nsLayoutManager  glyphsToShow origin =
-    sendMsg nsLayoutManager (mkSelector "drawBackgroundForGlyphRange:atPoint:") retVoid [argNSRange glyphsToShow, argNSPoint origin]
+drawBackgroundForGlyphRange_atPoint nsLayoutManager glyphsToShow origin =
+  sendMessage nsLayoutManager drawBackgroundForGlyphRange_atPointSelector glyphsToShow origin
 
 -- | @- drawGlyphsForGlyphRange:atPoint:@
 drawGlyphsForGlyphRange_atPoint :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSPoint -> IO ()
-drawGlyphsForGlyphRange_atPoint nsLayoutManager  glyphsToShow origin =
-    sendMsg nsLayoutManager (mkSelector "drawGlyphsForGlyphRange:atPoint:") retVoid [argNSRange glyphsToShow, argNSPoint origin]
+drawGlyphsForGlyphRange_atPoint nsLayoutManager glyphsToShow origin =
+  sendMessage nsLayoutManager drawGlyphsForGlyphRange_atPointSelector glyphsToShow origin
 
 -- | @- fillBackgroundRectArray:count:forCharacterRange:color:@
 fillBackgroundRectArray_count_forCharacterRange_color :: (IsNSLayoutManager nsLayoutManager, IsNSColor color) => nsLayoutManager -> Const (Ptr NSRect) -> CULong -> NSRange -> color -> IO ()
-fillBackgroundRectArray_count_forCharacterRange_color nsLayoutManager  rectArray rectCount charRange color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg nsLayoutManager (mkSelector "fillBackgroundRectArray:count:forCharacterRange:color:") retVoid [argPtr (unConst rectArray), argCULong rectCount, argNSRange charRange, argPtr (castPtr raw_color :: Ptr ())]
+fillBackgroundRectArray_count_forCharacterRange_color nsLayoutManager rectArray rectCount charRange color =
+  sendMessage nsLayoutManager fillBackgroundRectArray_count_forCharacterRange_colorSelector rectArray rectCount charRange (toNSColor color)
 
 -- | @- drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
 drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSUnderlineStyle -> CDouble -> NSRect -> NSRange -> NSPoint -> IO ()
-drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager  glyphRange underlineVal baselineOffset lineRect lineGlyphRange containerOrigin =
-    sendMsg nsLayoutManager (mkSelector "drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:") retVoid [argNSRange glyphRange, argCLong (coerce underlineVal), argCDouble baselineOffset, argNSRect lineRect, argNSRange lineGlyphRange, argNSPoint containerOrigin]
+drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager glyphRange underlineVal baselineOffset lineRect lineGlyphRange containerOrigin =
+  sendMessage nsLayoutManager drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector glyphRange underlineVal baselineOffset lineRect lineGlyphRange containerOrigin
 
 -- | @- underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
 underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSUnderlineStyle -> NSRect -> NSRange -> NSPoint -> IO ()
-underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager  glyphRange underlineVal lineRect lineGlyphRange containerOrigin =
-    sendMsg nsLayoutManager (mkSelector "underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:") retVoid [argNSRange glyphRange, argCLong (coerce underlineVal), argNSRect lineRect, argNSRange lineGlyphRange, argNSPoint containerOrigin]
+underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager glyphRange underlineVal lineRect lineGlyphRange containerOrigin =
+  sendMessage nsLayoutManager underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector glyphRange underlineVal lineRect lineGlyphRange containerOrigin
 
 -- | @- drawStrikethroughForGlyphRange:strikethroughType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
 drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSUnderlineStyle -> CDouble -> NSRect -> NSRange -> NSPoint -> IO ()
-drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager  glyphRange strikethroughVal baselineOffset lineRect lineGlyphRange containerOrigin =
-    sendMsg nsLayoutManager (mkSelector "drawStrikethroughForGlyphRange:strikethroughType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:") retVoid [argNSRange glyphRange, argCLong (coerce strikethroughVal), argCDouble baselineOffset, argNSRect lineRect, argNSRange lineGlyphRange, argNSPoint containerOrigin]
+drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager glyphRange strikethroughVal baselineOffset lineRect lineGlyphRange containerOrigin =
+  sendMessage nsLayoutManager drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector glyphRange strikethroughVal baselineOffset lineRect lineGlyphRange containerOrigin
 
 -- | @- strikethroughGlyphRange:strikethroughType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
 strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> NSUnderlineStyle -> NSRect -> NSRange -> NSPoint -> IO ()
-strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager  glyphRange strikethroughVal lineRect lineGlyphRange containerOrigin =
-    sendMsg nsLayoutManager (mkSelector "strikethroughGlyphRange:strikethroughType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:") retVoid [argNSRange glyphRange, argCLong (coerce strikethroughVal), argNSRect lineRect, argNSRange lineGlyphRange, argNSPoint containerOrigin]
+strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOrigin nsLayoutManager glyphRange strikethroughVal lineRect lineGlyphRange containerOrigin =
+  sendMessage nsLayoutManager strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector glyphRange strikethroughVal lineRect lineGlyphRange containerOrigin
 
 -- | @- showAttachmentCell:inRect:characterIndex:@
 showAttachmentCell_inRect_characterIndex :: (IsNSLayoutManager nsLayoutManager, IsNSCell cell) => nsLayoutManager -> cell -> NSRect -> CULong -> IO ()
-showAttachmentCell_inRect_characterIndex nsLayoutManager  cell rect attachmentIndex =
-  withObjCPtr cell $ \raw_cell ->
-      sendMsg nsLayoutManager (mkSelector "showAttachmentCell:inRect:characterIndex:") retVoid [argPtr (castPtr raw_cell :: Ptr ()), argNSRect rect, argCULong attachmentIndex]
+showAttachmentCell_inRect_characterIndex nsLayoutManager cell rect attachmentIndex =
+  sendMessage nsLayoutManager showAttachmentCell_inRect_characterIndexSelector (toNSCell cell) rect attachmentIndex
 
 -- | ************************ Block information *************************
 --
 -- ObjC selector: @- setLayoutRect:forTextBlock:glyphRange:@
 setLayoutRect_forTextBlock_glyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> NSRect -> block -> NSRange -> IO ()
-setLayoutRect_forTextBlock_glyphRange nsLayoutManager  rect block glyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsg nsLayoutManager (mkSelector "setLayoutRect:forTextBlock:glyphRange:") retVoid [argNSRect rect, argPtr (castPtr raw_block :: Ptr ()), argNSRange glyphRange]
+setLayoutRect_forTextBlock_glyphRange nsLayoutManager rect block glyphRange =
+  sendMessage nsLayoutManager setLayoutRect_forTextBlock_glyphRangeSelector rect (toNSTextBlock block) glyphRange
 
 -- | @- setBoundsRect:forTextBlock:glyphRange:@
 setBoundsRect_forTextBlock_glyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> NSRect -> block -> NSRange -> IO ()
-setBoundsRect_forTextBlock_glyphRange nsLayoutManager  rect block glyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsg nsLayoutManager (mkSelector "setBoundsRect:forTextBlock:glyphRange:") retVoid [argNSRect rect, argPtr (castPtr raw_block :: Ptr ()), argNSRange glyphRange]
+setBoundsRect_forTextBlock_glyphRange nsLayoutManager rect block glyphRange =
+  sendMessage nsLayoutManager setBoundsRect_forTextBlock_glyphRangeSelector rect (toNSTextBlock block) glyphRange
 
 -- | @- layoutRectForTextBlock:glyphRange:@
 layoutRectForTextBlock_glyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> block -> NSRange -> IO NSRect
-layoutRectForTextBlock_glyphRange nsLayoutManager  block glyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsgStret nsLayoutManager (mkSelector "layoutRectForTextBlock:glyphRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argNSRange glyphRange]
+layoutRectForTextBlock_glyphRange nsLayoutManager block glyphRange =
+  sendMessage nsLayoutManager layoutRectForTextBlock_glyphRangeSelector (toNSTextBlock block) glyphRange
 
 -- | @- boundsRectForTextBlock:glyphRange:@
 boundsRectForTextBlock_glyphRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> block -> NSRange -> IO NSRect
-boundsRectForTextBlock_glyphRange nsLayoutManager  block glyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsgStret nsLayoutManager (mkSelector "boundsRectForTextBlock:glyphRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argNSRange glyphRange]
+boundsRectForTextBlock_glyphRange nsLayoutManager block glyphRange =
+  sendMessage nsLayoutManager boundsRectForTextBlock_glyphRangeSelector (toNSTextBlock block) glyphRange
 
 -- | @- layoutRectForTextBlock:atIndex:effectiveRange:@
 layoutRectForTextBlock_atIndex_effectiveRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> block -> CULong -> Ptr NSRange -> IO NSRect
-layoutRectForTextBlock_atIndex_effectiveRange nsLayoutManager  block glyphIndex effectiveGlyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsgStret nsLayoutManager (mkSelector "layoutRectForTextBlock:atIndex:effectiveRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argCULong glyphIndex, argPtr effectiveGlyphRange]
+layoutRectForTextBlock_atIndex_effectiveRange nsLayoutManager block glyphIndex effectiveGlyphRange =
+  sendMessage nsLayoutManager layoutRectForTextBlock_atIndex_effectiveRangeSelector (toNSTextBlock block) glyphIndex effectiveGlyphRange
 
 -- | @- boundsRectForTextBlock:atIndex:effectiveRange:@
 boundsRectForTextBlock_atIndex_effectiveRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextBlock block) => nsLayoutManager -> block -> CULong -> Ptr NSRange -> IO NSRect
-boundsRectForTextBlock_atIndex_effectiveRange nsLayoutManager  block glyphIndex effectiveGlyphRange =
-  withObjCPtr block $ \raw_block ->
-      sendMsgStret nsLayoutManager (mkSelector "boundsRectForTextBlock:atIndex:effectiveRange:") retNSRect [argPtr (castPtr raw_block :: Ptr ()), argCULong glyphIndex, argPtr effectiveGlyphRange]
+boundsRectForTextBlock_atIndex_effectiveRange nsLayoutManager block glyphIndex effectiveGlyphRange =
+  sendMessage nsLayoutManager boundsRectForTextBlock_atIndex_effectiveRangeSelector (toNSTextBlock block) glyphIndex effectiveGlyphRange
 
 -- | ********************** Temporary attribute support ***********************
 --
 -- ObjC selector: @- temporaryAttributesAtCharacterIndex:effectiveRange:@
 temporaryAttributesAtCharacterIndex_effectiveRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> IO (Id NSDictionary)
-temporaryAttributesAtCharacterIndex_effectiveRange nsLayoutManager  charIndex effectiveCharRange =
-    sendMsg nsLayoutManager (mkSelector "temporaryAttributesAtCharacterIndex:effectiveRange:") (retPtr retVoid) [argCULong charIndex, argPtr effectiveCharRange] >>= retainedObject . castPtr
+temporaryAttributesAtCharacterIndex_effectiveRange nsLayoutManager charIndex effectiveCharRange =
+  sendMessage nsLayoutManager temporaryAttributesAtCharacterIndex_effectiveRangeSelector charIndex effectiveCharRange
 
 -- | @- setTemporaryAttributes:forCharacterRange:@
 setTemporaryAttributes_forCharacterRange :: (IsNSLayoutManager nsLayoutManager, IsNSDictionary attrs) => nsLayoutManager -> attrs -> NSRange -> IO ()
-setTemporaryAttributes_forCharacterRange nsLayoutManager  attrs charRange =
-  withObjCPtr attrs $ \raw_attrs ->
-      sendMsg nsLayoutManager (mkSelector "setTemporaryAttributes:forCharacterRange:") retVoid [argPtr (castPtr raw_attrs :: Ptr ()), argNSRange charRange]
+setTemporaryAttributes_forCharacterRange nsLayoutManager attrs charRange =
+  sendMessage nsLayoutManager setTemporaryAttributes_forCharacterRangeSelector (toNSDictionary attrs) charRange
 
 -- | @- addTemporaryAttributes:forCharacterRange:@
 addTemporaryAttributes_forCharacterRange :: (IsNSLayoutManager nsLayoutManager, IsNSDictionary attrs) => nsLayoutManager -> attrs -> NSRange -> IO ()
-addTemporaryAttributes_forCharacterRange nsLayoutManager  attrs charRange =
-  withObjCPtr attrs $ \raw_attrs ->
-      sendMsg nsLayoutManager (mkSelector "addTemporaryAttributes:forCharacterRange:") retVoid [argPtr (castPtr raw_attrs :: Ptr ()), argNSRange charRange]
+addTemporaryAttributes_forCharacterRange nsLayoutManager attrs charRange =
+  sendMessage nsLayoutManager addTemporaryAttributes_forCharacterRangeSelector (toNSDictionary attrs) charRange
 
 -- | @- removeTemporaryAttribute:forCharacterRange:@
 removeTemporaryAttribute_forCharacterRange :: (IsNSLayoutManager nsLayoutManager, IsNSString attrName) => nsLayoutManager -> attrName -> NSRange -> IO ()
-removeTemporaryAttribute_forCharacterRange nsLayoutManager  attrName charRange =
-  withObjCPtr attrName $ \raw_attrName ->
-      sendMsg nsLayoutManager (mkSelector "removeTemporaryAttribute:forCharacterRange:") retVoid [argPtr (castPtr raw_attrName :: Ptr ()), argNSRange charRange]
+removeTemporaryAttribute_forCharacterRange nsLayoutManager attrName charRange =
+  sendMessage nsLayoutManager removeTemporaryAttribute_forCharacterRangeSelector (toNSString attrName) charRange
 
 -- | @- temporaryAttribute:atCharacterIndex:effectiveRange:@
 temporaryAttribute_atCharacterIndex_effectiveRange :: (IsNSLayoutManager nsLayoutManager, IsNSString attrName) => nsLayoutManager -> attrName -> CULong -> Ptr NSRange -> IO RawId
-temporaryAttribute_atCharacterIndex_effectiveRange nsLayoutManager  attrName location range =
-  withObjCPtr attrName $ \raw_attrName ->
-      fmap (RawId . castPtr) $ sendMsg nsLayoutManager (mkSelector "temporaryAttribute:atCharacterIndex:effectiveRange:") (retPtr retVoid) [argPtr (castPtr raw_attrName :: Ptr ()), argCULong location, argPtr range]
+temporaryAttribute_atCharacterIndex_effectiveRange nsLayoutManager attrName location range =
+  sendMessage nsLayoutManager temporaryAttribute_atCharacterIndex_effectiveRangeSelector (toNSString attrName) location range
 
 -- | @- temporaryAttribute:atCharacterIndex:longestEffectiveRange:inRange:@
 temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRange :: (IsNSLayoutManager nsLayoutManager, IsNSString attrName) => nsLayoutManager -> attrName -> CULong -> Ptr NSRange -> NSRange -> IO RawId
-temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRange nsLayoutManager  attrName location range rangeLimit =
-  withObjCPtr attrName $ \raw_attrName ->
-      fmap (RawId . castPtr) $ sendMsg nsLayoutManager (mkSelector "temporaryAttribute:atCharacterIndex:longestEffectiveRange:inRange:") (retPtr retVoid) [argPtr (castPtr raw_attrName :: Ptr ()), argCULong location, argPtr range, argNSRange rangeLimit]
+temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRange nsLayoutManager attrName location range rangeLimit =
+  sendMessage nsLayoutManager temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector (toNSString attrName) location range rangeLimit
 
 -- | @- temporaryAttributesAtCharacterIndex:longestEffectiveRange:inRange:@
 temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr NSRange -> NSRange -> IO (Id NSDictionary)
-temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRange nsLayoutManager  location range rangeLimit =
-    sendMsg nsLayoutManager (mkSelector "temporaryAttributesAtCharacterIndex:longestEffectiveRange:inRange:") (retPtr retVoid) [argCULong location, argPtr range, argNSRange rangeLimit] >>= retainedObject . castPtr
+temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRange nsLayoutManager location range rangeLimit =
+  sendMessage nsLayoutManager temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector location range rangeLimit
 
 -- | @- addTemporaryAttribute:value:forCharacterRange:@
 addTemporaryAttribute_value_forCharacterRange :: (IsNSLayoutManager nsLayoutManager, IsNSString attrName) => nsLayoutManager -> attrName -> RawId -> NSRange -> IO ()
-addTemporaryAttribute_value_forCharacterRange nsLayoutManager  attrName value charRange =
-  withObjCPtr attrName $ \raw_attrName ->
-      sendMsg nsLayoutManager (mkSelector "addTemporaryAttribute:value:forCharacterRange:") retVoid [argPtr (castPtr raw_attrName :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argNSRange charRange]
+addTemporaryAttribute_value_forCharacterRange nsLayoutManager attrName value charRange =
+  sendMessage nsLayoutManager addTemporaryAttribute_value_forCharacterRangeSelector (toNSString attrName) value charRange
 
 -- | ***************************** Font metrics *****************************
 --
 -- ObjC selector: @- defaultLineHeightForFont:@
 defaultLineHeightForFont :: (IsNSLayoutManager nsLayoutManager, IsNSFont theFont) => nsLayoutManager -> theFont -> IO CDouble
-defaultLineHeightForFont nsLayoutManager  theFont =
-  withObjCPtr theFont $ \raw_theFont ->
-      sendMsg nsLayoutManager (mkSelector "defaultLineHeightForFont:") retCDouble [argPtr (castPtr raw_theFont :: Ptr ())]
+defaultLineHeightForFont nsLayoutManager theFont =
+  sendMessage nsLayoutManager defaultLineHeightForFontSelector (toNSFont theFont)
 
 -- | @- defaultBaselineOffsetForFont:@
 defaultBaselineOffsetForFont :: (IsNSLayoutManager nsLayoutManager, IsNSFont theFont) => nsLayoutManager -> theFont -> IO CDouble
-defaultBaselineOffsetForFont nsLayoutManager  theFont =
-  withObjCPtr theFont $ \raw_theFont ->
-      sendMsg nsLayoutManager (mkSelector "defaultBaselineOffsetForFont:") retCDouble [argPtr (castPtr raw_theFont :: Ptr ())]
+defaultBaselineOffsetForFont nsLayoutManager theFont =
+  sendMessage nsLayoutManager defaultBaselineOffsetForFontSelector (toNSFont theFont)
 
 -- | @- glyphAtIndex:isValidIndex:@
 glyphAtIndex_isValidIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> Ptr Bool -> IO CUInt
-glyphAtIndex_isValidIndex nsLayoutManager  glyphIndex isValidIndex =
-    sendMsg nsLayoutManager (mkSelector "glyphAtIndex:isValidIndex:") retCUInt [argCULong glyphIndex, argPtr isValidIndex]
+glyphAtIndex_isValidIndex nsLayoutManager glyphIndex isValidIndex =
+  sendMessage nsLayoutManager glyphAtIndex_isValidIndexSelector glyphIndex isValidIndex
 
 -- | @- glyphAtIndex:@
 glyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> IO CUInt
-glyphAtIndex nsLayoutManager  glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "glyphAtIndex:") retCUInt [argCULong glyphIndex]
+glyphAtIndex nsLayoutManager glyphIndex =
+  sendMessage nsLayoutManager glyphAtIndexSelector glyphIndex
 
 -- | @- rectArrayForCharacterRange:withinSelectedCharacterRange:inTextContainer:rectCount:@
 rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCount :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRange -> NSRange -> container -> Ptr CULong -> IO (Ptr NSRect)
-rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCount nsLayoutManager  charRange selCharRange container rectCount =
-  withObjCPtr container $ \raw_container ->
-      fmap castPtr $ sendMsg nsLayoutManager (mkSelector "rectArrayForCharacterRange:withinSelectedCharacterRange:inTextContainer:rectCount:") (retPtr retVoid) [argNSRange charRange, argNSRange selCharRange, argPtr (castPtr raw_container :: Ptr ()), argPtr rectCount]
+rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCount nsLayoutManager charRange selCharRange container rectCount =
+  sendMessage nsLayoutManager rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector charRange selCharRange (toNSTextContainer container) rectCount
 
 -- | @- rectArrayForGlyphRange:withinSelectedGlyphRange:inTextContainer:rectCount:@
 rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCount :: (IsNSLayoutManager nsLayoutManager, IsNSTextContainer container) => nsLayoutManager -> NSRange -> NSRange -> container -> Ptr CULong -> IO (Ptr NSRect)
-rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCount nsLayoutManager  glyphRange selGlyphRange container rectCount =
-  withObjCPtr container $ \raw_container ->
-      fmap castPtr $ sendMsg nsLayoutManager (mkSelector "rectArrayForGlyphRange:withinSelectedGlyphRange:inTextContainer:rectCount:") (retPtr retVoid) [argNSRange glyphRange, argNSRange selGlyphRange, argPtr (castPtr raw_container :: Ptr ()), argPtr rectCount]
+rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCount nsLayoutManager glyphRange selGlyphRange container rectCount =
+  sendMessage nsLayoutManager rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector glyphRange selGlyphRange (toNSTextContainer container) rectCount
 
 -- | @- substituteFontForFont:@
 substituteFontForFont :: (IsNSLayoutManager nsLayoutManager, IsNSFont originalFont) => nsLayoutManager -> originalFont -> IO (Id NSFont)
-substituteFontForFont nsLayoutManager  originalFont =
-  withObjCPtr originalFont $ \raw_originalFont ->
-      sendMsg nsLayoutManager (mkSelector "substituteFontForFont:") (retPtr retVoid) [argPtr (castPtr raw_originalFont :: Ptr ())] >>= retainedObject . castPtr
+substituteFontForFont nsLayoutManager originalFont =
+  sendMessage nsLayoutManager substituteFontForFontSelector (toNSFont originalFont)
 
 -- | @- insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:@
 insertGlyphs_length_forStartingGlyphAtIndex_characterIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Const RawId -> CULong -> CULong -> CULong -> IO ()
-insertGlyphs_length_forStartingGlyphAtIndex_characterIndex nsLayoutManager  glyphs length_ glyphIndex charIndex =
-    sendMsg nsLayoutManager (mkSelector "insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong length_, argCULong glyphIndex, argCULong charIndex]
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndex nsLayoutManager glyphs length_ glyphIndex charIndex =
+  sendMessage nsLayoutManager insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector glyphs length_ glyphIndex charIndex
 
 -- | @- insertGlyph:atGlyphIndex:characterIndex:@
 insertGlyph_atGlyphIndex_characterIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CUInt -> CULong -> CULong -> IO ()
-insertGlyph_atGlyphIndex_characterIndex nsLayoutManager  glyph glyphIndex charIndex =
-    sendMsg nsLayoutManager (mkSelector "insertGlyph:atGlyphIndex:characterIndex:") retVoid [argCUInt glyph, argCULong glyphIndex, argCULong charIndex]
+insertGlyph_atGlyphIndex_characterIndex nsLayoutManager glyph glyphIndex charIndex =
+  sendMessage nsLayoutManager insertGlyph_atGlyphIndex_characterIndexSelector glyph glyphIndex charIndex
 
 -- | @- replaceGlyphAtIndex:withGlyph:@
 replaceGlyphAtIndex_withGlyph :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> CUInt -> IO ()
-replaceGlyphAtIndex_withGlyph nsLayoutManager  glyphIndex newGlyph =
-    sendMsg nsLayoutManager (mkSelector "replaceGlyphAtIndex:withGlyph:") retVoid [argCULong glyphIndex, argCUInt newGlyph]
+replaceGlyphAtIndex_withGlyph nsLayoutManager glyphIndex newGlyph =
+  sendMessage nsLayoutManager replaceGlyphAtIndex_withGlyphSelector glyphIndex newGlyph
 
 -- | @- deleteGlyphsInRange:@
 deleteGlyphsInRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-deleteGlyphsInRange nsLayoutManager  glyphRange =
-    sendMsg nsLayoutManager (mkSelector "deleteGlyphsInRange:") retVoid [argNSRange glyphRange]
+deleteGlyphsInRange nsLayoutManager glyphRange =
+  sendMessage nsLayoutManager deleteGlyphsInRangeSelector glyphRange
 
 -- | @- setCharacterIndex:forGlyphAtIndex:@
 setCharacterIndex_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CULong -> CULong -> IO ()
-setCharacterIndex_forGlyphAtIndex nsLayoutManager  charIndex glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "setCharacterIndex:forGlyphAtIndex:") retVoid [argCULong charIndex, argCULong glyphIndex]
+setCharacterIndex_forGlyphAtIndex nsLayoutManager charIndex glyphIndex =
+  sendMessage nsLayoutManager setCharacterIndex_forGlyphAtIndexSelector charIndex glyphIndex
 
 -- | @- setIntAttribute:value:forGlyphAtIndex:@
 setIntAttribute_value_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CLong -> CLong -> CULong -> IO ()
-setIntAttribute_value_forGlyphAtIndex nsLayoutManager  attributeTag val glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "setIntAttribute:value:forGlyphAtIndex:") retVoid [argCLong attributeTag, argCLong val, argCULong glyphIndex]
+setIntAttribute_value_forGlyphAtIndex nsLayoutManager attributeTag val glyphIndex =
+  sendMessage nsLayoutManager setIntAttribute_value_forGlyphAtIndexSelector attributeTag val glyphIndex
 
 -- | @- invalidateGlyphsOnLayoutInvalidationForGlyphRange:@
 invalidateGlyphsOnLayoutInvalidationForGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> IO ()
-invalidateGlyphsOnLayoutInvalidationForGlyphRange nsLayoutManager  glyphRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateGlyphsOnLayoutInvalidationForGlyphRange:") retVoid [argNSRange glyphRange]
+invalidateGlyphsOnLayoutInvalidationForGlyphRange nsLayoutManager glyphRange =
+  sendMessage nsLayoutManager invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector glyphRange
 
 -- | @- intAttribute:forGlyphAtIndex:@
 intAttribute_forGlyphAtIndex :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CLong -> CULong -> IO CLong
-intAttribute_forGlyphAtIndex nsLayoutManager  attributeTag glyphIndex =
-    sendMsg nsLayoutManager (mkSelector "intAttribute:forGlyphAtIndex:") retCLong [argCLong attributeTag, argCULong glyphIndex]
+intAttribute_forGlyphAtIndex nsLayoutManager attributeTag glyphIndex =
+  sendMessage nsLayoutManager intAttribute_forGlyphAtIndexSelector attributeTag glyphIndex
 
 -- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> IO CULong
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsLayoutManager  glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
-    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer]
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits nsLayoutManager glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer =
+  sendMessage nsLayoutManager getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer
 
 -- | @- getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> RawId -> Ptr CULong -> Ptr NSGlyphInscription -> Ptr Bool -> Ptr CUChar -> IO CULong
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels nsLayoutManager  glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer bidiLevelBuffer =
-    sendMsg nsLayoutManager (mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:") retCULong [argNSRange glyphRange, argPtr (castPtr (unRawId glyphBuffer) :: Ptr ()), argPtr charIndexBuffer, argPtr inscribeBuffer, argPtr elasticBuffer, argPtr bidiLevelBuffer]
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevels nsLayoutManager glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer bidiLevelBuffer =
+  sendMessage nsLayoutManager getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector glyphRange glyphBuffer charIndexBuffer inscribeBuffer elasticBuffer bidiLevelBuffer
 
 -- | @- getGlyphs:range:@
 getGlyphs_range :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> RawId -> NSRange -> IO CULong
-getGlyphs_range nsLayoutManager  glyphArray glyphRange =
-    sendMsg nsLayoutManager (mkSelector "getGlyphs:range:") retCULong [argPtr (castPtr (unRawId glyphArray) :: Ptr ()), argNSRange glyphRange]
+getGlyphs_range nsLayoutManager glyphArray glyphRange =
+  sendMessage nsLayoutManager getGlyphs_rangeSelector glyphArray glyphRange
 
 -- | @- invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:@
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSRange -> Bool -> Ptr NSRange -> IO ()
-invalidateLayoutForCharacterRange_isSoft_actualCharacterRange nsLayoutManager  charRange flag actualCharRange =
-    sendMsg nsLayoutManager (mkSelector "invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:") retVoid [argNSRange charRange, argCULong (if flag then 1 else 0), argPtr actualCharRange]
+invalidateLayoutForCharacterRange_isSoft_actualCharacterRange nsLayoutManager charRange flag actualCharRange =
+  sendMessage nsLayoutManager invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector charRange flag actualCharRange
 
 -- | @- textStorage:edited:range:changeInLength:invalidatedRange:@
 textStorage_edited_range_changeInLength_invalidatedRange :: (IsNSLayoutManager nsLayoutManager, IsNSTextStorage str) => nsLayoutManager -> str -> CULong -> NSRange -> CLong -> NSRange -> IO ()
-textStorage_edited_range_changeInLength_invalidatedRange nsLayoutManager  str editedMask newCharRange delta invalidatedCharRange =
-  withObjCPtr str $ \raw_str ->
-      sendMsg nsLayoutManager (mkSelector "textStorage:edited:range:changeInLength:invalidatedRange:") retVoid [argPtr (castPtr raw_str :: Ptr ()), argCULong editedMask, argNSRange newCharRange, argCLong delta, argNSRange invalidatedCharRange]
+textStorage_edited_range_changeInLength_invalidatedRange nsLayoutManager str editedMask newCharRange delta invalidatedCharRange =
+  sendMessage nsLayoutManager textStorage_edited_range_changeInLength_invalidatedRangeSelector (toNSTextStorage str) editedMask newCharRange delta invalidatedCharRange
 
 -- | @- setLocations:startingGlyphIndexes:count:forGlyphRange:@
 setLocations_startingGlyphIndexes_count_forGlyphRange :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Ptr NSPoint -> Ptr CULong -> CULong -> NSRange -> IO ()
-setLocations_startingGlyphIndexes_count_forGlyphRange nsLayoutManager  locations glyphIndexes count glyphRange =
-    sendMsg nsLayoutManager (mkSelector "setLocations:startingGlyphIndexes:count:forGlyphRange:") retVoid [argPtr locations, argPtr glyphIndexes, argCULong count, argNSRange glyphRange]
+setLocations_startingGlyphIndexes_count_forGlyphRange nsLayoutManager locations glyphIndexes count glyphRange =
+  sendMessage nsLayoutManager setLocations_startingGlyphIndexes_count_forGlyphRangeSelector locations glyphIndexes count glyphRange
 
 -- | @- showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:@
 showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustment :: (IsNSLayoutManager nsLayoutManager, IsNSFont font, IsNSColor color) => nsLayoutManager -> Ptr CChar -> CULong -> NSRange -> NSPoint -> font -> color -> NSSize -> IO ()
-showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustment nsLayoutManager  glyphs glyphLen glyphRange point font color printingAdjustment =
-  withObjCPtr font $ \raw_font ->
-    withObjCPtr color $ \raw_color ->
-        sendMsg nsLayoutManager (mkSelector "showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:") retVoid [argPtr glyphs, argCULong glyphLen, argNSRange glyphRange, argNSPoint point, argPtr (castPtr raw_font :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argNSSize printingAdjustment]
+showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustment nsLayoutManager glyphs glyphLen glyphRange point font color printingAdjustment =
+  sendMessage nsLayoutManager showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector glyphs glyphLen glyphRange point (toNSFont font) (toNSColor color) printingAdjustment
 
 -- | @- showCGGlyphs:positions:count:font:matrix:attributes:inContext:@
 showCGGlyphs_positions_count_font_matrix_attributes_inContext :: (IsNSLayoutManager nsLayoutManager, IsNSFont font, IsNSAffineTransform textMatrix, IsNSDictionary attributes, IsNSGraphicsContext graphicsContext) => nsLayoutManager -> Const RawId -> Const (Ptr NSPoint) -> CULong -> font -> textMatrix -> attributes -> graphicsContext -> IO ()
-showCGGlyphs_positions_count_font_matrix_attributes_inContext nsLayoutManager  glyphs positions glyphCount font textMatrix attributes graphicsContext =
-  withObjCPtr font $ \raw_font ->
-    withObjCPtr textMatrix $ \raw_textMatrix ->
-      withObjCPtr attributes $ \raw_attributes ->
-        withObjCPtr graphicsContext $ \raw_graphicsContext ->
-            sendMsg nsLayoutManager (mkSelector "showCGGlyphs:positions:count:font:matrix:attributes:inContext:") retVoid [argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argPtr (unConst positions), argCULong glyphCount, argPtr (castPtr raw_font :: Ptr ()), argPtr (castPtr raw_textMatrix :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ()), argPtr (castPtr raw_graphicsContext :: Ptr ())]
+showCGGlyphs_positions_count_font_matrix_attributes_inContext nsLayoutManager glyphs positions glyphCount font textMatrix attributes graphicsContext =
+  sendMessage nsLayoutManager showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector glyphs positions glyphCount (toNSFont font) (toNSAffineTransform textMatrix) (toNSDictionary attributes) (toNSGraphicsContext graphicsContext)
 
 -- | *************************** Ruler support ****************************
 --
 -- ObjC selector: @- rulerMarkersForTextView:paragraphStyle:ruler:@
 rulerMarkersForTextView_paragraphStyle_ruler :: (IsNSLayoutManager nsLayoutManager, IsNSTextView view, IsNSParagraphStyle style, IsNSRulerView ruler) => nsLayoutManager -> view -> style -> ruler -> IO (Id NSArray)
-rulerMarkersForTextView_paragraphStyle_ruler nsLayoutManager  view style ruler =
-  withObjCPtr view $ \raw_view ->
-    withObjCPtr style $ \raw_style ->
-      withObjCPtr ruler $ \raw_ruler ->
-          sendMsg nsLayoutManager (mkSelector "rulerMarkersForTextView:paragraphStyle:ruler:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_style :: Ptr ()), argPtr (castPtr raw_ruler :: Ptr ())] >>= retainedObject . castPtr
+rulerMarkersForTextView_paragraphStyle_ruler nsLayoutManager view style ruler =
+  sendMessage nsLayoutManager rulerMarkersForTextView_paragraphStyle_rulerSelector (toNSTextView view) (toNSParagraphStyle style) (toNSRulerView ruler)
 
 -- | @- rulerAccessoryViewForTextView:paragraphStyle:ruler:enabled:@
 rulerAccessoryViewForTextView_paragraphStyle_ruler_enabled :: (IsNSLayoutManager nsLayoutManager, IsNSTextView view, IsNSParagraphStyle style, IsNSRulerView ruler) => nsLayoutManager -> view -> style -> ruler -> Bool -> IO (Id NSView)
-rulerAccessoryViewForTextView_paragraphStyle_ruler_enabled nsLayoutManager  view style ruler isEnabled =
-  withObjCPtr view $ \raw_view ->
-    withObjCPtr style $ \raw_style ->
-      withObjCPtr ruler $ \raw_ruler ->
-          sendMsg nsLayoutManager (mkSelector "rulerAccessoryViewForTextView:paragraphStyle:ruler:enabled:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_style :: Ptr ()), argPtr (castPtr raw_ruler :: Ptr ()), argCULong (if isEnabled then 1 else 0)] >>= retainedObject . castPtr
+rulerAccessoryViewForTextView_paragraphStyle_ruler_enabled nsLayoutManager view style ruler isEnabled =
+  sendMessage nsLayoutManager rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector (toNSTextView view) (toNSParagraphStyle style) (toNSRulerView ruler) isEnabled
 
 -- | ********************** First responder support ***********************
 --
 -- ObjC selector: @- layoutManagerOwnsFirstResponderInWindow:@
 layoutManagerOwnsFirstResponderInWindow :: (IsNSLayoutManager nsLayoutManager, IsNSWindow window) => nsLayoutManager -> window -> IO Bool
-layoutManagerOwnsFirstResponderInWindow nsLayoutManager  window =
-  withObjCPtr window $ \raw_window ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "layoutManagerOwnsFirstResponderInWindow:") retCULong [argPtr (castPtr raw_window :: Ptr ())]
+layoutManagerOwnsFirstResponderInWindow nsLayoutManager window =
+  sendMessage nsLayoutManager layoutManagerOwnsFirstResponderInWindowSelector (toNSWindow window)
 
 -- | ************************* Text storage **************************
 --
 -- ObjC selector: @- textStorage@
 textStorage :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSTextStorage)
-textStorage nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "textStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+textStorage nsLayoutManager =
+  sendMessage nsLayoutManager textStorageSelector
 
 -- | ************************* Text storage **************************
 --
 -- ObjC selector: @- setTextStorage:@
 setTextStorage :: (IsNSLayoutManager nsLayoutManager, IsNSTextStorage value) => nsLayoutManager -> value -> IO ()
-setTextStorage nsLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLayoutManager (mkSelector "setTextStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextStorage nsLayoutManager value =
+  sendMessage nsLayoutManager setTextStorageSelector (toNSTextStorage value)
 
 -- | ************************** Text containers ***************************
 --
 -- ObjC selector: @- textContainers@
 textContainers :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSArray)
-textContainers nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "textContainers") (retPtr retVoid) [] >>= retainedObject . castPtr
+textContainers nsLayoutManager =
+  sendMessage nsLayoutManager textContainersSelector
 
 -- | ************************** Delegate ***************************
 --
 -- ObjC selector: @- delegate@
 delegate :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO RawId
-delegate nsLayoutManager  =
-    fmap (RawId . castPtr) $ sendMsg nsLayoutManager (mkSelector "delegate") (retPtr retVoid) []
+delegate nsLayoutManager =
+  sendMessage nsLayoutManager delegateSelector
 
 -- | ************************** Delegate ***************************
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> RawId -> IO ()
-setDelegate nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsLayoutManager value =
+  sendMessage nsLayoutManager setDelegateSelector value
 
 -- | ********************* Global layout manager options **********************
 --
 -- ObjC selector: @- showsInvisibleCharacters@
 showsInvisibleCharacters :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-showsInvisibleCharacters nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "showsInvisibleCharacters") retCULong []
+showsInvisibleCharacters nsLayoutManager =
+  sendMessage nsLayoutManager showsInvisibleCharactersSelector
 
 -- | ********************* Global layout manager options **********************
 --
 -- ObjC selector: @- setShowsInvisibleCharacters:@
 setShowsInvisibleCharacters :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setShowsInvisibleCharacters nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setShowsInvisibleCharacters:") retVoid [argCULong (if value then 1 else 0)]
+setShowsInvisibleCharacters nsLayoutManager value =
+  sendMessage nsLayoutManager setShowsInvisibleCharactersSelector value
 
 -- | @- showsControlCharacters@
 showsControlCharacters :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-showsControlCharacters nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "showsControlCharacters") retCULong []
+showsControlCharacters nsLayoutManager =
+  sendMessage nsLayoutManager showsControlCharactersSelector
 
 -- | @- setShowsControlCharacters:@
 setShowsControlCharacters :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setShowsControlCharacters nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setShowsControlCharacters:") retVoid [argCULong (if value then 1 else 0)]
+setShowsControlCharacters nsLayoutManager value =
+  sendMessage nsLayoutManager setShowsControlCharactersSelector value
 
 -- | @- usesDefaultHyphenation@
 usesDefaultHyphenation :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-usesDefaultHyphenation nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "usesDefaultHyphenation") retCULong []
+usesDefaultHyphenation nsLayoutManager =
+  sendMessage nsLayoutManager usesDefaultHyphenationSelector
 
 -- | @- setUsesDefaultHyphenation:@
 setUsesDefaultHyphenation :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setUsesDefaultHyphenation nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setUsesDefaultHyphenation:") retVoid [argCULong (if value then 1 else 0)]
+setUsesDefaultHyphenation nsLayoutManager value =
+  sendMessage nsLayoutManager setUsesDefaultHyphenationSelector value
 
 -- | @- usesFontLeading@
 usesFontLeading :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-usesFontLeading nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "usesFontLeading") retCULong []
+usesFontLeading nsLayoutManager =
+  sendMessage nsLayoutManager usesFontLeadingSelector
 
 -- | @- setUsesFontLeading:@
 setUsesFontLeading :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setUsesFontLeading nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setUsesFontLeading:") retVoid [argCULong (if value then 1 else 0)]
+setUsesFontLeading nsLayoutManager value =
+  sendMessage nsLayoutManager setUsesFontLeadingSelector value
 
 -- | @- allowsNonContiguousLayout@
 allowsNonContiguousLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-allowsNonContiguousLayout nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "allowsNonContiguousLayout") retCULong []
+allowsNonContiguousLayout nsLayoutManager =
+  sendMessage nsLayoutManager allowsNonContiguousLayoutSelector
 
 -- | @- setAllowsNonContiguousLayout:@
 setAllowsNonContiguousLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setAllowsNonContiguousLayout nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setAllowsNonContiguousLayout:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsNonContiguousLayout nsLayoutManager value =
+  sendMessage nsLayoutManager setAllowsNonContiguousLayoutSelector value
 
 -- | @- hasNonContiguousLayout@
 hasNonContiguousLayout :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-hasNonContiguousLayout nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "hasNonContiguousLayout") retCULong []
+hasNonContiguousLayout nsLayoutManager =
+  sendMessage nsLayoutManager hasNonContiguousLayoutSelector
 
 -- | @- limitsLayoutForSuspiciousContents@
 limitsLayoutForSuspiciousContents :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-limitsLayoutForSuspiciousContents nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "limitsLayoutForSuspiciousContents") retCULong []
+limitsLayoutForSuspiciousContents nsLayoutManager =
+  sendMessage nsLayoutManager limitsLayoutForSuspiciousContentsSelector
 
 -- | @- setLimitsLayoutForSuspiciousContents:@
 setLimitsLayoutForSuspiciousContents :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setLimitsLayoutForSuspiciousContents nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setLimitsLayoutForSuspiciousContents:") retVoid [argCULong (if value then 1 else 0)]
+setLimitsLayoutForSuspiciousContents nsLayoutManager value =
+  sendMessage nsLayoutManager setLimitsLayoutForSuspiciousContentsSelector value
 
 -- | @- backgroundLayoutEnabled@
 backgroundLayoutEnabled :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-backgroundLayoutEnabled nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "backgroundLayoutEnabled") retCULong []
+backgroundLayoutEnabled nsLayoutManager =
+  sendMessage nsLayoutManager backgroundLayoutEnabledSelector
 
 -- | @- setBackgroundLayoutEnabled:@
 setBackgroundLayoutEnabled :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setBackgroundLayoutEnabled nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setBackgroundLayoutEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setBackgroundLayoutEnabled nsLayoutManager value =
+  sendMessage nsLayoutManager setBackgroundLayoutEnabledSelector value
 
 -- | @- defaultAttachmentScaling@
 defaultAttachmentScaling :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO NSImageScaling
-defaultAttachmentScaling nsLayoutManager  =
-    fmap (coerce :: CULong -> NSImageScaling) $ sendMsg nsLayoutManager (mkSelector "defaultAttachmentScaling") retCULong []
+defaultAttachmentScaling nsLayoutManager =
+  sendMessage nsLayoutManager defaultAttachmentScalingSelector
 
 -- | @- setDefaultAttachmentScaling:@
 setDefaultAttachmentScaling :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSImageScaling -> IO ()
-setDefaultAttachmentScaling nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setDefaultAttachmentScaling:") retVoid [argCULong (coerce value)]
+setDefaultAttachmentScaling nsLayoutManager value =
+  sendMessage nsLayoutManager setDefaultAttachmentScalingSelector value
 
 -- | ********************* Typesetter **********************
 --
 -- ObjC selector: @- typesetter@
 typesetter :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSTypesetter)
-typesetter nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "typesetter") (retPtr retVoid) [] >>= retainedObject . castPtr
+typesetter nsLayoutManager =
+  sendMessage nsLayoutManager typesetterSelector
 
 -- | ********************* Typesetter **********************
 --
 -- ObjC selector: @- setTypesetter:@
 setTypesetter :: (IsNSLayoutManager nsLayoutManager, IsNSTypesetter value) => nsLayoutManager -> value -> IO ()
-setTypesetter nsLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLayoutManager (mkSelector "setTypesetter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTypesetter nsLayoutManager value =
+  sendMessage nsLayoutManager setTypesetterSelector (toNSTypesetter value)
 
 -- | @- typesetterBehavior@
 typesetterBehavior :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO NSTypesetterBehavior
-typesetterBehavior nsLayoutManager  =
-    fmap (coerce :: CLong -> NSTypesetterBehavior) $ sendMsg nsLayoutManager (mkSelector "typesetterBehavior") retCLong []
+typesetterBehavior nsLayoutManager =
+  sendMessage nsLayoutManager typesetterBehaviorSelector
 
 -- | @- setTypesetterBehavior:@
 setTypesetterBehavior :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> NSTypesetterBehavior -> IO ()
-setTypesetterBehavior nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setTypesetterBehavior:") retVoid [argCLong (coerce value)]
+setTypesetterBehavior nsLayoutManager value =
+  sendMessage nsLayoutManager setTypesetterBehaviorSelector value
 
 -- | ********************** Get glyphs and glyph properties ***********************
 --
 -- ObjC selector: @- numberOfGlyphs@
 numberOfGlyphs :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO CULong
-numberOfGlyphs nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "numberOfGlyphs") retCULong []
+numberOfGlyphs nsLayoutManager =
+  sendMessage nsLayoutManager numberOfGlyphsSelector
 
 -- | @- extraLineFragmentRect@
 extraLineFragmentRect :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO NSRect
-extraLineFragmentRect nsLayoutManager  =
-    sendMsgStret nsLayoutManager (mkSelector "extraLineFragmentRect") retNSRect []
+extraLineFragmentRect nsLayoutManager =
+  sendMessage nsLayoutManager extraLineFragmentRectSelector
 
 -- | @- extraLineFragmentUsedRect@
 extraLineFragmentUsedRect :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO NSRect
-extraLineFragmentUsedRect nsLayoutManager  =
-    sendMsgStret nsLayoutManager (mkSelector "extraLineFragmentUsedRect") retNSRect []
+extraLineFragmentUsedRect nsLayoutManager =
+  sendMessage nsLayoutManager extraLineFragmentUsedRectSelector
 
 -- | @- extraLineFragmentTextContainer@
 extraLineFragmentTextContainer :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSTextContainer)
-extraLineFragmentTextContainer nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "extraLineFragmentTextContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+extraLineFragmentTextContainer nsLayoutManager =
+  sendMessage nsLayoutManager extraLineFragmentTextContainerSelector
 
 -- | @- glyphGenerator@
 glyphGenerator :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSGlyphGenerator)
-glyphGenerator nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "glyphGenerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+glyphGenerator nsLayoutManager =
+  sendMessage nsLayoutManager glyphGeneratorSelector
 
 -- | @- setGlyphGenerator:@
 setGlyphGenerator :: (IsNSLayoutManager nsLayoutManager, IsNSGlyphGenerator value) => nsLayoutManager -> value -> IO ()
-setGlyphGenerator nsLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLayoutManager (mkSelector "setGlyphGenerator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGlyphGenerator nsLayoutManager value =
+  sendMessage nsLayoutManager setGlyphGeneratorSelector (toNSGlyphGenerator value)
 
 -- | @- usesScreenFonts@
 usesScreenFonts :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO Bool
-usesScreenFonts nsLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutManager (mkSelector "usesScreenFonts") retCULong []
+usesScreenFonts nsLayoutManager =
+  sendMessage nsLayoutManager usesScreenFontsSelector
 
 -- | @- setUsesScreenFonts:@
 setUsesScreenFonts :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> Bool -> IO ()
-setUsesScreenFonts nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setUsesScreenFonts:") retVoid [argCULong (if value then 1 else 0)]
+setUsesScreenFonts nsLayoutManager value =
+  sendMessage nsLayoutManager setUsesScreenFontsSelector value
 
 -- | @- hyphenationFactor@
 hyphenationFactor :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO CFloat
-hyphenationFactor nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "hyphenationFactor") retCFloat []
+hyphenationFactor nsLayoutManager =
+  sendMessage nsLayoutManager hyphenationFactorSelector
 
 -- | @- setHyphenationFactor:@
 setHyphenationFactor :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> CFloat -> IO ()
-setHyphenationFactor nsLayoutManager  value =
-    sendMsg nsLayoutManager (mkSelector "setHyphenationFactor:") retVoid [argCFloat value]
+setHyphenationFactor nsLayoutManager value =
+  sendMessage nsLayoutManager setHyphenationFactorSelector value
 
 -- | @- firstTextView@
 firstTextView :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSTextView)
-firstTextView nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "firstTextView") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstTextView nsLayoutManager =
+  sendMessage nsLayoutManager firstTextViewSelector
 
 -- | @- textViewForBeginningOfSelection@
 textViewForBeginningOfSelection :: IsNSLayoutManager nsLayoutManager => nsLayoutManager -> IO (Id NSTextView)
-textViewForBeginningOfSelection nsLayoutManager  =
-    sendMsg nsLayoutManager (mkSelector "textViewForBeginningOfSelection") (retPtr retVoid) [] >>= retainedObject . castPtr
+textViewForBeginningOfSelection nsLayoutManager =
+  sendMessage nsLayoutManager textViewForBeginningOfSelectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSLayoutManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSLayoutManager)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @replaceTextStorage:@
-replaceTextStorageSelector :: Selector
+replaceTextStorageSelector :: Selector '[Id NSTextStorage] ()
 replaceTextStorageSelector = mkSelector "replaceTextStorage:"
 
 -- | @Selector@ for @addTextContainer:@
-addTextContainerSelector :: Selector
+addTextContainerSelector :: Selector '[Id NSTextContainer] ()
 addTextContainerSelector = mkSelector "addTextContainer:"
 
 -- | @Selector@ for @insertTextContainer:atIndex:@
-insertTextContainer_atIndexSelector :: Selector
+insertTextContainer_atIndexSelector :: Selector '[Id NSTextContainer, CULong] ()
 insertTextContainer_atIndexSelector = mkSelector "insertTextContainer:atIndex:"
 
 -- | @Selector@ for @removeTextContainerAtIndex:@
-removeTextContainerAtIndexSelector :: Selector
+removeTextContainerAtIndexSelector :: Selector '[CULong] ()
 removeTextContainerAtIndexSelector = mkSelector "removeTextContainerAtIndex:"
 
 -- | @Selector@ for @textContainerChangedGeometry:@
-textContainerChangedGeometrySelector :: Selector
+textContainerChangedGeometrySelector :: Selector '[Id NSTextContainer] ()
 textContainerChangedGeometrySelector = mkSelector "textContainerChangedGeometry:"
 
 -- | @Selector@ for @textContainerChangedTextView:@
-textContainerChangedTextViewSelector :: Selector
+textContainerChangedTextViewSelector :: Selector '[Id NSTextContainer] ()
 textContainerChangedTextViewSelector = mkSelector "textContainerChangedTextView:"
 
 -- | @Selector@ for @invalidateGlyphsForCharacterRange:changeInLength:actualCharacterRange:@
-invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector :: Selector
+invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector :: Selector '[NSRange, CLong, Ptr NSRange] ()
 invalidateGlyphsForCharacterRange_changeInLength_actualCharacterRangeSelector = mkSelector "invalidateGlyphsForCharacterRange:changeInLength:actualCharacterRange:"
 
 -- | @Selector@ for @invalidateLayoutForCharacterRange:actualCharacterRange:@
-invalidateLayoutForCharacterRange_actualCharacterRangeSelector :: Selector
+invalidateLayoutForCharacterRange_actualCharacterRangeSelector :: Selector '[NSRange, Ptr NSRange] ()
 invalidateLayoutForCharacterRange_actualCharacterRangeSelector = mkSelector "invalidateLayoutForCharacterRange:actualCharacterRange:"
 
 -- | @Selector@ for @invalidateDisplayForCharacterRange:@
-invalidateDisplayForCharacterRangeSelector :: Selector
+invalidateDisplayForCharacterRangeSelector :: Selector '[NSRange] ()
 invalidateDisplayForCharacterRangeSelector = mkSelector "invalidateDisplayForCharacterRange:"
 
 -- | @Selector@ for @invalidateDisplayForGlyphRange:@
-invalidateDisplayForGlyphRangeSelector :: Selector
+invalidateDisplayForGlyphRangeSelector :: Selector '[NSRange] ()
 invalidateDisplayForGlyphRangeSelector = mkSelector "invalidateDisplayForGlyphRange:"
 
 -- | @Selector@ for @processEditingForTextStorage:edited:range:changeInLength:invalidatedRange:@
-processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector :: Selector
+processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector :: Selector '[Id NSTextStorage, NSTextStorageEditActions, NSRange, CLong, NSRange] ()
 processEditingForTextStorage_edited_range_changeInLength_invalidatedRangeSelector = mkSelector "processEditingForTextStorage:edited:range:changeInLength:invalidatedRange:"
 
 -- | @Selector@ for @ensureGlyphsForCharacterRange:@
-ensureGlyphsForCharacterRangeSelector :: Selector
+ensureGlyphsForCharacterRangeSelector :: Selector '[NSRange] ()
 ensureGlyphsForCharacterRangeSelector = mkSelector "ensureGlyphsForCharacterRange:"
 
 -- | @Selector@ for @ensureGlyphsForGlyphRange:@
-ensureGlyphsForGlyphRangeSelector :: Selector
+ensureGlyphsForGlyphRangeSelector :: Selector '[NSRange] ()
 ensureGlyphsForGlyphRangeSelector = mkSelector "ensureGlyphsForGlyphRange:"
 
 -- | @Selector@ for @ensureLayoutForCharacterRange:@
-ensureLayoutForCharacterRangeSelector :: Selector
+ensureLayoutForCharacterRangeSelector :: Selector '[NSRange] ()
 ensureLayoutForCharacterRangeSelector = mkSelector "ensureLayoutForCharacterRange:"
 
 -- | @Selector@ for @ensureLayoutForGlyphRange:@
-ensureLayoutForGlyphRangeSelector :: Selector
+ensureLayoutForGlyphRangeSelector :: Selector '[NSRange] ()
 ensureLayoutForGlyphRangeSelector = mkSelector "ensureLayoutForGlyphRange:"
 
 -- | @Selector@ for @ensureLayoutForTextContainer:@
-ensureLayoutForTextContainerSelector :: Selector
+ensureLayoutForTextContainerSelector :: Selector '[Id NSTextContainer] ()
 ensureLayoutForTextContainerSelector = mkSelector "ensureLayoutForTextContainer:"
 
 -- | @Selector@ for @ensureLayoutForBoundingRect:inTextContainer:@
-ensureLayoutForBoundingRect_inTextContainerSelector :: Selector
+ensureLayoutForBoundingRect_inTextContainerSelector :: Selector '[NSRect, Id NSTextContainer] ()
 ensureLayoutForBoundingRect_inTextContainerSelector = mkSelector "ensureLayoutForBoundingRect:inTextContainer:"
 
 -- | @Selector@ for @setGlyphs:properties:characterIndexes:font:forGlyphRange:@
-setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector :: Selector
+setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector :: Selector '[Const RawId, Const (Ptr NSGlyphProperty), Const (Ptr CULong), Id NSFont, NSRange] ()
 setGlyphs_properties_characterIndexes_font_forGlyphRangeSelector = mkSelector "setGlyphs:properties:characterIndexes:font:forGlyphRange:"
 
 -- | @Selector@ for @CGGlyphAtIndex:isValidIndex:@
-cgGlyphAtIndex_isValidIndexSelector :: Selector
+cgGlyphAtIndex_isValidIndexSelector :: Selector '[CULong, Ptr Bool] CUShort
 cgGlyphAtIndex_isValidIndexSelector = mkSelector "CGGlyphAtIndex:isValidIndex:"
 
 -- | @Selector@ for @CGGlyphAtIndex:@
-cgGlyphAtIndexSelector :: Selector
+cgGlyphAtIndexSelector :: Selector '[CULong] CUShort
 cgGlyphAtIndexSelector = mkSelector "CGGlyphAtIndex:"
 
 -- | @Selector@ for @isValidGlyphIndex:@
-isValidGlyphIndexSelector :: Selector
+isValidGlyphIndexSelector :: Selector '[CULong] Bool
 isValidGlyphIndexSelector = mkSelector "isValidGlyphIndex:"
 
 -- | @Selector@ for @propertyForGlyphAtIndex:@
-propertyForGlyphAtIndexSelector :: Selector
+propertyForGlyphAtIndexSelector :: Selector '[CULong] NSGlyphProperty
 propertyForGlyphAtIndexSelector = mkSelector "propertyForGlyphAtIndex:"
 
 -- | @Selector@ for @characterIndexForGlyphAtIndex:@
-characterIndexForGlyphAtIndexSelector :: Selector
+characterIndexForGlyphAtIndexSelector :: Selector '[CULong] CULong
 characterIndexForGlyphAtIndexSelector = mkSelector "characterIndexForGlyphAtIndex:"
 
 -- | @Selector@ for @glyphIndexForCharacterAtIndex:@
-glyphIndexForCharacterAtIndexSelector :: Selector
+glyphIndexForCharacterAtIndexSelector :: Selector '[CULong] CULong
 glyphIndexForCharacterAtIndexSelector = mkSelector "glyphIndexForCharacterAtIndex:"
 
 -- | @Selector@ for @getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:@
-getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector :: Selector
+getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector :: Selector '[NSRange, RawId, Ptr NSGlyphProperty, Ptr CULong, Ptr CUChar] CULong
 getGlyphsInRange_glyphs_properties_characterIndexes_bidiLevelsSelector = mkSelector "getGlyphsInRange:glyphs:properties:characterIndexes:bidiLevels:"
 
 -- | @Selector@ for @setTextContainer:forGlyphRange:@
-setTextContainer_forGlyphRangeSelector :: Selector
+setTextContainer_forGlyphRangeSelector :: Selector '[Id NSTextContainer, NSRange] ()
 setTextContainer_forGlyphRangeSelector = mkSelector "setTextContainer:forGlyphRange:"
 
 -- | @Selector@ for @setLineFragmentRect:forGlyphRange:usedRect:@
-setLineFragmentRect_forGlyphRange_usedRectSelector :: Selector
+setLineFragmentRect_forGlyphRange_usedRectSelector :: Selector '[NSRect, NSRange, NSRect] ()
 setLineFragmentRect_forGlyphRange_usedRectSelector = mkSelector "setLineFragmentRect:forGlyphRange:usedRect:"
 
 -- | @Selector@ for @setExtraLineFragmentRect:usedRect:textContainer:@
-setExtraLineFragmentRect_usedRect_textContainerSelector :: Selector
+setExtraLineFragmentRect_usedRect_textContainerSelector :: Selector '[NSRect, NSRect, Id NSTextContainer] ()
 setExtraLineFragmentRect_usedRect_textContainerSelector = mkSelector "setExtraLineFragmentRect:usedRect:textContainer:"
 
 -- | @Selector@ for @setLocation:forStartOfGlyphRange:@
-setLocation_forStartOfGlyphRangeSelector :: Selector
+setLocation_forStartOfGlyphRangeSelector :: Selector '[NSPoint, NSRange] ()
 setLocation_forStartOfGlyphRangeSelector = mkSelector "setLocation:forStartOfGlyphRange:"
 
 -- | @Selector@ for @setNotShownAttribute:forGlyphAtIndex:@
-setNotShownAttribute_forGlyphAtIndexSelector :: Selector
+setNotShownAttribute_forGlyphAtIndexSelector :: Selector '[Bool, CULong] ()
 setNotShownAttribute_forGlyphAtIndexSelector = mkSelector "setNotShownAttribute:forGlyphAtIndex:"
 
 -- | @Selector@ for @setDrawsOutsideLineFragment:forGlyphAtIndex:@
-setDrawsOutsideLineFragment_forGlyphAtIndexSelector :: Selector
+setDrawsOutsideLineFragment_forGlyphAtIndexSelector :: Selector '[Bool, CULong] ()
 setDrawsOutsideLineFragment_forGlyphAtIndexSelector = mkSelector "setDrawsOutsideLineFragment:forGlyphAtIndex:"
 
 -- | @Selector@ for @setAttachmentSize:forGlyphRange:@
-setAttachmentSize_forGlyphRangeSelector :: Selector
+setAttachmentSize_forGlyphRangeSelector :: Selector '[NSSize, NSRange] ()
 setAttachmentSize_forGlyphRangeSelector = mkSelector "setAttachmentSize:forGlyphRange:"
 
 -- | @Selector@ for @getFirstUnlaidCharacterIndex:glyphIndex:@
-getFirstUnlaidCharacterIndex_glyphIndexSelector :: Selector
+getFirstUnlaidCharacterIndex_glyphIndexSelector :: Selector '[Ptr CULong, Ptr CULong] ()
 getFirstUnlaidCharacterIndex_glyphIndexSelector = mkSelector "getFirstUnlaidCharacterIndex:glyphIndex:"
 
 -- | @Selector@ for @firstUnlaidCharacterIndex@
-firstUnlaidCharacterIndexSelector :: Selector
+firstUnlaidCharacterIndexSelector :: Selector '[] CULong
 firstUnlaidCharacterIndexSelector = mkSelector "firstUnlaidCharacterIndex"
 
 -- | @Selector@ for @firstUnlaidGlyphIndex@
-firstUnlaidGlyphIndexSelector :: Selector
+firstUnlaidGlyphIndexSelector :: Selector '[] CULong
 firstUnlaidGlyphIndexSelector = mkSelector "firstUnlaidGlyphIndex"
 
 -- | @Selector@ for @textContainerForGlyphAtIndex:effectiveRange:@
-textContainerForGlyphAtIndex_effectiveRangeSelector :: Selector
+textContainerForGlyphAtIndex_effectiveRangeSelector :: Selector '[CULong, Ptr NSRange] (Id NSTextContainer)
 textContainerForGlyphAtIndex_effectiveRangeSelector = mkSelector "textContainerForGlyphAtIndex:effectiveRange:"
 
 -- | @Selector@ for @textContainerForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
-textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector
+textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector '[CULong, Ptr NSRange, Bool] (Id NSTextContainer)
 textContainerForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector = mkSelector "textContainerForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:"
 
 -- | @Selector@ for @usedRectForTextContainer:@
-usedRectForTextContainerSelector :: Selector
+usedRectForTextContainerSelector :: Selector '[Id NSTextContainer] NSRect
 usedRectForTextContainerSelector = mkSelector "usedRectForTextContainer:"
 
 -- | @Selector@ for @lineFragmentRectForGlyphAtIndex:effectiveRange:@
-lineFragmentRectForGlyphAtIndex_effectiveRangeSelector :: Selector
+lineFragmentRectForGlyphAtIndex_effectiveRangeSelector :: Selector '[CULong, Ptr NSRange] NSRect
 lineFragmentRectForGlyphAtIndex_effectiveRangeSelector = mkSelector "lineFragmentRectForGlyphAtIndex:effectiveRange:"
 
 -- | @Selector@ for @lineFragmentRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
-lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector
+lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector '[CULong, Ptr NSRange, Bool] NSRect
 lineFragmentRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector = mkSelector "lineFragmentRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:"
 
 -- | @Selector@ for @lineFragmentUsedRectForGlyphAtIndex:effectiveRange:@
-lineFragmentUsedRectForGlyphAtIndex_effectiveRangeSelector :: Selector
+lineFragmentUsedRectForGlyphAtIndex_effectiveRangeSelector :: Selector '[CULong, Ptr NSRange] NSRect
 lineFragmentUsedRectForGlyphAtIndex_effectiveRangeSelector = mkSelector "lineFragmentUsedRectForGlyphAtIndex:effectiveRange:"
 
 -- | @Selector@ for @lineFragmentUsedRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:@
-lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector
+lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector :: Selector '[CULong, Ptr NSRange, Bool] NSRect
 lineFragmentUsedRectForGlyphAtIndex_effectiveRange_withoutAdditionalLayoutSelector = mkSelector "lineFragmentUsedRectForGlyphAtIndex:effectiveRange:withoutAdditionalLayout:"
 
 -- | @Selector@ for @locationForGlyphAtIndex:@
-locationForGlyphAtIndexSelector :: Selector
+locationForGlyphAtIndexSelector :: Selector '[CULong] NSPoint
 locationForGlyphAtIndexSelector = mkSelector "locationForGlyphAtIndex:"
 
 -- | @Selector@ for @notShownAttributeForGlyphAtIndex:@
-notShownAttributeForGlyphAtIndexSelector :: Selector
+notShownAttributeForGlyphAtIndexSelector :: Selector '[CULong] Bool
 notShownAttributeForGlyphAtIndexSelector = mkSelector "notShownAttributeForGlyphAtIndex:"
 
 -- | @Selector@ for @drawsOutsideLineFragmentForGlyphAtIndex:@
-drawsOutsideLineFragmentForGlyphAtIndexSelector :: Selector
+drawsOutsideLineFragmentForGlyphAtIndexSelector :: Selector '[CULong] Bool
 drawsOutsideLineFragmentForGlyphAtIndexSelector = mkSelector "drawsOutsideLineFragmentForGlyphAtIndex:"
 
 -- | @Selector@ for @attachmentSizeForGlyphAtIndex:@
-attachmentSizeForGlyphAtIndexSelector :: Selector
+attachmentSizeForGlyphAtIndexSelector :: Selector '[CULong] NSSize
 attachmentSizeForGlyphAtIndexSelector = mkSelector "attachmentSizeForGlyphAtIndex:"
 
 -- | @Selector@ for @truncatedGlyphRangeInLineFragmentForGlyphAtIndex:@
-truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector :: Selector
+truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector :: Selector '[CULong] NSRange
 truncatedGlyphRangeInLineFragmentForGlyphAtIndexSelector = mkSelector "truncatedGlyphRangeInLineFragmentForGlyphAtIndex:"
 
 -- | @Selector@ for @glyphRangeForCharacterRange:actualCharacterRange:@
-glyphRangeForCharacterRange_actualCharacterRangeSelector :: Selector
+glyphRangeForCharacterRange_actualCharacterRangeSelector :: Selector '[NSRange, Ptr NSRange] NSRange
 glyphRangeForCharacterRange_actualCharacterRangeSelector = mkSelector "glyphRangeForCharacterRange:actualCharacterRange:"
 
 -- | @Selector@ for @characterRangeForGlyphRange:actualGlyphRange:@
-characterRangeForGlyphRange_actualGlyphRangeSelector :: Selector
+characterRangeForGlyphRange_actualGlyphRangeSelector :: Selector '[NSRange, Ptr NSRange] NSRange
 characterRangeForGlyphRange_actualGlyphRangeSelector = mkSelector "characterRangeForGlyphRange:actualGlyphRange:"
 
 -- | @Selector@ for @glyphRangeForTextContainer:@
-glyphRangeForTextContainerSelector :: Selector
+glyphRangeForTextContainerSelector :: Selector '[Id NSTextContainer] NSRange
 glyphRangeForTextContainerSelector = mkSelector "glyphRangeForTextContainer:"
 
 -- | @Selector@ for @rangeOfNominallySpacedGlyphsContainingIndex:@
-rangeOfNominallySpacedGlyphsContainingIndexSelector :: Selector
+rangeOfNominallySpacedGlyphsContainingIndexSelector :: Selector '[CULong] NSRange
 rangeOfNominallySpacedGlyphsContainingIndexSelector = mkSelector "rangeOfNominallySpacedGlyphsContainingIndex:"
 
 -- | @Selector@ for @boundingRectForGlyphRange:inTextContainer:@
-boundingRectForGlyphRange_inTextContainerSelector :: Selector
+boundingRectForGlyphRange_inTextContainerSelector :: Selector '[NSRange, Id NSTextContainer] NSRect
 boundingRectForGlyphRange_inTextContainerSelector = mkSelector "boundingRectForGlyphRange:inTextContainer:"
 
 -- | @Selector@ for @glyphRangeForBoundingRect:inTextContainer:@
-glyphRangeForBoundingRect_inTextContainerSelector :: Selector
+glyphRangeForBoundingRect_inTextContainerSelector :: Selector '[NSRect, Id NSTextContainer] NSRange
 glyphRangeForBoundingRect_inTextContainerSelector = mkSelector "glyphRangeForBoundingRect:inTextContainer:"
 
 -- | @Selector@ for @glyphRangeForBoundingRectWithoutAdditionalLayout:inTextContainer:@
-glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector :: Selector
+glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector :: Selector '[NSRect, Id NSTextContainer] NSRange
 glyphRangeForBoundingRectWithoutAdditionalLayout_inTextContainerSelector = mkSelector "glyphRangeForBoundingRectWithoutAdditionalLayout:inTextContainer:"
 
 -- | @Selector@ for @glyphIndexForPoint:inTextContainer:fractionOfDistanceThroughGlyph:@
-glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector :: Selector
+glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector :: Selector '[NSPoint, Id NSTextContainer, Ptr CDouble] CULong
 glyphIndexForPoint_inTextContainer_fractionOfDistanceThroughGlyphSelector = mkSelector "glyphIndexForPoint:inTextContainer:fractionOfDistanceThroughGlyph:"
 
 -- | @Selector@ for @glyphIndexForPoint:inTextContainer:@
-glyphIndexForPoint_inTextContainerSelector :: Selector
+glyphIndexForPoint_inTextContainerSelector :: Selector '[NSPoint, Id NSTextContainer] CULong
 glyphIndexForPoint_inTextContainerSelector = mkSelector "glyphIndexForPoint:inTextContainer:"
 
 -- | @Selector@ for @fractionOfDistanceThroughGlyphForPoint:inTextContainer:@
-fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector :: Selector
+fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector :: Selector '[NSPoint, Id NSTextContainer] CDouble
 fractionOfDistanceThroughGlyphForPoint_inTextContainerSelector = mkSelector "fractionOfDistanceThroughGlyphForPoint:inTextContainer:"
 
 -- | @Selector@ for @characterIndexForPoint:inTextContainer:fractionOfDistanceBetweenInsertionPoints:@
-characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector :: Selector
+characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector :: Selector '[NSPoint, Id NSTextContainer, Ptr CDouble] CULong
 characterIndexForPoint_inTextContainer_fractionOfDistanceBetweenInsertionPointsSelector = mkSelector "characterIndexForPoint:inTextContainer:fractionOfDistanceBetweenInsertionPoints:"
 
 -- | @Selector@ for @getLineFragmentInsertionPointsForCharacterAtIndex:alternatePositions:inDisplayOrder:positions:characterIndexes:@
-getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector :: Selector
+getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector :: Selector '[CULong, Bool, Bool, Ptr CDouble, Ptr CULong] CULong
 getLineFragmentInsertionPointsForCharacterAtIndex_alternatePositions_inDisplayOrder_positions_characterIndexesSelector = mkSelector "getLineFragmentInsertionPointsForCharacterAtIndex:alternatePositions:inDisplayOrder:positions:characterIndexes:"
 
 -- | @Selector@ for @enumerateLineFragmentsForGlyphRange:usingBlock:@
-enumerateLineFragmentsForGlyphRange_usingBlockSelector :: Selector
+enumerateLineFragmentsForGlyphRange_usingBlockSelector :: Selector '[NSRange, Ptr ()] ()
 enumerateLineFragmentsForGlyphRange_usingBlockSelector = mkSelector "enumerateLineFragmentsForGlyphRange:usingBlock:"
 
 -- | @Selector@ for @enumerateEnclosingRectsForGlyphRange:withinSelectedGlyphRange:inTextContainer:usingBlock:@
-enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector :: Selector
+enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector :: Selector '[NSRange, NSRange, Id NSTextContainer, Ptr ()] ()
 enumerateEnclosingRectsForGlyphRange_withinSelectedGlyphRange_inTextContainer_usingBlockSelector = mkSelector "enumerateEnclosingRectsForGlyphRange:withinSelectedGlyphRange:inTextContainer:usingBlock:"
 
 -- | @Selector@ for @drawBackgroundForGlyphRange:atPoint:@
-drawBackgroundForGlyphRange_atPointSelector :: Selector
+drawBackgroundForGlyphRange_atPointSelector :: Selector '[NSRange, NSPoint] ()
 drawBackgroundForGlyphRange_atPointSelector = mkSelector "drawBackgroundForGlyphRange:atPoint:"
 
 -- | @Selector@ for @drawGlyphsForGlyphRange:atPoint:@
-drawGlyphsForGlyphRange_atPointSelector :: Selector
+drawGlyphsForGlyphRange_atPointSelector :: Selector '[NSRange, NSPoint] ()
 drawGlyphsForGlyphRange_atPointSelector = mkSelector "drawGlyphsForGlyphRange:atPoint:"
 
 -- | @Selector@ for @fillBackgroundRectArray:count:forCharacterRange:color:@
-fillBackgroundRectArray_count_forCharacterRange_colorSelector :: Selector
+fillBackgroundRectArray_count_forCharacterRange_colorSelector :: Selector '[Const (Ptr NSRect), CULong, NSRange, Id NSColor] ()
 fillBackgroundRectArray_count_forCharacterRange_colorSelector = mkSelector "fillBackgroundRectArray:count:forCharacterRange:color:"
 
 -- | @Selector@ for @drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
-drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector
+drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector '[NSRange, NSUnderlineStyle, CDouble, NSRect, NSRange, NSPoint] ()
 drawUnderlineForGlyphRange_underlineType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector = mkSelector "drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:"
 
 -- | @Selector@ for @underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
-underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector
+underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector '[NSRange, NSUnderlineStyle, NSRect, NSRange, NSPoint] ()
 underlineGlyphRange_underlineType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector = mkSelector "underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:"
 
 -- | @Selector@ for @drawStrikethroughForGlyphRange:strikethroughType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
-drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector
+drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector '[NSRange, NSUnderlineStyle, CDouble, NSRect, NSRange, NSPoint] ()
 drawStrikethroughForGlyphRange_strikethroughType_baselineOffset_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector = mkSelector "drawStrikethroughForGlyphRange:strikethroughType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:"
 
 -- | @Selector@ for @strikethroughGlyphRange:strikethroughType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:@
-strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector
+strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector :: Selector '[NSRange, NSUnderlineStyle, NSRect, NSRange, NSPoint] ()
 strikethroughGlyphRange_strikethroughType_lineFragmentRect_lineFragmentGlyphRange_containerOriginSelector = mkSelector "strikethroughGlyphRange:strikethroughType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:"
 
 -- | @Selector@ for @showAttachmentCell:inRect:characterIndex:@
-showAttachmentCell_inRect_characterIndexSelector :: Selector
+showAttachmentCell_inRect_characterIndexSelector :: Selector '[Id NSCell, NSRect, CULong] ()
 showAttachmentCell_inRect_characterIndexSelector = mkSelector "showAttachmentCell:inRect:characterIndex:"
 
 -- | @Selector@ for @setLayoutRect:forTextBlock:glyphRange:@
-setLayoutRect_forTextBlock_glyphRangeSelector :: Selector
+setLayoutRect_forTextBlock_glyphRangeSelector :: Selector '[NSRect, Id NSTextBlock, NSRange] ()
 setLayoutRect_forTextBlock_glyphRangeSelector = mkSelector "setLayoutRect:forTextBlock:glyphRange:"
 
 -- | @Selector@ for @setBoundsRect:forTextBlock:glyphRange:@
-setBoundsRect_forTextBlock_glyphRangeSelector :: Selector
+setBoundsRect_forTextBlock_glyphRangeSelector :: Selector '[NSRect, Id NSTextBlock, NSRange] ()
 setBoundsRect_forTextBlock_glyphRangeSelector = mkSelector "setBoundsRect:forTextBlock:glyphRange:"
 
 -- | @Selector@ for @layoutRectForTextBlock:glyphRange:@
-layoutRectForTextBlock_glyphRangeSelector :: Selector
+layoutRectForTextBlock_glyphRangeSelector :: Selector '[Id NSTextBlock, NSRange] NSRect
 layoutRectForTextBlock_glyphRangeSelector = mkSelector "layoutRectForTextBlock:glyphRange:"
 
 -- | @Selector@ for @boundsRectForTextBlock:glyphRange:@
-boundsRectForTextBlock_glyphRangeSelector :: Selector
+boundsRectForTextBlock_glyphRangeSelector :: Selector '[Id NSTextBlock, NSRange] NSRect
 boundsRectForTextBlock_glyphRangeSelector = mkSelector "boundsRectForTextBlock:glyphRange:"
 
 -- | @Selector@ for @layoutRectForTextBlock:atIndex:effectiveRange:@
-layoutRectForTextBlock_atIndex_effectiveRangeSelector :: Selector
+layoutRectForTextBlock_atIndex_effectiveRangeSelector :: Selector '[Id NSTextBlock, CULong, Ptr NSRange] NSRect
 layoutRectForTextBlock_atIndex_effectiveRangeSelector = mkSelector "layoutRectForTextBlock:atIndex:effectiveRange:"
 
 -- | @Selector@ for @boundsRectForTextBlock:atIndex:effectiveRange:@
-boundsRectForTextBlock_atIndex_effectiveRangeSelector :: Selector
+boundsRectForTextBlock_atIndex_effectiveRangeSelector :: Selector '[Id NSTextBlock, CULong, Ptr NSRange] NSRect
 boundsRectForTextBlock_atIndex_effectiveRangeSelector = mkSelector "boundsRectForTextBlock:atIndex:effectiveRange:"
 
 -- | @Selector@ for @temporaryAttributesAtCharacterIndex:effectiveRange:@
-temporaryAttributesAtCharacterIndex_effectiveRangeSelector :: Selector
+temporaryAttributesAtCharacterIndex_effectiveRangeSelector :: Selector '[CULong, Ptr NSRange] (Id NSDictionary)
 temporaryAttributesAtCharacterIndex_effectiveRangeSelector = mkSelector "temporaryAttributesAtCharacterIndex:effectiveRange:"
 
 -- | @Selector@ for @setTemporaryAttributes:forCharacterRange:@
-setTemporaryAttributes_forCharacterRangeSelector :: Selector
+setTemporaryAttributes_forCharacterRangeSelector :: Selector '[Id NSDictionary, NSRange] ()
 setTemporaryAttributes_forCharacterRangeSelector = mkSelector "setTemporaryAttributes:forCharacterRange:"
 
 -- | @Selector@ for @addTemporaryAttributes:forCharacterRange:@
-addTemporaryAttributes_forCharacterRangeSelector :: Selector
+addTemporaryAttributes_forCharacterRangeSelector :: Selector '[Id NSDictionary, NSRange] ()
 addTemporaryAttributes_forCharacterRangeSelector = mkSelector "addTemporaryAttributes:forCharacterRange:"
 
 -- | @Selector@ for @removeTemporaryAttribute:forCharacterRange:@
-removeTemporaryAttribute_forCharacterRangeSelector :: Selector
+removeTemporaryAttribute_forCharacterRangeSelector :: Selector '[Id NSString, NSRange] ()
 removeTemporaryAttribute_forCharacterRangeSelector = mkSelector "removeTemporaryAttribute:forCharacterRange:"
 
 -- | @Selector@ for @temporaryAttribute:atCharacterIndex:effectiveRange:@
-temporaryAttribute_atCharacterIndex_effectiveRangeSelector :: Selector
+temporaryAttribute_atCharacterIndex_effectiveRangeSelector :: Selector '[Id NSString, CULong, Ptr NSRange] RawId
 temporaryAttribute_atCharacterIndex_effectiveRangeSelector = mkSelector "temporaryAttribute:atCharacterIndex:effectiveRange:"
 
 -- | @Selector@ for @temporaryAttribute:atCharacterIndex:longestEffectiveRange:inRange:@
-temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector :: Selector
+temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector :: Selector '[Id NSString, CULong, Ptr NSRange, NSRange] RawId
 temporaryAttribute_atCharacterIndex_longestEffectiveRange_inRangeSelector = mkSelector "temporaryAttribute:atCharacterIndex:longestEffectiveRange:inRange:"
 
 -- | @Selector@ for @temporaryAttributesAtCharacterIndex:longestEffectiveRange:inRange:@
-temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector :: Selector
+temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector :: Selector '[CULong, Ptr NSRange, NSRange] (Id NSDictionary)
 temporaryAttributesAtCharacterIndex_longestEffectiveRange_inRangeSelector = mkSelector "temporaryAttributesAtCharacterIndex:longestEffectiveRange:inRange:"
 
 -- | @Selector@ for @addTemporaryAttribute:value:forCharacterRange:@
-addTemporaryAttribute_value_forCharacterRangeSelector :: Selector
+addTemporaryAttribute_value_forCharacterRangeSelector :: Selector '[Id NSString, RawId, NSRange] ()
 addTemporaryAttribute_value_forCharacterRangeSelector = mkSelector "addTemporaryAttribute:value:forCharacterRange:"
 
 -- | @Selector@ for @defaultLineHeightForFont:@
-defaultLineHeightForFontSelector :: Selector
+defaultLineHeightForFontSelector :: Selector '[Id NSFont] CDouble
 defaultLineHeightForFontSelector = mkSelector "defaultLineHeightForFont:"
 
 -- | @Selector@ for @defaultBaselineOffsetForFont:@
-defaultBaselineOffsetForFontSelector :: Selector
+defaultBaselineOffsetForFontSelector :: Selector '[Id NSFont] CDouble
 defaultBaselineOffsetForFontSelector = mkSelector "defaultBaselineOffsetForFont:"
 
 -- | @Selector@ for @glyphAtIndex:isValidIndex:@
-glyphAtIndex_isValidIndexSelector :: Selector
+glyphAtIndex_isValidIndexSelector :: Selector '[CULong, Ptr Bool] CUInt
 glyphAtIndex_isValidIndexSelector = mkSelector "glyphAtIndex:isValidIndex:"
 
 -- | @Selector@ for @glyphAtIndex:@
-glyphAtIndexSelector :: Selector
+glyphAtIndexSelector :: Selector '[CULong] CUInt
 glyphAtIndexSelector = mkSelector "glyphAtIndex:"
 
 -- | @Selector@ for @rectArrayForCharacterRange:withinSelectedCharacterRange:inTextContainer:rectCount:@
-rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector :: Selector
+rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector :: Selector '[NSRange, NSRange, Id NSTextContainer, Ptr CULong] (Ptr NSRect)
 rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCountSelector = mkSelector "rectArrayForCharacterRange:withinSelectedCharacterRange:inTextContainer:rectCount:"
 
 -- | @Selector@ for @rectArrayForGlyphRange:withinSelectedGlyphRange:inTextContainer:rectCount:@
-rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector :: Selector
+rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector :: Selector '[NSRange, NSRange, Id NSTextContainer, Ptr CULong] (Ptr NSRect)
 rectArrayForGlyphRange_withinSelectedGlyphRange_inTextContainer_rectCountSelector = mkSelector "rectArrayForGlyphRange:withinSelectedGlyphRange:inTextContainer:rectCount:"
 
 -- | @Selector@ for @substituteFontForFont:@
-substituteFontForFontSelector :: Selector
+substituteFontForFontSelector :: Selector '[Id NSFont] (Id NSFont)
 substituteFontForFontSelector = mkSelector "substituteFontForFont:"
 
 -- | @Selector@ for @insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:@
-insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector :: Selector
+insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector :: Selector '[Const RawId, CULong, CULong, CULong] ()
 insertGlyphs_length_forStartingGlyphAtIndex_characterIndexSelector = mkSelector "insertGlyphs:length:forStartingGlyphAtIndex:characterIndex:"
 
 -- | @Selector@ for @insertGlyph:atGlyphIndex:characterIndex:@
-insertGlyph_atGlyphIndex_characterIndexSelector :: Selector
+insertGlyph_atGlyphIndex_characterIndexSelector :: Selector '[CUInt, CULong, CULong] ()
 insertGlyph_atGlyphIndex_characterIndexSelector = mkSelector "insertGlyph:atGlyphIndex:characterIndex:"
 
 -- | @Selector@ for @replaceGlyphAtIndex:withGlyph:@
-replaceGlyphAtIndex_withGlyphSelector :: Selector
+replaceGlyphAtIndex_withGlyphSelector :: Selector '[CULong, CUInt] ()
 replaceGlyphAtIndex_withGlyphSelector = mkSelector "replaceGlyphAtIndex:withGlyph:"
 
 -- | @Selector@ for @deleteGlyphsInRange:@
-deleteGlyphsInRangeSelector :: Selector
+deleteGlyphsInRangeSelector :: Selector '[NSRange] ()
 deleteGlyphsInRangeSelector = mkSelector "deleteGlyphsInRange:"
 
 -- | @Selector@ for @setCharacterIndex:forGlyphAtIndex:@
-setCharacterIndex_forGlyphAtIndexSelector :: Selector
+setCharacterIndex_forGlyphAtIndexSelector :: Selector '[CULong, CULong] ()
 setCharacterIndex_forGlyphAtIndexSelector = mkSelector "setCharacterIndex:forGlyphAtIndex:"
 
 -- | @Selector@ for @setIntAttribute:value:forGlyphAtIndex:@
-setIntAttribute_value_forGlyphAtIndexSelector :: Selector
+setIntAttribute_value_forGlyphAtIndexSelector :: Selector '[CLong, CLong, CULong] ()
 setIntAttribute_value_forGlyphAtIndexSelector = mkSelector "setIntAttribute:value:forGlyphAtIndex:"
 
 -- | @Selector@ for @invalidateGlyphsOnLayoutInvalidationForGlyphRange:@
-invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector :: Selector
+invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector :: Selector '[NSRange] ()
 invalidateGlyphsOnLayoutInvalidationForGlyphRangeSelector = mkSelector "invalidateGlyphsOnLayoutInvalidationForGlyphRange:"
 
 -- | @Selector@ for @intAttribute:forGlyphAtIndex:@
-intAttribute_forGlyphAtIndexSelector :: Selector
+intAttribute_forGlyphAtIndexSelector :: Selector '[CLong, CULong] CLong
 intAttribute_forGlyphAtIndexSelector = mkSelector "intAttribute:forGlyphAtIndex:"
 
 -- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:@
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector :: Selector '[NSRange, RawId, Ptr CULong, Ptr NSGlyphInscription, Ptr Bool] CULong
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBitsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:"
 
 -- | @Selector@ for @getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:@
-getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector :: Selector
+getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector :: Selector '[NSRange, RawId, Ptr CULong, Ptr NSGlyphInscription, Ptr Bool, Ptr CUChar] CULong
 getGlyphsInRange_glyphs_characterIndexes_glyphInscriptions_elasticBits_bidiLevelsSelector = mkSelector "getGlyphsInRange:glyphs:characterIndexes:glyphInscriptions:elasticBits:bidiLevels:"
 
 -- | @Selector@ for @getGlyphs:range:@
-getGlyphs_rangeSelector :: Selector
+getGlyphs_rangeSelector :: Selector '[RawId, NSRange] CULong
 getGlyphs_rangeSelector = mkSelector "getGlyphs:range:"
 
 -- | @Selector@ for @invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:@
-invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector :: Selector
+invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector :: Selector '[NSRange, Bool, Ptr NSRange] ()
 invalidateLayoutForCharacterRange_isSoft_actualCharacterRangeSelector = mkSelector "invalidateLayoutForCharacterRange:isSoft:actualCharacterRange:"
 
 -- | @Selector@ for @textStorage:edited:range:changeInLength:invalidatedRange:@
-textStorage_edited_range_changeInLength_invalidatedRangeSelector :: Selector
+textStorage_edited_range_changeInLength_invalidatedRangeSelector :: Selector '[Id NSTextStorage, CULong, NSRange, CLong, NSRange] ()
 textStorage_edited_range_changeInLength_invalidatedRangeSelector = mkSelector "textStorage:edited:range:changeInLength:invalidatedRange:"
 
 -- | @Selector@ for @setLocations:startingGlyphIndexes:count:forGlyphRange:@
-setLocations_startingGlyphIndexes_count_forGlyphRangeSelector :: Selector
+setLocations_startingGlyphIndexes_count_forGlyphRangeSelector :: Selector '[Ptr NSPoint, Ptr CULong, CULong, NSRange] ()
 setLocations_startingGlyphIndexes_count_forGlyphRangeSelector = mkSelector "setLocations:startingGlyphIndexes:count:forGlyphRange:"
 
 -- | @Selector@ for @showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:@
-showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector :: Selector
+showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector :: Selector '[Ptr CChar, CULong, NSRange, NSPoint, Id NSFont, Id NSColor, NSSize] ()
 showPackedGlyphs_length_glyphRange_atPoint_font_color_printingAdjustmentSelector = mkSelector "showPackedGlyphs:length:glyphRange:atPoint:font:color:printingAdjustment:"
 
 -- | @Selector@ for @showCGGlyphs:positions:count:font:matrix:attributes:inContext:@
-showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector :: Selector
+showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector :: Selector '[Const RawId, Const (Ptr NSPoint), CULong, Id NSFont, Id NSAffineTransform, Id NSDictionary, Id NSGraphicsContext] ()
 showCGGlyphs_positions_count_font_matrix_attributes_inContextSelector = mkSelector "showCGGlyphs:positions:count:font:matrix:attributes:inContext:"
 
 -- | @Selector@ for @rulerMarkersForTextView:paragraphStyle:ruler:@
-rulerMarkersForTextView_paragraphStyle_rulerSelector :: Selector
+rulerMarkersForTextView_paragraphStyle_rulerSelector :: Selector '[Id NSTextView, Id NSParagraphStyle, Id NSRulerView] (Id NSArray)
 rulerMarkersForTextView_paragraphStyle_rulerSelector = mkSelector "rulerMarkersForTextView:paragraphStyle:ruler:"
 
 -- | @Selector@ for @rulerAccessoryViewForTextView:paragraphStyle:ruler:enabled:@
-rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector :: Selector
+rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector :: Selector '[Id NSTextView, Id NSParagraphStyle, Id NSRulerView, Bool] (Id NSView)
 rulerAccessoryViewForTextView_paragraphStyle_ruler_enabledSelector = mkSelector "rulerAccessoryViewForTextView:paragraphStyle:ruler:enabled:"
 
 -- | @Selector@ for @layoutManagerOwnsFirstResponderInWindow:@
-layoutManagerOwnsFirstResponderInWindowSelector :: Selector
+layoutManagerOwnsFirstResponderInWindowSelector :: Selector '[Id NSWindow] Bool
 layoutManagerOwnsFirstResponderInWindowSelector = mkSelector "layoutManagerOwnsFirstResponderInWindow:"
 
 -- | @Selector@ for @textStorage@
-textStorageSelector :: Selector
+textStorageSelector :: Selector '[] (Id NSTextStorage)
 textStorageSelector = mkSelector "textStorage"
 
 -- | @Selector@ for @setTextStorage:@
-setTextStorageSelector :: Selector
+setTextStorageSelector :: Selector '[Id NSTextStorage] ()
 setTextStorageSelector = mkSelector "setTextStorage:"
 
 -- | @Selector@ for @textContainers@
-textContainersSelector :: Selector
+textContainersSelector :: Selector '[] (Id NSArray)
 textContainersSelector = mkSelector "textContainers"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @showsInvisibleCharacters@
-showsInvisibleCharactersSelector :: Selector
+showsInvisibleCharactersSelector :: Selector '[] Bool
 showsInvisibleCharactersSelector = mkSelector "showsInvisibleCharacters"
 
 -- | @Selector@ for @setShowsInvisibleCharacters:@
-setShowsInvisibleCharactersSelector :: Selector
+setShowsInvisibleCharactersSelector :: Selector '[Bool] ()
 setShowsInvisibleCharactersSelector = mkSelector "setShowsInvisibleCharacters:"
 
 -- | @Selector@ for @showsControlCharacters@
-showsControlCharactersSelector :: Selector
+showsControlCharactersSelector :: Selector '[] Bool
 showsControlCharactersSelector = mkSelector "showsControlCharacters"
 
 -- | @Selector@ for @setShowsControlCharacters:@
-setShowsControlCharactersSelector :: Selector
+setShowsControlCharactersSelector :: Selector '[Bool] ()
 setShowsControlCharactersSelector = mkSelector "setShowsControlCharacters:"
 
 -- | @Selector@ for @usesDefaultHyphenation@
-usesDefaultHyphenationSelector :: Selector
+usesDefaultHyphenationSelector :: Selector '[] Bool
 usesDefaultHyphenationSelector = mkSelector "usesDefaultHyphenation"
 
 -- | @Selector@ for @setUsesDefaultHyphenation:@
-setUsesDefaultHyphenationSelector :: Selector
+setUsesDefaultHyphenationSelector :: Selector '[Bool] ()
 setUsesDefaultHyphenationSelector = mkSelector "setUsesDefaultHyphenation:"
 
 -- | @Selector@ for @usesFontLeading@
-usesFontLeadingSelector :: Selector
+usesFontLeadingSelector :: Selector '[] Bool
 usesFontLeadingSelector = mkSelector "usesFontLeading"
 
 -- | @Selector@ for @setUsesFontLeading:@
-setUsesFontLeadingSelector :: Selector
+setUsesFontLeadingSelector :: Selector '[Bool] ()
 setUsesFontLeadingSelector = mkSelector "setUsesFontLeading:"
 
 -- | @Selector@ for @allowsNonContiguousLayout@
-allowsNonContiguousLayoutSelector :: Selector
+allowsNonContiguousLayoutSelector :: Selector '[] Bool
 allowsNonContiguousLayoutSelector = mkSelector "allowsNonContiguousLayout"
 
 -- | @Selector@ for @setAllowsNonContiguousLayout:@
-setAllowsNonContiguousLayoutSelector :: Selector
+setAllowsNonContiguousLayoutSelector :: Selector '[Bool] ()
 setAllowsNonContiguousLayoutSelector = mkSelector "setAllowsNonContiguousLayout:"
 
 -- | @Selector@ for @hasNonContiguousLayout@
-hasNonContiguousLayoutSelector :: Selector
+hasNonContiguousLayoutSelector :: Selector '[] Bool
 hasNonContiguousLayoutSelector = mkSelector "hasNonContiguousLayout"
 
 -- | @Selector@ for @limitsLayoutForSuspiciousContents@
-limitsLayoutForSuspiciousContentsSelector :: Selector
+limitsLayoutForSuspiciousContentsSelector :: Selector '[] Bool
 limitsLayoutForSuspiciousContentsSelector = mkSelector "limitsLayoutForSuspiciousContents"
 
 -- | @Selector@ for @setLimitsLayoutForSuspiciousContents:@
-setLimitsLayoutForSuspiciousContentsSelector :: Selector
+setLimitsLayoutForSuspiciousContentsSelector :: Selector '[Bool] ()
 setLimitsLayoutForSuspiciousContentsSelector = mkSelector "setLimitsLayoutForSuspiciousContents:"
 
 -- | @Selector@ for @backgroundLayoutEnabled@
-backgroundLayoutEnabledSelector :: Selector
+backgroundLayoutEnabledSelector :: Selector '[] Bool
 backgroundLayoutEnabledSelector = mkSelector "backgroundLayoutEnabled"
 
 -- | @Selector@ for @setBackgroundLayoutEnabled:@
-setBackgroundLayoutEnabledSelector :: Selector
+setBackgroundLayoutEnabledSelector :: Selector '[Bool] ()
 setBackgroundLayoutEnabledSelector = mkSelector "setBackgroundLayoutEnabled:"
 
 -- | @Selector@ for @defaultAttachmentScaling@
-defaultAttachmentScalingSelector :: Selector
+defaultAttachmentScalingSelector :: Selector '[] NSImageScaling
 defaultAttachmentScalingSelector = mkSelector "defaultAttachmentScaling"
 
 -- | @Selector@ for @setDefaultAttachmentScaling:@
-setDefaultAttachmentScalingSelector :: Selector
+setDefaultAttachmentScalingSelector :: Selector '[NSImageScaling] ()
 setDefaultAttachmentScalingSelector = mkSelector "setDefaultAttachmentScaling:"
 
 -- | @Selector@ for @typesetter@
-typesetterSelector :: Selector
+typesetterSelector :: Selector '[] (Id NSTypesetter)
 typesetterSelector = mkSelector "typesetter"
 
 -- | @Selector@ for @setTypesetter:@
-setTypesetterSelector :: Selector
+setTypesetterSelector :: Selector '[Id NSTypesetter] ()
 setTypesetterSelector = mkSelector "setTypesetter:"
 
 -- | @Selector@ for @typesetterBehavior@
-typesetterBehaviorSelector :: Selector
+typesetterBehaviorSelector :: Selector '[] NSTypesetterBehavior
 typesetterBehaviorSelector = mkSelector "typesetterBehavior"
 
 -- | @Selector@ for @setTypesetterBehavior:@
-setTypesetterBehaviorSelector :: Selector
+setTypesetterBehaviorSelector :: Selector '[NSTypesetterBehavior] ()
 setTypesetterBehaviorSelector = mkSelector "setTypesetterBehavior:"
 
 -- | @Selector@ for @numberOfGlyphs@
-numberOfGlyphsSelector :: Selector
+numberOfGlyphsSelector :: Selector '[] CULong
 numberOfGlyphsSelector = mkSelector "numberOfGlyphs"
 
 -- | @Selector@ for @extraLineFragmentRect@
-extraLineFragmentRectSelector :: Selector
+extraLineFragmentRectSelector :: Selector '[] NSRect
 extraLineFragmentRectSelector = mkSelector "extraLineFragmentRect"
 
 -- | @Selector@ for @extraLineFragmentUsedRect@
-extraLineFragmentUsedRectSelector :: Selector
+extraLineFragmentUsedRectSelector :: Selector '[] NSRect
 extraLineFragmentUsedRectSelector = mkSelector "extraLineFragmentUsedRect"
 
 -- | @Selector@ for @extraLineFragmentTextContainer@
-extraLineFragmentTextContainerSelector :: Selector
+extraLineFragmentTextContainerSelector :: Selector '[] (Id NSTextContainer)
 extraLineFragmentTextContainerSelector = mkSelector "extraLineFragmentTextContainer"
 
 -- | @Selector@ for @glyphGenerator@
-glyphGeneratorSelector :: Selector
+glyphGeneratorSelector :: Selector '[] (Id NSGlyphGenerator)
 glyphGeneratorSelector = mkSelector "glyphGenerator"
 
 -- | @Selector@ for @setGlyphGenerator:@
-setGlyphGeneratorSelector :: Selector
+setGlyphGeneratorSelector :: Selector '[Id NSGlyphGenerator] ()
 setGlyphGeneratorSelector = mkSelector "setGlyphGenerator:"
 
 -- | @Selector@ for @usesScreenFonts@
-usesScreenFontsSelector :: Selector
+usesScreenFontsSelector :: Selector '[] Bool
 usesScreenFontsSelector = mkSelector "usesScreenFonts"
 
 -- | @Selector@ for @setUsesScreenFonts:@
-setUsesScreenFontsSelector :: Selector
+setUsesScreenFontsSelector :: Selector '[Bool] ()
 setUsesScreenFontsSelector = mkSelector "setUsesScreenFonts:"
 
 -- | @Selector@ for @hyphenationFactor@
-hyphenationFactorSelector :: Selector
+hyphenationFactorSelector :: Selector '[] CFloat
 hyphenationFactorSelector = mkSelector "hyphenationFactor"
 
 -- | @Selector@ for @setHyphenationFactor:@
-setHyphenationFactorSelector :: Selector
+setHyphenationFactorSelector :: Selector '[CFloat] ()
 setHyphenationFactorSelector = mkSelector "setHyphenationFactor:"
 
 -- | @Selector@ for @firstTextView@
-firstTextViewSelector :: Selector
+firstTextViewSelector :: Selector '[] (Id NSTextView)
 firstTextViewSelector = mkSelector "firstTextView"
 
 -- | @Selector@ for @textViewForBeginningOfSelection@
-textViewForBeginningOfSelectionSelector :: Selector
+textViewForBeginningOfSelectionSelector :: Selector '[] (Id NSTextView)
 textViewForBeginningOfSelectionSelector = mkSelector "textViewForBeginningOfSelection"
 

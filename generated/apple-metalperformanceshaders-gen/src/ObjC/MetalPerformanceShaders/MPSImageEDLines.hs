@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,35 +29,31 @@ module ObjC.MetalPerformanceShaders.MPSImageEDLines
   , setLineErrorThreshold
   , mergeLocalityThreshold
   , setMergeLocalityThreshold
-  , initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector
-  , initWithCoder_deviceSelector
+  , detailRatioSelector
   , encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffsetSelector
   , gaussianSigmaSelector
-  , minLineLengthSelector
-  , setMinLineLengthSelector
-  , maxLinesSelector
-  , setMaxLinesSelector
-  , detailRatioSelector
-  , setDetailRatioSelector
   , gradientThresholdSelector
-  , setGradientThresholdSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector
   , lineErrorThresholdSelector
-  , setLineErrorThresholdSelector
+  , maxLinesSelector
   , mergeLocalityThresholdSelector
+  , minLineLengthSelector
+  , setDetailRatioSelector
+  , setGradientThresholdSelector
+  , setLineErrorThresholdSelector
+  , setMaxLinesSelector
   , setMergeLocalityThresholdSelector
+  , setMinLineLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,8 +90,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:gaussianSigma:minLineLength:maxLines:detailRatio:gradientThreshold:lineErrorThreshold:mergeLocalityThreshold:@
 initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> RawId -> Const CFloat -> Const CUShort -> Const CULong -> Const CUShort -> Const CFloat -> Const CFloat -> Const CFloat -> IO (Id MPSImageEDLines)
-initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThreshold mpsImageEDLines  device gaussianSigma minLineLength maxLines detailRatio gradientThreshold lineErrorThreshold mergeLocalityThreshold =
-    sendMsg mpsImageEDLines (mkSelector "initWithDevice:gaussianSigma:minLineLength:maxLines:detailRatio:gradientThreshold:lineErrorThreshold:mergeLocalityThreshold:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat (unConst gaussianSigma), argCUInt (fromIntegral (unConst minLineLength)), argCULong (unConst maxLines), argCUInt (fromIntegral (unConst detailRatio)), argCFloat (unConst gradientThreshold), argCFloat (unConst lineErrorThreshold), argCFloat (unConst mergeLocalityThreshold)] >>= ownedObject . castPtr
+initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThreshold mpsImageEDLines device gaussianSigma minLineLength maxLines detailRatio gradientThreshold lineErrorThreshold mergeLocalityThreshold =
+  sendOwnedMessage mpsImageEDLines initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector device gaussianSigma minLineLength maxLines detailRatio gradientThreshold lineErrorThreshold mergeLocalityThreshold
 
 -- | NSSecureCoding compatability
 --
@@ -108,9 +105,8 @@ initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshol
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageEDLines mpsImageEDLines, IsNSCoder aDecoder) => mpsImageEDLines -> aDecoder -> RawId -> IO (Id MPSImageEDLines)
-initWithCoder_device mpsImageEDLines  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageEDLines (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageEDLines aDecoder device =
+  sendOwnedMessage mpsImageEDLines initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the filter to a command buffer using a MTLComputeCommandEncoder.
 --
@@ -128,8 +124,8 @@ initWithCoder_device mpsImageEDLines  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceTexture:destinationTexture:endpointBuffer:endpointOffset:@
 encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffset :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> RawId -> RawId -> RawId -> RawId -> CULong -> IO ()
-encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffset mpsImageEDLines  commandBuffer source dest endpointBuffer endpointOffset =
-    sendMsg mpsImageEDLines (mkSelector "encodeToCommandBuffer:sourceTexture:destinationTexture:endpointBuffer:endpointOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr (unRawId dest) :: Ptr ()), argPtr (castPtr (unRawId endpointBuffer) :: Ptr ()), argCULong endpointOffset]
+encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffset mpsImageEDLines commandBuffer source dest endpointBuffer endpointOffset =
+  sendMessage mpsImageEDLines encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffsetSelector commandBuffer source dest endpointBuffer endpointOffset
 
 -- | sigma
 --
@@ -137,8 +133,8 @@ encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOf
 --
 -- ObjC selector: @- gaussianSigma@
 gaussianSigma :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CFloat
-gaussianSigma mpsImageEDLines  =
-    sendMsg mpsImageEDLines (mkSelector "gaussianSigma") retCFloat []
+gaussianSigma mpsImageEDLines =
+  sendMessage mpsImageEDLines gaussianSigmaSelector
 
 -- | minLineLength
 --
@@ -146,8 +142,8 @@ gaussianSigma mpsImageEDLines  =
 --
 -- ObjC selector: @- minLineLength@
 minLineLength :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CUShort
-minLineLength mpsImageEDLines  =
-    fmap fromIntegral $ sendMsg mpsImageEDLines (mkSelector "minLineLength") retCUInt []
+minLineLength mpsImageEDLines =
+  sendMessage mpsImageEDLines minLineLengthSelector
 
 -- | minLineLength
 --
@@ -155,8 +151,8 @@ minLineLength mpsImageEDLines  =
 --
 -- ObjC selector: @- setMinLineLength:@
 setMinLineLength :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CUShort -> IO ()
-setMinLineLength mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setMinLineLength:") retVoid [argCUInt (fromIntegral value)]
+setMinLineLength mpsImageEDLines value =
+  sendMessage mpsImageEDLines setMinLineLengthSelector value
 
 -- | maxLines
 --
@@ -164,8 +160,8 @@ setMinLineLength mpsImageEDLines  value =
 --
 -- ObjC selector: @- maxLines@
 maxLines :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CULong
-maxLines mpsImageEDLines  =
-    sendMsg mpsImageEDLines (mkSelector "maxLines") retCULong []
+maxLines mpsImageEDLines =
+  sendMessage mpsImageEDLines maxLinesSelector
 
 -- | maxLines
 --
@@ -173,8 +169,8 @@ maxLines mpsImageEDLines  =
 --
 -- ObjC selector: @- setMaxLines:@
 setMaxLines :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CULong -> IO ()
-setMaxLines mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setMaxLines:") retVoid [argCULong value]
+setMaxLines mpsImageEDLines value =
+  sendMessage mpsImageEDLines setMaxLinesSelector value
 
 -- | detailRatio
 --
@@ -182,8 +178,8 @@ setMaxLines mpsImageEDLines  value =
 --
 -- ObjC selector: @- detailRatio@
 detailRatio :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CUShort
-detailRatio mpsImageEDLines  =
-    fmap fromIntegral $ sendMsg mpsImageEDLines (mkSelector "detailRatio") retCUInt []
+detailRatio mpsImageEDLines =
+  sendMessage mpsImageEDLines detailRatioSelector
 
 -- | detailRatio
 --
@@ -191,8 +187,8 @@ detailRatio mpsImageEDLines  =
 --
 -- ObjC selector: @- setDetailRatio:@
 setDetailRatio :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CUShort -> IO ()
-setDetailRatio mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setDetailRatio:") retVoid [argCUInt (fromIntegral value)]
+setDetailRatio mpsImageEDLines value =
+  sendMessage mpsImageEDLines setDetailRatioSelector value
 
 -- | gradientThreshold
 --
@@ -200,8 +196,8 @@ setDetailRatio mpsImageEDLines  value =
 --
 -- ObjC selector: @- gradientThreshold@
 gradientThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CFloat
-gradientThreshold mpsImageEDLines  =
-    sendMsg mpsImageEDLines (mkSelector "gradientThreshold") retCFloat []
+gradientThreshold mpsImageEDLines =
+  sendMessage mpsImageEDLines gradientThresholdSelector
 
 -- | gradientThreshold
 --
@@ -209,8 +205,8 @@ gradientThreshold mpsImageEDLines  =
 --
 -- ObjC selector: @- setGradientThreshold:@
 setGradientThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CFloat -> IO ()
-setGradientThreshold mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setGradientThreshold:") retVoid [argCFloat value]
+setGradientThreshold mpsImageEDLines value =
+  sendMessage mpsImageEDLines setGradientThresholdSelector value
 
 -- | lineErrorThreshold
 --
@@ -218,8 +214,8 @@ setGradientThreshold mpsImageEDLines  value =
 --
 -- ObjC selector: @- lineErrorThreshold@
 lineErrorThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CFloat
-lineErrorThreshold mpsImageEDLines  =
-    sendMsg mpsImageEDLines (mkSelector "lineErrorThreshold") retCFloat []
+lineErrorThreshold mpsImageEDLines =
+  sendMessage mpsImageEDLines lineErrorThresholdSelector
 
 -- | lineErrorThreshold
 --
@@ -227,8 +223,8 @@ lineErrorThreshold mpsImageEDLines  =
 --
 -- ObjC selector: @- setLineErrorThreshold:@
 setLineErrorThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CFloat -> IO ()
-setLineErrorThreshold mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setLineErrorThreshold:") retVoid [argCFloat value]
+setLineErrorThreshold mpsImageEDLines value =
+  sendMessage mpsImageEDLines setLineErrorThresholdSelector value
 
 -- | mergeLocalityThreshold
 --
@@ -236,8 +232,8 @@ setLineErrorThreshold mpsImageEDLines  value =
 --
 -- ObjC selector: @- mergeLocalityThreshold@
 mergeLocalityThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> IO CFloat
-mergeLocalityThreshold mpsImageEDLines  =
-    sendMsg mpsImageEDLines (mkSelector "mergeLocalityThreshold") retCFloat []
+mergeLocalityThreshold mpsImageEDLines =
+  sendMessage mpsImageEDLines mergeLocalityThresholdSelector
 
 -- | mergeLocalityThreshold
 --
@@ -245,74 +241,74 @@ mergeLocalityThreshold mpsImageEDLines  =
 --
 -- ObjC selector: @- setMergeLocalityThreshold:@
 setMergeLocalityThreshold :: IsMPSImageEDLines mpsImageEDLines => mpsImageEDLines -> CFloat -> IO ()
-setMergeLocalityThreshold mpsImageEDLines  value =
-    sendMsg mpsImageEDLines (mkSelector "setMergeLocalityThreshold:") retVoid [argCFloat value]
+setMergeLocalityThreshold mpsImageEDLines value =
+  sendMessage mpsImageEDLines setMergeLocalityThresholdSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:gaussianSigma:minLineLength:maxLines:detailRatio:gradientThreshold:lineErrorThreshold:mergeLocalityThreshold:@
-initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector :: Selector
+initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector :: Selector '[RawId, Const CFloat, Const CUShort, Const CULong, Const CUShort, Const CFloat, Const CFloat, Const CFloat] (Id MPSImageEDLines)
 initWithDevice_gaussianSigma_minLineLength_maxLines_detailRatio_gradientThreshold_lineErrorThreshold_mergeLocalityThresholdSelector = mkSelector "initWithDevice:gaussianSigma:minLineLength:maxLines:detailRatio:gradientThreshold:lineErrorThreshold:mergeLocalityThreshold:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageEDLines)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceTexture:destinationTexture:endpointBuffer:endpointOffset:@
-encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffsetSelector :: Selector
+encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffsetSelector :: Selector '[RawId, RawId, RawId, RawId, CULong] ()
 encodeToCommandBuffer_sourceTexture_destinationTexture_endpointBuffer_endpointOffsetSelector = mkSelector "encodeToCommandBuffer:sourceTexture:destinationTexture:endpointBuffer:endpointOffset:"
 
 -- | @Selector@ for @gaussianSigma@
-gaussianSigmaSelector :: Selector
+gaussianSigmaSelector :: Selector '[] CFloat
 gaussianSigmaSelector = mkSelector "gaussianSigma"
 
 -- | @Selector@ for @minLineLength@
-minLineLengthSelector :: Selector
+minLineLengthSelector :: Selector '[] CUShort
 minLineLengthSelector = mkSelector "minLineLength"
 
 -- | @Selector@ for @setMinLineLength:@
-setMinLineLengthSelector :: Selector
+setMinLineLengthSelector :: Selector '[CUShort] ()
 setMinLineLengthSelector = mkSelector "setMinLineLength:"
 
 -- | @Selector@ for @maxLines@
-maxLinesSelector :: Selector
+maxLinesSelector :: Selector '[] CULong
 maxLinesSelector = mkSelector "maxLines"
 
 -- | @Selector@ for @setMaxLines:@
-setMaxLinesSelector :: Selector
+setMaxLinesSelector :: Selector '[CULong] ()
 setMaxLinesSelector = mkSelector "setMaxLines:"
 
 -- | @Selector@ for @detailRatio@
-detailRatioSelector :: Selector
+detailRatioSelector :: Selector '[] CUShort
 detailRatioSelector = mkSelector "detailRatio"
 
 -- | @Selector@ for @setDetailRatio:@
-setDetailRatioSelector :: Selector
+setDetailRatioSelector :: Selector '[CUShort] ()
 setDetailRatioSelector = mkSelector "setDetailRatio:"
 
 -- | @Selector@ for @gradientThreshold@
-gradientThresholdSelector :: Selector
+gradientThresholdSelector :: Selector '[] CFloat
 gradientThresholdSelector = mkSelector "gradientThreshold"
 
 -- | @Selector@ for @setGradientThreshold:@
-setGradientThresholdSelector :: Selector
+setGradientThresholdSelector :: Selector '[CFloat] ()
 setGradientThresholdSelector = mkSelector "setGradientThreshold:"
 
 -- | @Selector@ for @lineErrorThreshold@
-lineErrorThresholdSelector :: Selector
+lineErrorThresholdSelector :: Selector '[] CFloat
 lineErrorThresholdSelector = mkSelector "lineErrorThreshold"
 
 -- | @Selector@ for @setLineErrorThreshold:@
-setLineErrorThresholdSelector :: Selector
+setLineErrorThresholdSelector :: Selector '[CFloat] ()
 setLineErrorThresholdSelector = mkSelector "setLineErrorThreshold:"
 
 -- | @Selector@ for @mergeLocalityThreshold@
-mergeLocalityThresholdSelector :: Selector
+mergeLocalityThresholdSelector :: Selector '[] CFloat
 mergeLocalityThresholdSelector = mkSelector "mergeLocalityThreshold"
 
 -- | @Selector@ for @setMergeLocalityThreshold:@
-setMergeLocalityThresholdSelector :: Selector
+setMergeLocalityThresholdSelector :: Selector '[CFloat] ()
 setMergeLocalityThresholdSelector = mkSelector "setMergeLocalityThreshold:"
 

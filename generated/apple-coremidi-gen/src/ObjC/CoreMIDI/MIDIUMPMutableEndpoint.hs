@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,12 +24,12 @@ module ObjC.CoreMIDI.MIDIUMPMutableEndpoint
   , setMutableFunctionBlocks
   , isEnabled
   , initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallbackSelector
-  , setName_errorSelector
+  , isEnabledSelector
+  , mutableFunctionBlocksSelector
   , registerFunctionBlocks_markAsStatic_errorSelector
   , setEnabled_errorSelector
-  , mutableFunctionBlocksSelector
   , setMutableFunctionBlocksSelector
-  , isEnabledSelector
+  , setName_errorSelector
 
   -- * Enum types
   , MIDIProtocolID(MIDIProtocolID)
@@ -37,15 +38,11 @@ module ObjC.CoreMIDI.MIDIUMPMutableEndpoint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,11 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:deviceInfo:productInstanceID:MIDIProtocol:destinationCallback:@
 initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallback :: (IsMIDIUMPMutableEndpoint midiumpMutableEndpoint, IsNSString name, IsMIDI2DeviceInfo deviceInfo, IsNSString productInstanceID) => midiumpMutableEndpoint -> name -> deviceInfo -> productInstanceID -> MIDIProtocolID -> Ptr () -> IO (Id MIDIUMPMutableEndpoint)
-initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallback midiumpMutableEndpoint  name deviceInfo productInstanceID midiProtocol destinationCallback =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr deviceInfo $ \raw_deviceInfo ->
-      withObjCPtr productInstanceID $ \raw_productInstanceID ->
-          sendMsg midiumpMutableEndpoint (mkSelector "initWithName:deviceInfo:productInstanceID:MIDIProtocol:destinationCallback:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_deviceInfo :: Ptr ()), argPtr (castPtr raw_productInstanceID :: Ptr ()), argCInt (coerce midiProtocol), argPtr (castPtr destinationCallback :: Ptr ())] >>= ownedObject . castPtr
+initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallback midiumpMutableEndpoint name deviceInfo productInstanceID midiProtocol destinationCallback =
+  sendOwnedMessage midiumpMutableEndpoint initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallbackSelector (toNSString name) (toMIDI2DeviceInfo deviceInfo) (toNSString productInstanceID) midiProtocol destinationCallback
 
 -- | setName:error:
 --
@@ -91,10 +85,8 @@ initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallback midiu
 --
 -- ObjC selector: @- setName:error:@
 setName_error :: (IsMIDIUMPMutableEndpoint midiumpMutableEndpoint, IsNSString name, IsNSError error_) => midiumpMutableEndpoint -> name -> error_ -> IO Bool
-setName_error midiumpMutableEndpoint  name error_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableEndpoint (mkSelector "setName:error:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setName_error midiumpMutableEndpoint name error_ =
+  sendMessage midiumpMutableEndpoint setName_errorSelector (toNSString name) (toNSError error_)
 
 -- | registerFunctionBlocks:markAsStatic:error:
 --
@@ -112,10 +104,8 @@ setName_error midiumpMutableEndpoint  name error_ =
 --
 -- ObjC selector: @- registerFunctionBlocks:markAsStatic:error:@
 registerFunctionBlocks_markAsStatic_error :: (IsMIDIUMPMutableEndpoint midiumpMutableEndpoint, IsNSArray functionBlocks, IsNSError error_) => midiumpMutableEndpoint -> functionBlocks -> Bool -> error_ -> IO Bool
-registerFunctionBlocks_markAsStatic_error midiumpMutableEndpoint  functionBlocks markAsStatic error_ =
-  withObjCPtr functionBlocks $ \raw_functionBlocks ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableEndpoint (mkSelector "registerFunctionBlocks:markAsStatic:error:") retCULong [argPtr (castPtr raw_functionBlocks :: Ptr ()), argCULong (if markAsStatic then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+registerFunctionBlocks_markAsStatic_error midiumpMutableEndpoint functionBlocks markAsStatic error_ =
+  sendMessage midiumpMutableEndpoint registerFunctionBlocks_markAsStatic_errorSelector (toNSArray functionBlocks) markAsStatic (toNSError error_)
 
 -- | setEnabled:error:
 --
@@ -131,9 +121,8 @@ registerFunctionBlocks_markAsStatic_error midiumpMutableEndpoint  functionBlocks
 --
 -- ObjC selector: @- setEnabled:error:@
 setEnabled_error :: (IsMIDIUMPMutableEndpoint midiumpMutableEndpoint, IsNSError error_) => midiumpMutableEndpoint -> Bool -> error_ -> IO Bool
-setEnabled_error midiumpMutableEndpoint  isEnabled error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableEndpoint (mkSelector "setEnabled:error:") retCULong [argCULong (if isEnabled then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+setEnabled_error midiumpMutableEndpoint isEnabled error_ =
+  sendMessage midiumpMutableEndpoint setEnabled_errorSelector isEnabled (toNSError error_)
 
 -- | mutableFunctionBlocks
 --
@@ -141,8 +130,8 @@ setEnabled_error midiumpMutableEndpoint  isEnabled error_ =
 --
 -- ObjC selector: @- mutableFunctionBlocks@
 mutableFunctionBlocks :: IsMIDIUMPMutableEndpoint midiumpMutableEndpoint => midiumpMutableEndpoint -> IO (Id NSArray)
-mutableFunctionBlocks midiumpMutableEndpoint  =
-    sendMsg midiumpMutableEndpoint (mkSelector "mutableFunctionBlocks") (retPtr retVoid) [] >>= retainedObject . castPtr
+mutableFunctionBlocks midiumpMutableEndpoint =
+  sendMessage midiumpMutableEndpoint mutableFunctionBlocksSelector
 
 -- | mutableFunctionBlocks
 --
@@ -150,9 +139,8 @@ mutableFunctionBlocks midiumpMutableEndpoint  =
 --
 -- ObjC selector: @- setMutableFunctionBlocks:@
 setMutableFunctionBlocks :: (IsMIDIUMPMutableEndpoint midiumpMutableEndpoint, IsNSArray value) => midiumpMutableEndpoint -> value -> IO ()
-setMutableFunctionBlocks midiumpMutableEndpoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg midiumpMutableEndpoint (mkSelector "setMutableFunctionBlocks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMutableFunctionBlocks midiumpMutableEndpoint value =
+  sendMessage midiumpMutableEndpoint setMutableFunctionBlocksSelector (toNSArray value)
 
 -- | isEnabled
 --
@@ -160,38 +148,38 @@ setMutableFunctionBlocks midiumpMutableEndpoint  value =
 --
 -- ObjC selector: @- isEnabled@
 isEnabled :: IsMIDIUMPMutableEndpoint midiumpMutableEndpoint => midiumpMutableEndpoint -> IO Bool
-isEnabled midiumpMutableEndpoint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableEndpoint (mkSelector "isEnabled") retCULong []
+isEnabled midiumpMutableEndpoint =
+  sendMessage midiumpMutableEndpoint isEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:deviceInfo:productInstanceID:MIDIProtocol:destinationCallback:@
-initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallbackSelector :: Selector
+initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallbackSelector :: Selector '[Id NSString, Id MIDI2DeviceInfo, Id NSString, MIDIProtocolID, Ptr ()] (Id MIDIUMPMutableEndpoint)
 initWithName_deviceInfo_productInstanceID_MIDIProtocol_destinationCallbackSelector = mkSelector "initWithName:deviceInfo:productInstanceID:MIDIProtocol:destinationCallback:"
 
 -- | @Selector@ for @setName:error:@
-setName_errorSelector :: Selector
+setName_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setName_errorSelector = mkSelector "setName:error:"
 
 -- | @Selector@ for @registerFunctionBlocks:markAsStatic:error:@
-registerFunctionBlocks_markAsStatic_errorSelector :: Selector
+registerFunctionBlocks_markAsStatic_errorSelector :: Selector '[Id NSArray, Bool, Id NSError] Bool
 registerFunctionBlocks_markAsStatic_errorSelector = mkSelector "registerFunctionBlocks:markAsStatic:error:"
 
 -- | @Selector@ for @setEnabled:error:@
-setEnabled_errorSelector :: Selector
+setEnabled_errorSelector :: Selector '[Bool, Id NSError] Bool
 setEnabled_errorSelector = mkSelector "setEnabled:error:"
 
 -- | @Selector@ for @mutableFunctionBlocks@
-mutableFunctionBlocksSelector :: Selector
+mutableFunctionBlocksSelector :: Selector '[] (Id NSArray)
 mutableFunctionBlocksSelector = mkSelector "mutableFunctionBlocks"
 
 -- | @Selector@ for @setMutableFunctionBlocks:@
-setMutableFunctionBlocksSelector :: Selector
+setMutableFunctionBlocksSelector :: Selector '[Id NSArray] ()
 setMutableFunctionBlocksSelector = mkSelector "setMutableFunctionBlocks:"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 

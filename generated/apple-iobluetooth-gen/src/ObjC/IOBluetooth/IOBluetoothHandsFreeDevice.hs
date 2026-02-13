@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,41 +33,37 @@ module ObjC.IOBluetooth.IOBluetoothHandsFreeDevice
   , sendSMS_message
   , sendATCommand
   , sendATCommand_timeout_selector_target
-  , initWithDevice_delegateSelector
-  , dialNumberSelector
-  , memoryDialSelector
-  , redialSelector
-  , endCallSelector
-  , acceptCallSelector
   , acceptCallOnPhoneSelector
-  , sendDTMFSelector
-  , subscriberNumberSelector
-  , currentCallListSelector
-  , releaseHeldCallsSelector
-  , releaseActiveCallsSelector
-  , releaseCallSelector
-  , holdCallSelector
-  , placeAllOthersOnHoldSelector
+  , acceptCallSelector
   , addHeldCallSelector
   , callTransferSelector
-  , transferAudioToComputerSelector
-  , transferAudioToPhoneSelector
-  , sendSMS_messageSelector
+  , currentCallListSelector
+  , dialNumberSelector
+  , endCallSelector
+  , holdCallSelector
+  , initWithDevice_delegateSelector
+  , memoryDialSelector
+  , placeAllOthersOnHoldSelector
+  , redialSelector
+  , releaseActiveCallsSelector
+  , releaseCallSelector
+  , releaseHeldCallsSelector
   , sendATCommandSelector
   , sendATCommand_timeout_selector_targetSelector
+  , sendDTMFSelector
+  , sendSMS_messageSelector
+  , subscriberNumberSelector
+  , transferAudioToComputerSelector
+  , transferAudioToPhoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,9 +84,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:delegate:@
 initWithDevice_delegate :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsIOBluetoothDevice device) => ioBluetoothHandsFreeDevice -> device -> RawId -> IO (Id IOBluetoothHandsFreeDevice)
-initWithDevice_delegate ioBluetoothHandsFreeDevice  device delegate =
-  withObjCPtr device $ \raw_device ->
-      sendMsg ioBluetoothHandsFreeDevice (mkSelector "initWithDevice:delegate:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_delegate ioBluetoothHandsFreeDevice device delegate =
+  sendOwnedMessage ioBluetoothHandsFreeDevice initWithDevice_delegateSelector (toIOBluetoothDevice device) delegate
 
 -- | dialNumber:aNumber
 --
@@ -101,9 +97,8 @@ initWithDevice_delegate ioBluetoothHandsFreeDevice  device delegate =
 --
 -- ObjC selector: @- dialNumber:@
 dialNumber :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString aNumber) => ioBluetoothHandsFreeDevice -> aNumber -> IO ()
-dialNumber ioBluetoothHandsFreeDevice  aNumber =
-  withObjCPtr aNumber $ \raw_aNumber ->
-      sendMsg ioBluetoothHandsFreeDevice (mkSelector "dialNumber:") retVoid [argPtr (castPtr raw_aNumber :: Ptr ())]
+dialNumber ioBluetoothHandsFreeDevice aNumber =
+  sendMessage ioBluetoothHandsFreeDevice dialNumberSelector (toNSString aNumber)
 
 -- | memoryDial:memoryLocation
 --
@@ -115,8 +110,8 @@ dialNumber ioBluetoothHandsFreeDevice  aNumber =
 --
 -- ObjC selector: @- memoryDial:@
 memoryDial :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> CInt -> IO ()
-memoryDial ioBluetoothHandsFreeDevice  memoryLocation =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "memoryDial:") retVoid [argCInt memoryLocation]
+memoryDial ioBluetoothHandsFreeDevice memoryLocation =
+  sendMessage ioBluetoothHandsFreeDevice memoryDialSelector memoryLocation
 
 -- | redial
 --
@@ -126,8 +121,8 @@ memoryDial ioBluetoothHandsFreeDevice  memoryLocation =
 --
 -- ObjC selector: @- redial@
 redial :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-redial ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "redial") retVoid []
+redial ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice redialSelector
 
 -- | endCall
 --
@@ -137,8 +132,8 @@ redial ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- endCall@
 endCall :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-endCall ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "endCall") retVoid []
+endCall ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice endCallSelector
 
 -- | acceptCall
 --
@@ -148,8 +143,8 @@ endCall ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- acceptCall@
 acceptCall :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-acceptCall ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "acceptCall") retVoid []
+acceptCall ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice acceptCallSelector
 
 -- | acceptCallOnPhone
 --
@@ -159,8 +154,8 @@ acceptCall ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- acceptCallOnPhone@
 acceptCallOnPhone :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-acceptCallOnPhone ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "acceptCallOnPhone") retVoid []
+acceptCallOnPhone ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice acceptCallOnPhoneSelector
 
 -- | sendDTMF:character
 --
@@ -172,9 +167,8 @@ acceptCallOnPhone ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- sendDTMF:@
 sendDTMF :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString character) => ioBluetoothHandsFreeDevice -> character -> IO ()
-sendDTMF ioBluetoothHandsFreeDevice  character =
-  withObjCPtr character $ \raw_character ->
-      sendMsg ioBluetoothHandsFreeDevice (mkSelector "sendDTMF:") retVoid [argPtr (castPtr raw_character :: Ptr ())]
+sendDTMF ioBluetoothHandsFreeDevice character =
+  sendMessage ioBluetoothHandsFreeDevice sendDTMFSelector (toNSString character)
 
 -- | subscriberNumber
 --
@@ -184,8 +178,8 @@ sendDTMF ioBluetoothHandsFreeDevice  character =
 --
 -- ObjC selector: @- subscriberNumber@
 subscriberNumber :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-subscriberNumber ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "subscriberNumber") retVoid []
+subscriberNumber ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice subscriberNumberSelector
 
 -- | currentCallList
 --
@@ -195,8 +189,8 @@ subscriberNumber ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- currentCallList@
 currentCallList :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-currentCallList ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "currentCallList") retVoid []
+currentCallList ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice currentCallListSelector
 
 -- | releaseHeldCalls
 --
@@ -206,8 +200,8 @@ currentCallList ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- releaseHeldCalls@
 releaseHeldCalls :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-releaseHeldCalls ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "releaseHeldCalls") retVoid []
+releaseHeldCalls ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice releaseHeldCallsSelector
 
 -- | releaseActiveCalls
 --
@@ -217,8 +211,8 @@ releaseHeldCalls ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- releaseActiveCalls@
 releaseActiveCalls :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-releaseActiveCalls ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "releaseActiveCalls") retVoid []
+releaseActiveCalls ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice releaseActiveCallsSelector
 
 -- | releaseCall:index
 --
@@ -230,8 +224,8 @@ releaseActiveCalls ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- releaseCall:@
 releaseCall :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> CInt -> IO ()
-releaseCall ioBluetoothHandsFreeDevice  index =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "releaseCall:") retVoid [argCInt index]
+releaseCall ioBluetoothHandsFreeDevice index =
+  sendMessage ioBluetoothHandsFreeDevice releaseCallSelector index
 
 -- | holdCall
 --
@@ -241,8 +235,8 @@ releaseCall ioBluetoothHandsFreeDevice  index =
 --
 -- ObjC selector: @- holdCall@
 holdCall :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-holdCall ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "holdCall") retVoid []
+holdCall ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice holdCallSelector
 
 -- | placeAllOthersOnHold:index
 --
@@ -254,8 +248,8 @@ holdCall ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- placeAllOthersOnHold:@
 placeAllOthersOnHold :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> CInt -> IO ()
-placeAllOthersOnHold ioBluetoothHandsFreeDevice  index =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "placeAllOthersOnHold:") retVoid [argCInt index]
+placeAllOthersOnHold ioBluetoothHandsFreeDevice index =
+  sendMessage ioBluetoothHandsFreeDevice placeAllOthersOnHoldSelector index
 
 -- | addHeldCall
 --
@@ -265,8 +259,8 @@ placeAllOthersOnHold ioBluetoothHandsFreeDevice  index =
 --
 -- ObjC selector: @- addHeldCall@
 addHeldCall :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-addHeldCall ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "addHeldCall") retVoid []
+addHeldCall ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice addHeldCallSelector
 
 -- | callTransfer
 --
@@ -276,8 +270,8 @@ addHeldCall ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- callTransfer@
 callTransfer :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-callTransfer ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "callTransfer") retVoid []
+callTransfer ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice callTransferSelector
 
 -- | transferAudioToComputer
 --
@@ -287,8 +281,8 @@ callTransfer ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- transferAudioToComputer@
 transferAudioToComputer :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-transferAudioToComputer ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "transferAudioToComputer") retVoid []
+transferAudioToComputer ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice transferAudioToComputerSelector
 
 -- | transferAudioToPhone
 --
@@ -298,8 +292,8 @@ transferAudioToComputer ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- transferAudioToPhone@
 transferAudioToPhone :: IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice => ioBluetoothHandsFreeDevice -> IO ()
-transferAudioToPhone ioBluetoothHandsFreeDevice  =
-    sendMsg ioBluetoothHandsFreeDevice (mkSelector "transferAudioToPhone") retVoid []
+transferAudioToPhone ioBluetoothHandsFreeDevice =
+  sendMessage ioBluetoothHandsFreeDevice transferAudioToPhoneSelector
 
 -- | sendSMS:aNumber:aMessage
 --
@@ -309,10 +303,8 @@ transferAudioToPhone ioBluetoothHandsFreeDevice  =
 --
 -- ObjC selector: @- sendSMS:message:@
 sendSMS_message :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString aNumber, IsNSString aMessage) => ioBluetoothHandsFreeDevice -> aNumber -> aMessage -> IO ()
-sendSMS_message ioBluetoothHandsFreeDevice  aNumber aMessage =
-  withObjCPtr aNumber $ \raw_aNumber ->
-    withObjCPtr aMessage $ \raw_aMessage ->
-        sendMsg ioBluetoothHandsFreeDevice (mkSelector "sendSMS:message:") retVoid [argPtr (castPtr raw_aNumber :: Ptr ()), argPtr (castPtr raw_aMessage :: Ptr ())]
+sendSMS_message ioBluetoothHandsFreeDevice aNumber aMessage =
+  sendMessage ioBluetoothHandsFreeDevice sendSMS_messageSelector (toNSString aNumber) (toNSString aMessage)
 
 -- | sendATCommand:atCommand
 --
@@ -324,9 +316,8 @@ sendSMS_message ioBluetoothHandsFreeDevice  aNumber aMessage =
 --
 -- ObjC selector: @- sendATCommand:@
 sendATCommand :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString atCommand) => ioBluetoothHandsFreeDevice -> atCommand -> IO ()
-sendATCommand ioBluetoothHandsFreeDevice  atCommand =
-  withObjCPtr atCommand $ \raw_atCommand ->
-      sendMsg ioBluetoothHandsFreeDevice (mkSelector "sendATCommand:") retVoid [argPtr (castPtr raw_atCommand :: Ptr ())]
+sendATCommand ioBluetoothHandsFreeDevice atCommand =
+  sendMessage ioBluetoothHandsFreeDevice sendATCommandSelector (toNSString atCommand)
 
 -- | sendATCommand:atCommand:timeout:selector:target
 --
@@ -337,100 +328,99 @@ sendATCommand ioBluetoothHandsFreeDevice  atCommand =
 -- @atCommand@ — AT command to send
 --
 -- ObjC selector: @- sendATCommand:timeout:selector:target:@
-sendATCommand_timeout_selector_target :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString atCommand) => ioBluetoothHandsFreeDevice -> atCommand -> CFloat -> Selector -> RawId -> IO ()
-sendATCommand_timeout_selector_target ioBluetoothHandsFreeDevice  atCommand timeout selector target =
-  withObjCPtr atCommand $ \raw_atCommand ->
-      sendMsg ioBluetoothHandsFreeDevice (mkSelector "sendATCommand:timeout:selector:target:") retVoid [argPtr (castPtr raw_atCommand :: Ptr ()), argCFloat timeout, argPtr (unSelector selector), argPtr (castPtr (unRawId target) :: Ptr ())]
+sendATCommand_timeout_selector_target :: (IsIOBluetoothHandsFreeDevice ioBluetoothHandsFreeDevice, IsNSString atCommand) => ioBluetoothHandsFreeDevice -> atCommand -> CFloat -> Sel -> RawId -> IO ()
+sendATCommand_timeout_selector_target ioBluetoothHandsFreeDevice atCommand timeout selector target =
+  sendMessage ioBluetoothHandsFreeDevice sendATCommand_timeout_selector_targetSelector (toNSString atCommand) timeout selector target
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:delegate:@
-initWithDevice_delegateSelector :: Selector
+initWithDevice_delegateSelector :: Selector '[Id IOBluetoothDevice, RawId] (Id IOBluetoothHandsFreeDevice)
 initWithDevice_delegateSelector = mkSelector "initWithDevice:delegate:"
 
 -- | @Selector@ for @dialNumber:@
-dialNumberSelector :: Selector
+dialNumberSelector :: Selector '[Id NSString] ()
 dialNumberSelector = mkSelector "dialNumber:"
 
 -- | @Selector@ for @memoryDial:@
-memoryDialSelector :: Selector
+memoryDialSelector :: Selector '[CInt] ()
 memoryDialSelector = mkSelector "memoryDial:"
 
 -- | @Selector@ for @redial@
-redialSelector :: Selector
+redialSelector :: Selector '[] ()
 redialSelector = mkSelector "redial"
 
 -- | @Selector@ for @endCall@
-endCallSelector :: Selector
+endCallSelector :: Selector '[] ()
 endCallSelector = mkSelector "endCall"
 
 -- | @Selector@ for @acceptCall@
-acceptCallSelector :: Selector
+acceptCallSelector :: Selector '[] ()
 acceptCallSelector = mkSelector "acceptCall"
 
 -- | @Selector@ for @acceptCallOnPhone@
-acceptCallOnPhoneSelector :: Selector
+acceptCallOnPhoneSelector :: Selector '[] ()
 acceptCallOnPhoneSelector = mkSelector "acceptCallOnPhone"
 
 -- | @Selector@ for @sendDTMF:@
-sendDTMFSelector :: Selector
+sendDTMFSelector :: Selector '[Id NSString] ()
 sendDTMFSelector = mkSelector "sendDTMF:"
 
 -- | @Selector@ for @subscriberNumber@
-subscriberNumberSelector :: Selector
+subscriberNumberSelector :: Selector '[] ()
 subscriberNumberSelector = mkSelector "subscriberNumber"
 
 -- | @Selector@ for @currentCallList@
-currentCallListSelector :: Selector
+currentCallListSelector :: Selector '[] ()
 currentCallListSelector = mkSelector "currentCallList"
 
 -- | @Selector@ for @releaseHeldCalls@
-releaseHeldCallsSelector :: Selector
+releaseHeldCallsSelector :: Selector '[] ()
 releaseHeldCallsSelector = mkSelector "releaseHeldCalls"
 
 -- | @Selector@ for @releaseActiveCalls@
-releaseActiveCallsSelector :: Selector
+releaseActiveCallsSelector :: Selector '[] ()
 releaseActiveCallsSelector = mkSelector "releaseActiveCalls"
 
 -- | @Selector@ for @releaseCall:@
-releaseCallSelector :: Selector
+releaseCallSelector :: Selector '[CInt] ()
 releaseCallSelector = mkSelector "releaseCall:"
 
 -- | @Selector@ for @holdCall@
-holdCallSelector :: Selector
+holdCallSelector :: Selector '[] ()
 holdCallSelector = mkSelector "holdCall"
 
 -- | @Selector@ for @placeAllOthersOnHold:@
-placeAllOthersOnHoldSelector :: Selector
+placeAllOthersOnHoldSelector :: Selector '[CInt] ()
 placeAllOthersOnHoldSelector = mkSelector "placeAllOthersOnHold:"
 
 -- | @Selector@ for @addHeldCall@
-addHeldCallSelector :: Selector
+addHeldCallSelector :: Selector '[] ()
 addHeldCallSelector = mkSelector "addHeldCall"
 
 -- | @Selector@ for @callTransfer@
-callTransferSelector :: Selector
+callTransferSelector :: Selector '[] ()
 callTransferSelector = mkSelector "callTransfer"
 
 -- | @Selector@ for @transferAudioToComputer@
-transferAudioToComputerSelector :: Selector
+transferAudioToComputerSelector :: Selector '[] ()
 transferAudioToComputerSelector = mkSelector "transferAudioToComputer"
 
 -- | @Selector@ for @transferAudioToPhone@
-transferAudioToPhoneSelector :: Selector
+transferAudioToPhoneSelector :: Selector '[] ()
 transferAudioToPhoneSelector = mkSelector "transferAudioToPhone"
 
 -- | @Selector@ for @sendSMS:message:@
-sendSMS_messageSelector :: Selector
+sendSMS_messageSelector :: Selector '[Id NSString, Id NSString] ()
 sendSMS_messageSelector = mkSelector "sendSMS:message:"
 
 -- | @Selector@ for @sendATCommand:@
-sendATCommandSelector :: Selector
+sendATCommandSelector :: Selector '[Id NSString] ()
 sendATCommandSelector = mkSelector "sendATCommand:"
 
 -- | @Selector@ for @sendATCommand:timeout:selector:target:@
-sendATCommand_timeout_selector_targetSelector :: Selector
+sendATCommand_timeout_selector_targetSelector :: Selector '[Id NSString, CFloat, Sel, RawId] ()
 sendATCommand_timeout_selector_targetSelector = mkSelector "sendATCommand:timeout:selector:target:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data NSEdgeInsets = NSEdgeInsets
   { nsEdgeInsetsTop :: !CDouble
@@ -43,6 +45,16 @@ argNSEdgeInsets = mkStorableArg nsEdgeInsetsStructType
 retNSEdgeInsets :: RetType NSEdgeInsets
 retNSEdgeInsets = mkStorableRetType nsEdgeInsetsStructType
 
+instance ObjCArgument NSEdgeInsets where
+  withObjCArg x k = k (argNSEdgeInsets x)
+
+instance ObjCReturn NSEdgeInsets where
+  type RawReturn NSEdgeInsets = NSEdgeInsets
+  objcRetType = retNSEdgeInsets
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NSPoint = NSPoint
   { nsPointX :: !CDouble
   , nsPointY :: !CDouble
@@ -66,6 +78,16 @@ argNSPoint = mkStorableArg nsPointStructType
 
 retNSPoint :: RetType NSPoint
 retNSPoint = mkStorableRetType nsPointStructType
+
+instance ObjCArgument NSPoint where
+  withObjCArg x k = k (argNSPoint x)
+
+instance ObjCReturn NSPoint where
+  type RawReturn NSPoint = NSPoint
+  objcRetType = retNSPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NSRange = NSRange
   { nsRangeLocation :: !CULong
@@ -91,6 +113,16 @@ argNSRange = mkStorableArg nsRangeStructType
 retNSRange :: RetType NSRange
 retNSRange = mkStorableRetType nsRangeStructType
 
+instance ObjCArgument NSRange where
+  withObjCArg x k = k (argNSRange x)
+
+instance ObjCReturn NSRange where
+  type RawReturn NSRange = NSRange
+  objcRetType = retNSRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NSSize = NSSize
   { nsSizeWidth :: !CDouble
   , nsSizeHeight :: !CDouble
@@ -115,6 +147,16 @@ argNSSize = mkStorableArg nsSizeStructType
 retNSSize :: RetType NSSize
 retNSSize = mkStorableRetType nsSizeStructType
 
+instance ObjCArgument NSSize where
+  withObjCArg x k = k (argNSSize x)
+
+instance ObjCReturn NSSize where
+  type RawReturn NSSize = NSSize
+  objcRetType = retNSSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data NSRect = NSRect
   { nsRectOrigin :: !NSPoint
   , nsRectSize :: !NSSize
@@ -138,3 +180,13 @@ argNSRect = mkStorableArg nsRectStructType
 
 retNSRect :: RetType NSRect
 retNSRect = mkStorableRetType nsRectStructType
+
+instance ObjCArgument NSRect where
+  withObjCArg x k = k (argNSRect x)
+
+instance ObjCReturn NSRect where
+  type RawReturn NSRect = NSRect
+  objcRetType = retNSRect
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

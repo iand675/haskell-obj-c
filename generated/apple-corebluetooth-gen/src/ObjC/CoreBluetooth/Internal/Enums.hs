@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreBluetooth.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CBATTError@
 newtype CBATTError = CBATTError CLong
@@ -70,6 +73,16 @@ pattern CBATTErrorUnsupportedGroupType = CBATTError 16
 pattern CBATTErrorInsufficientResources :: CBATTError
 pattern CBATTErrorInsufficientResources = CBATTError 17
 
+instance ObjCArgument CBATTError where
+  withObjCArg (CBATTError x) k = k (argCLong x)
+
+instance ObjCReturn CBATTError where
+  type RawReturn CBATTError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBATTError x)
+  fromOwned x = pure (CBATTError x)
+
 -- | CBAttributePermissions
 --
 -- Read, write, and encryption permissions for an ATT attribute. Can be combined.
@@ -104,6 +117,16 @@ pattern CBAttributePermissionsReadEncryptionRequired = CBAttributePermissions 4
 pattern CBAttributePermissionsWriteEncryptionRequired :: CBAttributePermissions
 pattern CBAttributePermissionsWriteEncryptionRequired = CBAttributePermissions 8
 
+instance ObjCArgument CBAttributePermissions where
+  withObjCArg (CBAttributePermissions x) k = k (argCULong x)
+
+instance ObjCReturn CBAttributePermissions where
+  type RawReturn CBAttributePermissions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBAttributePermissions x)
+  fromOwned x = pure (CBAttributePermissions x)
+
 -- | CBCentralManagerFeature
 --
 -- The set of device specific features.
@@ -122,6 +145,16 @@ instance Monoid CBCentralManagerFeature where
 
 pattern CBCentralManagerFeatureExtendedScanAndConnect :: CBCentralManagerFeature
 pattern CBCentralManagerFeatureExtendedScanAndConnect = CBCentralManagerFeature 1
+
+instance ObjCArgument CBCentralManagerFeature where
+  withObjCArg (CBCentralManagerFeature x) k = k (argCULong x)
+
+instance ObjCReturn CBCentralManagerFeature where
+  type RawReturn CBCentralManagerFeature = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBCentralManagerFeature x)
+  fromOwned x = pure (CBCentralManagerFeature x)
 
 -- | CBCentralManagerState
 --
@@ -160,6 +193,16 @@ pattern CBCentralManagerStatePoweredOff = CBCentralManagerState 4
 
 pattern CBCentralManagerStatePoweredOn :: CBCentralManagerState
 pattern CBCentralManagerStatePoweredOn = CBCentralManagerState 5
+
+instance ObjCArgument CBCentralManagerState where
+  withObjCArg (CBCentralManagerState x) k = k (argCLong x)
+
+instance ObjCReturn CBCentralManagerState where
+  type RawReturn CBCentralManagerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBCentralManagerState x)
+  fromOwned x = pure (CBCentralManagerState x)
 
 -- | CBCharacteristicProperties
 --
@@ -229,6 +272,16 @@ pattern CBCharacteristicPropertyNotifyEncryptionRequired = CBCharacteristicPrope
 pattern CBCharacteristicPropertyIndicateEncryptionRequired :: CBCharacteristicProperties
 pattern CBCharacteristicPropertyIndicateEncryptionRequired = CBCharacteristicProperties 512
 
+instance ObjCArgument CBCharacteristicProperties where
+  withObjCArg (CBCharacteristicProperties x) k = k (argCULong x)
+
+instance ObjCReturn CBCharacteristicProperties where
+  type RawReturn CBCharacteristicProperties = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBCharacteristicProperties x)
+  fromOwned x = pure (CBCharacteristicProperties x)
+
 -- | CBCharacteristicWriteType
 --
 -- Specifies which type of write is to be performed on a CBCharacteristic.
@@ -242,6 +295,16 @@ pattern CBCharacteristicWriteWithResponse = CBCharacteristicWriteType 0
 
 pattern CBCharacteristicWriteWithoutResponse :: CBCharacteristicWriteType
 pattern CBCharacteristicWriteWithoutResponse = CBCharacteristicWriteType 1
+
+instance ObjCArgument CBCharacteristicWriteType where
+  withObjCArg (CBCharacteristicWriteType x) k = k (argCLong x)
+
+instance ObjCReturn CBCharacteristicWriteType where
+  type RawReturn CBCharacteristicWriteType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBCharacteristicWriteType x)
+  fromOwned x = pure (CBCharacteristicWriteType x)
 
 -- | CBConnectionEvent
 --
@@ -260,6 +323,16 @@ pattern CBConnectionEventPeerDisconnected = CBConnectionEvent 0
 
 pattern CBConnectionEventPeerConnected :: CBConnectionEvent
 pattern CBConnectionEventPeerConnected = CBConnectionEvent 1
+
+instance ObjCArgument CBConnectionEvent where
+  withObjCArg (CBConnectionEvent x) k = k (argCLong x)
+
+instance ObjCReturn CBConnectionEvent where
+  type RawReturn CBConnectionEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBConnectionEvent x)
+  fromOwned x = pure (CBConnectionEvent x)
 
 -- | CBError
 --
@@ -329,6 +402,16 @@ pattern CBErrorLeGattExceededBackgroundNotificationLimit = CBError 17
 pattern CBErrorLeGattNearBackgroundNotificationLimit :: CBError
 pattern CBErrorLeGattNearBackgroundNotificationLimit = CBError 18
 
+instance ObjCArgument CBError where
+  withObjCArg (CBError x) k = k (argCLong x)
+
+instance ObjCReturn CBError where
+  type RawReturn CBError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBError x)
+  fromOwned x = pure (CBError x)
+
 -- | CBManagerAuthorization
 --
 -- Represents the current authorization state of a CBManager.
@@ -358,6 +441,16 @@ pattern CBManagerAuthorizationDenied = CBManagerAuthorization 2
 
 pattern CBManagerAuthorizationAllowedAlways :: CBManagerAuthorization
 pattern CBManagerAuthorizationAllowedAlways = CBManagerAuthorization 3
+
+instance ObjCArgument CBManagerAuthorization where
+  withObjCArg (CBManagerAuthorization x) k = k (argCLong x)
+
+instance ObjCReturn CBManagerAuthorization where
+  type RawReturn CBManagerAuthorization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBManagerAuthorization x)
+  fromOwned x = pure (CBManagerAuthorization x)
 
 -- | CBManagerState
 --
@@ -399,6 +492,16 @@ pattern CBManagerStatePoweredOff = CBManagerState 4
 pattern CBManagerStatePoweredOn :: CBManagerState
 pattern CBManagerStatePoweredOn = CBManagerState 5
 
+instance ObjCArgument CBManagerState where
+  withObjCArg (CBManagerState x) k = k (argCLong x)
+
+instance ObjCReturn CBManagerState where
+  type RawReturn CBManagerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBManagerState x)
+  fromOwned x = pure (CBManagerState x)
+
 -- | CBPeripheralManagerAuthorizationStatus
 --
 -- Represents the current state of a CBPeripheralManager.
@@ -427,6 +530,16 @@ pattern CBPeripheralManagerAuthorizationStatusDenied = CBPeripheralManagerAuthor
 pattern CBPeripheralManagerAuthorizationStatusAuthorized :: CBPeripheralManagerAuthorizationStatus
 pattern CBPeripheralManagerAuthorizationStatusAuthorized = CBPeripheralManagerAuthorizationStatus 3
 
+instance ObjCArgument CBPeripheralManagerAuthorizationStatus where
+  withObjCArg (CBPeripheralManagerAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn CBPeripheralManagerAuthorizationStatus where
+  type RawReturn CBPeripheralManagerAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBPeripheralManagerAuthorizationStatus x)
+  fromOwned x = pure (CBPeripheralManagerAuthorizationStatus x)
+
 -- | CBPeripheralManagerConnectionLatency
 --
 -- The latency of a peripheral-central connection controls how frequently messages can be exchanged.
@@ -449,6 +562,16 @@ pattern CBPeripheralManagerConnectionLatencyMedium = CBPeripheralManagerConnecti
 
 pattern CBPeripheralManagerConnectionLatencyHigh :: CBPeripheralManagerConnectionLatency
 pattern CBPeripheralManagerConnectionLatencyHigh = CBPeripheralManagerConnectionLatency 2
+
+instance ObjCArgument CBPeripheralManagerConnectionLatency where
+  withObjCArg (CBPeripheralManagerConnectionLatency x) k = k (argCLong x)
+
+instance ObjCReturn CBPeripheralManagerConnectionLatency where
+  type RawReturn CBPeripheralManagerConnectionLatency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBPeripheralManagerConnectionLatency x)
+  fromOwned x = pure (CBPeripheralManagerConnectionLatency x)
 
 -- | CBPeripheralManagerState
 --
@@ -488,6 +611,16 @@ pattern CBPeripheralManagerStatePoweredOff = CBPeripheralManagerState 4
 pattern CBPeripheralManagerStatePoweredOn :: CBPeripheralManagerState
 pattern CBPeripheralManagerStatePoweredOn = CBPeripheralManagerState 5
 
+instance ObjCArgument CBPeripheralManagerState where
+  withObjCArg (CBPeripheralManagerState x) k = k (argCLong x)
+
+instance ObjCReturn CBPeripheralManagerState where
+  type RawReturn CBPeripheralManagerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBPeripheralManagerState x)
+  fromOwned x = pure (CBPeripheralManagerState x)
+
 -- | CBPeripheralState
 --
 -- Represents the current connection state of a CBPeripheral.
@@ -507,3 +640,13 @@ pattern CBPeripheralStateConnected = CBPeripheralState 2
 
 pattern CBPeripheralStateDisconnecting :: CBPeripheralState
 pattern CBPeripheralStateDisconnecting = CBPeripheralState 3
+
+instance ObjCArgument CBPeripheralState where
+  withObjCArg (CBPeripheralState x) k = k (argCLong x)
+
+instance ObjCReturn CBPeripheralState where
+  type RawReturn CBPeripheralState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CBPeripheralState x)
+  fromOwned x = pure (CBPeripheralState x)

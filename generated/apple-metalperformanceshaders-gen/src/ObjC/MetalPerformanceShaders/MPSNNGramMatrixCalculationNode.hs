@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.MetalPerformanceShaders.MPSNNGramMatrixCalculationNode
   , alpha
   , propertyCallBack
   , setPropertyCallBack
-  , nodeWithSourceSelector
-  , initWithSourceSelector
-  , nodeWithSource_alphaSelector
-  , initWithSource_alphaSelector
   , alphaSelector
+  , initWithSourceSelector
+  , initWithSource_alphaSelector
+  , nodeWithSourceSelector
+  , nodeWithSource_alphaSelector
   , propertyCallBackSelector
   , setPropertyCallBackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ nodeWithSource :: IsMPSNNImageNode sourceNode => sourceNode -> IO (Id MPSNNGramM
 nodeWithSource sourceNode =
   do
     cls' <- getRequiredClass "MPSNNGramMatrixCalculationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | Init a node representing a MPSNNGramMatrixCalculationNode kernel.
 --
@@ -63,9 +59,8 @@ nodeWithSource sourceNode =
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode, IsMPSNNImageNode sourceNode) => mpsnnGramMatrixCalculationNode -> sourceNode -> IO (Id MPSNNGramMatrixCalculationNode)
-initWithSource mpsnnGramMatrixCalculationNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpsnnGramMatrixCalculationNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpsnnGramMatrixCalculationNode sourceNode =
+  sendOwnedMessage mpsnnGramMatrixCalculationNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | Init a node representing a autoreleased MPSNNGramMatrixCalculationNode kernel.
 --
@@ -80,8 +75,7 @@ nodeWithSource_alpha :: IsMPSNNImageNode sourceNode => sourceNode -> CFloat -> I
 nodeWithSource_alpha sourceNode alpha =
   do
     cls' <- getRequiredClass "MPSNNGramMatrixCalculationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:alpha:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat alpha] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_alphaSelector (toMPSNNImageNode sourceNode) alpha
 
 -- | Init a node representing a MPSNNGramMatrixCalculationNode kernel.
 --
@@ -93,9 +87,8 @@ nodeWithSource_alpha sourceNode alpha =
 --
 -- ObjC selector: @- initWithSource:alpha:@
 initWithSource_alpha :: (IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode, IsMPSNNImageNode sourceNode) => mpsnnGramMatrixCalculationNode -> sourceNode -> CFloat -> IO (Id MPSNNGramMatrixCalculationNode)
-initWithSource_alpha mpsnnGramMatrixCalculationNode  sourceNode alpha =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpsnnGramMatrixCalculationNode (mkSelector "initWithSource:alpha:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat alpha] >>= ownedObject . castPtr
+initWithSource_alpha mpsnnGramMatrixCalculationNode sourceNode alpha =
+  sendOwnedMessage mpsnnGramMatrixCalculationNode initWithSource_alphaSelector (toMPSNNImageNode sourceNode) alpha
 
 -- | alpha
 --
@@ -103,8 +96,8 @@ initWithSource_alpha mpsnnGramMatrixCalculationNode  sourceNode alpha =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsnnGramMatrixCalculationNode -> IO CFloat
-alpha mpsnnGramMatrixCalculationNode  =
-    sendMsg mpsnnGramMatrixCalculationNode (mkSelector "alpha") retCFloat []
+alpha mpsnnGramMatrixCalculationNode =
+  sendMessage mpsnnGramMatrixCalculationNode alphaSelector
 
 -- | propertyCallBack
 --
@@ -112,8 +105,8 @@ alpha mpsnnGramMatrixCalculationNode  =
 --
 -- ObjC selector: @- propertyCallBack@
 propertyCallBack :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsnnGramMatrixCalculationNode -> IO RawId
-propertyCallBack mpsnnGramMatrixCalculationNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnGramMatrixCalculationNode (mkSelector "propertyCallBack") (retPtr retVoid) []
+propertyCallBack mpsnnGramMatrixCalculationNode =
+  sendMessage mpsnnGramMatrixCalculationNode propertyCallBackSelector
 
 -- | propertyCallBack
 --
@@ -121,38 +114,38 @@ propertyCallBack mpsnnGramMatrixCalculationNode  =
 --
 -- ObjC selector: @- setPropertyCallBack:@
 setPropertyCallBack :: IsMPSNNGramMatrixCalculationNode mpsnnGramMatrixCalculationNode => mpsnnGramMatrixCalculationNode -> RawId -> IO ()
-setPropertyCallBack mpsnnGramMatrixCalculationNode  value =
-    sendMsg mpsnnGramMatrixCalculationNode (mkSelector "setPropertyCallBack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPropertyCallBack mpsnnGramMatrixCalculationNode value =
+  sendMessage mpsnnGramMatrixCalculationNode setPropertyCallBackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:@
-nodeWithSourceSelector :: Selector
+nodeWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNGramMatrixCalculationNode)
 nodeWithSourceSelector = mkSelector "nodeWithSource:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNGramMatrixCalculationNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @nodeWithSource:alpha:@
-nodeWithSource_alphaSelector :: Selector
+nodeWithSource_alphaSelector :: Selector '[Id MPSNNImageNode, CFloat] (Id MPSNNGramMatrixCalculationNode)
 nodeWithSource_alphaSelector = mkSelector "nodeWithSource:alpha:"
 
 -- | @Selector@ for @initWithSource:alpha:@
-initWithSource_alphaSelector :: Selector
+initWithSource_alphaSelector :: Selector '[Id MPSNNImageNode, CFloat] (Id MPSNNGramMatrixCalculationNode)
 initWithSource_alphaSelector = mkSelector "initWithSource:alpha:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @propertyCallBack@
-propertyCallBackSelector :: Selector
+propertyCallBackSelector :: Selector '[] RawId
 propertyCallBackSelector = mkSelector "propertyCallBack"
 
 -- | @Selector@ for @setPropertyCallBack:@
-setPropertyCallBackSelector :: Selector
+setPropertyCallBackSelector :: Selector '[RawId] ()
 setPropertyCallBackSelector = mkSelector "setPropertyCallBack:"
 

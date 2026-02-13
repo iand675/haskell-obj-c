@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.MetricKit.MXCPUExceptionDiagnostic
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- callStackTree@
 callStackTree :: IsMXCPUExceptionDiagnostic mxcpuExceptionDiagnostic => mxcpuExceptionDiagnostic -> IO (Id MXCallStackTree)
-callStackTree mxcpuExceptionDiagnostic  =
-    sendMsg mxcpuExceptionDiagnostic (mkSelector "callStackTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+callStackTree mxcpuExceptionDiagnostic =
+  sendMessage mxcpuExceptionDiagnostic callStackTreeSelector
 
 -- | totalCPUTime
 --
@@ -56,8 +53,8 @@ callStackTree mxcpuExceptionDiagnostic  =
 --
 -- ObjC selector: @- totalCPUTime@
 totalCPUTime :: IsMXCPUExceptionDiagnostic mxcpuExceptionDiagnostic => mxcpuExceptionDiagnostic -> IO (Id NSMeasurement)
-totalCPUTime mxcpuExceptionDiagnostic  =
-    sendMsg mxcpuExceptionDiagnostic (mkSelector "totalCPUTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalCPUTime mxcpuExceptionDiagnostic =
+  sendMessage mxcpuExceptionDiagnostic totalCPUTimeSelector
 
 -- | totalSampledTime
 --
@@ -67,22 +64,22 @@ totalCPUTime mxcpuExceptionDiagnostic  =
 --
 -- ObjC selector: @- totalSampledTime@
 totalSampledTime :: IsMXCPUExceptionDiagnostic mxcpuExceptionDiagnostic => mxcpuExceptionDiagnostic -> IO (Id NSMeasurement)
-totalSampledTime mxcpuExceptionDiagnostic  =
-    sendMsg mxcpuExceptionDiagnostic (mkSelector "totalSampledTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalSampledTime mxcpuExceptionDiagnostic =
+  sendMessage mxcpuExceptionDiagnostic totalSampledTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @callStackTree@
-callStackTreeSelector :: Selector
+callStackTreeSelector :: Selector '[] (Id MXCallStackTree)
 callStackTreeSelector = mkSelector "callStackTree"
 
 -- | @Selector@ for @totalCPUTime@
-totalCPUTimeSelector :: Selector
+totalCPUTimeSelector :: Selector '[] (Id NSMeasurement)
 totalCPUTimeSelector = mkSelector "totalCPUTime"
 
 -- | @Selector@ for @totalSampledTime@
-totalSampledTimeSelector :: Selector
+totalSampledTimeSelector :: Selector '[] (Id NSMeasurement)
 totalSampledTimeSelector = mkSelector "totalSampledTime"
 

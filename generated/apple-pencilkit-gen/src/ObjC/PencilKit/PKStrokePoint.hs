@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.PencilKit.PKStrokePoint
   , altitude
   , secondaryScale
   , threshold
-  , initSelector
-  , timeOffsetSelector
-  , opacitySelector
+  , altitudeSelector
   , azimuthSelector
   , forceSelector
-  , altitudeSelector
+  , initSelector
+  , opacitySelector
   , secondaryScaleSelector
   , thresholdSelector
+  , timeOffsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,43 +42,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO (Id PKStrokePoint)
-init_ pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkStrokePoint =
+  sendOwnedMessage pkStrokePoint initSelector
 
 -- | Time offset since the start of the stroke path in seconds.
 --
 -- ObjC selector: @- timeOffset@
 timeOffset :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-timeOffset pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "timeOffset") retCDouble []
+timeOffset pkStrokePoint =
+  sendMessage pkStrokePoint timeOffsetSelector
 
 -- | Opacity of the point 0-2.
 --
 -- ObjC selector: @- opacity@
 opacity :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-opacity pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "opacity") retCDouble []
+opacity pkStrokePoint =
+  sendMessage pkStrokePoint opacitySelector
 
 -- | Azimuth of the point in radians, 0.0-2π radians
 --
 -- ObjC selector: @- azimuth@
 azimuth :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-azimuth pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "azimuth") retCDouble []
+azimuth pkStrokePoint =
+  sendMessage pkStrokePoint azimuthSelector
 
 -- | Force used to create this point.
 --
 -- ObjC selector: @- force@
 force :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-force pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "force") retCDouble []
+force pkStrokePoint =
+  sendMessage pkStrokePoint forceSelector
 
 -- | Altitude used to create this point in radians, 0.0-π/2 radians
 --
 -- ObjC selector: @- altitude@
 altitude :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-altitude pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "altitude") retCDouble []
+altitude pkStrokePoint =
+  sendMessage pkStrokePoint altitudeSelector
 
 -- | The scaling of the point for secondary effects.
 --
@@ -89,8 +86,8 @@ altitude pkStrokePoint  =
 --
 -- ObjC selector: @- secondaryScale@
 secondaryScale :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-secondaryScale pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "secondaryScale") retCDouble []
+secondaryScale pkStrokePoint =
+  sendMessage pkStrokePoint secondaryScaleSelector
 
 -- | The threshold for clipping the stroke rendering.
 --
@@ -98,42 +95,42 @@ secondaryScale pkStrokePoint  =
 --
 -- ObjC selector: @- threshold@
 threshold :: IsPKStrokePoint pkStrokePoint => pkStrokePoint -> IO CDouble
-threshold pkStrokePoint  =
-    sendMsg pkStrokePoint (mkSelector "threshold") retCDouble []
+threshold pkStrokePoint =
+  sendMessage pkStrokePoint thresholdSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKStrokePoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @timeOffset@
-timeOffsetSelector :: Selector
+timeOffsetSelector :: Selector '[] CDouble
 timeOffsetSelector = mkSelector "timeOffset"
 
 -- | @Selector@ for @opacity@
-opacitySelector :: Selector
+opacitySelector :: Selector '[] CDouble
 opacitySelector = mkSelector "opacity"
 
 -- | @Selector@ for @azimuth@
-azimuthSelector :: Selector
+azimuthSelector :: Selector '[] CDouble
 azimuthSelector = mkSelector "azimuth"
 
 -- | @Selector@ for @force@
-forceSelector :: Selector
+forceSelector :: Selector '[] CDouble
 forceSelector = mkSelector "force"
 
 -- | @Selector@ for @altitude@
-altitudeSelector :: Selector
+altitudeSelector :: Selector '[] CDouble
 altitudeSelector = mkSelector "altitude"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CDouble
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @threshold@
-thresholdSelector :: Selector
+thresholdSelector :: Selector '[] CDouble
 thresholdSelector = mkSelector "threshold"
 

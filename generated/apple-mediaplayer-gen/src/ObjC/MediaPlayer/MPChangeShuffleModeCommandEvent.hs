@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.MediaPlayer.MPChangeShuffleModeCommandEvent
   , IsMPChangeShuffleModeCommandEvent(..)
   , shuffleType
   , preservesShuffleMode
-  , shuffleTypeSelector
   , preservesShuffleModeSelector
+  , shuffleTypeSelector
 
   -- * Enum types
   , MPShuffleType(MPShuffleType)
@@ -20,15 +21,11 @@ module ObjC.MediaPlayer.MPChangeShuffleModeCommandEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,25 +37,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- shuffleType@
 shuffleType :: IsMPChangeShuffleModeCommandEvent mpChangeShuffleModeCommandEvent => mpChangeShuffleModeCommandEvent -> IO MPShuffleType
-shuffleType mpChangeShuffleModeCommandEvent  =
-    fmap (coerce :: CLong -> MPShuffleType) $ sendMsg mpChangeShuffleModeCommandEvent (mkSelector "shuffleType") retCLong []
+shuffleType mpChangeShuffleModeCommandEvent =
+  sendMessage mpChangeShuffleModeCommandEvent shuffleTypeSelector
 
 -- | Whether or not the selection should be preserved between playback sessions
 --
 -- ObjC selector: @- preservesShuffleMode@
 preservesShuffleMode :: IsMPChangeShuffleModeCommandEvent mpChangeShuffleModeCommandEvent => mpChangeShuffleModeCommandEvent -> IO Bool
-preservesShuffleMode mpChangeShuffleModeCommandEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpChangeShuffleModeCommandEvent (mkSelector "preservesShuffleMode") retCULong []
+preservesShuffleMode mpChangeShuffleModeCommandEvent =
+  sendMessage mpChangeShuffleModeCommandEvent preservesShuffleModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shuffleType@
-shuffleTypeSelector :: Selector
+shuffleTypeSelector :: Selector '[] MPShuffleType
 shuffleTypeSelector = mkSelector "shuffleType"
 
 -- | @Selector@ for @preservesShuffleMode@
-preservesShuffleModeSelector :: Selector
+preservesShuffleModeSelector :: Selector '[] Bool
 preservesShuffleModeSelector = mkSelector "preservesShuffleMode"
 

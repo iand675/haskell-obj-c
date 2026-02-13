@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Contacts.CNChangeHistoryDeleteContactEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,14 +28,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- contactIdentifier@
 contactIdentifier :: IsCNChangeHistoryDeleteContactEvent cnChangeHistoryDeleteContactEvent => cnChangeHistoryDeleteContactEvent -> IO (Id NSString)
-contactIdentifier cnChangeHistoryDeleteContactEvent  =
-    sendMsg cnChangeHistoryDeleteContactEvent (mkSelector "contactIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactIdentifier cnChangeHistoryDeleteContactEvent =
+  sendMessage cnChangeHistoryDeleteContactEvent contactIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contactIdentifier@
-contactIdentifierSelector :: Selector
+contactIdentifierSelector :: Selector '[] (Id NSString)
 contactIdentifierSelector = mkSelector "contactIdentifier"
 

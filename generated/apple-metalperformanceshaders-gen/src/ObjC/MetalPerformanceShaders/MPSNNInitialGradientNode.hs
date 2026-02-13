@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.MetalPerformanceShaders.MPSNNInitialGradientNode
   , nodeWithSource
   , initWithSource
   , gradientFilterWithSources
-  , nodeWithSourceSelector
-  , initWithSourceSelector
   , gradientFilterWithSourcesSelector
+  , initWithSourceSelector
+  , nodeWithSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,7 @@ nodeWithSource :: IsMPSNNImageNode source => source -> IO (Id MPSNNInitialGradie
 nodeWithSource source =
   do
     cls' <- getRequiredClass "MPSNNInitialGradientNode"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceSelector (toMPSNNImageNode source)
 
 -- | Init a node representing a MPSNNInitialGradient MPSNNPad kernel
 --
@@ -59,31 +55,29 @@ nodeWithSource source =
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsMPSNNInitialGradientNode mpsnnInitialGradientNode, IsMPSNNImageNode source) => mpsnnInitialGradientNode -> source -> IO (Id MPSNNInitialGradientNode)
-initWithSource mpsnnInitialGradientNode  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg mpsnnInitialGradientNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpsnnInitialGradientNode source =
+  sendOwnedMessage mpsnnInitialGradientNode initWithSourceSelector (toMPSNNImageNode source)
 
 -- | The initial gradient filter is a gradient filter and we don't provide support for gradients of gradients currently.
 --
 -- ObjC selector: @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSNNInitialGradientNode mpsnnInitialGradientNode, IsNSArray gradientImages) => mpsnnInitialGradientNode -> gradientImages -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSources mpsnnInitialGradientNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnInitialGradientNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpsnnInitialGradientNode gradientImages =
+  sendMessage mpsnnInitialGradientNode gradientFilterWithSourcesSelector (toNSArray gradientImages)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:@
-nodeWithSourceSelector :: Selector
+nodeWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNInitialGradientNode)
 nodeWithSourceSelector = mkSelector "nodeWithSource:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNInitialGradientNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AppKit.NSLayoutYAxisAnchor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- anchorWithOffsetToAnchor:@
 anchorWithOffsetToAnchor :: (IsNSLayoutYAxisAnchor nsLayoutYAxisAnchor, IsNSLayoutYAxisAnchor otherAnchor) => nsLayoutYAxisAnchor -> otherAnchor -> IO (Id NSLayoutDimension)
-anchorWithOffsetToAnchor nsLayoutYAxisAnchor  otherAnchor =
-  withObjCPtr otherAnchor $ \raw_otherAnchor ->
-      sendMsg nsLayoutYAxisAnchor (mkSelector "anchorWithOffsetToAnchor:") (retPtr retVoid) [argPtr (castPtr raw_otherAnchor :: Ptr ())] >>= retainedObject . castPtr
+anchorWithOffsetToAnchor nsLayoutYAxisAnchor otherAnchor =
+  sendMessage nsLayoutYAxisAnchor anchorWithOffsetToAnchorSelector (toNSLayoutYAxisAnchor otherAnchor)
 
 -- | @- constraintEqualToSystemSpacingBelowAnchor:multiplier:@
 constraintEqualToSystemSpacingBelowAnchor_multiplier :: (IsNSLayoutYAxisAnchor nsLayoutYAxisAnchor, IsNSLayoutYAxisAnchor anchor) => nsLayoutYAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutYAxisAnchor (mkSelector "constraintEqualToSystemSpacingBelowAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor anchor multiplier =
+  sendMessage nsLayoutYAxisAnchor constraintEqualToSystemSpacingBelowAnchor_multiplierSelector (toNSLayoutYAxisAnchor anchor) multiplier
 
 -- | @- constraintGreaterThanOrEqualToSystemSpacingBelowAnchor:multiplier:@
 constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplier :: (IsNSLayoutYAxisAnchor nsLayoutYAxisAnchor, IsNSLayoutYAxisAnchor anchor) => nsLayoutYAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutYAxisAnchor (mkSelector "constraintGreaterThanOrEqualToSystemSpacingBelowAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor anchor multiplier =
+  sendMessage nsLayoutYAxisAnchor constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector (toNSLayoutYAxisAnchor anchor) multiplier
 
 -- | @- constraintLessThanOrEqualToSystemSpacingBelowAnchor:multiplier:@
 constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplier :: (IsNSLayoutYAxisAnchor nsLayoutYAxisAnchor, IsNSLayoutYAxisAnchor anchor) => nsLayoutYAxisAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor  anchor multiplier =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutYAxisAnchor (mkSelector "constraintLessThanOrEqualToSystemSpacingBelowAnchor:multiplier:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble multiplier] >>= retainedObject . castPtr
+constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplier nsLayoutYAxisAnchor anchor multiplier =
+  sendMessage nsLayoutYAxisAnchor constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector (toNSLayoutYAxisAnchor anchor) multiplier
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @anchorWithOffsetToAnchor:@
-anchorWithOffsetToAnchorSelector :: Selector
+anchorWithOffsetToAnchorSelector :: Selector '[Id NSLayoutYAxisAnchor] (Id NSLayoutDimension)
 anchorWithOffsetToAnchorSelector = mkSelector "anchorWithOffsetToAnchor:"
 
 -- | @Selector@ for @constraintEqualToSystemSpacingBelowAnchor:multiplier:@
-constraintEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector
+constraintEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector '[Id NSLayoutYAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintEqualToSystemSpacingBelowAnchor_multiplierSelector = mkSelector "constraintEqualToSystemSpacingBelowAnchor:multiplier:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToSystemSpacingBelowAnchor:multiplier:@
-constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector
+constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector '[Id NSLayoutYAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector = mkSelector "constraintGreaterThanOrEqualToSystemSpacingBelowAnchor:multiplier:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToSystemSpacingBelowAnchor:multiplier:@
-constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector
+constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector :: Selector '[Id NSLayoutYAxisAnchor, CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToSystemSpacingBelowAnchor_multiplierSelector = mkSelector "constraintLessThanOrEqualToSystemSpacingBelowAnchor:multiplier:"
 

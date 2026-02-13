@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.CloudKit.CKShareParticipant
   , participantID
   , isApprovedRequester
   , dateAddedToShare
+  , acceptanceStatusSelector
+  , dateAddedToShareSelector
   , initSelector
+  , isApprovedRequesterSelector
   , newSelector
   , oneTimeURLParticipantSelector
-  , userIdentitySelector
-  , roleSelector
-  , setRoleSelector
-  , typeSelector
-  , setTypeSelector
-  , acceptanceStatusSelector
-  , permissionSelector
-  , setPermissionSelector
   , participantIDSelector
-  , isApprovedRequesterSelector
-  , dateAddedToShareSelector
+  , permissionSelector
+  , roleSelector
+  , setPermissionSelector
+  , setRoleSelector
+  , setTypeSelector
+  , typeSelector
+  , userIdentitySelector
 
   -- * Enum types
   , CKShareParticipantAcceptanceStatus(CKShareParticipantAcceptanceStatus)
@@ -61,15 +62,11 @@ module ObjC.CloudKit.CKShareParticipant
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,15 +78,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO (Id CKShareParticipant)
-init_ ckShareParticipant  =
-    sendMsg ckShareParticipant (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShareParticipant =
+  sendOwnedMessage ckShareParticipant initSelector
 
 -- | @+ new@
 new :: IO (Id CKShareParticipant)
 new  =
   do
     cls' <- getRequiredClass "CKShareParticipant"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Generate a unique URL for inviting a participant without knowing their handle
 --
@@ -102,73 +99,73 @@ oneTimeURLParticipant :: IO (Id CKShareParticipant)
 oneTimeURLParticipant  =
   do
     cls' <- getRequiredClass "CKShareParticipant"
-    sendClassMsg cls' (mkSelector "oneTimeURLParticipant") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' oneTimeURLParticipantSelector
 
 -- | @- userIdentity@
 userIdentity :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO (Id CKUserIdentity)
-userIdentity ckShareParticipant  =
-    sendMsg ckShareParticipant (mkSelector "userIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIdentity ckShareParticipant =
+  sendMessage ckShareParticipant userIdentitySelector
 
 -- | The default participant role is @CKShareParticipantRolePrivateUser.@
 --
 -- ObjC selector: @- role@
 role_ :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO CKShareParticipantRole
-role_ ckShareParticipant  =
-    fmap (coerce :: CLong -> CKShareParticipantRole) $ sendMsg ckShareParticipant (mkSelector "role") retCLong []
+role_ ckShareParticipant =
+  sendMessage ckShareParticipant roleSelector
 
 -- | The default participant role is @CKShareParticipantRolePrivateUser.@
 --
 -- ObjC selector: @- setRole:@
 setRole :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> CKShareParticipantRole -> IO ()
-setRole ckShareParticipant  value =
-    sendMsg ckShareParticipant (mkSelector "setRole:") retVoid [argCLong (coerce value)]
+setRole ckShareParticipant value =
+  sendMessage ckShareParticipant setRoleSelector value
 
 -- | The default participant type is ``CloudKit/CKShareParticipantType/CKShareParticipantTypePrivateUser``.
 --
 -- ObjC selector: @- type@
 type_ :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO CKShareParticipantType
-type_ ckShareParticipant  =
-    fmap (coerce :: CLong -> CKShareParticipantType) $ sendMsg ckShareParticipant (mkSelector "type") retCLong []
+type_ ckShareParticipant =
+  sendMessage ckShareParticipant typeSelector
 
 -- | The default participant type is ``CloudKit/CKShareParticipantType/CKShareParticipantTypePrivateUser``.
 --
 -- ObjC selector: @- setType:@
 setType :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> CKShareParticipantType -> IO ()
-setType ckShareParticipant  value =
-    sendMsg ckShareParticipant (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType ckShareParticipant value =
+  sendMessage ckShareParticipant setTypeSelector value
 
 -- | @- acceptanceStatus@
 acceptanceStatus :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO CKShareParticipantAcceptanceStatus
-acceptanceStatus ckShareParticipant  =
-    fmap (coerce :: CLong -> CKShareParticipantAcceptanceStatus) $ sendMsg ckShareParticipant (mkSelector "acceptanceStatus") retCLong []
+acceptanceStatus ckShareParticipant =
+  sendMessage ckShareParticipant acceptanceStatusSelector
 
 -- | The default permission for a new participant is @CKShareParticipantPermissionReadOnly.@
 --
 -- ObjC selector: @- permission@
 permission :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO CKShareParticipantPermission
-permission ckShareParticipant  =
-    fmap (coerce :: CLong -> CKShareParticipantPermission) $ sendMsg ckShareParticipant (mkSelector "permission") retCLong []
+permission ckShareParticipant =
+  sendMessage ckShareParticipant permissionSelector
 
 -- | The default permission for a new participant is @CKShareParticipantPermissionReadOnly.@
 --
 -- ObjC selector: @- setPermission:@
 setPermission :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> CKShareParticipantPermission -> IO ()
-setPermission ckShareParticipant  value =
-    sendMsg ckShareParticipant (mkSelector "setPermission:") retVoid [argCLong (coerce value)]
+setPermission ckShareParticipant value =
+  sendMessage ckShareParticipant setPermissionSelector value
 
 -- | A unique identifier for this participant.
 --
 -- ObjC selector: @- participantID@
 participantID :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO (Id NSString)
-participantID ckShareParticipant  =
-    sendMsg ckShareParticipant (mkSelector "participantID") (retPtr retVoid) [] >>= retainedObject . castPtr
+participantID ckShareParticipant =
+  sendMessage ckShareParticipant participantIDSelector
 
 -- | Indicates whether the participant was originally a requester who was approved to join the share.
 --
 -- ObjC selector: @- isApprovedRequester@
 isApprovedRequester :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO Bool
-isApprovedRequester ckShareParticipant  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckShareParticipant (mkSelector "isApprovedRequester") retCULong []
+isApprovedRequester ckShareParticipant =
+  sendMessage ckShareParticipant isApprovedRequesterSelector
 
 -- | The date and time when the participant was added to the share.
 --
@@ -176,66 +173,66 @@ isApprovedRequester ckShareParticipant  =
 --
 -- ObjC selector: @- dateAddedToShare@
 dateAddedToShare :: IsCKShareParticipant ckShareParticipant => ckShareParticipant -> IO (Id NSDate)
-dateAddedToShare ckShareParticipant  =
-    sendMsg ckShareParticipant (mkSelector "dateAddedToShare") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateAddedToShare ckShareParticipant =
+  sendMessage ckShareParticipant dateAddedToShareSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShareParticipant)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKShareParticipant)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @oneTimeURLParticipant@
-oneTimeURLParticipantSelector :: Selector
+oneTimeURLParticipantSelector :: Selector '[] (Id CKShareParticipant)
 oneTimeURLParticipantSelector = mkSelector "oneTimeURLParticipant"
 
 -- | @Selector@ for @userIdentity@
-userIdentitySelector :: Selector
+userIdentitySelector :: Selector '[] (Id CKUserIdentity)
 userIdentitySelector = mkSelector "userIdentity"
 
 -- | @Selector@ for @role@
-roleSelector :: Selector
+roleSelector :: Selector '[] CKShareParticipantRole
 roleSelector = mkSelector "role"
 
 -- | @Selector@ for @setRole:@
-setRoleSelector :: Selector
+setRoleSelector :: Selector '[CKShareParticipantRole] ()
 setRoleSelector = mkSelector "setRole:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CKShareParticipantType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[CKShareParticipantType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @acceptanceStatus@
-acceptanceStatusSelector :: Selector
+acceptanceStatusSelector :: Selector '[] CKShareParticipantAcceptanceStatus
 acceptanceStatusSelector = mkSelector "acceptanceStatus"
 
 -- | @Selector@ for @permission@
-permissionSelector :: Selector
+permissionSelector :: Selector '[] CKShareParticipantPermission
 permissionSelector = mkSelector "permission"
 
 -- | @Selector@ for @setPermission:@
-setPermissionSelector :: Selector
+setPermissionSelector :: Selector '[CKShareParticipantPermission] ()
 setPermissionSelector = mkSelector "setPermission:"
 
 -- | @Selector@ for @participantID@
-participantIDSelector :: Selector
+participantIDSelector :: Selector '[] (Id NSString)
 participantIDSelector = mkSelector "participantID"
 
 -- | @Selector@ for @isApprovedRequester@
-isApprovedRequesterSelector :: Selector
+isApprovedRequesterSelector :: Selector '[] Bool
 isApprovedRequesterSelector = mkSelector "isApprovedRequester"
 
 -- | @Selector@ for @dateAddedToShare@
-dateAddedToShareSelector :: Selector
+dateAddedToShareSelector :: Selector '[] (Id NSDate)
 dateAddedToShareSelector = mkSelector "dateAddedToShare"
 

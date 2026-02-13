@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.OpenDirectory.ODQuery
   , setDelegate
   , operationQueue
   , setOperationQueue
-  , queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector
+  , delegateSelector
   , initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector
+  , operationQueueSelector
+  , queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector
+  , removeFromRunLoop_forModeSelector
   , resultsAllowingPartial_errorSelector
   , scheduleInRunLoop_forModeSelector
-  , removeFromRunLoop_forModeSelector
-  , synchronizeSelector
-  , delegateSelector
   , setDelegateSelector
-  , operationQueueSelector
   , setOperationQueueSelector
+  , synchronizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,10 +59,7 @@ queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_ma
 queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_error inNode inRecordTypeOrList inAttribute inMatchType inQueryValueOrList inReturnAttributeOrList inMaximumResults outError =
   do
     cls' <- getRequiredClass "ODQuery"
-    withObjCPtr inNode $ \raw_inNode ->
-      withObjCPtr inAttribute $ \raw_inAttribute ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "queryWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:") (retPtr retVoid) [argPtr (castPtr raw_inNode :: Ptr ()), argPtr (castPtr (unRawId inRecordTypeOrList) :: Ptr ()), argPtr (castPtr raw_inAttribute :: Ptr ()), argCUInt inMatchType, argPtr (castPtr (unRawId inQueryValueOrList) :: Ptr ()), argPtr (castPtr (unRawId inReturnAttributeOrList) :: Ptr ()), argCLong inMaximumResults, argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector (toODNode inNode) inRecordTypeOrList (toNSString inAttribute) inMatchType inQueryValueOrList inReturnAttributeOrList inMaximumResults (toNSError outError)
 
 -- | initWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:
 --
@@ -75,11 +69,8 @@ queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_ma
 --
 -- ObjC selector: @- initWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:@
 initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_error :: (IsODQuery odQuery, IsODNode inNode, IsNSString inAttribute, IsNSError outError) => odQuery -> inNode -> RawId -> inAttribute -> CUInt -> RawId -> RawId -> CLong -> outError -> IO (Id ODQuery)
-initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_error odQuery  inNode inRecordTypeOrList inAttribute inMatchType inQueryValueOrList inReturnAttributeOrList inMaximumResults outError =
-  withObjCPtr inNode $ \raw_inNode ->
-    withObjCPtr inAttribute $ \raw_inAttribute ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg odQuery (mkSelector "initWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:") (retPtr retVoid) [argPtr (castPtr raw_inNode :: Ptr ()), argPtr (castPtr (unRawId inRecordTypeOrList) :: Ptr ()), argPtr (castPtr raw_inAttribute :: Ptr ()), argCUInt inMatchType, argPtr (castPtr (unRawId inQueryValueOrList) :: Ptr ()), argPtr (castPtr (unRawId inReturnAttributeOrList) :: Ptr ()), argCLong inMaximumResults, argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_error odQuery inNode inRecordTypeOrList inAttribute inMatchType inQueryValueOrList inReturnAttributeOrList inMaximumResults outError =
+  sendOwnedMessage odQuery initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector (toODNode inNode) inRecordTypeOrList (toNSString inAttribute) inMatchType inQueryValueOrList inReturnAttributeOrList inMaximumResults (toNSError outError)
 
 -- | resultsAllowingPartial:error:
 --
@@ -89,9 +80,8 @@ initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_max
 --
 -- ObjC selector: @- resultsAllowingPartial:error:@
 resultsAllowingPartial_error :: (IsODQuery odQuery, IsNSError outError) => odQuery -> Bool -> outError -> IO (Id NSArray)
-resultsAllowingPartial_error odQuery  inAllowPartialResults outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg odQuery (mkSelector "resultsAllowingPartial:error:") (retPtr retVoid) [argCULong (if inAllowPartialResults then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+resultsAllowingPartial_error odQuery inAllowPartialResults outError =
+  sendMessage odQuery resultsAllowingPartial_errorSelector inAllowPartialResults (toNSError outError)
 
 -- | scheduleInRunLoop:forMode:
 --
@@ -101,10 +91,8 @@ resultsAllowingPartial_error odQuery  inAllowPartialResults outError =
 --
 -- ObjC selector: @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsODQuery odQuery, IsNSRunLoop inRunLoop, IsNSString inMode) => odQuery -> inRunLoop -> inMode -> IO ()
-scheduleInRunLoop_forMode odQuery  inRunLoop inMode =
-  withObjCPtr inRunLoop $ \raw_inRunLoop ->
-    withObjCPtr inMode $ \raw_inMode ->
-        sendMsg odQuery (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_inRunLoop :: Ptr ()), argPtr (castPtr raw_inMode :: Ptr ())]
+scheduleInRunLoop_forMode odQuery inRunLoop inMode =
+  sendMessage odQuery scheduleInRunLoop_forModeSelector (toNSRunLoop inRunLoop) (toNSString inMode)
 
 -- | removeFromRunLoop:forMode:
 --
@@ -114,10 +102,8 @@ scheduleInRunLoop_forMode odQuery  inRunLoop inMode =
 --
 -- ObjC selector: @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsODQuery odQuery, IsNSRunLoop inRunLoop, IsNSString inMode) => odQuery -> inRunLoop -> inMode -> IO ()
-removeFromRunLoop_forMode odQuery  inRunLoop inMode =
-  withObjCPtr inRunLoop $ \raw_inRunLoop ->
-    withObjCPtr inMode $ \raw_inMode ->
-        sendMsg odQuery (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_inRunLoop :: Ptr ()), argPtr (castPtr raw_inMode :: Ptr ())]
+removeFromRunLoop_forMode odQuery inRunLoop inMode =
+  sendMessage odQuery removeFromRunLoop_forModeSelector (toNSRunLoop inRunLoop) (toNSString inMode)
 
 -- | synchronize
 --
@@ -127,8 +113,8 @@ removeFromRunLoop_forMode odQuery  inRunLoop inMode =
 --
 -- ObjC selector: @- synchronize@
 synchronize :: IsODQuery odQuery => odQuery -> IO ()
-synchronize odQuery  =
-    sendMsg odQuery (mkSelector "synchronize") retVoid []
+synchronize odQuery =
+  sendMessage odQuery synchronizeSelector
 
 -- | delegate
 --
@@ -138,8 +124,8 @@ synchronize odQuery  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsODQuery odQuery => odQuery -> IO RawId
-delegate odQuery  =
-    fmap (RawId . castPtr) $ sendMsg odQuery (mkSelector "delegate") (retPtr retVoid) []
+delegate odQuery =
+  sendMessage odQuery delegateSelector
 
 -- | delegate
 --
@@ -149,8 +135,8 @@ delegate odQuery  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsODQuery odQuery => odQuery -> RawId -> IO ()
-setDelegate odQuery  value =
-    sendMsg odQuery (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate odQuery value =
+  sendMessage odQuery setDelegateSelector value
 
 -- | operationQueue
 --
@@ -160,8 +146,8 @@ setDelegate odQuery  value =
 --
 -- ObjC selector: @- operationQueue@
 operationQueue :: IsODQuery odQuery => odQuery -> IO (Id NSOperationQueue)
-operationQueue odQuery  =
-    sendMsg odQuery (mkSelector "operationQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationQueue odQuery =
+  sendMessage odQuery operationQueueSelector
 
 -- | operationQueue
 --
@@ -171,51 +157,50 @@ operationQueue odQuery  =
 --
 -- ObjC selector: @- setOperationQueue:@
 setOperationQueue :: (IsODQuery odQuery, IsNSOperationQueue value) => odQuery -> value -> IO ()
-setOperationQueue odQuery  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odQuery (mkSelector "setOperationQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationQueue odQuery value =
+  sendMessage odQuery setOperationQueueSelector (toNSOperationQueue value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @queryWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:@
-queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector :: Selector
+queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector :: Selector '[Id ODNode, RawId, Id NSString, CUInt, RawId, RawId, CLong, Id NSError] (Id ODQuery)
 queryWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector = mkSelector "queryWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:"
 
 -- | @Selector@ for @initWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:@
-initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector :: Selector
+initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector :: Selector '[Id ODNode, RawId, Id NSString, CUInt, RawId, RawId, CLong, Id NSError] (Id ODQuery)
 initWithNode_forRecordTypes_attribute_matchType_queryValues_returnAttributes_maximumResults_errorSelector = mkSelector "initWithNode:forRecordTypes:attribute:matchType:queryValues:returnAttributes:maximumResults:error:"
 
 -- | @Selector@ for @resultsAllowingPartial:error:@
-resultsAllowingPartial_errorSelector :: Selector
+resultsAllowingPartial_errorSelector :: Selector '[Bool, Id NSError] (Id NSArray)
 resultsAllowingPartial_errorSelector = mkSelector "resultsAllowingPartial:error:"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @synchronize@
-synchronizeSelector :: Selector
+synchronizeSelector :: Selector '[] ()
 synchronizeSelector = mkSelector "synchronize"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @operationQueue@
-operationQueueSelector :: Selector
+operationQueueSelector :: Selector '[] (Id NSOperationQueue)
 operationQueueSelector = mkSelector "operationQueue"
 
 -- | @Selector@ for @setOperationQueue:@
-setOperationQueueSelector :: Selector
+setOperationQueueSelector :: Selector '[Id NSOperationQueue] ()
 setOperationQueueSelector = mkSelector "setOperationQueue:"
 

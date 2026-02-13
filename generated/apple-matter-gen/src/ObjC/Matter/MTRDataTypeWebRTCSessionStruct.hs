@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRDataTypeWebRTCSessionStruct
   , setMetadataEnabled
   , fabricIndex
   , setFabricIndex
-  , idSelector
-  , setIdSelector
-  , peerNodeIDSelector
-  , setPeerNodeIDSelector
-  , peerEndpointIDSelector
-  , setPeerEndpointIDSelector
-  , streamUsageSelector
-  , setStreamUsageSelector
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
   , audioStreamIDSelector
-  , setAudioStreamIDSelector
-  , metadataEnabledSelector
-  , setMetadataEnabledSelector
   , fabricIndexSelector
+  , idSelector
+  , metadataEnabledSelector
+  , peerEndpointIDSelector
+  , peerNodeIDSelector
+  , setAudioStreamIDSelector
   , setFabricIndexSelector
+  , setIdSelector
+  , setMetadataEnabledSelector
+  , setPeerEndpointIDSelector
+  , setPeerNodeIDSelector
+  , setStreamUsageSelector
+  , setVideoStreamIDSelector
+  , streamUsageSelector
+  , videoStreamIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- id@
 id_ :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-id_ mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "id") (retPtr retVoid) [] >>= retainedObject . castPtr
+id_ mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct idSelector
 
 -- | @- setId:@
 setId :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setId mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setId mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setIdSelector (toNSNumber value)
 
 -- | @- peerNodeID@
 peerNodeID :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-peerNodeID mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "peerNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+peerNodeID mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct peerNodeIDSelector
 
 -- | @- setPeerNodeID:@
 setPeerNodeID :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setPeerNodeID mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setPeerNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeerNodeID mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setPeerNodeIDSelector (toNSNumber value)
 
 -- | @- peerEndpointID@
 peerEndpointID :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-peerEndpointID mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "peerEndpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+peerEndpointID mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct peerEndpointIDSelector
 
 -- | @- setPeerEndpointID:@
 setPeerEndpointID :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setPeerEndpointID mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setPeerEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeerEndpointID mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setPeerEndpointIDSelector (toNSNumber value)
 
 -- | @- streamUsage@
 streamUsage :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-streamUsage mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "streamUsage") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamUsage mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct streamUsageSelector
 
 -- | @- setStreamUsage:@
 setStreamUsage :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setStreamUsage mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setStreamUsage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamUsage mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setStreamUsageSelector (toNSNumber value)
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-videoStreamID mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setVideoStreamID mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- audioStreamID@
 audioStreamID :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-audioStreamID mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "audioStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioStreamID mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct audioStreamIDSelector
 
 -- | @- setAudioStreamID:@
 setAudioStreamID :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setAudioStreamID mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setAudioStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioStreamID mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setAudioStreamIDSelector (toNSNumber value)
 
 -- | @- metadataEnabled@
 metadataEnabled :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-metadataEnabled mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "metadataEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataEnabled mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct metadataEnabledSelector
 
 -- | @- setMetadataEnabled:@
 setMetadataEnabled :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setMetadataEnabled mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setMetadataEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadataEnabled mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setMetadataEnabledSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct => mtrDataTypeWebRTCSessionStruct -> IO (Id NSNumber)
-fabricIndex mtrDataTypeWebRTCSessionStruct  =
-    sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrDataTypeWebRTCSessionStruct =
+  sendMessage mtrDataTypeWebRTCSessionStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRDataTypeWebRTCSessionStruct mtrDataTypeWebRTCSessionStruct, IsNSNumber value) => mtrDataTypeWebRTCSessionStruct -> value -> IO ()
-setFabricIndex mtrDataTypeWebRTCSessionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeWebRTCSessionStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrDataTypeWebRTCSessionStruct value =
+  sendMessage mtrDataTypeWebRTCSessionStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @id@
-idSelector :: Selector
+idSelector :: Selector '[] (Id NSNumber)
 idSelector = mkSelector "id"
 
 -- | @Selector@ for @setId:@
-setIdSelector :: Selector
+setIdSelector :: Selector '[Id NSNumber] ()
 setIdSelector = mkSelector "setId:"
 
 -- | @Selector@ for @peerNodeID@
-peerNodeIDSelector :: Selector
+peerNodeIDSelector :: Selector '[] (Id NSNumber)
 peerNodeIDSelector = mkSelector "peerNodeID"
 
 -- | @Selector@ for @setPeerNodeID:@
-setPeerNodeIDSelector :: Selector
+setPeerNodeIDSelector :: Selector '[Id NSNumber] ()
 setPeerNodeIDSelector = mkSelector "setPeerNodeID:"
 
 -- | @Selector@ for @peerEndpointID@
-peerEndpointIDSelector :: Selector
+peerEndpointIDSelector :: Selector '[] (Id NSNumber)
 peerEndpointIDSelector = mkSelector "peerEndpointID"
 
 -- | @Selector@ for @setPeerEndpointID:@
-setPeerEndpointIDSelector :: Selector
+setPeerEndpointIDSelector :: Selector '[Id NSNumber] ()
 setPeerEndpointIDSelector = mkSelector "setPeerEndpointID:"
 
 -- | @Selector@ for @streamUsage@
-streamUsageSelector :: Selector
+streamUsageSelector :: Selector '[] (Id NSNumber)
 streamUsageSelector = mkSelector "streamUsage"
 
 -- | @Selector@ for @setStreamUsage:@
-setStreamUsageSelector :: Selector
+setStreamUsageSelector :: Selector '[Id NSNumber] ()
 setStreamUsageSelector = mkSelector "setStreamUsage:"
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @audioStreamID@
-audioStreamIDSelector :: Selector
+audioStreamIDSelector :: Selector '[] (Id NSNumber)
 audioStreamIDSelector = mkSelector "audioStreamID"
 
 -- | @Selector@ for @setAudioStreamID:@
-setAudioStreamIDSelector :: Selector
+setAudioStreamIDSelector :: Selector '[Id NSNumber] ()
 setAudioStreamIDSelector = mkSelector "setAudioStreamID:"
 
 -- | @Selector@ for @metadataEnabled@
-metadataEnabledSelector :: Selector
+metadataEnabledSelector :: Selector '[] (Id NSNumber)
 metadataEnabledSelector = mkSelector "metadataEnabled"
 
 -- | @Selector@ for @setMetadataEnabled:@
-setMetadataEnabledSelector :: Selector
+setMetadataEnabledSelector :: Selector '[Id NSNumber] ()
 setMetadataEnabledSelector = mkSelector "setMetadataEnabled:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

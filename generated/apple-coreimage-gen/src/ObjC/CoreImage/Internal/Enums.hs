@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreImage.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Constants indicating the Data Matrix code ECC version.
 --
@@ -39,6 +42,16 @@ pattern CIDataMatrixCodeECCVersion140 = CIDataMatrixCodeECCVersion 140
 pattern CIDataMatrixCodeECCVersion200 :: CIDataMatrixCodeECCVersion
 pattern CIDataMatrixCodeECCVersion200 = CIDataMatrixCodeECCVersion 200
 
+instance ObjCArgument CIDataMatrixCodeECCVersion where
+  withObjCArg (CIDataMatrixCodeECCVersion x) k = k (argCLong x)
+
+instance ObjCReturn CIDataMatrixCodeECCVersion where
+  type RawReturn CIDataMatrixCodeECCVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CIDataMatrixCodeECCVersion x)
+  fromOwned x = pure (CIDataMatrixCodeECCVersion x)
+
 -- | Constants indicating the percentage of the symbol that is dedicated to error correction.
 -- | @CIQRCodeErrorCorrectionLevel@
 newtype CIQRCodeErrorCorrectionLevel = CIQRCodeErrorCorrectionLevel CLong
@@ -57,6 +70,16 @@ pattern CIQRCodeErrorCorrectionLevelQ = CIQRCodeErrorCorrectionLevel 81
 pattern CIQRCodeErrorCorrectionLevelH :: CIQRCodeErrorCorrectionLevel
 pattern CIQRCodeErrorCorrectionLevelH = CIQRCodeErrorCorrectionLevel 72
 
+instance ObjCArgument CIQRCodeErrorCorrectionLevel where
+  withObjCArg (CIQRCodeErrorCorrectionLevel x) k = k (argCLong x)
+
+instance ObjCReturn CIQRCodeErrorCorrectionLevel where
+  type RawReturn CIQRCodeErrorCorrectionLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CIQRCodeErrorCorrectionLevel x)
+  fromOwned x = pure (CIQRCodeErrorCorrectionLevel x)
+
 -- | @CIRenderDestinationAlphaMode@
 newtype CIRenderDestinationAlphaMode = CIRenderDestinationAlphaMode CULong
   deriving stock (Eq, Ord, Show)
@@ -70,3 +93,13 @@ pattern CIRenderDestinationAlphaPremultiplied = CIRenderDestinationAlphaMode 1
 
 pattern CIRenderDestinationAlphaUnpremultiplied :: CIRenderDestinationAlphaMode
 pattern CIRenderDestinationAlphaUnpremultiplied = CIRenderDestinationAlphaMode 2
+
+instance ObjCArgument CIRenderDestinationAlphaMode where
+  withObjCArg (CIRenderDestinationAlphaMode x) k = k (argCULong x)
+
+instance ObjCReturn CIRenderDestinationAlphaMode where
+  type RawReturn CIRenderDestinationAlphaMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CIRenderDestinationAlphaMode x)
+  fromOwned x = pure (CIRenderDestinationAlphaMode x)

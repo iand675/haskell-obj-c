@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,46 +42,42 @@ module ObjC.UniformTypeIdentifiers.UTType
   , publicType
   , tags
   , supertypes
-  , newSelector
-  , initSelector
-  , typeWithIdentifierSelector
-  , typeWithFilenameExtensionSelector
-  , typeWithFilenameExtension_conformingToTypeSelector
-  , typeWithMIMETypeSelector
-  , typeWithMIMEType_conformingToTypeSelector
+  , conformsToTypeSelector
+  , declaredSelector
+  , dynamicSelector
   , exportedTypeWithIdentifierSelector
   , exportedTypeWithIdentifier_conformingToTypeSelector
+  , identifierSelector
   , importedTypeWithIdentifierSelector
   , importedTypeWithIdentifier_conformingToTypeSelector
-  , typeWithTag_tagClass_conformingToTypeSelector
-  , typesWithTag_tagClass_conformingToTypeSelector
-  , conformsToTypeSelector
-  , isSupertypeOfTypeSelector
+  , initSelector
   , isSubtypeOfTypeSelector
-  , identifierSelector
+  , isSupertypeOfTypeSelector
+  , localizedDescriptionSelector
+  , newSelector
   , preferredFilenameExtensionSelector
   , preferredMIMETypeSelector
-  , localizedDescriptionSelector
-  , versionSelector
-  , referenceURLSelector
-  , dynamicSelector
-  , declaredSelector
   , publicTypeSelector
-  , tagsSelector
+  , referenceURLSelector
   , supertypesSelector
+  , tagsSelector
+  , typeWithFilenameExtensionSelector
+  , typeWithFilenameExtension_conformingToTypeSelector
+  , typeWithIdentifierSelector
+  , typeWithMIMETypeSelector
+  , typeWithMIMEType_conformingToTypeSelector
+  , typeWithTag_tagClass_conformingToTypeSelector
+  , typesWithTag_tagClass_conformingToTypeSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,12 +89,12 @@ new :: IO (Id UTType)
 new  =
   do
     cls' <- getRequiredClass "UTType"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsUTType utType => utType -> IO (Id UTType)
-init_ utType  =
-    sendMsg utType (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ utType =
+  sendOwnedMessage utType initSelector
 
 -- | Create a type given a type identifier.
 --
@@ -110,8 +107,7 @@ typeWithIdentifier :: IsNSString identifier => identifier -> IO (Id UTType)
 typeWithIdentifier identifier =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "typeWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithIdentifierSelector (toNSString identifier)
 
 -- | Create a type given a filename extension that conforms to		@UTTypeData.@
 --
@@ -130,8 +126,7 @@ typeWithFilenameExtension :: IsNSString filenameExtension => filenameExtension -
 typeWithFilenameExtension filenameExtension =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr filenameExtension $ \raw_filenameExtension ->
-      sendClassMsg cls' (mkSelector "typeWithFilenameExtension:") (retPtr retVoid) [argPtr (castPtr raw_filenameExtension :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithFilenameExtensionSelector (toNSString filenameExtension)
 
 -- | Create a type given a filename extension.
 --
@@ -152,9 +147,7 @@ typeWithFilenameExtension_conformingToType :: (IsNSString filenameExtension, IsU
 typeWithFilenameExtension_conformingToType filenameExtension supertype =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr filenameExtension $ \raw_filenameExtension ->
-      withObjCPtr supertype $ \raw_supertype ->
-        sendClassMsg cls' (mkSelector "typeWithFilenameExtension:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_filenameExtension :: Ptr ()), argPtr (castPtr raw_supertype :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithFilenameExtension_conformingToTypeSelector (toNSString filenameExtension) (toUTType supertype)
 
 -- | Create a type given a MIME type that conforms to @UTTypeData.@
 --
@@ -171,8 +164,7 @@ typeWithMIMEType :: IsNSString mimeType => mimeType -> IO (Id UTType)
 typeWithMIMEType mimeType =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      sendClassMsg cls' (mkSelector "typeWithMIMEType:") (retPtr retVoid) [argPtr (castPtr raw_mimeType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithMIMETypeSelector (toNSString mimeType)
 
 -- | Create a type given a MIME type.
 --
@@ -191,9 +183,7 @@ typeWithMIMEType_conformingToType :: (IsNSString mimeType, IsUTType supertype) =
 typeWithMIMEType_conformingToType mimeType supertype =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      withObjCPtr supertype $ \raw_supertype ->
-        sendClassMsg cls' (mkSelector "typeWithMIMEType:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_mimeType :: Ptr ()), argPtr (castPtr raw_supertype :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithMIMEType_conformingToTypeSelector (toNSString mimeType) (toUTType supertype)
 
 -- | Gets an active @UTType@ corresponding to a type that is declared as		"exported" by the current process.
 --
@@ -223,8 +213,7 @@ exportedTypeWithIdentifier :: IsNSString identifier => identifier -> IO (Id UTTy
 exportedTypeWithIdentifier identifier =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "exportedTypeWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' exportedTypeWithIdentifierSelector (toNSString identifier)
 
 -- | Gets an active @UTType@ corresponding to a type that is declared as		"exported" by the current process.
 --
@@ -254,9 +243,7 @@ exportedTypeWithIdentifier_conformingToType :: (IsNSString identifier, IsUTType 
 exportedTypeWithIdentifier_conformingToType identifier parentType =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr parentType $ \raw_parentType ->
-        sendClassMsg cls' (mkSelector "exportedTypeWithIdentifier:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_parentType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' exportedTypeWithIdentifier_conformingToTypeSelector (toNSString identifier) (toUTType parentType)
 
 -- | Gets an active @UTType@ corresponding to a type that is declared as		"imported" by the current process.
 --
@@ -281,8 +268,7 @@ importedTypeWithIdentifier :: IsNSString identifier => identifier -> IO (Id UTTy
 importedTypeWithIdentifier identifier =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "importedTypeWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' importedTypeWithIdentifierSelector (toNSString identifier)
 
 -- | Gets an active @UTType@ corresponding to a type that is declared as		"imported" by the current process.
 --
@@ -307,9 +293,7 @@ importedTypeWithIdentifier_conformingToType :: (IsNSString identifier, IsUTType 
 importedTypeWithIdentifier_conformingToType identifier parentType =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr parentType $ \raw_parentType ->
-        sendClassMsg cls' (mkSelector "importedTypeWithIdentifier:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_parentType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' importedTypeWithIdentifier_conformingToTypeSelector (toNSString identifier) (toUTType parentType)
 
 -- | Create a type given a type tag.
 --
@@ -326,10 +310,7 @@ typeWithTag_tagClass_conformingToType :: (IsNSString tag, IsNSString tagClass, I
 typeWithTag_tagClass_conformingToType tag tagClass supertype =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr tag $ \raw_tag ->
-      withObjCPtr tagClass $ \raw_tagClass ->
-        withObjCPtr supertype $ \raw_supertype ->
-          sendClassMsg cls' (mkSelector "typeWithTag:tagClass:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_tag :: Ptr ()), argPtr (castPtr raw_tagClass :: Ptr ()), argPtr (castPtr raw_supertype :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typeWithTag_tagClass_conformingToTypeSelector (toNSString tag) (toNSString tagClass) (toUTType supertype)
 
 -- | Create an array of types given a type tag.
 --
@@ -346,10 +327,7 @@ typesWithTag_tagClass_conformingToType :: (IsNSString tag, IsNSString tagClass, 
 typesWithTag_tagClass_conformingToType tag tagClass supertype =
   do
     cls' <- getRequiredClass "UTType"
-    withObjCPtr tag $ \raw_tag ->
-      withObjCPtr tagClass $ \raw_tagClass ->
-        withObjCPtr supertype $ \raw_supertype ->
-          sendClassMsg cls' (mkSelector "typesWithTag:tagClass:conformingToType:") (retPtr retVoid) [argPtr (castPtr raw_tag :: Ptr ()), argPtr (castPtr raw_tagClass :: Ptr ()), argPtr (castPtr raw_supertype :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' typesWithTag_tagClass_conformingToTypeSelector (toNSString tag) (toNSString tagClass) (toUTType supertype)
 
 -- | Tests for a conformance relationship between the receiver and another		type.
 --
@@ -363,9 +341,8 @@ typesWithTag_tagClass_conformingToType tag tagClass supertype =
 --
 -- ObjC selector: @- conformsToType:@
 conformsToType :: (IsUTType utType, IsUTType type_) => utType -> type_ -> IO Bool
-conformsToType utType  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "conformsToType:") retCULong [argPtr (castPtr raw_type_ :: Ptr ())]
+conformsToType utType type_ =
+  sendMessage utType conformsToTypeSelector (toUTType type_)
 
 -- | Tests if the receiver is a supertype of another type.
 --
@@ -379,9 +356,8 @@ conformsToType utType  type_ =
 --
 -- ObjC selector: @- isSupertypeOfType:@
 isSupertypeOfType :: (IsUTType utType, IsUTType type_) => utType -> type_ -> IO Bool
-isSupertypeOfType utType  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "isSupertypeOfType:") retCULong [argPtr (castPtr raw_type_ :: Ptr ())]
+isSupertypeOfType utType type_ =
+  sendMessage utType isSupertypeOfTypeSelector (toUTType type_)
 
 -- | Tests if the receiver is a subtype of another type.
 --
@@ -395,9 +371,8 @@ isSupertypeOfType utType  type_ =
 --
 -- ObjC selector: @- isSubtypeOfType:@
 isSubtypeOfType :: (IsUTType utType, IsUTType type_) => utType -> type_ -> IO Bool
-isSubtypeOfType utType  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "isSubtypeOfType:") retCULong [argPtr (castPtr raw_type_ :: Ptr ())]
+isSubtypeOfType utType type_ =
+  sendMessage utType isSubtypeOfTypeSelector (toUTType type_)
 
 -- | The receiver's identifier.
 --
@@ -405,8 +380,8 @@ isSubtypeOfType utType  type_ =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsUTType utType => utType -> IO (Id NSString)
-identifier utType  =
-    sendMsg utType (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier utType =
+  sendMessage utType identifierSelector
 
 -- | If available, the preferred (first available) tag of class		@UTTagClassFilenameExtension.@
 --
@@ -416,8 +391,8 @@ identifier utType  =
 --
 -- ObjC selector: @- preferredFilenameExtension@
 preferredFilenameExtension :: IsUTType utType => utType -> IO (Id NSString)
-preferredFilenameExtension utType  =
-    sendMsg utType (mkSelector "preferredFilenameExtension") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredFilenameExtension utType =
+  sendMessage utType preferredFilenameExtensionSelector
 
 -- | If available, the preferred (first available) tag of class		@UTTagClassMIMEType.@
 --
@@ -427,8 +402,8 @@ preferredFilenameExtension utType  =
 --
 -- ObjC selector: @- preferredMIMEType@
 preferredMIMEType :: IsUTType utType => utType -> IO (Id NSString)
-preferredMIMEType utType  =
-    sendMsg utType (mkSelector "preferredMIMEType") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredMIMEType utType =
+  sendMessage utType preferredMIMETypeSelector
 
 -- | The localized description of the type.
 --
@@ -436,8 +411,8 @@ preferredMIMEType utType  =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsUTType utType => utType -> IO (Id NSString)
-localizedDescription utType  =
-    sendMsg utType (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription utType =
+  sendMessage utType localizedDescriptionSelector
 
 -- | The type's version.
 --
@@ -445,8 +420,8 @@ localizedDescription utType  =
 --
 -- ObjC selector: @- version@
 version :: IsUTType utType => utType -> IO (Id NSNumber)
-version utType  =
-    sendMsg utType (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version utType =
+  sendMessage utType versionSelector
 
 -- | The reference URL of the type.
 --
@@ -456,8 +431,8 @@ version utType  =
 --
 -- ObjC selector: @- referenceURL@
 referenceURL :: IsUTType utType => utType -> IO (Id NSURL)
-referenceURL utType  =
-    sendMsg utType (mkSelector "referenceURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+referenceURL utType =
+  sendMessage utType referenceURLSelector
 
 -- | Whether or not the receiver is a dynamically generated type.
 --
@@ -467,8 +442,8 @@ referenceURL utType  =
 --
 -- ObjC selector: @- dynamic@
 dynamic :: IsUTType utType => utType -> IO Bool
-dynamic utType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "dynamic") retCULong []
+dynamic utType =
+  sendMessage utType dynamicSelector
 
 -- | Whether or not the receiver is a type known to the system.
 --
@@ -476,8 +451,8 @@ dynamic utType  =
 --
 -- ObjC selector: @- declared@
 declared :: IsUTType utType => utType -> IO Bool
-declared utType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "declared") retCULong []
+declared utType =
+  sendMessage utType declaredSelector
 
 -- | Whether or not the type is in the public domain.
 --
@@ -485,8 +460,8 @@ declared utType  =
 --
 -- ObjC selector: @- publicType@
 publicType :: IsUTType utType => utType -> IO Bool
-publicType utType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg utType (mkSelector "publicType") retCULong []
+publicType utType =
+  sendMessage utType publicTypeSelector
 
 -- | The tag specification dictionary of the type.
 --
@@ -507,8 +482,8 @@ publicType utType  =
 --
 -- ObjC selector: @- tags@
 tags :: IsUTType utType => utType -> IO (Id NSDictionary)
-tags utType  =
-    sendMsg utType (mkSelector "tags") (retPtr retVoid) [] >>= retainedObject . castPtr
+tags utType =
+  sendMessage utType tagsSelector
 
 -- | The set of types to which the receiving type conforms, directly or		indirectly.
 --
@@ -516,118 +491,118 @@ tags utType  =
 --
 -- ObjC selector: @- supertypes@
 supertypes :: IsUTType utType => utType -> IO (Id NSSet)
-supertypes utType  =
-    sendMsg utType (mkSelector "supertypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supertypes utType =
+  sendMessage utType supertypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id UTType)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UTType)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @typeWithIdentifier:@
-typeWithIdentifierSelector :: Selector
+typeWithIdentifierSelector :: Selector '[Id NSString] (Id UTType)
 typeWithIdentifierSelector = mkSelector "typeWithIdentifier:"
 
 -- | @Selector@ for @typeWithFilenameExtension:@
-typeWithFilenameExtensionSelector :: Selector
+typeWithFilenameExtensionSelector :: Selector '[Id NSString] (Id UTType)
 typeWithFilenameExtensionSelector = mkSelector "typeWithFilenameExtension:"
 
 -- | @Selector@ for @typeWithFilenameExtension:conformingToType:@
-typeWithFilenameExtension_conformingToTypeSelector :: Selector
+typeWithFilenameExtension_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id UTType)
 typeWithFilenameExtension_conformingToTypeSelector = mkSelector "typeWithFilenameExtension:conformingToType:"
 
 -- | @Selector@ for @typeWithMIMEType:@
-typeWithMIMETypeSelector :: Selector
+typeWithMIMETypeSelector :: Selector '[Id NSString] (Id UTType)
 typeWithMIMETypeSelector = mkSelector "typeWithMIMEType:"
 
 -- | @Selector@ for @typeWithMIMEType:conformingToType:@
-typeWithMIMEType_conformingToTypeSelector :: Selector
+typeWithMIMEType_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id UTType)
 typeWithMIMEType_conformingToTypeSelector = mkSelector "typeWithMIMEType:conformingToType:"
 
 -- | @Selector@ for @exportedTypeWithIdentifier:@
-exportedTypeWithIdentifierSelector :: Selector
+exportedTypeWithIdentifierSelector :: Selector '[Id NSString] (Id UTType)
 exportedTypeWithIdentifierSelector = mkSelector "exportedTypeWithIdentifier:"
 
 -- | @Selector@ for @exportedTypeWithIdentifier:conformingToType:@
-exportedTypeWithIdentifier_conformingToTypeSelector :: Selector
+exportedTypeWithIdentifier_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id UTType)
 exportedTypeWithIdentifier_conformingToTypeSelector = mkSelector "exportedTypeWithIdentifier:conformingToType:"
 
 -- | @Selector@ for @importedTypeWithIdentifier:@
-importedTypeWithIdentifierSelector :: Selector
+importedTypeWithIdentifierSelector :: Selector '[Id NSString] (Id UTType)
 importedTypeWithIdentifierSelector = mkSelector "importedTypeWithIdentifier:"
 
 -- | @Selector@ for @importedTypeWithIdentifier:conformingToType:@
-importedTypeWithIdentifier_conformingToTypeSelector :: Selector
+importedTypeWithIdentifier_conformingToTypeSelector :: Selector '[Id NSString, Id UTType] (Id UTType)
 importedTypeWithIdentifier_conformingToTypeSelector = mkSelector "importedTypeWithIdentifier:conformingToType:"
 
 -- | @Selector@ for @typeWithTag:tagClass:conformingToType:@
-typeWithTag_tagClass_conformingToTypeSelector :: Selector
+typeWithTag_tagClass_conformingToTypeSelector :: Selector '[Id NSString, Id NSString, Id UTType] (Id UTType)
 typeWithTag_tagClass_conformingToTypeSelector = mkSelector "typeWithTag:tagClass:conformingToType:"
 
 -- | @Selector@ for @typesWithTag:tagClass:conformingToType:@
-typesWithTag_tagClass_conformingToTypeSelector :: Selector
+typesWithTag_tagClass_conformingToTypeSelector :: Selector '[Id NSString, Id NSString, Id UTType] (Id NSArray)
 typesWithTag_tagClass_conformingToTypeSelector = mkSelector "typesWithTag:tagClass:conformingToType:"
 
 -- | @Selector@ for @conformsToType:@
-conformsToTypeSelector :: Selector
+conformsToTypeSelector :: Selector '[Id UTType] Bool
 conformsToTypeSelector = mkSelector "conformsToType:"
 
 -- | @Selector@ for @isSupertypeOfType:@
-isSupertypeOfTypeSelector :: Selector
+isSupertypeOfTypeSelector :: Selector '[Id UTType] Bool
 isSupertypeOfTypeSelector = mkSelector "isSupertypeOfType:"
 
 -- | @Selector@ for @isSubtypeOfType:@
-isSubtypeOfTypeSelector :: Selector
+isSubtypeOfTypeSelector :: Selector '[Id UTType] Bool
 isSubtypeOfTypeSelector = mkSelector "isSubtypeOfType:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @preferredFilenameExtension@
-preferredFilenameExtensionSelector :: Selector
+preferredFilenameExtensionSelector :: Selector '[] (Id NSString)
 preferredFilenameExtensionSelector = mkSelector "preferredFilenameExtension"
 
 -- | @Selector@ for @preferredMIMEType@
-preferredMIMETypeSelector :: Selector
+preferredMIMETypeSelector :: Selector '[] (Id NSString)
 preferredMIMETypeSelector = mkSelector "preferredMIMEType"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSNumber)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @referenceURL@
-referenceURLSelector :: Selector
+referenceURLSelector :: Selector '[] (Id NSURL)
 referenceURLSelector = mkSelector "referenceURL"
 
 -- | @Selector@ for @dynamic@
-dynamicSelector :: Selector
+dynamicSelector :: Selector '[] Bool
 dynamicSelector = mkSelector "dynamic"
 
 -- | @Selector@ for @declared@
-declaredSelector :: Selector
+declaredSelector :: Selector '[] Bool
 declaredSelector = mkSelector "declared"
 
 -- | @Selector@ for @publicType@
-publicTypeSelector :: Selector
+publicTypeSelector :: Selector '[] Bool
 publicTypeSelector = mkSelector "publicType"
 
 -- | @Selector@ for @tags@
-tagsSelector :: Selector
+tagsSelector :: Selector '[] (Id NSDictionary)
 tagsSelector = mkSelector "tags"
 
 -- | @Selector@ for @supertypes@
-supertypesSelector :: Selector
+supertypesSelector :: Selector '[] (Id NSSet)
 supertypesSelector = mkSelector "supertypes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -76,29 +77,25 @@ module ObjC.CloudKit.CKSyncEngine
   , cancelOperationsWithCompletionHandler
   , database
   , state
-  , initWithConfigurationSelector
-  , initSelector
-  , newSelector
-  , fetchChangesWithCompletionHandlerSelector
-  , fetchChangesWithOptions_completionHandlerSelector
-  , sendChangesWithCompletionHandlerSelector
-  , sendChangesWithOptions_completionHandlerSelector
   , cancelOperationsWithCompletionHandlerSelector
   , databaseSelector
+  , fetchChangesWithCompletionHandlerSelector
+  , fetchChangesWithOptions_completionHandlerSelector
+  , initSelector
+  , initWithConfigurationSelector
+  , newSelector
+  , sendChangesWithCompletionHandlerSelector
+  , sendChangesWithOptions_completionHandlerSelector
   , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,21 +106,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsCKSyncEngine ckSyncEngine, IsCKSyncEngineConfiguration configuration) => ckSyncEngine -> configuration -> IO (Id CKSyncEngine)
-initWithConfiguration ckSyncEngine  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg ckSyncEngine (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration ckSyncEngine configuration =
+  sendOwnedMessage ckSyncEngine initWithConfigurationSelector (toCKSyncEngineConfiguration configuration)
 
 -- | @- init@
 init_ :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> IO (Id CKSyncEngine)
-init_ ckSyncEngine  =
-    sendMsg ckSyncEngine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngine =
+  sendOwnedMessage ckSyncEngine initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngine)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngine"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Fetches changes from the server immediately, bypassing the system scheduler.
 --
@@ -133,16 +129,15 @@ new  =
 --
 -- ObjC selector: @- fetchChangesWithCompletionHandler:@
 fetchChangesWithCompletionHandler :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> Ptr () -> IO ()
-fetchChangesWithCompletionHandler ckSyncEngine  completionHandler =
-    sendMsg ckSyncEngine (mkSelector "fetchChangesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+fetchChangesWithCompletionHandler ckSyncEngine completionHandler =
+  sendMessage ckSyncEngine fetchChangesWithCompletionHandlerSelector completionHandler
 
 -- | Fetches changes from the server with the specified options. See ``fetchChangesWithCompletionHandler:`` for more information.
 --
 -- ObjC selector: @- fetchChangesWithOptions:completionHandler:@
 fetchChangesWithOptions_completionHandler :: (IsCKSyncEngine ckSyncEngine, IsCKSyncEngineFetchChangesOptions options) => ckSyncEngine -> options -> Ptr () -> IO ()
-fetchChangesWithOptions_completionHandler ckSyncEngine  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ckSyncEngine (mkSelector "fetchChangesWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchChangesWithOptions_completionHandler ckSyncEngine options completionHandler =
+  sendMessage ckSyncEngine fetchChangesWithOptions_completionHandlerSelector (toCKSyncEngineFetchChangesOptions options) completionHandler
 
 -- | Sends any pending changes to the server immediately, bypassing the system scheduler.
 --
@@ -152,16 +147,15 @@ fetchChangesWithOptions_completionHandler ckSyncEngine  options completionHandle
 --
 -- ObjC selector: @- sendChangesWithCompletionHandler:@
 sendChangesWithCompletionHandler :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> Ptr () -> IO ()
-sendChangesWithCompletionHandler ckSyncEngine  completionHandler =
-    sendMsg ckSyncEngine (mkSelector "sendChangesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+sendChangesWithCompletionHandler ckSyncEngine completionHandler =
+  sendMessage ckSyncEngine sendChangesWithCompletionHandlerSelector completionHandler
 
 -- | Sends pending changes to the server with the specified options. See discussion in ``sendChangesWithCompletionHandler:`` for more information.
 --
 -- ObjC selector: @- sendChangesWithOptions:completionHandler:@
 sendChangesWithOptions_completionHandler :: (IsCKSyncEngine ckSyncEngine, IsCKSyncEngineSendChangesOptions options) => ckSyncEngine -> options -> Ptr () -> IO ()
-sendChangesWithOptions_completionHandler ckSyncEngine  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ckSyncEngine (mkSelector "sendChangesWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+sendChangesWithOptions_completionHandler ckSyncEngine options completionHandler =
+  sendMessage ckSyncEngine sendChangesWithOptions_completionHandlerSelector (toCKSyncEngineSendChangesOptions options) completionHandler
 
 -- | Cancels any currently executing or pending sync operations.
 --
@@ -169,64 +163,64 @@ sendChangesWithOptions_completionHandler ckSyncEngine  options completionHandler
 --
 -- ObjC selector: @- cancelOperationsWithCompletionHandler:@
 cancelOperationsWithCompletionHandler :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> Ptr () -> IO ()
-cancelOperationsWithCompletionHandler ckSyncEngine  completionHandler =
-    sendMsg ckSyncEngine (mkSelector "cancelOperationsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+cancelOperationsWithCompletionHandler ckSyncEngine completionHandler =
+  sendMessage ckSyncEngine cancelOperationsWithCompletionHandlerSelector completionHandler
 
 -- | The database this sync engine will sync with.
 --
 -- ObjC selector: @- database@
 database :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> IO (Id CKDatabase)
-database ckSyncEngine  =
-    sendMsg ckSyncEngine (mkSelector "database") (retPtr retVoid) [] >>= retainedObject . castPtr
+database ckSyncEngine =
+  sendMessage ckSyncEngine databaseSelector
 
 -- | A collection of state properties used to efficiently manage sync engine operation. See ``CKSyncEngineState`` for more details.
 --
 -- ObjC selector: @- state@
 state :: IsCKSyncEngine ckSyncEngine => ckSyncEngine -> IO (Id CKSyncEngineState)
-state ckSyncEngine  =
-    sendMsg ckSyncEngine (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state ckSyncEngine =
+  sendMessage ckSyncEngine stateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id CKSyncEngineConfiguration] (Id CKSyncEngine)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngine)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fetchChangesWithCompletionHandler:@
-fetchChangesWithCompletionHandlerSelector :: Selector
+fetchChangesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchChangesWithCompletionHandlerSelector = mkSelector "fetchChangesWithCompletionHandler:"
 
 -- | @Selector@ for @fetchChangesWithOptions:completionHandler:@
-fetchChangesWithOptions_completionHandlerSelector :: Selector
+fetchChangesWithOptions_completionHandlerSelector :: Selector '[Id CKSyncEngineFetchChangesOptions, Ptr ()] ()
 fetchChangesWithOptions_completionHandlerSelector = mkSelector "fetchChangesWithOptions:completionHandler:"
 
 -- | @Selector@ for @sendChangesWithCompletionHandler:@
-sendChangesWithCompletionHandlerSelector :: Selector
+sendChangesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 sendChangesWithCompletionHandlerSelector = mkSelector "sendChangesWithCompletionHandler:"
 
 -- | @Selector@ for @sendChangesWithOptions:completionHandler:@
-sendChangesWithOptions_completionHandlerSelector :: Selector
+sendChangesWithOptions_completionHandlerSelector :: Selector '[Id CKSyncEngineSendChangesOptions, Ptr ()] ()
 sendChangesWithOptions_completionHandlerSelector = mkSelector "sendChangesWithOptions:completionHandler:"
 
 -- | @Selector@ for @cancelOperationsWithCompletionHandler:@
-cancelOperationsWithCompletionHandlerSelector :: Selector
+cancelOperationsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 cancelOperationsWithCompletionHandlerSelector = mkSelector "cancelOperationsWithCompletionHandler:"
 
 -- | @Selector@ for @database@
-databaseSelector :: Selector
+databaseSelector :: Selector '[] (Id CKDatabase)
 databaseSelector = mkSelector "database"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id CKSyncEngineState)
 stateSelector = mkSelector "state"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRTargetNavigatorClusterNavigateTargetParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , targetSelector
-  , setTargetSelector
   , dataSelector
-  , setDataSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDataSelector
   , setServerSideProcessingTimeoutSelector
+  , setTargetSelector
+  , setTimedInvokeTimeoutMsSelector
+  , targetSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- target@
 target :: IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams => mtrTargetNavigatorClusterNavigateTargetParams -> IO (Id NSNumber)
-target mtrTargetNavigatorClusterNavigateTargetParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target mtrTargetNavigatorClusterNavigateTargetParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams, IsNSNumber value) => mtrTargetNavigatorClusterNavigateTargetParams -> value -> IO ()
-setTarget mtrTargetNavigatorClusterNavigateTargetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget mtrTargetNavigatorClusterNavigateTargetParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams setTargetSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams => mtrTargetNavigatorClusterNavigateTargetParams -> IO (Id NSString)
-data_ mtrTargetNavigatorClusterNavigateTargetParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrTargetNavigatorClusterNavigateTargetParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams, IsNSString value) => mtrTargetNavigatorClusterNavigateTargetParams -> value -> IO ()
-setData mtrTargetNavigatorClusterNavigateTargetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrTargetNavigatorClusterNavigateTargetParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams setDataSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setData mtrTargetNavigatorClusterNavigateTargetParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams => mtrTargetNavigatorClusterNavigateTargetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams, IsNSNumber value) => mtrTargetNavigatorClusterNavigateTargetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrTargetNavigatorClusterNavigateTargetParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams => mtrTargetNavigatorClusterNavigateTargetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTargetNavigatorClusterNavigateTargetParams  =
-    sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTargetNavigatorClusterNavigateTargetParams =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrTargetNavigatorClusterNavigateTargetParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTargetNavigatorClusterNavigateTargetParams mtrTargetNavigatorClusterNavigateTargetParams, IsNSNumber value) => mtrTargetNavigatorClusterNavigateTargetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTargetNavigatorClusterNavigateTargetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterNavigateTargetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTargetNavigatorClusterNavigateTargetParams value =
+  sendMessage mtrTargetNavigatorClusterNavigateTargetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSNumber)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSNumber] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -65,44 +66,44 @@ module ObjC.AVFoundation.AVAsset
   , trackGroups
   , referenceRestrictions
   , providesPreciseDurationAndTiming
+  , allMediaSelectionsSelector
   , assetWithURLSelector
-  , unusedTrackIDSelector
-  , findUnusedTrackIDWithCompletionHandlerSelector
-  , mediaSelectionGroupForMediaCharacteristicSelector
-  , loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector
-  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
-  , chapterMetadataGroupsBestMatchingPreferredLanguagesSelector
-  , metadataForFormatSelector
-  , trackWithTrackIDSelector
-  , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
+  , availableChapterLocalesSelector
+  , availableMediaCharacteristicsWithMediaSelectionOptionsSelector
+  , availableMetadataFormatsSelector
+  , canContainFragmentsSelector
   , cancelLoadingSelector
+  , chapterMetadataGroupsBestMatchingPreferredLanguagesSelector
+  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
+  , commonMetadataSelector
+  , compatibleWithAirPlayVideoSelector
+  , compatibleWithSavedPhotosAlbumSelector
+  , composableSelector
+  , containsFragmentsSelector
+  , creationDateSelector
+  , exportableSelector
+  , findUnusedTrackIDWithCompletionHandlerSelector
+  , hasProtectedContentSelector
+  , loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector
+  , loadTrackWithTrackID_completionHandlerSelector
+  , lyricsSelector
+  , mediaSelectionGroupForMediaCharacteristicSelector
+  , metadataForFormatSelector
+  , metadataSelector
+  , playableSelector
+  , preferredDisplayCriteriaSelector
+  , preferredMediaSelectionSelector
   , preferredRateSelector
   , preferredVolumeSelector
-  , preferredDisplayCriteriaSelector
-  , playableSelector
-  , exportableSelector
-  , readableSelector
-  , composableSelector
-  , compatibleWithSavedPhotosAlbumSelector
-  , compatibleWithAirPlayVideoSelector
-  , canContainFragmentsSelector
-  , containsFragmentsSelector
-  , hasProtectedContentSelector
-  , availableMediaCharacteristicsWithMediaSelectionOptionsSelector
-  , preferredMediaSelectionSelector
-  , allMediaSelectionsSelector
-  , availableChapterLocalesSelector
-  , creationDateSelector
-  , lyricsSelector
-  , commonMetadataSelector
-  , metadataSelector
-  , availableMetadataFormatsSelector
-  , tracksSelector
-  , trackGroupsSelector
-  , referenceRestrictionsSelector
   , providesPreciseDurationAndTimingSelector
+  , readableSelector
+  , referenceRestrictionsSelector
+  , trackGroupsSelector
+  , trackWithTrackIDSelector
+  , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
+  , unusedTrackIDSelector
 
   -- * Enum types
   , AVAssetReferenceRestrictions(AVAssetReferenceRestrictions)
@@ -116,15 +117,11 @@ module ObjC.AVFoundation.AVAsset
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -145,13 +142,12 @@ assetWithURL :: IsNSURL url => url -> IO (Id AVAsset)
 assetWithURL url =
   do
     cls' <- getRequiredClass "AVAsset"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "assetWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWithURLSelector (toNSURL url)
 
 -- | @- unusedTrackID@
 unusedTrackID :: IsAVAsset avAsset => avAsset -> IO CInt
-unusedTrackID avAsset  =
-    sendMsg avAsset (mkSelector "unusedTrackID") retCInt []
+unusedTrackID avAsset =
+  sendMessage avAsset unusedTrackIDSelector
 
 -- | Loads a track ID that will not collide with any existing track
 --
@@ -159,8 +155,8 @@ unusedTrackID avAsset  =
 --
 -- ObjC selector: @- findUnusedTrackIDWithCompletionHandler:@
 findUnusedTrackIDWithCompletionHandler :: IsAVAsset avAsset => avAsset -> Ptr () -> IO ()
-findUnusedTrackIDWithCompletionHandler avAsset  completionHandler =
-    sendMsg avAsset (mkSelector "findUnusedTrackIDWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+findUnusedTrackIDWithCompletionHandler avAsset completionHandler =
+  sendMessage avAsset findUnusedTrackIDWithCompletionHandlerSelector completionHandler
 
 -- | Provides an instance of AVMediaSelectionGroup that contains one or more options with the specified media characteristic.
 --
@@ -176,9 +172,8 @@ findUnusedTrackIDWithCompletionHandler avAsset  completionHandler =
 --
 -- ObjC selector: @- mediaSelectionGroupForMediaCharacteristic:@
 mediaSelectionGroupForMediaCharacteristic :: (IsAVAsset avAsset, IsNSString mediaCharacteristic) => avAsset -> mediaCharacteristic -> IO (Id AVMediaSelectionGroup)
-mediaSelectionGroupForMediaCharacteristic avAsset  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avAsset (mkSelector "mediaSelectionGroupForMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+mediaSelectionGroupForMediaCharacteristic avAsset mediaCharacteristic =
+  sendMessage avAsset mediaSelectionGroupForMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | Loads an instance of AVMediaSelectionGroup that contains one or more options with the specified media characteristic.
 --
@@ -190,9 +185,8 @@ mediaSelectionGroupForMediaCharacteristic avAsset  mediaCharacteristic =
 --
 -- ObjC selector: @- loadMediaSelectionGroupForMediaCharacteristic:completionHandler:@
 loadMediaSelectionGroupForMediaCharacteristic_completionHandler :: (IsAVAsset avAsset, IsNSString mediaCharacteristic) => avAsset -> mediaCharacteristic -> Ptr () -> IO ()
-loadMediaSelectionGroupForMediaCharacteristic_completionHandler avAsset  mediaCharacteristic completionHandler =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avAsset (mkSelector "loadMediaSelectionGroupForMediaCharacteristic:completionHandler:") retVoid [argPtr (castPtr raw_mediaCharacteristic :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+loadMediaSelectionGroupForMediaCharacteristic_completionHandler avAsset mediaCharacteristic completionHandler =
+  sendMessage avAsset loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector (toNSString mediaCharacteristic) completionHandler
 
 -- | Provides an array of chapters.
 --
@@ -208,10 +202,8 @@ loadMediaSelectionGroupForMediaCharacteristic_completionHandler avAsset  mediaCh
 --
 -- ObjC selector: @- chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys :: (IsAVAsset avAsset, IsNSLocale locale, IsNSArray commonKeys) => avAsset -> locale -> commonKeys -> IO (Id NSArray)
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avAsset  locale commonKeys =
-  withObjCPtr locale $ \raw_locale ->
-    withObjCPtr commonKeys $ \raw_commonKeys ->
-        sendMsg avAsset (mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ()), argPtr (castPtr raw_commonKeys :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avAsset locale commonKeys =
+  sendMessage avAsset chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector (toNSLocale locale) (toNSArray commonKeys)
 
 -- | Tests, in order of preference, for a match between language identifiers in the specified array of preferred languages and the available chapter locales, and returns the array of chapters corresponding to the first match that's found.
 --
@@ -229,9 +221,8 @@ chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avAsset  loca
 --
 -- ObjC selector: @- chapterMetadataGroupsBestMatchingPreferredLanguages:@
 chapterMetadataGroupsBestMatchingPreferredLanguages :: (IsAVAsset avAsset, IsNSArray preferredLanguages) => avAsset -> preferredLanguages -> IO (Id NSArray)
-chapterMetadataGroupsBestMatchingPreferredLanguages avAsset  preferredLanguages =
-  withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-      sendMsg avAsset (mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:") (retPtr retVoid) [argPtr (castPtr raw_preferredLanguages :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsBestMatchingPreferredLanguages avAsset preferredLanguages =
+  sendMessage avAsset chapterMetadataGroupsBestMatchingPreferredLanguagesSelector (toNSArray preferredLanguages)
 
 -- | Provides an NSArray of AVMetadataItems, one for each metadata item in the container of the specified format; can subsequently be filtered according to language via +[AVMetadataItem metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:], according to locale via +[AVMetadataItem metadataItemsFromArray:withLocale:], or according to key via +[AVMetadataItem metadataItemsFromArray:withKey:keySpace:].
 --
@@ -243,9 +234,8 @@ chapterMetadataGroupsBestMatchingPreferredLanguages avAsset  preferredLanguages 
 --
 -- ObjC selector: @- metadataForFormat:@
 metadataForFormat :: (IsAVAsset avAsset, IsNSString format) => avAsset -> format -> IO (Id NSArray)
-metadataForFormat avAsset  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAsset (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avAsset format =
+  sendMessage avAsset metadataForFormatSelector (toNSString format)
 
 -- | Provides an instance of AVAssetTrack that represents the track of the specified trackID.
 --
@@ -257,8 +247,8 @@ metadataForFormat avAsset  format =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVAsset avAsset => avAsset -> CInt -> IO (Id AVAssetTrack)
-trackWithTrackID avAsset  trackID =
-    sendMsg avAsset (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avAsset trackID =
+  sendMessage avAsset trackWithTrackIDSelector trackID
 
 -- | Loads an instance of AVAssetTrack that represents the track of the specified trackID.
 --
@@ -266,8 +256,8 @@ trackWithTrackID avAsset  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVAsset avAsset => avAsset -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avAsset  trackID completionHandler =
-    sendMsg avAsset (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avAsset trackID completionHandler =
+  sendMessage avAsset loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | Provides an array of AVAssetTracks of the asset that present media of the specified media type.
 --
@@ -279,9 +269,8 @@ loadTrackWithTrackID_completionHandler avAsset  trackID completionHandler =
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVAsset avAsset, IsNSString mediaType) => avAsset -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avAsset  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avAsset (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avAsset mediaType =
+  sendMessage avAsset tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | Provides an array of AVAssetTracks of the asset that present media with the specified characteristic.
 --
@@ -293,9 +282,8 @@ tracksWithMediaType avAsset  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVAsset avAsset, IsNSString mediaCharacteristic) => avAsset -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avAsset  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avAsset (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avAsset mediaCharacteristic =
+  sendMessage avAsset tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | Cancels the loading of all values for all observers.
 --
@@ -303,29 +291,29 @@ tracksWithMediaCharacteristic avAsset  mediaCharacteristic =
 --
 -- ObjC selector: @- cancelLoading@
 cancelLoading :: IsAVAsset avAsset => avAsset -> IO ()
-cancelLoading avAsset  =
-    sendMsg avAsset (mkSelector "cancelLoading") retVoid []
+cancelLoading avAsset =
+  sendMessage avAsset cancelLoadingSelector
 
 -- | Indicates the natural rate at which the asset is to be played; often but not always 1.0
 --
 -- ObjC selector: @- preferredRate@
 preferredRate :: IsAVAsset avAsset => avAsset -> IO CFloat
-preferredRate avAsset  =
-    sendMsg avAsset (mkSelector "preferredRate") retCFloat []
+preferredRate avAsset =
+  sendMessage avAsset preferredRateSelector
 
 -- | Indicates the preferred volume at which the audible media of an asset is to be played; often but not always 1.0
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVAsset avAsset => avAsset -> IO CFloat
-preferredVolume avAsset  =
-    sendMsg avAsset (mkSelector "preferredVolume") retCFloat []
+preferredVolume avAsset =
+  sendMessage avAsset preferredVolumeSelector
 
 -- | Guides to a display mode that is optimal for playing this particular asset.
 --
 -- ObjC selector: @- preferredDisplayCriteria@
 preferredDisplayCriteria :: IsAVAsset avAsset => avAsset -> IO RawId
-preferredDisplayCriteria avAsset  =
-    fmap (RawId . castPtr) $ sendMsg avAsset (mkSelector "preferredDisplayCriteria") (retPtr retVoid) []
+preferredDisplayCriteria avAsset =
+  sendMessage avAsset preferredDisplayCriteriaSelector
 
 -- | Indicates whether an AVPlayer can play the contents of the asset in a manner that meets user expectations.
 --
@@ -333,36 +321,36 @@ preferredDisplayCriteria avAsset  =
 --
 -- ObjC selector: @- playable@
 playable :: IsAVAsset avAsset => avAsset -> IO Bool
-playable avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "playable") retCULong []
+playable avAsset =
+  sendMessage avAsset playableSelector
 
 -- | Indicates whether an AVAssetExportSession can be used with the receiver for export
 --
 -- ObjC selector: @- exportable@
 exportable :: IsAVAsset avAsset => avAsset -> IO Bool
-exportable avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "exportable") retCULong []
+exportable avAsset =
+  sendMessage avAsset exportableSelector
 
 -- | Indicates whether an AVAssetReader can be used with the receiver for extracting media data
 --
 -- ObjC selector: @- readable@
 readable :: IsAVAsset avAsset => avAsset -> IO Bool
-readable avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "readable") retCULong []
+readable avAsset =
+  sendMessage avAsset readableSelector
 
 -- | Indicates whether the receiver can be used to build an AVMutableComposition
 --
 -- ObjC selector: @- composable@
 composable :: IsAVAsset avAsset => avAsset -> IO Bool
-composable avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "composable") retCULong []
+composable avAsset =
+  sendMessage avAsset composableSelector
 
 -- | Indicates whether the receiver can be written to the saved photos album
 --
 -- ObjC selector: @- compatibleWithSavedPhotosAlbum@
 compatibleWithSavedPhotosAlbum :: IsAVAsset avAsset => avAsset -> IO Bool
-compatibleWithSavedPhotosAlbum avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "compatibleWithSavedPhotosAlbum") retCULong []
+compatibleWithSavedPhotosAlbum avAsset =
+  sendMessage avAsset compatibleWithSavedPhotosAlbumSelector
 
 -- | Indicates whether the asset is compatible with AirPlay Video.
 --
@@ -370,8 +358,8 @@ compatibleWithSavedPhotosAlbum avAsset  =
 --
 -- ObjC selector: @- compatibleWithAirPlayVideo@
 compatibleWithAirPlayVideo :: IsAVAsset avAsset => avAsset -> IO Bool
-compatibleWithAirPlayVideo avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "compatibleWithAirPlayVideo") retCULong []
+compatibleWithAirPlayVideo avAsset =
+  sendMessage avAsset compatibleWithAirPlayVideoSelector
 
 -- | Indicates whether the asset is capable of being extended by fragments.
 --
@@ -379,8 +367,8 @@ compatibleWithAirPlayVideo avAsset  =
 --
 -- ObjC selector: @- canContainFragments@
 canContainFragments :: IsAVAsset avAsset => avAsset -> IO Bool
-canContainFragments avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "canContainFragments") retCULong []
+canContainFragments avAsset =
+  sendMessage avAsset canContainFragmentsSelector
 
 -- | Indicates whether the asset is extended by at least one fragment.
 --
@@ -388,8 +376,8 @@ canContainFragments avAsset  =
 --
 -- ObjC selector: @- containsFragments@
 containsFragments :: IsAVAsset avAsset => avAsset -> IO Bool
-containsFragments avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "containsFragments") retCULong []
+containsFragments avAsset =
+  sendMessage avAsset containsFragmentsSelector
 
 -- | Indicates whether or not the asset has protected content.
 --
@@ -397,78 +385,78 @@ containsFragments avAsset  =
 --
 -- ObjC selector: @- hasProtectedContent@
 hasProtectedContent :: IsAVAsset avAsset => avAsset -> IO Bool
-hasProtectedContent avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "hasProtectedContent") retCULong []
+hasProtectedContent avAsset =
+  sendMessage avAsset hasProtectedContentSelector
 
 -- | Provides an NSArray of NSStrings, each NSString indicating a media characteristic for which a media selection option is available.
 --
 -- ObjC selector: @- availableMediaCharacteristicsWithMediaSelectionOptions@
 availableMediaCharacteristicsWithMediaSelectionOptions :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-availableMediaCharacteristicsWithMediaSelectionOptions avAsset  =
-    sendMsg avAsset (mkSelector "availableMediaCharacteristicsWithMediaSelectionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMediaCharacteristicsWithMediaSelectionOptions avAsset =
+  sendMessage avAsset availableMediaCharacteristicsWithMediaSelectionOptionsSelector
 
 -- | Provides an instance of AVMediaSelection with default selections for each of the receiver's media selection groups.
 --
 -- ObjC selector: @- preferredMediaSelection@
 preferredMediaSelection :: IsAVAsset avAsset => avAsset -> IO (Id AVMediaSelection)
-preferredMediaSelection avAsset  =
-    sendMsg avAsset (mkSelector "preferredMediaSelection") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredMediaSelection avAsset =
+  sendMessage avAsset preferredMediaSelectionSelector
 
 -- | Provides an array of all permutations of AVMediaSelection for this asset.
 --
 -- ObjC selector: @- allMediaSelections@
 allMediaSelections :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-allMediaSelections avAsset  =
-    sendMsg avAsset (mkSelector "allMediaSelections") (retPtr retVoid) [] >>= retainedObject . castPtr
+allMediaSelections avAsset =
+  sendMessage avAsset allMediaSelectionsSelector
 
 -- | array of NSLocale
 --
 -- ObjC selector: @- availableChapterLocales@
 availableChapterLocales :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-availableChapterLocales avAsset  =
-    sendMsg avAsset (mkSelector "availableChapterLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableChapterLocales avAsset =
+  sendMessage avAsset availableChapterLocalesSelector
 
 -- | Indicates the creation date of the asset as an AVMetadataItem. May be nil. If a creation date has been stored by the asset in a form that can be converted to an NSDate, the dateValue property of the AVMetadataItem will provide an instance of NSDate. Otherwise the creation date is available only as a string value, via -[AVMetadataItem stringValue].
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsAVAsset avAsset => avAsset -> IO (Id AVMetadataItem)
-creationDate avAsset  =
-    sendMsg avAsset (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate avAsset =
+  sendMessage avAsset creationDateSelector
 
 -- | Provides access to the lyrics of the asset suitable for the current locale.
 --
 -- ObjC selector: @- lyrics@
 lyrics :: IsAVAsset avAsset => avAsset -> IO (Id NSString)
-lyrics avAsset  =
-    sendMsg avAsset (mkSelector "lyrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+lyrics avAsset =
+  sendMessage avAsset lyricsSelector
 
 -- | Provides access to an array of AVMetadataItems for each common metadata key for which a value is available; items can be filtered according to language via +[AVMetadataItem metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:] and according to identifier via +[AVMetadataItem metadataItemsFromArray:filteredByIdentifier:].
 --
 -- ObjC selector: @- commonMetadata@
 commonMetadata :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-commonMetadata avAsset  =
-    sendMsg avAsset (mkSelector "commonMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonMetadata avAsset =
+  sendMessage avAsset commonMetadataSelector
 
 -- | Provides access to an array of AVMetadataItems for all metadata identifiers for which a value is available; items can be filtered according to language via +[AVMetadataItem metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:] and according to identifier via +[AVMetadataItem metadataItemsFromArray:filteredByIdentifier:].
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-metadata avAsset  =
-    sendMsg avAsset (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avAsset =
+  sendMessage avAsset metadataSelector
 
 -- | Provides an NSArray of NSStrings, each representing a metadata format that's available to the asset (e.g. ID3, iTunes metadata, etc.). Metadata formats are defined in AVMetadataFormat.h.
 --
 -- ObjC selector: @- availableMetadataFormats@
 availableMetadataFormats :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-availableMetadataFormats avAsset  =
-    sendMsg avAsset (mkSelector "availableMetadataFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMetadataFormats avAsset =
+  sendMessage avAsset availableMetadataFormatsSelector
 
 -- | Provides the array of AVAssetTracks contained by the asset
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-tracks avAsset  =
-    sendMsg avAsset (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avAsset =
+  sendMessage avAsset tracksSelector
 
 -- | All track groups in the receiver.
 --
@@ -476,8 +464,8 @@ tracks avAsset  =
 --
 -- ObjC selector: @- trackGroups@
 trackGroups :: IsAVAsset avAsset => avAsset -> IO (Id NSArray)
-trackGroups avAsset  =
-    sendMsg avAsset (mkSelector "trackGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackGroups avAsset =
+  sendMessage avAsset trackGroupsSelector
 
 -- | Indicates the reference restrictions being used by the receiver.
 --
@@ -485,169 +473,169 @@ trackGroups avAsset  =
 --
 -- ObjC selector: @- referenceRestrictions@
 referenceRestrictions :: IsAVAsset avAsset => avAsset -> IO AVAssetReferenceRestrictions
-referenceRestrictions avAsset  =
-    fmap (coerce :: CULong -> AVAssetReferenceRestrictions) $ sendMsg avAsset (mkSelector "referenceRestrictions") retCULong []
+referenceRestrictions avAsset =
+  sendMessage avAsset referenceRestrictionsSelector
 
 -- | Indicates that the asset provides precise timing. See "duration" above and AVURLAssetPreferPreciseDurationAndTimingKey below.
 --
 -- ObjC selector: @- providesPreciseDurationAndTiming@
 providesPreciseDurationAndTiming :: IsAVAsset avAsset => avAsset -> IO Bool
-providesPreciseDurationAndTiming avAsset  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAsset (mkSelector "providesPreciseDurationAndTiming") retCULong []
+providesPreciseDurationAndTiming avAsset =
+  sendMessage avAsset providesPreciseDurationAndTimingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @assetWithURL:@
-assetWithURLSelector :: Selector
+assetWithURLSelector :: Selector '[Id NSURL] (Id AVAsset)
 assetWithURLSelector = mkSelector "assetWithURL:"
 
 -- | @Selector@ for @unusedTrackID@
-unusedTrackIDSelector :: Selector
+unusedTrackIDSelector :: Selector '[] CInt
 unusedTrackIDSelector = mkSelector "unusedTrackID"
 
 -- | @Selector@ for @findUnusedTrackIDWithCompletionHandler:@
-findUnusedTrackIDWithCompletionHandlerSelector :: Selector
+findUnusedTrackIDWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 findUnusedTrackIDWithCompletionHandlerSelector = mkSelector "findUnusedTrackIDWithCompletionHandler:"
 
 -- | @Selector@ for @mediaSelectionGroupForMediaCharacteristic:@
-mediaSelectionGroupForMediaCharacteristicSelector :: Selector
+mediaSelectionGroupForMediaCharacteristicSelector :: Selector '[Id NSString] (Id AVMediaSelectionGroup)
 mediaSelectionGroupForMediaCharacteristicSelector = mkSelector "mediaSelectionGroupForMediaCharacteristic:"
 
 -- | @Selector@ for @loadMediaSelectionGroupForMediaCharacteristic:completionHandler:@
-loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector :: Selector
+loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 loadMediaSelectionGroupForMediaCharacteristic_completionHandlerSelector = mkSelector "loadMediaSelectionGroupForMediaCharacteristic:completionHandler:"
 
 -- | @Selector@ for @chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector '[Id NSLocale, Id NSArray] (Id NSArray)
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector = mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:"
 
 -- | @Selector@ for @chapterMetadataGroupsBestMatchingPreferredLanguages:@
-chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector
+chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector '[Id NSArray] (Id NSArray)
 chapterMetadataGroupsBestMatchingPreferredLanguagesSelector = mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVAssetTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @cancelLoading@
-cancelLoadingSelector :: Selector
+cancelLoadingSelector :: Selector '[] ()
 cancelLoadingSelector = mkSelector "cancelLoading"
 
 -- | @Selector@ for @preferredRate@
-preferredRateSelector :: Selector
+preferredRateSelector :: Selector '[] CFloat
 preferredRateSelector = mkSelector "preferredRate"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @preferredDisplayCriteria@
-preferredDisplayCriteriaSelector :: Selector
+preferredDisplayCriteriaSelector :: Selector '[] RawId
 preferredDisplayCriteriaSelector = mkSelector "preferredDisplayCriteria"
 
 -- | @Selector@ for @playable@
-playableSelector :: Selector
+playableSelector :: Selector '[] Bool
 playableSelector = mkSelector "playable"
 
 -- | @Selector@ for @exportable@
-exportableSelector :: Selector
+exportableSelector :: Selector '[] Bool
 exportableSelector = mkSelector "exportable"
 
 -- | @Selector@ for @readable@
-readableSelector :: Selector
+readableSelector :: Selector '[] Bool
 readableSelector = mkSelector "readable"
 
 -- | @Selector@ for @composable@
-composableSelector :: Selector
+composableSelector :: Selector '[] Bool
 composableSelector = mkSelector "composable"
 
 -- | @Selector@ for @compatibleWithSavedPhotosAlbum@
-compatibleWithSavedPhotosAlbumSelector :: Selector
+compatibleWithSavedPhotosAlbumSelector :: Selector '[] Bool
 compatibleWithSavedPhotosAlbumSelector = mkSelector "compatibleWithSavedPhotosAlbum"
 
 -- | @Selector@ for @compatibleWithAirPlayVideo@
-compatibleWithAirPlayVideoSelector :: Selector
+compatibleWithAirPlayVideoSelector :: Selector '[] Bool
 compatibleWithAirPlayVideoSelector = mkSelector "compatibleWithAirPlayVideo"
 
 -- | @Selector@ for @canContainFragments@
-canContainFragmentsSelector :: Selector
+canContainFragmentsSelector :: Selector '[] Bool
 canContainFragmentsSelector = mkSelector "canContainFragments"
 
 -- | @Selector@ for @containsFragments@
-containsFragmentsSelector :: Selector
+containsFragmentsSelector :: Selector '[] Bool
 containsFragmentsSelector = mkSelector "containsFragments"
 
 -- | @Selector@ for @hasProtectedContent@
-hasProtectedContentSelector :: Selector
+hasProtectedContentSelector :: Selector '[] Bool
 hasProtectedContentSelector = mkSelector "hasProtectedContent"
 
 -- | @Selector@ for @availableMediaCharacteristicsWithMediaSelectionOptions@
-availableMediaCharacteristicsWithMediaSelectionOptionsSelector :: Selector
+availableMediaCharacteristicsWithMediaSelectionOptionsSelector :: Selector '[] (Id NSArray)
 availableMediaCharacteristicsWithMediaSelectionOptionsSelector = mkSelector "availableMediaCharacteristicsWithMediaSelectionOptions"
 
 -- | @Selector@ for @preferredMediaSelection@
-preferredMediaSelectionSelector :: Selector
+preferredMediaSelectionSelector :: Selector '[] (Id AVMediaSelection)
 preferredMediaSelectionSelector = mkSelector "preferredMediaSelection"
 
 -- | @Selector@ for @allMediaSelections@
-allMediaSelectionsSelector :: Selector
+allMediaSelectionsSelector :: Selector '[] (Id NSArray)
 allMediaSelectionsSelector = mkSelector "allMediaSelections"
 
 -- | @Selector@ for @availableChapterLocales@
-availableChapterLocalesSelector :: Selector
+availableChapterLocalesSelector :: Selector '[] (Id NSArray)
 availableChapterLocalesSelector = mkSelector "availableChapterLocales"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id AVMetadataItem)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @lyrics@
-lyricsSelector :: Selector
+lyricsSelector :: Selector '[] (Id NSString)
 lyricsSelector = mkSelector "lyrics"
 
 -- | @Selector@ for @commonMetadata@
-commonMetadataSelector :: Selector
+commonMetadataSelector :: Selector '[] (Id NSArray)
 commonMetadataSelector = mkSelector "commonMetadata"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @availableMetadataFormats@
-availableMetadataFormatsSelector :: Selector
+availableMetadataFormatsSelector :: Selector '[] (Id NSArray)
 availableMetadataFormatsSelector = mkSelector "availableMetadataFormats"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 
 -- | @Selector@ for @trackGroups@
-trackGroupsSelector :: Selector
+trackGroupsSelector :: Selector '[] (Id NSArray)
 trackGroupsSelector = mkSelector "trackGroups"
 
 -- | @Selector@ for @referenceRestrictions@
-referenceRestrictionsSelector :: Selector
+referenceRestrictionsSelector :: Selector '[] AVAssetReferenceRestrictions
 referenceRestrictionsSelector = mkSelector "referenceRestrictions"
 
 -- | @Selector@ for @providesPreciseDurationAndTiming@
-providesPreciseDurationAndTimingSelector :: Selector
+providesPreciseDurationAndTimingSelector :: Selector '[] Bool
 providesPreciseDurationAndTimingSelector = mkSelector "providesPreciseDurationAndTiming"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.QuickLookThumbnailing.QLThumbnailReply
   , replyWithImageFileURL
   , extensionBadge
   , setExtensionBadge
+  , extensionBadgeSelector
   , initSelector
   , replyWithImageFileURLSelector
-  , extensionBadgeSelector
   , setExtensionBadgeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsQLThumbnailReply qlThumbnailReply => qlThumbnailReply -> IO (Id QLThumbnailReply)
-init_ qlThumbnailReply  =
-    sendMsg qlThumbnailReply (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ qlThumbnailReply =
+  sendOwnedMessage qlThumbnailReply initSelector
 
 -- | You can create a reply object with a file URL of an image that will be used as the thumbnail. The image will be downscaled to fit the size of the QLFileThumbnailRequest if necessary.
 --
@@ -49,41 +46,39 @@ replyWithImageFileURL :: IsNSURL fileURL => fileURL -> IO (Id QLThumbnailReply)
 replyWithImageFileURL fileURL =
   do
     cls' <- getRequiredClass "QLThumbnailReply"
-    withObjCPtr fileURL $ \raw_fileURL ->
-      sendClassMsg cls' (mkSelector "replyWithImageFileURL:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' replyWithImageFileURLSelector (toNSURL fileURL)
 
 -- | The extensionBadge is a short string identifying the file type used as a badge when producing an icon.
 --
 -- ObjC selector: @- extensionBadge@
 extensionBadge :: IsQLThumbnailReply qlThumbnailReply => qlThumbnailReply -> IO (Id NSString)
-extensionBadge qlThumbnailReply  =
-    sendMsg qlThumbnailReply (mkSelector "extensionBadge") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionBadge qlThumbnailReply =
+  sendMessage qlThumbnailReply extensionBadgeSelector
 
 -- | The extensionBadge is a short string identifying the file type used as a badge when producing an icon.
 --
 -- ObjC selector: @- setExtensionBadge:@
 setExtensionBadge :: (IsQLThumbnailReply qlThumbnailReply, IsNSString value) => qlThumbnailReply -> value -> IO ()
-setExtensionBadge qlThumbnailReply  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg qlThumbnailReply (mkSelector "setExtensionBadge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtensionBadge qlThumbnailReply value =
+  sendMessage qlThumbnailReply setExtensionBadgeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id QLThumbnailReply)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @replyWithImageFileURL:@
-replyWithImageFileURLSelector :: Selector
+replyWithImageFileURLSelector :: Selector '[Id NSURL] (Id QLThumbnailReply)
 replyWithImageFileURLSelector = mkSelector "replyWithImageFileURL:"
 
 -- | @Selector@ for @extensionBadge@
-extensionBadgeSelector :: Selector
+extensionBadgeSelector :: Selector '[] (Id NSString)
 extensionBadgeSelector = mkSelector "extensionBadge"
 
 -- | @Selector@ for @setExtensionBadge:@
-setExtensionBadgeSelector :: Selector
+setExtensionBadgeSelector :: Selector '[Id NSString] ()
 setExtensionBadgeSelector = mkSelector "setExtensionBadge:"
 

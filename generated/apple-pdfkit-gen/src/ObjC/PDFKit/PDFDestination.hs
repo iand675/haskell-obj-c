@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.PDFKit.PDFDestination
   , point
   , zoom
   , setZoom
-  , initWithPage_atPointSelector
   , compareSelector
+  , initWithPage_atPointSelector
   , pageSelector
   , pointSelector
-  , zoomSelector
   , setZoomSelector
+  , zoomSelector
 
   -- * Enum types
   , NSComparisonResult(NSComparisonResult)
@@ -28,15 +29,11 @@ module ObjC.PDFKit.PDFDestination
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,61 +44,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPage:atPoint:@
 initWithPage_atPoint :: (IsPDFDestination pdfDestination, IsPDFPage page) => pdfDestination -> page -> NSPoint -> IO (Id PDFDestination)
-initWithPage_atPoint pdfDestination  page point =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfDestination (mkSelector "initWithPage:atPoint:") (retPtr retVoid) [argPtr (castPtr raw_page :: Ptr ()), argNSPoint point] >>= ownedObject . castPtr
+initWithPage_atPoint pdfDestination page point =
+  sendOwnedMessage pdfDestination initWithPage_atPointSelector (toPDFPage page) point
 
 -- | @- compare:@
 compare_ :: (IsPDFDestination pdfDestination, IsPDFDestination destination) => pdfDestination -> destination -> IO NSComparisonResult
-compare_ pdfDestination  destination =
-  withObjCPtr destination $ \raw_destination ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg pdfDestination (mkSelector "compare:") retCLong [argPtr (castPtr raw_destination :: Ptr ())]
+compare_ pdfDestination destination =
+  sendMessage pdfDestination compareSelector (toPDFDestination destination)
 
 -- | @- page@
 page :: IsPDFDestination pdfDestination => pdfDestination -> IO (Id PDFPage)
-page pdfDestination  =
-    sendMsg pdfDestination (mkSelector "page") (retPtr retVoid) [] >>= retainedObject . castPtr
+page pdfDestination =
+  sendMessage pdfDestination pageSelector
 
 -- | @- point@
 point :: IsPDFDestination pdfDestination => pdfDestination -> IO NSPoint
-point pdfDestination  =
-    sendMsgStret pdfDestination (mkSelector "point") retNSPoint []
+point pdfDestination =
+  sendMessage pdfDestination pointSelector
 
 -- | @- zoom@
 zoom :: IsPDFDestination pdfDestination => pdfDestination -> IO CDouble
-zoom pdfDestination  =
-    sendMsg pdfDestination (mkSelector "zoom") retCDouble []
+zoom pdfDestination =
+  sendMessage pdfDestination zoomSelector
 
 -- | @- setZoom:@
 setZoom :: IsPDFDestination pdfDestination => pdfDestination -> CDouble -> IO ()
-setZoom pdfDestination  value =
-    sendMsg pdfDestination (mkSelector "setZoom:") retVoid [argCDouble value]
+setZoom pdfDestination value =
+  sendMessage pdfDestination setZoomSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPage:atPoint:@
-initWithPage_atPointSelector :: Selector
+initWithPage_atPointSelector :: Selector '[Id PDFPage, NSPoint] (Id PDFDestination)
 initWithPage_atPointSelector = mkSelector "initWithPage:atPoint:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id PDFDestination] NSComparisonResult
 compareSelector = mkSelector "compare:"
 
 -- | @Selector@ for @page@
-pageSelector :: Selector
+pageSelector :: Selector '[] (Id PDFPage)
 pageSelector = mkSelector "page"
 
 -- | @Selector@ for @point@
-pointSelector :: Selector
+pointSelector :: Selector '[] NSPoint
 pointSelector = mkSelector "point"
 
 -- | @Selector@ for @zoom@
-zoomSelector :: Selector
+zoomSelector :: Selector '[] CDouble
 zoomSelector = mkSelector "zoom"
 
 -- | @Selector@ for @setZoom:@
-setZoomSelector :: Selector
+setZoomSelector :: Selector '[CDouble] ()
 setZoomSelector = mkSelector "setZoom:"
 

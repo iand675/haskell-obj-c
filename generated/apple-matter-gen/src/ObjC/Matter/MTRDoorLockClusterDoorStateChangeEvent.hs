@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRDoorLockClusterDoorStateChangeEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- doorState@
 doorState :: IsMTRDoorLockClusterDoorStateChangeEvent mtrDoorLockClusterDoorStateChangeEvent => mtrDoorLockClusterDoorStateChangeEvent -> IO (Id NSNumber)
-doorState mtrDoorLockClusterDoorStateChangeEvent  =
-    sendMsg mtrDoorLockClusterDoorStateChangeEvent (mkSelector "doorState") (retPtr retVoid) [] >>= retainedObject . castPtr
+doorState mtrDoorLockClusterDoorStateChangeEvent =
+  sendMessage mtrDoorLockClusterDoorStateChangeEvent doorStateSelector
 
 -- | @- setDoorState:@
 setDoorState :: (IsMTRDoorLockClusterDoorStateChangeEvent mtrDoorLockClusterDoorStateChangeEvent, IsNSNumber value) => mtrDoorLockClusterDoorStateChangeEvent -> value -> IO ()
-setDoorState mtrDoorLockClusterDoorStateChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterDoorStateChangeEvent (mkSelector "setDoorState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDoorState mtrDoorLockClusterDoorStateChangeEvent value =
+  sendMessage mtrDoorLockClusterDoorStateChangeEvent setDoorStateSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @doorState@
-doorStateSelector :: Selector
+doorStateSelector :: Selector '[] (Id NSNumber)
 doorStateSelector = mkSelector "doorState"
 
 -- | @Selector@ for @setDoorState:@
-setDoorStateSelector :: Selector
+setDoorStateSelector :: Selector '[Id NSNumber] ()
 setDoorStateSelector = mkSelector "setDoorState:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AVFoundation.AVPortraitEffectsMatte
   , dictionaryRepresentationForAuxiliaryDataType
   , pixelFormatType
   , mattingImage
+  , dictionaryRepresentationForAuxiliaryDataTypeSelector
   , initSelector
+  , mattingImageSelector
   , newSelector
-  , portraitEffectsMatteFromDictionaryRepresentation_errorSelector
+  , pixelFormatTypeSelector
   , portraitEffectsMatteByApplyingExifOrientationSelector
   , portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_errorSelector
-  , dictionaryRepresentationForAuxiliaryDataTypeSelector
-  , pixelFormatTypeSelector
-  , mattingImageSelector
+  , portraitEffectsMatteFromDictionaryRepresentation_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPortraitEffectsMatte avPortraitEffectsMatte => avPortraitEffectsMatte -> IO (Id AVPortraitEffectsMatte)
-init_ avPortraitEffectsMatte  =
-    sendMsg avPortraitEffectsMatte (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPortraitEffectsMatte =
+  sendOwnedMessage avPortraitEffectsMatte initSelector
 
 -- | @+ new@
 new :: IO (Id AVPortraitEffectsMatte)
 new  =
   do
     cls' <- getRequiredClass "AVPortraitEffectsMatte"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | portraitEffectsMatteFromDictionaryRepresentation:error:
 --
@@ -76,9 +73,7 @@ portraitEffectsMatteFromDictionaryRepresentation_error :: (IsNSDictionary imageS
 portraitEffectsMatteFromDictionaryRepresentation_error imageSourceAuxDataInfoDictionary outError =
   do
     cls' <- getRequiredClass "AVPortraitEffectsMatte"
-    withObjCPtr imageSourceAuxDataInfoDictionary $ \raw_imageSourceAuxDataInfoDictionary ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "portraitEffectsMatteFromDictionaryRepresentation:error:") (retPtr retVoid) [argPtr (castPtr raw_imageSourceAuxDataInfoDictionary :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' portraitEffectsMatteFromDictionaryRepresentation_errorSelector (toNSDictionary imageSourceAuxDataInfoDictionary) (toNSError outError)
 
 -- | portraitEffectsMatteByApplyingExifOrientation:
 --
@@ -92,8 +87,8 @@ portraitEffectsMatteFromDictionaryRepresentation_error imageSourceAuxDataInfoDic
 --
 -- ObjC selector: @- portraitEffectsMatteByApplyingExifOrientation:@
 portraitEffectsMatteByApplyingExifOrientation :: IsAVPortraitEffectsMatte avPortraitEffectsMatte => avPortraitEffectsMatte -> CInt -> IO (Id AVPortraitEffectsMatte)
-portraitEffectsMatteByApplyingExifOrientation avPortraitEffectsMatte  exifOrientation =
-    sendMsg avPortraitEffectsMatte (mkSelector "portraitEffectsMatteByApplyingExifOrientation:") (retPtr retVoid) [argCInt (fromIntegral exifOrientation)] >>= retainedObject . castPtr
+portraitEffectsMatteByApplyingExifOrientation avPortraitEffectsMatte exifOrientation =
+  sendMessage avPortraitEffectsMatte portraitEffectsMatteByApplyingExifOrientationSelector exifOrientation
 
 -- | portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer:error:
 --
@@ -109,9 +104,8 @@ portraitEffectsMatteByApplyingExifOrientation avPortraitEffectsMatte  exifOrient
 --
 -- ObjC selector: @- portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer:error:@
 portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_error :: (IsAVPortraitEffectsMatte avPortraitEffectsMatte, IsNSError outError) => avPortraitEffectsMatte -> Ptr () -> outError -> IO (Id AVPortraitEffectsMatte)
-portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_error avPortraitEffectsMatte  pixelBuffer outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avPortraitEffectsMatte (mkSelector "portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer:error:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_error avPortraitEffectsMatte pixelBuffer outError =
+  sendMessage avPortraitEffectsMatte portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_errorSelector pixelBuffer (toNSError outError)
 
 -- | dictionaryRepresentationForAuxiliaryDataType:
 --
@@ -125,9 +119,8 @@ portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_error avPortr
 --
 -- ObjC selector: @- dictionaryRepresentationForAuxiliaryDataType:@
 dictionaryRepresentationForAuxiliaryDataType :: (IsAVPortraitEffectsMatte avPortraitEffectsMatte, IsNSString outAuxDataType) => avPortraitEffectsMatte -> outAuxDataType -> IO (Id NSDictionary)
-dictionaryRepresentationForAuxiliaryDataType avPortraitEffectsMatte  outAuxDataType =
-  withObjCPtr outAuxDataType $ \raw_outAuxDataType ->
-      sendMsg avPortraitEffectsMatte (mkSelector "dictionaryRepresentationForAuxiliaryDataType:") (retPtr retVoid) [argPtr (castPtr raw_outAuxDataType :: Ptr ())] >>= retainedObject . castPtr
+dictionaryRepresentationForAuxiliaryDataType avPortraitEffectsMatte outAuxDataType =
+  sendMessage avPortraitEffectsMatte dictionaryRepresentationForAuxiliaryDataTypeSelector (toNSString outAuxDataType)
 
 -- | pixelFormatType
 --
@@ -137,8 +130,8 @@ dictionaryRepresentationForAuxiliaryDataType avPortraitEffectsMatte  outAuxDataT
 --
 -- ObjC selector: @- pixelFormatType@
 pixelFormatType :: IsAVPortraitEffectsMatte avPortraitEffectsMatte => avPortraitEffectsMatte -> IO CUInt
-pixelFormatType avPortraitEffectsMatte  =
-    sendMsg avPortraitEffectsMatte (mkSelector "pixelFormatType") retCUInt []
+pixelFormatType avPortraitEffectsMatte =
+  sendMessage avPortraitEffectsMatte pixelFormatTypeSelector
 
 -- | mattingImage
 --
@@ -148,42 +141,42 @@ pixelFormatType avPortraitEffectsMatte  =
 --
 -- ObjC selector: @- mattingImage@
 mattingImage :: IsAVPortraitEffectsMatte avPortraitEffectsMatte => avPortraitEffectsMatte -> IO (Ptr ())
-mattingImage avPortraitEffectsMatte  =
-    fmap castPtr $ sendMsg avPortraitEffectsMatte (mkSelector "mattingImage") (retPtr retVoid) []
+mattingImage avPortraitEffectsMatte =
+  sendMessage avPortraitEffectsMatte mattingImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPortraitEffectsMatte)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPortraitEffectsMatte)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @portraitEffectsMatteFromDictionaryRepresentation:error:@
-portraitEffectsMatteFromDictionaryRepresentation_errorSelector :: Selector
+portraitEffectsMatteFromDictionaryRepresentation_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id AVPortraitEffectsMatte)
 portraitEffectsMatteFromDictionaryRepresentation_errorSelector = mkSelector "portraitEffectsMatteFromDictionaryRepresentation:error:"
 
 -- | @Selector@ for @portraitEffectsMatteByApplyingExifOrientation:@
-portraitEffectsMatteByApplyingExifOrientationSelector :: Selector
+portraitEffectsMatteByApplyingExifOrientationSelector :: Selector '[CInt] (Id AVPortraitEffectsMatte)
 portraitEffectsMatteByApplyingExifOrientationSelector = mkSelector "portraitEffectsMatteByApplyingExifOrientation:"
 
 -- | @Selector@ for @portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer:error:@
-portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_errorSelector :: Selector
+portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_errorSelector :: Selector '[Ptr (), Id NSError] (Id AVPortraitEffectsMatte)
 portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer_errorSelector = mkSelector "portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBuffer:error:"
 
 -- | @Selector@ for @dictionaryRepresentationForAuxiliaryDataType:@
-dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector
+dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector '[Id NSString] (Id NSDictionary)
 dictionaryRepresentationForAuxiliaryDataTypeSelector = mkSelector "dictionaryRepresentationForAuxiliaryDataType:"
 
 -- | @Selector@ for @pixelFormatType@
-pixelFormatTypeSelector :: Selector
+pixelFormatTypeSelector :: Selector '[] CUInt
 pixelFormatTypeSelector = mkSelector "pixelFormatType"
 
 -- | @Selector@ for @mattingImage@
-mattingImageSelector :: Selector
+mattingImageSelector :: Selector '[] (Ptr ())
 mattingImageSelector = mkSelector "mattingImage"
 

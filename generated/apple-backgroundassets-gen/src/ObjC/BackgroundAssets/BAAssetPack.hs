@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.BackgroundAssets.BAAssetPack
   , downloadSize
   , version
   , userInfo
+  , downloadForContentRequestSelector
+  , downloadSelector
+  , downloadSizeSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , downloadSelector
-  , downloadForContentRequestSelector
-  , identifierSelector
-  , downloadSizeSelector
-  , versionSelector
   , userInfoSelector
+  , versionSelector
 
   -- * Enum types
   , BAContentRequest(BAContentRequest)
@@ -36,15 +37,11 @@ module ObjC.BackgroundAssets.BAAssetPack
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,36 +51,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBAAssetPack baAssetPack => baAssetPack -> IO (Id BAAssetPack)
-init_ baAssetPack  =
-    sendMsg baAssetPack (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ baAssetPack =
+  sendOwnedMessage baAssetPack initSelector
 
 -- | @+ new@
 new :: IO (Id BAAssetPack)
 new  =
   do
     cls' <- getRequiredClass "BAAssetPack"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a download object for the asset pack that you schedule using a download manager. - Remark: Use this method in your main app; use ``BAAssetPack/downloadForContentRequest:`` instead in your downloader extension.
 --
 -- ObjC selector: @- download@
 download :: IsBAAssetPack baAssetPack => baAssetPack -> IO (Id BADownload)
-download baAssetPack  =
-    sendMsg baAssetPack (mkSelector "download") (retPtr retVoid) [] >>= retainedObject . castPtr
+download baAssetPack =
+  sendMessage baAssetPack downloadSelector
 
 -- | Creates a download object for the asset pack that you schedule using a download manager. - Parameter contentRequest: The content request for the current extension invocation. - Returns: A download object. - Remark: Use this method in your downloader extension; use ``BAAssetPack/download`` instead in your main app.
 --
 -- ObjC selector: @- downloadForContentRequest:@
 downloadForContentRequest :: IsBAAssetPack baAssetPack => baAssetPack -> BAContentRequest -> IO (Id BADownload)
-downloadForContentRequest baAssetPack  contentRequest =
-    sendMsg baAssetPack (mkSelector "downloadForContentRequest:") (retPtr retVoid) [argCLong (coerce contentRequest)] >>= retainedObject . castPtr
+downloadForContentRequest baAssetPack contentRequest =
+  sendMessage baAssetPack downloadForContentRequestSelector contentRequest
 
 -- | A unique identifier for the asset pack.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsBAAssetPack baAssetPack => baAssetPack -> IO (Id NSString)
-identifier baAssetPack  =
-    sendMsg baAssetPack (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier baAssetPack =
+  sendMessage baAssetPack identifierSelector
 
 -- | The size of the download file containing the asset pack in bytes.
 --
@@ -91,15 +88,15 @@ identifier baAssetPack  =
 --
 -- ObjC selector: @- downloadSize@
 downloadSize :: IsBAAssetPack baAssetPack => baAssetPack -> IO CLong
-downloadSize baAssetPack  =
-    sendMsg baAssetPack (mkSelector "downloadSize") retCLong []
+downloadSize baAssetPack =
+  sendMessage baAssetPack downloadSizeSelector
 
 -- | The asset pack’s version number
 --
 -- ObjC selector: @- version@
 version :: IsBAAssetPack baAssetPack => baAssetPack -> IO CLong
-version baAssetPack  =
-    sendMsg baAssetPack (mkSelector "version") retCLong []
+version baAssetPack =
+  sendMessage baAssetPack versionSelector
 
 -- | JSON-encoded custom information that’s associated with the asset pack.
 --
@@ -107,42 +104,42 @@ version baAssetPack  =
 --
 -- ObjC selector: @- userInfo@
 userInfo :: IsBAAssetPack baAssetPack => baAssetPack -> IO (Id NSData)
-userInfo baAssetPack  =
-    sendMsg baAssetPack (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo baAssetPack =
+  sendMessage baAssetPack userInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BAAssetPack)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BAAssetPack)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @download@
-downloadSelector :: Selector
+downloadSelector :: Selector '[] (Id BADownload)
 downloadSelector = mkSelector "download"
 
 -- | @Selector@ for @downloadForContentRequest:@
-downloadForContentRequestSelector :: Selector
+downloadForContentRequestSelector :: Selector '[BAContentRequest] (Id BADownload)
 downloadForContentRequestSelector = mkSelector "downloadForContentRequest:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @downloadSize@
-downloadSizeSelector :: Selector
+downloadSizeSelector :: Selector '[] CLong
 downloadSizeSelector = mkSelector "downloadSize"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CLong
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSData)
 userInfoSelector = mkSelector "userInfo"
 

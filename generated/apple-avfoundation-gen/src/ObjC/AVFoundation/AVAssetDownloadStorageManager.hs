@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AVFoundation.AVAssetDownloadStorageManager
   , sharedDownloadStorageManager
   , setStorageManagementPolicy_forURL
   , storageManagementPolicyForURL
-  , sharedDownloadStorageManagerSelector
   , setStorageManagementPolicy_forURLSelector
+  , sharedDownloadStorageManagerSelector
   , storageManagementPolicyForURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,7 +39,7 @@ sharedDownloadStorageManager :: IO (Id AVAssetDownloadStorageManager)
 sharedDownloadStorageManager  =
   do
     cls' <- getRequiredClass "AVAssetDownloadStorageManager"
-    sendClassMsg cls' (mkSelector "sharedDownloadStorageManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedDownloadStorageManagerSelector
 
 -- | Sets the policy for asset with disk backing at downloadStorageURL.
 --
@@ -50,10 +47,8 @@ sharedDownloadStorageManager  =
 --
 -- ObjC selector: @- setStorageManagementPolicy:forURL:@
 setStorageManagementPolicy_forURL :: (IsAVAssetDownloadStorageManager avAssetDownloadStorageManager, IsAVAssetDownloadStorageManagementPolicy storageManagementPolicy, IsNSURL downloadStorageURL) => avAssetDownloadStorageManager -> storageManagementPolicy -> downloadStorageURL -> IO ()
-setStorageManagementPolicy_forURL avAssetDownloadStorageManager  storageManagementPolicy downloadStorageURL =
-  withObjCPtr storageManagementPolicy $ \raw_storageManagementPolicy ->
-    withObjCPtr downloadStorageURL $ \raw_downloadStorageURL ->
-        sendMsg avAssetDownloadStorageManager (mkSelector "setStorageManagementPolicy:forURL:") retVoid [argPtr (castPtr raw_storageManagementPolicy :: Ptr ()), argPtr (castPtr raw_downloadStorageURL :: Ptr ())]
+setStorageManagementPolicy_forURL avAssetDownloadStorageManager storageManagementPolicy downloadStorageURL =
+  sendMessage avAssetDownloadStorageManager setStorageManagementPolicy_forURLSelector (toAVAssetDownloadStorageManagementPolicy storageManagementPolicy) (toNSURL downloadStorageURL)
 
 -- | Returns the storage management policy for asset downloaded at downloadStorageURL. This may be nil if a storageManagementPolicy was never set on the downloaded asset.
 --
@@ -61,23 +56,22 @@ setStorageManagementPolicy_forURL avAssetDownloadStorageManager  storageManageme
 --
 -- ObjC selector: @- storageManagementPolicyForURL:@
 storageManagementPolicyForURL :: (IsAVAssetDownloadStorageManager avAssetDownloadStorageManager, IsNSURL downloadStorageURL) => avAssetDownloadStorageManager -> downloadStorageURL -> IO (Id AVAssetDownloadStorageManagementPolicy)
-storageManagementPolicyForURL avAssetDownloadStorageManager  downloadStorageURL =
-  withObjCPtr downloadStorageURL $ \raw_downloadStorageURL ->
-      sendMsg avAssetDownloadStorageManager (mkSelector "storageManagementPolicyForURL:") (retPtr retVoid) [argPtr (castPtr raw_downloadStorageURL :: Ptr ())] >>= retainedObject . castPtr
+storageManagementPolicyForURL avAssetDownloadStorageManager downloadStorageURL =
+  sendMessage avAssetDownloadStorageManager storageManagementPolicyForURLSelector (toNSURL downloadStorageURL)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedDownloadStorageManager@
-sharedDownloadStorageManagerSelector :: Selector
+sharedDownloadStorageManagerSelector :: Selector '[] (Id AVAssetDownloadStorageManager)
 sharedDownloadStorageManagerSelector = mkSelector "sharedDownloadStorageManager"
 
 -- | @Selector@ for @setStorageManagementPolicy:forURL:@
-setStorageManagementPolicy_forURLSelector :: Selector
+setStorageManagementPolicy_forURLSelector :: Selector '[Id AVAssetDownloadStorageManagementPolicy, Id NSURL] ()
 setStorageManagementPolicy_forURLSelector = mkSelector "setStorageManagementPolicy:forURL:"
 
 -- | @Selector@ for @storageManagementPolicyForURL:@
-storageManagementPolicyForURLSelector :: Selector
+storageManagementPolicyForURLSelector :: Selector '[Id NSURL] (Id AVAssetDownloadStorageManagementPolicy)
 storageManagementPolicyForURLSelector = mkSelector "storageManagementPolicyForURL:"
 

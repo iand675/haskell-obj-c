@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.EventKit.EKSource
   , title
   , isDelegate
   , calendarsForEntityTypeSelector
+  , isDelegateSelector
   , sourceIdentifierSelector
   , sourceTypeSelector
   , titleSelector
-  , isDelegateSelector
 
   -- * Enum types
   , EKEntityType(EKEntityType)
@@ -32,15 +33,11 @@ module ObjC.EventKit.EKSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,23 +51,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- calendarsForEntityType:@
 calendarsForEntityType :: IsEKSource ekSource => ekSource -> EKEntityType -> IO (Id NSSet)
-calendarsForEntityType ekSource  entityType =
-    sendMsg ekSource (mkSelector "calendarsForEntityType:") (retPtr retVoid) [argCULong (coerce entityType)] >>= retainedObject . castPtr
+calendarsForEntityType ekSource entityType =
+  sendMessage ekSource calendarsForEntityTypeSelector entityType
 
 -- | @- sourceIdentifier@
 sourceIdentifier :: IsEKSource ekSource => ekSource -> IO (Id NSString)
-sourceIdentifier ekSource  =
-    sendMsg ekSource (mkSelector "sourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceIdentifier ekSource =
+  sendMessage ekSource sourceIdentifierSelector
 
 -- | @- sourceType@
 sourceType :: IsEKSource ekSource => ekSource -> IO EKSourceType
-sourceType ekSource  =
-    fmap (coerce :: CLong -> EKSourceType) $ sendMsg ekSource (mkSelector "sourceType") retCLong []
+sourceType ekSource =
+  sendMessage ekSource sourceTypeSelector
 
 -- | @- title@
 title :: IsEKSource ekSource => ekSource -> IO (Id NSString)
-title ekSource  =
-    sendMsg ekSource (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekSource =
+  sendMessage ekSource titleSelector
 
 -- | isDelegate
 --
@@ -78,30 +75,30 @@ title ekSource  =
 --
 -- ObjC selector: @- isDelegate@
 isDelegate :: IsEKSource ekSource => ekSource -> IO Bool
-isDelegate ekSource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekSource (mkSelector "isDelegate") retCULong []
+isDelegate ekSource =
+  sendMessage ekSource isDelegateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @calendarsForEntityType:@
-calendarsForEntityTypeSelector :: Selector
+calendarsForEntityTypeSelector :: Selector '[EKEntityType] (Id NSSet)
 calendarsForEntityTypeSelector = mkSelector "calendarsForEntityType:"
 
 -- | @Selector@ for @sourceIdentifier@
-sourceIdentifierSelector :: Selector
+sourceIdentifierSelector :: Selector '[] (Id NSString)
 sourceIdentifierSelector = mkSelector "sourceIdentifier"
 
 -- | @Selector@ for @sourceType@
-sourceTypeSelector :: Selector
+sourceTypeSelector :: Selector '[] EKSourceType
 sourceTypeSelector = mkSelector "sourceType"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @isDelegate@
-isDelegateSelector :: Selector
+isDelegateSelector :: Selector '[] Bool
 isDelegateSelector = mkSelector "isDelegate"
 

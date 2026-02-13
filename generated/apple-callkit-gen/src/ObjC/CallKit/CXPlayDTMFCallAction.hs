@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.CallKit.CXPlayDTMFCallAction
   , setDigits
   , type_
   , setType
+  , digitsSelector
+  , initWithCallUUIDSelector
   , initWithCallUUID_digits_typeSelector
   , initWithCoderSelector
-  , initWithCallUUIDSelector
-  , digitsSelector
   , setDigitsSelector
-  , typeSelector
   , setTypeSelector
+  , typeSelector
 
   -- * Enum types
   , CXPlayDTMFCallActionType(CXPlayDTMFCallActionType)
@@ -30,15 +31,11 @@ module ObjC.CallKit.CXPlayDTMFCallAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,73 +45,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCallUUID:digits:type:@
 initWithCallUUID_digits_type :: (IsCXPlayDTMFCallAction cxPlayDTMFCallAction, IsNSUUID callUUID, IsNSString digits) => cxPlayDTMFCallAction -> callUUID -> digits -> CXPlayDTMFCallActionType -> IO (Id CXPlayDTMFCallAction)
-initWithCallUUID_digits_type cxPlayDTMFCallAction  callUUID digits type_ =
-  withObjCPtr callUUID $ \raw_callUUID ->
-    withObjCPtr digits $ \raw_digits ->
-        sendMsg cxPlayDTMFCallAction (mkSelector "initWithCallUUID:digits:type:") (retPtr retVoid) [argPtr (castPtr raw_callUUID :: Ptr ()), argPtr (castPtr raw_digits :: Ptr ()), argCLong (coerce type_)] >>= ownedObject . castPtr
+initWithCallUUID_digits_type cxPlayDTMFCallAction callUUID digits type_ =
+  sendOwnedMessage cxPlayDTMFCallAction initWithCallUUID_digits_typeSelector (toNSUUID callUUID) (toNSString digits) type_
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCXPlayDTMFCallAction cxPlayDTMFCallAction, IsNSCoder aDecoder) => cxPlayDTMFCallAction -> aDecoder -> IO (Id CXPlayDTMFCallAction)
-initWithCoder cxPlayDTMFCallAction  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg cxPlayDTMFCallAction (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder cxPlayDTMFCallAction aDecoder =
+  sendOwnedMessage cxPlayDTMFCallAction initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @- initWithCallUUID:@
 initWithCallUUID :: (IsCXPlayDTMFCallAction cxPlayDTMFCallAction, IsNSUUID callUUID) => cxPlayDTMFCallAction -> callUUID -> IO (Id CXPlayDTMFCallAction)
-initWithCallUUID cxPlayDTMFCallAction  callUUID =
-  withObjCPtr callUUID $ \raw_callUUID ->
-      sendMsg cxPlayDTMFCallAction (mkSelector "initWithCallUUID:") (retPtr retVoid) [argPtr (castPtr raw_callUUID :: Ptr ())] >>= ownedObject . castPtr
+initWithCallUUID cxPlayDTMFCallAction callUUID =
+  sendOwnedMessage cxPlayDTMFCallAction initWithCallUUIDSelector (toNSUUID callUUID)
 
 -- | @- digits@
 digits :: IsCXPlayDTMFCallAction cxPlayDTMFCallAction => cxPlayDTMFCallAction -> IO (Id NSString)
-digits cxPlayDTMFCallAction  =
-    sendMsg cxPlayDTMFCallAction (mkSelector "digits") (retPtr retVoid) [] >>= retainedObject . castPtr
+digits cxPlayDTMFCallAction =
+  sendMessage cxPlayDTMFCallAction digitsSelector
 
 -- | @- setDigits:@
 setDigits :: (IsCXPlayDTMFCallAction cxPlayDTMFCallAction, IsNSString value) => cxPlayDTMFCallAction -> value -> IO ()
-setDigits cxPlayDTMFCallAction  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cxPlayDTMFCallAction (mkSelector "setDigits:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDigits cxPlayDTMFCallAction value =
+  sendMessage cxPlayDTMFCallAction setDigitsSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsCXPlayDTMFCallAction cxPlayDTMFCallAction => cxPlayDTMFCallAction -> IO CXPlayDTMFCallActionType
-type_ cxPlayDTMFCallAction  =
-    fmap (coerce :: CLong -> CXPlayDTMFCallActionType) $ sendMsg cxPlayDTMFCallAction (mkSelector "type") retCLong []
+type_ cxPlayDTMFCallAction =
+  sendMessage cxPlayDTMFCallAction typeSelector
 
 -- | @- setType:@
 setType :: IsCXPlayDTMFCallAction cxPlayDTMFCallAction => cxPlayDTMFCallAction -> CXPlayDTMFCallActionType -> IO ()
-setType cxPlayDTMFCallAction  value =
-    sendMsg cxPlayDTMFCallAction (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType cxPlayDTMFCallAction value =
+  sendMessage cxPlayDTMFCallAction setTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCallUUID:digits:type:@
-initWithCallUUID_digits_typeSelector :: Selector
+initWithCallUUID_digits_typeSelector :: Selector '[Id NSUUID, Id NSString, CXPlayDTMFCallActionType] (Id CXPlayDTMFCallAction)
 initWithCallUUID_digits_typeSelector = mkSelector "initWithCallUUID:digits:type:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CXPlayDTMFCallAction)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithCallUUID:@
-initWithCallUUIDSelector :: Selector
+initWithCallUUIDSelector :: Selector '[Id NSUUID] (Id CXPlayDTMFCallAction)
 initWithCallUUIDSelector = mkSelector "initWithCallUUID:"
 
 -- | @Selector@ for @digits@
-digitsSelector :: Selector
+digitsSelector :: Selector '[] (Id NSString)
 digitsSelector = mkSelector "digits"
 
 -- | @Selector@ for @setDigits:@
-setDigitsSelector :: Selector
+setDigitsSelector :: Selector '[Id NSString] ()
 setDigitsSelector = mkSelector "setDigits:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CXPlayDTMFCallActionType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[CXPlayDTMFCallActionType] ()
 setTypeSelector = mkSelector "setType:"
 

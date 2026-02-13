@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.CoreML.MLModelStructureNeuralNetworkLayer
   , inputNames
   , outputNames
   , initSelector
-  , newSelector
-  , nameSelector
-  , typeSelector
   , inputNamesSelector
+  , nameSelector
+  , newSelector
   , outputNamesSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,69 +38,69 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructureNeuralNetworkLayer mlModelStructureNeuralNetworkLayer => mlModelStructureNeuralNetworkLayer -> IO (Id MLModelStructureNeuralNetworkLayer)
-init_ mlModelStructureNeuralNetworkLayer  =
-    sendMsg mlModelStructureNeuralNetworkLayer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructureNeuralNetworkLayer =
+  sendOwnedMessage mlModelStructureNeuralNetworkLayer initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructureNeuralNetworkLayer)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructureNeuralNetworkLayer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The layer name.
 --
 -- ObjC selector: @- name@
 name :: IsMLModelStructureNeuralNetworkLayer mlModelStructureNeuralNetworkLayer => mlModelStructureNeuralNetworkLayer -> IO (Id NSString)
-name mlModelStructureNeuralNetworkLayer  =
-    sendMsg mlModelStructureNeuralNetworkLayer (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlModelStructureNeuralNetworkLayer =
+  sendMessage mlModelStructureNeuralNetworkLayer nameSelector
 
 -- | The type of the layer, e,g, "elementwise", "pooling", etc.
 --
 -- ObjC selector: @- type@
 type_ :: IsMLModelStructureNeuralNetworkLayer mlModelStructureNeuralNetworkLayer => mlModelStructureNeuralNetworkLayer -> IO (Id NSString)
-type_ mlModelStructureNeuralNetworkLayer  =
-    sendMsg mlModelStructureNeuralNetworkLayer (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mlModelStructureNeuralNetworkLayer =
+  sendMessage mlModelStructureNeuralNetworkLayer typeSelector
 
 -- | The input names.
 --
 -- ObjC selector: @- inputNames@
 inputNames :: IsMLModelStructureNeuralNetworkLayer mlModelStructureNeuralNetworkLayer => mlModelStructureNeuralNetworkLayer -> IO (Id NSArray)
-inputNames mlModelStructureNeuralNetworkLayer  =
-    sendMsg mlModelStructureNeuralNetworkLayer (mkSelector "inputNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputNames mlModelStructureNeuralNetworkLayer =
+  sendMessage mlModelStructureNeuralNetworkLayer inputNamesSelector
 
 -- | The output names.
 --
 -- ObjC selector: @- outputNames@
 outputNames :: IsMLModelStructureNeuralNetworkLayer mlModelStructureNeuralNetworkLayer => mlModelStructureNeuralNetworkLayer -> IO (Id NSArray)
-outputNames mlModelStructureNeuralNetworkLayer  =
-    sendMsg mlModelStructureNeuralNetworkLayer (mkSelector "outputNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputNames mlModelStructureNeuralNetworkLayer =
+  sendMessage mlModelStructureNeuralNetworkLayer outputNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructureNeuralNetworkLayer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructureNeuralNetworkLayer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @inputNames@
-inputNamesSelector :: Selector
+inputNamesSelector :: Selector '[] (Id NSArray)
 inputNamesSelector = mkSelector "inputNames"
 
 -- | @Selector@ for @outputNames@
-outputNamesSelector :: Selector
+outputNamesSelector :: Selector '[] (Id NSArray)
 outputNamesSelector = mkSelector "outputNames"
 

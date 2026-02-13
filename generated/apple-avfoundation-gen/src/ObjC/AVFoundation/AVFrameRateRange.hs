@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.AVFoundation.AVFrameRateRange
   , minFrameRate
   , maxFrameRate
   , initSelector
-  , newSelector
-  , minFrameRateSelector
   , maxFrameRateSelector
+  , minFrameRateSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVFrameRateRange avFrameRateRange => avFrameRateRange -> IO (Id AVFrameRateRange)
-init_ avFrameRateRange  =
-    sendMsg avFrameRateRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avFrameRateRange =
+  sendOwnedMessage avFrameRateRange initSelector
 
 -- | @+ new@
 new :: IO (Id AVFrameRateRange)
 new  =
   do
     cls' <- getRequiredClass "AVFrameRateRange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | minFrameRate
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- minFrameRate@
 minFrameRate :: IsAVFrameRateRange avFrameRateRange => avFrameRateRange -> IO CDouble
-minFrameRate avFrameRateRange  =
-    sendMsg avFrameRateRange (mkSelector "minFrameRate") retCDouble []
+minFrameRate avFrameRateRange =
+  sendMessage avFrameRateRange minFrameRateSelector
 
 -- | maxFrameRate
 --
@@ -70,26 +67,26 @@ minFrameRate avFrameRateRange  =
 --
 -- ObjC selector: @- maxFrameRate@
 maxFrameRate :: IsAVFrameRateRange avFrameRateRange => avFrameRateRange -> IO CDouble
-maxFrameRate avFrameRateRange  =
-    sendMsg avFrameRateRange (mkSelector "maxFrameRate") retCDouble []
+maxFrameRate avFrameRateRange =
+  sendMessage avFrameRateRange maxFrameRateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVFrameRateRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVFrameRateRange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @minFrameRate@
-minFrameRateSelector :: Selector
+minFrameRateSelector :: Selector '[] CDouble
 minFrameRateSelector = mkSelector "minFrameRate"
 
 -- | @Selector@ for @maxFrameRate@
-maxFrameRateSelector :: Selector
+maxFrameRateSelector :: Selector '[] CDouble
 maxFrameRateSelector = mkSelector "maxFrameRate"
 

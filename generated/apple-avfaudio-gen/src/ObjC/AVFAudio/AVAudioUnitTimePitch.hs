@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AVFAudio.AVAudioUnitTimePitch
   , setPitch
   , overlap
   , setOverlap
-  , rateSelector
-  , setRateSelector
-  , pitchSelector
-  , setPitchSelector
   , overlapSelector
+  , pitchSelector
+  , rateSelector
   , setOverlapSelector
+  , setPitchSelector
+  , setRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- rate@
 rate :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> IO CFloat
-rate avAudioUnitTimePitch  =
-    sendMsg avAudioUnitTimePitch (mkSelector "rate") retCFloat []
+rate avAudioUnitTimePitch =
+  sendMessage avAudioUnitTimePitch rateSelector
 
 -- | rate
 --
@@ -62,8 +59,8 @@ rate avAudioUnitTimePitch  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> CFloat -> IO ()
-setRate avAudioUnitTimePitch  value =
-    sendMsg avAudioUnitTimePitch (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avAudioUnitTimePitch value =
+  sendMessage avAudioUnitTimePitch setRateSelector value
 
 -- | pitch
 --
@@ -75,8 +72,8 @@ setRate avAudioUnitTimePitch  value =
 --
 -- ObjC selector: @- pitch@
 pitch :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> IO CFloat
-pitch avAudioUnitTimePitch  =
-    sendMsg avAudioUnitTimePitch (mkSelector "pitch") retCFloat []
+pitch avAudioUnitTimePitch =
+  sendMessage avAudioUnitTimePitch pitchSelector
 
 -- | pitch
 --
@@ -88,8 +85,8 @@ pitch avAudioUnitTimePitch  =
 --
 -- ObjC selector: @- setPitch:@
 setPitch :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> CFloat -> IO ()
-setPitch avAudioUnitTimePitch  value =
-    sendMsg avAudioUnitTimePitch (mkSelector "setPitch:") retVoid [argCFloat value]
+setPitch avAudioUnitTimePitch value =
+  sendMessage avAudioUnitTimePitch setPitchSelector value
 
 -- | overlap
 --
@@ -101,8 +98,8 @@ setPitch avAudioUnitTimePitch  value =
 --
 -- ObjC selector: @- overlap@
 overlap :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> IO CFloat
-overlap avAudioUnitTimePitch  =
-    sendMsg avAudioUnitTimePitch (mkSelector "overlap") retCFloat []
+overlap avAudioUnitTimePitch =
+  sendMessage avAudioUnitTimePitch overlapSelector
 
 -- | overlap
 --
@@ -114,34 +111,34 @@ overlap avAudioUnitTimePitch  =
 --
 -- ObjC selector: @- setOverlap:@
 setOverlap :: IsAVAudioUnitTimePitch avAudioUnitTimePitch => avAudioUnitTimePitch -> CFloat -> IO ()
-setOverlap avAudioUnitTimePitch  value =
-    sendMsg avAudioUnitTimePitch (mkSelector "setOverlap:") retVoid [argCFloat value]
+setOverlap avAudioUnitTimePitch value =
+  sendMessage avAudioUnitTimePitch setOverlapSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @pitch@
-pitchSelector :: Selector
+pitchSelector :: Selector '[] CFloat
 pitchSelector = mkSelector "pitch"
 
 -- | @Selector@ for @setPitch:@
-setPitchSelector :: Selector
+setPitchSelector :: Selector '[CFloat] ()
 setPitchSelector = mkSelector "setPitch:"
 
 -- | @Selector@ for @overlap@
-overlapSelector :: Selector
+overlapSelector :: Selector '[] CFloat
 overlapSelector = mkSelector "overlap"
 
 -- | @Selector@ for @setOverlap:@
-setOverlapSelector :: Selector
+setOverlapSelector :: Selector '[CFloat] ()
 setOverlapSelector = mkSelector "setOverlap:"
 

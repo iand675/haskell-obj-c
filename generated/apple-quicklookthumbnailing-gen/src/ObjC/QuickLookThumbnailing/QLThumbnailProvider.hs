@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.QuickLookThumbnailing.QLThumbnailProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,15 +32,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- provideThumbnailForFileRequest:completionHandler:@
 provideThumbnailForFileRequest_completionHandler :: (IsQLThumbnailProvider qlThumbnailProvider, IsQLFileThumbnailRequest request) => qlThumbnailProvider -> request -> Ptr () -> IO ()
-provideThumbnailForFileRequest_completionHandler qlThumbnailProvider  request handler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg qlThumbnailProvider (mkSelector "provideThumbnailForFileRequest:completionHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+provideThumbnailForFileRequest_completionHandler qlThumbnailProvider request handler =
+  sendMessage qlThumbnailProvider provideThumbnailForFileRequest_completionHandlerSelector (toQLFileThumbnailRequest request) handler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @provideThumbnailForFileRequest:completionHandler:@
-provideThumbnailForFileRequest_completionHandlerSelector :: Selector
+provideThumbnailForFileRequest_completionHandlerSelector :: Selector '[Id QLFileThumbnailRequest, Ptr ()] ()
 provideThumbnailForFileRequest_completionHandlerSelector = mkSelector "provideThumbnailForFileRequest:completionHandler:"
 

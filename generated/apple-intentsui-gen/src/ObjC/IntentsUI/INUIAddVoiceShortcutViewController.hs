@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.IntentsUI.INUIAddVoiceShortcutViewController
   , initWithNibName_bundle
   , delegate
   , setDelegate
-  , initWithShortcutSelector
+  , delegateSelector
   , initSelector
   , initWithNibName_bundleSelector
-  , delegateSelector
+  , initWithShortcutSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,53 +42,50 @@ import ObjC.Intents.Internal.Classes
 --
 -- ObjC selector: @- initWithShortcut:@
 initWithShortcut :: (IsINUIAddVoiceShortcutViewController inuiAddVoiceShortcutViewController, IsINShortcut shortcut) => inuiAddVoiceShortcutViewController -> shortcut -> IO (Id INUIAddVoiceShortcutViewController)
-initWithShortcut inuiAddVoiceShortcutViewController  shortcut =
-  withObjCPtr shortcut $ \raw_shortcut ->
-      sendMsg inuiAddVoiceShortcutViewController (mkSelector "initWithShortcut:") (retPtr retVoid) [argPtr (castPtr raw_shortcut :: Ptr ())] >>= ownedObject . castPtr
+initWithShortcut inuiAddVoiceShortcutViewController shortcut =
+  sendOwnedMessage inuiAddVoiceShortcutViewController initWithShortcutSelector (toINShortcut shortcut)
 
 -- | @- init@
 init_ :: IsINUIAddVoiceShortcutViewController inuiAddVoiceShortcutViewController => inuiAddVoiceShortcutViewController -> IO (Id INUIAddVoiceShortcutViewController)
-init_ inuiAddVoiceShortcutViewController  =
-    sendMsg inuiAddVoiceShortcutViewController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inuiAddVoiceShortcutViewController =
+  sendOwnedMessage inuiAddVoiceShortcutViewController initSelector
 
 -- | @- initWithNibName:bundle:@
 initWithNibName_bundle :: (IsINUIAddVoiceShortcutViewController inuiAddVoiceShortcutViewController, IsNSString nibNameOrNil, IsNSBundle nibBundleOrNil) => inuiAddVoiceShortcutViewController -> nibNameOrNil -> nibBundleOrNil -> IO (Id INUIAddVoiceShortcutViewController)
-initWithNibName_bundle inuiAddVoiceShortcutViewController  nibNameOrNil nibBundleOrNil =
-  withObjCPtr nibNameOrNil $ \raw_nibNameOrNil ->
-    withObjCPtr nibBundleOrNil $ \raw_nibBundleOrNil ->
-        sendMsg inuiAddVoiceShortcutViewController (mkSelector "initWithNibName:bundle:") (retPtr retVoid) [argPtr (castPtr raw_nibNameOrNil :: Ptr ()), argPtr (castPtr raw_nibBundleOrNil :: Ptr ())] >>= ownedObject . castPtr
+initWithNibName_bundle inuiAddVoiceShortcutViewController nibNameOrNil nibBundleOrNil =
+  sendOwnedMessage inuiAddVoiceShortcutViewController initWithNibName_bundleSelector (toNSString nibNameOrNil) (toNSBundle nibBundleOrNil)
 
 -- | @- delegate@
 delegate :: IsINUIAddVoiceShortcutViewController inuiAddVoiceShortcutViewController => inuiAddVoiceShortcutViewController -> IO RawId
-delegate inuiAddVoiceShortcutViewController  =
-    fmap (RawId . castPtr) $ sendMsg inuiAddVoiceShortcutViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate inuiAddVoiceShortcutViewController =
+  sendMessage inuiAddVoiceShortcutViewController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsINUIAddVoiceShortcutViewController inuiAddVoiceShortcutViewController => inuiAddVoiceShortcutViewController -> RawId -> IO ()
-setDelegate inuiAddVoiceShortcutViewController  value =
-    sendMsg inuiAddVoiceShortcutViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate inuiAddVoiceShortcutViewController value =
+  sendMessage inuiAddVoiceShortcutViewController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithShortcut:@
-initWithShortcutSelector :: Selector
+initWithShortcutSelector :: Selector '[Id INShortcut] (Id INUIAddVoiceShortcutViewController)
 initWithShortcutSelector = mkSelector "initWithShortcut:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INUIAddVoiceShortcutViewController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNibName:bundle:@
-initWithNibName_bundleSelector :: Selector
+initWithNibName_bundleSelector :: Selector '[Id NSString, Id NSBundle] (Id INUIAddVoiceShortcutViewController)
 initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

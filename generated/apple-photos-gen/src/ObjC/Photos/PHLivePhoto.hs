@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Photos.PHLivePhoto
   , IsPHLivePhoto(..)
   , init_
   , cancelLivePhotoRequestWithRequestID
-  , initSelector
   , cancelLivePhotoRequestWithRequestIDSelector
+  , initSelector
 
   -- * Enum types
   , PHImageContentMode(PHImageContentMode)
@@ -20,15 +21,11 @@ module ObjC.Photos.PHLivePhoto
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHLivePhoto phLivePhoto => phLivePhoto -> IO (Id PHLivePhoto)
-init_ phLivePhoto  =
-    sendMsg phLivePhoto (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phLivePhoto =
+  sendOwnedMessage phLivePhoto initSelector
 
 -- | Cancels the loading of a PHLivePhoto. The request's completion handler will be called.
 --
@@ -49,17 +46,17 @@ cancelLivePhotoRequestWithRequestID :: CInt -> IO ()
 cancelLivePhotoRequestWithRequestID requestID =
   do
     cls' <- getRequiredClass "PHLivePhoto"
-    sendClassMsg cls' (mkSelector "cancelLivePhotoRequestWithRequestID:") retVoid [argCInt requestID]
+    sendClassMessage cls' cancelLivePhotoRequestWithRequestIDSelector requestID
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHLivePhoto)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @cancelLivePhotoRequestWithRequestID:@
-cancelLivePhotoRequestWithRequestIDSelector :: Selector
+cancelLivePhotoRequestWithRequestIDSelector :: Selector '[CInt] ()
 cancelLivePhotoRequestWithRequestIDSelector = mkSelector "cancelLivePhotoRequestWithRequestID:"
 

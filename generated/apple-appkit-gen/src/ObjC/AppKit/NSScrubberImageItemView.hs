@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.AppKit.NSScrubberImageItemView
   , setImage
   , imageAlignment
   , setImageAlignment
-  , imageViewSelector
-  , imageSelector
-  , setImageSelector
   , imageAlignmentSelector
+  , imageSelector
+  , imageViewSelector
   , setImageAlignmentSelector
+  , setImageSelector
 
   -- * Enum types
   , NSImageAlignment(NSImageAlignment)
@@ -38,15 +39,11 @@ module ObjC.AppKit.NSScrubberImageItemView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,51 +53,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- imageView@
 imageView :: IsNSScrubberImageItemView nsScrubberImageItemView => nsScrubberImageItemView -> IO (Id NSImageView)
-imageView nsScrubberImageItemView  =
-    sendMsg nsScrubberImageItemView (mkSelector "imageView") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageView nsScrubberImageItemView =
+  sendMessage nsScrubberImageItemView imageViewSelector
 
 -- | @- image@
 image :: IsNSScrubberImageItemView nsScrubberImageItemView => nsScrubberImageItemView -> IO (Id NSImage)
-image nsScrubberImageItemView  =
-    sendMsg nsScrubberImageItemView (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsScrubberImageItemView =
+  sendMessage nsScrubberImageItemView imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSScrubberImageItemView nsScrubberImageItemView, IsNSImage value) => nsScrubberImageItemView -> value -> IO ()
-setImage nsScrubberImageItemView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScrubberImageItemView (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsScrubberImageItemView value =
+  sendMessage nsScrubberImageItemView setImageSelector (toNSImage value)
 
 -- | @- imageAlignment@
 imageAlignment :: IsNSScrubberImageItemView nsScrubberImageItemView => nsScrubberImageItemView -> IO NSImageAlignment
-imageAlignment nsScrubberImageItemView  =
-    fmap (coerce :: CULong -> NSImageAlignment) $ sendMsg nsScrubberImageItemView (mkSelector "imageAlignment") retCULong []
+imageAlignment nsScrubberImageItemView =
+  sendMessage nsScrubberImageItemView imageAlignmentSelector
 
 -- | @- setImageAlignment:@
 setImageAlignment :: IsNSScrubberImageItemView nsScrubberImageItemView => nsScrubberImageItemView -> NSImageAlignment -> IO ()
-setImageAlignment nsScrubberImageItemView  value =
-    sendMsg nsScrubberImageItemView (mkSelector "setImageAlignment:") retVoid [argCULong (coerce value)]
+setImageAlignment nsScrubberImageItemView value =
+  sendMessage nsScrubberImageItemView setImageAlignmentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageView@
-imageViewSelector :: Selector
+imageViewSelector :: Selector '[] (Id NSImageView)
 imageViewSelector = mkSelector "imageView"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @imageAlignment@
-imageAlignmentSelector :: Selector
+imageAlignmentSelector :: Selector '[] NSImageAlignment
 imageAlignmentSelector = mkSelector "imageAlignment"
 
 -- | @Selector@ for @setImageAlignment:@
-setImageAlignmentSelector :: Selector
+setImageAlignmentSelector :: Selector '[NSImageAlignment] ()
 setImageAlignmentSelector = mkSelector "setImageAlignment:"
 

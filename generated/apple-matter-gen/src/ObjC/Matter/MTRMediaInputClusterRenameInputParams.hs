@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRMediaInputClusterRenameInputParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , indexSelector
-  , setIndexSelector
   , nameSelector
-  , setNameSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setIndexSelector
+  , setNameSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- index@
 index :: IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams => mtrMediaInputClusterRenameInputParams -> IO (Id NSNumber)
-index mtrMediaInputClusterRenameInputParams  =
-    sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "index") (retPtr retVoid) [] >>= retainedObject . castPtr
+index mtrMediaInputClusterRenameInputParams =
+  sendMessage mtrMediaInputClusterRenameInputParams indexSelector
 
 -- | @- setIndex:@
 setIndex :: (IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams, IsNSNumber value) => mtrMediaInputClusterRenameInputParams -> value -> IO ()
-setIndex mtrMediaInputClusterRenameInputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "setIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIndex mtrMediaInputClusterRenameInputParams value =
+  sendMessage mtrMediaInputClusterRenameInputParams setIndexSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams => mtrMediaInputClusterRenameInputParams -> IO (Id NSString)
-name mtrMediaInputClusterRenameInputParams  =
-    sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrMediaInputClusterRenameInputParams =
+  sendMessage mtrMediaInputClusterRenameInputParams nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams, IsNSString value) => mtrMediaInputClusterRenameInputParams -> value -> IO ()
-setName mtrMediaInputClusterRenameInputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrMediaInputClusterRenameInputParams value =
+  sendMessage mtrMediaInputClusterRenameInputParams setNameSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setName mtrMediaInputClusterRenameInputParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams => mtrMediaInputClusterRenameInputParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams  =
-    sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams =
+  sendMessage mtrMediaInputClusterRenameInputParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams, IsNSNumber value) => mtrMediaInputClusterRenameInputParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams value =
+  sendMessage mtrMediaInputClusterRenameInputParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrMediaInputClusterRenameInputParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams => mtrMediaInputClusterRenameInputParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMediaInputClusterRenameInputParams  =
-    sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMediaInputClusterRenameInputParams =
+  sendMessage mtrMediaInputClusterRenameInputParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrMediaInputClusterRenameInputParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMediaInputClusterRenameInputParams mtrMediaInputClusterRenameInputParams, IsNSNumber value) => mtrMediaInputClusterRenameInputParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMediaInputClusterRenameInputParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterRenameInputParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMediaInputClusterRenameInputParams value =
+  sendMessage mtrMediaInputClusterRenameInputParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] (Id NSNumber)
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @setIndex:@
-setIndexSelector :: Selector
+setIndexSelector :: Selector '[Id NSNumber] ()
 setIndexSelector = mkSelector "setIndex:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

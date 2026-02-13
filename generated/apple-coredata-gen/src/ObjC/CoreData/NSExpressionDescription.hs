@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.CoreData.NSExpressionDescription
   , setExpression
   , expressionResultType
   , setExpressionResultType
-  , expressionSelector
-  , setExpressionSelector
   , expressionResultTypeSelector
+  , expressionSelector
   , setExpressionResultTypeSelector
+  , setExpressionSelector
 
   -- * Enum types
   , NSAttributeType(NSAttributeType)
@@ -37,15 +38,11 @@ module ObjC.CoreData.NSExpressionDescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,42 +52,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- expression@
 expression :: IsNSExpressionDescription nsExpressionDescription => nsExpressionDescription -> IO (Id NSExpression)
-expression nsExpressionDescription  =
-    sendMsg nsExpressionDescription (mkSelector "expression") (retPtr retVoid) [] >>= retainedObject . castPtr
+expression nsExpressionDescription =
+  sendMessage nsExpressionDescription expressionSelector
 
 -- | @- setExpression:@
 setExpression :: (IsNSExpressionDescription nsExpressionDescription, IsNSExpression value) => nsExpressionDescription -> value -> IO ()
-setExpression nsExpressionDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsExpressionDescription (mkSelector "setExpression:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpression nsExpressionDescription value =
+  sendMessage nsExpressionDescription setExpressionSelector (toNSExpression value)
 
 -- | @- expressionResultType@
 expressionResultType :: IsNSExpressionDescription nsExpressionDescription => nsExpressionDescription -> IO NSAttributeType
-expressionResultType nsExpressionDescription  =
-    fmap (coerce :: CULong -> NSAttributeType) $ sendMsg nsExpressionDescription (mkSelector "expressionResultType") retCULong []
+expressionResultType nsExpressionDescription =
+  sendMessage nsExpressionDescription expressionResultTypeSelector
 
 -- | @- setExpressionResultType:@
 setExpressionResultType :: IsNSExpressionDescription nsExpressionDescription => nsExpressionDescription -> NSAttributeType -> IO ()
-setExpressionResultType nsExpressionDescription  value =
-    sendMsg nsExpressionDescription (mkSelector "setExpressionResultType:") retVoid [argCULong (coerce value)]
+setExpressionResultType nsExpressionDescription value =
+  sendMessage nsExpressionDescription setExpressionResultTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @expression@
-expressionSelector :: Selector
+expressionSelector :: Selector '[] (Id NSExpression)
 expressionSelector = mkSelector "expression"
 
 -- | @Selector@ for @setExpression:@
-setExpressionSelector :: Selector
+setExpressionSelector :: Selector '[Id NSExpression] ()
 setExpressionSelector = mkSelector "setExpression:"
 
 -- | @Selector@ for @expressionResultType@
-expressionResultTypeSelector :: Selector
+expressionResultTypeSelector :: Selector '[] NSAttributeType
 expressionResultTypeSelector = mkSelector "expressionResultType"
 
 -- | @Selector@ for @setExpressionResultType:@
-setExpressionResultTypeSelector :: Selector
+setExpressionResultTypeSelector :: Selector '[NSAttributeType] ()
 setExpressionResultTypeSelector = mkSelector "setExpressionResultType:"
 

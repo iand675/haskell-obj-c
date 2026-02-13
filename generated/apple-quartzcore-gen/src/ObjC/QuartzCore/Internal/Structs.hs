@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data CAFrameRateRange = CAFrameRateRange
   { caFrameRateRangeMinimum :: !CFloat
@@ -39,6 +41,16 @@ argCAFrameRateRange = mkStorableArg caFrameRateRangeStructType
 
 retCAFrameRateRange :: RetType CAFrameRateRange
 retCAFrameRateRange = mkStorableRetType caFrameRateRangeStructType
+
+instance ObjCArgument CAFrameRateRange where
+  withObjCArg x k = k (argCAFrameRateRange x)
+
+instance ObjCReturn CAFrameRateRange where
+  type RawReturn CAFrameRateRange = CAFrameRateRange
+  objcRetType = retCAFrameRateRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CATransform3D = CATransform3D
   { caTransform3DM11 :: !CDouble
@@ -105,3 +117,13 @@ argCATransform3D = mkStorableArg caTransform3DStructType
 
 retCATransform3D :: RetType CATransform3D
 retCATransform3D = mkStorableRetType caTransform3DStructType
+
+instance ObjCArgument CATransform3D where
+  withObjCArg x k = k (argCATransform3D x)
+
+instance ObjCReturn CATransform3D where
+  type RawReturn CATransform3D = CATransform3D
+  objcRetType = retCATransform3D
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

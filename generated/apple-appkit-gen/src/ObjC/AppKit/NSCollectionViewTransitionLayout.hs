@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSCollectionViewTransitionLayout
   , setTransitionProgress
   , currentLayout
   , nextLayout
+  , currentLayoutSelector
   , initWithCurrentLayout_nextLayoutSelector
+  , nextLayoutSelector
+  , setTransitionProgressSelector
+  , transitionProgressSelector
   , updateValue_forAnimatedKeySelector
   , valueForAnimatedKeySelector
-  , transitionProgressSelector
-  , setTransitionProgressSelector
-  , currentLayoutSelector
-  , nextLayoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,72 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCurrentLayout:nextLayout:@
 initWithCurrentLayout_nextLayout :: (IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout, IsNSCollectionViewLayout currentLayout, IsNSCollectionViewLayout newLayout) => nsCollectionViewTransitionLayout -> currentLayout -> newLayout -> IO (Id NSCollectionViewTransitionLayout)
-initWithCurrentLayout_nextLayout nsCollectionViewTransitionLayout  currentLayout newLayout =
-  withObjCPtr currentLayout $ \raw_currentLayout ->
-    withObjCPtr newLayout $ \raw_newLayout ->
-        sendMsg nsCollectionViewTransitionLayout (mkSelector "initWithCurrentLayout:nextLayout:") (retPtr retVoid) [argPtr (castPtr raw_currentLayout :: Ptr ()), argPtr (castPtr raw_newLayout :: Ptr ())] >>= ownedObject . castPtr
+initWithCurrentLayout_nextLayout nsCollectionViewTransitionLayout currentLayout newLayout =
+  sendOwnedMessage nsCollectionViewTransitionLayout initWithCurrentLayout_nextLayoutSelector (toNSCollectionViewLayout currentLayout) (toNSCollectionViewLayout newLayout)
 
 -- | @- updateValue:forAnimatedKey:@
 updateValue_forAnimatedKey :: (IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout, IsNSString key) => nsCollectionViewTransitionLayout -> CDouble -> key -> IO ()
-updateValue_forAnimatedKey nsCollectionViewTransitionLayout  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsCollectionViewTransitionLayout (mkSelector "updateValue:forAnimatedKey:") retVoid [argCDouble value, argPtr (castPtr raw_key :: Ptr ())]
+updateValue_forAnimatedKey nsCollectionViewTransitionLayout value key =
+  sendMessage nsCollectionViewTransitionLayout updateValue_forAnimatedKeySelector value (toNSString key)
 
 -- | @- valueForAnimatedKey:@
 valueForAnimatedKey :: (IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout, IsNSString key) => nsCollectionViewTransitionLayout -> key -> IO CDouble
-valueForAnimatedKey nsCollectionViewTransitionLayout  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsCollectionViewTransitionLayout (mkSelector "valueForAnimatedKey:") retCDouble [argPtr (castPtr raw_key :: Ptr ())]
+valueForAnimatedKey nsCollectionViewTransitionLayout key =
+  sendMessage nsCollectionViewTransitionLayout valueForAnimatedKeySelector (toNSString key)
 
 -- | @- transitionProgress@
 transitionProgress :: IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout => nsCollectionViewTransitionLayout -> IO CDouble
-transitionProgress nsCollectionViewTransitionLayout  =
-    sendMsg nsCollectionViewTransitionLayout (mkSelector "transitionProgress") retCDouble []
+transitionProgress nsCollectionViewTransitionLayout =
+  sendMessage nsCollectionViewTransitionLayout transitionProgressSelector
 
 -- | @- setTransitionProgress:@
 setTransitionProgress :: IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout => nsCollectionViewTransitionLayout -> CDouble -> IO ()
-setTransitionProgress nsCollectionViewTransitionLayout  value =
-    sendMsg nsCollectionViewTransitionLayout (mkSelector "setTransitionProgress:") retVoid [argCDouble value]
+setTransitionProgress nsCollectionViewTransitionLayout value =
+  sendMessage nsCollectionViewTransitionLayout setTransitionProgressSelector value
 
 -- | @- currentLayout@
 currentLayout :: IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout => nsCollectionViewTransitionLayout -> IO (Id NSCollectionViewLayout)
-currentLayout nsCollectionViewTransitionLayout  =
-    sendMsg nsCollectionViewTransitionLayout (mkSelector "currentLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentLayout nsCollectionViewTransitionLayout =
+  sendMessage nsCollectionViewTransitionLayout currentLayoutSelector
 
 -- | @- nextLayout@
 nextLayout :: IsNSCollectionViewTransitionLayout nsCollectionViewTransitionLayout => nsCollectionViewTransitionLayout -> IO (Id NSCollectionViewLayout)
-nextLayout nsCollectionViewTransitionLayout  =
-    sendMsg nsCollectionViewTransitionLayout (mkSelector "nextLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextLayout nsCollectionViewTransitionLayout =
+  sendMessage nsCollectionViewTransitionLayout nextLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCurrentLayout:nextLayout:@
-initWithCurrentLayout_nextLayoutSelector :: Selector
+initWithCurrentLayout_nextLayoutSelector :: Selector '[Id NSCollectionViewLayout, Id NSCollectionViewLayout] (Id NSCollectionViewTransitionLayout)
 initWithCurrentLayout_nextLayoutSelector = mkSelector "initWithCurrentLayout:nextLayout:"
 
 -- | @Selector@ for @updateValue:forAnimatedKey:@
-updateValue_forAnimatedKeySelector :: Selector
+updateValue_forAnimatedKeySelector :: Selector '[CDouble, Id NSString] ()
 updateValue_forAnimatedKeySelector = mkSelector "updateValue:forAnimatedKey:"
 
 -- | @Selector@ for @valueForAnimatedKey:@
-valueForAnimatedKeySelector :: Selector
+valueForAnimatedKeySelector :: Selector '[Id NSString] CDouble
 valueForAnimatedKeySelector = mkSelector "valueForAnimatedKey:"
 
 -- | @Selector@ for @transitionProgress@
-transitionProgressSelector :: Selector
+transitionProgressSelector :: Selector '[] CDouble
 transitionProgressSelector = mkSelector "transitionProgress"
 
 -- | @Selector@ for @setTransitionProgress:@
-setTransitionProgressSelector :: Selector
+setTransitionProgressSelector :: Selector '[CDouble] ()
 setTransitionProgressSelector = mkSelector "setTransitionProgress:"
 
 -- | @Selector@ for @currentLayout@
-currentLayoutSelector :: Selector
+currentLayoutSelector :: Selector '[] (Id NSCollectionViewLayout)
 currentLayoutSelector = mkSelector "currentLayout"
 
 -- | @Selector@ for @nextLayout@
-nextLayoutSelector :: Selector
+nextLayoutSelector :: Selector '[] (Id NSCollectionViewLayout)
 nextLayoutSelector = mkSelector "nextLayout"
 

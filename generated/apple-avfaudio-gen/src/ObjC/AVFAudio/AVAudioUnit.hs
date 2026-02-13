@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,13 +22,13 @@ module ObjC.AVFAudio.AVAudioUnit
   , name
   , manufacturerName
   , version
-  , instantiateWithComponentDescription_options_completionHandlerSelector
-  , loadAudioUnitPresetAtURL_errorSelector
+  , auAudioUnitSelector
   , audioComponentDescriptionSelector
   , audioUnitSelector
-  , auAudioUnitSelector
-  , nameSelector
+  , instantiateWithComponentDescription_options_completionHandlerSelector
+  , loadAudioUnitPresetAtURL_errorSelector
   , manufacturerNameSelector
+  , nameSelector
   , versionSelector
 
   -- * Enum types
@@ -38,15 +39,11 @@ module ObjC.AVFAudio.AVAudioUnit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,7 +72,7 @@ instantiateWithComponentDescription_options_completionHandler :: AudioComponentD
 instantiateWithComponentDescription_options_completionHandler audioComponentDescription options completionHandler =
   do
     cls' <- getRequiredClass "AVAudioUnit"
-    sendClassMsg cls' (mkSelector "instantiateWithComponentDescription:options:completionHandler:") retVoid [argAudioComponentDescription audioComponentDescription, argCUInt (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' instantiateWithComponentDescription_options_completionHandlerSelector audioComponentDescription options completionHandler
 
 -- | loadAudioUnitPresetAtURL:error:
 --
@@ -89,10 +86,8 @@ instantiateWithComponentDescription_options_completionHandler audioComponentDesc
 --
 -- ObjC selector: @- loadAudioUnitPresetAtURL:error:@
 loadAudioUnitPresetAtURL_error :: (IsAVAudioUnit avAudioUnit, IsNSURL url, IsNSError outError) => avAudioUnit -> url -> outError -> IO Bool
-loadAudioUnitPresetAtURL_error avAudioUnit  url outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnit (mkSelector "loadAudioUnitPresetAtURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+loadAudioUnitPresetAtURL_error avAudioUnit url outError =
+  sendMessage avAudioUnit loadAudioUnitPresetAtURL_errorSelector (toNSURL url) (toNSError outError)
 
 -- | audioComponentDescription
 --
@@ -100,8 +95,8 @@ loadAudioUnitPresetAtURL_error avAudioUnit  url outError =
 --
 -- ObjC selector: @- audioComponentDescription@
 audioComponentDescription :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO AudioComponentDescription
-audioComponentDescription avAudioUnit  =
-    sendMsgStret avAudioUnit (mkSelector "audioComponentDescription") retAudioComponentDescription []
+audioComponentDescription avAudioUnit =
+  sendMessage avAudioUnit audioComponentDescriptionSelector
 
 -- | audioUnit
 --
@@ -113,8 +108,8 @@ audioComponentDescription avAudioUnit  =
 --
 -- ObjC selector: @- audioUnit@
 audioUnit :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO (Ptr ())
-audioUnit avAudioUnit  =
-    fmap castPtr $ sendMsg avAudioUnit (mkSelector "audioUnit") (retPtr retVoid) []
+audioUnit avAudioUnit =
+  sendMessage avAudioUnit audioUnitSelector
 
 -- | AUAudioUnit
 --
@@ -126,8 +121,8 @@ audioUnit avAudioUnit  =
 --
 -- ObjC selector: @- AUAudioUnit@
 auAudioUnit :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO (Id AUAudioUnit)
-auAudioUnit avAudioUnit  =
-    sendMsg avAudioUnit (mkSelector "AUAudioUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+auAudioUnit avAudioUnit =
+  sendMessage avAudioUnit auAudioUnitSelector
 
 -- | name
 --
@@ -135,8 +130,8 @@ auAudioUnit avAudioUnit  =
 --
 -- ObjC selector: @- name@
 name :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO (Id NSString)
-name avAudioUnit  =
-    sendMsg avAudioUnit (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name avAudioUnit =
+  sendMessage avAudioUnit nameSelector
 
 -- | manufacturerName
 --
@@ -144,8 +139,8 @@ name avAudioUnit  =
 --
 -- ObjC selector: @- manufacturerName@
 manufacturerName :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO (Id NSString)
-manufacturerName avAudioUnit  =
-    sendMsg avAudioUnit (mkSelector "manufacturerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturerName avAudioUnit =
+  sendMessage avAudioUnit manufacturerNameSelector
 
 -- | version
 --
@@ -153,42 +148,42 @@ manufacturerName avAudioUnit  =
 --
 -- ObjC selector: @- version@
 version :: IsAVAudioUnit avAudioUnit => avAudioUnit -> IO CULong
-version avAudioUnit  =
-    sendMsg avAudioUnit (mkSelector "version") retCULong []
+version avAudioUnit =
+  sendMessage avAudioUnit versionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @instantiateWithComponentDescription:options:completionHandler:@
-instantiateWithComponentDescription_options_completionHandlerSelector :: Selector
+instantiateWithComponentDescription_options_completionHandlerSelector :: Selector '[AudioComponentDescription, AudioComponentInstantiationOptions, Ptr ()] ()
 instantiateWithComponentDescription_options_completionHandlerSelector = mkSelector "instantiateWithComponentDescription:options:completionHandler:"
 
 -- | @Selector@ for @loadAudioUnitPresetAtURL:error:@
-loadAudioUnitPresetAtURL_errorSelector :: Selector
+loadAudioUnitPresetAtURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 loadAudioUnitPresetAtURL_errorSelector = mkSelector "loadAudioUnitPresetAtURL:error:"
 
 -- | @Selector@ for @audioComponentDescription@
-audioComponentDescriptionSelector :: Selector
+audioComponentDescriptionSelector :: Selector '[] AudioComponentDescription
 audioComponentDescriptionSelector = mkSelector "audioComponentDescription"
 
 -- | @Selector@ for @audioUnit@
-audioUnitSelector :: Selector
+audioUnitSelector :: Selector '[] (Ptr ())
 audioUnitSelector = mkSelector "audioUnit"
 
 -- | @Selector@ for @AUAudioUnit@
-auAudioUnitSelector :: Selector
+auAudioUnitSelector :: Selector '[] (Id AUAudioUnit)
 auAudioUnitSelector = mkSelector "AUAudioUnit"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @manufacturerName@
-manufacturerNameSelector :: Selector
+manufacturerNameSelector :: Selector '[] (Id NSString)
 manufacturerNameSelector = mkSelector "manufacturerName"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CULong
 versionSelector = mkSelector "version"
 

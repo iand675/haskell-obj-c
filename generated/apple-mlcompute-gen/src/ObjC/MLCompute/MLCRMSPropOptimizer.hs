@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.MLCompute.MLCRMSPropOptimizer
   , alpha
   , epsilon
   , isCentered
-  , optimizerWithDescriptorSelector
-  , optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector
-  , momentumScaleSelector
   , alphaSelector
   , epsilonSelector
   , isCenteredSelector
+  , momentumScaleSelector
+  , optimizerWithDescriptorSelector
+  , optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ optimizerWithDescriptor :: IsMLCOptimizerDescriptor optimizerDescriptor => optim
 optimizerWithDescriptor optimizerDescriptor =
   do
     cls' <- getRequiredClass "MLCRMSPropOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptorSelector (toMLCOptimizerDescriptor optimizerDescriptor)
 
 -- | Create a MLCRMSPropOptimizer object
 --
@@ -72,8 +68,7 @@ optimizerWithDescriptor_momentumScale_alpha_epsilon_isCentered :: IsMLCOptimizer
 optimizerWithDescriptor_momentumScale_alpha_epsilon_isCentered optimizerDescriptor momentumScale alpha epsilon isCentered =
   do
     cls' <- getRequiredClass "MLCRMSPropOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:momentumScale:alpha:epsilon:isCentered:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ()), argCFloat momentumScale, argCFloat alpha, argCFloat epsilon, argCULong (if isCentered then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector (toMLCOptimizerDescriptor optimizerDescriptor) momentumScale alpha epsilon isCentered
 
 -- | momentumScale
 --
@@ -83,8 +78,8 @@ optimizerWithDescriptor_momentumScale_alpha_epsilon_isCentered optimizerDescript
 --
 -- ObjC selector: @- momentumScale@
 momentumScale :: IsMLCRMSPropOptimizer mlcrmsPropOptimizer => mlcrmsPropOptimizer -> IO CFloat
-momentumScale mlcrmsPropOptimizer  =
-    sendMsg mlcrmsPropOptimizer (mkSelector "momentumScale") retCFloat []
+momentumScale mlcrmsPropOptimizer =
+  sendMessage mlcrmsPropOptimizer momentumScaleSelector
 
 -- | alpha
 --
@@ -94,8 +89,8 @@ momentumScale mlcrmsPropOptimizer  =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMLCRMSPropOptimizer mlcrmsPropOptimizer => mlcrmsPropOptimizer -> IO CFloat
-alpha mlcrmsPropOptimizer  =
-    sendMsg mlcrmsPropOptimizer (mkSelector "alpha") retCFloat []
+alpha mlcrmsPropOptimizer =
+  sendMessage mlcrmsPropOptimizer alphaSelector
 
 -- | epsilon
 --
@@ -105,8 +100,8 @@ alpha mlcrmsPropOptimizer  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMLCRMSPropOptimizer mlcrmsPropOptimizer => mlcrmsPropOptimizer -> IO CFloat
-epsilon mlcrmsPropOptimizer  =
-    sendMsg mlcrmsPropOptimizer (mkSelector "epsilon") retCFloat []
+epsilon mlcrmsPropOptimizer =
+  sendMessage mlcrmsPropOptimizer epsilonSelector
 
 -- | isCentered
 --
@@ -116,34 +111,34 @@ epsilon mlcrmsPropOptimizer  =
 --
 -- ObjC selector: @- isCentered@
 isCentered :: IsMLCRMSPropOptimizer mlcrmsPropOptimizer => mlcrmsPropOptimizer -> IO Bool
-isCentered mlcrmsPropOptimizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcrmsPropOptimizer (mkSelector "isCentered") retCULong []
+isCentered mlcrmsPropOptimizer =
+  sendMessage mlcrmsPropOptimizer isCenteredSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optimizerWithDescriptor:@
-optimizerWithDescriptorSelector :: Selector
+optimizerWithDescriptorSelector :: Selector '[Id MLCOptimizerDescriptor] (Id MLCRMSPropOptimizer)
 optimizerWithDescriptorSelector = mkSelector "optimizerWithDescriptor:"
 
 -- | @Selector@ for @optimizerWithDescriptor:momentumScale:alpha:epsilon:isCentered:@
-optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector :: Selector
+optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector :: Selector '[Id MLCOptimizerDescriptor, CFloat, CFloat, CFloat, Bool] (Id MLCRMSPropOptimizer)
 optimizerWithDescriptor_momentumScale_alpha_epsilon_isCenteredSelector = mkSelector "optimizerWithDescriptor:momentumScale:alpha:epsilon:isCentered:"
 
 -- | @Selector@ for @momentumScale@
-momentumScaleSelector :: Selector
+momentumScaleSelector :: Selector '[] CFloat
 momentumScaleSelector = mkSelector "momentumScale"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @isCentered@
-isCenteredSelector :: Selector
+isCenteredSelector :: Selector '[] Bool
 isCenteredSelector = mkSelector "isCentered"
 

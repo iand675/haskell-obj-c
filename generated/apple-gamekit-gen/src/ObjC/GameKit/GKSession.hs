@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,27 +34,27 @@ module ObjC.GameKit.GKSession
   , setAvailable
   , disconnectTimeout
   , setDisconnectTimeout
-  , initWithSessionID_displayName_sessionModeSelector
-  , displayNameForPeerSelector
-  , sendData_toPeers_withDataMode_errorSelector
-  , sendDataToAllPeers_withDataMode_errorSelector
-  , setDataReceiveHandler_withContextSelector
-  , connectToPeer_withTimeoutSelector
-  , cancelConnectToPeerSelector
   , acceptConnectionFromPeer_errorSelector
-  , denyConnectionFromPeerSelector
-  , disconnectPeerFromAllPeersSelector
-  , disconnectFromAllPeersSelector
-  , peersWithConnectionStateSelector
-  , delegateSelector
-  , setDelegateSelector
-  , sessionIDSelector
-  , displayNameSelector
-  , sessionModeSelector
-  , peerIDSelector
   , availableSelector
-  , setAvailableSelector
+  , cancelConnectToPeerSelector
+  , connectToPeer_withTimeoutSelector
+  , delegateSelector
+  , denyConnectionFromPeerSelector
+  , disconnectFromAllPeersSelector
+  , disconnectPeerFromAllPeersSelector
   , disconnectTimeoutSelector
+  , displayNameForPeerSelector
+  , displayNameSelector
+  , initWithSessionID_displayName_sessionModeSelector
+  , peerIDSelector
+  , peersWithConnectionStateSelector
+  , sendDataToAllPeers_withDataMode_errorSelector
+  , sendData_toPeers_withDataMode_errorSelector
+  , sessionIDSelector
+  , sessionModeSelector
+  , setAvailableSelector
+  , setDataReceiveHandler_withContextSelector
+  , setDelegateSelector
   , setDisconnectTimeoutSelector
 
   -- * Enum types
@@ -74,15 +75,11 @@ module ObjC.GameKit.GKSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,44 +89,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSessionID:displayName:sessionMode:@
 initWithSessionID_displayName_sessionMode :: (IsGKSession gkSession, IsNSString sessionID, IsNSString name) => gkSession -> sessionID -> name -> GKSessionMode -> IO RawId
-initWithSessionID_displayName_sessionMode gkSession  sessionID name mode =
-  withObjCPtr sessionID $ \raw_sessionID ->
-    withObjCPtr name $ \raw_name ->
-        fmap (RawId . castPtr) $ sendMsg gkSession (mkSelector "initWithSessionID:displayName:sessionMode:") (retPtr retVoid) [argPtr (castPtr raw_sessionID :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argCInt (coerce mode)]
+initWithSessionID_displayName_sessionMode gkSession sessionID name mode =
+  sendOwnedMessage gkSession initWithSessionID_displayName_sessionModeSelector (toNSString sessionID) (toNSString name) mode
 
 -- | Return the application chosen name of a specific peer
 --
 -- ObjC selector: @- displayNameForPeer:@
 displayNameForPeer :: (IsGKSession gkSession, IsNSString peerID) => gkSession -> peerID -> IO (Id NSString)
-displayNameForPeer gkSession  peerID =
-  withObjCPtr peerID $ \raw_peerID ->
-      sendMsg gkSession (mkSelector "displayNameForPeer:") (retPtr retVoid) [argPtr (castPtr raw_peerID :: Ptr ())] >>= retainedObject . castPtr
+displayNameForPeer gkSession peerID =
+  sendMessage gkSession displayNameForPeerSelector (toNSString peerID)
 
 -- | Asynchronous delivery of data to one or more peers.  Returns YES if delivery started, NO if unable to start sending, and error will be set.  Delivery will be reliable or unreliable as set by mode.
 --
 -- ObjC selector: @- sendData:toPeers:withDataMode:error:@
 sendData_toPeers_withDataMode_error :: (IsGKSession gkSession, IsNSData data_, IsNSArray peers, IsNSError error_) => gkSession -> data_ -> peers -> GKSendDataMode -> error_ -> IO Bool
-sendData_toPeers_withDataMode_error gkSession  data_ peers mode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr peers $ \raw_peers ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkSession (mkSelector "sendData:toPeers:withDataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_peers :: Ptr ()), argCInt (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
+sendData_toPeers_withDataMode_error gkSession data_ peers mode error_ =
+  sendMessage gkSession sendData_toPeers_withDataMode_errorSelector (toNSData data_) (toNSArray peers) mode (toNSError error_)
 
 -- | Asynchronous delivery to all peers.  Returns YES if delivery started, NO if unable to start sending, and error will be set.  Delivery will be reliable or unreliable as set by mode.
 --
 -- ObjC selector: @- sendDataToAllPeers:withDataMode:error:@
 sendDataToAllPeers_withDataMode_error :: (IsGKSession gkSession, IsNSData data_, IsNSError error_) => gkSession -> data_ -> GKSendDataMode -> error_ -> IO Bool
-sendDataToAllPeers_withDataMode_error gkSession  data_ mode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkSession (mkSelector "sendDataToAllPeers:withDataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argCInt (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
+sendDataToAllPeers_withDataMode_error gkSession data_ mode error_ =
+  sendMessage gkSession sendDataToAllPeers_withDataMode_errorSelector (toNSData data_) mode (toNSError error_)
 
 -- | Set the handler to receive data sent from remote peers.
 --
 -- ObjC selector: @- setDataReceiveHandler:withContext:@
 setDataReceiveHandler_withContext :: IsGKSession gkSession => gkSession -> RawId -> Ptr () -> IO ()
-setDataReceiveHandler_withContext gkSession  handler context =
-    sendMsg gkSession (mkSelector "setDataReceiveHandler:withContext:") retVoid [argPtr (castPtr (unRawId handler) :: Ptr ()), argPtr context]
+setDataReceiveHandler_withContext gkSession handler context =
+  sendMessage gkSession setDataReceiveHandler_withContextSelector handler context
 
 -- | Attempt connection to a remote peer.  Remote peer gets a callback to -session:didReceiveConnectionRequestFromPeer:.
 --
@@ -137,200 +126,194 @@ setDataReceiveHandler_withContext gkSession  handler context =
 --
 -- ObjC selector: @- connectToPeer:withTimeout:@
 connectToPeer_withTimeout :: (IsGKSession gkSession, IsNSString peerID) => gkSession -> peerID -> CDouble -> IO ()
-connectToPeer_withTimeout gkSession  peerID timeout =
-  withObjCPtr peerID $ \raw_peerID ->
-      sendMsg gkSession (mkSelector "connectToPeer:withTimeout:") retVoid [argPtr (castPtr raw_peerID :: Ptr ()), argCDouble timeout]
+connectToPeer_withTimeout gkSession peerID timeout =
+  sendMessage gkSession connectToPeer_withTimeoutSelector (toNSString peerID) timeout
 
 -- | @- cancelConnectToPeer:@
 cancelConnectToPeer :: (IsGKSession gkSession, IsNSString peerID) => gkSession -> peerID -> IO ()
-cancelConnectToPeer gkSession  peerID =
-  withObjCPtr peerID $ \raw_peerID ->
-      sendMsg gkSession (mkSelector "cancelConnectToPeer:") retVoid [argPtr (castPtr raw_peerID :: Ptr ())]
+cancelConnectToPeer gkSession peerID =
+  sendMessage gkSession cancelConnectToPeerSelector (toNSString peerID)
 
 -- | Methods to accept or deny a prior connection request from -session:didReceiveConnectionRequestFromPeer:
 --
 -- ObjC selector: @- acceptConnectionFromPeer:error:@
 acceptConnectionFromPeer_error :: (IsGKSession gkSession, IsNSString peerID, IsNSError error_) => gkSession -> peerID -> error_ -> IO Bool
-acceptConnectionFromPeer_error gkSession  peerID error_ =
-  withObjCPtr peerID $ \raw_peerID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkSession (mkSelector "acceptConnectionFromPeer:error:") retCULong [argPtr (castPtr raw_peerID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+acceptConnectionFromPeer_error gkSession peerID error_ =
+  sendMessage gkSession acceptConnectionFromPeer_errorSelector (toNSString peerID) (toNSError error_)
 
 -- | @- denyConnectionFromPeer:@
 denyConnectionFromPeer :: (IsGKSession gkSession, IsNSString peerID) => gkSession -> peerID -> IO ()
-denyConnectionFromPeer gkSession  peerID =
-  withObjCPtr peerID $ \raw_peerID ->
-      sendMsg gkSession (mkSelector "denyConnectionFromPeer:") retVoid [argPtr (castPtr raw_peerID :: Ptr ())]
+denyConnectionFromPeer gkSession peerID =
+  sendMessage gkSession denyConnectionFromPeerSelector (toNSString peerID)
 
 -- | Disconnect a peer from the session (the peer gets disconnected from all connected peers).
 --
 -- ObjC selector: @- disconnectPeerFromAllPeers:@
 disconnectPeerFromAllPeers :: (IsGKSession gkSession, IsNSString peerID) => gkSession -> peerID -> IO ()
-disconnectPeerFromAllPeers gkSession  peerID =
-  withObjCPtr peerID $ \raw_peerID ->
-      sendMsg gkSession (mkSelector "disconnectPeerFromAllPeers:") retVoid [argPtr (castPtr raw_peerID :: Ptr ())]
+disconnectPeerFromAllPeers gkSession peerID =
+  sendMessage gkSession disconnectPeerFromAllPeersSelector (toNSString peerID)
 
 -- | Disconnect local peer
 --
 -- ObjC selector: @- disconnectFromAllPeers@
 disconnectFromAllPeers :: IsGKSession gkSession => gkSession -> IO ()
-disconnectFromAllPeers gkSession  =
-    sendMsg gkSession (mkSelector "disconnectFromAllPeers") retVoid []
+disconnectFromAllPeers gkSession =
+  sendMessage gkSession disconnectFromAllPeersSelector
 
 -- | Returns peers according to connection state
 --
 -- ObjC selector: @- peersWithConnectionState:@
 peersWithConnectionState :: IsGKSession gkSession => gkSession -> GKPeerConnectionState -> IO (Id NSArray)
-peersWithConnectionState gkSession  state =
-    sendMsg gkSession (mkSelector "peersWithConnectionState:") (retPtr retVoid) [argCInt (coerce state)] >>= retainedObject . castPtr
+peersWithConnectionState gkSession state =
+  sendMessage gkSession peersWithConnectionStateSelector state
 
 -- | @- delegate@
 delegate :: IsGKSession gkSession => gkSession -> IO RawId
-delegate gkSession  =
-    fmap (RawId . castPtr) $ sendMsg gkSession (mkSelector "delegate") (retPtr retVoid) []
+delegate gkSession =
+  sendMessage gkSession delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsGKSession gkSession => gkSession -> RawId -> IO ()
-setDelegate gkSession  value =
-    sendMsg gkSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate gkSession value =
+  sendMessage gkSession setDelegateSelector value
 
 -- | @- sessionID@
 sessionID :: IsGKSession gkSession => gkSession -> IO (Id NSString)
-sessionID gkSession  =
-    sendMsg gkSession (mkSelector "sessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionID gkSession =
+  sendMessage gkSession sessionIDSelector
 
 -- | @- displayName@
 displayName :: IsGKSession gkSession => gkSession -> IO (Id NSString)
-displayName gkSession  =
-    sendMsg gkSession (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName gkSession =
+  sendMessage gkSession displayNameSelector
 
 -- | @- sessionMode@
 sessionMode :: IsGKSession gkSession => gkSession -> IO GKSessionMode
-sessionMode gkSession  =
-    fmap (coerce :: CInt -> GKSessionMode) $ sendMsg gkSession (mkSelector "sessionMode") retCInt []
+sessionMode gkSession =
+  sendMessage gkSession sessionModeSelector
 
 -- | @- peerID@
 peerID :: IsGKSession gkSession => gkSession -> IO (Id NSString)
-peerID gkSession  =
-    sendMsg gkSession (mkSelector "peerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+peerID gkSession =
+  sendMessage gkSession peerIDSelector
 
 -- | Toggle availability on the network based on session mode and search criteria.  Delegate will get a callback -session:didReceiveConnectionRequestFromPeer: when a peer attempts a connection.
 --
 -- ObjC selector: @- available@
 available :: IsGKSession gkSession => gkSession -> IO Bool
-available gkSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkSession (mkSelector "available") retCULong []
+available gkSession =
+  sendMessage gkSession availableSelector
 
 -- | Toggle availability on the network based on session mode and search criteria.  Delegate will get a callback -session:didReceiveConnectionRequestFromPeer: when a peer attempts a connection.
 --
 -- ObjC selector: @- setAvailable:@
 setAvailable :: IsGKSession gkSession => gkSession -> Bool -> IO ()
-setAvailable gkSession  value =
-    sendMsg gkSession (mkSelector "setAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setAvailable gkSession value =
+  sendMessage gkSession setAvailableSelector value
 
 -- | The timeout for disconnecting a peer if it appears that the peer has lost connection to the game network
 --
 -- ObjC selector: @- disconnectTimeout@
 disconnectTimeout :: IsGKSession gkSession => gkSession -> IO CDouble
-disconnectTimeout gkSession  =
-    sendMsg gkSession (mkSelector "disconnectTimeout") retCDouble []
+disconnectTimeout gkSession =
+  sendMessage gkSession disconnectTimeoutSelector
 
 -- | The timeout for disconnecting a peer if it appears that the peer has lost connection to the game network
 --
 -- ObjC selector: @- setDisconnectTimeout:@
 setDisconnectTimeout :: IsGKSession gkSession => gkSession -> CDouble -> IO ()
-setDisconnectTimeout gkSession  value =
-    sendMsg gkSession (mkSelector "setDisconnectTimeout:") retVoid [argCDouble value]
+setDisconnectTimeout gkSession value =
+  sendMessage gkSession setDisconnectTimeoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSessionID:displayName:sessionMode:@
-initWithSessionID_displayName_sessionModeSelector :: Selector
+initWithSessionID_displayName_sessionModeSelector :: Selector '[Id NSString, Id NSString, GKSessionMode] RawId
 initWithSessionID_displayName_sessionModeSelector = mkSelector "initWithSessionID:displayName:sessionMode:"
 
 -- | @Selector@ for @displayNameForPeer:@
-displayNameForPeerSelector :: Selector
+displayNameForPeerSelector :: Selector '[Id NSString] (Id NSString)
 displayNameForPeerSelector = mkSelector "displayNameForPeer:"
 
 -- | @Selector@ for @sendData:toPeers:withDataMode:error:@
-sendData_toPeers_withDataMode_errorSelector :: Selector
+sendData_toPeers_withDataMode_errorSelector :: Selector '[Id NSData, Id NSArray, GKSendDataMode, Id NSError] Bool
 sendData_toPeers_withDataMode_errorSelector = mkSelector "sendData:toPeers:withDataMode:error:"
 
 -- | @Selector@ for @sendDataToAllPeers:withDataMode:error:@
-sendDataToAllPeers_withDataMode_errorSelector :: Selector
+sendDataToAllPeers_withDataMode_errorSelector :: Selector '[Id NSData, GKSendDataMode, Id NSError] Bool
 sendDataToAllPeers_withDataMode_errorSelector = mkSelector "sendDataToAllPeers:withDataMode:error:"
 
 -- | @Selector@ for @setDataReceiveHandler:withContext:@
-setDataReceiveHandler_withContextSelector :: Selector
+setDataReceiveHandler_withContextSelector :: Selector '[RawId, Ptr ()] ()
 setDataReceiveHandler_withContextSelector = mkSelector "setDataReceiveHandler:withContext:"
 
 -- | @Selector@ for @connectToPeer:withTimeout:@
-connectToPeer_withTimeoutSelector :: Selector
+connectToPeer_withTimeoutSelector :: Selector '[Id NSString, CDouble] ()
 connectToPeer_withTimeoutSelector = mkSelector "connectToPeer:withTimeout:"
 
 -- | @Selector@ for @cancelConnectToPeer:@
-cancelConnectToPeerSelector :: Selector
+cancelConnectToPeerSelector :: Selector '[Id NSString] ()
 cancelConnectToPeerSelector = mkSelector "cancelConnectToPeer:"
 
 -- | @Selector@ for @acceptConnectionFromPeer:error:@
-acceptConnectionFromPeer_errorSelector :: Selector
+acceptConnectionFromPeer_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 acceptConnectionFromPeer_errorSelector = mkSelector "acceptConnectionFromPeer:error:"
 
 -- | @Selector@ for @denyConnectionFromPeer:@
-denyConnectionFromPeerSelector :: Selector
+denyConnectionFromPeerSelector :: Selector '[Id NSString] ()
 denyConnectionFromPeerSelector = mkSelector "denyConnectionFromPeer:"
 
 -- | @Selector@ for @disconnectPeerFromAllPeers:@
-disconnectPeerFromAllPeersSelector :: Selector
+disconnectPeerFromAllPeersSelector :: Selector '[Id NSString] ()
 disconnectPeerFromAllPeersSelector = mkSelector "disconnectPeerFromAllPeers:"
 
 -- | @Selector@ for @disconnectFromAllPeers@
-disconnectFromAllPeersSelector :: Selector
+disconnectFromAllPeersSelector :: Selector '[] ()
 disconnectFromAllPeersSelector = mkSelector "disconnectFromAllPeers"
 
 -- | @Selector@ for @peersWithConnectionState:@
-peersWithConnectionStateSelector :: Selector
+peersWithConnectionStateSelector :: Selector '[GKPeerConnectionState] (Id NSArray)
 peersWithConnectionStateSelector = mkSelector "peersWithConnectionState:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @sessionID@
-sessionIDSelector :: Selector
+sessionIDSelector :: Selector '[] (Id NSString)
 sessionIDSelector = mkSelector "sessionID"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @sessionMode@
-sessionModeSelector :: Selector
+sessionModeSelector :: Selector '[] GKSessionMode
 sessionModeSelector = mkSelector "sessionMode"
 
 -- | @Selector@ for @peerID@
-peerIDSelector :: Selector
+peerIDSelector :: Selector '[] (Id NSString)
 peerIDSelector = mkSelector "peerID"
 
 -- | @Selector@ for @available@
-availableSelector :: Selector
+availableSelector :: Selector '[] Bool
 availableSelector = mkSelector "available"
 
 -- | @Selector@ for @setAvailable:@
-setAvailableSelector :: Selector
+setAvailableSelector :: Selector '[Bool] ()
 setAvailableSelector = mkSelector "setAvailable:"
 
 -- | @Selector@ for @disconnectTimeout@
-disconnectTimeoutSelector :: Selector
+disconnectTimeoutSelector :: Selector '[] CDouble
 disconnectTimeoutSelector = mkSelector "disconnectTimeout"
 
 -- | @Selector@ for @setDisconnectTimeout:@
-setDisconnectTimeoutSelector :: Selector
+setDisconnectTimeoutSelector :: Selector '[CDouble] ()
 setDisconnectTimeoutSelector = mkSelector "setDisconnectTimeout:"
 

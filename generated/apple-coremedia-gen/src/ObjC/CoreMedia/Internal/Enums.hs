@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreMedia.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Constants used with kCMTagCategory_PackingType to signal the nature of any packing applied in a buffer or channel.
 --
@@ -33,6 +36,16 @@ pattern KCMPackingType_SideBySide = CMPackingType 1936286821
 
 pattern KCMPackingType_OverUnder :: CMPackingType
 pattern KCMPackingType_OverUnder = CMPackingType 1870030194
+
+instance ObjCArgument CMPackingType where
+  withObjCArg (CMPackingType x) k = k (argCULong x)
+
+instance ObjCReturn CMPackingType where
+  type RawReturn CMPackingType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMPackingType x)
+  fromOwned x = pure (CMPackingType x)
 
 -- | Constants used with kCMTagCategory_ProjectionType to signal the nature of a video projection carried in a buffer or channel.
 --
@@ -67,6 +80,16 @@ pattern KCMProjectionType_Fisheye = CMProjectionType 1718186856
 pattern KCMProjectionType_ParametricImmersive :: CMProjectionType
 pattern KCMProjectionType_ParametricImmersive = CMProjectionType 1886546285
 
+instance ObjCArgument CMProjectionType where
+  withObjCArg (CMProjectionType x) k = k (argCULong x)
+
+instance ObjCReturn CMProjectionType where
+  type RawReturn CMProjectionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMProjectionType x)
+  fromOwned x = pure (CMProjectionType x)
+
 -- | Flags used with kCMTagCategory_StereoView tags to signal the nature of the stereo views carried in a buffer or channel.
 --
 -- A "stereo eye" is either for the left eye or for the right eye. A CMTag signaling of stereo views can indicate the presence of one "stereo eye", both stereo eyes or no stereo eyes. A CMTag having a CMTagCategory of kCMTagCategory_StereoView has a value that is a set of kCMTagStereoViewComponent_* flags (see CMTagMakeWithFlagsValue()) that can be set to indicate the stereo eyes carried.  If neither the left nor the right stereo eye is signaled, this can be interpreted to mean that this is not stereo view related and is instead monoscopic video. If it is not stereo related, a kCMTagCategory_StereoView CMTag need not be associated with the buffer or channel.  kCMTagCategory_StereoView does not prescribe how the stereo views are carried. It might be contained in some kind of multiview carriage or might be frame packed in some way. The kCMTagCategory_PackingType will typically be available if frame packing of stereo views is used. The presence of a CMTag with kCMTagCategory_StereoView alone is insufficient to imply if there is some kind of packing or other mechanism required. Additional CMTags with other CMTagCategories may be necessary.  One or more kCMTagCategory_StereoView tags may be present in a collection. When considering which stereo eyes are represented by the collection, the same semantic can be expressed in more than one way in the collection. Specifying the same CMTag more than once has no meaning as the first occurrence indicates the stereo eye or stereo eyes are present.	Here are compatible semantics expressed by one or more CMTags:	- a single CMTag with kCMTagStereoViewsOption_LeftEye bitwise ORed with kCMTagStereoViewsOption_RightEye.	- two kCMTagCategory_StereoView CMTags with one CMTag having the value kCMTagStereoViewsOption_LeftEye and the other CMTag having the value kCMTagStereoViewsOption_RightEye.	- three or more CMTags made up of a CMTag with kCMTagStereoViewsOption_LeftEye bitwise ORed with kCMTagStereoViewsOption_RightEye and both a CMTag with only kCMTagStereoViewsOption_LeftEye and a CMTag with kCMTagStereoViewsOption_RightEye.	Likewise, if a collection contains only one or more CMTags with one stereo eye (e.g., kCMTagStereoViewsOption_LeftEye), only that stereo eye should be considered present.  The absence of a kCMTagCategory_StereoView CMTag is meant to indicate there is no stereo view present. If this signaling of no stereo eyes is associated with a buffer or channel that carries stereo eye views, the buffer or channel should be configured to present only a monoscopic view. This might be in the form of some fallback to a default view corresponding to a stereo eye or even to some other view it includes or can synthesize.
@@ -93,6 +116,16 @@ pattern KCMStereoView_LeftEye = CMStereoViewComponents 1
 
 pattern KCMStereoView_RightEye :: CMStereoViewComponents
 pattern KCMStereoView_RightEye = CMStereoViewComponents 2
+
+instance ObjCArgument CMStereoViewComponents where
+  withObjCArg (CMStereoViewComponents x) k = k (argCULong x)
+
+instance ObjCReturn CMStereoViewComponents where
+  type RawReturn CMStereoViewComponents = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMStereoViewComponents x)
+  fromOwned x = pure (CMStereoViewComponents x)
 
 -- | Flags used with kCMTagCategory_StereoViewInterpretation tags to signal additional information that may be important to the interpretation of stereo views carried in a buffer or channel.
 --
@@ -122,6 +155,16 @@ pattern KCMStereoViewInterpretation_StereoOrderReversed = CMStereoViewInterpreta
 
 pattern KCMStereoViewInterpretation_AdditionalViews :: CMStereoViewInterpretationOptions
 pattern KCMStereoViewInterpretation_AdditionalViews = CMStereoViewInterpretationOptions 2
+
+instance ObjCArgument CMStereoViewInterpretationOptions where
+  withObjCArg (CMStereoViewInterpretationOptions x) k = k (argCULong x)
+
+instance ObjCReturn CMStereoViewInterpretationOptions where
+  type RawReturn CMStereoViewInterpretationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMStereoViewInterpretationOptions x)
+  fromOwned x = pure (CMStereoViewInterpretationOptions x)
 
 -- | CMTagCategory
 --
@@ -188,6 +231,16 @@ pattern KCMTagCategory_StereoView = CMTagCategory 1702454643
 pattern KCMTagCategory_StereoViewInterpretation :: CMTagCategory
 pattern KCMTagCategory_StereoViewInterpretation = CMTagCategory 1702455664
 
+instance ObjCArgument CMTagCategory where
+  withObjCArg (CMTagCategory x) k = k (argCUInt x)
+
+instance ObjCReturn CMTagCategory where
+  type RawReturn CMTagCategory = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTagCategory x)
+  fromOwned x = pure (CMTagCategory x)
+
 -- | CMTagCollection Errors
 --
 -- The OSStatus errors returned from the CMTagCollection routines.
@@ -246,6 +299,16 @@ pattern KCMTagCollectionError_ExhaustedBufferSize = CMTagCollectionError (-15748
 pattern KCMTagCollectionError_NotYetImplemented :: CMTagCollectionError
 pattern KCMTagCollectionError_NotYetImplemented = CMTagCollectionError (-15749)
 
+instance ObjCArgument CMTagCollectionError where
+  withObjCArg (CMTagCollectionError x) k = k (argCInt x)
+
+instance ObjCReturn CMTagCollectionError where
+  type RawReturn CMTagCollectionError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTagCollectionError x)
+  fromOwned x = pure (CMTagCollectionError x)
+
 -- | CMTagDataType
 --
 -- The data type for the value of the CMTag.
@@ -279,6 +342,16 @@ pattern KCMTagDataType_OSType = CMTagDataType 5
 pattern KCMTagDataType_Flags :: CMTagDataType
 pattern KCMTagDataType_Flags = CMTagDataType 7
 
+instance ObjCArgument CMTagDataType where
+  withObjCArg (CMTagDataType x) k = k (argCUInt x)
+
+instance ObjCReturn CMTagDataType where
+  type RawReturn CMTagDataType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTagDataType x)
+  fromOwned x = pure (CMTagDataType x)
+
 -- | CMTag Errors
 --
 -- The OSStatus errors returned from the CMTag routines.
@@ -296,6 +369,16 @@ pattern KCMTagError_ParamErr = CMTagError (-15730)
 
 pattern KCMTagError_AllocationFailed :: CMTagError
 pattern KCMTagError_AllocationFailed = CMTagError (-15731)
+
+instance ObjCArgument CMTagError where
+  withObjCArg (CMTagError x) k = k (argCInt x)
+
+instance ObjCReturn CMTagError where
+  type RawReturn CMTagError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTagError x)
+  fromOwned x = pure (CMTagError x)
 
 -- | CMTaggedBufferGroup Errors
 --
@@ -319,6 +402,16 @@ pattern KCMTaggedBufferGroupError_AllocationFailed = CMTaggedBufferGroupError (-
 
 pattern KCMTaggedBufferGroupError_InternalError :: CMTaggedBufferGroupError
 pattern KCMTaggedBufferGroupError_InternalError = CMTaggedBufferGroupError (-15782)
+
+instance ObjCArgument CMTaggedBufferGroupError where
+  withObjCArg (CMTaggedBufferGroupError x) k = k (argCInt x)
+
+instance ObjCReturn CMTaggedBufferGroupError where
+  type RawReturn CMTaggedBufferGroupError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTaggedBufferGroupError x)
+  fromOwned x = pure (CMTaggedBufferGroupError x)
 
 -- | CMTimeFlags
 --
@@ -366,6 +459,16 @@ pattern KCMTimeFlags_Indefinite = CMTimeFlags 16
 pattern KCMTimeFlags_ImpliedValueFlagsMask :: CMTimeFlags
 pattern KCMTimeFlags_ImpliedValueFlagsMask = CMTimeFlags 28
 
+instance ObjCArgument CMTimeFlags where
+  withObjCArg (CMTimeFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CMTimeFlags where
+  type RawReturn CMTimeFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTimeFlags x)
+  fromOwned x = pure (CMTimeFlags x)
+
 -- | CMTimeRoundingMethod
 --
 -- Rounding method to use when computing time.value during timescale conversions.
@@ -412,3 +515,13 @@ pattern KCMTimeRoundingMethod_RoundTowardNegativeInfinity = CMTimeRoundingMethod
 
 pattern KCMTimeRoundingMethod_Default :: CMTimeRoundingMethod
 pattern KCMTimeRoundingMethod_Default = CMTimeRoundingMethod 1
+
+instance ObjCArgument CMTimeRoundingMethod where
+  withObjCArg (CMTimeRoundingMethod x) k = k (argCUInt x)
+
+instance ObjCReturn CMTimeRoundingMethod where
+  type RawReturn CMTimeRoundingMethod = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTimeRoundingMethod x)
+  fromOwned x = pure (CMTimeRoundingMethod x)

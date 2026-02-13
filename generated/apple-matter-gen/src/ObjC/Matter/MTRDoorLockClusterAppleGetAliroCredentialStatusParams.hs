@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDoorLockClusterAppleGetAliroCredentialStatusParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , credentialSelector
-  , setCredentialSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCredentialSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- credential@
 credential :: IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> IO (Id MTRDoorLockClusterAppleAliroCredentialStruct)
-credential mtrDoorLockClusterAppleGetAliroCredentialStatusParams  =
-    sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "credential") (retPtr retVoid) [] >>= retainedObject . castPtr
+credential mtrDoorLockClusterAppleGetAliroCredentialStatusParams =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams credentialSelector
 
 -- | @- setCredential:@
 setCredential :: (IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams, IsMTRDoorLockClusterAppleAliroCredentialStruct value) => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> value -> IO ()
-setCredential mtrDoorLockClusterAppleGetAliroCredentialStatusParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "setCredential:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredential mtrDoorLockClusterAppleGetAliroCredentialStatusParams value =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams setCredentialSelector (toMTRDoorLockClusterAppleAliroCredentialStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setCredential mtrDoorLockClusterAppleGetAliroCredentialStatusParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams  =
-    sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams, IsNSNumber value) => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams value =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterAppleGetAliroCredentialStatusParams  v
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterAppleGetAliroCredentialStatusParams  =
-    sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterAppleGetAliroCredentialStatusParams =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrDoorLockClusterAppleGetAliroCredentialStatusParam
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterAppleGetAliroCredentialStatusParams mtrDoorLockClusterAppleGetAliroCredentialStatusParams, IsNSNumber value) => mtrDoorLockClusterAppleGetAliroCredentialStatusParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterAppleGetAliroCredentialStatusParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleGetAliroCredentialStatusParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterAppleGetAliroCredentialStatusParams value =
+  sendMessage mtrDoorLockClusterAppleGetAliroCredentialStatusParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @credential@
-credentialSelector :: Selector
+credentialSelector :: Selector '[] (Id MTRDoorLockClusterAppleAliroCredentialStruct)
 credentialSelector = mkSelector "credential"
 
 -- | @Selector@ for @setCredential:@
-setCredentialSelector :: Selector
+setCredentialSelector :: Selector '[Id MTRDoorLockClusterAppleAliroCredentialStruct] ()
 setCredentialSelector = mkSelector "setCredential:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

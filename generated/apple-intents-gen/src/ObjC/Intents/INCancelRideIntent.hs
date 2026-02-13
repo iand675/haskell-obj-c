@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Intents.INCancelRideIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINCancelRideIntent inCancelRideIntent => inCancelRideIntent -> IO (Id INCancelRideIntent)
-init_ inCancelRideIntent  =
-    sendMsg inCancelRideIntent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inCancelRideIntent =
+  sendOwnedMessage inCancelRideIntent initSelector
 
 -- | @- initWithRideIdentifier:@
 initWithRideIdentifier :: (IsINCancelRideIntent inCancelRideIntent, IsNSString rideIdentifier) => inCancelRideIntent -> rideIdentifier -> IO (Id INCancelRideIntent)
-initWithRideIdentifier inCancelRideIntent  rideIdentifier =
-  withObjCPtr rideIdentifier $ \raw_rideIdentifier ->
-      sendMsg inCancelRideIntent (mkSelector "initWithRideIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_rideIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithRideIdentifier inCancelRideIntent rideIdentifier =
+  sendOwnedMessage inCancelRideIntent initWithRideIdentifierSelector (toNSString rideIdentifier)
 
 -- | @- rideIdentifier@
 rideIdentifier :: IsINCancelRideIntent inCancelRideIntent => inCancelRideIntent -> IO (Id NSString)
-rideIdentifier inCancelRideIntent  =
-    sendMsg inCancelRideIntent (mkSelector "rideIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideIdentifier inCancelRideIntent =
+  sendMessage inCancelRideIntent rideIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INCancelRideIntent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRideIdentifier:@
-initWithRideIdentifierSelector :: Selector
+initWithRideIdentifierSelector :: Selector '[Id NSString] (Id INCancelRideIntent)
 initWithRideIdentifierSelector = mkSelector "initWithRideIdentifier:"
 
 -- | @Selector@ for @rideIdentifier@
-rideIdentifierSelector :: Selector
+rideIdentifierSelector :: Selector '[] (Id NSString)
 rideIdentifierSelector = mkSelector "rideIdentifier"
 

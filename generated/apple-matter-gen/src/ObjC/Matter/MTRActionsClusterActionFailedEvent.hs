@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRActionsClusterActionFailedEvent
   , error_
   , setError
   , actionIDSelector
-  , setActionIDSelector
-  , invokeIDSelector
-  , setInvokeIDSelector
-  , newStateSelector
-  , setNewStateSelector
   , errorSelector
+  , invokeIDSelector
+  , newStateSelector
+  , setActionIDSelector
   , setErrorSelector
+  , setInvokeIDSelector
+  , setNewStateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- actionID@
 actionID :: IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent => mtrActionsClusterActionFailedEvent -> IO (Id NSNumber)
-actionID mtrActionsClusterActionFailedEvent  =
-    sendMsg mtrActionsClusterActionFailedEvent (mkSelector "actionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionID mtrActionsClusterActionFailedEvent =
+  sendMessage mtrActionsClusterActionFailedEvent actionIDSelector
 
 -- | @- setActionID:@
 setActionID :: (IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent, IsNSNumber value) => mtrActionsClusterActionFailedEvent -> value -> IO ()
-setActionID mtrActionsClusterActionFailedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionFailedEvent (mkSelector "setActionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionID mtrActionsClusterActionFailedEvent value =
+  sendMessage mtrActionsClusterActionFailedEvent setActionIDSelector (toNSNumber value)
 
 -- | @- invokeID@
 invokeID :: IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent => mtrActionsClusterActionFailedEvent -> IO (Id NSNumber)
-invokeID mtrActionsClusterActionFailedEvent  =
-    sendMsg mtrActionsClusterActionFailedEvent (mkSelector "invokeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+invokeID mtrActionsClusterActionFailedEvent =
+  sendMessage mtrActionsClusterActionFailedEvent invokeIDSelector
 
 -- | @- setInvokeID:@
 setInvokeID :: (IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent, IsNSNumber value) => mtrActionsClusterActionFailedEvent -> value -> IO ()
-setInvokeID mtrActionsClusterActionFailedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionFailedEvent (mkSelector "setInvokeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInvokeID mtrActionsClusterActionFailedEvent value =
+  sendMessage mtrActionsClusterActionFailedEvent setInvokeIDSelector (toNSNumber value)
 
 -- | @- newState@
 newState :: IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent => mtrActionsClusterActionFailedEvent -> IO (Id NSNumber)
-newState mtrActionsClusterActionFailedEvent  =
-    sendMsg mtrActionsClusterActionFailedEvent (mkSelector "newState") (retPtr retVoid) [] >>= ownedObject . castPtr
+newState mtrActionsClusterActionFailedEvent =
+  sendOwnedMessage mtrActionsClusterActionFailedEvent newStateSelector
 
 -- | @- setNewState:@
 setNewState :: (IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent, IsNSNumber value) => mtrActionsClusterActionFailedEvent -> value -> IO ()
-setNewState mtrActionsClusterActionFailedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionFailedEvent (mkSelector "setNewState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewState mtrActionsClusterActionFailedEvent value =
+  sendMessage mtrActionsClusterActionFailedEvent setNewStateSelector (toNSNumber value)
 
 -- | @- error@
 error_ :: IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent => mtrActionsClusterActionFailedEvent -> IO (Id NSNumber)
-error_ mtrActionsClusterActionFailedEvent  =
-    sendMsg mtrActionsClusterActionFailedEvent (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ mtrActionsClusterActionFailedEvent =
+  sendMessage mtrActionsClusterActionFailedEvent errorSelector
 
 -- | @- setError:@
 setError :: (IsMTRActionsClusterActionFailedEvent mtrActionsClusterActionFailedEvent, IsNSNumber value) => mtrActionsClusterActionFailedEvent -> value -> IO ()
-setError mtrActionsClusterActionFailedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterActionFailedEvent (mkSelector "setError:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setError mtrActionsClusterActionFailedEvent value =
+  sendMessage mtrActionsClusterActionFailedEvent setErrorSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionID@
-actionIDSelector :: Selector
+actionIDSelector :: Selector '[] (Id NSNumber)
 actionIDSelector = mkSelector "actionID"
 
 -- | @Selector@ for @setActionID:@
-setActionIDSelector :: Selector
+setActionIDSelector :: Selector '[Id NSNumber] ()
 setActionIDSelector = mkSelector "setActionID:"
 
 -- | @Selector@ for @invokeID@
-invokeIDSelector :: Selector
+invokeIDSelector :: Selector '[] (Id NSNumber)
 invokeIDSelector = mkSelector "invokeID"
 
 -- | @Selector@ for @setInvokeID:@
-setInvokeIDSelector :: Selector
+setInvokeIDSelector :: Selector '[Id NSNumber] ()
 setInvokeIDSelector = mkSelector "setInvokeID:"
 
 -- | @Selector@ for @newState@
-newStateSelector :: Selector
+newStateSelector :: Selector '[] (Id NSNumber)
 newStateSelector = mkSelector "newState"
 
 -- | @Selector@ for @setNewState:@
-setNewStateSelector :: Selector
+setNewStateSelector :: Selector '[Id NSNumber] ()
 setNewStateSelector = mkSelector "setNewState:"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSNumber)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @setError:@
-setErrorSelector :: Selector
+setErrorSelector :: Selector '[Id NSNumber] ()
 setErrorSelector = mkSelector "setError:"
 

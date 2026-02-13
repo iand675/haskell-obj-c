@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.ModelIO.MDLTransformRotateOp
   , IsMDLTransformRotateOp(..)
   , name
   , animatedValue
-  , nameSelector
   , animatedValueSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMDLTransformRotateOp mdlTransformRotateOp => mdlTransformRotateOp -> IO (Id NSString)
-name mdlTransformRotateOp  =
-    sendMsg mdlTransformRotateOp (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlTransformRotateOp =
+  sendMessage mdlTransformRotateOp nameSelector
 
 -- | @- animatedValue@
 animatedValue :: IsMDLTransformRotateOp mdlTransformRotateOp => mdlTransformRotateOp -> IO (Id MDLAnimatedVector3)
-animatedValue mdlTransformRotateOp  =
-    sendMsg mdlTransformRotateOp (mkSelector "animatedValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+animatedValue mdlTransformRotateOp =
+  sendMessage mdlTransformRotateOp animatedValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @animatedValue@
-animatedValueSelector :: Selector
+animatedValueSelector :: Selector '[] (Id MDLAnimatedVector3)
 animatedValueSelector = mkSelector "animatedValue"
 

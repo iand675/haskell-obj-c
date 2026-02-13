@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AuthenticationServices.ASCredentialProviderExtensionContext
   , completeExtensionConfigurationRequest
   , completeRequestReturningItems_completionHandler
   , cancelRequestWithError
-  , completeRequestWithSelectedCredential_completionHandlerSelector
-  , completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector
-  , completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector
-  , completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector
-  , completeSavePasswordRequestWithCompletionHandlerSelector
-  , completeGeneratePasswordRequestWithResults_completionHandlerSelector
-  , completeExtensionConfigurationRequestSelector
-  , completeRequestReturningItems_completionHandlerSelector
   , cancelRequestWithErrorSelector
+  , completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector
+  , completeExtensionConfigurationRequestSelector
+  , completeGeneratePasswordRequestWithResults_completionHandlerSelector
+  , completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector
+  , completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector
+  , completeRequestReturningItems_completionHandlerSelector
+  , completeRequestWithSelectedCredential_completionHandlerSelector
+  , completeSavePasswordRequestWithCompletionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- completeRequestWithSelectedCredential:completionHandler:@
 completeRequestWithSelectedCredential_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsASPasswordCredential credential) => asCredentialProviderExtensionContext -> credential -> Ptr () -> IO ()
-completeRequestWithSelectedCredential_completionHandler asCredentialProviderExtensionContext  credential completionHandler =
-  withObjCPtr credential $ \raw_credential ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeRequestWithSelectedCredential:completionHandler:") retVoid [argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeRequestWithSelectedCredential_completionHandler asCredentialProviderExtensionContext credential completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeRequestWithSelectedCredential_completionHandlerSelector (toASPasswordCredential credential) completionHandler
 
 -- | Complete the assertion request by providing the user selected passkey credential.
 --
@@ -67,9 +63,8 @@ completeRequestWithSelectedCredential_completionHandler asCredentialProviderExte
 --
 -- ObjC selector: @- completeAssertionRequestWithSelectedPasskeyCredential:completionHandler:@
 completeAssertionRequestWithSelectedPasskeyCredential_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsASPasskeyAssertionCredential credential) => asCredentialProviderExtensionContext -> credential -> Ptr () -> IO ()
-completeAssertionRequestWithSelectedPasskeyCredential_completionHandler asCredentialProviderExtensionContext  credential completionHandler =
-  withObjCPtr credential $ \raw_credential ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeAssertionRequestWithSelectedPasskeyCredential:completionHandler:") retVoid [argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeAssertionRequestWithSelectedPasskeyCredential_completionHandler asCredentialProviderExtensionContext credential completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector (toASPasskeyAssertionCredential credential) completionHandler
 
 -- | Complete the registration request by providing the newly created passkey credential.
 --
@@ -81,9 +76,8 @@ completeAssertionRequestWithSelectedPasskeyCredential_completionHandler asCreden
 --
 -- ObjC selector: @- completeRegistrationRequestWithSelectedPasskeyCredential:completionHandler:@
 completeRegistrationRequestWithSelectedPasskeyCredential_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsASPasskeyRegistrationCredential credential) => asCredentialProviderExtensionContext -> credential -> Ptr () -> IO ()
-completeRegistrationRequestWithSelectedPasskeyCredential_completionHandler asCredentialProviderExtensionContext  credential completionHandler =
-  withObjCPtr credential $ \raw_credential ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeRegistrationRequestWithSelectedPasskeyCredential:completionHandler:") retVoid [argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeRegistrationRequestWithSelectedPasskeyCredential_completionHandler asCredentialProviderExtensionContext credential completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector (toASPasskeyRegistrationCredential credential) completionHandler
 
 -- | Complete the request by providing the user selected one time code credential.
 --
@@ -95,24 +89,22 @@ completeRegistrationRequestWithSelectedPasskeyCredential_completionHandler asCre
 --
 -- ObjC selector: @- completeOneTimeCodeRequestWithSelectedCredential:completionHandler:@
 completeOneTimeCodeRequestWithSelectedCredential_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsASOneTimeCodeCredential credential) => asCredentialProviderExtensionContext -> credential -> Ptr () -> IO ()
-completeOneTimeCodeRequestWithSelectedCredential_completionHandler asCredentialProviderExtensionContext  credential completionHandler =
-  withObjCPtr credential $ \raw_credential ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeOneTimeCodeRequestWithSelectedCredential:completionHandler:") retVoid [argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeOneTimeCodeRequestWithSelectedCredential_completionHandler asCredentialProviderExtensionContext credential completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector (toASOneTimeCodeCredential credential) completionHandler
 
 -- | Signal that a password request was successfully saved. - parameter completionHandler: An optional block your extension can provide to perform any cleanup work after the system has captured the results. The expired parameter is true if the system decides to prematurely end a previous non-expiration invocation of the completion handler. - note: You are responsible for updating the ASCredentialIdentityStore.
 --
 -- ObjC selector: @- completeSavePasswordRequestWithCompletionHandler:@
 completeSavePasswordRequestWithCompletionHandler :: IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext => asCredentialProviderExtensionContext -> Ptr () -> IO ()
-completeSavePasswordRequestWithCompletionHandler asCredentialProviderExtensionContext  completionHandler =
-    sendMsg asCredentialProviderExtensionContext (mkSelector "completeSavePasswordRequestWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+completeSavePasswordRequestWithCompletionHandler asCredentialProviderExtensionContext completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeSavePasswordRequestWithCompletionHandlerSelector completionHandler
 
 -- | Return potential passwords for the given request. - parameter results: Potential passwords that the user can select. You can provide multiple options for increased flexibility on the user's behalf. These results should be returned in priority order. - parameter completionHandler: An optional block your extension can provide to perform any cleanup work after the system has captured the results. The expired parameter is true if the system decides to prematurely end a previous non-expiration invocation of the completion handler.
 --
 -- ObjC selector: @- completeGeneratePasswordRequestWithResults:completionHandler:@
 completeGeneratePasswordRequestWithResults_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsNSArray results) => asCredentialProviderExtensionContext -> results -> Ptr () -> IO ()
-completeGeneratePasswordRequestWithResults_completionHandler asCredentialProviderExtensionContext  results completionHandler =
-  withObjCPtr results $ \raw_results ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeGeneratePasswordRequestWithResults:completionHandler:") retVoid [argPtr (castPtr raw_results :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeGeneratePasswordRequestWithResults_completionHandler asCredentialProviderExtensionContext results completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeGeneratePasswordRequestWithResults_completionHandlerSelector (toNSArray results) completionHandler
 
 -- | Complete the request to configure the extension.
 --
@@ -120,14 +112,13 @@ completeGeneratePasswordRequestWithResults_completionHandler asCredentialProvide
 --
 -- ObjC selector: @- completeExtensionConfigurationRequest@
 completeExtensionConfigurationRequest :: IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext => asCredentialProviderExtensionContext -> IO ()
-completeExtensionConfigurationRequest asCredentialProviderExtensionContext  =
-    sendMsg asCredentialProviderExtensionContext (mkSelector "completeExtensionConfigurationRequest") retVoid []
+completeExtensionConfigurationRequest asCredentialProviderExtensionContext =
+  sendMessage asCredentialProviderExtensionContext completeExtensionConfigurationRequestSelector
 
 -- | @- completeRequestReturningItems:completionHandler:@
 completeRequestReturningItems_completionHandler :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsNSArray items) => asCredentialProviderExtensionContext -> items -> Ptr () -> IO ()
-completeRequestReturningItems_completionHandler asCredentialProviderExtensionContext  items completionHandler =
-  withObjCPtr items $ \raw_items ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "completeRequestReturningItems:completionHandler:") retVoid [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+completeRequestReturningItems_completionHandler asCredentialProviderExtensionContext items completionHandler =
+  sendMessage asCredentialProviderExtensionContext completeRequestReturningItems_completionHandlerSelector (toNSArray items) completionHandler
 
 -- | Cancels the request.
 --
@@ -137,47 +128,46 @@ completeRequestReturningItems_completionHandler asCredentialProviderExtensionCon
 --
 -- ObjC selector: @- cancelRequestWithError:@
 cancelRequestWithError :: (IsASCredentialProviderExtensionContext asCredentialProviderExtensionContext, IsNSError error_) => asCredentialProviderExtensionContext -> error_ -> IO ()
-cancelRequestWithError asCredentialProviderExtensionContext  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg asCredentialProviderExtensionContext (mkSelector "cancelRequestWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelRequestWithError asCredentialProviderExtensionContext error_ =
+  sendMessage asCredentialProviderExtensionContext cancelRequestWithErrorSelector (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @completeRequestWithSelectedCredential:completionHandler:@
-completeRequestWithSelectedCredential_completionHandlerSelector :: Selector
+completeRequestWithSelectedCredential_completionHandlerSelector :: Selector '[Id ASPasswordCredential, Ptr ()] ()
 completeRequestWithSelectedCredential_completionHandlerSelector = mkSelector "completeRequestWithSelectedCredential:completionHandler:"
 
 -- | @Selector@ for @completeAssertionRequestWithSelectedPasskeyCredential:completionHandler:@
-completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector :: Selector
+completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector :: Selector '[Id ASPasskeyAssertionCredential, Ptr ()] ()
 completeAssertionRequestWithSelectedPasskeyCredential_completionHandlerSelector = mkSelector "completeAssertionRequestWithSelectedPasskeyCredential:completionHandler:"
 
 -- | @Selector@ for @completeRegistrationRequestWithSelectedPasskeyCredential:completionHandler:@
-completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector :: Selector
+completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector :: Selector '[Id ASPasskeyRegistrationCredential, Ptr ()] ()
 completeRegistrationRequestWithSelectedPasskeyCredential_completionHandlerSelector = mkSelector "completeRegistrationRequestWithSelectedPasskeyCredential:completionHandler:"
 
 -- | @Selector@ for @completeOneTimeCodeRequestWithSelectedCredential:completionHandler:@
-completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector :: Selector
+completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector :: Selector '[Id ASOneTimeCodeCredential, Ptr ()] ()
 completeOneTimeCodeRequestWithSelectedCredential_completionHandlerSelector = mkSelector "completeOneTimeCodeRequestWithSelectedCredential:completionHandler:"
 
 -- | @Selector@ for @completeSavePasswordRequestWithCompletionHandler:@
-completeSavePasswordRequestWithCompletionHandlerSelector :: Selector
+completeSavePasswordRequestWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 completeSavePasswordRequestWithCompletionHandlerSelector = mkSelector "completeSavePasswordRequestWithCompletionHandler:"
 
 -- | @Selector@ for @completeGeneratePasswordRequestWithResults:completionHandler:@
-completeGeneratePasswordRequestWithResults_completionHandlerSelector :: Selector
+completeGeneratePasswordRequestWithResults_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 completeGeneratePasswordRequestWithResults_completionHandlerSelector = mkSelector "completeGeneratePasswordRequestWithResults:completionHandler:"
 
 -- | @Selector@ for @completeExtensionConfigurationRequest@
-completeExtensionConfigurationRequestSelector :: Selector
+completeExtensionConfigurationRequestSelector :: Selector '[] ()
 completeExtensionConfigurationRequestSelector = mkSelector "completeExtensionConfigurationRequest"
 
 -- | @Selector@ for @completeRequestReturningItems:completionHandler:@
-completeRequestReturningItems_completionHandlerSelector :: Selector
+completeRequestReturningItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 completeRequestReturningItems_completionHandlerSelector = mkSelector "completeRequestReturningItems:completionHandler:"
 
 -- | @Selector@ for @cancelRequestWithError:@
-cancelRequestWithErrorSelector :: Selector
+cancelRequestWithErrorSelector :: Selector '[Id NSError] ()
 cancelRequestWithErrorSelector = mkSelector "cancelRequestWithError:"
 

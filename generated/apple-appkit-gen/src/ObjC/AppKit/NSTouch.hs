@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,14 +17,14 @@ module ObjC.AppKit.NSTouch
   , device
   , deviceSize
   , type_
-  , locationInViewSelector
-  , previousLocationInViewSelector
-  , identitySelector
-  , phaseSelector
-  , normalizedPositionSelector
-  , restingSelector
   , deviceSelector
   , deviceSizeSelector
+  , identitySelector
+  , locationInViewSelector
+  , normalizedPositionSelector
+  , phaseSelector
+  , previousLocationInViewSelector
+  , restingSelector
   , typeSelector
 
   -- * Enum types
@@ -41,15 +42,11 @@ module ObjC.AppKit.NSTouch
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,88 +57,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- locationInView:@
 locationInView :: (IsNSTouch nsTouch, IsNSView view) => nsTouch -> view -> IO NSPoint
-locationInView nsTouch  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsTouch (mkSelector "locationInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
+locationInView nsTouch view =
+  sendMessage nsTouch locationInViewSelector (toNSView view)
 
 -- | @- previousLocationInView:@
 previousLocationInView :: (IsNSTouch nsTouch, IsNSView view) => nsTouch -> view -> IO NSPoint
-previousLocationInView nsTouch  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsgStret nsTouch (mkSelector "previousLocationInView:") retNSPoint [argPtr (castPtr raw_view :: Ptr ())]
+previousLocationInView nsTouch view =
+  sendMessage nsTouch previousLocationInViewSelector (toNSView view)
 
 -- | @- identity@
 identity :: IsNSTouch nsTouch => nsTouch -> IO RawId
-identity nsTouch  =
-    fmap (RawId . castPtr) $ sendMsg nsTouch (mkSelector "identity") (retPtr retVoid) []
+identity nsTouch =
+  sendMessage nsTouch identitySelector
 
 -- | @- phase@
 phase :: IsNSTouch nsTouch => nsTouch -> IO NSTouchPhase
-phase nsTouch  =
-    fmap (coerce :: CULong -> NSTouchPhase) $ sendMsg nsTouch (mkSelector "phase") retCULong []
+phase nsTouch =
+  sendMessage nsTouch phaseSelector
 
 -- | @- normalizedPosition@
 normalizedPosition :: IsNSTouch nsTouch => nsTouch -> IO NSPoint
-normalizedPosition nsTouch  =
-    sendMsgStret nsTouch (mkSelector "normalizedPosition") retNSPoint []
+normalizedPosition nsTouch =
+  sendMessage nsTouch normalizedPositionSelector
 
 -- | @- resting@
 resting :: IsNSTouch nsTouch => nsTouch -> IO Bool
-resting nsTouch  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTouch (mkSelector "resting") retCULong []
+resting nsTouch =
+  sendMessage nsTouch restingSelector
 
 -- | @- device@
 device :: IsNSTouch nsTouch => nsTouch -> IO RawId
-device nsTouch  =
-    fmap (RawId . castPtr) $ sendMsg nsTouch (mkSelector "device") (retPtr retVoid) []
+device nsTouch =
+  sendMessage nsTouch deviceSelector
 
 -- | @- deviceSize@
 deviceSize :: IsNSTouch nsTouch => nsTouch -> IO NSSize
-deviceSize nsTouch  =
-    sendMsgStret nsTouch (mkSelector "deviceSize") retNSSize []
+deviceSize nsTouch =
+  sendMessage nsTouch deviceSizeSelector
 
 -- | @- type@
 type_ :: IsNSTouch nsTouch => nsTouch -> IO NSTouchType
-type_ nsTouch  =
-    fmap (coerce :: CLong -> NSTouchType) $ sendMsg nsTouch (mkSelector "type") retCLong []
+type_ nsTouch =
+  sendMessage nsTouch typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @locationInView:@
-locationInViewSelector :: Selector
+locationInViewSelector :: Selector '[Id NSView] NSPoint
 locationInViewSelector = mkSelector "locationInView:"
 
 -- | @Selector@ for @previousLocationInView:@
-previousLocationInViewSelector :: Selector
+previousLocationInViewSelector :: Selector '[Id NSView] NSPoint
 previousLocationInViewSelector = mkSelector "previousLocationInView:"
 
 -- | @Selector@ for @identity@
-identitySelector :: Selector
+identitySelector :: Selector '[] RawId
 identitySelector = mkSelector "identity"
 
 -- | @Selector@ for @phase@
-phaseSelector :: Selector
+phaseSelector :: Selector '[] NSTouchPhase
 phaseSelector = mkSelector "phase"
 
 -- | @Selector@ for @normalizedPosition@
-normalizedPositionSelector :: Selector
+normalizedPositionSelector :: Selector '[] NSPoint
 normalizedPositionSelector = mkSelector "normalizedPosition"
 
 -- | @Selector@ for @resting@
-restingSelector :: Selector
+restingSelector :: Selector '[] Bool
 restingSelector = mkSelector "resting"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @deviceSize@
-deviceSizeSelector :: Selector
+deviceSizeSelector :: Selector '[] NSSize
 deviceSizeSelector = mkSelector "deviceSize"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] NSTouchType
 typeSelector = mkSelector "type"
 

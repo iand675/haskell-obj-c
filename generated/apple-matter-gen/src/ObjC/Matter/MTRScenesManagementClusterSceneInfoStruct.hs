@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRScenesManagementClusterSceneInfoStruct
   , setRemainingCapacity
   , fabricIndex
   , setFabricIndex
-  , sceneCountSelector
-  , setSceneCountSelector
-  , currentSceneSelector
-  , setCurrentSceneSelector
   , currentGroupSelector
-  , setCurrentGroupSelector
-  , sceneValidSelector
-  , setSceneValidSelector
-  , remainingCapacitySelector
-  , setRemainingCapacitySelector
+  , currentSceneSelector
   , fabricIndexSelector
+  , remainingCapacitySelector
+  , sceneCountSelector
+  , sceneValidSelector
+  , setCurrentGroupSelector
+  , setCurrentSceneSelector
   , setFabricIndexSelector
+  , setRemainingCapacitySelector
+  , setSceneCountSelector
+  , setSceneValidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sceneCount@
 sceneCount :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-sceneCount mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "sceneCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneCount mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct sceneCountSelector
 
 -- | @- setSceneCount:@
 setSceneCount :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setSceneCount mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setSceneCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneCount mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setSceneCountSelector (toNSNumber value)
 
 -- | @- currentScene@
 currentScene :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-currentScene mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "currentScene") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentScene mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct currentSceneSelector
 
 -- | @- setCurrentScene:@
 setCurrentScene :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setCurrentScene mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setCurrentScene:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentScene mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setCurrentSceneSelector (toNSNumber value)
 
 -- | @- currentGroup@
 currentGroup :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-currentGroup mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "currentGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentGroup mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct currentGroupSelector
 
 -- | @- setCurrentGroup:@
 setCurrentGroup :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setCurrentGroup mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setCurrentGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentGroup mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setCurrentGroupSelector (toNSNumber value)
 
 -- | @- sceneValid@
 sceneValid :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-sceneValid mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "sceneValid") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneValid mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct sceneValidSelector
 
 -- | @- setSceneValid:@
 setSceneValid :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setSceneValid mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setSceneValid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneValid mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setSceneValidSelector (toNSNumber value)
 
 -- | @- remainingCapacity@
 remainingCapacity :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-remainingCapacity mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "remainingCapacity") (retPtr retVoid) [] >>= retainedObject . castPtr
+remainingCapacity mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct remainingCapacitySelector
 
 -- | @- setRemainingCapacity:@
 setRemainingCapacity :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setRemainingCapacity mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setRemainingCapacity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRemainingCapacity mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setRemainingCapacitySelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct => mtrScenesManagementClusterSceneInfoStruct -> IO (Id NSNumber)
-fabricIndex mtrScenesManagementClusterSceneInfoStruct  =
-    sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrScenesManagementClusterSceneInfoStruct =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRScenesManagementClusterSceneInfoStruct mtrScenesManagementClusterSceneInfoStruct, IsNSNumber value) => mtrScenesManagementClusterSceneInfoStruct -> value -> IO ()
-setFabricIndex mtrScenesManagementClusterSceneInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterSceneInfoStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrScenesManagementClusterSceneInfoStruct value =
+  sendMessage mtrScenesManagementClusterSceneInfoStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sceneCount@
-sceneCountSelector :: Selector
+sceneCountSelector :: Selector '[] (Id NSNumber)
 sceneCountSelector = mkSelector "sceneCount"
 
 -- | @Selector@ for @setSceneCount:@
-setSceneCountSelector :: Selector
+setSceneCountSelector :: Selector '[Id NSNumber] ()
 setSceneCountSelector = mkSelector "setSceneCount:"
 
 -- | @Selector@ for @currentScene@
-currentSceneSelector :: Selector
+currentSceneSelector :: Selector '[] (Id NSNumber)
 currentSceneSelector = mkSelector "currentScene"
 
 -- | @Selector@ for @setCurrentScene:@
-setCurrentSceneSelector :: Selector
+setCurrentSceneSelector :: Selector '[Id NSNumber] ()
 setCurrentSceneSelector = mkSelector "setCurrentScene:"
 
 -- | @Selector@ for @currentGroup@
-currentGroupSelector :: Selector
+currentGroupSelector :: Selector '[] (Id NSNumber)
 currentGroupSelector = mkSelector "currentGroup"
 
 -- | @Selector@ for @setCurrentGroup:@
-setCurrentGroupSelector :: Selector
+setCurrentGroupSelector :: Selector '[Id NSNumber] ()
 setCurrentGroupSelector = mkSelector "setCurrentGroup:"
 
 -- | @Selector@ for @sceneValid@
-sceneValidSelector :: Selector
+sceneValidSelector :: Selector '[] (Id NSNumber)
 sceneValidSelector = mkSelector "sceneValid"
 
 -- | @Selector@ for @setSceneValid:@
-setSceneValidSelector :: Selector
+setSceneValidSelector :: Selector '[Id NSNumber] ()
 setSceneValidSelector = mkSelector "setSceneValid:"
 
 -- | @Selector@ for @remainingCapacity@
-remainingCapacitySelector :: Selector
+remainingCapacitySelector :: Selector '[] (Id NSNumber)
 remainingCapacitySelector = mkSelector "remainingCapacity"
 
 -- | @Selector@ for @setRemainingCapacity:@
-setRemainingCapacitySelector :: Selector
+setRemainingCapacitySelector :: Selector '[Id NSNumber] ()
 setRemainingCapacitySelector = mkSelector "setRemainingCapacity:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

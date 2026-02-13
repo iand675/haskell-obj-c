@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AppKit.NSPasteboardItem
   , propertyListForType
   , types
   , availableTypeFromArraySelector
+  , dataForTypeSelector
+  , propertyListForTypeSelector
   , setDataProvider_forTypesSelector
   , setData_forTypeSelector
-  , setString_forTypeSelector
   , setPropertyList_forTypeSelector
-  , dataForTypeSelector
+  , setString_forTypeSelector
   , stringForTypeSelector
-  , propertyListForTypeSelector
   , typesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,96 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- availableTypeFromArray:@
 availableTypeFromArray :: (IsNSPasteboardItem nsPasteboardItem, IsNSArray types) => nsPasteboardItem -> types -> IO (Id NSString)
-availableTypeFromArray nsPasteboardItem  types =
-  withObjCPtr types $ \raw_types ->
-      sendMsg nsPasteboardItem (mkSelector "availableTypeFromArray:") (retPtr retVoid) [argPtr (castPtr raw_types :: Ptr ())] >>= retainedObject . castPtr
+availableTypeFromArray nsPasteboardItem types =
+  sendMessage nsPasteboardItem availableTypeFromArraySelector (toNSArray types)
 
 -- | @- setDataProvider:forTypes:@
 setDataProvider_forTypes :: (IsNSPasteboardItem nsPasteboardItem, IsNSArray types) => nsPasteboardItem -> RawId -> types -> IO Bool
-setDataProvider_forTypes nsPasteboardItem  dataProvider types =
-  withObjCPtr types $ \raw_types ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboardItem (mkSelector "setDataProvider:forTypes:") retCULong [argPtr (castPtr (unRawId dataProvider) :: Ptr ()), argPtr (castPtr raw_types :: Ptr ())]
+setDataProvider_forTypes nsPasteboardItem dataProvider types =
+  sendMessage nsPasteboardItem setDataProvider_forTypesSelector dataProvider (toNSArray types)
 
 -- | @- setData:forType:@
 setData_forType :: (IsNSPasteboardItem nsPasteboardItem, IsNSData data_, IsNSString type_) => nsPasteboardItem -> data_ -> type_ -> IO Bool
-setData_forType nsPasteboardItem  data_ type_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr type_ $ \raw_type_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboardItem (mkSelector "setData:forType:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ())]
+setData_forType nsPasteboardItem data_ type_ =
+  sendMessage nsPasteboardItem setData_forTypeSelector (toNSData data_) (toNSString type_)
 
 -- | @- setString:forType:@
 setString_forType :: (IsNSPasteboardItem nsPasteboardItem, IsNSString string, IsNSString type_) => nsPasteboardItem -> string -> type_ -> IO Bool
-setString_forType nsPasteboardItem  string type_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr type_ $ \raw_type_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboardItem (mkSelector "setString:forType:") retCULong [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ())]
+setString_forType nsPasteboardItem string type_ =
+  sendMessage nsPasteboardItem setString_forTypeSelector (toNSString string) (toNSString type_)
 
 -- | @- setPropertyList:forType:@
 setPropertyList_forType :: (IsNSPasteboardItem nsPasteboardItem, IsNSString type_) => nsPasteboardItem -> RawId -> type_ -> IO Bool
-setPropertyList_forType nsPasteboardItem  propertyList type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPasteboardItem (mkSelector "setPropertyList:forType:") retCULong [argPtr (castPtr (unRawId propertyList) :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ())]
+setPropertyList_forType nsPasteboardItem propertyList type_ =
+  sendMessage nsPasteboardItem setPropertyList_forTypeSelector propertyList (toNSString type_)
 
 -- | @- dataForType:@
 dataForType :: (IsNSPasteboardItem nsPasteboardItem, IsNSString type_) => nsPasteboardItem -> type_ -> IO (Id NSData)
-dataForType nsPasteboardItem  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg nsPasteboardItem (mkSelector "dataForType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+dataForType nsPasteboardItem type_ =
+  sendMessage nsPasteboardItem dataForTypeSelector (toNSString type_)
 
 -- | @- stringForType:@
 stringForType :: (IsNSPasteboardItem nsPasteboardItem, IsNSString type_) => nsPasteboardItem -> type_ -> IO (Id NSString)
-stringForType nsPasteboardItem  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg nsPasteboardItem (mkSelector "stringForType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+stringForType nsPasteboardItem type_ =
+  sendMessage nsPasteboardItem stringForTypeSelector (toNSString type_)
 
 -- | @- propertyListForType:@
 propertyListForType :: (IsNSPasteboardItem nsPasteboardItem, IsNSString type_) => nsPasteboardItem -> type_ -> IO RawId
-propertyListForType nsPasteboardItem  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap (RawId . castPtr) $ sendMsg nsPasteboardItem (mkSelector "propertyListForType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())]
+propertyListForType nsPasteboardItem type_ =
+  sendMessage nsPasteboardItem propertyListForTypeSelector (toNSString type_)
 
 -- | @- types@
 types :: IsNSPasteboardItem nsPasteboardItem => nsPasteboardItem -> IO (Id NSArray)
-types nsPasteboardItem  =
-    sendMsg nsPasteboardItem (mkSelector "types") (retPtr retVoid) [] >>= retainedObject . castPtr
+types nsPasteboardItem =
+  sendMessage nsPasteboardItem typesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @availableTypeFromArray:@
-availableTypeFromArraySelector :: Selector
+availableTypeFromArraySelector :: Selector '[Id NSArray] (Id NSString)
 availableTypeFromArraySelector = mkSelector "availableTypeFromArray:"
 
 -- | @Selector@ for @setDataProvider:forTypes:@
-setDataProvider_forTypesSelector :: Selector
+setDataProvider_forTypesSelector :: Selector '[RawId, Id NSArray] Bool
 setDataProvider_forTypesSelector = mkSelector "setDataProvider:forTypes:"
 
 -- | @Selector@ for @setData:forType:@
-setData_forTypeSelector :: Selector
+setData_forTypeSelector :: Selector '[Id NSData, Id NSString] Bool
 setData_forTypeSelector = mkSelector "setData:forType:"
 
 -- | @Selector@ for @setString:forType:@
-setString_forTypeSelector :: Selector
+setString_forTypeSelector :: Selector '[Id NSString, Id NSString] Bool
 setString_forTypeSelector = mkSelector "setString:forType:"
 
 -- | @Selector@ for @setPropertyList:forType:@
-setPropertyList_forTypeSelector :: Selector
+setPropertyList_forTypeSelector :: Selector '[RawId, Id NSString] Bool
 setPropertyList_forTypeSelector = mkSelector "setPropertyList:forType:"
 
 -- | @Selector@ for @dataForType:@
-dataForTypeSelector :: Selector
+dataForTypeSelector :: Selector '[Id NSString] (Id NSData)
 dataForTypeSelector = mkSelector "dataForType:"
 
 -- | @Selector@ for @stringForType:@
-stringForTypeSelector :: Selector
+stringForTypeSelector :: Selector '[Id NSString] (Id NSString)
 stringForTypeSelector = mkSelector "stringForType:"
 
 -- | @Selector@ for @propertyListForType:@
-propertyListForTypeSelector :: Selector
+propertyListForTypeSelector :: Selector '[Id NSString] RawId
 propertyListForTypeSelector = mkSelector "propertyListForType:"
 
 -- | @Selector@ for @types@
-typesSelector :: Selector
+typesSelector :: Selector '[] (Id NSArray)
 typesSelector = mkSelector "types"
 

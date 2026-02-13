@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,32 +26,28 @@ module ObjC.IOBluetooth.IOBluetoothSDPUUID
   , classForCoder
   , classForArchiver
   , classForPortCoder
-  , uuidWithBytes_lengthSelector
-  , uuidWithDataSelector
-  , uuid16Selector
-  , uuid32Selector
-  , withSDPUUIDRefSelector
-  , initWithUUID16Selector
-  , initWithUUID32Selector
+  , classForArchiverSelector
+  , classForCoderSelector
+  , classForPortCoderSelector
   , getSDPUUIDRefSelector
   , getUUIDWithLengthSelector
+  , initWithUUID16Selector
+  , initWithUUID32Selector
   , isEqualToUUIDSelector
-  , classForCoderSelector
-  , classForArchiverSelector
-  , classForPortCoderSelector
+  , uuid16Selector
+  , uuid32Selector
+  , uuidWithBytes_lengthSelector
+  , uuidWithDataSelector
+  , withSDPUUIDRefSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,7 +71,7 @@ uuidWithBytes_length :: Const (Ptr ()) -> CUInt -> IO (Id IOBluetoothSDPUUID)
 uuidWithBytes_length bytes length_ =
   do
     cls' <- getRequiredClass "IOBluetoothSDPUUID"
-    sendClassMsg cls' (mkSelector "uuidWithBytes:length:") (retPtr retVoid) [argPtr (unConst bytes), argCUInt length_] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithBytes_lengthSelector bytes length_
 
 -- | uuidWithData:
 --
@@ -91,8 +88,7 @@ uuidWithData :: IsNSData data_ => data_ -> IO (Id IOBluetoothSDPUUID)
 uuidWithData data_ =
   do
     cls' <- getRequiredClass "IOBluetoothSDPUUID"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "uuidWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithDataSelector (toNSData data_)
 
 -- | uuid16:
 --
@@ -107,7 +103,7 @@ uuid16 :: CUShort -> IO (Id IOBluetoothSDPUUID)
 uuid16 uuid16 =
   do
     cls' <- getRequiredClass "IOBluetoothSDPUUID"
-    sendClassMsg cls' (mkSelector "uuid16:") (retPtr retVoid) [argCUInt (fromIntegral uuid16)] >>= retainedObject . castPtr
+    sendClassMessage cls' uuid16Selector uuid16
 
 -- | uuid32:
 --
@@ -122,7 +118,7 @@ uuid32 :: CUInt -> IO (Id IOBluetoothSDPUUID)
 uuid32 uuid32 =
   do
     cls' <- getRequiredClass "IOBluetoothSDPUUID"
-    sendClassMsg cls' (mkSelector "uuid32:") (retPtr retVoid) [argCUInt uuid32] >>= retainedObject . castPtr
+    sendClassMessage cls' uuid32Selector uuid32
 
 -- | withSDPUUIDRef:
 --
@@ -137,7 +133,7 @@ withSDPUUIDRef :: Ptr () -> IO (Id IOBluetoothSDPUUID)
 withSDPUUIDRef sdpUUIDRef =
   do
     cls' <- getRequiredClass "IOBluetoothSDPUUID"
-    sendClassMsg cls' (mkSelector "withSDPUUIDRef:") (retPtr retVoid) [argPtr sdpUUIDRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withSDPUUIDRefSelector sdpUUIDRef
 
 -- | initWithUUID16:
 --
@@ -149,8 +145,8 @@ withSDPUUIDRef sdpUUIDRef =
 --
 -- ObjC selector: @- initWithUUID16:@
 initWithUUID16 :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> CUShort -> IO (Id IOBluetoothSDPUUID)
-initWithUUID16 ioBluetoothSDPUUID  uuid16 =
-    sendMsg ioBluetoothSDPUUID (mkSelector "initWithUUID16:") (retPtr retVoid) [argCUInt (fromIntegral uuid16)] >>= ownedObject . castPtr
+initWithUUID16 ioBluetoothSDPUUID uuid16 =
+  sendOwnedMessage ioBluetoothSDPUUID initWithUUID16Selector uuid16
 
 -- | initWithUUID32:
 --
@@ -162,8 +158,8 @@ initWithUUID16 ioBluetoothSDPUUID  uuid16 =
 --
 -- ObjC selector: @- initWithUUID32:@
 initWithUUID32 :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> CUInt -> IO (Id IOBluetoothSDPUUID)
-initWithUUID32 ioBluetoothSDPUUID  uuid32 =
-    sendMsg ioBluetoothSDPUUID (mkSelector "initWithUUID32:") (retPtr retVoid) [argCUInt uuid32] >>= ownedObject . castPtr
+initWithUUID32 ioBluetoothSDPUUID uuid32 =
+  sendOwnedMessage ioBluetoothSDPUUID initWithUUID32Selector uuid32
 
 -- | getSDPUUIDRef
 --
@@ -173,8 +169,8 @@ initWithUUID32 ioBluetoothSDPUUID  uuid32 =
 --
 -- ObjC selector: @- getSDPUUIDRef@
 getSDPUUIDRef :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> IO (Ptr ())
-getSDPUUIDRef ioBluetoothSDPUUID  =
-    fmap castPtr $ sendMsg ioBluetoothSDPUUID (mkSelector "getSDPUUIDRef") (retPtr retVoid) []
+getSDPUUIDRef ioBluetoothSDPUUID =
+  sendMessage ioBluetoothSDPUUID getSDPUUIDRefSelector
 
 -- | getUUIDWithLength:
 --
@@ -188,8 +184,8 @@ getSDPUUIDRef ioBluetoothSDPUUID  =
 --
 -- ObjC selector: @- getUUIDWithLength:@
 getUUIDWithLength :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> CUInt -> IO (Id IOBluetoothSDPUUID)
-getUUIDWithLength ioBluetoothSDPUUID  newLength =
-    sendMsg ioBluetoothSDPUUID (mkSelector "getUUIDWithLength:") (retPtr retVoid) [argCUInt newLength] >>= retainedObject . castPtr
+getUUIDWithLength ioBluetoothSDPUUID newLength =
+  sendMessage ioBluetoothSDPUUID getUUIDWithLengthSelector newLength
 
 -- | isEqualToUUID:
 --
@@ -203,78 +199,77 @@ getUUIDWithLength ioBluetoothSDPUUID  newLength =
 --
 -- ObjC selector: @- isEqualToUUID:@
 isEqualToUUID :: (IsIOBluetoothSDPUUID ioBluetoothSDPUUID, IsIOBluetoothSDPUUID otherUUID) => ioBluetoothSDPUUID -> otherUUID -> IO Bool
-isEqualToUUID ioBluetoothSDPUUID  otherUUID =
-  withObjCPtr otherUUID $ \raw_otherUUID ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPUUID (mkSelector "isEqualToUUID:") retCULong [argPtr (castPtr raw_otherUUID :: Ptr ())]
+isEqualToUUID ioBluetoothSDPUUID otherUUID =
+  sendMessage ioBluetoothSDPUUID isEqualToUUIDSelector (toIOBluetoothSDPUUID otherUUID)
 
 -- | @- classForCoder@
 classForCoder :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> IO Class
-classForCoder ioBluetoothSDPUUID  =
-    fmap (Class . castPtr) $ sendMsg ioBluetoothSDPUUID (mkSelector "classForCoder") (retPtr retVoid) []
+classForCoder ioBluetoothSDPUUID =
+  sendMessage ioBluetoothSDPUUID classForCoderSelector
 
 -- | @- classForArchiver@
 classForArchiver :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> IO Class
-classForArchiver ioBluetoothSDPUUID  =
-    fmap (Class . castPtr) $ sendMsg ioBluetoothSDPUUID (mkSelector "classForArchiver") (retPtr retVoid) []
+classForArchiver ioBluetoothSDPUUID =
+  sendMessage ioBluetoothSDPUUID classForArchiverSelector
 
 -- | @- classForPortCoder@
 classForPortCoder :: IsIOBluetoothSDPUUID ioBluetoothSDPUUID => ioBluetoothSDPUUID -> IO Class
-classForPortCoder ioBluetoothSDPUUID  =
-    fmap (Class . castPtr) $ sendMsg ioBluetoothSDPUUID (mkSelector "classForPortCoder") (retPtr retVoid) []
+classForPortCoder ioBluetoothSDPUUID =
+  sendMessage ioBluetoothSDPUUID classForPortCoderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uuidWithBytes:length:@
-uuidWithBytes_lengthSelector :: Selector
+uuidWithBytes_lengthSelector :: Selector '[Const (Ptr ()), CUInt] (Id IOBluetoothSDPUUID)
 uuidWithBytes_lengthSelector = mkSelector "uuidWithBytes:length:"
 
 -- | @Selector@ for @uuidWithData:@
-uuidWithDataSelector :: Selector
+uuidWithDataSelector :: Selector '[Id NSData] (Id IOBluetoothSDPUUID)
 uuidWithDataSelector = mkSelector "uuidWithData:"
 
 -- | @Selector@ for @uuid16:@
-uuid16Selector :: Selector
+uuid16Selector :: Selector '[CUShort] (Id IOBluetoothSDPUUID)
 uuid16Selector = mkSelector "uuid16:"
 
 -- | @Selector@ for @uuid32:@
-uuid32Selector :: Selector
+uuid32Selector :: Selector '[CUInt] (Id IOBluetoothSDPUUID)
 uuid32Selector = mkSelector "uuid32:"
 
 -- | @Selector@ for @withSDPUUIDRef:@
-withSDPUUIDRefSelector :: Selector
+withSDPUUIDRefSelector :: Selector '[Ptr ()] (Id IOBluetoothSDPUUID)
 withSDPUUIDRefSelector = mkSelector "withSDPUUIDRef:"
 
 -- | @Selector@ for @initWithUUID16:@
-initWithUUID16Selector :: Selector
+initWithUUID16Selector :: Selector '[CUShort] (Id IOBluetoothSDPUUID)
 initWithUUID16Selector = mkSelector "initWithUUID16:"
 
 -- | @Selector@ for @initWithUUID32:@
-initWithUUID32Selector :: Selector
+initWithUUID32Selector :: Selector '[CUInt] (Id IOBluetoothSDPUUID)
 initWithUUID32Selector = mkSelector "initWithUUID32:"
 
 -- | @Selector@ for @getSDPUUIDRef@
-getSDPUUIDRefSelector :: Selector
+getSDPUUIDRefSelector :: Selector '[] (Ptr ())
 getSDPUUIDRefSelector = mkSelector "getSDPUUIDRef"
 
 -- | @Selector@ for @getUUIDWithLength:@
-getUUIDWithLengthSelector :: Selector
+getUUIDWithLengthSelector :: Selector '[CUInt] (Id IOBluetoothSDPUUID)
 getUUIDWithLengthSelector = mkSelector "getUUIDWithLength:"
 
 -- | @Selector@ for @isEqualToUUID:@
-isEqualToUUIDSelector :: Selector
+isEqualToUUIDSelector :: Selector '[Id IOBluetoothSDPUUID] Bool
 isEqualToUUIDSelector = mkSelector "isEqualToUUID:"
 
 -- | @Selector@ for @classForCoder@
-classForCoderSelector :: Selector
+classForCoderSelector :: Selector '[] Class
 classForCoderSelector = mkSelector "classForCoder"
 
 -- | @Selector@ for @classForArchiver@
-classForArchiverSelector :: Selector
+classForArchiverSelector :: Selector '[] Class
 classForArchiverSelector = mkSelector "classForArchiver"
 
 -- | @Selector@ for @classForPortCoder@
-classForPortCoderSelector :: Selector
+classForPortCoderSelector :: Selector '[] Class
 classForPortCoderSelector = mkSelector "classForPortCoder"
 

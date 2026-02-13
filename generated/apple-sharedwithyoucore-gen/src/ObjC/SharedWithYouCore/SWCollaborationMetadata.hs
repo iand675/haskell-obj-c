@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.SharedWithYouCore.SWCollaborationMetadata
   , setInitiatorHandle
   , initiatorNameComponents
   , setInitiatorNameComponents
-  , initWithLocalIdentifierSelector
-  , initWithCollaborationIdentifierSelector
-  , initSelector
-  , newSelector
   , collaborationIdentifierSelector
-  , localIdentifierSelector
-  , titleSelector
-  , setTitleSelector
   , defaultShareOptionsSelector
-  , setDefaultShareOptionsSelector
-  , userSelectedShareOptionsSelector
-  , setUserSelectedShareOptionsSelector
+  , initSelector
+  , initWithCollaborationIdentifierSelector
+  , initWithLocalIdentifierSelector
   , initiatorHandleSelector
-  , setInitiatorHandleSelector
   , initiatorNameComponentsSelector
+  , localIdentifierSelector
+  , newSelector
+  , setDefaultShareOptionsSelector
+  , setInitiatorHandleSelector
   , setInitiatorNameComponentsSelector
+  , setTitleSelector
+  , setUserSelectedShareOptionsSelector
+  , titleSelector
+  , userSelectedShareOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,27 +56,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLocalIdentifier:@
 initWithLocalIdentifier :: (IsSWCollaborationMetadata swCollaborationMetadata, IsNSString localIdentifier) => swCollaborationMetadata -> localIdentifier -> IO (Id SWCollaborationMetadata)
-initWithLocalIdentifier swCollaborationMetadata  localIdentifier =
-  withObjCPtr localIdentifier $ \raw_localIdentifier ->
-      sendMsg swCollaborationMetadata (mkSelector "initWithLocalIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_localIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalIdentifier swCollaborationMetadata localIdentifier =
+  sendOwnedMessage swCollaborationMetadata initWithLocalIdentifierSelector (toNSString localIdentifier)
 
 -- | @- initWithCollaborationIdentifier:@
 initWithCollaborationIdentifier :: (IsSWCollaborationMetadata swCollaborationMetadata, IsNSString collaborationIdentifier) => swCollaborationMetadata -> collaborationIdentifier -> IO (Id SWCollaborationMetadata)
-initWithCollaborationIdentifier swCollaborationMetadata  collaborationIdentifier =
-  withObjCPtr collaborationIdentifier $ \raw_collaborationIdentifier ->
-      sendMsg swCollaborationMetadata (mkSelector "initWithCollaborationIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_collaborationIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithCollaborationIdentifier swCollaborationMetadata collaborationIdentifier =
+  sendOwnedMessage swCollaborationMetadata initWithCollaborationIdentifierSelector (toNSString collaborationIdentifier)
 
 -- | @- init@
 init_ :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id SWCollaborationMetadata)
-init_ swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swCollaborationMetadata =
+  sendOwnedMessage swCollaborationMetadata initSelector
 
 -- | @+ new@
 new :: IO (Id SWCollaborationMetadata)
 new  =
   do
     cls' <- getRequiredClass "SWCollaborationMetadata"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Globally unique identifier for the item represented by this metadata.
 --
@@ -87,8 +82,8 @@ new  =
 --
 -- ObjC selector: @- collaborationIdentifier@
 collaborationIdentifier :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id NSString)
-collaborationIdentifier swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "collaborationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+collaborationIdentifier swCollaborationMetadata =
+  sendMessage swCollaborationMetadata collaborationIdentifierSelector
 
 -- | Locally unique identifier for the item represented by this metadata.
 --
@@ -96,8 +91,8 @@ collaborationIdentifier swCollaborationMetadata  =
 --
 -- ObjC selector: @- localIdentifier@
 localIdentifier :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id NSString)
-localIdentifier swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "localIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+localIdentifier swCollaborationMetadata =
+  sendMessage swCollaborationMetadata localIdentifierSelector
 
 -- | Title of the content.
 --
@@ -105,8 +100,8 @@ localIdentifier swCollaborationMetadata  =
 --
 -- ObjC selector: @- title@
 title :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id NSString)
-title swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title swCollaborationMetadata =
+  sendMessage swCollaborationMetadata titleSelector
 
 -- | Title of the content.
 --
@@ -114,39 +109,36 @@ title swCollaborationMetadata  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsSWCollaborationMetadata swCollaborationMetadata, IsNSString value) => swCollaborationMetadata -> value -> IO ()
-setTitle swCollaborationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationMetadata (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle swCollaborationMetadata value =
+  sendMessage swCollaborationMetadata setTitleSelector (toNSString value)
 
 -- | The collaboration options that this content supports (updated).
 --
 -- ObjC selector: @- defaultShareOptions@
 defaultShareOptions :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id SWCollaborationShareOptions)
-defaultShareOptions swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "defaultShareOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultShareOptions swCollaborationMetadata =
+  sendMessage swCollaborationMetadata defaultShareOptionsSelector
 
 -- | The collaboration options that this content supports (updated).
 --
 -- ObjC selector: @- setDefaultShareOptions:@
 setDefaultShareOptions :: (IsSWCollaborationMetadata swCollaborationMetadata, IsSWCollaborationShareOptions value) => swCollaborationMetadata -> value -> IO ()
-setDefaultShareOptions swCollaborationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationMetadata (mkSelector "setDefaultShareOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultShareOptions swCollaborationMetadata value =
+  sendMessage swCollaborationMetadata setDefaultShareOptionsSelector (toSWCollaborationShareOptions value)
 
 -- | The collaboration options that the user selected when sending the invite (updated).
 --
 -- ObjC selector: @- userSelectedShareOptions@
 userSelectedShareOptions :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id SWCollaborationShareOptions)
-userSelectedShareOptions swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "userSelectedShareOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+userSelectedShareOptions swCollaborationMetadata =
+  sendMessage swCollaborationMetadata userSelectedShareOptionsSelector
 
 -- | The collaboration options that the user selected when sending the invite (updated).
 --
 -- ObjC selector: @- setUserSelectedShareOptions:@
 setUserSelectedShareOptions :: (IsSWCollaborationMetadata swCollaborationMetadata, IsSWCollaborationShareOptions value) => swCollaborationMetadata -> value -> IO ()
-setUserSelectedShareOptions swCollaborationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationMetadata (mkSelector "setUserSelectedShareOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserSelectedShareOptions swCollaborationMetadata value =
+  sendMessage swCollaborationMetadata setUserSelectedShareOptionsSelector (toSWCollaborationShareOptions value)
 
 -- | The handle of the person initiating the collaboration, e.g. an email address or phone number.
 --
@@ -154,8 +146,8 @@ setUserSelectedShareOptions swCollaborationMetadata  value =
 --
 -- ObjC selector: @- initiatorHandle@
 initiatorHandle :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id NSString)
-initiatorHandle swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "initiatorHandle") (retPtr retVoid) [] >>= ownedObject . castPtr
+initiatorHandle swCollaborationMetadata =
+  sendOwnedMessage swCollaborationMetadata initiatorHandleSelector
 
 -- | The handle of the person initiating the collaboration, e.g. an email address or phone number.
 --
@@ -163,9 +155,8 @@ initiatorHandle swCollaborationMetadata  =
 --
 -- ObjC selector: @- setInitiatorHandle:@
 setInitiatorHandle :: (IsSWCollaborationMetadata swCollaborationMetadata, IsNSString value) => swCollaborationMetadata -> value -> IO ()
-setInitiatorHandle swCollaborationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationMetadata (mkSelector "setInitiatorHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitiatorHandle swCollaborationMetadata value =
+  sendMessage swCollaborationMetadata setInitiatorHandleSelector (toNSString value)
 
 -- | The name of the person initiating the collaboration.
 --
@@ -173,8 +164,8 @@ setInitiatorHandle swCollaborationMetadata  value =
 --
 -- ObjC selector: @- initiatorNameComponents@
 initiatorNameComponents :: IsSWCollaborationMetadata swCollaborationMetadata => swCollaborationMetadata -> IO (Id NSPersonNameComponents)
-initiatorNameComponents swCollaborationMetadata  =
-    sendMsg swCollaborationMetadata (mkSelector "initiatorNameComponents") (retPtr retVoid) [] >>= ownedObject . castPtr
+initiatorNameComponents swCollaborationMetadata =
+  sendOwnedMessage swCollaborationMetadata initiatorNameComponentsSelector
 
 -- | The name of the person initiating the collaboration.
 --
@@ -182,75 +173,74 @@ initiatorNameComponents swCollaborationMetadata  =
 --
 -- ObjC selector: @- setInitiatorNameComponents:@
 setInitiatorNameComponents :: (IsSWCollaborationMetadata swCollaborationMetadata, IsNSPersonNameComponents value) => swCollaborationMetadata -> value -> IO ()
-setInitiatorNameComponents swCollaborationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationMetadata (mkSelector "setInitiatorNameComponents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitiatorNameComponents swCollaborationMetadata value =
+  sendMessage swCollaborationMetadata setInitiatorNameComponentsSelector (toNSPersonNameComponents value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLocalIdentifier:@
-initWithLocalIdentifierSelector :: Selector
+initWithLocalIdentifierSelector :: Selector '[Id NSString] (Id SWCollaborationMetadata)
 initWithLocalIdentifierSelector = mkSelector "initWithLocalIdentifier:"
 
 -- | @Selector@ for @initWithCollaborationIdentifier:@
-initWithCollaborationIdentifierSelector :: Selector
+initWithCollaborationIdentifierSelector :: Selector '[Id NSString] (Id SWCollaborationMetadata)
 initWithCollaborationIdentifierSelector = mkSelector "initWithCollaborationIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWCollaborationMetadata)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWCollaborationMetadata)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @collaborationIdentifier@
-collaborationIdentifierSelector :: Selector
+collaborationIdentifierSelector :: Selector '[] (Id NSString)
 collaborationIdentifierSelector = mkSelector "collaborationIdentifier"
 
 -- | @Selector@ for @localIdentifier@
-localIdentifierSelector :: Selector
+localIdentifierSelector :: Selector '[] (Id NSString)
 localIdentifierSelector = mkSelector "localIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @defaultShareOptions@
-defaultShareOptionsSelector :: Selector
+defaultShareOptionsSelector :: Selector '[] (Id SWCollaborationShareOptions)
 defaultShareOptionsSelector = mkSelector "defaultShareOptions"
 
 -- | @Selector@ for @setDefaultShareOptions:@
-setDefaultShareOptionsSelector :: Selector
+setDefaultShareOptionsSelector :: Selector '[Id SWCollaborationShareOptions] ()
 setDefaultShareOptionsSelector = mkSelector "setDefaultShareOptions:"
 
 -- | @Selector@ for @userSelectedShareOptions@
-userSelectedShareOptionsSelector :: Selector
+userSelectedShareOptionsSelector :: Selector '[] (Id SWCollaborationShareOptions)
 userSelectedShareOptionsSelector = mkSelector "userSelectedShareOptions"
 
 -- | @Selector@ for @setUserSelectedShareOptions:@
-setUserSelectedShareOptionsSelector :: Selector
+setUserSelectedShareOptionsSelector :: Selector '[Id SWCollaborationShareOptions] ()
 setUserSelectedShareOptionsSelector = mkSelector "setUserSelectedShareOptions:"
 
 -- | @Selector@ for @initiatorHandle@
-initiatorHandleSelector :: Selector
+initiatorHandleSelector :: Selector '[] (Id NSString)
 initiatorHandleSelector = mkSelector "initiatorHandle"
 
 -- | @Selector@ for @setInitiatorHandle:@
-setInitiatorHandleSelector :: Selector
+setInitiatorHandleSelector :: Selector '[Id NSString] ()
 setInitiatorHandleSelector = mkSelector "setInitiatorHandle:"
 
 -- | @Selector@ for @initiatorNameComponents@
-initiatorNameComponentsSelector :: Selector
+initiatorNameComponentsSelector :: Selector '[] (Id NSPersonNameComponents)
 initiatorNameComponentsSelector = mkSelector "initiatorNameComponents"
 
 -- | @Selector@ for @setInitiatorNameComponents:@
-setInitiatorNameComponentsSelector :: Selector
+setInitiatorNameComponentsSelector :: Selector '[Id NSPersonNameComponents] ()
 setInitiatorNameComponentsSelector = mkSelector "setInitiatorNameComponents:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.WebKit.DOMTreeWalker
   , expandEntityReferences
   , currentNode
   , setCurrentNode
-  , parentNodeSelector
+  , currentNodeSelector
+  , expandEntityReferencesSelector
+  , filterSelector
   , firstChildSelector
   , lastChildSelector
-  , previousSiblingSelector
-  , nextSiblingSelector
-  , previousNodeSelector
   , nextNodeSelector
+  , nextSiblingSelector
+  , parentNodeSelector
+  , previousNodeSelector
+  , previousSiblingSelector
   , rootSelector
-  , whatToShowSelector
-  , filterSelector
-  , expandEntityReferencesSelector
-  , currentNodeSelector
   , setCurrentNodeSelector
+  , whatToShowSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,123 +50,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- parentNode@
 parentNode :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-parentNode domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "parentNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentNode domTreeWalker =
+  sendMessage domTreeWalker parentNodeSelector
 
 -- | @- firstChild@
 firstChild :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-firstChild domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "firstChild") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstChild domTreeWalker =
+  sendMessage domTreeWalker firstChildSelector
 
 -- | @- lastChild@
 lastChild :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-lastChild domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "lastChild") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastChild domTreeWalker =
+  sendMessage domTreeWalker lastChildSelector
 
 -- | @- previousSibling@
 previousSibling :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-previousSibling domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "previousSibling") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousSibling domTreeWalker =
+  sendMessage domTreeWalker previousSiblingSelector
 
 -- | @- nextSibling@
 nextSibling :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-nextSibling domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "nextSibling") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextSibling domTreeWalker =
+  sendMessage domTreeWalker nextSiblingSelector
 
 -- | @- previousNode@
 previousNode :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-previousNode domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "previousNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousNode domTreeWalker =
+  sendMessage domTreeWalker previousNodeSelector
 
 -- | @- nextNode@
 nextNode :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-nextNode domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "nextNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextNode domTreeWalker =
+  sendMessage domTreeWalker nextNodeSelector
 
 -- | @- root@
 root :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-root domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "root") (retPtr retVoid) [] >>= retainedObject . castPtr
+root domTreeWalker =
+  sendMessage domTreeWalker rootSelector
 
 -- | @- whatToShow@
 whatToShow :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO CUInt
-whatToShow domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "whatToShow") retCUInt []
+whatToShow domTreeWalker =
+  sendMessage domTreeWalker whatToShowSelector
 
 -- | @- filter@
 filter_ :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO RawId
-filter_ domTreeWalker  =
-    fmap (RawId . castPtr) $ sendMsg domTreeWalker (mkSelector "filter") (retPtr retVoid) []
+filter_ domTreeWalker =
+  sendMessage domTreeWalker filterSelector
 
 -- | @- expandEntityReferences@
 expandEntityReferences :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO Bool
-expandEntityReferences domTreeWalker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domTreeWalker (mkSelector "expandEntityReferences") retCULong []
+expandEntityReferences domTreeWalker =
+  sendMessage domTreeWalker expandEntityReferencesSelector
 
 -- | @- currentNode@
 currentNode :: IsDOMTreeWalker domTreeWalker => domTreeWalker -> IO (Id DOMNode)
-currentNode domTreeWalker  =
-    sendMsg domTreeWalker (mkSelector "currentNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentNode domTreeWalker =
+  sendMessage domTreeWalker currentNodeSelector
 
 -- | @- setCurrentNode:@
 setCurrentNode :: (IsDOMTreeWalker domTreeWalker, IsDOMNode value) => domTreeWalker -> value -> IO ()
-setCurrentNode domTreeWalker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domTreeWalker (mkSelector "setCurrentNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentNode domTreeWalker value =
+  sendMessage domTreeWalker setCurrentNodeSelector (toDOMNode value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @parentNode@
-parentNodeSelector :: Selector
+parentNodeSelector :: Selector '[] (Id DOMNode)
 parentNodeSelector = mkSelector "parentNode"
 
 -- | @Selector@ for @firstChild@
-firstChildSelector :: Selector
+firstChildSelector :: Selector '[] (Id DOMNode)
 firstChildSelector = mkSelector "firstChild"
 
 -- | @Selector@ for @lastChild@
-lastChildSelector :: Selector
+lastChildSelector :: Selector '[] (Id DOMNode)
 lastChildSelector = mkSelector "lastChild"
 
 -- | @Selector@ for @previousSibling@
-previousSiblingSelector :: Selector
+previousSiblingSelector :: Selector '[] (Id DOMNode)
 previousSiblingSelector = mkSelector "previousSibling"
 
 -- | @Selector@ for @nextSibling@
-nextSiblingSelector :: Selector
+nextSiblingSelector :: Selector '[] (Id DOMNode)
 nextSiblingSelector = mkSelector "nextSibling"
 
 -- | @Selector@ for @previousNode@
-previousNodeSelector :: Selector
+previousNodeSelector :: Selector '[] (Id DOMNode)
 previousNodeSelector = mkSelector "previousNode"
 
 -- | @Selector@ for @nextNode@
-nextNodeSelector :: Selector
+nextNodeSelector :: Selector '[] (Id DOMNode)
 nextNodeSelector = mkSelector "nextNode"
 
 -- | @Selector@ for @root@
-rootSelector :: Selector
+rootSelector :: Selector '[] (Id DOMNode)
 rootSelector = mkSelector "root"
 
 -- | @Selector@ for @whatToShow@
-whatToShowSelector :: Selector
+whatToShowSelector :: Selector '[] CUInt
 whatToShowSelector = mkSelector "whatToShow"
 
 -- | @Selector@ for @filter@
-filterSelector :: Selector
+filterSelector :: Selector '[] RawId
 filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @expandEntityReferences@
-expandEntityReferencesSelector :: Selector
+expandEntityReferencesSelector :: Selector '[] Bool
 expandEntityReferencesSelector = mkSelector "expandEntityReferences"
 
 -- | @Selector@ for @currentNode@
-currentNodeSelector :: Selector
+currentNodeSelector :: Selector '[] (Id DOMNode)
 currentNodeSelector = mkSelector "currentNode"
 
 -- | @Selector@ for @setCurrentNode:@
-setCurrentNodeSelector :: Selector
+setCurrentNodeSelector :: Selector '[Id DOMNode] ()
 setCurrentNodeSelector = mkSelector "setCurrentNode:"
 

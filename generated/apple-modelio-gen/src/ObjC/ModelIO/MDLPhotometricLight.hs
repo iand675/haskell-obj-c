@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,26 +30,22 @@ module ObjC.ModelIO.MDLPhotometricLight
   , lightCubeMap
   , sphericalHarmonicsLevel
   , sphericalHarmonicsCoefficients
-  , initWithIESProfileSelector
-  , generateSphericalHarmonicsFromLightSelector
   , generateCubemapFromLightSelector
+  , generateSphericalHarmonicsFromLightSelector
   , generateTextureSelector
+  , initWithIESProfileSelector
   , lightCubeMapSelector
-  , sphericalHarmonicsLevelSelector
   , sphericalHarmonicsCoefficientsSelector
+  , sphericalHarmonicsLevelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,19 +54,18 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithIESProfile:@
 initWithIESProfile :: (IsMDLPhotometricLight mdlPhotometricLight, IsNSURL url) => mdlPhotometricLight -> url -> IO (Id MDLPhotometricLight)
-initWithIESProfile mdlPhotometricLight  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg mdlPhotometricLight (mkSelector "initWithIESProfile:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithIESProfile mdlPhotometricLight url =
+  sendOwnedMessage mdlPhotometricLight initWithIESProfileSelector (toNSURL url)
 
 -- | @- generateSphericalHarmonicsFromLight:@
 generateSphericalHarmonicsFromLight :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> CULong -> IO ()
-generateSphericalHarmonicsFromLight mdlPhotometricLight  sphericalHarmonicsLevel =
-    sendMsg mdlPhotometricLight (mkSelector "generateSphericalHarmonicsFromLight:") retVoid [argCULong sphericalHarmonicsLevel]
+generateSphericalHarmonicsFromLight mdlPhotometricLight sphericalHarmonicsLevel =
+  sendMessage mdlPhotometricLight generateSphericalHarmonicsFromLightSelector sphericalHarmonicsLevel
 
 -- | @- generateCubemapFromLight:@
 generateCubemapFromLight :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> CULong -> IO ()
-generateCubemapFromLight mdlPhotometricLight  textureSize =
-    sendMsg mdlPhotometricLight (mkSelector "generateCubemapFromLight:") retVoid [argCULong textureSize]
+generateCubemapFromLight mdlPhotometricLight textureSize =
+  sendMessage mdlPhotometricLight generateCubemapFromLightSelector textureSize
 
 -- | generateTexture
 --
@@ -77,53 +73,53 @@ generateCubemapFromLight mdlPhotometricLight  textureSize =
 --
 -- ObjC selector: @- generateTexture:@
 generateTexture :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> CULong -> IO (Id MDLTexture)
-generateTexture mdlPhotometricLight  textureSize =
-    sendMsg mdlPhotometricLight (mkSelector "generateTexture:") (retPtr retVoid) [argCULong textureSize] >>= retainedObject . castPtr
+generateTexture mdlPhotometricLight textureSize =
+  sendMessage mdlPhotometricLight generateTextureSelector textureSize
 
 -- | @- lightCubeMap@
 lightCubeMap :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> IO (Id MDLTexture)
-lightCubeMap mdlPhotometricLight  =
-    sendMsg mdlPhotometricLight (mkSelector "lightCubeMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+lightCubeMap mdlPhotometricLight =
+  sendMessage mdlPhotometricLight lightCubeMapSelector
 
 -- | @- sphericalHarmonicsLevel@
 sphericalHarmonicsLevel :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> IO CULong
-sphericalHarmonicsLevel mdlPhotometricLight  =
-    sendMsg mdlPhotometricLight (mkSelector "sphericalHarmonicsLevel") retCULong []
+sphericalHarmonicsLevel mdlPhotometricLight =
+  sendMessage mdlPhotometricLight sphericalHarmonicsLevelSelector
 
 -- | @- sphericalHarmonicsCoefficients@
 sphericalHarmonicsCoefficients :: IsMDLPhotometricLight mdlPhotometricLight => mdlPhotometricLight -> IO (Id NSData)
-sphericalHarmonicsCoefficients mdlPhotometricLight  =
-    sendMsg mdlPhotometricLight (mkSelector "sphericalHarmonicsCoefficients") (retPtr retVoid) [] >>= retainedObject . castPtr
+sphericalHarmonicsCoefficients mdlPhotometricLight =
+  sendMessage mdlPhotometricLight sphericalHarmonicsCoefficientsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIESProfile:@
-initWithIESProfileSelector :: Selector
+initWithIESProfileSelector :: Selector '[Id NSURL] (Id MDLPhotometricLight)
 initWithIESProfileSelector = mkSelector "initWithIESProfile:"
 
 -- | @Selector@ for @generateSphericalHarmonicsFromLight:@
-generateSphericalHarmonicsFromLightSelector :: Selector
+generateSphericalHarmonicsFromLightSelector :: Selector '[CULong] ()
 generateSphericalHarmonicsFromLightSelector = mkSelector "generateSphericalHarmonicsFromLight:"
 
 -- | @Selector@ for @generateCubemapFromLight:@
-generateCubemapFromLightSelector :: Selector
+generateCubemapFromLightSelector :: Selector '[CULong] ()
 generateCubemapFromLightSelector = mkSelector "generateCubemapFromLight:"
 
 -- | @Selector@ for @generateTexture:@
-generateTextureSelector :: Selector
+generateTextureSelector :: Selector '[CULong] (Id MDLTexture)
 generateTextureSelector = mkSelector "generateTexture:"
 
 -- | @Selector@ for @lightCubeMap@
-lightCubeMapSelector :: Selector
+lightCubeMapSelector :: Selector '[] (Id MDLTexture)
 lightCubeMapSelector = mkSelector "lightCubeMap"
 
 -- | @Selector@ for @sphericalHarmonicsLevel@
-sphericalHarmonicsLevelSelector :: Selector
+sphericalHarmonicsLevelSelector :: Selector '[] CULong
 sphericalHarmonicsLevelSelector = mkSelector "sphericalHarmonicsLevel"
 
 -- | @Selector@ for @sphericalHarmonicsCoefficients@
-sphericalHarmonicsCoefficientsSelector :: Selector
+sphericalHarmonicsCoefficientsSelector :: Selector '[] (Id NSData)
 sphericalHarmonicsCoefficientsSelector = mkSelector "sphericalHarmonicsCoefficients"
 

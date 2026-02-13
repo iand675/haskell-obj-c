@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.SpriteKit.SKRange
   , upperLimit
   , setUpperLimit
   , initWithLowerLimit_upperLimitSelector
-  , rangeWithLowerLimit_upperLimitSelector
-  , rangeWithLowerLimitSelector
-  , rangeWithUpperLimitSelector
-  , rangeWithConstantValueSelector
-  , rangeWithValue_varianceSelector
-  , rangeWithNoLimitsSelector
   , lowerLimitSelector
+  , rangeWithConstantValueSelector
+  , rangeWithLowerLimitSelector
+  , rangeWithLowerLimit_upperLimitSelector
+  , rangeWithNoLimitsSelector
+  , rangeWithUpperLimitSelector
+  , rangeWithValue_varianceSelector
   , setLowerLimitSelector
-  , upperLimitSelector
   , setUpperLimitSelector
+  , upperLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,116 +48,116 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLowerLimit:upperLimit:@
 initWithLowerLimit_upperLimit :: IsSKRange skRange => skRange -> CDouble -> CDouble -> IO (Id SKRange)
-initWithLowerLimit_upperLimit skRange  lower upper =
-    sendMsg skRange (mkSelector "initWithLowerLimit:upperLimit:") (retPtr retVoid) [argCDouble lower, argCDouble upper] >>= ownedObject . castPtr
+initWithLowerLimit_upperLimit skRange lower upper =
+  sendOwnedMessage skRange initWithLowerLimit_upperLimitSelector lower upper
 
 -- | @+ rangeWithLowerLimit:upperLimit:@
 rangeWithLowerLimit_upperLimit :: CDouble -> CDouble -> IO (Id SKRange)
 rangeWithLowerLimit_upperLimit lower upper =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithLowerLimit:upperLimit:") (retPtr retVoid) [argCDouble lower, argCDouble upper] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithLowerLimit_upperLimitSelector lower upper
 
 -- | @+ rangeWithLowerLimit:@
 rangeWithLowerLimit :: CDouble -> IO (Id SKRange)
 rangeWithLowerLimit lower =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithLowerLimit:") (retPtr retVoid) [argCDouble lower] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithLowerLimitSelector lower
 
 -- | @+ rangeWithUpperLimit:@
 rangeWithUpperLimit :: CDouble -> IO (Id SKRange)
 rangeWithUpperLimit upper =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithUpperLimit:") (retPtr retVoid) [argCDouble upper] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithUpperLimitSelector upper
 
 -- | @+ rangeWithConstantValue:@
 rangeWithConstantValue :: CDouble -> IO (Id SKRange)
 rangeWithConstantValue value =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithConstantValue:") (retPtr retVoid) [argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithConstantValueSelector value
 
 -- | @+ rangeWithValue:variance:@
 rangeWithValue_variance :: CDouble -> CDouble -> IO (Id SKRange)
 rangeWithValue_variance value variance =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithValue:variance:") (retPtr retVoid) [argCDouble value, argCDouble variance] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithValue_varianceSelector value variance
 
 -- | @+ rangeWithNoLimits@
 rangeWithNoLimits :: IO (Id SKRange)
 rangeWithNoLimits  =
   do
     cls' <- getRequiredClass "SKRange"
-    sendClassMsg cls' (mkSelector "rangeWithNoLimits") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithNoLimitsSelector
 
 -- | @- lowerLimit@
 lowerLimit :: IsSKRange skRange => skRange -> IO CDouble
-lowerLimit skRange  =
-    sendMsg skRange (mkSelector "lowerLimit") retCDouble []
+lowerLimit skRange =
+  sendMessage skRange lowerLimitSelector
 
 -- | @- setLowerLimit:@
 setLowerLimit :: IsSKRange skRange => skRange -> CDouble -> IO ()
-setLowerLimit skRange  value =
-    sendMsg skRange (mkSelector "setLowerLimit:") retVoid [argCDouble value]
+setLowerLimit skRange value =
+  sendMessage skRange setLowerLimitSelector value
 
 -- | @- upperLimit@
 upperLimit :: IsSKRange skRange => skRange -> IO CDouble
-upperLimit skRange  =
-    sendMsg skRange (mkSelector "upperLimit") retCDouble []
+upperLimit skRange =
+  sendMessage skRange upperLimitSelector
 
 -- | @- setUpperLimit:@
 setUpperLimit :: IsSKRange skRange => skRange -> CDouble -> IO ()
-setUpperLimit skRange  value =
-    sendMsg skRange (mkSelector "setUpperLimit:") retVoid [argCDouble value]
+setUpperLimit skRange value =
+  sendMessage skRange setUpperLimitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLowerLimit:upperLimit:@
-initWithLowerLimit_upperLimitSelector :: Selector
+initWithLowerLimit_upperLimitSelector :: Selector '[CDouble, CDouble] (Id SKRange)
 initWithLowerLimit_upperLimitSelector = mkSelector "initWithLowerLimit:upperLimit:"
 
 -- | @Selector@ for @rangeWithLowerLimit:upperLimit:@
-rangeWithLowerLimit_upperLimitSelector :: Selector
+rangeWithLowerLimit_upperLimitSelector :: Selector '[CDouble, CDouble] (Id SKRange)
 rangeWithLowerLimit_upperLimitSelector = mkSelector "rangeWithLowerLimit:upperLimit:"
 
 -- | @Selector@ for @rangeWithLowerLimit:@
-rangeWithLowerLimitSelector :: Selector
+rangeWithLowerLimitSelector :: Selector '[CDouble] (Id SKRange)
 rangeWithLowerLimitSelector = mkSelector "rangeWithLowerLimit:"
 
 -- | @Selector@ for @rangeWithUpperLimit:@
-rangeWithUpperLimitSelector :: Selector
+rangeWithUpperLimitSelector :: Selector '[CDouble] (Id SKRange)
 rangeWithUpperLimitSelector = mkSelector "rangeWithUpperLimit:"
 
 -- | @Selector@ for @rangeWithConstantValue:@
-rangeWithConstantValueSelector :: Selector
+rangeWithConstantValueSelector :: Selector '[CDouble] (Id SKRange)
 rangeWithConstantValueSelector = mkSelector "rangeWithConstantValue:"
 
 -- | @Selector@ for @rangeWithValue:variance:@
-rangeWithValue_varianceSelector :: Selector
+rangeWithValue_varianceSelector :: Selector '[CDouble, CDouble] (Id SKRange)
 rangeWithValue_varianceSelector = mkSelector "rangeWithValue:variance:"
 
 -- | @Selector@ for @rangeWithNoLimits@
-rangeWithNoLimitsSelector :: Selector
+rangeWithNoLimitsSelector :: Selector '[] (Id SKRange)
 rangeWithNoLimitsSelector = mkSelector "rangeWithNoLimits"
 
 -- | @Selector@ for @lowerLimit@
-lowerLimitSelector :: Selector
+lowerLimitSelector :: Selector '[] CDouble
 lowerLimitSelector = mkSelector "lowerLimit"
 
 -- | @Selector@ for @setLowerLimit:@
-setLowerLimitSelector :: Selector
+setLowerLimitSelector :: Selector '[CDouble] ()
 setLowerLimitSelector = mkSelector "setLowerLimit:"
 
 -- | @Selector@ for @upperLimit@
-upperLimitSelector :: Selector
+upperLimitSelector :: Selector '[] CDouble
 upperLimitSelector = mkSelector "upperLimit"
 
 -- | @Selector@ for @setUpperLimit:@
-setUpperLimitSelector :: Selector
+setUpperLimitSelector :: Selector '[CDouble] ()
 setUpperLimitSelector = mkSelector "setUpperLimit:"
 

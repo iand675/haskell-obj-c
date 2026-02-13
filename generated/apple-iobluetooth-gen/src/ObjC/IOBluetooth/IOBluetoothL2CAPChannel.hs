@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,33 +43,33 @@ module ObjC.IOBluetooth.IOBluetoothL2CAPChannel
   , psm
   , localChannelID
   , remoteChannelID
+  , closeChannelSelector
+  , delegateSelector
+  , deviceSelector
+  , getDeviceSelector
+  , getIncomingMTUSelector
+  , getLocalChannelIDSelector
+  , getObjectIDSelector
+  , getOutgoingMTUSelector
+  , getPSMSelector
+  , getRemoteChannelIDSelector
+  , incomingMTUSelector
+  , isIncomingSelector
+  , localChannelIDSelector
+  , objectIDSelector
+  , outgoingMTUSelector
+  , psmSelector
+  , registerForChannelCloseNotification_selectorSelector
   , registerForChannelOpenNotifications_selectorSelector
   , registerForChannelOpenNotifications_selector_withPSM_directionSelector
-  , withObjectIDSelector
-  , closeChannelSelector
-  , getOutgoingMTUSelector
-  , getIncomingMTUSelector
+  , remoteChannelIDSelector
   , requestRemoteMTUSelector
+  , setDelegateSelector
+  , setDelegate_withConfigurationSelector
+  , withObjectIDSelector
   , writeAsyncTrap_length_refconSelector
   , writeAsync_length_refconSelector
   , writeSync_lengthSelector
-  , setDelegateSelector
-  , setDelegate_withConfigurationSelector
-  , delegateSelector
-  , getDeviceSelector
-  , getObjectIDSelector
-  , getPSMSelector
-  , getLocalChannelIDSelector
-  , getRemoteChannelIDSelector
-  , isIncomingSelector
-  , registerForChannelCloseNotification_selectorSelector
-  , outgoingMTUSelector
-  , incomingMTUSelector
-  , deviceSelector
-  , objectIDSelector
-  , psmSelector
-  , localChannelIDSelector
-  , remoteChannelIDSelector
 
   -- * Enum types
   , IOBluetoothUserNotificationChannelDirection(IOBluetoothUserNotificationChannelDirection)
@@ -78,15 +79,11 @@ module ObjC.IOBluetooth.IOBluetoothL2CAPChannel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,11 +104,11 @@ import ObjC.Foundation.Internal.Classes
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding L2CAP channel notification.				To unregister the notification, call -unregister on the resulting IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.  The returned				IOBluetoothUserNotification will be valid for as long as the notification is registered.  It is				not necessary to retain the result.  Once -unregister is called on it, it will no longer be valid.
 --
 -- ObjC selector: @+ registerForChannelOpenNotifications:selector:@
-registerForChannelOpenNotifications_selector :: RawId -> Selector -> IO (Id IOBluetoothUserNotification)
+registerForChannelOpenNotifications_selector :: RawId -> Sel -> IO (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector object selector =
   do
     cls' <- getRequiredClass "IOBluetoothL2CAPChannel"
-    sendClassMsg cls' (mkSelector "registerForChannelOpenNotifications:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+    sendClassMessage cls' registerForChannelOpenNotifications_selectorSelector object selector
 
 -- | registerForChannelOpenNotifications:selector:withPSM:direction:
 --
@@ -130,11 +127,11 @@ registerForChannelOpenNotifications_selector object selector =
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding L2CAP channel notification.				To unregister the notification, call -unregister on the resulting IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.  The returned				IOBluetoothUserNotification will be valid for as long as the notification is registered.  It is				not necessary to retain the result.  Once -unregister is called on it, it will no longer be valid.
 --
 -- ObjC selector: @+ registerForChannelOpenNotifications:selector:withPSM:direction:@
-registerForChannelOpenNotifications_selector_withPSM_direction :: RawId -> Selector -> CUShort -> IOBluetoothUserNotificationChannelDirection -> IO (Id IOBluetoothUserNotification)
+registerForChannelOpenNotifications_selector_withPSM_direction :: RawId -> Sel -> CUShort -> IOBluetoothUserNotificationChannelDirection -> IO (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector_withPSM_direction object selector psm inDirection =
   do
     cls' <- getRequiredClass "IOBluetoothL2CAPChannel"
-    sendClassMsg cls' (mkSelector "registerForChannelOpenNotifications:selector:withPSM:direction:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (unSelector selector), argCUInt (fromIntegral psm), argCInt (coerce inDirection)] >>= retainedObject . castPtr
+    sendClassMessage cls' registerForChannelOpenNotifications_selector_withPSM_directionSelector object selector psm inDirection
 
 -- | withObjectID:
 --
@@ -151,7 +148,7 @@ withObjectID :: CULong -> IO (Id IOBluetoothL2CAPChannel)
 withObjectID objectID =
   do
     cls' <- getRequiredClass "IOBluetoothL2CAPChannel"
-    sendClassMsg cls' (mkSelector "withObjectID:") (retPtr retVoid) [argCULong objectID] >>= retainedObject . castPtr
+    sendClassMessage cls' withObjectIDSelector objectID
 
 -- | closeChannel
 --
@@ -163,18 +160,18 @@ withObjectID objectID =
 --
 -- ObjC selector: @- closeChannel@
 closeChannel :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CInt
-closeChannel ioBluetoothL2CAPChannel  =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "closeChannel") retCInt []
+closeChannel ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel closeChannelSelector
 
 -- | @- getOutgoingMTU@
 getOutgoingMTU :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-getOutgoingMTU ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "getOutgoingMTU") retCUInt []
+getOutgoingMTU ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getOutgoingMTUSelector
 
 -- | @- getIncomingMTU@
 getIncomingMTU :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-getIncomingMTU ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "getIncomingMTU") retCUInt []
+getIncomingMTU ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getIncomingMTUSelector
 
 -- | requestRemoteMTU:
 --
@@ -188,8 +185,8 @@ getIncomingMTU ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- requestRemoteMTU:@
 requestRemoteMTU :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> CUShort -> IO CInt
-requestRemoteMTU ioBluetoothL2CAPChannel  remoteMTU =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "requestRemoteMTU:") retCInt [argCUInt (fromIntegral remoteMTU)]
+requestRemoteMTU ioBluetoothL2CAPChannel remoteMTU =
+  sendMessage ioBluetoothL2CAPChannel requestRemoteMTUSelector remoteMTU
 
 -- | writeAsyncTrap:length:refcon:
 --
@@ -209,8 +206,8 @@ requestRemoteMTU ioBluetoothL2CAPChannel  remoteMTU =
 --
 -- ObjC selector: @- writeAsyncTrap:length:refcon:@
 writeAsyncTrap_length_refcon :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> Ptr () -> CUShort -> Ptr () -> IO CInt
-writeAsyncTrap_length_refcon ioBluetoothL2CAPChannel  data_ length_ refcon =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "writeAsyncTrap:length:refcon:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argPtr refcon]
+writeAsyncTrap_length_refcon ioBluetoothL2CAPChannel data_ length_ refcon =
+  sendMessage ioBluetoothL2CAPChannel writeAsyncTrap_length_refconSelector data_ length_ refcon
 
 -- | writeAsync:length:refcon:
 --
@@ -230,8 +227,8 @@ writeAsyncTrap_length_refcon ioBluetoothL2CAPChannel  data_ length_ refcon =
 --
 -- ObjC selector: @- writeAsync:length:refcon:@
 writeAsync_length_refcon :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> Ptr () -> CUShort -> Ptr () -> IO CInt
-writeAsync_length_refcon ioBluetoothL2CAPChannel  data_ length_ refcon =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "writeAsync:length:refcon:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argPtr refcon]
+writeAsync_length_refcon ioBluetoothL2CAPChannel data_ length_ refcon =
+  sendMessage ioBluetoothL2CAPChannel writeAsync_length_refconSelector data_ length_ refcon
 
 -- | writeSync:length:
 --
@@ -249,8 +246,8 @@ writeAsync_length_refcon ioBluetoothL2CAPChannel  data_ length_ refcon =
 --
 -- ObjC selector: @- writeSync:length:@
 writeSync_length :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> Ptr () -> CUShort -> IO CInt
-writeSync_length ioBluetoothL2CAPChannel  data_ length_ =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "writeSync:length:") retCInt [argPtr data_, argCUInt (fromIntegral length_)]
+writeSync_length ioBluetoothL2CAPChannel data_ length_ =
+  sendMessage ioBluetoothL2CAPChannel writeSync_lengthSelector data_ length_
 
 -- | setDelegate:
 --
@@ -266,8 +263,8 @@ writeSync_length ioBluetoothL2CAPChannel  data_ length_ =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> RawId -> IO CInt
-setDelegate ioBluetoothL2CAPChannel  channelDelegate =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "setDelegate:") retCInt [argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+setDelegate ioBluetoothL2CAPChannel channelDelegate =
+  sendMessage ioBluetoothL2CAPChannel setDelegateSelector channelDelegate
 
 -- | setDelegate:withConfiguration:
 --
@@ -285,9 +282,8 @@ setDelegate ioBluetoothL2CAPChannel  channelDelegate =
 --
 -- ObjC selector: @- setDelegate:withConfiguration:@
 setDelegate_withConfiguration :: (IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel, IsNSDictionary channelConfiguration) => ioBluetoothL2CAPChannel -> RawId -> channelConfiguration -> IO CInt
-setDelegate_withConfiguration ioBluetoothL2CAPChannel  channelDelegate channelConfiguration =
-  withObjCPtr channelConfiguration $ \raw_channelConfiguration ->
-      sendMsg ioBluetoothL2CAPChannel (mkSelector "setDelegate:withConfiguration:") retCInt [argPtr (castPtr (unRawId channelDelegate) :: Ptr ()), argPtr (castPtr raw_channelConfiguration :: Ptr ())]
+setDelegate_withConfiguration ioBluetoothL2CAPChannel channelDelegate channelConfiguration =
+  sendMessage ioBluetoothL2CAPChannel setDelegate_withConfigurationSelector channelDelegate (toNSDictionary channelConfiguration)
 
 -- | delegate
 --
@@ -299,33 +295,33 @@ setDelegate_withConfiguration ioBluetoothL2CAPChannel  channelDelegate channelCo
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO RawId
-delegate ioBluetoothL2CAPChannel  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothL2CAPChannel (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel delegateSelector
 
 -- | @- getDevice@
 getDevice :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO (Id IOBluetoothDevice)
-getDevice ioBluetoothL2CAPChannel  =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "getDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDevice ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getDeviceSelector
 
 -- | @- getObjectID@
 getObjectID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CULong
-getObjectID ioBluetoothL2CAPChannel  =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "getObjectID") retCULong []
+getObjectID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getObjectIDSelector
 
 -- | @- getPSM@
 getPSM :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-getPSM ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "getPSM") retCUInt []
+getPSM ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getPSMSelector
 
 -- | @- getLocalChannelID@
 getLocalChannelID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-getLocalChannelID ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "getLocalChannelID") retCUInt []
+getLocalChannelID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getLocalChannelIDSelector
 
 -- | @- getRemoteChannelID@
 getRemoteChannelID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-getRemoteChannelID ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "getRemoteChannelID") retCUInt []
+getRemoteChannelID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel getRemoteChannelIDSelector
 
 -- | isIncoming
 --
@@ -337,8 +333,8 @@ getRemoteChannelID ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- isIncoming@
 isIncoming :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO Bool
-isIncoming ioBluetoothL2CAPChannel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothL2CAPChannel (mkSelector "isIncoming") retCULong []
+isIncoming ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel isIncomingSelector
 
 -- | registerForChannelCloseNotification:selector:
 --
@@ -353,9 +349,9 @@ isIncoming ioBluetoothL2CAPChannel  =
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding L2CAP channel close notification.				To unregister the notification, call -unregister of the returned IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.
 --
 -- ObjC selector: @- registerForChannelCloseNotification:selector:@
-registerForChannelCloseNotification_selector :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> RawId -> Selector -> IO (Id IOBluetoothUserNotification)
-registerForChannelCloseNotification_selector ioBluetoothL2CAPChannel  observer inSelector =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "registerForChannelCloseNotification:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector inSelector)] >>= retainedObject . castPtr
+registerForChannelCloseNotification_selector :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> RawId -> Sel -> IO (Id IOBluetoothUserNotification)
+registerForChannelCloseNotification_selector ioBluetoothL2CAPChannel observer inSelector =
+  sendMessage ioBluetoothL2CAPChannel registerForChannelCloseNotification_selectorSelector observer inSelector
 
 -- | getOutgoingMTU
 --
@@ -367,8 +363,8 @@ registerForChannelCloseNotification_selector ioBluetoothL2CAPChannel  observer i
 --
 -- ObjC selector: @- outgoingMTU@
 outgoingMTU :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-outgoingMTU ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "outgoingMTU") retCUInt []
+outgoingMTU ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel outgoingMTUSelector
 
 -- | getIncomingMTU
 --
@@ -380,8 +376,8 @@ outgoingMTU ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- incomingMTU@
 incomingMTU :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-incomingMTU ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "incomingMTU") retCUInt []
+incomingMTU ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel incomingMTUSelector
 
 -- | getDevice
 --
@@ -391,8 +387,8 @@ incomingMTU ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- device@
 device :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO (Id IOBluetoothDevice)
-device ioBluetoothL2CAPChannel  =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel deviceSelector
 
 -- | getObjectID
 --
@@ -404,8 +400,8 @@ device ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- objectID@
 objectID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CULong
-objectID ioBluetoothL2CAPChannel  =
-    sendMsg ioBluetoothL2CAPChannel (mkSelector "objectID") retCULong []
+objectID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel objectIDSelector
 
 -- | getPSM
 --
@@ -415,8 +411,8 @@ objectID ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- PSM@
 psm :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-psm ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "PSM") retCUInt []
+psm ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel psmSelector
 
 -- | getLocalChannelID
 --
@@ -426,8 +422,8 @@ psm ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- localChannelID@
 localChannelID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-localChannelID ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "localChannelID") retCUInt []
+localChannelID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel localChannelIDSelector
 
 -- | getRemoteChannelID
 --
@@ -437,118 +433,118 @@ localChannelID ioBluetoothL2CAPChannel  =
 --
 -- ObjC selector: @- remoteChannelID@
 remoteChannelID :: IsIOBluetoothL2CAPChannel ioBluetoothL2CAPChannel => ioBluetoothL2CAPChannel -> IO CUShort
-remoteChannelID ioBluetoothL2CAPChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothL2CAPChannel (mkSelector "remoteChannelID") retCUInt []
+remoteChannelID ioBluetoothL2CAPChannel =
+  sendMessage ioBluetoothL2CAPChannel remoteChannelIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerForChannelOpenNotifications:selector:@
-registerForChannelOpenNotifications_selectorSelector :: Selector
+registerForChannelOpenNotifications_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selectorSelector = mkSelector "registerForChannelOpenNotifications:selector:"
 
 -- | @Selector@ for @registerForChannelOpenNotifications:selector:withPSM:direction:@
-registerForChannelOpenNotifications_selector_withPSM_directionSelector :: Selector
+registerForChannelOpenNotifications_selector_withPSM_directionSelector :: Selector '[RawId, Sel, CUShort, IOBluetoothUserNotificationChannelDirection] (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector_withPSM_directionSelector = mkSelector "registerForChannelOpenNotifications:selector:withPSM:direction:"
 
 -- | @Selector@ for @withObjectID:@
-withObjectIDSelector :: Selector
+withObjectIDSelector :: Selector '[CULong] (Id IOBluetoothL2CAPChannel)
 withObjectIDSelector = mkSelector "withObjectID:"
 
 -- | @Selector@ for @closeChannel@
-closeChannelSelector :: Selector
+closeChannelSelector :: Selector '[] CInt
 closeChannelSelector = mkSelector "closeChannel"
 
 -- | @Selector@ for @getOutgoingMTU@
-getOutgoingMTUSelector :: Selector
+getOutgoingMTUSelector :: Selector '[] CUShort
 getOutgoingMTUSelector = mkSelector "getOutgoingMTU"
 
 -- | @Selector@ for @getIncomingMTU@
-getIncomingMTUSelector :: Selector
+getIncomingMTUSelector :: Selector '[] CUShort
 getIncomingMTUSelector = mkSelector "getIncomingMTU"
 
 -- | @Selector@ for @requestRemoteMTU:@
-requestRemoteMTUSelector :: Selector
+requestRemoteMTUSelector :: Selector '[CUShort] CInt
 requestRemoteMTUSelector = mkSelector "requestRemoteMTU:"
 
 -- | @Selector@ for @writeAsyncTrap:length:refcon:@
-writeAsyncTrap_length_refconSelector :: Selector
+writeAsyncTrap_length_refconSelector :: Selector '[Ptr (), CUShort, Ptr ()] CInt
 writeAsyncTrap_length_refconSelector = mkSelector "writeAsyncTrap:length:refcon:"
 
 -- | @Selector@ for @writeAsync:length:refcon:@
-writeAsync_length_refconSelector :: Selector
+writeAsync_length_refconSelector :: Selector '[Ptr (), CUShort, Ptr ()] CInt
 writeAsync_length_refconSelector = mkSelector "writeAsync:length:refcon:"
 
 -- | @Selector@ for @writeSync:length:@
-writeSync_lengthSelector :: Selector
+writeSync_lengthSelector :: Selector '[Ptr (), CUShort] CInt
 writeSync_lengthSelector = mkSelector "writeSync:length:"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] CInt
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @setDelegate:withConfiguration:@
-setDelegate_withConfigurationSelector :: Selector
+setDelegate_withConfigurationSelector :: Selector '[RawId, Id NSDictionary] CInt
 setDelegate_withConfigurationSelector = mkSelector "setDelegate:withConfiguration:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @getDevice@
-getDeviceSelector :: Selector
+getDeviceSelector :: Selector '[] (Id IOBluetoothDevice)
 getDeviceSelector = mkSelector "getDevice"
 
 -- | @Selector@ for @getObjectID@
-getObjectIDSelector :: Selector
+getObjectIDSelector :: Selector '[] CULong
 getObjectIDSelector = mkSelector "getObjectID"
 
 -- | @Selector@ for @getPSM@
-getPSMSelector :: Selector
+getPSMSelector :: Selector '[] CUShort
 getPSMSelector = mkSelector "getPSM"
 
 -- | @Selector@ for @getLocalChannelID@
-getLocalChannelIDSelector :: Selector
+getLocalChannelIDSelector :: Selector '[] CUShort
 getLocalChannelIDSelector = mkSelector "getLocalChannelID"
 
 -- | @Selector@ for @getRemoteChannelID@
-getRemoteChannelIDSelector :: Selector
+getRemoteChannelIDSelector :: Selector '[] CUShort
 getRemoteChannelIDSelector = mkSelector "getRemoteChannelID"
 
 -- | @Selector@ for @isIncoming@
-isIncomingSelector :: Selector
+isIncomingSelector :: Selector '[] Bool
 isIncomingSelector = mkSelector "isIncoming"
 
 -- | @Selector@ for @registerForChannelCloseNotification:selector:@
-registerForChannelCloseNotification_selectorSelector :: Selector
+registerForChannelCloseNotification_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForChannelCloseNotification_selectorSelector = mkSelector "registerForChannelCloseNotification:selector:"
 
 -- | @Selector@ for @outgoingMTU@
-outgoingMTUSelector :: Selector
+outgoingMTUSelector :: Selector '[] CUShort
 outgoingMTUSelector = mkSelector "outgoingMTU"
 
 -- | @Selector@ for @incomingMTU@
-incomingMTUSelector :: Selector
+incomingMTUSelector :: Selector '[] CUShort
 incomingMTUSelector = mkSelector "incomingMTU"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id IOBluetoothDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @objectID@
-objectIDSelector :: Selector
+objectIDSelector :: Selector '[] CULong
 objectIDSelector = mkSelector "objectID"
 
 -- | @Selector@ for @PSM@
-psmSelector :: Selector
+psmSelector :: Selector '[] CUShort
 psmSelector = mkSelector "PSM"
 
 -- | @Selector@ for @localChannelID@
-localChannelIDSelector :: Selector
+localChannelIDSelector :: Selector '[] CUShort
 localChannelIDSelector = mkSelector "localChannelID"
 
 -- | @Selector@ for @remoteChannelID@
-remoteChannelIDSelector :: Selector
+remoteChannelIDSelector :: Selector '[] CUShort
 remoteChannelIDSelector = mkSelector "remoteChannelID"
 

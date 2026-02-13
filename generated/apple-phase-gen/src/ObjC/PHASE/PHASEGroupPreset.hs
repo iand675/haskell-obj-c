@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.PHASE.PHASEGroupPreset
   , settings
   , timeToTarget
   , timeToReset
-  , initSelector
-  , newSelector
-  , initWithEngine_settings_timeToTarget_timeToResetSelector
   , activateSelector
   , activateWithTimeToTargetOverrideSelector
   , deactivateSelector
   , deactivateWithTimeToResetOverrideSelector
+  , initSelector
+  , initWithEngine_settings_timeToTarget_timeToResetSelector
+  , newSelector
   , settingsSelector
-  , timeToTargetSelector
   , timeToResetSelector
+  , timeToTargetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,15 +52,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO (Id PHASEGroupPreset)
-init_ phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseGroupPreset =
+  sendOwnedMessage phaseGroupPreset initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEGroupPreset)
 new  =
   do
     cls' <- getRequiredClass "PHASEGroupPreset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEngine
 --
@@ -81,10 +78,8 @@ new  =
 --
 -- ObjC selector: @- initWithEngine:settings:timeToTarget:timeToReset:@
 initWithEngine_settings_timeToTarget_timeToReset :: (IsPHASEGroupPreset phaseGroupPreset, IsPHASEEngine engine, IsNSDictionary settings) => phaseGroupPreset -> engine -> settings -> CDouble -> CDouble -> IO (Id PHASEGroupPreset)
-initWithEngine_settings_timeToTarget_timeToReset phaseGroupPreset  engine settings timeToTarget timeToReset =
-  withObjCPtr engine $ \raw_engine ->
-    withObjCPtr settings $ \raw_settings ->
-        sendMsg phaseGroupPreset (mkSelector "initWithEngine:settings:timeToTarget:timeToReset:") (retPtr retVoid) [argPtr (castPtr raw_engine :: Ptr ()), argPtr (castPtr raw_settings :: Ptr ()), argCDouble timeToTarget, argCDouble timeToReset] >>= ownedObject . castPtr
+initWithEngine_settings_timeToTarget_timeToReset phaseGroupPreset engine settings timeToTarget timeToReset =
+  sendOwnedMessage phaseGroupPreset initWithEngine_settings_timeToTarget_timeToResetSelector (toPHASEEngine engine) (toNSDictionary settings) timeToTarget timeToReset
 
 -- | activate
 --
@@ -92,8 +87,8 @@ initWithEngine_settings_timeToTarget_timeToReset phaseGroupPreset  engine settin
 --
 -- ObjC selector: @- activate@
 activate :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO ()
-activate phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "activate") retVoid []
+activate phaseGroupPreset =
+  sendMessage phaseGroupPreset activateSelector
 
 -- | activateWithTimeToTargetOverride
 --
@@ -105,8 +100,8 @@ activate phaseGroupPreset  =
 --
 -- ObjC selector: @- activateWithTimeToTargetOverride:@
 activateWithTimeToTargetOverride :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> CDouble -> IO ()
-activateWithTimeToTargetOverride phaseGroupPreset  timeToTargetOverride =
-    sendMsg phaseGroupPreset (mkSelector "activateWithTimeToTargetOverride:") retVoid [argCDouble timeToTargetOverride]
+activateWithTimeToTargetOverride phaseGroupPreset timeToTargetOverride =
+  sendMessage phaseGroupPreset activateWithTimeToTargetOverrideSelector timeToTargetOverride
 
 -- | deactivate
 --
@@ -114,8 +109,8 @@ activateWithTimeToTargetOverride phaseGroupPreset  timeToTargetOverride =
 --
 -- ObjC selector: @- deactivate@
 deactivate :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO ()
-deactivate phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "deactivate") retVoid []
+deactivate phaseGroupPreset =
+  sendMessage phaseGroupPreset deactivateSelector
 
 -- | deactivateWithTimeToResetOverride
 --
@@ -127,8 +122,8 @@ deactivate phaseGroupPreset  =
 --
 -- ObjC selector: @- deactivateWithTimeToResetOverride:@
 deactivateWithTimeToResetOverride :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> CDouble -> IO ()
-deactivateWithTimeToResetOverride phaseGroupPreset  timeToResetOverride =
-    sendMsg phaseGroupPreset (mkSelector "deactivateWithTimeToResetOverride:") retVoid [argCDouble timeToResetOverride]
+deactivateWithTimeToResetOverride phaseGroupPreset timeToResetOverride =
+  sendMessage phaseGroupPreset deactivateWithTimeToResetOverrideSelector timeToResetOverride
 
 -- | settings
 --
@@ -136,8 +131,8 @@ deactivateWithTimeToResetOverride phaseGroupPreset  timeToResetOverride =
 --
 -- ObjC selector: @- settings@
 settings :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO (Id NSDictionary)
-settings phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+settings phaseGroupPreset =
+  sendMessage phaseGroupPreset settingsSelector
 
 -- | timeToTarget
 --
@@ -147,8 +142,8 @@ settings phaseGroupPreset  =
 --
 -- ObjC selector: @- timeToTarget@
 timeToTarget :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO CDouble
-timeToTarget phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "timeToTarget") retCDouble []
+timeToTarget phaseGroupPreset =
+  sendMessage phaseGroupPreset timeToTargetSelector
 
 -- | timeToReset
 --
@@ -158,50 +153,50 @@ timeToTarget phaseGroupPreset  =
 --
 -- ObjC selector: @- timeToReset@
 timeToReset :: IsPHASEGroupPreset phaseGroupPreset => phaseGroupPreset -> IO CDouble
-timeToReset phaseGroupPreset  =
-    sendMsg phaseGroupPreset (mkSelector "timeToReset") retCDouble []
+timeToReset phaseGroupPreset =
+  sendMessage phaseGroupPreset timeToResetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEGroupPreset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEGroupPreset)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEngine:settings:timeToTarget:timeToReset:@
-initWithEngine_settings_timeToTarget_timeToResetSelector :: Selector
+initWithEngine_settings_timeToTarget_timeToResetSelector :: Selector '[Id PHASEEngine, Id NSDictionary, CDouble, CDouble] (Id PHASEGroupPreset)
 initWithEngine_settings_timeToTarget_timeToResetSelector = mkSelector "initWithEngine:settings:timeToTarget:timeToReset:"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @activateWithTimeToTargetOverride:@
-activateWithTimeToTargetOverrideSelector :: Selector
+activateWithTimeToTargetOverrideSelector :: Selector '[CDouble] ()
 activateWithTimeToTargetOverrideSelector = mkSelector "activateWithTimeToTargetOverride:"
 
 -- | @Selector@ for @deactivate@
-deactivateSelector :: Selector
+deactivateSelector :: Selector '[] ()
 deactivateSelector = mkSelector "deactivate"
 
 -- | @Selector@ for @deactivateWithTimeToResetOverride:@
-deactivateWithTimeToResetOverrideSelector :: Selector
+deactivateWithTimeToResetOverrideSelector :: Selector '[CDouble] ()
 deactivateWithTimeToResetOverrideSelector = mkSelector "deactivateWithTimeToResetOverride:"
 
 -- | @Selector@ for @settings@
-settingsSelector :: Selector
+settingsSelector :: Selector '[] (Id NSDictionary)
 settingsSelector = mkSelector "settings"
 
 -- | @Selector@ for @timeToTarget@
-timeToTargetSelector :: Selector
+timeToTargetSelector :: Selector '[] CDouble
 timeToTargetSelector = mkSelector "timeToTarget"
 
 -- | @Selector@ for @timeToReset@
-timeToResetSelector :: Selector
+timeToResetSelector :: Selector '[] CDouble
 timeToResetSelector = mkSelector "timeToReset"
 

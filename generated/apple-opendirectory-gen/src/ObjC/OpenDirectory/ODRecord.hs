@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,55 +49,51 @@ module ObjC.OpenDirectory.ODRecord
   , recordName
   , secondsUntilPasswordExpires
   , secondsUntilAuthenticationsExpire
-  , setNodeCredentials_password_errorSelector
-  , setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector
-  , setNodeCredentialsUsingKerberosCache_errorSelector
-  , passwordPolicyAndReturnErrorSelector
-  , verifyPassword_errorSelector
-  , verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector
-  , changePassword_toPassword_errorSelector
-  , synchronizeAndReturnErrorSelector
-  , recordDetailsForAttributes_errorSelector
-  , valuesForAttribute_errorSelector
-  , setValue_forAttribute_errorSelector
-  , removeValuesForAttribute_errorSelector
+  , accountPoliciesAndReturnErrorSelector
+  , addAccountPolicy_toCategory_errorSelector
+  , addMemberRecord_errorSelector
   , addValue_toAttribute_errorSelector
-  , removeValue_fromAttribute_errorSelector
+  , authenticationAllowedAndReturnErrorSelector
+  , changePassword_toPassword_errorSelector
   , deleteRecordAndReturnErrorSelector
-  , policiesAndReturnErrorSelector
   , effectivePoliciesAndReturnErrorSelector
-  , supportedPoliciesAndReturnErrorSelector
+  , isMemberRecord_errorSelector
+  , passwordChangeAllowed_errorSelector
+  , passwordPolicyAndReturnErrorSelector
+  , policiesAndReturnErrorSelector
+  , recordDetailsForAttributes_errorSelector
+  , recordNameSelector
+  , recordTypeSelector
+  , removeAccountPolicy_fromCategory_errorSelector
+  , removeMemberRecord_errorSelector
+  , removePolicy_errorSelector
+  , removeValue_fromAttribute_errorSelector
+  , removeValuesForAttribute_errorSelector
+  , secondsUntilAuthenticationsExpireSelector
+  , secondsUntilPasswordExpiresSelector
+  , setAccountPolicies_errorSelector
+  , setNodeCredentialsUsingKerberosCache_errorSelector
+  , setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector
+  , setNodeCredentials_password_errorSelector
   , setPolicies_errorSelector
   , setPolicy_value_errorSelector
-  , removePolicy_errorSelector
-  , addAccountPolicy_toCategory_errorSelector
-  , removeAccountPolicy_fromCategory_errorSelector
-  , setAccountPolicies_errorSelector
-  , accountPoliciesAndReturnErrorSelector
-  , authenticationAllowedAndReturnErrorSelector
-  , passwordChangeAllowed_errorSelector
-  , willPasswordExpireSelector
+  , setValue_forAttribute_errorSelector
+  , supportedPoliciesAndReturnErrorSelector
+  , synchronizeAndReturnErrorSelector
+  , valuesForAttribute_errorSelector
+  , verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector
+  , verifyPassword_errorSelector
   , willAuthenticationsExpireSelector
-  , addMemberRecord_errorSelector
-  , removeMemberRecord_errorSelector
-  , isMemberRecord_errorSelector
-  , recordTypeSelector
-  , recordNameSelector
-  , secondsUntilPasswordExpiresSelector
-  , secondsUntilAuthenticationsExpireSelector
+  , willPasswordExpireSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -111,11 +108,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setNodeCredentials:password:error:@
 setNodeCredentials_password_error :: (IsODRecord odRecord, IsNSString inUsername, IsNSString inPassword, IsNSError outError) => odRecord -> inUsername -> inPassword -> outError -> IO Bool
-setNodeCredentials_password_error odRecord  inUsername inPassword outError =
-  withObjCPtr inUsername $ \raw_inUsername ->
-    withObjCPtr inPassword $ \raw_inPassword ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setNodeCredentials:password:error:") retCULong [argPtr (castPtr raw_inUsername :: Ptr ()), argPtr (castPtr raw_inPassword :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setNodeCredentials_password_error odRecord inUsername inPassword outError =
+  sendMessage odRecord setNodeCredentials_password_errorSelector (toNSString inUsername) (toNSString inPassword) (toNSError outError)
 
 -- | setNodeCredentialsWithRecordType:authenticationType:authenticationItems:continueItems:context:error:
 --
@@ -125,13 +119,8 @@ setNodeCredentials_password_error odRecord  inUsername inPassword outError =
 --
 -- ObjC selector: @- setNodeCredentialsWithRecordType:authenticationType:authenticationItems:continueItems:context:error:@
 setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_error :: (IsODRecord odRecord, IsNSString inRecordType, IsNSString inType, IsNSArray inItems, IsNSArray outItems, IsNSError outError) => odRecord -> inRecordType -> inType -> inItems -> outItems -> Ptr (Maybe RawId) -> outError -> IO Bool
-setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_error odRecord  inRecordType inType inItems outItems outContext outError =
-  withObjCPtr inRecordType $ \raw_inRecordType ->
-    withObjCPtr inType $ \raw_inType ->
-      withObjCPtr inItems $ \raw_inItems ->
-        withObjCPtr outItems $ \raw_outItems ->
-          withObjCPtr outError $ \raw_outError ->
-              fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setNodeCredentialsWithRecordType:authenticationType:authenticationItems:continueItems:context:error:") retCULong [argPtr (castPtr raw_inRecordType :: Ptr ()), argPtr (castPtr raw_inType :: Ptr ()), argPtr (castPtr raw_inItems :: Ptr ()), argPtr (castPtr raw_outItems :: Ptr ()), argPtr outContext, argPtr (castPtr raw_outError :: Ptr ())]
+setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_error odRecord inRecordType inType inItems outItems outContext outError =
+  sendMessage odRecord setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector (toNSString inRecordType) (toNSString inType) (toNSArray inItems) (toNSArray outItems) outContext (toNSError outError)
 
 -- | setNodeCredentialsUsingKerberosCache:error:
 --
@@ -141,10 +130,8 @@ setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continue
 --
 -- ObjC selector: @- setNodeCredentialsUsingKerberosCache:error:@
 setNodeCredentialsUsingKerberosCache_error :: (IsODRecord odRecord, IsNSString inCacheName, IsNSError outError) => odRecord -> inCacheName -> outError -> IO Bool
-setNodeCredentialsUsingKerberosCache_error odRecord  inCacheName outError =
-  withObjCPtr inCacheName $ \raw_inCacheName ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setNodeCredentialsUsingKerberosCache:error:") retCULong [argPtr (castPtr raw_inCacheName :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setNodeCredentialsUsingKerberosCache_error odRecord inCacheName outError =
+  sendMessage odRecord setNodeCredentialsUsingKerberosCache_errorSelector (toNSString inCacheName) (toNSError outError)
 
 -- | passwordPolicyAndReturnError:
 --
@@ -154,9 +141,8 @@ setNodeCredentialsUsingKerberosCache_error odRecord  inCacheName outError =
 --
 -- ObjC selector: @- passwordPolicyAndReturnError:@
 passwordPolicyAndReturnError :: (IsODRecord odRecord, IsNSError outError) => odRecord -> outError -> IO (Id NSDictionary)
-passwordPolicyAndReturnError odRecord  outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg odRecord (mkSelector "passwordPolicyAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+passwordPolicyAndReturnError odRecord outError =
+  sendMessage odRecord passwordPolicyAndReturnErrorSelector (toNSError outError)
 
 -- | verifyPassword:error:
 --
@@ -166,10 +152,8 @@ passwordPolicyAndReturnError odRecord  outError =
 --
 -- ObjC selector: @- verifyPassword:error:@
 verifyPassword_error :: (IsODRecord odRecord, IsNSString inPassword, IsNSError outError) => odRecord -> inPassword -> outError -> IO Bool
-verifyPassword_error odRecord  inPassword outError =
-  withObjCPtr inPassword $ \raw_inPassword ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "verifyPassword:error:") retCULong [argPtr (castPtr raw_inPassword :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+verifyPassword_error odRecord inPassword outError =
+  sendMessage odRecord verifyPassword_errorSelector (toNSString inPassword) (toNSError outError)
 
 -- | verifyExtendedWithAuthenticationType:authenticationItems:continueItems:context:error:
 --
@@ -179,12 +163,8 @@ verifyPassword_error odRecord  inPassword outError =
 --
 -- ObjC selector: @- verifyExtendedWithAuthenticationType:authenticationItems:continueItems:context:error:@
 verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_error :: (IsODRecord odRecord, IsNSString inType, IsNSArray inItems, IsNSArray outItems, IsNSError outError) => odRecord -> inType -> inItems -> outItems -> Ptr (Maybe RawId) -> outError -> IO Bool
-verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_error odRecord  inType inItems outItems outContext outError =
-  withObjCPtr inType $ \raw_inType ->
-    withObjCPtr inItems $ \raw_inItems ->
-      withObjCPtr outItems $ \raw_outItems ->
-        withObjCPtr outError $ \raw_outError ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "verifyExtendedWithAuthenticationType:authenticationItems:continueItems:context:error:") retCULong [argPtr (castPtr raw_inType :: Ptr ()), argPtr (castPtr raw_inItems :: Ptr ()), argPtr (castPtr raw_outItems :: Ptr ()), argPtr outContext, argPtr (castPtr raw_outError :: Ptr ())]
+verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_error odRecord inType inItems outItems outContext outError =
+  sendMessage odRecord verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector (toNSString inType) (toNSArray inItems) (toNSArray outItems) outContext (toNSError outError)
 
 -- | changePassword:toPassword:error:
 --
@@ -194,11 +174,8 @@ verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_e
 --
 -- ObjC selector: @- changePassword:toPassword:error:@
 changePassword_toPassword_error :: (IsODRecord odRecord, IsNSString oldPassword, IsNSString newPassword, IsNSError outError) => odRecord -> oldPassword -> newPassword -> outError -> IO Bool
-changePassword_toPassword_error odRecord  oldPassword newPassword outError =
-  withObjCPtr oldPassword $ \raw_oldPassword ->
-    withObjCPtr newPassword $ \raw_newPassword ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "changePassword:toPassword:error:") retCULong [argPtr (castPtr raw_oldPassword :: Ptr ()), argPtr (castPtr raw_newPassword :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+changePassword_toPassword_error odRecord oldPassword newPassword outError =
+  sendMessage odRecord changePassword_toPassword_errorSelector (toNSString oldPassword) (toNSString newPassword) (toNSError outError)
 
 -- | synchronizeAndReturnError:
 --
@@ -208,9 +185,8 @@ changePassword_toPassword_error odRecord  oldPassword newPassword outError =
 --
 -- ObjC selector: @- synchronizeAndReturnError:@
 synchronizeAndReturnError :: (IsODRecord odRecord, IsNSError outError) => odRecord -> outError -> IO Bool
-synchronizeAndReturnError odRecord  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "synchronizeAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+synchronizeAndReturnError odRecord outError =
+  sendMessage odRecord synchronizeAndReturnErrorSelector (toNSError outError)
 
 -- | recordDetailsForAttributes:error:
 --
@@ -220,10 +196,8 @@ synchronizeAndReturnError odRecord  outError =
 --
 -- ObjC selector: @- recordDetailsForAttributes:error:@
 recordDetailsForAttributes_error :: (IsODRecord odRecord, IsNSArray inAttributes, IsNSError outError) => odRecord -> inAttributes -> outError -> IO (Id NSDictionary)
-recordDetailsForAttributes_error odRecord  inAttributes outError =
-  withObjCPtr inAttributes $ \raw_inAttributes ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg odRecord (mkSelector "recordDetailsForAttributes:error:") (retPtr retVoid) [argPtr (castPtr raw_inAttributes :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+recordDetailsForAttributes_error odRecord inAttributes outError =
+  sendMessage odRecord recordDetailsForAttributes_errorSelector (toNSArray inAttributes) (toNSError outError)
 
 -- | valuesForAttribute:error:
 --
@@ -233,10 +207,8 @@ recordDetailsForAttributes_error odRecord  inAttributes outError =
 --
 -- ObjC selector: @- valuesForAttribute:error:@
 valuesForAttribute_error :: (IsODRecord odRecord, IsNSString inAttribute, IsNSError outError) => odRecord -> inAttribute -> outError -> IO (Id NSArray)
-valuesForAttribute_error odRecord  inAttribute outError =
-  withObjCPtr inAttribute $ \raw_inAttribute ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg odRecord (mkSelector "valuesForAttribute:error:") (retPtr retVoid) [argPtr (castPtr raw_inAttribute :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+valuesForAttribute_error odRecord inAttribute outError =
+  sendMessage odRecord valuesForAttribute_errorSelector (toNSString inAttribute) (toNSError outError)
 
 -- | setValue:forAttribute:error:
 --
@@ -246,10 +218,8 @@ valuesForAttribute_error odRecord  inAttribute outError =
 --
 -- ObjC selector: @- setValue:forAttribute:error:@
 setValue_forAttribute_error :: (IsODRecord odRecord, IsNSString inAttribute, IsNSError outError) => odRecord -> RawId -> inAttribute -> outError -> IO Bool
-setValue_forAttribute_error odRecord  inValueOrValues inAttribute outError =
-  withObjCPtr inAttribute $ \raw_inAttribute ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setValue:forAttribute:error:") retCULong [argPtr (castPtr (unRawId inValueOrValues) :: Ptr ()), argPtr (castPtr raw_inAttribute :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setValue_forAttribute_error odRecord inValueOrValues inAttribute outError =
+  sendMessage odRecord setValue_forAttribute_errorSelector inValueOrValues (toNSString inAttribute) (toNSError outError)
 
 -- | removeValuesForAttribute:error:
 --
@@ -259,10 +229,8 @@ setValue_forAttribute_error odRecord  inValueOrValues inAttribute outError =
 --
 -- ObjC selector: @- removeValuesForAttribute:error:@
 removeValuesForAttribute_error :: (IsODRecord odRecord, IsNSString inAttribute, IsNSError outError) => odRecord -> inAttribute -> outError -> IO Bool
-removeValuesForAttribute_error odRecord  inAttribute outError =
-  withObjCPtr inAttribute $ \raw_inAttribute ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "removeValuesForAttribute:error:") retCULong [argPtr (castPtr raw_inAttribute :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+removeValuesForAttribute_error odRecord inAttribute outError =
+  sendMessage odRecord removeValuesForAttribute_errorSelector (toNSString inAttribute) (toNSError outError)
 
 -- | addValue:toAttribute:error:
 --
@@ -272,10 +240,8 @@ removeValuesForAttribute_error odRecord  inAttribute outError =
 --
 -- ObjC selector: @- addValue:toAttribute:error:@
 addValue_toAttribute_error :: (IsODRecord odRecord, IsNSString inAttribute, IsNSError outError) => odRecord -> RawId -> inAttribute -> outError -> IO Bool
-addValue_toAttribute_error odRecord  inValue inAttribute outError =
-  withObjCPtr inAttribute $ \raw_inAttribute ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "addValue:toAttribute:error:") retCULong [argPtr (castPtr (unRawId inValue) :: Ptr ()), argPtr (castPtr raw_inAttribute :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+addValue_toAttribute_error odRecord inValue inAttribute outError =
+  sendMessage odRecord addValue_toAttribute_errorSelector inValue (toNSString inAttribute) (toNSError outError)
 
 -- | removeValue:fromAttribute:error:
 --
@@ -285,10 +251,8 @@ addValue_toAttribute_error odRecord  inValue inAttribute outError =
 --
 -- ObjC selector: @- removeValue:fromAttribute:error:@
 removeValue_fromAttribute_error :: (IsODRecord odRecord, IsNSString inAttribute, IsNSError outError) => odRecord -> RawId -> inAttribute -> outError -> IO Bool
-removeValue_fromAttribute_error odRecord  inValue inAttribute outError =
-  withObjCPtr inAttribute $ \raw_inAttribute ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "removeValue:fromAttribute:error:") retCULong [argPtr (castPtr (unRawId inValue) :: Ptr ()), argPtr (castPtr raw_inAttribute :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+removeValue_fromAttribute_error odRecord inValue inAttribute outError =
+  sendMessage odRecord removeValue_fromAttribute_errorSelector inValue (toNSString inAttribute) (toNSError outError)
 
 -- | deleteRecordAndReturnError:
 --
@@ -298,9 +262,8 @@ removeValue_fromAttribute_error odRecord  inValue inAttribute outError =
 --
 -- ObjC selector: @- deleteRecordAndReturnError:@
 deleteRecordAndReturnError :: (IsODRecord odRecord, IsNSError outError) => odRecord -> outError -> IO Bool
-deleteRecordAndReturnError odRecord  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "deleteRecordAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+deleteRecordAndReturnError odRecord outError =
+  sendMessage odRecord deleteRecordAndReturnErrorSelector (toNSError outError)
 
 -- | policiesAndReturnError:
 --
@@ -310,9 +273,8 @@ deleteRecordAndReturnError odRecord  outError =
 --
 -- ObjC selector: @- policiesAndReturnError:@
 policiesAndReturnError :: (IsODRecord odRecord, IsNSError error_) => odRecord -> error_ -> IO (Id NSDictionary)
-policiesAndReturnError odRecord  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg odRecord (mkSelector "policiesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+policiesAndReturnError odRecord error_ =
+  sendMessage odRecord policiesAndReturnErrorSelector (toNSError error_)
 
 -- | effectivePoliciesAndReturnError:
 --
@@ -322,9 +284,8 @@ policiesAndReturnError odRecord  error_ =
 --
 -- ObjC selector: @- effectivePoliciesAndReturnError:@
 effectivePoliciesAndReturnError :: (IsODRecord odRecord, IsNSError error_) => odRecord -> error_ -> IO (Id NSDictionary)
-effectivePoliciesAndReturnError odRecord  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg odRecord (mkSelector "effectivePoliciesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+effectivePoliciesAndReturnError odRecord error_ =
+  sendMessage odRecord effectivePoliciesAndReturnErrorSelector (toNSError error_)
 
 -- | supportedPoliciesAndReturnError:
 --
@@ -334,9 +295,8 @@ effectivePoliciesAndReturnError odRecord  error_ =
 --
 -- ObjC selector: @- supportedPoliciesAndReturnError:@
 supportedPoliciesAndReturnError :: (IsODRecord odRecord, IsNSError error_) => odRecord -> error_ -> IO (Id NSDictionary)
-supportedPoliciesAndReturnError odRecord  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg odRecord (mkSelector "supportedPoliciesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedPoliciesAndReturnError odRecord error_ =
+  sendMessage odRecord supportedPoliciesAndReturnErrorSelector (toNSError error_)
 
 -- | setPolicies:error:
 --
@@ -346,10 +306,8 @@ supportedPoliciesAndReturnError odRecord  error_ =
 --
 -- ObjC selector: @- setPolicies:error:@
 setPolicies_error :: (IsODRecord odRecord, IsNSDictionary policies, IsNSError error_) => odRecord -> policies -> error_ -> IO Bool
-setPolicies_error odRecord  policies error_ =
-  withObjCPtr policies $ \raw_policies ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setPolicies:error:") retCULong [argPtr (castPtr raw_policies :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setPolicies_error odRecord policies error_ =
+  sendMessage odRecord setPolicies_errorSelector (toNSDictionary policies) (toNSError error_)
 
 -- | setPolicy:value:error:
 --
@@ -359,10 +317,8 @@ setPolicies_error odRecord  policies error_ =
 --
 -- ObjC selector: @- setPolicy:value:error:@
 setPolicy_value_error :: (IsODRecord odRecord, IsNSString policy, IsNSError error_) => odRecord -> policy -> RawId -> error_ -> IO Bool
-setPolicy_value_error odRecord  policy value error_ =
-  withObjCPtr policy $ \raw_policy ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setPolicy:value:error:") retCULong [argPtr (castPtr raw_policy :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setPolicy_value_error odRecord policy value error_ =
+  sendMessage odRecord setPolicy_value_errorSelector (toNSString policy) value (toNSError error_)
 
 -- | removePolicy:error:
 --
@@ -372,10 +328,8 @@ setPolicy_value_error odRecord  policy value error_ =
 --
 -- ObjC selector: @- removePolicy:error:@
 removePolicy_error :: (IsODRecord odRecord, IsNSString policy, IsNSError error_) => odRecord -> policy -> error_ -> IO Bool
-removePolicy_error odRecord  policy error_ =
-  withObjCPtr policy $ \raw_policy ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "removePolicy:error:") retCULong [argPtr (castPtr raw_policy :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removePolicy_error odRecord policy error_ =
+  sendMessage odRecord removePolicy_errorSelector (toNSString policy) (toNSError error_)
 
 -- | addAccountPolicy:toCategory:error:
 --
@@ -393,11 +347,8 @@ removePolicy_error odRecord  policy error_ =
 --
 -- ObjC selector: @- addAccountPolicy:toCategory:error:@
 addAccountPolicy_toCategory_error :: (IsODRecord odRecord, IsNSDictionary policy, IsNSString category, IsNSError error_) => odRecord -> policy -> category -> error_ -> IO Bool
-addAccountPolicy_toCategory_error odRecord  policy category error_ =
-  withObjCPtr policy $ \raw_policy ->
-    withObjCPtr category $ \raw_category ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "addAccountPolicy:toCategory:error:") retCULong [argPtr (castPtr raw_policy :: Ptr ()), argPtr (castPtr raw_category :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addAccountPolicy_toCategory_error odRecord policy category error_ =
+  sendMessage odRecord addAccountPolicy_toCategory_errorSelector (toNSDictionary policy) (toNSString category) (toNSError error_)
 
 -- | removeAccountPolicy:fromCategory:error:
 --
@@ -415,11 +366,8 @@ addAccountPolicy_toCategory_error odRecord  policy category error_ =
 --
 -- ObjC selector: @- removeAccountPolicy:fromCategory:error:@
 removeAccountPolicy_fromCategory_error :: (IsODRecord odRecord, IsNSDictionary policy, IsNSString category, IsNSError error_) => odRecord -> policy -> category -> error_ -> IO Bool
-removeAccountPolicy_fromCategory_error odRecord  policy category error_ =
-  withObjCPtr policy $ \raw_policy ->
-    withObjCPtr category $ \raw_category ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "removeAccountPolicy:fromCategory:error:") retCULong [argPtr (castPtr raw_policy :: Ptr ()), argPtr (castPtr raw_category :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeAccountPolicy_fromCategory_error odRecord policy category error_ =
+  sendMessage odRecord removeAccountPolicy_fromCategory_errorSelector (toNSDictionary policy) (toNSString category) (toNSError error_)
 
 -- | setAccountPolicies:error:
 --
@@ -435,10 +383,8 @@ removeAccountPolicy_fromCategory_error odRecord  policy category error_ =
 --
 -- ObjC selector: @- setAccountPolicies:error:@
 setAccountPolicies_error :: (IsODRecord odRecord, IsNSDictionary policies, IsNSError error_) => odRecord -> policies -> error_ -> IO Bool
-setAccountPolicies_error odRecord  policies error_ =
-  withObjCPtr policies $ \raw_policies ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "setAccountPolicies:error:") retCULong [argPtr (castPtr raw_policies :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setAccountPolicies_error odRecord policies error_ =
+  sendMessage odRecord setAccountPolicies_errorSelector (toNSDictionary policies) (toNSError error_)
 
 -- | accountPoliciesAndReturnError:
 --
@@ -454,9 +400,8 @@ setAccountPolicies_error odRecord  policies error_ =
 --
 -- ObjC selector: @- accountPoliciesAndReturnError:@
 accountPoliciesAndReturnError :: (IsODRecord odRecord, IsNSError error_) => odRecord -> error_ -> IO (Id NSDictionary)
-accountPoliciesAndReturnError odRecord  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg odRecord (mkSelector "accountPoliciesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+accountPoliciesAndReturnError odRecord error_ =
+  sendMessage odRecord accountPoliciesAndReturnErrorSelector (toNSError error_)
 
 -- | authenticationAllowedAndReturnError:
 --
@@ -474,9 +419,8 @@ accountPoliciesAndReturnError odRecord  error_ =
 --
 -- ObjC selector: @- authenticationAllowedAndReturnError:@
 authenticationAllowedAndReturnError :: (IsODRecord odRecord, IsNSError error_) => odRecord -> error_ -> IO Bool
-authenticationAllowedAndReturnError odRecord  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "authenticationAllowedAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+authenticationAllowedAndReturnError odRecord error_ =
+  sendMessage odRecord authenticationAllowedAndReturnErrorSelector (toNSError error_)
 
 -- | passwordChangeAllowed:error:
 --
@@ -494,10 +438,8 @@ authenticationAllowedAndReturnError odRecord  error_ =
 --
 -- ObjC selector: @- passwordChangeAllowed:error:@
 passwordChangeAllowed_error :: (IsODRecord odRecord, IsNSString newPassword, IsNSError error_) => odRecord -> newPassword -> error_ -> IO Bool
-passwordChangeAllowed_error odRecord  newPassword error_ =
-  withObjCPtr newPassword $ \raw_newPassword ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "passwordChangeAllowed:error:") retCULong [argPtr (castPtr raw_newPassword :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+passwordChangeAllowed_error odRecord newPassword error_ =
+  sendMessage odRecord passwordChangeAllowed_errorSelector (toNSString newPassword) (toNSError error_)
 
 -- | willPasswordExpire:
 --
@@ -511,8 +453,8 @@ passwordChangeAllowed_error odRecord  newPassword error_ =
 --
 -- ObjC selector: @- willPasswordExpire:@
 willPasswordExpire :: IsODRecord odRecord => odRecord -> CULong -> IO Bool
-willPasswordExpire odRecord  willExpireIn =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "willPasswordExpire:") retCULong [argCULong willExpireIn]
+willPasswordExpire odRecord willExpireIn =
+  sendMessage odRecord willPasswordExpireSelector willExpireIn
 
 -- | willAuthenticationsExpire:
 --
@@ -526,8 +468,8 @@ willPasswordExpire odRecord  willExpireIn =
 --
 -- ObjC selector: @- willAuthenticationsExpire:@
 willAuthenticationsExpire :: IsODRecord odRecord => odRecord -> CULong -> IO Bool
-willAuthenticationsExpire odRecord  willExpireIn =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "willAuthenticationsExpire:") retCULong [argCULong willExpireIn]
+willAuthenticationsExpire odRecord willExpireIn =
+  sendMessage odRecord willAuthenticationsExpireSelector willExpireIn
 
 -- | addMemberRecord:error:
 --
@@ -537,10 +479,8 @@ willAuthenticationsExpire odRecord  willExpireIn =
 --
 -- ObjC selector: @- addMemberRecord:error:@
 addMemberRecord_error :: (IsODRecord odRecord, IsODRecord inRecord, IsNSError outError) => odRecord -> inRecord -> outError -> IO Bool
-addMemberRecord_error odRecord  inRecord outError =
-  withObjCPtr inRecord $ \raw_inRecord ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "addMemberRecord:error:") retCULong [argPtr (castPtr raw_inRecord :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+addMemberRecord_error odRecord inRecord outError =
+  sendMessage odRecord addMemberRecord_errorSelector (toODRecord inRecord) (toNSError outError)
 
 -- | removeMemberRecord:error:
 --
@@ -550,10 +490,8 @@ addMemberRecord_error odRecord  inRecord outError =
 --
 -- ObjC selector: @- removeMemberRecord:error:@
 removeMemberRecord_error :: (IsODRecord odRecord, IsODRecord inRecord, IsNSError outError) => odRecord -> inRecord -> outError -> IO Bool
-removeMemberRecord_error odRecord  inRecord outError =
-  withObjCPtr inRecord $ \raw_inRecord ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "removeMemberRecord:error:") retCULong [argPtr (castPtr raw_inRecord :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+removeMemberRecord_error odRecord inRecord outError =
+  sendMessage odRecord removeMemberRecord_errorSelector (toODRecord inRecord) (toNSError outError)
 
 -- | isMemberRecord:error:
 --
@@ -563,10 +501,8 @@ removeMemberRecord_error odRecord  inRecord outError =
 --
 -- ObjC selector: @- isMemberRecord:error:@
 isMemberRecord_error :: (IsODRecord odRecord, IsODRecord inRecord, IsNSError outError) => odRecord -> inRecord -> outError -> IO Bool
-isMemberRecord_error odRecord  inRecord outError =
-  withObjCPtr inRecord $ \raw_inRecord ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg odRecord (mkSelector "isMemberRecord:error:") retCULong [argPtr (castPtr raw_inRecord :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+isMemberRecord_error odRecord inRecord outError =
+  sendMessage odRecord isMemberRecord_errorSelector (toODRecord inRecord) (toNSError outError)
 
 -- | recordType
 --
@@ -576,8 +512,8 @@ isMemberRecord_error odRecord  inRecord outError =
 --
 -- ObjC selector: @- recordType@
 recordType :: IsODRecord odRecord => odRecord -> IO (Id NSString)
-recordType odRecord  =
-    sendMsg odRecord (mkSelector "recordType") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordType odRecord =
+  sendMessage odRecord recordTypeSelector
 
 -- | recordName
 --
@@ -587,8 +523,8 @@ recordType odRecord  =
 --
 -- ObjC selector: @- recordName@
 recordName :: IsODRecord odRecord => odRecord -> IO (Id NSString)
-recordName odRecord  =
-    sendMsg odRecord (mkSelector "recordName") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordName odRecord =
+  sendMessage odRecord recordNameSelector
 
 -- | secondsUntilPasswordExpires
 --
@@ -600,8 +536,8 @@ recordName odRecord  =
 --
 -- ObjC selector: @- secondsUntilPasswordExpires@
 secondsUntilPasswordExpires :: IsODRecord odRecord => odRecord -> IO CLong
-secondsUntilPasswordExpires odRecord  =
-    sendMsg odRecord (mkSelector "secondsUntilPasswordExpires") retCLong []
+secondsUntilPasswordExpires odRecord =
+  sendMessage odRecord secondsUntilPasswordExpiresSelector
 
 -- | secondsUntilAuthenticationsExpire
 --
@@ -613,154 +549,154 @@ secondsUntilPasswordExpires odRecord  =
 --
 -- ObjC selector: @- secondsUntilAuthenticationsExpire@
 secondsUntilAuthenticationsExpire :: IsODRecord odRecord => odRecord -> IO CLong
-secondsUntilAuthenticationsExpire odRecord  =
-    sendMsg odRecord (mkSelector "secondsUntilAuthenticationsExpire") retCLong []
+secondsUntilAuthenticationsExpire odRecord =
+  sendMessage odRecord secondsUntilAuthenticationsExpireSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setNodeCredentials:password:error:@
-setNodeCredentials_password_errorSelector :: Selector
+setNodeCredentials_password_errorSelector :: Selector '[Id NSString, Id NSString, Id NSError] Bool
 setNodeCredentials_password_errorSelector = mkSelector "setNodeCredentials:password:error:"
 
 -- | @Selector@ for @setNodeCredentialsWithRecordType:authenticationType:authenticationItems:continueItems:context:error:@
-setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector :: Selector
+setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector :: Selector '[Id NSString, Id NSString, Id NSArray, Id NSArray, Ptr (Maybe RawId), Id NSError] Bool
 setNodeCredentialsWithRecordType_authenticationType_authenticationItems_continueItems_context_errorSelector = mkSelector "setNodeCredentialsWithRecordType:authenticationType:authenticationItems:continueItems:context:error:"
 
 -- | @Selector@ for @setNodeCredentialsUsingKerberosCache:error:@
-setNodeCredentialsUsingKerberosCache_errorSelector :: Selector
+setNodeCredentialsUsingKerberosCache_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setNodeCredentialsUsingKerberosCache_errorSelector = mkSelector "setNodeCredentialsUsingKerberosCache:error:"
 
 -- | @Selector@ for @passwordPolicyAndReturnError:@
-passwordPolicyAndReturnErrorSelector :: Selector
+passwordPolicyAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 passwordPolicyAndReturnErrorSelector = mkSelector "passwordPolicyAndReturnError:"
 
 -- | @Selector@ for @verifyPassword:error:@
-verifyPassword_errorSelector :: Selector
+verifyPassword_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 verifyPassword_errorSelector = mkSelector "verifyPassword:error:"
 
 -- | @Selector@ for @verifyExtendedWithAuthenticationType:authenticationItems:continueItems:context:error:@
-verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector :: Selector
+verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector :: Selector '[Id NSString, Id NSArray, Id NSArray, Ptr (Maybe RawId), Id NSError] Bool
 verifyExtendedWithAuthenticationType_authenticationItems_continueItems_context_errorSelector = mkSelector "verifyExtendedWithAuthenticationType:authenticationItems:continueItems:context:error:"
 
 -- | @Selector@ for @changePassword:toPassword:error:@
-changePassword_toPassword_errorSelector :: Selector
+changePassword_toPassword_errorSelector :: Selector '[Id NSString, Id NSString, Id NSError] Bool
 changePassword_toPassword_errorSelector = mkSelector "changePassword:toPassword:error:"
 
 -- | @Selector@ for @synchronizeAndReturnError:@
-synchronizeAndReturnErrorSelector :: Selector
+synchronizeAndReturnErrorSelector :: Selector '[Id NSError] Bool
 synchronizeAndReturnErrorSelector = mkSelector "synchronizeAndReturnError:"
 
 -- | @Selector@ for @recordDetailsForAttributes:error:@
-recordDetailsForAttributes_errorSelector :: Selector
+recordDetailsForAttributes_errorSelector :: Selector '[Id NSArray, Id NSError] (Id NSDictionary)
 recordDetailsForAttributes_errorSelector = mkSelector "recordDetailsForAttributes:error:"
 
 -- | @Selector@ for @valuesForAttribute:error:@
-valuesForAttribute_errorSelector :: Selector
+valuesForAttribute_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSArray)
 valuesForAttribute_errorSelector = mkSelector "valuesForAttribute:error:"
 
 -- | @Selector@ for @setValue:forAttribute:error:@
-setValue_forAttribute_errorSelector :: Selector
+setValue_forAttribute_errorSelector :: Selector '[RawId, Id NSString, Id NSError] Bool
 setValue_forAttribute_errorSelector = mkSelector "setValue:forAttribute:error:"
 
 -- | @Selector@ for @removeValuesForAttribute:error:@
-removeValuesForAttribute_errorSelector :: Selector
+removeValuesForAttribute_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 removeValuesForAttribute_errorSelector = mkSelector "removeValuesForAttribute:error:"
 
 -- | @Selector@ for @addValue:toAttribute:error:@
-addValue_toAttribute_errorSelector :: Selector
+addValue_toAttribute_errorSelector :: Selector '[RawId, Id NSString, Id NSError] Bool
 addValue_toAttribute_errorSelector = mkSelector "addValue:toAttribute:error:"
 
 -- | @Selector@ for @removeValue:fromAttribute:error:@
-removeValue_fromAttribute_errorSelector :: Selector
+removeValue_fromAttribute_errorSelector :: Selector '[RawId, Id NSString, Id NSError] Bool
 removeValue_fromAttribute_errorSelector = mkSelector "removeValue:fromAttribute:error:"
 
 -- | @Selector@ for @deleteRecordAndReturnError:@
-deleteRecordAndReturnErrorSelector :: Selector
+deleteRecordAndReturnErrorSelector :: Selector '[Id NSError] Bool
 deleteRecordAndReturnErrorSelector = mkSelector "deleteRecordAndReturnError:"
 
 -- | @Selector@ for @policiesAndReturnError:@
-policiesAndReturnErrorSelector :: Selector
+policiesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 policiesAndReturnErrorSelector = mkSelector "policiesAndReturnError:"
 
 -- | @Selector@ for @effectivePoliciesAndReturnError:@
-effectivePoliciesAndReturnErrorSelector :: Selector
+effectivePoliciesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 effectivePoliciesAndReturnErrorSelector = mkSelector "effectivePoliciesAndReturnError:"
 
 -- | @Selector@ for @supportedPoliciesAndReturnError:@
-supportedPoliciesAndReturnErrorSelector :: Selector
+supportedPoliciesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 supportedPoliciesAndReturnErrorSelector = mkSelector "supportedPoliciesAndReturnError:"
 
 -- | @Selector@ for @setPolicies:error:@
-setPolicies_errorSelector :: Selector
+setPolicies_errorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setPolicies_errorSelector = mkSelector "setPolicies:error:"
 
 -- | @Selector@ for @setPolicy:value:error:@
-setPolicy_value_errorSelector :: Selector
+setPolicy_value_errorSelector :: Selector '[Id NSString, RawId, Id NSError] Bool
 setPolicy_value_errorSelector = mkSelector "setPolicy:value:error:"
 
 -- | @Selector@ for @removePolicy:error:@
-removePolicy_errorSelector :: Selector
+removePolicy_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 removePolicy_errorSelector = mkSelector "removePolicy:error:"
 
 -- | @Selector@ for @addAccountPolicy:toCategory:error:@
-addAccountPolicy_toCategory_errorSelector :: Selector
+addAccountPolicy_toCategory_errorSelector :: Selector '[Id NSDictionary, Id NSString, Id NSError] Bool
 addAccountPolicy_toCategory_errorSelector = mkSelector "addAccountPolicy:toCategory:error:"
 
 -- | @Selector@ for @removeAccountPolicy:fromCategory:error:@
-removeAccountPolicy_fromCategory_errorSelector :: Selector
+removeAccountPolicy_fromCategory_errorSelector :: Selector '[Id NSDictionary, Id NSString, Id NSError] Bool
 removeAccountPolicy_fromCategory_errorSelector = mkSelector "removeAccountPolicy:fromCategory:error:"
 
 -- | @Selector@ for @setAccountPolicies:error:@
-setAccountPolicies_errorSelector :: Selector
+setAccountPolicies_errorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setAccountPolicies_errorSelector = mkSelector "setAccountPolicies:error:"
 
 -- | @Selector@ for @accountPoliciesAndReturnError:@
-accountPoliciesAndReturnErrorSelector :: Selector
+accountPoliciesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSDictionary)
 accountPoliciesAndReturnErrorSelector = mkSelector "accountPoliciesAndReturnError:"
 
 -- | @Selector@ for @authenticationAllowedAndReturnError:@
-authenticationAllowedAndReturnErrorSelector :: Selector
+authenticationAllowedAndReturnErrorSelector :: Selector '[Id NSError] Bool
 authenticationAllowedAndReturnErrorSelector = mkSelector "authenticationAllowedAndReturnError:"
 
 -- | @Selector@ for @passwordChangeAllowed:error:@
-passwordChangeAllowed_errorSelector :: Selector
+passwordChangeAllowed_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 passwordChangeAllowed_errorSelector = mkSelector "passwordChangeAllowed:error:"
 
 -- | @Selector@ for @willPasswordExpire:@
-willPasswordExpireSelector :: Selector
+willPasswordExpireSelector :: Selector '[CULong] Bool
 willPasswordExpireSelector = mkSelector "willPasswordExpire:"
 
 -- | @Selector@ for @willAuthenticationsExpire:@
-willAuthenticationsExpireSelector :: Selector
+willAuthenticationsExpireSelector :: Selector '[CULong] Bool
 willAuthenticationsExpireSelector = mkSelector "willAuthenticationsExpire:"
 
 -- | @Selector@ for @addMemberRecord:error:@
-addMemberRecord_errorSelector :: Selector
+addMemberRecord_errorSelector :: Selector '[Id ODRecord, Id NSError] Bool
 addMemberRecord_errorSelector = mkSelector "addMemberRecord:error:"
 
 -- | @Selector@ for @removeMemberRecord:error:@
-removeMemberRecord_errorSelector :: Selector
+removeMemberRecord_errorSelector :: Selector '[Id ODRecord, Id NSError] Bool
 removeMemberRecord_errorSelector = mkSelector "removeMemberRecord:error:"
 
 -- | @Selector@ for @isMemberRecord:error:@
-isMemberRecord_errorSelector :: Selector
+isMemberRecord_errorSelector :: Selector '[Id ODRecord, Id NSError] Bool
 isMemberRecord_errorSelector = mkSelector "isMemberRecord:error:"
 
 -- | @Selector@ for @recordType@
-recordTypeSelector :: Selector
+recordTypeSelector :: Selector '[] (Id NSString)
 recordTypeSelector = mkSelector "recordType"
 
 -- | @Selector@ for @recordName@
-recordNameSelector :: Selector
+recordNameSelector :: Selector '[] (Id NSString)
 recordNameSelector = mkSelector "recordName"
 
 -- | @Selector@ for @secondsUntilPasswordExpires@
-secondsUntilPasswordExpiresSelector :: Selector
+secondsUntilPasswordExpiresSelector :: Selector '[] CLong
 secondsUntilPasswordExpiresSelector = mkSelector "secondsUntilPasswordExpires"
 
 -- | @Selector@ for @secondsUntilAuthenticationsExpire@
-secondsUntilAuthenticationsExpireSelector :: Selector
+secondsUntilAuthenticationsExpireSelector :: Selector '[] CLong
 secondsUntilAuthenticationsExpireSelector = mkSelector "secondsUntilAuthenticationsExpire"
 

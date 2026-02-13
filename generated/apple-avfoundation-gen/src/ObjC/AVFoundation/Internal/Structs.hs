@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.AVFoundation.Internal.Enums
 
 -- | AVCaptionDimension
@@ -41,6 +43,16 @@ argAVCaptionDimension = mkStorableArg avCaptionDimensionStructType
 retAVCaptionDimension :: RetType AVCaptionDimension
 retAVCaptionDimension = mkStorableRetType avCaptionDimensionStructType
 
+instance ObjCArgument AVCaptionDimension where
+  withObjCArg x k = k (argAVCaptionDimension x)
+
+instance ObjCReturn AVCaptionDimension where
+  type RawReturn AVCaptionDimension = AVCaptionDimension
+  objcRetType = retAVCaptionDimension
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AVCaptionPoint
 --
 -- A two dimensional point made of x and y AVCaptionDimension coordinates  x An AVCaptionDimension holding the x coordinate of the point  y An AVCaptionDimension holding the y coordinate of the point
@@ -68,6 +80,16 @@ argAVCaptionPoint = mkStorableArg avCaptionPointStructType
 retAVCaptionPoint :: RetType AVCaptionPoint
 retAVCaptionPoint = mkStorableRetType avCaptionPointStructType
 
+instance ObjCArgument AVCaptionPoint where
+  withObjCArg x k = k (argAVCaptionPoint x)
+
+instance ObjCReturn AVCaptionPoint where
+  type RawReturn AVCaptionPoint = AVCaptionPoint
+  objcRetType = retAVCaptionPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AVCaptionSize
 --
 -- A two dimensional size made of width and height AVCaptionDimensions  width An AVCaptionDimension holding the width  height An AVCaptionDimension holding the height
@@ -94,3 +116,13 @@ argAVCaptionSize = mkStorableArg avCaptionSizeStructType
 
 retAVCaptionSize :: RetType AVCaptionSize
 retAVCaptionSize = mkStorableRetType avCaptionSizeStructType
+
+instance ObjCArgument AVCaptionSize where
+  withObjCArg x k = k (argAVCaptionSize x)
+
+instance ObjCReturn AVCaptionSize where
+  type RawReturn AVCaptionSize = AVCaptionSize
+  objcRetType = retAVCaptionSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

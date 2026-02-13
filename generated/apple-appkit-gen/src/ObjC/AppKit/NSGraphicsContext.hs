@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,36 +40,38 @@ module ObjC.AppKit.NSGraphicsContext
   , setCompositingOperation
   , colorRenderingIntent
   , setColorRenderingIntent
+  , attributesSelector
+  , cgContextSelector
+  , ciContextSelector
+  , colorRenderingIntentSelector
+  , compositingOperationSelector
+  , currentContextDrawingToScreenSelector
+  , currentContextSelector
+  , drawingToScreenSelector
+  , flippedSelector
+  , flushGraphicsSelector
+  , focusStackSelector
   , graphicsContextWithAttributesSelector
   , graphicsContextWithBitmapImageRepSelector
   , graphicsContextWithCGContext_flippedSelector
-  , currentContextDrawingToScreenSelector
-  , saveGraphicsStateSelector
-  , restoreGraphicsStateSelector
-  , flushGraphicsSelector
-  , setGraphicsStateSelector
-  , focusStackSelector
-  , setFocusStackSelector
   , graphicsContextWithGraphicsPort_flippedSelector
   , graphicsContextWithWindowSelector
-  , currentContextSelector
-  , setCurrentContextSelector
-  , attributesSelector
-  , drawingToScreenSelector
-  , cgContextSelector
-  , flippedSelector
   , graphicsPortSelector
-  , ciContextSelector
-  , shouldAntialiasSelector
-  , setShouldAntialiasSelector
   , imageInterpolationSelector
-  , setImageInterpolationSelector
+  , nsGraphicsContextRestoreGraphicsStateSelector
+  , nsGraphicsContextSaveGraphicsStateSelector
   , patternPhaseSelector
-  , setPatternPhaseSelector
-  , compositingOperationSelector
-  , setCompositingOperationSelector
-  , colorRenderingIntentSelector
+  , restoreGraphicsStateSelector
+  , saveGraphicsStateSelector
   , setColorRenderingIntentSelector
+  , setCompositingOperationSelector
+  , setCurrentContextSelector
+  , setFocusStackSelector
+  , setGraphicsStateSelector
+  , setImageInterpolationSelector
+  , setPatternPhaseSelector
+  , setShouldAntialiasSelector
+  , shouldAntialiasSelector
 
   -- * Enum types
   , NSColorRenderingIntent(NSColorRenderingIntent)
@@ -116,15 +119,11 @@ module ObjC.AppKit.NSGraphicsContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -139,308 +138,312 @@ graphicsContextWithAttributes :: IsNSDictionary attributes => attributes -> IO (
 graphicsContextWithAttributes attributes =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    withObjCPtr attributes $ \raw_attributes ->
-      sendClassMsg cls' (mkSelector "graphicsContextWithAttributes:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphicsContextWithAttributesSelector (toNSDictionary attributes)
 
 -- | @+ graphicsContextWithBitmapImageRep:@
 graphicsContextWithBitmapImageRep :: IsNSBitmapImageRep bitmapRep => bitmapRep -> IO (Id NSGraphicsContext)
 graphicsContextWithBitmapImageRep bitmapRep =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    withObjCPtr bitmapRep $ \raw_bitmapRep ->
-      sendClassMsg cls' (mkSelector "graphicsContextWithBitmapImageRep:") (retPtr retVoid) [argPtr (castPtr raw_bitmapRep :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphicsContextWithBitmapImageRepSelector (toNSBitmapImageRep bitmapRep)
 
 -- | @+ graphicsContextWithCGContext:flipped:@
 graphicsContextWithCGContext_flipped :: Ptr () -> Bool -> IO (Id NSGraphicsContext)
 graphicsContextWithCGContext_flipped graphicsPort initialFlippedState =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "graphicsContextWithCGContext:flipped:") (retPtr retVoid) [argPtr graphicsPort, argCULong (if initialFlippedState then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' graphicsContextWithCGContext_flippedSelector graphicsPort initialFlippedState
 
 -- | @+ currentContextDrawingToScreen@
 currentContextDrawingToScreen :: IO Bool
 currentContextDrawingToScreen  =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "currentContextDrawingToScreen") retCULong []
+    sendClassMessage cls' currentContextDrawingToScreenSelector
 
 -- | @+ saveGraphicsState@
 nsGraphicsContextSaveGraphicsState :: IO ()
 nsGraphicsContextSaveGraphicsState  =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "saveGraphicsState") retVoid []
+    sendClassMessage cls' nsGraphicsContextSaveGraphicsStateSelector
 
 -- | @+ restoreGraphicsState@
 nsGraphicsContextRestoreGraphicsState :: IO ()
 nsGraphicsContextRestoreGraphicsState  =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "restoreGraphicsState") retVoid []
+    sendClassMessage cls' nsGraphicsContextRestoreGraphicsStateSelector
 
 -- | @- saveGraphicsState@
 saveGraphicsState :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO ()
-saveGraphicsState nsGraphicsContext  =
-    sendMsg nsGraphicsContext (mkSelector "saveGraphicsState") retVoid []
+saveGraphicsState nsGraphicsContext =
+  sendMessage nsGraphicsContext saveGraphicsStateSelector
 
 -- | @- restoreGraphicsState@
 restoreGraphicsState :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO ()
-restoreGraphicsState nsGraphicsContext  =
-    sendMsg nsGraphicsContext (mkSelector "restoreGraphicsState") retVoid []
+restoreGraphicsState nsGraphicsContext =
+  sendMessage nsGraphicsContext restoreGraphicsStateSelector
 
 -- | @- flushGraphics@
 flushGraphics :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO ()
-flushGraphics nsGraphicsContext  =
-    sendMsg nsGraphicsContext (mkSelector "flushGraphics") retVoid []
+flushGraphics nsGraphicsContext =
+  sendMessage nsGraphicsContext flushGraphicsSelector
 
 -- | @+ setGraphicsState:@
 setGraphicsState :: CLong -> IO ()
 setGraphicsState gState =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "setGraphicsState:") retVoid [argCLong gState]
+    sendClassMessage cls' setGraphicsStateSelector gState
 
 -- | @- focusStack@
 focusStack :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO RawId
-focusStack nsGraphicsContext  =
-    fmap (RawId . castPtr) $ sendMsg nsGraphicsContext (mkSelector "focusStack") (retPtr retVoid) []
+focusStack nsGraphicsContext =
+  sendMessage nsGraphicsContext focusStackSelector
 
 -- | @- setFocusStack:@
 setFocusStack :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> RawId -> IO ()
-setFocusStack nsGraphicsContext  stack =
-    sendMsg nsGraphicsContext (mkSelector "setFocusStack:") retVoid [argPtr (castPtr (unRawId stack) :: Ptr ())]
+setFocusStack nsGraphicsContext stack =
+  sendMessage nsGraphicsContext setFocusStackSelector stack
 
 -- | @+ graphicsContextWithGraphicsPort:flipped:@
 graphicsContextWithGraphicsPort_flipped :: Ptr () -> Bool -> IO (Id NSGraphicsContext)
 graphicsContextWithGraphicsPort_flipped graphicsPort initialFlippedState =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "graphicsContextWithGraphicsPort:flipped:") (retPtr retVoid) [argPtr graphicsPort, argCULong (if initialFlippedState then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' graphicsContextWithGraphicsPort_flippedSelector graphicsPort initialFlippedState
 
 -- | @+ graphicsContextWithWindow:@
 graphicsContextWithWindow :: IsNSWindow window => window -> IO (Id NSGraphicsContext)
 graphicsContextWithWindow window =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    withObjCPtr window $ \raw_window ->
-      sendClassMsg cls' (mkSelector "graphicsContextWithWindow:") (retPtr retVoid) [argPtr (castPtr raw_window :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphicsContextWithWindowSelector (toNSWindow window)
 
 -- | @+ currentContext@
 currentContext :: IO (Id NSGraphicsContext)
 currentContext  =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    sendClassMsg cls' (mkSelector "currentContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentContextSelector
 
 -- | @+ setCurrentContext:@
 setCurrentContext :: IsNSGraphicsContext value => value -> IO ()
 setCurrentContext value =
   do
     cls' <- getRequiredClass "NSGraphicsContext"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setCurrentContext:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setCurrentContextSelector (toNSGraphicsContext value)
 
 -- | @- attributes@
 attributes :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Id NSDictionary)
-attributes nsGraphicsContext  =
-    sendMsg nsGraphicsContext (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes nsGraphicsContext =
+  sendMessage nsGraphicsContext attributesSelector
 
 -- | @- drawingToScreen@
 drawingToScreen :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO Bool
-drawingToScreen nsGraphicsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGraphicsContext (mkSelector "drawingToScreen") retCULong []
+drawingToScreen nsGraphicsContext =
+  sendMessage nsGraphicsContext drawingToScreenSelector
 
 -- | @- CGContext@
 cgContext :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Ptr ())
-cgContext nsGraphicsContext  =
-    fmap castPtr $ sendMsg nsGraphicsContext (mkSelector "CGContext") (retPtr retVoid) []
+cgContext nsGraphicsContext =
+  sendMessage nsGraphicsContext cgContextSelector
 
 -- | @- flipped@
 flipped :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO Bool
-flipped nsGraphicsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGraphicsContext (mkSelector "flipped") retCULong []
+flipped nsGraphicsContext =
+  sendMessage nsGraphicsContext flippedSelector
 
 -- | @- graphicsPort@
 graphicsPort :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Ptr ())
-graphicsPort nsGraphicsContext  =
-    fmap castPtr $ sendMsg nsGraphicsContext (mkSelector "graphicsPort") (retPtr retVoid) []
+graphicsPort nsGraphicsContext =
+  sendMessage nsGraphicsContext graphicsPortSelector
 
 -- | @- CIContext@
 ciContext :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO (Id CIContext)
-ciContext nsGraphicsContext  =
-    sendMsg nsGraphicsContext (mkSelector "CIContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+ciContext nsGraphicsContext =
+  sendMessage nsGraphicsContext ciContextSelector
 
 -- | @- shouldAntialias@
 shouldAntialias :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO Bool
-shouldAntialias nsGraphicsContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGraphicsContext (mkSelector "shouldAntialias") retCULong []
+shouldAntialias nsGraphicsContext =
+  sendMessage nsGraphicsContext shouldAntialiasSelector
 
 -- | @- setShouldAntialias:@
 setShouldAntialias :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> Bool -> IO ()
-setShouldAntialias nsGraphicsContext  value =
-    sendMsg nsGraphicsContext (mkSelector "setShouldAntialias:") retVoid [argCULong (if value then 1 else 0)]
+setShouldAntialias nsGraphicsContext value =
+  sendMessage nsGraphicsContext setShouldAntialiasSelector value
 
 -- | @- imageInterpolation@
 imageInterpolation :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO NSImageInterpolation
-imageInterpolation nsGraphicsContext  =
-    fmap (coerce :: CULong -> NSImageInterpolation) $ sendMsg nsGraphicsContext (mkSelector "imageInterpolation") retCULong []
+imageInterpolation nsGraphicsContext =
+  sendMessage nsGraphicsContext imageInterpolationSelector
 
 -- | @- setImageInterpolation:@
 setImageInterpolation :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> NSImageInterpolation -> IO ()
-setImageInterpolation nsGraphicsContext  value =
-    sendMsg nsGraphicsContext (mkSelector "setImageInterpolation:") retVoid [argCULong (coerce value)]
+setImageInterpolation nsGraphicsContext value =
+  sendMessage nsGraphicsContext setImageInterpolationSelector value
 
 -- | @- patternPhase@
 patternPhase :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO NSPoint
-patternPhase nsGraphicsContext  =
-    sendMsgStret nsGraphicsContext (mkSelector "patternPhase") retNSPoint []
+patternPhase nsGraphicsContext =
+  sendMessage nsGraphicsContext patternPhaseSelector
 
 -- | @- setPatternPhase:@
 setPatternPhase :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> NSPoint -> IO ()
-setPatternPhase nsGraphicsContext  value =
-    sendMsg nsGraphicsContext (mkSelector "setPatternPhase:") retVoid [argNSPoint value]
+setPatternPhase nsGraphicsContext value =
+  sendMessage nsGraphicsContext setPatternPhaseSelector value
 
 -- | @- compositingOperation@
 compositingOperation :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO NSCompositingOperation
-compositingOperation nsGraphicsContext  =
-    fmap (coerce :: CULong -> NSCompositingOperation) $ sendMsg nsGraphicsContext (mkSelector "compositingOperation") retCULong []
+compositingOperation nsGraphicsContext =
+  sendMessage nsGraphicsContext compositingOperationSelector
 
 -- | @- setCompositingOperation:@
 setCompositingOperation :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> NSCompositingOperation -> IO ()
-setCompositingOperation nsGraphicsContext  value =
-    sendMsg nsGraphicsContext (mkSelector "setCompositingOperation:") retVoid [argCULong (coerce value)]
+setCompositingOperation nsGraphicsContext value =
+  sendMessage nsGraphicsContext setCompositingOperationSelector value
 
 -- | @- colorRenderingIntent@
 colorRenderingIntent :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> IO NSColorRenderingIntent
-colorRenderingIntent nsGraphicsContext  =
-    fmap (coerce :: CLong -> NSColorRenderingIntent) $ sendMsg nsGraphicsContext (mkSelector "colorRenderingIntent") retCLong []
+colorRenderingIntent nsGraphicsContext =
+  sendMessage nsGraphicsContext colorRenderingIntentSelector
 
 -- | @- setColorRenderingIntent:@
 setColorRenderingIntent :: IsNSGraphicsContext nsGraphicsContext => nsGraphicsContext -> NSColorRenderingIntent -> IO ()
-setColorRenderingIntent nsGraphicsContext  value =
-    sendMsg nsGraphicsContext (mkSelector "setColorRenderingIntent:") retVoid [argCLong (coerce value)]
+setColorRenderingIntent nsGraphicsContext value =
+  sendMessage nsGraphicsContext setColorRenderingIntentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @graphicsContextWithAttributes:@
-graphicsContextWithAttributesSelector :: Selector
+graphicsContextWithAttributesSelector :: Selector '[Id NSDictionary] (Id NSGraphicsContext)
 graphicsContextWithAttributesSelector = mkSelector "graphicsContextWithAttributes:"
 
 -- | @Selector@ for @graphicsContextWithBitmapImageRep:@
-graphicsContextWithBitmapImageRepSelector :: Selector
+graphicsContextWithBitmapImageRepSelector :: Selector '[Id NSBitmapImageRep] (Id NSGraphicsContext)
 graphicsContextWithBitmapImageRepSelector = mkSelector "graphicsContextWithBitmapImageRep:"
 
 -- | @Selector@ for @graphicsContextWithCGContext:flipped:@
-graphicsContextWithCGContext_flippedSelector :: Selector
+graphicsContextWithCGContext_flippedSelector :: Selector '[Ptr (), Bool] (Id NSGraphicsContext)
 graphicsContextWithCGContext_flippedSelector = mkSelector "graphicsContextWithCGContext:flipped:"
 
 -- | @Selector@ for @currentContextDrawingToScreen@
-currentContextDrawingToScreenSelector :: Selector
+currentContextDrawingToScreenSelector :: Selector '[] Bool
 currentContextDrawingToScreenSelector = mkSelector "currentContextDrawingToScreen"
 
 -- | @Selector@ for @saveGraphicsState@
-saveGraphicsStateSelector :: Selector
+nsGraphicsContextSaveGraphicsStateSelector :: Selector '[] ()
+nsGraphicsContextSaveGraphicsStateSelector = mkSelector "saveGraphicsState"
+
+-- | @Selector@ for @restoreGraphicsState@
+nsGraphicsContextRestoreGraphicsStateSelector :: Selector '[] ()
+nsGraphicsContextRestoreGraphicsStateSelector = mkSelector "restoreGraphicsState"
+
+-- | @Selector@ for @saveGraphicsState@
+saveGraphicsStateSelector :: Selector '[] ()
 saveGraphicsStateSelector = mkSelector "saveGraphicsState"
 
 -- | @Selector@ for @restoreGraphicsState@
-restoreGraphicsStateSelector :: Selector
+restoreGraphicsStateSelector :: Selector '[] ()
 restoreGraphicsStateSelector = mkSelector "restoreGraphicsState"
 
 -- | @Selector@ for @flushGraphics@
-flushGraphicsSelector :: Selector
+flushGraphicsSelector :: Selector '[] ()
 flushGraphicsSelector = mkSelector "flushGraphics"
 
 -- | @Selector@ for @setGraphicsState:@
-setGraphicsStateSelector :: Selector
+setGraphicsStateSelector :: Selector '[CLong] ()
 setGraphicsStateSelector = mkSelector "setGraphicsState:"
 
 -- | @Selector@ for @focusStack@
-focusStackSelector :: Selector
+focusStackSelector :: Selector '[] RawId
 focusStackSelector = mkSelector "focusStack"
 
 -- | @Selector@ for @setFocusStack:@
-setFocusStackSelector :: Selector
+setFocusStackSelector :: Selector '[RawId] ()
 setFocusStackSelector = mkSelector "setFocusStack:"
 
 -- | @Selector@ for @graphicsContextWithGraphicsPort:flipped:@
-graphicsContextWithGraphicsPort_flippedSelector :: Selector
+graphicsContextWithGraphicsPort_flippedSelector :: Selector '[Ptr (), Bool] (Id NSGraphicsContext)
 graphicsContextWithGraphicsPort_flippedSelector = mkSelector "graphicsContextWithGraphicsPort:flipped:"
 
 -- | @Selector@ for @graphicsContextWithWindow:@
-graphicsContextWithWindowSelector :: Selector
+graphicsContextWithWindowSelector :: Selector '[Id NSWindow] (Id NSGraphicsContext)
 graphicsContextWithWindowSelector = mkSelector "graphicsContextWithWindow:"
 
 -- | @Selector@ for @currentContext@
-currentContextSelector :: Selector
+currentContextSelector :: Selector '[] (Id NSGraphicsContext)
 currentContextSelector = mkSelector "currentContext"
 
 -- | @Selector@ for @setCurrentContext:@
-setCurrentContextSelector :: Selector
+setCurrentContextSelector :: Selector '[Id NSGraphicsContext] ()
 setCurrentContextSelector = mkSelector "setCurrentContext:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @drawingToScreen@
-drawingToScreenSelector :: Selector
+drawingToScreenSelector :: Selector '[] Bool
 drawingToScreenSelector = mkSelector "drawingToScreen"
 
 -- | @Selector@ for @CGContext@
-cgContextSelector :: Selector
+cgContextSelector :: Selector '[] (Ptr ())
 cgContextSelector = mkSelector "CGContext"
 
 -- | @Selector@ for @flipped@
-flippedSelector :: Selector
+flippedSelector :: Selector '[] Bool
 flippedSelector = mkSelector "flipped"
 
 -- | @Selector@ for @graphicsPort@
-graphicsPortSelector :: Selector
+graphicsPortSelector :: Selector '[] (Ptr ())
 graphicsPortSelector = mkSelector "graphicsPort"
 
 -- | @Selector@ for @CIContext@
-ciContextSelector :: Selector
+ciContextSelector :: Selector '[] (Id CIContext)
 ciContextSelector = mkSelector "CIContext"
 
 -- | @Selector@ for @shouldAntialias@
-shouldAntialiasSelector :: Selector
+shouldAntialiasSelector :: Selector '[] Bool
 shouldAntialiasSelector = mkSelector "shouldAntialias"
 
 -- | @Selector@ for @setShouldAntialias:@
-setShouldAntialiasSelector :: Selector
+setShouldAntialiasSelector :: Selector '[Bool] ()
 setShouldAntialiasSelector = mkSelector "setShouldAntialias:"
 
 -- | @Selector@ for @imageInterpolation@
-imageInterpolationSelector :: Selector
+imageInterpolationSelector :: Selector '[] NSImageInterpolation
 imageInterpolationSelector = mkSelector "imageInterpolation"
 
 -- | @Selector@ for @setImageInterpolation:@
-setImageInterpolationSelector :: Selector
+setImageInterpolationSelector :: Selector '[NSImageInterpolation] ()
 setImageInterpolationSelector = mkSelector "setImageInterpolation:"
 
 -- | @Selector@ for @patternPhase@
-patternPhaseSelector :: Selector
+patternPhaseSelector :: Selector '[] NSPoint
 patternPhaseSelector = mkSelector "patternPhase"
 
 -- | @Selector@ for @setPatternPhase:@
-setPatternPhaseSelector :: Selector
+setPatternPhaseSelector :: Selector '[NSPoint] ()
 setPatternPhaseSelector = mkSelector "setPatternPhase:"
 
 -- | @Selector@ for @compositingOperation@
-compositingOperationSelector :: Selector
+compositingOperationSelector :: Selector '[] NSCompositingOperation
 compositingOperationSelector = mkSelector "compositingOperation"
 
 -- | @Selector@ for @setCompositingOperation:@
-setCompositingOperationSelector :: Selector
+setCompositingOperationSelector :: Selector '[NSCompositingOperation] ()
 setCompositingOperationSelector = mkSelector "setCompositingOperation:"
 
 -- | @Selector@ for @colorRenderingIntent@
-colorRenderingIntentSelector :: Selector
+colorRenderingIntentSelector :: Selector '[] NSColorRenderingIntent
 colorRenderingIntentSelector = mkSelector "colorRenderingIntent"
 
 -- | @Selector@ for @setColorRenderingIntent:@
-setColorRenderingIntentSelector :: Selector
+setColorRenderingIntentSelector :: Selector '[NSColorRenderingIntent] ()
 setColorRenderingIntentSelector = mkSelector "setColorRenderingIntent:"
 

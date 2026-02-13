@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.UserNotifications.UNNotificationResponse
   , init_
   , notification
   , actionIdentifier
+  , actionIdentifierSelector
   , initSelector
   , notificationSelector
-  , actionIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsUNNotificationResponse unNotificationResponse => unNotificationResponse -> IO (Id UNNotificationResponse)
-init_ unNotificationResponse  =
-    sendMsg unNotificationResponse (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationResponse =
+  sendOwnedMessage unNotificationResponse initSelector
 
 -- | @- notification@
 notification :: IsUNNotificationResponse unNotificationResponse => unNotificationResponse -> IO (Id UNNotification)
-notification unNotificationResponse  =
-    sendMsg unNotificationResponse (mkSelector "notification") (retPtr retVoid) [] >>= retainedObject . castPtr
+notification unNotificationResponse =
+  sendMessage unNotificationResponse notificationSelector
 
 -- | @- actionIdentifier@
 actionIdentifier :: IsUNNotificationResponse unNotificationResponse => unNotificationResponse -> IO (Id NSString)
-actionIdentifier unNotificationResponse  =
-    sendMsg unNotificationResponse (mkSelector "actionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionIdentifier unNotificationResponse =
+  sendMessage unNotificationResponse actionIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationResponse)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @notification@
-notificationSelector :: Selector
+notificationSelector :: Selector '[] (Id UNNotification)
 notificationSelector = mkSelector "notification"
 
 -- | @Selector@ for @actionIdentifier@
-actionIdentifierSelector :: Selector
+actionIdentifierSelector :: Selector '[] (Id NSString)
 actionIdentifierSelector = mkSelector "actionIdentifier"
 

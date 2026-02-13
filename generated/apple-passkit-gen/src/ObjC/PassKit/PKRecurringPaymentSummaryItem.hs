@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.PassKit.PKRecurringPaymentSummaryItem
   , setIntervalCount
   , endDate
   , setEndDate
-  , startDateSelector
-  , setStartDateSelector
-  , intervalUnitSelector
-  , setIntervalUnitSelector
-  , intervalCountSelector
-  , setIntervalCountSelector
   , endDateSelector
+  , intervalCountSelector
+  , intervalUnitSelector
   , setEndDateSelector
+  , setIntervalCountSelector
+  , setIntervalUnitSelector
+  , setStartDateSelector
+  , startDateSelector
 
   -- * Enum types
   , NSCalendarUnit(NSCalendarUnit)
@@ -64,15 +65,11 @@ module ObjC.PassKit.PKRecurringPaymentSummaryItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,79 +79,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startDate@
 startDate :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> IO (Id NSDate)
-startDate pkRecurringPaymentSummaryItem  =
-    sendMsg pkRecurringPaymentSummaryItem (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate pkRecurringPaymentSummaryItem =
+  sendMessage pkRecurringPaymentSummaryItem startDateSelector
 
 -- | @- setStartDate:@
 setStartDate :: (IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem, IsNSDate value) => pkRecurringPaymentSummaryItem -> value -> IO ()
-setStartDate pkRecurringPaymentSummaryItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkRecurringPaymentSummaryItem (mkSelector "setStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartDate pkRecurringPaymentSummaryItem value =
+  sendMessage pkRecurringPaymentSummaryItem setStartDateSelector (toNSDate value)
 
 -- | @- intervalUnit@
 intervalUnit :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> IO NSCalendarUnit
-intervalUnit pkRecurringPaymentSummaryItem  =
-    fmap (coerce :: CULong -> NSCalendarUnit) $ sendMsg pkRecurringPaymentSummaryItem (mkSelector "intervalUnit") retCULong []
+intervalUnit pkRecurringPaymentSummaryItem =
+  sendMessage pkRecurringPaymentSummaryItem intervalUnitSelector
 
 -- | @- setIntervalUnit:@
 setIntervalUnit :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> NSCalendarUnit -> IO ()
-setIntervalUnit pkRecurringPaymentSummaryItem  value =
-    sendMsg pkRecurringPaymentSummaryItem (mkSelector "setIntervalUnit:") retVoid [argCULong (coerce value)]
+setIntervalUnit pkRecurringPaymentSummaryItem value =
+  sendMessage pkRecurringPaymentSummaryItem setIntervalUnitSelector value
 
 -- | @- intervalCount@
 intervalCount :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> IO CLong
-intervalCount pkRecurringPaymentSummaryItem  =
-    sendMsg pkRecurringPaymentSummaryItem (mkSelector "intervalCount") retCLong []
+intervalCount pkRecurringPaymentSummaryItem =
+  sendMessage pkRecurringPaymentSummaryItem intervalCountSelector
 
 -- | @- setIntervalCount:@
 setIntervalCount :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> CLong -> IO ()
-setIntervalCount pkRecurringPaymentSummaryItem  value =
-    sendMsg pkRecurringPaymentSummaryItem (mkSelector "setIntervalCount:") retVoid [argCLong value]
+setIntervalCount pkRecurringPaymentSummaryItem value =
+  sendMessage pkRecurringPaymentSummaryItem setIntervalCountSelector value
 
 -- | @- endDate@
 endDate :: IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem => pkRecurringPaymentSummaryItem -> IO (Id NSDate)
-endDate pkRecurringPaymentSummaryItem  =
-    sendMsg pkRecurringPaymentSummaryItem (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate pkRecurringPaymentSummaryItem =
+  sendMessage pkRecurringPaymentSummaryItem endDateSelector
 
 -- | @- setEndDate:@
 setEndDate :: (IsPKRecurringPaymentSummaryItem pkRecurringPaymentSummaryItem, IsNSDate value) => pkRecurringPaymentSummaryItem -> value -> IO ()
-setEndDate pkRecurringPaymentSummaryItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkRecurringPaymentSummaryItem (mkSelector "setEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndDate pkRecurringPaymentSummaryItem value =
+  sendMessage pkRecurringPaymentSummaryItem setEndDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @setStartDate:@
-setStartDateSelector :: Selector
+setStartDateSelector :: Selector '[Id NSDate] ()
 setStartDateSelector = mkSelector "setStartDate:"
 
 -- | @Selector@ for @intervalUnit@
-intervalUnitSelector :: Selector
+intervalUnitSelector :: Selector '[] NSCalendarUnit
 intervalUnitSelector = mkSelector "intervalUnit"
 
 -- | @Selector@ for @setIntervalUnit:@
-setIntervalUnitSelector :: Selector
+setIntervalUnitSelector :: Selector '[NSCalendarUnit] ()
 setIntervalUnitSelector = mkSelector "setIntervalUnit:"
 
 -- | @Selector@ for @intervalCount@
-intervalCountSelector :: Selector
+intervalCountSelector :: Selector '[] CLong
 intervalCountSelector = mkSelector "intervalCount"
 
 -- | @Selector@ for @setIntervalCount:@
-setIntervalCountSelector :: Selector
+setIntervalCountSelector :: Selector '[CLong] ()
 setIntervalCountSelector = mkSelector "setIntervalCount:"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @setEndDate:@
-setEndDateSelector :: Selector
+setEndDateSelector :: Selector '[Id NSDate] ()
 setEndDateSelector = mkSelector "setEndDate:"
 

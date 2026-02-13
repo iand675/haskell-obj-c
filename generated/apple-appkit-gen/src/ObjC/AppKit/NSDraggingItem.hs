@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AppKit.NSDraggingItem
   , imageComponentsProvider
   , setImageComponentsProvider
   , imageComponents
-  , initWithPasteboardWriterSelector
-  , initSelector
-  , setDraggingFrame_contentsSelector
-  , itemSelector
   , draggingFrameSelector
-  , setDraggingFrameSelector
   , imageComponentsProviderSelector
-  , setImageComponentsProviderSelector
   , imageComponentsSelector
+  , initSelector
+  , initWithPasteboardWriterSelector
+  , itemSelector
+  , setDraggingFrameSelector
+  , setDraggingFrame_contentsSelector
+  , setImageComponentsProviderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,87 +43,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPasteboardWriter:@
 initWithPasteboardWriter :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> RawId -> IO (Id NSDraggingItem)
-initWithPasteboardWriter nsDraggingItem  pasteboardWriter =
-    sendMsg nsDraggingItem (mkSelector "initWithPasteboardWriter:") (retPtr retVoid) [argPtr (castPtr (unRawId pasteboardWriter) :: Ptr ())] >>= ownedObject . castPtr
+initWithPasteboardWriter nsDraggingItem pasteboardWriter =
+  sendOwnedMessage nsDraggingItem initWithPasteboardWriterSelector pasteboardWriter
 
 -- | @- init@
 init_ :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> IO (Id NSDraggingItem)
-init_ nsDraggingItem  =
-    sendMsg nsDraggingItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsDraggingItem =
+  sendOwnedMessage nsDraggingItem initSelector
 
 -- | @- setDraggingFrame:contents:@
 setDraggingFrame_contents :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> NSRect -> RawId -> IO ()
-setDraggingFrame_contents nsDraggingItem  frame contents =
-    sendMsg nsDraggingItem (mkSelector "setDraggingFrame:contents:") retVoid [argNSRect frame, argPtr (castPtr (unRawId contents) :: Ptr ())]
+setDraggingFrame_contents nsDraggingItem frame contents =
+  sendMessage nsDraggingItem setDraggingFrame_contentsSelector frame contents
 
 -- | @- item@
 item :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> IO RawId
-item nsDraggingItem  =
-    fmap (RawId . castPtr) $ sendMsg nsDraggingItem (mkSelector "item") (retPtr retVoid) []
+item nsDraggingItem =
+  sendMessage nsDraggingItem itemSelector
 
 -- | @- draggingFrame@
 draggingFrame :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> IO NSRect
-draggingFrame nsDraggingItem  =
-    sendMsgStret nsDraggingItem (mkSelector "draggingFrame") retNSRect []
+draggingFrame nsDraggingItem =
+  sendMessage nsDraggingItem draggingFrameSelector
 
 -- | @- setDraggingFrame:@
 setDraggingFrame :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> NSRect -> IO ()
-setDraggingFrame nsDraggingItem  value =
-    sendMsg nsDraggingItem (mkSelector "setDraggingFrame:") retVoid [argNSRect value]
+setDraggingFrame nsDraggingItem value =
+  sendMessage nsDraggingItem setDraggingFrameSelector value
 
 -- | @- imageComponentsProvider@
 imageComponentsProvider :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> IO (Id NSArray)
-imageComponentsProvider nsDraggingItem  =
-    sendMsg nsDraggingItem (mkSelector "imageComponentsProvider") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageComponentsProvider nsDraggingItem =
+  sendMessage nsDraggingItem imageComponentsProviderSelector
 
 -- | @- setImageComponentsProvider:@
 setImageComponentsProvider :: (IsNSDraggingItem nsDraggingItem, IsNSArray value) => nsDraggingItem -> value -> IO ()
-setImageComponentsProvider nsDraggingItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDraggingItem (mkSelector "setImageComponentsProvider:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageComponentsProvider nsDraggingItem value =
+  sendMessage nsDraggingItem setImageComponentsProviderSelector (toNSArray value)
 
 -- | @- imageComponents@
 imageComponents :: IsNSDraggingItem nsDraggingItem => nsDraggingItem -> IO (Id NSArray)
-imageComponents nsDraggingItem  =
-    sendMsg nsDraggingItem (mkSelector "imageComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageComponents nsDraggingItem =
+  sendMessage nsDraggingItem imageComponentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPasteboardWriter:@
-initWithPasteboardWriterSelector :: Selector
+initWithPasteboardWriterSelector :: Selector '[RawId] (Id NSDraggingItem)
 initWithPasteboardWriterSelector = mkSelector "initWithPasteboardWriter:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSDraggingItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setDraggingFrame:contents:@
-setDraggingFrame_contentsSelector :: Selector
+setDraggingFrame_contentsSelector :: Selector '[NSRect, RawId] ()
 setDraggingFrame_contentsSelector = mkSelector "setDraggingFrame:contents:"
 
 -- | @Selector@ for @item@
-itemSelector :: Selector
+itemSelector :: Selector '[] RawId
 itemSelector = mkSelector "item"
 
 -- | @Selector@ for @draggingFrame@
-draggingFrameSelector :: Selector
+draggingFrameSelector :: Selector '[] NSRect
 draggingFrameSelector = mkSelector "draggingFrame"
 
 -- | @Selector@ for @setDraggingFrame:@
-setDraggingFrameSelector :: Selector
+setDraggingFrameSelector :: Selector '[NSRect] ()
 setDraggingFrameSelector = mkSelector "setDraggingFrame:"
 
 -- | @Selector@ for @imageComponentsProvider@
-imageComponentsProviderSelector :: Selector
+imageComponentsProviderSelector :: Selector '[] (Id NSArray)
 imageComponentsProviderSelector = mkSelector "imageComponentsProvider"
 
 -- | @Selector@ for @setImageComponentsProvider:@
-setImageComponentsProviderSelector :: Selector
+setImageComponentsProviderSelector :: Selector '[Id NSArray] ()
 setImageComponentsProviderSelector = mkSelector "setImageComponentsProvider:"
 
 -- | @Selector@ for @imageComponents@
-imageComponentsSelector :: Selector
+imageComponentsSelector :: Selector '[] (Id NSArray)
 imageComponentsSelector = mkSelector "imageComponents"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.ExecutionPolicy.EPDeveloperTool
   , init_
   , requestDeveloperToolAccessWithCompletionHandler
   , authorizationStatus
+  , authorizationStatusSelector
   , initSelector
   , requestDeveloperToolAccessWithCompletionHandlerSelector
-  , authorizationStatusSelector
 
   -- * Enum types
   , EPDeveloperToolStatus(EPDeveloperToolStatus)
@@ -23,15 +24,11 @@ module ObjC.ExecutionPolicy.EPDeveloperTool
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsEPDeveloperTool epDeveloperTool => epDeveloperTool -> IO (Id EPDeveloperTool)
-init_ epDeveloperTool  =
-    sendMsg epDeveloperTool (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ epDeveloperTool =
+  sendOwnedMessage epDeveloperTool initSelector
 
 -- | Checks whether developer tool privileges are already available and if not  populates an entry in Settings for user approval.
 --
@@ -58,29 +55,29 @@ init_ epDeveloperTool  =
 --
 -- ObjC selector: @- requestDeveloperToolAccessWithCompletionHandler:@
 requestDeveloperToolAccessWithCompletionHandler :: IsEPDeveloperTool epDeveloperTool => epDeveloperTool -> Ptr () -> IO ()
-requestDeveloperToolAccessWithCompletionHandler epDeveloperTool  handler =
-    sendMsg epDeveloperTool (mkSelector "requestDeveloperToolAccessWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+requestDeveloperToolAccessWithCompletionHandler epDeveloperTool handler =
+  sendMessage epDeveloperTool requestDeveloperToolAccessWithCompletionHandlerSelector handler
 
 -- | The current authorization status of the current process. - Returns: An EPDeveloperToolStatus indicating whether the current process has developer tool privileges.
 --
 -- ObjC selector: @- authorizationStatus@
 authorizationStatus :: IsEPDeveloperTool epDeveloperTool => epDeveloperTool -> IO EPDeveloperToolStatus
-authorizationStatus epDeveloperTool  =
-    fmap (coerce :: CLong -> EPDeveloperToolStatus) $ sendMsg epDeveloperTool (mkSelector "authorizationStatus") retCLong []
+authorizationStatus epDeveloperTool =
+  sendMessage epDeveloperTool authorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id EPDeveloperTool)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @requestDeveloperToolAccessWithCompletionHandler:@
-requestDeveloperToolAccessWithCompletionHandlerSelector :: Selector
+requestDeveloperToolAccessWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestDeveloperToolAccessWithCompletionHandlerSelector = mkSelector "requestDeveloperToolAccessWithCompletionHandler:"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] EPDeveloperToolStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 

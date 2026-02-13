@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,66 +68,66 @@ module ObjC.AppKit.NSTextField
   , setAutomaticTextCompletionEnabled
   , allowsCharacterPickerTouchBarItem
   , setAllowsCharacterPickerTouchBarItem
+  , acceptsFirstResponderSelector
+  , allowsCharacterPickerTouchBarItemSelector
+  , allowsDefaultTighteningForTruncationSelector
+  , allowsEditingTextAttributesSelector
+  , allowsWritingToolsAffordanceSelector
+  , allowsWritingToolsSelector
+  , automaticTextCompletionEnabledSelector
+  , backgroundColorSelector
+  , bezelStyleSelector
+  , bezeledSelector
+  , borderedSelector
+  , delegateSelector
+  , drawsBackgroundSelector
+  , editableSelector
+  , importsGraphicsSelector
+  , labelWithAttributedStringSelector
+  , labelWithStringSelector
+  , lineBreakStrategySelector
+  , maximumNumberOfLinesSelector
+  , placeholderAttributedStringSelector
+  , placeholderAttributedStringsSelector
+  , placeholderStringSelector
+  , placeholderStringsSelector
+  , preferredMaxLayoutWidthSelector
+  , resolvesNaturalAlignmentWithBaseWritingDirectionSelector
   , selectTextSelector
+  , selectableSelector
+  , setAllowsCharacterPickerTouchBarItemSelector
+  , setAllowsDefaultTighteningForTruncationSelector
+  , setAllowsEditingTextAttributesSelector
+  , setAllowsWritingToolsAffordanceSelector
+  , setAllowsWritingToolsSelector
+  , setAutomaticTextCompletionEnabledSelector
+  , setBackgroundColorSelector
+  , setBezelStyleSelector
+  , setBezeledSelector
+  , setBorderedSelector
+  , setDelegateSelector
+  , setDrawsBackgroundSelector
+  , setEditableSelector
+  , setImportsGraphicsSelector
+  , setLineBreakStrategySelector
+  , setMaximumNumberOfLinesSelector
+  , setPlaceholderAttributedStringSelector
+  , setPlaceholderAttributedStringsSelector
+  , setPlaceholderStringSelector
+  , setPlaceholderStringsSelector
+  , setPreferredMaxLayoutWidthSelector
+  , setResolvesNaturalAlignmentWithBaseWritingDirectionSelector
+  , setSelectableSelector
+  , setTextColorSelector
+  , setTitleWithMnemonicSelector
+  , textColorSelector
+  , textDidBeginEditingSelector
+  , textDidChangeSelector
+  , textDidEndEditingSelector
+  , textFieldWithStringSelector
   , textShouldBeginEditingSelector
   , textShouldEndEditingSelector
-  , textDidBeginEditingSelector
-  , textDidEndEditingSelector
-  , textDidChangeSelector
-  , setTitleWithMnemonicSelector
-  , labelWithStringSelector
   , wrappingLabelWithStringSelector
-  , labelWithAttributedStringSelector
-  , textFieldWithStringSelector
-  , placeholderStringSelector
-  , setPlaceholderStringSelector
-  , placeholderAttributedStringSelector
-  , setPlaceholderAttributedStringSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , textColorSelector
-  , setTextColorSelector
-  , borderedSelector
-  , setBorderedSelector
-  , bezeledSelector
-  , setBezeledSelector
-  , editableSelector
-  , setEditableSelector
-  , selectableSelector
-  , setSelectableSelector
-  , delegateSelector
-  , setDelegateSelector
-  , acceptsFirstResponderSelector
-  , bezelStyleSelector
-  , setBezelStyleSelector
-  , preferredMaxLayoutWidthSelector
-  , setPreferredMaxLayoutWidthSelector
-  , maximumNumberOfLinesSelector
-  , setMaximumNumberOfLinesSelector
-  , allowsDefaultTighteningForTruncationSelector
-  , setAllowsDefaultTighteningForTruncationSelector
-  , lineBreakStrategySelector
-  , setLineBreakStrategySelector
-  , allowsWritingToolsSelector
-  , setAllowsWritingToolsSelector
-  , allowsWritingToolsAffordanceSelector
-  , setAllowsWritingToolsAffordanceSelector
-  , placeholderStringsSelector
-  , setPlaceholderStringsSelector
-  , placeholderAttributedStringsSelector
-  , setPlaceholderAttributedStringsSelector
-  , resolvesNaturalAlignmentWithBaseWritingDirectionSelector
-  , setResolvesNaturalAlignmentWithBaseWritingDirectionSelector
-  , allowsEditingTextAttributesSelector
-  , setAllowsEditingTextAttributesSelector
-  , importsGraphicsSelector
-  , setImportsGraphicsSelector
-  , automaticTextCompletionEnabledSelector
-  , setAutomaticTextCompletionEnabledSelector
-  , allowsCharacterPickerTouchBarItemSelector
-  , setAllowsCharacterPickerTouchBarItemSelector
 
   -- * Enum types
   , NSLineBreakStrategy(NSLineBreakStrategy)
@@ -140,15 +141,11 @@ module ObjC.AppKit.NSTextField
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -158,44 +155,38 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selectText:@
 selectText :: IsNSTextField nsTextField => nsTextField -> RawId -> IO ()
-selectText nsTextField  sender =
-    sendMsg nsTextField (mkSelector "selectText:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectText nsTextField sender =
+  sendMessage nsTextField selectTextSelector sender
 
 -- | @- textShouldBeginEditing:@
 textShouldBeginEditing :: (IsNSTextField nsTextField, IsNSText textObject) => nsTextField -> textObject -> IO Bool
-textShouldBeginEditing nsTextField  textObject =
-  withObjCPtr textObject $ \raw_textObject ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "textShouldBeginEditing:") retCULong [argPtr (castPtr raw_textObject :: Ptr ())]
+textShouldBeginEditing nsTextField textObject =
+  sendMessage nsTextField textShouldBeginEditingSelector (toNSText textObject)
 
 -- | @- textShouldEndEditing:@
 textShouldEndEditing :: (IsNSTextField nsTextField, IsNSText textObject) => nsTextField -> textObject -> IO Bool
-textShouldEndEditing nsTextField  textObject =
-  withObjCPtr textObject $ \raw_textObject ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "textShouldEndEditing:") retCULong [argPtr (castPtr raw_textObject :: Ptr ())]
+textShouldEndEditing nsTextField textObject =
+  sendMessage nsTextField textShouldEndEditingSelector (toNSText textObject)
 
 -- | @- textDidBeginEditing:@
 textDidBeginEditing :: (IsNSTextField nsTextField, IsNSNotification notification) => nsTextField -> notification -> IO ()
-textDidBeginEditing nsTextField  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsTextField (mkSelector "textDidBeginEditing:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+textDidBeginEditing nsTextField notification =
+  sendMessage nsTextField textDidBeginEditingSelector (toNSNotification notification)
 
 -- | @- textDidEndEditing:@
 textDidEndEditing :: (IsNSTextField nsTextField, IsNSNotification notification) => nsTextField -> notification -> IO ()
-textDidEndEditing nsTextField  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsTextField (mkSelector "textDidEndEditing:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+textDidEndEditing nsTextField notification =
+  sendMessage nsTextField textDidEndEditingSelector (toNSNotification notification)
 
 -- | @- textDidChange:@
 textDidChange :: (IsNSTextField nsTextField, IsNSNotification notification) => nsTextField -> notification -> IO ()
-textDidChange nsTextField  notification =
-  withObjCPtr notification $ \raw_notification ->
-      sendMsg nsTextField (mkSelector "textDidChange:") retVoid [argPtr (castPtr raw_notification :: Ptr ())]
+textDidChange nsTextField notification =
+  sendMessage nsTextField textDidChangeSelector (toNSNotification notification)
 
 -- | @- setTitleWithMnemonic:@
 setTitleWithMnemonic :: (IsNSTextField nsTextField, IsNSString stringWithAmpersand) => nsTextField -> stringWithAmpersand -> IO ()
-setTitleWithMnemonic nsTextField  stringWithAmpersand =
-  withObjCPtr stringWithAmpersand $ \raw_stringWithAmpersand ->
-      sendMsg nsTextField (mkSelector "setTitleWithMnemonic:") retVoid [argPtr (castPtr raw_stringWithAmpersand :: Ptr ())]
+setTitleWithMnemonic nsTextField stringWithAmpersand =
+  sendMessage nsTextField setTitleWithMnemonicSelector (toNSString stringWithAmpersand)
 
 -- | Creates a non-wrapping, non-editable, non-selectable text field that displays text in the default system font.
 --
@@ -208,8 +199,7 @@ labelWithString :: IsNSString stringValue => stringValue -> IO (Id NSTextField)
 labelWithString stringValue =
   do
     cls' <- getRequiredClass "NSTextField"
-    withObjCPtr stringValue $ \raw_stringValue ->
-      sendClassMsg cls' (mkSelector "labelWithString:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' labelWithStringSelector (toNSString stringValue)
 
 -- | Creates a wrapping, non-editable, selectable text field that displays text in the default system font.
 --
@@ -222,8 +212,7 @@ wrappingLabelWithString :: IsNSString stringValue => stringValue -> IO (Id NSTex
 wrappingLabelWithString stringValue =
   do
     cls' <- getRequiredClass "NSTextField"
-    withObjCPtr stringValue $ \raw_stringValue ->
-      sendClassMsg cls' (mkSelector "wrappingLabelWithString:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' wrappingLabelWithStringSelector (toNSString stringValue)
 
 -- | Creates a non-editable, non-selectable text field that displays attributed text. The line break mode of this field is determined by the attributed string's NSParagraphStyle attribute.
 --
@@ -236,8 +225,7 @@ labelWithAttributedString :: IsNSAttributedString attributedStringValue => attri
 labelWithAttributedString attributedStringValue =
   do
     cls' <- getRequiredClass "NSTextField"
-    withObjCPtr attributedStringValue $ \raw_attributedStringValue ->
-      sendClassMsg cls' (mkSelector "labelWithAttributedString:") (retPtr retVoid) [argPtr (castPtr raw_attributedStringValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' labelWithAttributedStringSelector (toNSAttributedString attributedStringValue)
 
 -- | Creates a non-wrapping editable text field.
 --
@@ -250,209 +238,202 @@ textFieldWithString :: IsNSString stringValue => stringValue -> IO (Id NSTextFie
 textFieldWithString stringValue =
   do
     cls' <- getRequiredClass "NSTextField"
-    withObjCPtr stringValue $ \raw_stringValue ->
-      sendClassMsg cls' (mkSelector "textFieldWithString:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textFieldWithStringSelector (toNSString stringValue)
 
 -- | @- placeholderString@
 placeholderString :: IsNSTextField nsTextField => nsTextField -> IO (Id NSString)
-placeholderString nsTextField  =
-    sendMsg nsTextField (mkSelector "placeholderString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderString nsTextField =
+  sendMessage nsTextField placeholderStringSelector
 
 -- | @- setPlaceholderString:@
 setPlaceholderString :: (IsNSTextField nsTextField, IsNSString value) => nsTextField -> value -> IO ()
-setPlaceholderString nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setPlaceholderString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderString nsTextField value =
+  sendMessage nsTextField setPlaceholderStringSelector (toNSString value)
 
 -- | @- placeholderAttributedString@
 placeholderAttributedString :: IsNSTextField nsTextField => nsTextField -> IO (Id NSAttributedString)
-placeholderAttributedString nsTextField  =
-    sendMsg nsTextField (mkSelector "placeholderAttributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderAttributedString nsTextField =
+  sendMessage nsTextField placeholderAttributedStringSelector
 
 -- | @- setPlaceholderAttributedString:@
 setPlaceholderAttributedString :: (IsNSTextField nsTextField, IsNSAttributedString value) => nsTextField -> value -> IO ()
-setPlaceholderAttributedString nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setPlaceholderAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderAttributedString nsTextField value =
+  sendMessage nsTextField setPlaceholderAttributedStringSelector (toNSAttributedString value)
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSTextField nsTextField => nsTextField -> IO (Id NSColor)
-backgroundColor nsTextField  =
-    sendMsg nsTextField (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsTextField =
+  sendMessage nsTextField backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSTextField nsTextField, IsNSColor value) => nsTextField -> value -> IO ()
-setBackgroundColor nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsTextField value =
+  sendMessage nsTextField setBackgroundColorSelector (toNSColor value)
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSTextField nsTextField => nsTextField -> IO Bool
-drawsBackground nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "drawsBackground") retCULong []
+drawsBackground nsTextField =
+  sendMessage nsTextField drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setDrawsBackground nsTextField  value =
-    sendMsg nsTextField (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsTextField value =
+  sendMessage nsTextField setDrawsBackgroundSelector value
 
 -- | @- textColor@
 textColor :: IsNSTextField nsTextField => nsTextField -> IO (Id NSColor)
-textColor nsTextField  =
-    sendMsg nsTextField (mkSelector "textColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+textColor nsTextField =
+  sendMessage nsTextField textColorSelector
 
 -- | @- setTextColor:@
 setTextColor :: (IsNSTextField nsTextField, IsNSColor value) => nsTextField -> value -> IO ()
-setTextColor nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setTextColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextColor nsTextField value =
+  sendMessage nsTextField setTextColorSelector (toNSColor value)
 
 -- | @- bordered@
 bordered :: IsNSTextField nsTextField => nsTextField -> IO Bool
-bordered nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "bordered") retCULong []
+bordered nsTextField =
+  sendMessage nsTextField borderedSelector
 
 -- | @- setBordered:@
 setBordered :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setBordered nsTextField  value =
-    sendMsg nsTextField (mkSelector "setBordered:") retVoid [argCULong (if value then 1 else 0)]
+setBordered nsTextField value =
+  sendMessage nsTextField setBorderedSelector value
 
 -- | @- bezeled@
 bezeled :: IsNSTextField nsTextField => nsTextField -> IO Bool
-bezeled nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "bezeled") retCULong []
+bezeled nsTextField =
+  sendMessage nsTextField bezeledSelector
 
 -- | @- setBezeled:@
 setBezeled :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setBezeled nsTextField  value =
-    sendMsg nsTextField (mkSelector "setBezeled:") retVoid [argCULong (if value then 1 else 0)]
+setBezeled nsTextField value =
+  sendMessage nsTextField setBezeledSelector value
 
 -- | @- editable@
 editable :: IsNSTextField nsTextField => nsTextField -> IO Bool
-editable nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "editable") retCULong []
+editable nsTextField =
+  sendMessage nsTextField editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setEditable nsTextField  value =
-    sendMsg nsTextField (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsTextField value =
+  sendMessage nsTextField setEditableSelector value
 
 -- | @- selectable@
 selectable :: IsNSTextField nsTextField => nsTextField -> IO Bool
-selectable nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "selectable") retCULong []
+selectable nsTextField =
+  sendMessage nsTextField selectableSelector
 
 -- | @- setSelectable:@
 setSelectable :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setSelectable nsTextField  value =
-    sendMsg nsTextField (mkSelector "setSelectable:") retVoid [argCULong (if value then 1 else 0)]
+setSelectable nsTextField value =
+  sendMessage nsTextField setSelectableSelector value
 
 -- | @- delegate@
 delegate :: IsNSTextField nsTextField => nsTextField -> IO RawId
-delegate nsTextField  =
-    fmap (RawId . castPtr) $ sendMsg nsTextField (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextField =
+  sendMessage nsTextField delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTextField nsTextField => nsTextField -> RawId -> IO ()
-setDelegate nsTextField  value =
-    sendMsg nsTextField (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextField value =
+  sendMessage nsTextField setDelegateSelector value
 
 -- | @- acceptsFirstResponder@
 acceptsFirstResponder :: IsNSTextField nsTextField => nsTextField -> IO Bool
-acceptsFirstResponder nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "acceptsFirstResponder") retCULong []
+acceptsFirstResponder nsTextField =
+  sendMessage nsTextField acceptsFirstResponderSelector
 
 -- | @- bezelStyle@
 bezelStyle :: IsNSTextField nsTextField => nsTextField -> IO NSTextFieldBezelStyle
-bezelStyle nsTextField  =
-    fmap (coerce :: CULong -> NSTextFieldBezelStyle) $ sendMsg nsTextField (mkSelector "bezelStyle") retCULong []
+bezelStyle nsTextField =
+  sendMessage nsTextField bezelStyleSelector
 
 -- | @- setBezelStyle:@
 setBezelStyle :: IsNSTextField nsTextField => nsTextField -> NSTextFieldBezelStyle -> IO ()
-setBezelStyle nsTextField  value =
-    sendMsg nsTextField (mkSelector "setBezelStyle:") retVoid [argCULong (coerce value)]
+setBezelStyle nsTextField value =
+  sendMessage nsTextField setBezelStyleSelector value
 
 -- | @- preferredMaxLayoutWidth@
 preferredMaxLayoutWidth :: IsNSTextField nsTextField => nsTextField -> IO CDouble
-preferredMaxLayoutWidth nsTextField  =
-    sendMsg nsTextField (mkSelector "preferredMaxLayoutWidth") retCDouble []
+preferredMaxLayoutWidth nsTextField =
+  sendMessage nsTextField preferredMaxLayoutWidthSelector
 
 -- | @- setPreferredMaxLayoutWidth:@
 setPreferredMaxLayoutWidth :: IsNSTextField nsTextField => nsTextField -> CDouble -> IO ()
-setPreferredMaxLayoutWidth nsTextField  value =
-    sendMsg nsTextField (mkSelector "setPreferredMaxLayoutWidth:") retVoid [argCDouble value]
+setPreferredMaxLayoutWidth nsTextField value =
+  sendMessage nsTextField setPreferredMaxLayoutWidthSelector value
 
 -- | @- maximumNumberOfLines@
 maximumNumberOfLines :: IsNSTextField nsTextField => nsTextField -> IO CLong
-maximumNumberOfLines nsTextField  =
-    sendMsg nsTextField (mkSelector "maximumNumberOfLines") retCLong []
+maximumNumberOfLines nsTextField =
+  sendMessage nsTextField maximumNumberOfLinesSelector
 
 -- | @- setMaximumNumberOfLines:@
 setMaximumNumberOfLines :: IsNSTextField nsTextField => nsTextField -> CLong -> IO ()
-setMaximumNumberOfLines nsTextField  value =
-    sendMsg nsTextField (mkSelector "setMaximumNumberOfLines:") retVoid [argCLong value]
+setMaximumNumberOfLines nsTextField value =
+  sendMessage nsTextField setMaximumNumberOfLinesSelector value
 
 -- | @- allowsDefaultTighteningForTruncation@
 allowsDefaultTighteningForTruncation :: IsNSTextField nsTextField => nsTextField -> IO Bool
-allowsDefaultTighteningForTruncation nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "allowsDefaultTighteningForTruncation") retCULong []
+allowsDefaultTighteningForTruncation nsTextField =
+  sendMessage nsTextField allowsDefaultTighteningForTruncationSelector
 
 -- | @- setAllowsDefaultTighteningForTruncation:@
 setAllowsDefaultTighteningForTruncation :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAllowsDefaultTighteningForTruncation nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAllowsDefaultTighteningForTruncation:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsDefaultTighteningForTruncation nsTextField value =
+  sendMessage nsTextField setAllowsDefaultTighteningForTruncationSelector value
 
 -- | @- lineBreakStrategy@
 lineBreakStrategy :: IsNSTextField nsTextField => nsTextField -> IO NSLineBreakStrategy
-lineBreakStrategy nsTextField  =
-    fmap (coerce :: CULong -> NSLineBreakStrategy) $ sendMsg nsTextField (mkSelector "lineBreakStrategy") retCULong []
+lineBreakStrategy nsTextField =
+  sendMessage nsTextField lineBreakStrategySelector
 
 -- | @- setLineBreakStrategy:@
 setLineBreakStrategy :: IsNSTextField nsTextField => nsTextField -> NSLineBreakStrategy -> IO ()
-setLineBreakStrategy nsTextField  value =
-    sendMsg nsTextField (mkSelector "setLineBreakStrategy:") retVoid [argCULong (coerce value)]
+setLineBreakStrategy nsTextField value =
+  sendMessage nsTextField setLineBreakStrategySelector value
 
 -- | @- allowsWritingTools@
 allowsWritingTools :: IsNSTextField nsTextField => nsTextField -> IO Bool
-allowsWritingTools nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "allowsWritingTools") retCULong []
+allowsWritingTools nsTextField =
+  sendMessage nsTextField allowsWritingToolsSelector
 
 -- | @- setAllowsWritingTools:@
 setAllowsWritingTools :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAllowsWritingTools nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAllowsWritingTools:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsWritingTools nsTextField value =
+  sendMessage nsTextField setAllowsWritingToolsSelector value
 
 -- | @- allowsWritingToolsAffordance@
 allowsWritingToolsAffordance :: IsNSTextField nsTextField => nsTextField -> IO Bool
-allowsWritingToolsAffordance nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "allowsWritingToolsAffordance") retCULong []
+allowsWritingToolsAffordance nsTextField =
+  sendMessage nsTextField allowsWritingToolsAffordanceSelector
 
 -- | @- setAllowsWritingToolsAffordance:@
 setAllowsWritingToolsAffordance :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAllowsWritingToolsAffordance nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAllowsWritingToolsAffordance:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsWritingToolsAffordance nsTextField value =
+  sendMessage nsTextField setAllowsWritingToolsAffordanceSelector value
 
 -- | @- placeholderStrings@
 placeholderStrings :: IsNSTextField nsTextField => nsTextField -> IO (Id NSArray)
-placeholderStrings nsTextField  =
-    sendMsg nsTextField (mkSelector "placeholderStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderStrings nsTextField =
+  sendMessage nsTextField placeholderStringsSelector
 
 -- | @- setPlaceholderStrings:@
 setPlaceholderStrings :: (IsNSTextField nsTextField, IsNSArray value) => nsTextField -> value -> IO ()
-setPlaceholderStrings nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setPlaceholderStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderStrings nsTextField value =
+  sendMessage nsTextField setPlaceholderStringsSelector (toNSArray value)
 
 -- | @- placeholderAttributedStrings@
 placeholderAttributedStrings :: IsNSTextField nsTextField => nsTextField -> IO (Id NSArray)
-placeholderAttributedStrings nsTextField  =
-    sendMsg nsTextField (mkSelector "placeholderAttributedStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderAttributedStrings nsTextField =
+  sendMessage nsTextField placeholderAttributedStringsSelector
 
 -- | @- setPlaceholderAttributedStrings:@
 setPlaceholderAttributedStrings :: (IsNSTextField nsTextField, IsNSArray value) => nsTextField -> value -> IO ()
-setPlaceholderAttributedStrings nsTextField  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextField (mkSelector "setPlaceholderAttributedStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderAttributedStrings nsTextField value =
+  sendMessage nsTextField setPlaceholderAttributedStringsSelector (toNSArray value)
 
 -- | Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
 --
@@ -460,8 +441,8 @@ setPlaceholderAttributedStrings nsTextField  value =
 --
 -- ObjC selector: @- resolvesNaturalAlignmentWithBaseWritingDirection@
 resolvesNaturalAlignmentWithBaseWritingDirection :: IsNSTextField nsTextField => nsTextField -> IO Bool
-resolvesNaturalAlignmentWithBaseWritingDirection nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "resolvesNaturalAlignmentWithBaseWritingDirection") retCULong []
+resolvesNaturalAlignmentWithBaseWritingDirection nsTextField =
+  sendMessage nsTextField resolvesNaturalAlignmentWithBaseWritingDirectionSelector
 
 -- | Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
 --
@@ -469,290 +450,290 @@ resolvesNaturalAlignmentWithBaseWritingDirection nsTextField  =
 --
 -- ObjC selector: @- setResolvesNaturalAlignmentWithBaseWritingDirection:@
 setResolvesNaturalAlignmentWithBaseWritingDirection :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setResolvesNaturalAlignmentWithBaseWritingDirection nsTextField  value =
-    sendMsg nsTextField (mkSelector "setResolvesNaturalAlignmentWithBaseWritingDirection:") retVoid [argCULong (if value then 1 else 0)]
+setResolvesNaturalAlignmentWithBaseWritingDirection nsTextField value =
+  sendMessage nsTextField setResolvesNaturalAlignmentWithBaseWritingDirectionSelector value
 
 -- | @- allowsEditingTextAttributes@
 allowsEditingTextAttributes :: IsNSTextField nsTextField => nsTextField -> IO Bool
-allowsEditingTextAttributes nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "allowsEditingTextAttributes") retCULong []
+allowsEditingTextAttributes nsTextField =
+  sendMessage nsTextField allowsEditingTextAttributesSelector
 
 -- | @- setAllowsEditingTextAttributes:@
 setAllowsEditingTextAttributes :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAllowsEditingTextAttributes nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAllowsEditingTextAttributes:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsEditingTextAttributes nsTextField value =
+  sendMessage nsTextField setAllowsEditingTextAttributesSelector value
 
 -- | @- importsGraphics@
 importsGraphics :: IsNSTextField nsTextField => nsTextField -> IO Bool
-importsGraphics nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "importsGraphics") retCULong []
+importsGraphics nsTextField =
+  sendMessage nsTextField importsGraphicsSelector
 
 -- | @- setImportsGraphics:@
 setImportsGraphics :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setImportsGraphics nsTextField  value =
-    sendMsg nsTextField (mkSelector "setImportsGraphics:") retVoid [argCULong (if value then 1 else 0)]
+setImportsGraphics nsTextField value =
+  sendMessage nsTextField setImportsGraphicsSelector value
 
 -- | @- automaticTextCompletionEnabled@
 automaticTextCompletionEnabled :: IsNSTextField nsTextField => nsTextField -> IO Bool
-automaticTextCompletionEnabled nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "automaticTextCompletionEnabled") retCULong []
+automaticTextCompletionEnabled nsTextField =
+  sendMessage nsTextField automaticTextCompletionEnabledSelector
 
 -- | @- setAutomaticTextCompletionEnabled:@
 setAutomaticTextCompletionEnabled :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAutomaticTextCompletionEnabled nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAutomaticTextCompletionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticTextCompletionEnabled nsTextField value =
+  sendMessage nsTextField setAutomaticTextCompletionEnabledSelector value
 
 -- | @- allowsCharacterPickerTouchBarItem@
 allowsCharacterPickerTouchBarItem :: IsNSTextField nsTextField => nsTextField -> IO Bool
-allowsCharacterPickerTouchBarItem nsTextField  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextField (mkSelector "allowsCharacterPickerTouchBarItem") retCULong []
+allowsCharacterPickerTouchBarItem nsTextField =
+  sendMessage nsTextField allowsCharacterPickerTouchBarItemSelector
 
 -- | @- setAllowsCharacterPickerTouchBarItem:@
 setAllowsCharacterPickerTouchBarItem :: IsNSTextField nsTextField => nsTextField -> Bool -> IO ()
-setAllowsCharacterPickerTouchBarItem nsTextField  value =
-    sendMsg nsTextField (mkSelector "setAllowsCharacterPickerTouchBarItem:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCharacterPickerTouchBarItem nsTextField value =
+  sendMessage nsTextField setAllowsCharacterPickerTouchBarItemSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectText:@
-selectTextSelector :: Selector
+selectTextSelector :: Selector '[RawId] ()
 selectTextSelector = mkSelector "selectText:"
 
 -- | @Selector@ for @textShouldBeginEditing:@
-textShouldBeginEditingSelector :: Selector
+textShouldBeginEditingSelector :: Selector '[Id NSText] Bool
 textShouldBeginEditingSelector = mkSelector "textShouldBeginEditing:"
 
 -- | @Selector@ for @textShouldEndEditing:@
-textShouldEndEditingSelector :: Selector
+textShouldEndEditingSelector :: Selector '[Id NSText] Bool
 textShouldEndEditingSelector = mkSelector "textShouldEndEditing:"
 
 -- | @Selector@ for @textDidBeginEditing:@
-textDidBeginEditingSelector :: Selector
+textDidBeginEditingSelector :: Selector '[Id NSNotification] ()
 textDidBeginEditingSelector = mkSelector "textDidBeginEditing:"
 
 -- | @Selector@ for @textDidEndEditing:@
-textDidEndEditingSelector :: Selector
+textDidEndEditingSelector :: Selector '[Id NSNotification] ()
 textDidEndEditingSelector = mkSelector "textDidEndEditing:"
 
 -- | @Selector@ for @textDidChange:@
-textDidChangeSelector :: Selector
+textDidChangeSelector :: Selector '[Id NSNotification] ()
 textDidChangeSelector = mkSelector "textDidChange:"
 
 -- | @Selector@ for @setTitleWithMnemonic:@
-setTitleWithMnemonicSelector :: Selector
+setTitleWithMnemonicSelector :: Selector '[Id NSString] ()
 setTitleWithMnemonicSelector = mkSelector "setTitleWithMnemonic:"
 
 -- | @Selector@ for @labelWithString:@
-labelWithStringSelector :: Selector
+labelWithStringSelector :: Selector '[Id NSString] (Id NSTextField)
 labelWithStringSelector = mkSelector "labelWithString:"
 
 -- | @Selector@ for @wrappingLabelWithString:@
-wrappingLabelWithStringSelector :: Selector
+wrappingLabelWithStringSelector :: Selector '[Id NSString] (Id NSTextField)
 wrappingLabelWithStringSelector = mkSelector "wrappingLabelWithString:"
 
 -- | @Selector@ for @labelWithAttributedString:@
-labelWithAttributedStringSelector :: Selector
+labelWithAttributedStringSelector :: Selector '[Id NSAttributedString] (Id NSTextField)
 labelWithAttributedStringSelector = mkSelector "labelWithAttributedString:"
 
 -- | @Selector@ for @textFieldWithString:@
-textFieldWithStringSelector :: Selector
+textFieldWithStringSelector :: Selector '[Id NSString] (Id NSTextField)
 textFieldWithStringSelector = mkSelector "textFieldWithString:"
 
 -- | @Selector@ for @placeholderString@
-placeholderStringSelector :: Selector
+placeholderStringSelector :: Selector '[] (Id NSString)
 placeholderStringSelector = mkSelector "placeholderString"
 
 -- | @Selector@ for @setPlaceholderString:@
-setPlaceholderStringSelector :: Selector
+setPlaceholderStringSelector :: Selector '[Id NSString] ()
 setPlaceholderStringSelector = mkSelector "setPlaceholderString:"
 
 -- | @Selector@ for @placeholderAttributedString@
-placeholderAttributedStringSelector :: Selector
+placeholderAttributedStringSelector :: Selector '[] (Id NSAttributedString)
 placeholderAttributedStringSelector = mkSelector "placeholderAttributedString"
 
 -- | @Selector@ for @setPlaceholderAttributedString:@
-setPlaceholderAttributedStringSelector :: Selector
+setPlaceholderAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setPlaceholderAttributedStringSelector = mkSelector "setPlaceholderAttributedString:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @textColor@
-textColorSelector :: Selector
+textColorSelector :: Selector '[] (Id NSColor)
 textColorSelector = mkSelector "textColor"
 
 -- | @Selector@ for @setTextColor:@
-setTextColorSelector :: Selector
+setTextColorSelector :: Selector '[Id NSColor] ()
 setTextColorSelector = mkSelector "setTextColor:"
 
 -- | @Selector@ for @bordered@
-borderedSelector :: Selector
+borderedSelector :: Selector '[] Bool
 borderedSelector = mkSelector "bordered"
 
 -- | @Selector@ for @setBordered:@
-setBorderedSelector :: Selector
+setBorderedSelector :: Selector '[Bool] ()
 setBorderedSelector = mkSelector "setBordered:"
 
 -- | @Selector@ for @bezeled@
-bezeledSelector :: Selector
+bezeledSelector :: Selector '[] Bool
 bezeledSelector = mkSelector "bezeled"
 
 -- | @Selector@ for @setBezeled:@
-setBezeledSelector :: Selector
+setBezeledSelector :: Selector '[Bool] ()
 setBezeledSelector = mkSelector "setBezeled:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @selectable@
-selectableSelector :: Selector
+selectableSelector :: Selector '[] Bool
 selectableSelector = mkSelector "selectable"
 
 -- | @Selector@ for @setSelectable:@
-setSelectableSelector :: Selector
+setSelectableSelector :: Selector '[Bool] ()
 setSelectableSelector = mkSelector "setSelectable:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @acceptsFirstResponder@
-acceptsFirstResponderSelector :: Selector
+acceptsFirstResponderSelector :: Selector '[] Bool
 acceptsFirstResponderSelector = mkSelector "acceptsFirstResponder"
 
 -- | @Selector@ for @bezelStyle@
-bezelStyleSelector :: Selector
+bezelStyleSelector :: Selector '[] NSTextFieldBezelStyle
 bezelStyleSelector = mkSelector "bezelStyle"
 
 -- | @Selector@ for @setBezelStyle:@
-setBezelStyleSelector :: Selector
+setBezelStyleSelector :: Selector '[NSTextFieldBezelStyle] ()
 setBezelStyleSelector = mkSelector "setBezelStyle:"
 
 -- | @Selector@ for @preferredMaxLayoutWidth@
-preferredMaxLayoutWidthSelector :: Selector
+preferredMaxLayoutWidthSelector :: Selector '[] CDouble
 preferredMaxLayoutWidthSelector = mkSelector "preferredMaxLayoutWidth"
 
 -- | @Selector@ for @setPreferredMaxLayoutWidth:@
-setPreferredMaxLayoutWidthSelector :: Selector
+setPreferredMaxLayoutWidthSelector :: Selector '[CDouble] ()
 setPreferredMaxLayoutWidthSelector = mkSelector "setPreferredMaxLayoutWidth:"
 
 -- | @Selector@ for @maximumNumberOfLines@
-maximumNumberOfLinesSelector :: Selector
+maximumNumberOfLinesSelector :: Selector '[] CLong
 maximumNumberOfLinesSelector = mkSelector "maximumNumberOfLines"
 
 -- | @Selector@ for @setMaximumNumberOfLines:@
-setMaximumNumberOfLinesSelector :: Selector
+setMaximumNumberOfLinesSelector :: Selector '[CLong] ()
 setMaximumNumberOfLinesSelector = mkSelector "setMaximumNumberOfLines:"
 
 -- | @Selector@ for @allowsDefaultTighteningForTruncation@
-allowsDefaultTighteningForTruncationSelector :: Selector
+allowsDefaultTighteningForTruncationSelector :: Selector '[] Bool
 allowsDefaultTighteningForTruncationSelector = mkSelector "allowsDefaultTighteningForTruncation"
 
 -- | @Selector@ for @setAllowsDefaultTighteningForTruncation:@
-setAllowsDefaultTighteningForTruncationSelector :: Selector
+setAllowsDefaultTighteningForTruncationSelector :: Selector '[Bool] ()
 setAllowsDefaultTighteningForTruncationSelector = mkSelector "setAllowsDefaultTighteningForTruncation:"
 
 -- | @Selector@ for @lineBreakStrategy@
-lineBreakStrategySelector :: Selector
+lineBreakStrategySelector :: Selector '[] NSLineBreakStrategy
 lineBreakStrategySelector = mkSelector "lineBreakStrategy"
 
 -- | @Selector@ for @setLineBreakStrategy:@
-setLineBreakStrategySelector :: Selector
+setLineBreakStrategySelector :: Selector '[NSLineBreakStrategy] ()
 setLineBreakStrategySelector = mkSelector "setLineBreakStrategy:"
 
 -- | @Selector@ for @allowsWritingTools@
-allowsWritingToolsSelector :: Selector
+allowsWritingToolsSelector :: Selector '[] Bool
 allowsWritingToolsSelector = mkSelector "allowsWritingTools"
 
 -- | @Selector@ for @setAllowsWritingTools:@
-setAllowsWritingToolsSelector :: Selector
+setAllowsWritingToolsSelector :: Selector '[Bool] ()
 setAllowsWritingToolsSelector = mkSelector "setAllowsWritingTools:"
 
 -- | @Selector@ for @allowsWritingToolsAffordance@
-allowsWritingToolsAffordanceSelector :: Selector
+allowsWritingToolsAffordanceSelector :: Selector '[] Bool
 allowsWritingToolsAffordanceSelector = mkSelector "allowsWritingToolsAffordance"
 
 -- | @Selector@ for @setAllowsWritingToolsAffordance:@
-setAllowsWritingToolsAffordanceSelector :: Selector
+setAllowsWritingToolsAffordanceSelector :: Selector '[Bool] ()
 setAllowsWritingToolsAffordanceSelector = mkSelector "setAllowsWritingToolsAffordance:"
 
 -- | @Selector@ for @placeholderStrings@
-placeholderStringsSelector :: Selector
+placeholderStringsSelector :: Selector '[] (Id NSArray)
 placeholderStringsSelector = mkSelector "placeholderStrings"
 
 -- | @Selector@ for @setPlaceholderStrings:@
-setPlaceholderStringsSelector :: Selector
+setPlaceholderStringsSelector :: Selector '[Id NSArray] ()
 setPlaceholderStringsSelector = mkSelector "setPlaceholderStrings:"
 
 -- | @Selector@ for @placeholderAttributedStrings@
-placeholderAttributedStringsSelector :: Selector
+placeholderAttributedStringsSelector :: Selector '[] (Id NSArray)
 placeholderAttributedStringsSelector = mkSelector "placeholderAttributedStrings"
 
 -- | @Selector@ for @setPlaceholderAttributedStrings:@
-setPlaceholderAttributedStringsSelector :: Selector
+setPlaceholderAttributedStringsSelector :: Selector '[Id NSArray] ()
 setPlaceholderAttributedStringsSelector = mkSelector "setPlaceholderAttributedStrings:"
 
 -- | @Selector@ for @resolvesNaturalAlignmentWithBaseWritingDirection@
-resolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector
+resolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector '[] Bool
 resolvesNaturalAlignmentWithBaseWritingDirectionSelector = mkSelector "resolvesNaturalAlignmentWithBaseWritingDirection"
 
 -- | @Selector@ for @setResolvesNaturalAlignmentWithBaseWritingDirection:@
-setResolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector
+setResolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector '[Bool] ()
 setResolvesNaturalAlignmentWithBaseWritingDirectionSelector = mkSelector "setResolvesNaturalAlignmentWithBaseWritingDirection:"
 
 -- | @Selector@ for @allowsEditingTextAttributes@
-allowsEditingTextAttributesSelector :: Selector
+allowsEditingTextAttributesSelector :: Selector '[] Bool
 allowsEditingTextAttributesSelector = mkSelector "allowsEditingTextAttributes"
 
 -- | @Selector@ for @setAllowsEditingTextAttributes:@
-setAllowsEditingTextAttributesSelector :: Selector
+setAllowsEditingTextAttributesSelector :: Selector '[Bool] ()
 setAllowsEditingTextAttributesSelector = mkSelector "setAllowsEditingTextAttributes:"
 
 -- | @Selector@ for @importsGraphics@
-importsGraphicsSelector :: Selector
+importsGraphicsSelector :: Selector '[] Bool
 importsGraphicsSelector = mkSelector "importsGraphics"
 
 -- | @Selector@ for @setImportsGraphics:@
-setImportsGraphicsSelector :: Selector
+setImportsGraphicsSelector :: Selector '[Bool] ()
 setImportsGraphicsSelector = mkSelector "setImportsGraphics:"
 
 -- | @Selector@ for @automaticTextCompletionEnabled@
-automaticTextCompletionEnabledSelector :: Selector
+automaticTextCompletionEnabledSelector :: Selector '[] Bool
 automaticTextCompletionEnabledSelector = mkSelector "automaticTextCompletionEnabled"
 
 -- | @Selector@ for @setAutomaticTextCompletionEnabled:@
-setAutomaticTextCompletionEnabledSelector :: Selector
+setAutomaticTextCompletionEnabledSelector :: Selector '[Bool] ()
 setAutomaticTextCompletionEnabledSelector = mkSelector "setAutomaticTextCompletionEnabled:"
 
 -- | @Selector@ for @allowsCharacterPickerTouchBarItem@
-allowsCharacterPickerTouchBarItemSelector :: Selector
+allowsCharacterPickerTouchBarItemSelector :: Selector '[] Bool
 allowsCharacterPickerTouchBarItemSelector = mkSelector "allowsCharacterPickerTouchBarItem"
 
 -- | @Selector@ for @setAllowsCharacterPickerTouchBarItem:@
-setAllowsCharacterPickerTouchBarItemSelector :: Selector
+setAllowsCharacterPickerTouchBarItemSelector :: Selector '[Bool] ()
 setAllowsCharacterPickerTouchBarItemSelector = mkSelector "setAllowsCharacterPickerTouchBarItem:"
 

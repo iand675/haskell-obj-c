@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.CloudKit.CKFetchShareMetadataOperation
   , setPerShareMetadataBlock
   , fetchShareMetadataCompletionBlock
   , setFetchShareMetadataCompletionBlock
+  , fetchShareMetadataCompletionBlockSelector
   , initSelector
   , initWithShareURLsSelector
-  , shareURLsSelector
-  , setShareURLsSelector
-  , shouldFetchRootRecordSelector
-  , setShouldFetchRootRecordSelector
-  , rootRecordDesiredKeysSelector
-  , setRootRecordDesiredKeysSelector
   , perShareMetadataBlockSelector
-  , setPerShareMetadataBlockSelector
-  , fetchShareMetadataCompletionBlockSelector
+  , rootRecordDesiredKeysSelector
   , setFetchShareMetadataCompletionBlockSelector
+  , setPerShareMetadataBlockSelector
+  , setRootRecordDesiredKeysSelector
+  , setShareURLsSelector
+  , setShouldFetchRootRecordSelector
+  , shareURLsSelector
+  , shouldFetchRootRecordSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,25 +54,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO (Id CKFetchShareMetadataOperation)
-init_ ckFetchShareMetadataOperation  =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchShareMetadataOperation =
+  sendOwnedMessage ckFetchShareMetadataOperation initSelector
 
 -- | @- initWithShareURLs:@
 initWithShareURLs :: (IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation, IsNSArray shareURLs) => ckFetchShareMetadataOperation -> shareURLs -> IO (Id CKFetchShareMetadataOperation)
-initWithShareURLs ckFetchShareMetadataOperation  shareURLs =
-  withObjCPtr shareURLs $ \raw_shareURLs ->
-      sendMsg ckFetchShareMetadataOperation (mkSelector "initWithShareURLs:") (retPtr retVoid) [argPtr (castPtr raw_shareURLs :: Ptr ())] >>= ownedObject . castPtr
+initWithShareURLs ckFetchShareMetadataOperation shareURLs =
+  sendOwnedMessage ckFetchShareMetadataOperation initWithShareURLsSelector (toNSArray shareURLs)
 
 -- | @- shareURLs@
 shareURLs :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO (Id NSArray)
-shareURLs ckFetchShareMetadataOperation  =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "shareURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+shareURLs ckFetchShareMetadataOperation =
+  sendMessage ckFetchShareMetadataOperation shareURLsSelector
 
 -- | @- setShareURLs:@
 setShareURLs :: (IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation, IsNSArray value) => ckFetchShareMetadataOperation -> value -> IO ()
-setShareURLs ckFetchShareMetadataOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchShareMetadataOperation (mkSelector "setShareURLs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShareURLs ckFetchShareMetadataOperation value =
+  sendMessage ckFetchShareMetadataOperation setShareURLsSelector (toNSArray value)
 
 -- | If set to YES, the resulting @CKShareMetadata@ will have a @rootRecord@ object filled out.
 --
@@ -83,8 +78,8 @@ setShareURLs ckFetchShareMetadataOperation  value =
 --
 -- ObjC selector: @- shouldFetchRootRecord@
 shouldFetchRootRecord :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO Bool
-shouldFetchRootRecord ckFetchShareMetadataOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckFetchShareMetadataOperation (mkSelector "shouldFetchRootRecord") retCULong []
+shouldFetchRootRecord ckFetchShareMetadataOperation =
+  sendMessage ckFetchShareMetadataOperation shouldFetchRootRecordSelector
 
 -- | If set to YES, the resulting @CKShareMetadata@ will have a @rootRecord@ object filled out.
 --
@@ -92,8 +87,8 @@ shouldFetchRootRecord ckFetchShareMetadataOperation  =
 --
 -- ObjC selector: @- setShouldFetchRootRecord:@
 setShouldFetchRootRecord :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> Bool -> IO ()
-setShouldFetchRootRecord ckFetchShareMetadataOperation  value =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "setShouldFetchRootRecord:") retVoid [argCULong (if value then 1 else 0)]
+setShouldFetchRootRecord ckFetchShareMetadataOperation value =
+  sendMessage ckFetchShareMetadataOperation setShouldFetchRootRecordSelector value
 
 -- | Declares which user-defined keys should be fetched and added to the resulting @rootRecord.@
 --
@@ -101,8 +96,8 @@ setShouldFetchRootRecord ckFetchShareMetadataOperation  value =
 --
 -- ObjC selector: @- rootRecordDesiredKeys@
 rootRecordDesiredKeys :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO (Id NSArray)
-rootRecordDesiredKeys ckFetchShareMetadataOperation  =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "rootRecordDesiredKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootRecordDesiredKeys ckFetchShareMetadataOperation =
+  sendMessage ckFetchShareMetadataOperation rootRecordDesiredKeysSelector
 
 -- | Declares which user-defined keys should be fetched and added to the resulting @rootRecord.@
 --
@@ -110,9 +105,8 @@ rootRecordDesiredKeys ckFetchShareMetadataOperation  =
 --
 -- ObjC selector: @- setRootRecordDesiredKeys:@
 setRootRecordDesiredKeys :: (IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation, IsNSArray value) => ckFetchShareMetadataOperation -> value -> IO ()
-setRootRecordDesiredKeys ckFetchShareMetadataOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchShareMetadataOperation (mkSelector "setRootRecordDesiredKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootRecordDesiredKeys ckFetchShareMetadataOperation value =
+  sendMessage ckFetchShareMetadataOperation setRootRecordDesiredKeysSelector (toNSArray value)
 
 -- | Called once for each share URL that the server processed
 --
@@ -120,8 +114,8 @@ setRootRecordDesiredKeys ckFetchShareMetadataOperation  value =
 --
 -- ObjC selector: @- perShareMetadataBlock@
 perShareMetadataBlock :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO (Ptr ())
-perShareMetadataBlock ckFetchShareMetadataOperation  =
-    fmap castPtr $ sendMsg ckFetchShareMetadataOperation (mkSelector "perShareMetadataBlock") (retPtr retVoid) []
+perShareMetadataBlock ckFetchShareMetadataOperation =
+  sendMessage ckFetchShareMetadataOperation perShareMetadataBlockSelector
 
 -- | Called once for each share URL that the server processed
 --
@@ -129,8 +123,8 @@ perShareMetadataBlock ckFetchShareMetadataOperation  =
 --
 -- ObjC selector: @- setPerShareMetadataBlock:@
 setPerShareMetadataBlock :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> Ptr () -> IO ()
-setPerShareMetadataBlock ckFetchShareMetadataOperation  value =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "setPerShareMetadataBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerShareMetadataBlock ckFetchShareMetadataOperation value =
+  sendMessage ckFetchShareMetadataOperation setPerShareMetadataBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -142,8 +136,8 @@ setPerShareMetadataBlock ckFetchShareMetadataOperation  value =
 --
 -- ObjC selector: @- fetchShareMetadataCompletionBlock@
 fetchShareMetadataCompletionBlock :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> IO (Ptr ())
-fetchShareMetadataCompletionBlock ckFetchShareMetadataOperation  =
-    fmap castPtr $ sendMsg ckFetchShareMetadataOperation (mkSelector "fetchShareMetadataCompletionBlock") (retPtr retVoid) []
+fetchShareMetadataCompletionBlock ckFetchShareMetadataOperation =
+  sendMessage ckFetchShareMetadataOperation fetchShareMetadataCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -155,58 +149,58 @@ fetchShareMetadataCompletionBlock ckFetchShareMetadataOperation  =
 --
 -- ObjC selector: @- setFetchShareMetadataCompletionBlock:@
 setFetchShareMetadataCompletionBlock :: IsCKFetchShareMetadataOperation ckFetchShareMetadataOperation => ckFetchShareMetadataOperation -> Ptr () -> IO ()
-setFetchShareMetadataCompletionBlock ckFetchShareMetadataOperation  value =
-    sendMsg ckFetchShareMetadataOperation (mkSelector "setFetchShareMetadataCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setFetchShareMetadataCompletionBlock ckFetchShareMetadataOperation value =
+  sendMessage ckFetchShareMetadataOperation setFetchShareMetadataCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchShareMetadataOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithShareURLs:@
-initWithShareURLsSelector :: Selector
+initWithShareURLsSelector :: Selector '[Id NSArray] (Id CKFetchShareMetadataOperation)
 initWithShareURLsSelector = mkSelector "initWithShareURLs:"
 
 -- | @Selector@ for @shareURLs@
-shareURLsSelector :: Selector
+shareURLsSelector :: Selector '[] (Id NSArray)
 shareURLsSelector = mkSelector "shareURLs"
 
 -- | @Selector@ for @setShareURLs:@
-setShareURLsSelector :: Selector
+setShareURLsSelector :: Selector '[Id NSArray] ()
 setShareURLsSelector = mkSelector "setShareURLs:"
 
 -- | @Selector@ for @shouldFetchRootRecord@
-shouldFetchRootRecordSelector :: Selector
+shouldFetchRootRecordSelector :: Selector '[] Bool
 shouldFetchRootRecordSelector = mkSelector "shouldFetchRootRecord"
 
 -- | @Selector@ for @setShouldFetchRootRecord:@
-setShouldFetchRootRecordSelector :: Selector
+setShouldFetchRootRecordSelector :: Selector '[Bool] ()
 setShouldFetchRootRecordSelector = mkSelector "setShouldFetchRootRecord:"
 
 -- | @Selector@ for @rootRecordDesiredKeys@
-rootRecordDesiredKeysSelector :: Selector
+rootRecordDesiredKeysSelector :: Selector '[] (Id NSArray)
 rootRecordDesiredKeysSelector = mkSelector "rootRecordDesiredKeys"
 
 -- | @Selector@ for @setRootRecordDesiredKeys:@
-setRootRecordDesiredKeysSelector :: Selector
+setRootRecordDesiredKeysSelector :: Selector '[Id NSArray] ()
 setRootRecordDesiredKeysSelector = mkSelector "setRootRecordDesiredKeys:"
 
 -- | @Selector@ for @perShareMetadataBlock@
-perShareMetadataBlockSelector :: Selector
+perShareMetadataBlockSelector :: Selector '[] (Ptr ())
 perShareMetadataBlockSelector = mkSelector "perShareMetadataBlock"
 
 -- | @Selector@ for @setPerShareMetadataBlock:@
-setPerShareMetadataBlockSelector :: Selector
+setPerShareMetadataBlockSelector :: Selector '[Ptr ()] ()
 setPerShareMetadataBlockSelector = mkSelector "setPerShareMetadataBlock:"
 
 -- | @Selector@ for @fetchShareMetadataCompletionBlock@
-fetchShareMetadataCompletionBlockSelector :: Selector
+fetchShareMetadataCompletionBlockSelector :: Selector '[] (Ptr ())
 fetchShareMetadataCompletionBlockSelector = mkSelector "fetchShareMetadataCompletionBlock"
 
 -- | @Selector@ for @setFetchShareMetadataCompletionBlock:@
-setFetchShareMetadataCompletionBlockSelector :: Selector
+setFetchShareMetadataCompletionBlockSelector :: Selector '[Ptr ()] ()
 setFetchShareMetadataCompletionBlockSelector = mkSelector "setFetchShareMetadataCompletionBlock:"
 

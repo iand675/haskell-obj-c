@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,50 +42,46 @@ module ObjC.CoreHaptics.CHHapticEngine
   , setAutoShutdownEnabled
   , intendedSpatialExperience
   , setIntendedSpatialExperience
-  , capabilitiesForHardwareSelector
-  , initSelector
-  , initAndReturnErrorSelector
-  , initWithAudioSession_errorSelector
-  , startWithCompletionHandlerSelector
-  , startAndReturnErrorSelector
-  , stopWithCompletionHandlerSelector
-  , notifyWhenPlayersFinishedSelector
-  , createPlayerWithPattern_errorSelector
-  , createAdvancedPlayerWithPattern_errorSelector
-  , registerAudioResource_options_errorSelector
-  , unregisterAudioResource_errorSelector
-  , playPatternFromURL_errorSelector
-  , playPatternFromData_errorSelector
-  , currentTimeSelector
-  , stoppedHandlerSelector
-  , setStoppedHandlerSelector
-  , resetHandlerSelector
-  , setResetHandlerSelector
-  , playsHapticsOnlySelector
-  , setPlaysHapticsOnlySelector
-  , playsAudioOnlySelector
-  , setPlaysAudioOnlySelector
-  , isMutedForAudioSelector
-  , setIsMutedForAudioSelector
-  , isMutedForHapticsSelector
-  , setIsMutedForHapticsSelector
   , autoShutdownEnabledSelector
-  , setAutoShutdownEnabledSelector
+  , capabilitiesForHardwareSelector
+  , createAdvancedPlayerWithPattern_errorSelector
+  , createPlayerWithPattern_errorSelector
+  , currentTimeSelector
+  , initAndReturnErrorSelector
+  , initSelector
+  , initWithAudioSession_errorSelector
   , intendedSpatialExperienceSelector
+  , isMutedForAudioSelector
+  , isMutedForHapticsSelector
+  , notifyWhenPlayersFinishedSelector
+  , playPatternFromData_errorSelector
+  , playPatternFromURL_errorSelector
+  , playsAudioOnlySelector
+  , playsHapticsOnlySelector
+  , registerAudioResource_options_errorSelector
+  , resetHandlerSelector
+  , setAutoShutdownEnabledSelector
   , setIntendedSpatialExperienceSelector
+  , setIsMutedForAudioSelector
+  , setIsMutedForHapticsSelector
+  , setPlaysAudioOnlySelector
+  , setPlaysHapticsOnlySelector
+  , setResetHandlerSelector
+  , setStoppedHandlerSelector
+  , startAndReturnErrorSelector
+  , startWithCompletionHandlerSelector
+  , stopWithCompletionHandlerSelector
+  , stoppedHandlerSelector
+  , unregisterAudioResource_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,12 +100,12 @@ capabilitiesForHardware :: IO RawId
 capabilitiesForHardware  =
   do
     cls' <- getRequiredClass "CHHapticEngine"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "capabilitiesForHardware") (retPtr retVoid) []
+    sendClassMessage cls' capabilitiesForHardwareSelector
 
 -- | @- init@
 init_ :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO (Id CHHapticEngine)
-init_ chHapticEngine  =
-    sendMsg chHapticEngine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticEngine =
+  sendOwnedMessage chHapticEngine initSelector
 
 -- | initAndReturnError:
 --
@@ -118,9 +115,8 @@ init_ chHapticEngine  =
 --
 -- ObjC selector: @- initAndReturnError:@
 initAndReturnError :: (IsCHHapticEngine chHapticEngine, IsNSError error_) => chHapticEngine -> error_ -> IO (Id CHHapticEngine)
-initAndReturnError chHapticEngine  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg chHapticEngine (mkSelector "initAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initAndReturnError chHapticEngine error_ =
+  sendOwnedMessage chHapticEngine initAndReturnErrorSelector (toNSError error_)
 
 -- | initWithAudioSession:error
 --
@@ -130,10 +126,8 @@ initAndReturnError chHapticEngine  error_ =
 --
 -- ObjC selector: @- initWithAudioSession:error:@
 initWithAudioSession_error :: (IsCHHapticEngine chHapticEngine, IsAVAudioSession audioSession, IsNSError error_) => chHapticEngine -> audioSession -> error_ -> IO (Id CHHapticEngine)
-initWithAudioSession_error chHapticEngine  audioSession error_ =
-  withObjCPtr audioSession $ \raw_audioSession ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg chHapticEngine (mkSelector "initWithAudioSession:error:") (retPtr retVoid) [argPtr (castPtr raw_audioSession :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithAudioSession_error chHapticEngine audioSession error_ =
+  sendOwnedMessage chHapticEngine initWithAudioSession_errorSelector (toAVAudioSession audioSession) (toNSError error_)
 
 -- | startWithCompletionHandler:
 --
@@ -143,8 +137,8 @@ initWithAudioSession_error chHapticEngine  audioSession error_ =
 --
 -- ObjC selector: @- startWithCompletionHandler:@
 startWithCompletionHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Ptr () -> IO ()
-startWithCompletionHandler chHapticEngine  completionHandler =
-    sendMsg chHapticEngine (mkSelector "startWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startWithCompletionHandler chHapticEngine completionHandler =
+  sendMessage chHapticEngine startWithCompletionHandlerSelector completionHandler
 
 -- | startAndReturnError:
 --
@@ -154,9 +148,8 @@ startWithCompletionHandler chHapticEngine  completionHandler =
 --
 -- ObjC selector: @- startAndReturnError:@
 startAndReturnError :: (IsCHHapticEngine chHapticEngine, IsNSError outError) => chHapticEngine -> outError -> IO Bool
-startAndReturnError chHapticEngine  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "startAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+startAndReturnError chHapticEngine outError =
+  sendMessage chHapticEngine startAndReturnErrorSelector (toNSError outError)
 
 -- | stopWithCompletionHandler:
 --
@@ -166,8 +159,8 @@ startAndReturnError chHapticEngine  outError =
 --
 -- ObjC selector: @- stopWithCompletionHandler:@
 stopWithCompletionHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Ptr () -> IO ()
-stopWithCompletionHandler chHapticEngine  completionHandler =
-    sendMsg chHapticEngine (mkSelector "stopWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+stopWithCompletionHandler chHapticEngine completionHandler =
+  sendMessage chHapticEngine stopWithCompletionHandlerSelector completionHandler
 
 -- | notifyWhenPlayersFinished:
 --
@@ -179,8 +172,8 @@ stopWithCompletionHandler chHapticEngine  completionHandler =
 --
 -- ObjC selector: @- notifyWhenPlayersFinished:@
 notifyWhenPlayersFinished :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Ptr () -> IO ()
-notifyWhenPlayersFinished chHapticEngine  finishedHandler =
-    sendMsg chHapticEngine (mkSelector "notifyWhenPlayersFinished:") retVoid [argPtr (castPtr finishedHandler :: Ptr ())]
+notifyWhenPlayersFinished chHapticEngine finishedHandler =
+  sendMessage chHapticEngine notifyWhenPlayersFinishedSelector finishedHandler
 
 -- | createPlayerWithPattern:error
 --
@@ -190,10 +183,8 @@ notifyWhenPlayersFinished chHapticEngine  finishedHandler =
 --
 -- ObjC selector: @- createPlayerWithPattern:error:@
 createPlayerWithPattern_error :: (IsCHHapticEngine chHapticEngine, IsCHHapticPattern pattern_, IsNSError outError) => chHapticEngine -> pattern_ -> outError -> IO RawId
-createPlayerWithPattern_error chHapticEngine  pattern_ outError =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap (RawId . castPtr) $ sendMsg chHapticEngine (mkSelector "createPlayerWithPattern:error:") (retPtr retVoid) [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+createPlayerWithPattern_error chHapticEngine pattern_ outError =
+  sendMessage chHapticEngine createPlayerWithPattern_errorSelector (toCHHapticPattern pattern_) (toNSError outError)
 
 -- | createAdvancedPlayerWithPattern:error
 --
@@ -203,10 +194,8 @@ createPlayerWithPattern_error chHapticEngine  pattern_ outError =
 --
 -- ObjC selector: @- createAdvancedPlayerWithPattern:error:@
 createAdvancedPlayerWithPattern_error :: (IsCHHapticEngine chHapticEngine, IsCHHapticPattern pattern_, IsNSError outError) => chHapticEngine -> pattern_ -> outError -> IO RawId
-createAdvancedPlayerWithPattern_error chHapticEngine  pattern_ outError =
-  withObjCPtr pattern_ $ \raw_pattern_ ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap (RawId . castPtr) $ sendMsg chHapticEngine (mkSelector "createAdvancedPlayerWithPattern:error:") (retPtr retVoid) [argPtr (castPtr raw_pattern_ :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+createAdvancedPlayerWithPattern_error chHapticEngine pattern_ outError =
+  sendMessage chHapticEngine createAdvancedPlayerWithPattern_errorSelector (toCHHapticPattern pattern_) (toNSError outError)
 
 -- | registerAudioResource:options:error
 --
@@ -220,11 +209,8 @@ createAdvancedPlayerWithPattern_error chHapticEngine  pattern_ outError =
 --
 -- ObjC selector: @- registerAudioResource:options:error:@
 registerAudioResource_options_error :: (IsCHHapticEngine chHapticEngine, IsNSURL resourceURL, IsNSDictionary options, IsNSError outError) => chHapticEngine -> resourceURL -> options -> outError -> IO CULong
-registerAudioResource_options_error chHapticEngine  resourceURL options outError =
-  withObjCPtr resourceURL $ \raw_resourceURL ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg chHapticEngine (mkSelector "registerAudioResource:options:error:") retCULong [argPtr (castPtr raw_resourceURL :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+registerAudioResource_options_error chHapticEngine resourceURL options outError =
+  sendMessage chHapticEngine registerAudioResource_options_errorSelector (toNSURL resourceURL) (toNSDictionary options) (toNSError outError)
 
 -- | unregisterAudioResource:error
 --
@@ -236,9 +222,8 @@ registerAudioResource_options_error chHapticEngine  resourceURL options outError
 --
 -- ObjC selector: @- unregisterAudioResource:error:@
 unregisterAudioResource_error :: (IsCHHapticEngine chHapticEngine, IsNSError outError) => chHapticEngine -> CULong -> outError -> IO Bool
-unregisterAudioResource_error chHapticEngine  resourceID outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "unregisterAudioResource:error:") retCULong [argCULong resourceID, argPtr (castPtr raw_outError :: Ptr ())]
+unregisterAudioResource_error chHapticEngine resourceID outError =
+  sendMessage chHapticEngine unregisterAudioResource_errorSelector resourceID (toNSError outError)
 
 -- | playPatternFromURL:error
 --
@@ -252,10 +237,8 @@ unregisterAudioResource_error chHapticEngine  resourceID outError =
 --
 -- ObjC selector: @- playPatternFromURL:error:@
 playPatternFromURL_error :: (IsCHHapticEngine chHapticEngine, IsNSURL fileURL, IsNSError outError) => chHapticEngine -> fileURL -> outError -> IO Bool
-playPatternFromURL_error chHapticEngine  fileURL outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "playPatternFromURL:error:") retCULong [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+playPatternFromURL_error chHapticEngine fileURL outError =
+  sendMessage chHapticEngine playPatternFromURL_errorSelector (toNSURL fileURL) (toNSError outError)
 
 -- | playPatternFromData:error
 --
@@ -269,10 +252,8 @@ playPatternFromURL_error chHapticEngine  fileURL outError =
 --
 -- ObjC selector: @- playPatternFromData:error:@
 playPatternFromData_error :: (IsCHHapticEngine chHapticEngine, IsNSData data_, IsNSError outError) => chHapticEngine -> data_ -> outError -> IO Bool
-playPatternFromData_error chHapticEngine  data_ outError =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "playPatternFromData:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+playPatternFromData_error chHapticEngine data_ outError =
+  sendMessage chHapticEngine playPatternFromData_errorSelector (toNSData data_) (toNSError outError)
 
 -- | currentTime
 --
@@ -280,8 +261,8 @@ playPatternFromData_error chHapticEngine  data_ outError =
 --
 -- ObjC selector: @- currentTime@
 currentTime :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO CDouble
-currentTime chHapticEngine  =
-    sendMsg chHapticEngine (mkSelector "currentTime") retCDouble []
+currentTime chHapticEngine =
+  sendMessage chHapticEngine currentTimeSelector
 
 -- | stoppedHandler
 --
@@ -291,8 +272,8 @@ currentTime chHapticEngine  =
 --
 -- ObjC selector: @- stoppedHandler@
 stoppedHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO (Ptr ())
-stoppedHandler chHapticEngine  =
-    fmap castPtr $ sendMsg chHapticEngine (mkSelector "stoppedHandler") (retPtr retVoid) []
+stoppedHandler chHapticEngine =
+  sendMessage chHapticEngine stoppedHandlerSelector
 
 -- | stoppedHandler
 --
@@ -302,8 +283,8 @@ stoppedHandler chHapticEngine  =
 --
 -- ObjC selector: @- setStoppedHandler:@
 setStoppedHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Ptr () -> IO ()
-setStoppedHandler chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setStoppedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setStoppedHandler chHapticEngine value =
+  sendMessage chHapticEngine setStoppedHandlerSelector value
 
 -- | resetHandler
 --
@@ -313,8 +294,8 @@ setStoppedHandler chHapticEngine  value =
 --
 -- ObjC selector: @- resetHandler@
 resetHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO (Ptr ())
-resetHandler chHapticEngine  =
-    fmap castPtr $ sendMsg chHapticEngine (mkSelector "resetHandler") (retPtr retVoid) []
+resetHandler chHapticEngine =
+  sendMessage chHapticEngine resetHandlerSelector
 
 -- | resetHandler
 --
@@ -324,8 +305,8 @@ resetHandler chHapticEngine  =
 --
 -- ObjC selector: @- setResetHandler:@
 setResetHandler :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Ptr () -> IO ()
-setResetHandler chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setResetHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setResetHandler chHapticEngine value =
+  sendMessage chHapticEngine setResetHandlerSelector value
 
 -- | playsHapticsOnly
 --
@@ -335,8 +316,8 @@ setResetHandler chHapticEngine  value =
 --
 -- ObjC selector: @- playsHapticsOnly@
 playsHapticsOnly :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO Bool
-playsHapticsOnly chHapticEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "playsHapticsOnly") retCULong []
+playsHapticsOnly chHapticEngine =
+  sendMessage chHapticEngine playsHapticsOnlySelector
 
 -- | playsHapticsOnly
 --
@@ -346,8 +327,8 @@ playsHapticsOnly chHapticEngine  =
 --
 -- ObjC selector: @- setPlaysHapticsOnly:@
 setPlaysHapticsOnly :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Bool -> IO ()
-setPlaysHapticsOnly chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setPlaysHapticsOnly:") retVoid [argCULong (if value then 1 else 0)]
+setPlaysHapticsOnly chHapticEngine value =
+  sendMessage chHapticEngine setPlaysHapticsOnlySelector value
 
 -- | playsAudioOnly
 --
@@ -357,8 +338,8 @@ setPlaysHapticsOnly chHapticEngine  value =
 --
 -- ObjC selector: @- playsAudioOnly@
 playsAudioOnly :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO Bool
-playsAudioOnly chHapticEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "playsAudioOnly") retCULong []
+playsAudioOnly chHapticEngine =
+  sendMessage chHapticEngine playsAudioOnlySelector
 
 -- | playsAudioOnly
 --
@@ -368,8 +349,8 @@ playsAudioOnly chHapticEngine  =
 --
 -- ObjC selector: @- setPlaysAudioOnly:@
 setPlaysAudioOnly :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Bool -> IO ()
-setPlaysAudioOnly chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setPlaysAudioOnly:") retVoid [argCULong (if value then 1 else 0)]
+setPlaysAudioOnly chHapticEngine value =
+  sendMessage chHapticEngine setPlaysAudioOnlySelector value
 
 -- | isMutedForAudio
 --
@@ -379,8 +360,8 @@ setPlaysAudioOnly chHapticEngine  value =
 --
 -- ObjC selector: @- isMutedForAudio@
 isMutedForAudio :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO Bool
-isMutedForAudio chHapticEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "isMutedForAudio") retCULong []
+isMutedForAudio chHapticEngine =
+  sendMessage chHapticEngine isMutedForAudioSelector
 
 -- | isMutedForAudio
 --
@@ -390,8 +371,8 @@ isMutedForAudio chHapticEngine  =
 --
 -- ObjC selector: @- setIsMutedForAudio:@
 setIsMutedForAudio :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Bool -> IO ()
-setIsMutedForAudio chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setIsMutedForAudio:") retVoid [argCULong (if value then 1 else 0)]
+setIsMutedForAudio chHapticEngine value =
+  sendMessage chHapticEngine setIsMutedForAudioSelector value
 
 -- | isMutedForHaptics
 --
@@ -401,8 +382,8 @@ setIsMutedForAudio chHapticEngine  value =
 --
 -- ObjC selector: @- isMutedForHaptics@
 isMutedForHaptics :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO Bool
-isMutedForHaptics chHapticEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "isMutedForHaptics") retCULong []
+isMutedForHaptics chHapticEngine =
+  sendMessage chHapticEngine isMutedForHapticsSelector
 
 -- | isMutedForHaptics
 --
@@ -412,8 +393,8 @@ isMutedForHaptics chHapticEngine  =
 --
 -- ObjC selector: @- setIsMutedForHaptics:@
 setIsMutedForHaptics :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Bool -> IO ()
-setIsMutedForHaptics chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setIsMutedForHaptics:") retVoid [argCULong (if value then 1 else 0)]
+setIsMutedForHaptics chHapticEngine value =
+  sendMessage chHapticEngine setIsMutedForHapticsSelector value
 
 -- | autoShutdownEnabled
 --
@@ -425,8 +406,8 @@ setIsMutedForHaptics chHapticEngine  value =
 --
 -- ObjC selector: @- autoShutdownEnabled@
 autoShutdownEnabled :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO Bool
-autoShutdownEnabled chHapticEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg chHapticEngine (mkSelector "autoShutdownEnabled") retCULong []
+autoShutdownEnabled chHapticEngine =
+  sendMessage chHapticEngine autoShutdownEnabledSelector
 
 -- | autoShutdownEnabled
 --
@@ -438,8 +419,8 @@ autoShutdownEnabled chHapticEngine  =
 --
 -- ObjC selector: @- setAutoShutdownEnabled:@
 setAutoShutdownEnabled :: IsCHHapticEngine chHapticEngine => chHapticEngine -> Bool -> IO ()
-setAutoShutdownEnabled chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setAutoShutdownEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoShutdownEnabled chHapticEngine value =
+  sendMessage chHapticEngine setAutoShutdownEnabledSelector value
 
 -- | intendedSpatialExperience
 --
@@ -449,8 +430,8 @@ setAutoShutdownEnabled chHapticEngine  value =
 --
 -- ObjC selector: @- intendedSpatialExperience@
 intendedSpatialExperience :: IsCHHapticEngine chHapticEngine => chHapticEngine -> IO RawId
-intendedSpatialExperience chHapticEngine  =
-    fmap (RawId . castPtr) $ sendMsg chHapticEngine (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+intendedSpatialExperience chHapticEngine =
+  sendMessage chHapticEngine intendedSpatialExperienceSelector
 
 -- | intendedSpatialExperience
 --
@@ -460,134 +441,134 @@ intendedSpatialExperience chHapticEngine  =
 --
 -- ObjC selector: @- setIntendedSpatialExperience:@
 setIntendedSpatialExperience :: IsCHHapticEngine chHapticEngine => chHapticEngine -> RawId -> IO ()
-setIntendedSpatialExperience chHapticEngine  value =
-    sendMsg chHapticEngine (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIntendedSpatialExperience chHapticEngine value =
+  sendMessage chHapticEngine setIntendedSpatialExperienceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @capabilitiesForHardware@
-capabilitiesForHardwareSelector :: Selector
+capabilitiesForHardwareSelector :: Selector '[] RawId
 capabilitiesForHardwareSelector = mkSelector "capabilitiesForHardware"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticEngine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initAndReturnError:@
-initAndReturnErrorSelector :: Selector
+initAndReturnErrorSelector :: Selector '[Id NSError] (Id CHHapticEngine)
 initAndReturnErrorSelector = mkSelector "initAndReturnError:"
 
 -- | @Selector@ for @initWithAudioSession:error:@
-initWithAudioSession_errorSelector :: Selector
+initWithAudioSession_errorSelector :: Selector '[Id AVAudioSession, Id NSError] (Id CHHapticEngine)
 initWithAudioSession_errorSelector = mkSelector "initWithAudioSession:error:"
 
 -- | @Selector@ for @startWithCompletionHandler:@
-startWithCompletionHandlerSelector :: Selector
+startWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startWithCompletionHandlerSelector = mkSelector "startWithCompletionHandler:"
 
 -- | @Selector@ for @startAndReturnError:@
-startAndReturnErrorSelector :: Selector
+startAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startAndReturnErrorSelector = mkSelector "startAndReturnError:"
 
 -- | @Selector@ for @stopWithCompletionHandler:@
-stopWithCompletionHandlerSelector :: Selector
+stopWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 stopWithCompletionHandlerSelector = mkSelector "stopWithCompletionHandler:"
 
 -- | @Selector@ for @notifyWhenPlayersFinished:@
-notifyWhenPlayersFinishedSelector :: Selector
+notifyWhenPlayersFinishedSelector :: Selector '[Ptr ()] ()
 notifyWhenPlayersFinishedSelector = mkSelector "notifyWhenPlayersFinished:"
 
 -- | @Selector@ for @createPlayerWithPattern:error:@
-createPlayerWithPattern_errorSelector :: Selector
+createPlayerWithPattern_errorSelector :: Selector '[Id CHHapticPattern, Id NSError] RawId
 createPlayerWithPattern_errorSelector = mkSelector "createPlayerWithPattern:error:"
 
 -- | @Selector@ for @createAdvancedPlayerWithPattern:error:@
-createAdvancedPlayerWithPattern_errorSelector :: Selector
+createAdvancedPlayerWithPattern_errorSelector :: Selector '[Id CHHapticPattern, Id NSError] RawId
 createAdvancedPlayerWithPattern_errorSelector = mkSelector "createAdvancedPlayerWithPattern:error:"
 
 -- | @Selector@ for @registerAudioResource:options:error:@
-registerAudioResource_options_errorSelector :: Selector
+registerAudioResource_options_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] CULong
 registerAudioResource_options_errorSelector = mkSelector "registerAudioResource:options:error:"
 
 -- | @Selector@ for @unregisterAudioResource:error:@
-unregisterAudioResource_errorSelector :: Selector
+unregisterAudioResource_errorSelector :: Selector '[CULong, Id NSError] Bool
 unregisterAudioResource_errorSelector = mkSelector "unregisterAudioResource:error:"
 
 -- | @Selector@ for @playPatternFromURL:error:@
-playPatternFromURL_errorSelector :: Selector
+playPatternFromURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 playPatternFromURL_errorSelector = mkSelector "playPatternFromURL:error:"
 
 -- | @Selector@ for @playPatternFromData:error:@
-playPatternFromData_errorSelector :: Selector
+playPatternFromData_errorSelector :: Selector '[Id NSData, Id NSError] Bool
 playPatternFromData_errorSelector = mkSelector "playPatternFromData:error:"
 
 -- | @Selector@ for @currentTime@
-currentTimeSelector :: Selector
+currentTimeSelector :: Selector '[] CDouble
 currentTimeSelector = mkSelector "currentTime"
 
 -- | @Selector@ for @stoppedHandler@
-stoppedHandlerSelector :: Selector
+stoppedHandlerSelector :: Selector '[] (Ptr ())
 stoppedHandlerSelector = mkSelector "stoppedHandler"
 
 -- | @Selector@ for @setStoppedHandler:@
-setStoppedHandlerSelector :: Selector
+setStoppedHandlerSelector :: Selector '[Ptr ()] ()
 setStoppedHandlerSelector = mkSelector "setStoppedHandler:"
 
 -- | @Selector@ for @resetHandler@
-resetHandlerSelector :: Selector
+resetHandlerSelector :: Selector '[] (Ptr ())
 resetHandlerSelector = mkSelector "resetHandler"
 
 -- | @Selector@ for @setResetHandler:@
-setResetHandlerSelector :: Selector
+setResetHandlerSelector :: Selector '[Ptr ()] ()
 setResetHandlerSelector = mkSelector "setResetHandler:"
 
 -- | @Selector@ for @playsHapticsOnly@
-playsHapticsOnlySelector :: Selector
+playsHapticsOnlySelector :: Selector '[] Bool
 playsHapticsOnlySelector = mkSelector "playsHapticsOnly"
 
 -- | @Selector@ for @setPlaysHapticsOnly:@
-setPlaysHapticsOnlySelector :: Selector
+setPlaysHapticsOnlySelector :: Selector '[Bool] ()
 setPlaysHapticsOnlySelector = mkSelector "setPlaysHapticsOnly:"
 
 -- | @Selector@ for @playsAudioOnly@
-playsAudioOnlySelector :: Selector
+playsAudioOnlySelector :: Selector '[] Bool
 playsAudioOnlySelector = mkSelector "playsAudioOnly"
 
 -- | @Selector@ for @setPlaysAudioOnly:@
-setPlaysAudioOnlySelector :: Selector
+setPlaysAudioOnlySelector :: Selector '[Bool] ()
 setPlaysAudioOnlySelector = mkSelector "setPlaysAudioOnly:"
 
 -- | @Selector@ for @isMutedForAudio@
-isMutedForAudioSelector :: Selector
+isMutedForAudioSelector :: Selector '[] Bool
 isMutedForAudioSelector = mkSelector "isMutedForAudio"
 
 -- | @Selector@ for @setIsMutedForAudio:@
-setIsMutedForAudioSelector :: Selector
+setIsMutedForAudioSelector :: Selector '[Bool] ()
 setIsMutedForAudioSelector = mkSelector "setIsMutedForAudio:"
 
 -- | @Selector@ for @isMutedForHaptics@
-isMutedForHapticsSelector :: Selector
+isMutedForHapticsSelector :: Selector '[] Bool
 isMutedForHapticsSelector = mkSelector "isMutedForHaptics"
 
 -- | @Selector@ for @setIsMutedForHaptics:@
-setIsMutedForHapticsSelector :: Selector
+setIsMutedForHapticsSelector :: Selector '[Bool] ()
 setIsMutedForHapticsSelector = mkSelector "setIsMutedForHaptics:"
 
 -- | @Selector@ for @autoShutdownEnabled@
-autoShutdownEnabledSelector :: Selector
+autoShutdownEnabledSelector :: Selector '[] Bool
 autoShutdownEnabledSelector = mkSelector "autoShutdownEnabled"
 
 -- | @Selector@ for @setAutoShutdownEnabled:@
-setAutoShutdownEnabledSelector :: Selector
+setAutoShutdownEnabledSelector :: Selector '[Bool] ()
 setAutoShutdownEnabledSelector = mkSelector "setAutoShutdownEnabled:"
 
 -- | @Selector@ for @intendedSpatialExperience@
-intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector :: Selector '[] RawId
 intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
 
 -- | @Selector@ for @setIntendedSpatialExperience:@
-setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector :: Selector '[RawId] ()
 setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 

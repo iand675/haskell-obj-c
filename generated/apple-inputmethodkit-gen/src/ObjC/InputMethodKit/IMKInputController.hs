@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,37 +33,33 @@ module ObjC.InputMethodKit.IMKInputController
   , annotationSelected_forCandidate
   , candidateSelectionChanged
   , candidateSelected
-  , initWithServer_delegate_clientSelector
-  , updateCompositionSelector
+  , annotationSelected_forCandidateSelector
   , cancelCompositionSelector
+  , candidateSelectedSelector
+  , candidateSelectionChangedSelector
+  , clientSelector
   , compositionAttributesAtRangeSelector
-  , selectionRangeSelector
-  , replacementRangeSelector
-  , markForStyle_atRangeSelector
+  , delegateSelector
   , doCommandBySelector_commandDictionarySelector
   , hidePalettesSelector
-  , menuSelector
-  , delegateSelector
-  , setDelegateSelector
-  , serverSelector
-  , clientSelector
+  , initWithServer_delegate_clientSelector
   , inputControllerWillCloseSelector
-  , annotationSelected_forCandidateSelector
-  , candidateSelectionChangedSelector
-  , candidateSelectedSelector
+  , markForStyle_atRangeSelector
+  , menuSelector
+  , replacementRangeSelector
+  , selectionRangeSelector
+  , serverSelector
+  , setDelegateSelector
+  , updateCompositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,9 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithServer:delegate:client:@
 initWithServer_delegate_client :: (IsIMKInputController imkInputController, IsIMKServer server) => imkInputController -> server -> RawId -> RawId -> IO RawId
-initWithServer_delegate_client imkInputController  server delegate inputClient =
-  withObjCPtr server $ \raw_server ->
-      fmap (RawId . castPtr) $ sendMsg imkInputController (mkSelector "initWithServer:delegate:client:") (retPtr retVoid) [argPtr (castPtr raw_server :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr (unRawId inputClient) :: Ptr ())]
+initWithServer_delegate_client imkInputController server delegate inputClient =
+  sendOwnedMessage imkInputController initWithServer_delegate_clientSelector (toIMKServer server) delegate inputClient
 
 -- | Called to inform the controller that the composition has changed.
 --
@@ -89,8 +85,8 @@ initWithServer_delegate_client imkInputController  server delegate inputClient =
 --
 -- ObjC selector: @- updateComposition@
 updateComposition :: IsIMKInputController imkInputController => imkInputController -> IO ()
-updateComposition imkInputController  =
-    sendMsg imkInputController (mkSelector "updateComposition") retVoid []
+updateComposition imkInputController =
+  sendMessage imkInputController updateCompositionSelector
 
 -- | Stops the current composition and replaces marked text with the original text.
 --
@@ -98,8 +94,8 @@ updateComposition imkInputController  =
 --
 -- ObjC selector: @- cancelComposition@
 cancelComposition :: IsIMKInputController imkInputController => imkInputController -> IO ()
-cancelComposition imkInputController  =
-    sendMsg imkInputController (mkSelector "cancelComposition") retVoid []
+cancelComposition imkInputController =
+  sendMessage imkInputController cancelCompositionSelector
 
 -- | Called to obtain a dictionary of text attributes.
 --
@@ -107,8 +103,8 @@ cancelComposition imkInputController  =
 --
 -- ObjC selector: @- compositionAttributesAtRange:@
 compositionAttributesAtRange :: IsIMKInputController imkInputController => imkInputController -> NSRange -> IO (Id NSMutableDictionary)
-compositionAttributesAtRange imkInputController  range =
-    sendMsg imkInputController (mkSelector "compositionAttributesAtRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+compositionAttributesAtRange imkInputController range =
+  sendMessage imkInputController compositionAttributesAtRangeSelector range
 
 -- | Returns where the selection should be placed inside markedText.
 --
@@ -116,8 +112,8 @@ compositionAttributesAtRange imkInputController  range =
 --
 -- ObjC selector: @- selectionRange@
 selectionRange :: IsIMKInputController imkInputController => imkInputController -> IO NSRange
-selectionRange imkInputController  =
-    sendMsgStret imkInputController (mkSelector "selectionRange") retNSRange []
+selectionRange imkInputController =
+  sendMessage imkInputController selectionRangeSelector
 
 -- | Returns the range in the client document that text should replace.
 --
@@ -127,8 +123,8 @@ selectionRange imkInputController  =
 --
 -- ObjC selector: @- replacementRange@
 replacementRange :: IsIMKInputController imkInputController => imkInputController -> IO NSRange
-replacementRange imkInputController  =
-    sendMsgStret imkInputController (mkSelector "replacementRange") retNSRange []
+replacementRange imkInputController =
+  sendMessage imkInputController replacementRangeSelector
 
 -- | Returns a dictionary of text attributes that can be used to mark a range of an attributed string that is going to be sent to a client.
 --
@@ -140,8 +136,8 @@ replacementRange imkInputController  =
 --
 -- ObjC selector: @- markForStyle:atRange:@
 markForStyle_atRange :: IsIMKInputController imkInputController => imkInputController -> CLong -> NSRange -> IO (Id NSDictionary)
-markForStyle_atRange imkInputController  style range =
-    sendMsg imkInputController (mkSelector "markForStyle:atRange:") (retPtr retVoid) [argCLong style, argNSRange range] >>= retainedObject . castPtr
+markForStyle_atRange imkInputController style range =
+  sendMessage imkInputController markForStyle_atRangeSelector style range
 
 -- | Called to pass commands that are not generated as part of the text input.
 --
@@ -156,17 +152,16 @@ markForStyle_atRange imkInputController  style range =
 -- kIMKCommandMenuItemName			NSMenuItem  -- the NSMenuItem that was selected  	kIMKCommandClientName			id<IMKTextInput, NSObject> - the current client
 --
 -- ObjC selector: @- doCommandBySelector:commandDictionary:@
-doCommandBySelector_commandDictionary :: (IsIMKInputController imkInputController, IsNSDictionary infoDictionary) => imkInputController -> Selector -> infoDictionary -> IO ()
-doCommandBySelector_commandDictionary imkInputController  aSelector infoDictionary =
-  withObjCPtr infoDictionary $ \raw_infoDictionary ->
-      sendMsg imkInputController (mkSelector "doCommandBySelector:commandDictionary:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr raw_infoDictionary :: Ptr ())]
+doCommandBySelector_commandDictionary :: (IsIMKInputController imkInputController, IsNSDictionary infoDictionary) => imkInputController -> Sel -> infoDictionary -> IO ()
+doCommandBySelector_commandDictionary imkInputController aSelector infoDictionary =
+  sendMessage imkInputController doCommandBySelector_commandDictionarySelector aSelector (toNSDictionary infoDictionary)
 
 -- | Called to inform an input method that any visible UI should be closed.
 --
 -- ObjC selector: @- hidePalettes@
 hidePalettes :: IsIMKInputController imkInputController => imkInputController -> IO ()
-hidePalettes imkInputController  =
-    sendMsg imkInputController (mkSelector "hidePalettes") retVoid []
+hidePalettes imkInputController =
+  sendMessage imkInputController hidePalettesSelector
 
 -- | Returns a menu of input method specific commands.
 --
@@ -174,8 +169,8 @@ hidePalettes imkInputController  =
 --
 -- ObjC selector: @- menu@
 menu :: IsIMKInputController imkInputController => imkInputController -> IO (Id NSMenu)
-menu imkInputController  =
-    sendMsg imkInputController (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+menu imkInputController =
+  sendMessage imkInputController menuSelector
 
 -- | - (id)delegate;
 --
@@ -183,22 +178,22 @@ menu imkInputController  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIMKInputController imkInputController => imkInputController -> IO RawId
-delegate imkInputController  =
-    fmap (RawId . castPtr) $ sendMsg imkInputController (mkSelector "delegate") (retPtr retVoid) []
+delegate imkInputController =
+  sendMessage imkInputController delegateSelector
 
 -- | Set the input controller's delegate object.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIMKInputController imkInputController => imkInputController -> RawId -> IO ()
-setDelegate imkInputController  newDelegate =
-    sendMsg imkInputController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId newDelegate) :: Ptr ())]
+setDelegate imkInputController newDelegate =
+  sendMessage imkInputController setDelegateSelector newDelegate
 
 -- | Return the server object which is managing this input controller. The returned IMKServer is an autoreleased object.
 --
 -- ObjC selector: @- server@
 server :: IsIMKInputController imkInputController => imkInputController -> IO (Id IMKServer)
-server imkInputController  =
-    sendMsg imkInputController (mkSelector "server") (retPtr retVoid) [] >>= retainedObject . castPtr
+server imkInputController =
+  sendMessage imkInputController serverSelector
 
 -- | Returns this controller's client object.
 --
@@ -206,15 +201,15 @@ server imkInputController  =
 --
 -- ObjC selector: @- client@
 client :: IsIMKInputController imkInputController => imkInputController -> IO RawId
-client imkInputController  =
-    fmap (RawId . castPtr) $ sendMsg imkInputController (mkSelector "client") (retPtr retVoid) []
+client imkInputController =
+  sendMessage imkInputController clientSelector
 
 -- | Called to notify an input controller that it is about to be closed.
 --
 -- ObjC selector: @- inputControllerWillClose@
 inputControllerWillClose :: IsIMKInputController imkInputController => imkInputController -> IO ()
-inputControllerWillClose imkInputController  =
-    sendMsg imkInputController (mkSelector "inputControllerWillClose") retVoid []
+inputControllerWillClose imkInputController =
+  sendMessage imkInputController inputControllerWillCloseSelector
 
 -- | Called when a user has selected a annotation in a candidate window.
 --
@@ -222,10 +217,8 @@ inputControllerWillClose imkInputController  =
 --
 -- ObjC selector: @- annotationSelected:forCandidate:@
 annotationSelected_forCandidate :: (IsIMKInputController imkInputController, IsNSAttributedString annotationString, IsNSAttributedString candidateString) => imkInputController -> annotationString -> candidateString -> IO ()
-annotationSelected_forCandidate imkInputController  annotationString candidateString =
-  withObjCPtr annotationString $ \raw_annotationString ->
-    withObjCPtr candidateString $ \raw_candidateString ->
-        sendMsg imkInputController (mkSelector "annotationSelected:forCandidate:") retVoid [argPtr (castPtr raw_annotationString :: Ptr ()), argPtr (castPtr raw_candidateString :: Ptr ())]
+annotationSelected_forCandidate imkInputController annotationString candidateString =
+  sendMessage imkInputController annotationSelected_forCandidateSelector (toNSAttributedString annotationString) (toNSAttributedString candidateString)
 
 -- | Informs an input controller that the current candidate selection in the candidate window has changed.
 --
@@ -233,9 +226,8 @@ annotationSelected_forCandidate imkInputController  annotationString candidateSt
 --
 -- ObjC selector: @- candidateSelectionChanged:@
 candidateSelectionChanged :: (IsIMKInputController imkInputController, IsNSAttributedString candidateString) => imkInputController -> candidateString -> IO ()
-candidateSelectionChanged imkInputController  candidateString =
-  withObjCPtr candidateString $ \raw_candidateString ->
-      sendMsg imkInputController (mkSelector "candidateSelectionChanged:") retVoid [argPtr (castPtr raw_candidateString :: Ptr ())]
+candidateSelectionChanged imkInputController candidateString =
+  sendMessage imkInputController candidateSelectionChangedSelector (toNSAttributedString candidateString)
 
 -- | Called when a new candidate has been finally selected.
 --
@@ -243,83 +235,82 @@ candidateSelectionChanged imkInputController  candidateString =
 --
 -- ObjC selector: @- candidateSelected:@
 candidateSelected :: (IsIMKInputController imkInputController, IsNSAttributedString candidateString) => imkInputController -> candidateString -> IO ()
-candidateSelected imkInputController  candidateString =
-  withObjCPtr candidateString $ \raw_candidateString ->
-      sendMsg imkInputController (mkSelector "candidateSelected:") retVoid [argPtr (castPtr raw_candidateString :: Ptr ())]
+candidateSelected imkInputController candidateString =
+  sendMessage imkInputController candidateSelectedSelector (toNSAttributedString candidateString)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServer:delegate:client:@
-initWithServer_delegate_clientSelector :: Selector
+initWithServer_delegate_clientSelector :: Selector '[Id IMKServer, RawId, RawId] RawId
 initWithServer_delegate_clientSelector = mkSelector "initWithServer:delegate:client:"
 
 -- | @Selector@ for @updateComposition@
-updateCompositionSelector :: Selector
+updateCompositionSelector :: Selector '[] ()
 updateCompositionSelector = mkSelector "updateComposition"
 
 -- | @Selector@ for @cancelComposition@
-cancelCompositionSelector :: Selector
+cancelCompositionSelector :: Selector '[] ()
 cancelCompositionSelector = mkSelector "cancelComposition"
 
 -- | @Selector@ for @compositionAttributesAtRange:@
-compositionAttributesAtRangeSelector :: Selector
+compositionAttributesAtRangeSelector :: Selector '[NSRange] (Id NSMutableDictionary)
 compositionAttributesAtRangeSelector = mkSelector "compositionAttributesAtRange:"
 
 -- | @Selector@ for @selectionRange@
-selectionRangeSelector :: Selector
+selectionRangeSelector :: Selector '[] NSRange
 selectionRangeSelector = mkSelector "selectionRange"
 
 -- | @Selector@ for @replacementRange@
-replacementRangeSelector :: Selector
+replacementRangeSelector :: Selector '[] NSRange
 replacementRangeSelector = mkSelector "replacementRange"
 
 -- | @Selector@ for @markForStyle:atRange:@
-markForStyle_atRangeSelector :: Selector
+markForStyle_atRangeSelector :: Selector '[CLong, NSRange] (Id NSDictionary)
 markForStyle_atRangeSelector = mkSelector "markForStyle:atRange:"
 
 -- | @Selector@ for @doCommandBySelector:commandDictionary:@
-doCommandBySelector_commandDictionarySelector :: Selector
+doCommandBySelector_commandDictionarySelector :: Selector '[Sel, Id NSDictionary] ()
 doCommandBySelector_commandDictionarySelector = mkSelector "doCommandBySelector:commandDictionary:"
 
 -- | @Selector@ for @hidePalettes@
-hidePalettesSelector :: Selector
+hidePalettesSelector :: Selector '[] ()
 hidePalettesSelector = mkSelector "hidePalettes"
 
 -- | @Selector@ for @menu@
-menuSelector :: Selector
+menuSelector :: Selector '[] (Id NSMenu)
 menuSelector = mkSelector "menu"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @server@
-serverSelector :: Selector
+serverSelector :: Selector '[] (Id IMKServer)
 serverSelector = mkSelector "server"
 
 -- | @Selector@ for @client@
-clientSelector :: Selector
+clientSelector :: Selector '[] RawId
 clientSelector = mkSelector "client"
 
 -- | @Selector@ for @inputControllerWillClose@
-inputControllerWillCloseSelector :: Selector
+inputControllerWillCloseSelector :: Selector '[] ()
 inputControllerWillCloseSelector = mkSelector "inputControllerWillClose"
 
 -- | @Selector@ for @annotationSelected:forCandidate:@
-annotationSelected_forCandidateSelector :: Selector
+annotationSelected_forCandidateSelector :: Selector '[Id NSAttributedString, Id NSAttributedString] ()
 annotationSelected_forCandidateSelector = mkSelector "annotationSelected:forCandidate:"
 
 -- | @Selector@ for @candidateSelectionChanged:@
-candidateSelectionChangedSelector :: Selector
+candidateSelectionChangedSelector :: Selector '[Id NSAttributedString] ()
 candidateSelectionChangedSelector = mkSelector "candidateSelectionChanged:"
 
 -- | @Selector@ for @candidateSelected:@
-candidateSelectedSelector :: Selector
+candidateSelectedSelector :: Selector '[Id NSAttributedString] ()
 candidateSelectedSelector = mkSelector "candidateSelected:"
 

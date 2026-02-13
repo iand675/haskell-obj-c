@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.WebKit.WKContentRuleListStore
   , compileContentRuleListForIdentifier_encodedContentRuleList_completionHandler
   , lookUpContentRuleListForIdentifier_completionHandler
   , removeContentRuleListForIdentifier_completionHandler
-  , defaultStoreSelector
-  , storeWithURLSelector
   , compileContentRuleListForIdentifier_encodedContentRuleList_completionHandlerSelector
+  , defaultStoreSelector
   , lookUpContentRuleListForIdentifier_completionHandlerSelector
   , removeContentRuleListForIdentifier_completionHandlerSelector
+  , storeWithURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,56 +37,51 @@ defaultStore :: IO (Id WKContentRuleListStore)
 defaultStore  =
   do
     cls' <- getRequiredClass "WKContentRuleListStore"
-    sendClassMsg cls' (mkSelector "defaultStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultStoreSelector
 
 -- | @+ storeWithURL:@
 storeWithURL :: IsNSURL url => url -> IO (Id WKContentRuleListStore)
 storeWithURL url =
   do
     cls' <- getRequiredClass "WKContentRuleListStore"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "storeWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' storeWithURLSelector (toNSURL url)
 
 -- | @- compileContentRuleListForIdentifier:encodedContentRuleList:completionHandler:@
 compileContentRuleListForIdentifier_encodedContentRuleList_completionHandler :: (IsWKContentRuleListStore wkContentRuleListStore, IsNSString identifier, IsNSString encodedContentRuleList) => wkContentRuleListStore -> identifier -> encodedContentRuleList -> Ptr () -> IO ()
-compileContentRuleListForIdentifier_encodedContentRuleList_completionHandler wkContentRuleListStore  identifier encodedContentRuleList completionHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr encodedContentRuleList $ \raw_encodedContentRuleList ->
-        sendMsg wkContentRuleListStore (mkSelector "compileContentRuleListForIdentifier:encodedContentRuleList:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_encodedContentRuleList :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+compileContentRuleListForIdentifier_encodedContentRuleList_completionHandler wkContentRuleListStore identifier encodedContentRuleList completionHandler =
+  sendMessage wkContentRuleListStore compileContentRuleListForIdentifier_encodedContentRuleList_completionHandlerSelector (toNSString identifier) (toNSString encodedContentRuleList) completionHandler
 
 -- | @- lookUpContentRuleListForIdentifier:completionHandler:@
 lookUpContentRuleListForIdentifier_completionHandler :: (IsWKContentRuleListStore wkContentRuleListStore, IsNSString identifier) => wkContentRuleListStore -> identifier -> Ptr () -> IO ()
-lookUpContentRuleListForIdentifier_completionHandler wkContentRuleListStore  identifier completionHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg wkContentRuleListStore (mkSelector "lookUpContentRuleListForIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+lookUpContentRuleListForIdentifier_completionHandler wkContentRuleListStore identifier completionHandler =
+  sendMessage wkContentRuleListStore lookUpContentRuleListForIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- | @- removeContentRuleListForIdentifier:completionHandler:@
 removeContentRuleListForIdentifier_completionHandler :: (IsWKContentRuleListStore wkContentRuleListStore, IsNSString identifier) => wkContentRuleListStore -> identifier -> Ptr () -> IO ()
-removeContentRuleListForIdentifier_completionHandler wkContentRuleListStore  identifier completionHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg wkContentRuleListStore (mkSelector "removeContentRuleListForIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+removeContentRuleListForIdentifier_completionHandler wkContentRuleListStore identifier completionHandler =
+  sendMessage wkContentRuleListStore removeContentRuleListForIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultStore@
-defaultStoreSelector :: Selector
+defaultStoreSelector :: Selector '[] (Id WKContentRuleListStore)
 defaultStoreSelector = mkSelector "defaultStore"
 
 -- | @Selector@ for @storeWithURL:@
-storeWithURLSelector :: Selector
+storeWithURLSelector :: Selector '[Id NSURL] (Id WKContentRuleListStore)
 storeWithURLSelector = mkSelector "storeWithURL:"
 
 -- | @Selector@ for @compileContentRuleListForIdentifier:encodedContentRuleList:completionHandler:@
-compileContentRuleListForIdentifier_encodedContentRuleList_completionHandlerSelector :: Selector
+compileContentRuleListForIdentifier_encodedContentRuleList_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 compileContentRuleListForIdentifier_encodedContentRuleList_completionHandlerSelector = mkSelector "compileContentRuleListForIdentifier:encodedContentRuleList:completionHandler:"
 
 -- | @Selector@ for @lookUpContentRuleListForIdentifier:completionHandler:@
-lookUpContentRuleListForIdentifier_completionHandlerSelector :: Selector
+lookUpContentRuleListForIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 lookUpContentRuleListForIdentifier_completionHandlerSelector = mkSelector "lookUpContentRuleListForIdentifier:completionHandler:"
 
 -- | @Selector@ for @removeContentRuleListForIdentifier:completionHandler:@
-removeContentRuleListForIdentifier_completionHandlerSelector :: Selector
+removeContentRuleListForIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 removeContentRuleListForIdentifier_completionHandlerSelector = mkSelector "removeContentRuleListForIdentifier:completionHandler:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.WebKit.WKUserContentController
   , removeContentRuleList
   , removeAllContentRuleLists
   , userScripts
-  , addUserScriptSelector
-  , removeAllUserScriptsSelector
-  , addScriptMessageHandler_contentWorld_nameSelector
+  , addContentRuleListSelector
   , addScriptMessageHandlerWithReply_contentWorld_nameSelector
+  , addScriptMessageHandler_contentWorld_nameSelector
   , addScriptMessageHandler_nameSelector
-  , removeScriptMessageHandlerForName_contentWorldSelector
-  , removeScriptMessageHandlerForNameSelector
+  , addUserScriptSelector
+  , removeAllContentRuleListsSelector
   , removeAllScriptMessageHandlersFromContentWorldSelector
   , removeAllScriptMessageHandlersSelector
-  , addContentRuleListSelector
+  , removeAllUserScriptsSelector
   , removeContentRuleListSelector
-  , removeAllContentRuleListsSelector
+  , removeScriptMessageHandlerForNameSelector
+  , removeScriptMessageHandlerForName_contentWorldSelector
   , userScriptsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,16 +56,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addUserScript:@
 addUserScript :: (IsWKUserContentController wkUserContentController, IsWKUserScript userScript) => wkUserContentController -> userScript -> IO ()
-addUserScript wkUserContentController  userScript =
-  withObjCPtr userScript $ \raw_userScript ->
-      sendMsg wkUserContentController (mkSelector "addUserScript:") retVoid [argPtr (castPtr raw_userScript :: Ptr ())]
+addUserScript wkUserContentController userScript =
+  sendMessage wkUserContentController addUserScriptSelector (toWKUserScript userScript)
 
 -- | Removes all associated user scripts.
 --
 -- ObjC selector: @- removeAllUserScripts@
 removeAllUserScripts :: IsWKUserContentController wkUserContentController => wkUserContentController -> IO ()
-removeAllUserScripts wkUserContentController  =
-    sendMsg wkUserContentController (mkSelector "removeAllUserScripts") retVoid []
+removeAllUserScripts wkUserContentController =
+  sendMessage wkUserContentController removeAllUserScriptsSelector
 
 -- | Adds a script message handler.
 --
@@ -90,10 +86,8 @@ removeAllUserScripts wkUserContentController  =
 --
 -- ObjC selector: @- addScriptMessageHandler:contentWorld:name:@
 addScriptMessageHandler_contentWorld_name :: (IsWKUserContentController wkUserContentController, IsWKContentWorld world, IsNSString name) => wkUserContentController -> RawId -> world -> name -> IO ()
-addScriptMessageHandler_contentWorld_name wkUserContentController  scriptMessageHandler world name =
-  withObjCPtr world $ \raw_world ->
-    withObjCPtr name $ \raw_name ->
-        sendMsg wkUserContentController (mkSelector "addScriptMessageHandler:contentWorld:name:") retVoid [argPtr (castPtr (unRawId scriptMessageHandler) :: Ptr ()), argPtr (castPtr raw_world :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())]
+addScriptMessageHandler_contentWorld_name wkUserContentController scriptMessageHandler world name =
+  sendMessage wkUserContentController addScriptMessageHandler_contentWorld_nameSelector scriptMessageHandler (toWKContentWorld world) (toNSString name)
 
 -- | Adds a script message handler.
 --
@@ -117,10 +111,8 @@ addScriptMessageHandler_contentWorld_name wkUserContentController  scriptMessage
 --
 -- ObjC selector: @- addScriptMessageHandlerWithReply:contentWorld:name:@
 addScriptMessageHandlerWithReply_contentWorld_name :: (IsWKUserContentController wkUserContentController, IsWKContentWorld contentWorld, IsNSString name) => wkUserContentController -> RawId -> contentWorld -> name -> IO ()
-addScriptMessageHandlerWithReply_contentWorld_name wkUserContentController  scriptMessageHandlerWithReply contentWorld name =
-  withObjCPtr contentWorld $ \raw_contentWorld ->
-    withObjCPtr name $ \raw_name ->
-        sendMsg wkUserContentController (mkSelector "addScriptMessageHandlerWithReply:contentWorld:name:") retVoid [argPtr (castPtr (unRawId scriptMessageHandlerWithReply) :: Ptr ()), argPtr (castPtr raw_contentWorld :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())]
+addScriptMessageHandlerWithReply_contentWorld_name wkUserContentController scriptMessageHandlerWithReply contentWorld name =
+  sendMessage wkUserContentController addScriptMessageHandlerWithReply_contentWorld_nameSelector scriptMessageHandlerWithReply (toWKContentWorld contentWorld) (toNSString name)
 
 -- | Adds a script message handler to the main world used by page content itself.
 --
@@ -132,9 +124,8 @@ addScriptMessageHandlerWithReply_contentWorld_name wkUserContentController  scri
 --
 -- ObjC selector: @- addScriptMessageHandler:name:@
 addScriptMessageHandler_name :: (IsWKUserContentController wkUserContentController, IsNSString name) => wkUserContentController -> RawId -> name -> IO ()
-addScriptMessageHandler_name wkUserContentController  scriptMessageHandler name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg wkUserContentController (mkSelector "addScriptMessageHandler:name:") retVoid [argPtr (castPtr (unRawId scriptMessageHandler) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())]
+addScriptMessageHandler_name wkUserContentController scriptMessageHandler name =
+  sendMessage wkUserContentController addScriptMessageHandler_nameSelector scriptMessageHandler (toNSString name)
 
 -- | Removes a script message handler.
 --
@@ -144,10 +135,8 @@ addScriptMessageHandler_name wkUserContentController  scriptMessageHandler name 
 --
 -- ObjC selector: @- removeScriptMessageHandlerForName:contentWorld:@
 removeScriptMessageHandlerForName_contentWorld :: (IsWKUserContentController wkUserContentController, IsNSString name, IsWKContentWorld contentWorld) => wkUserContentController -> name -> contentWorld -> IO ()
-removeScriptMessageHandlerForName_contentWorld wkUserContentController  name contentWorld =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr contentWorld $ \raw_contentWorld ->
-        sendMsg wkUserContentController (mkSelector "removeScriptMessageHandlerForName:contentWorld:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_contentWorld :: Ptr ())]
+removeScriptMessageHandlerForName_contentWorld wkUserContentController name contentWorld =
+  sendMessage wkUserContentController removeScriptMessageHandlerForName_contentWorldSelector (toNSString name) (toWKContentWorld contentWorld)
 
 -- | Removes a script message handler.
 --
@@ -157,9 +146,8 @@ removeScriptMessageHandlerForName_contentWorld wkUserContentController  name con
 --
 -- ObjC selector: @- removeScriptMessageHandlerForName:@
 removeScriptMessageHandlerForName :: (IsWKUserContentController wkUserContentController, IsNSString name) => wkUserContentController -> name -> IO ()
-removeScriptMessageHandlerForName wkUserContentController  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg wkUserContentController (mkSelector "removeScriptMessageHandlerForName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeScriptMessageHandlerForName wkUserContentController name =
+  sendMessage wkUserContentController removeScriptMessageHandlerForNameSelector (toNSString name)
 
 -- | Removes all script message handlers from a given WKContentWorld.
 --
@@ -167,16 +155,15 @@ removeScriptMessageHandlerForName wkUserContentController  name =
 --
 -- ObjC selector: @- removeAllScriptMessageHandlersFromContentWorld:@
 removeAllScriptMessageHandlersFromContentWorld :: (IsWKUserContentController wkUserContentController, IsWKContentWorld contentWorld) => wkUserContentController -> contentWorld -> IO ()
-removeAllScriptMessageHandlersFromContentWorld wkUserContentController  contentWorld =
-  withObjCPtr contentWorld $ \raw_contentWorld ->
-      sendMsg wkUserContentController (mkSelector "removeAllScriptMessageHandlersFromContentWorld:") retVoid [argPtr (castPtr raw_contentWorld :: Ptr ())]
+removeAllScriptMessageHandlersFromContentWorld wkUserContentController contentWorld =
+  sendMessage wkUserContentController removeAllScriptMessageHandlersFromContentWorldSelector (toWKContentWorld contentWorld)
 
 -- | Removes all associated script message handlers.
 --
 -- ObjC selector: @- removeAllScriptMessageHandlers@
 removeAllScriptMessageHandlers :: IsWKUserContentController wkUserContentController => wkUserContentController -> IO ()
-removeAllScriptMessageHandlers wkUserContentController  =
-    sendMsg wkUserContentController (mkSelector "removeAllScriptMessageHandlers") retVoid []
+removeAllScriptMessageHandlers wkUserContentController =
+  sendMessage wkUserContentController removeAllScriptMessageHandlersSelector
 
 -- | Adds a content rule list.
 --
@@ -184,9 +171,8 @@ removeAllScriptMessageHandlers wkUserContentController  =
 --
 -- ObjC selector: @- addContentRuleList:@
 addContentRuleList :: (IsWKUserContentController wkUserContentController, IsWKContentRuleList contentRuleList) => wkUserContentController -> contentRuleList -> IO ()
-addContentRuleList wkUserContentController  contentRuleList =
-  withObjCPtr contentRuleList $ \raw_contentRuleList ->
-      sendMsg wkUserContentController (mkSelector "addContentRuleList:") retVoid [argPtr (castPtr raw_contentRuleList :: Ptr ())]
+addContentRuleList wkUserContentController contentRuleList =
+  sendMessage wkUserContentController addContentRuleListSelector (toWKContentRuleList contentRuleList)
 
 -- | Removes a content rule list.
 --
@@ -194,77 +180,76 @@ addContentRuleList wkUserContentController  contentRuleList =
 --
 -- ObjC selector: @- removeContentRuleList:@
 removeContentRuleList :: (IsWKUserContentController wkUserContentController, IsWKContentRuleList contentRuleList) => wkUserContentController -> contentRuleList -> IO ()
-removeContentRuleList wkUserContentController  contentRuleList =
-  withObjCPtr contentRuleList $ \raw_contentRuleList ->
-      sendMsg wkUserContentController (mkSelector "removeContentRuleList:") retVoid [argPtr (castPtr raw_contentRuleList :: Ptr ())]
+removeContentRuleList wkUserContentController contentRuleList =
+  sendMessage wkUserContentController removeContentRuleListSelector (toWKContentRuleList contentRuleList)
 
 -- | Removes all associated content rule lists.
 --
 -- ObjC selector: @- removeAllContentRuleLists@
 removeAllContentRuleLists :: IsWKUserContentController wkUserContentController => wkUserContentController -> IO ()
-removeAllContentRuleLists wkUserContentController  =
-    sendMsg wkUserContentController (mkSelector "removeAllContentRuleLists") retVoid []
+removeAllContentRuleLists wkUserContentController =
+  sendMessage wkUserContentController removeAllContentRuleListsSelector
 
 -- | The user scripts associated with this user content controller.
 --
 -- ObjC selector: @- userScripts@
 userScripts :: IsWKUserContentController wkUserContentController => wkUserContentController -> IO (Id NSArray)
-userScripts wkUserContentController  =
-    sendMsg wkUserContentController (mkSelector "userScripts") (retPtr retVoid) [] >>= retainedObject . castPtr
+userScripts wkUserContentController =
+  sendMessage wkUserContentController userScriptsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addUserScript:@
-addUserScriptSelector :: Selector
+addUserScriptSelector :: Selector '[Id WKUserScript] ()
 addUserScriptSelector = mkSelector "addUserScript:"
 
 -- | @Selector@ for @removeAllUserScripts@
-removeAllUserScriptsSelector :: Selector
+removeAllUserScriptsSelector :: Selector '[] ()
 removeAllUserScriptsSelector = mkSelector "removeAllUserScripts"
 
 -- | @Selector@ for @addScriptMessageHandler:contentWorld:name:@
-addScriptMessageHandler_contentWorld_nameSelector :: Selector
+addScriptMessageHandler_contentWorld_nameSelector :: Selector '[RawId, Id WKContentWorld, Id NSString] ()
 addScriptMessageHandler_contentWorld_nameSelector = mkSelector "addScriptMessageHandler:contentWorld:name:"
 
 -- | @Selector@ for @addScriptMessageHandlerWithReply:contentWorld:name:@
-addScriptMessageHandlerWithReply_contentWorld_nameSelector :: Selector
+addScriptMessageHandlerWithReply_contentWorld_nameSelector :: Selector '[RawId, Id WKContentWorld, Id NSString] ()
 addScriptMessageHandlerWithReply_contentWorld_nameSelector = mkSelector "addScriptMessageHandlerWithReply:contentWorld:name:"
 
 -- | @Selector@ for @addScriptMessageHandler:name:@
-addScriptMessageHandler_nameSelector :: Selector
+addScriptMessageHandler_nameSelector :: Selector '[RawId, Id NSString] ()
 addScriptMessageHandler_nameSelector = mkSelector "addScriptMessageHandler:name:"
 
 -- | @Selector@ for @removeScriptMessageHandlerForName:contentWorld:@
-removeScriptMessageHandlerForName_contentWorldSelector :: Selector
+removeScriptMessageHandlerForName_contentWorldSelector :: Selector '[Id NSString, Id WKContentWorld] ()
 removeScriptMessageHandlerForName_contentWorldSelector = mkSelector "removeScriptMessageHandlerForName:contentWorld:"
 
 -- | @Selector@ for @removeScriptMessageHandlerForName:@
-removeScriptMessageHandlerForNameSelector :: Selector
+removeScriptMessageHandlerForNameSelector :: Selector '[Id NSString] ()
 removeScriptMessageHandlerForNameSelector = mkSelector "removeScriptMessageHandlerForName:"
 
 -- | @Selector@ for @removeAllScriptMessageHandlersFromContentWorld:@
-removeAllScriptMessageHandlersFromContentWorldSelector :: Selector
+removeAllScriptMessageHandlersFromContentWorldSelector :: Selector '[Id WKContentWorld] ()
 removeAllScriptMessageHandlersFromContentWorldSelector = mkSelector "removeAllScriptMessageHandlersFromContentWorld:"
 
 -- | @Selector@ for @removeAllScriptMessageHandlers@
-removeAllScriptMessageHandlersSelector :: Selector
+removeAllScriptMessageHandlersSelector :: Selector '[] ()
 removeAllScriptMessageHandlersSelector = mkSelector "removeAllScriptMessageHandlers"
 
 -- | @Selector@ for @addContentRuleList:@
-addContentRuleListSelector :: Selector
+addContentRuleListSelector :: Selector '[Id WKContentRuleList] ()
 addContentRuleListSelector = mkSelector "addContentRuleList:"
 
 -- | @Selector@ for @removeContentRuleList:@
-removeContentRuleListSelector :: Selector
+removeContentRuleListSelector :: Selector '[Id WKContentRuleList] ()
 removeContentRuleListSelector = mkSelector "removeContentRuleList:"
 
 -- | @Selector@ for @removeAllContentRuleLists@
-removeAllContentRuleListsSelector :: Selector
+removeAllContentRuleListsSelector :: Selector '[] ()
 removeAllContentRuleListsSelector = mkSelector "removeAllContentRuleLists"
 
 -- | @Selector@ for @userScripts@
-userScriptsSelector :: Selector
+userScriptsSelector :: Selector '[] (Id NSArray)
 userScriptsSelector = mkSelector "userScripts"
 

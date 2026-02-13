@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AVFAudio.AVMIDIPitchBendEvent
   , value
   , setValue
   , initWithChannel_valueSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:value:@
 initWithChannel_value :: IsAVMIDIPitchBendEvent avmidiPitchBendEvent => avmidiPitchBendEvent -> CUInt -> CUInt -> IO (Id AVMIDIPitchBendEvent)
-initWithChannel_value avmidiPitchBendEvent  channel value =
-    sendMsg avmidiPitchBendEvent (mkSelector "initWithChannel:value:") (retPtr retVoid) [argCUInt channel, argCUInt value] >>= ownedObject . castPtr
+initWithChannel_value avmidiPitchBendEvent channel value =
+  sendOwnedMessage avmidiPitchBendEvent initWithChannel_valueSelector channel value
 
 -- | value
 --
@@ -56,8 +53,8 @@ initWithChannel_value avmidiPitchBendEvent  channel value =
 --
 -- ObjC selector: @- value@
 value :: IsAVMIDIPitchBendEvent avmidiPitchBendEvent => avmidiPitchBendEvent -> IO CUInt
-value avmidiPitchBendEvent  =
-    sendMsg avmidiPitchBendEvent (mkSelector "value") retCUInt []
+value avmidiPitchBendEvent =
+  sendMessage avmidiPitchBendEvent valueSelector
 
 -- | value
 --
@@ -65,22 +62,22 @@ value avmidiPitchBendEvent  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsAVMIDIPitchBendEvent avmidiPitchBendEvent => avmidiPitchBendEvent -> CUInt -> IO ()
-setValue avmidiPitchBendEvent  value =
-    sendMsg avmidiPitchBendEvent (mkSelector "setValue:") retVoid [argCUInt value]
+setValue avmidiPitchBendEvent value =
+  sendMessage avmidiPitchBendEvent setValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:value:@
-initWithChannel_valueSelector :: Selector
+initWithChannel_valueSelector :: Selector '[CUInt, CUInt] (Id AVMIDIPitchBendEvent)
 initWithChannel_valueSelector = mkSelector "initWithChannel:value:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CUInt
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CUInt] ()
 setValueSelector = mkSelector "setValue:"
 

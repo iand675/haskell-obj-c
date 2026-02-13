@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,20 +28,20 @@ module ObjC.PHASE.PHASEGeneratorNodeDefinition
   , rateMetaParameterDefinition
   , setRateMetaParameterDefinition
   , mixerDefinition
-  , initSelector
-  , newSelector
-  , setCalibrationMode_levelSelector
   , calibrationModeSelector
-  , levelSelector
-  , rateSelector
-  , setRateSelector
-  , groupSelector
-  , setGroupSelector
   , gainMetaParameterDefinitionSelector
-  , setGainMetaParameterDefinitionSelector
-  , rateMetaParameterDefinitionSelector
-  , setRateMetaParameterDefinitionSelector
+  , groupSelector
+  , initSelector
+  , levelSelector
   , mixerDefinitionSelector
+  , newSelector
+  , rateMetaParameterDefinitionSelector
+  , rateSelector
+  , setCalibrationMode_levelSelector
+  , setGainMetaParameterDefinitionSelector
+  , setGroupSelector
+  , setRateMetaParameterDefinitionSelector
+  , setRateSelector
 
   -- * Enum types
   , PHASECalibrationMode(PHASECalibrationMode)
@@ -50,15 +51,11 @@ module ObjC.PHASE.PHASEGeneratorNodeDefinition
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,15 +65,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO (Id PHASEGeneratorNodeDefinition)
-init_ phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseGeneratorNodeDefinition =
+  sendOwnedMessage phaseGeneratorNodeDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEGeneratorNodeDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEGeneratorNodeDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setCalibrationMode:level
 --
@@ -90,8 +87,8 @@ new  =
 --
 -- ObjC selector: @- setCalibrationMode:level:@
 setCalibrationMode_level :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> PHASECalibrationMode -> CDouble -> IO ()
-setCalibrationMode_level phaseGeneratorNodeDefinition  calibrationMode level =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "setCalibrationMode:level:") retVoid [argCLong (coerce calibrationMode), argCDouble level]
+setCalibrationMode_level phaseGeneratorNodeDefinition calibrationMode level =
+  sendMessage phaseGeneratorNodeDefinition setCalibrationMode_levelSelector calibrationMode level
 
 -- | calibrationMode
 --
@@ -99,8 +96,8 @@ setCalibrationMode_level phaseGeneratorNodeDefinition  calibrationMode level =
 --
 -- ObjC selector: @- calibrationMode@
 calibrationMode :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO PHASECalibrationMode
-calibrationMode phaseGeneratorNodeDefinition  =
-    fmap (coerce :: CLong -> PHASECalibrationMode) $ sendMsg phaseGeneratorNodeDefinition (mkSelector "calibrationMode") retCLong []
+calibrationMode phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition calibrationModeSelector
 
 -- | level
 --
@@ -110,8 +107,8 @@ calibrationMode phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- level@
 level :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO CDouble
-level phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "level") retCDouble []
+level phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition levelSelector
 
 -- | rate
 --
@@ -121,8 +118,8 @@ level phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- rate@
 rate :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO CDouble
-rate phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "rate") retCDouble []
+rate phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition rateSelector
 
 -- | rate
 --
@@ -132,8 +129,8 @@ rate phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> CDouble -> IO ()
-setRate phaseGeneratorNodeDefinition  value =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "setRate:") retVoid [argCDouble value]
+setRate phaseGeneratorNodeDefinition value =
+  sendMessage phaseGeneratorNodeDefinition setRateSelector value
 
 -- | group
 --
@@ -141,8 +138,8 @@ setRate phaseGeneratorNodeDefinition  value =
 --
 -- ObjC selector: @- group@
 group :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO (Id PHASEGroup)
-group phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition groupSelector
 
 -- | group
 --
@@ -150,9 +147,8 @@ group phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- setGroup:@
 setGroup :: (IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition, IsPHASEGroup value) => phaseGeneratorNodeDefinition -> value -> IO ()
-setGroup phaseGeneratorNodeDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseGeneratorNodeDefinition (mkSelector "setGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroup phaseGeneratorNodeDefinition value =
+  sendMessage phaseGeneratorNodeDefinition setGroupSelector (toPHASEGroup value)
 
 -- | gainMetaParameterDefinition
 --
@@ -160,8 +156,8 @@ setGroup phaseGeneratorNodeDefinition  value =
 --
 -- ObjC selector: @- gainMetaParameterDefinition@
 gainMetaParameterDefinition :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-gainMetaParameterDefinition phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "gainMetaParameterDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+gainMetaParameterDefinition phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition gainMetaParameterDefinitionSelector
 
 -- | gainMetaParameterDefinition
 --
@@ -169,9 +165,8 @@ gainMetaParameterDefinition phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- setGainMetaParameterDefinition:@
 setGainMetaParameterDefinition :: (IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition, IsPHASENumberMetaParameterDefinition value) => phaseGeneratorNodeDefinition -> value -> IO ()
-setGainMetaParameterDefinition phaseGeneratorNodeDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseGeneratorNodeDefinition (mkSelector "setGainMetaParameterDefinition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGainMetaParameterDefinition phaseGeneratorNodeDefinition value =
+  sendMessage phaseGeneratorNodeDefinition setGainMetaParameterDefinitionSelector (toPHASENumberMetaParameterDefinition value)
 
 -- | rateMetaParameterDefinition
 --
@@ -179,8 +174,8 @@ setGainMetaParameterDefinition phaseGeneratorNodeDefinition  value =
 --
 -- ObjC selector: @- rateMetaParameterDefinition@
 rateMetaParameterDefinition :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-rateMetaParameterDefinition phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "rateMetaParameterDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+rateMetaParameterDefinition phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition rateMetaParameterDefinitionSelector
 
 -- | rateMetaParameterDefinition
 --
@@ -188,9 +183,8 @@ rateMetaParameterDefinition phaseGeneratorNodeDefinition  =
 --
 -- ObjC selector: @- setRateMetaParameterDefinition:@
 setRateMetaParameterDefinition :: (IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition, IsPHASENumberMetaParameterDefinition value) => phaseGeneratorNodeDefinition -> value -> IO ()
-setRateMetaParameterDefinition phaseGeneratorNodeDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseGeneratorNodeDefinition (mkSelector "setRateMetaParameterDefinition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRateMetaParameterDefinition phaseGeneratorNodeDefinition value =
+  sendMessage phaseGeneratorNodeDefinition setRateMetaParameterDefinitionSelector (toPHASENumberMetaParameterDefinition value)
 
 -- | mixerDefinition
 --
@@ -198,66 +192,66 @@ setRateMetaParameterDefinition phaseGeneratorNodeDefinition  value =
 --
 -- ObjC selector: @- mixerDefinition@
 mixerDefinition :: IsPHASEGeneratorNodeDefinition phaseGeneratorNodeDefinition => phaseGeneratorNodeDefinition -> IO (Id PHASEMixerDefinition)
-mixerDefinition phaseGeneratorNodeDefinition  =
-    sendMsg phaseGeneratorNodeDefinition (mkSelector "mixerDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+mixerDefinition phaseGeneratorNodeDefinition =
+  sendMessage phaseGeneratorNodeDefinition mixerDefinitionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEGeneratorNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEGeneratorNodeDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setCalibrationMode:level:@
-setCalibrationMode_levelSelector :: Selector
+setCalibrationMode_levelSelector :: Selector '[PHASECalibrationMode, CDouble] ()
 setCalibrationMode_levelSelector = mkSelector "setCalibrationMode:level:"
 
 -- | @Selector@ for @calibrationMode@
-calibrationModeSelector :: Selector
+calibrationModeSelector :: Selector '[] PHASECalibrationMode
 calibrationModeSelector = mkSelector "calibrationMode"
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] CDouble
 levelSelector = mkSelector "level"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CDouble
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CDouble] ()
 setRateSelector = mkSelector "setRate:"
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id PHASEGroup)
 groupSelector = mkSelector "group"
 
 -- | @Selector@ for @setGroup:@
-setGroupSelector :: Selector
+setGroupSelector :: Selector '[Id PHASEGroup] ()
 setGroupSelector = mkSelector "setGroup:"
 
 -- | @Selector@ for @gainMetaParameterDefinition@
-gainMetaParameterDefinitionSelector :: Selector
+gainMetaParameterDefinitionSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 gainMetaParameterDefinitionSelector = mkSelector "gainMetaParameterDefinition"
 
 -- | @Selector@ for @setGainMetaParameterDefinition:@
-setGainMetaParameterDefinitionSelector :: Selector
+setGainMetaParameterDefinitionSelector :: Selector '[Id PHASENumberMetaParameterDefinition] ()
 setGainMetaParameterDefinitionSelector = mkSelector "setGainMetaParameterDefinition:"
 
 -- | @Selector@ for @rateMetaParameterDefinition@
-rateMetaParameterDefinitionSelector :: Selector
+rateMetaParameterDefinitionSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 rateMetaParameterDefinitionSelector = mkSelector "rateMetaParameterDefinition"
 
 -- | @Selector@ for @setRateMetaParameterDefinition:@
-setRateMetaParameterDefinitionSelector :: Selector
+setRateMetaParameterDefinitionSelector :: Selector '[Id PHASENumberMetaParameterDefinition] ()
 setRateMetaParameterDefinitionSelector = mkSelector "setRateMetaParameterDefinition:"
 
 -- | @Selector@ for @mixerDefinition@
-mixerDefinitionSelector :: Selector
+mixerDefinitionSelector :: Selector '[] (Id PHASEMixerDefinition)
 mixerDefinitionSelector = mkSelector "mixerDefinition"
 

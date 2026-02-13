@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.CoreMIDI.MIDICIDiscoveryManager
   , IsMIDICIDiscoveryManager(..)
   , sharedInstance
   , discoverWithHandler
-  , sharedInstanceSelector
   , discoverWithHandlerSelector
+  , sharedInstanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,22 +31,22 @@ sharedInstance :: IO (Id MIDICIDiscoveryManager)
 sharedInstance  =
   do
     cls' <- getRequiredClass "MIDICIDiscoveryManager"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | @- discoverWithHandler:@
 discoverWithHandler :: IsMIDICIDiscoveryManager midiciDiscoveryManager => midiciDiscoveryManager -> Ptr () -> IO ()
-discoverWithHandler midiciDiscoveryManager  completedHandler =
-    sendMsg midiciDiscoveryManager (mkSelector "discoverWithHandler:") retVoid [argPtr (castPtr completedHandler :: Ptr ())]
+discoverWithHandler midiciDiscoveryManager completedHandler =
+  sendMessage midiciDiscoveryManager discoverWithHandlerSelector completedHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id MIDICIDiscoveryManager)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @discoverWithHandler:@
-discoverWithHandlerSelector :: Selector
+discoverWithHandlerSelector :: Selector '[Ptr ()] ()
 discoverWithHandlerSelector = mkSelector "discoverWithHandler:"
 

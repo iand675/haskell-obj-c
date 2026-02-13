@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.UniformTypeIdentifiers.NSItemProvider
   , registeredContentTypes
   , registeredContentTypesForOpenInPlace
   , initWithContentsOfURL_contentType_openInPlace_coordinated_visibilitySelector
+  , loadDataRepresentationForContentType_completionHandlerSelector
+  , loadFileRepresentationForContentType_openInPlace_completionHandlerSelector
   , registerDataRepresentationForContentType_visibility_loadHandlerSelector
   , registerFileRepresentationForContentType_visibility_openInPlace_loadHandlerSelector
   , registeredContentTypesConformingToContentTypeSelector
-  , loadDataRepresentationForContentType_completionHandlerSelector
-  , loadFileRepresentationForContentType_openInPlace_completionHandlerSelector
-  , registeredContentTypesSelector
   , registeredContentTypesForOpenInPlaceSelector
+  , registeredContentTypesSelector
 
   -- * Enum types
   , NSItemProviderRepresentationVisibility(NSItemProviderRepresentationVisibility)
@@ -33,15 +34,11 @@ module ObjC.UniformTypeIdentifiers.NSItemProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,10 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithContentsOfURL:contentType:openInPlace:coordinated:visibility:@
 initWithContentsOfURL_contentType_openInPlace_coordinated_visibility :: (IsNSItemProvider nsItemProvider, IsNSURL fileURL, IsUTType contentType) => nsItemProvider -> fileURL -> contentType -> Bool -> Bool -> NSItemProviderRepresentationVisibility -> IO (Id NSItemProvider)
-initWithContentsOfURL_contentType_openInPlace_coordinated_visibility nsItemProvider  fileURL contentType openInPlace coordinated visibility =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr contentType $ \raw_contentType ->
-        sendMsg nsItemProvider (mkSelector "initWithContentsOfURL:contentType:openInPlace:coordinated:visibility:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ()), argCULong (if openInPlace then 1 else 0), argCULong (if coordinated then 1 else 0), argCLong (coerce visibility)] >>= ownedObject . castPtr
+initWithContentsOfURL_contentType_openInPlace_coordinated_visibility nsItemProvider fileURL contentType openInPlace coordinated visibility =
+  sendOwnedMessage nsItemProvider initWithContentsOfURL_contentType_openInPlace_coordinated_visibilitySelector (toNSURL fileURL) (toUTType contentType) openInPlace coordinated visibility
 
 -- | Register a representation backed by an @NSData@
 --
@@ -82,9 +77,8 @@ initWithContentsOfURL_contentType_openInPlace_coordinated_visibility nsItemProvi
 --
 -- ObjC selector: @- registerDataRepresentationForContentType:visibility:loadHandler:@
 registerDataRepresentationForContentType_visibility_loadHandler :: (IsNSItemProvider nsItemProvider, IsUTType contentType) => nsItemProvider -> contentType -> NSItemProviderRepresentationVisibility -> Ptr () -> IO ()
-registerDataRepresentationForContentType_visibility_loadHandler nsItemProvider  contentType visibility loadHandler =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsItemProvider (mkSelector "registerDataRepresentationForContentType:visibility:loadHandler:") retVoid [argPtr (castPtr raw_contentType :: Ptr ()), argCLong (coerce visibility), argPtr (castPtr loadHandler :: Ptr ())]
+registerDataRepresentationForContentType_visibility_loadHandler nsItemProvider contentType visibility loadHandler =
+  sendMessage nsItemProvider registerDataRepresentationForContentType_visibility_loadHandlerSelector (toUTType contentType) visibility loadHandler
 
 -- | Register a representation backed by a file
 --
@@ -104,9 +98,8 @@ registerDataRepresentationForContentType_visibility_loadHandler nsItemProvider  
 --
 -- ObjC selector: @- registerFileRepresentationForContentType:visibility:openInPlace:loadHandler:@
 registerFileRepresentationForContentType_visibility_openInPlace_loadHandler :: (IsNSItemProvider nsItemProvider, IsUTType contentType) => nsItemProvider -> contentType -> NSItemProviderRepresentationVisibility -> Bool -> Ptr () -> IO ()
-registerFileRepresentationForContentType_visibility_openInPlace_loadHandler nsItemProvider  contentType visibility openInPlace loadHandler =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsItemProvider (mkSelector "registerFileRepresentationForContentType:visibility:openInPlace:loadHandler:") retVoid [argPtr (castPtr raw_contentType :: Ptr ()), argCLong (coerce visibility), argCULong (if openInPlace then 1 else 0), argPtr (castPtr loadHandler :: Ptr ())]
+registerFileRepresentationForContentType_visibility_openInPlace_loadHandler nsItemProvider contentType visibility openInPlace loadHandler =
+  sendMessage nsItemProvider registerFileRepresentationForContentType_visibility_openInPlace_loadHandlerSelector (toUTType contentType) visibility openInPlace loadHandler
 
 -- | Return an array of registered content types that conform to a given content type.
 --
@@ -114,9 +107,8 @@ registerFileRepresentationForContentType_visibility_openInPlace_loadHandler nsIt
 --
 -- ObjC selector: @- registeredContentTypesConformingToContentType:@
 registeredContentTypesConformingToContentType :: (IsNSItemProvider nsItemProvider, IsUTType contentType) => nsItemProvider -> contentType -> IO (Id NSArray)
-registeredContentTypesConformingToContentType nsItemProvider  contentType =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsItemProvider (mkSelector "registeredContentTypesConformingToContentType:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ())] >>= retainedObject . castPtr
+registeredContentTypesConformingToContentType nsItemProvider contentType =
+  sendMessage nsItemProvider registeredContentTypesConformingToContentTypeSelector (toUTType contentType)
 
 -- | Load a representation as data
 --
@@ -132,9 +124,8 @@ registeredContentTypesConformingToContentType nsItemProvider  contentType =
 --
 -- ObjC selector: @- loadDataRepresentationForContentType:completionHandler:@
 loadDataRepresentationForContentType_completionHandler :: (IsNSItemProvider nsItemProvider, IsUTType contentType) => nsItemProvider -> contentType -> Ptr () -> IO (Id NSProgress)
-loadDataRepresentationForContentType_completionHandler nsItemProvider  contentType completionHandler =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsItemProvider (mkSelector "loadDataRepresentationForContentType:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+loadDataRepresentationForContentType_completionHandler nsItemProvider contentType completionHandler =
+  sendMessage nsItemProvider loadDataRepresentationForContentType_completionHandlerSelector (toUTType contentType) completionHandler
 
 -- | Load a representation as a file
 --
@@ -156,9 +147,8 @@ loadDataRepresentationForContentType_completionHandler nsItemProvider  contentTy
 --
 -- ObjC selector: @- loadFileRepresentationForContentType:openInPlace:completionHandler:@
 loadFileRepresentationForContentType_openInPlace_completionHandler :: (IsNSItemProvider nsItemProvider, IsUTType contentType) => nsItemProvider -> contentType -> Bool -> Ptr () -> IO (Id NSProgress)
-loadFileRepresentationForContentType_openInPlace_completionHandler nsItemProvider  contentType openInPlace completionHandler =
-  withObjCPtr contentType $ \raw_contentType ->
-      sendMsg nsItemProvider (mkSelector "loadFileRepresentationForContentType:openInPlace:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_contentType :: Ptr ()), argCULong (if openInPlace then 1 else 0), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+loadFileRepresentationForContentType_openInPlace_completionHandler nsItemProvider contentType openInPlace completionHandler =
+  sendMessage nsItemProvider loadFileRepresentationForContentType_openInPlace_completionHandlerSelector (toUTType contentType) openInPlace completionHandler
 
 -- | Registered content types, in the order they were registered
 --
@@ -166,49 +156,49 @@ loadFileRepresentationForContentType_openInPlace_completionHandler nsItemProvide
 --
 -- ObjC selector: @- registeredContentTypes@
 registeredContentTypes :: IsNSItemProvider nsItemProvider => nsItemProvider -> IO (Id NSArray)
-registeredContentTypes nsItemProvider  =
-    sendMsg nsItemProvider (mkSelector "registeredContentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+registeredContentTypes nsItemProvider =
+  sendMessage nsItemProvider registeredContentTypesSelector
 
 -- | Registered content types that can be loaded as files opened in place
 --
 -- ObjC selector: @- registeredContentTypesForOpenInPlace@
 registeredContentTypesForOpenInPlace :: IsNSItemProvider nsItemProvider => nsItemProvider -> IO (Id NSArray)
-registeredContentTypesForOpenInPlace nsItemProvider  =
-    sendMsg nsItemProvider (mkSelector "registeredContentTypesForOpenInPlace") (retPtr retVoid) [] >>= retainedObject . castPtr
+registeredContentTypesForOpenInPlace nsItemProvider =
+  sendMessage nsItemProvider registeredContentTypesForOpenInPlaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContentsOfURL:contentType:openInPlace:coordinated:visibility:@
-initWithContentsOfURL_contentType_openInPlace_coordinated_visibilitySelector :: Selector
+initWithContentsOfURL_contentType_openInPlace_coordinated_visibilitySelector :: Selector '[Id NSURL, Id UTType, Bool, Bool, NSItemProviderRepresentationVisibility] (Id NSItemProvider)
 initWithContentsOfURL_contentType_openInPlace_coordinated_visibilitySelector = mkSelector "initWithContentsOfURL:contentType:openInPlace:coordinated:visibility:"
 
 -- | @Selector@ for @registerDataRepresentationForContentType:visibility:loadHandler:@
-registerDataRepresentationForContentType_visibility_loadHandlerSelector :: Selector
+registerDataRepresentationForContentType_visibility_loadHandlerSelector :: Selector '[Id UTType, NSItemProviderRepresentationVisibility, Ptr ()] ()
 registerDataRepresentationForContentType_visibility_loadHandlerSelector = mkSelector "registerDataRepresentationForContentType:visibility:loadHandler:"
 
 -- | @Selector@ for @registerFileRepresentationForContentType:visibility:openInPlace:loadHandler:@
-registerFileRepresentationForContentType_visibility_openInPlace_loadHandlerSelector :: Selector
+registerFileRepresentationForContentType_visibility_openInPlace_loadHandlerSelector :: Selector '[Id UTType, NSItemProviderRepresentationVisibility, Bool, Ptr ()] ()
 registerFileRepresentationForContentType_visibility_openInPlace_loadHandlerSelector = mkSelector "registerFileRepresentationForContentType:visibility:openInPlace:loadHandler:"
 
 -- | @Selector@ for @registeredContentTypesConformingToContentType:@
-registeredContentTypesConformingToContentTypeSelector :: Selector
+registeredContentTypesConformingToContentTypeSelector :: Selector '[Id UTType] (Id NSArray)
 registeredContentTypesConformingToContentTypeSelector = mkSelector "registeredContentTypesConformingToContentType:"
 
 -- | @Selector@ for @loadDataRepresentationForContentType:completionHandler:@
-loadDataRepresentationForContentType_completionHandlerSelector :: Selector
+loadDataRepresentationForContentType_completionHandlerSelector :: Selector '[Id UTType, Ptr ()] (Id NSProgress)
 loadDataRepresentationForContentType_completionHandlerSelector = mkSelector "loadDataRepresentationForContentType:completionHandler:"
 
 -- | @Selector@ for @loadFileRepresentationForContentType:openInPlace:completionHandler:@
-loadFileRepresentationForContentType_openInPlace_completionHandlerSelector :: Selector
+loadFileRepresentationForContentType_openInPlace_completionHandlerSelector :: Selector '[Id UTType, Bool, Ptr ()] (Id NSProgress)
 loadFileRepresentationForContentType_openInPlace_completionHandlerSelector = mkSelector "loadFileRepresentationForContentType:openInPlace:completionHandler:"
 
 -- | @Selector@ for @registeredContentTypes@
-registeredContentTypesSelector :: Selector
+registeredContentTypesSelector :: Selector '[] (Id NSArray)
 registeredContentTypesSelector = mkSelector "registeredContentTypes"
 
 -- | @Selector@ for @registeredContentTypesForOpenInPlace@
-registeredContentTypesForOpenInPlaceSelector :: Selector
+registeredContentTypesForOpenInPlaceSelector :: Selector '[] (Id NSArray)
 registeredContentTypesForOpenInPlaceSelector = mkSelector "registeredContentTypesForOpenInPlace"
 

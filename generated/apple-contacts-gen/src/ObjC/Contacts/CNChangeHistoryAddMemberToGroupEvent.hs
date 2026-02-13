@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Contacts.CNChangeHistoryAddMemberToGroupEvent
   , IsCNChangeHistoryAddMemberToGroupEvent(..)
   , member
   , group
-  , memberSelector
   , groupSelector
+  , memberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,23 +30,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- member@
 member :: IsCNChangeHistoryAddMemberToGroupEvent cnChangeHistoryAddMemberToGroupEvent => cnChangeHistoryAddMemberToGroupEvent -> IO (Id CNContact)
-member cnChangeHistoryAddMemberToGroupEvent  =
-    sendMsg cnChangeHistoryAddMemberToGroupEvent (mkSelector "member") (retPtr retVoid) [] >>= retainedObject . castPtr
+member cnChangeHistoryAddMemberToGroupEvent =
+  sendMessage cnChangeHistoryAddMemberToGroupEvent memberSelector
 
 -- | @- group@
 group :: IsCNChangeHistoryAddMemberToGroupEvent cnChangeHistoryAddMemberToGroupEvent => cnChangeHistoryAddMemberToGroupEvent -> IO (Id CNGroup)
-group cnChangeHistoryAddMemberToGroupEvent  =
-    sendMsg cnChangeHistoryAddMemberToGroupEvent (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group cnChangeHistoryAddMemberToGroupEvent =
+  sendMessage cnChangeHistoryAddMemberToGroupEvent groupSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @member@
-memberSelector :: Selector
+memberSelector :: Selector '[] (Id CNContact)
 memberSelector = mkSelector "member"
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id CNGroup)
 groupSelector = mkSelector "group"
 

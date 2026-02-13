@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Accessibility.AXMathExpressionNumber
   , IsAXMathExpressionNumber(..)
   , initWithContent
   , content
-  , initWithContentSelector
   , contentSelector
+  , initWithContentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithContent:@
 initWithContent :: (IsAXMathExpressionNumber axMathExpressionNumber, IsNSString content) => axMathExpressionNumber -> content -> IO (Id AXMathExpressionNumber)
-initWithContent axMathExpressionNumber  content =
-  withObjCPtr content $ \raw_content ->
-      sendMsg axMathExpressionNumber (mkSelector "initWithContent:") (retPtr retVoid) [argPtr (castPtr raw_content :: Ptr ())] >>= ownedObject . castPtr
+initWithContent axMathExpressionNumber content =
+  sendOwnedMessage axMathExpressionNumber initWithContentSelector (toNSString content)
 
 -- | @- content@
 content :: IsAXMathExpressionNumber axMathExpressionNumber => axMathExpressionNumber -> IO (Id NSString)
-content axMathExpressionNumber  =
-    sendMsg axMathExpressionNumber (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content axMathExpressionNumber =
+  sendMessage axMathExpressionNumber contentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContent:@
-initWithContentSelector :: Selector
+initWithContentSelector :: Selector '[Id NSString] (Id AXMathExpressionNumber)
 initWithContentSelector = mkSelector "initWithContent:"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id NSString)
 contentSelector = mkSelector "content"
 

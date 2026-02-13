@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,32 +34,32 @@ module ObjC.Foundation.NSNetService
   , hostName
   , addresses
   , port
-  , initWithDomain_type_name_portSelector
+  , addressesSelector
+  , dataFromTXTRecordDictionarySelector
+  , delegateSelector
+  , dictionaryFromTXTRecordDataSelector
+  , domainSelector
+  , getInputStream_outputStreamSelector
+  , hostNameSelector
+  , includesPeerToPeerSelector
   , initWithDomain_type_nameSelector
-  , scheduleInRunLoop_forModeSelector
-  , removeFromRunLoop_forModeSelector
+  , initWithDomain_type_name_portSelector
+  , nameSelector
+  , portSelector
   , publishSelector
   , publishWithOptionsSelector
+  , removeFromRunLoop_forModeSelector
   , resolveSelector
-  , stopSelector
-  , dictionaryFromTXTRecordDataSelector
-  , dataFromTXTRecordDictionarySelector
   , resolveWithTimeoutSelector
-  , getInputStream_outputStreamSelector
+  , scheduleInRunLoop_forModeSelector
+  , setDelegateSelector
+  , setIncludesPeerToPeerSelector
   , setTXTRecordDataSelector
-  , txtRecordDataSelector
   , startMonitoringSelector
   , stopMonitoringSelector
-  , delegateSelector
-  , setDelegateSelector
-  , includesPeerToPeerSelector
-  , setIncludesPeerToPeerSelector
-  , nameSelector
+  , stopSelector
+  , txtRecordDataSelector
   , typeSelector
-  , domainSelector
-  , hostNameSelector
-  , addressesSelector
-  , portSelector
 
   -- * Enum types
   , NSNetServiceOptions(NSNetServiceOptions)
@@ -67,15 +68,11 @@ module ObjC.Foundation.NSNetService
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,258 +81,243 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithDomain:type:name:port:@
 initWithDomain_type_name_port :: (IsNSNetService nsNetService, IsNSString domain, IsNSString type_, IsNSString name) => nsNetService -> domain -> type_ -> name -> CInt -> IO (Id NSNetService)
-initWithDomain_type_name_port nsNetService  domain type_ name port =
-  withObjCPtr domain $ \raw_domain ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr name $ \raw_name ->
-          sendMsg nsNetService (mkSelector "initWithDomain:type:name:port:") (retPtr retVoid) [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argCInt port] >>= ownedObject . castPtr
+initWithDomain_type_name_port nsNetService domain type_ name port =
+  sendOwnedMessage nsNetService initWithDomain_type_name_portSelector (toNSString domain) (toNSString type_) (toNSString name) port
 
 -- | @- initWithDomain:type:name:@
 initWithDomain_type_name :: (IsNSNetService nsNetService, IsNSString domain, IsNSString type_, IsNSString name) => nsNetService -> domain -> type_ -> name -> IO (Id NSNetService)
-initWithDomain_type_name nsNetService  domain type_ name =
-  withObjCPtr domain $ \raw_domain ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr name $ \raw_name ->
-          sendMsg nsNetService (mkSelector "initWithDomain:type:name:") (retPtr retVoid) [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithDomain_type_name nsNetService domain type_ name =
+  sendOwnedMessage nsNetService initWithDomain_type_nameSelector (toNSString domain) (toNSString type_) (toNSString name)
 
 -- | @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsNSNetService nsNetService, IsNSRunLoop aRunLoop, IsNSString mode) => nsNetService -> aRunLoop -> mode -> IO ()
-scheduleInRunLoop_forMode nsNetService  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsNetService (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+scheduleInRunLoop_forMode nsNetService aRunLoop mode =
+  sendMessage nsNetService scheduleInRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsNSNetService nsNetService, IsNSRunLoop aRunLoop, IsNSString mode) => nsNetService -> aRunLoop -> mode -> IO ()
-removeFromRunLoop_forMode nsNetService  aRunLoop mode =
-  withObjCPtr aRunLoop $ \raw_aRunLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsNetService (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_aRunLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeFromRunLoop_forMode nsNetService aRunLoop mode =
+  sendMessage nsNetService removeFromRunLoop_forModeSelector (toNSRunLoop aRunLoop) (toNSString mode)
 
 -- | @- publish@
 publish :: IsNSNetService nsNetService => nsNetService -> IO ()
-publish nsNetService  =
-    sendMsg nsNetService (mkSelector "publish") retVoid []
+publish nsNetService =
+  sendMessage nsNetService publishSelector
 
 -- | @- publishWithOptions:@
 publishWithOptions :: IsNSNetService nsNetService => nsNetService -> NSNetServiceOptions -> IO ()
-publishWithOptions nsNetService  options =
-    sendMsg nsNetService (mkSelector "publishWithOptions:") retVoid [argCULong (coerce options)]
+publishWithOptions nsNetService options =
+  sendMessage nsNetService publishWithOptionsSelector options
 
 -- | @- resolve@
 resolve :: IsNSNetService nsNetService => nsNetService -> IO ()
-resolve nsNetService  =
-    sendMsg nsNetService (mkSelector "resolve") retVoid []
+resolve nsNetService =
+  sendMessage nsNetService resolveSelector
 
 -- | @- stop@
 stop :: IsNSNetService nsNetService => nsNetService -> IO ()
-stop nsNetService  =
-    sendMsg nsNetService (mkSelector "stop") retVoid []
+stop nsNetService =
+  sendMessage nsNetService stopSelector
 
 -- | @+ dictionaryFromTXTRecordData:@
 dictionaryFromTXTRecordData :: IsNSData txtData => txtData -> IO (Id NSDictionary)
 dictionaryFromTXTRecordData txtData =
   do
     cls' <- getRequiredClass "NSNetService"
-    withObjCPtr txtData $ \raw_txtData ->
-      sendClassMsg cls' (mkSelector "dictionaryFromTXTRecordData:") (retPtr retVoid) [argPtr (castPtr raw_txtData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryFromTXTRecordDataSelector (toNSData txtData)
 
 -- | @+ dataFromTXTRecordDictionary:@
 dataFromTXTRecordDictionary :: IsNSDictionary txtDictionary => txtDictionary -> IO (Id NSData)
 dataFromTXTRecordDictionary txtDictionary =
   do
     cls' <- getRequiredClass "NSNetService"
-    withObjCPtr txtDictionary $ \raw_txtDictionary ->
-      sendClassMsg cls' (mkSelector "dataFromTXTRecordDictionary:") (retPtr retVoid) [argPtr (castPtr raw_txtDictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataFromTXTRecordDictionarySelector (toNSDictionary txtDictionary)
 
 -- | @- resolveWithTimeout:@
 resolveWithTimeout :: IsNSNetService nsNetService => nsNetService -> CDouble -> IO ()
-resolveWithTimeout nsNetService  timeout =
-    sendMsg nsNetService (mkSelector "resolveWithTimeout:") retVoid [argCDouble timeout]
+resolveWithTimeout nsNetService timeout =
+  sendMessage nsNetService resolveWithTimeoutSelector timeout
 
 -- | @- getInputStream:outputStream:@
 getInputStream_outputStream :: (IsNSNetService nsNetService, IsNSInputStream inputStream, IsNSOutputStream outputStream) => nsNetService -> inputStream -> outputStream -> IO Bool
-getInputStream_outputStream nsNetService  inputStream outputStream =
-  withObjCPtr inputStream $ \raw_inputStream ->
-    withObjCPtr outputStream $ \raw_outputStream ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNetService (mkSelector "getInputStream:outputStream:") retCULong [argPtr (castPtr raw_inputStream :: Ptr ()), argPtr (castPtr raw_outputStream :: Ptr ())]
+getInputStream_outputStream nsNetService inputStream outputStream =
+  sendMessage nsNetService getInputStream_outputStreamSelector (toNSInputStream inputStream) (toNSOutputStream outputStream)
 
 -- | @- setTXTRecordData:@
 setTXTRecordData :: (IsNSNetService nsNetService, IsNSData recordData) => nsNetService -> recordData -> IO Bool
-setTXTRecordData nsNetService  recordData =
-  withObjCPtr recordData $ \raw_recordData ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNetService (mkSelector "setTXTRecordData:") retCULong [argPtr (castPtr raw_recordData :: Ptr ())]
+setTXTRecordData nsNetService recordData =
+  sendMessage nsNetService setTXTRecordDataSelector (toNSData recordData)
 
 -- | @- TXTRecordData@
 txtRecordData :: IsNSNetService nsNetService => nsNetService -> IO (Id NSData)
-txtRecordData nsNetService  =
-    sendMsg nsNetService (mkSelector "TXTRecordData") (retPtr retVoid) [] >>= retainedObject . castPtr
+txtRecordData nsNetService =
+  sendMessage nsNetService txtRecordDataSelector
 
 -- | @- startMonitoring@
 startMonitoring :: IsNSNetService nsNetService => nsNetService -> IO ()
-startMonitoring nsNetService  =
-    sendMsg nsNetService (mkSelector "startMonitoring") retVoid []
+startMonitoring nsNetService =
+  sendMessage nsNetService startMonitoringSelector
 
 -- | @- stopMonitoring@
 stopMonitoring :: IsNSNetService nsNetService => nsNetService -> IO ()
-stopMonitoring nsNetService  =
-    sendMsg nsNetService (mkSelector "stopMonitoring") retVoid []
+stopMonitoring nsNetService =
+  sendMessage nsNetService stopMonitoringSelector
 
 -- | @- delegate@
 delegate :: IsNSNetService nsNetService => nsNetService -> IO RawId
-delegate nsNetService  =
-    fmap (RawId . castPtr) $ sendMsg nsNetService (mkSelector "delegate") (retPtr retVoid) []
+delegate nsNetService =
+  sendMessage nsNetService delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSNetService nsNetService => nsNetService -> RawId -> IO ()
-setDelegate nsNetService  value =
-    sendMsg nsNetService (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsNetService value =
+  sendMessage nsNetService setDelegateSelector value
 
 -- | @- includesPeerToPeer@
 includesPeerToPeer :: IsNSNetService nsNetService => nsNetService -> IO Bool
-includesPeerToPeer nsNetService  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNetService (mkSelector "includesPeerToPeer") retCULong []
+includesPeerToPeer nsNetService =
+  sendMessage nsNetService includesPeerToPeerSelector
 
 -- | @- setIncludesPeerToPeer:@
 setIncludesPeerToPeer :: IsNSNetService nsNetService => nsNetService -> Bool -> IO ()
-setIncludesPeerToPeer nsNetService  value =
-    sendMsg nsNetService (mkSelector "setIncludesPeerToPeer:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesPeerToPeer nsNetService value =
+  sendMessage nsNetService setIncludesPeerToPeerSelector value
 
 -- | @- name@
 name :: IsNSNetService nsNetService => nsNetService -> IO (Id NSString)
-name nsNetService  =
-    sendMsg nsNetService (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsNetService =
+  sendMessage nsNetService nameSelector
 
 -- | @- type@
 type_ :: IsNSNetService nsNetService => nsNetService -> IO (Id NSString)
-type_ nsNetService  =
-    sendMsg nsNetService (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ nsNetService =
+  sendMessage nsNetService typeSelector
 
 -- | @- domain@
 domain :: IsNSNetService nsNetService => nsNetService -> IO (Id NSString)
-domain nsNetService  =
-    sendMsg nsNetService (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nsNetService =
+  sendMessage nsNetService domainSelector
 
 -- | @- hostName@
 hostName :: IsNSNetService nsNetService => nsNetService -> IO (Id NSString)
-hostName nsNetService  =
-    sendMsg nsNetService (mkSelector "hostName") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostName nsNetService =
+  sendMessage nsNetService hostNameSelector
 
 -- | @- addresses@
 addresses :: IsNSNetService nsNetService => nsNetService -> IO (Id NSArray)
-addresses nsNetService  =
-    sendMsg nsNetService (mkSelector "addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+addresses nsNetService =
+  sendMessage nsNetService addressesSelector
 
 -- | @- port@
 port :: IsNSNetService nsNetService => nsNetService -> IO CLong
-port nsNetService  =
-    sendMsg nsNetService (mkSelector "port") retCLong []
+port nsNetService =
+  sendMessage nsNetService portSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDomain:type:name:port:@
-initWithDomain_type_name_portSelector :: Selector
+initWithDomain_type_name_portSelector :: Selector '[Id NSString, Id NSString, Id NSString, CInt] (Id NSNetService)
 initWithDomain_type_name_portSelector = mkSelector "initWithDomain:type:name:port:"
 
 -- | @Selector@ for @initWithDomain:type:name:@
-initWithDomain_type_nameSelector :: Selector
+initWithDomain_type_nameSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id NSNetService)
 initWithDomain_type_nameSelector = mkSelector "initWithDomain:type:name:"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @publish@
-publishSelector :: Selector
+publishSelector :: Selector '[] ()
 publishSelector = mkSelector "publish"
 
 -- | @Selector@ for @publishWithOptions:@
-publishWithOptionsSelector :: Selector
+publishWithOptionsSelector :: Selector '[NSNetServiceOptions] ()
 publishWithOptionsSelector = mkSelector "publishWithOptions:"
 
 -- | @Selector@ for @resolve@
-resolveSelector :: Selector
+resolveSelector :: Selector '[] ()
 resolveSelector = mkSelector "resolve"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @dictionaryFromTXTRecordData:@
-dictionaryFromTXTRecordDataSelector :: Selector
+dictionaryFromTXTRecordDataSelector :: Selector '[Id NSData] (Id NSDictionary)
 dictionaryFromTXTRecordDataSelector = mkSelector "dictionaryFromTXTRecordData:"
 
 -- | @Selector@ for @dataFromTXTRecordDictionary:@
-dataFromTXTRecordDictionarySelector :: Selector
+dataFromTXTRecordDictionarySelector :: Selector '[Id NSDictionary] (Id NSData)
 dataFromTXTRecordDictionarySelector = mkSelector "dataFromTXTRecordDictionary:"
 
 -- | @Selector@ for @resolveWithTimeout:@
-resolveWithTimeoutSelector :: Selector
+resolveWithTimeoutSelector :: Selector '[CDouble] ()
 resolveWithTimeoutSelector = mkSelector "resolveWithTimeout:"
 
 -- | @Selector@ for @getInputStream:outputStream:@
-getInputStream_outputStreamSelector :: Selector
+getInputStream_outputStreamSelector :: Selector '[Id NSInputStream, Id NSOutputStream] Bool
 getInputStream_outputStreamSelector = mkSelector "getInputStream:outputStream:"
 
 -- | @Selector@ for @setTXTRecordData:@
-setTXTRecordDataSelector :: Selector
+setTXTRecordDataSelector :: Selector '[Id NSData] Bool
 setTXTRecordDataSelector = mkSelector "setTXTRecordData:"
 
 -- | @Selector@ for @TXTRecordData@
-txtRecordDataSelector :: Selector
+txtRecordDataSelector :: Selector '[] (Id NSData)
 txtRecordDataSelector = mkSelector "TXTRecordData"
 
 -- | @Selector@ for @startMonitoring@
-startMonitoringSelector :: Selector
+startMonitoringSelector :: Selector '[] ()
 startMonitoringSelector = mkSelector "startMonitoring"
 
 -- | @Selector@ for @stopMonitoring@
-stopMonitoringSelector :: Selector
+stopMonitoringSelector :: Selector '[] ()
 stopMonitoringSelector = mkSelector "stopMonitoring"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesPeerToPeer@
-includesPeerToPeerSelector :: Selector
+includesPeerToPeerSelector :: Selector '[] Bool
 includesPeerToPeerSelector = mkSelector "includesPeerToPeer"
 
 -- | @Selector@ for @setIncludesPeerToPeer:@
-setIncludesPeerToPeerSelector :: Selector
+setIncludesPeerToPeerSelector :: Selector '[Bool] ()
 setIncludesPeerToPeerSelector = mkSelector "setIncludesPeerToPeer:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @hostName@
-hostNameSelector :: Selector
+hostNameSelector :: Selector '[] (Id NSString)
 hostNameSelector = mkSelector "hostName"
 
 -- | @Selector@ for @addresses@
-addressesSelector :: Selector
+addressesSelector :: Selector '[] (Id NSArray)
 addressesSelector = mkSelector "addresses"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] CLong
 portSelector = mkSelector "port"
 

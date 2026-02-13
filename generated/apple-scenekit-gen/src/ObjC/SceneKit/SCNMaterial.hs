@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,53 +59,53 @@ module ObjC.SceneKit.SCNMaterial
   , setFresnelExponent
   , blendMode
   , setBlendMode
-  , materialSelector
-  , nameSelector
-  , setNameSelector
-  , diffuseSelector
-  , ambientSelector
-  , specularSelector
-  , emissionSelector
-  , transparentSelector
-  , reflectiveSelector
-  , multiplySelector
-  , normalSelector
-  , displacementSelector
   , ambientOcclusionSelector
-  , selfIlluminationSelector
-  , metalnessSelector
-  , roughnessSelector
-  , clearCoatSelector
-  , clearCoatRoughnessSelector
-  , clearCoatNormalSelector
-  , shininessSelector
-  , setShininessSelector
-  , transparencySelector
-  , setTransparencySelector
-  , lightingModelNameSelector
-  , setLightingModelNameSelector
-  , litPerPixelSelector
-  , setLitPerPixelSelector
-  , doubleSidedSelector
-  , setDoubleSidedSelector
-  , fillModeSelector
-  , setFillModeSelector
-  , cullModeSelector
-  , setCullModeSelector
-  , transparencyModeSelector
-  , setTransparencyModeSelector
-  , locksAmbientWithDiffuseSelector
-  , setLocksAmbientWithDiffuseSelector
-  , writesToDepthBufferSelector
-  , setWritesToDepthBufferSelector
-  , colorBufferWriteMaskSelector
-  , setColorBufferWriteMaskSelector
-  , readsFromDepthBufferSelector
-  , setReadsFromDepthBufferSelector
-  , fresnelExponentSelector
-  , setFresnelExponentSelector
+  , ambientSelector
   , blendModeSelector
+  , clearCoatNormalSelector
+  , clearCoatRoughnessSelector
+  , clearCoatSelector
+  , colorBufferWriteMaskSelector
+  , cullModeSelector
+  , diffuseSelector
+  , displacementSelector
+  , doubleSidedSelector
+  , emissionSelector
+  , fillModeSelector
+  , fresnelExponentSelector
+  , lightingModelNameSelector
+  , litPerPixelSelector
+  , locksAmbientWithDiffuseSelector
+  , materialSelector
+  , metalnessSelector
+  , multiplySelector
+  , nameSelector
+  , normalSelector
+  , readsFromDepthBufferSelector
+  , reflectiveSelector
+  , roughnessSelector
+  , selfIlluminationSelector
   , setBlendModeSelector
+  , setColorBufferWriteMaskSelector
+  , setCullModeSelector
+  , setDoubleSidedSelector
+  , setFillModeSelector
+  , setFresnelExponentSelector
+  , setLightingModelNameSelector
+  , setLitPerPixelSelector
+  , setLocksAmbientWithDiffuseSelector
+  , setNameSelector
+  , setReadsFromDepthBufferSelector
+  , setShininessSelector
+  , setTransparencyModeSelector
+  , setTransparencySelector
+  , setWritesToDepthBufferSelector
+  , shininessSelector
+  , specularSelector
+  , transparencyModeSelector
+  , transparencySelector
+  , transparentSelector
+  , writesToDepthBufferSelector
 
   -- * Enum types
   , SCNBlendMode(SCNBlendMode)
@@ -137,15 +138,11 @@ module ObjC.SceneKit.SCNMaterial
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -162,7 +159,7 @@ material :: IO (Id SCNMaterial)
 material  =
   do
     cls' <- getRequiredClass "SCNMaterial"
-    sendClassMsg cls' (mkSelector "material") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' materialSelector
 
 -- | name
 --
@@ -170,8 +167,8 @@ material  =
 --
 -- ObjC selector: @- name@
 name :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id NSString)
-name scnMaterial  =
-    sendMsg scnMaterial (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name scnMaterial =
+  sendMessage scnMaterial nameSelector
 
 -- | name
 --
@@ -179,9 +176,8 @@ name scnMaterial  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSCNMaterial scnMaterial, IsNSString value) => scnMaterial -> value -> IO ()
-setName scnMaterial  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnMaterial (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName scnMaterial value =
+  sendMessage scnMaterial setNameSelector (toNSString value)
 
 -- | diffuse
 --
@@ -191,8 +187,8 @@ setName scnMaterial  value =
 --
 -- ObjC selector: @- diffuse@
 diffuse :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-diffuse scnMaterial  =
-    sendMsg scnMaterial (mkSelector "diffuse") (retPtr retVoid) [] >>= retainedObject . castPtr
+diffuse scnMaterial =
+  sendMessage scnMaterial diffuseSelector
 
 -- | ambient
 --
@@ -202,8 +198,8 @@ diffuse scnMaterial  =
 --
 -- ObjC selector: @- ambient@
 ambient :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-ambient scnMaterial  =
-    sendMsg scnMaterial (mkSelector "ambient") (retPtr retVoid) [] >>= retainedObject . castPtr
+ambient scnMaterial =
+  sendMessage scnMaterial ambientSelector
 
 -- | specular
 --
@@ -213,8 +209,8 @@ ambient scnMaterial  =
 --
 -- ObjC selector: @- specular@
 specular :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-specular scnMaterial  =
-    sendMsg scnMaterial (mkSelector "specular") (retPtr retVoid) [] >>= retainedObject . castPtr
+specular scnMaterial =
+  sendMessage scnMaterial specularSelector
 
 -- | emission
 --
@@ -222,8 +218,8 @@ specular scnMaterial  =
 --
 -- ObjC selector: @- emission@
 emission :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-emission scnMaterial  =
-    sendMsg scnMaterial (mkSelector "emission") (retPtr retVoid) [] >>= retainedObject . castPtr
+emission scnMaterial =
+  sendMessage scnMaterial emissionSelector
 
 -- | transparent
 --
@@ -231,8 +227,8 @@ emission scnMaterial  =
 --
 -- ObjC selector: @- transparent@
 transparent :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-transparent scnMaterial  =
-    sendMsg scnMaterial (mkSelector "transparent") (retPtr retVoid) [] >>= retainedObject . castPtr
+transparent scnMaterial =
+  sendMessage scnMaterial transparentSelector
 
 -- | reflective
 --
@@ -240,8 +236,8 @@ transparent scnMaterial  =
 --
 -- ObjC selector: @- reflective@
 reflective :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-reflective scnMaterial  =
-    sendMsg scnMaterial (mkSelector "reflective") (retPtr retVoid) [] >>= retainedObject . castPtr
+reflective scnMaterial =
+  sendMessage scnMaterial reflectiveSelector
 
 -- | multiply
 --
@@ -249,8 +245,8 @@ reflective scnMaterial  =
 --
 -- ObjC selector: @- multiply@
 multiply :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-multiply scnMaterial  =
-    sendMsg scnMaterial (mkSelector "multiply") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiply scnMaterial =
+  sendMessage scnMaterial multiplySelector
 
 -- | normal
 --
@@ -260,8 +256,8 @@ multiply scnMaterial  =
 --
 -- ObjC selector: @- normal@
 normal :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-normal scnMaterial  =
-    sendMsg scnMaterial (mkSelector "normal") (retPtr retVoid) [] >>= retainedObject . castPtr
+normal scnMaterial =
+  sendMessage scnMaterial normalSelector
 
 -- | displacement
 --
@@ -271,8 +267,8 @@ normal scnMaterial  =
 --
 -- ObjC selector: @- displacement@
 displacement :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-displacement scnMaterial  =
-    sendMsg scnMaterial (mkSelector "displacement") (retPtr retVoid) [] >>= retainedObject . castPtr
+displacement scnMaterial =
+  sendMessage scnMaterial displacementSelector
 
 -- | ambientOcclusion
 --
@@ -280,8 +276,8 @@ displacement scnMaterial  =
 --
 -- ObjC selector: @- ambientOcclusion@
 ambientOcclusion :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-ambientOcclusion scnMaterial  =
-    sendMsg scnMaterial (mkSelector "ambientOcclusion") (retPtr retVoid) [] >>= retainedObject . castPtr
+ambientOcclusion scnMaterial =
+  sendMessage scnMaterial ambientOcclusionSelector
 
 -- | selfIllumination
 --
@@ -289,8 +285,8 @@ ambientOcclusion scnMaterial  =
 --
 -- ObjC selector: @- selfIllumination@
 selfIllumination :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-selfIllumination scnMaterial  =
-    sendMsg scnMaterial (mkSelector "selfIllumination") (retPtr retVoid) [] >>= retainedObject . castPtr
+selfIllumination scnMaterial =
+  sendMessage scnMaterial selfIlluminationSelector
 
 -- | metalness
 --
@@ -298,8 +294,8 @@ selfIllumination scnMaterial  =
 --
 -- ObjC selector: @- metalness@
 metalness :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-metalness scnMaterial  =
-    sendMsg scnMaterial (mkSelector "metalness") (retPtr retVoid) [] >>= retainedObject . castPtr
+metalness scnMaterial =
+  sendMessage scnMaterial metalnessSelector
 
 -- | roughness
 --
@@ -307,8 +303,8 @@ metalness scnMaterial  =
 --
 -- ObjC selector: @- roughness@
 roughness :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-roughness scnMaterial  =
-    sendMsg scnMaterial (mkSelector "roughness") (retPtr retVoid) [] >>= retainedObject . castPtr
+roughness scnMaterial =
+  sendMessage scnMaterial roughnessSelector
 
 -- | clearCoat
 --
@@ -316,8 +312,8 @@ roughness scnMaterial  =
 --
 -- ObjC selector: @- clearCoat@
 clearCoat :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-clearCoat scnMaterial  =
-    sendMsg scnMaterial (mkSelector "clearCoat") (retPtr retVoid) [] >>= retainedObject . castPtr
+clearCoat scnMaterial =
+  sendMessage scnMaterial clearCoatSelector
 
 -- | clearCoatRoughness
 --
@@ -325,8 +321,8 @@ clearCoat scnMaterial  =
 --
 -- ObjC selector: @- clearCoatRoughness@
 clearCoatRoughness :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-clearCoatRoughness scnMaterial  =
-    sendMsg scnMaterial (mkSelector "clearCoatRoughness") (retPtr retVoid) [] >>= retainedObject . castPtr
+clearCoatRoughness scnMaterial =
+  sendMessage scnMaterial clearCoatRoughnessSelector
 
 -- | clearCoatNormal
 --
@@ -334,8 +330,8 @@ clearCoatRoughness scnMaterial  =
 --
 -- ObjC selector: @- clearCoatNormal@
 clearCoatNormal :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id SCNMaterialProperty)
-clearCoatNormal scnMaterial  =
-    sendMsg scnMaterial (mkSelector "clearCoatNormal") (retPtr retVoid) [] >>= retainedObject . castPtr
+clearCoatNormal scnMaterial =
+  sendMessage scnMaterial clearCoatNormalSelector
 
 -- | shininess
 --
@@ -343,8 +339,8 @@ clearCoatNormal scnMaterial  =
 --
 -- ObjC selector: @- shininess@
 shininess :: IsSCNMaterial scnMaterial => scnMaterial -> IO CDouble
-shininess scnMaterial  =
-    sendMsg scnMaterial (mkSelector "shininess") retCDouble []
+shininess scnMaterial =
+  sendMessage scnMaterial shininessSelector
 
 -- | shininess
 --
@@ -352,8 +348,8 @@ shininess scnMaterial  =
 --
 -- ObjC selector: @- setShininess:@
 setShininess :: IsSCNMaterial scnMaterial => scnMaterial -> CDouble -> IO ()
-setShininess scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setShininess:") retVoid [argCDouble value]
+setShininess scnMaterial value =
+  sendMessage scnMaterial setShininessSelector value
 
 -- | transparency
 --
@@ -363,8 +359,8 @@ setShininess scnMaterial  value =
 --
 -- ObjC selector: @- transparency@
 transparency :: IsSCNMaterial scnMaterial => scnMaterial -> IO CDouble
-transparency scnMaterial  =
-    sendMsg scnMaterial (mkSelector "transparency") retCDouble []
+transparency scnMaterial =
+  sendMessage scnMaterial transparencySelector
 
 -- | transparency
 --
@@ -374,8 +370,8 @@ transparency scnMaterial  =
 --
 -- ObjC selector: @- setTransparency:@
 setTransparency :: IsSCNMaterial scnMaterial => scnMaterial -> CDouble -> IO ()
-setTransparency scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setTransparency:") retVoid [argCDouble value]
+setTransparency scnMaterial value =
+  sendMessage scnMaterial setTransparencySelector value
 
 -- | lightingModelName
 --
@@ -383,8 +379,8 @@ setTransparency scnMaterial  value =
 --
 -- ObjC selector: @- lightingModelName@
 lightingModelName :: IsSCNMaterial scnMaterial => scnMaterial -> IO (Id NSString)
-lightingModelName scnMaterial  =
-    sendMsg scnMaterial (mkSelector "lightingModelName") (retPtr retVoid) [] >>= retainedObject . castPtr
+lightingModelName scnMaterial =
+  sendMessage scnMaterial lightingModelNameSelector
 
 -- | lightingModelName
 --
@@ -392,9 +388,8 @@ lightingModelName scnMaterial  =
 --
 -- ObjC selector: @- setLightingModelName:@
 setLightingModelName :: (IsSCNMaterial scnMaterial, IsNSString value) => scnMaterial -> value -> IO ()
-setLightingModelName scnMaterial  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnMaterial (mkSelector "setLightingModelName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLightingModelName scnMaterial value =
+  sendMessage scnMaterial setLightingModelNameSelector (toNSString value)
 
 -- | litPerPixel
 --
@@ -402,8 +397,8 @@ setLightingModelName scnMaterial  value =
 --
 -- ObjC selector: @- litPerPixel@
 litPerPixel :: IsSCNMaterial scnMaterial => scnMaterial -> IO Bool
-litPerPixel scnMaterial  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMaterial (mkSelector "litPerPixel") retCULong []
+litPerPixel scnMaterial =
+  sendMessage scnMaterial litPerPixelSelector
 
 -- | litPerPixel
 --
@@ -411,8 +406,8 @@ litPerPixel scnMaterial  =
 --
 -- ObjC selector: @- setLitPerPixel:@
 setLitPerPixel :: IsSCNMaterial scnMaterial => scnMaterial -> Bool -> IO ()
-setLitPerPixel scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setLitPerPixel:") retVoid [argCULong (if value then 1 else 0)]
+setLitPerPixel scnMaterial value =
+  sendMessage scnMaterial setLitPerPixelSelector value
 
 -- | doubleSided
 --
@@ -420,8 +415,8 @@ setLitPerPixel scnMaterial  value =
 --
 -- ObjC selector: @- doubleSided@
 doubleSided :: IsSCNMaterial scnMaterial => scnMaterial -> IO Bool
-doubleSided scnMaterial  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMaterial (mkSelector "doubleSided") retCULong []
+doubleSided scnMaterial =
+  sendMessage scnMaterial doubleSidedSelector
 
 -- | doubleSided
 --
@@ -429,8 +424,8 @@ doubleSided scnMaterial  =
 --
 -- ObjC selector: @- setDoubleSided:@
 setDoubleSided :: IsSCNMaterial scnMaterial => scnMaterial -> Bool -> IO ()
-setDoubleSided scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setDoubleSided:") retVoid [argCULong (if value then 1 else 0)]
+setDoubleSided scnMaterial value =
+  sendMessage scnMaterial setDoubleSidedSelector value
 
 -- | fillMode
 --
@@ -438,8 +433,8 @@ setDoubleSided scnMaterial  value =
 --
 -- ObjC selector: @- fillMode@
 fillMode :: IsSCNMaterial scnMaterial => scnMaterial -> IO SCNFillMode
-fillMode scnMaterial  =
-    fmap (coerce :: CULong -> SCNFillMode) $ sendMsg scnMaterial (mkSelector "fillMode") retCULong []
+fillMode scnMaterial =
+  sendMessage scnMaterial fillModeSelector
 
 -- | fillMode
 --
@@ -447,8 +442,8 @@ fillMode scnMaterial  =
 --
 -- ObjC selector: @- setFillMode:@
 setFillMode :: IsSCNMaterial scnMaterial => scnMaterial -> SCNFillMode -> IO ()
-setFillMode scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setFillMode:") retVoid [argCULong (coerce value)]
+setFillMode scnMaterial value =
+  sendMessage scnMaterial setFillModeSelector value
 
 -- | cullMode
 --
@@ -456,8 +451,8 @@ setFillMode scnMaterial  value =
 --
 -- ObjC selector: @- cullMode@
 cullMode :: IsSCNMaterial scnMaterial => scnMaterial -> IO SCNCullMode
-cullMode scnMaterial  =
-    fmap (coerce :: CLong -> SCNCullMode) $ sendMsg scnMaterial (mkSelector "cullMode") retCLong []
+cullMode scnMaterial =
+  sendMessage scnMaterial cullModeSelector
 
 -- | cullMode
 --
@@ -465,8 +460,8 @@ cullMode scnMaterial  =
 --
 -- ObjC selector: @- setCullMode:@
 setCullMode :: IsSCNMaterial scnMaterial => scnMaterial -> SCNCullMode -> IO ()
-setCullMode scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setCullMode:") retVoid [argCLong (coerce value)]
+setCullMode scnMaterial value =
+  sendMessage scnMaterial setCullModeSelector value
 
 -- | transparencyMode
 --
@@ -474,8 +469,8 @@ setCullMode scnMaterial  value =
 --
 -- ObjC selector: @- transparencyMode@
 transparencyMode :: IsSCNMaterial scnMaterial => scnMaterial -> IO SCNTransparencyMode
-transparencyMode scnMaterial  =
-    fmap (coerce :: CLong -> SCNTransparencyMode) $ sendMsg scnMaterial (mkSelector "transparencyMode") retCLong []
+transparencyMode scnMaterial =
+  sendMessage scnMaterial transparencyModeSelector
 
 -- | transparencyMode
 --
@@ -483,8 +478,8 @@ transparencyMode scnMaterial  =
 --
 -- ObjC selector: @- setTransparencyMode:@
 setTransparencyMode :: IsSCNMaterial scnMaterial => scnMaterial -> SCNTransparencyMode -> IO ()
-setTransparencyMode scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setTransparencyMode:") retVoid [argCLong (coerce value)]
+setTransparencyMode scnMaterial value =
+  sendMessage scnMaterial setTransparencyModeSelector value
 
 -- | locksAmbientWithDiffuse
 --
@@ -492,8 +487,8 @@ setTransparencyMode scnMaterial  value =
 --
 -- ObjC selector: @- locksAmbientWithDiffuse@
 locksAmbientWithDiffuse :: IsSCNMaterial scnMaterial => scnMaterial -> IO Bool
-locksAmbientWithDiffuse scnMaterial  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMaterial (mkSelector "locksAmbientWithDiffuse") retCULong []
+locksAmbientWithDiffuse scnMaterial =
+  sendMessage scnMaterial locksAmbientWithDiffuseSelector
 
 -- | locksAmbientWithDiffuse
 --
@@ -501,8 +496,8 @@ locksAmbientWithDiffuse scnMaterial  =
 --
 -- ObjC selector: @- setLocksAmbientWithDiffuse:@
 setLocksAmbientWithDiffuse :: IsSCNMaterial scnMaterial => scnMaterial -> Bool -> IO ()
-setLocksAmbientWithDiffuse scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setLocksAmbientWithDiffuse:") retVoid [argCULong (if value then 1 else 0)]
+setLocksAmbientWithDiffuse scnMaterial value =
+  sendMessage scnMaterial setLocksAmbientWithDiffuseSelector value
 
 -- | writeToDepthBuffer
 --
@@ -510,8 +505,8 @@ setLocksAmbientWithDiffuse scnMaterial  value =
 --
 -- ObjC selector: @- writesToDepthBuffer@
 writesToDepthBuffer :: IsSCNMaterial scnMaterial => scnMaterial -> IO Bool
-writesToDepthBuffer scnMaterial  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMaterial (mkSelector "writesToDepthBuffer") retCULong []
+writesToDepthBuffer scnMaterial =
+  sendMessage scnMaterial writesToDepthBufferSelector
 
 -- | writeToDepthBuffer
 --
@@ -519,22 +514,22 @@ writesToDepthBuffer scnMaterial  =
 --
 -- ObjC selector: @- setWritesToDepthBuffer:@
 setWritesToDepthBuffer :: IsSCNMaterial scnMaterial => scnMaterial -> Bool -> IO ()
-setWritesToDepthBuffer scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setWritesToDepthBuffer:") retVoid [argCULong (if value then 1 else 0)]
+setWritesToDepthBuffer scnMaterial value =
+  sendMessage scnMaterial setWritesToDepthBufferSelector value
 
 -- | Determines whether the receiver writes to the color buffer when rendered. Defaults to SCNColorMaskAll.
 --
 -- ObjC selector: @- colorBufferWriteMask@
 colorBufferWriteMask :: IsSCNMaterial scnMaterial => scnMaterial -> IO SCNColorMask
-colorBufferWriteMask scnMaterial  =
-    fmap (coerce :: CLong -> SCNColorMask) $ sendMsg scnMaterial (mkSelector "colorBufferWriteMask") retCLong []
+colorBufferWriteMask scnMaterial =
+  sendMessage scnMaterial colorBufferWriteMaskSelector
 
 -- | Determines whether the receiver writes to the color buffer when rendered. Defaults to SCNColorMaskAll.
 --
 -- ObjC selector: @- setColorBufferWriteMask:@
 setColorBufferWriteMask :: IsSCNMaterial scnMaterial => scnMaterial -> SCNColorMask -> IO ()
-setColorBufferWriteMask scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setColorBufferWriteMask:") retVoid [argCLong (coerce value)]
+setColorBufferWriteMask scnMaterial value =
+  sendMessage scnMaterial setColorBufferWriteMaskSelector value
 
 -- | readsFromDepthBuffer
 --
@@ -542,8 +537,8 @@ setColorBufferWriteMask scnMaterial  value =
 --
 -- ObjC selector: @- readsFromDepthBuffer@
 readsFromDepthBuffer :: IsSCNMaterial scnMaterial => scnMaterial -> IO Bool
-readsFromDepthBuffer scnMaterial  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMaterial (mkSelector "readsFromDepthBuffer") retCULong []
+readsFromDepthBuffer scnMaterial =
+  sendMessage scnMaterial readsFromDepthBufferSelector
 
 -- | readsFromDepthBuffer
 --
@@ -551,8 +546,8 @@ readsFromDepthBuffer scnMaterial  =
 --
 -- ObjC selector: @- setReadsFromDepthBuffer:@
 setReadsFromDepthBuffer :: IsSCNMaterial scnMaterial => scnMaterial -> Bool -> IO ()
-setReadsFromDepthBuffer scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setReadsFromDepthBuffer:") retVoid [argCULong (if value then 1 else 0)]
+setReadsFromDepthBuffer scnMaterial value =
+  sendMessage scnMaterial setReadsFromDepthBufferSelector value
 
 -- | fresnelExponent
 --
@@ -562,8 +557,8 @@ setReadsFromDepthBuffer scnMaterial  value =
 --
 -- ObjC selector: @- fresnelExponent@
 fresnelExponent :: IsSCNMaterial scnMaterial => scnMaterial -> IO CDouble
-fresnelExponent scnMaterial  =
-    sendMsg scnMaterial (mkSelector "fresnelExponent") retCDouble []
+fresnelExponent scnMaterial =
+  sendMessage scnMaterial fresnelExponentSelector
 
 -- | fresnelExponent
 --
@@ -573,8 +568,8 @@ fresnelExponent scnMaterial  =
 --
 -- ObjC selector: @- setFresnelExponent:@
 setFresnelExponent :: IsSCNMaterial scnMaterial => scnMaterial -> CDouble -> IO ()
-setFresnelExponent scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setFresnelExponent:") retVoid [argCDouble value]
+setFresnelExponent scnMaterial value =
+  sendMessage scnMaterial setFresnelExponentSelector value
 
 -- | blendMode
 --
@@ -582,8 +577,8 @@ setFresnelExponent scnMaterial  value =
 --
 -- ObjC selector: @- blendMode@
 blendMode :: IsSCNMaterial scnMaterial => scnMaterial -> IO SCNBlendMode
-blendMode scnMaterial  =
-    fmap (coerce :: CLong -> SCNBlendMode) $ sendMsg scnMaterial (mkSelector "blendMode") retCLong []
+blendMode scnMaterial =
+  sendMessage scnMaterial blendModeSelector
 
 -- | blendMode
 --
@@ -591,198 +586,198 @@ blendMode scnMaterial  =
 --
 -- ObjC selector: @- setBlendMode:@
 setBlendMode :: IsSCNMaterial scnMaterial => scnMaterial -> SCNBlendMode -> IO ()
-setBlendMode scnMaterial  value =
-    sendMsg scnMaterial (mkSelector "setBlendMode:") retVoid [argCLong (coerce value)]
+setBlendMode scnMaterial value =
+  sendMessage scnMaterial setBlendModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @material@
-materialSelector :: Selector
+materialSelector :: Selector '[] (Id SCNMaterial)
 materialSelector = mkSelector "material"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @diffuse@
-diffuseSelector :: Selector
+diffuseSelector :: Selector '[] (Id SCNMaterialProperty)
 diffuseSelector = mkSelector "diffuse"
 
 -- | @Selector@ for @ambient@
-ambientSelector :: Selector
+ambientSelector :: Selector '[] (Id SCNMaterialProperty)
 ambientSelector = mkSelector "ambient"
 
 -- | @Selector@ for @specular@
-specularSelector :: Selector
+specularSelector :: Selector '[] (Id SCNMaterialProperty)
 specularSelector = mkSelector "specular"
 
 -- | @Selector@ for @emission@
-emissionSelector :: Selector
+emissionSelector :: Selector '[] (Id SCNMaterialProperty)
 emissionSelector = mkSelector "emission"
 
 -- | @Selector@ for @transparent@
-transparentSelector :: Selector
+transparentSelector :: Selector '[] (Id SCNMaterialProperty)
 transparentSelector = mkSelector "transparent"
 
 -- | @Selector@ for @reflective@
-reflectiveSelector :: Selector
+reflectiveSelector :: Selector '[] (Id SCNMaterialProperty)
 reflectiveSelector = mkSelector "reflective"
 
 -- | @Selector@ for @multiply@
-multiplySelector :: Selector
+multiplySelector :: Selector '[] (Id SCNMaterialProperty)
 multiplySelector = mkSelector "multiply"
 
 -- | @Selector@ for @normal@
-normalSelector :: Selector
+normalSelector :: Selector '[] (Id SCNMaterialProperty)
 normalSelector = mkSelector "normal"
 
 -- | @Selector@ for @displacement@
-displacementSelector :: Selector
+displacementSelector :: Selector '[] (Id SCNMaterialProperty)
 displacementSelector = mkSelector "displacement"
 
 -- | @Selector@ for @ambientOcclusion@
-ambientOcclusionSelector :: Selector
+ambientOcclusionSelector :: Selector '[] (Id SCNMaterialProperty)
 ambientOcclusionSelector = mkSelector "ambientOcclusion"
 
 -- | @Selector@ for @selfIllumination@
-selfIlluminationSelector :: Selector
+selfIlluminationSelector :: Selector '[] (Id SCNMaterialProperty)
 selfIlluminationSelector = mkSelector "selfIllumination"
 
 -- | @Selector@ for @metalness@
-metalnessSelector :: Selector
+metalnessSelector :: Selector '[] (Id SCNMaterialProperty)
 metalnessSelector = mkSelector "metalness"
 
 -- | @Selector@ for @roughness@
-roughnessSelector :: Selector
+roughnessSelector :: Selector '[] (Id SCNMaterialProperty)
 roughnessSelector = mkSelector "roughness"
 
 -- | @Selector@ for @clearCoat@
-clearCoatSelector :: Selector
+clearCoatSelector :: Selector '[] (Id SCNMaterialProperty)
 clearCoatSelector = mkSelector "clearCoat"
 
 -- | @Selector@ for @clearCoatRoughness@
-clearCoatRoughnessSelector :: Selector
+clearCoatRoughnessSelector :: Selector '[] (Id SCNMaterialProperty)
 clearCoatRoughnessSelector = mkSelector "clearCoatRoughness"
 
 -- | @Selector@ for @clearCoatNormal@
-clearCoatNormalSelector :: Selector
+clearCoatNormalSelector :: Selector '[] (Id SCNMaterialProperty)
 clearCoatNormalSelector = mkSelector "clearCoatNormal"
 
 -- | @Selector@ for @shininess@
-shininessSelector :: Selector
+shininessSelector :: Selector '[] CDouble
 shininessSelector = mkSelector "shininess"
 
 -- | @Selector@ for @setShininess:@
-setShininessSelector :: Selector
+setShininessSelector :: Selector '[CDouble] ()
 setShininessSelector = mkSelector "setShininess:"
 
 -- | @Selector@ for @transparency@
-transparencySelector :: Selector
+transparencySelector :: Selector '[] CDouble
 transparencySelector = mkSelector "transparency"
 
 -- | @Selector@ for @setTransparency:@
-setTransparencySelector :: Selector
+setTransparencySelector :: Selector '[CDouble] ()
 setTransparencySelector = mkSelector "setTransparency:"
 
 -- | @Selector@ for @lightingModelName@
-lightingModelNameSelector :: Selector
+lightingModelNameSelector :: Selector '[] (Id NSString)
 lightingModelNameSelector = mkSelector "lightingModelName"
 
 -- | @Selector@ for @setLightingModelName:@
-setLightingModelNameSelector :: Selector
+setLightingModelNameSelector :: Selector '[Id NSString] ()
 setLightingModelNameSelector = mkSelector "setLightingModelName:"
 
 -- | @Selector@ for @litPerPixel@
-litPerPixelSelector :: Selector
+litPerPixelSelector :: Selector '[] Bool
 litPerPixelSelector = mkSelector "litPerPixel"
 
 -- | @Selector@ for @setLitPerPixel:@
-setLitPerPixelSelector :: Selector
+setLitPerPixelSelector :: Selector '[Bool] ()
 setLitPerPixelSelector = mkSelector "setLitPerPixel:"
 
 -- | @Selector@ for @doubleSided@
-doubleSidedSelector :: Selector
+doubleSidedSelector :: Selector '[] Bool
 doubleSidedSelector = mkSelector "doubleSided"
 
 -- | @Selector@ for @setDoubleSided:@
-setDoubleSidedSelector :: Selector
+setDoubleSidedSelector :: Selector '[Bool] ()
 setDoubleSidedSelector = mkSelector "setDoubleSided:"
 
 -- | @Selector@ for @fillMode@
-fillModeSelector :: Selector
+fillModeSelector :: Selector '[] SCNFillMode
 fillModeSelector = mkSelector "fillMode"
 
 -- | @Selector@ for @setFillMode:@
-setFillModeSelector :: Selector
+setFillModeSelector :: Selector '[SCNFillMode] ()
 setFillModeSelector = mkSelector "setFillMode:"
 
 -- | @Selector@ for @cullMode@
-cullModeSelector :: Selector
+cullModeSelector :: Selector '[] SCNCullMode
 cullModeSelector = mkSelector "cullMode"
 
 -- | @Selector@ for @setCullMode:@
-setCullModeSelector :: Selector
+setCullModeSelector :: Selector '[SCNCullMode] ()
 setCullModeSelector = mkSelector "setCullMode:"
 
 -- | @Selector@ for @transparencyMode@
-transparencyModeSelector :: Selector
+transparencyModeSelector :: Selector '[] SCNTransparencyMode
 transparencyModeSelector = mkSelector "transparencyMode"
 
 -- | @Selector@ for @setTransparencyMode:@
-setTransparencyModeSelector :: Selector
+setTransparencyModeSelector :: Selector '[SCNTransparencyMode] ()
 setTransparencyModeSelector = mkSelector "setTransparencyMode:"
 
 -- | @Selector@ for @locksAmbientWithDiffuse@
-locksAmbientWithDiffuseSelector :: Selector
+locksAmbientWithDiffuseSelector :: Selector '[] Bool
 locksAmbientWithDiffuseSelector = mkSelector "locksAmbientWithDiffuse"
 
 -- | @Selector@ for @setLocksAmbientWithDiffuse:@
-setLocksAmbientWithDiffuseSelector :: Selector
+setLocksAmbientWithDiffuseSelector :: Selector '[Bool] ()
 setLocksAmbientWithDiffuseSelector = mkSelector "setLocksAmbientWithDiffuse:"
 
 -- | @Selector@ for @writesToDepthBuffer@
-writesToDepthBufferSelector :: Selector
+writesToDepthBufferSelector :: Selector '[] Bool
 writesToDepthBufferSelector = mkSelector "writesToDepthBuffer"
 
 -- | @Selector@ for @setWritesToDepthBuffer:@
-setWritesToDepthBufferSelector :: Selector
+setWritesToDepthBufferSelector :: Selector '[Bool] ()
 setWritesToDepthBufferSelector = mkSelector "setWritesToDepthBuffer:"
 
 -- | @Selector@ for @colorBufferWriteMask@
-colorBufferWriteMaskSelector :: Selector
+colorBufferWriteMaskSelector :: Selector '[] SCNColorMask
 colorBufferWriteMaskSelector = mkSelector "colorBufferWriteMask"
 
 -- | @Selector@ for @setColorBufferWriteMask:@
-setColorBufferWriteMaskSelector :: Selector
+setColorBufferWriteMaskSelector :: Selector '[SCNColorMask] ()
 setColorBufferWriteMaskSelector = mkSelector "setColorBufferWriteMask:"
 
 -- | @Selector@ for @readsFromDepthBuffer@
-readsFromDepthBufferSelector :: Selector
+readsFromDepthBufferSelector :: Selector '[] Bool
 readsFromDepthBufferSelector = mkSelector "readsFromDepthBuffer"
 
 -- | @Selector@ for @setReadsFromDepthBuffer:@
-setReadsFromDepthBufferSelector :: Selector
+setReadsFromDepthBufferSelector :: Selector '[Bool] ()
 setReadsFromDepthBufferSelector = mkSelector "setReadsFromDepthBuffer:"
 
 -- | @Selector@ for @fresnelExponent@
-fresnelExponentSelector :: Selector
+fresnelExponentSelector :: Selector '[] CDouble
 fresnelExponentSelector = mkSelector "fresnelExponent"
 
 -- | @Selector@ for @setFresnelExponent:@
-setFresnelExponentSelector :: Selector
+setFresnelExponentSelector :: Selector '[CDouble] ()
 setFresnelExponentSelector = mkSelector "setFresnelExponent:"
 
 -- | @Selector@ for @blendMode@
-blendModeSelector :: Selector
+blendModeSelector :: Selector '[] SCNBlendMode
 blendModeSelector = mkSelector "blendMode"
 
 -- | @Selector@ for @setBlendMode:@
-setBlendModeSelector :: Selector
+setBlendModeSelector :: Selector '[SCNBlendMode] ()
 setBlendModeSelector = mkSelector "setBlendMode:"
 

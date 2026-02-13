@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Symbols.NSSymbolDrawOnEffect
   , effectWithIndividually
   , effectSelector
   , effectWithByLayerSelector
-  , effectWithWholeSymbolSelector
   , effectWithIndividuallySelector
+  , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,46 +41,46 @@ effect :: IO (Id NSSymbolDrawOnEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolDrawOnEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Returns a copy of the effect requesting an animation that applies separately to each motion group.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolDrawOnEffect nsSymbolDrawOnEffect => nsSymbolDrawOnEffect -> IO (Id NSSymbolDrawOnEffect)
-effectWithByLayer nsSymbolDrawOnEffect  =
-    sendMsg nsSymbolDrawOnEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolDrawOnEffect =
+  sendMessage nsSymbolDrawOnEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect requesting an animation that applies to all motion groups simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolDrawOnEffect nsSymbolDrawOnEffect => nsSymbolDrawOnEffect -> IO (Id NSSymbolDrawOnEffect)
-effectWithWholeSymbol nsSymbolDrawOnEffect  =
-    sendMsg nsSymbolDrawOnEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolDrawOnEffect =
+  sendMessage nsSymbolDrawOnEffect effectWithWholeSymbolSelector
 
 -- | Returns a copy of the effect requesting an animation that applies separately to each motion group, where only one motion group is active at a time.
 --
 -- ObjC selector: @- effectWithIndividually@
 effectWithIndividually :: IsNSSymbolDrawOnEffect nsSymbolDrawOnEffect => nsSymbolDrawOnEffect -> IO (Id NSSymbolDrawOnEffect)
-effectWithIndividually nsSymbolDrawOnEffect  =
-    sendMsg nsSymbolDrawOnEffect (mkSelector "effectWithIndividually") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithIndividually nsSymbolDrawOnEffect =
+  sendMessage nsSymbolDrawOnEffect effectWithIndividuallySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolDrawOnEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolDrawOnEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolDrawOnEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 
 -- | @Selector@ for @effectWithIndividually@
-effectWithIndividuallySelector :: Selector
+effectWithIndividuallySelector :: Selector '[] (Id NSSymbolDrawOnEffect)
 effectWithIndividuallySelector = mkSelector "effectWithIndividually"
 

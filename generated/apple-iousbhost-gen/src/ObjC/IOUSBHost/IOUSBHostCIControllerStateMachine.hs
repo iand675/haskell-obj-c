@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.IOUSBHost.IOUSBHostCIControllerStateMachine
   , inspectCommand_error
   , enqueueUpdatedFrame_timestamp_error
   , controllerInterface
+  , controllerInterfaceSelector
+  , enqueueUpdatedFrame_timestamp_errorSelector
   , initSelector
   , initWithInterface_errorSelector
   , inspectCommand_errorSelector
-  , enqueueUpdatedFrame_timestamp_errorSelector
-  , controllerInterfaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsIOUSBHostCIControllerStateMachine iousbHostCIControllerStateMachine => iousbHostCIControllerStateMachine -> IO (Id IOUSBHostCIControllerStateMachine)
-init_ iousbHostCIControllerStateMachine  =
-    sendMsg iousbHostCIControllerStateMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ iousbHostCIControllerStateMachine =
+  sendOwnedMessage iousbHostCIControllerStateMachine initSelector
 
 -- | Initializes an IOUSBHostCIControllerStateMachine object
 --
@@ -59,10 +56,8 @@ init_ iousbHostCIControllerStateMachine  =
 --
 -- ObjC selector: @- initWithInterface:error:@
 initWithInterface_error :: (IsIOUSBHostCIControllerStateMachine iousbHostCIControllerStateMachine, IsIOUSBHostControllerInterface interface, IsNSError error_) => iousbHostCIControllerStateMachine -> interface -> error_ -> IO (Id IOUSBHostCIControllerStateMachine)
-initWithInterface_error iousbHostCIControllerStateMachine  interface error_ =
-  withObjCPtr interface $ \raw_interface ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg iousbHostCIControllerStateMachine (mkSelector "initWithInterface:error:") (retPtr retVoid) [argPtr (castPtr raw_interface :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface_error iousbHostCIControllerStateMachine interface error_ =
+  sendOwnedMessage iousbHostCIControllerStateMachine initWithInterface_errorSelector (toIOUSBHostControllerInterface interface) (toNSError error_)
 
 -- | Inspect an IOUSBHostCIMessage command
 --
@@ -74,9 +69,8 @@ initWithInterface_error iousbHostCIControllerStateMachine  interface error_ =
 --
 -- ObjC selector: @- inspectCommand:error:@
 inspectCommand_error :: (IsIOUSBHostCIControllerStateMachine iousbHostCIControllerStateMachine, IsNSError error_) => iousbHostCIControllerStateMachine -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO Bool
-inspectCommand_error iousbHostCIControllerStateMachine  command error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIControllerStateMachine (mkSelector "inspectCommand:error:") retCULong [argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())]
+inspectCommand_error iousbHostCIControllerStateMachine command error_ =
+  sendMessage iousbHostCIControllerStateMachine inspectCommand_errorSelector command (toNSError error_)
 
 -- | Enqueue frame and timestamp messages for delivery to the kernel driver
 --
@@ -90,36 +84,35 @@ inspectCommand_error iousbHostCIControllerStateMachine  command error_ =
 --
 -- ObjC selector: @- enqueueUpdatedFrame:timestamp:error:@
 enqueueUpdatedFrame_timestamp_error :: (IsIOUSBHostCIControllerStateMachine iousbHostCIControllerStateMachine, IsNSError error_) => iousbHostCIControllerStateMachine -> CULong -> CULong -> error_ -> IO Bool
-enqueueUpdatedFrame_timestamp_error iousbHostCIControllerStateMachine  frame timestamp error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIControllerStateMachine (mkSelector "enqueueUpdatedFrame:timestamp:error:") retCULong [argCULong frame, argCULong timestamp, argPtr (castPtr raw_error_ :: Ptr ())]
+enqueueUpdatedFrame_timestamp_error iousbHostCIControllerStateMachine frame timestamp error_ =
+  sendMessage iousbHostCIControllerStateMachine enqueueUpdatedFrame_timestamp_errorSelector frame timestamp (toNSError error_)
 
 -- | @- controllerInterface@
 controllerInterface :: IsIOUSBHostCIControllerStateMachine iousbHostCIControllerStateMachine => iousbHostCIControllerStateMachine -> IO (Id IOUSBHostControllerInterface)
-controllerInterface iousbHostCIControllerStateMachine  =
-    sendMsg iousbHostCIControllerStateMachine (mkSelector "controllerInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerInterface iousbHostCIControllerStateMachine =
+  sendMessage iousbHostCIControllerStateMachine controllerInterfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id IOUSBHostCIControllerStateMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterface:error:@
-initWithInterface_errorSelector :: Selector
+initWithInterface_errorSelector :: Selector '[Id IOUSBHostControllerInterface, Id NSError] (Id IOUSBHostCIControllerStateMachine)
 initWithInterface_errorSelector = mkSelector "initWithInterface:error:"
 
 -- | @Selector@ for @inspectCommand:error:@
-inspectCommand_errorSelector :: Selector
+inspectCommand_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] Bool
 inspectCommand_errorSelector = mkSelector "inspectCommand:error:"
 
 -- | @Selector@ for @enqueueUpdatedFrame:timestamp:error:@
-enqueueUpdatedFrame_timestamp_errorSelector :: Selector
+enqueueUpdatedFrame_timestamp_errorSelector :: Selector '[CULong, CULong, Id NSError] Bool
 enqueueUpdatedFrame_timestamp_errorSelector = mkSelector "enqueueUpdatedFrame:timestamp:error:"
 
 -- | @Selector@ for @controllerInterface@
-controllerInterfaceSelector :: Selector
+controllerInterfaceSelector :: Selector '[] (Id IOUSBHostControllerInterface)
 controllerInterfaceSelector = mkSelector "controllerInterface"
 

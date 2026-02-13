@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.WebKit.WKWindowFeatures
   , y
   , width
   , height
+  , allowsResizingSelector
+  , heightSelector
   , menuBarVisibilitySelector
   , statusBarVisibilitySelector
   , toolbarsVisibilitySelector
-  , allowsResizingSelector
+  , widthSelector
   , xSelector
   , ySelector
-  , widthSelector
-  , heightSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,91 +44,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- menuBarVisibility@
 menuBarVisibility :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-menuBarVisibility wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "menuBarVisibility") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuBarVisibility wkWindowFeatures =
+  sendMessage wkWindowFeatures menuBarVisibilitySelector
 
 -- | BOOL. Whether the status bar should be visible. nil if status bar visibility was not specified.
 --
 -- ObjC selector: @- statusBarVisibility@
 statusBarVisibility :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-statusBarVisibility wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "statusBarVisibility") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusBarVisibility wkWindowFeatures =
+  sendMessage wkWindowFeatures statusBarVisibilitySelector
 
 -- | BOOL. Whether toolbars should be visible. nil if toolbar visibility was not specified.
 --
 -- ObjC selector: @- toolbarsVisibility@
 toolbarsVisibility :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-toolbarsVisibility wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "toolbarsVisibility") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolbarsVisibility wkWindowFeatures =
+  sendMessage wkWindowFeatures toolbarsVisibilitySelector
 
 -- | BOOL. Whether the containing window should be resizable. nil if resizability was not specified.
 --
 -- ObjC selector: @- allowsResizing@
 allowsResizing :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-allowsResizing wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "allowsResizing") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowsResizing wkWindowFeatures =
+  sendMessage wkWindowFeatures allowsResizingSelector
 
 -- | CGFloat. The x coordinate of the containing window. nil if the x coordinate was not specified.
 --
 -- ObjC selector: @- x@
 x :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-x wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "x") (retPtr retVoid) [] >>= retainedObject . castPtr
+x wkWindowFeatures =
+  sendMessage wkWindowFeatures xSelector
 
 -- | CGFloat. The y coordinate of the containing window. nil if the y coordinate was not specified.
 --
 -- ObjC selector: @- y@
 y :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-y wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "y") (retPtr retVoid) [] >>= retainedObject . castPtr
+y wkWindowFeatures =
+  sendMessage wkWindowFeatures ySelector
 
 -- | CGFloat. The width coordinate of the containing window. nil if the width was not specified.
 --
 -- ObjC selector: @- width@
 width :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-width wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width wkWindowFeatures =
+  sendMessage wkWindowFeatures widthSelector
 
 -- | CGFloat. The height coordinate of the containing window. nil if the height was not specified.
 --
 -- ObjC selector: @- height@
 height :: IsWKWindowFeatures wkWindowFeatures => wkWindowFeatures -> IO (Id NSNumber)
-height wkWindowFeatures  =
-    sendMsg wkWindowFeatures (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height wkWindowFeatures =
+  sendMessage wkWindowFeatures heightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @menuBarVisibility@
-menuBarVisibilitySelector :: Selector
+menuBarVisibilitySelector :: Selector '[] (Id NSNumber)
 menuBarVisibilitySelector = mkSelector "menuBarVisibility"
 
 -- | @Selector@ for @statusBarVisibility@
-statusBarVisibilitySelector :: Selector
+statusBarVisibilitySelector :: Selector '[] (Id NSNumber)
 statusBarVisibilitySelector = mkSelector "statusBarVisibility"
 
 -- | @Selector@ for @toolbarsVisibility@
-toolbarsVisibilitySelector :: Selector
+toolbarsVisibilitySelector :: Selector '[] (Id NSNumber)
 toolbarsVisibilitySelector = mkSelector "toolbarsVisibility"
 
 -- | @Selector@ for @allowsResizing@
-allowsResizingSelector :: Selector
+allowsResizingSelector :: Selector '[] (Id NSNumber)
 allowsResizingSelector = mkSelector "allowsResizing"
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] (Id NSNumber)
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] (Id NSNumber)
 ySelector = mkSelector "y"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSNumber)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSNumber)
 heightSelector = mkSelector "height"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.AppKit.NSTextBlock
   , setVerticalAlignment
   , backgroundColor
   , setBackgroundColor
-  , initSelector
-  , setValue_type_forDimensionSelector
-  , valueForDimensionSelector
-  , valueTypeForDimensionSelector
-  , setContentWidth_typeSelector
-  , setWidth_type_forLayer_edgeSelector
-  , setWidth_type_forLayerSelector
-  , widthForLayer_edgeSelector
-  , widthValueTypeForLayer_edgeSelector
-  , setBorderColor_forEdgeSelector
-  , setBorderColorSelector
+  , backgroundColorSelector
   , borderColorForEdgeSelector
-  , rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector
   , boundsRectForContentRect_inRect_textContainer_characterRangeSelector
-  , drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector
   , contentWidthSelector
   , contentWidthValueTypeSelector
-  , verticalAlignmentSelector
-  , setVerticalAlignmentSelector
-  , backgroundColorSelector
+  , drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector
+  , initSelector
+  , rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector
   , setBackgroundColorSelector
+  , setBorderColorSelector
+  , setBorderColor_forEdgeSelector
+  , setContentWidth_typeSelector
+  , setValue_type_forDimensionSelector
+  , setVerticalAlignmentSelector
+  , setWidth_type_forLayerSelector
+  , setWidth_type_forLayer_edgeSelector
+  , valueForDimensionSelector
+  , valueTypeForDimensionSelector
+  , verticalAlignmentSelector
+  , widthForLayer_edgeSelector
+  , widthValueTypeForLayer_edgeSelector
 
   -- * Enum types
   , NSRectEdge(NSRectEdge)
@@ -82,15 +83,11 @@ module ObjC.AppKit.NSTextBlock
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,201 +99,194 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSTextBlock nsTextBlock => nsTextBlock -> IO (Id NSTextBlock)
-init_ nsTextBlock  =
-    sendMsg nsTextBlock (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextBlock =
+  sendOwnedMessage nsTextBlock initSelector
 
 -- | @- setValue:type:forDimension:@
 setValue_type_forDimension :: IsNSTextBlock nsTextBlock => nsTextBlock -> CDouble -> NSTextBlockValueType -> NSTextBlockDimension -> IO ()
-setValue_type_forDimension nsTextBlock  val type_ dimension =
-    sendMsg nsTextBlock (mkSelector "setValue:type:forDimension:") retVoid [argCDouble val, argCULong (coerce type_), argCULong (coerce dimension)]
+setValue_type_forDimension nsTextBlock val type_ dimension =
+  sendMessage nsTextBlock setValue_type_forDimensionSelector val type_ dimension
 
 -- | @- valueForDimension:@
 valueForDimension :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSTextBlockDimension -> IO CDouble
-valueForDimension nsTextBlock  dimension =
-    sendMsg nsTextBlock (mkSelector "valueForDimension:") retCDouble [argCULong (coerce dimension)]
+valueForDimension nsTextBlock dimension =
+  sendMessage nsTextBlock valueForDimensionSelector dimension
 
 -- | @- valueTypeForDimension:@
 valueTypeForDimension :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSTextBlockDimension -> IO NSTextBlockValueType
-valueTypeForDimension nsTextBlock  dimension =
-    fmap (coerce :: CULong -> NSTextBlockValueType) $ sendMsg nsTextBlock (mkSelector "valueTypeForDimension:") retCULong [argCULong (coerce dimension)]
+valueTypeForDimension nsTextBlock dimension =
+  sendMessage nsTextBlock valueTypeForDimensionSelector dimension
 
 -- | @- setContentWidth:type:@
 setContentWidth_type :: IsNSTextBlock nsTextBlock => nsTextBlock -> CDouble -> NSTextBlockValueType -> IO ()
-setContentWidth_type nsTextBlock  val type_ =
-    sendMsg nsTextBlock (mkSelector "setContentWidth:type:") retVoid [argCDouble val, argCULong (coerce type_)]
+setContentWidth_type nsTextBlock val type_ =
+  sendMessage nsTextBlock setContentWidth_typeSelector val type_
 
 -- | @- setWidth:type:forLayer:edge:@
 setWidth_type_forLayer_edge :: IsNSTextBlock nsTextBlock => nsTextBlock -> CDouble -> NSTextBlockValueType -> NSTextBlockLayer -> NSRectEdge -> IO ()
-setWidth_type_forLayer_edge nsTextBlock  val type_ layer edge =
-    sendMsg nsTextBlock (mkSelector "setWidth:type:forLayer:edge:") retVoid [argCDouble val, argCULong (coerce type_), argCLong (coerce layer), argCULong (coerce edge)]
+setWidth_type_forLayer_edge nsTextBlock val type_ layer edge =
+  sendMessage nsTextBlock setWidth_type_forLayer_edgeSelector val type_ layer edge
 
 -- | @- setWidth:type:forLayer:@
 setWidth_type_forLayer :: IsNSTextBlock nsTextBlock => nsTextBlock -> CDouble -> NSTextBlockValueType -> NSTextBlockLayer -> IO ()
-setWidth_type_forLayer nsTextBlock  val type_ layer =
-    sendMsg nsTextBlock (mkSelector "setWidth:type:forLayer:") retVoid [argCDouble val, argCULong (coerce type_), argCLong (coerce layer)]
+setWidth_type_forLayer nsTextBlock val type_ layer =
+  sendMessage nsTextBlock setWidth_type_forLayerSelector val type_ layer
 
 -- | @- widthForLayer:edge:@
 widthForLayer_edge :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSTextBlockLayer -> NSRectEdge -> IO CDouble
-widthForLayer_edge nsTextBlock  layer edge =
-    sendMsg nsTextBlock (mkSelector "widthForLayer:edge:") retCDouble [argCLong (coerce layer), argCULong (coerce edge)]
+widthForLayer_edge nsTextBlock layer edge =
+  sendMessage nsTextBlock widthForLayer_edgeSelector layer edge
 
 -- | @- widthValueTypeForLayer:edge:@
 widthValueTypeForLayer_edge :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSTextBlockLayer -> NSRectEdge -> IO NSTextBlockValueType
-widthValueTypeForLayer_edge nsTextBlock  layer edge =
-    fmap (coerce :: CULong -> NSTextBlockValueType) $ sendMsg nsTextBlock (mkSelector "widthValueTypeForLayer:edge:") retCULong [argCLong (coerce layer), argCULong (coerce edge)]
+widthValueTypeForLayer_edge nsTextBlock layer edge =
+  sendMessage nsTextBlock widthValueTypeForLayer_edgeSelector layer edge
 
 -- | @- setBorderColor:forEdge:@
 setBorderColor_forEdge :: (IsNSTextBlock nsTextBlock, IsNSColor color) => nsTextBlock -> color -> NSRectEdge -> IO ()
-setBorderColor_forEdge nsTextBlock  color edge =
-  withObjCPtr color $ \raw_color ->
-      sendMsg nsTextBlock (mkSelector "setBorderColor:forEdge:") retVoid [argPtr (castPtr raw_color :: Ptr ()), argCULong (coerce edge)]
+setBorderColor_forEdge nsTextBlock color edge =
+  sendMessage nsTextBlock setBorderColor_forEdgeSelector (toNSColor color) edge
 
 -- | @- setBorderColor:@
 setBorderColor :: (IsNSTextBlock nsTextBlock, IsNSColor color) => nsTextBlock -> color -> IO ()
-setBorderColor nsTextBlock  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg nsTextBlock (mkSelector "setBorderColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setBorderColor nsTextBlock color =
+  sendMessage nsTextBlock setBorderColorSelector (toNSColor color)
 
 -- | @- borderColorForEdge:@
 borderColorForEdge :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSRectEdge -> IO (Id NSColor)
-borderColorForEdge nsTextBlock  edge =
-    sendMsg nsTextBlock (mkSelector "borderColorForEdge:") (retPtr retVoid) [argCULong (coerce edge)] >>= retainedObject . castPtr
+borderColorForEdge nsTextBlock edge =
+  sendMessage nsTextBlock borderColorForEdgeSelector edge
 
 -- | @- rectForLayoutAtPoint:inRect:textContainer:characterRange:@
 rectForLayoutAtPoint_inRect_textContainer_characterRange :: (IsNSTextBlock nsTextBlock, IsNSTextContainer textContainer) => nsTextBlock -> NSPoint -> NSRect -> textContainer -> NSRange -> IO NSRect
-rectForLayoutAtPoint_inRect_textContainer_characterRange nsTextBlock  startingPoint rect textContainer charRange =
-  withObjCPtr textContainer $ \raw_textContainer ->
-      sendMsgStret nsTextBlock (mkSelector "rectForLayoutAtPoint:inRect:textContainer:characterRange:") retNSRect [argNSPoint startingPoint, argNSRect rect, argPtr (castPtr raw_textContainer :: Ptr ()), argNSRange charRange]
+rectForLayoutAtPoint_inRect_textContainer_characterRange nsTextBlock startingPoint rect textContainer charRange =
+  sendMessage nsTextBlock rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector startingPoint rect (toNSTextContainer textContainer) charRange
 
 -- | @- boundsRectForContentRect:inRect:textContainer:characterRange:@
 boundsRectForContentRect_inRect_textContainer_characterRange :: (IsNSTextBlock nsTextBlock, IsNSTextContainer textContainer) => nsTextBlock -> NSRect -> NSRect -> textContainer -> NSRange -> IO NSRect
-boundsRectForContentRect_inRect_textContainer_characterRange nsTextBlock  contentRect rect textContainer charRange =
-  withObjCPtr textContainer $ \raw_textContainer ->
-      sendMsgStret nsTextBlock (mkSelector "boundsRectForContentRect:inRect:textContainer:characterRange:") retNSRect [argNSRect contentRect, argNSRect rect, argPtr (castPtr raw_textContainer :: Ptr ()), argNSRange charRange]
+boundsRectForContentRect_inRect_textContainer_characterRange nsTextBlock contentRect rect textContainer charRange =
+  sendMessage nsTextBlock boundsRectForContentRect_inRect_textContainer_characterRangeSelector contentRect rect (toNSTextContainer textContainer) charRange
 
 -- | @- drawBackgroundWithFrame:inView:characterRange:layoutManager:@
 drawBackgroundWithFrame_inView_characterRange_layoutManager :: (IsNSTextBlock nsTextBlock, IsNSView controlView, IsNSLayoutManager layoutManager) => nsTextBlock -> NSRect -> controlView -> NSRange -> layoutManager -> IO ()
-drawBackgroundWithFrame_inView_characterRange_layoutManager nsTextBlock  frameRect controlView charRange layoutManager =
-  withObjCPtr controlView $ \raw_controlView ->
-    withObjCPtr layoutManager $ \raw_layoutManager ->
-        sendMsg nsTextBlock (mkSelector "drawBackgroundWithFrame:inView:characterRange:layoutManager:") retVoid [argNSRect frameRect, argPtr (castPtr raw_controlView :: Ptr ()), argNSRange charRange, argPtr (castPtr raw_layoutManager :: Ptr ())]
+drawBackgroundWithFrame_inView_characterRange_layoutManager nsTextBlock frameRect controlView charRange layoutManager =
+  sendMessage nsTextBlock drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector frameRect (toNSView controlView) charRange (toNSLayoutManager layoutManager)
 
 -- | @- contentWidth@
 contentWidth :: IsNSTextBlock nsTextBlock => nsTextBlock -> IO CDouble
-contentWidth nsTextBlock  =
-    sendMsg nsTextBlock (mkSelector "contentWidth") retCDouble []
+contentWidth nsTextBlock =
+  sendMessage nsTextBlock contentWidthSelector
 
 -- | @- contentWidthValueType@
 contentWidthValueType :: IsNSTextBlock nsTextBlock => nsTextBlock -> IO NSTextBlockValueType
-contentWidthValueType nsTextBlock  =
-    fmap (coerce :: CULong -> NSTextBlockValueType) $ sendMsg nsTextBlock (mkSelector "contentWidthValueType") retCULong []
+contentWidthValueType nsTextBlock =
+  sendMessage nsTextBlock contentWidthValueTypeSelector
 
 -- | @- verticalAlignment@
 verticalAlignment :: IsNSTextBlock nsTextBlock => nsTextBlock -> IO NSTextBlockVerticalAlignment
-verticalAlignment nsTextBlock  =
-    fmap (coerce :: CULong -> NSTextBlockVerticalAlignment) $ sendMsg nsTextBlock (mkSelector "verticalAlignment") retCULong []
+verticalAlignment nsTextBlock =
+  sendMessage nsTextBlock verticalAlignmentSelector
 
 -- | @- setVerticalAlignment:@
 setVerticalAlignment :: IsNSTextBlock nsTextBlock => nsTextBlock -> NSTextBlockVerticalAlignment -> IO ()
-setVerticalAlignment nsTextBlock  value =
-    sendMsg nsTextBlock (mkSelector "setVerticalAlignment:") retVoid [argCULong (coerce value)]
+setVerticalAlignment nsTextBlock value =
+  sendMessage nsTextBlock setVerticalAlignmentSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSTextBlock nsTextBlock => nsTextBlock -> IO (Id NSColor)
-backgroundColor nsTextBlock  =
-    sendMsg nsTextBlock (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsTextBlock =
+  sendMessage nsTextBlock backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSTextBlock nsTextBlock, IsNSColor value) => nsTextBlock -> value -> IO ()
-setBackgroundColor nsTextBlock  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextBlock (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsTextBlock value =
+  sendMessage nsTextBlock setBackgroundColorSelector (toNSColor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextBlock)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setValue:type:forDimension:@
-setValue_type_forDimensionSelector :: Selector
+setValue_type_forDimensionSelector :: Selector '[CDouble, NSTextBlockValueType, NSTextBlockDimension] ()
 setValue_type_forDimensionSelector = mkSelector "setValue:type:forDimension:"
 
 -- | @Selector@ for @valueForDimension:@
-valueForDimensionSelector :: Selector
+valueForDimensionSelector :: Selector '[NSTextBlockDimension] CDouble
 valueForDimensionSelector = mkSelector "valueForDimension:"
 
 -- | @Selector@ for @valueTypeForDimension:@
-valueTypeForDimensionSelector :: Selector
+valueTypeForDimensionSelector :: Selector '[NSTextBlockDimension] NSTextBlockValueType
 valueTypeForDimensionSelector = mkSelector "valueTypeForDimension:"
 
 -- | @Selector@ for @setContentWidth:type:@
-setContentWidth_typeSelector :: Selector
+setContentWidth_typeSelector :: Selector '[CDouble, NSTextBlockValueType] ()
 setContentWidth_typeSelector = mkSelector "setContentWidth:type:"
 
 -- | @Selector@ for @setWidth:type:forLayer:edge:@
-setWidth_type_forLayer_edgeSelector :: Selector
+setWidth_type_forLayer_edgeSelector :: Selector '[CDouble, NSTextBlockValueType, NSTextBlockLayer, NSRectEdge] ()
 setWidth_type_forLayer_edgeSelector = mkSelector "setWidth:type:forLayer:edge:"
 
 -- | @Selector@ for @setWidth:type:forLayer:@
-setWidth_type_forLayerSelector :: Selector
+setWidth_type_forLayerSelector :: Selector '[CDouble, NSTextBlockValueType, NSTextBlockLayer] ()
 setWidth_type_forLayerSelector = mkSelector "setWidth:type:forLayer:"
 
 -- | @Selector@ for @widthForLayer:edge:@
-widthForLayer_edgeSelector :: Selector
+widthForLayer_edgeSelector :: Selector '[NSTextBlockLayer, NSRectEdge] CDouble
 widthForLayer_edgeSelector = mkSelector "widthForLayer:edge:"
 
 -- | @Selector@ for @widthValueTypeForLayer:edge:@
-widthValueTypeForLayer_edgeSelector :: Selector
+widthValueTypeForLayer_edgeSelector :: Selector '[NSTextBlockLayer, NSRectEdge] NSTextBlockValueType
 widthValueTypeForLayer_edgeSelector = mkSelector "widthValueTypeForLayer:edge:"
 
 -- | @Selector@ for @setBorderColor:forEdge:@
-setBorderColor_forEdgeSelector :: Selector
+setBorderColor_forEdgeSelector :: Selector '[Id NSColor, NSRectEdge] ()
 setBorderColor_forEdgeSelector = mkSelector "setBorderColor:forEdge:"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[Id NSColor] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 
 -- | @Selector@ for @borderColorForEdge:@
-borderColorForEdgeSelector :: Selector
+borderColorForEdgeSelector :: Selector '[NSRectEdge] (Id NSColor)
 borderColorForEdgeSelector = mkSelector "borderColorForEdge:"
 
 -- | @Selector@ for @rectForLayoutAtPoint:inRect:textContainer:characterRange:@
-rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector :: Selector
+rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector :: Selector '[NSPoint, NSRect, Id NSTextContainer, NSRange] NSRect
 rectForLayoutAtPoint_inRect_textContainer_characterRangeSelector = mkSelector "rectForLayoutAtPoint:inRect:textContainer:characterRange:"
 
 -- | @Selector@ for @boundsRectForContentRect:inRect:textContainer:characterRange:@
-boundsRectForContentRect_inRect_textContainer_characterRangeSelector :: Selector
+boundsRectForContentRect_inRect_textContainer_characterRangeSelector :: Selector '[NSRect, NSRect, Id NSTextContainer, NSRange] NSRect
 boundsRectForContentRect_inRect_textContainer_characterRangeSelector = mkSelector "boundsRectForContentRect:inRect:textContainer:characterRange:"
 
 -- | @Selector@ for @drawBackgroundWithFrame:inView:characterRange:layoutManager:@
-drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector :: Selector
+drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector :: Selector '[NSRect, Id NSView, NSRange, Id NSLayoutManager] ()
 drawBackgroundWithFrame_inView_characterRange_layoutManagerSelector = mkSelector "drawBackgroundWithFrame:inView:characterRange:layoutManager:"
 
 -- | @Selector@ for @contentWidth@
-contentWidthSelector :: Selector
+contentWidthSelector :: Selector '[] CDouble
 contentWidthSelector = mkSelector "contentWidth"
 
 -- | @Selector@ for @contentWidthValueType@
-contentWidthValueTypeSelector :: Selector
+contentWidthValueTypeSelector :: Selector '[] NSTextBlockValueType
 contentWidthValueTypeSelector = mkSelector "contentWidthValueType"
 
 -- | @Selector@ for @verticalAlignment@
-verticalAlignmentSelector :: Selector
+verticalAlignmentSelector :: Selector '[] NSTextBlockVerticalAlignment
 verticalAlignmentSelector = mkSelector "verticalAlignment"
 
 -- | @Selector@ for @setVerticalAlignment:@
-setVerticalAlignmentSelector :: Selector
+setVerticalAlignmentSelector :: Selector '[NSTextBlockVerticalAlignment] ()
 setVerticalAlignmentSelector = mkSelector "setVerticalAlignment:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 

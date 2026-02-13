@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,13 +25,13 @@ module ObjC.AudioToolbox.AUParameterTree
   , createGroupTemplate
   , createGroupFromTemplate_identifier_name_addressOffset
   , createTreeWithChildren
+  , createGroupFromTemplate_identifier_name_addressOffsetSelector
+  , createGroupTemplateSelector
+  , createGroupWithIdentifier_name_childrenSelector
+  , createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector
+  , createTreeWithChildrenSelector
   , parameterWithAddressSelector
   , parameterWithID_scope_elementSelector
-  , createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector
-  , createGroupWithIdentifier_name_childrenSelector
-  , createGroupTemplateSelector
-  , createGroupFromTemplate_identifier_name_addressOffsetSelector
-  , createTreeWithChildrenSelector
 
   -- * Enum types
   , AudioUnitParameterOptions(AudioUnitParameterOptions)
@@ -88,15 +89,11 @@ module ObjC.AudioToolbox.AUParameterTree
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -112,8 +109,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- parameterWithAddress:@
 parameterWithAddress :: IsAUParameterTree auParameterTree => auParameterTree -> CULong -> IO (Id AUParameter)
-parameterWithAddress auParameterTree  address =
-    sendMsg auParameterTree (mkSelector "parameterWithAddress:") (retPtr retVoid) [argCULong address] >>= retainedObject . castPtr
+parameterWithAddress auParameterTree address =
+  sendMessage auParameterTree parameterWithAddressSelector address
 
 -- | parameterWithID:scope:element:
 --
@@ -125,8 +122,8 @@ parameterWithAddress auParameterTree  address =
 --
 -- ObjC selector: @- parameterWithID:scope:element:@
 parameterWithID_scope_element :: IsAUParameterTree auParameterTree => auParameterTree -> CUInt -> CUInt -> CUInt -> IO (Id AUParameter)
-parameterWithID_scope_element auParameterTree  paramID scope element =
-    sendMsg auParameterTree (mkSelector "parameterWithID:scope:element:") (retPtr retVoid) [argCUInt paramID, argCUInt scope, argCUInt element] >>= retainedObject . castPtr
+parameterWithID_scope_element auParameterTree paramID scope element =
+  sendMessage auParameterTree parameterWithID_scope_elementSelector paramID scope element
 
 -- | Create an AUParameter. See AUParameter's properties for descriptions of the arguments.
 --
@@ -135,12 +132,7 @@ createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStri
 createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParameters identifier name address min_ max_ unit unitName flags valueStrings dependentParameters =
   do
     cls' <- getRequiredClass "AUParameterTree"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr name $ \raw_name ->
-        withObjCPtr unitName $ \raw_unitName ->
-          withObjCPtr valueStrings $ \raw_valueStrings ->
-            withObjCPtr dependentParameters $ \raw_dependentParameters ->
-              sendClassMsg cls' (mkSelector "createParameterWithIdentifier:name:address:min:max:unit:unitName:flags:valueStrings:dependentParameters:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argCULong address, argCFloat min_, argCFloat max_, argCUInt (coerce unit), argPtr (castPtr raw_unitName :: Ptr ()), argCUInt (coerce flags), argPtr (castPtr raw_valueStrings :: Ptr ()), argPtr (castPtr raw_dependentParameters :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector (toNSString identifier) (toNSString name) address min_ max_ unit (toNSString unitName) flags (toNSArray valueStrings) (toNSArray dependentParameters)
 
 -- | Create an AUParameterGroup.
 --
@@ -155,10 +147,7 @@ createGroupWithIdentifier_name_children :: (IsNSString identifier, IsNSString na
 createGroupWithIdentifier_name_children identifier name children =
   do
     cls' <- getRequiredClass "AUParameterTree"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr name $ \raw_name ->
-        withObjCPtr children $ \raw_children ->
-          sendClassMsg cls' (mkSelector "createGroupWithIdentifier:name:children:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_children :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createGroupWithIdentifier_name_childrenSelector (toNSString identifier) (toNSString name) (toNSArray children)
 
 -- | Create a template group which may be used as a prototype for further group instances.
 --
@@ -171,8 +160,7 @@ createGroupTemplate :: IsNSArray children => children -> IO (Id AUParameterGroup
 createGroupTemplate children =
   do
     cls' <- getRequiredClass "AUParameterTree"
-    withObjCPtr children $ \raw_children ->
-      sendClassMsg cls' (mkSelector "createGroupTemplate:") (retPtr retVoid) [argPtr (castPtr raw_children :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createGroupTemplateSelector (toNSArray children)
 
 -- | Initialize a group as a copied instance of a template group.
 --
@@ -189,10 +177,7 @@ createGroupFromTemplate_identifier_name_addressOffset :: (IsAUParameterGroup tem
 createGroupFromTemplate_identifier_name_addressOffset templateGroup identifier name addressOffset =
   do
     cls' <- getRequiredClass "AUParameterTree"
-    withObjCPtr templateGroup $ \raw_templateGroup ->
-      withObjCPtr identifier $ \raw_identifier ->
-        withObjCPtr name $ \raw_name ->
-          sendClassMsg cls' (mkSelector "createGroupFromTemplate:identifier:name:addressOffset:") (retPtr retVoid) [argPtr (castPtr raw_templateGroup :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argCULong addressOffset] >>= retainedObject . castPtr
+    sendClassMessage cls' createGroupFromTemplate_identifier_name_addressOffsetSelector (toAUParameterGroup templateGroup) (toNSString identifier) (toNSString name) addressOffset
 
 -- | Create an AUParameterTree.
 --
@@ -203,38 +188,37 @@ createTreeWithChildren :: IsNSArray children => children -> IO (Id AUParameterTr
 createTreeWithChildren children =
   do
     cls' <- getRequiredClass "AUParameterTree"
-    withObjCPtr children $ \raw_children ->
-      sendClassMsg cls' (mkSelector "createTreeWithChildren:") (retPtr retVoid) [argPtr (castPtr raw_children :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' createTreeWithChildrenSelector (toNSArray children)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @parameterWithAddress:@
-parameterWithAddressSelector :: Selector
+parameterWithAddressSelector :: Selector '[CULong] (Id AUParameter)
 parameterWithAddressSelector = mkSelector "parameterWithAddress:"
 
 -- | @Selector@ for @parameterWithID:scope:element:@
-parameterWithID_scope_elementSelector :: Selector
+parameterWithID_scope_elementSelector :: Selector '[CUInt, CUInt, CUInt] (Id AUParameter)
 parameterWithID_scope_elementSelector = mkSelector "parameterWithID:scope:element:"
 
 -- | @Selector@ for @createParameterWithIdentifier:name:address:min:max:unit:unitName:flags:valueStrings:dependentParameters:@
-createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector :: Selector
+createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector :: Selector '[Id NSString, Id NSString, CULong, CFloat, CFloat, AudioUnitParameterUnit, Id NSString, AudioUnitParameterOptions, Id NSArray, Id NSArray] (Id AUParameter)
 createParameterWithIdentifier_name_address_min_max_unit_unitName_flags_valueStrings_dependentParametersSelector = mkSelector "createParameterWithIdentifier:name:address:min:max:unit:unitName:flags:valueStrings:dependentParameters:"
 
 -- | @Selector@ for @createGroupWithIdentifier:name:children:@
-createGroupWithIdentifier_name_childrenSelector :: Selector
+createGroupWithIdentifier_name_childrenSelector :: Selector '[Id NSString, Id NSString, Id NSArray] (Id AUParameterGroup)
 createGroupWithIdentifier_name_childrenSelector = mkSelector "createGroupWithIdentifier:name:children:"
 
 -- | @Selector@ for @createGroupTemplate:@
-createGroupTemplateSelector :: Selector
+createGroupTemplateSelector :: Selector '[Id NSArray] (Id AUParameterGroup)
 createGroupTemplateSelector = mkSelector "createGroupTemplate:"
 
 -- | @Selector@ for @createGroupFromTemplate:identifier:name:addressOffset:@
-createGroupFromTemplate_identifier_name_addressOffsetSelector :: Selector
+createGroupFromTemplate_identifier_name_addressOffsetSelector :: Selector '[Id AUParameterGroup, Id NSString, Id NSString, CULong] (Id AUParameterGroup)
 createGroupFromTemplate_identifier_name_addressOffsetSelector = mkSelector "createGroupFromTemplate:identifier:name:addressOffset:"
 
 -- | @Selector@ for @createTreeWithChildren:@
-createTreeWithChildrenSelector :: Selector
+createTreeWithChildrenSelector :: Selector '[Id NSArray] (Id AUParameterTree)
 createTreeWithChildrenSelector = mkSelector "createTreeWithChildren:"
 

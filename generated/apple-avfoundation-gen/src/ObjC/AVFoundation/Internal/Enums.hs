@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AVFoundation.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @AVAssetExportSessionStatus@
 newtype AVAssetExportSessionStatus = AVAssetExportSessionStatus CLong
@@ -34,6 +37,16 @@ pattern AVAssetExportSessionStatusFailed = AVAssetExportSessionStatus 4
 pattern AVAssetExportSessionStatusCancelled :: AVAssetExportSessionStatus
 pattern AVAssetExportSessionStatusCancelled = AVAssetExportSessionStatus 5
 
+instance ObjCArgument AVAssetExportSessionStatus where
+  withObjCArg (AVAssetExportSessionStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAssetExportSessionStatus where
+  type RawReturn AVAssetExportSessionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetExportSessionStatus x)
+  fromOwned x = pure (AVAssetExportSessionStatus x)
+
 -- | @AVAssetImageGeneratorResult@
 newtype AVAssetImageGeneratorResult = AVAssetImageGeneratorResult CLong
   deriving stock (Eq, Ord, Show)
@@ -47,6 +60,16 @@ pattern AVAssetImageGeneratorFailed = AVAssetImageGeneratorResult 1
 
 pattern AVAssetImageGeneratorCancelled :: AVAssetImageGeneratorResult
 pattern AVAssetImageGeneratorCancelled = AVAssetImageGeneratorResult 2
+
+instance ObjCArgument AVAssetImageGeneratorResult where
+  withObjCArg (AVAssetImageGeneratorResult x) k = k (argCLong x)
+
+instance ObjCReturn AVAssetImageGeneratorResult where
+  type RawReturn AVAssetImageGeneratorResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetImageGeneratorResult x)
+  fromOwned x = pure (AVAssetImageGeneratorResult x)
 
 -- | AVAssetReaderStatus
 --
@@ -91,6 +114,16 @@ pattern AVAssetReaderStatusFailed = AVAssetReaderStatus 3
 pattern AVAssetReaderStatusCancelled :: AVAssetReaderStatus
 pattern AVAssetReaderStatusCancelled = AVAssetReaderStatus 4
 
+instance ObjCArgument AVAssetReaderStatus where
+  withObjCArg (AVAssetReaderStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAssetReaderStatus where
+  type RawReturn AVAssetReaderStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetReaderStatus x)
+  fromOwned x = pure (AVAssetReaderStatus x)
+
 -- | These constants can be passed in to AVURLAssetReferenceRestrictionsKey to control the resolution of references to external media data.
 -- | @AVAssetReferenceRestrictions@ (bitmask)
 newtype AVAssetReferenceRestrictions = AVAssetReferenceRestrictions CULong
@@ -124,6 +157,16 @@ pattern AVAssetReferenceRestrictionForbidAll = AVAssetReferenceRestrictions 6553
 pattern AVAssetReferenceRestrictionDefaultPolicy :: AVAssetReferenceRestrictions
 pattern AVAssetReferenceRestrictionDefaultPolicy = AVAssetReferenceRestrictions 2
 
+instance ObjCArgument AVAssetReferenceRestrictions where
+  withObjCArg (AVAssetReferenceRestrictions x) k = k (argCULong x)
+
+instance ObjCReturn AVAssetReferenceRestrictions where
+  type RawReturn AVAssetReferenceRestrictions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetReferenceRestrictions x)
+  fromOwned x = pure (AVAssetReferenceRestrictions x)
+
 -- | AVAssetSegmentType
 --
 -- Indicates the type of segment.
@@ -145,6 +188,16 @@ pattern AVAssetSegmentTypeInitialization = AVAssetSegmentType 1
 
 pattern AVAssetSegmentTypeSeparable :: AVAssetSegmentType
 pattern AVAssetSegmentTypeSeparable = AVAssetSegmentType 2
+
+instance ObjCArgument AVAssetSegmentType where
+  withObjCArg (AVAssetSegmentType x) k = k (argCLong x)
+
+instance ObjCReturn AVAssetSegmentType where
+  type RawReturn AVAssetSegmentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetSegmentType x)
+  fromOwned x = pure (AVAssetSegmentType x)
 
 -- | AVAssetTrackGroupOutputHandling
 --
@@ -176,6 +229,16 @@ pattern AVAssetTrackGroupOutputHandlingPreserveAlternateTracks = AVAssetTrackGro
 
 pattern AVAssetTrackGroupOutputHandlingDefaultPolicy :: AVAssetTrackGroupOutputHandling
 pattern AVAssetTrackGroupOutputHandlingDefaultPolicy = AVAssetTrackGroupOutputHandling 0
+
+instance ObjCArgument AVAssetTrackGroupOutputHandling where
+  withObjCArg (AVAssetTrackGroupOutputHandling x) k = k (argCULong x)
+
+instance ObjCReturn AVAssetTrackGroupOutputHandling where
+  type RawReturn AVAssetTrackGroupOutputHandling = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetTrackGroupOutputHandling x)
+  fromOwned x = pure (AVAssetTrackGroupOutputHandling x)
 
 -- | AVAssetWriterStatus
 --
@@ -220,6 +283,16 @@ pattern AVAssetWriterStatusFailed = AVAssetWriterStatus 3
 pattern AVAssetWriterStatusCancelled :: AVAssetWriterStatus
 pattern AVAssetWriterStatusCancelled = AVAssetWriterStatus 4
 
+instance ObjCArgument AVAssetWriterStatus where
+  withObjCArg (AVAssetWriterStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAssetWriterStatus where
+  type RawReturn AVAssetWriterStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAssetWriterStatus x)
+  fromOwned x = pure (AVAssetWriterStatus x)
+
 -- | AVAudioSpatializationFormats
 --
 -- These constants can be used to specify values for allowedAudioSpatializationFormats.
@@ -262,6 +335,16 @@ pattern AVAudioSpatializationFormatMultichannel = AVAudioSpatializationFormats 4
 pattern AVAudioSpatializationFormatMonoStereoAndMultichannel :: AVAudioSpatializationFormats
 pattern AVAudioSpatializationFormatMonoStereoAndMultichannel = AVAudioSpatializationFormats 7
 
+instance ObjCArgument AVAudioSpatializationFormats where
+  withObjCArg (AVAudioSpatializationFormats x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSpatializationFormats where
+  type RawReturn AVAudioSpatializationFormats = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSpatializationFormats x)
+  fromOwned x = pure (AVAudioSpatializationFormats x)
+
 -- | AVAuthorizationStatus
 --
 -- Constants indicating the client's authorization to the underlying hardware supporting a media type.
@@ -298,6 +381,16 @@ pattern AVAuthorizationStatusDenied = AVAuthorizationStatus 2
 pattern AVAuthorizationStatusAuthorized :: AVAuthorizationStatus
 pattern AVAuthorizationStatusAuthorized = AVAuthorizationStatus 3
 
+instance ObjCArgument AVAuthorizationStatus where
+  withObjCArg (AVAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAuthorizationStatus where
+  type RawReturn AVAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAuthorizationStatus x)
+  fromOwned x = pure (AVAuthorizationStatus x)
+
 -- | AVCaptionAnimation
 --
 -- Animation effect for a caption
@@ -315,6 +408,16 @@ pattern AVCaptionAnimationNone = AVCaptionAnimation 0
 
 pattern AVCaptionAnimationCharacterReveal :: AVCaptionAnimation
 pattern AVCaptionAnimationCharacterReveal = AVCaptionAnimation 1
+
+instance ObjCArgument AVCaptionAnimation where
+  withObjCArg (AVCaptionAnimation x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionAnimation where
+  type RawReturn AVCaptionAnimation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionAnimation x)
+  fromOwned x = pure (AVCaptionAnimation x)
 
 -- | AVCaptionConversionValidatorStatus
 --
@@ -352,6 +455,16 @@ pattern AVCaptionConversionValidatorStatusCompleted = AVCaptionConversionValidat
 pattern AVCaptionConversionValidatorStatusStopped :: AVCaptionConversionValidatorStatus
 pattern AVCaptionConversionValidatorStatusStopped = AVCaptionConversionValidatorStatus 3
 
+instance ObjCArgument AVCaptionConversionValidatorStatus where
+  withObjCArg (AVCaptionConversionValidatorStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionConversionValidatorStatus where
+  type RawReturn AVCaptionConversionValidatorStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionConversionValidatorStatus x)
+  fromOwned x = pure (AVCaptionConversionValidatorStatus x)
+
 -- | AVCaptionDecoration
 --
 -- Choices for character decoration .
@@ -386,6 +499,16 @@ pattern AVCaptionDecorationLineThrough = AVCaptionDecoration 2
 pattern AVCaptionDecorationOverline :: AVCaptionDecoration
 pattern AVCaptionDecorationOverline = AVCaptionDecoration 4
 
+instance ObjCArgument AVCaptionDecoration where
+  withObjCArg (AVCaptionDecoration x) k = k (argCULong x)
+
+instance ObjCReturn AVCaptionDecoration where
+  type RawReturn AVCaptionDecoration = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionDecoration x)
+  fromOwned x = pure (AVCaptionDecoration x)
+
 -- | AVCaptionFontStyle
 --
 -- Choices for character style.
@@ -409,6 +532,16 @@ pattern AVCaptionFontStyleNormal = AVCaptionFontStyle 1
 pattern AVCaptionFontStyleItalic :: AVCaptionFontStyle
 pattern AVCaptionFontStyleItalic = AVCaptionFontStyle 2
 
+instance ObjCArgument AVCaptionFontStyle where
+  withObjCArg (AVCaptionFontStyle x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionFontStyle where
+  type RawReturn AVCaptionFontStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionFontStyle x)
+  fromOwned x = pure (AVCaptionFontStyle x)
+
 -- | AVCaptionFontWeight
 --
 -- Choices for font weight.
@@ -431,6 +564,16 @@ pattern AVCaptionFontWeightNormal = AVCaptionFontWeight 1
 
 pattern AVCaptionFontWeightBold :: AVCaptionFontWeight
 pattern AVCaptionFontWeightBold = AVCaptionFontWeight 2
+
+instance ObjCArgument AVCaptionFontWeight where
+  withObjCArg (AVCaptionFontWeight x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionFontWeight where
+  type RawReturn AVCaptionFontWeight = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionFontWeight x)
+  fromOwned x = pure (AVCaptionFontWeight x)
 
 -- | AVCaptionRegionDisplayAlignment
 --
@@ -465,6 +608,16 @@ pattern AVCaptionRegionDisplayAlignmentCenter = AVCaptionRegionDisplayAlignment 
 pattern AVCaptionRegionDisplayAlignmentAfter :: AVCaptionRegionDisplayAlignment
 pattern AVCaptionRegionDisplayAlignmentAfter = AVCaptionRegionDisplayAlignment 2
 
+instance ObjCArgument AVCaptionRegionDisplayAlignment where
+  withObjCArg (AVCaptionRegionDisplayAlignment x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionRegionDisplayAlignment where
+  type RawReturn AVCaptionRegionDisplayAlignment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionRegionDisplayAlignment x)
+  fromOwned x = pure (AVCaptionRegionDisplayAlignment x)
+
 -- | AVCaptionRegionScroll
 --
 -- Scrolling effect for a region
@@ -483,6 +636,16 @@ pattern AVCaptionRegionScrollNone = AVCaptionRegionScroll 0
 pattern AVCaptionRegionScrollRollUp :: AVCaptionRegionScroll
 pattern AVCaptionRegionScrollRollUp = AVCaptionRegionScroll 1
 
+instance ObjCArgument AVCaptionRegionScroll where
+  withObjCArg (AVCaptionRegionScroll x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionRegionScroll where
+  type RawReturn AVCaptionRegionScroll = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionRegionScroll x)
+  fromOwned x = pure (AVCaptionRegionScroll x)
+
 -- | AVCaptionRegionWritingMode
 --
 -- Choices for region writing mode
@@ -500,6 +663,16 @@ pattern AVCaptionRegionWritingModeLeftToRightAndTopToBottom = AVCaptionRegionWri
 
 pattern AVCaptionRegionWritingModeTopToBottomAndRightToLeft :: AVCaptionRegionWritingMode
 pattern AVCaptionRegionWritingModeTopToBottomAndRightToLeft = AVCaptionRegionWritingMode 2
+
+instance ObjCArgument AVCaptionRegionWritingMode where
+  withObjCArg (AVCaptionRegionWritingMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionRegionWritingMode where
+  type RawReturn AVCaptionRegionWritingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionRegionWritingMode x)
+  fromOwned x = pure (AVCaptionRegionWritingMode x)
 
 -- | AVCaptionRubyAlignment
 --
@@ -547,6 +720,16 @@ pattern AVCaptionRubyAlignmentDistributeSpaceBetween = AVCaptionRubyAlignment 2
 pattern AVCaptionRubyAlignmentDistributeSpaceAround :: AVCaptionRubyAlignment
 pattern AVCaptionRubyAlignmentDistributeSpaceAround = AVCaptionRubyAlignment 3
 
+instance ObjCArgument AVCaptionRubyAlignment where
+  withObjCArg (AVCaptionRubyAlignment x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionRubyAlignment where
+  type RawReturn AVCaptionRubyAlignment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionRubyAlignment x)
+  fromOwned x = pure (AVCaptionRubyAlignment x)
+
 -- | AVCaptionRubyPosition
 --
 -- Choices for Ruby position
@@ -568,6 +751,16 @@ pattern AVCaptionRubyPositionBefore = AVCaptionRubyPosition 0
 
 pattern AVCaptionRubyPositionAfter :: AVCaptionRubyPosition
 pattern AVCaptionRubyPositionAfter = AVCaptionRubyPosition 1
+
+instance ObjCArgument AVCaptionRubyPosition where
+  withObjCArg (AVCaptionRubyPosition x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionRubyPosition where
+  type RawReturn AVCaptionRubyPosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionRubyPosition x)
+  fromOwned x = pure (AVCaptionRubyPosition x)
 
 -- | AVCaptionTextAlignment
 --
@@ -611,6 +804,16 @@ pattern AVCaptionTextAlignmentLeft = AVCaptionTextAlignment 3
 
 pattern AVCaptionTextAlignmentRight :: AVCaptionTextAlignment
 pattern AVCaptionTextAlignmentRight = AVCaptionTextAlignment 4
+
+instance ObjCArgument AVCaptionTextAlignment where
+  withObjCArg (AVCaptionTextAlignment x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionTextAlignment where
+  type RawReturn AVCaptionTextAlignment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionTextAlignment x)
+  fromOwned x = pure (AVCaptionTextAlignment x)
 
 -- | AVCaptionTextCombine
 --
@@ -666,6 +869,16 @@ pattern AVCaptionTextCombineThreeDigits = AVCaptionTextCombine 3
 pattern AVCaptionTextCombineFourDigits :: AVCaptionTextCombine
 pattern AVCaptionTextCombineFourDigits = AVCaptionTextCombine 4
 
+instance ObjCArgument AVCaptionTextCombine where
+  withObjCArg (AVCaptionTextCombine x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionTextCombine where
+  type RawReturn AVCaptionTextCombine = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionTextCombine x)
+  fromOwned x = pure (AVCaptionTextCombine x)
+
 -- | AVCaptionUnitsType
 --
 -- Geometry unit.
@@ -697,6 +910,16 @@ pattern AVCaptionUnitsTypeCells = AVCaptionUnitsType 1
 pattern AVCaptionUnitsTypePercent :: AVCaptionUnitsType
 pattern AVCaptionUnitsTypePercent = AVCaptionUnitsType 2
 
+instance ObjCArgument AVCaptionUnitsType where
+  withObjCArg (AVCaptionUnitsType x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptionUnitsType where
+  type RawReturn AVCaptionUnitsType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptionUnitsType x)
+  fromOwned x = pure (AVCaptionUnitsType x)
+
 -- | AVCaptureAutoFocusRangeRestriction
 --
 -- Constants indicating the restriction of the receiver's autofocus system to a particular range of focus scan, if it supports range restrictions.
@@ -725,6 +948,16 @@ pattern AVCaptureAutoFocusRangeRestrictionNear = AVCaptureAutoFocusRangeRestrict
 
 pattern AVCaptureAutoFocusRangeRestrictionFar :: AVCaptureAutoFocusRangeRestriction
 pattern AVCaptureAutoFocusRangeRestrictionFar = AVCaptureAutoFocusRangeRestriction 2
+
+instance ObjCArgument AVCaptureAutoFocusRangeRestriction where
+  withObjCArg (AVCaptureAutoFocusRangeRestriction x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureAutoFocusRangeRestriction where
+  type RawReturn AVCaptureAutoFocusRangeRestriction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureAutoFocusRangeRestriction x)
+  fromOwned x = pure (AVCaptureAutoFocusRangeRestriction x)
 
 -- | AVCaptureAutoFocusSystem
 --
@@ -755,6 +988,16 @@ pattern AVCaptureAutoFocusSystemContrastDetection = AVCaptureAutoFocusSystem 1
 pattern AVCaptureAutoFocusSystemPhaseDetection :: AVCaptureAutoFocusSystem
 pattern AVCaptureAutoFocusSystemPhaseDetection = AVCaptureAutoFocusSystem 2
 
+instance ObjCArgument AVCaptureAutoFocusSystem where
+  withObjCArg (AVCaptureAutoFocusSystem x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureAutoFocusSystem where
+  type RawReturn AVCaptureAutoFocusSystem = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureAutoFocusSystem x)
+  fromOwned x = pure (AVCaptureAutoFocusSystem x)
+
 -- | Constants indicating the current camera lens smudge detection status.
 -- | @AVCaptureCameraLensSmudgeDetectionStatus@
 newtype AVCaptureCameraLensSmudgeDetectionStatus = AVCaptureCameraLensSmudgeDetectionStatus CLong
@@ -772,6 +1015,16 @@ pattern AVCaptureCameraLensSmudgeDetectionStatusSmudged = AVCaptureCameraLensSmu
 
 pattern AVCaptureCameraLensSmudgeDetectionStatusUnknown :: AVCaptureCameraLensSmudgeDetectionStatus
 pattern AVCaptureCameraLensSmudgeDetectionStatusUnknown = AVCaptureCameraLensSmudgeDetectionStatus 3
+
+instance ObjCArgument AVCaptureCameraLensSmudgeDetectionStatus where
+  withObjCArg (AVCaptureCameraLensSmudgeDetectionStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureCameraLensSmudgeDetectionStatus where
+  type RawReturn AVCaptureCameraLensSmudgeDetectionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureCameraLensSmudgeDetectionStatus x)
+  fromOwned x = pure (AVCaptureCameraLensSmudgeDetectionStatus x)
 
 -- | AVCaptureCenterStageControlMode
 --
@@ -802,6 +1055,16 @@ pattern AVCaptureCenterStageControlModeApp = AVCaptureCenterStageControlMode 1
 pattern AVCaptureCenterStageControlModeCooperative :: AVCaptureCenterStageControlMode
 pattern AVCaptureCenterStageControlModeCooperative = AVCaptureCenterStageControlMode 2
 
+instance ObjCArgument AVCaptureCenterStageControlMode where
+  withObjCArg (AVCaptureCenterStageControlMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureCenterStageControlMode where
+  type RawReturn AVCaptureCenterStageControlMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureCenterStageControlMode x)
+  fromOwned x = pure (AVCaptureCenterStageControlMode x)
+
 -- | Constants indicating the focus behavior when recording a Cinematic Video.
 -- | @AVCaptureCinematicVideoFocusMode@
 newtype AVCaptureCinematicVideoFocusMode = AVCaptureCinematicVideoFocusMode CLong
@@ -816,6 +1079,16 @@ pattern AVCaptureCinematicVideoFocusModeStrong = AVCaptureCinematicVideoFocusMod
 
 pattern AVCaptureCinematicVideoFocusModeWeak :: AVCaptureCinematicVideoFocusMode
 pattern AVCaptureCinematicVideoFocusModeWeak = AVCaptureCinematicVideoFocusMode 2
+
+instance ObjCArgument AVCaptureCinematicVideoFocusMode where
+  withObjCArg (AVCaptureCinematicVideoFocusMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureCinematicVideoFocusMode where
+  type RawReturn AVCaptureCinematicVideoFocusMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureCinematicVideoFocusMode x)
+  fromOwned x = pure (AVCaptureCinematicVideoFocusMode x)
 
 -- | Constants indicating active or supported video color space.
 -- | @AVCaptureColorSpace@
@@ -837,6 +1110,16 @@ pattern AVCaptureColorSpace_AppleLog = AVCaptureColorSpace 3
 
 pattern AVCaptureColorSpace_AppleLog2 :: AVCaptureColorSpace
 pattern AVCaptureColorSpace_AppleLog2 = AVCaptureColorSpace 4
+
+instance ObjCArgument AVCaptureColorSpace where
+  withObjCArg (AVCaptureColorSpace x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureColorSpace where
+  type RawReturn AVCaptureColorSpace = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureColorSpace x)
+  fromOwned x = pure (AVCaptureColorSpace x)
 
 -- | AVCaptureDevicePosition
 --
@@ -867,6 +1150,16 @@ pattern AVCaptureDevicePositionBack = AVCaptureDevicePosition 1
 pattern AVCaptureDevicePositionFront :: AVCaptureDevicePosition
 pattern AVCaptureDevicePositionFront = AVCaptureDevicePosition 2
 
+instance ObjCArgument AVCaptureDevicePosition where
+  withObjCArg (AVCaptureDevicePosition x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureDevicePosition where
+  type RawReturn AVCaptureDevicePosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureDevicePosition x)
+  fromOwned x = pure (AVCaptureDevicePosition x)
+
 -- | AVCaptureDeviceTransportControlsPlaybackMode
 --
 -- Constants indicating the transport controls' current mode of play back, if it has one.
@@ -888,6 +1181,16 @@ pattern AVCaptureDeviceTransportControlsNotPlayingMode = AVCaptureDeviceTranspor
 
 pattern AVCaptureDeviceTransportControlsPlayingMode :: AVCaptureDeviceTransportControlsPlaybackMode
 pattern AVCaptureDeviceTransportControlsPlayingMode = AVCaptureDeviceTransportControlsPlaybackMode 1
+
+instance ObjCArgument AVCaptureDeviceTransportControlsPlaybackMode where
+  withObjCArg (AVCaptureDeviceTransportControlsPlaybackMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureDeviceTransportControlsPlaybackMode where
+  type RawReturn AVCaptureDeviceTransportControlsPlaybackMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureDeviceTransportControlsPlaybackMode x)
+  fromOwned x = pure (AVCaptureDeviceTransportControlsPlaybackMode x)
 
 -- | AVCaptureExposureMode
 --
@@ -925,6 +1228,16 @@ pattern AVCaptureExposureModeContinuousAutoExposure = AVCaptureExposureMode 2
 pattern AVCaptureExposureModeCustom :: AVCaptureExposureMode
 pattern AVCaptureExposureModeCustom = AVCaptureExposureMode 3
 
+instance ObjCArgument AVCaptureExposureMode where
+  withObjCArg (AVCaptureExposureMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureExposureMode where
+  type RawReturn AVCaptureExposureMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureExposureMode x)
+  fromOwned x = pure (AVCaptureExposureMode x)
+
 -- | AVCaptureFlashMode
 --
 -- Constants indicating the mode of the flash on the receiver's device, if it has one.
@@ -954,6 +1267,16 @@ pattern AVCaptureFlashModeOn = AVCaptureFlashMode 1
 pattern AVCaptureFlashModeAuto :: AVCaptureFlashMode
 pattern AVCaptureFlashModeAuto = AVCaptureFlashMode 2
 
+instance ObjCArgument AVCaptureFlashMode where
+  withObjCArg (AVCaptureFlashMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureFlashMode where
+  type RawReturn AVCaptureFlashMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureFlashMode x)
+  fromOwned x = pure (AVCaptureFlashMode x)
+
 -- | AVCaptureFocusMode
 --
 -- Constants indicating the mode of the focus on the receiver's device, if it has one.
@@ -982,6 +1305,16 @@ pattern AVCaptureFocusModeAutoFocus = AVCaptureFocusMode 1
 
 pattern AVCaptureFocusModeContinuousAutoFocus :: AVCaptureFocusMode
 pattern AVCaptureFocusModeContinuousAutoFocus = AVCaptureFocusMode 2
+
+instance ObjCArgument AVCaptureFocusMode where
+  withObjCArg (AVCaptureFocusMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureFocusMode where
+  type RawReturn AVCaptureFocusMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureFocusMode x)
+  fromOwned x = pure (AVCaptureFocusMode x)
 
 -- | AVCaptureLensStabilizationStatus
 --
@@ -1026,6 +1359,16 @@ pattern AVCaptureLensStabilizationStatusOutOfRange = AVCaptureLensStabilizationS
 pattern AVCaptureLensStabilizationStatusUnavailable :: AVCaptureLensStabilizationStatus
 pattern AVCaptureLensStabilizationStatusUnavailable = AVCaptureLensStabilizationStatus 4
 
+instance ObjCArgument AVCaptureLensStabilizationStatus where
+  withObjCArg (AVCaptureLensStabilizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureLensStabilizationStatus where
+  type RawReturn AVCaptureLensStabilizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureLensStabilizationStatus x)
+  fromOwned x = pure (AVCaptureLensStabilizationStatus x)
+
 -- | AVCaptureMicrophoneMode
 --
 -- Constants describing microphone filtering modes.
@@ -1055,6 +1398,16 @@ pattern AVCaptureMicrophoneModeWideSpectrum = AVCaptureMicrophoneMode 1
 pattern AVCaptureMicrophoneModeVoiceIsolation :: AVCaptureMicrophoneMode
 pattern AVCaptureMicrophoneModeVoiceIsolation = AVCaptureMicrophoneMode 2
 
+instance ObjCArgument AVCaptureMicrophoneMode where
+  withObjCArg (AVCaptureMicrophoneMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureMicrophoneMode where
+  type RawReturn AVCaptureMicrophoneMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureMicrophoneMode x)
+  fromOwned x = pure (AVCaptureMicrophoneMode x)
+
 -- | AVCaptureMultichannelAudioMode
 --
 -- Constants indicating the modes of multichannel audio.
@@ -1083,6 +1436,16 @@ pattern AVCaptureMultichannelAudioModeStereo = AVCaptureMultichannelAudioMode 1
 
 pattern AVCaptureMultichannelAudioModeFirstOrderAmbisonics :: AVCaptureMultichannelAudioMode
 pattern AVCaptureMultichannelAudioModeFirstOrderAmbisonics = AVCaptureMultichannelAudioMode 2
+
+instance ObjCArgument AVCaptureMultichannelAudioMode where
+  withObjCArg (AVCaptureMultichannelAudioMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureMultichannelAudioMode where
+  type RawReturn AVCaptureMultichannelAudioMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureMultichannelAudioMode x)
+  fromOwned x = pure (AVCaptureMultichannelAudioMode x)
 
 -- | AVCaptureOutputDataDroppedReason
 --
@@ -1119,6 +1482,16 @@ pattern AVCaptureOutputDataDroppedReasonOutOfBuffers = AVCaptureOutputDataDroppe
 
 pattern AVCaptureOutputDataDroppedReasonDiscontinuity :: AVCaptureOutputDataDroppedReason
 pattern AVCaptureOutputDataDroppedReasonDiscontinuity = AVCaptureOutputDataDroppedReason 3
+
+instance ObjCArgument AVCaptureOutputDataDroppedReason where
+  withObjCArg (AVCaptureOutputDataDroppedReason x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureOutputDataDroppedReason where
+  type RawReturn AVCaptureOutputDataDroppedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureOutputDataDroppedReason x)
+  fromOwned x = pure (AVCaptureOutputDataDroppedReason x)
 
 -- | AVCapturePhotoOutputCaptureReadiness
 --
@@ -1163,6 +1536,16 @@ pattern AVCapturePhotoOutputCaptureReadinessNotReadyWaitingForCapture = AVCaptur
 pattern AVCapturePhotoOutputCaptureReadinessNotReadyWaitingForProcessing :: AVCapturePhotoOutputCaptureReadiness
 pattern AVCapturePhotoOutputCaptureReadinessNotReadyWaitingForProcessing = AVCapturePhotoOutputCaptureReadiness 4
 
+instance ObjCArgument AVCapturePhotoOutputCaptureReadiness where
+  withObjCArg (AVCapturePhotoOutputCaptureReadiness x) k = k (argCLong x)
+
+instance ObjCReturn AVCapturePhotoOutputCaptureReadiness where
+  type RawReturn AVCapturePhotoOutputCaptureReadiness = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCapturePhotoOutputCaptureReadiness x)
+  fromOwned x = pure (AVCapturePhotoOutputCaptureReadiness x)
+
 -- | AVCapturePhotoQualityPrioritization
 --
 -- Constants indicating how photo quality should be prioritized against speed.
@@ -1191,6 +1574,16 @@ pattern AVCapturePhotoQualityPrioritizationBalanced = AVCapturePhotoQualityPrior
 
 pattern AVCapturePhotoQualityPrioritizationQuality :: AVCapturePhotoQualityPrioritization
 pattern AVCapturePhotoQualityPrioritizationQuality = AVCapturePhotoQualityPrioritization 3
+
+instance ObjCArgument AVCapturePhotoQualityPrioritization where
+  withObjCArg (AVCapturePhotoQualityPrioritization x) k = k (argCLong x)
+
+instance ObjCReturn AVCapturePhotoQualityPrioritization where
+  type RawReturn AVCapturePhotoQualityPrioritization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCapturePhotoQualityPrioritization x)
+  fromOwned x = pure (AVCapturePhotoQualityPrioritization x)
 
 -- | AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 --
@@ -1238,6 +1631,16 @@ pattern AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionFoc
 pattern AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionExposureModeChanged :: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 pattern AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionExposureModeChanged = AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions 4
 
+instance ObjCArgument AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions where
+  withObjCArg (AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions x) k = k (argCULong x)
+
+instance ObjCReturn AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions where
+  type RawReturn AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions x)
+  fromOwned x = pure (AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions x)
+
 -- | AVCapturePrimaryConstituentDeviceSwitchingBehavior
 --
 -- These constants can be used to control when the virtual device is allowed to switch the active primary constituent device.
@@ -1278,6 +1681,16 @@ pattern AVCapturePrimaryConstituentDeviceSwitchingBehaviorRestricted = AVCapture
 pattern AVCapturePrimaryConstituentDeviceSwitchingBehaviorLocked :: AVCapturePrimaryConstituentDeviceSwitchingBehavior
 pattern AVCapturePrimaryConstituentDeviceSwitchingBehaviorLocked = AVCapturePrimaryConstituentDeviceSwitchingBehavior 3
 
+instance ObjCArgument AVCapturePrimaryConstituentDeviceSwitchingBehavior where
+  withObjCArg (AVCapturePrimaryConstituentDeviceSwitchingBehavior x) k = k (argCLong x)
+
+instance ObjCReturn AVCapturePrimaryConstituentDeviceSwitchingBehavior where
+  type RawReturn AVCapturePrimaryConstituentDeviceSwitchingBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCapturePrimaryConstituentDeviceSwitchingBehavior x)
+  fromOwned x = pure (AVCapturePrimaryConstituentDeviceSwitchingBehavior x)
+
 -- | Constants indicating interruption reason. One of these is returned with the ``AVCaptureSessionWasInterruptedNotification`` (see ``AVCaptureSessionInterruptionReasonKey``).
 -- | @AVCaptureSessionInterruptionReason@
 newtype AVCaptureSessionInterruptionReason = AVCaptureSessionInterruptionReason CLong
@@ -1301,6 +1714,16 @@ pattern AVCaptureSessionInterruptionReasonVideoDeviceNotAvailableDueToSystemPres
 
 pattern AVCaptureSessionInterruptionReasonSensitiveContentMitigationActivated :: AVCaptureSessionInterruptionReason
 pattern AVCaptureSessionInterruptionReasonSensitiveContentMitigationActivated = AVCaptureSessionInterruptionReason 6
+
+instance ObjCArgument AVCaptureSessionInterruptionReason where
+  withObjCArg (AVCaptureSessionInterruptionReason x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureSessionInterruptionReason where
+  type RawReturn AVCaptureSessionInterruptionReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureSessionInterruptionReason x)
+  fromOwned x = pure (AVCaptureSessionInterruptionReason x)
 
 -- | AVCaptureSystemPressureFactors
 --
@@ -1351,6 +1774,16 @@ pattern AVCaptureSystemPressureFactorDepthModuleTemperature = AVCaptureSystemPre
 pattern AVCaptureSystemPressureFactorCameraTemperature :: AVCaptureSystemPressureFactors
 pattern AVCaptureSystemPressureFactorCameraTemperature = AVCaptureSystemPressureFactors 8
 
+instance ObjCArgument AVCaptureSystemPressureFactors where
+  withObjCArg (AVCaptureSystemPressureFactors x) k = k (argCULong x)
+
+instance ObjCReturn AVCaptureSystemPressureFactors where
+  type RawReturn AVCaptureSystemPressureFactors = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureSystemPressureFactors x)
+  fromOwned x = pure (AVCaptureSystemPressureFactors x)
+
 -- | AVCaptureSystemUserInterface
 --
 -- Constants describing the system user interfaces available to +showSystemUserInterface:.
@@ -1372,6 +1805,16 @@ pattern AVCaptureSystemUserInterfaceVideoEffects = AVCaptureSystemUserInterface 
 
 pattern AVCaptureSystemUserInterfaceMicrophoneModes :: AVCaptureSystemUserInterface
 pattern AVCaptureSystemUserInterfaceMicrophoneModes = AVCaptureSystemUserInterface 2
+
+instance ObjCArgument AVCaptureSystemUserInterface where
+  withObjCArg (AVCaptureSystemUserInterface x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureSystemUserInterface where
+  type RawReturn AVCaptureSystemUserInterface = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureSystemUserInterface x)
+  fromOwned x = pure (AVCaptureSystemUserInterface x)
 
 -- | Constants defining the synchronization status of a timecode generator .
 -- | @AVCaptureTimecodeGeneratorSynchronizationStatus@
@@ -1403,6 +1846,16 @@ pattern AVCaptureTimecodeGeneratorSynchronizationStatusSourceUnsupported = AVCap
 pattern AVCaptureTimecodeGeneratorSynchronizationStatusNotRequired :: AVCaptureTimecodeGeneratorSynchronizationStatus
 pattern AVCaptureTimecodeGeneratorSynchronizationStatusNotRequired = AVCaptureTimecodeGeneratorSynchronizationStatus 7
 
+instance ObjCArgument AVCaptureTimecodeGeneratorSynchronizationStatus where
+  withObjCArg (AVCaptureTimecodeGeneratorSynchronizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureTimecodeGeneratorSynchronizationStatus where
+  type RawReturn AVCaptureTimecodeGeneratorSynchronizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureTimecodeGeneratorSynchronizationStatus x)
+  fromOwned x = pure (AVCaptureTimecodeGeneratorSynchronizationStatus x)
+
 -- | Defines possible sources for generating timecode in using a timecode generator.
 -- | @AVCaptureTimecodeSourceType@
 newtype AVCaptureTimecodeSourceType = AVCaptureTimecodeSourceType CLong
@@ -1417,6 +1870,16 @@ pattern AVCaptureTimecodeSourceTypeRealTimeClock = AVCaptureTimecodeSourceType 1
 
 pattern AVCaptureTimecodeSourceTypeExternal :: AVCaptureTimecodeSourceType
 pattern AVCaptureTimecodeSourceTypeExternal = AVCaptureTimecodeSourceType 2
+
+instance ObjCArgument AVCaptureTimecodeSourceType where
+  withObjCArg (AVCaptureTimecodeSourceType x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureTimecodeSourceType where
+  type RawReturn AVCaptureTimecodeSourceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureTimecodeSourceType x)
+  fromOwned x = pure (AVCaptureTimecodeSourceType x)
 
 -- | AVCaptureTorchMode
 --
@@ -1446,6 +1909,16 @@ pattern AVCaptureTorchModeOn = AVCaptureTorchMode 1
 
 pattern AVCaptureTorchModeAuto :: AVCaptureTorchMode
 pattern AVCaptureTorchModeAuto = AVCaptureTorchMode 2
+
+instance ObjCArgument AVCaptureTorchMode where
+  withObjCArg (AVCaptureTorchMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureTorchMode where
+  type RawReturn AVCaptureTorchMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureTorchMode x)
+  fromOwned x = pure (AVCaptureTorchMode x)
 
 -- | AVCaptureVideoOrientation
 --
@@ -1483,6 +1956,16 @@ pattern AVCaptureVideoOrientationLandscapeRight = AVCaptureVideoOrientation 3
 pattern AVCaptureVideoOrientationLandscapeLeft :: AVCaptureVideoOrientation
 pattern AVCaptureVideoOrientationLandscapeLeft = AVCaptureVideoOrientation 4
 
+instance ObjCArgument AVCaptureVideoOrientation where
+  withObjCArg (AVCaptureVideoOrientation x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureVideoOrientation where
+  type RawReturn AVCaptureVideoOrientation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureVideoOrientation x)
+  fromOwned x = pure (AVCaptureVideoOrientation x)
+
 -- | Constants indicating the modes of video stabilization supported by the device's format.
 -- | @AVCaptureVideoStabilizationMode@
 newtype AVCaptureVideoStabilizationMode = AVCaptureVideoStabilizationMode CLong
@@ -1513,6 +1996,16 @@ pattern AVCaptureVideoStabilizationModeLowLatency = AVCaptureVideoStabilizationM
 pattern AVCaptureVideoStabilizationModeAuto :: AVCaptureVideoStabilizationMode
 pattern AVCaptureVideoStabilizationModeAuto = AVCaptureVideoStabilizationMode (-1)
 
+instance ObjCArgument AVCaptureVideoStabilizationMode where
+  withObjCArg (AVCaptureVideoStabilizationMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureVideoStabilizationMode where
+  type RawReturn AVCaptureVideoStabilizationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureVideoStabilizationMode x)
+  fromOwned x = pure (AVCaptureVideoStabilizationMode x)
+
 -- | AVCaptureWhiteBalanceMode
 --
 -- Constants indicating the mode of the white balance on the receiver's device, if it has adjustable white balance.
@@ -1541,6 +2034,16 @@ pattern AVCaptureWhiteBalanceModeAutoWhiteBalance = AVCaptureWhiteBalanceMode 1
 
 pattern AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance :: AVCaptureWhiteBalanceMode
 pattern AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance = AVCaptureWhiteBalanceMode 2
+
+instance ObjCArgument AVCaptureWhiteBalanceMode where
+  withObjCArg (AVCaptureWhiteBalanceMode x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureWhiteBalanceMode where
+  type RawReturn AVCaptureWhiteBalanceMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureWhiteBalanceMode x)
+  fromOwned x = pure (AVCaptureWhiteBalanceMode x)
 
 -- | Authorization Request Status
 --
@@ -1587,6 +2090,16 @@ pattern AVContentAuthorizationNotAvailable = AVContentAuthorizationStatus 5
 pattern AVContentAuthorizationNotPossible :: AVContentAuthorizationStatus
 pattern AVContentAuthorizationNotPossible = AVContentAuthorizationStatus 6
 
+instance ObjCArgument AVContentAuthorizationStatus where
+  withObjCArg (AVContentAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVContentAuthorizationStatus where
+  type RawReturn AVContentAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVContentAuthorizationStatus x)
+  fromOwned x = pure (AVContentAuthorizationStatus x)
+
 -- | @AVContentKeyRequestStatus@
 newtype AVContentKeyRequestStatus = AVContentKeyRequestStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -1610,6 +2123,16 @@ pattern AVContentKeyRequestStatusCancelled = AVContentKeyRequestStatus 4
 pattern AVContentKeyRequestStatusFailed :: AVContentKeyRequestStatus
 pattern AVContentKeyRequestStatusFailed = AVContentKeyRequestStatus 5
 
+instance ObjCArgument AVContentKeyRequestStatus where
+  withObjCArg (AVContentKeyRequestStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVContentKeyRequestStatus where
+  type RawReturn AVContentKeyRequestStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVContentKeyRequestStatus x)
+  fromOwned x = pure (AVContentKeyRequestStatus x)
+
 -- | Configuration for a call to [AVDelegatingPlaybackCoordinator coordinateRateChangeToRate:options:].
 -- | @AVDelegatingPlaybackCoordinatorRateChangeOptions@ (bitmask)
 newtype AVDelegatingPlaybackCoordinatorRateChangeOptions = AVDelegatingPlaybackCoordinatorRateChangeOptions CULong
@@ -1624,6 +2147,16 @@ instance Monoid AVDelegatingPlaybackCoordinatorRateChangeOptions where
 
 pattern AVDelegatingPlaybackCoordinatorRateChangeOptionPlayImmediately :: AVDelegatingPlaybackCoordinatorRateChangeOptions
 pattern AVDelegatingPlaybackCoordinatorRateChangeOptionPlayImmediately = AVDelegatingPlaybackCoordinatorRateChangeOptions 1
+
+instance ObjCArgument AVDelegatingPlaybackCoordinatorRateChangeOptions where
+  withObjCArg (AVDelegatingPlaybackCoordinatorRateChangeOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVDelegatingPlaybackCoordinatorRateChangeOptions where
+  type RawReturn AVDelegatingPlaybackCoordinatorRateChangeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVDelegatingPlaybackCoordinatorRateChangeOptions x)
+  fromOwned x = pure (AVDelegatingPlaybackCoordinatorRateChangeOptions x)
 
 -- | Configuration for a call to [AVDelegatingPlaybackCoordinator coordinateSeekToTime:options:].
 -- | @AVDelegatingPlaybackCoordinatorSeekOptions@ (bitmask)
@@ -1640,6 +2173,16 @@ instance Monoid AVDelegatingPlaybackCoordinatorSeekOptions where
 pattern AVDelegatingPlaybackCoordinatorSeekOptionResumeImmediately :: AVDelegatingPlaybackCoordinatorSeekOptions
 pattern AVDelegatingPlaybackCoordinatorSeekOptionResumeImmediately = AVDelegatingPlaybackCoordinatorSeekOptions 1
 
+instance ObjCArgument AVDelegatingPlaybackCoordinatorSeekOptions where
+  withObjCArg (AVDelegatingPlaybackCoordinatorSeekOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVDelegatingPlaybackCoordinatorSeekOptions where
+  type RawReturn AVDelegatingPlaybackCoordinatorSeekOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVDelegatingPlaybackCoordinatorSeekOptions x)
+  fromOwned x = pure (AVDelegatingPlaybackCoordinatorSeekOptions x)
+
 -- | @AVDepthDataAccuracy@
 newtype AVDepthDataAccuracy = AVDepthDataAccuracy CLong
   deriving stock (Eq, Ord, Show)
@@ -1651,6 +2194,16 @@ pattern AVDepthDataAccuracyRelative = AVDepthDataAccuracy 0
 pattern AVDepthDataAccuracyAbsolute :: AVDepthDataAccuracy
 pattern AVDepthDataAccuracyAbsolute = AVDepthDataAccuracy 1
 
+instance ObjCArgument AVDepthDataAccuracy where
+  withObjCArg (AVDepthDataAccuracy x) k = k (argCLong x)
+
+instance ObjCReturn AVDepthDataAccuracy where
+  type RawReturn AVDepthDataAccuracy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVDepthDataAccuracy x)
+  fromOwned x = pure (AVDepthDataAccuracy x)
+
 -- | @AVDepthDataQuality@
 newtype AVDepthDataQuality = AVDepthDataQuality CLong
   deriving stock (Eq, Ord, Show)
@@ -1661,6 +2214,16 @@ pattern AVDepthDataQualityLow = AVDepthDataQuality 0
 
 pattern AVDepthDataQualityHigh :: AVDepthDataQuality
 pattern AVDepthDataQualityHigh = AVDepthDataQuality 1
+
+instance ObjCArgument AVDepthDataQuality where
+  withObjCArg (AVDepthDataQuality x) k = k (argCLong x)
+
+instance ObjCReturn AVDepthDataQuality where
+  type RawReturn AVDepthDataQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVDepthDataQuality x)
+  fromOwned x = pure (AVDepthDataQuality x)
 
 -- | @AVError@
 newtype AVError = AVError CLong
@@ -1922,6 +2485,16 @@ pattern AVErrorAutoWhiteBalanceNotLocked = AVError (-11891)
 pattern AVErrorFollowExternalSyncDeviceTimedOut :: AVError
 pattern AVErrorFollowExternalSyncDeviceTimedOut = AVError (-11892)
 
+instance ObjCArgument AVError where
+  withObjCArg (AVError x) k = k (argCLong x)
+
+instance ObjCReturn AVError where
+  type RawReturn AVError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVError x)
+  fromOwned x = pure (AVError x)
+
 -- | The constants can be used to derive whether or not we have established sufficient protection to display content protected by this AVContentKey on some set of attached displays.
 -- | @AVExternalContentProtectionStatus@
 newtype AVExternalContentProtectionStatus = AVExternalContentProtectionStatus CLong
@@ -1936,6 +2509,16 @@ pattern AVExternalContentProtectionStatusSufficient = AVExternalContentProtectio
 
 pattern AVExternalContentProtectionStatusInsufficient :: AVExternalContentProtectionStatus
 pattern AVExternalContentProtectionStatusInsufficient = AVExternalContentProtectionStatus 2
+
+instance ObjCArgument AVExternalContentProtectionStatus where
+  withObjCArg (AVExternalContentProtectionStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVExternalContentProtectionStatus where
+  type RawReturn AVExternalContentProtectionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVExternalContentProtectionStatus x)
+  fromOwned x = pure (AVExternalContentProtectionStatus x)
 
 -- | Connection state of an external sync device
 -- | @AVExternalSyncDeviceStatus@
@@ -1958,6 +2541,16 @@ pattern AVExternalSyncDeviceStatusActiveSync = AVExternalSyncDeviceStatus 3
 pattern AVExternalSyncDeviceStatusFreeRunSync :: AVExternalSyncDeviceStatus
 pattern AVExternalSyncDeviceStatusFreeRunSync = AVExternalSyncDeviceStatus 4
 
+instance ObjCArgument AVExternalSyncDeviceStatus where
+  withObjCArg (AVExternalSyncDeviceStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVExternalSyncDeviceStatus where
+  type RawReturn AVExternalSyncDeviceStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVExternalSyncDeviceStatus x)
+  fromOwned x = pure (AVExternalSyncDeviceStatus x)
+
 -- | @AVKeyValueStatus@
 newtype AVKeyValueStatus = AVKeyValueStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -1977,6 +2570,16 @@ pattern AVKeyValueStatusFailed = AVKeyValueStatus 3
 
 pattern AVKeyValueStatusCancelled :: AVKeyValueStatus
 pattern AVKeyValueStatusCancelled = AVKeyValueStatus 4
+
+instance ObjCArgument AVKeyValueStatus where
+  withObjCArg (AVKeyValueStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVKeyValueStatus where
+  type RawReturn AVKeyValueStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVKeyValueStatus x)
+  fromOwned x = pure (AVKeyValueStatus x)
 
 -- | AVMovieWritingOptions
 --
@@ -2008,6 +2611,16 @@ pattern AVMovieWritingAddMovieHeaderToDestination = AVMovieWritingOptions 0
 pattern AVMovieWritingTruncateDestinationToMovieHeaderOnly :: AVMovieWritingOptions
 pattern AVMovieWritingTruncateDestinationToMovieHeaderOnly = AVMovieWritingOptions 1
 
+instance ObjCArgument AVMovieWritingOptions where
+  withObjCArg (AVMovieWritingOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVMovieWritingOptions where
+  type RawReturn AVMovieWritingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVMovieWritingOptions x)
+  fromOwned x = pure (AVMovieWritingOptions x)
+
 -- | These constants are the allowable values of AVPlayer's actionAtItemEnd property.
 -- | @AVPlayerActionAtItemEnd@
 newtype AVPlayerActionAtItemEnd = AVPlayerActionAtItemEnd CLong
@@ -2023,6 +2636,16 @@ pattern AVPlayerActionAtItemEndPause = AVPlayerActionAtItemEnd 1
 pattern AVPlayerActionAtItemEndNone :: AVPlayerActionAtItemEnd
 pattern AVPlayerActionAtItemEndNone = AVPlayerActionAtItemEnd 2
 
+instance ObjCArgument AVPlayerActionAtItemEnd where
+  withObjCArg (AVPlayerActionAtItemEnd x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerActionAtItemEnd where
+  type RawReturn AVPlayerActionAtItemEnd = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerActionAtItemEnd x)
+  fromOwned x = pure (AVPlayerActionAtItemEnd x)
+
 -- | This policy describes how AVPlayer behaves when the application transitions to UIApplicationStateBackground while playing video.
 -- | @AVPlayerAudiovisualBackgroundPlaybackPolicy@
 newtype AVPlayerAudiovisualBackgroundPlaybackPolicy = AVPlayerAudiovisualBackgroundPlaybackPolicy CLong
@@ -2037,6 +2660,16 @@ pattern AVPlayerAudiovisualBackgroundPlaybackPolicyPauses = AVPlayerAudiovisualB
 
 pattern AVPlayerAudiovisualBackgroundPlaybackPolicyContinuesIfPossible :: AVPlayerAudiovisualBackgroundPlaybackPolicy
 pattern AVPlayerAudiovisualBackgroundPlaybackPolicyContinuesIfPossible = AVPlayerAudiovisualBackgroundPlaybackPolicy 3
+
+instance ObjCArgument AVPlayerAudiovisualBackgroundPlaybackPolicy where
+  withObjCArg (AVPlayerAudiovisualBackgroundPlaybackPolicy x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerAudiovisualBackgroundPlaybackPolicy where
+  type RawReturn AVPlayerAudiovisualBackgroundPlaybackPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerAudiovisualBackgroundPlaybackPolicy x)
+  fromOwned x = pure (AVPlayerAudiovisualBackgroundPlaybackPolicy x)
 
 -- | A bitfield type that specifies an HDR mode.
 -- | @AVPlayerHDRMode@ (bitmask)
@@ -2059,6 +2692,16 @@ pattern AVPlayerHDRModeHDR10 = AVPlayerHDRMode 2
 pattern AVPlayerHDRModeDolbyVision :: AVPlayerHDRMode
 pattern AVPlayerHDRModeDolbyVision = AVPlayerHDRMode 4
 
+instance ObjCArgument AVPlayerHDRMode where
+  withObjCArg (AVPlayerHDRMode x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerHDRMode where
+  type RawReturn AVPlayerHDRMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerHDRMode x)
+  fromOwned x = pure (AVPlayerHDRMode x)
+
 -- | These constants describe the status of the asset list response for an AVPlayerInterstitialEvent.
 -- | @AVPlayerInterstitialEventAssetListResponseStatus@
 newtype AVPlayerInterstitialEventAssetListResponseStatus = AVPlayerInterstitialEventAssetListResponseStatus CLong
@@ -2073,6 +2716,16 @@ pattern AVPlayerInterstitialEventAssetListResponseStatusCleared = AVPlayerInters
 
 pattern AVPlayerInterstitialEventAssetListResponseStatusUnavailable :: AVPlayerInterstitialEventAssetListResponseStatus
 pattern AVPlayerInterstitialEventAssetListResponseStatusUnavailable = AVPlayerInterstitialEventAssetListResponseStatus 2
+
+instance ObjCArgument AVPlayerInterstitialEventAssetListResponseStatus where
+  withObjCArg (AVPlayerInterstitialEventAssetListResponseStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerInterstitialEventAssetListResponseStatus where
+  type RawReturn AVPlayerInterstitialEventAssetListResponseStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerInterstitialEventAssetListResponseStatus x)
+  fromOwned x = pure (AVPlayerInterstitialEventAssetListResponseStatus x)
 
 -- | These constants can be specified when creating AVPlayerInterstitialEvents in order to configure their behavior.
 -- | @AVPlayerInterstitialEventRestrictions@ (bitmask)
@@ -2098,6 +2751,16 @@ pattern AVPlayerInterstitialEventRestrictionRequiresPlaybackAtPreferredRateForAd
 pattern AVPlayerInterstitialEventRestrictionDefaultPolicy :: AVPlayerInterstitialEventRestrictions
 pattern AVPlayerInterstitialEventRestrictionDefaultPolicy = AVPlayerInterstitialEventRestrictions 0
 
+instance ObjCArgument AVPlayerInterstitialEventRestrictions where
+  withObjCArg (AVPlayerInterstitialEventRestrictions x) k = k (argCULong x)
+
+instance ObjCReturn AVPlayerInterstitialEventRestrictions where
+  type RawReturn AVPlayerInterstitialEventRestrictions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerInterstitialEventRestrictions x)
+  fromOwned x = pure (AVPlayerInterstitialEventRestrictions x)
+
 -- | These constants describe the state for a skippable AVPlayerInterstitialEvent.
 -- | @AVPlayerInterstitialEventSkippableEventState@
 newtype AVPlayerInterstitialEventSkippableEventState = AVPlayerInterstitialEventSkippableEventState CLong
@@ -2116,6 +2779,16 @@ pattern AVPlayerInterstitialEventSkippableEventStateEligible = AVPlayerInterstit
 pattern AVPlayerInterstitialEventSkippableEventStateNoLongerEligible :: AVPlayerInterstitialEventSkippableEventState
 pattern AVPlayerInterstitialEventSkippableEventStateNoLongerEligible = AVPlayerInterstitialEventSkippableEventState 3
 
+instance ObjCArgument AVPlayerInterstitialEventSkippableEventState where
+  withObjCArg (AVPlayerInterstitialEventSkippableEventState x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerInterstitialEventSkippableEventState where
+  type RawReturn AVPlayerInterstitialEventSkippableEventState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerInterstitialEventSkippableEventState x)
+  fromOwned x = pure (AVPlayerInterstitialEventSkippableEventState x)
+
 -- | These constants specify how an event occupies time on AVPlayerItemIntegratedTimeline.
 -- | @AVPlayerInterstitialEventTimelineOccupancy@
 newtype AVPlayerInterstitialEventTimelineOccupancy = AVPlayerInterstitialEventTimelineOccupancy CLong
@@ -2127,6 +2800,16 @@ pattern AVPlayerInterstitialEventTimelineOccupancySinglePoint = AVPlayerIntersti
 
 pattern AVPlayerInterstitialEventTimelineOccupancyFill :: AVPlayerInterstitialEventTimelineOccupancy
 pattern AVPlayerInterstitialEventTimelineOccupancyFill = AVPlayerInterstitialEventTimelineOccupancy 1
+
+instance ObjCArgument AVPlayerInterstitialEventTimelineOccupancy where
+  withObjCArg (AVPlayerInterstitialEventTimelineOccupancy x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerInterstitialEventTimelineOccupancy where
+  type RawReturn AVPlayerInterstitialEventTimelineOccupancy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerInterstitialEventTimelineOccupancy x)
+  fromOwned x = pure (AVPlayerInterstitialEventTimelineOccupancy x)
 
 -- | AVPlayerItemSegmentType
 --
@@ -2150,6 +2833,16 @@ pattern AVPlayerItemSegmentTypePrimary = AVPlayerItemSegmentType 0
 pattern AVPlayerItemSegmentTypeInterstitial :: AVPlayerItemSegmentType
 pattern AVPlayerItemSegmentTypeInterstitial = AVPlayerItemSegmentType 1
 
+instance ObjCArgument AVPlayerItemSegmentType where
+  withObjCArg (AVPlayerItemSegmentType x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerItemSegmentType where
+  type RawReturn AVPlayerItemSegmentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerItemSegmentType x)
+  fromOwned x = pure (AVPlayerItemSegmentType x)
+
 -- | These constants are returned by the AVPlayerItem status property to indicate whether it can successfully be played.
 -- | @AVPlayerItemStatus@
 newtype AVPlayerItemStatus = AVPlayerItemStatus CLong
@@ -2164,6 +2857,16 @@ pattern AVPlayerItemStatusReadyToPlay = AVPlayerItemStatus 1
 
 pattern AVPlayerItemStatusFailed :: AVPlayerItemStatus
 pattern AVPlayerItemStatusFailed = AVPlayerItemStatus 2
+
+instance ObjCArgument AVPlayerItemStatus where
+  withObjCArg (AVPlayerItemStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerItemStatus where
+  type RawReturn AVPlayerItemStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerItemStatus x)
+  fromOwned x = pure (AVPlayerItemStatus x)
 
 -- | AVPlayerLooperItemOrdering
 --
@@ -2186,6 +2889,16 @@ pattern AVPlayerLooperItemOrderingLoopingItemsPrecedeExistingItems = AVPlayerLoo
 
 pattern AVPlayerLooperItemOrderingLoopingItemsFollowExistingItems :: AVPlayerLooperItemOrdering
 pattern AVPlayerLooperItemOrderingLoopingItemsFollowExistingItems = AVPlayerLooperItemOrdering 1
+
+instance ObjCArgument AVPlayerLooperItemOrdering where
+  withObjCArg (AVPlayerLooperItemOrdering x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerLooperItemOrdering where
+  type RawReturn AVPlayerLooperItemOrdering = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerLooperItemOrdering x)
+  fromOwned x = pure (AVPlayerLooperItemOrdering x)
 
 -- | AVPlayerLooperStatus
 --
@@ -2223,6 +2936,16 @@ pattern AVPlayerLooperStatusFailed = AVPlayerLooperStatus 2
 pattern AVPlayerLooperStatusCancelled :: AVPlayerLooperStatus
 pattern AVPlayerLooperStatusCancelled = AVPlayerLooperStatus 3
 
+instance ObjCArgument AVPlayerLooperStatus where
+  withObjCArg (AVPlayerLooperStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerLooperStatus where
+  type RawReturn AVPlayerLooperStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerLooperStatus x)
+  fromOwned x = pure (AVPlayerLooperStatus x)
+
 -- | This defines the network resource priority for a player.
 -- | @AVPlayerNetworkResourcePriority@
 newtype AVPlayerNetworkResourcePriority = AVPlayerNetworkResourcePriority CLong
@@ -2237,6 +2960,16 @@ pattern AVPlayerNetworkResourcePriorityLow = AVPlayerNetworkResourcePriority 1
 
 pattern AVPlayerNetworkResourcePriorityHigh :: AVPlayerNetworkResourcePriority
 pattern AVPlayerNetworkResourcePriorityHigh = AVPlayerNetworkResourcePriority 2
+
+instance ObjCArgument AVPlayerNetworkResourcePriority where
+  withObjCArg (AVPlayerNetworkResourcePriority x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerNetworkResourcePriority where
+  type RawReturn AVPlayerNetworkResourcePriority = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerNetworkResourcePriority x)
+  fromOwned x = pure (AVPlayerNetworkResourcePriority x)
 
 -- | These constants are returned by the AVPlayer status property to indicate whether it can successfully play items.
 -- | @AVPlayerStatus@
@@ -2253,6 +2986,16 @@ pattern AVPlayerStatusReadyToPlay = AVPlayerStatus 1
 pattern AVPlayerStatusFailed :: AVPlayerStatus
 pattern AVPlayerStatusFailed = AVPlayerStatus 2
 
+instance ObjCArgument AVPlayerStatus where
+  withObjCArg (AVPlayerStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerStatus where
+  type RawReturn AVPlayerStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerStatus x)
+  fromOwned x = pure (AVPlayerStatus x)
+
 -- | These constants are the allowable values of AVPlayer's timeControlStatus property. This discussion pertains when automaticallyWaitsToMinimizeStalling is YES, the default setting, and exceptions are discussed in connection with automaticallyWaitsToMinimizeStalling.
 -- | @AVPlayerTimeControlStatus@
 newtype AVPlayerTimeControlStatus = AVPlayerTimeControlStatus CLong
@@ -2267,6 +3010,16 @@ pattern AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate = AVPlayerTimeCont
 
 pattern AVPlayerTimeControlStatusPlaying :: AVPlayerTimeControlStatus
 pattern AVPlayerTimeControlStatusPlaying = AVPlayerTimeControlStatus 2
+
+instance ObjCArgument AVPlayerTimeControlStatus where
+  withObjCArg (AVPlayerTimeControlStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerTimeControlStatus where
+  type RawReturn AVPlayerTimeControlStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerTimeControlStatus x)
+  fromOwned x = pure (AVPlayerTimeControlStatus x)
 
 -- | AVQueuedSampleBufferRenderingStatus
 --
@@ -2297,6 +3050,16 @@ pattern AVQueuedSampleBufferRenderingStatusRendering = AVQueuedSampleBufferRende
 pattern AVQueuedSampleBufferRenderingStatusFailed :: AVQueuedSampleBufferRenderingStatus
 pattern AVQueuedSampleBufferRenderingStatusFailed = AVQueuedSampleBufferRenderingStatus 2
 
+instance ObjCArgument AVQueuedSampleBufferRenderingStatus where
+  withObjCArg (AVQueuedSampleBufferRenderingStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVQueuedSampleBufferRenderingStatus where
+  type RawReturn AVQueuedSampleBufferRenderingStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVQueuedSampleBufferRenderingStatus x)
+  fromOwned x = pure (AVQueuedSampleBufferRenderingStatus x)
+
 -- | AVSampleBufferRequestDirection
 --
 -- Indicates the direction in which the samples should be generated for the AVSampleBufferRequest.
@@ -2325,6 +3088,16 @@ pattern AVSampleBufferRequestDirectionNone = AVSampleBufferRequestDirection 0
 
 pattern AVSampleBufferRequestDirectionReverse :: AVSampleBufferRequestDirection
 pattern AVSampleBufferRequestDirectionReverse = AVSampleBufferRequestDirection (-1)
+
+instance ObjCArgument AVSampleBufferRequestDirection where
+  withObjCArg (AVSampleBufferRequestDirection x) k = k (argCLong x)
+
+instance ObjCReturn AVSampleBufferRequestDirection where
+  type RawReturn AVSampleBufferRequestDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSampleBufferRequestDirection x)
+  fromOwned x = pure (AVSampleBufferRequestDirection x)
 
 -- | AVSampleBufferRequestMode
 --
@@ -2355,6 +3128,16 @@ pattern AVSampleBufferRequestModeScheduled = AVSampleBufferRequestMode 1
 pattern AVSampleBufferRequestModeOpportunistic :: AVSampleBufferRequestMode
 pattern AVSampleBufferRequestModeOpportunistic = AVSampleBufferRequestMode 2
 
+instance ObjCArgument AVSampleBufferRequestMode where
+  withObjCArg (AVSampleBufferRequestMode x) k = k (argCLong x)
+
+instance ObjCReturn AVSampleBufferRequestMode where
+  type RawReturn AVSampleBufferRequestMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSampleBufferRequestMode x)
+  fromOwned x = pure (AVSampleBufferRequestMode x)
+
 -- | These constants can be used in any combination as the value of variantPreferences.
 -- | @AVVariantPreferences@ (bitmask)
 newtype AVVariantPreferences = AVVariantPreferences CULong
@@ -2372,6 +3155,16 @@ pattern AVVariantPreferenceNone = AVVariantPreferences 0
 
 pattern AVVariantPreferenceScalabilityToLosslessAudio :: AVVariantPreferences
 pattern AVVariantPreferenceScalabilityToLosslessAudio = AVVariantPreferences 1
+
+instance ObjCArgument AVVariantPreferences where
+  withObjCArg (AVVariantPreferences x) k = k (argCULong x)
+
+instance ObjCReturn AVVariantPreferences where
+  type RawReturn AVVariantPreferences = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVVariantPreferences x)
+  fromOwned x = pure (AVVariantPreferences x)
 
 -- | AVVideoFieldMode
 --
@@ -2409,6 +3202,16 @@ pattern AVVideoFieldModeBottomOnly = AVVideoFieldMode 2
 pattern AVVideoFieldModeDeinterlace :: AVVideoFieldMode
 pattern AVVideoFieldModeDeinterlace = AVVideoFieldMode 3
 
+instance ObjCArgument AVVideoFieldMode where
+  withObjCArg (AVVideoFieldMode x) k = k (argCLong x)
+
+instance ObjCReturn AVVideoFieldMode where
+  type RawReturn AVVideoFieldMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVVideoFieldMode x)
+  fromOwned x = pure (AVVideoFieldMode x)
+
 -- | CMTagCollectionVideoOutputPreset
 --
 -- Video output presets supported by CMTagCollectionCreateWithVideoOutputPreset.
@@ -2430,3 +3233,13 @@ pattern KCMTagCollectionVideoOutputPreset_Monoscopic = CMTagCollectionVideoOutpu
 
 pattern KCMTagCollectionVideoOutputPreset_Stereoscopic :: CMTagCollectionVideoOutputPreset
 pattern KCMTagCollectionVideoOutputPreset_Stereoscopic = CMTagCollectionVideoOutputPreset 1
+
+instance ObjCArgument CMTagCollectionVideoOutputPreset where
+  withObjCArg (CMTagCollectionVideoOutputPreset x) k = k (argCUInt x)
+
+instance ObjCReturn CMTagCollectionVideoOutputPreset where
+  type RawReturn CMTagCollectionVideoOutputPreset = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMTagCollectionVideoOutputPreset x)
+  fromOwned x = pure (CMTagCollectionVideoOutputPreset x)

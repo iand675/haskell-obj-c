@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.MetalPerformanceShaders.MPSImageCanny
   , setLowThreshold
   , useFastMode
   , setUseFastMode
+  , colorTransformSelector
+  , highThresholdSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_linearToGrayScaleTransform_sigmaSelector
-  , initWithCoder_deviceSelector
-  , colorTransformSelector
-  , sigmaSelector
-  , highThresholdSelector
-  , setHighThresholdSelector
   , lowThresholdSelector
+  , setHighThresholdSelector
   , setLowThresholdSelector
-  , useFastModeSelector
   , setUseFastModeSelector
+  , sigmaSelector
+  , useFastModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> RawId -> IO (Id MPSImageCanny)
-initWithDevice mpsImageCanny  device =
-    sendMsg mpsImageCanny (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageCanny device =
+  sendOwnedMessage mpsImageCanny initWithDeviceSelector device
 
 -- | Initialize a Canny filter on a given device with a non-default color transform and              non-default sigma.
 --
@@ -90,8 +87,8 @@ initWithDevice mpsImageCanny  device =
 --
 -- ObjC selector: @- initWithDevice:linearToGrayScaleTransform:sigma:@
 initWithDevice_linearToGrayScaleTransform_sigma :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> RawId -> Const (Ptr CFloat) -> Const CFloat -> IO (Id MPSImageCanny)
-initWithDevice_linearToGrayScaleTransform_sigma mpsImageCanny  device transform sigma =
-    sendMsg mpsImageCanny (mkSelector "initWithDevice:linearToGrayScaleTransform:sigma:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (unConst transform), argCFloat (unConst sigma)] >>= ownedObject . castPtr
+initWithDevice_linearToGrayScaleTransform_sigma mpsImageCanny device transform sigma =
+  sendOwnedMessage mpsImageCanny initWithDevice_linearToGrayScaleTransform_sigmaSelector device transform sigma
 
 -- | NSSecureCoding compatability
 --
@@ -105,9 +102,8 @@ initWithDevice_linearToGrayScaleTransform_sigma mpsImageCanny  device transform 
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageCanny mpsImageCanny, IsNSCoder aDecoder) => mpsImageCanny -> aDecoder -> RawId -> IO (Id MPSImageCanny)
-initWithCoder_device mpsImageCanny  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageCanny (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageCanny aDecoder device =
+  sendOwnedMessage mpsImageCanny initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | colorTransform
 --
@@ -115,8 +111,8 @@ initWithCoder_device mpsImageCanny  aDecoder device =
 --
 -- ObjC selector: @- colorTransform@
 colorTransform :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> IO (Const (Ptr CFloat))
-colorTransform mpsImageCanny  =
-    fmap Const $ fmap castPtr $ sendMsg mpsImageCanny (mkSelector "colorTransform") (retPtr retVoid) []
+colorTransform mpsImageCanny =
+  sendMessage mpsImageCanny colorTransformSelector
 
 -- | sigma
 --
@@ -124,8 +120,8 @@ colorTransform mpsImageCanny  =
 --
 -- ObjC selector: @- sigma@
 sigma :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> IO CFloat
-sigma mpsImageCanny  =
-    sendMsg mpsImageCanny (mkSelector "sigma") retCFloat []
+sigma mpsImageCanny =
+  sendMessage mpsImageCanny sigmaSelector
 
 -- | highThreshold
 --
@@ -133,8 +129,8 @@ sigma mpsImageCanny  =
 --
 -- ObjC selector: @- highThreshold@
 highThreshold :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> IO CFloat
-highThreshold mpsImageCanny  =
-    sendMsg mpsImageCanny (mkSelector "highThreshold") retCFloat []
+highThreshold mpsImageCanny =
+  sendMessage mpsImageCanny highThresholdSelector
 
 -- | highThreshold
 --
@@ -142,8 +138,8 @@ highThreshold mpsImageCanny  =
 --
 -- ObjC selector: @- setHighThreshold:@
 setHighThreshold :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> CFloat -> IO ()
-setHighThreshold mpsImageCanny  value =
-    sendMsg mpsImageCanny (mkSelector "setHighThreshold:") retVoid [argCFloat value]
+setHighThreshold mpsImageCanny value =
+  sendMessage mpsImageCanny setHighThresholdSelector value
 
 -- | lowThreshold
 --
@@ -151,8 +147,8 @@ setHighThreshold mpsImageCanny  value =
 --
 -- ObjC selector: @- lowThreshold@
 lowThreshold :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> IO CFloat
-lowThreshold mpsImageCanny  =
-    sendMsg mpsImageCanny (mkSelector "lowThreshold") retCFloat []
+lowThreshold mpsImageCanny =
+  sendMessage mpsImageCanny lowThresholdSelector
 
 -- | lowThreshold
 --
@@ -160,8 +156,8 @@ lowThreshold mpsImageCanny  =
 --
 -- ObjC selector: @- setLowThreshold:@
 setLowThreshold :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> CFloat -> IO ()
-setLowThreshold mpsImageCanny  value =
-    sendMsg mpsImageCanny (mkSelector "setLowThreshold:") retVoid [argCFloat value]
+setLowThreshold mpsImageCanny value =
+  sendMessage mpsImageCanny setLowThresholdSelector value
 
 -- | useFastMode
 --
@@ -169,8 +165,8 @@ setLowThreshold mpsImageCanny  value =
 --
 -- ObjC selector: @- useFastMode@
 useFastMode :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> IO Bool
-useFastMode mpsImageCanny  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsImageCanny (mkSelector "useFastMode") retCULong []
+useFastMode mpsImageCanny =
+  sendMessage mpsImageCanny useFastModeSelector
 
 -- | useFastMode
 --
@@ -178,54 +174,54 @@ useFastMode mpsImageCanny  =
 --
 -- ObjC selector: @- setUseFastMode:@
 setUseFastMode :: IsMPSImageCanny mpsImageCanny => mpsImageCanny -> Bool -> IO ()
-setUseFastMode mpsImageCanny  value =
-    sendMsg mpsImageCanny (mkSelector "setUseFastMode:") retVoid [argCULong (if value then 1 else 0)]
+setUseFastMode mpsImageCanny value =
+  sendMessage mpsImageCanny setUseFastModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageCanny)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:linearToGrayScaleTransform:sigma:@
-initWithDevice_linearToGrayScaleTransform_sigmaSelector :: Selector
+initWithDevice_linearToGrayScaleTransform_sigmaSelector :: Selector '[RawId, Const (Ptr CFloat), Const CFloat] (Id MPSImageCanny)
 initWithDevice_linearToGrayScaleTransform_sigmaSelector = mkSelector "initWithDevice:linearToGrayScaleTransform:sigma:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageCanny)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @colorTransform@
-colorTransformSelector :: Selector
+colorTransformSelector :: Selector '[] (Const (Ptr CFloat))
 colorTransformSelector = mkSelector "colorTransform"
 
 -- | @Selector@ for @sigma@
-sigmaSelector :: Selector
+sigmaSelector :: Selector '[] CFloat
 sigmaSelector = mkSelector "sigma"
 
 -- | @Selector@ for @highThreshold@
-highThresholdSelector :: Selector
+highThresholdSelector :: Selector '[] CFloat
 highThresholdSelector = mkSelector "highThreshold"
 
 -- | @Selector@ for @setHighThreshold:@
-setHighThresholdSelector :: Selector
+setHighThresholdSelector :: Selector '[CFloat] ()
 setHighThresholdSelector = mkSelector "setHighThreshold:"
 
 -- | @Selector@ for @lowThreshold@
-lowThresholdSelector :: Selector
+lowThresholdSelector :: Selector '[] CFloat
 lowThresholdSelector = mkSelector "lowThreshold"
 
 -- | @Selector@ for @setLowThreshold:@
-setLowThresholdSelector :: Selector
+setLowThresholdSelector :: Selector '[CFloat] ()
 setLowThresholdSelector = mkSelector "setLowThreshold:"
 
 -- | @Selector@ for @useFastMode@
-useFastModeSelector :: Selector
+useFastModeSelector :: Selector '[] Bool
 useFastModeSelector = mkSelector "useFastMode"
 
 -- | @Selector@ for @setUseFastMode:@
-setUseFastModeSelector :: Selector
+setUseFastModeSelector :: Selector '[Bool] ()
 setUseFastModeSelector = mkSelector "setUseFastMode:"
 

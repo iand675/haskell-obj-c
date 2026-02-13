@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,32 +28,28 @@ module ObjC.MetalPerformanceShaders.MPSMatrixFullyConnectedGradient
   , setSourceInputFeatureChannels
   , alpha
   , setAlpha
-  , initWithDeviceSelector
+  , alphaSelector
+  , copyWithZone_deviceSelector
   , encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrixSelector
   , encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVectorSelector
   , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , sourceNumberOfFeatureVectorsSelector
+  , initWithDeviceSelector
+  , setAlphaSelector
+  , setSourceInputFeatureChannelsSelector
   , setSourceNumberOfFeatureVectorsSelector
-  , sourceOutputFeatureChannelsSelector
   , setSourceOutputFeatureChannelsSelector
   , sourceInputFeatureChannelsSelector
-  , setSourceInputFeatureChannelsSelector
-  , alphaSelector
-  , setAlphaSelector
+  , sourceNumberOfFeatureVectorsSelector
+  , sourceOutputFeatureChannelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> RawId -> IO (Id MPSMatrixFullyConnectedGradient)
-initWithDevice mpsMatrixFullyConnectedGradient  device =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixFullyConnectedGradient device =
+  sendOwnedMessage mpsMatrixFullyConnectedGradient initWithDeviceSelector device
 
 -- | Encode a MPSMatrixFullyConnectedGradient object to a command buffer and              produce the gradient of the loss function with respect to the input data.
 --
@@ -78,11 +75,8 @@ initWithDevice mpsMatrixFullyConnectedGradient  device =
 --
 -- ObjC selector: @- encodeGradientForDataToCommandBuffer:gradientMatrix:weightMatrix:resultGradientForDataMatrix:@
 encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrix :: (IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient, IsMPSMatrix resultGradientForDataMatrix) => mpsMatrixFullyConnectedGradient -> RawId -> Const (Id MPSMatrix) -> Const (Id MPSMatrix) -> resultGradientForDataMatrix -> IO ()
-encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrix mpsMatrixFullyConnectedGradient  commandBuffer gradientMatrix weightMatrix resultGradientForDataMatrix =
-  withObjCPtr gradientMatrix $ \raw_gradientMatrix ->
-    withObjCPtr weightMatrix $ \raw_weightMatrix ->
-      withObjCPtr resultGradientForDataMatrix $ \raw_resultGradientForDataMatrix ->
-          sendMsg mpsMatrixFullyConnectedGradient (mkSelector "encodeGradientForDataToCommandBuffer:gradientMatrix:weightMatrix:resultGradientForDataMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_gradientMatrix :: Ptr ()), argPtr (castPtr raw_weightMatrix :: Ptr ()), argPtr (castPtr raw_resultGradientForDataMatrix :: Ptr ())]
+encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrix mpsMatrixFullyConnectedGradient commandBuffer gradientMatrix weightMatrix resultGradientForDataMatrix =
+  sendMessage mpsMatrixFullyConnectedGradient encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrixSelector commandBuffer gradientMatrix weightMatrix (toMPSMatrix resultGradientForDataMatrix)
 
 -- | Encode a MPSMatrixFullyConnectedGradient object to a command buffer and              produce the gradient of the loss function with respect to the weight matrix              and bias vector.
 --
@@ -100,12 +94,8 @@ encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientF
 --
 -- ObjC selector: @- encodeGradientForWeightsAndBiasToCommandBuffer:gradientMatrix:inputMatrix:resultGradientForWeightMatrix:resultGradientForBiasVector:@
 encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVector :: (IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient, IsMPSMatrix resultGradientForWeightMatrix, IsMPSVector resultGradientForBiasVector) => mpsMatrixFullyConnectedGradient -> RawId -> Const (Id MPSMatrix) -> Const (Id MPSMatrix) -> resultGradientForWeightMatrix -> resultGradientForBiasVector -> IO ()
-encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVector mpsMatrixFullyConnectedGradient  commandBuffer gradientMatrix inputMatrix resultGradientForWeightMatrix resultGradientForBiasVector =
-  withObjCPtr gradientMatrix $ \raw_gradientMatrix ->
-    withObjCPtr inputMatrix $ \raw_inputMatrix ->
-      withObjCPtr resultGradientForWeightMatrix $ \raw_resultGradientForWeightMatrix ->
-        withObjCPtr resultGradientForBiasVector $ \raw_resultGradientForBiasVector ->
-            sendMsg mpsMatrixFullyConnectedGradient (mkSelector "encodeGradientForWeightsAndBiasToCommandBuffer:gradientMatrix:inputMatrix:resultGradientForWeightMatrix:resultGradientForBiasVector:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_gradientMatrix :: Ptr ()), argPtr (castPtr raw_inputMatrix :: Ptr ()), argPtr (castPtr raw_resultGradientForWeightMatrix :: Ptr ()), argPtr (castPtr raw_resultGradientForBiasVector :: Ptr ())]
+encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVector mpsMatrixFullyConnectedGradient commandBuffer gradientMatrix inputMatrix resultGradientForWeightMatrix resultGradientForBiasVector =
+  sendMessage mpsMatrixFullyConnectedGradient encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVectorSelector commandBuffer gradientMatrix inputMatrix (toMPSMatrix resultGradientForWeightMatrix) (toMPSVector resultGradientForBiasVector)
 
 -- | NSSecureCoding compatability
 --
@@ -119,9 +109,8 @@ encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_result
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient, IsNSCoder aDecoder) => mpsMatrixFullyConnectedGradient -> aDecoder -> RawId -> IO (Id MPSMatrixFullyConnectedGradient)
-initWithCoder_device mpsMatrixFullyConnectedGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixFullyConnectedGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixFullyConnectedGradient aDecoder device =
+  sendOwnedMessage mpsMatrixFullyConnectedGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -135,8 +124,8 @@ initWithCoder_device mpsMatrixFullyConnectedGradient  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> Ptr () -> RawId -> IO (Id MPSMatrixFullyConnectedGradient)
-copyWithZone_device mpsMatrixFullyConnectedGradient  zone device =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixFullyConnectedGradient zone device =
+  sendOwnedMessage mpsMatrixFullyConnectedGradient copyWithZone_deviceSelector zone device
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -146,8 +135,8 @@ copyWithZone_device mpsMatrixFullyConnectedGradient  zone device =
 --
 -- ObjC selector: @- sourceNumberOfFeatureVectors@
 sourceNumberOfFeatureVectors :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> IO CULong
-sourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient  =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "sourceNumberOfFeatureVectors") retCULong []
+sourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient =
+  sendMessage mpsMatrixFullyConnectedGradient sourceNumberOfFeatureVectorsSelector
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -157,8 +146,8 @@ sourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient  =
 --
 -- ObjC selector: @- setSourceNumberOfFeatureVectors:@
 setSourceNumberOfFeatureVectors :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> CULong -> IO ()
-setSourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient  value =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "setSourceNumberOfFeatureVectors:") retVoid [argCULong value]
+setSourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient value =
+  sendMessage mpsMatrixFullyConnectedGradient setSourceNumberOfFeatureVectorsSelector value
 
 -- | sourceOutputFeatureChannels
 --
@@ -168,8 +157,8 @@ setSourceNumberOfFeatureVectors mpsMatrixFullyConnectedGradient  value =
 --
 -- ObjC selector: @- sourceOutputFeatureChannels@
 sourceOutputFeatureChannels :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> IO CULong
-sourceOutputFeatureChannels mpsMatrixFullyConnectedGradient  =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "sourceOutputFeatureChannels") retCULong []
+sourceOutputFeatureChannels mpsMatrixFullyConnectedGradient =
+  sendMessage mpsMatrixFullyConnectedGradient sourceOutputFeatureChannelsSelector
 
 -- | sourceOutputFeatureChannels
 --
@@ -179,8 +168,8 @@ sourceOutputFeatureChannels mpsMatrixFullyConnectedGradient  =
 --
 -- ObjC selector: @- setSourceOutputFeatureChannels:@
 setSourceOutputFeatureChannels :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> CULong -> IO ()
-setSourceOutputFeatureChannels mpsMatrixFullyConnectedGradient  value =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "setSourceOutputFeatureChannels:") retVoid [argCULong value]
+setSourceOutputFeatureChannels mpsMatrixFullyConnectedGradient value =
+  sendMessage mpsMatrixFullyConnectedGradient setSourceOutputFeatureChannelsSelector value
 
 -- | sourceInputFeatureChannels
 --
@@ -190,8 +179,8 @@ setSourceOutputFeatureChannels mpsMatrixFullyConnectedGradient  value =
 --
 -- ObjC selector: @- sourceInputFeatureChannels@
 sourceInputFeatureChannels :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> IO CULong
-sourceInputFeatureChannels mpsMatrixFullyConnectedGradient  =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "sourceInputFeatureChannels") retCULong []
+sourceInputFeatureChannels mpsMatrixFullyConnectedGradient =
+  sendMessage mpsMatrixFullyConnectedGradient sourceInputFeatureChannelsSelector
 
 -- | sourceInputFeatureChannels
 --
@@ -201,8 +190,8 @@ sourceInputFeatureChannels mpsMatrixFullyConnectedGradient  =
 --
 -- ObjC selector: @- setSourceInputFeatureChannels:@
 setSourceInputFeatureChannels :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> CULong -> IO ()
-setSourceInputFeatureChannels mpsMatrixFullyConnectedGradient  value =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "setSourceInputFeatureChannels:") retVoid [argCULong value]
+setSourceInputFeatureChannels mpsMatrixFullyConnectedGradient value =
+  sendMessage mpsMatrixFullyConnectedGradient setSourceInputFeatureChannelsSelector value
 
 -- | alpha
 --
@@ -210,8 +199,8 @@ setSourceInputFeatureChannels mpsMatrixFullyConnectedGradient  value =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> IO CDouble
-alpha mpsMatrixFullyConnectedGradient  =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "alpha") retCDouble []
+alpha mpsMatrixFullyConnectedGradient =
+  sendMessage mpsMatrixFullyConnectedGradient alphaSelector
 
 -- | alpha
 --
@@ -219,62 +208,62 @@ alpha mpsMatrixFullyConnectedGradient  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSMatrixFullyConnectedGradient mpsMatrixFullyConnectedGradient => mpsMatrixFullyConnectedGradient -> CDouble -> IO ()
-setAlpha mpsMatrixFullyConnectedGradient  value =
-    sendMsg mpsMatrixFullyConnectedGradient (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha mpsMatrixFullyConnectedGradient value =
+  sendMessage mpsMatrixFullyConnectedGradient setAlphaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixFullyConnectedGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeGradientForDataToCommandBuffer:gradientMatrix:weightMatrix:resultGradientForDataMatrix:@
-encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrixSelector :: Selector
+encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrixSelector :: Selector '[RawId, Const (Id MPSMatrix), Const (Id MPSMatrix), Id MPSMatrix] ()
 encodeGradientForDataToCommandBuffer_gradientMatrix_weightMatrix_resultGradientForDataMatrixSelector = mkSelector "encodeGradientForDataToCommandBuffer:gradientMatrix:weightMatrix:resultGradientForDataMatrix:"
 
 -- | @Selector@ for @encodeGradientForWeightsAndBiasToCommandBuffer:gradientMatrix:inputMatrix:resultGradientForWeightMatrix:resultGradientForBiasVector:@
-encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVectorSelector :: Selector
+encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVectorSelector :: Selector '[RawId, Const (Id MPSMatrix), Const (Id MPSMatrix), Id MPSMatrix, Id MPSVector] ()
 encodeGradientForWeightsAndBiasToCommandBuffer_gradientMatrix_inputMatrix_resultGradientForWeightMatrix_resultGradientForBiasVectorSelector = mkSelector "encodeGradientForWeightsAndBiasToCommandBuffer:gradientMatrix:inputMatrix:resultGradientForWeightMatrix:resultGradientForBiasVector:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixFullyConnectedGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixFullyConnectedGradient)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceNumberOfFeatureVectors@
-sourceNumberOfFeatureVectorsSelector :: Selector
+sourceNumberOfFeatureVectorsSelector :: Selector '[] CULong
 sourceNumberOfFeatureVectorsSelector = mkSelector "sourceNumberOfFeatureVectors"
 
 -- | @Selector@ for @setSourceNumberOfFeatureVectors:@
-setSourceNumberOfFeatureVectorsSelector :: Selector
+setSourceNumberOfFeatureVectorsSelector :: Selector '[CULong] ()
 setSourceNumberOfFeatureVectorsSelector = mkSelector "setSourceNumberOfFeatureVectors:"
 
 -- | @Selector@ for @sourceOutputFeatureChannels@
-sourceOutputFeatureChannelsSelector :: Selector
+sourceOutputFeatureChannelsSelector :: Selector '[] CULong
 sourceOutputFeatureChannelsSelector = mkSelector "sourceOutputFeatureChannels"
 
 -- | @Selector@ for @setSourceOutputFeatureChannels:@
-setSourceOutputFeatureChannelsSelector :: Selector
+setSourceOutputFeatureChannelsSelector :: Selector '[CULong] ()
 setSourceOutputFeatureChannelsSelector = mkSelector "setSourceOutputFeatureChannels:"
 
 -- | @Selector@ for @sourceInputFeatureChannels@
-sourceInputFeatureChannelsSelector :: Selector
+sourceInputFeatureChannelsSelector :: Selector '[] CULong
 sourceInputFeatureChannelsSelector = mkSelector "sourceInputFeatureChannels"
 
 -- | @Selector@ for @setSourceInputFeatureChannels:@
-setSourceInputFeatureChannelsSelector :: Selector
+setSourceInputFeatureChannelsSelector :: Selector '[CULong] ()
 setSourceInputFeatureChannelsSelector = mkSelector "setSourceInputFeatureChannels:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 

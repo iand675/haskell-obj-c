@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.ModelIO.MDLStereoscopicCamera
   , overlap
   , setOverlap
   , interPupillaryDistanceSelector
-  , setInterPupillaryDistanceSelector
   , leftVergenceSelector
-  , setLeftVergenceSelector
-  , rightVergenceSelector
-  , setRightVergenceSelector
   , overlapSelector
+  , rightVergenceSelector
+  , setInterPupillaryDistanceSelector
+  , setLeftVergenceSelector
   , setOverlapSelector
+  , setRightVergenceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- interPupillaryDistance@
 interPupillaryDistance :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> IO CFloat
-interPupillaryDistance mdlStereoscopicCamera  =
-    sendMsg mdlStereoscopicCamera (mkSelector "interPupillaryDistance") retCFloat []
+interPupillaryDistance mdlStereoscopicCamera =
+  sendMessage mdlStereoscopicCamera interPupillaryDistanceSelector
 
 -- | Inter-pupillary distance in mm. Default is 63mm.
 --
 -- ObjC selector: @- setInterPupillaryDistance:@
 setInterPupillaryDistance :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> CFloat -> IO ()
-setInterPupillaryDistance mdlStereoscopicCamera  value =
-    sendMsg mdlStereoscopicCamera (mkSelector "setInterPupillaryDistance:") retVoid [argCFloat value]
+setInterPupillaryDistance mdlStereoscopicCamera value =
+  sendMessage mdlStereoscopicCamera setInterPupillaryDistanceSelector value
 
 -- | Vergence in a stereoscopic camera can be controlled in two ways. A toed-in  binocular stereoscopic camera rotates the lens and sensor together such that a  ray projected from the center of either sensor and lens meets at a point. A  parallel binocular stereoscopic camera accomplishes the same thing by shifting  the relative centers of the sensor and lens.
 --
@@ -63,8 +60,8 @@ setInterPupillaryDistance mdlStereoscopicCamera  value =
 --
 -- ObjC selector: @- leftVergence@
 leftVergence :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> IO CFloat
-leftVergence mdlStereoscopicCamera  =
-    sendMsg mdlStereoscopicCamera (mkSelector "leftVergence") retCFloat []
+leftVergence mdlStereoscopicCamera =
+  sendMessage mdlStereoscopicCamera leftVergenceSelector
 
 -- | Vergence in a stereoscopic camera can be controlled in two ways. A toed-in  binocular stereoscopic camera rotates the lens and sensor together such that a  ray projected from the center of either sensor and lens meets at a point. A  parallel binocular stereoscopic camera accomplishes the same thing by shifting  the relative centers of the sensor and lens.
 --
@@ -74,66 +71,66 @@ leftVergence mdlStereoscopicCamera  =
 --
 -- ObjC selector: @- setLeftVergence:@
 setLeftVergence :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> CFloat -> IO ()
-setLeftVergence mdlStereoscopicCamera  value =
-    sendMsg mdlStereoscopicCamera (mkSelector "setLeftVergence:") retVoid [argCFloat value]
+setLeftVergence mdlStereoscopicCamera value =
+  sendMessage mdlStereoscopicCamera setLeftVergenceSelector value
 
 -- | @- rightVergence@
 rightVergence :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> IO CFloat
-rightVergence mdlStereoscopicCamera  =
-    sendMsg mdlStereoscopicCamera (mkSelector "rightVergence") retCFloat []
+rightVergence mdlStereoscopicCamera =
+  sendMessage mdlStereoscopicCamera rightVergenceSelector
 
 -- | @- setRightVergence:@
 setRightVergence :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> CFloat -> IO ()
-setRightVergence mdlStereoscopicCamera  value =
-    sendMsg mdlStereoscopicCamera (mkSelector "setRightVergence:") retVoid [argCFloat value]
+setRightVergence mdlStereoscopicCamera value =
+  sendMessage mdlStereoscopicCamera setRightVergenceSelector value
 
 -- | The amount, as a percentage of image width to offset an image towards the other  camera. This value is used in a stereo grade to enhance or reduce the intensity  of the stereoscopic effect
 --
 -- ObjC selector: @- overlap@
 overlap :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> IO CFloat
-overlap mdlStereoscopicCamera  =
-    sendMsg mdlStereoscopicCamera (mkSelector "overlap") retCFloat []
+overlap mdlStereoscopicCamera =
+  sendMessage mdlStereoscopicCamera overlapSelector
 
 -- | The amount, as a percentage of image width to offset an image towards the other  camera. This value is used in a stereo grade to enhance or reduce the intensity  of the stereoscopic effect
 --
 -- ObjC selector: @- setOverlap:@
 setOverlap :: IsMDLStereoscopicCamera mdlStereoscopicCamera => mdlStereoscopicCamera -> CFloat -> IO ()
-setOverlap mdlStereoscopicCamera  value =
-    sendMsg mdlStereoscopicCamera (mkSelector "setOverlap:") retVoid [argCFloat value]
+setOverlap mdlStereoscopicCamera value =
+  sendMessage mdlStereoscopicCamera setOverlapSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interPupillaryDistance@
-interPupillaryDistanceSelector :: Selector
+interPupillaryDistanceSelector :: Selector '[] CFloat
 interPupillaryDistanceSelector = mkSelector "interPupillaryDistance"
 
 -- | @Selector@ for @setInterPupillaryDistance:@
-setInterPupillaryDistanceSelector :: Selector
+setInterPupillaryDistanceSelector :: Selector '[CFloat] ()
 setInterPupillaryDistanceSelector = mkSelector "setInterPupillaryDistance:"
 
 -- | @Selector@ for @leftVergence@
-leftVergenceSelector :: Selector
+leftVergenceSelector :: Selector '[] CFloat
 leftVergenceSelector = mkSelector "leftVergence"
 
 -- | @Selector@ for @setLeftVergence:@
-setLeftVergenceSelector :: Selector
+setLeftVergenceSelector :: Selector '[CFloat] ()
 setLeftVergenceSelector = mkSelector "setLeftVergence:"
 
 -- | @Selector@ for @rightVergence@
-rightVergenceSelector :: Selector
+rightVergenceSelector :: Selector '[] CFloat
 rightVergenceSelector = mkSelector "rightVergence"
 
 -- | @Selector@ for @setRightVergence:@
-setRightVergenceSelector :: Selector
+setRightVergenceSelector :: Selector '[CFloat] ()
 setRightVergenceSelector = mkSelector "setRightVergence:"
 
 -- | @Selector@ for @overlap@
-overlapSelector :: Selector
+overlapSelector :: Selector '[] CFloat
 overlapSelector = mkSelector "overlap"
 
 -- | @Selector@ for @setOverlap:@
-setOverlapSelector :: Selector
+setOverlapSelector :: Selector '[CFloat] ()
 setOverlapSelector = mkSelector "setOverlap:"
 

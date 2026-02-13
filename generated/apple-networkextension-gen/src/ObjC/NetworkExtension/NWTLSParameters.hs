@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.NetworkExtension.NWTLSParameters
   , setMinimumSSLProtocolVersion
   , maximumSSLProtocolVersion
   , setMaximumSSLProtocolVersion
-  , tlsSessionIDSelector
+  , maximumSSLProtocolVersionSelector
+  , minimumSSLProtocolVersionSelector
+  , setMaximumSSLProtocolVersionSelector
+  , setMinimumSSLProtocolVersionSelector
+  , setSSLCipherSuitesSelector
   , setTLSSessionIDSelector
   , sslCipherSuitesSelector
-  , setSSLCipherSuitesSelector
-  , minimumSSLProtocolVersionSelector
-  , setMinimumSSLProtocolVersionSelector
-  , maximumSSLProtocolVersionSelector
-  , setMaximumSSLProtocolVersionSelector
+  , tlsSessionIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- TLSSessionID@
 tlsSessionID :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO (Id NSData)
-tlsSessionID nwtlsParameters  =
-    sendMsg nwtlsParameters (mkSelector "TLSSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+tlsSessionID nwtlsParameters =
+  sendMessage nwtlsParameters tlsSessionIDSelector
 
 -- | TLSSessionID
 --
@@ -60,9 +57,8 @@ tlsSessionID nwtlsParameters  =
 --
 -- ObjC selector: @- setTLSSessionID:@
 setTLSSessionID :: (IsNWTLSParameters nwtlsParameters, IsNSData value) => nwtlsParameters -> value -> IO ()
-setTLSSessionID nwtlsParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nwtlsParameters (mkSelector "setTLSSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTLSSessionID nwtlsParameters value =
+  sendMessage nwtlsParameters setTLSSessionIDSelector (toNSData value)
 
 -- | SSLCipherSuites
 --
@@ -70,8 +66,8 @@ setTLSSessionID nwtlsParameters  value =
 --
 -- ObjC selector: @- SSLCipherSuites@
 sslCipherSuites :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO (Id NSSet)
-sslCipherSuites nwtlsParameters  =
-    sendMsg nwtlsParameters (mkSelector "SSLCipherSuites") (retPtr retVoid) [] >>= retainedObject . castPtr
+sslCipherSuites nwtlsParameters =
+  sendMessage nwtlsParameters sslCipherSuitesSelector
 
 -- | SSLCipherSuites
 --
@@ -79,9 +75,8 @@ sslCipherSuites nwtlsParameters  =
 --
 -- ObjC selector: @- setSSLCipherSuites:@
 setSSLCipherSuites :: (IsNWTLSParameters nwtlsParameters, IsNSSet value) => nwtlsParameters -> value -> IO ()
-setSSLCipherSuites nwtlsParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nwtlsParameters (mkSelector "setSSLCipherSuites:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSSLCipherSuites nwtlsParameters value =
+  sendMessage nwtlsParameters setSSLCipherSuitesSelector (toNSSet value)
 
 -- | minimumSSLProtocolVersion
 --
@@ -89,8 +84,8 @@ setSSLCipherSuites nwtlsParameters  value =
 --
 -- ObjC selector: @- minimumSSLProtocolVersion@
 minimumSSLProtocolVersion :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO CULong
-minimumSSLProtocolVersion nwtlsParameters  =
-    sendMsg nwtlsParameters (mkSelector "minimumSSLProtocolVersion") retCULong []
+minimumSSLProtocolVersion nwtlsParameters =
+  sendMessage nwtlsParameters minimumSSLProtocolVersionSelector
 
 -- | minimumSSLProtocolVersion
 --
@@ -98,8 +93,8 @@ minimumSSLProtocolVersion nwtlsParameters  =
 --
 -- ObjC selector: @- setMinimumSSLProtocolVersion:@
 setMinimumSSLProtocolVersion :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> CULong -> IO ()
-setMinimumSSLProtocolVersion nwtlsParameters  value =
-    sendMsg nwtlsParameters (mkSelector "setMinimumSSLProtocolVersion:") retVoid [argCULong value]
+setMinimumSSLProtocolVersion nwtlsParameters value =
+  sendMessage nwtlsParameters setMinimumSSLProtocolVersionSelector value
 
 -- | maximumSSLProtocolVersion
 --
@@ -107,8 +102,8 @@ setMinimumSSLProtocolVersion nwtlsParameters  value =
 --
 -- ObjC selector: @- maximumSSLProtocolVersion@
 maximumSSLProtocolVersion :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> IO CULong
-maximumSSLProtocolVersion nwtlsParameters  =
-    sendMsg nwtlsParameters (mkSelector "maximumSSLProtocolVersion") retCULong []
+maximumSSLProtocolVersion nwtlsParameters =
+  sendMessage nwtlsParameters maximumSSLProtocolVersionSelector
 
 -- | maximumSSLProtocolVersion
 --
@@ -116,42 +111,42 @@ maximumSSLProtocolVersion nwtlsParameters  =
 --
 -- ObjC selector: @- setMaximumSSLProtocolVersion:@
 setMaximumSSLProtocolVersion :: IsNWTLSParameters nwtlsParameters => nwtlsParameters -> CULong -> IO ()
-setMaximumSSLProtocolVersion nwtlsParameters  value =
-    sendMsg nwtlsParameters (mkSelector "setMaximumSSLProtocolVersion:") retVoid [argCULong value]
+setMaximumSSLProtocolVersion nwtlsParameters value =
+  sendMessage nwtlsParameters setMaximumSSLProtocolVersionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @TLSSessionID@
-tlsSessionIDSelector :: Selector
+tlsSessionIDSelector :: Selector '[] (Id NSData)
 tlsSessionIDSelector = mkSelector "TLSSessionID"
 
 -- | @Selector@ for @setTLSSessionID:@
-setTLSSessionIDSelector :: Selector
+setTLSSessionIDSelector :: Selector '[Id NSData] ()
 setTLSSessionIDSelector = mkSelector "setTLSSessionID:"
 
 -- | @Selector@ for @SSLCipherSuites@
-sslCipherSuitesSelector :: Selector
+sslCipherSuitesSelector :: Selector '[] (Id NSSet)
 sslCipherSuitesSelector = mkSelector "SSLCipherSuites"
 
 -- | @Selector@ for @setSSLCipherSuites:@
-setSSLCipherSuitesSelector :: Selector
+setSSLCipherSuitesSelector :: Selector '[Id NSSet] ()
 setSSLCipherSuitesSelector = mkSelector "setSSLCipherSuites:"
 
 -- | @Selector@ for @minimumSSLProtocolVersion@
-minimumSSLProtocolVersionSelector :: Selector
+minimumSSLProtocolVersionSelector :: Selector '[] CULong
 minimumSSLProtocolVersionSelector = mkSelector "minimumSSLProtocolVersion"
 
 -- | @Selector@ for @setMinimumSSLProtocolVersion:@
-setMinimumSSLProtocolVersionSelector :: Selector
+setMinimumSSLProtocolVersionSelector :: Selector '[CULong] ()
 setMinimumSSLProtocolVersionSelector = mkSelector "setMinimumSSLProtocolVersion:"
 
 -- | @Selector@ for @maximumSSLProtocolVersion@
-maximumSSLProtocolVersionSelector :: Selector
+maximumSSLProtocolVersionSelector :: Selector '[] CULong
 maximumSSLProtocolVersionSelector = mkSelector "maximumSSLProtocolVersion"
 
 -- | @Selector@ for @setMaximumSSLProtocolVersion:@
-setMaximumSSLProtocolVersionSelector :: Selector
+setMaximumSSLProtocolVersionSelector :: Selector '[CULong] ()
 setMaximumSSLProtocolVersionSelector = mkSelector "setMaximumSSLProtocolVersion:"
 

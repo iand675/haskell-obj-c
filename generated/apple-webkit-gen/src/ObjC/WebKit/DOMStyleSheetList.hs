@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.WebKit.DOMStyleSheetList
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- item:@
 item :: IsDOMStyleSheetList domStyleSheetList => domStyleSheetList -> CUInt -> IO (Id DOMStyleSheet)
-item domStyleSheetList  index =
-    sendMsg domStyleSheetList (mkSelector "item:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+item domStyleSheetList index =
+  sendMessage domStyleSheetList itemSelector index
 
 -- | @- length@
 length_ :: IsDOMStyleSheetList domStyleSheetList => domStyleSheetList -> IO CUInt
-length_ domStyleSheetList  =
-    sendMsg domStyleSheetList (mkSelector "length") retCUInt []
+length_ domStyleSheetList =
+  sendMessage domStyleSheetList lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @item:@
-itemSelector :: Selector
+itemSelector :: Selector '[CUInt] (Id DOMStyleSheet)
 itemSelector = mkSelector "item:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,32 +30,28 @@ module ObjC.Contacts.CNSaveRequest
   , shouldRefetchContacts
   , setShouldRefetchContacts
   , addContact_toContainerWithIdentifierSelector
-  , updateContactSelector
-  , deleteContactSelector
   , addGroup_toContainerWithIdentifierSelector
-  , updateGroupSelector
-  , deleteGroupSelector
-  , addSubgroup_toGroupSelector
-  , removeSubgroup_fromGroupSelector
   , addMember_toGroupSelector
+  , addSubgroup_toGroupSelector
+  , deleteContactSelector
+  , deleteGroupSelector
   , removeMember_fromGroupSelector
-  , transactionAuthorSelector
+  , removeSubgroup_fromGroupSelector
+  , setShouldRefetchContactsSelector
   , setTransactionAuthorSelector
   , shouldRefetchContactsSelector
-  , setShouldRefetchContactsSelector
+  , transactionAuthorSelector
+  , updateContactSelector
+  , updateGroupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,10 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addContact:toContainerWithIdentifier:@
 addContact_toContainerWithIdentifier :: (IsCNSaveRequest cnSaveRequest, IsCNMutableContact contact, IsNSString identifier) => cnSaveRequest -> contact -> identifier -> IO ()
-addContact_toContainerWithIdentifier cnSaveRequest  contact identifier =
-  withObjCPtr contact $ \raw_contact ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg cnSaveRequest (mkSelector "addContact:toContainerWithIdentifier:") retVoid [argPtr (castPtr raw_contact :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())]
+addContact_toContainerWithIdentifier cnSaveRequest contact identifier =
+  sendMessage cnSaveRequest addContact_toContainerWithIdentifierSelector (toCNMutableContact contact) (toNSString identifier)
 
 -- | Update an existing contact in the contact store.
 --
@@ -82,9 +77,8 @@ addContact_toContainerWithIdentifier cnSaveRequest  contact identifier =
 --
 -- ObjC selector: @- updateContact:@
 updateContact :: (IsCNSaveRequest cnSaveRequest, IsCNMutableContact contact) => cnSaveRequest -> contact -> IO ()
-updateContact cnSaveRequest  contact =
-  withObjCPtr contact $ \raw_contact ->
-      sendMsg cnSaveRequest (mkSelector "updateContact:") retVoid [argPtr (castPtr raw_contact :: Ptr ())]
+updateContact cnSaveRequest contact =
+  sendMessage cnSaveRequest updateContactSelector (toCNMutableContact contact)
 
 -- | Delete a contact from the contact store.
 --
@@ -92,9 +86,8 @@ updateContact cnSaveRequest  contact =
 --
 -- ObjC selector: @- deleteContact:@
 deleteContact :: (IsCNSaveRequest cnSaveRequest, IsCNMutableContact contact) => cnSaveRequest -> contact -> IO ()
-deleteContact cnSaveRequest  contact =
-  withObjCPtr contact $ \raw_contact ->
-      sendMsg cnSaveRequest (mkSelector "deleteContact:") retVoid [argPtr (castPtr raw_contact :: Ptr ())]
+deleteContact cnSaveRequest contact =
+  sendMessage cnSaveRequest deleteContactSelector (toCNMutableContact contact)
 
 -- | Add a new group to the contact store.
 --
@@ -106,10 +99,8 @@ deleteContact cnSaveRequest  contact =
 --
 -- ObjC selector: @- addGroup:toContainerWithIdentifier:@
 addGroup_toContainerWithIdentifier :: (IsCNSaveRequest cnSaveRequest, IsCNMutableGroup group, IsNSString identifier) => cnSaveRequest -> group -> identifier -> IO ()
-addGroup_toContainerWithIdentifier cnSaveRequest  group identifier =
-  withObjCPtr group $ \raw_group ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg cnSaveRequest (mkSelector "addGroup:toContainerWithIdentifier:") retVoid [argPtr (castPtr raw_group :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())]
+addGroup_toContainerWithIdentifier cnSaveRequest group identifier =
+  sendMessage cnSaveRequest addGroup_toContainerWithIdentifierSelector (toCNMutableGroup group) (toNSString identifier)
 
 -- | Update an existing group in the contact store.
 --
@@ -117,9 +108,8 @@ addGroup_toContainerWithIdentifier cnSaveRequest  group identifier =
 --
 -- ObjC selector: @- updateGroup:@
 updateGroup :: (IsCNSaveRequest cnSaveRequest, IsCNMutableGroup group) => cnSaveRequest -> group -> IO ()
-updateGroup cnSaveRequest  group =
-  withObjCPtr group $ \raw_group ->
-      sendMsg cnSaveRequest (mkSelector "updateGroup:") retVoid [argPtr (castPtr raw_group :: Ptr ())]
+updateGroup cnSaveRequest group =
+  sendMessage cnSaveRequest updateGroupSelector (toCNMutableGroup group)
 
 -- | Delete a group from the contact store.
 --
@@ -127,9 +117,8 @@ updateGroup cnSaveRequest  group =
 --
 -- ObjC selector: @- deleteGroup:@
 deleteGroup :: (IsCNSaveRequest cnSaveRequest, IsCNMutableGroup group) => cnSaveRequest -> group -> IO ()
-deleteGroup cnSaveRequest  group =
-  withObjCPtr group $ \raw_group ->
-      sendMsg cnSaveRequest (mkSelector "deleteGroup:") retVoid [argPtr (castPtr raw_group :: Ptr ())]
+deleteGroup cnSaveRequest group =
+  sendMessage cnSaveRequest deleteGroupSelector (toCNMutableGroup group)
 
 -- | Add a new subgroup to a group.
 --
@@ -141,10 +130,8 @@ deleteGroup cnSaveRequest  group =
 --
 -- ObjC selector: @- addSubgroup:toGroup:@
 addSubgroup_toGroup :: (IsCNSaveRequest cnSaveRequest, IsCNGroup subgroup, IsCNGroup group) => cnSaveRequest -> subgroup -> group -> IO ()
-addSubgroup_toGroup cnSaveRequest  subgroup group =
-  withObjCPtr subgroup $ \raw_subgroup ->
-    withObjCPtr group $ \raw_group ->
-        sendMsg cnSaveRequest (mkSelector "addSubgroup:toGroup:") retVoid [argPtr (castPtr raw_subgroup :: Ptr ()), argPtr (castPtr raw_group :: Ptr ())]
+addSubgroup_toGroup cnSaveRequest subgroup group =
+  sendMessage cnSaveRequest addSubgroup_toGroupSelector (toCNGroup subgroup) (toCNGroup group)
 
 -- | Remove a subgroup from a group.
 --
@@ -156,10 +143,8 @@ addSubgroup_toGroup cnSaveRequest  subgroup group =
 --
 -- ObjC selector: @- removeSubgroup:fromGroup:@
 removeSubgroup_fromGroup :: (IsCNSaveRequest cnSaveRequest, IsCNGroup subgroup, IsCNGroup group) => cnSaveRequest -> subgroup -> group -> IO ()
-removeSubgroup_fromGroup cnSaveRequest  subgroup group =
-  withObjCPtr subgroup $ \raw_subgroup ->
-    withObjCPtr group $ \raw_group ->
-        sendMsg cnSaveRequest (mkSelector "removeSubgroup:fromGroup:") retVoid [argPtr (castPtr raw_subgroup :: Ptr ()), argPtr (castPtr raw_group :: Ptr ())]
+removeSubgroup_fromGroup cnSaveRequest subgroup group =
+  sendMessage cnSaveRequest removeSubgroup_fromGroupSelector (toCNGroup subgroup) (toCNGroup group)
 
 -- | Add a new member to a group.
 --
@@ -171,10 +156,8 @@ removeSubgroup_fromGroup cnSaveRequest  subgroup group =
 --
 -- ObjC selector: @- addMember:toGroup:@
 addMember_toGroup :: (IsCNSaveRequest cnSaveRequest, IsCNContact contact, IsCNGroup group) => cnSaveRequest -> contact -> group -> IO ()
-addMember_toGroup cnSaveRequest  contact group =
-  withObjCPtr contact $ \raw_contact ->
-    withObjCPtr group $ \raw_group ->
-        sendMsg cnSaveRequest (mkSelector "addMember:toGroup:") retVoid [argPtr (castPtr raw_contact :: Ptr ()), argPtr (castPtr raw_group :: Ptr ())]
+addMember_toGroup cnSaveRequest contact group =
+  sendMessage cnSaveRequest addMember_toGroupSelector (toCNContact contact) (toCNGroup group)
 
 -- | Remove a member from a group.
 --
@@ -186,10 +169,8 @@ addMember_toGroup cnSaveRequest  contact group =
 --
 -- ObjC selector: @- removeMember:fromGroup:@
 removeMember_fromGroup :: (IsCNSaveRequest cnSaveRequest, IsCNContact contact, IsCNGroup group) => cnSaveRequest -> contact -> group -> IO ()
-removeMember_fromGroup cnSaveRequest  contact group =
-  withObjCPtr contact $ \raw_contact ->
-    withObjCPtr group $ \raw_group ->
-        sendMsg cnSaveRequest (mkSelector "removeMember:fromGroup:") retVoid [argPtr (castPtr raw_contact :: Ptr ()), argPtr (castPtr raw_group :: Ptr ())]
+removeMember_fromGroup cnSaveRequest contact group =
+  sendMessage cnSaveRequest removeMember_fromGroupSelector (toCNContact contact) (toCNGroup group)
 
 -- | The author of this transaction.
 --
@@ -197,8 +178,8 @@ removeMember_fromGroup cnSaveRequest  contact group =
 --
 -- ObjC selector: @- transactionAuthor@
 transactionAuthor :: IsCNSaveRequest cnSaveRequest => cnSaveRequest -> IO (Id NSString)
-transactionAuthor cnSaveRequest  =
-    sendMsg cnSaveRequest (mkSelector "transactionAuthor") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionAuthor cnSaveRequest =
+  sendMessage cnSaveRequest transactionAuthorSelector
 
 -- | The author of this transaction.
 --
@@ -206,9 +187,8 @@ transactionAuthor cnSaveRequest  =
 --
 -- ObjC selector: @- setTransactionAuthor:@
 setTransactionAuthor :: (IsCNSaveRequest cnSaveRequest, IsNSString value) => cnSaveRequest -> value -> IO ()
-setTransactionAuthor cnSaveRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnSaveRequest (mkSelector "setTransactionAuthor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionAuthor cnSaveRequest value =
+  sendMessage cnSaveRequest setTransactionAuthorSelector (toNSString value)
 
 -- | Should the contacts be refetched as part of executing the save request.
 --
@@ -218,8 +198,8 @@ setTransactionAuthor cnSaveRequest  value =
 --
 -- ObjC selector: @- shouldRefetchContacts@
 shouldRefetchContacts :: IsCNSaveRequest cnSaveRequest => cnSaveRequest -> IO Bool
-shouldRefetchContacts cnSaveRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnSaveRequest (mkSelector "shouldRefetchContacts") retCULong []
+shouldRefetchContacts cnSaveRequest =
+  sendMessage cnSaveRequest shouldRefetchContactsSelector
 
 -- | Should the contacts be refetched as part of executing the save request.
 --
@@ -229,66 +209,66 @@ shouldRefetchContacts cnSaveRequest  =
 --
 -- ObjC selector: @- setShouldRefetchContacts:@
 setShouldRefetchContacts :: IsCNSaveRequest cnSaveRequest => cnSaveRequest -> Bool -> IO ()
-setShouldRefetchContacts cnSaveRequest  value =
-    sendMsg cnSaveRequest (mkSelector "setShouldRefetchContacts:") retVoid [argCULong (if value then 1 else 0)]
+setShouldRefetchContacts cnSaveRequest value =
+  sendMessage cnSaveRequest setShouldRefetchContactsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addContact:toContainerWithIdentifier:@
-addContact_toContainerWithIdentifierSelector :: Selector
+addContact_toContainerWithIdentifierSelector :: Selector '[Id CNMutableContact, Id NSString] ()
 addContact_toContainerWithIdentifierSelector = mkSelector "addContact:toContainerWithIdentifier:"
 
 -- | @Selector@ for @updateContact:@
-updateContactSelector :: Selector
+updateContactSelector :: Selector '[Id CNMutableContact] ()
 updateContactSelector = mkSelector "updateContact:"
 
 -- | @Selector@ for @deleteContact:@
-deleteContactSelector :: Selector
+deleteContactSelector :: Selector '[Id CNMutableContact] ()
 deleteContactSelector = mkSelector "deleteContact:"
 
 -- | @Selector@ for @addGroup:toContainerWithIdentifier:@
-addGroup_toContainerWithIdentifierSelector :: Selector
+addGroup_toContainerWithIdentifierSelector :: Selector '[Id CNMutableGroup, Id NSString] ()
 addGroup_toContainerWithIdentifierSelector = mkSelector "addGroup:toContainerWithIdentifier:"
 
 -- | @Selector@ for @updateGroup:@
-updateGroupSelector :: Selector
+updateGroupSelector :: Selector '[Id CNMutableGroup] ()
 updateGroupSelector = mkSelector "updateGroup:"
 
 -- | @Selector@ for @deleteGroup:@
-deleteGroupSelector :: Selector
+deleteGroupSelector :: Selector '[Id CNMutableGroup] ()
 deleteGroupSelector = mkSelector "deleteGroup:"
 
 -- | @Selector@ for @addSubgroup:toGroup:@
-addSubgroup_toGroupSelector :: Selector
+addSubgroup_toGroupSelector :: Selector '[Id CNGroup, Id CNGroup] ()
 addSubgroup_toGroupSelector = mkSelector "addSubgroup:toGroup:"
 
 -- | @Selector@ for @removeSubgroup:fromGroup:@
-removeSubgroup_fromGroupSelector :: Selector
+removeSubgroup_fromGroupSelector :: Selector '[Id CNGroup, Id CNGroup] ()
 removeSubgroup_fromGroupSelector = mkSelector "removeSubgroup:fromGroup:"
 
 -- | @Selector@ for @addMember:toGroup:@
-addMember_toGroupSelector :: Selector
+addMember_toGroupSelector :: Selector '[Id CNContact, Id CNGroup] ()
 addMember_toGroupSelector = mkSelector "addMember:toGroup:"
 
 -- | @Selector@ for @removeMember:fromGroup:@
-removeMember_fromGroupSelector :: Selector
+removeMember_fromGroupSelector :: Selector '[Id CNContact, Id CNGroup] ()
 removeMember_fromGroupSelector = mkSelector "removeMember:fromGroup:"
 
 -- | @Selector@ for @transactionAuthor@
-transactionAuthorSelector :: Selector
+transactionAuthorSelector :: Selector '[] (Id NSString)
 transactionAuthorSelector = mkSelector "transactionAuthor"
 
 -- | @Selector@ for @setTransactionAuthor:@
-setTransactionAuthorSelector :: Selector
+setTransactionAuthorSelector :: Selector '[Id NSString] ()
 setTransactionAuthorSelector = mkSelector "setTransactionAuthor:"
 
 -- | @Selector@ for @shouldRefetchContacts@
-shouldRefetchContactsSelector :: Selector
+shouldRefetchContactsSelector :: Selector '[] Bool
 shouldRefetchContactsSelector = mkSelector "shouldRefetchContacts"
 
 -- | @Selector@ for @setShouldRefetchContacts:@
-setShouldRefetchContactsSelector :: Selector
+setShouldRefetchContactsSelector :: Selector '[Bool] ()
 setShouldRefetchContactsSelector = mkSelector "setShouldRefetchContacts:"
 

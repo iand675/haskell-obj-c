@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.ImageCaptureCore.ICScannerFeatureEnumeration
   , menuItemLabels
   , menuItemLabelsTooltips
   , currentValueSelector
-  , setCurrentValueSelector
   , defaultValueSelector
-  , valuesSelector
   , menuItemLabelsSelector
   , menuItemLabelsTooltipsSelector
+  , setCurrentValueSelector
+  , valuesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- currentValue@
 currentValue :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> IO RawId
-currentValue icScannerFeatureEnumeration  =
-    fmap (RawId . castPtr) $ sendMsg icScannerFeatureEnumeration (mkSelector "currentValue") (retPtr retVoid) []
+currentValue icScannerFeatureEnumeration =
+  sendMessage icScannerFeatureEnumeration currentValueSelector
 
 -- | currentValue
 --
@@ -56,8 +53,8 @@ currentValue icScannerFeatureEnumeration  =
 --
 -- ObjC selector: @- setCurrentValue:@
 setCurrentValue :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> RawId -> IO ()
-setCurrentValue icScannerFeatureEnumeration  value =
-    sendMsg icScannerFeatureEnumeration (mkSelector "setCurrentValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCurrentValue icScannerFeatureEnumeration value =
+  sendMessage icScannerFeatureEnumeration setCurrentValueSelector value
 
 -- | defaultValue
 --
@@ -65,8 +62,8 @@ setCurrentValue icScannerFeatureEnumeration  value =
 --
 -- ObjC selector: @- defaultValue@
 defaultValue :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> IO RawId
-defaultValue icScannerFeatureEnumeration  =
-    fmap (RawId . castPtr) $ sendMsg icScannerFeatureEnumeration (mkSelector "defaultValue") (retPtr retVoid) []
+defaultValue icScannerFeatureEnumeration =
+  sendMessage icScannerFeatureEnumeration defaultValueSelector
 
 -- | values
 --
@@ -74,8 +71,8 @@ defaultValue icScannerFeatureEnumeration  =
 --
 -- ObjC selector: @- values@
 values :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> IO (Id NSArray)
-values icScannerFeatureEnumeration  =
-    sendMsg icScannerFeatureEnumeration (mkSelector "values") (retPtr retVoid) [] >>= retainedObject . castPtr
+values icScannerFeatureEnumeration =
+  sendMessage icScannerFeatureEnumeration valuesSelector
 
 -- | menuItemLabels
 --
@@ -83,8 +80,8 @@ values icScannerFeatureEnumeration  =
 --
 -- ObjC selector: @- menuItemLabels@
 menuItemLabels :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> IO (Id NSArray)
-menuItemLabels icScannerFeatureEnumeration  =
-    sendMsg icScannerFeatureEnumeration (mkSelector "menuItemLabels") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuItemLabels icScannerFeatureEnumeration =
+  sendMessage icScannerFeatureEnumeration menuItemLabelsSelector
 
 -- | menuItemLabelsTooltips
 --
@@ -92,34 +89,34 @@ menuItemLabels icScannerFeatureEnumeration  =
 --
 -- ObjC selector: @- menuItemLabelsTooltips@
 menuItemLabelsTooltips :: IsICScannerFeatureEnumeration icScannerFeatureEnumeration => icScannerFeatureEnumeration -> IO (Id NSArray)
-menuItemLabelsTooltips icScannerFeatureEnumeration  =
-    sendMsg icScannerFeatureEnumeration (mkSelector "menuItemLabelsTooltips") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuItemLabelsTooltips icScannerFeatureEnumeration =
+  sendMessage icScannerFeatureEnumeration menuItemLabelsTooltipsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentValue@
-currentValueSelector :: Selector
+currentValueSelector :: Selector '[] RawId
 currentValueSelector = mkSelector "currentValue"
 
 -- | @Selector@ for @setCurrentValue:@
-setCurrentValueSelector :: Selector
+setCurrentValueSelector :: Selector '[RawId] ()
 setCurrentValueSelector = mkSelector "setCurrentValue:"
 
 -- | @Selector@ for @defaultValue@
-defaultValueSelector :: Selector
+defaultValueSelector :: Selector '[] RawId
 defaultValueSelector = mkSelector "defaultValue"
 
 -- | @Selector@ for @values@
-valuesSelector :: Selector
+valuesSelector :: Selector '[] (Id NSArray)
 valuesSelector = mkSelector "values"
 
 -- | @Selector@ for @menuItemLabels@
-menuItemLabelsSelector :: Selector
+menuItemLabelsSelector :: Selector '[] (Id NSArray)
 menuItemLabelsSelector = mkSelector "menuItemLabels"
 
 -- | @Selector@ for @menuItemLabelsTooltips@
-menuItemLabelsTooltipsSelector :: Selector
+menuItemLabelsTooltipsSelector :: Selector '[] (Id NSArray)
 menuItemLabelsTooltipsSelector = mkSelector "menuItemLabelsTooltips"
 

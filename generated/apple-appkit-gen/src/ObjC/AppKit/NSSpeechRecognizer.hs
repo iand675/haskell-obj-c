@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.AppKit.NSSpeechRecognizer
   , setListensInForegroundOnly
   , blocksOtherRecognizers
   , setBlocksOtherRecognizers
+  , blocksOtherRecognizersSelector
+  , commandsSelector
+  , delegateSelector
+  , displayedCommandsTitleSelector
   , initSelector
+  , listensInForegroundOnlySelector
+  , setBlocksOtherRecognizersSelector
+  , setCommandsSelector
+  , setDelegateSelector
+  , setDisplayedCommandsTitleSelector
+  , setListensInForegroundOnlySelector
   , startListeningSelector
   , stopListeningSelector
-  , delegateSelector
-  , setDelegateSelector
-  , commandsSelector
-  , setCommandsSelector
-  , displayedCommandsTitleSelector
-  , setDisplayedCommandsTitleSelector
-  , listensInForegroundOnlySelector
-  , setListensInForegroundOnlySelector
-  , blocksOtherRecognizersSelector
-  , setBlocksOtherRecognizersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,124 +50,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO (Id NSSpeechRecognizer)
-init_ nsSpeechRecognizer  =
-    sendMsg nsSpeechRecognizer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSpeechRecognizer =
+  sendOwnedMessage nsSpeechRecognizer initSelector
 
 -- | @- startListening@
 startListening :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO ()
-startListening nsSpeechRecognizer  =
-    sendMsg nsSpeechRecognizer (mkSelector "startListening") retVoid []
+startListening nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer startListeningSelector
 
 -- | @- stopListening@
 stopListening :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO ()
-stopListening nsSpeechRecognizer  =
-    sendMsg nsSpeechRecognizer (mkSelector "stopListening") retVoid []
+stopListening nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer stopListeningSelector
 
 -- | @- delegate@
 delegate :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO RawId
-delegate nsSpeechRecognizer  =
-    fmap (RawId . castPtr) $ sendMsg nsSpeechRecognizer (mkSelector "delegate") (retPtr retVoid) []
+delegate nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> RawId -> IO ()
-setDelegate nsSpeechRecognizer  value =
-    sendMsg nsSpeechRecognizer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsSpeechRecognizer value =
+  sendMessage nsSpeechRecognizer setDelegateSelector value
 
 -- | @- commands@
 commands :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO (Id NSArray)
-commands nsSpeechRecognizer  =
-    sendMsg nsSpeechRecognizer (mkSelector "commands") (retPtr retVoid) [] >>= retainedObject . castPtr
+commands nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer commandsSelector
 
 -- | @- setCommands:@
 setCommands :: (IsNSSpeechRecognizer nsSpeechRecognizer, IsNSArray value) => nsSpeechRecognizer -> value -> IO ()
-setCommands nsSpeechRecognizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSpeechRecognizer (mkSelector "setCommands:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCommands nsSpeechRecognizer value =
+  sendMessage nsSpeechRecognizer setCommandsSelector (toNSArray value)
 
 -- | @- displayedCommandsTitle@
 displayedCommandsTitle :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO (Id NSString)
-displayedCommandsTitle nsSpeechRecognizer  =
-    sendMsg nsSpeechRecognizer (mkSelector "displayedCommandsTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayedCommandsTitle nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer displayedCommandsTitleSelector
 
 -- | @- setDisplayedCommandsTitle:@
 setDisplayedCommandsTitle :: (IsNSSpeechRecognizer nsSpeechRecognizer, IsNSString value) => nsSpeechRecognizer -> value -> IO ()
-setDisplayedCommandsTitle nsSpeechRecognizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSpeechRecognizer (mkSelector "setDisplayedCommandsTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayedCommandsTitle nsSpeechRecognizer value =
+  sendMessage nsSpeechRecognizer setDisplayedCommandsTitleSelector (toNSString value)
 
 -- | @- listensInForegroundOnly@
 listensInForegroundOnly :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO Bool
-listensInForegroundOnly nsSpeechRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSpeechRecognizer (mkSelector "listensInForegroundOnly") retCULong []
+listensInForegroundOnly nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer listensInForegroundOnlySelector
 
 -- | @- setListensInForegroundOnly:@
 setListensInForegroundOnly :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> Bool -> IO ()
-setListensInForegroundOnly nsSpeechRecognizer  value =
-    sendMsg nsSpeechRecognizer (mkSelector "setListensInForegroundOnly:") retVoid [argCULong (if value then 1 else 0)]
+setListensInForegroundOnly nsSpeechRecognizer value =
+  sendMessage nsSpeechRecognizer setListensInForegroundOnlySelector value
 
 -- | @- blocksOtherRecognizers@
 blocksOtherRecognizers :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> IO Bool
-blocksOtherRecognizers nsSpeechRecognizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSpeechRecognizer (mkSelector "blocksOtherRecognizers") retCULong []
+blocksOtherRecognizers nsSpeechRecognizer =
+  sendMessage nsSpeechRecognizer blocksOtherRecognizersSelector
 
 -- | @- setBlocksOtherRecognizers:@
 setBlocksOtherRecognizers :: IsNSSpeechRecognizer nsSpeechRecognizer => nsSpeechRecognizer -> Bool -> IO ()
-setBlocksOtherRecognizers nsSpeechRecognizer  value =
-    sendMsg nsSpeechRecognizer (mkSelector "setBlocksOtherRecognizers:") retVoid [argCULong (if value then 1 else 0)]
+setBlocksOtherRecognizers nsSpeechRecognizer value =
+  sendMessage nsSpeechRecognizer setBlocksOtherRecognizersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSpeechRecognizer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @startListening@
-startListeningSelector :: Selector
+startListeningSelector :: Selector '[] ()
 startListeningSelector = mkSelector "startListening"
 
 -- | @Selector@ for @stopListening@
-stopListeningSelector :: Selector
+stopListeningSelector :: Selector '[] ()
 stopListeningSelector = mkSelector "stopListening"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @commands@
-commandsSelector :: Selector
+commandsSelector :: Selector '[] (Id NSArray)
 commandsSelector = mkSelector "commands"
 
 -- | @Selector@ for @setCommands:@
-setCommandsSelector :: Selector
+setCommandsSelector :: Selector '[Id NSArray] ()
 setCommandsSelector = mkSelector "setCommands:"
 
 -- | @Selector@ for @displayedCommandsTitle@
-displayedCommandsTitleSelector :: Selector
+displayedCommandsTitleSelector :: Selector '[] (Id NSString)
 displayedCommandsTitleSelector = mkSelector "displayedCommandsTitle"
 
 -- | @Selector@ for @setDisplayedCommandsTitle:@
-setDisplayedCommandsTitleSelector :: Selector
+setDisplayedCommandsTitleSelector :: Selector '[Id NSString] ()
 setDisplayedCommandsTitleSelector = mkSelector "setDisplayedCommandsTitle:"
 
 -- | @Selector@ for @listensInForegroundOnly@
-listensInForegroundOnlySelector :: Selector
+listensInForegroundOnlySelector :: Selector '[] Bool
 listensInForegroundOnlySelector = mkSelector "listensInForegroundOnly"
 
 -- | @Selector@ for @setListensInForegroundOnly:@
-setListensInForegroundOnlySelector :: Selector
+setListensInForegroundOnlySelector :: Selector '[Bool] ()
 setListensInForegroundOnlySelector = mkSelector "setListensInForegroundOnly:"
 
 -- | @Selector@ for @blocksOtherRecognizers@
-blocksOtherRecognizersSelector :: Selector
+blocksOtherRecognizersSelector :: Selector '[] Bool
 blocksOtherRecognizersSelector = mkSelector "blocksOtherRecognizers"
 
 -- | @Selector@ for @setBlocksOtherRecognizers:@
-setBlocksOtherRecognizersSelector :: Selector
+setBlocksOtherRecognizersSelector :: Selector '[Bool] ()
 setBlocksOtherRecognizersSelector = mkSelector "setBlocksOtherRecognizers:"
 

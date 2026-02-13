@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,40 +40,36 @@ module ObjC.AVFoundation.AVContentKeySession
   , keySystem
   , contentProtectionSessionIdentifier
   , contentKeyRecipients
-  , initSelector
-  , newSelector
+  , addContentKeyRecipientSelector
+  , contentKeyRecipientsSelector
   , contentKeySessionWithKeySystemSelector
   , contentKeySessionWithKeySystem_storageDirectoryAtURLSelector
-  , setDelegate_queueSelector
-  , expireSelector
-  , processContentKeyRequestWithIdentifier_initializationData_optionsSelector
-  , renewExpiringResponseDataForContentKeyRequestSelector
-  , makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector
-  , invalidatePersistableContentKey_options_completionHandlerSelector
-  , invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector
-  , pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector
-  , removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector
-  , addContentKeyRecipientSelector
-  , removeContentKeyRecipientSelector
-  , delegateSelector
-  , delegateQueueSelector
-  , storageURLSelector
-  , keySystemSelector
   , contentProtectionSessionIdentifierSelector
-  , contentKeyRecipientsSelector
+  , delegateQueueSelector
+  , delegateSelector
+  , expireSelector
+  , initSelector
+  , invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector
+  , invalidatePersistableContentKey_options_completionHandlerSelector
+  , keySystemSelector
+  , makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector
+  , newSelector
+  , pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector
+  , processContentKeyRequestWithIdentifier_initializationData_optionsSelector
+  , removeContentKeyRecipientSelector
+  , removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector
+  , renewExpiringResponseDataForContentKeyRequestSelector
+  , setDelegate_queueSelector
+  , storageURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,15 +78,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id AVContentKeySession)
-init_ avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avContentKeySession =
+  sendOwnedMessage avContentKeySession initSelector
 
 -- | @+ new@
 new :: IO (Id AVContentKeySession)
 new  =
   do
     cls' <- getRequiredClass "AVContentKeySession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new instance of AVContentKeySession to manage a collection of media content keys.
 --
@@ -104,8 +101,7 @@ contentKeySessionWithKeySystem :: IsNSString keySystem => keySystem -> IO (Id AV
 contentKeySessionWithKeySystem keySystem =
   do
     cls' <- getRequiredClass "AVContentKeySession"
-    withObjCPtr keySystem $ \raw_keySystem ->
-      sendClassMsg cls' (mkSelector "contentKeySessionWithKeySystem:") (retPtr retVoid) [argPtr (castPtr raw_keySystem :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contentKeySessionWithKeySystemSelector (toNSString keySystem)
 
 -- | Creates a new instance of AVContentKeySession to manage a collection of media content keys.
 --
@@ -120,9 +116,7 @@ contentKeySessionWithKeySystem_storageDirectoryAtURL :: (IsNSString keySystem, I
 contentKeySessionWithKeySystem_storageDirectoryAtURL keySystem storageURL =
   do
     cls' <- getRequiredClass "AVContentKeySession"
-    withObjCPtr keySystem $ \raw_keySystem ->
-      withObjCPtr storageURL $ \raw_storageURL ->
-        sendClassMsg cls' (mkSelector "contentKeySessionWithKeySystem:storageDirectoryAtURL:") (retPtr retVoid) [argPtr (castPtr raw_keySystem :: Ptr ()), argPtr (castPtr raw_storageURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contentKeySessionWithKeySystem_storageDirectoryAtURLSelector (toNSString keySystem) (toNSURL storageURL)
 
 -- | Sets the receiver's delegate. A delegate is required to handle content key initialization.
 --
@@ -130,9 +124,8 @@ contentKeySessionWithKeySystem_storageDirectoryAtURL keySystem storageURL =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVContentKeySession avContentKeySession, IsNSObject delegateQueue) => avContentKeySession -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avContentKeySession  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avContentKeySession (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avContentKeySession delegate delegateQueue =
+  sendMessage avContentKeySession setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | Tells the receiver to treat the session as having been intentionally and normally expired.
 --
@@ -140,8 +133,8 @@ setDelegate_queue avContentKeySession  delegate delegateQueue =
 --
 -- ObjC selector: @- expire@
 expire :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO ()
-expire avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "expire") retVoid []
+expire avContentKeySession =
+  sendMessage avContentKeySession expireSelector
 
 -- | Informs the receiver that it should attempt to instantiate a content decryption key using the specified initialization data.
 --
@@ -151,10 +144,8 @@ expire avContentKeySession  =
 --
 -- ObjC selector: @- processContentKeyRequestWithIdentifier:initializationData:options:@
 processContentKeyRequestWithIdentifier_initializationData_options :: (IsAVContentKeySession avContentKeySession, IsNSData initializationData, IsNSDictionary options) => avContentKeySession -> RawId -> initializationData -> options -> IO ()
-processContentKeyRequestWithIdentifier_initializationData_options avContentKeySession  identifier initializationData options =
-  withObjCPtr initializationData $ \raw_initializationData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avContentKeySession (mkSelector "processContentKeyRequestWithIdentifier:initializationData:options:") retVoid [argPtr (castPtr (unRawId identifier) :: Ptr ()), argPtr (castPtr raw_initializationData :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+processContentKeyRequestWithIdentifier_initializationData_options avContentKeySession identifier initializationData options =
+  sendMessage avContentKeySession processContentKeyRequestWithIdentifier_initializationData_optionsSelector identifier (toNSData initializationData) (toNSDictionary options)
 
 -- | Informs the receiver that the already provided response data for an earlier AVContentKeyRequest will imminently expire.
 --
@@ -162,9 +153,8 @@ processContentKeyRequestWithIdentifier_initializationData_options avContentKeySe
 --
 -- ObjC selector: @- renewExpiringResponseDataForContentKeyRequest:@
 renewExpiringResponseDataForContentKeyRequest :: (IsAVContentKeySession avContentKeySession, IsAVContentKeyRequest contentKeyRequest) => avContentKeySession -> contentKeyRequest -> IO ()
-renewExpiringResponseDataForContentKeyRequest avContentKeySession  contentKeyRequest =
-  withObjCPtr contentKeyRequest $ \raw_contentKeyRequest ->
-      sendMsg avContentKeySession (mkSelector "renewExpiringResponseDataForContentKeyRequest:") retVoid [argPtr (castPtr raw_contentKeyRequest :: Ptr ())]
+renewExpiringResponseDataForContentKeyRequest avContentKeySession contentKeyRequest =
+  sendMessage avContentKeySession renewExpiringResponseDataForContentKeyRequestSelector (toAVContentKeyRequest contentKeyRequest)
 
 -- | Creates a secure server playback context (SPC) that the client could send to the key server to obtain an expiration date for the provided persistable content key data.
 --
@@ -172,9 +162,8 @@ renewExpiringResponseDataForContentKeyRequest avContentKeySession  contentKeyReq
 --
 -- ObjC selector: @- makeSecureTokenForExpirationDateOfPersistableContentKey:completionHandler:@
 makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandler :: (IsAVContentKeySession avContentKeySession, IsNSData persistableContentKeyData) => avContentKeySession -> persistableContentKeyData -> Ptr () -> IO ()
-makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandler avContentKeySession  persistableContentKeyData handler =
-  withObjCPtr persistableContentKeyData $ \raw_persistableContentKeyData ->
-      sendMsg avContentKeySession (mkSelector "makeSecureTokenForExpirationDateOfPersistableContentKey:completionHandler:") retVoid [argPtr (castPtr raw_persistableContentKeyData :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandler avContentKeySession persistableContentKeyData handler =
+  sendMessage avContentKeySession makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector (toNSData persistableContentKeyData) handler
 
 -- | Invalidates the persistable content key and creates a secure server playback context (SPC) that the client could send to the key server to verify the outcome of invalidation request.
 --
@@ -184,10 +173,8 @@ makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandler avCont
 --
 -- ObjC selector: @- invalidatePersistableContentKey:options:completionHandler:@
 invalidatePersistableContentKey_options_completionHandler :: (IsAVContentKeySession avContentKeySession, IsNSData persistableContentKeyData, IsNSDictionary options) => avContentKeySession -> persistableContentKeyData -> options -> Ptr () -> IO ()
-invalidatePersistableContentKey_options_completionHandler avContentKeySession  persistableContentKeyData options handler =
-  withObjCPtr persistableContentKeyData $ \raw_persistableContentKeyData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avContentKeySession (mkSelector "invalidatePersistableContentKey:options:completionHandler:") retVoid [argPtr (castPtr raw_persistableContentKeyData :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+invalidatePersistableContentKey_options_completionHandler avContentKeySession persistableContentKeyData options handler =
+  sendMessage avContentKeySession invalidatePersistableContentKey_options_completionHandlerSelector (toNSData persistableContentKeyData) (toNSDictionary options) handler
 
 -- | Invalidates all persistable content keys associated with the application and creates a secure server playback context (SPC) that the client could send to the key server to verify the outcome of invalidation request.
 --
@@ -197,10 +184,8 @@ invalidatePersistableContentKey_options_completionHandler avContentKeySession  p
 --
 -- ObjC selector: @- invalidateAllPersistableContentKeysForApp:options:completionHandler:@
 invalidateAllPersistableContentKeysForApp_options_completionHandler :: (IsAVContentKeySession avContentKeySession, IsNSData appIdentifier, IsNSDictionary options) => avContentKeySession -> appIdentifier -> options -> Ptr () -> IO ()
-invalidateAllPersistableContentKeysForApp_options_completionHandler avContentKeySession  appIdentifier options handler =
-  withObjCPtr appIdentifier $ \raw_appIdentifier ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avContentKeySession (mkSelector "invalidateAllPersistableContentKeysForApp:options:completionHandler:") retVoid [argPtr (castPtr raw_appIdentifier :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+invalidateAllPersistableContentKeysForApp_options_completionHandler avContentKeySession appIdentifier options handler =
+  sendMessage avContentKeySession invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector (toNSData appIdentifier) (toNSDictionary options) handler
 
 -- | Provides "expired session reports" for prior AVContentKeySessions created with the specified app identifier that have expired either normally or abnormally.
 --
@@ -215,9 +200,7 @@ pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURL :: (IsNSData
 pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURL appIdentifier storageURL =
   do
     cls' <- getRequiredClass "AVContentKeySession"
-    withObjCPtr appIdentifier $ \raw_appIdentifier ->
-      withObjCPtr storageURL $ \raw_storageURL ->
-        sendClassMsg cls' (mkSelector "pendingExpiredSessionReportsWithAppIdentifier:storageDirectoryAtURL:") (retPtr retVoid) [argPtr (castPtr raw_appIdentifier :: Ptr ()), argPtr (castPtr raw_storageURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector (toNSData appIdentifier) (toNSURL storageURL)
 
 -- | Removes expired session reports for prior AVContentKeySessions from storage. Once they have been removed, they will no longer be available via subsequent invocations of +pendingExpiredSessionReportsWithAppIdentifier:.
 --
@@ -230,10 +213,7 @@ removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURL :: (I
 removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURL expiredSessionReports appIdentifier storageURL =
   do
     cls' <- getRequiredClass "AVContentKeySession"
-    withObjCPtr expiredSessionReports $ \raw_expiredSessionReports ->
-      withObjCPtr appIdentifier $ \raw_appIdentifier ->
-        withObjCPtr storageURL $ \raw_storageURL ->
-          sendClassMsg cls' (mkSelector "removePendingExpiredSessionReports:withAppIdentifier:storageDirectoryAtURL:") retVoid [argPtr (castPtr raw_expiredSessionReports :: Ptr ()), argPtr (castPtr raw_appIdentifier :: Ptr ()), argPtr (castPtr raw_storageURL :: Ptr ())]
+    sendClassMessage cls' removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector (toNSArray expiredSessionReports) (toNSData appIdentifier) (toNSURL storageURL)
 
 -- | Informs the receiver that the specified recipient will be used for the session.
 --
@@ -241,8 +221,8 @@ removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURL expir
 --
 -- ObjC selector: @- addContentKeyRecipient:@
 addContentKeyRecipient :: IsAVContentKeySession avContentKeySession => avContentKeySession -> RawId -> IO ()
-addContentKeyRecipient avContentKeySession  recipient =
-    sendMsg avContentKeySession (mkSelector "addContentKeyRecipient:") retVoid [argPtr (castPtr (unRawId recipient) :: Ptr ())]
+addContentKeyRecipient avContentKeySession recipient =
+  sendMessage avContentKeySession addContentKeyRecipientSelector recipient
 
 -- | Informs the receiver that the specified recipient will no longer be used.
 --
@@ -250,8 +230,8 @@ addContentKeyRecipient avContentKeySession  recipient =
 --
 -- ObjC selector: @- removeContentKeyRecipient:@
 removeContentKeyRecipient :: IsAVContentKeySession avContentKeySession => avContentKeySession -> RawId -> IO ()
-removeContentKeyRecipient avContentKeySession  recipient =
-    sendMsg avContentKeySession (mkSelector "removeContentKeyRecipient:") retVoid [argPtr (castPtr (unRawId recipient) :: Ptr ())]
+removeContentKeyRecipient avContentKeySession recipient =
+  sendMessage avContentKeySession removeContentKeyRecipientSelector recipient
 
 -- | The receiver's delegate.
 --
@@ -259,8 +239,8 @@ removeContentKeyRecipient avContentKeySession  recipient =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO RawId
-delegate avContentKeySession  =
-    fmap (RawId . castPtr) $ sendMsg avContentKeySession (mkSelector "delegate") (retPtr retVoid) []
+delegate avContentKeySession =
+  sendMessage avContentKeySession delegateSelector
 
 -- | The dispatch queue on which all delegate methods will be invoked whenever processes requiring content keys are executed asynchronously.
 --
@@ -268,8 +248,8 @@ delegate avContentKeySession  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSObject)
-delegateQueue avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avContentKeySession =
+  sendMessage avContentKeySession delegateQueueSelector
 
 -- | The storage URL provided when the AVContentKeySession was created. May be nil.
 --
@@ -277,15 +257,15 @@ delegateQueue avContentKeySession  =
 --
 -- ObjC selector: @- storageURL@
 storageURL :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSURL)
-storageURL avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "storageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+storageURL avContentKeySession =
+  sendMessage avContentKeySession storageURLSelector
 
 -- | The key system used for retrieving keys
 --
 -- ObjC selector: @- keySystem@
 keySystem :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSString)
-keySystem avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "keySystem") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySystem avContentKeySession =
+  sendMessage avContentKeySession keySystemSelector
 
 -- | An opaque identifier for the current content protection session.
 --
@@ -293,101 +273,101 @@ keySystem avContentKeySession  =
 --
 -- ObjC selector: @- contentProtectionSessionIdentifier@
 contentProtectionSessionIdentifier :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSData)
-contentProtectionSessionIdentifier avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "contentProtectionSessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentProtectionSessionIdentifier avContentKeySession =
+  sendMessage avContentKeySession contentProtectionSessionIdentifierSelector
 
 -- | The array of recipients of content keys currently associated with the AVContentKeySession.
 --
 -- ObjC selector: @- contentKeyRecipients@
 contentKeyRecipients :: IsAVContentKeySession avContentKeySession => avContentKeySession -> IO (Id NSArray)
-contentKeyRecipients avContentKeySession  =
-    sendMsg avContentKeySession (mkSelector "contentKeyRecipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentKeyRecipients avContentKeySession =
+  sendMessage avContentKeySession contentKeyRecipientsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVContentKeySession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVContentKeySession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @contentKeySessionWithKeySystem:@
-contentKeySessionWithKeySystemSelector :: Selector
+contentKeySessionWithKeySystemSelector :: Selector '[Id NSString] (Id AVContentKeySession)
 contentKeySessionWithKeySystemSelector = mkSelector "contentKeySessionWithKeySystem:"
 
 -- | @Selector@ for @contentKeySessionWithKeySystem:storageDirectoryAtURL:@
-contentKeySessionWithKeySystem_storageDirectoryAtURLSelector :: Selector
+contentKeySessionWithKeySystem_storageDirectoryAtURLSelector :: Selector '[Id NSString, Id NSURL] (Id AVContentKeySession)
 contentKeySessionWithKeySystem_storageDirectoryAtURLSelector = mkSelector "contentKeySessionWithKeySystem:storageDirectoryAtURL:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @expire@
-expireSelector :: Selector
+expireSelector :: Selector '[] ()
 expireSelector = mkSelector "expire"
 
 -- | @Selector@ for @processContentKeyRequestWithIdentifier:initializationData:options:@
-processContentKeyRequestWithIdentifier_initializationData_optionsSelector :: Selector
+processContentKeyRequestWithIdentifier_initializationData_optionsSelector :: Selector '[RawId, Id NSData, Id NSDictionary] ()
 processContentKeyRequestWithIdentifier_initializationData_optionsSelector = mkSelector "processContentKeyRequestWithIdentifier:initializationData:options:"
 
 -- | @Selector@ for @renewExpiringResponseDataForContentKeyRequest:@
-renewExpiringResponseDataForContentKeyRequestSelector :: Selector
+renewExpiringResponseDataForContentKeyRequestSelector :: Selector '[Id AVContentKeyRequest] ()
 renewExpiringResponseDataForContentKeyRequestSelector = mkSelector "renewExpiringResponseDataForContentKeyRequest:"
 
 -- | @Selector@ for @makeSecureTokenForExpirationDateOfPersistableContentKey:completionHandler:@
-makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector :: Selector
+makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 makeSecureTokenForExpirationDateOfPersistableContentKey_completionHandlerSelector = mkSelector "makeSecureTokenForExpirationDateOfPersistableContentKey:completionHandler:"
 
 -- | @Selector@ for @invalidatePersistableContentKey:options:completionHandler:@
-invalidatePersistableContentKey_options_completionHandlerSelector :: Selector
+invalidatePersistableContentKey_options_completionHandlerSelector :: Selector '[Id NSData, Id NSDictionary, Ptr ()] ()
 invalidatePersistableContentKey_options_completionHandlerSelector = mkSelector "invalidatePersistableContentKey:options:completionHandler:"
 
 -- | @Selector@ for @invalidateAllPersistableContentKeysForApp:options:completionHandler:@
-invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector :: Selector
+invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector :: Selector '[Id NSData, Id NSDictionary, Ptr ()] ()
 invalidateAllPersistableContentKeysForApp_options_completionHandlerSelector = mkSelector "invalidateAllPersistableContentKeysForApp:options:completionHandler:"
 
 -- | @Selector@ for @pendingExpiredSessionReportsWithAppIdentifier:storageDirectoryAtURL:@
-pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector :: Selector
+pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector :: Selector '[Id NSData, Id NSURL] (Id NSArray)
 pendingExpiredSessionReportsWithAppIdentifier_storageDirectoryAtURLSelector = mkSelector "pendingExpiredSessionReportsWithAppIdentifier:storageDirectoryAtURL:"
 
 -- | @Selector@ for @removePendingExpiredSessionReports:withAppIdentifier:storageDirectoryAtURL:@
-removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector :: Selector
+removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector :: Selector '[Id NSArray, Id NSData, Id NSURL] ()
 removePendingExpiredSessionReports_withAppIdentifier_storageDirectoryAtURLSelector = mkSelector "removePendingExpiredSessionReports:withAppIdentifier:storageDirectoryAtURL:"
 
 -- | @Selector@ for @addContentKeyRecipient:@
-addContentKeyRecipientSelector :: Selector
+addContentKeyRecipientSelector :: Selector '[RawId] ()
 addContentKeyRecipientSelector = mkSelector "addContentKeyRecipient:"
 
 -- | @Selector@ for @removeContentKeyRecipient:@
-removeContentKeyRecipientSelector :: Selector
+removeContentKeyRecipientSelector :: Selector '[RawId] ()
 removeContentKeyRecipientSelector = mkSelector "removeContentKeyRecipient:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @storageURL@
-storageURLSelector :: Selector
+storageURLSelector :: Selector '[] (Id NSURL)
 storageURLSelector = mkSelector "storageURL"
 
 -- | @Selector@ for @keySystem@
-keySystemSelector :: Selector
+keySystemSelector :: Selector '[] (Id NSString)
 keySystemSelector = mkSelector "keySystem"
 
 -- | @Selector@ for @contentProtectionSessionIdentifier@
-contentProtectionSessionIdentifierSelector :: Selector
+contentProtectionSessionIdentifierSelector :: Selector '[] (Id NSData)
 contentProtectionSessionIdentifierSelector = mkSelector "contentProtectionSessionIdentifier"
 
 -- | @Selector@ for @contentKeyRecipients@
-contentKeyRecipientsSelector :: Selector
+contentKeyRecipientsSelector :: Selector '[] (Id NSArray)
 contentKeyRecipientsSelector = mkSelector "contentKeyRecipients"
 

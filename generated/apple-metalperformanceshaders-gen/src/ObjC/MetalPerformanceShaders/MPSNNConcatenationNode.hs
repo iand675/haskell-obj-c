@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.MetalPerformanceShaders.MPSNNConcatenationNode
   , nodeWithSources
   , initWithSources
   , gradientFilterWithSources
-  , nodeWithSourcesSelector
-  , initWithSourcesSelector
   , gradientFilterWithSourcesSelector
+  , initWithSourcesSelector
+  , nodeWithSourcesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ nodeWithSources :: IsNSArray sourceNodes => sourceNodes -> IO (Id MPSNNConcatena
 nodeWithSources sourceNodes =
   do
     cls' <- getRequiredClass "MPSNNConcatenationNode"
-    withObjCPtr sourceNodes $ \raw_sourceNodes ->
-      sendClassMsg cls' (mkSelector "nodeWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourcesSelector (toNSArray sourceNodes)
 
 -- | Init a node that concatenates feature channels from multiple images
 --
@@ -67,31 +63,29 @@ nodeWithSources sourceNodes =
 --
 -- ObjC selector: @- initWithSources:@
 initWithSources :: (IsMPSNNConcatenationNode mpsnnConcatenationNode, IsNSArray sourceNodes) => mpsnnConcatenationNode -> sourceNodes -> IO (Id MPSNNConcatenationNode)
-initWithSources mpsnnConcatenationNode  sourceNodes =
-  withObjCPtr sourceNodes $ \raw_sourceNodes ->
-      sendMsg mpsnnConcatenationNode (mkSelector "initWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ())] >>= ownedObject . castPtr
+initWithSources mpsnnConcatenationNode sourceNodes =
+  sendOwnedMessage mpsnnConcatenationNode initWithSourcesSelector (toNSArray sourceNodes)
 
 -- | Concatenation returns multiple gradient filters. Use -gradientFiltersWithSources: instead.
 --
 -- ObjC selector: @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSNNConcatenationNode mpsnnConcatenationNode, IsNSArray gradientImages) => mpsnnConcatenationNode -> gradientImages -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSources mpsnnConcatenationNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnConcatenationNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpsnnConcatenationNode gradientImages =
+  sendMessage mpsnnConcatenationNode gradientFilterWithSourcesSelector (toNSArray gradientImages)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSources:@
-nodeWithSourcesSelector :: Selector
+nodeWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNConcatenationNode)
 nodeWithSourcesSelector = mkSelector "nodeWithSources:"
 
 -- | @Selector@ for @initWithSources:@
-initWithSourcesSelector :: Selector
+initWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNConcatenationNode)
 initWithSourcesSelector = mkSelector "initWithSources:"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 

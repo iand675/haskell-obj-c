@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,32 +40,32 @@ module ObjC.Foundation.NSURLRequest
   , httpBodyStream
   , httpShouldHandleCookies
   , httpShouldUsePipelining
-  , requestWithURLSelector
-  , requestWithURL_cachePolicy_timeoutIntervalSelector
-  , initWithURLSelector
-  , initWithURL_cachePolicy_timeoutIntervalSelector
-  , valueForHTTPHeaderFieldSelector
-  , supportsSecureCodingSelector
-  , urlSelector
-  , cachePolicySelector
-  , timeoutIntervalSelector
-  , mainDocumentURLSelector
-  , networkServiceTypeSelector
+  , allHTTPHeaderFieldsSelector
   , allowsCellularAccessSelector
-  , allowsExpensiveNetworkAccessSelector
   , allowsConstrainedNetworkAccessSelector
+  , allowsExpensiveNetworkAccessSelector
+  , allowsPersistentDNSSelector
   , allowsUltraConstrainedNetworkAccessSelector
   , assumesHTTP3CapableSelector
   , attributionSelector
-  , requiresDNSSECValidationSelector
-  , allowsPersistentDNSSelector
+  , cachePolicySelector
   , cookiePartitionIdentifierSelector
-  , httpMethodSelector
-  , allHTTPHeaderFieldsSelector
   , httpBodySelector
   , httpBodyStreamSelector
+  , httpMethodSelector
   , httpShouldHandleCookiesSelector
   , httpShouldUsePipeliningSelector
+  , initWithURLSelector
+  , initWithURL_cachePolicy_timeoutIntervalSelector
+  , mainDocumentURLSelector
+  , networkServiceTypeSelector
+  , requestWithURLSelector
+  , requestWithURL_cachePolicy_timeoutIntervalSelector
+  , requiresDNSSECValidationSelector
+  , supportsSecureCodingSelector
+  , timeoutIntervalSelector
+  , urlSelector
+  , valueForHTTPHeaderFieldSelector
 
   -- * Enum types
   , NSURLRequestAttribution(NSURLRequestAttribution)
@@ -91,15 +92,11 @@ module ObjC.Foundation.NSURLRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,8 +118,7 @@ requestWithURL :: IsNSURL url => url -> IO (Id NSURLRequest)
 requestWithURL url =
   do
     cls' <- getRequiredClass "NSURLRequest"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "requestWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requestWithURLSelector (toNSURL url)
 
 -- | requestWithURL:cachePolicy:timeoutInterval:
 --
@@ -141,8 +137,7 @@ requestWithURL_cachePolicy_timeoutInterval :: IsNSURL url => url -> NSURLRequest
 requestWithURL_cachePolicy_timeoutInterval url cachePolicy timeoutInterval =
   do
     cls' <- getRequiredClass "NSURLRequest"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "requestWithURL:cachePolicy:timeoutInterval:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce cachePolicy), argCDouble timeoutInterval] >>= retainedObject . castPtr
+    sendClassMessage cls' requestWithURL_cachePolicy_timeoutIntervalSelector (toNSURL url) cachePolicy timeoutInterval
 
 -- | initWithURL:
 --
@@ -156,9 +151,8 @@ requestWithURL_cachePolicy_timeoutInterval url cachePolicy timeoutInterval =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsNSURLRequest nsurlRequest, IsNSURL url) => nsurlRequest -> url -> IO (Id NSURLRequest)
-initWithURL nsurlRequest  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlRequest (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL nsurlRequest url =
+  sendOwnedMessage nsurlRequest initWithURLSelector (toNSURL url)
 
 -- | initWithURL:
 --
@@ -176,9 +170,8 @@ initWithURL nsurlRequest  url =
 --
 -- ObjC selector: @- initWithURL:cachePolicy:timeoutInterval:@
 initWithURL_cachePolicy_timeoutInterval :: (IsNSURLRequest nsurlRequest, IsNSURL url) => nsurlRequest -> url -> NSURLRequestCachePolicy -> CDouble -> IO (Id NSURLRequest)
-initWithURL_cachePolicy_timeoutInterval nsurlRequest  url cachePolicy timeoutInterval =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlRequest (mkSelector "initWithURL:cachePolicy:timeoutInterval:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce cachePolicy), argCDouble timeoutInterval] >>= ownedObject . castPtr
+initWithURL_cachePolicy_timeoutInterval nsurlRequest url cachePolicy timeoutInterval =
+  sendOwnedMessage nsurlRequest initWithURL_cachePolicy_timeoutIntervalSelector (toNSURL url) cachePolicy timeoutInterval
 
 -- | valueForHTTPHeaderField:
 --
@@ -190,9 +183,8 @@ initWithURL_cachePolicy_timeoutInterval nsurlRequest  url cachePolicy timeoutInt
 --
 -- ObjC selector: @- valueForHTTPHeaderField:@
 valueForHTTPHeaderField :: (IsNSURLRequest nsurlRequest, IsNSString field) => nsurlRequest -> field -> IO (Id NSString)
-valueForHTTPHeaderField nsurlRequest  field =
-  withObjCPtr field $ \raw_field ->
-      sendMsg nsurlRequest (mkSelector "valueForHTTPHeaderField:") (retPtr retVoid) [argPtr (castPtr raw_field :: Ptr ())] >>= retainedObject . castPtr
+valueForHTTPHeaderField nsurlRequest field =
+  sendMessage nsurlRequest valueForHTTPHeaderFieldSelector (toNSString field)
 
 -- | supportsSecureCoding
 --
@@ -205,7 +197,7 @@ supportsSecureCoding :: IO Bool
 supportsSecureCoding  =
   do
     cls' <- getRequiredClass "NSURLRequest"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsSecureCoding") retCULong []
+    sendClassMessage cls' supportsSecureCodingSelector
 
 -- | Returns the URL of the receiver.
 --
@@ -213,8 +205,8 @@ supportsSecureCoding  =
 --
 -- ObjC selector: @- URL@
 url :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSURL)
-url nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsurlRequest =
+  sendMessage nsurlRequest urlSelector
 
 -- | Returns the cache policy of the receiver.
 --
@@ -222,8 +214,8 @@ url nsurlRequest  =
 --
 -- ObjC selector: @- cachePolicy@
 cachePolicy :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO NSURLRequestCachePolicy
-cachePolicy nsurlRequest  =
-    fmap (coerce :: CULong -> NSURLRequestCachePolicy) $ sendMsg nsurlRequest (mkSelector "cachePolicy") retCULong []
+cachePolicy nsurlRequest =
+  sendMessage nsurlRequest cachePolicySelector
 
 -- | Returns the timeout interval of the receiver.
 --
@@ -233,8 +225,8 @@ cachePolicy nsurlRequest  =
 --
 -- ObjC selector: @- timeoutInterval@
 timeoutInterval :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO CDouble
-timeoutInterval nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "timeoutInterval") retCDouble []
+timeoutInterval nsurlRequest =
+  sendMessage nsurlRequest timeoutIntervalSelector
 
 -- | The main document URL associated with this load.
 --
@@ -244,8 +236,8 @@ timeoutInterval nsurlRequest  =
 --
 -- ObjC selector: @- mainDocumentURL@
 mainDocumentURL :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSURL)
-mainDocumentURL nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "mainDocumentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainDocumentURL nsurlRequest =
+  sendMessage nsurlRequest mainDocumentURLSelector
 
 -- | Returns the NSURLRequestNetworkServiceType associated with this request.
 --
@@ -255,8 +247,8 @@ mainDocumentURL nsurlRequest  =
 --
 -- ObjC selector: @- networkServiceType@
 networkServiceType :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO NSURLRequestNetworkServiceType
-networkServiceType nsurlRequest  =
-    fmap (coerce :: CULong -> NSURLRequestNetworkServiceType) $ sendMsg nsurlRequest (mkSelector "networkServiceType") retCULong []
+networkServiceType nsurlRequest =
+  sendMessage nsurlRequest networkServiceTypeSelector
 
 -- | returns whether a connection created with this request is allowed to use the built in cellular radios (if present).
 --
@@ -264,8 +256,8 @@ networkServiceType nsurlRequest  =
 --
 -- ObjC selector: @- allowsCellularAccess@
 allowsCellularAccess :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-allowsCellularAccess nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "allowsCellularAccess") retCULong []
+allowsCellularAccess nsurlRequest =
+  sendMessage nsurlRequest allowsCellularAccessSelector
 
 -- | returns whether a connection created with this request is allowed to use network interfaces which have been marked as expensive.
 --
@@ -273,8 +265,8 @@ allowsCellularAccess nsurlRequest  =
 --
 -- ObjC selector: @- allowsExpensiveNetworkAccess@
 allowsExpensiveNetworkAccess :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-allowsExpensiveNetworkAccess nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "allowsExpensiveNetworkAccess") retCULong []
+allowsExpensiveNetworkAccess nsurlRequest =
+  sendMessage nsurlRequest allowsExpensiveNetworkAccessSelector
 
 -- | returns whether a connection created with this request is allowed to use network interfaces which have been marked as constrained.
 --
@@ -282,8 +274,8 @@ allowsExpensiveNetworkAccess nsurlRequest  =
 --
 -- ObjC selector: @- allowsConstrainedNetworkAccess@
 allowsConstrainedNetworkAccess :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-allowsConstrainedNetworkAccess nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "allowsConstrainedNetworkAccess") retCULong []
+allowsConstrainedNetworkAccess nsurlRequest =
+  sendMessage nsurlRequest allowsConstrainedNetworkAccessSelector
 
 -- | returns whether a connection created with this request is allowed to use network interfaces which have been marked as ultra constrained.
 --
@@ -291,8 +283,8 @@ allowsConstrainedNetworkAccess nsurlRequest  =
 --
 -- ObjC selector: @- allowsUltraConstrainedNetworkAccess@
 allowsUltraConstrainedNetworkAccess :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-allowsUltraConstrainedNetworkAccess nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "allowsUltraConstrainedNetworkAccess") retCULong []
+allowsUltraConstrainedNetworkAccess nsurlRequest =
+  sendMessage nsurlRequest allowsUltraConstrainedNetworkAccessSelector
 
 -- | returns whether we assume that server supports HTTP/3. Enables QUIC racing without HTTP/3 service discovery.
 --
@@ -300,8 +292,8 @@ allowsUltraConstrainedNetworkAccess nsurlRequest  =
 --
 -- ObjC selector: @- assumesHTTP3Capable@
 assumesHTTP3Capable :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-assumesHTTP3Capable nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "assumesHTTP3Capable") retCULong []
+assumesHTTP3Capable nsurlRequest =
+  sendMessage nsurlRequest assumesHTTP3CapableSelector
 
 -- | Returns the NSURLRequestAttribution associated with this request.
 --
@@ -311,8 +303,8 @@ assumesHTTP3Capable nsurlRequest  =
 --
 -- ObjC selector: @- attribution@
 attribution :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO NSURLRequestAttribution
-attribution nsurlRequest  =
-    fmap (coerce :: CULong -> NSURLRequestAttribution) $ sendMsg nsurlRequest (mkSelector "attribution") retCULong []
+attribution nsurlRequest =
+  sendMessage nsurlRequest attributionSelector
 
 -- | sets whether a request is required to do DNSSEC validation during DNS lookup.
 --
@@ -320,8 +312,8 @@ attribution nsurlRequest  =
 --
 -- ObjC selector: @- requiresDNSSECValidation@
 requiresDNSSECValidation :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-requiresDNSSECValidation nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "requiresDNSSECValidation") retCULong []
+requiresDNSSECValidation nsurlRequest =
+  sendMessage nsurlRequest requiresDNSSECValidationSelector
 
 -- | Allows storing and usage of DNS answers, potentially beyond TTL expiry, in a persistent per-process cache. This should only be set for hostnames whose resolutions are not expected to change across networks.
 --
@@ -329,13 +321,13 @@ requiresDNSSECValidation nsurlRequest  =
 --
 -- ObjC selector: @- allowsPersistentDNS@
 allowsPersistentDNS :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-allowsPersistentDNS nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "allowsPersistentDNS") retCULong []
+allowsPersistentDNS nsurlRequest =
+  sendMessage nsurlRequest allowsPersistentDNSSelector
 
 -- | @- cookiePartitionIdentifier@
 cookiePartitionIdentifier :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSString)
-cookiePartitionIdentifier nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "cookiePartitionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+cookiePartitionIdentifier nsurlRequest =
+  sendMessage nsurlRequest cookiePartitionIdentifierSelector
 
 -- | Returns the HTTP request method of the receiver.
 --
@@ -343,8 +335,8 @@ cookiePartitionIdentifier nsurlRequest  =
 --
 -- ObjC selector: @- HTTPMethod@
 httpMethod :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSString)
-httpMethod nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "HTTPMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpMethod nsurlRequest =
+  sendMessage nsurlRequest httpMethodSelector
 
 -- | Returns a dictionary containing all the HTTP header fields    of the receiver.
 --
@@ -352,8 +344,8 @@ httpMethod nsurlRequest  =
 --
 -- ObjC selector: @- allHTTPHeaderFields@
 allHTTPHeaderFields :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSDictionary)
-allHTTPHeaderFields nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "allHTTPHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+allHTTPHeaderFields nsurlRequest =
+  sendMessage nsurlRequest allHTTPHeaderFieldsSelector
 
 -- | Returns the request body data of the receiver.
 --
@@ -363,8 +355,8 @@ allHTTPHeaderFields nsurlRequest  =
 --
 -- ObjC selector: @- HTTPBody@
 httpBody :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSData)
-httpBody nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "HTTPBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpBody nsurlRequest =
+  sendMessage nsurlRequest httpBodySelector
 
 -- | Returns the request body stream of the receiver    if any has been set
 --
@@ -374,8 +366,8 @@ httpBody nsurlRequest  =
 --
 -- ObjC selector: @- HTTPBodyStream@
 httpBodyStream :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO (Id NSInputStream)
-httpBodyStream nsurlRequest  =
-    sendMsg nsurlRequest (mkSelector "HTTPBodyStream") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpBodyStream nsurlRequest =
+  sendMessage nsurlRequest httpBodyStreamSelector
 
 -- | Determine whether default cookie handling will happen for     this request.
 --
@@ -385,8 +377,8 @@ httpBodyStream nsurlRequest  =
 --
 -- ObjC selector: @- HTTPShouldHandleCookies@
 httpShouldHandleCookies :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-httpShouldHandleCookies nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "HTTPShouldHandleCookies") retCULong []
+httpShouldHandleCookies nsurlRequest =
+  sendMessage nsurlRequest httpShouldHandleCookiesSelector
 
 -- | Reports whether the receiver is not expected to wait for the previous response before transmitting.
 --
@@ -394,114 +386,114 @@ httpShouldHandleCookies nsurlRequest  =
 --
 -- ObjC selector: @- HTTPShouldUsePipelining@
 httpShouldUsePipelining :: IsNSURLRequest nsurlRequest => nsurlRequest -> IO Bool
-httpShouldUsePipelining nsurlRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlRequest (mkSelector "HTTPShouldUsePipelining") retCULong []
+httpShouldUsePipelining nsurlRequest =
+  sendMessage nsurlRequest httpShouldUsePipeliningSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestWithURL:@
-requestWithURLSelector :: Selector
+requestWithURLSelector :: Selector '[Id NSURL] (Id NSURLRequest)
 requestWithURLSelector = mkSelector "requestWithURL:"
 
 -- | @Selector@ for @requestWithURL:cachePolicy:timeoutInterval:@
-requestWithURL_cachePolicy_timeoutIntervalSelector :: Selector
+requestWithURL_cachePolicy_timeoutIntervalSelector :: Selector '[Id NSURL, NSURLRequestCachePolicy, CDouble] (Id NSURLRequest)
 requestWithURL_cachePolicy_timeoutIntervalSelector = mkSelector "requestWithURL:cachePolicy:timeoutInterval:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id NSURLRequest)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithURL:cachePolicy:timeoutInterval:@
-initWithURL_cachePolicy_timeoutIntervalSelector :: Selector
+initWithURL_cachePolicy_timeoutIntervalSelector :: Selector '[Id NSURL, NSURLRequestCachePolicy, CDouble] (Id NSURLRequest)
 initWithURL_cachePolicy_timeoutIntervalSelector = mkSelector "initWithURL:cachePolicy:timeoutInterval:"
 
 -- | @Selector@ for @valueForHTTPHeaderField:@
-valueForHTTPHeaderFieldSelector :: Selector
+valueForHTTPHeaderFieldSelector :: Selector '[Id NSString] (Id NSString)
 valueForHTTPHeaderFieldSelector = mkSelector "valueForHTTPHeaderField:"
 
 -- | @Selector@ for @supportsSecureCoding@
-supportsSecureCodingSelector :: Selector
+supportsSecureCodingSelector :: Selector '[] Bool
 supportsSecureCodingSelector = mkSelector "supportsSecureCoding"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @cachePolicy@
-cachePolicySelector :: Selector
+cachePolicySelector :: Selector '[] NSURLRequestCachePolicy
 cachePolicySelector = mkSelector "cachePolicy"
 
 -- | @Selector@ for @timeoutInterval@
-timeoutIntervalSelector :: Selector
+timeoutIntervalSelector :: Selector '[] CDouble
 timeoutIntervalSelector = mkSelector "timeoutInterval"
 
 -- | @Selector@ for @mainDocumentURL@
-mainDocumentURLSelector :: Selector
+mainDocumentURLSelector :: Selector '[] (Id NSURL)
 mainDocumentURLSelector = mkSelector "mainDocumentURL"
 
 -- | @Selector@ for @networkServiceType@
-networkServiceTypeSelector :: Selector
+networkServiceTypeSelector :: Selector '[] NSURLRequestNetworkServiceType
 networkServiceTypeSelector = mkSelector "networkServiceType"
 
 -- | @Selector@ for @allowsCellularAccess@
-allowsCellularAccessSelector :: Selector
+allowsCellularAccessSelector :: Selector '[] Bool
 allowsCellularAccessSelector = mkSelector "allowsCellularAccess"
 
 -- | @Selector@ for @allowsExpensiveNetworkAccess@
-allowsExpensiveNetworkAccessSelector :: Selector
+allowsExpensiveNetworkAccessSelector :: Selector '[] Bool
 allowsExpensiveNetworkAccessSelector = mkSelector "allowsExpensiveNetworkAccess"
 
 -- | @Selector@ for @allowsConstrainedNetworkAccess@
-allowsConstrainedNetworkAccessSelector :: Selector
+allowsConstrainedNetworkAccessSelector :: Selector '[] Bool
 allowsConstrainedNetworkAccessSelector = mkSelector "allowsConstrainedNetworkAccess"
 
 -- | @Selector@ for @allowsUltraConstrainedNetworkAccess@
-allowsUltraConstrainedNetworkAccessSelector :: Selector
+allowsUltraConstrainedNetworkAccessSelector :: Selector '[] Bool
 allowsUltraConstrainedNetworkAccessSelector = mkSelector "allowsUltraConstrainedNetworkAccess"
 
 -- | @Selector@ for @assumesHTTP3Capable@
-assumesHTTP3CapableSelector :: Selector
+assumesHTTP3CapableSelector :: Selector '[] Bool
 assumesHTTP3CapableSelector = mkSelector "assumesHTTP3Capable"
 
 -- | @Selector@ for @attribution@
-attributionSelector :: Selector
+attributionSelector :: Selector '[] NSURLRequestAttribution
 attributionSelector = mkSelector "attribution"
 
 -- | @Selector@ for @requiresDNSSECValidation@
-requiresDNSSECValidationSelector :: Selector
+requiresDNSSECValidationSelector :: Selector '[] Bool
 requiresDNSSECValidationSelector = mkSelector "requiresDNSSECValidation"
 
 -- | @Selector@ for @allowsPersistentDNS@
-allowsPersistentDNSSelector :: Selector
+allowsPersistentDNSSelector :: Selector '[] Bool
 allowsPersistentDNSSelector = mkSelector "allowsPersistentDNS"
 
 -- | @Selector@ for @cookiePartitionIdentifier@
-cookiePartitionIdentifierSelector :: Selector
+cookiePartitionIdentifierSelector :: Selector '[] (Id NSString)
 cookiePartitionIdentifierSelector = mkSelector "cookiePartitionIdentifier"
 
 -- | @Selector@ for @HTTPMethod@
-httpMethodSelector :: Selector
+httpMethodSelector :: Selector '[] (Id NSString)
 httpMethodSelector = mkSelector "HTTPMethod"
 
 -- | @Selector@ for @allHTTPHeaderFields@
-allHTTPHeaderFieldsSelector :: Selector
+allHTTPHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 allHTTPHeaderFieldsSelector = mkSelector "allHTTPHeaderFields"
 
 -- | @Selector@ for @HTTPBody@
-httpBodySelector :: Selector
+httpBodySelector :: Selector '[] (Id NSData)
 httpBodySelector = mkSelector "HTTPBody"
 
 -- | @Selector@ for @HTTPBodyStream@
-httpBodyStreamSelector :: Selector
+httpBodyStreamSelector :: Selector '[] (Id NSInputStream)
 httpBodyStreamSelector = mkSelector "HTTPBodyStream"
 
 -- | @Selector@ for @HTTPShouldHandleCookies@
-httpShouldHandleCookiesSelector :: Selector
+httpShouldHandleCookiesSelector :: Selector '[] Bool
 httpShouldHandleCookiesSelector = mkSelector "HTTPShouldHandleCookies"
 
 -- | @Selector@ for @HTTPShouldUsePipelining@
-httpShouldUsePipeliningSelector :: Selector
+httpShouldUsePipeliningSelector :: Selector '[] Bool
 httpShouldUsePipeliningSelector = mkSelector "HTTPShouldUsePipelining"
 

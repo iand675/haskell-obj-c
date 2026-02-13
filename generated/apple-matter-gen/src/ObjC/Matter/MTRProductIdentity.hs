@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Matter.MTRProductIdentity
   , vendorID
   , productID
   , initSelector
-  , newSelector
   , initWithVendorID_productIDSelector
-  , vendorIDSelector
+  , newSelector
   , productIDSelector
+  , vendorIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,54 +36,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRProductIdentity mtrProductIdentity => mtrProductIdentity -> IO (Id MTRProductIdentity)
-init_ mtrProductIdentity  =
-    sendMsg mtrProductIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrProductIdentity =
+  sendOwnedMessage mtrProductIdentity initSelector
 
 -- | @+ new@
 new :: IO (Id MTRProductIdentity)
 new  =
   do
     cls' <- getRequiredClass "MTRProductIdentity"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithVendorID:productID:@
 initWithVendorID_productID :: (IsMTRProductIdentity mtrProductIdentity, IsNSNumber vendorID, IsNSNumber productID) => mtrProductIdentity -> vendorID -> productID -> IO (Id MTRProductIdentity)
-initWithVendorID_productID mtrProductIdentity  vendorID productID =
-  withObjCPtr vendorID $ \raw_vendorID ->
-    withObjCPtr productID $ \raw_productID ->
-        sendMsg mtrProductIdentity (mkSelector "initWithVendorID:productID:") (retPtr retVoid) [argPtr (castPtr raw_vendorID :: Ptr ()), argPtr (castPtr raw_productID :: Ptr ())] >>= ownedObject . castPtr
+initWithVendorID_productID mtrProductIdentity vendorID productID =
+  sendOwnedMessage mtrProductIdentity initWithVendorID_productIDSelector (toNSNumber vendorID) (toNSNumber productID)
 
 -- | @- vendorID@
 vendorID :: IsMTRProductIdentity mtrProductIdentity => mtrProductIdentity -> IO (Id NSNumber)
-vendorID mtrProductIdentity  =
-    sendMsg mtrProductIdentity (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrProductIdentity =
+  sendMessage mtrProductIdentity vendorIDSelector
 
 -- | @- productID@
 productID :: IsMTRProductIdentity mtrProductIdentity => mtrProductIdentity -> IO (Id NSNumber)
-productID mtrProductIdentity  =
-    sendMsg mtrProductIdentity (mkSelector "productID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productID mtrProductIdentity =
+  sendMessage mtrProductIdentity productIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRProductIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRProductIdentity)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithVendorID:productID:@
-initWithVendorID_productIDSelector :: Selector
+initWithVendorID_productIDSelector :: Selector '[Id NSNumber, Id NSNumber] (Id MTRProductIdentity)
 initWithVendorID_productIDSelector = mkSelector "initWithVendorID:productID:"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @productID@
-productIDSelector :: Selector
+productIDSelector :: Selector '[] (Id NSNumber)
 productIDSelector = mkSelector "productID"
 

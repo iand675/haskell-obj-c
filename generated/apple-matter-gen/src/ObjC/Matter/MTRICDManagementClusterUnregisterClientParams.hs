@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRICDManagementClusterUnregisterClientParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , checkInNodeIDSelector
+  , serverSideProcessingTimeoutSelector
   , setCheckInNodeIDSelector
-  , verificationKeySelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
   , setVerificationKeySelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , verificationKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- checkInNodeID@
 checkInNodeID :: IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams => mtricdManagementClusterUnregisterClientParams -> IO (Id NSNumber)
-checkInNodeID mtricdManagementClusterUnregisterClientParams  =
-    sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "checkInNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+checkInNodeID mtricdManagementClusterUnregisterClientParams =
+  sendMessage mtricdManagementClusterUnregisterClientParams checkInNodeIDSelector
 
 -- | @- setCheckInNodeID:@
 setCheckInNodeID :: (IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams, IsNSNumber value) => mtricdManagementClusterUnregisterClientParams -> value -> IO ()
-setCheckInNodeID mtricdManagementClusterUnregisterClientParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "setCheckInNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCheckInNodeID mtricdManagementClusterUnregisterClientParams value =
+  sendMessage mtricdManagementClusterUnregisterClientParams setCheckInNodeIDSelector (toNSNumber value)
 
 -- | @- verificationKey@
 verificationKey :: IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams => mtricdManagementClusterUnregisterClientParams -> IO (Id NSData)
-verificationKey mtricdManagementClusterUnregisterClientParams  =
-    sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "verificationKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+verificationKey mtricdManagementClusterUnregisterClientParams =
+  sendMessage mtricdManagementClusterUnregisterClientParams verificationKeySelector
 
 -- | @- setVerificationKey:@
 setVerificationKey :: (IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams, IsNSData value) => mtricdManagementClusterUnregisterClientParams -> value -> IO ()
-setVerificationKey mtricdManagementClusterUnregisterClientParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "setVerificationKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVerificationKey mtricdManagementClusterUnregisterClientParams value =
+  sendMessage mtricdManagementClusterUnregisterClientParams setVerificationKeySelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setVerificationKey mtricdManagementClusterUnregisterClientParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams => mtricdManagementClusterUnregisterClientParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams  =
-    sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams =
+  sendMessage mtricdManagementClusterUnregisterClientParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams, IsNSNumber value) => mtricdManagementClusterUnregisterClientParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams value =
+  sendMessage mtricdManagementClusterUnregisterClientParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtricdManagementClusterUnregisterClientParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams => mtricdManagementClusterUnregisterClientParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtricdManagementClusterUnregisterClientParams  =
-    sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtricdManagementClusterUnregisterClientParams =
+  sendMessage mtricdManagementClusterUnregisterClientParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtricdManagementClusterUnregisterClientParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRICDManagementClusterUnregisterClientParams mtricdManagementClusterUnregisterClientParams, IsNSNumber value) => mtricdManagementClusterUnregisterClientParams -> value -> IO ()
-setServerSideProcessingTimeout mtricdManagementClusterUnregisterClientParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterUnregisterClientParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtricdManagementClusterUnregisterClientParams value =
+  sendMessage mtricdManagementClusterUnregisterClientParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkInNodeID@
-checkInNodeIDSelector :: Selector
+checkInNodeIDSelector :: Selector '[] (Id NSNumber)
 checkInNodeIDSelector = mkSelector "checkInNodeID"
 
 -- | @Selector@ for @setCheckInNodeID:@
-setCheckInNodeIDSelector :: Selector
+setCheckInNodeIDSelector :: Selector '[Id NSNumber] ()
 setCheckInNodeIDSelector = mkSelector "setCheckInNodeID:"
 
 -- | @Selector@ for @verificationKey@
-verificationKeySelector :: Selector
+verificationKeySelector :: Selector '[] (Id NSData)
 verificationKeySelector = mkSelector "verificationKey"
 
 -- | @Selector@ for @setVerificationKey:@
-setVerificationKeySelector :: Selector
+setVerificationKeySelector :: Selector '[Id NSData] ()
 setVerificationKeySelector = mkSelector "setVerificationKey:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

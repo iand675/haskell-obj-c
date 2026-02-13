@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.SharedWithYouCore.SWUpdateCollaborationParticipantsAction
   , collaborationMetadata
   , addedIdentities
   , removedIdentities
+  , addedIdentitiesSelector
+  , collaborationMetadataSelector
   , initSelector
   , newSelector
-  , collaborationMetadataSelector
-  , addedIdentitiesSelector
   , removedIdentitiesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,52 +34,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSWUpdateCollaborationParticipantsAction swUpdateCollaborationParticipantsAction => swUpdateCollaborationParticipantsAction -> IO (Id SWUpdateCollaborationParticipantsAction)
-init_ swUpdateCollaborationParticipantsAction  =
-    sendMsg swUpdateCollaborationParticipantsAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swUpdateCollaborationParticipantsAction =
+  sendOwnedMessage swUpdateCollaborationParticipantsAction initSelector
 
 -- | @+ new@
 new :: IO (Id SWUpdateCollaborationParticipantsAction)
 new  =
   do
     cls' <- getRequiredClass "SWUpdateCollaborationParticipantsAction"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- collaborationMetadata@
 collaborationMetadata :: IsSWUpdateCollaborationParticipantsAction swUpdateCollaborationParticipantsAction => swUpdateCollaborationParticipantsAction -> IO (Id SWCollaborationMetadata)
-collaborationMetadata swUpdateCollaborationParticipantsAction  =
-    sendMsg swUpdateCollaborationParticipantsAction (mkSelector "collaborationMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+collaborationMetadata swUpdateCollaborationParticipantsAction =
+  sendMessage swUpdateCollaborationParticipantsAction collaborationMetadataSelector
 
 -- | @- addedIdentities@
 addedIdentities :: IsSWUpdateCollaborationParticipantsAction swUpdateCollaborationParticipantsAction => swUpdateCollaborationParticipantsAction -> IO (Id NSArray)
-addedIdentities swUpdateCollaborationParticipantsAction  =
-    sendMsg swUpdateCollaborationParticipantsAction (mkSelector "addedIdentities") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedIdentities swUpdateCollaborationParticipantsAction =
+  sendMessage swUpdateCollaborationParticipantsAction addedIdentitiesSelector
 
 -- | @- removedIdentities@
 removedIdentities :: IsSWUpdateCollaborationParticipantsAction swUpdateCollaborationParticipantsAction => swUpdateCollaborationParticipantsAction -> IO (Id NSArray)
-removedIdentities swUpdateCollaborationParticipantsAction  =
-    sendMsg swUpdateCollaborationParticipantsAction (mkSelector "removedIdentities") (retPtr retVoid) [] >>= retainedObject . castPtr
+removedIdentities swUpdateCollaborationParticipantsAction =
+  sendMessage swUpdateCollaborationParticipantsAction removedIdentitiesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWUpdateCollaborationParticipantsAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWUpdateCollaborationParticipantsAction)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @collaborationMetadata@
-collaborationMetadataSelector :: Selector
+collaborationMetadataSelector :: Selector '[] (Id SWCollaborationMetadata)
 collaborationMetadataSelector = mkSelector "collaborationMetadata"
 
 -- | @Selector@ for @addedIdentities@
-addedIdentitiesSelector :: Selector
+addedIdentitiesSelector :: Selector '[] (Id NSArray)
 addedIdentitiesSelector = mkSelector "addedIdentities"
 
 -- | @Selector@ for @removedIdentities@
-removedIdentitiesSelector :: Selector
+removedIdentitiesSelector :: Selector '[] (Id NSArray)
 removedIdentitiesSelector = mkSelector "removedIdentities"
 

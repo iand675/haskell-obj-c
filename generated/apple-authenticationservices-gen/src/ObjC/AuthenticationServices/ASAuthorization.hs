@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASAuthorization
   , init_
   , provider
   , credential
-  , newSelector
-  , initSelector
-  , providerSelector
   , credentialSelector
+  , initSelector
+  , newSelector
+  , providerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,44 +35,44 @@ new :: IO (Id ASAuthorization)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorization"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorization asAuthorization => asAuthorization -> IO (Id ASAuthorization)
-init_ asAuthorization  =
-    sendMsg asAuthorization (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorization =
+  sendOwnedMessage asAuthorization initSelector
 
 -- | Provider which was used to generate this authorization response.
 --
 -- ObjC selector: @- provider@
 provider :: IsASAuthorization asAuthorization => asAuthorization -> IO RawId
-provider asAuthorization  =
-    fmap (RawId . castPtr) $ sendMsg asAuthorization (mkSelector "provider") (retPtr retVoid) []
+provider asAuthorization =
+  sendMessage asAuthorization providerSelector
 
 -- | The credential that was returned by the authorization provider. Authorization provider type should be used to determine how to introspect the credential.
 --
 -- ObjC selector: @- credential@
 credential :: IsASAuthorization asAuthorization => asAuthorization -> IO RawId
-credential asAuthorization  =
-    fmap (RawId . castPtr) $ sendMsg asAuthorization (mkSelector "credential") (retPtr retVoid) []
+credential asAuthorization =
+  sendMessage asAuthorization credentialSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorization)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorization)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @provider@
-providerSelector :: Selector
+providerSelector :: Selector '[] RawId
 providerSelector = mkSelector "provider"
 
 -- | @Selector@ for @credential@
-credentialSelector :: Selector
+credentialSelector :: Selector '[] RawId
 credentialSelector = mkSelector "credential"
 

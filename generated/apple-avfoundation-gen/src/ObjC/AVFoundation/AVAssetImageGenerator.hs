@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.AVFoundation.AVAssetImageGenerator
   , videoComposition
   , setVideoComposition
   , customVideoCompositor
-  , initSelector
-  , newSelector
-  , assetImageGeneratorWithAssetSelector
-  , initWithAssetSelector
-  , generateCGImagesAsynchronouslyForTimes_completionHandlerSelector
-  , cancelAllCGImageGenerationSelector
-  , assetSelector
-  , appliesPreferredTrackTransformSelector
-  , setAppliesPreferredTrackTransformSelector
   , apertureModeSelector
-  , setApertureModeSelector
-  , dynamicRangePolicySelector
-  , setDynamicRangePolicySelector
-  , videoCompositionSelector
-  , setVideoCompositionSelector
+  , appliesPreferredTrackTransformSelector
+  , assetImageGeneratorWithAssetSelector
+  , assetSelector
+  , cancelAllCGImageGenerationSelector
   , customVideoCompositorSelector
+  , dynamicRangePolicySelector
+  , generateCGImagesAsynchronouslyForTimes_completionHandlerSelector
+  , initSelector
+  , initWithAssetSelector
+  , newSelector
+  , setApertureModeSelector
+  , setAppliesPreferredTrackTransformSelector
+  , setDynamicRangePolicySelector
+  , setVideoCompositionSelector
+  , videoCompositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,15 +56,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id AVAssetImageGenerator)
-init_ avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetImageGenerator =
+  sendOwnedMessage avAssetImageGenerator initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetImageGenerator)
 new  =
   do
     cls' <- getRequiredClass "AVAssetImageGenerator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetImageGeneratorWithAsset:
 --
@@ -90,8 +87,7 @@ assetImageGeneratorWithAsset :: IsAVAsset asset => asset -> IO (Id AVAssetImageG
 assetImageGeneratorWithAsset asset =
   do
     cls' <- getRequiredClass "AVAssetImageGenerator"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "assetImageGeneratorWithAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetImageGeneratorWithAssetSelector (toAVAsset asset)
 
 -- | initWithAsset:
 --
@@ -111,9 +107,8 @@ assetImageGeneratorWithAsset asset =
 --
 -- ObjC selector: @- initWithAsset:@
 initWithAsset :: (IsAVAssetImageGenerator avAssetImageGenerator, IsAVAsset asset) => avAssetImageGenerator -> asset -> IO (Id AVAssetImageGenerator)
-initWithAsset avAssetImageGenerator  asset =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg avAssetImageGenerator (mkSelector "initWithAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= ownedObject . castPtr
+initWithAsset avAssetImageGenerator asset =
+  sendOwnedMessage avAssetImageGenerator initWithAssetSelector (toAVAsset asset)
 
 -- | generateCGImagesAsynchronouslyForTimes:completionHandler:
 --
@@ -127,9 +122,8 @@ initWithAsset avAssetImageGenerator  asset =
 --
 -- ObjC selector: @- generateCGImagesAsynchronouslyForTimes:completionHandler:@
 generateCGImagesAsynchronouslyForTimes_completionHandler :: (IsAVAssetImageGenerator avAssetImageGenerator, IsNSArray requestedTimes) => avAssetImageGenerator -> requestedTimes -> Ptr () -> IO ()
-generateCGImagesAsynchronouslyForTimes_completionHandler avAssetImageGenerator  requestedTimes handler =
-  withObjCPtr requestedTimes $ \raw_requestedTimes ->
-      sendMsg avAssetImageGenerator (mkSelector "generateCGImagesAsynchronouslyForTimes:completionHandler:") retVoid [argPtr (castPtr raw_requestedTimes :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+generateCGImagesAsynchronouslyForTimes_completionHandler avAssetImageGenerator requestedTimes handler =
+  sendMessage avAssetImageGenerator generateCGImagesAsynchronouslyForTimes_completionHandlerSelector (toNSArray requestedTimes) handler
 
 -- | cancelAllCGImageGeneration
 --
@@ -139,34 +133,33 @@ generateCGImagesAsynchronouslyForTimes_completionHandler avAssetImageGenerator  
 --
 -- ObjC selector: @- cancelAllCGImageGeneration@
 cancelAllCGImageGeneration :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO ()
-cancelAllCGImageGeneration avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "cancelAllCGImageGeneration") retVoid []
+cancelAllCGImageGeneration avAssetImageGenerator =
+  sendMessage avAssetImageGenerator cancelAllCGImageGenerationSelector
 
 -- | @- asset@
 asset :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id AVAsset)
-asset avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset avAssetImageGenerator =
+  sendMessage avAssetImageGenerator assetSelector
 
 -- | @- appliesPreferredTrackTransform@
 appliesPreferredTrackTransform :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO Bool
-appliesPreferredTrackTransform avAssetImageGenerator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetImageGenerator (mkSelector "appliesPreferredTrackTransform") retCULong []
+appliesPreferredTrackTransform avAssetImageGenerator =
+  sendMessage avAssetImageGenerator appliesPreferredTrackTransformSelector
 
 -- | @- setAppliesPreferredTrackTransform:@
 setAppliesPreferredTrackTransform :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> Bool -> IO ()
-setAppliesPreferredTrackTransform avAssetImageGenerator  value =
-    sendMsg avAssetImageGenerator (mkSelector "setAppliesPreferredTrackTransform:") retVoid [argCULong (if value then 1 else 0)]
+setAppliesPreferredTrackTransform avAssetImageGenerator value =
+  sendMessage avAssetImageGenerator setAppliesPreferredTrackTransformSelector value
 
 -- | @- apertureMode@
 apertureMode :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id NSString)
-apertureMode avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "apertureMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+apertureMode avAssetImageGenerator =
+  sendMessage avAssetImageGenerator apertureModeSelector
 
 -- | @- setApertureMode:@
 setApertureMode :: (IsAVAssetImageGenerator avAssetImageGenerator, IsNSString value) => avAssetImageGenerator -> value -> IO ()
-setApertureMode avAssetImageGenerator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetImageGenerator (mkSelector "setApertureMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApertureMode avAssetImageGenerator value =
+  sendMessage avAssetImageGenerator setApertureModeSelector (toNSString value)
 
 -- | dynamicRangePolicy
 --
@@ -176,8 +169,8 @@ setApertureMode avAssetImageGenerator  value =
 --
 -- ObjC selector: @- dynamicRangePolicy@
 dynamicRangePolicy :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id NSString)
-dynamicRangePolicy avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "dynamicRangePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+dynamicRangePolicy avAssetImageGenerator =
+  sendMessage avAssetImageGenerator dynamicRangePolicySelector
 
 -- | dynamicRangePolicy
 --
@@ -187,9 +180,8 @@ dynamicRangePolicy avAssetImageGenerator  =
 --
 -- ObjC selector: @- setDynamicRangePolicy:@
 setDynamicRangePolicy :: (IsAVAssetImageGenerator avAssetImageGenerator, IsNSString value) => avAssetImageGenerator -> value -> IO ()
-setDynamicRangePolicy avAssetImageGenerator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetImageGenerator (mkSelector "setDynamicRangePolicy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDynamicRangePolicy avAssetImageGenerator value =
+  sendMessage avAssetImageGenerator setDynamicRangePolicySelector (toNSString value)
 
 -- | videoComposition
 --
@@ -199,8 +191,8 @@ setDynamicRangePolicy avAssetImageGenerator  value =
 --
 -- ObjC selector: @- videoComposition@
 videoComposition :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO (Id AVVideoComposition)
-videoComposition avAssetImageGenerator  =
-    sendMsg avAssetImageGenerator (mkSelector "videoComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoComposition avAssetImageGenerator =
+  sendMessage avAssetImageGenerator videoCompositionSelector
 
 -- | videoComposition
 --
@@ -210,80 +202,79 @@ videoComposition avAssetImageGenerator  =
 --
 -- ObjC selector: @- setVideoComposition:@
 setVideoComposition :: (IsAVAssetImageGenerator avAssetImageGenerator, IsAVVideoComposition value) => avAssetImageGenerator -> value -> IO ()
-setVideoComposition avAssetImageGenerator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetImageGenerator (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoComposition avAssetImageGenerator value =
+  sendMessage avAssetImageGenerator setVideoCompositionSelector (toAVVideoComposition value)
 
 -- | @- customVideoCompositor@
 customVideoCompositor :: IsAVAssetImageGenerator avAssetImageGenerator => avAssetImageGenerator -> IO RawId
-customVideoCompositor avAssetImageGenerator  =
-    fmap (RawId . castPtr) $ sendMsg avAssetImageGenerator (mkSelector "customVideoCompositor") (retPtr retVoid) []
+customVideoCompositor avAssetImageGenerator =
+  sendMessage avAssetImageGenerator customVideoCompositorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetImageGenerator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetImageGenerator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetImageGeneratorWithAsset:@
-assetImageGeneratorWithAssetSelector :: Selector
+assetImageGeneratorWithAssetSelector :: Selector '[Id AVAsset] (Id AVAssetImageGenerator)
 assetImageGeneratorWithAssetSelector = mkSelector "assetImageGeneratorWithAsset:"
 
 -- | @Selector@ for @initWithAsset:@
-initWithAssetSelector :: Selector
+initWithAssetSelector :: Selector '[Id AVAsset] (Id AVAssetImageGenerator)
 initWithAssetSelector = mkSelector "initWithAsset:"
 
 -- | @Selector@ for @generateCGImagesAsynchronouslyForTimes:completionHandler:@
-generateCGImagesAsynchronouslyForTimes_completionHandlerSelector :: Selector
+generateCGImagesAsynchronouslyForTimes_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 generateCGImagesAsynchronouslyForTimes_completionHandlerSelector = mkSelector "generateCGImagesAsynchronouslyForTimes:completionHandler:"
 
 -- | @Selector@ for @cancelAllCGImageGeneration@
-cancelAllCGImageGenerationSelector :: Selector
+cancelAllCGImageGenerationSelector :: Selector '[] ()
 cancelAllCGImageGenerationSelector = mkSelector "cancelAllCGImageGeneration"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @appliesPreferredTrackTransform@
-appliesPreferredTrackTransformSelector :: Selector
+appliesPreferredTrackTransformSelector :: Selector '[] Bool
 appliesPreferredTrackTransformSelector = mkSelector "appliesPreferredTrackTransform"
 
 -- | @Selector@ for @setAppliesPreferredTrackTransform:@
-setAppliesPreferredTrackTransformSelector :: Selector
+setAppliesPreferredTrackTransformSelector :: Selector '[Bool] ()
 setAppliesPreferredTrackTransformSelector = mkSelector "setAppliesPreferredTrackTransform:"
 
 -- | @Selector@ for @apertureMode@
-apertureModeSelector :: Selector
+apertureModeSelector :: Selector '[] (Id NSString)
 apertureModeSelector = mkSelector "apertureMode"
 
 -- | @Selector@ for @setApertureMode:@
-setApertureModeSelector :: Selector
+setApertureModeSelector :: Selector '[Id NSString] ()
 setApertureModeSelector = mkSelector "setApertureMode:"
 
 -- | @Selector@ for @dynamicRangePolicy@
-dynamicRangePolicySelector :: Selector
+dynamicRangePolicySelector :: Selector '[] (Id NSString)
 dynamicRangePolicySelector = mkSelector "dynamicRangePolicy"
 
 -- | @Selector@ for @setDynamicRangePolicy:@
-setDynamicRangePolicySelector :: Selector
+setDynamicRangePolicySelector :: Selector '[Id NSString] ()
 setDynamicRangePolicySelector = mkSelector "setDynamicRangePolicy:"
 
 -- | @Selector@ for @videoComposition@
-videoCompositionSelector :: Selector
+videoCompositionSelector :: Selector '[] (Id AVVideoComposition)
 videoCompositionSelector = mkSelector "videoComposition"
 
 -- | @Selector@ for @setVideoComposition:@
-setVideoCompositionSelector :: Selector
+setVideoCompositionSelector :: Selector '[Id AVVideoComposition] ()
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
 
 -- | @Selector@ for @customVideoCompositor@
-customVideoCompositorSelector :: Selector
+customVideoCompositorSelector :: Selector '[] RawId
 customVideoCompositorSelector = mkSelector "customVideoCompositor"
 

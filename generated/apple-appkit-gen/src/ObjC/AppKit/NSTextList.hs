@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.AppKit.NSTextList
   , setStartingItemNumber
   , ordered
   , includesTextListMarkers
-  , initWithMarkerFormat_options_startingItemNumberSelector
-  , initWithMarkerFormat_optionsSelector
+  , includesTextListMarkersSelector
   , initWithCoderSelector
+  , initWithMarkerFormat_optionsSelector
+  , initWithMarkerFormat_options_startingItemNumberSelector
+  , listOptionsSelector
   , markerForItemNumberSelector
   , markerFormatSelector
-  , listOptionsSelector
-  , startingItemNumberSelector
-  , setStartingItemNumberSelector
   , orderedSelector
-  , includesTextListMarkersSelector
+  , setStartingItemNumberSelector
+  , startingItemNumberSelector
 
   -- * Enum types
   , NSTextListOptions(NSTextListOptions)
@@ -34,15 +35,11 @@ module ObjC.AppKit.NSTextList
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,100 +49,97 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMarkerFormat:options:startingItemNumber:@
 initWithMarkerFormat_options_startingItemNumber :: (IsNSTextList nsTextList, IsNSString markerFormat) => nsTextList -> markerFormat -> NSTextListOptions -> CLong -> IO (Id NSTextList)
-initWithMarkerFormat_options_startingItemNumber nsTextList  markerFormat options startingItemNumber =
-  withObjCPtr markerFormat $ \raw_markerFormat ->
-      sendMsg nsTextList (mkSelector "initWithMarkerFormat:options:startingItemNumber:") (retPtr retVoid) [argPtr (castPtr raw_markerFormat :: Ptr ()), argCULong (coerce options), argCLong startingItemNumber] >>= ownedObject . castPtr
+initWithMarkerFormat_options_startingItemNumber nsTextList markerFormat options startingItemNumber =
+  sendOwnedMessage nsTextList initWithMarkerFormat_options_startingItemNumberSelector (toNSString markerFormat) options startingItemNumber
 
 -- | @- initWithMarkerFormat:options:@
 initWithMarkerFormat_options :: (IsNSTextList nsTextList, IsNSString markerFormat) => nsTextList -> markerFormat -> CULong -> IO (Id NSTextList)
-initWithMarkerFormat_options nsTextList  markerFormat options =
-  withObjCPtr markerFormat $ \raw_markerFormat ->
-      sendMsg nsTextList (mkSelector "initWithMarkerFormat:options:") (retPtr retVoid) [argPtr (castPtr raw_markerFormat :: Ptr ()), argCULong options] >>= ownedObject . castPtr
+initWithMarkerFormat_options nsTextList markerFormat options =
+  sendOwnedMessage nsTextList initWithMarkerFormat_optionsSelector (toNSString markerFormat) options
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextList nsTextList, IsNSCoder coder) => nsTextList -> coder -> IO (Id NSTextList)
-initWithCoder nsTextList  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextList (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextList coder =
+  sendOwnedMessage nsTextList initWithCoderSelector (toNSCoder coder)
 
 -- | @- markerForItemNumber:@
 markerForItemNumber :: IsNSTextList nsTextList => nsTextList -> CLong -> IO (Id NSString)
-markerForItemNumber nsTextList  itemNumber =
-    sendMsg nsTextList (mkSelector "markerForItemNumber:") (retPtr retVoid) [argCLong itemNumber] >>= retainedObject . castPtr
+markerForItemNumber nsTextList itemNumber =
+  sendMessage nsTextList markerForItemNumberSelector itemNumber
 
 -- | @- markerFormat@
 markerFormat :: IsNSTextList nsTextList => nsTextList -> IO (Id NSString)
-markerFormat nsTextList  =
-    sendMsg nsTextList (mkSelector "markerFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+markerFormat nsTextList =
+  sendMessage nsTextList markerFormatSelector
 
 -- | @- listOptions@
 listOptions :: IsNSTextList nsTextList => nsTextList -> IO NSTextListOptions
-listOptions nsTextList  =
-    fmap (coerce :: CULong -> NSTextListOptions) $ sendMsg nsTextList (mkSelector "listOptions") retCULong []
+listOptions nsTextList =
+  sendMessage nsTextList listOptionsSelector
 
 -- | @- startingItemNumber@
 startingItemNumber :: IsNSTextList nsTextList => nsTextList -> IO CLong
-startingItemNumber nsTextList  =
-    sendMsg nsTextList (mkSelector "startingItemNumber") retCLong []
+startingItemNumber nsTextList =
+  sendMessage nsTextList startingItemNumberSelector
 
 -- | @- setStartingItemNumber:@
 setStartingItemNumber :: IsNSTextList nsTextList => nsTextList -> CLong -> IO ()
-setStartingItemNumber nsTextList  value =
-    sendMsg nsTextList (mkSelector "setStartingItemNumber:") retVoid [argCLong value]
+setStartingItemNumber nsTextList value =
+  sendMessage nsTextList setStartingItemNumberSelector value
 
 -- | @- ordered@
 ordered :: IsNSTextList nsTextList => nsTextList -> IO Bool
-ordered nsTextList  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextList (mkSelector "ordered") retCULong []
+ordered nsTextList =
+  sendMessage nsTextList orderedSelector
 
 -- | @+ includesTextListMarkers@
 includesTextListMarkers :: IO Bool
 includesTextListMarkers  =
   do
     cls' <- getRequiredClass "NSTextList"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "includesTextListMarkers") retCULong []
+    sendClassMessage cls' includesTextListMarkersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMarkerFormat:options:startingItemNumber:@
-initWithMarkerFormat_options_startingItemNumberSelector :: Selector
+initWithMarkerFormat_options_startingItemNumberSelector :: Selector '[Id NSString, NSTextListOptions, CLong] (Id NSTextList)
 initWithMarkerFormat_options_startingItemNumberSelector = mkSelector "initWithMarkerFormat:options:startingItemNumber:"
 
 -- | @Selector@ for @initWithMarkerFormat:options:@
-initWithMarkerFormat_optionsSelector :: Selector
+initWithMarkerFormat_optionsSelector :: Selector '[Id NSString, CULong] (Id NSTextList)
 initWithMarkerFormat_optionsSelector = mkSelector "initWithMarkerFormat:options:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextList)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @markerForItemNumber:@
-markerForItemNumberSelector :: Selector
+markerForItemNumberSelector :: Selector '[CLong] (Id NSString)
 markerForItemNumberSelector = mkSelector "markerForItemNumber:"
 
 -- | @Selector@ for @markerFormat@
-markerFormatSelector :: Selector
+markerFormatSelector :: Selector '[] (Id NSString)
 markerFormatSelector = mkSelector "markerFormat"
 
 -- | @Selector@ for @listOptions@
-listOptionsSelector :: Selector
+listOptionsSelector :: Selector '[] NSTextListOptions
 listOptionsSelector = mkSelector "listOptions"
 
 -- | @Selector@ for @startingItemNumber@
-startingItemNumberSelector :: Selector
+startingItemNumberSelector :: Selector '[] CLong
 startingItemNumberSelector = mkSelector "startingItemNumber"
 
 -- | @Selector@ for @setStartingItemNumber:@
-setStartingItemNumberSelector :: Selector
+setStartingItemNumberSelector :: Selector '[CLong] ()
 setStartingItemNumberSelector = mkSelector "setStartingItemNumber:"
 
 -- | @Selector@ for @ordered@
-orderedSelector :: Selector
+orderedSelector :: Selector '[] Bool
 orderedSelector = mkSelector "ordered"
 
 -- | @Selector@ for @includesTextListMarkers@
-includesTextListMarkersSelector :: Selector
+includesTextListMarkersSelector :: Selector '[] Bool
 includesTextListMarkersSelector = mkSelector "includesTextListMarkers"
 

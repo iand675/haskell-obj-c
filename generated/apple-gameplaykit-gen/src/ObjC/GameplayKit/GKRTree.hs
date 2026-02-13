@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.GameplayKit.GKRTree
   , initWithMaxNumberOfChildren
   , queryReserve
   , setQueryReserve
-  , treeWithMaxNumberOfChildrenSelector
   , initWithMaxNumberOfChildrenSelector
   , queryReserveSelector
   , setQueryReserveSelector
+  , treeWithMaxNumberOfChildrenSelector
 
   -- * Enum types
   , GKRTreeSplitStrategy(GKRTreeSplitStrategy)
@@ -27,15 +28,11 @@ module ObjC.GameplayKit.GKRTree
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,44 +49,44 @@ treeWithMaxNumberOfChildren :: CULong -> IO (Id GKRTree)
 treeWithMaxNumberOfChildren maxNumberOfChildren =
   do
     cls' <- getRequiredClass "GKRTree"
-    sendClassMsg cls' (mkSelector "treeWithMaxNumberOfChildren:") (retPtr retVoid) [argCULong maxNumberOfChildren] >>= retainedObject . castPtr
+    sendClassMessage cls' treeWithMaxNumberOfChildrenSelector maxNumberOfChildren
 
 -- | @- initWithMaxNumberOfChildren:@
 initWithMaxNumberOfChildren :: IsGKRTree gkrTree => gkrTree -> CULong -> IO (Id GKRTree)
-initWithMaxNumberOfChildren gkrTree  maxNumberOfChildren =
-    sendMsg gkrTree (mkSelector "initWithMaxNumberOfChildren:") (retPtr retVoid) [argCULong maxNumberOfChildren] >>= ownedObject . castPtr
+initWithMaxNumberOfChildren gkrTree maxNumberOfChildren =
+  sendOwnedMessage gkrTree initWithMaxNumberOfChildrenSelector maxNumberOfChildren
 
 -- | Amount of array items to reserve before a query. This improves query performance at the cost of memory
 --
 -- ObjC selector: @- queryReserve@
 queryReserve :: IsGKRTree gkrTree => gkrTree -> IO CULong
-queryReserve gkrTree  =
-    sendMsg gkrTree (mkSelector "queryReserve") retCULong []
+queryReserve gkrTree =
+  sendMessage gkrTree queryReserveSelector
 
 -- | Amount of array items to reserve before a query. This improves query performance at the cost of memory
 --
 -- ObjC selector: @- setQueryReserve:@
 setQueryReserve :: IsGKRTree gkrTree => gkrTree -> CULong -> IO ()
-setQueryReserve gkrTree  value =
-    sendMsg gkrTree (mkSelector "setQueryReserve:") retVoid [argCULong value]
+setQueryReserve gkrTree value =
+  sendMessage gkrTree setQueryReserveSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @treeWithMaxNumberOfChildren:@
-treeWithMaxNumberOfChildrenSelector :: Selector
+treeWithMaxNumberOfChildrenSelector :: Selector '[CULong] (Id GKRTree)
 treeWithMaxNumberOfChildrenSelector = mkSelector "treeWithMaxNumberOfChildren:"
 
 -- | @Selector@ for @initWithMaxNumberOfChildren:@
-initWithMaxNumberOfChildrenSelector :: Selector
+initWithMaxNumberOfChildrenSelector :: Selector '[CULong] (Id GKRTree)
 initWithMaxNumberOfChildrenSelector = mkSelector "initWithMaxNumberOfChildren:"
 
 -- | @Selector@ for @queryReserve@
-queryReserveSelector :: Selector
+queryReserveSelector :: Selector '[] CULong
 queryReserveSelector = mkSelector "queryReserve"
 
 -- | @Selector@ for @setQueryReserve:@
-setQueryReserveSelector :: Selector
+setQueryReserveSelector :: Selector '[CULong] ()
 setQueryReserveSelector = mkSelector "setQueryReserve:"
 

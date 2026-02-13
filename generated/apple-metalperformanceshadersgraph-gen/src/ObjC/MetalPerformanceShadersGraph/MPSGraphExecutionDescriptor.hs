@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,16 +20,16 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutionDescriptor
   , setWaitUntilCompleted
   , compilationDescriptor
   , setCompilationDescriptor
-  , waitForEvent_valueSelector
-  , signalEvent_atExecutionEvent_valueSelector
-  , scheduledHandlerSelector
-  , setScheduledHandlerSelector
-  , completionHandlerSelector
-  , setCompletionHandlerSelector
-  , waitUntilCompletedSelector
-  , setWaitUntilCompletedSelector
   , compilationDescriptorSelector
+  , completionHandlerSelector
+  , scheduledHandlerSelector
   , setCompilationDescriptorSelector
+  , setCompletionHandlerSelector
+  , setScheduledHandlerSelector
+  , setWaitUntilCompletedSelector
+  , signalEvent_atExecutionEvent_valueSelector
+  , waitForEvent_valueSelector
+  , waitUntilCompletedSelector
 
   -- * Enum types
   , MPSGraphExecutionStage(MPSGraphExecutionStage)
@@ -36,15 +37,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphExecutionDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- waitForEvent:value:@
 waitForEvent_value :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> RawId -> CULong -> IO ()
-waitForEvent_value mpsGraphExecutionDescriptor  event value =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "waitForEvent:value:") retVoid [argPtr (castPtr (unRawId event) :: Ptr ()), argCULong value]
+waitForEvent_value mpsGraphExecutionDescriptor event value =
+  sendMessage mpsGraphExecutionDescriptor waitForEvent_valueSelector event value
 
 -- | Executable signals these shared events at execution stage and immediately proceeds.
 --
@@ -67,8 +64,8 @@ waitForEvent_value mpsGraphExecutionDescriptor  event value =
 --
 -- ObjC selector: @- signalEvent:atExecutionEvent:value:@
 signalEvent_atExecutionEvent_value :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> RawId -> MPSGraphExecutionStage -> CULong -> IO ()
-signalEvent_atExecutionEvent_value mpsGraphExecutionDescriptor  event executionStage value =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "signalEvent:atExecutionEvent:value:") retVoid [argPtr (castPtr (unRawId event) :: Ptr ()), argCULong (coerce executionStage), argCULong value]
+signalEvent_atExecutionEvent_value mpsGraphExecutionDescriptor event executionStage value =
+  sendMessage mpsGraphExecutionDescriptor signalEvent_atExecutionEvent_valueSelector event executionStage value
 
 -- | The handler that graph calls when it schedules the execution.
 --
@@ -76,8 +73,8 @@ signalEvent_atExecutionEvent_value mpsGraphExecutionDescriptor  event executionS
 --
 -- ObjC selector: @- scheduledHandler@
 scheduledHandler :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> IO (Ptr ())
-scheduledHandler mpsGraphExecutionDescriptor  =
-    fmap castPtr $ sendMsg mpsGraphExecutionDescriptor (mkSelector "scheduledHandler") (retPtr retVoid) []
+scheduledHandler mpsGraphExecutionDescriptor =
+  sendMessage mpsGraphExecutionDescriptor scheduledHandlerSelector
 
 -- | The handler that graph calls when it schedules the execution.
 --
@@ -85,8 +82,8 @@ scheduledHandler mpsGraphExecutionDescriptor  =
 --
 -- ObjC selector: @- setScheduledHandler:@
 setScheduledHandler :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> Ptr () -> IO ()
-setScheduledHandler mpsGraphExecutionDescriptor  value =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "setScheduledHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setScheduledHandler mpsGraphExecutionDescriptor value =
+  sendMessage mpsGraphExecutionDescriptor setScheduledHandlerSelector value
 
 -- | The handler that graph calls at the completion of the execution.
 --
@@ -94,8 +91,8 @@ setScheduledHandler mpsGraphExecutionDescriptor  value =
 --
 -- ObjC selector: @- completionHandler@
 completionHandler :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> IO (Ptr ())
-completionHandler mpsGraphExecutionDescriptor  =
-    fmap castPtr $ sendMsg mpsGraphExecutionDescriptor (mkSelector "completionHandler") (retPtr retVoid) []
+completionHandler mpsGraphExecutionDescriptor =
+  sendMessage mpsGraphExecutionDescriptor completionHandlerSelector
 
 -- | The handler that graph calls at the completion of the execution.
 --
@@ -103,8 +100,8 @@ completionHandler mpsGraphExecutionDescriptor  =
 --
 -- ObjC selector: @- setCompletionHandler:@
 setCompletionHandler :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> Ptr () -> IO ()
-setCompletionHandler mpsGraphExecutionDescriptor  value =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "setCompletionHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCompletionHandler mpsGraphExecutionDescriptor value =
+  sendMessage mpsGraphExecutionDescriptor setCompletionHandlerSelector value
 
 -- | The flag that blocks the execution call until the entire execution is complete.
 --
@@ -112,8 +109,8 @@ setCompletionHandler mpsGraphExecutionDescriptor  value =
 --
 -- ObjC selector: @- waitUntilCompleted@
 waitUntilCompleted :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> IO Bool
-waitUntilCompleted mpsGraphExecutionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphExecutionDescriptor (mkSelector "waitUntilCompleted") retCULong []
+waitUntilCompleted mpsGraphExecutionDescriptor =
+  sendMessage mpsGraphExecutionDescriptor waitUntilCompletedSelector
 
 -- | The flag that blocks the execution call until the entire execution is complete.
 --
@@ -121,8 +118,8 @@ waitUntilCompleted mpsGraphExecutionDescriptor  =
 --
 -- ObjC selector: @- setWaitUntilCompleted:@
 setWaitUntilCompleted :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> Bool -> IO ()
-setWaitUntilCompleted mpsGraphExecutionDescriptor  value =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "setWaitUntilCompleted:") retVoid [argCULong (if value then 1 else 0)]
+setWaitUntilCompleted mpsGraphExecutionDescriptor value =
+  sendMessage mpsGraphExecutionDescriptor setWaitUntilCompletedSelector value
 
 -- | The compilation descriptor for the graph.
 --
@@ -130,8 +127,8 @@ setWaitUntilCompleted mpsGraphExecutionDescriptor  value =
 --
 -- ObjC selector: @- compilationDescriptor@
 compilationDescriptor :: IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor => mpsGraphExecutionDescriptor -> IO (Id MPSGraphCompilationDescriptor)
-compilationDescriptor mpsGraphExecutionDescriptor  =
-    sendMsg mpsGraphExecutionDescriptor (mkSelector "compilationDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+compilationDescriptor mpsGraphExecutionDescriptor =
+  sendMessage mpsGraphExecutionDescriptor compilationDescriptorSelector
 
 -- | The compilation descriptor for the graph.
 --
@@ -139,51 +136,50 @@ compilationDescriptor mpsGraphExecutionDescriptor  =
 --
 -- ObjC selector: @- setCompilationDescriptor:@
 setCompilationDescriptor :: (IsMPSGraphExecutionDescriptor mpsGraphExecutionDescriptor, IsMPSGraphCompilationDescriptor value) => mpsGraphExecutionDescriptor -> value -> IO ()
-setCompilationDescriptor mpsGraphExecutionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphExecutionDescriptor (mkSelector "setCompilationDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompilationDescriptor mpsGraphExecutionDescriptor value =
+  sendMessage mpsGraphExecutionDescriptor setCompilationDescriptorSelector (toMPSGraphCompilationDescriptor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @waitForEvent:value:@
-waitForEvent_valueSelector :: Selector
+waitForEvent_valueSelector :: Selector '[RawId, CULong] ()
 waitForEvent_valueSelector = mkSelector "waitForEvent:value:"
 
 -- | @Selector@ for @signalEvent:atExecutionEvent:value:@
-signalEvent_atExecutionEvent_valueSelector :: Selector
+signalEvent_atExecutionEvent_valueSelector :: Selector '[RawId, MPSGraphExecutionStage, CULong] ()
 signalEvent_atExecutionEvent_valueSelector = mkSelector "signalEvent:atExecutionEvent:value:"
 
 -- | @Selector@ for @scheduledHandler@
-scheduledHandlerSelector :: Selector
+scheduledHandlerSelector :: Selector '[] (Ptr ())
 scheduledHandlerSelector = mkSelector "scheduledHandler"
 
 -- | @Selector@ for @setScheduledHandler:@
-setScheduledHandlerSelector :: Selector
+setScheduledHandlerSelector :: Selector '[Ptr ()] ()
 setScheduledHandlerSelector = mkSelector "setScheduledHandler:"
 
 -- | @Selector@ for @completionHandler@
-completionHandlerSelector :: Selector
+completionHandlerSelector :: Selector '[] (Ptr ())
 completionHandlerSelector = mkSelector "completionHandler"
 
 -- | @Selector@ for @setCompletionHandler:@
-setCompletionHandlerSelector :: Selector
+setCompletionHandlerSelector :: Selector '[Ptr ()] ()
 setCompletionHandlerSelector = mkSelector "setCompletionHandler:"
 
 -- | @Selector@ for @waitUntilCompleted@
-waitUntilCompletedSelector :: Selector
+waitUntilCompletedSelector :: Selector '[] Bool
 waitUntilCompletedSelector = mkSelector "waitUntilCompleted"
 
 -- | @Selector@ for @setWaitUntilCompleted:@
-setWaitUntilCompletedSelector :: Selector
+setWaitUntilCompletedSelector :: Selector '[Bool] ()
 setWaitUntilCompletedSelector = mkSelector "setWaitUntilCompleted:"
 
 -- | @Selector@ for @compilationDescriptor@
-compilationDescriptorSelector :: Selector
+compilationDescriptorSelector :: Selector '[] (Id MPSGraphCompilationDescriptor)
 compilationDescriptorSelector = mkSelector "compilationDescriptor"
 
 -- | @Selector@ for @setCompilationDescriptor:@
-setCompilationDescriptorSelector :: Selector
+setCompilationDescriptorSelector :: Selector '[Id MPSGraphCompilationDescriptor] ()
 setCompilationDescriptorSelector = mkSelector "setCompilationDescriptor:"
 

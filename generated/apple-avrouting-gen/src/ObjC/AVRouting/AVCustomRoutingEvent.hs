@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.AVRouting.AVCustomRoutingEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,25 +41,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reason@
 reason :: IsAVCustomRoutingEvent avCustomRoutingEvent => avCustomRoutingEvent -> IO AVCustomRoutingEventReason
-reason avCustomRoutingEvent  =
-    fmap (coerce :: CLong -> AVCustomRoutingEventReason) $ sendMsg avCustomRoutingEvent (mkSelector "reason") retCLong []
+reason avCustomRoutingEvent =
+  sendMessage avCustomRoutingEvent reasonSelector
 
 -- | A route for the event.
 --
 -- ObjC selector: @- route@
 route :: IsAVCustomRoutingEvent avCustomRoutingEvent => avCustomRoutingEvent -> IO (Id AVCustomDeviceRoute)
-route avCustomRoutingEvent  =
-    sendMsg avCustomRoutingEvent (mkSelector "route") (retPtr retVoid) [] >>= retainedObject . castPtr
+route avCustomRoutingEvent =
+  sendMessage avCustomRoutingEvent routeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] AVCustomRoutingEventReason
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @route@
-routeSelector :: Selector
+routeSelector :: Selector '[] (Id AVCustomDeviceRoute)
 routeSelector = mkSelector "route"
 

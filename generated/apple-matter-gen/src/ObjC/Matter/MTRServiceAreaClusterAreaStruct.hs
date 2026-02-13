@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRServiceAreaClusterAreaStruct
   , areaInfo
   , setAreaInfo
   , areaIDSelector
-  , setAreaIDSelector
-  , mapIDSelector
-  , setMapIDSelector
   , areaInfoSelector
+  , mapIDSelector
+  , setAreaIDSelector
   , setAreaInfoSelector
+  , setMapIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- areaID@
 areaID :: IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct => mtrServiceAreaClusterAreaStruct -> IO (Id NSNumber)
-areaID mtrServiceAreaClusterAreaStruct  =
-    sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "areaID") (retPtr retVoid) [] >>= retainedObject . castPtr
+areaID mtrServiceAreaClusterAreaStruct =
+  sendMessage mtrServiceAreaClusterAreaStruct areaIDSelector
 
 -- | @- setAreaID:@
 setAreaID :: (IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct, IsNSNumber value) => mtrServiceAreaClusterAreaStruct -> value -> IO ()
-setAreaID mtrServiceAreaClusterAreaStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "setAreaID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAreaID mtrServiceAreaClusterAreaStruct value =
+  sendMessage mtrServiceAreaClusterAreaStruct setAreaIDSelector (toNSNumber value)
 
 -- | @- mapID@
 mapID :: IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct => mtrServiceAreaClusterAreaStruct -> IO (Id NSNumber)
-mapID mtrServiceAreaClusterAreaStruct  =
-    sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "mapID") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapID mtrServiceAreaClusterAreaStruct =
+  sendMessage mtrServiceAreaClusterAreaStruct mapIDSelector
 
 -- | @- setMapID:@
 setMapID :: (IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct, IsNSNumber value) => mtrServiceAreaClusterAreaStruct -> value -> IO ()
-setMapID mtrServiceAreaClusterAreaStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "setMapID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMapID mtrServiceAreaClusterAreaStruct value =
+  sendMessage mtrServiceAreaClusterAreaStruct setMapIDSelector (toNSNumber value)
 
 -- | @- areaInfo@
 areaInfo :: IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct => mtrServiceAreaClusterAreaStruct -> IO (Id MTRServiceAreaClusterAreaInfoStruct)
-areaInfo mtrServiceAreaClusterAreaStruct  =
-    sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "areaInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+areaInfo mtrServiceAreaClusterAreaStruct =
+  sendMessage mtrServiceAreaClusterAreaStruct areaInfoSelector
 
 -- | @- setAreaInfo:@
 setAreaInfo :: (IsMTRServiceAreaClusterAreaStruct mtrServiceAreaClusterAreaStruct, IsMTRServiceAreaClusterAreaInfoStruct value) => mtrServiceAreaClusterAreaStruct -> value -> IO ()
-setAreaInfo mtrServiceAreaClusterAreaStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterAreaStruct (mkSelector "setAreaInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAreaInfo mtrServiceAreaClusterAreaStruct value =
+  sendMessage mtrServiceAreaClusterAreaStruct setAreaInfoSelector (toMTRServiceAreaClusterAreaInfoStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @areaID@
-areaIDSelector :: Selector
+areaIDSelector :: Selector '[] (Id NSNumber)
 areaIDSelector = mkSelector "areaID"
 
 -- | @Selector@ for @setAreaID:@
-setAreaIDSelector :: Selector
+setAreaIDSelector :: Selector '[Id NSNumber] ()
 setAreaIDSelector = mkSelector "setAreaID:"
 
 -- | @Selector@ for @mapID@
-mapIDSelector :: Selector
+mapIDSelector :: Selector '[] (Id NSNumber)
 mapIDSelector = mkSelector "mapID"
 
 -- | @Selector@ for @setMapID:@
-setMapIDSelector :: Selector
+setMapIDSelector :: Selector '[Id NSNumber] ()
 setMapIDSelector = mkSelector "setMapID:"
 
 -- | @Selector@ for @areaInfo@
-areaInfoSelector :: Selector
+areaInfoSelector :: Selector '[] (Id MTRServiceAreaClusterAreaInfoStruct)
 areaInfoSelector = mkSelector "areaInfo"
 
 -- | @Selector@ for @setAreaInfo:@
-setAreaInfoSelector :: Selector
+setAreaInfoSelector :: Selector '[Id MTRServiceAreaClusterAreaInfoStruct] ()
 setAreaInfoSelector = mkSelector "setAreaInfo:"
 

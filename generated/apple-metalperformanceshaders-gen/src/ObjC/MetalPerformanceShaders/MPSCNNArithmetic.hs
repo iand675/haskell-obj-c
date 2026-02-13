@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,36 +42,32 @@ module ObjC.MetalPerformanceShaders.MPSCNNArithmetic
   , setMinimumValue
   , maximumValue
   , setMaximumValue
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector
-  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector
-  , primaryScaleSelector
-  , setPrimaryScaleSelector
-  , secondaryScaleSelector
-  , setSecondaryScaleSelector
   , biasSelector
-  , setBiasSelector
-  , primaryStrideInFeatureChannelsSelector
-  , setPrimaryStrideInFeatureChannelsSelector
-  , secondaryStrideInFeatureChannelsSelector
-  , setSecondaryStrideInFeatureChannelsSelector
-  , minimumValueSelector
-  , setMinimumValueSelector
+  , encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector
+  , encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector
+  , initWithDeviceSelector
   , maximumValueSelector
+  , minimumValueSelector
+  , primaryScaleSelector
+  , primaryStrideInFeatureChannelsSelector
+  , secondaryScaleSelector
+  , secondaryStrideInFeatureChannelsSelector
+  , setBiasSelector
   , setMaximumValueSelector
+  , setMinimumValueSelector
+  , setPrimaryScaleSelector
+  , setPrimaryStrideInFeatureChannelsSelector
+  , setSecondaryScaleSelector
+  , setSecondaryStrideInFeatureChannelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> RawId -> IO (Id MPSCNNArithmetic)
-initWithDevice mpscnnArithmetic  device =
-    sendMsg mpscnnArithmetic (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnArithmetic device =
+  sendOwnedMessage mpscnnArithmetic initWithDeviceSelector device
 
 -- | Encode call that operates on a state for later consumption by a gradient kernel in training
 --
@@ -98,12 +95,8 @@ initWithDevice mpscnnArithmetic  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:@
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImage :: (IsMPSCNNArithmetic mpscnnArithmetic, IsMPSImage primaryImage, IsMPSImage secondaryImage, IsMPSCNNArithmeticGradientState destinationState, IsMPSImage destinationImage) => mpscnnArithmetic -> RawId -> primaryImage -> secondaryImage -> destinationState -> destinationImage -> IO ()
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImage mpscnnArithmetic  commandBuffer primaryImage secondaryImage destinationState destinationImage =
-  withObjCPtr primaryImage $ \raw_primaryImage ->
-    withObjCPtr secondaryImage $ \raw_secondaryImage ->
-      withObjCPtr destinationState $ \raw_destinationState ->
-        withObjCPtr destinationImage $ \raw_destinationImage ->
-            sendMsg mpscnnArithmetic (mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_primaryImage :: Ptr ()), argPtr (castPtr raw_secondaryImage :: Ptr ()), argPtr (castPtr raw_destinationState :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImage mpscnnArithmetic commandBuffer primaryImage secondaryImage destinationState destinationImage =
+  sendMessage mpscnnArithmetic encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector commandBuffer (toMPSImage primaryImage) (toMPSImage secondaryImage) (toMPSCNNArithmeticGradientState destinationState) (toMPSImage destinationImage)
 
 -- | Encode call that operates on a state for later consumption by a gradient kernel in training
 --
@@ -121,38 +114,38 @@ encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationIm
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:@
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages mpscnnArithmetic  commandBuffer primaryImages secondaryImages destinationStates destinationImages =
-    sendMsg mpscnnArithmetic (mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId primaryImages) :: Ptr ()), argPtr (castPtr (unRawId secondaryImages) :: Ptr ()), argPtr (castPtr (unRawId destinationStates) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImages mpscnnArithmetic commandBuffer primaryImages secondaryImages destinationStates destinationImages =
+  sendMessage mpscnnArithmetic encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector commandBuffer primaryImages secondaryImages destinationStates destinationImages
 
 -- | @- primaryScale@
 primaryScale :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
-primaryScale mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "primaryScale") retCFloat []
+primaryScale mpscnnArithmetic =
+  sendMessage mpscnnArithmetic primaryScaleSelector
 
 -- | @- setPrimaryScale:@
 setPrimaryScale :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CFloat -> IO ()
-setPrimaryScale mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setPrimaryScale:") retVoid [argCFloat value]
+setPrimaryScale mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setPrimaryScaleSelector value
 
 -- | @- secondaryScale@
 secondaryScale :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
-secondaryScale mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "secondaryScale") retCFloat []
+secondaryScale mpscnnArithmetic =
+  sendMessage mpscnnArithmetic secondaryScaleSelector
 
 -- | @- setSecondaryScale:@
 setSecondaryScale :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CFloat -> IO ()
-setSecondaryScale mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setSecondaryScale:") retVoid [argCFloat value]
+setSecondaryScale mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setSecondaryScaleSelector value
 
 -- | @- bias@
 bias :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
-bias mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "bias") retCFloat []
+bias mpscnnArithmetic =
+  sendMessage mpscnnArithmetic biasSelector
 
 -- | @- setBias:@
 setBias :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CFloat -> IO ()
-setBias mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setBiasSelector value
 
 -- | primaryStrideInPixels
 --
@@ -160,8 +153,8 @@ setBias mpscnnArithmetic  value =
 --
 -- ObjC selector: @- primaryStrideInFeatureChannels@
 primaryStrideInFeatureChannels :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CULong
-primaryStrideInFeatureChannels mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "primaryStrideInFeatureChannels") retCULong []
+primaryStrideInFeatureChannels mpscnnArithmetic =
+  sendMessage mpscnnArithmetic primaryStrideInFeatureChannelsSelector
 
 -- | primaryStrideInPixels
 --
@@ -169,8 +162,8 @@ primaryStrideInFeatureChannels mpscnnArithmetic  =
 --
 -- ObjC selector: @- setPrimaryStrideInFeatureChannels:@
 setPrimaryStrideInFeatureChannels :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CULong -> IO ()
-setPrimaryStrideInFeatureChannels mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setPrimaryStrideInFeatureChannels:") retVoid [argCULong value]
+setPrimaryStrideInFeatureChannels mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setPrimaryStrideInFeatureChannelsSelector value
 
 -- | secondaryStrideInPixels
 --
@@ -178,8 +171,8 @@ setPrimaryStrideInFeatureChannels mpscnnArithmetic  value =
 --
 -- ObjC selector: @- secondaryStrideInFeatureChannels@
 secondaryStrideInFeatureChannels :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CULong
-secondaryStrideInFeatureChannels mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "secondaryStrideInFeatureChannels") retCULong []
+secondaryStrideInFeatureChannels mpscnnArithmetic =
+  sendMessage mpscnnArithmetic secondaryStrideInFeatureChannelsSelector
 
 -- | secondaryStrideInPixels
 --
@@ -187,8 +180,8 @@ secondaryStrideInFeatureChannels mpscnnArithmetic  =
 --
 -- ObjC selector: @- setSecondaryStrideInFeatureChannels:@
 setSecondaryStrideInFeatureChannels :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CULong -> IO ()
-setSecondaryStrideInFeatureChannels mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setSecondaryStrideInFeatureChannels:") retVoid [argCULong value]
+setSecondaryStrideInFeatureChannels mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setSecondaryStrideInFeatureChannelsSelector value
 
 -- | minimumValue
 --
@@ -196,8 +189,8 @@ setSecondaryStrideInFeatureChannels mpscnnArithmetic  value =
 --
 -- ObjC selector: @- minimumValue@
 minimumValue :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
-minimumValue mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "minimumValue") retCFloat []
+minimumValue mpscnnArithmetic =
+  sendMessage mpscnnArithmetic minimumValueSelector
 
 -- | minimumValue
 --
@@ -205,8 +198,8 @@ minimumValue mpscnnArithmetic  =
 --
 -- ObjC selector: @- setMinimumValue:@
 setMinimumValue :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CFloat -> IO ()
-setMinimumValue mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setMinimumValue:") retVoid [argCFloat value]
+setMinimumValue mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setMinimumValueSelector value
 
 -- | maximumValue
 --
@@ -214,8 +207,8 @@ setMinimumValue mpscnnArithmetic  value =
 --
 -- ObjC selector: @- maximumValue@
 maximumValue :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> IO CFloat
-maximumValue mpscnnArithmetic  =
-    sendMsg mpscnnArithmetic (mkSelector "maximumValue") retCFloat []
+maximumValue mpscnnArithmetic =
+  sendMessage mpscnnArithmetic maximumValueSelector
 
 -- | maximumValue
 --
@@ -223,78 +216,78 @@ maximumValue mpscnnArithmetic  =
 --
 -- ObjC selector: @- setMaximumValue:@
 setMaximumValue :: IsMPSCNNArithmetic mpscnnArithmetic => mpscnnArithmetic -> CFloat -> IO ()
-setMaximumValue mpscnnArithmetic  value =
-    sendMsg mpscnnArithmetic (mkSelector "setMaximumValue:") retVoid [argCFloat value]
+setMaximumValue mpscnnArithmetic value =
+  sendMessage mpscnnArithmetic setMaximumValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNArithmetic)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:@
-encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector :: Selector
+encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage, Id MPSCNNArithmeticGradientState, Id MPSImage] ()
 encodeToCommandBuffer_primaryImage_secondaryImage_destinationState_destinationImageSelector = mkSelector "encodeToCommandBuffer:primaryImage:secondaryImage:destinationState:destinationImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:@
-encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_primaryImages_secondaryImages_destinationStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:primaryImages:secondaryImages:destinationStates:destinationImages:"
 
 -- | @Selector@ for @primaryScale@
-primaryScaleSelector :: Selector
+primaryScaleSelector :: Selector '[] CFloat
 primaryScaleSelector = mkSelector "primaryScale"
 
 -- | @Selector@ for @setPrimaryScale:@
-setPrimaryScaleSelector :: Selector
+setPrimaryScaleSelector :: Selector '[CFloat] ()
 setPrimaryScaleSelector = mkSelector "setPrimaryScale:"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CFloat
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @setSecondaryScale:@
-setSecondaryScaleSelector :: Selector
+setSecondaryScaleSelector :: Selector '[CFloat] ()
 setSecondaryScaleSelector = mkSelector "setSecondaryScale:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 
 -- | @Selector@ for @primaryStrideInFeatureChannels@
-primaryStrideInFeatureChannelsSelector :: Selector
+primaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 primaryStrideInFeatureChannelsSelector = mkSelector "primaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setPrimaryStrideInFeatureChannels:@
-setPrimaryStrideInFeatureChannelsSelector :: Selector
+setPrimaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setPrimaryStrideInFeatureChannelsSelector = mkSelector "setPrimaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @secondaryStrideInFeatureChannels@
-secondaryStrideInFeatureChannelsSelector :: Selector
+secondaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 secondaryStrideInFeatureChannelsSelector = mkSelector "secondaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setSecondaryStrideInFeatureChannels:@
-setSecondaryStrideInFeatureChannelsSelector :: Selector
+setSecondaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setSecondaryStrideInFeatureChannelsSelector = mkSelector "setSecondaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CFloat
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @setMinimumValue:@
-setMinimumValueSelector :: Selector
+setMinimumValueSelector :: Selector '[CFloat] ()
 setMinimumValueSelector = mkSelector "setMinimumValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @setMaximumValue:@
-setMaximumValueSelector :: Selector
+setMaximumValueSelector :: Selector '[CFloat] ()
 setMaximumValueSelector = mkSelector "setMaximumValue:"
 

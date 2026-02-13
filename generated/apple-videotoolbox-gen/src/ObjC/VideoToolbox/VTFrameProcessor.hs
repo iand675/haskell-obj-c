@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.VideoToolbox.VTFrameProcessor
   , processWithParameters_error
   , processWithCommandBuffer_parameters
   , endSession
-  , initSelector
-  , startSessionWithConfiguration_errorSelector
-  , processWithParameters_errorSelector
-  , processWithCommandBuffer_parametersSelector
   , endSessionSelector
+  , initSelector
+  , processWithCommandBuffer_parametersSelector
+  , processWithParameters_errorSelector
+  , startSessionWithConfiguration_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVTFrameProcessor vtFrameProcessor => vtFrameProcessor -> IO (Id VTFrameProcessor)
-init_ vtFrameProcessor  =
-    sendMsg vtFrameProcessor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtFrameProcessor =
+  sendOwnedMessage vtFrameProcessor initSelector
 
 -- | Starts a new session and configures the processor pipeline for an effect.
 --
@@ -56,9 +53,8 @@ init_ vtFrameProcessor  =
 --
 -- ObjC selector: @- startSessionWithConfiguration:error:@
 startSessionWithConfiguration_error :: (IsVTFrameProcessor vtFrameProcessor, IsNSError error_) => vtFrameProcessor -> RawId -> error_ -> IO Bool
-startSessionWithConfiguration_error vtFrameProcessor  configuration error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtFrameProcessor (mkSelector "startSessionWithConfiguration:error:") retCULong [argPtr (castPtr (unRawId configuration) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startSessionWithConfiguration_error vtFrameProcessor configuration error_ =
+  sendMessage vtFrameProcessor startSessionWithConfiguration_errorSelector configuration (toNSError error_)
 
 -- | Synchronously performs the processor effects.
 --
@@ -68,9 +64,8 @@ startSessionWithConfiguration_error vtFrameProcessor  configuration error_ =
 --
 -- ObjC selector: @- processWithParameters:error:@
 processWithParameters_error :: (IsVTFrameProcessor vtFrameProcessor, IsNSError error_) => vtFrameProcessor -> RawId -> error_ -> IO Bool
-processWithParameters_error vtFrameProcessor  parameters error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtFrameProcessor (mkSelector "processWithParameters:error:") retCULong [argPtr (castPtr (unRawId parameters) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+processWithParameters_error vtFrameProcessor parameters error_ =
+  sendMessage vtFrameProcessor processWithParameters_errorSelector parameters (toNSError error_)
 
 -- | Performs effects in a Metal command buffer.
 --
@@ -82,8 +77,8 @@ processWithParameters_error vtFrameProcessor  parameters error_ =
 --
 -- ObjC selector: @- processWithCommandBuffer:parameters:@
 processWithCommandBuffer_parameters :: IsVTFrameProcessor vtFrameProcessor => vtFrameProcessor -> RawId -> RawId -> IO ()
-processWithCommandBuffer_parameters vtFrameProcessor  commandBuffer parameters =
-    sendMsg vtFrameProcessor (mkSelector "processWithCommandBuffer:parameters:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId parameters) :: Ptr ())]
+processWithCommandBuffer_parameters vtFrameProcessor commandBuffer parameters =
+  sendMessage vtFrameProcessor processWithCommandBuffer_parametersSelector commandBuffer parameters
 
 -- | Performs all necessary tasks to end the session.
 --
@@ -91,30 +86,30 @@ processWithCommandBuffer_parameters vtFrameProcessor  commandBuffer parameters =
 --
 -- ObjC selector: @- endSession@
 endSession :: IsVTFrameProcessor vtFrameProcessor => vtFrameProcessor -> IO ()
-endSession vtFrameProcessor  =
-    sendMsg vtFrameProcessor (mkSelector "endSession") retVoid []
+endSession vtFrameProcessor =
+  sendMessage vtFrameProcessor endSessionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTFrameProcessor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @startSessionWithConfiguration:error:@
-startSessionWithConfiguration_errorSelector :: Selector
+startSessionWithConfiguration_errorSelector :: Selector '[RawId, Id NSError] Bool
 startSessionWithConfiguration_errorSelector = mkSelector "startSessionWithConfiguration:error:"
 
 -- | @Selector@ for @processWithParameters:error:@
-processWithParameters_errorSelector :: Selector
+processWithParameters_errorSelector :: Selector '[RawId, Id NSError] Bool
 processWithParameters_errorSelector = mkSelector "processWithParameters:error:"
 
 -- | @Selector@ for @processWithCommandBuffer:parameters:@
-processWithCommandBuffer_parametersSelector :: Selector
+processWithCommandBuffer_parametersSelector :: Selector '[RawId, RawId] ()
 processWithCommandBuffer_parametersSelector = mkSelector "processWithCommandBuffer:parameters:"
 
 -- | @Selector@ for @endSession@
-endSessionSelector :: Selector
+endSessionSelector :: Selector '[] ()
 endSessionSelector = mkSelector "endSession"
 

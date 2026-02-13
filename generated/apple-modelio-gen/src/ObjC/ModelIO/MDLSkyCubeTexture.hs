@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -76,31 +77,31 @@ module ObjC.ModelIO.MDLSkyCubeTexture
   , setContrast
   , saturation
   , setSaturation
-  , updateTextureSelector
-  , turbiditySelector
-  , setTurbiditySelector
-  , sunElevationSelector
-  , setSunElevationSelector
-  , sunAzimuthSelector
-  , setSunAzimuthSelector
-  , upperAtmosphereScatteringSelector
-  , setUpperAtmosphereScatteringSelector
-  , groundAlbedoSelector
-  , setGroundAlbedoSelector
-  , horizonElevationSelector
-  , setHorizonElevationSelector
-  , groundColorSelector
-  , setGroundColorSelector
-  , gammaSelector
-  , setGammaSelector
-  , exposureSelector
-  , setExposureSelector
   , brightnessSelector
-  , setBrightnessSelector
   , contrastSelector
-  , setContrastSelector
+  , exposureSelector
+  , gammaSelector
+  , groundAlbedoSelector
+  , groundColorSelector
+  , horizonElevationSelector
   , saturationSelector
+  , setBrightnessSelector
+  , setContrastSelector
+  , setExposureSelector
+  , setGammaSelector
+  , setGroundAlbedoSelector
+  , setGroundColorSelector
+  , setHorizonElevationSelector
   , setSaturationSelector
+  , setSunAzimuthSelector
+  , setSunElevationSelector
+  , setTurbiditySelector
+  , setUpperAtmosphereScatteringSelector
+  , sunAzimuthSelector
+  , sunElevationSelector
+  , turbiditySelector
+  , updateTextureSelector
+  , upperAtmosphereScatteringSelector
 
   -- * Enum types
   , MDLTextureChannelEncoding(MDLTextureChannelEncoding)
@@ -118,15 +119,11 @@ module ObjC.ModelIO.MDLSkyCubeTexture
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -138,230 +135,230 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateTexture@
 updateTexture :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO ()
-updateTexture mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "updateTexture") retVoid []
+updateTexture mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture updateTextureSelector
 
 -- | @- turbidity@
 turbidity :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-turbidity mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "turbidity") retCFloat []
+turbidity mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture turbiditySelector
 
 -- | @- setTurbidity:@
 setTurbidity :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setTurbidity mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setTurbidity:") retVoid [argCFloat value]
+setTurbidity mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setTurbiditySelector value
 
 -- | @- sunElevation@
 sunElevation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-sunElevation mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "sunElevation") retCFloat []
+sunElevation mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture sunElevationSelector
 
 -- | @- setSunElevation:@
 setSunElevation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setSunElevation mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setSunElevation:") retVoid [argCFloat value]
+setSunElevation mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setSunElevationSelector value
 
 -- | @- sunAzimuth@
 sunAzimuth :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-sunAzimuth mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "sunAzimuth") retCFloat []
+sunAzimuth mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture sunAzimuthSelector
 
 -- | @- setSunAzimuth:@
 setSunAzimuth :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setSunAzimuth mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setSunAzimuth:") retVoid [argCFloat value]
+setSunAzimuth mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setSunAzimuthSelector value
 
 -- | @- upperAtmosphereScattering@
 upperAtmosphereScattering :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-upperAtmosphereScattering mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "upperAtmosphereScattering") retCFloat []
+upperAtmosphereScattering mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture upperAtmosphereScatteringSelector
 
 -- | @- setUpperAtmosphereScattering:@
 setUpperAtmosphereScattering :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setUpperAtmosphereScattering mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setUpperAtmosphereScattering:") retVoid [argCFloat value]
+setUpperAtmosphereScattering mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setUpperAtmosphereScatteringSelector value
 
 -- | @- groundAlbedo@
 groundAlbedo :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-groundAlbedo mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "groundAlbedo") retCFloat []
+groundAlbedo mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture groundAlbedoSelector
 
 -- | @- setGroundAlbedo:@
 setGroundAlbedo :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setGroundAlbedo mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setGroundAlbedo:") retVoid [argCFloat value]
+setGroundAlbedo mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setGroundAlbedoSelector value
 
 -- | @- horizonElevation@
 horizonElevation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-horizonElevation mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "horizonElevation") retCFloat []
+horizonElevation mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture horizonElevationSelector
 
 -- | @- setHorizonElevation:@
 setHorizonElevation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setHorizonElevation mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setHorizonElevation:") retVoid [argCFloat value]
+setHorizonElevation mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setHorizonElevationSelector value
 
 -- | @- groundColor@
 groundColor :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO (Ptr ())
-groundColor mdlSkyCubeTexture  =
-    fmap castPtr $ sendMsg mdlSkyCubeTexture (mkSelector "groundColor") (retPtr retVoid) []
+groundColor mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture groundColorSelector
 
 -- | @- setGroundColor:@
 setGroundColor :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> Ptr () -> IO ()
-setGroundColor mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setGroundColor:") retVoid [argPtr value]
+setGroundColor mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setGroundColorSelector value
 
 -- | @- gamma@
 gamma :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-gamma mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "gamma") retCFloat []
+gamma mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture gammaSelector
 
 -- | @- setGamma:@
 setGamma :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setGamma mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setGamma:") retVoid [argCFloat value]
+setGamma mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setGammaSelector value
 
 -- | @- exposure@
 exposure :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-exposure mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "exposure") retCFloat []
+exposure mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture exposureSelector
 
 -- | @- setExposure:@
 setExposure :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setExposure mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setExposure:") retVoid [argCFloat value]
+setExposure mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setExposureSelector value
 
 -- | @- brightness@
 brightness :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-brightness mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "brightness") retCFloat []
+brightness mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture brightnessSelector
 
 -- | @- setBrightness:@
 setBrightness :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setBrightness mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setBrightness:") retVoid [argCFloat value]
+setBrightness mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setBrightnessSelector value
 
 -- | @- contrast@
 contrast :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-contrast mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "contrast") retCFloat []
+contrast mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture contrastSelector
 
 -- | @- setContrast:@
 setContrast :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setContrast mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setContrast:") retVoid [argCFloat value]
+setContrast mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setContrastSelector value
 
 -- | @- saturation@
 saturation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> IO CFloat
-saturation mdlSkyCubeTexture  =
-    sendMsg mdlSkyCubeTexture (mkSelector "saturation") retCFloat []
+saturation mdlSkyCubeTexture =
+  sendMessage mdlSkyCubeTexture saturationSelector
 
 -- | @- setSaturation:@
 setSaturation :: IsMDLSkyCubeTexture mdlSkyCubeTexture => mdlSkyCubeTexture -> CFloat -> IO ()
-setSaturation mdlSkyCubeTexture  value =
-    sendMsg mdlSkyCubeTexture (mkSelector "setSaturation:") retVoid [argCFloat value]
+setSaturation mdlSkyCubeTexture value =
+  sendMessage mdlSkyCubeTexture setSaturationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateTexture@
-updateTextureSelector :: Selector
+updateTextureSelector :: Selector '[] ()
 updateTextureSelector = mkSelector "updateTexture"
 
 -- | @Selector@ for @turbidity@
-turbiditySelector :: Selector
+turbiditySelector :: Selector '[] CFloat
 turbiditySelector = mkSelector "turbidity"
 
 -- | @Selector@ for @setTurbidity:@
-setTurbiditySelector :: Selector
+setTurbiditySelector :: Selector '[CFloat] ()
 setTurbiditySelector = mkSelector "setTurbidity:"
 
 -- | @Selector@ for @sunElevation@
-sunElevationSelector :: Selector
+sunElevationSelector :: Selector '[] CFloat
 sunElevationSelector = mkSelector "sunElevation"
 
 -- | @Selector@ for @setSunElevation:@
-setSunElevationSelector :: Selector
+setSunElevationSelector :: Selector '[CFloat] ()
 setSunElevationSelector = mkSelector "setSunElevation:"
 
 -- | @Selector@ for @sunAzimuth@
-sunAzimuthSelector :: Selector
+sunAzimuthSelector :: Selector '[] CFloat
 sunAzimuthSelector = mkSelector "sunAzimuth"
 
 -- | @Selector@ for @setSunAzimuth:@
-setSunAzimuthSelector :: Selector
+setSunAzimuthSelector :: Selector '[CFloat] ()
 setSunAzimuthSelector = mkSelector "setSunAzimuth:"
 
 -- | @Selector@ for @upperAtmosphereScattering@
-upperAtmosphereScatteringSelector :: Selector
+upperAtmosphereScatteringSelector :: Selector '[] CFloat
 upperAtmosphereScatteringSelector = mkSelector "upperAtmosphereScattering"
 
 -- | @Selector@ for @setUpperAtmosphereScattering:@
-setUpperAtmosphereScatteringSelector :: Selector
+setUpperAtmosphereScatteringSelector :: Selector '[CFloat] ()
 setUpperAtmosphereScatteringSelector = mkSelector "setUpperAtmosphereScattering:"
 
 -- | @Selector@ for @groundAlbedo@
-groundAlbedoSelector :: Selector
+groundAlbedoSelector :: Selector '[] CFloat
 groundAlbedoSelector = mkSelector "groundAlbedo"
 
 -- | @Selector@ for @setGroundAlbedo:@
-setGroundAlbedoSelector :: Selector
+setGroundAlbedoSelector :: Selector '[CFloat] ()
 setGroundAlbedoSelector = mkSelector "setGroundAlbedo:"
 
 -- | @Selector@ for @horizonElevation@
-horizonElevationSelector :: Selector
+horizonElevationSelector :: Selector '[] CFloat
 horizonElevationSelector = mkSelector "horizonElevation"
 
 -- | @Selector@ for @setHorizonElevation:@
-setHorizonElevationSelector :: Selector
+setHorizonElevationSelector :: Selector '[CFloat] ()
 setHorizonElevationSelector = mkSelector "setHorizonElevation:"
 
 -- | @Selector@ for @groundColor@
-groundColorSelector :: Selector
+groundColorSelector :: Selector '[] (Ptr ())
 groundColorSelector = mkSelector "groundColor"
 
 -- | @Selector@ for @setGroundColor:@
-setGroundColorSelector :: Selector
+setGroundColorSelector :: Selector '[Ptr ()] ()
 setGroundColorSelector = mkSelector "setGroundColor:"
 
 -- | @Selector@ for @gamma@
-gammaSelector :: Selector
+gammaSelector :: Selector '[] CFloat
 gammaSelector = mkSelector "gamma"
 
 -- | @Selector@ for @setGamma:@
-setGammaSelector :: Selector
+setGammaSelector :: Selector '[CFloat] ()
 setGammaSelector = mkSelector "setGamma:"
 
 -- | @Selector@ for @exposure@
-exposureSelector :: Selector
+exposureSelector :: Selector '[] CFloat
 exposureSelector = mkSelector "exposure"
 
 -- | @Selector@ for @setExposure:@
-setExposureSelector :: Selector
+setExposureSelector :: Selector '[CFloat] ()
 setExposureSelector = mkSelector "setExposure:"
 
 -- | @Selector@ for @brightness@
-brightnessSelector :: Selector
+brightnessSelector :: Selector '[] CFloat
 brightnessSelector = mkSelector "brightness"
 
 -- | @Selector@ for @setBrightness:@
-setBrightnessSelector :: Selector
+setBrightnessSelector :: Selector '[CFloat] ()
 setBrightnessSelector = mkSelector "setBrightness:"
 
 -- | @Selector@ for @contrast@
-contrastSelector :: Selector
+contrastSelector :: Selector '[] CFloat
 contrastSelector = mkSelector "contrast"
 
 -- | @Selector@ for @setContrast:@
-setContrastSelector :: Selector
+setContrastSelector :: Selector '[CFloat] ()
 setContrastSelector = mkSelector "setContrast:"
 
 -- | @Selector@ for @saturation@
-saturationSelector :: Selector
+saturationSelector :: Selector '[] CFloat
 saturationSelector = mkSelector "saturation"
 
 -- | @Selector@ for @setSaturation:@
-setSaturationSelector :: Selector
+setSaturationSelector :: Selector '[CFloat] ()
 setSaturationSelector = mkSelector "setSaturation:"
 

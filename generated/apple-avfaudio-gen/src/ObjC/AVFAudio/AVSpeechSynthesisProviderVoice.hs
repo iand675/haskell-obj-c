@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,22 @@ module ObjC.AVFAudio.AVSpeechSynthesisProviderVoice
   , setGender
   , age
   , setAge
-  , initWithName_identifier_primaryLanguages_supportedLanguagesSelector
-  , initSelector
-  , newSelector
-  , updateSpeechVoicesSelector
-  , nameSelector
-  , identifierSelector
-  , primaryLanguagesSelector
-  , supportedLanguagesSelector
-  , voiceSizeSelector
-  , setVoiceSizeSelector
-  , versionSelector
-  , setVersionSelector
-  , genderSelector
-  , setGenderSelector
   , ageSelector
+  , genderSelector
+  , identifierSelector
+  , initSelector
+  , initWithName_identifier_primaryLanguages_supportedLanguagesSelector
+  , nameSelector
+  , newSelector
+  , primaryLanguagesSelector
   , setAgeSelector
+  , setGenderSelector
+  , setVersionSelector
+  , setVoiceSizeSelector
+  , supportedLanguagesSelector
+  , updateSpeechVoicesSelector
+  , versionSelector
+  , voiceSizeSelector
 
   -- * Enum types
   , AVSpeechSynthesisVoiceGender(AVSpeechSynthesisVoiceGender)
@@ -52,15 +53,11 @@ module ObjC.AVFAudio.AVSpeechSynthesisProviderVoice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,24 +67,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:identifier:primaryLanguages:supportedLanguages:@
 initWithName_identifier_primaryLanguages_supportedLanguages :: (IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice, IsNSString name, IsNSString identifier, IsNSArray primaryLanguages, IsNSArray supportedLanguages) => avSpeechSynthesisProviderVoice -> name -> identifier -> primaryLanguages -> supportedLanguages -> IO (Id AVSpeechSynthesisProviderVoice)
-initWithName_identifier_primaryLanguages_supportedLanguages avSpeechSynthesisProviderVoice  name identifier primaryLanguages supportedLanguages =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr primaryLanguages $ \raw_primaryLanguages ->
-        withObjCPtr supportedLanguages $ \raw_supportedLanguages ->
-            sendMsg avSpeechSynthesisProviderVoice (mkSelector "initWithName:identifier:primaryLanguages:supportedLanguages:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_primaryLanguages :: Ptr ()), argPtr (castPtr raw_supportedLanguages :: Ptr ())] >>= ownedObject . castPtr
+initWithName_identifier_primaryLanguages_supportedLanguages avSpeechSynthesisProviderVoice name identifier primaryLanguages supportedLanguages =
+  sendOwnedMessage avSpeechSynthesisProviderVoice initWithName_identifier_primaryLanguages_supportedLanguagesSelector (toNSString name) (toNSString identifier) (toNSArray primaryLanguages) (toNSArray supportedLanguages)
 
 -- | @- init@
 init_ :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id AVSpeechSynthesisProviderVoice)
-init_ avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSpeechSynthesisProviderVoice =
+  sendOwnedMessage avSpeechSynthesisProviderVoice initSelector
 
 -- | @+ new@
 new :: IO (Id AVSpeechSynthesisProviderVoice)
 new  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisProviderVoice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A call that indicates that a new voice or set of voices is available, or no longer available, for system use.
 --
@@ -98,14 +91,14 @@ updateSpeechVoices :: IO ()
 updateSpeechVoices  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisProviderVoice"
-    sendClassMsg cls' (mkSelector "updateSpeechVoices") retVoid []
+    sendClassMessage cls' updateSpeechVoicesSelector
 
 -- | The localized name of the voice
 --
 -- ObjC selector: @- name@
 name :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id NSString)
-name avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice nameSelector
 
 -- | A unique identifier for the voice
 --
@@ -113,8 +106,8 @@ name avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id NSString)
-identifier avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice identifierSelector
 
 -- | A set of BCP 47 codes identifying the languages this synthesizer is primarily used for.
 --
@@ -122,8 +115,8 @@ identifier avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- primaryLanguages@
 primaryLanguages :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id NSArray)
-primaryLanguages avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "primaryLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryLanguages avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice primaryLanguagesSelector
 
 -- | A superset of BCP 47 codes identifying the voice’s supported languages.
 --
@@ -131,8 +124,8 @@ primaryLanguages avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- supportedLanguages@
 supportedLanguages :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id NSArray)
-supportedLanguages avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "supportedLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedLanguages avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice supportedLanguagesSelector
 
 -- | The size of the voice (optional)
 --
@@ -140,8 +133,8 @@ supportedLanguages avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- voiceSize@
 voiceSize :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO CLong
-voiceSize avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "voiceSize") retCLong []
+voiceSize avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice voiceSizeSelector
 
 -- | The size of the voice (optional)
 --
@@ -149,8 +142,8 @@ voiceSize avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- setVoiceSize:@
 setVoiceSize :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> CLong -> IO ()
-setVoiceSize avSpeechSynthesisProviderVoice  value =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "setVoiceSize:") retVoid [argCLong value]
+setVoiceSize avSpeechSynthesisProviderVoice value =
+  sendMessage avSpeechSynthesisProviderVoice setVoiceSizeSelector value
 
 -- | The voice version (optional)
 --
@@ -158,8 +151,8 @@ setVoiceSize avSpeechSynthesisProviderVoice  value =
 --
 -- ObjC selector: @- version@
 version :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO (Id NSString)
-version avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice versionSelector
 
 -- | The voice version (optional)
 --
@@ -167,23 +160,22 @@ version avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- setVersion:@
 setVersion :: (IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice, IsNSString value) => avSpeechSynthesisProviderVoice -> value -> IO ()
-setVersion avSpeechSynthesisProviderVoice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpeechSynthesisProviderVoice (mkSelector "setVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVersion avSpeechSynthesisProviderVoice value =
+  sendMessage avSpeechSynthesisProviderVoice setVersionSelector (toNSString value)
 
 -- | The gender of the voice (optional)
 --
 -- ObjC selector: @- gender@
 gender :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO AVSpeechSynthesisVoiceGender
-gender avSpeechSynthesisProviderVoice  =
-    fmap (coerce :: CLong -> AVSpeechSynthesisVoiceGender) $ sendMsg avSpeechSynthesisProviderVoice (mkSelector "gender") retCLong []
+gender avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice genderSelector
 
 -- | The gender of the voice (optional)
 --
 -- ObjC selector: @- setGender:@
 setGender :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> AVSpeechSynthesisVoiceGender -> IO ()
-setGender avSpeechSynthesisProviderVoice  value =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "setGender:") retVoid [argCLong (coerce value)]
+setGender avSpeechSynthesisProviderVoice value =
+  sendMessage avSpeechSynthesisProviderVoice setGenderSelector value
 
 -- | The age of the voice in years (optional)
 --
@@ -191,8 +183,8 @@ setGender avSpeechSynthesisProviderVoice  value =
 --
 -- ObjC selector: @- age@
 age :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> IO CLong
-age avSpeechSynthesisProviderVoice  =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "age") retCLong []
+age avSpeechSynthesisProviderVoice =
+  sendMessage avSpeechSynthesisProviderVoice ageSelector
 
 -- | The age of the voice in years (optional)
 --
@@ -200,74 +192,74 @@ age avSpeechSynthesisProviderVoice  =
 --
 -- ObjC selector: @- setAge:@
 setAge :: IsAVSpeechSynthesisProviderVoice avSpeechSynthesisProviderVoice => avSpeechSynthesisProviderVoice -> CLong -> IO ()
-setAge avSpeechSynthesisProviderVoice  value =
-    sendMsg avSpeechSynthesisProviderVoice (mkSelector "setAge:") retVoid [argCLong value]
+setAge avSpeechSynthesisProviderVoice value =
+  sendMessage avSpeechSynthesisProviderVoice setAgeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:identifier:primaryLanguages:supportedLanguages:@
-initWithName_identifier_primaryLanguages_supportedLanguagesSelector :: Selector
+initWithName_identifier_primaryLanguages_supportedLanguagesSelector :: Selector '[Id NSString, Id NSString, Id NSArray, Id NSArray] (Id AVSpeechSynthesisProviderVoice)
 initWithName_identifier_primaryLanguages_supportedLanguagesSelector = mkSelector "initWithName:identifier:primaryLanguages:supportedLanguages:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSpeechSynthesisProviderVoice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSpeechSynthesisProviderVoice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @updateSpeechVoices@
-updateSpeechVoicesSelector :: Selector
+updateSpeechVoicesSelector :: Selector '[] ()
 updateSpeechVoicesSelector = mkSelector "updateSpeechVoices"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @primaryLanguages@
-primaryLanguagesSelector :: Selector
+primaryLanguagesSelector :: Selector '[] (Id NSArray)
 primaryLanguagesSelector = mkSelector "primaryLanguages"
 
 -- | @Selector@ for @supportedLanguages@
-supportedLanguagesSelector :: Selector
+supportedLanguagesSelector :: Selector '[] (Id NSArray)
 supportedLanguagesSelector = mkSelector "supportedLanguages"
 
 -- | @Selector@ for @voiceSize@
-voiceSizeSelector :: Selector
+voiceSizeSelector :: Selector '[] CLong
 voiceSizeSelector = mkSelector "voiceSize"
 
 -- | @Selector@ for @setVoiceSize:@
-setVoiceSizeSelector :: Selector
+setVoiceSizeSelector :: Selector '[CLong] ()
 setVoiceSizeSelector = mkSelector "setVoiceSize:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[Id NSString] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @gender@
-genderSelector :: Selector
+genderSelector :: Selector '[] AVSpeechSynthesisVoiceGender
 genderSelector = mkSelector "gender"
 
 -- | @Selector@ for @setGender:@
-setGenderSelector :: Selector
+setGenderSelector :: Selector '[AVSpeechSynthesisVoiceGender] ()
 setGenderSelector = mkSelector "setGender:"
 
 -- | @Selector@ for @age@
-ageSelector :: Selector
+ageSelector :: Selector '[] CLong
 ageSelector = mkSelector "age"
 
 -- | @Selector@ for @setAge:@
-setAgeSelector :: Selector
+setAgeSelector :: Selector '[CLong] ()
 setAgeSelector = mkSelector "setAge:"
 

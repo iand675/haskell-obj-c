@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.NetworkExtension.NEProvider
   , displayMessage_completionHandler
   , startSystemExtensionMode
   , defaultPath
-  , sleepWithCompletionHandlerSelector
-  , wakeSelector
   , createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector
   , createUDPSessionToEndpoint_fromEndpointSelector
-  , displayMessage_completionHandlerSelector
-  , startSystemExtensionModeSelector
   , defaultPathSelector
+  , displayMessage_completionHandlerSelector
+  , sleepWithCompletionHandlerSelector
+  , startSystemExtensionModeSelector
+  , wakeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sleepWithCompletionHandler:@
 sleepWithCompletionHandler :: IsNEProvider neProvider => neProvider -> Ptr () -> IO ()
-sleepWithCompletionHandler neProvider  completionHandler =
-    sendMsg neProvider (mkSelector "sleepWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+sleepWithCompletionHandler neProvider completionHandler =
+  sendMessage neProvider sleepWithCompletionHandlerSelector completionHandler
 
 -- | wake
 --
@@ -64,8 +61,8 @@ sleepWithCompletionHandler neProvider  completionHandler =
 --
 -- ObjC selector: @- wake@
 wake :: IsNEProvider neProvider => neProvider -> IO ()
-wake neProvider  =
-    sendMsg neProvider (mkSelector "wake") retVoid []
+wake neProvider =
+  sendMessage neProvider wakeSelector
 
 -- | createTCPConnectionToEndpoint:enableTLS:TLSParameters:delegate:
 --
@@ -83,10 +80,8 @@ wake neProvider  =
 --
 -- ObjC selector: @- createTCPConnectionToEndpoint:enableTLS:TLSParameters:delegate:@
 createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegate :: (IsNEProvider neProvider, IsNWEndpoint remoteEndpoint, IsNWTLSParameters tlsParameters) => neProvider -> remoteEndpoint -> Bool -> tlsParameters -> RawId -> IO (Id NWTCPConnection)
-createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegate neProvider  remoteEndpoint enableTLS tlsParameters delegate =
-  withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-    withObjCPtr tlsParameters $ \raw_tlsParameters ->
-        sendMsg neProvider (mkSelector "createTCPConnectionToEndpoint:enableTLS:TLSParameters:delegate:") (retPtr retVoid) [argPtr (castPtr raw_remoteEndpoint :: Ptr ()), argCULong (if enableTLS then 1 else 0), argPtr (castPtr raw_tlsParameters :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= retainedObject . castPtr
+createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegate neProvider remoteEndpoint enableTLS tlsParameters delegate =
+  sendMessage neProvider createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector (toNWEndpoint remoteEndpoint) enableTLS (toNWTLSParameters tlsParameters) delegate
 
 -- | createUDPSessionToEndpoint:fromEndpoint:
 --
@@ -100,10 +95,8 @@ createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegate neProvider  remot
 --
 -- ObjC selector: @- createUDPSessionToEndpoint:fromEndpoint:@
 createUDPSessionToEndpoint_fromEndpoint :: (IsNEProvider neProvider, IsNWEndpoint remoteEndpoint, IsNWHostEndpoint localEndpoint) => neProvider -> remoteEndpoint -> localEndpoint -> IO (Id NWUDPSession)
-createUDPSessionToEndpoint_fromEndpoint neProvider  remoteEndpoint localEndpoint =
-  withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-    withObjCPtr localEndpoint $ \raw_localEndpoint ->
-        sendMsg neProvider (mkSelector "createUDPSessionToEndpoint:fromEndpoint:") (retPtr retVoid) [argPtr (castPtr raw_remoteEndpoint :: Ptr ()), argPtr (castPtr raw_localEndpoint :: Ptr ())] >>= retainedObject . castPtr
+createUDPSessionToEndpoint_fromEndpoint neProvider remoteEndpoint localEndpoint =
+  sendMessage neProvider createUDPSessionToEndpoint_fromEndpointSelector (toNWEndpoint remoteEndpoint) (toNWHostEndpoint localEndpoint)
 
 -- | displayMessage:completionHandler:
 --
@@ -115,9 +108,8 @@ createUDPSessionToEndpoint_fromEndpoint neProvider  remoteEndpoint localEndpoint
 --
 -- ObjC selector: @- displayMessage:completionHandler:@
 displayMessage_completionHandler :: (IsNEProvider neProvider, IsNSString message) => neProvider -> message -> Ptr () -> IO ()
-displayMessage_completionHandler neProvider  message completionHandler =
-  withObjCPtr message $ \raw_message ->
-      sendMsg neProvider (mkSelector "displayMessage:completionHandler:") retVoid [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+displayMessage_completionHandler neProvider message completionHandler =
+  sendMessage neProvider displayMessage_completionHandlerSelector (toNSString message) completionHandler
 
 -- | startSystemExtensionMode
 --
@@ -136,7 +128,7 @@ startSystemExtensionMode :: IO ()
 startSystemExtensionMode  =
   do
     cls' <- getRequiredClass "NEProvider"
-    sendClassMsg cls' (mkSelector "startSystemExtensionMode") retVoid []
+    sendClassMessage cls' startSystemExtensionModeSelector
 
 -- | defaultPath
 --
@@ -144,38 +136,38 @@ startSystemExtensionMode  =
 --
 -- ObjC selector: @- defaultPath@
 defaultPath :: IsNEProvider neProvider => neProvider -> IO (Id NWPath)
-defaultPath neProvider  =
-    sendMsg neProvider (mkSelector "defaultPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultPath neProvider =
+  sendMessage neProvider defaultPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sleepWithCompletionHandler:@
-sleepWithCompletionHandlerSelector :: Selector
+sleepWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 sleepWithCompletionHandlerSelector = mkSelector "sleepWithCompletionHandler:"
 
 -- | @Selector@ for @wake@
-wakeSelector :: Selector
+wakeSelector :: Selector '[] ()
 wakeSelector = mkSelector "wake"
 
 -- | @Selector@ for @createTCPConnectionToEndpoint:enableTLS:TLSParameters:delegate:@
-createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector :: Selector
+createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector :: Selector '[Id NWEndpoint, Bool, Id NWTLSParameters, RawId] (Id NWTCPConnection)
 createTCPConnectionToEndpoint_enableTLS_TLSParameters_delegateSelector = mkSelector "createTCPConnectionToEndpoint:enableTLS:TLSParameters:delegate:"
 
 -- | @Selector@ for @createUDPSessionToEndpoint:fromEndpoint:@
-createUDPSessionToEndpoint_fromEndpointSelector :: Selector
+createUDPSessionToEndpoint_fromEndpointSelector :: Selector '[Id NWEndpoint, Id NWHostEndpoint] (Id NWUDPSession)
 createUDPSessionToEndpoint_fromEndpointSelector = mkSelector "createUDPSessionToEndpoint:fromEndpoint:"
 
 -- | @Selector@ for @displayMessage:completionHandler:@
-displayMessage_completionHandlerSelector :: Selector
+displayMessage_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 displayMessage_completionHandlerSelector = mkSelector "displayMessage:completionHandler:"
 
 -- | @Selector@ for @startSystemExtensionMode@
-startSystemExtensionModeSelector :: Selector
+startSystemExtensionModeSelector :: Selector '[] ()
 startSystemExtensionModeSelector = mkSelector "startSystemExtensionMode"
 
 -- | @Selector@ for @defaultPath@
-defaultPathSelector :: Selector
+defaultPathSelector :: Selector '[] (Id NWPath)
 defaultPathSelector = mkSelector "defaultPath"
 

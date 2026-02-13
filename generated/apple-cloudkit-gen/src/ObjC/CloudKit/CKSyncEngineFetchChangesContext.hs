@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.CloudKit.CKSyncEngineFetchChangesContext
   , options
   , initSelector
   , newSelector
-  , reasonSelector
   , optionsSelector
+  , reasonSelector
 
   -- * Enum types
   , CKSyncEngineSyncReason(CKSyncEngineSyncReason)
@@ -27,15 +28,11 @@ module ObjC.CloudKit.CKSyncEngineFetchChangesContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,47 +42,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineFetchChangesContext ckSyncEngineFetchChangesContext => ckSyncEngineFetchChangesContext -> IO (Id CKSyncEngineFetchChangesContext)
-init_ ckSyncEngineFetchChangesContext  =
-    sendMsg ckSyncEngineFetchChangesContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineFetchChangesContext =
+  sendOwnedMessage ckSyncEngineFetchChangesContext initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineFetchChangesContext)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineFetchChangesContext"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The reason why the sync engine is attempting to fetch changes.
 --
 -- ObjC selector: @- reason@
 reason :: IsCKSyncEngineFetchChangesContext ckSyncEngineFetchChangesContext => ckSyncEngineFetchChangesContext -> IO CKSyncEngineSyncReason
-reason ckSyncEngineFetchChangesContext  =
-    fmap (coerce :: CLong -> CKSyncEngineSyncReason) $ sendMsg ckSyncEngineFetchChangesContext (mkSelector "reason") retCLong []
+reason ckSyncEngineFetchChangesContext =
+  sendMessage ckSyncEngineFetchChangesContext reasonSelector
 
 -- | The options being used for this attempt to fetch changes.
 --
 -- ObjC selector: @- options@
 options :: IsCKSyncEngineFetchChangesContext ckSyncEngineFetchChangesContext => ckSyncEngineFetchChangesContext -> IO (Id CKSyncEngineFetchChangesOptions)
-options ckSyncEngineFetchChangesContext  =
-    sendMsg ckSyncEngineFetchChangesContext (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options ckSyncEngineFetchChangesContext =
+  sendMessage ckSyncEngineFetchChangesContext optionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineFetchChangesContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineFetchChangesContext)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] CKSyncEngineSyncReason
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id CKSyncEngineFetchChangesOptions)
 optionsSelector = mkSelector "options"
 

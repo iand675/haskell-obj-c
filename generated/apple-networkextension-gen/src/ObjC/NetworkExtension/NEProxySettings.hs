@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,38 +34,34 @@ module ObjC.NetworkExtension.NEProxySettings
   , matchDomains
   , setMatchDomains
   , autoProxyConfigurationEnabledSelector
-  , setAutoProxyConfigurationEnabledSelector
-  , proxyAutoConfigurationURLSelector
-  , setProxyAutoConfigurationURLSelector
-  , proxyAutoConfigurationJavaScriptSelector
-  , setProxyAutoConfigurationJavaScriptSelector
-  , httpEnabledSelector
-  , setHTTPEnabledSelector
-  , httpServerSelector
-  , setHTTPServerSelector
-  , httpsEnabledSelector
-  , setHTTPSEnabledSelector
-  , httpsServerSelector
-  , setHTTPSServerSelector
-  , excludeSimpleHostnamesSelector
-  , setExcludeSimpleHostnamesSelector
   , exceptionListSelector
-  , setExceptionListSelector
+  , excludeSimpleHostnamesSelector
+  , httpEnabledSelector
+  , httpServerSelector
+  , httpsEnabledSelector
+  , httpsServerSelector
   , matchDomainsSelector
+  , proxyAutoConfigurationJavaScriptSelector
+  , proxyAutoConfigurationURLSelector
+  , setAutoProxyConfigurationEnabledSelector
+  , setExceptionListSelector
+  , setExcludeSimpleHostnamesSelector
+  , setHTTPEnabledSelector
+  , setHTTPSEnabledSelector
+  , setHTTPSServerSelector
+  , setHTTPServerSelector
   , setMatchDomainsSelector
+  , setProxyAutoConfigurationJavaScriptSelector
+  , setProxyAutoConfigurationURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,8 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- autoProxyConfigurationEnabled@
 autoProxyConfigurationEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> IO Bool
-autoProxyConfigurationEnabled neProxySettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neProxySettings (mkSelector "autoProxyConfigurationEnabled") retCULong []
+autoProxyConfigurationEnabled neProxySettings =
+  sendMessage neProxySettings autoProxyConfigurationEnabledSelector
 
 -- | autoProxyConfigurationEnabled
 --
@@ -86,8 +83,8 @@ autoProxyConfigurationEnabled neProxySettings  =
 --
 -- ObjC selector: @- setAutoProxyConfigurationEnabled:@
 setAutoProxyConfigurationEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> Bool -> IO ()
-setAutoProxyConfigurationEnabled neProxySettings  value =
-    sendMsg neProxySettings (mkSelector "setAutoProxyConfigurationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoProxyConfigurationEnabled neProxySettings value =
+  sendMessage neProxySettings setAutoProxyConfigurationEnabledSelector value
 
 -- | proxyAutoConfigurationURL
 --
@@ -95,8 +92,8 @@ setAutoProxyConfigurationEnabled neProxySettings  value =
 --
 -- ObjC selector: @- proxyAutoConfigurationURL@
 proxyAutoConfigurationURL :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NSURL)
-proxyAutoConfigurationURL neProxySettings  =
-    sendMsg neProxySettings (mkSelector "proxyAutoConfigurationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+proxyAutoConfigurationURL neProxySettings =
+  sendMessage neProxySettings proxyAutoConfigurationURLSelector
 
 -- | proxyAutoConfigurationURL
 --
@@ -104,9 +101,8 @@ proxyAutoConfigurationURL neProxySettings  =
 --
 -- ObjC selector: @- setProxyAutoConfigurationURL:@
 setProxyAutoConfigurationURL :: (IsNEProxySettings neProxySettings, IsNSURL value) => neProxySettings -> value -> IO ()
-setProxyAutoConfigurationURL neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setProxyAutoConfigurationURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProxyAutoConfigurationURL neProxySettings value =
+  sendMessage neProxySettings setProxyAutoConfigurationURLSelector (toNSURL value)
 
 -- | proxyAutoConfigurationJavaScript
 --
@@ -114,8 +110,8 @@ setProxyAutoConfigurationURL neProxySettings  value =
 --
 -- ObjC selector: @- proxyAutoConfigurationJavaScript@
 proxyAutoConfigurationJavaScript :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NSString)
-proxyAutoConfigurationJavaScript neProxySettings  =
-    sendMsg neProxySettings (mkSelector "proxyAutoConfigurationJavaScript") (retPtr retVoid) [] >>= retainedObject . castPtr
+proxyAutoConfigurationJavaScript neProxySettings =
+  sendMessage neProxySettings proxyAutoConfigurationJavaScriptSelector
 
 -- | proxyAutoConfigurationJavaScript
 --
@@ -123,9 +119,8 @@ proxyAutoConfigurationJavaScript neProxySettings  =
 --
 -- ObjC selector: @- setProxyAutoConfigurationJavaScript:@
 setProxyAutoConfigurationJavaScript :: (IsNEProxySettings neProxySettings, IsNSString value) => neProxySettings -> value -> IO ()
-setProxyAutoConfigurationJavaScript neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setProxyAutoConfigurationJavaScript:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProxyAutoConfigurationJavaScript neProxySettings value =
+  sendMessage neProxySettings setProxyAutoConfigurationJavaScriptSelector (toNSString value)
 
 -- | HTTPEnabled
 --
@@ -133,8 +128,8 @@ setProxyAutoConfigurationJavaScript neProxySettings  value =
 --
 -- ObjC selector: @- HTTPEnabled@
 httpEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> IO Bool
-httpEnabled neProxySettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neProxySettings (mkSelector "HTTPEnabled") retCULong []
+httpEnabled neProxySettings =
+  sendMessage neProxySettings httpEnabledSelector
 
 -- | HTTPEnabled
 --
@@ -142,8 +137,8 @@ httpEnabled neProxySettings  =
 --
 -- ObjC selector: @- setHTTPEnabled:@
 setHTTPEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> Bool -> IO ()
-setHTTPEnabled neProxySettings  value =
-    sendMsg neProxySettings (mkSelector "setHTTPEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setHTTPEnabled neProxySettings value =
+  sendMessage neProxySettings setHTTPEnabledSelector value
 
 -- | HTTPServer
 --
@@ -151,8 +146,8 @@ setHTTPEnabled neProxySettings  value =
 --
 -- ObjC selector: @- HTTPServer@
 httpServer :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NEProxyServer)
-httpServer neProxySettings  =
-    sendMsg neProxySettings (mkSelector "HTTPServer") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpServer neProxySettings =
+  sendMessage neProxySettings httpServerSelector
 
 -- | HTTPServer
 --
@@ -160,9 +155,8 @@ httpServer neProxySettings  =
 --
 -- ObjC selector: @- setHTTPServer:@
 setHTTPServer :: (IsNEProxySettings neProxySettings, IsNEProxyServer value) => neProxySettings -> value -> IO ()
-setHTTPServer neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setHTTPServer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTPServer neProxySettings value =
+  sendMessage neProxySettings setHTTPServerSelector (toNEProxyServer value)
 
 -- | HTTPSEnabled
 --
@@ -170,8 +164,8 @@ setHTTPServer neProxySettings  value =
 --
 -- ObjC selector: @- HTTPSEnabled@
 httpsEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> IO Bool
-httpsEnabled neProxySettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neProxySettings (mkSelector "HTTPSEnabled") retCULong []
+httpsEnabled neProxySettings =
+  sendMessage neProxySettings httpsEnabledSelector
 
 -- | HTTPSEnabled
 --
@@ -179,8 +173,8 @@ httpsEnabled neProxySettings  =
 --
 -- ObjC selector: @- setHTTPSEnabled:@
 setHTTPSEnabled :: IsNEProxySettings neProxySettings => neProxySettings -> Bool -> IO ()
-setHTTPSEnabled neProxySettings  value =
-    sendMsg neProxySettings (mkSelector "setHTTPSEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setHTTPSEnabled neProxySettings value =
+  sendMessage neProxySettings setHTTPSEnabledSelector value
 
 -- | HTTPSServer
 --
@@ -188,8 +182,8 @@ setHTTPSEnabled neProxySettings  value =
 --
 -- ObjC selector: @- HTTPSServer@
 httpsServer :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NEProxyServer)
-httpsServer neProxySettings  =
-    sendMsg neProxySettings (mkSelector "HTTPSServer") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpsServer neProxySettings =
+  sendMessage neProxySettings httpsServerSelector
 
 -- | HTTPSServer
 --
@@ -197,9 +191,8 @@ httpsServer neProxySettings  =
 --
 -- ObjC selector: @- setHTTPSServer:@
 setHTTPSServer :: (IsNEProxySettings neProxySettings, IsNEProxyServer value) => neProxySettings -> value -> IO ()
-setHTTPSServer neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setHTTPSServer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTPSServer neProxySettings value =
+  sendMessage neProxySettings setHTTPSServerSelector (toNEProxyServer value)
 
 -- | excludeSimpleHostnames
 --
@@ -207,8 +200,8 @@ setHTTPSServer neProxySettings  value =
 --
 -- ObjC selector: @- excludeSimpleHostnames@
 excludeSimpleHostnames :: IsNEProxySettings neProxySettings => neProxySettings -> IO Bool
-excludeSimpleHostnames neProxySettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neProxySettings (mkSelector "excludeSimpleHostnames") retCULong []
+excludeSimpleHostnames neProxySettings =
+  sendMessage neProxySettings excludeSimpleHostnamesSelector
 
 -- | excludeSimpleHostnames
 --
@@ -216,8 +209,8 @@ excludeSimpleHostnames neProxySettings  =
 --
 -- ObjC selector: @- setExcludeSimpleHostnames:@
 setExcludeSimpleHostnames :: IsNEProxySettings neProxySettings => neProxySettings -> Bool -> IO ()
-setExcludeSimpleHostnames neProxySettings  value =
-    sendMsg neProxySettings (mkSelector "setExcludeSimpleHostnames:") retVoid [argCULong (if value then 1 else 0)]
+setExcludeSimpleHostnames neProxySettings value =
+  sendMessage neProxySettings setExcludeSimpleHostnamesSelector value
 
 -- | exceptionList
 --
@@ -225,8 +218,8 @@ setExcludeSimpleHostnames neProxySettings  value =
 --
 -- ObjC selector: @- exceptionList@
 exceptionList :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NSArray)
-exceptionList neProxySettings  =
-    sendMsg neProxySettings (mkSelector "exceptionList") (retPtr retVoid) [] >>= retainedObject . castPtr
+exceptionList neProxySettings =
+  sendMessage neProxySettings exceptionListSelector
 
 -- | exceptionList
 --
@@ -234,9 +227,8 @@ exceptionList neProxySettings  =
 --
 -- ObjC selector: @- setExceptionList:@
 setExceptionList :: (IsNEProxySettings neProxySettings, IsNSArray value) => neProxySettings -> value -> IO ()
-setExceptionList neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setExceptionList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExceptionList neProxySettings value =
+  sendMessage neProxySettings setExceptionListSelector (toNSArray value)
 
 -- | matchDomains
 --
@@ -244,8 +236,8 @@ setExceptionList neProxySettings  value =
 --
 -- ObjC selector: @- matchDomains@
 matchDomains :: IsNEProxySettings neProxySettings => neProxySettings -> IO (Id NSArray)
-matchDomains neProxySettings  =
-    sendMsg neProxySettings (mkSelector "matchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchDomains neProxySettings =
+  sendMessage neProxySettings matchDomainsSelector
 
 -- | matchDomains
 --
@@ -253,91 +245,90 @@ matchDomains neProxySettings  =
 --
 -- ObjC selector: @- setMatchDomains:@
 setMatchDomains :: (IsNEProxySettings neProxySettings, IsNSArray value) => neProxySettings -> value -> IO ()
-setMatchDomains neProxySettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neProxySettings (mkSelector "setMatchDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchDomains neProxySettings value =
+  sendMessage neProxySettings setMatchDomainsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @autoProxyConfigurationEnabled@
-autoProxyConfigurationEnabledSelector :: Selector
+autoProxyConfigurationEnabledSelector :: Selector '[] Bool
 autoProxyConfigurationEnabledSelector = mkSelector "autoProxyConfigurationEnabled"
 
 -- | @Selector@ for @setAutoProxyConfigurationEnabled:@
-setAutoProxyConfigurationEnabledSelector :: Selector
+setAutoProxyConfigurationEnabledSelector :: Selector '[Bool] ()
 setAutoProxyConfigurationEnabledSelector = mkSelector "setAutoProxyConfigurationEnabled:"
 
 -- | @Selector@ for @proxyAutoConfigurationURL@
-proxyAutoConfigurationURLSelector :: Selector
+proxyAutoConfigurationURLSelector :: Selector '[] (Id NSURL)
 proxyAutoConfigurationURLSelector = mkSelector "proxyAutoConfigurationURL"
 
 -- | @Selector@ for @setProxyAutoConfigurationURL:@
-setProxyAutoConfigurationURLSelector :: Selector
+setProxyAutoConfigurationURLSelector :: Selector '[Id NSURL] ()
 setProxyAutoConfigurationURLSelector = mkSelector "setProxyAutoConfigurationURL:"
 
 -- | @Selector@ for @proxyAutoConfigurationJavaScript@
-proxyAutoConfigurationJavaScriptSelector :: Selector
+proxyAutoConfigurationJavaScriptSelector :: Selector '[] (Id NSString)
 proxyAutoConfigurationJavaScriptSelector = mkSelector "proxyAutoConfigurationJavaScript"
 
 -- | @Selector@ for @setProxyAutoConfigurationJavaScript:@
-setProxyAutoConfigurationJavaScriptSelector :: Selector
+setProxyAutoConfigurationJavaScriptSelector :: Selector '[Id NSString] ()
 setProxyAutoConfigurationJavaScriptSelector = mkSelector "setProxyAutoConfigurationJavaScript:"
 
 -- | @Selector@ for @HTTPEnabled@
-httpEnabledSelector :: Selector
+httpEnabledSelector :: Selector '[] Bool
 httpEnabledSelector = mkSelector "HTTPEnabled"
 
 -- | @Selector@ for @setHTTPEnabled:@
-setHTTPEnabledSelector :: Selector
+setHTTPEnabledSelector :: Selector '[Bool] ()
 setHTTPEnabledSelector = mkSelector "setHTTPEnabled:"
 
 -- | @Selector@ for @HTTPServer@
-httpServerSelector :: Selector
+httpServerSelector :: Selector '[] (Id NEProxyServer)
 httpServerSelector = mkSelector "HTTPServer"
 
 -- | @Selector@ for @setHTTPServer:@
-setHTTPServerSelector :: Selector
+setHTTPServerSelector :: Selector '[Id NEProxyServer] ()
 setHTTPServerSelector = mkSelector "setHTTPServer:"
 
 -- | @Selector@ for @HTTPSEnabled@
-httpsEnabledSelector :: Selector
+httpsEnabledSelector :: Selector '[] Bool
 httpsEnabledSelector = mkSelector "HTTPSEnabled"
 
 -- | @Selector@ for @setHTTPSEnabled:@
-setHTTPSEnabledSelector :: Selector
+setHTTPSEnabledSelector :: Selector '[Bool] ()
 setHTTPSEnabledSelector = mkSelector "setHTTPSEnabled:"
 
 -- | @Selector@ for @HTTPSServer@
-httpsServerSelector :: Selector
+httpsServerSelector :: Selector '[] (Id NEProxyServer)
 httpsServerSelector = mkSelector "HTTPSServer"
 
 -- | @Selector@ for @setHTTPSServer:@
-setHTTPSServerSelector :: Selector
+setHTTPSServerSelector :: Selector '[Id NEProxyServer] ()
 setHTTPSServerSelector = mkSelector "setHTTPSServer:"
 
 -- | @Selector@ for @excludeSimpleHostnames@
-excludeSimpleHostnamesSelector :: Selector
+excludeSimpleHostnamesSelector :: Selector '[] Bool
 excludeSimpleHostnamesSelector = mkSelector "excludeSimpleHostnames"
 
 -- | @Selector@ for @setExcludeSimpleHostnames:@
-setExcludeSimpleHostnamesSelector :: Selector
+setExcludeSimpleHostnamesSelector :: Selector '[Bool] ()
 setExcludeSimpleHostnamesSelector = mkSelector "setExcludeSimpleHostnames:"
 
 -- | @Selector@ for @exceptionList@
-exceptionListSelector :: Selector
+exceptionListSelector :: Selector '[] (Id NSArray)
 exceptionListSelector = mkSelector "exceptionList"
 
 -- | @Selector@ for @setExceptionList:@
-setExceptionListSelector :: Selector
+setExceptionListSelector :: Selector '[Id NSArray] ()
 setExceptionListSelector = mkSelector "setExceptionList:"
 
 -- | @Selector@ for @matchDomains@
-matchDomainsSelector :: Selector
+matchDomainsSelector :: Selector '[] (Id NSArray)
 matchDomainsSelector = mkSelector "matchDomains"
 
 -- | @Selector@ for @setMatchDomains:@
-setMatchDomainsSelector :: Selector
+setMatchDomainsSelector :: Selector '[Id NSArray] ()
 setMatchDomainsSelector = mkSelector "setMatchDomains:"
 

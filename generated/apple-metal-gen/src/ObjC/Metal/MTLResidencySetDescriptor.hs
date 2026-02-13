@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Metal.MTLResidencySetDescriptor
   , setLabel
   , initialCapacity
   , setInitialCapacity
-  , labelSelector
-  , setLabelSelector
   , initialCapacitySelector
+  , labelSelector
   , setInitialCapacitySelector
+  , setLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- label@
 label :: IsMTLResidencySetDescriptor mtlResidencySetDescriptor => mtlResidencySetDescriptor -> IO (Id NSString)
-label mtlResidencySetDescriptor  =
-    sendMsg mtlResidencySetDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlResidencySetDescriptor =
+  sendMessage mtlResidencySetDescriptor labelSelector
 
 -- | label
 --
@@ -52,9 +49,8 @@ label mtlResidencySetDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLResidencySetDescriptor mtlResidencySetDescriptor, IsNSString value) => mtlResidencySetDescriptor -> value -> IO ()
-setLabel mtlResidencySetDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlResidencySetDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlResidencySetDescriptor value =
+  sendMessage mtlResidencySetDescriptor setLabelSelector (toNSString value)
 
 -- | initialCapacity
 --
@@ -62,8 +58,8 @@ setLabel mtlResidencySetDescriptor  value =
 --
 -- ObjC selector: @- initialCapacity@
 initialCapacity :: IsMTLResidencySetDescriptor mtlResidencySetDescriptor => mtlResidencySetDescriptor -> IO CULong
-initialCapacity mtlResidencySetDescriptor  =
-    sendMsg mtlResidencySetDescriptor (mkSelector "initialCapacity") retCULong []
+initialCapacity mtlResidencySetDescriptor =
+  sendOwnedMessage mtlResidencySetDescriptor initialCapacitySelector
 
 -- | initialCapacity
 --
@@ -71,26 +67,26 @@ initialCapacity mtlResidencySetDescriptor  =
 --
 -- ObjC selector: @- setInitialCapacity:@
 setInitialCapacity :: IsMTLResidencySetDescriptor mtlResidencySetDescriptor => mtlResidencySetDescriptor -> CULong -> IO ()
-setInitialCapacity mtlResidencySetDescriptor  value =
-    sendMsg mtlResidencySetDescriptor (mkSelector "setInitialCapacity:") retVoid [argCULong value]
+setInitialCapacity mtlResidencySetDescriptor value =
+  sendMessage mtlResidencySetDescriptor setInitialCapacitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @initialCapacity@
-initialCapacitySelector :: Selector
+initialCapacitySelector :: Selector '[] CULong
 initialCapacitySelector = mkSelector "initialCapacity"
 
 -- | @Selector@ for @setInitialCapacity:@
-setInitialCapacitySelector :: Selector
+setInitialCapacitySelector :: Selector '[CULong] ()
 setInitialCapacitySelector = mkSelector "setInitialCapacity:"
 

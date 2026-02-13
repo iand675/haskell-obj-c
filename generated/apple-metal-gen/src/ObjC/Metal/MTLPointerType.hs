@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.Metal.MTLPointerType
   , alignment
   , dataSize
   , elementIsArgumentBuffer
-  , elementStructTypeSelector
-  , elementArrayTypeSelector
-  , elementTypeSelector
   , accessSelector
   , alignmentSelector
   , dataSizeSelector
+  , elementArrayTypeSelector
   , elementIsArgumentBufferSelector
+  , elementStructTypeSelector
+  , elementTypeSelector
 
   -- * Enum types
   , MTLBindingAccess(MTLBindingAccess)
@@ -131,15 +132,11 @@ module ObjC.Metal.MTLPointerType
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -149,68 +146,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- elementStructType@
 elementStructType :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO (Id MTLStructType)
-elementStructType mtlPointerType  =
-    sendMsg mtlPointerType (mkSelector "elementStructType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementStructType mtlPointerType =
+  sendMessage mtlPointerType elementStructTypeSelector
 
 -- | @- elementArrayType@
 elementArrayType :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO (Id MTLArrayType)
-elementArrayType mtlPointerType  =
-    sendMsg mtlPointerType (mkSelector "elementArrayType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementArrayType mtlPointerType =
+  sendMessage mtlPointerType elementArrayTypeSelector
 
 -- | @- elementType@
 elementType :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO MTLDataType
-elementType mtlPointerType  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlPointerType (mkSelector "elementType") retCULong []
+elementType mtlPointerType =
+  sendMessage mtlPointerType elementTypeSelector
 
 -- | @- access@
 access :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO MTLBindingAccess
-access mtlPointerType  =
-    fmap (coerce :: CULong -> MTLBindingAccess) $ sendMsg mtlPointerType (mkSelector "access") retCULong []
+access mtlPointerType =
+  sendMessage mtlPointerType accessSelector
 
 -- | @- alignment@
 alignment :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO CULong
-alignment mtlPointerType  =
-    sendMsg mtlPointerType (mkSelector "alignment") retCULong []
+alignment mtlPointerType =
+  sendMessage mtlPointerType alignmentSelector
 
 -- | @- dataSize@
 dataSize :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO CULong
-dataSize mtlPointerType  =
-    sendMsg mtlPointerType (mkSelector "dataSize") retCULong []
+dataSize mtlPointerType =
+  sendMessage mtlPointerType dataSizeSelector
 
 -- | @- elementIsArgumentBuffer@
 elementIsArgumentBuffer :: IsMTLPointerType mtlPointerType => mtlPointerType -> IO Bool
-elementIsArgumentBuffer mtlPointerType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlPointerType (mkSelector "elementIsArgumentBuffer") retCULong []
+elementIsArgumentBuffer mtlPointerType =
+  sendMessage mtlPointerType elementIsArgumentBufferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @elementStructType@
-elementStructTypeSelector :: Selector
+elementStructTypeSelector :: Selector '[] (Id MTLStructType)
 elementStructTypeSelector = mkSelector "elementStructType"
 
 -- | @Selector@ for @elementArrayType@
-elementArrayTypeSelector :: Selector
+elementArrayTypeSelector :: Selector '[] (Id MTLArrayType)
 elementArrayTypeSelector = mkSelector "elementArrayType"
 
 -- | @Selector@ for @elementType@
-elementTypeSelector :: Selector
+elementTypeSelector :: Selector '[] MTLDataType
 elementTypeSelector = mkSelector "elementType"
 
 -- | @Selector@ for @access@
-accessSelector :: Selector
+accessSelector :: Selector '[] MTLBindingAccess
 accessSelector = mkSelector "access"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] CULong
 alignmentSelector = mkSelector "alignment"
 
 -- | @Selector@ for @dataSize@
-dataSizeSelector :: Selector
+dataSizeSelector :: Selector '[] CULong
 dataSizeSelector = mkSelector "dataSize"
 
 -- | @Selector@ for @elementIsArgumentBuffer@
-elementIsArgumentBufferSelector :: Selector
+elementIsArgumentBufferSelector :: Selector '[] Bool
 elementIsArgumentBufferSelector = mkSelector "elementIsArgumentBuffer"
 

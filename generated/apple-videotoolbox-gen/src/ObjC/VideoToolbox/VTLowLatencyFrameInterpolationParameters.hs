@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.VideoToolbox.VTLowLatencyFrameInterpolationParameters
   , previousFrame
   , interpolationPhase
   , destinationFrames
-  , initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector
-  , initSelector
-  , newSelector
-  , sourceFrameSelector
-  , previousFrameSelector
-  , interpolationPhaseSelector
   , destinationFramesSelector
+  , initSelector
+  , initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector
+  , interpolationPhaseSelector
+  , newSelector
+  , previousFrameSelector
+  , sourceFrameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,82 +48,78 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSourceFrame:previousFrame:interpolationPhase:destinationFrames:@
 initWithSourceFrame_previousFrame_interpolationPhase_destinationFrames :: (IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters, IsVTFrameProcessorFrame sourceFrame, IsVTFrameProcessorFrame previousFrame, IsNSArray interpolationPhase, IsNSArray destinationFrames) => vtLowLatencyFrameInterpolationParameters -> sourceFrame -> previousFrame -> interpolationPhase -> destinationFrames -> IO (Id VTLowLatencyFrameInterpolationParameters)
-initWithSourceFrame_previousFrame_interpolationPhase_destinationFrames vtLowLatencyFrameInterpolationParameters  sourceFrame previousFrame interpolationPhase destinationFrames =
-  withObjCPtr sourceFrame $ \raw_sourceFrame ->
-    withObjCPtr previousFrame $ \raw_previousFrame ->
-      withObjCPtr interpolationPhase $ \raw_interpolationPhase ->
-        withObjCPtr destinationFrames $ \raw_destinationFrames ->
-            sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "initWithSourceFrame:previousFrame:interpolationPhase:destinationFrames:") (retPtr retVoid) [argPtr (castPtr raw_sourceFrame :: Ptr ()), argPtr (castPtr raw_previousFrame :: Ptr ()), argPtr (castPtr raw_interpolationPhase :: Ptr ()), argPtr (castPtr raw_destinationFrames :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceFrame_previousFrame_interpolationPhase_destinationFrames vtLowLatencyFrameInterpolationParameters sourceFrame previousFrame interpolationPhase destinationFrames =
+  sendOwnedMessage vtLowLatencyFrameInterpolationParameters initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector (toVTFrameProcessorFrame sourceFrame) (toVTFrameProcessorFrame previousFrame) (toNSArray interpolationPhase) (toNSArray destinationFrames)
 
 -- | @- init@
 init_ :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id VTLowLatencyFrameInterpolationParameters)
-init_ vtLowLatencyFrameInterpolationParameters  =
-    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtLowLatencyFrameInterpolationParameters =
+  sendOwnedMessage vtLowLatencyFrameInterpolationParameters initSelector
 
 -- | @+ new@
 new :: IO (Id VTLowLatencyFrameInterpolationParameters)
 new  =
   do
     cls' <- getRequiredClass "VTLowLatencyFrameInterpolationParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Source frame that you provided when creating the low-latency frame interpolation parameters object.
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id VTFrameProcessorFrame)
-sourceFrame vtLowLatencyFrameInterpolationParameters  =
-    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame vtLowLatencyFrameInterpolationParameters =
+  sendMessage vtLowLatencyFrameInterpolationParameters sourceFrameSelector
 
 -- | Previous frame that you provided when creating the low-latency frame interpolation parameters object.
 --
 -- ObjC selector: @- previousFrame@
 previousFrame :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id VTFrameProcessorFrame)
-previousFrame vtLowLatencyFrameInterpolationParameters  =
-    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "previousFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousFrame vtLowLatencyFrameInterpolationParameters =
+  sendMessage vtLowLatencyFrameInterpolationParameters previousFrameSelector
 
 -- | Array of interpolation phases that you provided when creating the low-latency frame interpolation parameters object.
 --
 -- ObjC selector: @- interpolationPhase@
 interpolationPhase :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id NSArray)
-interpolationPhase vtLowLatencyFrameInterpolationParameters  =
-    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "interpolationPhase") (retPtr retVoid) [] >>= retainedObject . castPtr
+interpolationPhase vtLowLatencyFrameInterpolationParameters =
+  sendMessage vtLowLatencyFrameInterpolationParameters interpolationPhaseSelector
 
 -- | Array of destination frames that you provided when creating the low-latency frame interpolation parameters object.
 --
 -- ObjC selector: @- destinationFrames@
 destinationFrames :: IsVTLowLatencyFrameInterpolationParameters vtLowLatencyFrameInterpolationParameters => vtLowLatencyFrameInterpolationParameters -> IO (Id NSArray)
-destinationFrames vtLowLatencyFrameInterpolationParameters  =
-    sendMsg vtLowLatencyFrameInterpolationParameters (mkSelector "destinationFrames") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationFrames vtLowLatencyFrameInterpolationParameters =
+  sendMessage vtLowLatencyFrameInterpolationParameters destinationFramesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSourceFrame:previousFrame:interpolationPhase:destinationFrames:@
-initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector :: Selector
+initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector :: Selector '[Id VTFrameProcessorFrame, Id VTFrameProcessorFrame, Id NSArray, Id NSArray] (Id VTLowLatencyFrameInterpolationParameters)
 initWithSourceFrame_previousFrame_interpolationPhase_destinationFramesSelector = mkSelector "initWithSourceFrame:previousFrame:interpolationPhase:destinationFrames:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTLowLatencyFrameInterpolationParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTLowLatencyFrameInterpolationParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @previousFrame@
-previousFrameSelector :: Selector
+previousFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 previousFrameSelector = mkSelector "previousFrame"
 
 -- | @Selector@ for @interpolationPhase@
-interpolationPhaseSelector :: Selector
+interpolationPhaseSelector :: Selector '[] (Id NSArray)
 interpolationPhaseSelector = mkSelector "interpolationPhase"
 
 -- | @Selector@ for @destinationFrames@
-destinationFramesSelector :: Selector
+destinationFramesSelector :: Selector '[] (Id NSArray)
 destinationFramesSelector = mkSelector "destinationFrames"
 

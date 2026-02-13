@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Automator.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @AMErrorCode@
 newtype AMErrorCode = AMErrorCode CLong
@@ -118,6 +121,16 @@ pattern AMConversionNoDataError = AMErrorCode (-301)
 pattern AMConversionFailedError :: AMErrorCode
 pattern AMConversionFailedError = AMErrorCode (-302)
 
+instance ObjCArgument AMErrorCode where
+  withObjCArg (AMErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn AMErrorCode where
+  type RawReturn AMErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AMErrorCode x)
+  fromOwned x = pure (AMErrorCode x)
+
 -- | @AMLogLevel@
 newtype AMLogLevel = AMLogLevel CULong
   deriving stock (Eq, Ord, Show)
@@ -134,3 +147,13 @@ pattern AMLogLevelWarn = AMLogLevel 2
 
 pattern AMLogLevelError :: AMLogLevel
 pattern AMLogLevelError = AMLogLevel 3
+
+instance ObjCArgument AMLogLevel where
+  withObjCArg (AMLogLevel x) k = k (argCULong x)
+
+instance ObjCReturn AMLogLevel where
+  type RawReturn AMLogLevel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AMLogLevel x)
+  fromOwned x = pure (AMLogLevel x)

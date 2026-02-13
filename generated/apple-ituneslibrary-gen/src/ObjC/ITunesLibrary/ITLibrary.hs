@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,23 +27,23 @@ module ObjC.ITunesLibrary.ITLibrary
   , showContentRating
   , allMediaItems
   , allPlaylists
-  , initSelector
-  , libraryWithAPIVersion_errorSelector
-  , libraryWithAPIVersion_options_errorSelector
-  , initWithAPIVersion_errorSelector
-  , initWithAPIVersion_options_errorSelector
-  , artworkForMediaFileSelector
-  , reloadDataSelector
-  , unloadDataSelector
-  , applicationVersionSelector
-  , featuresSelector
-  , apiMajorVersionSelector
-  , apiMinorVersionSelector
-  , mediaFolderLocationSelector
-  , musicFolderLocationSelector
-  , showContentRatingSelector
   , allMediaItemsSelector
   , allPlaylistsSelector
+  , apiMajorVersionSelector
+  , apiMinorVersionSelector
+  , applicationVersionSelector
+  , artworkForMediaFileSelector
+  , featuresSelector
+  , initSelector
+  , initWithAPIVersion_errorSelector
+  , initWithAPIVersion_options_errorSelector
+  , libraryWithAPIVersion_errorSelector
+  , libraryWithAPIVersion_options_errorSelector
+  , mediaFolderLocationSelector
+  , musicFolderLocationSelector
+  , reloadDataSelector
+  , showContentRatingSelector
+  , unloadDataSelector
 
   -- * Enum types
   , ITLibExportFeature(ITLibExportFeature)
@@ -53,15 +54,11 @@ module ObjC.ITunesLibrary.ITLibrary
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsITLibrary itLibrary => itLibrary -> IO (Id ITLibrary)
-init_ itLibrary  =
-    sendMsg itLibrary (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ itLibrary =
+  sendOwnedMessage itLibrary initSelector
 
 -- | Creates and initializes an instance of ITLibrary which can be used to retrieve media entities.
 --
@@ -89,9 +86,7 @@ libraryWithAPIVersion_error :: (IsNSString requestedAPIVersion, IsNSError error_
 libraryWithAPIVersion_error requestedAPIVersion error_ =
   do
     cls' <- getRequiredClass "ITLibrary"
-    withObjCPtr requestedAPIVersion $ \raw_requestedAPIVersion ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "libraryWithAPIVersion:error:") (retPtr retVoid) [argPtr (castPtr raw_requestedAPIVersion :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' libraryWithAPIVersion_errorSelector (toNSString requestedAPIVersion) (toNSError error_)
 
 -- | Creates and initializes an instance of ITLibrary which can be used to retrieve media entities.
 --
@@ -110,9 +105,7 @@ libraryWithAPIVersion_options_error :: (IsNSString requestedAPIVersion, IsNSErro
 libraryWithAPIVersion_options_error requestedAPIVersion options error_ =
   do
     cls' <- getRequiredClass "ITLibrary"
-    withObjCPtr requestedAPIVersion $ \raw_requestedAPIVersion ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "libraryWithAPIVersion:options:error:") (retPtr retVoid) [argPtr (castPtr raw_requestedAPIVersion :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' libraryWithAPIVersion_options_errorSelector (toNSString requestedAPIVersion) options (toNSError error_)
 
 -- | Initializes an instance of ITLibrary which can be used to retrieve media entities.
 --
@@ -126,10 +119,8 @@ libraryWithAPIVersion_options_error requestedAPIVersion options error_ =
 --
 -- ObjC selector: @- initWithAPIVersion:error:@
 initWithAPIVersion_error :: (IsITLibrary itLibrary, IsNSString requestedAPIVersion, IsNSError error_) => itLibrary -> requestedAPIVersion -> error_ -> IO (Id ITLibrary)
-initWithAPIVersion_error itLibrary  requestedAPIVersion error_ =
-  withObjCPtr requestedAPIVersion $ \raw_requestedAPIVersion ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg itLibrary (mkSelector "initWithAPIVersion:error:") (retPtr retVoid) [argPtr (castPtr raw_requestedAPIVersion :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithAPIVersion_error itLibrary requestedAPIVersion error_ =
+  sendOwnedMessage itLibrary initWithAPIVersion_errorSelector (toNSString requestedAPIVersion) (toNSError error_)
 
 -- | Initializes an instance of ITLibrary which can be used to retrieve media entities.
 --
@@ -145,10 +136,8 @@ initWithAPIVersion_error itLibrary  requestedAPIVersion error_ =
 --
 -- ObjC selector: @- initWithAPIVersion:options:error:@
 initWithAPIVersion_options_error :: (IsITLibrary itLibrary, IsNSString requestedAPIVersion, IsNSError error_) => itLibrary -> requestedAPIVersion -> ITLibInitOptions -> error_ -> IO (Id ITLibrary)
-initWithAPIVersion_options_error itLibrary  requestedAPIVersion options error_ =
-  withObjCPtr requestedAPIVersion $ \raw_requestedAPIVersion ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg itLibrary (mkSelector "initWithAPIVersion:options:error:") (retPtr retVoid) [argPtr (castPtr raw_requestedAPIVersion :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithAPIVersion_options_error itLibrary requestedAPIVersion options error_ =
+  sendOwnedMessage itLibrary initWithAPIVersion_options_errorSelector (toNSString requestedAPIVersion) options (toNSError error_)
 
 -- | Retrieves the artwork from a media file.
 --
@@ -158,9 +147,8 @@ initWithAPIVersion_options_error itLibrary  requestedAPIVersion options error_ =
 --
 -- ObjC selector: @- artworkForMediaFile:@
 artworkForMediaFile :: (IsITLibrary itLibrary, IsNSURL mediaFileURL) => itLibrary -> mediaFileURL -> IO (Id ITLibArtwork)
-artworkForMediaFile itLibrary  mediaFileURL =
-  withObjCPtr mediaFileURL $ \raw_mediaFileURL ->
-      sendMsg itLibrary (mkSelector "artworkForMediaFile:") (retPtr retVoid) [argPtr (castPtr raw_mediaFileURL :: Ptr ())] >>= retainedObject . castPtr
+artworkForMediaFile itLibrary mediaFileURL =
+  sendMessage itLibrary artworkForMediaFileSelector (toNSURL mediaFileURL)
 
 -- | Refreshes the data used by the framework.
 --
@@ -168,148 +156,148 @@ artworkForMediaFile itLibrary  mediaFileURL =
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsITLibrary itLibrary => itLibrary -> IO Bool
-reloadData itLibrary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibrary (mkSelector "reloadData") retCULong []
+reloadData itLibrary =
+  sendMessage itLibrary reloadDataSelector
 
 -- | Unloads the data used by the framework.
 --
 -- ObjC selector: @- unloadData@
 unloadData :: IsITLibrary itLibrary => itLibrary -> IO ()
-unloadData itLibrary  =
-    sendMsg itLibrary (mkSelector "unloadData") retVoid []
+unloadData itLibrary =
+  sendMessage itLibrary unloadDataSelector
 
 -- | The version of iTunes being accessed.
 --
 -- ObjC selector: @- applicationVersion@
 applicationVersion :: IsITLibrary itLibrary => itLibrary -> IO (Id NSString)
-applicationVersion itLibrary  =
-    sendMsg itLibrary (mkSelector "applicationVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationVersion itLibrary =
+  sendMessage itLibrary applicationVersionSelector
 
 -- | A bitwise OR combination of the features of this library.
 --
 -- ObjC selector: @- features@
 features :: IsITLibrary itLibrary => itLibrary -> IO ITLibExportFeature
-features itLibrary  =
-    fmap (coerce :: CULong -> ITLibExportFeature) $ sendMsg itLibrary (mkSelector "features") retCULong []
+features itLibrary =
+  sendMessage itLibrary featuresSelector
 
 -- | The major version number of this API.
 --
 -- ObjC selector: @- apiMajorVersion@
 apiMajorVersion :: IsITLibrary itLibrary => itLibrary -> IO CULong
-apiMajorVersion itLibrary  =
-    sendMsg itLibrary (mkSelector "apiMajorVersion") retCULong []
+apiMajorVersion itLibrary =
+  sendMessage itLibrary apiMajorVersionSelector
 
 -- | The minor version number of this API.
 --
 -- ObjC selector: @- apiMinorVersion@
 apiMinorVersion :: IsITLibrary itLibrary => itLibrary -> IO CULong
-apiMinorVersion itLibrary  =
-    sendMsg itLibrary (mkSelector "apiMinorVersion") retCULong []
+apiMinorVersion itLibrary =
+  sendMessage itLibrary apiMinorVersionSelector
 
 -- | The location of the iTunes music folder.
 --
 -- ObjC selector: @- mediaFolderLocation@
 mediaFolderLocation :: IsITLibrary itLibrary => itLibrary -> IO RawId
-mediaFolderLocation itLibrary  =
-    fmap (RawId . castPtr) $ sendMsg itLibrary (mkSelector "mediaFolderLocation") (retPtr retVoid) []
+mediaFolderLocation itLibrary =
+  sendMessage itLibrary mediaFolderLocationSelector
 
 -- | The location of the iTunes music folder. Replaced by mediaFolderLocation.
 --
 -- ObjC selector: @- musicFolderLocation@
 musicFolderLocation :: IsITLibrary itLibrary => itLibrary -> IO (Id NSURL)
-musicFolderLocation itLibrary  =
-    sendMsg itLibrary (mkSelector "musicFolderLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+musicFolderLocation itLibrary =
+  sendMessage itLibrary musicFolderLocationSelector
 
 -- | Whether to show content rating labels.
 --
 -- ObjC selector: @- showContentRating@
 showContentRating :: IsITLibrary itLibrary => itLibrary -> IO Bool
-showContentRating itLibrary  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibrary (mkSelector "showContentRating") retCULong []
+showContentRating itLibrary =
+  sendMessage itLibrary showContentRatingSelector
 
 -- | All media items in the library.
 --
 -- ObjC selector: @- allMediaItems@
 allMediaItems :: IsITLibrary itLibrary => itLibrary -> IO (Id NSArray)
-allMediaItems itLibrary  =
-    sendMsg itLibrary (mkSelector "allMediaItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+allMediaItems itLibrary =
+  sendMessage itLibrary allMediaItemsSelector
 
 -- | All playlists in the library.
 --
 -- ObjC selector: @- allPlaylists@
 allPlaylists :: IsITLibrary itLibrary => itLibrary -> IO (Id NSArray)
-allPlaylists itLibrary  =
-    sendMsg itLibrary (mkSelector "allPlaylists") (retPtr retVoid) [] >>= retainedObject . castPtr
+allPlaylists itLibrary =
+  sendMessage itLibrary allPlaylistsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ITLibrary)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @libraryWithAPIVersion:error:@
-libraryWithAPIVersion_errorSelector :: Selector
+libraryWithAPIVersion_errorSelector :: Selector '[Id NSString, Id NSError] (Id ITLibrary)
 libraryWithAPIVersion_errorSelector = mkSelector "libraryWithAPIVersion:error:"
 
 -- | @Selector@ for @libraryWithAPIVersion:options:error:@
-libraryWithAPIVersion_options_errorSelector :: Selector
+libraryWithAPIVersion_options_errorSelector :: Selector '[Id NSString, ITLibInitOptions, Id NSError] (Id ITLibrary)
 libraryWithAPIVersion_options_errorSelector = mkSelector "libraryWithAPIVersion:options:error:"
 
 -- | @Selector@ for @initWithAPIVersion:error:@
-initWithAPIVersion_errorSelector :: Selector
+initWithAPIVersion_errorSelector :: Selector '[Id NSString, Id NSError] (Id ITLibrary)
 initWithAPIVersion_errorSelector = mkSelector "initWithAPIVersion:error:"
 
 -- | @Selector@ for @initWithAPIVersion:options:error:@
-initWithAPIVersion_options_errorSelector :: Selector
+initWithAPIVersion_options_errorSelector :: Selector '[Id NSString, ITLibInitOptions, Id NSError] (Id ITLibrary)
 initWithAPIVersion_options_errorSelector = mkSelector "initWithAPIVersion:options:error:"
 
 -- | @Selector@ for @artworkForMediaFile:@
-artworkForMediaFileSelector :: Selector
+artworkForMediaFileSelector :: Selector '[Id NSURL] (Id ITLibArtwork)
 artworkForMediaFileSelector = mkSelector "artworkForMediaFile:"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] Bool
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @unloadData@
-unloadDataSelector :: Selector
+unloadDataSelector :: Selector '[] ()
 unloadDataSelector = mkSelector "unloadData"
 
 -- | @Selector@ for @applicationVersion@
-applicationVersionSelector :: Selector
+applicationVersionSelector :: Selector '[] (Id NSString)
 applicationVersionSelector = mkSelector "applicationVersion"
 
 -- | @Selector@ for @features@
-featuresSelector :: Selector
+featuresSelector :: Selector '[] ITLibExportFeature
 featuresSelector = mkSelector "features"
 
 -- | @Selector@ for @apiMajorVersion@
-apiMajorVersionSelector :: Selector
+apiMajorVersionSelector :: Selector '[] CULong
 apiMajorVersionSelector = mkSelector "apiMajorVersion"
 
 -- | @Selector@ for @apiMinorVersion@
-apiMinorVersionSelector :: Selector
+apiMinorVersionSelector :: Selector '[] CULong
 apiMinorVersionSelector = mkSelector "apiMinorVersion"
 
 -- | @Selector@ for @mediaFolderLocation@
-mediaFolderLocationSelector :: Selector
+mediaFolderLocationSelector :: Selector '[] RawId
 mediaFolderLocationSelector = mkSelector "mediaFolderLocation"
 
 -- | @Selector@ for @musicFolderLocation@
-musicFolderLocationSelector :: Selector
+musicFolderLocationSelector :: Selector '[] (Id NSURL)
 musicFolderLocationSelector = mkSelector "musicFolderLocation"
 
 -- | @Selector@ for @showContentRating@
-showContentRatingSelector :: Selector
+showContentRatingSelector :: Selector '[] Bool
 showContentRatingSelector = mkSelector "showContentRating"
 
 -- | @Selector@ for @allMediaItems@
-allMediaItemsSelector :: Selector
+allMediaItemsSelector :: Selector '[] (Id NSArray)
 allMediaItemsSelector = mkSelector "allMediaItems"
 
 -- | @Selector@ for @allPlaylists@
-allPlaylistsSelector :: Selector
+allPlaylistsSelector :: Selector '[] (Id NSArray)
 allPlaylistsSelector = mkSelector "allPlaylists"
 

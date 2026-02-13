@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.AVFAudio.AVSpeechSynthesisVoice
   , gender
   , audioFileSettings
   , voiceTraits
-  , speechVoicesSelector
+  , audioFileSettingsSelector
   , currentLanguageCodeSelector
-  , voiceWithLanguageSelector
-  , voiceWithIdentifierSelector
-  , languageSelector
+  , genderSelector
   , identifierSelector
+  , languageSelector
   , nameSelector
   , qualitySelector
-  , genderSelector
-  , audioFileSettingsSelector
+  , speechVoicesSelector
   , voiceTraitsSelector
+  , voiceWithIdentifierSelector
+  , voiceWithLanguageSelector
 
   -- * Enum types
   , AVSpeechSynthesisVoiceGender(AVSpeechSynthesisVoiceGender)
@@ -52,15 +53,11 @@ module ObjC.AVFAudio.AVSpeechSynthesisVoice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,14 +70,14 @@ speechVoices :: IO (Id NSArray)
 speechVoices  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisVoice"
-    sendClassMsg cls' (mkSelector "speechVoices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' speechVoicesSelector
 
 -- | @+ currentLanguageCode@
 currentLanguageCode :: IO (Id NSString)
 currentLanguageCode  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisVoice"
-    sendClassMsg cls' (mkSelector "currentLanguageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentLanguageCodeSelector
 
 -- | voiceWithLanguage:
 --
@@ -95,8 +92,7 @@ voiceWithLanguage :: IsNSString languageCode => languageCode -> IO (Id AVSpeechS
 voiceWithLanguage languageCode =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisVoice"
-    withObjCPtr languageCode $ \raw_languageCode ->
-      sendClassMsg cls' (mkSelector "voiceWithLanguage:") (retPtr retVoid) [argPtr (castPtr raw_languageCode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' voiceWithLanguageSelector (toNSString languageCode)
 
 -- | voiceWithIdentifier:
 --
@@ -111,89 +107,88 @@ voiceWithIdentifier :: IsNSString identifier => identifier -> IO (Id AVSpeechSyn
 voiceWithIdentifier identifier =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisVoice"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "voiceWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' voiceWithIdentifierSelector (toNSString identifier)
 
 -- | @- language@
 language :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO (Id NSString)
-language avSpeechSynthesisVoice  =
-    sendMsg avSpeechSynthesisVoice (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice languageSelector
 
 -- | @- identifier@
 identifier :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO (Id NSString)
-identifier avSpeechSynthesisVoice  =
-    sendMsg avSpeechSynthesisVoice (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice identifierSelector
 
 -- | @- name@
 name :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO (Id NSString)
-name avSpeechSynthesisVoice  =
-    sendMsg avSpeechSynthesisVoice (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice nameSelector
 
 -- | @- quality@
 quality :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO AVSpeechSynthesisVoiceQuality
-quality avSpeechSynthesisVoice  =
-    fmap (coerce :: CLong -> AVSpeechSynthesisVoiceQuality) $ sendMsg avSpeechSynthesisVoice (mkSelector "quality") retCLong []
+quality avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice qualitySelector
 
 -- | @- gender@
 gender :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO AVSpeechSynthesisVoiceGender
-gender avSpeechSynthesisVoice  =
-    fmap (coerce :: CLong -> AVSpeechSynthesisVoiceGender) $ sendMsg avSpeechSynthesisVoice (mkSelector "gender") retCLong []
+gender avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice genderSelector
 
 -- | @- audioFileSettings@
 audioFileSettings :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO (Id NSDictionary)
-audioFileSettings avSpeechSynthesisVoice  =
-    sendMsg avSpeechSynthesisVoice (mkSelector "audioFileSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioFileSettings avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice audioFileSettingsSelector
 
 -- | @- voiceTraits@
 voiceTraits :: IsAVSpeechSynthesisVoice avSpeechSynthesisVoice => avSpeechSynthesisVoice -> IO AVSpeechSynthesisVoiceTraits
-voiceTraits avSpeechSynthesisVoice  =
-    fmap (coerce :: CULong -> AVSpeechSynthesisVoiceTraits) $ sendMsg avSpeechSynthesisVoice (mkSelector "voiceTraits") retCULong []
+voiceTraits avSpeechSynthesisVoice =
+  sendMessage avSpeechSynthesisVoice voiceTraitsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @speechVoices@
-speechVoicesSelector :: Selector
+speechVoicesSelector :: Selector '[] (Id NSArray)
 speechVoicesSelector = mkSelector "speechVoices"
 
 -- | @Selector@ for @currentLanguageCode@
-currentLanguageCodeSelector :: Selector
+currentLanguageCodeSelector :: Selector '[] (Id NSString)
 currentLanguageCodeSelector = mkSelector "currentLanguageCode"
 
 -- | @Selector@ for @voiceWithLanguage:@
-voiceWithLanguageSelector :: Selector
+voiceWithLanguageSelector :: Selector '[Id NSString] (Id AVSpeechSynthesisVoice)
 voiceWithLanguageSelector = mkSelector "voiceWithLanguage:"
 
 -- | @Selector@ for @voiceWithIdentifier:@
-voiceWithIdentifierSelector :: Selector
+voiceWithIdentifierSelector :: Selector '[Id NSString] (Id AVSpeechSynthesisVoice)
 voiceWithIdentifierSelector = mkSelector "voiceWithIdentifier:"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id NSString)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @quality@
-qualitySelector :: Selector
+qualitySelector :: Selector '[] AVSpeechSynthesisVoiceQuality
 qualitySelector = mkSelector "quality"
 
 -- | @Selector@ for @gender@
-genderSelector :: Selector
+genderSelector :: Selector '[] AVSpeechSynthesisVoiceGender
 genderSelector = mkSelector "gender"
 
 -- | @Selector@ for @audioFileSettings@
-audioFileSettingsSelector :: Selector
+audioFileSettingsSelector :: Selector '[] (Id NSDictionary)
 audioFileSettingsSelector = mkSelector "audioFileSettings"
 
 -- | @Selector@ for @voiceTraits@
-voiceTraitsSelector :: Selector
+voiceTraitsSelector :: Selector '[] AVSpeechSynthesisVoiceTraits
 voiceTraitsSelector = mkSelector "voiceTraits"
 

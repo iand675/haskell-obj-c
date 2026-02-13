@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,9 +14,9 @@ module ObjC.PencilKit.PKInk
   , inkType
   , color
   , requiredContentVersion
+  , colorSelector
   , initWithInkType_colorSelector
   , inkTypeSelector
-  , colorSelector
   , requiredContentVersionSelector
 
   -- * Enum types
@@ -28,15 +29,11 @@ module ObjC.PencilKit.PKInk
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,47 +44,45 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithInkType:color:@
 initWithInkType_color :: (IsPKInk pkInk, IsNSString type_, IsNSColor color) => pkInk -> type_ -> color -> IO (Id PKInk)
-initWithInkType_color pkInk  type_ color =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr color $ \raw_color ->
-        sendMsg pkInk (mkSelector "initWithInkType:color:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_color :: Ptr ())] >>= ownedObject . castPtr
+initWithInkType_color pkInk type_ color =
+  sendOwnedMessage pkInk initWithInkType_colorSelector (toNSString type_) (toNSColor color)
 
 -- | The type of ink, eg. pen, pencil...
 --
 -- ObjC selector: @- inkType@
 inkType :: IsPKInk pkInk => pkInk -> IO (Id NSString)
-inkType pkInk  =
-    sendMsg pkInk (mkSelector "inkType") (retPtr retVoid) [] >>= retainedObject . castPtr
+inkType pkInk =
+  sendMessage pkInk inkTypeSelector
 
 -- | @- color@
 color :: IsPKInk pkInk => pkInk -> IO (Id NSColor)
-color pkInk  =
-    sendMsg pkInk (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color pkInk =
+  sendMessage pkInk colorSelector
 
 -- | The PencilKit version required to use this ink.
 --
 -- ObjC selector: @- requiredContentVersion@
 requiredContentVersion :: IsPKInk pkInk => pkInk -> IO PKContentVersion
-requiredContentVersion pkInk  =
-    fmap (coerce :: CLong -> PKContentVersion) $ sendMsg pkInk (mkSelector "requiredContentVersion") retCLong []
+requiredContentVersion pkInk =
+  sendMessage pkInk requiredContentVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInkType:color:@
-initWithInkType_colorSelector :: Selector
+initWithInkType_colorSelector :: Selector '[Id NSString, Id NSColor] (Id PKInk)
 initWithInkType_colorSelector = mkSelector "initWithInkType:color:"
 
 -- | @Selector@ for @inkType@
-inkTypeSelector :: Selector
+inkTypeSelector :: Selector '[] (Id NSString)
 inkTypeSelector = mkSelector "inkType"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @requiredContentVersion@
-requiredContentVersionSelector :: Selector
+requiredContentVersionSelector :: Selector '[] PKContentVersion
 requiredContentVersionSelector = mkSelector "requiredContentVersion"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVSynchronizedLayer
   , synchronizedLayerWithPlayerItem
   , playerItem
   , setPlayerItem
-  , synchronizedLayerWithPlayerItemSelector
   , playerItemSelector
   , setPlayerItemSelector
+  , synchronizedLayerWithPlayerItemSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,7 @@ synchronizedLayerWithPlayerItem :: IsAVPlayerItem playerItem => playerItem -> IO
 synchronizedLayerWithPlayerItem playerItem =
   do
     cls' <- getRequiredClass "AVSynchronizedLayer"
-    withObjCPtr playerItem $ \raw_playerItem ->
-      sendClassMsg cls' (mkSelector "synchronizedLayerWithPlayerItem:") (retPtr retVoid) [argPtr (castPtr raw_playerItem :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' synchronizedLayerWithPlayerItemSelector (toAVPlayerItem playerItem)
 
 -- | playerItem
 --
@@ -54,8 +50,8 @@ synchronizedLayerWithPlayerItem playerItem =
 --
 -- ObjC selector: @- playerItem@
 playerItem :: IsAVSynchronizedLayer avSynchronizedLayer => avSynchronizedLayer -> IO (Id AVPlayerItem)
-playerItem avSynchronizedLayer  =
-    sendMsg avSynchronizedLayer (mkSelector "playerItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerItem avSynchronizedLayer =
+  sendMessage avSynchronizedLayer playerItemSelector
 
 -- | playerItem
 --
@@ -65,23 +61,22 @@ playerItem avSynchronizedLayer  =
 --
 -- ObjC selector: @- setPlayerItem:@
 setPlayerItem :: (IsAVSynchronizedLayer avSynchronizedLayer, IsAVPlayerItem value) => avSynchronizedLayer -> value -> IO ()
-setPlayerItem avSynchronizedLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSynchronizedLayer (mkSelector "setPlayerItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlayerItem avSynchronizedLayer value =
+  sendMessage avSynchronizedLayer setPlayerItemSelector (toAVPlayerItem value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @synchronizedLayerWithPlayerItem:@
-synchronizedLayerWithPlayerItemSelector :: Selector
+synchronizedLayerWithPlayerItemSelector :: Selector '[Id AVPlayerItem] (Id AVSynchronizedLayer)
 synchronizedLayerWithPlayerItemSelector = mkSelector "synchronizedLayerWithPlayerItem:"
 
 -- | @Selector@ for @playerItem@
-playerItemSelector :: Selector
+playerItemSelector :: Selector '[] (Id AVPlayerItem)
 playerItemSelector = mkSelector "playerItem"
 
 -- | @Selector@ for @setPlayerItem:@
-setPlayerItemSelector :: Selector
+setPlayerItemSelector :: Selector '[Id AVPlayerItem] ()
 setPlayerItemSelector = mkSelector "setPlayerItem:"
 

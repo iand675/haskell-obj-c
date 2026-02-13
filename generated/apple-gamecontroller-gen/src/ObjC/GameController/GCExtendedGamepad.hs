@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,40 +28,36 @@ module ObjC.GameController.GCExtendedGamepad
   , rightTrigger
   , leftThumbstickButton
   , rightThumbstickButton
-  , saveSnapshotSelector
-  , setStateFromExtendedGamepadSelector
-  , controllerSelector
-  , valueChangedHandlerSelector
-  , setValueChangedHandlerSelector
-  , dpadSelector
   , buttonASelector
   , buttonBSelector
-  , buttonXSelector
-  , buttonYSelector
+  , buttonHomeSelector
   , buttonMenuSelector
   , buttonOptionsSelector
-  , buttonHomeSelector
-  , leftThumbstickSelector
-  , rightThumbstickSelector
+  , buttonXSelector
+  , buttonYSelector
+  , controllerSelector
+  , dpadSelector
   , leftShoulderSelector
-  , rightShoulderSelector
-  , leftTriggerSelector
-  , rightTriggerSelector
   , leftThumbstickButtonSelector
+  , leftThumbstickSelector
+  , leftTriggerSelector
+  , rightShoulderSelector
   , rightThumbstickButtonSelector
+  , rightThumbstickSelector
+  , rightTriggerSelector
+  , saveSnapshotSelector
+  , setStateFromExtendedGamepadSelector
+  , setValueChangedHandlerSelector
+  , valueChangedHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- saveSnapshot@
 saveSnapshot :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCExtendedGamepadSnapshot)
-saveSnapshot gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "saveSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+saveSnapshot gcExtendedGamepad =
+  sendMessage gcExtendedGamepad saveSnapshotSelector
 
 -- | Sets the state vector of the extended gamepad to a copy of the input extended gamepad's state vector.
 --
@@ -84,33 +81,32 @@ saveSnapshot gcExtendedGamepad  =
 --
 -- ObjC selector: @- setStateFromExtendedGamepad:@
 setStateFromExtendedGamepad :: (IsGCExtendedGamepad gcExtendedGamepad, IsGCExtendedGamepad extendedGamepad) => gcExtendedGamepad -> extendedGamepad -> IO ()
-setStateFromExtendedGamepad gcExtendedGamepad  extendedGamepad =
-  withObjCPtr extendedGamepad $ \raw_extendedGamepad ->
-      sendMsg gcExtendedGamepad (mkSelector "setStateFromExtendedGamepad:") retVoid [argPtr (castPtr raw_extendedGamepad :: Ptr ())]
+setStateFromExtendedGamepad gcExtendedGamepad extendedGamepad =
+  sendMessage gcExtendedGamepad setStateFromExtendedGamepadSelector (toGCExtendedGamepad extendedGamepad)
 
 -- | A profile keeps a reference to the controller that this profile is mapping input from.
 --
 -- ObjC selector: @- controller@
 controller :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCController)
-controller gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "controller") (retPtr retVoid) [] >>= retainedObject . castPtr
+controller gcExtendedGamepad =
+  sendMessage gcExtendedGamepad controllerSelector
 
 -- | @- valueChangedHandler@
 valueChangedHandler :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Ptr ())
-valueChangedHandler gcExtendedGamepad  =
-    fmap castPtr $ sendMsg gcExtendedGamepad (mkSelector "valueChangedHandler") (retPtr retVoid) []
+valueChangedHandler gcExtendedGamepad =
+  sendMessage gcExtendedGamepad valueChangedHandlerSelector
 
 -- | @- setValueChangedHandler:@
 setValueChangedHandler :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> Ptr () -> IO ()
-setValueChangedHandler gcExtendedGamepad  value =
-    sendMsg gcExtendedGamepad (mkSelector "setValueChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueChangedHandler gcExtendedGamepad value =
+  sendMessage gcExtendedGamepad setValueChangedHandlerSelector value
 
 -- | Required to be analog in the Extended profile. All the elements of this directional input are thus analog.
 --
 -- ObjC selector: @- dpad@
 dpad :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerDirectionPad)
-dpad gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "dpad") (retPtr retVoid) [] >>= retainedObject . castPtr
+dpad gcExtendedGamepad =
+  sendMessage gcExtendedGamepad dpadSelector
 
 -- | All face buttons are required to be analog in the Extended profile. These must be arranged in the diamond pattern given below:
 --
@@ -118,182 +114,182 @@ dpad gcExtendedGamepad  =
 --
 -- ObjC selector: @- buttonA@
 buttonA :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonA gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonA") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonA gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonASelector
 
 -- | @- buttonB@
 buttonB :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonB gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonB") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonB gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonBSelector
 
 -- | @- buttonX@
 buttonX :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonX gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonX") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonX gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonXSelector
 
 -- | @- buttonY@
 buttonY :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonY gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonY") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonY gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonYSelector
 
 -- | Button menu is the primary menu button, and should be used to enter the main menu and pause the game.
 --
 -- ObjC selector: @- buttonMenu@
 buttonMenu :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonMenu gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonMenu gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonMenuSelector
 
 -- | Button options is the secondary menu button. It should be used to enter a secondary menu, such as graphics and sound configuration, and pause the game.
 --
 -- ObjC selector: @- buttonOptions@
 buttonOptions :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonOptions gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonOptions gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonOptionsSelector
 
 -- | Button home is a special menu button. If the system does not consume button home events, they will be passed to your application and should be used to enter a secondary menu, and pause the game.
 --
 -- ObjC selector: @- buttonHome@
 buttonHome :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-buttonHome gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "buttonHome") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonHome gcExtendedGamepad =
+  sendMessage gcExtendedGamepad buttonHomeSelector
 
 -- | A thumbstick is a 2-axis control that is physically required to be analog. All the elements of this directional input are thus analog.
 --
 -- ObjC selector: @- leftThumbstick@
 leftThumbstick :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerDirectionPad)
-leftThumbstick gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "leftThumbstick") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftThumbstick gcExtendedGamepad =
+  sendMessage gcExtendedGamepad leftThumbstickSelector
 
 -- | A thumbstick is a 2-axis control that is physically required to be analog. All the elements of this directional input are thus analog.
 --
 -- ObjC selector: @- rightThumbstick@
 rightThumbstick :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerDirectionPad)
-rightThumbstick gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "rightThumbstick") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightThumbstick gcExtendedGamepad =
+  sendMessage gcExtendedGamepad rightThumbstickSelector
 
 -- | Shoulder buttons are required to be analog inputs.
 --
 -- ObjC selector: @- leftShoulder@
 leftShoulder :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-leftShoulder gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "leftShoulder") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftShoulder gcExtendedGamepad =
+  sendMessage gcExtendedGamepad leftShoulderSelector
 
 -- | Shoulder buttons are required to be analog inputs.
 --
 -- ObjC selector: @- rightShoulder@
 rightShoulder :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-rightShoulder gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "rightShoulder") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightShoulder gcExtendedGamepad =
+  sendMessage gcExtendedGamepad rightShoulderSelector
 
 -- | Triggers are required to be analog inputs. Common uses would be acceleration and decelleration in a driving game for example.
 --
 -- ObjC selector: @- leftTrigger@
 leftTrigger :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-leftTrigger gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "leftTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftTrigger gcExtendedGamepad =
+  sendMessage gcExtendedGamepad leftTriggerSelector
 
 -- | @- rightTrigger@
 rightTrigger :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-rightTrigger gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "rightTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightTrigger gcExtendedGamepad =
+  sendMessage gcExtendedGamepad rightTriggerSelector
 
 -- | A thumbstick may also have a clickable component, which is treated as a non-analog button.
 --
 -- ObjC selector: @- leftThumbstickButton@
 leftThumbstickButton :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-leftThumbstickButton gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "leftThumbstickButton") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftThumbstickButton gcExtendedGamepad =
+  sendMessage gcExtendedGamepad leftThumbstickButtonSelector
 
 -- | @- rightThumbstickButton@
 rightThumbstickButton :: IsGCExtendedGamepad gcExtendedGamepad => gcExtendedGamepad -> IO (Id GCControllerButtonInput)
-rightThumbstickButton gcExtendedGamepad  =
-    sendMsg gcExtendedGamepad (mkSelector "rightThumbstickButton") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightThumbstickButton gcExtendedGamepad =
+  sendMessage gcExtendedGamepad rightThumbstickButtonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @saveSnapshot@
-saveSnapshotSelector :: Selector
+saveSnapshotSelector :: Selector '[] (Id GCExtendedGamepadSnapshot)
 saveSnapshotSelector = mkSelector "saveSnapshot"
 
 -- | @Selector@ for @setStateFromExtendedGamepad:@
-setStateFromExtendedGamepadSelector :: Selector
+setStateFromExtendedGamepadSelector :: Selector '[Id GCExtendedGamepad] ()
 setStateFromExtendedGamepadSelector = mkSelector "setStateFromExtendedGamepad:"
 
 -- | @Selector@ for @controller@
-controllerSelector :: Selector
+controllerSelector :: Selector '[] (Id GCController)
 controllerSelector = mkSelector "controller"
 
 -- | @Selector@ for @valueChangedHandler@
-valueChangedHandlerSelector :: Selector
+valueChangedHandlerSelector :: Selector '[] (Ptr ())
 valueChangedHandlerSelector = mkSelector "valueChangedHandler"
 
 -- | @Selector@ for @setValueChangedHandler:@
-setValueChangedHandlerSelector :: Selector
+setValueChangedHandlerSelector :: Selector '[Ptr ()] ()
 setValueChangedHandlerSelector = mkSelector "setValueChangedHandler:"
 
 -- | @Selector@ for @dpad@
-dpadSelector :: Selector
+dpadSelector :: Selector '[] (Id GCControllerDirectionPad)
 dpadSelector = mkSelector "dpad"
 
 -- | @Selector@ for @buttonA@
-buttonASelector :: Selector
+buttonASelector :: Selector '[] (Id GCControllerButtonInput)
 buttonASelector = mkSelector "buttonA"
 
 -- | @Selector@ for @buttonB@
-buttonBSelector :: Selector
+buttonBSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonBSelector = mkSelector "buttonB"
 
 -- | @Selector@ for @buttonX@
-buttonXSelector :: Selector
+buttonXSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonXSelector = mkSelector "buttonX"
 
 -- | @Selector@ for @buttonY@
-buttonYSelector :: Selector
+buttonYSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonYSelector = mkSelector "buttonY"
 
 -- | @Selector@ for @buttonMenu@
-buttonMenuSelector :: Selector
+buttonMenuSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonMenuSelector = mkSelector "buttonMenu"
 
 -- | @Selector@ for @buttonOptions@
-buttonOptionsSelector :: Selector
+buttonOptionsSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonOptionsSelector = mkSelector "buttonOptions"
 
 -- | @Selector@ for @buttonHome@
-buttonHomeSelector :: Selector
+buttonHomeSelector :: Selector '[] (Id GCControllerButtonInput)
 buttonHomeSelector = mkSelector "buttonHome"
 
 -- | @Selector@ for @leftThumbstick@
-leftThumbstickSelector :: Selector
+leftThumbstickSelector :: Selector '[] (Id GCControllerDirectionPad)
 leftThumbstickSelector = mkSelector "leftThumbstick"
 
 -- | @Selector@ for @rightThumbstick@
-rightThumbstickSelector :: Selector
+rightThumbstickSelector :: Selector '[] (Id GCControllerDirectionPad)
 rightThumbstickSelector = mkSelector "rightThumbstick"
 
 -- | @Selector@ for @leftShoulder@
-leftShoulderSelector :: Selector
+leftShoulderSelector :: Selector '[] (Id GCControllerButtonInput)
 leftShoulderSelector = mkSelector "leftShoulder"
 
 -- | @Selector@ for @rightShoulder@
-rightShoulderSelector :: Selector
+rightShoulderSelector :: Selector '[] (Id GCControllerButtonInput)
 rightShoulderSelector = mkSelector "rightShoulder"
 
 -- | @Selector@ for @leftTrigger@
-leftTriggerSelector :: Selector
+leftTriggerSelector :: Selector '[] (Id GCControllerButtonInput)
 leftTriggerSelector = mkSelector "leftTrigger"
 
 -- | @Selector@ for @rightTrigger@
-rightTriggerSelector :: Selector
+rightTriggerSelector :: Selector '[] (Id GCControllerButtonInput)
 rightTriggerSelector = mkSelector "rightTrigger"
 
 -- | @Selector@ for @leftThumbstickButton@
-leftThumbstickButtonSelector :: Selector
+leftThumbstickButtonSelector :: Selector '[] (Id GCControllerButtonInput)
 leftThumbstickButtonSelector = mkSelector "leftThumbstickButton"
 
 -- | @Selector@ for @rightThumbstickButton@
-rightThumbstickButtonSelector :: Selector
+rightThumbstickButtonSelector :: Selector '[] (Id GCControllerButtonInput)
 rightThumbstickButtonSelector = mkSelector "rightThumbstickButton"
 

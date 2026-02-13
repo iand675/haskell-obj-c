@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Photos.PHContentEditingInputRequestOptions
   , progressHandler
   , setProgressHandler
   , canHandleAdjustmentDataSelector
-  , setCanHandleAdjustmentDataSelector
   , networkAccessAllowedSelector
-  , setNetworkAccessAllowedSelector
   , progressHandlerSelector
+  , setCanHandleAdjustmentDataSelector
+  , setNetworkAccessAllowedSelector
   , setProgressHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- canHandleAdjustmentData@
 canHandleAdjustmentData :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> IO (Ptr ())
-canHandleAdjustmentData phContentEditingInputRequestOptions  =
-    fmap castPtr $ sendMsg phContentEditingInputRequestOptions (mkSelector "canHandleAdjustmentData") (retPtr retVoid) []
+canHandleAdjustmentData phContentEditingInputRequestOptions =
+  sendMessage phContentEditingInputRequestOptions canHandleAdjustmentDataSelector
 
 -- | @- setCanHandleAdjustmentData:@
 setCanHandleAdjustmentData :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> Ptr () -> IO ()
-setCanHandleAdjustmentData phContentEditingInputRequestOptions  value =
-    sendMsg phContentEditingInputRequestOptions (mkSelector "setCanHandleAdjustmentData:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCanHandleAdjustmentData phContentEditingInputRequestOptions value =
+  sendMessage phContentEditingInputRequestOptions setCanHandleAdjustmentDataSelector value
 
 -- | @- networkAccessAllowed@
 networkAccessAllowed :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> IO Bool
-networkAccessAllowed phContentEditingInputRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phContentEditingInputRequestOptions (mkSelector "networkAccessAllowed") retCULong []
+networkAccessAllowed phContentEditingInputRequestOptions =
+  sendMessage phContentEditingInputRequestOptions networkAccessAllowedSelector
 
 -- | @- setNetworkAccessAllowed:@
 setNetworkAccessAllowed :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> Bool -> IO ()
-setNetworkAccessAllowed phContentEditingInputRequestOptions  value =
-    sendMsg phContentEditingInputRequestOptions (mkSelector "setNetworkAccessAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setNetworkAccessAllowed phContentEditingInputRequestOptions value =
+  sendMessage phContentEditingInputRequestOptions setNetworkAccessAllowedSelector value
 
 -- | @- progressHandler@
 progressHandler :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> IO (Ptr ())
-progressHandler phContentEditingInputRequestOptions  =
-    fmap castPtr $ sendMsg phContentEditingInputRequestOptions (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler phContentEditingInputRequestOptions =
+  sendMessage phContentEditingInputRequestOptions progressHandlerSelector
 
 -- | @- setProgressHandler:@
 setProgressHandler :: IsPHContentEditingInputRequestOptions phContentEditingInputRequestOptions => phContentEditingInputRequestOptions -> Ptr () -> IO ()
-setProgressHandler phContentEditingInputRequestOptions  value =
-    sendMsg phContentEditingInputRequestOptions (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler phContentEditingInputRequestOptions value =
+  sendMessage phContentEditingInputRequestOptions setProgressHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canHandleAdjustmentData@
-canHandleAdjustmentDataSelector :: Selector
+canHandleAdjustmentDataSelector :: Selector '[] (Ptr ())
 canHandleAdjustmentDataSelector = mkSelector "canHandleAdjustmentData"
 
 -- | @Selector@ for @setCanHandleAdjustmentData:@
-setCanHandleAdjustmentDataSelector :: Selector
+setCanHandleAdjustmentDataSelector :: Selector '[Ptr ()] ()
 setCanHandleAdjustmentDataSelector = mkSelector "setCanHandleAdjustmentData:"
 
 -- | @Selector@ for @networkAccessAllowed@
-networkAccessAllowedSelector :: Selector
+networkAccessAllowedSelector :: Selector '[] Bool
 networkAccessAllowedSelector = mkSelector "networkAccessAllowed"
 
 -- | @Selector@ for @setNetworkAccessAllowed:@
-setNetworkAccessAllowedSelector :: Selector
+setNetworkAccessAllowedSelector :: Selector '[Bool] ()
 setNetworkAccessAllowedSelector = mkSelector "setNetworkAccessAllowed:"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 

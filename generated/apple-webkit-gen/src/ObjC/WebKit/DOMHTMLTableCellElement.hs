@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,48 +36,44 @@ module ObjC.WebKit.DOMHTMLTableCellElement
   , setAbbr
   , scope
   , setScope
-  , cellIndexSelector
-  , alignSelector
-  , setAlignSelector
-  , axisSelector
-  , setAxisSelector
-  , bgColorSelector
-  , setBgColorSelector
-  , chSelector
-  , setChSelector
-  , chOffSelector
-  , setChOffSelector
-  , colSpanSelector
-  , setColSpanSelector
-  , rowSpanSelector
-  , setRowSpanSelector
-  , headersSelector
-  , setHeadersSelector
-  , heightSelector
-  , setHeightSelector
-  , noWrapSelector
-  , setNoWrapSelector
-  , vAlignSelector
-  , setVAlignSelector
-  , widthSelector
-  , setWidthSelector
   , abbrSelector
-  , setAbbrSelector
+  , alignSelector
+  , axisSelector
+  , bgColorSelector
+  , cellIndexSelector
+  , chOffSelector
+  , chSelector
+  , colSpanSelector
+  , headersSelector
+  , heightSelector
+  , noWrapSelector
+  , rowSpanSelector
   , scopeSelector
+  , setAbbrSelector
+  , setAlignSelector
+  , setAxisSelector
+  , setBgColorSelector
+  , setChOffSelector
+  , setChSelector
+  , setColSpanSelector
+  , setHeadersSelector
+  , setHeightSelector
+  , setNoWrapSelector
+  , setRowSpanSelector
   , setScopeSelector
+  , setVAlignSelector
+  , setWidthSelector
+  , vAlignSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,277 +82,266 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cellIndex@
 cellIndex :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO CInt
-cellIndex domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "cellIndex") retCInt []
+cellIndex domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement cellIndexSelector
 
 -- | @- align@
 align :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-align domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setAlign domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setAlignSelector (toNSString value)
 
 -- | @- axis@
 axis :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-axis domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "axis") (retPtr retVoid) [] >>= retainedObject . castPtr
+axis domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement axisSelector
 
 -- | @- setAxis:@
 setAxis :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setAxis domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setAxis:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAxis domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setAxisSelector (toNSString value)
 
 -- | @- bgColor@
 bgColor :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-bgColor domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "bgColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bgColor domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement bgColorSelector
 
 -- | @- setBgColor:@
 setBgColor :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setBgColor domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setBgColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBgColor domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setBgColorSelector (toNSString value)
 
 -- | @- ch@
 ch :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-ch domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "ch") (retPtr retVoid) [] >>= retainedObject . castPtr
+ch domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement chSelector
 
 -- | @- setCh:@
 setCh :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setCh domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setCh:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCh domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setChSelector (toNSString value)
 
 -- | @- chOff@
 chOff :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-chOff domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "chOff") (retPtr retVoid) [] >>= retainedObject . castPtr
+chOff domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement chOffSelector
 
 -- | @- setChOff:@
 setChOff :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setChOff domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setChOff:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChOff domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setChOffSelector (toNSString value)
 
 -- | @- colSpan@
 colSpan :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO CInt
-colSpan domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "colSpan") retCInt []
+colSpan domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement colSpanSelector
 
 -- | @- setColSpan:@
 setColSpan :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> CInt -> IO ()
-setColSpan domhtmlTableCellElement  value =
-    sendMsg domhtmlTableCellElement (mkSelector "setColSpan:") retVoid [argCInt value]
+setColSpan domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setColSpanSelector value
 
 -- | @- rowSpan@
 rowSpan :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO CInt
-rowSpan domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "rowSpan") retCInt []
+rowSpan domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement rowSpanSelector
 
 -- | @- setRowSpan:@
 setRowSpan :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> CInt -> IO ()
-setRowSpan domhtmlTableCellElement  value =
-    sendMsg domhtmlTableCellElement (mkSelector "setRowSpan:") retVoid [argCInt value]
+setRowSpan domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setRowSpanSelector value
 
 -- | @- headers@
 headers :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-headers domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "headers") (retPtr retVoid) [] >>= retainedObject . castPtr
+headers domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement headersSelector
 
 -- | @- setHeaders:@
 setHeaders :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setHeaders domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setHeaders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeaders domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setHeadersSelector (toNSString value)
 
 -- | @- height@
 height :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-height domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement heightSelector
 
 -- | @- setHeight:@
 setHeight :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setHeight domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeight domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setHeightSelector (toNSString value)
 
 -- | @- noWrap@
 noWrap :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO Bool
-noWrap domhtmlTableCellElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlTableCellElement (mkSelector "noWrap") retCULong []
+noWrap domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement noWrapSelector
 
 -- | @- setNoWrap:@
 setNoWrap :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> Bool -> IO ()
-setNoWrap domhtmlTableCellElement  value =
-    sendMsg domhtmlTableCellElement (mkSelector "setNoWrap:") retVoid [argCULong (if value then 1 else 0)]
+setNoWrap domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setNoWrapSelector value
 
 -- | @- vAlign@
 vAlign :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-vAlign domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "vAlign") (retPtr retVoid) [] >>= retainedObject . castPtr
+vAlign domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement vAlignSelector
 
 -- | @- setVAlign:@
 setVAlign :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setVAlign domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setVAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVAlign domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setVAlignSelector (toNSString value)
 
 -- | @- width@
 width :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-width domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setWidth domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidth domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setWidthSelector (toNSString value)
 
 -- | @- abbr@
 abbr :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-abbr domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "abbr") (retPtr retVoid) [] >>= retainedObject . castPtr
+abbr domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement abbrSelector
 
 -- | @- setAbbr:@
 setAbbr :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setAbbr domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setAbbr:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAbbr domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setAbbrSelector (toNSString value)
 
 -- | @- scope@
 scope :: IsDOMHTMLTableCellElement domhtmlTableCellElement => domhtmlTableCellElement -> IO (Id NSString)
-scope domhtmlTableCellElement  =
-    sendMsg domhtmlTableCellElement (mkSelector "scope") (retPtr retVoid) [] >>= retainedObject . castPtr
+scope domhtmlTableCellElement =
+  sendMessage domhtmlTableCellElement scopeSelector
 
 -- | @- setScope:@
 setScope :: (IsDOMHTMLTableCellElement domhtmlTableCellElement, IsNSString value) => domhtmlTableCellElement -> value -> IO ()
-setScope domhtmlTableCellElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableCellElement (mkSelector "setScope:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScope domhtmlTableCellElement value =
+  sendMessage domhtmlTableCellElement setScopeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cellIndex@
-cellIndexSelector :: Selector
+cellIndexSelector :: Selector '[] CInt
 cellIndexSelector = mkSelector "cellIndex"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @axis@
-axisSelector :: Selector
+axisSelector :: Selector '[] (Id NSString)
 axisSelector = mkSelector "axis"
 
 -- | @Selector@ for @setAxis:@
-setAxisSelector :: Selector
+setAxisSelector :: Selector '[Id NSString] ()
 setAxisSelector = mkSelector "setAxis:"
 
 -- | @Selector@ for @bgColor@
-bgColorSelector :: Selector
+bgColorSelector :: Selector '[] (Id NSString)
 bgColorSelector = mkSelector "bgColor"
 
 -- | @Selector@ for @setBgColor:@
-setBgColorSelector :: Selector
+setBgColorSelector :: Selector '[Id NSString] ()
 setBgColorSelector = mkSelector "setBgColor:"
 
 -- | @Selector@ for @ch@
-chSelector :: Selector
+chSelector :: Selector '[] (Id NSString)
 chSelector = mkSelector "ch"
 
 -- | @Selector@ for @setCh:@
-setChSelector :: Selector
+setChSelector :: Selector '[Id NSString] ()
 setChSelector = mkSelector "setCh:"
 
 -- | @Selector@ for @chOff@
-chOffSelector :: Selector
+chOffSelector :: Selector '[] (Id NSString)
 chOffSelector = mkSelector "chOff"
 
 -- | @Selector@ for @setChOff:@
-setChOffSelector :: Selector
+setChOffSelector :: Selector '[Id NSString] ()
 setChOffSelector = mkSelector "setChOff:"
 
 -- | @Selector@ for @colSpan@
-colSpanSelector :: Selector
+colSpanSelector :: Selector '[] CInt
 colSpanSelector = mkSelector "colSpan"
 
 -- | @Selector@ for @setColSpan:@
-setColSpanSelector :: Selector
+setColSpanSelector :: Selector '[CInt] ()
 setColSpanSelector = mkSelector "setColSpan:"
 
 -- | @Selector@ for @rowSpan@
-rowSpanSelector :: Selector
+rowSpanSelector :: Selector '[] CInt
 rowSpanSelector = mkSelector "rowSpan"
 
 -- | @Selector@ for @setRowSpan:@
-setRowSpanSelector :: Selector
+setRowSpanSelector :: Selector '[CInt] ()
 setRowSpanSelector = mkSelector "setRowSpan:"
 
 -- | @Selector@ for @headers@
-headersSelector :: Selector
+headersSelector :: Selector '[] (Id NSString)
 headersSelector = mkSelector "headers"
 
 -- | @Selector@ for @setHeaders:@
-setHeadersSelector :: Selector
+setHeadersSelector :: Selector '[Id NSString] ()
 setHeadersSelector = mkSelector "setHeaders:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSString)
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[Id NSString] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @noWrap@
-noWrapSelector :: Selector
+noWrapSelector :: Selector '[] Bool
 noWrapSelector = mkSelector "noWrap"
 
 -- | @Selector@ for @setNoWrap:@
-setNoWrapSelector :: Selector
+setNoWrapSelector :: Selector '[Bool] ()
 setNoWrapSelector = mkSelector "setNoWrap:"
 
 -- | @Selector@ for @vAlign@
-vAlignSelector :: Selector
+vAlignSelector :: Selector '[] (Id NSString)
 vAlignSelector = mkSelector "vAlign"
 
 -- | @Selector@ for @setVAlign:@
-setVAlignSelector :: Selector
+setVAlignSelector :: Selector '[Id NSString] ()
 setVAlignSelector = mkSelector "setVAlign:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSString)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[Id NSString] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @abbr@
-abbrSelector :: Selector
+abbrSelector :: Selector '[] (Id NSString)
 abbrSelector = mkSelector "abbr"
 
 -- | @Selector@ for @setAbbr:@
-setAbbrSelector :: Selector
+setAbbrSelector :: Selector '[Id NSString] ()
 setAbbrSelector = mkSelector "setAbbr:"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] (Id NSString)
 scopeSelector = mkSelector "scope"
 
 -- | @Selector@ for @setScope:@
-setScopeSelector :: Selector
+setScopeSelector :: Selector '[Id NSString] ()
 setScopeSelector = mkSelector "setScope:"
 

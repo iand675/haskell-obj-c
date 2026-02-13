@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MailKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MEComposeSessionErrorCode@
 newtype MEComposeSessionErrorCode = MEComposeSessionErrorCode CLong
@@ -24,6 +27,16 @@ pattern MEComposeSessionErrorCodeInvalidHeaders = MEComposeSessionErrorCode 1
 
 pattern MEComposeSessionErrorCodeInvalidBody :: MEComposeSessionErrorCode
 pattern MEComposeSessionErrorCodeInvalidBody = MEComposeSessionErrorCode 2
+
+instance ObjCArgument MEComposeSessionErrorCode where
+  withObjCArg (MEComposeSessionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MEComposeSessionErrorCode where
+  type RawReturn MEComposeSessionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEComposeSessionErrorCode x)
+  fromOwned x = pure (MEComposeSessionErrorCode x)
 
 -- | An enumeration corresponding to the action user took to start a new mail compose window.
 -- | @MEComposeUserAction@
@@ -42,6 +55,16 @@ pattern MEComposeUserActionReplyAll = MEComposeUserAction 3
 
 pattern MEComposeUserActionForward :: MEComposeUserAction
 pattern MEComposeUserActionForward = MEComposeUserAction 4
+
+instance ObjCArgument MEComposeUserAction where
+  withObjCArg (MEComposeUserAction x) k = k (argCLong x)
+
+instance ObjCReturn MEComposeUserAction where
+  type RawReturn MEComposeUserAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEComposeUserAction x)
+  fromOwned x = pure (MEComposeUserAction x)
 
 -- | @MEMessageActionFlag@
 newtype MEMessageActionFlag = MEMessageActionFlag CLong
@@ -75,6 +98,16 @@ pattern MEMessageActionFlagPurple = MEMessageActionFlag 7
 pattern MEMessageActionFlagGray :: MEMessageActionFlag
 pattern MEMessageActionFlagGray = MEMessageActionFlag 8
 
+instance ObjCArgument MEMessageActionFlag where
+  withObjCArg (MEMessageActionFlag x) k = k (argCLong x)
+
+instance ObjCReturn MEMessageActionFlag where
+  type RawReturn MEMessageActionFlag = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEMessageActionFlag x)
+  fromOwned x = pure (MEMessageActionFlag x)
+
 -- | @MEMessageActionMessageColor@
 newtype MEMessageActionMessageColor = MEMessageActionMessageColor CLong
   deriving stock (Eq, Ord, Show)
@@ -104,6 +137,16 @@ pattern MEMessageActionMessageColorBlue = MEMessageActionMessageColor 6
 pattern MEMessageActionMessageColorGray :: MEMessageActionMessageColor
 pattern MEMessageActionMessageColorGray = MEMessageActionMessageColor 7
 
+instance ObjCArgument MEMessageActionMessageColor where
+  withObjCArg (MEMessageActionMessageColor x) k = k (argCLong x)
+
+instance ObjCReturn MEMessageActionMessageColor where
+  type RawReturn MEMessageActionMessageColor = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEMessageActionMessageColor x)
+  fromOwned x = pure (MEMessageActionMessageColor x)
+
 -- | @MEMessageEncryptionState@
 newtype MEMessageEncryptionState = MEMessageEncryptionState CLong
   deriving stock (Eq, Ord, Show)
@@ -118,6 +161,16 @@ pattern MEMessageEncryptionStateNotEncrypted = MEMessageEncryptionState 1
 pattern MEMessageEncryptionStateEncrypted :: MEMessageEncryptionState
 pattern MEMessageEncryptionStateEncrypted = MEMessageEncryptionState 2
 
+instance ObjCArgument MEMessageEncryptionState where
+  withObjCArg (MEMessageEncryptionState x) k = k (argCLong x)
+
+instance ObjCReturn MEMessageEncryptionState where
+  type RawReturn MEMessageEncryptionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEMessageEncryptionState x)
+  fromOwned x = pure (MEMessageEncryptionState x)
+
 -- | @MEMessageSecurityErrorCode@
 newtype MEMessageSecurityErrorCode = MEMessageSecurityErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -128,6 +181,16 @@ pattern MEMessageSecurityEncodingError = MEMessageSecurityErrorCode 0
 
 pattern MEMessageSecurityDecodingError :: MEMessageSecurityErrorCode
 pattern MEMessageSecurityDecodingError = MEMessageSecurityErrorCode 1
+
+instance ObjCArgument MEMessageSecurityErrorCode where
+  withObjCArg (MEMessageSecurityErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MEMessageSecurityErrorCode where
+  type RawReturn MEMessageSecurityErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEMessageSecurityErrorCode x)
+  fromOwned x = pure (MEMessageSecurityErrorCode x)
 
 -- | @MEMessageState@
 newtype MEMessageState = MEMessageState CLong
@@ -142,3 +205,13 @@ pattern MEMessageStateDraft = MEMessageState 1
 
 pattern MEMessageStateSending :: MEMessageState
 pattern MEMessageStateSending = MEMessageState 2
+
+instance ObjCArgument MEMessageState where
+  withObjCArg (MEMessageState x) k = k (argCLong x)
+
+instance ObjCReturn MEMessageState where
+  type RawReturn MEMessageState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEMessageState x)
+  fromOwned x = pure (MEMessageState x)

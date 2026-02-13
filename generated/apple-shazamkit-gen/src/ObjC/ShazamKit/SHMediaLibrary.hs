@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.ShazamKit.SHMediaLibrary
   , new
   , defaultLibrary
   , addMediaItems_completionHandlerSelector
+  , defaultLibrarySelector
   , initSelector
   , newSelector
-  , defaultLibrarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,21 +54,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addMediaItems:completionHandler:@
 addMediaItems_completionHandler :: (IsSHMediaLibrary shMediaLibrary, IsNSArray mediaItems) => shMediaLibrary -> mediaItems -> Ptr () -> IO ()
-addMediaItems_completionHandler shMediaLibrary  mediaItems completionHandler =
-  withObjCPtr mediaItems $ \raw_mediaItems ->
-      sendMsg shMediaLibrary (mkSelector "addMediaItems:completionHandler:") retVoid [argPtr (castPtr raw_mediaItems :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+addMediaItems_completionHandler shMediaLibrary mediaItems completionHandler =
+  sendMessage shMediaLibrary addMediaItems_completionHandlerSelector (toNSArray mediaItems) completionHandler
 
 -- | @- init@
 init_ :: IsSHMediaLibrary shMediaLibrary => shMediaLibrary -> IO (Id SHMediaLibrary)
-init_ shMediaLibrary  =
-    sendMsg shMediaLibrary (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shMediaLibrary =
+  sendOwnedMessage shMediaLibrary initSelector
 
 -- | @+ new@
 new :: IO (Id SHMediaLibrary)
 new  =
   do
     cls' <- getRequiredClass "SHMediaLibrary"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An instance of the user's default Shazam library.
 --
@@ -80,25 +76,25 @@ defaultLibrary :: IO (Id SHMediaLibrary)
 defaultLibrary  =
   do
     cls' <- getRequiredClass "SHMediaLibrary"
-    sendClassMsg cls' (mkSelector "defaultLibrary") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultLibrarySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addMediaItems:completionHandler:@
-addMediaItems_completionHandlerSelector :: Selector
+addMediaItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 addMediaItems_completionHandlerSelector = mkSelector "addMediaItems:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHMediaLibrary)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SHMediaLibrary)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @defaultLibrary@
-defaultLibrarySelector :: Selector
+defaultLibrarySelector :: Selector '[] (Id SHMediaLibrary)
 defaultLibrarySelector = mkSelector "defaultLibrary"
 

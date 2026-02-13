@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Intents.INCreateTaskListIntent
   , title
   , taskTitles
   , groupName
-  , initWithTitle_taskTitles_groupNameSelector
-  , titleSelector
-  , taskTitlesSelector
   , groupNameSelector
+  , initWithTitle_taskTitles_groupNameSelector
+  , taskTitlesSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTitle:taskTitles:groupName:@
 initWithTitle_taskTitles_groupName :: (IsINCreateTaskListIntent inCreateTaskListIntent, IsINSpeakableString title, IsNSArray taskTitles, IsINSpeakableString groupName) => inCreateTaskListIntent -> title -> taskTitles -> groupName -> IO (Id INCreateTaskListIntent)
-initWithTitle_taskTitles_groupName inCreateTaskListIntent  title taskTitles groupName =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr taskTitles $ \raw_taskTitles ->
-      withObjCPtr groupName $ \raw_groupName ->
-          sendMsg inCreateTaskListIntent (mkSelector "initWithTitle:taskTitles:groupName:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_taskTitles :: Ptr ()), argPtr (castPtr raw_groupName :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_taskTitles_groupName inCreateTaskListIntent title taskTitles groupName =
+  sendOwnedMessage inCreateTaskListIntent initWithTitle_taskTitles_groupNameSelector (toINSpeakableString title) (toNSArray taskTitles) (toINSpeakableString groupName)
 
 -- | @- title@
 title :: IsINCreateTaskListIntent inCreateTaskListIntent => inCreateTaskListIntent -> IO (Id INSpeakableString)
-title inCreateTaskListIntent  =
-    sendMsg inCreateTaskListIntent (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title inCreateTaskListIntent =
+  sendMessage inCreateTaskListIntent titleSelector
 
 -- | @- taskTitles@
 taskTitles :: IsINCreateTaskListIntent inCreateTaskListIntent => inCreateTaskListIntent -> IO (Id NSArray)
-taskTitles inCreateTaskListIntent  =
-    sendMsg inCreateTaskListIntent (mkSelector "taskTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskTitles inCreateTaskListIntent =
+  sendMessage inCreateTaskListIntent taskTitlesSelector
 
 -- | @- groupName@
 groupName :: IsINCreateTaskListIntent inCreateTaskListIntent => inCreateTaskListIntent -> IO (Id INSpeakableString)
-groupName inCreateTaskListIntent  =
-    sendMsg inCreateTaskListIntent (mkSelector "groupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupName inCreateTaskListIntent =
+  sendMessage inCreateTaskListIntent groupNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:taskTitles:groupName:@
-initWithTitle_taskTitles_groupNameSelector :: Selector
+initWithTitle_taskTitles_groupNameSelector :: Selector '[Id INSpeakableString, Id NSArray, Id INSpeakableString] (Id INCreateTaskListIntent)
 initWithTitle_taskTitles_groupNameSelector = mkSelector "initWithTitle:taskTitles:groupName:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id INSpeakableString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @taskTitles@
-taskTitlesSelector :: Selector
+taskTitlesSelector :: Selector '[] (Id NSArray)
 taskTitlesSelector = mkSelector "taskTitles"
 
 -- | @Selector@ for @groupName@
-groupNameSelector :: Selector
+groupNameSelector :: Selector '[] (Id INSpeakableString)
 groupNameSelector = mkSelector "groupName"
 

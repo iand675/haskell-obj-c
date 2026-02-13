@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AddressBook.ABRecord
   , isReadOnly
   , uniqueId
   , displayName
+  , displayNameSelector
   , initSelector
   , initWithAddressBookSelector
-  , valueForPropertySelector
-  , setValue_forProperty_errorSelector
-  , setValue_forPropertySelector
-  , removeValueForPropertySelector
   , isReadOnlySelector
+  , removeValueForPropertySelector
+  , setValue_forPropertySelector
+  , setValue_forProperty_errorSelector
   , uniqueIdSelector
-  , displayNameSelector
+  , valueForPropertySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,92 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsABRecord abRecord => abRecord -> IO RawId
-init_ abRecord  =
-    fmap (RawId . castPtr) $ sendMsg abRecord (mkSelector "init") (retPtr retVoid) []
+init_ abRecord =
+  sendOwnedMessage abRecord initSelector
 
 -- | @- initWithAddressBook:@
 initWithAddressBook :: (IsABRecord abRecord, IsABAddressBook addressBook) => abRecord -> addressBook -> IO RawId
-initWithAddressBook abRecord  addressBook =
-  withObjCPtr addressBook $ \raw_addressBook ->
-      fmap (RawId . castPtr) $ sendMsg abRecord (mkSelector "initWithAddressBook:") (retPtr retVoid) [argPtr (castPtr raw_addressBook :: Ptr ())]
+initWithAddressBook abRecord addressBook =
+  sendOwnedMessage abRecord initWithAddressBookSelector (toABAddressBook addressBook)
 
 -- | @- valueForProperty:@
 valueForProperty :: (IsABRecord abRecord, IsNSString property) => abRecord -> property -> IO RawId
-valueForProperty abRecord  property =
-  withObjCPtr property $ \raw_property ->
-      fmap (RawId . castPtr) $ sendMsg abRecord (mkSelector "valueForProperty:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ())]
+valueForProperty abRecord property =
+  sendMessage abRecord valueForPropertySelector (toNSString property)
 
 -- | @- setValue:forProperty:error:@
 setValue_forProperty_error :: (IsABRecord abRecord, IsNSString property, IsNSError error_) => abRecord -> RawId -> property -> error_ -> IO Bool
-setValue_forProperty_error abRecord  value property error_ =
-  withObjCPtr property $ \raw_property ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg abRecord (mkSelector "setValue:forProperty:error:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_property :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setValue_forProperty_error abRecord value property error_ =
+  sendMessage abRecord setValue_forProperty_errorSelector value (toNSString property) (toNSError error_)
 
 -- | @- setValue:forProperty:@
 setValue_forProperty :: (IsABRecord abRecord, IsNSString property) => abRecord -> RawId -> property -> IO Bool
-setValue_forProperty abRecord  value property =
-  withObjCPtr property $ \raw_property ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abRecord (mkSelector "setValue:forProperty:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_property :: Ptr ())]
+setValue_forProperty abRecord value property =
+  sendMessage abRecord setValue_forPropertySelector value (toNSString property)
 
 -- | @- removeValueForProperty:@
 removeValueForProperty :: (IsABRecord abRecord, IsNSString property) => abRecord -> property -> IO Bool
-removeValueForProperty abRecord  property =
-  withObjCPtr property $ \raw_property ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abRecord (mkSelector "removeValueForProperty:") retCULong [argPtr (castPtr raw_property :: Ptr ())]
+removeValueForProperty abRecord property =
+  sendMessage abRecord removeValueForPropertySelector (toNSString property)
 
 -- | @- isReadOnly@
 isReadOnly :: IsABRecord abRecord => abRecord -> IO Bool
-isReadOnly abRecord  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg abRecord (mkSelector "isReadOnly") retCULong []
+isReadOnly abRecord =
+  sendMessage abRecord isReadOnlySelector
 
 -- | @- uniqueId@
 uniqueId :: IsABRecord abRecord => abRecord -> IO (Id NSString)
-uniqueId abRecord  =
-    sendMsg abRecord (mkSelector "uniqueId") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueId abRecord =
+  sendMessage abRecord uniqueIdSelector
 
 -- | @- displayName@
 displayName :: IsABRecord abRecord => abRecord -> IO (Id NSString)
-displayName abRecord  =
-    sendMsg abRecord (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName abRecord =
+  sendMessage abRecord displayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAddressBook:@
-initWithAddressBookSelector :: Selector
+initWithAddressBookSelector :: Selector '[Id ABAddressBook] RawId
 initWithAddressBookSelector = mkSelector "initWithAddressBook:"
 
 -- | @Selector@ for @valueForProperty:@
-valueForPropertySelector :: Selector
+valueForPropertySelector :: Selector '[Id NSString] RawId
 valueForPropertySelector = mkSelector "valueForProperty:"
 
 -- | @Selector@ for @setValue:forProperty:error:@
-setValue_forProperty_errorSelector :: Selector
+setValue_forProperty_errorSelector :: Selector '[RawId, Id NSString, Id NSError] Bool
 setValue_forProperty_errorSelector = mkSelector "setValue:forProperty:error:"
 
 -- | @Selector@ for @setValue:forProperty:@
-setValue_forPropertySelector :: Selector
+setValue_forPropertySelector :: Selector '[RawId, Id NSString] Bool
 setValue_forPropertySelector = mkSelector "setValue:forProperty:"
 
 -- | @Selector@ for @removeValueForProperty:@
-removeValueForPropertySelector :: Selector
+removeValueForPropertySelector :: Selector '[Id NSString] Bool
 removeValueForPropertySelector = mkSelector "removeValueForProperty:"
 
 -- | @Selector@ for @isReadOnly@
-isReadOnlySelector :: Selector
+isReadOnlySelector :: Selector '[] Bool
 isReadOnlySelector = mkSelector "isReadOnly"
 
 -- | @Selector@ for @uniqueId@
-uniqueIdSelector :: Selector
+uniqueIdSelector :: Selector '[] (Id NSString)
 uniqueIdSelector = mkSelector "uniqueId"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 

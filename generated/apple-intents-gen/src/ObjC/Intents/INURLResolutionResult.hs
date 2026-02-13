@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INURLResolutionResult
   , successWithResolvedURL
   , disambiguationWithURLsToDisambiguate
   , confirmationRequiredWithURLToConfirm
-  , successWithResolvedURLSelector
-  , disambiguationWithURLsToDisambiguateSelector
   , confirmationRequiredWithURLToConfirmSelector
+  , disambiguationWithURLsToDisambiguateSelector
+  , successWithResolvedURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedURL :: IsNSURL resolvedURL => resolvedURL -> IO (Id INURLReso
 successWithResolvedURL resolvedURL =
   do
     cls' <- getRequiredClass "INURLResolutionResult"
-    withObjCPtr resolvedURL $ \raw_resolvedURL ->
-      sendClassMsg cls' (mkSelector "successWithResolvedURL:") (retPtr retVoid) [argPtr (castPtr raw_resolvedURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedURLSelector (toNSURL resolvedURL)
 
 -- | @+ disambiguationWithURLsToDisambiguate:@
 disambiguationWithURLsToDisambiguate :: IsNSArray urlsToDisambiguate => urlsToDisambiguate -> IO (Id INURLResolutionResult)
 disambiguationWithURLsToDisambiguate urlsToDisambiguate =
   do
     cls' <- getRequiredClass "INURLResolutionResult"
-    withObjCPtr urlsToDisambiguate $ \raw_urlsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithURLsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_urlsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithURLsToDisambiguateSelector (toNSArray urlsToDisambiguate)
 
 -- | @+ confirmationRequiredWithURLToConfirm:@
 confirmationRequiredWithURLToConfirm :: IsNSURL urlToConfirm => urlToConfirm -> IO (Id INURLResolutionResult)
 confirmationRequiredWithURLToConfirm urlToConfirm =
   do
     cls' <- getRequiredClass "INURLResolutionResult"
-    withObjCPtr urlToConfirm $ \raw_urlToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithURLToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_urlToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithURLToConfirmSelector (toNSURL urlToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedURL:@
-successWithResolvedURLSelector :: Selector
+successWithResolvedURLSelector :: Selector '[Id NSURL] (Id INURLResolutionResult)
 successWithResolvedURLSelector = mkSelector "successWithResolvedURL:"
 
 -- | @Selector@ for @disambiguationWithURLsToDisambiguate:@
-disambiguationWithURLsToDisambiguateSelector :: Selector
+disambiguationWithURLsToDisambiguateSelector :: Selector '[Id NSArray] (Id INURLResolutionResult)
 disambiguationWithURLsToDisambiguateSelector = mkSelector "disambiguationWithURLsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithURLToConfirm:@
-confirmationRequiredWithURLToConfirmSelector :: Selector
+confirmationRequiredWithURLToConfirmSelector :: Selector '[Id NSURL] (Id INURLResolutionResult)
 confirmationRequiredWithURLToConfirmSelector = mkSelector "confirmationRequiredWithURLToConfirm:"
 

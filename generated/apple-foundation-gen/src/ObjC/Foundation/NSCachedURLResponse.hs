@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.Foundation.NSCachedURLResponse
   , data_
   , userInfo
   , storagePolicy
+  , dataSelector
   , initWithResponse_dataSelector
   , initWithResponse_data_userInfo_storagePolicySelector
   , responseSelector
-  , dataSelector
-  , userInfoSelector
   , storagePolicySelector
+  , userInfoSelector
 
   -- * Enum types
   , NSURLCacheStoragePolicy(NSURLCacheStoragePolicy)
@@ -32,15 +33,11 @@ module ObjC.Foundation.NSCachedURLResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,10 +58,8 @@ import ObjC.Foundation.Internal.Enums
 --
 -- ObjC selector: @- initWithResponse:data:@
 initWithResponse_data :: (IsNSCachedURLResponse nsCachedURLResponse, IsNSURLResponse response, IsNSData data_) => nsCachedURLResponse -> response -> data_ -> IO (Id NSCachedURLResponse)
-initWithResponse_data nsCachedURLResponse  response data_ =
-  withObjCPtr response $ \raw_response ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg nsCachedURLResponse (mkSelector "initWithResponse:data:") (retPtr retVoid) [argPtr (castPtr raw_response :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponse_data nsCachedURLResponse response data_ =
+  sendOwnedMessage nsCachedURLResponse initWithResponse_dataSelector (toNSURLResponse response) (toNSData data_)
 
 -- | initWithResponse:data:userInfo:storagePolicy:
 --
@@ -82,11 +77,8 @@ initWithResponse_data nsCachedURLResponse  response data_ =
 --
 -- ObjC selector: @- initWithResponse:data:userInfo:storagePolicy:@
 initWithResponse_data_userInfo_storagePolicy :: (IsNSCachedURLResponse nsCachedURLResponse, IsNSURLResponse response, IsNSData data_, IsNSDictionary userInfo) => nsCachedURLResponse -> response -> data_ -> userInfo -> NSURLCacheStoragePolicy -> IO (Id NSCachedURLResponse)
-initWithResponse_data_userInfo_storagePolicy nsCachedURLResponse  response data_ userInfo storagePolicy =
-  withObjCPtr response $ \raw_response ->
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg nsCachedURLResponse (mkSelector "initWithResponse:data:userInfo:storagePolicy:") (retPtr retVoid) [argPtr (castPtr raw_response :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ()), argCULong (coerce storagePolicy)] >>= ownedObject . castPtr
+initWithResponse_data_userInfo_storagePolicy nsCachedURLResponse response data_ userInfo storagePolicy =
+  sendOwnedMessage nsCachedURLResponse initWithResponse_data_userInfo_storagePolicySelector (toNSURLResponse response) (toNSData data_) (toNSDictionary userInfo) storagePolicy
 
 -- | Returns the response wrapped by this instance.
 --
@@ -94,8 +86,8 @@ initWithResponse_data_userInfo_storagePolicy nsCachedURLResponse  response data_
 --
 -- ObjC selector: @- response@
 response :: IsNSCachedURLResponse nsCachedURLResponse => nsCachedURLResponse -> IO (Id NSURLResponse)
-response nsCachedURLResponse  =
-    sendMsg nsCachedURLResponse (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response nsCachedURLResponse =
+  sendMessage nsCachedURLResponse responseSelector
 
 -- | Returns the data of the receiver.
 --
@@ -103,8 +95,8 @@ response nsCachedURLResponse  =
 --
 -- ObjC selector: @- data@
 data_ :: IsNSCachedURLResponse nsCachedURLResponse => nsCachedURLResponse -> IO (Id NSData)
-data_ nsCachedURLResponse  =
-    sendMsg nsCachedURLResponse (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ nsCachedURLResponse =
+  sendMessage nsCachedURLResponse dataSelector
 
 -- | Returns the userInfo dictionary of the receiver.
 --
@@ -112,8 +104,8 @@ data_ nsCachedURLResponse  =
 --
 -- ObjC selector: @- userInfo@
 userInfo :: IsNSCachedURLResponse nsCachedURLResponse => nsCachedURLResponse -> IO (Id NSDictionary)
-userInfo nsCachedURLResponse  =
-    sendMsg nsCachedURLResponse (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsCachedURLResponse =
+  sendMessage nsCachedURLResponse userInfoSelector
 
 -- | Returns the NSURLCacheStoragePolicy constant of the receiver.
 --
@@ -121,34 +113,34 @@ userInfo nsCachedURLResponse  =
 --
 -- ObjC selector: @- storagePolicy@
 storagePolicy :: IsNSCachedURLResponse nsCachedURLResponse => nsCachedURLResponse -> IO NSURLCacheStoragePolicy
-storagePolicy nsCachedURLResponse  =
-    fmap (coerce :: CULong -> NSURLCacheStoragePolicy) $ sendMsg nsCachedURLResponse (mkSelector "storagePolicy") retCULong []
+storagePolicy nsCachedURLResponse =
+  sendMessage nsCachedURLResponse storagePolicySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponse:data:@
-initWithResponse_dataSelector :: Selector
+initWithResponse_dataSelector :: Selector '[Id NSURLResponse, Id NSData] (Id NSCachedURLResponse)
 initWithResponse_dataSelector = mkSelector "initWithResponse:data:"
 
 -- | @Selector@ for @initWithResponse:data:userInfo:storagePolicy:@
-initWithResponse_data_userInfo_storagePolicySelector :: Selector
+initWithResponse_data_userInfo_storagePolicySelector :: Selector '[Id NSURLResponse, Id NSData, Id NSDictionary, NSURLCacheStoragePolicy] (Id NSCachedURLResponse)
 initWithResponse_data_userInfo_storagePolicySelector = mkSelector "initWithResponse:data:userInfo:storagePolicy:"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @storagePolicy@
-storagePolicySelector :: Selector
+storagePolicySelector :: Selector '[] NSURLCacheStoragePolicy
 storagePolicySelector = mkSelector "storagePolicy"
 

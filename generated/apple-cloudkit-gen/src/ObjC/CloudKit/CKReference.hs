@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.CloudKit.CKReference
   , referenceAction
   , recordID
   , initSelector
-  , newSelector
   , initWithRecordID_actionSelector
   , initWithRecord_actionSelector
-  , referenceActionSelector
+  , newSelector
   , recordIDSelector
+  , referenceActionSelector
 
   -- * Enum types
   , CKReferenceAction(CKReferenceAction)
@@ -27,15 +28,11 @@ module ObjC.CloudKit.CKReference
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKReference ckReference => ckReference -> IO (Id CKReference)
-init_ ckReference  =
-    sendMsg ckReference (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckReference =
+  sendOwnedMessage ckReference initSelector
 
 -- | @+ new@
 new :: IO (Id CKReference)
 new  =
   do
     cls' <- getRequiredClass "CKReference"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | It is acceptable to relate two records that have not yet been uploaded to the server. Those records must be uploaded to the server in the same operation if using an action other than @CKReferenceActionNone@.
 --
@@ -61,51 +58,49 @@ new  =
 --
 -- ObjC selector: @- initWithRecordID:action:@
 initWithRecordID_action :: (IsCKReference ckReference, IsCKRecordID recordID) => ckReference -> recordID -> CKReferenceAction -> IO (Id CKReference)
-initWithRecordID_action ckReference  recordID action =
-  withObjCPtr recordID $ \raw_recordID ->
-      sendMsg ckReference (mkSelector "initWithRecordID:action:") (retPtr retVoid) [argPtr (castPtr raw_recordID :: Ptr ()), argCULong (coerce action)] >>= ownedObject . castPtr
+initWithRecordID_action ckReference recordID action =
+  sendOwnedMessage ckReference initWithRecordID_actionSelector (toCKRecordID recordID) action
 
 -- | @- initWithRecord:action:@
 initWithRecord_action :: (IsCKReference ckReference, IsCKRecord record) => ckReference -> record -> CKReferenceAction -> IO (Id CKReference)
-initWithRecord_action ckReference  record action =
-  withObjCPtr record $ \raw_record ->
-      sendMsg ckReference (mkSelector "initWithRecord:action:") (retPtr retVoid) [argPtr (castPtr raw_record :: Ptr ()), argCULong (coerce action)] >>= ownedObject . castPtr
+initWithRecord_action ckReference record action =
+  sendOwnedMessage ckReference initWithRecord_actionSelector (toCKRecord record) action
 
 -- | @- referenceAction@
 referenceAction :: IsCKReference ckReference => ckReference -> IO CKReferenceAction
-referenceAction ckReference  =
-    fmap (coerce :: CULong -> CKReferenceAction) $ sendMsg ckReference (mkSelector "referenceAction") retCULong []
+referenceAction ckReference =
+  sendMessage ckReference referenceActionSelector
 
 -- | @- recordID@
 recordID :: IsCKReference ckReference => ckReference -> IO (Id CKRecordID)
-recordID ckReference  =
-    sendMsg ckReference (mkSelector "recordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordID ckReference =
+  sendMessage ckReference recordIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKReference)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKReference)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithRecordID:action:@
-initWithRecordID_actionSelector :: Selector
+initWithRecordID_actionSelector :: Selector '[Id CKRecordID, CKReferenceAction] (Id CKReference)
 initWithRecordID_actionSelector = mkSelector "initWithRecordID:action:"
 
 -- | @Selector@ for @initWithRecord:action:@
-initWithRecord_actionSelector :: Selector
+initWithRecord_actionSelector :: Selector '[Id CKRecord, CKReferenceAction] (Id CKReference)
 initWithRecord_actionSelector = mkSelector "initWithRecord:action:"
 
 -- | @Selector@ for @referenceAction@
-referenceActionSelector :: Selector
+referenceActionSelector :: Selector '[] CKReferenceAction
 referenceActionSelector = mkSelector "referenceAction"
 
 -- | @Selector@ for @recordID@
-recordIDSelector :: Selector
+recordIDSelector :: Selector '[] (Id CKRecordID)
 recordIDSelector = mkSelector "recordID"
 

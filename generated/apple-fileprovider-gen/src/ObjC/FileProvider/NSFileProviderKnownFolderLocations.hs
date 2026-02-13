@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.FileProvider.NSFileProviderKnownFolderLocations
   , setDesktopLocation
   , documentsLocation
   , setDocumentsLocation
-  , initSelector
-  , shouldCreateBinaryCompatibilitySymlinkSelector
-  , setShouldCreateBinaryCompatibilitySymlinkSelector
   , desktopLocationSelector
-  , setDesktopLocationSelector
   , documentsLocationSelector
+  , initSelector
+  , setDesktopLocationSelector
   , setDocumentsLocationSelector
+  , setShouldCreateBinaryCompatibilitySymlinkSelector
+  , shouldCreateBinaryCompatibilitySymlinkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations => nsFileProviderKnownFolderLocations -> IO (Id NSFileProviderKnownFolderLocations)
-init_ nsFileProviderKnownFolderLocations  =
-    sendMsg nsFileProviderKnownFolderLocations (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsFileProviderKnownFolderLocations =
+  sendOwnedMessage nsFileProviderKnownFolderLocations initSelector
 
 -- | Specify whether the system should create a binary compatibility symlink folders.
 --
@@ -56,8 +53,8 @@ init_ nsFileProviderKnownFolderLocations  =
 --
 -- ObjC selector: @- shouldCreateBinaryCompatibilitySymlink@
 shouldCreateBinaryCompatibilitySymlink :: IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations => nsFileProviderKnownFolderLocations -> IO Bool
-shouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderKnownFolderLocations (mkSelector "shouldCreateBinaryCompatibilitySymlink") retCULong []
+shouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations =
+  sendMessage nsFileProviderKnownFolderLocations shouldCreateBinaryCompatibilitySymlinkSelector
 
 -- | Specify whether the system should create a binary compatibility symlink folders.
 --
@@ -67,8 +64,8 @@ shouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations  =
 --
 -- ObjC selector: @- setShouldCreateBinaryCompatibilitySymlink:@
 setShouldCreateBinaryCompatibilitySymlink :: IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations => nsFileProviderKnownFolderLocations -> Bool -> IO ()
-setShouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations  value =
-    sendMsg nsFileProviderKnownFolderLocations (mkSelector "setShouldCreateBinaryCompatibilitySymlink:") retVoid [argCULong (if value then 1 else 0)]
+setShouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations value =
+  sendMessage nsFileProviderKnownFolderLocations setShouldCreateBinaryCompatibilitySymlinkSelector value
 
 -- | Candidate item for ~/Desktop
 --
@@ -76,8 +73,8 @@ setShouldCreateBinaryCompatibilitySymlink nsFileProviderKnownFolderLocations  va
 --
 -- ObjC selector: @- desktopLocation@
 desktopLocation :: IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations => nsFileProviderKnownFolderLocations -> IO (Id NSFileProviderKnownFolderLocation)
-desktopLocation nsFileProviderKnownFolderLocations  =
-    sendMsg nsFileProviderKnownFolderLocations (mkSelector "desktopLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+desktopLocation nsFileProviderKnownFolderLocations =
+  sendMessage nsFileProviderKnownFolderLocations desktopLocationSelector
 
 -- | Candidate item for ~/Desktop
 --
@@ -85,9 +82,8 @@ desktopLocation nsFileProviderKnownFolderLocations  =
 --
 -- ObjC selector: @- setDesktopLocation:@
 setDesktopLocation :: (IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations, IsNSFileProviderKnownFolderLocation value) => nsFileProviderKnownFolderLocations -> value -> IO ()
-setDesktopLocation nsFileProviderKnownFolderLocations  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileProviderKnownFolderLocations (mkSelector "setDesktopLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesktopLocation nsFileProviderKnownFolderLocations value =
+  sendMessage nsFileProviderKnownFolderLocations setDesktopLocationSelector (toNSFileProviderKnownFolderLocation value)
 
 -- | Candidate item for ~/Documents
 --
@@ -95,8 +91,8 @@ setDesktopLocation nsFileProviderKnownFolderLocations  value =
 --
 -- ObjC selector: @- documentsLocation@
 documentsLocation :: IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations => nsFileProviderKnownFolderLocations -> IO (Id NSFileProviderKnownFolderLocation)
-documentsLocation nsFileProviderKnownFolderLocations  =
-    sendMsg nsFileProviderKnownFolderLocations (mkSelector "documentsLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentsLocation nsFileProviderKnownFolderLocations =
+  sendMessage nsFileProviderKnownFolderLocations documentsLocationSelector
 
 -- | Candidate item for ~/Documents
 --
@@ -104,39 +100,38 @@ documentsLocation nsFileProviderKnownFolderLocations  =
 --
 -- ObjC selector: @- setDocumentsLocation:@
 setDocumentsLocation :: (IsNSFileProviderKnownFolderLocations nsFileProviderKnownFolderLocations, IsNSFileProviderKnownFolderLocation value) => nsFileProviderKnownFolderLocations -> value -> IO ()
-setDocumentsLocation nsFileProviderKnownFolderLocations  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileProviderKnownFolderLocations (mkSelector "setDocumentsLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentsLocation nsFileProviderKnownFolderLocations value =
+  sendMessage nsFileProviderKnownFolderLocations setDocumentsLocationSelector (toNSFileProviderKnownFolderLocation value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSFileProviderKnownFolderLocations)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @shouldCreateBinaryCompatibilitySymlink@
-shouldCreateBinaryCompatibilitySymlinkSelector :: Selector
+shouldCreateBinaryCompatibilitySymlinkSelector :: Selector '[] Bool
 shouldCreateBinaryCompatibilitySymlinkSelector = mkSelector "shouldCreateBinaryCompatibilitySymlink"
 
 -- | @Selector@ for @setShouldCreateBinaryCompatibilitySymlink:@
-setShouldCreateBinaryCompatibilitySymlinkSelector :: Selector
+setShouldCreateBinaryCompatibilitySymlinkSelector :: Selector '[Bool] ()
 setShouldCreateBinaryCompatibilitySymlinkSelector = mkSelector "setShouldCreateBinaryCompatibilitySymlink:"
 
 -- | @Selector@ for @desktopLocation@
-desktopLocationSelector :: Selector
+desktopLocationSelector :: Selector '[] (Id NSFileProviderKnownFolderLocation)
 desktopLocationSelector = mkSelector "desktopLocation"
 
 -- | @Selector@ for @setDesktopLocation:@
-setDesktopLocationSelector :: Selector
+setDesktopLocationSelector :: Selector '[Id NSFileProviderKnownFolderLocation] ()
 setDesktopLocationSelector = mkSelector "setDesktopLocation:"
 
 -- | @Selector@ for @documentsLocation@
-documentsLocationSelector :: Selector
+documentsLocationSelector :: Selector '[] (Id NSFileProviderKnownFolderLocation)
 documentsLocationSelector = mkSelector "documentsLocation"
 
 -- | @Selector@ for @setDocumentsLocation:@
-setDocumentsLocationSelector :: Selector
+setDocumentsLocationSelector :: Selector '[Id NSFileProviderKnownFolderLocation] ()
 setDocumentsLocationSelector = mkSelector "setDocumentsLocation:"
 
